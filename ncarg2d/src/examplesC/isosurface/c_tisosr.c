@@ -1,5 +1,5 @@
 /*
- *	$Id: c_tisosr.c,v 1.3 1994-08-08 22:27:50 haley Exp $
+ *	$Id: c_tisosr.c,v 1.4 1994-11-03 20:44:07 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -15,17 +15,17 @@ main()
 {
     int idum, ierr;
 /*
- * OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
+ * Open GKS, open workstation, activate workstation
  */
     gopen_gks ("stdout",0);
     gopen_ws (WKID, NULL, WSTYPE);
     gactivate_ws (WKID);
 /*
- * INVOKE DEMO DRIVER
+ * invoke demo driver
  */
     tisosr(&ierr);
 /*
- *     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
+ *     Deactivate and close workstation, close GKS.
  */
     gdeactivate_ws(WKID);
     gclose_ws(WKID);
@@ -73,8 +73,8 @@ int *ierror;
     float rbig1, rbig2, rsml1, rsml2, tiso, fimid, fkmid;
     float f1, f2, fip1, fip2, fjmid1, fjmid2, fkp1, fkp2, fjp1, fjp2;
     float xmin1, xmin2;
-    float ix, iy, rval;
-    int nu, nv, nw, i, j, k, muvwp2, iflag, mu, mv, mw, ival;
+    float ix, iy;
+    int nu, nv, nw, i, j, k, muvwp2, iflag, mu, mv, mw;
     int jcent1, jcent2, isize;
 /*
  * Specify coordinates for plot titles.
@@ -146,8 +146,7 @@ int *ierror;
     c_ezisos (&t[0][0][0],nu,nv,nw,eye,&slab[0][0],tiso);
 /*
  *     frame 2 -- The ISOSRF entry.
- */
-/*
+ *
  * Select normalization transformation 0.
  */
     gsel_norm_tran(0);
@@ -169,21 +168,5 @@ int *ierror;
 
     *ierror = 0;
     printf( "ISOSRF TEST EXECUTED--SEE PLOTS TO CERTIFY\n");
-/*
- * Test c_isgeti, c_isseti
- */
-    c_isseti("IU",3);
-    c_isgeti("IU",&ival);
-	if( ival != 3) {
-		printf( "c_isgeti, c_isseti:  ival should be 3, ival is really %d\n", ival );
-	}
-/*
- * Test c_isgetr, c_isset
- */
-    c_issetr("RS",0.5);
-    c_isgetr("RS",&rval);
-	if( rval != 0.5 ) {
-		printf( "c_isgetr, c_issetr:  rval should be 0.5, rval is really %g\n", rval );
-	}
     return(1);
 }
