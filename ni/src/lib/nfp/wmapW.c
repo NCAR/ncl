@@ -438,6 +438,9 @@ NhlErrorTypes wmbarb_W( void )
 
 NhlErrorTypes wmdrft_W( void )
 {
+  int ier;
+  Gclip clip_ind_rect;
+
   int grlist,gkswid,i;
   int *nwid,nid,ezf,j,indx,numi;
   float *xd,*yd,*ud,*vd,xt,yt,mval=1.e12;
@@ -501,6 +504,9 @@ NhlErrorTypes wmdrft_W( void )
  * The following section calls the c_wmdrft function.
  */
   gactivate_ws (gkswid);
+  ginq_clip(&ier,&clip_ind_rect);
+  gset_clip_ind(1);
+  
 /*
  *  If wmdrft is being used in conjunction with a 
  *  currently existing map projection, then the
@@ -592,6 +598,7 @@ NhlErrorTypes wmdrft_W( void )
     c_wmdrft(dsizes_x[0], x, y);
   }
 
+  gset_clip_ind(clip_ind_rect.clip_ind);
   gdeactivate_ws (gkswid);
   NhlRLDestroy(grlist);
   return(NhlNOERROR);
@@ -668,6 +675,9 @@ NhlErrorTypes wmfndn(float x1, float y1, float x2, float y2,
 
 NhlErrorTypes wmlabs_W( void )
 {
+  int ier;
+  Gclip clip_ind_rect;
+
   int grlist,gkswid,i;
   int *nwid,nid,ezf;
   char *arg1;
@@ -759,6 +769,8 @@ NhlErrorTypes wmlabs_W( void )
  * The following section calls the c_wmwmlabs function.
  */
   gactivate_ws (gkswid);
+  ginq_clip(&ier,&clip_ind_rect);
+  gset_clip_ind(1);
   c_wmgeti("ezf",&ezf);
   if (ezf != -1) {
     for (i = 0; i < dsizes_x[0]; i++) {
@@ -773,6 +785,7 @@ NhlErrorTypes wmlabs_W( void )
       c_wmlabs(*(x+i), *(y+i), arg1);
     }
   }
+  gset_clip_ind(clip_ind_rect.clip_ind);
   gdeactivate_ws (gkswid);
 
   NhlRLDestroy(grlist);

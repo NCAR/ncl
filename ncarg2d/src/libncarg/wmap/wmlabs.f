@@ -1,5 +1,5 @@
 
-C	$Id: wmlabs.f,v 1.7 2000-02-29 00:48:49 fred Exp $
+C	$Id: wmlabs.f,v 1.8 2000-03-07 00:38:31 fred Exp $
 C
       SUBROUTINE WMLABS(X,Y,SYMTYP)
 C
@@ -32,6 +32,7 @@ C  Reference arrow.
 C
       PARAMETER (IADIM=8,D2RAD=.017453293)
       DIMENSION XX(IADIM),YY(IADIM),ARROWX(IADIM),ARROWY(IADIM)
+      REAL OLDWN(4),OLDVP(4),OCLIP(4)
       DIMENSION TMPX(IADIM),TMPY(IADIM)
       DATA XX/-1.000, -0.330, -0.360,  0.000,
      +        -0.360, -0.330, -1.000, -1.000  /
@@ -51,8 +52,19 @@ C  Convert X and Y to NDC and work in NDC space.
 C
       CALL WMW2NX(1,X,XNDC)
       CALL WMW2NY(1,Y,YNDC)
+C
+C  Save normalization transformation number 1 along with its
+C  window and viewport and define a new transformation 1
+C  that has as its window and viewport the current clip
+C  rectangle.
+C
       CALL GQCNTN(IER,NTRO)
-      CALL GSELNT(0)
+      CALL GQCLIP(IER,ICLIP,OCLIP)
+      CALL GQNT(1,IER,OLDWN,OLDVP)
+C
+      CALL GSWN(1,OCLIP(1),OCLIP(2),OCLIP(3),OCLIP(4))
+      CALL GSVP(1,OCLIP(1),OCLIP(2),OCLIP(3),OCLIP(4))
+      CALL GSELNT(1)
 C
 C  Turn on text extent computation for the remainder of the subroutine.
 C
@@ -555,6 +567,8 @@ C
       CALL GSFACI(IFCLRO)
       CALL GSPLCI(ILCLRO)
       CALL GSELNT(NTRO)
+      CALL GSWN(1,OLDWN(1),OLDWN(2),OLDWN(3),OLDWN(4))
+      CALL GSVP(1,OLDVP(1),OLDVP(2),OLDVP(3),OLDVP(4))
       CALL PCSETI('TE',0)
 C
       RETURN

@@ -1,5 +1,5 @@
 C
-C	$Id: wmdrft.f,v 1.5 2000-03-02 01:27:36 fred Exp $
+C	$Id: wmdrft.f,v 1.6 2000-03-07 00:38:31 fred Exp $
 C
       SUBROUTINE WMDRFT(N,X,Y)
 C
@@ -9,7 +9,7 @@ C  fit to the points, so only a few points need be supplied.
 C
       include 'wmcomn.h'
 C
-      DIMENSION X(N),Y(N)
+      DIMENSION X(N),Y(N),OLDWN(4),OLDVP(4),OCLIP(4)
       DIMENSION IPOSIT(200)
 C
       NPO = N
@@ -82,11 +82,18 @@ C
         YOUT(I) = YS(I)
    20 CONTINUE
 C
-C  Save the current normalization transformation number, and select
-C  transformation 0.
+C  Save normalization transformation number 1 along with its
+C  window and viewport and define a new transformation 1
+C  that has as its window and viewport the current clip
+C  rectangle.
 C
       CALL GQCNTN(IER,NTRO)
-      CALL GSELNT(0)
+      CALL GQCLIP(IER,ICLIP,OCLIP)
+      CALL GQNT(1,IER,OLDWN,OLDVP)
+C     
+      CALL GSWN(1,OCLIP(1),OCLIP(2),OCLIP(3),OCLIP(4))
+      CALL GSVP(1,OCLIP(1),OCLIP(2),OCLIP(3),OCLIP(4))
+      CALL GSELNT(1)
 C
 C  Save the current value for fill area interior style, and set
 C  interior style according to that needed.
@@ -231,10 +238,12 @@ C
         ICOLOR = ICOLD
       ENDIF
 C
-C  Restore the original normalization transformation, interior style,
+C  Restore normalization transformation 1, interior style,
 C  linewidth, fill color, line color.
 C
   80  CONTINUE
+      CALL GSWN(1,OLDWN(1),OLDWN(2),OLDWN(3),OLDWN(4))
+      CALL GSVP(1,OLDVP(1),OLDVP(2),OLDVP(3),OLDVP(4))
       CALL GSELNT(NTRO)
       CALL GSFAIS(INSTYO)
       CALL GSLWSC(RLNSCO)
