@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.43 2000-08-25 17:56:38 haley Exp $
+;      $Id: gsn_code.ncl,v 1.44 2000-08-30 22:23:31 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -70,6 +70,7 @@ undef("gsn_add_polymarker")
 undef("gsn_polymarker_ndc")
 undef("gsn_labelbar_ndc")
 undef("gsn_panel")
+undef("gsn_attach_plots")
 undef("gsn_contour")
 undef("gsn_contour_map")
 undef("gsn_map")
@@ -1153,47 +1154,44 @@ end
 local i, gsid, plot_object, res, gs_res_index
 begin
 
-; Make sure data is converted to a float, since NhlDataPolyline
-; only takes floats.
+; Retrieve graphic style object.
 
     getvalues wks 
         "wkDefGraphicStyleId":  gsid
+    end getvalues
 
-; Draw a polyline.
+    gsres = get_res_eq(resources,"gs")
+    attsetvalues_check(gsid,gsres)
 
     gmres = False
 ;
 ; If we end up with a line with just one point, then we draw it with
-      x2 = xf
-      y2 = xf
 ;
-; Since the data contains missing values, leave gaps where the missing
-; values are located.
+; Since the data contains missing values, loop through each point and only
+; draw the non-missing points.
 ;
-      j = 0
-      do i = 0,dimsizes(x2)-1
-        if(ismissing(x2(i)).or.ismissing(y2(i)))
-          if(j.eq.1)    ; only one value, so draw a marker
-            NhlDataPolymarker(plotid,gsid,x2(0),y2(0))
+      ibeg = -1   ; First non-missing point in a group.
+      do i = 0,dimsizes(xf)-1
+        if(.not.ismissing(xf(i)).and..not.ismissing(yf(i)))
+          if(ibeg.lt.0)    ; on the first point of the line
+            ibeg = i
+            iend = i       ; Represents last non-missing point in a group
+          else
+            iend = i
           end if
-          if(j.gt.1)    ; multiple values, so draw a line
-            NhlDataPolyline(plotid,gsid,x2(0:j-1),y2(0:j-1))
-          end if
-          j = 0
+          is_missing = False
         else
-          x2(j) = xf(i)   ; Neither point is missing, so store in
-          y2(j) = yf(i)   ; separate arrays to draw later.
-          j = j + 1
+          is_missing = True
+        end if
+        if(ibeg.gt.0.and.(is_missing.or.iend.eq.dimsizes(xf)-1))
+          if(iend.gt.ibeg)
+            NhlDataPolyline(plotid,gsid,xf(ibeg:iend),yf(ibeg:iend))
+          else    ; iend = ibeg --> only one point
+            NhlDataPolymarker(plotid,gsid,xf(ibeg),yf(ibeg))
+          end if
+          ibeg = -1   ; Reinitialize
 ; Since NhlDataPolyline doesn't accept missing values, this routine steps
 ; a single point is surrounded by missing values, then a marker is drawn.
-      if(j.eq.1)         
-        NhlDataPolymarker(plotid,gsid,x2(0),y2(0))
-        j = 0
-      end if
-      if(j.gt.1)         
-        NhlDataPolyline(plotid,gsid,x2(0:j-1),y2(0:j-1))
-        j = 0
-      end if
 ;
     if(.not.any(ismissing(xf)).and..not.any(ismissing(yf)))
       NhlDataPolyline(plotid,gsid,xf,yf)
@@ -1262,45 +1260,45 @@ procedure gsn_polyline_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
     if(gsres.and..not.any(ismissing(getvaratts(gsres))))
       attsetvalues(gsid,gsres)
     end if
+local gsid, plot_object
+begin
 
-; Convert to float.
 ; Retrieve graphic style object.
 
-
-; Draw a polyline.
+    getvalues wks 
+        "wkDefGraphicStyleId":  gsid
+    end getvalues
+;
+; Create a LogLinPlot that covers the entire NDC space
 ; to use as a drawing canvas
 ;
     canvas = create "canvas" logLinPlotClass wks
       "vpXF"      : 0.0
-; Since the data contains missing values, leave gaps where the missing
-; values are located.
+      "vpYF"      : 1.0
+      "vpWidthF"  : 1.0
       "vpHeightF" : 1.0
-      x2 = new(dimsizes(x),float)
-      y2 = new(dimsizes(y),float)
-      j = 0
+      ibeg = -1   ; First non-missing point in a group.
       do i = 0,dimsizes(xf)-1
-        if(ismissing(xf(i)).or.ismissing(yf(i)))
-          if(j.eq.1)    ; only one value, so draw a marker
-            NhlNDCPolymarker(canvas,gsid,x2(0),y2(0))
+        if(.not.ismissing(xf(i)).and..not.ismissing(yf(i)))
+          if(ibeg.lt.0)    ; on the first point of the line
+            ibeg = i
+            iend = i       ; Represents last non-missing point in a group
+          else
+            iend = i
           end if
-          if(j.gt.1)    ; multiple values, so draw a line
-            NhlNDCPolyline(canvas,gsid,x2(0:j-1),y2(0:j-1))
-          end if
-          j = 0
+          is_missing = False
         else
-          x2(j) = xf(i)   ; Neither point is missing, so store in
-          y2(j) = yf(i)   ; separate arrays to draw later.
-          j = j + 1
+          is_missing = True
+        end if
+        if(ibeg.gt.0.and.(is_missing.or.iend.eq.dimsizes(xf)-1))
+          if(iend.gt.ibeg)
+            NhlNDCPolyline(canvas,gsid,xf(ibeg:iend),yf(ibeg:iend))
+          else    ; iend = ibeg --> only one point
+            NhlNDCPolymarker(canvas,gsid,xf(ibeg),yf(ibeg))
+          end if
+          ibeg = -1   ; Reinitialize
 ;
 ; through all the points, and only draws the ones that aren't missing. If
-      if(j.eq.1)         
-        NhlNDCPolymarker(canvas,gsid,x2(0),y2(0))
-        j = 0
-      end if
-      if(j.gt.1)         
-        NhlNDCPolyline(canvas,gsid,x2(0:j-1),y2(0:j-1))
-        j = 0
-      end if
 ; a single point is surrounded by missing values, then a marker is drawn.
 ;
     if(.not.any(ismissing(xf)).and..not.any(ismissing(yf)))
@@ -1335,12 +1333,15 @@ end
     if(gsres.and..not.any(ismissing(getvaratts(gsres))))
       attsetvalues(gsid,gsres)
     end if
-
-; Make sure data is float.
+;                                                                       ;
+; This procedure draws polymarkers on the workstation "wks" (the        ;
+; variable returned from a previous call to "gsn_open_wks") in the same ;
 ; data space as the data in "plotid" (returned from a previous call to  ;
 ; one of the gsn_* plotting functions). "x" and "y" are the x and y     ;
-
-; Draw some polymarkers.
+; locations of each marker, and should be in the same data space as the ;
+; data from "plotid". "resources" is an optional list of resources.     ;
+;***********************************************************************;
+procedure gsn_polymarker(wks:graphic,plotid:graphic,x[*]:numeric,\
                          y[*]:numeric,resources:logical)
 local i, gsid, plot_object, res, xf, yf, x2, y2
 begin
@@ -1501,7 +1502,6 @@ local i, lbid, res, lb_res_index, lbres
     "amResizeNotify" : True
     "amTrackData"    : True
     "amJust"         : just
-;                                                                       ;
 end
 
 ;***********************************************************************;
@@ -2040,6 +2040,417 @@ begin
     if(callframe)
       frame(wks)   ; Advance the frame.
     end if
+          "vpHeightF" : old_vp(i,3)
+
+      end if
+    end do
+  end if
+
+  return(newplots)
+end
+
+
+;***********************************************************************;
+; procedure gsn_panel - same as gsn_panel_return, only it doesn't return;
+;                       anything.                                       ;
+;***********************************************************************;
+procedure gsn_panel(wks:graphic,plot[*]:graphic,dims[*]:integer,\
+                    resources:logical)
+local res2
+begin
+  res2 = resources
+  set_attr(res2,"gsnPanelSave",False )
+  plots = gsn_panel_return(wks,plot,dims,res2)
+end
+
+;***********************************************************************;
+; Function : gsn_attach_plots                                           ;
+;                  plot1 : first plot                                   ;
+;                  plot2 : second plot                                  ;
+;               resplot1 : logical                                      ;
+;               resplot2 : logical                                      ;
+;                                                                       ;
+; This function attaches plot2 to plot1 either on the right Y axis or   ;
+; bottom X axis of plot1. The default is to attach the plots at the Y   ;
+; axis, unless gsnAttachPlotsXAxis is set to True.                      ;
+;                                                                       ;
+; By default, the viewport heights of both plots will be made the same, ;
+; appropriate tick marks and labels will be turned off, and the aspect  ;
+; ratio preserved.                                                      ;
+;                                                                       ;
+; For example, if you have the following plots and you want them        ;
+; attached at the Y axis:                                               ;
+;                                                                       ;
+;    ___________      _____                                             ;
+;    |         |      |   |                                             ;
+;    |         |      |   |                                             ;
+;    |         |      |   |                                             ;
+;    |         |      |   |                                             ;
+;    |         |      |   |                                             ;
+;    -----------      -----                                             ;
+;                                                                       ;
+; you will end up with:                                                 ;
+;                                                                       ;
+;    _______________                                                    ;
+;    |         |   |                                                    ;
+;    |         |   |                                                    ;
+;    |         |   |                                                    ;
+;    |         |   |                                                    ;
+;    |         |   |                                                    ;
+;    ---------------                                                    ;
+;                                                                       ;
+; Or, if you have the following plots and you want them attached at the ;
+; X axis:                                                               ;
+;                                                                       ;
+;    ___________      ___________                                       ;
+;    |         |      |         |                                       ;
+;    |         |      |         |                                       ;
+;    |         |      |         |                                       ;
+;    |         |      -----------                                       ;
+
+;    |         |                                                        ;
+;    -----------                                                        ;
+;                                                                       ;
+; you will end up with:                                                 ;
+;                                                                       ;
+;    ___________                                                        ;
+;    |         |                                                        ;
+;    |         |                                                        ;
+;    |         |                                                        ;
+;    |         |                                                        ;
+;    |         |                                                        ;
+;    -----------                                                        ;
+;    |         |                                                        ;
+;    |         |                                                        ;
+;    |         |                                                        ;
+;    -----------                                                        ;
+;                                                                       ;
+; plotres1 and plotres2 are resources changing the default behavior of  ;
+; this function.                                                        ;
+;                                                                       ;
+;***********************************************************************;
+function gsn_attach_plots(oldplot1:graphic,oldplot2:graphic, \
+                          plotres1:logical, plotres2:logical)
+local anno, width1, width2, height1, height2, font_height1, font_height2, \
+mj_length1, mj_length2, mjo_length1, mjo_length2, mno_length1, mno_length2, \
+mno_length1, mno_length2, total_width1, total_width2, scale1, scale2, scale
+begin
+  res1  = plotres1
+  res2  = plotres2
+  plot1 = oldplot1
+  plot2 = oldplot2
+
+  attach_y = .not.get_res_value(res1,"gsnAttachPlotsXAxis",False)
+  attach_y = .not.get_res_value(res2,"gsnAttachPlotsXAxis",.not.attach_y)
+;
+; Retrieve tickmark lengths and font height labels so we can make
+; them the same size later.
+;
+; Also get the viewport widths and heights so we can maintain the
+; aspect ratio, but yet make the heights the same.
+;
+  getvalues plot1
+    "vpWidthF"                : width1
+    "vpHeightF"               : height1
+
+    "tiMainFontHeightF"       : main_font_height1
+  end getvalues
+
+  getvalues plot2
+    "vpWidthF"                : width2
+    "vpHeightF"               : height2
+  end getvalues
+
+  if(attach_y)
+    getvalues plot1
+      "tmXBMajorLengthF"        : mj_length1
+      "tmXBMajorOutwardLengthF" : mjo_length1
+      "tmXBMinorLengthF"        : mn_length1
+      "tmXBMinorOutwardLengthF" : mno_length1
+      "tmXBLabelFontHeightF"    : font_height1
+    end getvalues
+
+    getvalues plot2
+      "tmXBMajorLengthF"        : mj_length2
+      "tmXBMajorOutwardLengthF" : mjo_length2
+      "tmXBMinorLengthF"        : mn_length2
+      "tmXBMinorOutwardLengthF" : mno_length2
+      "tmXBLabelFontHeightF"    : font_height2
+    end getvalues
+
+  else
+    getvalues plot1
+      "tmYLMajorLengthF"        : mj_length1
+      "tmYLMajorOutwardLengthF" : mjo_length1
+      "tmYLMinorLengthF"        : mn_length1
+      "tmYLMinorOutwardLengthF" : mno_length1
+      "tmYLLabelFontHeightF"    : font_height1
+    end getvalues
+
+    getvalues plot2
+      "tmYLMajorLengthF"        : mj_length2
+      "tmYLMajorOutwardLengthF" : mjo_length2
+      "tmYLMinorLengthF"        : mn_length2
+      "tmYLMinorOutwardLengthF" : mno_length2
+      "tmYLLabelFontHeightF"    : font_height2
+    end getvalues
+  end if
+
+;
+; Calculate the scale factor needed to make the plots the same
+; size in the appropriate axis.  If we are attaching plots at the Y axis,
+; then we want to make them the same height. Otherwise, we want to make
+; them the same width.
+;
+  if(attach_y) then
+    if(height1.lt.height2) then
+      scale1 = height2/height1
+      scale2 = 1.
+    else
+      scale2 = height1/height2
+      scale1 = 1.
+    end if
+  else 
+    if(width1.lt.width2) then
+      scale1 = width2/width1
+      scale2 = 1.
+    else
+      scale2 = width1/width2
+      scale1 = 1.
+    end if
+  end if
+;
+; Because we are attaching two plots right at an axis, turn off
+; tickmarks and labels where appropriate.
+;
+  if(attach_y) then
+    setvalues plot1
+      "tmYROn"       : get_res_value(res1,"tmYROn",False)
+      "tmYUseLeft"   : get_res_value(res1,"tmYUseLeft",False)
+    end setvalues
+
+    setvalues plot2
+      "tiYAxisOn"    : get_res_value(res2,"tiYAxisOn",False)
+      "tmYLOn"       : get_res_value(res2,"tmYLOn",False)
+      "tmYUseLeft"   : get_res_value(res2,"tmYUseLeft",False)
+    end setvalues
+  else
+    setvalues plot1
+      "tmXBOn"       : get_res_value(res1,"tmXBOn",False)
+      "tmXUseBottom" : get_res_value(res1,"tmXUseBottom",False)
+      "tiXAxisOn"    : get_res_value(res1,"tiXAxisOn",False)
+    end setvalues
+
+    setvalues plot2
+      "tmXTOn"       : get_res_value(res2,"tmXTOn",False)
+      "tmXUseBottom" : get_res_value(res2,"tmXUseBottom",False)
+      "tiMainOn"     : get_res_value(res2,"tiMainOn",False)
+    end setvalues
+  end if
+
+;
+; Now that we've turned off the necessary tickmark stuff, 
+; retrieve the bounding box of each plot.
+;
+  bb1 = NhlGetBB(plot1) ; Get bounding box of plot
+  top1 = bb1(0)
+  bot1 = bb1(1)
+  lft1 = bb1(2)
+  rgt1 = bb1(3)
+
+  bb2 = NhlGetBB(plot2) ; Get bounding box of plot
+  top2 = bb2(0)
+  bot2 = bb2(1)
+  lft2 = bb2(2)
+  rgt2 = bb2(3)
+
+  total_height1 = top1 - bot1
+  total_height2 = top2 - bot2
+  total_width1  = rgt1 - lft1
+  total_width2  = rgt2 - lft2
+
+;
+; Calculate the largest scale factor possible that will allow us
+; to fit both plots on the page, with 5% white space on both sides.
+;
+  if(attach_y) then
+    scale_width   = 1. / (1.1 * (scale1*total_width1 + scale2*total_width2))
+    scale_height1 = 1. / (1.1 * scale1*total_height1)
+    scale_height2 = 1. / (1.1 * scale2*total_height2)
+    scale = min((/scale_height1,scale_height2,scale_width/))
+  else
+    scale_height = 1. / (1.1 * (scale1*total_height1 + scale2*total_height2))
+    scale_width1 = 1. / (1.1 * scale1*total_width1)
+    scale_width2 = 1. / (1.1 * scale2*total_width2)
+    scale = min((/scale_height,scale_width1,scale_width2/))
+  end if
+;
+; Resize both plots with new scale factor, and set sizes of tick marks
+; and tick marks labels to be the same.
+;
+  new_scale1 = scale * scale1
+  new_scale2 = scale * scale2
+
+  new_mj_length   = (new_scale1*mj_length1  + new_scale2*mj_length2)/2.
+  new_mjo_length  = (new_scale1*mjo_length1 + new_scale2*mjo_length2)/2.
+  new_mn_length   = (new_scale1*mn_length1  + new_scale2*mn_length2)/2.
+  new_mno_length  = (new_scale1*mno_length1 + new_scale2*mno_length2)/2.
+  new_font_height = (new_scale1*font_height1 + new_scale2*font_height2)/2.
+  new_main_font_height = new_scale1*main_font_height1
+
+  if(attach_y) then
+    mj_length  =  get_res_value(res1,"tmXBMajorLengthF",new_mj_length)
+    mjo_length =  get_res_value(res1,"tmXBMajorOutwardLengthF",\
+                                new_mjo_length)
+    mn_length  =  get_res_value(res1,"tmXBMinorLengthF",new_mn_length)
+    mno_length =  get_res_value(res1,"tmXBMinorOutwardLengthF",\
+                                new_mno_length)
+  else
+    mj_length  =  get_res_value(res1,"tmYLMajorLengthF",new_mj_length)
+    mjo_length =  get_res_value(res1,"tmYLMajorOutwardLengthF",\
+                                new_mjo_length)
+    mn_length  =  get_res_value(res1,"tmYLMinorLengthF",new_mn_length)
+    mno_length =  get_res_value(res1,"tmYLMinorOutwardLengthF",\
+                              new_mno_length)
+  end if
+
+  font_heightxl = get_res_value(res1,"tmXBFontHeight",new_font_height)
+  font_heightyl = get_res_value(res1,"tmYLFontHeight",new_font_height)
+  font_heightx  = get_res_value(res1,"tiXAxisFontHeightF",new_font_height)
+  font_heighty  = get_res_value(res1,"tiYAxisFontHeightF",new_font_height)
+  main_font_height = get_res_value(res2,"tiMainFontHeightF", \
+                     max((/new_main_font_height,new_font_height/)))
+  setvalues plot1
+    "vpHeightF"               : new_scale1 * height1
+    "vpWidthF"                : new_scale1 * width1
+
+    "tiXAxisFontHeightF"      : font_heightx
+    "tiYAxisFontHeightF"      : font_heighty
+    "tiMainFontHeightF"       : main_font_height
+
+    "tmYRMajorLengthF"        : mj_length
+    "tmYRMajorOutwardLengthF" : mjo_length
+    "tmYRMinorLengthF"        : mn_length
+    "tmYRMinorOutwardLengthF" : mno_length
+
+    "tmYLMajorLengthF"        : mj_length
+    "tmYLMajorOutwardLengthF" : mjo_length
+    "tmYLMinorLengthF"        : mn_length
+    "tmYLMinorOutwardLengthF" : mno_length
+
+    "tmXBMajorLengthF"        : mj_length
+    "tmXBMajorOutwardLengthF" : mjo_length
+    "tmXBMinorLengthF"        : mn_length
+    "tmXBMinorOutwardLengthF" : mno_length
+
+    "tmXTMajorLengthF"        : mj_length
+    "tmXTMajorOutwardLengthF" : mjo_length
+    "tmXTMinorLengthF"        : mn_length
+    "tmXTMinorOutwardLengthF" : mno_length
+
+    "tmXBLabelFontHeightF"    : font_heightx
+    "tmYLLabelFontHeightF"    : font_heighty
+  end setvalues
+
+  if(attach_y) then
+    mj_length  =  get_res_value(res2,"tmXBMajorLengthF",new_mj_length)
+    mjo_length =  get_res_value(res2,"tmXBMajorOutwardLengthF",\
+                                new_mjo_length)
+    mn_length  =  get_res_value(res2,"tmXBMinorLengthF",new_mn_length)
+    mno_length =  get_res_value(res2,"tmXBMinorOutwardLengthF",\
+                                new_mno_length)
+  else
+    mj_length  =  get_res_value(res2,"tmYLMajorLengthF",new_mj_length)
+    mjo_length =  get_res_value(res2,"tmYLMajorOutwardLengthF",\
+                                new_mjo_length)
+    mn_length  =  get_res_value(res2,"tmYLMinorLengthF",new_mn_length)
+    mno_length =  get_res_value(res2,"tmYLMinorOutwardLengthF",\
+                                new_mno_length)
+  end if
+
+  font_heightxl = get_res_value(res2,"tmXBFontHeight",new_font_height)
+  font_heightyl = get_res_value(res2,"tmYLFontHeight",new_font_height)
+  font_heightx  = get_res_value(res2,"tiXAxisFontHeightF",new_font_height)
+  font_heighty  = get_res_value(res2,"tiYAxisFontHeightF",new_font_height)
+  main_font_height = get_res_value(res2,"tiMainFontHeightF", \
+                     max((/new_main_font_height,new_font_height/)))
+
+  setvalues plot2
+    "vpHeightF"               : new_scale2 * height2
+    "vpWidthF"                : new_scale2 * width2
+
+    "tiXAxisFontHeightF"      : font_heightx
+    "tiYAxisFontHeightF"      : font_heighty
+    "tiMainFontHeightF"       : main_font_height
+
+    "tmYRMajorLengthF"        : mj_length
+    "tmYRMajorOutwardLengthF" : mjo_length
+    "tmYRMinorLengthF"        : mn_length
+    "tmYRMinorOutwardLengthF" : mno_length
+
+    "tmYLMajorLengthF"        : mj_length
+    "tmYLMajorOutwardLengthF" : mjo_length
+    "tmYLMinorLengthF"        : mn_length
+    "tmYLMinorOutwardLengthF" : mno_length
+
+    "tmXBMajorLengthF"        : mj_length
+    "tmXBMajorOutwardLengthF" : mjo_length
+    "tmXBMinorLengthF"        : mn_length
+    "tmXBMinorOutwardLengthF" : mno_length
+
+    "tmXTMajorLengthF"        : mj_length
+    "tmXTMajorOutwardLengthF" : mjo_length
+    "tmXTMinorLengthF"        : mn_length
+    "tmXTMinorOutwardLengthF" : mno_length
+
+    "tmXBLabelFontHeightF"    : font_heightx
+    "tmYLLabelFontHeightF"    : font_heighty
+  end setvalues
+;
+; Get new bounding boxes and sizes of resized plots, so we can
+; figure out where to position the first plot.
+;
+  bb1 = NhlGetBB(plot1) ; Get bounding box of plot
+  top1 = bb1(0)
+  bot1 = bb1(1)
+  lft1 = bb1(2)
+  rgt1 = bb1(3)
+
+  bb2 = NhlGetBB(plot2) ; Get bounding box of plot
+  top2 = bb2(0)
+  bot2 = bb2(1)
+  lft2 = bb2(2)
+  rgt2 = bb2(3)
+
+  total_height1 = top1 - bot1
+  total_height2 = top2 - bot2
+  total_width1  = rgt1 - lft1
+  total_width2  = rgt2 - lft2
+
+  getvalues plot1
+    "vpXF" : vpx1
+    "vpYF" : vpy1
+  end getvalues
+
+  if(attach_y) then
+    total_width_left  = 1. - (total_width1 + total_width2)
+    total_height_left = 1. - max((/total_height1,total_height2/))
+      "amResizeNotify"  : True     ; Allow resize if plot resized.
+      "amParallelPosF"  : para
+      "amOrthogonalPosF": orth
+    end setvalues
+  return(anno)
+    setvalues anno
+      "amZone"          : zone
+      "amSide"          : "bottom" ; Plot at bottom
+      "amResizeNotify"  : True     ; Allow resize if plot resized.
+      "amParallelPosF"  : para
+      "amOrthogonalPosF": orth
+    end setvalues
+end
+;               plot:graphic                                            ;
+  return(anno)
+  
 ; objects.                                                              ; 
 ;***********************************************************************;
 procedure draw_bb(wks:graphic,plot:graphic)

@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.47 2000-08-09 01:00:49 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.48 2000-08-30 22:23:32 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -48,6 +48,9 @@ undef("get_allowed_pres_units_mb")
 undef("get_allowed_pres_units_pa")
 undef("get_allowed_pres_units_hpa")
 undef("get_allowed_pres_units")
+undef("is_xcoord_valid_lat")
+undef("is_xcoord_valid_lon")
+undef("is_ycoord_valid_lat")
 undef("gsn_geop_hgt")
 undef("check_for_y_lat_coord")
 undef("check_for_x_lat_coord")
@@ -325,7 +328,7 @@ end
 ;                 res: logical                                          ;
 ;                data: numeric                                          ;
 ;                                                                       ;
-; This procedure sets the tiYAxisString resource depending on current   ;
+; This procedure sets the tiXAxisString resource depending on current   ;
 ; resource and/or attribute settings.                                   ;
 ;***********************************************************************;
 procedure set_xaxis_string(res:logical,data:numeric)
@@ -518,6 +521,66 @@ end
 ; Function : get_allowed_pres_units_mb                                  ;
 ;                                                                       ;
 ; Get list of names allowed for pressure units in millibars.            ; 
+; Function : is_xcoord_valid_lat                                        ;
+  return(all_pres)
+end
+
+;***********************************************************************;
+; Function : get_allowed_lat_units                                      ;
+;                                                                       ;
+function is_xcoord_valid_lat(data:numeric)
+; coordinate array.                                                     ; 
+  if(.not.ismissing(data!1).and.iscoord(data,data!1).and.\
+     any(data!1.eq.get_allowed_latnames()).and.\
+     (isatt(data&$data!1$,"units").and. \
+      data&$data!1$@units.eq."degrees_north"))
+    return(True)
+  else
+    return(False)
+
+; Function : is_valid_lat_xcoord                                        ;
+;                                                                       ;
+; Checks if the X coordinate variable contains real lat values, and not ;
+; Function : is_xcoord_valid_lon                                        ;
+; be set by CSM convention.                                             ;
+;                                                                       ;
+;***********************************************************************;
+function is_valid_lat_xcoord(data:numeric)
+begin
+  if(is_valid_xcoord(data)) then
+function is_xcoord_valid_lon(data:numeric)
+      if(isatt(data&$data!1$,"units"))
+  if(.not.ismissing(data!1).and.iscoord(data,data!1).and.\
+     any(data!1.eq.get_allowed_lonnames()).and.\
+     (isatt(data&$data!1$,"units").and. \
+      data&$data!1$@units.eq."degrees_east"))
+    return(True)
+  else
+    return(False)
+
+; Function : is_valid_lon_xcoord                                        ;
+;                                                                       ;
+; Checks if the X coordinate variable contains real lon values, and not ;
+; Function : is_ycoord_valid_lat                                        ;
+; be set by CSM convention.                                             ;
+;                                                                       ;
+;***********************************************************************;
+function is_valid_lon_xcoord(data:numeric)
+begin
+  if(is_valid_xcoord(data))
+function is_ycoord_valid_lat(data:numeric)
+      if(isatt(data&$data!1$,"units"))
+  if(.not.ismissing(data!0).and.iscoord(data,data!0).and.\
+     any(data!0.eq.get_allowed_latnames()).and.\
+     (isatt(data&$data!0$,"units").and. \
+      data&$data!0$@units.eq."degrees_north"))
+    return(True)
+  else
+    return(False)
+
+; Function : is_valid_lat_ycoord                                        ;
+;                                                                       ;
+; Checks if the Y coordinate variable contains real lat values, and not ;
 ; just indices. This is determined by the "units" attribute, which must ;
 ; be set by CSM convention.                                             ;
 ;                                                                       ;
@@ -919,14 +982,17 @@ begin
 ;
 ; Check to make sure the string doesn't contain only blanks.
 ;
+      chararray = stringtochar(strings(i)) 
+      string_len = dimsizes(chararray)-1
 
       if(any(chararray(0:string_len-1).ne.ablank(0)))
         text_object = create just(i)+"string" textItemClass wks
           "txString" : strings(i)
         end create
 
+
         attsetvalues_check(text_object,txres)   ; Set some text resources.
-  set_attr(amres,"amParallelPosF",0.5)
+
         anno = NhlAddAnnotation(plot,text_object)  ; Add annotation to plot.
 
         setvalues anno
@@ -971,27 +1037,29 @@ procedure add_labelbar(wks:graphic,plot,zone:integer,font_height:numeric,\
 local anno, num_res, amres, lbres, labelbar_object, lbar_orient, \
 lbar_side, lbar_just, fill_patterns, fill_scales, mono_fill_pat, \
 mono_fill_scl, mono_fill_col
+begin
 ;
+; if lbLabelBarOn is set to False, then don't bother with a labelbar.
+;
+  if(check_attr(res,"lbLabelBarOn",False,False))
+    return
+  end if
     set_attr(lbres,"vpHeightF",height)
     set_attr(lbres,"vpWidthF",0.2*width)
-; if lbLabelBarOn is set to False, then don't bother with a labelbar.
-      set_attr(amres,"amOrthogonalPosF",0.05)
-  if(check_attr(res,"lbLabelBarOn",False,False))
-      set_attr(amres,"amOrthogonalPosF",0.03)
-  end if
   amres = True   ; hold annomanager resources 
     set_attr(lbres,"vpHeightF",0.3*height)
     set_attr(lbres,"vpWidthF",def_lvpwf*width)
 
-    if(type.eq."polar")
-      set_attr(amres,"amOrthogonalPosF",0.03)
+; Check for annotation/labelbar resources
+
+  lbres = get_res_eq(res,(/"lb","vp"/))
+  amres = get_res_eq(res,"am")
+
   set_attr(amres,"amZone",zone)
-      set_attr(amres,"amOrthogonalPosF",0.06)
-    end if
-    else
-      set_attr(amres,"amOrthogonalPosF",0.0)
+  set_attr(amres,"amResizeNotify",True)
   set_attr(amres,"amParallelPosF",parallel)
   set_attr(lbres,"lbLabelFontHeightF",font_height)
+
   lbar_orient = "horizontal"
   lbar_side   = "bottom"
   lbar_just   = "bottomcenter"
@@ -1103,7 +1171,7 @@ end
 
 procedure set_pres_hgt_axes(pres:numeric,res:logical,add_hgt:logical)
 local hgt, hnice, pnice, ptmp
-; Procedure : fill_xy                                                   ;
+; Function : fill_xy                                                    ;
   if(pres(0).lt.pres(dimsizes(pres)-1))
     ptmp = 1.* pres(::-1)    ; reverse values so descending order
   else
@@ -1459,6 +1527,11 @@ begin
     mlspcng_arr = mlonspacing_array
   end if
 
+; Longitude range, will help determine longitude spacing.
+    print("get_lat_values: Fatal: Your latitude values do not fall between -90 and 90 inclusive.")
+    return
+
+  if(lon_spacing.le.0)
     lon_spcng  = lspcng_arr(lon_ind(0))  ; spacing for lon major tickmarks
   else
     lon_spcng = tointeger(lon_spacing)
@@ -1743,8 +1816,7 @@ end
 ; to False.
 local min_lat, max_lat, min_lon, max_lon
     if(.not.(isatt(tmres,"tiXAxisString").and.tmres@tiXAxisString.ne.""))
-  if(.not.ismissing(data!1).and.iscoord(data,data!1).and.\
-     any(data!1.eq.get_allowed_latnames()))
+  if(is_xcoord_valid_lat(data)) then
 ;                 res: logical                                          ;
 ;                                                                       ;
 ; Add "nice" latitude labels ("90S", "30N", etc) to the Y axis in       ;
@@ -1755,8 +1827,7 @@ procedure add_lat_labels_yaxis(plot:graphic,min_lat:numeric,max_lat:numeric,\
     add_lat_labels_xaxis(plot,min_lat,max_lat,0,0,res)
   tmres = get_res_eq(res,(/"tm","ti"/))  ; Get tickmark resources
 
-  if(.not.ismissing(data!0).and.iscoord(data,data!0).and.\
-     any(data!0.eq.get_allowed_latnames()))
+  if(is_ycoord_valid_lat(data)) then
     latlabels    = get_lat_labels(latvalues)
 
     tmres = True
@@ -1767,8 +1838,7 @@ procedure add_lat_labels_yaxis(plot:graphic,min_lat:numeric,max_lat:numeric,\
     add_lat_labels_yaxis(plot,min_lat,max_lat,0,0,res)
     attsetvalues(plot,tmres)
   end if
-  if(.not.ismissing(data!1).and.iscoord(data,data!1).and.\
-     any(data!1.eq.get_allowed_lonnames()))
+  if(is_xcoord_valid_lon(data)) then
 ;***********************************************************************;
 ; Procedure : add_latlon_labels                                         ;
 ;               plot: graphic                                           ;
@@ -2846,7 +2916,7 @@ begin
 ;       hasn't explicitly been set, then the value of this attribute    ;
 ;       is used for the right string title.                             ;
 ;    7. If either of the resources "gsnPolarNH" or "gsnPolarSH" are set ;
-    lbres = get_res_eq(res2,"lb")
+;       to True then only the northern or southern hemisphere is        ;
     mpres = get_res_eq(res2,(/"mp","ti","vp","tx","am"/))
     cnres = get_res_ne(res2,(/"mp","vp","lb","tx","am"/))
 
@@ -3092,7 +3162,7 @@ begin
             map_vphf = res2@vpHeightF
           else
             map_vphf  = 0.7 ; make sure zonalplot will fit in view port
-    lbres = get_res_eq(res2,"lb")
+
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
     cnres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am"/))
             set_attr(res2,     "vpXF",0.1)
@@ -3383,7 +3453,7 @@ end
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; This function creates and draws a contour plot over a map plot to the ;
-    lbres = get_res_eq(res2,"lb")
+; workstation "wks" (the variable returned from a previous call to      ;
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
     cnres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am"/))
 ; plot is returned.                                                     ;
@@ -3594,7 +3664,7 @@ end
 local i, vector_object, map_object, res, res2, calldraw, vcres, \
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
     vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am"/))
-    lbres = get_res_eq(res2,"lb")
+begin
 
 ; Initialize.
       if(isatt(vcres,"vcMonoLineArrowColor").and.\
@@ -3910,7 +3980,7 @@ local i, attnames, vector_object, map_object, res, res2, \
     subres = get_res_eq(res2,(/"tx","am"/))  ; Get textitem resources
     subres                  = True
     add_subtitles(wks,vector_object,left_string,center_string,\
-    lbres = get_res_eq(res2,"lb")
+                  right_string,subres)
 
     draw_and_frame(wks,vector_object,calldraw,callframe,maxbb)
 
@@ -4460,9 +4530,9 @@ begin
             print("gsn_csm_xy: Fatal: There are no values above or below the chosen reference line.")
             print("Cannot draw a bar chart.")
         var_string = "polygons" + i
-        xy_object@$var_string$ =fill_xy(wks,xy_object,xinterp(i,0:npts(i)-1), \
+        xy_object@$var_string$=fill_xy(wks,xy_object,xinterp(i,0:npts(i)-1), \
                                      yinterp(i,0:npts(i)-1),\
-                       yref_line(i),fill_above,fill_below)
+            yinterp = new((/2*ncurves,nab_max/),double,yabove@_FillValue)
 
             if(na_max.gt.0)
               xinterp(0:2*ncurves-1:2,0:na_max-1) = xabove(:,0:na_max-1)
@@ -4480,7 +4550,6 @@ begin
 ; polygons look better if the lines are drawn thicker.
 ;
       xyres_tmp = True
-
         var_string = "xpolyline" + i     
       attsetvalues_check(xy_object,xyres_tmp)
       delete(xyres_tmp)
@@ -4502,11 +4571,9 @@ begin
     if(yref_fill_on.and.bar_chart.and..not.bar_outline_only)
       gsres = True
         yline = fspan(yref_line(i),yref_line(i),2)
-
         var_string = "ypolyline" + i     
 ;
         gsres@gsFillColor = yref_line_above(0)
-
 
           if(dimsizes(yref_line_above).gt.1)
             gsres@gsFillColor = yref_line_above(i)
@@ -4748,7 +4815,7 @@ begin
 
     if(check_attr(res2,"gsnShape",True,False))
       main_zone     = main_zone+1 ; Zone for main title
-      lbres = get_res_eq(res2,"lb")
+    end if
 
 ; Use coordinate variables for X and/or Y if they exist.
 
@@ -4815,8 +4882,7 @@ function gsn_csm_hov(wks:graphic,data:numeric,resources:logical)
 
     scale = font_scale(index(0))
     font_height  = scale * font_height
-    if(.not.ismissing(data!1).and.iscoord(data,data!1).and.\
-       any(data!1.eq.get_allowed_lonnames()))
+    if(is_xcoord_valid_lon(data)) then
     if(popgrid.ne."") then
       pop_latlon_grid(wks,contour_object,popgrid)  ; Add a POP grid.
     else
@@ -5129,8 +5195,7 @@ begin
 
     if(is_valid_ycoord(data).and.isatt(data&$data!0$,"long_name"))
       set_attr(res2,"tiYAxisString",data&$data!0$@long_name)
-    if(.not.ismissing(data!1).and.iscoord(data,data!1).and.\
-       any(data!1.eq.get_allowed_latnames()))
+    if(is_xcoord_valid_lat(data)) then
 
 ;
 ; If this is a pressure/hgt plot, then do stuff to the pressure values.
@@ -5355,7 +5420,7 @@ begin
     if(left_string.or.center_string.or.right_string)
       main_zone   = main_zone+1
     end if
-      lbres = get_res_eq(res2,"lb")
+
 ; Check if gsnShape set.
 
     if(check_attr(res2,"gsnShape",True,False))
@@ -5531,10 +5596,6 @@ begin
     right_string  = new(1,logical)
 
     check_for_subtitles(res2,left_string,center_string,right_string)
-
-
-
-
                   right_string,subres)
 
 ; Draw all this stuff: streamline plot and subtitles.
