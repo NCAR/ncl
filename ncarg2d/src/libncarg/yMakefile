@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.4 1993-10-19 17:26:41 boote Exp $
+#	$Id: yMakefile,v 1.5 1994-06-20 19:49:57 kennison Exp $
 #
 #	Makefile for libncarg.a
 #	Includes utilities and their corresponding test programs,
@@ -11,9 +11,9 @@
 SUBDIRS = \
 	areas autogrph colconv common concom conpack conran \
 	conrec conterp dashchar ezmap ezmapa gflash gridal \
-	hafton histgr isosrf isosrfhr labelbar ngmisc plotchar pwritx  \
-	pwrity pwrzi pwrzs pwrzt softfill spps srface stitle \
-	strmln support threed velvct
+	hafton histgr isosrf isosrfhr labelbar ngmisc plotchar \
+	polypack pwritx pwrity pwrzi pwrzs pwrzt softfill spps \
+	srface stitle strmln support threed velvct
 
 PartialLibraryRoot(libncarg.a,$(SUBDIRS))
 PartialSourceLibraryRoot(srcncarg.a,$(SUBDIRS))
