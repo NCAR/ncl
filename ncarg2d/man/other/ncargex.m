@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.50 2002-06-05 22:02:18 haley Exp $
+.\"	$Id: ncargex.m,v 1.51 2003-08-18 20:55:20 kennison Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "June 1998" NCAR "NCAR GRAPHICS"
@@ -11,6 +11,7 @@ ncargex \- NCAR Graphics Fortran and C Low-Level Utility Examples
 [\fB-U\fR] [\fB-C\fR] [\fB-Fortran\fR] [\fB-class\fR] [\fB-ps\fR]
 [\fB-x11\fR] [\fB-W workstation_type\fR] [\fB-areas]
 [\fB-autograph\fR] [\fB-bivar\fR] [\fB-colconv\fR] [\fB-conpack\fR]
+[\fB-conpackt\fR]
 [\fB-conran_family\fR] [\fB-conrec_family\fR] [\fB-csagrid\fR]
 [\fB-cssgrid\fR] [\fB-dashline\fR] [\fB-dashpack\fR] [\fB-dsgrid\fR]
 [\fB-ezmap\fR] [\fB-field_flow\fR] [\fB-fitgrid\fR] [\fB-gflash\fR]
@@ -177,6 +178,9 @@ Generate all Colconv C/Fortran examples.
 .IP \-conpack " " ""
 Generate all Conpack C/Fortran examples.
 .sp
+.IP \-conpackt " " ""
+Generate all Conpackt C/Fortran examples.
+.sp
 .IP \-conran_family " " ""
 Generate all Conran Fortran examples.
 .sp
@@ -339,6 +343,10 @@ ccpscam ccpset ccpsps1 ccpsps2 ccpspv ccpt2d ccptitle
 ccpvp ccpvs cidsfft colcon cpex01 cpex02 cpex03 cpex04
 cpex05 cpex06 cpex07 cpex08 cpex09 cpex10 cpex11 cpex12 cpex13
 cpex14 cpex15 cpex16 tconpa c_cbex01 c_colcon
+.sp
+.I "CONPACKT Examples:"
+.sp
+ctex01 ctex02
 .sp
 .I "CONRAN FAMILY Examples:"
 .sp
