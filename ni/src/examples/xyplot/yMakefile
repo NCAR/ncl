@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.26 1995-05-09 22:39:49 haley Exp $
+#   $Id: yMakefile,v 1.27 1995-05-11 21:33:15 fred Exp $
 #
 #   Makefile for HLU XYPlot examples
 #
@@ -15,7 +15,7 @@ CSRCS      = xy01c.c xy02c.c xy03c.c xy04c.c xy05c.c xy06c.c xy07c.c \
 FSRCS      = xy01f.f xy02f.f xy03f.f xy04f.f xy05f.f xy06f.f xy07f.f \
 			xy08f.f xy09f.f xy10f.f xy11f.f
 NSRCS      = xy01n.ncl xy02n.ncl xy03n.ncl xy04n.ncl xy05n.ncl xy06n.ncl \
-			xy07n.ncl xy08n.ncl xy09n.ncl xy10n.ncl xy11n.ncl
+             xy07n.ncl xy08n.ncl xy09n.ncl xy10n.ncl xy11n.ncl xy14n.ncl
 COBJS      = xy01c.o xy02c.o xy03c.o xy04c.o xy05c.o xy06c.o xy07c.o \
              xy08c.o xy09c.o xy11c.o xy12c.o xy13c.o 
 FOBJS      = xy01f.o xy02f.o xy03f.o xy04f.o xy05f.o xy06f.o xy07f.o \
