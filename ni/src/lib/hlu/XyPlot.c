@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.53 1996-01-09 16:39:30 boote Exp $
+ *      $Id: XyPlot.c,v 1.54 1996-01-09 17:11:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -684,7 +684,7 @@ XyDataClassInitialize
 		{NhlCUSTOM,	"custom"}
 	};
 
-	_NhlRegisterEnumType(NhlxyDataClass,NhlTLineLabelMode,lblmode,
+	_NhlRegisterEnumType(NhlxyDataSpecClass,NhlTLineLabelMode,lblmode,
 		NhlNumber(lblmode));
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);
