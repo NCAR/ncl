@@ -1,5 +1,5 @@
 C
-C $Id: RLGEN.f,v 1.2 1995-03-31 00:50:51 boote Exp $
+C $Id: RLGEN.f,v 1.3 1997-05-05 21:45:19 boote Exp $
 C
 C************************************************************************
 C                                                                       *
@@ -27,19 +27,19 @@ C
       subroutine nhlfrlcreate (listid,ltype)
 	integer listid
 	character*(*) ltype
-	call nhl_frlcreate(listid,ltype,len(ltype))
+	call nhlpfrlcreate(listid,ltype,len(ltype))
       end
       subroutine nhlfrldestroy (id)
-      	call nhl_frldestroy (id)
+      	call nhlpfrldestroy (id)
       end
       subroutine nhlfrlclear (id)
-      	call nhl_frlclear (id)
+      	call nhlpfrlclear (id)
       end
       subroutine nhlfrlunset (id,name)
 	character*(*) name
-      	call nhl_frlunset (id,name,len(name))
+      	call nhlpfrlunset (id,name,len(name))
       end
       subroutine nhlfrlisset (id,name,ival)
 	character*(*) name
-      	call nhl_frlisset (id,name,len(name),ival)
+      	call nhlpfrlisset (id,name,len(name),ival)
       end

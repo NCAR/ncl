@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.35 1997-02-24 22:12:44 boote Exp $
+ *      $Id: Workspace.c,v 1.36 1997-05-05 21:45:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -630,7 +630,7 @@ NhlGetWorkspaceObjectId
 }
 
 /*
- * Function:	nhl_fgetworkspaceobjectid
+ * Function:	nhlpfgetworkspaceobjectid
  *
  * Description:	
  *
@@ -642,7 +642,7 @@ NhlGetWorkspaceObjectId
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fgetworkspaceobjectid,NHL_FGETWORKSPACEOBJECTID)
+void _NHLCALLF(nhlpfgetworkspaceobjectid,NHLPFGETWORKSPACEOBJECTID)
 #if	NhlNeedProto
 (
 	int	*id

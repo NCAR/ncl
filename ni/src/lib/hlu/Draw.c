@@ -1,5 +1,5 @@
 /*
- *      $Id: Draw.c,v 1.15 1997-01-17 18:57:25 boote Exp $
+ *      $Id: Draw.c,v 1.16 1997-05-05 21:45:12 boote Exp $
  */
 /************************************************************************
 *									*
@@ -302,7 +302,7 @@ NhlDraw
 }
 
 /*
- * Function:	nhl_fdraw
+ * Function:	nhlpfdraw
  *
  * Description:	Fortran binding function.
  *
@@ -315,7 +315,7 @@ NhlDraw
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_fdraw,NHL_FDRAW)
+_NHLCALLF(nhlpfdraw,NHLPFDRAW)
 #if	NhlNeedProto
 (
 	int	*id_obj,

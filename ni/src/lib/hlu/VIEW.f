@@ -1,5 +1,5 @@
 C
-C $Id: VIEW.f,v 1.2 1995-02-17 10:23:36 boote Exp $
+C $Id: VIEW.f,v 1.3 1997-05-05 21:45:28 boote Exp $
 C
 C****************************************************************
 C								*
@@ -27,5 +27,5 @@ C
       subroutine nhlfisview(id,istat)
 
 	integer id,istat
-	call nhl_fisview(id,istat)
+	call nhlpfisview(id,istat)
       end

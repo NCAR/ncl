@@ -1,5 +1,5 @@
 C
-C $Id: gerhnd.f,v 1.3 1995-06-17 00:09:39 boote Exp $
+C $Id: gerhnd.f,v 1.4 1997-05-05 21:45:41 boote Exp $
 C
 C****************************************************************
 C								*
@@ -39,7 +39,7 @@ C
 
 	call gzname(fctid,fname)
 	call gzgte2(errnr,mesg)
-	call nhl_fgerhnd(errnr,fctid,fname,len(fname),mesg,len(mesg))
+	call nhlpfgerhnd(errnr,fctid,fname,len(fname),mesg,len(mesg))
 
 	return
       end

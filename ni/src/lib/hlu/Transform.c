@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.32 1997-02-24 22:12:40 boote Exp $
+ *      $Id: Transform.c,v 1.33 1997-05-05 21:45:27 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1470,7 +1470,7 @@ NhlIsTransform
 }
 
 /*
- * Function:	nhl_fistransform
+ * Function:	nhlpfistransform
  *
  * Description:	
  *
@@ -1482,7 +1482,7 @@ NhlIsTransform
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fistransform,NHL_FISTRANSFORM)
+void _NHLCALLF(nhlpfistransform,NHLPFISTRANSFORM)
 #if	NhlNeedProto
 (
 	int	*id,

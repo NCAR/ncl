@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.38 1997-03-31 16:16:01 boote Exp $
+ *      $Id: CoordArrays.c,v 1.39 1997-05-05 21:45:04 boote Exp $
  */
 /************************************************************************
 *									*
@@ -643,8 +643,8 @@ FlushObj
 				to.size = sizeof(float);
 				to.data.ptrval = &tfloat;
 
-				lret = NhlConvertData(NULL,NhlTVariable,
-					NhlTFloat,&from,&to);
+				lret = NhlConvertData(NhlDEFAULT_APP,
+					NhlTVariable,NhlTFloat,&from,&to);
 				if(ret < NhlWARNING)
 					return NhlFATAL;
 				ret = MIN(ret,lret);
@@ -703,8 +703,8 @@ FlushObj
 				to.size = sizeof(float);
 				to.data.ptrval = &tfloat;
 
-				lret = NhlConvertData(NULL,NhlTVariable,
-						NhlTFloat,&from,&to);
+				lret = NhlConvertData(NhlDEFAULT_APP,
+					NhlTVariable,NhlTFloat,&from,&to);
 				if(lret < NhlWARNING)
 					return NhlFATAL;
 				ret = MIN(lret,ret);

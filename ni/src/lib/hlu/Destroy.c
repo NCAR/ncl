@@ -1,5 +1,5 @@
 /*
- *      $Id: Destroy.c,v 1.14 1997-02-27 20:13:02 boote Exp $
+ *      $Id: Destroy.c,v 1.15 1997-05-05 21:45:12 boote Exp $
  */
 /************************************************************************
 *									*
@@ -140,7 +140,7 @@ NhlDestroy
 }
 
 /*
- * Function:	nhl_fdestroy
+ * Function:	nhlpfdestroy
  *
  * Description:	Fortran called destroy func
  *
@@ -153,7 +153,7 @@ NhlDestroy
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_fdestroy,NHL_FDESTROY)
+_NHLCALLF(nhlpfdestroy,NHLPFDESTROY)
 #if	NhlNeedProto
 (
 	int	*id_obj,

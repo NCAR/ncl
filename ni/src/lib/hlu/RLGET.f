@@ -1,5 +1,5 @@
 C
-C $Id: RLGET.f,v 1.4 1997-01-08 23:05:52 boote Exp $
+C $Id: RLGET.f,v 1.5 1997-05-05 21:45:20 boote Exp $
 C
 C****************************************************************
 C								*
@@ -22,34 +22,34 @@ C
       subroutine nhlfrlgetinteger(id,name,ival,ierr)
 	integer id, ival,ierr
 	character*(*) name
-      	call nhl_frlgetinteger(id,name,len(name),ival,ierr)
+      	call nhlpfrlgetinteger(id,name,len(name),ival,ierr)
       end
 C
       subroutine nhlfrlgetfloat(id,name,fval,ierr)
 	integer id,ierr
 	real fval
 	character*(*) name
-      	call nhl_frlgetfloat(id,name,len(name),fval,ierr)
+      	call nhlpfrlgetfloat(id,name,len(name),fval,ierr)
       end
 C
       subroutine nhlfrlgetdouble(id,name,dval,ierr)
 	integer id,ierr
 	double precision dval
 	character*(*) name
-      	call nhl_frlgetdouble(id,name,len(name),dval,ierr)
+      	call nhlpfrlgetdouble(id,name,len(name),dval,ierr)
       end
 C
       subroutine nhlfrlgetstring(id,name,sval,ierr)
 	integer id,ierr
 	character*(*) name,sval
-      	call nhl_frlgetstring(id,name,len(name),sval,len(sval),ierr)
+      	call nhlpfrlgetstring(id,name,len(name),sval,len(sval),ierr)
       end
 C
       subroutine nhlfrlgetmdintegerarray(id,name,iarr,inumdim,ilendim,
      % ierr)
 	integer id,iarr(*),inumdim,ilendim,ierr
 	character*(*) name
-	call nhl_frlgetmdintegerarray(id,name,len(name),iarr,inumdim,
+	call nhlpfrlgetmdintegerarray(id,name,len(name),iarr,inumdim,
      %	ilendim,ierr)
       end
 C
@@ -58,7 +58,7 @@ C
 	integer id,inumdim,ilendim,ierr
 	character*(*) name
 	real farr(*)
-	call nhl_frlgetmdfloatarray(id,name,len(name),farr,inumdim,
+	call nhlpfrlgetmdfloatarray(id,name,len(name),farr,inumdim,
      %	ilendim,ierr)
       end
 C
@@ -67,14 +67,14 @@ C
 	integer id,inumdim,ilendim,ierr
 	character*(*) name
 	double precision darr(*)
-	call nhl_frlgetmddoublearray(id,name,len(name),darr,inumdim,
+	call nhlpfrlgetmddoublearray(id,name,len(name),darr,inumdim,
      %	ilendim,ierr)
       end
 C
       subroutine nhlfrlgetintegerarray(id,name,iarr,iarr_len,ierr)
 	integer id,iarr_len,iarr(iarr_len),ierr
 	character*(*) name
-	call nhl_frlgetintegerarray(id,name,len(name),iarr,iarr_len,
+	call nhlpfrlgetintegerarray(id,name,len(name),iarr,iarr_len,
      % ierr)
       end
 C
@@ -82,20 +82,20 @@ C
 	integer id,farr_len,ierr
 	character*(*) name
 	real farr(farr_len)
-	call nhl_frlgetfloatarray(id,name,len(name),farr,farr_len,ierr)
+	call nhlpfrlgetfloatarray(id,name,len(name),farr,farr_len,ierr)
       end
 C
       subroutine nhlfrlgetdoublearray(id,name,darr,darr_len,ierr)
 	integer id,darr_len,ierr
 	character*(*) name
 	real darr(darr_len)
-	call nhl_frlgetdoublearray(id,name,len(name),darr,darr_len,ierr)
+	call nhlpfrlgetdoublearray(id,name,len(name),darr,darr_len,ierr)
       end
 C
       subroutine nhlfrlgetstringarray(id,name,carr,carr_len,ierr)
 	integer id,carr_len,ierr
 	character*(*) name
 	character*(*) carr(carr_len)
-	call nhl_frlgetstringarray(id,name,len(name),carr,len(carr(1)),
+	call nhlpfrlgetstringarray(id,name,len(name),carr,len(carr(1)),
      %	carr_len,ierr)
       end

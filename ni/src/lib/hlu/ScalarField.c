@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.23 1997-02-24 22:12:34 boote Exp $
+ *      $Id: ScalarField.c,v 1.24 1997-05-05 21:45:21 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2596,7 +2596,8 @@ static NhlScalarFieldFloatLayer ForceConvert
 	from.data.intval = sfl->base.id;
 	to.size = sizeof(NhlScalarFieldFloatLayerRec);
 	to.data.ptrval = &id;
-	ret = NhlConvertData(NULL,NhlscalarFieldClass->base_class.class_name,
+	ret = NhlConvertData(NhlDEFAULT_APP,
+			NhlscalarFieldClass->base_class.class_name,
 			NhlscalarFieldFloatClass->base_class.class_name,
 			     &from,&to);
 	if (ret < NhlWARNING ||

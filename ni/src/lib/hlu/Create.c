@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.33 1997-02-27 20:13:01 boote Exp $
+ *      $Id: Create.c,v 1.34 1997-05-05 21:45:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -785,7 +785,7 @@ handle_ill
 }
 
 /*
- * Function:	nhl_fcreate
+ * Function:	nhlpfcreate
  *
  * Description:	This function is used to create an instance of the given
  *		classfunc.  This function is identical to NhlCreate
@@ -801,7 +801,7 @@ handle_ill
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_fcreate,NHL_FCREATE)
+_NHLCALLF(nhlpfcreate,NHLPFCREATE)
 #if	NhlNeedProto
 (
 	int		*pid,		/* plot id <return>		*/

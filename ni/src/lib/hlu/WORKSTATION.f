@@ -1,5 +1,5 @@
 C
-C $Id: WORKSTATION.f,v 1.4 1995-02-19 08:19:11 boote Exp $
+C $Id: WORKSTATION.f,v 1.5 1997-05-05 21:45:31 boote Exp $
 C
 C****************************************************************
 C								*
@@ -20,28 +20,28 @@ C
 C      Description:     
 C
       subroutine nhlfupdateworkstation(idwork,ierr)
-      	call nhl_fupdateworkstation(idwork,ierr)
+      	call nhlpfupdateworkstation(idwork,ierr)
       end
       subroutine nhlfclearworkstation(idwork,ierr)
-      	call nhl_fclearworkstation(idwork,ierr)
+      	call nhlpfclearworkstation(idwork,ierr)
       end
       subroutine nhlfframe(id_work,ierr)
-	call nhl_fframe(id_work,ierr)
+	call nhlpfframe(id_work,ierr)
       end
       subroutine nhlfsetcolor(id_work,index,rred,rgreen,rblue,ierr)
-	call nhl_fsetcolor(id_work,index,rred,rgreen,rblue,ierr)
+	call nhlpfsetcolor(id_work,index,rred,rgreen,rblue,ierr)
       end
       subroutine nhlffreecolor(id_work,index,ierr)
-	call nhl_ffreecolor(id_work,index,ierr)
+	call nhlpffreecolor(id_work,index,ierr)
       end
       subroutine nhlfnewcolor(id_work,rred,rgreen,rblue,indx_ret)
-	call nhl_fnewcolor(id_work,rred,rgreen,rblue,indx_ret)
+	call nhlpfnewcolor(id_work,rred,rgreen,rblue,indx_ret)
       end
       subroutine nhlfgetgksci(id_work,indx_hlu,indx_gks_ret)
-	call nhl_fgetgksci(id_work,indx_hlu,indx_gks_ret)
+	call nhlpfgetgksci(id_work,indx_hlu,indx_gks_ret)
       end
       subroutine nhlfisallocatedcolor(id_work,indx,iret)
-	call nhl_fisallocatedcolor(id_work,indx,iret)
+	call nhlpfisallocatedcolor(id_work,indx,iret)
       end
       subroutine nhlfnewmarker(id_work,marker,xoff,yoff,aspadj,sizeadj,
      %	indx_ret)
@@ -50,7 +50,7 @@ C
 	character*(*) marker
 	real xoff,yoff,aspadj,sizeadj
 
-	call nhl_fnewmarker(id_work,marker,len(marker),xoff,yoff,aspadj,
+	call nhlpfnewmarker(id_work,marker,len(marker),xoff,yoff,aspadj,
      %		sizeadj,indx_ret)
       end
       subroutine nhlfsetmarker(id_work,indx,marker,xoff,yoff,aspadj,
@@ -60,11 +60,11 @@ C
 	character*(*) marker
 	real xoff,yoff,aspadj,sizeadj
 
-	call nhl_fsetmarker(id_work,indx,marker,len(marker),xoff,yoff,
+	call nhlpfsetmarker(id_work,indx,marker,len(marker),xoff,yoff,
      %		aspadj,sizeadj,indx_ret)
       end
       subroutine nhlfisworkstation(id,istat)
 
 	integer id,istat
-	call nhl_fisworkstation(id,istat)
+	call nhlpfisworkstation(id,istat)
       end

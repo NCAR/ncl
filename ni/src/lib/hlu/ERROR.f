@@ -1,5 +1,5 @@
 C
-C $Id: ERROR.f,v 1.8 1997-01-17 18:57:25 boote Exp $
+C $Id: ERROR.f,v 1.9 1997-05-05 21:45:13 boote Exp $
 C
 C****************************************************************
 C								*
@@ -28,7 +28,7 @@ C****************************************************************
 C
 C find out if iunit is connected - return 0 if not 1 if is
 C
-      subroutine nhl_finqunit(iunit,iconn,ierr)
+      subroutine nhlpfinqunit(iunit,iconn,ierr)
 	integer iunit,iconn
 	logical opn
 
@@ -45,7 +45,7 @@ C
 C
 C open the given file with the given unit number
 C
-      subroutine nhl_fopnunit(iunit,fname,fname_len,ierr)
+      subroutine nhlpfopnunit(iunit,fname,fname_len,ierr)
 	integer iunit,fname_len,ierr
 	character*(*) fname
 
@@ -55,7 +55,7 @@ C
 C
 C close the given unit number
 C
-      subroutine nhl_fclsunit(iunit,ierr)
+      subroutine nhlpfclsunit(iunit,ierr)
 	integer iunit,ierr
 	close(iunit,IOSTAT=ierr)
 	return
@@ -65,7 +65,7 @@ C
 C print a message to the unit number
 C
 
-      subroutine nhl_fprnmes(iunit,ermess,ierlen)
+      subroutine nhlpfprnmes(iunit,ermess,ierlen)
       	external i1mach
       	integer iunit,ierlen,ierr
      	character*(*) ermess
@@ -87,7 +87,7 @@ C
       subroutine nhlfperror(slevel,ienum,estring)
 	character*(*) slevel,estring
 	integer ienum
-	call nhl_fperror(slevel,len(slevel),ienum,estring,len(estring))
+	call nhlpfperror(slevel,len(slevel),ienum,estring,len(estring))
 	return
       end
 C
@@ -95,7 +95,7 @@ C
 C
       subroutine nhlferrgetid(id_ret)
 	integer id_ret
-	call nhl_ferrgetid(id_ret)
+	call nhlpferrgetid(id_ret)
 	return
       end
 C
@@ -103,7 +103,7 @@ C
 C
       subroutine nhlferrnummsgs(nummsg)
 	integer nummsg
-	call nhl_ferrnummsgs(nummsg)
+	call nhlpferrnummsgs(nummsg)
 	return
       end
 C
@@ -113,7 +113,7 @@ C
      %	ierr)
 	integer imsg,ilevel,enum,line,ierr
 	character*(*) emess,smess,file
-	call nhl_ferrgetmsg(imsg,ilevel,emess,len(emess),enum,smess,
+	call nhlpferrgetmsg(imsg,ilevel,emess,len(emess),enum,smess,
      %		len(smess),line,file,len(file),ierr)
 	return
       end
@@ -121,7 +121,7 @@ C
 C
 C
       subroutine nhlferrclearmsgs(ierr)
-	call nhl_ferrclearmsgs(ierr)
+	call nhlpferrclearmsgs(ierr)
 	return
       end
 C
@@ -130,7 +130,7 @@ C
       subroutine nhlferrsprintmsg(smess,imsg)
 	character*(*) smess
 	integer imsg
-	call nhl_ferrsprintmsg(smess,len(smess),imsg)
+	call nhlpferrsprintmsg(smess,len(smess),imsg)
 	return
       end
 C
@@ -141,6 +141,6 @@ C
 	character*10240 smsg
 
 	call nhlferrsprintmsg(smsg,imsg)
-	call nhl_fprnmes(iunit,smsg,len(smsg))
+	call nhlpfprnmes(iunit,smsg,len(smsg))
 	return
       end

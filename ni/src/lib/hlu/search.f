@@ -1,12 +1,12 @@
 C
 C
-C	$Id: search.f,v 1.1 1994-08-11 23:17:31 boote Exp $
+C	$Id: search.f,v 1.2 1997-05-05 21:45:43 boote Exp $
 C
 C This subprogram is used by subroutines TERP1 and TERP2 in 
 C library ncarm.  It is lower-level, i.e. not called by users.
 C **********************************************************
       SUBROUTINE SEARCH (XBAR,X,N,I)
-      DIMENSION       X(1)
+      DIMENSION       X(N)
       SAVE
       DATA B/.69314718/
 C

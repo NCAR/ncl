@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.41 1997-02-27 20:13:07 boote Exp $
+ *      $Id: hlu.c,v 1.42 1997-05-05 21:45:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -464,7 +464,7 @@ NhlName
 }
 
 /*
- * Function:	nhl_fname
+ * Function:	nhlpfname
  *
  * Description:	Fortran callable function to return the name of an object.
  *
@@ -478,7 +478,7 @@ NhlName
  */
 /*ARGSUSED*/
 void
-_NHLCALLF(nhl_fname,NHL_FNAME)
+_NHLCALLF(nhlpfname,NHLPFNAME)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -536,7 +536,7 @@ int pid;
 }
 
 /*
- * Function:	nhl_fclassname
+ * Function:	nhlpfclassname
  *
  * Description:	Fortran callable function to return the classname of an object.
  *
@@ -549,7 +549,7 @@ int pid;
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_fclassname,NHL_FCLASSNAME)
+_NHLCALLF(nhlpfclassname,NHLPFCLASSNAME)
 #if	NhlNeedProto
 (
 	int		*id,

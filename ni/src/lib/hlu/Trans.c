@@ -1,5 +1,5 @@
 /*
- *      $Id: Trans.c,v 1.14 1996-02-26 21:46:10 dbrown Exp $
+ *      $Id: Trans.c,v 1.15 1997-05-05 21:45:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -389,7 +389,7 @@ NhlErrorTypes NhlDataToNDC
 }
 
 /*
- * Function:	nhl_fdatatondc
+ * Function:	nhlpfdatatondc
  *
  * Description:	
  *
@@ -401,7 +401,7 @@ NhlErrorTypes NhlDataToNDC
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fdatatondc,NHL_FDATATONDC)
+void _NHLCALLF(nhlpfdatatondc,NHLPFDATATONDC)
 #if	NhlNeedProto
 (
 	int	*pid,
@@ -486,7 +486,7 @@ NhlErrorTypes NhlNDCToData
 }
 
 /*
- * Function:	nhl_fndctodata
+ * Function:	nhlpfndctodata
  *
  * Description:	
  *
@@ -498,7 +498,7 @@ NhlErrorTypes NhlNDCToData
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fndctodata,NHL_FNDCTODATA)
+void _NHLCALLF(nhlpfndctodata,NHLPFNDCTODATA)
 #if	NhlNeedProto
 (
 	int	*pid,
@@ -570,7 +570,7 @@ NhlErrorTypes NhlDataPolyline
 }
 
 /*
- * Function:	nhl_fdatapolyline
+ * Function:	nhlpfdatapolyline
  *
  * Description:	
  *
@@ -582,7 +582,7 @@ NhlErrorTypes NhlDataPolyline
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fdatapolyline,NHL_FDATAPOLYLINE)
+void _NHLCALLF(nhlpfdatapolyline,NHLPFDATAPOLYLINE)
 #if	NhlNeedProto
 (
 	int	*pid,
@@ -646,7 +646,7 @@ NhlErrorTypes NhlNDCPolyline
 }
 
 /*
- * Function:	nhl_fndcpolyline
+ * Function:	nhlpfndcpolyline
  *
  * Description:	
  *
@@ -658,7 +658,7 @@ NhlErrorTypes NhlNDCPolyline
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fndcpolyline,NHL_FNDCPOLYLINE)
+void _NHLCALLF(nhlpfndcpolyline,NHLPFNDCPOLYLINE)
 #if	NhlNeedProto
 (
 	int	*pid,
@@ -716,7 +716,7 @@ NhlErrorTypes NhlDataPolygon
 }
 
 /*
- * Function:	nhl_fdatapolygon
+ * Function:	nhlpfdatapolygon
  *
  * Description:	
  *
@@ -728,7 +728,7 @@ NhlErrorTypes NhlDataPolygon
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fdatapolygon,NHL_FDATAPOLYGON)
+void _NHLCALLF(nhlpfdatapolygon,NHLPFDATAPOLYGON)
 #if	NhlNeedProto
 (
 	int	*pid,
@@ -792,7 +792,7 @@ NhlErrorTypes NhlNDCPolygon
 }
 
 /*
- * Function:	nhl_fndcpolygon
+ * Function:	nhlpfndcpolygon
  *
  * Description:	
  *
@@ -804,7 +804,7 @@ NhlErrorTypes NhlNDCPolygon
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fndcpolygon,NHL_FNDCPOLYGON)
+void _NHLCALLF(nhlpfndcpolygon,NHLPFNDCPOLYGON)
 #if	NhlNeedProto
 (
 	int	*pid,
@@ -862,7 +862,7 @@ NhlErrorTypes NhlDataPolymarker
 }
 
 /*
- * Function:	nhl_fdatapolymarker
+ * Function:	nhlpfdatapolymarker
  *
  * Description:	
  *
@@ -874,7 +874,7 @@ NhlErrorTypes NhlDataPolymarker
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fdatapolymarker,NHL_FDATAPOLYMARKER)
+void _NHLCALLF(nhlpfdatapolymarker,NHLPFDATAPOLYMARKER)
 #if	NhlNeedProto
 (
 	int	*pid,
@@ -938,7 +938,7 @@ NhlErrorTypes NhlNDCPolymarker
 }
 
 /*
- * Function:	nhl_fndcpolymarker
+ * Function:	nhlpfndcpolymarker
  *
  * Description:	
  *
@@ -950,7 +950,7 @@ NhlErrorTypes NhlNDCPolymarker
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fndcpolymarker,NHL_FNDCPOLYMARKER)
+void _NHLCALLF(nhlpfndcpolymarker,NHLPFNDCPOLYMARKER)
 #if	NhlNeedProto
 (
 	int	*pid,

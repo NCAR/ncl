@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.21 1997-01-25 00:42:15 ethan Exp $
+ *      $Id: GetValues.c,v 1.22 1997-05-05 21:45:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -594,7 +594,7 @@ NhlGetValues
 }
 
 /*
- * Function:	nhl_fgetvalues
+ * Function:	nhlpfgetvalues
  *
  * Description:	
  *
@@ -607,7 +607,7 @@ NhlGetValues
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_fgetvalues,NHL_FGETVALUES)
+_NHLCALLF(nhlpfgetvalues,NHLPFGETVALUES)
 #if	NhlNeedProto
 (
 	int	*id,

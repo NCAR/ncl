@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.c,v 1.11 1997-02-24 22:12:41 boote Exp $
+ *      $Id: VectorField.c,v 1.12 1997-05-05 21:45:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -3301,7 +3301,8 @@ static NhlVectorFieldFloatLayer ForceConvert
 	from.data.intval = vfl->base.id;
 	to.size = sizeof(NhlVectorFieldFloatLayerRec);
 	to.data.ptrval = &id;
-	ret = NhlConvertData(NULL,NhlvectorFieldClass->base_class.class_name,
+	ret = NhlConvertData(NhlDEFAULT_APP,
+			NhlvectorFieldClass->base_class.class_name,
 			NhlvectorFieldFloatClass->base_class.class_name,
 			     &from,&to);
 	if (ret < NhlWARNING ||

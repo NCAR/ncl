@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.26 1997-02-24 22:12:43 boote Exp $
+ *      $Id: View.c,v 1.27 1997-05-05 21:45:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1211,7 +1211,7 @@ NhlIsView
 }
 
 /*
- * Function:	nhl_fisview
+ * Function:	nhlpfisview
  *
  * Description:	
  *
@@ -1223,7 +1223,7 @@ NhlIsView
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fisview,NHL_FISVIEW)
+void _NHLCALLF(nhlpfisview,NHLPFISVIEW)
 #if	NhlNeedProto
 (
 	int	*id,

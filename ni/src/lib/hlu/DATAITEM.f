@@ -1,5 +1,5 @@
 C
-C $Id: DATAITEM.f,v 1.1 1995-02-17 10:23:04 boote Exp $
+C $Id: DATAITEM.f,v 1.2 1997-05-05 21:45:07 boote Exp $
 C
 C****************************************************************
 C								*
@@ -22,5 +22,5 @@ C
       subroutine nhlfisdataitem(id,istat)
 
 	integer id,istat
-	call nhl_fisdataitem(id,istat)
+	call nhlpfisdataitem(id,istat)
       end

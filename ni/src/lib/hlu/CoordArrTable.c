@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.31 1997-02-24 22:12:20 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.32 1997-05-05 21:45:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -513,7 +513,7 @@ GetOwnMiss
 	to.size = sizeof(float);
 	to.data.ptrval = &value;
 
-	ret = NhlConvertData(NULL,NhlTGenArray,NhlTFloat,&from,&to);
+	ret = NhlConvertData(NhlDEFAULT_APP,NhlTGenArray,NhlTFloat,&from,&to);
 
 	if(ret < NhlWARNING)
 		return NhlFATAL;

@@ -1,5 +1,5 @@
 C
-C $Id: RLSET.f,v 1.5 1997-01-08 23:05:52 boote Exp $
+C $Id: RLSET.f,v 1.6 1997-05-05 21:45:20 boote Exp $
 C
 C****************************************************************
 C								*
@@ -23,34 +23,34 @@ C
       subroutine nhlfrlsetinteger(id,name,ival,ierr)
 	integer id, ival,ierr
 	character*(*) name
-      	call nhl_frlsetinteger(id,name,len(name),ival,ierr)
+      	call nhlpfrlsetinteger(id,name,len(name),ival,ierr)
       end
 C
       subroutine nhlfrlsetfloat(id,name,fval,ierr)
 	integer id,ierr
 	real fval
 	character*(*) name
-      	call nhl_frlsetfloat(id,name,len(name),fval,ierr)
+      	call nhlpfrlsetfloat(id,name,len(name),fval,ierr)
       end
 C
       subroutine nhlfrlsetdouble(id,name,dval,ierr)
 	integer id,ierr
 	double precision dval
 	character*(*) name
-      	call nhl_frlsetdouble(id,name,len(name),dval,ierr)
+      	call nhlpfrlsetdouble(id,name,len(name),dval,ierr)
       end
 C
       subroutine nhlfrlsetstring(id,name,sval,ierr)
 	integer id,ierr
 	character*(*) name,sval
-      	call nhl_frlsetstring(id,name,len(name),sval,len(sval),ierr)
+      	call nhlpfrlsetstring(id,name,len(name),sval,len(sval),ierr)
       end
 C
       subroutine nhlfrlsetmdintegerarray(id,name,iarr,inumdim,ilendim,
      % ierr)
 	integer id,iarr(*),inumdim,ilendim,ierr
 	character*(*) name
-	call nhl_frlsetmdintegerarray(id,name,len(name),iarr,inumdim,
+	call nhlpfrlsetmdintegerarray(id,name,len(name),iarr,inumdim,
      %	ilendim,ierr)
       end
 C
@@ -59,7 +59,7 @@ C
 	integer id,inumdim,ilendim,ierr
 	character*(*) name
 	real farr(*)
-	call nhl_frlsetmdfloatarray(id,name,len(name),farr,inumdim,
+	call nhlpfrlsetmdfloatarray(id,name,len(name),farr,inumdim,
      %	ilendim,ierr)
       end
 C
@@ -68,14 +68,14 @@ C
 	integer id,inumdim,ilendim,ierr
 	character*(*) name
 	double precision darr(*)
-	call nhl_frlsetmddoublearray(id,name,len(name),darr,inumdim,
+	call nhlpfrlsetmddoublearray(id,name,len(name),darr,inumdim,
      %	ilendim,ierr)
       end
 C
       subroutine nhlfrlsetintegerarray(id,name,iarr,iarr_len,ierr)
 	integer id,iarr_len,iarr(iarr_len),ierr
 	character*(*) name
-	call nhl_frlsetintegerarray(id,name,len(name),iarr,iarr_len,
+	call nhlpfrlsetintegerarray(id,name,len(name),iarr,iarr_len,
      % ierr)
       end
 C
@@ -83,20 +83,20 @@ C
 	integer id,farr_len,ierr
 	character*(*) name
 	real farr(farr_len)
-	call nhl_frlsetfloatarray(id,name,len(name),farr,farr_len,ierr)
+	call nhlpfrlsetfloatarray(id,name,len(name),farr,farr_len,ierr)
       end
 C
       subroutine nhlfrlsetdoublearray(id,name,darr,darr_len,ierr)
 	integer id,darr_len,ierr
 	character*(*) name
 	double precision darr(darr_len)
-	call nhl_frlsetdoublearray(id,name,len(name),darr,darr_len,ierr)
+	call nhlpfrlsetdoublearray(id,name,len(name),darr,darr_len,ierr)
       end
 C
       subroutine nhlfrlsetstringarray(id,name,carr,carr_len,ierr)
 	integer id,carr_len,ierr
 	character*(*) name
 	character*(*) carr(carr_len)
-	call nhl_frlsetstringarray(id,name,len(name),carr,carr_len,
+	call nhlpfrlsetstringarray(id,name,len(name),carr,carr_len,
      %  len(carr(1)),ierr)
       end

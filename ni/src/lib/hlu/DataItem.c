@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.c,v 1.14 1997-02-24 22:12:22 boote Exp $
+ *      $Id: DataItem.c,v 1.15 1997-05-05 21:45:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -461,7 +461,7 @@ NhlIsDataItem
 }
 
 /*
- * Function:	nhl_fisdataitem
+ * Function:	nhlpfisdataitem
  *
  * Description:	
  *
@@ -473,7 +473,7 @@ NhlIsDataItem
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fisdataitem,NHL_FISDATAITEM)
+void _NHLCALLF(nhlpfisdataitem,NHLPFISDATAITEM)
 #if	NhlNeedProto
 (
 	int	*id,

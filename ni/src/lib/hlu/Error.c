@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.27 1997-02-27 20:13:03 boote Exp $
+ *      $Id: Error.c,v 1.28 1997-05-05 21:45:14 boote Exp $
  */
 /************************************************************************
 *									*
@@ -479,7 +479,7 @@ ErrorInitialize
 				/* File is specified so open unit with file */
 				int	conn = 0;
 				int	ierr = 0;
-				_NHLCALLF(nhl_finqunit,NHL_FINQUNIT)
+				_NHLCALLF(nhlpfinqunit,NHLPFINQUNIT)
 					(&fchild->ferror.eunit,&conn,&ierr);
 				if(ierr){
 					NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -510,8 +510,8 @@ ErrorInitialize
 						ffname_len = strlen(tfname);
 						ffname = (_NhlFString)
 						_NhlCptrToFptr((char*)tfname);
-						_NHLCALLF(nhl_fopnunit,
-								NHL_FOPNUNIT)
+						_NHLCALLF(nhlpfopnunit,
+								NHLPFOPNUNIT)
 							(&fchild->ferror.eunit,
 							ffname,&ffname_len,
 									&ierr);
@@ -564,8 +564,8 @@ ErrorInitialize
 						ffname_len = strlen(tfname);
 						ffname = (_NhlFString)
 						_NhlCptrToFptr((char*)tfname);
-						_NHLCALLF(nhl_fopnunit,
-								NHL_FOPNUNIT)
+						_NHLCALLF(nhlpfopnunit,
+								NHLPFOPNUNIT)
 							(&fchild->ferror.eunit,
 							ffname,&ffname_len,
 									&ierr);
@@ -749,12 +749,12 @@ ErrorSetValues
 		if(enew->error.private_eunit != fchild->ferror.eunit){
 
 			if(fchild->ferror.my_eunit)
-				_NHLCALLF(nhl_fclsunit,NHL_FCLSUNIT)
+				_NHLCALLF(nhlpfclsunit,NHLPFCLSUNIT)
 					(&eold->error.private_eunit,&ierr);
 
 			fchild->ferror.my_eunit = False;
 
-			_NHLCALLF(nhl_finqunit,NHL_FINQUNIT)
+			_NHLCALLF(nhlpfinqunit,NHLPFINQUNIT)
 					(&fchild->ferror.eunit,&conn,&ierr);
 			if(ierr){
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -787,7 +787,7 @@ ErrorSetValues
 					ffname_len = strlen(tfname);
 					ffname = (_NhlFString)
 						_NhlCptrToFptr((char*)tfname);
-					_NHLCALLF(nhl_fopnunit,NHL_FOPNUNIT)
+					_NHLCALLF(nhlpfopnunit,NHLPFOPNUNIT)
 						(&fchild->ferror.eunit,ffname,
 							&ffname_len,&ierr);
 				}
@@ -819,7 +819,7 @@ ErrorSetValues
 			tfname = enew->error.error_file;
 
 			if(fchild->ferror.my_eunit)
-				_NHLCALLF(nhl_fclsunit,NHL_FCLSUNIT)
+				_NHLCALLF(nhlpfclsunit,NHLPFCLSUNIT)
 					(&eold->error.private_eunit,&ierr);
 
 			fchild->ferror.my_eunit = False;
@@ -836,7 +836,7 @@ ErrorSetValues
 						_NHLCALLF(i1mach,I1MACH)(&conn);
 			}
 			else{
-				_NHLCALLF(nhl_finqunit,NHL_FINQUNIT)
+				_NHLCALLF(nhlpfinqunit,NHLPFINQUNIT)
 					(&fchild->ferror.eunit,&conn,&ierr);
 				if(ierr){
 					NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -867,8 +867,8 @@ ErrorSetValues
 						ffname_len = strlen(tfname);
 						ffname = (_NhlFString)
 						_NhlCptrToFptr((char*)tfname);
-						_NHLCALLF(nhl_fopnunit,
-								NHL_FOPNUNIT)
+						_NHLCALLF(nhlpfopnunit,
+								NHLPFOPNUNIT)
 						(&fchild->ferror.eunit,ffname,
 							&ffname_len,&ierr);
 					}
@@ -983,7 +983,7 @@ ErrorDestroy
 		int ierr = 0;
 
 		if(fchild->ferror.my_eunit){
-			_NHLCALLF(nhl_fclsunit,NHL_FCLSUNIT)
+			_NHLCALLF(nhlpfclsunit,NHLPFCLSUNIT)
 						(&fchild->ferror.eunit,&ierr);
 			if(ierr){
 				NHLPERROR((NhlWARNING,NhlEUNKNOWN,
@@ -1143,7 +1143,7 @@ PrintMessage
 		message = NhlErrSPrintMsg(tbuf,msg);
 		fmessage_len = strlen(message);
 		fmessage = (_NhlFString)_NhlCptrToFptr((char*)message);
-		_NHLCALLF(nhl_fprnmes,NHL_FPRNMES)
+		_NHLCALLF(nhlpfprnmes,NHLPFPRNMES)
 				(&errorLayer->error.private_eunit,fmessage,
 								&fmessage_len);
 
@@ -1375,7 +1375,7 @@ Const char *NhlPError
 }
 
 /*
- * Function:	nhl_fperror
+ * Function:	nhlpfperror
  *
  * Description:	
  *
@@ -1388,7 +1388,7 @@ Const char *NhlPError
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_fperror,NHL_FPERROR)
+_NHLCALLF(nhlpfperror,NHLPFPERROR)
 #if	NhlNeedProto
 (
 	_NhlFString	flevel,
@@ -1422,7 +1422,7 @@ _NHLCALLF(nhl_fperror,NHL_FPERROR)
 	to.size = sizeof(NhlErrorTypes);
 	to.data.ptrval = &elevel;
 
-	if(NhlConvertData(NULL,NhlTString,NhlTErrorTypes,&from,&to)
+	if(NhlConvertData(NhlDEFAULT_APP,NhlTString,NhlTErrorTypes,&from,&to)
 							!= NhlNOERROR){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 		"Unable to report Fortran error message:Invalid error level");
@@ -1474,7 +1474,7 @@ NhlErrGetID
 }
 
 /*
- * Function:	nhl_ferrgetid
+ * Function:	nhlpferrgetid
  *
  * Description:	
  *
@@ -1487,7 +1487,7 @@ NhlErrGetID
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_ferrgetid,NHL_FERRGETID)
+_NHLCALLF(nhlpferrgetid,NHLPFERRGETID)
 #if	NhlNeedProto
 (
 	int	*id
@@ -1534,7 +1534,7 @@ NhlErrNumMsgs
 }
 
 /*
- * Function:	nhl_ferrnummsgs
+ * Function:	nhlpferrnummsgs
  *
  * Description:	
  *
@@ -1547,7 +1547,7 @@ NhlErrNumMsgs
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_ferrnummsgs,NHL_FERRNUMMSGS)
+_NHLCALLF(nhlpferrnummsgs,NHLPFERRNUMMSGS)
 #if	NhlNeedProto
 (
 	int	*nummsgs
@@ -1607,7 +1607,7 @@ NhlErrGetMsg
 }
 
 /*
- * Function:	nhl_ferrgetmsg
+ * Function:	nhlpferrgetmsg
  *
  * Description:	
  *
@@ -1620,7 +1620,7 @@ NhlErrGetMsg
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_ferrgetmsg,NHL_FERRGETMSG)
+_NHLCALLF(nhlpferrgetmsg,NHLPFERRGETMSG)
 #if	NhlNeedProto
 (
 	int		*index,
@@ -1658,7 +1658,7 @@ _NHLCALLF(nhl_ferrgetmsg,NHL_FERRGETMSG)
 
 	if(ret == NhlFATAL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"nhl_ferrgetmsg:Unable to retrieve errmsg #%d",*index);
+			"nhlpferrgetmsg:Unable to retrieve errmsg #%d",*index);
 
 		*err = ret;
 
@@ -1724,7 +1724,7 @@ NhlErrClearMsgs
 }
 
 /*
- * Function:	nhl_ferrclearmsgs
+ * Function:	nhlpferrclearmsgs
  *
  * Description:	
  *
@@ -1737,7 +1737,7 @@ NhlErrClearMsgs
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_ferrclearmsgs,NHL_FERRCLEARMSGS)
+_NHLCALLF(nhlpferrclearmsgs,NHLPFERRCLEARMSGS)
 #if	NhlNeedProto
 (
 	int	*ierr
@@ -1923,7 +1923,7 @@ NhlErrSPrintMsg
 }
 
 /*
- * Function:	nhl_ferrsprintmsg
+ * Function:	nhlpferrsprintmsg
  *
  * Description:	
  *
@@ -1935,7 +1935,7 @@ NhlErrSPrintMsg
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_ferrsprintmsg,NHL_FERRSPRINTMSG)
+void _NHLCALLF(nhlpferrsprintmsg,NHLPFERRSPRINTMSG)
 #if	NhlNeedProto
 (
 	_NhlFString	fbuffer,
@@ -2006,7 +2006,7 @@ NhlErrFPrintMsg
 }
 
 /*
- * Function:	nhl_fgerhnd
+ * Function:	nhlpfgerhnd
  *
  * Description:	This function will get called in the event of a GKS error.
  *
@@ -2018,7 +2018,7 @@ NhlErrFPrintMsg
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fgerhnd,NHL_FGERHND)
+void _NHLCALLF(nhlpfgerhnd,NHLPFGERHND)
 #if	NhlNeedProto
 (
 	int		*gks_enum,

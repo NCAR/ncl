@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.65 1997-04-14 23:57:13 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.66 1997-05-05 21:46:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2576,7 +2576,7 @@ NhlErrorTypes _NclIfbinread
 	}
 	totalsize = size*thetype->type_class.size;
 	tmp_ptr = NclMalloc(totalsize);
-	NGCALLF(ncl_fortranread,NCL_FORTRANREAD)(path_string,tmp_ptr,&totalsize,&ret,strlen(path_string));
+	NGCALLF(nclpfortranread,NCLPFORTRANREAD)(path_string,tmp_ptr,&totalsize,&ret,strlen(path_string));
 	if(tmp_ptr != NULL) {
 		
 		tmp_md = _NclCreateMultiDVal(
@@ -3199,7 +3199,7 @@ NhlErrorTypes _NclIfbinwrite
 		thetype = tmp_md->multidval.type;
 		totalsize = tmp_md->multidval.totalelements * thetype->type_class.size;
 	}
-	NGCALLF(ncl_fortranwrite,NCL_FORTRANWRITE)(path_string,tmp_ptr,&totalsize,&ret,strlen(path_string));
+	NGCALLF(nclpfortranwrite,NCLPFORTRANWRITE)(path_string,tmp_ptr,&totalsize,&ret,strlen(path_string));
 	return(ret);
 }
 NhlErrorTypes _NclIsleep

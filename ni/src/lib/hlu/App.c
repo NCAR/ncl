@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.32 1997-02-27 20:13:00 boote Exp $
+ *      $Id: App.c,v 1.33 1997-05-05 21:44:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1377,7 +1377,7 @@ NhlAppGetDefaultParentId
 }
 
 /*
- * Function:	nhl_fappgetdefaultparentid
+ * Function:	nhlpfappgetdefaultparentid
  *
  * Description:	
  *
@@ -1390,7 +1390,7 @@ NhlAppGetDefaultParentId
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_fappgetdefaultparentid,NHL_FAPPGETDEFAULTPARENTID)
+_NHLCALLF(nhlpfappgetdefaultparentid,NHLPFAPPGETDEFAULTPARENTID)
 #if	NhlNeedProto
 (
 	int	*id
@@ -1436,7 +1436,7 @@ NhlIsApp
 }
 
 /*
- * Function:	nhl_fisapp
+ * Function:	nhlpfisapp
  *
  * Description:	
  *
@@ -1448,7 +1448,7 @@ NhlIsApp
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fisapp,NHL_FISAPP)
+void _NHLCALLF(nhlpfisapp,NHLPFISAPP)
 #if	NhlNeedProto
 (
 	int	*id,

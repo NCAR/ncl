@@ -1,5 +1,5 @@
 C
-C $Id: APP.f,v 1.2 1995-03-31 21:51:08 boote Exp $
+C $Id: APP.f,v 1.3 1997-05-05 21:44:57 boote Exp $
 C
 C****************************************************************
 C								*
@@ -22,10 +22,10 @@ C
       subroutine nhlfisapp(id,istat)
 
 	integer id,istat
-	call nhl_fisapp(id,istat)
+	call nhlpfisapp(id,istat)
       end
 
       subroutine nhlfappgetdefaultparentid(id)
 	integer id
-	call nhl_fappgetdefaultparentid(id)
+	call nhlpfappgetdefaultparentid(id)
       end

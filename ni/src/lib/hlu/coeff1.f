@@ -1,6 +1,6 @@
 C
 C
-C	$Id: coeff1.f,v 1.1 1994-08-11 23:17:24 boote Exp $
+C	$Id: coeff1.f,v 1.2 1997-05-05 21:45:41 boote Exp $
 C
 C PACKAGE CUBSPL         NOTE--DOCUMENTATION FOR INDIVIDUAL ROUTINES
 C                              FOLLOWS THE GENERAL PACKAGE INFORMATION
@@ -617,8 +617,8 @@ C                        ALOG(NX*NY).  THE TIME FOR FUNCTION EVALUATION
 C                        IS INDEPENDENT OF N.
 C***********************************************************************
       SUBROUTINE COEFF1 (N,X,F,W,IOP,INT,WK)
-      DIMENSION       X(1)       ,F(1)       ,W(1)       ,IOP(2)     ,
-     1                WK(N,1)
+      DIMENSION       X(4)       ,F(4)       ,W(4)       ,IOP(2)     ,
+     1                WK(N,4)
       SAVE
 C
 C ARITHMETIC STATENENT FUNCTION USED TO LOCATE ENTRIES IN F AND W ARRAYS

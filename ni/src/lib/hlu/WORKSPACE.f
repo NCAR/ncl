@@ -1,5 +1,5 @@
 C
-C $Id: WORKSPACE.f,v 1.1 1994-05-12 23:52:47 boote Exp $
+C $Id: WORKSPACE.f,v 1.2 1997-05-05 21:45:31 boote Exp $
 C
 C****************************************************************
 C								*
@@ -22,5 +22,5 @@ C
       subroutine nhlfgetworkspaceobjectid(id)
 	integer id
 
-	call nhl_fgetworkspaceobjectid(id)
+	call nhlpfgetworkspaceobjectid(id)
       end

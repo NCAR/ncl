@@ -1,5 +1,5 @@
 /*
- *      $Id: Open.c,v 1.13 1996-09-05 20:36:19 boote Exp $
+ *      $Id: Open.c,v 1.14 1997-05-05 21:45:19 boote Exp $
  */
 /************************************************************************
 *									*
@@ -109,7 +109,7 @@ void NhlOpen
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_fopen,NHL_FOPEN)
+_NHLCALLF(nhlpfopen,NHLPFOPEN)
 #if	NhlNeedProto
 (
 	void
@@ -201,7 +201,7 @@ void NhlInitialize
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_finitialize,NHL_FINITIALIZE)
+_NHLCALLF(nhlpfinitialize,NHLPFINITIALIZE)
 #if	NhlNeedProto
 (
 	void

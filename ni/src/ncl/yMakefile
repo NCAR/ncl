@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.54 1997-04-17 16:25:18 haley Exp $
+#      $Id: yMakefile,v 1.55 1997-05-05 21:46:08 boote Exp $
 #
 #########################################################################
 #									#
@@ -46,9 +46,9 @@ EXTRA_DEFINES = $(OS1_DEF) $(MAJOR_DEF)
 
 API_DEFS	=	-DMAKEAPI
 
-PROG_LIBS	=	$(HLULIBS) $(CNCARGLIB) $(NCARGLIBS)
+PROG_LIBS	=	$(HLULIBS) $(NCARGLIBS)
 DEPLIBS		=	$(DEPHLULIBS) $(DEPNCARGLIBS)
-EXTRA_LIBS	=	-ll $(NCDFLIBS) $(HDFLIB)
+EXTRA_LIBS	=	$(NCDFLIBS) $(HDFLIB)
 SYS_LIBS	=	$(XLIB) $(CTOFLIBS) -lm $(ARCH_LIBS)
 
 HDRS		=	$(GEN_HDRS) $(STATIC_HDRS) $(INSTALL_HDRS)

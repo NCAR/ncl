@@ -1,5 +1,5 @@
 /*
- *      $Id: Close.c,v 1.11 1995-04-07 10:40:56 boote Exp $
+ *      $Id: Close.c,v 1.12 1997-05-05 21:45:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -99,7 +99,7 @@ NhlClose
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_fclose,NHL_FCLOSE)
+_NHLCALLF(nhlpfclose,NHLPFCLOSE)
 #if	NhlNeedProto
 (
 	void

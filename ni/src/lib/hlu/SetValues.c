@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.27 1997-02-27 20:13:05 boote Exp $
+ *      $Id: SetValues.c,v 1.28 1997-05-05 21:45:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -652,7 +652,7 @@ NhlSetValues
 }
 
 /*
- * Function:	nhl_fsetvalues
+ * Function:	nhlpfsetvalues
  *
  * Description:	
  *
@@ -665,7 +665,7 @@ NhlSetValues
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_fsetvalues,NHL_FSETVALUES)
+_NHLCALLF(nhlpfsetvalues,NHLPFSETVALUES)
 #if	NhlNeedProto
 (
 	int		*pid,		/* plot id <return>		*/

@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.27 1997-02-24 22:12:31 boote Exp $
+ *      $Id: NcgmWorkstation.c,v 1.28 1997-05-05 21:45:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -272,7 +272,7 @@ static NhlErrorTypes NcgmWorkstationInitialize
 
 	while(1){
 		int	opn, ierr;
-		_NHLCALLF(nhl_finqunit,NHL_FINQUNIT)
+		_NHLCALLF(nhlpfinqunit,NHLPFINQUNIT)
 			(&default_conid,&opn,&ierr);
 		if(!opn)
 			break;

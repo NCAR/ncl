@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.40 1997-02-24 22:12:21 boote Exp $
+ *      $Id: DataComm.c,v 1.41 1997-05-05 21:45:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2284,7 +2284,7 @@ NhlIsDataComm
 }
 
 /*
- * Function:	nhl_fisdatacomm
+ * Function:	nhlpfisdatacomm
  *
  * Description:	
  *
@@ -2296,7 +2296,7 @@ NhlIsDataComm
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fisdatacomm,NHL_FISDATACOMM)
+void _NHLCALLF(nhlpfisdatacomm,NHLPFISDATACOMM)
 #if	NhlNeedProto
 (
 	int	*id,
@@ -2346,7 +2346,7 @@ NhlIsDataSpec
 }
 
 /*
- * Function:	nhl_fisdataspec
+ * Function:	nhlpfisdataspec
  *
  * Description:	
  *
@@ -2358,7 +2358,7 @@ NhlIsDataSpec
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fisdataspec,NHL_FISDATASPEC)
+void _NHLCALLF(nhlpfisdataspec,NHLPFISDATASPEC)
 #if	NhlNeedProto
 (
 	int	*id,

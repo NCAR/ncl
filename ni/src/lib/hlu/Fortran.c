@@ -1,5 +1,5 @@
 /*
- *      $Id: Fortran.c,v 1.15 1997-02-14 21:20:35 haley Exp $
+ *      $Id: Fortran.c,v 1.16 1997-05-05 21:45:16 boote Exp $
  */
 /************************************************************************
 *									*
@@ -49,7 +49,7 @@ static void FortranInit(
 );
 
 /*
- * Function:	nhl_frlcreate
+ * Function:	nhlpfrlcreate
  *
  * Description:	This is a rapper function to allow fortran to get a ResList.
  *
@@ -62,7 +62,7 @@ static void FortranInit(
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlcreate,NHL_FRLCREATE)
+_NHLCALLF(nhlpfrlcreate,NHLPFRLCREATE)
 #if	NhlNeedProto
 (
 	int			*listid,
@@ -98,7 +98,8 @@ _NHLCALLF(nhl_frlcreate,NHL_FRLCREATE)
 	to.size = sizeof(rltype);
 	to.data.ptrval = &rltype;
 
-	if(NhlConvertData(NULL,NhlTString,NhlTRLType,&from,&to) < NhlINFO){
+	if(NhlConvertData(NhlDEFAULT_APP,NhlTString,NhlTRLType,&from,&to) <
+								NhlINFO){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Invalid list type \"%s\"",
 								tstring);
 		*listid = NhlFATAL;
@@ -111,7 +112,7 @@ _NHLCALLF(nhl_frlcreate,NHL_FRLCREATE)
 }
 
 /*
- * Function:	nhl_frldestroy
+ * Function:	nhlpfrldestroy
  *
  * Description:	
  *
@@ -124,7 +125,7 @@ _NHLCALLF(nhl_frlcreate,NHL_FRLCREATE)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frldestroy,NHL_FRLDESTROY)
+_NHLCALLF(nhlpfrldestroy,NHLPFRLDESTROY)
 #if	NhlNeedProto
 (
 	int	*id
@@ -140,7 +141,7 @@ _NHLCALLF(nhl_frldestroy,NHL_FRLDESTROY)
 }
 
 /*
- * Function:	nhl_frlclear
+ * Function:	nhlpfrlclear
  *
  * Description:	
  *
@@ -153,7 +154,7 @@ _NHLCALLF(nhl_frldestroy,NHL_FRLDESTROY)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlclear,NHL_FRLCLEAR)
+_NHLCALLF(nhlpfrlclear,NHLPFRLCLEAR)
 #if	NhlNeedProto
 (
 	int	*id
@@ -169,7 +170,7 @@ _NHLCALLF(nhl_frlclear,NHL_FRLCLEAR)
 }
 
 /*
- * Function:	nhl_frlunset
+ * Function:	nhlpfrlunset
  *
  * Description:	
  *
@@ -182,7 +183,7 @@ _NHLCALLF(nhl_frlclear,NHL_FRLCLEAR)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlunset,NHL_FRLUNSET)
+_NHLCALLF(nhlpfrlunset,NHLPFRLUNSET)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -210,7 +211,7 @@ _NHLCALLF(nhl_frlunset,NHL_FRLUNSET)
 }
 
 /*
- * Function:	nhl_frlisset
+ * Function:	nhlpfrlisset
  *
  * Description:	
  *
@@ -223,7 +224,7 @@ _NHLCALLF(nhl_frlunset,NHL_FRLUNSET)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlisset,NHL_FRLISSET)
+_NHLCALLF(nhlpfrlisset,NHLPFRLISSET)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -253,7 +254,7 @@ _NHLCALLF(nhl_frlisset,NHL_FRLISSET)
 }
 
 /*
- * Function:	nhl_frlsetinteger
+ * Function:	nhlpfrlsetinteger
  *
  * Description:	
  *
@@ -266,7 +267,7 @@ _NHLCALLF(nhl_frlisset,NHL_FRLISSET)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlsetinteger,NHL_FRLSETINTEGER)
+_NHLCALLF(nhlpfrlsetinteger,NHLPFRLSETINTEGER)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -298,7 +299,7 @@ _NHLCALLF(nhl_frlsetinteger,NHL_FRLSETINTEGER)
 }
 
 /*
- * Function:	nhl_frlsetfloat
+ * Function:	nhlpfrlsetfloat
  *
  * Description:	
  *
@@ -311,7 +312,7 @@ _NHLCALLF(nhl_frlsetinteger,NHL_FRLSETINTEGER)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlsetfloat,NHL_FRLSETFLOAT)
+_NHLCALLF(nhlpfrlsetfloat,NHLPFRLSETFLOAT)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -343,7 +344,7 @@ _NHLCALLF(nhl_frlsetfloat,NHL_FRLSETFLOAT)
 }
 
 /*
- * Function:	nhl_frlsetdouble
+ * Function:	nhlpfrlsetdouble
  *
  * Description:	
  *
@@ -356,7 +357,7 @@ _NHLCALLF(nhl_frlsetfloat,NHL_FRLSETFLOAT)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlsetdouble,NHL_FRLSETDOUBLE)
+_NHLCALLF(nhlpfrlsetdouble,NHLPFRLSETDOUBLE)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -388,7 +389,7 @@ _NHLCALLF(nhl_frlsetdouble,NHL_FRLSETDOUBLE)
 }
 
 /*
- * Function:	nhl_frlsetstring
+ * Function:	nhlpfrlsetstring
  *
  * Description:	
  *
@@ -401,7 +402,7 @@ _NHLCALLF(nhl_frlsetdouble,NHL_FRLSETDOUBLE)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlsetstring,NHL_FRLSETSTRING)
+_NHLCALLF(nhlpfrlsetstring,NHLPFRLSETSTRING)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -490,7 +491,7 @@ NhlFSetMDArray
 }
 
 /*
- * Function:	nhl_frlsetmdintegerarray
+ * Function:	nhlpfrlsetmdintegerarray
  *
  * Description:	Set a multidimentional int array
  *
@@ -503,7 +504,7 @@ NhlFSetMDArray
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlsetmdintegerarray,NHL_FRLSETMDINTEGERARRAY)
+_NHLCALLF(nhlpfrlsetmdintegerarray,NHLPFRLSETMDINTEGERARRAY)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -532,7 +533,7 @@ _NHLCALLF(nhl_frlsetmdintegerarray,NHL_FRLSETMDINTEGERARRAY)
 }
 
 /*
- * Function:	nhl_frlsetmdfloatarray
+ * Function:	nhlpfrlsetmdfloatarray
  *
  * Description:	Set a multidimentional int array
  *
@@ -545,7 +546,7 @@ _NHLCALLF(nhl_frlsetmdintegerarray,NHL_FRLSETMDINTEGERARRAY)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlsetmdfloatarray,NHL_FRLSETMDFLOATARRAY)
+_NHLCALLF(nhlpfrlsetmdfloatarray,NHLPFRLSETMDFLOATARRAY)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -574,7 +575,7 @@ _NHLCALLF(nhl_frlsetmdfloatarray,NHL_FRLSETMDFLOATARRAY)
 }
 
 /*
- * Function:	nhl_frlsetmddoublearray
+ * Function:	nhlpfrlsetmddoublearray
  *
  * Description:	Set a multidimentional int array
  *
@@ -587,7 +588,7 @@ _NHLCALLF(nhl_frlsetmdfloatarray,NHL_FRLSETMDFLOATARRAY)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlsetmddoublearray,NHL_FRLSETMDDOUBLEARRAY)
+_NHLCALLF(nhlpfrlsetmddoublearray,NHLPFRLSETMDDOUBLEARRAY)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -616,7 +617,7 @@ _NHLCALLF(nhl_frlsetmddoublearray,NHL_FRLSETMDDOUBLEARRAY)
 }
 
 /*
- * Function:	nhl_frlsetintegerarray
+ * Function:	nhlpfrlsetintegerarray
  *
  * Description:	Set a multidimentional int array
  *
@@ -629,7 +630,7 @@ _NHLCALLF(nhl_frlsetmddoublearray,NHL_FRLSETMDDOUBLEARRAY)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlsetintegerarray,NHL_FRLSETINTEGERARRAY)
+_NHLCALLF(nhlpfrlsetintegerarray,NHLPFRLSETINTEGERARRAY)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -656,7 +657,7 @@ _NHLCALLF(nhl_frlsetintegerarray,NHL_FRLSETINTEGERARRAY)
 }
 
 /*
- * Function:	nhl_frlsetfloatarray
+ * Function:	nhlpfrlsetfloatarray
  *
  * Description:	Set a multidimentional int array
  *
@@ -669,7 +670,7 @@ _NHLCALLF(nhl_frlsetintegerarray,NHL_FRLSETINTEGERARRAY)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlsetfloatarray,NHL_FRLSETFLOATARRAY)
+_NHLCALLF(nhlpfrlsetfloatarray,NHLPFRLSETFLOATARRAY)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -696,7 +697,7 @@ _NHLCALLF(nhl_frlsetfloatarray,NHL_FRLSETFLOATARRAY)
 }
 
 /*
- * Function:	nhl_frlsetdoublearray
+ * Function:	nhlpfrlsetdoublearray
  *
  * Description:	Set a multidimentional int array
  *
@@ -709,7 +710,7 @@ _NHLCALLF(nhl_frlsetfloatarray,NHL_FRLSETFLOATARRAY)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlsetdoublearray,NHL_FRLSETDOUBLEARRAY)
+_NHLCALLF(nhlpfrlsetdoublearray,NHLPFRLSETDOUBLEARRAY)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -736,7 +737,7 @@ _NHLCALLF(nhl_frlsetdoublearray,NHL_FRLSETDOUBLEARRAY)
 }
 
 /*
- * Function:	nhl_frlsetstringarray
+ * Function:	nhlpfrlsetstringarray
  *
  * Description:	Set a multidimentional int array
  *
@@ -749,7 +750,7 @@ _NHLCALLF(nhl_frlsetdoublearray,NHL_FRLSETDOUBLEARRAY)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlsetstringarray,NHL_FRLSETSTRINGARRAY)
+_NHLCALLF(nhlpfrlsetstringarray,NHLPFRLSETSTRINGARRAY)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -806,7 +807,7 @@ _NHLCALLF(nhl_frlsetstringarray,NHL_FRLSETSTRINGARRAY)
 }
 
 /*
- * Function:	nhl_frlgetinteger
+ * Function:	nhlpfrlgetinteger
  *
  * Description:	
  *
@@ -819,7 +820,7 @@ _NHLCALLF(nhl_frlsetstringarray,NHL_FRLSETSTRINGARRAY)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlgetinteger,NHL_FRLGETINTEGER)
+_NHLCALLF(nhlpfrlgetinteger,NHLPFRLGETINTEGER)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -851,7 +852,7 @@ _NHLCALLF(nhl_frlgetinteger,NHL_FRLGETINTEGER)
 }
 
 /*
- * Function:	nhl_frlgetfloat
+ * Function:	nhlpfrlgetfloat
  *
  * Description:	
  *
@@ -864,7 +865,7 @@ _NHLCALLF(nhl_frlgetinteger,NHL_FRLGETINTEGER)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlgetfloat,NHL_FRLGETFLOAT)
+_NHLCALLF(nhlpfrlgetfloat,NHLPFRLGETFLOAT)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -896,7 +897,7 @@ _NHLCALLF(nhl_frlgetfloat,NHL_FRLGETFLOAT)
 }
 
 /*
- * Function:	nhl_frlgetdouble
+ * Function:	nhlpfrlgetdouble
  *
  * Description:	
  *
@@ -909,7 +910,7 @@ _NHLCALLF(nhl_frlgetfloat,NHL_FRLGETFLOAT)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlgetdouble,NHL_FRLGETDOUBLE)
+_NHLCALLF(nhlpfrlgetdouble,NHLPFRLGETDOUBLE)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -941,7 +942,7 @@ _NHLCALLF(nhl_frlgetdouble,NHL_FRLGETDOUBLE)
 }
 
 /*
- * Function:	nhl_frlgetstring
+ * Function:	nhlpfrlgetstring
  *
  * Description:	
  *
@@ -954,7 +955,7 @@ _NHLCALLF(nhl_frlgetdouble,NHL_FRLGETDOUBLE)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlgetstring,NHL_FRLGETSTRING)
+_NHLCALLF(nhlpfrlgetstring,NHLPFRLGETSTRING)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -1422,7 +1423,7 @@ GetFArray
 }
 
 /*
- * Function:	nhl_frlgetmdintegerarray
+ * Function:	nhlpfrlgetmdintegerarray
  *
  * Description:	fortran func
  *
@@ -1435,7 +1436,7 @@ GetFArray
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlgetmdintegerarray,NHL_FRLGETMDINTEGERARRAY)
+_NHLCALLF(nhlpfrlgetmdintegerarray,NHLPFRLGETMDINTEGERARRAY)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -1466,7 +1467,7 @@ _NHLCALLF(nhl_frlgetmdintegerarray,NHL_FRLGETMDINTEGERARRAY)
 }
 
 /*
- * Function:	nhl_frlgetmdfloatarray
+ * Function:	nhlpfrlgetmdfloatarray
  *
  * Description:	fortran func
  *
@@ -1479,7 +1480,7 @@ _NHLCALLF(nhl_frlgetmdintegerarray,NHL_FRLGETMDINTEGERARRAY)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlgetmdfloatarray,NHL_FRLGETMDFLOATARRAY)
+_NHLCALLF(nhlpfrlgetmdfloatarray,NHLPFRLGETMDFLOATARRAY)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -1511,7 +1512,7 @@ _NHLCALLF(nhl_frlgetmdfloatarray,NHL_FRLGETMDFLOATARRAY)
 }
 
 /*
- * Function:	nhl_frlgetmddoublearray
+ * Function:	nhlpfrlgetmddoublearray
  *
  * Description:	fortran func
  *
@@ -1524,7 +1525,7 @@ _NHLCALLF(nhl_frlgetmdfloatarray,NHL_FRLGETMDFLOATARRAY)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlgetmddoublearray,NHL_FRLGETMDDOUBLEARRAY)
+_NHLCALLF(nhlpfrlgetmddoublearray,NHLPFRLGETMDDOUBLEARRAY)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -1556,7 +1557,7 @@ _NHLCALLF(nhl_frlgetmddoublearray,NHL_FRLGETMDDOUBLEARRAY)
 }
 
 /*
- * Function:	nhl_frlgetintegerarray
+ * Function:	nhlpfrlgetintegerarray
  *
  * Description:	fortran func
  *
@@ -1569,7 +1570,7 @@ _NHLCALLF(nhl_frlgetmddoublearray,NHL_FRLGETMDDOUBLEARRAY)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlgetintegerarray,NHL_FRLGETINTEGERARRAY)
+_NHLCALLF(nhlpfrlgetintegerarray,NHLPFRLGETINTEGERARRAY)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -1599,7 +1600,7 @@ _NHLCALLF(nhl_frlgetintegerarray,NHL_FRLGETINTEGERARRAY)
 }
 
 /*
- * Function:	nhl_frlgetfloatarray
+ * Function:	nhlpfrlgetfloatarray
  *
  * Description:	fortran func
  *
@@ -1612,7 +1613,7 @@ _NHLCALLF(nhl_frlgetintegerarray,NHL_FRLGETINTEGERARRAY)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlgetfloatarray,NHL_FRLGETFLOATARRAY)
+_NHLCALLF(nhlpfrlgetfloatarray,NHLPFRLGETFLOATARRAY)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -1642,7 +1643,7 @@ _NHLCALLF(nhl_frlgetfloatarray,NHL_FRLGETFLOATARRAY)
 }
 
 /*
- * Function:	nhl_frlgetdoublearray
+ * Function:	nhlpfrlgetdoublearray
  *
  * Description:	fortran func
  *
@@ -1655,7 +1656,7 @@ _NHLCALLF(nhl_frlgetfloatarray,NHL_FRLGETFLOATARRAY)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlgetdoublearray,NHL_FRLGETDOUBLEARRAY)
+_NHLCALLF(nhlpfrlgetdoublearray,NHLPFRLGETDOUBLEARRAY)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -1784,7 +1785,7 @@ CvtGenToFStrArr
 }
 
 /*
- * Function:	nhl_frlgetstringarray
+ * Function:	nhlpfrlgetstringarray
  *
  * Description:	fortran func
  *
@@ -1797,7 +1798,7 @@ CvtGenToFStrArr
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlgetstringarray,NHL_FRLGETSTRINGARRAY)
+_NHLCALLF(nhlpfrlgetstringarray,NHLPFRLGETSTRINGARRAY)
 #if	NhlNeedProto
 (
 	int		*id,

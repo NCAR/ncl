@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.64 1997-03-19 18:30:20 ethan Exp $
+ *      $Id: Workstation.c,v 1.65 1997-05-05 21:45:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2727,7 +2727,7 @@ NhlSetColor
 }
 
 /*
- * Function:	nhl_fsetcolor
+ * Function:	nhlpfsetcolor
  *
  * Description:	
  *
@@ -2739,7 +2739,7 @@ NhlSetColor
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fsetcolor,NHL_FSETCOLOR)
+void _NHLCALLF(nhlpfsetcolor,NHLPFSETCOLOR)
 #if	NhlNeedProto
 (
 	int	*pid,
@@ -2830,7 +2830,7 @@ NhlErrorTypes	NhlFreeColor
 
 
 /*
- * Function:	nhl_ffreecolor
+ * Function:	nhlpffreecolor
  *
  * Description:	
  *
@@ -2842,7 +2842,7 @@ NhlErrorTypes	NhlFreeColor
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_ffreecolor,NHL_FFREECOLOR)
+void _NHLCALLF(nhlpffreecolor,NHLPFFREECOLOR)
 #if	NhlNeedProto
 (
 	int	*wid,
@@ -3030,7 +3030,7 @@ int NhlNewColor
 }
 
 /*
- * Function:	nhl_fnewcolor
+ * Function:	nhlpfnewcolor
  *
  * Description:	
  *
@@ -3042,7 +3042,7 @@ int NhlNewColor
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fnewcolor,NHL_FNEWCOLOR)
+void _NHLCALLF(nhlpfnewcolor,NHLPFNEWCOLOR)
 #if	NhlNeedProto
 (
 	int	*wid,
@@ -3137,7 +3137,7 @@ NhlGetGksCi
 }
 
 /*
- * Function:	nhl_fgetgksci
+ * Function:	nhlpfgetgksci
  *
  * Description:	
  *
@@ -3149,7 +3149,7 @@ NhlGetGksCi
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fgetgksci,NHL_FGETGKSCI)
+void _NHLCALLF(nhlpfgetgksci,NHLPFGETGKSCI)
 #if	NhlNeedProto
 (
 	int	*wid,
@@ -3242,7 +3242,7 @@ NhlIsAllocatedColor
 }
 
 /*
- * Function:	nhl_fisallocatedcolor
+ * Function:	nhlpfisallocatedcolor
  *
  * Description:	
  *
@@ -3254,7 +3254,7 @@ NhlIsAllocatedColor
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fisallocatedcolor,NHL_FISALLOCATEDCOLOR)
+void _NHLCALLF(nhlpfisallocatedcolor,NHLPFISALLOCATEDCOLOR)
 #if	NhlNeedProto
 (
 	int	*wid,
@@ -3488,7 +3488,7 @@ NhlUpdateWorkstation
 }
 
 /*
- * Function:	nhl_fupdateworkstation
+ * Function:	nhlpfupdateworkstation
  *
  * Description:	
  *
@@ -3501,7 +3501,7 @@ NhlUpdateWorkstation
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_fupdateworkstation,NHL_FUPDATEWORKSTATION)
+_NHLCALLF(nhlpfupdateworkstation,NHLPFUPDATEWORKSTATION)
 #if	NhlNeedProto
 (
 	int	*wid,
@@ -3564,7 +3564,7 @@ NhlClearWorkstation
 }
 
 /*
- * Function:	nhl_fclearworkstation
+ * Function:	nhlpfclearworkstation
  *
  * Description:	
  *
@@ -3577,7 +3577,7 @@ NhlClearWorkstation
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_fclearworkstation,NHL_FCLEARWORKSTATION)
+_NHLCALLF(nhlpfclearworkstation,NHLPFCLEARWORKSTATION)
 #if	NhlNeedProto
 (
 	int	*wid,
@@ -3626,7 +3626,7 @@ NhlErrorTypes	NhlFrame
 }
 
 /*
- * Function:	nhl_fframe
+ * Function:	nhlpfframe
  *
  * Description:	Fortran referencable Frame call
  *
@@ -3639,7 +3639,7 @@ NhlErrorTypes	NhlFrame
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_fframe,NHL_FFRAME)
+_NHLCALLF(nhlpfframe,NHLPFFRAME)
 #if	NhlNeedProto
 (
 	int	*wid,
@@ -4129,7 +4129,7 @@ int NhlNewMarker
 }
 
 /*
- * Function:	nhl_fnewmarker
+ * Function:	nhlpfnewmarker
  *
  * Description:	
  *
@@ -4141,7 +4141,7 @@ int NhlNewMarker
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fnewmarker,NHL_FNEWMARKER)
+void _NHLCALLF(nhlpfnewmarker,NHLPFNEWMARKER)
 #if	NhlNeedProto
 (
 	int		*wid,
@@ -4273,7 +4273,7 @@ NhlSetMarker
 }
 
 /*
- * Function:	nhl_fsetmarker
+ * Function:	nhlpfsetmarker
  *
  * Description:	
  *
@@ -4285,7 +4285,7 @@ NhlSetMarker
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fsetmarker,NHL_FSETMARKER)
+void _NHLCALLF(nhlpfsetmarker,NHLPFSETMARKER)
 #if	NhlNeedProto
 (
 	int		*wid,
@@ -4533,7 +4533,7 @@ NhlIsWorkstation
 }
 
 /*
- * Function:	nhl_fisworkstation
+ * Function:	nhlpfisworkstation
  *
  * Description:	
  *
@@ -4545,7 +4545,7 @@ NhlIsWorkstation
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhl_fisworkstation,NHL_FISWORKSTATION)
+void _NHLCALLF(nhlpfisworkstation,NHLPFISWORKSTATION)
 #if	NhlNeedProto
 (
 	int	*id,

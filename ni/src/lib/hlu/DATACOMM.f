@@ -1,5 +1,5 @@
 C
-C $Id: DATACOMM.f,v 1.2 1995-02-17 10:23:03 boote Exp $
+C $Id: DATACOMM.f,v 1.3 1997-05-05 21:45:07 boote Exp $
 C
 C****************************************************************
 C								*
@@ -35,10 +35,10 @@ C
       subroutine nhlfisdatacomm(id,istat)
 
 	integer id,istat
-	call nhl_fisdatacomm(id,istat)
+	call nhlpfisdatacomm(id,istat)
       end
       subroutine nhlfisdataspec(id,istat)
 
 	integer id,istat
-	call nhl_fisdataspec(id,istat)
+	call nhlpfisdataspec(id,istat)
       end
