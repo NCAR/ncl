@@ -127,10 +127,10 @@ main(int argc, char *argv[])
  */
     for (i = 0; i < NhlNumber(anno_list); i++) {
 
-	    NhlRLClear(rlist);
-	    NhlRLSetString(rlist,NhlNtxString,anno_list[i].name);
-	    NhlCreate(&text_ids[i],anno_list[i].name,
-		      NhltextItemLayerClass,wid,rlist);
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNtxString,anno_list[i].name);
+        NhlCreate(&text_ids[i],anno_list[i].name,
+              NhltextItemLayerClass,wid,rlist);
     }
 
 /* 
@@ -154,10 +154,10 @@ main(int argc, char *argv[])
     NhlGetValues(mapid,grlist);
 
     for (i = 0; i < num_anno_ids; i++) {
-	    NhlRLClear(rlist);
-	    NhlRLSetFloat(rlist,NhlNanDataXF,anno_list[i].lon);
-	    NhlRLSetFloat(rlist,NhlNanDataYF,anno_list[i].lat);
-	    NhlSetValues(anno_ids[i],rlist);
+        NhlRLClear(rlist);
+        NhlRLSetFloat(rlist,NhlNanDataXF,anno_list[i].lon);
+        NhlRLSetFloat(rlist,NhlNanDataYF,anno_list[i].lat);
+        NhlSetValues(anno_ids[i],rlist);
     }
 
 /*
