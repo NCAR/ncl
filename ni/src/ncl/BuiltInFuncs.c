@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.138 2001-05-16 16:51:06 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.139 2001-07-11 16:40:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2430,13 +2430,15 @@ NhlErrorTypes _NclIfbindirread(void)
 			n = read(fd, step,buf.st_blksize);
 			step = step + buf.st_blksize;
 		}
-		n = read(fd,step,totalsize % buf.st_blksize);
-		if(n == 0) {
-			ret = NhlFATAL;
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirread: An error occurred while reading the file (%s). Size or dimension information is wrong.",path_string);
-			return(NhlFATAL);
+		if(totalsize % buf.st_blksize != 0){
+			n = read(fd,step,totalsize % buf.st_blksize);
+			if(n == 0) {
+				ret = NhlFATAL;
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirread: An error occurred while reading the file (%s). Size or dimension information is wrong.",path_string);
+				return(NhlFATAL);
+			}
+			step = step + totalsize % buf.st_blksize;
 		}
-		step = step + totalsize % buf.st_blksize;
 
 		while((int)(step - (char*)tmp_ptr) < totalsize) {
 			memcpy(step,(char*)&(thetype->type_class.default_mis),thetype->type_class.size);
