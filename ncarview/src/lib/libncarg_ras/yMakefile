@@ -1,4 +1,4 @@
-#	$Id: yMakefile,v 1.19 1992-03-27 21:00:10 clyne Exp $
+#	$Id: yMakefile,v 1.20 1992-03-31 00:09:32 don Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -78,11 +78,11 @@ DEVICE_SRCS =	$(HDF_SRCS) $(HPLJ_SRCS) $(NRIF_SRCS) $(SUN_SRCS) \
 		$(XWD_SRCS) $(PARALLAX_SRCS) $(AVS_SRCS)
 
 GENERIC_OBJS =	raster.o cleartext.o error.o misc.o palette.o \
-		dither.o resample.o composite.o ntsc.o \
+		dither.o resample.o composite.o ntsc.o color.o \
 		$(DEVICE_OBJS)
 
 GENERIC_SRCS =	raster.c cleartext.c error.c misc.c palette.c \
-		dither.c resample.c composite.c ntsc.c \
+		dither.c resample.c composite.c ntsc.c color.c \
 		$(DEVICE_SRCS)
 			
 #ifdef CRAY
@@ -114,6 +114,7 @@ hplj.o:		ncarg_ras.h hplj.h
 cleartext.o:	ncarg_ras.h
 avsraster.o:	ncarg_ras.h avsraster.h
 ntsc.o:		ncarg_ras.h ntsc.h
+color.o:	ncarg_ras.h
 
 saber_src: $(SRCS)
 	#setopt load_flags $(CFLAGS)
