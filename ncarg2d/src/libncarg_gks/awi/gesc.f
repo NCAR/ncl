@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.19 1996-01-12 21:11:45 boote Exp $
+C	$Id: gesc.f,v 1.20 1996-03-16 21:40:25 boote Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -53,6 +53,10 @@ C      -1397  --  Flags whether segments should be deleted or not.
 C                 (0 = save; 1 = delete).
 C      -1398  --  Maximum number of error messages before abort.
 C      -1399  --  Flag for GKS clipping (0 = off; 1 = on).
+C
+C  Private escape element only for use by gescape (libncarg_gksC)
+C      -1450  --  Pass native "C" data to "C" gks drivers.
+C                 Causes an error 180 if called here.
 C
 C  X driver specific escapes (-1400 through -1410):
 C      -1400  --  Specify the error allowed in matching a requested
@@ -476,6 +480,14 @@ C
           ENDIF
           CUFLAG = -1
         ENDIF
+C
+C  Sending "native" C data to a C driver(NOT FROM FORTRAN!)
+C
+      ELSE IF (FCTID .EQ. -1450) THEN
+        ERS = 1
+        CALL GERHND(180,EESC,ERF)
+        ERS = 0
+        RETURN
       ELSE
 C
 C  Send ESCAPE element.
