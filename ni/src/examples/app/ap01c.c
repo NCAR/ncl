@@ -1,5 +1,6 @@
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/App.h>
+#include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/TextItem.h>
 
@@ -7,6 +8,7 @@ main()
 {
 	int	appid, workid, textid;
 	int	rlist;
+	int	NCGM=0;
 
 	/*
 	 * Initialize the HLU library.
@@ -34,19 +36,34 @@ main()
 	NhlCreate(&appid,"ap01",NhlappClass,NhlDEFAULT_APP,rlist);
 
 	/*
-	 * Destroy the ResList.
-	 * Since I am not setting any more resources programmatically, I
-	 * don't need the ResList anymore.
-	 */
-	NhlRLDestroy(rlist);
-
-	/*
 	 * Create the Workstation to manage the output device.
 	 * Since the NhlNappDefaultParent resource was set to True for
 	 * "ap01", we can use either the constant NhlDEFAULT_APP or
 	 * appid as the Parent id.  They mean the same thing.
 	 */
-	NhlCreate(&workid,"x",NhlxWorkstationClass,NhlDEFAULT_APP,0);
+	if (NCGM) {
+		/*
+		 * Create a meta file workstation.
+		 */
+		NhlRLClear(rlist);
+		NhlRLSetString(rlist,NhlNwkMetaName,"./ap01c.ncgm");
+		NhlCreate(&workid,"x",NhlncgmWorkstationClass,NhlDEFAULT_APP,0);
+	}
+        else {
+		/*
+		 * Create an X workstation.
+		 */
+		NhlRLClear(rlist);
+		NhlRLSetInteger(rlist,NhlNwkPause,True);
+		NhlCreate(&workid,"x",NhlxWorkstationClass,NhlDEFAULT_APP,0);
+        }
+
+	/*
+	 * Destroy the ResList.
+	 * Since I am not setting any more resources programmatically, I
+	 * don't need the ResList anymore.
+	 */
+	NhlRLDestroy(rlist);
 
 	/*
 	 * Create a TextItem.  I am not programmatically setting any of
