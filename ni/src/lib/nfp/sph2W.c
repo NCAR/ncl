@@ -464,14 +464,10 @@ NhlErrorTypes dv2uvf_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_ud == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)ud)[index_dv+j] = (float)(tmp_ud[j]);
-        }
+        coerce_output_float_only(ud,tmp_ud,nlatnlon,index_dv);
       }
       if(type_vd == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)vd)[index_dv+j] = (float)(tmp_vd[j]);
-        }
+        coerce_output_float_only(vd,tmp_vd,nlatnlon,index_dv);
       }
     }
     index_dv += nlatnlon;
@@ -785,14 +781,10 @@ NhlErrorTypes dv2uvg_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_ud == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)ud)[index_dv+j] = (float)(tmp_ud[j]);
-        }
+        coerce_output_float_only(ud,tmp_ud,nlatnlon,index_dv);
       }
       if(type_vd == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)vd)[index_dv+j] = (float)(tmp_vd[j]);
-        }
+        coerce_output_float_only(vd,tmp_vd,nlatnlon,index_dv);
       }
     }
     index_dv += nlatnlon;
@@ -1062,10 +1054,8 @@ NhlErrorTypes dv2uvF_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_uvd == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)uvd)[index_ud+j] = (float)(tmp_ud[j]);
-          ((float*)uvd)[index_vd+j] = (float)(tmp_vd[j]);
-        }
+        coerce_output_float_only(uvd,tmp_ud,nlatnlon,index_ud);
+        coerce_output_float_only(uvd,tmp_vd,nlatnlon,index_vd);
       }
     }
     index_ud = index_dv += nlatnlon;
@@ -1341,10 +1331,8 @@ NhlErrorTypes dv2uvG_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_uvd == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)uvd)[index_ud+j] = (float)(tmp_ud[j]);
-          ((float*)uvd)[index_vd+j] = (float)(tmp_vd[j]);
-        }
+        coerce_output_float_only(uvd,tmp_ud,nlatnlon,index_ud);
+        coerce_output_float_only(uvd,tmp_vd,nlatnlon,index_vd);
       }
     }
     index_ud = index_dv += nlatnlon;
@@ -1664,14 +1652,10 @@ NhlErrorTypes gradsf_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_gzx == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)gzx)[index_z+j] = (float)(tmp_gzx[j]);
-        }
+        coerce_output_float_only(gzx,tmp_gzx,nlatnlon,index_z);
       }
       if(type_gzy == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)gzy)[index_z+j] = (float)(tmp_gzy[j]);
-        }
+        coerce_output_float_only(gzy,tmp_gzy,nlatnlon,index_z);
       }
     }
     index_z += nlatnlon;
@@ -1986,14 +1970,10 @@ NhlErrorTypes gradsg_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_gzx == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)gzx)[index_z+j] = (float)(tmp_gzx[j]);
-        }
+        coerce_output_float_only(gzx,tmp_gzx,nlatnlon,index_z);
       }
       if(type_gzy == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)gzy)[index_z+j] = (float)(tmp_gzy[j]);
-        }
+        coerce_output_float_only(gzy,tmp_gzy,nlatnlon,index_z);
       }
     }
     index_z += nlatnlon;
@@ -2313,10 +2293,8 @@ NhlErrorTypes igradsf_W( void )
 /*
  * Coerce output back to float if necessary.
  */
-      if(type_z  == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)z)[index_gzxy+j] = (float)(tmp_z[j]);
-        }
+      if(type_z == NCL_float) {
+        coerce_output_float_only(z,tmp_z,nlatnlon,index_gzxy);
       }
     }
     index_gzxy += nlatnlon;
@@ -2628,9 +2606,7 @@ NhlErrorTypes igradsF_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_z == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)z)[index_gzxy+j] = (float)(tmp_z[j]);
-        }
+        coerce_output_float_only(z,tmp_z,nlatnlon,index_gzxy);
       }
     }
     index_gzxy += nlatnlon;
@@ -2953,10 +2929,8 @@ NhlErrorTypes igradsg_W( void )
 /*
  * Coerce output back to float if necessary.
  */
-      if(type_z  == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)z)[index_gzxy+j] = (float)(tmp_z[j]);
-        }
+      if(type_z == NCL_float) {
+        coerce_output_float_only(z,tmp_z,nlatnlon,index_gzxy);
       }
     }
     index_gzxy += nlatnlon;
@@ -3269,9 +3243,7 @@ NhlErrorTypes igradsG_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_z == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)z)[index_gzxy+j] = (float)(tmp_z[j]);
-        }
+        coerce_output_float_only(z,tmp_z,nlatnlon,index_gzxy);
       }
     }
     index_gzxy += nlatnlon;
@@ -3611,9 +3583,7 @@ NhlErrorTypes ilapsf_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_z == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)z)[index_zlap+j] = (float)(tmp_z[j]);
-        }
+        coerce_output_float_only(z,tmp_z,nlatnlon,index_zlap);
       }
     }
     index_zlap += nlatnlon;
@@ -3940,9 +3910,7 @@ NhlErrorTypes ilapsF_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_z == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)z)[index_zlap+j] = (float)(tmp_z[j]);
-        }
+        coerce_output_float_only(z,tmp_z,nlatnlon,index_zlap);
       }
     }
     index_zlap += nlatnlon;
@@ -4284,9 +4252,7 @@ NhlErrorTypes ilapsg_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_z == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)z)[index_zlap+j] = (float)(tmp_z[j]);
-        }
+        coerce_output_float_only(z,tmp_z,nlatnlon,index_zlap);
       }
     }
     index_zlap += nlatnlon;
@@ -4612,9 +4578,7 @@ NhlErrorTypes ilapsG_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_z == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)z)[index_zlap+j] = (float)(tmp_z[j]);
-        }
+        coerce_output_float_only(z,tmp_z,nlatnlon,index_zlap);
       }
     }
     index_zlap += nlatnlon;
@@ -4970,14 +4934,10 @@ NhlErrorTypes ilapvf_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_u == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)u)[index_uv+j] = (float)(tmp_u[j]);
-        }
+        coerce_output_float_only(u,tmp_u,nlatnlon,index_uv);
       }
       if(type_v == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)v)[index_uv+j] = (float)(tmp_v[j]);
-        }
+        coerce_output_float_only(v,tmp_v,nlatnlon,index_uv);
       }
     }
     index_uv += nlatnlon;
@@ -5334,14 +5294,10 @@ NhlErrorTypes ilapvg_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_u == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)u)[index_uv+j] = (float)(tmp_u[j]);
-        }
+        coerce_output_float_only(u,tmp_u,nlatnlon,index_uv);
       }
       if(type_v == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)v)[index_uv+j] = (float)(tmp_v[j]);
-        }
+        coerce_output_float_only(v,tmp_v,nlatnlon,index_uv);
       }
     }
     index_uv += nlatnlon;
@@ -5620,9 +5576,7 @@ NhlErrorTypes lapsf_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_zlap == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)zlap)[index_z+j] = (float)(tmp_zlap[j]);
-        }
+        coerce_output_float_only(zlap,tmp_zlap,nlatnlon,index_z);
       }
     }
     index_z += nlatnlon;
@@ -5877,9 +5831,7 @@ NhlErrorTypes lapsF_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_zlap == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)zlap)[index_z+j] = (float)(tmp_zlap[j]);
-        }
+        coerce_output_float_only(zlap,tmp_zlap,nlatnlon,index_z);
       }
     }
     index_z += nlatnlon;
@@ -6154,9 +6106,7 @@ NhlErrorTypes lapsg_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_zlap == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)zlap)[index_z+j] = (float)(tmp_zlap[j]);
-        }
+        coerce_output_float_only(zlap,tmp_zlap,nlatnlon,index_z);
       }
     }
     index_z += nlatnlon;
@@ -6410,9 +6360,7 @@ NhlErrorTypes lapsG_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_zlap == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)zlap)[index_z+j] = (float)(tmp_zlap[j]);
-        }
+        coerce_output_float_only(zlap,tmp_zlap,nlatnlon,index_z);
       }
     }
     index_z += nlatnlon;
@@ -6765,14 +6713,10 @@ NhlErrorTypes lapvf_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_ulap == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)ulap)[index_uv+j] = (float)(tmp_ulap[j]);
-        }
+        coerce_output_float_only(ulap,tmp_ulap,nlatnlon,index_uv);
       }
       if(type_vlap == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)vlap)[index_uv+j] = (float)(tmp_vlap[j]);
-        }
+        coerce_output_float_only(vlap,tmp_vlap,nlatnlon,index_uv);
       }
     }
     index_uv += nlatnlon;
@@ -7127,14 +7071,10 @@ NhlErrorTypes lapvg_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_ulap == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)ulap)[index_uv+j] = (float)(tmp_ulap[j]);
-        }
+        coerce_output_float_only(ulap,tmp_ulap,nlatnlon,index_uv);
       }
       if(type_vlap == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)vlap)[index_uv+j] = (float)(tmp_vlap[j]);
-        }
+        coerce_output_float_only(vlap,tmp_vlap,nlatnlon,index_uv);
       }
     }
     index_uv += nlatnlon;
@@ -7481,14 +7421,10 @@ NhlErrorTypes uv2sfvpf_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_sf  == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)sf)[index_uv+j] = (float)(tmp_sf[j]);
-        }
+        coerce_output_float_only(sf,tmp_sf,nlatnlon,index_uv);
       }
       if(type_vp  == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)vp)[index_uv+j] = (float)(tmp_vp[j]);
-        }
+        coerce_output_float_only(vp,tmp_vp,nlatnlon,index_uv);
       }
     }
     index_uv += nlatnlon;
@@ -7798,10 +7734,8 @@ NhlErrorTypes uv2sfvpF_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_sfvp == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)sfvp)[index_sf+j] = (float)(tmp_sf[j]);
-          ((float*)sfvp)[index_vp+j] = (float)(tmp_vp[j]);
-        }
+        coerce_output_float_only(sfvp,tmp_sf,nlatnlon,index_sf);
+        coerce_output_float_only(sfvp,tmp_vp,nlatnlon,index_vp);
       }
     }
     index_sf = index_uv += nlatnlon;
@@ -8154,15 +8088,11 @@ NhlErrorTypes uv2sfvpg_W( void )
 /*
  * Coerce output back to float if necessary.
  */
-      if(type_sf  == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)sf)[index_uv+j] = (float)(tmp_sf[j]);
-        }
+      if(type_sf == NCL_float) {
+        coerce_output_float_only(sf,tmp_sf,nlatnlon,index_uv);
       }
-      if(type_vp  == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)vp)[index_uv+j] = (float)(tmp_vp[j]);
-        }
+      if(type_vp == NCL_float) {
+        coerce_output_float_only(vp,tmp_vp,nlatnlon,index_uv);
       }
     }
     index_uv += nlatnlon;
@@ -8472,10 +8402,8 @@ NhlErrorTypes uv2sfvpG_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_sfvp == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)sfvp)[index_sf+j] = (float)(tmp_sf[j]);
-          ((float*)sfvp)[index_vp+j] = (float)(tmp_vp[j]);
-        }
+        coerce_output_float_only(sfvp,tmp_sf,nlatnlon,index_sf);
+        coerce_output_float_only(sfvp,tmp_vp,nlatnlon,index_vp);
       }
     }
     index_sf = index_uv += nlatnlon;
@@ -8832,14 +8760,10 @@ NhlErrorTypes lderuvf_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_uy  == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)uy)[index_uv+j] = (float)(tmp_uy[j]);
-        }
+        coerce_output_float_only(uy,tmp_uy,nlatnlon,index_uv);
       }
       if(type_vy  == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)vy)[index_uv+j] = (float)(tmp_vy[j]);
-        }
+        coerce_output_float_only(vy,tmp_vy,nlatnlon,index_uv);
       }
     }
     index_uv += nlatnlon;
@@ -9189,14 +9113,10 @@ NhlErrorTypes lderuvg_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_uy  == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)uy)[index_uv+j] = (float)(tmp_uy[j]);
-        }
+        coerce_output_float_only(uy,tmp_uy,nlatnlon,index_uv);
       }
       if(type_vy  == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)vy)[index_uv+j] = (float)(tmp_vy[j]);
-        }
+        coerce_output_float_only(vy,tmp_vy,nlatnlon,index_uv);
       }
     }
     index_uv += nlatnlon;
@@ -9518,9 +9438,7 @@ NhlErrorTypes uv2dvf_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_dv  == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)dv)[index_uv+j] = (float)(tmp_dv[j]);
-        }
+        coerce_output_float_only(dv,tmp_dv,nlatnlon,index_uv);
       }
     }
     index_uv += nlatnlon;
@@ -9831,9 +9749,7 @@ NhlErrorTypes uv2dvF_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_dv  == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)dv)[index_uv+j] = (float)(tmp_dv[j]);
-        }
+        coerce_output_float_only(dv,tmp_dv,nlatnlon,index_uv);
       }
     }
     index_uv += nlatnlon;
@@ -10156,9 +10072,7 @@ NhlErrorTypes uv2dvg_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_dv   == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)dv)[index_uv+j] = (float)(tmp_dv[j]);
-        }
+        coerce_output_float_only(dv,tmp_dv,nlatnlon,index_uv);
       }
     }
     index_uv += nlatnlon;
@@ -10467,9 +10381,7 @@ NhlErrorTypes uv2dvG_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_dv == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)dv)[index_uv+j] = (float)(tmp_dv[j]);
-        }
+        coerce_output_float_only(dv,tmp_dv,nlatnlon,index_uv);
       }
     }
     index_uv += nlatnlon;
@@ -10793,9 +10705,7 @@ NhlErrorTypes uv2vrf_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_vort == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)vort)[index_uv+j] = (float)(tmp_vort[j]);
-        }
+        coerce_output_float_only(vort,tmp_vort,nlatnlon,index_uv);
       }
     }
     index_uv += nlatnlon;
@@ -11105,9 +11015,7 @@ NhlErrorTypes uv2vrF_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_vort == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)vort)[index_uv+j] = (float)(tmp_vort[j]);
-        }
+        coerce_output_float_only(vort,tmp_vort,nlatnlon,index_uv);
       }
     }
     index_uv += nlatnlon;
@@ -11431,9 +11339,7 @@ NhlErrorTypes uv2vrg_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_vort == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)vort)[index_uv+j] = (float)(tmp_vort[j]);
-        }
+        coerce_output_float_only(vort,tmp_vort,nlatnlon,index_uv);
       }
     }
     index_uv += nlatnlon;
@@ -11743,9 +11649,7 @@ NhlErrorTypes uv2vrG_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_vort == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)vort)[index_uv+j] = (float)(tmp_vort[j]);
-        }
+        coerce_output_float_only(vort,tmp_vort,nlatnlon,index_uv);
       }
     }
     index_uv += nlatnlon;
@@ -12096,14 +12000,10 @@ NhlErrorTypes uv2vrdvf_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_vr  == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)vr)[index_uv+j] = (float)(tmp_vr[j]);
-        }
+        coerce_output_float_only(vr,tmp_vr,nlatnlon,index_uv);
       }
       if(type_dv  == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)dv)[index_uv+j] = (float)(tmp_dv[j]);
-        }
+        coerce_output_float_only(dv,tmp_dv,nlatnlon,index_uv);
       }
     }
     index_uv += nlatnlon;
@@ -12419,10 +12319,8 @@ NhlErrorTypes uv2vrdvF_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_vrdv == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)vrdv)[index_vr+j] = (float)(tmp_vr[j]);
-          ((float*)vrdv)[index_dv+j] = (float)(tmp_dv[j]);
-        }
+        coerce_output_float_only(vrdv,tmp_vr,nlatnlon,index_vr);
+        coerce_output_float_only(vrdv,tmp_dv,nlatnlon,index_dv);
       }
     }
     index_vr = index_uv += nlatnlon;
@@ -12785,14 +12683,10 @@ NhlErrorTypes uv2vrdvg_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_vr  == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)vr)[index_uv+j] = (float)(tmp_vr[j]);
-        }
+        coerce_output_float_only(vr,tmp_vr,nlatnlon,index_uv);
       }
       if(type_dv  == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)dv)[index_uv+j] = (float)(tmp_dv[j]);
-        }
+        coerce_output_float_only(dv,tmp_dv,nlatnlon,index_uv);
       }
     }
     index_uv += nlatnlon;
@@ -13108,10 +13002,8 @@ NhlErrorTypes uv2vrdvG_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_vrdv == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)vrdv)[index_vr+j] = (float)(tmp_vr[j]);
-          ((float*)vrdv)[index_dv+j] = (float)(tmp_dv[j]);
-        }
+        coerce_output_float_only(vrdv,tmp_vr,nlatnlon,index_vr);
+        coerce_output_float_only(vrdv,tmp_dv,nlatnlon,index_dv);
       }
     }
     index_vr = index_uv += nlatnlon;
@@ -13432,14 +13324,10 @@ NhlErrorTypes vr2uvf_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_ur == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)ur)[index_vr+j] = (float)(tmp_ur[j]);
-        }
+        coerce_output_float_only(ur,tmp_ur,nlatnlon,index_vr);
       }
       if(type_vr == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)vr)[index_vr+j] = (float)(tmp_vr[j]);
-        }
+        coerce_output_float_only(vr,tmp_vr,nlatnlon,index_vr);
       }
     }
     index_vr += nlatnlon;
@@ -13707,10 +13595,8 @@ NhlErrorTypes vr2uvF_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_uvr == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)uvr)[index_ur+j] = (float)(tmp_ur[j]);
-          ((float*)uvr)[index_vr+j] = (float)(tmp_vr[j]);
-        }
+        coerce_output_float_only(uvr,tmp_ur,nlatnlon,index_ur);
+        coerce_output_float_only(uvr,tmp_vr,nlatnlon,index_vr);
       }
     }
     index_ur = index_vort += nlatnlon;
@@ -14029,14 +13915,10 @@ NhlErrorTypes vr2uvg_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_ur == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)ur)[index_vr+j] = (float)(tmp_ur[j]);
-        }
+        coerce_output_float_only(ur,tmp_ur,nlatnlon,index_vr);
       }
       if(type_vr == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)vr)[index_vr+j] = (float)(tmp_vr[j]);
-        }
+        coerce_output_float_only(vr,tmp_vr,nlatnlon,index_vr);
       }
     }
     index_vr += nlatnlon;
@@ -14304,10 +14186,8 @@ NhlErrorTypes vr2uvG_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_uvr == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)uvr)[index_ur+j] = (float)(tmp_ur[j]);
-          ((float*)uvr)[index_vr+j] = (float)(tmp_vr[j]);
-        }
+        coerce_output_float_only(uvr,tmp_ur,nlatnlon,index_ur);
+        coerce_output_float_only(uvr,tmp_vr,nlatnlon,index_vr);
       }
     }
     index_ur = index_vort += nlatnlon;
@@ -14672,14 +14552,10 @@ NhlErrorTypes vrdv2uvf_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_u == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)u)[index_uv+j] = (float)(tmp_u[j]);
-        }
+        coerce_output_float_only(u,tmp_u,nlatnlon,index_uv);
       }
       if(type_v == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)v)[index_uv+j] = (float)(tmp_v[j]);
-        }
+        coerce_output_float_only(v,tmp_v,nlatnlon,index_uv);
       }
     }
     index_uv += nlatnlon;
@@ -15002,10 +14878,8 @@ NhlErrorTypes vrdv2uvF_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_uv == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)uv)[index_u+j] = (float)(tmp_u[j]);
-          ((float*)uv)[index_v+j] = (float)(tmp_v[j]);
-        }
+        coerce_output_float_only(uv,tmp_u,nlatnlon,index_u);
+        coerce_output_float_only(uv,tmp_v,nlatnlon,index_v);
       }
     }
     index_u = index_vrdv += nlatnlon;
@@ -15375,14 +15249,10 @@ NhlErrorTypes vrdv2uvg_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_u == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)u)[index_uv+j] = (float)(tmp_u[j]);
-        }
+        coerce_output_float_only(u,tmp_u,nlatnlon,index_uv);
       }
       if(type_v == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)v)[index_uv+j] = (float)(tmp_v[j]);
-        }
+        coerce_output_float_only(v,tmp_v,nlatnlon,index_uv);
       }
     }
     index_uv += nlatnlon;
@@ -15704,10 +15574,8 @@ NhlErrorTypes vrdv2uvG_W( void )
  * Coerce output back to float if necessary.
  */
       if(type_uv == NCL_float) {
-        for(j = 0; j < nlatnlon; j++) {
-          ((float*)uv)[index_u+j] = (float)(tmp_u[j]);
-          ((float*)uv)[index_v+j] = (float)(tmp_v[j]);
-        }
+        coerce_output_float_only(uv,tmp_u,nlatnlon,index_u);
+        coerce_output_float_only(uv,tmp_v,nlatnlon,index_v);
       }
     }
     index_u = index_vrdv += nlatnlon;

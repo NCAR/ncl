@@ -620,7 +620,7 @@ NhlErrorTypes dim_median_W( void )
 /*
  * various
  */
-  int i, l1, total_elements, ier = 0, ier_count, npts;
+  int i, l1, total_elements, ier = 0, ier_count = 0, npts;
   double *work;
 /*
  * Retrieve parameter.
