@@ -5,7 +5,7 @@ SRC_TAR	= $(ROOT_DIR)/SRC.TAR
 TARGETS		=	HPUX_HP9000_7xx AIX_RS6000 SunOS_sun4 \
 			Solaris_sun4 ULTRIX_RISC IRIX_IP IRIX64_ip OSF1_alpha \
 			UNICOS_YMP UNICOS_J90 UNICOS_C90
-			
+
 SHELL		= /bin/sh
 
 all::	dirs
