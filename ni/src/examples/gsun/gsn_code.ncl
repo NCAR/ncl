@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.13 1999-03-17 20:24:58 haley Exp $
+;      $Id: gsn_code.ncl,v 1.14 1999-03-20 00:15:15 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -539,7 +539,13 @@ cn_res_index, res2
 ;                                                                       ;
 ;   gsnScale                                                            ;
 ;   gsnSpreadColors                                                     ;
-    data_object = create wks@name + "_data" scalarFieldClass noparent
+    if(isatt(wks,"name"))
+      wksname = wks@name
+    else
+      wksname = "gsnapp"
+    end if
+;   gsnSpreadColorEnd                                                   ;
+;***********************************************************************;
 function gsn_contour(wks:graphic, data[*][*]:numeric, resources:logical )
 local i, data_object, plot_object, res, sf_res_index, \
 begin
@@ -553,7 +559,7 @@ begin
 
 ; Create plot object.
     data_object = create wksname + "_data" scalarFieldClass noparent
-    plot_object = create wks@name + "_contour" contourPlotClass wks
+        "sfDataArray" : data
     sfres = get_res_eq(res2,"sf")
     attsetvalues_check(data_object,sfres)
 
@@ -759,7 +765,13 @@ cn_res_index, mp_res_index, map_object, res2
 ; "gsn_open_wks").  "data" is the 2-dimensional data to be contoured,   ;
 ; and "resources" is an optional list of resources. The id of the map   ;
 ; plot is returned.                                                     ;
-    data_object = create wks@name + "_data" scalarFieldClass noparent
+    if(isatt(wks,"name"))
+      wksname = wks@name
+    else
+      wksname = "gsnapp"
+    end if
+; Special resources ("gsn" prefix) allowed:                             ;
+;                                                                       ;
 ;   gsnDraw                                                             ;
 ;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
@@ -773,7 +785,7 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
                          resources:logical)
 ; Create plot object.
     data_object = create wksname + "_data" scalarFieldClass noparent
-    contour_object = create wks@name + "_contour" contourPlotClass wks
+        "sfDataArray" : data
     end create
 
     if(isatt(data,"_FillValue")) then
@@ -788,7 +800,7 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
     attsetvalues_check(data_object,sfres)
 ;
 ; Create plot object. Make sure you set the tension values (if
-    map_object = create wks@name + "_map" mapPlotClass wks
+; any) when you create the plot. This works better than setting
 ; them later.
 ;
     if((res2).and..not.any(ismissing(getvaratts(res2))))
@@ -942,7 +954,13 @@ procedure gsn_labelbar_ndc(wks:graphic, nbox:integer, labels:string, \
 local i, lbid, attnames, res, lb_res_index, lbres
 begin
 
-    lbid = create wks@name + "_labelbar" labelBarClass wks
+    if(isatt(wks,"name"))
+      wksname = wks@name
+    else
+      wksname = "gsnapp"
+    end if
+
+    lbid = create wksname + "_labelbar" labelBarClass wks
       "vpXF"           : x
       "vpYF"           : y
       "lbBoxCount"     : nbox
@@ -1005,7 +1023,13 @@ begin
 
 ; Create plot object.
 
-    plot_object = create wks@name + "_map" mapPlotClass wks
+    if(isatt(wks,"name"))
+      wksname = wks@name
+    else
+      wksname = "gsnapp"
+    end if
+
+    plot_object = create wksname + "_map" mapPlotClass wks
         "mpProjection" : projection
     end create
 
@@ -1542,7 +1566,13 @@ local i,attnames,data_object,plot_object,res,vf_res_index,st_res_index, res2
 ; "wks" (the variable returned from a previous call to "gsn_open_wks"). ;
 ;                                                                       ;
 ;   gsnDraw                                                             ;
-    data_object = create wks@name + "_data" vectorFieldClass noparent
+    if(isatt(wks,"name"))
+      wksname = wks@name
+    else
+      wksname = "gsnapp"
+    end if
+;   gsnShape                                                            ;
+;   gsnScale                                                            ;
 ;                                                                       ;
 ;***********************************************************************;
 function gsn_streamline(wks:graphic,u[*][*]:numeric,v[*][*]:numeric,\
@@ -1562,7 +1592,7 @@ begin
 ; Create the data object.
 
     wksname = get_res_value_keep(wks,"name","gsnapp")
-    plot_object = create wks@name + "_stream" streamlinePlotClass wks
+
     data_object = create wksname + "_data" vectorFieldClass noparent
         "vfUDataArray" : u
         "vfVDataArray" : v
@@ -1757,7 +1787,13 @@ local i, attnames, data_object, contour_object, res, vf_res_index, \
 ;                                                                       ;
 ; This function creates and draws a streamline plot over a map plot to  ;
 ; the workstation "wks" (the variable returned from a previous call to  ;
-    data_object = create wks@name + "_data" vectorFieldClass noparent
+    if(isatt(wks,"name"))
+      wksname = wks@name
+    else
+      wksname = "gsnapp"
+    end if
+; streamlined, and "resources" is an optional list of resources. The id ;
+; of the map plot is returned.                                          ;
 ;                                                                       ;
 ; Special resources ("gsn" prefix) allowed:                             ;
 ;                                                                       ;
@@ -1777,13 +1813,13 @@ begin
 ; Create the data object.
 
     wksname = get_res_value_keep(wks,"name","gsnapp")
-    stream_object = create wks@name + "_stream" streamlinePlotClass wks
+
     data_object = create wksname + "_data" vectorFieldClass noparent
         "vfUDataArray" : u
         "vfVDataArray" : v
     end create
 
-    map_object = create wks@name + "_map" mapPlotClass wks
+; Check for missing values.
 
     if(isatt(u,"_FillValue")) then
     if((res2).and..not.any(ismissing(getvaratts(res2))))
@@ -1952,7 +1988,13 @@ begin
       funccode = ":"     ; The default.
     end if
 
-    txid = create wks@name + "_text" textItemClass wks
+    if(isatt(wks,"name"))
+      wksname = wks@name
+    else
+      wksname = "gsnapp"
+    end if
+
+    txid = create wksname + "_text" textItemClass wks
         "txString"   : text
         "txPosXF"    : x2
         "txPosYF"    : y2
@@ -2012,15 +2054,21 @@ procedure gsn_text_ndc(wks:graphic, text:string, x:numeric, \
 local i, txid, attnames, plot_object, res, tx_res_index, x2, y2
 begin
 
+    if(isatt(wks,"name"))
+      wksname = wks@name
+    else
+      wksname = "gsnapp"
+    end if
+
     if((resources).and.isatt(resources,"txFuncCode")) then
-      txid = create wks@name + "_text_ndc" textItemClass wks
+      txid = create wksname + "_text_ndc" textItemClass wks
         "txString" : text
         "txPosXF"  : x
         "txPosYF"  : y
         "txFuncCode" : resources@txFuncCode
       end create
     else
-      txid = create wks@name + "_text_ndc" textItemClass wks
+      txid = create wksname + "_text_ndc" textItemClass wks
         "txString" : text
         "txPosXF"  : x
         "txPosYF"  : y
@@ -2087,7 +2135,13 @@ local i,attnames,data_object,plot_object,res,vf_res_index,vc_res_index, res2
 ; returned.                                                             ;
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
-    data_object = create wks@name + "_data" vectorFieldClass noparent
+    if(isatt(wks,"name"))
+      wksname = wks@name
+    else
+      wksname = "gsnapp"
+    end if
+;   gsnSpreadColorStart                                                 ;
+;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
 ;***********************************************************************;
 function gsn_vector(wks:graphic, u[*][*]:numeric, v[*][*]:numeric, \
@@ -2107,7 +2161,7 @@ begin
 ; Create the data object.
 
     wksname = get_res_value_keep(wks,"name","gsnapp")
-    plot_object = create wks@name + "_vector" vectorPlotClass wks
+
     data_object = create wksname + "_data" vectorFieldClass noparent
         "vfUDataArray" : u
         "vfVDataArray" : v
@@ -2306,7 +2360,13 @@ local i, attnames, vfdata_object, sfdata_object, contour_object, res, \
 ; plot is returned.                                                     ;
 ;                                                                       ;
 ; Special resources ("gsn" prefix) allowed:                             ;
-    vfdata_object = create wks@name + "_vfdata" vectorFieldClass noparent
+    if(isatt(wks,"name"))
+      wksname = wks@name
+    else
+      wksname = "gsnapp"
+    end if
+;   gsnDraw                                                             ;
+;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
 ;   gsnSpreadColors                                                     ;
@@ -2327,7 +2387,7 @@ begin
 ;
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
-    sfdata_object = create wks@name + "_sfdata" scalarFieldClass noparent
+    vfdata_object = create wksname + "_vfdata" vectorFieldClass noparent
         "vfUDataArray" : u
         "vfVDataArray" : v
     end create
@@ -2341,13 +2401,13 @@ begin
         end setvalues
     end if
     if(isatt(v,"_FillValue")) then
-    vector_object = create wks@name + "_vector" vectorPlotClass wks
+        setvalues vfdata_object
             "vfMissingVValueV" :v@_FillValue
         end setvalues
     end if
 
 ; Create the scalar field object.
-    contour_object = create wks@name + "_contour" contourPlotClass wks
+
     sfdata_object = create wksname + "_sfdata" scalarFieldClass noparent
         "sfDataArray" : data
     end create
@@ -2530,7 +2590,13 @@ local i, attnames, vfdata_object, sfdata_object, contour_object, res, \
 ; is returned.                                                          ;
 ;                                                                       ;
 ; Special resources ("gsn" prefix) allowed:                             ;
-    vfdata_object = create wks@name + "_vfdata" vectorFieldClass noparent
+    if(isatt(wks,"name"))
+      wksname = wks@name
+    else
+      wksname = "gsnapp"
+    end if
+;   gsnDraw                                                             ;
+;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
 ;   gsnSpreadColors                                                     ;
@@ -2551,7 +2617,7 @@ begin
 ;
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
-    sfdata_object = create wks@name + "_sfdata" scalarFieldClass noparent
+    vfdata_object = create wksname + "_vfdata" vectorFieldClass noparent
         "vfUDataArray" : u
         "vfVDataArray" : v
     end create
@@ -2565,19 +2631,19 @@ begin
         end setvalues
     end if
     if(isatt(v,"_FillValue")) then
-    vector_object = create wks@name + "_vector" vectorPlotClass wks
+        setvalues vfdata_object
             "vfMissingVValueV" :v@_FillValue
         end setvalues
     end if
 
 ; Create the scalar field object.
-    contour_object = create wks@name + "_contour" contourPlotClass wks
+
     sfdata_object = create wksname + "_sfdata" scalarFieldClass noparent
         "sfDataArray" : data
     end create
 
 ; Check for a missing value.
-    map_object = create wks@name + "_map" mapPlotClass wks end create
+
     if(isatt(data,"_FillValue")) then
     if((res2).and..not.any(ismissing(getvaratts(res2))))
 
@@ -2771,7 +2837,13 @@ vc_res_index, mp_res_index, map_object, res2
 ; "gsn_open_wks").  "u" and "v" are the 2-dimensional arrays to be      ;
 ; vectorized, and "resources" is an optional list of resources. The id  ;
 ; of the map plot is returned.                                          ;
-    data_object = create wks@name + "_data" vectorFieldClass noparent
+    if(isatt(wks,"name"))
+      wksname = wks@name
+    else
+      wksname = "gsnapp"
+    end if
+; Special resources ("gsn" prefix) allowed:                             ;
+;                                                                       ;
 ;   gsnDraw                                                             ;
 ;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
@@ -2791,13 +2863,13 @@ begin
 ; Create the data object.
 
     wksname = get_res_value_keep(wks,"name","gsnapp")
-    vector_object = create wks@name + "_vector" vectorPlotClass wks
+
     data_object = create wksname + "_data" vectorFieldClass noparent
         "vfUDataArray" : u
         "vfVDataArray" : v
     end create
 
-    map_object = create wks@name + "_map" mapPlotClass wks
+; Check for missing values.
 
     if(isatt(u,"_FillValue")) then
     if((res2).and..not.any(ismissing(getvaratts(res2))))
@@ -2959,14 +3031,20 @@ vf_res_index, vc_res_index, sf_res_index, res2
 ;                                                                       ;
 ;   gsnScale                                                            ;
 ;   gsnSpreadColors                                                     ;
-    vfdata_object = create wks@name + "_vfdata" vectorFieldClass noparent
+    if(isatt(wks,"name"))
+      wksname = wks@name
+    else
+      wksname = "gsnapp"
+    end if
+;   gsnSpreadColorEnd                                                   ;
+;                                                                       ;
 ;***********************************************************************;
 function gsn_vector_scalar(wks:graphic,u[*][*]:numeric,v[*][*]:numeric,\
                            data[*][*]:numeric, resources:logical )
 local i, vfdata_object, sfdata_object, plot_object, res, \
 force_x_linear, force_y_linear, force_x_log, force_y_log, \
 trxmin, trxmax, trymin, trymax, ll_res_index, llres, vf_res_index, \
-    sfdata_object = create wks@name + "_sfdata" scalarFieldClass noparent
+vc_res_index, sf_res_index, res2, sprdcols
 begin
     llres     = False
     res2      = resources
@@ -2993,7 +3071,7 @@ begin
 
 ; Check for a missing value.
 
-    plot_object = create wks@name + "_vector" vectorPlotClass wks
+    if(isatt(data,"_FillValue")) then
         "vcVectorFieldData" : vfdata_object
         "vcScalarFieldData" : sfdata_object
         "vcUseScalarArray"  : True
@@ -3210,7 +3288,13 @@ vf_res_index, vc_res_index, sf_res_index, mp_res_index, map_object, res2
 ; the map plot is returned.                                             ;
 ;                                                                       ;
 ; Special resources ("gsn" prefix) allowed:                             ;
-    vfdata_object = create wks@name + "_vfdata" vectorFieldClass noparent
+    if(isatt(wks,"name"))
+      wksname = wks@name
+    else
+      wksname = "gsnapp"
+    end if
+;   gsnDraw                                                             ;
+;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
 ;   gsnSpreadColors                                                     ;
@@ -3231,7 +3315,7 @@ begin
 ;
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
-    sfdata_object = create wks@name + "_sfdata" scalarFieldClass noparent
+    vfdata_object = create wksname + "_vfdata" vectorFieldClass noparent
         "vfUDataArray" : u
         "vfVDataArray" : v
     end create
@@ -3245,7 +3329,7 @@ begin
         end setvalues
     end if
     if(isatt(v,"_FillValue")) then
-    vector_object = create wks@name + "_vector" vectorPlotClass wks
+        setvalues vfdata_object
         "vcVectorFieldData" : vfdata_object
         "vcScalarFieldData" : sfdata_object
         "vcUseScalarArray"  : True
@@ -3254,7 +3338,7 @@ begin
 
     sfdata_object = create wksname + "_sfdata" scalarFieldClass noparent
         "sfDataArray" : data
-    map_object = create wks@name + "_map" mapPlotClass wks end create
+    end create
 
     if((res2).and..not.any(ismissing(getvaratts(res2))))
 
@@ -3432,7 +3516,13 @@ xy_res_index, xydp_res_index, dspec, res2
 ; (the variable returned from a previous call to "gsn_open_wks").  "x"  ;
 ; and "y" are either 1 or 2-dimensional arrays containing the X and Y   ;
 ; data points and "resources" is an optional list of resources. The id  ;
-    data_object = create wks@name + "_data" coordArraysClass noparent
+    if(isatt(wks,"name"))
+      wksname = wks@name
+    else
+      wksname = "gsnapp"
+    end if
+;                                                                       ;
+; Special resources ("gsn" prefix) allowed:                             ;
 ;                                                                       ;
 ;   gsnDraw                                                             ;
 ;   gsnFrame                                                            ;
@@ -3452,7 +3542,7 @@ begin
     nxdims = dimsizes(dimsizes(x))
     xdims = dimsizes(x)
     wksname = get_res_value_keep(wks,"name","gsnapp")
-    plot_object = create wks@name + "_xy" xyPlotClass wks
+
     data_object = create wksname + "_data" coordArraysClass noparent
         "xyCoordData" : data_object
     end create
@@ -3695,6 +3785,7 @@ begin
     plot_object@data = data_object
 ; If gsnShape was set to True, then resize the X or Y axis so that
 ; the scales are proportionally correct.
+
       gsnp_shape_plot(plot_object)
     end if
 
