@@ -1,20 +1,29 @@
 #
-#   $Id: yMakefile,v 1.5 2001-02-09 21:59:15 haley Exp $
+#   $Id: yMakefile,v 1.6 2003-02-23 00:06:29 haley Exp $
 #
 #   Makefile for GSUN examples
 #
 
 MYNAME = gsun
 
-NSRCS      = gsun01n.ncl gsun02n.ncl gsun03n.ncl gsun04n.ncl \
-			gsun05n.ncl gsun06n.ncl gsun07n.ncl gsun08n.ncl gsun09n.ncl \
-			gsun10n.ncl gsun11n.ncl gsn_code.ncl gsn_csm.ncl
+EXAMPLES = gsun01n.ncl gsun02n.ncl gsun03n.ncl gsun04n.ncl \
+	gsun05n.ncl gsun06n.ncl gsun07n.ncl gsun08n.ncl gsun09n.ncl \
+	gsun10n.ncl gsun11n.ncl
 
-RESFILES   = gsun08n.res gsun09n.res
+RESFILES = gsun08n.res gsun09n.res
+
+GSN_SCRIPTS = gsn_code.ncl gsn_csm.ncl
+
+OTHER_SCRIPTS = ccm_func.ncl contributed.ncl popRemap.ncl shea_util.ncl \
+	skewt_func.ncl wind_rose.ncl
+
 
 #if !defined(CRAY)
-InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
-InstallTarget($(NSRCS),$(INSTALL_LIB),$(LIBNCARGROOT)/nclscripts/csm)
+InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
+InstallTarget($(GSN_SCRIPTS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
+InstallTarget($(GSN_SCRIPTS),$(INSTALL_LIB),$(LIBNCARGROOT)/nclscripts/csm)
+InstallTarget($(OTHER_SCRIPTS),$(INSTALL_LIB),$(LIBNCARGROOT)/nclscripts/csm)
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 #endif
+
 
