@@ -1,5 +1,5 @@
 /*
- *	$Id: raster.c,v 1.27 1993-10-20 17:54:26 don Exp $
+ *	$Id: raster.c,v 1.28 1993-11-03 18:19:19 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -43,6 +43,7 @@ int	OptionDitherBits = 5;
 int	OptionInX = 0;
 int	OptionInY = 0;
 int	OptionInInvert = False;
+int	OptionIndexed = False;
 
 char	*NrtProgramName;
 
@@ -171,6 +172,10 @@ RasterInit(argc, argv)
 		}
 		else if (!strcmp(argv[i], "-in_invert")) {
 			OptionInInvert = True;
+			(void) argdel(argc, argv, i);
+		}
+		else if (!strcmp(argv[i], "-indexed")) {
+			OptionIndexed = True;
 			(void) argdel(argc, argv, i);
 		}
 		else {
