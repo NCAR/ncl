@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS.c,v 1.1 2002-08-02 21:06:36 ethan Exp $
+ *      $Id: NclHDFEOS.c,v 1.2 2002-08-21 22:52:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -76,6 +76,7 @@ struct _HDFEOSDimInqRec {
 	NclQuark hdf_name;
 	int ncldim_id;
 	long size;
+	int is_unlimited;
 };
 
 struct _HDFEOSAttInqRec {
@@ -253,7 +254,8 @@ NclQuark ncl_class_name;
 
 static void HDFEOSIntAddDim
 #if NhlNeedProto
-(HDFEOSDimInqRecList **dims,int *n_dims, NclQuark hdf_name, NclQuark ncl_name, int32 size,NclQuark class_name,NclQuark ncl_class_name)
+(HDFEOSDimInqRecList **dims,int *n_dims, NclQuark hdf_name, NclQuark ncl_name, int32 size,NclQuark class_name,NclQuark ncl_class_name,
+NclQuark path)
 #else
 (dims,n_dims, hdf_name, ncl_name, size,class_name)
 HDFEOSDimInqRecList **dims;
@@ -263,6 +265,7 @@ NclQuark ncl_name;
 int32 size;
 NclQuark class_name;
 NclQuark ncl_class_name;
+NclQuark path;
 #endif 
 {
 	HDFEOSDimInqRecList * tmp_node ;
@@ -287,7 +290,28 @@ NclQuark ncl_class_name;
 	tmp_node->dim_inq = (HDFEOSDimInqRec*)NclMalloc(sizeof(HDFEOSDimInqRec));
 	tmp_node->dim_inq->name = NrmStringToQuark(buffer);
 	tmp_node->dim_inq->hdf_name = hdf_name;
-	tmp_node->dim_inq->size = size;
+	tmp_node->dim_inq->is_unlimited = size == 0 ? 1 : 0;
+	if (! tmp_node->dim_inq->is_unlimited) {
+		tmp_node->dim_inq->size = size;
+	}
+	else {
+		/* reuse buffer; this is a kludge because I can't find any interface to get the size of an unlimited dimension
+		 * using the hdfeos swath interface.
+		 */
+		int dimid;
+		long len;
+		int cdfid = sd_ncopen(NrmQuarkToString(path),NC_NOWRITE);
+		sprintf(buffer,"%s:%s",NrmQuarkToString(hdf_name),NrmQuarkToString(class_name));
+		dimid = sd_ncdimid(cdfid,buffer);
+		sd_ncdiminq(cdfid,dimid,buffer,&len);
+		if (len > 0)
+			tmp_node->dim_inq->size = len;	
+		else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"NclHDFEOS: HDF-EOS dim size not accessible");
+			len = -1;
+		}
+		sd_ncclose(cdfid);
+	}
 	tmp_node->dim_inq->ncldim_id = *n_dims;
 	tmp_node->next = *dims;
 	*dims = tmp_node;
@@ -480,7 +504,7 @@ int wr_status;
 				if(ndims != -1) {
 					HDFEOSParseName(dimnames,&dim_hdf_names,&dim_ncl_names,ndims);
 					for(j = 0; j < ndims; j++) {
-						HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),dim_hdf_names[j],dim_ncl_names[j],SWdiminfo(SWid,NrmQuarkToString(dim_hdf_names[j])),sw_hdf_names[i],sw_ncl_names[i]);
+						HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),dim_hdf_names[j],dim_ncl_names[j],SWdiminfo(SWid,NrmQuarkToString(dim_hdf_names[j])),sw_hdf_names[i],sw_ncl_names[i],the_file->file_path_q);
 					}
 					ndata = SWinqdatafields(SWid,fieldlist,NULL,NULL);
 					if(ndata != -1) {
@@ -490,7 +514,7 @@ int wr_status;
 							if(SWfieldinfo(SWid,NrmQuarkToString(var_hdf_names[j]),&tmp_rank,dims,&tmp_type,buffer) == 0) {
 								HDFEOSParseName(buffer,&tmp_names,&tmp_ncl_names,tmp_rank);
 								for(k = 0; k < tmp_rank; k++) {
-									HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),tmp_names[k],tmp_ncl_names[k],dims[k],sw_hdf_names[i],sw_ncl_names[i]);
+									HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),tmp_names[k],tmp_ncl_names[k],dims[k],sw_hdf_names[i],sw_ncl_names[i],the_file->file_path_q);
 								}
 						
 
@@ -549,7 +573,7 @@ int wr_status;
 				if(ndims != -1) {
 					HDFEOSParseName(dimnames,&dim_hdf_names,&dim_ncl_names,ndims);
 					for(j = 0; j < ndims; j++) {
-						HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),dim_hdf_names[j],dim_ncl_names[j],GDdiminfo(GDid,NrmQuarkToString(dim_hdf_names[j])),gd_hdf_names[i],gd_ncl_names[i]);
+						HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),dim_hdf_names[j],dim_ncl_names[j],GDdiminfo(GDid,NrmQuarkToString(dim_hdf_names[j])),gd_hdf_names[i],gd_ncl_names[i],the_file->file_path_q);
 					}
 					ndata = GDinqfields(GDid,fieldlist,NULL,NULL);
 					if(ndata != -1) {
@@ -559,7 +583,7 @@ int wr_status;
 							if(GDfieldinfo(GDid,NrmQuarkToString(var_hdf_names[j]),&tmp_rank,dims,&tmp_type,buffer) == 0) {
 								HDFEOSParseName(buffer,&tmp_names,&tmp_ncl_names,tmp_rank);
 								for(k = 0; k < tmp_rank; k++) {
-									HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),tmp_names[k],tmp_ncl_names[k],dims[k],gd_hdf_names[i],gd_ncl_names[i]);
+									HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),tmp_names[k],tmp_ncl_names[k],dims[k],gd_hdf_names[i],gd_ncl_names[i],the_file->file_path_q);
 								}
 						
 
@@ -701,7 +725,7 @@ int wr_status;
 				if(ndims != -1) {
 					HDFEOSParseName(dimnames,&dim_hdf_names,&dim_ncl_names,ndims);
 					for(j = 0; j < ndims; j++) {
-						HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),dim_hdf_names[j],dim_ncl_names[j],PTdiminfo(PTid,NrmQuarkToString(dim_hdf_names[j])),pt_hdf_names[i],pt_ncl_names[i]);
+						HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),dim_hdf_names[j],dim_ncl_names[j],PTdiminfo(PTid,NrmQuarkToString(dim_hdf_names[j])),pt_hdf_names[i],pt_ncl_names[i],the_file->file_path_q);
 					}
 					ndata = PTinqfields(PTid,fieldlist,NULL,NULL);
 					if(ndata != -1) {
@@ -711,7 +735,7 @@ int wr_status;
 							if(PTfieldinfo(PTid,NrmQuarkToString(var_hdf_names[j]),&tmp_rank,dims,&tmp_type,buffer) == 0) {
 								HDFEOSParseName(buffer,&tmp_names,&tmp_ncl_names,tmp_rank);
 								for(k = 0; k < tmp_rank; k++) {
-									HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),tmp_names[k],tmp_ncl_names[k],dims[k],pt_hdf_names[i],pt_ncl_names[i]);
+									HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),tmp_names[k],tmp_ncl_names[k],dims[k],pt_hdf_names[i],pt_ncl_names[i],the_file->file_path_q);
 								}
 						
 
@@ -905,7 +929,7 @@ NclQuark dim_name_q;
 	for(i =0; i < thefile->n_dims; i++) {
 		if(dim_name_q == thelist->dim_inq->name) {
 			dim_info->dim_name_quark = dim_name_q;
-			dim_info->is_unlimited = 0;
+			dim_info->is_unlimited = thelist->dim_inq->is_unlimited;
 			dim_info->dim_size = thelist->dim_inq->size;
 			return(dim_info);
 		}
