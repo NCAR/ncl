@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.68 1999-08-16 18:08:29 dbrown Exp $
+ *      $Id: TickMark.c,v 1.69 2000-02-08 01:18:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -21,6 +21,7 @@
  */
 
 #include <math.h>
+#include <limits.h>
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/TickMarkP.h>
 #include <ncarg/hlu/TransObjI.h>
@@ -322,6 +323,13 @@ static NhlResource resources[] = {
 		sizeof(NhlBoolean),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_auto_precision),
 		NhlTImmediate,_NhlUSET( (NhlPointer)True ),0,NULL},
+	{ NhlNtmXBMaxLabelLenF, NhlCtmXBMaxLabelLenF, NhlTFloat, sizeof(float),
+		NhlOffset(NhlTickMarkLayerRec,tick.x_b_max_label_len),
+		NhlTString,_NhlUSET( "0.0" ),_NhlRES_GONLY,NULL},
+	{ NhlNtmXBMinLabelSpacingF, NhlCtmXBMinLabelSpacingF, 
+	        NhlTFloat, sizeof(float),
+		NhlOffset(NhlTickMarkLayerRec,tick.x_b_label_spacing),
+		NhlTString,_NhlUSET( "0.0" ),_NhlRES_GONLY,NULL},
 	
 
 	{ NhlNtmXTDataLeftF, NhlCtmXTDataLeftF,NhlTFloat, sizeof(float),
@@ -473,6 +481,13 @@ static NhlResource resources[] = {
 		sizeof(NhlBoolean),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_auto_precision),
 		NhlTImmediate,_NhlUSET( (NhlPointer)True ),0,NULL},
+	{ NhlNtmXTMaxLabelLenF, NhlCtmXTMaxLabelLenF, NhlTFloat, sizeof(float),
+		NhlOffset(NhlTickMarkLayerRec,tick.x_t_max_label_len),
+		NhlTString,_NhlUSET( "0.0" ),_NhlRES_GONLY,NULL},
+	{ NhlNtmXTMinLabelSpacingF, NhlCtmXTMinLabelSpacingF, 
+	        NhlTFloat, sizeof(float),
+		NhlOffset(NhlTickMarkLayerRec,tick.x_t_label_spacing),
+		NhlTString,_NhlUSET( "0.0" ),_NhlRES_GONLY,NULL},
 
 	{ NhlNtmYUseLeft, NhlCtmYUseLeft, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_use_left),
@@ -748,6 +763,13 @@ static NhlResource resources[] = {
 		sizeof(NhlBoolean),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_auto_precision),
 		NhlTImmediate,_NhlUSET( (NhlPointer)True ),0,NULL},
+	{ NhlNtmYLMaxLabelLenF, NhlCtmYLMaxLabelLenF, NhlTFloat, sizeof(float),
+		NhlOffset(NhlTickMarkLayerRec,tick.y_l_max_label_len),
+		NhlTString,_NhlUSET( "0.0" ),_NhlRES_GONLY,NULL},
+	{ NhlNtmYLMinLabelSpacingF, NhlCtmYLMinLabelSpacingF, 
+	        NhlTFloat, sizeof(float),
+		NhlOffset(NhlTickMarkLayerRec,tick.y_l_label_spacing),
+		NhlTString,_NhlUSET( "0.0" ),_NhlRES_GONLY,NULL},
 	
 
 	{ NhlNtmYRDataTopF, NhlCtmYRDataTopF,NhlTFloat, sizeof(float),
@@ -900,7 +922,14 @@ static NhlResource resources[] = {
 	{ NhlNtmYRAutoPrecision, NhlCtmAutoPrecision, NhlTBoolean,
 		sizeof(NhlBoolean),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_auto_precision),
-		NhlTImmediate,_NhlUSET( (NhlPointer)True ),0,NULL}
+		NhlTImmediate,_NhlUSET( (NhlPointer)True ),0,NULL},
+	{ NhlNtmYRMaxLabelLenF, NhlCtmYRMaxLabelLenF, NhlTFloat, sizeof(float),
+		NhlOffset(NhlTickMarkLayerRec,tick.y_r_max_label_len),
+		NhlTString,_NhlUSET( "0.0" ),_NhlRES_GONLY,NULL},
+	{ NhlNtmYRMinLabelSpacingF, NhlCtmYRMinLabelSpacingF, 
+	        NhlTFloat, sizeof(float),
+		NhlOffset(NhlTickMarkLayerRec,tick.y_r_label_spacing),
+		NhlTString,_NhlUSET( "0.0" ),_NhlRES_GONLY,NULL}
 
 /* End-documented-resources */
 
@@ -939,7 +968,8 @@ static NhlErrorTypes ComputeMinorTickMarks(
 	float* minor_locs,
 	int* nminor,
 	int precision,
-	NhlTickMarkStyle style
+	NhlTickMarkStyle style,
+	float min_nonzero
 #endif 
 );
 static NhlErrorTypes AutoComputeMajorTickMarks(
@@ -958,7 +988,8 @@ static NhlErrorTypes AutoComputeMajorTickMarks(
         int /*cutoff*/,
 	NhlFormatRec * /*format*/,
 	char /*func_code*/,
-	int * /*sug_minor_ticks*/
+	int * /*sug_minor_ticks*/,
+	float /*min_nonzero*/
 #endif
 );
 static NhlErrorTypes ManualComputeMajorTickMarks(
@@ -977,7 +1008,8 @@ static NhlErrorTypes ManualComputeMajorTickMarks(
         int */*nmajor*/,
         int /*cutoff*/,
 	NhlFormatRec * /*format*/,
-	char 	/*func_code*/
+	char 	/*func_code*/,
+	float /*min_nonzero*/
 #endif
 );
 static NhlErrorTypes ChooseSpacingLin(
@@ -987,7 +1019,8 @@ float * /*tend*/,
 float * /*spacing*/,
 int /*convert_precision*/,
 int /*max_ticks*/,
-int * /*sug_minor_ticks*/
+int * /*sug_minor_ticks*/,
+float min_nonzero
 #endif
 );
 static NhlErrorTypes ChooseSpacingLog(
@@ -997,7 +1030,8 @@ float * /*tend*/,
 float * /*spacing*/,
 int /* convert_precision*/,
 int /* max_ticks */,
-int * /*sug_minor_ticks*/
+int * /*sug_minor_ticks*/,
+float /*min_nonzero*/
 #endif
 );
 static NhlErrorTypes ExplicitComputeMinorTickMarks(
@@ -1010,7 +1044,8 @@ float /*tend*/,
 int /*convert_precision*/,
 float */*requested_points*/,
 int */*nmajor*/,
-int /* n */
+int /* n */,
+float min_nonzero
 );
 
 static NhlErrorTypes ExplicitComputeMajorTickMarks(
@@ -1025,7 +1060,8 @@ float */*tend*/,
 int /*convert_precision*/,
 NhlGenArray req_points,
 NhlGenArray req_labels,
-int */*nmajor*/
+int */*nmajor*/,
+float /*min_nonzero*/
 #endif
 );
 
@@ -1288,6 +1324,211 @@ NhlTickMarkClassRec NhltickMarkClassRec = {
 	}
 };
 
+#define MIN_NONZERO 10e-32
+#define CMPF_DEBUG 0
+/*
+ * Function:	tmCmpFAny
+ *
+ * Description: New version of the _NhlCmpFAny routine. 
+ *		A new parameter allows specification of a minimum nonzero
+ *              value.
+ *              Also: Now uses frexp to break numbers up without fear of
+ *              overflow. Numbers are normalized to the range 
+ *              .1 <= fabs(x) < 1.0, using the base 2 exponent to nearly
+ *              figure out the base 10 exponent to factor out. Iteration
+ *              is then used to get the exact base 10 exponent.
+ *		
+ *
+ * In Args:	a	first floating point number
+ *		b	second floating point number
+ *		sig_dig	<=7 represents number of significant digits to compare.
+ *              min_nonzero the smallest abs value to be treated as nonzero.
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: 0 if equal, <0 if a<b, and >0 if a>b
+ *
+ * Side Effects: NONE
+ */
+float	tmCmpFAny
+#if	NhlNeedProto
+(float a, float b, int sig_dig, float min_nonzero)
+#else
+(a,b,sig_dig,min_nonzero)
+	float a;
+	float b;
+	int sig_dig;
+	float min_nonzero;
+#endif
+{
+	double afr,bfr,minfr;
+	int    aexp,bexp,minexp;
+	long   arnd,brnd;
+	int    asign,bsign;
+	float factor;
+	int   diffexp;
+	int   aexp10,bexp10,diffexp10;
+	double norm_factor,anorm,bnorm;
+	int icount = 0;
+
+#define EXP2TOEXP10 0.30102999
+
+#if CMPF_DEBUG
+	fprintf(stderr,"comparing a: %g and b: %g to %d significant digits\n",
+		a,b,sig_dig);
+#endif
+	if(sig_dig > 7) 
+		sig_dig = 7;
+
+	afr = frexp(a,&aexp);
+	bfr = frexp(b,&bexp);
+
+	minfr = fabs(frexp(min_nonzero,&minexp));
+	asign = afr < 0.0 ? -1 : 1;
+	bsign = bfr < 0.0 ? -1 : 1;
+#if CMPF_DEBUG
+	fprintf(stderr,"base 2 decomposition: a: %g %d b: %g %d\n",
+		afr,aexp,bfr,bexp);
+#endif
+
+	if (afr == 0.0 && bfr == 0.0) {
+#if CMPF_DEBUG
+		fprintf(stderr,"both numbers are 0.0\n");
+#endif
+		return 0.0;
+	}
+	if (aexp < minexp && bexp < minexp) {
+#if CMPF_DEBUG
+		fprintf(stderr,
+			"numbers smaller than minimum non-zero value: %f\n",
+			min_nonzero);
+#endif
+		return 0.0;
+	}
+	if (aexp == minexp && bexp == minexp) {
+		if (afr * asign <= minfr && bfr * bsign <= minfr) {
+#if CMPF_DEBUG
+			fprintf(stderr,
+		"numbers less than or equal to minimum non-zero value: %f\n",
+				min_nonzero);
+#endif
+			return 0.0;
+		}
+	}
+	if (afr == 0.0)
+		return (float) - bsign;
+	if (bfr == 0.0)
+		return (float) asign;
+	
+	diffexp = abs(aexp - bexp);
+	if (diffexp >= 4) {
+		/*
+		 * difference exceeds range of single digit decimal precision
+		 */
+#if CMPF_DEBUG
+		fprintf(stderr,"difference exceeds factor of 10e1\n");
+#endif
+
+		switch (asign) {
+		case 1:
+			switch (bsign) {
+			case 1:
+				return (float)aexp - bexp;
+			case -1:
+				return 1.0;
+			}
+		case -1:
+			switch (bsign) {
+			case 1:
+				return -1.0;
+			case -1:
+				return (float)bexp - aexp;
+			}
+		}
+	}
+
+	aexp10 = EXP2TOEXP10 * aexp;
+
+#if CMPF_DEBUG
+	printf("a base 2 exp: %d a base 10 exp: %d\n",aexp,aexp10);
+#endif
+/*
+ * normalize the original values such that the greatest absolute value is
+ * in the range .1 <= x < 1.0. Two step process: the first step seems to get
+ * within 1 digit either way, so perhaps the "while" could be replaced with
+ * and "if", but this is not proven.
+ */
+	norm_factor = pow(10.0,-aexp10); 
+	anorm = a * norm_factor;
+	while (anorm * asign >= 1.0) {
+		icount++;
+		aexp10++;
+		anorm *= .1;
+	}
+	while (anorm * asign < .1) {
+		icount++;
+		aexp10--;
+		anorm *= 10;
+	}
+
+#if CMPF_DEBUG
+	printf("a normalized after %d iterations: %g %d\n",
+	       icount,anorm,aexp10);
+#endif
+	bexp10 = EXP2TOEXP10 * bexp;
+#if CMPF_DEBUG
+	printf("b base 2 exp: %d b base 10 exp: %d\n",bexp,bexp10);
+#endif
+
+	norm_factor = pow(10.0,-bexp10); 
+	bnorm = b * norm_factor;
+	while (bnorm * bsign >= 1.0) {
+		icount++;
+		bexp10++;
+		bnorm *= .1;
+	}
+	while (bnorm * bsign < .1) {
+		icount++;
+		bexp10--;
+		bnorm *= 10;
+	}
+
+#if CMPF_DEBUG
+	printf("b normalized after %d iterations: %g %d\n",
+	       icount,bnorm,bexp10);
+#endif
+
+/*
+ * Convert to longs in the range 10e(sig_digits) <= x < 10e(sig_digits+1)
+ * rounded in the units digit.
+ */
+
+	factor = pow(10.0,(double)sig_dig);
+	arnd = anorm * factor + (asign == 1 ? .5 : -.5);
+	brnd = bnorm * factor + (bsign == 1 ? .5 : -.5);
+
+/*
+ * the exponents cannot be different by more than 1, since 10^2 is greater
+ * than 2^4.
+ */         
+	diffexp10 = aexp10 - bexp10;
+	if (diffexp10 > 0) {
+		arnd *= 10;
+	}
+	else if (diffexp10 < 0) {
+		brnd *= 10;
+	}
+	
+#if CMPF_DEBUG
+	fprintf(stderr,
+	"rounded values converted to longs in range 10e(sig_digits): %d %d\n",
+		arnd,brnd);
+#endif
+/*
+ * compare
+ */
+	return (float) (arnd - brnd);
+}
 
 NhlClass NhltickMarkClass = (NhlClass)&NhltickMarkClassRec;
 
@@ -2450,6 +2691,7 @@ NhlTickMarkLayer tlayer;
 	int i;
 	NhlErrorTypes ret = NhlNOERROR;
 	NhlErrorTypes ret1 = NhlNOERROR;
+	NhlBoolean x_b_on,x_t_on,y_l_on,y_r_on;
 
 	xr = tlayer->view.x + tlayer->view.width;
 	xl = tlayer->view.x;
@@ -2462,8 +2704,12 @@ NhlTickMarkLayer tlayer;
 		_NhlNwkReset,	True,
 		NULL);
 
+	x_b_on = tlayer->tick.x_b_on && tlayer->tick.x_b_data_valid;
+	x_t_on = tlayer->tick.x_t_on && tlayer->tick.x_t_data_valid;
+	y_l_on = tlayer->tick.y_l_on && tlayer->tick.y_l_data_valid;
+	y_r_on = tlayer->tick.y_r_on && tlayer->tick.y_r_data_valid;
 	if(tlayer->tick.x_major_grid){
-		if(tlayer->tick.x_b_on) {
+		if(x_b_on) {
 			NhlVASetValues(tlayer->base.wkptr->base.id,
 				_NhlNwkLineColor,tlayer->tick.x_major_grid_line_color,
 				_NhlNwkDashPattern,tlayer->tick.x_major_grid_line_dash_pattern,
@@ -2476,7 +2722,7 @@ NhlTickMarkLayer tlayer;
 				_NhlWorkstationLineTo(tlayer->base.wkptr,
 					1.0,1.0,1);
 			}
-		} else if(tlayer->tick.x_t_on) {
+		} else if(x_t_on) {
 			NhlVASetValues(tlayer->base.wkptr->base.id,
 				_NhlNwkLineColor,tlayer->tick.x_major_grid_line_color,
 				_NhlNwkDashPattern,tlayer->tick.x_major_grid_line_dash_pattern,
@@ -2494,7 +2740,7 @@ NhlTickMarkLayer tlayer;
 		}
 	}
 	if(tlayer->tick.x_minor_grid) {
-		if((tlayer->tick.x_b_on)&&(tlayer->tick.x_b_minor_on)) {
+		if(x_b_on &&(tlayer->tick.x_b_minor_on)) {
 			NhlVASetValues(tlayer->base.wkptr->base.id,
 				_NhlNwkLineColor,tlayer->tick.x_minor_grid_line_color,
 				_NhlNwkDashPattern,tlayer->tick.x_minor_grid_line_dash_pattern,
@@ -2506,7 +2752,7 @@ NhlTickMarkLayer tlayer;
 				_NhlWorkstationLineTo(tlayer->base.wkptr,tlayer->tick.x_b_minor_ndc_locs[i],yt,0);
 			}
 			_NhlWorkstationLineTo(tlayer->base.wkptr,1.0,1.0,1);
-		} else if((tlayer->tick.x_t_on)&&(tlayer->tick.x_t_minor_on)){
+		} else if(x_t_on &&(tlayer->tick.x_t_minor_on)){
 			NhlVASetValues(tlayer->base.wkptr->base.id,
 				_NhlNwkLineColor,tlayer->tick.x_minor_grid_line_color,
 				_NhlNwkDashPattern,tlayer->tick.x_minor_grid_line_dash_pattern,
@@ -2524,7 +2770,7 @@ NhlTickMarkLayer tlayer;
 		}
 	}
 	if(tlayer->tick.y_major_grid){
-		if(tlayer->tick.y_l_on) {
+		if(y_l_on) {
 			NhlVASetValues(tlayer->base.wkptr->base.id,
 				_NhlNwkLineColor,tlayer->tick.y_major_grid_line_color,
 				_NhlNwkDashPattern,tlayer->tick.y_major_grid_line_dash_pattern,
@@ -2536,7 +2782,7 @@ NhlTickMarkLayer tlayer;
 				_NhlWorkstationLineTo(tlayer->base.wkptr,xr,tlayer->tick.y_l_major_ndc_locs[i],0);
 			}
 			_NhlWorkstationLineTo(tlayer->base.wkptr,1.0,1.0,1);
-		} else if(tlayer->tick.y_r_on) {
+		} else if(y_r_on) {
 			NhlVASetValues(tlayer->base.wkptr->base.id,
 				_NhlNwkLineColor,tlayer->tick.y_major_grid_line_color,
 				_NhlNwkDashPattern,tlayer->tick.y_major_grid_line_dash_pattern,
@@ -2554,7 +2800,7 @@ NhlTickMarkLayer tlayer;
 		}
 	}
 	if(tlayer->tick.y_minor_grid) {
-		if((tlayer->tick.y_l_on)&&(tlayer->tick.y_l_minor_on)) {
+		if(y_l_on &&(tlayer->tick.y_l_minor_on)) {
 			NhlVASetValues(tlayer->base.wkptr->base.id,
 				_NhlNwkLineColor,tlayer->tick.y_minor_grid_line_color,
 				_NhlNwkDashPattern,tlayer->tick.y_minor_grid_line_dash_pattern,
@@ -2566,7 +2812,7 @@ NhlTickMarkLayer tlayer;
 				_NhlWorkstationLineTo(tlayer->base.wkptr,xr,tlayer->tick.y_l_minor_ndc_locs[i],0);
 			}
 			_NhlWorkstationLineTo(tlayer->base.wkptr,1.0,1.0,1);
-		} else if((tlayer->tick.y_r_on)&&(tlayer->tick.y_r_minor_on)){
+		} else if(y_r_on &&(tlayer->tick.y_r_minor_on)){
 			NhlVASetValues(tlayer->base.wkptr->base.id,
 				_NhlNwkLineColor,tlayer->tick.y_minor_grid_line_color,
 				_NhlNwkDashPattern,tlayer->tick.y_minor_grid_line_dash_pattern,
@@ -2615,6 +2861,7 @@ NhlTickMarkLayer tlayer;
 	float xr,xl,yt,yb;
 	int i;
 	NhlErrorTypes ret = NhlNOERROR;
+	NhlBoolean x_b_on,x_t_on,y_l_on,y_r_on;
 
 /*
 * NEED SOME WAY TO KNOW WHEN A GKS ERROR HAS OCCURED
@@ -2630,7 +2877,12 @@ NhlTickMarkLayer tlayer;
 		_NhlNwkReset,	True,
 		NULL);
 
-	if(tlayer->tick.x_b_on && tlayer->tick.x_b_data_valid) {
+	x_b_on = tlayer->tick.x_b_on && tlayer->tick.x_b_data_valid;
+	x_t_on = tlayer->tick.x_t_on && tlayer->tick.x_t_data_valid;
+	y_l_on = tlayer->tick.y_l_on && tlayer->tick.y_l_data_valid;
+	y_r_on = tlayer->tick.y_r_on && tlayer->tick.y_r_data_valid;
+
+	if(x_b_on) {
 		NhlVASetValues(tlayer->base.wkptr->base.id,
 			_NhlNwkLineColor,tlayer->tick.x_b_major_line_color,
 			_NhlNwkDashPattern,0,
@@ -2659,7 +2911,7 @@ NhlTickMarkLayer tlayer;
 			}
 		}
 	}
-	if(tlayer->tick.x_t_on && tlayer->tick.x_t_data_valid) {
+	if(x_t_on) {
 		NhlVASetValues(tlayer->base.wkptr->base.id,
 			_NhlNwkLineColor,tlayer->tick.x_t_major_line_color,
 			_NhlNwkDashPattern,0,
@@ -2687,7 +2939,7 @@ NhlTickMarkLayer tlayer;
 			}
 		}
 	}
-	if(tlayer->tick.y_l_on && tlayer->tick.y_l_data_valid) {
+	if(y_l_on) {
 		NhlVASetValues(tlayer->base.wkptr->base.id,
 			_NhlNwkLineColor,tlayer->tick.y_l_major_line_color,
 			_NhlNwkDashPattern,0,
@@ -2719,7 +2971,7 @@ NhlTickMarkLayer tlayer;
 			}
 		}
 	}
-	if(tlayer->tick.y_r_on && tlayer->tick.y_r_data_valid) {
+	if(y_r_on) {
 		NhlVASetValues(tlayer->base.wkptr->base.id,
 			_NhlNwkLineColor,tlayer->tick.y_r_major_line_color,
 			_NhlNwkDashPattern,0,
@@ -2871,29 +3123,35 @@ NhlTickMarkLayer tlayer;
 {
 	NhlErrorTypes ret = NhlNOERROR;
 	NhlErrorTypes realret = NhlNOERROR;
+	NhlBoolean x_b_on,x_t_on,y_l_on,y_r_on;
+
+	x_b_on = tlayer->tick.x_b_on && tlayer->tick.x_b_data_valid;
+	x_t_on = tlayer->tick.x_t_on && tlayer->tick.x_t_data_valid;
+	y_l_on = tlayer->tick.y_l_on && tlayer->tick.y_l_data_valid;
+	y_r_on = tlayer->tick.y_r_on && tlayer->tick.y_r_data_valid;
 
 	if (tlayer->view.use_segments) {
-		if(tlayer->tick.x_b_on && tlayer->tick.x_b_labels_on 
+		if(x_b_on && tlayer->tick.x_b_labels_on 
 		   && tlayer->tick.xb_multi != NULL) {
 			ret = _NhlSegDraw(tlayer->tick.xb_multi);
 			if ((ret = MIN(ret,realret))  < NhlWARNING) 
 				return(ret);
 		}
 
-		if(tlayer->tick.x_t_on && tlayer->tick.x_t_labels_on 
+		if(x_t_on && tlayer->tick.x_t_labels_on 
 		   && tlayer->tick.xt_multi != NULL) {
 			ret = _NhlSegDraw(tlayer->tick.xt_multi);
 			if ((ret = MIN(ret,realret))  < NhlWARNING)
 				return(ret);
 
 		}
-		if(tlayer->tick.y_l_on && tlayer->tick.y_l_labels_on
+		if(y_l_on && tlayer->tick.y_l_labels_on
 		   && tlayer->tick.yl_multi != NULL) {
 			ret = _NhlSegDraw(tlayer->tick.yl_multi);
 			if ((ret = MIN(ret,realret))  < NhlWARNING)
 				return(ret);
 		}
-		if(tlayer->tick.y_r_on && tlayer->tick.y_r_labels_on
+		if(y_r_on && tlayer->tick.y_r_labels_on
 		   && tlayer->tick.yr_multi != NULL) {
 			ret = _NhlSegDraw(tlayer->tick.yr_multi);
 			if ((ret = MIN(ret,realret))  < NhlWARNING)
@@ -2901,27 +3159,27 @@ NhlTickMarkLayer tlayer;
 		}
 	}
 	else {
-		if(tlayer->tick.x_b_on && tlayer->tick.x_b_labels_on
+		if(x_b_on && tlayer->tick.x_b_labels_on
 		   && tlayer->tick.xb_multi != NULL) {
 			ret = NhlDraw(tlayer->tick.xb_multi->base.id);
 			if ((ret = MIN(ret,realret))  < NhlWARNING) 
 				return(ret);
 		}
 
-		if(tlayer->tick.x_t_on && tlayer->tick.x_t_labels_on
+		if(x_t_on && tlayer->tick.x_t_labels_on
 		   && tlayer->tick.xt_multi != NULL) {
 			ret = NhlDraw(tlayer->tick.xt_multi->base.id);
 			if ((ret = MIN(ret,realret))  < NhlWARNING)
 				return(ret);
 
 		}
-		if(tlayer->tick.y_l_on && tlayer->tick.y_l_labels_on
+		if(y_l_on && tlayer->tick.y_l_labels_on
 		   && tlayer->tick.yl_multi != NULL) {
 			ret = NhlDraw(tlayer->tick.yl_multi->base.id);
 			if ((ret = MIN(ret,realret))  < NhlWARNING)
 				return(ret);
 		}
-		if(tlayer->tick.y_r_on && tlayer->tick.y_r_labels_on
+		if(y_r_on && tlayer->tick.y_r_labels_on
 		   && tlayer->tick.yr_multi != NULL) {
 			ret = NhlDraw(tlayer->tick.yr_multi->base.id);
 			if ((ret = MIN(ret,realret))  < NhlWARNING)
@@ -2959,17 +3217,27 @@ static NhlErrorTypes TickMarkGetBB
 #endif
 {
 	NhlTickMarkLayer tinstance = (NhlTickMarkLayer) instance;
+	NhlBoolean x_b_on,x_t_on,y_l_on,y_r_on;
 
-	if((tinstance->tick.xb_multi != NULL)&&(tinstance->tick.x_b_nmajor > 0)&&(tinstance->tick.x_b_labels_on))
-	_NhlGetBB(tinstance->tick.xb_multi,thebox);
-	if((tinstance->tick.xt_multi != NULL)&&(tinstance->tick.x_t_nmajor > 0)&&(tinstance->tick.x_t_labels_on))
-	_NhlGetBB(tinstance->tick.xt_multi,thebox);
-	if((tinstance->tick.yl_multi != NULL)&&(tinstance->tick.y_l_nmajor > 0)&&(tinstance->tick.y_l_labels_on))
-	_NhlGetBB(tinstance->tick.yl_multi,thebox);
-	if((tinstance->tick.yr_multi != NULL)&&(tinstance->tick.y_r_nmajor > 0)&&(tinstance->tick.y_r_labels_on))
-	_NhlGetBB(tinstance->tick.yr_multi,thebox);
+	x_b_on = tinstance->tick.x_b_on && tinstance->tick.x_b_data_valid;
+	x_t_on = tinstance->tick.x_t_on && tinstance->tick.x_t_data_valid;
+	y_l_on = tinstance->tick.y_l_on && tinstance->tick.y_l_data_valid;
+	y_r_on = tinstance->tick.y_r_on && tinstance->tick.y_r_data_valid;
 
-	if(tinstance->tick.x_b_on) {
+	if(x_b_on && (tinstance->tick.xb_multi != NULL)
+	   &&(tinstance->tick.x_b_nmajor > 0)&&(tinstance->tick.x_b_labels_on))
+		_NhlGetBB(tinstance->tick.xb_multi,thebox);
+	if(x_t_on && (tinstance->tick.xt_multi != NULL)
+	   &&(tinstance->tick.x_t_nmajor > 0)&&(tinstance->tick.x_t_labels_on))
+		_NhlGetBB(tinstance->tick.xt_multi,thebox);
+	if(y_l_on && (tinstance->tick.yl_multi != NULL)
+	   &&(tinstance->tick.y_l_nmajor > 0)&&(tinstance->tick.y_l_labels_on))
+		_NhlGetBB(tinstance->tick.yl_multi,thebox);
+	if(y_r_on && (tinstance->tick.yr_multi != NULL)
+	   &&(tinstance->tick.y_r_nmajor > 0)&&(tinstance->tick.y_r_labels_on))
+		_NhlGetBB(tinstance->tick.yr_multi,thebox);
+
+	if(x_b_on) {
 		float ext;
 
 		ext = (tinstance->tick.x_b_major_outward_length > tinstance->tick.x_b_minor_outward_length ? tinstance->tick.x_b_major_outward_length : tinstance->tick.x_b_minor_outward_length);
@@ -2977,7 +3245,7 @@ static NhlErrorTypes TickMarkGetBB
 			thebox->b = tinstance->view.y - tinstance->view.height - ext;
 		}
 	}	
-	if(tinstance->tick.x_t_on) {
+	if(x_t_on) {
 		float ext;
 
 		ext = (tinstance->tick.x_t_major_outward_length > tinstance->tick.x_t_minor_outward_length ? tinstance->tick.x_t_major_outward_length : tinstance->tick.x_t_minor_outward_length);
@@ -2985,7 +3253,7 @@ static NhlErrorTypes TickMarkGetBB
 			thebox->t = tinstance->view.y + ext;
 		}
 	}	
-	if(tinstance->tick.y_r_on) {
+	if(y_r_on) {
 		float ext;
 
 		ext = (tinstance->tick.y_r_major_outward_length > tinstance->tick.y_r_minor_outward_length ? tinstance->tick.y_r_major_outward_length : tinstance->tick.y_r_minor_outward_length);
@@ -2993,7 +3261,7 @@ static NhlErrorTypes TickMarkGetBB
 			thebox->r = tinstance->view.x + tinstance->view.width + ext;
 		}
 	}	
-	if(tinstance->tick.y_l_on) {
+	if(y_l_on) {
 		float ext;
 
 		ext = (tinstance->tick.y_l_major_outward_length > tinstance->tick.y_l_minor_outward_length ? tinstance->tick.y_l_major_outward_length : tinstance->tick.y_l_minor_outward_length);
@@ -3060,10 +3328,11 @@ static NhlErrorTypes AutoComputeMajorTickMarks
 	int cutoff,
 	NhlFormatRec *format,
 	char	func_code,
-	int *sug_minor_ticks
+	int *sug_minor_ticks,
+	float min_nonzero
 )
 #else
-(style,array,larray,max_ticks,dmax,dmin,tstart,tend,convert_precision,spacing,nmajor,cutoff,format,func_code,sug_minor_ticks)
+(style,array,larray,max_ticks,dmax,dmin,tstart,tend,convert_precision,spacing,nmajor,cutoff,format,func_code,sug_minor_ticks,min_nonzero)
 NhlTickMarkStyle  style;
 float   *       array;
 char	**	larray;
@@ -3079,6 +3348,7 @@ int		cutoff;
 NhlFormatRec	*format;
 char		func_code;
 int		*sug_minor_ticks;
+float 		min_nonzero;
 #endif
 {
 	int done = 0,i = 0,j = 0;
@@ -3102,7 +3372,7 @@ int		*sug_minor_ticks;
 */
 		*tstart = dmin;
 		*tend = dmax;
-		ret = ChooseSpacingLin(tstart,tend,spacing,7,max_ticks,sug_minor_ticks);
+		ret = ChooseSpacingLin(tstart,tend,spacing,7,max_ticks,sug_minor_ticks,min_nonzero);
 		if(ret<NhlWARNING) {
 			return(NhlFATAL);
 		}
@@ -3112,7 +3382,7 @@ int		*sug_minor_ticks;
 		ret = _NhlGetScaleInfo(absmax,&divpwr,&sig_digits,"TickMark");
 		left_sig_digit = divpwr - 1;
 				       
-		if(_NhlCmpFAny(min,0.0,7) != 0.0) {
+		if(tmCmpFAny(min,0.0,7,min_nonzero) != 0.0) {
                         zero_min = False;
 			min_compare = ceil(fabs(log10((double)((*spacing)/
 							  fabs(min)))))+1.0;
@@ -3122,7 +3392,7 @@ int		*sug_minor_ticks;
 			min_compare = 7.0;
 		}
 
-		if(_NhlCmpFAny(max,0.0,7) != 0.0) {
+		if(tmCmpFAny(max,0.0,7,min_nonzero) != 0.0) {
 			zero_max = False;
 			max_compare = ceil(fabs(log10((double)((*spacing)/
                                                             fabs(max)))))+1.0;
@@ -3156,8 +3426,8 @@ int		*sug_minor_ticks;
 
 		while(!done) {
 			tmploc = *tstart + i * *spacing;
-			if((_NhlCmpFAny(tmploc,min,7/*min_compare*/)>=0.0)
-				&&(_NhlCmpFAny(tmploc,max,7/*max_compare*/) <= 0.0)) {
+			if((tmCmpFAny(tmploc,min,7,min_nonzero/*min_compare*/)>=0.0)
+				&&(tmCmpFAny(tmploc,max,7,min_nonzero/*max_compare*/) <= 0.0)) {
 				array[j] = tmploc;
 				larray[j] = ConvertToString(tmploc,cnvt_precision,compare_precision,NhlLINEAR,cutoff,left_sig_digit,format,func_code);
 				j++;
@@ -3166,7 +3436,7 @@ int		*sug_minor_ticks;
 					ret = NhlWARNING;
 					break;	
 				}
-			} else if(_NhlCmpFAny(tmploc,max,7/*max_compare*/) >0.0) {
+			} else if(tmCmpFAny(tmploc,max,7,min_nonzero/*max_compare*/) >0.0) {
 				done = 1;
 			} 
 			i++;
@@ -3181,7 +3451,7 @@ int		*sug_minor_ticks;
 			*tstart = dmin;
 			*tend = dmax;
 		} 
-		ret = ChooseSpacingLog(tstart,tend,spacing,5,max_ticks,sug_minor_ticks);
+		ret = ChooseSpacingLog(tstart,tend,spacing,5,max_ticks,sug_minor_ticks,min_nonzero);
 		if((dmin <=0.0)||(dmax <=0.0)) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"AutoComputeMajorTickMarks: data min or data max is less than or equal to zero, can not continue");
 			return(NhlFATAL);
@@ -3197,8 +3467,8 @@ int		*sug_minor_ticks;
 		log_spacing = (int)_NhlRndIt(*spacing,2);
 		while(!done) {
 			tmploc = *tstart + i;
-			if((_NhlCmpFAny(tmploc,log10(dmin),compare_precision)>=0.0)
-				&&(_NhlCmpFAny(tmploc,log10(dmax),compare_precision) <= 0.0)) {
+			if((tmCmpFAny(tmploc,log10(dmin),compare_precision,min_nonzero)>=0.0)
+				&&(tmCmpFAny(tmploc,log10(dmax),compare_precision,min_nonzero) <= 0.0)) {
 				array[j] = pow(10.0,tmploc);
 				if(i%log_spacing == 0) {
 					larray[j] = ConvertToString(array[j],cnvt_precision,compare_precision,NhlLOG,cutoff,left_sig_digit,format,func_code);
@@ -3211,7 +3481,7 @@ int		*sug_minor_ticks;
 					ret = NhlWARNING;
 					break;	
 				}
-			} else if(_NhlCmpFAny(tmploc,log10(dmax),compare_precision) >0.0) {
+			} else if(tmCmpFAny(tmploc,log10(dmax),compare_precision,min_nonzero) >0.0) {
 				done = 1;
 			} 
 			i++;
@@ -3282,10 +3552,11 @@ static NhlErrorTypes ManualComputeMajorTickMarks
 	int *nmajor,
 	int cutoff,
 	NhlFormatRec *format,
-	char func_code
+	char func_code,
+	float	min_nonzero
 )
 #else
-(style,array,larray,dmax,dmin,tstart,tend,convert_precision,auto_precision,spacing,spacing_type,nmajor,cutoff,format,func_code)
+(style,array,larray,dmax,dmin,tstart,tend,convert_precision,auto_precision,spacing,spacing_type,nmajor,cutoff,format,func_code,min_nonzero)
 NhlTickMarkStyle  style;
 float   *       array;
 char	** 	larray;
@@ -3301,6 +3572,7 @@ int     *       nmajor;
 int		cutoff;
 NhlFormatRec	*format;
 char		func_code;
+float		min_nonzero;
 #endif
 {
 	int done = 0,i=0,j=0;
@@ -3340,8 +3612,8 @@ char		func_code;
 		log_spacing = (int) _NhlRndIt(spacing,2);
 		while(!done) {
 			tmploc = tstart + i;
-			if((_NhlCmpFAny(tmploc,min,compare_precision)>=0.0)
-				&&(_NhlCmpFAny(tmploc,max,compare_precision) <= 0.0)) {
+			if((tmCmpFAny(tmploc,min,compare_precision,min_nonzero)>=0.0)
+				&&(tmCmpFAny(tmploc,max,compare_precision,min_nonzero) <= 0.0)) {
 				array[j] = pow(10.0,tmploc);
 				if(i%log_spacing == 0) {
 					larray[j] = ConvertToString(array[j],cnvt_precision,compare_precision,NhlLOG,cutoff,left_sig_digit,format,func_code);
@@ -3354,7 +3626,7 @@ char		func_code;
 					ret = NhlWARNING;
 					break;	
 				}
-			} else if(_NhlCmpFAny(tmploc,max,compare_precision) >0.0) {
+			} else if(tmCmpFAny(tmploc,max,compare_precision,min_nonzero) >0.0) {
 				done = 1;
 			} 
 			i++;
@@ -3377,7 +3649,7 @@ char		func_code;
 		sig_digits = MIN(sig_digits,convert_precision);
 		sig_digits = MAX(sig_digits,sig_digits + tmpi);
 
-		if(_NhlCmpFAny(min,0.0,7) != 0.0) {
+		if(tmCmpFAny(min,0.0,7,min_nonzero) != 0.0) {
                         zero_min = False;
 			min_compare = ceil(fabs(log10((double)(spacing/
 							   fabs(min)))))+1.0;
@@ -3387,7 +3659,7 @@ char		func_code;
 			min_compare = 7.0;
 		}
 
-		if(_NhlCmpFAny(max,0.0,7) != 0.0) {
+		if(tmCmpFAny(max,0.0,7,min_nonzero) != 0.0) {
 			zero_max = False;
 			max_compare = ceil(fabs(log10((double)(spacing/
 							    fabs(max)))))+1.0;
@@ -3421,8 +3693,8 @@ char		func_code;
 		
 		while(!done) {
 			tmploc = tstart + i * spacing;
-			if((_NhlCmpFAny(tmploc,min,7/*min_compare*/)>=0.0)
-				&&(_NhlCmpFAny(tmploc,max,7/*max_compare*/)) <= 0.0) {
+			if((tmCmpFAny(tmploc,min,7,min_nonzero/*min_compare*/)>=0.0)
+				&&(tmCmpFAny(tmploc,max,7,min_nonzero/*max_compare*/)) <= 0.0) {
 				array[j] = tmploc;
 				larray[j] = ConvertToString(array[j],cnvt_precision,compare_precision,NhlLINEAR,cutoff,left_sig_digit,format,func_code);
 				j++;
@@ -3431,7 +3703,7 @@ char		func_code;
 					ret = NhlWARNING;
 					break;	
 				}
-			} else if(_NhlCmpFAny(tmploc,max,7 /*max_compare*/) >0.0) {
+			} else if(tmCmpFAny(tmploc,max,7,min_nonzero /*max_compare*/) >0.0) {
 				done = 1;
 			} 
 			i++;
@@ -3491,11 +3763,12 @@ static NhlErrorTypes ExplicitComputeMajorTickMarks
 	int convert_precision,
 	NhlGenArray req_points,
 	NhlGenArray req_labels,
-	int *nmajor
+	int *nmajor,
+	float min_nonzero
 	)
 #else
 (style,array,larray,dmax,dmin,tstart,tend,convert_precision,
-req_points,req_labels,nmajor)
+req_points,req_labels,nmajor,min_nonzero)
 NhlTickMarkStyle  style;
 float   *       array;
 char	**	larray;
@@ -3507,6 +3780,7 @@ int		convert_precision;
 NhlGenArray 	req_points;
 NhlGenArray 	req_labels;
 int     *       nmajor;
+float 		min_nonzero;
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR;
@@ -3534,20 +3808,20 @@ int     *       nmajor;
 		min = dmin;
 #ifdef	NOTUSED
 		spacing_estimate = (max - min)/n_requested_points;
-		if(_NhlCmpFAny(min,0.0,7) != 0.0) {
+		if(tmCmpFAny(min,0.0,7,min_nonzero) != 0.0) {
 			min_compare = ceil(fabs(log10((double)(spacing_estimate/fabs(min)))))+1.0;
 		else 
 			min_compare = 7;
 
-		if(_NhlCmpFAny(max,0.0,7) != 0.0) {
+		if(tmCmpFAny(max,0.0,7,min_nonzero) != 0.0) {
 			max_compare = ceil(fabs(log10((double)(spacing_estimate/fabs(max)))))+1.0;
 		else 
 			max_compare = 7;
 #endif
 		k = 0;
 		for(i = 0; i< n_req_points; i++) {
-			if((_NhlCmpFAny(points[i],min,7) >= 0.0) && 
-			   (_NhlCmpFAny(points[i],max,7) <= 0.0)) {
+			if((tmCmpFAny(points[i],min,7,min_nonzero) >= 0.0) && 
+			   (tmCmpFAny(points[i],max,7,min_nonzero) <= 0.0)) {
 				array[k] = points[i];
 				if (do_labels)
 					larray[k] = labels[i];
@@ -3576,9 +3850,9 @@ int     *       nmajor;
 
 static NhlErrorTypes ExplicitComputeMinorTickMarks
 #if	NhlNeedProto
-(NhlTickMarkStyle style, float *array, float dmax, float dmin, float tstart, float tend, int convert_precision, float *requested_points, int* nminor, int  n_requested )
+(NhlTickMarkStyle style, float *array, float dmax, float dmin, float tstart, float tend, int convert_precision, float *requested_points, int* nminor, int  n_requested,float min_nonzero )
 #else
-(style, array, dmax, dmin, tstart, tend, convert_precision, requested_points, nminor, n_requested )
+(style, array, dmax, dmin, tstart, tend, convert_precision, requested_points, nminor, n_requested, min_nonzero )
 NhlTickMarkStyle style;
 float *array;
 float dmax;
@@ -3589,6 +3863,7 @@ int convert_precision;
 float *requested_points;
 int  *nminor;
 int  n_requested;
+float min_nonzero;
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR;
@@ -3603,7 +3878,7 @@ int  n_requested;
 		min = dmin;
 		k = 0;
 		for(i = 0; i< n_requested; i++) {
-			if((_NhlCmpFAny(requested_points[i],min,7/*min_compare*/) >= 0.0) && (_NhlCmpFAny(requested_points[i],max,7 /*max_compare*/) <= 0.0)) {
+			if((tmCmpFAny(requested_points[i],min,7,min_nonzero/*min_compare*/) >= 0.0) && (tmCmpFAny(requested_points[i],max,7,min_nonzero /*max_compare*/) <= 0.0)) {
 				array[k] = requested_points[i];
 				k++;
 				if(k == MAXMINORTICKS) {
@@ -3664,15 +3939,16 @@ int  n_requested;
  */
 static NhlErrorTypes ChooseSpacingLin
 #if	NhlNeedProto
-(float *tstart,float *tend,float *spacing,int convert_precision,int max_ticks,int *sug_minor_ticks)
+(float *tstart,float *tend,float *spacing,int convert_precision,int max_ticks,int *sug_minor_ticks,float min_nonzero)
 #else
-(tstart,tend,spacing,convert_precision,max_ticks,sug_minor_ticks)
+(tstart,tend,spacing,convert_precision,max_ticks,sug_minor_ticks,min_nonzero)
 float *tstart;
 float *tend;
 float *spacing;
 int	convert_precision;
 int	max_ticks;
 int	*sug_minor_ticks;
+float   min_nonzero;
 #endif
 {
 	double table[10],d,u,t,am1,am2=0.0,ax1,ax2=0.0;
@@ -3701,7 +3977,7 @@ int	*sug_minor_ticks;
 	mtab[9] = 4;
 	npts = 10;
 
-	if(_NhlCmpFAny(*tend,*tstart,8)<=0.0) {
+	if(tmCmpFAny(*tend,*tstart,8,min_nonzero)<=0.0) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"ChooseSpacingLin: An impossible condition has been detected, TickEnd and TickStart are nearly equal, cannot continue");
 		return(NhlFATAL);
 	}
@@ -3713,7 +3989,7 @@ int	*sug_minor_ticks;
 		am1 = floor(*tstart/t) *t;
 		ax1 = ceil(*tend/t) * t;
 		if(((i>=npts-1)&&(*spacing == u))||((t <= *spacing)
-			&&(_NhlCmpFAny((ax1-am1)/t,(double)max_ticks,convert_precision) <= 0.0))){
+			&&(tmCmpFAny((ax1-am1)/t,(double)max_ticks,convert_precision,min_nonzero) <= 0.0))){
 			*spacing = t;
 			ax2 = ax1;
 			am2 = am1;
@@ -3748,15 +4024,17 @@ int	*sug_minor_ticks;
  */
 static NhlErrorTypes ChooseSpacingLog
 #if	NhlNeedProto
-(float *tstart,float *tend,float *spacing,int convert_precision,int max_ticks,int* sug_minor_ticks)
+(float *tstart,float *tend,float *spacing,int convert_precision,
+ int max_ticks,int* sug_minor_ticks,float min_nonzero)
 #else
-(tstart,tend,spacing,convert_precision,max_ticks,sug_minor_ticks)
+(tstart,tend,spacing,convert_precision,max_ticks,sug_minor_ticks,min_nonzero)
 float *tstart;
 float *tend;
 float *spacing;
 int	convert_precision;
 int	max_ticks;
 int 	*sug_minor_ticks;
+float   min_nonzero;
 #endif
 {
 	double table[10],d,u,t,am1,am2=0.0,ax1,ax2=0.0;
@@ -3787,7 +4065,7 @@ int 	*sug_minor_ticks;
 		am1 = floor(*tstart/t) *t;
 		ax1 = ceil(*tend/t) * t;
 		if(((i>=npts-1)&&(*spacing == u))||((t <= *spacing)
-			&&(_NhlCmpFAny((ax1-am1)/t,(double)max_ticks,convert_precision) <= 0.0))){
+			&&(tmCmpFAny((ax1-am1)/t,(double)max_ticks,convert_precision,min_nonzero) <= 0.0))){
 			*spacing = t;
 			ax2 = ax1;
 			am2 = am1;
@@ -3945,10 +4223,11 @@ static NhlErrorTypes ComputeMinorTickMarks
 	float* minor_locs,
 	int* nminor,
 	int precision,
-	NhlTickMarkStyle style
+	NhlTickMarkStyle style,
+	float min_nonzero
 )
 #else
-(minorpermajor,spacing,tstart,tend,dmax,dmin,m_locs,nmajor,minor_locs, nminor,precision,style)
+(minorpermajor,spacing,tstart,tend,dmax,dmin,m_locs,nmajor,minor_locs, nminor,precision,style,min_nonzero)
 	int minorpermajor;
 	float	spacing;
 	float	tstart;
@@ -3961,6 +4240,7 @@ static NhlErrorTypes ComputeMinorTickMarks
 	int	*nminor;
 	int	precision;
 	NhlTickMarkStyle	style;
+	float	min_nonzero;
 #endif
 {
 	float minor_spacing,tmp;
@@ -3971,7 +4251,7 @@ static NhlErrorTypes ComputeMinorTickMarks
 	NhlErrorTypes ret = NhlNOERROR;
 	float tmnstart,tmnend,mnspacing;
 
-	if (_NhlCmpFAny(dmin,dmax,7) == 0.0) {
+	if (tmCmpFAny(dmin,dmax,7,min_nonzero) == 0.0) {
 		*nminor = 0;
 		return NhlNOERROR;
 	}
@@ -4030,7 +4310,7 @@ static NhlErrorTypes ComputeMinorTickMarks
 					j = 1;
 					tmp = m_locs[i] - j * 
 						pow(10.0,minor_spacing);
-					while(_NhlCmpFAny(tmp,m_locs[i-1],precision) > 0.0){
+					while(tmCmpFAny(tmp,m_locs[i-1],precision,min_nonzero) > 0.0){
 						minor_locs[k] = tmp;
 						k++;
 						j++;
@@ -4043,8 +4323,8 @@ static NhlErrorTypes ComputeMinorTickMarks
 						return(NhlWARNING);
 					}
 				}
-				if(_NhlCmpFAny(pow(10.0,max),m_locs[nmajor-1],
-					compare_precision) > 0.0) {
+				if(tmCmpFAny(pow(10.0,max),m_locs[nmajor-1],
+					compare_precision,min_nonzero) > 0.0) {
 					minor_spacing = floor(log10(
 						m_locs[nmajor-1]))  
 						+ logminor;
@@ -4052,10 +4332,10 @@ static NhlErrorTypes ComputeMinorTickMarks
 					tmp = pow(10.0,floor(log10(
 						m_locs[nmajor-1])) + 1.0) - j * 
 						pow(10.0,minor_spacing);
-					while(_NhlCmpFAny(tmp,m_locs[nmajor-1],
-						precision) > 0.0) {
-						if(_NhlCmpFAny(tmp,pow(10.0,max),
-							precision) < 0.0) {
+					while(tmCmpFAny(tmp,m_locs[nmajor-1],
+						precision,min_nonzero) > 0.0) {
+						if(tmCmpFAny(tmp,pow(10.0,max),
+							precision,min_nonzero) < 0.0) {
 							minor_locs[k] = tmp;
 							k++;
 						} 
@@ -4080,8 +4360,8 @@ static NhlErrorTypes ComputeMinorTickMarks
 				j = 1;
 				tmp = pow(10.0,ceil(max)) - j * 
 					pow(10.0,minor_spacing);
-				while(_NhlCmpFAny(tmp,m_locs[0],precision) > 0.0){
-					if(_NhlCmpFAny(tmp,pow(10.0,max),8) < 0.0) {
+				while(tmCmpFAny(tmp,m_locs[0],precision,min_nonzero) > 0.0){
+					if(tmCmpFAny(tmp,pow(10.0,max),8,min_nonzero) < 0.0) {
 						minor_locs[k] = tmp;
 						k++;
 					}
@@ -4096,14 +4376,14 @@ static NhlErrorTypes ComputeMinorTickMarks
 				}
 				
 			}
-			if(_NhlCmpFAny(log10(m_locs[0]),min, 8) > 0.0) {
+			if(tmCmpFAny(log10(m_locs[0]),min, 8,min_nonzero) > 0.0) {
 				minor_spacing = log10(m_locs[0]);
 				minor_spacing = ceil(minor_spacing);
 				minor_spacing -= 1.0;
 				minor_spacing += logminor;
 				j = 1;
 				tmp = m_locs[0] - j * pow(10.0,minor_spacing);
-                                while(_NhlCmpFAny(tmp,pow(10.0,min),precision) > 0.0){
+                                while(tmCmpFAny(tmp,pow(10.0,min),precision,min_nonzero) > 0.0){
                                         minor_locs[k] = tmp;
                                         k++;
                                         j++;
@@ -4127,8 +4407,8 @@ static NhlErrorTypes ComputeMinorTickMarks
 				j = 1;
 				k= 0;
 				tmp = pow(10.0,ceil(max)) - j *pow(10.0,minor_spacing);
-				while(_NhlCmpFAny(tmp,pow(10.0,min),precision) >0.0) {
-					if(_NhlCmpFAny(tmp,pow(10.0,max),precision) < 0.0) {
+				while(tmCmpFAny(tmp,pow(10.0,min),precision,min_nonzero) >0.0) {
+					if(tmCmpFAny(tmp,pow(10.0,max),precision,min_nonzero) < 0.0) {
 						minor_locs[k] = tmp;
 						k++;
 					}
@@ -4191,10 +4471,10 @@ static NhlErrorTypes ComputeMinorTickMarks
 */
 			if(nmajor > 0) {
 			k = 0;
-			if(_NhlCmpFAny(min,m_locs[0],7/*min_compare*/) < 0.0) {	
+			if(tmCmpFAny(min,m_locs[0],7,min_nonzero/*min_compare*/) < 0.0) {	
 				j = 1;
 				tmp = m_locs[0] - j * minor_spacing;
-				while(_NhlCmpFAny(min,tmp,7/*min_compare*/)<=0.0) {
+				while(tmCmpFAny(min,tmp,7,min_nonzero/*min_compare*/)<=0.0) {
 					minor_locs[k] = tmp;
 					k++;
 					j++;
@@ -4218,10 +4498,10 @@ static NhlErrorTypes ComputeMinorTickMarks
 					}
 				}
 			}
-			if(_NhlCmpFAny(max,m_locs[nmajor-1],7/*compare_precision*/) > 0.0) {
+			if(tmCmpFAny(max,m_locs[nmajor-1],7,min_nonzero/*compare_precision*/) > 0.0) {
 				j = 1;
 				tmp = m_locs[nmajor-1] + j * minor_spacing;
-				while(_NhlCmpFAny(max,tmp,7/*max_compare*/)>= 0.0){
+				while(tmCmpFAny(max,tmp,7,min_nonzero/*max_compare*/)>= 0.0){
 					minor_locs[k] = tmp;
 					k++;
 					j++;
@@ -4237,14 +4517,14 @@ static NhlErrorTypes ComputeMinorTickMarks
 			} else {
 				k = 0;
 				i = 0;
-				while( _NhlCmpFAny(i*spacing + tstart,max,7/*max_compare*/) < 0.0) {
+				while( tmCmpFAny(i*spacing + tstart,max,7,min_nonzero/*max_compare*/) < 0.0) {
 					i++;
 				}
 				min2 = (i-1)*spacing + tstart;
 				j = 1;
 				tmp = min2 + j *minor_spacing;
-				while(_NhlCmpFAny(max,tmp,7/*max_compare*/) >=0.0){
-					if(_NhlCmpFAny(min,tmp,7/*min_compare*/) < 0.0) {
+				while(tmCmpFAny(max,tmp,7,min_nonzero/*max_compare*/) >=0.0){
+					if(tmCmpFAny(min,tmp,7,min_nonzero/*min_compare*/) < 0.0) {
 					minor_locs[k] = tmp;
 					k++;
 					}
@@ -4577,45 +4857,74 @@ static NhlErrorTypes CheckKeyVals
 	if (tnew->tick.y_r_precision_set)
 		tnew->tick.y_r_auto_precision = False;
 
+	tnew->tick.x_b_min_nonzero = MIN(10e-7,0.01 *
+		fabs(MIN(tnew->tick.x_b_data_right,tnew->tick.x_b_data_left)));
+	tnew->tick.x_b_min_nonzero = 
+		MIN(tnew->tick.x_b_min_nonzero,0.01 *
+		    fabs(tnew->tick.x_b_data_right-tnew->tick.x_b_data_left));
+	tnew->tick.x_b_min_nonzero = 
+		MAX(MIN_NONZERO,tnew->tick.x_b_min_nonzero);
+
 	tnew->tick.x_b_data_valid = True;
-	if (_NhlCmpFAny(tnew->tick.x_b_data_left,
-			tnew->tick.x_b_data_right,7) == 0.0) {
+	if (tmCmpFAny(tnew->tick.x_b_data_left,
+			tnew->tick.x_b_data_right,7,MIN_NONZERO) == 0.0) {
 		tnew->tick.x_b_data_valid = False;
-		tnew->tick.x_b_on = False;
 		e_text = 
-		     "%s: Zero span between %s and %s, setting %s to False";
-                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,error_lead,
-			  NhlNtmXBDataLeftF,NhlNtmXBDataRightF,NhlNtmXBOn);
+	       "%s: Zero span between %s and %s, turning bottom tickmarks off";
+                NhlPError(NhlWARNING,NhlEZEROSPAN,e_text,error_lead,
+			  NhlNtmXBDataLeftF,NhlNtmXBDataRightF);
 	}
 	tnew->tick.x_t_data_valid = True;
-	if (_NhlCmpFAny(tnew->tick.x_t_data_left,
-			tnew->tick.x_t_data_right,7) == 0.0) {
+	tnew->tick.x_t_min_nonzero = MIN(10e-7,0.01 *
+		fabs(MIN(tnew->tick.x_t_data_right,tnew->tick.x_t_data_left)));
+	tnew->tick.x_t_min_nonzero = 
+		MIN(tnew->tick.x_t_min_nonzero,0.01 *
+		    fabs(tnew->tick.x_t_data_right-tnew->tick.x_t_data_left));
+	tnew->tick.x_t_min_nonzero = 
+		MAX(MIN_NONZERO,tnew->tick.x_t_min_nonzero);
+	if (tmCmpFAny(tnew->tick.x_t_data_left,
+			tnew->tick.x_t_data_right,7,MIN_NONZERO) == 0.0) {
 		tnew->tick.x_t_data_valid = False;
-		tnew->tick.x_t_on = False;
+		tnew->tick.x_t_min_nonzero = MIN_NONZERO;
 		e_text = 
-		      "%s: Zero span between %s and %s, setting %s to False";
-                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,error_lead,
-			  NhlNtmXTDataLeftF,NhlNtmXTDataRightF,NhlNtmXTOn);
+		 "%s: Zero span between %s and %s, turning top tickmarks off";
+                NhlPError(NhlWARNING,NhlEZEROSPAN,e_text,error_lead,
+			  NhlNtmXTDataLeftF,NhlNtmXTDataRightF);
 	}
 	tnew->tick.y_l_data_valid = True;
-	if (_NhlCmpFAny(tnew->tick.y_l_data_bottom,
-			tnew->tick.y_l_data_top,7) == 0.0) {
+	tnew->tick.y_l_data_valid = True;
+	tnew->tick.y_l_min_nonzero = MIN(10e-7,0.01 *
+		fabs(MIN(tnew->tick.y_l_data_top,tnew->tick.y_l_data_bottom)));
+	tnew->tick.y_l_min_nonzero = 
+		MIN(tnew->tick.y_l_min_nonzero,0.01 *
+		    fabs(tnew->tick.y_l_data_top-tnew->tick.y_l_data_bottom));
+	tnew->tick.y_l_min_nonzero = 
+		MAX(MIN_NONZERO,tnew->tick.y_l_min_nonzero);
+	if (tmCmpFAny(tnew->tick.y_l_data_bottom,
+			tnew->tick.y_l_data_top,7,MIN_NONZERO) == 0.0) {
 		tnew->tick.y_l_data_valid = False;
-		tnew->tick.y_l_on = False;
+		tnew->tick.y_l_min_nonzero = MIN_NONZERO;
 		e_text = 
-		      "%s: Zero span between %s and %s, setting %s to False";
-                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,error_lead,
-			  NhlNtmYLDataBottomF,NhlNtmYLDataTopF,NhlNtmYLOn);
+	      "%s: Zero span between %s and %s, turning left tickmarks off";
+                NhlPError(NhlWARNING,NhlEZEROSPAN,e_text,error_lead,
+			  NhlNtmYLDataBottomF,NhlNtmYLDataTopF);
 	}
 	tnew->tick.y_r_data_valid = True;
-	if (_NhlCmpFAny(tnew->tick.y_r_data_bottom,
-			tnew->tick.y_r_data_top,7) == 0.0) {
+	tnew->tick.y_r_min_nonzero = MIN(10e-7,0.01 *
+		fabs(MIN(tnew->tick.y_r_data_top,tnew->tick.y_r_data_bottom)));
+	tnew->tick.y_r_min_nonzero = 
+		MIN(tnew->tick.y_r_min_nonzero,0.01 *
+		    fabs(tnew->tick.y_r_data_top-tnew->tick.y_r_data_bottom));
+	tnew->tick.y_r_min_nonzero = 
+		MAX(MIN_NONZERO,tnew->tick.y_r_min_nonzero);
+	if (tmCmpFAny(tnew->tick.y_r_data_bottom,
+			tnew->tick.y_r_data_top,7,MIN_NONZERO) == 0.0) {
 		tnew->tick.y_r_data_valid = False;
-		tnew->tick.y_r_on = False;
+		tnew->tick.y_r_min_nonzero = MIN_NONZERO;
 		e_text = 
-		      "%s: Zero span between %s and %s, setting %s to False";
-                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,error_lead,
-			  NhlNtmYRDataBottomF,NhlNtmYRDataTopF,NhlNtmYROn);
+	        "%s: Zero span between %s and %s, turning right tickmarks off";
+                NhlPError(NhlWARNING,NhlEZEROSPAN,e_text,error_lead,
+			  NhlNtmYRDataBottomF,NhlNtmYRDataTopF);
 	}
 		
 	if(!tnew->tick.x_b_minor_on) {
@@ -5831,7 +6140,7 @@ static NhlErrorTypes CheckLog
                 if((tnew->tick.x_b_data_left <=0.0)
                         ||(tnew->tick.x_b_data_right <=0.0)) {
                         NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Bottom tick style is log and either DataLeft or DataRight is negative or zero, turning bottom ticks off",error_lead);
-                        tnew->tick.x_b_on = 0;
+                        tnew->tick.x_b_data_valid = False;
 			ret = NhlWARNING;
 
                 }
@@ -5875,7 +6184,7 @@ static NhlErrorTypes CheckLog
                         ||(tnew->tick.x_t_data_right <=0.0)) {
                         NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Top tick style is log and either DataLeft or DataRight is negative or zero, turning top ticks off",error_lead);
 			ret = NhlWARNING;
-                        tnew->tick.x_t_on = 0;
+                        tnew->tick.x_t_data_valid = False;
 
                 }
 		if(tnew->tick.x_t_mode == NhlMANUAL) {
@@ -5917,7 +6226,7 @@ static NhlErrorTypes CheckLog
                         ||(tnew->tick.y_l_data_bottom<=0.0)) {
                         NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Left tick style is log and either DataBottom or DataTop is negative or zero, turning left ticks off",error_lead);
 			ret = NhlWARNING;
-                        tnew->tick.y_l_on = 0;
+                        tnew->tick.y_l_data_valid = False;
 
                 }
 		if(tnew->tick.y_l_mode == NhlMANUAL) {
@@ -5959,7 +6268,7 @@ static NhlErrorTypes CheckLog
                         ||(tnew->tick.y_r_data_bottom <=0.0)) {
                         NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Right tick style is log and either DataBottom or DataTop is negative or zero, turning right ticks off",error_lead);
 			ret = NhlWARNING;
-                        tnew->tick.y_r_on = 0;
+                        tnew->tick.y_r_data_valid = False;
 
                 }
 		if(tnew->tick.y_r_mode == NhlMANUAL) {
@@ -6591,7 +6900,8 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.sci_note_cutoff,
 					&tnew->tick.x_b_format,
 					tnew->tick.x_b_label_fcode,
-					&sug_minor_ticks);
+					&sug_minor_ticks,
+					tnew->tick.x_b_min_nonzero);
 			minorret = ComputeMinorTickMarks(
                                         (tnew->tick.x_b_minor_per_major_set ? tnew->tick.x_b_minor_per_major:sug_minor_ticks),
                                         tnew->tick.x_b_tick_spacing,
@@ -6604,7 +6914,8 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.x_b_minor_data_locs,
                                         &tnew->tick.x_b_nminor,
                                         tnew->tick.x_b_precision,
-                                        tnew->tick.x_b_style);
+                                        tnew->tick.x_b_style,
+					tnew->tick.x_b_min_nonzero);
 		}
 		break;
 	case NhlMANUAL:
@@ -6628,7 +6939,8 @@ static NhlErrorTypes ComputeTickInfo
                                         &tnew->tick.x_b_nmajor,
                                         tnew->tick.sci_note_cutoff,
 					&tnew->tick.x_b_format,
-					tnew->tick.x_b_label_fcode);
+					tnew->tick.x_b_label_fcode,
+					tnew->tick.x_b_min_nonzero);
 			minorret = ComputeMinorTickMarks(
                                         tnew->tick.x_b_minor_per_major,
                                         tnew->tick.x_b_tick_spacing,
@@ -6641,7 +6953,8 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.x_b_minor_data_locs,
                                         &tnew->tick.x_b_nminor,
                                         tnew->tick.x_b_precision,
-                                        tnew->tick.x_b_style);
+                                        tnew->tick.x_b_style,
+					tnew->tick.x_b_min_nonzero);
 		}
 		break;
 	case NhlEXPLICIT:
@@ -6661,7 +6974,8 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.x_b_precision,
 					tnew->tick.x_b_values,
 					tnew->tick.x_b_labels,
-                                        &tnew->tick.x_b_nmajor);
+                                        &tnew->tick.x_b_nmajor,
+					tnew->tick.x_b_min_nonzero);
 			minorret = ExplicitComputeMinorTickMarks(
 					tnew->tick.x_b_style,
 					tnew->tick.x_b_minor_data_locs,
@@ -6674,7 +6988,8 @@ static NhlErrorTypes ComputeTickInfo
                                          NULL : tnew->tick.x_b_minor_values->data),
 					&tnew->tick.x_b_nminor,
 					(tnew->tick.x_b_minor_values == NULL ?
-					 0 :tnew->tick.x_b_minor_values->num_elements));
+					 0 :tnew->tick.x_b_minor_values->num_elements),
+					 tnew->tick.x_b_min_nonzero);
 
 					
 		}
@@ -6717,7 +7032,8 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.sci_note_cutoff,
 					&tnew->tick.x_t_format,
 					tnew->tick.x_t_label_fcode,
-					&sug_minor_ticks);
+					&sug_minor_ticks,
+					tnew->tick.x_t_min_nonzero);
 
 			minorret = ComputeMinorTickMarks(
                                         (tnew->tick.x_t_minor_per_major_set ? tnew->tick.x_t_minor_per_major: sug_minor_ticks),
@@ -6731,7 +7047,8 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.x_t_minor_data_locs,
                                         &tnew->tick.x_t_nminor,
                                         tnew->tick.x_t_precision,
-                                        tnew->tick.x_t_style);
+                                        tnew->tick.x_t_style,
+					tnew->tick.x_t_min_nonzero);
 		}
 		break;
 	case NhlMANUAL:
@@ -6755,7 +7072,8 @@ static NhlErrorTypes ComputeTickInfo
                                         &tnew->tick.x_t_nmajor,
                                         tnew->tick.sci_note_cutoff,
 					&tnew->tick.x_t_format,
-					tnew->tick.x_t_label_fcode);
+					tnew->tick.x_t_label_fcode,
+					tnew->tick.x_t_min_nonzero);
 
 			minorret = ComputeMinorTickMarks(
                                         tnew->tick.x_t_minor_per_major,
@@ -6769,7 +7087,8 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.x_t_minor_data_locs,
                                         &tnew->tick.x_t_nminor,
                                         tnew->tick.x_t_precision,
-                                        tnew->tick.x_t_style);
+                                        tnew->tick.x_t_style,
+					tnew->tick.x_t_min_nonzero);
 		}
 		break;
 	case NhlEXPLICIT:
@@ -6789,7 +7108,8 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.x_t_precision,
 					tnew->tick.x_t_values,
 					tnew->tick.x_t_labels,
-                                        &tnew->tick.x_t_nmajor);
+                                        &tnew->tick.x_t_nmajor,
+					tnew->tick.x_t_min_nonzero);
 			minorret = ExplicitComputeMinorTickMarks(
 					tnew->tick.x_t_style,
 					tnew->tick.x_t_minor_data_locs,
@@ -6802,7 +7122,8 @@ static NhlErrorTypes ComputeTickInfo
                                          NULL : tnew->tick.x_t_minor_values->data),
 					&tnew->tick.x_t_nminor,
 					(tnew->tick.x_t_minor_values == NULL ?
-					 0 :tnew->tick.x_t_minor_values->num_elements));
+					 0 :tnew->tick.x_t_minor_values->num_elements),
+					tnew->tick.x_t_min_nonzero);
 		}
 		break;
 	default:
@@ -6843,7 +7164,8 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.sci_note_cutoff,
 					&tnew->tick.y_l_format,
 					tnew->tick.y_l_label_fcode,
-					&sug_minor_ticks);
+					&sug_minor_ticks,
+					tnew->tick.y_l_min_nonzero);
 
 			minorret = ComputeMinorTickMarks(
                                         (tnew->tick.y_l_minor_per_major_set?tnew->tick.y_l_minor_per_major:sug_minor_ticks),
@@ -6857,7 +7179,8 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.y_l_minor_data_locs,
                                         &tnew->tick.y_l_nminor,
                                         tnew->tick.y_l_precision,
-                                        tnew->tick.y_l_style);
+                                        tnew->tick.y_l_style,
+					tnew->tick.y_l_min_nonzero);
 		}
 		break;
 	case NhlMANUAL:
@@ -6881,7 +7204,8 @@ static NhlErrorTypes ComputeTickInfo
                                         &tnew->tick.y_l_nmajor,
                                         tnew->tick.sci_note_cutoff,
 					&tnew->tick.y_l_format,
-					tnew->tick.y_l_label_fcode);
+					tnew->tick.y_l_label_fcode,
+					tnew->tick.y_l_min_nonzero);
 
 			minorret = ComputeMinorTickMarks(
                                         tnew->tick.y_l_minor_per_major,
@@ -6895,7 +7219,8 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.y_l_minor_data_locs,
                                         &tnew->tick.y_l_nminor,
                                         tnew->tick.y_l_precision,
-                                        tnew->tick.y_l_style);
+                                        tnew->tick.y_l_style,
+					tnew->tick.y_l_min_nonzero);
 		}
 		break;
 	case NhlEXPLICIT:
@@ -6915,7 +7240,8 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.y_l_precision,
 					tnew->tick.y_l_values,
 					tnew->tick.y_l_labels,
-                                        &tnew->tick.y_l_nmajor);
+                                        &tnew->tick.y_l_nmajor,
+					tnew->tick.y_l_min_nonzero);
 			minorret = ExplicitComputeMinorTickMarks(
                                         tnew->tick.y_l_style,
                                         tnew->tick.y_l_minor_data_locs,
@@ -6928,7 +7254,8 @@ static NhlErrorTypes ComputeTickInfo
                                          NULL : tnew->tick.y_l_minor_values->data),
                                         &tnew->tick.y_l_nminor,
 					(tnew->tick.y_l_minor_values == NULL ?
-					 0 :tnew->tick.y_l_minor_values->num_elements));
+					 0 :tnew->tick.y_l_minor_values->num_elements),
+					tnew->tick.y_l_min_nonzero);
 
 		}
 		break;
@@ -6970,7 +7297,8 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.sci_note_cutoff,
 					&tnew->tick.y_r_format,
 					tnew->tick.y_r_label_fcode,
-					&sug_minor_ticks);
+					&sug_minor_ticks,
+					tnew->tick.y_r_min_nonzero);
 
 			minorret = ComputeMinorTickMarks(
                                         (tnew->tick.y_r_minor_per_major_set ? tnew->tick.y_r_minor_per_major:sug_minor_ticks),
@@ -6984,7 +7312,8 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.y_r_minor_data_locs,
                                         &tnew->tick.y_r_nminor,
                                         tnew->tick.y_r_precision,
-                                        tnew->tick.y_r_style);
+                                        tnew->tick.y_r_style,
+					tnew->tick.y_r_min_nonzero);
 		}
 		break;
 	case NhlMANUAL:
@@ -7008,7 +7337,8 @@ static NhlErrorTypes ComputeTickInfo
                                         &tnew->tick.y_r_nmajor,
                                         tnew->tick.sci_note_cutoff,
 					&tnew->tick.y_r_format,
-					tnew->tick.y_r_label_fcode);
+					tnew->tick.y_r_label_fcode,
+					tnew->tick.y_r_min_nonzero);
 
 			minorret = ComputeMinorTickMarks(
                                         tnew->tick.y_r_minor_per_major,
@@ -7022,7 +7352,8 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.y_r_minor_data_locs,
                                         &tnew->tick.y_r_nminor,
                                         tnew->tick.y_r_precision,
-                                        tnew->tick.y_r_style);
+                                        tnew->tick.y_r_style,
+					tnew->tick.y_r_min_nonzero);
 		}
 		break;
 	case NhlEXPLICIT:
@@ -7042,7 +7373,8 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.y_r_precision,
 					tnew->tick.y_r_values,
 					tnew->tick.y_r_labels,
-                                        &tnew->tick.y_r_nmajor);
+                                        &tnew->tick.y_r_nmajor,
+					tnew->tick.y_r_min_nonzero);
 			minorret = ExplicitComputeMinorTickMarks(
 					tnew->tick.y_r_style,
 					tnew->tick.y_r_minor_data_locs,
@@ -7055,7 +7387,8 @@ static NhlErrorTypes ComputeTickInfo
                                          NULL : tnew->tick.y_r_minor_values->data),
 					&tnew->tick.y_r_nminor,
 					(tnew->tick.y_r_minor_values == NULL ?
-					 0 :tnew->tick.y_r_minor_values->num_elements));
+					 0 :tnew->tick.y_r_minor_values->num_elements),
+					tnew->tick.y_r_min_nonzero);
 
 		}
 		break;
@@ -7620,6 +7953,7 @@ int		c_or_s;
 	NhlErrorTypes ret = NhlNOERROR;
 	NhlErrorTypes subret = NhlNOERROR;
 	char *error_lead;
+	float label_spacing;
 
 	if(c_or_s == SET )
 		error_lead = "TickMarkSetValues";
@@ -7728,7 +8062,10 @@ int		c_or_s;
 			}
 		}
                 subret = NhlVAGetValues(tmpid,
-                        NhlNvpYF,&tmpy,NULL);
+					NhlNvpYF,&tmpy,
+					NhlNMtextMaxLenF,
+					&tnew->tick.x_b_max_label_len,
+					NULL);
 		if(subret < NhlWARNING){
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Could not retrieve key value from internal object, cannot continue",error_lead);
 			return(NhlFATAL);
@@ -7749,6 +8086,14 @@ int		c_or_s;
 			}
                 }
                 tnew->tick.xb_multi = _NhlGetLayer(tmpid);
+		
+		label_spacing = 1.0;
+		for (i = 1; i < tmp; i++) {
+			label_spacing = 
+				MIN(label_spacing,
+				    locs_for_multi[i] - locs_for_multi[i-1]);
+		}
+		tnew->tick.x_b_label_spacing = label_spacing;
         } else {
 /*
 * Won't create one until its needed. However I don't ever plan on destroying
@@ -7859,8 +8204,11 @@ int		c_or_s;
 			}
 		}
                 subret = NhlVAGetValues(tmpid,
-                        NhlNvpYF,&tmpy,
-                        NhlNvpHeightF,&tmpheight,NULL);
+					NhlNvpYF,&tmpy,
+					NhlNvpHeightF,&tmpheight,
+					NhlNMtextMaxLenF,
+					&tnew->tick.x_t_max_label_len,
+					NULL);
 		if(subret < NhlWARNING) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Could not retrieve key value from internal object, cannot continue",error_lead);
 			return(NhlFATAL);
@@ -7878,6 +8226,13 @@ int		c_or_s;
 			}
                 }
                 tnew->tick.xt_multi = _NhlGetLayer(tmpid);
+		label_spacing = 1.0;
+		for (i = 1; i < tmp; i++) {
+			label_spacing = 
+				MIN(label_spacing,
+				    locs_for_multi[i] - locs_for_multi[i-1]);
+		}
+		tnew->tick.x_t_label_spacing = label_spacing;
         } else {
 /*
 * Won't create one until its needed. However I don't ever plan on destroying
@@ -7985,8 +8340,11 @@ int		c_or_s;
 			}
 		}
                 subret = NhlVAGetValues(tmpid,
-                        NhlNvpXF,&tmpx,
-                        NhlNvpWidthF,&tmpwidth,NULL);
+					NhlNvpXF,&tmpx,
+					NhlNvpWidthF,&tmpwidth,
+					NhlNMtextMaxLenF,
+					&tnew->tick.y_l_max_label_len,
+					NULL);
 		if(subret < NhlWARNING) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Could not retrieve key value from internal object, cannot continue",error_lead);
 			return(NhlFATAL);
@@ -8007,6 +8365,13 @@ int		c_or_s;
                 }
 
                 tnew->tick.yl_multi = _NhlGetLayer(tmpid);
+		label_spacing = 1.0;
+		for (i = 1; i < tmp; i++) {
+			label_spacing = 
+				MIN(label_spacing,
+				    locs_for_multi[i] - locs_for_multi[i-1]);
+		}
+		tnew->tick.y_l_label_spacing = label_spacing;
         } else {
 /*
 * Won't create one until its needed. However I don't ever plan on destroying
@@ -8113,7 +8478,10 @@ int		c_or_s;
 		}
 	}
                 subret = NhlVAGetValues(tmpid,
-                        NhlNvpXF,&tmpx,NULL);
+					NhlNvpXF,&tmpx,
+					NhlNMtextMaxLenF,
+					&tnew->tick.y_r_max_label_len,
+					NULL);
 		if(subret < NhlWARNING) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Could not retrieve key value from internal object, cannot continue",error_lead);
 			return(NhlFATAL);
@@ -8132,6 +8500,13 @@ int		c_or_s;
 			}
                 }
                 tnew->tick.yr_multi = _NhlGetLayer(tmpid);
+		label_spacing = 1.0;
+		for (i = 1; i < tmp; i++) {
+			label_spacing = 
+				MIN(label_spacing,
+				    locs_for_multi[i] - locs_for_multi[i-1]);
+		}
+		tnew->tick.y_r_label_spacing = label_spacing;
         } else {
 /*
 * Won't create one until its needed. However I don't ever plan on destroying
@@ -8491,7 +8866,7 @@ static NhlErrorTypes ScaleValuesForMove
 /*
  * X fonts and Y ticks change relative to the X-Axis
  */
-	if (_NhlCmpFAny(deltax,1.0,4) != 0.0) {
+	if (tmCmpFAny(deltax,1.0,4,MIN_NONZERO) != 0.0) {
 		if (! tnew->tick.x_b_label_font_height_set)
 			tnew->tick.x_b_label_font_height *= deltax;
 		if (! tnew->tick.x_t_label_font_height_set)
@@ -8517,7 +8892,7 @@ static NhlErrorTypes ScaleValuesForMove
 /*
  * Y fonts and X ticks change relative to the Y-Axis
  */
-	if (_NhlCmpFAny(deltay,1.0,4) != 0.0) {
+	if (tmCmpFAny(deltay,1.0,4,MIN_NONZERO) != 0.0) {
 		if (! tnew->tick.y_l_label_font_height_set)
 			tnew->tick.y_l_label_font_height *= deltay;
 		if (! tnew->tick.y_r_label_font_height_set)

@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.h,v 1.18 1999-03-29 18:31:36 dbrown Exp $
+ *      $Id: TickMark.h,v 1.19 2000-02-08 01:18:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -143,7 +143,8 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 
 #define NhlNtmXBLabelDeltaF		"tmXBLabelDeltaF"
 
-
+#define NhlNtmXBMaxLabelLenF		"tmXBMaxLabelLenF"
+#define NhlNtmXBMinLabelSpacingF	"tmXBMinLabelSpacingF"
 
 /* 
 * X Axis Top Resources 
@@ -203,6 +204,8 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 
 #define NhlNtmXTLabelDeltaF		"tmXTLabelDeltaF"
 
+#define NhlNtmXTMaxLabelLenF		"tmXTMaxLabelLenF"
+#define NhlNtmXTMinLabelSpacingF	"tmXTMinLabelSpacingF"
 
 
 
@@ -300,6 +303,8 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 
 #define NhlNtmYLLabelDeltaF		"tmYLLabelDeltaF"
 
+#define NhlNtmYLMaxLabelLenF		"tmYLMaxLabelLenF"
+#define NhlNtmYLMinLabelSpacingF	"tmYLMinLabelSpacingF"
 
 
 /* 
@@ -358,6 +363,9 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlNtmYRLabelConstantSpacingF	"tmYRLabelConstantSpacingF"
 
 #define NhlNtmYRLabelDeltaF		"tmYRLabelDeltaF"
+
+#define NhlNtmYRMaxLabelLenF		"tmYRMaxLabelLenF"
+#define NhlNtmYRMinLabelSpacingF	"tmYRMinLabelSpacingF"
 
 /*
 * -------------> Still need to come up with resources for 
@@ -427,6 +435,8 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlCtmXBMinorValues	"TmXBMinorValues"
 #define NhlCtmXBLabels		"TmXBLabels"
 #define NhlCtmXBLabelDeltaF	"TmXBLabelDeltaF"
+#define NhlCtmXBMaxLabelLenF		"TmXBMaxLabelLenF"
+#define NhlCtmXBMinLabelSpacingF	"TmXBMinLabelSpacingF"
 #define NhlCtmXTLabelStride	"TmXTLabelStride"
 #define NhlCtmXTDataLeftF	"TmXTDataLeftF"
 #define NhlCtmXTDataRightF	"TmXTDataRightF"
@@ -439,6 +449,8 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlCtmXTMinorValues	"TmXTMinorValues"
 #define NhlCtmXTLabels		"TmXTLabels"
 #define NhlCtmXTLabelDeltaF	"TmXLabelDeltaF"
+#define NhlCtmXTMaxLabelLenF		"TmXTMaxLabelLenF"
+#define NhlCtmXTMinLabelSpacingF	"TmXTMinLabelSpacingF"
 #define NhlCtmYUseLeft		"TmYUseLeft"
 #define NhlCtmYLOn		"TmYLOn"
 #define NhlCtmYROn		"TmYROn"
@@ -466,6 +478,8 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlCtmYLMinorValues	"TmYLMinorValues"
 #define NhlCtmYLLabels		"TmYLLabels"
 #define NhlCtmYLLabelDeltaF	"TmYLLabelDeltaF"
+#define NhlCtmYLMaxLabelLenF		"TmYLMaxLabelLenF"
+#define NhlCtmYLMinLabelSpacingF	"TmYLMinLabelSpacingF"
 #define NhlCtmYRLabelStride	"TmYRLabelStride"
 #define NhlCtmYRDataTopF	"TmYRDataTopF"
 #define NhlCtmYRDataBottomF	"TmYRDataBottomF"
@@ -478,6 +492,8 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlCtmYRMinorValues	"TmYRMinorValues"
 #define NhlCtmYRLabels		"TmYRLabels"
 #define NhlCtmYRLabelDeltaF	"TmYRLabelDeltaF"
+#define NhlCtmYRMaxLabelLenF		"TmYRMaxLabelLenF"
+#define NhlCtmYRMinLabelSpacingF	"TmYRMinLabelSpacingF"
 
 /*
  * These class resources have been added

@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMarkP.h,v 1.16 1998-10-23 18:31:16 dbrown Exp $
+ *      $Id: TickMarkP.h,v 1.17 2000-02-08 01:18:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -112,6 +112,8 @@ typedef struct _NhlTickMarkLayerPart {
 	float		x_b_label_constant_spacing;
 	float		x_b_label_delta;
 	NhlBoolean	x_b_auto_precision;
+	float		x_b_max_label_len;
+	float		x_b_label_spacing;
 	float		x_t_data_left;
 	float		x_t_data_right;
 	NhlBoolean	x_t_tick_start_set;
@@ -151,6 +153,8 @@ typedef struct _NhlTickMarkLayerPart {
 	float		x_t_label_constant_spacing;
 	float		x_t_label_delta;
 	NhlBoolean	x_t_auto_precision;
+	float		x_t_max_label_len;
+	float		x_t_label_spacing;
 	NhlBoolean	y_use_left;
 	NhlBoolean	y_r_on;
 	NhlBoolean	y_l_on;
@@ -225,6 +229,8 @@ typedef struct _NhlTickMarkLayerPart {
 	float		y_l_label_constant_spacing;
 	float		y_l_label_delta;
 	NhlBoolean	y_l_auto_precision;
+	float		y_l_max_label_len;
+	float		y_l_label_spacing;
 	float		y_r_data_top;
 	float		y_r_data_bottom;
 	NhlBoolean	y_r_tick_start_set;
@@ -264,6 +270,8 @@ typedef struct _NhlTickMarkLayerPart {
 	float		y_r_label_constant_spacing;
 	float		y_r_label_delta;
 	NhlBoolean	y_r_auto_precision;
+	float		y_r_max_label_len;
+	float		y_r_label_spacing;
 /* Private fields */
 	NhlLayer		xb_yl_trans_obj;  /* used to tranform tick mark data locations
 					to tickmark NDC locations */
@@ -280,15 +288,19 @@ typedef struct _NhlTickMarkLayerPart {
 	float 		x_b_data_min;
 	float 		x_b_data_max;
 	NhlBoolean	x_b_data_valid;
+	float		x_b_min_nonzero;
 	float 		x_t_data_min;
 	float 		x_t_data_max;
 	NhlBoolean	x_t_data_valid;
+	float		x_t_min_nonzero;
 	float 		y_l_data_min;
 	float 		y_l_data_max;
 	NhlBoolean	y_l_data_valid;
+	float		y_l_min_nonzero;
 	float 		y_r_data_min;
 	float 		y_r_data_max;
 	NhlBoolean	y_r_data_valid;
+	float		y_r_min_nonzero;
 
 	float 		ir_xbmin;
 	float 		ir_xtmin;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.h,v 1.8 1996-10-10 17:58:02 boote Exp $
+ *      $Id: Error.h,v 1.9 2000-02-08 01:18:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -52,6 +52,11 @@
 
 /* usefull const's for error stuff */
 #define NhlEUNKNOWN	(1000)
+
+#define NhlENODATA	(1101)
+#define NhlECONSTFIELD	(1102)
+#define NhlEZEROFIELD   (1103)
+#define NhlEZEROSPAN    (1104)
 
 #ifndef ENOSYS
 #define	ENOSYS	(90)

@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.84 1999-04-26 21:05:02 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.85 2000-02-08 01:18:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -975,7 +975,7 @@ XyResetExtents
 	NhlErrorTypes		ret;
 
 	if (! xnew->trans.plot_manager_on ||
-	    newxy->display_tickmarks < NhlCONDITIONAL)
+	    newxy->display_tickmarks < NhlALWAYS)
 		return NhlNOERROR;
 	    
 	nargs = 0;
@@ -3295,6 +3295,11 @@ XyPlotUpdateData
 	NhlErrorTypes		ret1=NhlNOERROR,ret2=NhlNOERROR;
 	NhlSArg			sargs[1];
 	int			nsargs=0;
+
+/*
+ * a data change forces a new draw
+ */
+	xl->xyplot.new_draw_req = True;
 
 	ret2 = ComputeDataExtents(xl,xlold,_NhlUPDATEDATA);
 	if(ret2 < NhlWARNING)
