@@ -1,3 +1,6 @@
+/*
+ *	$Id: composite.c,v 1.2 1992-02-12 11:43:49 don Exp $
+ */
 #include <stdio.h>
 #include "ncarg_ras.h"
 

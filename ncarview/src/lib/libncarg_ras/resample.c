@@ -1,3 +1,6 @@
+/*
+ *	$Id: resample.c,v 1.2 1992-02-12 11:43:53 don Exp $
+ */
 #include	<stdio.h>
 #include	<string.h>
 #include	<math.h>

@@ -1,3 +1,6 @@
+/*
+ *	$Id: ntsc.c,v 1.2 1992-02-12 11:43:51 don Exp $
+ */
 #include <stdio.h>
 #include <math.h>
 #include "ncarg_ras.h"
