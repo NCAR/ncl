@@ -1,9 +1,24 @@
 #
-#	$Id: yMakefile,v 1.4 1993-10-19 17:25:00 boote Exp $
+#	$Id: yMakefile,v 1.5 1995-06-14 00:02:48 haley Exp $
 #
 MYNAME	= ffield_flow
 
-GENERIC_SRCS = ffex00.f ffex01.f ffex02.f ffex03.f ffex04.f ffex05.f \
-	ffex02.dat ffex05.dat fcover.f fcover.dat
+SRCS = ffex00.f ffex01.f ffex02.f ffex03.f ffex04.f ffex05.f ffex02.dat \
+	ffex05.dat fcover.f fcover.dat
+OBJS = ffex00.o ffex01.o ffex02.o ffex03.o ffex04.o ffex05.o fcover.o
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(ffex00,ffex00.o)
+FExampleTarget(ffex01,ffex01.o)
+FExampleTarget(ffex02,ffex02.o)
+FExampleTarget(ffex03,ffex03.o)
+FExampleTarget(ffex04,ffex04.o)
+FExampleTarget(ffex05,ffex05.o)
+FExampleTarget(fcover,fcover.o)
+

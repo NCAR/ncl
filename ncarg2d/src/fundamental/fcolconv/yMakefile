@@ -1,8 +1,18 @@
 #
-#	$Id: yMakefile,v 1.2 1993-10-19 17:24:41 boote Exp $
+#	$Id: yMakefile,v 1.3 1995-06-14 00:02:41 haley Exp $
 #
 MYNAME	= fcolconv
 
-GENERIC_SRCS = fcce01.f fcce02.f
+SRCS = fcce01.f fcce02.f
+OBJS = fcce01.o fcce02.o
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(fcce01,fcce01.o)
+FExampleTarget(fcce02,fcce02.o)
+

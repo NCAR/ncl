@@ -1,8 +1,23 @@
 #
-#	$Id: yMakefile,v 1.3 1993-10-19 17:26:04 boote Exp $
+#	$Id: yMakefile,v 1.4 1995-06-14 00:03:05 haley Exp $
 #
 MYNAME	= fspps
-GENERIC_SRCS = fspcurve.f fspline.f fsppoint.f fspponts.f fcoord.f fcoord1.f \
+SRCS = fspcurve.f fspline.f fsppoint.f fspponts.f fcoord.f fcoord1.f \
 		fcoord2.f
+OBJS = fspcurve.o fspline.o fsppoint.o fspponts.o fcoord.o fcoord1.o \
+		fcoord2.o
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(fspcurve,fspcurve.o)
+FExampleTarget(fspline,fspline.o)
+FExampleTarget(fsppoint,fsppoint.o)
+FExampleTarget(fspponts,fspponts.o)
+FExampleTarget(fcoord,fcoord.o)
+FExampleTarget(fcoord1,fcoord1.o)
+FExampleTarget(fcoord2,fcoord2.o)

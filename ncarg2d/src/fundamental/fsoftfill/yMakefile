@@ -1,9 +1,19 @@
 #
-#	$Id: yMakefile,v 1.2 1993-10-19 17:25:56 boote Exp $
+#	$Id: yMakefile,v 1.3 1995-06-14 00:03:03 haley Exp $
 #
 
 MYNAME	= fsoftfill
-GENERIC_SRCS = fsfsgfa.f fsfwrld.f
+SRCS = fsfsgfa.f fsfwrld.f
+OBJS = fsfsgfa.o fsfwrld.o
 GENERIC_OBJS = fsfsgfa.o fsfwrld.o
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(fsfsgfa,fsfsgfa.o)
+FExampleTarget(fsfwrld,fsfwrld.o)
+

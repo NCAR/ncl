@@ -1,8 +1,20 @@
 #
-#	$Id: yMakefile,v 1.2 1993-10-19 17:24:49 boote Exp $
+#	$Id: yMakefile,v 1.3 1995-06-14 00:02:46 haley Exp $
 #
 MYNAME	= fdashline
 
-GENERIC_SRCS = fdlcurvd.f fdldashc.f fdldashd.f fdlsmth.f
+SRCS = fdlcurvd.f fdldashc.f fdldashd.f fdlsmth.f
+OBJS = fdlcurvd.o fdldashc.o fdldashd.o fdlsmth.o
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(fdlcurvd,fdlcurvd.o)
+FExampleTarget(fdldashc,fdldashc.o)
+FExampleTarget(fdldashd,fdldashd.o)
+FExampleTarget(fdlsmth,fdlsmth.o)
+

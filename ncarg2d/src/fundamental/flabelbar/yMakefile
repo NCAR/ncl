@@ -1,8 +1,20 @@
 #
-#	$Id: yMakefile,v 1.2 1993-10-26 23:29:16 haley Exp $
+#	$Id: yMakefile,v 1.3 1995-06-14 00:02:54 haley Exp $
 #
 MYNAME	= fautograph
 
-GENERIC_SRCS = clbbar.f clbfil.f clblbr.f
+SRCS = clbbar.f clbfil.f clblbr.f
+OBJS = clbbar.o clbfil.o clblbr.o
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(clbbar,clbbar.o)
+FExampleTarget(clbfil,clbfil.o)
+FExampleTarget(clblbr,clblbr.o)
+
+

@@ -1,9 +1,31 @@
 #
-#	$Id: yMakefile,v 1.4 1993-10-19 17:25:12 boote Exp $
+#	$Id: yMakefile,v 1.5 1995-06-14 00:02:50 haley Exp $
 #
 MYNAME	= fgks
 
-GENERIC_SRCS = fcell.f fcell0.f fgke01.f fgke02.f fgke03.f fgke04.f fgkgpl.f \
+SRCS = fcell.f fcell0.f fgke01.f fgke02.f fgke03.f fgke04.f fgkgpl.f \
 	fgkgpm.f fgkgtx.f fgklnclr.f fgklnwth.f fgpm01.f fcirc.f
+OBJS = fcell.o fcell0.o fgke01.o fgke02.o fgke03.o fgke04.o fgkgpl.o \
+	fgkgpm.o fgkgtx.o fgklnclr.o fgklnwth.o fgpm01.o fcirc.o
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(fcell,fcell.o)
+FExampleTarget(fcell0,fcell0.o)
+FExampleTarget(fgke01,fgke01.o)
+FExampleTarget(fgke02,fgke02.o)
+FExampleTarget(fgke03,fgke03.o)
+FExampleTarget(fgke04,fgke04.o)
+FExampleTarget(fgkgpl,fgkgpl.o)
+FExampleTarget(fgkgpm,fgkgpm.o)
+FExampleTarget(fgkgtx,fgkgtx.o)
+FExampleTarget(fgklnclr,fgklnclr.o)
+FExampleTarget(fgklnwth,fgklnwth.o)
+FExampleTarget(fgpm01,fgpm01.o)
+FExampleTarget(fcirc,fcirc.o)
+
