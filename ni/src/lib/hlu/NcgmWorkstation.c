@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.37 1998-03-31 16:49:49 dbrown Exp $
+ *      $Id: NcgmWorkstation.c,v 1.38 1998-10-05 19:13:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -120,7 +120,9 @@ static NhlErrorTypes NcgmWorkstationDeactivate(
 
 static NhlErrorTypes NcgmWorkstationAllocateColors(
 #if	NhlNeedProto
-	NhlLayer	l
+	NhlWorkstationLayer	wl,
+	NhlPrivateColor		*new,
+	NhlPrivateColor		*old
 #endif
 );
 
@@ -679,7 +681,8 @@ NcgmWorkstationActivate
 		return retcode;
 
 	if (np->update_colors) {
-		_NhlAllocateColors(l);
+		wl->work.cmap_changed = True;
+		_NhlAllocateColors((NhlWorkstationLayer)l);
 	}
 
 	return retcode;
@@ -807,17 +810,21 @@ static NhlErrorTypes
 NcgmWorkstationAllocateColors
 #if	NhlNeedProto
 (
-	NhlLayer	l	/* workstation layer to update	*/
+	NhlWorkstationLayer	workl,
+	NhlPrivateColor		*new,
+	NhlPrivateColor		*old
 )
 #else
-(l)
-	NhlLayer	l;	/* workstation layer to update	*/
+(workl,new,old)
+	NhlWorkstationLayer	workl;
+	NhlPrivateColor		*new;
+	NhlPrivateColor		*old;
 #endif
 {
-	NhlNcgmWorkstationLayer	wl = (NhlNcgmWorkstationLayer)l;
+	NhlNcgmWorkstationLayer	wl = (NhlNcgmWorkstationLayer)workl;
 	char			func[] = "NcgmWorkstationAllocateColors";
 	NhlNcgmWorkstationClass wlc = 
-		(NhlNcgmWorkstationClass)l->base.layer_class;
+		(NhlNcgmWorkstationClass)workl->base.layer_class;
 	NhlNcgmWorkstationLayerPart	*np = &wl->ncgm;
 	NhlErrorTypes subret = NhlNOERROR,retcode = NhlNOERROR;
 
@@ -828,7 +835,7 @@ NcgmWorkstationAllocateColors
 		return NhlFATAL;
 	}
 
-	subret = UpdateGKSState(l,func);
+	subret = UpdateGKSState((NhlLayer)workl,func);
 	if ((retcode = MIN(retcode,subret)) < NhlWARNING)
 		return retcode;
 
@@ -841,18 +848,16 @@ NcgmWorkstationAllocateColors
  * frame
  */
 	if (np->update_colors) {
-		NhlPrivateColor	*pcmap;
 		int		i;
 
-		pcmap = wl->work.private_color_map;
 		for (i = 0; i < _NhlMAX_COLOR_MAP; i++) {
-			if (pcmap[i].cstat == _NhlCOLSET)
-				pcmap[i].cstat = _NhlCOLCHANGE;
+			if (new[i].cstat == _NhlCOLSET)
+				new[i].cstat = _NhlCOLCHANGE;
 		}
 		np->update_colors = False;
-		wl->work.cmap_changed = True;
 	}
-	subret = (*NhlworkstationClassRec.work_class.alloc_colors)(l);
+	subret = (*NhlworkstationClassRec.work_class.alloc_colors)
+								(workl,new,old);
 	retcode = MIN(retcode,subret);
 
 	return retcode;

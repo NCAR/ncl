@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.31 1998-09-18 23:20:54 boote Exp $
+ *      $Id: XWorkstation.c,v 1.32 1998-10-05 19:13:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -128,7 +128,9 @@ static NhlErrorTypes XWorkstationClear(
 
 static NhlErrorTypes XWorkstationAllocateColors(
 #if  NhlNeedProto
-	NhlLayer l
+	NhlWorkstationLayer	wl,
+	NhlPrivateColor		*new,
+	NhlPrivateColor		*old
 #endif
 );
 
@@ -650,12 +652,6 @@ XWorkstationOpen
 			"Unknown workstation connection id");
 		return(NhlFATAL);
 	}
-#if 0        
-	while(wksisopn(i)) {
-		i++;
-	}
-	xl->work.gkswksid = i;
-#endif        
 
 	switch (xp->xcolor_mode){
 		case NhlPRIVATE:
@@ -692,7 +688,7 @@ XWorkstationOpen
 	xgsc.closure = &xl->work.vswidth_dev_units;
 	gescape(NGESC_CNATIVE,&gesc_in_xgsc,NULL,NULL);
 
-	return _NhlAllocateColors(l);
+	return _NhlAllocateColors((NhlWorkstationLayer)l);
 }
 
 /*
@@ -712,29 +708,30 @@ static NhlErrorTypes
 XWorkstationAllocateColors
 #if  NhlNeedProto
 (
-	NhlLayer l
+	NhlWorkstationLayer 	wl,
+	NhlPrivateColor		*old,
+	NhlPrivateColor		*new
 )
 #else
-(l)
-	NhlLayer l;
+(wl,old,new)
+	NhlWorkstationLayer	wl;
+	NhlPrivateColor		*old;
+	NhlPrivateColor		*new;
 #endif
 {
 	char				func[] = "XWorkstationAllocateColors";
-	NhlXWorkstationLayer		wl = (NhlXWorkstationLayer)l;
+	NhlXWorkstationLayer		xwk = (NhlXWorkstationLayer)wl;
 	NhlWorkstationClassPart	*wcp =
 		&((NhlWorkstationClass)wl->base.layer_class)->work_class;
 	Gcolr_rep			tcrep;
-	int				i, max_col = 0;
-	NhlPrivateColor			*pcmap = wl->work.private_color_map;
-	NhlXPixel			*xpixnums = wl->xwork.xpixels;
+	int				i;
+	NhlPrivateColor			*pcmap = new;
+	NhlXPixel			*xpixnums = xwk->xwork.xpixels;
 	NhlErrorTypes			ret = NhlNOERROR;
 	_NGCXGetXPix			getxpix;
 	_NGCXFreeCi			freeci;
 	Gescape_in_data			gesc_in_getxpix;
 	Gescape_in_data			gesc_in_freeci;
-
-	if (! wl->work.cmap_changed)
-		return ret;
 
 	gesc_in_getxpix.escape_r1.data = &getxpix;
 	gesc_in_getxpix.escape_r1.size = 0;
@@ -764,7 +761,6 @@ XWorkstationAllocateColors
 				else {
 					pcmap[i].cstat = _NhlCOLSET;
 					pcmap[i].ci = i;
-					max_col = i;
 					getxpix.gksci = i;
 					gescape(NGESC_CNATIVE,&gesc_in_getxpix,
 						NULL,NULL);
@@ -786,7 +782,6 @@ XWorkstationAllocateColors
 				break;
 
 			case _NhlCOLSET:
-				max_col = i;
 				break;
 		}
 	}
@@ -842,10 +837,6 @@ XWorkstationAllocateColors
 		if(!_NhlLLErrCheckPrnt(NhlWARNING,func))
 			xpixnums[NhlFOREGROUND] = getxpix.xpixnum;
 	}
-
-	max_col = MAX(max_col,1);
-	wl->work.color_map_len = max_col + 1;
-	wl->work.cmap_changed = False;
 
 	return ret;
 }

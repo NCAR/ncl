@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.20 1998-03-13 22:19:24 dbrown Exp $
+ *      $Id: WorkstationP.h,v 1.21 1998-10-05 19:13:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -53,6 +53,14 @@ typedef struct _NhlPrivateColor {
 typedef NhlErrorTypes (*NhlWorkstationProc)(
 #if	NhlNeedProto
 	NhlLayer	wl
+#endif
+);
+
+typedef	NhlErrorTypes	(*NhlWorkstationAllocColorsProc)(
+#if	NhlNeedProto
+	NhlWorkstationLayer	wl,
+	NhlPrivateColor		*new,
+	NhlPrivateColor		*old
 #endif
 );
 
@@ -117,7 +125,7 @@ typedef void (*NhlWorkstationNotify)(
 #define NhlInheritClose ((NhlWorkstationProc)_NhlInherit)
 #define NhlInheritActivate ((NhlWorkstationProc)_NhlInherit)
 #define NhlInheritDeactivate ((NhlWorkstationProc)_NhlInherit)
-#define NhlInheritAllocateColors ((NhlWorkstationProc)_NhlInherit)
+#define NhlInheritAllocateColors ((NhlWorkstationAllocColorsProc)_NhlInherit)
 #define NhlInheritUpdate ((NhlWorkstationProc)_NhlInherit)
 #define NhlInheritClear ((NhlWorkstationProc)_NhlInherit)
 #define NhlInheritLineTo ((NhlWorkstationLineTo)_NhlInherit)
@@ -175,6 +183,9 @@ typedef struct _NhlWorkstationLayerPart{
 	NhlBoolean	cmap_changed;
         NhlBoolean	cleared;
 
+	_NhlCB		color_index_cb;
+	_NhlCB		color_cb;
+
 	int edge_char_size;
 	int edge_dash_dollar_size;
 	int marker_table_alloc_len;
@@ -205,22 +216,22 @@ typedef struct _wkGksWksRec
 } wkGksWksRec;
 
 typedef struct _NhlWorkstationClassPart{
-        int			*current_wks_count;
-	wkGksWksRec		*gks_wks_recs;
-        NhlBoolean		*hlu_wks_flag;
-	NhlColor		def_background;
-	int			pal;
-	NhlWorkstationProc	open_work;
-	NhlWorkstationProc	close_work;
-	NhlWorkstationProc	activate_work;
-	NhlWorkstationProc	deactivate_work;
-	NhlWorkstationProc	alloc_colors;
-	NhlWorkstationProc	update_work;
-	NhlWorkstationProc	clear_work;
-	NhlWorkstationLineTo	lineto_work;
-	NhlWorkstationFill      fill_work;
-	NhlWorkstationMarker    marker_work;
-        NhlWorkstationNotify    notify_work;
+        int				*current_wks_count;
+	wkGksWksRec			*gks_wks_recs;
+        NhlBoolean			*hlu_wks_flag;
+	NhlColor			def_background;
+	int				pal;
+	NhlWorkstationProc		open_work;
+	NhlWorkstationProc		close_work;
+	NhlWorkstationProc		activate_work;
+	NhlWorkstationProc		deactivate_work;
+	NhlWorkstationAllocColorsProc	alloc_colors;
+	NhlWorkstationProc		update_work;
+	NhlWorkstationProc		clear_work;
+	NhlWorkstationLineTo		lineto_work;
+	NhlWorkstationFill		fill_work;
+	NhlWorkstationMarker		marker_work;
+        NhlWorkstationNotify		notify_work;
 } NhlWorkstationClassPart;
 
 typedef struct _NhlWorkstationClassRec{
@@ -246,7 +257,7 @@ extern	NhlErrorTypes _NhlUpdateGksWksRecs(
 
 extern	NhlErrorTypes _NhlAllocateColors(
 #if	NhlNeedProto
-	NhlLayer	wl
+	NhlWorkstationLayer	wl
 #endif
 );
 

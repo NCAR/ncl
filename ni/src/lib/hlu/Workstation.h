@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.24 1998-05-27 22:50:36 dbrown Exp $
+ *      $Id: Workstation.h,v 1.25 1998-10-05 19:13:50 boote Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,8 @@
 
 #include <ncarg/hlu/Base.h>
 #include <ncarg/hlu/GraphicStyle.h>
+
+#define NhlwkMAX_COLORS	(256)
 
 /*
  * Public Workstation Resources are defined here.

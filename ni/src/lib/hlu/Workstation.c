@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.82 1998-10-02 19:35:21 dbrown Exp $
+ *      $Id: Workstation.c,v 1.83 1998-10-05 19:13:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -403,6 +403,15 @@ static NhlResource resources[] = {
 		_NhlUSET((NhlPointer)NULL),_NhlRES_SGONLY|_NhlRES_PRIVATE,NULL}
 };
 
+static _NhlRawObjCB callbacks[] = {
+	{_NhlCBworkColorIndexChange,
+			NhlOffset(NhlWorkstationLayerRec,work.color_index_cb),
+		8,NULL,NULL,NULL},
+	{_NhlCBworkColorChange,
+			NhlOffset(NhlWorkstationLayerRec,work.color_cb),
+		0,NULL,NULL,NULL},
+};
+
 static _NhlRawClassCB workc_callbacks[] = {
 	{_NhlCBworkPreOpen,NULL,0,NULL,NULL,NULL},
 };
@@ -490,7 +499,9 @@ static NhlErrorTypes WorkstationDeactivate(
 
 static NhlErrorTypes WorkstationAllocateColors(
 #if	NhlNeedProto
-	NhlLayer	wl
+	NhlWorkstationLayer	wl,
+	NhlPrivateColor		*new,
+	NhlPrivateColor		*old
 #endif
 );
 
@@ -574,8 +585,8 @@ NhlWorkstationClassRec NhlworkstationClassRec = {
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
-/* callbacks			*/	NULL,
-/* num_callbacks		*/	0,
+/* callbacks			*/	callbacks,
+/* num_callbacks		*/	NhlNumber(callbacks),
 /* class_callbacks		*/	workc_callbacks,
 /* num_class_callbacks		*/	NhlNumber(workc_callbacks),
 
@@ -1711,7 +1722,7 @@ WorkstationSetValues
 	 * This function actually allocates the colors contained in the
 	 * private colormap.
 	 */
-	subret = _NhlAllocateColors(new);
+	subret = _NhlAllocateColors(newl);
 	retcode = MIN(retcode,subret);
 
 	len1 = 0;
@@ -2329,7 +2340,7 @@ WorkstationOpen
 		return NhlFATAL;
 	}
 
-	return _NhlAllocateColors(l);
+	return _NhlAllocateColors(wl);
 }
 
 /*
@@ -2512,25 +2523,24 @@ static NhlErrorTypes
 WorkstationAllocateColors
 #if  NhlNeedProto
 (
-	NhlLayer l
+	NhlWorkstationLayer	wl,
+	NhlPrivateColor		*old,
+	NhlPrivateColor		*new
 )
 #else
-(l)
-	NhlLayer l;
+(wl,old,new)
+	NhlWorkstationLayer	wl;
+	NhlPrivateColor		*old;
+	NhlPrivateColor		*new;
 #endif
 {
 	char			func[] = "WorkstationAllocateColors";
-	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
 	NhlWorkstationClassPart	*wcp =
 		&((NhlWorkstationClass)wl->base.layer_class)->work_class;
 	Gcolr_rep		tcrep;
-	int			i, max_col = 0;
-	NhlPrivateColor		*pcmap;
+	int			i;
+	NhlPrivateColor		*pcmap = new;
 	NhlErrorTypes		ret = NhlNOERROR;
-
-	pcmap = wl->work.private_color_map;
-	if (! wl->work.cmap_changed)
-		return NhlNOERROR;
 
 	for ( i = 0; i < _NhlMAX_COLOR_MAP; i++) {
 		switch(pcmap[i].cstat){
@@ -2547,7 +2557,6 @@ WorkstationAllocateColors
 				else {
 					pcmap[i].cstat = _NhlCOLSET;
 					pcmap[i].ci = i;
-					max_col = i;
 				}
 				break;
 
@@ -2560,7 +2569,6 @@ WorkstationAllocateColors
 				break;
 
 			case _NhlCOLSET:
-				max_col = i;
 				break;
 		}
 	}
@@ -2609,10 +2617,6 @@ WorkstationAllocateColors
 		pcmap[NhlFOREGROUND].cstat = _NhlCOLSET;
 	}
 
-	max_col = MAX(max_col,1);
-	wl->work.color_map_len = max_col + 1;
-	wl->work.cmap_changed = False;
-	
 	return ret;
 }
 
@@ -3011,7 +3015,7 @@ _NhlSetColor
 		wl->work.private_color_map[ci].cstat = _NhlCOLCHANGE;
 
 	wl->work.cmap_changed = True;
-	return _NhlAllocateColors(l);
+	return _NhlAllocateColors(wl);
 }
 
 NhlErrorTypes
@@ -3107,7 +3111,7 @@ _NhlFreeColor
 	wl->work.private_color_map[ci].cstat = _NhlCOLREMOVE;
 
 	wl->work.cmap_changed = True;
-	return _NhlAllocateColors(l);
+	return _NhlAllocateColors(wl);
 }
 
 /*
@@ -3287,7 +3291,7 @@ int _NhlNewColor
 			wl->work.private_color_map[i].green = green;
 			wl->work.private_color_map[i].blue = blue;
 			wl->work.cmap_changed = True;
-			ret = _NhlAllocateColors(l);
+			ret = _NhlAllocateColors(wl);
 
 			if(ret < NhlINFO){
 				NhlPError(ret,NhlEUNKNOWN,
@@ -3748,17 +3752,66 @@ NhlErrorTypes
 _NhlAllocateColors
 #if	NhlNeedProto
 (
-	NhlLayer	wl
+	NhlWorkstationLayer	wl
 )
 #else
 (wl)
-	NhlLayer	wl;
+	NhlWorkstationLayer	wl;
 #endif
 {
 	NhlWorkstationClassPart	*wc =
 		&((NhlWorkstationClass)wl->base.layer_class)->work_class;
+	NhlPrivateColor			old[_NhlMAX_COLOR_MAP];
+	NhlPrivateColor			*new = wl->work.private_color_map;
+	NhlErrorTypes			ret = NhlNOERROR;
+	int				i,maxi=0;
+	NhlArgVal			cbdata,sel;
+	_NhlworkColorChangeDataRec	ccdata;
 
-	return (*(wc->alloc_colors))(wl);
+	NhlINITVAR(sel);
+	NhlINITVAR(cbdata);
+	cbdata.ptrval = &ccdata;
+	ccdata.pid = wl->base.id;
+
+	if(!wl->work.cmap_changed)
+		return ret;
+
+	memcpy(old,new,sizeof(NhlPrivateColor)*_NhlMAX_COLOR_MAP);
+
+	ret = (*(wc->alloc_colors))(wl,old,new);
+
+	for(i=0;i<_NhlMAX_COLOR_MAP;i++){
+		if(new[i].cstat == _NhlCOLSET)
+			maxi = i;
+		else{
+			new[i].cstat = _NhlCOLUNSET;
+			new[i].red = new[i].green = new[i].blue = -1.0;
+		}
+	}
+
+	maxi = MAX(maxi,1);
+	wl->work.color_map_len = maxi + 1;
+	wl->work.cmap_changed = False;
+
+	/*
+	 * call callbacks.
+	 */
+	for(i=0;i<_NhlMAX_COLOR_MAP;i++){
+		if(memcmp(&new[i],&old[i],sizeof(NhlPrivateColor)) == 0)
+			continue;
+
+		ccdata.ci = sel.lngval = i;
+		ccdata.red = new[i].red;
+		ccdata.green = new[i].green;
+		ccdata.blue = new[i].blue;
+		_NhlCallObjCallbacks((NhlLayer)wl,_NhlCBworkColorChange,
+								sel,cbdata);
+		_NhlCallObjCallbacks((NhlLayer)wl,_NhlCBworkColorIndexChange,
+								sel,cbdata);
+	}
+
+
+	return ret;
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstationP.h,v 1.6 1997-08-25 20:20:39 boote Exp $
+ *      $Id: XWorkstationP.h,v 1.7 1998-10-05 19:13:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -46,7 +46,6 @@ typedef struct _NhlXWorkstationLayerPart {
 	 * Private Fields...
 	 */
 	NhlXPixel	xpixels[_NhlMAX_COLOR_MAP];
-
 } NhlXWorkstationLayerPart;
 
 typedef struct _NhlXWorkstationLayerRec {

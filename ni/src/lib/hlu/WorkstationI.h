@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationI.h,v 1.10 1998-02-24 02:21:19 dbrown Exp $
+ *      $Id: WorkstationI.h,v 1.11 1998-10-05 19:13:50 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,30 @@
 
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/Workstation.h>
+
+typedef struct _NhlworkColorChangeDataRec
+			_NhlworkColorChangeDataRec, *_NhlworkColorChangeData;
+
+struct _NhlworkColorChangeDataRec{
+	int		pid;	/* wks layer id */
+	NhlColorIndex	ci;
+	float		red;
+	float		green;
+	float		blue;
+};
+
+/*
+ * The "Index" version is to get changes on a "specific" color index.  Set
+ * the selector.lngval = to the index of interest.
+ *
+ * The non-"Index" version is a callback that gets called for each and every
+ * index that changes - so a complete colormap set will cause that CB function
+ * to be called 256 times.
+ *
+ * cbdata.ptrval is _NhlworkColorChangeData for both of these
+ */
+#define _NhlCBworkColorIndexChange	"CBworkColorIndexChange"
+#define _NhlCBworkColorChange		"CBworkColorChange"
 
 /*cbdata.ptrval is workstation NhlLayer */
 #define	_NhlCBworkPreOpen	"CBworkPreOpen"
