@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.30 1998-03-11 18:36:12 dbrown Exp $
+ *      $Id: XWorkstation.c,v 1.31 1998-09-18 23:20:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -90,6 +90,12 @@ static NhlErrorTypes XWorkstationInitialize(
 #endif
 );
 
+static NhlErrorTypes XWorkstationDestroy(
+#if	NhlNeedProto
+	NhlLayer
+#endif
+);
+
 static NhlErrorTypes XWorkstationSetValues(
 #if	NhlNeedProto
         NhlLayer,	/* old */
@@ -154,7 +160,7 @@ NhlXWorkstationClassRec NhlxWorkstationClassRec = {
 /* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	XWorkstationGetValues,
 /* layer_reparent		*/	NULL,
-/* layer_destroy		*/	NULL,
+/* layer_destroy		*/	XWorkstationDestroy,
 
 /* child_resources		*/	NULL,
 
@@ -361,6 +367,38 @@ static NhlErrorTypes XWorkstationInitialize
 	return ret;
 }
 
+/*
+ * Function:	XWorkstationDestroy
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static NhlErrorTypes
+XWorkstationDestroy
+#if	NhlNeedProto
+(
+	NhlLayer	l
+)
+#else
+(l)
+	NhlLayer	l;
+#endif
+{
+	char				func[]="XWorkstationDestroy";
+	NhlXWorkstationLayer		xl = (NhlXWorkstationLayer)l;
+
+	NhlFree(xl->xwork.xwinconfig.title);
+	NhlFree(xl->xwork.xwinconfig.icon_title);
+
+	return NhlNOERROR;
+}
 
 /*
  * Function:	XWorkstationSetValues
