@@ -1650,9 +1650,9 @@ void *storage;
 					break;
 				}
 			} else if(NrmStringToQuark("_FillValue") == att_name) {
-				if(thefile[i].vars[i].var_info.data_type == NCL_float) {
+				if(thefile->vars[i].var_info.data_type == NCL_float) {
 					*(float*)storage = (float)1e36;
-				} else if(thefile[i].vars[i].var_info.data_type == NCL_double){
+				} else if(thefile->vars[i].var_info.data_type == NCL_double){
 					*(double*)storage = (double)1e36;
 				}
 			}
