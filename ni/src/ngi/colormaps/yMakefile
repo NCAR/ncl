@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.3 2000-01-27 23:30:14 haley Exp $
+#       $Id: yMakefile,v 1.4 2000-01-30 23:45:24 haley Exp $
 #
 FILES		= \
 		3gauss.ncmap  \
@@ -16,6 +16,7 @@ FILES		= \
 		BlWhRe.gp \
 		BlWhRe.rgb \
 		BlueRed.rgb \
+		BlueRedGray.rgb \
 		GreenYellow.rgb \
 		ViBlGrWhYeOrRe.gp \
 		ViBlGrWhYeOrRe.rgb \
