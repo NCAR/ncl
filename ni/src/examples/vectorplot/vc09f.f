@@ -1,5 +1,5 @@
 C
-C  $Id: vc09f.f,v 1.2 1998-02-05 23:56:57 haley Exp $
+C  $Id: vc09f.f,v 1.3 1998-06-28 22:51:33 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -135,6 +135,7 @@ C
  15   filename(1:flen)=dir
 
       filename(flen+1:flen+10) = Uname
+      filename(flen+11:flen+11) = char(0)
       uf = ncopn (filename, 0, ierr)
       filename(flen+1:flen+10) = Vname
       vf = ncopn (filename, 0, ierr)
