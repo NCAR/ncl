@@ -1,6 +1,6 @@
 C
-C $Id: plchhq.f,v 1.23 2000-08-22 15:05:27 haley Exp $
-C                                                                      
+C $Id: plchhq.f,v 1.24 2003-01-04 00:11:01 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -139,10 +139,10 @@ C
 C
       CHARACTER*(NCSO) CHSV
 C
-C Define arrays in which to save the definitions of normalization
-C transformation 1 and the current normalization transformation.
+C Define arrays in which to save the definitions of the window and
+C the viewport of the current normalization transformation.
 C
-      DIMENSION WNT1(4),VNT1(4),WNTC(4),VNTC(4)
+      DIMENSION WNTC(4),VNTC(4)
 C
 C Declare an array in which to save text extent information for specific
 C characters from specific fonts.
@@ -881,15 +881,7 @@ C
 C D R A W   T H E   C H A R A C T E R S
 C
 C
-C First, save information about normalization transformation 1 and the
-C current normalization transformation.
-C
-      CALL GQNT (1,IERR,WNT1,VNT1)
-C
-      IF (IERR.NE.0) THEN
-        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQNT',15,1)
-        RETURN
-      END IF
+C Save information about the current normalization transformation.
 C
       CALL GQCNTN (IERR,INTC)
 C
@@ -1676,13 +1668,13 @@ C Now, if there are visible pieces of the polyline/polygon, ...
 C
               IF (NPCS.NE.0) THEN
 C
-C ... redefine normalization transformation 1 so that we can use
-C fractional coordinates and yet have the same window as before, and
-C then switch to that normalization transformation ...
+C ... redefine the current normalization transformation, if possible,
+C so that we can use fractional coordinates and yet have the same
+C viewport as before ...
 C
-                CALL GSWN   (1,VNTC(1),VNTC(2),VNTC(3),VNTC(4))
-                CALL GSVP   (1,VNTC(1),VNTC(2),VNTC(3),VNTC(4))
-                CALL GSELNT (1)
+                IF (INTC.NE.0) THEN
+                  CALL GSWN (1,VNTC(1),VNTC(2),VNTC(3),VNTC(4))
+                END IF
 C
 C ... change color (during pass 2) if so directed by information from
 C the fontcap, ...
@@ -1740,14 +1732,12 @@ C
 C
                 END IF
 C
-C ... restore normalization transformation 1, ...
+C ... restore the current normalization transformation (if it was
+C changed above) ...
 C
-                CALL GSWN (1,WNT1(1),WNT1(2),WNT1(3),WNT1(4))
-                CALL GSVP (1,VNT1(1),VNT1(2),VNT1(3),VNT1(4))
-C
-C ... switch back to the original normalization transformation, ...
-C
-                CALL GSELNT (INTC)
+                IF (INTC.NE.0) THEN
+                  CALL GSWN (1,WNTC(1),WNTC(2),WNTC(3),WNTC(4))
+                END IF
 C
 C ... and, if the color was just overridden above, set it back to what
 C it was.
