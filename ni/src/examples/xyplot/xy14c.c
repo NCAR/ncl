@@ -1,5 +1,5 @@
 /*
-**      $Id: xy14c.c,v 1.2 1995-10-17 17:09:54 haley Exp $
+**      $Id: xy14c.c,v 1.3 1996-01-04 16:48:55 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -242,7 +242,7 @@ main()
     std_dev = 0.;
     for( i = 0; i < NHOURS; i++ ) {
          std_dev = std_dev+pow( ((9./5.)*tr_data[0][i]+32.) - t_mean,2.);
-	 }
+     }
     std_dev = sqrt(std_dev/(NHOURS-1));
     for( i = 0; i < NHOURS; i++ ) {
         y_array[i] = ((9./5.)*tr_data[0][i]+32. - t_mean)/std_dev;

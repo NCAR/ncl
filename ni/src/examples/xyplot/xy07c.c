@@ -1,5 +1,5 @@
 /*
-**      $Id: xy07c.c,v 1.4 1995-06-22 21:09:39 haley Exp $
+**      $Id: xy07c.c,v 1.5 1996-01-04 16:48:55 haley Exp $
 */
 /************************************************************************
 *                                                                       *
@@ -48,7 +48,7 @@ main()
     int     appid,xworkid,plotid,dataid[2];
     int     rlist, i, j, len[2];
     float   x;
-	float cmap[4][3];
+    float cmap[4][3];
     char datastr[10];
     extern float fran();
     int NCGM=0, X11=1, PS=0;
@@ -63,13 +63,13 @@ main()
  * foreground and two colors defined for our markers.  Color '0' is
  * the background color and '1' is the foreground color.
  */
-	cmap[0][0] = cmap[0][1] = cmap[0][2] = 1.;
-	cmap[1][0] = cmap[1][1] = cmap[1][2] = 0.;
+    cmap[0][0] = cmap[0][1] = cmap[0][2] = 1.;
+    cmap[1][0] = cmap[1][1] = cmap[1][2] = 0.;
     cmap[2][1] = cmap[2][2] = 0.;
     cmap[2][0] = 1.;
     cmap[3][0] = cmap[3][1] = 0.;
     cmap[3][2] = 1.;
-	len[0] = 4;  len[1] = 3;
+    len[0] = 4;  len[1] = 3;
 /*
  * Create Application object.  The Application object name is used to
  * determine the name of the resource file, which is "xy07.res" in
@@ -86,7 +86,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./xy07c.ncgm");
-		NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
         NhlCreate(&xworkid,"xy07Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
@@ -96,7 +96,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
-		NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
         NhlCreate(&xworkid,"xy07Work",NhlxWorkstationClass,
               NhlDEFAULT_APP,rlist);
     }
@@ -106,7 +106,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"./xy07c.ps");
-		NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
         NhlCreate(&xworkid,"xy07Work",NhlpsWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
