@@ -7392,13 +7392,15 @@ C     See that SMALL and BIG bound the zero and set QINCR
 C
       X = SMALL
 C     GET-FUNCTION-VALUE
-      ASSIGN 10 TO I99999
+C DJS ASSIGN 10 TO I99999
+      I99999 = 10
       GO TO 300
 
    10 FSMALL = FX
       X = BIG
 C     GET-FUNCTION-VALUE
-      ASSIGN 20 TO I99999
+C DJS ASSIGN 20 TO I99999
+      I99999 = 20
       GO TO 300
 
    20 FBIG = FX
@@ -7439,7 +7441,8 @@ C*PT*WARNING* Constant already double-precision
       STEP = MAX(ABSSTP,RELSTP*ABS(X))
 C      YY = F(X) - Y
 C     GET-FUNCTION-VALUE
-      ASSIGN 90 TO I99999
+C DJS ASSIGN 90 TO I99999
+      I99999 = 90
       GO TO 300
 
    90 YY = FX
@@ -7467,7 +7470,8 @@ C++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C      YY = F(XUB) - Y
   120 X = XUB
 C     GET-FUNCTION-VALUE
-      ASSIGN 130 TO I99999
+C DJS ASSIGN 130 TO I99999
+      I99999 = 130
       GO TO 300
 
   130 YY = FX
@@ -7504,7 +7508,8 @@ C++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C      YY = F(XLB) - Y
   190 X = XLB
 C     GET-FUNCTION-VALUE
-      ASSIGN 200 TO I99999
+C DJS ASSIGN 200 TO I99999
+      I99999 = 200
       GO TO 300
 
   200 YY = FX
@@ -7541,7 +7546,8 @@ C++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   260 CALL DZROR(STATUS,X,FX,XLO,XHI,QDUM1,QDUM2)
       IF (.NOT. (STATUS.EQ.1)) GO TO 280
 C     GET-FUNCTION-VALUE
-      ASSIGN 270 TO I99999
+C DJS ASSIGN 270 TO I99999
+      I99999 = 270
       GO TO 300
 
   270 CONTINUE
@@ -7650,7 +7656,13 @@ C     TO GET-FUNCTION-VALUE
       RETURN
 
   310 CONTINUE
-      GO TO I99999
+C DJS GO TO I99999
+      IF (I99999 .EQ.  10) GO TO 10 
+      IF (I99999 .EQ.  20) GO TO 20 
+      IF (I99999 .EQ.  90) GO TO 90 
+      IF (I99999 .EQ. 130) GO TO 130 
+      IF (I99999 .EQ. 200) GO TO 200 
+      IF (I99999 .EQ. 270) GO TO 270 
 
       END
 C*PT*WARNING* Already double-precision
@@ -8463,7 +8475,8 @@ C     .. Executable Statements ..
       B = XLO
       X = XLO
 C     GET-FUNCTION-VALUE
-      ASSIGN 10 TO I99999
+C DJS ASSIGN 10 TO I99999
+      I99999 = 10
       GO TO 270
 
    10 FB = FX
@@ -8471,7 +8484,8 @@ C     GET-FUNCTION-VALUE
       A = XLO
       X = XLO
 C     GET-FUNCTION-VALUE
-      ASSIGN 20 TO I99999
+C DJS ASSIGN 20 TO I99999
+      I99999 = 20
       GO TO 270
 C*PT*WARNING* Constant already double-precision
 C
@@ -8561,7 +8575,8 @@ C*PT*WARNING* Constant already double-precision
       XLO = B
       X = XLO
 C     GET-FUNCTION-VALUE
-      ASSIGN 200 TO I99999
+C DJS ASSIGN 200 TO I99999
+      I99999 = 200
       GO TO 270
 
   200 FB = FX
@@ -8666,7 +8681,10 @@ C     TO GET-FUNCTION-VALUE
       RETURN
 
   280 CONTINUE
-      GO TO I99999
+C DJS GO TO I99999
+      IF (I99999 .EQ.  10) GO TO 10 
+      IF (I99999 .EQ.  20) GO TO 20 
+      IF (I99999 .EQ. 200) GO TO 200 
 
       END
 C*PT*WARNING* Already double-precision
