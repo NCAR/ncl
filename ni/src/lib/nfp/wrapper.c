@@ -429,6 +429,9 @@ extern NhlErrorTypes ind_resolve_W(void);
 extern NhlErrorTypes unique_string_W(void);
 extern NhlErrorTypes tempnam_W(void);
 
+extern NhlErrorTypes print2d_W(void);
+
+
 void NclAddUserFuncs(void)
 {
     void *args;
@@ -5418,8 +5421,29 @@ void NclAddUserFuncs(void)
 
     NclRegisterFunc(tempnam_W, args, "tempnam", nargs);
 
+/*
+ * Register "print2d".
+ */
+    nargs = 0;
+    args = NewArgs(8);
+
+    SetArgTemplate(args, nargs, "string", NclANY, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "string", NclANY, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "string", NclANY, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, NclANY); nargs++;
+
+    NclRegisterProc(print2d_W, args, "print2d", nargs);
+
+
     return;
 }
+
+
+
 
 /*
  * NOTE: the following function stubs must be included with the
@@ -6009,3 +6033,5 @@ NclScalar         *missing_fx
                typeclass_x);
   }
 }
+
+
