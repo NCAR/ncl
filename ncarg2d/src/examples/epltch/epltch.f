@@ -1,5 +1,5 @@
 C
-C $Id: epltch.f,v 1.2 1992-11-11 01:55:27 kennison Exp $
+C $Id: epltch.f,v 1.3 1992-11-17 19:54:43 kennison Exp $
 C
       PROGRAM EXMPLS
 C
@@ -14,7 +14,11 @@ C
 C Define a couple of temporary variables of type CHARACTER.
 C
       CHARACTER*6 CTMP
-      CHARACTER*7 CHRS
+      CHARACTER*8 CHRS
+C
+C Define an array in which to put the numbers of the filled fonts.
+C
+      DIMENSION IFFN(23)
 C
 C Define the column and row labels.  The character string ':c:r', where
 C "c" is the first three characters of a column label and "r" is the
@@ -54,11 +58,20 @@ C
      +            '?', '@', '[', '\\',']', '^', '_', '`', '{', '|',
      +            '}', '~'                                        /
 C
+C Define the font numbers for the filled fonts.
+C
+      DATA IFFN / 1, 21, 22, 25, 26, 29, 30, 33, 34, 35, 36, 37 ,
+     +              121,122,125,126,129,130,133,134,135,136,137 /
+C
 C ---------------------------------------------------------------------
 C
 C Open GKS.
 C
       CALL OPNGKS
+C
+C Set the "fill area interior style" to "solid".
+C
+      CALL GSFAIS (1)
 C
 C Do a call to SET which allows us to use fractional coordinates.
 C
@@ -349,9 +362,6 @@ C Double the line width.
 C
       CALL GSLWSC (2.)
 C
-C Do a single frame showing all the characters in the fontcap databases,
-C access to which was added in June of 1990.
-C
 C Put a label at the top of the plot.
 C
       CALL PLCHHQ (.5,.98,'PLCHHQ - FONTCAP DATABASES ADDED 6/90',
@@ -379,7 +389,7 @@ C
 C
         YCEN=.945-.045*REAL(IFNT)
 C
-        WRITE (CHRS,'(I7)') IFNT
+        WRITE (CHRS,'(I8)') IFNT
         CHRS(1:4)='FONT'
         CALL PCSETI ('FN - FONTCAP NUMBER',7)
         CALL PLCHHQ (.005,YCEN,CHRS,.012,0.,-1.)
@@ -454,14 +464,14 @@ C
 C
 C Write lines illustrating various kinds of zooming.
 C
-      CALL PLCHHQ (.5,.754,'/F13/Unzoomed characters from font 13.',.012
-     +,0.,0.)
-      CALL PLCHHQ (.5,.730,'/F13X150Q/Characters zoomed in width, using
-     +X150Q.',.012,0.,0.)
-      CALL PLCHHQ (.5,.700,'/F13Y150Q/Characters zoomed in height, using
-     + Y150Q.',.012,0.,0.)
-      CALL PLCHHQ (.5,.664,'/F13Z150Q/Characters zoomed both ways, using
-     + Z150Q.',.012,0.,0.)
+      CALL PLCHHQ (.500,.754,'/F13/Unzoomed characters from font 13.',
+     +.012,0.,0.)
+      CALL PLCHHQ (.500,.730,'/F13X150Q/Characters zoomed in width, usin
+     +g X150Q.',.012,0.,0.)
+      CALL PLCHHQ (.500,.700,'/F13Y150Q/Characters zoomed in height, usi
+     +ng Y150Q.',.012,0.,0.)
+      CALL PLCHHQ (.500,.664,'/F13Z150Q/Characters zoomed both ways, usi
+     +ng Z150Q.',.012,0.,0.)
 C
 C Write a line illustrating non-aligned zooming in height.
 C
@@ -514,7 +524,8 @@ C
       CALL PLCHHQ (.5,.312,'Large characters on digitization grid.  X''s
      + mark edge points of the characters.',.01,0.,0.)
 C
-      WDTH=.150
+      CALL PCGETR ('SA - SIZE ADJUSTMENT',SIZA)
+      WDTH=.15
       XLFT=.500-48.*(WDTH/16.)
       XRGT=.500+48.*(WDTH/16.)
       YBOT=.150-11.*(WDTH/16.)
@@ -537,30 +548,30 @@ C
       CALL GSLWSC (2.)
 C
       XCRD=.500-45.*(WDTH/16.)
-      YCRD=.150
+      YCRD=.150+1.5*(WDTH/16.)
       CALL LINE (XCRD-WDTH/32.,YCRD-WDTH/32.,
      +           XCRD+WDTH/32.,YCRD+WDTH/32.)
       CALL LINE (XCRD-WDTH/32.,YCRD+WDTH/32.,
      +           XCRD+WDTH/32.,YCRD-WDTH/32.)
-      CALL PLCHHQ (XCRD,YCRD,'/F9/A',WDTH,0.,-1.)
+      CALL PLCHHQ (XCRD,YCRD,'/F9/A',WDTH/SIZA,0.,-1.)
       CALL PCGETR ('XE - X COORDINATE AT END OF STRING',XCRD)
       CALL LINE (XCRD-WDTH/32.,YCRD-WDTH/32.,
      +           XCRD+WDTH/32.,YCRD+WDTH/32.)
       CALL LINE (XCRD-WDTH/32.,YCRD+WDTH/32.,
      +           XCRD+WDTH/32.,YCRD-WDTH/32.)
-      CALL PLCHHQ (XCRD,YCRD,'/F9/B',WDTH,0.,-1.)
+      CALL PLCHHQ (XCRD,YCRD,'/F9/B',WDTH/SIZA,0.,-1.)
       CALL PCGETR ('XE - X COORDINATE AT END OF STRING',XCRD)
       CALL LINE (XCRD-WDTH/32.,YCRD-WDTH/32.,
      +           XCRD+WDTH/32.,YCRD+WDTH/32.)
       CALL LINE (XCRD-WDTH/32.,YCRD+WDTH/32.,
      +           XCRD+WDTH/32.,YCRD-WDTH/32.)
-      CALL PLCHHQ (XCRD,YCRD,'/F9/C',WDTH,0.,-1.)
+      CALL PLCHHQ (XCRD,YCRD,'/F9/C',WDTH/SIZA,0.,-1.)
       CALL PCGETR ('XE - X COORDINATE AT END OF STRING',XCRD)
       CALL LINE (XCRD-WDTH/32.,YCRD-WDTH/32.,
      +           XCRD+WDTH/32.,YCRD+WDTH/32.)
       CALL LINE (XCRD-WDTH/32.,YCRD+WDTH/32.,
      +           XCRD+WDTH/32.,YCRD-WDTH/32.)
-      CALL PLCHHQ (XCRD,YCRD,'/F9/D',WDTH,0.,-1.)
+      CALL PLCHHQ (XCRD,YCRD,'/F9/D',WDTH/SIZA,0.,-1.)
       CALL PCGETR ('XE - X COORDINATE AT END OF STRING',XCRD)
       CALL LINE (XCRD-WDTH/32.,YCRD-WDTH/32.,
      +           XCRD+WDTH/32.,YCRD+WDTH/32.)
@@ -575,6 +586,71 @@ C Go back to normal line width.
 C
       CALL PLOTIF (0.,0.,2)
       CALL GSLWSC (1.)
+C
+C Advance the frame.
+C
+      CALL FRAME
+C
+C Example 1-13. -------------------------------------------------------
+C
+C Do a single frame showing all the characters in the fontcap databases,
+C access to which was added in October of 1992.
+C
+C Put a label at the top of the plot.
+C
+      CALL PLCHHQ (.5,.98,'PLCHHQ - FONTCAP DATABASES ADDED 10/92',
+     +                                                        .02,0.,0.)
+C
+C Temporarily use the slash as a function code character.
+C
+      CALL PCSETC ('FC - FUNCTION CODE CHARACTER','/')
+C
+C Put an explanatory note on the plot.
+C
+      CALL PLCHHQ (.5,.945,':F1:c selects the ASCII character "c", as sh
+     +own in the first two lines.',.01,0.,0.)
+C
+      CALL PLCHHQ (.5,.925,':Fn:c selects the corresponding character fr
+     +om font n.',.01,0.,0.)
+C
+C Return to a colon as the function code character.
+C
+      CALL PCSETC ('FC - FUNCTION CODE CHARACTER',':')
+C
+C Loop through all the new filled fonts.
+C
+      DO 113 IFNS=1,23
+C
+        YCEN=.945-.0391304*REAL(IFNS)
+C
+        WRITE (CHRS,'(I8)') IFFN(IFNS)
+        CHRS(1:4)='FONT'
+        CALL PCSETI ('FN - FONTCAP NUMBER',7)
+        CALL PLCHHQ (.005,YCEN,CHRS,.012,0.,-1.)
+C
+        CALL PCSETI ('FN - FONTCAP NUMBER',IFFN(IFNS))
+C
+C Draw all the meaningful characters from the font.
+C
+        DO 112 ICHR=33,126
+          IF (ICHR.LE.79) THEN
+            XCEN=.125+.0183*REAL(ICHR-32)
+          ELSE
+            XCEN=.125+.0183*REAL(ICHR-79)
+          END IF
+          IF (ICHR.EQ.80) YCEN=YCEN-.0195652
+          IF (CHAR(ICHR).EQ.':') CALL PCSETC ('FC','!')
+          CALL PLCHHQ (XCEN,YCEN,CHAR(ICHR),.01,0.,0.)
+          IF (CHAR(ICHR).EQ.':') CALL PCSETC ('FC',':')
+  112   CONTINUE
+C
+C End of loop through fonts.
+C
+  113 CONTINUE
+C
+C Restore the fontcap number to 0 to select the PWRITX database.
+C
+      CALL PCSETI ('FN - FONTCAP NUMBER',0)
 C
 C Advance the frame.
 C
