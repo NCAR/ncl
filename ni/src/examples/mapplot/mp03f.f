@@ -1,70 +1,71 @@
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      C
+C			     Copyright (C)  1993			                       C
+C	     University Corporation for Atmospheric Research		       C
+C			     All Rights Reserved			                       C
+C                                                                      C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C     $Id: mp03f.f,v 1.1 1995-01-24 23:27:42 haley Exp $
+C	File:		mp03f.f
 C
-C************************************************************************
-C                                                                       *
-C                            Copyright (C)  1995                        *
-C                 University Corporation for Atmospheric Research       *
-C                            All Rights Reserved                        *
-C                                                                       *
-C************************************************************************
+C	Author:		David Brown (converted to Fortran by Mary)
+C			National Center for Atmospheric Research
+C			PO 3000, Boulder, Colorado
 C
-C      File:            mp03f.f
+C	Date:		Tue Jan 24 10:08:50 MST 1995
 C
-C      Author:          Dave Brown (converted to Fortran by Mary Haley)
-C                       National Center for Atmospheric Research
-C                       PO 3000, Boulder, Colorado
-C
-C      Date:            Tue Jan 24 10:08:50 MST 1995
-C
-C      Description:    	Demonstrates MapPlot masking; loosely emulates
-C                       the LLU example 'colcon'
+C	Description:	Demonstrates MapPlot masking; loosely emulates the
+C			LLU example 'colcon'
 C
       external nhlfapplayerclass
       external nhlfncgmworkstationlayerclass
-      external nhlfcontourlayerclass
-      external nhlfscalarfieldlayerclass
       external nhlfmapplotlayerclass
+      external nhlfscalarfieldlayerclass
+      external nhlfcontourlayerclass
 
-      parameter(M = 50, N = 50)
       integer appid,wid,mapid,dataid,cnid
       integer rlist
 
-      real z(M,N)
+      real z(50,50)
+      integer M,N
+      data M,N/50,50/
       integer mlow, mhigh
-      data mlow,mhigh/13,13/
-      real dlow,dhigh
+      data mlow,mhigh/13,18/
+      real dlow, dhigh
       data dlow,dhigh/13.,18./
       integer len_dims(2)
 
-      character*6 mask_specs(1) 
+      character*6 mask_specs(1)
       data mask_specs/'oceans'/
 C
 C Initialize the high level utility library
 C
       call nhlfinitialize
 C
-C Create an application context. Set the app dir to the current directory
-C so the application looks for a resource file in the working directory.
-C The resource file sets most of the Contour resources that remain fixed
-C throughout the life of the Contour object.
+C Create an application context. Set the app dir to the current
+C directory so the application looks for a resource file in the working
+C directory. The resource file sets most of the Contour resources that
+C remain fixed throughout the life of the Contour object.
 C
       call nhlfrlcreate(rlist,'SETRL')
       call nhlfrlclear(rlist)
       call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
       call nhlfcreate(appid,'mp03',nhlfapplayerclass,0,rlist,ierr)
+
 C
 C Create a meta file workstation
 C
+      call nhlfrlcreate(rlist,'SETRL')
       call nhlfrlclear(rlist)
       call nhlfrlsetstring(rlist,'wkMetaName','./mp03f.ncgm',ierr)
       call nhlfcreate(wid,'mp03Work',nhlfncgmworkstationlayerclass,0,
-     1    rlist,ierr)
+     1     rlist,ierr)
 C
-C Call the Fortran routine 'GENDAT' to create the first array of contour
-C data. Create a ScalarField data object and hand it the data created by
-C 'GENDAT'. Define the extent of the data coordinates as the whole globe 
-C
+C Call the routine 'gendat' to create the first array of contour
+C data. Create a ScalarField data object and hand it the data created
+C by 'gendat'. Define the extent of the data coordinates as the whole
+C globe. 
+
       call nhlfrlclear(rlist)
       len_dims(1) = N
       len_dims(2) = M
@@ -75,7 +76,8 @@ C
       call nhlfrlsetinteger(rlist,'sfYCStartV',-90,ierr)
       call nhlfrlsetinteger(rlist,'sfYCEndV',90,ierr)
       call nhlfcreate(dataid,'Gendat',nhlfscalarfieldlayerclass,appid,
-     1        rlist,ierr)
+     1     rlist,ierr)
+
 C
 C Create a Contour object, supplying the ScalarField object as data,
 C and setting the size of the viewport.
@@ -84,7 +86,7 @@ C
       call nhlfrlsetinteger(rlist,'cnScalarFieldData',dataid,ierr)
       call nhlfrlsetstring(rlist,'cnLabelDrawOrder','postdraw',ierr)
       call nhlfcreate(cnid,'Contour1',nhlfcontourlayerclass,wid,rlist,
-     1      ierr)
+     1     ierr)
 C
 C Create a MapPlot object, setting the fill to draw over the main draw,
 C and masking out the oceans.
@@ -96,24 +98,28 @@ C
       call nhlfrlsetstring(rlist,'ovTitleDisplayMode','always',ierr)
       call nhlfrlsetstring(rlist,'tiMainString','mp03f',ierr)
       call nhlfrlsetstring(rlist,'mpFillDrawOrder','postdraw',ierr)
+      call nhlfrlsetstring(rlist,'mpAreaMaskingOn','true',ierr)
       call nhlfrlsetstringarray(rlist,'mpMaskAreaSpecifiers',mask_specs,
-     1        1,ierr)
+     1     1,ierr)
       call nhlfcreate(mapid,'Map1',nhlfmapplotlayerclass,wid,rlist,ierr)
 C
 C Overlay the Contour object on the MapPlot object
 C
       call nhlfaddtooverlay(mapid,cnid,-1,ierr)
-    
+	
       call nhlfdraw(mapid,ierr)
       call nhlfframe(wid,ierr)
 C
 C Destroy the objects created, close the HLU library and exit.
 C
+
       call nhlfdestroy(mapid,ierr)
       call nhlfdestroy(wid,ierr)
       call nhlfclose
+
       stop
       end
+
 
       subroutine gendat (data,idim,m,n,mlow,mhgh,dlow,dhgh)
 C
