@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.3 1991-01-08 12:22:33 clyne Exp $
+ *	$Id: main.c,v 1.4 1991-03-12 17:05:42 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -51,6 +51,8 @@ extern	Ct_err	ctrans();
 
 extern	char	*strrchr();
 extern	char	*malloc();
+
+char	*ProgramName;
 
 /*
  *	a global structure that contains values of command line options

@@ -43,7 +43,7 @@ OBJS	= \
 LIBS	= $(LOCLIB) $(X11LIBS) $(CGILIBS) $(SUNLIBS) $(GENLIBS)
 
 
-GENLIBS 	= -lm
+GENLIBS 	= -lm -lraster -ldf
 CDEFINES	= -I$(LOCINCDIR)
 
 DCGILIBS = -lcgi -lsuntool -lsunwindow -lpixrect
