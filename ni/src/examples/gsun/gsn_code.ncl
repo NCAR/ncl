@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.50 2000-10-27 20:49:48 haley Exp $
+;      $Id: gsn_code.ncl,v 1.51 2000-11-01 16:02:18 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1636,7 +1636,7 @@ end
 ;                                                                       ;
 ; However, if you set gsnPanelRowSpec to True, and dims to an array of  ;
 procedure gsn_panel(wks:graphic,plot[*]:graphic,dims[*]:integer,\
-                    resources:logical )
+                  resources:logical)
 ; there to be two plots in the first row, three in the second row, and  ;
 ; one in the third row.                                                 ;
 ;                                                                       ;
@@ -1773,7 +1773,8 @@ begin
     print("Warning: gsn_panel: attribute gsnPanelBottom must be >= 0.0 and < 1.0")
     print("Defaulting to 0.")
     y_bot = 0.0
-  if(class(0).ne."contourPlotClass".and.class(0).ne."vectorPlotClass") then
+  end if
+
   if(x_rgt.le.x_lft)
     print("Error: gsn_panel: attribute gsnPanelRight ("+x_rgt+") must be greater")
     print("than gsnPanelLeft ("+x_lft+").")
@@ -1788,8 +1789,15 @@ begin
 ;
 ; Get the type of plots we have. "plot" can be a map, in which case
 ; the vector or contour plot overlaid
-      vector_plot = plot(0)
-      plot_type = "vector"
+; on it will be indicated by "plot@contour" or "plot@vector"
+;
+  plot_type = "unknown"
+  class = NhlClassName(plot)
+
+  if(class(0).ne."contourPlotClass".and.class(0).ne."vectorPlotClass".and. \
+     class(0).ne."xyPlotClass") then
+    if(isatt(plot,"contour")) then
+      contour_plot = plot@contour
       plot_type = "contour"
     else
         vector_plot = plot@vector
@@ -1806,9 +1814,16 @@ begin
         plot_type = "vector"
       else
         if(class(0).eq."xyPlotClass") then
-        font_height = 0.01
-        print("Warning: gsn_panel: unrecognized plot type, thus unable to get information for font height.")
-        print("Defaulting to " + font_height)
+          xy_plot = plot(0)
+          plot_type = "xy"
+        end if
+      end if
+    end if
+  end if
+
+;
+; Get the font height
+;
   if(is_figure_strings.or.panel_labelbar) then
     if(plot_type.eq."contour") then
       getvalues contour_plot
@@ -2145,6 +2160,7 @@ begin
   if(callframe)
     frame(wks)   ; Advance the frame.
                              (/bot,bot,top,top,bot/),gsres)
+  return(plot)
           "vpHeightF" : old_vp(i,3)
         end setvalues
 
