@@ -1208,15 +1208,15 @@ C the quadrilateral and perturb the coordinates a little.
 C
           DO 103 I=1,4
             UCRD(I)=UCEN(INUM(J))+XCRD(I,J)*UCOX(INUM(J))+
-     +                            YCRD(I,J)*UCOY(INUM(J))
+     +                            YCRD(I,J)*UCOY(INUM(J))+PRTURB(1.E-6)
             VCRD(I)=VCEN(INUM(J))+XCRD(I,J)*VCOX(INUM(J))+
-     +                            YCRD(I,J)*VCOY(INUM(J))
+     +                            YCRD(I,J)*VCOY(INUM(J))+PRTURB(1.E-6)
             WCRD(I)=WCEN(INUM(J))+XCRD(I,J)*WCOX(INUM(J))+
-     +                            YCRD(I,J)*WCOY(INUM(J))
+     +                            YCRD(I,J)*WCOY(INUM(J))+PRTURB(1.E-6)
             DTMP=SQRT(UCRD(I)**2+VCRD(I)**2+WCRD(I)**2)
-            UCRD(I)=UCRD(I)/DTMP+PRTURB(1.E-6)
-            VCRD(I)=VCRD(I)/DTMP+PRTURB(1.E-6)
-            WCRD(I)=WCRD(I)/DTMP+PRTURB(1.E-6)
+            UCRD(I)=UCRD(I)/DTMP
+            VCRD(I)=VCRD(I)/DTMP
+            WCRD(I)=WCRD(I)/DTMP
             CALL XYZLLP (UCRD(I),VCRD(I),WCRD(I),RLAT(I,J),RLON(I,J))
   103     CONTINUE
 C
