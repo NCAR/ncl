@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.41 2002-03-25 21:40:06 haley Exp $
+#	$Id: ymake,v 1.42 2002-06-20 22:17:18 haley Exp $
 #
 ######################################################################
 #
@@ -241,29 +241,7 @@ endif
 
 onintr error_cleanup
 
-# Determine the hostname of the machine, create a definition
-# for it, and pass that to "cpp" so that yMakefiles can key
-# off of it. This is used to install local host-specific
-# configuration options permanently with the distribution.
-
-set hostname = "UnKnown"
 set foo = `uname -s`
-
-if (-e /bin/hostname) then
-  if ("$foo" == "Linux" || "$foo" == "Darwin") then
-        set hostname    = `/bin/hostname -s`
-  else
-        set hostname    = `/bin/hostname`
-  endif
-endif
-
-if (-e /usr/bsd/hostname) then
-        set hostname    = `/usr/bsd/hostname`
-endif
-
-set hostname=host$hostname
-
-set defines=($defines -D$hostname)
 
 #
 #       Figure out what kind of system we are on. We need to know the OS
