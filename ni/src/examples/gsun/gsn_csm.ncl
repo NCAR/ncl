@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.6 1999-04-16 13:49:02 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.7 1999-04-28 04:28:17 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1255,10 +1255,8 @@ end
 ; list of resources. The id of the map plot is returned.                ;
 ;                                                                       ;
     if(iscoord(datanew,"lat").and.iscoord(datanew,"lon"))
-      cnres@sfYCStartV  = datanew&lat(0)
-      cnres@sfYCEndV    = datanew&lat(dimsizes(datanew&lat)-1)
-      cnres@sfXCStartV  = datanew&lon(0)
-      cnres@sfXCEndV    = datanew&lon(dimsizes(datanew&lon)-1)
+      cnres@sfYArray  = datanew&lat
+      cnres@sfXArray  = datanew&lon
     end if
 ;                                                                       ;
 ; Check for a missing value.
@@ -1520,15 +1518,13 @@ map_vpwf, map_vphf, vpwf, vphf
 ;
     main_font_height = get_res_value_keep(res2,"tiMainFontHeightF", \
     if(iscoord(datanew,"lat").and.iscoord(datanew,"lon")) then
-        cnres@sfYCStartV = datanew&lat(0)
-        cnres@sfYCEndV   = datanew&lat(dimsizes(datanew&lat)-1)
-        cnres@sfXCStartV = datanew&lon(0)
-        cnres@sfXCEndV   = datanew&lon(dimsizes(datanew&lon)-1)
+      cnres@sfYArray  = datanew&lat
+      cnres@sfXArray  = datanew&lon
     else
-        cnres@sfYCStartV =  -90.
-        cnres@sfYCEndV   =   90.
-        cnres@sfXCStartV = -180.
-        cnres@sfXCEndV   =  180.
+      cnres@sfYCStartV =  -90.
+      cnres@sfYCEndV   =   90.
+      cnres@sfXCStartV = -180.
+      cnres@sfXCEndV   =  180.
       add_labelbar(wks,contour_object,lbar_zone,font_height,"polar",lbres)
     end if
   
