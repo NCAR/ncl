@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\" $Id: nhlex.new.man,v 1.2 1995-01-26 15:48:51 haley Exp $
+.\" $Id: nhlex.new.man,v 1.3 1995-01-26 16:44:43 haley Exp $
 .\"
 .\"######################################################################
 .\"#                                                                    #
@@ -176,7 +176,7 @@ the X Window to a meta file.
 .IP xy03c 1i
 Shows how to interactively retrieve data values from a plot by pointing
 and clicking on the plot.
-.IP ti01c,ti01f 1i
+.IP tx01c,tx01f 1i
 Shows how to use the TextItem object of the HLU library.
 .IP cn01c,cn01f 1i
 Demonstrates how to use HLU objects with low level NCAR Graphics

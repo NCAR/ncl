@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: nhlex.new.csh,v 1.2 1995-01-26 15:48:49 haley Exp $
+#	$Id: nhlex.new.csh,v 1.3 1995-01-26 16:44:44 haley Exp $
 #
 
 #***********************#
@@ -126,8 +126,8 @@ set overlay_list
 #  Set TextITem examples  #
 #                         #
 #*************************#
-set c_textitem = (ti01c)
-set f_textitem = (ti01f)
+set c_textitem = (tx01c)
+set f_textitem = (tx01f)
 set textitem_list  = ($c_textitem $f_textitem)
 set c_list = ($c_list $c_textitem)
 set f_list = ($f_list $f_textitem)
