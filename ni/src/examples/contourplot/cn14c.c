@@ -1,5 +1,5 @@
 /*
- *      $Id: cn14c.c,v 1.3 1997-04-09 21:05:28 haley Exp $
+ *      $Id: cn14c.c,v 1.4 1997-12-01 22:34:02 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -193,6 +193,7 @@ main()
  */
     lat_id = ncvarid(ncid,"lat");
     count[0] = latlen;
+    start[0] = 0;
     ncvarget(ncid,lat_id,(long const *)start,(long const *)count,lat);
 
     lon_id = ncvarid(ncid,"lon");
