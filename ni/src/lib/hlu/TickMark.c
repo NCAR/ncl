@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.67 1999-03-29 18:31:35 dbrown Exp $
+ *      $Id: TickMark.c,v 1.68 1999-08-16 18:08:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1023,10 +1023,9 @@ float /*dmin*/,
 float */*tstart*/,
 float */*tend*/,
 int /*convert_precision*/,
-float */*requested_points*/,
-char** /*requested_labels*/,
-int */*nmajor*/,
-int /* n_requested */
+NhlGenArray req_points,
+NhlGenArray req_labels,
+int */*nmajor*/
 #endif
 );
 
@@ -3481,9 +3480,22 @@ char		func_code;
 /*ARGSUSED*/
 static NhlErrorTypes ExplicitComputeMajorTickMarks
 #if	NhlNeedProto
-(NhlTickMarkStyle style,float *array,char** larray,float dmax,float dmin,float *tstart,float *tend,int convert_precision,float *requested_points,char** requested_labels,int *nmajor,int n_requested)
+(
+	NhlTickMarkStyle style,
+	float *array,
+	char** larray,
+	float dmax,
+	float dmin,
+	float *tstart,
+	float *tend,
+	int convert_precision,
+	NhlGenArray req_points,
+	NhlGenArray req_labels,
+	int *nmajor
+	)
 #else
-(style,array,larray,dmax,dmin,tstart,tend,convert_precision,requested_points,requested_labels,nmajor,n_requested)
+(style,array,larray,dmax,dmin,tstart,tend,convert_precision,
+req_points,req_labels,nmajor)
 NhlTickMarkStyle  style;
 float   *       array;
 char	**	larray;
@@ -3492,18 +3504,27 @@ float           dmin;
 float           *tstart;
 float           *tend;
 int		convert_precision;
-float   *       requested_points;
-char	**      requested_labels;
+NhlGenArray 	req_points;
+NhlGenArray 	req_labels;
 int     *       nmajor;
-int n_requested;
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR;
 	float min,max;
 	int i,k;
+	int n_req_points;
+	char 	**labels;
+	float 	*points;
+	NhlBoolean do_labels = True;
 #ifdef	NOTUSED
 	int	spacing_estimate,min_compare;
 #endif
+
+	n_req_points = req_points ? req_points->num_elements : 0;
+	if (! req_labels || req_labels->num_elements < n_req_points)
+		do_labels = False;
+	points = req_points ? (float *) req_points->data : NULL;
+	labels = req_labels ? (char **) req_labels->data : NULL;
 
 	switch(style) {
 	case NhlLOG:
@@ -3512,7 +3533,7 @@ int n_requested;
 		max = dmax;
 		min = dmin;
 #ifdef	NOTUSED
-		spacing_estimate = (max - min)/n_requested;
+		spacing_estimate = (max - min)/n_requested_points;
 		if(_NhlCmpFAny(min,0.0,7) != 0.0) {
 			min_compare = ceil(fabs(log10((double)(spacing_estimate/fabs(min)))))+1.0;
 		else 
@@ -3524,11 +3545,12 @@ int n_requested;
 			max_compare = 7;
 #endif
 		k = 0;
-		for(i = 0; i< n_requested; i++) {
-			if((_NhlCmpFAny(requested_points[i],min,7/*min_compare*/) >= 0.0) && (_NhlCmpFAny(requested_points[i],max,7 /*max_compare*/) <= 0.0)) {
-				array[k] = requested_points[i];
-				if(requested_labels != NULL)
-					larray[k] = requested_labels[i];
+		for(i = 0; i< n_req_points; i++) {
+			if((_NhlCmpFAny(points[i],min,7) >= 0.0) && 
+			   (_NhlCmpFAny(points[i],max,7) <= 0.0)) {
+				array[k] = points[i];
+				if (do_labels)
+					larray[k] = labels[i];
 				k++;
 				if(k == MAXTICKS) {
 					NhlPError(NhlWARNING,NhlEUNKNOWN,"ManualComputeMajorTickMarks: Maximum tickmarks (%d) has been reached, tickmarks may appear in complete",MAXTICKS);
@@ -5018,7 +5040,7 @@ static NhlErrorTypes CheckExplicit
 	int		c_or_s;
 #endif
 {
-	char		*error_lead;
+	char		*error_lead,*e_text;
 	NhlGenArray	gen;
 	NhlErrorTypes	ret = NhlNOERROR;
 	NhlBoolean	free_xb_val=False, skip_xb_val=False;
@@ -5356,16 +5378,32 @@ static NhlErrorTypes CheckExplicit
 	 * Set labels fields
 	 */
 
+	/*
+	 * Although the CopyLabelArray makes sure that the labels have 
+	 * as many elements as the values array, and set them to NULL if
+	 * not defined, there is still a problem: if the values array is
+	 * set but the labels array is not, the CopyLabelArray function
+	 * will not get called. Therefore I have taken a different approach:
+	 * now the ExplicitComputeMajorTickMarks handles the problem by 
+	 * ignoring the labels if there are more values than labels.
+	 * (Actually I made these changes before noticing what CopyLabelArray
+	 * did. I might have done things differently otherwise.)
+	 * I have added warning messages for the situation in this routine.
+	 * -dib-
+	 */
+
 	if((tnew->tick.x_b_labels != NULL) && !skip_xb_labels){
 
 		gen = (NhlGenArray)tnew->tick.x_b_labels;
 
-		if((gen->typeQ != Qstring) || (gen->size != sizeof(NhlString))||
-			(gen->num_dimensions != 1) || (gen->num_elements < 1)){
+		if((gen->typeQ != Qstring) ||
+		   (gen->size != sizeof(NhlString))||
+		   (gen->num_dimensions != 1) || 
+		   (gen->num_elements < 1)){
 
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 				"%s:%s must be a 1 dim char* array: resetting",
-						error_lead,NhlNtmXBLabels);
+						error_lead,NhlNtmXTLabels);
 
 			if(c_or_s == SET)
 				tnew->tick.x_b_labels = told->tick.x_b_labels;
@@ -5387,6 +5425,16 @@ static NhlErrorTypes CheckExplicit
 
 	if(free_xb_labels)
 		NhlFreeGenArray(told->tick.x_b_labels);
+
+	if (tnew->tick.x_b_labels && tnew->tick.x_b_values &&
+	    tnew->tick.x_b_labels->num_elements < 
+	    tnew->tick.x_b_values->num_elements) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+	       "%s: %s has fewer elements than %s; the labels will be ignored",
+			  error_lead,NhlNtmXBLabels,NhlNtmXBValues);
+			ret = MIN(ret,NhlWARNING);
+	}
+
 
 	if((tnew->tick.x_t_labels != NULL) && !skip_xt_labels){
 
@@ -5420,6 +5468,16 @@ static NhlErrorTypes CheckExplicit
 	if(free_xt_labels)
 		NhlFreeGenArray(told->tick.x_t_labels);
 
+	if (tnew->tick.x_t_labels && tnew->tick.x_t_values &&
+	    tnew->tick.x_t_labels && tnew->tick.x_t_values &&
+	    tnew->tick.x_t_labels->num_elements < 
+	    tnew->tick.x_t_values->num_elements) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+	       "%s: %s has fewer elements than %s; the labels will be ignored",
+			  error_lead,NhlNtmXTLabels,NhlNtmXTValues);
+			ret = MIN(ret,NhlWARNING);
+	}
+
 	if((tnew->tick.y_l_labels != NULL) && !skip_yl_labels){
 
 		gen = (NhlGenArray)tnew->tick.y_l_labels;
@@ -5452,6 +5510,15 @@ static NhlErrorTypes CheckExplicit
 	if(free_yl_labels)
 		NhlFreeGenArray(told->tick.y_l_labels);
 
+	if (tnew->tick.y_l_labels && tnew->tick.y_l_values &&
+	    tnew->tick.y_l_labels->num_elements < 
+	    tnew->tick.y_l_values->num_elements) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+	       "%s: %s has fewer elements than %s; the labels will be ignored",
+			  error_lead,NhlNtmYLLabels,NhlNtmYLValues);
+			ret = MIN(ret,NhlWARNING);
+	}
+
 	if((tnew->tick.y_r_labels != NULL) && !skip_yr_labels){
 
 		gen = (NhlGenArray)tnew->tick.y_r_labels;
@@ -5483,6 +5550,15 @@ static NhlErrorTypes CheckExplicit
 
 	if(free_yr_labels)
 		NhlFreeGenArray(told->tick.y_r_labels);
+
+	if (tnew->tick.y_r_labels && tnew->tick.y_r_values &&
+	    tnew->tick.y_r_labels->num_elements < 
+	    tnew->tick.y_r_values->num_elements) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+	       "%s: %s has fewer elements than %s; the labels will be ignored",
+			  error_lead,NhlNtmYRLabels,NhlNtmYRValues);
+			ret = MIN(ret,NhlWARNING);
+	}
 
 	/*
 	 * Check "mode" fields
@@ -6583,12 +6659,9 @@ static NhlErrorTypes ComputeTickInfo
                                         &tnew->tick.x_b_tick_start,
                                         &tnew->tick.x_b_tick_end,
                                         tnew->tick.x_b_precision,
-                                        (tnew->tick.x_b_values == NULL ? 
-					 NULL : tnew->tick.x_b_values->data),
-                                        (tnew->tick.x_b_labels == NULL ? 
-					 NULL : tnew->tick.x_b_labels->data),
-                                        &tnew->tick.x_b_nmajor,
-					tnew->tick.x_b_values->num_elements);
+					tnew->tick.x_b_values,
+					tnew->tick.x_b_labels,
+                                        &tnew->tick.x_b_nmajor);
 			minorret = ExplicitComputeMinorTickMarks(
 					tnew->tick.x_b_style,
 					tnew->tick.x_b_minor_data_locs,
@@ -6714,12 +6787,9 @@ static NhlErrorTypes ComputeTickInfo
                                         &tnew->tick.x_t_tick_start,
                                         &tnew->tick.x_t_tick_end,
                                         tnew->tick.x_t_precision,
-                                        (tnew->tick.x_t_values == NULL ? 
-					 NULL : tnew->tick.x_t_values->data),
-                                        (tnew->tick.x_t_labels == NULL ? 
-					 NULL : tnew->tick.x_t_labels->data),
-                                        &tnew->tick.x_t_nmajor,
-					tnew->tick.x_t_values->num_elements);
+					tnew->tick.x_t_values,
+					tnew->tick.x_t_labels,
+                                        &tnew->tick.x_t_nmajor);
 			minorret = ExplicitComputeMinorTickMarks(
 					tnew->tick.x_t_style,
 					tnew->tick.x_t_minor_data_locs,
@@ -6843,12 +6913,9 @@ static NhlErrorTypes ComputeTickInfo
                                         &tnew->tick.y_l_tick_start,
                                         &tnew->tick.y_l_tick_end,
                                         tnew->tick.y_l_precision,
-                                        (tnew->tick.y_l_values == NULL ?
-					 NULL : tnew->tick.y_l_values->data),
-                                        (tnew->tick.y_l_labels == NULL ?
-					 NULL : tnew->tick.y_l_labels->data),
-                                        &tnew->tick.y_l_nmajor,
-					tnew->tick.y_l_values->num_elements);
+					tnew->tick.y_l_values,
+					tnew->tick.y_l_labels,
+                                        &tnew->tick.y_l_nmajor);
 			minorret = ExplicitComputeMinorTickMarks(
                                         tnew->tick.y_l_style,
                                         tnew->tick.y_l_minor_data_locs,
@@ -6973,12 +7040,9 @@ static NhlErrorTypes ComputeTickInfo
                                         &tnew->tick.y_r_tick_start,
                                         &tnew->tick.y_r_tick_end,
                                         tnew->tick.y_r_precision,
-                                        (tnew->tick.y_r_values == NULL ? 
-					 NULL : tnew->tick.y_r_values->data),
-                                        (tnew->tick.y_r_labels == NULL ? 
-					 NULL : tnew->tick.y_r_labels->data),
-                                        &tnew->tick.y_r_nmajor,
-					tnew->tick.y_r_values->num_elements);
+					tnew->tick.y_r_values,
+					tnew->tick.y_r_labels,
+                                        &tnew->tick.y_r_nmajor);
 			minorret = ExplicitComputeMinorTickMarks(
 					tnew->tick.y_r_style,
 					tnew->tick.y_r_minor_data_locs,
