@@ -1,5 +1,5 @@
 /*
- *      $Id: vcrcontrol.c,v 1.7 1999-12-07 19:08:52 dbrown Exp $
+ *      $Id: vcrcontrol.c,v 1.8 1999-12-24 01:29:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +26,7 @@
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
 #include <Xm/Form.h>
-#include  <Xm/DrawnB.h>
+#include  <Xm/DrawnBP.h>
 #include  <ncarg/ngo/XmL.h>
 #include <float.h>
 
@@ -83,12 +83,15 @@ static Widget CreateDrawnButton
                                       XmNheight,vcrp->size,
                                       XmNwidth,vcrp->size,
 				      XmNpushButtonEnabled,True,
+				      XmNsensitive,True,
+				      XmNtraversalOn,True,
                                       NULL);
 
         if (ret) {
                 XmLDrawnButtonSetType(ret,type,dir);
         }
 	_NgGOWidgetTranslations(vcrp->go,ret);
+	XmProcessTraversal(ret, XmTRAVERSE_CURRENT);
 
         return ret;
 }
