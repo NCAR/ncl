@@ -1,20 +1,27 @@
 #
-#   $Id: yMakefile,v 1.5 1995-02-08 17:26:26 haley Exp $
+#   $Id: yMakefile,v 1.6 1995-02-15 22:41:20 haley Exp $
 #
 #   Makefile for HLU Title examples
 #
+
+MYNAME  = title
 
 PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
-SRCS        = ti01c.c ti02c.c ti03c.c ti01f.f ti02f.f ti03f.f ti01n.ncl \
-				ti02n.ncl ti03n.ncl
-OBJS        = ti01c.o ti02c.o ti03c.o ti01f.o ti02f.o ti03f.o
-RES	        = ti01.res ti02.res ti03.res
-EXFILES     = $(SRCS) $(RES) $(INCLUDES)
+CSRCS    = ti01c.c ti02c.c ti03c.c
+FSRCS    = ti01f.f ti02f.f ti03f.f
+NSRCS    = ti01n.ncl ti02n.ncl ti03n.ncl
+COBJS    = ti01c.o ti02c.o ti03c.o
+FOBJS    = ti01f.o ti02f.o ti03f.o
+SRCS     = $(CSRCS) $(FSRCS)
+OBJS     = $(COBJS) $(FOBJS)
+RESFILES = ti01.res ti02.res ti03.res
 
-InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))
+InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
+InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
+InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 
 HLUCExampleTarget(ti01c,ti01c.o)
 HLUCExampleTarget(ti02c,ti02c.o)
@@ -24,5 +31,4 @@ HLUFExampleTarget(ti02f,ti02f.o)
 HLUFExampleTarget(ti03f,ti03f.o)
 
 CleanFilesTarget($(OBJS))
-DependTarget($(SRCS))
-
+DependTarget($(CSRCS))
