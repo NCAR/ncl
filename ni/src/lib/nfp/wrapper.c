@@ -354,8 +354,7 @@ void NclAddUserFuncs(void)
 
         SetArgTemplate(args,9,"integer",1,dimsizes);nargs++;
         SetArgTemplate(args,10,"numeric",NclANY,NclANY);nargs++;
-        dimsizes[0] = 2;
-        SetArgTemplate(args,11,"numeric",2,NclANY);nargs++;
+        SetArgTemplate(args,11,"numeric",NclANY,NclANY);nargs++;
         NclRegisterFunc(vinth2p_ecmwf_W,args,"vinth2p_ecmwf",nargs);
 
 /*
