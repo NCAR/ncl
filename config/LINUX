@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX,v 1.10 2000-07-18 19:38:14 haley Exp $
+ *      $Id: LINUX,v 1.11 2001-09-26 16:54:06 haley Exp $
  */
 /************************************************************************
 *									*
@@ -21,24 +21,22 @@
  *			tell ymake how LINUX is different from a
  *			default setup.
  */
-#define	HdfDefines	-DLINUX
-#define	StdDefines	-DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped
+#define HdfDefines  -DLINUX
+#define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped
 #define ByteSwapped
-#define	Cstatic	-Wl,-Bstatic
-#define	Cdynamic -Wl,-Bdynamic
-#define	CCompiler	gcc
-#define	FCompiler	g77
-#define	CtoFLibraries	-Wl,-Bstatic '-L/usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66' -lg2c -Wl,-Bdynamic -lm
-#define CcOptions       -O -ansi
-#define FcOptions   -O
-#define COptimizeFlag   
-#define FOptimizeFlag   
-#define XToolLibrary	-lXt -lSM -lICE
+#define Cstatic -Wl,-Bstatic
+#define Cdynamic -Wl,-Bdynamic
+#define CppCommand '/usr/bin/cpp -traditional'
+#define CCompiler   gcc
+#define FCompiler   g77
+#define CtoFLibraries   -Wl,-Bstatic '-L/usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66' -lg2c -Wl,-Bdynamic -lm
+#define CcOptions      -ansi
+#define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
+#define XLibrary -lXpm -lX11 -lXext
 
-
-#define	ArchRecLibSearch	-L/usr/X11R6/lib -L/usr/local/lib
-#define	ArchRecIncSearch	-I/usr/X11R6/include -I/usr/local/include
+#define ArchRecLibSearch    -L/usr/X11R6/lib -L/usr/local/lib
+#define ArchRecIncSearch    -I/usr/X11R6/include -I/usr/local/include
 
 FC = $(F77)
 
@@ -50,6 +48,6 @@ FC = $(F77)
  * Description:	This rule creates a directory - if a parent dir doesn't exist
  *		it attempts to create it.
  */
-#ifndef	MakeDir
-#define	MakeDir(dir)	@if (test ! -d dir); then ($(MKDIRHIER) dir); fi
+#ifndef MakeDir
+#define MakeDir(dir)    @if (test ! -d dir); then ($(MKDIRHIER) dir); fi
 #endif
