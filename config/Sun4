@@ -15,7 +15,7 @@
 /*
 **  Stuff that should be edited by Configure
 */
-VERSION		= 3.2.alpha
+VERSION		= 3.2
 BINROOT		= /usr/local/bin
 LIBROOT		= /usr/local/lib
 INCROOT		= /usr/local/include
