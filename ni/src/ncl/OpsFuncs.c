@@ -350,9 +350,9 @@ NhlErrorTypes _NclBuildArray
 			return(NhlFATAL);
 		}
 		if((must_be_numeric==1)&&
-			( obj_type &NCL_VAL_NUMERIC_MASK)) {
-			if(result_type > (obj_type & NCL_VAL_NUMERIC_MASK)) {
-				result_type = (obj_type & NCL_VAL_NUMERIC_MASK);
+			( obj_type & (NCL_VAL_NUMERIC_MASK | Ncl_Typelogical))) {
+			if(result_type > (obj_type & (NCL_VAL_NUMERIC_MASK | Ncl_Typelogical))) {
+				result_type = (obj_type & (NCL_VAL_NUMERIC_MASK | Ncl_Typelogical));
 			}
 		} else if((must_be_numeric == 0)&&
 			(obj_type & NCL_VAL_CHARSTR_MASK)) {
