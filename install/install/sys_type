@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: sys_type,v 1.13 1998-01-30 16:57:19 haley Exp $
+#      $Id: sys_type,v 1.14 1998-03-04 19:59:47 haley Exp $
 #
 #########################################################################
 #									#
@@ -79,8 +79,7 @@ else
 
   cat > /dev/tty << EOF
 
-	Select one of the following systems:
-
+	For which system do you want to install binaries:
 
 EOF
 

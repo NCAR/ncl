@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: INSTALL,v 1.12 1998-01-30 16:57:12 haley Exp $
+#      $Id: INSTALL,v 1.13 1998-03-04 19:59:43 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -76,13 +76,76 @@ if ("$answer" == "y") then
 endif
 
 if ("$SYSTEM_TO_INSTALL" == "IRIX_IP") then
-  echo -n "I see you are installing binaries for an SGI system. Do you want to install binaries compiled with the -n32 (1) or the -64 option (2)?: (1)" > /dev/tty
-  set answer=$<
-  if ("$answer" == "2") then
-    setenv SYSTEM_TO_INSTALL IRIX_64_IP
-  else
-    setenv SYSTEM_TO_INSTALL IRIX_n32_IP
-  endif 
+sgimenu:
+    clear
+cat <<EOF
+
+
+                 NCAR Graphics Unix Version $VERSION
+                     Copyright (C) 1987-1998
+          University Corporation for Atmospheric Research
+     The use of this Software is governed by a License Agreement.
+
+
+      I see you are running on a Silicon Graphics system.
+  
+      On some SGI systems, three different options are supported for
+      building libraries and binaries. These options are '-n32', '-64',
+      and '-32'.
+
+      Please select which set of SGI binaries you want to install:
+
+        1.  'n32' binaries
+        2.   '64' binaries
+        3.   '32' binaries (not available on NCAR Graphics 4.1 CD-ROM)
+        4.   Help
+
+        0.  Exit
+
+EOF
+    echo -n "    Select: "
+    set answer =  $<
+    switch ("$answer")
+
+    case "1":
+      setenv SYSTEM_TO_INSTALL IRIX_n32_IP
+      breaksw
+
+    case "2":
+      setenv SYSTEM_TO_INSTALL IRIX_64_IP
+      breaksw
+
+    case "3":
+      setenv SYSTEM_TO_INSTALL IRIX_32_IP
+      breaksw
+
+    case "4":
+
+        clear
+        cat <<EOF
+
+    If you have an older SGI system, like an Indigo, then you should
+    go with the "-32" option since this is the only one compatible with
+    older SGIs. Please note that the "-32" binaries are not available on
+    the NCAR Graphics $VERSION CD-ROM.
+
+    If you have a newer SGI and are not sure which option to choose, 
+    then either check with your system administrator, or see the SGI
+    man page for "cc".
+EOF
+        $LOCALDIR/pause
+        goto sgimenu
+        breaksw
+
+    case "0":
+        exit 0
+        breaksw
+
+    default
+        echo "Invalid option <$answer>"
+        $LOCALDIR/pause
+        goto sgimenu
+    endsw
 endif
 
 #
