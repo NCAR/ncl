@@ -833,10 +833,10 @@ C     DATA IMACH(16) /        127 /
 C       
 C***FIRST EXECUTABLE STATEMENT  I1MACH  
 #if defined(CRAY)
-      DATA IMACH( 1) /   100 /                                          
-      DATA IMACH( 2) /   101 /                                          
+      DATA IMACH( 1) /   5 /                                          
+      DATA IMACH( 2) /   6 /                                          
       DATA IMACH( 3) /   102 /                                          
-      DATA IMACH( 4) /   101 /                                          
+      DATA IMACH( 4) /   0 /                                          
       DATA IMACH( 5) /    64 /                                          
       DATA IMACH( 6) /     8 /                                          
       DATA IMACH( 7) /     2 /                                          
@@ -854,7 +854,7 @@ C***FIRST EXECUTABLE STATEMENT  I1MACH
       DATA IMACH( 1) /          5 /     
       DATA IMACH( 2) /          6 /     
       DATA IMACH( 3) /          6 /     
-      DATA IMACH( 4) /          6 /     
+      DATA IMACH( 4) /          0 /     
       DATA IMACH( 5) /         32 /     
       DATA IMACH( 6) /          4 /     
       DATA IMACH( 7) /          2 /     
