@@ -1,5 +1,5 @@
 /*
- *  $Id: vc06c.c,v 1.3 1996-06-27 16:07:11 haley Exp $    
+ *  $Id: vc06c.c,v 1.4 1996-10-03 15:35:06 haley Exp $    
  */
 /***********************************************************************
 *                                                                      *
@@ -229,7 +229,6 @@ main(int argc, char *argv[])
  * longitude.
  */
     for(i = (FRAME_COUNT-1);i > -1; i--){
-        printf("longitude: %f",+i * 360./(FRAME_COUNT-1));
         NhlRLClear(rlist);       
         CenLonF =  i * 360./(FRAME_COUNT-1);
         NhlRLSetFloat(rlist,NhlNmpCenterLonF,CenLonF);
