@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.c,v 1.18 2003-11-25 22:41:18 dbrown Exp $
+ *      $Id: PSWorkstation.c,v 1.19 2004-01-16 21:09:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -762,11 +762,13 @@ PSWorkstationClear
 
 	pp->bbox.set = 0;
 
-
-	c_ngseti("AX",bblx);
-	c_ngseti("BX",bbux);
-	c_ngseti("AY",bbly);
-	c_ngseti("BY",bbuy);
+	if (pp->format == NhlEPS || pp->format == NhlEPSI) {
+		c_ngseti("wo",_NhlWorkstationId(l));
+		c_ngseti("AX",bblx);
+		c_ngseti("BX",bbux);
+		c_ngseti("AY",bbly);
+		c_ngseti("BY",bbuy);
+	}
 
 	return (*(lc->work_class.clear_work))(l);
 }
