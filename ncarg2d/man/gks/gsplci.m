@@ -1,11 +1,15 @@
 .\"
-.\"	$Id: gsplci.m,v 1.1 1993-03-11 16:24:11 haley Exp $
+.\"	$Id: gsplci.m,v 1.2 1993-04-02 16:50:31 haley Exp $
 .\"
 .TH GSPLCI 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 GSPLCI (Polyline color index) - sets the polyline color index.
 .SH SYNOPSIS
 CALL GSPLCI (COLI)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gset_line_colr_ind(Gint line_colr_ind);
 .SH DESCRIPTION
 .IP COLI 12
 (Integer, Input) - A color index. 
@@ -27,7 +31,7 @@ ncarg_gks.
 .SH SEE ALSO
 Online: 
 gpl, gsln, gslwsc, gscr, gqln, gqlwsc, gqplci, 
-dashline
+dashline, gset_line_colr_ind
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gqlwsc.m,v 1.1 1993-03-11 16:22:58 haley Exp $
+.\"	$Id: gqlwsc.m,v 1.2 1993-04-02 16:47:07 haley Exp $
 .\"
 .TH GQLWSC 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GQLWSC (Inquire linewidth scale factor) - retrieves the current setting of the
 linewidth scale factor.
 .SH SYNOPSIS
 CALL GQLWSC (ERRIND, LWIDTH)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void ginq_linewidth(Gint *err_ind, Gdouble *linewidth);
 .SH DESCRIPTION
 .IP ERRIND 12
 (Integer, Output) - If the inquired value cannot be returned correctly,
@@ -20,7 +24,7 @@ as set by default or by a call to GSLWSC.
 To use GKS routines, load the NCAR GKS-0A library ncarg_gks.
 .SH SEE ALSO
 Online: 
-gpl, gsln, gslwsc, gscr, gsplci, gqln, gqplci, dashline
+gpl, gsln, gslwsc, gscr, gsplci, gqln, gqplci, dashline, ginq_linewidth
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

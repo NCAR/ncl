@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gqfasi.m,v 1.1 1993-03-11 16:22:53 haley Exp $
+.\"	$Id: gqfasi.m,v 1.2 1993-04-02 16:46:54 haley Exp $
 .\"
 .TH GQFASI 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GQFASI (Inquire fill area style index) - retrieves the current value of
 the fill area style index.
 .SH SYNOPSIS
 CALL GQFASI (ERRIND, STYLI)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void ginq_fill_style_ind(Gint *err_ind, Gint *fill_style_ind);
 .SH DESCRIPTION
 .IP ERRIND 12
 (Integer, Output) - If the inquired value cannot be returned correctly,
@@ -36,7 +40,7 @@ To use GKS routines, load the NCAR GKS-0A library ncarg_gks.
 .SH SEE ALSO
 Online: 
 gfa, gsfais, gscr, gsfaci, gqfais, gqfasi, 
-areas
+areas, ginq_fill_style_ind
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

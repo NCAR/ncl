@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gqchup.m,v 1.1 1993-03-11 16:22:35 haley Exp $
+.\"	$Id: gqchup.m,v 1.2 1993-04-02 16:46:06 haley Exp $
 .\"
 .TH GQCHUP 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GQCHUP (Inquire character up vector) - retrieves the current value of
 the character up vector.
 .SH SYNOPSIS
 CALL GQCHUP (ERRIND, CHUX, CHUY)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void ginq_char_up_vec(Gint *err_ind, Gvec *char_up_vec);
 .SH DESCRIPTION
 .IP ERRIND 12
 (Integer, Output) - If the inquired values cannot be returned correctly,
@@ -30,7 +34,7 @@ ncarg_gks.
 Online: 
 gtx, gstxp, gstxal, gstxfp, gschh, gschsp, gschup, 
 gschxp, gscr, gstxci, gqtxp, gqtxal, gqtxfp, gqchh, 
-gqchsp, gqchxp, plotchar
+gqchsp, gqchxp, plotchar, ginq_char_up_vec
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

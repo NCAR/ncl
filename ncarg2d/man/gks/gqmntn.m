@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gqmntn.m,v 1.1 1993-03-11 16:23:05 haley Exp $
+.\"	$Id: gqmntn.m,v 1.2 1993-04-02 16:47:27 haley Exp $
 .\"
 .TH GQMNTN 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GQMNTN (Inquire maximum normalization transformation number) - retrieves
 the maximum number of supported normalization transformations.
 .SH SYNOPSIS
 CALL GQMNTN (ERRIND, MAXTRN)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void ginq_max_norm_tran_num(Gint *err_ind, Gint *max_norm_tran_num);
 .SH DESCRIPTION
 .IP ERRIND 12
 (Integer, Output) - If the inquired value cannot be returned correctly,
@@ -22,7 +26,7 @@ To use GKS routines, load the NCAR GKS-0A library
 ncarg_gks.
 .SH SEE ALSO
 Online: 
-gselnt, gqcntn, gqnt, getset
+gselnt, gqcntn, gqnt, getset, ginq_max_norm_tran_num
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

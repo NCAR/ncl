@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gsasf.m,v 1.1 1993-03-11 16:23:33 haley Exp $
+.\"	$Id: gsasf.m,v 1.2 1993-04-02 16:48:43 haley Exp $
 .\"
 .TH GSASF 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -8,6 +8,10 @@ determine whether primitive attributes are to be selected from individual
 settings or from "bundle tables".
 .SH SYNOPSIS
 CALL GSASF (LASF)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gset_asfs(const Gasfs *list_asf);
 .SH DESCRIPTION 
 .IP LASF 12
 (Integer array, input) - An array of settings for the thirteen attributes:
@@ -57,7 +61,7 @@ gqasf,
 gsln, gslwsc, gsplci, gsmk, gsmksc, gspmci, gstxfp, gschxp,
 gstxsp, gstxci, gsfais, gsfasi, gsfaci,
 gqln, gqlwsc, gqplci, gqmk, gqmksc, gqpmci, gqtxfp, gqchxp,
-gqtxsp, gqtxci, gqfais, gqfasi, gqfaci,
+gqtxsp, gqtxci, gqfais, gqfasi, gqfaci,, gset_asfs
 .sp
 Hardcopy:  
 "User's Guide for NCAR GKS-0A Graphics"

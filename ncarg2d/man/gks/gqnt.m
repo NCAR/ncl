@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gqnt.m,v 1.1 1993-03-11 16:23:08 haley Exp $
+.\"	$Id: gqnt.m,v 1.2 1993-04-02 16:47:33 haley Exp $
 .\"
 .TH GQNT 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -10,6 +10,10 @@ and GETSET to handle normalization transformations instead of the
 GKS entries GSWN, GSVP, GSELNT, and GQNT.
 .SH SYNOPSIS
 CALL GQNT (NTNR, ERRIND, WINDOW, VIEWPT)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void ginq_norm_tran(Gint num, Gint *err_ind, Gtran *norm_tran);
 .SH DESCRIPTION
 .IP NTNR 12
 (Integer, Input) - Gives the number of the normalization transformation.
@@ -29,7 +33,7 @@ VXMIN, VXMAX, VYMIN, VYMAX.
 To use GKS routines, load the NCAR GKS-0A library ncarg-gks.
 .SH SEE ALSO
 Online:
-gswn, gsvp, gselnt, gqcntn, gqmntn, getset, gsclip, gqclip
+gswn, gsvp, gselnt, gqcntn, gqmntn, getset, gsclip, gqclip, ginq_norm_tran
 .sp
 Hardcopy:
 "User's Guide for NCAR GKS-0A Graphics"

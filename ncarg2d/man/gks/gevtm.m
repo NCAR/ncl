@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gevtm.m,v 1.1 1993-03-11 16:22:08 haley Exp $
+.\"	$Id: gevtm.m,v 1.2 1993-04-02 16:44:57 haley Exp $
 .\"
 .TH GEVTM 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -8,6 +8,10 @@ transformation matrix starting from a given point, a shift vector, a rotation
 angle, and X and Y scale factors.
 .SH SYNOPSIS
 CALL GEVTM(X0,Y0,DX,DY,PHI,FX,FY,SW,MOUT)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void geval_tran_matrix(const Gpoint *point, const Gvec *shift, Gdouble angle, const Gvec *scale, Gcoord_switch coord_switch, Gtran_matrix tran_matrix);
 .SH DESCRIPTION
 .IP X0 12
 (Real, Input) - An X coordinate value for a fixed point to be used for
@@ -79,7 +83,7 @@ To use GKS routines, load the NCAR GKS-0A library
 ncarg_gks.
 .SH SEE ALSO
 Online: 
-gactm, gclsg, gcrsg, gcsgwk, gdsg, gqopsg, gqsgus, gssgt.
+gactm, gclsg, gcrsg, gcsgwk, gdsg, gqopsg, gqsgus, gssgt., geval_tran_matrix
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

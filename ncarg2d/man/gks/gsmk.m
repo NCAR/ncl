@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gsmk.m,v 1.1 1993-03-11 16:24:06 haley Exp $
+.\"	$Id: gsmk.m,v 1.2 1993-04-02 16:50:17 haley Exp $
 .\"
 .TH GSMK 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GSMK (Set marker type) - sets the type of polymarker to be used in
 subsequent GPM calls.
 .SH SYNOPSIS
 CALL GSMK (MTYPE)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gset_marker_type(Gint marker_type);
 .SH DESCRIPTION
 .IP MTYPE 12
 (Integer, Input) - Selects the type of marker to be drawn. 
@@ -33,7 +37,7 @@ ncarg_gks.
 .SH SEE ALSO
 Online:
 gpm, gsmksc, gscr, gspmci, gqmk, gqmksc, gqpmci, 
-point, points, ngdots
+point, points, ngdots, gset_marker_type
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

@@ -1,11 +1,15 @@
 .\"
-.\"	$Id: gqln.m,v 1.1 1993-03-11 16:22:55 haley Exp $
+.\"	$Id: gqln.m,v 1.2 1993-04-02 16:47:01 haley Exp $
 .\"
 .TH GQLN 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 GQLN (Inquire line type) - retrieves the current setting for linetype.
 .SH SYNOPSIS
 CALL GQLN (ERRIND, LTYPE)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void ginq_linetype(Gint *err_ind, Gint *linetype);
 .SH DESCRIPTION
 .IP ERRIND 12
 (Integer, Output) - If the inquired value cannot be returned correctly,
@@ -29,7 +33,7 @@ Dot-dash
 To use GKS routines, load the NCAR GKS-0A library ncarg_gks.
 .SH SEE ALSO
 Online: 
-gpl, gsln, gslwsc, gscr, gsplci, gqlwsc, gqplci, dashline
+gpl, gsln, gslwsc, gscr, gsplci, gqlwsc, gqplci, dashline, ginq_linetype
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

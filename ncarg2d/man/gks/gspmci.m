@@ -1,11 +1,15 @@
 .\"
-.\"	$Id: gspmci.m,v 1.1 1993-03-11 16:24:14 haley Exp $
+.\"	$Id: gspmci.m,v 1.2 1993-04-02 16:50:38 haley Exp $
 .\"
 .TH GSPMCI 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 GSPMCI - (Set polymarker color index) - sets the polymarker color index.
 .SH SYNOPSIS
 CALL GSPMCI (COLI)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gset_marker_colr_ind(Gint marker_colr_ind);
 .SH DESCRIPTION
 .IP COLI 12
 (Integer, Input) - A color index.
@@ -27,7 +31,7 @@ ncarg_gks.
 .SH SEE ALSO
 Online: 
 gpm, gsmk, gsmksc, gscr, gqmk, gqmksc, gqpmci, 
-point, points
+point, points, gset_marker_colr_ind
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

@@ -1,11 +1,15 @@
 .\"
-.\"	$Id: gsln.m,v 1.1 1993-03-11 16:24:01 haley Exp $
+.\"	$Id: gsln.m,v 1.2 1993-04-02 16:50:02 haley Exp $
 .\"
 .TH GSLN 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 GSLN (Set line type) - sets the line type to solid or various dashed patterns.
 .SH SYNOPSIS
 CALL GSLN (LTYPE)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gset_linetype(Gint linetype);
 .SH DESCRIPTION
 .IP LTYPE 12
 (Integer, Input) - The type of polyline to be drawn.  
@@ -32,7 +36,7 @@ ncarg_gks.
 .SH SEE ALSO
 Online: 
 gpl, gslwsc, gscr, gsplci, gqln, gqlwsc, gqplci, 
-dashline
+dashline, gset_linetype
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

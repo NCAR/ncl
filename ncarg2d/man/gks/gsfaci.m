@@ -1,11 +1,15 @@
 .\"
-.\"	$Id: gsfaci.m,v 1.1 1993-03-11 16:23:53 haley Exp $
+.\"	$Id: gsfaci.m,v 1.2 1993-04-02 16:49:41 haley Exp $
 .\"
 .TH GSFACI 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 GSFACI (Set fill area color index) - sets the fill area color index.
 .SH SYNOPSIS
 CALL GSFACI (COLI)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gset_fill_colr_ind(Gint fill_colr_ind);
 .SH DESCRIPTION
 .IP COLI 12
 (Integer, Input) - A color index.
@@ -27,7 +31,7 @@ ncarg_gks.
 .SH SEE ALSO
 Online: 
 gfa, gsfais, gsfasi, gscr, gqfais, gqfasi, 
-areas
+areas, gset_fill_colr_ind
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

@@ -1,11 +1,15 @@
 .\"
-.\"	$Id: gdawk.m,v 1.1 1993-03-11 16:22:01 haley Exp $
+.\"	$Id: gdawk.m,v 1.2 1993-04-02 16:44:38 haley Exp $
 .\"
 .TH GDAWK 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 GDAWK (Deactivate workstation) - deactivates a workstation.
 .SH SYNOPSIS
 CALL GDAWK (WKID)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gdeactivate_ws(Gint ws_id);
 .SH DESCRIPTION
 .IP WKID 12
 (Integer, Input) - A number identifying the workstation to be deactivated.
@@ -20,7 +24,7 @@ ncarg_gks.
 .SH SEE ALSO
 Online: 
 gopks, gopwk, gacwk, gclwk, gclks, opngks, 
-clsgks
+clsgks, gdeactivate_ws
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

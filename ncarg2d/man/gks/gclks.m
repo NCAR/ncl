@@ -1,11 +1,15 @@
 .\"
-.\"	$Id: gclks.m,v 1.1 1993-03-11 16:21:46 haley Exp $
+.\"	$Id: gclks.m,v 1.2 1993-04-02 16:44:01 haley Exp $
 .\"
 .TH GCLKS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 GCLKS (Close GSK) - closes the GKS package.
 .SH SYNOPSIS
 CALL GCLKS
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gclose_gks( void );
 .SH USAGE
 A call to GCLKS insures that the graphics package is properly
 terminated.  No graphics calls depending on GKS should be made
@@ -20,7 +24,7 @@ To use GKS routines, load the NCAR GKS-0A library
 ncarg_gks.
 .SH SEE ALSO
 Online: 
-gopks, gopwk, gacwk, gdawk, gclwk, gupwk, opngks, clsgks
+gopks, gopwk, gacwk, gdawk, gclwk, gupwk, opngks, clsgks, gclose_gks
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

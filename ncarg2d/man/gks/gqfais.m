@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gqfais.m,v 1.1 1993-03-11 16:22:50 haley Exp $
+.\"	$Id: gqfais.m,v 1.2 1993-04-02 16:46:48 haley Exp $
 .\"
 .TH GQFAIS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GQFAIS (Inquire fill area interior style) - retrieves the current value
 for fill area interior style.
 .SH SYNOPSIS
 CALL GQFAIS (ERRIND, INTS)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void ginq_fill_int_style(Gint *err_ind, Gfill_int_style *fill_int_style);
 .SH DESCRIPTION
 .IP ERRIND 12
 (Integer, Output) - If the inquired value cannot be returned correctly,
@@ -22,7 +26,7 @@ ncarg_gks.
 .SH SEE ALSO
 Online: 
 gfa, gsfais, gsfasi, gscr, gsfaci, gqfasi, 
-areas
+areas, ginq_fill_int_style
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics";

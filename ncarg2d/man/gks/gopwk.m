@@ -1,11 +1,15 @@
 .\"
-.\"	$Id: gopwk.m,v 1.1 1993-03-11 16:22:19 haley Exp $
+.\"	$Id: gopwk.m,v 1.2 1993-04-02 16:45:23 haley Exp $
 .\"
 .TH GOPWK 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 GOPWK (Open workstation) - opens a GKS workstation.
 .SH SYNOPSIS
 CALL GOPWK (WKID, CONID, WKTYPE)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gopen_ws(Gint ws_id, const char *conn_id, Gint ws_type);
 .SH DESCRIPTION
 .IP WKID 12
 (Integer, Input) - A number assigned to a workstation as an identifier 
@@ -59,7 +63,7 @@ To use GKS routines, load the NCAR GKS-0A library
 ncarg_gks.
 .SH SEE ALSO
 Online: 
-gopks, gacwk, gdawk, gclwk, gclks, opngks, clsgks
+gopks, gacwk, gdawk, gclwk, gclks, opngks, clsgks, gopen_ws
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

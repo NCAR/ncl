@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gacwk.m,v 1.1 1993-03-11 16:21:42 haley Exp $
+.\"	$Id: gacwk.m,v 1.2 1993-04-02 16:43:50 haley Exp $
 .\"
 .TH GACWK 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GACWK (Activate workstation) -
 activates a GKS workstation.
 .SH SYNOPSIS
 CALL GACWK (WKID)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gactivate_ws(Gint ws_id);
 .SH DESCRIPTION
 .IP WKID 12
 (Integer, Input) - A number identifying the workstation to be activated.
@@ -18,7 +22,7 @@ To use GKS routines, load the NCAR GKS-0A library
 ncarg_gks.
 .SH SEE ALSO
 Online: 
-gopks, gopwk, gdawk, gclwk, gclks, opngks, clsgks
+gopks, gopwk, gdawk, gclwk, gclks, opngks, clsgks, gactivate_ws
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

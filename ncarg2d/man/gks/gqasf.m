@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gqasf.m,v 1.1 1993-03-11 16:22:26 haley Exp $
+.\"	$Id: gqasf.m,v 1.2 1993-04-02 16:45:43 haley Exp $
 .\"
 .TH GQASF 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -8,6 +8,10 @@ aspect source flags that determine whether primitive attributes are
 to be selected from individual settings or from "bundle tables".
 .SH SYNOPSIS
 CALL GQASF (ERRIND,LASF)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void ginq_asfs(Gint *err_ind, Gasfs *list_asf);
 .SH DESCRIPTION 
 .IP ERRIND 12
 (Integer, Output) - If the inquired value cannot be returned correctly,
@@ -60,7 +64,7 @@ ncarg_gks.
 Online:
 gsasf, gsln, gslwsc, gsplci, gsmk, gsmksc, gspmci, gstxfp, gschxp,
 gstxsp, gstxci, gsfais, gsfasi, gsfaci, gqln, gqlwsc, gqplci, gqmk, 
-gqmksc, gqpmci, gqtxfp, gqchxp, gqtxsp, gqtxci, gqfais, gqfasi, gqfaci,
+gqmksc, gqpmci, gqtxfp, gqchxp, gqtxsp, gqtxci, gqfais, gqfasi, gqfaci,, ginq_asfs
 .sp
 Hardcopy:  
 "User's Guide for NCAR GKS-0A Graphics"

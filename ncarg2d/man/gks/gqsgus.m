@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gqsgus.m,v 1.1 1993-03-11 16:23:21 haley Exp $
+.\"	$Id: gqsgus.m,v 1.2 1993-04-02 16:48:06 haley Exp $
 .\"
 .TH GQSGUS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GQSGUS (Inquire set of segment names in use) - Retrieves what segment
 names are currently in use.
 .SH SYNOPSIS
 CALL GQSGUS(N,ERRIND,OL,SGNA)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void ginq_set_seg_names(Gint num_elems_appl_list, Gint start_pos, Gint *err_ind, Gint_list *seg_names, Gint *length_list);
 .SH DESCRIPTION
 .IP N 12
 (Integer, Input) - The set member requested.
@@ -39,7 +43,7 @@ To use GKS routines, load the NCAR GKS-0A library
 ncarg_gks.
 .SH SEE ALSO
 Online: 
-gevtm, gactm, gclsg, gcrsg, gcsgwk, gqopsg, gdsg, gssgt.
+gevtm, gactm, gclsg, gcrsg, gcsgwk, gqopsg, gdsg, gssgt., ginq_set_seg_names
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gqops.m,v 1.1 1993-03-11 16:23:10 haley Exp $
+.\"	$Id: gqops.m,v 1.2 1993-04-02 16:47:39 haley Exp $
 .\"
 .TH GQOPS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GQOPS (Inquire operating state value) - returns the operating state
 of GKS. 
 .SH SYNOPSIS
 CALL GQOPS (OPSTA)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void ginq_op_st(Gop_st *op_st);
 .SH DESCRIPTION
 .IP OPSTA 12
 (Integer, Output) - Returns the GKS operating state:
@@ -26,7 +30,7 @@ Additionally, a segment is open
 To use GKS routines, load the NCAR GKS-0A library ncarg_gks.
 .SH SEE ALSO
 Online: 
-gopks, gopwk, gacwk, gdawk, gclwk, gclks, opngks, clsgks
+gopks, gopwk, gacwk, gdawk, gclwk, gclks, opngks, clsgks, ginq_op_st
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

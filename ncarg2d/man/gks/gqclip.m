@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gqclip.m,v 1.1 1993-03-11 16:22:40 haley Exp $
+.\"	$Id: gqclip.m,v 1.2 1993-04-02 16:46:21 haley Exp $
 .\"
 .TH GQCLIP 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GQCLIP (Inquire clipping indicator) - retrieves the current value of the
 clipping indicator as well as the current clipping rectangle.
 .SH SYNOPSIS
 CALL GQCLIP (ERRIND, ICLIP, CLRECT)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void ginq_clip(Gint *err_ind, Gclip *clip_ind_rect);
 .SH DESCRIPTION
 .IP ERRIND 12
 (Integer, Output) - If the inquired values cannot be returned correctly,
@@ -31,7 +35,7 @@ XMIN, XMAX, YMIN, YMAX.
 To use GKS routines, load the NCAR GKS-0A library ncarg_gks.
 .SH SEE ALSO
 Online: 
-set, gsclip, gswn, gselnt
+set, gsclip, gswn, gselnt, ginq_clip
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

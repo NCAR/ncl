@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gsfais.m,v 1.1 1993-03-11 16:23:56 haley Exp $
+.\"	$Id: gsfais.m,v 1.2 1993-04-02 16:49:48 haley Exp $
 .\"
 .TH GSFAIS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GSFAIS (Set fill area interior style) - sets the fill style
 of polygons drawn with GFA.
 .SH SYNOPSIS
 CALL GSFAIS (INTS)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gset_fill_int_style(Gfill_int_style fill_int_style);
 .SH DESCRIPTION
 .IP INTS 12
 (Integer, Input) - Gives the style of fill to be used 
@@ -35,7 +39,7 @@ ncarg_gks.
 .SH SEE ALSO
 Online: 
 gfa, gsfasi, gscr, gsfaci, gqfais, gqfasi, 
-areas
+areas, gset_fill_int_style
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

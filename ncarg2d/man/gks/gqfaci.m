@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gqfaci.m,v 1.1 1993-03-11 16:22:48 haley Exp $
+.\"	$Id: gqfaci.m,v 1.2 1993-04-02 16:46:41 haley Exp $
 .\"
 .TH GQFACI 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GQFACI (Inquire fill area color index) - retrieves the current fill
 area color index.
 .SH SYNOPSIS
 CALL GQFACI (ERRIND, COLI)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void ginq_fill_colr_ind(Gint *err_ind, Gint *fill_colr_ind);
 .SH DESCRIPTION
 .IP ERRIND 12
 (Integer, Output) - If the inquired value cannot be returned correctly,
@@ -22,7 +26,7 @@ ncarg_gks.
 .SH SEE ALSO
 Online: 
 gfa, gsfais, gsfasi, gscr, gsfaci, gqfais, gqfasi, 
-areas
+areas, ginq_fill_colr_ind
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

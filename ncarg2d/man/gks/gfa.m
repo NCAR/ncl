@@ -1,11 +1,15 @@
 .\"
-.\"	$Id: gfa.m,v 1.1 1993-03-11 16:22:11 haley Exp $
+.\"	$Id: gfa.m,v 1.2 1993-04-02 16:45:04 haley Exp $
 .\"
 .TH GFA 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 GFA (Fill area) - output primitive for filling polygonal areas.
 .SH SYNOPSIS
 CALL GFA (N, X, Y)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gfill_area(const Gpoint_list *point_list);
 .SH DESCRIPTION
 .IP N 12
 (Integer, Input) - The number of points in the polygon 
@@ -46,7 +50,7 @@ To use GKS routines, load the NCAR GKS-0A library
 ncarg_gks.
 .SH SEE ALSO
 Online: 
-gsfais, gsfasi, gscr, gsfaci, gqfais, gqfasi
+gsfais, gsfasi, gscr, gsfaci, gqfais, gqfasi, gfill_area
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

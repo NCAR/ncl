@@ -1,11 +1,15 @@
 .\"
-.\"	$Id: gqtxci.m,v 1.1 1993-03-11 16:23:26 haley Exp $
+.\"	$Id: gqtxci.m,v 1.2 1993-04-02 16:48:19 haley Exp $
 .\"
 .TH GQTXCI 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 GQTXCI (Inquire text color index) - retrieves the current text color index.
 .SH SYNOPSIS
 CALL GQTXCI (ERRIND, COLI)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void ginq_text_colr_ind(Gint *err_ind, Gint *text_colr_ind);
 .SH DESCRIPTION
 .IP ERRIND 12
 (Integer, Output) - If the inquired value cannot be returned correctly,
@@ -21,7 +25,7 @@ To use GKS routines, load the NCAR GKS-0A library ncarg_gks.
 Online: 
 gtx, gstxp, gstxal, gstxfp, gschh, gschsp, gschup, 
 gschxp, gscr, gstxci, gqtxp, gqtxal, gqtxfp, gqchh, 
-gqchsp, gqchup, gqchxp, plotchar
+gqchsp, gqchup, gqchxp, plotchar, ginq_text_colr_ind
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gpl.m,v 1.1 1993-03-11 16:22:21 haley Exp $
+.\"	$Id: gpl.m,v 1.2 1993-04-02 16:45:30 haley Exp $
 .\"
 .TH GPL 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GPL (Polyline) - This output primitive draws
 line segments connecting a sequence of user-specified coordinate pairs.
 .SH SYNOPSIS
 CALL GPL (N, X, Y)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gpolyline(const Gpoint_list *point_list);
 .SH DESCRIPTION
 .IP N 12
 (Integer, Input) - The number of points in the line to 
@@ -26,7 +30,7 @@ functions for drawing lines are not applicable here.
 To use GKS routines, load the NCAR GKS-0A library ncarg_gks.
 .SH SEE ALSO
 Online: 
-gsln, gslwsc, gscr, gsplci, gqln, gqlwsc, gqplci, dashline, set
+gsln, gslwsc, gscr, gsplci, gqln, gqlwsc, gqplci, dashline, set, gpolyline
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics";

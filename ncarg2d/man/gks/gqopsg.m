@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gqopsg.m,v 1.1 1993-03-11 16:23:12 haley Exp $
+.\"	$Id: gqopsg.m,v 1.2 1993-04-02 16:47:46 haley Exp $
 .\"
 .TH GQOPSG 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GQOPSG (Inquire name of open segment) - returns the name of the currently
 open segment.
 .SH SYNOPSIS
 CALL GQOPSG(ERRIND,SGNA)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void ginq_name_open_seg(Gint *err_ind, Gint *name_open_seg);
 .SH DESCRIPTION
 .IP ERRIND 12
 (Integer, Output) - If the GKS state is SGOP (segment open), 
@@ -20,7 +24,7 @@ To use GKS routines, load the NCAR GKS-0A library
 ncarg_gks.
 .SH SEE ALSO
 Online: 
-gevtm, gactm, gclsg, gcrsg, gcsgwk, gdsg, gqsgus, gssgt.
+gevtm, gactm, gclsg, gcrsg, gcsgwk, gdsg, gqsgus, gssgt., ginq_name_open_seg
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

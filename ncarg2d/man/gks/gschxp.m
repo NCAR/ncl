@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gschxp.m,v 1.1 1993-03-11 16:23:43 haley Exp $
+.\"	$Id: gschxp.m,v 1.2 1993-04-02 16:49:11 haley Exp $
 .\"
 .TH GSCHXP 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -8,6 +8,10 @@ the width to
 height ratio of text.
 .SH SYNOPSIS
 CALL GSCHXP (CHXP)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gset_char_expan(Gdouble char_expan);
 .SH DESCRIPTION
 .IP CHXP 12
 (Real, Input) - 
@@ -28,7 +32,7 @@ ncarg_gks.
 Online: 
 gtx, gstxp, gstxal, gstxfp, gschh, gschsp, gschup, 
 gscr, gstxci, gqtxp, gqtxal, gqtxfp, gqchh, 
-gqchsp, gqchup, gqchxp, plotchar
+gqchsp, gqchup, gqchxp, plotchar, gset_char_expan
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

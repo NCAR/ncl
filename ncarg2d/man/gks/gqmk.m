@@ -1,11 +1,15 @@
 .\"
-.\"	$Id: gqmk.m,v 1.1 1993-03-11 16:23:00 haley Exp $
+.\"	$Id: gqmk.m,v 1.2 1993-04-02 16:47:14 haley Exp $
 .\"
 .TH GQMK 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 GQMK (Inquire marker type) - retrieves the current value for the marker type.
 .SH SYNOPSIS
 CALL GQMK (ERRIND, MTYPE)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void ginq_marker_type(Gint *err_ind, Gint *marker_type);
 .SH DESCRIPTION
 .IP ERRIND 12
 (Integer, Output) - If the inquired value cannot be returned correctly,
@@ -32,7 +36,7 @@ To use GKS routines, load the NCAR GKS-0A library ncarg_gks.
 .SH SEE ALSO
 Online: 
 gpm, gsmk, gsmksc, gscr, gspmci, gqmksc, gqpmci, 
-point, points
+point, points, ginq_marker_type
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

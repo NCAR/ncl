@@ -1,11 +1,15 @@
 .\"
-.\"	$Id: gopks.m,v 1.1 1993-03-11 16:22:16 haley Exp $
+.\"	$Id: gopks.m,v 1.2 1993-04-02 16:45:16 haley Exp $
 .\"
 .TH GOPKS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 GOPKS (Open GKS) - opens the GKS package
 .SH SYNOPSIS
 CALL GOPKS (ERRFIL, BUFA)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gopen_gks(const char *err_file, size_t mem_unit);
 .SH DESCRIPTION
 .IP ERRFIL 12
 (Input, Integer) - The Fortran unit number to which 
@@ -24,7 +28,7 @@ To use GKS routines, load the NCAR GKS-0A library
 ncarg_gks.
 .SH SEE ALSO
 Online: 
-gopwk, gacwk, gdawk, gclwk, gclks, guwk, opngks, clsgks
+gopwk, gacwk, gdawk, gclwk, gclks, guwk, opngks, clsgks, gopen_gks
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

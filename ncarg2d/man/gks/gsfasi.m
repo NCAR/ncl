@@ -1,11 +1,15 @@
 .\"
-.\"	$Id: gsfasi.m,v 1.1 1993-03-11 16:23:58 haley Exp $
+.\"	$Id: gsfasi.m,v 1.2 1993-04-02 16:49:54 haley Exp $
 .\"
 .TH GSFASI 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 GSFASI (Set fill are style index) - sets the fill area style index.
 .SH SYNOPSIS
 CALL GSFASI (STYLI)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gset_fill_style_ind(Gint fill_style_ind);
 .SH DESCRIPTION
 .IP STYLI 12
 (Integer, Input) - 
@@ -33,7 +37,7 @@ ncarg_gks.
 .SH SEE ALSO
 Online: 
 gfa, gsfais, gscr, gsfaci, gqfais, gqfasi, 
-areas
+areas, gset_fill_style_ind
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

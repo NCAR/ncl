@@ -1,11 +1,15 @@
 .\"
-.\"	$Id: gschh.m,v 1.1 1993-03-11 16:23:35 haley Exp $
+.\"	$Id: gschh.m,v 1.2 1993-04-02 16:48:50 haley Exp $
 .\"
 .TH GSCHH 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 GSCHH (Set character height) - sets the character height for text.
 .SH SYNOPSIS
 CALL GSCHH (CHH)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gset_char_ht(Gdouble char_ht);
 .SH DESCRIPTION
 .IP CHH 12
 (Real, Input) - 
@@ -21,7 +25,7 @@ ncarg_gks.
 Online: 
 gtx, gstxp, gstxal, gstxfp, gschsp, gschup, 
 gschxp, gscr, gstxci, gqtxp, gqtxal, gqtxfp, gqchh, 
-gqchsp, gqchup, gqchxp, plotchar
+gqchsp, gqchup, gqchxp, plotchar, gset_char_ht
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

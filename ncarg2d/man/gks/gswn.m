@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gswn.m,v 1.1 1993-03-11 16:24:32 haley Exp $
+.\"	$Id: gswn.m,v 1.2 1993-04-02 16:51:16 haley Exp $
 .\"
 .TH GSWN 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -10,6 +10,10 @@ subroutine because SET also supports mirror imaging and log
 scaling of axes. 
 .SH SYNOPSIS
 CALL GSWN (TRNUM, XMIN, XMAX, YMIN, YMAX)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gset_win(Gint tran_num, const Glimit *win_limits);
 .SH DESCRIPTION
 .IP TRNUM 12
 (Integer, Input) - A normalization transformation 
@@ -40,7 +44,7 @@ To use GKS routines, load the NCAR GKS-0A library
 ncarg_gks.
 .SH SEE ALSO
 Online: 
-set, gsvp, gselnt, gqclip
+set, gsvp, gselnt, gqclip, gset_win
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

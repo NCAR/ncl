@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gesc.m,v 1.1 1993-03-11 16:22:06 haley Exp $
+.\"	$Id: gesc.m,v 1.2 1993-04-02 16:44:51 haley Exp $
 .\"
 .TH GESC 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -9,6 +9,10 @@ defined: one for changing the name of a metafile and another for
 pausing in an X window.
 .SH SYNOPSIS
 CALL GESC (FCTID, LIDR, IDR, MXODR, LODR, ODR)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gescape(Gint func_id, const Gescape_in_data *in_data, Gstore *store_data,Gescape_out_data **out_data);
 .SH DESCRIPTION
 .IP FCTID 12
 (Integer, Input) - 
@@ -86,7 +90,7 @@ To use GKS routines, load the NCAR GKS-0A library
 ncarg_gks.
 .SH SEE ALSO
 Online: 
-SETUSV, FRAME, NGPICT
+SETUSV, FRAME, NGPICT, gescape
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

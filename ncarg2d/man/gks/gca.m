@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gca.m,v 1.1 1993-03-11 16:21:44 haley Exp $
+.\"	$Id: gca.m,v 1.2 1993-04-02 16:43:55 haley Exp $
 .\"
 .TH GCA 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -11,6 +11,10 @@ and Y directions; each subrectangle (or cell) is
 assigned a color and drawn with that color.
 .SH SYNOPSIS
 CALL GCA (XP1, YP1, XP2, YP2, NXCLR, NYCLR, IXCLR, IYCLR, NXDO, NYDO, CLRIA)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gcell_array(const Grect *rect, const Gpat_rep *colr_array);
 .SH DESCRIPTION
 .IP XP1 12
 (Real, Input) - X world coordinate of point 1.
@@ -52,7 +56,7 @@ To use GKS routines, load the NCAR GKS-0A library
 ncarg_gks.
 .SH SEE ALSO
 Online:
-gscr
+gscr, gcell_array
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gschup.m,v 1.1 1993-03-11 16:23:40 haley Exp $
+.\"	$Id: gschup.m,v 1.2 1993-04-02 16:49:03 haley Exp $
 .\"
 .TH GSCHUP 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GSCHUP (Set character up vector) - specifies the angle at which subsequent
 text is to be drawn with GTX.
 .SH SYNOPSIS
 CALL GSCHUP (CHUX, CHUY)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gset_char_up_vec(const Gvec *char_up_vec);
 .SH DESCRIPTION
 .IP CHUX 12
 (Real, Input) - 
@@ -47,7 +51,7 @@ ncarg_gks.
 .SH SEE ALSO
 Online: 
 gtx, gstxp, gstxal, gstxfp, gschh, gschsp, gschxp, gscr, gstxci, 
-gqtxp, gqtxal, gqtxfp, gqchh, gqchsp, gqchup, gqchxp, plotchar
+gqtxp, gqtxal, gqtxfp, gqchh, gqchsp, gqchup, gqchxp, plotchar, gset_char_up_vec
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

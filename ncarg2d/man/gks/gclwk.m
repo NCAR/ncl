@@ -1,11 +1,15 @@
 .\"
-.\"	$Id: gclwk.m,v 1.1 1993-03-11 16:21:54 haley Exp $
+.\"	$Id: gclwk.m,v 1.2 1993-04-02 16:44:20 haley Exp $
 .\"
 .TH GCLWK 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 GCLWK (Close workstation) - closes a workstation.
 .SH SYNOPSIS
 CALL GCLWK (WKID)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gclear_ws(Gint ws_id, Gctrl_flag  ctrl_flag);
 .SH DESCRIPTION
 .IP WKID 12
 (Input, Integer) - A number identifying the workstation to be
@@ -20,7 +24,7 @@ ncarg_gks.
 .SH SEE ALSO
 Online: 
 gopks, gopwk, gacwk, gdawk, gclks, opngks, 
-clsgks
+clsgks, gclear_ws
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

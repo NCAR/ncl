@@ -1,11 +1,15 @@
 .\"
-.\"	$Id: gschsp.m,v 1.1 1993-03-11 16:23:38 haley Exp $
+.\"	$Id: gschsp.m,v 1.2 1993-04-02 16:48:57 haley Exp $
 .\"
 .TH GSCHSP 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 GSCHSP (Set character spacing) - sets the character spacing for text.
 .SH SYNOPSIS
 CALL GSCHSP (CHSP)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gset_char_space(Gdouble char_space);
 .SH DESCRIPTION
 .IP CHSP 12
 (Real, Input) - 
@@ -29,7 +33,7 @@ ncarg_gks.
 Online: 
 gtx, gstxp, gstxal, gstxfp, gschh, gschup, 
 gschxp, gscr, gstxci, gqtxp, gqtxal, gqtxfp, gqchh, 
-gqchsp, gqchup, gqchxp, plotchar
+gqchsp, gqchup, gqchxp, plotchar, gset_char_space
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

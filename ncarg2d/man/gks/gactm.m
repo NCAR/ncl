@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gactm.m,v 1.1 1993-03-11 16:21:38 haley Exp $
+.\"	$Id: gactm.m,v 1.2 1993-04-02 16:43:45 haley Exp $
 .\"
 .TH GACTM 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -10,6 +10,10 @@ create a new transformation matrix.  The rotation and scaling are
 done with respect to a user-defined fixed point.
 .SH SYNOPSIS
 CALL GACTM(MINP,X0,Y0,DX,DY,PHI,FX,FY,SW,MOUT)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gaccum_tran_matrix(const Gtran_matrix t_matrix, const Gpoint *point, const Gvec *shift, Gdouble angle, const Gvec *scale, Gcoord_switch coord_switch, Gtran_matrix tran_matrix);
 .SH DESCRIPTION
 .IP MINP 12
 (Real, Input) - A 2x3 GKS transformation matrix.
@@ -92,7 +96,7 @@ To use GKS routines, load the NCAR GKS-0A library
 ncarg_gks.
 .SH SEE ALSO
 Online: 
-gevtm, gclsg, gcrsg, gcsgwk, gdsg, gqopsg, gqsgus, gssgt.
+gevtm, gclsg, gcrsg, gcsgwk, gdsg, gqopsg, gqsgus, gssgt., gaccum_tran_matrix
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

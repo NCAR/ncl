@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gscr.m,v 1.1 1993-03-11 16:23:48 haley Exp $
+.\"	$Id: gscr.m,v 1.2 1993-04-02 16:49:26 haley Exp $
 .\"
 .TH GSCR 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GSCR (Set color representation) - associates a color value with a
 color index.
 .SH SYNOPSIS
 CALL GSCR (WKID, CI, CR, CG, CB)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gset_colr_rep(Gint ws_id, Gint colr_ind, const Gcolr_rep *colr_rep);
 .SH DESCRIPTION
 .IP WKID 12
 (Integer, Input) - A workstation identifier.
@@ -53,7 +57,7 @@ To use GKS routines, load the NCAR GKS-0A library
 ncarg_gks.
 .SH SEE ALSO
 Online: 
-gqcr, gsplci, gspmci, gsfaci, gstxci, gqplci, gqpmci, gqfaci, gqtxci
+gqcr, gsplci, gspmci, gsfaci, gstxci, gqplci, gqpmci, gqfaci, gqtxci, gset_colr_rep
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

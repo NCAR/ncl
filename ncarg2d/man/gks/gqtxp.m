@@ -1,11 +1,15 @@
 .\"
-.\"	$Id: gqtxp.m,v 1.1 1993-03-11 16:23:30 haley Exp $
+.\"	$Id: gqtxp.m,v 1.2 1993-04-02 16:48:34 haley Exp $
 .\"
 .TH GQTXP 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 GQTXP (Inquire text path) - retrieves the current text path.
 .SH SYNOPSIS
 CALL GQTXP (ERRIND, TXP)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void ginq_text_path(Gint *err_ind, Gtext_path *text_path);
 .SH DESCRIPTION
 .IP ERRIND 12
 (Integer, Output) - If the inquired value cannot be returned correctly,
@@ -33,7 +37,7 @@ To use GKS routines, load the NCAR GKS-0A library ncarg_gks.
 Online: 
 gtx, gstxp, gstxal, gstxfp, gschh, gschsp, gschup, 
 gschxp, gscr, gstxci, gqtxp, gqtxal, gqtxfp, gqchh, 
-gqchsp, gqchup, gqchxp, plotchar
+gqchsp, gqchup, gqchxp, plotchar, ginq_text_path
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

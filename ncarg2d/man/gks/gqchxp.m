@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gqchxp.m,v 1.1 1993-03-11 16:22:37 haley Exp $
+.\"	$Id: gqchxp.m,v 1.2 1993-04-02 16:46:14 haley Exp $
 .\"
 .TH GQCHXP 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GQCHXP (Inquire character expansion factor) - retrieves the current
 value of the character expansion factor.
 .SH SYNOPSIS
 CALL GQCHXP (ERRIND, CHXP)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void ginq_char_expan(Gint *err_ind, Gdouble *char_expan);
 .SH DESCRIPTION
 .IP ERRIND 12
 (Integer, Output) - If the inquired value cannot be returned correctly,
@@ -24,7 +28,7 @@ ncarg_gks.
 Online: 
 gtx, gstxp, gstxal, gstxfp, gschh, gschsp, gschup, 
 gschxp, gscr, gstxci, gqtxp, gqtxal, gqtxfp, gqchh, 
-gqchsp, gqchup, plotchar
+gqchsp, gqchup, plotchar, ginq_char_expan
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

@@ -1,11 +1,15 @@
 .\"
-.\"	$Id: gstxal.m,v 1.1 1993-03-11 16:24:20 haley Exp $
+.\"	$Id: gstxal.m,v 1.2 1993-04-02 16:50:49 haley Exp $
 .\"
 .TH GSTXAL 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 GSTXAL (Set text alignment) - sets the text alignment.
 .SH SYNOPSIS
 CALL GSTXAL (TXALH, TXALV)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gset_text_align(const Gtext_align *text_align);
 .SH DESCRIPTION
 .IP TXALH 12
 (Integer, Input) - 
@@ -50,7 +54,7 @@ ncarg_gks.
 Online: 
 gtx, gstxp, gstxfp, gschh, gschsp, gschup, 
 gschxp, gscr, gstxci, gqtxp, gqtxal, gqtxfp, gqchh, 
-gqchsp, gqchup, gqchxp, plotchar
+gqchsp, gqchup, gqchxp, plotchar, gset_text_align
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

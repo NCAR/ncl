@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gsvp.m,v 1.1 1993-03-11 16:24:30 haley Exp $
+.\"	$Id: gsvp.m,v 1.2 1993-04-02 16:51:11 haley Exp $
 .\"
 .TH GSVP 3NCARG "14 January 1992" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -10,6 +10,10 @@ subroutine because SET also supports mirror imaging and log
 scaling of axes. 
 .SH SYNOPSIS
 CALL GSVP (TRNUM, XMIN, XMAX, YMIN, YMAX)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gset_vp(Gint tran_num, const Glimit *vp_limits);
 .SH DESCRIPTION
 .IP TRNUM 12
 (Integer, Input) - A normalization transformation 
@@ -48,7 +52,7 @@ To use GKS routines, load the NCAR GKS-0A library
 ncarg_gks.
 .SH SEE ALSO
 Online: 
-set, gswn, gselnt, gqclip
+set, gswn, gselnt, gqclip, gset_vp
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

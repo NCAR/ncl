@@ -1,11 +1,15 @@
 .\"
-.\"	$Id: gstxci.m,v 1.1 1993-03-11 16:24:22 haley Exp $
+.\"	$Id: gstxci.m,v 1.2 1993-04-02 16:50:55 haley Exp $
 .\"
 .TH GSTXCI 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 GSTXCI (Set text color index) - sets the text color index.
 .SH SYNOPSIS
 CALL GSTXCI (COLI)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gset_text_colr_ind(Gint text_colr_ind);
 .SH DESCRIPTION
 .IP COLI 12
 (Integer, Input) - A color index.
@@ -28,7 +32,7 @@ ncarg_gks.
 Online: 
 gtx, gstxp, gstxal, gstxfp, gschh, gschsp, gschup, 
 gschxp, gscr, gqtxp, gqtxal, gqtxfp, gqchh, 
-gqchsp, gqchup, gqchxp, plotchar
+gqchsp, gqchup, gqchxp, plotchar, gset_text_colr_ind
 .sp
 Hardcopy:  
 "User's Guide for NCAR GKS-0A Graphics"

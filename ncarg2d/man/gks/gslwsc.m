@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gslwsc.m,v 1.1 1993-03-11 16:24:04 haley Exp $
+.\"	$Id: gslwsc.m,v 1.2 1993-04-02 16:50:09 haley Exp $
 .\"
 .TH GSLWSC 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -8,6 +8,10 @@ factor, or relative
 thickness of a polyline.
 .SH SYNOPSIS
 CALL GSLWSC (LWIDTH)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gset_linewidth(Gdouble linewidth);
 .SH DESCRIPTION
 .IP LWIDTH 12
 (Real, Input) - A scale factor to control the 
@@ -28,7 +32,7 @@ ncarg_gks.
 .SH SEE ALSO
 Online: 
 gpl, gsln, gscr, gsplci, gqln, gqlwsc, gqplci, 
-dashline
+dashline, gset_linewidth
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

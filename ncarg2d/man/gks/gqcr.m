@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gqcr.m,v 1.1 1993-03-11 16:22:45 haley Exp $
+.\"	$Id: gqcr.m,v 1.2 1993-04-02 16:46:34 haley Exp $
 .\"
 .TH GQCR 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GQCR (Inquire color representation) - retrieves the color value associated
 with a color index on a particular workstation.
 .SH SYNOPSIS
 CALL GQCR (WKID, CI, TYPE, ERRIND, CR, CG, CB)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void ginq_colr_rep(Gint ws_id, Gint colr_ind, Ginq_type type, Gint *err_ind, Gcolr_rep  *colr_rep);
 .SH DESCRIPTION
 .IP WKID 12
 (Integer, Input) - Gives a workstation identifier as was set in
@@ -46,7 +50,7 @@ For details on setting and using color indices see the man page for GSCR.
 To use GKS routines, load the NCAR GKS-0A library ncarg_gks.
 .SH SEE ALSO
 Online: 
-gscr, gsplci, gsmkci, gstxci, gsfaci
+gscr, gsplci, gsmkci, gstxci, gsfaci, ginq_colr_rep
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

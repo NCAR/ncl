@@ -1,11 +1,15 @@
 .\"
-.\"	$Id: gclsg.m,v 1.1 1993-03-11 16:21:51 haley Exp $
+.\"	$Id: gclsg.m,v 1.2 1993-04-02 16:44:13 haley Exp $
 .\"
 .TH GCLSG 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 GCLSG (Close segment) - closes a GKS segment.
 .SH SYNOPSIS
 CALL GCLSG
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gclose_seg( void );
 .SH USAGE
 A call to GCLSG closes the 
 currently open segment (graphics output primitives will no longer
@@ -16,7 +20,7 @@ To use GKS routines, load the NCAR GKS-0A library
 ncarg_gks.
 .SH SEE ALSO
 Online: 
-gevtm, gactm, gcrsg, gcsgwk, gdsg, gqopsg, gqsgus, gssgt.
+gevtm, gactm, gcrsg, gcsgwk, gdsg, gqopsg, gqsgus, gssgt, gclose_seg
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

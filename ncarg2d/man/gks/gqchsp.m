@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gqchsp.m,v 1.1 1993-03-11 16:22:32 haley Exp $
+.\"	$Id: gqchsp.m,v 1.2 1993-04-02 16:45:58 haley Exp $
 .\"
 .TH GQCHSP 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GQCHSP (Inquire character spacing) - retrieves the current value for
 character spacing.
 .SH SYNOPSIS
 CALL GQCHSP (ERRIND, CHSP)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void ginq_char_space(Gint *err_ind, Gdouble *char_space);
 .SH DESCRIPTION
 .IP ERRIND 12
 (Integer, Output) - If the inquired value cannot be returned correctly,
@@ -24,7 +28,7 @@ ncarg_gks.
 Online: 
 gtx, gstxp, gstxal, gstxfp, gschh, gschsp, gschup, 
 gschxp, gscr, gstxci, gqtxp, gqtxal, gqtxfp, gqchh, 
-gqchup, gqchxp, plotchar
+gqchup, gqchxp, plotchar, ginq_char_space
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: guwk.m,v 1.1 1993-03-11 16:24:37 haley Exp $
+.\"	$Id: guwk.m,v 1.2 1993-04-02 16:51:27 haley Exp $
 .\"
 .TH GUWK 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GUWK (Update workstation) - Insures that the workstation is current and
 reflects all requests that have been made.
 .SH SYNOPSIS
 CALL GUWK(WKID,REGFL)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gupd_ws(Gint ws_id, Gupd_regen_flag upd_regen_flag);
 .SH DESCRIPTION
 .IP WKID 12
 (Integer, Input) - A number identifying the workstation to be updated.
@@ -25,7 +29,7 @@ To use GKS routines, load the NCAR GKS-0A library
 ncarg_gks.
 .SH SEE ALSO
 Online: 
-sflush, plotif
+sflush, plotif, gupd_ws
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

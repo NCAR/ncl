@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gpm.m,v 1.1 1993-03-11 16:22:24 haley Exp $
+.\"	$Id: gpm.m,v 1.2 1993-04-02 16:45:36 haley Exp $
 .\"
 .TH GPM 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GPM (Polymarker) - the polymarker output primitive draws selected
 symmetric symbols to mark user-specified coordinate positions.
 .SH SYNOPSIS
 CALL GPM (N, X, Y)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gpolymarker(const Gpoint_list *point_list);
 .SH DESCRIPTION
 .IP N 12
 (Integer, Input) - The number of markers to be drawn.  N must be
@@ -32,7 +36,7 @@ ncarg_gks.
 .SH SEE ALSO
 Online: 
 gsmk, gsmksc, gscr, gspmci, gqmk, gqmksc, gqpmci, 
-point, points, ngdots
+point, points, ngdots, gpolymarker
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

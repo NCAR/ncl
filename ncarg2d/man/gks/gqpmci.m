@@ -1,11 +1,15 @@
 .\"
-.\"	$Id: gqpmci.m,v 1.1 1993-03-11 16:23:18 haley Exp $
+.\"	$Id: gqpmci.m,v 1.2 1993-04-02 16:48:00 haley Exp $
 .\"
 .TH GQPMCI 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 GQPMCI (Inquire polymarker color index) - retrieves the polymarker color index.
 .SH SYNOPSIS
 CALL GQPMCI (ERRIND, COLI)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void ginq_marker_colr_ind(Gint *err_ind, Gint *marker_colr_ind);
 .SH DESCRIPTION
 .IP ERRIND 12
 (Integer, Output) - If the inquired value cannot be returned correctly,
@@ -21,7 +25,7 @@ ncarg_gks.
 .SH SEE ALSO
 Online: 
 gpm, gsmk, gsmksc, gscr, gspmci, gqmk, gqmksc, gqpmci, 
-point, points
+point, points, ginq_marker_colr_ind
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

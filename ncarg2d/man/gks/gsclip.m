@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gsclip.m,v 1.1 1993-03-11 16:23:46 haley Exp $
+.\"	$Id: gsclip.m,v 1.2 1993-04-02 16:49:18 haley Exp $
 .\"
 .TH GSCLIP 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -8,6 +8,10 @@ displayed outside the boundaries of the world coordinate window
 of the current normalization transformation.
 .SH SYNOPSIS
 CALL GSCLIP (ICLIP)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gset_clip_ind(Gclip_ind clip_ind);
 .SH DESCRIPTION
 .IP ICLIP 12
 (Integer, Input) - A flag to turn clipping on or off.
@@ -31,7 +35,7 @@ To use GKS routines, load the NCAR GKS-0A library
 ncarg_gks.
 .SH SEE ALSO
 Online: 
-set, gsup, gswn, gselnt, gqclip
+set, gsup, gswn, gselnt, gqclip, gset_clip_ind
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

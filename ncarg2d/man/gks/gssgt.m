@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gssgt.m,v 1.1 1993-03-11 16:24:17 haley Exp $
+.\"	$Id: gssgt.m,v 1.2 1993-04-02 16:50:43 haley Exp $
 .\"
 .TH GSSGT 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,10 @@ GSSGT (Set segment transformation) - Associates a segment transformation
 with a named segment.
 .SH SYNOPSIS
 CALL GSSGT(SGNA,M)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/gks.h>
+.sp
+void gset_seg_tran(Gint seg_name, const Gtran_matrix tran_matrix);
 .SH DESCRIPTION
 .IP SGNA 12
 (Integer, Input) - A segment name as used in a previous GCRSG call.
@@ -22,7 +26,7 @@ To use GKS routines, load the NCAR GKS-0A library
 ncarg_gks.
 .SH SEE ALSO
 Online: 
-gactm, gevtm, gclsg, gcrsg, gcsgwk, gdsg, gqopsg, gqsgus.
+gactm, gevtm, gclsg, gcrsg, gcsgwk, gdsg, gqopsg, gqsgus., gset_seg_tran
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"
