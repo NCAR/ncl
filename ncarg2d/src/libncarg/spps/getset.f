@@ -1,5 +1,5 @@
 C
-C $Id: getset.f,v 1.2 1993-12-12 20:55:24 kennison Exp $
+C $Id: getset.f,v 1.3 1994-03-17 01:43:32 kennison Exp $
 C
       SUBROUTINE GETSET (VL,VR,VB,VT,WL,WR,WB,WT,LF)
 C

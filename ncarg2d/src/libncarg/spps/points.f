@@ -1,5 +1,5 @@
 C
-C $Id: points.f,v 1.2 1993-12-12 20:56:12 kennison Exp $
+C $Id: points.f,v 1.3 1994-03-17 01:44:11 kennison Exp $
 C
       SUBROUTINE POINTS (PX,PY,NP,IC,IL)
       DIMENSION PX(NP),PY(NP)
@@ -22,6 +22,10 @@ C
       DIMENSION LA(13)
       CHARACTER*1 CHRTMP
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('POINTS - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C If the number of points is zero or negative, there's nothing to do.
 C
       IF (NP.LE.0) RETURN
@@ -29,12 +33,12 @@ C
 C Otherwise, flush the pen-move buffer.
 C
       CALL PLOTIF (0.,0.,2)
-      IF (ICFELL('POINTS',1).NE.0) RETURN
+      IF (ICFELL('POINTS',2).NE.0) RETURN
 C
 C Retrieve the parameters from the last SET call.
 C
       CALL GETSET (F1,F2,F3,F4,F5,F6,F7,F8,LL)
-      IF (ICFELL('POINTS',2).NE.0) RETURN
+      IF (ICFELL('POINTS',3).NE.0) RETURN
 C
 C If a linear-linear, non-mirror-imaged, mapping is being done and the
 C GKS polymarkers can be used, all the points can be marked with a
@@ -44,13 +48,13 @@ C
       IF (F5.LT.F6.AND.F7.LT.F8.AND.LL.EQ.1.AND.IC.LE.0) THEN
         CALL GQASF (IE,LA)
         IF (IE.NE.0) THEN
-          CALL SETER ('POINTS - ERROR EXIT FROM GQASF',3,1)
+          CALL SETER ('POINTS - ERROR EXIT FROM GQASF',4,1)
           RETURN
         END IF
         IF (LA(4).EQ.0) THEN
           CALL GQPMI (IE,IN)
           IF (IE.NE.0) THEN
-            CALL SETER ('POINTS - ERROR EXIT FROM GQPMI',4,1)
+            CALL SETER ('POINTS - ERROR EXIT FROM GQPMI',5,1)
             RETURN
           END IF
           CALL GSPMI (MAX0(-IC,1))
@@ -59,7 +63,7 @@ C
         ELSE
           CALL GQMK (IE,IN)
           IF (IE.NE.0) THEN
-            CALL SETER ('POINTS - ERROR EXIT FROM GQMK',5,1)
+            CALL SETER ('POINTS - ERROR EXIT FROM GQMK',6,1)
             RETURN
           END IF
           CALL GSMK (MAX0(-IC,1))
@@ -80,20 +84,20 @@ C
         IF (IC.LE.0) THEN
           CALL GQASF (IE,LA)
           IF (IE.NE.0) THEN
-            CALL SETER ('POINTS - ERROR EXIT FROM GQASF',6,1)
+            CALL SETER ('POINTS - ERROR EXIT FROM GQASF',7,1)
             RETURN
           END IF
           IF (LA(4).EQ.0) THEN
             CALL GQPMI (IE,IN)
             IF (IE.NE.0) THEN
-              CALL SETER ('POINTS - ERROR EXIT FROM GQPMI',7,1)
+              CALL SETER ('POINTS - ERROR EXIT FROM GQPMI',8,1)
               RETURN
             END IF
             CALL GSPMI (MAX0(-IC,1))
           ELSE
             CALL GQMK (IE,IN)
             IF (IE.NE.0) THEN
-              CALL SETER ('POINTS - ERROR EXIT FROM GQMK',8,1)
+              CALL SETER ('POINTS - ERROR EXIT FROM GQMK',9,1)
               RETURN
             END IF
             CALL GSMK (MAX0(-IC,1))
@@ -101,7 +105,7 @@ C
         ELSE
           CALL GQTXAL (IE,IH,IV)
           IF (IE.NE.0) THEN
-            CALL SETER ('POINTS - ERROR EXIT FROM GQTXAL',9,1)
+            CALL SETER ('POINTS - ERROR EXIT FROM GQTXAL',10,1)
             RETURN
           END IF
           CALL GSTXAL (2,3)
@@ -124,7 +128,7 @@ C
 C Change the SET call to allow the use of fractional coordinates.
 C
           CALL SET (F1,F2,F3,F4,F1,F2,F3,F4,1)
-          IF (ICFELL('POINTS',10).NE.0) RETURN
+          IF (ICFELL('POINTS',11).NE.0) RETURN
 C
 C Crank out either a polymarker or a set of characters.
 C
@@ -141,7 +145,7 @@ C
 C Put the SET parameters back the way they were.
 C
           CALL SET (F1,F2,F3,F4,F5,F6,F7,F8,LL)
-          IF (ICFELL('POINTS',11).NE.0) RETURN
+          IF (ICFELL('POINTS',12).NE.0) RETURN
 C
   104   CONTINUE
 C
@@ -163,7 +167,7 @@ C
 C Update the pen position.
 C
       CALL FRSTPT (PX(NP),PY(NP))
-      IF (ICFELL('POINTS',12).NE.0) RETURN
+      IF (ICFELL('POINTS',13).NE.0) RETURN
 C
 C Done.
 C

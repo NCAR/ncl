@@ -1,5 +1,5 @@
 C
-C $Id: getusv.f,v 1.2 1993-12-12 20:55:28 kennison Exp $
+C $Id: getusv.f,v 1.3 1994-03-17 01:43:36 kennison Exp $
 C
       SUBROUTINE GETUSV (VN,IV)
       CHARACTER*(*) VN
@@ -13,6 +13,10 @@ C variables.
 C
       COMMON /IUTLCM/IU(100)
       SAVE /IUTLCM/
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('GETUSV - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Check for the linear-log scaling variable.
 C
@@ -81,7 +85,7 @@ C
 C Otherwise, the variable name is unknown.
 C
       ELSE
-        CALL SETER ('GETUSV - UNKNOWN VARIABLE NAME IN CALL',1,1)
+        CALL SETER ('GETUSV - UNKNOWN VARIABLE NAME IN CALL',2,1)
 C
       ENDIF
 C

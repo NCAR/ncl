@@ -1,5 +1,5 @@
 C
-C $Id: set.f,v 1.2 1993-12-12 20:56:16 kennison Exp $
+C $Id: set.f,v 1.3 1994-03-17 01:44:15 kennison Exp $
 C
       SUBROUTINE SET (VL,VR,VB,VT,WL,WR,WB,WT,LF)
 C
@@ -22,11 +22,6 @@ C flags.
 C
       COMMON /IUTLCM/ LL,MI,MX,MY,IU(96)
       SAVE /IUTLCM/
-C
-C Flush the pen-move buffer.
-C
-      CALL PLOTIF (0.,0.,2)
-      IF (ICFELL('SET',1).NE.0) RETURN
 C
 C Set the GKS viewport for transformation 1.
 C

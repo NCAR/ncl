@@ -1,5 +1,5 @@
 C
-C $Id: plotit.f,v 1.2 1993-12-12 20:56:07 kennison Exp $
+C $Id: plotit.f,v 1.3 1994-03-17 01:44:07 kennison Exp $
 C
       SUBROUTINE PLOTIT (IX,IY,IP)
 C
@@ -36,10 +36,14 @@ C from GKS.
 C
       DIMENSION VP(4),WD(4)
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('PLOTIT - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Check for out-of-range values of the pen parameter.
 C
       IF (IP.LT.0.OR.IP.GT.2) THEN
-        CALL SETER ('PLOTIT - ILLEGAL VALUE FOR IPEN',1,1)
+        CALL SETER ('PLOTIT - ILLEGAL VALUE FOR IPEN',2,1)
         RETURN
       END IF
 C
@@ -90,13 +94,13 @@ C coordinates (normalized device coordinates, in GKS terms).
 C
       CALL GQCNTN (IE,NT)
       IF (IE.NE.0) THEN
-        CALL SETER ('PLOTIT - ERROR EXIT FROM GQCNTN',2,1)
+        CALL SETER ('PLOTIT - ERROR EXIT FROM GQCNTN',3,1)
         RETURN
       END IF
       IF (NT.NE.0) THEN
         CALL GQNT (NT,IE,WD,VP)
         IF (IE.NE.0) THEN
-          CALL SETER ('PLOTIT - ERROR EXIT FROM GQNT',3,1)
+          CALL SETER ('PLOTIT - ERROR EXIT FROM GQNT',4,1)
           RETURN
         END IF
         CALL GSWN (NT,VP(1),VP(2),VP(3),VP(4))

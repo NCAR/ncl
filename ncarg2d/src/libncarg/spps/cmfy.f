@@ -1,5 +1,5 @@
 C
-C $Id: cmfy.f,v 1.2 1993-12-12 20:54:54 kennison Exp $
+C $Id: cmfy.f,v 1.3 1994-03-17 01:43:10 kennison Exp $
 C
       FUNCTION CMFY (IY)
 C

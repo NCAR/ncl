@@ -1,5 +1,5 @@
 C
-C $Id: cpuy.f,v 1.2 1993-12-12 20:55:08 kennison Exp $
+C $Id: cpuy.f,v 1.3 1994-03-17 01:43:20 kennison Exp $
 C
       FUNCTION CPUY (IY)
 C

@@ -1,5 +1,5 @@
 C
-C $Id: kumx.f,v 1.2 1993-12-12 20:55:49 kennison Exp $
+C $Id: kumx.f,v 1.3 1994-03-17 01:43:53 kennison Exp $
 C
       FUNCTION KUMX (RX)
 C

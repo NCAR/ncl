@@ -1,5 +1,5 @@
 C
-C $Id: opngks.f,v 1.2 1993-12-12 20:56:02 kennison Exp $
+C $Id: opngks.f,v 1.3 1994-03-17 01:44:04 kennison Exp $
 C
       SUBROUTINE OPNGKS
 C
@@ -12,6 +12,11 @@ C
 C Force the required BLOCKDATA to load.
 C
       EXTERNAL UTILBD
+C
+C Make sure that, if there is an uncleared prior error, the error
+C message gets printed.  Go ahead and open GKS, though.
+C
+      IERR=ICFELL('OPNGKS - UNCLEARED PRIOR ERROR',1)
 C
 C Open GKS, define a workstation, and activate the workstation.
 C

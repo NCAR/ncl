@@ -1,5 +1,5 @@
 C
-C $Id: kfpx.f,v 1.2 1993-12-12 20:55:35 kennison Exp $
+C $Id: kfpx.f,v 1.3 1994-03-17 01:43:41 kennison Exp $
 C
       FUNCTION KFPX (RX)
 C

@@ -1,5 +1,5 @@
 C
-C $Id: kpmx.f,v 1.2 1993-12-12 20:55:44 kennison Exp $
+C $Id: kpmx.f,v 1.3 1994-03-17 01:43:50 kennison Exp $
 C
       FUNCTION KPMX (IX)
 C

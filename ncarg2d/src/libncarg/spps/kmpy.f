@@ -1,5 +1,5 @@
 C
-C $Id: kmpy.f,v 1.2 1993-12-12 20:55:42 kennison Exp $
+C $Id: kmpy.f,v 1.3 1994-03-17 01:43:48 kennison Exp $
 C
       FUNCTION KMPY (IY)
 C

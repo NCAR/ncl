@@ -1,5 +1,5 @@
 C
-C $Id: cufx.f,v 1.2 1993-12-12 20:55:10 kennison Exp $
+C $Id: cufx.f,v 1.3 1994-03-17 01:43:21 kennison Exp $
 C
       FUNCTION CUFX (RX)
 C

@@ -1,5 +1,5 @@
 C
-C $Id: kumy.f,v 1.2 1993-12-12 20:55:51 kennison Exp $
+C $Id: kumy.f,v 1.3 1994-03-17 01:43:55 kennison Exp $
 C
       FUNCTION KUMY (RY)
 C

@@ -1,5 +1,5 @@
 C
-C $Id: mxmy.f,v 1.2 1993-12-12 20:56:00 kennison Exp $
+C $Id: mxmy.f,v 1.3 1994-03-17 01:44:02 kennison Exp $
 C
       SUBROUTINE MXMY (IX,IY)
 C

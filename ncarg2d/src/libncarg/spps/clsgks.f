@@ -1,5 +1,5 @@
 C
-C $Id: clsgks.f,v 1.2 1993-12-12 20:54:50 kennison Exp $
+C $Id: clsgks.f,v 1.3 1994-03-17 01:43:06 kennison Exp $
 C
       SUBROUTINE CLSGKS
 C
@@ -8,6 +8,11 @@ C unit is currently in use.
 C
       COMMON /IUTLCM/ IU(100)
       SAVE /IUTLCM/
+C
+C Make sure that, if there is an uncleared prior error, the error
+C message gets printed.  Go ahead and close GKS, though.
+C
+      IERR=ICFELL('CLSGKS - UNCLEARED PRIOR ERROR',1)
 C
 C Deactivate the metacode workstation, close the workstation, and
 C close GKS.

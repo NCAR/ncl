@@ -1,5 +1,5 @@
 C
-C $Id: frame.f,v 1.3 1993-12-12 20:55:19 kennison Exp $
+C $Id: frame.f,v 1.4 1994-03-17 01:43:28 kennison Exp $
 C
       SUBROUTINE FRAME
       COMMON /GFLASH/MODEF,IOPWKS(100),IOACT(100),NUMOP,IWISSI
@@ -20,16 +20,20 @@ C
       INTEGER WKID
       CHARACTER*80 DATREC,STR,ISTR
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('FRAME - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C  First, flush the pen-move buffer.
 C
       CALL PLOTIF (0.,0.,2)
-      IF (ICFELL('FRAME',1).NE.0) RETURN
+      IF (ICFELL('FRAME',2).NE.0) RETURN
 C
 C  If no workstations are open, return.
 C
       CALL GQOPWK (1,IE,NO,ID)
       IF (IE.NE.0) THEN
-        CALL SETER ('FRAME - ERROR EXIT FROM GQOPWK',2,1)
+        CALL SETER ('FRAME - ERROR EXIT FROM GQOPWK',3,1)
         RETURN
       END IF
       IF (NO .EQ. 0) RETURN
@@ -42,7 +46,7 @@ C  Get the workstation ID.
 C
         CALL GQOPWK (I,IE,NO,WKID)
         IF (IE.NE.0) THEN
-          CALL SETER ('FRAME - ERROR EXIT FROM GQOPWK',3,1)
+          CALL SETER ('FRAME - ERROR EXIT FROM GQOPWK',4,1)
           RETURN
         END IF
 C
@@ -50,7 +54,7 @@ C  Get workstation type.
 C
         CALL GQWKC (WKID,IE,ICON,ITYPE)
         IF (IE.NE.0) THEN
-          CALL SETER ('FRAME - ERROR EXIT FROM GQWKC',4,1)
+          CALL SETER ('FRAME - ERROR EXIT FROM GQWKC',5,1)
           RETURN
         END IF
 C
@@ -58,7 +62,7 @@ C  Get workstation category (0=output; 2=out/in; 4=metafile).
 C
         CALL GQWKCA (ITYPE,IE,ICAT)
         IF (IE.NE.0) THEN
-          CALL SETER ('FRAME - ERROR EXIT FROM GQWKCA',5,1)
+          CALL SETER ('FRAME - ERROR EXIT FROM GQWKCA',6,1)
           RETURN
         END IF
 C
@@ -69,7 +73,7 @@ C
           IF (MODEF .EQ. 1) THEN
             CALL SETER 
      -    ('FRAME - ILLEGAL TO CALL FRAME WHILE A FLASH BUFFER IS OPEN',      
-     -      6,1)
+     -      7,1)
           ENDIF
           CALL GCLRWK(WKID,1)
         ELSE IF (ICAT.EQ.0 .OR. ICAT.EQ.2) THEN
@@ -85,17 +89,17 @@ C
       DO 100 I=NO,1,-1
         CALL GQOPWK (I,IE,NO,WKID)
         IF (IE.NE.0) THEN
-          CALL SETER ('FRAME - ERROR EXIT FROM GQOPWK',7,1)
+          CALL SETER ('FRAME - ERROR EXIT FROM GQOPWK',8,1)
           RETURN
         END IF
         CALL GQWKC (WKID,IE,ICON,ITYPE)
         IF (IE.NE.0) THEN
-          CALL SETER ('FRAME - ERROR EXIT FROM GQWKC',8,1)
+          CALL SETER ('FRAME - ERROR EXIT FROM GQWKC',9,1)
           RETURN
         END IF
         CALL GQWKCA (ITYPE,IE,ICAT)
         IF (IE.NE.0) THEN
-          CALL SETER ('FRAME - ERROR EXIT FROM GQWKCA',9,1)
+          CALL SETER ('FRAME - ERROR EXIT FROM GQWKCA',10,1)
           RETURN
         END IF
         IF (ICAT.EQ.2) THEN
@@ -113,17 +117,17 @@ C
       DO 300 I=1,NO
         CALL GQOPWK (I,IE,NO,WKID)
         IF (IE.NE.0) THEN
-          CALL SETER ('FRAME - ERROR EXIT FROM GQOPWK',10,1)
+          CALL SETER ('FRAME - ERROR EXIT FROM GQOPWK',11,1)
           RETURN
         END IF
         CALL GQWKC (WKID,IE,ICON,ITYPE)
         IF (IE.NE.0) THEN
-          CALL SETER ('FRAME - ERROR EXIT FROM GQWKC',11,1)
+          CALL SETER ('FRAME - ERROR EXIT FROM GQWKC',12,1)
           RETURN
         END IF
         CALL GQWKCA (ITYPE,IE,ICAT)
         IF (IE.NE.0) THEN
-          CALL SETER ('FRAME - ERROR EXIT FROM GQWKCA',12,1)
+          CALL SETER ('FRAME - ERROR EXIT FROM GQWKCA',13,1)
           RETURN
         END IF
         IF (ICAT.EQ.2) THEN
