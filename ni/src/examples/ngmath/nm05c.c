@@ -1,5 +1,5 @@
 /*
- *      $Id: nm05c.c,v 1.3 1998-06-23 22:53:05 fred Exp $
+ *      $Id: nm05c.c,v 1.4 1998-06-28 21:31:41 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -45,7 +45,7 @@ main()
   float xi[] = {0.00, 1.00, 0.00, 1.00, 0.40, 0.75};
   float yi[] = {0.00, 0.00, 1.00, 1.00, 0.20, 0.65};
   float zi[] = {0.00, 0.00, 0.00, 0.00, 1.25, 0.80};
-  float xo[NX], yo[NY], xinc, yinc, *output;
+  float xo[NX], yo[NY], xinc, yinc, *output, outr[NY][NX];
   float rho = 3., theta = -45., phi =  55.;
 
 /*
@@ -121,7 +121,17 @@ main()
  * LLUs to get a surface plot.
  */
 	gactivate_ws (gkswid);
-	c_tdez2d(NX, NY, xo, yo, output, rho, theta, phi, 6);
+
+/*
+ *  Reverse the array indices for plotting with tdez2d, since
+ *  c_dsgrid returns its array in column dominate order.
+ */
+        for (i = 0; i < NX; i++) {
+          for (j = 0; j < NY; j++) {
+            outr[j][i] = output[i*NY+j];
+          }
+        }
+	c_tdez2d(NX, NY, xo, yo, &outr[0][0], rho, theta, phi, 6);
 	gdeactivate_ws (gkswid);
         NhlFrame(wid);
 /*
@@ -134,7 +144,17 @@ main()
 	  exit(1);
 	}
 	gactivate_ws (gkswid);
-	c_tdez2d(NX, NY, xo, yo, output, rho, theta, phi, 6);
+
+/*
+ *  Reverse the array indices for plotting with tdez2d, since
+ *  c_dsgrid returns its array in column dominate order.
+ */
+        for (i = 0; i < NX; i++) {
+          for (j = 0; j < NY; j++) {
+            outr[j][i] = output[i*NY+j];
+          }
+        }
+	c_tdez2d(NX, NY, xo, yo, &outr[0][0], rho, theta, phi, 6);
 	gdeactivate_ws (gkswid);
         NhlFrame(wid);
 /*
@@ -147,7 +167,16 @@ main()
 	  exit(1);
 	}
 	gactivate_ws (gkswid);
-	c_tdez2d(NX, NY, xo, yo, output, rho, theta, phi, 6);
+/*
+ *  Reverse the array indices for plotting with tdez2d, since
+ *  c_dsgrid returns its array in column dominate order.
+ */
+        for (i = 0; i < NX; i++) {
+          for (j = 0; j < NY; j++) {
+            outr[j][i] = output[i*NY+j];
+          }
+        }
+	c_tdez2d(NX, NY, xo, yo, &outr[0][0], rho, theta, phi, 6);
 	gdeactivate_ws (gkswid);
         NhlFrame(wid);
 /*
