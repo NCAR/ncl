@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.7 1994-08-05 16:31:20 fred Exp $
+ *	$Id: ps.c,v 1.8 1994-08-05 16:48:53 fred Exp $
  */
 /*
  *
@@ -3178,6 +3178,7 @@ ps_Esc(gksc)
 
 	int	escape_id = iptr[0];
 	float	rscale;
+	static	int	saved_color_index;
 
 
 	switch (escape_id) {
@@ -3186,11 +3187,13 @@ ps_Esc(gksc)
 			PSpreamble(psa, FOR_PICTURE);
 			psa->pict_empty = FALSE;
 		}
+		saved_color_index = psa->attributes.ps_colr_ind;
 		(void) fprintf(psa->file_pointer, 
 			"G /bl Ex def /gr Ex def /rd Ex def\n");
 		(void) fflush(psa->file_pointer);
 		break;
 	case -1511:  /* Restore color setting after segment copy */
+		psa->attributes.ps_colr_ind = saved_color_index;
 		(void) fprintf(psa->file_pointer, "rd gr bl R\n");
 		break;
 	case -1512:  /* Spacing between fill lines in range 0. to 1. */
