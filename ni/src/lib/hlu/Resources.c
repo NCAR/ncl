@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.24 1995-04-22 01:01:59 boote Exp $
+ *      $Id: Resources.c,v 1.25 1995-05-09 22:17:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -48,6 +48,15 @@
 static NrmQuark QImmediate = NrmNULLQUARK;
 static NrmQuark QProcedure = NrmNULLQUARK;
 static NrmQuark QString = NrmNULLQUARK;
+static NrmQuark	byteQ = NrmNULLQUARK;
+static NrmQuark	charQ = NrmNULLQUARK;
+static NrmQuark	doubleQ = NrmNULLQUARK;
+static NrmQuark	floatQ = NrmNULLQUARK;
+static NrmQuark	shortQ = NrmNULLQUARK;
+static NrmQuark	stringQ = NrmNULLQUARK;
+static NrmQuark	intQ = NrmNULLQUARK;
+static NrmQuark	genQ = NrmNULLQUARK;
+static NrmQuark	pointerQ = NrmNULLQUARK;
 
 /*
  * Function:	_NhlCopyFromArgVal
@@ -133,23 +142,20 @@ _NhlCopyFromArg
 #endif
 {
 
-	if(_NhlIsFloatRes(NrmQuarkToString(name))){
-		if (size == sizeof(float))
-			*(float *)dst = *(float*)&src.lngval;
-		else if (size == sizeof(double))
-			*(double *)dst = *(float*)&src.lngval;
-		else
-			memcpy((void*)dst,(void*)&src,size);
-		return;
-	}
-	if (size == sizeof(char))	*(char *)dst = (char)src.lngval;
-	else if (size == sizeof(short))	*(short *)dst = (short)src.lngval;
-	else if (size == sizeof(int))	*(int *)dst = (int)src.lngval;
-	else if(size == sizeof(long))	*(long *)dst = src.lngval;
-	else if (size == sizeof(NhlPointer))
-				*(NhlPointer *)dst = (NhlPointer)src.lngval;
-	else if (size == sizeof(NhlString))
+	if(_NhlIsSubtypeQ(floatQ,name)) *(float *)dst = *(float*)&src.lngval;
+	else if(_NhlIsSubtypeQ(doubleQ,name))
+					*(double *)dst = *(float*)&src.lngval;
+	else if(_NhlIsSubtypeQ(charQ,name)) *(char *)dst = (char)src.lngval;
+	else if(_NhlIsSubtypeQ(byteQ,name)) *(char *)dst = (char)src.lngval;
+	else if(_NhlIsSubtypeQ(shortQ,name)) *(short *)dst = (short)src.lngval;
+	else if(_NhlIsSubtypeQ(intQ,name)) *(int *)dst = (int)src.lngval;
+	else if(_NhlIsSubtypeQ(stringQ,name))
 				*(NhlString *)dst = (NhlString)src.lngval;
+	else if(_NhlIsSubtypeQ(genQ,name))
+				*(NhlPointer *)dst = (NhlPointer)src.lngval;
+	else if(_NhlIsSubtypeQ(pointerQ,name))
+				*(NhlPointer *)dst = (NhlPointer)src.lngval;
+	else if(size == sizeof(long))	*(long *)dst = src.lngval;
 	else if (size == sizeof(_NhlArgVal))	*(_NhlArgVal *)dst = src;
 	else memcpy((void*)dst,(void*)&src,size);
 
@@ -961,6 +967,16 @@ _NhlResourceListInitialize
 	QImmediate = NrmStringToName(NhlTImmediate);
 	QProcedure = NrmStringToName(NhlTProcedure);
 	QString = NrmStringToName(NhlTString);
+
+	byteQ = NrmStringToQuark(NhlTByte);
+	charQ = NrmStringToQuark(NhlTCharacter);
+	doubleQ = NrmStringToQuark(NhlTDouble);
+	floatQ = NrmStringToQuark(NhlTFloat);
+	shortQ = NrmStringToQuark(NhlTShort);
+	stringQ = NrmStringToQuark(NhlTString);
+	intQ = NrmStringToQuark(NhlTInteger);
+	genQ = NrmStringToQuark(NhlTGenArray);
+	pointerQ = NrmStringToQuark(NhlTPointer);
 
 	return; 
 }
