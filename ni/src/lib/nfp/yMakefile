@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.46 2001-04-26 16:56:11 haley Exp $
+#      $Id: yMakefile,v 1.47 2001-05-02 21:08:22 haley Exp $
 #
 #########################################################################
 #									#
@@ -53,7 +53,9 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o chiinvW.o conformW.o \
 	wrapper.o vinth2pW.o vinth2peW.o zonmpsiW.o
 
 FSRCS = aam.f areaAve.f areaRmse.f dbetai.f calcorc_dp.f chiin_dp.f \
-	cntrFiniteDiff.f cz2ccm_dp.f dmapgci.f dpsort.f dtrend_dp.f \
+	cfftb.f cfftb1.f cfftf.f cfftf1.f cffti.f cffti1.f passb.f passb2.f \
+	passb3.f passb4.f passb5.f passf.f passf2.f passf3.f passf4.f \
+	passf5.f cntrFiniteDiff.f cz2ccm_dp.f dmapgci.f dpsort.f dtrend_dp.f \
 	ezfft_dp.f filtrx.f finfo.f fluxEddyTav_dp.f fo2fs_dp.f hydro_dp.f \
 	gausLobat.f index77_dp.f int2p_dp.f julGreg.f linint2.f linmsg_dp.f \
 	localMinMax.f paleo_coasts.f phybrid_ccm.f prcwat.f preshybrid.f \
@@ -63,10 +65,12 @@ FSRCS = aam.f areaAve.f areaRmse.f dbetai.f calcorc_dp.f chiin_dp.f \
 	statx.f statx_dp.f svd_lap_dp.f svd_util_dp.f taper.f ttest.f \
 	trcwav_dp.f trvsph77_dp.f upsl_dp.f varimax_dp.f vibeta_dp.f \
 	volAve.f wrunave_dp.f vinth2p_dp.f vinth2p_ecmwf.f volRmse.f \
-	zon_mpsi.f
+	wavelet.f zon_mpsi.f 
 
 FOBJS = aam.o areaAve.o areaRmse.o dbetai.o calcorc_dp.o chiin_dp.o \
-	cntrFiniteDiff.o cz2ccm_dp.o dmapgci.o dpsort.o dtrend_dp.o \
+	cfftb.o cfftb1.o cfftf.o cfftf1.o cffti.o cffti1.o passb.o passb2.o \
+	passb3.o passb4.o passb5.o passf.o passf2.o passf3.o passf4.o \
+	passf5.o cntrFiniteDiff.o cz2ccm_dp.o dmapgci.o dpsort.o dtrend_dp.o \
 	ezfft_dp.o filtrx.o finfo.o fluxEddyTav_dp.o fo2fs_dp.o hydro_dp.o \
 	gausLobat.o index77_dp.o int2p_dp.o julGreg.o linint2.o linmsg_dp.o \
 	localMinMax.o paleo_coasts.o phybrid_ccm.o prcwat.o preshybrid.o \
@@ -76,7 +80,7 @@ FOBJS = aam.o areaAve.o areaRmse.o dbetai.o calcorc_dp.o chiin_dp.o \
 	statx.o statx_dp.o svd_lap_dp.o svd_util_dp.o taper.o ttest.o \
 	trcwav_dp.o trvsph77_dp.o upsl_dp.o varimax_dp.o vibeta_dp.o \
 	volAve.o wrunave_dp.o vinth2p_dp.o vinth2p_ecmwf.o volRmse.o \
-	zon_mpsi.o
+	wavelet.o zon_mpsi.o
 
 #if defined(alpha)
 EXFSRCS = d1mach_alpha.f

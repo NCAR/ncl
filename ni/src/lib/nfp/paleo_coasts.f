@@ -1,11 +1,12 @@
 c nclfortstart
-      subroutine paleooutline(mask,zdat,nlat,nlon,jm,im,name,mskval)
+      subroutine paleooutline(mask,zdat,lat,lon,nlat,nlon,jm,im,name,
+     +                        mskval)
       integer nlat,nlon
       integer im,jm
-      real mask(nlon,nlat)
-      real zdat(im,jm)
+      real lat1,latn,lon1,lonn
+      double precision mask(nlon,nlat), lat(nlat), lon(nlon)
+      real zdat(im,jm), mskval
       character*(*) name
-      real mskval
 c nclend
       integer i,j
       integer iwrk(2000)
@@ -14,21 +15,27 @@ c the subroutine svbled requires that the input mask array be twice as
 c large as the orginal. This is an artificat of the original program written
 c for Pat Behling. 
 c
-      do i=1,im
-         do j=1,jm
-            zdat(i,j)=0.
-         enddo
-      enddo
+c Don't need to initialize here, because it's done in the C interface.
+c
+c      do i=1,im
+c         do j=1,jm
+c            zdat(i,j)=0.
+c         enddo
+c      enddo
 
       do i=1,nlon
          do j=1,nlat
             ZDAT(2*I,2*J)=REAL(mask(I,J))
          enddo
       enddo
-      
+C
+      lat1 = real(lat(1))
+      latn = real(lat(nlat))
+      lon1 = real(lon(1))
+      lonn = real(lon(nlon))
 C     
-      CALL SVBLED (ZDAT,im,jm,IWRK,2000,mskval,1,0.,im,360.,
-     +     1,-87.15,jm,87.15,'Land','Water',name)
+      CALL SVBLED (ZDAT,im,jm,IWRK,2000,mskval,1,lon1,im,lonn,
+     +     1,lat1,jm,latn,'Land','Water',name)
 
 c ZDAT = data (idim,jdim)
 c IWRK = scratch (LIWK) 
@@ -58,6 +65,7 @@ c written.
       
       SUBROUTINE SVBLED (ZDAT,IDIM,JDIM,IWRK,LIWK,SVAL,ILFT,XLFT,
      +                   IRGT,XRGT,JBOT,YBOT,JTOP,YTOP,NAML,NAMR,FLNM)
+C
 C This routine is adapted from the CONPACK routine CPTRES, which traces
 C the edge of the special-value area in a contour field.  (The mnemonic
 C SVBLED stands for "Special Value Boundary Line to Ezmap Dataset".)
@@ -295,36 +303,48 @@ C
         NCHR=0
 C
         CALL WRCHAR (IFDE,CHRS,1024,NCHR, ' ')
-        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   1)  !  index of 1st area
+C  index of 1st area
+        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   1)  
         CALL WRCHAR (IFDE,CHRS,1024,NCHR, ' ')
-        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   1)  !  type of 1st area
+C  type of 1st area
+        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   1)  
         CALL WRCHAR (IFDE,CHRS,1024,NCHR, ' ')
-        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   2)  !  color of 1st area
+C  color of 1st area
+        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   2)  
         CALL WRCHAR (IFDE,CHRS,1024,NCHR, ' ')
-        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   0)  !  parent of 1st area
+C  parent of 1st area
+        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   0)  
         CALL WRCHAR (IFDE,CHRS,1024,NCHR, ' ')
         IBEG=IOFNBC(NAML)
         IEND=IOLNBC(NAML)
-        CALL WRNUMB (IFDE,CHRS,1024,NCHR,IEND-IBEG+1)  !  name length
+C  name length
+        CALL WRNUMB (IFDE,CHRS,1024,NCHR,IEND-IBEG+1)  
         CALL WRCHAR (IFDE,CHRS,1024,NCHR,        ' ')
         DO 108 I=IBEG,IEND
-          CALL WRCHAR (IFDE,CHRS,1024,NCHR,NAML(I:I))  !  name of area
+C  name of area
+          CALL WRCHAR (IFDE,CHRS,1024,NCHR,NAML(I:I))  
   108   CONTINUE
         CALL WRCHAR (IFDE,CHRS,1024,NCHR, ' ')
-        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   2)  !  index of 2nd area
+C  index of 2nd area
+        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   2)  
         CALL WRCHAR (IFDE,CHRS,1024,NCHR, ' ')
-        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   1)  !  type of 2nd area
+C  type of 2nd area
+        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   1)  
         CALL WRCHAR (IFDE,CHRS,1024,NCHR, ' ')
-        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   1)  !  color of 2nd area
+C  color of 2nd area
+        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   1)  
         CALL WRCHAR (IFDE,CHRS,1024,NCHR, ' ')
-        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   0)  !  parent of 2nd area
+C  parent of 2nd area
+        CALL WRNUMB (IFDE,CHRS,1024,NCHR,   0)  
         CALL WRCHAR (IFDE,CHRS,1024,NCHR, ' ')
         IBEG=IOFNBC(NAMR)
         IEND=IOLNBC(NAMR)
-        CALL WRNUMB (IFDE,CHRS,1024,NCHR,IEND-IBEG+1)  !  name length
+C  name length
+        CALL WRNUMB (IFDE,CHRS,1024,NCHR,IEND-IBEG+1)  
         CALL WRCHAR (IFDE,CHRS,1024,NCHR,        ' ')
         DO 109 I=IBEG,IEND
-          CALL WRCHAR (IFDE,CHRS,1024,NCHR,NAMR(I:I))  !  name of area
+C  name of area
+          CALL WRCHAR (IFDE,CHRS,1024,NCHR,NAMR(I:I))  
   109   CONTINUE
 C
         IF (NCHR.GT.0) THEN

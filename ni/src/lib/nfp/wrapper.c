@@ -3839,8 +3839,10 @@ void NclAddUserFuncs(void)
  *  Register paleo_outline.
  */
     nargs = 0;
-    args = NewArgs(3);
-    SetArgTemplate(args, nargs, "float", 2, NclANY);  nargs++;
+    args = NewArgs(5);
+    SetArgTemplate(args, nargs, "numeric", 2, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "float", 1, dimsizes);  nargs++;
     SetArgTemplate(args, nargs, "string", 1, NclANY);  nargs++;
