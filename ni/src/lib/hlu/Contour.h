@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.h,v 1.7 1994-04-05 00:51:07 dbrown Exp $
+ *      $Id: Contour.h,v 1.8 1994-04-29 21:31:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 #define _NContour_h
 
 #include <ncarg/hlu/Workspace.h>
+#include <ncarg/hlu/DataComm.h>
 #include <ncarg/hlu/Overlay.h>
 
 /* Level selection modes */
@@ -53,10 +54,19 @@
 #define Nhl_cnSOLIDMASK		1
 #define Nhl_cnSOFTMASK		2
 
+
+/*
+ * DataDep objects resources
+ */
+
+#define NhlNcnExplicitLabels		"cnExplicitLabels"
+#define NhlCcnExplicitLabels		"CnExplicitLabels"
+
 /*
  * Contour instance resources
  */
 
+#define NhlNcnScalarFieldData		"cnScalarFieldData"
 #define NhlNcnOutOfRangeValF		"cnOutOfRangeValF"
 #define NhlNcnSpecialValF		"cnSpecialValF"
 
@@ -68,6 +78,8 @@
 #define NhlNcnMinLevelValF		"cnMinLevelValF"
 #define NhlNcnMaxLevelValF		"cnMaxLevelValF"
 #define NhlNcnLineLabelInterval		"cnLineLabelInterval"
+#define NhlNcnDelayLabels		"cnDelayLabels"
+#define NhlNcnDelayLines		"cnDelayLines"
 
 #define NhlNcnMonoLevelFlag		"cnMonoLevelFlag"
 #define NhlNcnMonoFillColor		"cnMonoFillColor"
@@ -161,8 +173,9 @@
  * Contour class resources
  */
 
-#define NhlCcnOutOfRangeValF		"CnOutOfRangeValF"
+#define NhlCcnScalarFieldData		"CnScalarFieldData"
 
+#define NhlCcnOutOfRangeValF		"CnOutOfRangeValF"
 #define NhlCcnSpecialValF		"CnSpecialValF"
 
 #define NhlCcnLevelCount		".CnLevelCount"		/* read-only */
@@ -173,6 +186,8 @@
 #define NhlCcnMinLevelValF		"CnMinLevelValF"
 #define NhlCcnMaxLevelValF		"CnMaxLevelValF"
 #define NhlCcnLineLabelInterval		"CnLineLabelInterval"
+#define NhlCcnDelayLabels		"CnDelayLabels"
+#define NhlCcnDelayLines		"CnDelayLines"
 
 #define NhlCcnMonoLevelFlag		"CnMonoLevelFlag"
 #define NhlCcnMonoFillColor		"CnMonoFillColor"

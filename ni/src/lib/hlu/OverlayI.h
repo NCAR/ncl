@@ -1,5 +1,5 @@
 /*
- *      $Id: OverlayI.h,v 1.3 1994-03-18 02:18:26 dbrown Exp $
+ *      $Id: OverlayI.h,v 1.4 1994-04-29 21:31:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -48,6 +48,24 @@ extern NhlErrorTypes _NhlManageOverlay(
 	NhlSArgList	sargs,
 	int		nargs,
 	char		*entry_name				   
+#endif
+);
+
+extern void _NhlovCpMapXY(
+#ifdef NhlNeedProto
+	float *xin,
+	float *yin,
+	float* xout,
+	float* yout
+#endif
+);
+
+extern void _NhlovCpInvMapXY(
+#ifdef NhlNeedProto
+	float *xin,
+	float *yin,
+	float* xout,
+	float* yout
 #endif
 );
 

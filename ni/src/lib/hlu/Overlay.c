@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.9 1994-03-18 02:18:23 dbrown Exp $
+ *      $Id: Overlay.c,v 1.10 1994-04-29 21:31:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2821,10 +2821,9 @@ ManageLegend
 }
 
 
-
 /* low level overlay mapping functions */
 
-void nhlcxy_
+void _NhlovCpMapXY
 #if __STDC__
 (float *xin,float *yin, float* xout, float* yout)
 #else
@@ -2845,6 +2844,7 @@ void nhlcxy_
 		_NhlCompcToData(Trans_Obj,Plot,xin,yin,1,xout,yout,
 				&status,NULL,NULL);
 
+		if (status) return;
 #if 0
 		fprintf (stderr,"inter: %f %f : ",*xout,*yout);
 #endif
@@ -2857,6 +2857,46 @@ void nhlcxy_
 	fprintf (stderr,"%f %f : %f %f \n",*xin,*yin,*xout,*yout);
 #endif
 
+	return;
+}
+
+
+void _NhlovCpInvMapXY
+#if __STDC__
+(float *xin,float *yin, float* xout, float* yout)
+#else
+(xin,yin,xout,yout)
+        float *xin;
+        float *yin;
+        float *xout;
+        float *yout;
+#endif
+{
+        int status = 0;
+
+        if (Overlay_Trans_Obj == NULL) {
+		_NhlWinToCompc(Trans_Obj,Plot,xin,yin,1,xout,yout,
+			       &status,NULL,NULL);
+	}
+        else {
+		_NhlWinToData(Overlay_Trans_Obj,Overlay_Plot,
+			      xin,yin,1,xout,yout,
+			      &status,NULL,NULL);
+
+		if (status) return;
+#if 0
+		fprintf (stderr,"inter: %f %f : ",*xout,*yout);
+#endif
+
+		_NhlDataToCompc(Trans_Obj,Plot,xout,yout,1,xout,yout,
+				&status,NULL,NULL);
+        }
+
+#if 0
+	fprintf (stderr,"%f %f : %f %f \n",*xin,*yin,*xout,*yout);
+#endif
+
+	return;
 }
 
 

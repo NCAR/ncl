@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.h,v 1.3 1994-01-27 21:24:40 boote Exp $
+ *      $Id: MapPlot.h,v 1.4 1994-04-29 21:31:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -40,9 +40,13 @@
  * MapPlot instance resources
  */
 
+#define NhlNmpDelayOutline		"mpDelayOutline"
+
 /*
  * MapPlot class resources
  */
+
+#define NhlCmpDelayOutline		"MpDelayOutline"
 
 
 extern NhlLayerClass NhlmapPlotLayerClass;

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourP.h,v 1.6 1994-04-05 00:51:09 dbrown Exp $
+ *      $Id: ContourP.h,v 1.7 1994-04-29 21:31:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,12 +23,12 @@
 #ifndef _NContourP_h
 #define _NContourP_h
 
-#include <ncarg/hlu/TransformP.h>
+#include <ncarg/hlu/DataCommP.h>
 #include <ncarg/hlu/LogLinTransObjP.h>
 #include <ncarg/hlu/OverlayI.h>
 #include <ncarg/hlu/Contour.h>
 #include <ncarg/hlu/WorkspaceI.h>
-
+#include <ncarg/hlu/ScalarFieldFloatP.h>
 
 #define Nhl_cnDEF_ARRAY_SIZE	16
 #define Nhl_cnMAX_LEVELS	256
@@ -40,7 +40,7 @@
 #define Nhl_cnFLOAT_WKSPACE	5000
 #define Nhl_cnSTD_VIEW_WIDTH	1.0
 #define Nhl_cnSTD_VIEW_HEIGHT	1.0
-
+#define NhlcnMAPVAL		99
 
 typedef struct _NhlcnLabelAttrs {
 	NhlBoolean	on;
@@ -70,9 +70,24 @@ typedef struct _NhlcnLabelAttrs {
 	float		pwidth;
 } NhlcnLabelAttrs;
 
+typedef struct _NhlContourDataDepLayerPart{
+	/* Public resources	*/
+
+	NhlBoolean		labels;
+
+	/* Private fields	*/
+} NhlContourDataDepLayerPart;
+/* private resource */
+
+#define NhlNcnDataChanged	".cnDataChanged"
+#define NhlCcnDataChanged	".CnDataChanged"
+
+
 typedef struct _NhlContourLayerPart {
 
 	/* Public resources */
+
+	NhlGenArray	scalar_field_data;
 
 	float		out_of_range_val;
 	float		special_val;
@@ -88,6 +103,8 @@ typedef struct _NhlContourLayerPart {
 	float		max_level_val;
 	NhlBoolean	llabel_interval_set;
 	int		llabel_interval;
+	NhlBoolean	delay_labels;
+	NhlBoolean	delay_lines;
 
 	NhlBoolean	mono_level_flag;
 	NhlBoolean	mono_fill_color;
@@ -141,13 +158,17 @@ typedef struct _NhlContourLayerPart {
 
 	NhlBoolean	update_req;
 
+	/* private resource */
+
+	NhlBoolean	data_changed;
+
 	/* Private Fields */
 
         NhlTransDat	*trans_dat;
 	NhlBoolean	new_draw_req;
 
 	NhlLayer	overlay_object;
-	NhlBoolean	data_changed;
+	NhlBoolean	data_init;
 	NhlBoolean	cprect_call_req;
 	float		*real_levels;
 	int		*gks_fill_colors;
@@ -157,18 +178,6 @@ typedef struct _NhlContourLayerPart {
 	float		zmin;
 	float		zmax;
 	int		fill_count;
-	float		llabel_pwidth;
-	float		llabel_pheight;
-	float		llabel_real_height;
-	float		info_label_pwidth;
-	float		info_label_pheight;
-	float		info_label_real_height;
-	float		high_label_pwidth;
-	float		high_label_pheight;
-	float		high_label_real_height;
-	float		low_label_pwidth;
-	float		low_label_pheight;
-	float		low_label_real_height;
 	NhlGenArray	ll_strings;
 	NhlGenArray	ll_text_heights;
 	int		*label_amap;
@@ -178,29 +187,54 @@ typedef struct _NhlContourLayerPart {
 	int		fill_aws_id;
 	int		ezmap_aws_id;
 
+	NhlScalarFieldFloatLayerPart	*sfp;
+
 } NhlContourLayerPart;
+
+typedef struct _NhlContourDataDepLayerRec{
+	NhlObjLayerPart			base;
+	NhlDataSpecLayerPart		dataspec;
+	NhlContourDataDepLayerPart	cndata;
+} NhlContourDataDepLayerRec;
 
 typedef struct _NhlContourLayerRec {
 	NhlBaseLayerPart	base;
 	NhlViewLayerPart	view;
 	NhlTransformLayerPart	trans;
+	NhlDataCommLayerPart	datacomm;
 	NhlContourLayerPart	contour;
 } NhlContourLayerRec;
+
+typedef struct _NhlContourDataDepLayerClassPart{
+	NhlPointer		foo;
+} NhlContourDataDepLayerClassPart;
 
 typedef struct NhlContourLayerClassPart{
 	NhlPointer		foo;
 } NhlContourLayerClassPart;
 
+typedef struct _NhlContourDataDepLayerClassRec{
+	NhlObjLayerClassPart		base_class;
+	NhlDataSpecLayerClassPart	dataspec_class;
+	NhlContourDataDepLayerClassPart	cndata_class;
+} NhlContourDataDepLayerClassRec;
+
 typedef struct _NhlContourLayerClassRec{
 	NhlBaseLayerClassPart		base_class;
 	NhlViewLayerClassPart		view_class;
 	NhlTransformLayerClassPart	trans_class;
+	NhlDataCommLayerClassPart	datacomm_class;
 	NhlContourLayerClassPart	contour_class;
 } NhlContourLayerClassRec;
 
-typedef struct _NhlContourLayerClassRec	*NhlContourLayerClass;
-typedef struct _NhlContourLayerRec	*NhlContourLayer;
+typedef struct _NhlContourDataDepLayerClassRec	*NhlContourDataDepLayerClass;
+typedef struct _NhlContourDataDepLayerRec	*NhlContourDataDepLayer;
 
+typedef struct _NhlContourLayerClassRec		*NhlContourLayerClass;
+typedef struct _NhlContourLayerRec		*NhlContourLayer;
+
+extern NhlLayerClass			NhlcontourDataDepLayerClass;
+extern NhlContourDataDepLayerClassRec	NhlcontourDataDepLayerClassRec;
 extern NhlContourLayerClassRec		NhlcontourLayerClassRec;
 
 #endif  /* _NContourP_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.4 1994-01-27 21:24:43 boote Exp $
+ *      $Id: MapPlotP.h,v 1.5 1994-04-29 21:31:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,8 @@
 typedef struct NhlMapPlotLayerPart {
 
 	/* Public resources */
+
+	NhlBoolean		delay_outline;
 
 	/* Private Fields */
 

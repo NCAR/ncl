@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.4 1994-01-27 21:24:36 boote Exp $
+ *      $Id: MapPlot.c,v 1.5 1994-04-29 21:31:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,14 +28,14 @@
 #include <ncarg/hlu/MapPlotP.h>
 #include <ncarg/hlu/LogLinTransObj.h>
 
-#if 0
+
+#define Oset(field)	NhlOffset(NhlMapPlotLayerRec,mapplot.field)
 static NhlResource resources[] = {
-	{ NhlNtfOverlayPlotBase,NhlCtfOverlayPlotBase,
-		NhlTBoolean,sizeof(NhlBoolean),
-		NhlOffset(NhlMapPlotLayerRec,trans.overlay_plot_base),
-		NhlTImmediate,(NhlPointer)False},
+	{NhlNmpDelayOutline,NhlCmpDelayOutline,NhlTBoolean,
+		 sizeof(long),Oset(delay_outline),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True)}
 };
-#endif
+#undef Oset
 
 /* base methods */
 
@@ -84,6 +84,12 @@ static NhlErrorTypes MapPlotDraw(
 #endif
 );
 
+static NhlErrorTypes MapPlotPostDraw(
+#ifdef NhlNeedProto
+        NhlLayer   /* layer */
+#endif
+);
+
 static NhlErrorTypes SetUpTransObj(
 #ifdef NhlNeedProto
 	NhlMapPlotLayer	mpnew,
@@ -100,8 +106,8 @@ NhlMapPlotLayerClassRec NhlmapPlotLayerClassRec = {
 /* class_inited			*/      False,
 /* superclass			*/      (NhlLayerClass)&NhltransformLayerClassRec,
 
-/* layer_resources		*/	NULL,
-/* num_resources		*/	0,
+/* layer_resources		*/	resources,
+/* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
 
 /* class_part_initialize	*/	MapPlotClassPartInitialize,
@@ -119,7 +125,7 @@ NhlMapPlotLayerClassRec NhlmapPlotLayerClassRec = {
 
 /* layer_pre_draw		*/      NULL,
 /* layer_draw_segonly		*/	NULL,
-/* layer_post_draw		*/      NULL,
+/* layer_post_draw		*/      MapPlotPostDraw,
 /* layer_clear			*/      NULL
 
         },
@@ -413,6 +419,8 @@ static NhlErrorTypes MapPlotDraw
 	NhlMapPlotLayer		mp = (NhlMapPlotLayer) layer;
 	NhlTransformLayerPart	*tfp = &(mp->trans);
 
+	if (mp->mapplot.delay_outline) return ret;
+	return ret;
 	subret = _NhlActivateWorkstation(mp->base.wkptr);
 
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -429,10 +437,85 @@ static NhlErrorTypes MapPlotDraw
 		return NhlFATAL;
 	}
 
-	gset_line_colr_ind((Gint)_NhlGetGksCi(mp->base.wkptr,0));
+	gset_line_colr_ind((Gint)_NhlGetGksCi(mp->base.wkptr,1));
 	gset_linewidth(1.0);
 
-	c_mapsti("PE",0);
+#if 0
+	c_mapsti("EL",1);
+#endif
+
+	c_mpsetc("OU","PO");
+	c_mapsti("PE",1);
+	c_mapdrw();
+
+	subret = _NhlDeactivateWorkstation(mp->base.wkptr);
+
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		e_text = "%s: Error setting transformation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	return ret;
+}
+
+
+/*
+ * Function:	MapPlotPostDraw
+ *
+ * Description:	
+ *
+ * In Args:	layer	MapPlot instance
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+static NhlErrorTypes MapPlotPostDraw
+#if  __STDC__
+(NhlLayer layer)
+#else
+(layer)
+        NhlLayer layer;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	char			*entry_name = "MapPlotPostDraw";
+	NhlMapPlotLayer		mp = (NhlMapPlotLayer) layer;
+	NhlTransformLayerPart	*tfp = &(mp->trans);
+
+	if (! mp->mapplot.delay_outline) return ret;
+	return ret;
+
+	subret = _NhlActivateWorkstation(mp->base.wkptr);
+
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		e_text = "%s: Error activating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	subret = _NhlSetTrans((NhlLayer)tfp->trans_obj,layer);
+
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		e_text = "%s: Error setting transformation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	gset_line_colr_ind((Gint)_NhlGetGksCi(mp->base.wkptr,1));
+	gset_linewidth(1.0);
+
+#if 0
+	c_mapsti("EL",1);
+#endif
+
+	c_mpsetc("OU","PO");
+	c_mapsti("PE",1);
 	c_mapdrw();
 
 	subret = _NhlDeactivateWorkstation(mp->base.wkptr);

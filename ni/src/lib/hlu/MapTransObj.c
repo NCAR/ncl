@@ -1,6 +1,6 @@
 /*
- *      $Id: MapTransObj.c,v 1.5 1994-01-27 21:24:46 boote Exp $
- */
+*      $Id: MapTransObj.c,v 1.6 1994-04-29 21:31:18 dbrown Exp $
+*/
 /************************************************************************
 *									*
 *			     Copyright (C)  1992			*
@@ -9,16 +9,16 @@
 *									*
 ************************************************************************/
 /*
- *	File:		
- *
- *	Author:		Ethan Alpert
- *			National Center for Atmospheric Research
- *			PO 3000, Boulder, Colorado
- *
- *	Date:		Wed Oct 28 15:09:23 MST 1992
- *
- *	Description:	
- */
+*	File:		
+*
+*	Author:		Ethan Alpert
+*			National Center for Atmospheric Research
+*			PO 3000, Boulder, Colorado
+*
+*	Date:		Wed Oct 28 15:09:23 MST 1992
+*
+*	Description:	
+*/
 #include <stdio.h>
 #include <strings.h>
 #include <ncarg/hlu/hluutil.h>
@@ -31,76 +31,76 @@
 #define DEFAULT_RECT_LIMIT_TYPE "MA"
 
 static NhlResource resources[] = {
-	{ NhlNmpProjection, NhlCmpProjection, NhlTString, sizeof(char*),
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.projection),
-		NhlTString,"CE" },
-	{ NhlNmpOutlineType, NhlCmpOutlineType, NhlTString, sizeof(char*),
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.outline_type),
-		NhlTString,"PS" },
-	{ NhlNmpCenterLatF, NhlCmpCenterLatF, NhlTFloat, sizeof(float),
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.center_lat),
-		NhlTString,"0.0"},
-	{ NhlNmpCenterLonF, NhlCmpCenterLonF, NhlTFloat, sizeof(float),
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.center_lon),
-		NhlTString,"0.0"},
-	{ NhlNmpCenterRotF, NhlCmpCenterRotF, NhlTFloat, sizeof(float),
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.center_rot),
-		NhlTString,"0.0"},
-	{ NhlNmpRectLimitType, NhlCmpRectLimitType, NhlTString, sizeof(char*),
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.rect_limit_type),
-		NhlTString,"MA"},
-	{ NhlNmpRectLimit1, NhlCmpRectLimit1, NhlTFloatPtr, sizeof(float*),
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.rect_limit_1),
-		NhlTFloatPtr,NULL},
-	{ NhlNmpRectLimit2, NhlCmpRectLimit2, NhlTFloatPtr, sizeof(float*),
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.rect_limit_2),
-		NhlTFloatPtr,NULL},
-	{ NhlNmpRectLimit3, NhlCmpRectLimit3, NhlTFloatPtr, sizeof(float*),
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.rect_limit_3),
-		NhlTFloatPtr,NULL},
-	{ NhlNmpRectLimit4, NhlCmpRectLimit4, NhlTFloatPtr, sizeof(float*),
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.rect_limit_4),
-		NhlTFloatPtr,NULL},
-	{ NhlNmpLambertParallel1F, NhlCmpLambertParallel1F, NhlTFloat, 
-		sizeof(float), 
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.lambert_parallel_1),
-		NhlTString,".001"},
-	{ NhlNmpLambertParallel2F, NhlCmpLambertParallel2F, NhlTFloat, 
-		sizeof(float), 
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.lambert_parallel_2),
-		NhlTString,"89.999"},
-	{ NhlNmpLambertMeridianF,NhlCmpLambertMeridianF,NhlTFloat,sizeof(float),
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.lambert_meridian),
-		NhlTString,"0.0"},
-	{ NhlNmpSatelliteDistF,NhlCmpSatelliteDistF,NhlTFloat,sizeof(float),
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.satellite_dist),
-		NhlTString,"1"},
-	{ NhlNmpSatelliteAngle1F,NhlCmpSatelliteAngle1F,NhlTFloat,sizeof(float),
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.satellite_angle_1),
-		NhlTString,"0.0"},
-	{ NhlNmpSatelliteAngle2F,NhlCmpSatelliteAngle2F,NhlTFloat,sizeof(float),
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.satellite_angle_2),
-		NhlTString,"0.0"},
-	{ NhlNmpSatelliteAngle2F,NhlCmpSatelliteAngle2F,NhlTFloat,sizeof(float),
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.satellite_angle_2),
-		NhlTString,"0.0"},
-	{ NhlNmpEllipticalBoundary,NhlCmpEllipticalBoundary,NhlTInteger,
-		sizeof(int),
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.elliptical_boundary),
-		NhlTString,"0" }
+{ NhlNmpProjection, NhlCmpProjection, NhlTString, sizeof(char*),
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.projection),
+	NhlTString,"CE" },
+{ NhlNmpOutlineType, NhlCmpOutlineType, NhlTString, sizeof(char*),
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.outline_type),
+	NhlTString,"PS" },
+{ NhlNmpCenterLatF, NhlCmpCenterLatF, NhlTFloat, sizeof(float),
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.center_lat),
+	NhlTString,"0.0"},
+{ NhlNmpCenterLonF, NhlCmpCenterLonF, NhlTFloat, sizeof(float),
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.center_lon),
+	NhlTString,"0.0"},
+{ NhlNmpCenterRotF, NhlCmpCenterRotF, NhlTFloat, sizeof(float),
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.center_rot),
+	NhlTString,"0.0"},
+{ NhlNmpRectLimitType, NhlCmpRectLimitType, NhlTString, sizeof(char*),
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.rect_limit_type),
+	NhlTString,"MA"},
+{ NhlNmpRectLimit1, NhlCmpRectLimit1, NhlTFloatPtr, sizeof(float*),
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.rect_limit_1),
+	NhlTFloatPtr,NULL},
+{ NhlNmpRectLimit2, NhlCmpRectLimit2, NhlTFloatPtr, sizeof(float*),
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.rect_limit_2),
+	NhlTFloatPtr,NULL},
+{ NhlNmpRectLimit3, NhlCmpRectLimit3, NhlTFloatPtr, sizeof(float*),
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.rect_limit_3),
+	NhlTFloatPtr,NULL},
+{ NhlNmpRectLimit4, NhlCmpRectLimit4, NhlTFloatPtr, sizeof(float*),
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.rect_limit_4),
+	NhlTFloatPtr,NULL},
+{ NhlNmpLambertParallel1F, NhlCmpLambertParallel1F, NhlTFloat, 
+	sizeof(float), 
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.lambert_parallel_1),
+	NhlTString,".001"},
+{ NhlNmpLambertParallel2F, NhlCmpLambertParallel2F, NhlTFloat, 
+	sizeof(float), 
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.lambert_parallel_2),
+	NhlTString,"89.999"},
+{ NhlNmpLambertMeridianF,NhlCmpLambertMeridianF,NhlTFloat,sizeof(float),
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.lambert_meridian),
+	NhlTString,"0.0"},
+{ NhlNmpSatelliteDistF,NhlCmpSatelliteDistF,NhlTFloat,sizeof(float),
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.satellite_dist),
+	NhlTString,"1"},
+{ NhlNmpSatelliteAngle1F,NhlCmpSatelliteAngle1F,NhlTFloat,sizeof(float),
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.satellite_angle_1),
+	NhlTString,"0.0"},
+{ NhlNmpSatelliteAngle2F,NhlCmpSatelliteAngle2F,NhlTFloat,sizeof(float),
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.satellite_angle_2),
+	NhlTString,"0.0"},
+{ NhlNmpSatelliteAngle2F,NhlCmpSatelliteAngle2F,NhlTFloat,sizeof(float),
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.satellite_angle_2),
+	NhlTString,"0.0"},
+{ NhlNmpEllipticalBoundary,NhlCmpEllipticalBoundary,NhlTInteger,
+	sizeof(int),
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.elliptical_boundary),
+	NhlTString,"0" }
 /* not sure these are needed,
-	{ NhlNmpMapPosLF, NhlCmpMapPosLF, NhlTFloat,sizeof(float),
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.map_pos_l),
-		NhlTString,"0.05" },
-	{ NhlNmpMapPosRF, NhlCmpMapPosRF, NhlTFloat,sizeof(float),
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.map_pos_r),
-		NhlTString,"0.95" },
-	{ NhlNmpMapPosTF, NhlCmpMapPosTF, NhlTFloat,sizeof(float),
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.map_pos_t),
-		NhlTString,"0.95" },
-	{ NhlNmpMapPosTF, NhlCmpMapPosTF, NhlTFloat,sizeof(float),
-		NhlOffset(NhlMapTransObjLayerRec,mptrans.map_pos_t),
-		NhlTString,"0.0" }
+{ NhlNmpMapPosLF, NhlCmpMapPosLF, NhlTFloat,sizeof(float),
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.map_pos_l),
+	NhlTString,"0.05" },
+{ NhlNmpMapPosRF, NhlCmpMapPosRF, NhlTFloat,sizeof(float),
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.map_pos_r),
+	NhlTString,"0.95" },
+{ NhlNmpMapPosTF, NhlCmpMapPosTF, NhlTFloat,sizeof(float),
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.map_pos_t),
+	NhlTString,"0.95" },
+{ NhlNmpMapPosTF, NhlCmpMapPosTF, NhlTFloat,sizeof(float),
+	NhlOffset(NhlMapTransObjLayerRec,mptrans.map_pos_t),
+	NhlTString,"0.0" }
 */
 };
 
@@ -110,21 +110,21 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes  MapTransSetValues(
 #ifdef NhlNeedProto
-        NhlLayer,          /* old */
-        NhlLayer,          /* reference */
-        NhlLayer,          /* new */
-        _NhlArgList,    /* args */
-        int             /* num_args*/
+NhlLayer,          /* old */
+NhlLayer,          /* reference */
+NhlLayer,          /* new */
+_NhlArgList,    /* args */
+int             /* num_args*/
 #endif
 );
 
 static NhlErrorTypes MapTransInitialize(
 #ifdef NhlNeedProto
-        NhlLayerClass,     /* class */
-        NhlLayer,          /* req */
-        NhlLayer,          /* new */
-        _NhlArgList,    /* args */
-        int             /* num_args */
+NhlLayerClass,     /* class */
+NhlLayer,          /* req */
+NhlLayer,          /* new */
+_NhlArgList,    /* args */
+int             /* num_args */
 #endif
 );
 
@@ -246,7 +246,7 @@ int     /* upordown */
 
 
 NhlMapTransObjLayerClassRec NhlmapTransObjLayerClassRec = {
-        {
+{
 /* class_name			*/	"MapTransObj",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlMapTransObjLayerRec),
@@ -265,8 +265,8 @@ NhlMapTransObjLayerClassRec NhlmapTransObjLayerClassRec = {
 /* layer_get_values		*/	NULL,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	NULL
-        },
-        {
+},
+{
 /*
 * For Maps Data and Compc are the same hence the following definitions.
 */
@@ -284,74 +284,74 @@ NhlMapTransObjLayerClassRec NhlmapTransObjLayerClassRec = {
 /* compc_lineto */      MapDataLineTo,
 /* win_lineto */        MapWinLineTo,
 /* NDC_lineto */        MapNDCLineTo
-        }
+}
 };
 
 NhlLayerClass NhlmapTransObjLayerClass = (NhlLayerClass) &NhlmapTransObjLayerClassRec;
 
 /*
- * Function:	MapSetTrans
- *
- * Description:
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
- */
+* Function:	MapSetTrans
+*
+* Description:
+*
+* In Args:
+*
+* Out Args:
+*
+* Return Values:
+*
+* Side Effects:
+*/
 static NhlErrorTypes MapSetTrans
 #if __STDC__
 ( NhlLayer instance,NhlLayer parent )
 #else
 (instance,parent)
-	NhlLayer instance;
-	NhlLayer parent;
+NhlLayer instance;
+NhlLayer parent;
 #endif
 {
-	float xl;
-	float yt;
-	float width,xr;
-	float height,yb;
-	int irold,nerr,loglin;
-	NhlMapTransObjLayer minstance = (NhlMapTransObjLayer)instance;
-	
+float xl;
+float yt;
+float width,xr;
+float height,yb;
+int irold,nerr,loglin;
+NhlMapTransObjLayer minstance = (NhlMapTransObjLayer)instance;
+
 /*
 * C bindings don't work for maps yet
 */
-	NhlVAGetValues(parent->base.id,
-		NhlNvpXF,&xl,
-		NhlNvpYF,&yt,
-                NhlNvpWidthF,&width,
-                NhlNvpHeightF,&height,NULL);
-	xr = xl + width;
-	yb = yt - height;
-	c_mappos(xl,xr,yb,yt);
-	c_mapstc("OU",minstance->mptrans.outline_type);
-	c_mapsti("EL",minstance->mptrans.elliptical_boundary);
+NhlVAGetValues(parent->base.id,
+	NhlNvpXF,&xl,
+	NhlNvpYF,&yt,
+	NhlNvpWidthF,&width,
+	NhlNvpHeightF,&height,NULL);
+xr = xl + width;
+yb = yt - height;
+c_mappos(xl,xr,yb,yt);
+c_mapstc("OU",minstance->mptrans.outline_type);
+c_mapsti("EL",minstance->mptrans.elliptical_boundary);
 
-	if(strncmp(minstance->mptrans.projection,"SV",2) == 0) {
-		c_mapstr("SA",minstance->mptrans.satellite_dist);
-		c_mapstr("S1",minstance->mptrans.satellite_angle_1);
-		c_mapstr("S2",minstance->mptrans.satellite_angle_2);
-		c_maproj(minstance->mptrans.projection,
-			minstance->mptrans.center_lat,
-			minstance->mptrans.center_lon,
-			minstance->mptrans.center_rot);
-	} else if(strncmp(minstance->mptrans.projection,"LC",2) == 0) {	
-		c_maproj(minstance->mptrans.projection,
-			minstance->mptrans.lambert_parallel_1,
-			minstance->mptrans.lambert_meridian,
-			minstance->mptrans.lambert_parallel_2);
-	} else {
-		c_maproj(minstance->mptrans.projection,
-			minstance->mptrans.center_lat,
-			minstance->mptrans.center_lon,
-			minstance->mptrans.center_rot);
-	}
-	c_mapset(minstance->mptrans.rect_limit_type,
+if(strncmp(minstance->mptrans.projection,"SV",2) == 0) {
+	c_mapstr("SA",minstance->mptrans.satellite_dist);
+	c_mapstr("S1",minstance->mptrans.satellite_angle_1);
+	c_mapstr("S2",minstance->mptrans.satellite_angle_2);
+	c_maproj(minstance->mptrans.projection,
+		minstance->mptrans.center_lat,
+		minstance->mptrans.center_lon,
+		minstance->mptrans.center_rot);
+} else if(strncmp(minstance->mptrans.projection,"LC",2) == 0) {	
+	c_maproj(minstance->mptrans.projection,
+		minstance->mptrans.lambert_parallel_1,
+		minstance->mptrans.lambert_meridian,
+		minstance->mptrans.lambert_parallel_2);
+} else {
+	c_maproj(minstance->mptrans.projection,
+		minstance->mptrans.center_lat,
+		minstance->mptrans.center_lon,
+		minstance->mptrans.center_rot);
+}
+c_mapset(minstance->mptrans.rect_limit_type,
 		minstance->mptrans.rect_limit_1,
 		minstance->mptrans.rect_limit_2,
 		minstance->mptrans.rect_limit_3,

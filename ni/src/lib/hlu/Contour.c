@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.10 1994-04-05 00:51:03 dbrown Exp $
+ *      $Id: Contour.c,v 1.11 1994-04-29 21:31:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -78,9 +78,20 @@ ResourceUnset
 	return NhlNOERROR;
 }
 
-#define Oset(field)     NhlOffset(NhlContourLayerRec,contour.field)
+#define	Oset(field)	NhlOffset(NhlContourDataDepLayerRec,cndata.field)
+static NhlResource data_resources[] = {
 
+	{NhlNcnExplicitLabels,NhlCcnExplicitLabels,NhlTGenArray,
+		sizeof(NhlPointer),
+		Oset(labels),NhlTImmediate,_NhlUSET((NhlPointer)NULL)}
+};
+#undef Oset
+
+#define Oset(field)     NhlOffset(NhlContourLayerRec,contour.field)
 static NhlResource resources[] = {
+	{NhlNcnScalarFieldData,NhlCcnScalarFieldData,_NhlTDataList,
+		 sizeof(NhlGenArray),
+		 Oset(scalar_field_data),NhlTImmediate,_NhlUSET(NULL)},
 	{ NhlNcnOutOfRangeValF,NhlCcnOutOfRangeValF,NhlTFloat,sizeof(float),
 		  Oset(out_of_range_val),NhlTString,_NhlUSET("1.0E12")},
 	{ NhlNcnSpecialValF,NhlCcnSpecialValF,NhlTFloat,sizeof(float),
@@ -115,6 +126,16 @@ static NhlResource resources[] = {
 		  NhlTFloat,sizeof(float),
 		  Oset(llabel_interval),
 		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset)},
+	{NhlNcnDelayLabels, NhlCcnDelayLabels, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(delay_labels),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True)},
+	{NhlNcnDelayLines, NhlCcnDelayLines, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(delay_lines),
+		 NhlTImmediate,_NhlUSET((NhlPointer) False)},
+
+	{NhlNcnMonoLevelFlag, NhlCcnMonoLevelFlag, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(mono_level_flag),
+		 NhlTImmediate,_NhlUSET((NhlPointer) False)},
 	{NhlNcnMonoLevelFlag, NhlCcnMonoLevelFlag, NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(mono_level_flag),
 		 NhlTImmediate,_NhlUSET((NhlPointer) False)},
@@ -187,7 +208,7 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer) True)},
 	{NhlNcnHighUseLineLabelRes,NhlCcnHighUseLineLabelRes,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(high_use_line_attrs),
-		 NhlTImmediate,_NhlUSET((NhlPointer) False)},
+		 NhlTImmediate,_NhlUSET((NhlPointer) True)},
 	{NhlNcnLineUseInfoLabelRes,NhlCcnLineUseInfoLabelRes,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(line_use_info_attrs),
 		 NhlTImmediate,_NhlUSET((NhlPointer) False)},
@@ -444,11 +465,13 @@ static NhlResource resources[] = {
 	{ NhlNovUpdateReq,NhlCovUpdateReq,NhlTInteger,sizeof(int),
 		  Oset(update_req),
 		  NhlTImmediate,_NhlUSET((NhlPointer) False)},
+	{ NhlNcnDataChanged,NhlCcnDataChanged,NhlTBoolean,sizeof(NhlBoolean),
+		  Oset(data_changed),
+		  NhlTImmediate,_NhlUSET((NhlPointer) True)}
 };
 #undef Oset
 
 /* base methods */
-
 
 static NhlErrorTypes ContourClassInitialize(
 #ifdef NhlNeedProto
@@ -499,6 +522,37 @@ static NhlErrorTypes ContourDestroy(
 static NhlErrorTypes ContourDraw(
 #ifdef NhlNeedProto
         NhlLayer	/* layer */
+#endif
+);
+
+static NhlErrorTypes ContourPostDraw(
+#ifdef NhlNeedProto
+        NhlLayer	/* layer */
+#endif
+);
+
+
+static NhlErrorTypes ContourUpdateData(
+#ifdef NhlNeedProto
+	NhlDataCommLayer	new,
+	NhlDataCommLayer	old
+#endif
+);
+
+
+static NhlErrorTypes ContourDataClassInitialize(
+#ifdef NhlNeedProto
+	void
+#endif
+);
+
+static NhlErrorTypes ContourDataInitialize(
+#ifdef NhlNeedProto
+        NhlLayerClass	class,
+        NhlLayer	req,
+        NhlLayer	new,
+        _NhlArgList	args,
+        int             num_args
 #endif
 );
 
@@ -604,6 +658,16 @@ static float roundit(
 #endif
 );
 
+static NhlErrorTypes    ManageData(
+#ifdef NhlNeedProto
+	NhlContourLayer	cnnew, 
+	NhlContourLayer	cnold,
+	NhlBoolean	init,
+	_NhlArgList	args,
+	int		num_args
+#endif
+);
+
 static NhlErrorTypes    ManageViewDepResources(
 #ifdef NhlNeedProto
 	NhlLayer	new,
@@ -668,6 +732,14 @@ static NhlGenArray GenArraySubsetCopy(
 #endif
 );
 
+static NhlErrorTypes GetData(
+#ifdef NhlNeedProto
+	NhlContourLayer	cl,
+	float		**scalar_field,
+	int		*first_dim,
+	int		*second_dim
+#endif
+);
 
 static NhlErrorTypes UpdateLineAndLabelParams(
 #ifdef NhlNeedProto
@@ -726,15 +798,58 @@ extern void   (_NHLCALLF(cpchll,CPCHLL))(
 	int	*iflg
 #endif
 );
+extern void   (_NHLCALLF(cpmpxy,CPMPXY))(
+#ifdef NhlNeedProto
+	int	*imap,
+	float	*xinp,
+	float	*yinp,
+	float	*xotp,
+	float	*yotp
+#endif
+);
 
+
+NhlContourDataDepLayerClassRec NhlcontourDataDepLayerClassRec = {
+	/* base_class */
+        {
+/* class_name			*/	"ContourDataDep",
+/* nrm_class			*/	NrmNULLQUARK,
+/* layer_size			*/	sizeof(NhlContourDataDepLayerRec),
+/* class_inited			*/	False,
+/* superclass			*/	(NhlLayerClass)
+						&NhldataSpecLayerClassRec,
+
+/* layer_resources		*/	data_resources,
+/* num_resources		*/	NhlNumber(data_resources),
+/* all_resources		*/	NULL,
+
+/* class_part_initialize	*/	NULL,
+/* class_initialize		*/	ContourDataClassInitialize,
+/* layer_initialize		*/	ContourDataInitialize,
+/* layer_set_values		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
+/* layer_get_values		*/	NULL,
+/* layer_reparent		*/	NULL,
+/* layer_destroy		*/	NULL
+	},
+	/* dataspec_class */
+	{
+/* foo				*/	0
+	},
+	/* contour datadep_class */
+	{
+/* foo				*/	0
+	}
+};
 
 NhlContourLayerClassRec NhlcontourLayerClassRec = {
+	/* base_class */
         {
 /* class_name			*/      "Contour",
 /* nrm_class			*/      NrmNULLQUARK,
 /* layer_size			*/      sizeof(NhlContourLayerRec),
 /* class_inited			*/      False,
-/* superclass			*/  (NhlLayerClass)&NhltransformLayerClassRec,
+/* superclass			*/  (NhlLayerClass)&NhldataCommLayerClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -755,14 +870,16 @@ NhlContourLayerClassRec NhlcontourLayerClassRec = {
 
 /* layer_pre_draw		*/      NULL,
 /* layer_draw_segonly		*/	NULL,
-/* layer_post_draw		*/      NULL,
+/* layer_post_draw		*/      ContourPostDraw,
 /* layer_clear			*/      NULL
 
         },
+	/* view_class */
 	{
 /* segment_wkid			*/	0,
 /* get_bb			*/	NULL
 	},
+	/* trans_class */
 	{
 /* overlay_capability 		*/	_tfOverlayBaseOrMember,
 /* data_to_ndc			*/	NULL,
@@ -770,12 +887,21 @@ NhlContourLayerClassRec NhlcontourLayerClassRec = {
 /* data_polyline		*/	NULL,
 /* ndc_polyline			*/	NULL,
 	},
+	/* datacomm_class */
+	{
+/* data_offsets			*/	NULL,
+/* update_data			*/	ContourUpdateData
+	},
 	{
 /* foo				*/	NULL
 	}
 };
 	
-NhlLayerClass NhlcontourLayerClass = (NhlLayerClass)&NhlcontourLayerClassRec;
+
+NhlLayerClass NhlcontourDataDepLayerClass =
+		(NhlLayerClass) &NhlcontourDataDepLayerClassRec;
+NhlLayerClass NhlcontourLayerClass = 
+		(NhlLayerClass) &NhlcontourLayerClassRec;
 
 static NrmQuark	Qfloat = NrmNULLQUARK;
 static NrmQuark Qint = NrmNULLQUARK;
@@ -796,7 +922,16 @@ static int Def_Colors[] = {
 static int Def_Colors_Count = NhlNumber(Def_Colors); 
 #endif
 	
-	
+
+static NhlLayer		Trans_Obj;
+static NhlBoolean	Do_Lines;
+static NhlBoolean	Do_Labels;
+static NhlWorkspace	*Fws,*Iws,*Aws;
+static NhlBoolean	Use_Area_Ws;
+static float		*Data;
+static int		M,N;
+
+
 #define NhlDASHBUFSIZE	128
 static NhlString	*Dash_Table;
 static int		Dash_Table_Len;
@@ -824,9 +959,121 @@ static int		Fill_Count;
 static NhlLayer		Wkptr;
 static NhlLayer		Clayer;
 
-static int M = 73;
-static int N = 10;
-static float T[73*10]; 
+
+/*
+ * Function:	ContourDataClassInitialize
+ *
+ * Description:	init quark for latter use.
+ *
+ * In Args:	
+ *		void
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+ContourDataClassInitialize
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	Qint = NrmStringToQuark(NhlTInteger);
+	Qstring = NrmStringToQuark(NhlTString);
+
+	return NhlNOERROR;
+}
+
+/*
+ * Function:	ContourDataInitialize
+ *
+ * Description:	Initializes the ContourData Dependent class instance.
+ *
+ * In Args:	
+ *		NhlLayerClass	class,
+ *		NhlLayer		req,
+ *		NhlLayer		new,
+ *		_NhlArgList	args,
+ *		int		num_args
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+ContourDataInitialize
+#if     __STDC__
+(
+	NhlLayerClass	class,
+	NhlLayer		req,
+	NhlLayer		new,
+	_NhlArgList	args,
+	int		num_args
+)
+#else
+(class,req,new,args,num_args)
+        NhlLayerClass      class;
+        NhlLayer           req;
+        NhlLayer           new;
+        _NhlArgList     args;
+        int             num_args;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+
+	return ret;
+}
+
+
+/*
+ * Function:	ContourUpdateData
+ *
+ * Description:	This function is called whenever the data pointed to by the
+ *		data resources change.  This function needs to check if
+ *		this specific data resource changed - it may have been another
+ *		data resource in a sub/super class.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+ContourUpdateData
+#if	__STDC__
+(
+	NhlDataCommLayer	new,
+	NhlDataCommLayer	old
+)
+#else
+(new,old)
+	NhlDataCommLayer	new;
+	NhlDataCommLayer	old;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR;
+	_NhlArgList		args = NULL;
+
+/*
+ * For now simply call ContourSetValues with a NULL argument list
+ */
+	NhlVASetValues(new->base.id,NhlNcnDataChanged,True,
+		       NULL);
+
+	return ret;
+}
 
 /*
  * Function:	ContourClassInitialize
@@ -934,7 +1181,7 @@ ContourClassPartInitialize
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "overlayLayerClass");
+			  "NhloverlayLayerClass");
 		return(NhlFATAL);
 	}
 
@@ -953,7 +1200,7 @@ ContourClassPartInitialize
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "logLinTransObjLayerClass");
+			  "NhllogLinTransObjLayerClass");
 		return(NhlFATAL);
 	}
 
@@ -972,7 +1219,7 @@ ContourClassPartInitialize
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "irregularType2TransObjLayerClass");
+			  "NhlirregularType2TransObjLayerClass");
 		return(NhlFATAL);
 	}
 
@@ -991,7 +1238,20 @@ ContourClassPartInitialize
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "irregularTransObjLayerClass");
+			  "NhlirregularTransObjLayerClass");
+		return(NhlFATAL);
+	}
+
+	subret = _NhlRegisterDataRes((NhlDataCommLayerClass)lc,
+				     NhlNcnScalarFieldData,
+				     NhlcontourDataDepLayerClass,
+				     NhlscalarFieldFloatLayerClass,
+				     NULL);
+
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error registering data resource %s";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  "NhlcoordArrTableFloatLayerClass");
 		return(NhlFATAL);
 	}
 
@@ -1041,31 +1301,10 @@ ContourInitialize
 	char			*e_text;
 	NhlContourLayer		cnew = (NhlContourLayer) new;
 	NhlContourLayerPart	*cnp = &(cnew->contour);
-#if 0
-	NhlContourLayerClassPart *cnclp = (NhlContourLayerClassPart *)
-	      &((NhlContourLayerClass)cnew->base.layer_class)->contour_class;
-#endif
 	NhlSArg			sargs[64];
 	int			nargs = 0;
 
-
-/* initialize a scalar field of contour data (temporary) */
-#define PI	3.14159
-	int i,j;
-	float x,y;
-	M=25;
-	N=25;
-	for (i=-N/2;i<=N/2;i++) 
-		for (j=-M/2;j<=M/2;j++) {
-			x = 8.0 * i;
-			y = 8.0 * j;
-#if 0
-			*(T+(M*(i+N/2)+j+M/2)) = sqrt((double)(x*x + y*y));
-#endif
-			*(T+(M*(i+N/2)+j+M/2)) = sin(y*M/PI) + cos(x*M/PI);
-		}
-
-/* Initialize Contour class workspace if necessary */
+/* Initialize Contour float and integer workspaces */
 
 	if ((cnp->iws_id =_NhlNewWorkspace(NhlTConpackInt,NhlwsNONE,
 					   4000*sizeof(int))) < 0) {
@@ -1124,6 +1363,13 @@ ContourInitialize
 	cnp->ll_text_heights = NULL;
 	cnp->ll_strings = NULL;
 
+	subret = ManageData(cnew,(NhlContourLayer) req,True,args,num_args);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error setting view dependent resources";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(ret);
+	}
+
 /* Set view dependent resources */
 
 	subret = ManageViewDepResources(new,req,True,args,num_args);
@@ -1179,8 +1425,6 @@ ContourInitialize
 		return ret;
 
 	cnp->data_changed = False;
-	cnp->min_level_set = False;
-	cnp->max_level_set = False;
 	cnp->line_dash_seglen_set = False;
 	cnp->llabel_interval_set = False;
 	cnp->line_lbls.height_set = False;
@@ -1191,6 +1435,11 @@ ContourInitialize
 	cnp->info_lbl.perim_space_set = False;
 	cnp->high_lbls.perim_space_set = False;
 	cnp->low_lbls.perim_space_set = False;
+
+	if (cnp->data_init) {
+		cnp->min_level_set = False;
+		cnp->max_level_set = False;
+	}
 
 	return ret;
 }
@@ -1216,17 +1465,17 @@ ContourInitialize
 static NhlErrorTypes ContourSetValues
 #if  __STDC__
 (
-	NhlLayer		old,
-	NhlLayer		reference,
-	NhlLayer		new,
+	NhlLayer	old,
+	NhlLayer	reference,
+	NhlLayer	new,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
 (old,reference,new,args,num_args)
-	NhlLayer		old;
-	NhlLayer		reference;
-	NhlLayer		new;
+	NhlLayer	old;
+	NhlLayer	reference;
+	NhlLayer	new;
 	_NhlArgList	args;
 	int		num_args;
 #endif
@@ -1275,6 +1524,15 @@ static NhlErrorTypes ContourSetValues
 		cnp->high_lbls.perim_space_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNcnLowLabelPerimSpaceF))
 		cnp->low_lbls.perim_space_set = True;
+
+/* Manage the data */
+
+	subret = ManageData(cnew,cold,False,args,num_args);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error setting view dependent resources";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(ret);
+	}
 
 /* Set view dependent resources */
 
@@ -1331,10 +1589,9 @@ static NhlErrorTypes ContourSetValues
 	subret = _NhlManageOverlay(&cnp->overlay_object,new,old,
 				   False,sargs,nargs,entry_name);
 	ret = MIN(ret,subret);
+
 	cnp->update_req = False;
 	cnp->data_changed = False;
-	cnp->min_level_set = False;
-	cnp->max_level_set = False;
 	cnp->llabel_interval_set = False;
 	cnp->line_dash_seglen_set = False;
 	cnp->line_lbls.height_set = False;
@@ -1345,6 +1602,11 @@ static NhlErrorTypes ContourSetValues
 	cnp->info_lbl.perim_space_set = False;
 	cnp->high_lbls.perim_space_set = False;
 	cnp->low_lbls.perim_space_set = False;
+
+	if (cnp->data_init) {
+		cnp->min_level_set = False;
+		cnp->max_level_set = False;
+	}
 
 	return ret;
 }
@@ -1637,11 +1899,10 @@ static NhlErrorTypes ContourDraw
 	NhlContourLayer		cl = (NhlContourLayer) layer;
 	NhlContourLayerPart	*cnp = &(cl->contour);
 	NhlTransformLayerPart	*tfp = &(cl->trans);
-	NhlLayer		trans_obj;
 	float			out_of_range_val;
-	NhlWorkspace		*fws,*iws,*laws;
-	NhlBoolean		do_labels,do_lines,do_fill;
-	NhlBoolean		use_area_ws = False;
+	NhlBoolean		do_fill;
+
+	if (! cnp->data_init) return NhlNOERROR;
 
 	if (cl->view.use_segments && ! cnp->new_draw_req) {
                 subret = _NhlActivateWorkstation(cl->base.wkptr);
@@ -1655,6 +1916,9 @@ static NhlErrorTypes ContourDraw
 	}
 	cnp->new_draw_req = False;
 	
+	subret = GetData(cl,&Data,&M,&N);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+
 	subret = _NhlActivateWorkstation(cl->base.wkptr);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
@@ -1675,46 +1939,49 @@ static NhlErrorTypes ContourDraw
  */
 	if (tfp->overlay_status == _tfCurrentOverlayMember && 
 	    tfp->overlay_trans_obj != NULL) {
-		trans_obj = tfp->overlay_trans_obj;
+		Trans_Obj = tfp->overlay_trans_obj;
 	}
 	else {
-		trans_obj = tfp->trans_obj;
+		Trans_Obj = tfp->trans_obj;
 		subret = _NhlSetTrans(tfp->trans_obj, layer);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error setting transformation";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 			return(ret);
-		}
+ 		}
 	}
 
-	NhlVAGetValues(trans_obj->base.id, 
+	NhlVAGetValues(Trans_Obj->base.id, 
 		     NhlNtrOutOfRangeF, &out_of_range_val,
 		     NULL);
         c_cpsetr("ORV",out_of_range_val);
 
+	c_cpsetr("SPV",cnp->sfp->missing_value);
+
 	if (! cnp->x_reverse) {
-		c_cpsetr("XC1",cnp->x_min);
-		c_cpsetr("XCM",cnp->x_max);
+		c_cpsetr("XC1",cnp->sfp->x_min);
+		c_cpsetr("XCM",cnp->sfp->x_max);
 	}
 	else {
-		c_cpsetr("XC1",cnp->x_max);
-		c_cpsetr("XCM",cnp->x_min);
+		c_cpsetr("XC1",cnp->sfp->x_max);
+		c_cpsetr("XCM",cnp->sfp->x_min);
 	}
 	if (! cnp->y_reverse) {
-		c_cpsetr("YC1",cnp->y_min);
-		c_cpsetr("YCN",cnp->y_max);
+		c_cpsetr("YC1",cnp->sfp->y_min);
+		c_cpsetr("YCN",cnp->sfp->y_max);
 	}
 	else {
-		c_cpsetr("YC1",cnp->y_max);
-		c_cpsetr("YCN",cnp->y_min);
+		c_cpsetr("YC1",cnp->sfp->y_max);
+		c_cpsetr("YCN",cnp->sfp->y_min);
 	}
 	c_cpseti("WSO", 3);
         c_cpseti("SET",0);
-        c_cpseti("MAP",3);
+        c_cpseti("MAP",NhlcnMAPVAL);
+	c_cpseti("PIC",1);
 
 	gset_fill_colr_ind((Gint)_NhlGetGksCi(cl->base.wkptr,0));
 
-	subret = UpdateLineAndLabelParams(cl, &do_lines,&do_labels);
+	subret = UpdateLineAndLabelParams(cl, &Do_Lines,&Do_Labels);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
 	subret = UpdateFillInfo(cl, &do_fill);
@@ -1722,12 +1989,12 @@ static NhlErrorTypes ContourDraw
 
 /* Retrieve workspace pointers */
 
-	if ((fws = _NhlUseWorkspace(cnp->fws_id)) == NULL) {
+	if ((Fws = _NhlUseWorkspace(cnp->fws_id)) == NULL) {
 		e_text = "%s: error reserving float workspace";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
-	if ((iws = _NhlUseWorkspace(cnp->iws_id)) == NULL) {
+	if ((Iws = _NhlUseWorkspace(cnp->iws_id)) == NULL) {
 		e_text = "%s: error reserving integer workspace";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
@@ -1735,10 +2002,17 @@ static NhlErrorTypes ContourDraw
 
 /* Draw the contours */
 
-	subret = _NhlCprect(T,M,M,N,fws,iws,entry_name);
+	subret = _NhlCprect(Data,M,M,N,Fws,Iws,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
-	if (do_fill || (do_labels && cnp->label_masking)) {
+
+		{ float flx,frx,fby,fuy,wlx,wrx,wby,wuy; int ll;
+		  c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
+		  printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
+			 flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
+	        }
+	Use_Area_Ws = False;
+	if (do_fill || (Do_Labels && cnp->label_masking)) {
 
 		if (cnp->label_aws_id < 0) {
 			cnp->label_aws_id = 
@@ -1747,52 +2021,145 @@ static NhlErrorTypes ContourDraw
 			if (cnp->label_aws_id < 0) 
 				return MIN(ret,cnp->label_aws_id);
 		}
-		if ((laws = _NhlUseWorkspace(cnp->label_aws_id)) == NULL) {
+		if ((Aws = _NhlUseWorkspace(cnp->label_aws_id)) == NULL) {
 			e_text = 
 			      "%s: error reserving label area map workspace";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return(ret);
 		}
-		use_area_ws = True;
+		Use_Area_Ws = True;
 
-		subret = _NhlArinam(laws,entry_name);
+		subret = _NhlArinam(Aws,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+#if 0
+		c_mapsti("PE",1);
+		c_mpsetc("OU","NO");
+		_NhlMapbla(Aws,entry_name);
+#endif
 
-		if (do_lines) {
-			subret = _NhlCpclam(T,fws,iws,laws,entry_name);
+		if (Do_Lines) {
+			subret = _NhlCpclam(Data,Fws,Iws,Aws,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 		}
 
-		if (do_labels && cnp->label_masking) {
-			subret = _NhlCplbam(T,fws,iws,laws,entry_name);
+		if (Do_Labels && cnp->label_masking) {
+			subret = _NhlCplbam(Data,Fws,Iws,Aws,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 		}
+		
 	}
 
+
+		{ float flx,frx,fby,fuy,wlx,wrx,wby,wuy; int ll;
+		  float xa[5], ya[5],ya1[5];
+		  int i,first = 0;
+		  c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
+		  printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
+			 flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
+		  ll = NhlcnMAPVAL;
+#if 0
+		  cpmpxy_(&ll,&cnp->x_min,&cnp->y_min,&wlx,&wby);
+		  cpmpxy_(&ll,&cnp->x_max,&cnp->y_max,&wrx,&wuy);
+		  printf("cpmpxy - %f,%f,%f,%f,%f,%f,%f,%f\n",
+			 flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
+
+		  xa[0] = xa[1] = xa[4] = wlx;
+		  xa[2] = xa[3] = wrx;
+		  ya[0] = ya[3] = ya[4] = wuy;
+		  ya[1] = ya[2] = wby;
+		  _NhlAredam(Aws,xa,ya,5,10,0,-1,entry_name);
+#endif
+
+		  xa[0] = xa[1] = xa[4] = MAX(cnp->x_min,cnp->sfp->x_min);
+		  xa[2] = xa[3] = MIN(cnp->x_max,cnp->sfp->x_max);
+		  ya[0] = ya[3] = ya[4] = MIN(cnp->y_max,cnp->sfp->y_max);
+		  ya[1] = ya[2] = MAX(cnp->y_min,cnp->sfp->y_min);
+		  ya1[0] = ya1[3] = ya1[4] = MAX(cnp->y_min,cnp->sfp->y_min);
+		  ya1[1] = ya1[2] = MIN(cnp->y_max,cnp->sfp->y_max);
+		  for (i=0;  i<4;i++) {
+			  float xinc,yinc; int j;
+			  gset_line_colr_ind(20);
+			  xinc = (xa[i+1]-xa[i])/20;
+			  yinc = (ya[i+1]-ya[i])/20;
+			  if (! first) {
+#if 0
+				  _NhlMapita(Aws,ya[i],xa[i],
+					     first,10,0,-1,entry_name);
+#endif
+				  _NhlMapita(Aws,ya[i],xa[i],
+					     first,3,0,-1,entry_name);
+				  c_mapit(ya[i],xa[i],first);
+				  first = 1;
+			  }
+			  for (j=0;j<21;j++) {
+#if 0
+				  _NhlMapita(Aws,ya[i]+j*yinc,xa[i]+j*xinc,
+					     first,10,0,-1,entry_name);
+#endif
+				  _NhlMapita(Aws,ya[i]+j*yinc,xa[i]+j*xinc,
+					     first,3,0,-1,entry_name);
+				  c_mapit(ya[i]+j*yinc,xa[i]+j*xinc,first);
+			  }
+		  }
+#if 0
+		  _NhlMapiqa(Aws,10,0,-1,entry_name);
+#endif
+		  _NhlMapiqa(Aws,3,0,-1,entry_name);
+		  c_mapiq();
+#if 0
+		  first = 0;
+		  for (i=0;  i<4;i++) {
+			  float xinc,yinc; int j;
+			  gset_line_colr_ind(20);
+			  xinc = (xa[i+1]-xa[i])/20;
+			  yinc = (ya[i+1]-ya[i])/20;
+			  if (! first) {
+				  _NhlMapita(Aws,ya1[i],xa[i],
+					     first,10,-1,0,entry_name);
+				  c_mapit(ya[i],xa[i],first);
+				  first = 1;
+			  }
+			  for (j=0;j<21;j++) {
+				  _NhlMapita(Aws,ya1[i]+j*yinc,xa[i]+j*xinc,
+					     first,10,-1,0,entry_name);
+				  c_mapit(ya[i]+j*yinc,xa[i]+j*xinc,first);
+			  }
+		  }
+		  _NhlMapiqa(Aws,10,-1,0,entry_name);
+		  c_mapiq();
+#endif
+
+	        }
+
+#if 0
+	c_arseti("dc",20);
+	_NhlArdbpa(Aws,3,"debug group 3",entry_name);
+#endif
 	if (do_fill) {
 		
-		subret = _NhlArscam(laws,(_NHLCALLF(nhlfll,NHLFLL)),
+		subret = _NhlArscam(Aws,(_NHLCALLF(nhlfll,NHLFLL)),
 				    entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 	}
 	
-	if (do_lines) {
-		if (do_labels && cnp->label_masking) {
-			subret = _NhlCpcldm(T,fws,iws,laws,
+	
+	if (Do_Lines && ! cnp->delay_lines) {
+		if (Do_Labels && cnp->label_masking) {
+			subret = _NhlCpcldm(Data,Fws,Iws,Aws,
 					    (_NHLCALLF(cpdrpl,CPDRPL)),
 					    entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 		}
 		else {
-			subret = _NhlCpcldr(T,fws,iws,entry_name);
+			subret = _NhlCpcldr(Data,Fws,Iws,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 		}
 	}
 	
-	if (do_labels) {	
+	if (Do_Labels && ! cnp->delay_labels) {	
 		gset_fill_int_style(GSTYLE_SOLID);
 
-		subret = _NhlCplbdr(T,fws,iws,entry_name);
+		subret = _NhlCplbdr(Data,Fws,Iws,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 	}
 
@@ -1802,18 +2169,138 @@ static NhlErrorTypes ContourDraw
         subret = _NhlDeactivateWorkstation(cl->base.wkptr);
 	ret = MIN(subret,ret);
 
-	if (use_area_ws) {
-		subret = _NhlIdleWorkspace(laws);
+	return MIN(subret,ret);
+}
+
+
+/*
+ * Function:	ContourPostDraw
+ *
+ * Description:	
+ *
+ * In Args:	layer	Contour instance
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+static NhlErrorTypes ContourPostDraw
+#if  __STDC__
+(NhlLayer layer)
+#else
+(layer)
+        NhlLayer layer;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*entry_name = "ContourPostDraw";
+	NhlContourLayer		cl = (NhlContourLayer) layer;
+	NhlContourLayerPart	*cnp = &(cl->contour);
+
+	if (! cnp->data_init) return NhlNOERROR;
+
+	subret = _NhlActivateWorkstation(cl->base.wkptr);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+	
+	if (Do_Lines && cnp->delay_lines) {
+		if (Do_Labels && cnp->label_masking) {
+			subret = _NhlCpcldm(Data,Fws,Iws,Aws,
+					    (_NHLCALLF(cpdrpl,CPDRPL)),
+					    entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		}
+		else {
+			subret = _NhlCpcldr(Data,Fws,Iws,entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		}
+	}
+	
+	if (Do_Labels && cnp->delay_labels) {	
+		gset_fill_int_style(GSTYLE_SOLID);
+
+		subret = _NhlCplbdr(Data,Fws,Iws,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+	}
+
+        subret = _NhlDeactivateWorkstation(cl->base.wkptr);
+	ret = MIN(subret,ret);
+
+
+	if (Use_Area_Ws) {
+		subret = _NhlIdleWorkspace(Aws);
 		ret = MIN(subret,ret);
 	}
-	subret = _NhlIdleWorkspace(fws);
+	subret = _NhlIdleWorkspace(Fws);
 	ret = MIN(subret,ret);
-	subret = _NhlIdleWorkspace(iws);
+	subret = _NhlIdleWorkspace(Iws);
 	ret = MIN(subret,ret);
 
 	return MIN(subret,ret);
 }
 
+
+/*
+ * Function:	GetData
+ *
+ * Description:	
+ *
+ * In Args:	cl	ContourLayer instance
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: 
+ *		 
+ */	
+
+static NhlErrorTypes GetData
+#if  __STDC__
+(
+	NhlContourLayer	cl,
+	float		**scalar_field,
+	int		*first_dim,
+	int		*second_dim
+)
+#else
+(cl,data_p,mlen,nlen)
+	NhlContourLayer	cl;
+	float		**scalar_field;
+	int		*first_dim;
+	int		*second_dim;
+#endif
+{
+	char			*e_text;
+	char			*entry_name = "ContourDraw";
+	NhlContourLayerPart	*cnp = &(cl->contour);
+	NhlScalarFieldFloatLayer	sfl;
+	NhlScalarFieldFloatLayerPart	*sfp;
+	_NhlDataNodePtr			*dlist = NULL;
+	NhlBoolean			new;
+
+	if (_NhlGetDataInfo(cnp->scalar_field_data,&dlist) != 1) {
+		e_text = "%s: internal error retrieving data info";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	sfl = (NhlScalarFieldFloatLayer) _NhlGetDataSet(dlist[0],&new);
+	if (sfl == NULL) {
+		e_text = "%s: internal error retrieving data set";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	sfp = (NhlScalarFieldFloatLayerPart *) &sfl->sfieldfloat;
+
+	*scalar_field = (float *) sfp->d_arr->data;
+	*first_dim = sfp->d_arr->len_dimensions[0];
+	*second_dim = sfp->d_arr->len_dimensions[1];
+
+	return NhlNOERROR;
+}
 /*
  * Function:	UpdateLineAndLabelParams
  *
@@ -1845,8 +2332,6 @@ static NhlErrorTypes UpdateLineAndLabelParams
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR;
-	char			*e_text;
-	char			*entry_name = "ContourDraw";
 	NhlContourLayerPart	*cnp = &(cl->contour);
 	float			*clvp;
 	int			*clup;
@@ -1916,6 +2401,8 @@ static NhlErrorTypes UpdateLineAndLabelParams
 		c_cpseti("PAI",i+1);
 		c_cpsetr("CLV",clvp[i]);
 		c_cpseti("CLU",clup[i]);
+		c_cpseti("AIA",100+i+1);
+		c_cpseti("AIB",100+i);
 #if 0
 		c_cpseti("CLC", cnp->mono_line_color ? clcp[0] : clcp[i]);
 		c_cpsetr("CLL",cnp->mono_line_thickness ? cllp[0] : cllp[i]);
@@ -2172,6 +2659,8 @@ static NhlErrorTypes SetUpTransObj
 
 		NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,cnp->x_reverse);
 		NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,cnp->y_reverse);
+		NhlSetSArg(&sargs[nargs++],NhlNtrOutOfRangeF,
+			   cnp->out_of_range_val);
 
 		sprintf(buffer,"%s",cnnew->base.name);
 		strcat(buffer,".Trans");
@@ -2212,6 +2701,9 @@ static NhlErrorTypes SetUpTransObj
 	if (cnp->y_log != ocnp->y_log)
 		NhlSetSArg(&sargs[nargs++],NhlNtrYLog,cnp->y_log);
 
+	if (cnp->out_of_range_val != ocnp->out_of_range_val)
+		NhlSetSArg(&sargs[nargs++],NhlNtrOutOfRangeF,
+			   cnp->out_of_range_val);
 
 	subret = _NhlALSetValuesChild(tfp->trans_obj->base.id,
 				      (NhlLayer) cnnew,sargs,nargs);
@@ -2559,6 +3051,87 @@ static NhlErrorTypes ManageLabelBar
 	return NhlNOERROR;
 }
 
+
+/*
+ * Function:  ManageData
+ *
+ * Description: Handles updating of data dependent resources
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+/*ARGSUSED*/
+static NhlErrorTypes    ManageData
+#if __STDC__
+(
+	NhlContourLayer	cnnew, 
+	NhlContourLayer	cnold,
+	NhlBoolean	init,
+	_NhlArgList	args,
+	int		num_args
+)
+#else
+(cnnew,cnold,init,args,num_args)
+	NhlContourLayer	cnnew;
+	NhlContourLayer	cnold;
+	NhlBoolean	init;
+	_NhlArgList	args;
+	int		num_args;
+#endif
+
+{
+	char			*entry_name;
+	char			*e_text;
+	NhlContourLayerPart	*cnp = &cnnew->contour;
+	NhlContourLayerPart	*ocnp = &cnold->contour;
+	NhlScalarFieldFloatLayer	sfl;
+	_NhlDataNodePtr			*dlist = NULL;
+	NhlBoolean			new;
+	int				ndata;
+
+	if (! init && (cnp->scalar_field_data == ocnp->scalar_field_data)) 
+		return NhlNOERROR;
+
+	entry_name = (init) ? "ContourInitialize" : "ContourSetValues";
+
+	ndata = _NhlGetDataInfo(cnp->scalar_field_data,&dlist);
+	if (ndata <= 0) {
+		cnp->zmin = 0.0;
+		cnp->zmax = 1.0;
+		cnp->data_init = False;
+		cnp->sfp = NULL;
+		return NhlNOERROR;
+	}
+	else if (ndata != 1) {
+		cnp->data_init = False;
+		e_text = "%s: internal error retrieving data info";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	sfl = (NhlScalarFieldFloatLayer) _NhlGetDataSet(dlist[0],&new);
+	if (sfl == NULL) {
+		cnp->data_init = False;
+		e_text = "%s: internal error retrieving data set";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	cnp->sfp = (NhlScalarFieldFloatLayerPart *) &sfl->sfieldfloat;
+
+	cnp->zmin = cnp->sfp->data_min;
+	cnp->zmax = cnp->sfp->data_max;
+	cnp->data_init = True;
+	cnp->data_changed = True;
+
+	return NhlNOERROR;
+}
+
 /*
  * Function:  ManageViewDepResources
  *
@@ -2616,13 +3189,11 @@ static NhlErrorTypes    ManageViewDepResources
 	subret = AdjustText(&cnp->info_lbl,cnew,cold,init);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 	
-	if (cnp->line_use_info_attrs) {
+	if (cnp->line_use_info_attrs && cnp->info_lbl.on) {
 		float save_angle = cnp->line_lbls.angle;
 		memcpy(&cnp->line_lbls,
 		       &cnp->info_lbl,sizeof(NhlcnLabelAttrs));
 		cnp->line_lbls.mono_color = True;
-		((int *)cnp->llabel_colors->data)[0] = 
-			cnp->info_lbl.mono_color;
 		cnp->line_lbls.angle = save_angle;
 	}
 	else {
@@ -2630,18 +3201,16 @@ static NhlErrorTypes    ManageViewDepResources
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 	}
 
-	if (cnp->high_use_line_attrs) {
+	if (cnp->high_use_line_attrs && cnp->line_lbls.on) {
 		memcpy(&cnp->high_lbls,
 		       &cnp->line_lbls,sizeof(NhlcnLabelAttrs));
-		cnp->high_lbls.mono_color = 
-			((int *)cnp->llabel_colors->data)[0];
 	}
 	else {
 		subret = AdjustText(&cnp->high_lbls,cnew,cold,init);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 	}
 		
-	if (cnp->low_use_high_attrs) {
+	if (cnp->low_use_high_attrs && cnp->high_lbls.on) {
 		memcpy(&cnp->low_lbls,
 		       &cnp->high_lbls,sizeof(NhlcnLabelAttrs));
 	}
@@ -3149,18 +3718,27 @@ static NhlErrorTypes    ManageDynamicArrays
 
 	if (levels_modified || need_check) {
 		NhlString *sp = (NhlString *) ga->data;
-		fp = (float *) cnp->levels->data;
+		NhlBoolean modified = False;
 
+		fp = (float *) cnp->levels->data;
 		init_count = levels_modified && 
 			cnp->llabel_strings == ocnp->llabel_strings ?
 				0 : init_count;
 
 		for (i=init_count; i<count; i++) {
 			if (sp[i] != NULL) NhlFree(sp[i]);
-			sp[i] = (char *) NhlMalloc(7);
+			if ((sp[i] = (char *) 
+			     NhlMalloc(7 * sizeof(char))) == NULL) {
+				e_text = "%s: dynamic memory allocation error";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name);
+				return NhlFATAL;
+			}
 			sprintf(sp[i],"%6.2f",fp[i]);
 			sp[i][6] = '\0';
+			modified = True;
 		}
+		if (modified) ocnp->llabel_strings = NULL;
 	}
 	if (flags_modified && init) {
 		NhlString *sp;
@@ -3236,6 +3814,18 @@ static NhlErrorTypes    ManageDynamicArrays
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 			return ret;
 	}
+	if (cnp->line_use_info_attrs && cnp->info_lbl.on) {
+		((int *)cnp->llabel_colors->data)[0] = 
+			cnp->info_lbl.mono_color;
+	}
+	if (cnp->high_use_line_attrs && cnp->line_lbls.on) {
+		cnp->high_lbls.mono_color = 
+			((int *)cnp->llabel_colors->data)[0];
+	}
+	if (cnp->low_use_high_attrs && cnp->high_lbls.on) {
+		cnp->low_lbls.mono_color = cnp->low_lbls.mono_color;
+	}
+	
 
 /*=======================================================================*/
 
@@ -3331,7 +3921,7 @@ static NhlErrorTypes    ManageGenArray
 	char		*str_type;
 	NhlErrorTypes	ret = NhlNOERROR;
 	int		i, size;
-	NhlPointer	*datap;
+	NhlPointer	datap;
 	char		*e_text;
 
 	*init_count = 0;
@@ -3369,6 +3959,7 @@ static NhlErrorTypes    ManageGenArray
 					  entry_name,resource_name);
 				return NhlFATAL;
 			}
+			(*ga)->data = datap;
 			(*ga)->num_elements = count;
 		}
 		else if (*ga == copy_ga) {
@@ -3417,9 +4008,13 @@ static NhlErrorTypes    ManageGenArray
 	if (*init_count < count) {
 
 		if (init_val == NULL) {
-			if (type == Qstring) 
-				for (i = *init_count; i< count; i++)
-					((NhlString *)datap)[i] = NULL;
+			if (type == Qstring) {
+				NhlString *sp = (NhlString *) datap;
+				for (i = *init_count; i< count; i++) {
+					if (i < *old_count) NhlFree(sp[i]);
+					sp[i] = NULL;
+				}
+			}
 			*need_check = True;
 			return ret;
 		}
@@ -3591,28 +4186,12 @@ static NhlErrorTypes    SetupLevels
 	NhlContourLayerPart	*cnp = &(cnew->contour);
 	NhlContourLayer		cold = (NhlContourLayer) old;
 	NhlContourLayerPart	*ocnp = &(cold->contour);
-	float			zmin,zmax;
-	int			i;
 
 	entry_name = init ? "ContourInitialize" : "ContourSetValues";
 	*modified = False;
 
-/*
- * If the data has changed -- find the data max and min 
- */ 
-	if (cnp->data_changed) {
-		float *fp = T;
-		zmin = BIGNUMBER;
-		zmax = LITTLENUMBER;
-		for (i=0;i<M*N;i++,fp++) {
-			if (*fp < zmin) zmin = *fp;
-			if (*fp > zmax) zmax = *fp;
-		}
-		cnp->zmin = zmin;
-		cnp->zmax = zmax;
-		if (! cnp->min_level_set) cnp->min_level_val = cnp->zmin; 
-		if (! cnp->max_level_set) cnp->max_level_val = cnp->zmax; 
-	}
+	if (! cnp->min_level_set) cnp->min_level_val = cnp->zmin; 
+	if (! cnp->max_level_set) cnp->max_level_val = cnp->zmax; 
 		
 	if (init || cnp->data_changed ||
 	    cnp->levels != ocnp->levels ||
@@ -3876,7 +4455,7 @@ static NhlErrorTypes    SetupLevelsAutomatic
 		return ret;
 	}
 
-	count = (zmax - zmin) / spacing + 1.001;
+	count = (int)((zmax - zmin) / spacing + 1.001);
 	if ((*levels = (float *) NhlMalloc(count * sizeof(float))) == NULL) {
 		e_text = "%s: dynamic memory allocation error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
@@ -4326,15 +4905,26 @@ int (_NHLCALLF(nhlfll,NHLFLL))
 	int pat_ix, col_ix;
 	float fscale;
 
-#if 0	
-	printf("npoints %d, ngroups %d\n",*ncs,*nai);
-#endif
-	for (i = 0; i < *nai; i++) {
 #if 0
+	printf("npoints %d, ngroups %d\n",*ncs,*nai);
+	for (i = 0; i < *nai; i++) {
 		printf("\t%d iag %d iai %d\n",i,iag[i],iai[i]);
+	}
+	for (i = 0; i < *ncs; i++) {
+		printf("\t\tx,y %f %f\n",xcs[i],ycs[i]);
+	}
+
 #endif
-		if (iag[i] == 3 && iai[i] > 0 && iai[i] <= Fill_Count) {
-			int ix = iai[i] - 1;
+
+	for (i = 0; i < *nai; i++) {
+		if (iag[i] == 10 && iai[i] == -1) {
+			return;
+		}
+	}
+
+	for (i = 0; i < *nai; i++) {
+		if (iag[i] == 3 && iai[i] > 99 && iai[i] < 100 + Fill_Count) {
+			int ix = iai[i] - 100;
 			col_ix = Mono_Fill_Color ? 
 				Fill_Colors[0] : Fill_Colors[ix];
 			pat_ix = Mono_Fill_Pattern ?
@@ -4342,6 +4932,20 @@ int (_NHLCALLF(nhlfll,NHLFLL))
 			fscale = Mono_Fill_Scale ?
 				Fill_Scales[0] : Fill_Scales[ix];
 
+			if (iai[i] == 102) {
+				int pai,aia,aib;
+				float f;
+				c_cpseti("pai",2);
+				c_cpgetr("clv",&f);
+				c_cpgeti("aia",&aia);
+				c_cpgeti("aib",&aib);
+				printf("clv,aia,aib, %f,%d,%d\n",f,aia,aib);
+				printf("iai[i],clx,patx %d,%d,%d\n",
+				       iai[i],col_ix,pat_ix);
+				for (i = 0; i < *ncs; i++) {
+				      printf("\t\tx,y %f %f\n",xcs[i],ycs[i]);
+				}
+			}
 			NhlVASetValues(Wkptr->base.id,
 				       NhlNwkFillIndex, pat_ix,
 				       NhlNwkFillColor, col_ix,
@@ -4441,7 +5045,9 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 		}
 			
                 c_dashdc(buffer,jcrt,jsize);
+#if 0
 		printf("seglen %f jcrt %d, jsize %d\n",Dash_Seglen,jcrt,jsize);
+#endif
 		
 	}
 	return;
@@ -4474,12 +5080,14 @@ void   (_NHLCALLF(cpchhl,CPCHHL))
 #endif
 
 {
+#if 0
 	float zdv;
 	char cval[80];
 
 	c_cpgetc("lot",cval,80);
 	c_cpgetr("zdv",&zdv);
 	printf("%s%f\n",cval,zdv);
+#endif
 
 	if (*iflg == 2) {
 		gset_fill_colr_ind(High_Label_AttrsP->gks_bcolor);
@@ -4640,6 +5248,60 @@ void   (_NHLCALLF(cpchll,CPCHLL))
 		gset_linewidth(LLabel_AttrsP->perim_lthick);
 	}
 
+	return;
+}
+
+
+/*
+ * Function:  cpmpxy_
+ *
+ * Description: 
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+/*ARGSUSED*/
+void   (_NHLCALLF(cpmpxy,CPMPXY))
+#if __STDC__
+(
+	int	*imap,
+	float	*xinp,
+	float	*yinp,
+	float	*xotp,
+	float	*yotp
+)
+#else
+(imap,xinp,yinp,xotp,yotp)
+	int	*imap;
+	float	*xinp;
+	float	*yinp;
+	float	*xotp;
+	float	*yotp;
+#endif
+
+{
+
+        if (*imap == 0) {
+                if ((int) *xinp == NhlcnMAPVAL)
+                        *yinp = 3.0;
+                else
+                        *yinp = 0.0;
+        }
+        else if (abs(*imap) != NhlcnMAPVAL) {
+                *xotp = *xinp;
+                *yotp = *yinp;
+        }
+        else if (*imap > 0)
+                _NhlovCpMapXY(xinp,yinp,xotp,yotp);
+        else
+                _NhlovCpInvMapXY(xinp,yinp,xotp,yotp);
+                
 	return;
 }
 
