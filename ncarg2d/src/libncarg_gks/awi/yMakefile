@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.18 1996-10-25 21:41:02 boote Exp $
+#	$Id: yMakefile,v 1.19 1997-04-21 21:13:37 haley Exp $
 #
 
 MYNAME	= awi
@@ -11,12 +11,12 @@ gcrsg.f   gcsgwk.f  gdawk.f   gdsg.f    geclks.f  gelms.f   \
 genneg.f  gerhnd.f  gerlog.f  gesc.f    gescfn.f  gevtm.f   \
 gfa.f     gfilat.f  ggdp.f    ggtitm.f  giitm.f   ginst.f   \
 gksbd.f   gmarat.f  gninst.f  gnpart.f  gopdec.f  gopks.f   \
-gopwk.f   gpl.f     gpm.f     gpolat.f  gprec.f   gputpt.f  \ 
+gopwk.f   gpl.f     gpm.f     gpolat.f  gprec.f   gputpt.f  \
 gqacwk.f  gqasf.f   gqcf.f    gqchb.f   gqchh.f   gqchsp.f  \
 gqchup.f  gqchw.f   gqchxp.f  gqclip.f  gqcntn.f  gqcr.f    \
 gqdsp.f   gqeci.f   gqegdp.f  gqentn.f  gqewk.f   gqfaci.f  \
 gqfaf.f   gqfai.f   gqfais.f  gqfasi.f  gqgdp.f   gqln.f    \
-gqlvks.f  gqlwk.f   gqlwsc.f  gqmk.f    gqmksc.f  gqmntn.f  \ 
+gqlvks.f  gqlwk.f   gqlwsc.f  gqmk.f    gqmksc.f  gqmntn.f  \
 gqnt.f    gqops.f   gqopsg.f  gqopwk.f  gqpa.f    gqpaf.f   \
 gqparf.f  gqpcr.f   gqpfar.f  gqplci.f  gqplf.f   gqpli.f   \
 gqpmci.f  gqpmf.f   gqpmi.f   gqppar.f  gqpplr.f  gqppmr.f  \
@@ -35,7 +35,7 @@ gzckst.f  gzckwk.f  gzclli.f  gzclpo.f  gzcpwk.f  gzfmwk.f  \
 gzgte1.f  gzgte2.f  gzines.f  gzinsl.f  gziqwk.f  gzn2wx.f  \
 gzn2wy.f  gzname.f  gznume.f  gzputr.f  gzputs.f  gzreop.f  \
 gzroi.f   gzsrat.f  gzusat.f  gztowk.f  gzw2gk.f  gzw2nx.f  \
-gzw2ny.f  gzxid.f 
+gzw2ny.f  gzxid.f
 
 GENERIC_OBJS = \
 gactm.o   gacwk.o   gaspar.o  gatelm.o  gca.o     gcelcd.o  \
@@ -44,12 +44,12 @@ gcrsg.o   gcsgwk.o  gdawk.o   gdsg.o    geclks.o  gelms.o   \
 genneg.o  gerhnd.o  gerlog.o  gesc.o    gescfn.o  gevtm.o   \
 gfa.o     gfilat.o  ggdp.o    ggtitm.o  giitm.o   ginst.o   \
 gksbd.o   gmarat.o  gninst.o  gnpart.o  gopdec.o  gopks.o   \
-gopwk.o   gpl.o     gpm.o     gpolat.o  gprec.o   gputpt.o  \ 
+gopwk.o   gpl.o     gpm.o     gpolat.o  gprec.o   gputpt.o  \
 gqacwk.o  gqasf.o   gqcf.o    gqchb.o   gqchh.o   gqchsp.o  \
 gqchup.o  gqchw.o   gqchxp.o  gqclip.o  gqcntn.o  gqcr.o    \
 gqdsp.o   gqeci.o   gqegdp.o  gqentn.o  gqewk.o   gqfaci.o  \
 gqfaf.o   gqfai.o   gqfais.o  gqfasi.o  gqgdp.o   gqln.o    \
-gqlvks.o  gqlwk.o   gqlwsc.o  gqmk.o    gqmksc.o  gqmntn.o  \ 
+gqlvks.o  gqlwk.o   gqlwsc.o  gqmk.o    gqmksc.o  gqmntn.o  \
 gqnt.o    gqops.o   gqopsg.o  gqopwk.o  gqpa.o    gqpaf.o   \
 gqparf.o  gqpcr.o   gqpfar.o  gqplci.o  gqplf.o   gqpli.o   \
 gqpmci.o  gqpmf.o   gqpmi.o   gqppar.o  gqpplr.o  gqppmr.o  \
@@ -68,7 +68,7 @@ gzckst.o  gzckwk.o  gzclli.o  gzclpo.o  gzcpwk.o  gzfmwk.o  \
 gzgte1.o  gzgte2.o  gzines.o  gzinsl.o  gziqwk.o  gzn2wx.o  \
 gzn2wy.o  gzname.o  gznume.o  gzputr.o  gzputs.o  gzreop.o  \
 gzroi.o   gzsrat.o  gzusat.o  gztowk.o  gzw2gk.o  gzw2nx.o  \
-gzw2ny.o  gzxid.o 
+gzw2ny.o  gzxid.o
 
 SOURCES = $(GENERIC_SRCS)
 OBJECTS = $(GENERIC_OBJS)
