@@ -119,7 +119,7 @@ main(int argc, char *argv[])
  * Create a PS workstation.
  */
         NhlRLClear(rlist);
-		NhlRLSetString(rlist,NhlNwkPSFileName,"mp04c.ps");
+        NhlRLSetString(rlist,NhlNwkPSFileName,"mp04c.ps");
         NhlCreate(&wid,"mp04Work",
                   NhlpsWorkstationClass,NhlDEFAULT_APP,rlist);
     }
