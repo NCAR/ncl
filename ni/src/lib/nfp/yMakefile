@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.68 2003-02-25 00:51:34 haley Exp $
+#      $Id: yMakefile,v 1.69 2003-03-21 05:01:29 haley Exp $
 #
 #########################################################################
 #									#
@@ -55,7 +55,8 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cdf_dpW.o chiinvW.o \
 	writematrixW.o wrunaveW.o wrapper.o udunitsW.o utilW.o vinth2pW.o \
 	vinth2peW.o zonmpsiW.o 
 
-FSRCS = aam.f areaAve.f areaRmse.f areaSum.f calcorc_dp.f cdf_dp.f cfftb.f \
+FSRCS = aam.f areaAve.f areaAve2.f areaRmse.f areaRmse2.f areaSum2.f \
+	calcorc_dp.f cdf_dp.f cfftb.f \
 	cfftb1.f cfftf.f cfftf1.f cffti.f cffti1.f chiin_dp.f cntrFiniteDiff.f \
 	cz2ccm_dp.f dbetai.f dewpt_trh.f dmapgci.f dpsort.f dtrend_dp.f \
 	exptapersh.f ezfft_dp.f f2foshv.f filtrx.f finfo.f fluxEddyTav_dp.f \
@@ -73,7 +74,8 @@ FSRCS = aam.f areaAve.f areaRmse.f areaSum.f calcorc_dp.f cdf_dp.f cfftb.f \
 	vinth2p_ecmwf.f volAve.f volRmse.f wavelet.f writematrix.f \
 	wrunave_dp.f zon_mpsi.f
 
-FOBJS = aam.o areaAve.o areaRmse.o areaSum.o calcorc_dp.o cdf_dp.o cfftb.o \
+FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o \
+	calcorc_dp.o cdf_dp.o cfftb.o \
 	cfftb1.o cfftf.o cfftf1.o cffti.o cffti1.o chiin_dp.o cntrFiniteDiff.o \
 	cz2ccm_dp.o dbetai.o dewpt_trh.o dmapgci.o dpsort.o dtrend_dp.o \
 	exptapersh.o ezfft_dp.o f2foshv.o filtrx.o finfo.o fluxEddyTav_dp.o \

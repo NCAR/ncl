@@ -375,9 +375,11 @@ extern NhlErrorTypes relhum_W(void);
 extern NhlErrorTypes runave_W(void);
 extern NhlErrorTypes wgt_runave_W(void);
 extern NhlErrorTypes wgt_areaave_W(void);
-extern NhlErrorTypes wgt_areasum_W(void);
-extern NhlErrorTypes wgt_volave_W(void);
+extern NhlErrorTypes wgt_areaave2_W(void);
+extern NhlErrorTypes wgt_areasum2_W(void);
 extern NhlErrorTypes wgt_arearmse_W(void);
+extern NhlErrorTypes wgt_arearmse2_W(void);
+extern NhlErrorTypes wgt_volave_W(void);
 extern NhlErrorTypes wgt_volrmse_W(void);
 extern NhlErrorTypes wgt_volrmse_ccm_W(void);
 extern NhlErrorTypes wgt_volave_ccm_W(void);
@@ -4800,16 +4802,51 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(wgt_areaave_W,args,"wgt_areaave",nargs);
 
 /*
- * Register "wgt_areasum".
+ * Register "wgt_areaave2".
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(wgt_areaave2_W,args,"wgt_areaave2",nargs);
+
+/*
+ * Register "wgt_areasum2".
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(wgt_areasum2_W,args,"wgt_areasum2",nargs);
+
+/*
+ * Register "wgt_arearmse".
+ */
+    nargs = 0;
+    args = NewArgs(5);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(wgt_arearmse_W,args,"wgt_arearmse",nargs);
+
+/*
+ * Register "wgt_arearmse2".
  */
     nargs = 0;
     args = NewArgs(4);
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    NclRegisterFunc(wgt_areasum_W,args,"wgt_areasum",nargs);
+    NclRegisterFunc(wgt_arearmse2_W,args,"wgt_arearmse2",nargs);
 
 /*
  * Register "wgt_volave".
@@ -4836,19 +4873,6 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(wgt_volave_ccm_W,args,"wgt_volave_ccm",nargs);
-
-/*
- * Register "wgt_arearmse".
- */
-    nargs = 0;
-    args = NewArgs(5);
-    dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    NclRegisterFunc(wgt_arearmse_W,args,"wgt_arearmse",nargs);
 
 /*
  * Register "wgt_volrmse".
