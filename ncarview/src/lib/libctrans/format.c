@@ -1,5 +1,5 @@
 /*
- *	$Id: format.c,v 1.9 1993-03-15 21:12:18 clyne Exp $
+ *	$Id: format.c,v 1.10 1993-03-22 17:37:01 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -269,7 +269,7 @@ long value;
        *   COMPUTE THE REQUESTED STRING
        *
        */
-      temp = labs(value);
+      temp = LABS(value);
       s[0] = temp / 1024 + 64;
       s[1] = (temp/16) % 64 + 64;
       s[2] = temp % 16 + 32;
