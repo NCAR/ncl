@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.22 1993-03-11 17:34:16 haley Exp $
+#   $Id: ncargex.csh,v 1.23 1993-03-12 04:05:10 haley Exp $
 #
 
 #********************#
@@ -11,7 +11,7 @@
 if ($#argv < 1) then
   echo "usage: ncargex [-all,-A] [-allexamples,-E] [-alltests,-T]        "
   echo "               [-allfundamental,-F] [-alltutorial,-U] [-areas]   "
-  echo "               [-autograph] [-cbivar] [-colconv] [-conpack]      "
+  echo "               [-autograph] [-bivar] [-colconv] [-conpack]       "
   echo "               [-conran_family] [-conrec_family] [-dashline]     "
   echo "               [-ezmap] [-gflash] [-gridall] [-halftone]         "
   echo "               [-histogram] [-isosrfhr] [-isosurface] [-labelbar]"
@@ -498,7 +498,7 @@ while ($#argv > 0)
             set names=($autograph_list)
             breaksw
 
-        case "-cbivar":
+        case "-bivar":
             shift
             set names=($cbivar_list)
             breaksw
