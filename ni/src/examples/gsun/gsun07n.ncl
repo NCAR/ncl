@@ -1,4 +1,4 @@
-load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsn_code.ncl"
+load "gsn_code.ncl"
 
 begin
                                      ; Initialize some data.
@@ -21,15 +21,14 @@ begin
     yint(i) = ftcurvpi(0., xo(i), period, xi, yi)
   end do
 
-  wks_type            = "x11"
-  wks_type@wkColorMap = (/"white","black","red","green","blue","yellow"/)
+  wks = gsn_open_wks("x11","gsun07n") ; Open an X11 workstation.
 
-  wks = gsn_open_wks(wks_type,"gsun07n") ; Open an X11 workstation.
+  cmap = (/"white","black","red","green","blue","yellow"/)
+
+  gsn_define_colormap(wks,cmap)
 
   txres = True   ; Set up variable for TextItem resources.
-
   xyres = True   ; Set up variable for XyPlot resources.
-
   gsres = True   ; Set up variable for GraphicStyle resources.
 
   xyres@gsnFrame               = False     ; Don't advance the frame.
