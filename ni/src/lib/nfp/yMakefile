@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.41 2001-01-26 07:55:21 haley Exp $
+#      $Id: yMakefile,v 1.42 2001-03-05 00:07:12 haley Exp $
 #
 #########################################################################
 #									#
@@ -29,8 +29,8 @@ EXFOBJS = d1mach_sun.o
 HDRS = wrapper.h
 
 CSRCS = areavolW.c betaincW.c bytesW.o calcorcW.c chiinvW.c conformW.c csagridW.c \
-	cssgridW.c cz2ccmW.c datesW.c drwvctc.c dsgridW.c dtrendW.c \
-	eofW.c ezfftW.c finitediffW.c fitgridW.c fluxEddyW.c fourinfoW.c \
+	cssgridW.c cz2ccmW.c datesW.c drwvctc.c dsgridW.c dtrendW.c eofW.c \
+	ezfftW.c finitediffW.c filterxW.c fitgridW.c fluxEddyW.c fourinfoW.c \
 	gausW.c hydroW.c int2pW.c julGregW.c linint2W.c linmsgW.c linroodW.c \
 	locminmaxW.c mapgciW.c natgridW.c ncolorW.c ngmiscW.c nicevalsW.c \
 	outputgif.c prcwatW.c preshybW.c probtestW.c regcoefW.c relhumW.c remapW.c \
@@ -40,8 +40,8 @@ CSRCS = areavolW.c betaincW.c bytesW.o calcorcW.c chiinvW.c conformW.c csagridW.
 	vinth2pW.c vinth2peW.c
 
 COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o chiinvW.o conformW.o csagridW.o \
-	cssgridW.o cz2ccmW.o datesW.o drwvctc.o dsgridW.o dtrendW.o \
-	eofW.o ezfftW.o finitediffW.o fitgridW.o fluxEddyW.o fourinfoW.o \
+	cssgridW.o cz2ccmW.o datesW.o drwvctc.o dsgridW.o dtrendW.o eofW.o \
+	ezfftW.o finitediffW.o filterxW.o fitgridW.o fluxEddyW.o fourinfoW.o \
 	gausW.o hydroW.o int2pW.o julGregW.o linint2W.o linmsgW.o linroodW.o \
 	locminmaxW.o mapgciW.o natgridW.o ncolorW.o ngmiscW.o nicevalsW.o \
 	outputgif.o prcwatW.o preshybW.o probtestW.o regcoefW.o relhumW.o remapW.o \
@@ -52,8 +52,8 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o chiinvW.o conformW.o csagridW.
 
 FSRCS = aam.f areaAve.f areaRmse.f dbetai.f calcorc_dp.f chiin_dp.f \
 	cntrFiniteDiff.f cz2ccm_dp.f dmapgci.f dpsort.f dtrend_dp.f \
-	ezfft_dp.f finfo.f fluxEddyTav_dp.f fo2fs_dp.f hydro_dp.f gausLobat.f \
-	index77_dp.f int2p_dp.f julGreg.f linint2.f linmsg_dp.f \
+	ezfft_dp.f filtrx.f finfo.f fluxEddyTav_dp.f fo2fs_dp.f hydro_dp.f \
+	gausLobat.f index77_dp.f int2p_dp.f julGreg.f linint2.f linmsg_dp.f \
 	localMinMax.f phybrid_ccm.f prcwat.f preshybrid.f prneof_dp.f prneofts_dp.f \
 	rdsstoi.f regcoef_dp.f relhum_dp.f remap.f rhombtri_dp.f \
 	rmStndx_dp.f runave_dp.f rvdv.f setrig.f skewT.f smth9_dp.f sp2_util.f \
@@ -64,8 +64,8 @@ FSRCS = aam.f areaAve.f areaRmse.f dbetai.f calcorc_dp.f chiin_dp.f \
 
 FOBJS = aam.o areaAve.o areaRmse.o dbetai.o calcorc_dp.o chiin_dp.o \
 	cntrFiniteDiff.o cz2ccm_dp.o dmapgci.o dpsort.o dtrend_dp.o \
-	ezfft_dp.o finfo.o fluxEddyTav_dp.o fo2fs_dp.o hydro_dp.o gausLobat.o \
-	index77_dp.o int2p_dp.o julGreg.o linint2.o linmsg_dp.o \
+	ezfft_dp.o filtrx.o finfo.o fluxEddyTav_dp.o fo2fs_dp.o hydro_dp.o \
+	gausLobat.o index77_dp.o int2p_dp.o julGreg.o linint2.o linmsg_dp.o \
 	localMinMax.o phybrid_ccm.o prcwat.o preshybrid.o prneof_dp.o prneofts_dp.o \
 	rdsstoi.o regcoef_dp.o relhum_dp.o remap.o rhombtri_dp.o \
 	rmStndx_dp.o runave_dp.o rvdv.o setrig.o skewT.o smth9_dp.o sp2_util.o \
