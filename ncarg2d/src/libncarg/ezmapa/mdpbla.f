@@ -1,5 +1,5 @@
 C
-C $Id: mdpbla.f,v 1.1 2001-08-16 23:10:21 kennison Exp $
+C $Id: mdpbla.f,v 1.2 2002-02-25 18:06:20 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -108,18 +108,18 @@ C
 C
 C Declare arithmetic statement functions.
 C
-      DOUBLE PRECISION CLING,FLOOR
+      DOUBLE PRECISION CEIL,FLOR
 C
 C Declare external functions.
 C
       DOUBLE PRECISION RBGDFE,RBGLEN
 C
-C The arithmetic statement functions FLOOR and CLING give, respectively,
+C The arithmetic statement functions FLOR and CEIL give, respectively,
 C the "floor" of X - the largest integer less than or equal to X - and
 C the "ceiling" of X - the smallest integer greater than or equal to X.
 C
-      FLOOR(X)=DINT(X+1.D4)-1.D4
-      CLING(X)=-FLOOR(-X)
+      FLOR(X)=DINT(X+1.D4)-1.D4
+      CEIL(X)=-FLOR(-X)
 C
 C Check for an uncleared prior error.
 C
@@ -254,7 +254,7 @@ C
       RLAT=-89.998D0
       IDLT=0
       IDRT=-1
-      K=CLING(360.D0/DLON)
+      K=CEIL(360.D0/DLON)
       DO 10027 I=1,2
       RLON=UTPA(5)-180.D0
       CALL MDPITA (RLAT,RLON,0,IAMP,IGRP,IDLT,IDRT)
@@ -287,7 +287,7 @@ C
       RLON=UTPA(5)+DLON
       IDLT=0
       IDRT=-1
-      K=CLING(180.D0/DLAT)
+      K=CEIL(180.D0/DLAT)
       DO 10032 I=1,2
       RLAT=-90.D0
       CALL MDPITA (RLAT,RLON,0,IAMP,IGRP,IDLT,IDRT)
@@ -316,7 +316,7 @@ C
       RLAT=-.001D0
       IDLT=-1
       IDRT=0
-      K=CLING(180.D0/DLON)
+      K=CEIL(180.D0/DLON)
       DO 10036 I=1,2
       RLON=UTPA(5)+90.D0
       CALL MDPITA (RLAT,RLON,0,IAMP,IGRP,IDLT,IDRT)
@@ -423,7 +423,7 @@ C
       RLON=PHOC+179.999999D0
       IDLT=0
       IDRT=-1
-      K=CLING(180.D0/DLAT)
+      K=CEIL(180.D0/DLAT)
       DO 10049 I=1,2
       RLAT=-90.D0
       CALL MDPITA (RLAT,RLON,0,IAMP,IGRP,IDLT,IDRT)
