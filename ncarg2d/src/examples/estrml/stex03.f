@@ -48,14 +48,6 @@ C     Generate the input array.
 C
       DO 2 I=1,M
          DO 1 J=1,N
-c$$$            A(I,J)=1.0*Float(I)/Float(M)
-c$$$            B(I,J)=1.0*float(n)/float(j)
-c$$$            if (i .ge. j-2 .and. i .le. j+2) then
-c$$$               a(i,j) = -9999.0
-c$$$            else
-c            A(I,J)=float(i*j)
-c$$$            endif
-c            B(I,J)=float(mod(i*j*2.7,360))
             a(i,j) = 1.0
             b(i,j) = -135.0
  1       CONTINUE
@@ -70,21 +62,10 @@ C
 C     Frame 6 -- VELVCT overlaid on EZMAP.
 C
       CALL GSLWSC(1.0)
-c$$$c     
-c$$$      do 800 i=1,14,1
-c$$$         call stseti('PAI -- parameter array index', i)
-c$$$         call stseti('CLR -- gks color index', i+1)
-c$$$ 800  continue
-c$$$c
-c$$$      call stsetr('lwd -- vector linewidth', 2.25)
-c$$$c      call stsetr('amn -- arrow minimum size', 0.01)
-c$$$      call stseti('vpo -- vector position method', 0)
-c$$$      call stseti('set -- SET call flag', 0)
-      call stseti('svf -- special value flag', 1)
-      call stsetr('usv -- U special value', -9999.0)
-c
-      do 1000 i=1,10,1 
-c      do 1000 i=9,9,1 
+      CALL STSETI('SVF -- Special Value Flag', 1)
+      CALL STSETR('USV -- U Special Value', -9999.0)
+C
+      DO 1000 I=1,10,1 
 C
 C Do 10 different easy map projections
 C
@@ -93,40 +74,23 @@ C
          ELSE
             CALL SUPMAP (I,0.,0.,0.,0.,0.,0.,0.,1,20,2,0,IERS)
          END IF
-c$$$C
-c$$$C Treat the data as as grid covering the full globe
-c$$$C
-c$$$         CALL STINIT (A(3,20),60,B,60,ZDAT,60,MA,NA,IDM,IDM,IDM,IDM)
-c$$$         CALL STGETI('NLV -- NUMBER OF LEVELS', NLV)
-c$$$         CALL STSETR('VFR -- VECTOR FRACTIONAL MINIMUM', 0.33)
-c$$$         IF (I .GE. 5) THEN
-c$$$            CALL STGETR('VMN -- Minimum Vector', VMN)
-c$$$            CALL  STGETR('VMX -- Maximum Vector', VMX)
-c$$$            CALL STSETR('VLM -- Vector Low Magnitude',
-c$$$     +           VMN+(VMX-VMN)/5.0)
-c$$$            CALL STGETR('VLM -- Vector Low Magnitude',VLM)
-c$$$            write(*,*) vlm,vmn,vmx
-c$$$            CALL STGETR('VFR -- Vector Fractioal Minimum',VFR)
-c$$$            CALL STGETR('DMX -- Distance of Max Vector',DMX)
-c$$$            CALL STSETR('VML -- Vector Max Length', DMX*2.0)
-c$$$         END IF
-c$$$C         write (*,*) 'nlv,vmn,vmx,vlm,vfr', nlv,vmn,vmx,vlm,vfr
-c$$$C
-         call stseti('map -- mapping flag', 1)
-         CALL STSETR('XC1 -- LOWER X BOUND', -180.0)
-         CALL STSETR('XCM -- UPPER X BOUND', 180.0)
-         CALL STSETR('YC1 -- LOWER Y BOUND', -90.0)
-         CALL STSETR('YCN -- UPPER Y BOUND', 90.0)
-         CALL STSETI('PLR -- VECTOR POLAR FLAG', 1)
-         CALL STSETI('TRP -- interpolation method', 1)
-         CALL STSETR('ssp -- stream spacing', 0.015)
-         call vvseti('map -- mapping flag', 1)
-         CALL VVSETR('XC1 -- LOWER X BOUND', -180.0)
-         CALL VVSETR('XCM -- UPPER X BOUND', 180.0)
-         CALL VVSETR('YC1 -- LOWER Y BOUND', -90.0)
-         CALL VVSETR('YCN -- UPPER Y BOUND', 90.0)
-         CALL VVSETI('PLR -- VECTOR POLAR FLAG', 1)
-         CALL VVSETR('VFR -- Vector Fractional minimum', 0.7)
+         CALL STSETI('MAP -- Mapping Flag', 1)
+         CALL STSETR('XC1 -- Lower X Bound', -180.0)
+         CALL STSETR('XCM -- Upper X Bound', 180.0)
+         CALL STSETR('YC1 -- Lower Y Bound', -90.0)
+         CALL STSETR('YCN -- Upper Y Bound', 90.0)
+         CALL STSETI('PLR -- Vector Polar Flag', 1)
+         CALL STSETI('TRP -- Interpolation Method', 1)
+         CALL STSETR('SSP -- Stream Spacing', 0.015)
+         CALL VVSETI('MAP -- Mapping Flag', 1)
+         CALL VVSETI('SET -- Set Call Flag', 0)
+         CALL STSETI('SET -- Set Call Flag', 0)
+         CALL VVSETR('XC1 -- Lower X Bound', -180.0)
+         CALL VVSETR('XCM -- Upper X Bound', 180.0)
+         CALL VVSETR('YC1 -- Lower Y Bound', -90.0)
+         CALL VVSETR('YCN -- Upper Y Bound', 90.0)
+         CALL VVSETI('PLR -- Vector Polar Flag', 1)
+         CALL VVSETR('VFR -- Vector Fractional Minimum', 0.7)
          MA = M
          NA = N
          ITRANS = 2
@@ -135,19 +99,15 @@ c$$$C
          ALTMN = -90.
          ALTMX = 90.
          CALL GSPLCI(3)
-         CALL VVINIT(A,M,B,M,idm,idm,M,N,IDM,IDM,IDM,IDM)
-         CALL VVECTR(A,B,idm,IDM,IDM,IDM,IDM)
+         CALL VVINIT(A,M,B,M,IDM,IDM,M,N,IDM,IDM,IDM,IDM)
+         CALL VVECTR(A,B,IDM,IDM,IDM,IDM,IDM)
          CALL GSPLCI(7)
-c         CALL STSETR('vnl - normalized vector magnitude', 0.01)
-c         CALL STSETI('ckp - check progress', 200)
-c         CALL STSETR('arl - arrow length', 0.75)
-c         CALL stsetr('ssp - stream spacing', 0.75)
-         CALL STINIT(A,M,B,M,idm,idm,m,n,wrk,2*m*n)
-         CALL STREAM(A,B,WRK,idm,idm)
+         CALL STINIT(A,M,B,M,IDM,IDM,M,N,WRK,2*M*N)
+         CALL STREAM(A,B,WRK,IDM,IDM)
          CALL GSPLCI(1)
          CALL FRAME
  1000 CONTINUE
-c
+C
 C
 C     Deactivate and close workstation, close GKS.
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: stex01.f,v 1.2 1993-01-21 01:23:15 dbrown Exp $
+C	$Id: stex01.f,v 1.3 1993-02-20 00:46:23 dbrown Exp $
 C
       PROGRAM STEX01
 C
@@ -46,46 +46,34 @@ C
       CALL GOPWK (1, 2, 1)
       CALL GACWK (1)
 C
-c$$$      CALL VVSETI('map -- mapping mode', 1)
-c$$$      CALL VVSETI('set -- do set call', 0)
-c$$$      CALL VVSETR('XC1 -- LOWER X BOUND', -120.0)
-c$$$      CALL VVSETR('XCM -- UPPER X BOUND', -75.0)
-c$$$      CALL VVSETR('YC1 -- LOWER Y BOUND', 25.0)
-c$$$      CALL VVSETR('YCN -- UPPER Y BOUND', 50.0)
-c$$$      CALL VVSETR('VFR - Vector fractional floor', 0.75)
-c$$$      call vvseti('cpm - compatibility mode', -4)
-c$$$      CALL GSPLCI(3)
-c$$$      CALL VELVCT (A(1,10),60,A(1,25),60,MA,NA,0.,0.,1,0,0,0.)
-c
+C
       CALL SET (0.05,0.95,0.05,0.95,-20.0,20.0,-20.0,20.0,1)
-      CALL STSETI('map -- mapping mode', 2)
-      CALL STSETI('set -- do set call', 0)
-      CALL STSETR('XC1 -- LOWER X BOUND', 1.0)
-      CALL STSETR('XCM -- UPPER X BOUND', 20.0)
-      CALL STSETR('YC1 -- LOWER Y BOUND', 0.0)
-      CALL STSETR('YCN -- UPPER Y BOUND', 360.0)
-c     CALL STSETI('TRT -- TRANSFORM TYPE', 1)
-      do 20 i = 1,M
-         do 10 j = 1,N
-            a(i,j)=1.0
-            b(i,j)=0.0
- 10      continue
- 20   continue
-c      call stsetr('ssp - stream spacing', 0.05)
-c      call stseti('ckp - check progress', 50)
-c      call stseti('ckx - check crossover', 3)
-      CALL STINIT(A,M,B,M,idm,idm,M,N,wrk,2*m*n)
+      CALL STSETI('MAP -- Mapping Mode', 2)
+      CALL STSETI('SET -- Do Set Call', 0)
+      CALL STSETR('XC1 -- Lower X Bound', 1.0)
+      CALL STSETR('XCM -- Upper X Bound', 20.0)
+      CALL STSETR('YC1 -- Lower Y Bound', 0.0)
+      CALL STSETR('YCN -- Upper Y Bound', 360.0)
+C     CALL STSETI('TRT -- Transform Type', 1)
+      DO 20 I = 1,M
+         DO 10 J = 1,N
+            A(I,J)=1.0
+            B(I,J)=0.0
+ 10      CONTINUE
+ 20   CONTINUE
+C
+      CALL STINIT(A,M,B,M,IDM,IDM,M,N,WRK,2*M*N)
       CALL GSPLCI(7)
-      CALL STREAM(A,B,WRK,idm,idm)
+      CALL STREAM(A,B,WRK,IDM,IDM)
       CALL GSPLCI(2)
-      do 120 i = 1,M
-         do 110 j = 1,N
-            a(i,j)=0.0
-            b(i,j)=-1.0
- 110     continue
- 120  continue
-      CALL STINIT(A,M,B,M,idm,idm,M,N,wrk,2*m*n)
-      CALL STREAM(A,B,WRK,idm,idm)
+      DO 120 I = 1,M
+         DO 110 J = 1,N
+            A(I,J)=0.0
+            B(I,J)=-1.0
+ 110     CONTINUE
+ 120  CONTINUE
+      CALL STINIT(A,M,B,M,IDM,IDM,M,N,WRK,2*M*N)
+      CALL STREAM(A,B,WRK,IDM,IDM)
       CALL FRAME
 C
 C     Deactivate and close workstation, close GKS.
