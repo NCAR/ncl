@@ -166,15 +166,22 @@ if(groot != NULL) {
 				step = step->next;
 				nres++;
 			}
-			_NclTranslate(vblk->objname,fp);
-			_NclTranslate(vblk->objtype,fp);
-			_NclPutInstr(CREATE_OBJ_OP,vblk->line,vblk->file);
+			if(vblk->objparent != NULL) {
+				off2 = _NclTranslate(vblk->objparent,fp);	
+				_NclPutInstr(CREATE_OBJ_WP_OP,vblk->line,vblk->file);
+			} else {
+				off2 = _NclPutInstr(CREATE_OBJ_OP,vblk->line,vblk->file);
+			}
+			if(off1 == -1) 
+				off1 = off2;
 			_NclPutInstr((NclValue)nres,vblk->line,vblk->file);
+			_NclPutInstr((NclValue)vblk->objname,vblk->line,vblk->file);
+			_NclPutInstr((NclValue)vblk->objtype,vblk->line,vblk->file);
 			break;
 		}
 		case Ncl_VISBLKSET:
 		{
-			NclVisblk *vblk = (NclVisblk*)root;
+			NclSGVisblk *vblk = (NclSGVisblk*)root;
 			int nres = 0;
 			step = vblk->resource_list;
 			if(step != NULL) {
@@ -187,14 +194,16 @@ if(groot != NULL) {
 				step = step->next;
 				nres++;
 			}
-			_NclTranslate(vblk->objname,fp);
+			off2 = _NclTranslate(vblk->objname,fp);
+			if(off1 == -1) 
+				off1 = off2;
 			_NclPutInstr(SET_OBJ_OP,vblk->line,vblk->file);
 			_NclPutInstr((NclValue)nres,vblk->line,vblk->file);
 			break;
 		}
 		case Ncl_VISBLKGET:
 		{
-			NclVisblk *vblk = (NclVisblk*)root;
+			NclSGVisblk *vblk = (NclSGVisblk*)root;
 			int nres = 0;
 			step = vblk->resource_list;
 			if(step != NULL) {
@@ -207,7 +216,9 @@ if(groot != NULL) {
 				step = step->next;
 				nres++;
 			}
-			_NclTranslate(vblk->objname,fp);
+			off2 = _NclTranslate(vblk->objname,fp);
+			if(off1 == -1) 
+				off1 = off2;
 			_NclPutInstr(GET_OBJ_OP,vblk->line,vblk->file);
 			_NclPutInstr((NclValue)nres,vblk->line,vblk->file);
 			break;

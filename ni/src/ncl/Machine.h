@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.h,v 1.8 1994-04-07 16:48:15 ethan Exp $
+ *      $Id: Machine.h,v 1.9 1994-04-18 17:10:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -257,6 +257,12 @@ FILE * /*fp*/
 extern NhlErrorTypes _NclPlaceReturn(
 #ifdef NhlNeedProto
 struct _NclStackEntry data
+#endif
+);
+
+extern void _NclCleanUpStack(
+#ifdef NhlNeedProto
+int /*n*/
 #endif
 );
 

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.6 1994-03-03 21:54:38 ethan Exp $
+ *      $Id: Symbol.h,v 1.7 1994-04-18 17:11:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -48,6 +48,7 @@ typedef struct _NclSymbol {
 		struct _NclProcFuncInfo		*procfunc;
 		struct _NclBuiltInProcInfo	*bproc;
 		struct _NclBuiltInFuncInfo	*bfunc;
+		struct _NhlLayerClassRec 	*obj_class_ptr;
 /*
 		struct _NclLiteral		*lit;
 */
@@ -172,6 +173,19 @@ void
 #endif
 );
 
+void _NclAddHLUObjs(
+#ifdef NhlNeedProto
+void
+#endif
+);
+
+NhlLayerClass _NclGetClassPtr(
+#ifdef  NhlNeedProto
+int /* class_q */
+#endif
+);
+
+
 void _NclRegisterFunc(
 #ifdef NhlNeedProto
 NclBuiltInFuncWrapper /* thefunctptr */,
@@ -189,6 +203,13 @@ NclArgTemplate *      /* args */,
 char *                /* fname */,
 int                   /* nargs */,
 int                   /* ftype */
+#endif
+);
+
+void _NclAddSingleObj(
+#ifdef NhlNeedProto
+char * /*name*/,
+struct _NhlLayerClassRec * /* the_ptr */
 #endif
 );
 

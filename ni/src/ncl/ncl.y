@@ -55,7 +55,7 @@ char *cur_load_file = NULL;
 %token <sym> UNDEF VAR WHILE DO QUIT PROC EPROC NPROC IPROC UNDEFFILEVAR BREAK
 %token <sym> BGIN END FUNC EFUNC NFUNC IFUNC FDIM IF THEN VBLKNAME FILEVAR CONTINUE
 %token <sym> DFILE KEYFUNC KEYPROC ELSE EXTERNAL RETURN VSBLKGET LOAD
-%token <sym> OBJNAME OBJTYPE RECORD VSBLKCREATE VSBLKSET LOCAL STOP
+%token <sym> OBJVAR OBJTYPE RECORD VSBLKCREATE VSBLKSET LOCAL STOP
 %token '='
 %token OR
 %token XOR
@@ -518,11 +518,17 @@ visblk :  vcreate	{
 				$$ = $1;
 			}
 ;
-vcreate : VSBLKCREATE identifier identifier resource_list END VSBLKCREATE	{   
-									$$ = _NclMakeVis($2,$3,$4,Ncl_VISBLKCREATE);
+vcreate : VSBLKCREATE UNDEF OBJTYPE identifier resource_list END VSBLKCREATE	{   
+									$$ = _NclMakeVis($2,$3,$4,$5,Ncl_VISBLKCREATE);
 								}
-	| VSBLKCREATE identifier identifier resource END VSBLKCREATE 		{   
-									$$ = _NclMakeVis($2,$3,$4,Ncl_VISBLKCREATE); 
+	| VSBLKCREATE UNDEF OBJTYPE identifier resource END VSBLKCREATE 		{   
+									$$ = _NclMakeVis($2,$3,$4,$5,Ncl_VISBLKCREATE); 
+								}
+	| VSBLKCREATE UNDEF OBJTYPE resource_list END VSBLKCREATE	{   
+									$$ = _NclMakeVis($2,$3,NULL,$4,Ncl_VISBLKCREATE);
+								}
+	| VSBLKCREATE UNDEF OBJTYPE resource END VSBLKCREATE 		{   
+									$$ = _NclMakeVis($2,$3,NULL,$4,Ncl_VISBLKCREATE); 
 								}
 	| VSBLKCREATE error 					{
 										$$ = NULL;
@@ -530,20 +536,20 @@ vcreate : VSBLKCREATE identifier identifier resource_list END VSBLKCREATE	{
 ;
 
 vset :  VSBLKSET identifier resource END VSBLKSET		{
-									$$ = _NclMakeVis($2,NULL,$3,Ncl_VISBLKSET); 
+									$$ = _NclMakeSGVis($2,$3,Ncl_VISBLKSET); 
 								}
 	| VSBLKSET identifier resource_list END VSBLKSET	{
-									$$ = _NclMakeVis($2,NULL,$3,Ncl_VISBLKSET);
+									$$ = _NclMakeSGVis($2,$3,Ncl_VISBLKSET);
 								}
 	| VSBLKSET error 					{
 										$$ = NULL;
 								}
 ;
 vget : VSBLKGET identifier get_resource END VSBLKGET		{
-									$$ = _NclMakeVis($2,NULL,$3,Ncl_VISBLKGET); 
+									$$ = _NclMakeSGVis($2,$3,Ncl_VISBLKGET); 
 								}
 	| VSBLKGET identifier get_resource_list END VSBLKGET  	{
-									$$ = _NclMakeVis($2,NULL,$3,Ncl_VISBLKGET);
+									$$ = _NclMakeSGVis($2,$3,Ncl_VISBLKGET);
 								}
 	| VSBLKGET error {
 										$$ = NULL;
@@ -1156,7 +1162,7 @@ identifier : vname {
 					}
 ;
 
-vname : OBJNAME		{
+vname : OBJVAR		{
 				$$ = $1;
 			}
 	| OBJTYPE	{

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.12 1994-04-07 16:48:07 ethan Exp $
+ *      $Id: Execute.c,v 1.13 1994-04-18 17:10:48 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -646,9 +646,6 @@ NclExecuteReturnStatus _NclExecute
 			case JMPFALSE :
 				ptr++;lptr++;fptr++;
 				break;
-			case CREATE_OBJ_OP :
-				ptr++;lptr++;fptr++;
-				break;
 			case SET_OBJ_OP :
 				ptr++;lptr++;fptr++;
 				break;
@@ -943,6 +940,7 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry data;
 				NclStackEntry *lhs_var = NULL;
 				NclMultiDValData rhs_md = NULL;
+				NclMultiDValData tmp_md = NULL;
 				NclSelectionRecord *sel_ptr = NULL;
 				int i,nsubs;	
 				NclSymbol *sym = NULL;
@@ -962,16 +960,7 @@ NclExecuteReturnStatus _NclExecute
 						status = NhlFATAL;
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Assign: %s is undefined, can not subscript an undefined variable",sym->name);
 						status = NhlFATAL;
-						for(i=0;i<nsubs;i++) {
-/*
-* code for building selection record
-*/
-							(void)_NclPop();
-						}
-/*
-* Pop off right hand side 
-*/
-						rhs = _NclPop();	
+						_NclCleanUpStack(nsubs+1);
 					} else {
 						rhs = _NclPop();	
 						if(rhs.kind == NclStk_VAL) {
@@ -982,7 +971,12 @@ NclExecuteReturnStatus _NclExecute
 * This is ok no ponters are lost since rhs_md was permanent which means that
 * some NclVar object has a reference to it
 */
+									tmp_md = rhs_md;	
 									rhs_md= _NclCopyVal(rhs_md,NULL);
+									if(tmp_md->obj.status != PERMANENT) {
+										_NclDestroyObj((NclObj)tmp_md);
+									}
+				
 								}
 								lhs_var->u.data_var= _NclVarCreate(NULL,NULL,Ncl_Var,0,sym,rhs_md,NULL,-1,NULL,NORMAL,sym->name);
 								if(lhs_var->u.data_var != NULL) {
@@ -1008,7 +1002,11 @@ NclExecuteReturnStatus _NclExecute
 * This is ok no ponters are lost since rhs_md was permanent which means that
 * some NclVar object has a reference to it
 */
+									tmp_md = rhs_md;
 									rhs_md= _NclCopyVal(rhs_md,NULL);
+									if(tmp_md->obj.status != PERMANENT) {
+										_NclDestroyObj((NclObj)tmp_md);
+									}
 								}
 								lhs_var->u.data_var= _NclVarCreate(NULL,NULL,Ncl_Var,0,sym,rhs_md,rhs.u.data_var->var.dim_info,rhs.u.data_var->var.att_id,rhs.u.data_var->var.coord_vars,NORMAL,sym->name);
 								if(lhs_var->u.data_var != NULL) {
@@ -1022,7 +1020,7 @@ NclExecuteReturnStatus _NclExecute
 							} else {
 								status = NhlFATAL;
 							} 
-							if(rhs.u.data_var->obj.status == TEMPORARY) {
+							if(rhs.u.data_var->obj.status != PERMANENT) {
 								_NclDestroyObj((NclObj)rhs.u.data_var);
 							}
 						} else {
@@ -1034,13 +1032,7 @@ NclExecuteReturnStatus _NclExecute
 					if((nsubs != lhs_var->u.data_var->var.n_dims)&&(nsubs != 0)) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts (%d) and number of dimensions (%d) do not match for variable (%s)",nsubs,lhs_var->u.data_var->var.n_dims,sym->name);
 						status = NhlFATAL;
-						for(i=0;i<nsubs;i++) {
-/*
-* Need to free this stuff
-*/
-							(void)_NclPop();
-						}
-						(void)_NclPop();	
+						_NclCleanUpStack(nsubs+1);
 					}
 					if(nsubs != 0) {
 						sel_ptr = (NclSelectionRecord*)NclMalloc (sizeof(NclSelectionRecord));
@@ -1095,7 +1087,7 @@ NclExecuteReturnStatus _NclExecute
 * to visit each element anyways
 */
 							status = _NclAssignVarToVar(rhs.u.data_var,sel_ptr,rhs.u.data_var,NULL);
-							if(rhs.u.data_var->obj.status == TEMPORARY) {
+							if(rhs.u.data_var->obj.status != PERMANENT) {
 								_NclDestroyObj((NclObj)rhs.u.data_var);
 							}
 						} else {
@@ -1109,12 +1101,7 @@ NclExecuteReturnStatus _NclExecute
 				}
 
 			} else {
-				for(i=0;i<nsubs;i++) {
-					data =_NclPop();
-/*
-* Need to free stuff here
-*/
-				}
+				_NclCleanUpStack(nsubs);
 			}
 			break;
 			}
@@ -1358,6 +1345,27 @@ NclExecuteReturnStatus _NclExecute
 /*****************************
 * Three Operand Instructions *
 *****************************/
+			case CREATE_OBJ_WP_OP : 
+			case CREATE_OBJ_OP : {
+				int nres;
+				NclSymbol *objname;
+				NclSymbol *objtype;
+				NclStackEntry parent;
+				int parent_id = -1;
+				if(*ptr == CREATE_OBJ_WP_OP) {
+				/*--->Code to retrieve parent<---*/
+					parent_id = -1;
+				}
+				ptr++;lptr++;fptr++;
+				nres = (int)*ptr;
+				ptr++;lptr++;fptr++;
+				objname =(NclSymbol*)*ptr ;
+				ptr++;lptr++;fptr++;
+				objtype =(NclSymbol*)*ptr ;
+
+				status = _NclCreateHLUObjOp(nres,objname,objtype,parent_id);
+			}
+			break;
 			case PARAM_VARATT_OP:
 			case VARATT_OP: {
 				NclSymbol *thesym = NULL;
@@ -1437,7 +1445,7 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry data;
 				NclSymbol* thesym = NULL;
 				char *coord_name = NULL;
-				int nsubs = 0,i;
+				int nsubs = 0;
 				NhlErrorTypes ret = NhlNOERROR;
 				NclSelectionRecord *sel_ptr = NULL;
 				NclMultiDValData thevalue = NULL;
@@ -1494,9 +1502,7 @@ NclExecuteReturnStatus _NclExecute
 
 					} else {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate variables have only one dimension, %d subscripts on left hand side of assignement",nsubs);
-						for(i = 0; i < nsubs; i++) {
-							(void)_NclPop();
-						}
+						_NclCleanUpStack(nsubs);
 						status = NhlFATAL;
 					}
 					if(status != NhlFATAL) {
@@ -1522,8 +1528,8 @@ NclExecuteReturnStatus _NclExecute
 						} else {
 							status = NhlFATAL;
 						}
-					} else {
-						(void)_NclPop();
+					} else {	
+						_NclCleanUpStack(1);
 					}
 				}
 			}
@@ -1535,7 +1541,7 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry data;
 				NclSymbol* thesym = NULL;
 				char *coord_name = NULL;
-				int nsubs = 0,i;
+				int nsubs = 0;
 				NclSelectionRecord *sel_ptr = NULL;
 				NhlErrorTypes ret = NhlNOERROR;
 				
@@ -1590,9 +1596,7 @@ NclExecuteReturnStatus _NclExecute
 							status = NhlFATAL;
 					} else {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate variables have only one dimension, %d subscripts used on coordinate variable reference",nsubs);
-						for(i = 0; i < nsubs; i++) {
-							(void)_NclPop();
-						}
+						_NclCleanUpStack(nsubs);
 						status = NhlFATAL;
 					}
 					if(status != NhlFATAL) {
@@ -1689,11 +1693,7 @@ NclExecuteReturnStatus _NclExecute
 							status = ret;
 						}
 					} else {
-/*
-* NOT GOOD!!!
-*/
-						(void)_NclPop();
-
+						_NclCleanUpStack(1);
 					}
 				} else {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable (%s) is undefined, can not assign attribute (%s)",thesym->name,attname);
@@ -1717,11 +1717,9 @@ NclExecuteReturnStatus _NclExecute
 			break;
 			case ASSIGN_VAR_VAR_OP: {
 				NhlErrorTypes ret = NhlNOERROR;
-				int dim_is_ref[NCL_MAX_DIMENSIONS];
 				int i;
 				int rhs_nsubs=0,lhs_nsubs=0;
 				NclStackEntry data;
-				NclStackEntry data1;
 				NclStackEntry *rhs_var,*lhs_var;
 				NclSymbol *rhs_sym,*lhs_sym;
 				NclSelectionRecord *lhs_sel_ptr = NULL;
@@ -1749,9 +1747,7 @@ NclExecuteReturnStatus _NclExecute
 					if(lhs_nsubs != 0) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Assign: %s is undefined, can not subscript an undefined variable",lhs_sym->name);
 						status = NhlFATAL;
-						for(i= 0; i< lhs_nsubs;i++) {
-							(void)_NclPop();
-						}
+						_NclCleanUpStack(lhs_nsubs);
 					} else if(rhs_nsubs != 0) {
 /*
 * This branch is where wholesale assigment of rhs to lhs occurs. including coords,atts and values

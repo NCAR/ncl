@@ -19,6 +19,7 @@ extern int yyparse();
 
 #define BUFF_SIZE 512
 
+
 main() {
 
 #ifdef YYDEBUG
@@ -37,6 +38,7 @@ main() {
 
 	thefptr = fopen("ncl.tree","w");
 	theoptr = fopen("ncl.seq","w");
+	NhlOpen();
 	_NclInitMachine();
 	_NclInitSymbol();	
 
@@ -46,6 +48,7 @@ main() {
 	fclose(thefptr);
 	fprintf(stdout,"Number of unfreed objects %d\n",_NclNumObjs());
 	_NclPrintUnfreedObjs(stdout);
+	NhlClose();
 	exit(0);
 }
 #ifdef __cplusplus

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.8 1994-04-07 16:48:30 ethan Exp $
+ *      $Id: SrcTree.h,v 1.9 1994-04-18 17:11:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -282,14 +282,25 @@ typedef struct ncl_block{
 	NclSrcListNode *stmnts;
 } NclBlock; 
 
-typedef struct ncl_visblk{
+typedef struct ncl_sgvisblk{
 	NclSrcTreeTypes kind;
 	char *name;
 	int  line;
 	char *file;
 	NclSrcTreeDestroyProc destroy_it;
 	void *objname;
-	void *objtype;
+	NclSrcListNode *resource_list;
+}NclSGVisblk;
+
+typedef struct ncl_visblk{
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclSymbol *objname;
+	NclSymbol *objtype;
+	void *objparent;
 	NclSrcListNode *resource_list;
 }NclVisblk;
 
@@ -297,8 +308,8 @@ typedef struct ncl_resource{
 	NclSrcTreeTypes kind;
 	char *name;
 	int  line;
-	NclSrcTreeDestroyProc destroy_it;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 /*
 	char *res_name;
 */
@@ -585,10 +596,18 @@ NclSrcListNode * /*block_stmnt_list2*/
 #endif
 );
 
-extern void *_NclMakeVis(
+extern void *_NclMakeSGVis(
 #ifdef NhlNeedProto
 void * /*objname*/,
-void */*objtype*/,
+NclSrcListNode *  /*objtype*/,
+NclSrcTreeTypes /*nodetype*/
+#endif
+);
+extern void *_NclMakeVis(
+#ifdef NhlNeedProto
+NclSymbol* /*objname*/,
+NclSymbol* /*objtype*/,
+void */*objparent*/,
 NclSrcListNode *  /*objtype*/,
 NclSrcTreeTypes /*nodetype*/
 #endif

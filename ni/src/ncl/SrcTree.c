@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.10 1994-04-07 16:48:26 ethan Exp $
+ *      $Id: SrcTree.c,v 1.11 1994-04-18 17:11:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,6 @@ extern "C" {
 #endif
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/NresDB.h>
 
 #include <data_objs/NclData.h>
@@ -460,11 +459,12 @@ extern void *_NclMakeObjRef
  */
 void *_NclMakeVis
 #if  __STDC__
-(void *objname,void *objtype,NclSrcListNode* resource_list,NclSrcTreeTypes nodetype)
+(NclSymbol *objname,NclSymbol *objtype,void *objparent,NclSrcListNode* resource_list,NclSrcTreeTypes nodetype)
 #else
-(objname,objtype,resource_list,nodetype)
-void * objname;
-void* objtype;
+(objname,objtype,objparent,resource_list,nodetype)
+NclSymbol* objname;
+NclSymbol* objtype;
+void * objparent;
 NclSrcListNode * resource_list;
 NclSrcTreeTypes nodetype;
 #endif
@@ -478,6 +478,7 @@ NclSrcTreeTypes nodetype;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
 
 	tmp->objname = objname;
+	tmp->objparent = objparent;
 	tmp->resource_list = resource_list;
 	tmp->objtype = objtype;
 	
@@ -485,6 +486,30 @@ NclSrcTreeTypes nodetype;
 	return((void*)tmp);
 }
 
+void *_NclMakeSGVis
+#if  __STDC__
+(void *objname,NclSrcListNode* resource_list,NclSrcTreeTypes nodetype)
+#else
+(objname,resource_list,nodetype)
+void * objname;
+NclSrcListNode * resource_list;
+NclSrcTreeTypes nodetype;
+#endif
+{
+	NclSGVisblk *tmp = (NclSGVisblk*)NclMalloc((unsigned)sizeof(NclSGVisblk));
+
+	tmp->kind = nodetype;
+	tmp->name = src_tree_names[nodetype];
+	tmp->line = cur_line_number;
+	tmp->file = cur_load_file;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+
+	tmp->objname = objname;
+	tmp->resource_list = resource_list;
+	
+	_NclRegisterNode((NclGenericNode*)tmp);
+	return((void*)tmp);
+}
 /*
  * Function:	_NclMakeNewListNode
  *
@@ -1842,8 +1867,8 @@ void _NclPrintSymbol
 	case THEN:
 		fprintf(fp,"%s\t","THEN");
 		break;
-	case OBJNAME:
-		fprintf(fp,"%s\t","OBJNAME");
+	case OBJVAR:
+		fprintf(fp,"%s\t","OBJVAR");
 		break;
 	case OBJTYPE:
 		fprintf(fp,"%s\t","OBJTYPE");
@@ -1990,18 +2015,35 @@ if(groot != NULL) {
 			break;
 */
 		case Ncl_VISBLKCREATE:
-		case Ncl_VISBLKSET:
-		case Ncl_VISBLKGET:
 		{
 			NclVisblk *vblk = (NclVisblk*)root;
 			
 			putspace(i,fp);
 			fprintf(fp,"%s\n",vblk->name);
 			i++;
-			_NclPrintTree(vblk->objname,fp);
-			if(vblk->kind ==Ncl_VISBLKCREATE) {
-				_NclPrintTree(vblk->objtype,fp);
+			putspace(i,fp);
+			_NclPrintSymbol(vblk->objname,fp);
+			_NclPrintSymbol(vblk->objtype,fp);
+			if(vblk->objparent != NULL) {
+				_NclPrintTree(vblk->objparent,fp);
 			}
+			step = vblk->resource_list;
+			while(step!= NULL) {
+				_NclPrintTree(step->node,fp);
+				step = step->next;
+			}
+			i--;
+		}
+		break;
+		case Ncl_VISBLKSET:
+		case Ncl_VISBLKGET:
+		{
+			NclSGVisblk *vblk = (NclSGVisblk*)root;
+			
+			putspace(i,fp);
+			fprintf(fp,"%s\n",vblk->name);
+			i++;
+			_NclPrintTree(vblk->objname,fp);
 			step = vblk->resource_list;
 			while(step!= NULL) {
 				_NclPrintTree(step->node,fp);

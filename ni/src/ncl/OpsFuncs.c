@@ -2,7 +2,7 @@
 extern "C" {
 #endif
 #include <stdio.h>
-#include <ncarg/hlu/hlu.h>
+#include <ncarg/hlu/hluP.h>
 #include <data_objs/NclMultiDValdoubleData.h>
 #include <data_objs/NclMultiDValfloatData.h>
 #include <data_objs/NclMultiDVallongData.h>
@@ -20,6 +20,32 @@ extern "C" {
 #include <data_objs/DataSupport.h>
 #include <y.tab.h>
 
+void _NclIClear
+#if  __STDC__
+(void)
+#else
+()
+#endif
+{
+}
+
+void _NclIUpdate
+#if  __STDC__
+(void)
+#else
+()
+#endif
+{
+}
+
+void _NclIDraw
+#if  __STDC__
+(void)
+#else
+()
+#endif
+{
+}
 
 void _NclIPrint
 #if  __STDC__
@@ -38,10 +64,10 @@ void _NclIPrint
 
 	switch(data.kind) {
 	case NclStk_VAL:
-		_NclMultiDValPrint(data.u.data_obj,fp);
+		_NclPrint((NclObj)data.u.data_obj,fp);
 		break;
 	case NclStk_VAR:
-		_NclVarPrint(data.u.data_var,fp);
+		_NclPrint((NclObj)data.u.data_var,fp);
 		break;
 	default:
 		break;
@@ -579,9 +605,6 @@ NhlErrorTypes _NclProcCallOp
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR;
-	NclStackEntry *data_ptr= NULL;
-	NclMultiDValData tmp_val = NULL;
-	NclObjTypes param_type;
 	NclExecuteReturnStatus eret;
 	NclStackEntry data;
 	void* previous_fp = NULL;
@@ -651,10 +674,7 @@ NhlErrorTypes _NclFuncCallOp
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR;
-	NclStackEntry *data_ptr= NULL;
 	NclStackEntry data;
-	NclMultiDValData tmp_val = NULL;
-	NclObjTypes param_type;
 	NclExecuteReturnStatus eret;
 	void *previous_fp= NULL;
 	
@@ -711,6 +731,67 @@ NhlErrorTypes _NclFuncCallOp
 */
 
 	return(ret);
+}
+
+NhlErrorTypes _NclCreateHLUObjOp
+#if __STDC__
+(int nres,NclSymbol *the_hlu_obj, NclSymbol *the_hlu_obj_class, int parent_id)
+#else
+(nres,the_hlu_obj, the_hlu_obj_class, parent_id)
+	int nres;
+	NclSymbol *the_hlu_obj;
+	NclSymbol *the_hlu_obj_class;
+	int parent_id;
+#endif
+{
+	int i,j;
+	NclStackEntry *data,*resname;
+	int rl_list;
+	NhlGenArray gen_array;
+	NclMultiDValData tmp_md = NULL;
+	int dim_lens[NCL_MAX_DIMENSIONS];
+	int tmp_id;
+
+
+	rl_list = NhlRLCreate(NhlSETRL);	
+	for(i = 0; i < nres; i++) {
+/*
+* Need to peek because I have to keep the stack values arround until after
+* the Create call
+*/
+		data = _NclPeek(2*i);
+		resname = _NclPeek(2*i+1);
+		if(((data->kind != NclStk_VAL)&&(data->kind != NclStk_VAR))||(resname->kind != NclStk_VAL)) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in resource list. type mismatch, resource names must be strings and \nresource values must be either file variables, variables or expression results.\n");
+
+			_NclCleanUpStack(2*nres);
+			return(NhlFATAL);
+		}
+		switch(data->kind) {
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data->u.data_obj;
+		break;
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data->u.data_var,NULL,NULL);
+		break;
+		}
+		gen_array = _NhlCreateGenArray(
+				(NhlPointer)tmp_md->multidval.val,
+				tmp_md->multidval.hlu_type_rep,
+				_NclSizeOf(tmp_md->multidval.data_type),
+				tmp_md->multidval.n_dims,
+				tmp_md->multidval.dim_sizes,
+				0);
+		NhlRLSet(rl_list,NrmQuarkToString(
+			*(int*)(((NclMultiDValData)resname->u.data_obj)->multidval.val)),
+			NhlTGenArray,
+			gen_array);
+	}
+
+	NhlCreate(&tmp_id,the_hlu_obj->name,the_hlu_obj_class->u.obj_class_ptr,(parent_id == -1? NhlNOPARENT:parent_id),rl_list);
+	(void)_NclChangeSymbolType(the_hlu_obj,OBJVAR);
+	_NclCleanUpStack(2*nres);
+	return(NhlNOERROR);
 }
 
 #ifdef __cplusplus

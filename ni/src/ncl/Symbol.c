@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.7 1994-03-03 23:38:06 ethan Exp $
+ *      $Id: Symbol.c,v 1.8 1994-04-18 17:11:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -107,6 +107,7 @@ int _NclInitSymbol
 	}
 	_NclAddIntrinsics();
 	_NclAddBuiltIns();
+	_NclAddHLUObjs();
 /*
 * After keywords are defined a new scope must be created. The Zero
 * level scope is just for keywords and does not need any memory on the
@@ -729,6 +730,22 @@ void _NclPrintSym
 		}
 		st = st->previous;
 	}
+}
+
+void _NclAddSingleObj
+#if __STDC__
+(char *name,struct _NhlLayerClassRec *the_ptr)
+#else
+(name,the_ptr)
+	char *name;
+	struct _NhlLayerClassRec *the_ptr;
+#endif
+{
+	NclSymbol *s;
+
+	s = _NclAddSym(name,OBJTYPE);
+	s->u.obj_class_ptr = the_ptr;
+	return;
 }
 #ifdef __cplusplus
 }

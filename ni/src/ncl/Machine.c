@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.12 1994-04-07 16:48:13 ethan Exp $
+ *      $Id: Machine.c,v 1.13 1994-04-18 17:10:53 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1070,7 +1070,6 @@ extern void _NclAddObjToParamList
 #endif 
 {
 	NclMultiDValData tmp_md;
-	NclMultiDValData tmp_var;
 	NclFrame *tmp_fp;
 /*
 * guarenteed to have next frame pointer in the flist stack.
@@ -1180,6 +1179,13 @@ void _NclRemapParameters
 * Try reverse coercion which in many cases will
 * just fail.
 */
+						tmp_var = _NclCoerceVar(data.u.data_var,param_rep_type,NULL);
+						if(tmp_var == NULL) { 
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclRemapParameters: Argument (%d) to function or procedure was coerced before calling and can not be coerced back, arguments value remains unchanged",i);
+						} else {
+							_NclDestroyObj((NclObj)data.u.data_var);
+							data.u.data_var = tmp_var;
+						}
 					} else {
 						if(!contains_vec) 
 							_NclAssignVarToVar(anst_var,the_list[i].rec,data.u.data_var,NULL);
@@ -1548,6 +1554,37 @@ NhlErrorTypes _NclPlaceReturn
 	return(NhlNOERROR);
 }
 
+void _NclCleanUpStack
+#if  __STDC__
+(int n)
+#else
+(n)
+	int n;
+#endif
+{
+	int i;
+	NclStackEntry data;
+	for( i = 0 ; i < n; i++) {
+		data = _NclPop();
+		switch(data.kind) {
+		case NclStk_VAL:
+			if((data.u.data_obj != NULL)&&(data.u.data_obj->obj.status != PERMANENT)) {
+				_NclDestroyObj((NclObj)data.u.data_obj);
+			}
+			break;
+		case NclStk_VAR:
+			if((data.u.data_var != NULL) &&( data.u.data_var->obj.status != PERMANENT)) {
+				_NclDestroyObj((NclObj)data.u.data_var);
+			}
+			break;
+		case NclStk_SUBREC:
+				_NclFreeSubRec(data.u.sub_rec);
+			break;
+		default:
+			break;
+		}
+	}
+}
 
 #ifdef __cplusplus
 }

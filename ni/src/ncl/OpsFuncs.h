@@ -1,6 +1,6 @@
 
 /*
- *      $Id: OpsFuncs.h,v 1.3 1994-04-07 16:48:21 ethan Exp $
+ *      $Id: OpsFuncs.h,v 1.4 1994-04-18 17:11:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -59,5 +59,13 @@ NclSymbol *  /* proc*/
 #endif
 );
 
+NhlErrorTypes _NclCreateHLUObjOp(
+#ifdef NhlNeedProto
+int /*nres*/,
+NclSymbol * /*the_hlu_obj*/,
+NclSymbol * /*the_hlu_obj_class*/,
+int /*the_hlu_obj_parent*/
+#endif
+);
 
 
