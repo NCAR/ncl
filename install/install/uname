@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: uname,v 1.19 2002-03-18 18:22:05 haley Exp $
+#      $Id: uname,v 1.20 2002-06-10 21:51:35 haley Exp $
 #
 #########################################################################
 #									#
@@ -60,7 +60,14 @@ set	version = ""		# version level (-v opt)
 # figure out what we are running on so we can deal with implementation
 # specific details. Thank god for standards.
 #
-set foo = `/bin/uname -s`
+
+if (-e /bin/uname) then
+  set Uname = "/bin/uname"
+else if (-e /usr/bin/uname) then
+  set Uname = "/usr/bin/uname"
+endif
+
+set foo = `$Uname -s`
 if ($status != 0) exit 1
 
 switch ("$foo")
@@ -84,7 +91,7 @@ case CYGWIN*:
 	breaksw
 
 default:
-	set foo = `/bin/uname -m`
+	set foo = `$Uname -m`
 	if ($status != 0) exit 1
 	switch ("$foo")
 	case	CRAY*:
@@ -109,7 +116,7 @@ while($#argv)
 	switch ("$argv[1]")
 
 	case	-m:
-		set machine_type = `/bin/uname -m`
+		set machine_type = `$Uname -m`
 		if ($status != 0) exit 1
 		breaksw
 
@@ -121,7 +128,7 @@ while($#argv)
 			breaksw
 		default:
 			
-			set node_name = `/bin/uname -n`
+			set node_name = `$Uname -n`
 			if ($status != 0) exit 1
 			breaksw
 		endsw
@@ -130,19 +137,19 @@ while($#argv)
 	case	-r:
 		switch ("$os")
 		case	AIX:
-			set foo = `/bin/uname -a`
+			set foo = `$Uname -a`
 			if ($status != 0) exit 1
 
 			set release = $foo[4].$foo[3]
 			breaksw
 		case UNIXSV:
-			set foo = `/bin/uname -a`
+			set foo = `$Uname -a`
 			if ($status != 0) exit 1
 			set release = $foo[1]
 			breaksw
 
 		default:
-			set release = `/bin/uname -r`
+			set release = `$Uname -r`
 			if ($status != 0) exit 1
 			breaksw
 		endsw
@@ -151,7 +158,7 @@ while($#argv)
 	case	-s:
 		switch ("$os")
 		case	SunOS:
-			set foo = `/bin/uname -r`
+			set foo = `$Uname -r`
 			if ($status != 0) exit 1
 
 			switch ("$foo")
@@ -181,13 +188,13 @@ while($#argv)
 		breaksw
 
 	case	-v:
-		set version = `/bin/uname -v`
+		set version = `$Uname -v`
 		if ($status != 0) exit 1
 		breaksw
 
 	case	-M:
 		
-		set mach = `/bin/uname -m`
+		set mach = `$Uname -m`
 		if ($status != 0) exit 1
 
 		switch ("$os")

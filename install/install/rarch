@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: rarch,v 1.13 2002-03-18 04:04:57 haley Exp $
+#      $Id: rarch,v 1.14 2002-06-10 21:51:34 haley Exp $
 #
 #########################################################################
 #									#
@@ -58,9 +58,14 @@ if (! $?rhost) then
 	exit 1
 endif
 		
-
+if (-e /bin/uname) then
+  set Uname = "/bin/uname"
+else if (-e /usr/bin/uname) then
+  set Uname = "/usr/bin/uname"
+endif
+  
 #set a = `$RSH $host $ruser /bin/uname -a`
-set a = `$LOCALDIR/rshe $RSH $ruser $rhost /bin/uname -a`
+set a = `$LOCALDIR/rshe $RSH $ruser $rhost $Uname -a`
 if ($status != 0) then
 	exit 1
 endif

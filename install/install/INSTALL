@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: INSTALL,v 1.18 2002-02-01 16:11:33 haley Exp $
+#      $Id: INSTALL,v 1.19 2002-06-10 21:51:34 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -149,6 +149,72 @@ EOF
         echo "Invalid option <$answer>"
         $LOCALDIR/pause
         goto sgimenu
+    endsw
+endif
+
+if ("$SYSTEM_TO_INSTALL" == "AIX_RS6000") then
+ibmmenu:
+    clear
+cat <<EOF
+
+
+                 NCAR Graphics Unix Version $VERSION
+                     Copyright (C) 1987-2002
+          University Corporation for Atmospheric Research
+     The use of this Software is governed by a License Agreement.
+
+
+      I see you are either running on an IBM RS6000 system
+      or have selected to install binaries for an IBM RS6000.
+  
+      On some IBM systems, two options are supported for building
+      libraries and binaries: '-q32' and '-q64'.
+
+      Please select which set of SGI binaries you want to install:
+
+        1.  'q32' binaries
+        2.  'q64' binaries
+        3.   Help
+
+        0.  Exit
+
+EOF
+    echo -n "    Select: "
+    set answer =  $<
+    switch ("$answer")
+
+    case "1":
+      setenv SYSTEM_TO_INSTALL AIX_32_RS6000
+      breaksw
+
+    case "2":
+      setenv SYSTEM_TO_INSTALL AIX_64_RS6000
+      breaksw
+
+    case "3":
+
+        clear
+        cat <<EOF
+
+    If you have an older IBM system, then you should go with the "-q32"
+    option.
+
+    If you have a newer IBM and are not sure which option to choose, 
+    then either check with your system administrator, or see the IBM
+    man page for "cc".
+EOF
+        $LOCALDIR/pause
+        goto ibmmenu
+        breaksw
+
+    case "0":
+        exit 0
+        breaksw
+
+    default
+        echo "Invalid option <$answer>"
+        $LOCALDIR/pause
+        goto ibmmenu
     endsw
 endif
 
