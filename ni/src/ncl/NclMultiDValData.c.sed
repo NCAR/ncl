@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.10 1995-04-05 22:17:17 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.11 1995-05-09 20:57:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -923,7 +923,7 @@ NclSelectionRecord *from_selection;
 * mapping from the value object into target. 
 */
 
-	int i,k;
+	int i,j,k;
 	long from,to;
 	NclSelection *to_sel_ptr = NULL;
 	void *to_val;
@@ -1180,13 +1180,36 @@ NclSelectionRecord *from_selection;
 		total_elements_value =total_elements_value * n_elem_value;
 		from_sel_ptr++;
 	}
+	for( i = 0; i < n_dims_value; i++) {
+		if(from_output_dim_sizes[i] == 1) {
+			n_dims_value--;
+			for(j = i; j  < n_dims_value; j++) {
+				from_output_dim_sizes[i] = from_output_dim_sizes[i+1];
+			}
+		}
+	}
+	if(n_dims_value == 0) {
+		n_dims_value = 1;
+	}
+	for( i = 0; i < n_dims_target; i++) {
+		if(to_output_dim_sizes[i] == 1) {
+			n_dims_target--;
+			for(j = i; j  < n_dims_target; j++) {
+				to_output_dim_sizes[i] = to_output_dim_sizes[i+1];
+			}
+		}
+	}
+	if(n_dims_target == 0) {
+		n_dims_target = 1;
+	}
+	
 	if(n_dims_target != n_dims_value) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Right hand side of assignment has (%d) dimensions and left hand side has (%d), dimension mismatch",n_dims_value,n_dims_target);
 		return(NhlFATAL);
 	}
 	for(i = 0; i< n_dims_target; i++) {
 		if(from_output_dim_sizes[i] != to_output_dim_sizes[i]) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension size mismatch, dimension (%d) of left hand side does not have the same size as the right hand side.",i);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension size mismatch, dimension (%d) of left hand side reference does not have the same size as the right hand side reference after subscripting.",i);
 			return(NhlFATAL);
 		}
 	}
