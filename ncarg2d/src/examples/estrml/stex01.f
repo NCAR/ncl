@@ -1,9 +1,11 @@
 C
-C	$Id: stex01.f,v 1.4 1993-02-26 23:49:57 dbrown Exp $
+C	$Id: stex01.f,v 1.5 1993-04-09 23:46:08 dbrown Exp $
 C
       PROGRAM STEX01
 C
-      PARAMETER ( M=20 , N=36 , NPR=155)
+C Example illustrating polar coordinates using Streamlines
+C
+      PARAMETER (M=20, N=36)
       DIMENSION A(M,N),B(M,N)
       DIMENSION WRK(2*M*N)
 C
@@ -13,6 +15,12 @@ C
       CALL GOPWK (1, 2, 1)
       CALL GACWK (1)
 C
+C Define a GKS color table
+C
+      CALL DFCLRS
+C
+C Do the SET call, set the mapping mode and data coordinate boundaries
+C appropriately for polar coordinate mapping
 C
       CALL SET (0.05,0.95,0.05,0.95,-20.0,20.0,-20.0,20.0,1)
       CALL STSETI('MAP -- Mapping Mode', 2)
@@ -22,6 +30,9 @@ C
       CALL STSETR('YC1 -- Lower Y Bound', 0.0)
       CALL STSETR('YCN -- Upper Y Bound', 360.0)
 C     CALL STSETI('TRT -- Transform Type', 1)
+C
+C Set up a uniform field parallel to the radius
+C
       DO 20 I = 1,M
          DO 10 J = 1,N
             A(I,J)=1.0
@@ -29,16 +40,24 @@ C     CALL STSETI('TRT -- Transform Type', 1)
  10      CONTINUE
  20   CONTINUE
 C
+C Render the field using one color
+C
+      CALL GSPLCI(4)
       CALL STINIT(A,M,B,M,IDM,IDM,M,N,WRK,2*M*N)
-      CALL GSPLCI(7)
       CALL STREAM(A,B,IDM,IDM,IDM,WRK)
-      CALL GSPLCI(2)
+C
+C Set up a uniform field perpendicular to the radius
+C
       DO 120 I = 1,M
          DO 110 J = 1,N
             A(I,J)=0.0
             B(I,J)=-1.0
  110     CONTINUE
  120  CONTINUE
+C
+C Change the color and render the next field
+C
+      CALL GSPLCI(15)
       CALL STINIT(A,M,B,M,IDM,IDM,M,N,WRK,2*M*N)
       CALL STREAM(A,B,IDM,IDM,IDM,WRK)
       CALL FRAME
@@ -48,5 +67,50 @@ C
       CALL GDAWK (1)
       CALL GCLWK (1)
       CALL GCLKS
+C
       STOP
       END
+C
+C ==============================================================
+C
+      SUBROUTINE DFCLRS
+C
+C Define a set of RGB color triples for colors 0 through 15.
+C
+      PARAMETER (NCLRS=16)
+      DIMENSION RGBV(3,NCLRS)
+C
+C Define the RGB color triples needed below.
+C
+      DATA RGBV / 
+     +     0.00 , 0.00 , 0.00 ,
+     +     1.00 , 1.00 , 1.00 ,
+     +     0.70 , 0.70 , 0.70 ,
+     +     0.75 , 0.50 , 1.00 ,
+     +     1.00 , 0.00 , 1.00 ,
+     +     0.00 , 0.00 , 1.00 ,
+     +     0.00 , 0.50 , 1.00 ,
+     +     0.00 , 1.00 , 1.00 ,
+     +     0.00 , 1.00 , 0.60 ,
+     +     0.00 , 1.00 , 0.00 ,
+     +     0.70 , 1.00 , 0.00 ,
+     +     1.00 , 1.00 , 0.00 ,
+     +     1.00 , 0.75 , 0.00 ,
+     +     1.00 , 0.38 , 0.38 ,
+     +     1.00 , 0.00 , 0.38 ,
+     +     1.00 , 0.00 , 0.00 /
+C
+C Define 16 different color indices, for indices 0 through 15.  The
+C color corresponding to index 0 is black and the color corresponding
+C to index 1 is white.
+C
+      DO 101 I=1,NCLRS
+         CALL GSCR (1,I-1,RGBV(1,I),RGBV(2,I),RGBV(3,I))
+ 101  CONTINUE
+C
+C Done.
+C
+        RETURN
+C
+      END
+C
