@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: install_soft,v 1.8 1995-08-22 21:17:36 haley Exp $
+#      $Id: install_soft,v 1.9 1995-10-05 20:55:15 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -20,7 +20,7 @@
 #
 #   Description:    Configure the installation and install software
 #
-#   Usage:      install_soft -doc
+#   Usage:      install_soft
 #
 #   Environment:    LOCALDIR        path to install system
 #           SYSTEM (exported)   The system type
@@ -32,7 +32,6 @@
 #           INSTALL_SOURCE (exported)   installation source
 #           INSTALL_TYPE (exported)     installation type
 #           INSTALL_FILE_DEV (exported) installation file device
-#           INSTALL_DOCFILE_DEV (exported) installation doc file device
 #           INSTALL_CD_DEV (exported)   installation cd device
 #           INSTALL_TAPE_DEV (exported) installation tape device
 #
@@ -40,27 +39,11 @@
 #           $LOCALDIR/config/env.$system    system specific config
 #
 #
-#   Options:    -doc      : Install documentation
+#   Options:
 #
 #
 
 onintr cleanup
-
-set do_doc = 0
-
-if ($#argv > 1) then
-	echo "Usage: install_soft [-doc]" > /dev/tty
-	exit 1
-endif
-
-if ($#argv == 1) then
-  if ("$argv[1]" == "-doc") then
-    set do_doc = 1
-  else
-	echo "Usage: install_soft [-doc]" > /dev/tty
-	exit 1
-  endif
-endif
 
 source $LOCALDIR/env.cf
 if (-e "$LOCALDIR/config/env.$SYSTEM") then
@@ -68,41 +51,35 @@ if (-e "$LOCALDIR/config/env.$SYSTEM") then
 endif
 
 #
-#	don't know install paths yet
+#   don't know install paths yet
 #
 set bin_path = 
 set inc_path = 
 set lib_path = 
 set man_path = 
-set htmldoc_path =
-set psdoc_path =
 
 
 while (1) 
-	switch ("$INSTALL_SOURCE")
+    switch ("$INSTALL_SOURCE")
 
-	case	"tape":
-		set device = $INSTALL_TAPE_DEV
-		breaksw
+    case    "tape":
+        set device = $INSTALL_TAPE_DEV
+        breaksw
 
-	case	"cdrom":
-		set device = $INSTALL_CD_DEV
-		breaksw
+    case    "cdrom":
+        set device = $INSTALL_CD_DEV
+        breaksw
 
-	case	"tar-file":
-        if ($do_doc) then
-			set device = $INSTALL_DOCFILE_DEV
-		else
-			set device = $INSTALL_FILE_DEV
-		endif
-		breaksw
+    case    "tar-file":
+        set device = $INSTALL_FILE_DEV
+        breaksw
 
-	default:
-		echo "$0 : Unknown install source <$INSTALL_SOURCE>" > /dev/tty
-		exit 1
-	endsw
+    default:
+        echo "$0 : Unknown install source <$INSTALL_SOURCE>" > /dev/tty
+        exit 1
+    endsw
 
-	clear
+    clear
 cat <<EOF
 
 
@@ -114,204 +91,173 @@ cat <<EOF
 
 
 
-	1.  Select distribution medium		[ install from $INSTALL_SOURCE ]
-        2.  Select source device		[ device: $device ]
-	3.  Select installation type		[ $INSTALL_TYPE ]
-	4.  Show installation configuration
+    1.  Select distribution medium      [ install from $INSTALL_SOURCE ]
+        2.  Select source device        [ device: $device ]
+    3.  Select installation type        [ $INSTALL_TYPE ]
+    4.  Show installation configuration
         5.  Perform installation
         6.  Help
 
-	0.  Return to previous menu
+    0.  Return to previous menu
 
 EOF
 
-	echo -n "    Select: " > /dev/tty
-	set answer =  $<
-	switch ($answer)
-	case "1":
-		set source = `$LOCALDIR/select_src`
-		if ($status == 0) then
-			setenv INSTALL_SOURCE $source
-		endif
-		breaksw
-
-	case "2":
-		switch ($INSTALL_SOURCE)
-
-		case	"tape":
-			set device = `$LOCALDIR/select_dev -t $INSTALL_TAPE_DEV`
-			if ($status == 0) then
-				setenv INSTALL_TAPE_DEV $device
-			else
-				$LOCALDIR/pause
-			endif
-			breaksw
-
-		case	"cdrom":
-			set device = `$LOCALDIR/select_dev -c $INSTALL_CD_DEV`
-			if ($status == 0) then
-				setenv INSTALL_CD_DEV $device
-			else
-				$LOCALDIR/pause
-			endif
-			breaksw
-
-		case	"tar-file":
-			if ($do_doc) then
-				set device = `$LOCALDIR/select_dev -f $INSTALL_DOCFILE_DEV`
-			else
-				set device = `$LOCALDIR/select_dev -f $INSTALL_FILE_DEV`
-			endif
-			if ($status == 0) then
-				if ($do_doc) then
-					setenv INSTALL_DOCFILE_DEV $device
-				else
-					setenv INSTALL_FILE_DEV $device
-				endif
-			else
-				$LOCALDIR/pause
-			endif
-			breaksw
-		breaksw
-
-		default:
-			echo "$0 : Unknown install source <$INSTALL_SOURCE>" > /dev/tty
-			exit 1
-		endsw
-
-		breaksw
-
-	case "3":
-        if ("$do_doc") then
-		  set config_line = `$LOCALDIR/select_config -doc`
-        else
-		  set config_line = `$LOCALDIR/select_config`
+    echo -n "    Select: " > /dev/tty
+    set answer =  $<
+    switch ($answer)
+    case "1":
+        set source = `$LOCALDIR/select_src`
+        if ($status == 0) then
+            setenv INSTALL_SOURCE $source
         endif
-		if ($status == 0) then
-			if ("$config_line" != "") then
-              if ("$do_doc") then
-				setenv INSTALL_TYPE $config_line[1]
-				set htmldoc_path = $config_line[2]
-				set psdoc_path = $config_line[3]
-              else
-				setenv INSTALL_TYPE $config_line[1]
-				set bin_path = $config_line[2]
-				set inc_path = $config_line[3]
-				set lib_path = $config_line[4]
-				set man_path = $config_line[5]
-			  endif
-			endif
-		else 
-			$LOCALDIR/pause
-		endif
-		breaksw
+        breaksw
 
-	case "4":
-		clear > /dev/tty
-		echo "" > /dev/tty
-		echo "" > /dev/tty
-		echo "" > /dev/tty
-		echo "	Current Installation Configuration" > /dev/tty
-		echo "" > /dev/tty
-		echo "" > /dev/tty
-		echo "" > /dev/tty
-		echo "	Installation source:	$INSTALL_SOURCE" > /dev/tty
-		echo "	Source device:		$device" > /dev/tty
-		echo "	Installation type:	$INSTALL_TYPE" > /dev/tty
-		echo "" > /dev/tty
+    case "2":
+        switch ($INSTALL_SOURCE)
 
-        if ("$do_doc") then
-		  if ("$htmldoc_path" != "/dev/null") then
-			echo "		Install HTML documentation to:	$htmldoc_path" > /dev/tty
-		  endif
-  		  if ("$psdoc_path" != "/dev/null") then
-			echo "		Install PostScript documentation to:	$psdoc_path" > /dev/tty
-		  endif
-        else
-    	  if ("$bin_path" != "/dev/null") then
-			echo "		Install executables to:		$bin_path" > /dev/tty
-		  endif
-		  if ("$inc_path" != "/dev/null") then
-			echo "		Install C include files to:	$inc_path" > /dev/tty
-		  endif
-		  if ("$lib_path" != "/dev/null") then
-			echo "		Install libraries to:		$lib_path" > /dev/tty
-		  endif
-		  if ("$man_path" != "/dev/null") then
-			echo "		Install man pages to:		$man_path" > /dev/tty
-		  endif
+        case    "tape":
+            set device = `$LOCALDIR/select_dev -t $INSTALL_TAPE_DEV`
+            if ($status == 0) then
+                setenv INSTALL_TAPE_DEV $device
+            else
+                $LOCALDIR/pause
+            endif
+            breaksw
+
+        case    "cdrom":
+            set device = `$LOCALDIR/select_dev -c $INSTALL_CD_DEV`
+            if ($status == 0) then
+                setenv INSTALL_CD_DEV $device
+            else
+                $LOCALDIR/pause
+            endif
+            breaksw
+
+        case    "tar-file":
+            set device = `$LOCALDIR/select_dev -f $INSTALL_FILE_DEV`
+            if ($status == 0) then
+                setenv INSTALL_FILE_DEV $device
+            else
+                $LOCALDIR/pause
+            endif
+            breaksw
+        breaksw
+
+        default:
+            echo "$0 : Unknown install source <$INSTALL_SOURCE>" > /dev/tty
+            exit 1
+        endsw
+
+        breaksw
+
+    case "3":
+        set config_line = `$LOCALDIR/select_config`
+        if ($status == 0) then
+            if ("$config_line" != "") then
+                setenv INSTALL_TYPE $config_line[1]
+                set bin_path = $config_line[2]
+                set inc_path = $config_line[3]
+                set lib_path = $config_line[4]
+                set man_path = $config_line[5]
+            endif
+        else 
+            $LOCALDIR/pause
         endif
-		
-		$LOCALDIR/pause
-		breaksw
+        breaksw
+
+    case "4":
+        clear > /dev/tty
+        echo "" > /dev/tty
+        echo "" > /dev/tty
+        echo "" > /dev/tty
+        echo "  Current Installation Configuration" > /dev/tty
+        echo "" > /dev/tty
+        echo "" > /dev/tty
+        echo "" > /dev/tty
+        echo "  Installation source:    $INSTALL_SOURCE" > /dev/tty
+        echo "  Source device:      $device" > /dev/tty
+        echo "  Installation type:  $INSTALL_TYPE" > /dev/tty
+        echo "" > /dev/tty
+
+        if ("$bin_path" != "/dev/null") then
+            echo "      Install executables to:     $bin_path" > /dev/tty
+        endif
+        if ("$inc_path" != "/dev/null") then
+            echo "      Install C include files to: $inc_path" > /dev/tty
+        endif
+        if ("$lib_path" != "/dev/null") then
+            echo "      Install libraries to:       $lib_path" > /dev/tty
+        endif
+        if ("$man_path" != "/dev/null") then
+            echo "      Install man pages to:       $man_path" > /dev/tty
+        endif
+        
+        $LOCALDIR/pause
+        breaksw
 
 
-	case "5":
-		if ("$INSTALL_TYPE" == "?") then 
-			clear > /dev/tty
-			cat <<EOF  > /dev/tty
+    case "5":
+        if ("$INSTALL_TYPE" == "?") then 
+            clear > /dev/tty
+            cat <<EOF  > /dev/tty
 
 
 
-	Installation type not selected. Please select an installation type.
+    Installation type not selected. Please select an installation type.
 EOF
-			$LOCALDIR/pause
-			breaksw
-		endif
-
-        if ("$do_doc") then
-  		  $LOCALDIR/perf_doc_install $htmldoc_path $psdoc_path
-        else
-   		  $LOCALDIR/perf_install $bin_path $inc_path $lib_path $man_path
+            $LOCALDIR/pause
+            breaksw
         endif
-		if ($status != 0) then
-			$LOCALDIR/pause
-		endif
-		breaksw
+
+        $LOCALDIR/perf_install $bin_path $inc_path $lib_path $man_path
+        if ($status != 0) then
+            $LOCALDIR/pause
+        endif
+        breaksw
 
 
-	case "6":
-		clear > /dev/tty
-		cat <<EOF | $PAGER > /dev/tty
+    case "6":
+        clear > /dev/tty
+        cat <<EOF | $PAGER > /dev/tty
 
 
-	This is the NCAR Graphics installation menu. Use this menu
-	to customize your installation configuration and to install
-	your software. 
+    This is the NCAR Graphics installation menu. Use this menu
+    to customize your installation configuration and to install
+    your software. 
 
-	Configuring Your Installation
+    Configuring Your Installation
 
-	Before you can install NCAR Graphics you need to inform the 
-	installation system of the type and location of your distribution
-	media. Menu items "1" and "2" perform this service. You also need
-	to decide which components of NCAR Graphics you are installing 
-	and where in your file system these components will be 
-	installed (menu item "3"). If you only want to install NCAR 
-	Graphics man pages, for example, the installation system allows 
-	you to do so.
+    Before you can install NCAR Graphics you need to inform the 
+    installation system of the type and location of your distribution
+    media. Menu items "1" and "2" perform this service. You also need
+    to decide which components of NCAR Graphics you are installing 
+    and where in your file system these components will be 
+    installed (menu item "3"). If you only want to install NCAR 
+    Graphics man pages, for example, the installation system allows 
+    you to do so.
 
-	You may examine your current installation configuration at any time
-	by selecting menu item "4".
+    You may examine your current installation configuration at any time
+    by selecting menu item "4".
 
-	Starting the Installation
+    Starting the Installation
 
-	When you are satisfied with the configuration of your installation
-	you may begin the installation process by selecting menu item "5".
+    When you are satisfied with the configuration of your installation
+    you may begin the installation process by selecting menu item "5".
 EOF
-		$LOCALDIR/pause
-		breaksw
+        $LOCALDIR/pause
+        breaksw
 
-	case "0":
-		exit 0
-		breaksw
+    case "0":
+        exit 0
+        breaksw
 
-	case ""
-		breaksw
+    case ""
+        breaksw
 
-	default
-		echo "Invalid option <$answer>" > /dev/tty
-		$LOCALDIR/pause
-	endsw
+    default
+        echo "Invalid option <$answer>" > /dev/tty
+        $LOCALDIR/pause
+    endsw
 end
 
 
