@@ -1,5 +1,5 @@
 C
-C	$Id: pcgtdi.f,v 1.1.1.1 1992-04-17 22:32:21 ncargd Exp $
+C       $Id: pcgtdi.f,v 1.2 1992-11-11 00:57:24 kennison Exp $
 C
 C
 C ---------------------------------------------------------------------
@@ -54,15 +54,15 @@ C
         ELSE IF (IDPC(ICHAR(CHRS(ICHR:ICHR))).LT.27.OR.
      +           IDPC(ICHAR(CHRS(ICHR:ICHR))).GT.36) THEN
           ISGN=0
-        ENDIF
-      ENDIF
+        END IF
+      END IF
 C
 C If we haven't found any character implying that no decimal integer
 C starts at character index ICHR, find the numeric value.
 C
       IF (ISGN.NE.0) THEN
         CALL PCGTPI (CHRS,NCHR,ICHR,10,NUMV)
-      ENDIF
+      END IF
 C
 C Tack on the proper sign.
 C

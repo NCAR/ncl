@@ -1,5 +1,5 @@
 C
-C	$Id: plchlq.f,v 1.1.1.1 1992-04-17 22:32:18 ncargd Exp $
+C       $Id: plchlq.f,v 1.2 1992-11-11 00:57:31 kennison Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -92,7 +92,7 @@ C
         CALL GSCHUP (-1.,1./TAN(.017453292519943*ANGM))
       ELSE
         CALL GSCHUP (1.,-1./TAN(.017453292519943*ANGM))
-      ENDIF
+      END IF
 C
 C Define the text alignment.
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: pcgtpi.f,v 1.1.1.1 1992-04-17 22:32:21 ncargd Exp $
+C       $Id: pcgtpi.f,v 1.2 1992-11-11 00:57:26 kennison Exp $
 C
 C
 C ---------------------------------------------------------------------
@@ -54,7 +54,7 @@ C
           ICHR=ICHR+1
         ELSE
           RETURN
-        ENDIF
+        END IF
  101  CONTINUE
 C
 C Done.

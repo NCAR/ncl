@@ -1,5 +1,5 @@
 C
-C	$Id: pccffc.f,v 1.2 1992-10-13 18:45:18 haley Exp $
+C       $Id: pccffc.f,v 1.3 1992-11-11 00:57:19 kennison Exp $
 C
 C
 C ---------------------------------------------------------------------
@@ -133,9 +133,9 @@ C
             ELSE IF (FNTTYP.EQ.0.OR.FNTTYP.EQ.2) THEN
               XLFT(INDX)=0.
               XRGT(INDX)=REAL(CHRWDT)
-            ENDIF
+            END IF
             XCNT(INDX)=999999.
-          ENDIF
+          END IF
   102   CONTINUE
 C
 C Set a fudge factor which will make fonts 1-20 work better with the
