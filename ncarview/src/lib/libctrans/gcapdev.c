@@ -1,3 +1,6 @@
+/*
+ *	$Id: gcapdev.c,v 1.2 1991-03-12 18:46:02 clyne Exp $
+ */
 #include <stdio.h>
 #include "graphcap.h"
 #include "cgmc.h"
@@ -55,7 +58,7 @@ boolean polysim;	/* True if to simulate polygons with lines */
 		for(i=1;i<*coord_buf_num;i++)
 			(void) ComLineSim(coord_buf[i-1].x,coord_buf[i-1].y,
 				  coord_buf[i].x,coord_buf[i].y);
-
+		return;
 	}
 
 	/*
