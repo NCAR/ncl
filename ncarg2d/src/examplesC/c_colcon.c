@@ -302,7 +302,7 @@ float fran()
     return(rseq[iseq-1]);
 }
 
-void color ()
+void color (n)
 int n;
 {
 /*
