@@ -160,10 +160,10 @@ NhlErrorTypes dtrend_W( void )
  * Copy output back out as float or double.
  */
       coerce_output_float_or_double(dtrend_y,tmp_y,type_dtrend_y,npts,
-				    index_y);
+                                    index_y);
       if(*return_slope) {
-	coerce_output_float_or_double(yintp,&c[0],type_dtrend_y,1,i);
-	coerce_output_float_or_double(slope,&c[1],type_dtrend_y,1,i);
+        coerce_output_float_or_double(yintp,&c[0],type_dtrend_y,1,i);
+        coerce_output_float_or_double(slope,&c[1],type_dtrend_y,1,i);
       }
     }
     index_y += npts;
@@ -369,24 +369,168 @@ NhlErrorTypes dtrend_W( void )
  * No slope/y-intercept is being returned, so we don't need to do all
  * that attribute stuff.
  */
-    if(type_dtrend_y == NCL_float) {
-      if(has_missing_y) {
+    if(has_missing_y) {
+      if(type_dtrend_y == NCL_float) {
         return(NclReturnValue(dtrend_y,ndims_y,dsizes_y,&missing_ry,
-                              NCL_float,0));
+                              type_dtrend_y,0));
       }
       else {
-        return(NclReturnValue(dtrend_y,ndims_y,dsizes_y,NULL,NCL_float,0));
+        return(NclReturnValue(dtrend_y,ndims_y,dsizes_y,&missing_dy,
+                              type_dtrend_y,0));
       }
     }
     else {
-      if(has_missing_y) {
-        return(NclReturnValue(dtrend_y,ndims_y,dsizes_y,&missing_dy,
-                              NCL_double,0));
-      }
-      else {
-        return(NclReturnValue(dtrend_y,ndims_y,dsizes_y,NULL,NCL_double,0));
-      }
+      return(NclReturnValue(dtrend_y,ndims_y,dsizes_y,NULL,type_dtrend_y,0));
     }
+  }
+}
+
+
+NhlErrorTypes dtrend_quadratic_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *y;
+  double *tmp_y;
+  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y, found_missing;
+  NclScalar missing_y, missing_dy, missing_ry;
+  int *option;
+  NclBasicDataTypes type_y, type_dtrend_y;
+/*
+ * Output array variables
+ */
+  void *dtrend_y;
+  double xmean, yvari, yvaro;
+/*
+ * Declare various variables for random purposes.
+ * Setting iopt to 2 removes the quadratic trend.
+ */
+  int i, j, index_y, npts, size_leftmost, size_y, ier, iopt = 2;
+  double c[3];
+/*
+ * Retrieve arguments.
+ */
+  y = (void*)NclGetArgValue(
+          0,
+          2,
+          &ndims_y,
+          dsizes_y,
+          &missing_y,
+          &has_missing_y,
+          &type_y,
+          2);
+
+  option = (int*)NclGetArgValue(
+          1,
+          2,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          2);
+/*
+ * "option" is not used yet, so we'll just set it to zero.
+ */
+  *option = 0;
+
+/*
+ * Check input sizes.
+ */
+  npts = dsizes_y[ndims_y-1];
+  if( npts < 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_quadratic: The last dimension of x must be greater than 2");
+    return(NhlFATAL);
+  }
+  
+/*
+ * Compute the total size of the output array.
+ */
+  size_leftmost = 1;
+  for( i = 0; i < ndims_y-1; i++ ) size_leftmost *= dsizes_y[i];
+  size_y = size_leftmost * npts;
+
+/*
+ * Check for missing values.
+ */
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,&missing_ry);
+/*
+ * Coerce data to double no matter what, since input array also becomes
+ * output array. 
+ */
+  tmp_y = (double*)calloc(npts,sizeof(double));
+  if( tmp_y == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_quadratic: Unable to allocate memory for coercing y array to double precision");
+    return(NhlFATAL);
+  }
+/*
+ * Allocate space for output array
+ */
+  if(type_y != NCL_double) {
+    type_dtrend_y = NCL_float;
+    dtrend_y = (void*)calloc(size_y,sizeof(float));
+  }
+  else {
+    type_dtrend_y = NCL_double;
+    dtrend_y = (void*)calloc(size_y,sizeof(double));
+  }
+  if( dtrend_y == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_quadratic: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+
+/*
+ * Call the Fortran version of this routine.
+ */
+  index_y = 0;
+  for( i = 0; i < size_leftmost; i++ ) {
+/*
+ * Coerce subsection of y (tmp_y) to double.
+ */
+    coerce_subset_input_double(y,tmp_y,index_y,type_y,npts,0,NULL,NULL);
+/*
+ * Check for missing values.
+ */
+    found_missing = contains_missing(tmp_y,npts,has_missing_y,
+                                     missing_y.doubleval);
+    if(found_missing) {
+      set_subset_output_missing(dtrend_y,index_y,type_y,npts,
+                                missing_dy.doubleval);
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"dtrend_quadratic: An input array contains missing values. No dtrending performed on this array.");
+    }
+    else {
+
+      NGCALLF(ddtrndx,DDTRNDX)(tmp_y,&npts,&iopt,&xmean,&yvari,&yvaro,
+                               c,&ier);
+/*
+ * Copy output back out as float or double.
+ */
+      coerce_output_float_or_double(dtrend_y,tmp_y,type_dtrend_y,npts,
+                                    index_y);
+    }
+    index_y += npts;
+  }
+/*
+ * Free memory.
+ */
+  NclFree(tmp_y);
+
+/*
+ * Return to NCL.
+ */
+  if(has_missing_y) {
+    if(type_dtrend_y == NCL_float) {
+      return(NclReturnValue(dtrend_y,ndims_y,dsizes_y,&missing_ry,
+                            type_dtrend_y,0));
+    }
+    else {
+      return(NclReturnValue(dtrend_y,ndims_y,dsizes_y,&missing_dy,
+                            type_dtrend_y,0));
+    }
+  }
+  else {
+    return(NclReturnValue(dtrend_y,ndims_y,dsizes_y,NULL,type_dtrend_y,0));
   }
 }
 
@@ -566,7 +710,7 @@ NhlErrorTypes dtrend_msg_W( void )
                                  &slpe,&yint,&ier);
 
     coerce_output_float_or_double(dtrend_y,ydt,type_dtrend_y,npts,
-				  index_y);
+                                  index_y);
     if(*return_slope) {
       coerce_output_float_or_double(yintp,&yint,type_dtrend_y,1,i);
       coerce_output_float_or_double(slope,&slpe,type_dtrend_y,1,i);
@@ -745,11 +889,11 @@ NhlErrorTypes dtrend_msg_W( void )
  */
     if(type_dtrend_y == NCL_float) {
       return(NclReturnValue(dtrend_y,ndims_y,dsizes_y,&missing_ry,
-                            NCL_float,0));
+                            type_dtrend_y,0));
     }
     else {
       return(NclReturnValue(dtrend_y,ndims_y,dsizes_y,&missing_dy,
-                            NCL_double,0));
+                            type_dtrend_y,0));
     }
   }
 }
