@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.29 1995-06-05 19:08:51 dbrown Exp $
+ *      $Id: CoordArrays.c,v 1.30 1995-07-03 06:55:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1675,18 +1675,22 @@ CoordArraysDestroy
 	NhlCoordArraysLayerPart	*cap = &cl->carr;
 
 	if(cap->my_xarray != cap->xarray)
-		NhlFreeGenArray(cap->my_xarray);
+		NhlFreeGenArray(cap->xarray);
 	if(cap->my_yarray != cap->yarray)
-		NhlFreeGenArray(cap->my_yarray);
+		NhlFreeGenArray(cap->yarray);
 
-	_NhlFreeConvertContext(cap->xctxt);
-	_NhlFreeConvertContext(cap->yctxt);
+	if(cap->xctxt)
+		_NhlFreeConvertContext(cap->xctxt);
+	else
+		NhlFreeGenArray(cap->my_xarray);
+
+	if(cap->yctxt)
+		_NhlFreeConvertContext(cap->yctxt);
+	else
+		NhlFreeGenArray(cap->my_yarray);
 
 	NhlFreeGenArray(cap->my_missing_x);
 	NhlFreeGenArray(cap->my_missing_y);
-
-	NhlFreeGenArray(cap->xarray);
-	NhlFreeGenArray(cap->yarray);
 
 	NhlFreeGenArray(cap->missing_x);
 	NhlFreeGenArray(cap->missing_y);
