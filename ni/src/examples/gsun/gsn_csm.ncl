@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.65 2001-03-28 17:46:48 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.66 2001-04-06 15:48:53 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -6754,6 +6754,16 @@ begin
           ybelow = new((/ncurves,5*npts/),double,1e36)
 ;
     if(yref_fill_on)
+;
+          nabove = new(ncurves,integer)
+          nbelow = new(ncurves,integer)
+;
+; Fill in values for filled bars (that will be filled later).
+;
+          filled_bars(x,y,xabove,yabove,xbelow,ybelow,nabove,nbelow, \
+                      yref_line,bar_widths)
+;
+; Combine the above/below arrays into one X/Y array so that we can pass
 ; to gsn_xy routine. Make the 5h point missing, since the 5th point
 ; closes the polygon, and we only want an outline here.
 ;
@@ -7481,8 +7491,22 @@ begin
       print("gsn_csm_pres_hgt: Fatal: The first dimension of the input data must")
       print("have a coordinate variable called 'lev.'")
       print("Cannot create plot.")
+      return
+    end if
+
     log_y = get_res_value(res2,"trYLog",True)  ; Check if Y axis to stay linear.
     res2           = True
+    res2@gsnDraw   = False
+    res2@gsnFrame  = False
+
+    if(pres_reverse)
+      contour_object = gsn_csm_hov(wks,data,res2) ; Create a contour plot.
+    else
+      contour_object = gsn_csm_hov(wks,data(::-1,:),res2)  ; reverse Y
+    end if
+
+; Retrieve some values from the contour plot so we can create a LogLin
+; plot with the same information.
 
     contour_plot = check_class_name(contour_object,"contour")
 

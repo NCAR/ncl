@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.65 2001-03-28 17:46:47 haley Exp $
+;      $Id: gsn_code.ncl,v 1.66 2001-04-06 15:48:51 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3704,7 +3704,7 @@ end
 
 ;***********************************************************************;
 ; Function : hist_columns                                               ;
-                      colors[*]:integer, sprd:numeric,gsres:logical)
+;                   wks: workstation object                             ;
 ;                    xy: graphic                                        ;
 ;                  bins: numeric                                        ;
 ;             binvalues: numeric                                        ;
@@ -3763,7 +3763,6 @@ begin
 
   if(compare)
     width23 = 0.6667 * width
-    nsprd = dimsizes(sprd)
     ypoints(0,:,0) = (/0/)
     ypoints(1,:,0) = (/0/)
     ypoints(0,:,1) = (/binvalues(0,:)/)
@@ -3799,14 +3798,28 @@ begin
 
   newcolors = get_res_value(gsres,"gsFillColor",colors)
   ncol      = dimsizes(newcolors)
-      polygons1(i) = gsn_add_polygon(wks,xy,xpoints(1,i,:),ypoints(1,i,:), \
-                                     gsres)
+
+  fillindex = get_res_value(gsres,"gsFillIndex",(/0,6/))
+;
+; Make sure fill indices are between 0 and 17.
+;
+  fillindex1 = min((/max((/fillindex(0),0/)),17/))
+  if(dimsizes(fillindex).ge.2)
     fillindex2 = min((/max((/fillindex(1),0/)),17/))
-      polygons0(i) = gsn_add_polygon(wks,xy,xpoints(0,i,:),ypoints(0,i,:), \
-                                     gsres)
+  else
+    fillindex2 = fillindex1
+  end if
+
+  do i = 0, nbins - 1
+    gsres@gsFillColor = newcolors(i%ncol)
+
     if(compare) 
 ;
-      polygons(i) = gsn_add_polygon(wks,xy,xpoints(i,:),ypoints(i,:),gsres)
+; Add the second histogram bars first, so that they will be drawn
+; first. The first histogram bars will thus be drawn on top.
+;
+      gsres@gsFillIndex = fillindex2
+      if(binvalues@horizontal) then
         polygons1(i) = gsn_add_polygon(wks,xy,ypoints(1,i,:), \
                                        xpoints(1,i,:), gsres)
       else
@@ -3941,16 +3954,22 @@ begin
   end if
 
   if(setmidpts)
-      num_in_bins(0,nbuckets-1) = num(xx1.ge.sprd(nbuckets-2).and. \
-                                      xx1.le.sprd(nbuckets-1))
-      num_in_bins(1,nbuckets-1) = num(xx2.ge.sprd(nbuckets-2).and. \
-                                      xx2.le.sprd(nbuckets-1))
+    if(compare) then
+      do i = 0, nbuckets-1
+        num_in_bins(0,i) = num(xx1.eq.sprd(i))
+        num_in_bins(1,i) = num(xx2.eq.sprd(i))
+      end do
+    else
+      do i = 0, nbuckets-1
         num_in_bins(i) = num(xx.eq.sprd(i))
       end do
     end if
   else
-      num_in_bins(nbuckets-1) = num(xx.ge.sprd(nbuckets-2).and. \
-                                    xx.le.sprd(nbuckets-1))
+;
+; The last bin interval will contain values that fall on both the
+; right and left end points.  All the other bin intervals contain
+; values that fall on the left only.
+;
     if(compare) then
       do i = 0, nbuckets-2
         num_in_bins(0,i) = num(xx1.ge.sprd(i).and.xx1.lt.sprd(i+1))
@@ -4034,6 +4053,8 @@ end
 ;       or approximately this size.                                     ; 
 ;                                                                       ;
 ;  gsnHistogramSelectNiceIntervals - Indicates whether we want          ;
+;       gsn_histogram to select "nice" range values. Default is True.   ;
+;                                                                       ;
 ;  gsnHistogramComputePercentages - If True, then percentage values     ;
 ;       will be put on right axis. Default is False.                    ;
 ;                                                                       ;
@@ -4054,6 +4075,7 @@ end
 ;  gsnHistogramCompare - Compare two fields.                            ;
 ;  gsnHistogramHorizontal - Draw horizontal bars.  Default is False     ;
 ;                                                                       ;
+; The number of missing values counted is returned as an attribute      ;
 ; called "NumMissing" (or "NumMissing1" and "NumMissing2" if comparing  ;
 ; two fields.)                                                          ;
 ;***********************************************************************;
@@ -4129,6 +4151,8 @@ begin
       end if
     end if
   end if
+
+  if(.not.setendpts.and..not.setmidpts) then
     bins = 0
   end if
 ;
@@ -4226,16 +4250,24 @@ begin
     if(dimsizes(tmpc).ne.dimsizes(colors))
       colors = tmpc(0:dimsizes(colors)-1)
     else
-  xy = create "xy" xyPlotClass wks
-    "trXMinF" : get_res_value(res2,"trXMinF",left)
-    "trXMaxF" : get_res_value(res2,"trXMaxF",right)
-    "trYMinF" : get_res_value(res2,"trYMinF",bottom)
-    "trYMaxF" : get_res_value(res2,"trYMaxF",top)
-  end create
-
+      colors = tmpc
+    end if
+  end if
+;
+; Calculate locations of center of bins and labels and 
+; values for tick marks. If comparing two fields, and using ranges,
+; then the center won't be exactly the center, but rather 5/12 of 
+; the width of the range in.
+;
+  if(setmidpts) then 
+    locs = buck@sprd
+  else
+    locs = new(nbucks,float)
+    if(compare)
+      locs = buck@sprd(0:nbucks-1) + 5.*buck@dx(0:nbucks-1)/12.
     else
       locs = buck@sprd(0:nbucks-1) + buck@dx(0:nbucks-1)/2.
-; labels to the right axis.
+    end if
   end if
   lbs = buck@sprd
 
@@ -4265,58 +4297,93 @@ begin
       npts = dimsizes(ndtooned(xdata))    ; Total number of points. 
     end if
 ;
-    set_attr(res2,"tmYUseLeft", False)
-    set_attr(res2,"tmYROn",True)
-    set_attr(res2,"tmYRLabelsOn",True)
-    set_attr(res2,"tmYRMode","Explicit")
-    set_attr(res2,"tmYRValues",bins_at_pnice)
-    set_attr(res2,"tmYRMinorValues",bins_at_pmnice)
-    set_attr(res2,"tmYRLabels",pnice)
+; Compute min, max, and step necessary to later get
+; "nice" values for the percentages.
+;
+    nicevals = nice_mnmxintvl(bottom,min((/100.,100.*(top/npts)/)),7,False)
+    nvals    = floattoint((nicevals(1) - nicevals(0))/nicevals(2) + 1)
+;
+; Generate nice values for minor and major tick marks. For the minor
+      set_attr(res2,"tmXTLabels",pnice)
+;
+; Calculate bins at these percentages. These are the values we'll use
+; for the tick marks.
+;
+    bins_at_pnice  = (npts * pnice) / 100.
+    bins_at_pmnice = (npts * pmnice) / 100.
+;
+      set_attr(res2,"tmYRLabels",pnice)
+      set_attr(res2,"tmXTLabelsOn",True)
       set_attr(res2,"tmXTMode","Explicit")
       set_attr(res2,"tmXTValues",bins_at_pnice)
       set_attr(res2,"tmXTMinorValues",bins_at_pmnice)
-; Label the X Axis with xdata@long_name if it exists.
+      if(percentsign)
         set_attr(res2,"tmXTLabels",pnice+"%")
       else
-    set_attr(res2,"tiXAxisString",xdata@long_name)
+        set_attr(res2,"tmXTLabels",pnice)
+      end if
+    else
+      set_attr(res2,"tmYUseLeft", False)
+      set_attr(res2,"tmYROn",True)
       set_attr(res2,"tmYRLabelsOn",True)
       set_attr(res2,"tmYRMode","Explicit")
-      set_attr(res2,"tiXAxisString","Class Intervals")
+      set_attr(res2,"tmYRValues",bins_at_pnice)
+      set_attr(res2,"tmYRMinorValues",bins_at_pmnice)
+      if(percentsign)
+        set_attr(res2,"tmYRLabels",pnice+"%")
+      else
         set_attr(res2,"tmYRLabels",pnice)
       end if  
     end if  
   end if
 
-  set_attr(res2,"tiYAxisString","Frequency")
-  set_attr(res2,"tmXTOn",False)
-  set_attr(res2,"tmXBMode","EXPLICIT")
-  set_attr(res2,"tmXBValues",lbs)
-  set_attr(res2,"tmXBLabels",lbs)
-;  set_attr(res2,"tmXBLabelAngleF",270 )
-;  set_attr(res2,"tmXBLabelJust","CenterLeft")
+;
+; Label the X (or Y) Axis with xdata@long_name if it exists.
+;
+  if(isatt(xdata,"long_name")) then
+    if(horizontal) then
+      set_attr(res2,"tiYAxisString",xdata@long_name)
+    else
+      set_attr(res2,"tiXAxisString",xdata@long_name)
+    end if
+  else
+    if(setendpts)
+      if(horizontal) then
+        set_attr(res2,"tiYAxisString","Class Intervals")
       else
         set_attr(res2,"tiXAxisString","Class Intervals")
       end if
     end if
-; Add a right Y axis "Percent Occurence" or "Percent of Maximum" label.
+  end if
+;
 ; Set some resources.
   if(ispercent)
-     getvalues xy
-       "tiYAxisFontHeightF" : font_height
-    end getvalues
+  if(horizontal) then
+    set_attr(res2,"tiXAxisString","Frequency")
+    set_attr(res2,"tmYROn",False)
+    set_attr(res2,"tmYLMode","EXPLICIT")
+    set_attr(res2,"tmYLValues",lbs)
+    set_attr(res2,"tmYLLabels",lbs)
+  else
+    set_attr(res2,"tiYAxisString","Frequency")
+    set_attr(res2,"tmXTOn",False)
+    set_attr(res2,"tmXBMode","EXPLICIT")
+    set_attr(res2,"tmXBValues",lbs)
+    set_attr(res2,"tmXBLabels",lbs)
+  end if
   xyres = get_res_ne(res2,"gs")
-    rightaxis_string = create "right_axis" textItemClass wks
+  attsetvalues_check(xy,xyres)
 
 ;
-      "txAngleF"      : 90.
+; Add a right Y (or top X axis) "Percent Occurence" or
 ; "Percent of Maximum" label.
 ;
-    anno = NhlAddAnnotation(xy,rightaxis_string)
+  if(ispercent.and..not.percentsign)
     if(horizontal) then
       getvalues xy
         "tiXAxisFontHeightF" : font_height
       end getvalues
-      "amSide"          : "right" 
+      txangle = 0.
       txside  = "top"
     else
       getvalues xy
@@ -4328,7 +4395,7 @@ begin
 
     axis_string = create "axis_string" textItemClass wks
       "txString"      : "Percent"
-  histogram = hist_columns(wks,xy,locs,buck,width,colors,buck@sprd,gsres)
+      "txFontHeightF" : font_height
       "txAngleF"      : txangle
     end create
 
