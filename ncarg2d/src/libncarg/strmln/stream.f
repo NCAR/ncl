@@ -1,5 +1,5 @@
 C
-C       $Id: stream.f,v 1.8 1993-12-03 21:18:47 kennison Exp $
+C       $Id: stream.f,v 1.9 1996-02-08 20:30:13 dbrown Exp $
 C
       SUBROUTINE STREAM (U,V,P,IAM,STUMSL,WRK)
 C
@@ -167,5 +167,9 @@ C
       CALL GSLWSC(ROW)
       CALL GSTXCI(IOT)
 C
+      RETURN
+      END
+C
+      SUBROUTINE STDUMB
       RETURN
       END

@@ -1,5 +1,5 @@
 C
-C       $Id: strmln.f,v 1.13 1996-02-07 19:06:28 dbrown Exp $
+C       $Id: strmln.f,v 1.14 1996-02-08 20:30:14 dbrown Exp $
 C
       SUBROUTINE STRMLN (U,V,WORK,IMAX,IPTSX,JPTSY,NSET,IER)
 C
@@ -253,9 +253,12 @@ C WXL,WXR,WYB,WYT - saved window boundary
 C X1,X2,Y1,Y2     - temporary viewport boundary
 C X3,Y3,X4,Y4     - temporary window boundary
 C LEN             - maximum vector size in Metacode coords
-C IDM             - integer dummy variable
 C
-      DATA IDM / 0 /
+      EXTERNAL STDUMB
+      DIMENSION RDA(1)
+      DIMENSION IDA(1)
+      DATA RDA / 0.0 /
+      DATA IDA / 0 /
 C
 C Save the values of all parameters that may get changed
 C
@@ -394,9 +397,9 @@ C
 C
 C Initialize the stream plotting routine and draw the streamlines
 C
-      CALL STINIT(U,LU,V,LV,IDM,IDM,M,N,WORK,LW)
+      CALL STINIT(U,LU,V,LV,RDA,0,M,N,WORK,LW)
 C
-      CALL STREAM(U,V,IDM,IDM,IDM,WORK)
+      CALL STREAM(U,V,RDA,IDA,STDUMB,WORK)
 C
 C Fetch the error value into the output parameter, IER
 C
