@@ -1,3 +1,6 @@
+;
+;      $Id: shea_util.ncl,v 1.2 2003-02-23 00:11:05 haley Exp $
+;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
 ; the way I want them. If u want to modify one to suit

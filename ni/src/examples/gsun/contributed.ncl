@@ -1,3 +1,6 @@
+;
+;      $Id: contributed.ncl,v 1.2 2003-02-23 00:11:05 haley Exp $
+;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
 ; cssgrid_Wrap

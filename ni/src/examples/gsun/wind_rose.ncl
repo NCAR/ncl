@@ -1,3 +1,6 @@
+;
+;      $Id: wind_rose.ncl,v 1.2 2003-02-23 00:11:05 haley Exp $
+;
 ; functions to draw variations of wind roses
 
 ; These were developed to draw the figures the way I like them.

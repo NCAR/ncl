@@ -1,4 +1,6 @@
 ;
+;      $Id: ccm_func.ncl,v 1.2 2003-02-23 00:11:05 haley Exp $
+;
 ; ccm_func.ncl
 ;
 ; this script contains ncl codes that are model specific.

@@ -1,3 +1,6 @@
+;
+;      $Id: popRemap.ncl,v 1.2 2003-02-23 00:11:05 haley Exp $
+;
 ;===========================================================
 ; D. Shea
 ; NCL function to perform selected grid-to-grid transformations

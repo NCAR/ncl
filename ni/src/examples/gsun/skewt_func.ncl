@@ -1,3 +1,6 @@
+;
+;      $Id: skewt_func.ncl,v 1.2 2003-02-23 00:11:05 haley Exp $
+;
 ; -------------------------------------------------
 ; Dennis Shea
 ; email: shea@ucar.edu
