@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.5 2000-10-04 19:43:28 haley Exp $
+#       $Id: yMakefile,v 1.6 2001-01-18 00:06:58 haley Exp $
 #
 FILES		= \
 		3gauss.ncmap  \
@@ -39,7 +39,9 @@ FILES		= \
 		hotres.ncmap \
 		ncview_default.ncmap \
 		rainbow.gp \
+		rainbow+gray.gp \
 		rainbow+white.gp \
+		rainbow+white+gray.gp \
 		so4_21.gp \
 		so4_23.gp \
 		tbrAvg1.rgb \
