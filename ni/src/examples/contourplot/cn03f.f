@@ -1,5 +1,5 @@
 C
-C     $Id: cn03f.f,v 1.3 1995-04-07 10:53:58 boote Exp $
+C     $Id: cn03f.f,v 1.4 1995-05-11 15:33:46 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -70,8 +70,9 @@ C Read data
 C     
       open(unit=10,file=filenm,status='old',form='formatted',err=104)
       do 10 j=1,N
-         read (10,*)(t(i,j),i=1,M)
+         read (10,1001)(t(i,j),i=1,M)
  10   continue
+ 1001 format(1x,15F13.8)
 C
 C Initialize the high level utility library
 C
