@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.28 2000-03-21 02:35:48 dbrown Exp $
+ *      $Id: restree.c,v 1.29 2000-03-29 04:01:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1971,7 +1971,7 @@ static void AddToSetValList
 }
         
 
-void EmptySetValList
+static void EmptySetValList
 (
         NgResTreeRec *rtp
         )

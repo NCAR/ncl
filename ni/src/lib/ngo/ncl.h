@@ -1,5 +1,5 @@
 /*
- *      $Id: ncl.h,v 1.1 2000-03-21 02:35:43 dbrown Exp $
+ *      $Id: ncl.h,v 1.2 2000-03-29 04:01:22 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -23,6 +23,7 @@
 #ifndef _NCL_H_
 #define _NCL_H_
 
+#include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/ncl/defs.h>
 #include <ncarg/ncl/NclDataDefs.h>

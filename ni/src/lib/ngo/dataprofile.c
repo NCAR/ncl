@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.c,v 1.17 2000-03-21 02:35:35 dbrown Exp $
+ *      $Id: dataprofile.c,v 1.18 2000-03-29 04:01:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,7 +34,7 @@ typedef struct _TmpVarRec {
 	int			ref_count;
 } TmpVarRec, *TmpVar;
 
-TmpVar TmpVarList = NULL;
+static TmpVar TmpVarList = NULL;
 
 static void NewTmpVarRef
 (
@@ -1011,7 +1011,7 @@ extern NhlBoolean NgSetUnknownDataItem
 	return True;
 }
 
-NclApiDataList	*EvaluateExpression
+static NclApiDataList	*EvaluateExpression
 (
 	NgGO		go,
 	NhlString	expr_val,

@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.26 2000-03-21 02:35:45 dbrown Exp $
+ *      $Id: plotapp.c,v 1.27 2000-03-29 04:01:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -581,7 +581,7 @@ static NclApiDataList *GetNclFuncData
 	return NULL;
 }
 
-NhlBoolean IsHluVar
+static NhlBoolean IsHluVar
 (
 	PlotApp		papp,
 	NhlString	sym
@@ -602,7 +602,7 @@ NhlBoolean IsHluVar
 	return False;
 }
 
-NhlBoolean IsFile
+static NhlBoolean IsFile
 (
 	PlotApp		papp,
 	NhlString	sym
@@ -623,7 +623,7 @@ NhlBoolean IsFile
 	return False;
 }
 
-NhlBoolean IsVar
+static NhlBoolean IsVar
 (
 	PlotApp		papp,
 	NhlString	sym
@@ -645,7 +645,7 @@ NhlBoolean IsVar
 }
 
 
-NhlBoolean IsFunc
+static NhlBoolean IsFunc
 (
 	PlotApp		papp,
 	NhlString	fsym,
@@ -689,7 +689,7 @@ NhlBoolean IsFunc
 	return True;
 }
 
-NhlBoolean SingleFunction
+static NhlBoolean SingleFunction
 (
 	ResFunc rfunc,
 	char	*buf
@@ -702,7 +702,7 @@ NhlBoolean SingleFunction
 }
 	
 
-NhlBoolean CheckFunctions
+static NhlBoolean CheckFunctions
 (
 	ResFunc rfuncs,
 	char	*buf
@@ -4612,7 +4612,7 @@ NhlBoolean NgPlotAppDataUsable
 	return False;
 }
 
-NhlErrorTypes InitializePlotDataRecs
+static NhlErrorTypes InitializePlotDataRecs
 (
 	NgPlotData	plotdata,
 	NrmQuark	qname,
@@ -4964,7 +4964,7 @@ static char *VarRefInValue
  * The plotapp data vars must already be set.
  */
 
-AppResSymRef BackSubstitute
+static AppResSymRef BackSubstitute
 (
 	NgDataItem	ditem,
 	NhlString	ref_val,

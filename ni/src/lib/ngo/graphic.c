@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.c,v 1.16 2000-02-17 01:36:22 dbrown Exp $
+ *      $Id: graphic.c,v 1.17 2000-03-29 04:01:20 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -410,7 +410,7 @@ static void SetNewSelectedView
 	return;
 }
 
-NhlErrorTypes DestroyGraphicArray
+static NhlErrorTypes DestroyGraphicArray
 (
 	NgGO		go,
 	NhlString	ncl_graphic,
@@ -597,7 +597,7 @@ NhlErrorTypes NgDestroyGraphic
         return NhlNOERROR;
 }
 
-NhlErrorTypes DrawGraphicArray
+static NhlErrorTypes DrawGraphicArray
 (
 	NgGO		go,
 	NgWksState 	wks_state,

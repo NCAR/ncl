@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.c,v 1.22 2000-03-21 02:35:53 dbrown Exp $
+ *      $Id: varpage.c,v 1.23 2000-03-29 04:01:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -677,7 +677,7 @@ DeactivateVarPage
         return;
 }
 
-NhlBoolean InitializeDimInfo
+static NhlBoolean InitializeDimInfo
 (
 	brPage		*page,
         brVarPageRec	*rec,

@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.25 2000-03-21 02:35:51 dbrown Exp $
+ *      $Id: shaper.c,v 1.26 2000-03-29 04:01:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -379,7 +379,7 @@ UpdateShape
 	return;
 }
 
-void
+static void
 DimSelectNotify
 (
 	NhlPointer data
@@ -406,7 +406,7 @@ DimSelectNotify
  * information on to its parent object.
  */
 
-void
+static void
 ShapeNotify
 (
         NhlPointer data

@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlview.c,v 1.15 1999-09-11 01:06:30 dbrown Exp $
+ *      $Id: htmlview.c,v 1.16 2000-03-29 04:01:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -273,7 +273,7 @@ static int HtmlObjectListSize
         return count;
 }
 
-void _XmHTMLClearWidget
+static void _XmHTMLClearWidget
 (
         XmHTMLWidget html
         )
@@ -312,7 +312,7 @@ void _XmHTMLSetWidget
         return;
 }
 
-void _XmHTMLSetObject
+static void _XmHTMLSetObject
 (
         XmHTMLWidget html,
         _hvHtmlObject *hobject

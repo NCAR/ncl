@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.29 2000-01-24 20:56:22 dbrown Exp $
+ *      $Id: xwk.c,v 1.30 2000-03-29 04:01:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -378,7 +378,7 @@ SetUpWorkColorCBs
 }
 
 /*
- * Function:	NgXWorkPreOpenCB
+ * Function:	XWorkPreOpenCB
  *
  * Description:	
  *
@@ -391,13 +391,13 @@ SetUpWorkColorCBs
  * Side Effect:	
  */
 static void
-NgXWorkPreOpenCB
+XWorkPreOpenCB
 (
 	NhlArgVal	cbdata,
 	NhlArgVal	udata
 )
 {
-	char			func[]="NgXWorkPreOpenCB";
+	char			func[]="XWorkPreOpenCB";
 	NhlXWorkstationLayer	wk = (NhlXWorkstationLayer)cbdata.ptrval;
 	NgXWk			xwk;
 	int			xwkid,appmgr,selected_work;
@@ -497,7 +497,7 @@ XWkClassInitialize
 	NhlINITVAR(sel);
 	NhlINITVAR(udata);
 	_NhlAddClassCallback(NhlxWorkstationClass,_NhlCBworkPreOpen,sel,
-			     NgXWorkPreOpenCB,udata);
+			     XWorkPreOpenCB,udata);
 	return NhlNOERROR;
 }
 
@@ -871,7 +871,7 @@ CFault
 	return;
 }
 
-void
+static void
 DrawSingleViewOptionCB
 (
 	Widget		w,
@@ -892,7 +892,7 @@ DrawSingleViewOptionCB
 }
 
 
-void
+static void
 RaiseOnDrawOptionCB
 (
 	Widget		w,
@@ -912,7 +912,7 @@ RaiseOnDrawOptionCB
 	return;
 }
 
-void
+static void
 AutoRefreshOptionCB
 (
 	Widget		w,
@@ -938,7 +938,7 @@ AutoRefreshOptionCB
 	return;
 }
 
-void
+static void
 ExchangeForeBackCB
 (
 	Widget		w,

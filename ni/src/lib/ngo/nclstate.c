@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.24 2000-03-21 02:35:44 dbrown Exp $
+ *      $Id: nclstate.c,v 1.25 2000-03-29 04:01:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -500,7 +500,7 @@ DeleteHluObjCB
 	return HluObjCB(NgNclCBDELETE_HLUOBJ,cbdata,udata);
 }
 
-NhlErrorTypes
+static NhlErrorTypes
 CreateHluVarCB
 (
 	NhlPointer	cbdata,
@@ -513,7 +513,7 @@ CreateHluVarCB
 								udata);
 }
 
-NhlErrorTypes
+static NhlErrorTypes
 DeleteHluVarCB
 (
 	NhlPointer	cbdata,
@@ -526,7 +526,7 @@ DeleteHluVarCB
 								udata);
 }
 
-NhlErrorTypes
+static NhlErrorTypes
 CreateVarCB
 (
 	NhlPointer	cbdata,
@@ -538,7 +538,7 @@ CreateVarCB
 	return VarCB(NgNclCBCREATE_VAR,&ncl->nclstate.var_pending,cbdata,udata);
 }
 
-NhlErrorTypes
+static NhlErrorTypes
 DeleteVarCB
 (
 	NhlPointer	cbdata,
@@ -550,7 +550,7 @@ DeleteVarCB
 	return VarCB(NgNclCBDELETE_VAR,&ncl->nclstate.var_pending,cbdata,udata);
 }
 
-NhlErrorTypes
+static NhlErrorTypes
 CreateFileVarCB
 (
 	NhlPointer	cbdata,
@@ -563,7 +563,7 @@ CreateFileVarCB
 								cbdata,udata);
 }
 
-NhlErrorTypes
+static NhlErrorTypes
 DeleteFileVarCB
 (
 	NhlPointer	cbdata,
@@ -1073,7 +1073,7 @@ NgNclReset
 	return;
 }
 
-NhlBoolean
+static NhlBoolean
 SubmitNclLine
 (
 	NgNclState	ncl,

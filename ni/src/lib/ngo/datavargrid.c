@@ -1,5 +1,5 @@
 /*
- *      $Id: datavargrid.c,v 1.15 2000-03-21 02:35:38 dbrown Exp $
+ *      $Id: datavargrid.c,v 1.16 2000-03-29 04:01:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -160,7 +160,7 @@ static void AdjustShapeToolGeometry
  * any time.
  */
 
-NclApiVarInfoRec 
+static NclApiVarInfoRec 
 *GetDataVarInfo
 (
 	NgVarData	vdata

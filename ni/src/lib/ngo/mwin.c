@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.31 2000-01-28 17:25:41 dbrown Exp $
+ *      $Id: mwin.c,v 1.32 2000-03-29 04:01:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1527,7 +1527,7 @@ RemoveOverlayNode
 	return True;
 }
 
-extern void SetViewBBOffscreen
+static void SetViewBBOffscreen
 (
 	NgObjTree	otree,
 	int		pid

@@ -1,5 +1,5 @@
 /*
- *      $Id: xapp.c,v 1.14 1999-11-03 20:29:32 dbrown Exp $
+ *      $Id: xapp.c,v 1.15 2000-03-29 04:01:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -214,7 +214,7 @@ XAppMgrClassInitialize
  * Returns:	
  * Side Effect:	
  */
-NhlBoolean
+static NhlBoolean
 LoadXres
 (
 	NrmDatabase		*db,

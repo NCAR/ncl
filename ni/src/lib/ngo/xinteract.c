@@ -1,5 +1,5 @@
 /*
- *      $Id: xinteract.c,v 1.13 2000-03-21 02:35:56 dbrown Exp $
+ *      $Id: xinteract.c,v 1.14 2000-03-29 04:01:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -67,7 +67,7 @@ static void Select(
  * Returns:	void
  * Side Effect:	
  */
-void
+static void
 CalcBBox
 (
 	NgXBBox	*bbox,
@@ -751,7 +751,7 @@ static void Manipulate
  * Side Effect:	
  */
 /*ARGSUSED*/
-void
+static void
 ManipulateEH
 (
 	Widget		w,	/* widget			*/

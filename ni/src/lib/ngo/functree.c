@@ -1,5 +1,5 @@
 /*
- *      $Id: functree.c,v 1.6 2000-03-21 02:35:41 dbrown Exp $
+ *      $Id: functree.c,v 1.7 2000-03-29 04:01:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1366,7 +1366,7 @@ void NgDestroyFuncTree
 }
 	
 
-ftNodeData *FindNodeOfType
+static ftNodeData *FindNodeOfType
 (
 	ftNodeData 	*start_node,
 	_ftNodeType	type

@@ -1,5 +1,5 @@
 /*
- *      $Id: plotstylemenu.c,v 1.10 2000-03-21 02:35:46 dbrown Exp $
+ *      $Id: plotstylemenu.c,v 1.11 2000-03-29 04:01:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -111,11 +111,11 @@ typedef void (*PathFunc)
 	NhlPointer	path_func_data
 );
 
-NgPlotStyle	PlotStyles = NULL;
+static NgPlotStyle	PlotStyles = NULL;
 
 
-NgPlotStyleRec  VarPlotStyle = { NULL, NULL, NULL, "ncl_var",NULL };
-NgPathRec	VarPath = { NULL,NULL,0,NULL,NULL,NULL,NULL,&VarPlotStyle };
+static NgPlotStyleRec  VarPlotStyle = { NULL, NULL, NULL, "ncl_var",NULL };
+static NgPathRec VarPath = { NULL,NULL,0,NULL,NULL,NULL,NULL,&VarPlotStyle };
 
 static NgPath	PlotStylePaths = NULL;
 static NgPath   PlotStylePathTop = NULL;
@@ -190,7 +190,7 @@ static void FreePlotStyle
 	return;
 }
 
-FILE	*OpenResFile
+static FILE	*OpenResFile
 (
 	NhlString	dirpath,
 	NhlString	name
