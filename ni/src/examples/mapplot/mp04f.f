@@ -18,6 +18,7 @@ C     Description:      Illustrates use of AnnoManager objects.
 C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
+      external NhlFXWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFMapPlotClass
       external NhlFtextitemClass
