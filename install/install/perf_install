@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: perf_install,v 1.16 2002-03-18 04:04:57 haley Exp $
+#      $Id: perf_install,v 1.17 2002-05-01 22:15:04 haley Exp $
 #
 #########################################################################
 #									#
@@ -378,20 +378,6 @@ if ("$lib_path" != "/dev/null" && $NCARG_SITE_ID != "") then
     /bin/rm $lib_path/ncarg/$NCARG_SITE_FILE
   endif
   echo $NCARG_SITE_ID >> $lib_path/ncarg/$NCARG_SITE_FILE
-else
-cat <<EOF > /dev/tty
-
-
-   For consulting purposes, it would help to create the file
-   \$NCARG_ROOT/lib/ncarg/$NCARG_SITE_FILE and enter in your
-   3 or 4-digit NCAR Graphics Order number.  This number can
-   be found on the upper right corner of the cover of the
-   NCAR Graphics Installer's Guide. If you don't see any such
-   number, you can call (303) 497-1201 or send email to
-   ncarginf@ncar.ucar.edu to get that information.
-
-EOF
-   
 endif
 
 $LOCALDIR/pause
