@@ -1,5 +1,5 @@
 C
-C $Id: mdgnin.f,v 1.2 2001-11-02 22:36:55 kennison Exp $
+C $Id: mdgnin.f,v 1.3 2004-06-03 21:39:12 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -46,7 +46,7 @@ C
 C
 C Look for a nice interval which is an integral number of degrees.
 C
-        DO 101 I=1,9
+        DO 101 I=1,8
           IF (DANG.GE.TDEG(I)) THEN
             DNCE=TDEG(I)
             RETURN
