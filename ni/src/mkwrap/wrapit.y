@@ -239,8 +239,6 @@ interface_list : interface ENDOFIF
 			}
 			if(i!= c_callrec->n_args-1) {
 				strcat(buffer,",");
-			} else if(c_callrec->nstrs == 0) {
-				strcat(buffer,");\n\n");
 			} 
 		}
 		if(c_callrec->nstrs != 0) {
@@ -360,9 +358,7 @@ interface_list : interface ENDOFIF
 		
 			if((i!= c_callrec->n_args-1)) {
 				strcat(buffer,",");
-			} else if(c_callrec->nstrs == 0) {
-                                strcat(buffer,");\n\n");
-                        }
+			} 
 		}
 		if(c_callrec->nstrs != 0) {
 			strcat(buffer,",");
