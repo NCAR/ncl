@@ -1,10 +1,34 @@
 /*
- *	$Id: c_epltch.c,v 1.4 1992-11-11 17:18:27 haley Exp $
+ *	$Id: c_epltch.c,v 1.5 1993-01-15 21:44:19 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
+
+/*
+ * Include function prototypes
+ */
 #include <ncarg/ncargC.h>
-#include <ncarg/ncarg_gksC.h>
+#include <ncarg/gks.h>
+
+/*
+ * Define the column and row labels.  The character string ':c:r', where
+ * "c" is the first three characters of a column label and "r" is the
+ * first character of a row label, is used to select the character to
+ * be written in that column of that row.
+ */
+
+char *clbl[12][10] = { "PRU(0000)", "PRL(0100)", "IRU(0200)", "IRL(0300)", 
+                       "KRU(0400)", "KRL(0500)", "PGU(0600)", "PGL(0700)", 
+                       "IGU(1000)", "IGL(1100)", "KGU(1200)", "KGL(1300)" }
+
+char  *rlbl[48] = { "A(01)", "B(02)", "C(03)", "D(04)", "E(05)", "F(06)", 
+                    "G(07)", "H(10)", "I(11)", "J(12)", "K(13)", "L(14)", 
+                    "M(15)", "N(16)", "O(17)", "P(20)", "Q(21)", "R(22)", 
+                    "S(23)", "T(24)", "U(25)", "V(26)", "W(27)", "X(30)", 
+                    "Y(31)", "Z(32)", "0(33)", "1(34)", "2(35)", "3(36)", 
+                    "4(37)", "5(40)", "6(41)", "7(42)", "8(43)", "9(44)", 
+                    "+(45)", "-(46)", "*(47)", "/(50)", "((51)", ")(52)", 
+                    "$(53)", "=(54)", " (55)", ",(56)", ".(57)", "     " }
 
 main()
 {
@@ -16,74 +40,6 @@ main()
     int i, j, k, l, icmp, c_ifnt, ichr;
     float csmu, xpos, ypos, xcen, ycen, xrgt, ybot;
     float wdth, xlft, ytop, xcrd, ycrd;
-/*
- * Define the column and row labels.  The character string ':c:r', where
- * "c" is the first three characters of a column label and "r" is the
- * first character of a row label, is used to select the character to
- * be written in that column of that row.
- */
-    strcpy( clbl[0],  "PRU(0000)" );
-    strcpy( clbl[1],  "PRL(0100)" );
-    strcpy( clbl[2],  "IRU(0200)" );
-    strcpy( clbl[3],  "IRL(0300)" );
-    strcpy( clbl[4],  "KRU(0400)" );
-    strcpy( clbl[5],  "KRL(0500)" );
-    strcpy( clbl[6],  "PGU(0600)" );
-    strcpy( clbl[7],  "PGL(0700)" );
-    strcpy( clbl[8],  "IGU(1000)" );
-    strcpy( clbl[9],  "IGL(1100)" );
-    strcpy( clbl[10], "KGU(1200)" );
-    strcpy( clbl[11], "KGL(1300)" );
-
-    strcpy( rlbl[0],  "A(01)" );
-    strcpy( rlbl[1],  "B(02)" );
-    strcpy( rlbl[2],  "C(03)" );
-    strcpy( rlbl[3],  "D(04)" );
-    strcpy( rlbl[4],  "E(05)" );
-    strcpy( rlbl[5],  "F(06)" );
-    strcpy( rlbl[6],  "G(07)" );
-    strcpy( rlbl[7],  "H(10)" );
-    strcpy( rlbl[8],  "I(11)" );
-    strcpy( rlbl[9],  "J(12)" );
-    strcpy( rlbl[10], "K(13)" );
-    strcpy( rlbl[11], "L(14)" );
-    strcpy( rlbl[12], "M(15)" );
-    strcpy( rlbl[13], "N(16)" );
-    strcpy( rlbl[14], "O(17)" );
-    strcpy( rlbl[15], "P(20)" );
-    strcpy( rlbl[16], "Q(21)" );
-    strcpy( rlbl[17], "R(22)" );
-    strcpy( rlbl[18], "S(23)" );
-    strcpy( rlbl[19], "T(24)" );
-    strcpy( rlbl[20], "U(25)" );
-    strcpy( rlbl[21], "V(26)" );
-    strcpy( rlbl[22], "W(27)" );
-    strcpy( rlbl[23], "X(30)" );
-    strcpy( rlbl[24], "Y(31)" );
-    strcpy( rlbl[25], "Z(32)" );
-    strcpy( rlbl[26], "0(33)" );
-    strcpy( rlbl[27], "1(34)" );
-    strcpy( rlbl[28], "2(35)" );
-    strcpy( rlbl[29], "3(36)" );
-    strcpy( rlbl[30], "4(37)" );
-    strcpy( rlbl[31], "5(40)" );
-    strcpy( rlbl[32], "6(41)" );
-    strcpy( rlbl[33], "7(42)" );
-    strcpy( rlbl[34], "8(43)" );
-    strcpy( rlbl[35], "9(44)" );
-    strcpy( rlbl[36], "+(45)" );
-    strcpy( rlbl[37], "-(46)" );
-    strcpy( rlbl[38], "*(47)" );
-    strcpy( rlbl[39], "/(50)" );
-    strcpy( rlbl[40], "((51)" );
-    strcpy( rlbl[41], ")(52)" );
-    strcpy( rlbl[42], "$(53)" );
-    strcpy( rlbl[43], "=(54)" );
-    strcpy( rlbl[44], " (55)" );
-    strcpy( rlbl[45], ",(56)" );
-    strcpy( rlbl[46], ".(57)" );
-    strcpy( rlbl[47], "     " );
-
 /*
  * Define a flag which says, if 0, that the first eight plots are to
  * occupy eight separate frames and, if 1, that those plots are to be
@@ -100,18 +56,16 @@ main()
     c_set(0.,1.,0.,1.,0.,1.,0.,1.,1);
 /*
  * Produce examples of the complex and duplex character sets.
- */
-
-/*
+ *
  * Compute a character-size multiplier, depending on whether the first
  * eight plots are being put on eight frames or two.
  */
-    csmu=(float)(2-icmp);
+    csmu = (float)(2-icmp);
 /*
  * Each pass through the loop on I produces four plots - the first four
  * for the complex set, and the second four for the duplex set.
  */
-    for( i=1; i <= 2; i++ ) {
+    for( i = 1; i <= 2; i++ ) {
 /*
  * Change to the appropriate character set.
  */
@@ -215,9 +169,8 @@ main()
     if(icmp != 0) c_set (0.,1.,0.,1.,0.,1.,0.,1.,1);
 /*
  * Do a single frame showing various capabilities of PLCHHQ.
- */
-
-/*
+ *
+ *
  * Put labels at the top of the plot.
  */
     c_plchhq (.5,.98,"PLCHHQ - VARIOUS CAPABILITIES",.02,0.,0.);
@@ -380,7 +333,7 @@ main()
 /*
  * Double the line width.
  */
-    c_gslwsc (2.);
+    gset_linewidth (2.);
 /*
  * Do a single frame showing all the characters in the fontcap databases,
  * access to which was added in June of 1990.
@@ -441,7 +394,7 @@ main()
  * Go back to normal line width.
  */
     c_plotif (0.,0.,2);
-    c_gslwsc (1.);
+    gset_linewidth (1.);
 /*
  * Advance the frame.
  */
@@ -455,7 +408,7 @@ main()
  *
  * Double the line width.
  */
-    c_gslwsc (2.);
+    gset_linewidth (2.);
 /*
  * Put a label at the top of the plot.
  */
@@ -537,7 +490,7 @@ main()
     ytop=.150+14.*(wdth/16.);
     
     c_plotif (0.,0.,2);
-    c_gslwsc (1.);
+    gset_linewidth (1.);
     
     for( i = -48; i <= 48; i++ ) {
         xcrd=.500+(float)(i)*(wdth/16.);
@@ -550,7 +503,7 @@ main()
     }
     
     c_plotif (0.,0.,2);
-    c_gslwsc (2.);
+    gset_linewidth (2.);
 
     xcrd=.500-45.*(wdth/16.);
     ycrd=.150;
@@ -580,7 +533,7 @@ main()
  * Go back to normal line width.
  */
     c_plotif (0.,0.,2);
-    c_gslwsc (1.);
+    gset_linewidth (1.);
 /*
  * Advance the frame.
  */
@@ -589,9 +542,6 @@ main()
  * Close GKS.
  */
     c_clsgks();
-/*
- * Done.
- */
 }
 
 drawbx(xcen,ycen,angd,xtra)
@@ -623,5 +573,4 @@ float xcen,ycen,angd,xtra;
     c_plotif (xalt,yalt,1);
     c_plotif (xalb,yalb,1);
     c_plotif (0.,0.,2);
-    return(1);
 }

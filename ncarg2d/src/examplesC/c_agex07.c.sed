@@ -1,8 +1,12 @@
 /*
- *	$Id: c_agex07.c.sed,v 1.3 1992-11-06 21:54:15 haley Exp $
+ *	$Id: c_agex07.c.sed,v 1.4 1993-01-15 21:43:23 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
+
+/*
+ * Include function prototypes
+ */
 #include <ncarg/ncargC.h>
 
 main()
@@ -144,11 +148,10 @@ main()
  * close gks.
  */
     c_clsgks();
-
 }
 
 
-bndary()
+void bndary()
 {
 /*
  * Routine to draw the plotter-frame edge.
@@ -158,7 +161,6 @@ bndary()
     c_plotit(32767,32767,1);
     c_plotit(    0,32767,1);
     c_plotit(    0,    0,1);
-    return(1);
 }
 
 agutol_(iaxs,funs,idma,vinp,votp)

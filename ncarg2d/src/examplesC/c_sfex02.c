@@ -1,10 +1,14 @@
 /*
- *	$Id: c_sfex02.c,v 1.2 1992-11-04 15:50:58 haley Exp $
+ *	$Id: c_sfex02.c,v 1.3 1993-01-15 21:44:50 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
+
+/* 
+ * Include function prototypes
+ */
 #include <ncarg/ncargC.h>
-#include <ncarg/ncarg_gksC.h>
+#include <ncarg/gks.h>
 
 main()
 {
@@ -29,15 +33,15 @@ main()
 /*
  * Turn off the clipping indicator.
  */
-    c_gsclip(0);
+    gset_clip_ind(0);
 /*
  * Set all the GKS aspect source flags to "individual".
  */
-    c_gsasf (ias);
+    gset_asfs (ias);
 /*
  * force solid fill.
  */
-    c_gsfais (1);
+    gset_fill_int_style (1);
 /*
  * Define color indices.
  */
@@ -122,63 +126,37 @@ dfclrs()
  * Define a set of RGB color triples for colors 1 through 15.
  */
     float rgbv[3][15];
+    Gcolr_rep color;
     int i;
 /*
  * Define the RGB color triples needed below.
  */
-    rgbv[0][0] = 1.00;
-    rgbv[1][0] = 1.00;
-    rgbv[2][0] = 1.00;
-    rgbv[0][1] = 0.70;
-    rgbv[1][1] = 0.70;
-    rgbv[2][1] = 0.70;
-    rgbv[0][2] = 0.75;
-    rgbv[1][2] = 0.50;
-    rgbv[2][2] = 1.00;
-    rgbv[0][3] = 0.50;
-    rgbv[1][3] = 0.00;
-    rgbv[2][3] = 1.00;
-    rgbv[0][4] = 0.00;
-    rgbv[1][4] = 0.00;
-    rgbv[2][4] = 1.00;
-    rgbv[0][5] = 0.00;
-    rgbv[1][5] = 0.50;
-    rgbv[2][5] = 1.00;
-    rgbv[0][6] = 0.00;
-    rgbv[1][6] = 1.00;
-    rgbv[2][6] = 1.00;
-    rgbv[0][7] = 0.00;
-    rgbv[1][7] = 1.00;
-    rgbv[2][7] = 0.60;
-    rgbv[0][8] = 0.00;
-    rgbv[1][8] = 1.00;
-    rgbv[2][8] = 0.00;
-    rgbv[0][9] = 0.70;
-    rgbv[1][9] = 1.00;
-    rgbv[2][9] = 0.00;
-    rgbv[0][10] = 1.00;
-    rgbv[1][10] = 1.00;
-    rgbv[2][10] = 0.00;
-    rgbv[0][11] = 1.00;
-    rgbv[1][11] = 0.75;
-    rgbv[2][11] = 0.00;
-    rgbv[0][12] = 1.00;
-    rgbv[1][12] = 0.38;
-    rgbv[2][12] = 0.38;
-    rgbv[0][13] = 1.00;
-    rgbv[1][13] = 0.00;
-    rgbv[2][13] = 0.38;
-    rgbv[0][14] = 1.00;
-    rgbv[1][14] = 0.00;
-    rgbv[2][14] = 0.00;
+    rgbv[0][0] = 1.00;    rgbv[1][0] = 1.00;    rgbv[2][0] = 1.00;
+    rgbv[0][1] = 0.70;    rgbv[1][1] = 0.70;    rgbv[2][1] = 0.70;
+    rgbv[0][2] = 0.75;    rgbv[1][2] = 0.50;    rgbv[2][2] = 1.00;
+    rgbv[0][3] = 0.50;    rgbv[1][3] = 0.00;    rgbv[2][3] = 1.00;
+    rgbv[0][4] = 0.00;    rgbv[1][4] = 0.00;    rgbv[2][4] = 1.00;
+    rgbv[0][5] = 0.00;    rgbv[1][5] = 0.50;    rgbv[2][5] = 1.00;
+    rgbv[0][6] = 0.00;    rgbv[1][6] = 1.00;    rgbv[2][6] = 1.00;
+    rgbv[0][7] = 0.00;    rgbv[1][7] = 1.00;    rgbv[2][7] = 0.60;
+    rgbv[0][8] = 0.00;    rgbv[1][8] = 1.00;    rgbv[2][8] = 0.00;
+    rgbv[0][9] = 0.70;    rgbv[1][9] = 1.00;    rgbv[2][9] = 0.00;
+    rgbv[0][10] = 1.00;    rgbv[1][10] = 1.00;    rgbv[2][10] = 0.00;
+    rgbv[0][11] = 1.00;    rgbv[1][11] = 0.75;    rgbv[2][11] = 0.00;
+    rgbv[0][12] = 1.00;    rgbv[1][12] = 0.38;    rgbv[2][12] = 0.38;
+    rgbv[0][13] = 1.00;    rgbv[1][13] = 0.00;    rgbv[2][13] = 0.38;
+    rgbv[0][14] = 1.00;    rgbv[1][14] = 0.00;    rgbv[2][14] = 0.00;
 /*
  * Define 16 different color indices, for indices 0 through 15.  The
  * color corresponding to index 0 is black and the color corresponding
  * to index 1 is white.
  */
-    c_gscr (1,0,0.,0.,0.);
+    color.rgb.red = color.rgb.green = color.rgb.blue = 0.;
+    gset_colr_rep (1,0,&color);
     for( i = 0; i < 15; i++ ) {
-        c_gscr(1,i+1,rgbv[0][i],rgbv[1][i],rgbv[2][i]);
+        color.rgb.red = rgbv[0][i];
+        color.rgb.green = rgbv[1][i];
+        color.rgb.blue = rgbv[2][i];
+        gset_colr_rep(1,i+1,&color);
     }
-    return(1);
 }

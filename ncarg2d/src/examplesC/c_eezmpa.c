@@ -1,10 +1,14 @@
 /*
- *	$Id: c_eezmpa.c,v 1.2 1992-11-04 15:50:24 haley Exp $
+ *	$Id: c_eezmpa.c,v 1.3 1993-01-15 21:44:15 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
+
+/*
+ * Include function prototypes
+ */
 #include <ncarg/ncargC.h>
-#include <ncarg/ncarg_gksC.h>
+#include <ncarg/gks.h>
 
 #define max(x,y)   ((x) > (y) ? (x) : (y) )
 
@@ -18,6 +22,7 @@ main()
     int ioc[14];
     int if1[13];
     int i,j,isu,ie;
+    Gcolr_rep color;
     extern int colram(
 #ifdef NeedFuncProto
         float *xcs,
@@ -41,48 +46,20 @@ main()
 /*
  * define the required rgb triples and indices.
  */
-    rgb[1][1] = 0.70;
-    rgb[2][1] = 0.70;
-    rgb[3][1] = 0.70;
-    rgb[1][2] = 0.75;
-    rgb[2][2] = 0.50;
-    rgb[3][2] = 1.00;
-    rgb[1][3] = 0.50;
-    rgb[2][3] = 0.00;
-    rgb[3][3] = 1.00;
-    rgb[1][4] = 0.00;
-    rgb[2][4] = 0.00;
-    rgb[3][4] = 1.00;
-    rgb[1][5] = 0.00;
-    rgb[2][5] = 0.50;
-    rgb[3][5] = 1.00;
-    rgb[1][6] = 0.00;
-    rgb[2][6] = 1.00;
-    rgb[3][6] = 1.00;
-    rgb[1][7] = 0.00;
-    rgb[2][7] = 1.00;
-    rgb[3][7] = 0.60;
-    rgb[1][8] = 0.00;
-    rgb[2][8] = 1.00;
-    rgb[3][8] = 0.00;
-    rgb[1][9] = 0.70;
-    rgb[2][9] = 1.00;
-    rgb[3][9] = 0.00;
-    rgb[1][10] = 1.00;
-    rgb[2][10] = 1.00;
-    rgb[3][10] = 0.00;
-    rgb[1][11] = 1.00;
-    rgb[2][11] = 0.75;
-    rgb[3][11] = 0.00;
-    rgb[1][12] = 1.00;
-    rgb[2][12] = 0.38;
-    rgb[3][12] = 0.38;
-    rgb[1][13] = 1.00;
-    rgb[2][13] = 0.00;
-    rgb[3][13] = 0.38;
-    rgb[1][14] = 1.00;
-    rgb[2][14] = 0.00;
-    rgb[3][14] = 0.00;
+    rgb[1][1] = 0.70;    rgb[2][1] = 0.70;    rgb[3][1] = 0.70;
+    rgb[1][2] = 0.75;    rgb[2][2] = 0.50;    rgb[3][2] = 1.00;
+    rgb[1][3] = 0.50;    rgb[2][3] = 0.00;    rgb[3][3] = 1.00;
+    rgb[1][4] = 0.00;    rgb[2][4] = 0.00;    rgb[3][4] = 1.00;
+    rgb[1][5] = 0.00;    rgb[2][5] = 0.50;    rgb[3][5] = 1.00;
+    rgb[1][6] = 0.00;    rgb[2][6] = 1.00;    rgb[3][6] = 1.00;
+    rgb[1][7] = 0.00;    rgb[2][7] = 1.00;    rgb[3][7] = 0.60;
+    rgb[1][8] = 0.00;    rgb[2][8] = 1.00;    rgb[3][8] = 0.00;
+    rgb[1][9] = 0.70;    rgb[2][9] = 1.00;    rgb[3][9] = 0.00;
+    rgb[1][10] = 1.00;   rgb[2][10] = 1.00;   rgb[3][10] = 0.00;
+    rgb[1][11] = 1.00;   rgb[2][11] = 0.75;   rgb[3][11] = 0.00;
+    rgb[1][12] = 1.00;   rgb[2][12] = 0.38;   rgb[3][12] = 0.38;
+    rgb[1][13] = 1.00;   rgb[2][13] = 0.00;   rgb[3][13] = 0.38;
+    rgb[1][14] = 1.00;   rgb[2][14] = 0.00;   rgb[3][14] = 0.00;
     
     ioc[0] = 6;
     ioc[1] = 2;
@@ -105,23 +82,27 @@ main()
 /*
  * re-set certain aspect source flags to "individual".
  */
-    c_gqasf(ie,if1);
+    ginq_asfs(&ie,if1);
     if1[10]=1;
     if1[11]=1;
-    c_gsasf(if1);
+    gset_asfs(if1);
 /*
  * force solid fill.
  */
-    c_gsfais(1);
+    gset_fill_int_style(1);
 /*
  * define 15 different color indices.  the first 14 are spaced through
  * the color spectrum and the final one is black.
  */
     for( j = 1; j <= 14; j++ ) {
         i=ioc[j-1];
-        c_gscr(1,j,rgb[1][i],rgb[2][i],rgb[3][i]);
+        color.rgb.red = rgb[1][i];
+        color.rgb.green = rgb[2][i];
+        color.rgb.blue = rgb[3][i];
+        gset_colr_rep(1,j,&color);
     }
-    c_gscr(1,15,0.,0.,0.);
+    color.rgb.red = color.rgb.green = color.rgb.blue = 0.;
+    gset_colr_rep(1,15,&color);
 /*
  * set up ezmap, but don't draw anything.
  */
@@ -161,7 +142,8 @@ main()
 /*
  * set the background color.
  */
-    c_gscr(1,0,1.,1.,1.);
+    color.rgb.red = color.rgb.green = color.rgb.blue = 1.;
+    gset_colr_rep(1,0,&color);
 /*
  * color the map.
  */
@@ -175,7 +157,7 @@ main()
  * flush c_plotit's buffers and set polyline color index to black.
  */
     c_plotit(0,0,0);
-    c_gsplci(15);
+    gset_line_colr_ind(15);
 
     c_mapsti("LA",0);
     c_mapsti("MV",1);
@@ -183,7 +165,7 @@ main()
     c_maplot();
 /*
  * draw lines of latitude and longitude over water.  they will be in
- * black because of the c_gsplci call above.
+ * black because of the gset_line_colr_ind call above.
  */
     c_mapgrm(iam,xcs,ycs,10000,iai,iag,10,colrln);
 /*
@@ -225,7 +207,8 @@ colram (xcs,ycs,ncs,iai,iag,nai)
  * device being used won't handle polygons defined by more points than
  * that.)
  */
-    int itm;
+    int i, itm;
+    Gpoint_list fill_area;
 
     if (iai[9] >= 0 && iai[1] >= 0) {
         itm=max(iai[0],iai[1]);
@@ -234,11 +217,28 @@ colram (xcs,ycs,ncs,iai,iag,nai)
 /*
  * set area fill color index.
  */
-            c_gsfaci(c_mapaci(itm));
-
-            c_gfa (*ncs-1,xcs,ycs);
+            gset_fill_colr_ind(c_mapaci(itm));
+/*
+ * Create structure to pass to gfill_area
+ */
+            fill_area.num_points = *ncs-1;
+            fill_area.points = (Gpoint *) malloc(2*(*ncs-1)*sizeof(Gfloat));
+            if( !fill_area.points ) {
+                fprintf( stderr, "colram: Not enough memory to create fill area structure\n" );
+                gemergency_close_gks();
+                exit(1);
+            }
+            for( i = 0; i < *ncs-1; i++ ) {
+                fill_area.points[i].x = xcs[i];
+                fill_area.points[i].y = ycs[i];
+            }
+/*
+ * Fill area
+ */
+            gfill_area(&fill_area);
         }
     }
+    free((Gpoint *)fill_area.points);
     return(1);
 }
 
@@ -270,13 +270,28 @@ int colrln(xcs,ycs,ncs,iai,iag,nai)
  * if the segment is defined by more than 150 points, we'd like to
  * know about it.
  */
-    int itm;
+    int i, itm;
+    Gpoint_list line;
 
     if (iai[0] >= 0 && iai[1] >= 0) {
         itm=max(iai[0],iai[1]);
         if (c_mapaci(itm) == 1) {
             if (*ncs > 150) printf( "colrln - ncs too big - %d\n",*ncs);
-            c_gpl (*ncs,xcs,ycs);
+/*
+ * Create structure to pass to gfill_area
+ */
+            line.num_points = *ncs;
+            line.points = (Gpoint *) malloc(2*(*ncs)*sizeof(Gfloat));
+            if( !line.points ) {
+                fprintf( stderr, "colrln: Not enough memory to create fill area structure\n" );
+                gemergency_close_gks();
+                exit(1);
+            }
+            for( i = 0; i < *ncs; i++ ) {
+                line.points[i].x = xcs[i];
+                line.points[i].y = ycs[i];
+            }
+            gpolyline(&line);
         }
     }
     return(1);

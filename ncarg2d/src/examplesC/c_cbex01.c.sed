@@ -1,10 +1,10 @@
 /*
- *	$Id: c_cbex01.c.sed,v 1.5 1992-12-08 16:51:07 haley Exp $
+ *	$Id: c_cbex01.c.sed,v 1.6 1993-01-15 21:43:41 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
 #include <ncarg/ncargC.h>
-#include <ncarg/ncarg_gksC.h>
+#include <ncarg/gks.h>
 
 int icll, iama[10000];
 
@@ -127,7 +127,7 @@ main()
 /*
  * Turn off clipping.
  */
-    c_gsclip (0);
+    gset_clip_ind (0);
 /*
  * Define a set of colors to use.
  */
@@ -163,8 +163,8 @@ main()
  * Change the text color to orange.  CONPACK will use these colors.
  */
     c_plotif (0.,0.,2);
-    c_gsplci (1);
-    c_gstxci (12);
+    gset_line_colr_ind (1);
+    gset_text_colr_ind (12);
 /*
  * Initialize the drawing of the first contour plot.
  */
@@ -192,8 +192,8 @@ main()
  * will come out entirely in that color.
  */
     c_plotif (0.,0.,2);
-    c_gsplci (12);
-    c_gstxci (12);
+    gset_line_colr_ind (12);
+    gset_text_colr_ind (12);
 /*
  * Use AUTOGRAPH to produce a background for the contour plot, forcing
  * it to pick up appropriate values from CONPACK"s SET call.
@@ -205,7 +205,7 @@ main()
  * Dump the polyline buffer and change the polyline color to green.
  */
     c_plotif (0.,0.,2);
-    c_gsplci (9);
+    gset_line_colr_ind (9);
 /*
  * Change the aspect ratio of the characters drawn by PLCHMQ to make
  * them approximately square.
@@ -263,7 +263,7 @@ main()
  * Dump the polyline buffer and switch the polyline color to yellow.
  */
     c_plotif (0.,0.,2);
-    c_gsplci (11);
+    gset_line_colr_ind (11);
 /*
  * Put a label at the top of the plot.
  */
@@ -283,8 +283,8 @@ main()
  * Force the text color index to orange.
  */
     c_plotif (0.,0.,2);
-    c_gsplci (1);
-    c_gstxci (12);
+    gset_line_colr_ind (1);
+    gset_text_colr_ind (12);
 /*
  * Initialize the drawing of the second contour plot.
  */
@@ -315,7 +315,7 @@ main()
  * Dump the polyline buffer and switch the polyline color to orange.
  */
     c_plotif (0.,0.,2);
-    c_gsplci (12);
+    gset_line_colr_ind (12);
 /*
  * Use AUTOGRAPH to draw a background.
  */
@@ -326,7 +326,7 @@ main()
  * Dump the polyline buffer and switch the polyline color to yellow.
  */
     c_plotif (0.,0.,2);
-    c_gsplci (11);
+    gset_line_colr_ind (11);
 /*
  * Draw a label at the top of the plot.
  */
@@ -348,35 +348,36 @@ void dfclrs()
  * Define a set of RGB color triples for colors 1 through 15 on
  * workstation 1.
  */
-    float rgbv[3][15];
+    Gcolr_rep rgbv[15];
     int i;
 /*
  * Define the RGB color triples needed below.
  */
-    rgbv[0][0] = 1.00;    rgbv[1][0] = 1.00;    rgbv[2][0] = 1.00;
-    rgbv[0][1] = 0.70;    rgbv[1][1] = 0.70;    rgbv[2][1] = 0.70;
-    rgbv[0][2] = 0.75;    rgbv[1][2] = 0.50;    rgbv[2][2] = 1.00;
-    rgbv[0][3] = 0.50;    rgbv[1][3] = 0.00;    rgbv[2][3] = 1.00;
-    rgbv[0][4] = 0.00;    rgbv[1][4] = 0.00;    rgbv[2][4] = 1.00;
-    rgbv[0][5] = 0.00;    rgbv[1][5] = 0.50;    rgbv[2][5] = 1.00;
-    rgbv[0][6] = 0.00;    rgbv[1][6] = 1.00;    rgbv[2][6] = 1.00;
-    rgbv[0][7] = 0.00;    rgbv[1][7] = 1.00;    rgbv[2][7] = 0.60;
-    rgbv[0][8] = 0.00;    rgbv[1][8] = 1.00;    rgbv[2][8] = 0.00;
-    rgbv[0][9] = 0.70;    rgbv[1][9] = 1.00;    rgbv[2][9] = 0.00;
-    rgbv[0][10] = 1.00;   rgbv[1][10] = 1.00;   rgbv[2][10] = 0.00;
-    rgbv[0][11] = 1.00;   rgbv[1][11] = 0.75;   rgbv[2][11] = 0.00;
-    rgbv[0][12] = 1.00;   rgbv[1][12] = 0.38;   rgbv[2][12] = 0.38;
-    rgbv[0][13] = 1.00;   rgbv[1][13] = 0.00;   rgbv[2][13] = 0.38;
-    rgbv[0][14] = 1.00;   rgbv[1][14] = 0.00;   rgbv[2][14] = 0.00;
+    rgbv[1].rgb.red = 0.70; rgbv[1].rgb.green = 0.70; rgbv[1].rgb.blue = 0.70;
+    rgbv[2].rgb.red = 0.75; rgbv[2].rgb.green = 0.50; rgbv[2].rgb.blue = 1.00;
+    rgbv[3].rgb.red = 0.50; rgbv[3].rgb.green = 0.00; rgbv[3].rgb.blue = 1.00;
+    rgbv[4].rgb.red = 0.00; rgbv[4].rgb.green = 0.00; rgbv[4].rgb.blue = 1.00;
+    rgbv[5].rgb.red = 0.00; rgbv[5].rgb.green = 0.50; rgbv[5].rgb.blue = 1.00;
+    rgbv[6].rgb.red = 0.00; rgbv[6].rgb.green = 1.00; rgbv[6].rgb.blue = 1.00;
+    rgbv[7].rgb.red = 0.00; rgbv[7].rgb.green = 1.00; rgbv[7].rgb.blue = 0.60;
+    rgbv[8].rgb.red = 0.00; rgbv[8].rgb.green = 1.00; rgbv[8].rgb.blue = 0.00;
+    rgbv[9].rgb.red = 0.70; rgbv[9].rgb.green = 1.00; rgbv[9].rgb.blue = 0.00;
+    rgbv[10].rgb.red = 1.00; rgbv[10].rgb.green = 1.00; rgbv[10].rgb.blue = 0.00;
+    rgbv[11].rgb.red = 1.00; rgbv[11].rgb.green = 0.75; rgbv[11].rgb.blue = 0.00;
+    rgbv[12].rgb.red = 1.00; rgbv[12].rgb.green = 0.38; rgbv[12].rgb.blue = 0.38;
+    rgbv[13].rgb.red = 1.00; rgbv[13].rgb.green = 0.00; rgbv[13].rgb.blue = 0.38;
+    rgbv[14].rgb.red = 1.00; rgbv[14].rgb.green = 0.00; rgbv[14].rgb.blue = 0.00;
 /*
  * Define 16 different color indices, for indices 0 through 15.  The
  * color corresponding to index 0 is black and the color corresponding
  * to index 1 is white.
  */
-    c_gscr (1,0,0.,0.,0.);
+    rgbv[0].rgb.red = 0.0; rgbv[0].rgb.green = 0.0; rgbv[0].rgb.blue = 0.0;
+    gset_colr_rep (1,0,&rgbv[0]);
+    rgbv[0].rgb.red = 1.00; rgbv[0].rgb.green = 1.00; rgbv[0].rgb.blue = 1.00;
 
     for( i = 0; i < 15; i++ ) {
-        c_gscr (1,i+1,rgbv[0][i],rgbv[1][i],rgbv[2][i]);
+        gset_colr_rep (1,i+1,&rgbv[i]);
     }
 }
 

@@ -1,16 +1,19 @@
 /*
- *	$Id: c_mpex05.c.sed,v 1.2 1992-11-04 15:50:42 haley Exp $
+ *	$Id: c_mpex05.c.sed,v 1.3 1993-01-15 21:44:32 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
+
+/*
+ * Include function prototypes
+ */
 #include <ncarg/ncargC.h>
-#include <ncarg/ncarg_gksC.h>
+#include <ncarg/gks.h>
 
 main()
 {
-
 /*
- * The program EXMPL5 produces a single frame with maximal-area
+ * This programproduces a single frame with maximal-area
  * views of all the EZMAP projections of the globe.
  */
 /*
@@ -26,7 +29,7 @@ main()
 /*
  * Turn off the clipping indicator.
  */
-    c_gsclip (0);
+    gset_clip_ind (0);
 /*
  * Set the outline-dataset parameter.
  */
@@ -131,12 +134,9 @@ main()
  * Close GKS.
  */
     c_clsgks();
-/*
- * Done.
- */
 }
 
-bndary()
+void bndary()
 {
 /*
  * Routine to draw the plotter-frame edge.
@@ -146,7 +146,6 @@ bndary()
     c_plotit(32767,32767,1);
     c_plotit(    0,32767,1);
     c_plotit(    0,    0,1);
-    return(1);
 }
 
 mapeod_(nout,nseg,idls,idrs,npts,pnts)

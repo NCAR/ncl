@@ -1,10 +1,14 @@
 /*
- *	$Id: c_elblba.c,v 1.2 1992-11-04 15:50:27 haley Exp $
+ *	$Id: c_elblba.c,v 1.3 1993-01-15 21:44:17 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
+
+/*
+ * Include function prototypes
+ */
 #include <ncarg/ncargC.h>
-#include <ncarg/ncarg_gksC.h>
+#include <ncarg/gks.h>
 
 char *llb1[20] = {
     "  0 to 5:H2Q"," 5 to 10:H1Q","10 to 15:H1Q","15 to 20:H1Q","20 to 25:H1Q",
@@ -41,87 +45,101 @@ main()
         lnd5[i] = i+4;
         lnd6[i] = i;
     }
-
+/*
+ * Open GKS.
+ */
     c_opngks();
-    c_gsasf(iasf);
-    c_gsfais(1);
-    c_gsclip(0);
+/*
+ * Set all the GKS aspect source flags to "individual".
+ */
+    gset_asfs(iasf);
+/*
+ * Force solid fill.
+ */
+    gset_fill_int_style(1);
+/*
+ * Turn off the clipping indicator.
+ */
+    gset_clip_ind(0);
+/*
+ * Define color indices.
+ */
     dfclrs();
+/*
+ * Set some parameter values.
+ */
     c_pcsetr("CS - CONSTANT SPACING",1.25);
     c_lbsetr("WBL - WIDTH OF BOX LINES",4.);
     c_lbsetr("WFL - WIDTH OF FILL LINES",2.);
     c_lbsetr("WLB - WIDTH OF LABEL LINES",2.);
+/*
+ * Put the first label bar vertically along the left edge of the plotter
+ * frame.  Use patterns.
+ */
     c_sfseti("ANGLE OF FILL LINES",15);
     c_sfseti ("TYPE OF FILL",-4);
     c_lblbar(1,.05,.30,.05,.95,20,.3333,1.,lnd1,0,llb1,20,2);
+/*
+ * Put the second label bar vertically along the right edge.  Use solid
+ * color fill.
+ */
     c_sfseti("TYPE OF FILL",0);
     c_lblbar(1,.70,.95,.05,.95,16,.3333,1.,lnd2,0,llb2,17,1);
     c_lblbar(0,.35,.65,.05,.20,4,.5,.5,lnd3,1,llb3,4,1);
     c_lblbar(0,.35,.65,.20,.35,4,.5,.5,lnd4,1,llb4,4,1);
     c_lblbar(0,.35,.65,.35,.50,4,.5,.5,lnd5,1,llb5,4,1);
     c_lblbar(0,.35,.65,.50,.65,4,.5,.5,lnd6,1,llb6,4,1);
+/*
+ * Put a title on the plot.  We must first call SET to define the ranges
+ * of the X and Y coordinates to be used.  The constant spacing feature
+ * is turned off so that the title will look normal.
+ */
     c_set(0.,1.,0.,1.,0.,1.,0.,1.,1);
     c_pcsetr("CS - CONSTANT SPACING",0.);
     c_plchhq(.5,.90,"THREE",.025,0.,0.);
     c_plchhq(.5,.85,"LABELBAR",.025,0.,0.);
     c_plchhq(.5,.80,"EXAMPLES",.025,0.,0.);
-    
+/*
+ * Advance the frame.
+ */    
     c_frame();
+/*
+ * Close GKS.
+ */
     c_clsgks();
 }
-dfclrs()
+
+void dfclrs()
 {
     int i;
-    float rgbv[4][16];
+    Gcolr_rep rgbv[16];
+/*
+ * Define a set of RGB color triples for colors 1 through 15.
+ */
+    rgbv[2].rgb.red = 0.70; rgbv[2].rgb.green = 0.70; rgbv[2].rgb.blue = 0.70;
+    rgbv[3].rgb.red = 0.75; rgbv[3].rgb.green = 0.50; rgbv[3].rgb.blue = 1.00;
+    rgbv[4].rgb.red = 0.50; rgbv[4].rgb.green = 0.00; rgbv[4].rgb.blue = 1.00;
+    rgbv[5].rgb.red = 0.00; rgbv[5].rgb.green = 0.00; rgbv[5].rgb.blue = 1.00;
+    rgbv[6].rgb.red = 0.00; rgbv[6].rgb.green = 0.50; rgbv[6].rgb.blue = 1.00;
+    rgbv[7].rgb.red = 0.00; rgbv[7].rgb.green = 1.00; rgbv[7].rgb.blue = 1.00;
+    rgbv[8].rgb.red = 0.00; rgbv[8].rgb.green = 1.00; rgbv[8].rgb.blue = 0.60;
+    rgbv[9].rgb.red = 0.00; rgbv[9].rgb.green = 1.00; rgbv[9].rgb.blue = 0.00;
+    rgbv[10].rgb.red = 0.70; rgbv[10].rgb.green = 1.00; rgbv[10].rgb.blue = 0.00;
+    rgbv[11].rgb.red = 1.00; rgbv[11].rgb.green = 1.00; rgbv[11].rgb.blue = 0.00;
+    rgbv[12].rgb.red = 1.00; rgbv[12].rgb.green = 0.75; rgbv[12].rgb.blue = 0.00;
+    rgbv[13].rgb.red = 1.00; rgbv[13].rgb.green = 0.38; rgbv[13].rgb.blue = 0.38;
+    rgbv[14].rgb.red = 1.00; rgbv[14].rgb.green = 0.00; rgbv[14].rgb.blue = 0.38;
+    rgbv[15].rgb.red = 1.00; rgbv[15].rgb.green = 0.00; rgbv[15].rgb.blue = 0.00;
 
-    rgbv[1][1] = 1.00;
-    rgbv[2][1] = 1.00;
-    rgbv[3][1] = 1.00;
-    rgbv[1][2] = 0.70;
-    rgbv[2][2] = 0.70;
-    rgbv[3][2] = 0.70;
-    rgbv[1][3] = 0.75;
-    rgbv[2][3] = 0.50;
-    rgbv[3][3] = 1.00;
-    rgbv[1][4] = 0.50;
-    rgbv[2][4] = 0.00;
-    rgbv[3][4] = 1.00;
-    rgbv[1][5] = 0.00;
-    rgbv[2][5] = 0.00;
-    rgbv[3][5] = 1.00;
-    rgbv[1][6] = 0.00;
-    rgbv[2][6] = 0.50;
-    rgbv[3][6] = 1.00;
-    rgbv[1][7] = 0.00;
-    rgbv[2][7] = 1.00;
-    rgbv[3][7] = 1.00;
-    rgbv[1][8] = 0.00;
-    rgbv[2][8] = 1.00;
-    rgbv[3][8] = 0.60;
-    rgbv[1][9] = 0.00;
-    rgbv[2][9] = 1.00;
-    rgbv[3][9] = 0.00;
-    rgbv[1][10] = 0.70;
-    rgbv[2][10] = 1.00;
-    rgbv[3][10] = 0.00;
-    rgbv[1][11] = 1.00;
-    rgbv[2][11] = 1.00;
-    rgbv[3][11] = 0.00;
-    rgbv[1][12] = 1.00;
-    rgbv[2][12] = 0.75;
-    rgbv[3][12] = 0.00;
-    rgbv[1][13] = 1.00;
-    rgbv[2][13] = 0.38;
-    rgbv[3][13] = 0.38;
-    rgbv[1][14] = 1.00;
-    rgbv[2][14] = 0.00;
-    rgbv[3][14] = 0.38;
-    rgbv[1][15] = 1.00;
-    rgbv[2][15] = 0.00;
-    rgbv[3][15] = 0.00;
-    c_gscr(1,0,0.,0.,0.);
+    rgbv[1].rgb.red = rgbv[1].rgb.green = rgbv[1].rgb.blue = 0.0;
+/*
+ * Define 16 different color indices, for indices 0 through 15.  The
+ * color corresponding to index 0 is black and the color corresponding
+ * to index 1 is white.
+ */
+    gset_colr_rep(1,0,&rgbv[0]);
+    rgbv[1].rgb.red = rgbv[1].rgb.green = rgbv[1].rgb.blue = 1.00;
     for( i = 1; i <= 15; i++ ) {
-        c_gscr(1,i,rgbv[1][i],rgbv[2][i],rgbv[3][i]);
+        gset_colr_rep(1,i,&rgbv[i]);
     }
-    return(1);
 }
