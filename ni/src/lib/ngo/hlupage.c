@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.31 1999-12-11 01:02:35 dbrown Exp $
+ *      $Id: hlupage.c,v 1.32 1999-12-11 04:44:08 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -260,7 +260,7 @@ static NhlErrorTypes GetHluObjCreateMessage
 	brHluObjCreate	obj_create;
 	NhlBoolean	do_link = False;
 	NgPageMessageType reply_req = _NgNOMESSAGE;
-	NhlErrorTypes 	ret = NhlNOERROR;
+	NhlErrorTypes 	subret,ret = NhlNOERROR;
 
 	obj_create = (brHluObjCreate) message->message;
 	pub->class_name = obj_create->class_name;
@@ -340,8 +340,10 @@ static NhlErrorTypes GetHluObjCreateMessage
 	}
 	/* call reset on this page */
 
-	if (reset)
-		return MIN(ret,NgResetPage(rec->go->base.id,page->id));
+	if (reset) {
+		subret = NgResetPage(rec->go->base.id,page->id);
+		return MIN(ret,subret);
+	}
 	else
 		return ret;
 }
@@ -2500,7 +2502,6 @@ static NhlErrorTypes ResetHluPage
 	else {
 		if (! rec->data_source_grid_managed) {
 			XtManageChild(rec->data_source_grid->grid);	
-			XtMapWidget(rec->data_source_grid->grid);
 			rec->data_source_grid_managed = True;
 		}
 
@@ -2591,8 +2592,13 @@ static NhlErrorTypes ResetHluPage
 			      NULL);
 		NgXAppFreeXmString(rec->go->go.appmgr,xmstring);
 	}
-	XtMapWidget(pdp->form);
 		      
+	XtMapWidget(rec->data_source_grid->grid);
+	XtUnmapWidget(rec->res_tree->tree);
+ 	XtMapWidget(pdp->form);
+	XtMapWidget(rec->res_tree->tree);
+	(*pdp->adjust_page_geo)(page);
+
         return NhlNOERROR;
 
 }
@@ -2839,9 +2845,9 @@ _NgGetHluPage
                         ResetHluPage(page);
 		else 
 			GetPageMessages(page,True);
-		if (new)
+		if (new) {
 			_NgGOWidgetTranslations(go,pdp->form);
-
+		}
                 return pdp;
         }
 
@@ -2945,11 +2951,12 @@ _NgGetHluPage
 			rec->data_object_count = copy_rec->data_object_count;
 		}
 	}
-	GetPageMessages(page,True);
-	ResetHluPage(page);
+	if (rec->hlu_id > NhlNULLOBJID)
+		ResetHluPage(page);
+	else 
+		GetPageMessages(page,True);
 	if (new)
 		_NgGOWidgetTranslations(go,pdp->form);
-
         return pdp;
 }
 
