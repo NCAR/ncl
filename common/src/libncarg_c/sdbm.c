@@ -30,6 +30,7 @@
 
 #include "c.h"
 
+#include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -53,7 +54,6 @@
 extern int errno;
 #endif
 
-extern char *malloc proto((unsigned int));
 extern void free proto((void *));
 
 /*
