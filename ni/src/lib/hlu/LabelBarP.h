@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBarP.h,v 1.12 2000-02-11 02:47:37 dbrown Exp $
+ *      $Id: LabelBarP.h,v 1.13 2000-08-30 00:38:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -98,6 +98,7 @@ typedef struct _NhlLabelBarLayerPart {
 	
 	float	title_ext;
 	char	*title_string;
+	NhlBoolean title_on_set;
 	int	title_on;
 	NhlPosition title_pos;
 	NhlJustification  title_just;

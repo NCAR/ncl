@@ -1,5 +1,5 @@
 /*
- *      $Id: TitleP.h,v 1.6 1999-04-19 23:28:52 dbrown Exp $
+ *      $Id: TitleP.h,v 1.7 2000-08-30 00:38:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,7 @@ typedef struct _NhlTitleLayerPart {
 /* Publically setable resource fields */
 	float	delta;
 	char	*main_string;
+	NhlBoolean	main_on_set;
 	NhlBoolean	main_on;
 	NhlTitlePositions	main_side;
 	NhlTitlePositions	main_position;
@@ -51,6 +52,7 @@ typedef struct _NhlTitleLayerPart {
 					used for all the titles */
 	int 	main_font_color;
 	char	*x_axis_string;
+	NhlBoolean	x_axis_on_set;
 	NhlBoolean	x_axis_on;
 	NhlTitlePositions	x_axis_side;
 	NhlTitlePositions	x_axis_position;
@@ -70,6 +72,7 @@ typedef struct _NhlTitleLayerPart {
 	int 	x_axis_font_color;
 
 	char	*y_axis_string;
+	NhlBoolean	y_axis_on_set;
 	NhlBoolean	y_axis_on;
 	NhlTitlePositions	y_axis_side;
 	NhlTitlePositions	y_axis_position;

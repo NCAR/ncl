@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.66 2000-02-28 18:48:48 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.67 2000-08-30 00:38:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,32 +30,6 @@
 #include <ncarg/hlu/hluutil.h>
 
 static char lbDefTitle[] = "NOTHING";
-
-/*ARGSUSED*/
-static NhlErrorTypes
-SetTitleOn
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	NhlLabelBarLayer	lbl = (NhlLabelBarLayer)base;
-
-	lbl->labelbar.title_on = !(lbl->labelbar.title_string == lbDefTitle);
-
-	return NhlNOERROR;
-}
-
 
 /* default pattern list */
 
@@ -229,9 +203,12 @@ static NhlResource resources[] = {
 {NhlNlbTitleString, NhlClbTitleString, NhlTString, 
 	 sizeof(char *), NhlOffset(NhlLabelBarLayerRec,labelbar.title_string),
 	 NhlTImmediate,_NhlUSET(lbDefTitle),0,(NhlFreeFunc)NhlFree},
+{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.title_on_set),
+	 NhlTImmediate,_NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 {NhlNlbTitleOn, NhlClbTitleOn, NhlTBoolean, 
 	 sizeof(NhlBoolean), NhlOffset(NhlLabelBarLayerRec,labelbar.title_on),
-	 NhlTProcedure,_NhlUSET((NhlPointer)SetTitleOn),0,NULL},
+	 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 {NhlNlbTitlePosition, NhlClbTitlePosition, NhlTPosition, 
 	 sizeof(NhlPosition), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.title_pos),
@@ -666,6 +643,15 @@ static NhlErrorTypes    LabelBarInitialize
 			lb_p->title_direction = NhlDOWN;
 			break;
 		}
+	}
+	/*
+	 * If the title on flag is not explicitly set, set it based on
+	 * whether a string has been supplied. Note that this must
+	 * occur before the title is set from SetLabelBarGeometry.
+	 */
+	if (! lb_p->title_on_set) {
+		lb_p->title_on = lb_p->title_string == lbDefTitle ?
+			False : True;
 	}
 
 	lb_p->lb_x = tnew->view.x;

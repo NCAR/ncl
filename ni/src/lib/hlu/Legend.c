@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.65 2000-03-02 01:30:18 dbrown Exp $
+ *      $Id: Legend.c,v 1.66 2000-08-30 00:38:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,31 +30,6 @@
 #include <ncarg/hlu/hluutil.h>
 
 static char lgDefTitle[] = "NOTHING";
-
-/*ARGSUSED*/
-static NhlErrorTypes
-SetTitleOn
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	NhlLegendLayer	lgl = (NhlLegendLayer)base;
-
-	lgl->legend.title_on = !(lgl->legend.title_string == lgDefTitle);
-
-	return NhlNOERROR;
-}
 
 static char Init_Name[] = "LegendInitialize";
 static char SetValues_Name[] = "LegendSetValues";
@@ -319,9 +294,12 @@ static NhlResource resources[] = {
 {NhlNlgTitleString, NhlClgTitleString, NhlTString, 
 	 sizeof(char *), NhlOffset(NhlLegendLayerRec,legend.title_string),
 	 NhlTImmediate, _NhlUSET(lgDefTitle),0,(NhlFreeFunc)NhlFree},
+{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 NhlOffset(NhlLegendLayerRec,legend.title_on_set),
+	 NhlTImmediate,_NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 {NhlNlgTitleOn, NhlClgTitleOn, NhlTBoolean, 
 	 sizeof(NhlBoolean), NhlOffset(NhlLegendLayerRec,legend.title_on),
-	 NhlTProcedure,_NhlUSET((NhlPointer)SetTitleOn),0,NULL},
+	 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 {NhlNlgTitlePosition, NhlClgTitlePosition, NhlTPosition, 
 	 sizeof(NhlPosition), NhlOffset(NhlLegendLayerRec,legend.title_pos),
 	 NhlTImmediate, _NhlUSET((NhlPointer) NhlTOP),0,NULL},
@@ -784,6 +762,15 @@ static NhlErrorTypes    LegendInitialize
 			lg_p->title_direction = NhlDOWN;
 			break;
 		}
+	}
+	/*
+	 * If the title on flag is not explicitly set, set it based on
+	 * whether a string has been supplied. Note that this must
+	 * occur before the title is set from SetLegendGeometry. 
+	 */
+	if (! lg_p->title_on_set) {
+		lg_p->title_on = lg_p->title_string == lgDefTitle ?
+			False : True;
 	}
 
 	lg_p->lg_x = tnew->view.x;

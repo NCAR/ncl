@@ -1,5 +1,5 @@
 /*
- *      $Id: LegendP.h,v 1.17 1999-05-22 00:43:12 dbrown Exp $
+ *      $Id: LegendP.h,v 1.18 2000-08-30 00:38:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -135,6 +135,7 @@ typedef struct _NhlLegendLayerPart {
 	
 	float		title_ext;
 	char		*title_string;
+	NhlBoolean	title_on_set;
 	int		title_on;
 	NhlPosition 	title_pos;
 	NhlJustification  title_just;

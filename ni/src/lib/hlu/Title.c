@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.41 1999-04-19 23:28:51 dbrown Exp $
+ *      $Id: Title.c,v 1.42 2000-08-30 00:38:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,81 +29,6 @@
 static char	Main[] = "Main";
 static char	XAxis[] = "XAxis";
 static char	YAxis[] = "YAxis";
-
-/*ARGSUSED*/
-static NhlErrorTypes
-SetMainOn
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	NhlTitleLayer	tl = (NhlTitleLayer)base;
-
-	tl->title.main_on = !(tl->title.main_string == Main);
-
-	return NhlNOERROR;
-}
-
-/*ARGSUSED*/
-static NhlErrorTypes
-SetXAxisOn
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	NhlTitleLayer	tl = (NhlTitleLayer)base;
-
-	tl->title.x_axis_on = !(tl->title.x_axis_string == XAxis);
-
-	return NhlNOERROR;
-}
-
-/*ARGSUSED*/
-static NhlErrorTypes
-SetYAxisOn
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	NhlTitleLayer	tl = (NhlTitleLayer)base;
-
-	tl->title.y_axis_on = !(tl->title.y_axis_string == YAxis);
-
-	return NhlNOERROR;
-}
 
 #define Oset(field) NhlOffset(NhlTitleLayerRec,title.field)
 static NhlResource resources[] = {
@@ -152,9 +77,12 @@ static NhlResource resources[] = {
 		 sizeof(NhlTitlePositions),
 		 Oset(main_position), NhlTImmediate,
 		 _NhlUSET((NhlPointer)NhlCENTER),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(main_on_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNtiMainOn,NhlCtiMainOn,NhlTBoolean, sizeof(NhlBoolean),
-		 Oset(main_on),NhlTProcedure,_NhlUSET((NhlPointer)SetMainOn),
-		0,NULL},
+		Oset(main_on),
+	 	NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNtiMainSide,NhlCtiMainSide,NhlTTitlePositions,
 		 sizeof(NhlTitlePositions),
 		 Oset(main_side),NhlTImmediate,_NhlUSET((NhlPointer)NhlTOP),
@@ -220,9 +148,12 @@ static NhlResource resources[] = {
 		 Oset(x_axis_offset_x), NhlTString,_NhlUSET("0.0"),0,NULL},
 	{NhlNtiXAxisOffsetYF, NhlCtiXAxisOffsetYF, NhlTFloat,sizeof(float),
 		 Oset(x_axis_offset_y), NhlTString,_NhlUSET("0.0"),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(x_axis_on_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNtiXAxisOn,NhlCtiXAxisOn,NhlTBoolean, sizeof(NhlBoolean),
 		 Oset(x_axis_on), NhlTProcedure,
-		 _NhlUSET((NhlPointer)SetXAxisOn),0,NULL},
+		 _NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNtiXAxisSide,NhlCtiXAxisSide,NhlTTitlePositions, 
 		 sizeof(NhlTitlePositions),
 		 Oset(x_axis_side), NhlTImmediate,
@@ -277,9 +208,12 @@ static NhlResource resources[] = {
 		 Oset(y_axis_offset_x), NhlTString,_NhlUSET("0.0"),0,NULL},
 	{NhlNtiYAxisOffsetYF, NhlCtiYAxisOffsetYF, NhlTFloat,sizeof(float),
 		 Oset(y_axis_offset_y), NhlTString,_NhlUSET("0.0"),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(y_axis_on_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNtiYAxisOn,NhlCtiYAxisOn,NhlTBoolean, sizeof(NhlBoolean),
 		 Oset(y_axis_on), NhlTProcedure,
-		 _NhlUSET((NhlPointer)SetYAxisOn),0,NULL},
+		 _NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNtiYAxisSide,NhlCtiYAxisSide,NhlTTitlePositions, 
 		 sizeof(NhlTitlePositions),
 		 Oset(y_axis_side), NhlTImmediate,
@@ -1106,18 +1040,32 @@ static NhlErrorTypes    TitleInitialize
                 tnew->title.main_string = (char*)NhlMalloc((unsigned)
                                 strlen(tnew->title.main_string)+1);
                 strcpy(tnew->title.main_string,treq->title.main_string);
-
-	}	
+		if (! tnew->title.main_on_set)
+			tnew->title.main_on = True;
+	}
+	else if (! tnew->title.main_on_set) {
+		tnew->title.main_on = False;
+	}
 	if(tnew->title.x_axis_string != XAxis){
                 tnew->title.x_axis_string = (char*)NhlMalloc((unsigned)
                                 strlen(tnew->title.x_axis_string)+1);
                 strcpy(tnew->title.x_axis_string,treq->title.x_axis_string);
+		if (! tnew->title.x_axis_on_set)
+			tnew->title.x_axis_on = True;
         }
+	else if (! tnew->title.x_axis_on_set) {
+		tnew->title.x_axis_on = False;
+	}
 	if(tnew->title.y_axis_string != YAxis){
                 tnew->title.y_axis_string = (char*)NhlMalloc((unsigned)
                                 strlen(tnew->title.y_axis_string)+1);
                 strcpy(tnew->title.y_axis_string,treq->title.y_axis_string);
+		if (! tnew->title.y_axis_on_set)
+			tnew->title.y_axis_on = True;
         }
+	else if (! tnew->title.y_axis_on_set) {
+		tnew->title.y_axis_on = False;
+	}
 
         ret1 = CheckAndAdjustAttrs(tnew,True);
         ret = MIN(ret1,ret);
