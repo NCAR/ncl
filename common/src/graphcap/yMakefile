@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.17 2003-12-10 23:01:01 haley Exp $
+#	$Id: yMakefile,v 1.18 2004-07-31 15:29:25 haley Exp $
 #
 
 MYNAME	= graphcap
@@ -17,7 +17,11 @@ SOURCES = \
 	 rascls.f rdline.f skpblk.f txtcls.f
 
 FCPP_OBJS	= capast.f capchg.f
-PROG_LIBS	= $(NCARGCLIB)
+#if defined(Darwin)
+PROG_LIBS	=	$(NCARGCLIB) $(CTOFLIBS)
+#else
+PROG_LIBS	=	$(NCARGCLIB)
+#endif
 
 #
 # NOTE:		"t4006.gc" is not installed because it requires
