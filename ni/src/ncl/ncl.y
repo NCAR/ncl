@@ -908,7 +908,7 @@ procedure : IPROC opt_arg_list    {
 						s = _NclLookUpInScope($1->u.package->scope,$4->name);
 						if(s == NULL) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s is not defined in package %s\n",$1->name,$4->name);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s is not defined in package %s\n",$4->name,$1->name);
 							$$ = NULL;
 						} else if(s->type == IPROC){
 							if(s->u.procfunc->nargs != 0) {
@@ -919,7 +919,7 @@ procedure : IPROC opt_arg_list    {
 								$$ = _NclMakeProcCall(s,NULL,Ncl_INTRINSICPROCCALL); 
 							}
 						} else {
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a procedure in package %s\n",$1->name,$4->name);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a procedure in package %s\n",$4->name,$1->name);
 							$$ = NULL;
 						}
 					} else {
@@ -935,7 +935,7 @@ procedure : IPROC opt_arg_list    {
 						s = _NclLookUpInScope($1->u.package->scope,$4->name);
 						if(s == NULL) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s is not defined in package %s\n",$1->name,$4->name);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s is not defined in package %s\n",$4->name,$1->name);
 							$$ = NULL;
 						} else if(s->type == IPROC){
 							step = $5;
@@ -951,7 +951,7 @@ procedure : IPROC opt_arg_list    {
 								$$ = _NclMakeProcCall(s,$5,Ncl_INTRINSICPROCCALL); 
 							}
                                                 } else {
-                                                        NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a procedure in package %s\n",$1->name,$4->name);
+                                                        NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a procedure in package %s\n",$4->name,$1->name);
                                                         $$ = NULL;
                                                 }
 
@@ -1926,7 +1926,7 @@ function:  IFUNC opt_arg_list		{
 							s = _NclLookUpInScope($1->u.package->scope,$4->name);
 							if(s == NULL) {
 								is_error += 1;
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s is not defined in package %s\n",$1->name,$4->name);
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s is not defined in package %s\n",$4->name,$1->name);
 								$$ = NULL;
 							} else if(s->type == IFUNC){
 								if(s->u.procfunc->nargs != 0) {
@@ -1937,7 +1937,7 @@ function:  IFUNC opt_arg_list		{
 									$$ = _NclMakeFuncCall(s,NULL,Ncl_INTRINSICFUNCCALL); 
 								}
 							} else {
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a function in package %s\n",$1->name,$4->name);
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a function in package %s\n",$4->name,$1->name);
 								$$ = NULL;
 							}
 						} else {
@@ -1953,7 +1953,7 @@ function:  IFUNC opt_arg_list		{
 							s = _NclLookUpInScope($1->u.package->scope,$4->name);
 							if(s == NULL) {
 								is_error += 1;
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s is not defined in package %s\n",$1->name,$4->name);
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s is not defined in package %s\n",$4->name,$1->name);
 								$$ = NULL;
 							} else if(s->type == IFUNC){
 								step = $5;
@@ -1969,7 +1969,7 @@ function:  IFUNC opt_arg_list		{
 									$$ = _NclMakeFuncCall(s,$5,Ncl_INTRINSICFUNCCALL); 
 								}
                                                 	} else {
-                                                        	NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a function in package %s\n",$1->name,$4->name);
+                                                        	NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a function in package %s\n",$4->name,$1->name);
                                                         	$$ = NULL;
                                                 	}
 	
