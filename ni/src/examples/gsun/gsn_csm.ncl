@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.31 2000-01-28 18:42:05 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.32 2000-02-03 17:57:34 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -760,7 +760,7 @@ begin
   num_res  = 0
   parallel_pos = (/0.0,0.5,1.0/)
   just         = (/"left","center","right"/)
-;        font_height: float                                             ;
+
   strings = (/"","",""/)  
   if(left_string)
     strings(0) =   left_string@sub_string
@@ -772,7 +772,7 @@ begin
     strings(2) =  right_string@sub_string
   end if
 
-procedure add_labelbar(wks:graphic,plot,zone:integer,font_height:float,\
+; Check for text and annotation resources
 
   txres = get_res_eq(res,"tx")
   amres = get_res_eq(res,"am")
@@ -1121,10 +1121,10 @@ end
 
     do i=0,npts-1
             last(1) = y2(ept)
-;             min_lon: float                                            ;
-;             max_lon: float                                            ;
-;         lon_spacing: float                                            ;
-;        mlon_spacing: float                                            ;
+          else
+            if(fabs(y1(ept+1)-y2(ept+1)).le.delta)
+;
+; If the two points are within delta of each other, then we'll
 ; consider them to be the same point.
 ;
               last(0) =  x(ept+1)
@@ -1132,10 +1132,10 @@ end
             else
 ;
 ; Otherwise, find the intersection where the two curves cross.
-function get_lon_values(min_lon:float,max_lon:float,lon_spacing:integer,\
-                        mlon_spacing:integer)
+;
+                        mlon_spacing:numeric)
             end if
-start_lon, end_lon
+          end if
 ;
 ; Initialize polygon.
 ;
@@ -1153,17 +1153,51 @@ start_lon, end_lon
                                               polygon_y(0:npts2+2),res)
 ;
 ; Advance polygon counter.
-    lon_spcng = lon_spacing
+    if(typeof(lon_spacing).eq."float")
+      lon_spcng = floattointeger(lon_spacing)
+    else
+      if(typeof(lon_spacing).eq."double")
+        lon_spcng = doubletointeger(lon_spacing)
+      else
+        lon_spcng = new(1,integer)
+        lon_spcng = lon_spacing
+      end if
+    end if
           npoly = npoly + 1
           bpt = -1            ; Reinitialize
           ept = -1
         end if
       end if
-    mlon_spcng = mlon_spacing
+    if(typeof(mlon_spacing).eq."float")
+      mlon_spcng = floattointeger(mlon_spacing)
+    else
+      if(typeof(mlon_spacing).eq."double")
+        mlon_spcng = doubletointeger(mlon_spacing)
+      else
+        mlon_spcng = new(1,integer)
+        mlon_spcng = mlon_spacing
+      end if
+    end if
   end do
   return(plot)
-  start_lon = (floattointeger(min_lon/lon_spcng)-1)*lon_spcng
-  end_lon   = (floattointeger(max_lon/lon_spcng)+1)*lon_spcng
+
+  xstart_lon = ((min_lon/lon_spcng)-1)*lon_spcng
+  xend_lon   = ((max_lon/lon_spcng)+1)*lon_spcng
+
+  if(typeof(xstart_lon).eq."float")
+    start_lon = floattointeger(xstart_lon)
+    end_lon   = floattointeger(xend_lon)
+  else
+    if(typeof(xstart_lon).eq."double")
+      start_lon = doubletointeger(xstart_lon)
+      end_lon   = doubletointeger(xend_lon)
+    else
+      start_lon = new(1,integer)
+      end_lon   = new(1,integer)
+      start_lon = xstart_lon
+      end_lon   = xend_lon
+    end if
+  end if 
 function get_lon_values(min_lon:numeric,max_lon:numeric,lon_spacing:numeric,\
                         mlon_spacing:numeric,range_array,lonspacing_array, \
                         mlonspacing_array)
@@ -1173,10 +1207,10 @@ begin
 
 ; Initialize
 
-;             min_lat: float                                            ;
-;             max_lat: float                                            ;
-;         lat_spacing: float                                            ;
-;        mlat_spacing: float                                            ;
+  if(all(range_array.eq.0))
+    lcheck_arr = (/ 20, 40, 60, 360/) ; lon range will determine
+                                      ; spacing of minor/major ticks
+  else
     lcheck_arr = range_array
   end if
     
@@ -1184,9 +1218,10 @@ begin
     lspcng_arr = (/ 5, 10, 20, 30/)  ; spacings for major ticks
   else
     lspcng_arr = lonspacing_array
-function get_lat_values(min_lat:float,max_lat:float,lat_spacing:integer,\
-                        mlat_spacing:integer)
-local lat_range, lcheck_arr, lspcng_arr, mlspcng_arr, lat_spcng, mlat_spcng
+  end if
+
+  if(all(mlonspacing_array.eq.0))
+start_lat, end_lat, xstart_lat, xend_lat
   else
     mlspcng_arr = mlonspacing_array
   end if
@@ -1204,18 +1239,51 @@ local lat_range, lcheck_arr, lspcng_arr, mlspcng_arr, lat_spcng, mlat_spcng
   delete(lon_ind)
 ;
 ; This code will find the first integer value that is divisible
-    lat_spcng = lat_spacing
+    if(typeof(lat_spacing).eq."float")
+      lat_spcng = floattointeger(lat_spacing)
+    else
+      if(typeof(lat_spacing).eq."double")
+        lat_spcng = doubletointeger(lat_spacing)
+      else
+        lat_spcng = new(1,integer)
+        lat_spcng = lat_spacing
+      end if
+    end if
 ; labeled longitude value.
 ;
    start_lon = floattointeger(ceil(tofloat(min_lon)))
    end_lon   = floattointeger(floor(tofloat(max_lon)))
    lon = start_lon
-    mlat_spcng = mlat_spacing
+    if(typeof(mlat_spacing).eq."float")
+      mlat_spcng = floattointeger(mlat_spacing)
+    else
+      if(typeof(mlat_spacing).eq."double")
+        mlat_spcng = doubletointeger(mlat_spacing)
+      else
+        mlat_spcng = new(1,integer)
+        mlat_spcng = mlat_spacing
+      end if
+    end if
    do while(lon.le.end_lon.and..not.found)
      if((lon % lon_spcng).eq.0)
        start_lon = lon
-  start_lat = (floattointeger(min_lat/lat_spcng)-1)*lat_spcng
-  end_lat = (floattointeger(max_lat/lat_spcng)+1)*lat_spcng
+  xstart_lat = ((min_lat/lat_spcng)-1)*lat_spcng
+  xend_lat   = ((max_lat/lat_spcng)+1)*lat_spcng
+
+  if(typeof(xstart_lat).eq."float")
+    start_lat = floattointeger(xstart_lat)
+    end_lat   = floattointeger(xend_lat)
+  else
+    if(typeof(xstart_lat).eq."double")
+      start_lat = doubletointeger(xstart_lat)
+      end_lat   = doubletointeger(xend_lat)
+    else
+      start_lat = new(1,integer)
+      end_lat   = new(1,integer)
+      start_lat = xstart_lat
+      end_lat   = xend_lat
+    end if
+  end if 
 ;        mlat_spacing: numeric                                          ;
 ;                                                                       ;
 ; Calculate "nice" latitude values to use for placing latitude labels   ;
@@ -1225,7 +1293,7 @@ local lat_range, lcheck_arr, lspcng_arr, mlspcng_arr, lat_spcng, mlat_spcng
 ;***********************************************************************;
 
 function get_lat_values(min_lat:numeric,max_lat:numeric,lat_spacing:numeric,\
-;                lon_values[*]: float                                   ;
+                        mlat_spacing:numeric)
 local lat_range, lcheck_arr, lspcng_arr, mlspcng_arr, lat_spcng, mlat_spcng, \
 start_lat, end_lat, lat, found
 begin
@@ -1276,7 +1344,7 @@ function get_lon_labels(lon_values:numeric)
 local lon_index
 begin
   lon_labels  = new(dimsizes(lon_values),string)
-;                lat_values[*]: float                                   ;
+
 ; -180 < lon < 0 (west)
 
   lon_index = ind((lon_values).lt.0)
@@ -1312,17 +1380,17 @@ begin
 ; 540 < lon < 720 (west)
 
   lon_index = ind(lon_values.gt.540.and.lon_values.lt.720)
-;             min_lon: float                                            ;
-;             max_lon: float                                            ;
-;         lon_spacing: float                                            ;
-;        mlon_spacing: float                                            ;
+  if(.not.all(ismissing(lon_index)))
+    lon_labels(lon_index) = 540-lon_values(lon_index) + "W"  ; west
+  end if
+  delete(lon_index)
 ;                                                                       ;
 ; lon = +/-180 or lon=540 (180)
 
   lon_index = ind(fabs(lon_values).eq.180.or.lon_values.eq.540)
   if(.not.all(ismissing(lon_index)))
     lon_labels(lon_index) = "180"
-                         lon_spacing:integer,mlon_spacing:integer)
+                         lon_spacing:numeric,mlon_spacing:numeric)
 
   lonvalues = get_lon_values(min_lon,max_lon,lon_spacing,mlon_spacing)
   lonlabels = get_lon_labels(lonvalues)
@@ -1339,10 +1407,10 @@ begin
   lat_index = ind(lat_values.lt.0)
   if(.not.all(ismissing(lat_index)))
      lat_labels(lat_index) = fabs(lat_values(lat_index)) + "S"    ; south
-;             min_lat: float                                            ;
-;             max_lat: float                                            ;
-;         lat_spacing: float                                            ;
-;        mlat_spacing: float                                            ;
+  end if
+  delete(lat_index)
+
+  lat_index = ind(lat_values.gt.0)
     lat_labels(lat_index) = lat_values(lat_index) + "N"    ; north
   end if
   delete(lat_index)
@@ -1350,7 +1418,7 @@ begin
   lat_index = ind(lat_values.eq.0)
   if(.not.all(ismissing(lat_index)))
     lat_labels(lat_index) = lat_values(lat_index)          ; equator
-                               lat_spacing:integer,mlat_spacing:integer)
+                               lat_spacing:numeric,mlat_spacing:numeric)
   return(lat_labels)
   latvalues = get_lat_values(min_lat,max_lat,lat_spacing,mlat_spacing)
   latlabels = get_lat_labels(latvalues)
@@ -1367,8 +1435,8 @@ begin
                              range_array,lonspacing_array,mlonspacing_array)
   lonlabels   = get_lon_labels(lonvalues)
 
-;             min_lat: float                                            ;
-;             max_lat: float                                            ;
+  tmres = True
+  set_attr(tmres,"tmXBMode"         , "Explicit")
 ;         lat_spacing: float                                            ;
 ;        mlat_spacing: float                                            ;
 ;                                                                       ;
@@ -1378,7 +1446,7 @@ begin
 ;
   if(.not.(isatt(tmres,"tiXAxisString").and.tmres@tiXAxisString.ne.""))
     set_attr(tmres,"tiXAxisOn"      , False)
-                               lat_spacing:integer,mlat_spacing:integer)
+                               lat_spacing:numeric,mlat_spacing:numeric)
 end
   latvalues = get_lat_values(min_lat,max_lat,lat_spacing,mlat_spacing)
   latlabels = get_lat_labels(latvalues)
@@ -1437,8 +1505,8 @@ local dims, newdata, ny, mx, mx1
 
 ; Point tick marks outward and make labels the same size.
 
-;             lonorlat : float                                          ;
-;                 locs : float                                          ;
+    gsnp_point_tickmarks_outward(tickmark,tmres,-1.,-1.,-1.,-1.,-1.,-1.)
+    gsnp_uniform_tickmark_labels(tickmark,tmres,0.)
 
 ;
 ; Add the tick mark object as an annotation of the map object, so that
