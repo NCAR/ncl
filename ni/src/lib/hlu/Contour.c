@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.37 1994-11-07 03:09:00 ethan Exp $
+ *      $Id: Contour.c,v 1.38 1994-11-11 20:02:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -875,6 +875,13 @@ static NhlErrorTypes ContourDestroy(
 #endif
 );
 
+static NhlErrorTypes ContourGetBB(
+#ifdef NhlNeedProto
+        NhlLayer        instance,
+        NhlBoundingBox	*thebox
+#endif
+);
+
 static NhlErrorTypes ContourPreDraw(
 #ifdef NhlNeedProto
         NhlLayer	/* layer */
@@ -1457,7 +1464,7 @@ NhlContourLayerClassRec NhlcontourLayerClassRec = {
 	/* view_class */
 	{
 /* segment_wkid			*/	0,
-/* get_bb			*/	NULL
+/* get_bb			*/	ContourGetBB
 	},
 	/* trans_class */
 	{
@@ -2655,6 +2662,87 @@ NhlLayer inst;
                 NhlFree(cnp->constf_lbl.text);
 
 	return(ret);
+}
+
+
+/*
+ * Function:    ContourGetBB
+ *
+ * Description: 
+ *
+ * In Args:     instance        the object instance record
+ *              thebox          a data structure used to hold bounding box 
+ *                              information.
+ *
+ * Out Args:    NONE
+ *
+ * Return Values:       Error Conditions
+ *
+ * Side Effects:        NONE
+ */
+static NhlErrorTypes ContourGetBB
+#if	__STDC__
+(NhlLayer instance, NhlBoundingBox *thebox)
+#else
+(instance,thebox)
+	NhlLayer instance;
+	NhlBoundingBox *thebox;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
+	char			*entry_name  = "ContourGetBB";
+	char			*e_text;
+	NhlContourLayer		cnl = (NhlContourLayer) instance;
+	NhlContourLayerPart	*cnp = &(cnl->contour);
+	NhlTransformLayerPart	*cntp = &(((NhlTransformLayer)cnl)->trans);
+	NhlViewLayerPart	*cnvp = &(((NhlViewLayer) cnl)->view);
+	float			x,y,width,height;
+
+	if (! _NhlIsTransform(instance)) {
+		e_text = "%s: invalid object id";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(NhlFATAL);
+	}
+/*
+ * If the Contour object is a overlay base, return the bounding box
+ * of the complete overlay. If it is a member of an overlay, return
+ * only the Contour's viewport, since it does not 'own' any of its
+ * annotations. If it is not in an overlay at all, return its viewport
+ * plus the info label and constant field annotation viewports 
+ * (instantiated directly by the Contour) as appropriate.
+ */
+	if (cntp->overlay_status == _tfCurrentOverlayBase) {
+		return _NhlGetBB(cntp->overlay_object,thebox);
+	}
+
+	_NhlAddBBInfo(cnvp->y,cnvp->y - cnvp->height,
+		      cnvp->x + cnvp->width,cnvp->x,thebox);
+
+	if (cntp->overlay_status == _tfCurrentOverlayMember)
+		return ret;
+
+	if (cnp->info_anno_id != -1 && ! cnp->display_constf) {
+		subret = NhlVAGetValues(cnp->info_anno_id,
+					NhlNvpXF,&x,
+					NhlNvpYF,&y,
+					NhlNvpWidthF,&width,
+					NhlNvpHeightF, &height, NULL);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+
+		_NhlAddBBInfo(y,y-height,x+width,x,thebox);
+	}
+	if (cnp->constf_anno_id != -1 && cnp->display_constf) {
+		subret = NhlVAGetValues(cnp->constf_anno_id,
+					NhlNvpXF,&x,
+					NhlNvpYF,&y,
+					NhlNvpWidthF,&width,
+					NhlNvpHeightF, &height, NULL);
+
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+		_NhlAddBBInfo(y,y-height,x+width,x,thebox);
+	}
+
+	return ret;
 }
 
 /*

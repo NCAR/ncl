@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.9 1994-11-07 03:09:27 ethan Exp $
+ *      $Id: IrregularPlot.c,v 1.10 1994-11-11 20:02:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -70,6 +70,14 @@ static NhlErrorTypes IrregularPlotDestroy(
 #endif
 );
 
+static NhlErrorTypes IrregularPlotGetBB(
+#ifdef NhlNeedProto
+        NhlLayer        instance,
+        NhlBoundingBox	*thebox
+#endif
+);
+
+
 static NhlErrorTypes IrregularPlotDraw(
 #ifdef NhlNeedProto
         NhlLayer   /* layer */
@@ -117,7 +125,7 @@ NhlIrregularPlotLayerClassRec NhlirregularPlotLayerClassRec = {
         },
 	{
 /* segment_wkid			*/	0,
-/* get_bb			*/	NULL
+/* get_bb			*/	IrregularPlotGetBB
 	},
 	{
 /* overlay_capability 		*/	_tfOverlayBaseOrMember,
@@ -420,6 +428,57 @@ NhlLayer inst;
 	
 	return(ret);
 }
+
+/*
+ * Function:    IrregularPlotGetBB
+ *
+ * Description: 
+ *
+ * In Args:     instance        the object instance record
+ *              thebox          a data structure used to hold bounding box 
+ *                              information.
+ *
+ * Out Args:    NONE
+ *
+ * Return Values:       Error Conditions
+ *
+ * Side Effects:        NONE
+ */
+static NhlErrorTypes IrregularPlotGetBB
+#if	__STDC__
+(NhlLayer instance, NhlBoundingBox *thebox)
+#else
+(instance,thebox)
+	NhlLayer instance;
+	NhlBoundingBox *thebox;
+#endif
+{
+	char			*entry_name  = "IrregularPlotGetBB";
+	char			*e_text;
+	NhlIrregularPlotLayer	irl = (NhlIrregularPlotLayer) instance;
+	NhlTransformLayerPart	*irtp = &(((NhlTransformLayer)irl)->trans);
+	NhlViewLayerPart	*irvp = &(((NhlViewLayer) irl)->view);
+
+	if (! _NhlIsTransform(instance)) {
+		e_text = "%s: invalid object id";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(NhlFATAL);
+	}
+/*
+ * If the IrregularPlot object is a overlay base, return the bounding box
+ * of the complete overlay.
+ * Otherwise, return its viewport only.
+ */
+	if (irtp->overlay_status == _tfCurrentOverlayBase) {
+		return _NhlGetBB(irtp->overlay_object,thebox);
+	}
+
+	_NhlAddBBInfo(irvp->y,irvp->y - irvp->height,
+		      irvp->x + irvp->width,irvp->x,thebox);
+
+	return NhlNOERROR;
+}
+
 
 /*
  * Function:	IrregularPlotDraw

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.17 1994-11-07 03:09:54 ethan Exp $
+ *      $Id: MapPlot.c,v 1.18 1994-11-11 20:02:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -470,6 +470,14 @@ static NhlErrorTypes MapPlotDestroy(
 #endif
 );
 
+static NhlErrorTypes MapPlotGetBB(
+#ifdef NhlNeedProto
+        NhlLayer        instance,
+        NhlBoundingBox	*thebox
+#endif
+);
+
+
 static NhlErrorTypes MapPlotPreDraw(
 #ifdef NhlNeedProto
         NhlLayer   /* layer */
@@ -749,7 +757,7 @@ NhlMapPlotLayerClassRec NhlmapPlotLayerClassRec = {
         },
 	{
 /* segment_wkid			*/	0,
-/* get_bb			*/	NULL
+/* get_bb			*/	MapPlotGetBB
 	},
 	{
 /* overlay_capability 		*/	_tfOverlayBaseOnly,
@@ -1920,6 +1928,56 @@ NhlLayer inst;
 		_NhlDeleteViewSegment(inst,mpp->postdraw_dat);
 
 	return(ret);
+}
+
+/*
+ * Function:    MapPlotGetBB
+ *
+ * Description: 
+ *
+ * In Args:     instance        the object instance record
+ *              thebox          a data structure used to hold bounding box 
+ *                              information.
+ *
+ * Out Args:    NONE
+ *
+ * Return Values:       Error Conditions
+ *
+ * Side Effects:        NONE
+ */
+static NhlErrorTypes MapPlotGetBB
+#if	__STDC__
+(NhlLayer instance, NhlBoundingBox *thebox)
+#else
+(instance,thebox)
+	NhlLayer instance;
+	NhlBoundingBox *thebox;
+#endif
+{
+	char			*entry_name  = "MapPlotGetBB";
+	char			*e_text;
+	NhlMapPlotLayer		mpl = (NhlMapPlotLayer) instance;
+	NhlTransformLayerPart	*mptp = &(((NhlTransformLayer)mpl)->trans);
+	NhlViewLayerPart	*mpvp = &(((NhlViewLayer) mpl)->view);
+
+	if (! _NhlIsTransform(instance)) {
+		e_text = "%s: invalid object id";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(NhlFATAL);
+	}
+/*
+ * If the MapPlot object is a overlay base, return the bounding box
+ * of the complete overlay.
+ * Otherwise, return its viewport only.
+ */
+	if (mptp->overlay_status == _tfCurrentOverlayBase) {
+		return _NhlGetBB(mptp->overlay_object,thebox);
+	}
+
+	_NhlAddBBInfo(mpvp->y,mpvp->y - mpvp->height,
+		      mpvp->x + mpvp->width,mpvp->x,thebox);
+
+	return NhlNOERROR;
 }
 
 
