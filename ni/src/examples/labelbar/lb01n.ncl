@@ -33,11 +33,23 @@ appid = create "lb01" appLayerClass defaultapp
 end create
 
 ;
-; Create an XWorkstation object.
+; Default is to display output to an X workstation
 ;
-wid = create "lb01Work" xWorkstationLayerClass defaultapp
-    "wkPause" : "True"
-end create
+NCGM=0
+
+if (NCGM.eq.1) then
+;
+; Create an NCGM workstation.
+;
+  wid = create "lb01Work" ncgmWorkstationLayerClass appid
+    "wkMetaName" : "./lb01n.ncgm"
+  end create
+else
+;
+; Create an X workstation.
+;
+  wid = create "lb01Work" xWorkstationLayerClass defaultapp end create
+end if
 
 ;
 ; Specify the viewport extent of the object.

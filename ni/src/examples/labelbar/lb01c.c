@@ -21,18 +21,18 @@
 #include <ncarg/hlu/ResList.h>
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/LabelBar.h>
+#include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
         
 main()
 {
     int appid, wid, pid;
     int rlist;
-
+    int NCGM=0;
 /*
  * Initialize the high level utility library
  */
     NhlInitialize();
-
 /*
  * Create an application context. Set the app dir to the current directory
  * so the application looks for a resource file in the working directory.
@@ -44,13 +44,24 @@ main()
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
     NhlCreate(&appid,"lb01",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
+    if (NCGM) {
 /*
- * Create an XWorkstation object.
+ * Create a meta file workstation.
  */
-    NhlRLClear(rlist);
-    NhlRLSetInteger(rlist,NhlNwkPause,True);
-    NhlCreate(&wid,"lb01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
-              rlist);
+        NhlRLClear(rlist);
+		NhlRLSetString(rlist,NhlNwkMetaName,"./lb01c.ncgm");
+		NhlCreate(&wid,"lb01Work",NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,
+				  rlist);
+	}
+	else {
+/*
+ * Create an X Workstation.
+ */
+		NhlRLClear(rlist);
+		NhlRLSetInteger(rlist,NhlNwkPause,True);
+		NhlCreate(&wid,"lb01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
+				  rlist);
+	}
 /*
  * Specify the viewport extent of the object.
  */

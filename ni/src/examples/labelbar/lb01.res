@@ -287,7 +287,7 @@
 ! *lb01Work.LabelBar.lbMonoFillScale       : True
 !
 !       Fill pattern of the interior of the labelbar boxes
-! *lb01Work.LabelBar.lbFillPatterns        : False
+! *lb01Work.LabelBar.lbFillPatterns        : SolidFill
 !
 !       Fill color of the interior of the labelbar boxes
 ! *lb01Work.LabelBar.lbFillColors          : False

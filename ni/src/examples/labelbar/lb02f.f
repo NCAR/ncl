@@ -21,7 +21,7 @@ C
       external nhlflabelbarlayerclass
       external nhlfapplayerclass
       external nhlfxworkstationlayerclass
-
+      external nhlfncgmworkstationlayerclass
         
       integer appid, wid, pid
       integer rlist, ierr
@@ -43,11 +43,15 @@ C
      $     'Color Index 91','Color Index 96',
      $     'Color Index 101','Color Index 106'/
 
+      integer NCGM
+C
+C Default is to display output to an X workstation
+C
+      NCGM=0
 C
 C Initialize the high level utility library
 C
       call nhlfinitialize
-
 C
 C Create an application context. Set the app dir to the current
 C directory so the application looks for a resource file in the
@@ -60,14 +64,21 @@ C
       call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
       call nhlfcreate(appid,'lb02',nhlfapplayerclass,0,rlist,ierr)
 
+      if (NCGM.eq.1) then
 C
-C Create an xworkstation object.
+C Create an NCGM workstation.
 C
-      call nhlfrlclear(rlist)
-      call nhlfrlsetstring(rlist,'wkPause','True',ierr)
-      call nhlfcreate(wid,'lb02Work',nhlfxworkstationlayerclass,
-     $     0,rlist,ierr)
-
+         call nhlfrlclear(rlist)
+         call nhlfrlsetstring(rlist,'wkMetaName','./lb02f.ncgm',ierr)
+         call nhlfcreate(wid,'lb02Work',
+     $        nhlfncgmworkstationlayerclass,0,rlist,ierr) 
+      else 
+C
+C Create an X workstation.
+C
+         call nhlfcreate(wid,'lb02Work',nhlfxworkstationlayerclass,
+     $        0,0,ierr)
+      endif
 C
 C Create a plot with 22 color indices (Every 5th one of the default
 C workstation colormap.

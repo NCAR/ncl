@@ -1,10 +1,10 @@
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
-;                Copyright (C)  1995                                    ;
+;                Copyright (C)  1993                                    ;
 ;        University Corporation for Atmospheric Research                ;
 ;                All Rights Reserved                                    ;
 ;                                                                       ;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ;      File:           lb02n.ncl
 ;
@@ -49,11 +49,23 @@ appid = create "lb02" appLayerClass defaultapp
 end create
 
 ;
-; Create an XWorkstation object.
+; Default is to display output to an X workstation
 ;
-wid = create "lb02Work" xWorkstationLayerClass defaultapp
-    "wkPause" : "True"
-end create
+NCGM=0
+
+if (NCGM.eq.1) then
+;
+; Create an NCGM workstation.
+;
+  wid = create "lb02Work" ncgmWorkstationLayerClass appid
+    "wkMetaName" : "./lb02n.ncgm"
+  end create
+else
+;
+; Create an X Workstation object.
+;
+  wid = create "lb02Work" xWorkstationLayerClass defaultapp end create
+end if
 
 ;
 ; Create a plot with 22 color indices (Every 5th one of the default

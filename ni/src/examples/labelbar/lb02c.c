@@ -24,6 +24,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/LabelBar.h>
 #include <ncarg/hlu/XWorkstation.h>
+#include <ncarg/hlu/NcgmWorkstation.h>
         
 main()
 {
@@ -31,7 +32,7 @@ main()
     int rlist;
     int colors[22];
     char *line_labels[22];
-
+    int NCGM=0;
 /*
  * Initialize data values
  */
@@ -96,13 +97,24 @@ main()
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
     NhlCreate(&appid,"lb02",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
+    if (NCGM) {
 /*
- * Create an XWorkstation object.
+ * Create a meta file workstation.
  */
-    NhlRLClear(rlist);
-    NhlRLSetInteger(rlist,NhlNwkPause,True);
-    NhlCreate(&wid,"lb02Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
-              rlist);
+        NhlRLClear(rlist);
+		NhlRLSetString(rlist,NhlNwkMetaName,"./lb02c.ncgm");
+		NhlCreate(&wid,"lb02Work",NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,
+				  rlist);
+	}
+	else {
+/*
+ * Create an X Workstation.
+ */
+		NhlRLClear(rlist);
+		NhlRLSetInteger(rlist,NhlNwkPause,True);
+		NhlCreate(&wid,"lb02Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
+				  rlist);
+	}
 /*
  * Create a plot with 22 color indices (Every 5th one of the default
  * workstation colormap.
