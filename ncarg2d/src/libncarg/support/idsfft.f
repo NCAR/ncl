@@ -1,5 +1,5 @@
 C
-C $Id: idsfft.f,v 1.2 1995-11-03 23:45:26 kennison Exp $
+C $Id: idsfft.f,v 1.3 1996-03-07 20:18:00 fred Exp $
 C
       SUBROUTINE IDSFFT (MD,NDP,XD,YD,ZD,NXI,NYI,NZI,XI,YI,ZI,IWK,WK)
 C
@@ -62,7 +62,7 @@ C                          Array of dimension NDP containing the Z
 C                          coordinates of the data points.
 C
 C                        NXI
-C                          Number of output grid poitns in the X
+C                          Number of output grid points in the X
 C                          direction (must be 1 or greater, else
 C                          an error return will occur).
 C
