@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.74 1999-11-12 19:11:28 ethan Exp $
+#      $Id: yMakefile,v 1.75 2000-02-18 20:15:30 haley Exp $
 #
 #########################################################################
 #									#
@@ -58,13 +58,13 @@ PROG_LIBS	=	$(NFPLIB) $(HLULIBS) $(NCARGLIBS) $(NGMATHLIB)
 DEPLIBS		=	$(DEPNFPLIB) $(DEPHLULIBS) $(DEPNCARGLIBS) $(DEPNGMATHLIB)
 
 #if defined(SUN)
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFLIB) -lsphere3 -fast -xlic_lib=sunperf 
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFLIB) -lsphere3_dp -fast -xlic_lib=sunperf 
 #elif defined(AIX)
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFLIB) -lsphere3 -llapack -lessl -lxlf90
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFLIB) -lsphere3_dp -llapack -lessl -lxlf90
 #elif (defined(IRIX) || defined(IRIX64))
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFLIB) -lsphere3 -lcomplib.sgimath
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFLIB) -lsphere3_dp -lcomplib.sgimath
 #else
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFLIB) -lsphere3 -llapack -lblas
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFLIB) -lsphere3_dp -llapack -lblas
 #endif
 
 SYS_LIBS	=	$(XLIB) $(CTOFLIBS) -lm $(ARCH_LIBS) $(DYNAMIC_LIBS)
@@ -89,7 +89,6 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			NclOneDValCoordData.h BuiltInFuncs.h HLUFunctions.h \
 			NclCallBacksI.h date.h NclGRIB.h date.h tables.h \
 			editline.h unix.h ListSupport.h NclList.h NclMultiDVallistData.h NclTypelist.h
-	
 
 INSTALL_HDRS	=	defs.h NclApi.h ApiRecords.h NclVar.h NclBuiltIns.h \
 			NclDataDefs.h NclBuiltInSupport.h NclCallBacksI.h \
