@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.158 2004-02-27 03:28:15 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.159 2004-03-30 21:27:27 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4689,10 +4689,8 @@ begin
 ; Check if a zonal mean plot is desired.
 
     if(zonal_mean_plot) then
-      if((isdimnamed(datanew,0).and. \
-         any(datanew!0.eq.get_allowed_latnames())).and.\
-         (isdimnamed(datanew,1).and.\
-         any(datanew!1.eq.get_allowed_lonnames())))
+      if(is_valid_latlon_coord(datanew,"y","lat",res2).and. \
+         is_valid_latlon_coord(datanew,"x","lon",res2)) then
         if(isatt(res2,"vpHeightF"))
           map_vphf = res2@vpHeightF
         else
@@ -4897,7 +4895,7 @@ begin
       end getvalues
 
 ; Create data object.
-      if(isdimnamed(datanew,0).and.any(datanew!0.eq.get_allowed_latnames()))
+      if(is_valid_latlon_coord(datanew,"y","lat",res2)) then
         data_object = create "data" coordArraysClass noparent
           "caXArray" : zmeans
           "caYArray" : datanew&$datanew!0$
