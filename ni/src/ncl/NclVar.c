@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.36 1996-12-20 00:42:10 ethan Exp $
+ *      $Id: NclVar.c,v 1.37 1996-12-31 17:15:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -368,7 +368,11 @@ NclScalar *new_missing;
 					return(NULL);
 				}
 			}
-			return(_NclReadSubSection((NclData)thevalue,sel_ptr,new_missing));
+			thevalue = (NclMultiDValData)_NclReadSubSection((NclData)thevalue,sel_ptr,new_missing);
+			if(thevalue == NULL) {	
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occurred reading %s",((self->var.thesym != NULL)?self->var.thesym->name:"unknown"));
+			}
+			return((NclData)thevalue);
 		} else {
 			return((NclData)thevalue);
 		}
@@ -1552,6 +1556,7 @@ NclSelectionRecord *sel_ptr;
 */
 			val = (NclMultiDValData)_NclReadSubSection((NclData)thevalue,sel_ptr,NULL);
 			if(val == NULL) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occurred reading %s",((self->var.thesym != NULL)?self->var.thesym->name:"unknown"));
 				return(NULL);
 			}
 			tmp_sel.n_entries = 1;
@@ -1817,7 +1822,10 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 			return(NhlFATAL);
 		}
 		rhs_md = _NclVarValueRead(rhs,rhs_sel_ptr,NULL);
-
+		if(rhs_md == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occurred reading %s",((rhs->var.thesym != NULL)?rhs->var.thesym->name:"unknown"));
+			return(NhlFATAL);
+		}
 		ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
 		if(rhs_md->obj.status != PERMANENT) {
 			_NclDestroyObj((NclObj)rhs_md);
@@ -1831,8 +1839,12 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 	
 		rhs_md = (NclMultiDValData)_NclGetObj(rhs->var.thevalue_id);
 	}
-
-	if((lhs_md == NULL)||(rhs_md == NULL) ) {
+	if(lhs_md == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occurred reading %s",((lhs->var.thesym != NULL)?lhs->var.thesym->name:"unknown"));
+		return(NhlFATAL);
+	}
+	if(rhs_md == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occurred reading %s",((rhs->var.thesym != NULL)?rhs->var.thesym->name:"unknown"));
 		return(NhlFATAL);
 	}
 	if((rhs_sel_ptr == NULL)&&(lhs_sel_ptr == NULL)&&(lhs->obj.id == rhs->obj.id)&&(lhs->var.thevalue_id == rhs->var.thevalue_id)&&(lhs->var.att_id == rhs->var.att_id)) { 
@@ -1845,6 +1857,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 */
 		rhs_md = _NclVarValueRead(rhs,rhs_sel_ptr,NULL);
 		if(rhs_md == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occurred reading %s",((rhs->var.thesym != NULL)?rhs->var.thesym->name:"unknown"));
 			return(NhlFATAL);
 		}
 
@@ -2532,6 +2545,10 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 		fprintf(stdout,"(lhs_sel_ptr == NULL)\n");
 #endif
 		rhs_md = _NclVarValueRead(rhs,rhs_sel_ptr,NULL);
+		if(rhs_md == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occurred reading %s",((rhs->var.thesym != NULL)?rhs->var.thesym->name:"unknown"));
+			return(NhlFATAL);
+		}
 
 		ret = _NclAssignToVar(lhs,rhs_md,NULL);
 		if(ret < NhlWARNING) {
