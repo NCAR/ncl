@@ -1,5 +1,5 @@
 /*
- *      $Id: nm06c.c,v 1.2 1997-12-17 16:14:22 haley Exp $
+ *      $Id: nm06c.c,v 1.3 1998-04-09 18:54:15 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -141,7 +141,7 @@ main()
  */
 	gactivate_ws (gkswid);
     drwtd2(gkswid, NX, NY, xo, yo, output, xeye, yeye, zeye, -6);
-    drwtd2(gkswid, NX, NY, xo, yo, output2, xeye, yeye, zeye, -6);
+    drwtd2(gkswid, NX, NY, xo, yo, &output2[0][0], xeye, yeye, zeye, -6);
 	gdeactivate_ws (gkswid);
 /*
  * NhlDestroy destroys the given id and all of its children.
