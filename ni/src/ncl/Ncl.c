@@ -126,7 +126,8 @@ main() {
 		NhlNappUsrDir,"./",NULL);
 	errid = NhlErrGetID();
 	NhlVAGetValues(errid,NhlNerrFileName,&tmp);
-	if(!strcmp(tmp,"stderr")){
+	
+	if((tmp == NULL)||(!strcmp(tmp,"stderr"))){
 		NhlVASetValues(errid,
 			NhlNerrFilePtr,stdout,NULL);
 	}
