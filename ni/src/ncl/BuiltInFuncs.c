@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.126 2000-09-21 22:36:07 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.127 2000-09-29 17:53:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -9322,6 +9322,8 @@ NhlErrorTypes _Nclminind
 			));
 		}
 		tmp= &(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size]);
+		j = i;
+		i++;
 		for(; i < tmp_md->multidval.totalelements; i++) {
 			_Nclgt(tmp_md->multidval.type,&result,tmp,&(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size]),NULL,&(tmp_md->multidval.missing_value.value),1,1);
 			if(result == 1) {
@@ -9340,7 +9342,8 @@ NhlErrorTypes _Nclminind
 		));
 	} else {
 		tmp= tmp_md->multidval.val;
-		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+		j = 0;
+		for(i = 1; i < tmp_md->multidval.totalelements; i++) {
 			_Nclgt(tmp_md->multidval.type,&result,tmp,&(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size]),NULL,NULL,1,1);
 			if(result == 1) {
 				tmp = &(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size]);
@@ -9402,6 +9405,8 @@ NhlErrorTypes _Nclmaxind
 			));
 		}
 		tmp= &(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size]);
+		j = i;
+		i++;
 		for(; i < tmp_md->multidval.totalelements; i++) {
 			_Ncllt(tmp_md->multidval.type,&result,tmp,&(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size]),NULL,&(tmp_md->multidval.missing_value.value),1,1);
 			if(result == 1) {
@@ -9420,7 +9425,8 @@ NhlErrorTypes _Nclmaxind
 		));
 	} else {
 		tmp= tmp_md->multidval.val;
-		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+		j = 0;
+		for(i = 1; i < tmp_md->multidval.totalelements; i++) {
 			_Ncllt(tmp_md->multidval.type,&result,tmp,&(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size]),NULL,NULL,1,1);
 			if(result == 1) {
 				tmp = &(((char*)tmp_md->multidval.val)[i* tmp_md->multidval.type->type_class.size]);

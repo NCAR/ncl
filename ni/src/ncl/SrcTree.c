@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.37 2000-01-28 20:46:15 ethan Exp $
+ *      $Id: SrcTree.c,v 1.38 2000-09-29 17:53:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2159,6 +2159,7 @@ void _NclPrintSymbol
 #endif
 {
 	if(fp == NULL) return;
+	if(sym == NULL) return;
 	switch(sym->type) {
 	case INTEGER:
 		fprintf(fp,"%s\t","INTEGER");

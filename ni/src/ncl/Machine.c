@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.79 2000-08-15 20:57:29 ethan Exp $
+ *      $Id: Machine.c,v 1.80 2000-09-29 17:53:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1149,6 +1149,7 @@ void _NclPrintMachine
 {
 	NclValue *ptr;
 	NclValue *eptr;
+	NclValue tmp;
 	int	*lptr;
 	char **fptr;
 
@@ -1401,7 +1402,15 @@ void _NclPrintMachine
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
-				_NclPushMachine(((NclSymbol*)*ptr)->u.procfunc->mach_rec_ptr);
+				ptr++;lptr++;fptr++;
+				tmp = *ptr;
+				ptr++;lptr++;fptr++;
+				if(*ptr == NFUNC) {
+					fprintf(fp," NFUNC");
+				} else {
+					fprintf(fp," NPROC");
+				}
+				_NclPushMachine(((NclProcFuncInfo*)tmp)->mach_rec_ptr);
 				_NclPrintMachine(-1,-1,fp);
 				(void)_NclPopMachine();
 				break;

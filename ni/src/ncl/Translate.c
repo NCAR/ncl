@@ -1038,6 +1038,8 @@ Unneeded translations
 
 			off1 = _NclPutInstr(FPDEF,procdef->line,procdef->file);
 			_NclPutInstr((NclValue)procdef->proc,procdef->line,procdef->file);
+			_NclPutInstr((NclValue)procdef->proc->u.procfunc,procdef->line,procdef->file);
+			_NclPutInstr((NclValue)procdef->proc->type,procdef->line,procdef->file);
 			break;
 		}
 		case Ncl_EXTERNPROCDEF:
@@ -1281,6 +1283,8 @@ Unneeded translations
 			
 			off1 = _NclPutInstr(FPDEF,funcdef->line,funcdef->file);
 			_NclPutInstr((NclValue)funcdef->func,funcdef->line,funcdef->file);
+			_NclPutInstr((NclValue)funcdef->func->u.procfunc,funcdef->line,funcdef->file);
+			_NclPutInstr((NclValue)funcdef->func->type,funcdef->line,funcdef->file);
 			break;
 		}	
 		case Ncl_ARRAY:

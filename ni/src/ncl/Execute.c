@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.114 2000-02-28 22:49:48 ethan Exp $
+ *      $Id: Execute.c,v 1.115 2000-09-29 17:53:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1059,6 +1059,18 @@ void CallGET_OBJ_OP(void) {
 				}
 				
 			}
+void CallFPDEF(void) {
+			NclSymbol *func = NULL;
+			ptr++;lptr++;fptr++;
+			func = (NclSymbol*)(*ptr);
+			ptr++;lptr++;fptr++;
+			if(func->u.procfunc == NULL) {
+				func->u.procfunc = (NclProcFuncInfo*)(*ptr);
+			}
+			ptr++;lptr++;fptr++;
+			_NclChangeSymbolType(func,*ptr);
+			return;
+		}
 
 void CallFUNC_CALL_OP(void) {
 				NclSymbol *func = NULL;
@@ -5672,7 +5684,7 @@ NclExecuteReturnStatus _NclExecute
 			}
 			break;
 			case FPDEF: 
-				ptr++;lptr++;fptr++;
+				CallFPDEF();
 				break;
 			case JMP : {
 				CallJMP();

@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.61 2000-02-01 16:09:27 ethan Exp $
+ *      $Id: Symbol.c,v 1.62 2000-09-29 17:53:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -119,6 +119,7 @@ NclSymbol *sym;
 			break;
 		case NPROC:
 		case NFUNC:
+/*
 			for(i = 0; i < NCL_SYM_TAB_SIZE; i++) {
 				if(sym->u.procfunc->thescope->this_scope[i].nelem != 0) {
 					s = sym->u.procfunc->thescope->this_scope[i].thelist;
@@ -147,6 +148,7 @@ NclSymbol *sym;
 			NclFree(sym->u.procfunc->theargs);
 			NclFree(sym->u.procfunc->thescope);
 			NclFree(sym->u.procfunc);
+*/
 			sym->u.procfunc = NULL;
 			break;
 
