@@ -1,5 +1,5 @@
 /*
- *	$Id: options.c,v 1.23 2000-08-22 04:03:32 haley Exp $
+ *	$Id: options.c,v 1.24 2002-05-24 19:45:32 akash Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -676,6 +676,8 @@ int	ParseOptionTable(od, argc, argv, optds)
 	OptDescRec	*optd;
 	OptDescRec	*odr;
 	int		new_argc = 1;
+	char *tempstr;
+	int len;
 
 	if (!(usedOD & (1 << od))) {
 		ESprintf(EBADF, "");
@@ -743,7 +745,13 @@ int	ParseOptionTable(od, argc, argv, optds)
 		 * a value of true. They are false by default
 		 */
 		if (optd->arg_count == 0) {
-			optd->value = "true";
+			len = strlen("true");
+			if ((tempstr = (char *) malloc(len +1)) == NULL) {
+				ESprintf(EINVAL, "malloc(%d)", len+1);
+				return(-1);
+			}
+			strcpy(tempstr, "true");
+			optd->value = tempstr;
 			continue;
 		}
 
