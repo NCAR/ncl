@@ -1,6 +1,7 @@
 #
-#	$Id: yMakefile,v 1.1 1993-02-11 17:45:32 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-02-13 21:01:32 haley Exp $
 #
+NCARG = ../../../../
 
 MYNAME	= ncargworld
 
