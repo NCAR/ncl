@@ -1,5 +1,5 @@
 /*
- *      $Id: rascat.c,v 1.20 1994-04-15 14:35:34 haley Exp $
+ *      $Id: rascat.c,v 1.21 1994-06-03 22:16:10 clyne Exp $
  */
 /*
  *	File:		rascat.c
@@ -72,10 +72,8 @@
 #include <ncarg/ncarg_ras.h>
 
 
-static int	cvt_to_rsfunc(
-	const char 	*from,
-	Voidptr		to
-);
+static int	cvt_to_rsfunc(const char *from, Voidptr	to);
+static	int	cvt_to_etype(const char	*from, Voidptr 	to);
 
 typedef struct	Subregion_ {
 	int	nx;
@@ -100,6 +98,7 @@ static	struct	{
 	Dimension2D	resolution;
 	boolean		do_help;
 	char		*pal;
+	RasterEncoding	outtype;
 	int		(*resample)();
 	} opt;
 
@@ -117,6 +116,7 @@ static  OptDescRec      set_options[] = {
 	{"help", 0, "NULL", "Print this message and exit"},
 	{"ira", 1, "nn", "Specify resampling algo, nn or bl"},
 	{"pal", 1, NULL, "Specify a color palette"},
+	{"outtype", 1, NULL, "Force output encoding type, indexed or direct"},
 	{NULL},
 };
 
@@ -155,6 +155,9 @@ static	Option get_options[] = {
 	{"pal", NCARGCvtToString, (Voidptr) &opt.pal, 
 							sizeof(opt.pal)
 	},
+	{"outtype", cvt_to_etype, (Voidptr) &opt.outtype, 
+							sizeof(opt.outtype)
+	},
 	{NULL
 	}
 };
@@ -188,6 +191,7 @@ main(argc, argv)
 	boolean		do_window  = False;
 	boolean		do_scale  = False;
 	boolean		do_res  = False;
+	boolean		do_quant  = False;
 
 	char		*Comment = "Created by rascat";
 	Raster		*src, *dst;
@@ -202,6 +206,7 @@ main(argc, argv)
 	int		pipe_count = 0;	/* number filters in pipeline	*/
 	Raster	*win_ras = (Raster *) NULL;
 	Raster	*sca_ras = (Raster *) NULL;
+	Raster	*quant_ras = (Raster *) NULL;
 	int		err = 0;	/* exit rc			*/
 	int		i;
 	unsigned char	colors[768];
@@ -254,6 +259,7 @@ main(argc, argv)
 	do_window = win->nx != -1;
 	do_scale = opt.scale != 0;
 	do_res = (! (opt.resolution.nx == 0 && opt.resolution.ny == 0));
+	do_quant = (opt.outtype != RAS_UNKNOWN);
 
 
 	if (do_scale && do_res) {
@@ -266,6 +272,7 @@ main(argc, argv)
 	if (do_window) pipe_count++;
 	if (do_scale) pipe_count++;
 	if (do_res) pipe_count++;
+	if (do_quant) pipe_count++;
 
 
 	/*
@@ -331,8 +338,11 @@ main(argc, argv)
 		 * file.
 		 */
 		if (! dst) {
-			int	nx, ny;
-			int	pipe_count_ = pipe_count;
+			int		nx = src->nx;
+			int		ny = src->ny;
+			RasterEncoding	type = src->type;
+
+			int		pipe_count_ = pipe_count;
 			/*
 			 * if output is stdout and output format is unspecified
 			 * use the input format. If thats not specified 
@@ -348,8 +358,17 @@ main(argc, argv)
 					);
 			}
 
-			nx = src->nx;
-			ny = src->ny;
+			/*
+			 * if an output encoding type was specified and
+			 * the source type is the same as the requested
+			 * out type - do nothing
+			 */
+			if (do_quant) {
+				if (opt.outtype == src->type) {
+					do_quant = False;
+					pipe_count--; pipe_count_--;
+				}
+			}
 
 			if (do_window) {
 				pipe_count_--;
@@ -392,16 +411,30 @@ main(argc, argv)
 				} 
 			}
 
+			if (do_quant) {
+
+				pipe_count_--;
+				type = opt.outtype;
+				if (pipe_count_ > 0) {
+					quant_ras = RasterCreate(nx,ny,type);
+					if (! quant_ras) {
+						(void) fprintf(stderr, 
+						"%s : RasterCreate() : %s\n",
+						progName, RasterGetError());
+					}
+				} 
+
+			}
 
 			dst = RasterOpenWrite(
 				opt.dstfile,nx,ny, Comment, 
-				src->type, opt.dstformat
+				type, opt.dstformat
 			);
 			if (dst == (Raster *) NULL) {
 				(void) fprintf(stderr, 
 					"%s: RasterOpenWrite(%s, %d, %d, %s,%d,%s) [ %s ]\n",
 					progName, opt.dstfile, nx, ny, Comment, 
-					src->type,
+					type,
 					opt.dstformat ? opt.dstformat : "NULL",
 					ErrGetMsg()
 				);
@@ -409,7 +442,7 @@ main(argc, argv)
 				exit(1);
 			}
 
-			rasterType = src->type;;
+			rasterType = src->type;
 			nX = src->nx;
 			nY = src->ny;
 		}
@@ -455,6 +488,20 @@ main(argc, argv)
 					(void) fprintf(
 						stderr, 
 						"%s: Resampling failed : %s\n",
+						progName, RasterGetError()
+						);
+					exit(1);
+				}
+				tmp = sca_ras;
+			}
+
+			if (do_quant) {
+				new = quant_ras ? quant_ras : dst;
+				rc = RasterDither(tmp, new, opt.do_verbose);
+				if (rc != RAS_OK) {
+					(void) fprintf(
+						stderr, 
+						"%s: Quantizing failed : %s\n",
 						progName, RasterGetError()
 						);
 					exit(1);
@@ -554,6 +601,27 @@ static	int	cvt_to_rsfunc(from, to)
 	}
 	return(1);
 }
+
+static	int	cvt_to_etype(const char	*from, Voidptr 	to)
+{
+	RasterEncoding	*type = (RasterEncoding *) to;
+
+	if (! from) {
+		*type = RAS_UNKNOWN;
+	}
+	else if (strncmp(from, "indexed", 3) == 0) {
+		*type = RAS_INDEXED;
+	}
+	else if (strncmp(from, "direct", 3) == 0) {
+		*type = RAS_DIRECT;
+	}
+	else {
+		ESprintf(EINVAL, "Convert(%s) to encoding type failed", from);
+		return(-1);
+	}
+	return(1);
+}
+		
 
 
 check_win(win, src)
