@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.58 2002-03-06 19:55:30 haley Exp $
+#      $Id: yMakefile,v 1.59 2002-03-22 00:14:50 haley Exp $
 #
 #########################################################################
 #									#
@@ -68,7 +68,7 @@ FSRCS = aam.f areaAve.f areaRmse.f calcorc_dp.f cfftb.f cfftb1.f \
 	specx_dp.f statx.f statx_dp.f svd_lap_dp.f svd_util_dp.f taper.f \
 	tdez1d.f trssphx.f trvsphx.f ttest.f upsl_dp.f varimax_dp.f \
 	vibeta_dp.f vinth2p_dp.f vinth2p_ecmwf.f volAve.f volRmse.f \
-	wavelet.f wrunave_dp.f zon_mpsi.f d1mach.f
+	wavelet.f wrunave_dp.f zon_mpsi.f
 
 FOBJS = aam.o areaAve.o areaRmse.o calcorc_dp.o cfftb.o cfftb1.o \
 	cfftf.o cfftf1.o cffti.o cffti1.o chiin_dp.o cntrFiniteDiff.o \
@@ -85,7 +85,7 @@ FOBJS = aam.o areaAve.o areaRmse.o calcorc_dp.o cfftb.o cfftb1.o \
 	specx_dp.o statx.o statx_dp.o svd_lap_dp.o svd_util_dp.o taper.o \
 	tdez1d.o trssphx.o trvsphx.o ttest.o upsl_dp.o varimax_dp.o \
 	vibeta_dp.o vinth2p_dp.o vinth2p_ecmwf.o volAve.o volRmse.o \
-	wavelet.o wrunave_dp.o zon_mpsi.o d1mach.o
+	wavelet.o wrunave_dp.o zon_mpsi.o
 
 OBJS = $(COBJS) $(FOBJS) $(EXFOBJS)
 
