@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.12 1998-01-08 01:44:50 dbrown Exp $
+#      $Id: yMakefile,v 1.13 1998-01-29 16:01:15 boote Exp $
 #
 #########################################################################
 #									#
@@ -36,7 +36,7 @@ EXTRA_DEFINES	=	-DNGDEMO $(OS1_DEF) $(MAJOR_DEF) $(DEBUGDEFS)
 EXTRA_LDFLAGS	=
 
 PROG_LIBS	=	$(NGOLIB) $(XCBLIB) $(DBLIB) $(NCLAPILIB) \
-			$(HLULIBS) $(NCARGLIBS)
+			-lXcb $(HLULIBS) $(NCARGLIBS)
 DEPLIBS		=	$(DEPNGOLIB) $(DEPNCLAPILIB) $(DEPHLULIBS) \
 			$(DEPNCARGLIBS)
 EXTRA_LIBS	=	$(NCDFLIBS) -lXmHTML -lXpm $(HDFLIB)

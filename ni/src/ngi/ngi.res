@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.14 1998-01-08 22:47:21 dbrown Exp $
+!      $Id: ngi.res,v 1.15 1998-01-29 16:01:14 boote Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -51,10 +51,16 @@ NgNGO*addfileMGR*directory:	.
 
 ! It is not recommended to set the "visual" resource, however, if you
 ! feel you must, then remember to set the "depth" resource with it
-! or it will be ignored. XcbVisual is a special visual name that means
-! to use the best possible visual if the server is capable of installing
-! more then one colormap at a time, or to just use the DefaultVisual
-! if it can't.
+! or it will be ignored. DefaultVisual is a special visual name that
+! means to use the DefaultVisual of the display, even if it isn't optimal.
+! XcbVisual is a special visual name that means to use the "best" possible
+! visual (based on an internal algorithm tuned for ngi).
+! The possible values for the "visual" resource string are:
+!	StaticGray,StaticColor,TrueColor,GrayScale,
+!	PseudoColor,DirectColor,DefaultVisual,XcbVisual
+!			or
+!	the actual hex id of the visual (Server dependent).
+!
 !NgNGO*visual:		XcbVisual
 ngi.minColorCells:	20
 
