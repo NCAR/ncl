@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.27 2003-05-31 00:33:19 dbrown Exp $
+ *      $Id: WorkstationP.h,v 1.28 2003-06-10 23:21:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -157,8 +157,11 @@ typedef struct _NhlFillSpec {
 
 typedef NhlFillSpec **NhlFillTable;
 
+#define wkDEF_MARKER_ASPECT 1.3125
+
 typedef struct _NhlMarkerSpec {
 	char *marker;
+	int font;
 	float x_off;
 	float y_off;
 	float aspect_adj;

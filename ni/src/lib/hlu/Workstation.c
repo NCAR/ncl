@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.100 2003-06-04 19:04:23 dbrown Exp $
+ *      $Id: Workstation.c,v 1.101 2003-06-10 23:20:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -119,29 +119,29 @@ static NhlFillSpec Fill_Specs[] = {
  */
 
 static NhlMarkerSpec Marker_Specs[] = {
-{"",       0.0, 0.0, 1.3125, 1.0, 0.0, False},    /* user-defined */
-{":F37:Z", 0.0, 0.0, 1.3125, 0.175, 0.0, False}, 
+{"",  1,0.0, 0.0, 1.0, 1.0, 0.0, False},    /* user-defined */
+{"Z", 37,0.0, 0.0, 1.0, 0.175, 0.0, False}, 
 					/* 1 - dot (small filled circle)*/
-{":F18:+", 0.0, 0.075, 1.3125, 0.95, 0.0, False}, /* 2 - plus sign */
-{":F1:*",  0.0, 0.0, 1.3125, 1.0, 0.0, False},    /* 3 - asterisk */
-{":F19:x", 0.0, 0.075, 1.3125, 1.2, 0.0, False},  /* 4 - hollow circle */
-{":F18:U", 0.0, 0.075, 1.3125, 1.1, 0.0, False},  /* 5 - cross (x) */
-{":F19:Z", 0.0, 0.083, 1.3125, 1.45, 0.0, False}, /* 6 - hollow square */
-{":F19:[", 0.0, -0.03, 1.5, 1.25, 0.0, False},    
+{"+", 18,0.0, 0.0, 1.0, 0.8955, 0.0, False}, /* 2 - plus sign */
+{"*",  1,0.0, 0.0, 0.765, 1.2868, 0.0, False},    /* 3 - asterisk */
+{"x", 19,0.0, 0.0, 1.0, 1.1428, 0.0, False},  /* 4 - hollow circle */
+{"U", 18,0.0, 0.0, 1.0, 1.1428, 0.0, False},  /* 5 - cross (x) */
+{"Z", 19,0.0, 0.0, 1.0, 1.33333, 0.0, False}, /* 6 - hollow square */
+{"[", 19,0.0, 0.0, 1.166667, 1.1428, 0.0, False},    
 					/* 7 - up pointing triangle */
-{":F19:X", 0.0, 0.87, 2.15, 0.67, 0.0, False},    
+{"X", 19,0.0, 0.0, 1.75, 0.5714, 0.0, False},    
 					/* 8 - down pointing triangle */
-{":F19:\\", 0.0, 0.075, 1.0, 1.15, 0.0, False},   /* 9 - diamond */
-{":F19:`", 0.0, 0.08, 1.5, 1.55, 0.0, False}, 
+{"\\", 19,0.0, 0.0, 0.6, 1.33333, 0.0, False},   /* 9 - diamond */
+{"`", 19,0.0, 0.0, 0.88, 1.8182, 0.0, False}, 
 					/* 10-left pointing filled triangle */
-{":F19:b", 0.0, 0.08, 1.5, 1.55, 0.0, False},
+{"b", 19,0.0, 0.0, 0.88, 1.8182, 0.0, False},
 					/* 11-right pointing filled triangle */
-{":F19:]", 0.0, 0.0625, 1.3125, 1.1, 0.0, False}, /* 12 - five-pointed star */
-{":F19:m", 0.0, 0.0725, 1.3125, 1.1, 0.0, False}, /* 13 - six-pointed star */
-{":F18:Z", 0.0, 0.0, 1.3125, 0.8, 0.0, False},    
+{"]", 19,0.0, 0.0, 1.0, 1.0, 0.0, False}, /* 12 - five-pointed star */
+{"m", 19,0.0, 0.0, 0.875, 1.14286, 0.0, False},/* 13 - six-pointed star */
+{"Z", 18,0.0, 0.0, 1.0, 0.7620, 0.0, False},    
 					/* 14 - circle with center dot */
-{":F37:[", 0.0, 0.0, 1.3125, 0.8, 0.0, False},    /* 15 - circle with cross */
-{":F37:Z", 0.0, 0.0, 1.3125, 0.8, 0.0, False}     /* 16 - filled circle */
+{"[", 37,0.0, 0.0, 1.0, 0.7620, 0.0, False},    /* 15 - circle with cross */
+{"Z", 37,0.0, 0.0, 1.0, 0.7620, 0.0, False}     /* 16 - filled circle */
 
 };
 
@@ -6009,6 +6009,7 @@ int NhlNewMarker
 (
 	int	wid, 
 	char	*mark_string, 
+	int	font,
 	float	x_off, 
 	float	y_off,
 	float	aspect_adj,
@@ -6016,9 +6017,10 @@ int NhlNewMarker
 	float   angle
 )
 #else
-(wid,mark_string,x_off,y_off,aspect_adj,size_adj,angle)
+(wid,mark_string,font,x_off,y_off,aspect_adj,size_adj,angle)
 	int	wid;
 	char	*mark_string;
+	int     font;
 	float	x_off;
 	float	y_off;
 	float	aspect_adj;
@@ -6079,24 +6081,15 @@ int NhlNewMarker
 	}
 	wkp->marker_table[wkp->marker_table_len+1] = m_p;
 
-/*
- * If the marker string is NULL or an empty string use the default marker
- */
 	if ((m_p->marker = NhlMalloc(strlen(mark_string) + 1)) == NULL) {
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return((int)NhlFATAL);
 	}
 	strcpy(m_p->marker, mark_string);
-	
-	if (x_off < 1.0 && x_off > -1.0)  
-		m_p->x_off = x_off;
-	else
-		m_p->x_off = Marker_Specs[0].x_off;
 
-	if (y_off < 1.0 && y_off > -1.0)
-		m_p->y_off = y_off;
-	else
-		m_p->y_off = Marker_Specs[0].y_off;
+	m_p->font = font;
+	m_p->x_off = x_off;
+	m_p->y_off = y_off;
 
 	if (aspect_adj > 0.0)
 		m_p->aspect_adj = aspect_adj;
@@ -6108,11 +6101,7 @@ int NhlNewMarker
 	else
 		m_p->size_adj = Marker_Specs[0].size_adj;
 
-	if (angle >= 0.0)
-		m_p->angle = angle;
-	else
-		m_p->angle = Marker_Specs[0].angle;
-
+	m_p->angle = angle;
 	m_p->dynamic = True;
 
 	wkp->marker_table_len++;
@@ -6139,6 +6128,7 @@ void _NHLCALLF(nhlpfnewmarker,NHLPFNEWMARKER)
 	int		*wid,
 	_NhlFString	fmark,
 	int		*fmark_len,
+	int             *font,
 	float		*xoff,
 	float		*yoff,
 	float		*aspadj,
@@ -6148,10 +6138,11 @@ void _NHLCALLF(nhlpfnewmarker,NHLPFNEWMARKER)
 	
 )
 #else
-(wid,fmark,fmark_len,xoff,yoff,aspadj,sizeadj,angle,indx_ret)
+(wid,fmark,fmark_len,font,xoff,yoff,aspadj,sizeadj,angle,indx_ret)
 	int		*wid;
 	_NhlFString	fmark;
 	int		*fmark_len;
+	int             *font;
 	float		*xoff;
 	float		*yoff;
 	float		*aspadj;
@@ -6169,7 +6160,7 @@ void _NHLCALLF(nhlpfnewmarker,NHLPFNEWMARKER)
 		return;
 	}
 
-	*indx_ret = NhlNewMarker(*wid,tstr,
+	*indx_ret = NhlNewMarker(*wid,tstr,*font,
 				 *xoff,*yoff,*aspadj,*sizeadj,*angle);
 
 	return;
@@ -6189,16 +6180,18 @@ NhlSetMarker
 (int instance, 
  int	index,
  char	*mark_string, 
+ int    font,
  float	x_off, 
  float	y_off,
  float	aspect_adj,
  float	size_adj,
  float  angle)
 #else
-(instance,index,mark_string,x_off,y_off,aspect_adj,size_adj,angle)
+(instance,index,mark_string,font,x_off,y_off,aspect_adj,size_adj,angle)
         int instance;
 	int   index;
 	char *mark_string; 
+	int   font;
 	float x_off; 
 	float y_off;
 	float aspect_adj;
@@ -6261,9 +6254,13 @@ NhlSetMarker
 		memcpy((char *) m_p, (char *) wkp->marker_table[index],
 			sizeof(NhlMarkerSpec));
 		wkp->marker_table[index] = m_p;
+		/* make a copy is made of the string, or there
+		   a chance that subsequently the static string might
+		   get freed */
+		m_p->marker = NULL;
 	}
 		
-	if (mark_string != NULL && 
+	if (m_p->marker == NULL || 
 	    strcmp(mark_string, m_p->marker)) {
 		    if ((c_p = NhlMalloc(strlen(mark_string)+ 1 )) == NULL) {
 			    NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -6276,30 +6273,21 @@ NhlSetMarker
 	}
 	m_p->dynamic = True;
 
-	if (x_off < 1.0 && x_off > -1.0)  
-		m_p->x_off = x_off;
-	else
-		m_p->x_off = Marker_Specs[0].x_off;
-
-	if (y_off < 1.0 && y_off > -1.0)
-		m_p->y_off = y_off;
-	else
-		m_p->y_off = Marker_Specs[0].y_off;
+	m_p->font = font;
+	m_p->x_off = x_off;
+	m_p->y_off = y_off;
 
 	if (aspect_adj > 0.0)
 		m_p->aspect_adj = aspect_adj;
 	else
-		m_p->aspect_adj = Marker_Specs[0].aspect_adj;
+		m_p->aspect_adj = 1.0;
 
 	if (size_adj > 0.0)
 		m_p->size_adj = size_adj;
 	else
-		m_p->size_adj = Marker_Specs[0].size_adj;
+		m_p->size_adj = 1.0;
 
-	if (angle >= 0.0)
-		m_p->angle = angle;
-	else
-		m_p->angle = Marker_Specs[0].angle;
+	m_p->angle = angle;
 
 	return (NhlNOERROR); 
 	
@@ -6325,6 +6313,7 @@ void _NHLCALLF(nhlpfsetmarker,NHLPFSETMARKER)
 	int		*indx,
 	_NhlFString	fmark,
 	int		*fmark_len,
+	int             *font,
 	float		*xoff,
 	float		*yoff,
 	float		*aspadj,
@@ -6333,11 +6322,12 @@ void _NHLCALLF(nhlpfsetmarker,NHLPFSETMARKER)
 	int		*err
 )
 #else
-(wid,indx,fmark,fmark_len,xoff,yoff,aspadj,sizeadj,angle,err)
+(wid,indx,fmark,fmark_len,font,xoff,yoff,aspadj,sizeadj,angle,err)
 	int		*wid;
 	int		*indx;
 	_NhlFString	fmark;
 	int		*fmark_len;
+	int             *font;
 	float		*xoff;
 	float		*yoff;
 	float		*aspadj;
@@ -6355,7 +6345,7 @@ void _NHLCALLF(nhlpfsetmarker,NHLPFSETMARKER)
 		return;
 	}
 
-	*err = NhlSetMarker(*wid,*indx,tstr,
+	*err = NhlSetMarker(*wid,*indx,tstr,*font,
 			    *xoff,*yoff,*aspadj,*sizeadj,*angle);
 
 	return;
@@ -6582,9 +6572,10 @@ NhlSetDashPattern
 		memcpy(d_p, wkp->dash_table[index],
 			sizeof(NhlDashSpec));
 		wkp->dash_table[index] = d_p;
+		d_p->dpat = NULL;
 	}
 		
-	if (strcmp(dash_string, d_p->dpat)) {
+	if (d_p->dpat == NULL || strcmp(dash_string, d_p->dpat)) {
 		    if ((c_p = NhlMalloc(strlen(dash_string)+ 1 )) == NULL) {
 			    NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			    return(NhlFATAL);
@@ -6653,6 +6644,8 @@ static struct{
 	char	*string;
 } minfo;
 
+
+
 /*ARGSUSED*/
 void
 _NhlSetMarkerInfo
@@ -6674,6 +6667,7 @@ _NhlSetMarkerInfo
 	int			index;
 	int			marker_color;
 	float			p_height, p_width;
+	float			aspect;
 
 /*
  * Flush plotif buffer...
@@ -6705,35 +6699,55 @@ _NhlSetMarkerInfo
 		p_height = 21.0;
 		minfo.size = wkp->marker_table[NhlWK_DEF_MARKER]->size_adj *
 					mkp->marker_size;
-		minfo.xoff = minfo.size *
+		minfo.xoff = mkp->marker_size *
 			wkp->marker_table[NhlWK_DEF_MARKER]->x_off;
-		minfo.yoff = minfo.size *
+		minfo.yoff = mkp->marker_size *
 			wkp->marker_table[NhlWK_DEF_MARKER]->y_off;
 		minfo.string = wkp->marker_table[NhlWK_DEF_MARKER]->marker;
+		aspect = wkDEF_MARKER_ASPECT * 
+			wkp->marker_table[NhlWK_DEF_MARKER]->aspect_adj;
 	}
 	else if (index > 0) {
 		index = 1 + (index - 1) % wkp->marker_table_len;
-		if (wkp->marker_table[index]->aspect_adj <= 1.0) {
-			p_width = 21.0;
-			p_height = 21.0 * wkp->marker_table[index]->aspect_adj;
-		} else {
-			p_width = 21.0 / wkp->marker_table[index]->aspect_adj;
-			p_height = 21.0;
-		}
+		aspect = wkDEF_MARKER_ASPECT * 
+			wkp->marker_table[index]->aspect_adj;
 
-		minfo.size = wkp->marker_table[index]->size_adj * mkp->marker_size;
-		minfo.xoff = minfo.size * wkp->marker_table[index]->x_off;
-		minfo.yoff = minfo.size * wkp->marker_table[index]->y_off;
+		minfo.size = wkp->marker_table[index]->size_adj 
+			* mkp->marker_size;
+		minfo.xoff = mkp->marker_size 
+			* wkp->marker_table[index]->x_off;
+		minfo.yoff = mkp->marker_size 
+			* wkp->marker_table[index]->y_off;
 		minfo.angle = wkp->marker_table[index]->angle;
 		minfo.string = wkp->marker_table[index]->marker;
-
 	}
+	
+	if (aspect <= 1.0) {
+		p_width = 21.0;
+		p_height = 21.0 * aspect;
+	} else {
+		p_width = 21.0 / aspect;
+		p_height = 21.0;
+	}
+	
 	c_pcsetr("PH",p_height);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	c_pcsetr("PW",p_width);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+#if 0
+	/* 
+	 * This puts a boundary around the marker character box:
+	 * useful for debugging
+	 */
+	c_pcseti("BF",1);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+	c_pcseti("BC",2);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+	c_pcsetr("BM",0.0);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+#endif
 
-	c_pcseti("FN", 1);
+	c_pcseti("FN", wkp->marker_table[index]->font);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	c_pcsetr("CL",mkp->marker_thickness);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
@@ -6744,6 +6758,37 @@ _NhlSetMarkerInfo
 	c_pcseti("CC",marker_color);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
+#if 0
+/*
+ * figure the offsets needed to center the markers and add to the
+ * user-specified offsets. Not needed when you use the 'CE' parameter.
+ */
+
+	{
+		float db,dt,dr,dl;
+		float x_off, y_off;
+
+		c_pcseti("TE",1);
+		c_plchhq(0.5,0.5,minfo.string,minfo.size*1.125,360.0,0.0);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+		c_pcgetr("DL",&dl);
+		c_pcgetr("DR",&dr);
+		c_pcgetr("DT",&dt);
+		c_pcgetr("DB",&db);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+		if (fabs(dl) > 10.0) dl = 0.0001;
+		if (fabs(dr) > 10.0) dr = 0.0001;
+		if (fabs(db) > 10.0) db = 0.0001;
+		if (fabs(dt) > 10.0) dt = 0.0001;
+		x_off = 0.5 - (1.0 + dr - dl) / 2.0;
+		y_off = 0.5 - (1.0 + dt - db) / 2.0;
+		x_off = (dl - dr) / 2.0;
+		y_off = (db - dt) / 2.0;
+		minfo.xoff += x_off;
+		minfo.yoff += y_off;
+		c_pcseti("TE",1);
+	}
+#endif
         return;
 }
 
@@ -6770,6 +6815,7 @@ WorkstationMarker
 	int			ll, i;
 	NhlErrorTypes		ret = NhlNOERROR;
         char			func_code[8];
+	int                     ce;
 
 /*
  * Make the user space coincide with the NDC space for the
@@ -6784,6 +6830,8 @@ WorkstationMarker
 
         c_pcgetc("FC",func_code,8);
         c_pcsetc("FC",":");
+	c_pcgeti("CE",&ce);
+	c_pcseti("CE",1);
 
 	for (i=0; i<num_points; i++) {
 		/*
@@ -6795,7 +6843,7 @@ WorkstationMarker
 		if(_NhlLLErrCheckPrnt(NhlWARNING,func))
 			ret = NhlWARNING;
 	}
-
+	c_pcseti("CE",ce);
         c_pcsetc("FC",func_code);
 
 	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);

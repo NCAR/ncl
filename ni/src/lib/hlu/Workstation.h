@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.35 2003-05-31 00:33:19 dbrown Exp $
+ *      $Id: Workstation.h,v 1.36 2003-06-10 23:21:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -320,6 +320,7 @@ extern int NhlNewMarker(
 #if	NhlNeedProto
 	int instance, 
 	char *marker_string, 
+	int  font,
 	float x_off, 
 	float y_off,
 	float aspect_adj,
@@ -333,6 +334,7 @@ extern NhlErrorTypes NhlSetMarker(
 	int instance, 
 	int	index,
 	char	*marker_string, 
+	int     font,
 	float	x_off, 
 	float	y_off,
 	float	aspect_adj,
