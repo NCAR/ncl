@@ -1,21 +1,20 @@
 C
-C	$Id: pcfopn.F.sed,v 1.1 1992-09-24 19:50:04 ncargd Exp $
+C   $Id: pcfopn.F.sed,v 1.2 1992-09-25 19:37:07 ncargd Exp $
 C
       SUBROUTINE PCFOPN (IBNU,NFNT)
-      CHARACTER*128 PARANM,FILENM
-      DATA PARANM / 'DBDIR' /
+      CHARACTER*128 FILENM
       IF (NFNT.EQ.0) THEN
-         CALL GNGPAT (PARANM,FILENM,ISTATUS)
+         CALL GNGPAT (FILENM,'SED_DBDIR',ISTATUS)
          IF (ISTATUS .NE. -1) THEN
-            DO 101 I=1,119
-               IF (FILENM(I:I).EQ.' ') THEN
+             DO 101 I=1,119
+                IF (FILENM(I:I).EQ.CHAR(0)) THEN
                   FILENM(I:I+9)='/pwritdata'
                   GO TO 102
-               END IF
- 101        CONTINUE
-            GO TO 104
+                ENDIF
+101          CONTINUE
+             GO TO 104
          ELSE
-            GO TO 103
+             GO TO 103
          ENDIF
 #if defined(ultrix) && defined(mips)
  102     OPEN (UNIT=IBNU,FILE=FILENM,STATUS='OLD',FORM='UNFORMATTED',

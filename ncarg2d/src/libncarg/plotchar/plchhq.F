@@ -1,5 +1,5 @@
 C
-C	$Id: plchhq.F,v 1.3 1992-09-04 20:46:21 ncargd Exp $
+C	$Id: plchhq.F,v 1.4 1992-09-25 19:37:13 ncargd Exp $
 C
 C***********************************************************************
 C P A C K A G E   P L O T C H A R   -   I N T R O D U C T I O N
@@ -59,18 +59,22 @@ C     the FORTRAN version of the metafile translator "cgmtrans"):
 C
 C     SUBROUTINE PCFOPN (IBNU,NFNT)
 C     CHARACTER*128 PARANM,FILENM
-C     DATA PARANM / 'DBDIR' /
+C     DATA PARANM / 'dbdir' /
 C       IF (NFNT.EQ.0) THEN
-C         CALL GETNGP (PARANM,FILENM)
+C   	  CALL GNGPAT (PARANM,FILENM,ISTATUS)
+C   	  IF (ISTATUS .NE. -1) THEN
 C         DO 101 I=1,119
 C           IF (FILENM(I:I).EQ.' ') THEN
 C             FILENM(I:I+9)='/pwritdata'
 C             GO TO 102
 C           END IF
 C 101     CONTINUE
-C         GO TO 103
+C         GO TO 104
+C         ELSE
+C           GO TO 103       
+C         ENDIF
 C 102     OPEN (UNIT=IBNU,FILE=FILENM,STATUS='OLD',
-C    +                  FORM='UNFORMATTED',ERR=103)
+C    +                  FORM='UNFORMATTED',ERR=104)
 C         REWIND IBNU
 C       ELSE IF (NFNT.GE.1.AND.NFNT.LE.20) THEN
 C         CALL BOFRED (IBNU,NFNT,IOST,ISTA)
@@ -83,7 +87,10 @@ C         PRINT * , 'PCFOPN - REQUEST FOR UNAVAILBLE FONT ',NFNT
 C         STOP
 C       END IF
 C       RETURN
-C 103   PRINT * , 'PCFOPN - ERROR OPENING PWRITX DATA FILE ',FILENM
+C 103   PRINT FILENM
+C       GO TO 105
+C 104   PRINT * , 'PCFOPN - ERROR OPENING PWRITX DATA FILE ',FILENM
+C 105   CONTINUE 
 C       STOP
 C     END
 C
