@@ -1,5 +1,5 @@
 /*
- *	$Id: gksc.h,v 1.3 1994-06-08 16:57:38 boote Exp $
+ *	$Id: gksc.h,v 1.4 1994-06-18 00:09:45 boote Exp $
  */
 /*
  *      File:		gksc.h
@@ -179,8 +179,8 @@ typedef	struct	GKSC_	{
 #define	ERR_FILL_PAT	83	/* Fill style pattern not supported	*/
 #define	ERR_CELL_DIM	91	/* dimensions of color array invalid	*/
 #define	ERR_INV_IND	94	/* invalid or undefined color index	*/
-#define	ERR_INV_CODE	101	/* invalid code in string		*/
 #define	ERR_INV_ESCAPE	180	/* escape function not supported	*/
+#define	ERR_INV_DATA	182	/* contents of esc data rec invalid	*/
 
 /*
  *  local X driver errors.

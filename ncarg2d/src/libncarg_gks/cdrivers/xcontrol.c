@@ -1,5 +1,5 @@
 /*
- *	$Id: xcontrol.c,v 1.3 1994-06-08 16:58:00 boote Exp $
+ *	$Id: xcontrol.c,v 1.4 1994-06-18 00:09:47 boote Exp $
  */
 /*
  *      File:		xcontrol.c
@@ -668,10 +668,10 @@ X11_Esc
 	Xddp			*xi = (Xddp *) gksc->ddp;
 	char			*sptr = (char *) gksc->s.list;
 	int			*iptr = (int *) gksc->i.list;
+	char			*tstr;
 	int			tint;
-	int			flag = iptr[0];
 
-	switch (flag) {
+	switch (iptr[0]) {
 	case	ESCAPE_PAUSE:
 		/*
 		 * Pause does nothing for XUSRWIN type
@@ -679,18 +679,6 @@ X11_Esc
 		if(xi->xwtype == XUSRWIN) break;
 
 		pause(xi->dpy);
-		break;
-
-	case	ESCAPE_USR_CMAP:
-		if(xi->cmap_ro)
-			free_color(xi->dpy,xi->cmap,xi->color_status);
-		if(xi->mycmap)
-			XFreeColormap(xi->dpy,xi->cmap);
-		xi->cmap = atoi(sptr);
-		init_color(xi->scr,xi->color_pal,xi->color_info,
-							xi->color_status);
-		xi->mycmap = False;
-		xi->cmap_ro = True;
 		break;
 
 	case	ESCAPE_PRIVATE_CMAP:
@@ -737,9 +725,15 @@ X11_Esc
 		break;
 
 	case	ESCAPE_COLOR_ERROR:
-		tint = atoi(sptr);
+		/* first token is wkid */
+		tstr = strtok(sptr," ");
+		/* second token is data */
+		tstr = strtok(NULL," ");
+		if(tstr == NULL)
+			return ERR_INV_DATA;
+		tint = atoi(tstr);
 		if((tint < 0 )|| (tint > 100))
-			return(ERR_INV_CODE);
+			return ERR_INV_DATA;
 		if (tint == 100) tint = 0;
 		xi->percent_colerr = tint;
 		xi->pcerr_sqr = (float)tint*((float)MAX_INTEN_DIST/(float)100);
