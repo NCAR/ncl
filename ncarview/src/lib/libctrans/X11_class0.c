@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.38 1996-08-24 21:43:31 boote Exp $
+ *	$Id: X11_class0.c,v 1.39 1998-07-08 19:12:00 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -609,7 +609,7 @@ CGMC *c;
 					|| keybuffer[0] == 'Q'
 					|| keybuffer[0] == '\003')) {
 
-					ESprintf(E_UNKNOWN,"Interruped");
+					ESprintf(E_UNKNOWN,"Interrupted");
 					return(-1);
 
 				}
@@ -831,7 +831,7 @@ CGMC *c;
 				|| keybuffer[0] == 'Q'
 				|| keybuffer[0] == '\003')) {
 
-				ESprintf(E_UNKNOWN, "Interruped");
+				ESprintf(E_UNKNOWN, "Interrupted");
 				return(-1);
 
 			}
