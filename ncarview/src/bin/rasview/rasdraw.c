@@ -1,5 +1,5 @@
 /*
- *	$Id: rasdraw.c,v 1.12 1993-11-03 23:57:20 clyne Exp $
+ *	$Id: rasdraw.c,v 1.13 1993-12-16 22:26:03 haley Exp $
  */
 /*
  *	rasdraw.c
@@ -686,7 +686,7 @@ Context	*RasDrawOpen(argc, argv, batch)
 	context->app_con = XtCreateApplicationContext();
 	dpy = XtOpenDisplay(
 		context->app_con, NULL, NULL, app_class, 
-		(XrmOptionDescList *) NULL, (Cardinal) 0, argc, argv
+		(XrmOptionDescRec *) NULL, (Cardinal) 0, argc, argv
 	);
 	if (! dpy) {
 		ESprintf(E_UNKNOWN,"XtOpenDisplay(,,,,,,,)");
@@ -896,7 +896,7 @@ int	RasDraw(ras, context)
 		int	pass_go = 0;
 
 		XtAddEventHandler(context->canvas, ButtonPressMask,
-				False, PassGo, (caddr_t) &pass_go);
+				False, (XtEventHandler) PassGo, (caddr_t) &pass_go);
 		/*
 		 * loop until we get a button press
 		 */
@@ -908,7 +908,7 @@ int	RasDraw(ras, context)
 			if (pass_go) break;
 		}
 		XtRemoveEventHandler(context->canvas, ButtonPressMask,
-				False, PassGo, NULL);
+				False, (XtEventHandler) PassGo, NULL);
 	} 
 
 	/*
