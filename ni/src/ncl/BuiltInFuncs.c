@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.121 2000-04-03 16:23:26 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.122 2000-04-03 16:26:22 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -7853,14 +7853,18 @@ NhlErrorTypes _NclIdim_variance
 						count = count +1;
 					}
 				}
-				sum_val = sum_val/(double) count;
-				sum_sqrd_val = 0;
-				for(j = start; j < m; j++) {
-					if(val[(i*m)+j]!= tmp_md->multidval.missing_value.value.doubleval) {        
-						sum_sqrd_val += (val[(i*m)+j] - sum_val) * (val[(i*m)+j] - sum_val);
+				if(count != 1) {
+					sum_val = sum_val/(double) count;
+					sum_sqrd_val = 0;
+					for(j = start; j < m; j++) {
+						if(val[(i*m)+j]!= tmp_md->multidval.missing_value.value.doubleval) {        
+							sum_sqrd_val += (val[(i*m)+j] - sum_val) * (val[(i*m)+j] - sum_val);
+						}
 					}
+					sum_sqrd_val /= (double)(count-1);
+				} else {
+					sum_sqrd_val = 0.0
 				}
-				sum_sqrd_val /= (double)(count-1);
 				if(out_data_type == NCL_double) {
                                         ((double*)out_val)[i] = sum_sqrd_val;
                                 } else {
@@ -8040,14 +8044,18 @@ NhlErrorTypes _NclIvariance
 /*
 * Square of sum
 */
-		sum_val /= (double)n;
-		sum_sqrd_val = 0;
-		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
-			if(val[i]!= missing.doubleval) {        
-				sum_sqrd_val += (val[i] - sum_val) * (val[i] - sum_val);
+		if(n != 1) {
+			sum_val /= (double)n;
+			sum_sqrd_val = 0;
+			for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+				if(val[i]!= missing.doubleval) {        
+					sum_sqrd_val += (val[i] - sum_val) * (val[i] - sum_val);
+				}
 			}
+			sum_sqrd_val /= (double)(n-1);
+		} else {
+			sum_sqrd_val = 0.0;
 		}
-		sum_sqrd_val /= (double)(n-1);
 
 
 
