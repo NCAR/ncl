@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.33 1995-02-04 01:41:25 ethan Exp $
+ *      $Id: Machine.c,v 1.34 1995-02-27 21:54:18 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1024,6 +1024,7 @@ void _NclPrintMachine
 			case JMPFALSE :
 			case SET_OBJ_OP :
 			case PUSH_INT_LIT_OP :
+			case PUSH_LOGICAL_LIT_OP :
 			case PUSH_LOG_LIT_OP :
 			case ARRAY_LIT_OP :
 			case JMP_SCALAR_TRUE_OP:

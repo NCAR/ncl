@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.13 1994-12-23 01:19:12 ethan Exp $
+ *      $Id: SrcTree.h,v 1.14 1995-02-27 21:54:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -49,7 +49,8 @@ typedef enum {Ncl_BLOCK, Ncl_RETURN, Ncl_IFTHEN, Ncl_IFTHENELSE,
 			Ncl_VARCOORD, Ncl_FILEVAR, Ncl_IDNEXPR, 
 			Ncl_RESOURCE, Ncl_GETRESOURCE, Ncl_OBJ,
 			Ncl_BREAK, Ncl_CONTINUE, Ncl_FILEVARATT,
-			Ncl_FILEVARDIM,  Ncl_FILEVARCOORD, Ncl_NEW
+			Ncl_FILEVARDIM,  Ncl_FILEVARCOORD, Ncl_NEW,
+			Ncl_LOGICAL
                         } NclSrcTreeTypes;
 
 typedef enum { Ncl_READIT, Ncl_WRITEIT, Ncl_PARAMIT } NclReferenceTypes;
@@ -785,6 +786,12 @@ extern void * _NclMakeRealExpr(
 #endif
 );
 
+extern void * _NclMakeLogicalExpr(
+#if	NhlNeedProto
+	int /* integer */,
+	char * /*string_rep*/
+#endif
+);
 extern void * _NclMakeIntExpr(
 #if	NhlNeedProto
 	int /* integer */,

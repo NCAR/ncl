@@ -878,6 +878,13 @@ if(groot != NULL) {
 			_NclPutRealInstr(real->real,real->line,real->file);
 			break;
 		}
+		case Ncl_LOGICAL:
+		{
+			NclInt *integer = (NclInt*)root;
+			off1 = _NclPutInstr(PUSH_LOGICAL_LIT_OP,integer->line,integer->file);
+			_NclPutIntInstr(integer->integer,integer->line,integer->file);
+			break;
+		}
 		case Ncl_INT:
 		{
 			NclInt *integer = (NclInt*)root;

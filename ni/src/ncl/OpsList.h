@@ -86,4 +86,5 @@
 #define JMP_SCALAR_TRUE_OP			86
 #define JMP_SCALAR_FALSE_OP			87
 #define ISDEFINED_OP				88
-#define NUM_OPERATORS				89
+#define PUSH_LOGICAL_LIT_OP 			89
+#define NUM_OPERATORS				90

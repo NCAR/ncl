@@ -73,7 +73,7 @@ char *cur_load_file = NULL;
 %token <sym> UNDEF VAR WHILE DO QUIT PROC EPROC NPROC PIPROC IPROC UNDEFFILEVAR BREAK NOPARENT
 %token <sym> BGIN END FUNC EFUNC NFUNC IFUNC FDIM IF THEN VBLKNAME CONTINUE
 %token <sym> DFILE KEYFUNC KEYPROC ELSE EXTERNAL RETURN VSBLKGET LOAD NEW
-%token <sym> OBJVAR OBJTYPE RECORD VSBLKCREATE VSBLKSET LOCAL STOP
+%token <sym> OBJVAR OBJTYPE RECORD VSBLKCREATE VSBLKSET LOCAL STOP NCLTRUE NCLFALSE
 %token '='
 %token OR
 %token XOR
@@ -1544,6 +1544,12 @@ primary : REAL				{
 					}
 	| INT				{
 						$$ = _NclMakeIdnExpr(_NclMakeIntExpr($1,yytext));
+					}
+	| NCLTRUE				{
+						$$ = _NclMakeIdnExpr(_NclMakeLogicalExpr(1,yytext));
+					}
+	| NCLFALSE 			{
+						$$ = _NclMakeIdnExpr(_NclMakeLogicalExpr(0,yytext));
 					}
 	| STRING			{
 						$$ = _NclMakeIdnExpr(_NclMakeStringExpr($1));

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.21 1994-12-23 01:19:09 ethan Exp $
+ *      $Id: SrcTree.c,v 1.22 1995-02-27 21:54:26 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -67,7 +67,7 @@ char *src_tree_names[] = {"Ncl_BLOCK", "Ncl_RETURN", "Ncl_IFTHEN",
 			"Ncl_RESOURCE","Ncl_GETRESOURCE", "Ncl_OBJ",
 			"Ncl_BREAK", "Ncl_CONTINUE","Ncl_FILEVARATT",
 			"Ncl_FILEVARDIM",
-			"Ncl_FILECOORD","Ncl_NEW"
+			"Ncl_FILECOORD","Ncl_NEW","Ncl_LOGICAL"
 			};
 /*
 * These are the string equivalents of the attribute tags assigned to 
@@ -1562,7 +1562,34 @@ char* string_rep;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
 }
-
+void * _NclMakeLogicalExpr
+#if	NhlNeedProto
+(int integer,char* string_rep)
+#else
+(integer,string_rep)
+int integer;
+char* string_rep;
+#endif
+{
+	NclInt *tmp = (NclInt*)NclMalloc((unsigned)sizeof(NclInt));
+	
+	if(tmp == NULL) {
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
+		return(NULL);
+	}
+	tmp->kind = Ncl_LOGICAL;	
+	tmp->name = src_tree_names[Ncl_LOGICAL];
+	tmp->line = cur_line_number;
+	tmp->file = cur_load_file;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	tmp->integer= integer;
+	tmp->ref_type = Ncl_READIT;
+	tmp->len = -1;
+	if(string_rep != NULL) 
+		tmp->len = strlen(string_rep);
+	_NclRegisterNode((NclGenericNode*)tmp);
+	return((void*)tmp);
+}
 
 void _NclStringExprDestroy
 #if	NhlNeedProto

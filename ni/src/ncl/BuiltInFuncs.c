@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.2 1995-02-17 20:52:36 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.3 1995-02-27 21:54:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -636,7 +636,6 @@ NhlErrorTypes _NclIAddFile
 	} else {
 		return(NhlFATAL);
 	}
-	
 }
 
 NhlErrorTypes _NclIAny
@@ -1776,8 +1775,8 @@ NhlErrorTypes _NclIsleep
 	default:
 		return(NhlFATAL);
 	}
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"Function or procedure not implemented");
-	return(NhlFATAL);
+	sleep(*(int*)tmp_md->multidval.val);
+	return(NhlNOERROR);
 }
 NhlErrorTypes _NclIprompt
 #if	NhlNeedProto

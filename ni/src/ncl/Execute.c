@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.34 1995-02-24 15:25:08 haley Exp $
+ *      $Id: Execute.c,v 1.35 1995-02-27 21:54:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -816,6 +816,18 @@ NclExecuteReturnStatus _NclExecute
 						NULL,Ncl_MultiDValData,0,
 						(void*)ptr,NULL,1,&dim_size,
 						STATIC,NULL,(NclTypeClass)nclTypefloatClass);
+				estatus = _NclPush(data);
+				break;
+			}
+			case PUSH_LOGICAL_LIT_OP: {
+				NclStackEntry data;
+				int dim_size = 1;
+				ptr++;lptr++;fptr++;
+				data.kind = NclStk_VAL;
+				data.u.data_obj = _NclCreateMultiDVal(NULL,
+						NULL,Ncl_MultiDValData,0,
+						(void*)ptr,NULL,1,&dim_size,
+						STATIC,NULL,(NclTypeClass)nclTypelogicalClass);
 				estatus = _NclPush(data);
 				break;
 			}
