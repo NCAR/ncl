@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.160 2005-01-04 15:22:42 haley Exp $
+;      $Id: gsn_code.ncl,v 1.161 2005-01-11 17:20:15 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -5637,11 +5637,21 @@ begin
 ;
   if(rank.eq.2) then
 
-; Create the data object.
+; Create the data object; also, check for a missing value and
+; set during the create call (if you don't do this, then if the
+; user's happens by freak chance to have a constant field of -999,
+; it will choke.
 
-    data_object = create sfname scalarFieldClass noparent
-      "sfDataArray" : data
-    end create
+    if(isatt(data,"_FillValue")) then
+      data_object = create sfname scalarFieldClass noparent
+        "sfMissingValueV" : data@_FillValue
+        "sfDataArray"     : data
+      end create
+    else
+      data_object = create sfname scalarFieldClass noparent
+        "sfDataArray"     : data
+      end create
+    end if
   else
 ;
 ; Rank is 1. This means we have to use the mesh scalar object.
@@ -5651,24 +5661,25 @@ begin
 ;
 ; Create the data object.
 ;
-      data_object = create sfname meshScalarFieldClass noparent
-        "sfDataArray" : data
-        "sfXArray"    : get_res_value(res2,"sfXArray",1)
-        "sfYArray"    : get_res_value(res2,"sfYArray",1)
-      end create
+      if(isatt(data,"_FillValue")) then
+        data_object = create sfname meshScalarFieldClass noparent
+          "sfDataArray"     : data
+          "sfMissingValueV" : data@_FillValue
+          "sfXArray"        : get_res_value(res2,"sfXArray",1)
+          "sfYArray"        : get_res_value(res2,"sfYArray",1)
+        end create
+      else
+        data_object = create sfname meshScalarFieldClass noparent
+          "sfDataArray" : data
+          "sfXArray"    : get_res_value(res2,"sfXArray",1)
+          "sfYArray"    : get_res_value(res2,"sfYArray",1)
+        end create
+      end if
     else
       print("Error: scalar_field: If the input data is 1-dimensional, you must set sfXArray and sfYArray to 1-dimensional arrays of the same length.")
       dum = new(1,graphic)
       return(dum)
     end if
-  end if
-
-; Check for a missing value.
-
-  if(isatt(data,"_FillValue")) then
-      setvalues data_object
-          "sfMissingValueV" : data@_FillValue
-      end setvalues
   end if
 
   return(data_object)
@@ -5687,20 +5698,20 @@ end
 function vector_field(vfname:string,u:numeric,v:numeric,res2:logical)
 begin
   data_object = create vfname vectorFieldClass noparent
-      "vfUDataArray" : u
-      "vfVDataArray" : v
+    "vfUDataArray" : u
+    "vfVDataArray" : v
   end create
 
 ; Check for missing values.
 
   if(isatt(u,"_FillValue")) then
       setvalues data_object
-          "vfMissingUValueV" :u@_FillValue
+          "vfMissingUValueV" : u@_FillValue
       end setvalues
   end if
   if(isatt(v,"_FillValue")) then
       setvalues data_object
-          "vfMissingVValueV" :v@_FillValue
+          "vfMissingVValueV" : v@_FillValue
       end setvalues
   end if
 
@@ -8387,12 +8398,12 @@ begin
 
     if(isatt(x,"_FillValue")) then
         setvalues data_object
-            "caXMissingV" :x@_FillValue
+            "caXMissingV" : x@_FillValue
         end setvalues
     end if
     if(isatt(y,"_FillValue")) then
         setvalues data_object
-            "caYMissingV" :y@_FillValue
+            "caYMissingV" : y@_FillValue
         end setvalues
     end if
 
