@@ -27,13 +27,13 @@ int *c_csstri(int n, float xi[], float yi[], float zi[],
   nwrk = 27*nit;
   iwork = (int *) calloc(nwrk, sizeof(int));
   if (iwork == NULL) {
-    printf("Unable to allocate work space in c_cssgrid\n");
+    printf("Unable to allocate work space in c_csstri\n");
     *ier = 300;
     return((int *)NULL);
   }
   rwork = (float *) calloc(nit, sizeof(float));
   if (rwork == NULL) {
-    printf("Unable to allocate work space in c_cssgrid\n");
+    printf("Unable to allocate work space in c_csstri\n");
     *ier = 300;
     return((int *)NULL);
   }
@@ -50,7 +50,7 @@ int *c_csstri(int n, float xi[], float yi[], float zi[],
  */
   trlist = (int *) realloc(trlist, 3*num_tri*sizeof(int));
   if (rwork == NULL) {
-    printf("Unable to reallocate space for triangle list in c_cssgrid\n");
+    printf("Unable to reallocate space for triangle list in c_csstri\n");
     *ier = 300;
     return((int *)NULL);
   }
