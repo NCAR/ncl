@@ -1,5 +1,5 @@
 /*
- *      $Id: VecAnno.c,v 1.9 1996-09-14 17:07:34 boote Exp $
+ *      $Id: VecAnno.c,v 1.10 1996-11-14 03:02:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -330,11 +330,17 @@ CalculateGeometry
 	txe = tx + vap->vec_len * cos(DEGTORAD * vap->ah_angle);
 	tye = ty + vap->vec_len * sin(DEGTORAD * vap->ah_angle); 
 
-	NGCALLF(vvgetarrowbound,VVGETARROWBOUND)
-                (vap->a_params,&tx,&ty,&txe,&tye,&vap->vec_len,
-		 &xmn,&ymn,&xmx,&ymx);
-	vap->vec.width = xmx - xmn;
-	vap->vec.height = ymx - ymn;
+	if (vap->vec_len > 0.0) {
+		NGCALLF(vvgetarrowbound,VVGETARROWBOUND)
+			(vap->a_params,&tx,&ty,&txe,&tye,&vap->vec_len,
+			 &xmn,&ymn,&xmx,&ymx);
+		vap->vec.width = xmx - xmn;
+		vap->vec.height = ymx - ymn;
+	}
+	else {
+		vap->vec.width = 0;
+		vap->vec.height = 0;
+	}
 
 	max_tx_height = MAX(s1height,s2height);
 	margin = vap->font_height * vap->perim_space;
@@ -788,44 +794,47 @@ VecAnnoDraw
 		_NhlWorkstationFill(l->base.wkptr,x,y,5);
 	}
 
-	line_color = vap->vec_line_color;
-	if (vap->a_params->ast_iast == 1) {
-		int acm = 0;
-		if (vap->vec_fill_color <= NhlTRANSPARENT) {
-			if (line_color <= NhlTRANSPARENT)
-				line_color = NhlFOREGROUND;
-			acm = -1;
+	if (vap->vec_len > 0.0) {
+		line_color = vap->vec_line_color;
+		if (vap->a_params->ast_iast == 1) {
+			int acm = 0;
+			if (vap->vec_fill_color <= NhlTRANSPARENT) {
+				if (line_color <= NhlTRANSPARENT)
+					line_color = NhlFOREGROUND;
+				acm = -1;
+			}
+			else if (line_color <= NhlTRANSPARENT) {
+				acm = -2;
+			}
+			c_vvseti("ACM",acm);
 		}
 		else if (line_color <= NhlTRANSPARENT) {
-			acm = -2;
+			line_color = NhlFOREGROUND;
 		}
-		c_vvseti("ACM",acm);
-	}
-	else if (line_color <= NhlTRANSPARENT) {
-		line_color = NhlFOREGROUND;
-	}
 
-	if (line_color > NhlTRANSPARENT)
-		gset_line_colr_ind((Gint)
-				   _NhlGetGksCi(l->base.wkptr,line_color));
-	if (vap->vec_fill_color > NhlTRANSPARENT) 
-		gset_fill_colr_ind((Gint)
-			    _NhlGetGksCi(l->base.wkptr,vap->vec_fill_color));
-	gset_linewidth(vap->ah_line_thickness);
+		if (line_color > NhlTRANSPARENT)
+			gset_line_colr_ind((Gint)
+				      _NhlGetGksCi(l->base.wkptr,line_color));
+		if (vap->vec_fill_color > NhlTRANSPARENT) 
+			gset_fill_colr_ind((Gint)
+			      _NhlGetGksCi(l->base.wkptr,vap->vec_fill_color));
+		gset_linewidth(vap->ah_line_thickness);
+		
+		xb = vap->vxb;
+		yb = vap->vyb;
+		xe = vap->vxe;
+		ye = vap->vye;
+		vln = vap->vec_len;
 
-	xb = vap->vxb;
-	yb = vap->vyb;
-	xe = vap->vxe;
-	ye = vap->vye;
-	vln = vap->vec_len;
-
-	if (vap->d_params == NULL || vap->a_params == NULL) {
-		e_text = "%s: internal parameter values not initialized";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
+		if (vap->d_params == NULL || vap->a_params == NULL) {
+			e_text = 
+			     "%s: internal parameter values not initialized";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+		_NHLCALLF(vvarrowdraw,VVARROWDRAW)(vap->d_params,vap->a_params,
+						   &xb,&yb,&xe,&ye,&vln);
 	}
-	_NHLCALLF(vvarrowdraw,VVARROWDRAW)(vap->d_params,vap->a_params,
-					   &xb,&yb,&xe,&ye,&vln);
 
 	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
 
