@@ -1,5 +1,5 @@
 /*
- *      $Id: FileSupport.h,v 1.9 2000-02-01 16:09:27 ethan Exp $
+ *      $Id: FileSupport.h,v 1.10 2001-03-07 22:28:28 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -287,6 +287,18 @@ extern struct _NclApiDataList *_NclGetFileVarInfoList2(
 struct _NclFileRec * /*thefile*/
 #endif
 );
+extern struct _NclApiDataList *_NclGetFileVarInfo2(
+#if     NhlNeedProto
+struct _NclFileRec * /*thefile*/,
+NclQuark /*file_var_name*/
+#endif
+);
+extern struct _NclApiDataList *_NclGetFileInfo2(
+#if NhlNeedProto
+struct _NclFileRec * /*thefile*/
+#endif
+);
+
 
 #endif /*_FileSupport_h */
 

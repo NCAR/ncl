@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.21 2000-02-15 16:46:43 ethan Exp $
+ *      $Id: VarSupport.c,v 1.22 2001-03-07 22:28:28 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,8 @@
 #include "VarSupport.h"
 #include "DataSupport.h"
 #include "NclAtt.h"
+#include "ApiRecords.h"
+
 
 NclSelectionRecord* _NclGetVarSelRec
 #if	NhlNeedProto
@@ -1422,4 +1424,61 @@ struct _NclVarRec* self;
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclPrintVarSummary: Non-Variable passed to printVarSummary, can't print summary");
 		return(NhlFATAL);
 	}
+}
+
+
+
+NclApiDataList *_NclGetVarInfo2
+#if	NhlNeedProto
+(NclVar the_var)
+#else
+(the_var)
+NclVar;
+#endif
+{
+	NclApiDataList *tmp = NULL,*thelist = NULL;
+	NclAtt tmp_att = NULL;
+	NclAttList *att_list = NULL;
+	NclMultiDValData the_value = NULL;
+	NclSymTableListNode *st;
+	NclSymbol *s;
+	int j;
+
+
+	tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
+	tmp->kind = VARIABLE_LIST;
+	tmp->u.var = (NclApiVarInfoRec*) NclMalloc(sizeof(NclApiVarInfoRec));
+	tmp->u.var->name = the_var->var.var_quark;
+	the_value = (NclMultiDValData)_NclGetObj(the_var->var.thevalue_id);
+	tmp->u.var->data_type= the_value->multidval.data_type;
+	tmp->u.var->type = the_var->var.var_type;
+	tmp->u.var->n_dims = the_var->var.n_dims;
+	tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*the_var->var.n_dims);
+	for(j = 0; j < the_var->var.n_dims; j++) {
+		tmp->u.var->dim_info[j]= the_var->var.dim_info[j];
+			if(the_var->var.coord_vars[j] != -1) {
+				tmp->u.var->coordnames[j]= the_var->var.dim_info[j].dim_quark;
+			} else {
+				tmp->u.var->coordnames[j]= -1;
+			}
+	}
+	if(the_var->var.att_id != -1) {
+
+		tmp_att= (NclAtt)_NclGetObj(the_var->var.att_id);
+		att_list = tmp_att->att.att_list;
+		tmp->u.var->n_atts = tmp_att->att.n_atts;
+		tmp->u.var->attnames = (NclQuark*)NclMalloc(sizeof(NclQuark)*tmp_att->att.n_atts);
+			
+		j = 0;	
+		while(att_list != NULL) {
+			tmp->u.var->attnames[j] = att_list->quark;
+			att_list = att_list->next;
+			j++;
+		}
+	} else {
+		tmp->u.var->n_atts = 0;
+		tmp->u.var->attnames = NULL;
+	}
+	tmp->next = NULL;	
+	return(tmp);
 }
