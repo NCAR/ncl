@@ -1,6 +1,6 @@
 
 /*
- *      $Id: rascat.c,v 1.15 1992-10-28 04:10:13 clyne Exp $
+ *      $Id: rascat.c,v 1.16 1992-11-06 19:41:32 clyne Exp $
  */
 /*
  *	File:		rascat.c
@@ -58,9 +58,9 @@
  *				Resample the input image to the resolution
  *				'nx'x'ny'.
  *
- *			-ira	[NN|BL]
- *				Specify Nearest Neighbor (NN) or Bilinear 
- *				interpolation (BL) algorithm for resampling.
+ *			-ira	[nn|bl]
+ *				Specify Nearest Neighbor (nn) or Bilinear 
+ *				interpolation (bl) algorithm for resampling.
  *
  *	Environment:
  *				
@@ -112,7 +112,7 @@ static  OptDescRec      set_options[] = {
 	{"rgbscale", 1, "1.0", "Specify color intensity scaling factor"},
 	{"resolution", 1, "0x0", "Specify output image resolution"},
 	{"help", 0, "NULL", "Print this message and exit"},
-	{"ira", 1, "NN", "Specify resampling algo, NN or BL"},
+	{"ira", 1, "nn", "Specify resampling algo, nn or bl"},
 	{NULL},
 };
 
@@ -163,7 +163,7 @@ static	int	oD;
 static	void	Usage(msg) 
 	char	*msg;
 {
-	char	*opts = "[-v] [-ifmt format] [-ofmt format] [-win nx ny x y] [-o file] [-scale factor | -res resolution [ -ira NN | BL]] [-rgbscale  factor] [ - | file... ]";
+	char	*opts = "[-v] [-ifmt format] [-ofmt format] [-win nx ny x y] [-o file] [-scale factor | -res resolution [ -ira nn | bl]] [-rgbscale  factor] [ - | file... ]";
 
 	if (msg) {
 		(void) fprintf(stderr, "%s: %s\n", progName, msg);
@@ -495,10 +495,10 @@ static	int	cvt_to_rsfunc(from, to)
 	if (! from) {
 		*fptr = RasterResampleNearestNeighbor;
 	}
-	else if (strcmp(from, "NN") == 0) {
+	else if (strcmp(from, "NN") == 0 || strcmp(from, "nn") == 0) {
 		*fptr = RasterResampleNearestNeighbor;
 	}
-	else if (strcmp(from, "BL") == 0) {
+	else if (strcmp(from, "BL") == 0 || strcmp(from, "bl") == 0) {
 		*fptr = RasterResampleBilinear;
 	}
 	else {
