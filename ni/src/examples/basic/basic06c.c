@@ -69,7 +69,7 @@ main()
 /*
  * Set the display. Default is to display output to an X workstation.
  */
-	int NCGM=0, X11=0, PS=0;
+	int NCGM=0, X11=1, PS=0;
 
 /*
  * Initialize the high level utility library and create application.
@@ -131,8 +131,6 @@ main()
  * is invoked on it.
  */
 	NhlRLClear(rlist);
-	NhlRLSetString(rlist,NhlNtmXBLabelsOn,"False");
-	NhlRLSetString(rlist,NhlNtmYLLabelsOn,"False");
 	NhlRLSetString(rlist,NhlNtmXBBorderOn,"False");
 	NhlRLSetString(rlist,NhlNtmXTBorderOn,"False");
 	NhlRLSetString(rlist,NhlNtmYLBorderOn,"False");

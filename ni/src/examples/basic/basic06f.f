@@ -116,8 +116,6 @@ C the workstation identified by xwork_id when the draw procedure
 C is invoked on it.
 C
 	call NhlFRLClear(rlist)
-	call NhlFRLSetString(rlist,'tmXBLabelsOn','False',ierr)
-	call NhlFRLSetString(rlist,'tmYLLabelsOn','False',ierr)
 	call NhlFRLSetString(rlist,'tmXBBorderOn','False',ierr)
 	call NhlFRLSetString(rlist,'tmXTBorderOn','False',ierr)
 	call NhlFRLSetString(rlist,'tmYLBorderOn','False',ierr)

@@ -1,4 +1,4 @@
-; $Id: basic06n.ncl,v 1.3 1995-06-22 21:07:31 haley Exp $
+; $Id: basic06n.ncl,v 1.4 1995-06-29 00:15:41 scheitln Exp $
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
 ;                Copyright (C)  1995                                    ;
@@ -157,8 +157,6 @@ end create
 ;
 
 box_id = create "Box" xyPlotClass xwork_id
-    "tmXBLabelsOn": "False"
-    "tmYLLabelsOn": "False"
     "tmXBBorderOn": "False"
     "tmXTBorderOn": "False"
     "tmYLBorderOn": "False"
