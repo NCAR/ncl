@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gqchsp.m,v 1.4 1993-05-12 17:14:29 haley Exp $
+.\"	$Id: gqchsp.m,v 1.5 1995-10-13 15:09:50 haley Exp $
 .\"
 .TH GQCHSP 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -34,7 +34,8 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-(c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
-for Atmospheric Research
+Copyright (C) 1987-1995
 .br
-All Rights Reserved
+University Corporation for Atmospheric Research
+.br
+The use of this Software is governed by a License Agreement.

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_text_align.m,v 1.5 1994-08-11 17:53:06 haley Exp $
+.\"	$Id: ginq_text_align.m,v 1.6 1995-10-13 15:10:46 haley Exp $
 .\"
 .TH GINQ_TEXT_ALIGN 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -74,7 +74,8 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-(c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
-for Atmospheric Research
+Copyright (C) 1987-1995
 .br
-All Rights Reserved
+University Corporation for Atmospheric Research
+.br
+The use of this Software is governed by a License Agreement.
