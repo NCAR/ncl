@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\"	$Id: ymake.man,v 1.15 1997-02-28 19:42:35 haley Exp $
+.\"	$Id: ymake.man,v 1.16 1997-03-05 19:19:54 haley Exp $
 .\"
 .\"######################################################################
 .\"#									#
@@ -321,8 +321,6 @@ the \fI-local\fP parameter to \fBymake\fP these will not be defined.
 .br
 	\fINCARGGKSLIB\fP	libncarg_gks.a
 .br
-	\fICNCARGGKSLIB\fP	libncarg_gksC.a
-.br
 	\fINGMATHLIB\fP	libngmath.a
 .br
 	\fICGMLIB\fP	libcgm.a
@@ -343,7 +341,7 @@ Additionally, the following symbols have been defined that combine the above
 .IP \fINCARGLIBS\fP 1.5i
 $(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB)
 .IP \fICNCARGLIBS\fP 1.5i
-$(CNCARGLIB) $(CNCARGGKSLIB)
+$(CNCARGLIB)
 .IP \fIHLULIBS\fP 1.5i
 $(HLULIB)
 .RE
@@ -363,8 +361,6 @@ the dependency list of a link command. (See the \fBFortranProgram\fP and
 	\fIDEPCNCARGLIB\fP
 .br
 	\fIDEPNCARGGKSLIB\fP
-.br
-	\fIDEPCNCARGGKSLIB\fP
 .br
 	\fIDEPNGMATHLIB\fP
 .br
@@ -594,7 +590,7 @@ This is used by \fBymake\fP to find its config directory if \fBymake\fP is
 being used from the system's bin directory.
 .TP 5
 .B NCARG_CONFIG
-This is used by \fBymake\fP to find it's config directory if \fBymake\fP is
+This is used by \fBymake\fP to find its config directory if \fBymake\fP is
 being used from the system's bin directory.  It is more specific, thus more
 binding than the \fINCARG_ROOT\fP environment variable.
 .RE
