@@ -1,5 +1,5 @@
 /*
- *      $Id: util.c,v 1.4 1997-06-11 20:47:25 boote Exp $
+ *      $Id: util.c,v 1.5 1998-09-25 19:01:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -157,6 +157,9 @@ NgHashString
 #define	M_ASCII		0x00ff
 
 #ifdef	Linux
+typedef unsigned short ushort;
+typedef unsigned char unchar;
+typedef unsigned int uint;
 typedef ushort	ushort_t;
 typedef unchar	uchar_t;
 typedef uint	uint_t;
@@ -611,7 +614,11 @@ glob2(pathbuf, pathend, pattern, pglob)
 		
 			if (((pglob->ngl_flags & NgGLOB_MARK) &&
 			    pathend[-1] != SEP) && (S_ISDIR(sb.st_mode)
+#ifdef Linux
+			    || (__S_ISTYPE((sb.st_mode), __S_IFLNK) &&
+#else
 			    || (S_ISLNK(sb.st_mode) &&
+#endif
 			    (g_stat(pathbuf, &sb, pglob) == 0) &&
 			    S_ISDIR(sb.st_mode)))) {
 				*pathend++ = SEP;

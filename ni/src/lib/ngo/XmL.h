@@ -1,5 +1,5 @@
 /*
- *      $Id: XmL.h,v 1.4 1998-02-20 00:11:27 dbrown Exp $
+ *      $Id: XmL.h,v 1.5 1998-09-25 19:01:49 dbrown Exp $
  */
 /*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
@@ -60,6 +60,10 @@ Microline Software, 41 Sutter St Suite 1374, San Francisco, CA 94104.
 
 #ifdef XmL_CPP
 extern "C" {
+#endif
+
+#ifdef Linux
+typedef void * caddr_t;
 #endif
 
 /* shared resources */
