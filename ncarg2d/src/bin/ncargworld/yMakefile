@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.12 1996-05-16 21:11:18 haley Exp $
+#	$Id: yMakefile,v 1.13 2001-10-10 02:23:17 haley Exp $
 #
 
 MYNAME	= ncargworld
@@ -21,7 +21,6 @@ OBJECTS	= $(OBJ) $(ROBJS) $(OTHER_ROBJS)
 
 PROG_LIBS =	$(NCARGLIBS)
 DEP_LIBS =	$(DEPNCARGLIBS)
-SYS_LIBS	=	-lm
 
 FortranProgram($(MYNAME),$(OBJECTS),$(DEP_LIBS))
 InstallTarget($(SRC),$(INSTALL_LIB),$(EXAMPLESPATH))
