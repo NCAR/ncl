@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.137 2003-08-25 15:01:55 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.138 2003-09-03 21:29:34 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4187,7 +4187,7 @@ begin
     set_attr(res2,"vpHeightF",0.6)
 
     set_attr(res2,"mpGridAndLimbOn", False)
-    set_attr(res2,"mpPerimOn", True)
+    set_attr(res2,"mpPerimOn", .not.masklc)
     set_attr(res2,"mpFillOn", True)
     set_attr(res2,"mpFillColors",(/"background","transparent","LightGray",\
                                    "transparent"/)) ; (default,ocean,land,

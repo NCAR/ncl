@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.111 2003-08-20 20:56:28 haley Exp $
+;      $Id: gsn_code.ncl,v 1.112 2003-09-03 21:29:33 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -7658,7 +7658,11 @@ begin
     plot_object = create wksname + "_xy" xyPlotClass wks
         "xyCoordData" : data_object
     end create
-
+;
+; I'm guessing that we can't set the tr* resources when we create
+; the XY plot because it probably affects other resources.  So, we go ahead
+; and create the full plot, and *then* we set the tr* resources, if any.
+;  
     getvalues plot_object
       "trXMinF" : trxmin2
       "trXMaxF" : trxmax2
