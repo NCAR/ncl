@@ -1,6 +1,7 @@
 /*
- *	$Id: c_anotat.c,v 1.1 1997-04-11 17:40:40 haley Exp $
+ *	$Id: c_anotat.c,v 1.2 1999-07-27 21:03:06 haley Exp $
  */
+#include <stdlib.h>
 #include <ncarg/ncargC.h>
 
 void c_anotat

@@ -1,6 +1,8 @@
 /*
- *	$Id: c_stitle.c,v 1.1 1997-04-11 17:44:46 haley Exp $
+ *	$Id: c_stitle.c,v 1.2 1999-07-27 21:03:19 haley Exp $
  */
+#include <stdlib.h>
+
 #include <ncarg/ncargC.h>
 
 void c_stitle

@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1996-10-25 21:42:50 boote Exp $
+#	$Id: yMakefile,v 1.6 1999-07-27 21:03:12 haley Exp $
 #
 
 MYNAME	= concom
@@ -20,3 +20,8 @@ PartialLibraryTarget(libncarg.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
 
 PartialLibraryTarget(libNGcn.a,$(OBJECTS))
+
+#if defined(sun4)
+conecd.o: conecd.f
+	$(F77) -g -c conecd.f
+#endif
