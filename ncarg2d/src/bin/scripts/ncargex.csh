@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.148 2004-03-26 23:46:09 kennison Exp $
+#   $Id: ncargex.csh,v 1.149 2004-04-07 21:35:24 kennison Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -221,9 +221,9 @@ set c_list = ($c_list $conpack_clist)
 #  Set conpackt examples  #
 #                         #
 #*************************#
-set conpackt_fex   = (ctcbay ctex01 ctex02 ctfite ctgaus ctgeo1 ctgeo2 ctiscp \
-		      ctllg1 ctllg2 ctllg3 ctnccl ctorca ctpopg ctswth ctwng1 \
-		      ctwng2 cttd01 cttd02)
+set conpackt_fex   = (ctcbay ctex01 ctex02 ctfite ctgaus ctgc23 ctgeo1 ctgeo2 \
+		      ctgeo3 ctiscp ctllg1 ctllg2 ctllg3 ctnccl ctorca ctpopg \
+		      ctswth ctwng1 ctwng2 cttd01 cttd02)
 set conpackt_flist = ($conpackt_fex)
 
 set conpackt_cex   = (c_ctllg3)
@@ -1617,6 +1617,10 @@ switch ($name)
 
     case ctgaus:
 	set other_data_files = (ctgaus.dat)
+    breaksw
+
+    case ctgeo3:
+	set other_data_files = (ctgeo3.dat)
     breaksw
 
     case ctiscp:
