@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.80 2001-09-06 16:38:08 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.81 2001-09-14 21:17:57 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -7706,7 +7706,7 @@ function gsn_csm_hov(wks:graphic,data:numeric,resources:logical)
       "tmYLMinorLengthF"     : ymlength
       "tmXBMinorLengthF"     : xmlength
     end getvalues
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
+
     font_height = min((/xfontf,yfontf/))  ; Make subtitle label sizes a
                                           ; function of the size of the
                                           ; X/Y axis labels.

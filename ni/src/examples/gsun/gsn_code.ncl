@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.73 2001-08-02 17:20:50 haley Exp $
+;      $Id: gsn_code.ncl,v 1.74 2001-09-14 21:17:55 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1171,6 +1171,11 @@ begin
   bot_pnl = isatt(res,"gsnPanelBottom")
   top_pnl = isatt(res,"gsnPanelTop")
 
+  lft_inv_pnl = isatt(res,"gsnPanelInvsblLeft")
+  rgt_inv_pnl = isatt(res,"gsnPanelInvsblRight")
+  bot_inv_pnl = isatt(res,"gsnPanelInvsblBottom")
+  top_inv_pnl = isatt(res,"gsnPanelInvsblTop")
+
   if(typeof(paper_orient).eq."integer")
     if(paper_orient.eq.0)
       lc_orient = "portrait"
@@ -1200,25 +1205,41 @@ begin
     newbb = bb
   end if
 
-  if(top_pnl)
-    top = max((/1.,max(newbb(:,0))/))
+  if(top_inv_pnl)
+    top = max((/res@gsnPanelInvsblTop,max(newbb(:,0))/))
   else
-    top = max(newbb(:,0))
+    if(top_pnl)
+      top = max((/1.,max(newbb(:,0))/))
+    else 
+      top = max(newbb(:,0))
+    end if
   end if
-  if(bot_pnl)
-    bot = min((/0.,min(newbb(:,1))/))
+  if(bot_inv_pnl)
+    bot = min((/res@gsnPanelInvsblBottom,min(newbb(:,1))/))
   else
-    bot = min(newbb(:,1))
+    if(bot_pnl)
+      bot = min((/0.,min(newbb(:,1))/))
+    else
+      bot = min(newbb(:,1))
+    end if
   end if
-  if(lft_pnl)
-    lft = min((/0.,min(newbb(:,2))/))
+  if(lft_inv_pnl)
+    lft = min((/res@gsnPanelInvsblLeft,min(newbb(:,2))/))
   else
-    lft = min(newbb(:,2))
+    if(lft_pnl)
+      lft = min((/0.,min(newbb(:,2))/))
+    else
+      lft = min(newbb(:,2))
+    end if
   end if
-  if(rgt_pnl)
-    rgt = max((/1.,max(newbb(:,3))/))
+  if(rgt_inv_pnl)
+    rgt = max((/res@gsnPanelInvsblRight,max(newbb(:,3))/))
   else
-    rgt = max(newbb(:,3))
+    if(rgt_pnl)
+      rgt = max((/1.,max(newbb(:,3))/))
+    else
+      rgt = max(newbb(:,3))
+    end if
   end if
 
 ;  if(bot.lt.0.or.bot.gt.1.or.top.lt.0.or.top.gt.1.or. \
@@ -2501,8 +2522,6 @@ function gsn_panel_return(wks:graphic,plot[*]:graphic,dims[*]:integer,\
 local res, nrows, ncols, ddims, is_row_spec, row_spec, npanels, nplots
 begin
   res = resources              ; Make copy of resources
-
-  ddims = dimsizes(dims)
 ;
 ; First check if paneling is to be specified by (#rows x #columns) or
 ; by #columns per row.  The default is rows x columns, unless 
@@ -2512,6 +2531,7 @@ begin
 ;
 ; Check to see if we have enough plots to fit panels, and vice versa.
 ;
+  ddims = dimsizes(dims)
   if(is_row_spec)
     row_spec = dims
     npanels = 0
@@ -2529,9 +2549,9 @@ begin
       print("Error: gsn_panel: for the third argument of gsn_panel, you must either specify # rows by # columns or set gsnPanelRowSpec to True and set the number of plots per row.")
       exit
     end if
-    nrows = dims(0)
-    ncols = dims(1)
-    npanels = nrows * ncols
+    nrows    = dims(0)
+    ncols    = dims(1)
+    npanels  = nrows * ncols
     row_spec = new(nrows,integer)
     row_spec = ncols
   end if
@@ -2562,6 +2582,10 @@ begin
   y_top          = get_res_value_keep(res,"gsnPanelTop",1.)
   main_string    = get_res_value_keep(res,"txString","")
   maxbb          = get_bb_res(res)
+  lft_pnl        = isatt(res,"gsnPanelLeft")
+  rgt_pnl        = isatt(res,"gsnPanelRight")
+  bot_pnl        = isatt(res,"gsnPanelBottom")
+  top_pnl        = isatt(res,"gsnPanelTop")
 ;
 ; Check if a main string has been specified. If so, we need to make sure
 ; we leave some room for it by computing y_top (if the user hasn't set
@@ -2855,12 +2879,16 @@ begin
     "vpHeightF" : vph
   end getvalues
 
-  dx = scale * (vpx - left) ; Calculate distance from plot's left position
-                            ; to its leftmost annotation
-  dy = scale * (top - vpy) ; Calculate distance from plot's top position
-                           ; to its topmost annotation.
+  dxl = scale * (vpx-left)           ; Distance from plot's left
+                                     ; position to its leftmost annotation
+  dxr = scale * (right-(vpx+vpw))    ; Distance from plot's right
+                                     ; position to its rightmost annotation
+  dyt = scale * (top-vpy)            ; Distance from plot's top
+                                     ; position to its topmost annotation.
+  dyb = scale * ((vpy-vph)-bottom)   ; Distance from plot's bottom
+                                     ; position to its bottommost annotation.
 
-  ypos = y_top - ywsp - dy -(ysp/2.+new_total_height*ispan(0,nrows-1,1))
+  ypos = y_top - ywsp - dyt -(ysp/2.+new_total_height*ispan(0,nrows-1,1))
 ;
 ; If we have figure strings, then determine white spacing around 
 ; the text box.
@@ -2916,7 +2944,7 @@ begin
 ;
 ; Calculate new x positions.
 ;
-    xpos = x_lft + xwsp + dx +(xsp/2.+new_total_width*ispan(0,new_ncols-1,1))
+    xpos = x_lft + xwsp + dxl +(xsp/2.+new_total_width*ispan(0,new_ncols-1,1))
 
     do nc = 0,new_ncols-1
       if(.not.ismissing(plot(nplot)))
@@ -3003,10 +3031,16 @@ begin
     else
       min_xpos = min( (/min(xpos),min_xpos/) )
     end if
-    delete(xpos)
     num_plots_left = nplots - nplot
     nr = nr + 1   ; increment rows
   end do    ; end of plots
+;
+; Calculate the biggest rescaled widths and heights (technically, they
+; should all be the same).  These values will be used a few times 
+; throughout the rest of the code.
+;
+  scaled_width  = scale*max(old_vp(:,2))
+  scaled_height = scale*max(old_vp(:,3))
 ;
 ; Check if a labelbar is to be drawn at the bottom.
 ;
@@ -3059,16 +3093,16 @@ begin
 ;
       if(lbhor)
         set_attr(lbres,"vpYF",max ((/ywsp+labelbar_height,bot-ywsp/)))
-        if(ncols.eq.1.and.lbres@vpWidthF.le.scale*max(old_vp(:,2)))
-          set_attr(lbres,"vpXF",min_xpos+(scale*max(old_vp(:,2)) - lbres@vpWidthF)/2.)
+        if(ncols.eq.1.and.lbres@vpWidthF.le.scaled_width)
+          set_attr(lbres,"vpXF",min_xpos + (scaled_width-lbres@vpWidthF)/2.)
         else
           tmp_range = x_rgt - x_lft
           set_attr(lbres,"vpXF",x_lft + (tmp_range - lbres@vpWidthF)/2.)
         end if
       else
         set_attr(lbres,"vpXF",min ((/1.-(xwsp+labelbar_width),max_rgt+xwsp/)))
-        if(nrows.eq.1.and.lbres@vpHeightF.le.scale*max(old_vp(:,3)))
-          set_attr(lbres,"vpYF",ypos(0)-(scale*max(old_vp(:,3)) - lbres@vpHeightF)/2.)
+        if(nrows.eq.1.and.lbres@vpHeightF.le.scaled_height)
+          set_attr(lbres,"vpYF",ypos(0)-(scaled_height - lbres@vpHeightF)/2.)
         else
           tmp_range = y_top - y_bot
           set_attr(lbres,"vpYF",y_top-(tmp_range - lbres@vpHeightF)/2.)
@@ -3128,6 +3162,81 @@ begin
     newplots(nplot) = gsn_text_ndc_return(wks, main_string, main_xpos, \
                       main_ypos, txres)
   end if
+;
+; If some of the paneled plots are missing, we need to take these into
+; account so that the maximization will still work properly.  For
+; example, if we ask for a 2 x 2 configuration, but plots 1 and 3 (the
+; rightmost plots) are missing, then we need to set a new resource
+; called gsnPanelInvsblRight to whatever approximate X value it 
+; would have been if those plots weren't missing.  Setting just gsnPanelRight
+; won't work in this case, because that resource is only used to control
+; where the plots are drawn in a 0 to 1 square, and *not* to indicate the
+; rightmost location of the rightmost graphic (which could be a vertical 
+; labelbar.
+;
+; Not dealing with the case of gsnPanelRowSpec = True yet.
+;  
+  if(.not.is_row_spec) then
+    newbb  = new((/dimsizes(newplots),4/),float)
+    newbb  = NhlGetBB(newplots)       ; Get bounding boxes of plots, plus
+                                      ; labelbar and text string if they
+                                      ; exist.  
+;
+; Get largest bounding box that encompasses all non-missing graphical
+; objects.
+;
+    newtop = max(newbb(:,0))
+    newbot = min(newbb(:,1))
+    newlft = min(newbb(:,2))
+    newrgt = max(newbb(:,3))
+    delete(newbb)
+    if(.not.rgt_pnl.and.nplots.gt.ncols.and. \ 
+       all(ismissing(plot(ncols-1:nplots-1:ncols))))
+;
+; The rightmost graphical object is either the rightmost edge of
+; the rightmost plot, or the rightmost edge of the labelbar or
+; text string (if they exist).
+;
+      irgt                      = ncols - 1        ; 1st rightmost plot.
+      xrgt                      = xpos(irgt)+scaled_width+dxr
+      maxbb@gsnPanelInvsblRight = max((/xrgt,newrgt/))
+    end if
+
+    if(.not.lft_pnl.and.all(ismissing(plot(0:nplots-1:ncols))))
+;
+; The leftmost graphical object is either the leftmost edge of
+; the leftmost plot, or the leftmost edge of the labelbar or
+; text string (if they exist).
+;
+      ilft                     = 0             ; 1st leftmost plot.
+      xlft                     = xpos(ilft)-dxl
+      maxbb@gsnPanelInvsblLeft = min((/xlft,newlft/))
+    end if
+
+    if(.not.top_pnl.and.all(ismissing(plot(0:ncols-1))))
+;
+; The topmost graphical object is either the topmost edge of
+; the topmost plot, or the topmost edge of the labelbar or
+; text string (if they exist).
+;
+      itop                    = 0               ; 1st topmost plot.
+      xtop                    = ypos(itop)+dyt
+      maxbb@gsnPanelInvsblTop = max((/xtop,newtop/))
+    end if
+
+    if(.not.bot_pnl.and.nplots.gt.(nrows-1)*ncols.and. \ 
+       all(ismissing(plot(nplots-ncols-1:nplots-1))))
+;
+; The bottommost graphical object is either the bottommost edge of
+; the bottommost plot, or the bottommost edge of the labelbar or
+; text string (if they exist).
+;
+      ibot                       = nplots-ncols-1   ; 1st bottommost plot.
+      xbot                       = ypos(ibot)-scaled_height-dyb
+      maxbb@gsnPanelInvsblBottom = min((/xbot,newbot/))
+    end if
+  end if
+; 
 ;
 ; Draw plots plus labelbar and main title (if they exists). This is
 ; also where the plots will be maximized for PostScript output,
