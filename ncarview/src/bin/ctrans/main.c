@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.13 1992-02-13 18:14:53 clyne Exp $
+ *	$Id: main.c,v 1.14 1992-02-14 16:58:02 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -69,6 +69,7 @@ static	struct	{
 	FloatType_ 	line_scale;	/* additional line scaling	*/
 	StringType_	pal;		/* optional color palette	*/
 	BoolType_       version;	/* print the verison number	*/
+	BoolType_       verbose;	/* operate in verbose mode	*/
 	} commLineOpt;
 	
 
@@ -85,6 +86,7 @@ static	OptDescRec	set_options[] = {
 	{"lscale", OptSepArg, "-1"},	
 	{"pal", OptSepArg, NULL},	
         {"Version", OptIsArg, "false"},
+        {"verbose", OptIsArg, "false"},
 	{NULL}
 	};
 
@@ -112,6 +114,8 @@ static	Option	get_options[] = {
 	{"pal", StringType, (unsigned long) &(commLineOpt.pal), 
 							sizeof(StringType_)},	
         {"Version", BoolType, (unsigned long) &commLineOpt.version, 
+							sizeof (BoolType_ )},
+        {"verbose", BoolType, (unsigned long) &commLineOpt.verbose, 
 							sizeof (BoolType_ )},
 	{NULL}
 	};
@@ -144,6 +148,7 @@ char	**argv;
 	char	**meta_files = (char **) 
 			malloc ((unsigned) ((argc * sizeof(char *)) + 1));
 	int	i,j;
+	int	frame_count = 1;
 
 	extern	void	SetDefaultPalette();
 
@@ -301,6 +306,13 @@ char	**argv;
 			 *	unrecoverable error occurs
 			 */
 			while (ctrans(NEXT) == OK) {
+				if (commLineOpt.verbose) {
+					fprintf(
+						stderr, 
+						"plotted %d frames\n", 
+						frame_count++
+					);
+				}
 				if (batch)
 					sleep(sleep_time);
 			}
@@ -312,6 +324,13 @@ char	**argv;
 			i = 0;
 			while (record[i] != -1) {
 				(void) ctrans(record[i++]);
+				if (commLineOpt.verbose) {
+					fprintf(
+						stderr, 
+						"plotted %d frames\n", 
+						frame_count++
+					);
+				}
 				if (batch)
 					sleep(sleep_time);
 			}
