@@ -1,6 +1,9 @@
 ;
-;      $Id: skewt_func.ncl,v 1.4 2004-04-28 16:28:01 haley Exp $
+;      $Id: skewt_func.ncl,v 1.5 2004-08-19 14:46:51 shea Exp $
 ;
+; -------------------------------------------------
+; This library requires that the "gsn_code.ncl" library
+; be loaded prior to use by skewt_func.ncl
 ; -------------------------------------------------
 ; Dennis Shea
 ; email: shea@ucar.edu
