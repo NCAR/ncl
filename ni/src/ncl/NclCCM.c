@@ -536,7 +536,7 @@ char EndOfRec(unsigned char cw[]) {
 	} else if(tmpc == (char)0) {
 		return(CBCW);
 	} else {
-		fprintf(stdout, "ERROR:\n");
+	/*	fprintf(stdout, "ERROR:\n");*/
 		return((char)0377);
 	}
 }
@@ -1843,10 +1843,11 @@ int *n_atts;
 				arout[3] = NrmStringToQuark("_FillValue");
         			return(arout);
 			} else {
-				*n_atts = 3;
-				arout[0] = NrmStringToQuark("units");
-				arout[1] = NrmStringToQuark("t_op");
-				arout[2] = NrmStringToQuark("_FillValue");
+				*n_atts = 4;
+				arout[0] = NrmStringToQuark("long_name");
+				arout[1] = NrmStringToQuark("units");
+				arout[2] = NrmStringToQuark("t_op");
+				arout[3] = NrmStringToQuark("_FillValue");
         			return(arout);
 			}
 			
@@ -2287,7 +2288,11 @@ void *storage;
 					*(NclQuark*)storage = CcmVarName(&(thefile->header.cheader.MCFLDS[2*WORD_SIZE * i + WORD_SIZE]));
 				}
 			} else if(NrmStringToQuark("long_name") == att_name) {
-				*(NclQuark*)storage = NrmStringToQuark(ccm_name_tab[thefile->vars[i].ccm_var_index].long_name);
+				if(thefile->vars[i].ccm_var_index == -1) {
+					*(NclQuark*)storage = thefile->vars[i].var_name_q;
+				} else {
+					*(NclQuark*)storage = NrmStringToQuark(ccm_name_tab[thefile->vars[i].ccm_var_index].long_name);
+				}
 			} else if(NrmStringToQuark("t_op") == att_name) {
 				switch(thefile->vars[i].sample_type) {
 				case 0:
