@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex_local.csh,v 1.5 1994-11-08 23:09:00 haley Exp $
+#	$Id: ncargcex_local.csh,v 1.6 1994-12-14 15:48:14 haley Exp $
 #
 
 #********************************#
@@ -1117,10 +1117,6 @@ set extra_c_files
 set data_files
 
 switch ($name)
-    case c_agex13:
-        set data_files = (agda13.dat)
-    breaksw
-
     case c_ccpcica:
     case c_ccpcir:
     case c_ccpcnrc:
