@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.116 2000-01-29 00:10:50 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.117 2000-02-01 16:09:26 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -60,6 +60,7 @@ extern "C" {
 #include "NclAtt.h"
 #include "NclList.h"
 #include "ListSupport.h"
+#include "NclFileInterfaces.h"
 #include <signal.h>
 
 extern int cmd_line;
@@ -418,6 +419,8 @@ NhlErrorTypes _NclIGetFileVarNames
 	NclQuark file_q;
 	int i,ret =0;
 	int dimsize = 0;
+	NclFile thefile;
+	NclMultiDValData tmp_md;
 	
 
 	data = _NclGetArg(0,1,DONT_CARE);
@@ -429,41 +432,46 @@ NhlErrorTypes _NclIGetFileVarNames
 		file_q = data.u.data_var->var.var_quark;
 		break;
 	case NclStk_VAL:
+	default:
 		return(NhlFATAL);
 	}
-/*
-	thefile = _NclGetObj(*(int*)tmp_md->val);
+	if(file_q == -1) {
+
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		thefile = (NclFile)_NclGetObj(*(int*)tmp_md->multidval.val);
+		
+		var_names = (NclQuark*)NclMalloc((unsigned)sizeof(NclQuark)*thefile->file.n_vars);
+		dimsize = thefile->file.n_vars;
 	
-	var_names = (NclQuark*)NclMalloc((unsigned)sizeof(NclQuark)*thefile->n_vars);
-	dimsize = thefile->n_vars;
-	
-	for(i = 0; i< thefile->file.n_vars;i++ 	) {
-		if(thefile->file.var_info[i] != NULL) {
-			var_names[i] = thefile->file.var_info[i]->var_quark;
-		} else {
-			var_names[i] = 0;
+		for(i = thefile->file.n_vars-1; i>=0;i-- 	) {
+			if(thefile->file.var_info[i] != NULL) {
+				var_names[i] = thefile->file.var_info[i]->var_name_quark;
+			} else {
+				var_names[i] = 0;
+			}
 		}
-	}
-*/
-	tmp = _NclGetFileVarInfoList(file_q);
-	if(tmp==NULL){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIGetFileVarNames: file does not exist");
-		return(NhlFATAL);
-	} 
-	step = tmp;
-	i = 0;
-	while(step != NULL) {
-		i++;
-		step = step->next;
-	}
-	var_names = (NclQuark*)NclMalloc((unsigned)sizeof(NclQuark)*i);
-	step = tmp;
-	dimsize = i;
-	i = 0;
-	while(step != NULL) {
-		var_names[i] = step->u.var->name;
-		step = step->next;
-		i++;
+	} else {
+
+		tmp = _NclGetFileVarInfoList(file_q);
+		if(tmp==NULL){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIGetFileVarNames: file does not exist");
+			return(NhlFATAL);
+		} 
+		step = tmp;
+		i = 0;
+		while(step != NULL) {
+			i++;
+			step = step->next;
+		}
+		var_names = (NclQuark*)NclMalloc((unsigned)sizeof(NclQuark)*i);
+		step = tmp;
+		dimsize = i;
+		i = 0;
+		while(step != NULL) {
+			var_names[i] = step->u.var->name;
+			step = step->next;
+			i++;
+		}
 	}
 		
 	data.kind = NclStk_VAL;
@@ -485,6 +493,8 @@ NhlErrorTypes _NclIListFileVariables
 	NclApiDataList *tmp,*step;
 	NclQuark file_q;
 	int i,ret =0;
+	NclMultiDValData tmp_md;
+	NclFile thefile;
 	
 
 	data = _NclGetArg(0,1,DONT_CARE);
@@ -499,7 +509,14 @@ NhlErrorTypes _NclIListFileVariables
 		_NclStartCmdLinePager();
 	}
 	fp = _NclGetOutputStream();
-	tmp = _NclGetFileVarInfoList(file_q);
+	if(file_q == -1) {
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		thefile = (NclFile)_NclGetObj(*(int*)tmp_md->multidval.val);
+		
+		tmp = _NclGetFileVarInfoList2(thefile);
+	} else {
+		tmp = _NclGetFileVarInfoList(file_q);
+	}
 	step = tmp;
 	while(step != NULL) {
 		ret = nclfprintf(fp,"\n%s\t%s ",_NclBasicDataTypeToName((NclBasicDataTypes)step->u.var->data_type),NrmQuarkToString(step->u.var->name));

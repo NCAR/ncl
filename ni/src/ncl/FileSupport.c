@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.15 2000-01-28 20:46:15 ethan Exp $
+ *      $Id: FileSupport.c,v 1.16 2000-02-01 16:09:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,7 @@
 #include "NclCoordVar.h"
 #include "FileSupport.h"
 #include "VarSupport.h"
+#include "ApiRecords.h"
 
 
 NhlErrorTypes _NclBuildFileCoordRSelection
@@ -1432,3 +1433,67 @@ NclQuark  varname;
 	}
 }
 
+NclApiDataList *_NclGetFileVarInfoList2
+#if	NhlNeedProto
+(struct _NclFileRec *thefile)
+#else
+(thefile)
+	struct _NclFileRec *thefile;
+#endif
+{
+	NclApiDataList *tmp = NULL,*thelist = NULL;
+	NclSymbol *s = NULL;
+	int i,j;
+	NclStackEntry *thevar = NULL;
+	NclMultiDValData theid = NULL;
+	NclFileAttInfoList *step;
+	if(thefile!=NULL) {
+					for(i = 0; i < thefile->file.n_vars; i++) {
+						tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
+						tmp->kind = VARIABLE_LIST;
+						tmp->u.var = (NclApiVarInfoRec*)NclMalloc(sizeof(NclApiVarInfoRec));
+						tmp->u.var->name = thefile->file.var_info[i]->var_name_quark;
+						tmp->u.var->data_type = thefile->file.var_info[i]->data_type;
+						tmp->u.var->type = FILEVAR;
+						tmp->u.var->n_dims = thefile->file.var_info[i]->num_dimensions;
+						tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp->u.var->n_dims);
+
+						for(j = 0 ; j < tmp->u.var->n_dims ; j++) {
+							tmp->u.var->dim_info[j].dim_quark =thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark;
+							tmp->u.var->dim_info[j].dim_num = thefile->file.var_info[i]->file_dim_num[j];
+							tmp->u.var->dim_info[j].dim_size = thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_size;
+							if(thefile->file.coord_vars[thefile->file.var_info[i]->file_dim_num[j]] != NULL) {
+								tmp->u.var->coordnames[j] = thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark;
+
+							} else {
+								tmp->u.var->coordnames[j] = -1;
+							}
+						}
+						if(thefile->file.var_att_info[i] != NULL) {
+							j = 0;
+							step = thefile->file.var_att_info[i];
+							while(step != NULL) {
+								step = step->next;
+								j++;
+							}
+							tmp->u.var->n_atts = j;
+							tmp->u.var->attnames = (NclQuark*)NclMalloc(sizeof(NclQuark)*j);
+							step = thefile->file.var_att_info[i];
+							j = 0;
+							while(step != NULL) {
+								tmp->u.var->attnames[j]= step->the_att->att_name_quark;
+								j++;
+								step = step->next;
+							}
+						} else {
+							tmp->u.var->n_atts = 0;
+							tmp->u.var->attnames = NULL;
+						}
+						tmp->next = thelist;
+						thelist = tmp;
+						tmp = NULL;
+					}
+	} else {
+		return(NULL);
+	}
+}

@@ -1,5 +1,5 @@
 /*
- *      $Id: FileSupport.h,v 1.8 2000-01-28 20:46:15 ethan Exp $
+ *      $Id: FileSupport.h,v 1.9 2000-02-01 16:09:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -280,6 +280,11 @@ extern NhlErrorTypes _NclPrintFileVarSummary(
 #if NhlNeedProto
 NclFile /* thefile */,
 NclQuark /* varname */
+#endif
+);
+extern struct _NclApiDataList *_NclGetFileVarInfoList2(
+#if NhlNeedProto
+struct _NclFileRec * /*thefile*/
 #endif
 );
 

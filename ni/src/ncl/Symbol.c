@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.60 1999-11-10 22:31:16 dbrown Exp $
+ *      $Id: Symbol.c,v 1.61 2000-02-01 16:09:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1135,7 +1135,6 @@ void _NclAddSingleObj
 	}
 	return;
 }
-
 NclApiDataList *_NclGetFileVarInfoList
 #if	NhlNeedProto
 (NclQuark file_var)
