@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: c_csa3s.m,v 1.1 1999-01-07 17:59:29 fred Exp $
+.\"	$Id: c_csa3s.m,v 1.2 1999-09-18 00:07:02 fred Exp $
 .\"
 .TH c_csa3s 3NCARG "January 1999" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -95,7 +95,7 @@ and we set:
 then out[nz*ny*i + nz*j + k] is the approximation function value 
 at coordinate point (xo[i],
 yo[j], zo[k]) for 0 <= i < nx, 0 <= j < ny, and 0 <= k < nz. The space 
-for out is allocated internal to c_c_csa3s and is nx*ny*nz floats in size. 
+for out is allocated internal to c_csa3s and is nx*ny*nz floats in size. 
 .SH ACCESS
 To use c_csa3s, load the NCAR Graphics library ngmath.
 .SH SEE ALSO
