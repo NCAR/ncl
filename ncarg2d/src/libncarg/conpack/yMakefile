@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.14 2001-09-26 22:49:40 haley Exp $
+#	$Id: yMakefile,v 1.15 2002-01-29 22:48:45 kennison Exp $
 #
 
 MYNAME	= conpack
@@ -15,7 +15,7 @@ GENERIC_SRCS = \
 	cpsbst.f cpsort.f cpstls.f cptrcl.f cptreg.f cptres.f cptrev.f \
 	cpcltr.f cpcica.f cphchm.f cphchr.f cpscae.f cptroe.f cptrve.f \
 	cpwlam.f hlucpchcf.f hlucpchcl.f hlucpchhl.f hlucpchil.f hlucpchll.f \
-	hlucpmpxy.f hlucpscae.f
+	hlucpmpxy.f hlucpscae.f cphlso.f cphls2.f
 
 
 GENERIC_OBJS	= \
@@ -29,7 +29,7 @@ GENERIC_OBJS	= \
 	cpsbst.o cpsort.o cpstls.o cptrcl.o cptreg.o cptres.o cptrev.o \
 	cpcltr.o cpcica.o cphchm.o cphchr.o cpscae.o cptroe.o cptrve.o \
 	cpwlam.o hlucpchcf.o hlucpchcl.o hlucpchhl.o hlucpchil.o hlucpchll.o \
-	hlucpmpxy.o hlucpscae.o
+	hlucpmpxy.o hlucpscae.o cphlso.o cphls2.o
 
 SOURCES = $(GENERIC_SRCS)
 

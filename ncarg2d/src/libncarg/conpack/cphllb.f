@@ -1,6 +1,6 @@
 C
-C $Id: cphllb.f,v 1.10 2000-08-22 15:02:48 haley Exp $
-C                                                                      
+C $Id: cphllb.f,v 1.11 2002-01-29 22:48:38 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -29,8 +29,8 @@ C quantities defining the labels are added to the lists in real
 C workspaces 3 and 4.
 C
 C A point (I,J) is defined to be a high (low) if ZDAT(I,J) is greater
-C than (less than) every other point within a certain neighborhood of
-C (I,J).  The neighborhood is defined by the values of the parameters
+C than (less than) every other field value within a certain neighborhood
+C of (I,J).  The neighborhood is defined by the values of the parameters
 C 'HLX' and 'HLY'.
 C
 C
@@ -47,8 +47,8 @@ C
       COMMON /CPCOM1/ IAIB(256),IBCF,IBHL,IBIL,IBLL,ICAF,ICCF
       COMMON /CPCOM1/ ICCL(259),ICFF,ICHI,ICHL,ICIL,ICLL(256)
       COMMON /CPCOM1/ ICLO,ICLP(256),ICLS,ICLU(259),ICLV,ICLW
-      COMMON /CPCOM1/ IDUF,IGCL,IGLB,IGRM,IGRN,IGVS,IHCF,IHLX,IHLY
-      COMMON /CPCOM1/ IIWS(2),IIWU,ILBC,IMPF,INCX(8),INCY(8)
+      COMMON /CPCOM1/ IDUF,IGCL,IGLB,IGRM,IGRN,IGVS,IHCF,IHLE,IHLX
+      COMMON /CPCOM1/ IHLY,IIWS(2),IIWU,ILBC,IMPF,INCX(8),INCY(8)
       COMMON /CPCOM1/ INHL,INIL,INIT,INLL,IOCF,IOHL,IOLL,IPAI,IPCF
       COMMON /CPCOM1/ IPIC,IPIE,IPIL,IPLL,IRWS(4),IRWU,ISET,IWSO
       COMMON /CPCOM1/ IZD1,IZDM,IZDN,IZDS,JODP,JOMA,JOTZ,LCTM,LEA1
@@ -87,9 +87,20 @@ C
       CHARACTER*32 TXLO
       SAVE   /CPCOM2/
 C
+C ZVAL is an arithmetic statement function which, given an integer
+C index I between 1 and IZDM*IZDN, has as its value the Ith element
+C (in column-wise order) of the array ZDAT.
+C
+      ZVAL(I)=ZDAT(MOD(I,IZDM)+1,I/IZDM+1)
+C
 C If the text strings for high and low labels are blank, do nothing.
 C
       IF (TXHI(1:LTHI).EQ.' '.AND.TXLO(1:LTLO).EQ.' ') RETURN
+C
+C Zero the value of a flag that is incremented whenever a problematic
+C pair of near-by equal values is seen in the field.
+C
+      IFLG=0
 C
 C Compute constants needed to get from data-index coordinates to user
 C coordinates.
@@ -138,6 +149,9 @@ C maxima along some line.  Finding these candidates is made efficient by
 C using a count of consecutive increases or decreases of the function
 C along the line.
 C
+C Tell IFTRAN to use the FORTRAN-66 implementation of BLOCK invocations.
+C
+C
         JPNT = 2
         GO TO 10003
 10001   CONTINUE
@@ -160,34 +174,41 @@ C
           ZNXT=ZDAT(IPNT+1,JPNT)
           IF (SVAL.NE.0..AND.ZNXT.EQ.SVAL) GO TO 105
           IF (ZNXT.LT.ZNOW) GO TO 10005
-          ICON=ICON+1
-          IF (ZNXT.EQ.ZNOW) ICON=0
+          IF (.NOT.(ZNXT.EQ.ZNOW)) GO TO 10006
+            IFLG=IFLG+1
+            ICON=0
+          GO TO 10007
+10006     CONTINUE
+            ICON=ICON+1
+10007     CONTINUE
         GO TO 10004
 10005   CONTINUE
 C
 C Function decreases at next point.  Test for maximum on line.
 C
-        IF (.NOT.(ICON.LT.IRNG)) GO TO 10006
+        IF (.NOT.(ICON.LT.IRNG)) GO TO 10008
 C
           IBEG=MAX(1,IPNT-IRNG)
           IEND=IPNT-ICON-1
 C
-          DO 10007 I=IBEG,IEND
+          DO 10009 I=IBEG,IEND
+            IF (ZNOW.EQ.ZDAT(I,JPNT)) IFLG=IFLG+1
             IF (ZNOW.LE.ZDAT(I,JPNT)) GO TO 102
-10007     CONTINUE
+10009     CONTINUE
 C
-10006   CONTINUE
+10008   CONTINUE
 C
         IBEG=IPNT+2
         IEND=MIN(IZDM,IPNT+IRNG)
 C
-        DO 10008 I=IBEG,IEND
-          IF (.NOT.(SVAL.NE.0..AND.ZDAT(I,JPNT).EQ.SVAL)) GO TO 10009
+        DO 10010 I=IBEG,IEND
+          IF (.NOT.(SVAL.NE.0..AND.ZDAT(I,JPNT).EQ.SVAL)) GO TO 10011
             IPNT=I-1
             GO TO 105
-10009     CONTINUE
+10011     CONTINUE
+          IF (ZNOW.EQ.ZDAT(I,JPNT)) IFLG=IFLG+1
           IF (ZNOW.LE.ZDAT(I,JPNT)) GO TO 102
-10008   CONTINUE
+10010   CONTINUE
 C
 C We have a maximum on the line.  Do a two-dimensional test for a
 C maximum in the field.
@@ -197,23 +218,26 @@ C
         IBEG=MAX(1,IPNT-IRNG)
         IEND=MIN(IZDM,IPNT+IRNG)
 C
-        DO 10010 J=JBEG,JEND
-          IF (.NOT.(J.NE.JPNT)) GO TO 10011
-            DO 10012 I=IBEG,IEND
+        DO 10012 J=JBEG,JEND
+          IF (.NOT.(J.NE.JPNT)) GO TO 10013
+            DO 10014 I=IBEG,IEND
+              IF (ZDAT(I,J).EQ.ZNOW) IFLG=IFLG+1
               IF (ZDAT(I,J).GE.ZNOW.OR.
      +            (SVAL.NE.0..AND.ZDAT(I,J).EQ.SVAL)) GO TO 102
-10012       CONTINUE
-10011     CONTINUE
-10010   CONTINUE
+10014       CONTINUE
+10013     CONTINUE
+10012   CONTINUE
 C
 C We have a maximum in the field.  Process it.
 C
-        IF (.NOT.(TXHI(1:LTHI).NE.' ')) GO TO 10013
+        IF (.NOT.(TXHI(1:LTHI).NE.' ')) GO TO 10015
           IHOL=0
-          L10015=    1
-          GO TO 10015
-10014     CONTINUE
-10013   CONTINUE
+          XLBC=XAT1+RZDM*(REAL(IPNT)-1.)
+          YLBC=YAT1+RZDN*(REAL(JPNT)-1.)
+          L10017=    1
+          GO TO 10017
+10016     CONTINUE
+10015   CONTINUE
 C
 C Start searching for a minimum.
 C
@@ -223,41 +247,48 @@ C Loop as long as the function is decreasing along the line.  We seek a
 C possible minimum.
 C
   103   CONTINUE
-10016   CONTINUE
+10018   CONTINUE
           IPNT=IPNT+1
           IF (IPNT.GE.IZDM) GO TO 107
           ZNOW=ZNXT
           ZNXT=ZDAT(IPNT+1,JPNT)
           IF (SVAL.NE.0..AND.ZNXT.EQ.SVAL) GO TO 105
-          IF (ZNXT.GT.ZNOW) GO TO 10017
-          ICON=ICON+1
-          IF (ZNXT.EQ.ZNOW) ICON=0
-        GO TO 10016
-10017   CONTINUE
+          IF (ZNXT.GT.ZNOW) GO TO 10019
+          IF (.NOT.(ZNXT.EQ.ZNOW)) GO TO 10020
+            IFLG=IFLG+1
+            ICON=0
+          GO TO 10021
+10020     CONTINUE
+            ICON=ICON+1
+10021     CONTINUE
+        GO TO 10018
+10019   CONTINUE
 C
 C Function increases at next point.  Test for a minimum on the line.
 C
-        IF (.NOT.(ICON.LT.IRNG)) GO TO 10018
+        IF (.NOT.(ICON.LT.IRNG)) GO TO 10022
 C
           IBEG=MAX(1,IPNT-IRNG)
           IEND=IPNT-ICON-1
 C
-          DO 10019 I=IBEG,IEND
+          DO 10023 I=IBEG,IEND
+            IF (ZNOW.EQ.ZDAT(I,JPNT)) IFLG=IFLG+1
             IF (ZNOW.GE.ZDAT(I,JPNT)) GO TO 104
-10019     CONTINUE
+10023     CONTINUE
 C
-10018   CONTINUE
+10022   CONTINUE
 C
         IBEG=IPNT+2
         IEND=MIN(IZDM,IPNT+IRNG)
 C
-        DO 10020 I=IBEG,IEND
-          IF (.NOT.(SVAL.NE.0..AND.ZDAT(I,JPNT).EQ.SVAL)) GO TO 10021
+        DO 10024 I=IBEG,IEND
+          IF (.NOT.(SVAL.NE.0..AND.ZDAT(I,JPNT).EQ.SVAL)) GO TO 10025
             IPNT=I-1
             GO TO 105
-10021     CONTINUE
+10025     CONTINUE
+          IF (ZNOW.EQ.ZDAT(I,JPNT)) IFLG=IFLG+1
           IF (ZNOW.GE.ZDAT(I,JPNT)) GO TO 104
-10020   CONTINUE
+10024   CONTINUE
 C
 C We have a minimum on the line.  Do a two-dimensional test for a
 C minimum of the field.
@@ -267,23 +298,26 @@ C
         IBEG=MAX(1,IPNT-IRNG)
         IEND=MIN(IZDM,IPNT+IRNG)
 C
-        DO 10022 J=JBEG,JEND
-          IF (.NOT.(J.NE.JPNT)) GO TO 10023
-            DO 10024 I=IBEG,IEND
+        DO 10026 J=JBEG,JEND
+          IF (.NOT.(J.NE.JPNT)) GO TO 10027
+            DO 10028 I=IBEG,IEND
+              IF (ZDAT(I,J).EQ.ZNOW) IFLG=IFLG+1
               IF (ZDAT(I,J).LE.ZNOW.OR.
      +            (SVAL.NE.0..AND.ZDAT(I,J).EQ.SVAL)) GO TO 104
-10024       CONTINUE
-10023     CONTINUE
-10022   CONTINUE
+10028       CONTINUE
+10027     CONTINUE
+10026   CONTINUE
 C
 C We have a minimum in the field.  Process it.
 C
-        IF (.NOT.(TXLO(1:LTLO).NE.' ')) GO TO 10025
+        IF (.NOT.(TXLO(1:LTLO).NE.' ')) GO TO 10029
           IHOL=1
-          L10015=    2
-          GO TO 10015
-10026     CONTINUE
-10025   CONTINUE
+          XLBC=XAT1+RZDM*(REAL(IPNT)-1.)
+          YLBC=YAT1+RZDN*(REAL(JPNT)-1.)
+          L10017=    2
+          GO TO 10017
+10030     CONTINUE
+10029   CONTINUE
 C
 C Start searching for a maximum.
 C
@@ -309,10 +343,247 @@ C
       GO TO 10001
 10002 CONTINUE
 C
+C If there is evidence that the straightforward search for highs and
+C lows may have missed some because of equal field values at neighboring
+C locations within the search neighborhood and if the user has enabled
+C an additional search for the highs and lows that were missed, do it.
+C
+      IF (.NOT.(IFLG.NE.0.AND.IHLE.NE.0)) GO TO 10031
+C
+C Grab a portion of the integer workspace of length IZDM*IZDN.
+C
+        CALL CPGIWS (IWRK,1,IZDM*IZDN,IWSE)
+        IF (IWSE.NE.0.OR.ICFELL('CPHLLB',3).NE.0) GO TO 110
+C
+C Form an index array for the contents of ZDAT.  Each element of the
+C index array is of the form (J-1)*IZDM+(I-1), where I and J are indices
+C of an element of ZDAT.  The elements of the index array are sorted
+C in order of increasing value of the associated elements of ZDAT.
+C
+        CALL CPHLSO (ZDAT,IZD1,IZDM,IZDN,IWRK(II01+1))
+C
+C Initialize a scan of the index array to look for elements of ZDAT
+C that are equal to each other.  ZNXT is the larger element of ZDAT.
+C NEQU keeps track of the number of equal values found in a row.
+C
+        ZNXT=ZVAL(IWRK(II01+1))
+        NEQU=0
+C
+C Loop through the elements of the index array.
+C
+          INDX = 1
+          GO TO 10034
+10032     CONTINUE
+          INDX =INDX +1
+10034     CONTINUE
+          IF (INDX .GT.(IZDM*IZDN)) GO TO 10033
+C
+C ZNOW is the element of ZDAT pointed at by element INDX of the index
+C array.
+C
+          ZNOW=ZNXT
+C
+C ZNXT is the element of ZDAT pointed at by element INDX+1 of the index
+C array.  If element INDX is the last element of the array, ZNXT is just
+C set to a value different from ZNOW (the smallest element of ZDAT).
+C
+          IF (.NOT.(INDX.LT.IZDM*IZDN)) GO TO 10035
+            ZNXT=ZVAL(IWRK(II01+INDX+1))
+          GO TO 10036
+10035     CONTINUE
+            ZNXT=ZVAL(IWRK(II01+1))
+10036     CONTINUE
+C
+C If ZNXT is equal to ZNOW, bump the value of NEQU, which keeps track
+C of the number of consecutive elements of the index array that have
+C pointed to the same value in the ZDAT array.
+C
+          IF (.NOT.(ZNXT.EQ.ZNOW)) GO TO 10037
+C
+            NEQU=NEQU+1
+C
+C Otherwise, ...
+C
+          GO TO 10038
+10037     CONTINUE
+C
+C ... if a group of equal values has been seen but not yet processed
+C and if it's not a group of special values, ...
+C
+            IF (.NOT.(NEQU.NE.0.AND.(SVAL.EQ.0..OR.ZNOW.NE.SVAL))) GO TO
+     + 10039
+C
+C ... process the group.  Processing consists of dividing the group into
+C subgroups that are spatially connected (meaning that, given any two
+C elements, A and B, of the subgroup, there's a sequence of elements of
+C the subgroup that begins with A, ends with B, and is such that any two
+C consecutive elements of the sequence point to elements of ZDAT that
+C are within one grid unit of each other in both X and Y.)  NEQU is the
+C number of equalities seen and is therefore one less than the number of
+C equal values in the group.  INDX points to the element of the index
+C array defining the last element of the group.  JNDX points to the
+C element of the index array defining the first element of the group.
+C KNDX points to the element of the index array defining the last
+C element of the subgroup currently being worked on.
+C
+              JNDX=INDX-NEQU
+              KNDX=JNDX
+C
+C Loop as long as elements of the group remain.
+C
+10040         CONTINUE
+              IF (.NOT.(JNDX.LT.INDX)) GO TO 10041
+C
+C Look for another subgroup.  (IHLE.EQ.1.OR.NEQU.LT.IHLE).AND.
+C
+  108           CONTINUE
+                DO 10042 LNDX=KNDX+1,INDX
+                  LIM1=MOD(IWRK(II01+LNDX),IZDM)
+                  LJM1=(IWRK(II01+LNDX))/IZDM
+                  DO 10043 MNDX=JNDX,KNDX
+                    MIM1=MOD(IWRK(II01+MNDX),IZDM)
+                    MJM1=(IWRK(II01+MNDX))/IZDM
+                    IF (.NOT.(ABS(LIM1-MIM1).LE.1.AND.ABS(LJM1-MJM1).LE.
+     +1))           GO TO 10044
+                      KNDX=KNDX+1
+                      IF (.NOT.(KNDX.NE.LNDX)) GO TO 10045
+                        ITMP=IWRK(II01+KNDX)
+                        IWRK(II01+KNDX)=IWRK(II01+LNDX)
+                        IWRK(II01+LNDX)=ITMP
+10045                 CONTINUE
+                      GO TO 108
+10044               CONTINUE
+10043             CONTINUE
+10042           CONTINUE
+C
+C A subgroup has been found.  If it contains more than one element and
+C not more than the number of elements specified by 'HLE' as the upper
+C limit ...
+C
+                IF (.NOT.(JNDX.LT.KNDX.AND.(IHLE.EQ.1.OR.KNDX-JNDX.LT.IH
+     +LE)))     GO TO 10046
+C
+C ... examine the elements of ZDAT pointed at by members of the subgroup
+C to see whether the subgroup can be considered a high or a low.  IHLC
+C is set positive to indicate that the subgroup is a high, negative to
+C indicate that it is a low.  XLBC, YLBC, and NLBC are used to compute a
+C mean position for the high or the low.
+C
+                  IHLC=0
+                  XLBC=0.
+                  YLBC=0.
+                  NLBC=0
+C
+C Loop through the elements of the subgroup.
+C
+                  DO 10047 LNDX=JNDX,KNDX
+                    IPNT=MOD(IWRK(LNDX),IZDM)+1
+                    JPNT=(IWRK(LNDX))/IZDM+1
+                    IBEG=MAX(1,IPNT-IRNG)
+                    IEND=MIN(IZDM,IPNT+IRNG)
+                    JBEG=MAX(1,JPNT-JRNG)
+                    JEND=MIN(IZDN,JPNT+JRNG)
+                    XLBC=XLBC+XAT1+RZDM*(REAL(IPNT)-1.)
+                    YLBC=YLBC+YAT1+RZDN*(REAL(JPNT)-1.)
+                    NLBC=NLBC+1
+                    DO 10048 I=IBEG,IEND
+                      DO 10049 J=JBEG,JEND
+                        IF (.NOT.(I.NE.IPNT.OR.J.NE.JPNT)) GO TO 10050
+                          IF (.NOT.(SVAL.NE.0..AND.ZDAT(I,J).EQ.SVAL)) G
+     +O TO 10051
+                            GO TO 109
+10051                     CONTINUE
+                          IF (.NOT.(ZNOW.GT.ZDAT(I,J))) GO TO 10052
+                            IF (IHLC.LT.0) GO TO 109
+                            IHLC=+1
+                          GO TO 10053
+10052                     CONTINUE
+                          IF (.NOT.(ZNOW.LT.ZDAT(I,J))) GO TO 10054
+                            IF (IHLC.GT.0) GO TO 109
+                            IHLC=-1
+10053                     CONTINUE
+10054                     CONTINUE
+10050                   CONTINUE
+10049                 CONTINUE
+10048               CONTINUE
+10047             CONTINUE
+C
+C Finish computing the location of the "high" or "low" and, ...
+C
+                  XLBC=XLBC/REAL(NLBC)
+                  IF (XLBC.LE.XAT1.OR.XLBC.GE.XATM) GO TO 109
+                  YLBC=YLBC/REAL(NLBC)
+                  IF (YLBC.LE.YAT1.OR.YLBC.GE.YATN) GO TO 109
+C
+C ... if all comparisons indicate that a high has been found, ...
+C
+                  IF (.NOT.(IHLC.GT.0)) GO TO 10055
+C
+C ... put a "high" label there; ...
+C
+                    IF (.NOT.(TXHI(1:LTHI).NE.' ')) GO TO 10056
+                      IHOL=0
+                      L10017=    3
+                      GO TO 10017
+10057                 CONTINUE
+10056               CONTINUE
+C
+C ... but if all comparisons indicate that a low has been found, ...
+C
+                  GO TO 10058
+10055             CONTINUE
+                  IF (.NOT.(IHLC.LT.0)) GO TO 10059
+C
+C ... put a "low" label there.
+C
+                    IF (.NOT.(TXLO(1:LTLO).NE.' ')) GO TO 10060
+                      IHOL=1
+                      L10017=    4
+                      GO TO 10017
+10061                 CONTINUE
+10060               CONTINUE
+C
+10058             CONTINUE
+10059             CONTINUE
+C
+10046           CONTINUE
+C
+C We're done with that subgroup; initialize to look for the next one.
+C
+  109           JNDX=KNDX+1
+                KNDX=JNDX
+C
+              GO TO 10040
+10041         CONTINUE
+C
+10039       CONTINUE
+C
+C All elements of the group have been processed, so zero NEQU and keep
+C looking through the index array.
+C
+            NEQU=0
+C
+10038     CONTINUE
+C
+        GO TO 10032
+10033   CONTINUE
+C
+C All highs and lows that were missed by the normal algorithm have been
+C found and labeled.
+C
+10031 CONTINUE
+C
+C Tell IFTRAN to use the FORTRAN-77 implementation of BLOCK invocations.
+C
+C
+C Discard any integer workspace that may have been used above.
+C
+  110 LI01=0
+C
 C Return PLOTCHAR to its default state.
 C
-  108 CALL PCSETI ('TE',ITMP)
-      IF (ICFELL('CPHLLB',3).NE.0) RETURN
+      CALL PCSETI ('TE',ITMP)
+      IF (ICFELL('CPHLLB',4).NE.0) RETURN
 C
 C Done.
 C
@@ -322,25 +593,23 @@ C The following internal procedure writes a high (if IHOL=0) or low (if
 C IHOL=1) label, centered at the point whose subscript coordinates are
 C IPNT and JPNT.
 C
-10015 CONTINUE
+10017 CONTINUE
 C
-        XLBC=XAT1+RZDM*(REAL(IPNT)-1.)
-        YLBC=YAT1+RZDN*(REAL(JPNT)-1.)
         IVIS=1
 C
         IF (IMPF.NE.0) THEN
           XTMP=XLBC
           YTMP=YLBC
           CALL HLUCPMPXY (IMPF,XTMP,YTMP,XLBC,YLBC)
-          IF (ICFELL('CPHLLB',4).NE.0) RETURN
+          IF (ICFELL('CPHLLB',5).NE.0) RETURN
           IF ((OORV.NE.0.).AND.(XLBC.EQ.OORV.OR.YLBC.EQ.OORV)) IVIS=0
         END IF
 C
         IF (IVIS.NE.0) THEN
           XCLB=CUFX(XLBC)
-          IF (ICFELL('CPHLLB',5).NE.0) RETURN
-          YCLB=CUFY(YLBC)
           IF (ICFELL('CPHLLB',6).NE.0) RETURN
+          YCLB=CUFY(YLBC)
+          IF (ICFELL('CPHLLB',7).NE.0) RETURN
           ZDVL=ZDAT(IPNT,JPNT)
           IF (IHOL.EQ.0) THEN
             CALL CPSBST(TXHI(1:LTHI),CTMA,LCTM)
@@ -348,20 +617,20 @@ C
             CALL CPSBST(TXLO(1:LTLO),CTMA,LCTM)
           END IF
           CALL HLUCPCHHL (+1+4*IHOL)
-          IF (ICFELL('CPHLLB',7).NE.0) RETURN
-          IF (CTMA(1:LCTM).EQ.' ') GO TO 109
-          CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),WCFS,360.,0.)
           IF (ICFELL('CPHLLB',8).NE.0) RETURN
-          CALL HLUCPCHHL (-1-4*IHOL)
+          IF (CTMA(1:LCTM).EQ.' ') GO TO 111
+          CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),WCFS,360.,0.)
           IF (ICFELL('CPHLLB',9).NE.0) RETURN
-          CALL PCGETR ('DL',DTOL)
+          CALL HLUCPCHHL (-1-4*IHOL)
           IF (ICFELL('CPHLLB',10).NE.0) RETURN
-          CALL PCGETR ('DR',DTOR)
+          CALL PCGETR ('DL',DTOL)
           IF (ICFELL('CPHLLB',11).NE.0) RETURN
-          CALL PCGETR ('DB',DTOB)
+          CALL PCGETR ('DR',DTOR)
           IF (ICFELL('CPHLLB',12).NE.0) RETURN
-          CALL PCGETR ('DT',DTOT)
+          CALL PCGETR ('DB',DTOB)
           IF (ICFELL('CPHLLB',13).NE.0) RETURN
+          CALL PCGETR ('DT',DTOT)
+          IF (ICFELL('CPHLLB',14).NE.0) RETURN
           DTOL=DTOL+WWFS
           DTOR=DTOR+WWFS
           DTOB=DTOB+WWFS
@@ -396,18 +665,18 @@ C
 C
             IF (IOHL/4.EQ.1) THEN
               IF (XLLB.LT.XVPL.OR.XRLB.GT.XVPR.OR.
-     +            YBLB.LT.YVPB.OR.YTLB.GT.YVPT) GO TO 109
+     +            YBLB.LT.YVPB.OR.YTLB.GT.YVPT) GO TO 111
             ELSE IF (IOHL/4.GE.2) THEN
               DELX=0.
               IF (XLLB.LT.XVPL) DELX=XVPL-XLLB
               IF (XRLB+DELX.GT.XVPR) THEN
-                IF (DELX.NE.0.) GO TO 109
+                IF (DELX.NE.0.) GO TO 111
                 DELX=XVPR-XRLB
               END IF
               DELY=0.
               IF (YBLB.LT.YVPB) DELY=YVPB-YBLB
               IF (YTLB+DELY.GT.YVPT) THEN
-                IF (DELY.NE.0.) GO TO 109
+                IF (DELY.NE.0.) GO TO 111
                 DELY=YVPT-YTLB
               END IF
               XCLB=XCLB+DELX
@@ -417,9 +686,9 @@ C
               YBLB=YBLB+DELY
               YTLB=YTLB+DELY
               XLBC=CFUX(XCLB)
-              IF (ICFELL('CPHLLB',14).NE.0) RETURN
-              YLBC=CFUY(YCLB)
               IF (ICFELL('CPHLLB',15).NE.0) RETURN
+              YLBC=CFUY(YCLB)
+              IF (ICFELL('CPHLLB',16).NE.0) RETURN
             END IF
 C
           END IF
@@ -432,11 +701,11 @@ C
             IF (MOD(IOHL/2,2).EQ.0) ILB2=INHL-1
 C
               ILBL = ILB1
-              GO TO 10029
-10027         CONTINUE
+              GO TO 10064
+10062         CONTINUE
               ILBL =ILBL +1
-10029         CONTINUE
-              IF (ILBL .GT.(ILB2)) GO TO 10028
+10064         CONTINUE
+              IF (ILBL .GT.(ILB2)) GO TO 10063
 C
               IF (ILBL.EQ.INIL) ETRA=.5*CHWM*WCIL*(XVPR-XVPL)
               IF (ILBL.EQ.INHL) ETRA=.5*CHWM*WCHL*(XVPR-XVPL)
@@ -472,10 +741,10 @@ C
               END IF
 C
               IF (XRLB.GE.XLOL.AND.XLLB.LE.XROL.AND.
-     +            YTLB.GE.YBOL.AND.YBLB.LE.YTOL) GO TO 109
+     +            YTLB.GE.YBOL.AND.YBLB.LE.YTOL) GO TO 111
 C
-            GO TO 10027
-10028       CONTINUE
+            GO TO 10062
+10063       CONTINUE
 C
           END IF
 C
@@ -484,8 +753,8 @@ C
             CALL CPGRWS (RWRK,3,MAX(4*NLBS,LR03+100),IWSE)
             IF (IWSE.NE.0) THEN
               NLBS=NLBS-1
-              GO TO 108
-            ELSE IF (ICFELL('CPHLLB',16).NE.0) THEN
+              GO TO 110
+            ELSE IF (ICFELL('CPHLLB',17).NE.0) THEN
               NLBS=NLBS-1
               RETURN
             END IF
@@ -499,8 +768,8 @@ C
             CALL CPGRWS (RWRK,4,MAX(NR04,LR04+100),IWSE)
             IF (IWSE.NE.0) THEN
               NLBS=NLBS-1
-              GO TO 108
-            ELSE IF (ICFELL('CPHLLB',17).NE.0) THEN
+              GO TO 110
+            ELSE IF (ICFELL('CPHLLB',18).NE.0) THEN
               NLBS=NLBS-1
               RETURN
             END IF
@@ -514,7 +783,7 @@ C
 C
         END IF
 C
-  109 CONTINUE
-      GO TO (10014,10026) , L10015
+  111 CONTINUE
+      GO TO (10016,10030,10057,10061) , L10017
 C
       END

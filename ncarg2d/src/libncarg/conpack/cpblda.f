@@ -1,6 +1,6 @@
 C
-C $Id: cpblda.f,v 1.9 2000-08-22 15:02:42 haley Exp $
-C                                                                      
+C $Id: cpblda.f,v 1.10 2002-01-29 22:48:34 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -35,8 +35,8 @@ C
       COMMON /CPCOM1/ IAIB(256),IBCF,IBHL,IBIL,IBLL,ICAF,ICCF
       COMMON /CPCOM1/ ICCL(259),ICFF,ICHI,ICHL,ICIL,ICLL(256)
       COMMON /CPCOM1/ ICLO,ICLP(256),ICLS,ICLU(259),ICLV,ICLW
-      COMMON /CPCOM1/ IDUF,IGCL,IGLB,IGRM,IGRN,IGVS,IHCF,IHLX,IHLY
-      COMMON /CPCOM1/ IIWS(2),IIWU,ILBC,IMPF,INCX(8),INCY(8)
+      COMMON /CPCOM1/ IDUF,IGCL,IGLB,IGRM,IGRN,IGVS,IHCF,IHLE,IHLX
+      COMMON /CPCOM1/ IHLY,IIWS(2),IIWU,ILBC,IMPF,INCX(8),INCY(8)
       COMMON /CPCOM1/ INHL,INIL,INIT,INLL,IOCF,IOHL,IOLL,IPAI,IPCF
       COMMON /CPCOM1/ IPIC,IPIE,IPIL,IPLL,IRWS(4),IRWU,ISET,IWSO
       COMMON /CPCOM1/ IZD1,IZDM,IZDN,IZDS,JODP,JOMA,JOTZ,LCTM,LEA1
@@ -381,6 +381,12 @@ C IHCF is the parameter 'HCF', which says whether or not hachuring is
 C turned on and what type of hachuring is to be done.
 C
       DATA IHCF / 0 /
+C
+C IHLE is the parameter 'HLE', a flag the user can set non-zero to
+C enable CONPACK to search for highs and lows involving more than
+C one adjacent equal value in the field.
+C
+      DATA IHLE / 0 /
 C
 C IHLX and IHLY are the parameters 'HLX' and 'HLY', which specify the
 C dimensions of the neighborhood to be used in looking for highs and
