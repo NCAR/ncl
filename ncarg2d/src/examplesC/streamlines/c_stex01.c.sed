@@ -1,5 +1,5 @@
 /*
- *  $Id: c_stex01.c.sed,v 1.2 1994-06-21 15:01:35 haley Exp $
+ *  $Id: c_stex01.c.sed,v 1.3 1994-08-02 16:52:41 haley Exp $
  */
 #include <stdio.h>
 #include <ncarg/ncargC.h>
@@ -67,13 +67,19 @@ main()
  */
     c_stseti("MAP -- mapping mode", 2);
     c_stgeti("MAP -- mapping mode", &ival);
-    printf( "c_stgeti:  ival should be 2, ival is really %d\n", ival );
+	if( ival != 2 ) {
+		fprintf( stderr, "c_stgeti test UNSUCCESSFUL\n" );
+		fprintf( stderr, "ival should be 2, ival is really %d\n", ival );
+	}
 /*
  * Test c_stgetr
  */
     c_stsetr("YCN -- upper y bound", 85.0);
     c_stgetr("YCN -- upper y bound", &rval);
-    printf( "c_stgetr:  rval should be 85.0 rval is really %g\n", rval );
+	if( rval != 85. ) {
+		fprintf( stderr, "c_stgetr test UNSUCCESSFUL\n" );
+	    fprintf( stderr, "rval should be 85.0, rval is really %g\n", rval );
+	}
 /*
  * Close and deactivate workstation
  */
@@ -93,7 +99,7 @@ void dfclrs()
 /*
  * Define a set of RGB color triples for colors 0 through 15.
  */
-	Gcolr_rep rgbv[NCLRS];
+	Gcolr_rep rgb[NCLRS];
 /*
  * Define the RGB color triples needed below.
  */
@@ -119,7 +125,7 @@ void dfclrs()
  * to index 1 is white.
  */
 	for( i = 0; i < NCLRS; i++ ) {
-	    gset_colr_rep(WKID, i, rgbv[i] );
+	    gset_colr_rep(WKID, i, &rgb[i] );
 	}
     return;
 }
