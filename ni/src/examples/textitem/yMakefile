@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.16 1995-11-27 23:38:40 haley Exp $
+#   $Id: yMakefile,v 1.17 1996-01-04 17:08:36 haley Exp $
 #
 #   Makefile for HLU TextItem examples
 #
@@ -10,11 +10,11 @@ PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XLIB)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
-CSRCS     = tx01c.c tx02c.c tx03c.c tx04c.c tx05c.c tx06c.c tx07c.c
+CSRCS     = tx01c.c tx02c.c tx03c.c tx04c.c tx05c.c tx06c.c tx07c.c tx08c.c
 FSRCS     = tx01f.f tx02f.f tx03f.f tx04f.f tx05f.f tx06f.f tx07f.f tx08f.f
 NSRCS     = tx01n.ncl tx02n.ncl tx03n.ncl tx04n.ncl tx05n.ncl tx06n.ncl \
             tx07n.ncl
-COBJS     = tx01c.o tx02c.o tx03c.o tx04c.o tx05c.o tx06c.o tx07c.o
+COBJS     = tx01c.o tx02c.o tx03c.o tx04c.o tx05c.o tx06c.o tx07c.o tx08c.o
 FOBJS     = tx01f.o tx02f.o tx03f.o tx04f.o tx05f.o tx06f.o tx07f.o tx08f.o
 SRCS      = $(CSRCS) $(FSRCS)
 OBJS      = $(COBJS) $(FOBJS)
@@ -32,6 +32,7 @@ CExampleTarget(tx04c,tx04c.o)
 CExampleTarget(tx05c,tx05c.o)
 CExampleTarget(tx06c,tx06c.o)
 CExampleTarget(tx07c,tx07c.o)
+CExampleTarget(tx08c,tx08c.o)
 
 FExampleTarget(tx01f,tx01f.o)
 FExampleTarget(tx02f,tx02f.o)
