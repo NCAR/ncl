@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.26 1993-07-01 15:57:47 clyne Exp $
+ *	$Id: text.c,v 1.27 1994-03-07 19:52:15 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -902,12 +902,34 @@ int	Text(cgmc)
 	 * make sure font has not changed
 	 */
 	if (TEXT_F_IND_DAMAGE) {
-		if (setFont(TEXT_F_IND) < 0) status = -1;
+		/*
+		 * set TEXT_F_IND_DAMAGE to false unconditionally. If we can't
+		 * set the font successfully we don't want to retry every 
+		 * time we're called.
+		 */
 		TEXT_F_IND_DAMAGE = FALSE;
+
+		if (setFont(TEXT_F_IND) < 0) {
+			status = -1;
+			(void) ESprintf(
+				E_UNKNOWN, 
+				"Cannot find font #%d [ %s ], using font #1",
+				TEXT_F_IND, ErrGetMsg()
+			);
+			if (setFont(1) < 0) {
+				(void) ESprintf(
+					E_UNKNOWN, 
+					"Cannot find any fonts"
+				);
+				FontIsInit = 0;
+				return(status);
+			}
+		}
 	}
 
-	if (! FontIsInit)
+	if (! FontIsInit) {
 		return(0);	/* no font, nothing to do	*/
+	}
 
 	/*
 	 * initialize the line drawing code. We stroke text with polylines.

@@ -1,5 +1,5 @@
 /*
- *	$Id: fontlist.c,v 1.10 1993-01-06 21:12:17 clyne Exp $
+ *	$Id: fontlist.c,v 1.11 1994-03-07 19:52:13 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -52,9 +52,6 @@ InitFontList()
 	int	i;
 
 	static	boolean	initialized = FALSE;
-
-	
-
 
 
 	if (initialized) return; 
@@ -163,16 +160,15 @@ int	setFont(font_index)
 
 
 	if (font_index < 0 || font_index >= MAXFONT) {
-		ESprintf(EINVAL, "Invalid font index(%d)", font_index);;
-		status = -1;
-		font_index = 1;
+		ESprintf(E_UNKNOWN, "Invalid font index(%d)", font_index);;
+		return(-1);
 	}
 
 	font = Fontlist[font_index - 1];
 
 	if (! *font) {
-		status = -1;
-		font = "DEFAULT";
+		ESprintf(E_UNKNOWN, "Invalid font index(%d)", font_index);;
+		return(-1);
 	}
 
 	/* this is a hack to prevent ctrans from reinitializeing the 
@@ -182,7 +178,7 @@ int	setFont(font_index)
 	 * a text commamnd
 	 */
 	if (fontindex == font_index)
-		return(status);
+		return(0);
 	else
 		fontindex = font_index;
 
