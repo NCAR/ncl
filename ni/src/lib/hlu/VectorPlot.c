@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.60 1999-04-02 23:51:18 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.61 1999-04-06 23:46:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4896,8 +4896,29 @@ static NhlErrorTypes ManageLabelBar
 				set_all = True;
 		}
 	}
+	/*
+	 * Moved explicit label before the zero field return, so that explicit
+	 * labels will be set even if the current data represents a 
+	 * zero field
+	 */
+	if (vcp->explicit_lbar_labels_on && vcp->lbar_labels_res_set) {
+		NhlGenArray ga;
+		if (vcp->lbar_labels != NULL) 
+			NhlFreeGenArray(vcp->lbar_labels);
 
-	if (vcp->zero_field) return ret;
+		if ((ga = _NhlCopyGenArray(vcp->lbar_labels_res,
+					   True)) == NULL) {
+			e_text = "%s: error copying GenArray";
+			NhlPError(NhlFATAL,
+				  NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+		vcp->lbar_labels = ga;
+		ovcp->lbar_labels = NULL;
+		vcp->lbar_labels_set = True;
+	}
+	if (vcp->zero_field)
+		return ret;
 
 	if (! vcp->explicit_lbar_labels_on) {
 		vcp->lbar_labels_set = False;
@@ -4913,29 +4934,12 @@ static NhlErrorTypes ManageLabelBar
 		else
 			vcp->lbar_alignment = NhlINTERIOREDGES;
 	}
-	else {
-		if (vcp->lbar_labels_res_set) {
-			NhlGenArray ga;
-			if (vcp->lbar_labels != NULL) 
-				NhlFreeGenArray(vcp->lbar_labels);
-
-			if ((ga = _NhlCopyGenArray(vcp->lbar_labels_res,
-						   True)) == NULL) {
-				e_text = "%s: error copying GenArray";
-				NhlPError(NhlFATAL,
-					  NhlEUNKNOWN,e_text,entry_name);
-				return NhlFATAL;
-			}
-			vcp->lbar_labels = ga;
-			ovcp->lbar_labels = NULL;
-		}
-		else if (! vcp->lbar_labels_set) {
-			redo_level_strings = True;
-			if (vcp->lbar_end_labels_on)
-				vcp->lbar_alignment = NhlEXTERNALEDGES;
-			else
-				vcp->lbar_alignment = NhlINTERIOREDGES;
-		}
+	else if (! vcp->lbar_labels_set) {
+		redo_level_strings = True;
+		if (vcp->lbar_end_labels_on)
+			vcp->lbar_alignment = NhlEXTERNALEDGES;
+		else
+			vcp->lbar_alignment = NhlINTERIOREDGES;
 		vcp->lbar_labels_set = True;
 	}
 
