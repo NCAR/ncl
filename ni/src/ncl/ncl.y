@@ -121,6 +121,10 @@ char *cur_load_file = NULL;
 statement_list :  statement eoln			{	
 								int strt;
 
+/*
+								fprintf(stdout,"is_error0 %d\n",is_error);
+								fflush(stdout);
+*/
 								if(($1 != NULL)&&!(is_error)) {
 									_NclPrintTree($1,thefptr);
 									strt = _NclTranslate($1,thefptr);
@@ -140,7 +144,10 @@ statement_list :  statement eoln			{
 							}
 	| statement_list statement eoln			{		
 								int strt;
-
+/*
+								fprintf(stdout,"is_error1 %d\n",is_error);
+								fflush(stdout);
+*/
 								if(($2 != NULL) && !(is_error)) {
 									_NclPrintTree($2,thefptr);
 									strt = _NclTranslate($2,thefptr);
@@ -277,6 +284,7 @@ block_statement_list : statement eoln {
 									if(is_error) {
 										_NclDeleteNewSymStack();	
 										is_error = 0;
+										$1 = NULL;
 									} else {
 										_NclResetNewSymStack();
 									}
@@ -303,6 +311,7 @@ block_statement_list : statement eoln {
 								if(cmd_line){
 									if(is_error) {
 										_NclDeleteNewSymStack();	
+										$2 = NULL;
 										is_error = 0;
 									} else {
 										_NclResetNewSymStack();
@@ -686,6 +695,9 @@ get_resource_list : get_resource eoln		{
 								$$->node = $2;
 							} else {
 								$$ = $1;
+								if((is_error)&&(cmd_line)) {
+									is_error = 0;
+								}
 							}
 							if(cmd_line) {
 								fprintf(stdout,"ncl %d> ",cur_line_number);
@@ -752,7 +764,7 @@ resource_list : resource eoln			{
 								$$->node = $2;
 							} else {
 								$$ = $1;
-								if(is_error) {
+								if((is_error)&&(cmd_line)) {
 /*
 									_NclDeleteNewSymStack();		
 */

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.55 1996-04-17 21:56:11 ethan Exp $
+ *      $Id: Execute.c,v 1.56 1996-04-17 23:56:55 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -735,6 +735,8 @@ NclExecuteReturnStatus _NclExecute
 				data_out = _NclGetHLUObjOp(name,*(NclQuark*)res->multidval.val);
 				if((data_out.kind != NclStk_NOVAL)&&(data_out.u.data_obj != NULL)){
 					estatus =_NclPush(data_out);	
+				} else {
+					estatus = NhlFATAL;
 				}
 
 				if((res_name.kind == NclStk_VAL)&&(res_name.u.data_obj->obj.status != PERMANENT)) {
