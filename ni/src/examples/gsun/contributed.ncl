@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.62 2005-04-01 00:48:32 shea Exp $
+;      $Id: contributed.ncl,v 1.63 2005-04-05 19:47:35 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -172,18 +172,19 @@ end
 ;************************************************************
 ; D. Shea
 ; Copy all of the coordinate variables from one variable to another.  
-; Both variables must be the same size, and have the exact same 
-; coordinate variables.
 
 undef("copy_VarCoords")
 procedure copy_VarCoords(var_from,var_to)  
-local rfrom, rto, i
+local dfrom, dto, rfrom, rto, i
 begin                                     
-  rfrom = dimsizes(dimsizes(var_from))
-  rto   = dimsizes(dimsizes(var_to))
+  dfrom = dimsizes(var_from)
+  dto   = dimsizes(var_to)
+  
+  rfrom = dimsizes(dfrom)
+  rto   = dimsizes(dto)
 
-  if((rto.eq.rfrom).and.(all(dimsizes(var_from).eq.dimsizes(var_to))))
-      do i = 0,rfrom-1
+  if(all(dfrom(0:rto-1).eq.dto)) then
+      do i = 0,rto-1
          if (.not.ismissing(var_from!i)) then
             var_to!i = var_from!i
             if(iscoord(var_from,var_from!i))
@@ -192,7 +193,9 @@ begin
          end if
       end  do
   else
-      print("ERROR: copy_VarCoords: number of dimensions do not match")
+      print("ERROR: copy_VarCoords: dimension sizes do not match")
+      print(dto)
+      print(dfrom)
   end if
 end
 ;************************************************************
