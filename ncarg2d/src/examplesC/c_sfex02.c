@@ -1,5 +1,5 @@
 /*
- *	$Id: c_sfex02.c,v 1.4 1993-01-23 15:15:06 haley Exp $
+ *	$Id: c_sfex02.c,v 1.5 1993-01-29 17:59:16 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -22,7 +22,6 @@ main()
     int i, ity, ici, l;
     float xcn, ycn, x1, y1,x2,y2,rx,rx2;
     Gasfs ias;
-    extern double sin(), cos();
 /*
  * Initialize the values in the aspect-source-flag array.
  */
