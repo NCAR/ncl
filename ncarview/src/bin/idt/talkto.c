@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.19 1992-12-14 22:05:16 clyne Exp $
+ *	$Id: talkto.c,v 1.20 1993-02-01 16:27:47 clyne Exp $
  */
 /*
  *	talkto.c
@@ -59,7 +59,8 @@ static	struct	{
 static	int	hFD = -1;	/* history file file descriptor	*/
 
 #ifdef	CRAY
-static	void	reaper()
+static	void	reaper(sig)
+	int	sig;
 {
 	int	pid, status;
 
