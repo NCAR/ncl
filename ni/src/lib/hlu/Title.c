@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.8 1994-05-05 18:17:24 ethan Exp $
+ *      $Id: Title.c,v 1.9 1994-05-12 23:52:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,7 @@
 
 #include <ncarg/hlu/TitleP.h>
 #include <ncarg/hlu/Converters.h>
+#include <ncarg/hlu/FortranP.h>
 #include <math.h>
 
 static char	Main[] = "Main";
@@ -350,6 +351,32 @@ NhlTitleLayerClassRec NhltitleLayerClassRec = {
 };
 
 NhlLayerClass NhltitleLayerClass = (NhlLayerClass)&NhltitleLayerClassRec;
+
+/*
+ * Function:	nhlftitleclass
+ *
+ * Description:	fortran ref to this class
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global Fortran
+ * Returns:	NhlLayerClass
+ * Side Effect:	
+ */
+NhlLayerClass
+_NHLCALLF(nhlftitleclass,NHLFTITLECLASS)
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	return NhltitleLayerClass;
+}
 
 		
 	
@@ -1416,6 +1443,10 @@ static NhlErrorTypes    TitleClassInitialize
 				inttitlepos,NhlNumber(inttitlepos),False,NULL);
 	NhlRegisterConverter(NhlTFloat,NhlTTitlePositions,NhlCvtFloatToEnum,
 				inttitlepos,NhlNumber(inttitlepos),False,NULL);
+	NhlRegisterConverter(NhlTTitlePositions,NhlTString,NhlCvtEnumToString,
+				titlepos,NhlNumber(titlepos),False,NULL);
+	NhlRegisterConverter(NhlTTitlePositions,_NhlTFExpString,
+		NhlCvtEnumToFStr,titlepos,NhlNumber(titlepos),False,NULL);
 
 	return(NhlNOERROR);
 }

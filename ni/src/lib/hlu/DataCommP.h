@@ -1,5 +1,5 @@
 /*
- *      $Id: DataCommP.h,v 1.4 1994-02-18 02:54:08 boote Exp $
+ *      $Id: DataCommP.h,v 1.5 1994-05-12 23:50:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -143,7 +143,7 @@ extern NhlDataSpecLayerClassRec NhldataSpecLayerClassRec;
 
 /*VARARGS3*/
 extern NhlErrorTypes _NhlRegisterDataRes(
-#if	NeedVarArgProto
+#if	NhlNeedVarArgProto
 	NhlDataCommLayerClass	dc,		/* DataComm sub-class	*/
 	NrmString		res_name,	/* name of data res	*/
 	NhlLayerClass		dataspec,	/* DataSpecific object	*/

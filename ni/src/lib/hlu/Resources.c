@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.7 1994-04-01 20:08:46 boote Exp $
+ *      $Id: Resources.c,v 1.8 1994-05-12 23:52:16 boote Exp $
  */
 /************************************************************************
 *									*
@@ -185,6 +185,7 @@ _NhlCopyToArg
 {
 
     if      (size == sizeof(long)) *(long *)dst->ptrval = *(long*)src;
+    else if (size == sizeof(int)) *(int *)dst->ptrval = *(int*)src;
     else if (size == sizeof(short)) *(short *)dst->ptrval = *(short*)src;
     else if (size == sizeof(NhlPointer)) *(NhlPointer*)dst->ptrval =
 							*(NhlPointer*)src;
@@ -243,7 +244,7 @@ GetNamesAndClasses
 		classes[len] = (layer->base.layer_class)->base_class.nrm_class;
 	}
 
-	if(len > length) return (-len);
+	if(len >= length) return (-len);
 
 	/*
 	 * reverse order

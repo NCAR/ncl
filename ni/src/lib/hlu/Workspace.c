@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.5 1994-05-05 18:17:35 ethan Exp $
+ *      $Id: Workspace.c,v 1.6 1994-05-12 23:52:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -289,9 +289,6 @@ WorkspaceClassInitialize
 ()
 #endif
 {
-#ifdef __CLCC__
-	printf("__CLCC__ defined\n");
-#endif
 	Qcurrent_size = NrmStringToQuark(NhlNwsCurrentSize);
 	return NhlNOERROR;
 }
@@ -702,6 +699,33 @@ NhlGetWorkspaceObjectID
 	return NhlFATAL;
 }
 
+/*
+ * Function:	nhl_fgetworkspaceobjectid
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fgetworkspaceobjectid,NHL_FGETWORKSPACEOBJECTID)
+#if	NhlNeedProto
+(
+	int	*id
+)
+#else
+(id)
+	int	*id;
+#endif
+{
+	*id = NhlGetWorkspaceObjectID();
+
+	return;
+}
 
 /*
  *	Friend API for Workspace management
@@ -2245,7 +2269,9 @@ NhlErrorTypes _NhlCpclam
 	
 	c_retsr(save_mode);
 
+#ifdef	NOMORE
 	ardamn_(awsrp->ws_ptr,&err_num);
+#endif
 
 	return NhlNOERROR;
 }

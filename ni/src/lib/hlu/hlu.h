@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.15 1994-05-05 18:17:54 ethan Exp $
+ *      $Id: hlu.h,v 1.16 1994-05-12 23:53:13 boote Exp $
  */
 /************************************************************************
 *									*
@@ -29,10 +29,10 @@
 #include <ncarg/hlu/defs.h>
 
 #ifdef	__STDC__
-#define NeedVarArgProto         True 
+#define NhlNeedVarArgProto	True 
 #include <stdlib.h>
 #else
-#define NeedVarArgProto		False
+#define NhlNeedVarArgProto	False
 #endif
 
 #if	__STDC__
@@ -247,7 +247,7 @@ NhlDOCTAG(NhlSetSArg)
 NhlSRCREF(hlu/hlu.c#NhlSetSArg)
 /*VARARGS2*/
 extern void NhlSetSArg(
-#if	NeedVarArgProto
+#if	NhlNeedVarArgProto
 	NhlSArg		*arg,		/* arg to set		*/
 	NhlString	resname,	/* resource to set	*/
 	...				/* value to set arg to	*/
@@ -258,7 +258,7 @@ NhlDOCTAG(NhlSetGArg)
 NhlSRCREF(hlu/hlu.c#NhlSetGArg)
 /*VARARGS2*/
 extern void NhlSetGArg(
-#if	NeedVarArgProto
+#if	NhlNeedVarArgProto
 	NhlGArg		*arg,		/* arg to set		*/
 	NhlString	resname,	/* resource to set	*/
 	...				/* value to set arg to	*/
@@ -269,7 +269,7 @@ NhlDOCTAG(NhlVACreate)
 NhlSRCREF(hlu/hlu.c#NhlSetGArg)
 /*VARARGS4*/
 extern NhlErrorTypes NhlVACreate(
-#if	NeedVarArgProto
+#if	NhlNeedVarArgProto
 	int*,			/* return plot id			*/
 	Const char*,		/* name					*/
 	NhlLayerClass,		/* requested class			*/
@@ -331,7 +331,7 @@ extern void NhlClose(
 NhlDOCTAG(NhlVASetValues)
 /*VARARGS1*/
 extern NhlErrorTypes NhlVASetValues( 
-#if	NeedVarArgProto 
+#if	NhlNeedVarArgProto 
 	int,		/* id		*/
 	...		/* resource names and values - NULL terminated	*/
 #endif 
@@ -356,7 +356,7 @@ extern NhlErrorTypes NhlSetValues(
 NhlDOCTAG(NhlVAGetValues)
 /*VARARGS1*/
 extern NhlErrorTypes NhlVAGetValues(
-#if	NeedVarArgProto
+#if	NhlNeedVarArgProto
 	int,		/* id		*/
 	...		/* resource names and values - NULL terminated	*/
 #endif

@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.h,v 1.3 1994-04-19 00:04:41 boote Exp $
+ *      $Id: ResList.h,v 1.4 1994-05-12 23:52:14 boote Exp $
  */
 /************************************************************************
 *									*
@@ -59,7 +59,7 @@ extern NhlBoolean NhlRLIsSet(
 
 /*VARARGS3*/
 extern NhlErrorTypes NhlRLSet(
-#if	NeedVarArgProto
+#if	NhlNeedVarArgProto
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
 	NhlString	type,		/* type of value		*/
@@ -163,7 +163,7 @@ extern NhlErrorTypes NhlRLSetStringArray(
 
 /*VARARGS3*/
 extern NhlErrorTypes NhlRLGet(
-#if	NeedVarArgProto
+#if	NhlNeedVarArgProto
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
 	NhlString	type,		/* type of value		*/

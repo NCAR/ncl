@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.6 1994-05-05 18:16:53 ethan Exp $
+ *      $Id: MapPlot.c,v 1.7 1994-05-12 23:51:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,7 +33,7 @@
 static NhlResource resources[] = {
 	{NhlNmpDelayOutline,NhlCmpDelayOutline,NhlTBoolean,
 		 sizeof(long),Oset(delay_outline),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),NULL}
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL}
 };
 #undef Oset
 
@@ -146,6 +146,32 @@ NhlMapPlotLayerClassRec NhlmapPlotLayerClassRec = {
 };
 	
 NhlLayerClass NhlmapPlotLayerClass = (NhlLayerClass)&NhlmapPlotLayerClassRec;
+
+/*
+ * Function:	nhlfmapplotclass
+ *
+ * Description:	fortran ref to contour class
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global Fortran
+ * Returns:	NhlLayerClass
+ * Side Effect:	
+ */
+NhlLayerClass
+_NHLCALLF(nhlfmapplotclass,NHLFMAPPLOTCLASS)
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	return NhlmapPlotLayerClass;
+}
 
 /*
  * Function:	MapPlotClassInitialize
@@ -583,7 +609,7 @@ static NhlErrorTypes SetUpTransObj
 		sprintf(buffer,"%s",mpnew->base.name);
 		strcat(buffer,".Trans");
 
-		subret = _NhlCreateChild(&tmpid,buffer,NhlmapTransObjLayerClass,
+		subret = _NhlVACreateChild(&tmpid,buffer,NhlmapTransObjLayerClass,
 					 (NhlLayer) mpnew, NULL);
 
 		ret = MIN(subret,ret);

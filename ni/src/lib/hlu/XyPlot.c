@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.17 1994-05-05 18:17:47 ethan Exp $
+ *      $Id: XyPlot.c,v 1.18 1994-05-12 23:53:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #include <math.h>
 #include <ncarg/hlu/XyPlotP.h>
 #include <ncarg/hlu/Converters.h>
+#include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/TickMark.h>
 #include <ncarg/hlu/Title.h>
 #include <ncarg/hlu/TransObjI.h>
@@ -651,6 +652,58 @@ NhlLayerClass NhlxyDataDepLayerClass =
 				(NhlLayerClass)&NhlxyDataDepLayerClassRec;
 NhlLayerClass NhlxyPlotLayerClass = (NhlLayerClass)&NhlxyPlotLayerClassRec;
 
+/*
+ * Function:	nhlfxydatadepclass
+ *
+ * Description:	fortran ref to this class
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global Fortran
+ * Returns:	NhlLayerClass
+ * Side Effect:	
+ */
+NhlLayerClass
+_NHLCALLF(nhlfxydatadepclass,NHLFXYDATADEPCLASS)
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	return NhlxyDataDepLayerClass;
+}
+
+/*
+ * Function:	nhlfxyplotclass
+ *
+ * Description:	fortran ref to this class
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global Fortran
+ * Returns:	NhlLayerClass
+ * Side Effect:	
+ */
+NhlLayerClass
+_NHLCALLF(nhlfxyplotclass,NHLFXYPLOTCLASS)
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	return NhlxyPlotLayerClass;
+}
+
 static NrmQuark	Qfloat = NrmNULLQUARK;
 static NrmQuark Qint = NrmNULLQUARK;
 static NrmQuark Qstring = NrmNULLQUARK;
@@ -750,6 +803,10 @@ XyPlotClassInitialize
 				intaltplace,NhlNumber(intaltplace),False,NULL);
 	NhlRegisterConverter(NhlTFloat,NhlTAlternatePlace,NhlCvtFloatToEnum,
 				intaltplace,NhlNumber(intaltplace),False,NULL);
+	NhlRegisterConverter(NhlTAlternatePlace,NhlTString,NhlCvtEnumToString,
+				altplace,NhlNumber(altplace),False,NULL);
+	NhlRegisterConverter(NhlTAlternatePlace,_NhlTFExpString,
+		NhlCvtEnumToFStr,altplace,NhlNumber(altplace),False,NULL);
 
 	NhlRegisterConverter(NhlTGenArray,NhlTLineLabelModes,NhlCvtGenToEnum,
 				linelabelmodesgentoenumdat,1,False,NULL);
@@ -760,6 +817,10 @@ XyPlotClassInitialize
 				intlblmode,NhlNumber(intlblmode),False,NULL);
 	NhlRegisterConverter(NhlTFloat,NhlTLineLabelModes,NhlCvtFloatToEnum,
 				intlblmode,NhlNumber(intlblmode),False,NULL);
+	NhlRegisterConverter(NhlTLineLabelModes,NhlTString,NhlCvtEnumToString,
+					lblmode,NhlNumber(lblmode),False,NULL);
+	NhlRegisterConverter(NhlTLineLabelModes,_NhlTFExpString,
+		NhlCvtEnumToFStr,lblmode,NhlNumber(lblmode),False,NULL);
 
 	Qfloat = NrmStringToQuark(NhlTFloat);
 
@@ -3084,7 +3145,7 @@ SetUpTransObjs
  * Description:	Takes care of setting resources for TickMarks. It is at
  *		this time that the resources, that are blocked by the
  *		_NhlRegisterChildClass call in XyPlotClassInitialize, are set.
- *		_NhlCreateChild is used to create tick marks. _NhlCreateChild
+ *		_NhlVACreateChild is used to create tick marks. _NhlVACreateChild
  *		is only called once and SetValues is used at all other times
  *		even when a change of style happens. This function could've
  *		been a lot shorter if there had been an argument list 
@@ -3335,7 +3396,7 @@ SetUpTicks
 /*
  * Function:	SetUpTitles
  *
- * Description: Sets and Creates Title object. _NhlCreateChild is used to
+ * Description: Sets and Creates Title object. _NhlVACreateChild is used to
  *		create the titles.  The title resources *OffsetXF and *OffsetYF
  *		are intercepted by the XyPlot object so adjustments can be
  *		made to make sure that the titles are centered over the
@@ -3477,7 +3538,7 @@ static NhlErrorTypes SetUpTitles
 	if((calledfrom == CREATE) || (xnew->xyplot.ttitles == NULL)){	
 		strcpy(buffer,xnew->base.name);
 		strcat(buffer,".Title");
-		ret = _NhlCreateChild(&tmpid,buffer,NhltitleLayerClass,(NhlLayer)xnew,
+		ret = _NhlVACreateChild(&tmpid,buffer,NhltitleLayerClass,(NhlLayer)xnew,
 			NhlNvpXF,xtmp,
 			NhlNvpYF,ytmp,
 			NhlNvpWidthF,widthtmp,
@@ -3491,7 +3552,7 @@ static NhlErrorTypes SetUpTitles
 			NULL);
 	} else {
 		tmpid = xnew->xyplot.ttitles->base.id;
-		ret = _NhlSetValuesChild(tmpid,
+		ret = _NhlVASetValuesChild(tmpid,
 			(NhlLayer)xnew,
 			NhlNvpXF,xtmp,
 			NhlNvpYF,ytmp,

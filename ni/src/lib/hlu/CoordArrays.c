@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.10 1994-05-05 18:16:21 ethan Exp $
+ *      $Id: CoordArrays.c,v 1.11 1994-05-12 23:50:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -640,6 +640,32 @@ NhlLayerClass NhlcoordArraysFloatLayerClass = (NhlLayerClass)
 					&NhlcoordArraysFloatLayerClassRec;
 NhlLayerClass NhlcoordArraysIntLayerClass = (NhlLayerClass)
 					&NhlcoordArraysIntLayerClassRec;
+
+/*
+ * Function:	nhlfcoordarraysclass
+ *
+ * Description:	fortran ref to contour class
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global Fortran
+ * Returns:	NhlLayerClass
+ * Side Effect:	
+ */
+NhlLayerClass
+_NHLCALLF(nhlfcoordarraysclass,NHLFCOORDARRAYSCLASS)
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	return NhlcoordArraysLayerClass;
+}
 
 static	NrmQuark	floatQ = NrmNULLQUARK;
 static	NrmQuark	intQ = NrmNULLQUARK;
@@ -1468,7 +1494,7 @@ CoordArraysInitialize
 		strcat(name,".INT");
 	}
 
-	ret = _NhlCreateChild(&tchild,name,child_class,new,NULL);
+	ret = _NhlVACreateChild(&tchild,name,child_class,new,NULL);
 
 	ncarr->carr.child = _NhlGetLayer(tchild);
 

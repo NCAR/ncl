@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.16 1994-05-05 18:17:17 ethan Exp $
+ *      $Id: TickMark.c,v 1.17 1994-05-12 23:52:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@
 #include <ncarg/hlu/LogLinTransObj.h>
 #include <ncarg/hlu/MultiText.h>
 #include <ncarg/hlu/Converters.h>
+#include <ncarg/hlu/FortranP.h>
 
 
 /* resource list definition */
@@ -962,6 +963,32 @@ NhlTickMarkLayerClassRec NhltickMarkLayerClassRec = {
 
 NhlLayerClass NhltickMarkLayerClass = (NhlLayerClass)&NhltickMarkLayerClassRec;
 
+/*
+ * Function:	nhlftickmarkclass
+ *
+ * Description:	fortran ref to this class
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global Fortran
+ * Returns:	NhlLayerClass
+ * Side Effect:	
+ */
+NhlLayerClass
+_NHLCALLF(nhlftickmarkclass,NHLFTICKMARKCLASS)
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	return NhltickMarkLayerClass;
+}
+
 static NrmQuark Qfloat = NrmNULLQUARK;
 static NrmQuark Qstring = NrmNULLQUARK;
 
@@ -1682,6 +1709,10 @@ static NhlErrorTypes	TickMarkClassInitialize
 			inttmarkmodes,NhlNumber(inttmarkmodes),False,NULL);
 	NhlRegisterConverter(NhlTFloat,NhlTTickMarkModes,NhlCvtFloatToEnum,
 			inttmarkmodes,NhlNumber(inttmarkmodes),False,NULL);
+	NhlRegisterConverter(NhlTTickMarkModes,NhlTString,NhlCvtEnumToString,
+				tmarkmodes,NhlNumber(tmarkmodes),False,NULL);
+	NhlRegisterConverter(NhlTTickMarkModes,_NhlTFExpString,NhlCvtEnumToFStr,
+				tmarkmodes,NhlNumber(tmarkmodes),False,NULL);
 
 	NhlRegisterConverter(NhlTString,NhlTTickMarkStyles,NhlCvtStringToEnum,
 				tmarkstyles,NhlNumber(tmarkstyles),False,NULL);
@@ -1689,6 +1720,10 @@ static NhlErrorTypes	TickMarkClassInitialize
 			inttmarkstyles,NhlNumber(inttmarkstyles),False,NULL);
 	NhlRegisterConverter(NhlTFloat,NhlTTickMarkStyles,NhlCvtFloatToEnum,
 			inttmarkstyles,NhlNumber(inttmarkstyles),False,NULL);
+	NhlRegisterConverter(NhlTTickMarkStyles,NhlTString,NhlCvtEnumToString,
+				tmarkstyles,NhlNumber(tmarkstyles),False,NULL);
+	NhlRegisterConverter(NhlTTickMarkStyles,_NhlTFExpString,
+		NhlCvtEnumToFStr,tmarkstyles,NhlNumber(tmarkstyles),False,NULL);
 
 	Qfloat = NrmStringToQuark(NhlTFloat);
 	Qstring = NrmStringToQuark(NhlTString);

@@ -1,5 +1,5 @@
 /*
- *      $Id: ConvertP.h,v 1.3 1994-02-18 02:53:49 boote Exp $
+ *      $Id: ConvertP.h,v 1.4 1994-05-12 23:50:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -78,11 +78,16 @@ struct _CacheRec {
  * declarations for the converter entries - actual typedef is in public file.
  */
 
+typedef enum _NhlCvtRecType_ {
+	_NhlRealConverter,
+	_NhlReferenceConverter
+} _NhlCvtRecType;
+
 struct _NhlConvertRec{
 	NhlConvertPtr		next;
+	_NhlCvtRecType		record_type;
 	NrmQuark		fromtype;
 	NrmQuark		totype;
-	NrmQuark		converter_type;
 	NhlTypeConverter	converter;
 	NhlConvertArgList	args;
 	int			nargs;
@@ -91,22 +96,30 @@ struct _NhlConvertRec{
 	NhlCacheClosure		closure;
 };
 
+typedef enum _NhlCvtSymNames_ {
+	_NhlSYM_NONE,
+	_NhlSYM_FROM,
+	_NhlSYM_TO
+} _NhlCvtSymNames;
+
 extern NhlErrorTypes _NhlExtRegisterConverter(
-#if	NhlNeedProto
+#ifdef	NhlNeedVarArgProto
 	NhlString		from,		/* from type		*/
 	NhlString		to,		/* to type		*/
-	NhlString		converter_type,	/* type	of conversion	*/
 	NhlTypeConverter	convert,	/* the converter function*/ 
 	NhlConvertArgList	args,		/* conversion args	*/ 
-	int			nargs		/* number of args	*/ 
+	int			nargs,		/* number of args	*/ 
+	NhlBoolean		cache,		/* cache results???	*/
+	NhlCacheClosure		close,		/* free cached data	*/
+	_NhlCvtSymNames		sym_type,	/* symname type		*/
+	...
 #endif
 );
 
 extern NhlErrorTypes _NhlDeleteConverter(
 #if	NhlNeedProto
 	NrmQuark		fromQ,		/* from type	*/
-	NrmQuark		toQ,		/* to type	*/
-	NrmQuark		conv_typeQ	/* conv type	*/
+	NrmQuark		toQ		/* to type	*/
 #endif
 );
 
@@ -114,7 +127,6 @@ extern NhlErrorTypes _NhlUnRegisterConverter(
 #if	NhlNeedProto
 	NrmQuark	from,		/* from type		*/
 	NrmQuark	to,		/* to type		*/
-	NrmQuark	conv_type,	/* conv type		*/
  	NhlConvertPtr	converter	/* pointer to converter	*/
 #endif
 );
@@ -123,25 +135,6 @@ extern NhlBoolean _NhlConverterExists(
 #if	NhlNeedProto
 	NrmQuark		from,		/* from type	*/
 	NrmQuark		to		/* to type	*/
-#endif
-);
-
-extern NhlBoolean _NhlExtConverterExists(
-#if	NhlNeedProto
-	NrmQuark		from,		/* from type	*/
-	NrmQuark		to,		/* to type	*/
-	NrmQuark		conv_type	/* conv type	*/
-#endif
-);
-
-extern NhlErrorTypes _NhlExtConvertData(
-#if	NhlNeedProto
-	_NhlConvertContext	context,	/* context		*/
-	NrmQuark		typeQ,		/* conv type		*/
-	NrmQuark		fromQ,		/* from type		*/
-	NrmQuark		toQ,		/* to type		*/
-	NrmValue		*fromdata,	/* from type		*/
-	NrmValue		*todata		/* to type		*/
 #endif
 );
 

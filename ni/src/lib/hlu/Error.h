@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.h,v 1.5 1994-01-27 21:22:59 boote Exp $
+ *      $Id: Error.h,v 1.6 1994-05-12 23:51:12 boote Exp $
  */
 /************************************************************************
 *									*
@@ -40,13 +40,22 @@
 #define NhlNerrFileName	"errFileName"
 #define NhlCerrFileName	"ErrFileName"
 
+#define NhlNerrFilePtr	"errFilePtr"
+#define NhlCerrFilePtr	"ErrFilePtr"
+
+#define NhlNerrUnitNumber	"errUnitNumber"
+#define NhlCerrUnitNumber	"ErrUnitNumber"
+
 /* new type names */
 
 #define NhlTErrorTypes		"ErrorTypes"
 
 /* usefull const's for error stuff */
-#define NhlEUNKNOWN	1000
+#define NhlEUNKNOWN	(1000)
 
+#ifndef ENOSYS
+#define	ENOSYS	(90)
+#endif
 
 extern NhlLayerClass NhlerrorLayerClass;
 
@@ -67,7 +76,7 @@ typedef struct _NhlErrMsg{
 
 /*VARARGS3*/
 extern Const char *NhlPError(
-#if	NeedVarArgProto
+#if	NhlNeedVarArgProto
 	NhlErrorTypes	severity,	/* error severity	*/
 	int		errnum,		/* errornum in table	*/
 	char		*fmt,		/* fmt string		*/

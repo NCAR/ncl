@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.8 1994-05-05 18:17:11 ethan Exp $
+ *      $Id: TextItem.c,v 1.9 1994-05-12 23:52:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,7 @@
 #include <math.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/Converters.h>
+#include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/TextItemP.h>
 
 #define DEFSTRING "NOTHING"
@@ -197,6 +198,31 @@ NhlTextItemLayerClassRec NhltextItemLayerClassRec = {
 
 NhlLayerClass NhltextItemLayerClass = (NhlLayerClass)&NhltextItemLayerClassRec;
 
+/*
+ * Function:	nhlftextitemclass
+ *
+ * Description:	Fortran ?referencable? function to return layer class.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global Fortran
+ * Returns:	NhlLayerClass
+ * Side Effect:	
+ */
+NhlLayerClass
+_NHLCALLF(nhlftextitemclass,NHLFTEXTITEMCLASS)
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	return NhltextItemLayerClass;
+}
 
 /*
  * Function:	TextItemSetValues
@@ -674,6 +700,10 @@ static NhlErrorTypes    TextItemClassInitialize
 			intfontqlist,NhlNumber(intfontqlist),False,NULL);
 	NhlRegisterConverter(NhlTFloat,NhlTFQuality,NhlCvtFloatToEnum,
 			intfontqlist,NhlNumber(intfontqlist),False,NULL);
+	NhlRegisterConverter(NhlTFQuality,NhlTString,NhlCvtEnumToString,
+				fontqlist,NhlNumber(fontqlist),False,NULL);
+	NhlRegisterConverter(NhlTFQuality,_NhlTFExpString,NhlCvtEnumToFStr,
+				fontqlist,NhlNumber(fontqlist),False,NULL);
 
 	NhlRegisterConverter(NhlTGenArray,NhlTTextDirection,NhlCvtGenToEnum,
 				textdirgentoenumdat,1,False,NULL);
@@ -684,6 +714,10 @@ static NhlErrorTypes    TextItemClassInitialize
 			inttextdirlist,NhlNumber(inttextdirlist),False,NULL);
 	NhlRegisterConverter(NhlTFloat,NhlTTextDirection,NhlCvtFloatToEnum,
 			inttextdirlist,NhlNumber(inttextdirlist),False,NULL);
+	NhlRegisterConverter(NhlTTextDirection,NhlTString,NhlCvtEnumToString,
+				textdirlist,NhlNumber(textdirlist),False,NULL);
+	NhlRegisterConverter(NhlTTextDirection,_NhlTFExpString,NhlCvtEnumToFStr,
+				textdirlist,NhlNumber(textdirlist),False,NULL);
 
 	return(NhlNOERROR);	
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.11 1994-05-05 18:17:39 ethan Exp $
+ *      $Id: Workstation.c,v 1.12 1994-05-12 23:52:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,7 @@
 #include <string.h>
 #include <limits.h>
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/WorkstationP.h>
 #include <ncarg/hlu/hluutil.h>
 
@@ -663,7 +664,7 @@ static NhlErrorTypes WorkstationClassInitialize()
  */
 static NhlErrorTypes
 WorkstationClassPartInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	layerclass	/* layerclass to init	*/
 )
@@ -713,7 +714,7 @@ WorkstationClassPartInitialize
  */
 /*ARGSUSED*/
 static NhlErrorTypes WorkstationInitialize
-#if  __STDC__
+#if  NhlNeedProto
 ( NhlLayerClass class,  NhlLayer req, NhlLayer new, _NhlArgList args , int num_args  )
 #else
 ( class,  req, new, args , num_args  )
@@ -1092,7 +1093,7 @@ static NhlErrorTypes WorkstationInitialize
  * Side Effects:
  */
 static NhlErrorTypes WorkstationDestroy
-#if	__STDC__
+#if	NhlNeedProto
 ( NhlLayer inst )
 #else
 (inst)
@@ -1126,7 +1127,7 @@ static NhlErrorTypes WorkstationDestroy
  */
 /*ARGSUSED*/
 static NhlErrorTypes    WorkstationSetValues
-#if  __STDC__
+#if  NhlNeedProto
 ( NhlLayer old, NhlLayer reference, NhlLayer new, _NhlArgList args, int num_args)
 #else
 (old,reference,new,args,num_args)
@@ -1400,7 +1401,7 @@ static NhlErrorTypes    WorkstationSetValues
  * Side Effects:
  */
 static NhlErrorTypes WorkstationActivate
-#if __STDC__
+#if NhlNeedProto
 (NhlLayer	instance )
 #else
 (instance)
@@ -1445,7 +1446,7 @@ static NhlErrorTypes WorkstationActivate
  * Side Effects:
  */
 static NhlErrorTypes WorkstationDeactivate
-#if __STDC__
+#if NhlNeedProto
 (NhlLayer	instance )
 #else
 (instance)
@@ -1490,7 +1491,7 @@ static NhlErrorTypes WorkstationDeactivate
  * Side Effects:
  */
 static NhlErrorTypes WorkstationOpen
-#if __STDC__
+#if NhlNeedProto
 (NhlLayer	instance )
 #else
 (instance)
@@ -1542,7 +1543,7 @@ static NhlErrorTypes WorkstationOpen
  * Side Effects:
  */
 static NhlErrorTypes WorkstationClose
-#if __STDC__
+#if NhlNeedProto
 (NhlLayer	instance )
 #else
 (instance)
@@ -1582,7 +1583,7 @@ static NhlErrorTypes WorkstationClose
  */
 static NhlErrorTypes
 WorkstationUpdate
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* workstation layer to update	*/
 )
@@ -1612,7 +1613,7 @@ WorkstationUpdate
  */
 static NhlErrorTypes
 WorkstationClear
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer	l	/* workstation layer to update	*/
 )
@@ -1640,7 +1641,7 @@ WorkstationClear
  * Side Effects:
  */
 NhlErrorTypes	NhlSetColor
-#if	__STDC__
+#if	NhlNeedProto
 (int pid, int ci, float red, float green, float blue)
 #else
 (pid,ci,red,green,blue)
@@ -1653,8 +1654,47 @@ NhlErrorTypes	NhlSetColor
 {
 	return(_NhlSetColor(_NhlGetLayer(pid),ci,red,green,blue));
 }
+
+/*
+ * Function:	nhl_fsetcolor
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fsetcolor,NHL_FSETCOLOR)
+#if	NhlNeedProto
+(
+	int	*pid,
+	int	*indx,
+	float	*red,
+	float	*green,
+	float	*blue,
+	int	*err
+)
+#else
+(pid,indx,red,green,blue,err)
+	int	*pid;
+	int	*indx;
+	float	*red;
+	float	*green;
+	float	*blue;
+	int	*err;
+#endif
+{
+	*err = NhlSetColor(*pid,*indx,*red,*green,*blue);
+
+	return;
+}
+
 NhlErrorTypes	_NhlSetColor
-#if	__STDC__
+#if	NhlNeedProto
 (NhlLayer inst, int ci, float red, float green, float blue)
 #else
 (inst,ci,red,green,blue)
@@ -1697,7 +1737,7 @@ NhlErrorTypes	_NhlSetColor
  * Side Effects:
  */
 NhlErrorTypes	NhlFreeColor
-#if	__STDC__
+#if	NhlNeedProto
 (int pid, int ci)
 #else
 (pid ,ci)
@@ -1708,7 +1748,7 @@ NhlErrorTypes	NhlFreeColor
 	return(_NhlFreeColor(_NhlGetLayer(pid),ci));
 }
 NhlErrorTypes	_NhlFreeColor
-#if	__STDC__
+#if	NhlNeedProto
 (NhlLayer inst, int ci)
 #else
 (inst,ci)
@@ -1728,6 +1768,37 @@ NhlErrorTypes	_NhlFreeColor
 	return(DeallocateColors((NhlLayer)thework));
 }
 
+/*
+ * Function:	nhl_ffreecolor
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_ffreecolor,NHL_FFREECOLOR)
+#if	NhlNeedProto
+(
+	int	*wid,
+	int	*indx,
+	int	*err
+)
+#else
+(wid,indx,err)
+	int	*wid;
+	int	*indx;
+	int	*err;
+#endif
+{
+	*err = NhlFreeColor(*wid,*indx);
+
+	return;
+}
 
 /*
  * Function:	AllocateColors
@@ -1744,7 +1815,7 @@ NhlErrorTypes	_NhlFreeColor
  */
 
 static NhlErrorTypes AllocateColors
-#if  __STDC__
+#if  NhlNeedProto
 (NhlLayer inst )
 #else
 (inst)
@@ -1813,7 +1884,7 @@ static NhlErrorTypes AllocateColors
  */
 
 static NhlErrorTypes DeallocateColors
-#if  __STDC__
+#if  NhlNeedProto
 (NhlLayer inst )
 #else
 (inst)
@@ -1879,7 +1950,7 @@ static NhlErrorTypes DeallocateColors
  * Side Effects:
  */
 int NhlNewColor
-#if  __STDC__
+#if  NhlNeedProto
 (int pid, float red, float green, float blue)
 #else
 (pid,red,green,blue)
@@ -1892,8 +1963,44 @@ int NhlNewColor
 	return(_NhlNewColor(_NhlGetLayer(pid),red,green,blue));
 }
 
+/*
+ * Function:	nhl_fnewcolor
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fnewcolor,NHL_FNEWCOLOR)
+#if	NhlNeedProto
+(
+	int	*wid,
+	float	*red,
+	float	*green,
+	float	*blue,
+	int	*indx
+)
+#else
+(wid,red,green,blue,indx)
+	int	*wid;
+	float	*red;
+	float	*green;
+	float	*blue;
+	int	*indx;
+#endif
+{
+	*indx = NhlNewColor(*wid,*red,*green,*blue);
+
+	return;
+}
+
 int _NhlNewColor
-#if   __STDC__
+#if   NhlNeedProto
 (NhlLayer inst,float red,float green,float blue)
 #else
 (inst,red,green,blue)
@@ -1949,7 +2056,7 @@ int _NhlNewColor
  */
 
 static NhlErrorTypes	WorkstationGetValues
-#if __STDC__
+#if NhlNeedProto
 (NhlLayer l, _NhlArgList args, int num_args)
 #else
 (l,args,num_args)
@@ -2149,7 +2256,7 @@ static NhlErrorTypes	WorkstationGetValues
  * Side Effects:
  */
 int	_NhlWorkstationId
-#if __STDC__
+#if NhlNeedProto
 (NhlLayer instance)
 #else
 (instance)
@@ -2177,7 +2284,7 @@ int	_NhlWorkstationId
  * Side Effects:
  */
 static NhlErrorTypes CallActivateWorkstation
-#if __STDC__
+#if NhlNeedProto
 	(NhlLayer layer, NhlLayerClass lc)
 #else
 	(layer,lc)
@@ -2200,7 +2307,7 @@ static NhlErrorTypes CallActivateWorkstation
 	return(MIN(ancestor,thistime));
 }
 NhlErrorTypes _NhlActivateWorkstation
-#if __STDC__
+#if NhlNeedProto
 (NhlLayer wks)
 #else
 (wks)
@@ -2231,7 +2338,7 @@ NhlErrorTypes _NhlActivateWorkstation
  * Side Effects:
  */
 static NhlErrorTypes CallDeactivateWorkstation
-#if __STDC__
+#if NhlNeedProto
 	(NhlLayer layer, NhlLayerClass lc)
 #else
 	(layer,lc)
@@ -2254,7 +2361,7 @@ static NhlErrorTypes CallDeactivateWorkstation
 	return(MIN(ancestor,thistime));
 }
 NhlErrorTypes _NhlDeactivateWorkstation
-#if __STDC__
+#if NhlNeedProto
 (NhlLayer wks)
 #else
 (wks)
@@ -2285,7 +2392,7 @@ NhlErrorTypes _NhlDeactivateWorkstation
  * Side Effects:
  */
 static NhlErrorTypes CallCloseWorkstation
-#if __STDC__
+#if NhlNeedProto
 (NhlLayer instance,NhlLayerClass lc)
 #else
 (instance,lc)
@@ -2310,7 +2417,7 @@ static NhlErrorTypes CallCloseWorkstation
 }
 
 NhlErrorTypes _NhlCloseWorkstation
-#if __STDC__
+#if NhlNeedProto
 (NhlLayer layer)
 #else
 (layer)
@@ -2341,7 +2448,7 @@ NhlErrorTypes _NhlCloseWorkstation
  *
  */
 static NhlErrorTypes CallOpenWorkstation
-#if __STDC__
+#if NhlNeedProto
 (NhlLayer instance,NhlLayerClass lc)
 #else
 (instance,lc)
@@ -2366,7 +2473,7 @@ static NhlErrorTypes CallOpenWorkstation
 }
 
 NhlErrorTypes _NhlOpenWorkstation
-#if __STDC__
+#if NhlNeedProto
 (NhlLayer layer)
 #else
 (layer)
@@ -2393,7 +2500,7 @@ NhlErrorTypes _NhlOpenWorkstation
  * Returns:	integer gks workstation id
  */
 int NhlGetGksWorkId
-#if  __STDC__
+#if  NhlNeedProto
 (int workid)
 #else
 (workid)
@@ -2411,6 +2518,36 @@ int	workid;
 }
 
 /*
+ * Function:	nhl_fgetgksworkid
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fgetgksworkid,NHL_FGETGKSWORKID)
+#if	NhlNeedProto
+(
+	int	*wid,
+	int	*gksid
+)
+#else
+(wid,gksid)
+	int	*wid;
+	int	*gksid;
+#endif
+{
+	*gksid = NhlGetGksWorkId(*wid);
+
+	return;
+}
+
+/*
  * Function:	NhlGetGksCi
  *
  * Description: Returns a color index for GKS given a workstation color index.
@@ -2424,7 +2561,7 @@ int	workid;
  * Side Effects:
  */
 int NhlGetGksCi
-#if __STDC__
+#if NhlNeedProto
 (int pid, int ci)
 #else
 (pid,ci)
@@ -2435,8 +2572,41 @@ int NhlGetGksCi
 
  	return(_NhlGetGksCi(_NhlGetLayer(pid),ci));	
 }
+
+/*
+ * Function:	nhl_fgetgksci
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fgetgksci,NHL_FGETGKSCI)
+#if	NhlNeedProto
+(
+	int	*wid,
+	int	*hluci,
+	int	*gksci
+)
+#else
+(wid,hluci,gksci)
+	int	*wid;
+	int	*hluci;
+	int	*gksci;
+#endif
+{
+	*gksci = NhlGetGksCi(*wid,*hluci);
+
+	return;
+}
+
 int _NhlGetGksCi
-#if __STDC__
+#if NhlNeedProto
 ( NhlLayer workstation, int  ci)
 #else
 (workstation, ci)
@@ -2475,7 +2645,7 @@ int _NhlGetGksCi
  * Side Effects:
  */
 NhlBoolean NhlIsAllocatedColor
-#if __STDC__
+#if NhlNeedProto
 (int pid, int ci)
 #else
 (pid,ci)
@@ -2485,6 +2655,38 @@ NhlBoolean NhlIsAllocatedColor
 {
 
  	return(_NhlIsAllocatedColor(_NhlGetLayer(pid),ci));	
+}
+
+/*
+ * Function:	nhl_fisallocatedcolor
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fisallocatedcolor,NHL_FISALLOCATEDCOLOR)
+#if	NhlNeedProto
+(
+	int	*wid,
+	int	*indx,
+	int	*ret
+)
+#else
+(wid,indx,ret)
+	int	*wid;
+	int	*indx;
+	int	*ret;
+#endif
+{
+	*ret = NhlIsAllocatedColor(*wid,*indx);
+
+	return;
 }
 
 /*
@@ -2502,7 +2704,7 @@ NhlBoolean NhlIsAllocatedColor
  * Side Effects:
  */
 int _NhlIsAllocatedColor
-#if __STDC__
+#if NhlNeedProto
 ( 
 	NhlLayer workstation, 
 	int  ci
@@ -2545,7 +2747,7 @@ int _NhlIsAllocatedColor
  */
 NhlErrorTypes
 NhlUpdateWorkstation
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	workid	/* id of workstation class object	*/
 )
@@ -2574,6 +2776,36 @@ NhlUpdateWorkstation
 	return (*(lc->work_class.update_work))(l);
 }
 
+/*
+ * Function:	nhl_fupdateworkstation
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global private fortran
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_fupdateworkstation,NHL_FUPDATEWORKSTATION)
+#if	NhlNeedProto
+(
+	int	*wid,
+	int	*err
+)
+#else
+(wid,err)
+	int	*wid;
+	int	*err;
+#endif
+{
+	*err = NhlUpdateWorkstation(*wid);
+
+	return;
+}
 
 /*
  * Function:	NhlClearWorkstation
@@ -2591,7 +2823,7 @@ NhlUpdateWorkstation
  */
 NhlErrorTypes
 NhlClearWorkstation
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	workid	/* id of workstation class object	*/
 )
@@ -2620,12 +2852,58 @@ NhlClearWorkstation
 	return (*(lc->work_class.clear_work))(l);
 }
 
+/*
+ * Function:	nhl_fclearworkstation
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global private fortran
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_fclearworkstation,NHL_FCLEARWORKSTATION)
+#if	NhlNeedProto
+(
+	int	*wid,
+	int	*err
+)
+#else
+(wid,err)
+	int	*wid;
+	int	*err;
+#endif
+{
+	*err = NhlClearWorkstation(*wid);
+
+	return;
+}
+
+/*
+ * Function:	NhlFrame
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
 NhlErrorTypes	NhlFrame
-#if	__STDC__
-(int wid)
+#if	NhlNeedProto
+(
+	int	wid
+)
 #else
 (wid)
-	int wid;
+	int	wid;
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR;
@@ -2636,9 +2914,40 @@ NhlErrorTypes	NhlFrame
 	return(MIN(ret,ret1));
 }
 
+/*
+ * Function:	nhl_fframe
+ *
+ * Description:	Fortran referencable Frame call
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	private Fortran
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_fframe,NHL_FFRAME)
+#if	NhlNeedProto
+(
+	int	*wid,
+	int	*err
+)
+#else
+(wid,err)
+	int	*wid;
+	int	*err;
+#endif
+{
+	*err = NhlFrame(*wid);
+
+	return;
+}
+
 /*ARGSUSED*/
 void _NhlSetLineInfo
-#if  __STDC__
+#if  NhlNeedProto
 (NhlLayer instance,NhlLayer plot)
 #else
 (instance,plot)
@@ -2711,7 +3020,7 @@ void _NhlSetLineInfo
 
 /*ARGSUSED*/
 static NhlErrorTypes WorkstationLineTo
-#if  __STDC__
+#if  NhlNeedProto
 (NhlLayer l,float x,float y,int upordown)
 #else
 (l,x,y,upordown)
@@ -2748,7 +3057,7 @@ static NhlErrorTypes WorkstationLineTo
 }
 
 NhlErrorTypes CallWorkLineTo
-#if  __STDC__
+#if  NhlNeedProto
 (NhlLayerClass lc, NhlLayer instance,  float x, float y, int upordown)
 #else
 (lc, instance,  x, y, upordown)
@@ -2774,7 +3083,7 @@ int upordown;
 }
 
 NhlErrorTypes _NhlWorkstationLineTo
-#if __STDC__
+#if NhlNeedProto
 (NhlLayer instance, float x, float y, int upordown)
 #else
 (instance,x,y,upordown)
@@ -2790,7 +3099,7 @@ int upordown;
 
 /*ARGSUSED*/
 void _NhlSetFillInfo
-#if  __STDC__
+#if  NhlNeedProto
 (NhlLayer instance,NhlLayer plot)
 #else
 (instance,plot)
@@ -2883,7 +3192,7 @@ void _NhlSetFillInfo
 
 
 static NhlErrorTypes WorkstationFill
-#if  __STDC__
+#if  NhlNeedProto
 (NhlLayer l,float *x,float *y,int num_points)
 #else
 (l,x,y,num_points)
@@ -3023,7 +3332,7 @@ static NhlErrorTypes WorkstationFill
 }
 
 NhlErrorTypes CallWorkstationFill
-#if  __STDC__
+#if  NhlNeedProto
 (NhlLayerClass lc, NhlLayer instance,  float *x, float *y, int num_points)
 #else
 (lc, instance,  x, y, num_points)
@@ -3051,7 +3360,7 @@ int num_points;
 }
 
 NhlErrorTypes _NhlWorkstationFill
-#if __STDC__
+#if NhlNeedProto
 (NhlLayer instance, float *x, float *y, int num_points)
 #else
 (instance,x,y,num_points)
@@ -3072,7 +3381,7 @@ int num_points;
  */
 /*ARGSUSED*/
 int NhlNewMarker
-#if  __STDC__
+#if  NhlNeedProto
 (int instance, 
  char *marker_string, 
  float x_off, 
@@ -3170,6 +3479,56 @@ int NhlNewMarker
 	
 }
 
+/*
+ * Function:	nhl_fnewmarker
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fnewmarker,NHL_FNEWMARKER)
+#if	NhlNeedProto
+(
+	int		*wid,
+	_NhlFString	fmark,
+	int		*fmark_len,
+	float		*xoff,
+	float		*yoff,
+	float		*aspadj,
+	float		*sizeadj,
+	int		*indx_ret
+)
+#else
+(wid,fmark,fmark_len,xoff,yoff,aspadj,sizeadj,indx_ret)
+	int		*wid;
+	_NhlFString	fmark;
+	int		*fmark_len;
+	float		*xoff;
+	float		*yoff;
+	float		*aspadj;
+	float		*sizeadj;
+	int		*indx_ret;
+#endif
+{
+	char	tstr[_NhlMAXMARKERLEN];
+
+	if(!_NhlFstrToCstr(tstr,NhlNumber(tstr),fmark,*fmark_len)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"Can't convert Fortran string to C string");
+		*indx_ret = NhlFATAL;
+		return;
+	}
+
+	*indx_ret = NhlNewMarker(*wid,tstr,*xoff,*yoff,*aspadj,*sizeadj);
+
+	return;
+}
 
 /*
  * Allows modification of the characteristics of an existing marker, 
@@ -3177,7 +3536,7 @@ int NhlNewMarker
  */
 /*ARGSUSED*/
 NhlErrorTypes NhlSetMarker
-#if  __STDC__
+#if  NhlNeedProto
 (int instance, 
  int	index,
  char	*marker_string, 
@@ -3263,9 +3622,62 @@ NhlErrorTypes NhlSetMarker
 	
 }
 
+/*
+ * Function:	nhl_fsetmarker
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fsetmarker,NHL_FSETMARKER)
+#if	NhlNeedProto
+(
+	int		*wid,
+	int		*indx,
+	_NhlFString	fmark,
+	int		*fmark_len,
+	float		*xoff,
+	float		*yoff,
+	float		*aspadj,
+	float		*sizeadj,
+	int		*err
+)
+#else
+(wid,indx,fmark,fmark_len,xoff,yoff,aspadj,sizeadj,err)
+	int		*wid;
+	int		*indx;
+	_NhlFString	fmark;
+	int		*fmark_len;
+	float		*xoff;
+	float		*yoff;
+	float		*aspadj;
+	float		*sizeadj;
+	int		*err;
+#endif
+{
+	char	tstr[_NhlMAXMARKERLEN];
+
+	if(!_NhlFstrToCstr(tstr,NhlNumber(tstr),fmark,*fmark_len)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"Can't convert Fortran string to C string");
+		*err = NhlFATAL;
+		return;
+	}
+
+	*err = NhlSetMarker(*wid,*indx,tstr,*xoff,*yoff,*aspadj,*sizeadj);
+
+	return;
+}
+
 /*ARGSUSED*/
 void _NhlSetMarkerInfo
-#if  __STDC__
+#if  NhlNeedProto
 (NhlLayer instance,NhlLayer plot)
 #else
 (instance,plot)
@@ -3348,7 +3760,7 @@ void _NhlSetMarkerInfo
 
 
 static NhlErrorTypes WorkstationMarker
-#if  __STDC__
+#if  NhlNeedProto
 (NhlLayer l,float *x,float *y,int num_points)
 #else
 (l,x,y,num_points)
@@ -3487,7 +3899,7 @@ static NhlErrorTypes WorkstationMarker
 }
 
 NhlErrorTypes CallWorkstationMarker
-#if  __STDC__
+#if  NhlNeedProto
 (NhlLayerClass lc, NhlLayer instance,  float *x, float *y, int num_points)
 #else
 (lc, instance,  x, y, num_points)
@@ -3517,7 +3929,7 @@ int num_points;
 }
 
 NhlErrorTypes _NhlWorkstationMarker
-#if __STDC__
+#if NhlNeedProto
 (NhlLayer instance, float *x, float *y, int num_points)
 #else
 (instance,x,y,num_points)

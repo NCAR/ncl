@@ -1,5 +1,5 @@
 /*
- *      $Id: Draw.c,v 1.6 1994-03-02 01:43:53 dbrown Exp $
+ *      $Id: Draw.c,v 1.7 1994-05-12 23:51:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -261,6 +261,37 @@ NhlDraw
 
 	return ret;
 
+}
+
+/*
+ * Function:	nhl_fdraw
+ *
+ * Description:	Fortran binding function.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	NhlErrorTypes is returned in err_ret
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_fdraw,NHL_FDRAW)
+#if	__STDC__
+(
+	int	*id_obj,
+	int	*err_ret
+)
+#else
+(id_obj,err_ret)
+	int	*id_obj;
+	int	*err_ret;
+#endif
+{
+	*err_ret = NhlDraw(*id_obj);
+
+	return;
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.12 1994-05-05 18:16:24 ethan Exp $
+ *      $Id: DataComm.c,v 1.13 1994-05-12 23:50:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -21,9 +21,9 @@
  *			may use.  It maintains a list of all the data
  *			objects.
  */
-#include <stdio.h>
 #include <ncarg/hlu/DataCommP.h>
 #include <ncarg/hlu/DataMgrF.h>
+#include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/VarArg.h>
 
@@ -1706,7 +1706,7 @@ DataSpecDestroy
  */
 NhlErrorTypes
 _NhlRegisterDataRes
-#if	NeedVarArgProto
+#if	NhlNeedVarArgProto
 (
 	NhlDataCommLayerClass	dc,		/* DataComm sub-class	*/
 	NrmString		res_name,	/* name of data res	*/
@@ -2026,6 +2026,52 @@ NhlAddData
 }
 
 /*
+ * Function:	nhlf_adddata
+ *
+ * Description:	Private Fortran binding for NhlAddData
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global private fortran
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhlf_adddata,NHLF_ADDDATA)
+#if	__STDC__
+(
+	int		*pid,
+	_NhlFString	fname,
+	int		*fname_len,
+	int		*did,
+	int		*err
+)
+#else
+(pid,fname,fname_len,did,err)
+	int		*pid;
+	_NhlFString	fname;
+	int		*fname_len;
+	int		*did;
+	int		*err;
+#endif
+{
+	char	name[_NhlMAXRESNAMLEN];
+
+	if(!_NhlFstrToCstr(name,sizeof(name),fname,*fname_len)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"Unable to create C string from Fortran string");
+		*err = NhlFATAL;
+		return;
+	}
+
+	*err = NhlAddData(*pid,name,*did);
+
+	return;
+}
+
+/*
  * Function:	NhlRemoveData
  *
  * Description:	This function is a convienience function for removing a single
@@ -2074,6 +2120,52 @@ NhlRemoveData
 }
 
 /*
+ * Function:	nhlf_removedata
+ *
+ * Description:	Private Fortran binding for NhlAddData
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global private fortran
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhlf_removedata,NHLF_REMOVEDATA)
+#if	__STDC__
+(
+	int		*pid,
+	_NhlFString	fname,
+	int		*fname_len,
+	int		*did,
+	int		*err
+)
+#else
+(pid,fname,fname_len,did,err)
+	int		*pid;
+	_NhlFString	fname;
+	int		*fname_len;
+	int		*did;
+	int		*err;
+#endif
+{
+	char	name[_NhlMAXRESNAMLEN];
+
+	if(!_NhlFstrToCstr(name,sizeof(name),fname,*fname_len)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"Unable to create C string from Fortran string");
+		*err = NhlFATAL;
+		return;
+	}
+
+	*err = NhlRemoveData(*pid,name,*did);
+
+	return;
+}
+
+/*
  * Function:	NhlUpdateData
  *
  * Description:	This function is the public interface to tell a datacomm object
@@ -2115,6 +2207,37 @@ NhlUpdateData
 	}
 
 	return UpdateData(dcomm);
+}
+
+/*
+ * Function:	nhlf_updatedata
+ *
+ * Description:	Fortran binding for NhlUpdateData.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global Private Fortran
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhlf_updatedata,NHLF_UPDATEDATA)
+#if	__STDC__
+(
+	int	*id,
+	int	*err
+)
+#else
+(id,err)
+	int	*id;
+	int	*err;
+#endif
+{
+	*err = NhlUpdateData(*id);
+
+	return;
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: BoundingBox.c,v 1.3 1994-01-27 21:21:28 boote Exp $
+ *      $Id: BoundingBox.c,v 1.4 1994-05-12 23:50:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -158,4 +158,49 @@ NhlErrorTypes NhlGetBB
 		NhlPError(NhlFATAL,NhlEUNKNOWN,buffer);
 		return(NhlFATAL);
 	}
+}
+
+/*
+ * Function:	nhlf_getbb
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhlf_getbb,NHLF_GETBB)
+#if	NhlNeedProto
+(
+	int	*pid,
+	float	*top,
+	float	*bottom,
+	float	*left,
+	float	*right,
+	int	*err
+)
+#else
+(pid,top,bottom,left,right,err)
+	int	*pid;
+	float	*top;
+	float	*bottom;
+	float	*left;
+	float	*right;
+	int	*err;
+#endif
+{
+	NhlBoundingBox	box;
+
+	*err = NhlGetBB(*pid,&box);
+
+	*top = box.t;
+	*bottom = box.b;
+	*left = box.l;
+	*right = box.r;
+
+	return;
 }

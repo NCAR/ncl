@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.c,v 1.5 1994-04-19 00:04:39 boote Exp $
+ *      $Id: ResList.c,v 1.6 1994-05-12 23:52:12 boote Exp $
  */
 /************************************************************************
 *									*
@@ -577,7 +577,7 @@ NhlRLIsSet
  */
 NhlErrorTypes
 NhlRLSet
-#if	NeedVarArgProto
+#if	NhlNeedVarArgProto
 (
 	int		id,
 	NhlString	name,
@@ -1007,7 +1007,7 @@ NhlRLSetStringArray
  */
 NhlErrorTypes
 NhlRLGet
-#if	NeedVarArgProto
+#if	NhlNeedVarArgProto
 (
 	int		id,
 	NhlString	name,

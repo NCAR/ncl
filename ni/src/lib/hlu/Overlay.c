@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.11 1994-05-05 18:17:04 ethan Exp $
+ *      $Id: Overlay.c,v 1.12 1994-05-12 23:51:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2472,7 +2472,7 @@ ManageLabelBar
 	if (ovp->labelbar == NULL) {	
 		strcpy(buffer,ovnew->base.name);
 		strcat(buffer,".LabelBar");
-		subret = _NhlCreateChild(&tmpid,buffer,NhllabelBarLayerClass,
+		subret = _NhlVACreateChild(&tmpid,buffer,NhllabelBarLayerClass,
 					 (NhlLayer)ovnew,
 					 NhlNvpUseSegments,
 					 ovnew->view.use_segments,
@@ -2770,7 +2770,7 @@ ManageLegend
 	if (ovp->legend == NULL) {	
 		strcpy(buffer,ovnew->base.name);
 		strcat(buffer,".Legend");
-		subret = _NhlCreateChild(&tmpid,buffer,NhllegendLayerClass,
+		subret = _NhlVACreateChild(&tmpid,buffer,NhllegendLayerClass,
 					 (NhlLayer)ovnew,
 					 NhlNvpUseSegments,
 					 ovnew->view.use_segments,
@@ -3173,6 +3173,41 @@ NhlErrorTypes NhlAddToOverlay
 }
 
 /*
+ * Function:	nhlf_addtooverlay
+ *
+ * Description:	Fortran wrapper for NhlAddToOverlay
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global private Fortran
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhlf_addtooverlay,NHLF_ADDTOOVERLAY)
+#if	__STDC__
+(
+	int	*base,
+	int	*plot,
+	int	*after,
+	int	*err
+)
+#else
+(base,plot,after,err)
+	int	*base;
+	int	*plot;
+	int	*after;
+	int	*err;
+#endif
+{
+	*err = NhlAddToOverlay(*base,*plot,*after);
+
+	return;
+}
+
+/*
  * Function:	NhlRemoveFromOverlay
  *
  * Description:	
@@ -3318,6 +3353,41 @@ NhlErrorTypes NhlRemoveFromOverlay
 		return ret;
 
 	return ret;
+}
+
+/*
+ * Function:	nhlf_removefromoverlay
+ *
+ * Description:	Fortran wrapper for NhlRemoveFromOverlay
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global private fortran
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhlf_removefromoverlay,NHLF_REMOVEFROMOVERLAY)
+#if	__STDC__
+(
+	int	*base,
+	int	*plot,
+	int	*restore,
+	int	*err
+)
+#else
+(base,plot,restore,err)
+	int	*base;
+	int	*plot;
+	int	*restore;
+	int	*err;
+#endif
+{
+	*err = NhlRemoveFromOverlay(*base,*plot,*restore);
+
+	return;
 }
 
 /*

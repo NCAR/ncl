@@ -1,5 +1,5 @@
 /*
- *      $Id: Trans.c,v 1.7 1994-01-27 21:26:42 boote Exp $
+ *      $Id: Trans.c,v 1.8 1994-05-12 23:52:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -55,7 +55,7 @@ static NhlErrorTypes CallNDCPolyline(
 );
 
 NhlErrorTypes 	_NhlWinToNDC
-#if  __STDC__
+#if  NhlNeedProto
 (NhlLayer instance, NhlLayer parent,float *x,float *y,int n, float *xout,
 	float *yout,int *istrans,float* xmissing, float* ymissing)
 #else
@@ -100,7 +100,7 @@ NhlErrorTypes 	_NhlWinToNDC
 
 
 NhlErrorTypes 	_NhlNDCToWin
-#if  __STDC__
+#if  NhlNeedProto
 (NhlLayer 	instance,NhlLayer parent,float *x,float *y,int n, float *xout,
 	float *yout,int *istrans,float *xmissing,float *ymissing)
 #else
@@ -144,7 +144,7 @@ NhlErrorTypes 	_NhlNDCToWin
 }
 
 NhlErrorTypes 	_NhlDataToCompc
-#if  __STDC__
+#if  NhlNeedProto
 (NhlLayer 	instance,NhlLayer parent,float *x,float *y,int n, float *xout,
 	float *yout, int *istrans,float* xmissing,float* ymissing)
 #else
@@ -190,7 +190,7 @@ NhlErrorTypes 	_NhlDataToCompc
 
 
 NhlErrorTypes 	_NhlCompcToData
-#if  __STDC__
+#if  NhlNeedProto
 (NhlLayer 	instance,NhlLayer parent,float *x,float *y,int n, float *xout,
 	float *yout,int *istrans,float* xmissing, float* ymissing)
 #else
@@ -236,7 +236,7 @@ NhlErrorTypes 	_NhlCompcToData
 
 
 NhlErrorTypes 	_NhlDataToWin
-#if  __STDC__
+#if  NhlNeedProto
 (NhlLayer 	instance,NhlLayer parent,float *x,float *y,int n, float *xout,
 	float *yout,int *istrans,float *xmissing, float *ymissing)
 #else
@@ -283,7 +283,7 @@ NhlErrorTypes 	_NhlDataToWin
 
 
 NhlErrorTypes 	_NhlWinToData
-#if  __STDC__
+#if  NhlNeedProto
 (NhlLayer 	instance,NhlLayer parent,float *x,float *y,int n, float *xout,
 	float *yout, int * istrans,float *xmissing, float *ymissing)
 #else
@@ -330,7 +330,7 @@ NhlErrorTypes 	_NhlWinToData
 
 
 NhlErrorTypes 	_NhlWinToCompc
-#if  __STDC__
+#if  NhlNeedProto
 (NhlLayer 	instance,NhlLayer parent,float *x,float *y,int n, float *xout,
 	float *yout,int *istrans,float *xmissing, float *ymissing)
 #else
@@ -376,7 +376,7 @@ NhlErrorTypes 	_NhlWinToCompc
 
 
 NhlErrorTypes 	_NhlCompcToWin
-#if  __STDC__
+#if  NhlNeedProto
 (NhlLayer 	instance,NhlLayer parent,float *x,float *y,int n, float *xout,
 	float *yout,int *istrans,float *xmissing,float *ymissing)
 #else
@@ -423,7 +423,7 @@ NhlErrorTypes 	_NhlCompcToWin
 
 
 NhlErrorTypes 	_NhlSetTrans
-#if  __STDC__
+#if  NhlNeedProto
 (NhlLayer instance,NhlLayer  parent)
 #else
 (instance,parent)
@@ -448,7 +448,7 @@ NhlErrorTypes 	_NhlSetTrans
 	
 }
 static NhlErrorTypes CallDataToNDC
-#if __STDC__
+#if NhlNeedProto
 (NhlLayer layer, NhlLayerClass class,float *x,float *y,int n, float *xout,float *yout,float *xmissing,float *ymissing,int *status,float* out_of_range)
 #else 
 (layer,class,x,y,n,xout,yout,xmissing,ymissing,status,out_of_range)
@@ -483,7 +483,7 @@ static NhlErrorTypes CallDataToNDC
 }
 
 NhlErrorTypes NhlDataToNDC
-#if __STDC__
+#if NhlNeedProto
 (int pid, float *x,float *y, int n, float *xout, float *yout,float *xmissing,float *ymissing,int* status,float* out_of_range)
 #else 
 (pid,x,y,n,xout,yout,xmissing,ymissing,status,out_of_range)
@@ -516,8 +516,61 @@ NhlErrorTypes NhlDataToNDC
 	return(ret);
 }
 
+/*
+ * Function:	nhl_fdatatondc
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fdatatondc,NHL_FDATATONDC)
+#if	NhlNeedProto
+(
+	int	*pid,
+	float	*x,
+	float	*y,
+	int	*n,
+	float	*xout,
+	float	*yout,
+	float	*xmiss,
+	float	*ymiss,
+	int	*usexmiss,
+	int	*useymiss,
+	int	*status,
+	float	*out_of_range,
+	int	*err
+)
+#else
+(pid,x,y,n,xout,yout,xmiss,ymiss,usexmiss,useymiss,status,out_of_range,err)
+	int	*pid;
+	float	*x;
+	float	*y;
+	int	*n;
+	float	*xout;
+	float	*yout;
+	float	*xmiss;
+	float	*ymiss;
+	int	*usexmiss;
+	int	*useymiss;
+	int	*status;
+	float	*out_of_range;
+	int	*err;
+#endif
+{
+	*err = NhlDataToNDC(*pid,x,y,*n,xout,yout,((*usexmiss)?xmiss:NULL),
+		((*useymiss)?ymiss:NULL),status,out_of_range);
+
+	return;
+}
+
 static NhlErrorTypes CallNDCToData
-#if __STDC__
+#if NhlNeedProto
 (NhlLayer layer, NhlLayerClass class,float *x,float *y,int n, float *xout,float *yout,float *xmissing,float *ymissing,int *status,float *out_of_range)
 #else 
 (layer,class,x,y,n,xout,yout,xmissing,ymissing,status,out_of_range)
@@ -552,7 +605,7 @@ static NhlErrorTypes CallNDCToData
 }
 
 NhlErrorTypes NhlNDCToData
-#if __STDC__
+#if NhlNeedProto
 (int pid, float *x,float *y, int n, float *xout, float *yout,float *xmissing,float *ymissing,int* status,float* out_of_range)
 #else 
 (pid,x,y,n,xout,yout,xmissing,ymissing,status,out_of_range)
@@ -569,23 +622,72 @@ NhlErrorTypes NhlNDCToData
 #endif
 {
 	NhlTransformLayer tlayer = (NhlTransformLayer)_NhlGetLayer(pid);
-	NhlErrorTypes ret = NhlNOERROR;
 
-	if(_NhlIsTransform(tlayer)) {
-
-		ret = CallNDCToData((NhlLayer)tlayer,tlayer->base.layer_class,
-				x,y,n,xout,yout,xmissing,ymissing,status,out_of_range);
-		
-	} else {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"NhlNDCToData has been passed an object that can't perform the requested transformation");
+	if(!_NhlIsTransform(tlayer)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+"NhlNDCToData has been passed an object that can't perform the requested transformation");
 		return(NhlFATAL);
 	}
-	return(ret);
+
+	return CallNDCToData((NhlLayer)tlayer,tlayer->base.layer_class,
+			x,y,n,xout,yout,xmissing,ymissing,status,out_of_range);
 }
 
+/*
+ * Function:	nhl_fndctodata
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fndctodata,NHL_FNDCTODATA)
+#if	NhlNeedProto
+(
+	int	*pid,
+	float	*x,
+	float	*y,
+	int	*n,
+	float	*xout,
+	float	*yout,
+	float	*xmiss,
+	float	*ymiss,
+	int	*usexmiss,
+	int	*useymiss,
+	int	*status,
+	float	*out_of_range,
+	int	*err
+)
+#else
+(pid,x,y,n,xout,yout,xmiss,ymiss,usexmiss,useymiss,status,out_of_range,err)
+	int	*pid;
+	float	*x;
+	float	*y;
+	int	*n;
+	float	*xout;
+	float	*yout;
+	float	*xmiss;
+	float	*ymiss;
+	int	*usexmiss;
+	int	*useymiss;
+	int	*status;
+	float	*out_of_range;
+	int	*err;
+#endif
+{
+	*err = NhlNDCToData(*pid,x,y,*n,xout,yout,((*usexmiss)?xmiss:NULL),
+		((*useymiss)?ymiss:NULL),status,out_of_range);
+
+	return;
+}
 
 NhlErrorTypes NhlDataPolyline
-#if __STDC__
+#if NhlNeedProto
 (int pid, float *x,float *y, int n)
 #else 
 (pid,x,y,n)
@@ -619,8 +721,44 @@ NhlErrorTypes NhlDataPolyline
 	return(ret);
 }
 
+/*
+ * Function:	nhl_fdatapolyline
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fdatapolyline,NHL_FDATAPOLYLINE)
+#if	NhlNeedProto
+(
+	int	*pid,
+	float	*x,
+	float	*y,
+	int	*n,
+	int	*err
+)
+#else
+(pid,x,y,n,err)
+	int	*pid;
+	float	*x;
+	float	*y;
+	int	*n;
+	int	*err;
+#endif
+{
+	*err = NhlDataPolyline(*pid,x,y,*n);
+
+	return;
+}
+
 static NhlErrorTypes CallDataPolyline
-#if __STDC__
+#if NhlNeedProto
 (NhlLayer layer, NhlLayerClass class,float *x,float *y,int n)
 #else 
 (layer,class,x,y,n)
@@ -655,7 +793,7 @@ static NhlErrorTypes CallDataPolyline
 
 
 NhlErrorTypes NhlNDCPolyline
-#if __STDC__
+#if NhlNeedProto
 (int pid, float *x,float *y, int n)
 #else 
 (pid,x,y,n)
@@ -689,8 +827,44 @@ NhlErrorTypes NhlNDCPolyline
 	return(ret);
 }
 
+/*
+ * Function:	nhl_fndcpolyline
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fndcpolyline,NHL_FNDCPOLYLINE)
+#if	NhlNeedProto
+(
+	int	*pid,
+	float	*x,
+	float	*y,
+	int	*n,
+	int	*err
+)
+#else
+(pid,x,y,n,err)
+	int	*pid;
+	float	*x;
+	float	*y;
+	int	*n;
+	int	*err;
+#endif
+{
+	*err = NhlNDCPolyline(*pid,x,y,*n);
+
+	return;
+}
+
 static NhlErrorTypes CallNDCPolyline
-#if __STDC__
+#if NhlNeedProto
 (NhlLayer layer, NhlLayerClass class,float *x,float *y,int n)
 #else 
 (layer,class,x,y,n)

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.5 1994-01-27 21:23:06 boote Exp $
+ *      $Id: IrregularPlot.c,v 1.6 1994-05-12 23:51:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -484,7 +484,7 @@ static NhlErrorTypes SetUpTransObj
 		sprintf(buffer,"%s",irnew->base.name);
 		strcat(buffer,".Trans");
 
-		subret = _NhlCreateChild(&tmpid,buffer,
+		subret = _NhlVACreateChild(&tmpid,buffer,
 					 NhlirregularType2TransObjLayerClass,
 					 (NhlLayer) irnew, NULL);
 

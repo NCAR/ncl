@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.12 1994-05-05 18:16:08 ethan Exp $
+ *      $Id: Contour.c,v 1.13 1994-05-12 23:50:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -959,6 +959,31 @@ static int		Fill_Count;
 static NhlLayer		Wkptr;
 static NhlLayer		Clayer;
 
+/*
+ * Function:	nhlfcontourclass
+ *
+ * Description:	fortran ref to contour class
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global Fortran
+ * Returns:	NhlLayerClass
+ * Side Effect:	
+ */
+NhlLayerClass
+_NHLCALLF(nhlfcontourclass,NHLFCONTOURCLASS)
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	return NhlcontourLayerClass;
+}
 
 /*
  * Function:	ContourDataClassInitialize

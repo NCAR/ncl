@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.c,v 1.5 1994-05-05 18:16:27 ethan Exp $
+ *      $Id: DataItem.c,v 1.6 1994-05-12 23:51:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -236,7 +236,7 @@ DataItemInitialize
 	 */
 	strcpy(tstring,direq->base.name);
 	strcat(tstring,PFIX);
-	ret = _NhlCreateChild(&tint,tstring,NhldataMgrLayerClass,new,
+	ret = _NhlVACreateChild(&tint,tstring,NhldataMgrLayerClass,new,
 				NULL);
 
 	if(ret < NhlWARNING)

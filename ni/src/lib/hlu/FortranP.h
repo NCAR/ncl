@@ -1,5 +1,5 @@
 /*
- *      $Id: FortranP.h,v 1.1 1994-04-19 15:38:08 boote Exp $
+ *      $Id: FortranP.h,v 1.2 1994-05-12 23:51:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -22,15 +22,18 @@
 #ifndef	_NFortranP_H
 #define	_NFortranP_H
 
+#include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 
 #ifdef	UNICOS
 #include <fortran.h>
 typedef _fcd _NhlFString;
 #define	_NhlFptrToCptr(fptr)	(_fcdtocp(fptr))
+#define	_NhlCptrToFptr(cptr)	((cptr)?_cptofcd(cptr,strlen(cptr)):_cptofcd("",0))
 #else
 typedef NhlString _NhlFString;
-#define	_NhlFptrToCptr(fptr)	(fptr)
+#define	_NhlFptrToCptr(fptr)		(fptr)
+#define	_NhlCptrToFptr(cptr)		(cptr)
 #endif
 
 

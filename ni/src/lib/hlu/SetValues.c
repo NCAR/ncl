@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.7 1994-04-01 20:08:52 boote Exp $
+ *      $Id: SetValues.c,v 1.8 1994-05-12 23:52:19 boote Exp $
  */
 /************************************************************************
 *									*
@@ -490,7 +490,7 @@ NhlDOCTAG(NhlVASetValues)
 /*VARARGS1*/
 NhlErrorTypes
 NhlVASetValues
-#if	NeedVarArgProto
+#if	NhlNeedVarArgProto
 (
 	int		id,		/* plot id		*/
 	...
@@ -499,7 +499,7 @@ NhlVASetValues
 (id,va_alist)
 	int		id;		/* plot id		*/
 	va_dcl
-#endif	/* NeedVarArgProto */
+#endif	/* NhlNeedVarArgProto */
 {
         va_list         ap; 
 	int             num_args; 
@@ -803,11 +803,11 @@ SetValuesChild
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
-NhlDOCTAG(_NhlSetValuesChild)
+NhlDOCTAG(_NhlVASetValuesChild)
 /*VARARGS2*/
 NhlErrorTypes
-_NhlSetValuesChild
-#if	NeedVarArgProto
+_NhlVASetValuesChild
+#if	NhlNeedVarArgProto
 (
 	int		pid,	/* pid return		*/
 	NhlLayer	parent,	/* parent of child	*/

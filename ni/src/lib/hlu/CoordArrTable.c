@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.13 1994-05-05 18:16:18 ethan Exp $
+ *      $Id: CoordArrTable.c,v 1.14 1994-05-12 23:50:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1220,7 +1220,7 @@ CoordArrTableInitialize
 		strcat(name,".INT");
 	}
 
-	ret = _NhlCreateChild(&tchild,name,child_class,new,NULL);
+	ret = _NhlVACreateChild(&tchild,name,child_class,new,NULL);
 
 	ncat->cat.child = _NhlGetLayer(tchild);
 

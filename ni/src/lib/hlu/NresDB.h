@@ -1,5 +1,5 @@
 /*
- *      $Id: NresDB.h,v 1.2 1994-02-18 02:54:35 boote Exp $
+ *      $Id: NresDB.h,v 1.3 1994-05-12 23:51:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -102,7 +102,7 @@ extern char *Npermalloc(
  *
  ****************************************************************/
 
-typedef int     NrmQuark, *NrmQuarkList;
+typedef long	NrmQuark, *NrmQuarkList;
 #define NrmNULLQUARK ((NrmQuark) 0)
 
 typedef char *NrmString;
@@ -193,6 +193,7 @@ typedef NrmQuark     NrmRepresentation;
 typedef struct _NrmValue{
     unsigned int	size;
     NhlArgVal		data;
+    NrmQuark		typeQ;	/* This is only valid inside converter funcs */
 } NrmValue, *NrmValuePtr;
 
 

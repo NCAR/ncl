@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.11 1994-05-05 18:16:46 ethan Exp $
+ *      $Id: Legend.c,v 1.12 1994-05-12 23:51:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -513,6 +513,32 @@ NhlLegendLayerClassRec NhllegendLayerClassRec = {
 };
 
 NhlLayerClass NhllegendLayerClass = (NhlLayerClass)&NhllegendLayerClassRec;
+
+/*
+ * Function:	nhlflegendclass
+ *
+ * Description:	fortran ref to contour class
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global Fortran
+ * Returns:	NhlLayerClass
+ * Side Effect:	
+ */
+NhlLayerClass
+_NHLCALLF(nhlflegendclass,NHLFLEGENDCLASS)
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	return NhllegendLayerClass;
+}
 
 static NrmQuark	Qfloat = NrmNULLQUARK;
 static NrmQuark Qint = NrmNULLQUARK;

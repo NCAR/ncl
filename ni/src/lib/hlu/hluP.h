@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.15 1994-05-05 18:17:56 ethan Exp $
+ *      $Id: hluP.h,v 1.16 1994-05-12 23:53:15 boote Exp $
  */
 /************************************************************************
 *									*
@@ -114,7 +114,7 @@ typedef	NhlArgVal	_NhlArgVal;
 typedef enum _NhlC_OR_F_{
 	_NhlCLIB,
 	_NhlFLIB,
-	_NhlFCLIB
+	_NhlFNONE
 } _NhlC_OR_F;
 
 /*
@@ -195,6 +195,12 @@ extern NhlGenArray _NhlCopyGenArray(
 #endif
 );
 
+extern NhlGenArray _NhlMyGenArray(
+#if	NhlNeedProto
+	NhlGenArray	gen
+#endif
+);
+
 extern NhlErrorTypes _NhlValidatedGenArrayCopy(
 #ifdef NhlNeedProto
 	 NhlGenArray	*gto, 		/* destination gen array */
@@ -222,8 +228,8 @@ extern void _NhlSArgToSetArgList(
 );
 
 /*VARARGS4*/
-extern NhlErrorTypes _NhlCreateChild(
-#if	NeedVarArgProto
+extern NhlErrorTypes _NhlVACreateChild(
+#if	NhlNeedVarArgProto
 	int		*pid,	/* pid return		*/
 	Const char	*name,	/* name of child	*/
 	NhlLayerClass	class,	/* class to create	*/
@@ -244,8 +250,8 @@ extern NhlErrorTypes _NhlALCreateChild(
 );
 
 /*VARARGS2*/
-extern NhlErrorTypes _NhlSetValuesChild(
-#if	NeedVarArgProto
+extern NhlErrorTypes _NhlVASetValuesChild(
+#if	NhlNeedVarArgProto
 	int		pid,	/* pid return		*/
 	NhlLayer	parent,	/* parent of child	*/
 	...			/* args to set in child	*/
@@ -270,7 +276,7 @@ extern NhlErrorTypes _NhlDestroyChild(
 
 /*VARARGS4*/
 extern NhlErrorTypes _NhlRegisterChildClass(
-#if	NeedVarArgProto
+#if	NhlNeedVarArgProto
 	NhlLayerClass	parent,		/* parent class			*/
 	NhlLayerClass	child,		/* child class			*/
 	NhlBoolean	autosetval,	/* SetValue im/ex plicite	*/

@@ -1,5 +1,5 @@
 /*
- *      $Id: Reparent.c,v 1.5 1994-01-27 21:25:33 boote Exp $
+ *      $Id: Reparent.c,v 1.6 1994-05-12 23:52:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -248,4 +248,37 @@ NhlChangeWorkstation
 	}
 
 	return Reparent(plot,work);
+}
+
+/*
+ * Function:	nhlf_changeworkstation
+ *
+ * Description:	fortran wrapper for NhlChangeWorkstation
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global private fortran
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhlf_changeworkstation,NHLF_CHANGEWORKSTATION)
+#if	__STDC__
+(
+	int	*pid,
+	int	*wid,
+	int	*err
+)
+#else
+(pid,wid,err)
+	int	*pid;
+	int	*wid;
+	int	*err;
+#endif
+{
+	*err = NhlChangeWorkstation(*pid,*wid);
+
+	return;
 }

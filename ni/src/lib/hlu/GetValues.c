@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.8 1994-04-01 20:08:54 boote Exp $
+ *      $Id: GetValues.c,v 1.9 1994-05-12 23:51:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -476,23 +476,43 @@ NhlGetValues
 			if(args[i].type == stringQ){
 				NhlString	tstr =
 					*(NhlString *)args[i].value.ptrval;
-				*(NhlString *)args[i].value.ptrval =
+				if(tstr != NULL){
+					*(NhlString *)args[i].value.ptrval =
 						NhlMalloc(strlen(tstr) + 1);
-				if(*(NhlString *)args[i].value.ptrval == NULL){
+					if(*(NhlString *)args[i].value.ptrval
+								== NULL){
 					NhlPError(NhlWARNING,ENOMEM,
 					"NhlGetValues:Unable to retrieve %s",
 					NrmQuarkToString(args[i].quark));
 					ret = MIN(ret,NhlWARNING);
-				}
-				else
-					strcpy(
-					*(NhlString*)args[i].value.ptrval,
+					}
+					else
+						strcpy(
+							*(NhlString*)
+							args[i].value.ptrval,
 									tstr);
+				}
+			}
+			else if(args[i].type == genQ){
+				NhlGenArray	tgen =
+					*(NhlGenArray *)args[i].value.ptrval;
+				if(tgen != NULL){
+					*(NhlGenArray*)args[i].value.ptrval =
+						_NhlMyGenArray(tgen);
+					if(*(NhlGenArray*)args[i].value.ptrval
+								== NULL){
+					NhlPError(NhlWARNING,ENOMEM,
+					"NhlGetValues:Unable to retrieve %s",
+					NrmQuarkToString(args[i].quark));
+					ret = MIN(ret,NhlWARNING);
+					}
+				}
 			}
 
-			if(gextra[i].free_func != NULL)
+			if((gextra[i].free_func != NULL) &&
+						(from.data.ptrval != NULL))
 				(*(gextra[i].free_func))
-					(gextra[i].value_ret.ptrval);
+					(from.data.ptrval);
 		}
 		else{
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -564,7 +584,7 @@ NhlDOCTAG(NhlVAGetValues)
 /*VARARGS1*/
 NhlErrorTypes
 NhlVAGetValues
-#if	NeedVarArgProto
+#if	NhlNeedVarArgProto
 (
 	int		pid,		/* id for layer instance*/
 	...				/* res/addr pairs	*/
@@ -573,7 +593,7 @@ NhlVAGetValues
 (pid,va_alist)
 	int		pid;		/* id for layer instance*/
 	va_dcl				/* res/addr pairs	*/
-#endif	/* NeedVarArgProto */
+#endif	/* NhlNeedVarArgProto */
 {
 	va_list         ap;
 	NhlString	name;

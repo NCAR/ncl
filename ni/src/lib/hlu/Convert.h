@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.h,v 1.5 1994-02-18 02:53:47 boote Exp $
+ *      $Id: Convert.h,v 1.6 1994-05-12 23:50:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -67,13 +67,13 @@ typedef void (*NhlCacheClosure)(
 
 NhlErrorTypes NhlRegisterConverter(
 #if	NhlNeedProto
-	NhlString,		/* from type - usually a NHLT*** constant*/
-	NhlString,		/* to type - usually a NHLT*** constant	*/
-	NhlTypeConverter,	/* the converter function		*/
-	NhlConvertArgList,	/* list of conversion args		*/
-	int,			/* number of args			*/
-	NhlBoolean,		/* cache results?			*/
-	NhlCacheClosure		/* function for freeing cache data	*/
+	NhlString		from,
+	NhlString		to,
+	NhlTypeConverter	convert,
+	NhlConvertArgList	args,
+	int			nargs,
+	NhlBoolean		cache,
+	NhlCacheClosure		close
 #endif
 );
 

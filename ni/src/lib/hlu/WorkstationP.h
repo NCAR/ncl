@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.5 1994-03-02 01:44:51 dbrown Exp $
+ *      $Id: WorkstationP.h,v 1.6 1994-05-12 23:52:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -42,6 +42,10 @@
 #define UNSET		-3
 #define SETALMOST	-2
 
+/*
+ * this is currently only used to set the char buffer length for the FortranI
+ */
+#define	_NhlMAXMARKERLEN	(80)
 
 typedef struct _NhlPrivateColor {
 	int ci;

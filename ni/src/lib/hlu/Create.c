@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.7 1994-03-23 15:27:22 boote Exp $
+ *      $Id: Create.c,v 1.8 1994-05-12 23:50:50 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/VarArg.h>
 #include <ncarg/hlu/ResListP.h>
+#include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/WorkstationI.h>
@@ -118,14 +119,10 @@ InitializeLayerClass
 
 	step = lc;
 	while(step != NULL) {
-		if(step == NhlobjLayerClass) {
+		if(step == NhlobjLayerClass)
 			inited |= (_NhlObjLayerClassFlag);
-			break;
-		}
-		else if(step == NhlbaseLayerClass) {
+		else if(step == NhlbaseLayerClass)
 			inited |= ( _NhlBaseLayerClassFlag );  
-			break;
-		}
 		else if(step == NhlworkstationLayerClass)
 			inited |= (_NhlWorkstationLayerClassFlag);  
 		else if(step == NhlviewLayerClass)
@@ -165,11 +162,13 @@ InitializeLayerClass
 	else
 		thisclass = NhlNOERROR;
 
-	classpart = CallClassPartInit(lc,lc);
-	if(classpart < NhlWARNING)
-		return(classpart);
-
 	lc->base_class.class_inited = inited;
+
+	classpart = CallClassPartInit(lc,lc);
+	if(classpart < NhlWARNING){
+		lc->base_class.class_inited = False;
+		return(classpart);
+	}
 
 	return(MIN((MIN(ansestor,thisclass)),classpart));
 }
@@ -362,14 +361,7 @@ _NhlCreate
  * Check for valid parent for Obj sub-classes
  */
 	if(_NhlIsObj(layer)){
-		if(_NhlIsError(layer)){
-			if(parent != NULL){
-				NhlPError(NhlWARNING,NhlEUNKNOWN,
-"Error objects should not have a parent - Resetting parent to NOPARENT");
-				layer->base.parent = NULL;
-			}
-		}
-		else if(_NhlIsDataMgr(layer)){
+		if(_NhlIsDataMgr(layer)){
 			if((parent == NULL) || !_NhlIsDataItem(parent)){
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"DataMgr objects can only be created as a child of a DataItem Class");
 				(void)NhlFree(layer);
@@ -380,8 +372,8 @@ _NhlCreate
 	 * Resource forwarding is not supported by Obj sub-classes
 	 * so need to set largs to args.
 	 */
-	largs = args;
-	nlargs = nargs;
+		largs = args;
+		nlargs = nargs;
 	}
 
 /*
@@ -406,7 +398,13 @@ _NhlCreate
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
 "Workstation objects should not have a parent - Resetting parent to NOPARENT");
 				layer->base.parent = NULL;
-				layer->base.wkptr = NULL;
+			}
+		}
+		else if(_NhlIsError(layer)){
+			if(parent != NULL){
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+"The Error object should not have a parent - Resetting parent to NOPARENT");
+				layer->base.parent = NULL;
 			}
 		}
 		else if(_NhlIsDataItem(layer)){
@@ -430,7 +428,7 @@ _NhlCreate
  * and for the children.  The children args are returned as a linked list
  * that get's assigned into child_args of the instance during init and
  * then get's free'd soon after, that way they are available for any
- * _NhlCreateChild calls that happen during initialize.
+ * _NhlVACreateChild calls that happen during initialize.
  * Resource forwarding is not supported for Obj's.
  */
 		lret = _NhlSortChildArgs(layer,args,nargs,&largs,&nlargs,
@@ -572,7 +570,7 @@ _NhlCreate
 NhlDOCTAG(NhlVACreate)
 NhlErrorTypes
 NhlVACreate
-#if	NeedVarArgProto
+#if	NhlNeedVarArgProto
 (
 	int		*pid,		/* return plot id		*/
 	Const char	*name,		/* name of instance		*/
@@ -587,7 +585,7 @@ NhlVACreate
 	NhlLayerClass	lc;		/* NhlLayerClass to create	*/
 	int		parentid;	/* id of parent			*/
 	va_dcl				/* resource name/value pairs	*/
-#endif	/* NeedVarArgProto */
+#endif	/* NhlNeedVarArgProto */
 {
 	va_list		ap;
 	int		num_args;
@@ -677,6 +675,83 @@ NhlCreate
 }
 
 /*
+ * Function:	nhl_fcreate
+ *
+ * Description:	This function is used to create an instance of the given
+ *		classfunc.  This function is identical to NhlCreate
+ *		except that it is called from fortran and uses a classfunc
+ *		instead of the NhlLayerClass pointer.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Fortran
+ * Returns:	id is a negative number if the create failed.
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_fcreate,NHL_FCREATE)
+#if	__STDC__
+(
+	int		*pid,		/* plot id <return>		*/
+	_NhlFString	fname,		/* name of instance		*/
+	_NhlClassFunc	lc_func,	/* NhlLayerClass to create	*/
+	int		*parentid,	/* parent's id			*/
+	int		*rlid,		/* RL list of resources		*/
+	int		*fname_len,	/* length of "name" char array	*/
+	int		*err_ret	/* error return			*/
+)
+#else
+(pid,fname,lc,parentid,rlid,fname_len,err_ret)
+	int		*pid;		/* plot id <return>		*/
+	_NhlFString	fname;		/* name of instance		*/
+	_NhlClassFunc	lc_func;	/* NhlLayerClass to create	*/
+	int		*parentid;	/* parent's id			*/
+	int		*rlid;		/* RL list of resources		*/
+	int		*fname_len;	/* length of "name" char array	*/
+	int		*err_ret;	/* error return			*/
+#endif
+{
+	_NhlArg		args[_NhlMAXARGLIST];
+	int		nargs;
+	char		cname[_NhlMAXRESNAMLEN];
+	char		*name;
+	NhlLayerClass	lc = NULL;
+	
+	/*
+	 * A better test would be nice, but what can we say.
+	 */
+	if(lc_func != NULL){
+#if	!defined(UNICOS) && !defined(AIX)
+		extern etext[];
+
+		if((void *)lc_func < (void *)etext)
+#endif
+			lc = (*lc_func)();
+	}
+
+	if(lc == NULL){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"nhlfcreate:Invalid Class Function");
+		*pid = *err_ret = NhlFATAL;
+		return;
+	}
+
+	name = _NhlFstrToCstr(cname,NhlNumber(cname),fname,*fname_len);
+
+	if(!_NhlRLToArgList(*rlid,NhlSETRL,args,&nargs)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"nhlfcreate:Invalid RL id %d",*rlid);
+		*pid = *err_ret = NhlFATAL;
+		return;
+	}
+
+
+	*err_ret = _NhlCreate(pid, name, lc, *parentid, args, nargs, NULL);
+}
+
+/*
  * Function:	NhlALCreate
  *
  * Description:	This function is used to create an instance of the given
@@ -715,7 +790,7 @@ NhlALCreate
 	int		parentid;	/* parent's id			*/
 	NhlSArgList	args_in;	/* resource name/values		*/
 	int		nargs;		/* number of resources		*/
-#endif	/* NeedVarArgProto */
+#endif	/* NhlNeedVarArgProto */
 {
 	_NhlArg		args[_NhlMAXARGLIST];
 
@@ -839,7 +914,7 @@ InitAllResources
  *		that they may end up using as a child within the class they
  *		are writing. If they register the child's class in there
  *		class_initialize proc, and then create the child using
- *		_NhlCreateChild to create the child - the hlu support
+ *		_NhlVACreateChild to create the child - the hlu support
  *		routines will take care of forwarding resources set in
  *		the parent to the child. In effect making the fact that
  *		there is a child in use transparent to the App writer. The
@@ -865,7 +940,7 @@ NhlDOCTAG(_NhlRegisterChildClass)
 /*VARARGS3*/
 NhlErrorTypes
 _NhlRegisterChildClass
-#if	NeedVarArgProto
+#if	NhlNeedVarArgProto
 (
 	NhlLayerClass	parent,		/* parent class			*/
 	NhlLayerClass	child,		/* child class			*/
@@ -1162,7 +1237,7 @@ CreateChild
 }
 
 /*
- * Function:	_NhlCreateChild
+ * Function:	_NhlVACreateChild
  *
  * Description:	This function is used from within a layer's methode to
  *		create a child layer instance that has resources automatically
@@ -1185,11 +1260,11 @@ CreateChild
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
-NhlDOCTAG(_NhlCreateChild)
+NhlDOCTAG(_NhlVACreateChild)
 /*VARARGS4*/
 NhlErrorTypes
-_NhlCreateChild
-#if	NeedVarArgProto
+_NhlVACreateChild
+#if	NhlNeedVarArgProto
 (
 	int		*pid,	/* pid return		*/
 	Const char	*name,	/* name of child	*/

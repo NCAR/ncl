@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.11 1994-05-05 18:16:40 ethan Exp $
+ *      $Id: LabelBar.c,v 1.12 1994-05-12 23:51:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -483,6 +483,32 @@ NhlLabelBarLayerClassRec NhllabelBarLayerClassRec = {
 };
 
 NhlLayerClass NhllabelBarLayerClass = (NhlLayerClass)&NhllabelBarLayerClassRec;
+
+/*
+ * Function:	nhlflabelbarclass
+ *
+ * Description:	fortran ref to contour class
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global Fortran
+ * Returns:	NhlLayerClass
+ * Side Effect:	
+ */
+NhlLayerClass
+_NHLCALLF(nhlflabelbarclass,NHLFLABELBARCLASS)
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	return NhllabelBarLayerClass;
+}
 
 static NrmQuark	Qfloat = NrmNULLQUARK;
 static NrmQuark Qint = NrmNULLQUARK;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.8 1994-05-05 18:16:30 ethan Exp $
+ *      $Id: Error.c,v 1.9 1994-05-12 23:51:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -38,9 +38,13 @@
 #include <ncarg/hlu/VarArg.h>
 #include <ncarg/hlu/Converters.h>
 
-#define	MAXERRMSGLEN	1024
+#define	MAXERRMSGLEN	10240
 #define	TABLELISTINC	10
 #define	ERRLISTINC	32
+
+static char	def_file[] = "stderr";
+#define	DEF_FILE	def_file
+#define	DEF_UNIT	(74)
 
 /************************************************************************
 *									*
@@ -58,11 +62,34 @@ static NhlResource resources[] = {
 	{NhlNerrPrint,NhlCerrPrint,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(print_errors),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNerrFileName,NhlCerrFileName,NhlTString,sizeof(NhlString),
-		Oset(error_file),NhlTImmediate,(NhlPointer)"stderr",0,NULL},
+		Oset(error_file),NhlTImmediate,(NhlPointer)DEF_FILE,0,
+							(_NhlFreeFunc)NhlFree},
+	{_NhlNerrMode,_NhlCerrMode,NhlTInteger,sizeof(_NhlC_OR_F),
+		Oset(error_mode),NhlTImmediate,(NhlPointer)_NhlFNONE,0,NULL}
+};
+#undef Oset
+
+#define Oset(field)	NhlOffset(_NhlErrorLayerCRec,cerror.field)
+static NhlResource cresources[] = {
+	{NhlNerrFilePtr,NhlCerrFilePtr,NhlTPointer,sizeof(NhlPointer),
+		Oset(fp),NhlTImmediate,(NhlPointer)NULL,0,NULL}
+};
+#undef Oset
+
+#define Oset(field)	NhlOffset(_NhlErrorLayerFRec,ferror.field)
+static NhlResource fresources[] = {
+	{NhlNerrUnitNumber,NhlCerrUnitNumber,NhlTInteger,sizeof(int),
+		Oset(eunit),NhlTImmediate,(NhlPointer)-1,0,NULL}
 };
 #undef Oset
 
 /* Methode declarations	*/
+
+static NhlErrorTypes ErrorClassPartInitialize(
+#if	NhlNeedProto
+	NhlLayerClass	lc
+#endif
+);
 
 static NhlErrorTypes ErrorClassInitialize(
 #if	NhlNeedProto
@@ -105,20 +132,26 @@ NhlErrorLayerClassRec NhlerrorLayerClassRec = {
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlErrorLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlobjLayerClassRec,
+/* superclass			*/	(NhlLayerClass)&NhlbaseLayerClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
 
-/* class_part_initialize	*/	NULL,
+/* class_part_initialize	*/	ErrorClassPartInitialize,
 /* class_initialize		*/	ErrorClassInitialize,
 /* layer_initialize		*/	ErrorInitialize,
 /* layer_set_values		*/	ErrorSetValues,
-/* layer_set_values_hook	*/	ErrorSetValues,
+/* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
 /* layer_reparent		*/	NULL,
-/* layer_destroy		*/	ErrorDestroy
+/* layer_destroy		*/	ErrorDestroy,
+/* child_resources		*/	NULL,
+/* layer_draw			*/	NULL,
+/* layer_pre_draw		*/	NULL,
+/* layer_draw_segonly		*/	NULL,
+/* layer_post_draw		*/	NULL,
+/* layer_clear			*/	NULL
 	},
 	/* ErrorClassPart */
 	{
@@ -126,7 +159,67 @@ NhlErrorLayerClassRec NhlerrorLayerClassRec = {
 	}
 };
 
+static _NhlErrorLayerCClassRec _NhlerrorLayerCClassRec = {
+	/* BaseClassPart */
+	{
+/* class_name			*/	"ErrorC",
+/* nrm_class			*/	NrmNULLQUARK,
+/* layer_size			*/	sizeof(_NhlErrorLayerCRec),
+/* class_inited			*/	False,
+/* superclass			*/	(NhlLayerClass)&NhlobjLayerClassRec,
+
+/* layer_resources		*/	cresources,
+/* num_resources		*/	NhlNumber(cresources),
+/* all_resources		*/	NULL,
+
+/* class_part_initialize	*/	NULL,
+/* class_initialize		*/	NULL,
+/* layer_initialize		*/	NULL,
+/* layer_set_values		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
+/* layer_get_values		*/	NULL,
+/* layer_reparent		*/	NULL,
+/* layer_destroy		*/	NULL
+	},
+	/* ErrorClassCPart */
+	{
+/* foo				*/	0
+	}
+};
+
+static _NhlErrorLayerFClassRec _NhlerrorLayerFClassRec = {
+	/* BaseClassPart */
+	{
+/* class_name			*/	"ErrorF",
+/* nrm_class			*/	NrmNULLQUARK,
+/* layer_size			*/	sizeof(_NhlErrorLayerFRec),
+/* class_inited			*/	False,
+/* superclass			*/	(NhlLayerClass)&NhlobjLayerClassRec,
+
+/* layer_resources		*/	fresources,
+/* num_resources		*/	NhlNumber(fresources),
+/* all_resources		*/	NULL,
+
+/* class_part_initialize	*/	NULL,
+/* class_initialize		*/	NULL,
+/* layer_initialize		*/	NULL,
+/* layer_set_values		*/	NULL,
+/* layer_set_values_hook	*/	NULL,
+/* layer_get_values		*/	NULL,
+/* layer_reparent		*/	NULL,
+/* layer_destroy		*/	NULL
+	},
+	/* ErrorFClassPart */
+	{
+/* foo				*/	0
+	}
+};
+
 NhlLayerClass NhlerrorLayerClass = (NhlLayerClass)&NhlerrorLayerClassRec;
+static NhlLayerClass _NhlerrorLayerCClass =
+					(NhlLayerClass)&_NhlerrorLayerCClassRec;
+static NhlLayerClass _NhlerrorLayerFClass =
+					(NhlLayerClass)&_NhlerrorLayerFClassRec;
 
 /************************************************************************
 * New type converters - needed for new type's defined for this class	*
@@ -138,6 +231,39 @@ NhlLayerClass NhlerrorLayerClass = (NhlLayerClass)&NhlerrorLayerClassRec;
 *	Error Class Methode definitions					*
 *									*
 ************************************************************************/
+
+/*
+ * Function:	ErrorClassPartInitialize
+ *
+ * Description:	Class part init
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static NhlErrorTypes
+ErrorClassPartInitialize
+#if	NhlNeedProto
+(
+	NhlLayerClass	lc	/* NhlLayerClass to init */
+)
+#else
+(lc)
+	NhlLayerClass	lc;	/* NhlLayerClass to init */
+#endif
+{
+	NhlErrorTypes		ret,lret;
+
+	lret = _NhlRegisterChildClass(lc,_NhlerrorLayerCClass,True,False,NULL);
+	ret = _NhlRegisterChildClass(lc,_NhlerrorLayerFClass,True,False,NULL);
+
+	return MIN(lret,ret);
+}
+
 /*
  * Function:	ErrorClassInitialize
  *
@@ -153,7 +279,7 @@ NhlLayerClass NhlerrorLayerClass = (NhlLayerClass)&NhlerrorLayerClassRec;
  */
 static NhlErrorTypes
 ErrorClassInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -184,6 +310,11 @@ ErrorClassInitialize
 	NhlRegisterConverter(NhlTFloat,NhlTErrorTypes,NhlCvtFloatToEnum,
 				interrtypes,NhlNumber(interrtypes),False,NULL);
 
+	NhlRegisterConverter(NhlTErrorTypes,NhlTString,NhlCvtEnumToString,
+				errtypes,NhlNumber(errtypes),False,NULL);
+	NhlRegisterConverter(NhlTErrorTypes,_NhlTFExpString,NhlCvtEnumToFStr,
+				errtypes,NhlNumber(errtypes),False,NULL);
+
 	return NhlNOERROR;
 }
 
@@ -208,7 +339,7 @@ ErrorClassInitialize
 /*ARGSUSED*/
 static NhlErrorTypes
 ErrorInitialize
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayerClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
@@ -227,32 +358,180 @@ ErrorInitialize
 {
 	NhlErrorLayerClass	elc = (NhlErrorLayerClass)lc;
 	NhlErrorLayer		enew = (NhlErrorLayer)new;
+	NhlLayerClass		childclass;
 	Const char		*tfname = NULL;
-	NhlErrorTypes		ret = NhlNOERROR;
+	NhlErrorTypes		ret;
+	char			*fname = "ErrorInitialize";
 
 	if(elc->error_class.num_error_instances > 0){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-			"Only one instance of ErrorClass is supported"));
+		"%s:Only one instance of ErrorClass is supported",fname));
 		return NhlFATAL;
 	}
-	elc->error_class.num_error_instances = 1;
+
+	if(enew->error.error_mode == _NhlCLIB)
+		childclass = _NhlerrorLayerCClass;
+	else if(enew->error.error_mode == _NhlFLIB)
+		childclass = _NhlerrorLayerFClass;
+	else{
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Invalid Error Mode",fname));
+		return NhlFATAL;
+	}
+
+	ret = _NhlVACreateChild(&enew->error.child,NULL,childclass,
+							(NhlLayer)enew,NULL);
+
+	if (ret < NhlWARNING)
+		return ret;
 
 	tfname = enew->error.error_file;
-	if(strcmp(tfname,"stderr") == 0)
-		enew->error.error_fp = stderr;
-	else if(strcmp(tfname,"stdout") == 0)
-		enew->error.error_fp = stdout;
-	else{
-		tfname = _NhlResolvePath(enew->error.error_file);
-		enew->error.error_fp = fopen(tfname,"w");
-		if(enew->error.error_fp == NULL){
-			NHLPERROR((NhlWARNING,errno,
-			"Unable to open error file:%s - Using stderr",tfname));
-			ret = MIN(ret,NhlWARNING);
-			enew->error.error_fp = stderr;
-			tfname = "stderr";
+
+	if(enew->error.error_mode == _NhlCLIB){
+		_NhlErrorLayerC	cchild = (_NhlErrorLayerC)
+						_NhlGetLayer(enew->error.child);
+		cchild->cerror.my_fp = False;
+		if(strcmp(tfname,"stderr") == 0)
+			cchild->cerror.fp = stderr;
+		else if(strcmp(tfname,"stdout") == 0)
+			cchild->cerror.fp = stdout;
+		else{
+			tfname = _NhlResolvePath(enew->error.error_file);
+			cchild->cerror.fp = fopen(tfname,"w");
+			if(cchild->cerror.fp == NULL){
+				NHLPERROR((NhlWARNING,errno,
+			"%s:Unable to open error file:%s - Using stderr",fname,
+								tfname));
+				ret = MIN(ret,NhlWARNING);
+				cchild->cerror.fp = stderr;
+				tfname = "stderr";
+			}
+			else
+				cchild->cerror.my_fp = True;
 		}
+		enew->error.private_fp = cchild->cerror.fp;
 	}
+	else if(enew->error.error_mode == _NhlFLIB){
+		_NhlErrorLayerF	fchild = (_NhlErrorLayerF)
+						_NhlGetLayer(enew->error.child);
+
+		fchild->ferror.my_eunit = False;
+		if(fchild->ferror.eunit != -1){
+			/* Unit Number specified */
+			if(tfname != DEF_FILE){
+				/* File is specified so open unit with file */
+				int	conn = 0;
+				int	ierr = 0;
+				_NHLCALLF(nhl_finqunit,NHLF_INQUNIT)
+					(&fchild->ferror.eunit,&conn,&ierr);
+				if(ierr){
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+				"%s:Fortran I/O Error #%n:Using default I/O",
+								fname,ierr);
+					conn = 4;
+					fchild->ferror.eunit =
+						_NHLCALLF(i1mach,I1MACH)(&conn);
+					tfname = "stderr";
+				}
+				else if(conn){
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:Ignoring %s=%s :Unit number %d already open",fname,
+							NhlNerrFileName,tfname,
+							fchild->ferror.eunit);
+					ret = MIN(ret,NhlWARNING);
+					tfname = DEF_FILE;
+				}
+				else{
+					_NhlFString	ffname;
+					int		ffname_len;
+
+					tfname =
+					_NhlResolvePath(enew->error.error_file);
+
+					if(tfname){
+
+						ffname_len = strlen(tfname);
+						ffname = (_NhlFString)
+							_NhlCptrToFptr(tfname);
+						_NHLCALLF(nhl_fopnunit,
+								NHLF_OPNUNIT)
+							(&fchild->ferror.eunit,
+							ffname,&ffname_len,
+									&ierr);
+					}
+
+					if(!tfname || ierr){
+
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+	"%s:Unable to open %s with Unit %d:reverting to defaults",fname,tfname,
+							fchild->ferror.eunit);
+						conn = 4;
+						fchild->ferror.eunit =
+						_NHLCALLF(i1mach,I1MACH)(&conn);
+						tfname = "stderr";
+					}
+				}
+			}
+		}
+		else{
+			int tint = 4;
+
+			/* Unit number not specified */
+			if(tfname == DEF_FILE){
+				/* file not specified - use stderr */
+				tfname = DEF_FILE;
+				fchild->ferror.eunit =
+						_NHLCALLF(i1mach,I1MACH)(&tint);
+			}
+			else{
+				if(strcmp(tfname,"stderr") == 0)
+					fchild->ferror.eunit =
+						_NHLCALLF(i1mach,I1MACH)(&tint);
+				else if(strcmp(tfname,"stdout") == 0){
+					tint = 2;
+					fchild->ferror.eunit =
+						_NHLCALLF(i1mach,I1MACH)(&tint);
+				}
+				else{
+					_NhlFString	ffname;
+					int		ffname_len;
+					int		ierr;
+
+					fchild->ferror.eunit = DEF_UNIT;
+
+					tfname =
+					_NhlResolvePath(enew->error.error_file);
+
+					if(tfname){
+						ffname_len = strlen(tfname);
+						ffname = (_NhlFString)
+							_NhlCptrToFptr(tfname);
+						_NHLCALLF(nhl_fopnunit,
+								NHLF_OPNUNIT)
+							(&fchild->ferror.eunit,
+							ffname,&ffname_len,
+									&ierr);
+					}
+
+					if(!tfname || ierr){
+						int tint = 4;
+
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+	"ErrorInit:Unable to open %s with Unit %d:reverting to defaults",tfname,
+							fchild->ferror.eunit);
+						tfname = DEF_FILE;
+						fchild->ferror.eunit =
+						_NHLCALLF(i1mach,I1MACH)(&tint);
+					}
+					else
+						fchild->ferror.my_eunit = True;
+				}
+			}
+		}
+		enew->error.private_eunit = fchild->ferror.eunit;
+	}
+
+	if(!tfname)
+		tfname = DEF_FILE;
 
 	enew->error.error_file = (char *)NhlMalloc(strlen(tfname) + 1);
 	strcpy(enew->error.error_file,tfname);
@@ -264,6 +543,8 @@ ErrorInitialize
 	enew->error.num_etables = 0;
 	enew->error.etables = NULL;
 	enew->error.len_etables = 0;
+
+	elc->error_class.num_error_instances = 1;
 
 	return(ret);
 }
@@ -289,7 +570,7 @@ ErrorInitialize
 /*ARGSUSED*/
 static NhlErrorTypes
 ErrorSetValues
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer		old,		/* old		*/
 	NhlLayer		req,		/* requested	*/
@@ -306,53 +587,242 @@ ErrorSetValues
 	int		nargs;		/* nargs	*/
 #endif
 {
-	NhlErrorLayer eold = (NhlErrorLayer)old;
-	NhlErrorLayer ereq = (NhlErrorLayer)req;
-	NhlErrorLayer enew = (NhlErrorLayer)new;
-	char *tfname = NULL;
-	FILE *tfptr = NULL;
-	NhlErrorTypes ret = NhlNOERROR;
+	NhlErrorTypes	ret = NhlNOERROR;
+	NhlErrorLayer	eold = (NhlErrorLayer)old;
+	NhlErrorLayer	enew = (NhlErrorLayer)new;
+	char		*fname = "ErrorSetValues";
+	Const char	*tfname = NULL;
 
+	/*
+	 * Silently ignore changes to mode. It shouldn't be possible, but
+	 * just in case.
+	 */
+	enew->error.error_mode = eold->error.error_mode;
 
-	if(eold->error.error_file != ereq->error.error_file){
-		tfname = ereq->error.error_file;
-		if(tfname == NULL){
-			NhlPError(NhlWARNING,NhlEUNKNOWN,
+	if(eold->error.error_file != enew->error.error_file){
+
+		tfname = enew->error.error_file;
+
+		if(enew->error.error_mode == _NhlCLIB){
+			_NhlErrorLayerC	cchild = (_NhlErrorLayerC)
+						_NhlGetLayer(enew->error.child);
+
+			if(cchild->cerror.my_fp){
+				if(fclose(eold->error.private_fp) != 0){
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+						"Error closing old error file");
+					ret = MIN(ret,NhlWARNING);
+				}
+			}
+
+			cchild->cerror.my_fp = False;
+			if(enew->error.private_fp != cchild->cerror.fp){
+				if(enew->error.error_file != NULL){
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+						"%s:%s specified - ignoring %s",
+							fname,NhlNerrFilePtr,
+							NhlNerrFileName);
+				}
+				tfname = DEF_FILE;
+				enew->error.private_fp = cchild->cerror.fp;
+			}
+			else{
+				FILE	*tfptr = NULL;
+
+				if(tfname == NULL){
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
 				"Unable to open file NULL, Using stderr");
-			ret = MIN(ret,NhlWARNING);
-			tfname = "stderr";
-		}
+					ret = MIN(ret,NhlWARNING);
+					tfname = "stderr";
+				}
 
-		if(strcmp(tfname,"stderr") == 0)
-			tfptr = stderr;
-		else if(strcmp(tfname,"stdout") == 0)
-			tfptr = stdout;
-		else{
-			tfptr = fopen(_NhlResolvePath(tfname),"w");
-			if(tfptr == NULL){
-				NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-				"Unable to open %s,Using stderr",tfname));
-				ret = MIN(ret,NhlWARNING);
-				tfptr = stderr;
-				tfname = "stderr";
+				if(strcmp(tfname,"stderr") == 0)
+					tfptr = stderr;
+				else if(strcmp(tfname,"stdout") == 0)
+					tfptr = stdout;
+				else{
+					tfname =
+					_NhlResolvePath(enew->error.error_file);
+					if(tfname)
+						tfptr = fopen(tfname,"w");
+					if(!tfname || !tfptr){
+					NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+					"%s:Unable to open %s,Using stderr",
+						fname,(tfname)?tfname:"nil"));
+						ret = MIN(ret,NhlWARNING);
+						tfptr = stderr;
+						tfname = "stderr";
+					}
+					else
+						cchild->cerror.my_fp = True;
+				}
+				enew->error.private_fp = cchild->cerror.fp =
+									tfptr;
 			}
 		}
+		else if(enew->error.error_mode == _NhlFLIB){
+			_NhlErrorLayerF	fchild = (_NhlErrorLayerF)
+						_NhlGetLayer(enew->error.child);
+			int	ierr = 0;
+			int	conn = 0;
 
-		if((eold->error.error_fp != stderr) &&
-					(eold->error.error_fp != stdout)){
-			if(fclose(eold->error.error_fp) != 0){
+			if(fchild->ferror.my_eunit)
+				_NHLCALLF(nhl_fclsunit,NHLF_CLSUNIT)
+					(&eold->error.private_eunit,&ierr);
+			else
+				_NHLCALLF(nhl_finqunit,NHLF_INQUNIT)
+					(&fchild->ferror.eunit,&conn,&ierr);
+
+			fchild->ferror.my_eunit = False;
+
+			if(ierr){
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
-						"Error Closing File %s",
-						eold->error.error_file);
-				ret = MIN(ret,NhlWARNING);
+				"%s:Fortran I/O error #%n - Using defaults",
+								fname,ierr);
+				tfname = "stderr";
+				conn = 4;
+				fchild->ferror.eunit = _NHLCALLF(i1mach,I1MACH)
+									(&conn);
 			}
+			else if(conn){
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:Ignoring %s=%s :Unit number %d already open",fname,
+							NhlNerrFileName,tfname,
+							fchild->ferror.eunit);
+				ret = MIN(ret,NhlWARNING);
+				tfname = DEF_FILE;
+			}
+			else{
+				_NhlFString	ffname;
+				int		ffname_len;
+
+				tfname =_NhlResolvePath(enew->error.error_file);
+
+				if(tfname){
+					ffname_len = strlen(tfname);
+					ffname = (_NhlFString)
+							_NhlCptrToFptr(tfname);
+					_NHLCALLF(nhl_fopnunit,NHLF_OPNUNIT)
+						(&fchild->ferror.eunit,ffname,
+							&ffname_len,&ierr);
+				}
+
+				if(!tfname || ierr){
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+		"%s:Unable to open %s with Unit %d:reverting to defaults",fname,
+							(tfname)?tfname:"nil",
+							fchild->ferror.eunit);
+					conn = 4;
+					fchild->ferror.eunit =
+						_NHLCALLF(i1mach,I1MACH)(&conn);
+					tfname = "stderr";
+				}
+			}
+			enew->error.private_eunit = fchild->ferror.eunit;
+		}
+		else{
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"%s:Unknown error_mode???",fname);
+			return NhlFATAL;
 		}
 
 		(void)NhlFree(eold->error.error_file);
-		eold->error.error_file = NULL;
+		if(!tfname)
+			tfname = DEF_FILE;
 		enew->error.error_file = (char *)NhlMalloc(strlen(tfname) + 1);
+		if(!enew->error.error_file){
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return NhlFATAL;
+		}
 		strcpy(enew->error.error_file,tfname);
-		enew->error.error_fp = tfptr;
+	}
+	else{
+
+		if(enew->error.error_mode == _NhlCLIB){
+			_NhlErrorLayerC	cchild = (_NhlErrorLayerC)
+						_NhlGetLayer(enew->error.child);
+			if(enew->error.private_fp != cchild->cerror.fp){
+
+
+				if(!cchild->cerror.fp){
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+					"%s:%s cannot be NULL - Ignoring",fname,
+					NhlNerrFilePtr);
+					cchild->cerror.fp =
+							enew->error.private_fp;
+				}
+				else
+					enew->error.private_fp =
+							cchild->cerror.fp;
+				if(cchild->cerror.my_fp){
+					if(fclose(eold->error.private_fp) != 0){
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+						"Error closing old error file");
+						ret = MIN(ret,NhlWARNING);
+					}
+				}
+				cchild->cerror.my_fp = False;
+
+				if(cchild->cerror.fp == stderr)
+					tfname = "stderr";
+				else if(cchild->cerror.fp == stdout)
+					tfname = "stdout";
+				else
+					tfname = DEF_FILE;
+			}
+		}
+		else if(enew->error.error_mode == _NhlFLIB){
+			_NhlErrorLayerF	fchild = (_NhlErrorLayerF)
+						_NhlGetLayer(enew->error.child);
+			if(enew->error.private_eunit != fchild->ferror.eunit){
+				int conn;
+				int ierr = 0;
+
+				enew->error.private_eunit =fchild->ferror.eunit;
+
+				if(fchild->ferror.my_eunit)
+					_NHLCALLF(nhl_fclsunit,NHLF_CLSUNIT)
+					(&eold->error.private_eunit,&ierr);
+
+				if(ierr){
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+						"%s:Error Closing Unit #%n",
+						fname,
+						eold->error.private_eunit);
+				}
+
+				fchild->ferror.my_eunit = False;
+
+				conn = 4;
+				if(fchild->ferror.eunit ==
+						_NHLCALLF(i1mach,I1MACH)(&conn))
+					tfname = "stderr";
+				else{
+					conn = 2;
+					if(fchild->ferror.eunit ==
+						_NHLCALLF(i1mach,I1MACH)(&conn))
+
+						tfname = "stdout";
+					else
+						tfname = DEF_FILE;
+				}
+			}
+		}
+		else{
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"%s:Unknown Error_mode???",fname);
+			return NhlFATAL;
+		}
+
+		(void)NhlFree(eold->error.error_file);
+		if(!tfname)
+			tfname = DEF_FILE;
+		enew->error.error_file = (char *)NhlMalloc(strlen(tfname) + 1);
+		if(!enew->error.error_file){
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return NhlFATAL;
+		}
+		strcpy(enew->error.error_file,tfname);
 	}
 
 	return ret;
@@ -374,7 +844,7 @@ ErrorSetValues
  */
 static NhlErrorTypes
 ErrorDestroy
-#if	__STDC__
+#if	NhlNeedProto
 (
 	NhlLayer l		/* layer to ready for destruction	*/
 )
@@ -383,15 +853,36 @@ ErrorDestroy
 	NhlLayer l;	/* layer to ready for destruction	*/
 #endif
 {
-	NhlErrorLayer	el = (NhlErrorLayer)l;
 	NhlErrorTypes	ret = NhlNOERROR;
+	NhlErrorLayer	el = (NhlErrorLayer)l;
 	int		i;
+	char		*fname = "ErrorDestroy";
 
-	if ((el->error.error_fp != stdout) && (el->error.error_fp != stderr)){
-		if(fclose(el->error.error_fp) != 0){
-			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-				"error closing file:%s",el->error.error_file));
-			ret = MIN(ret,NhlWARNING);
+	if(el->error.error_mode == _NhlCLIB){
+		_NhlErrorLayerC	cchild = (_NhlErrorLayerC)
+						_NhlGetLayer(el->error.child);
+		if(cchild->cerror.my_fp){
+			if(fclose(cchild->cerror.fp) != 0){
+				NHLPERROR((NhlWARNING,errno,
+						"%s:Error closing error file"));
+				ret = MIN(ret,NhlWARNING);
+			}
+		}
+	}
+	else if(el->error.error_mode == _NhlFLIB){
+		_NhlErrorLayerF	fchild = (_NhlErrorLayerF)
+						_NhlGetLayer(el->error.child);
+		int ierr = 0;
+
+		if(fchild->ferror.my_eunit){
+			_NHLCALLF(nhl_fclsunit,NHLF_CLSUNIT)
+						(&fchild->ferror.eunit,&ierr);
+			if(ierr){
+				NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+					"%s:Error closing Unit #%n,IOSTAT=%n",
+					fname,fchild->ferror.eunit,ierr));
+				ret = MIN(ret,NhlWARNING);
+			}
 		}
 	}
 
@@ -412,7 +903,7 @@ ErrorDestroy
 *									*
 ************************************************************************/
 
-static int Error_inited = False;
+static NhlBoolean Error_inited = False;
 static NhlErrorLayer errorLayer = NULL;
 
 /*
@@ -431,12 +922,13 @@ static NhlErrorLayer errorLayer = NULL;
  */
 void
 _NhlInitError
-#if	__STDC__
+#if	NhlNeedProto
 (
-	void
+	_NhlC_OR_F	init_mode
 )
 #else
-()
+(init_mode)
+	_NhlC_OR_F	init_mode;
 #endif
 {
 	extern int	sys_nerr;
@@ -447,7 +939,8 @@ _NhlInitError
 		NhlErrorTypes ret = NhlNOERROR;
 
 		ret = NhlVACreate(&tmp,"error",NhlerrorLayerClass,NhlNOPARENT,
-									NULL);
+				_NhlNerrMode,	init_mode,
+				NULL);
 		if(ret < NhlWARNING){
 			NHLPERROR((ret,NhlEUNKNOWN,
 					"Error Creating ErrorClass object"));
@@ -485,7 +978,7 @@ _NhlInitError
  */
 void
 _NhlCloseError
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -515,7 +1008,7 @@ _NhlCloseError
  */
 static Const char *
 RetrieveSysError
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int	errnum	/* error number to retrieve message for	*/
 )
@@ -556,7 +1049,7 @@ RetrieveSysError
  */
 static void
 BufferMsg
-#if	__STDC__
+#if	NhlNeedProto
 (
 	Const NhlErrMsg	*msg	/* message to buffer	*/
 )
@@ -575,11 +1068,9 @@ BufferMsg
 			errorLayer->error.num_emsgs = 0;
 			errorLayer->error.len_emsgs = 0;
 			errorLayer->error.buffer_errors = False;
-			if(!errorLayer->error.print_errors){
-				errorLayer->error.print_errors = True;
-				errorLayer->error.error_fp = stderr;
-			}
-			NHLPERROR((NhlWARNING,12,"Unable to buffer e-msgs"));
+			errorLayer->error.print_errors = True;
+			NHLPERROR((NhlWARNING,ENOMEM,
+						"Unable to buffer e-msgs"));
 		}
 		else
 			errorLayer->error.len_emsgs += ERRLISTINC;
@@ -596,6 +1087,51 @@ BufferMsg
 	errorLayer->error.num_emsgs++;
 }
 
+/*
+ * Function:	PrintMessage
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static Const char *
+PrintMessage
+#if	NhlNeedProto
+(
+	Const NhlErrMsg	*msg		/* message to print		*/
+)
+#else
+(msg)
+	Const NhlErrMsg	*msg;		/* message to print		*/
+#endif
+{
+	if(errorLayer->error.error_mode == _NhlFLIB){
+		static char	tbuf[MAXERRMSGLEN];
+		Const char	*message;
+		_NhlFString	fmessage;
+		int		fmessage_len;
+
+		message = NhlErrSPrintMsg(tbuf,msg);
+		fmessage_len = strlen(message);
+		fmessage = (_NhlFString)_NhlCptrToFptr(message);
+		_NHLCALLF(nhl_fprnmes,NHLF_PRNMES)
+				(&errorLayer->error.private_eunit,fmessage,
+								&fmessage_len);
+
+		return tbuf;
+	}
+	else if(errorLayer->error.error_mode == _NhlCLIB)
+		return NhlErrFPrintMsg(errorLayer->error.private_fp,msg);
+	else
+		return NhlErrFPrintMsg(stderr,msg);
+}
+	
 /*
  * Function:	AddErrMsg
  *
@@ -614,7 +1150,7 @@ BufferMsg
  */
 static Const char *
 AddErrMsg
-#if	__STDC__
+#if	NhlNeedProto
 (
 	Const NhlErrMsg	*msg	/* message to add	*/
 )
@@ -640,11 +1176,8 @@ AddErrMsg
 	}
 
 	/* print out message */
-	if(errorLayer->error.print_errors &&
-		(errorLayer->error.error_fp != NULL)){
-
-		return NhlErrFPrintMsg(errorLayer->error.error_fp,msg);
-	}
+	if(errorLayer->error.print_errors)
+		return PrintMessage(msg);
 	else
 		return NhlErrSPrintMsg(buffer,msg);
 }
@@ -682,7 +1215,7 @@ static struct {
  */
 void
 _NhlPErrorHack
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		line,	/* line number	*/
 	Const char	*fname	/* file name	*/
@@ -699,6 +1232,61 @@ _NhlPErrorHack
 	strcpy(HackInfo.fname,fname);
 
 	return;
+}
+
+/*
+ * Function:	printerror
+ *
+ * Description:	This is the function used to report an error.
+ *
+ * In Args:	
+ *		NhlErrorTypes	severity,	error severity
+ *		int		errnum,		errornum in table
+ *		char		*errstring,	fmt string
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Public
+ * Returns:	Const char * - the string it will print or buffer
+ * Side Effect:	
+ */
+static Const char *printerror
+#if     NhlNeedProto
+(
+	NhlErrorTypes	severity,	/* error severity	*/
+	int		errnum,		/* errornum in table	*/
+	NhlString	errstring	/* fmt string		*/
+)
+#else
+(severity,errnum,errstring)
+	NhlErrorTypes	severity;	/* error severity	*/
+	int		errnum;		/* errornum in table	*/
+	NhlString	errstring;	/* fmt string		*/
+#endif
+{
+	NhlErrMsg	tmp;
+
+	tmp.severity = severity;
+	tmp.errorno = errnum;
+	tmp.msg = errstring;
+
+	if(errnum == NhlEUNKNOWN)
+		tmp.sysmsg = NULL;
+	else
+		tmp.sysmsg = RetrieveSysError(errnum);
+
+	if(HackUsed){
+		tmp.line = HackInfo.line;
+		tmp.fname = NhlMalloc(strlen(HackInfo.fname) + 1);
+		strcpy(tmp.fname,HackInfo.fname);
+		HackUsed = False;
+	}
+	else{
+		tmp.line = -1;
+		tmp.fname = NULL;
+	}
+
+	return AddErrMsg(&tmp);
 }
 
 /*
@@ -720,7 +1308,7 @@ _NhlPErrorHack
  * Side Effect:	
  */
 Const char *NhlPError
-#if     NeedVarArgProto
+#if     NhlNeedVarArgProto
 (
 	NhlErrorTypes	severity,	/* error severity	*/
 	int		errnum,		/* errornum in table	*/
@@ -735,17 +1323,9 @@ Const char *NhlPError
 	va_dcl				/* args for fmt string	*/
 #endif
 {
-        va_list         ap;
+	va_list		ap;
 	char		tbuf[MAXERRMSGLEN];
-	NhlErrMsg	tmp;
-
-	tmp.severity = severity;
-	tmp.errorno = errnum;
-
-	if(errnum == NhlEUNKNOWN)
-		tmp.sysmsg = NULL;
-	else
-		tmp.sysmsg = RetrieveSysError(errnum);
+	NhlString	errstr;
 
 	if(fmt != NULL){
 
@@ -753,25 +1333,78 @@ Const char *NhlPError
 		(void)vsprintf(tbuf, fmt, ap);
 		va_end(ap);
 
-		tmp.msg = tbuf;
+		errstr = tbuf;
 	}
 	else
-		tmp.msg = NULL;
+		errstr = NULL;
 
-	if(HackUsed){
-		tmp.line = HackInfo.line;
-		tmp.fname = NhlMalloc(strlen(HackInfo.fname) + 1);
-		strcpy(tmp.fname,HackInfo.fname);
-		HackUsed = False;
-	}
-	else{
-		tmp.line = -1;
-		tmp.fname = NULL;
-	}
-
-	return AddErrMsg(&tmp);
+	return printerror(severity,errnum,errstr);
 }
 
+/*
+ * Function:	nhl_fperror
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_fperror,NHL_FPERROR)
+#if	NhlNeedProto
+(
+	_NhlFString	flevel,
+	int		*flevel_len,
+	int		*errnum,
+	_NhlFString	estr,
+	int		*estr_len
+)
+#else
+(flevel,flevel_len,errnum,estr,estr_len)
+	_NhlFString	flevel;
+	int		*flevel_len;
+	int		*errnum;
+	_NhlFString	estr;
+	int		*estr_len;
+#endif
+{
+	char		clevel[_NhlMAXRESNAMLEN];
+	NhlErrorTypes	elevel;
+	NrmValue	from,to;
+	char		emsg[_NhlMAXRESNAMLEN];
+
+	if(!_NhlFstrToCstr(clevel,NhlNumber(clevel),flevel,*flevel_len)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+		"Unable to report Fortran error message:Invalid error level");
+		return;
+	}
+
+	from.size = strlen(clevel);
+	from.data.strval = clevel;
+	to.size = sizeof(NhlErrorTypes);
+	to.data.ptrval = &elevel;
+
+	if(NhlConvertData(NhlTString,NhlTErrorTypes,&from,&to) != NhlNOERROR){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+		"Unable to report Fortran error message:Invalid error level");
+		return;
+	}
+
+	if(!_NhlFstrToCstr(emsg,NhlNumber(emsg),estr,*estr_len)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+		"Unable to report Fortran error message:Invalid Error String");
+		return;
+	}
+
+	(void)printerror(elevel,*errnum,emsg);
+
+	return;
+}
 
 /*
  * Function:	NhlErrGetID
@@ -791,7 +1424,7 @@ Const char *NhlPError
  */
 int
 NhlErrGetID
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -804,6 +1437,35 @@ NhlErrGetID
 
 	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can't find Error Object"));
 	return NhlFATAL;
+}
+
+/*
+ * Function:	nhl_ferrgetid
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_ferrgetid,NHL_FERRGETID)
+#if	NhlNeedProto
+(
+	int	*id
+)
+#else
+(id)
+	int	*id;
+#endif
+{
+	*id = NhlErrGetID();
+
+	return;
 }
 
 /*
@@ -822,7 +1484,7 @@ NhlErrGetID
  */
 int
 NhlErrNumMsgs
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -835,6 +1497,35 @@ NhlErrNumMsgs
 
 	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can't find Error Object"));
 	return NhlFATAL;
+}
+
+/*
+ * Function:	nhl_ferrnummsgs
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_ferrnummsgs,NHL_FERRNUMMSGS)
+#if	NhlNeedProto
+(
+	int	*nummsgs
+)
+#else
+(nummsgs)
+	int	*nummsgs;
+#endif
+{
+	*nummsgs = NhlErrNumMsgs();
+
+	return;
 }
 
 /*
@@ -855,7 +1546,7 @@ NhlErrNumMsgs
  */
 NhlErrorTypes
 NhlErrGetMsg
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		msgnum,	/* msg num to retrieve	*/
 	Const NhlErrMsg	**msg	/* return msg		*/
@@ -882,6 +1573,80 @@ NhlErrGetMsg
 }
 
 /*
+ * Function:	nhl_ferrgetmsg
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_ferrgetmsg,NHL_FERRGETMSG)
+#if	NhlNeedProto
+(
+	int		*index,
+	int		*severity,
+	_NhlFString	emesg,
+	int		*emesg_len,
+	int		*errnum,
+	_NhlFString	sys_mesg,
+	int		*sys_mesg_len,
+	int		*line,
+	_NhlFString	fname,
+	int		*fname_len,
+	int		*err
+)
+#else
+(index,severity,emesg,emesg_len,errnum,sys_mesg,sys_mesg_len,line,fname,
+							fname_len,err)
+	int		*index;
+	int		*severity;
+	_NhlFString	emesg;
+	int		*emesg_len;
+	int		*errnum;
+	_NhlFString	sys_mesg;
+	int		*sys_mesg_len;
+	int		*line;
+	_NhlFString	fname;
+	int		*fname_len;
+	int		*err;
+#endif
+{
+	Const NhlErrMsg	*msg;
+	NhlErrorTypes	ret,lret;
+
+	ret = NhlErrGetMsg(*index,&msg);
+
+	if(ret == NhlFATAL){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"nhl_ferrgetmsg:Unable to retrieve errmsg #%d",*index);
+
+		*err = ret;
+
+		return;
+	}
+
+	*severity = msg->severity;
+	lret = _NhlCstrToFstr(emesg,*emesg_len,msg->msg);
+	ret = MIN(ret,lret);
+	*errnum = msg->errorno;
+	lret = _NhlCstrToFstr(sys_mesg,*sys_mesg_len,msg->sysmsg);
+	ret = MIN(ret,lret);
+	*line = msg->line;
+	ret = _NhlCstrToFstr(fname,*fname_len,msg->fname);
+	ret = MIN(ret,lret);
+
+	*err = ret;
+
+	return;
+}
+
+/*
  * Function:	NhlErrClearMsgs
  *
  * Description:	This function clears the internal error buffer that is managed
@@ -897,7 +1662,7 @@ NhlErrGetMsg
  */
 NhlErrorTypes
 NhlErrClearMsgs
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void
 )
@@ -925,6 +1690,35 @@ NhlErrClearMsgs
 }
 
 /*
+ * Function:	nhl_ferrclearmsgs
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_ferrclearmsgs,NHL_FERRCLEARMSGS)
+#if	NhlNeedProto
+(
+	int	*ierr
+)
+#else
+(ierr)
+	int	*ierr;
+#endif
+{
+	*ierr = NhlErrClearMsgs();
+
+	return;
+}
+
+/*
  * Function:	NhlErrAddTable
  *
  * Description:	This function adds an error msg table to the error object.
@@ -944,7 +1738,7 @@ NhlErrClearMsgs
  */
 NhlErrorTypes
 NhlErrAddTable
-#if	__STDC__
+#if	NhlNeedProto
 (
 	int		start,		/* starting number		*/
 	int		tlen,		/* table length			*/
@@ -1037,7 +1831,7 @@ NhlErrAddTable
  */
 char *
 NhlErrSPrintMsg
-#if	__STDC__
+#if	NhlNeedProto
 (
 	char		*buffer,	/* buffer to print message to	*/
 	Const NhlErrMsg	*msg		/* message to print		*/
@@ -1051,13 +1845,13 @@ NhlErrSPrintMsg
 	char tbuf[MAXERRMSGLEN];
 
 	if(msg->severity == NhlNOERROR)
-		strcpy(buffer,"NhlNOERROR");
+		strcpy(buffer,"noerror");
 	else if(msg->severity == NhlINFO)
-		strcpy(buffer,"NhlINFO");
+		strcpy(buffer,"info");
 	else if(msg->severity == NhlWARNING)
-		strcpy(buffer,"NhlWARNING");
+		strcpy(buffer,"warning");
 	else
-		strcpy(buffer,"NhlFATAL");
+		strcpy(buffer,"fatal");
 	
 	if((msg->line > 0) && (msg->fname != NULL)){
 		sprintf(tbuf,":[\"%s\":%d]",msg->fname,msg->line);
@@ -1083,6 +1877,50 @@ NhlErrSPrintMsg
 }
 
 /*
+ * Function:	nhl_ferrsprintmsg
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_ferrsprintmsg,NHL_FERRSPRINTMSG)
+#if	NhlNeedProto
+(
+	_NhlFString	fbuffer,
+	int		*fbuffer_len,
+	int		*msg_num
+)
+#else
+(fbuffer,fbuffer_len,msg_num)
+	_NhlFString	fbuffer;
+	int		*fbuffer_len;
+	int		*msg_num;
+#endif
+{
+	char		tbuf[MAXERRMSGLEN];
+	char		*msgstr;
+	Const NhlErrMsg	*msg;
+	NhlErrorTypes	ret;
+
+	ret = NhlErrGetMsg(*msg_num,&msg);
+
+	if(ret < NhlWARNING)
+		msgstr = NULL;
+	else
+		msgstr = NhlErrSPrintMsg(tbuf,msg);
+
+	_NhlCstrToFstr(fbuffer,*fbuffer_len,msgstr);
+
+	return;
+}
+
+/*
  * Function:	NhlErrFPrintMsg
  *
  * Description:	This function takes the given error msg and formats it for
@@ -1101,7 +1939,7 @@ NhlErrSPrintMsg
  */
 Const char *
 NhlErrFPrintMsg
-#if	__STDC__
+#if	NhlNeedProto
 (
 	FILE		*fp,	/* file to print to	*/
 	Const NhlErrMsg	*msg	/* message to print	*/
@@ -1114,7 +1952,8 @@ NhlErrFPrintMsg
 {
 	static char tbuf[MAXERRMSGLEN];
 
-	fprintf(fp,"%s\n\r",NhlErrSPrintMsg(tbuf,msg));
+	if(fprintf(fp,"%s\n\r",NhlErrSPrintMsg(tbuf,msg)) < 0)
+		fprintf(stderr,"Unable to print Error Messages???");
 	fflush(fp);
 
 	return tbuf;

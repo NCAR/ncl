@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.c,v 1.5 1994-01-27 21:24:14 boote Exp $
+ *      $Id: LogLinPlot.c,v 1.6 1994-05-12 23:51:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -468,7 +468,7 @@ static NhlErrorTypes SetUpTransObj
 		sprintf(buffer,"%s",llnew->base.name);
 		strcat(buffer,".Trans");
 
-		subret = _NhlCreateChild(&tmpid,buffer,
+		subret = _NhlVACreateChild(&tmpid,buffer,
 					 NhllogLinTransObjLayerClass,
 					 (NhlLayer) llnew, NULL);
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.5 1994-05-05 18:17:01 ethan Exp $
+ *      $Id: NcgmWorkstation.c,v 1.6 1994-05-12 23:51:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -134,6 +134,32 @@ NhlNcgmWorkstationLayerClassRec NhlncgmWorkstationLayerClassRec = {
 };
 
 NhlLayerClass NhlncgmWorkstationLayerClass = (NhlLayerClass)&NhlncgmWorkstationLayerClassRec;
+
+/*
+ * Function:	nhlfncgmworkstationclass
+ *
+ * Description:	fortran ref to this class
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global Fortran
+ * Returns:	NhlLayerClass
+ * Side Effect:	
+ */
+NhlLayerClass
+_NHLCALLF(nhlfncgmworkstationclass,NHLFNCGMWORKSTATIONCLASS)
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	return NhlncgmWorkstationLayerClass;
+}
 
 
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.4 1994-05-05 18:17:43 ethan Exp $
+ *      $Id: XWorkstation.c,v 1.5 1994-05-12 23:53:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -215,7 +215,31 @@ NhlXWorkstationLayerClassRec NhlxWorkstationLayerClassRec = {
 NhlLayerClass NhlxWorkstationLayerClass = (NhlLayerClass)
 						&NhlxWorkstationLayerClassRec;
 
-
+/*
+ * Function:	nhlfxworkstationclass
+ *
+ * Description:	Fortran ref function for xwork class.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global Fortran
+ * Returns:	NhlLayerClass
+ * Side Effect:	
+ */
+NhlLayerClass
+_NHLCALLF(nhlfxworkstationclass,NHLFXWORKSTATIONCLASS)
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	return NhlxWorkstationLayerClass;
+}
 
 /*
  * Function:	XWorkstationInitialize

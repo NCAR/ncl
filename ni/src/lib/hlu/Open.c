@@ -1,5 +1,5 @@
 /*
- *      $Id: Open.c,v 1.6 1994-04-28 23:06:47 dbrown Exp $
+ *      $Id: Open.c,v 1.7 1994-05-12 23:51:57 boote Exp $
  */
 /************************************************************************
 *									*
@@ -60,7 +60,7 @@ static void _NhlOpen
 	_NhlInitResDatabase();
 
 	/* Initialize Error handling */
-	_NhlInitError();
+	_NhlInitError(init_type);
 	_NhlInitRLList();
 	_NhlInitGetValues();
 	_NhlInitWorkspace();

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.13 1994-05-05 18:17:51 ethan Exp $
+ *      $Id: hlu.c,v 1.14 1994-05-12 23:53:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -908,7 +908,7 @@ NhlDOCTAG(NhlSetSArg)
 /*VARARGS2*/
 void
 NhlSetSArg
-#if	NeedVarArgProto
+#if	NhlNeedVarArgProto
 (
 	NhlSArg		*arg,		/* arg to set		*/
 	NhlString	resname,	/* resource to set	*/
@@ -993,7 +993,7 @@ _NhlSArgToSetArgList
 /*VARARGS2*/
 void
 NhlSetGArg
-#if	NeedVarArgProto
+#if	NhlNeedVarArgProto
 (
 	NhlGArg		*arg,		/* arg to set		*/
 	NhlString	resname,	/* resource to set	*/
@@ -1281,6 +1281,48 @@ _NhlCopyGenArray
 {
 	return _NhlCreateGenArray(gen->data,NrmQuarkToString(gen->typeQ),
 		gen->size,gen->num_dimensions,gen->len_dimensions,copy_data);
+}
+
+/*
+ * Function:	_NhlMyGenArray
+ *
+ * Description:	This function takes a GenArray, and returns one.  The one
+ *		returned must own all of it's memory.  It is allowed to
+ *		take ownership of the data from the original one instead
+ *		of copying, if the original GenArray owns the data - otherwise
+ *		it has to copy the data.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlGenArray _NhlMyGenArray
+#if	NhlNeedProto
+(
+	NhlGenArray	ogen
+)
+#else
+(ogen)
+	NhlGenArray	ogen;
+#endif
+{
+	if(ogen->my_data){
+		NhlGenArray gen = _NhlCopyGenArray(ogen,False);
+
+		if(!gen)
+			return NULL;
+
+		ogen->my_data = False;
+		gen->my_data = True;
+
+		return gen;
+	}
+
+	return _NhlCopyGenArray(ogen,True);
 }
 
 /*

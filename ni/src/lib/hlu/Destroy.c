@@ -1,5 +1,5 @@
 /*
- *      $Id: Destroy.c,v 1.5 1994-02-18 02:54:13 boote Exp $
+ *      $Id: Destroy.c,v 1.6 1994-05-12 23:51:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -147,6 +147,35 @@ NhlDestroy
 	(void)NhlFree(l);
 
 	return MIN(ret,lret);
+}
+
+/*
+ * Function:	nhl_fdestroy
+ *
+ * Description:	Fortran called destroy func
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_fdestroy,NHL_FDESTROY)
+#if	__STDC__
+(
+	int	*id_obj,
+	int	*err_ret
+)
+#else
+(id_obj,err_ret)
+	int	*id_obj;
+	int	*err_ret;
+#endif
+{
+	*err_ret = NhlDestroy(*id_obj);
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.6 1994-05-05 18:16:58 ethan Exp $
+ *      $Id: MultiText.c,v 1.7 1994-05-12 23:51:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -374,7 +374,7 @@ MultiTextInitialize
 	strcpy(name,new->base.name);
 	strcat(name,"-TxtItm");
 
-	ret = _NhlCreateChild(&mtnew->multitext.text_object,name,
+	ret = _NhlVACreateChild(&mtnew->multitext.text_object,name,
 						NhltextItemLayerClass,new,
 		NhlNtxAngleF,		mtnew->multitext.angle,
 		NhlNtxFont,		mtnew->multitext.font,
