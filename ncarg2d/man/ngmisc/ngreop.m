@@ -4,7 +4,7 @@
 .SH NAME
 NGREOP - reopen an existing NCAR Graphics metafile for appending.
 .SH SYNOPSIS
-CALL NGREOP(WKID,   CONID,  ITYPE, FNAME, IOPT, IAT, RAT,
+CALL NGREOP(WKID, CONID, ITYPE, FNAME, IOPT, IAT, RAT,
 .br
             NCOLRS, NSTART, CTAB)
 .SH C-BINDING SYNOPSIS
@@ -43,6 +43,9 @@ flushed to the metafile.
 .IP "              = 2" 20
 reestablish the color table and GKS state and flush the GKS state 
 values to the metafile.
+.IP "              = 3" 20
+reestablish the color table and flush the current GKS state values to the
+metafile (not the values in IAT and RAT).  values to the metafile.
 .IP "                 " 12
 .sp
 If IOPT equals 1 or 2, then IAT and RAT must be supplied, otherwise not.
@@ -106,7 +109,8 @@ NCOLRS = 3 and NSTART = 4, then the color values defined in CTAB would
 be used to define color indices 4, 5, and 6.
 .IP CTAB 12
 (a two-dimensional input array of type REAL dimensioned CTAB(3,NCOLRS) )
-that specifies a color table used to initialize the reopened
+that specifies a color table used to initialize the reopened metafile.
+This color table does not
 necessarily have to agree with the color table in effect when the 
 original metafile was created.
 .SH USAGE
@@ -158,8 +162,7 @@ Online:
 ngmftc(3NCARG),
 ngsrat(3NCARG),
 .sp
-Online:
-http://ngwww.ucar.edu/ngdoc/ng4.0.1/gks/gkshome.html
+Online URL:  http://ngwww.ucar.edu/ngdoc/ng4.1/gks/gkshome.html
 .SH COPYRIGHT
 Copyright (C) 1987-1996
 .br

@@ -44,9 +44,10 @@ ngseti,
 nggeti,
 ncarg_cbind.
 .sp
+Online URL:  http://ngwww.ucar.edu/ngdoc/ng4.1/gks/gkshome.html
+.sp
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version;
-User's Guide for NCAR GKS-0A Graphics
 .SH COPYRIGHT
 Copyright (C) 1987-1996
 .br

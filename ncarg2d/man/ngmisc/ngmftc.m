@@ -39,7 +39,7 @@ at the time of the reopen with NGREOP, see the documenation for
 NGSRAT.
 .sp
 If NGMFTC is used and NGREOP is not subsequently invoked to reopen
-the file so that it can be terminated normally in the dame job step, 
+the file so that it can be terminated normally in the same job step, 
 then an improperly terminated metafile will result from the temporary close.
 .SH EXAMPLES
 Assuming that an NCGM workstation, with workstation identifier 1, is open,
@@ -66,8 +66,9 @@ Online:
 ngsrat(3NCARG),
 ngreop(3NCARG),
 .sp
+Online URL:  http://ngwww.ucar.edu/ngdoc/ng4.1/gks/gkshome.html
+.sp
 Hardcopy:
-User's Guide for NCAR GKS-0A Graphics
 .SH COPYRIGHT
 Copyright (C) 1987-1996
 .br

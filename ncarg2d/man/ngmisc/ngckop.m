@@ -32,7 +32,7 @@ and ncarg_c, preferably in that order.  To use c_ngdots, load the
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
 ncarg_c, preferably in that order.
 .SH SEE ALSO
-Online URL:
+Online URL: http://ngwww.ucar.edu/ngdoc/ng4.1/gks/gkshome.html
 .SH COPYRIGHT
 Copyright (C) 1987-1996
 .br

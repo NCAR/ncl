@@ -80,9 +80,10 @@ points(3NCARG),
 set(3NCARG),
 ncarg_cbind(3NCARG)
 .sp
+Online URL: http://ngwww.ucar.edu/ngdoc/ng4.1/gks/gkshome.html
+.sp
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version;
-User's Guide for NCAR GKS-0A Graphics;
 "The Use of X/Y Coordinates in NCAR Graphics" SCD User Document
 .SH COPYRIGHT
 Copyright (C) 1987-1996

@@ -93,10 +93,11 @@ gclrwk(3NCARG),
 gupwk(3NCARG),
 ncarg_cbind(3NCARG)
 .sp
+Online URL:  http://ngwww.ucar.edu/ngdoc/ng4.1/gks/gkshome.html
+.sp
 Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial;
 NCAR Graphics Fundamentals, UNIX Version;
-User's Guide for NCAR GKS-0A Graphics
 .SH COPYRIGHT
 Copyright (C) 1987-1996
 .br
