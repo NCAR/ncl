@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.15 1993-10-19 17:44:16 boote Exp $
+#	$Id: yMakefile,v 1.16 2002-12-11 18:23:38 haley Exp $
 #
 #	Makefile for rasview
 #
@@ -9,6 +9,10 @@ MYNAME		= rasview
 
 SRCS	= rasdraw.c rasview.c
 OBJS	= rasdraw.o rasview.o
+
+#if defined(linux)
+EXTRA_CDEFINES = -D_BSD_SOURCE
+#endif
 
 PROG_LIBS	=	$(NCARGRASLIB) $(NCARGCLIB)
 DEPLIBS		=	$(DEPNCARGRASLIB) $(DEPNCARGCLIB)
