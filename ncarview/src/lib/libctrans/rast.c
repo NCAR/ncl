@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.30 1993-05-10 19:05:39 clyne Exp $
+ *	$Id: rast.c,v 1.31 1993-06-25 21:13:06 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -73,6 +73,9 @@ static	Option	raster_opts[] = {
 	NULL
 	}
 };
+
+static	CoordRect	rasDevExtent;	/* device extents		*/
+static	CoordModifier	rasCoordMod = { 0, 0, 1.0, 1.0 };
 
 RasColrTab	colorTab;	/* the color table			*/
 
@@ -440,17 +443,17 @@ int	Ras_BegMF(c)
 CGMC *c;
 {
 
-	CoordRect	dev_extent;
-	CoordModifier	coord_mod;
 	int	width, height;
 	int	encoding;
-
 	int	ras_argc;
 	char	*ras_argv[10];
+
+	extern	int	commHatchScaleFactor;
 
 	int	status = 0;
 
 	startedDrawing = FALSE;
+
 	/*
 	 *      parse raster specific command line args
 	 *      (currently only resolution accepted       )
@@ -492,18 +495,9 @@ CGMC *c;
 	/*
 	 * find dimensions of buffer for rasterization
 	 */
-	get_resolution(&dev_extent, rast_opts, devices[currdev].name);
-	width = ABS(dev_extent.llx - dev_extent.urx) + 1;
-	height = ABS(dev_extent.lly - dev_extent.ury) + 1;
+	get_resolution(&rasDevExtent, rast_opts, devices[currdev].name);
 
 	
-	/*
-	 * 	Init translation values and the formating routines
-	 */
-	coord_mod.x_off = 0;
-	coord_mod.y_off = 0;
-	coord_mod.x_scale = 1.0;
-	coord_mod.y_scale = 1.0;
 
 	/*
 	 * set device viewport specification
@@ -543,13 +537,7 @@ CGMC *c;
 		}
 	}
 
-	transinit(&dev_extent, coord_mod, TRUE);
 
-	/*
-	 * initialize the software fill module. This needs to
-	 * be initialized every time the window changes sizes
-	 */
-	if (initSoftSim(0, width-1, 0, height-1) < 0) return(-1);
 
 	/*
 	 * tweek soft fill option to do software filling 
@@ -558,6 +546,8 @@ CGMC *c;
 
 	init_color_tab();
 
+	width = ABS(rasDevExtent.llx - rasDevExtent.urx) + 1;
+	height = ABS(rasDevExtent.lly - rasDevExtent.ury) + 1;
 
 	/*
 	 * create the raster buffer
@@ -578,6 +568,8 @@ CGMC *c;
 	 * clear the grid
 	 */
 	clear_grid(rastGrid);
+
+	commHatchScaleFactor = 4;
 
 	deviceIsInit = TRUE;
 	return (status);
@@ -641,6 +633,24 @@ CGMC *c;
 int	Ras_BegPicBody(c)
 CGMC *c;
 {
+
+	if (VDC_EXTENT_DAMAGE) {
+		int	width, height;
+
+		width = ABS(rasDevExtent.llx - rasDevExtent.urx) + 1;
+		height = ABS(rasDevExtent.lly - rasDevExtent.ury) + 1;
+
+		transinit(&rasDevExtent, rasCoordMod, TRUE);
+
+		/*
+		 * initialize the software fill module. This needs to
+		 * be initialized every time the window changes sizes
+		 */
+		if (initSoftSim(0, width-1, 0, height-1) < 0) return(-1);
+
+		VDC_EXTENT_DAMAGE = FALSE;
+	}
+
 	startedDrawing = FALSE;
 	return (0);
 }

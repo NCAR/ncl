@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.38 1993-05-13 19:49:32 clyne Exp $
+ *	$Id: gcap.c,v 1.39 1993-06-25 21:13:03 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -107,14 +107,7 @@ int	BegMF(c)
 CGMC *c;
 {
 
-	CoordRect	dev_extent;
-	CoordModifier	coord_mod;
 	char    *tty_in = "/dev/tty";
-
-
-	extern	int	commFillScaleFactor;
-	extern	int	commHatchScaleFactor;
-
 	int	status = 0;
 
 	startedDrawing = FALSE;
@@ -138,21 +131,10 @@ CGMC *c;
 		return(-1);
 	}
 	
-	/*
-	 * 	Init translation values and the formating routines
-	 */
-	dev_extent.llx = LOWER_LEFT_X;
-	dev_extent.lly = LOWER_LEFT_Y;
-	dev_extent.ury = UPPER_RIGHT_Y;
-	dev_extent.urx = UPPER_RIGHT_X;
-
-	coord_mod.x_off = XOFFSET;
-	coord_mod.y_off = YOFFSET;
-	coord_mod.x_scale = XSCALE;
-	coord_mod.y_scale = YSCALE;
 
 
 	doSimulateBG = gcap_opts.sim_bg;
+	
 	/*
 	 * set device viewport specification
 	 */
@@ -198,53 +180,8 @@ CGMC *c;
 		);
 	}
 
-	transinit(&dev_extent, coord_mod, TRUE);
 
 	formatinit();
-
-	/*
-	 *	if this device has raster instructions then init the module
-	 */
-	if (RASTER_HOR_START_SIZE > 0) {
-		dev_extent.llx = RASTER_LOWER_LEFT_X;
-		dev_extent.lly = RASTER_LOWER_LEFT_Y;
-		dev_extent.urx = RASTER_UPPER_RIGHT_X;
-		dev_extent.ury = RASTER_UPPER_RIGHT_Y;
-
-		coord_mod.x_off = RASTER_XOFFSET;
-		coord_mod.y_off = RASTER_YOFFSET;
-		coord_mod.x_scale = RASTER_XSCALE;
-		coord_mod.y_scale = RASTER_YSCALE;
-		transinit(&dev_extent, coord_mod, FALSE);
-
-		(void) rasterformatinit();
-	}
-
-
-	
-	/*
-	 * if device is incapable of drawing filled polygons or they
-	 * are too big than use software simulation
-	 */
-	commFillScaleFactor = YScale(POLY_SIM_SPACING) + 1;
-	commFillScaleFactor = commFillScaleFactor == 0? 1 : commFillScaleFactor;
-
-	/*
-	 * divide hatch spacing by 2 to make things consistent with 
-	 * ftrans output
-	 */
-	commHatchScaleFactor = YScale(POLY_HATCH_SPACE) / 2;
-	commHatchScaleFactor = commHatchScaleFactor==0?1: commHatchScaleFactor;
-	
-	if (initSoftSim(
-		(DCtype) XConvert(XMIN),
-		(DCtype) XConvert(XMAX),
-		(DCtype) YConvert(YMIN),
-		(DCtype) YConvert(YMAX)
-		) < 0) {
-
-		return(-1);
-	}
 
 
 	/*
@@ -428,6 +365,73 @@ CGMC *c;
 int	BegPicBody(c)
 CGMC *c;
 {
+	CoordRect	dev_extent;
+	CoordModifier	coord_mod;
+
+	extern	int	commFillScaleFactor;
+	extern	int	commHatchScaleFactor;
+
+	if (VDC_EXTENT_DAMAGE) {
+		/*
+		 * 	Init translation values and the formating routines
+		 */
+		dev_extent.llx = LOWER_LEFT_X;
+		dev_extent.lly = LOWER_LEFT_Y;
+		dev_extent.ury = UPPER_RIGHT_Y;
+		dev_extent.urx = UPPER_RIGHT_X;
+		coord_mod.x_off = XOFFSET;
+		coord_mod.y_off = YOFFSET;
+		coord_mod.x_scale = XSCALE;
+		coord_mod.y_scale = YSCALE;
+
+		transinit(&dev_extent, coord_mod, TRUE);
+		/*
+		 *	if this device has raster instructions then 
+		 *	init the module
+		 */
+		if (RASTER_HOR_START_SIZE > 0) {
+			dev_extent.llx = RASTER_LOWER_LEFT_X;
+			dev_extent.lly = RASTER_LOWER_LEFT_Y;
+			dev_extent.urx = RASTER_UPPER_RIGHT_X;
+			dev_extent.ury = RASTER_UPPER_RIGHT_Y;
+
+			coord_mod.x_off = RASTER_XOFFSET;
+			coord_mod.y_off = RASTER_YOFFSET;
+			coord_mod.x_scale = RASTER_XSCALE;
+			coord_mod.y_scale = RASTER_YSCALE;
+			transinit(&dev_extent, coord_mod, FALSE);
+
+			(void) rasterformatinit();
+		}
+
+		/*
+		 * if device is incapable of drawing filled polygons or they
+		 * are too big than use software simulation
+		 */
+		commFillScaleFactor = YScale(POLY_SIM_SPACING) + 1;
+		commFillScaleFactor = commFillScaleFactor == 0 ? 
+						1 : commFillScaleFactor;
+
+		/*
+		 * divide hatch spacing by 2 to make things consistent with 
+		 * ftrans output
+		 */
+		commHatchScaleFactor = YScale(POLY_HATCH_SPACE) / 2;
+		commHatchScaleFactor = commHatchScaleFactor==0 ?
+						1 : commHatchScaleFactor;
+		if (initSoftSim(
+			(DCtype) XConvert(XMIN),
+			(DCtype) XConvert(XMAX),
+			(DCtype) YConvert(YMIN),
+			(DCtype) YConvert(YMAX)
+			) < 0) {
+
+		return(-1);
+		}
+
+		VDC_EXTENT_DAMAGE = FALSE;
+	}
+
 	startedDrawing = FALSE;
 	return (0);
 }

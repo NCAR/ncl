@@ -1,5 +1,5 @@
 /*
- *	$Id: default.h,v 1.12 1993-01-08 21:17:56 clyne Exp $
+ *	$Id: default.h,v 1.13 1993-06-25 21:12:59 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -96,7 +96,8 @@ typedef struct {
 	Itype 	real_exp;   	/*REAL PRECISION.exponent		*/	
 	Itype 	real_man;   	/*REAL PRECISION.mantisa		*/	
 
-	long	xmin,ymin,xmax,ymax;
+	long	xmin,ymin,xmax,ymax;	/* VDC EXTENT		*/
+	boolean	vdc_extent_damage;	
 	long	clipxmin,clipymin,clipxmax,clipymax;
 	boolean clipflag;
 	boolean	clip_damage;	/* CLIP damage	*/
@@ -212,9 +213,10 @@ static DEFAULTTABLE	defaulttable = {
 
 	1,16,16,			/*REAL PRECISION		*/	
 
-	0,0,32767,32767,		/* VDC Extent defaults */
-	0,0,32767,32767,		/* Clipping defaults */
-	FALSE,				/* Clip flag default False */
+	0,0,32767,32767,		/* VDC Extent defaults 		*/
+	TRUE,				/* VDC extent damage		*/
+	0,0,32767,32767,		/* Clipping defaults 		*/
+	FALSE,				/* Clip flag default False 	*/
 	FALSE,				/* clip damage 			*/
 
 	16,
@@ -359,6 +361,7 @@ extern	ColorLUTable		*clut;
 #define YMIN	 dt->ymin
 #define XMAX	 dt->xmax
 #define YMAX	 dt->ymax
+#define	VDC_EXTENT_DAMAGE	dt->vdc_extent_damage
 
 #define CLIPXMIN   dt->clipxmin
 #define CLIPYMIN   dt->clipymin
@@ -454,6 +457,7 @@ typedef	struct	{
 	boolean		text_f_ind_access;
 	boolean		colour_table_access;
 	boolean		text_att_access;
+	boolean		vdc_extent_access;
 } ACCESS_TABLE;
 
 ACCESS_TABLE	access_table = {
@@ -468,6 +472,7 @@ ACCESS_TABLE	access_table = {
 	TRUE,
 	TRUE,
 	FALSE,
+	TRUE,
 	TRUE,
 	TRUE
 	};
@@ -487,6 +492,7 @@ ACCESS_TABLE	*at = &access_table;
 #define	TEXT_F_IND_ACCESS	at->text_f_ind_access
 #define	COLOUR_TABLE_ACCESS	at->colour_table_access
 #define	TEXT_ATT_ACCESS		at->text_att_access
+#define	VDC_EXTENT_ACCESS	at->vdc_extent_access
 	
 
 #endif

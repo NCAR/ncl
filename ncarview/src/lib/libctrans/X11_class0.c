@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.30 1993-04-04 20:50:34 clyne Exp $
+ *	$Id: X11_class0.c,v 1.31 1993-06-25 21:12:53 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -686,8 +686,10 @@ CGMC *c;
 		return(-1);
 	}
 
-	if (dev.height != xwa.height || dev.width != dev.width 
-						|| DevWinChanged()){
+	if (dev.height != xwa.height || 
+		dev.width != dev.width || 
+		DevWinChanged() ||
+		VDC_EXTENT_DAMAGE) {
 
 		dev.height = xwa.height;
 		dev.width = xwa.width;

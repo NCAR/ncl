@@ -1,5 +1,5 @@
 /*
- *	$Id: default.c,v 1.21 1993-06-18 18:16:27 clyne Exp $
+ *	$Id: default.c,v 1.22 1993-06-25 21:12:56 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -191,6 +191,7 @@ boolean		value;
 		TEXT_F_IND_DAMAGE = TEXT_F_IND_ACCESS;
 		COLOUR_TABLE_DAMAGE = COLOUR_TABLE_ACCESS;
 		TEXT_ATT_DAMAGE = TEXT_ATT_ACCESS;
+		VDC_EXTENT_DAMAGE = VDC_EXTENT_ACCESS;
 
 		/*	clear access list for new frame	*/
 		LINE_TYPE_ACCESS	= 
@@ -198,14 +199,15 @@ boolean		value;
 		LINE_COLOUR_ACCESS	=
 		MARKER_COLOUR_ACCESS	= 
 		FILL_COLOUR_ACCESS	= 
-		INT_STYLE_DAMAGE	=
+		INT_STYLE_ACCESS	=
 		CLIP_ACCESS		= 
 		MARKER_TYPE_ACCESS	=
 		MARKER_SIZE_ACCESS	= 
 		BACKCOLR_ACCESS		= 
 		TEXT_F_IND_ACCESS	=
 		COLOUR_TABLE_ACCESS	= 
-		TEXT_ATT_ACCESS		= FALSE;
+		TEXT_ATT_ACCESS		= 
+		VDC_EXTENT_ACCESS	= FALSE;
 
 	} else {
 		dt = &defaulttable;
@@ -540,6 +542,8 @@ CGMC *c;
 	YMAX = c->p[1].y;
 
 	dt->char_height = (VDCtype) 0.01*(YMAX - YMIN);
+
+	dt->vdc_extent_damage = at->vdc_extent_access = TRUE;
 
 	return (0);
 }
