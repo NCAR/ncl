@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.h,v 1.11 1993-01-19 19:36:51 clyne Exp $
+ *	$Id: devices.h,v 1.12 1995-05-03 22:41:40 clyne Exp $
  */
 typedef struct RasterDeviceStruct {
 	char			*name;
@@ -128,6 +128,10 @@ extern int	BinaryClose();
 extern int	BinaryPrintInfo();
 #endif
 
+#ifdef BuildRasterYUV
+#include "yuv.h"
+#endif
+
 static RasterDevice rasdevices[] = {
 {
 	"cleartext", "Clear Text (output only)",
@@ -212,12 +216,6 @@ static RasterDevice rasdevices[] = {
 	AbekasRead, AbekasWrite, AbekasClose, AbekasPrintInfo,
 	ImageCount_
 },
-{
-	"yuv", "Abekas YUV",
-	AbekasOpen, AbekasOpenWrite, 
-	AbekasRead, AbekasWrite, AbekasClose, AbekasPrintInfo,
-	ImageCount_
-},
 #endif
 #ifdef BuildRasterNetcdf
 {
@@ -232,6 +230,14 @@ static RasterDevice rasdevices[] = {
 	"bin", "Generic Binary",
 	BinaryOpen, BinaryOpenWrite, 
 	BinaryRead, BinaryWrite, BinaryClose, BinaryPrintInfo,
+	ImageCount_
+},
+#endif
+#ifdef BuildRasterYUV
+{
+	"yuv", "YUV",
+	YUVOpen, YUVOpenWrite, 
+	YUVRead, YUVWrite, YUVClose, YUVPrintInfo,
 	ImageCount_
 }
 #endif
