@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.24 1997-08-01 21:02:29 ethan Exp $
+ *      $Id: Symbol.h,v 1.25 1997-08-04 17:58:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -364,6 +364,11 @@ int    *num_names
 );
 
 extern NclQuark *_NclGetProcFuncSymNames(
+#if     NhlNeedProto
+int    *num_names
+#endif
+);
+extern NhlClass *_NclGetHLUClassPtrs(
 #if     NhlNeedProto
 int    *num_names
 #endif

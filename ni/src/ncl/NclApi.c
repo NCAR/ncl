@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.45 1997-08-01 21:02:24 ethan Exp $
+ *      $Id: NclApi.c,v 1.46 1997-08-04 17:58:28 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -98,7 +98,7 @@ NclHLUStruct *ptr;
 			return(NhlWARNING);
 		}
 	}
-	
+	return(NhlNOERROR);	
 }
 
 
@@ -370,7 +370,7 @@ int	*num_names;
 	return(_NclGetVarSymNames(num_names));	
 }
 NhlClass *NclGetHLUClassPtrs
-if     NhlNeedProto
+#if     NhlNeedProto
 (int    *num_names)
 #else
 (num_names)

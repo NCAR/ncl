@@ -80,7 +80,7 @@ int arg;
 #endif
 {
 	char prmpt[10];
-	sprintf(prmpt,"ncl %d>",arg);
+	sprintf(prmpt,"ncl %d> ",arg);
 	if(ncl_input_buffer.using_buffer) {
 		if(ncl_input_buffer.buffer != NULL)
 			NclFree(ncl_input_buffer.buffer); 
