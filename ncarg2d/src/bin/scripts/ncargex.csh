@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.25 1993-03-25 00:09:51 haley Exp $
+#   $Id: ncargex.csh,v 1.26 1993-03-29 20:54:49 haley Exp $
 #
 
 #********************#
@@ -263,7 +263,7 @@ set labelbar_list = ($ex_labelbar $tst_labelbar $ttr_labelbar $fnd_labelbar)
 set ex_ngmisc
 set tst_ngmisc
 set ttr_ngmisc
-set fnd_ngmisc = (fnmngdts fnmwsym)
+set fnd_ngmisc = (fngngdts fngwsym)
 set ngmisc_list = ($ex_ngmisc $tst_ngmisc $ttr_ngmisc $fnd_ngmisc)
 
 #***********************#
