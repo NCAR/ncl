@@ -130,6 +130,7 @@ NhlDummyWorkstationClassRec NhldummyWorkstationClassRec = {
 /* layer_clear			*/	NULL
         },
 	{
+/* current_wks_count	*/	NhlInheritCurrentWksCount,                
 /* def_background	*/	{0.0,0.0,0.0},
 /* pal			*/	NhlInheritPalette,
 /* open_work		*/	DummyWorkstationOpen,
