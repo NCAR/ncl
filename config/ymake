@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.4 1993-02-11 00:29:27 clyne Exp $
+#	$Id: ymake,v 1.5 1993-02-20 00:16:29 clyne Exp $
 #
 ######################################################################
 #
@@ -98,7 +98,7 @@ set defines=($defines -D$hostname)
 #	Figure out what kind of system we are on. We need to know the OS
 #	and the machine architecture. 
 #
-set line = `$NCARG/config/uname -M -s`
+set line = `$NCARG/install/install/uname -M -s`
 if ($status != 0) then
 	echo "ymake : Unknown operating system"
 	exit 1
