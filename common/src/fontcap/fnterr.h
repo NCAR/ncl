@@ -1,0 +1,5 @@
+C
+C	$Id: fnterr.h,v 1.1 1997-01-24 21:59:53 haley Exp $
+C
+      COMMON /FNTERR/ ALLOK, EOFFL, INTERR, MAXINT
+      INTEGER         ALLOK, EOFFL, INTERR, MAXINT

@@ -1,17 +1,24 @@
 #
-#	$Id: yMakefile,v 1.6 1993-11-01 17:28:27 boote Exp $
+#	$Id: yMakefile,v 1.7 1997-01-24 21:59:56 haley Exp $
 #
 
 MYNAME	= fontcap
 
-GENERIC_SRCS = \
-	font1.fc font2.fc font3.fc font4.fc font5.fc \
-	font6.fc font7.fc font8.fc .fc font9.fc font10.fc \
-	font11.fc font12.fc font13.fc font14.fc font15.fc \
-	font16.fc font17.fc font18.fc font19.fc font20.fc \
-	font21.fc font22.fc font25.fc font26.fc font29.fc \
-	font30.fc font33.fc font34.fc font35.fc font36.fc \
-        font37.fc
+
+OBJECTS = \
+cfaamn.o  cfrdln.o  cfwrit.o  ffgttk.o  ffinfo.o  ffphol.o  ffppkt.o  ffprcf.o \
+ffprsa.o  fftbkd.o  fftkin.o  sffndc.o  sfgtin.o  sfgtkw.o  sfprcf.o  sfskbk.o \
+sftbkd.o
+
+SOURCES = \
+cfaamn.F  cfrdln.f  cfwrit.f  ffgttk.f  ffinfo.f  ffphol.f  ffppkt.f  ffprcf.f \
+ffprsa.f  fftbkd.f  fftkin.f  sffndc.f  sfgtin.f  sfgtkw.f  sfprcf.f  sfskbk.f \
+sftbkd.f
+
+FCPP_OBJS       = cfaamn.f
+
+PROG_LIBS	=	$(NCARGCLIB)
+DEPLIBS		=	$(DEPNCARGCLIB)
 
 FONTCAPS = \
 	font1 font2 font3 font4 font5 \
@@ -22,8 +29,10 @@ FONTCAPS = \
 	font30 font33 font34 font35 font36 \
         font37
 
+
+FortranProgram(fontc,$(OBJECTS),$(DEPLIBS))
 InstallTarget($(FONTCAPS),$(INSTALL_LIB),$(FONTCAPPATH))
-CleanFilesTarget($(FONTCAPS))
+CleanFilesTarget($(FONTCAPS) $(FCPP_OBJS))
 
 # Rule for processing fontcaps
 .SUFFIXES: .fc
@@ -31,3 +40,7 @@ CleanFilesTarget($(FONTCAPS))
 .fc:
 	@echo "	Processing fontcap $@"
 	@$(FONTC) $< $@
+
+
+
+
