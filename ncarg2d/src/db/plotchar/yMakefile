@@ -1,0 +1,19 @@
+#
+#	$Id: yMakefile,v 1.1 1995-07-07 19:47:59 kennison Exp $
+#
+
+MYNAME  = plotchar
+
+OBJECTS = pccchk.o pcdchk.o pcexcd.o pcwb15.o pcwbin.o pcwrda.o rwchinfl.o
+
+PROG_LIBS	= $(NCARGLIB) $(NCARGCLIB)
+DEPLIBS		= $(DEPNCARGLIB) $(DEPNCARGCLIB)
+
+FortranProgram(WritePlotcharData,$(OBJECTS),$(DEPLIBS))
+InstallTarget(PlotcharData,$(INSTALL_DB),$(DBPATH))
+CleanFilesTarget(PlotcharData)
+
+PlotcharData: WritePlotcharData pwritxc1 pwritxd1 pwritxc2 pwritxd2
+	-@$(RM) PlotcharData
+	@echo "Building the PWRITX database for PLOTCHAR"
+	@./WritePlotcharData
