@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.18 1995-12-19 20:39:25 boote Exp $
+ *      $Id: ScalarField.c,v 1.19 1996-03-26 01:36:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2767,8 +2767,8 @@ static NhlErrorTypes    ScalarFieldGetValues
 				if ((data = CopyData(sfp->data_max,resQ))
 				    == NULL)
 					return NhlFATAL;
-				typeQ = sfp->data_min->typeQ;
-				size = sfp->data_min->size;
+				typeQ = sfp->data_max->typeQ;
+				size = sfp->data_max->size;
 			}
 			else {
 				if (! converted) {
