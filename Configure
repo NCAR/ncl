@@ -1,105 +1,116 @@
 #!/bin/csh -f
-
 #
-# Establish defaults
+#      $Id: Configure,v 1.4 1994-04-08 04:13:56 boote Exp $
 #
+#########################################################################
+#									#
+#			   Copyright (C)  1994				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		Configure		
+#
+#	Author:		Jeff W. Boote
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Thu Apr 7 19:56:09 MDT 1994
+#
+#	Description:	I took pieces of the old configure script to
+#			build this one.
 
 onintr cleanup
 
-set unknown_system="GenericSV"
-set cpp="/lib/cpp"
-set installprompt="NCAR Graphics Configuration"
-set configfile="GenericBSD"
-set ncargversion=`cat version`
-set pwd=`pwd`
-
-if (! $?NCARG) then
-  echo "NCARG environment variable is not set."
-  exit 1
-endif
-
-if ("$NCARG" != "$pwd") then
-  echo "NCARG environment must be set to <$pwd>."
-  exit 1
-endif
+set makecmd = make
 
 set shell = $SHELL
-
 if ($shell:t != "csh") then
-  echo "Current shell must be csh."
-  exit 1
+	echo "Current shell must be csh."
+	exit 1
+endif
+
+set cmd = $0
+set cmddir = ${cmd:h}
+set cmdname = ${cmd:t}
+if (($cmddir != $cmdname) && ($cmddir != ".")) then
+	echo "Must be at top of NCARG source tree."
+	echo "cd to $cmddir and try again."
+	goto cleanup
+endif
+
+if (! -d config) then
+	echo "Where is the config subdir???"
+	echo "It should be at ./config"
+	goto cleanup
 endif
 
 if ($#argv > 0) then
-  while ($#argv)
-    switch($argv[1])
-    case "-v":
-      set verbose_option
-      breaksw
-    case "-ncar":
-      set ncarg_option
-      set ncarlocal
-      breaksw
-    default:
-      echo "Error: Unknown command-line argument."
-      exit 1
-      breaksw
-    endsw
-    shift
-  end
+	while ($#argv)
+		switch($argv[1])
+		case "-debug":
+			set verbose
+			breaksw
+		case "-v":
+			set verbose_option
+			breaksw
+		default:
+			echo "Error: Unknown command-line arguement."
+			exit 1
+			breaksw
+		endsw
+		shift
+	end
 endif
 
-
-set instDir = "$NCARG/install/install"
-set line = `$instDir/uname -M -s`
-set defines = "-D$line[1] -D$line[2]";
-cd config
-set line = `cc -E GetSystem $defines | grep SYSTEM_INCLUDE`
-set system=$line[3]
-cd ..
-
-set configpath="config/$system"
-if (! -e $configpath) then
-  echo "Error: Could not locate <$configpath>."
-  exit 1
+if (-e config/Site.local) then
+	echo "	*** WARNING:There is a previous configuration saved."
+	echo ""
+	echo "Overwrite existing configuration? (n)"
+	echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+	set answer=$<
+	if ("$answer" != "y") goto cleanup
 endif
 
-set bindir_line=`fgrep BINROOT $configpath`
-set libdir_line=`fgrep LIBROOT $configpath`
-set mandir_line=`fgrep MANROOT $configpath`
-set incdir_line=`fgrep INCROOT $configpath`
-set tmpdir_line=`fgrep TMPROOT $configpath`
-set loclib_line=`egrep \^LOCAL_LIB_SEARCH $configpath`
-set locincdir_line=`egrep \^LOCAL_INC_SEARCH $configpath`
-set xlib_stuff_line=`fgrep BuildXlibDependentCode $configpath`
-set xaw_stuff_line=`fgrep BuildAthenaApplications $configpath`
-set hdf_line=`fgrep BuildRasterHDF $configpath`
-set ncarlocal_line=`fgrep NCARLocal $configpath`
-set localconfig_line=`fgrep LocalConfig $configpath`
+echo "/* Default Config */" > config/Site.local
+echo "#define EmptySite" >> config/Site.local
 
-set bindir=$bindir_line[3]
-set libdir=$libdir_line[3]
-set mandir=$mandir_line[3]
-set incdir=$incdir_line[3]
-set tmpdir=$tmpdir_line[3]
-shift loclib_line
-shift loclib_line
-set loclib="$loclib_line"
-shift locincdir_line
-shift locincdir_line
-set locinc="$locincdir_line"
+echo ""
+echo "Building top-level Makefile to determine System defaults"
+echo ""
+$makecmd -f Makefile.ini me
+if ($status) then
+	echo "Unable to build Makefile - fix above errors and re-run."
+	goto cleanup
+endif
+echo ""
+echo "Makefile built, checking defaults..."
+echo ""
+echo ""
 
-if ("$xlib_stuff_line" != "") set buildxlibstuff
-if ("$xaw_stuff_line" != "") set buildxawbins
-if ("$hdf_line" != "") set buildhdf
-if ("$ncarlocal_line" != "") set ncarlocal
-if ("$localconfig_line" != "") set localconfig
-
-####################################################################
-#
-# Configuration procedure via question and answer
-#
-####################################################################
+set bindir=`$makecmd BROOT`
+echo -n "..."
+set libdir=`$makecmd LROOT`
+echo -n "..."
+set incdir=`$makecmd IROOT`
+echo -n "..."
+set mandir=`$makecmd MROOT`
+echo -n "..."
+set tmpdir=`$makecmd TROOT`
+echo -n "..."
+set loclib=`$makecmd LSEARCH`
+echo -n "..."
+set locinc=`$makecmd ISEARCH`
+echo -n "..."
+set buildxlibstuff=`$makecmd XSTUFF`
+echo -n "..."
+set buildhdf=`$makecmd HDFSTUFF`
+echo -n "..."
+set ncargversion=`$makecmd VERS`
+echo ""
+/bin/rm Makefile
+ln -s Makefile.ini Makefile
 
 QuestionAndAnswer:
 echo ""
@@ -110,10 +121,9 @@ if ($?verbose_option) then
   cat <<"EOF"
 
 	This question and answer session will allow you to configure
-	NCAR Graphics for installation. Each supported system (e.g.
-	DEC, Sun) has a unique configuration file and this procedure
-	provides you with a simple means of editing those parts that
-	may require change. This procedure will also check that the
+	NCAR Graphics for installation.  It creates a file "Site.local"
+	in the "config" directory that defines Site specific information.
+	This procedure will also check that the
 	directories specified are accessible and that the required
 	system support is available.
 
@@ -133,39 +143,6 @@ if ($?verbose_option) then
 	the other valid responses.
 
 "EOF"
-
-  echo -n "Enter Return to continue, or q(quit) > "
-  set answer=$<
-  if ("$answer" == "q") goto cleanup
-
-endif
-
-echo ""
-echo -n "        Your system configuration file is '$system'"
-if ($?localconfig) then
-  echo " (previously edited)."
-  else
-  echo "."
-endif
-
-if ($?verbose_option) then
-  echo ""
-  echo -n "Enter Return to continue, or q(quit) > "
-  set answer=$<
-  if ("$answer" == "q") goto cleanup
-endif
-
-if ("$system" == "SystemV") then
-  cat <<EOF
-
-	This configuration procedure is not familiar with your
-	system, so it has selected the default configuration file
-	called "$system". It is unlikely that you will get through
-	the installation procedure without having to make some
-	changes; you should refer to the Release Notes shipped with
-	this package.
-
-EOF
 
   echo -n "Enter Return to continue, or q(quit) > "
   set answer=$<
@@ -224,11 +201,8 @@ if ("$answer" != "") then
   set altered
 endif
 
-if ("$bindir:h" == "") then
-  set tail=""
-else
-  set tail="$bindir:t"
-endif
+set tail="$bindir:t"
+
 if ("$tail" != "bin") then
   echo ""
   echo "  *** Warning: <$bindir> does not end in 'bin'."
@@ -285,11 +259,7 @@ if ("$answer" != "") then
   set altered
 endif
 
-if ("$libdir:h" == "") then
-  set tail=""
-else
-  set tail="$libdir:t"
-endif
+set tail="$libdir:t"
 if ("$tail" != "lib") then
   echo ""
   echo "  *** Warning: <$libdir> does not end in 'lib'."
@@ -345,11 +315,7 @@ if ("$answer" != "") then
   set altered
 endif
 
-if ("$incdir:h" == "") then
-  set tail=""
-else
-  set tail="$incdir:t"
-endif
+set tail="$incdir:t"
 if ("$tail" != "include") then
   echo ""
   echo "  *** Warning: <$incdir> does not end in 'include'."
@@ -367,6 +333,7 @@ if (-d $incdir) then
   endif
 else
   set parent="$incdir:h"
+  if("$parent" == "") set parent="/"
   if (! -w "$parent") then
     echo "  *** Warning: <$parent> is not writable"
     echo "New directory name? (y)"
@@ -403,14 +370,11 @@ set answer=$<
 if ("$answer" == "q") goto cleanup
 if ("$answer" != "") then
   set mandir="$answer"
+  set newman
   set altered
 endif
 
-if ("$mandir:h" == "") then
-  set tail=""
-else
-  set tail="$mandir:t"
-endif
+set tail="$mandir:t"
 if ("$tail" != "man") then
   echo ""
   echo "  *** Warning: <$mandir> does not end in 'man'."
@@ -465,6 +429,7 @@ set answer=$<
 if ("$answer" == "q") goto cleanup
 if ("$answer" != "") then
   set tmpdir="$answer"
+  set newtmp
   set altered
 endif
 
@@ -521,70 +486,15 @@ endif
 # X stuff - ctrans/ictrans
 #
 echo ""
-echo -n "Build X support into ctrans/ictrans? "
-if ($?buildxlibstuff) then
-  echo "(y)"
-else
-  echo "(n)"
-endif
+echo "Build X support into ctrans/ictrans? ($buildxlibstuff)"
 echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
 set answer=$<
 if ("$answer" == "q") goto cleanup
 if ("$answer" != "") then
-  if ("$answer" == "y" ) then
-    if (! $?buildxlibstuff) then
-      set buildxlibstuff
-      set altered
-    endif
-  else if ("$answer" == "n") then
-    if ( $?buildxlibstuff) then
-      unset buildxlibstuff
-      set altered
-    endif
-  else 
-    unset buildxlibstuff
-    set altered
-  endif
-endif
-
-#
-# X stuff - idt/rasview/cgm_edit
-#
-if ($?verbose_option) then
-  cat <<"EOF"
-
-	In order to build the binaries "idt", "rasview", and
-	"cgm_edit", you need the basic X libraries as well as the
-	Athena Widget library (libXaw.a).  If you do not have all of
-	these libraries, then answer "n" to the next question."
-
-"EOF"
-endif
-
-echo ""
-echo -n "Build Athena applications? "
-if ($?buildxawbins) then
-  echo "(y)"
-else
-  echo "(n)"
-endif
-echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
-set answer=$<
-if ("$answer" == "q") goto cleanup
-if ("$answer" != "") then
-  if ("$answer" == "y" ) then
-    if (! $?buildxawbins) then
-      set buildxawbins
-      set altered
-    endif
-  else if ("$answer" == "n") then
-    if ( $?buildxawbins) then
-      unset buildxawbins
-      set altered
-    endif
-  else 
-    unset buildxawbins
-    set altered
+  if ("$answer" != "$buildxlibstuff") then
+     set buildxlibstuff = $answer
+     set newbuildxlibstuff
+     set altered
   endif
 endif
 
@@ -605,31 +515,15 @@ if ($?verbose_option) then
 endif
 
 echo ""
-echo -n "Build HDF support into raster library? "
-if ($?buildhdf) then
-  echo "(y)"
-else
-  echo "(n)"
-endif
+echo "Build HDF support into raster library? ($buildhdf)"
 echo "(requires the external library 'libdf.a') "
 echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
 set answer=$<
 if ("$answer" == "q") goto cleanup
-if ("$answer" != "") then
-  if ("$answer" == "y" ) then
-    if (! $?buildhdf) then
-      set buildhdf
-      set altered
-    endif
-  else if ("$answer" == "n") then
-    if ( $?buildhdf) then
-      unset buildhdf
-      set altered
-    endif
-  else 
-    unset buildhdf
-    set altered
-  endif
+if (("$answer" != "") && ("$answer" != "$buildhdf")) then
+	set buildhdf = $answer
+	set newbuildhdf
+        set altered
 endif
 
 
@@ -647,10 +541,7 @@ if ($?verbose_option) then
 "EOF"
 endif
 
-echo "$loclib" > foo1
-sed -e 's/-L//g' < foo1 > foo2
-set loclibdir = `cat foo2`
-/bin/rm foo1 foo2
+set loclibdir = `echo "$loclib" | sed -e 's/-L//g'`
 
 proc_loclibdir:
 echo ""
@@ -660,12 +551,11 @@ set answer=$<
 if ("$answer" == "q") goto cleanup
 if ("$answer" != "") then
   set loclibdir = "$answer"
+  set nloclib
   set altered
 endif
 if ("$loclibdir" != "") then
-  echo "$loclibdir" > foo
-  set libs=`cat foo`
-  /bin/rm foo
+  set libs = ($loclibdir:x)
   set newloclib=""
   while ($#libs > 0)
     if (! -d $libs[1]) then
@@ -696,10 +586,8 @@ if ($?verbose_option) then
 endif
 
 
-echo "$locinc" > foo1
-sed -e 's/-I//g' < foo1 > foo2
-set locincdir = `cat foo2`
-/bin/rm foo1 foo2
+
+set locincdir = `echo "$locinc" | sed -e 's/-I//g'`
 
 proc_locincdir:
 echo ""
@@ -709,12 +597,11 @@ set answer=$<
 if ("$answer" == "q") goto cleanup
 if ("$answer" != "") then
   set locincdir = "$answer"
+  set nlocinc
   set altered
 endif
 if ("$locincdir" != "") then
-  echo "$locincdir" > foo
-  set incs=`cat foo`
-  /bin/rm foo
+  set incs = ($locincdir:x)
   set newlocinc=""
   while ($#incs > 0)
     if (! -d $incs[1]) then
@@ -747,6 +634,7 @@ if ($libdir:h != $bindir:h || $libdir:h != $incdir:h || $bindir:h != $incdir:h )
 EOF
 	
 else
+    set commonroot = ($libdir:h)
     cat <<EOF
 
 	Since you specified to have the libraries, binaries, and
@@ -754,7 +642,7 @@ else
 	of NCAR Graphics will only need to set the following
 	environment variable:
 
-        setenv NCARG_ROOT $libdir:h
+        setenv NCARG_ROOT $commonroot
 
 EOF
 	
@@ -778,135 +666,80 @@ echo -n "Enter Return(default), y(yes), or q(quit) > "
 set answer=$<
 if ("$answer" == "q") goto cleanup
 
-if ("$answer" == "y" || "$answer" == "") then
-
-  if (! $?altered) then
-    echo ""
-    echo "  The configuration file was unchanged."
-    goto proc_install
-  endif
-
-  cd config
-  if (! -e $system.dist) then
-    if ($?localconfig) then
-      echo "  *** Warning: <$system> has been previously edited, but there is no backup"
-      else
-      echo ""
-      echo "  Making backup copy of original <$system> to <$system.dist>"
-      cp $system $system.dist
-    endif
-  endif
-
-  ed - $system <<EOF >&/dev/null
-.
-/^BINROOT/
-c
-BINROOT          = $bindir
-.
-/^LIBROOT/
-c
-LIBROOT          = $libdir
-.
-/^INCROOT/
-c
-INCROOT          = $incdir
-.
-/^MANROOT/
-c
-MANROOT          = $mandir
-.
-/^TMPROOT/
-c
-TMPROOT          = $tmpdir
-.
-/^LOCAL_LIB_SEARCH/
-c
-LOCAL_LIB_SEARCH         = $loclib
-.
-/^LOCAL_INC_SEARCH/
-c
-LOCAL_INC_SEARCH         = $locinc
-.
-w
-q
-EOF
-
-  ed - $system <<'EOF' >&/dev/null
-g/#define BuildSunViewctrans/d
-g/#define BuildXlibDependentCode/d
-g/#define BuildAthenaApplications/d
-g/#define BuildRasterHDF/d
-g/#define LocalConfig/d
-g/#define NCARLocal/d
-1i
-#define LocalConfig
-
-.
-w
-q
-'EOF'
-
-  if ($?buildsunctrans) then
-    ed - $system <<'EOF' >&/dev/null
-/^$/
-i
-#define BuildSunViewctrans
-.
-w
-q
-'EOF'
-  endif
-
-  if ($?buildxlibstuff) then
-    ed - $system <<'EOF' >&/dev/null
-/^$/
-i
-#define BuildXlibDependentCode
-.
-w
-q
-'EOF'
-  endif
-
-  if ($?buildxawbins) then
-    ed - $system <<'EOF' >&/dev/null
-/^$/
-i
-#define BuildAthenaApplications
-.
-w
-q
-'EOF'
-  endif
-
-  if ($?buildhdf) then
-    ed - $system <<'EOF' >&/dev/null
-/^$/
-i
-#define BuildRasterHDF
-.
-w
-q
-'EOF'
-  endif
-
-  if ($?ncarlocal) then
-    ed - $system <<'EOF' >&/dev/null
-/^$/
-i
-#define NCARLocal
-.
-w
-q
-'EOF'
-  endif
-  cd ..
-
-else
-  echo ""
-  echo "Invalid Response"
-  goto proc_save
+if ("$answer" != "y" && "$answer" != "") then
+	echo "Invalid response"
+	goto proc_save
 endif
+
+if (! $?altered) goto proc_install
+
+cd config
+
+echo "/*" > Site.local
+echo " *	This file was created by the Configure script." >> Site.local
+echo " */" >> Site.local
+echo "" >> Site.local
+echo "#ifdef FirstSite" >> Site.local
+echo "" >> Site.local
+echo "#endif /* FirstSite */" >> Site.local
+echo "" >> Site.local
+echo "" >> Site.local
+echo "#ifdef SecondSite" >> Site.local
+echo "" >> Site.local
+echo "" >> Site.local
+
+if ($?commonroot) then
+	echo "#define YmakeRoot $commonroot" >> Site.local
+else
+	echo "#define BinRoot $bindir" >> Site.local
+	echo "#define IncRoot $incdir" >> Site.local
+	echo "#define LibRoot $libdir" >> Site.local
+endif
+
+echo "" >> Site.local
+echo "" >> Site.local
+
+if ($?newman) then
+	echo "#define ManRoot $mandir" >> Site.local
+endif
+if ($?newtmp) then
+	echo "#define TmpRoot $tmpdir" >> Site.local
+endif
+
+echo "" >> Site.local
+echo "" >> Site.local
+
+if ($?nloclib) then
+	echo "#define LibSearch $loclib" >> Site.local
+endif
+if ($?nlocinc) then
+	echo "#define IncSearch $locinc" >> Site.local
+endif
+
+echo "" >> Site.local
+echo "" >> Site.local
+
+if ($?newbuildxlibstuff) then
+	if ("$buildxlibstuff" == "y") then
+		echo "#define BuildXlibDependentCode TRUE" >> Site.local
+	else
+		echo "#define BuildXlibDependentCode FALSE" >> Site.local
+	endif
+endif
+
+if ($?newbuildhdf) then
+	if ("$buildhdf" == "y") then
+		echo "#define BuildRasterHDF TRUE" >> Site.local
+	else
+		echo "#define BuildRasterHDF FALSE" >> Site.local
+	endif
+endif
+
+echo "" >> Site.local
+echo "" >> Site.local
+echo "#endif /* SecondSite */" >> Site.local
+
+cd ..
 
 #
 # Installation step

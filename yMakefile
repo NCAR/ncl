@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.19 1994-04-07 21:20:39 boote Exp $
+ *      $Id: yMakefile,v 1.20 1994-04-08 04:14:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -114,3 +114,46 @@ Everything:
 
 includes::
 	$(RM) -r include
+
+dist-clean::
+	$(RM) -r include
+
+BROOT:
+	@echo "$(BINROOT)"
+
+LROOT:
+	@echo "$(LIBROOT)"
+
+IROOT:
+	@echo "$(INCROOT)"
+
+MROOT:
+	@echo "$(MANROOT)"
+
+TROOT:
+	@echo "$(TMPROOT)"
+
+LSEARCH:
+	@echo "$(LIBSEARCH)"
+
+ISEARCH:
+	@echo "$(INCSEARCH)"
+
+#ifdef	BuildXlibDependentCode
+XSTUFF:
+	@echo "y"
+#else
+XSTUFF:
+	@echo "n"
+#endif
+
+#ifdef	BuildRasterHDF
+HDFSTUFF:
+	@echo "y"
+#else
+HDFSTUFF:
+	@echo "n"
+#endif
+
+VERS:
+	@echo "$(VERSION)"
