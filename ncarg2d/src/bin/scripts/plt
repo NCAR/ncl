@@ -1,0 +1,14 @@
+#!/bin/csh -f
+#
+#   $Id: plt,v 1.1 1993-01-20 20:50:11 haley Exp $
+#
+
+cat << 'EOF'
+
+    As scheduled, "plt" has been removed from Version 3.02 of NCAR 
+    Graphics.  Please use "ictrans" or "idt" instead.   See man 
+    ictrans(l), idt(l).  If this poses a hardship for you contact 
+    scdinfo@ncar.ucar.edu or call the NCAR Graphics information 
+    line at  (303) 497-1201
+
+'EOF'

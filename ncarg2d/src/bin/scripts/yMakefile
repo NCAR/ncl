@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.10 1993-01-20 04:36:56 haley Exp $
+#	$Id: yMakefile,v 1.11 1993-01-20 20:50:08 haley Exp $
 #
 NCARG	= ../../../..
 
@@ -7,9 +7,9 @@ MYNAME	= scripts
 
 #if ! defined BuildNCARGSourceLibrary
 SCRIPTS = cgmtrans ncargf77 ncargcc ncargversion sunplot \
-	ncargrun ncargfile ftrans ncargex ncargCex pre2ncgm
+	ncargrun ncargfile ftrans ncargex ncargCex pre2ncgm plt
 #else
-SCRIPTS = cgmtrans ncargf77 ncargcc ncargversion sunplot \
+SCRIPTS = cgmtrans ncargf77 ncargcc ncargversion sunplot plt \
 	ncargrun ncargfile ftrans ncargex ncargCex pre2ncgm ncargsrc ncargsrcy
 #endif
 
