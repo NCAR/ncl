@@ -1,5 +1,5 @@
 /*
- *      $Id: error.c,v 1.8 2002-04-16 22:32:36 haley Exp $
+ *      $Id: error.c,v 1.9 2002-05-08 15:54:44 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -39,6 +39,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include "c.h"
 
 #define	TABLE_SIZE	10
