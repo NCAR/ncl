@@ -1,5 +1,5 @@
 C
-C      $Id: xy16f.f,v 1.2 1997-02-21 18:28:42 haley Exp $
+C      $Id: xy16f.f,v 1.3 1997-04-18 19:56:37 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                       C
@@ -336,7 +336,7 @@ C
       call NhlFDraw(xy1,ierr)
       call NhlFDraw(xy2,ierr)
       call NhlFDraw(xy3,ierr)
-      call NhlFFrame(xworkid)
+      call NhlFFrame(xworkid,ierr)
       call NhlFClose
       stop
  104  write (6,*) 'error in opening file: ',filename
