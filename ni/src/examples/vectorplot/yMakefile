@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.5 1996-05-10 15:22:17 haley Exp $
+#   $Id: yMakefile,v 1.6 1996-05-21 18:35:37 dbrown Exp $
 #
 #   Makefile for HLU VectorPlot examples
 #
@@ -12,14 +12,14 @@ SYS_LIBS    = $(CTOFLIBS) -lm
 
 CSRCS       = vc01c.c vc02c.c vc05c.c
 FSRCS       = vc01f.f vc02f.f vc05f.f
-NSRCS       = vc01n.ncl vc02n.ncl vc03n.ncl vc04n.ncl vc05n.ncl
+NSRCS       = vc01n.ncl vc02n.ncl vc03n.ncl vc04n.ncl vc05n.ncl vc06n.ncl
 
 COBJS       = vc01c.o vc02c.o vc05c.o
 FOBJS       = vc01f.o vc02f.o vc05f.o
 SRCS        = $(CSRCS) $(FSRCS)
 OBJS        = $(COBJS) $(FOBJS)
 
-RESFILES    = vc01.res vc02.res vc03.res vc04.res vc05.res
+RESFILES    = vc01.res vc02.res vc03.res vc04.res vc05.res vc06.res
 EXFILES     = $(SRCS) $(INCLUDES)
 
 InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
