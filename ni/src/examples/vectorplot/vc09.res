@@ -9,7 +9,6 @@
 *mpOceanFillColor: 9
 *mpLandFillColor: 2
 
-*vcMinVectorDistanceF : 0.00
 *vcRefLengthF : 0.045
 *vcMinFracLengthF : 0.15
 *vcFillArrowsOn : true
@@ -19,9 +18,6 @@
 *vcLevelSelectionMode : manuallevels
 !*vcLevelColors : (/40,43,46,49,52,55,58,61/)
 *vcLevelColors : (/4,12,20,28,36,44,52,60/)
-*vcVectorFillColor : foreground
-*vcVectorLineColor : background
-*vcVectorLineThicknessF : 3.0
 *vcLevelSpacingF : 20.0
 *vcMinLevelValF : -20.0
 *vcMaxLevelValF :  100.0
@@ -42,7 +38,6 @@
 *vcMinAnnoString1 : $VMG$ meters per second
 *vcMinAnnoOn : true
 *vcMinAnnoExplicitMagnitudeF : 5.0
-*vcFillOverLine : true
 *vcLineArrowThicknessF:  2.0
 
 *cnFillOn: true
