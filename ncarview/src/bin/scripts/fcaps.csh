@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: fcaps.csh,v 1.1 1992-02-25 17:03:23 clyne Exp $
+#	$Id: fcaps.csh,v 1.2 1992-06-24 20:51:33 clyne Exp $
 #
 #
 #	Name		fcaps
