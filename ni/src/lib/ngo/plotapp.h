@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.h,v 1.3 1999-12-07 19:08:47 dbrown Exp $
+ *      $Id: plotapp.h,v 1.4 2000-01-10 21:08:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -109,5 +109,15 @@ extern NhlString NgPlotAppName
 	NrmQuark	qplotstyle
 );
 
+extern NhlErrorTypes NgPlotAppBackSubstituteValue
+(
+	int		go_id,
+	NrmQuark	qplotstyle,
+	NhlString	plotname,
+	NgDataProfile	dprof,
+	int		ditem_ix,
+	int		param_ix,
+	NhlString	value
+);
 
 #endif	/* _NG_PLOTAPP_H */

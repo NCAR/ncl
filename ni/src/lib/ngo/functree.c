@@ -1,5 +1,5 @@
 /*
- *      $Id: functree.c,v 1.2 1999-12-24 01:29:25 dbrown Exp $
+ *      $Id: functree.c,v 1.3 2000-01-10 21:08:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1381,6 +1381,8 @@ ftNodeData *FindNodeOfType
 	}
 	return NULL;
 }
+			
+			
 
 NhlString NgGetFuncTreeValue
 (
@@ -1397,6 +1399,7 @@ NhlString NgGetFuncTreeValue
 	ftNodeData	*ndata,*pdata;
 	ftCompData	cdata;
 	int		size,i;
+	NhlErrorTypes	ret;
 
 	*is_new_value = False;
 	*data_ix = ftp->data_ix;
@@ -1424,13 +1427,24 @@ NhlString NgGetFuncTreeValue
 		cdata = (ftCompData) ndata->info;
 		
 		if (cdata->new_value) {
-			value = NhlMalloc(strlen(cdata->new_value)+1);
-			strcpy(value,cdata->new_value);
+			ret  = NgPlotAppBackSubstituteValue
+				(ftp->go->base.id,dprof->qpstyle,
+				 NrmQuarkToString(ftp->qname),dprof,
+				 ftp->data_ix,-1,cdata->new_value);
+			if (ret < NhlWARNING)
+				return NULL;
+
 			*is_new_value = True;
+			value = cdata->new_value;
+			cdata->new_value = NULL;
 			return value;
 		}
 		else if (ditem->vdata->expr_val) {
 			value = NhlMalloc(strlen(ditem->vdata->expr_val)+1);
+			if (! value) {
+				NHLPERROR((NhlFATAL,ENOMEM,NULL));
+				return NULL;
+			}
 			strcpy(value,ditem->vdata->expr_val);
 			return value;
 		}
@@ -1444,6 +1458,10 @@ NhlString NgGetFuncTreeValue
 		size += strlen(rinfo->args[i].sval);
 	}
 	value = NhlMalloc(size);
+	if (! value) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NULL;
+	}
 
 	sprintf(value,"%s(",NrmQuarkToString(rinfo->qsym));
 
@@ -1454,6 +1472,7 @@ NhlString NgGetFuncTreeValue
 	}
 
 	for (i = 0; i < rinfo->argcount; i++) {
+		NhlString new_value;
 		ndata = &pdata->subdata[i];
 		if (! ndata->info) {
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"internal error"));
@@ -1466,6 +1485,14 @@ NhlString NgGetFuncTreeValue
 				"%s,",rinfo->args[i].sval);
 			continue;
 		}
+
+		ret = NgPlotAppBackSubstituteValue
+			(ftp->go->base.id,dprof->qpstyle,
+			 NrmQuarkToString(ftp->qname),dprof,ftp->data_ix,i,
+			 cdata->new_value);
+		if (ret < NhlWARNING) 
+			return NULL;
+
 		if (strlen(cdata->new_value) > strlen(rinfo->args[i].sval)) {
 			int inc = strlen(cdata->new_value) -
 				strlen(rinfo->args[i].sval);

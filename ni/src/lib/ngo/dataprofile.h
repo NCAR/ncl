@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.h,v 1.9 1999-12-24 01:29:25 dbrown Exp $
+ *      $Id: dataprofile.h,v 1.10 2000-01-10 21:08:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -146,8 +146,11 @@ typedef char NgValType;     /* types of resource values and res func args */
 #define _NgDATA_COORD_REF	6
 #define _NgDATA_COORD_ATTR_REF	7
 
+
 typedef struct _NgArgInfoRec {
 	NhlString		sval;
+	NhlPointer		edata; /*  opaque edit data */
+	NhlFreeFunc		free_edata;
 	NhlBoolean		modified;
 	NrmQuark		qargdatatype;
 	NrmQuark		qargname;
@@ -159,19 +162,29 @@ typedef struct _NgArgInfoRec {
 
 typedef struct _NgResInfoRec {
 	NhlPointer 	rdata;		/* resource data-allocated elsewhere */
+	NhlPointer	edata;		/* opaque edit data */
+	NhlFreeFunc	free_edata;	/* needed to free the edit data */
 	NgValType	valtype;
 	NrmQuark	qsym;		/* single-term func */
 	int		argcount;
 	NgArgInfo	args;		/* func arg values */
 } NgResInfoRec, *NgResInfo;
 
+extern NgResInfo NgNewResInfo(
+	void
+);
+
 extern void NgFreeResInfo(
 	NgResInfo res_info
 );
 
 extern void NgFreeArgInfo(
-	NgArgInfo arg_info,
-	int	  count
+	NgArgInfo 	arg_info,
+	int	  	count
+);
+
+extern NgArgInfo NgNewArgInfo(
+	int	count
 );
 
 typedef struct _NgDataItemRec

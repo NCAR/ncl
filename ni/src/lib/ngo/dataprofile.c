@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.c,v 1.12 1999-12-11 01:02:33 dbrown Exp $
+ *      $Id: dataprofile.c,v 1.13 2000-01-10 21:08:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -689,6 +689,21 @@ static void InitializeDataProfile(
 	return;
 }
 
+extern NgArgInfo NgNewArgInfo(
+	count
+)
+{
+	NgArgInfo args = NhlMalloc(count * sizeof(NgArgInfoRec));
+
+	if (! args) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NULL;
+	}
+	memset(args,(char)0,count * sizeof(NgArgInfoRec));
+
+	return args;
+}
+
 void NgFreeArgInfo(
 	NgArgInfo	arg_info,
 	int		count
@@ -703,12 +718,29 @@ void NgFreeArgInfo(
 		NgArgInfo arg = &arg_info[i];
 		if (arg->sval)
 			NhlFree(arg->sval);
+		if (arg->edata && arg->free_edata)
+			(*arg->free_edata)(arg->edata);
 		if (arg->argcount)
 			NgFreeArgInfo(arg->args,arg->argcount);
 	}
 	NhlFree(arg_info);
 
 	return;
+}
+
+extern NgResInfo NgNewResInfo(
+	void
+)
+{
+	NgResInfo rinfo = NhlMalloc(sizeof(NgResInfoRec));
+
+	if (! rinfo) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NULL;
+	}
+	memset(rinfo,(char)0,sizeof(NgResInfoRec));
+
+	return rinfo;
 }
 
 void NgFreeResInfo(
@@ -722,6 +754,8 @@ void NgFreeResInfo(
 
 	if (res_info->argcount)
 		NgFreeArgInfo(res_info->args,res_info->argcount);
+	if (res_info->edata && res_info->free_edata) 
+		(*res_info->free_edata)(res_info->edata);
 
 	NhlFree(res_info);
 

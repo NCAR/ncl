@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.15 1999-12-24 01:29:25 dbrown Exp $
+ *      $Id: plotapp.c,v 1.16 2000-01-10 21:08:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -135,7 +135,7 @@ typedef char RefKind;
 /*
  * When references to objects or data appear in the resfile they are 
  * dilimited by '$'. The character following the '$' may qualify the
- * the reference as a coordinate(!), an attribute(@) or as a subset((\..\)).
+ * the reference as a coordinate(!), an attribute(@) or as a subset((...)).
  * For subsets white space may be permitted eventually. It's not yet
  * understood.
  */
@@ -245,6 +245,12 @@ static FuncFile FuncFileList = NULL; /* list of files containing ref funcs */
 
 static NclApiDataList *NclFuncs = NULL; /* return from NclGetProcFuncInfo */
 
+
+/*
+ * this is an intermediate data structure used while processing a plot
+ * instance Data Profile. Eventually we may be able to eliminate it.
+ */
+
 typedef struct _DataTableRec {
 	AppData		appdata;
 	NrmQuark	qvar;
@@ -260,6 +266,17 @@ typedef struct _DataTableRec {
 
 static DataTable Data_Table = NULL;  /* used while processing Data Profile */
 static int DataTableAllocCount = 0;
+
+/*
+ * this structure provides information that is attached to plot app instances
+ * so that resources that have been edited by the user can be handled 
+ * dynamically in the same manner as unedited dynamic resources.
+ */
+
+typedef struct _EditInfoRec {
+	NhlString	value;
+	AppResSymRef	srefs;
+} EditInfoRec, *EditInfo;
 
 /*
  * Each field in the data profile is recognized in the resource file within
@@ -343,6 +360,27 @@ static NhlBoolean UpdateBufSize
 	}
 	*alloc_size = req_size + 1;
 	return True;
+}
+
+static void FreeEditInfo
+(
+	void *edata
+)
+{
+	EditInfo einfo = (EditInfo) edata;
+
+	AppResSymRef sref;
+
+	if (einfo->value)
+		NhlFree(einfo->value);
+	sref = einfo->srefs;
+
+	while (sref) {
+		AppResSymRef sref_to_free = sref;
+		sref = sref->next;
+		NhlFree(sref_to_free);
+	}
+	NhlFree(einfo);
 }
 
 static _NhlConvertContext 
@@ -2822,16 +2860,13 @@ static void MergeObjResDataItems
 			NgAppendDataProfileItem(dprof,ditem,NrmNULLQUARK);
 		}
 
-		ditem->res_info = NhlMalloc(sizeof(NgResInfoRec));
+		ditem->res_info = NgNewResInfo();
 		if (! ditem->res_info) {
 			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			return;
 		}
 		ditem->res_info->rdata = (NhlPointer) res;
-		ditem->res_info->valtype = _NgEXPR;
-		ditem->res_info->qsym = NrmNULLQUARK;
-		ditem->res_info->argcount = 0;
-		ditem->res_info->args = NULL;
+
 	}
 	return;
 }
@@ -2929,7 +2964,7 @@ static NhlBoolean PerlMatch
 static NhlBoolean MatchPattern
 (
 	AppData	  appdata,
-	int	  dcount,
+	DataTable dt,
 	NrmQuark  qfile,
 	NrmQuark  qvar
 )
@@ -2940,7 +2975,6 @@ static NhlBoolean MatchPattern
 	_NhlConvertContext context = NULL;
 	int i;
 	NhlBoolean matched = False;
-	DataTable dt = &Data_Table[dcount];
 	
 	for (datares = appdata->datares; datares; datares = datares->next) {
 		if (! datares->is_coord && 
@@ -3011,12 +3045,11 @@ static NhlBoolean HasMinElementCount
 static NhlBoolean MatchDimensions
 (
 	AppData	  appdata,
-	int	  dcount,
+	DataTable dt,
 	NgVarData vdata
 )
 {
 	AppDataRes	datares;
-	DataTable	dt = &Data_Table[dcount];
 	NhlString	patterns[10] = { NULL,NULL,NULL,NULL,NULL,
 					 NULL,NULL,NULL,NULL,NULL };
 	NhlBoolean	matched[10] = { False, False, False, False, False,
@@ -3086,7 +3119,7 @@ static NhlBoolean MatchDimensions
 static NhlBoolean MatchUnits
 (
 	AppData	  appdata,
-	int	  dcount
+	DataTable dt
 )
 {
 	return True;
@@ -3095,7 +3128,7 @@ static NhlBoolean MatchUnits
 static NhlBoolean MatchAttributes
 (
 	AppData	  appdata,
-	int	  dcount
+	DataTable dt
 )
 {
 	return True;
@@ -3114,6 +3147,8 @@ static NhlBoolean GetInfo
 		}
 		dt->dl = NULL;
 	}
+	dt->qfile = vdata->qfile;
+	dt->qvar = vdata->qvar;
 	if (vdata->dl) {
 		dt->dl = vdata->dl;
 		dt->free_dl = False;
@@ -3184,26 +3219,24 @@ static NgVarData MatchVarData
 				continue;
 
 			if (! MatchPattern
-			    (appdata,dcount,vdata[i]->qfile,vdata[i]->qvar)) {
+			    (appdata,dt,vdata[i]->qfile,vdata[i]->qvar)) {
 				never_matched = False;
 				continue;
 			}
 		}
-		dt->qfile = vdata[i]->qfile;
-		dt->qvar = vdata[i]->qvar;
 		if (! GetInfo(dt,vdata[i])) {
 			ScratchVar(dt);
 			continue;
 		}
-		if (! MatchDimensions(appdata,dcount,vdata[i])) {
+		if (! MatchDimensions(appdata,dt,vdata[i])) {
 			ScratchVar(dt);
 			continue;
 		}
-		if (! MatchUnits(appdata,dcount)) {
+		if (! MatchUnits(appdata,dt)) {
 			ScratchVar(dt);
 			continue;
 		}
-		if (! MatchAttributes(appdata,dcount)) {
+		if (! MatchAttributes(appdata,dt)) {
 			ScratchVar(dt);
 			continue;
 		}
@@ -3237,7 +3270,7 @@ static NgVarData MatchVarFromFile
 	return NULL;
 }
 
-static NhlBoolean MatchCoordAttr
+static NhlString MatchCoordAttr
 (
 	NrmQuark	qfile,
 	NrmQuark	qvar,
@@ -3251,6 +3284,7 @@ static NhlBoolean MatchCoordAttr
 	char tbuf[256];
 	char *cp;
 	int i;
+	NhlString attname;
 
 /*
  * The end pointer is already set. It should only be modified if the 
@@ -3286,16 +3320,16 @@ static NhlBoolean MatchCoordAttr
 		}
 		vinfo = dl->u.var;
 		for (i = 0; i < vinfo->n_atts; i++) {
-			if (! strcmp(tbuf,
-				     NrmQuarkToString(vinfo->attnames[i])))
+			attname = NrmQuarkToString(vinfo->attnames[i]);
+			if (! strcmp(tbuf,attname))
 				break;
 		}
 	}
 	if (i == vinfo->n_atts) {
 		*endp = buf + (cp - tbuf);
-		return False;
+		return NULL;
 	}
-	return True;
+	return attname;
 }
 
 static NhlBoolean WriteCoords
@@ -3418,7 +3452,6 @@ static NhlBoolean WriteReorderedCoords
 static NhlBoolean ReplaceDataSymRef
 (
 	PlotApp		papp,
-	AppObjRes	res,
 	int		index,
 	AppResSymRef	sref,
 	int		offset,
@@ -3438,6 +3471,7 @@ static NhlBoolean ReplaceDataSymRef
 	NhlBoolean	status = False;
 	NhlBoolean	is_coord_attr = False;
 	int		spos;
+	NhlString	attname = NULL;
 
 	*single_term = False;
 
@@ -3459,6 +3493,7 @@ static NhlBoolean ReplaceDataSymRef
 		/* first see if the attribute named is actually an
 		 * attribute of this var
 		 * the attribute starts beyond the char count by 2
+		 * (no white space allowed)
 		 */
 		cp = *buffer + offset + sref->count + 2;
 		strncpy(tbuf,cp,512);
@@ -3477,8 +3512,10 @@ static NhlBoolean ReplaceDataSymRef
 				     NrmQuarkToString(vinfo->attnames[i])))
 					break;
 			}
+			if (i < vinfo->n_atts)
+				attname = NrmQuarkToString(vinfo->attnames[i]);
 		}
-		if (i == vinfo->n_atts) {
+		if (! attname) {
 			/* replace with empty string */
 			spos = offset+sref->count+strlen(tbuf)+2;
 			sprintf(tbuf,"\"\"");
@@ -3538,8 +3575,9 @@ static NhlBoolean ReplaceDataSymRef
 				spos = sp - *buffer;
 				break;
 			}
-			else if (! MatchCoordAttr(dt->qfile,dt->qvar,
-						  qdim,sp+1,&sp)) {
+			else if (! (attname = 
+				    MatchCoordAttr(dt->qfile,dt->qvar,
+						   qdim,sp+1,&sp))) {
 				sprintf(tbuf,"\"\"");
 				spos = sp - *buffer;
 				break;
@@ -3560,8 +3598,9 @@ static NhlBoolean ReplaceDataSymRef
 		}
 		if (qdim > NrmNULLQUARK) {
 			if (dt->qfile) {
-				sprintf(tbuf,"%s->%s",
+				sprintf(tbuf,"%s->%s&%s",
 					NrmQuarkToString(dt->qfile),
+					NrmQuarkToString(dt->qvar),
 					NrmQuarkToString(qdim));
 			}
 			else {
@@ -3616,8 +3655,14 @@ static NhlBoolean ReplaceDataSymRef
 		break;
 	}
 
-	if (offset == 0 && spos == strlen(*buffer))
-		*single_term = True;
+	if (attname) {
+		if (offset == 0 && spos + strlen(attname)+1 == strlen(*buffer))
+			*single_term = True;
+	}
+	else {
+		if (offset == 0 && spos == strlen(*buffer))
+			*single_term = True;
+	}
 
 #if DEBUG_PLOTAPP
 	fprintf(stderr,"single term: %s\n", *single_term ? "True" : "False");
@@ -3641,7 +3686,6 @@ static NhlBoolean ReplaceDataSymRef
 static NhlBoolean ReplaceObjSymRef
 (
 	PlotApp		papp,
-	AppObjRes	res,
 	AppObject 	appobj,
 	AppResSymRef	sref,
 	NhlString	plotname,
@@ -3697,7 +3741,6 @@ static NhlBoolean ReplaceObjSymRef
 static NhlBoolean ReplaceSymRef
 (
 	PlotApp		papp,
-	AppObjRes	res,
 	AppResSymRef	sref,
 	NhlString	plotname,
 	int		offset,
@@ -3713,7 +3756,7 @@ static NhlBoolean ReplaceSymRef
 		for (i = 0; i < papp->data_count; i++) {
 			if (sref->sym.d == Data_Table[i].appdata) {
 				return ReplaceDataSymRef
-					(papp,res,i,sref,
+					(papp,i,sref,
 					 offset,buffer,bufsize,single_term);
 			}
 		}
@@ -3723,7 +3766,7 @@ static NhlBoolean ReplaceSymRef
 		for (appobj = papp->objects; appobj; appobj = appobj->next) {
 			if (sref->sym.o == appobj) {
 				return ReplaceObjSymRef
-					(papp,res,appobj,sref,plotname,
+					(papp,appobj,sref,plotname,
 					 offset,buffer,bufsize,single_term);
 			}
 		}
@@ -3732,6 +3775,167 @@ static NhlBoolean ReplaceSymRef
 	return False;
 }
 
+/*
+ * this is an intermediate structure for communicating information
+ * to the BackSubstitution routine. It is not preserved long term.
+ */
+
+#define SREF_ALLOC_UNIT 8
+typedef struct _SymRefInfoRec {
+	int		count;
+	int		alloc;
+	AppResSymRef 	*sref;
+	int		*rep_offset; /* replacement text offset */
+	AppResSymRef 	*new_srefs;
+} SymRefInfoRec, *SymRefInfo;
+
+static NhlBoolean UpdateSymRefInfoSize
+(
+	SymRefInfo sri
+)
+{
+	int new_alloc;
+	int i;
+
+	if (sri->alloc < sri->count)
+		return True;
+
+	new_alloc = sri->alloc + SREF_ALLOC_UNIT;
+	sri->sref = NhlRealloc(sri->sref,sizeof(AppResSymRef) * new_alloc);
+	sri->rep_offset = NhlRealloc(sri->rep_offset,sizeof(int) * new_alloc);
+	sri->new_srefs = NhlRealloc(sri->new_srefs,sizeof(int) * new_alloc);
+	if (! (sri->sref && sri->rep_offset)) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return False;
+	}
+	sri->alloc = new_alloc;
+	for (i = sri->count; i < sri->alloc; i++) {
+		sri->new_srefs[i] = NULL;
+	}
+	return True;
+}
+/*
+ * frees the pointer arrays only
+ */
+static void FreeSymRefInfo
+(
+SymRefInfo sri
+)
+{	
+	if (sri->sref) {
+		NhlFree(sri->sref);
+		NhlFree(sri->rep_offset);
+		NhlFree(sri->new_srefs);
+	}
+	return;
+}
+
+static NhlString SubstituteParam
+(
+	PlotApp		papp,
+	NhlString	plotname,
+	AppResSymRef 	symrefs,
+ 	ResFunc		rfunc,
+	int		param_ix,
+	NhlString	valbuf,
+	SymRefInfo	sref_info,
+	NhlBoolean	*single_term_param,
+	AppResSymRef 	*sref_ret
+)
+{
+	int 		bix,eix;
+	NhlString	buf = NULL;
+	int		bufsize = 0;
+	int		len;
+	NhlString	inval = valbuf;
+
+	*single_term_param = False;
+	*sref_ret = NULL;
+
+	if (! inval) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			   "Internal error: no res value supplied"));
+		return NULL;
+	}
+	if (rfunc) {
+		bix = rfunc->delim_pos[param_ix] + 1;
+		eix = rfunc->delim_pos[param_ix+1] - 1;
+	}
+	else {
+		bix = 0;
+		eix = strlen(inval);
+	}
+		
+	while (isspace(inval[bix]))
+		bix++;
+	while (isspace(inval[eix]))
+		eix--;
+	len = eix - bix + 1;
+
+	if (! UpdateBufSize(len,&buf,&bufsize))
+		return NULL;
+	strncpy(buf,&inval[bix],len);
+	buf[len] = '\0';
+
+	if (strchr(buf,'$') && sref_info) {
+		int offset;
+		AppResSymRef sref;
+		int ix,prelen,postlen;
+
+		postlen = len;
+		for (sref = symrefs; sref; sref = sref->next) {
+			int lendiff;
+
+			if (sref->offset < bix || 
+			    sref->offset + sref->count > eix)
+				continue;
+
+			if (! UpdateSymRefInfoSize(sref_info))
+				return NULL;
+			    
+			offset = sref->offset - bix;
+			prelen = postlen;
+			ix = sref_info->count;
+			sref_info->sref[ix] = sref;
+			sref_info->rep_offset[ix] = offset;
+
+			ReplaceSymRef(papp,sref,plotname,offset,
+				      &buf,&bufsize,single_term_param);
+
+			postlen = strlen(buf);
+			lendiff = postlen - prelen;
+			for (--ix; ix > -1; ix--)
+				sref_info->rep_offset[ix] += lendiff;
+
+			sref_info->count++;
+
+			if (*single_term_param)
+				break;
+		}
+		if (*single_term_param)
+			*sref_ret = sref;
+	}
+	else if (strchr(buf,'$')) {
+		int offset;
+		AppResSymRef sref;
+
+		for (sref = symrefs; sref; sref = sref->next) {
+			if (sref->offset < bix || 
+			    sref->offset + sref->count > eix)
+				continue;
+			offset = sref->offset - bix;
+			ReplaceSymRef(papp,sref,plotname,offset,
+				      &buf,&bufsize,single_term_param);
+			if (*single_term_param)
+				break;
+		}
+		if (*single_term_param)
+			*sref_ret = sref;
+	}
+
+	return buf;
+}
+	
 static NhlString SetFuncInfo
 (
 	PlotApp		papp,
@@ -3772,15 +3976,10 @@ static NhlString SetFuncInfo
 			rinfo->args = NULL;
 		}
 		else {
-			rinfo->args = NhlMalloc
-				(finfo->nparams * sizeof(NgArgInfoRec));
+			rinfo->args = NgNewArgInfo(finfo->nparams);
 			if (! rinfo->args) {
 				NHLPERROR((NhlFATAL,ENOMEM,NULL));
 				return NULL;
-			}
-			for (i = 0; i < finfo->nparams; i++) {
-				rinfo->args[i].sval = NULL;
-				rinfo->args[i].modified = False;
 			}
 		}
 		rinfo->argcount = finfo->nparams;
@@ -3816,46 +4015,33 @@ static NhlString SetFuncInfo
 
 	for (i = 0; i < finfo->nparams; i++) {
 		AppResSymRef sref = NULL;
-		char *buf = NULL;
-		int  bufsize = 0;
-		int len,offset;
 		NclApiArgTemplate *arg = &finfo->theargs[i];
 		char *name = "unknown";
 		char *type = "any";
 		NhlBoolean single_term_param = False;
 		NgArgInfo arginfo = &rinfo->args[i];
-		
-		if (! (user_set && arginfo->modified && arginfo->sval)) {
-			int bix = orf->delim_pos[i] + 1;
-			int eix = orf->delim_pos[i+1] - 1;
-			while (isspace(inval[bix]))
-				bix++;
-			while (isspace(inval[eix]))
-				eix--;
-			len = eix - bix + 1;
-			if (! UpdateBufSize(len,&buf,&bufsize))
-				return NULL;
-			strncpy(buf,&inval[bix],len);
-			buf[len] = '\0';
 
-			if (strchr(buf,'$')) {
-				for (sref = res->symrefs; 
-				     sref; sref = sref->next) {
-					if (sref->offset < bix || 
-					    sref->offset + sref->count > eix)
-						continue;
-					offset = sref->offset - bix;
-					ReplaceSymRef
-						(papp,res,sref,plotname,offset,
-						 &buf,&bufsize,
-						 &single_term_param);
-					if (single_term_param)
-						break;
-				}
+		if (user_set && arginfo->modified && arginfo->sval) {
+			if (arginfo->edata) {
+				EditInfo einfo = (EditInfo) arginfo->edata;
+				NhlString sval = SubstituteParam
+					(papp,plotname,einfo->srefs,NULL,i,
+					 einfo->value,NULL,
+					 &single_term_param,&sref);
+				if (arginfo->sval)
+					NhlFree(arginfo->sval);
+				arginfo->sval = sval;
 			}
+		}
+		else {
+			NhlString sval = SubstituteParam
+				(papp,plotname,res->symrefs,orf,i,
+				 res->value,NULL,
+				 &single_term_param,&sref);
+
 			if (arginfo->sval)
 				NhlFree(arginfo->sval);
-			arginfo->sval = buf;
+			arginfo->sval = sval;
 			arginfo->modified = False;
 		}
 		arginfo->qargdatatype = arg->arg_data_type;
@@ -3878,7 +4064,7 @@ static NhlString SetFuncInfo
 			else if (sref->rtype == REF_ATTR)
 				arginfo->valtype = _NgDATA_ATTR_REF;
 			else if (sref->rtype == REF_COORD) {
-				if (strchr(buf,'@'))
+				if (strchr(arginfo->sval,'@'))
 					arginfo->valtype = 
 						_NgDATA_COORD_ATTR_REF;
 				else
@@ -3926,6 +4112,106 @@ static NhlString SetFuncInfo
 	return outval;
 }
 
+static NhlString SubstituteExpression
+(
+	PlotApp		papp,
+	NhlString	plotname,
+	NgResInfo 	rinfo,
+	AppResSymRef 	symrefs,
+	ResFunc		rfuncs,
+	NhlString	valbuf,
+	SymRefInfo	sref_info,
+	NhlBoolean	*single_term,
+	AppResSymRef 	*sref_ret
+)
+{
+	NhlString	buf = NULL;
+	int		bufsize = 0;
+	int		len;
+	NhlString	inval = valbuf;
+	AppResSymRef	sref;
+	NhlBoolean	status;
+
+	*single_term = False;
+	*sref_ret = NULL;
+
+	if (! inval) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			   "Internal error: no res value supplied"));
+		return NULL;
+	}
+
+	if (rfuncs) {
+		/* ? how to handle sref info request in this situtation */
+
+		buf = SetFuncInfo(papp,rfuncs,
+				  rinfo,plotname,inval,False);
+		if (buf) {
+			*single_term = True;
+			return buf;
+		}
+	}
+	if (! UpdateBufSize(strlen(inval),&buf,&bufsize))
+		return NULL;
+	strcpy(buf,inval);
+	len = strlen(buf);
+
+	if (! symrefs)
+		return buf;
+
+	if (sref_info) {
+		int offset;
+		int ix,prelen,postlen;
+
+		postlen = len;
+		for (sref = symrefs; sref; sref = sref->next) {
+			int lendiff;
+
+			if (! UpdateSymRefInfoSize(sref_info))
+				return NULL;
+
+			offset = sref->offset;
+			prelen = postlen;
+			ix = sref_info->count;
+			sref_info->sref[ix] = sref;
+			sref_info->rep_offset[ix] = offset;
+
+			status = ReplaceSymRef(papp,sref,plotname,-1,
+					       &buf,&bufsize,single_term);
+
+			if (! status)
+				break;
+
+			postlen = strlen(buf);
+			lendiff = postlen - prelen;
+			for (--ix; ix > -1; ix--)
+				sref_info->rep_offset[ix] += lendiff;
+
+			sref_info->count++;
+
+			if (*single_term)
+				break;
+		}
+	}
+	else {
+		for (sref = symrefs; sref; sref = sref->next) {
+			status = ReplaceSymRef(papp,sref,plotname,-1,
+					       &buf,&bufsize,single_term);
+			if (! status || *single_term)
+				break;
+		}
+	}
+	if (! status) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			   "Internal error: replacing sym refs"));
+		return NULL;
+	}
+	if (*single_term) {
+		*sref_ret = sref;
+	}
+	return buf;
+}
+
 static void SubstituteVarSyms
 (
 	PlotApp		papp,
@@ -3944,13 +4230,13 @@ static void SubstituteVarSyms
 		AppResSymRef sref;
 		ResFunc rfuncs = NULL;
 		ResFunc	rfunc;
+		int single_term = False;
 
 /*
  * Eventually we will try to figure out whether user expressions contain
  * references to the plot app objects or data, but for now just leave them
  * alone.
  */		
-
 		if (! (rinfo && rinfo->rdata))
 			continue;
 		res = (AppObjRes) rinfo->rdata;
@@ -3962,11 +4248,19 @@ static void SubstituteVarSyms
 
 		if (ditem->vdata->set_state == _NgUSER_EXPRESSION) {
 			int bogus, bogus_pos;
-			NhlString newval;
+			NhlString newval = NULL;
+			NhlString inval;
+
+			if (rinfo->edata) {
+				EditInfo einfo = (EditInfo) rinfo->edata;
+				inval = einfo->value;
+			}
+			else {
+				inval = ditem->vdata->expr_val;
+			}
 			bogus = ParseResourceValue
 				(papp,NrmQuarkToString(res->qres),
-				 ditem->vdata->expr_val,
-				 &bogus_pos,&rfuncs);
+				 inval,&bogus_pos,&rfuncs);
 			if (bogus) {
 				FreeResFuncs(rfuncs);
 				continue;
@@ -3974,17 +4268,38 @@ static void SubstituteVarSyms
 			if (rfuncs) {
 				newval = SetFuncInfo
 					(papp,rfuncs,rinfo,plotname,
-					 ditem->vdata->expr_val,True);
-				FreeResFuncs(rfuncs);
+					 inval,True);
+				if (newval) {
+					rinfo->valtype = _NgFUNC;
+					FreeResFuncs(rfuncs);
+					NgSetExpressionVarData
+						(papp->go_id,ditem->vdata,
+						 newval,_NgNOEVAL,True);
+					NhlFree(newval);
+					continue;
+				}
+			}
+			if (rinfo->edata) {
+				EditInfo einfo = (EditInfo) rinfo->edata;
+
+				newval = SubstituteExpression
+					(papp,plotname,rinfo,einfo->srefs,
+					 rfuncs,einfo->value,NULL,
+					 &single_term,&sref);
+			}
+			else {
+				newval = inval;
+			}
+			if (newval) {
 				NgSetExpressionVarData
-					(papp->go_id,
-					 ditem->vdata,newval,_NgNOEVAL,True);
+					(papp->go_id,ditem->vdata,
+					 newval,_NgNOEVAL,True);
 				NhlFree(newval);
 			}
+			if (rfuncs)
+				FreeResFuncs(rfuncs);
 		}
 		else {
-			NhlBoolean single_term;
-
 			if (res->rfuncs) {	
 				NhlString newval;
 
@@ -3992,6 +4307,7 @@ static void SubstituteVarSyms
 					(papp,res->rfuncs,
 					 rinfo,plotname,res->value,False);
 				if (newval) {
+					rinfo->valtype = _NgFUNC;
 					NgSetExpressionVarData
 						(papp->go_id,
 						 ditem->vdata,newval,
@@ -4006,7 +4322,7 @@ static void SubstituteVarSyms
 			strcpy(Buffer,res->value);
 			for (sref = res->symrefs; sref; sref = sref->next) {
 				status = ReplaceSymRef
-					(papp,res,sref,plotname,-1,
+					(papp,sref,plotname,-1,
 					 &Buffer,&BufSize,&single_term);
 				if (! status || single_term)
 					break;
@@ -4016,6 +4332,24 @@ static void SubstituteVarSyms
 					(papp->go_id,
 					 ditem->vdata,Buffer,_NgNOEVAL,False);
 			}
+		}
+		if (single_term && sref) {
+			if (sref->kind == OBJ_REF) 
+				rinfo->valtype = _NgOBJ_REF;
+			else if (sref->rtype == REF_REGULAR)
+				rinfo->valtype = _NgDATA_REF;
+			else if (sref->rtype == REF_ATTR)
+				rinfo->valtype = _NgDATA_ATTR_REF;
+			else if (sref->rtype == REF_COORD) {
+				if (strchr(Buffer,'@'))
+					rinfo->valtype = 
+						_NgDATA_COORD_ATTR_REF;
+				else
+					rinfo->valtype = _NgDATA_COORD_REF;
+			}
+		}
+		else {
+			rinfo->valtype = _NgEXPR;
 		}
 	}
 	if (QFiles)
@@ -4258,7 +4592,7 @@ NhlErrorTypes NgSetPlotAppDataVars
 	NrmQuark	qgraphics	/* graphic obj array - not used */
 )
 {
-	PlotApp	papp = PlotAppList;
+	PlotApp		papp = PlotAppList;
 	NgGO		go = (NgGO) _NhlGetLayer(go_id);
 	AppData		data;
 	int		dcount;
@@ -4342,6 +4676,450 @@ NhlErrorTypes NgSetPlotAppDataVars
 #if 0
 	EvaluateDataProfileVars(papp,data,dprof);
 #endif
+
+	return NhlNOERROR;
+}
+
+
+/*
+ * This routine substitutes references to dynamic vars in an edited value
+ * with the var '$'syms so that they can continue to be updated dynamically.
+ * (if possible). If no substitutions are made the value is returned 
+ * unmodified. Otherwise memory is allocated for the return value.
+ * The plotapp data vars must already be set.
+ */
+
+static char *VarRefInValue
+(
+	char 		*value,
+	NgVarData 	vdata,
+	char		**endp,
+	NhlBoolean	*is_subsection
+)
+{
+	char	*begin = NULL,*cp = NULL;
+	NhlString file,var,coord;
+	int len;
+
+	*is_subsection = False;
+
+	if (! vdata->qfile)
+		return NULL;
+
+	if (vdata->qfile) {
+		file = NrmQuarkToString(vdata->qfile);
+		len = strlen(file);
+
+		begin = strstr(value,file);
+		if (! begin)
+			return NULL;
+		cp = begin + len;
+		if (*cp != '-' &&  *(cp+1) != '>')
+			return NULL;
+		cp += 2;
+	}
+
+	var = NrmQuarkToString(vdata->qvar);
+	len = strlen(var);
+
+	if (! begin) {
+		begin = strstr(value,var);
+		if (! begin)
+			return NULL;
+		cp = begin + len;
+	}
+	else {
+		if (strncmp(cp,var,len))
+			return NULL;
+		cp += len;
+	}
+
+	if (vdata->qcoord) {
+		coord = NrmQuarkToString(vdata->qcoord);
+		len = strlen(coord);
+		if (*cp != '&')
+			return NULL;
+		cp++;
+		if (strncmp(cp,coord,len))
+			return NULL;
+		cp += len;
+	}
+
+	switch (*cp) {
+	case '@':
+#if 0
+		cp++;
+		if (! (isalpha(*cp) || *cp == '_'))
+			return NULL;
+		while (isalnum(*cp) || *cp == '_')
+			cp++;
+#endif
+		*endp = cp;
+		break;
+	case '!':
+		cp++;
+		strtol(cp,endp,10);
+		if (! *endp)
+			return NULL;
+		break;
+	case '(':
+		cp = strchr(cp,')');
+		if (! cp)
+			return NULL;
+		*is_subsection = True;
+		*endp = cp + 1;
+		break;
+	case '&':
+		cp++;
+		if (! (isalpha(*cp) || *cp == '_'))
+			return NULL;
+		while (isalnum(*cp) || *cp == '_')
+			cp++;
+		if (*cp == '(') {
+			cp = strchr(cp,')');
+			if (! cp)
+				return NULL;
+			*is_subsection = True;
+			*endp = cp + 1;
+		}
+		else {
+			*endp = cp;
+		}
+		break;
+	default:
+		*endp = cp;
+	}
+	return begin;
+}
+AppResSymRef BackSubstitute
+(
+	NgDataItem	ditem,
+	NhlString	ref_val,
+	SymRefInfo 	sri,
+	char		**buf,
+	int		*bufsize
+)
+{
+	char *rcp;
+	int offset,i,ix;
+	AppObjRes 	res;
+	int	newlen;
+	AppResSymRef 	sref = NULL;
+	char *cp, *endp;
+
+	rcp = strstr(ref_val,*buf);
+
+	if (! rcp)
+		return False;
+
+	offset = rcp - ref_val;
+	for (i = 0; i < sri->count; i++) {
+		if (offset == sri->rep_offset[i]) {
+			sref = sri->sref[i];
+			ix = i;
+			break;
+		}
+	}
+	if (! sref)
+		return NULL;
+
+	if (sref->kind != DATA_REF)
+		return False;
+
+	res = (AppObjRes) ditem->res_info->rdata;
+
+	switch (sref->rtype) {
+	case REF_REGULAR:
+	case REF_ATTR:
+		newlen = sref->count + 1;
+		if (! UpdateBufSize(newlen,buf,bufsize))
+			return False;
+		strncpy(*buf,&res->value[sref->offset],newlen);
+		(*buf)[newlen] = '\0';
+		break;
+	case REF_COORD:
+		cp = res->value + sref->offset + sref->count + 2; 
+		if (! strtol(cp,&endp,10))
+			return False;
+		newlen = endp - &res->value[sref->offset];
+		if (! UpdateBufSize(newlen,buf,bufsize))
+			return False;
+		strncpy(*buf,&res->value[sref->offset],newlen);
+		(*buf)[newlen] = '\0';
+		break;
+	default:
+		return NULL;
+	}
+
+	/*
+	 * allocate a new sref, file it in order of use, and copy the contents
+	 * of the model sref, then return it.
+	 */
+	for (i = 0; i < sri->count; i++) {
+		if (sri->new_srefs[i] == NULL) {
+			sri->new_srefs[i] = NhlMalloc(sizeof(AppResSymRefRec));
+			if (! sri->new_srefs[i]) {
+				NHLPERROR((NhlFATAL,ENOMEM,NULL));
+				return NULL;
+			}
+			memcpy(sri->new_srefs[i],sref,sizeof(AppResSymRefRec));
+			return sri->new_srefs[i];
+		}
+	}
+	
+	return NULL;
+}
+static int symref_comp
+(
+        const void *p1,
+        const void *p2
+)
+{
+        const AppResSymRef sref1 = *(AppResSymRef *) p1;
+        const AppResSymRef sref2 = *(AppResSymRef *) p2;
+        int ret;
+
+	if (sref1->offset < sref2->offset)
+		return 1;
+
+	return -1;
+}
+
+/*
+ * This function replaces variable references with symref "handles" in 
+ * newly edited link functions or expressions. It handles a single 
+ * parameter of a function or an expression. This allows the variables to
+ * continue to be updated dynamically if only some other term in the 
+ * parameter or expression was modified. It must be called by the function
+ * where the editing happened, or at least before a new update, because 
+ * by the time the update happens, the variable state might have changed,
+ * and the current edit string may no longer compare properly to the reference
+ * value (formed by substituting the original plot app value). 
+ */ 
+	
+extern NhlErrorTypes NgPlotAppBackSubstituteValue
+(
+	int		go_id,
+	NrmQuark	qplotstyle,
+	NhlString	plotname,
+	NgDataProfile	dprof,
+	int		ditem_ix,
+	int		param_ix,
+	NhlString	value
+)
+{
+	PlotApp		papp = PlotAppList;
+	int		i;
+	NhlString	value_out = value;
+	NhlString	new_value = NULL;
+	int		size_out = 0;
+	int		value_len;
+	int		len_out;
+	NgDataItem	ditem;
+	NgResInfo 	rinfo;
+	AppObjRes 	res;
+	ResFunc 	res_func;
+	NhlString	ref_val;
+	int		ref_val_size;
+	NhlBoolean	single_term = False;
+	AppResSymRef 	sref = NULL;
+	SymRefInfoRec 	symref_info;
+	char		*buf = NULL;
+	int		bufsize = 0;
+	int		new_symref_count;
+	EditInfo	einfo;
+
+	if (! value) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+	          "NgPlotAppBackSubstituteValue: value not provided"));
+		return NhlFATAL;
+	}
+		
+	while (papp) {
+		if (papp->qname == qplotstyle) {
+			break;
+		}
+		papp = papp->next;
+	}
+	if (! papp) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			 "NgPlotAppBackSubstituteValue: invalid plot style"));
+		return NhlFATAL;
+	}
+	if (! dprof->plotdata) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+	          "NgPlotAppBackSubstituteValue: plot data is uninitialized"));
+		return NhlFATAL;
+	}
+	/*
+	 * this is a lot to do, for information that could be kept around
+	 * with the instance. Data Table initialization is a candidate
+	 * for optimization.
+	 */
+	InitializeDataTable(papp->data_count);
+	for (i = 0; i < papp->data_count; i++) {
+		DataTable dt = &Data_Table[i];
+		NgPlotData pdata = &dprof->plotdata[i];
+
+		dt->appdata = &papp->data[i];
+		GetInfo(dt,pdata->vdata);
+		MatchDimensions(dt->appdata,dt,pdata->vdata);
+		TransferVarData(dt,pdata->vdata);
+	}
+	len_out = value_len = strlen(value);
+
+	ditem = dprof->ditems[ditem_ix];
+	rinfo = ditem->res_info;
+	if (! (rinfo && rinfo->rdata)) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+	          "NgPlotAppBackSubstituteValue: res info not available"));
+		return NhlFATAL;
+	}
+	res = (AppObjRes) rinfo->rdata;
+
+	memset(&symref_info,0,sizeof(SymRefInfoRec));
+
+	if (param_ix < 0) { /* not a function param */
+		ref_val = SubstituteExpression
+			(papp,plotname,rinfo,res->symrefs,res->rfuncs,
+			 res->value,&symref_info,&single_term,&sref);
+	}
+	else {
+
+		for (res_func = res->rfuncs; res_func; 
+		     res_func = res_func->next) {
+			if (res_func->finfo->qfunc == rinfo->qsym)
+				break;
+		}
+		if (! res_func) {
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+	                  "NgPlotAppBackSubstituteValue: res func not found"));
+			return NhlFATAL;
+		}
+		ref_val = SubstituteParam
+			(papp,plotname,res->symrefs,res_func,param_ix,
+			 res->value,&symref_info,&single_term,&sref);
+	}
+
+	for (i = 0; i < dprof->plotdata_count; i++) {
+		NgPlotData	plotdata = &dprof->plotdata[i];
+		NhlString 	vname,fname = NULL;
+		char		*cp,*endp;
+		NhlBoolean	is_subsection;
+
+		if (! plotdata->vdata->qvar)
+			continue;
+		
+		if (! new_value) {
+			if (!UpdateBufSize(value_len,&new_value,&size_out))
+				return NhlFATAL;
+			strcpy(new_value,value);
+		}
+		cp = new_value;
+		while (cp = VarRefInValue
+		       (cp,plotdata->vdata,&endp,&is_subsection)) {
+			int len = endp - cp;
+			int newlen;
+			NhlString varsym;
+			int j,lendiff,n_to_move;
+
+			if (! UpdateBufSize(len,&buf,&bufsize))
+				return NhlFATAL;
+			strncpy(buf,cp,len);
+			buf[len] = '\0';
+
+			sref = BackSubstitute
+			    (ditem,ref_val,&symref_info,&buf,&bufsize);
+			if (! sref) {
+				cp = endp;
+				continue;
+			}
+			sref->offset = cp - new_value;
+
+			newlen = strlen(buf);
+			lendiff = newlen - len;
+			len_out = len_out + lendiff;
+
+			if (! UpdateBufSize(MAX(len_out,value_len),
+					    &new_value,&size_out))
+				return NhlFATAL;
+			n_to_move = strlen(endp);
+			memmove(endp + lendiff,endp,n_to_move);
+			strncpy(cp,buf,newlen);
+			cp = endp + lendiff;
+			cp[n_to_move] = '\0';
+
+			/*
+			 * symrefs from previous loops need their offsets
+			 * adjusted if they come after this symref in the
+			 * string. The current sref should be the last in
+			 * the new list at this point.
+			 */
+			for (j = 0; symref_info.new_srefs[j]; j++) {
+				AppResSymRef new_sref = 
+					symref_info.new_srefs[j];
+				if (new_sref == sref)
+					break;
+				if (new_sref->offset > sref->offset)
+					new_sref->offset += lendiff;
+			}
+		}
+	}
+	if (buf)
+		NhlFree(buf);
+
+	/*
+	 * now the new symrefs must be sorted by descending offset like
+	 * the regular symrefs are.
+	 */
+	i = 0;
+	if (symref_info.new_srefs)
+		while (symref_info.new_srefs[i])
+			i++;
+	new_symref_count = i;
+
+	if (! (new_symref_count && new_value)) {
+		FreeSymRefInfo(&symref_info);
+		return NhlNOERROR;
+	}
+
+	qsort(symref_info.new_srefs,new_symref_count,sizeof(AppResSymRef),
+	      symref_comp);
+	/*
+	 * now link them together like regular symrefs
+	 */
+	for (i = 0; i < new_symref_count; i++) {
+		sref = symref_info.new_srefs[i];
+		if (i + 1 < symref_info.alloc)
+			sref->next = symref_info.new_srefs[i+1];
+		else
+			sref->next = NULL;
+	}
+	einfo = NhlMalloc(sizeof(EditInfoRec));
+	if (! einfo) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NhlFATAL;
+	}
+	einfo->value = new_value; 
+	einfo->srefs = symref_info.new_srefs[0];
+	
+	if (param_ix < 0) {
+		if (rinfo->edata) {
+			FreeEditInfo(rinfo->edata);
+		}
+		rinfo->edata = (NhlPointer) einfo;
+		rinfo->free_edata = FreeEditInfo;
+	}
+	else {
+		NgArgInfo arg = &rinfo->args[param_ix];
+		
+		if (arg->edata) {
+			FreeEditInfo(arg->edata);
+		}
+		arg->edata = (NhlPointer) einfo;
+		arg->free_edata = FreeEditInfo;
+	}
+	FreeSymRefInfo(&symref_info);
 
 	return NhlNOERROR;
 }

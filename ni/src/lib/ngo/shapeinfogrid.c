@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.19 1999-12-11 01:02:37 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.20 2000-01-10 21:08:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1072,13 +1072,16 @@ NewCoordValue
         int index;
         char *sval;
         int slen;
-        static NgShapeInfoGrid *last_sip = NULL;
+        static NrmQuark qfile = NrmNULLQUARK, qvar = NrmNULLQUARK;
         static int last_column = -1;
         static NclExtValueRec *val = NULL;
 
-        if (! val || sip != last_sip || column != last_column) {
-                last_sip = sip;
+        if (! (val && qfile == sirp->qfileref && 
+	       sirp->vinfo->name == qvar && column == last_column)) {
                 last_column = column;
+		qfile = sirp->qfileref;
+		qvar = sirp->vinfo->name;
+
                 if (val) {
                         if (val->constant != 0)
                                 NclFree(val->value);

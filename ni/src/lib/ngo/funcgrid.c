@@ -1,5 +1,5 @@
 /*
- *      $Id: funcgrid.c,v 1.2 1999-12-11 01:02:34 dbrown Exp $
+ *      $Id: funcgrid.c,v 1.3 2000-01-10 21:08:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -195,13 +195,13 @@ static void CompleteFuncToolEdit
 		ditem->vdata->cflags = _NgSYMBOL_CHANGE;
 		modified = False;
 	}
-	else if (! is_new) {
-		;	
-	}
 	else if (! new_value) {
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 			   "internal error retrieving func tool value"));
 		return;
+	}
+	else if (! is_new) {
+		;	
 	}
 	else {
 		if (enabled)
