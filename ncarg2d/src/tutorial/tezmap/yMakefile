@@ -1,12 +1,12 @@
 #
-#	$Id: yMakefile,v 1.1 1993-01-13 18:00:29 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-01-13 21:53:43 haley Exp $
 #
 NCARG	= ../../../..
 
 MYNAME	= tezmap
 
 GENERIC_SRCS = \
-	cezmap1.f cezmap2.f cezmap3.f cmpclr.f cmpcc.f cmpdd.f cmpdrw.f cmpel.f \
+	cezmap1.f cezmap2.f cezmap3.f cmpclr.f cmpdd.f cmpdrw.f cmpel.f \
 	cmpfil.f cmpgci.f cmpgrd.f cmpgrp.f cmpita.f cmpitm.f cmplab.f cmplbl.f \
 	cmplot.f cmpmsk.f cmpou.f cmppos.f cmpsat.f cmpsup.f cmptit.f cmptra.f \
 	cmpusr.f
