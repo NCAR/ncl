@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.7 2000-08-26 03:01:05 haley Exp $
+#	$Id: yMakefile,v 1.8 2004-09-27 22:33:07 fred Exp $
 #
 
 MYNAME	= enatgrid
@@ -37,5 +37,6 @@ FExampleTarget(nnex01d,nnex01d.o nnplotf.o)
 CExampleTarget(c_nnex01,c_nnex01.o nnplotc.o)
 CExampleTarget(c_nnex02,c_nnex02.o nnplotc.o)
 CExampleTarget(c_nnex03,c_nnex03.o nnplotc.o)
+CExampleTarget(c_nnex04,c_nnex04.o nnplotc.o)
 CExampleTarget(c_nnex06,c_nnex06.o nnplotc.o)
 CExampleTarget(c_nnex01d,c_nnex01d.o nnplotc.o)
