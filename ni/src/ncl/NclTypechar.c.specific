@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypechar.c.specific,v 1.2 1995-11-03 00:00:55 ethan Exp $
+ *      $Id: NclTypechar.c.specific,v 1.3 1996-11-16 00:45:47 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -43,6 +43,85 @@ void *val;
                 return(NhlNOERROR);
         }
 }
+
+
+
+static NhlErrorTypes Ncl_Type_char_coerce
+#if     NhlNeedProto
+(void * result, void* from, int n, NclScalar* from_m, NclScalar *to_m,NclTypeClass fc)
+#else
+(result, from, n, from_m, to_m, fc)
+void * result;
+void* from;
+int n;
+NclScalar* from_m;
+NclScalar *to_m;
+NclTypeClass fc;
+#endif
+{
+        int i;
+        char *res = (char*)result;
+        logical tmp;
+        NclTypeOp eq;
+        NclScalar tmp_mis;
+
+        if((fc == NULL)||(fc->type_class.eq == NULL)
+                ||(result == NULL)
+                ||(from==NULL))
+                return(NhlFATAL);
+        else
+                eq = fc->type_class.eq;
+
+        if(to_m == NULL){
+                tmp_mis.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+        } else {
+                tmp_mis.charval = to_m->charval;
+        }
+
+        switch(fc->type_class.type) {
+        case Ncl_Typebyte: {
+                byte *fl = (byte*)from;
+                if(from_m == NULL) {
+                        for(i = 0; i < n;i++,res++,fl++)  {
+                                *res = *fl;
+                        }
+                } else {
+                        for(i = 0; i < n;i++,res++,fl++)  {
+                                tmp = 0;
+                                (*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+                                if(tmp) {
+                                        *res = tmp_mis.charval;
+                                } else {
+                                        *res = (char)*fl;
+                                }
+                        }
+                }
+                return(NhlNOERROR);
+        }	
+        case Ncl_Typechar: {
+                char *fl = (char*)from;
+                if(from_m == NULL) {
+                        for(i = 0; i < n;i++,res++,fl++)  {
+                                *res = *fl;
+                        }
+                } else {
+                        for(i = 0; i < n;i++,res++,fl++)  {
+                                tmp = 0;
+                                (*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+                                if(tmp) {
+                                        *res = tmp_mis.charval;
+                                } else {
+                                        *res = (char)*fl;
+                                }
+                        }
+                }
+                return(NhlNOERROR);
+        }	
+	default:
+		return(NhlFATAL);
+	}
+}
+
 
 static NhlErrorTypes Ncl_Type_char_cmpf
 #if     NhlNeedProto

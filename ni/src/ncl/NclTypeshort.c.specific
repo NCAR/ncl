@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypeshort.c.specific,v 1.3 1995-11-03 00:01:04 ethan Exp $
+ *      $Id: NclTypeshort.c.specific,v 1.4 1996-11-16 00:45:51 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -81,6 +81,26 @@ NclTypeClass fc;
 	}
 
 	switch(fc->type_class.type) {
+	case Ncl_Typeshort: {
+		short *fl = (short*)from;
+
+		if(from_m == NULL) {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				*res = (short)*fl;
+			}
+		} else {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				tmp = 0;
+				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+				if(tmp) {
+					*res = tmp_mis.shortval;
+				} else {
+					*res = *fl;
+				}
+			}
+		}
+		return(NhlNOERROR);
+	}
 	case Ncl_Typebyte: {
 		byte *fl = (byte*)from;
 

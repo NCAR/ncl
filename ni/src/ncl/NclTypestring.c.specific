@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypestring.c.specific,v 1.3 1995-11-03 00:01:05 ethan Exp $
+ *      $Id: NclTypestring.c.specific,v 1.4 1996-11-16 00:45:52 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -103,6 +103,25 @@ NclTypeClass fc;
 					*res = tmp_mis.stringval;
 				} else {
 					*res = (*fl?true:false) ;
+				}
+			}
+		}
+		return(NhlNOERROR);
+	}
+	case Ncl_Typestring: {
+		string *fl = (string*)from;
+		if(from_m == NULL) {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				*res = *fl;
+			}
+		} else {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				tmp = 0;
+				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+				if(tmp) {
+					*res = tmp_mis.stringval;
+				} else {
+					*res = *fl;
 				}
 			}
 		}

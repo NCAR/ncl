@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#      $Id: char_data_c.sh,v 1.5 1995-04-19 00:02:01 ethan Exp $
+#      $Id: char_data_c.sh,v 1.6 1996-11-16 00:45:57 ethan Exp $
 #
 #########################################################################
 #									#
@@ -69,7 +69,6 @@ sed \
 -e 's/Ncl_Type_char_or/NULL/' \
 -e 's/Ncl_Type_char_xor_type/NULL/' \
 -e 's/Ncl_Type_char_xor/NULL/' \
--e 's/Ncl_Type_char_coerce/NULL/' \
 NclType.c.sed > NclTypechar.c
 
 rm .tmp.$$

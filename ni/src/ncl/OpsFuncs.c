@@ -180,9 +180,10 @@ int operation;
 		}
 	}
 	if((lhs_data_obj != NULL)&&(rhs_data_obj != NULL)) {
-		if((lhs_data_obj->multidval.kind != SCALAR)&&((lhs_data_obj->obj.status == TEMPORARY)||(lhs.u.data_obj->obj.status == TEMPORARY))) {
+
+		if(((lhs_data_obj->multidval.kind != SCALAR)||(lhs_data_obj->multidval.kind == rhs_data_obj->multidval.kind))&&((lhs_data_obj->obj.status == TEMPORARY)||(lhs.u.data_obj->obj.status == TEMPORARY))) {
 			result->u.data_obj = lhs_data_obj;
-		} else if((rhs_data_obj->multidval.kind != SCALAR)&&((rhs_data_obj->obj.status == TEMPORARY)||(rhs.u.data_obj->obj.status == TEMPORARY))) {
+		} else if(((rhs_data_obj->multidval.kind != SCALAR)||(lhs_data_obj->multidval.kind == rhs_data_obj->multidval.kind))&&((rhs_data_obj->obj.status == TEMPORARY)||(rhs.u.data_obj->obj.status == TEMPORARY))) {
 			result->u.data_obj = rhs_data_obj;
 		} else {
 			result->u.data_obj = NULL;
@@ -565,8 +566,15 @@ NhlErrorTypes _NclBuildArray
 	ptr = (char*)value;
 	memcpy(ptr,(char*)theobj->multidval.val,partsize);
 	ptr += partsize;
-	if(theobj->obj.status != PERMANENT) {
-		_NclDestroyObj((NclObj)theobj);
+	if((data.kind == NclStk_VAR)&&(data.u.data_obj->obj.status != PERMANENT)){
+		if((data.u.data_obj->obj.id != theobj->obj.id)&&(theobj->obj.status != PERMANENT)){
+			_NclDestroyObj((NclObj)theobj);
+		}
+		_NclDestroyObj((NclObj)data.u.data_obj);
+	} else if((data.kind == NclStk_VAR)&&(data.u.data_var->obj.status != PERMANENT)) {
+		if(theobj->obj.status != PERMANENT)
+			_NclDestroyObj((NclObj)theobj);
+		_NclDestroyObj((NclObj)data.u.data_var);
 	}
 
 
@@ -650,9 +658,6 @@ NhlErrorTypes _NclBuildArray
 					mis_ptr = &themissing;
 					themissing = theobj->multidval.missing_value.value;
 				}
-				if(data.u.data_var->obj.status != PERMANENT) {
-					_NclDestroyObj((NclObj)data.u.data_var);
-				}
 			} else {
 				theobj = _NclVarValueRead(data.u.data_var,NULL,NULL);
 				if(theobj == NULL) {
@@ -687,8 +692,17 @@ NhlErrorTypes _NclBuildArray
 		}
 		memcpy(ptr,(char*)theobj->multidval.val,partsize);
 		ptr += partsize;
-		if(theobj->obj.status != PERMANENT) {
-			_NclDestroyObj((NclObj)theobj);
+		if((data.kind == NclStk_VAL)&&(data.u.data_obj->obj.status != PERMANENT)) {
+			if((data.u.data_obj->obj.id != theobj->obj.id)&&(theobj->obj.status != PERMANENT))
+				_NclDestroyObj((NclObj)theobj);
+
+			_NclDestroyObj((NclObj)data.u.data_obj);
+		} else if((data.kind == NclStk_VAR)&&(data.u.data_var->obj.status != PERMANENT)) {
+
+			if(theobj->obj.status != PERMANENT)
+				_NclDestroyObj((NclObj)theobj);
+
+			_NclDestroyObj((NclObj)data.u.data_var);
 		}
 	}
 	result->kind = NclStk_VAL;

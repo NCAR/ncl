@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.45 1996-10-25 15:42:13 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.46 1996-11-16 00:45:43 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -5235,6 +5235,261 @@ NhlErrorTypes _NclIIsFileVarDim
 	}
 
 }
+
+
+NhlErrorTypes _Nclsum
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NclMultiDValData tmp_md = NULL;
+	void *out_val;
+	int dimsizes = 1;
+	logical *tmp;
+	int i;
+
+	data = _NclGetArg(0,1,DONT_CARE);
+	switch(data.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+
+
+	if(tmp_md->multidval.missing_value.has_missing) {
+		tmp = (logical*)NclMalloc(sizeof(logical)*tmp_md->multidval.totalelements);
+		_Ncleq(tmp_md->multidval.type,tmp,tmp_md->multidval.val,&(tmp_md->multidval.missing_value.value),NULL,NULL,tmp_md->multidval.totalelements,1);
+		out_val = (void*)NclMalloc(tmp_md->multidval.type->type_class.size);
+		i = 0;
+		while((tmp[i])&&(i<tmp_md->multidval.totalelements)) {
+			i++;
+		}
+		if(i==tmp_md->multidval.totalelements) {
+/*
+* return missing
+*/
+				memcpy(out_val,&(tmp_md->multidval.type->type_class.default_mis),tmp_md->multidval.type->type_class.size);
+				return(NclReturnValue(
+					out_val,
+					1,
+					&dimsizes,
+					&(tmp_md->multidval.missing_value.value),
+					tmp_md->multidval.type->type_class.data_type,
+					0
+				));
+		}
+		memcpy(out_val,&(((char*)tmp_md->multidval.val)[i*tmp_md->multidval.type->type_class.size]),tmp_md->multidval.type->type_class.size);
+		i = i+1;
+		for(; i < tmp_md->multidval.totalelements; i++) {
+			if(!tmp[i]) {
+				_Nclplus(tmp_md->multidval.type,out_val,&(((char*)tmp_md->multidval.val)[tmp_md->multidval.type->type_class.size*i]),out_val,NULL,NULL,1,1);
+			}
+		}
+	} else {
+		out_val = (void*)NclMalloc(tmp_md->multidval.type->type_class.size);
+		memcpy(out_val,tmp_md->multidval.val,tmp_md->multidval.type->type_class.size);
+		for(i = 1; i < tmp_md->multidval.totalelements; i++) {
+			_Nclplus(tmp_md->multidval.type,out_val,&(((char*)tmp_md->multidval.val)[tmp_md->multidval.type->type_class.size*i]),out_val,NULL,NULL,1,1);
+		}
+	}
+
+	return(NclReturnValue(
+		out_val,
+		1,
+		&dimsizes,
+		NULL,
+		tmp_md->multidval.type->type_class.data_type,
+		0
+	));
+}
+
+NhlErrorTypes _Nclavg
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NclMultiDValData tmp_md = NULL;
+	void *sum_val;
+	void *out_val;
+	void *div_val;
+	int dimsizes = 1;
+	logical *tmp;
+	int i,n;
+	short tmp1;
+	NclBasicDataTypes data_type;
+
+	data = _NclGetArg(0,1,DONT_CARE);
+	switch(data.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+
+
+	if(tmp_md->multidval.missing_value.has_missing) {
+		tmp = (logical*)NclMalloc(sizeof(logical)*tmp_md->multidval.totalelements);
+		_Ncleq(tmp_md->multidval.type,tmp,tmp_md->multidval.val,&(tmp_md->multidval.missing_value.value),NULL,NULL,tmp_md->multidval.totalelements,1);
+		sum_val = (void*)NclMalloc(tmp_md->multidval.type->type_class.size);
+		out_val = (void*)NclMalloc(sizeof(double));
+		div_val = (void*)NclMalloc(sizeof(double));
+		i = 0;
+		while((tmp[i])&&(i<tmp_md->multidval.totalelements)) {
+			i++;
+		}
+		if(i==tmp_md->multidval.totalelements) {
+/*
+* return missing
+*/
+				memcpy(sum_val,&(tmp_md->multidval.type->type_class.default_mis),tmp_md->multidval.type->type_class.size);
+				return(NclReturnValue(
+					sum_val,
+					1,
+					&dimsizes,
+					&(tmp_md->multidval.missing_value.value),
+					tmp_md->multidval.type->type_class.data_type,
+					0
+				));
+		}
+		n = 1;
+		memcpy(sum_val,&(((char*)tmp_md->multidval.val)[i*tmp_md->multidval.type->type_class.size]),tmp_md->multidval.type->type_class.size);
+		i = i+1;
+		for(; i < tmp_md->multidval.totalelements; i++) {
+		
+			if(!tmp[i]) {
+				_Nclplus(tmp_md->multidval.type,sum_val,&(((char*)tmp_md->multidval.val)[tmp_md->multidval.type->type_class.size*i]),sum_val,NULL,NULL,1,1);
+				n = n+1;
+			}
+		}
+		if(_Nclcoerce((NclTypeClass)nclTypefloatClass,out_val,sum_val,1,NULL,NULL,tmp_md->multidval.type) == NhlFATAL) {
+			if(_Nclcoerce((NclTypeClass)nclTypedoubleClass,out_val,sum_val,1,NULL,NULL,tmp_md->multidval.type) == NhlFATAL) {
+                               		memcpy(sum_val,&(((NclTypeClass)nclTypefloatClass)->type_class.default_mis),((NclTypeClass)nclTypefloatClass)->type_class.size);
+                               		return(NclReturnValue(
+                               			sum_val,
+                                       		1,
+                                       		&dimsizes,
+                                       		&(((NclTypeClass)nclTypefloatClass)->type_class.default_mis),
+						NCL_float,
+                                      		0
+                               		));
+			} else {
+				if(_Nclcoerce((NclTypeClass)nclTypedoubleClass,div_val,&n,1,NULL,NULL,(NclTypeClass)nclTypeintClass) == NhlFATAL) {
+	/*
+	* return missing
+	*/
+                                		memcpy(sum_val,&(((NclTypeClass)nclTypefloatClass)->type_class.default_mis),((NclTypeClass)nclTypefloatClass)->type_class.size);
+                               			return(NclReturnValue(
+                                       			sum_val,
+                                       			1,
+                                       			&dimsizes,
+                                       			&(((NclTypeClass)nclTypefloatClass)->type_class.default_mis),
+							NCL_float,
+                                      			0
+                               			));
+				}
+				_Ncldivide((NclTypeClass)nclTypedoubleClass,out_val,out_val,div_val,NULL,NULL,1,1);
+				data_type = NCL_double;
+			}
+		} else  {
+			if(_Nclcoerce((NclTypeClass)nclTypefloatClass,div_val,&n,1,NULL,NULL,(NclTypeClass)nclTypeintClass) == NhlFATAL) {
+	/*
+	* return missing
+	*/
+                                		memcpy(sum_val,&(((NclTypeClass)nclTypefloatClass)->type_class.default_mis),((NclTypeClass)nclTypefloatClass)->type_class.size);
+                               			return(NclReturnValue(
+                                       			sum_val,
+                                       			1,
+                                       			&dimsizes,
+                                       			&(((NclTypeClass)nclTypefloatClass)->type_class.default_mis),
+							NCL_float,
+                                      			0
+                               			));
+			}
+			_Ncldivide((NclTypeClass)nclTypefloatClass,out_val,out_val,div_val,NULL,NULL,1,1);
+			data_type = NCL_float;
+		}
+	} else {
+		sum_val = (void*)NclMalloc(tmp_md->multidval.type->type_class.size);
+		out_val = (void*)NclMalloc(sizeof(double));
+		div_val = (void*)NclMalloc(sizeof(double));
+		memcpy(sum_val,tmp_md->multidval.val,tmp_md->multidval.type->type_class.size);
+		for(i = 1; i < tmp_md->multidval.totalelements; i++) {
+			_Nclplus(tmp_md->multidval.type,sum_val,&(((char*)tmp_md->multidval.val)[tmp_md->multidval.type->type_class.size*i]),sum_val,NULL,NULL,1,1);
+		}
+		if(_Nclcoerce((NclTypeClass)nclTypefloatClass,out_val,sum_val,1,NULL,NULL,tmp_md->multidval.type) == NhlFATAL) {
+			if(_Nclcoerce((NclTypeClass)nclTypedoubleClass,out_val,sum_val,1,NULL,NULL,tmp_md->multidval.type) == NhlFATAL) {
+                               		memcpy(sum_val,&(((NclTypeClass)nclTypefloatClass)->type_class.default_mis),((NclTypeClass)nclTypefloatClass)->type_class.size);
+                               		return(NclReturnValue(
+                               			sum_val,
+                                       		1,
+                                       		&dimsizes,
+                                       		&(((NclTypeClass)nclTypefloatClass)->type_class.default_mis),
+						NCL_float,
+                                      		0
+                               		));
+			} else {
+				if(_Nclcoerce((NclTypeClass)nclTypedoubleClass,div_val,&tmp_md->multidval.totalelements,1,NULL,NULL,(NclTypeClass)nclTypeintClass) == NhlFATAL) {
+	/*
+	* return missing
+	*/
+                                		memcpy(sum_val,&(((NclTypeClass)nclTypefloatClass)->type_class.default_mis),((NclTypeClass)nclTypefloatClass)->type_class.size);
+                               			return(NclReturnValue(
+                                       			sum_val,
+                                       			1,
+                                       			&dimsizes,
+                                       			&(((NclTypeClass)nclTypefloatClass)->type_class.default_mis),
+							NCL_float,
+                                      			0
+                               			));
+				}
+				_Ncldivide((NclTypeClass)nclTypedoubleClass,out_val,out_val,div_val,NULL,NULL,1,1);
+				data_type = NCL_double;
+			}
+		} else  {
+			if(_Nclcoerce((NclTypeClass)nclTypefloatClass,div_val,&tmp_md->multidval.totalelements,1,NULL,NULL,(NclTypeClass)nclTypeintClass) == NhlFATAL) {
+	/*
+	* return missing
+	*/
+                                		memcpy(sum_val,&(((NclTypeClass)nclTypefloatClass)->type_class.default_mis),((NclTypeClass)nclTypefloatClass)->type_class.size);
+                               			return(NclReturnValue(
+                                       			sum_val,
+                                       			1,
+                                       			&dimsizes,
+                                       			&(((NclTypeClass)nclTypefloatClass)->type_class.default_mis),
+							NCL_float,
+                                      			0
+                               			));
+			}
+			_Ncldivide((NclTypeClass)nclTypefloatClass,out_val,out_val,div_val,NULL,NULL,1,1);
+			data_type = NCL_float;
+		}
+	}
+
+	return(NclReturnValue(
+		out_val,
+		1,
+		&dimsizes,
+		NULL,
+		data_type,
+		0
+	));
+}
+
 #ifdef __cplusplus
 }
 #endif

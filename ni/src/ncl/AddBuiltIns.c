@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.17 1996-04-19 23:05:18 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.18 1996-11-16 00:45:42 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,16 @@ extern "C" {
 #include "MathFuncs.h"
 #include "HLUFunctions.h"
 
+extern NhlErrorTypes _Nclsum(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _Nclavg(
+#if NhlNeedProto
+void
+#endif
+);
 
 extern NhlErrorTypes _NclIinttobyte(
 #if NhlNeedProto
@@ -639,6 +649,16 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
 	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsDim,args,"isdim",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+	NclRegisterFunc( _Nclsum,args,"sum",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+	NclRegisterFunc( _Nclavg,args,"avg",nargs);
 
 
 

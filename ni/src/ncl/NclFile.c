@@ -303,6 +303,65 @@ NhlArgVal udata;
 	}
 }
 
+static void LoadVarAtts
+#if     NhlNeedProto
+(NclFile thefile, NclQuark var)
+#else
+(NclFile thefile, NclQuark var)
+NclFile thefile;
+NclQuark var;
+#endif
+{
+	int index;
+        NclFileAttInfoList *step;
+        int att_id = -1;
+        void *val;
+        NclMultiDValData tmp_md;
+        NhlArgVal udata;
+	
+
+	index = FileIsVar(thefile,var);
+        if(index > -1) {
+		if(thefile->file.var_att_ids[index] == -1) {
+			step = thefile->file.var_att_info[index];
+			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)thefile);
+			while(step != NULL) {
+				val = NclMalloc(_NclSizeOf(step->the_att->data_type)* step->the_att->num_elements );
+				(void)(*thefile->file.format_funcs->read_var_att)(
+					thefile->file.private_rec,
+					var,
+					step->the_att->att_name_quark,
+					val
+					);
+				tmp_md = _NclCreateMultiDVal(
+						NULL,
+						NULL,
+						Ncl_MultiDValData,
+						0,
+						val,
+						NULL,
+						1,
+						&step->the_att->num_elements,
+						TEMPORARY,
+						NULL,
+						_NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(step->the_att->data_type))
+						);
+				if(tmp_md != NULL) {
+					_NclAddAtt(att_id,NrmQuarkToString(step->the_att->att_name_quark),tmp_md,NULL);
+				}
+				step = step->next;
+			}
+			udata.ptrval = (void*)NclMalloc(sizeof(FileCallBackRec));
+			((FileCallBackRec*)udata.ptrval)->thefileid = thefile->obj.id;
+			((FileCallBackRec*)udata.ptrval)->theattid = att_id;
+			((FileCallBackRec*)udata.ptrval)->thevar = var;
+			thefile->file.var_att_cb[index] = _NclAddCallback((NclObj)_NclGetObj(att_id),NULL,FileAttIsBeingDestroyedNotify,ATTDESTROYED,&udata);
+			thefile->file.var_att_ids[index] = att_id;
+			return;
+		}
+	}
+}
+
 NhlErrorTypes FilePrint
 #if	NhlNeedProto
 (NclObj self, FILE    *fp)
@@ -1986,43 +2045,12 @@ struct _NclSelectionRecord* sel_ptr;
 			return(NULL);
 		}
 
-
-		if(thefile->file.var_att_ids[index] != -1) {
-			att_id = thefile->file.var_att_ids[index];
-			att_obj = (NclObj)_NclCopyAtt((NclAtt)_NclGetObj(att_id),NULL);
-			if(att_obj != NULL) {
-				att_id = att_obj->obj.id;
-			} else {
-				att_id = -1;
-			}
-		} else if(thefile->file.var_att_info[index] != NULL){
-			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)thefile);
-			step = thefile->file.var_att_info[index];
-			while(step != NULL) {
-				tmp_att_md = FileReadVarAtt(thefile,thefile->file.var_info[index]->var_name_quark,step->the_att->att_name_quark,NULL);
-				if(tmp_att_md != NULL) {
-					if(tmp_att_md->obj.status == TEMPORARY) {
-						_NclAddAtt(att_id,NrmQuarkToString(step->the_att->att_name_quark),tmp_att_md,NULL);
-					} else {
-						tmp_att_md = _NclCopyVal(tmp_att_md,NULL);
-						_NclAddAtt(att_id,NrmQuarkToString(step->the_att->att_name_quark),tmp_att_md,NULL);
-					}
-		
-				}
-				step = step->next;
-			}
-			thefile->file.var_att_ids[index] = att_id;
-			udata.ptrval = (void*)NclMalloc(sizeof(FileCallBackRec));
-			((FileCallBackRec*)udata.ptrval)->thefileid = thefile->obj.id;
-			((FileCallBackRec*)udata.ptrval)->theattid = att_id;
-			((FileCallBackRec*)udata.ptrval)->thevar = var_name;
-			thefile->file.var_att_cb[index] = _NclAddCallback((NclObj)_NclGetObj(att_id),NULL,FileAttIsBeingDestroyedNotify,ATTDESTROYED,&udata);
-			att_obj = (NclObj)_NclCopyAtt((NclAtt)_NclGetObj(att_id),NULL);
-			if(att_obj != NULL) {
-				att_id = att_obj->obj.id;
-			} else {
-				att_id = -1;
-			}
+		if(thefile->file.var_att_ids[index] == -1)
+			LoadVarAtts(thefile,var_name);
+		att_id = thefile->file.var_att_ids[index];
+		att_obj = (NclObj)_NclCopyAtt((NclAtt)_NclGetObj(att_id),NULL);
+		if(att_obj != NULL) {
+			att_id = att_obj->obj.id;
 		} else {
 			att_id = -1;
 		}
@@ -2138,7 +2166,6 @@ NclQuark theatt;
 	}
 	return(-1);
 }
-
 static struct _NclMultiDValDataRec *FileReadVarAtt
 #if	NhlNeedProto
 (NclFile thefile, NclQuark var, NclQuark attname, struct _NclSelectionRecord *sel_ptr)
@@ -2160,48 +2187,9 @@ struct _NclSelectionRecord *sel_ptr;
 	aindex = FileIsVarAtt(thefile,var,attname);
 	if(aindex > -1) {
 		index = FileIsVar(thefile,var);
-		if(thefile->file.var_att_ids[index] != -1) {
-			return(_NclGetAtt(thefile->file.var_att_ids[index],NrmQuarkToString(attname),sel_ptr));
-		}
-		if(thefile->file.format_funcs->read_var_att != NULL) {
-			step = thefile->file.var_att_info[index];
-			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)thefile);
-			while(step != NULL) {
-				val = NclMalloc(_NclSizeOf(step->the_att->data_type)* step->the_att->num_elements );
-				(void)(*thefile->file.format_funcs->read_var_att)(
-					thefile->file.private_rec,
-					var,
-					step->the_att->att_name_quark,
-					val
-					);
-				tmp_md = _NclCreateMultiDVal(
-						NULL,
-						NULL,
-						Ncl_MultiDValData,
-						0,
-						val,
-						NULL,
-						1,
-						&step->the_att->num_elements,
-						TEMPORARY,
-						NULL,
-						_NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(step->the_att->data_type))
-						);
-				if(tmp_md != NULL) {
-					_NclAddAtt(att_id,NrmQuarkToString(step->the_att->att_name_quark),tmp_md,NULL);
-				}
-				step = step->next;
-			}
-			udata.ptrval = (void*)NclMalloc(sizeof(FileCallBackRec));
-			((FileCallBackRec*)udata.ptrval)->thefileid = thefile->obj.id;
-			((FileCallBackRec*)udata.ptrval)->theattid = att_id;
-			((FileCallBackRec*)udata.ptrval)->thevar = var;
-			thefile->file.var_att_cb[index] = _NclAddCallback((NclObj)_NclGetObj(att_id),NULL,FileAttIsBeingDestroyedNotify,ATTDESTROYED,&udata);
-			if(att_id != -1) {	
-				thefile->file.var_att_ids[index] = att_id;
-				return(_NclGetAtt(thefile->file.var_att_ids[index],NrmQuarkToString(attname),sel_ptr));
-			}
-		}
+		if(thefile->file.var_att_ids[index] == -1) 
+			LoadVarAtts(thefile,var);
+		return(_NclGetAtt(thefile->file.var_att_ids[index],NrmQuarkToString(attname),sel_ptr));
 	}
 	NhlPError(NhlWARNING,NhlEUNKNOWN,"FileReadVarAtt: (%s) is not an attribute of (%s)",NrmQuarkToString(attname),NrmQuarkToString(var));
 	return(_NclCreateMissing());
@@ -3344,30 +3332,10 @@ struct _NclSelectionRecord * sel_ptr;
 	if(thefile->file.wr_status<=0) {
 		index = FileIsVar(thefile,var);
 		if(index > -1) {
-			if(thefile->file.var_att_ids[index] == -1) {
-				att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)thefile);
-				step = thefile->file.var_att_info[index];
-				while(step != NULL){
-					tmp_att_md = FileReadVarAtt(thefile,var,step->the_att->att_name_quark,NULL);
-					if(tmp_att_md != NULL) {
-						if(tmp_att_md->obj.status == TEMPORARY){
-							_NclAddAtt(att_id,NrmQuarkToString(step->the_att->att_name_quark),tmp_att_md,NULL);
-						} else {
-							tmp_att_md = _NclCopyVal(tmp_att_md, NULL);
-							_NclAddAtt(att_id,NrmQuarkToString(step->the_att->att_name_quark),tmp_att_md,NULL);
-						}
-					}
-					step = step->next;
-				}
-				udata.ptrval = (void*)NclMalloc(sizeof(FileCallBackRec));
-				((FileCallBackRec*)udata.ptrval)->thefileid = thefile->obj.id;
-				((FileCallBackRec*)udata.ptrval)->theattid = att_id;
-				((FileCallBackRec*)udata.ptrval)->thevar = var;
-				thefile->file.var_att_cb[index] = _NclAddCallback((NclObj)_NclGetObj(att_id),NULL,FileAttIsBeingDestroyedNotify,ATTDESTROYED,&udata);
-				thefile->file.var_att_ids[index] = att_id;
-			}  else {
-				att_id = thefile->file.var_att_ids[index];
-			}
+			if(thefile->file.var_att_ids[index] == -1) 
+				LoadVarAtts(thefile,var);
+
+			att_id = thefile->file.var_att_ids[index];
 /*
 * Hereis the trick. It is easier to let the _NclAddAtt... functions deal
 * with the coercion than to figure out what it should be 
@@ -3910,44 +3878,15 @@ struct _NclSelectionRecord* sel_ptr;
 			FILE_COORD_VAR_ACCESS);
 		if(tmp_md == NULL) 
 			return(NULL);
-		if(thefile->file.var_att_ids[index] != -1) {
-			att_id = thefile->file.var_att_ids[index];
-			att_obj = (NclObj)_NclCopyAtt((NclAtt)_NclGetObj(att_id),NULL);
-			if(att_obj != NULL) {
-				att_id = att_obj->obj.id;
-			} else {
-				att_id = -1;
-			}
-		} else if(thefile->file.var_att_info[index] != NULL) {
-			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)thefile);
-			step = thefile->file.var_att_info[index];
-			while(step != NULL) {
-				tmp_att_md = FileReadVarAtt(thefile,thefile->file.var_info[index]->var_name_quark,step->the_att->att_name_quark,NULL);
-				if(tmp_att_md != NULL) {
-					if(tmp_att_md->obj.status == TEMPORARY){
-						_NclAddAtt(att_id,NrmQuarkToString(step->the_att->att_name_quark),tmp_att_md,NULL);
-					} else {
-						tmp_att_md = _NclCopyVal(tmp_att_md, NULL);
-						_NclAddAtt(att_id,NrmQuarkToString(step->the_att->att_name_quark),tmp_att_md,NULL);
-					}
-				}
-				step = step->next;
-			}
-			thefile->file.var_att_ids[index] = att_id;
-			udata.ptrval = (void*)NclMalloc(sizeof(FileCallBackRec));
-			((FileCallBackRec*)udata.ptrval)->thefileid = thefile->obj.id;
-			((FileCallBackRec*)udata.ptrval)->theattid = att_id;
-			((FileCallBackRec*)udata.ptrval)->thevar = coord_name;
-			thefile->file.var_att_cb[index] = _NclAddCallback((NclObj)_NclGetObj(att_id),NULL,FileAttIsBeingDestroyedNotify,ATTDESTROYED,&udata);
-			att_obj = (NclObj)_NclCopyAtt((NclAtt)_NclGetObj(att_id),NULL);
-			if(att_obj != NULL) {
-				att_id = att_obj->obj.id;
-			} else {
-				att_id = -1;
-			}
+		if(thefile->file.var_att_ids[index] == -1) 
+			LoadVarAtts(thefile,coord_name);
+		att_id = thefile->file.var_att_ids[index];
+		att_obj = (NclObj)_NclCopyAtt((NclAtt)_NclGetObj(att_id),NULL);
+		if(att_obj != NULL) {
+			att_id = att_obj->obj.id;
 		} else {
 			att_id = -1;
-		}		
+		}
 		if(sel_ptr != NULL) {
 			sel = sel_ptr->selection;
 		} else {

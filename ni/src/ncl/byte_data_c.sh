@@ -22,7 +22,6 @@ sed \
 -e 's/Ncl_Type_byte_mat/NULL/' \
 -e 's/Ncl_Type_byte_mod_type/NULL/' \
 -e 's/Ncl_Type_byte_mod/NULL/' \
--e 's/Ncl_Type_byte_coerce/NULL/' \
 NclType.c.sed > NclTypebyte.c
 
 rm .tmp.$$

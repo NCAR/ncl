@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypebyte.c.specific,v 1.3 1995-11-03 00:00:54 ethan Exp $
+ *      $Id: NclTypebyte.c.specific,v 1.4 1996-11-16 00:45:47 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,62 @@ void *val;
 		return(NhlWARNING);
 	} else {
 		return(NhlNOERROR);
+	}
+}
+static NhlErrorTypes Ncl_Type_byte_coerce
+#if     NhlNeedProto
+(void * result, void* from, int n, NclScalar* from_m, NclScalar *to_m,NclTypeClass fc)
+#else
+(result, from, n, from_m, to_m, fc)
+void * result;
+void* from;
+int n;
+NclScalar* from_m;
+NclScalar *to_m;
+NclTypeClass fc;
+#endif
+{
+        int i;
+        byte *res = (byte*)result;
+        logical tmp;
+        NclTypeOp eq;
+        NclScalar tmp_mis;
+
+        if((fc == NULL)||(fc->type_class.eq == NULL)
+                ||(result == NULL)
+                ||(from==NULL))
+                return(NhlFATAL);
+        else
+                eq = fc->type_class.eq;
+
+        if(to_m == NULL){
+                tmp_mis.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+        } else {
+                tmp_mis.byteval = to_m->byteval;
+        }
+
+        switch(fc->type_class.type) {
+        case Ncl_Typebyte: {
+                byte *fl = (byte*)from;
+                if(from_m == NULL) {
+                        for(i = 0; i < n;i++,res++,fl++)  {
+                                *res = *fl;
+                        }
+                } else {
+                        for(i = 0; i < n;i++,res++,fl++)  {
+                                tmp = 0;
+                                (*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+                                if(tmp) {
+                                        *res = tmp_mis.byteval;
+                                } else {
+                                        *res = *fl;
+                                }
+                        }
+                }
+                return(NhlNOERROR);
+        }	
+	default:
+		return(NhlFATAL);
 	}
 }
 

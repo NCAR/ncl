@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.33 1996-10-02 22:33:58 ethan Exp $
+ *      $Id: NclVar.c,v 1.34 1996-11-16 00:45:53 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2684,7 +2684,8 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 		att_list = tmp_att->att.att_list;
 		for(i = 0; i < tmp_att->att.n_atts; i++) {
 			if(_NclIsAtt(lhs->var.att_id,att_list->attname)) {
-				_NclDeleteAtt(lhs->var.att_id,att_list->attname);
+				if(NrmStringToQuark(att_list->attname) != NrmStringToQuark(NCL_MISSING_VALUE_ATT))
+					_NclDeleteAtt(lhs->var.att_id,att_list->attname);
 				_NclAddAtt(lhs->var.att_id,att_list->attname,att_list->attvalue,NULL);
 				att_list = att_list->next;
 			} else {
