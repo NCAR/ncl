@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.37 1998-06-03 19:36:11 dbrown Exp $
+ *      $Id: App.c,v 1.38 1998-06-17 17:26:19 boote Exp $
  */
 /************************************************************************
 *									*
@@ -69,7 +69,7 @@ static NhlErrorTypes AppGetValues(
 #endif
 );
 
-static NhlErrorTypes AppLayerDestroy(
+static NhlErrorTypes AppDestroy(
 #if	NhlNeedProto
 	NhlLayer	l
 #endif
@@ -205,7 +205,7 @@ NhlAppClassRec NhlappClassRec = {
 /* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	AppGetValues,
 /* layer_reparent		*/	NULL,
-/* layer_destroy		*/	AppLayerDestroy,
+/* layer_destroy		*/	AppDestroy,
 
 /* child_resources		*/	NULL,
 
@@ -508,9 +508,10 @@ AppInitialize
 			return NhlFATAL;
 		}
 
-		lret = NhlVACreate(&tint,anew->base.name,NhlappClass,0,
+		lret = NhlVACreate(&tint,"hlu",NhlappClass,0,
 				_NhlNappMode,	lang_type,
 				_NhlNdefApp,	True,
+				_NhlNnoAppDB,	True,
 				NULL);
 		if(lret < NhlWARNING)
 			return lret;
@@ -1036,7 +1037,7 @@ AppGetValues
 }
 
 /*
- * Function:	AppLayerDestroy
+ * Function:	AppDestroy
  *
  * Description:	This function is used to clean up any memory that has
  *		been allocated in the base part of the layer. It is called
@@ -1053,7 +1054,7 @@ AppGetValues
  */
 /*ARGSUSED*/
 static NhlErrorTypes
-AppLayerDestroy
+AppDestroy
 #if	NhlNeedProto
 (
 	NhlLayer	l	/* layer to destroy	*/
@@ -1063,11 +1064,12 @@ AppLayerDestroy
 	NhlLayer	l;	/* layer to destroy	*/
 #endif
 {
-	char			func[] = "AppLayerDestroy";
+	char			func[] = "AppDestroy";
 	NhlAppLayer		al = (NhlAppLayer)l;
 	NhlAppLayerPart		*alp = &al->app;
 	NhlAppClass		alc = (NhlAppClass)al->base.layer_class;
 	NhlAppClassPart		*alcp = &alc->app_class;
+	NhlErrorTypes		lret = NhlNOERROR;
 	NhlErrorTypes		ret = NhlNOERROR;
 
 	/*
@@ -1076,12 +1078,34 @@ AppLayerDestroy
 	 * This is how the NhlClose function has been implimented.
 	 */
 	if(al == alcp->default_app){
-		while(alcp->app_objs)
-			NhlDestroy(alcp->app_objs->app->base.id);
+		_NhlAllChildList	*chl;
+		while(alcp->app_objs){
+			lret = NhlDestroy(alcp->app_objs->app->base.id);
+			ret = MIN(ret,lret);
+		}
 		alcp->default_app = NULL;
 		alcp->current_app = NULL;
-		NhlDestroy(alcp->error_id);
-		NhlDestroy(alcp->workspace_id);
+
+		/*
+		 * Destroy all children except for error and workspace.
+		 * (Some of them may be "clients" of error and workspace so
+		 * they have to be destroyed first.)
+		 */
+		chl = &al->base.all_children;
+		while(*chl){
+			if((*chl)->pid == alcp->error_id ||
+					(*chl)->pid == alcp->workspace_id)
+				chl = &(*chl)->next;
+			else{
+				lret = NhlDestroy((*chl)->pid);
+				ret = MIN(ret,lret);
+			}
+		}
+
+		lret = NhlDestroy(alcp->error_id);
+		ret = MIN(ret,lret);
+		lret = NhlDestroy(alcp->workspace_id);
+		ret = MIN(ret,lret);
 		alcp->error_id = 0;
 		alcp->workspace_id = 0;
 		_NhlDestroyRLList();
