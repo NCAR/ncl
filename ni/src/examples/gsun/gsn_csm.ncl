@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.97 2002-06-14 22:52:27 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.98 2002-06-19 17:07:44 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -7616,6 +7616,7 @@ begin
     if(yref_fill_on.and.bar_chart.and..not.bar_outline_only)
       gsres = True
       do i=0,ncurves-1 
+        var_string = systemfunc("echo polygons$$") + i
 ;
 ; Fill above reference line.
 ;
@@ -7635,16 +7636,16 @@ begin
           if(mlt_above_bar_colors) then
             nca = dimsizes(bar_colors_above)
             do ii = 0,npts-1
+              var_string2 = var_string + "above" + ii
               gsres@gsFillColor = bar_colors_above(ii%nca)
-              var_string = systemfunc("echo polygons$$") + ii
-              xy_object@$var_string$ = gsn_add_polygon(wks,xy_object, \
+              xy_object@$var_string2$ = gsn_add_polygon(wks,xy_object, \
                                                      xabove(i,ii*5:ii*5+4), \
                                                      yabove(i,ii*5:ii*5+4), \
                                                      gsres)
             end do
           else
-            var_string = systemfunc("echo polygons$$")
-            xy_object@$var_string$ = gsn_add_polygon(wks,xy_object, \
+            var_string2 = var_string + "above"
+            xy_object@$var_string2$ = gsn_add_polygon(wks,xy_object, \
                                                      xabove(i,:), \
                                                      yabove(i,:),gsres)
           end if
@@ -7653,7 +7654,7 @@ begin
 ; Fill below reference line.
 ;
         if(nbelow(i).gt.0)
-          if(.not.mlt_above_bar_colors)
+          if(.not.mlt_below_bar_colors)
             gsres@gsFillColor = yref_line_below(0)
             if(dimsizes(yref_line_below).gt.1)
               gsres@gsFillColor = yref_line_below(i)
@@ -7663,16 +7664,16 @@ begin
           if(mlt_below_bar_colors) then
             ncb = dimsizes(bar_colors_below)
             do ii = 0,npts-1
+              var_string2 = var_string + "below" + ii
               gsres@gsFillColor = bar_colors_below(ii%ncb)
-              var_string = systemfunc("echo polygons$$") + ii
-              xy_object@$var_string$ = gsn_add_polygon(wks,xy_object, \
+              xy_object@$var_string2$ = gsn_add_polygon(wks,xy_object, \
                                                      xbelow(i,ii*5:ii*5+4), \
                                                      ybelow(i,ii*5:ii*5+4), \
                                                      gsres)
             end do
           else
-            var_string = systemfunc("echo polygons$$")
-            xy_object@$var_string$ = gsn_add_polygon(wks,xy_object, \
+            var_string2 = var_string + "below"
+            xy_object@$var_string2$ = gsn_add_polygon(wks,xy_object, \
                                                      xbelow(i,:), \
                                                      ybelow(i,:), gsres)
           end if
