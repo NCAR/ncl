@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.69 2001-05-17 16:24:12 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.70 2001-06-07 17:29:01 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -53,6 +53,8 @@ undef("get_allowed_pres_units_mb")
 undef("get_allowed_pres_units_pa")
 undef("get_allowed_pres_units_hpa")
 undef("get_allowed_pres_units")
+undef("get_allowed_lat_units")
+undef("get_allowed_lon_units")
 undef("is_valid_lat_xcoord")
 undef("is_valid_lon_xcoord")
 undef("is_valid_lat_ycoord")
@@ -632,25 +634,25 @@ end
 ; Function : get_allowed_pres_units_mb                                  ;
 ;                                                                       ;
 ; Get list of names allowed for pressure units in millibars.            ; 
-; Function : get_allowed_latunits                                       ;
+;                                                                       ;
 ;***********************************************************************;
 function get_allowed_pres_units_mb()
 begin
   return((/"mb","Mb","MB","millibars","MILLIBARS"/))
 end
-function get_allowed_latunits()
+
 ;***********************************************************************;
   return((/"degrees_north","degree_north","degrees north"/))
 ;                                                                       ;
 ; Get list of names allowed for pressure units.                         ; 
 ;                                                                       ;
-; Function : get_allowed_lonunits                                       ;
+;***********************************************************************;
 function get_allowed_pres_units()
 begin
   mb  = get_allowed_pres_units_mb()
   pa  = get_allowed_pres_units_pa()
   hpa = get_allowed_pres_units_hpa()
-function get_allowed_lonunits()
+  nmb  = dimsizes(mb)
   npa  = dimsizes(pa)
   return((/"degrees_east","degree_east","degrees east"/))
   all_pres = new(nmb+npa+nhpa,string)
@@ -668,7 +670,7 @@ end
 ;                                                                       ;
 ;***********************************************************************;
 function get_allowed_lat_units()
-        if(any(data&$data!1$@units.eq.get_allowed_latunits))
+begin
   return((/"degrees_north","degree_north","degrees north","degrees_N"/))
 end
 
@@ -700,7 +702,7 @@ begin
         if(any(data&$data!1$@units.eq.get_allowed_lat_units))
           return(True)
         else
-        if(any(data&$data!1$@units.eq.get_allowed_lonunits))
+          print("is_valid_lat_xcoord: Warning: The units attribute of the X coordinate array is not set to one of the allowable units values (i.e. 'degrees_north'). Your latitude labels may not be correct.")
           return(True)
         end if
       else
@@ -732,7 +734,7 @@ begin
         if(any(data&$data!1$@units.eq.get_allowed_lon_units))
           return(True)
         else
-        if(any(data&$data!0$@units.eq.get_allowed_latunits))
+          print("is_valid_lon_xcoord: Warning: The units attribute of the X coordinate array is not set to one of the allowable units values (i.e. 'degrees_east'). Your longitude labels may not be correct.")
           return(True)
         end if
       else
@@ -782,12 +784,14 @@ end
 
 ;***********************************************************************;
 ; Procedure : gsn_geop_hgt                                              ;
-            0.0,  0.5,  1.0,  1.5,  2.0,  2.5,  3.0,  3.5,  4.0,  4.5, \
-            5.0,  5.5,  6.0,  6.5,  7.0,  7.5,  8.0,  8.5,  9.0,  9.5, \
-           10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, \
-           20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 60.0, 70.0, 80.0, \
-           84.8, 87.7, 90.6, 93.3, 96.1, 97.5,100.4,104.9,110.0,114.2, \
-          116.7,119.7/)
+;                                                                       ;
+; Returns geopotential height (in km) given array p (pressure in mb)    ;
+; p must lie between 1013.25 mb and 2.54e-06 mb.                        ;
+;                                                                       ;
+; Algorithm is simply logarithmic interpolation from Standard           ;
+; Atmosphere.                                                           ;
+; Intended to provide an ESTIMATE of geopotential height when           ;
+; temperature and geopotential data are lacking.                        ;
 ;                                                                       ;
 ; Values above 85km were obtained from the COSPAR International         ;
 ; Reference Atmosphere: 1986 QB495 .A38 v.10 No.12  [FL]                ;
@@ -1317,10 +1321,21 @@ begin
     if(.not.mono_fill_scl)
       lbres@lbMonoFillScale = False
       lbres@lbFillScales    = fill_scales
-    hgt   = gsn_geop_hgt(ptmp)     ; Calculate hgts as a fcn of pres.
-    hnice = fspan(2.,34.,9)        ; Set range of "nice" hgt values.
-    pnice = ftcurv(hgt,ptmp,hnice) ; Get pres vals at nice hgt vals.
+    end if
+  else
+    getvalues the_plot
+      "vcLevels"      : levels
+      "vcLevelColors" : colors
+    end getvalues
+  end if
 
+  fix_zero_contour(levels)
+
+  labelbar_object = create_labelbar(wks,dimsizes(colors),colors,levels,lbres)
+
+  anno = NhlAddAnnotation(plot,labelbar_object)
+
+  attsetvalues_check(anno,amres)   ; Set annotation resources.
 
   return
 end
@@ -1819,6 +1834,7 @@ begin
 ;
           var_string = systemfunc("echo fill_polygon$$") + npoly
           plot@$var_string$ = gsn_add_polygon(wks,plot, \
+                                              polygon_x(0:npts2+2), \
                                               polygon_y(0:npts2+2),res)
 ;
 ; Advance polygon counter.
@@ -2151,8 +2167,19 @@ end
 ;
     if(.not.(isatt(tmres,"tiXAxisString").and.tmres@tiXAxisString.ne.""))
   res2 = res
-
-  if(is_valid_lat_xcoord(data)) then
+      set_attr(tmres,"tiXAxisOn"      , False)
+    end if
+    attsetvalues(plot,tmres)
+  end if
+  return
+end
+  is_xyplot = get_res_value(res2,"gsnXYPlot", False)
+  is_xaxis  = get_res_value(res2,"gsnXAxis", False)
+  is_yaxis  = get_res_value(res2,"gsnYAxis", False)
+;             min_lat: numeric                                          ;
+;             max_lat: numeric                                          ;
+;         lat_spacing: numeric                                          ;
+;        mlat_spacing: numeric                                          ;
 ;                 res: logical                                          ;
 ;                                                                       ;
 ; Add "nice" latitude labels ("90S", "30N", etc) to the Y axis in       ;
@@ -2160,10 +2187,13 @@ end
 ;***********************************************************************;
 
 procedure add_lat_labels_yaxis(plot:graphic,min_lat:numeric,max_lat:numeric,\
+                               lat_spacing:numeric,mlat_spacing:numeric, \)
     add_lat_labels_xaxis(plot,min_lat,max_lat,0,0,res2)
   tmres = get_res_eq(res,(/"tm","ti"/))  ; Get tickmark resources
 
-  if(is_valid_lat_ycoord(data)) then
+  lat_spacing2 = get_res_value(tmres,"tmYLTickSpacingF",lat_spacing)
+  latvalues    = get_lat_values(min_lat,max_lat,lat_spacing2,mlat_spacing)
+  if(.not.any(ismissing(latvalues)))
     latlabels    = get_lat_labels(latvalues)
 
     tmres = True
@@ -2175,7 +2205,9 @@ procedure add_lat_labels_yaxis(plot:graphic,min_lat:numeric,max_lat:numeric,\
     add_lat_labels_yaxis(plot,min_lat,max_lat,0,0,res2)
     attsetvalues(plot,tmres)
   end if
-  if(is_valid_lon_xcoord(data)) then
+  return
+end
+
 ;***********************************************************************;
 ; Procedure : add_latlon_labels                                         ;
 ;               plot: graphic                                           ;
@@ -6803,6 +6835,16 @@ begin
 
 ;
           bar_widths = get_bar_widths(x,ncurves,res2)
+          if(any(ismissing(bar_widths)).or.any(bar_widths.le.0))
+            print("gsn_csm_xy: Fatal: The x array is not monotonically increasing.")
+            print("Cannot draw a bar chart.")
+            return
+          end if
+; Loop across curves and figure out which points are above and
+; below references lines.  First create arrays to hold points
+; above and below reference lines.
+;
+          xabove = new((/ncurves,5*npts/),double,1e36)
           xbelow = new((/ncurves,5*npts/),double,1e36)
           ybelow = new((/ncurves,5*npts/),double,1e36)
 ;
