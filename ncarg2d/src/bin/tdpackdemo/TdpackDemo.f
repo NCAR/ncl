@@ -1,5 +1,5 @@
 C
-C $Id: TdpackDemo.f,v 1.4 2000-08-22 04:34:28 haley Exp $
+C $Id: TdpackDemo.f,v 1.5 2002-02-22 16:50:21 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -25,7 +25,7 @@ C
 C Declare parameters specifying the maximum sizes of the data-defining
 C arrays and the size of the triangle-list array.
 C
-	PARAMETER (IMAX=81,JMAX=81,KMAX=81,MTRI=80000)
+        PARAMETER (IMAX=81,JMAX=81,KMAX=81,MTRI=80000)
 C
 C Declare local dimensioned variables to hold data defining a simple
 C surface or an isosurface.
