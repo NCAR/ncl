@@ -51,24 +51,24 @@ static  XtResource      resources[] = {
 /*
  * resources that need to be set for proper execution of the GUI
  */
-String fallback_resources[] = {
-	"*input:	True",
-	"*file*file finder.value:	*",
-	"*file*file finder.label:	file finder",
-	"*file*file finder*value.translations: #override \\n\
+static	String fallback_resources[] = {
+	"Idt*input:	True",
+	"Idt*file*file finder.value:	*",
+	"Idt*file*file finder.label:	file finder",
+	"Idt*file*file finder*value.translations: #override \\n\
 		 <Key>Return: finderTranslation()",
-	"*file*selection.label:	selection",
-	"*file*selection.value:	\ ",
-	"*file*selection*value.translations: #override \\n\
+	"Idt*file*selection.label:	selection",
+	"Idt*file*selection.value:	\ ",
+	"Idt*file*selection*value.translations: #override \\n\
 		 <Key>Return: okFileTranslation()",
-	"*file*textDisplay*translations: #override \\n\
+	"Idt*file*textDisplay*translations: #override \\n\
 		 <Key>Return: selectFileTranslation() \\n\
 		 <Btn1Down>: select-start() selectFileTranslation()",
-	"*simpleDialog*dialog*value.translations: #override \\n\
+	"Idt*simpleDialog*dialog*value.translations: #override \\n\
 		 <Key>Return: okSDTranslation()",
-	"*scrollbar*orientation:	horizontal",
-	"*scrollbar*length:		100",
-	"*iconPixmap:		/usr/include/X11/bitmaps/ncarv_idt.bits",
+	"Idt*scrollbar*orientation:	horizontal",
+	"Idt*scrollbar*length:		100",
+	"Idt*iconPixmap:	/usr/include/X11/bitmaps/ncarv_idt.bits",
 	NULL
 	};
 
