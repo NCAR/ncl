@@ -1,8 +1,8 @@
-.TH CONREC_FAMILY 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH Conrec_family 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
-conrec_family - is a set of two dimensional contour mapping routines.
+Conrec_family - is a set of two dimensional contour mapping routines.
 There are options for generating standard contours, smoothing contour
 lines, labeling the contours, and removing crowded lines.
 .SH STATUS
@@ -44,20 +44,20 @@ The contours will be drawn as unsmoothed
 dashed or solid lines that can include characters along the lines.
 .sp 2
 .IP QUICK 10
-Command:  "ncargf77 -conrecquick mycode.f"
+Command:  "ncargf77 -quick mycode.f"
 .sp
 The contours will be drawn as unsmoothed
 dashed or solid lines without characters along the lines.
 .sp 2
 .IP SMOOTH 10
-Command:  "ncargf77 -conrecsmooth mycode.f"
+Command:  "ncargf77 -smooth mycode.f"
 .sp
 The contours will be drawn as smoothed
 dashed or solid lines using splines under tension.  There may be
 characters along the lines.
 .sp 2
 .IP SUPER 10
-Command:  "ncargf77 -conrecsuper mycode.f"
+Command:  "ncargf77 -super mycode.f"
 .sp
 The contours will be drawn as smoothed
 dashed or solid lines using splines under tension.  There may be

@@ -10,7 +10,7 @@ Parameters were set through common blocks CONRE1 and CONRE4.  There
 are three versions of the CONREC code.  The normal version is in
 the standard NCAR Graphics library.  The other two versions are in
 optional libraries one of which is linked when the ncargf77 option
--conrecquick, or -conrecsuper is declared on the command line.
+-quick, or -super is declared on the command line.
 .sp
 The CONREC and EZCNTR entries can be invoked in four different ways to create
 contour plots which vary considerably in appearance.  The four variations

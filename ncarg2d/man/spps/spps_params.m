@@ -1,8 +1,8 @@
-.TH SPPS_PARAMS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH SPPS_params 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
-spps_params - This document briefly describes all spps
+SPPS_params - This document briefly describes all spps
 internal parameters.
 .SH DESCRIPTION 
 .IP VN 12

@@ -27,6 +27,9 @@ the Z array.
 .IP N 12
 (an input parameter of type INTEGER)  which is the second dimension of
 the Z array.
+.SH EXAMPLES
+Use the ncargex command to see the relevant examples tconre.f,
+tcnqck.f, tcnsmt.f, and tcnsup.f.
 .SH ACCESS 
 EZCNTR can be invoked in four different ways to create
 contour plots which vary considerably in appearance.  The four variations
@@ -49,20 +52,20 @@ The contours will be drawn as unsmoothed
 dashed or solid lines that can include characters along the lines.
 .sp 2
 .IP QUICK 10
-Command:  "ncargf77 -conrecquick mycode.f"
+Command:  "ncargf77 -quick mycode.f"
 .sp
 The contours will be drawn as unsmoothed
 dashed or solid lines without characters along the lines.
 .sp 2
 .IP SMOOTH 10
-Command:  "ncargf77 -conrecsmooth mycode.f"
+Command:  "ncargf77 -smooth mycode.f"
 .sp
 The contours will be drawn as smoothed
 dashed or solid lines using splines under tension.  There may be
 characters along the lines.
 .sp 2
 .IP SUPER 10
-Command:  "ncargf77 -conrecsuper mycode.f"
+Command:  "ncargf77 -super mycode.f"
 .sp
 The contours will be drawn as smoothed
 dashed or solid lines using splines under tension.  There may be

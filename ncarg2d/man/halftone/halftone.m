@@ -2,7 +2,7 @@
 .na
 .nh
 .SH NAME
-halftone - is a utility for drawing half-tone pictures in which the
+Halftone - is a utility for drawing half-tone pictures in which the
 gray scale level is proportional to the value in a two dimensional array.
 .SH STATUS
 Halftone is obsolete.  It has been replaced by the CPCICA entry of the
