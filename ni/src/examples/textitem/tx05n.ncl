@@ -1,5 +1,5 @@
 ;
-;	$Id: tx05n.ncl,v 1.1 1995-03-20 21:29:03 fred Exp $
+;   $Id: tx05n.ncl,v 1.2 1995-03-22 21:45:58 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -44,10 +44,30 @@ end
 cmap = new( (/2, 3/), float)
 cmap(0,:) = (/0.0, 0.0, 1.0/)
 cmap(1,:) = (/0.4, 0.0, 0.4/)
-workstation_id = create "tx05Work"  xWorkstationLayerClass defaultapp
-  "wkColorMap"         : cmap
-  "wkBackgroundColor"  : (/ 1., 1., 1. /)
-end create
+;
+; Default is to display output to an X workstation
+;
+NCGM=0
+
+if (NCGM .eq. 1) then
+;
+; Create an ncgmWorkstation object.
+;
+  workstation_id = create "tx05Work" ncgmWorkstationLayerClass defaultapp
+      "wkMetaName"         : "tx05n.ncgm"
+      "wkColorMap"         : cmap
+      "wkBackgroundColor"  : (/ 1., 1., 1. /)
+  end create
+else
+;
+; Create an XWorkstation object.
+;
+    workstation_id = create "tx05Work"  xWorkstationLayerClass defaultapp
+      "wkPause"            : True
+      "wkColorMap"         : cmap
+      "wkBackgroundColor"  : (/ 1., 1., 1. /)
+    end create
+end if
 
 ;
 ; Create a TextItem object.

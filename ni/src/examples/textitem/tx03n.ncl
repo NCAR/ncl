@@ -1,11 +1,13 @@
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;    $Id: tx03n.ncl,v 1.5 1995-03-22 21:45:52 haley Exp $
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
 ;                Copyright (C)  1995                                    ;
 ;        University Corporation for Atmospheric Research                ;
 ;                All Rights Reserved                                    ;
 ;                                                                       ;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ;      File:           tx03n.ncl
 ;
@@ -36,11 +38,25 @@ appid = create "tx03" appLayerClass defaultapp
 end create
 
 ;
+; Default is to create a metafile.
+;
+NCGM=1
+
+if (NCGM .eq. 1) then
+;
+; Create an ncgmWorkstation object.
+;
+  wid = create "tx03Work" ncgmWorkstationLayerClass defaultapp
+      "wkMetaName"         : "tx03n.ncgm"
+  end create
+else
+;
 ; Create an XWorkstation object.
 ;
-wid = create "tx03Work" xWorkstationLayerClass defaultapp
-    "wkPause" : "True"
-end create
+  wid = create "tx03Work" xWorkstationLayerClass defaultapp
+      "wkPause" : "True"
+  end create
+end if
 
 ;
 ; Create 114 plots varying the fill color of the text bounding box

@@ -24,6 +24,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/TextItem.h>
 #include <ncarg/hlu/XWorkstation.h>
+#include <ncarg/hlu/NcgmWorkstation.h>
 
 main()
 {
@@ -31,12 +32,11 @@ main()
     int rlist;
     int M = 114;
     int i;
-
+    int NCGM=1;
 /*
  * Initialize the high level utility library
  */
     NhlInitialize();
-
 /*
  * Create an application context. Set the app dir to the current
  * directory so the application looks for a resource file in the
@@ -49,13 +49,24 @@ main()
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"tx03",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
+    if (NCGM) {
+/*
+ * Create a meta file workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkMetaName,"./tx03c.ncgm");
+        NhlCreate(&wid,"tx03Work",NhlncgmWorkstationLayerClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else {
 /*
  * Create an XWorkstation object.
  */
-    NhlRLClear(rlist);
-    NhlRLSetInteger(rlist,NhlNwkPause,True);
-    NhlCreate(&wid,"tx03Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
-                                    rlist);
+        NhlRLClear(rlist);
+        NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlCreate(&wid,"tx03Work",NhlxWorkstationLayerClass,
+                  NhlDEFAULT_APP,rlist);
+    }
 /*
  * Create 114 plots varying the fill color of the text bounding box
  * to all entries of the default workstation color map.

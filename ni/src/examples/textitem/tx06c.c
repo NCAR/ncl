@@ -1,5 +1,5 @@
 /*
- *	$Id: tx06c.c,v 1.1 1995-03-03 20:01:09 fred Exp $
+ *  $Id: tx06c.c,v 1.2 1995-03-22 21:45:59 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -26,6 +26,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/TextItem.h>
 #include <ncarg/hlu/XWorkstation.h>
+#include <ncarg/hlu/NcgmWorkstation.h>
 
 main()
 {
@@ -37,6 +38,7 @@ main()
     float bkg_color[] = {1., 1., 1.};
     int   just;
     NhlBoundingBox  t_box;
+    int NCGM=0;
 
 /*
  *  Initialize and set up application context.
@@ -46,15 +48,29 @@ main()
     rlist = NhlRLCreate(NhlSETRL);
     NhlRLClear(rlist);
 
+    if (NCGM) {
 /*
- * Create an XWorkstation object and TextItem object.
+ * Create a meta file workstation.
  */
-
-    NhlRLClear(rlist);
-    NhlRLSetInteger(rlist,NhlNwkPause,True);
-    NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
-    NhlCreate(&wid,"tx06Work",
-                 NhlxWorkstationLayerClass,NhlDEFAULT_APP, rlist);
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkMetaName,"./tx06c.ncgm");
+        NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
+        NhlCreate(&wid,"tx06Work",NhlncgmWorkstationLayerClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else {
+/*
+ * Create an XWorkstation object.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
+        NhlCreate(&wid,"tx06Work",
+                  NhlxWorkstationLayerClass,NhlDEFAULT_APP, rlist);
+    }
+/*
+ * Create a TextItem object.
+ */
     NhlSetColor(wid,1,0.0, 0.0, 1.0);
     NhlSetColor(wid,2,1.0, 0.0, 0.0);
     NhlSetColor(wid,3,0.4, 0.0, 0.4);
@@ -121,7 +137,7 @@ main()
     NhlRLSetFloat(rlist,NhlNtxPosXF, 0.5+0.5*char_height);
     NhlRLSetFloat(rlist,NhlNtxPosYF, 0.84);
     NhlRLSetString(rlist,NhlNtxString, 
-		" - Marks the justification point");
+        " - Marks the justification point");
     NhlSetValues(pid,rlist);
     NhlDraw(pid);
 

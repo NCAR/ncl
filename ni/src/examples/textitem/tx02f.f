@@ -20,11 +20,16 @@ C                      colored font.  Turn on the bounding box.
 C
       external nhlfapplayerclass
       external nhlfxworkstationlayerclass
+      external nhlfncgmworkstationlayerclass
       external nhlftextitemlayerclass
         
       integer appid, wid, pid
       integer rlist, ierr
-
+      integer NCGM
+C
+C Default is to create an X workstation.
+C
+      NCGM=0
 C
 C Initialize the high level utility library
 C
@@ -40,13 +45,24 @@ C
       call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
       call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
       call nhlfcreate(appid,'tx02',nhlfapplayerclass,0,rlist,ierr)
+
+      if (NCGM.eq.1) then
+C
+C Create an NCGM workstation.
+C
+         call nhlfrlclear(rlist)
+         call nhlfrlsetstring(rlist,'wkMetaName','./tx02f.ncgm',ierr)
+         call nhlfcreate(wid,'tx02Work',nhlfncgmworkstationlayerclass,0,
+     $        rlist,ierr)
+      else
 C
 C Create an xworkstation object.
 C
-      call nhlfrlclear(rlist)
-      call nhlfrlsetstring(rlist,'wkPause','True',ierr)
-      call nhlfcreate(wid,'tx02Work',nhlfxworkstationlayerclass,
-     $     0,rlist,ierr)
+         call nhlfrlclear(rlist)
+         call nhlfrlsetstring(rlist,'wkPause','True',ierr)
+         call nhlfcreate(wid,'tx02Work',nhlfxworkstationlayerclass,
+     $        0,rlist,ierr)
+      endif
 C
 C Specify the viewport extent of the object.
 C

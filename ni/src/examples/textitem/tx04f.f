@@ -18,11 +18,16 @@ C      Description:     Demonstrates TextItem object.
 C
       external nhlfapplayerclass
       external nhlfncgmworkstationlayerclass
+      external nhlfxworkstationlayerclass
       external nhlfmapplotlayerclass
       external nhlftextitemlayerclass
       
       integer i,appid,text_item_id,wid,rlist,ierr
-      
+      integer NCGM
+C
+C Default is to create a metafile.
+C
+      NCGM=1
 C     
 C  Initialize the high level utility library.
 C     
@@ -37,14 +42,24 @@ C
       call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
       call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
       call nhlfcreate(appid, 'tx04',nhlfapplayerclass,0,rlist,ierr)
-C  
-C Create a meta file workstation giving the output file a conventional 
-C metafile name.
-C  
-      call nhlfrlclear(rlist)
-      call nhlfrlsetstring(rlist,'wkMetaName','./tx04f.ncgm',ierr)
-      call nhlfcreate(wid,'tx04Work',nhlfncgmworkstationlayerclass,0,
-     1     rlist,ierr)
+
+      if (NCGM.eq.1) then
+C
+C Create an NCGM workstation.
+C
+         call nhlfrlclear(rlist)
+         call nhlfrlsetstring(rlist,'wkMetaName','./tx04f.ncgm',ierr)
+         call nhlfcreate(wid,'tx04Work',nhlfncgmworkstationlayerclass,0,
+     1        rlist,ierr)
+      else
+C
+C Create an X Workstation.
+C
+         call nhlfrlclear(rlist)
+         call nhlfrlsetinteger(rlist,'wkPause',1,ierr)
+         call nhlfcreate(wid,'tx04Work',nhlfxworkstationlayerclass,0,
+     1        rlist,ierr)
+      endif
 C  
 C This is the only creation of a text object for this entire program.
 C  

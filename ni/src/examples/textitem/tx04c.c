@@ -21,6 +21,7 @@
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/TextItem.h>
+#include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
@@ -31,7 +32,7 @@ main()
     int text_item_id;
     int workstation_id;
     int i,rlist;
-
+    int NCGM=0;
 /*
  * Initialize the high level utility library
  */
@@ -48,15 +49,24 @@ main()
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlCreate(&app_id,"tx04",NhlappLayerClass,NhlDEFAULT_APP,rlist);
     
+    if (NCGM) {
 /*
- * Create a meta file workstation giving the output file a conventional 
- * metafile name.
+ * Create a meta file workstation.
  */
         NhlRLClear(rlist);
-    NhlRLSetString(rlist,NhlNwkMetaName,"./tx04c.ncgm");
-    NhlCreate(&workstation_id,"tx04Work",
-          NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,rlist); 
-
+        NhlRLSetString(rlist,NhlNwkMetaName,"./tx04c.ncgm");
+        NhlCreate(&workstation_id,"tx04Work",
+                  NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,rlist); 
+    }
+    else {
+/*
+ *  Create an XWorkstation object.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlCreate(&workstation_id,"tx04Work",
+                  NhlxWorkstationLayerClass,NhlDEFAULT_APP, rlist);
+    }
 /*
  * This is the only creation of a text object for this entire program.
  */

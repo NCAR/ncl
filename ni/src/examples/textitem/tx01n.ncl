@@ -1,4 +1,6 @@
-
+;
+;   $Id: tx01n.ncl,v 1.5 1995-03-22 21:45:47 haley Exp $
+;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
 ;                Copyright (C)  1995                                   ;
@@ -35,11 +37,25 @@ appid = create "tx01" appLayerClass defaultapp
 end create
 
 ;
+; Default is to display output to an X workstation
+;
+NCGM=0
+
+if (NCGM .eq. 1) then
+;
+; Create an ncgmWorkstation object.
+;
+  wid = create "tx01Work" ncgmWorkstationLayerClass defaultapp
+      "wkMetaName"         : "tx01n.ncgm"
+  end create
+else
+;
 ; Create an XWorkstation object.
 ;
-wid = create "tx01Work" xWorkstationLayerClass defaultapp
-    "wkPause" : "True"
-end create
+  wid = create "tx01Work" xWorkstationLayerClass defaultapp
+      "wkPause" : "True"
+  end create
+end if
 
 ;
 ; Specify the viewport extent of the object.

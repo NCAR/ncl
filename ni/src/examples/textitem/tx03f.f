@@ -20,18 +20,23 @@ C                      114 different colors. (The default colormap.)
 C
       external nhlfapplayerclass
       external nhlfxworkstationlayerclass
+      external nhlfncgmworkstationlayerclass
       external nhlftextitemlayerclass
 
       integer appid, wid, pid
       integer rlist, ierr
       integer m,i
+      integer NCGM
 
       parameter(m=114)
+C
+C Default is to create a metafile.
+C
+      NCGM=1
 C
 C Initialize the high level utility library
 C
       call nhlfinitialize
-
 C
 C Create an application context. Set the app dir to the current
 C directory so the application looks for a resource file in the
@@ -43,13 +48,24 @@ C
       call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
       call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
       call nhlfcreate(appid,'tx03',nhlfapplayerclass,0,rlist,ierr)
+
+      if (NCGM.eq.1) then
 C
-C Create an xworkstation object.
+C Create an NCGM workstation.
 C
-      call nhlfrlclear(rlist)
-      call nhlfrlsetstring(rlist,'wkPause','True',ierr)
-      call nhlfcreate(wid,'tx03Work',nhlfxworkstationlayerclass,
-     $     0,rlist,ierr)
+         call nhlfrlclear(rlist)
+         call nhlfrlsetstring(rlist,'wkMetaName','./tx03f.ncgm',ierr)
+         call nhlfcreate(wid,'tx03Work',nhlfncgmworkstationlayerclass,0,
+     1        rlist,ierr)
+      else
+C
+C Create an X Workstation.
+C
+         call nhlfrlclear(rlist)
+         call nhlfrlsetstring(rlist,'wkPause','True',ierr)
+         call nhlfcreate(wid,'tx03Work',nhlfxworkstationlayerclass,
+     $        0,rlist,ierr)
+      endif
 C
 C Create 114 plots varying the fill color of the text bounding box
 C to all entries of the default workstation color map.

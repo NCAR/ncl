@@ -1,5 +1,5 @@
 /*
- *	$Id: tx07c.c,v 1.2 1995-03-20 21:29:06 fred Exp $
+ *  $Id: tx07c.c,v 1.3 1995-03-22 21:46:01 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -27,6 +27,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/TextItem.h>
 #include <ncarg/hlu/XWorkstation.h>
+#include <ncarg/hlu/NcgmWorkstation.h>
 
 main()
 {
@@ -34,6 +35,7 @@ main()
     float ypos, aspect;
     float bkg_color[] = {1., 1., 1.}, spacings[] = {0.0, 1.5, 0.6};
     char  label[25];
+    int NCGM=0;
 
 /*
  *  Initialize.
@@ -42,15 +44,29 @@ main()
     NhlOpen();
     rlist = NhlRLCreate(NhlSETRL);
 
+    if (NCGM) {
 /*
- * Create an XWorkstation object and two TextItem objects.
+ * Create a meta file workstation.
  */
-
-    NhlRLClear(rlist);
-    NhlRLSetInteger(rlist,NhlNwkPause,True);
-    NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
-    NhlCreate(&wid,"tx07Work",
-                 NhlxWorkstationLayerClass,NhlDEFAULT_APP, rlist);
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkMetaName,"./tx07c.ncgm");
+        NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
+        NhlCreate(&wid,"tx07Work",NhlncgmWorkstationLayerClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else {
+/*
+ * Create an XWorkstation object.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
+        NhlCreate(&wid,"tx07Work",
+                  NhlxWorkstationLayerClass,NhlDEFAULT_APP, rlist);
+    }
+/*
+ * Create two TextItem objects.
+ */
     NhlSetColor(wid,1,0.0, 0.0, 1.0);
     NhlSetColor(wid,2,0.4, 0.0, 0.4);
     NhlSetColor(wid,3,1.0, 0.0, 0.0);

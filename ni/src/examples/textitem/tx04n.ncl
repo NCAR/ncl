@@ -1,5 +1,5 @@
 ;
-;;      $Id: tx04n.ncl,v 1.3 1995-03-01 22:10:23 haley Exp $
+;;      $Id: tx04n.ncl,v 1.4 1995-03-22 21:45:56 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -36,12 +36,25 @@ app_id = create "tx04" appLayerClass defaultapp
 end create
     
 ;
-; Create a meta file workstation giving the output file a conventional 
-; metafile name.
+; Default is to create a metafile.
 ;
-workstation_id = create "tx04Work"  ncgmWorkstationLayerClass defaultapp
-    "wkMetaName" : "tx04n.ncgm"
-end create
+NCGM=1
+
+if (NCGM .eq. 1) then
+;
+; Create an ncgmWorkstation object.
+;
+    workstation_id = create "tx04Work"  ncgmWorkstationLayerClass defaultapp
+      "wkMetaName" : "tx04n.ncgm"
+    end create
+else
+;
+; Create an XWorkstation object.
+;
+  workstation_id = create "tx04Work"  xWorkstationLayerClass defaultapp
+    "wkPause"            : True
+  end create
+end if
 
 ;
 ; This is the only creation of a text object for this entire program.

@@ -1,5 +1,5 @@
 ;
-;	$Id: tx07n.ncl,v 1.1 1995-03-20 21:29:08 fred Exp $
+;   $Id: tx07n.ncl,v 1.2 1995-03-22 21:46:02 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -27,16 +27,34 @@
 begin
 
 ;
-; Create an X11 workstation, defining the desired colors.
+; Create a workstation, defining the desired colors.
 ;
 cmap = new( (/3, 3/), float)
 cmap(0,:) = (/0.0, 0.0, 1.0/)
 cmap(1,:) = (/0.4, 0.0, 0.4/)
 cmap(2,:) = (/1.0, 0.0, 0.0/)
-workstation_id = create "tx07Work"  xWorkstationLayerClass defaultapp
-  "wkColorMap"         : cmap
-  "wkBackgroundColor"  : (/ 1., 1., 1. /)
-end create
+
+;
+; Default is to display output to an X workstation
+;
+NCGM=0
+
+if (NCGM .eq. 1) then
+    workstation_id = create "tx07Work"  ncgmWorkstationLayerClass defaultapp
+      "wkMetaName"         : "tx07n.ncgm"
+      "wkColorMap"         : cmap
+      "wkBackgroundColor"  : (/ 1., 1., 1. /)
+    end create
+else
+;
+; Create an XWorkstation object.
+;
+  workstation_id = create "tx07Work"  xWorkstationLayerClass defaultapp
+    "wkPause"            : True
+    "wkColorMap"         : cmap
+    "wkBackgroundColor"  : (/ 1., 1., 1. /)
+  end create
+end if
 
 ;
 ; Create two TextItem objects to be used for the example string
