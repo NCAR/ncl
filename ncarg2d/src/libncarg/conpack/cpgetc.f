@@ -1,7 +1,4 @@
 C
-C	$Id: cpgetc.f,v 1.1.1.1 1992-04-17 22:32:44 ncargd Exp $
-C
-C
 C-----------------------------------------------------------------------
 C
       SUBROUTINE CPGETC (WHCH,CVAL)
@@ -81,7 +78,7 @@ C
 C
 C Check for incorrect use of the index parameter.
 C
-      IF (WHCH(1:3).EQ.'CLD') THEN
+      IF (WHCH(1:3).EQ.'CLD'.OR.WHCH(1:3).EQ.'cld') THEN
         IF (IPAI.GE.1.AND.IPAI.LE.NCLV) THEN
           JPAI=IPAI
         ELSE IF (IPAI.LE.-1.AND.IPAI.GE.-3) THEN
@@ -89,7 +86,7 @@ C
         ELSE
           GO TO 10002
         END IF
-      ELSE IF (WHCH(1:3).EQ.'LLT') THEN
+      ELSE IF (WHCH(1:3).EQ.'LLT'.OR.WHCH(1:3).EQ.'llt') THEN
         IF (IPAI.LT.1.OR.IPAI.GT.NCLV) THEN
           GO TO 10002
         END IF
@@ -105,29 +102,29 @@ C
 C
 C Get the appropriate parameter value.
 C
-      IF (WHCH(1:3).EQ.'CFT') THEN
+      IF (WHCH(1:3).EQ.'CFT'.OR.WHCH(1:3).EQ.'cft') THEN
         CVAL=TXCF(1:LTCF)
-      ELSE IF (WHCH(1:3).EQ.'CLD') THEN
+      ELSE IF (WHCH(1:3).EQ.'CLD'.OR.WHCH(1:3).EQ.'cld') THEN
         CVAL=CLDP(JPAI)
-      ELSE IF (WHCH(1:3).EQ.'CTM') THEN
+      ELSE IF (WHCH(1:3).EQ.'CTM'.OR.WHCH(1:3).EQ.'ctm') THEN
         CVAL=CTMA(1:LCTM)
-      ELSE IF (WHCH(1:3).EQ.'HIT') THEN
+      ELSE IF (WHCH(1:3).EQ.'HIT'.OR.WHCH(1:3).EQ.'hit') THEN
         CVAL=TXHI(1:LTHI)
-      ELSE IF (WHCH(1:3).EQ.'HLT') THEN
+      ELSE IF (WHCH(1:3).EQ.'HLT'.OR.WHCH(1:3).EQ.'hlt') THEN
         IF (TXHI(1:LTHI).EQ.TXLO(1:LTLO)) THEN
           CVAL=TXHI
         ELSE
           CVAL=TXHI(1:LTHI)//''''//TXLO(1:LTLO)
         END IF
-      ELSE IF (WHCH(1:3).EQ.'ILT') THEN
+      ELSE IF (WHCH(1:3).EQ.'ILT'.OR.WHCH(1:3).EQ.'ilt') THEN
         CVAL=TXIL(1:LTIL)
-      ELSE IF (WHCH(1:3).EQ.'LLT') THEN
+      ELSE IF (WHCH(1:3).EQ.'LLT'.OR.WHCH(1:3).EQ.'llt') THEN
         CVAL=CLBL(IPAI)
-      ELSE IF (WHCH(1:3).EQ.'LOT') THEN
+      ELSE IF (WHCH(1:3).EQ.'LOT'.OR.WHCH(1:3).EQ.'lot') THEN
         CVAL=TXLO(1:LTLO)
-      ELSE IF (WHCH(1:3).EQ.'ZDU') THEN
+      ELSE IF (WHCH(1:3).EQ.'ZDU'.OR.WHCH(1:3).EQ.'zdu') THEN
         CALL CPSBST ('$ZDVU$',CVAL,LCVL)
-      ELSE IF (WHCH(1:3).EQ.'ZDV') THEN
+      ELSE IF (WHCH(1:3).EQ.'ZDV'.OR.WHCH(1:3).EQ.'zdv') THEN
         CALL CPSBST ('$ZDV$',CVAL,LCVL)
       ELSE
         CTMB(1:36)='CPGETC - PARAMETER NAME NOT KNOWN - '

@@ -1,7 +1,4 @@
 C
-C	$Id: cpsetc.f,v 1.1.1.1 1992-04-17 22:32:46 ncargd Exp $
-C
-C
 C-----------------------------------------------------------------------
 C
       SUBROUTINE CPSETC (WHCH,CVAL)
@@ -81,7 +78,7 @@ C
 C
 C Check for incorrect use of the index parameter.
 C
-      IF (WHCH(1:3).EQ.'CLD') THEN
+      IF (WHCH(1:3).EQ.'CLD'.OR.WHCH(1:3).EQ.'cld') THEN
         IF (IPAI.GE.1.AND.IPAI.LE.NCLV) THEN
           JPAI=IPAI
         ELSE IF (IPAI.LE.-1.AND.IPAI.GE.-3) THEN
@@ -89,7 +86,7 @@ C
         ELSE
           GO TO 10002
         END IF
-      ELSE IF (WHCH(1:3).EQ.'LLT') THEN
+      ELSE IF (WHCH(1:3).EQ.'LLT'.OR.WHCH(1:3).EQ.'llt') THEN
         IF (IPAI.LT.1.OR.IPAI.GT.NCLV) THEN
           GO TO 10002
         END IF
@@ -113,18 +110,18 @@ C
 C
 C Set the proper parameter.
 C
-      IF (WHCH(1:3).EQ.'CFT') THEN
+      IF (WHCH(1:3).EQ.'CFT'.OR.WHCH(1:3).EQ.'cft') THEN
         TXCF=CVAL
         LTCF=MAX(1,MIN(40,LCVL))
-      ELSE IF (WHCH(1:3).EQ.'CLD') THEN
+      ELSE IF (WHCH(1:3).EQ.'CLD'.OR.WHCH(1:3).EQ.'cld') THEN
         CLDP(JPAI)=CVAL
-      ELSE IF (WHCH(1:3).EQ.'CTM') THEN
+      ELSE IF (WHCH(1:3).EQ.'CTM'.OR.WHCH(1:3).EQ.'ctm') THEN
         CTMA=CVAL
         LCTM=MAX(1,MIN(500,LCVL))
-      ELSE IF (WHCH(1:3).EQ.'HIT') THEN
+      ELSE IF (WHCH(1:3).EQ.'HIT'.OR.WHCH(1:3).EQ.'hit') THEN
         TXHI=CVAL
         LTHI=MAX(1,MIN(20,LCVL))
-      ELSE IF (WHCH(1:3).EQ.'HLT') THEN
+      ELSE IF (WHCH(1:3).EQ.'HLT'.OR.WHCH(1:3).EQ.'hlt') THEN
         TXHI=' '
         LTHI=1
         TXLO=' '
@@ -149,13 +146,13 @@ C
           TXLO=CVAL
           LTLO=MAX(1,MIN(20,LCVL))
         END IF
-      ELSE IF (WHCH(1:3).EQ.'ILT') THEN
+      ELSE IF (WHCH(1:3).EQ.'ILT'.OR.WHCH(1:3).EQ.'ilt') THEN
         TXIL=CVAL
         LTIL=MAX(1,MIN(100,LCVL))
-      ELSE IF (WHCH(1:3).EQ.'LLT') THEN
+      ELSE IF (WHCH(1:3).EQ.'LLT'.OR.WHCH(1:3).EQ.'llt') THEN
         CLBL(IPAI)=CVAL
         NCLB(IPAI)=-LCVL
-      ELSE IF (WHCH(1:3).EQ.'LOT') THEN
+      ELSE IF (WHCH(1:3).EQ.'LOT'.OR.WHCH(1:3).EQ.'lot') THEN
         TXLO=CVAL
         LTLO=MAX(1,MIN(20,LCVL))
       ELSE
