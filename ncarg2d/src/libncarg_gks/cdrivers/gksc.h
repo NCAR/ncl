@@ -1,5 +1,5 @@
 /*
- *	$Id: gksc.h,v 1.14 2004-04-02 22:18:31 fred Exp $
+ *	$Id: gksc.h,v 1.15 2004-05-28 22:38:33 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -199,8 +199,8 @@ typedef	struct	GKSC_	{
 #define	ERR_OPN_DEV	26	/* error opening device			*/
 #define	ERR_INV_RECT	51	/* transformation rect. def. is invalid	*/
 #define	ERR_INV_LINE	63	/* invalid line type			*/
-#define	ERR_INV_MARKER	67	/* invalid polymarker type		*/
-#define	ERR_FILL_PAT	83	/* Fill style pattern not supported	*/
+#define	ERR_INV_MARKER	66	/* invalid polymarker type		*/
+#define	ERR_FILL_PAT	84	/* Fill style pattern not supported	*/
 #define	ERR_CELL_DIM	91	/* dimensions of color array invalid	*/
 #define	ERR_INV_IND	94	/* invalid or undefined color index	*/
 #define	ERR_INV_ESCAPE	180	/* escape function not supported	*/
@@ -224,7 +224,7 @@ typedef	struct	GKSC_	{
 #define ERR_CELL_WIDTH     -212	/* Cell array has zero width or height  */
 #define ERR_CELL_MEMORY    -213	/* memory error processing cell array   */
 #define ERR_CRT_IMAGE      -214	/* error creating X image               */
-#define ERR_IMAGE_MEMORY   -215	/* memory error creting X image         */
+#define ERR_IMAGE_MEMORY   -215	/* memory error creating X image        */
 #define ERR_PIXEL_SIZE     -216	/* pixel size must be byte multiple     */
 #define ERR_FCAP_NAME      -217	/* error retrieving fontcap name        */
 #define ERR_INV_INDEX      -218	/* invalid index into GKS wks. ids      */
@@ -242,15 +242,15 @@ typedef	struct	GKSC_	{
 #define ERR_PDF_MEMORY	   -350	/* error in device dependent table mem  */
 #define ERR_OPN_PDF        -351	/* error opening output file            */
 #define ERR_PDF_CHAR       -352	/* PDF char not available for requested */
-#define ERR_PDF_RESTORE    -353	/* PDF char not available for requested */
+#define ERR_PDF_RESTORE    -353	/* Only one PDF wkstation can be open   */
 
 /*
  *  Errors for image drivers.
  */
-#define ERR_OPN_XWD        -400	/* error opening xwd output file        */
-#define ERR_OPN_PNG        -401	/* error opening PNG output file        */
-#define ERR_PIX_MAP        -402	/* error reading pixmap                 */
-#define ERR_PIX_DPT        -402	/* error in pixmap depth                */
+#define ERR_OPN_XWD        -450	/* error opening xwd output file        */
+#define ERR_OPN_PNG        -451	/* error opening PNG output file        */
+#define ERR_PIX_MAP        -452	/* error reading pixmap                 */
+#define ERR_PIX_DPT        -453	/* unsupported pixmap, depth PNG output */
 
 extern	GKSC    *CreateGKSC(
 #ifdef	NeedFuncProto

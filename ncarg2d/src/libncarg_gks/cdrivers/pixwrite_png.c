@@ -1,5 +1,5 @@
 /*
- *      $Id: pixwrite_png.c,v 1.5 2004-05-27 21:39:23 fred Exp $
+ *      $Id: pixwrite_png.c,v 1.6 2004-05-28 22:38:34 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -116,7 +116,7 @@ int PIX_Write_PNG (PIXddp *xi)
     pix_mask = 16777215;
   }
   else {
-    ESprintf(ERR_PIX_DPT,"Incorrect pixmap depth");
+    ESprintf(ERR_PIX_DPT,"Unsupported pixmap depth for PNG output");
     return(ERR_PIX_DPT);
   }
   
