@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.25 1992-09-23 23:02:43 clyne Exp $
+ *	$Id: w_idt.c,v 1.26 1992-10-14 17:55:22 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -100,6 +100,10 @@ static  XtResource      resources[] = {
         {
 	"oldIdt", "OldIdt", XtRBoolean, sizeof (Boolean),
                 XtOffset(AppDataPtr, oldidt), XtRString, "False" 
+	},
+        {
+	"debug", "Debug", XtRBoolean, sizeof (Boolean),
+                XtOffset(AppDataPtr, debug), XtRString, "False" 
 	}
 };
 
@@ -125,6 +129,8 @@ static	String fallback_resources[] = {
 	"*scrollbar*orientation:	horizontal",
 	"*scrollbar*length:		100",
 	"*fileSelectAction:	display",
+	"*canvas*height:      512",
+	"*canvas*width:      512",
 	NULL
 	};
 
@@ -154,7 +160,8 @@ static	XrmOptionDescRec 	options[] = {
 	{"-reverse",	"*translatorReverse",	XrmoptionNoArg,		"True"},
 	{"-pal",	"*translatorPal",	XrmoptionSepArg,	NULL},
 	{"-Version",	"*version",		XrmoptionNoArg,		"True"},
-	{"-oldidt",	"*oldidt",		XrmoptionNoArg,		"True"}
+	{"-oldidt",	"*oldidt",		XrmoptionNoArg,		"True"},
+	{"-debug",	"*debug",		XrmoptionNoArg,		"True"}
 };
 
 

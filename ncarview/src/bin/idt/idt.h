@@ -1,5 +1,5 @@
 /*
- *	$Id: idt.h,v 1.9 1992-09-01 23:38:54 clyne Exp $
+ *	$Id: idt.h,v 1.10 1992-10-14 17:55:14 clyne Exp $
  */
 #ifndef	_idt_
 #define	_idt_
@@ -27,6 +27,7 @@ typedef	struct	{
 	int		message_height;
 	Boolean		version;
 	Boolean		oldidt;
+	Boolean		debug;
 	} AppData, *AppDataPtr;
 
 extern	AppData	App_Data;

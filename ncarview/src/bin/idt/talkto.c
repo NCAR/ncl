@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.16 1992-09-01 23:39:01 clyne Exp $
+ *	$Id: talkto.c,v 1.17 1992-10-14 17:55:17 clyne Exp $
  */
 /*
  *	talkto.c
@@ -400,7 +400,7 @@ char	*TalkTo(id, command_string, mode)
 	if (Translators[id].pending) {
 
 		if (get_trans_msg(Translators[id].rfp, buf, sizeof(buf)) < 0) {
-			perror("reading from translator");
+			perror("reading stdout of translator");
 			return(NULL);
 		}
 
@@ -416,7 +416,7 @@ char	*TalkTo(id, command_string, mode)
 	 * see if there were any error messages
 	 */
 	if (get_trans_err(Translators[id].r_err_fp, buf, sizeof(buf)) < 0) {
-		perror("reading from translator");
+		perror("reading stderr of translator");
 		return(NULL);
 	}
 	/*

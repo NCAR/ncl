@@ -1,5 +1,5 @@
 /*
- *	$Id: w_display.c,v 1.14 1992-09-23 23:02:36 clyne Exp $
+ *	$Id: w_display.c,v 1.15 1992-10-14 17:55:20 clyne Exp $
  */
 /*
  *	w_display.c
@@ -969,6 +969,10 @@ void	CreateDisplayPopup(button, metafile)
 		win = (Window) -1;
 	}
 	wd->win = win;
+
+	if (App_Data.debug) {
+		fprintf(stderr, "Canvas window id(%d)\n", win);
+	}
 
 
 	/*
