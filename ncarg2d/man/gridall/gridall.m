@@ -135,27 +135,64 @@ ncarg_c, and ncarg_loc, preferably in that order.  To use the C bindings, load t
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
-The following error messages may be written by Gridall. They
-are written by means of a call to the error-handling
-support routine SETER, with a final argument indicating
-that the error is fatal and that execution should be
-terminated. All of the error messages should be more or
-less self-explanatory.
+Various error conditions can occur in Gridall.  Each of these results in
+a call to the error-handling routine SETER, with a final argument indicating
+that the error is recoverable; by default, an error message is printed and
+execution is terminated, but, if you turn on error recovery
+(as described in the "man" page for "error_handling"), you
+can get control back.
+.sp
+The error messages are as follows; all should be
+more or less self-explanatory.
 .sp
 .in +5
+GACOLR - UNCLEARED PRIOR ERROR
+.sp
+GAGETC - UNCLEARED PRIOR ERROR
+.sp
 GAGETC - UNRECOGNIZED PARAMETER NAME
 .sp
-GAGETI OR GAGETR - UNRECOGNIZED PARAMETER NAME
+GAGETI - UNCLEARED PRIOR ERROR
+.sp
+GAGETR - UNCLEARED PRIOR ERROR
+.sp
+GAGETR - UNRECOGNIZED PARAMETER NAME
+.sp
+GASETC - UNCLEARED PRIOR ERROR
 .sp
 GASETC - UNRECOGNIZED PARAMETER NAME
 .sp
-GASETI OR GASETR - UNRECOGNIZED PARAMETER NAME
+GASETI - UNCLEARED PRIOR ERROR
+.sp
+GASETR - UNCLEARED PRIOR ERROR
+.sp
+GASETR - UNRECOGNIZED PARAMETER NAME
+.sp
+GRID - UNCLEARED PRIOR ERROR
+.sp
+GRIDAL - ERROR EXIT FROM GQCLIP
+.sp
+GRIDAL - ERROR EXIT FROM GQLWSC
 .sp
 GRIDAL - ERROR EXIT FROM GQPLCI
 .sp
 GRIDAL - ERROR EXIT FROM GQTXCI
 .sp
-GRIDAL - ERROR EXIT FROM GQLWSC
+GRIDAL - UNCLEARED PRIOR ERROR
+.sp
+GRIDL - UNCLEARED PRIOR ERROR
+.sp
+HALFAX - UNCLEARED PRIOR ERROR
+.sp
+LABMOD - UNCLEARED PRIOR ERROR
+.sp
+PERIM - UNCLEARED PRIOR ERROR
+.sp
+PERIML - UNCLEARED PRIOR ERROR
+.sp
+TICK4 - UNCLEARED PRIOR ERROR
+.sp
+TICKS - UNCLEARED PRIOR ERROR
 .in -5
 .SH SEE ALSO
 Online:
