@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.1 1994-07-14 20:47:28 ethan Exp $
+ *      $Id: VarSupport.c,v 1.2 1994-07-21 00:19:04 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -26,11 +26,36 @@
 #include "Symbol.h"
 #include "NclMultiDValData.h"
 #include "NclVar.h"
+#include "NclFileVar.h"
 #include "VarSupport.h"
 #include "Machine.h"
 #include "DataSupport.h"
 
 
+struct _NclVarRec* _NclVarNclCreate
+#if  __STDC__
+(struct _NclVarRec * inst, struct _NclObjClassRec * theclass, NclObjTypes obj_type, unsigned int obj_type_mask, struct _NclSymbol  *thesym, struct _NclMultiDValDataRec *value, struct _NclDimRec *dim_info, int att_id, int* coords, NclVarTypes var_type, char *var_name)
+#else
+(inst, theclass, obj_type, obj_type_mask, thesym, value, dim_info, att_id, coords, var_type, var_name)
+struct _NclVarRec * inst;
+struct _NclObjClassRec * theclass;
+NclObjTypes obj_type;
+unsigned int obj_type_mask;
+struct _NclSymbol  *thesym;
+struct _NclMultiDValDataRec *value;
+struct _NclDimRec *dim_info;
+int att_id;
+int* coords;
+NclVarTypes var_type;
+char *var_name;
+#endif
+{
+	if(obj_type == Ncl_FileVar) {
+		return(_NclFileVarCreate(inst, theclass, obj_type, obj_type_mask, thesym, value, dim_info, att_id, coords, var_type, var_name));
+	} else {
+		return(_NclVarCreate(inst, theclass, obj_type, obj_type_mask, thesym, value, dim_info, att_id, coords, var_type, var_name));
+	}
+}
 
 NclObjTypes _NclGetVarRepValue
 #if __STDC__

@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.h,v 1.1 1994-07-14 20:47:30 ethan Exp $
+ *      $Id: VarSupport.h,v 1.2 1994-07-21 00:19:05 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -175,4 +175,19 @@ struct _NclVarRec * /*storage*/
 #endif
 );
 
+extern struct _NclVarRec * _NclVarNclCreate(
+#if NhlNeedProto
+        struct _NclVarRec *     /* inst */,
+        struct _NclObjClassRec *        /* theclass */,
+        NclObjTypes     /* obj_type */,
+        unsigned int    /* obj_type_mask */,
+        struct _NclSymbol  * /* thesym */,
+        struct _NclMultiDValDataRec * /* value */,
+        struct _NclDimRec * /*dim_info*/,
+        int             /*att_id*/,
+        int*            /*coords*/,
+        NclVarTypes /* var_type */,
+        char * /*var_name*/
+#endif
+);
 #endif /* _VarSupport_h */

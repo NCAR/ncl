@@ -26,8 +26,8 @@ NclQuark /* var */
 #endif
 );
 
-#define FILE_COORD_VAR_READ 0
-#define FILE_VAR_READ 1
+#define FILE_COORD_VAR_ACCESS 0
+#define FILE_VAR_ACCESS 1
 
 static int FileIsVar(
 #ifdef NhlNeedProto
@@ -617,10 +617,10 @@ int vtype;
 /* 
 * Take care of simplest case here
 */
-	if((vtype == FILE_VAR_READ ? thefile->file.format_funcs->read_var != NULL:thefile->file.format_funcs->read_coord != NULL)) {
+	if((vtype == FILE_VAR_ACCESS? thefile->file.format_funcs->read_var != NULL:thefile->file.format_funcs->read_coord != NULL)) {
 		if((!has_vectors)&&(!has_reverse)&&(!has_reorder)) {
 			val = (void*)NclMalloc(total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type));
-			if(vtype == FILE_VAR_READ) {
+			if(vtype == FILE_VAR_ACCESS) {
 				ret = (*thefile->file.format_funcs->read_var)(
 					thefile->file.private_rec,
 					thefile->file.var_info[index]->var_name_quark,
@@ -695,7 +695,7 @@ int vtype;
 				}
 			}
 			while(!done) {
-				if(vtype == FILE_VAR_READ) {
+				if(vtype == FILE_VAR_ACCESS) {
 					ret = (*thefile->file.format_funcs->read_var)(
 						thefile->file.private_rec,
 						thefile->file.var_info[index]->var_name_quark,
@@ -803,10 +803,10 @@ int vtype;
 				}
 			}
 		}
-	} else if((vtype == FILE_VAR_READ ? thefile->file.format_funcs->read_var_ns != NULL : thefile->file.format_funcs->read_coord_ns!= NULL)){
+	} else if((vtype == FILE_VAR_ACCESS ? thefile->file.format_funcs->read_var_ns != NULL : thefile->file.format_funcs->read_coord_ns!= NULL)){
 		if((!has_vectors)&&(!has_reverse)&&(!has_reorder)&&(!has_stride)) {
 			val = (void*)NclMalloc(total_elements*_NclSizeOf(thefile->file.var_info[index]->data_type));
-			if(vtype == FILE_VAR_READ) {
+			if(vtype == FILE_VAR_ACCESS) {
 				ret = (*thefile->file.format_funcs->read_var_ns)(
 					thefile->file.private_rec,
 					thefile->file.var_info[index]->var_name_quark,
@@ -871,7 +871,7 @@ struct _NclSelectionRecord* sel_ptr;
 {
 	NclDimRec dim_info[NCL_MAX_DIMENSIONS];
 
-	return(MyFileReadVarValue(thefile, var_name, sel_ptr,dim_info,FILE_VAR_READ));
+	return(MyFileReadVarValue(thefile, var_name, sel_ptr,dim_info,FILE_VAR_ACCESS));
 }
 
 
@@ -903,7 +903,7 @@ struct _NclSelectionRecord* sel_ptr;
 */
 	index = FileIsVar(thefile,var_name);
 	if(index > -1) {
-		tmp_md = MyFileReadVarValue(thefile,var_name,sel_ptr,dim_info,FILE_VAR_READ);
+		tmp_md = MyFileReadVarValue(thefile,var_name,sel_ptr,dim_info,FILE_VAR_ACCESS);
 
 
 		if(thefile->file.var_att_ids[index] != -1) {
@@ -915,7 +915,7 @@ struct _NclSelectionRecord* sel_ptr;
 				att_id = -1;
 			}
 		} else if(thefile->file.var_att_info[index] != NULL){
-			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)(thefile));
 			step = thefile->file.var_att_info[index];
 			while(step != NULL) {
 				tmp_att_md = FileReadVarAtt(thefile,thefile->file.var_info[index]->var_name_quark,step->the_att->att_name_quark,NULL);
@@ -1323,7 +1323,25 @@ struct _NclMultiDValDataRec* value;
 struct _NclSelectionRecord* sel_ptr;
 #endif
 {
-	return(NhlFATAL);
+	NhlErrorTypes ret = NhlNOERROR;
+	int dindex;
+	int index;
+	
+
+	dindex = FileIsDim(thefile,coord_name);
+	if(dindex > -1) {
+		ret = MyFileWriteVar(thefile,coord_name,value,sel_ptr,NULL,FILE_COORD_VAR_ACCESS);
+		if(thefile->file.coord_vars[dindex] == NULL) {
+			index = FileIsVar(thefile,coord_name);
+			if(index > -1) {
+				thefile->file.coord_vars[dindex] = thefile->file.var_info[index];
+			} 
+		}	
+		return(ret);
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%s) is not a valid dimension in file (%s), can't write coord_var",NrmQuarkToString(coord_name),NrmQuarkToString(thefile->file.fname));
+		return(NhlFATAL);
+	}
 }
 
 static NhlErrorTypes FileWriteVarVar
@@ -1338,7 +1356,43 @@ struct _NclVarRec* rhs_var;
 struct _NclSelectionRecord *rhs_sel_ptr;
 #endif
 {
-	return(NhlFATAL);
+	NhlErrorTypes ret = NhlNOERROR;
+	struct _NclVarRec* tmp_var;
+	int i;
+	NclQuark dim_names[NCL_MAX_DIMENSIONS];
+	int tmp_att_id;
+	NclAtt theatt;
+	NclVar coord_var;
+	NclAttList *step;
+	
+
+	tmp_var = _NclVarRead(rhs_var,rhs_sel_ptr);
+	for ( i = 0; i < tmp_var->var.n_dims; i++) {
+		dim_names[i] = tmp_var->var.dim_info[i].dim_quark;
+	}
+	ret = MyFileWriteVar(thefile,lhs_var,(NclMultiDValData)_NclGetObj(tmp_var->var.thevalue_id),lhs_sel_ptr,dim_names,FILE_VAR_ACCESS);
+	if(ret < NhlWARNING) {
+		return(ret);
+	}
+	if(rhs_var->var.att_id != -1) {
+		theatt = (NclAtt)_NclGetObj(rhs_var->var.att_id);
+		step = theatt->att.att_list;
+		while(step != NULL) {
+			ret = FileWriteVarAtt(thefile,lhs_var,step->quark,step->attvalue,NULL);
+			if(ret < NhlWARNING)
+				return(ret);
+			step = step->next;
+		}
+	}
+	for(i = 0; i < rhs_var->var.n_dims; i++) {
+		if(rhs_var->var.coord_vars[i] != -1) {
+			tmp_var = (NclVar)_NclGetObj(rhs_var->var.coord_vars[i]);
+			ret = FileWriteCoord(thefile,rhs_var->var.dim_info[i].dim_quark,_NclVarValueRead(tmp_var,NULL,NULL),NULL);
+			if(ret < NhlWARNING)
+				return(ret);
+		}
+	}
+	return(ret);
 }
 
 
@@ -1353,6 +1407,22 @@ struct _NclMultiDValDataRec *value;
 struct _NclSelectionRecord * sel_ptr;
 #endif
 {
+	return(MyFileWriteVar(thefile,var,value,sel_ptr,NULL,FILE_VAR_ACCESS));
+}
+
+static NhlErrorTypes MyFileWriteVar
+#if  __STDC__
+(NclFile thefile, NclQuark var, struct _NclMultiDValDataRec *value,struct _NclSelectionRecord * sel_ptr,NclQuark *dim_names,int type)
+#else 
+(thefile, var, value, sel_ptr,dim_names,type)
+NclFile thefile;
+NclQuark var;
+struct _NclMultiDValDataRec *value;
+struct _NclSelectionRecord * sel_ptr;
+NclQuark *dim_names;
+int type;
+#endif
+{
 	NclObjTypes lhs_type,rhs_type;
 	NclMultiDValData tmp_md = NULL;
 	NclMultiDValData mis_md = NULL;
@@ -1363,7 +1433,7 @@ struct _NclSelectionRecord * sel_ptr;
 	char buffer[8];
 	void *val;
 	NhlErrorTypes ret = NhlNOERROR;
-	int index;
+	int index,dindex;
 	long start[NCL_MAX_DIMENSIONS];
 	long finish[NCL_MAX_DIMENSIONS];
 	long stride[NCL_MAX_DIMENSIONS];
@@ -1553,15 +1623,25 @@ struct _NclSelectionRecord * sel_ptr;
 			if(tmp_md == NULL) {
 				return(NhlFATAL);
 			}
-			if(thefile->file.format_funcs->write_var != NULL ) {
+			if((type == FILE_VAR_ACCESS) ? thefile->file.format_funcs->write_var != NULL:thefile->file.format_funcs->write_coord != NULL ) {
 				if((!has_vectors)&&(!has_reverse)&&(!has_reorder)&&(value->multidval.kind != SCALAR)) {
-					ret = (*thefile->file.format_funcs->write_var)(
+					if(type == FILE_VAR_ACCESS) {
+						ret = (*thefile->file.format_funcs->write_var)(
 							thefile->file.private_rec,
 							var,
 							tmp_md->multidval.val,
 							start,
 							finish,	
 							stride);
+					} else {
+						ret = (*thefile->file.format_funcs->write_coord)(
+							thefile->file.private_rec,
+							var,
+							tmp_md->multidval.val,
+							start,
+							finish,	
+							stride);
+					}
 						return(ret);
 				} else {
 					if(value->multidval.kind != SCALAR) {
@@ -1592,13 +1672,23 @@ struct _NclSelectionRecord * sel_ptr;
 						}
 					}
 					while(!done) {
-						ret = (*thefile->file.format_funcs->write_var) (
-							thefile->file.private_rec,
-							var,
-							(void*)&(((char*)val)[from]),
-							current_index,
-							current_finish,
-							real_stride);
+						if(type == FILE_VAR_ACCESS) {
+							ret = (*thefile->file.format_funcs->write_var) (
+								thefile->file.private_rec,
+								var,
+								(void*)&(((char*)val)[from]),
+								current_index,
+								current_finish,
+								real_stride);
+						} else {
+							ret = (*thefile->file.format_funcs->write_coord) (
+								thefile->file.private_rec,
+								var,
+								(void*)&(((char*)val)[from]),
+								current_index,
+								current_finish,
+								real_stride);
+						}
 						if(ret < NhlWARNING) {
 							return(ret);
 						}
@@ -1681,42 +1771,103 @@ struct _NclSelectionRecord * sel_ptr;
 						}
 					}	
 				}
-			} else if(thefile->file.format_funcs->write_var_ns != NULL) {
+			} else if((type == FILE_VAR_ACCESS) ? thefile->file.format_funcs->write_var_ns != NULL : thefile->file.format_funcs->write_coord_ns != NULL) {
 				if((!has_vectors)&&(!has_reverse)&&(!has_reorder)&&(!has_stride)) {	
-					ret = (*thefile->file.format_funcs->write_var_ns)(
-						thefile->file.private_rec,
-						var,
-						tmp_md->multidval.val,
-						start,
-						finish
-						);
+					if(type == FILE_VAR_ACCESS) {
+						ret = (*thefile->file.format_funcs->write_var_ns)(
+							thefile->file.private_rec,
+							var,
+							tmp_md->multidval.val,
+							start,
+							finish
+							);
+					} else {
+						ret = (*thefile->file.format_funcs->write_coord_ns)(
+							thefile->file.private_rec,
+							var,
+							tmp_md->multidval.val,
+							start,
+							finish
+							);
+					}
 					return(ret);
 				}else{
+/*
+* Need code here
+*/
 				}
 			}
 		} else {
+			if(type == FILE_COORD_VAR_ACCESS) {
+				if((dindex = FileIsDim(thefile,var)) == -1) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a dimension in file (%s), can not add coordinate variable",NrmQuarkToString(var),NrmQuarkToString(thefile->file.fpath));
+					return(NhlFATAL);
+				} else if(thefile->file.file_dim_info[dindex]->dim_size == value->multidval.dim_sizes[0]){
+					if(value->multidval.n_dims != 1) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate variables must be single dimension arrays, attempt to assign (%d) dimension value to coordinate variable",value->multidval.n_dims); 
+						return(NhlFATAL);
+					}
+					new_dim_quarks[0] = var;
+					new_dim_sizes[0] = value->multidval.dim_sizes[0];
+					start[0] = 0;
+					finish[0] = value->multidval.dim_sizes[0] -1 ;
+					stride[0] = 1;
+				}
+			} else {
 /*
 * Since it is imposible to guess names of dimensions they must
 * blindly be added
 */
-			for(i = 0; i < value->multidval.n_dims; i++) {
-				sprintf(buffer,"ncl%d",thefile->file.n_file_dims);
-				new_dim_quarks[i] = NrmStringToQuark(buffer);
-				new_dim_sizes[i] = (long)value->multidval.dim_sizes[i];
-				start[i] = 0;
-				finish[i] = value->multidval.dim_sizes[i] -1;
-				stride[i] = 1;
+				if(dim_names == NULL) {
+					for(i = 0; i < value->multidval.n_dims; i++) {
+						sprintf(buffer,"ncl%d",thefile->file.n_file_dims);
+						new_dim_quarks[i] = NrmStringToQuark(buffer);
+						new_dim_sizes[i] = (long)value->multidval.dim_sizes[i];
+						start[i] = 0;
+						finish[i] = value->multidval.dim_sizes[i] -1;
+						stride[i] = 1;
 
-				ret = (*thefile->file.format_funcs->add_dim)(
-					thefile->file.private_rec,
-					new_dim_quarks[i],
-					new_dim_sizes[i]);
-				if(ret < NhlWARNING) {
-					return(ret);
-				}
-				thefile->file.file_dim_info[thefile->file.n_file_dims] = (*thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,new_dim_quarks[i]);
-				thefile->file.n_file_dims++;
+						ret = (*thefile->file.format_funcs->add_dim)(
+							thefile->file.private_rec,
+							new_dim_quarks[i],
+							new_dim_sizes[i]);
+						if(ret < NhlWARNING) {
+							return(ret);
+						}
+						thefile->file.file_dim_info[thefile->file.n_file_dims] = (*thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,new_dim_quarks[i]);
+						thefile->file.n_file_dims++;
 				
+					}
+				} else {
+					for(i = 0 ; i < value->multidval.n_dims; i++) {
+						if(dim_names[i] != -1) {
+							new_dim_quarks[i] = dim_names[i];
+						} else {
+							sprintf(buffer,"ncl%d",thefile->file.n_file_dims);
+							new_dim_quarks[i] = NrmStringToQuark(buffer);
+						}
+						new_dim_sizes[i] = value->multidval.dim_sizes[i];
+						start[i] = 0;
+						finish[i] = value->multidval.dim_sizes[i] - 1;
+						stride[i] = 1;
+						if((dindex = FileIsDim(thefile,dim_names[i])) == -1) {
+							ret = (*thefile->file.format_funcs->add_dim)(
+								thefile->file.private_rec,
+								new_dim_quarks[i],
+								new_dim_sizes[i]);
+							if(ret < NhlWARNING) 
+								return(ret);
+							thefile->file.file_dim_info[thefile->file.n_file_dims] = (*thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,new_dim_quarks[i]);
+							thefile->file.n_file_dims++;
+						} else {
+							if(thefile->file.file_dim_info[dindex]->dim_size != value->multidval.dim_sizes[i]) {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"File dimension conflict, dimension (%s) has a size of (%d) can not set it to requested size (%d)",NrmQuarkToString(dim_names[i]),thefile->file.file_dim_info[dindex]->dim_size,value->multidval.dim_sizes[i]);
+								return(NhlFATAL);
+			
+							}
+						}
+					}
+				}
 			}
 			ret = (*thefile->file.format_funcs->add_var)(
 					thefile->file.private_rec,
@@ -1729,21 +1880,40 @@ struct _NclSelectionRecord * sel_ptr;
 			if(ret < NhlWARNING) {
 				return(ret);
 			}
-			if(thefile->file.format_funcs->write_var != NULL) {
-				ret = (*thefile->file.format_funcs->write_var)(
-					thefile->file.private_rec,
-					var,
-					value->multidval.val,
-					start,
-					finish,
-					stride);
+			if((type == FILE_VAR_ACCESS) ? thefile->file.format_funcs->write_var != NULL : thefile->file.format_funcs->write_coord != NULL) {
+				if(type == FILE_VAR_ACCESS) {
+					ret = (*thefile->file.format_funcs->write_var)(
+						thefile->file.private_rec,
+						var,
+						value->multidval.val,
+						start,
+						finish,
+						stride);
+				} else {
+					ret = (*thefile->file.format_funcs->write_coord)(
+						thefile->file.private_rec,
+						var,
+						value->multidval.val,
+						start,
+						finish,
+						stride);
+				}
 			} else {
-				ret = (*thefile->file.format_funcs->write_var_ns)(
-					thefile->file.private_rec,
-					var,
-					value->multidval.val,
-					start,
-					finish);
+				if(type == FILE_VAR_ACCESS) {
+					ret = (*thefile->file.format_funcs->write_var_ns)(
+						thefile->file.private_rec,
+						var,
+						value->multidval.val,
+						start,
+						finish);
+				} else {
+					ret = (*thefile->file.format_funcs->write_coord_ns)(
+						thefile->file.private_rec,
+						var,
+						value->multidval.val,
+						start,
+						finish);
+				}
 			}
 			if(ret < NhlWARNING) {
 				return(ret);
@@ -1753,7 +1923,7 @@ struct _NclSelectionRecord * sel_ptr;
 			thefile->file.var_att_ids[thefile->file.n_vars] = -1;
 			
 			thefile->file.n_vars++;
-			
+			return(NhlNOERROR);
 		}
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"FileWriteVar: file (%s) was opened for reading only, can not write",NrmQuarkToString(thefile->file.fname));
@@ -1783,7 +1953,7 @@ struct _NclSelectionRecord * sel_ptr;
 	index = FileIsVar(thefile,var);
 	if(index > -1) {
 		if(thefile->file.var_att_ids[index] == -1) {
-			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)thefile);
 			step = thefile->file.var_att_info[index];
 			while(step != NULL){
 				tmp_att_md = FileReadVarAtt(thefile,var,step->the_att->att_name_quark,NULL);
@@ -1909,7 +2079,7 @@ struct _NclSelectionRecord *sel_ptr;
 	
 
 	if(thefile->file.file_atts_id == -1) {
-		att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+		att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)thefile);
 		for(i= 0; i < thefile->file.n_file_atts; i++) {
 			tmp_att_md = FileReadAtt(thefile,thefile->file.file_atts[i]->att_name_quark,NULL);
 			if(tmp_att_md != NULL) {
@@ -1930,29 +2100,37 @@ struct _NclSelectionRecord *sel_ptr;
 * with the coercion than to figure out what it should be 
 */
 	exists = _NclIsAtt(att_id,NrmQuarkToString(attname));
-	if(_NclAddAtt(att_id,NrmQuarkToString(attname),value,sel_ptr)<NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not write attribute (%s) to attribute list", NrmQuarkToString(attname));
-		return(NhlFATAL);
-	} else {
+	if((exists)&&(thefile->file.format_funcs->write_att != NULL))  {
+		ret = _NclAddAtt(att_id,NrmQuarkToString(attname),value,sel_ptr);
+		if(ret < NhlWARNING) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not write attribute (%s) to attribute list", NrmQuarkToString(attname));
+			return(NhlFATAL);
+		}
 		tmp_att_md = _NclGetAtt(att_id,NrmQuarkToString(attname),NULL);
-		if((exists)&&(thefile->file.format_funcs->write_att != NULL))  {
-			ret = (*thefile->file.format_funcs->write_att)(
-				thefile->file.private_rec,
-				attname,
-				tmp_att_md->multidval.val
-			);
-			return(ret);
-		} else if((!exists)&&(thefile->file.format_funcs->add_att != NULL)){
-			ret = (*thefile->file.format_funcs->add_att)(
-				thefile->file.private_rec,
-				attname,
-				tmp_att_md->multidval.data_type,
-				tmp_att_md->multidval.totalelements,
-				tmp_att_md->multidval.val
-			);
+		ret = (*thefile->file.format_funcs->write_att)(
+			thefile->file.private_rec,
+			attname,
+			tmp_att_md->multidval.val
+		);
+		return(ret);
+	} else if((!exists)&&(thefile->file.format_funcs->add_att != NULL)){
+		ret = (*thefile->file.format_funcs->add_att)(
+			thefile->file.private_rec,
+			attname,
+			value->multidval.data_type,
+			value->multidval.totalelements,
+			value->multidval.val
+		);
+		if(ret > NhlWARNING) {
+			thefile->file.file_atts[thefile->file.n_file_atts] = (*thefile->file.format_funcs->get_att_info)(thefile->file.private_rec,attname);
+			if(thefile->file.file_atts[thefile->file.n_file_atts] != NULL) {
+				thefile->file.n_file_atts++;
+			}
+			ret = _NclAddAtt(att_id,NrmQuarkToString(attname),value,sel_ptr);
 			return(ret);
 		} 
-	}
+		return(ret);
+	} 
 	return(NhlFATAL);
 }
 
@@ -2171,7 +2349,7 @@ struct _NclSelectionRecord* sel_ptr;
 	if(FileIsCoord(thefile,coord_name) > -1){
 		index = FileIsVar(thefile,coord_name);
 		tmp_md = MyFileReadVarValue(thefile,coord_name,sel_ptr,dim_info,
-			FILE_COORD_VAR_READ);
+			FILE_COORD_VAR_ACCESS);
 		if(thefile->file.var_att_ids[index] != -1) {
 			att_id = thefile->file.var_att_ids[index];
 			att_obj = (NclObj)_NclCopyAtt((NclAtt)_NclGetObj(att_id),NULL);
@@ -2181,7 +2359,7 @@ struct _NclSelectionRecord* sel_ptr;
 				att_id = -1;
 			}
 		} else if(thefile->file.var_att_info[index] != NULL) {
-			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)thefile);
 			step = thefile->file.var_att_info[index];
 			while(step != NULL) {
 				tmp_att_md = FileReadVarAtt(thefile,thefile->file.var_info[index]->var_name_quark,step->the_att->att_name_quark,NULL);

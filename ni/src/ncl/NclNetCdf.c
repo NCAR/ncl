@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.2 1994-07-18 15:46:46 ethan Exp $
+ *      $Id: NclNetCdf.c,v 1.3 1994-07-21 00:19:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -365,7 +365,7 @@ NclQuark var_name;
 	int i,j;
 
 	stepvl = rec->vars;
-	for(i = 0; i< rec->n_vars; i++){
+	while(stepvl != NULL) {
 		if(stepvl->var_inq->name == var_name) {
 			tmp = (NclFVarRec*)NclMalloc((unsigned)sizeof(NclFVarRec));
 			tmp->var_name_quark = stepvl->var_inq->name;
@@ -975,6 +975,7 @@ int size;
 			rec->dims->dim_inq->size = (long)size;
 			rec->dims->next = NULL;
 			rec->n_dims = 1;
+			return(NhlNOERROR);
 		} else {
 			while(stepdl->next != NULL) {
 				stepdl = stepdl->next;
@@ -986,6 +987,7 @@ int size;
 			stepdl->next->dim_inq->size = (long)size;
 			stepdl->next->next = NULL;
 			rec->n_dims++;
+			return(NhlNOERROR);
 		}
 	} else {	
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"File (%s) was opened as a read only file, can not write to it",NrmQuarkToString(rec->file_path_q));
@@ -1059,6 +1061,7 @@ long* dim_sizes;
 				for(i = 0 ; i< n_dims; i++) {
 					rec->vars->var_inq->dim[i] = dim_ids[i];
 				}
+				rec->n_vars = 1;
 			} else {
 				while(stepvl->next != NULL) {
 					stepvl= stepvl->next;
@@ -1077,6 +1080,7 @@ long* dim_sizes;
 				for(i = 0 ; i< n_dims; i++) {
 					stepvl->next->var_inq->dim[i] = dim_ids[i];
 				}
+				rec->n_vars++;
 			}
 			return(NhlNOERROR);
 		} else {

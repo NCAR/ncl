@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.18 1994-07-14 20:45:59 ethan Exp $
+ *      $Id: Machine.c,v 1.19 1994-07-21 00:18:52 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1349,7 +1349,7 @@ void _NclRemapParameters
 				if((data.kind == NclStk_VAR)&&(tmp_fp->func_ret_value.kind == NclStk_VAR)&&
 					(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)) {
 					tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
-					tmp_var = _NclVarCreate(
+					tmp_var = _NclVarNclCreate(
 						NULL,
 						tmp_var1->obj.class_ptr,
 						tmp_var1->obj.obj_type,
@@ -1465,7 +1465,7 @@ void _NclRemapParameters
 /* Here the object is available to be forced into a temporary variable */
 
 							tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
-							tmp_var = _NclVarCreate(
+							tmp_var = _NclVarNclCreate(
 								NULL,
 								tmp_var1->obj.class_ptr,
 								tmp_var1->obj.obj_type,
@@ -1493,7 +1493,7 @@ void _NclRemapParameters
 								coord_ids[j] = -1;
 							}
 						}
-						tmp_var = _NclVarCreate(
+						tmp_var = _NclVarNclCreate(
 							NULL,
 							tmp_var1->obj.class_ptr,
 							tmp_var1->obj.obj_type,
@@ -1567,7 +1567,7 @@ void _NclRemapParameters
 /* data better be a variable otherwise something is majorly hosed */
 /* Here the object is available to be forced into a temporary variable */
 						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
-						tmp_var = _NclVarCreate(
+						tmp_var = _NclVarNclCreate(
 							NULL,
 							tmp_var1->obj.class_ptr,
 							tmp_var1->obj.obj_type,
@@ -1596,7 +1596,7 @@ void _NclRemapParameters
 								coord_ids[i] = -1;
 							}
 						}
-						tmp_var = _NclVarCreate(
+						tmp_var = _NclVarNclCreate(
 							NULL,
 							tmp_var1->obj.class_ptr,
 							tmp_var1->obj.obj_type,
@@ -1625,7 +1625,7 @@ void _NclRemapParameters
 /* data better be a variable otherwise something is majorly hosed */
 /* Here the object is available to be forced into a temporary variable */
 						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
-						tmp_var = _NclVarCreate(
+						tmp_var = _NclVarNclCreate(
 							NULL,
 							tmp_var1->obj.class_ptr,
 							tmp_var1->obj.obj_type,
@@ -1654,7 +1654,7 @@ void _NclRemapParameters
 								coord_ids[i] = -1;
 							}
 						}
-						tmp_var = _NclVarCreate(
+						tmp_var = _NclVarNclCreate(
 							NULL,
 							tmp_var1->obj.class_ptr,
 							tmp_var1->obj.obj_type,
@@ -1687,7 +1687,7 @@ void _NclRemapParameters
 /* data better be a variable otherwise something is majorly hosed */
 /* Here the object is available to be forced into a temporary variable */
 						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
-						tmp_var = _NclVarCreate(
+						tmp_var = _NclVarNclCreate(
 							NULL,
 							tmp_var1->obj.class_ptr,
 							tmp_var1->obj.obj_type,
@@ -1716,7 +1716,7 @@ void _NclRemapParameters
 								coord_ids[i] = -1;
 							}
 						}
-						tmp_var = _NclVarCreate(
+						tmp_var = _NclVarNclCreate(
 							NULL,
 							tmp_var1->obj.class_ptr,
 							tmp_var1->obj.obj_type,
