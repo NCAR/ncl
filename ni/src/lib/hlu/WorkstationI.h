@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationI.h,v 1.11 1998-10-05 19:13:50 boote Exp $
+ *      $Id: WorkstationI.h,v 1.12 1999-10-18 22:25:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -47,8 +47,15 @@ struct _NhlworkColorChangeDataRec{
  *
  * cbdata.ptrval is _NhlworkColorChangeData for both of these
  */
+/*
+ * changed the non-"Index" version: now it is called ColorMapChange, and
+ * is called *once* any time the colormap is altered in any way. 
+ * Actually the indexed color map callback will be called 256 times for
+ * a complete color map change. The callback user only sees calls that he
+ * for indexes he has registered however.
+ */
 #define _NhlCBworkColorIndexChange	"CBworkColorIndexChange"
-#define _NhlCBworkColorChange		"CBworkColorChange"
+#define _NhlCBworkColorMapChange	"CBworkColorMapChange"
 
 /*cbdata.ptrval is workstation NhlLayer */
 #define	_NhlCBworkPreOpen	"CBworkPreOpen"

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.95 1999-10-13 17:07:00 ethan Exp $
+ *      $Id: Workstation.c,v 1.96 1999-10-18 22:25:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -414,8 +414,8 @@ static _NhlRawObjCB callbacks[] = {
 	{_NhlCBworkColorIndexChange,
 			NhlOffset(NhlWorkstationLayerRec,work.color_index_cb),
 		8,NULL,NULL,NULL},
-	{_NhlCBworkColorChange,
-			NhlOffset(NhlWorkstationLayerRec,work.color_cb),
+	{_NhlCBworkColorMapChange,
+			NhlOffset(NhlWorkstationLayerRec,work.colormap_cb),
 		0,NULL,NULL,NULL},
 };
 
@@ -2533,40 +2533,64 @@ DoCmap
 			nwp->color_map_len = _NhlMAX_COLOR_MAP;
 			ret = NhlWARNING;
 		}
-		/* copy the pointer to the old work so the setvalues cb will
-		   work (new and old must be different) */
-		if (owl) 
-			owp->color_map = nwp->color_map; 
-		nwp->color_map = NULL;
-		nwp->cmap_changed = True;
 		
+		nwp->cmap_changed = False;
 		if (tcp[0][0] >= 0.0 &&
 		    ! (tcp[0][0] == pcmap[0].red &&
 		       tcp[0][1] == pcmap[0].green &&
-		       tcp[0][2] == pcmap[0].blue))
+		       tcp[0][2] == pcmap[0].blue)) {
 			bg_changed = True; 
+			nwp->cmap_changed = True;
+		}
 				
 		if (tcp[1][0] >= 0.0 &&
 		    ! (tcp[1][0] == pcmap[1].red &&
 		       tcp[1][1] == pcmap[1].green &&
-		       tcp[1][2] == pcmap[1].blue))
+		       tcp[1][2] == pcmap[1].blue)) {
 			fg_changed = True; 
-
-		for(i=0;i < nwp->color_map_len;i++){
-			if (tcp[i][0] < 0.0) {
-				continue;
-			}
-			pcmap[i].red = tcp[i][0];
-			pcmap[i].green = tcp[i][1];
-			pcmap[i].blue = tcp[i][2];
-			if(pcmap[i].cstat == _NhlCOLUNSET)
-				pcmap[i].cstat = _NhlCOLNEW;
-			else
-				pcmap[i].cstat = _NhlCOLCHANGE;
+			nwp->cmap_changed = True;
 		}
-		for(i=nwp->color_map_len; i < _NhlMAX_COLOR_MAP;i++){
-			if(pcmap[i].cstat == _NhlCOLSET)
-				pcmap[i].cstat = _NhlCOLREMOVE;
+
+		if (owl && owp->color_map_len == nwp->color_map_len) {
+			NhlPrivateColor	*old_pcmap = owp->private_color_map;
+			for(i=0;i < nwp->color_map_len;i++){
+				if (! memcmp(tcp[i],&old_pcmap[i].red,
+					     3 * sizeof(float))) {
+					pcmap[i].cstat = old_pcmap[i].cstat;
+					pcmap[i].ci = old_pcmap[i].ci;
+					continue;
+				}
+				nwp->cmap_changed = True;
+				if (tcp[i][0] < 0.0) {
+					continue;
+				}
+				pcmap[i].red = tcp[i][0];
+				pcmap[i].green = tcp[i][1];
+				pcmap[i].blue = tcp[i][2];
+				if(pcmap[i].cstat == _NhlCOLUNSET)
+					pcmap[i].cstat = _NhlCOLNEW;
+				else
+					pcmap[i].cstat = _NhlCOLCHANGE;
+			}
+		}
+		else {
+			nwp->cmap_changed = True;
+			for(i=0;i < nwp->color_map_len;i++){
+				if (tcp[i][0] < 0.0) {
+					continue;
+				}
+				pcmap[i].red = tcp[i][0];
+				pcmap[i].green = tcp[i][1];
+				pcmap[i].blue = tcp[i][2];
+				if(pcmap[i].cstat == _NhlCOLUNSET)
+					pcmap[i].cstat = _NhlCOLNEW;
+				else
+					pcmap[i].cstat = _NhlCOLCHANGE;
+			}
+			for(i=nwp->color_map_len; i < _NhlMAX_COLOR_MAP;i++){
+				if(pcmap[i].cstat == _NhlCOLSET)
+					pcmap[i].cstat = _NhlCOLREMOVE;
+			}
 		}
 	}
 
@@ -2687,7 +2711,14 @@ DoCmap
 		pcmap[NhlFOREGROUND].green = (*tcp)[1];
 		pcmap[NhlFOREGROUND].blue = (*tcp)[2];
 	}
+	if (nwp->cmap_changed) {
+ 		/* copy the pointer to the old work so the setvalues cb will
+		   work (new and old must be different) */
+		if (owl)
+			owp->color_map = nwp->color_map; 
+	}
 
+	nwp->color_map = NULL;
 	return (ret);
 }
 
@@ -5341,11 +5372,14 @@ _NhlAllocateColors
 		ccdata.red = new[i].red;
 		ccdata.green = new[i].green;
 		ccdata.blue = new[i].blue;
-		_NhlCallObjCallbacks((NhlLayer)wl,_NhlCBworkColorChange,
-								sel,cbdata);
 		_NhlCallObjCallbacks((NhlLayer)wl,_NhlCBworkColorIndexChange,
 								sel,cbdata);
 	}
+	sel.lngval = 0;
+	ccdata.ci = -1;
+	ccdata.red = ccdata.green = ccdata.blue = -1.0;
+	_NhlCallObjCallbacks((NhlLayer)wl,_NhlCBworkColorMapChange,
+			     sel,cbdata);
 
 
 	return ret;

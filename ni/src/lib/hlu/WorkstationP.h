@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.24 1999-06-09 00:29:19 dbrown Exp $
+ *      $Id: WorkstationP.h,v 1.25 1999-10-18 22:25:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -186,7 +186,7 @@ typedef struct _NhlWorkstationLayerPart{
         NhlBoolean	cleared;
 
 	_NhlCB		color_index_cb;
-	_NhlCB		color_cb;
+	_NhlCB		colormap_cb;
 
 	int edge_char_size;
 	int edge_dash_dollar_size;
