@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.34 1996-02-26 21:45:53 dbrown Exp $
+ *      $Id: DataComm.c,v 1.35 1996-03-20 21:38:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -834,7 +834,10 @@ CompileDataList
 							NhlName(llist[j]),
 					NrmQuarkToString(oset->res_name));
 				ret = NhlWARNING;
-				llist[j] = llist[--len];
+				len--;
+				for(k=j;k<len;k++)
+					llist[k] = llist[k+1];
+
 			}
 			else
 				j++;
