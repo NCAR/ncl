@@ -1,5 +1,5 @@
 C
-C      $Id: cn15f.f,v 1.3 1997-04-09 14:07:20 haley Exp $
+C      $Id: cn15f.f,v 1.4 1998-11-24 16:29:23 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -35,7 +35,7 @@ C
 C
 C Declare variables for the HLU routine calls.
 C
-      integer appid, jan, cn, ice, mp, tx, srlist
+      integer appid, jan, cn, ice, mp, tx, srlist, zonal, xy_plot
 C
 C Declare variables for color map
 C
