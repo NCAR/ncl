@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.70 2000-02-09 03:37:44 dbrown Exp $
+ *      $Id: TickMark.c,v 1.71 2000-02-11 02:47:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -8082,12 +8082,21 @@ int		c_or_s;
 			}
                 }
                 tnew->tick.xb_multi = _NhlGetLayer(tmpid);
-		
-		label_spacing = 1.0;
-		for (i = 1; i < tmp; i++) {
-			label_spacing = 
-				MIN(label_spacing,
-				    locs_for_multi[i] - locs_for_multi[i-1]);
+
+		if (tnew->tick.x_b_nmajor == 1) {
+			label_spacing = tnew->view.width;
+		}
+		else if (tnew->tick.x_b_mode == NhlEXPLICIT) {
+			for (i = 1; i < tmp; i++) {
+				label_spacing = 
+					MIN(label_spacing, locs_for_multi[i] -
+					    locs_for_multi[i-1]);
+			}
+		}
+		else { /* all spaces are equal */
+			label_spacing = MAX(1,tnew->tick.x_b_label_stride) *
+				(tnew->tick.x_b_major_ndc_locs[1] -
+				tnew->tick.x_b_major_ndc_locs[0]);
 		}
 		tnew->tick.x_b_label_spacing = label_spacing;
         } else {
@@ -8222,12 +8231,23 @@ int		c_or_s;
 			}
                 }
                 tnew->tick.xt_multi = _NhlGetLayer(tmpid);
-		label_spacing = 1.0;
-		for (i = 1; i < tmp; i++) {
-			label_spacing = 
-				MIN(label_spacing,
-				    locs_for_multi[i] - locs_for_multi[i-1]);
+
+		if (tnew->tick.x_t_nmajor == 1) {
+			label_spacing = tnew->view.width;
 		}
+		else if (tnew->tick.x_t_mode == NhlEXPLICIT) {
+			for (i = 1; i < tmp; i++) {
+				label_spacing = 
+					MIN(label_spacing, locs_for_multi[i] -
+					    locs_for_multi[i-1]);
+			}
+		}
+		else { /* all spaces are equal */
+			label_spacing = MAX(1,tnew->tick.x_t_label_stride) *
+				(tnew->tick.x_t_major_ndc_locs[1] -
+				tnew->tick.x_t_major_ndc_locs[0]);
+		}
+			
 		tnew->tick.x_t_label_spacing = label_spacing;
         } else {
 /*
@@ -8359,13 +8379,22 @@ int		c_or_s;
 				ret = subret;
 			}
                 }
-
                 tnew->tick.yl_multi = _NhlGetLayer(tmpid);
-		label_spacing = 1.0;
-		for (i = 1; i < tmp; i++) {
-			label_spacing = 
-				MIN(label_spacing,
-				    locs_for_multi[i] - locs_for_multi[i-1]);
+
+		if (tnew->tick.y_l_nmajor == 1) {
+			label_spacing = tnew->view.width;
+		}
+		else if (tnew->tick.y_l_mode == NhlEXPLICIT) {
+			for (i = 1; i < tmp; i++) {
+				label_spacing = 
+					MIN(label_spacing, locs_for_multi[i] -
+					    locs_for_multi[i-1]);
+			}
+		}
+		else { /* all spaces are equal */
+			label_spacing = MAX(1,tnew->tick.y_l_label_stride) *
+				(tnew->tick.y_l_major_ndc_locs[1] -
+				tnew->tick.y_l_major_ndc_locs[0]);
 		}
 		tnew->tick.y_l_label_spacing = label_spacing;
         } else {
@@ -8496,11 +8525,21 @@ int		c_or_s;
 			}
                 }
                 tnew->tick.yr_multi = _NhlGetLayer(tmpid);
-		label_spacing = 1.0;
-		for (i = 1; i < tmp; i++) {
-			label_spacing = 
-				MIN(label_spacing,
-				    locs_for_multi[i] - locs_for_multi[i-1]);
+
+		if (tnew->tick.y_r_nmajor == 1) {
+			label_spacing = tnew->view.width;
+		}
+		else if (tnew->tick.y_r_mode == NhlEXPLICIT) {
+			for (i = 1; i < tmp; i++) {
+				label_spacing = 
+					MIN(label_spacing, locs_for_multi[i] -
+					    locs_for_multi[i-1]);
+			}
+		}
+		else { /* all spaces are equal */
+			label_spacing = MAX(1,tnew->tick.y_r_label_stride) *
+				(tnew->tick.y_r_major_ndc_locs[1] -
+				tnew->tick.y_r_major_ndc_locs[0]);
 		}
 		tnew->tick.y_r_label_spacing = label_spacing;
         } else {

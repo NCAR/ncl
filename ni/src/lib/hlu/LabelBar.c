@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.63 1999-10-26 05:14:10 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.64 2000-02-11 02:47:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -219,6 +219,12 @@ static NhlResource resources[] = {
 {NhlNlbLabelStride, NhlClbLabelStride, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.label_stride),
 	 NhlTImmediate,_NhlUSET((NhlPointer) 1),0,NULL},
+{NhlNlbMaxLabelLenF, NhlClbMaxLabelLenF, NhlTFloat, sizeof(float),
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.max_label_len),
+	 NhlTString,_NhlUSET( "0.0" ),_NhlRES_GONLY,NULL},
+{NhlNlbMinLabelSpacingF, NhlClbMinLabelSpacingF, NhlTFloat, sizeof(float),
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.min_label_spacing),
+	 NhlTString,_NhlUSET( "0.0" ),_NhlRES_GONLY,NULL},
 
 {NhlNlbTitleString, NhlClbTitleString, NhlTString, 
 	 sizeof(char *), NhlOffset(NhlLabelBarLayerRec,labelbar.title_string),
@@ -3174,6 +3180,7 @@ static NhlErrorTypes    SetLabels
 				NhlNvpWidthF,&width,
 				NhlNvpHeightF,&height,
 				NhlNMtextConstPosF,&lb_p->const_pos,
+				NhlNMtextMaxLenF,&lb_p->max_label_len,
 				NULL);
 /*
  * store the actual label bounding box in the 'xtr' variables.
@@ -3619,6 +3626,8 @@ static NhlErrorTypes    AdjustGeometry
 		tmpBB.r = lb_p->adj_bar.r;
 		tmpBB.b = lb_p->adj_bar.b;
 		tmpBB.t = lb_p->adj_bar.t;
+		lb_p->max_label_len = 0.0;
+		lb_p->min_label_spacing = 0.0;
 	}
 	else {
 		if (lb_p->orient == NhlHORIZONTAL) {
@@ -3940,6 +3949,15 @@ static NhlErrorTypes    AdjustGeometry
 		    < NhlWARNING)
 			return (ret1);
 		ret = MIN(ret1,ret);
+
+		lb_p->min_label_spacing = (lb_p->orient == NhlHORIZONTAL) ?
+			lb_p->labels.rxtr - lb_p->labels.lxtr :
+			lb_p->labels.txtr - lb_p->labels.rxtr;
+		for (i=1; i<lb_p->label_draw_count; i++) {
+			lb_p->min_label_spacing = MIN(lb_p->min_label_spacing,
+						      lb_p->label_locs[i] - 
+						      lb_p->label_locs[i-1]);
+		}
 	}
 /*
  * Set the title position
