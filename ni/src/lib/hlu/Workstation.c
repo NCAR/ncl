@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.16 1994-09-23 23:37:04 dbrown Exp $
+ *      $Id: Workstation.c,v 1.17 1994-10-07 18:48:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -167,7 +167,7 @@ static NhlColor def_color[] = {
 };
 
 /* 
- * There are currently 15 pre-defined dash patterns provided plus solid
+ * There are currently 16 pre-defined dash patterns provided plus solid
  * (index 0, or NhlSOLIDLINE). The solid line is element 0 of the dash
  * pattern table but is not counted in the number of dash patterns 
  * returned to the user. Therefore the user can use dash pattern indexes 

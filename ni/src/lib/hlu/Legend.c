@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.15 1994-09-23 23:36:45 dbrown Exp $
+ *      $Id: Legend.c,v 1.16 1994-10-07 18:47:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1369,7 +1369,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 				def_colors[i] : NhlLG_DEF_COLOR;
 	for (i = NhlLG_DEF_ITEM_COUNT; i < count; i++)
 		i_p[i] = _NhlIsAllocatedColor(tnew->base.wkptr, i) ?
-			def_colors[i] : NhlLG_DEF_COLOR;
+			i : NhlLG_DEF_COLOR;
 			
 	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTInteger,
 				    sizeof(int),1,&count)) == NULL) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.23 1994-09-30 01:11:03 dbrown Exp $
+ *      $Id: Overlay.c,v 1.24 1994-10-07 18:48:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3147,12 +3147,14 @@ ManageTickMarks
 	}
 	else if (tm_style == NhlIRREGULAR) {
 		count = NhlOV_IRR_COUNT;
-		for (i=0; i < count; i++) {
+		for (i=0; i < count - 1; i++) {
 			x_irr[i] = ovnew->view.x + ovnew->view.width * 
 				(float) i / (count - 1.0);
 			y_irr[i] = ovnew->view.y - ovnew->view.height +
 				ovnew->view.height * (float) i / (count - 1.0);
 		}
+		x_irr[count - 1] = ovnew->view.x + ovnew->view.width;
+		y_irr[count - 1] = ovnew->view.y;
 	}
 
 	subret = NhlNDCToData(ovp->ov_recs[0]->plot->base.id,

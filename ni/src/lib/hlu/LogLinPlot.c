@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.c,v 1.6 1994-05-12 23:51:44 boote Exp $
+ *      $Id: LogLinPlot.c,v 1.7 1994-10-07 18:47:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,16 @@
  */
 
 #include <ncarg/hlu/LogLinPlotP.h>
+
+
+#define	Oset(field)	NhlOffset(NhlLogLinPlotLayerRec,llplot.field)
+static NhlResource resources[] = {
+
+	{ NhlNovUpdateReq,NhlCovUpdateReq,NhlTBoolean,sizeof(NhlBoolean),
+		  Oset(update_req),
+		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL}
+};
+#undef Oset
 
 /* base methods */
 
@@ -89,8 +99,8 @@ NhlLogLinPlotLayerClassRec NhllogLinPlotLayerClassRec = {
 /* class_inited			*/      False,
 /* superclass			*/      (NhlLayerClass)&NhltransformLayerClassRec,
 
-/* layer_resources		*/	NULL,
-/* num_resources		*/	0,
+/* layer_resources		*/	resources,
+/* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
 
 /* class_part_initialize	*/	LogLinPlotClassPartInitialize,
@@ -262,6 +272,7 @@ LogLinPlotInitialize
 
 /* Initialize private fields */
 
+	llp->update_req = False;
 	llp->overlay_object = NULL;
 	
 /* Set up the loglin transformation */
@@ -320,6 +331,8 @@ static NhlErrorTypes LogLinPlotSetValues
 	char			*entry_name = "LogLinPlotSetValues";
 	NhlLogLinPlotLayer	lnew = (NhlLogLinPlotLayer) new;
 	NhlLogLinPlotLayerPart	*llp = &(lnew->llplot);
+	NhlSArg			sargs[1];
+	int			nargs = 0;
 
 
 /* Set up the loglin transformation */
@@ -330,9 +343,17 @@ static NhlErrorTypes LogLinPlotSetValues
 
 /* Manage the overlay */
 
+	/* 1 arg */
+
+	if (llp->update_req) {
+		NhlSetSArg(&sargs[nargs++],NhlNovUpdateReq,True);
+	}
+		
 	subret = _NhlManageOverlay(&llp->overlay_object,new,old,
-			       False,NULL,0,entry_name);
+			       False,sargs,nargs,entry_name);
 	ret = MIN(ret,subret);
+
+	llp->update_req = False;
 
 	return ret;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlotP.h,v 1.3 1994-01-27 21:24:21 boote Exp $
+ *      $Id: LogLinPlotP.h,v 1.4 1994-10-07 18:48:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,10 @@
 typedef struct NhlLogLinPlotLayerPart {
 
 	/* Public resources */
+
+	/* Private resources */
+
+	NhlBoolean		update_req;
 
 	/* Private Fields */
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourP.h,v 1.17 1994-09-30 01:11:02 dbrown Exp $
+ *      $Id: ContourP.h,v 1.18 1994-10-07 18:47:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -213,6 +213,8 @@ typedef struct _NhlContourLayerPart {
 	NhlBoolean	auto_legend_labels;
 	NhlGenArray	legend_labels;
 	NhlString	legend_title;
+	NhlBoolean	draw_lgnd_line_lbls_set;
+	NhlBoolean	draw_lgnd_line_lbls;
 	NhlBoolean	auto_labelbar_labels;
 	NhlGenArray	labelbar_labels;
 	NhlString	labelbar_title;
@@ -233,6 +235,7 @@ typedef struct _NhlContourLayerPart {
 	NhlLayer	overlay_object;
 	NhlBoolean	data_init;
 	NhlBoolean	cprect_call_req;
+	int		ref_level;
 	float		*real_levels;
 	int		real_fill_count;
 	int		*real_fill_colors;
@@ -246,6 +249,7 @@ typedef struct _NhlContourLayerPart {
 	NhlBoolean	const_field;
 	NhlBoolean	display_constf;
 	int		fill_count;
+	int		line_count;
 	NhlGenArray	ll_strings;
 	NhlGenArray	ll_text_heights;
 	int		*label_amap;
@@ -255,8 +259,8 @@ typedef struct _NhlContourLayerPart {
 	int		fill_aws_id;
 	int		ezmap_aws_id;
 	NhlBoolean	use_irr_trans;
-	float		xc1,xcm,yc1,ycn;
-	float		xlb,xub,ylb,yub;
+	float		xc1,xcm,yc1,ycn; /* data bounds for Conpack */
+	float		xlb,xub,ylb,yub; /* window boundaries */
 	int		info_anno_id;
 	int		constf_anno_id;
 
