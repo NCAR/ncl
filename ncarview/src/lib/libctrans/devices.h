@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.h,v 1.5 1991-11-07 11:51:39 clyne Exp $
+ *	$Id: devices.h,v 1.6 1992-02-11 14:59:09 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -47,13 +47,6 @@
 #define	X	0
 #endif	
 
-#ifdef	X11		/* the bfr driver gets defined when X11 is defined */
-#define	XBFR
-#define	B	1
-#else
-#define	B	0
-#endif
-
 #ifdef	CTXT
 #define	CL	1
 #else
@@ -84,10 +77,9 @@
 #define	GCAP_I	(G -1)
 #define	RAST_I	(G + R -1)
 #define	X11_I	(G + R + X -1)
-#define	XBFR_I	(G + R + X + B -1)
-#define	CTXT_I	(G + R + X + B + CL -1)
-#define	SunV_I	(G + R + X + B + CL + SV -1)
-#define	SunR_I	(G + R + X + B + CL + SV + SR -1)
+#define	CTXT_I	(G + R + X + CL -1)
+#define	SunV_I	(G + R + X + CL + SV -1)
+#define	SunR_I	(G + R + X + CL + SV + SR -1)
 
 
 /*
@@ -154,7 +146,6 @@ struct device{
 
 #ifdef  X11
         ,{"X11",X11_I,FALSE,TRUE,"", FALSE, X11_opts}
-	,{"xbfr",XBFR_I, FALSE,TRUE, "", FALSE, X11_opts}
 #endif   
 
 #ifdef  CTXT

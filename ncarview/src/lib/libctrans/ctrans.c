@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.15 1992-02-07 17:38:54 clyne Exp $
+ *	$Id: ctrans.c,v 1.16 1992-02-11 14:58:59 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -585,6 +585,11 @@ SetDevice(gcap)
 	 *	find out the name of the device (remove the path)
 	 */
 	device = (device = strrchr(gcap, '/')) ? ++device : gcap;
+
+	if (! strcmp(device, "xbfr")) {
+		fprintf(stderr, "ctrans : Warning - 'xbfr' device won't be available in next release. Use 'xwd' instead\n");
+		device = "xwd";
+	}
 
 
 	/*

@@ -1,5 +1,5 @@
 /*
- *	$Id: Xcrm.c,v 1.9 1992-02-10 17:31:42 clyne Exp $
+ *	$Id: Xcrm.c,v 1.10 1992-02-11 14:58:56 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -50,6 +50,7 @@ free_colors()
 	int	i;
 	int	count = 0;
 
+	if (! Color_ava) return;
 
 	free_list = (Pixeltype *) icMalloc 
 			((unsigned) (MAX_COLOR_SIZE * sizeof(Pixeltype)));

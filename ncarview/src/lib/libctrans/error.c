@@ -1,5 +1,5 @@
 /*
- *      $Id: error.c,v 1.2 1991-09-26 16:29:36 clyne Exp $
+ *      $Id: error.c,v 1.3 1992-02-11 14:59:12 clyne Exp $
  */
 /*
  *	File:		error.c	
@@ -48,28 +48,28 @@ static	int	errorTableSize = sizeof (errorMessages) / sizeof (char **);
  *	Set the current error number. Error codes are defined in error.h
  *
  * on entry
- *	errno		: an error code defined in error.h. If negative then
- *			  the unix global variable 'errno' is ABS(errno).	
+ *	err_code	: an error code defined in error.h. If negative then
+ *			  the unix global variable 'err_code' is ABS(err_code).	
  * on exit
  *	return		: < 0 => invalid error code, else ok.
  */
-CtransSetError_(errno)
-	int	errno;
+CtransSetError_(err_code)
+	int	err_code;
 {
-	if ((errno >= 0) &&  (errno >= errorTableSize)) {
+	if ((err_code >= 0) &&  (err_code >= errorTableSize)) {
 		/*
 		 * invalid error number
 		 */
 		return(-1);
 	}
-	if ((errno < 0) &&  (ABS(errno) >= sys_nerr)) {
+	if ((err_code < 0) &&  (ABS(err_code) >= sys_nerr)) {
 		/*
 		 * invalid error number
 		 */
 		return(-1);
 	}
 
-	errorNumber = errno;
+	errorNumber = err_code;
 	return(1);
 }
 
@@ -77,7 +77,7 @@ CtransSetError_(errno)
  *	CtransGetErrorNumber_
  * 
  *	returns the current number. If negative then the unix global 
- *	variable 'errno' is ABS(errno).	
+ *	variable 'err_code' is ABS(err_code).	
  */
 CtransGetErrorNumber_()
 {

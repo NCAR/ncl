@@ -77,12 +77,12 @@ DCGIOBJS = cgi.o cgi_cell_sim.o
 DX11SRCS = \
 	X11_class0.c X11_class1.c X11_class2.c X11_class3.c \
 	X11_class4.c X11_class5.c X11_class6.c X11_class7.c \
-	Xcrm.c X_pixdump.c Xbfr.c
+	Xcrm.c 
 
 DX11OBJS = \
 	X11_class0.o X11_class1.o X11_class2.o X11_class3.o \
 	X11_class4.o X11_class5.o X11_class6.o X11_class7.o \
-	Xcrm.o X_pixdump.o Xbfr.o
+	Xcrm.o 
 
 DSUNVSRCS = \
 	sun_view.c

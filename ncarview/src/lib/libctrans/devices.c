@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.c,v 1.8 1992-02-07 17:39:02 clyne Exp $
+ *	$Id: devices.c,v 1.9 1992-02-11 14:59:03 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -154,13 +154,6 @@ Ct_err X11_Escape();
 
 Ct_err X11_Message(), X11_ApplData();
 
-
-/*
- *	When the X11 driver is define the XBFR driver gets defined
- *	as well.
- */
-Ct_err	xbfr_BegMF(), xbfr_BegPic(), xbfr_BegPicBody(), xbfr_EndPic(),
-	xbfr_ClearDevice();
 
 #endif X11
 
@@ -515,104 +508,6 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	{
 	noop, X11_BegMF, X11_EndMF, X11_BegPic, X11_BegPicBody,
 	X11_EndPic, X11_ClearDevice, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL,
-	},
-	/* Class 1 */
-	{
-	NULL, X11_MFVersion, X11_MFDesc, VDCType, IntergerPrec,
-	RealPrec, IndexPrec, ColrPrec, ColrIndexPrec, MaxColrIndex,
-	ColrValueExt, X11_MFElemList, X11_MFDefaults, FontList,
-	X11_CharSetList, CharCoding, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL,
-	},
-	/* Class 2 */
-	{
-	NULL, ScaleMode, ColrMode, LineWidthMode, MarkerSizeMode,
-	EdgeWidthMode, VDCExt, BackColr, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL,
-	},
-	/* Class 3 */
-	{
-	NULL, VDCIntergerPrec, VDCRealPrec, X11_AuxColr, Transparency,
-	ClipRect, Clip, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL,
-	},
-	/* Class 4 */
-	{
-	NULL, X11_PolyLine, X11_DisjtLine, X11_PolyMarker, Text,
-	X11_RestrText, X11_ApndText, X11_Polygon, X11_PolygonSet, X11_CellArray,
-	X11_GDP, X11_Rect, X11_Circle, X11_Arc3Pt, X11_Arc3PtClose,
-	X11_ArcCtr, X11_ArcCtrClose, X11_Ellipse, X11_EllipArc, X11_EllipArcClose,
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL,
-	},
-	/* Class 5 */
-	{
-	NULL, LineIndex, LineType, LineWidth, LineColr,
-	MarkerIndex,MarkerType,MarkerSize,MarkerColr,
-	TextIndex, TextFontIndex, TextPrec, CharExpan, 
-	CharSpace, TextColr, CharHeight, CharOri, 
-	TextPath, TextAlign, CharSetIndex, AltCharSetIndex,
-	FillIndex,IntStyle,FillColr,HatchIndex,
-	PatIndex, EdgeIndex, EdgeType, EdgeWidth, EdgeColr,
-	EdgeVis, FillRefPt, X11_PatTable, PatSize, ColrTable,
-	X11_ASF,
-	},
-	/* Class 6 */
-	{
-	NULL, X11_Escape, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL,
-	},
-	/* Class 7 */
-	{
-	NULL, X11_Message, X11_ApplData, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL, NULL, NULL, NULL, NULL, 
-	NULL,
-	}
-
-	},
-
-	/*
-	 *	Whenever the X11 driver gets defined the xbfr driver gets
-	 * 	defined as well. xbfr uses all of the same X11 driver routines
-	 *	except X11_BegMF, X11_BegPic, X11_BegPicBody and X11_EndPic
-	 */
-	{
-	/* Class 0 */
-	{
-	noop, xbfr_BegMF, X11_EndMF, xbfr_BegPic, xbfr_BegPicBody,
-	xbfr_EndPic, xbfr_ClearDevice, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 

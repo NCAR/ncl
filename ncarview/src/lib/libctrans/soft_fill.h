@@ -28,7 +28,7 @@ typedef	struct	{
 	DCtype	y_first,	/* index in x_coord of first coord	*/ 
 		y_last;		/* index in x_coord of last coord	*/
 	int	*x_count;	/* num x coords in each *x_coord	*/
-	int	x_coord_size	/* mem allocated to each *x_coord	*/
+	int	x_coord_size;	/* mem allocated to each *x_coord	*/
 	} FillTable;
 #endif
 
