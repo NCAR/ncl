@@ -195,6 +195,7 @@ sfield2 = create "ScalarField2" scalarFieldClass appid
       "vpWidthF"  : 0.8
       "vpHeightF" : 0.8
       "tiMainFuncCode" : "~"
+      "tiMainFont" : 25
       "tiMainString" : vf->reftime  + " + " + vf->timestep(0)
   end create
 
@@ -237,7 +238,6 @@ sfield2 = create "ScalarField2" scalarFieldClass appid
 
           setvalues title_id1
             "tiMainString" : vf->reftime + " + " + vf->timestep(i)
-            "tiMainFont" : 25
           end setvalues
     
           draw(mapid)

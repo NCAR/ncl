@@ -1,5 +1,5 @@
 /*
- *      $Id: vc09c.c,v 1.2 1997-07-09 15:02:37 haley Exp $
+ *      $Id: vc09c.c,v 1.3 1998-02-05 23:56:56 haley Exp $
  */
 /************************************************************************
  *                                                                      *
@@ -28,6 +28,7 @@
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/Title.h>
+#include <ncarg/hlu/TextItem.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
@@ -54,7 +55,8 @@ void main ()
 
     int i, j, k, u_id, v_id, p_id, t_id, len_dims [2], *time, *timestep;
     int rlist, uf, vf, pf, tf, tim_id, lat_id, lon_id, tit_id;
-    int appid, wid, vfield, sfield, sfield2, mapid, vcid, cnid, tiid;
+    int appid, wid, vfield, sfield, sfield2, mapid, vcid, cnid;
+    int title_id1, title_id2, txid1;
     long timlen, latlen, lonlen, titlen;
     long start [3] = {0,0,0}, count [3]={0,0,0};
     float MinLat, MaxLat, MinLon, MaxLon;
@@ -86,7 +88,7 @@ void main ()
     if (NCGM) {
        NhlRLClear (rlist);
        NhlRLSetString (rlist, NhlNwkMetaName, "./vc09c.ncgm");
-       NhlRLSetString (rlist, NhlNwkColorMap, "default");
+       NhlRLSetString (rlist, NhlNwkColorMap, "temp1");
        NhlCreate (&wid, "vc09Work", NhlncgmWorkstationClass,
                    NhlDEFAULT_APP, rlist);
     }
@@ -99,7 +101,7 @@ void main ()
     if (X11) {
       NhlRLClear (rlist);
       NhlRLSetString (rlist, NhlNwkPause, "True");
-      NhlRLSetString (rlist, NhlNwkColorMap, "default");
+      NhlRLSetString (rlist, NhlNwkColorMap, "temp1");
       NhlCreate (&wid, "vc09Work", NhlxWorkstationClass,
                    NhlDEFAULT_APP, rlist);
     }
@@ -112,6 +114,7 @@ void main ()
     if (PS) {
        NhlRLClear (rlist);
        NhlRLSetString (rlist, NhlNwkPSFileName, "vc09c.ps");
+	   NhlRLSetString (rlist, NhlNwkColorMap, "temp1");
        NhlCreate (&wid, "vc09Work", NhlpsWorkstationClass,
                    NhlDEFAULT_APP, rlist);
     }
@@ -256,7 +259,7 @@ void main ()
 
     NhlRLClear (rlist);
     NhlRLSetFloat  (rlist, NhlNvpXF, 0.03);
-    NhlRLSetFloat  (rlist, NhlNvpYF, 0.9);
+    NhlRLSetFloat  (rlist, NhlNvpYF, 0.85);
     NhlRLSetFloat  (rlist, NhlNvpWidthF, 0.8);
     NhlRLSetFloat  (rlist, NhlNvpHeightF, 0.8);
     NhlRLSetString (rlist, NhlNvpUseSegments, "true");
@@ -302,12 +305,29 @@ void main ()
 
     NhlRLClear (rlist);
     NhlRLSetFloat  (rlist, NhlNvpXF, 0.03);
-    NhlRLSetFloat  (rlist, NhlNvpYF, 0.9);
+    NhlRLSetFloat  (rlist, NhlNvpYF, 0.85);
     NhlRLSetFloat  (rlist, NhlNvpWidthF, 0.8);
     NhlRLSetFloat  (rlist, NhlNvpHeightF, 0.8);
     NhlRLSetString (rlist, NhlNtiMainFuncCode, "~");
+    NhlRLSetInteger(rlist, NhlNtiMainFont, 25);
     NhlRLSetString (rlist, NhlNtiMainString, title);
-    NhlCreate (&tiid, "Titles", NhltitleClass, wid, rlist);
+    NhlCreate (&title_id1, "Titles", NhltitleClass, wid, rlist);
+
+    NhlRLClear (rlist);
+    NhlRLSetFloat  (rlist, NhlNvpXF, 0.03);
+    NhlRLSetFloat  (rlist, NhlNvpYF, 0.9);
+    NhlRLSetFloat  (rlist, NhlNvpWidthF, 0.8);
+    NhlRLSetFloat  (rlist, NhlNvpHeightF, 0.8);
+    NhlRLSetString (rlist, NhlNtiMainString, "January 1996 Snow Storm");
+    NhlRLSetInteger (rlist, NhlNtiMainFont, 25 );
+    NhlCreate (&title_id2, "Titles", NhltitleClass, wid, rlist);
+
+    NhlRLClear (rlist);
+    NhlRLSetFloat  (rlist, NhlNtxPosXF, 0.25);
+    NhlRLSetFloat  (rlist, NhlNtxPosYF, 0.08);
+    NhlRLSetFloat (rlist, NhlNtxFontHeightF, 0.015 );
+    NhlRLSetString (rlist, NhlNtxString, "Contours represent pressure field.:C:Vectors represent wind direction:C:colored by temperature." );
+    NhlCreate (&txid1, "text", NhltextItemClass, wid, rlist);
 
     NhlAddOverlay(mapid,cnid,-1);
     NhlAddOverlay(mapid,vcid,-1);
@@ -349,10 +369,12 @@ void main ()
 
         NhlRLClear (rlist);
         NhlRLSetString (rlist,  NhlNtiMainString, title);
-        NhlSetValues (tiid, rlist);
+        NhlSetValues (title_id1, rlist);
 
         NhlDraw (mapid);
-        NhlDraw (tiid);
+        NhlDraw (title_id1);
+        NhlDraw (title_id2);
+		NhlDraw (txid1);
         NhlFrame (wid);
       }  
     }

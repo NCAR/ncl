@@ -1,5 +1,5 @@
 C
-C  $Id: vc09f.f,v 1.1 1997-07-09 14:34:05 haley Exp $
+C  $Id: vc09f.f,v 1.2 1998-02-05 23:56:57 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -25,6 +25,7 @@ C
 
       external NhlFAppClass
       external NhlFTitleClass
+      external NhlFTextItemClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFXWorkstationClass
@@ -40,7 +41,7 @@ C
 
       integer ZOOM, NCGM, X11, PS
       integer appid, wid, vfield, sfield, sfield2
-      integer mapid, cnid, vcid, tiid
+      integer mapid, cnid, vcid, tiid1, tiid2,txid1
       integer u_id, v_id, p_id, t_id, lat_id, lon_id, titl_id, tim_id
       integer uf, vf, pf, tf, latlen, lonlen, timlen, flen
       integer start(3), count (3), len_dims (2), timestep (64)
@@ -97,7 +98,7 @@ C
          call NhlFRLClear (rlist,ierr)
          call NhlFRLSetString (rlist, 'wkMetaName', './vc09f.ncgm', 
      +        ierr)
-         call NhlFRLSetString (rlist, 'wkColorMap', 'default', ierr)
+         call NhlFRLSetString (rlist, 'wkColorMap', 'temp1', ierr)
          call NhlFCreate (wid, 'vc09Work', NhlFNcgmWorkstationClass, 0,
      +        rlist, ierr)
 
@@ -107,7 +108,7 @@ C
       else if (X11 .eq. 1) then
          call NhlFRLClear (rlist,ierr)
          call NhlFRLSetString (rlist, 'wkPause', 'True', ierr)
-         call NhlFRLSetString (rlist, 'wkColorMap', 'default', ierr)
+         call NhlFRLSetString (rlist, 'wkColorMap', 'temp1', ierr)
          call NhlFCreate (wid, 'vc09Work', NhlFXWorkstationClass, 0,
      +        rlist, ierr)
 
@@ -118,6 +119,7 @@ C
       else if (PS .eq. 1) then
          call NhlFRLClear (rlist,ierr)
          call NhlFRLSetString (rlist, 'wkPSFileName', 'vc09n.ps', ierr)
+         call NhlFRLSetString (rlist, 'wkColorMap', 'temp1', ierr)
          call NhlFCreate (wid, 'vc09Work', NhlFPSWorkstationClass, 0,
      +        rlist,  ierr)
       end if
@@ -290,7 +292,7 @@ C
 
       call NhlFRLClear (rlist)
       call NhlFRLSetFloat (rlist, 'vpXF', 0.03, ierr)
-      call NhlFRLSetFloat (rlist, 'vpYF', 0.9, ierr)
+      call NhlFRLSetFloat (rlist, 'vpYF', 0.85, ierr)
       call NhlFRLSetFloat (rlist, 'vpWidthF', 0.8, ierr)
       call NhlFRLSetFloat (rlist, 'vpHeightF', 0.8, ierr)
       call NhlFRLSetString (rlist, 'vpUseSegments', 'true', ierr)
@@ -353,14 +355,36 @@ C
 
       call NhlFRLClear (rlist)
       call NhlFRLSetFloat  (rlist, 'vpXF', 0.03, ierr)
-      call NhlFRLSetFloat  (rlist, 'vpYF', 0.9, ierr)
+      call NhlFRLSetFloat  (rlist, 'vpYF', 0.85, ierr)
       call NhlFRLSetFloat  (rlist, 'vpWidthF', 0.8, ierr)
       call NhlFRLSetFloat  (rlist, 'vpHeightF', 0.8, ierr)
       call NhlFRLSetString (rlist, 'tiMainFuncCode', "~", ierr)
+      call NhlFRLSetInteger(rlist, 'tiMainFont', 25, ierr)
       call NhlFRLSetString (rlist, 'tiMainString', mainstring, 
      +     ierr)
-      call NhlFCreate (tiid, 'Titles', NhlFtitleClass, wid, 
+      call NhlFCreate (tiid1, 'Titles', NhlFtitleClass, wid, 
      +     rlist, ierr)
+
+      call NhlFRLClear (rlist)
+      call NhlFRLSetFloat  (rlist, 'vpXF', 0.03, ierr)
+      call NhlFRLSetFloat  (rlist, 'vpYF', 0.9, ierr)
+      call NhlFRLSetFloat  (rlist, 'vpWidthF', 0.8, ierr)
+      call NhlFRLSetFloat  (rlist, 'vpHeightF', 0.8, ierr)
+      call NhlFRLSetInteger(rlist, 'tiMainFont', 25, ierr)
+      call NhlFRLSetString (rlist, 'tiMainString',
+     +     'January 1996 Snow Storm',ierr)
+      call NhlFCreate (tiid2, 'Titles', NhlFtitleClass, wid, 
+     +     rlist, ierr)
+
+      call NhlFRLClear (rlist)
+      call NhlFRLSetFloat  (rlist, 'txPosXF', 0.25,ierr)
+      call NhlFRLSetFloat  (rlist, 'txPosYF', 0.08,ierr)
+      call NhlFRLSetFloat (rlist, 'txFontHeightF', 0.015,ierr)
+      call NhlFRLSetString (rlist, 'txString','Contours represent pressu
+     +re field.:C:Vectors represent wind direction:C:colored by temperat
+     +ure.',ierr)
+      call NhlFCreate (txid1, 'text', NhlFtextItemClass, wid, rlist,
+     +     ierr)
 
       call NhlFAddOverlay (mapid, cnid, -1, ierr)
       call NhlFAddOverlay (mapid, vcid, -1, ierr)
@@ -411,10 +435,12 @@ C
            call NhlFRLClear (rlist)
            call NhlFRLSetString (rlist, 'tiMainString', mainstring,
      +          ierr)
-           call NhlFSetValues (tiid, rlist, ierr)
+           call NhlFSetValues (tiid1, rlist, ierr)
     
            call NhlFDraw(mapid,ierr)
-           call NhlFDraw(tiid, ierr)
+           call NhlFDraw(tiid1, ierr)
+           call NhlFDraw(tiid2, ierr)
+           call NhlFDraw(txid1, ierr)
            call NhlFFrame(wid, ierr)
 
         endif
