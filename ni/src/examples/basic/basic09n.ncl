@@ -1,5 +1,5 @@
 ;
-; $Id: basic09n.ncl,v 1.3 1996-07-10 18:37:03 haley Exp $
+; $Id: basic09n.ncl,v 1.4 1997-01-25 22:51:46 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
@@ -24,9 +24,9 @@
 begin
 
 ;
-; 'min' function
+; 'min2' function
 ;
-function min(i:integer,j:integer)
+function min2(i:integer,j:integer)
 begin  
   if (i .le. j) then
     return(i)
@@ -147,7 +147,7 @@ do j = 1,div
 ;
 ; Loop over each font
 ;
-  do i=(j-1)*num_lines,min(num_fonts-1,j*num_lines-1)
+  do i=(j-1)*num_lines,min2(num_fonts-1,j*num_lines-1)
 ;
 ; Font number and name
 ;
