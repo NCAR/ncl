@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.79 2002-09-20 21:36:07 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.80 2002-12-17 23:56:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -7386,23 +7386,10 @@ static NhlErrorTypes    ManageViewDepResources
 	NhlVectorPlotLayer	vcold = (NhlVectorPlotLayer) old;
 	NhlBoolean		view_changed;
 	float			ratio,old_width,old_height;
+	NhlBoolean		ref_len_inited = False;
 
 	entry_name = (init) ? InitName : SetValuesName;
 
-/* adjust the reference length if it is not set */
-
-	if (! vcp->data_init) {
-		vcp->a_params.dvmx = vcnew->view.width * 0.05;
-	}
-	else if (init || vcp->data_changed) {
-		int nx,ny;
-		float sx,sy;
-		nx = vcp->vfp->fast_len;
-		ny = vcp->vfp->slow_len;
-		sx = vcnew->view.width / nx;
-		sy = vcnew->view.height / ny;
-		vcp->a_params.dvmx = sqrt((sx*sx + sy*sy) / 2.0);
-	}
 	if (init) {
 		old_width = NHL_DEFAULT_VIEW_WIDTH;
 		old_height = NHL_DEFAULT_VIEW_HEIGHT;
@@ -7419,6 +7406,71 @@ static NhlErrorTypes    ManageViewDepResources
 	view_changed = init || vcnew->view.width != vcold->view.width ||
 		vcnew->view.height != vcold->view.height;
 
+/* adjust the reference length if it is not set */
+
+	if (! vcp->data_init) {
+		vcp->a_params.dvmx = vcnew->view.width * 0.05;
+	}
+	else if (init || vcp->data_changed || view_changed) {
+		int nx,ny;
+		float sx,sy;
+		nx = vcp->vfp->fast_len;
+		ny = vcp->vfp->slow_len;
+		sx = vcnew->view.width / nx;
+		sy = vcnew->view.height / ny;
+		vcp->a_params.dvmx = sqrt((sx*sx + sy*sy) / 2.0);
+	}
+
+	/*
+	 * I can't remember why VectorPlot always sets the LLU ref length 
+	 * parameter (VRL) when it has its  default value of 0.0 - but  
+	 *there's surely a reason. It definitely  makes this more complicated
+	 * because now VectorPlot must model the LLU behavior with respect 
+	 * to how ref_magnitude and min_frac_length affect the default value
+	 * of VRL. 
+	 * But note that if it is 0.0 we can always calculate from scratch 
+	 * without worrying about its previous value.
+	 */
+
+	if (vcp->ref_length > 0.0) {
+		vcp->real_ref_length = vcp->ref_length;
+		if (view_changed) {
+			vcp->real_ref_length *= ratio;
+			vcp->ref_length = vcp->real_ref_length;
+		}
+	}
+	else {
+		if (vcp->ref_magnitude > 0.0 && vcp->min_frac_len > 0.0) {
+			float vfr = vcp->min_frac_len;
+			float rat = (vcp->ref_magnitude - vcp->a_params.uvmn)
+				/ (vcp->a_params.uvmx - vcp->a_params.uvmn);
+			vcp->real_ref_length = vcp->a_params.dvmx * rat /
+				(1.0 - vfr + vfr * rat);
+		}
+		else if (vcp->ref_magnitude > 0.0) {
+			vcp->real_ref_length =  vcp->a_params.dvmx * 
+				(vcp->ref_magnitude / vcp->zmax);
+		}
+		else {
+			vcp->real_ref_length = vcp->a_params.dvmx;
+		}
+	}
+
+#if 0
+	/* old method -- more complicated and wrong */
+	if (! vcp->data_init) {
+		vcp->a_params.dvmx = vcnew->view.width * 0.05;
+	}
+	else if (init || vcp->data_changed) {
+		int nx,ny;
+		float sx,sy;
+		nx = vcp->vfp->fast_len;
+		ny = vcp->vfp->slow_len;
+		sx = vcnew->view.width / nx;
+		sy = vcnew->view.height / ny;
+		vcp->a_params.dvmx = sqrt((sx*sx + sy*sy) / 2.0);
+	}
+
 	if (vcp->ref_length > 0.0) {
 		vcp->real_ref_length = vcp->ref_length;
 	}
@@ -7428,12 +7480,19 @@ static NhlErrorTypes    ManageViewDepResources
 	}
 
 	if (! vcp->ref_length_set) {
-		if (view_changed) {
+		if (vcnew->view.width != vcold->view.width ||
+		    vcnew->view.height != vcold->view.height) {
+			float ratio;
+			ratio = sqrt((vcnew->view.width * vcnew->view.width
+				   + vcnew->view.height * vcnew->view.height) /
+				  (vcold->view.width * vcold->view.width
+				   + vcold->view.height * vcold->view.height));
 			vcp->real_ref_length *= ratio;
 			if (vcp->ref_length > 0.0)
 				vcp->ref_length = vcp->real_ref_length;
 		}
 	}
+#endif
 
 	if (view_changed && ! vcp->l_arrowhead_min_size_set) {
 		vcp->l_arrowhead_min_size *= ratio;
