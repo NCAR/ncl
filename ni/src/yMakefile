@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.5 1994-10-19 18:58:30 dbrown Exp $
+#      $Id: yMakefile,v 1.6 1995-06-27 06:56:09 boote Exp $
 #
 #########################################################################
 #									#
@@ -20,4 +20,4 @@
 #	Description:	yMakefile for ncarg/ni/src
 
 #define	IHaveSubdirs
-SUBDIRS = lib ncl db examples
+SUBDIRS = lib ncl xproto db examples
