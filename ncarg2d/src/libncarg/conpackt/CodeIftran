@@ -1,7 +1,7 @@
 .OP LS=10001 LI=1 CB RT ES=< ET=> OC UC=0 BI=77 IF=2
 .EL I
 I
-I $Id: CodeIftran,v 1.4 2004-06-29 19:32:23 kennison Exp $
+I $Id: CodeIftran,v 1.5 2004-07-27 21:14:52 kennison Exp $
 I
 I***********************************************************************
 I C O N P A C K T   -   I N T R O D U C T I O N
@@ -849,7 +849,7 @@ C
 C
 C NR04 is the current number of words of real work space devoted to the
 C list of labels which are not line labels (the informational label and
-C high/low labels).  ??? THIS IS WEIRD ???
+C high/low labels).
 C
 C NSDL is the parameter 'NSD', which specifies the maximum number of
 C significant digits to be used in numeric labels representing contour
@@ -1166,7 +1166,8 @@ C IXOR(IONE,ITWO) is the exclusive OR of the 12-bit masks IONE and ITWO.
 C
         IXOR(IONE,ITWO)=IAND(IOR(IONE,ITWO),4095-IAND(IONE,ITWO))
 C
-C ITBF(IARG) is non-zero if and only if a triangle is blocked.
+C ITBF(IARG) is non-zero if and only if a triangle with blocking-flag
+C element IARG is blocked.
 C
         ITBF(IARG)=IAND(IXOR(IARG,ITBX),ITBA)
 C
@@ -3733,7 +3734,8 @@ C IXOR(IONE,ITWO) is the exclusive OR of the 12-bit masks IONE and ITWO.
 C
         IXOR(IONE,ITWO)=IAND(IOR(IONE,ITWO),4095-IAND(IONE,ITWO))
 C
-C ITBF(IARG) is non-zero if and only if a triangle is blocked.
+C ITBF(IARG) is non-zero if and only if a triangle with blocking-flag
+C element IARG is blocked.
 C
         ITBF(IARG)=IAND(IAND(IXOR(IARG,ITBX),ITBA),1)
 C
@@ -6752,7 +6754,8 @@ C IXOR(IONE,ITWO) is the exclusive OR of the 12-bit masks IONE and ITWO.
 C
         IXOR(IONE,ITWO)=IAND(IOR(IONE,ITWO),4095-IAND(IONE,ITWO))
 C
-C ITBF(IARG) is non-zero if and only if a triangle is blocked.
+C ITBF(IARG) is non-zero if and only if a triangle with blocking-flag
+C element IARG is blocked.
 C
         ITBF(IARG)=IAND(IAND(IXOR(IARG,ITBX),ITBA),1)
 C
@@ -7178,7 +7181,8 @@ C IXOR(IONE,ITWO) is the exclusive OR of the 12-bit masks IONE and ITWO.
 C
         IXOR(IONE,ITWO)=IAND(IOR(IONE,ITWO),4095-IAND(IONE,ITWO))
 C
-C ITBF(IARG) is non-zero if and only if a triangle is blocked.
+C ITBF(IARG) is non-zero if and only if a triangle with blocking-flag
+C element IARG is blocked.
 C
         ITBF(IARG)=IAND(IAND(IXOR(IARG,ITBX),ITBA),1)
 C
@@ -7733,7 +7737,8 @@ C IXOR(IONE,ITWO) is the exclusive OR of the 12-bit masks IONE and ITWO.
 C
         IXOR(IONE,ITWO)=IAND(IOR(IONE,ITWO),4095-IAND(IONE,ITWO))
 C
-C ITBF(IARG) is non-zero if and only if a triangle is blocked.
+C ITBF(IARG) is non-zero if and only if a triangle with blocking-flag
+C element IARG is blocked.
 C
         ITBF(IARG)=IAND(IXOR(IARG,ITBX),ITBA)
 C
@@ -7847,7 +7852,7 @@ C
         WCFS=CHWM*WCCF*(XVPR-XVPL)
         WWFS=CHWM*WWCF*(XVPR-XVPL)
 C
-        CALL PCGETI ('TE',ITMP)
+        CALL PCGETI ('TE',ISTE)
         IF (ICFELL('CTCFLB',5).NE.0) RETURN
         CALL PCSETI ('TE',1)
         IF (ICFELL('CTCFLB',6).NE.0) RETURN
@@ -7865,7 +7870,7 @@ C
         IF (ICFELL('CTCFLB',12).NE.0) RETURN
         CALL PCGETR ('DT',DSTT)
         IF (ICFELL('CTCFLB',13).NE.0) RETURN
-        CALL PCSETI ('TE',ITMP)
+        CALL PCSETI ('TE',ISTE)
         IF (ICFELL('CTCFLB',14).NE.0) RETURN
         DSTL=DSTL+WWFS
         DSTR=DSTR+WWFS
@@ -8102,7 +8107,8 @@ C IXOR(IONE,ITWO) is the exclusive OR of the 12-bit masks IONE and ITWO.
 C
         IXOR(IONE,ITWO)=IAND(IOR(IONE,ITWO),4095-IAND(IONE,ITWO))
 C
-C ITBF(IARG) is non-zero if and only if a triangle is blocked.
+C ITBF(IARG) is non-zero if and only if a triangle with blocking-flag
+C element IARG is blocked.
 C
         ITBF(IARG)=IAND(IXOR(IARG,ITBX),ITBA)
 C
@@ -9177,7 +9183,8 @@ C IXOR(IONE,ITWO) is the exclusive OR of the 12-bit masks IONE and ITWO.
 C
         IXOR(IONE,ITWO)=IAND(IOR(IONE,ITWO),4095-IAND(IONE,ITWO))
 C
-C ITBF(IARG) is non-zero if and only if a triangle is blocked.
+C ITBF(IARG) is non-zero if and only if a triangle with blocking-flag
+C element IARG is blocked.
 C
         ITBF(IARG)=IAND(IXOR(IARG,ITBX),ITBA)
 C
@@ -9205,7 +9212,7 @@ C
 C
 C Make PLOTCHAR compute text-extent quantities.
 C
-        CALL PCGETI ('TE',ITMP)
+        CALL PCGETI ('TE',ISTE)
         IF (ICFELL('CTHLLB',1).NE.0) RETURN
         CALL PCSETI ('TE',1)
         IF (ICFELL('CTHLLB',2).NE.0) RETURN
@@ -9219,7 +9226,7 @@ C
           HLRS=HLSR*HLSR*MAX(XMAX-XMIN,YMAX-YMIN,ZMAX-ZMIN)**2
         END IF
 C
-C Tell IFTRAN to use the FORTRAN-66 implementation of BLOCK invocations.
+C Tell IFTRAN to use the FORTRAN-66 implementation of block-IFs.
 C
 .OP     BI=66
 C
@@ -9741,17 +9748,269 @@ C
 C
         END IF
 C
-C Tell IFTRAN to use the FORTRAN-77 implementation of BLOCK invocations.
+C If the user wants to look for high and low values that were missed by
+C the normal algorithm because of equal field values at opposite ends of
+C an edge, do it.
+C
+        IF (IHLE.NE.0)
+C
+C Check for any edge having equal field values at its ends.  If any such
+C edges are found, we have to do the special search.
+C
+          DO (I=0,NEDG-LOEN,LOEN)
+            IF (RPNT(IEDG(I+1)+4).EQ.RPNT(IEDG(I+2)+4)) GO TO 109
+          END DO
+C
+C No problem edges were found, so we're done; return to caller.
+C
+          GO TO 113
+C
+C At least one problem edge was found.  Proceed with special search.
+C Grab a chunk of integer workspace.  Quit if space is not available.
+C
+  109     CALL CTGIWS (IWRK,1,NPNT/LOPN,IWSE)
+          IF (IWSE.NE.0.OR.ICFELL('CTHLLB',3).NE.0) GO TO 112
+C
+C Form an array indicating which points are blocked.  First, mark them
+C all as unblocked.
+C
+          DO (I=1,NPNT/LOPN)
+            IWRK(II01+I)=0
+          END DO
+C
+C Find all the blocked triangles and mark their vertices as blocked.
+C
+          DO (I=0,NTRI-LOTN,LOTN)
+            IF (ITBF(ITRI(I+4)).NE.0)
+              IWRK(II01+IEDG(ITRI(I+1)+1)/LOPN+1)=1
+              IWRK(II01+IEDG(ITRI(I+1)+2)/LOPN+1)=1
+              IWRK(II01+IEDG(ITRI(I+2)+1)/LOPN+1)=1
+              IWRK(II01+IEDG(ITRI(I+2)+2)/LOPN+1)=1
+              IWRK(II01+IEDG(ITRI(I+3)+1)/LOPN+1)=1
+              IWRK(II01+IEDG(ITRI(I+3)+2)/LOPN+1)=1
+            END IF
+          END DO
+C
+C Form an array of all the base indices of unblocked point nodes.
+C
+          NUBN=0
+C
+          DO (I=1,NPNT/LOPN)
+            IF (IWRK(II01+I).EQ.0)
+              NUBN=NUBN+1
+              IWRK(II01+NUBN)=(I-1)*LOPN
+            END IF
+          END DO
+C
+          IF (NUBN.LT.2) GO TO 113
+C
+C Sort the base indices of unblocked point nodes in order of increasing
+C data value.
+C
+          CALL CTHLSO (RPNT,NUBN,LOPN,-4,IWRK(II01+1))
+C
+C Initialize a scan of the array to look for points of the mesh having
+C equal field values.
+C
+          DNXT=RPNT(IWRK(II01+1)+4)
+          NEQU=0
+C
+C Loop through the elements of the index array.
+C
+          FOR (INDX = 1 TO NUBN)
+C
+C DNOW is the field value at the point identified by element INDX of the
+C index array.
+C
+            DNOW=DNXT
+C
+C DNXT is the field value at the point identified by element INDX+1 of
+C the index array.  If element INDX is the last element of the array,
+C DNXT is just set to a value different from DNOW (the smallest field
+C value in the mesh).
+C
+            IF (INDX.LT.NUBN)
+              DNXT=RPNT(IWRK(II01+INDX+1)+4)
+            ELSE
+              DNXT=RPNT(IWRK(II01+1)+4)
+            END IF
+C
+C If DNXT is equal to DNOW, bump the value of NEQU, which keeps track
+C of the number of consecutive elements of the index array identifying
+C points having the same field value.
+C
+            IF (DNXT.EQ.DNOW)
+C
+              NEQU=NEQU+1
+C
+C Otherwise, ...
+C
+            ELSE
+C
+C ... if a group of equal values has been seen but not yet processed and
+C if it's not too big (where "too big" is defined pretty heuristically,
+C the object being to prevent the code from burning up a bunch of time
+C on what is probably a pointless search for a high/low label position
+C that the user won't care about) ...
+C
+              IF (NEQU.GT.0..AND.NEQU.LT.32)
+C
+C ... process the group.  Processing consists of dividing the group into
+C subgroups that are spatially connected (meaning that, given any two
+C elements, A and B, of the subgroup, there's a sequence of elements of
+C the subgroup that begins with A, ends with B, and is such that any two
+C consecutive elements of the sequence identify points of the mesh that
+C are connected by an edge.  NEQU is the number of equalities seen and
+C is therefore one less than the number of values in the group.  INDX
+C points to the element of the index array defining the last element of
+C the group.  JNDX points to the element of the index array defining the
+C first element of the group.  KNDX points to the element of the index
+C array defining the last element of the subgroup currently being worked
+C on.
+C
+                JNDX=INDX-NEQU
+                KNDX=JNDX
+C
+C Loop as long as elements of the group remain.
+C
+                WHILE (JNDX.LT.INDX)
+C
+C Look for another subgroup.
+C
+  110             DO (LNDX=KNDX+1,INDX)
+                    DO (MNDX=JNDX,KNDX)
+                      DO (I=0,NEDG-LOEN,LOEN)
+                        IF ((IEDG(I+1).EQ.IWRK(II01+LNDX).AND.
+     +                       IEDG(I+2).EQ.IWRK(II01+MNDX)).OR.
+     +                      (IEDG(I+1).EQ.IWRK(II01+MNDX).AND.
+     +                       IEDG(I+2).EQ.IWRK(II01+LNDX)))
+                          KNDX=KNDX+1
+                          IF (KNDX.NE.LNDX)
+                            ITMP=IWRK(II01+KNDX)
+                            IWRK(II01+KNDX)=IWRK(II01+LNDX)
+                            IWRK(II01+LNDX)=ITMP
+                          END IF
+                          GO TO 110
+                        END IF
+                      END DO
+                    END DO
+                  END DO
+C
+C A subgroup has been found.  If it contains more than one element and
+C not more than the number of elements specified by 'HLE' as the upper
+C limit ...
+C
+                  IF (JNDX.LT.KNDX.AND.(IHLE.EQ.1.OR.KNDX-JNDX.LT.IHLE))
+C
+C ... examine the mesh points identified by members of the subgroup to
+C see whether the subgroup can be considered a high or a low.  ITMP is
+C set positive to indicate that the subgroup is a high or negative to
+C indicate that it is a low.  XTMP, YTMP, ZTMP, and NTMP are used to
+C compute a mean position for the high or the low.
+C
+                    ITMP=0
+                    XTMP=0.
+                    YTMP=0.
+                    ZTMP=0.
+                    NTMP=KNDX-JNDX+1
+C
+C Loop through the elements of the subgroup.
+C
+                    DO (LNDX=JNDX,KNDX)
+                      I=IWRK(II01+LNDX)
+                      XTMP=XTMP+RPNT(I+1)
+                      YTMP=YTMP+RPNT(I+2)
+                      ZTMP=ZTMP+RPNT(I+3)
+                      DO (J=0,NPNT-LOPN,LOPN)
+                        IF (J.NE.I)
+                          IF ((RPNT(I+1)-RPNT(J+1))**2+
+     +                        (RPNT(I+2)-RPNT(J+2))**2+
+     +                        (RPNT(I+3)-RPNT(J+3))**2.LT.HLRS)
+                            IF      (RPNT(I+4).GT.RPNT(J+4))
+                              IF (ITMP.LT.0) GO TO 111
+                              ITMP=+1
+                            ELSE IF (RPNT(I+4).LT.RPNT(J+4))
+                              IF (ITMP.GT.0) GO TO 111
+                              ITMP=-1
+                            END IF
+                          END IF
+                        END IF
+                      END DO
+                    END DO
+C
+C Finish computing the location of the "high" or "low" and, ...
+C
+                    XTMP=XTMP/REAL(NTMP)
+                    YTMP=YTMP/REAL(NTMP)
+                    ZTMP=ZTMP/REAL(NTMP)
+C
+C ??? MOVE POINT BACK ONTO MESH ???  The point (XTMP,YTMP,ZTMP) is at
+C the center of mass of a connected group of points on the surface of
+C the mesh, all of which have the same data value associated with them.
+C It is possible, particularly if the group is large, that this point
+C is some distance off the mesh, in which case we would like to either
+C 1) move the point back onto the mesh, or 2) not put a high or low
+C there after all, or 3) something else, perhaps under user control.
+C
+                    DVAL=DNOW
+C
+C ... if all comparisons indicate that a high has been found, ...
+C
+                    IF (ITMP.GT.0)
+C
+C ... put a "high" label there; ...
+C
+                      IF (TXHI(1:LTHI).NE.' ')
+                        IHOL=0
+                        INVOKE (WRITE-A-LABEL)
+                      END IF
+C
+C ... but if all comparisons indicate that a low has been found, ...
+C
+                    ELSE IF (ITMP.LT.0)
+C
+C ... put a "low" label there.
+C
+                      IF (TXLO(1:LTLO).NE.' ')
+                        IHOL=1
+                        INVOKE (WRITE-A-LABEL)
+                      END IF
+C
+                    END IF
+C
+                  END IF
+C
+C We're done with that subgroup; initialize to look for the next one.
+C
+  111             JNDX=KNDX+1
+                  KNDX=JNDX
+C
+                END WHILE
+C
+              END IF
+C
+C All elements of the group have been processed, so zero NEQU and keep
+C looking through the index array.
+C
+              NEQU=0
+C
+            END IF
+C
+          END FOR
+C
+        END IF
+C
+C Tell IFTRAN to use the FORTRAN-77 implementation of block-IFs.
 C
 .OP     BI=77
 C
-C Discard any integer workspace that may have been used above.
+C Discard any integer workspace possibly acquired above.
 C
-  109   LI01=0
+  112     LI01=0
 C
 C Return PLOTCHAR to its default state.
 C
-        CALL PCSETI ('TE',ITMP)
+  113   CALL PCSETI ('TE',ISTE)
         IF (ICFELL('CTHLLB',3).NE.0) RETURN
 C
 C Done.
@@ -9759,8 +10018,8 @@ C
         RETURN
 C
 C The following internal procedure writes a high (if IHOL=0) or low (if
-C IHOL=1) label, centered at the point whose subscript coordinates are
-C IPNT and JPNT.
+C IHOL=1) label, centered at the point whose coordinates are XTMP, YTMP,
+C and ZTMP; the field value is taken to be DVAL.
 C
         BLOCK (WRITE-A-LABEL)
 C
@@ -9790,7 +10049,7 @@ C
             END IF
             CALL HLUCTCHHL (+1+4*IHOL)
             IF (ICFELL('CTHLLB',7).NE.0) RETURN
-            IF (CTMA(1:LCTM).EQ.' ') GO TO 110
+            IF (CTMA(1:LCTM).EQ.' ') GO TO 114
             CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),WCFS,360.,0.)
             IF (ICFELL('CTHLLB',8).NE.0) RETURN
             CALL HLUCTCHHL (-1-4*IHOL)
@@ -9837,18 +10096,18 @@ C
 C
               IF (IOHL/4.EQ.1)
                 IF (XLLB.LT.XVPL.OR.XRLB.GT.XVPR.OR.
-     +              YBLB.LT.YVPB.OR.YTLB.GT.YVPT) GO TO 110
+     +              YBLB.LT.YVPB.OR.YTLB.GT.YVPT) GO TO 114
               ELSE IF (IOHL/4.GE.2)
                 DELX=0.
                 IF (XLLB.LT.XVPL) DELX=XVPL-XLLB
                 IF (XRLB+DELX.GT.XVPR)
-                  IF (DELX.NE.0.) GO TO 110
+                  IF (DELX.NE.0.) GO TO 114
                   DELX=XVPR-XRLB
                 END IF
                 DELY=0.
                 IF (YBLB.LT.YVPB) DELY=YVPB-YBLB
                 IF (YTLB+DELY.GT.YVPT)
-                  IF (DELY.NE.0.) GO TO 110
+                  IF (DELY.NE.0.) GO TO 114
                   DELY=YVPT-YTLB
                 END IF
                 XCLB=XCLB+DELX
@@ -9908,7 +10167,7 @@ C
                 END IF
 C
                 IF (XRLB.GE.XLOL.AND.XLLB.LE.XROL.AND.
-     +              YTLB.GE.YBOL.AND.YBLB.LE.YTOL) GO TO 110
+     +              YTLB.GE.YBOL.AND.YBLB.LE.YTOL) GO TO 114
 C
               END FOR
 C
@@ -9919,7 +10178,7 @@ C
               CALL CTGRWS (RWRK,3,MAX(4*NLBS,LR03+100),IWSE)
               IF (IWSE.NE.0)
                 NLBS=NLBS-1
-                GO TO 109
+                GO TO 112
               ELSE IF (ICFELL('CTHLLB',16).NE.0)
                 NLBS=NLBS-1
                 RETURN
@@ -9934,7 +10193,7 @@ C
               CALL CTGRWS (RWRK,4,MAX(NR04,LR04+100),IWSE)
               IF (IWSE.NE.0)
                 NLBS=NLBS-1
-                GO TO 109
+                GO TO 112
               ELSE IF (ICFELL('CTHLLB',17).NE.0)
                 NLBS=NLBS-1
                 RETURN
@@ -9949,129 +10208,74 @@ C
 C
           END IF
 C
-  110   END BLOCK
+  114   END BLOCK
 C
       END
 
 
-      SUBROUTINE CTHLSO (RWRK,IDRW,MRWK,NRWK,IWRK)
+      SUBROUTINE CTHLSO (RWRK,NORN,LORN,ISES,IWRK)
 C
-        DIMENSION RWRK(IDRW,*),IWRK(*)
+        DIMENSION RWRK(*),IWRK(*)
 C
 C This is a modification of a sort routine from TDPACK.  I think the
 C original came from Fred Clare.
 C
-C Given MRWK*NRWK reals in an array RWRK (whose first dimension is IDRW)
-C and an integer array IWRK of length MRWK*NRWK, CTHLSO returns in IWRK
-C an array of indices of the elements of RWRK such that, if M and N are
-C in [1,MRWK*NRWK] and M.LE.N, then the element of RWRK indexed by the
-C Mth element of IWRK is less than or equal to the one indexed by the
-C Nth element of IWRK.
+C Given NORN nodes, each consisting of LORN reals, in an array RWRK, a
+C sort element selector ISEL [= ABS(ISES)] and an integer array IWRK of
+C length NORN, CTHLSO returns in IWRK an array of base indices of nodes
+C of RWRK such that if M and N are both in [1,NORN] and M is less than
+C or equal to N, then RWRK(IWRK(M)+ISEL) is less than or equal to
+C RWRK(IWRK(N)+ISEL).  The base indices returned in IWRK allow one
+C to step through the nodes of RWRK in increasing order of the node
+C element ISEL.
 C
-C RVAL is an arithmetic statement function which, given an integer
-C index I between 0 and MRWK*NRWK-1, has as its value the Ith element
-C (in column-wise order) of the array RWRK.
+C If the input value of ISES is positive, IWRK is initialized to contain
+C the base indices of the first NORN nodes (of length LORN) in RWRK, but
+C if the input value of ISES is negative, the initialization of IWRK is
+C skipped; it is assumed that the user has initialized IWRK himself and
+C that the NORN nodes being sorted on constitute a noncontiguous subset
+C of all the nodes (of length LORN) in RWRK.
 C
-        RVAL(I)=RWRK(MOD(I,MRWK)+1,I/MRWK+1)
+C If requested, generate base indices in the array IWRK.  In any case,
+C set the sort element selector ISEL.
 C
-C If the first dimension of the array of data to be sorted is equal to
-C the first dimension of the FORTRAN array in which it is stored, use
-C a simpler, faster version of the code to process it.
-C
-        IF (IDRW.EQ.MRWK)
-          CALL CTHLS2 (RWRK,MRWK*NRWK,IWRK)
-C
-C Otherwise ...
-C
+        IF (ISES.LT.0)
+          ISEL=-ISES
         ELSE
-C
-C ... generate indices 0 through MRWK*NRWK-1 in the array IWRK and ...
-C
-          DO 101 I=1,MRWK*NRWK
-            IWRK(I)=I-1
-  101     CONTINUE
-C
-C ... sort them.
-C                                                                       
-          K=0
-C
-  102     IF (3*K+1.LT.MRWK*NRWK)
-            K=3*K+1
-            GO TO 102
-          END IF
-C
-  103     IF (K.GT.0)
-C
-            DO 105 I=1,MRWK*NRWK-K
-C
-              J=I
-C
-  104         IF (RVAL(IWRK(J)).LE.RVAL(IWRK(J+K))) GO TO 105
-              ITMP=IWRK(J)
-              IWRK(J)=IWRK(J+K)
-              IWRK(J+K)=ITMP
-              J=J-K
-              IF (J.LT.1) GO TO 105
-              GO TO 104
-C
-  105       CONTINUE
-C
-            K=(K-1)/3
-C
-            GO TO 103
-C
-          END IF
-C
+          ISEL=+ISES
+          DO (I=1,NORN)
+            IWRK(I)=(I-1)*LORN
+          END DO
         END IF
 C
-C Done.
-C
-        RETURN
-C
-      END                                                               
-
-
-      SUBROUTINE CTHLS2 (RWRK,NRWK,IWRK)
-C
-        DIMENSION RWRK(NRWK),IWRK(NRWK)
-C
-C This is a modified version of a sort routine from TDPACK.  I think the
-C original came from Fred Clare.
-C
-C Given an array of NRWK reals in an array RWRK, this routine returns
-C a permutation vector IWRK such that, for every I and J such that
-C 1.LE.I.LE.J.LE.NRWK, then RWRK(IWRK(I)).LE.RWRK(IWRK(J)).
-C
-        DO 101 I=1,NRWK
-          IWRK(I)=I-1
-  101   CONTINUE
+C Sort the NORN nodes into increasing order.
 C                                                                       
         K=0
 C
-  102   IF (3*K+1.LT.NRWK)
+  101   IF (3*K+1.LT.NORN)
           K=3*K+1
-          GO TO 102
+          GO TO 101
         END IF
 C
-  103   IF (K.GT.0)
+  102   IF (K.GT.0)
 C
-          DO 105 I=1,NRWK-K
+          DO 104 I=1,NORN-K
 C
             J=I
 C
-  104       IF (RWRK(IWRK(J)+1).LE.RWRK(IWRK(J+K)+1)) GO TO 105
+  103       IF (RWRK(IWRK(J)+ISEL).LE.RWRK(IWRK(J+K)+ISEL)) GO TO 104
             ITMP=IWRK(J)
             IWRK(J)=IWRK(J+K)
             IWRK(J+K)=ITMP
             J=J-K
-            IF (J.LT.1) GO TO 105
-            GO TO 104
+            IF (J.LT.1) GO TO 104
+            GO TO 103
 C
-  105     CONTINUE
+  104     CONTINUE
 C
           K=(K-1)/3
 C
-          GO TO 103
+          GO TO 102
 C
         END IF
 C
@@ -10113,7 +10317,7 @@ C
         WCFS=CHWM*WCIL*(XVPR-XVPL)
         WWFS=CHWM*WWIL*(XVPR-XVPL)
 C
-        CALL PCGETI ('TE',ITMP)
+        CALL PCGETI ('TE',ISTE)
         IF (ICFELL('CTINLB',3).NE.0) RETURN
         CALL PCSETI ('TE',1)
         IF (ICFELL('CTINLB',4).NE.0) RETURN
@@ -10132,7 +10336,7 @@ C
         IF (ICFELL('CTINLB',10).NE.0) RETURN
         CALL PCGETR ('DT',DSTT)
         IF (ICFELL('CTINLB',11).NE.0) RETURN
-        CALL PCSETI ('TE',ITMP)
+        CALL PCSETI ('TE',ISTE)
         IF (ICFELL('CTINLB',12).NE.0) RETURN
         DSTL=DSTL+WWFS
         DSTR=DSTR+WWFS
@@ -11040,7 +11244,7 @@ C
               DSTB=CLDB(ICLV)+XTRA
               DSTT=CLDT(ICLV)+XTRA
             ELSE
-              CALL PCGETI ('TE',ITMP)
+              CALL PCGETI ('TE',ISTE)
               IF (ICFELL('CTPLAR',6).NE.0) RETURN
               CALL PCSETI ('TE',1)
               IF (ICFELL('CTPLAR',7).NE.0) RETURN
@@ -11054,7 +11258,7 @@ C
               IF (ICFELL('CTPLAR',11).NE.0) RETURN
               CALL PCGETR ('DT',DTOT)
               IF (ICFELL('CTPLAR',12).NE.0) RETURN
-              CALL PCSETI ('TE',ITMP)
+              CALL PCSETI ('TE',ISTE)
               IF (ICFELL('CTPLAR',13).NE.0) RETURN
               DTOL=DTOL+WWFS
               DTOR=DTOR+WWFS
@@ -11366,7 +11570,7 @@ C
               DSTT=CLDT(ICLV)+XTRA
             ELSE
               ICHF=1
-              CALL PCGETI ('TE',ITMP)
+              CALL PCGETI ('TE',ISTE)
               IF (ICFELL('CTPLPS',6).NE.0) RETURN
               CALL PCSETI ('TE',1)
               IF (ICFELL('CTPLPS',7).NE.0) RETURN
@@ -11380,7 +11584,7 @@ C
               IF (ICFELL('CTPLPS',11).NE.0) RETURN
               CALL PCGETR ('DT',DTOT)
               IF (ICFELL('CTPLPS',12).NE.0) RETURN
-              CALL PCSETI ('TE',ITMP)
+              CALL PCSETI ('TE',ISTE)
               IF (ICFELL('CTPLPS',13).NE.0) RETURN
               DTOL=DTOL+WWFS
               DTOR=DTOR+WWFS
@@ -11957,7 +12161,7 @@ C
             YLBC=(YWDB+YWDT)/2.
             SIZE=CHWM*WCLL*(XVPR-XVPL)
             WWSP=CHWM*WWLL*(XVPR-XVPL)
-            CALL PCGETI ('TE',ITMP)
+            CALL PCGETI ('TE',ISTE)
             IF (ICFELL('CTSTLS',1).NE.0) RETURN
             CALL PCSETI ('TE',1)
             IF (ICFELL('CTSTLS',2).NE.0) RETURN
@@ -11973,7 +12177,7 @@ C
             IF (ICFELL('CTSTLS',6).NE.0) RETURN
             CALL PCGETR ('DT',DSTT)
             IF (ICFELL('CTSTLS',7).NE.0) RETURN
-            CALL PCSETI ('TE',ITMP)
+            CALL PCSETI ('TE',ISTE)
             IF (ICFELL('CTSTLS',8).NE.0) RETURN
             CLDB(ICLV)=DSTB+WWSP
             CLDL(ICLV)=DSTL+WWSP
@@ -12041,7 +12245,8 @@ C IXOR(IONE,ITWO) is the exclusive OR of the 12-bit masks IONE and ITWO.
 C
         IXOR(IONE,ITWO)=IAND(IOR(IONE,ITWO),4095-IAND(IONE,ITWO))
 C
-C ITBF(IARG) is non-zero if and only if a triangle is blocked.
+C ITBF(IARG) is non-zero if and only if a triangle with blocking-flag
+C element IARG is blocked.
 C
         ITBF(IARG)=IAND(IXOR(IARG,ITBX),ITBA)
 C
@@ -12880,7 +13085,8 @@ C IXOR(IONE,ITWO) is the exclusive OR of the 12-bit masks IONE and ITWO.
 C
         IXOR(IONE,ITWO)=IAND(IOR(IONE,ITWO),4095-IAND(IONE,ITWO))
 C
-C ITBF(IARG) is non-zero if and only if a triangle is blocked.
+C ITBF(IARG) is non-zero if and only if a triangle with blocking-flag
+C element IARG is blocked.
 C
         ITBF(IARG)=IAND(IXOR(IARG,ITBX),ITBA)
 C
