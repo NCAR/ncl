@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.150 2003-03-03 18:25:52 haley Exp $
+ *      $Id: BuiltInFuncs.c,v 1.151 2003-03-10 22:27:57 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -12294,3 +12294,114 @@ NhlErrorTypes _NclICreateFile(void)
 #ifdef __cplusplus
 }
 #endif
+
+
+NhlErrorTypes   _NclIGetFileVarType
+# if    NhlNeedProto
+(void)
+# else
+()
+# endif /* NhlNeedProto */
+{
+    /* Local variables */
+    NclFile f;
+    obj *fid;
+
+    string  *var;
+
+    NclObjTypes vartype;
+    NclQuark *rstr;
+
+    int dimsizes = 1;
+
+
+    /* get file information (1st arg.) */
+    fid = (obj *) NclGetArgValue(
+                    0,
+                    2,
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    0);
+
+    f = (NclFile) _NclGetObj((int) *fid);
+
+    /* get variable information (2nd arg.) */
+    var = (string *) NclGetArgValue(
+                    1,
+                    2,
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    0);
+
+    /* the string to return */
+    rstr = (NclQuark*) NclMalloc(sizeof(NclQuark));
+    if (rstr == (NclQuark *) NULL) {
+        NhlPError(NhlFATAL, errno, "getfilevartype: memory allocation error");
+        return NhlFATAL;
+    }
+
+    vartype = _NclFileVarRepValue(f, *var);
+    switch (vartype) {
+		case Ncl_Typedouble:                
+			*rstr = NrmStringToQuark("double");
+			break;
+
+		case Ncl_Typefloat: 
+			*rstr = NrmStringToQuark("float");
+			break;
+
+		case Ncl_Typelong:
+			*rstr = NrmStringToQuark("long");
+			break;
+
+		case Ncl_Typeint:
+			*rstr = NrmStringToQuark("integer");
+			break;
+
+		case Ncl_Typeshort:
+			*rstr = NrmStringToQuark("short");
+			break;
+
+		case Ncl_Typebyte:
+			*rstr = NrmStringToQuark("byte");
+			break;
+
+		case Ncl_Typestring:
+			*rstr = NrmStringToQuark("string");
+			break;
+
+		case Ncl_Typechar: 
+			*rstr = NrmStringToQuark("character");
+			break;
+
+		case Ncl_Typeobj: 
+			*rstr = NrmStringToQuark("obj");
+			break;
+
+		case Ncl_Typelogical:
+			*rstr = NrmStringToQuark("logical");
+			break;
+
+		case Ncl_Typelist:
+			*rstr = NrmStringToQuark("list");
+			break;
+
+        case Ncl_None:
+        default:
+            *rstr = NrmStringToQuark("missing");
+            NhlPError(NhlWARNING, NhlEUNKNOWN,
+                "getfilevartype: variable (%s) does not exist in file (%s)",
+                NrmQuarkToString(*var), NrmQuarkToString(f->file.fname));
+            break;
+	}
+
+    return NclReturnValue(rstr, 1, &dimsizes, NULL,
+        ((NclTypeClass) nclTypestringClass)->type_class.data_type, 0);
+}
+

@@ -1,13 +1,13 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.60 2003-03-07 06:06:37 haley Exp $
+ *      $Id: AddBuiltIns.c,v 1.61 2003-03-10 22:27:57 grubin Exp $
  */
 /************************************************************************
-*									*
-*			     Copyright (C)  1993			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
+*                                                                       *
+*                Copyright (C)  1993                                    *
+*           University Corporation for Atmospheric Research             *
+*               All Rights Reserved                                     *
+*                                                                       *
 ************************************************************************/
 /*
  *	File:		AddBuiltIns.c
@@ -46,6 +46,14 @@ extern NhlErrorTypes _NclIAddFiles(
 void
 #endif
 );
+
+extern NhlErrorTypes    _NclIGetFileVarType(
+# if    NhlNeedProto
+void
+# endif /* NhlNeedProto */
+);
+
+
 extern NhlErrorTypes _NclIprintFileVarSummary(
 #if NhlNeedProto
 void
@@ -1506,12 +1514,21 @@ void _NclAddBuiltIns
 	dimsizes[0] = 1;
 	SetArgTemplate(args,0,NclANY,NclANY,NclANY);nargs++;
 	NclRegisterFunc(_NclIGetVarAtts,args,"getvaratts",nargs);
+
 	nargs = 0;
 	args = NewArgs(2);
 	dimsizes[0] = 1;
 	SetArgTemplate(args,0,"file",NclANY,NclANY);nargs++;
 	SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
 	NclRegisterFunc(_NclIGetFileVarAtts,args,"getfilevaratts",nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "file", NclANY, NclANY);    nargs++;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);     nargs++;
+    NclRegisterFunc(_NclIGetFileVarType, args, "getfilevartype", nargs);
+
 	nargs = 0;
 	args = NewArgs(2);
 	dimsizes[0] = 1;
