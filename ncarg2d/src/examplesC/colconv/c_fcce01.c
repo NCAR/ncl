@@ -1,5 +1,5 @@
 /*
- *  $Id: c_fcce01.c,v 1.1 1994-07-18 16:20:44 haley Exp $
+ *  $Id: c_fcce01.c,v 1.2 1994-08-02 13:22:25 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -13,11 +13,16 @@
 #define WSTYPE SED_WSTYPE
 #define WKID   1
 
+float x1[5] = {0.15, 0.35, 0.35, 0.15, 0.15};
+float x2[5] = {0.65, 0.85, 0.85, 0.65, 0.65};
+float y[5] = {0.45, 0.45, 0.65, 0.65, 0.45};
+
 main()
 {
     Gcolr_rep rgb;
     Gpoint_list line;
     Gpoint pos;
+    int i;
 /*
  *  This program provides a demonstration of setting up a color table 
  *  and specifying colors for the GKS primitives: lines, markers, text, 
@@ -64,17 +69,10 @@ main()
  */
     gset_line_colr_ind(3);
     line.num_points = 5;
-
-    line.points[0].x = 0.15;
-    line.points[1].x = 0.35;
-    line.points[2].x = 0.35;
-    line.points[3].x = 0.15;
-    line.points[4].x = 0.15;
-    line.points[0].y = 0.45;
-    line.points[1].y = 0.45;
-    line.points[2].y = 0.65;
-    line.points[3].y = 0.65;
-    line.points[4].y = 0.45;
+    for( i = 0; i < 5; i++ ) {
+        line.points[i].x = x1[i];
+        line.points[i].y = y[i];
+    }
     gpolyline(&line);
 /*
  *  Draw an asterisk scaled by 4. in the foreground color.
@@ -96,16 +94,10 @@ main()
     gset_fill_colr_ind(5);
     gset_fill_int_style(GSTYLE_SOLID);
     line.num_points = 5;
-    line.points[0].x = 0.65;
-    line.points[1].x = 0.85;
-    line.points[2].x = 0.85;
-    line.points[3].x = 0.65;
-    line.points[4].x = 0.65;
-    line.points[0].y = 0.45;
-    line.points[1].y = 0.45;
-    line.points[2].y = 0.65;
-    line.points[3].y = 0.65;
-    line.points[4].y = 0.45;
+    for( i = 0; i < 5; i++ ) {
+        line.points[i].x = x2[i];
+        line.points[i].y = y[i];
+    }
     gfill_area(&line);
 /*
  *  Draw a red asterisk.
