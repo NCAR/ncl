@@ -1,5 +1,5 @@
 /*
- *      $Id: Sun4Solaris,v 1.13 1995-05-05 14:04:24 haley Exp $
+ *      $Id: Sun4Solaris,v 1.14 1995-07-11 21:41:10 haley Exp $
  */
 /************************************************************************
 *									*
@@ -30,7 +30,11 @@
 #define	DoesRanlib	NO
 #define	LintCommand	alint
 #define StdDefines      -DSYSV
+#define	ArchRecLibSearch	-L/usr/local/lib -L/usr/openwin/lib -L/usr/dt/lib
+#define	ArchRecIncSearch	-I/usr/local/include -I/usr/openwin/include -I/usr/dt/include
 
-#define	ArchRecLibSearch	-L/usr/local/lib -L/usr/openwin/lib
-#define	ArchRecIncSearch	-I/usr/local/include -I/usr/openwin/include
+#define XLibrary -lX11 -lXext -lX11
+#define XmotifLibrary -Bdynamic -lXm -Bstatic
+
+
 
