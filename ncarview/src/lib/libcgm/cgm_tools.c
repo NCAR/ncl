@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.7 1991-08-15 17:19:49 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.8 1991-09-27 14:11:55 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -32,6 +32,7 @@
  */
 #define		CGM_TOOLS
 #include	<stdio.h>
+#include	<errno.h>
 #include	<fcntl.h>
 #include	<sys/types.h>
 #include	<sys/file.h>
@@ -54,27 +55,31 @@ extern	char	*strcpy();
  * file descriptor(s) and a pointer structure for performing metafile
  * operations
  */
+int	noop();
+int	stream_read(), stream_write(), stream_seek(), stream_close();
+int	raw_read(), raw_write(), raw_seek(), raw_close();
+int	memory_read(), memory_write(), memory_seek(), memory_close();
 static	Cgm_tab	cgmTab[] = {
-	{0, File, -1, -1, (Pg_struct *) NULL}, 
-	{0, File, -1, -1, (Pg_struct *) NULL}, 
-	{0, File, -1, -1, (Pg_struct *) NULL}, 
-	{0, File, -1, -1, (Pg_struct *) NULL}, 
-	{0, File, -1, -1, (Pg_struct *) NULL}, 
-	{0, File, -1, -1, (Pg_struct *) NULL}, 
-	{0, File, -1, -1, (Pg_struct *) NULL}, 
-	{0, File, -1, -1, (Pg_struct *) NULL}, 
-	{0, File, -1, -1, (Pg_struct *) NULL}, 
-	{0, File, -1, -1, (Pg_struct *) NULL}, 
-	{0, File, -1, -1, (Pg_struct *) NULL}, 
-	{0, File, -1, -1, (Pg_struct *) NULL}, 
-	{0, File, -1, -1, (Pg_struct *) NULL}, 
-	{0, File, -1, -1, (Pg_struct *) NULL}, 
-	{0, File, -1, -1, (Pg_struct *) NULL}, 
-	{0, File, -1, -1, (Pg_struct *) NULL}, 
-	{0, File, -1, -1, (Pg_struct *) NULL}, 
-	{0, File, -1, -1, (Pg_struct *) NULL}, 
-	{0, File, -1, -1, (Pg_struct *) NULL}, 
-	{0, File, -1, -1, (Pg_struct *) NULL}, 
+	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
+	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
+	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
+	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
+	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
+	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
+	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
+	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
+	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
+	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
+	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
+	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
+	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
+	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
+	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
+	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
+	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
+	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
+	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
+	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop} 
 	};
 
 /* maximum files allowed open	*/
@@ -106,9 +111,7 @@ char	*headerType[] = {
  *			
  *	record_size:	: size in bytes of records in metafile. if Negative
  *			  file is opened in memory, not on disk
- *	flags		: as described by the UNIX open facility 
- *	[mode]		: creation mode specifier. Only valid 
- *			  when O_CREAT is specified as a flag with O_WRONLY
+ *	type		: one of ("w"|"r"|"a"|"w+"|"r+"|"a+")
  * on exit
  *	cgmTab[cgm_fd]	: has been initialized;
  *	return:		== -1 => error else
@@ -116,24 +119,22 @@ char	*headerType[] = {
  *				  
  */
 /*VARARGS3*/
-Cgm_fd	CGM_open(metafile, record_size, flags, mode)
+Cgm_fd	CGM_open(metafile, record_size, type)
 	char		*metafile;
 	int		record_size;
-	int		flags;
-	long		mode;
+	char		*type;
 {
 
 	int	fildes[2];	/* file descriptor for a pipe	*/
 	Cgm_fd	index;		/* index into the cgmTab	*/
 
 	if (numOpen >= MAX_FILE) {
-		(void) fprintf(stderr,"%s : maximum file limit is %d\n",
-			NAME, MAX_FILE);
-
+		errno = ENOENT;
 		return(-1);
 	}
 
 	if (!metafile) {
+		errno = EACCES;
 		return(-1);	/* no file	*/
 	}
 
@@ -151,10 +152,15 @@ Cgm_fd	CGM_open(metafile, record_size, flags, mode)
 
 		cgmTab[index].mtype = MemFile;
 		if ((cgmTab[index].fd = (int) CGM_openMemFile(metafile, 
-			(int) cgmTab[index].record_size, flags)) < 0) {
+			(int) cgmTab[index].record_size, type)) < 0) {
 
 			return (-1);
 		}
+		cgmTab[index].fp = (FILE *) NULL;
+		cgmTab[index].write = memory_write;
+		cgmTab[index].read = memory_read;
+		cgmTab[index].seek = memory_seek;
+		cgmTab[index].close = memory_close;
 	} 
 	/*
 	 * 	see if read/write from stdin/stdout
@@ -162,19 +168,24 @@ Cgm_fd	CGM_open(metafile, record_size, flags, mode)
 	else if (strcmp (metafile, rw_stdin) == 0) {
 
 		cgmTab[index].mtype = Tty;
-		switch (flags) {
-			case O_RDONLY:
-				cgmTab[index].fd = STDIN;
-				break;
-			case O_WRONLY:
-				cgmTab[index].fd = STDOUT;
-				break;
-			default	:
-				(void) fprintf(stderr,
-					"%s : invalid flag %c\n", NAME, flags);
-				return(-1);
+		if (! (strcmp("r",type)) || ! (strcmp("r+",type))) {
+			cgmTab[index].fp = stdin;
+			cgmTab[index].fd = fileno(stdin);
 		}
+		else if (! (strcmp("w",type)) || ! (strcmp("w+",type))
+			|| ! (strcmp("a",type)) || ! (strcmp("a+",type))) {
 
+			cgmTab[index].fp = stdout;
+			cgmTab[index].fd = fileno(stdout);
+		}
+		else {
+			errno = EINVAL;
+			return(-1);
+		}
+		cgmTab[index].write = stream_write;
+		cgmTab[index].read = stream_read;
+		cgmTab[index].seek = stream_seek;
+		cgmTab[index].close = stream_close;
 	}
 
 	else  {
@@ -191,6 +202,13 @@ Cgm_fd	CGM_open(metafile, record_size, flags, mode)
 
 		cgmTab[index].fd = fildes[0];	/* read file descriptor	*/
 		cgmTab[index].fdw = fildes[1];	/* write file desctiptor*/
+		cgmTab[index].fp = (FILE *) NULL;
+		cgmTab[index].fpw = (FILE *) NULL;
+
+		cgmTab[index].write = raw_write;
+		cgmTab[index].read = raw_read;
+		cgmTab[index].seek = raw_seek;
+		cgmTab[index].close = raw_close;
 
 	}
 
@@ -200,11 +218,15 @@ Cgm_fd	CGM_open(metafile, record_size, flags, mode)
 	 */
 
 		cgmTab[index].mtype = File;
-		if ((cgmTab[index].fd = 
-			open(metafile, flags, (int) mode)) < 0) {
-
+		if ((cgmTab[index].fp = fopen(metafile, type)) == NULL) {
 			return(-1);
 		}
+		cgmTab[index].fd = fileno(cgmTab[index].fp);
+
+		cgmTab[index].write = stream_write;
+		cgmTab[index].read = stream_read;
+		cgmTab[index].seek = stream_seek;
+		cgmTab[index].close = stream_close;
 	}
 	}
 
@@ -253,28 +275,14 @@ Cgm_fd	CGM_open(metafile, record_size, flags, mode)
 int	CGM_close(cgm_fd)
 	Cgm_fd	cgm_fd;
 {
-
 	int	error = 0;
 
 	if (!(usedFd & (1 << cgm_fd))) {
+		errno = EBADF;
 		return(-1);	/* invalid file descriptor	*/
 	}	
 
-	/*
-	 *	see if file is a pipe, then close both desciptors
- 	 */
-	if (cgmTab[cgm_fd].mtype == Pipe ) {
-
-		error = close(cgmTab[cgm_fd].fdw);
-		error -= close(cgmTab[cgm_fd].fd);
-	}
-	else if (cgmTab[cgm_fd].mtype == File) {
-		error = close(cgmTab[cgm_fd].fd);
-
-	}
-	else if ( cgmTab[cgm_fd].mtype == MemFile) {
-		error = CGM_closeMemFile (cgmTab[cgm_fd].fd);
-	}
+	error = (cgmTab[cgm_fd].close(cgm_fd));
 
 	/*	
 	 *	mark index into cgmTab as being open so a new file can
@@ -310,29 +318,9 @@ CGM_read(cgm_fd, buf)
 	Cgm_fd		cgm_fd;
 	unsigned char	*buf;
 {
-
-	char *b;
-	int	n, l;
-	int	r = (int) cgmTab[cgm_fd].record_size;
-	int	fd = cgmTab[cgm_fd].fd;
-
-	/*
-	 * Make sure CGM does not reside in memory
-	 */
-	if (cgmTab[cgm_fd].mtype != MemFile ) {
-		b=(char *)buf;
-		for (n=0; n<r; n+=l) {
-			if ((l=read(fd,b+n,r-n))<0)
-				return(l);
-			else if (l==0)
-				break;
-		}
-		return(n);
-	}
-	else {	/* CGM resides in memory	*/
-		return(CGM_readMemFile(fd, buf));
-	}
+	return(cgmTab[cgm_fd].read(cgm_fd, buf));
 }
+
 
 
 /*	CGM_write:
@@ -351,24 +339,7 @@ CGM_write(cgm_fd, buf)
 	Cgm_fd		cgm_fd;
 	unsigned char	*buf;
 {
-
-	int	r = cgmTab[cgm_fd].record_size;
-	int	fd = cgmTab[cgm_fd].fd;
-
-	/*
-	 *	if cgm_fd is for a pipe then use fdw not fd
-	 */
-	if (cgmTab[cgm_fd].mtype == Pipe ) {
-		return(write (cgmTab[cgm_fd].fdw, (char *) buf, r));
-	}
-	else if (cgmTab[cgm_fd].mtype == MemFile ) {
-
-		return (CGM_writeMemFile(fd, buf));
-	} 
-	else {
-
-		return(write (fd, (char *) buf, r));
-	}
+	return(cgmTab[cgm_fd].write(cgm_fd, buf));
 }
 
 /*	CGM_lseek:
@@ -390,28 +361,10 @@ CGM_lseek(cgm_fd, offset, whence)
 	int	offset;
 	int	whence;
 {
-
 	int	r = cgmTab[cgm_fd].record_size;
-	int	fd = cgmTab[cgm_fd].fd;
+	long 	offset_ = r * offset;
 
-	extern	off_t	lseek();
-
-	/*
-	 *	if Mtype is a pipe then punt. (See man lseek)
-	 */
-	if (cgmTab[cgm_fd].mtype == Pipe) {
-		return(-1);
-	} 
-	else if (cgmTab[cgm_fd].mtype == MemFile) {
-
-		return (CGM_lseekMemFile(fd, offset, whence));
-	}
-	else {
-
-		return((int) lseek (cgmTab[cgm_fd].fd, 
-					(off_t) (offset * r), whence));
-	}
-
+	return(cgmTab[cgm_fd].seek(cgm_fd, offset_, whence));
 }
 
 
@@ -459,9 +412,7 @@ Directory	*CGM_directory(cgm_fd)
 	 *	see if file descriptor is valid
 	 */
 	if (cgm_fd < 0 || cgm_fd >= MAX_FILE) {
-		(void) fprintf(stderr, 
-			"%s : invalid file descriptor %d\n", NAME, cgm_fd);
-
+		errno = EBADF;
 		return(dir);
 	}
 
@@ -1409,3 +1360,144 @@ Directory	*init_dir()
 	return(dir);
 }
 
+
+static	int	stream_read(cgm_fd, buf)
+	Cgm_fd		cgm_fd;
+	unsigned char	*buf;
+{
+	char *b;
+	int	n, l;
+	int	r = (int) cgmTab[cgm_fd].record_size;
+	FILE	*fp = cgmTab[cgm_fd].fp;
+
+	b=(char *)buf;
+	for (n=0; n<r; n+=l) {
+		if ((l=fread(b+n,1,r-n,fp))<0)
+			return(l);
+		else if (l==0)
+			break;
+	}
+	return(n);
+}
+static	int	raw_read(cgm_fd, buf)
+	Cgm_fd		cgm_fd;
+	unsigned char	*buf;
+{
+	char *b;
+	int	n, l;
+	int	r = (int) cgmTab[cgm_fd].record_size;
+	int	fd = cgmTab[cgm_fd].fd;
+
+	b=(char *)buf;
+	for (n=0; n<r; n+=l) {
+		if ((l=read(fd,b+n,r-n))<0)
+			return(l);
+		else if (l==0)
+			break;
+	}
+	return(n);
+}
+static	int	memory_read(cgm_fd, buf)
+	Cgm_fd		cgm_fd;
+	unsigned char	*buf;
+{
+	int	fd = cgmTab[cgm_fd].fd;
+
+	return(CGM_readMemFile(fd, buf));
+}
+
+static	int	stream_write(cgm_fd, buf)
+	Cgm_fd		cgm_fd;
+	unsigned char	*buf;
+{
+	int	r = cgmTab[cgm_fd].record_size;
+	FILE	*fp = cgmTab[cgm_fd].fp;
+
+	return(fwrite((char *) buf, 1, r, fp)); 
+}
+
+static	int	raw_write(cgm_fd, buf)
+	Cgm_fd		cgm_fd;
+	unsigned char	*buf;
+{
+	int	r = cgmTab[cgm_fd].record_size;
+	int	fd = cgmTab[cgm_fd].fd;
+
+	if (cgmTab[cgm_fd].mtype == Pipe ) {
+		fd = cgmTab[cgm_fd].fdw;
+	}
+
+	return(write(fd, (char *) buf, r));
+}
+
+static	int	memory_write(cgm_fd, buf)
+	Cgm_fd		cgm_fd;
+	unsigned char	*buf;
+{
+	int	fd = cgmTab[cgm_fd].fd;
+
+	return (CGM_writeMemFile(fd, buf));
+}
+
+static	int	stream_seek(cgm_fd, offset, whence)
+	Cgm_fd		cgm_fd;
+	long	offset;
+	int	whence;
+{
+	FILE	*fp = cgmTab[cgm_fd].fp;
+
+	return(fseek(fp, offset, whence));
+}
+
+static	int	raw_seek(cgm_fd, offset, whence)
+	Cgm_fd		cgm_fd;
+	long	offset;
+	int	whence;
+{
+	int	fd = cgmTab[cgm_fd].fd;
+
+	return(lseek(fd, (off_t) offset, whence));
+}
+static	int	memory_seek(cgm_fd, offset, whence)
+	Cgm_fd		cgm_fd;
+	long	offset;
+	int	whence;
+{
+	int	fd = cgmTab[cgm_fd].fd;
+
+	return (CGM_lseekMemFile(fd, offset, whence));
+}
+static	int	stream_close(cgm_fd)
+	Cgm_fd		cgm_fd;
+{
+	FILE	*fp = cgmTab[cgm_fd].fp;
+
+	return(fclose(fp));
+}
+
+static	int	raw_close(cgm_fd)
+	Cgm_fd		cgm_fd;
+{
+	int	fd = cgmTab[cgm_fd].fd;
+	int	error;
+
+	error = close(fd);
+	if (cgmTab[cgm_fd].mtype == Pipe ) {
+		int	fdw = cgmTab[cgm_fd].fdw;
+		error -= close(fd);
+	}
+	return(error);
+}
+	
+static	int	memory_close(cgm_fd)
+	Cgm_fd		cgm_fd;
+{
+	int	fd = cgmTab[cgm_fd].fd;
+
+	return(CGM_closeMemFile (fd));
+}
+
+static	int	noop()
+{
+	return(-1);
+}

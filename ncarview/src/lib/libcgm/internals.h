@@ -55,6 +55,8 @@ typedef	struct	{
 typedef	struct {
 	unsigned	record_size;	/* record size of file		*/
 	Mtype	mtype;			/* media type			*/
+	FILE	*fp,
+		*fpw;
 	Cgm_fd	fd;			/* file descriptor for r/w	*/
 	Cgm_fd	fdw;			/* write file descriptor if mtype
 					 * is a Pipe
@@ -62,6 +64,10 @@ typedef	struct {
 	Pg_struct	*pg_struct;	/* pointer to put/get instruction
 					 * structs
 					 */
+	int	(*read)();
+	int	(*write)();
+	int	(*seek)();
+	int	(*close)();
 	} Cgm_tab;
 /*
  *	some NCAR CGM binary encoding defines

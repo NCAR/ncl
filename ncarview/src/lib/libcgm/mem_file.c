@@ -1,5 +1,5 @@
 /*
- *	$Id: mem_file.c,v 1.2 1991-01-09 11:04:40 clyne Exp $
+ *	$Id: mem_file.c,v 1.3 1991-09-27 14:12:02 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -13,6 +13,7 @@
 
 #include <stdio.h>
 #include <fcntl.h>
+#include <errno.h>
 #include <ncarv.h>
 #include <cgm_tools.h>
 #include "mem_file.h"
@@ -30,10 +31,10 @@ static
 unsigned int    numOpen = 0;    /* number of files currently open       */
 
 
-CGM_openMemFile(metafile, record_size, flags)
+CGM_openMemFile(metafile, record_size, type)
 	char	*metafile;
 	int	record_size;
-	int	flags;
+	char	*type;
 {
 
 	int	i,
@@ -44,6 +45,7 @@ CGM_openMemFile(metafile, record_size, flags)
 
 
 	if (!metafile) {
+		errno = EACCES;
 		return(-1);     /* no file      */
 	}
 
@@ -51,9 +53,7 @@ CGM_openMemFile(metafile, record_size, flags)
 	 * make sure have enough file descriptors
 	 */
 	if (numOpen >= MAX_MEM_FILE) {
-		(void) fprintf(stderr, "cgm_tools : maximum file limit is %d\n",
-		MAX_MEM_FILE);
-
+		errno = EMFILE;
 		return(-1);
 	}
 
@@ -72,11 +72,14 @@ CGM_openMemFile(metafile, record_size, flags)
 	/*
 	 * check some flags based on state of file
 	 */
-	if (old_index != -1) {	/* file exists	*/
-		if ((flags & O_EXCL) && (flags & O_CREAT)) return (-1);
-	}
-	else {	/* file does not exist	*/
-		if (flags & O_RDONLY)  return (-1);
+	if (old_index == -1) {	
+		/* 
+		 * file does not exists	
+		 */
+		if (! (strcmp(type, "r")) || ! (strcmp(type, "r+"))) {
+			errno = ENOENT;
+			return(-1);
+		}
 	}
 
 
@@ -100,6 +103,15 @@ CGM_openMemFile(metafile, record_size, flags)
 		if (record_size != *cgm_iobuf[old_index].r_size) return (-1);
 		cgm_iobuf[index].r_size = cgm_iobuf[old_index].r_size;
 
+		/*
+		 * if appending move to end of file
+		 */
+		if (! strcmp(type, "a") || ! strcmp(type, "a+")) {
+			cgm_iobuf[index]._ptr += *cgm_iobuf[index].len;
+		}
+		
+		
+
 	}
 	else {	/* a new file	*/
 		cgm_iobuf[index].name = icMalloc(strlen (metafile) + 1);
@@ -117,7 +129,10 @@ CGM_openMemFile(metafile, record_size, flags)
 		*cgm_iobuf[index].r_size = record_size;
 	}
 
-	if (flags & O_TRUNC) {	/* truncate file?	*/
+	/*
+	 * truncate file if opened with "w" or "w+"
+	 */
+	if (! strcmp(type, "w") || ! strcmp(type, "w+")) {
 
 		*cgm_iobuf[index].len = *cgm_iobuf[index].size = 0;
 
@@ -180,6 +195,7 @@ CGM_writeMemFile(fd, buf)
 			(unsigned) (*cgm_iobuf[fd].size + (r * F_INIT_SIZE)));
 
 		if (ptr == NULL) {
+			errno = ENOSPC;
 			return (-1);
 		}
 
@@ -232,10 +248,14 @@ CGM_lseekMemFile(fd, offset, whence)
 		break;
 		
 	default:
+		errno = EINVAL;
 		return(-1);
 	}
 
-	if (off < 0) return (-1);	/* can't seek back past file base */
+	if (off < 0) {
+		errno = ENOSPC;
+		return (-1);	/* can't seek back past file base */
+	}
 
 	/*
 	 * if off exceeds file space allocate more memory
@@ -245,6 +265,7 @@ CGM_lseekMemFile(fd, offset, whence)
 		ptr = realloc(ptr, (unsigned) (off * sizeof (unsigned char *)));
 
 		if (ptr == NULL) {
+			errno = ENOSPC;
 			return (-1);
 		}
 
@@ -288,7 +309,10 @@ CGM_closeMemFile(fd)
 		}
 	}
 
-	if (count == 0) return (-1);
+	if (count == 0) {
+		errno = EBADF;
+		return (-1);
+	}
 
 	if (count == 1) return (1);	/* do nothing	*/
 
@@ -340,7 +364,10 @@ CGM_unlinkMemFile(metafile)
 		}
 	}
 
-	if (index == -1) return (-1);
+	if (index == -1) {
+		errno = EBADF;
+		return (-1);
+	}
 
 	cfree( (char *) cgm_iobuf[index].name);
 	cfree( (char *) cgm_iobuf[index]._base);

@@ -1,5 +1,5 @@
 /*
- *	$Id: meta_edit.c,v 1.5 1991-08-15 17:19:21 clyne Exp $
+ *	$Id: meta_edit.c,v 1.6 1991-09-27 14:12:04 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -313,7 +313,7 @@ Directory	*CGM_readFrames(ncar_cgm, start_frame, num_frames, target,
 	if (target > workingList.number)
 		return(ERR);	/* target cannot not exceed end of file	*/
 
-	if ((fd = CGM_open(ncar_cgm, r, O_RDONLY)) < 0) /*open readfile */
+	if ((fd = CGM_open(ncar_cgm, r, "r")) < 0) /*open readfile */
 		return(ERR);
 
 	if ((dir = CGM_directory(fd)) == NULL) {/* create directory	*/
@@ -626,7 +626,7 @@ Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp)
 	/*
 	 * open the file and create a directory for it
 	 */
-	if ((workingFd = CGM_open(ncarCgm,recordSize,O_RDONLY)) < 0) {
+	if ((workingFd = CGM_open(ncarCgm,recordSize,"r")) < 0) {
 		return(ERR);
 	}
 
@@ -690,8 +690,7 @@ Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp)
 	(void) strcat(tempFile, TMPFILE);
 	(void) mktemp(tempFile);
 	(void) mktemp(writeFile);
-	if ((workingList.tmp_fd = 
-		CGM_open(tempFile, r, O_WRONLY | O_CREAT, 00644))<0) {
+	if ((workingList.tmp_fd = CGM_open(tempFile, r, "w"))<0) {
 
 		(void) CGM_close(workingFd);
 		CGM_freeDirectory(workingDir);
@@ -797,7 +796,7 @@ int	CGM_writeFrames(ncar_cgm, start_frame, num_frames)
 	 *	open the temp file where some frames may be
 	 *	stored
 	 */
-	if ((tmp_fd = CGM_open(tempFile, r, O_RDONLY)) < 0)
+	if ((tmp_fd = CGM_open(tempFile, r, "w")) < 0)
 		return(-1);
 	
 	/*
@@ -818,8 +817,7 @@ int	CGM_writeFrames(ncar_cgm, start_frame, num_frames)
 		newfile = strcpy(newfile, writeFile);
 	}
 
-	if ((fd = CGM_open(newfile, r, 
-				O_WRONLY | O_CREAT | O_TRUNC, 00644)) < 0) {
+	if ((fd = CGM_open(newfile, r, "w")) < 0) {
 		(void) CGM_close(tmp_fd);
 		return(-1);
 	}
@@ -922,7 +920,7 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 	 *	open the temp file where some frames may be
 	 *	stored
 	 */
-	if ((tmp_fd = CGM_open(tempFile, r, O_RDONLY)) < 0)
+	if ((tmp_fd = CGM_open(tempFile, r, "w")) < 0)
 		return(-1);
 	
 
@@ -936,7 +934,7 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 	/*
 	 * open the file for appending
 	 */
-	if ((fd = CGM_open(ncar_cgm, r, O_RDONLY )) < 0) {
+	if ((fd = CGM_open(ncar_cgm, r, "w" )) < 0) {
 		(void) CGM_close(tmp_fd);
 		return(-1);
 	}
@@ -978,7 +976,7 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 	/*
 	 * now open the file for writing
 	 */
-	if ((fd = CGM_open(ncar_cgm, r, O_WRONLY )) < 0) {
+	if ((fd = CGM_open(ncar_cgm, r, "w" )) < 0) {
 		(void) CGM_close(tmp_fd);
 		if (buf) cfree((char *) buf);
 		return(-1);
@@ -1053,7 +1051,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 	 * open file with bottom frame for reading. set file ptr to frame
 	 */
 	if (workingList.list[bottom].utype == ACTUAL) {
-		if ((b_fd = CGM_open(ncarCgm, recordSize, O_RDONLY)) < 0) {
+		if ((b_fd = CGM_open(ncarCgm, recordSize, "w")) < 0) {
 			return (ERR);
 		}
 		if (CGM_lseek(b_fd, saveDir->d[workingList.list[bottom]
@@ -1063,7 +1061,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 
 	}
 	else {	/* open tmp file for *reading*	*/
-		if ((b_fd = CGM_open(tempFile, r, O_RDONLY)) < 0) {
+		if ((b_fd = CGM_open(tempFile, r, "w")) < 0) {
 			return (ERR);
 		}
 		if (CGM_lseek(b_fd,workingList.list[bottom].
@@ -1078,7 +1076,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 	 * open file with top frame for reading. set file ptr to frame
 	 */
 	if (workingList.list[top].utype == ACTUAL) {
-		if ((t_fd = CGM_open(ncarCgm, recordSize, O_RDONLY)) < 0) {
+		if ((t_fd = CGM_open(ncarCgm, recordSize, "w")) < 0) {
 			(void) CGM_close(b_fd);
 			return (ERR);
 		}
@@ -1092,7 +1090,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 
 	}
 	else {	/* open tmp file for *reading*	*/
-		if ((t_fd = CGM_open(tempFile, r, O_RDONLY)) < 0) {
+		if ((t_fd = CGM_open(tempFile, r, "w")) < 0) {
 			(void) CGM_close(b_fd);
 			return (ERR);
 		}
@@ -1455,7 +1453,7 @@ write_frame(src_fd, dest_fd, tmp_fd,  list, dir, index)
 	if (list.list[index].utype == ACTUAL) {
 		frame = list.list[index].uval.frame;
 		offset = dir->d[frame].record;
-		if ((CGM_lseek(src_fd, offset, L_SET)) == NULL) {
+		if ((CGM_lseek(src_fd, offset, L_SET)) < 0) {
 			return(-1);
 		}
 
@@ -1529,7 +1527,7 @@ Directory	*CGM_editFrame(frame, edit_instr, num_occur)
 	 * open file containing frame for reading
 	 */
 	if (workingList.list[frame].utype == ACTUAL) {
-		if ((fd = CGM_open(ncarCgm, recordSize, O_RDONLY)) < 0) {
+		if ((fd = CGM_open(ncarCgm, recordSize, "w")) < 0) {
 			return (ERR);
 		}
 		if (CGM_lseek(fd, saveDir->d[workingList.list[frame]
@@ -1540,7 +1538,7 @@ Directory	*CGM_editFrame(frame, edit_instr, num_occur)
 
 	}
 	else {	/* open tmp file for *reading*	*/
-		if ((fd = CGM_open(tempFile, r, O_RDONLY)) < 0) {
+		if ((fd = CGM_open(tempFile, r, "w")) < 0) {
 			return (ERR);
 		}
 		if (CGM_lseek(fd, workingList.list[frame]
