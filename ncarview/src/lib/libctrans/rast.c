@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.26 1993-02-03 19:57:57 don Exp $
+ *	$Id: rast.c,v 1.27 1993-02-03 22:34:11 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -448,7 +448,6 @@ CGMC *c;
 	int	ras_argc;
 	char	*ras_argv[10];
 
-	Raster	*RasterOpenWrite();
 	int	status = 0;
 
 	startedDrawing = FALSE;
@@ -466,9 +465,13 @@ CGMC *c;
 	}
 
 	/*
-	 * a hack to make sure abekas a60 files are direct encoded.
+	 * a hack to make sure abekas a60,sgi, and avs files are 
+	 * direct encoded.
 	 */
-	if (strcmp(devices[currdev].name, "a60") == 0) {
+	if (strcmp(devices[currdev].name, "a60") ||
+		strcmp(devices[currdev].name, "sgi") ||
+		strcmp(devices[currdev].name, "avs") == 0) {
+
 		rast_opts.direct = TRUE;
 	}
 	rasIsDirect = rast_opts.direct;
@@ -482,7 +485,7 @@ CGMC *c;
 		return(-1);
 	}
 	if (RasterInit(&ras_argc, ras_argv) != RAS_OK) {
-		ESprintf(E_UNKNOWN, "RasterInit(,)");
+		ESprintf(E_UNKNOWN, "RasterInit(,) [ %s ]", ErrGetMsg());
 		return(-1);
 	}
 
@@ -664,7 +667,7 @@ CGMC *c;
 	 *	 write the file
 	 */
 	 if( RasterWrite(rastGrid) != RAS_OK) {
-		ESprintf(E_UNKNOWN, "RasterWrite()");
+		ESprintf(E_UNKNOWN, "RasterWrite() [ %s ]", ErrGetMsg());
 		return (-1);
 	}
 
