@@ -17,7 +17,7 @@ typedef	int	Cgm_fd;		/* a file descriptor for a metafile	*/
 
 typedef	enum {
 	CGM_OK,
-	CGM_ERROR,
+	CGM_ERROR
 	} CGM_Status;
 
 /*

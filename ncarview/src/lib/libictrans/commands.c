@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.2 1991-01-09 11:12:45 clyne Exp $
+ *	$Id: commands.c,v 1.3 1991-02-06 15:30:50 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -13,7 +13,11 @@
 
 #include <stdio.h>
 #include <signal.h>
+
+#ifndef	CRAY
 #include <sys/wait.h>
+#endif
+
 #include <errno.h>
 #include <cgm_tools.h>
 #include <ncarv.h>
