@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.24 1999-10-22 00:37:31 dbrown Exp $
+ *      $Id: xwk.c,v 1.25 1999-10-22 00:58:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -55,7 +55,7 @@ static NhlResource resources[] = {
 	 _NhlUSET((NhlPointer)True),_NhlRES_NOSACCESS,NULL},
 	{NgNxwkRaiseOnDraw,NgCxwkRaiseOnDraw,NhlTBoolean,
 	 sizeof(NhlBoolean),Oset(raise_on_draw),NhlTImmediate,
-	 _NhlUSET((NhlPointer)False),_NhlRES_NOSACCESS,NULL}
+	 _NhlUSET((NhlPointer)False),_NhlRES_GONLY,NULL}
 };
 #undef	Oset
 
