@@ -1,15 +1,25 @@
       PROGRAM CLASS3
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
       PARAMETER (NPTS=200)
       REAL YDRA(NPTS),XDRA(NPTS)
 
       DO 10 I=1,NPTS
          XDRA(I)=I*0.1
-            YDRA(I)=EXP(XDRA(I)*SIN(XDRA(I)))
-  10  CONTINUE
+         YDRA(I)=EXP(XDRA(I)*SIN(XDRA(I)))
+ 10   CONTINUE
 
-      CALL OPNGKS
+C
+C  Open GKS, open and activate a workstation.
+C
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 
-      CALL DEFCLR
+      CALL DEFCLR(IWKID)
 
       CALL AGSETI ('Y/LOGARITHMIC.',1)
       CALL AGSETF('DASH/SELECTOR.',-1.0)
@@ -25,20 +35,25 @@
       CALL EZXY (XDRA,YDRA,NPTS,
      +	'Log scaling and publication quality text$')
 
-      CALL CLSGKS
+C
+C Deactivate and close workstation, close GKS.
+C
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
 
       STOP
       END
 
-      SUBROUTINE DEFCLR
-      CALL GSCR(1, 0, 0.0, 0.0, 0.0)
-      CALL GSCR(1, 1, 1.0, 1.0, 1.0)
-      CALL GSCR(1, 2, 1.0, 0.0, 0.0)
-      CALL GSCR(1, 3, 0.0, 1.0, 0.0)
-      CALL GSCR(1, 4, 0.4, 0.7, 0.9)
-      CALL GSCR(1, 5, 0.7, 0.4, 0.7)
-      CALL GSCR(1, 6, 0.9, 0.7, 0.4)
-      CALL GSCR(1, 7, 0.4, 0.9, 0.7)
+      SUBROUTINE DEFCLR (IWKID)
+      CALL GSCR(IWKID, 0, 0.0, 0.0, 0.0)
+      CALL GSCR(IWKID, 1, 1.0, 1.0, 1.0)
+      CALL GSCR(IWKID, 2, 1.0, 0.0, 0.0)
+      CALL GSCR(IWKID, 3, 0.0, 1.0, 0.0)
+      CALL GSCR(IWKID, 4, 0.4, 0.7, 0.9)
+      CALL GSCR(IWKID, 5, 0.7, 0.4, 0.7)
+      CALL GSCR(IWKID, 6, 0.9, 0.7, 0.4)
+      CALL GSCR(IWKID, 7, 0.4, 0.9, 0.7)
       RETURN
       END
         
