@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.40 2004-04-28 16:29:17 haley Exp $
+;      $Id: contributed.ncl,v 1.41 2004-05-14 13:53:25 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5128,7 +5128,6 @@ begin
 
   N      = dimsizes(stime)
   time   = new( N ,"double")
-  delete(time@_FillValue)
   time@units = tunits
   time!0 = "time"
   time@long_name  = "time"
@@ -5145,6 +5144,10 @@ begin
   time    = (/ ut_inv_calendar(year,month,day,hour,min,sec,tunits, 0) /)
 
   time&time       =  time        ; make coordinate variable
+
+  if (isatt(time,"_FillValue")) then
+      delete(time@_FillValue)
+  end if
   return (time)
 end 
 
