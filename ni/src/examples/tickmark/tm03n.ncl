@@ -18,6 +18,11 @@
 ;                      with reversed and log y axis.
 ;
 
+;
+; Begin NCL script.
+;
+begin
+
 level = (/ 1000, 850, 700, 500, 400, 300, 250, 200, 150, 100 /)
 
 ;
@@ -79,3 +84,8 @@ frame(wid)
 delete(pid)
 delete(wid)
 delete(appid)
+
+;
+; End NCL script.
+;
+end

@@ -18,6 +18,11 @@
 ;
 
 ;
+; Begin NCL script.
+;
+begin
+
+;
 ; Initialize data values
 ;
 labels = (/"Marker_0","Marker_1","Marker_2","Marker_3","Marker_4" /)
@@ -69,3 +74,8 @@ frame(wid)
 delete(pid)
 delete(wid)
 delete(appid)
+
+;
+; End NCL script.
+;
+end

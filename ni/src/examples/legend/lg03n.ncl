@@ -18,6 +18,11 @@
 ;
 
 ;
+; Begin NCL script.
+;
+begin
+
+;
 ; Initialize data values
 ;
 labels = (/"Line_Type_0","Line_Type_1","Line_Type_2", \
@@ -75,3 +80,8 @@ frame(wid)
 delete(pid)
 delete(wid)
 delete(appid)
+
+;
+; End NCL script.
+;
+end

@@ -21,6 +21,11 @@
 ;
 
 ;
+; Begin NCL script.
+;
+begin
+
+;
 ; Create an application context. Set the app dir to the current directory
 ; so the application looks for a resource file in the working directory.
 ; In this example the resource file supplies the plot title only.
@@ -50,3 +55,8 @@ do i=1,114
     draw(pid);
     frame(wid);
 end do
+
+;
+; End NCL script.
+;
+end

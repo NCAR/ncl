@@ -1,5 +1,5 @@
 ;
-;      $Id: xy01n.ncl,v 1.4 1995-02-22 16:35:31 haley Exp $
+;      $Id: xy01n.ncl,v 1.5 1995-03-01 22:10:39 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -27,6 +27,11 @@
 ;;
 ;;                 The "CoordArrays" object is used to set up the data.
 ;;
+
+;
+; Begin NCL script.
+;
+begin
 
 
 procedure assigndata(
@@ -89,3 +94,8 @@ end create
 ; 
 draw(plotid)
 frame(xworkid)
+
+;
+; End NCL script.
+;
+end

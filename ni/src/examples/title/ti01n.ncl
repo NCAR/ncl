@@ -18,6 +18,10 @@
 ;                      defaults.
 ;
 
+;
+; Begin NCL script.
+;
+begin
 
 ;
 ; Create an application context. Set the app dir to the current directory
@@ -52,3 +56,8 @@ frame(wid);
 delete(pid);
 delete(wid);
 delete(appid);
+
+;
+; End NCL script.
+;
+end

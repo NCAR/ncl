@@ -1,5 +1,5 @@
 ;
-;;      $Id: tx04n.ncl,v 1.2 1995-02-22 14:48:45 haley Exp $
+;;      $Id: tx04n.ncl,v 1.3 1995-03-01 22:10:23 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -19,6 +19,11 @@
 ;;
 ;;  Description:         Demonstrates TextItem object.
 ;
+
+;
+; Begin NCL script.
+;
+begin
 
 ;
 ; Create an application context. Set the app dir to the current directory
@@ -734,3 +739,8 @@ frame(workstation_id)
 delete(text_item_id)
 delete(workstation_id)
 delete(app_id)
+
+;
+; End NCL script.
+;
+end

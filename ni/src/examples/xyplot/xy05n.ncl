@@ -1,5 +1,5 @@
 ;
-;      $Id: xy05n.ncl,v 1.4 1995-02-22 16:35:46 haley Exp $
+;      $Id: xy05n.ncl,v 1.5 1995-03-01 22:10:44 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -34,6 +34,11 @@
 ;;                 attributes of the data being plotted, like the
 ;;                 marker styles and sizes.
 ;;
+
+;
+; Begin NCL script.
+;
+begin
 
 procedure assigndata(
     y[*][*]:float,
@@ -125,3 +130,8 @@ end create
 ; 
 draw(plotid)
 frame(xworkid)
+
+;
+; End NCL script.
+;
+end
