@@ -1,5 +1,5 @@
-/*  
- *  $Id: vc06c.c,v 1.2 1996-06-26 16:05:23 haley Exp $    
+/*
+ *  $Id: vc06c.c,v 1.3 1996-06-27 16:07:11 haley Exp $    
  */
 /***********************************************************************
 *                                                                      *
@@ -16,6 +16,8 @@
  *              PO 3000, Boulder, Colorado
  *
  *  Date:       June 19, 1996
+ *
+ *
  *
  *    Description:  This example demonstrates several features of
  *                 VectorPlot:
@@ -65,11 +67,11 @@ main(int argc, char *argv[])
     int appid,wid,vcid,vfid, sfid, mpid;
     int rlist;
     float U[73][73],V[73][73], PSL[73][73];
-    char  smindist0[7] ;
-    char  smindist1[6] ;
-    char  smindist2[5] ;
-    char  title[27];
-    char  smindist[100] ;
+    char  smindist0[6] ;
+    char  smindist1[5] ;
+    char  smindist2[4] ;
+    char  title[35];
+    char  smindist[7] ;
     char slongitude[100] ;
 /*
  * Declare variables for getting information from netCDF file.
@@ -152,7 +154,7 @@ main(int argc, char *argv[])
     ncvarget(uv,u_id,(long const *)start,(long const *)count,U);
     ncvarget(uv,v_id,(long const *)start,(long const *)count,V);
 /*
- * Create a ScalarField data object using the data set defined above.
+ * Create a VectorField data object using the data set defined above.
  * By default the array bounds will define the data boundaries (zero-based,
  * as in C language conventions)
  */
@@ -222,6 +224,7 @@ main(int argc, char *argv[])
 /*
  * Create FRAME_COUNT frames, increasing the value of vcMinDistanceF
  * and decreasing the value of mpCenterLonF at each successive frame.
+ *
  * Note that the first frame and the last frame are equivalent in
  * longitude.
  */
@@ -237,21 +240,11 @@ main(int argc, char *argv[])
  */
         longitudeval = (int)(i * 360./(FRAME_COUNT-1) + 0.5);
 
-        if (longitudeval < 10) {
-            sprintf(slongitude,"%d:S:o:N:",longitudeval);
-        }
-        else {
-            if (longitudeval < 100){
-                sprintf(slongitude,"%d:S:o:N:",longitudeval);
-            }
-            else {
-                sprintf(slongitude,"%d:S:o:N:",longitudeval);
-            }
-        }
-        
+        sprintf(slongitude,"%d:S:o:N:",longitudeval);
+
         val = ((FRAME_COUNT-1) - i) * 0.0175/(FRAME_COUNT-1);
         mindistval = (int)(10000*val + 0.5);
-        
+
         if (mindistval < 10){
             sprintf(smindist,"%s%d",smindist0,mindistval);
         }
@@ -268,7 +261,7 @@ main(int argc, char *argv[])
         
         strcpy(title,"Varying vcMinDistanceF :: ");
         strcat(title,smindist);
-
+        
         NhlRLSetString(rlist,NhlNtiMainString,title);
         NhlRLSetString(rlist,NhlNtiXAxisString,slongitude);
         NhlRLSetFloat(rlist,NhlNvcMinDistanceF,val);
@@ -287,4 +280,3 @@ main(int argc, char *argv[])
     NhlClose();
     exit(0);
 }
-

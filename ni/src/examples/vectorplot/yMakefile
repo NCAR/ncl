@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.10 1996-06-25 14:17:20 haley Exp $
+#   $Id: yMakefile,v 1.11 1996-06-27 16:07:12 haley Exp $
 #
 #   Makefile for HLU VectorPlot examples
 #
@@ -11,11 +11,11 @@ EXTRA_LIBS  = $(XMOTIFCLIENTLIBS) -lnetcdf
 SYS_LIBS    = $(CTOFLIBS) -lm
 
 CSRCS       = vc01c.c vc02c.c vc03c.c vc04c.c vc05c.c vc06c.c
-FSRCS       = vc01f.f vc02f.f vc03f.f vc04f.f vc05f.f
+FSRCS       = vc01f.f vc02f.f vc03f.f vc04f.f vc05f.f vc06f.f
 NSRCS       = vc01n.ncl vc02n.ncl vc03n.ncl vc04n.ncl vc05n.ncl vc06n.ncl
 
 COBJS       = vc01c.o vc02c.o vc03c.o vc04c.o vc05c.o vc06c.o
-FOBJS       = vc01f.o vc02f.o vc03f.o vc04f.o vc05f.o
+FOBJS       = vc01f.o vc02f.o vc03f.o vc04f.o vc05f.o vc06f.o
 SRCS        = $(CSRCS) $(FSRCS)
 OBJS        = $(COBJS) $(FOBJS)
 
@@ -38,6 +38,7 @@ FExampleTarget(vc02f,vc02f.o)
 FExampleTarget(vc03f,vc03f.o)
 FExampleTarget(vc04f,vc04f.o)
 FExampleTarget(vc05f,vc05f.o)
+FExampleTarget(vc06f,vc06f.o)
 
 CleanFilesTarget($(OBJS))
 DependTarget($(CSRCS))
