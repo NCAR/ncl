@@ -1,5 +1,5 @@
 /*
- *	$Id: c_eezmpa.c,v 1.4 1993-01-23 15:14:58 haley Exp $
+ *	$Id: c_eezmpa.c,v 1.5 1993-02-01 21:05:40 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -236,9 +236,9 @@ colram (xcs,ycs,ncs,iai,iag,nai)
  * Fill area
  */
             gfill_area(&fill_area);
+            free((Gpoint *)fill_area.points);
         }
     }
-    free((Gpoint *)fill_area.points);
     return(1);
 }
 
