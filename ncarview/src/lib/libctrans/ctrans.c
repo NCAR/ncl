@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.26 1992-09-09 15:09:08 clyne Exp $
+ *	$Id: ctrans.c,v 1.27 1992-10-15 16:49:08 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -80,8 +80,6 @@ static	const char	*palFname = NULL;
 boolean *softFill = &softfill;
 boolean *deBug = &debug;
 boolean *doBell = &bell_off;
-
-FILE	*tty = NULL;
 
 /*
  * device dependent initialization state  (cgi, X11, graphcap, clear_text)
@@ -428,7 +426,6 @@ CtransRC	init_ctrans(argc, argv, gcap, fcap, stand_alone, batch)
 	boolean	batch;
 
 {
-	char	*tty_in	= "/dev/tty";
 	char	*minw;
  
 	stand_Alone = stand_alone;
@@ -436,18 +433,6 @@ CtransRC	init_ctrans(argc, argv, gcap, fcap, stand_alone, batch)
 
 	if (ctransIsInit) {
 		close_ctrans();
-	}
-
-
-	/*
-	 * open tty for user interaction if not batch
-	 */
-	if (!Batch && !BATCH) {
-		if (! (tty = fopen(tty_in, "r"))) {
-			ESprintf(errno,"fopen(%s, r)", tty_in);
-			elog(ErrGetMsg());
-			return(FATAL);
-		}
 	}
 
 
@@ -968,10 +953,6 @@ void	close_ctrans()
 		return;
 	}
 
-
-	if (!Batch && !BATCH) {
-		if (tty) (void) fclose (tty);
-	}
 
 	if (devices[currdev].use_common) ComClose();
 

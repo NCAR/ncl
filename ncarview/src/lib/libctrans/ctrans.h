@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ctrans.h,v 1.3 1992-10-15 15:23:50 clyne Exp $
+ *      $Id: ctrans.h,v 1.4 1992-10-15 16:49:11 clyne Exp $
  */
 /*
  *	File:		ctrans.h
@@ -14,8 +14,8 @@
  *	Description:	header file for ctrans.c
  */
 
-#include <ncarg/cgm_tools.h>
 #include <ncarg/c.h>
+#include <ncarg/cgm_tools.h>
 
 #ifndef	_ctrans_
 #define	_ctrans_

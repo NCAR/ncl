@@ -1,5 +1,5 @@
 /*
- *	$Id: fill.c,v 1.10 1992-09-09 15:09:22 clyne Exp $
+ *	$Id: fill.c,v 1.11 1992-10-15 16:49:16 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -13,8 +13,8 @@
 #include	<stdio.h>
 #include	<stdlib.h>
 #include	<errno.h>
-#include	<ncarg/cgm_tools.h>
 #include	<ncarg/c.h>
+#include	<ncarg/cgm_tools.h>
 #include	"fill.h"
 #include	"cgmc.h"
 #include	"in.h"

@@ -1,5 +1,5 @@
 /*
- *	$Id: in.c,v 1.7 1992-09-01 23:42:52 clyne Exp $
+ *	$Id: in.c,v 1.8 1992-10-15 16:49:22 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -17,7 +17,6 @@
 #include	<sys/file.h>
 #include	<errno.h>
 #include	<ncarg/cgm_tools.h>
-#include	<ncarg/c.h>
 #include	"in.h"
 #include	"cgmc.h"
 #include	"bitops.h"

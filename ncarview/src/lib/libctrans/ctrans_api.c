@@ -1,5 +1,5 @@
 /*
- *      $Id: ctrans_api.c,v 1.14 1992-09-01 23:42:02 clyne Exp $
+ *      $Id: ctrans_api.c,v 1.15 1992-10-15 16:49:14 clyne Exp $
  */
 /*
  *	File:		ctrans_api.c
@@ -86,7 +86,6 @@ extern	boolean	Batch;
 extern	boolean *softFill;
 extern	boolean *deBug;
 extern	boolean *doBell;
-extern	FILE	*tty;
 extern	boolean	deviceIsInit;	
 extern	int	optionDesc;
 extern	int	currdev;

@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.27 1992-09-15 22:54:58 clyne Exp $
+ *	$Id: gcap.c,v 1.28 1992-10-15 16:49:19 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -59,7 +59,7 @@
 #include "translate.h"
 #include "format.h"
 
-extern	FILE	*tty;
+FILE	*tty = (FILE *) NULL;
 extern	boolean	Batch;
 extern	boolean	deviceIsInit;
 extern	int	optionDesc;
@@ -112,12 +112,12 @@ CGMC *c;
 
 	CoordRect	dev_extent;
 	CoordModifier	coord_mod;
+	char    *tty_in = "/dev/tty";
+
 
 	extern	int	commFillScaleFactor;
 	extern	int	commHatchScaleFactor;
 	int	status = 0;
-
-	void	SetDevWin();
 
 	/*
 	 * parse gcap specific options
@@ -279,6 +279,19 @@ CGMC *c;
 		}
 	}
 
+	/*
+	 * if not in batch mode open a tty to prompt user for frame 
+	 * advances
+	 */
+	if (!Batch && !BATCH) {
+		if (! (tty = fopen(tty_in, "r"))) {
+			ESprintf(errno,"fopen(%s, r)", tty_in);
+			return(-1);
+		}
+	}
+
+
+
 	deviceIsInit = TRUE;
 	return (status);
 }
@@ -291,6 +304,9 @@ CGMC *c;
 	if (!deviceIsInit) {
 		return(0);
 	}
+
+	if (tty) (void) fclose(tty);
+
 
 	/*
 	 *	reset back to text mode
