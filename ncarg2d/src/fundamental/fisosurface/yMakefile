@@ -1,11 +1,11 @@
 #
-#	$Id: yMakefile,v 1.1 1993-03-24 21:23:51 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-04-12 21:19:53 haley Exp $
 #
 NCARG	= ../../../..
 
 MYNAME	= fisosurface
 
-GENERIC_SRCS = fiseziso.f fisissrf.f fispwrzi.f
+GENERIC_SRCS = fisissrf.f fispwrzi.f
 
 install::
 	@for file in $(GENERIC_SRCS); do\
