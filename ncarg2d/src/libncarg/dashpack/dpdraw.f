@@ -1,5 +1,5 @@
 C
-C $Id: dpdraw.f,v 1.6 1994-09-22 22:06:15 kennison Exp $
+C $Id: dpdraw.f,v 1.7 1996-02-15 23:09:42 kennison Exp $
 C
       SUBROUTINE DPDRAW (XCPF,YCPF,IFVL)
 C
@@ -275,7 +275,8 @@ C
                   IFCH=IDPE(I)/LDPA
                   ILCH=MOD(IDPE(I),LDPA)
 C
-                  CALL PLCHHQ (0.,0.,CHDP(IFCH:ILCH),WCHR,360.,0.)
+                  CALL PLCHHQ (CFUX(.5),CFUY(.5),CHDP(IFCH:ILCH),
+     +                                              WCHR,360.,0.)
                   IF (ICFELL('DPDRAW',4).NE.0) RETURN
 C
                   CALL PCGETR ('XB - X COORDINATE AT BEGINNING',XBEG)
