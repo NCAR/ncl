@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.11 1993-01-15 22:30:06 kennison Exp $
+#   $Id: ncargex.csh,v 1.12 1993-01-17 04:35:53 haley Exp $
 #
 
 set example_dir=`ncargpath SED_EXAMPLESDIR`
@@ -38,7 +38,8 @@ agex01 agex02 agex03 agex04 agex05 agex06 agex07 agex08 agex09 agex10 \
 agex11 agex12 agex13 arex01 mpex01 mpex02 mpex03 mpex04 mpex05 mpex06 \
 mpex07 mpex08 mpex09 mpex10 mpexfi cpex01 cpex02 cpex03 cpex04 cpex05 \
 cpex06 cpex07 cpex08 cpex09 eezmpa elblba epltch cbex01 coex01 coex02 \
-coex03 srex01 slex01 sfex01 sfex02 example nglogy ngrevx ngset1 ngset2)
+coex03 srex01 slex01 sfex01 sfex02 stex01 stex02 stex03 vvex01 vvex02 \
+example nglogy ngrevx ngset1 ngset2)
 
 set test_list=(\
 tagupw tareas tautog tcnqck tcnsmt tcnsup tcolcv tconan tconaq \
@@ -185,6 +186,13 @@ foreach file (cpex01 cpex02 cpex03 cpex04 cpex05 cpex06 cpex07 cpex08 cpex09)
     if ("$name" == "$file") then
         set f_files=($f_files cpexcc.f)
         set rmfiles="cpexcc.o"
+    endif
+end
+
+foreach file (vvex01 vvex02)
+    if ("$name" == "$file") then
+        set f_files=($f_files vvexcc.f)
+        set rmfiles="vvexcc.o"
     endif
 end
 
