@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.135 2004-03-23 16:45:37 haley Exp $
+;      $Id: gsn_code.ncl,v 1.136 2004-03-23 22:58:32 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -81,6 +81,7 @@ undef("gsn_open_x11")
 undef("create_labelbar")
 undef("gsn_open_ps")
 undef("gsn_open_pdf")
+undef("gsn_open_image")
 undef("gsn_open_wks")
 undef("gsn_add_primitive")
 undef("gsn_polygon")
@@ -2179,6 +2180,37 @@ begin
 end
 
 ;***********************************************************************;
+; Function : gsn_open_image                                             ;
+;               type : type of image file                               ;
+;               name : name of output image file                        ;
+;                                                                       ;
+; This function opens an image file called "<name>.<type>" and          ;
+; returns the workstation id. If "name" is an empty string, then the    ;
+; NCGM is given a default name "gmeta.type".                            ;
+;***********************************************************************;
+function gsn_open_image(type:string,name[1]:string)
+local image, res_file
+begin
+    res_file=get_res_value_keep(name,"res_file","gsnapp")
+
+    if(isatt(name,"wkColorMap"))
+      image = create res_file imageWorkstationClass defaultapp 
+        "wkImageFileName" : name
+        "wkImageFormat"   : type
+        "wkColorMap"      : name@wkColorMap
+      end create
+    else
+      image = create res_file imageWorkstationClass defaultapp 
+        "wkImageFileName" : "testim"
+        "wkImageFormat"   : type
+      end create
+    end if
+
+    return(image)
+end
+
+
+;***********************************************************************;
 ; Function : gsn_open_wks                                               ;
 ;               type : type of workstation to open                      ;
 ;               name : name of workstation                              ;
@@ -2219,50 +2251,81 @@ begin
       end if
     end if
 
-    ncgm_file = get_res_value_keep(type,"wkMetaName",res_file + ".ncgm")
-    ncgm_file@res_file = res_file
-
-    ps_file = get_res_value_keep(type,"wkPSFileName",res_file + "." + type)
-    ps_file@res_file = res_file
-
-    pdf_file = get_res_value_keep(type,"wkPDFFileName",res_file + "." + type)
-    pdf_file@res_file = res_file
-
-    x_file = res_file
-
     appid = create res_file appClass defaultapp
         "appDefaultParent" : True
         "appUsrDir"        : res_dir
     end create
 
-    if(type.eq."x11".or.type.eq."X11") then
-        if(isatt(type,"wkColorMap"))
-          x_file@wkColorMap = type@wkColorMap
-        end if
-        wks = gsn_open_x11(x_file)
-    else
-        if(type.eq."ps".or.type.eq."eps".or.type.eq."epsi".or.\
-           type.eq."PS".or.type.eq."EPS".or.type.eq."EPSI") then
-            wks = gsn_open_ps(type,res_dir+ps_file)
-        else
-            if(type.eq."ncgm".or.type.eq."NCGM") then
-                ncgm_file = res_dir + ncgm_file
-                if(isatt(type,"wkColorMap"))
-                  ncgm_file@wkColorMap = type@wkColorMap
-                end if
-                wks = gsn_open_ncgm(ncgm_file)
-            else
-                if (type.eq."pdf".or.type.eq."PDF") then
-                    wks = gsn_open_pdf(type, res_dir+pdf_file)
-                else
-                    print("Error: gsn_open_wks: "+ type + " is an illegal workstation type.")
-                    exit
-                end if
-            end if
-        end if
+;
+; If we had a case statement or an "elseif" in NCL, this next
+; section would look better!
+;
+    wks = new(1,graphic)
+
+    if (lower_case(type).eq."x11") then
+      x_file = res_file
+      if (isatt(type,"wkColorMap"))
+        x_file@wkColorMap = type@wkColorMap
+      end if
+      wks = gsn_open_x11(x_file)
     end if
+
+    if (lower_case(type).eq."ps".or.lower_case(type).eq."eps".or. \
+        lower_case(type).eq."epsi") then
+      ps_file = get_res_value_keep(type,"wkPSFileName",res_file + "." + type)
+      ps_file@res_file = res_file
+      wks = gsn_open_ps(type,res_dir+ps_file)
+    end if
+
+    if (lower_case(type).eq."ncgm") then
+      ncgm_file = get_res_value_keep(type,"wkMetaName",res_file + ".ncgm")
+      ncgm_file = res_dir + ncgm_file
+      ncgm_file@res_file = res_file
+      if (isatt(type,"wkColorMap"))
+        ncgm_file@wkColorMap = type@wkColorMap
+      end if
+      wks = gsn_open_ncgm(ncgm_file)
+    end if
+
+    if (lower_case(type).eq."pdf") then
+      pdf_file = get_res_value_keep(type,"wkPDFFileName", \
+                                    res_file + "." + type)
+      pdf_file@res_file = res_file
+      wks = gsn_open_pdf(type, res_dir+pdf_file)
+    end if
+
+    if (lower_case(type).eq."xwd") then
+      image_file = get_res_value_keep(type,"wkImageFileName", \
+                                      res_file + "." + type)
+      image_file@res_file = res_file
+      wks = gsn_open_image(type, res_dir+image_file)
+    end if
+
+    if (ismissing(wks)) then
+      print("Error: gsn_open_wks: "+ type + " is an illegal workstation type.")
+      exit
+    end if
+
+;
+; Apply other resources.
+;
+  varatts = getvaratts(type)
+  if(.not.any(ismissing(varatts))) then
+    wks_res = True
+    do i=0,dimsizes(varatts)-1
+      if(varatts(i).ne."wkColorMap") then
+        wks_res@$varatts(i)$ = type@$varatts(i)$
+      end if  
+    end do
+    attsetvalues(wks,wks_res)
+    delete(wks_res)
+  end if
+  delete(varatts)
+;
+; Return workstation and application id.
+;
     wks@name = res_file
-    wks@app = appid 
+    wks@app  = appid 
     return(wks)
 end
 
