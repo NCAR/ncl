@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.10 1994-03-18 02:18:59 dbrown Exp $
+#      $Id: yMakefile,v 1.11 1994-04-28 23:06:44 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -20,6 +20,8 @@
 #	Description:	yMakefile for ncarg/ni/src/lib/hlu
 MYNAME		= libhlu.a
 
+EXTRA_CDEFINES	=	$(OS_DEF)
+
 HDRS		= Base.h BaseP.h Convert.h ConvertP.h Converters.h\
 		CoordApprox.h Error.h ErrorP.h IrregularTransObj.h \
 		IrregularTransObjP.h IrregularType2TransObj.h \
@@ -39,9 +41,9 @@ HDRS		= Base.h BaseP.h Convert.h ConvertP.h Converters.h\
 		ContourP.h Overlay.h OverlayI.h OverlayP.h LogLinPlot.h \
 		LogLinPlotP.h IrregularPlot.h IrregularPlotP.h MapPlot.h \
 		MapPlotP.h ResList.h ResListP.h Workspace.h WorkspaceI.h \
-		WorkspaceP.h
+		WorkspaceP.h FortranP.h
 
-SRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
+CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Create.c Destroy.c Draw.c Error.c GetValues.c \
 		IrregularTransObj.c IrregularType2TransObj.c LogLinTransObj.c \
 		MapTransObj.c MultiText.c NcgmWorkstation.c NresDB.c Open.c \
@@ -51,9 +53,9 @@ SRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		XWorkstation.c hlu.c DataComm.c DataItem.c DataMgr.c \
 		Legend.c LabelBar.c CoordArrTable.c CoordArrays.c \
 		Contour.c Overlay.c LogLinPlot.c IrregularPlot.c MapPlot.c  \
-		XyPlot.c ResList.c Workspace.c
+		XyPlot.c ResList.c Workspace.c Fortran.c Futil.c
 
-OBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
+COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Create.o Destroy.o Draw.o Error.o GetValues.o \
 		IrregularTransObj.o IrregularType2TransObj.o LogLinTransObj.o \
 		MapTransObj.o MultiText.o NcgmWorkstation.o NresDB.o Open.o \
@@ -63,13 +65,21 @@ OBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		XWorkstation.o hlu.o DataComm.o DataItem.o DataMgr.o \
 		Legend.o LabelBar.o CoordArrTable.o CoordArrays.o \
 		Contour.o Overlay.o LogLinPlot.o IrregularPlot.o MapPlot.o \
-		XyPlot.o ResList.o Workspace.o
+		XyPlot.o ResList.o Workspace.o Fortran.o Futil.o
+
+FSRCS		= DATACOMM.f ERROR.f HLU.f OVERLAY.f RLGEN.f RLSET.f \
+		RLGET.f TRANSFORM.f VIEW.f WORKSPACE.f WORKSTATION.f
+
+FOBJS		= DATACOMM.o ERROR.o HLU.o OVERLAY.o RLGEN.o RLSET.o \
+		RLGET.o TRANSFORM.o VIEW.o WORKSPACE.o WORKSTATION.o
+
+OBJS		= $(COBJS) $(FOBJS)
 
 LibraryTarget($(MYNAME),$(OBJS))
 BuildIncludes($(HDRS),ncarg/hlu,../..)
 InstallTarget($(HDRS),$(INSTALL_INC),$(HLUINCPATH))
 InstallTarget(hluresfile,$(INSTALL_INC),$(LIBNCARGPATH))
-DependTarget($(SRCS))
+DependTarget($(CSRCS))
 
 #if	defined(DEBUG) && defined(SunOS)  && defined(ExpandMacros)
 

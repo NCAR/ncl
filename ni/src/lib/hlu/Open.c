@@ -1,5 +1,5 @@
 /*
- *      $Id: Open.c,v 1.5 1994-03-18 02:18:20 dbrown Exp $
+ *      $Id: Open.c,v 1.6 1994-04-28 23:06:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -22,16 +22,40 @@
  */
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/ResListP.h>
+#include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/ErrorP.h>
 #include <ncarg/hlu/WorkspaceP.h>
 
-void NhlOpen()
+/*
+ * Function:	_NhlOpen
+ *
+ * Description:	internal init function - called for "C" and  "Fortran"
+ *		interface.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	void
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static void _NhlOpen
+#if	__STDC__
+(
+	_NhlC_OR_F	init_type
+)
+#else
+(init_type)
+	_NhlC_OR_F	init_type;
+#endif
 {
 	/* Initialize Resource Mngmt stuff */
 	_NrmInitialize();
-	_NhlConvertersInitialize();
+	_NhlConvertersInitialize(init_type);
 	_NhlResourceListInitialize();
 	_NhlInitResDatabase();
 
@@ -40,4 +64,62 @@ void NhlOpen()
 	_NhlInitRLList();
 	_NhlInitGetValues();
 	_NhlInitWorkspace();
+
+	return;
+}
+
+/*
+ * Function:	NhlOpen
+ *
+ * Description:	Init function for "C" interface.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void NhlOpen
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	_NhlOpen(_NhlCLIB);
+
+	return;
+}
+
+/*
+ * Function:	nhlfopen
+ *
+ * Description:	init hlu library for use from the "Fortran" bindings.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_fopen,NHL_FOPEN)
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	_NhlOpen(_NhlFLIB);
+	_NhlFortranInit();
+
+	return;
 }
