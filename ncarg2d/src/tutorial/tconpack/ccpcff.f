@@ -30,9 +30,8 @@ C Close frame and close GKS
 	END
 
 	SUBROUTINE GETDAT (Z, M, N)
-
-	REAL Z(M,N)
 	INTEGER I,J,M,N
+	REAL Z(M,N)
 
 	DO 10, I=1,M
 	  DO 20, J=1,N

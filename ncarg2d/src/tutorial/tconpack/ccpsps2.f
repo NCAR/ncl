@@ -32,9 +32,8 @@ C Close frame and close GKS
 	END
 
 	SUBROUTINE GETDAT (X, Y, Z, M, N)
-
-	REAL X(M), Y(N), Z(M,N)
 	INTEGER I,J,M,N
+	REAL X(M), Y(N), Z(M,N)
 
 C X and Y data locations must be in increasing order.
 

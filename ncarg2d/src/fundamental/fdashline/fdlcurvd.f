@@ -129,9 +129,8 @@ C
       END
 
       SUBROUTINE GNCRCL(XCNTR, YCNTR, RAD, NPTS, XCOORD, YCOORD)
-      REAL XCNTR, YCNTR, RAD, XCOORD(NPTS), YCOORD(NPTS)
       INTEGER NPTS
-
+      REAL XCNTR, YCNTR, RAD, XCOORD(NPTS), YCOORD(NPTS)
 C
 C This function generates the coordinates for a circle with
 C center at XCNTR, YCNTR, and a radius of RAD.  There are

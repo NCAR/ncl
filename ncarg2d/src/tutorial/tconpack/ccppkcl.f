@@ -31,9 +31,8 @@ C Close frame and close GKS
 	END
 
 	SUBROUTINE GETDAT (ZREG, K, M, N)
-
-	REAL ZREG(K,N)
 	INTEGER I,J,K,M,N
+	REAL ZREG(K,N)
 
 	M=K
 	DO 10, I=1,M
