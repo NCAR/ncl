@@ -1,5 +1,5 @@
 /*
- *      $Id: MeshScalarField.c,v 1.5 2004-08-30 21:35:49 dbrown Exp $
+ *      $Id: MeshScalarField.c,v 1.6 2004-10-07 23:01:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2821,7 +2821,7 @@ static NhlErrorTypes    MeshScalarFieldGetValues
 		do_genarray = False;
                 if (resQ == Qd_arr) {
 			do_genarray = True;
-			ndim = 2;
+			ndim = 1;
 			dlen[0] = sfp->d_arr->len_dimensions[0];
 			if (sfp->copy_arrays) {
 				if ((data = CopyData(sfp->d_arr,resQ))
