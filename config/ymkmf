@@ -1,6 +1,6 @@
-#!/bin/csh -f
+#!/bin/csh -f -v
 #
-#      $Id: ymkmf,v 1.2 1993-11-12 02:44:31 boote Exp $
+#      $Id: ymkmf,v 1.3 1993-12-09 22:12:23 boote Exp $
 #
 #########################################################################
 #									#
@@ -74,6 +74,12 @@ if (! $?topname) then
 	@ useinstalled = 0
 endif
 
+if ("$topname" == ".") then
+	set	topdir = .
+	set	curdir = .
+	goto shortcut
+endif
+
 echo $thisdir | fgrep $topname >& /dev/null
 if ($status != 0) then
 	echo "$0 : Unable to find TopDir $topname in $thisdir"
@@ -107,6 +113,8 @@ if($?curdir) then
 else
 	set curdir = .
 endif
+
+shortcut:
 
 set defines = ($defines -Curdir "$curdir" -Topdir "$topdir")
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.12 1993-12-09 21:41:04 boote Exp $
+ *	$Id: Rules,v 1.13 1993-12-09 22:12:19 boote Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -58,8 +58,9 @@ all-local:: names]\
 ]\
 install-local:: names]\
 	MakeDir(dest)]\
-	for name in names; do\]\
-	($(INSTALL) -m mode $$name dest);\]\
+	@for name in names; do\]\
+	(echo "Installing $$name";\]\
+	$(INSTALL) -m mode $$name dest);\]\
 	done]
 #endif	/* InstallTarget */
 
@@ -585,6 +586,7 @@ all-local::]\
 install-local::]\
 	MakeDir(destdir)]\
 	@for file in files; do \]\
+	echo "Installing $${file}.section" \]\
 	$(INSTALL) -m $(INSTALL_MAN) $${file}suffix destdir/$${file}.section;\]\
 	done
 #endif	/* InstallManPages */
@@ -599,13 +601,11 @@ install-local::]\
 ]\
 all-local::]\
 ]\
-install-local::]\
-	@if (test ! -f destdir/file.section) then \]\
-	echo "destdir/file.section must exist to create ManAliases to it";\]\
-	exit 1; else continue; fi]\
+install-local:: destdir/file.section]\
 	@(cd destdir;\]\
 	for alias in aliases ; do \]\
 	$(RM) $$alias.section;\]\
+	echo "Installing $$alias.section";\]\
 	$(LN) file.section $$alias.section;\]\
 	done)]
 #endif	/* InstallManPageAliases */
@@ -644,6 +644,7 @@ install-local::]\
 	if (test -f $(XAPPPATH)/$$name) then \]\
 		echo "Warning - replacing $(XAPPPATH)/$$name"; \]\
 		$(MV) $(XAPPPATH)/$$name $(XAPPPATH)/$$name.bak ; else continue; fi; \]\
-	($(INSTALL) -m $(INSTALL_APP) $$name.ad $(XAPPPATH)/$$name); \]\
+	(echo "Installing $$name.ad"; \]\
+	$(INSTALL) -m $(INSTALL_APP) $$name.ad $(XAPPPATH)/$$name); \]\
 	done]
 #endif	/* InstallXappFiles */
