@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.1 1993-01-28 20:49:34 haley Exp $
+#	$Id: ncargcex.csh,v 1.2 1993-01-28 21:10:45 haley Exp $
 #
 
 set example_dir = `ncargpath SED_EXAMPLESDIR`
@@ -18,9 +18,9 @@ c_agex07 c_colcon c_mpex05 c_eezmpa c_elblba c_epltch c_cbex01 \
 c_slex01 c_sfex02)
 
 if ($#argv < 1) then
-echo "usage: ncargCex [-all] [-clean] [-n] [-onebyone] names               "
+echo "usage: ncargcex [-all] [-clean] [-n] [-onebyone] names               "
 echo "                                                                     "
-echo "See <man ncargCex>                                                   "
+echo "See <man ncargcex>                                                   "
 exit
 endif
 
@@ -133,7 +133,7 @@ endif
 
 if ("$type" == "Unknown") then
 
-echo "ncargCex: <$name> is not a known example or test"
+echo "ncargcex: <$name> is not a known example or test"
 
 endif
 
