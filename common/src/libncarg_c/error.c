@@ -1,5 +1,5 @@
 /*
- *      $Id: error.c,v 1.1 1992-03-26 18:24:25 clyne Exp $
+ *      $Id: error.c,v 1.2 1992-04-10 18:23:41 clyne Exp $
  */
 /*
  *	File:		error.c
@@ -31,9 +31,21 @@ typedef	struct	ErrTable_ {
 static	ErrTable	errTable[TABLE_SIZE];	/* all the error tables	*/
 static	int		errTableNum = 0;	/* num error tables	*/
 static	int		ErrorNumber;		/* current error num	*/
-static	char		ErrorBuf[256];		/* current error message*/
+static	char		ErrorBuf[1024];		/* current error message*/
+static	char		ErrorBufRet[1024];	/* error message returned*/
 static	int		isInitialized = 0;	/* are we initialized?	*/
 
+/*
+ * this struct is necessary to implement the ESPRINTF() macro since
+ * the C preprocessor does not handle variable argument macros
+ */
+static	struct	kludge_ {
+	int	err_code;
+	char	*file;
+	int	line;
+	char	*format;
+	} kludge;
+	
 
 /*
  *	ESprintf()
@@ -96,6 +108,146 @@ char	*ESprintf(err_code, format, va_alist)
 	return(ErrorBuf);
 }
 
+
+/*
+ *	LFESprintf()
+ *
+ *	LFESprintf is identical except that it takes the additional
+ *	arguments 'file' and 'line'.  file and line are expected to
+ *	be the name of the source file and the line number where the 
+ *	error occured. The string "FILE: <file>, LINE: <line>" is
+ *	jammed into the head of the resultant error message 
+ *
+ * on entry
+ *	err_code		: error number, E_UKNOWN if not known
+ *	*file		: file name (or whatever you want)
+ *	line		: line number where error occured.
+ *	*format		: format string
+ *	[, arg ...]	: var arg list
+ * on exit
+ *	return		: address of formated error message;
+ */ 
+char	*LFESprintf(err_code, file, line, format, va_alist)
+	unsigned	err_code;
+	char		*file;
+	int		line;
+	char	*format;
+	va_dcl
+{
+	va_list	ap;
+	extern	int	sys_nerr;
+	extern	char	*sys_errlist[];
+	char		*message;
+	char		*get_error();
+	char		buf[1024];
+
+	if (! isInitialized) {
+		/*
+		 * add the unix system/library error list
+		 */
+		(void) ErrorList(0, sys_nerr, sys_errlist);
+		isInitialized  = 1;
+	}
+
+	/*
+ 	 * record current error number
+	 */
+	ErrorNumber = err_code;
+
+
+	/*
+	 * deal with variable args
+	 */
+        va_start(ap);
+        (void) vsprintf(buf, format, ap);
+        va_end(ap);
+
+	/*
+	 * see if its an error we know about. If so append the message.
+	 */
+	if (message = get_error(err_code)) {
+		(void) strcat(buf, " : ");
+		(void) strcat(buf, message);
+	}
+
+	sprintf(ErrorBuf, "FILE: %s, LINE: %d, %s", file, line, buf);
+
+	return(ErrorBuf);
+}
+
+/*
+ *	ESprintfFirstPart()
+ *
+ *	This function is part of a kludge that allows the macro ESPRINTF() to 
+ *	take a variable number of arguments.  It is not intended to 
+ *	be called directly. In order to pass a variable argument list
+ *	to a macro the variable part needs to be enclosed in a second
+ *	set of parenthesis. eg
+ *
+ *		#define	VAR_MACRO (A,B,C) func(A,B,C)
+ *
+ *		VAR_MACRO(foo, bar, (var, arg, part))
+ *
+ *	which is expanded to 
+ *
+ *		func(foo, bar, (var,arg,part))
+ *
+ *	which is close but not quite right since (var,arg,part) will 
+ *	evaluate var, arg, and part but only return part. But we can do
+ *
+ *		#define	VAR_MACRO (C) func C
+ *
+ *		VAR_MACRO((var, arg, part))
+ *
+ *	which expands to 
+ *
+ *		func(var, arg, part)
+ *
+ *	Which is correct but does not allow for mixing of fixed and variable
+ *	length arg lists. Hence, ESprintfFirstPart() accepts the fixed arg
+ *	list and ESprintfSecondPart() accepts the variable part. These
+ *	functions are called in sequence by ESPRINTF()
+ *
+ *
+ */
+void	ESprintfFirstPart(err_code, file, line, format)
+	int	err_code;
+	char	*file;
+	int	line;
+	char	*format;
+{
+
+	/*
+	 * stash the relvant information for the subsequent call to 
+	 * the variable arg function ESprintfSecondPart()
+	 */
+	kludge.err_code = err_code;
+	kludge.file = file;
+	kludge.line = line;
+	kludge.format = format;
+}
+
+/*
+ *	ESprintfFirstPart()
+ *
+ *	This function is the part of a kludge that allows the 
+ *	macro ESPRINTF() to take variable arguments. 
+ */
+char	*ESprintfSecondPart(va_alist)
+	va_dcl
+{
+	va_list	ap;
+	char	buf[1024];
+
+	/*
+	 * deal with variable args
+	 */
+        va_start(ap);
+        (void) vsprintf(buf, kludge.format, ap);
+        va_end(ap);
+
+	return(LFESprintf(kludge.err_code, kludge.file, kludge.line, "%s",buf));
+}
 /*
  *	ErrGetMsg()
  *
@@ -103,7 +255,8 @@ char	*ESprintf(err_code, format, va_alist)
  */
 char	*ErrGetMsg()
 {
-	return(ErrorBuf);
+	(void) strcpy(ErrorBufRet, ErrorBuf);
+	return(ErrorBufRet);
 }
 
 /*

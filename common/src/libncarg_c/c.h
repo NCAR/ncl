@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.8 1992-04-10 00:56:01 clyne Exp $
+ *	$Id: c.h,v 1.9 1992-04-10 18:23:45 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -113,6 +113,16 @@ typedef	struct	Dimension2D_ {
 extern	char	*ESprintf(/* int	errno, char *format, va_alist */);
 extern	char	*ErrGetMsg();
 extern	int	ErrGetNum();
+extern	char	*LFESprintf(
+	/* int errno, char * file, int *line, char *format, va_alist */
+		);
+extern	void	ESprintfFirstPart(
+	/* int errno, char * file, int *line, char *format, */
+		);
+extern	char	*ESprintfSecondPart(/* va_alist */);
+
+#define	ESPRINTF(A,B,C)	ESprintfFirstPart(A, __FILE__, __LINE__, B), \
+				ESprintfSecondPart C
 
 /*
  * maintain backwords compatibility
