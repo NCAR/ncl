@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformI.h,v 1.9 1998-11-18 19:21:14 dbrown Exp $
+ *      $Id: TransformI.h,v 1.10 2000-01-20 03:39:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,9 +28,9 @@
  */
 
 typedef enum _NhltfOverlayStatus {
-	_tfNotInOverlay,
-	_tfCurrentOverlayBase,
-	_tfCurrentOverlayMember
+	_tfNotInOverlay,	/* not a plot member, has no plot manager */
+	_tfCurrentOverlayBase,  /* not a plot member, has plot mgr */
+	_tfCurrentOverlayMember /* plot member, may or may not have plot mgr */
 } NhltfOverlayStatus;
 
 extern NhlBoolean _NhlIsSimpleTransform(
