@@ -1,5 +1,5 @@
 /*
-**      $Id: cn09c.c,v 1.3 1996-04-04 15:26:06 haley Exp $
+**      $Id: cn09c.c,v 1.4 1996-04-14 03:30:59 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -50,7 +50,7 @@ main()
     float   press[33][36], special_value;
     float   lon[36], lat[33];
     long  start[3], count[3], lonlen, latlen, frtimelen;
-    long  frtime[7];
+    int  frtime[7];
     char    filename[256], string[20];
     const char *dir = _NGGetNCARGEnv("data");
 /*
