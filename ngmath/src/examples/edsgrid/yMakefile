@@ -1,0 +1,37 @@
+#
+#	$Id: yMakefile,v 1.1 1997-10-14 23:01:58 fred Exp $
+#
+
+MYNAME	= edsgrid
+
+SRCS = \
+	dsplotc.c    c_dsex01.c   c_dsex01d.c    c_dsex02.c    c_dsex03.c \
+	c_dsex04.c   c_dsex05.c   c_dsec06.c                              \
+	dsplotf.f    dsex01.f     dsex01d.f      dsex02.f      dsex03.f   \
+	dsex04.f     dsex05.f     dsex06.f
+
+OBJS = \
+	dsplotc.o    c_dsex01.o   c_dsex01d.o    c_dsex02.o    c_dsex03.o \
+	c_dsex04.o   c_dsex05.c   c_dsec06.c                              \
+	dsplotf.o    dsex01.o     dsex01d.o      dsex02.o      dsex03.o   \
+	dsex04.o     dsex05.o     dsex06.f
+
+PROG_LIBS               = $(NCARGLIBS) $(NGMATHLIBS)
+SYS_LIBS		= $(XLIB) $(CTOFLIBS)
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(dsex01,dsex01.o dsplotf.o)
+FExampleTarget(dsex02,dsex02.o dsplotf.o)
+FExampleTarget(dsex03,dsex03.o dsplotf.o)
+FExampleTarget(dsex04,dsex04.o dsplotf.o)
+FExampleTarget(dsex05,dsex05.o dsplotf.o)
+FExampleTarget(dsex06,dsex06.o dsplotf.o)
+FExampleTarget(dsex01d,dsex01d.o dsplotf.o)
+CExampleTarget(c_dsex01,c_dsex01.o dsplotc.o)
+CExampleTarget(c_dsex02,c_dsex02.o dsplotc.o)
+CExampleTarget(c_dsex03,c_dsex03.o dsplotc.o)
+CExampleTarget(c_dsex04,c_dsex04.o dsplotc.o)
+CExampleTarget(c_dsex05,c_dsex05.o dsplotc.o)
+CExampleTarget(c_dsex06,c_dsex06.o dsplotc.o)
+CExampleTarget(c_dsex01d,c_dsex01d.o dsplotc.o)
