@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.13 2000-02-18 18:32:05 haley Exp $
+#      $Id: yMakefile,v 1.14 2000-02-18 22:30:49 haley Exp $
 #
 #########################################################################
 #									#
@@ -37,20 +37,20 @@ COBJS = calcorcW.o chiinvW.o csagridW.o cssgridW.o cz2ccmW.o datesW.o \
 	smth9W.o specxW.o sph2W.o sphintW.o sstoiW.o statW.o svdW.o tdpackW.o \
 	trvsphW.o varimaxW.o vibetaW.o wmapW.o wrunaveW.o wrapper.o 
 
-FSRCS = calcorc_dp.f chiin_dp.f cz2ccm_dp.f dtrend_dp.f ezfft.f ezfft_dp.f \
+FSRCS = calcorc_dp.f chiin_dp.f cz2ccm_dp.f dtrend_dp.f ezfft_dp.f \
 	fluxEddyTav_dp.f fo2fs_dp.f hydro_dp.f index77_dp.f int2p_dp.f \
 	julGreg.f linmsg_dp.f upsl_dp.f prneof_dp.f prneofts_dp.f rdsstoi.f \
 	regcoef_dp.f relhum_dp.f remap.f rhombtri_dp.f rmStndx_dp.f runave_dp.f \
 	smth9_dp.f sp2_util.f sp2_util_dp.f specx_dp.f statx.f statx_dp.f \
-	svd_lap_dp.f svd_util_dp.f trcwav.f trcwav_dp.f trvsph77_dp.f \
+	svd_lap_dp.f svd_util_dp.f trcwav_dp.f trvsph77_dp.f \
 	varimax_dp.f vibeta_dp.f wrunave_dp.f
 
-FOBJS = calcorc_dp.o chiin_dp.o cz2ccm_dp.o dtrend_dp.o ezfft.o ezfft_dp.o \
+FOBJS = calcorc_dp.o chiin_dp.o cz2ccm_dp.o dtrend_dp.o ezfft_dp.o \
 	fluxEddyTav_dp.o fo2fs_dp.o hydro_dp.o index77_dp.o int2p_dp.o \
 	julGreg.o linmsg_dp.o upsl_dp.o prneof_dp.o prneofts_dp.o rdsstoi.o \
 	regcoef_dp.o relhum_dp.o remap.o rhombtri_dp.o rmStndx_dp.o runave_dp.o \
 	smth9_dp.o sp2_util.o sp2_util_dp.o specx_dp.o statx.o statx_dp.o \
-	svd_lap_dp.o svd_util_dp.o trcwav.o trcwav_dp.o trvsph77_dp.o \
+	svd_lap_dp.o svd_util_dp.o trcwav_dp.o trvsph77_dp.o \
 	varimax_dp.o vibeta_dp.o wrunave_dp.o
 
 OBJS = $(COBJS) $(FOBJS)
