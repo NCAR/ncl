@@ -1,5 +1,5 @@
 C
-C      $Id: nm03f.f,v 1.2 1998-01-08 16:31:21 haley Exp $
+C      $Id: nm03f.f,v 1.3 1998-04-25 16:42:57 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                       C
@@ -273,6 +273,7 @@ C
 c
 c  Find the extreme values.
 c
+      xmn =  x(1)
       xmx =  x(1)
       ymn =  y(1)
       ymx =  y(1)

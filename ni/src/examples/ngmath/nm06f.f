@@ -1,5 +1,5 @@
 C
-C      $Id: nm06f.f,v 1.2 1997-12-23 17:25:46 haley Exp $
+C      $Id: nm06f.f,v 1.3 1998-04-25 16:42:58 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                       C
@@ -295,16 +295,38 @@ C
       call frame
       return
       end
+
       real function dsrand()
+C
+C  This function returns a pseudo-random number for each invocation.
+C  It is a FORTRAN 77 adaptation of the "Integer Version 2" minimal
+C  standard number generator whose Pascal code appears in the article:
+C
+C     Park, Steven K. and Miller, Keith W., "Random Number Generators:
+C     Good Ones are Hard to Find", Communications of the ACM,
+C     October, 1988.
+C
+      data jseed,ifrst/123456789,0/
+      parameter (mplier=16807,modlus=2147483647,mobymp=127773,
+     +           momdmp=2836)
 c
-      data iseed/1/
-      save iseed
+      integer hvlue, lvlue, testv, nextn
+      save    nextn
 c
-      iseed = iseed*1103515245 + 12345
-      it = iand(ishift(iseed,-16),32767)
+      if (ifrst .eq. 0) then
+        nextn = jseed
+        ifrst = 1
+      endif
 c
-      dsrand = real(it)/32767.
+      hvlue = nextn / mobymp
+      lvlue = mod(nextn, mobymp)
+      testv = mplier*lvlue - momdmp*hvlue
+      if (testv .gt. 0) then
+        nextn = testv
+      else
+        nextn = testv + modlus
+      endif
+      dsrand = real(nextn)/real(modlus)
 c
       return
       end
-
