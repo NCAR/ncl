@@ -1,12 +1,12 @@
 #
-#	$Id: yMakefile,v 1.2 1993-04-08 22:44:23 haley Exp $
+#	$Id: yMakefile,v 1.3 1993-05-02 03:47:37 haley Exp $
 #
 NCARG	= ../../../..
 
 MYNAME	= ffield_flow
 
 GENERIC_SRCS = ffex00.f ffex01.f ffex02.f ffex03.f ffex04.f ffex05.f \
-	ffex02.dat ffex05.dat
+	ffex02.dat ffex05.dat fcover.f fcover.dat
 
 install::
 	@for file in $(GENERIC_SRCS); do\
