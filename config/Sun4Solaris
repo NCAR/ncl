@@ -14,7 +14,7 @@
 /*
 **  Stuff that should be edited by Configure
 */
-VERSION		= 3.2.x
+VERSION		= 3.2
 BINROOT		= /usr/local/bin
 LIBROOT		= /usr/local/lib
 INCROOT		= /usr/local/include
@@ -31,10 +31,12 @@ LIB_SEARCH        = -L$(LIBROOT) $(LOCAL_LIB_SEARCH)
 INC_SEARCH        = -I$(INCROOT) $(LOCAL_INC_SEARCH)
 
 NCARGDIR          = ncarg
+HLUDIR            = hlu
 BINDIR            = bin
 LIBDIR            = lib
 INCDIR            = include
 MANDIR            = man
+DOCDIR            = doc
 TMPDIR            = tmp
 DBDIR             = database
 FONTCAPDIR        = fontcaps
@@ -50,6 +52,7 @@ GENERICDIR        = generic
 BINPATH           = $(BINROOT)
 LIBPATH           = $(LIBROOT)
 INCPATH           = $(INCROOT)/$(NCARGDIR)
+HLUINCPATH        = $(INCROOT)/$(NCARGDIR)/$(HLUDIR)
 TMPPATH           = $(TMPROOT)
 MANPATH           = $(MANROOT)
 
@@ -64,6 +67,7 @@ LIBNCARGPATH      = $(LIBPATH)/$(NCARGDIR)
 DBPATH            = $(LIBNCARGPATH)/$(DBDIR)
 FONTCAPPATH       = $(LIBNCARGPATH)/$(FONTCAPDIR)
 GRAPHCAPPATH      = $(LIBNCARGPATH)/$(GRAPHCAPDIR)
+DOCPATH           = $(LIBNCARGPATH)/$(DOCDIR)
 EXAMPLESPATH      = $(LIBNCARGPATH)/$(EXAMPLESDIR)
 ROBJPATH          = $(LIBNCARGPATH)/$(ROBJDIR)
 TESTSPATH         = $(LIBNCARGPATH)/$(TESTSDIR)
@@ -83,6 +87,11 @@ XTOOLLIB          = -lXt
 XMULIB            = -lXmu
 XAWLIB            = -lXaw
 XMOTIFLIBS        = -lXm $(XTOOLLIB) $(XLIB)
+HLULIBS           = -lhlu -lhlu_util
+NCARGCLIBS        = -lncargC -lncarg_gksC
+NCARGLIBS         = -lncarg -lncarg_gks -lncarg_loc -lncarg_c
+CTOFLIBS          = -lF77
+NCDFLIBS          = -lnetcdf
 #ifdef BuildRasterHDF
 HDFLIB            = -ldf
 #endif
@@ -140,6 +149,7 @@ INSTALL           = install -c
 INSTALL_RM        = $(RM)
 INSTALL_BIN       = 0755
 INSTALL_MAN       = 0644
+INSTALL_DOC       = 0644
 INSTALL_APP       = 0644
 INSTALL_LIB       = 0644
 INSTALL_DB        = 0644
