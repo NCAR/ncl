@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.9 1994-08-10 21:22:44 boote Exp $
+ *      $Id: Project,v 1.10 1994-08-10 22:09:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -174,9 +174,9 @@ HLUDOCPATH		= $(LIBHLUPATH)/$(DOCDIR)
 HLURESPATH		= $(LIBHLUPATH)
 NCARGINCPATH		= $(INCPATH)/$(NCARGDIR)
 HLUINCPATH		= $(NCARGINCPATH)/$(HLUDIR)
-USRRESFILE		= ~/.hluresfile
+USRRESFILE		= "~/.hluresfile"
 
-ROOTPATHCHECK		= /lib/ncarg/fontcaps/font1
+ROOTPATHCHECK		= "/lib/ncarg/fontcaps/font1"
 
 /*
  * This huge define is used to define all the Environment variables
@@ -211,10 +211,10 @@ ROOTPATHCHECK		= /lib/ncarg/fontcaps/font1
  *		functions and ncargpath reports the error.
  */
 NGENV_DESCRIPT	= '{"tmp","TMPDIR",NULL,$(TMPROOT),NULL,	\
-		"foncap","FONTCAP",NULL,NULL,NULL,		\
+		"fontcap","FONTCAP",NULL,NULL,NULL,		\
 		"graphcap","GRAPHCAP",NULL,NULL,NULL,		\
-		"root",NULL,NULL,$(ROOTPATH),"$(ROOTPATHCHECK)",\
-		"usrresfile",NULL,NULL,"$(USRRESFILE)",NULL,	\
+		"root",NULL,NULL,$(ROOTPATH),$(ROOTPATHCHECK),\
+		"usrresfile",NULL,NULL,$(USRRESFILE),NULL,	\
 		"gks_output",NULL,NULL,"gmeta",NULL,		\
 		"bin",NULL,"root",NULL,NULL,			\
 		"lib",NULL,"root",NULL,NULL,			\
