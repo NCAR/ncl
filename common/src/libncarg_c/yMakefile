@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.38 2000-09-19 13:57:52 haley Exp $
+#	$Id: yMakefile,v 1.39 2000-12-05 18:02:54 haley Exp $
 #
 #
 #	Makefile for libncarg_c -- NCAR G common utilities
@@ -8,9 +8,6 @@
 #
 
 MYNAME		= libncarg_c
-
-EXCSRCS = gsbytes.c logic32.c
-EXOBJS  = gsbytes.o logic32.o
 
 #if defined(CRAY)
 EXCSRCS = logic64.c
@@ -36,6 +33,10 @@ EXCSRCS = bcopyswap.c gsbytes.c logic32.c
 EXOBJS  = bcopyswap.o gsbytes.o logic32.o
 SHLIBSRCS = g77.c
 SHLIBOBJS = g77.o 
+
+#else
+EXCSRCS = gsbytes.c logic32.c
+EXOBJS  = gsbytes.o logic32.o
 
 #endif
 
