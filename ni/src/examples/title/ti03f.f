@@ -19,7 +19,6 @@ C
 
       external nhlfapplayerclass
       external nhlfreslistlayerclass
-      external nhlfapplayerclass
       external nhlftitlelayerclass
       external nhlfxworkstationlayerclass
 
