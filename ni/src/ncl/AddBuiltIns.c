@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.59 2003-03-03 18:25:52 haley Exp $
+ *      $Id: AddBuiltIns.c,v 1.60 2003-03-07 06:06:37 haley Exp $
  */
 /************************************************************************
 *									*
@@ -954,6 +954,10 @@ void _NclAddBuiltIns
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIinttochar,args,"integertocharacter",nargs);
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
 	NclRegisterFunc( _NclIinttochar,args,"integertochar",nargs);
 	nargs = 0;
 	args = NewArgs(1);
@@ -977,6 +981,10 @@ void _NclAddBuiltIns
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"short",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIshorttochar,args,"shorttocharacter",nargs);
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"short",NclANY,NclANY);nargs++;
 	NclRegisterFunc( _NclIshorttochar,args,"shorttochar",nargs);
 
 	nargs = 0;
@@ -984,6 +992,10 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,nargs,"long",NclANY,NclANY);nargs++;
 	NclRegisterFunc( _NclIlongtobyte,args,"longtobyte",nargs);
 
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"long",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIlongtochar,args,"longtocharacter",nargs);
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"long",NclANY,NclANY);nargs++;
@@ -1008,6 +1020,10 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
 	NclRegisterFunc( _NclIfloattobyte,args,"floattobyte",nargs);
 
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIfloattochar,args,"floattocharacter",nargs);
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
@@ -1037,6 +1053,10 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
 	NclRegisterFunc( _NclIdoubletobyte,args,"doubletobyte",nargs);
 
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIdoubletochar,args,"doubletocharacter",nargs);
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
@@ -1070,8 +1090,16 @@ void _NclAddBuiltIns
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIchartodouble,args,"charactertodouble",nargs);
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
 	NclRegisterFunc( _NclIchartodouble,args,"chartodouble",nargs);
 
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIchartofloat,args,"charactertofloat",nargs);
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
@@ -1080,13 +1108,25 @@ void _NclAddBuiltIns
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIchartolong,args,"charactertolong",nargs);
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
 	NclRegisterFunc( _NclIchartolong,args,"chartolong",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIchartoshort,args,"charactertoshort",nargs);
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
 	NclRegisterFunc( _NclIchartoshort,args,"chartoshort",nargs);
 
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIchartoint,args,"charactertointeger",nargs);
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
@@ -1096,6 +1136,10 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
 	NclRegisterFunc( _NclIchartoint,args,"chartoint",nargs);
 
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIchartostring,args,"charactertostring",nargs);
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
@@ -1125,6 +1169,10 @@ void _NclAddBuiltIns
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"string",NclANY,NclANY);nargs++;
 	NclRegisterFunc( _NclIstringtofloat,args,"stringtofloat",nargs);
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"string",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIstringtochar,args,"stringtocharacter",nargs);
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"string",NclANY,NclANY);nargs++;
