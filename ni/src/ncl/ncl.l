@@ -442,9 +442,6 @@ digit	[0-9]
 	if((rec == 1)&&(s->type == QUIT)) {
 		fclose(recfp);
 	}
-	if(s->type == DLIB) {
-		fprintf(stdout,"Returning DLIB\n");
-	}
        	return s->type;
 }
 [!] {
