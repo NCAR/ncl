@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.56 1999-04-02 23:51:10 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.57 1999-04-08 00:05:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4041,18 +4041,18 @@ ManageTitles
 			       NhlNtiXAxisFontHeightF,&x_axis_height,
 			       NhlNtiYAxisFontHeightF,&y_axis_height,
 			       NULL);
-		if (main_height != NhlDEF_TITLE_HEIGHT) {
+		if (_NhlCmpFAny(main_height,NhlDEF_TITLE_HEIGHT,6) != 0.0) {
 			ovp->ti_main_font_height_set = True;
-			ovp->ti_main_font_height = main_height;
 		}
-		if (x_axis_height != NhlDEF_TITLE_HEIGHT) {
+		ovp->ti_main_font_height = main_height;
+		if (_NhlCmpFAny(x_axis_height,NhlDEF_TITLE_HEIGHT,6) != 0.0) {
 			ovp->ti_x_axis_font_height_set = True;
-			ovp->ti_x_axis_font_height = x_axis_height;
 		}
-		if (y_axis_height != NhlDEF_TITLE_HEIGHT) {
+		ovp->ti_x_axis_font_height = x_axis_height;
+		if (_NhlCmpFAny(y_axis_height,NhlDEF_TITLE_HEIGHT,6) != 0.0) {
 			ovp->ti_y_axis_font_height_set = True;
-			ovp->ti_y_axis_font_height = y_axis_height;
 		}
+		ovp->ti_y_axis_font_height = y_axis_height;
 	}
 	else {
 		if (ovp->titles == NULL) {
