@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.18 1994-03-03 22:05:27 haley Exp $
+ *	$Id: Rules,v 1.19 1994-03-11 19:36:24 boote Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -58,9 +58,9 @@ all-local:: names]\
 ]\
 install-local:: names]\
 	MakeDir(dest)]\
-	@for name in names; do\]\
-	(echo "Installing $$name";\]\
-	$(INSTALL) -m mode $$name dest);\]\
+	@for name in names; do\ ]\
+	(echo "Installing $$name";\ ]\
+	$(INSTALL) -m mode $$name dest);\ ]\
 	done]
 #endif	/* InstallTarget */
 
@@ -87,11 +87,11 @@ install-local::]\
 #define InternalMakeSubdirs(dirs)\
 ]\
 makesubdirs:]\
-	@for dir in dirs ; do \]\
-	if (test -d $$dir) then \]\
-	(cd $$dir; echo "Making $(CURRENT_DIR)/$$dir";\]\
-	$(MAKE) $(MFLAGS));\]\
-	else echo "NOT Making $(CURRENT_DIR)/$$dir"; fi \]\
+	@for dir in dirs ; do \ ]\
+	if (test -d $$dir) then \ ]\
+	(cd $$dir; echo "Making $(CURRENT_DIR)/$$dir";\ ]\
+	$(MAKE) $(MFLAGS));\ ]\
+	else echo "NOT Making $(CURRENT_DIR)/$$dir"; fi \ ]\
 	done]\
 ]\
 all:: all-local makesubdirs]
@@ -107,11 +107,11 @@ all:: all-local makesubdirs]
 #define InternalCleanSubdirs(dirs)\
 ]\
 clean:: clean-local]\
-	-@for dir in dirs ; do \]\
-	if (test -d $$dir) then \]\
-	(cd $$dir;\]\
-	$(MAKE) $(MFLAGS) clean);\]\
-	else echo "NOT Cleaning $(CURRENT_DIR)/$$dir"; fi \]\
+	-@for dir in dirs ; do \ ]\
+	if (test -d $$dir) then \ ]\
+	(cd $$dir;\ ]\
+	$(MAKE) $(MFLAGS) clean);\ ]\
+	else echo "NOT Cleaning $(CURRENT_DIR)/$$dir"; fi \ ]\
 	done]
 #endif	/* InternalCleanSubdirs */
 
@@ -125,10 +125,10 @@ clean:: clean-local]\
 #define	InternalDistCleanSubdirs(dirs)\
 ]\
 dist-clean:: clean-local]\
-	-@for dir in dirs ; do \]\
-	if (test -d $$dir) then \]\
-	(cd $$dir; $(MAKE) $(MFLAGS) dist-clean);\]\
-	else echo "NOT dist-cleaning $(CURRENT_DIR)/$$dir"; fi \]\
+	-@for dir in dirs ; do \ ]\
+	if (test -d $$dir) then \ ]\
+	(cd $$dir; $(MAKE) $(MFLAGS) dist-clean);\ ]\
+	else echo "NOT dist-cleaning $(CURRENT_DIR)/$$dir"; fi \ ]\
 	done]\
 	@$(RM) Makefile]\
 	@echo "dist-clean in $(CURRENT_DIR)"]\
@@ -145,11 +145,11 @@ dist-clean:: clean-local]\
 #define InternalInstallSubdirs(dirs)\
 ]\
 install:: install-local]\
-	@for dir in dirs ; do \]\
-	if (test -d $$dir) then \]\
-	(cd $$dir;\]\
-	$(MAKE) $(MFLAGS) install);\]\
-	else echo "NOT installing $(CURRENT_DIR)/$$dir"; fi \]\
+	@for dir in dirs ; do \ ]\
+	if (test -d $$dir) then \ ]\
+	(cd $$dir;\ ]\
+	$(MAKE) $(MFLAGS) install);\ ]\
+	else echo "NOT installing $(CURRENT_DIR)/$$dir"; fi \ ]\
 	done]
 #endif	/* InternalInstallSubdirs */
 
@@ -167,10 +167,10 @@ install:: install-local]\
 target:: $(YMAKEDEP)]\
 ]\
 $(YMAKEDEP):]\
-	@(cd $(CONFIGSRC); if (test -f Makefile) then \]\
-	echo "checking ymake in $(CONFIGSRC) first..."; $(MAKE) all; else \]\
-	echo "making ymake from Makefile.ini in $(CONFIGSRC) first..."; \]\
-	$(MAKE) -f Makefile.ini clean all; fi; \]\
+	@(cd $(CONFIGSRC); if (test -f Makefile) then \ ]\
+	echo "checking ymake in $(CONFIGSRC) first..."; $(MAKE) all; else \ ]\
+	echo "making ymake from Makefile.ini in $(CONFIGSRC) first..."; \ ]\
+	$(MAKE) -f Makefile.ini clean all; fi; \ ]\
 	echo "continuing in $(CURRENT_DIR)")]
 #endif	/* UseInstalled */
 #endif	/* YmakeDependency */
@@ -185,20 +185,20 @@ $(YMAKEDEP):]\
 #define InternalMakefilesSubdirs(dirs)\
 ]\
 Makefiles::]\
-	@for dir in dirs ; do \]\
-	if (test -d $$dir) then \]\
-	(cd $$dir; echo "Making Makefiles in $(CURRENT_DIR)/$$dir";\]\
-	$(NEWYMAKE) -Topdir ../$(TOP) -Curdir $(CURRENT_DIR)/$$dir;\]\
-	$(MAKE) $(MFLAGS) Makefiles);\]\
-	else echo "NOT Making Makefiles in $(CURRENT_DIR)/$$dir"; fi \]\
+	@for dir in dirs ; do \ ]\
+	if (test -d $$dir) then \ ]\
+	(cd $$dir; echo "Making Makefiles in $(CURRENT_DIR)/$$dir";\ ]\
+	$(NEWYMAKE) -Topdir ../$(TOP) -Curdir $(CURRENT_DIR)/$$dir;\ ]\
+	$(MAKE) $(MFLAGS) Makefiles);\ ]\
+	else echo "NOT Making Makefiles in $(CURRENT_DIR)/$$dir"; fi \ ]\
 	done]\
 ]\
 Makefiles-local::]\
-	@for dir in dirs ; do \]\
-	if (test -d $$dir) then \]\
-	(cd $$dir; echo "Making Makefile in $(CURRENT_DIR)/$$dir";\]\
-	$(NEWYMAKE) -Topdir ../$(TOP) -Curdir $(CURRENT_DIR)/$$dir;)\]\
-	else echo "NOT Making Makefile in $(CURRENT_DIR)/$$dir"; fi \]\
+	@for dir in dirs ; do \ ]\
+	if (test -d $$dir) then \ ]\
+	(cd $$dir; echo "Making Makefile in $(CURRENT_DIR)/$$dir";\ ]\
+	$(NEWYMAKE) -Topdir ../$(TOP) -Curdir $(CURRENT_DIR)/$$dir;)\ ]\
+	else echo "NOT Making Makefile in $(CURRENT_DIR)/$$dir"; fi \ ]\
 	done]
 #endif	/* InternalMakefilesSubdirs */
 
@@ -377,10 +377,10 @@ CleanFilesTarget(library objects)
 all-local:: library]\
 ]\
 library:: sources]\
-	@echo sources > name;\]\
-	$(RM) library;\]\
-	$(AR_SRC_QUICK) library name sources;\]\
-	$(RANLIB) library;\]\
+	@echo sources > name;\ ]\
+	$(RM) library;\ ]\
+	$(AR_SRC_QUICK) library name sources;\ ]\
+	$(RANLIB) library;\ ]\
 	$(RM) name]\
 ]\
 .F.f:]\
@@ -529,11 +529,11 @@ depend-local:: srcs]\
 #define InternalDependSubdirs(dirs)\
 ]\
 depend:: depend-local]\
-	@for dir in dirs ; do \]\
-	if (test -d $$dir) then \]\
-	(cd $$dir; echo "Depending $(CURRENT_DIR)/$$dir";\]\
-	$(MAKE) $(MFLAGS) depend);\]\
-	else echo "NOT Depending in $(CURRENT_DIR)/$$dir"; fi; \]\
+	@for dir in dirs ; do \ ]\
+	if (test -d $$dir) then \ ]\
+	(cd $$dir; echo "Depending $(CURRENT_DIR)/$$dir";\ ]\
+	$(MAKE) $(MFLAGS) depend);\ ]\
+	else echo "NOT Depending in $(CURRENT_DIR)/$$dir"; fi; \ ]\
 	done]
 #endif	/* InternalDependSubdirs */
 
@@ -560,11 +560,11 @@ depend:: depend-local]\
 ]\
 includes-local::]\
 	MakeDir($(BUILDINCDIR)/dstsubdir)]\
-	@cd $(BUILDINCDIR)/dstsubdir;\]\
-	$(RM) srclist; \]\
-	for i in srclist; do \]\
-	(echo "$(LN) dstupdir/$(BUILDINCTOP)/$(CURRENT_DIR)/$$i .";\]\
-	$(LN) dstupdir/$(BUILDINCTOP)/$(CURRENT_DIR)/$$i .;)\]\
+	@cd $(BUILDINCDIR)/dstsubdir;\ ]\
+	$(RM) srclist; \ ]\
+	for i in srclist; do \ ]\
+	(echo "$(LN) dstupdir/$(BUILDINCTOP)/$(CURRENT_DIR)/$$i .";\ ]\
+	$(LN) dstupdir/$(BUILDINCTOP)/$(CURRENT_DIR)/$$i .;)\ ]\
 	done]
 #endif	/* BuildIncludes */
 
@@ -577,11 +577,11 @@ includes-local::]\
 #define	InternalIncludesSubdirs(dirs)\
 ]\
 includes:: includes-local]\
-	@for dir in dirs ; do \]\
-	if (test -d $$dir) then \]\
-	(cd $$dir; echo "including in $(CURRENT_DIR)/$$dir";\]\
-	$(MAKE) $(MFLAGS) includes);\]\
-	else echo "NOT including in $(CURRENT_DIR)/$$dir"; fi;\]\
+	@for dir in dirs ; do \ ]\
+	if (test -d $$dir) then \ ]\
+	(cd $$dir; echo "including in $(CURRENT_DIR)/$$dir";\ ]\
+	$(MAKE) $(MFLAGS) includes);\ ]\
+	else echo "NOT including in $(CURRENT_DIR)/$$dir"; fi;\ ]\
 	done]
 #endif	/* InternalIncludesSubdirs */
 
@@ -597,9 +597,9 @@ all-local::]\
 ]\
 install-local::]\
 	MakeDir(destdir)]\
-	@for file in files; do \]\
-	echo "Installing $${file}.section"; \]\
-	$(INSTALL) -m $(INSTALL_MAN) $${file}suffix destdir/$${file}.section;\]\
+	@for file in files; do \ ]\
+	echo "Installing $${file}.section"; \ ]\
+	$(INSTALL) -m $(INSTALL_MAN) $${file}suffix destdir/$${file}.section;\ ]\
 	done
 #endif	/* InstallManPages */
 
@@ -614,11 +614,11 @@ install-local::]\
 all-local::]\
 ]\
 install-local:: destdir/file.section]\
-	@(cd destdir;\]\
-	for alias in aliases ; do \]\
-	$(RM) $$alias.section;\]\
-	echo "Installing $$alias.section";\]\
-	$(LN) file.section $$alias.section;\]\
+	@(cd destdir;\ ]\
+	for alias in aliases ; do \ ]\
+	$(RM) $$alias.section;\ ]\
+	echo "Installing $$alias.section";\ ]\
+	$(LN) file.section $$alias.section;\ ]\
 	done)]
 #endif	/* InstallManPageAliases */
 
@@ -631,9 +631,9 @@ install-local:: destdir/file.section]\
 #define	FormatManPages(manpages,mansuffix,catsuffix)\
 ]\
 preformatted::]\
-	@for name in manpages; do \]\
-	echo "Formatting $${name}mansuffix";\]\
-	$(TBL) $${name}mansuffix | $(NROFF) | $(COL) > $${name}catsuffix;\]\
+	@for name in manpages; do \ ]\
+	echo "Formatting $${name}mansuffix";\ ]\
+	$(TBL) $${name}mansuffix | $(NROFF) | $(COL) > $${name}catsuffix;\ ]\
 	done]
 #endif	/* FormatManPages */
 
@@ -652,11 +652,11 @@ all-local::]\
 ]\
 install-local::]\
 	MakeDir($(XAPPPATH))]\
-	@for name in appfiles; do \]\
-	if (test -f $(XAPPPATH)/$$name) then \]\
-		echo "Warning - replacing $(XAPPPATH)/$$name"; \]\
-		$(MV) $(XAPPPATH)/$$name $(XAPPPATH)/$$name.bak ; else continue; fi; \]\
-	(echo "Installing $$name.ad"; \]\
-	$(INSTALL) -m $(INSTALL_APP) $$name.ad $(XAPPPATH)/$$name); \]\
+	@for name in appfiles; do \ ]\
+	if (test -f $(XAPPPATH)/$$name) then \ ]\
+		echo "Warning - replacing $(XAPPPATH)/$$name"; \ ]\
+		$(MV) $(XAPPPATH)/$$name $(XAPPPATH)/$$name.bak ; else continue; fi; \ ]\
+	(echo "Installing $$name.ad"; \ ]\
+	$(INSTALL) -m $(INSTALL_APP) $$name.ad $(XAPPPATH)/$$name); \ ]\
 	done]
 #endif	/* InstallXappFiles */
