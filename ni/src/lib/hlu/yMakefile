@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.65 2004-08-03 20:51:09 haley Exp $
+#      $Id: yMakefile,v 1.66 2004-08-30 21:31:00 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -138,6 +138,11 @@ triangle.o: triangle.c
 #if defined(IRIX64)
 cmpf.o: cmpf.c
 	$(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c cmpf.c
+#endif
+
+#if defined(AIX)
+TextItem.o: TextItem.c
+	$(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c TextItem.c
 #endif
 
 /* This is used to expand the huge macros in this file	*/
