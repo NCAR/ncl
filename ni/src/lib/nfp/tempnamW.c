@@ -14,6 +14,7 @@ NhlErrorTypes tempnam_W(void)
     char    *dir,
             *prefix,
             return_name[255];
+    int fid;
 
     string  *dname,
             *pname,
@@ -57,7 +58,9 @@ NhlErrorTypes tempnam_W(void)
      * writeable directory, and call the C library routine.
      */
     (void) sprintf(return_name, "/tmp/%sXXXXXX", prefix);
-    (void) mkstemp(return_name);
+    fid = mkstemp(return_name);
+    (void) close(fid);
+    (void) unlink(return_name);
 
     rname  = (string *) calloc(1, sizeof(string));
     *rname = NrmStringToQuark(return_name);
