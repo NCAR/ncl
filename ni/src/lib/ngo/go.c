@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.11 1997-10-03 20:08:01 dbrown Exp $
+ *      $Id: go.c,v 1.12 1997-10-23 00:27:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1398,7 +1398,9 @@ DeleteVarCB
 	XtVaGetValues(w,
 		      XmNuserData,&qvar,
 		      NULL);
+#if 0
         printf("deleting %s\n", NrmQuarkToString(qvar));
+#endif
         sprintf(buf,"delete(%s)\n",NrmQuarkToString(qvar));
         (void)NgNclSubmitBlock(go->go.nclstate,buf);
         return;
@@ -1418,7 +1420,9 @@ DeleteHLUCB
 	XtVaGetValues(w,
 		      XmNuserData,&qvar,
 		      NULL);
+#if 0
         printf("deleting %s\n", NrmQuarkToString(qvar));
+#endif
         NgDestroyGraphic(go->base.id,NrmQuarkToString(qvar));
 }
 

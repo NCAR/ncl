@@ -1,5 +1,5 @@
 /*
- *      $Id: util.h,v 1.2 1996-11-24 22:27:35 boote Exp $
+ *      $Id: util.h,v 1.3 1997-10-23 00:27:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -65,9 +65,9 @@ extern unsigned int NgHashString(
  *	@(#)glob.h	8.1 (Berkeley) 6/2/93
  */
 
+#if	NOT
 #include <sys/cdefs.h>
 
-#if	NOT
 struct stat;
 #endif
 typedef struct {

@@ -1,5 +1,5 @@
 /*
- *      $Id: filetree.c,v 1.5 1997-10-03 20:08:00 dbrown Exp $
+ *      $Id: filetree.c,v 1.6 1997-10-23 00:27:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -278,7 +278,7 @@ static void ExpandAttr
         
 }
 
-static NhlBoolean DoSingleLineAttrVal
+static void DoSingleLineAttrVal
 (
         NgFileTreeRec	*ftp,
         ftNodeData	*ndata,

@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.10 1997-10-03 20:07:52 dbrown Exp $
+ *      $Id: app.c,v 1.11 1997-10-23 00:27:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -805,7 +805,7 @@ NgCBWPAdd
 	if(!app || !_NhlIsClass((NhlLayer)app,NgappMgrClass)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid NgAppMgr object!",
 									func);
-		return;
+		return NULL;
 	}
 
 	cbwp = NhlMalloc(sizeof(NgCBWPRec));

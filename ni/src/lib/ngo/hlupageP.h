@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupageP.h,v 1.6 1997-10-03 20:08:06 dbrown Exp $
+ *      $Id: hlupageP.h,v 1.7 1997-10-23 00:27:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -44,6 +44,12 @@ typedef enum __hluState
         _hluNOTCREATED, _hluPREVIEW, _hluCREATED
 } _hluState;
 
+typedef struct _brSetValCBInfo
+{
+	NgPageId pid;
+	int	 goid;
+} brSetValCBInfo;
+
 typedef struct _brHluPageRec 
 {
         NgHluPage	public;
@@ -63,6 +69,9 @@ typedef struct _brHluPageRec
         int		var_data_count;
         NgVarPageOutput	**var_data;
         NrmQuark	data_objects[8];
+        NhlBoolean	do_setval_cb;
+        _NhlCB		setval_cb;
+	brSetValCBInfo	setval_info;
 } brHluPageRec;
 
 extern brPageData *

@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.13 1997-10-03 20:08:10 dbrown Exp $
+ *      $Id: nclstate.c,v 1.14 1997-10-23 00:27:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -818,15 +818,23 @@ NclStateInitialize
 	NclSetOutputStream((FILE*)nncl);
 	_NclSetPrintFunc(NclOutput);
 
-	NclApiRegisterCallback(NCLHLUObj,NclAPICREATED,CreateHluObjCB,nncl);
-	NclApiRegisterCallback(NCLHLUObj,NclAPIDESTROYED,DeleteHluObjCB,nncl);
+	NclApiRegisterCallback
+		(NCLHLUObj,NclAPICREATED,(void*)CreateHluObjCB,nncl);
+	NclApiRegisterCallback
+		(NCLHLUObj,NclAPIDESTROYED,(void*)DeleteHluObjCB,nncl);
 
-	NclApiRegisterCallback(NCLHLUVar,NclAPICREATED,CreateHluVarCB,nncl);
-	NclApiRegisterCallback(NCLHLUVar,NclAPIDESTROYED,DeleteHluVarCB,nncl);
-	NclApiRegisterCallback(NCLVar,NclAPICREATED,CreateVarCB,nncl);
-	NclApiRegisterCallback(NCLVar,NclAPIDESTROYED,DeleteVarCB,nncl);
-	NclApiRegisterCallback(NCLFileVar,NclAPICREATED,CreateFileVarCB,nncl);
-	NclApiRegisterCallback(NCLFileVar,NclAPIDESTROYED,DeleteFileVarCB,nncl);
+	NclApiRegisterCallback
+		(NCLHLUVar,NclAPICREATED,(void*)CreateHluVarCB,nncl);
+	NclApiRegisterCallback
+		(NCLHLUVar,NclAPIDESTROYED,(void*)DeleteHluVarCB,nncl);
+	NclApiRegisterCallback
+		(NCLVar,NclAPICREATED,(void*)CreateVarCB,nncl);
+	NclApiRegisterCallback
+		(NCLVar,NclAPIDESTROYED,(void*)DeleteVarCB,nncl);
+	NclApiRegisterCallback
+		(NCLFileVar,NclAPICREATED,(void*)CreateFileVarCB,nncl);
+	NclApiRegisterCallback
+		(NCLFileVar,NclAPIDESTROYED,(void*)DeleteFileVarCB,nncl);
 
 	udata.ptrval = nncl;
 	_NhlAddObjCallback(_NhlGetLayer(NhlErrGetID()),_NhlCBerrPError,
@@ -959,7 +967,7 @@ NclStateDestroy
 	_NhlCBDestroy(ncl->promptcb);
 	_NhlCBDestroy(ncl->resetcb);
 
-	return;
+	return NhlNOERROR;
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: vartree.c,v 1.4 1997-10-03 20:08:34 dbrown Exp $
+ *      $Id: vartree.c,v 1.5 1997-10-23 00:27:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -385,7 +385,7 @@ static void ExpandAttr
         
 }
 
-static NhlBoolean DoSingleLineAttrVal
+static void DoSingleLineAttrVal
 (
         NgVarTreeRec	*vtp,
         vtNodeData	*ndata,

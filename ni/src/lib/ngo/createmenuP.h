@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenuP.h,v 1.1 1997-10-03 20:07:56 dbrown Exp $
+ *      $Id: createmenuP.h,v 1.2 1997-10-23 00:27:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,7 @@
 #define DEBUG_MENU 1 << 1
 #define DEBUG_CREATEMENU 0
 
+
 typedef struct _NgMenuRec 
 {
         Widget		menu;
@@ -45,18 +46,27 @@ typedef struct _CreateMenuRec
 	NgCreateMenu   	public;
         NgGO		go;
         Widget		parent;
+        
+            /* error dialog */
+        Widget		error_dialog;
+            /* standard create dialog */
         Widget		create_dialog;
         Widget		dialog_text;
+            /* data item create dialog */
+        Widget		data_item_dialog;
+        Widget		data_item_name_text;
+        Widget		data_var_slice_text;
+            /* end create dialogs */
         NhlClass	*classlist;
         int		classcount;
         NhlClass	create_class;
+        NgMenuRec	data;
         NgMenuRec	wks;
         NgMenuRec	plot;
         NgMenuRec	anno;
         NgMenuRec	other;
         NgMenuRec	var;
         NgMenuRec	file;
-        NgMenuRec	data;
 } CreateMenuRec;
 
 #endif	/* _NG_CREATEMENUP_H_ */

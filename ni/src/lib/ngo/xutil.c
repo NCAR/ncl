@@ -1,5 +1,5 @@
 /*
- *      $Id: xutil.c,v 1.4 1997-02-27 20:25:46 boote Exp $
+ *      $Id: xutil.c,v 1.5 1997-10-23 00:27:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -415,7 +415,7 @@ NgXListManage
 		NULL);
 	XtAddCallback(list->xmlist,XmNdestroyCallback,CleanUpXCB,list);
 
-	return;
+	return True;
 }
 
 void

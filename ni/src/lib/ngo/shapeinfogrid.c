@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.7 1997-10-03 20:08:24 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.8 1997-10-23 00:27:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #include <ncarg/ngo/shapeinfogridP.h>
 #include <ncarg/ngo/xutil.h>
 #include <ncarg/ngo/stringutil.h>
+#include <float.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
@@ -136,7 +137,7 @@ SelectedText
 )
 {
 	int	i;
-	char	dimstr[20];
+	char	dimstr[128];
         NgShapeInfoGrid *sip = &sirp->shapeinfogrid;
         NclApiVarInfoRec *vinfo = sirp->vinfo;
 #if 0
@@ -175,7 +176,7 @@ SubscriptText
 )
 {
 	int	i;
-	char	dimstr[20];
+	char	dimstr[128];
         NgShapeInfoGrid *sip = &sirp->shapeinfogrid;
         NclApiVarInfoRec *vinfo = sirp->vinfo;
 
@@ -203,7 +204,7 @@ StartText
 )
 {
 	int	i;
-	char	dimstr[20];
+	char	dimstr[128];
         NgShapeInfoGrid *sip = &sirp->shapeinfogrid;
         NclApiVarInfoRec *vinfo = sirp->vinfo;
 
@@ -217,7 +218,7 @@ StartText
                         sprintf(dimstr,"%d",sip->start[i]);
                 }
                 else if (sirp->float_types[i]) {
-                        sprintf(dimstr,"%f",sirp->start_coords[i]);
+		  	sprintf(dimstr,"%.*g",FLT_DIG,sirp->start_coords[i]);
                         NgFixFloat(dimstr);
                         NgRemoveZeros(dimstr);
                 }
@@ -243,7 +244,7 @@ FinishText
 )
 {
 	int	i;
-	char	dimstr[20];
+	char	dimstr[128];
         NgShapeInfoGrid *sip = &sirp->shapeinfogrid;
         NclApiVarInfoRec *vinfo = sirp->vinfo;
 #if 0
@@ -256,7 +257,7 @@ FinishText
                         sprintf(dimstr,"%d",sip->finish[i]);
                 }
                 else if (sirp->float_types[i]) {
-                        sprintf(dimstr,"%f",sirp->finish_coords[i]);
+		  	sprintf(dimstr,"%.*g",FLT_DIG,sirp->finish_coords[i]);
                         NgFixFloat(dimstr);
                         NgRemoveZeros(dimstr);
                 }
@@ -281,7 +282,7 @@ StrideText
 )
 {
 	int	i;
-	char	dimstr[20];
+	char	dimstr[128];
         NgShapeInfoGrid *sip = &sirp->shapeinfogrid;
         NclApiVarInfoRec *vinfo = sirp->vinfo;
 #if 0

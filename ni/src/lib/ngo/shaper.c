@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.7 1997-10-03 20:08:26 dbrown Exp $
+ *      $Id: shaper.c,v 1.8 1997-10-23 00:27:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,7 +28,6 @@
 #include <Xm/SeparatoG.h>
 #include <Xm/Text.h>
 #include <Xm/TextF.h>
-#include <Xm/Frame.h>
 #include <Xm/Label.h>
 #include <Xm/LabelG.h>
 #include <Xm/ToggleB.h>

@@ -1,5 +1,5 @@
 /*
- *      $Id: Tree.c,v 1.2 1997-10-03 20:07:48 dbrown Exp $
+ *      $Id: Tree.c,v 1.3 1997-10-23 00:26:58 dbrown Exp $
  */
 /*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
@@ -346,7 +346,7 @@ int isVert;
 	t = (XmLTreeWidget)g;
 	w = (Widget)g;
 	if (!t->grid.vertVisChangedHint)
-		return;
+		return 0;
 	t->grid.vertVisChangedHint = 0;
 
 	/* top down calculation of hidden states and maxLevel */
@@ -383,7 +383,7 @@ int isVert;
 	t->grid.layoutFrozen = False;
 	t->tree.linesMaxLevel = maxLevel;
 	if (!t->grid.rowCount)
-		return;
+		return 0;
 
 	/* bottom up calculation of connecting lines */
 	lineWidth = maxLevel + 1;

@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenu.c,v 1.1 1997-10-03 20:07:55 dbrown Exp $
+ *      $Id: createmenu.c,v 1.2 1997-10-23 00:27:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -266,6 +266,76 @@ static void CreateHluDialog
         
 }
 
+static void CreateDataItemDialog
+(
+        CreateMenuRec	*priv,
+        NhlClass	class
+       )
+{
+	Arg	args[50];
+	int	nargs;
+	NgCreateMenu	*pub = &priv->public;
+	char    buf[128] = "",prefix[8];
+        char    *cp;
+        XmString xmname;
+        Widget  form,label,help;
+
+        priv->create_class = class;
+        
+        sprintf(buf,"Create %s",class->base_class.class_name);
+        cp = strstr(buf,"Class"); /* remove the word class */
+        *cp = '\0';
+        
+        xmname = NgXAppCreateXmString
+                (priv->go->go.appmgr,buf);
+        
+        GetClassPrefix(class,prefix);
+        sprintf(buf,"%s_obj",prefix);
+
+        nargs = 0;
+	XtSetArg(args[nargs],XmNdialogTitle,xmname);nargs++;
+        if (! priv->data_item_dialog) {
+                priv->data_item_dialog = XmCreateMessageDialog
+                        (priv->parent,"CreateDialog",args,nargs);
+                help = XmMessageBoxGetChild
+                        (priv->data_item_dialog,XmDIALOG_HELP_BUTTON);
+                XtUnmanageChild(help);
+		XtAddCallback(priv->data_item_dialog,
+			      XmNokCallback,CreateCB,priv);
+		form = XtVaCreateManagedWidget
+                        ("form",xmFormWidgetClass,
+                         priv->data_item_dialog,
+                         NULL);
+                label = XtVaCreateManagedWidget
+                        ("Name",xmLabelGadgetClass,
+                         form,
+                         XmNrightAttachment,XmATTACH_NONE,
+                         NULL);
+                priv->data_item_name_text = XtVaCreateManagedWidget
+                        ("dialog",xmTextFieldWidgetClass,
+                         form,
+                         XmNleftAttachment,XmATTACH_WIDGET,
+                         XmNleftWidget,label,
+                         XmNvalue,
+                         NgNclGetSymName(priv->go->go.nclstate,buf,True),
+                         XmNresizeWidth,True,
+                         NULL);
+        }
+	else {
+		XtSetValues(priv->data_item_dialog,args,nargs);
+                XtVaSetValues(priv->data_item_name_text,
+                              XmNvalue,
+                              NgNclGetSymName
+                              (priv->go->go.nclstate,buf,True),
+                              NULL);
+	}
+	XmStringFree(xmname);
+        XtManageChild(priv->data_item_dialog);
+        
+        return;
+        
+}
+
 static void CreateHluDialogCB 
 (
 	Widget		w,
@@ -283,9 +353,60 @@ static void CreateHluDialogCB
         XtVaGetValues(w,
                       XmNuserData,&class,
                       NULL);
-        CreateHluDialog(priv,class);
+#if 0        
+        if (NhlClassIsSubclass(class,NhldataItemClass))
+                CreateDataItemDialog(priv,class);
+        else
+#endif                
+                CreateHluDialog(priv,class);
         return;
         
+}
+static void DataMenuCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+	CreateMenuRec	*priv = (CreateMenuRec	*)udata;
+	NgCreateMenu	*pub = &priv->public;
+        NgMenuRec	*data = &priv->data;
+        int		i,count,data_count = 0;
+        NhlClass	*classes,data_classes[20];
+
+        printf("in data menu cb\n");
+
+        NhlVAGetValues(priv->go->go.nclstate,
+                       NgNnsHluClassCount,&count,
+                       NgNnsHluClasses,&classes,
+                       NULL);
+        
+        for (i = 0; i < count; i++) {
+                if (NhlClassIsSubclass(classes[i],NhldataItemClass)) {
+                        data_classes[data_count] = classes[i];
+                        data_count++;
+                }
+        }
+        if (data_count > data->count) {
+                data->buttons = NhlRealloc
+                        (data->buttons,data_count * sizeof(Widget));
+                for (i = 0; i < data_count; i++) {
+                        data->buttons[i] = XtVaCreateManagedWidget
+                                (data_classes[i]->base_class.class_name,
+                                 xmPushButtonGadgetClass,
+                                 data->menu,
+                                 XmNuserData,data_classes[i],
+                                 NULL);
+                        XtAddCallback(data->buttons[i],
+                                      XmNactivateCallback,
+                                      CreateHluDialogCB,
+                                      priv);
+                }
+                data->count = data_count;
+        }
+
+        return;
 }
 
 static void WorkstationMenuCB 
@@ -501,9 +622,10 @@ NgCreateCreateMenu
         priv = NhlMalloc(sizeof(CreateMenuRec));
         priv->go = go;
         priv->create_dialog = NULL;
+        priv->data_item_dialog = NULL;
+        priv->error_dialog = NULL;
         priv->parent = parent;
 	pub = &priv->public;
-        
         
         priv->plot.count = priv->var.count = priv->data.count =
                 priv->wks.count = priv->anno.count = priv->other.count = 0;
@@ -518,6 +640,19 @@ NgCreateCreateMenu
                  XmNheight,		5,
                  XmNallowShellResize,	True,
                  XtNoverrideRedirect,	True,
+                 NULL);
+        
+        priv->data.menu =  XtVaCreateWidget
+                ("Data",xmRowColumnWidgetClass,menush,
+                 XmNrowColumnType,	XmMENU_PULLDOWN,
+                 NULL);
+	XtAddCallback(priv->data.menu,
+		      XmNmapCallback,DataMenuCB,priv);
+	pub->data_mbutton = 
+                XtVaCreateManagedWidget
+                ("Data",xmCascadeButtonGadgetClass,
+                 parent,
+                 XmNsubMenuId,priv->data.menu,
                  NULL);
         
         priv->wks.menu =  XtVaCreateWidget
@@ -584,6 +719,8 @@ void NgDestroyCreateMenu
 	NgCreateMenu	*pub = create_menu;
 	CreateMenuRec	*priv = (CreateMenuRec	*)pub;
 
+        if (priv->data.count)
+                NhlFree(priv->data.buttons);
         if (priv->wks.count)
                 NhlFree(priv->wks.buttons);
         if (priv->plot.count)

@@ -1,5 +1,5 @@
 /*
- *      $Id: addfileP.h,v 1.6 1997-07-23 22:23:32 dbrown Exp $
+ *      $Id: addfileP.h,v 1.7 1997-10-23 00:26:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -123,6 +123,8 @@ typedef struct _NgAddFilePart {
         NhlBoolean	popped_up;
         Dimension	shell_height;
         NhlBoolean	adjust_event;
+	Dimension	vlist_resize_width;
+	NhlBoolean	cleared;
 } NgAddFilePart;
 
 typedef struct _NgAddFileRec {

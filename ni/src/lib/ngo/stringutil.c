@@ -1,5 +1,5 @@
 /*
- *      $Id: stringutil.c,v 1.1 1997-06-04 18:08:33 dbrown Exp $
+ *      $Id: stringutil.c,v 1.2 1997-10-23 00:27:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -132,9 +132,7 @@ extern char *NgTypedValueToString
                     nclalloc = True;
                     *vlen = strlen(nclstring);
                     return nclstring;
-                    break;
         }
-        return;
 }
 
 

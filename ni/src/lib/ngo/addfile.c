@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.13 1997-09-17 16:41:04 boote Exp $
+ *      $Id: addfile.c,v 1.14 1997-10-23 00:26:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -43,14 +43,18 @@
 #include  <Xm/LabelG.h>
 #include  <Xm/Frame.h>
 
-#if 0
-#define _NgPreviewFile "_NgPreviewFile" /* the NCL file reference var name */
-#endif
 static  NrmQuark QPreviewFile = NrmNULLQUARK;
 static Pixel Background;
-
+#define ADDFILESTRING "Add file. Enter file reference variable name:"
+#define FILEADDEDSTRING "File added. File reference variable name is:"
+#define NOFILESTRING "No recognized data files match path filter."
+static XmString  AddFileXmString;
+static XmString FileAddedXmString;
+static XmString NoFileXmString;
 static XmString NoMatchString = NULL;
 static char Buffer[512];
+
+#define MIN_VLIST_WIDTH 90
 
 #define	Oset(field)	NhlOffset(NgAddFileRec,addfile.field)
 static NhlResource resources[] = {
@@ -59,6 +63,15 @@ static NhlResource resources[] = {
 		_NhlRES_NOACCESS,NULL},
 };
 #undef	Oset
+
+static void ApplyAction(
+#if	NhlNeedProto
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+#endif
+);
 
 static void FilterTextAction(
 #if	NhlNeedProto
@@ -142,6 +155,7 @@ static void VcrToggleAction(
 );
 
 static XtActionsRec addfileactions[] = {
+	{ "ApplyAction", ApplyAction },
 	{ "OpenDataFileAction", OpenDataFileAction },
         { "FilterAction", FilterAction },
         { "FilterTextAction", FilterTextAction },
@@ -257,6 +271,9 @@ AddFileInitialize
         np->adjust_event = False;
         np->shell_height = 0;
         np->vlist_empty = True;
+	np->vlist_resize_width = MIN_VLIST_WIDTH;
+	np->readable = np->writable = False;
+	np->cleared = True;
 
 	return NhlNOERROR;
 }
@@ -328,10 +345,10 @@ AddFileScript
 	XtVaGetValues(np->rw_optmenu,
 		XmNmenuHistory,	&rtype,
 		NULL);
-
 	if(rtype && rtype == np->write_label)
 		rw = "w";
 
+	rw = "r";
 	sprintf(Buffer,"%s = addfile(\"%s\",\"%s\")\n",vname,np->dirspec,rw);
 
 	(void)NgNclSubmitBlock(np->nsid,Buffer);
@@ -358,11 +375,11 @@ static void AdjustSize
 	np->adjust_event = False;
         if (! np->mapped)
                 return;
-        
         XtVaGetValues(go->go.manager,
                       XmNheight,&h,
                       XmNwidth,&w,
                       NULL);
+
 #if	DEBUG_ADDFILE
         fprintf(stderr,"shell height %d width %d\n",h,w);
 #endif
@@ -373,7 +390,6 @@ static void AdjustSize
                 h_add = h - np->shell_height;
                 np->shell_height = h;
         }
-        
 /*
  * Force the directory box to be at least as wide as the directory label
  */
@@ -394,7 +410,11 @@ static void AdjustSize
                       XmNhorizontalScrollBar,&hscroll,
                       XmNwidth,&cwidth,
                       NULL);
+		      
         cwidth = MAX(MAX(cwidth,w+10),np->user_dir_width);
+	XtVaSetValues(XtParent(np->dirlist),
+		      XmNwidth,cwidth,
+		      NULL);
 #if 0
         XtVaSetValues(XtParent(np->dirlist),
                       XmNwidth,cwidth,
@@ -448,11 +468,11 @@ static void AdjustSize
 		      XmNleftAttachment,XmATTACH_FORM,
 		      XmNbottomAttachment,XmATTACH_FORM,
 		      NULL);
-
         XtVaGetValues(np->info_optmenu,
                       XmNleftOffset,&oldoff,
                       XmNwidth,&cwidth,
                       NULL);
+
         off = -cwidth/2;
         if (off < oldoff-1 || off > oldoff + 1) {
                 XtVaSetValues(np->info_optmenu,
@@ -472,7 +492,6 @@ static void AdjustSize
 		      XmNpageIncrement,&pinc,
                       NULL);
 	XmScrollBarSetValues(hscroll,max-ssize,ssize,inc,pinc,True);
-
 
 	return;
 }
@@ -503,7 +522,6 @@ static void SetApplyForm
                               XmNbackground,&Background,
                               NULL);
         }
-        
         item = np->dirspec;
         if (item) {
                 dlist = NclGetFileList();
@@ -519,32 +537,30 @@ static void SetApplyForm
                 }
                 NclFreeDataList(dlist);
         }
+
         if (added) {
                 XtVaSetValues(np->vname,
                               XmNbackground,Background,
                               XmNeditable,False,
                               NULL);
                 XmTextFieldSetString(np->vname,NrmQuarkToString(symbol));
-                if (!np->vname_added) {
+                if (!np->vname_added || np->cleared) {
                         np->vname_added = True;
-                        xmstring = XmStringCreateLocalized("Added Var Name");
                         XtVaSetValues(np->vname_label,
-                                      XmNlabelString,xmstring,
+                                      XmNlabelString,FileAddedXmString,
                                       NULL);
-                        XmStringFree(xmstring);
                 }
                 XtSetSensitive(np->ok,False);
                 XtSetSensitive(np->apply,False);
+		np->cleared = False;
                 return;
         }
 
-        if (np->vname_added) {
+        if (np->vname_added || np->cleared) {
                 np->vname_added = False;
-                xmstring = XmStringCreateLocalized("Input Var Name");
                 XtVaSetValues(np->vname_label,
-                              XmNlabelString,xmstring,
+                              XmNlabelString,AddFileXmString,
                               NULL);
-                XmStringFree(xmstring);
                 XtVaSetValues(np->vname,
                               XmNeditable,True,
                               XtVaTypedArg,XmNbackground,
@@ -552,6 +568,7 @@ static void SetApplyForm
                               NULL);
                 XtSetSensitive(np->ok,True);
                 XtSetSensitive(np->apply,True);
+		np->cleared = False;
         }
         
 	if(item)
@@ -594,12 +611,16 @@ ApplyButtonCB
         )
 {
         NgGO		go = (NgGO)udata;
+	NgAddFile	l = (NgAddFile)go;
+	NgAddFilePart	*np = &l->addfile;
 
 #if	DEBUG_ADDFILE
 	fprintf(stderr,"ApplyButtonCB(IN)\n");
 #endif
-        AddFileScript(go);
-        SetApplyForm(go);
+	if (np->readable && ! np->vname_added) {
+		AddFileScript(go);
+        	SetApplyForm(go);
+	}
         
         return;
 }
@@ -614,12 +635,15 @@ OkButtonCB
 {
         NgGO		go = (NgGO)udata;
 	NgAddFile	l = (NgAddFile)go;
+	NgAddFilePart	*np = &l->addfile;
         
 #if	DEBUG_ADDFILE
 	fprintf(stderr,"OkButtonCB(IN)\n");
 #endif
-        AddFileScript(go);
-        SetApplyForm(go);
+	if (np->readable && ! np->vname_added) {
+		AddFileScript(go);
+        	SetApplyForm(go);
+	}
 	NgGOPopdown(l->base.id);
 }
 
@@ -810,7 +834,7 @@ DoAttrPopup
         
         return;
 }
-static NhlBoolean ClearVarList
+static void ClearVarList
 (
 	NgGO	go
 )
@@ -830,7 +854,7 @@ static NhlBoolean ClearVarList
         XmListDeleteAllItems(np->vlist);
         XmListAddItem(np->vlist,NoMatchString,0);
         np->vlist_empty = True;
-        
+#if 0        
         XtVaGetValues(np->vlist,
                       XmNwidth,&cwidth,
                       XmNfontList,&fontlist,
@@ -838,18 +862,18 @@ static NhlBoolean ClearVarList
         
         w = XmStringWidth(fontlist,NoMatchString);
 
-        w = MAX(40,w+10);
+        w = MAX(MIN_VLIST_WIDTH,w+10);
         if (w != cwidth) {
                 XtVaSetValues(np->vlist,
-                              XmNwidth,MAX(40,w+10),
+                              XmNwidth,MAX(MIN_VLIST_WIDTH,w+10),
                               NULL);
                 AdjustSize(go);
         }
-        
+#endif        
         return;
 }
 
-static NhlBoolean OpenForPreview
+static void OpenForPreview
 (
 	NgGO	go
 )
@@ -869,14 +893,14 @@ static NhlBoolean OpenForPreview
 
 	if (! np->readable) {
                 ClearVarList(go);
-		return False;
+		return;
 	}
 	if (! RecognizedType(np->dirspec,&writable)) {
 #if	DEBUG_ADDFILE
                 fprintf(stderr,"file format not recognized\n");
 #endif
                 ClearVarList(go);
-		return False;
+		return;
 	}
         
 	if (first) {
@@ -898,7 +922,7 @@ static NhlBoolean OpenForPreview
                 fprintf(stderr,"error reading file\n");
 #endif
                 ClearVarList(go);
-		return False;
+		return;
 	}
 	if (np->dl != NULL)
 		NclFreeDataList(np->dl);
@@ -1169,10 +1193,10 @@ static NhlBoolean ShowVarList
 		XmListAddItem(np->vlist,xmstring,0);
 		XmStringFree(xmstring);
 	}
-        
-        if (cwidth != MAX(40,maxw+10)) {
+        np->vlist_resize_width = MAX(MIN_VLIST_WIDTH,maxw+10);
+        if (cwidth < np->vlist_resize_width) {
                 XtVaSetValues(np->vlist,
-                              XmNwidth,MAX(40,maxw+10),
+                              XmNwidth,np->vlist_resize_width,
                               NULL);
                 AdjustSize(go);
         }
@@ -1261,9 +1285,26 @@ static void ClearApplyForm
 	char			*ptr,*ptr2,*ptr3;
 	XmString		cmdstr;
 	size_t			len;
+	char			*vname;
 
-	XmTextFieldSetString(np->vname,"");
-		
+	XtVaSetValues(np->vname,
+		      XmNeditable,True,
+		      NULL);
+	vname = XmTextFieldGetString(l->addfile.vname);
+	XmTextFieldSetSelection(l->addfile.vname,0,strlen(vname),CurrentTime);
+	XmTextFieldRemove(l->addfile.vname);
+	XtFree(vname);
+	XtSetSensitive(np->ok,False);
+	XtSetSensitive(np->apply,False);
+	XtVaSetValues(np->vname_label,
+		      XmNlabelString,NoFileXmString,
+		      NULL);
+	XtVaSetValues(np->vname,
+		      XmNbackground,Background,
+		      XmNeditable,False,
+		      NULL);
+
+	np->cleared = True;
 	return;
         
 }
@@ -1329,10 +1370,11 @@ static void SetSelectText
 	if (! RecognizedType(np->dirspec,&writable)) {
                 np->readable = False;
 	}
+
         XtVaSetValues(np->rw_optmenu,
                       XmNmenuHistory,np->read_label,
                       NULL);
-                              
+
         if (!writable || !np->writable) {
                 np->writable = False;
                 XtSetSensitive(np->write_label,False);
@@ -1340,13 +1382,13 @@ static void SetSelectText
         else {
                 XtSetSensitive(np->write_label,True);
         }
+
         if (!np->readable) {
                 XtSetSensitive(np->rw_optmenu,False);
         }
         else {
                 XtSetSensitive(np->rw_optmenu,True);
         }
-                
         
 	xmtmp = XmStringCreateLocalized(Buffer);
 	XtVaSetValues(np->fsize_label,
@@ -1355,8 +1397,12 @@ static void SetSelectText
 	XmStringFree(xmtmp);
 
 	if (S_ISREG(statbuf.st_mode)) {
+		char *cp;
 		struct tm *ts = localtime(&statbuf.st_mtime);
 		sprintf(Buffer,"%s",asctime(ts));
+		cp = strrchr(Buffer,'\n');
+		if (cp)
+		  *cp = '\0';
 	}
 	else
 		sprintf(Buffer,"           ");
@@ -1386,6 +1432,9 @@ static void Filter
 	char	*filtertext,*tstring = NULL;
 	int	len;
         Dimension w, cwidth;
+
+	if (! np->mapped)
+        	return;
         
 #if	DEBUG_ADDFILE
 	fprintf(stderr,"Filter(IN)\n");
@@ -1425,8 +1474,9 @@ static void Filter
 	}
 	else {
 		XtVaSetValues(np->filtertext,
-                              XmNvalue,filtertext,
-                              NULL);
+			      XmNvalue,filtertext,
+			      XmNcursorPosition,strlen(filtertext),
+			      NULL);
 		NhlFree(filtertext);
 	}
 
@@ -1840,10 +1890,23 @@ ChangeSizeEH
                 XtVaGetValues(XtParent(np->dirlist),
                               XmNwidth,&np->user_dir_width,
                               NULL);
+                XtVaSetValues(np->vlist,
+                              XmNwidth,np->vlist_resize_width,
+                              NULL);
                 AdjustSize(go);
         }
         else if (event->type == MapNotify) {
+		String dirmask_text;
                 np->mapped = True;
+
+		XmStringGetLtoR
+			(np->dirmask,XmFONTLIST_DEFAULT_TAG,&dirmask_text);
+		XtVaSetValues(np->filtertext,
+			      XmNvalue,dirmask_text,
+			      XmNcursorPosition,strlen(dirmask_text),
+			      NULL);
+		XtFree(dirmask_text);
+		Filter(go);
                 AdjustSize(go);
 #if	DEBUG_ADDFILE
                 fprintf(stderr,"MapNotify\n");
@@ -1867,7 +1930,9 @@ FileRefDeleteCB
         char		*vname;
         XmString	xmstring;
         
-        printf("in fileref delete callback\n");
+#if	DEBUG_ADDFILE
+        sprintf(stderr,"in fileref delete callback\n");
+#endif
 
         XtVaGetValues(np->vname,
                       XmNvalue,&vname,
@@ -1876,11 +1941,9 @@ FileRefDeleteCB
                 return;
 
         np->vname_added = False;
-        xmstring = XmStringCreateLocalized("Input Var Name");
         XtVaSetValues(np->vname_label,
-                      XmNlabelString,xmstring,
+                      XmNlabelString,AddFileXmString,
                       NULL);
-        XmStringFree(xmstring);
         XtVaSetValues(np->vname,
                       XmNeditable,True,
                       XtVaTypedArg,XmNbackground,
@@ -1914,7 +1977,76 @@ AddFileCreateWin
         Dimension	width1,width2;
         int		pos;
 	NhlArgVal	sel,user_data;
-                
+        XtTranslations	translations;
+	char		*cp;
+	static NhlBoolean first = True;
+        char		vlist_trans[] =
+	"Button3<Motion>:        ListButtonMotion() \
+                                CheckInfoPopupAction(1) \n\
+        <Btn1Down>:             ListBeginSelect() \
+                                InfoPopupAction(0) \n\
+        ~s ~c ~m ~a <Btn1Up>:   ListEndSelect() \
+                                InfoPopdownAction(0) \n\
+        Button1<Motion>:        ListButtonMotion() \
+                                CheckInfoPopupAction(0) \n\
+        <Btn3Down>:             ListBeginSelect() \
+                                InfoPopupAction(1) \n\
+        <Btn3Up>:               ListEndSelect() \
+				InfoPopdownAction(1)";
+        char		dirlist_trans[] =	
+        "<Key>Return:            FilterAction() \n\
+        <Select>:               FilterTextAction() \n\
+        <Btn1Up>(2+):           ListBeginSelect() \
+                                ListEndSelect() \
+                                FilterAction() \n\
+        <Btn1Down>,<Btn1Up>:    ListBeginSelect() \
+                                ListEndSelect() \
+                                FilterTextAction() \n\
+        ~s ~c ~m ~a <Btn1Up>:   ListEndSelect() \
+				FilterTextAction() \n\
+        <Key>osfUp:             ListPrevItem() \
+                                FilterTextAction() \n\
+        <Key>osfDown:           ListNextItem() \
+                                FilterTextAction() \n\
+        <Key>osfPageUp:         ListPrevPage() \
+                                FilterTextAction() \n\
+        <Key>osfPageDown:       ListNextPage() \
+				FilterTextAction()";
+        char		filelist_trans[] =
+        "Button1<Motion>:       ListBeginSelect() \n\
+	<Btn1Down>:             ListBeginSelect() \
+                                ListEndSelect() \
+                                SelectFileAction() \n\
+        ~s ~c ~m ~a <Btn1Up>:   ListEndSelect() \
+                                SelectFileAction() \n\
+        <Btn1Up>(2+):           ListEndSelect() \
+                                OpenDataFileAction() \n\
+        <Key>Return:            OpenDataFileAction() \n\
+        <Select>:               SelectFileAction() \n\
+        <Key>osfUp:             ListPrevItem() \
+                                SelectFileAction() \n\
+        <Key>osfDown:           ListNextItem() \
+                                SelectFileAction() \n\
+        <Key>osfPageUp:         ListPrevPage() \
+                                SelectFileAction() \n\
+        <Key>osfPageDown:       ListNextPage() \
+                                SelectFileAction() \n\
+        <Btn3Down>:             ListBeginSelect() \
+                                ListEndSelect() \
+                                SelectFileAction() \
+                                InfoPopupAction(2) \n\
+        <Btn3Up>:               ListEndSelect() \
+				InfoPopdownAction(2)" ;
+
+	if (first) {
+		first = False;
+		AddFileXmString = 
+			NgXAppCreateXmString(go->go.appmgr,ADDFILESTRING);
+		FileAddedXmString = 
+		  	NgXAppCreateXmString(go->go.appmgr,FILEADDEDSTRING);
+		NoFileXmString = 
+		  	NgXAppCreateXmString(go->go.appmgr,NOFILESTRING);
+	}
 	XtAppAddActions(go->go.x->app,
                         addfileactions,NhlNumber(addfileactions));
 	NhlVAGetValues(go->go.appmgr,
@@ -1977,15 +2109,6 @@ AddFileCreateWin
                                         XmNtopAttachment,XmATTACH_NONE,
                                         NULL);
 
-	xmtmp = XmStringCreateLocalized("Input Var Name");
-	np->vname_label =
-                XtVaCreateManagedWidget("input",xmLabelWidgetClass,applyform,
-                                        XmNrightAttachment,XmATTACH_NONE,
-                                        XmNlabelString,xmtmp,
-                                        NULL);
-	XmStringFree(xmtmp);
-        np->vname_added = False;
-        
             /* the read/write option menu */
 	menush =
                 XtVaCreatePopupShell("rwMenush",xmMenuShellWidgetClass,
@@ -2015,6 +2138,7 @@ AddFileCreateWin
                 XtVaCreateManagedWidget("rwoptMenu",
                                         xmRowColumnWidgetClass,applyform,
                                         XmNspacing,0,
+                                        XmNtopAttachment,XmATTACH_NONE,
                                         XmNleftAttachment,XmATTACH_NONE,
                                         XmNrightAttachment,XmATTACH_FORM,
                                         XmNrowColumnType,XmMENU_OPTION,
@@ -2028,17 +2152,27 @@ AddFileCreateWin
 	np->vname =
                 XtVaCreateManagedWidget("vname",
                                         xmTextFieldWidgetClass,applyform,
-                                        XmNleftWidget,np->vname_label,
-                                        XmNleftAttachment,XmATTACH_WIDGET,
+					XmNtopAttachment, XmATTACH_NONE,
                                         XmNrightAttachment,XmATTACH_WIDGET,
                                         XmNrightWidget,np->rw_optmenu,
                                         XmNresizeWidth,False,
+                                        XmNuserData,go,
                                         NULL);
 	XtVaSetValues(np->vname,
 		      XtVaTypedArg,XmNbackground,
 		      XmRString,"lightsalmon",12,
 		      NULL);
-        
+
+	np->vname_label =
+                XtVaCreateManagedWidget("vname_label",
+					xmLabelWidgetClass,applyform,
+                                        XmNrightAttachment,XmATTACH_NONE,
+                                        XmNbottomAttachment,XmATTACH_WIDGET,
+                                        XmNbottomWidget,np->vname,
+                                        XmNlabelString,AddFileXmString,
+                                        NULL);
+        np->vname_added = False;
+
 	sep = 
                 XtVaCreateManagedWidget("sep",
                                         xmSeparatorGadgetClass,workareaform,
@@ -2071,6 +2205,9 @@ AddFileCreateWin
                                         NULL);
 	tim = time(NULL);
 	sprintf(Buffer,"%s",ctime(&tim));
+	cp = strrchr(Buffer,'\n');
+	if (cp)
+		*cp = '\0';
 	strcat(Buffer,"00");
 	xmtmp = XmStringCreateLocalized(Buffer);
         np->fdate_label =
@@ -2196,7 +2333,7 @@ AddFileCreateWin
                       NULL);
 	XmStringFree(xmtmp);
         np->var_sort_mode = NgASCII_SORT;
-        
+
 	np->info_frame = 
                 XtVaCreateManagedWidget("vcrframe",
                                         xmFrameWidgetClass,workareaform,
@@ -2332,6 +2469,7 @@ AddFileCreateWin
 	XtSetArg(args[n],XmNtopAttachment,XmATTACH_WIDGET); n++;
 	XtSetArg(args[n],XmNselectionPolicy,XmBROWSE_SELECT); n++;
 	XtSetArg(args[n],XmNlistSizePolicy,XmCONSTANT); n++;
+	XtSetArg(args[n],XmNwidth,np->vlist_resize_width); n++;
 	XtSetArg(args[n],XmNscrollBarDisplayPolicy,XmSTATIC); n++;
 	XtSetArg(args[n],XmNnavigationType,XmSTICKY_TAB_GROUP); n++;
 	XtSetArg(args[n],XmNautomaticSelection,True); n++;
@@ -2339,6 +2477,9 @@ AddFileCreateWin
         
         np->vlist = XmCreateScrolledList(varform,"VarList",args,n);
         XtManageChild(np->vlist);
+
+        translations = XtParseTranslationTable(vlist_trans);
+        XtOverrideTranslations(np->vlist,translations);
 
 	np->fselect_box = 
                 XtVaCreateManagedWidget("addfile_fsb",
@@ -2373,9 +2514,24 @@ AddFileCreateWin
 	 */
 	np->filelist = XmFileSelectionBoxGetChild(np->fselect_box,
                                                   XmDIALOG_LIST);
+
+        XtVaSetValues(XtParent(np->filelist),
+		      XmNscrollBarDisplayPolicy,XmSTATIC,
+                      NULL);
+
+        XtVaSetValues(np->filelist,
+		      XmNscrollBarDisplayPolicy,XmSTATIC,
+                      NULL);
+
+        translations = XtParseTranslationTable(filelist_trans);
+        XtOverrideTranslations(np->filelist,translations);
 	np->dirlist = XmFileSelectionBoxGetChild(np->fselect_box,
                                                  XmDIALOG_DIR_LIST);
-                
+        translations = XtParseTranslationTable(dirlist_trans);
+        XtOverrideTranslations(np->dirlist,translations);
+#if 0        
+	_XtDisplayTranslations(np->filelist,NULL,NULL,NULL);
+#endif
 	XtVaSetValues(np->dirlist,
                       XmNuserData,go,
                       NULL);
@@ -2392,6 +2548,7 @@ AddFileCreateWin
 	np->cur_list = np->filelist;
 	np->cur_popup_type = GLOBAL_ATTRS_POPUP;
         
+        XmListAddItem(np->vlist,NoMatchString,0);
 	XmStringGetLtoR(dirspec,XmFONTLIST_DEFAULT_TAG,&np->dirspec);
 /*
  * The filter label and text area are contained in the filterform
@@ -2408,19 +2565,24 @@ AddFileCreateWin
                                         XmNrightAttachment,XmATTACH_NONE,
                                         NULL);
 
-	XmStringGetLtoR(np->dirmask,XmFONTLIST_DEFAULT_TAG,&dirmask_text);
         np->filtertext = 
                 XtVaCreateManagedWidget("FilterText",
                                         xmTextFieldWidgetClass,filterform,
                                         XmNleftAttachment,XmATTACH_WIDGET,
                                         XmNleftWidget,filterlabel,
-                                        XmNvalue,dirmask_text,
-                                        XmNcursorPosition,strlen(dirmask_text),
+                                        XmNresizeWidth,False,
+					XmNvalue,"filler",
+					XmNcursorPosition,strlen("filler"),
                                         XmNuserData,go,
                                         NULL);
+	XmStringGetLtoR(np->dirmask,XmFONTLIST_DEFAULT_TAG,&dirmask_text);
 	XtVaSetValues(np->filtertext,
 		      XtVaTypedArg,XmNbackground,
 		      XmRString,"lightsalmon",12,
+#if 0
+		      XmNvalue,dirmask_text,
+		      XmNcursorPosition,strlen(dirmask_text),
+#endif
 		      NULL);
 	XtAddCallback(np->filtertext,XmNactivateCallback,
 		      FilterTextCB,go);
@@ -2437,6 +2599,38 @@ AddFileCreateWin
         ClearVarList(go);
         
 	return True;
+}
+
+static void ApplyAction
+(
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+)
+{
+	NgGO	go;
+        NgAddFile	l;
+        NgAddFilePart	*np;
+        
+#if	DEBUG_ADDFILE
+	fprintf(stderr,"ApplyAction(IN)\n");
+#endif
+	XtVaGetValues(w,
+                      XmNuserData,(void*)&go,
+                      NULL);
+	if (! go)
+		return;
+
+	l = (NgAddFile)go;
+	np = &l->addfile;
+
+	if (np->readable && ! np->vname_added) {
+		AddFileScript(go);
+        	SetApplyForm(go);
+	}
+        
+        return;
 }
 
 static void FilterTextAction
@@ -2468,9 +2662,9 @@ static void FilterTextAction
 	XmStringGetLtoR(xmdirmask,XmSTRING_DEFAULT_CHARSET,&dirmask);
 
 	XtVaSetValues(np->filtertext,
-                    XmNvalue,dirmask,
-                    XmNcursorPosition,strlen(dirmask),
-                    NULL);
+		      XmNvalue,dirmask,
+		      XmNcursorPosition,strlen(dirmask),
+		      NULL);
         
 	XmStringFree(xmdirmask);
 	XtFree(dirmask);

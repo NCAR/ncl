@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.13 1997-10-03 20:07:53 dbrown Exp $
+ *      $Id: browse.c,v 1.14 1997-10-23 00:27:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -735,7 +735,7 @@ AddPane
         brPane		*pane;
         int		i;
         Dimension	height,theight = 0;
-
+        
 /*
  * Temporarily fix the shell widget size,
  * but only if the shell has been realized
@@ -1315,7 +1315,7 @@ static brPage *AddPage
         if (!page) {
                 e_text = "%s: dynamic memory allocation error";
                 NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,_NhlName(go));
-                return;
+                return NULL;
         }
         page->go = go;
         page->type = type;
@@ -1814,6 +1814,8 @@ static void PaneCtrlCB
                 RemovePane(go);
         }
         else if (w == pcp->vcr->forward) {
+                if (pcp->current_count == brMAX_PANES)
+                        return;
                 AddPane(go);
         }
 

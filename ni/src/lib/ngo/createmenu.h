@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenu.h,v 1.1 1997-10-03 20:07:55 dbrown Exp $
+ *      $Id: createmenu.h,v 1.2 1997-10-23 00:27:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -39,6 +39,7 @@
         
 typedef struct _NgCreateMenuRec
 {
+        Widget		data_mbutton;
         Widget		wks_mbutton;
         Widget		plot_mbutton;
         Widget		anno_mbutton;

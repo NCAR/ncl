@@ -1,5 +1,5 @@
 /*
- *      $Id: Grid.c,v 1.2 1997-10-03 20:07:36 dbrown Exp $
+ *      $Id: Grid.c,v 1.3 1997-10-23 00:26:56 dbrown Exp $
  */
 /*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
@@ -6575,7 +6575,7 @@ int row, col;
 		return False;
 		}
 	if (!len)
-		return;
+		return False;
 	buf = (char *)malloc((int)len);
 	done = 0;
 	while (!done)

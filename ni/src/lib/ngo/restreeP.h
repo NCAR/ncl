@@ -1,5 +1,5 @@
 /*
- *      $Id: restreeP.h,v 1.4 1997-10-03 20:08:22 dbrown Exp $
+ *      $Id: restreeP.h,v 1.5 1997-10-23 00:27:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,7 +32,7 @@
  
 #define DEBUG_ENTRY 1
 #define DEBUG_TREE 1 << 1
-#define DEBUG_RESTREE DEBUG_ENTRY | DEBUG_TREE
+#define DEBUG_RESTREE 0
 
 /* defines for each node of the file tree
  * -- not including the leaf nodes.
@@ -101,13 +101,39 @@ typedef struct _rtEnumInfoRec {
         Time			time;
 } rtEnumInfoRec;
 
-typedef struct _rtSResState 
+typedef enum _rtRowDisplayMode
 {
-	rtResData *res_data;
-	NhlBoolean faked;
-        NhlPointer dbres_value;
-} rtSResState;
-	
+        _rtHIDDEN,_rtUNEXPANDABLE,_rtEXPANDABLE 
+} rtRowDisplayMode;
+
+typedef struct _rtCntrlRes 
+{
+        NhlString res_name;
+        NhlString cntrl_class;
+        NhlPointer hide_val;
+        NhlPointer expand_val;
+	NhlString hide_str;
+        NhlString fake_val;
+} rtCntrlRes;
+
+typedef struct _rtCntrlnfo
+{
+        rtResData	*res_data;
+        rtCntrlRes	*cntrl_res;
+        NhlPointer	cur_value;
+        NhlBoolean	faked;
+} rtCntrlInfo;
+        
+typedef struct _rtClassInfo
+{
+        NhlClass		class;
+        int			res_count;
+        NhlLayer		layer;
+        rtRowDisplayMode	display_mode;
+        rtCntrlInfo		*cntrl_info;
+        rtNodeData		*ndata;
+} rtClassInfo;
+        
 typedef struct _NgResTreeRec 
 {
             /* public data */
@@ -120,9 +146,7 @@ typedef struct _NgResTreeRec
         NhlClass		class;
         int			super_class_count;
         int			class_count;
-        NhlClass		*classes;
-        NhlBoolean		*instantiated;
-        int			*top_res_counts;
+        rtClassInfo		*class_info;
         int			qnames_count;
         NrmNameList		qnames;
         int			res_data_count;
@@ -140,7 +164,7 @@ typedef struct _NgResTreeRec
         Boolean			scroll_cbs_installed;
         Widget			text;
   	rtEnumInfoRec		enum_info;
-	rtSResState		*sres_state;
+        Boolean			size_update_req;
 } NgResTreeRec;
 
 #endif	/* _NG_RESTREEP_H_ */
