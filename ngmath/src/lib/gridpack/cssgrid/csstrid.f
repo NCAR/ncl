@@ -1,20 +1,20 @@
 C
-C	$Id: csstri.f,v 1.5 2000-01-12 22:56:16 fred Exp $
+C	$Id: csstrid.f,v 1.1 2000-01-12 22:56:16 fred Exp $
 C
-      SUBROUTINE CSSTRI(N,RLATI,RLONI,NT,NTRI,IWK,WK,IER)
-      REAL RLATI(N),RLONI(N)
+      SUBROUTINE CSSTRID(N,RLATI,RLONI,NT,NTRI,IWK,WK,IER)
+      DOUBLE PRECISION RLATI(N),RLONI(N)
       DOUBLE PRECISION WK(*)
 C
       EXTERNAL CSBLDA
 C
-      DOUBLE PRECISION EPSILON,UN
+      DOUBLE PRECISION UN
       INTEGER N,NT,NTRI(3,*),IWK(*),IER
 C
 C  Parameters for random number usage.
 C
       INTEGER CSJRAND
       PARAMETER (EPSILON=0.00001D0,IRMAX=32767)
-      PARAMETER (D2R=0.017453293)
+      PARAMETER (D2R=0.017453293D0)
       DATA IX,IY,IZ/1,2,3/
 
 C
@@ -82,8 +82,8 @@ C
 C  Convert RLATI and RLONI to radians.
 C
       DO 7 I=1,N
-        WK(4*N+I) = DBLE(D2R*RLATI(I))
-        WK(5*N+I) = DBLE(D2R*RLONI(I))
+        WK(4*N+I) = D2R*RLATI(I)
+        WK(5*N+I) = D2R*RLONI(I)
     7 CONTINUE
 C
 C  Then convert to Cartesian coordinates.
@@ -97,11 +97,11 @@ C  tampered with.
 C
       DO 300 I = 1,N
           WK(  N+I) = DBLE(WK(  N+I) + EPSILON* (0.5-
-     +                REAL(CSJRAND(IRMAX,IX,IY,IZ)/REAL(IRMAX))))
+     +                DBLE(CSJRAND(IRMAX,IX,IY,IZ)/DBLE(IRMAX))))
           WK(2*N+I) = DBLE(WK(2*N+I) + EPSILON* (0.5-
-     +                REAL(CSJRAND(IRMAX,IX,IY,IZ)/REAL(IRMAX))))
+     +                DBLE(CSJRAND(IRMAX,IX,IY,IZ)/DBLE(IRMAX))))
           WK(3*N+I) = DBLE(WK(3*N+I) + EPSILON* (0.5-
-     +                REAL(CSJRAND(IRMAX,IX,IY,IZ)/REAL(IRMAX))))
+     +                DBLE(CSJRAND(IRMAX,IX,IY,IZ)/DBLE(IRMAX))))
 C
 C  Renormalize the vector so that it is still a unit vector.
 C
@@ -160,7 +160,7 @@ C
       RETURN
 C
   200 CONTINUE
-      CALL CSSERR('CSSTRI',IER)
+      CALL CSSERR('CSSTRID',IER)
       NT = 0
       RETURN
 C

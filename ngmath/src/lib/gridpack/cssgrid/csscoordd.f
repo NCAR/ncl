@@ -1,8 +1,8 @@
 C
-C	$Id: csscoord.f,v 1.2 2000-01-12 22:56:14 fred Exp $
+C	$Id: csscoordd.f,v 1.1 2000-01-12 22:56:14 fred Exp $
 C
-      SUBROUTINE CSSCOORD (PX,PY,PZ, PLAT,PLON,PNRM)
-      REAL PX, PY, PZ, PLAT, PLON, PNRM
+      SUBROUTINE CSSCOORDD (PX,PY,PZ, PLAT,PLON,PNRM)
+      DOUBLE PRECISION PX, PY, PZ, PLAT, PLON, PNRM
 C
 C***********************************************************
 C

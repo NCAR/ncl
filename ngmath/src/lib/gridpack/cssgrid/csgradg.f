@@ -1,8 +1,11 @@
+C
+C	$Id: csgradg.f,v 1.2 2000-01-12 22:56:12 fred Exp $
+C
       SUBROUTINE CSGRADG (N,X,Y,Z,F,LIST,LPTR,LEND,IFLGS,
      .                  SIGMA, NIT,DGMAX,GRAD, IER)
       INTEGER N, LIST(*), LPTR(*), LEND(N), IFLGS, NIT, IER
-      REAL    X(N), Y(N), Z(N), F(N), SIGMA(*), DGMAX,
-     .        GRAD(3,N)
+      DOUBLE PRECISION X(N), Y(N), Z(N), F(N), SIGMA(*),
+     .                 DGMAX, GRAD(3,N)
 C
 C***********************************************************
 C
@@ -131,10 +134,11 @@ C
 C***********************************************************
 C
       INTEGER IFL, ITER, J, K, LPJ, LPL, MAXIT, NN
-      REAL    ALFA, A11, A12, A22, CX, CY, D, DEN, DET,
-     .        DGK(3), DGMX, DG1, DG2, FK, G1, G2, G3, R1,
-     .        R2, SD, SIG, SINAL, SX, SY, T, TOL, XK, YK,
-     .        ZK, XJ, YJ, ZJ, XS, YS
+      DOUBLE PRECISION ALFA, A11, A12, A22, CX, CY, D, DEN,
+     .                 DET, DGK(3), DGMX, DG1, DG2, FK, G1,
+     .                 G2, G3, R1, R2, SD, SIG, SINAL, SX,
+     .                 SY, T, TOL, XK, YK, ZK, XJ, YJ, ZJ,
+     .                 XS, YS
 C
 C Local parameters:
 C
@@ -245,7 +249,7 @@ C
 C   Compute arc-length ALFA between J and K, SINAL =
 C     SIN(ALFA), and DEN = ALFA*SIN(ALFA)**2.
 C
-          ALFA = 2.*ATAN(SQRT((1.-ZJ)/(1.+ZJ)))
+          ALFA = 2.D0*ATAN(SQRT((1.D0-ZJ)/(1.D0+ZJ)))
           XS = XJ*XJ
           YS = YJ*YJ
           SINAL = SQRT(XS+YS)

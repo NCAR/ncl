@@ -1,5 +1,8 @@
+C
+C	$Id: csleft.f,v 1.2 2000-01-12 22:56:13 fred Exp $
+C
       LOGICAL FUNCTION CSLEFT (X1,Y1,Z1,X2,Y2,Z2,X0,Y0,Z0)
-      REAL X1, Y1, Z1, X2, Y2, Z2, X0, Y0, Z0
+      DOUBLE PRECISION X1, Y1, Z1, X2, Y2, Z2, X0, Y0, Z0
 C
 C***********************************************************
 C
@@ -38,6 +41,6 @@ C
 C CSLEFT = TRUE iff <N0,N1 X N2> = det(N0,N1,N2) .GE. 0.
 C
       CSLEFT = X0*(Y1*Z2-Y2*Z1) - Y0*(X1*Z2-X2*Z1) +
-     .       Z0*(X1*Y2-X2*Y1) .GE. 0.
+     .       Z0*(X1*Y2-X2*Y1) .GE. 0.D0
       RETURN
       END

@@ -1,3 +1,6 @@
+C
+C	$Id: csnbcnt.f,v 1.2 2000-01-12 22:56:14 fred Exp $
+C
       INTEGER FUNCTION CSNBCNT (LPL,LPTR)
       INTEGER LPL, LPTR(*)
 C

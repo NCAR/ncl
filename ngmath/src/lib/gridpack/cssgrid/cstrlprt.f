@@ -1,6 +1,9 @@
+C
+C	$Id: cstrlprt.f,v 1.2 2000-01-12 22:56:17 fred Exp $
+C
       SUBROUTINE CSTRLPRT (N,X,Y,Z,IFLAG,NROW,NT,LTRI,LOUT)
       INTEGER N, IFLAG, NROW, NT, LTRI(NROW,NT), LOUT
-      REAL X(N), Y(N), Z(N)
+      DOUBLE PRECISION X(N), Y(N), Z(N)
 C
 C***********************************************************
 C
@@ -174,8 +177,8 @@ C
   101 FORMAT (//8X,'Node',10X,'X(Node)',10X,'Y(Node)',10X,
      .        'Z(Node)'//)
   102 FORMAT (//16X,'Node',8X,'Longitude',9X,'Latitude'//)
-  103 FORMAT (8X,I4,3E17.6)
-  104 FORMAT (16X,I4,2E17.6)
+  103 FORMAT (8X,I4,3D17.6)
+  104 FORMAT (16X,I4,2D17.6)
   105 FORMAT (//1X,'Triangle',8X,'Vertices',12X,'Neighbors'/
      .        4X,'KT',7X,'N1',5X,'N2',5X,'N3',4X,'KT1',4X,
      .        'KT2',4X,'KT3'/)

@@ -1,5 +1,8 @@
+C
+C	$Id: csaplyrt.f,v 1.2 2000-01-12 22:56:10 fred Exp $
+C
       SUBROUTINE CSAPLYRT (G1P,G2P,CX,SX,CY,SY, G)
-      REAL G1P, G2P, CX, SX, CY, SY, G(3)
+      DOUBLE PRECISION G1P, G2P, CX, SX, CY, SY, G(3)
 C
 C***********************************************************
 C
@@ -36,7 +39,7 @@ C Modules required by CSAPLYRT:  None
 C
 C***********************************************************
 C
-      REAL T
+      DOUBLE PRECISION T
 C
 C Local parameters:
 C

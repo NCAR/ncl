@@ -1,7 +1,12 @@
-      REAL FUNCTION CSFVAL (B1,B2,B3,V1,V2,V3,F1,F2,F3,G1,G2,
-     .                    G3,SIG1,SIG2,SIG3)
-      REAL B1, B2, B3, V1(3), V2(3), V3(3), F1, F2, F3,
-     .     G1(3), G2(3), G3(3), SIG1, SIG2, SIG3
+C
+C	$Id: csfval.f,v 1.2 2000-01-12 22:56:11 fred Exp $
+C
+      DOUBLE PRECISION FUNCTION CSFVAL (B1,B2,B3,V1,V2,V3,F1,
+     .                                F2,F3,G1,G2,G3,CSSIG1,
+     .                                CSSIG2,SIG3)
+      DOUBLE PRECISION B1, B2, B3, V1(3), V2(3), V3(3), F1,
+     .                 F2, F3, G1(3), G2(3), G3(3), CSSIG1,
+     .                 CSSIG2, SIG3
 C
 C***********************************************************
 C
@@ -58,7 +63,7 @@ C
 C       G1,G2,G3 = Gradients associated with the vertices.
 C                  Gi is orthogonal to Vi for i = 1,2,3.
 C
-C       SIG1,SIG2,SIG3 = Tension factors associated with the
+C       CSSIG1,CSSIG2,SIG3 = Tension factors associated with the
 C                        triangle sides opposite V1, V2, and
 C                        V3, respectively.
 C
@@ -77,11 +82,12 @@ C Intrinsic function called by CSFVAL:  SQRT
 C
 C***********************************************************
 C
-      REAL    CSHVAL
+      DOUBLE PRECISION CSHVAL
       INTEGER I
-      REAL    C1, C2, C3, DS, DUM, DV, F, G(3),
-     .        Q1(3), Q2(3), Q3(3), SIG, SUM, S1, S2, S3,
-     .        U1(3), U2(3), U3(3), U1N, U2N, U3N, VAL
+      DOUBLE PRECISION C1, C2, C3, DS, DUM, DV, F, G(3),
+     .                 Q1(3), Q2(3), Q3(3), SIG, SUM, S1,
+     .                 S2, S3, U1(3), U2(3), U3(3), U1N,
+     .                 U2N, U3N, VAL
 C
 C Local parameters:
 C
@@ -177,13 +183,13 @@ C
 C   Compute value and gradient at Q1 by interpolating
 C     between V2 and V3.
 C
-      CALL CSARCINT (Q1,V2,V3,F2,F3,G2,G3,SIG1, F,G,DUM)
+      CALL CSARCINT (Q1,V2,V3,F2,F3,G2,G3,CSSIG1, F,G,DUM)
 C
 C   Add in the contribution.
 C
       DV = G1(1)*U1(1) + G1(2)*U1(2) + G1(3)*U1(3)
       DS = -(G(1)*V1(1) + G(2)*V1(2) + G(3)*V1(3))/U1N
-      SIG = (B2*SIG3 + B3*SIG2)/S1
+      SIG = (B2*SIG3 + B3*CSSIG2)/S1
       VAL = VAL + C1*CSHVAL(B1,F1,F,DV,DS,SIG)
 C
 C Contribution from side opposite V2:
@@ -191,13 +197,13 @@ C
 C   Compute value and gradient at Q2 by interpolating
 C     between V3 and V1.
 C
-      CALL CSARCINT (Q2,V3,V1,F3,F1,G3,G1,SIG2, F,G,DUM)
+      CALL CSARCINT (Q2,V3,V1,F3,F1,G3,G1,CSSIG2, F,G,DUM)
 C
 C   Add in the contribution.
 C
       DV = G2(1)*U2(1) + G2(2)*U2(2) + G2(3)*U2(3)
       DS = -(G(1)*V2(1) + G(2)*V2(2) + G(3)*V2(3))/U2N
-      SIG = (B3*SIG1 + B1*SIG3)/S2
+      SIG = (B3*CSSIG1 + B1*SIG3)/S2
       VAL = VAL + C2*CSHVAL(B2,F2,F,DV,DS,SIG)
 C
 C Contribution from side opposite V3:
@@ -211,7 +217,7 @@ C   Add in the final contribution.
 C
       DV = G3(1)*U3(1) + G3(2)*U3(2) + G3(3)*U3(3)
       DS = -(G(1)*V3(1) + G(2)*V3(2) + G(3)*V3(3))/U3N
-      SIG = (B1*SIG2 + B2*SIG1)/S3
+      SIG = (B1*CSSIG2 + B2*CSSIG1)/S3
       CSFVAL = VAL + C3*CSHVAL(B3,F3,F,DV,DS,SIG)
       RETURN
       END

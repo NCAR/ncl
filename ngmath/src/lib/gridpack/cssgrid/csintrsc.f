@@ -1,6 +1,9 @@
+C
+C	$Id: csintrsc.f,v 1.2 2000-01-12 22:56:13 fred Exp $
+C
       SUBROUTINE CSINTRSC (P1,P2,CN, P,IER)
       INTEGER IER
-      REAL    P1(3), P2(3), CN(3), P(3)
+      DOUBLE PRECISION P1(3), P2(3), CN(3), P(3)
 C
 C***********************************************************
 C
@@ -57,7 +60,7 @@ C
 C***********************************************************
 C
       INTEGER I
-      REAL    D1, D2, PP(3), PPN, T
+      DOUBLE PRECISION D1, D2, PP(3), PPN, T
 C
 C Local parameters:
 C
@@ -81,7 +84,7 @@ C
 C Solve for T such that <PP,CN> = 0 and compute PP and PPN.
 C
       T = D1/(D1-D2)
-      PPN = 0.
+      PPN = 0.D0
       DO 1 I = 1,3
         PP(I) = P1(I) + T*(P2(I)-P1(I))
         PPN = PPN + PP(I)*PP(I)
@@ -89,7 +92,7 @@ C
 C
 C PPN = 0 iff PP = 0 iff P2 = -P1 (and T = .5).
 C
-      IF (PPN .EQ. 0.) THEN
+      IF (PPN .EQ. 0.D0) THEN
         IER = 2
         RETURN
       ENDIF

@@ -1,10 +1,13 @@
+C
+C	$Id: csintrc1.f,v 1.4 2000-01-12 22:56:13 fred Exp $
+C
       SUBROUTINE CSINTRC1 (N,PLAT,PLON,X,Y,Z,F,LIST,LPTR,LEND,
      .                   IFLGS,SIGMA,IFLGG,GRAD, IST, FP,
      .                   IER)
       INTEGER N, LIST(*), LPTR(*), LEND(N), IFLGS, IFLGG,
      .        IST, IER
-      REAL    PLAT, PLON, X(N), Y(N), Z(N), F(N), SIGMA(*),
-     .        GRAD(3,N), FP
+      DOUBLE PRECISION PLAT, PLON, X(N), Y(N), Z(N), F(N),
+     .                 SIGMA(*), GRAD(3,N), FP
 C
 C***********************************************************
 C
@@ -79,24 +82,22 @@ C On output:
 C
 C       IST = Index of one of the vertices of the triangle
 C             containing P (or a boundary node if P is not
-C             contained in a triangle) unless IER = -1 or
-C             IER = -2.
+C             contained in a triangle) unless IER = 4.
 C
 C       FP = Value of F at P unless IER < 0, in which case
 C            FP is not defined.
 C
 C       IER = Error indicator and information flag:
 C               =  0 - no error.
-C               =  1 - invalid number of input points (must be 
+C               =  1 - invalid number of input points (must be
 C                      greater than 3).
 C               =  4 - first three nodes are collinear.
 C               =  7 - vertex of a triangle containing an interpolation
 C                      point is outside its valid range.
-C               =  8 - the angular distance between an interpolated 
-C                      point and the nearest point of the 
+C               =  8 - the angular distance between an interpolated
+C                      point and the nearest point of the
 C                      triangulation is at least 90 degrees.
 C               =  9 - not enough input points to calculate a gradient.
-C
 C
 C STRIPACK modules required by CSINTRC1: CSJRAND, CSLSTPTR, CSSTORE,
 C                                        CSTRFIND
@@ -113,11 +114,13 @@ C
 C***********************************************************
 C
       INTEGER CSLSTPTR
-      REAL    CSARCLEN, CSFVAL
+      DOUBLE PRECISION CSARCLEN, CSFVAL
       INTEGER I, IERR, I1, I2, I3, LP, N1, N2, NN
-      REAL    A, B1, B2, B3, DUM(3), FQ, GQ(3), GQN, G1(3),
-     .        G2(3), G3(3), P(3), P1(3), P2(3), P3(3), PTGQ,
-     .        PTN1, PTN2, Q(3), QNORM, S1, S2, S3, S12, SUM
+      DOUBLE PRECISION A, B1, B2, B3, DUM(3), FQ, GQ(3),
+     .                 GQN, G1(3), G2(3), G3(3), P(3),
+     .                 P1(3), P2(3), P3(3), PTGQ, PTN1,
+     .                 PTN2, Q(3), QNORM, S1, S2, S3, S12,
+     .                 SUM
 C
 C Local parameters:
 C
@@ -404,7 +407,7 @@ C
       IER = 9
       RETURN
 C
-C  Vertex of a triangle containing an interpolation point is outside 
+C  Vertex of a triangle containing an interpolation point is outside
 C  its valid range.
 C
   120 CONTINUE

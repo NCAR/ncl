@@ -1,3 +1,6 @@
+C
+C	$Id: csbnodes.f,v 1.2 2000-01-12 22:56:10 fred Exp $
+C
       SUBROUTINE CSBNODES (N,LIST,LPTR,LEND, NODES,NB,NA,NT)
       INTEGER N, LIST(*), LPTR(*), LEND(N), NODES(*), NB,
      .        NA, NT

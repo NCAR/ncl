@@ -3,14 +3,23 @@
 /*
  *  Specify all of the function prototypes.
  */
-int   *c_csstri(int, float [], float [], float [], int *, int *);
-float *c_cssgrid(int, float [], float [], float [], float [],
+int   *c_csstri(int, float [], float [], int *, int *);
+float *c_cssgrid(int, float [], float [], float [],
                  int, int, float [], float [], int *);
+void   c_csvoro(int, float [], float [], int, int,
+                float [], float [], float [], int *,
+                int *, int [], int *);
 void   c_cstrans(int, float *, float *, float *, float *, float *);
 void   c_csscoord(float, float, float, float *, float *, float *);
-void   c_csvoro(int, float [], float [], float [], int, int, 
-                float [], float [], float [], float [], int *, 
+
+int   *c_csstrid(int, double [], double [], int *, int *);
+double *c_cssgridd(int, double [], double [], double [],
+                 int, int, double [], double [], int *);
+void   c_csvorod(int, double [], double [], int, int,
+                double [], double [], double [], int *,
                 int *, int [], int *);
+void   c_cstransd(int, double *, double *, double *, double *, double *);
+void   c_csscoordd(double, double, double, double *, double *, double *);
 
 /*
  *  Fortran function macro.  This macro is used to provide the appropriate
@@ -34,3 +43,20 @@ void   c_csvoro(int, float [], float [], float [], int, int,
 #endif  /* UNICOS else ... */
 #endif  /* NGCALLF */
 
+#ifdef  UNICOS
+#include <fortran.h>
+#define NGstring            _fcd
+#define NGCstrToFstr(cstr,len) ((cstr)?_cptofcd((char *)cstr,len):_cptofcd("",0)
+)
+#define NGFstrToCstr(fstr) (_fcdtocp(fstr))
+#define NGFlgclToClgcl(flog)  (_ltob(&flog))
+#define NGClgclToFlgcl(clog)  (_btol(clog))
+#else
+#define NGstring            char *
+#define NGCstrToFstr(cstr,len) (char *)cstr
+#define NGFstrToCstr(fstr) fstr
+#define NGFlgclToClgcl(flog)  flog
+#define NGClgclToFlgcl(clog)  clog
+#endif
+
+#define NGSTRLEN(cstr)      ((cstr)?strlen(cstr):0)

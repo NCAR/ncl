@@ -1,7 +1,10 @@
+C
+C	$Id: csgetnp.f,v 1.2 2000-01-12 22:56:12 fred Exp $
+C
       SUBROUTINE CSGETNP (X,Y,Z,LIST,LPTR,LEND,L, NPTS, DF,
      .                  IER)
       INTEGER LIST(*), LPTR(*), LEND(*), L, NPTS(L), IER
-      REAL    X(*), Y(*), Z(*), DF
+      DOUBLE PRECISION X(*), Y(*), Z(*), DF
 C
 C***********************************************************
 C
@@ -65,7 +68,7 @@ C
 C***********************************************************
 C
       INTEGER I, LM1, LP, LPL, N1, NB, NI, NP
-      REAL    DNB, DNP, X1, Y1, Z1
+      DOUBLE PRECISION DNB, DNP, X1, Y1, Z1
 C
 C Local parameters:
 C
@@ -100,7 +103,7 @@ C Candidates for NP = NPTS(L) are the unmarked neighbors
 C   of nodes in NPTS.  DNP is initially greater than -cos(PI)
 C   (the maximum distance).
 C
-      DNP = 2.
+      DNP = 2.D0
 C
 C Loop on nodes NI in NPTS.
 C

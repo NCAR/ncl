@@ -1,6 +1,9 @@
+C
+C	$Id: csarcint.f,v 1.2 2000-01-12 22:56:10 fred Exp $
+C
       SUBROUTINE CSARCINT (P,P1,P2,F1,F2,G1,G2,SIGMA, F,G,GN)
-      REAL    P(3), P1(3), P2(3), F1, F2, G1(3), G2(3),
-     .        SIGMA, F, G(3), GN
+      DOUBLE PRECISION P(3), P1(3), P2(3), F1, F2, G1(3),
+     .                 G2(3), SIGMA, F, G(3), GN
 C
 C***********************************************************
 C
@@ -64,12 +67,13 @@ C Intrinsic functions called by CSARCINT:  ABS, EXP, SQRT
 C
 C***********************************************************
 C
-      REAL    CSARCLEN
+      DOUBLE PRECISION CSARCLEN
       INTEGER I, LUN
-      REAL    A, AL, B1, B2, CM, CMM, CM2, DUMMY, D1, D2, E,
-     .        EMS, E1, E2, GT, S, SB1, SB2, SIG, SINH,
-     .        SINH2, SM, SM2, TAU1, TAU2, TM, TM1, TM2, TP1,
-     .        TP2, TS, UN(3), UNORM
+      DOUBLE PRECISION A, AL, B1, B2, CM, CMM, CM2, DUMMY,
+     .                 D1, D2, E, EMS, E1, E2, GT, S, SB1,
+     .                 SB2, SIG, SINH, SINH2, SM, SM2, TAU1,
+     .                 TAU2, TM, TM1, TM2, TP1, TP2, TS,
+     .                 UN(3), UNORM
       DATA    LUN/6/
 C
 C Local parameters:
@@ -145,7 +149,7 @@ C
 C Test the range of SIGMA.
 C
       SIG = ABS(SIGMA)
-      IF (SIG .LT. 1.E-9) THEN
+      IF (SIG .LT. 1.D-9) THEN
 C
 C Hermite cubic interpolation.
 C

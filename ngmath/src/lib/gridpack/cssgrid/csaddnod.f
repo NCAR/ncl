@@ -1,7 +1,10 @@
+C
+C	$Id: csaddnod.f,v 1.3 2000-01-12 22:56:09 fred Exp $
+C
       SUBROUTINE CSADDNOD (NST,K,X,Y,Z, LIST,LPTR,LEND,
      .                   LNEW, IER)
       INTEGER NST, K, LIST(*), LPTR(*), LEND(K), LNEW, IER
-      REAL    X(K), Y(K), Z(K)
+      DOUBLE PRECISION X(K), Y(K), Z(K)
 C
 C***********************************************************
 C
@@ -10,7 +13,7 @@ C                                            Robert J. Renka
 C                                  Dept. of Computer Science
 C                                       Univ. of North Texas
 C                                           renka@cs.unt.edu
-C                                                   07/08/99
+C                                                   10/10/99
 C
 C   This subroutine adds node K to a triangulation of the
 C convex hull of nodes 1,...,K-1, producing a triangulation
@@ -80,7 +83,7 @@ C
       INTEGER I1, I2, I3, IO1, IO2, IN1, IST, KK, KM1, L,
      .        LP, LPF, LPO1, LPO1S
       LOGICAL CSSWPTST
-      REAL    B1, B2, B3, P(3)
+      DOUBLE PRECISION B1, B2, B3, P(3)
 C
 C Local parameters:
 C
@@ -169,15 +172,14 @@ C
         CALL CSSWAP (IN1,KK,IO1,IO2, LIST,LPTR,LEND, LPO1)
         IF (LPO1 .EQ. 0) THEN
 C
-C  A swap is not possible because KK and IN1 are already
-C  adjacent.  This error in SWPTST only occurs in the
-C  neutral case and when there are nearly duplicate
-C  nodes.
+C   A swap is not possible because KK and IN1 are already
+C     adjacent.  This error in CSSWPTST only occurs in the
+C     neutral case and when there are nearly duplicate
+C     nodes.
 C
           LPO1 = LPO1S
           GO TO 2
         ENDIF
-
         IO1 = IN1
         GO TO 1
 C

@@ -1,9 +1,14 @@
-      REAL FUNCTION CSSIG1 (N1,N2,N,X,Y,Z,H,LIST,LPTR,LEND,GRAD,
-     .                    IFLGB,HPBND,TOL,IFLGS, SIGMA, IER)
+C
+C	$Id: cssig1.f,v 1.2 2000-01-12 22:56:16 fred Exp $
+C
+      DOUBLE PRECISION FUNCTION CSSIG1 (N1,N2,N,X,Y,Z,H,LIST,
+     .                                LPTR,LEND,GRAD,IFLGB,
+     .                                HPBND,TOL,
+     .                                IFLGS, SIGMA, IER)
       INTEGER N1, N2, N, LIST(*), LPTR(*), LEND(N), IFLGB,
      .        IFLGS, IER
-      REAL    X(N), Y(N), Z(N), H(N), GRAD(3,N), HPBND, TOL,
-     .        SIGMA(*)
+      DOUBLE PRECISION X(N), Y(N), Z(N), H(N), GRAD(3,N),
+     .                 HPBND, TOL, SIGMA(*)
 C
 C***********************************************************
 C
@@ -122,20 +127,22 @@ C
 C SSRFPACK modules required by CSSIG1:  CSARCLEN, CSSNHCSH
 C
 C Intrinsic functions called by CSSIG1:   ABS, EXP, MAX, MIN,
-C                                         REAL, SIGN, SQRT
+C                                         DBLE, SIGN, SQRT
 C
 C***********************************************************
 C
-      REAL    CSARCLEN, CSSTORE
+      DOUBLE PRECISION CSARCLEN, CSSTORE
       INTEGER LP1, LP2, LPL, LUN, NIT
-      REAL    A, A0, AL, B0, BND, C0, C1, C2, COSHM, COSHMM,
-     .        D0, D1, D1PD2, D2, DMAX, DSIG, E, EMS, EMS2,
-     .        F, F0, FMAX, FNEG, FTOL, P1(3), P2(3), RF,
-     .        RTOL, S, S1, S2, SBIG, SIG, SINH, SINHM, STOL,
-     .        T0, T1, T2, TM, UN(3), UNORM
+      DOUBLE PRECISION A, A0, AL, B0, BND, C0, C1, C2,
+     .                 COSHM, COSHMM, D0, D1, D1PD2, D2,
+     .                 DMAX, DSIG, E, EMS, EMS2, F, F0,
+     .                 FMAX, FNEG, FTOL, P1(3), P2(3), RF,
+     .                 RTOL, S, S1, S2, SBIG, SIG, SINH,
+     .                 SINHM, STOL, T0, T1, T2, TM, UN(3),
+     .                 UNORM
 C
       DATA SBIG/85./,  LUN/-1/
-      RF = REAL(IFLGB)
+      RF = DBLE(IFLGB)
       BND = HPBND
 C
 C Print a heading.

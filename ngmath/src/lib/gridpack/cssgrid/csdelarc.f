@@ -1,3 +1,6 @@
+C
+C	$Id: csdelarc.f,v 1.2 2000-01-12 22:56:11 fred Exp $
+C
       SUBROUTINE CSDELARC (N,IO1,IO2, LIST,LPTR,LEND,
      .                   LNEW, IER)
       INTEGER N, IO1, IO2, LIST(*), LPTR(*), LEND(N), LNEW,

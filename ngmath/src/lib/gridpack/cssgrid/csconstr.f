@@ -1,5 +1,8 @@
+C
+C	$Id: csconstr.f,v 1.2 2000-01-12 22:56:11 fred Exp $
+C
       SUBROUTINE CSCONSTR (XK,YK,ZK, CX,SX,CY,SY)
-      REAL XK, YK, ZK, CX, SX, CY, SY
+      DOUBLE PRECISION XK, YK, ZK, CX, SX, CY, SY
 C
 C***********************************************************
 C

@@ -1,3 +1,6 @@
+C
+C	$Id: csserr.f,v 1.2 2000-01-12 22:56:14 fred Exp $
+C
       SUBROUTINE CSSERR (ISUB,IERR)                               
 C
 C SUBROUTINE CSSERR (ISUB,IERR)
@@ -65,11 +68,17 @@ C
         WRITE(6,200) ISUB
   200   FORMAT(A7,' - error 11, degenerate triangle (two vertices lie on
      + same geodesic).')
+      ELSE IF (IERR .EQ. 12) THEN
+        WRITE(6,210) ISUB
+  210   FORMAT(A7,' - error 12, duplicate input points.')
+      ELSE IF (IERR .EQ. 13) THEN
+        WRITE(6,220) ISUB
+  220   FORMAT(A7,' - error 13, parameter TOL or NSG out of range.')
       ELSE IF (IERR .LT. 0) THEN
         NERR = -IERR
-        WRITE(6,210) ISUB,IERR,NERR,NERR
-  210   FORMAT(A7,' - error ',I5,', coordinates ',I5,' and M coincide fo
-     +r some M  > ',I5,', >= 1 (coordinate numbering starting at 1).')
+        WRITE(6,300) ISUB,IERR,NERR,NERR
+  300   FORMAT(A7,' - error ',I5,', coordinates ',I5,' and M coincide fo
+     +r some M  > ',I5,' >= 1 (coordinate numbering starting at 1).')
       ENDIF
 C                                                                       
       RETURN                                                            

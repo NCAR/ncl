@@ -1,5 +1,8 @@
-      REAL FUNCTION CSAREAS (V1,V2,V3)
-      REAL V1(3), V2(3), V3(3)
+C
+C	$Id: csareas.f,v 1.2 2000-01-12 22:56:10 fred Exp $
+C
+      DOUBLE PRECISION FUNCTION CSAREAS (V1,V2,V3)
+      DOUBLE PRECISION V1(3), V2(3), V3(3)
 C
 C***********************************************************
 C
@@ -8,7 +11,7 @@ C                                            Robert J. Renka
 C                                  Dept. of Computer Science
 C                                       Univ. of North Texas
 C                                           renka@cs.unt.edu
-C                                                   09/18/90
+C                                                   06/22/98
 C
 C   This function returns the area of a spherical triangle
 C on the unit sphere.
@@ -28,51 +31,43 @@ C On output:
 C
 C       CSAREAS = Area of the spherical triangle defined by
 C               V1, V2, and V3 in the range 0 to 2*PI (the
-C               area of a hemisphere).  AREAS = 0 (or 2*PI)
+C               area of a hemisphere).  CSAREAS = 0 (or 2*PI)
 C               if and only if V1, V2, and V3 lie in (or
 C               close to) a plane containing the origin.
 C
-C Modules required by AREAS:  None
+C Modules required by CSAREAS:  None
 C
-C Intrinsic functions called by CSAREAS:  ACOS, DBLE, REAL,
-C                                         SQRT
+C Intrinsic functions called by CSAREAS:  ACOS, SQRT
 C
 C***********************************************************
 C
-      DOUBLE PRECISION A1, A2, A3, CA1, CA2, CA3, DV1(3),
-     .                 DV2(3), DV3(3), S12, S23, S31,
-     .                 U12(3), U23(3), U31(3)
+      DOUBLE PRECISION A1, A2, A3, CA1, CA2, CA3, S12, S23,
+     .                 S31, U12(3), U23(3), U31(3)
       INTEGER          I
 C
 C Local parameters:
 C
 C A1,A2,A3 =    Interior angles of the spherical triangle
 C CA1,CA2,CA3 = cos(A1), cos(A2), and cos(A3), respectively
-C DV1,DV2,DV3 = Double Precision copies of V1, V2, and V3
 C I =           DO-loop index and index for Uij
 C S12,S23,S31 = Sum of squared components of U12, U23, U31
 C U12,U23,U31 = Unit normal vectors to the planes defined by
 C                 pairs of triangle vertices
 C
-      DO 1 I = 1,3
-        DV1(I) = DBLE(V1(I))
-        DV2(I) = DBLE(V2(I))
-        DV3(I) = DBLE(V3(I))
-    1   CONTINUE
 C
 C Compute cross products Uij = Vi X Vj.
 C
-      U12(1) = DV1(2)*DV2(3) - DV1(3)*DV2(2)
-      U12(2) = DV1(3)*DV2(1) - DV1(1)*DV2(3)
-      U12(3) = DV1(1)*DV2(2) - DV1(2)*DV2(1)
+      U12(1) = V1(2)*V2(3) - V1(3)*V2(2)
+      U12(2) = V1(3)*V2(1) - V1(1)*V2(3)
+      U12(3) = V1(1)*V2(2) - V1(2)*V2(1)
 C
-      U23(1) = DV2(2)*DV3(3) - DV2(3)*DV3(2)
-      U23(2) = DV2(3)*DV3(1) - DV2(1)*DV3(3)
-      U23(3) = DV2(1)*DV3(2) - DV2(2)*DV3(1)
+      U23(1) = V2(2)*V3(3) - V2(3)*V3(2)
+      U23(2) = V2(3)*V3(1) - V2(1)*V3(3)
+      U23(3) = V2(1)*V3(2) - V2(2)*V3(1)
 C
-      U31(1) = DV3(2)*DV1(3) - DV3(3)*DV1(2)
-      U31(2) = DV3(3)*DV1(1) - DV3(1)*DV1(3)
-      U31(3) = DV3(1)*DV1(2) - DV3(2)*DV1(1)
+      U31(1) = V3(2)*V1(3) - V3(3)*V1(2)
+      U31(2) = V3(3)*V1(1) - V3(1)*V1(3)
+      U31(3) = V3(1)*V1(2) - V3(2)*V1(1)
 C
 C Normalize Uij to unit vectors.
 C
@@ -90,7 +85,7 @@ C   vertices.
 C
       IF (S12 .EQ. 0.D0  .OR.  S23 .EQ. 0.D0  .OR.
      .    S31 .EQ. 0.D0) THEN
-        CSAREAS = 0.
+        CSAREAS = 0.D0
         RETURN
       ENDIF
       S12 = SQRT(S12)
@@ -123,7 +118,7 @@ C
 C
 C Compute CSAREAS = A1 + A2 + A3 - PI.
 C
-      CSAREAS = REAL(A1 + A2 + A3 - ACOS(-1.D0))
-      IF (CSAREAS .LT. 0.) CSAREAS = 0.
+      CSAREAS = A1 + A2 + A3 - ACOS(-1.D0)
+      IF (CSAREAS .LT. 0.D0) CSAREAS = 0.D0
       RETURN
       END

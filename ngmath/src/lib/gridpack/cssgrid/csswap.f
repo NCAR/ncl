@@ -1,3 +1,6 @@
+C
+C	$Id: csswap.f,v 1.2 2000-01-12 22:56:17 fred Exp $
+C
       SUBROUTINE CSSWAP (IN1,IN2,IO1,IO2, LIST,LPTR,
      .                 LEND, LP21)
       INTEGER IN1, IN2, IO1, IO2, LIST(*), LPTR(*), LEND(*),

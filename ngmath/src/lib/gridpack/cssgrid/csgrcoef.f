@@ -1,5 +1,8 @@
+C
+C	$Id: csgrcoef.f,v 1.2 2000-01-12 22:56:12 fred Exp $
+C
       SUBROUTINE CSGRCOEF (SIGMA, D,SD)
-      REAL SIGMA, D, SD
+      DOUBLE PRECISION SIGMA, D, SD
 C
 C***********************************************************
 C
@@ -35,10 +38,10 @@ C Intrinsic function called by CSGRCOEF:  EXP
 C
 C***********************************************************
 C
-      REAL COSHM, COSHMM, E, EMS, SCM, SIG, SINHM, SSINH,
-     .     SSM
+      DOUBLE PRECISION COSHM, COSHMM, E, EMS, SCM, SIG,
+     .                 SINHM, SSINH, SSM
       SIG = SIGMA
-      IF (SIG .LT. 1.E-9) THEN
+      IF (SIG .LT. 1.D-9) THEN
 C
 C Cubic function:
 C

@@ -1,8 +1,11 @@
+C
+C	$Id: cssmsgs.f,v 1.2 2000-01-12 22:56:16 fred Exp $
+C
       SUBROUTINE CSSMSGS (N,X,Y,Z,U,LIST,LPTR,LEND,IFLGS,
      .                  SIGMA,W,P, NIT,DFMAX,F,GRAD, IER)
       INTEGER N, LIST(*), LPTR(*), LEND(N), IFLGS, NIT, IER
-      REAL    X(N), Y(N), Z(N), U(N), SIGMA(*), W(N), P,
-     .        DFMAX, F(N), GRAD(3,N)
+      DOUBLE PRECISION X(N), Y(N), Z(N), U(N), SIGMA(*),
+     .                 W(N), P, DFMAX, F(N), GRAD(3,N)
 C
 C***********************************************************
 C
@@ -87,12 +90,13 @@ C
 C***********************************************************
 C
       INTEGER IFL, ITER, ITMAX, J, K, LPJ, LPL, NN
-      REAL    ALFA, ALFSQ, C11, C12, C13, C22, C23, C33,
-     .        CC22, CC23, CC33, CX, CY, DEN1, DEN2, DET, DF,
-     .        DFMX, DGK(3), DGX, DGY, FK, G1, G2, G3, GJK,
-     .        GKJ, PP, R1, R2, R3, RR2, RR3, SIG, SINAL, SX,
-     .        SY, T, T1, T2, T3, T4, T5, T6, TOL, XJ, XK,
-     .        XS, YJ, YK, YS, ZJ, ZK
+      DOUBLE PRECISION ALFA, ALFSQ, C11, C12, C13, C22, C23,
+     .                 C33, CC22, CC23, CC33, CX, CY, DEN1,
+     .                 DEN2, DET, DF, DFMX, DGK(3), DGX,
+     .                 DGY, FK, G1, G2, G3, GJK, GKJ, PP,
+     .                 R1, R2, R3, RR2, RR3, SIG, SINAL, SX,
+     .                 SY, T, T1, T2, T3, T4, T5, T6, TOL,
+     .                 XJ, XK, XS, YJ, YK, YS, ZJ, ZK
 C
       NN = N
       IFL = IFLGS
@@ -160,7 +164,7 @@ C   Compute arc-length ALFA between K and J, ALFSQ = ALFA*
 C     ALFA, SINAL = SIN(ALFA), DEN1 = ALFA*SIN(ALFA)**2, and
 C     DEN2 = ALFSQ*SINAL.
 C
-          ALFA = 2.*ATAN(SQRT((1.-ZJ)/(1.+ZJ)))
+          ALFA = 2.D0*ATAN(SQRT((1.D0-ZJ)/(1.D0+ZJ)))
           ALFSQ = ALFA*ALFA
           XS = XJ*XJ
           YS = YJ*YJ

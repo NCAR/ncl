@@ -1,7 +1,10 @@
+C
+C	$Id: cstrfind.f,v 1.5 2000-01-12 22:56:17 fred Exp $
+C
       SUBROUTINE CSTRFIND (NST,P,N,X,Y,Z,LIST,LPTR,LEND, B1,
      .                   B2,B3,I1,I2,I3)
       INTEGER NST, N, LIST(*), LPTR(*), LEND(N), I1, I2, I3
-      REAL    P(3), X(N), Y(N), Z(N), B1, B2, B3
+      DOUBLE PRECISION P(3), X(N), Y(N), Z(N), B1, B2, B3
 C
 C***********************************************************
 C
@@ -10,7 +13,7 @@ C                                            Robert J. Renka
 C                                  Dept. of Computer Science
 C                                       Univ. of North Texas
 C                                           renka@cs.unt.edu
-C                                                   07/29/98
+C                                                   11/30/99
 C
 C   This subroutine locates a point P relative to a triangu-
 C lation created by Subroutine CSTRMESH.  If P is contained in
@@ -71,9 +74,10 @@ C
       INTEGER CSJRAND, CSLSTPTR
       INTEGER IX, IY, IZ, LP, N0, N1, N1S, N2, N2S, N3, N4,
      .        NEXT, NF, NL
-      REAL    CSSTORE
-      REAL    DET, EPS, PTN1, PTN2, Q(3), S12, XP, YP, ZP
-      REAL    X0, X1, X2, Y0, Y1, Y2, Z0, Z1, Z2
+      DOUBLE PRECISION CSSTORE
+      DOUBLE PRECISION DET, EPS, PTN1, PTN2, Q(3), S12, TOL,
+     .                 XP, YP, ZP
+      DOUBLE PRECISION X0, X1, X2, Y0, Y1, Y2, Z0, Z1, Z2
 C
       SAVE    IX, IY, IZ
       DATA    IX/1/, IY/2/, IZ/3/
@@ -99,6 +103,12 @@ C PTN2 =     Scalar product <P,N2>
 C Q =        (N2 X N1) X N2  or  N1 X (N2 X N1) -- used in
 C              the boundary traversal when P is exterior
 C S12 =      Scalar product <N1,N2>
+C TOL =      Tolerance (multiple of EPS) defining an upper
+C              bound on the magnitude of a negative bary-
+C              centric coordinate (B1 or B2) for P in a
+C              triangle -- used to avoid an infinite number
+C              of restarts with 0 <= B3 < EPS and B1 < 0 or
+C              B2 < 0 but small in magnitude
 C XP,YP,ZP = Local variables containing P(1), P(2), and P(3)
 C X0,Y0,Z0 = Dummy arguments for DET
 C X1,Y1,Z1 = Dummy arguments for DET
@@ -126,12 +136,13 @@ C
       IF (N0 .LT. 1  .OR.  N0 .GT. N)
      .  N0 = CSJRAND(N, IX,IY,IZ )
 C
-C Compute the relative machine precision EPS.
+C Compute the relative machine precision EPS and TOL.
 C
-      EPS = 1.E0
-    1 EPS = EPS/2.E0
-        IF (CSSTORE(EPS+1.E0) .GT. 1.E0) GO TO 1
-      EPS = 2.E0*EPS
+      EPS = 1.D0
+    1 EPS = EPS/2.D0
+        IF (CSSTORE(EPS+1.D0) .GT. 1.D0) GO TO 1
+      EPS = 2.D0*EPS
+      TOL = 4.D0*EPS
 C
 C Set NF and NL to the first and last neighbors of N0, and
 C   initialize N1 = NF.
@@ -150,7 +161,7 @@ C
 C   N0 is an interior node.  Find N1.
 C
     3   IF ( DET(X(N0),Y(N0),Z(N0),X(N1),Y(N1),Z(N1),
-     .           XP,YP,ZP) .LT. 0. ) THEN
+     .           XP,YP,ZP) .LT. 0.D0 ) THEN
           LP = LPTR(LP)
           N1 = LIST(LP)
           IF (N1 .EQ. NL) GO TO 6
@@ -162,7 +173,7 @@ C   N0 is a boundary node.  Test for P exterior.
 C
         NL = -NL
         IF ( DET(X(N0),Y(N0),Z(N0),X(NF),Y(NF),Z(NF),
-     .           XP,YP,ZP) .LT. 0. ) THEN
+     .           XP,YP,ZP) .LT. 0.D0 ) THEN
 C
 C   P is to the right of the boundary edge N0->NF.
 C
@@ -171,7 +182,7 @@ C
           GO TO 9
         ENDIF
         IF ( DET(X(NL),Y(NL),Z(NL),X(N0),Y(N0),Z(N0),
-     .           XP,YP,ZP) .LT. 0. ) THEN
+     .           XP,YP,ZP) .LT. 0.D0 ) THEN
 C
 C   P is to the right of the boundary edge NL->N0.
 C
@@ -187,23 +198,24 @@ C
     4 LP = LPTR(LP)
         N2 = ABS(LIST(LP))
         IF ( DET(X(N0),Y(N0),Z(N0),X(N2),Y(N2),Z(N2),
-     .           XP,YP,ZP) .LT. 0. ) GO TO 7
+     .           XP,YP,ZP) .LT. 0.D0 ) GO TO 7
         N1 = N2
         IF (N1 .NE. NL) GO TO 4
       IF ( DET(X(N0),Y(N0),Z(N0),X(NF),Y(NF),Z(NF),
-     .         XP,YP,ZP) .LT. 0. ) GO TO 6
+     .         XP,YP,ZP) .LT. 0.D0 ) GO TO 6
 C
 C P is left of or on arcs N0->NB for all neighbors NB
 C   of N0.  Test for P = +/-N0.
 C
-      IF (CSSTORE(ABS(X(N0)*XP + Y(N0)*YP + Z(N0)*ZP)) .LT. 1.) THEN
+      IF (CSSTORE(ABS(X(N0)*XP + Y(N0)*YP + Z(N0)*ZP))
+     .   .LT. 1.D0-4.D0*EPS) THEN
 C
 C   All points are collinear iff P Left NB->N0 for all
 C     neighbors NB of N0.  Search the neighbors of N0.
 C     Note:  N1 = NL and LP points to NL.
 C
     5   IF ( DET(X(N1),Y(N1),Z(N1),X(N0),Y(N0),Z(N0),
-     .           XP,YP,ZP) .GE. 0. ) THEN
+     .           XP,YP,ZP) .GE. 0.D0 ) THEN
           LP = LPTR(LP)
           N1 = ABS(LIST(LP))
           IF (N1 .EQ. NL) GO TO 14
@@ -232,7 +244,7 @@ C
 C Top of edge-hopping loop:
 C
     8 B3 = DET(X(N1),Y(N1),Z(N1),X(N2),Y(N2),Z(N2),XP,YP,ZP)
-      IF (B3 .LT. 0.) THEN
+      IF (B3 .LT. 0.D0) THEN
 C
 C   Set N4 to the first neighbor of N2 following N1 (the
 C     node opposite N2->N1) unless N1->N2 is a boundary arc.
@@ -246,7 +258,7 @@ C   Define a new arc N1->N2 which intersects the geodesic
 C     N0-P.
 C
         IF ( DET(X(N0),Y(N0),Z(N0),X(N4),Y(N4),Z(N4),
-     .           XP,YP,ZP) .LT. 0. ) THEN
+     .           XP,YP,ZP) .LT. 0.D0 ) THEN
           N3 = N2
           N2 = N4
           N1S = N1
@@ -277,7 +289,7 @@ C
      .           XP,YP,ZP)
         B2 = DET(X(N3),Y(N3),Z(N3),X(N1),Y(N1),Z(N1),
      .           XP,YP,ZP)
-        IF (B1 .LT. -15.E0*EPS  .OR.  B2 .LT. -15.E0*EPS) THEN
+        IF (B1 .LT. -TOL  .OR.  B2 .LT. -TOL) THEN
 C
 C   Restart with N0 randomly selected.
 C
@@ -289,13 +301,13 @@ C
 C   B3 = 0 and thus P lies on N1->N2. Compute
 C     B1 = Det(P,N2 X N1,N2) and B2 = Det(P,N1,N2 X N1).
 C
-        B3 = 0.
+        B3 = 0.D0
         S12 = X(N1)*X(N2) + Y(N1)*Y(N2) + Z(N1)*Z(N2)
         PTN1 = XP*X(N1) + YP*Y(N1) + ZP*Z(N1)
         PTN2 = XP*X(N2) + YP*Y(N2) + ZP*Z(N2)
         B1 = PTN1 - S12*PTN2
         B2 = PTN2 - S12*PTN1
-        IF (B1 .LT. -15.E0*EPS  .OR.  B2 .LT. -15.E0*EPS) THEN
+        IF (B1 .LT. -TOL  .OR.  B2 .LT. -TOL) THEN
 C
 C   Restart with N0 randomly selected.
 C
@@ -309,6 +321,8 @@ C
       I1 = N1
       I2 = N2
       I3 = N3
+      IF (B1 .LT. 0.0) B1 = 0.0
+      IF (B2 .LT. 0.0) B2 = 0.0
       RETURN
 C
 C P Right N1->N2, where N1->N2 is a boundary edge.
@@ -325,7 +339,7 @@ C
       LP = LPTR(LP)
       NEXT = LIST(LP)
       IF ( DET(X(N2),Y(N2),Z(N2),X(NEXT),Y(NEXT),Z(NEXT),
-     .         XP,YP,ZP) .GE. 0. ) THEN
+     .         XP,YP,ZP) .GE. 0.D0 ) THEN
 C
 C   N2 is the rightmost visible node if P Forward N2->N1
 C     or NEXT Forward N2->N1.  Set Q to (N2 X N1) X N2.
@@ -334,9 +348,9 @@ C
         Q(1) = X(N1) - S12*X(N2)
         Q(2) = Y(N1) - S12*Y(N2)
         Q(3) = Z(N1) - S12*Z(N2)
-        IF (XP*Q(1) + YP*Q(2) + ZP*Q(3) .GE. 0.) GO TO 11
+        IF (XP*Q(1) + YP*Q(2) + ZP*Q(3) .GE. 0.D0) GO TO 11
         IF (X(NEXT)*Q(1) + Y(NEXT)*Q(2) + Z(NEXT)*Q(3)
-     .      .GE. 0.) GO TO 11
+     .      .GE. 0.D0) GO TO 11
 C
 C   N1, N2, NEXT, and P are nearly collinear, and N2 is
 C     the leftmost visible node.
@@ -373,7 +387,7 @@ C
    12   LP = LEND(N1)
         NEXT = -LIST(LP)
         IF ( DET(X(NEXT),Y(NEXT),Z(NEXT),X(N1),Y(N1),Z(N1),
-     .           XP,YP,ZP) .GE. 0. ) THEN
+     .           XP,YP,ZP) .GE. 0.D0 ) THEN
 C
 C   N1 is the leftmost visible node if P or NEXT is
 C     forward of N1->N2.  Compute Q = N1 X (N2 X N1).
@@ -382,9 +396,10 @@ C
           Q(1) = X(N2) - S12*X(N1)
           Q(2) = Y(N2) - S12*Y(N1)
           Q(3) = Z(N2) - S12*Z(N1)
-          IF (XP*Q(1) + YP*Q(2) + ZP*Q(3) .GE. 0.) GO TO 13
+          IF (XP*Q(1) + YP*Q(2) + ZP*Q(3) .GE. 0.D0)
+     .      GO TO 13
           IF (X(NEXT)*Q(1) + Y(NEXT)*Q(2) + Z(NEXT)*Q(3)
-     .        .GE. 0.) GO TO 13
+     .        .GE. 0.D0) GO TO 13
 C
 C   P, NEXT, N1, and N2 are nearly collinear and N1 is the
 C     rightmost visible node.

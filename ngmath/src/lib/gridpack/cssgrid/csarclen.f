@@ -1,5 +1,8 @@
-      REAL FUNCTION CSARCLEN (P,Q)
-      REAL P(3), Q(3)
+C
+C	$Id: csarclen.f,v 1.3 2000-01-12 22:56:10 fred Exp $
+C
+      DOUBLE PRECISION FUNCTION CSARCLEN (P,Q)
+      DOUBLE PRECISION P(3), Q(3)
 C
 C***********************************************************
 C
@@ -24,16 +27,16 @@ C
 C On output:
 C
 C       CSARCLEN = Angle in radians between the unit vectors
-C                  P and Q.  0 .LE. CSARCLEN .LE. PI.
+C                P and Q.  0 .LE. CSARCLEN .LE. PI.
 C
 C Modules required by CSARCLEN:  None
 C
-C Intrinsic functions called by  CSARCLEN:  ATAN, SQRT
+C Intrinsic functions called by CSARCLEN:  ATAN, SQRT
 C
 C***********************************************************
 C
       INTEGER I
-      REAL    D
+      DOUBLE PRECISION D
 C
 C Local parameters:
 C
@@ -48,14 +51,14 @@ C
 C
 C P and Q are separated by 180 degrees.
 C
-        CSARCLEN = 4.*ATAN(1.)
-      ELSEIF (D .GE. 4.) THEN
+        CSARCLEN = 4.D0*ATAN(1.D0)
+      ELSEIF (D .GE. 4.D0) THEN
 C
 C P and Q coincide.
 C
         CSARCLEN = 0.
       ELSE
-        CSARCLEN = 2.*ATAN(SQRT((4.-D)/D))
+        CSARCLEN = 2.D0*ATAN(SQRT((4.D0-D)/D))
       ENDIF
       RETURN
       END

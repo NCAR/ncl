@@ -1,6 +1,9 @@
+C
+C	$Id: cssgprnt.f,v 1.2 2000-01-12 22:56:15 fred Exp $
+C
       SUBROUTINE CSSGPRNT (N,LUNIT,LIST,LPTR,LEND,SIGMA)
       INTEGER N, LUNIT, LIST(*), LPTR(*), LEND(N)
-      REAL    SIGMA(*)
+      DOUBLE PRECISION SIGMA(*)
 C
 C***********************************************************
 C
@@ -60,7 +63,7 @@ C
       INTEGER LP1, LP2, LPL, LUN, N1, N2, NA, NAT, NB, NE,
      .        NL, NLMAX, NM1, NMAX
       LOGICAL ERROR
-      REAL    SIG
+      DOUBLE PRECISION SIG
       DATA NMAX/9999/,  NLMAX/58/
 C
       LUN = LUNIT

@@ -1,7 +1,10 @@
+C
+C	$Id: csnearnd.f,v 1.2 2000-01-12 22:56:14 fred Exp $
+C
       INTEGER FUNCTION CSNEARND (P,IST,N,X,Y,Z,LIST,LPTR,
      .                         LEND, AL)
       INTEGER IST, N, LIST(*), LPTR(*), LEND(N)
-      REAL    P(3), X(N), Y(N), Z(N), AL
+      DOUBLE PRECISION P(3), X(N), Y(N), Z(N), AL
 C
 C***********************************************************
 C
@@ -69,8 +72,8 @@ C
       PARAMETER (LMAX=25)
       INTEGER   I1, I2, I3, L, LISTP(LMAX), LP, LP1, LP2,
      .          LPL, LPTRP(LMAX), N1, N2, N3, NN, NR, NST
-      REAL      B1, B2, B3, DS1, DSR, DX1, DX2, DX3, DY1,
-     .          DY2, DY3, DZ1, DZ2, DZ3
+      DOUBLE PRECISION B1, B2, B3, DS1, DSR, DX1, DX2, DX3,
+     .                 DY1, DY2, DY3, DZ1, DZ2, DZ3
 C
 C Local parameters:
 C
@@ -188,7 +191,7 @@ C
         DZ3 = Z(N3) - P(3)
         IF ( DX3*(DY2*DZ1 - DY1*DZ2) -
      .       DY3*(DX2*DZ1 - DX1*DZ2) +
-     .       DZ3*(DX2*DY1 - DX1*DY2) .LE. 0. ) GO TO 3
+     .       DZ3*(DX2*DY1 - DX1*DY2) .LE. 0.D0 ) GO TO 3
 C
 C Swap:  Insert N3 following N2 in the adjacency list for P.
 C        The two new arcs opposite P must be tested.
@@ -228,7 +231,7 @@ C
         ENDIF
     5   CONTINUE
       DSR = -DSR
-      IF (DSR .GT. 1.0) DSR = 1.0
+      IF (DSR .GT. 1.0D0) DSR = 1.0D0
       AL = ACOS(DSR)
       CSNEARND = NR
       RETURN

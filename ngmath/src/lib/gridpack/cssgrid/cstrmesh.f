@@ -1,8 +1,11 @@
+C
+C	$Id: cstrmesh.f,v 1.3 2000-01-12 22:56:17 fred Exp $
+C
       SUBROUTINE CSTRMESH (N,X,Y,Z, LIST,LPTR,LEND,LNEW,NEAR,
-     .                   NEXT,DIST,IER)
+     +                     NEXT,DIST,IER)
       INTEGER N, LIST(*), LPTR(*), LEND(N), LNEW, NEAR(N),
-     .        NEXT(N), IER
-      REAL    X(N), Y(N), Z(N), DIST(N)
+     +        NEXT(N), IER
+      DOUBLE PRECISION X(N), Y(N), Z(N), DIST(N)
 C
 C***********************************************************
 C
@@ -11,7 +14,7 @@ C                                            Robert J. Renka
 C                                  Dept. of Computer Science
 C                                       Univ. of North Texas
 C                                           renka@cs.unt.edu
-C                                                   08/18/98
+C                                                   07/08/99
 C
 C   This subroutine creates a Delaunay triangulation of a
 C set of N arbitrarily distributed points, referred to as
@@ -39,14 +42,11 @@ C plane.  This property makes the triangulation well-suited
 C for solving closest-point problems and for triangle-based
 C interpolation.
 C
-C   Provided the nodes are randomly ordered, the algorithm
-C has expected time complexity O(N*log(N)) for most nodal
-C distributions.  Note, however, that the complexity may be
-C as high as O(N**2) if, for example, the nodes are ordered
-C on increasing latitude.
+C   The algorithm has expected time complexity O(N*log(N))
+C for most nodal distributions.
 C
 C   Spherical coordinates (latitude and longitude) may be
-C converted to Cartesian coordinates by Subroutine CSTRANS.
+C converted to Cartesian coordinates by Subroutine CSTRANSD.
 C
 C   The following is a list of the software package modules
 C which a user may wish to call directly:
@@ -102,7 +102,7 @@ C             that the precision of floating point numbers
 C             in memory locations rather than registers is
 C             computed.
 C
-C  CSTRANS  - Transforms spherical coordinates into Cartesian
+C  CSTRANSD - Transforms spherical coordinates into Cartesian
 C             coordinates on the unit sphere for input to
 C             Subroutine CSTRMESH.
 C
@@ -118,7 +118,6 @@ C             nodes.
 C
 C  CSTRPRNT - Prints the triangulation data structure and,
 C             optionally, the nodal coordinates.
-C
 C
 C On input:
 C
@@ -189,8 +188,8 @@ C                      this case.
 C
 C Modules required by CSTRMESH:  CSADDNOD, CSBDYADD, CSCOVSPH,
 C                                CSINSERT, CSINTADD, CSJRAND,
-C                                CSLEFT,   CSLSTPTR, CSSTORE, 
-C                                CSSWAP,   CSSWPTST, CSTRFIND
+C                                CSLEFT, CSLSTPTR, CSSTORE, CSSWAP,
+C                                CSSWPTST, CSTRFIND
 C
 C Intrinsic function called by CSTRMESH:  ABS
 C
@@ -198,7 +197,7 @@ C***********************************************************
 C
       INTEGER I, I0, J, K, LP, LPL, NEXTI, NN
       LOGICAL CSLEFT
-      REAL    D, D1, D2, D3
+      DOUBLE PRECISION D, D1, D2, D3
 C
 C Local parameters:
 C

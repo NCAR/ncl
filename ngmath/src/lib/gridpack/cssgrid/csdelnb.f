@@ -1,3 +1,6 @@
+C
+C	$Id: csdelnb.f,v 1.2 2000-01-12 22:56:11 fred Exp $
+C
       SUBROUTINE CSDELNB (N0,NB,N, LIST,LPTR,LEND,LNEW, LPH)
       INTEGER N0, NB, N, LIST(*), LPTR(*), LEND(N), LNEW,
      .        LPH

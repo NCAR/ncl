@@ -1,6 +1,9 @@
+C
+C	$Id: cscircum.f,v 1.2 2000-01-12 22:56:10 fred Exp $
+C
       SUBROUTINE CSCIRCUM (V1,V2,V3, C,IER)
       INTEGER IER
-      REAL    V1(3), V2(3), V3(3), C(3)
+      DOUBLE PRECISION V1(3), V2(3), V3(3), C(3)
 C
 C***********************************************************
 C
@@ -47,7 +50,7 @@ C
 C***********************************************************
 C
       INTEGER I
-      REAL    CNORM, CU(3), E1(3), E2(3)
+      DOUBLE PRECISION CNORM, CU(3), E1(3), E2(3)
 C
 C Local parameters:
 C
@@ -72,7 +75,7 @@ C
 C The vertices lie on a common line if and only if CU is
 C   the zero vector.
 C
-      IF (CNORM .NE. 0.) THEN
+      IF (CNORM .NE. 0.D0) THEN
 C
 C   No error:  compute C.
 C

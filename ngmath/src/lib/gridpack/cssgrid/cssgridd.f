@@ -1,11 +1,12 @@
 C
-C	$Id: cssgrid.f,v 1.6 2000-01-12 22:56:15 fred Exp $
+C	$Id: cssgridd.f,v 1.1 2000-01-12 22:56:15 fred Exp $
 C
-      SUBROUTINE CSSGRID(N,RLATI,RLONI,F,NI,NJ,RLATO,RLONO,FF,
+      SUBROUTINE CSSGRIDD(N,RLATI,RLONI,F,NI,NJ,RLATO,RLONO,FF,
      +                     IWK,WK,IER)
       DOUBLE PRECISION UN,RLATD,RLOND,WK(*),TFVAL,DGMX,STOL,DSMX
       INTEGER N,NI,NJ,IWK(*),IER
-      REAL RLATI(N),RLONI(N),F(N),RLATO(NI),RLONO(NJ),FF(NI,NJ)
+      DOUBLE PRECISION RLATI(N),RLONI(N),F(N),RLATO(NI),
+     +                 RLONO(NJ),FF(NI,NJ)
 C
       EXTERNAL CSBLDA
 C
@@ -52,7 +53,7 @@ C             IWK(12*N+1)-IWK(13*N)  --  LEND.
 C             IWK(13*N+1)-IWK(14*N)  --  NEAR.
 C             IWK(14*N+1)-IWK(15*N)  --  NEXT.
 C
-C    WK   = A *DOUBLE PRECISION* workspace of length 13*N.
+C    WK   = A *double precision* workspace of length 13*N.
 C           This workspace must be double precision since this
 C           routine is simply a single precision interface to the
 C           primary double precision code.
@@ -95,13 +96,9 @@ C                    starting at 1).
 C
 C***********************************************************
 C
-C  Scale factor for converting from degrees to radians.
-C
-      PARAMETER (D2R=0.017453293)
-C
 C  Parameters for random number usage.
 C
-      PARAMETER (EPSILON=0.00001,IRMAX=32767)
+      PARAMETER (D2R=0.017453293D0,EPSILON=0.00001D0,IRMAX=32767)
       DATA IX,IY,IZ/1,2,3/
 C
 C  Use pre-calculated estimated gradients.
@@ -152,11 +149,11 @@ C  they will not be tampered with.
 C
       DO 300 I = 1,N
           WK(  N+I) = DBLE(WK(  N+I) + EPSILON* (0.5-
-     +                CSJRAND(IRMAX,IX,IY,IZ)/REAL(IRMAX)))
+     +                DBLE(CSJRAND(IRMAX,IX,IY,IZ))/DBLE(IRMAX)))
           WK(2*N+I) = DBLE(WK(2*N+I) + EPSILON* (0.5-
-     +                CSJRAND(IRMAX,IX,IY,IZ)/REAL(IRMAX)))
+     +                DBLE(CSJRAND(IRMAX,IX,IY,IZ))/DBLE(IRMAX)))
           WK(3*N+I) = DBLE(WK(3*N+I) + EPSILON* (0.5-
-     +                CSJRAND(IRMAX,IX,IY,IZ)/REAL(IRMAX)))
+     +                DBLE(CSJRAND(IRMAX,IX,IY,IZ))/DBLE(IRMAX)))
 C
 C  Renormalize the vector so that it is still a unit vector.
 C
@@ -195,7 +192,7 @@ C
 C  Copy the input values into a double precision array.
 C
       DO 4 I=1,NN
-        WK(I) = DBLE(F(I))
+        WK(I) = F(I)
     4 CONTINUE 
 C
 C  Set up the SIGMA array.
@@ -305,7 +302,7 @@ C
      +                  IWK(12*NN+1),IFLGS,WK(4*N+1),IFLGG,WK(10*N+1),
      +                  IST,TFVAL,IERR)
           IF (IERR.EQ.0) THEN
-              FF(I,J) = REAL(TFVAL)
+              FF(I,J) = TFVAL
               GO TO 2
           ELSE IF (IERR.EQ.1) THEN
               GO TO 110
@@ -326,57 +323,57 @@ C
 C
   110 CONTINUE
       IER = 1
-      CALL CSSERR('CSSGRID',IER)
+      CALL CSSERR('CSSGRIDD',IER)
       RETURN
 C
   120 CONTINUE
       IER = 4
-      CALL CSSERR('CSSGRID',IER)
+      CALL CSSERR('CSSGRIDD',IER)
       RETURN
 C
   130 CONTINUE
       IER = 6
-      CALL CSSERR('CSSGRID',IER)
+      CALL CSSERR('CSSGRIDD',IER)
       RETURN
 C
   140 CONTINUE
       IER = NERR
-      CALL CSSERR('CSSGRID',IER)
+      CALL CSSERR('CSSGRIDD',IER)
       RETURN
 C
   150 CONTINUE
       IER = 10
-      CALL CSSERR('CSSGRID',IER)
+      CALL CSSERR('CSSGRIDD',IER)
       RETURN
 C
   160 CONTINUE
       IER = 11
-      CALL CSSERR('CSSGRID',IER)
+      CALL CSSERR('CSSGRIDD',IER)
       RETURN
 C
   170 CONTINUE
       IER = 7
-      CALL CSSERR('CSSGRID',IER)
+      CALL CSSERR('CSSGRIDD',IER)
       RETURN
 C
   180 CONTINUE
       IER = 8
-      CALL CSSERR('CSSGRID',IER)
+      CALL CSSERR('CSSGRIDD',IER)
       RETURN
 C
   190 CONTINUE
       IER = 9
-      CALL CSSERR('CSSGRID',IER)
+      CALL CSSERR('CSSGRIDD',IER)
       RETURN
 C
   200 CONTINUE
       IER = 2
-      CALL CSSERR('CSSGRID',IER)
+      CALL CSSERR('CSSGRIDD',IER)
       RETURN
 C
   210 CONTINUE
       IER = 3
-      CALL CSSERR('CSSGRID',IER)
+      CALL CSSERR('CSSGRIDD',IER)
       RETURN
 C
       END

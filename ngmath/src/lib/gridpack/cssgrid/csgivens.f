@@ -1,5 +1,8 @@
+C
+C	$Id: csgivens.f,v 1.2 2000-01-12 22:56:12 fred Exp $
+C
       SUBROUTINE CSGIVENS ( A,B, C,S)
-      REAL A, B, C, S
+      DOUBLE PRECISION A, B, C, S
 C
 C***********************************************************
 C
@@ -48,7 +51,7 @@ C Intrinsic functions called by CSGIVENS:  ABS, SQRT
 C
 C***********************************************************
 C
-      REAL AA, BB, R, U, V
+      DOUBLE PRECISION AA, BB, R, U, V
 C
 C Local parameters:
 C

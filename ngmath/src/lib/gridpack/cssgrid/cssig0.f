@@ -1,10 +1,14 @@
-      REAL FUNCTION CSSIG0 (N1,N2,N,X,Y,Z,H,LIST,LPTR,LEND,
-     .                    GRAD,IFLGB,HBND,TOL,
-     .                    IFLGS, SIGMA, IER)
+C
+C	$Id: cssig0.f,v 1.2 2000-01-12 22:56:15 fred Exp $
+C
+      DOUBLE PRECISION FUNCTION CSSIG0 (N1,N2,N,X,Y,Z,H,LIST,
+     .                                LPTR,LEND,GRAD,IFLGB,
+     .                                HBND,TOL,IFLGS, SIGMA,
+     .                                IER)
       INTEGER N1, N2, N, LIST(*), LPTR(*), LEND(N), IFLGB,
      .        IFLGS, IER
-      REAL    X(N), Y(N), Z(N), H(N), GRAD(3,N), HBND, TOL,
-     .        SIGMA(*)
+      DOUBLE PRECISION X(N), Y(N), Z(N), H(N), GRAD(3,N),
+     .                 HBND, TOL, SIGMA(*)
 C
 C***********************************************************
 C
@@ -121,22 +125,23 @@ C
 C SSRFPACK modules required by CSSIG0:  CSARCLEN, CSSNHCSH
 C
 C Intrinsic functions called by CSSIG0:  ABS, EXP, LOG, MAX,
-C                                        MIN, REAL, SIGN,
+C                                        MIN, DBLE, SIGN,
 C                                        SQRT
 C
 C***********************************************************
 C
-      REAL    CSARCLEN, CSSTORE
+      DOUBLE PRECISION CSARCLEN, CSSTORE
       INTEGER LP1, LP2, LPL, LUN, NIT
-      REAL    A, A0, AA, AL, B, B0, BND, C, C1, C2, COSHM,
-     .        COSHMM, D, D0, D1PD2, D2, DMAX, DSIG, E, EMS,
-     .        F, F0, FMAX, FNEG, FTOL, H1, H2, P1(3), P2(3),
-     .        R, RF, RSIG, RTOL, S, S1, S2, SBIG, SCM, SIG,
-     .        SINHM, SNEG, SSINH, SSM, STOL, T, T0, T1, T2,
-     .        TM, UN(3), UNORM
+      DOUBLE PRECISION A, A0, AA, AL, B, B0, BND, C, C1, C2,
+     .                 COSHM, COSHMM, D, D0, D1PD2, D2,
+     .                 DMAX, DSIG, E, EMS, F, F0, FMAX,
+     .                 FNEG, FTOL, H1, H2, P1(3), P2(3), R,
+     .                 RF, RSIG, RTOL, S, S1, S2, SBIG, SCM,
+     .                 SIG, SINHM, SNEG, SSINH, SSM, STOL,
+     .                 T, T0, T1, T2, TM, UN(3), UNORM
 C
       DATA SBIG/85./,  LUN/-1/
-      RF = REAL(IFLGB)
+      RF = DBLE(IFLGB)
       BND = HBND
 C
 C Print a heading.
@@ -276,7 +281,7 @@ C   SNEG is initialized to a sufficiently large value that
 C   FNEG > 0.  This value is used only if the initial value
 C   of F is negative.
 C
-      FMAX = MAX(1.E-3,MIN(ABS(H1-BND),ABS(H2-BND)))
+      FMAX = MAX(1.D-3,MIN(ABS(H1-BND),ABS(H2-BND)))
       T = MAX(ABS(H1-BND),ABS(H2-BND))
       SIG = MAX(ABS(S1),ABS(S2))/T
       DMAX = SIG*(1.-T/FMAX)

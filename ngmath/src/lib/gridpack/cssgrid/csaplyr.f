@@ -1,5 +1,8 @@
+C
+C	$Id: csaplyr.f,v 1.2 2000-01-12 22:56:09 fred Exp $
+C
       SUBROUTINE CSAPLYR (X,Y,Z,CX,SX,CY,SY, XP,YP,ZP)
-      REAL X, Y, Z, CX, SX, CY, SY, XP, YP, ZP
+      DOUBLE PRECISION X, Y, Z, CX, SX, CY, SY, XP, YP, ZP
 C
 C***********************************************************
 C
@@ -42,7 +45,7 @@ C Intrinsic function called by CSAPLYR:  SQRT
 C
 C***********************************************************
 C
-      REAL T
+      DOUBLE PRECISION T
 C
 C Local parameter:
 C

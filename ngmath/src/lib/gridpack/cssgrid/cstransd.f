@@ -1,9 +1,9 @@
 C
-C	$Id: cstrans.f,v 1.2 2000-01-12 22:56:17 fred Exp $
+C	$Id: cstransd.f,v 1.1 2000-01-12 22:56:17 fred Exp $
 C
-      SUBROUTINE CSTRANS (N,RLAT,RLON, X,Y,Z)
+      SUBROUTINE CSTRANSD (N,RLAT,RLON, X,Y,Z)
       INTEGER N
-      REAL RLAT(N), RLON(N), X(N), Y(N), Z(N)
+      DOUBLE PRECISION RLAT(N), RLON(N), X(N), Y(N), Z(N)
 C
 C***********************************************************
 C

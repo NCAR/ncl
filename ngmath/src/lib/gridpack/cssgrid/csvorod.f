@@ -1,9 +1,9 @@
 C
-C	$Id: csvoro.f,v 1.8 2000-01-12 22:56:18 fred Exp $
+C	$Id: csvorod.f,v 1.1 2000-01-12 22:56:18 fred Exp $
 C
-      SUBROUTINE CSVORO(NPTS,RLATI,RLONI,NI,NF,IWK,RWK,NC,RLATO,RLONO,
+      SUBROUTINE CSVOROD(NPTS,RLATI,RLONI,NI,NF,IWK,RWK,NC,RLATO,RLONO,
      +                    RC,NCA,NUMV,NV,IER)
-      DOUBLE PRECISION RWK(*)
+      DOUBLE PRECISION RWK(*),RLATI,RLONI,RLATO,RLONO,RC
 C
 C  This subroutine returns vertices for a Voronoi polygon
 C  enclosing a given input coordinate.
@@ -77,7 +77,7 @@ C         IER =  6  internal error
 C         IER = -L  if coordinates L and M coincide for some
 C                   M > L >= 1 .
 C
-      PARAMETER (D2R=0.017453293, R2D=57.295778)
+      PARAMETER (D2R=0.017453293D0,R2D=57.295778D0)
       DIMENSION RLATI(NPTS),RLONI(NPTS),IWK(*),RLATO(NC),RLONO(NC),
      +          RC(NC),NV(NPTS)
 C
@@ -100,8 +100,8 @@ C  Convert RLATI and RLONI to radians.
 C
         N = NPTS 
         DO 7 I=1,N
-          RWK(3*N+I) = DBLE(D2R*RLATI(I))
-          RWK(4*N+I) = DBLE(D2R*RLONI(I))
+          RWK(3*N+I) = D2R*RLATI(I)
+          RWK(4*N+I) = D2R*RLONI(I)
     7   CONTINUE
 C
 C  Then convert to Cartesian coordinates.
@@ -136,7 +136,7 @@ C
 C
         N2 = NPTS*2
         DO 10 I = 1,N2
-            RWK(3*N+I) = -99999.
+            RWK(3*N+I) = -99999.D0
    10   CONTINUE
 C
 C  Get the pointers to the Voronoi polygon vertices.
@@ -148,9 +148,9 @@ C
      +                RWK(3*N+1),RWK(5*N+1),RWK(7*N+1),IER)
         IF (IER.EQ.0) THEN
             DO 160 K=1,N2
-              RLATO(K) = R2D*REAL(RWK(3*N+K))
-              RLONO(K) = R2D*REAL(RWK(5*N+K))
-              RC(K)    = R2D*REAL(RWK(7*N+K))
+              RLATO(K) = R2D*RWK(3*N+K)
+              RLONO(K) = R2D*RWK(5*N+K)
+              RC(K)    = R2D*RWK(7*N+K)
   160       CONTINUE 
             GO TO 220
         ELSE IF (IER.EQ.1) THEN
@@ -167,10 +167,11 @@ C
         END IF
   220   CONTINUE
 C
-C  Determine the number of circumcenters returned.
+C  Determine the number of circumcenters returned.  Remember that
+C  the RWK array was set to all -99999.D0 before getting the vertices.
 C
         DO 20 I = 1,N2
-          IF (RLATO(I).EQ.-99999.) THEN
+          IF (RLATO(I).EQ.-99999.D0) THEN
             NCA = I - 1
             GO TO 25
           END IF
@@ -193,7 +194,7 @@ C
       RETURN
 C
   200 CONTINUE
-      CALL CSSERR('CSVORO',IER)
+      CALL CSSERR('CSVOROD',IER)
       NCA = 0
       NUMV = 0
       RETURN

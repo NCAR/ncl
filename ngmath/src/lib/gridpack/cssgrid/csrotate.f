@@ -1,6 +1,9 @@
+C
+C	$Id: csrotate.f,v 1.2 2000-01-12 22:56:14 fred Exp $
+C
       SUBROUTINE CSROTATE (N,C,S, X,Y )
       INTEGER N
-      REAL    C, S, X(N), Y(N)
+      DOUBLE PRECISION C, S, X(N), Y(N)
 C
 C***********************************************************
 C
@@ -43,7 +46,7 @@ C
 C***********************************************************
 C
       INTEGER I
-      REAL    XI, YI
+      DOUBLE PRECISION XI, YI
 C
       DO 1 I = 1,N
         XI = X(I)

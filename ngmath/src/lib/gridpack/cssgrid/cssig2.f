@@ -1,9 +1,13 @@
-      REAL FUNCTION CSSIG2 (N1,N2,N,X,Y,Z,H,LIST,LPTR,LEND,
-     .                    GRAD,TOL,IFLGS, SIGMA, IER)
+C
+C	$Id: cssig2.f,v 1.2 2000-01-12 22:56:16 fred Exp $
+C
+      DOUBLE PRECISION FUNCTION CSSIG2 (N1,N2,N,X,Y,Z,H,LIST,
+     .                                LPTR,LEND,GRAD,TOL,
+     .                                IFLGS, SIGMA, IER)
       INTEGER N1, N2, N, LIST(*), LPTR(*), LEND(N), IFLGS,
      .        IER
-      REAL    X(N), Y(N), Z(N), H(N), GRAD(3,N), TOL,
-     .        SIGMA(*)
+      DOUBLE PRECISION X(N), Y(N), Z(N), H(N), GRAD(3,N),
+     .                 TOL, SIGMA(*)
 C
 C***********************************************************
 C
@@ -124,11 +128,12 @@ C                                        SQRT
 C
 C***********************************************************
 C
-      REAL    CSARCLEN, CSSTORE
+      DOUBLE PRECISION CSARCLEN, CSSTORE
       INTEGER LP1, LP2, LPL, LUN, NIT
-      REAL    AL, COSHM, D1, D1D2, D2, DSIG, DUMMY, EMS, F,
-     .        FP, FTOL, P1(3), P2(3), RTOL, S, SBIG, SIG,
-     .        SINHM, SSM, T, T1, TP1, UN(3), UNORM
+      DOUBLE PRECISION AL, COSHM, D1, D1D2, D2, DSIG, DUMMY,
+     .                 EMS, F, FP, FTOL, P1(3), P2(3), RTOL,
+     .                 S, SBIG, SIG, SINHM, SSM, T, T1, TP1,
+     .                 UN(3), UNORM
 C
       DATA SBIG/85./,  LUN/-1/
 C

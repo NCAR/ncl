@@ -1,6 +1,9 @@
+C
+C	$Id: csswptst.f,v 1.2 2000-01-12 22:56:17 fred Exp $
+C
       LOGICAL FUNCTION CSSWPTST (N1,N2,N3,N4,X,Y,Z)
       INTEGER N1, N2, N3, N4
-      REAL    X(*), Y(*), Z(*)
+      DOUBLE PRECISION X(*), Y(*), Z(*)
 C
 C***********************************************************
 C
@@ -47,8 +50,8 @@ C Modules required by CSSWPTST:  None
 C
 C***********************************************************
 C
-      REAL DX1, DX2, DX3, DY1, DY2, DY3, DZ1, DZ2, DZ3,
-     .     X4, Y4, Z4
+      DOUBLE PRECISION DX1, DX2, DX3, DY1, DY2, DY3, DZ1,
+     .                 DZ2, DZ3, X4, Y4, Z4
 C
 C Local parameters:
 C
@@ -76,6 +79,6 @@ C   (N3-N4,N2-N4 X N1-N4) > 0.
 C
       CSSWPTST = DX3*(DY2*DZ1 - DY1*DZ2)
      .        -DY3*(DX2*DZ1 - DX1*DZ2)
-     .        +DZ3*(DX2*DY1 - DX1*DY2) .GT. 0.
+     .        +DZ3*(DX2*DY1 - DX1*DY2) .GT. 0.D0
       RETURN
       END

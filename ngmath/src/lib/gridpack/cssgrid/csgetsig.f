@@ -1,8 +1,11 @@
+C
+C	$Id: csgetsig.f,v 1.2 2000-01-12 22:56:12 fred Exp $
+C
       SUBROUTINE CSGETSIG (N,X,Y,Z,H,LIST,LPTR,LEND,GRAD,
      .                   TOL, SIGMA, DSMAX,IER)
       INTEGER N, LIST(*), LPTR(*), LEND(N), IER
-      REAL    X(N), Y(N), Z(N), H(N), GRAD(3,N), TOL,
-     .        SIGMA(*), DSMAX
+      DOUBLE PRECISION X(N), Y(N), Z(N), H(N), GRAD(3,N),
+     .                 TOL, SIGMA(*), DSMAX
 C
 C***********************************************************
 C
@@ -144,14 +147,15 @@ C
 C***********************************************************
 C
       INTEGER CSLSTPTR
-      REAL    CSARCLEN, CSSTORE
+      DOUBLE PRECISION CSARCLEN, CSSTORE
       INTEGER ICNT, LP1, LP2, LPL, LUN, N1, N2, NIT, NM1
-      REAL    A, AL, C1, C2, COSHM, COSHMM, D0, D1, D1D2,
-     .        D1PD2, D2, DMAX, DSIG, DSM, E, EMS, EMS2, F,
-     .        F0, FMAX, FNEG, FP, FTOL, P1(3), P2(3), RTOL,
-     .        S, S1, S2, SBIG, SCM, SGN, SIG, SIGIN, SINHM,
-     .        SSINH, SSM, STOL, T, T0, T1, T2, TM, TP1,
-     .        UN(3), UNORM
+      DOUBLE PRECISION A, AL, C1, C2, COSHM, COSHMM, D0, D1,
+     .                 D1D2, D1PD2, D2, DMAX, DSIG, DSM, E,
+     .                 EMS, EMS2, F, F0, FMAX, FNEG, FP,
+     .                 FTOL, P1(3), P2(3), RTOL, S, S1, S2,
+     .                 SBIG, SCM, SGN, SIG, SIGIN, SINHM,
+     .                 SSINH, SSM, STOL, T, T0, T1, T2, TM,
+     .                 TP1, UN(3), UNORM
 C
       DATA SBIG/85./,  LUN/-1/
       NM1 = N - 1
@@ -311,7 +315,7 @@ C     uses three points:  (SG0,F0), (SIG,F), and
 C     (SNEG,FNEG), where SG0 and SNEG are defined implicitly
 C     by DSIG = SIG - SG0 and DMAX = SIG - SNEG.
 C
-        SGN = SIGN(1.,S)
+        SGN = SIGN(1.D0,S)
         SIG = SBIG
         FMAX = SGN*(SIG*S-S1-S2)/(SIG-2.)
         IF (FMAX .LE. 0.) GO TO 8

@@ -1,8 +1,11 @@
+C
+C	$Id: csedge.f,v 1.2 2000-01-12 22:56:11 fred Exp $
+C
       SUBROUTINE CSEDGE (IN1,IN2,X,Y,Z, LWK,IWK,LIST,LPTR,
      .                 LEND, IER)
       INTEGER IN1, IN2, LWK, IWK(2,*), LIST(*), LPTR(*),
      .        LEND(*), IER
-      REAL    X(*), Y(*), Z(*)
+      DOUBLE PRECISION X(*), Y(*), Z(*)
 C
 C***********************************************************
 C
@@ -105,8 +108,8 @@ C
       INTEGER I, IERR, IWC, IWCP1, IWEND, IWF, IWL, LFT, LP,
      .        LP21, LPL, N0, N1, N1FRST, N1LST, N2, NEXT,
      .        NIT, NL, NR
-      REAL    DP12, DP1L, DP1R, DP2L, DP2R, X0, X1, X2, Y0,
-     .        Y1, Y2, Z0, Z1, Z2
+      DOUBLE PRECISION DP12, DP1L, DP1R, DP2L, DP2R, X0, X1,
+     .                 X2, Y0, Y1, Y2, Z0, Z1, Z2
 C
 C Local parameters:
 C
@@ -220,10 +223,10 @@ C
           DP2L = X2*X(NL) + Y2*Y(NL) + Z2*Z(NL)
           DP1R = X1*X(NR) + Y1*Y(NR) + Z1*Z(NR)
           DP2R = X2*X(NR) + Y2*Y(NR) + Z2*Z(NR)
-          IF ( (DP2L-DP12*DP1L .GE. 0.  .OR.
-     .          DP2R-DP12*DP1R .GE. 0.)  .AND.
-     .         (DP1L-DP12*DP2L .GE. 0.  .OR.
-     .          DP1R-DP12*DP2R .GE. 0.) ) GO TO 6
+          IF ( (DP2L-DP12*DP1L .GE. 0.D0  .OR.
+     .          DP2R-DP12*DP1R .GE. 0.D0)  .AND.
+     .         (DP1L-DP12*DP2L .GE. 0.D0  .OR.
+     .          DP1R-DP12*DP2R .GE. 0.D0) ) GO TO 6
 C
 C   NL-NR does not intersect N1-N2.  However, there is
 C     another candidate for the first arc if NL lies on

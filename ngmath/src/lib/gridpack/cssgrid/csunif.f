@@ -1,10 +1,14 @@
+C
+C	$Id: csunif.f,v 1.2 2000-01-12 22:56:17 fred Exp $
+C
       SUBROUTINE CSUNIF (N,X,Y,Z,F,LIST,LPTR,LEND,IFLGS,SIGMA,
      .                 NROW,NI,NJ,PLAT,PLON,IFLGG, GRAD, FF,
      .                 IER)
       INTEGER N, LIST(*), LPTR(*), LEND(N), IFLGS, NROW, NI,
      .        NJ, IFLGG, IER
-      REAL    X(N), Y(N), Z(N), F(N), SIGMA(*), PLAT(NI),
-     .        PLON(NJ), GRAD(3,N), FF(NROW,NJ)
+      DOUBLE PRECISION X(N), Y(N), Z(N), F(N), SIGMA(*),
+     .                 PLAT(NI), PLON(NJ), GRAD(3,N),
+     .                 FF(NROW,NJ)
 C
 C***********************************************************
 C

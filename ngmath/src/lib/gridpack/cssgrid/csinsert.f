@@ -1,3 +1,6 @@
+C
+C	$Id: csinsert.f,v 1.2 2000-01-12 22:56:13 fred Exp $
+C
       SUBROUTINE CSINSERT (K,LP, LIST,LPTR,LNEW )
       INTEGER K, LP, LIST(*), LPTR(*), LNEW
 C

@@ -1,10 +1,14 @@
+C
+C	$Id: cssmsurf.f,v 1.2 2000-01-12 22:56:16 fred Exp $
+C
       SUBROUTINE CSSMSURF (N,X,Y,Z,U,LIST,LPTR,LEND,IFLGS,
      .                   SIGMA,W,SM,SMTOL,GSTOL,LPRNT, F,
      .                   GRAD,IER)
       INTEGER N, LIST(*), LPTR(*), LEND(N), IFLGS, LPRNT,
      .        IER
-      REAL    X(N), Y(N), Z(N), U(N), SIGMA(*), W(N), SM,
-     .        SMTOL, GSTOL, F(N), GRAD(3,N)
+      DOUBLE PRECISION X(N), Y(N), Z(N), U(N), SIGMA(*),
+     .                 W(N), SM, SMTOL, GSTOL, F(N),
+     .                 GRAD(3,N)
 C
 C***********************************************************
 C
@@ -158,8 +162,8 @@ C
 C***********************************************************
 C
       INTEGER I, IERR, ITER, ITMAX, LUN, NIT, NITMAX, NN
-      REAL    C, DFMAX, DMAX, DP, G, G0, GNEG, P, Q2, Q2MAX,
-     .        Q2MIN, S, SUMW, TOL, WI
+      DOUBLE PRECISION C, DFMAX, DMAX, DP, G, G0, GNEG, P,
+     .                 Q2, Q2MAX, Q2MIN, S, SUMW, TOL, WI
 C
 C Local parameters:
 C
@@ -216,7 +220,7 @@ C The constraint is satisfied by a constant function.
 C
         IER = 1
         IF (LUN .GE. 0) WRITE (LUN,100)
-  100   FORMAT (///1X,'CSSMSURF -- THE CONSTRAINT IS NOT ',
+  100   FORMAT (///1X,'CSSMSURF -- THE CSCONSTRAINT IS NOT ',
      .          'ACTIVE AND THE FITTING FCN IS CONSTANT.')
         RETURN
       ENDIF

@@ -1,7 +1,11 @@
+C
+C	$Id: csintrc0.f,v 1.3 2000-01-12 22:56:13 fred Exp $
+C
       SUBROUTINE CSINTRC0 (N,PLAT,PLON,X,Y,Z,W,LIST,LPTR,
      .                   LEND, IST, PW,IER)
       INTEGER N, LIST(*), LPTR(*), LEND(N), IST, IER
-      REAL    PLAT, PLON, X(N), Y(N), Z(N), W(N), PW
+      DOUBLE PRECISION PLAT, PLON, X(N), Y(N), Z(N), W(N),
+     .                 PW
 C
 C***********************************************************
 C
@@ -76,7 +80,8 @@ C
 C***********************************************************
 C
       INTEGER I1, I2, I3, LP, N1, N2
-      REAL    B1, B2, B3, P(3), PTN1, PTN2, S12, SUM
+      DOUBLE PRECISION B1, B2, B3, P(3), PTN1, PTN2, S12,
+     .                 SUM
 C
 C Local parameters:
 C

@@ -1,3 +1,6 @@
+C
+C	$Id: cscovsph.f,v 1.2 2000-01-12 22:56:11 fred Exp $
+C
       SUBROUTINE CSCOVSPH (KK,N0, LIST,LPTR,LEND,LNEW )
       INTEGER KK, N0, LIST(*), LPTR(*), LEND(*), LNEW
 C

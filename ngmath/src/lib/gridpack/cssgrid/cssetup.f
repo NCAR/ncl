@@ -1,5 +1,8 @@
+C
+C	$Id: cssetup.f,v 1.2 2000-01-12 22:56:15 fred Exp $
+C
       SUBROUTINE CSSETUP (XI,YI,WI,WK,S1,S2,WT, ROW)
-      REAL XI, YI, WI, WK, S1, S2, WT, ROW(6)
+      DOUBLE PRECISION XI, YI, WI, WK, S1, S2, WT, ROW(6)
 C
 C***********************************************************
 C
@@ -43,7 +46,7 @@ C Modules required by CSSETUP:  None
 C
 C***********************************************************
 C
-      REAL W1, W2
+      DOUBLE PRECISION W1, W2
 C
 C Local parameters:
 C

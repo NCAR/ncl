@@ -1,3 +1,6 @@
+C
+C	$Id: cstrlist.f,v 1.2 2000-01-12 22:56:17 fred Exp $
+C
       SUBROUTINE CSTRLIST (N,LIST,LPTR,LEND,NROW, NT,LTRI,IER)
       INTEGER N, LIST(*), LPTR(*), LEND(N), NROW, NT,
      .        LTRI(NROW,*), IER

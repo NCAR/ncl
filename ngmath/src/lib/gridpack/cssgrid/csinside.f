@@ -1,6 +1,9 @@
+C
+C	$Id: csinside.f,v 1.2 2000-01-12 22:56:13 fred Exp $
+C
       LOGICAL FUNCTION CSINSIDE (P,LV,XV,YV,ZV,NV,LISTV, IER)
       INTEGER LV, NV, LISTV(NV), IER
-      REAL    P(3), XV(LV), YV(LV), ZV(LV)
+      DOUBLE PRECISION P(3), XV(LV), YV(LV), ZV(LV)
 C
 C***********************************************************
 C
@@ -96,8 +99,9 @@ C***********************************************************
 C
       INTEGER I1, I2, IERR, IMX, K, K0, N, NI
       LOGICAL EVEN, LFT1, LFT2, PINR, QINR
-      REAL    B(3), BP, BQ, CN(3), D, EPS, PN(3), Q(3),
-     .        QN(3), QNRM, V1(3), V2(3), VN(3), VNRM
+      DOUBLE PRECISION B(3), BP, BQ, CN(3), D, EPS, PN(3),
+     .                 Q(3), QN(3), QNRM, V1(3), V2(3),
+     .                 VN(3), VNRM
 C
 C Local parameters:
 C
@@ -155,7 +159,7 @@ C VN =        V1 X V2, where V1->V2 is the boundary edge
 C               indexed by LISTV(K0) -> LISTV(K0+1)
 C VNRM =      Euclidean norm of VN
 C
-      DATA EPS/1.E-3/
+      DATA EPS/1.D-3/
 C
 C Store local parameters, test for error 1, and initialize
 C   K0.
@@ -184,7 +188,7 @@ C
       VN(2) = ZV(I1)*XV(I2) - XV(I1)*ZV(I2)
       VN(3) = XV(I1)*YV(I2) - YV(I1)*XV(I2)
       VNRM = SQRT(VN(1)*VN(1) + VN(2)*VN(2) + VN(3)*VN(3))
-      IF (VNRM .EQ. 0.) GO TO 1
+      IF (VNRM .EQ. 0.D0) GO TO 1
       Q(1) = XV(I1) + XV(I2) + EPS*VN(1)/VNRM
       Q(2) = YV(I1) + YV(I2) + EPS*VN(2)/VNRM
       Q(3) = ZV(I1) + ZV(I2) + EPS*VN(3)/VNRM
@@ -198,8 +202,8 @@ C
       CN(1) = Q(2)*P(3) - Q(3)*P(2)
       CN(2) = Q(3)*P(1) - Q(1)*P(3)
       CN(3) = Q(1)*P(2) - Q(2)*P(1)
-      IF (CN(1) .EQ. 0.  .AND.  CN(2) .EQ. 0.  .AND.
-     .    CN(3) .EQ. 0.) GO TO 1
+      IF (CN(1) .EQ. 0.D0  .AND.  CN(2) .EQ. 0.D0  .AND.
+     .    CN(3) .EQ. 0.D0) GO TO 1
       PN(1) = P(2)*CN(3) - P(3)*CN(2)
       PN(2) = P(3)*CN(1) - P(1)*CN(3)
       PN(3) = P(1)*CN(2) - P(2)*CN(1)
@@ -211,14 +215,14 @@ C Initialize parameters for the boundary traversal.
 C
       NI = 0
       EVEN = .TRUE.
-      BP = -2.
-      BQ = -2.
+      BP = -2.0D0
+      BQ = -2.0D0
       PINR = .TRUE.
       QINR = .TRUE.
       I2 = LISTV(N)
       IF (I2 .LT. 1  .OR.  I2 .GT. IMX) GO TO 12
       LFT2 = CN(1)*XV(I2) + CN(2)*YV(I2) +
-     .       CN(3)*ZV(I2) .GT. 0.
+     .       CN(3)*ZV(I2) .GT. 0.D0
 C
 C Loop on boundary arcs I1->I2.
 C
@@ -228,7 +232,7 @@ C
         I2 = LISTV(K)
         IF (I2 .LT. 1  .OR.  I2 .GT. IMX) GO TO 12
         LFT2 = CN(1)*XV(I2) + CN(2)*YV(I2) +
-     .         CN(3)*ZV(I2) .GT. 0.
+     .         CN(3)*ZV(I2) .GT. 0.D0
         IF (LFT1 .EQV. LFT2) GO TO 2
 C
 C   I1 and I2 are on opposite sides of Q->P.  Compute the
@@ -247,9 +251,9 @@ C   B is between Q and P (on the shorter arc) iff
 C     B Forward Q->P and B Forward P->Q       iff
 C     <B,QN> > 0 and <B,PN> > 0.
 C
-        IF (B(1)*QN(1) + B(2)*QN(2) + B(3)*QN(3) .GT. 0.
+        IF (B(1)*QN(1) + B(2)*QN(2) + B(3)*QN(3) .GT. 0.D0
      .      .AND.
-     .      B(1)*PN(1) + B(2)*PN(2) + B(3)*PN(3) .GT. 0.)
+     .      B(1)*PN(1) + B(2)*PN(2) + B(3)*PN(3) .GT. 0.D0)
      .    THEN
 C
 C   Update EVEN, BQ, QINR, BP, and PINR.

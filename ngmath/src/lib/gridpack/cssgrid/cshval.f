@@ -1,5 +1,8 @@
-      REAL FUNCTION CSHVAL (B,H1,H2,HP1,HP2,SIGMA)
-      REAL B, H1, H2, HP1, HP2, SIGMA
+C
+C	$Id: cshval.f,v 1.2 2000-01-12 22:56:13 fred Exp $
+C
+      DOUBLE PRECISION FUNCTION CSHVAL (B,H1,H2,HP1,HP2,SIGMA)
+      DOUBLE PRECISION B, H1, H2, HP1, HP2, SIGMA
 C
 C***********************************************************
 C
@@ -48,8 +51,9 @@ C Intrinsic functions called by CSHVAL:  ABS, EXP
 C
 C***********************************************************
 C
-      REAL B1, B2, CM, CM2, CMM, D1, D2, DUMMY, E, E1, E2,
-     .     EMS, S, SB1, SB2, SIG, SM, SM2, TM, TM1, TM2, TS
+      DOUBLE PRECISION B1, B2, CM, CM2, CMM, D1, D2, DUMMY,
+     .                 E, E1, E2, EMS, S, SB1, SB2, SIG, SM,
+     .                 SM2, TM, TM1, TM2, TS
       B1 = B
       B2 = 1. - B1
 C
@@ -63,7 +67,7 @@ C
 C Test the range of SIGMA.
 C
       SIG = ABS(SIGMA)
-      IF (SIG .LT. 1.E-9) THEN
+      IF (SIG .LT. 1.D-9) THEN
 C
 C Hermite cubic interpolation:
 C

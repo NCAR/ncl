@@ -1,5 +1,8 @@
-      REAL FUNCTION CSSTORE (X)
-      REAL X
+C
+C	$Id: csstore.f,v 1.2 2000-01-12 22:56:16 fred Exp $
+C
+      DOUBLE PRECISION FUNCTION CSSTORE (X)
+      DOUBLE PRECISION X
 C
 C***********************************************************
 C
@@ -33,7 +36,7 @@ C Modules required by CSSTORE:  None
 C
 C***********************************************************
 C
-      REAL Y
+      DOUBLE PRECISION Y
       COMMON/STCOM/Y
       Y = X
       CSSTORE = Y

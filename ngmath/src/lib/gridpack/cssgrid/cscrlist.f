@@ -1,8 +1,12 @@
+C
+C	$Id: cscrlist.f,v 1.2 2000-01-12 22:56:11 fred Exp $
+C
       SUBROUTINE CSCRLIST (N,NCOL,X,Y,Z,LIST,LEND, LPTR,LNEW,
-     .                   LTRI, LISTC,NB,XC,YC,ZC,RC,IER)
+     .                   LTRI, LISTC,NB,RLATO,RLONO,RC,IER)
       INTEGER  N, NCOL, LIST(*), LEND(N), LPTR(*), LNEW,
      .         LTRI(6,NCOL), LISTC(*), NB, IER
-      REAL X(N), Y(N), Z(N), XC(*), YC(*), ZC(*), RC(*)
+      DOUBLE PRECISION X(N), Y(N), Z(N), RLATO(*), RLONO(*),
+     .                 RC(*), XD, YD, ZD, PNM
 C
 C***********************************************************
 C
@@ -83,7 +87,7 @@ C               NT = 2*N-4 is the number of triangles in the
 C               triangulation (after extending it to cover
 C               the entire surface if necessary).
 C
-C       XC,YC,ZC,RC = Arrays of length NT = 2*N-4.
+C       RLATO,RLONO,RC = Arrays of length NT = 2*N-4.
 C
 C On output:
 C
@@ -106,7 +110,7 @@ C              three rows.  This array is not generally of
 C              any use.
 C
 C       LISTC = Array containing triangle indexes (indexes
-C               to XC, YC, ZC, and RC) stored in 1-1 corres-
+C               to RLATO, RLONO, and RC) stored in 1-1 corres-
 C               pondence with LIST/LPTR entries (or entries
 C               that would be stored in LIST for the
 C               extended triangulation):  the index of tri-
@@ -122,11 +126,10 @@ C               list (in the extended triangulation).
 C
 C       NB = Number of boundary nodes unless IER = 1.
 C
-C       XC,YC,ZC = Arrays containing the Cartesian coordi-
-C                  nates of the triangle circumcenters
-C                  (Voronoi vertices).  XC(I)**2 + YC(I)**2
-C                  + ZC(I)**2 = 1.  The first NB-2 entries
-C                  correspond to pseudo-triangles if NB > 0.
+C       RLATO,RLONO = Arrays containing the lat/lon coordi-
+C                     nates of the triangle circumcenters
+C                     (Voronoi vertices).  The first NB-2 entries
+C                     correspond to pseudo-triangles if NB > 0.
 C
 C       RC = Array containing circumradii (the arc lengths
 C            or angles between the circumcenters and associ-
@@ -152,7 +155,7 @@ C
      .        N3, N4, NM2, NN, NT
       LOGICAL CSSWPTST
       LOGICAL SWP
-      REAL    C(3), T, V1(3), V2(3), V3(3)
+      DOUBLE PRECISION C(3), T, V1(3), V2(3), V3(3)
 C
 C Local parameters:
 C
@@ -357,12 +360,14 @@ C
 C   Store the negative circumcenter and radius (computed
 C     from <V1,C>).
 C
-        XC(KT) = C(1)
-        YC(KT) = C(2)
-        ZC(KT) = C(3)
+        
+        XD = C(1)
+        YD = C(2)
+        ZD = C(3)
+        CALL CSSCOORDD(XD,YD,ZD,RLATO(KT),RLONO(KT),PNM)
         T = V1(1)*C(1) + V1(2)*C(2) + V1(3)*C(3)
-        IF (T .LT. -1.0) T = -1.0
-        IF (T .GT. 1.0) T = 1.0
+        IF (T .LT. -1.0D0) T = -1.0D0
+        IF (T .GT. 1.0D0) T = 1.0D0
         RC(KT) = ACOS(T)
     8   CONTINUE
 C
@@ -406,12 +411,13 @@ C
 C
 C   Store the circumcenter, radius and triangle index.
 C
-          XC(KT) = C(1)
-          YC(KT) = C(2)
-          ZC(KT) = C(3)
+          XD = C(1)
+          YD = C(2)
+          ZD = C(3)
+          CALL CSSCOORDD(XD,YD,ZD,RLATO(KT),RLONO(KT),PNM)
           T = V1(1)*C(1) + V1(2)*C(2) + V1(3)*C(3)
-          IF (T .LT. -1.0) T = -1.0
-          IF (T .GT. 1.0) T = 1.0
+          IF (T .LT. -1.0D0) T = -1.0D0
+          IF (T .GT. 1.0D0) T = 1.0D0
           RC(KT) = ACOS(T)
 C
 C   Store KT in LISTC(LPN), where Abs(LIST(LPN)) is the

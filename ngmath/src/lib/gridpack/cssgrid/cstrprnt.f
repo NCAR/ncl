@@ -1,6 +1,9 @@
+C
+C	$Id: cstrprnt.f,v 1.2 2000-01-12 22:56:17 fred Exp $
+C
       SUBROUTINE CSTRPRNT (N,X,Y,Z,IFLAG,LIST,LPTR,LEND,LOUT)
       INTEGER N, IFLAG, LIST(*), LPTR(*), LEND(N), LOUT
-      REAL    X(N), Y(N), Z(N)
+      DOUBLE PRECISION X(N), Y(N), Z(N)
 C
 C***********************************************************
 C
@@ -247,8 +250,8 @@ C
   103 FORMAT (1X,'Node',5X,'X(Node)',8X,'Y(Node)',8X,
      .        'Z(Node)',11X,'Neighbors of Node'//)
   104 FORMAT (1X,I4,4X,14I5/(1X,8X,14I5))
-  105 FORMAT (1X,I4,2E15.6,4X,8I5/(1X,38X,8I5))
-  106 FORMAT (1X,I4,3E15.6,4X,5I5/(1X,53X,5I5))
+  105 FORMAT (1X,I4,2D15.6,4X,8I5/(1X,38X,8I5))
+  106 FORMAT (1X,I4,3D15.6,4X,5I5/(1X,53X,5I5))
   107 FORMAT (1X)
   108 FORMAT (///)
   109 FORMAT (/1X,'NB = ',I4,' Boundary Nodes',5X,

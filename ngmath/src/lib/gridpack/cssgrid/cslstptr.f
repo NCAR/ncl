@@ -1,3 +1,6 @@
+C
+C	$Id: cslstptr.f,v 1.2 2000-01-12 22:56:14 fred Exp $
+C
       INTEGER FUNCTION CSLSTPTR (LPL,NB,LIST,LPTR)
       INTEGER LPL, NB, LIST(*), LPTR(*)
 C

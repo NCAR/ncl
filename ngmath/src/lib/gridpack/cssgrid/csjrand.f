@@ -1,3 +1,6 @@
+C
+C	$Id: csjrand.f,v 1.2 2000-01-12 22:56:13 fred Exp $
+C
       INTEGER FUNCTION CSJRAND (N, IX,IY,IZ )
       INTEGER N, IX, IY, IZ
 C
@@ -59,6 +62,6 @@ C
       X = (REAL(IX)/30269.) + (REAL(IY)/30307.) +
      .    (REAL(IZ)/30323.)
       U = X - INT(X)
-      CSJRAND = REAL(N)*U + 1.
+      CSJRAND = REAL(N)*U + 1.0E0
       RETURN
       END

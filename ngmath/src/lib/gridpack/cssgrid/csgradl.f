@@ -1,6 +1,9 @@
+C
+C	$Id: csgradl.f,v 1.2 2000-01-12 22:56:12 fred Exp $
+C
       SUBROUTINE CSGRADL (N,K,X,Y,Z,W,LIST,LPTR,LEND, G,IER)
       INTEGER N, K, LIST(*), LPTR(*), LEND(N), IER
-      REAL    X(N), Y(N), Z(N), W(N), G(3)
+      DOUBLE PRECISION X(N), Y(N), Z(N), W(N), G(3)
 C
 C***********************************************************
 C
@@ -71,7 +74,7 @@ C SSRFPACK modules required by CSGRADL:  CSAPLYR, CSAPLYRT,
 C                                        CSCONSTR, CSGIVENS,
 C                                        CSROTATE, CSSETUP
 C
-C Intrinsic functions called by CSGRADL:  ABS, MIN, REAL, SQRT
+C Intrinsic functions called by CSGRADL:  ABS, MIN, DBLE, SQRT
 C
 C***********************************************************
 C
@@ -79,11 +82,11 @@ C
       PARAMETER (LMN=10,  LMX=30)
       INTEGER I, IERR, IM1, IP1, J, JP1, KK, L, LM1, LMAX,
      .        LMIN, LNP, NN, NP, NPTS(LMX)
-      REAL    A(6,6), AV, AVSQ, C, CX, CY, DF, DMIN, DTOL,
-     .        DX, DY, RF, RIN, RTOL, S, SF, SUM, SX, SY,
-     .        WK, WT, XP, YP, ZP
+      DOUBLE PRECISION A(6,6), AV, AVSQ, C, CX, CY, DF,
+     .                 DMIN, DTOL, DX, DY, RF, RIN, RTOL, S,
+     .                 SF, SUM, SX, SY, WK, WT, XP, YP, ZP
 C
-      DATA    RTOL/1.E-6/, DTOL/.01/, SF/1./
+      DATA    RTOL/1.D-6/, DTOL/.01D0/, SF/1.D0/
 C
 C Local parameters:
 C
@@ -210,7 +213,7 @@ C
 C   There are LNP-2 equations corresponding to nodes
 C     NPTS(2),...,NPTS(LNP-1).
 C
-    3 AVSQ = SUM/REAL(LNP-2)
+    3 AVSQ = SUM/DBLE(LNP-2)
       AV = SQRT(AVSQ)
       RIN = 1./(1.+RF)
 C

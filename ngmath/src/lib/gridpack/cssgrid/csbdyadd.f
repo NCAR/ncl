@@ -1,3 +1,6 @@
+C
+C	$Id: csbdyadd.f,v 1.2 2000-01-12 22:56:10 fred Exp $
+C
       SUBROUTINE CSBDYADD (KK,I1,I2, LIST,LPTR,LEND,LNEW )
       INTEGER KK, I1, I2, LIST(*), LPTR(*), LEND(*), LNEW
 C

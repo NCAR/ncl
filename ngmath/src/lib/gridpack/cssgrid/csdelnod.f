@@ -1,8 +1,11 @@
+C
+C	$Id: csdelnod.f,v 1.2 2000-01-12 22:56:11 fred Exp $
+C
       SUBROUTINE CSDELNOD (K, N,X,Y,Z,LIST,LPTR,LEND,LNEW,LWK,
      .                   IWK, IER)
       INTEGER K, N, LIST(*), LPTR(*), LEND(*), LNEW, LWK,
      .        IWK(2,*), IER
-      REAL    X(*), Y(*), Z(*)
+      DOUBLE PRECISION X(*), Y(*), Z(*)
 C
 C***********************************************************
 C
@@ -11,7 +14,7 @@ C                                            Robert J. Renka
 C                                  Dept. of Computer Science
 C                                       Univ. of North Texas
 C                                           renka@cs.unt.edu
-C                                                   07/30/98
+C                                                   11/30/99
 C
 C   This subroutine deletes node K (along with all arcs
 C incident on node K) from a triangulation of N nodes on the
@@ -53,25 +56,25 @@ C On output:
 C
 C       N = Number of nodes in the triangulation on output.
 C           The input value is decremented unless 1 .LE. IER
-C           .LE. 3.
+C           .LE. 4.
 C
 C       X,Y,Z = Updated arrays containing nodal coordinates
 C               (with elements K+1,...,N+1 shifted up one
 C               position, thus overwriting element K) unless
-C               1 .LE. IER .LE. 3.
+C               1 .LE. IER .LE. 4.
 C
 C       LIST,LPTR,LEND,LNEW = Updated triangulation data
 C                             structure reflecting the dele-
-C                             tion unless 1 .LE. IER .LE. 3.
+C                             tion unless 1 .LE. IER .LE. 4.
 C                             Note that the data structure
-C                             may have been altered if IER
-C                             .GE. 3.
+C                             may have been altered if IER >
+C                             3.
 C
 C       LWK = Number of IWK columns required unless IER = 1
 C             or IER = 3.
 C
 C       IWK = Indexes of the endpoints of the new arcs added
-C             unless LWK = 0 or 1 .LE. IER .LE. 3.  (Arcs
+C             unless LWK = 0 or 1 .LE. IER .LE. 4.  (Arcs
 C             are associated with columns, or pairs of
 C             adjacent elements if IWK is declared as a
 C             singly-subscripted array.)
@@ -84,11 +87,15 @@ C             IER = 2 if more space is required in IWK.
 C                     Refer to LWK.
 C             IER = 3 if the triangulation data structure is
 C                     invalid on input.
-C             IER = 4 if an error flag (other than IER = 1)
+C             IER = 4 if K indexes an interior node with
+C                     four or more neighbors, none of which
+C                     can be swapped out due to collineari-
+C                     ty, and K cannot therefore be deleted.
+C             IER = 5 if an error flag (other than IER = 1)
 C                     was returned by CSOPTIM.  An error
 C                     message is written to the standard
 C                     output unit in this case.
-C             IER = 5 if error flag 1 was returned by CSOPTIM.
+C             IER = 6 if error flag 1 was returned by CSOPTIM.
 C                     This is not necessarily an error, but
 C                     the arcs may not be optimal.
 C
@@ -108,7 +115,8 @@ C
      .        NNB, NR
       LOGICAL CSLEFT
       LOGICAL BDRY
-      REAL    X1, X2, XL, XR, Y1, Y2, YL, YR, Z1, Z2, ZL, ZR
+      DOUBLE PRECISION X1, X2, XL, XR, Y1, Y2, YL, YR, Z1,
+     .                 Z2, ZL, ZR
 C
 C Local parameters:
 C
@@ -161,7 +169,7 @@ C
       LWK = NNB - 3
       IF (LWKL .LT. LWK) GO TO 22
       IWL = 0
-      IF (NNB .EQ. 3) GO TO 4
+      IF (NNB .EQ. 3) GO TO 3
 C
 C Initialize for loop on arcs N1-N2 for neighbors N2 of N1,
 C   beginning with the second neighbor.  NR and NL are the
@@ -187,7 +195,7 @@ C
 C Top of loop:  set NL to the neighbor following N2.
 C
     1 NL = ABS(LIST(LP))
-      IF (NL .EQ. NFRST  .AND.  BDRY) GO TO 4
+      IF (NL .EQ. NFRST  .AND.  BDRY) GO TO 3
       XL = X(NL)
       YL = Y(NL)
       ZL = Z(NL)
@@ -198,25 +206,34 @@ C     is a boundary node, then N1 CSLEFT NR->NL and if N2 is
 C     a boundary node, then N2 CSLEFT NL->NR.
 C
       LPL2 = LEND(N2)
-      IF ( (BDRY  .OR.  CSLEFT(XR,YR,ZR,XL,YL,ZL,X1,Y1,Z1))
-     .     .AND.  (LIST(LPL2) .LT. 0  .OR.
-     .      CSLEFT(XL,YL,ZL,XR,YR,ZR,X2,Y2,Z2)) ) GO TO 2
+      IF ( .NOT. ((BDRY  .OR.  CSLEFT(XR,YR,ZR,XL,YL,ZL,X1,Y1,
+     .      Z1))  .AND.  (LIST(LPL2) .LT. 0  .OR.
+     .      CSLEFT(XL,YL,ZL,XR,YR,ZR,X2,Y2,Z2))) ) THEN
 C
 C   Nonconvex quadrilateral -- no swap is possible.
 C
-      NR = N2
-      XR = X2
-      YR = Y2
-      ZR = Z2
-      GO TO 3
+        NR = N2
+        XR = X2
+        YR = Y2
+        ZR = Z2
+        GO TO 2
+      ENDIF
 C
 C   The quadrilateral defined by adjacent triangles
 C     (N1,N2,NL) and (N2,N1,NR) is convex.  Swap in
-C     NL-NR and store it in IWK.  Indexes larger than N1
-C     must be decremented since N1 will be deleted from
-C     X, Y, and Z.
+C     NL-NR and store it in IWK unless NL and NR are
+C     already adjacent, in which case the swap is not
+C     possible.  Indexes larger than N1 must be decremented
+C     since N1 will be deleted from X, Y, and Z.
 C
-    2 CALL CSSWAP (NL,NR,N1,N2, LIST,LPTR,LEND, LP21)
+      CALL CSSWAP (NL,NR,N1,N2, LIST,LPTR,LEND, LP21)
+      IF (LP21 .EQ. 0) THEN
+        NR = N2
+        XR = X2
+        YR = Y2
+        ZR = Z2
+        GO TO 2
+      ENDIF
       IWL = IWL + 1
       IF (NL .LE. N1) THEN
         IWK(1,IWL) = NL
@@ -229,13 +246,15 @@ C
         IWK(2,IWL) = NR - 1
       ENDIF
 C
-C   Recompute the LIST indexes LPL,LP and decrement NNB.
+C   Recompute the LIST indexes and NFRST, and decrement NNB.
 C
       LPL = LEND(N1)
       NNB = NNB - 1
-      IF (NNB .EQ. 3) GO TO 4
+      IF (NNB .EQ. 3) GO TO 3
+      LPF = LPTR(LPL)
+      NFRST = LIST(LPF)
       LP = CSLSTPTR(LPL,NL,LIST,LPTR)
-      IF (NR .EQ. NFRST) GO TO 3
+      IF (NR .EQ. NFRST) GO TO 2
 C
 C   NR is not the first neighbor of N1.
 C     Back up and test N1-NR for a swap again:  Set N2 to
@@ -255,9 +274,9 @@ C
       ZR = Z(NR)
       GO TO 1
 C
-C   Bottom of loop -- test for invalid termination.
+C   Bottom of loop -- test for termination of loop.
 C
-    3 IF (N2 .EQ. NFRST) GO TO 4
+    2 IF (N2 .EQ. NFRST) GO TO 3
       N2 = NL
       X2 = XL
       Y2 = YL
@@ -266,17 +285,17 @@ C
       GO TO 1
 C
 C Delete N1 and all its incident arcs.  If N1 is an interior
-C   node and (NNB > 3 or N2 CSLEFT NR->NL), then N1 must be
-C   separated from its neighbors by a plane containing the
-C   origin -- its removal reverses the effect of a call to
-C   CSCOVSPH, and all its neighbors become boundary nodes.
-C   This is achieved by treating it as if it were a boundary
-C   node (setting BDRY to TRUE and changing a sign in LIST).
+C   node and either NNB > 3 or NNB = 3 and N2 CSLEFT NR->NL,
+C   then N1 must be separated from its neighbors by a plane
+C   containing the origin -- its removal reverses the effect
+C   of a call to CSCOVSPH, and all its neighbors become
+C   boundary nodes.  This is achieved by treating it as if
+C   it were a boundary node (setting BDRY to TRUE, changing
+C   a sign in LIST, and incrementing NNB).
 C
-    4 IF (.NOT. BDRY) THEN
+    3 IF (.NOT. BDRY) THEN
         IF (NNB .GT. 3) THEN
           BDRY = .TRUE.
-          LIST(LPL) = -LIST(LPL)
         ELSE
           LPF = LPTR(LPL)
           NR = LIST(LPF)
@@ -285,9 +304,25 @@ C
           NL = LIST(LPL)
           BDRY = CSLEFT(X(NR),Y(NR),Z(NR),X(NL),Y(NL),Z(NL),
      .                X(N2),Y(N2),Z(N2))
-          IF (BDRY) LIST(LPL) = -NL
+        ENDIF
+        IF (BDRY) THEN
+C
+C   IF a boundary node already exists, then N1 and its
+C     neighbors cannot be converted to boundary nodes.
+C     (They must be collinear.)  This is a problem if
+C     NNB > 3.
+C
+          DO 4 I = 1,NN
+            IF (LIST(LEND(I)) .LT. 0) THEN
+              BDRY = .FALSE.
+              GO TO 5
+            ENDIF
+    4       CONTINUE
+          LIST(LPL) = -LIST(LPL)
+          NNB = NNB + 1
         ENDIF
       ENDIF
+    5 IF (.NOT. BDRY  .AND.  NNB .GT. 3) GO TO 24
 C
 C Initialize for loop on neighbors.  LPL points to the last
 C   neighbor of N1.  LNEW is stored in local variable LNW.
@@ -354,9 +389,7 @@ C
    10     CONTINUE
 C
    11   DO 12 I = LNW-1,1,-1
-          IF (LPTR(I) .EQ. LNW) THEN
-            LPTR(I) = LP
-          ENDIF
+          IF (LPTR(I) .EQ. LNW) LPTR(I) = LP
    12     CONTINUE
    13   CONTINUE
 C
@@ -369,8 +402,8 @@ C
       IF (IWL .GT. 0) THEN
         NIT = 4*IWL
         CALL CSOPTIM (X,Y,Z,IWL, LIST,LPTR,LEND,NIT,IWK, IERR)
-        IF (IERR .NE. 0  .AND.  IERR .NE. 1) GO TO 24
-        IF (IERR .EQ. 1) GO TO 25
+        IF (IERR .NE. 0  .AND.  IERR .NE. 1) GO TO 25
+        IF (IERR .EQ. 1) GO TO 26
       ENDIF
 C
 C Successful termination.
@@ -394,9 +427,14 @@ C
    23 IER = 3
       RETURN
 C
-C Error flag (other than 1) returned by CSOPTIM.
+C N1 is interior but NNB could not be reduced to 3.
 C
    24 IER = 4
+      RETURN
+C
+C Error flag (other than 1) returned by CSOPTIM.
+C
+   25 IER = 5
       WRITE (*,100) NIT, IERR
   100 FORMAT (//5X,'*** Error in CSOPTIM (called from ',
      .        'CSDELNOD):  NIT = ',I4,', IER = ',I1,' ***'/)
@@ -404,6 +442,6 @@ C
 C
 C Error flag 1 returned by CSOPTIM.
 C
-   25 IER = 5
+   26 IER = 6
       RETURN
       END

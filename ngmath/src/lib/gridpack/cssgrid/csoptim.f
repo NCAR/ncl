@@ -1,8 +1,11 @@
+C
+C	$Id: csoptim.f,v 1.2 2000-01-12 22:56:14 fred Exp $
+C
       SUBROUTINE CSOPTIM (X,Y,Z,NA, LIST,LPTR,LEND,NIT,
      .                  IWK, IER)
       INTEGER NA, LIST(*), LPTR(*), LEND(*), NIT, IWK(2,NA),
      .        IER
-      REAL    X(*), Y(*), Z(*)
+      DOUBLE PRECISION X(*), Y(*), Z(*)
 C
 C***********************************************************
 C

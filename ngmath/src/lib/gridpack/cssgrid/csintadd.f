@@ -1,3 +1,6 @@
+C
+C	$Id: csintadd.f,v 1.2 2000-01-12 22:56:13 fred Exp $
+C
       SUBROUTINE CSINTADD (KK,I1,I2,I3, LIST,LPTR,LEND,LNEW )
       INTEGER KK, I1, I2, I3, LIST(*), LPTR(*), LEND(*),
      .        LNEW
