@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.172 2005-01-12 20:54:57 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.173 2005-01-21 22:51:06 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -334,6 +334,15 @@ NhlErrorTypes _NclIListFuncs
 						}
 					}
 				}
+				else if (step->u.func->theargs[i].n_dims > 0) {
+					for(j = 0; j < step->u.func->theargs[i].n_dims; j++ ) {
+						ret = nclfprintf(fp,"[*]");
+						if(ret < 0) {
+							_NclFreeApiDataList((void*)tmp);
+							return(NhlWARNING);
+						}
+					}
+				}
 				if(step->u.func->theargs[i].arg_data_type > 0) {
 					ret = nclfprintf(fp,": %s,\n",NrmQuarkToString(step->u.func->theargs[i].arg_data_type));
 					if(ret < 0) {
@@ -374,6 +383,15 @@ NhlErrorTypes _NclIListFuncs
 							_NclFreeApiDataList((void*)tmp);
         						return(NhlWARNING);
 						}
+					}
+				}
+			}
+			else if (step->u.func->theargs[step->u.func->nparams-1].n_dims > 0) {
+				for(j = 0; j < step->u.func->theargs[step->u.func->nparams-1].n_dims; j++ ) {
+					ret = nclfprintf(fp,"[*]");
+					if(ret < 0) {
+						_NclFreeApiDataList((void*)tmp);
+						return(NhlWARNING);
 					}
 				}
 			}
