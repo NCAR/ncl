@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.22 1995-12-01 01:04:41 ethan Exp $
+ *      $Id: defs.h,v 1.23 1996-09-04 22:00:29 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -41,6 +41,15 @@ typedef struct _NclDimRec {
         long   dim_num;
         int   dim_size;
 } NclDimRec;
+
+
+typedef void (*NclPromptFunc)(
+#if     NhlNeedProto
+void * /*user_data*/,
+int /*arg*/
+#endif
+);
+
 
 
 /*
@@ -169,6 +178,7 @@ void _NclEndCmdLinePager(
 void
 #endif
 );
+
 #endif /*_NCdefs.h*/
 #ifdef __cplusplus
 }

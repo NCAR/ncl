@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.35 1996-07-25 19:47:12 ethan Exp $
+ *      $Id: Symbol.c,v 1.36 1996-09-04 22:00:26 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -90,6 +90,73 @@ void
 #endif
 );
 
+NhlErrorTypes _NclWalkSymTable 
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclApiDataList *tmp = NULL,*thelist = NULL;
+	NclSymTableListNode *st;
+	NclSymbol *s;
+	int i,j;
+	NclStackEntry *thevar = NULL;
+	NclFile thefile = NULL;
+	NclMultiDValData theid;
+
+	st = thetablelist;
+	while(st != NULL) {
+                for(i = 0; i < NCL_SYM_TAB_SIZE; i++) {
+                        if(st->sr->this_scope[i].nelem != 0) {
+				s = st->sr->this_scope[i].thelist;
+                                while(s != NULL) {
+					switch(s->type) {
+					case VAR:
+						fprintf(stdout,"VAR: %s\n",s->name);
+						break;
+					case UNDEF:
+						fprintf(stdout,"UNDEF: %s\n",s->name);
+						break;
+					case FUNC:
+						fprintf(stdout,"FUNC: %s\n",s->name);
+						break;
+					case NPROC: 
+						fprintf(stdout,"NPROC: %s\n",s->name);
+						_NclPushMachine(s->u.procfunc->mach_rec_ptr);
+						_NclPrintMachine(-1,-1,stdout);
+						(void) _NclPopMachine();
+						break;
+					case NFUNC:
+						fprintf(stdout,"NFUNC: %s\n",s->name);
+						_NclPushMachine(s->u.procfunc->mach_rec_ptr);
+						_NclPrintMachine(-1,-1,stdout);
+						(void) _NclPopMachine();
+						break;
+					case PROC:
+						fprintf(stdout,"PROC: %s\n",s->name);
+						break;
+					case IPROC: 
+						fprintf(stdout,"IPROC: %s\n",s->name);
+						break;
+					case IFUNC: 
+						fprintf(stdout,"IFUNC: %s\n",s->name);
+						break;
+					case EPROC:
+						fprintf(stdout,"EPROC: %s\n",s->name);
+						break;
+					case EFUNC:
+						fprintf(stdout,"EFUNC: %s\n",s->name);
+						break;
+					}
+					s = s->symnext;
+                                }
+                        }
+                }
+                st = st->previous;
+        }
+        return(NhlNOERROR);
+}
 static NclSelectionRecord *BuildSel
 #if     NhlNeedProto
 (int n_dims, int *dimsizes,long* start, long* finish, long* stride)

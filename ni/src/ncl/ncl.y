@@ -142,8 +142,10 @@ statement_list :  statement eoln			{
 									_NclFreeTree();
 									is_error = 0;
 								}
-								if(cmd_line) {
+								if(cmd_line == 1) {
 									fprintf(stdout,"ncl %d> ",cur_line_number);
+								} else if(cmd_line == 2) {
+									_NclCallPromptFunc(cur_line_number);
 								}
 							}
 	| statement_list statement eoln			{		
@@ -169,8 +171,11 @@ statement_list :  statement eoln			{
 									_NclFreeTree();
 									is_error = 0;
 								}
-								if(cmd_line)
+								if(cmd_line == 1) {
 									fprintf(stdout,"ncl %d> ",cur_line_number);
+								} else if(cmd_line == 2) {
+									_NclCallPromptFunc(cur_line_number);
+								}
 							}
 	| statement_list RECORD STRING eoln		{ 
 /*
@@ -184,8 +189,11 @@ statement_list :  statement eoln			{
 									NhlPError(NhlWARNING,errno,"Could not open record file");
 									rec = 0;
 								}
-								if(cmd_line)
+								if(cmd_line == 1) {
 									fprintf(stdout,"ncl %d> ",cur_line_number);
+								} else if(cmd_line == 2) {
+									_NclCallPromptFunc(cur_line_number);
+								}
 							}
 	| RECORD STRING eoln				{ 
 								recfp = fopen(_NGResolvePath($2),"w"); 
@@ -195,8 +203,10 @@ statement_list :  statement eoln			{
 									NhlPError(NhlWARNING,errno,"Could not open record file");
 									rec = 0;
 								}
-								if(cmd_line) {
+								if(cmd_line == 1) {
 									fprintf(stdout,"ncl %d> ",cur_line_number);
+								} else if(cmd_line == 2) {
+									_NclCallPromptFunc(cur_line_number);
 								}
 							}
 /*
@@ -217,8 +227,10 @@ statement_list :  statement eoln			{
 								} else {
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",$2);
 								}
-								if(cmd_line) {
+								if(cmd_line == 1) {
 									fprintf(stdout,"ncl %d> ",cur_line_number);
+								} else if(cmd_line == 2) {
+									_NclCallPromptFunc(cur_line_number);
 								}
 #else
 								FILE *tmp_file;
@@ -261,8 +273,10 @@ statement_list :  statement eoln			{
 								} else {
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",$3);
 								}
-								if(cmd_line) {
+								if(cmd_line == 1) {
 									fprintf(stdout,"ncl %d> ",cur_line_number);
+								} else if(cmd_line == 2) {
+									_NclCallPromptFunc(cur_line_number);
 								}
 #else
 								FILE *tmp_file;
@@ -304,7 +318,11 @@ block_statement_list : statement eoln {
 									} else {
 										_NclResetNewSymStack();
 									}
-									fprintf(stdout,"ncl %d> ",cur_line_number);
+									if(cmd_line == 1) {
+										fprintf(stdout,"ncl %d> ",cur_line_number);
+									} else if(cmd_line == 2) {
+										_NclCallPromptFunc(cur_line_number);
+									}
 								}
 								if($1 != NULL) {
 									$$ = _NclMakeNewListNode();
@@ -327,7 +345,11 @@ block_statement_list : statement eoln {
 									} else {
 										_NclResetNewSymStack();
 									}
-									fprintf(stdout,"ncl %d> ",cur_line_number);
+									if(cmd_line == 1) {
+										fprintf(stdout,"ncl %d> ",cur_line_number);
+									} else if(cmd_line == 2) {
+										_NclCallPromptFunc(cur_line_number);
+									}
 								}
 								if($1 == NULL) {
 									if($2 != NULL) {
@@ -360,8 +382,11 @@ block_statement_list : statement eoln {
 									rec = 0;
 								}
 								$$ = $1;
-								if(cmd_line)
+								if(cmd_line == 1) {
 									fprintf(stdout,"ncl %d> ",cur_line_number);
+								} else if(cmd_line == 2) {
+									_NclCallPromptFunc(cur_line_number);
+								}
 							}
 	| RECORD STRING eoln				{ 
 								recfp = fopen(_NGResolvePath($2),"w"); 
@@ -371,8 +396,11 @@ block_statement_list : statement eoln {
 									NhlPError(NhlWARNING,errno,"Could not open record file");
 									rec = 0;
 								}
-								if(cmd_line)
+								if(cmd_line == 1) {
 									fprintf(stdout,"ncl %d> ",cur_line_number);
+								} else if(cmd_line == 2) {
+									_NclCallPromptFunc(cur_line_number);
+								}
 								$$ = NULL;
 							}
 /*
@@ -393,9 +421,11 @@ block_statement_list : statement eoln {
                                                                 } else {
                                                                         NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",$2);
                                                                 }
-                                                                if(cmd_line) {
-                                                                        fprintf(stdout,"ncl %d> ",cur_line_number);
-                                                                }
+								if(cmd_line == 1) {
+									fprintf(stdout,"ncl %d> ",cur_line_number);
+								} else if(cmd_line == 2) {
+									_NclCallPromptFunc(cur_line_number);
+								}
 #else
                                                                 FILE *tmp_file;
                                                                 const char * tmp;
@@ -438,9 +468,11 @@ block_statement_list : statement eoln {
                                                                 } else {
                                                                         NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",$3);
                                                                 }
-                                                                if(cmd_line) {
-                                                                        fprintf(stdout,"ncl %d> ",cur_line_number);
-                                                                }
+								if(cmd_line == 1) {
+									fprintf(stdout,"ncl %d> ",cur_line_number);
+								} else if(cmd_line == 2) {
+									_NclCallPromptFunc(cur_line_number);
+								}
 #else
                                                                 FILE *tmp_file;
                                                                 const char * tmp;
@@ -475,8 +507,11 @@ block_statement_list : statement eoln {
 opt_eoln : 		{ /* do nothing */ }
 	| opt_eoln eoln	{ 
 				yyerrok;
-				if(cmd_line)
+				if(cmd_line == 1) {
 					fprintf(stdout,"ncl %d> ",cur_line_number);
+				} else if(cmd_line == 2) {
+					_NclCallPromptFunc(cur_line_number);
+				}
 			}	
 ;
 
@@ -685,8 +720,10 @@ get_resource_list : get_resource eoln		{
 							} else {
 								$$ = NULL;
 							}
-							if(cmd_line) {
+							if(cmd_line == 1) {
 								fprintf(stdout,"ncl %d> ",cur_line_number);
+							} else if(cmd_line == 2) {
+								_NclCallPromptFunc(cur_line_number);
 							}
 						}
 	| get_resource_list get_resource eoln	{
@@ -708,8 +745,10 @@ get_resource_list : get_resource eoln		{
 									is_error = 0;
 								}
 							}
-							if(cmd_line) {
+							if(cmd_line == 1) {
 								fprintf(stdout,"ncl %d> ",cur_line_number);
+							} else if(cmd_line == 2) {
+								_NclCallPromptFunc(cur_line_number);
 							}
 						}
 ;
@@ -753,8 +792,10 @@ resource_list : resource eoln			{
 							} else {
 								$$ = NULL;
 							}
-							if(cmd_line) {
+							if(cmd_line == 1) {
 								fprintf(stdout,"ncl %d> ",cur_line_number);
+							} else if(cmd_line == 2) {
+								_NclCallPromptFunc(cur_line_number);
 							}
 						}
 						
@@ -781,8 +822,10 @@ resource_list : resource eoln			{
 								}
 						
 							}
-							if(cmd_line) {
+							if(cmd_line == 1) {
 								fprintf(stdout,"ncl %d> ",cur_line_number);
+							} else if(cmd_line == 2) {
+								_NclCallPromptFunc(cur_line_number);
 							}
 						}	
 	| resource_list error eoln		{
@@ -791,9 +834,10 @@ resource_list : resource eoln			{
 /*
 							_NclDeleteNewSymStack();	
 */
-							if(cmd_line) {
-
+							if(cmd_line == 1) {
 								fprintf(stdout,"ncl %d> ",cur_line_number);
+							} else if(cmd_line == 2) {
+								_NclCallPromptFunc(cur_line_number);
 							}
 						}
 ;

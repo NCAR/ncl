@@ -10,6 +10,7 @@ extern char *cur_load_file;
 extern int cur_line_number;
 extern int top_level_line;
 extern int cmd_line;
+extern int cmd_line_is_set;
 
 #if     defined(SunOS) && (MAJOR == 4)
 extern FILE *nclin;
@@ -42,14 +43,24 @@ int yywrap()
 		cur_load_file = NULL;
 */
 #if     defined(SunOS) && (MAJOR == 4)
-		cmd_line = isatty(fileno(nclin));
+
+		if((cmd_line_is_set)&&(!loading)) {
+			cmd_line = cmd_line_is_set;
+		} else {
+			cmd_line = isatty(fileno(nclin)) ? 1 :0;
+		}
 #else
-		cmd_line = isatty(fileno(yyin));
+		if((cmd_line_is_set)&&(!loading)) {
+			cmd_line = cmd_line_is_set;
+		} else {
+			cmd_line = isatty(fileno(yyin))? 1: 0;
+		}
 #endif
 
-		if(cmd_line) {
+		if(cmd_line == 1) {
 			fprintf(stdout,"ncl %d> ",cur_line_number);
-
+		} else if(cmd_line == 2) {
+			_NclCallPromptFunc(cur_line_number);
 		}
 		return(0);
 	} else {

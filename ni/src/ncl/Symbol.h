@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.21 1996-07-25 19:47:14 ethan Exp $
+ *      $Id: Symbol.h,v 1.22 1996-09-04 22:00:28 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -475,6 +475,12 @@ extern struct _NclExtValueRec *_NclReadVarCoordAtt(
 NclQuark /*var_sym_name*/,
 NclQuark /*coordname*/,
 NclQuark /*attname*/
+#endif
+);
+
+extern NhlErrorTypes _NclWalkSymTable(
+#if	NhlNeedProto
+void
 #endif
 );
 

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.h,v 1.14 1996-08-29 23:39:10 ethan Exp $
+ *      $Id: NclApi.h,v 1.15 1996-09-04 22:00:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -337,8 +337,15 @@ int /*data_type*/
 #endif
 );
 
+extern void NclSetPromptFunc(
+#if	NhlNeedProto
+NclPromptFunc /*prmf*/, 
+void * /*user_data */
+#endif
+);
 
 #ifdef __cplusplus
 }
 #endif
+
 #endif  /*_NCNclApi_h */

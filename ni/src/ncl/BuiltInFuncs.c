@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.42 1996-08-29 23:39:58 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.43 1996-09-04 22:00:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -71,7 +71,7 @@ NhlErrorTypes _NclIListHLUObjs
         int i,ret=0;
 	tmp = _NclGetDefinedHLUInfo();
 
-	if(cmd_line) {
+	if(cmd_line == 1) {
 		_NclStartCmdLinePager();
 	}
 	fp = _NclGetOutputStream();
@@ -102,7 +102,7 @@ NhlErrorTypes _NclIListHLUObjs
 		step = step->next;
 	}
 	_NclFreeApiDataList((void*)tmp);
-	if(cmd_line) {
+	if(cmd_line == 1 ) {
                 _NclEndCmdLinePager();
         }
 	return(NhlNOERROR);
@@ -119,7 +119,7 @@ NhlErrorTypes _NclIListVariables
 	int i,ret=0;
 	
 
-	if(cmd_line) {
+	if(cmd_line == 1) {
 		_NclStartCmdLinePager();
 	}
 	fp = _NclGetOutputStream();
@@ -178,7 +178,7 @@ NhlErrorTypes _NclIListVariables
 		step = step->next;
 	}
 	_NclFreeApiDataList((void*)tmp);
-	if(cmd_line) {
+	if(cmd_line == 1) {
                 _NclEndCmdLinePager();
         }
 	return(NhlNOERROR);
@@ -197,7 +197,7 @@ NhlErrorTypes _NclIListFiles
 	int ret = 0;
 	
 
-	if(cmd_line) {
+	if(cmd_line == 1) {
 		_NclStartCmdLinePager();
 	}
 	fp = _NclGetOutputStream();
@@ -254,7 +254,7 @@ NhlErrorTypes _NclIListFiles
 	}
 	
 	_NclFreeApiDataList((void*)tmp);
-	if(cmd_line) {
+	if(cmd_line == 1) {
                 _NclEndCmdLinePager();
         }
 	return(NhlNOERROR);
@@ -273,7 +273,7 @@ NhlErrorTypes _NclIListFuncs
 	int ret = 0;
 	
 
-	if(cmd_line) {
+	if(cmd_line == 1) {
 		_NclStartCmdLinePager();
 	}
 	fp = _NclGetOutputStream();
@@ -394,7 +394,7 @@ NhlErrorTypes _NclIListFuncs
 	}
 	
 	_NclFreeApiDataList((void*)tmp);
-	if(cmd_line) {
+	if(cmd_line == 1) {
                 _NclEndCmdLinePager();
         }
         return(NhlNOERROR);
@@ -486,7 +486,7 @@ NhlErrorTypes _NclIListFileVariables
 	case NclStk_VAL:
 		return(NhlFATAL);
 	}
-	if(cmd_line) {
+	if(cmd_line == 1) {
 		_NclStartCmdLinePager();
 	}
 	fp = _NclGetOutputStream();
@@ -543,7 +543,7 @@ NhlErrorTypes _NclIListFileVariables
 		}
 		step = step->next;
 	}
-	if(cmd_line) {
+	if(cmd_line == 1) {
                 _NclEndCmdLinePager();
         }
 	_NclFreeApiDataList((void*)tmp);
@@ -1578,7 +1578,7 @@ NhlErrorTypes _NclIPrint
 	
 
 	data = _NclGetArg(0,1,DONT_CARE);
-	if(cmd_line) {
+	if(cmd_line == 1) {
 		_NclStartCmdLinePager();
 	}
 	fp = _NclGetOutputStream();
@@ -1594,7 +1594,7 @@ NhlErrorTypes _NclIPrint
 		ret = NhlNOERROR;
 		break;
 	}
-	if(cmd_line&&!(ret < NhlINFO)) {
+	if((cmd_line == 1)&&!(ret < NhlINFO)) {
 		_NclEndCmdLinePager();
 	}
 	return(ret);

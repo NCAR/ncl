@@ -15,6 +15,8 @@ extern "C" {
 #include <fcntl.h>
 #include <signal.h>
 extern int errno;
+extern int cmd_line;
+int	cmd_line_is_set = 0;
 
 
 struct str_load_list {
@@ -39,6 +41,37 @@ FILE *error_fp = stderr;
 FILE *stdout_fp = stdout;
 FILE *stdin_fp = stdin;
 int pager_id;
+
+void *prompt_user_data = NULL;
+NclPromptFunc prompt = NULL;
+
+void NclSetPromptFunc
+#if	NhlNeedProto
+(NclPromptFunc prmf, void* user_data)
+#else
+(prmf,user_data)
+#endif
+{
+	prompt = prmf;
+	prompt_user_data = user_data;
+	cmd_line = 2;
+	cmd_line_is_set = 2;
+}
+
+void _NclCallPromptFunc
+#if 	NhlNeedProto
+(int lineno)
+#else
+(lineno)
+int lineno;
+#endif
+{
+	if(prompt != NULL) {
+		(*prompt)(prompt_user_data,lineno);
+	} else {
+		fprintf(stdout,"ncl %d>",lineno);
+	}
+}
 
 FILE *_NclGetErrorStream
 #if	NhlNeedProto
