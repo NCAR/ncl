@@ -1,5 +1,5 @@
 /*
- *      $Id: ngi.c,v 1.9 1998-08-26 22:48:28 dbrown Exp $
+ *      $Id: ngi.c,v 1.10 1998-09-18 23:50:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -103,6 +103,9 @@ main
 		NgNxappArgc,			argc,
 		NgNxappArgv,			argv,
 		NULL);
+
+	if(nxapp < 0)
+		exit(1);
 
 	/*
 	 * This object assigns a field in the nxapp object to

@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.18 1998-08-26 22:48:29 dbrown Exp $
+!      $Id: ngi.res,v 1.19 1998-09-18 23:50:07 boote Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -61,13 +61,13 @@ NgNGO*addfileMGR*directory:	.
 !			or
 !	the actual hex id of the visual (Server dependent).
 !
-!NgNGO*visual:		XcbVisual
+NgNGO*visual:		XcbVisual
 ngi.minColorCells:	20
 
 NgNGO*colorMode:	mixedcmap
-NgNGO*colorMode:	sharedcmap
+!NgNGO*colorMode:	sharedcmap
 
-NgNGO*maxColorCells:	0
+!NgNGO*maxColorCells:	0
 NgNGO*rgbError:		5
 
 NgNGO*background:	#b2b2b2
@@ -549,7 +549,6 @@ addfile*directory:     /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cd
 !*html*fontSizeList: 10,8,20,16,12,10,8,6
 *enableBadHTMLWarnings : HTML_NONE
 *XmCascadeButtonGadget*shadowThickness: 2
-*XmCascadeButton*shadowThickness: 2
 *XmPushButtonGadget*shadowThickness: 2
 *XmPushButton*shadowThickness: 2
 *PaneInc*marginHeight: 0

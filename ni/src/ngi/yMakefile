@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.14 1998-02-26 15:21:55 boote Exp $
+#      $Id: yMakefile,v 1.15 1998-09-18 23:50:07 boote Exp $
 #
 #########################################################################
 #									#
@@ -35,8 +35,8 @@ EXTRA_CLDFLAGS	= -rdynamic
 EXTRA_DEFINES	=	-DNGDEMO $(OS1_DEF) $(MAJOR_DEF) $(DEBUGDEFS)
 EXTRA_LDFLAGS	=
 
-PROG_LIBS	=	$(NGOLIB) $(XCBLIB) $(DBLIB) $(NCLAPILIB) \
-			-lXcb $(HLULIBS) $(NCARGLIBS)
+PROG_LIBS	=	$(NGOLIB) $(DBLIB) $(NCLAPILIB) \
+			$(HLULIBS) $(NCARGLIBS) $(XCBLIB)
 DEPLIBS		=	$(DEPNGOLIB) $(DEPNCLAPILIB) $(DEPHLULIBS) \
 			$(DEPNCARGLIBS)
 EXTRA_LIBS	=	$(NCDFLIBS) -lXmHTML -lXpm $(HDFLIB)
