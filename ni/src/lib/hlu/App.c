@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.22 1996-05-09 23:16:09 ethan Exp $
+ *      $Id: App.c,v 1.23 1996-05-10 09:31:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -47,15 +47,6 @@ static NhlErrorTypes AppInitialize(
 #endif
 );
 
-static NhlErrorTypes AppSetValuesHook(
-#if	NhlNeedProto
-	NhlLayer	old,
-	NhlLayer	req,
-	NhlLayer	new,
-	_NhlArgList	args,
-	int		nargs
-#endif
-);
 static NhlErrorTypes AppSetValues(
 #if	NhlNeedProto
 	NhlLayer	old,
@@ -187,7 +178,7 @@ NhlAppClassRec NhlappClassRec = {
 /* class_initialize		*/	AppClassInitialize,
 /* layer_initialize		*/	AppInitialize,
 /* layer_set_values		*/	AppSetValues,
-/* layer_set_values_hook	*/	AppSetValuesHook,
+/* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	AppGetValues,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	AppLayerDestroy,
@@ -400,6 +391,32 @@ AppClassPartInitialize
 	return NhlNOERROR;
 }
 
+static void
+DefaultParentChange
+#if	NhlNeedProto
+(
+	NhlAppClass	ac
+)
+#else
+(ac)
+	NhlAppClass	ac;
+#endif
+{
+	NhlArgVal cbdata;
+	NhlArgVal selector;
+
+#ifdef	DEBUG
+	memset((char*)&cbdata,0,sizeof(NhlArgVal));
+	memset((char*)&selector,0,sizeof(NhlArgVal));
+#endif
+
+	selector.lngval = 0;
+	cbdata.lngval = ac->app_class.current_app->base.id;
+	_NhlCBCallCallbacks(ac->app_class.cblist,selector,cbdata);
+
+	return;
+}
+
 /*
  * Function:	AppInitialize
  *
@@ -456,10 +473,6 @@ AppInitialize
 			return NhlFATAL;
 		}
 		ac->app_class.default_app = anew;
-	}
-
-	if(!ac->app_class.current_app){
-		ac->app_class.current_app = anew;
 	}
 
 	if(!ac->app_class.default_app){
@@ -629,9 +642,9 @@ AppInitialize
 	}
 	ret = MIN(lret,ret);
 
-	if(anew->app.default_parent){
+	if(!ac->app_class.current_app || anew->app.default_parent){
 		ac->app_class.current_app = anew;
-		anew->app.default_parent = False;
+		anew->app.default_parent = True;
 	}
 
 	if(anew->app.resources){
@@ -711,41 +724,17 @@ AppInitialize
 	anew->app.args = NULL;
 	anew->app.nargs = 0;
 
+	/*
+	 * May need to create an initialize_hook for this...
+	 */
+	if(anew->app.default_parent){
+		anew->app.default_parent = False;
+		DefaultParentChange((NhlAppClass)anew->base.layer_class);
+	}
+
 	return ret;
 }
 
-static NhlErrorTypes
-AppSetValuesHook
-#if	NhlNeedProto
-(
-	NhlLayer	old,
-	NhlLayer	req,
-	NhlLayer	new,
-	_NhlArgList	args,
-	int		nargs
-)
-#else
-(old,req,new,args,nargs)
-	NhlLayer	old;
-	NhlLayer	req;
-	NhlLayer	new;
-	_NhlArgList	args;
-	int		nargs;
-#endif
-{
-	NhlAppLayer apo = (NhlAppLayer)old;
-	NhlAppLayer apn = (NhlAppLayer)new;
-	NhlArgVal cbdata;
-	NhlArgVal selector;
-	
-
-	
-	if(apn->app.default_app != apo->app.default_app) {
-		selector.lngval = 0;
-		cbdata.lngval = apn->base.id;
-		_NhlCBCallCallbacks(((NhlAppClass)apn->base.layer_class)->app_class.cblist,selector,cbdata);
-	}
-}
 /*
  * Function:	AppSetValues
  *
@@ -787,9 +776,23 @@ AppSetValues
 	_NhlConvertContext	context;
 	NhlErrorTypes		ret = NhlNOERROR,lret=NhlNOERROR;
 
-	if(np->default_parent){
-		ac->app_class.current_app = newapp;
-		np->default_parent = False;
+	if(_NhlArgIsSet(args,nargs,NhlNappDefaultParent)){
+		if(np->default_parent){
+			if(ac->app_class.current_app == newapp){
+				np->default_parent = False;
+			}
+			else{
+				ac->app_class.current_app = newapp;
+			}
+		}
+		/*
+		 * newapp is currently the default_parent, and the user
+		 * doesn't want it to be.
+		 */
+		else if(newapp == ac->app_class.current_app){
+			np->default_parent = True;
+			ac->app_class.current_app = ac->app_class.default_app;
+		}
 	}
 
 	if(np->args){
@@ -840,6 +843,11 @@ AppSetValues
 		NhlFree(np->args);
 		np->args = NULL;
 		np->nargs = 0;
+	}
+
+	if(np->default_parent){
+		np->default_parent = False;
+		DefaultParentChange(ac);
 	}
 
 	return ret;
@@ -1060,8 +1068,10 @@ AppLayerDestroy
 		}
 	}
 
-	if(al == alcp->current_app)
+	if(al == alcp->current_app){
 		alcp->current_app = alcp->default_app;
+		DefaultParentChange(alc);
+	}
 
 	NhlFree(alp->usr_appdir);
 	NhlFree(alp->sys_appdir);
@@ -1299,7 +1309,7 @@ NhlAppGetDefaultParentId
 
 		return NhlappClassRec.app_class.current_app->base.id;
 
-	return (int)NhlFATAL;
+	return 0;
 }
 
 /*
@@ -1392,28 +1402,28 @@ void _NHLCALLF(nhl_fisapp,NHL_FISAPP)
 
 
 /*
-* oc is need in case its an appClass subsclass
-*/
-_NhlCB  NhlSetAppDefaultChangeCB
+ * Don't need the NhlClass, since it isn't really possible to sub-class
+ * the App object, without re-writing the App class...
+ */
+_NhlCB  _NhlAppAddDefaultChangeCB
 #if 	NhlNeedProto
 (
-NhlClass        oc,
-_NhlCBFunc      cbfunc,
-NhlArgVal       udata
+	_NhlCBFunc	cbfunc,
+	NhlArgVal	udata
 )
 #else
-(oc,cbfunc,udata)
-	NhlClass	oc;
-        _NhlCBFunc      cbfunc;
-        NhlArgVal       udata;
+(cbfunc,udata)
+        _NhlCBFunc	cbfunc;
+        NhlArgVal	udata;
 #endif
 {
-	NhlAppClass apc = (NhlAppClass)oc;
-	NhlArgVal selector;
+	NhlArgVal	selector;
 
-	if(oc == NULL) {
-		apc = (NhlAppClass)NhlappClass;
-	}
+#ifdef	DEBUG
+	memset((char*)&selector,0,sizeof(NhlArgVal));
+#endif
+
 	selector.lngval = 0;
-	return(_NhlCBAdd(apc->app_class.cblist,selector,cbfunc,udata));
+	return _NhlCBAdd(((NhlAppClass)NhlappClass)->app_class.cblist,selector,
+								cbfunc,udata);
 }

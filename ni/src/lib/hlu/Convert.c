@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.c,v 1.14 1996-04-05 21:15:33 boote Exp $
+ *      $Id: Convert.c,v 1.15 1996-05-10 09:31:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -768,7 +768,8 @@ FreeConverter
 	 * free the args
 	 */
 	for(i=0;i < ptr->nargs;i++)
-		if(ptr->args[i].addressmode == NhlADDR)
+		if((ptr->args[i].addressmode == NhlADDR) ||
+			(ptr->args[i].addressmode == NhlSTRENUM))
 			(void)NhlFree(ptr->args[i].data.ptrval);
 
 	(void)NhlFree(ptr->args);

@@ -1,5 +1,5 @@
 /*
- *      $Id: AppI.h,v 1.5 1996-05-09 23:16:12 ethan Exp $
+ *      $Id: AppI.h,v 1.6 1996-05-10 09:31:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -71,13 +71,12 @@ extern NhlErrorTypes _NhlSortAppArgs(
 );
 
 /*
-* cbdata to cbfunc will be HLU Id of app whose
-* NhlNappDefaultParent resource has changed either
-* from True to False or False to True
-*/
-extern _NhlCB  NhlSetAppDefaultChangeCB(
+ * cbdata to cbfunc will be HLU Id of the new default parent.
+ * The default parent can change for all sorts of different reasons,
+ * so keeping track of the NhlNappDefaultParent will not work.
+ */
+extern _NhlCB  _NhlAppAddDefaultChangeCB(
 #if     NhlNeedProto
-        NhlClass        oc,
         _NhlCBFunc      cbfunc,
         NhlArgVal       udata
 #endif
