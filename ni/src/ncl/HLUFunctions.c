@@ -90,7 +90,7 @@ NhlErrorTypes _NclIChangeWorkstation
 		j = total;
 	}
 	for( i = 0; i < j; i++) {
-		if((tmp_hlu_ptr[i]!= NULL)&&(_NhlIsWorkstation(_NhlGetLayer(tmp_hlu_ptr[i]->hlu.hlu_id)))) {
+		if((tmp_hlu_ptr[i]!= NULL)&&(_NhlIsView(_NhlGetLayer(tmp_hlu_ptr[i]->hlu.hlu_id)))) {
 			if(tmp_hlu_ptr[i]->hlu.parent_hluobj_id != -1) {
 				_NclDelHLUChild(_NclGetObj(tmp_hlu_ptr[i]->hlu.parent_hluobj_id),tmp_hlu_ptr[i]->obj.id);
 			}
@@ -99,7 +99,7 @@ NhlErrorTypes _NclIChangeWorkstation
 				ret = NhlWARNING;
 			}
 		} else {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIChangeWorkstation: one of the elements of the workstation parameter does not exist as an HLU workstation, ingnoring it");
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIChangeWorkstation: one of the elements of the plot parameter is not a View object, ingnoring it");
 			ret = NhlWARNING;
 		}
 	}
