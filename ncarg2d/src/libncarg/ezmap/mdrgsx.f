@@ -1,5 +1,5 @@
 C
-C $Id: mdrgsx.f,v 1.1 2001-11-07 20:11:04 kennison Exp $
+C $Id: mdrgsx.f,v 1.2 2001-11-13 00:45:56 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -232,11 +232,11 @@ C
 C
               QLON=RLON
 C
-              RLON=.000001D0*DBLE(IOR(ISHIFT(
-     +             IOR(ISHIFT(IOR(ISHIFT(ICHAR(CTM4(4:4)),8),
+              RLON=.000001D0*DBLE(IOR(ISHIFT(IOR(ISHIFT(
+     +                        IOR(ISHIFT(ICHAR(CTM4(4:4)),8),
      +                                   ICHAR(CTM4(3:3))),8),
      +                                   ICHAR(CTM4(2:2))),8),
-     +                                   ICHAR(CTM4(1:1))))-DBLE(ILON)
+     +                                   ICHAR(CTM4(1:1)))-1000000*ILON)
 C
 C Read a latitude.
 C
@@ -249,11 +249,11 @@ C
 C
               QLAT=RLAT
 C
-              RLAT=.000001D0*DBLE(IOR(ISHIFT(
-     +             IOR(ISHIFT(IOR(ISHIFT(ICHAR(CTM4(4:4)),8),
+              RLAT=.000001D0*DBLE(IOR(ISHIFT(IOR(ISHIFT(
+     +                        IOR(ISHIFT(ICHAR(CTM4(4:4)),8),
      +                                   ICHAR(CTM4(3:3))),8),
      +                                   ICHAR(CTM4(2:2))),8),
-     +                                   ICHAR(CTM4(1:1))))-DBLE(ILAT)
+     +                                   ICHAR(CTM4(1:1)))-1000000*ILAT)
 C
 C If we had not yet seen the first point of the polygon (that is to
 C say, if IFLG is zero), this is it; save its longitude and latitude
@@ -353,11 +353,11 @@ C
 C
                 QLON=RLON
 C
-                RLON=.000001D0*DBLE(IOR(ISHIFT(
-     +               IOR(ISHIFT(IOR(ISHIFT(ICHAR(CTM4(4:4)),8),
-     +                                     ICHAR(CTM4(3:3))),8),
-     +                                     ICHAR(CTM4(2:2))),8),
-     +                                     ICHAR(CTM4(1:1))))-DBLE(ILON)
+                RLON=.000001D0*DBLE(IOR(ISHIFT(IOR(ISHIFT(
+     +                        IOR(ISHIFT(ICHAR(CTM4(4:4)),8),
+     +                                   ICHAR(CTM4(3:3))),8),
+     +                                   ICHAR(CTM4(2:2))),8),
+     +                                   ICHAR(CTM4(1:1)))-1000000*ILON)
 C
 C Read a latitude.
 C
@@ -370,11 +370,11 @@ C
 C
                 QLAT=RLAT
 C
-                RLAT=.000001D0*DBLE(IOR(ISHIFT(
-     +               IOR(ISHIFT(IOR(ISHIFT(ICHAR(CTM4(4:4)),8),
-     +                                     ICHAR(CTM4(3:3))),8),
-     +                                     ICHAR(CTM4(2:2))),8),
-     +                                     ICHAR(CTM4(1:1))))-DBLE(ILAT)
+                RLAT=.000001D0*DBLE(IOR(ISHIFT(IOR(ISHIFT(
+     +                        IOR(ISHIFT(ICHAR(CTM4(4:4)),8),
+     +                                   ICHAR(CTM4(3:3))),8),
+     +                                   ICHAR(CTM4(2:2))),8),
+     +                                   ICHAR(CTM4(1:1)))-1000000*ILAT)
 C
 C If we had not yet seen the first point of the polygon (that is to
 C say, if IFLG is zero), this is it; save its longitude and latitude

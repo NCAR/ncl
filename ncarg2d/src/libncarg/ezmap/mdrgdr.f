@@ -1,5 +1,5 @@
 C
-C $Id: mdrgdr.f,v 1.1 2001-11-02 22:40:58 kennison Exp $
+C $Id: mdrgdr.f,v 1.2 2001-11-13 00:45:56 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -55,8 +55,7 @@ C
      +        (YCRA(ICRA-1).EQ.1..AND.YCRA(ICRA).EQ.1.)) THEN
 C
 C It's on the boundary.  If an interior piece was being traced, draw
-C it, bump the piece count, and resume searching for the beginning of
-C another interior piece.
+C it and resume searching for the beginning of another interior piece.
 C
             IF (IBEG.NE.0) THEN
               CALL MDRGDP (XCRA(IBEG),YCRA(IBEG),ICRA-IBEG,ITYP)
@@ -79,7 +78,7 @@ C
         END IF
 C
 C All segments of the polygon have been examined.  If the trace of an
-C interior piece was in progress, draw it and bump the piece count.
+C interior piece was in progress, draw it.
 C
         IF (IBEG.NE.0) THEN
           CALL MDRGDP (XCRA(IBEG),YCRA(IBEG),ICRA-IBEG+1,ITYP)
