@@ -1,5 +1,5 @@
 C
-C $Id: basic05f.f,v 1.10 1997-09-29 20:32:42 haley Exp $
+C $Id: basic05f.f,v 1.11 1997-10-08 21:39:10 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -128,7 +128,7 @@ C Set fill pattern to solid
 C No lines between colors
       call NhlFRLSetString(rlist,'lbBoxLinesOn','False',ierr)
 
-C Display 131 entries
+C Display 31 entries
       call NhlFRLSetInteger(rlist,'lbBoxCount',31,ierr)
 
 C Turn off labelbar perimeter
