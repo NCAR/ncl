@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.48 2000-10-19 15:30:15 haley Exp $
+;      $Id: gsn_code.ncl,v 1.49 2000-10-20 19:49:22 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -240,6 +240,47 @@ begin
   end if
 
   return(return_val)
+end
+
+;***********************************************************************;
+; This function peruses two arrays of the same length and returns pairs ;
+; of indices that represent ranges of data values where there are no    ;
+; missing values.                                                       ;
+;***********************************************************************;
+function get_non_missing_pairs(x[*]:numeric,y[*]:numeric)
+local ibeg, iend, indices, ndimx, ndimy, is_missing
+begin
+  ndimx = dimsizes(x)
+  ndimy = dimsizes(y)
+
+  if(ndimx.ne.ndimy)
+    print("get_non_missing_pairs: x and y must be the same length")
+  end if
+
+  indices = new((/ndimx,2/),integer,-999)
+
+  counter = 0
+  ibeg = -1   ; First non-missing point in a group.
+  do i = 0,ndimx-1
+    if(.not.ismissing(x(i)).and..not.ismissing(y(i)))
+      if(ibeg.lt.0)    ; on the first point of the line
+        ibeg = i
+        iend = i       ; Represents last non-missing point in a group
+      else
+        iend = i
+      end if
+      is_missing = False
+    else
+      is_missing = True
+    end if
+    if(ibeg.ge.0.and.(is_missing.or.iend.eq.ndimx-1))
+      indices(counter,0) = ibeg
+      indices(counter,1) = iend
+      ibeg    = -1            ; Reinitialize
+      counter = counter + 1
+    end if
+  end do
+  return(indices)
 end
 
 ;***********************************************************************;
@@ -1017,11 +1058,97 @@ end
 ; created. polytype is the type of primitive to add (polymarker,        ;
 ; polygon, or polyline)                                                 ;
 ;                                                                       ;
+;***********************************************************************;
     if(gsres.and..not.any(ismissing(getvaratts(gsres))))
       attsetvalues(gsid,gsres)
+      if(isatt(gsres,"gsLineColor"))
+        gmres = True
+        gmres@gsMarkerColor = gsres@gsLineColor
+      end if
 
   if(.not.any(polytype.eq.(/"polymarker","polygon","polyline"/)))
-    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
+    print("Warning: gsn_add_primitive: Do not recognize primitive type '"+ polytype + "'.")
+   return(0)
+; Can't have missing values if this is a polygon, so just return 
+; a dummy primitive object.
+; Create a graphic style object.  We have to do this instead of using
+      if(polytype.eq."polygon")
+        prim_object = new(1,graphic)
+        print("Warning: gsn_add_primitive: Your polygon contains missing points. Cannot draw it.")
+      else
+;
+; If the primitive is a polymarker, then just draw the non-missing
+; polymarkers.
+;
+        if(polytype.eq."polymarker")
+          inds = ind(.not.ismissing(x).and..not.ismissing(y))
+          if(.not.any(ismissing(inds)))
+            x2 = x(inds)
+            y2 = y(inds)
+            prim_object = create polytype primitiveClass noparent
+              "prXArray"       : x2
+              "prYArray"       : y2
+              "prPolyType"     : polytype
+              "prGraphicStyle" : gsid
+            end create
+            delete(x2)
+            delete(y2)
+            delete(inds)
+    end if
+
+    if(any(ismissing(x)).or.any(ismissing(y)))
+            dummy = new(1,graphic)
+            NhlAddPrimitive(plotid,prim_object,dummy)
+          else
+            prim_object = new(1,graphic)
+          end if
+; non-missing values.
+        if(.not.any(ismissing(inds)))
+; If the primitive is a polylines, then retrieve the pairs of non-missing
+          y2 = y(inds)
+          prim_object = create polytype primitiveClass noparent
+          dummy = new(1,graphic)
+          indices = get_non_missing_pairs(x,y)
+          i = 0
+            "prGraphicStyle" : gsid
+          end create
+          delete(x2)
+          nlines = dimsizes(ind(.not.ismissing(indices(:,0))))
+          if(.not.ismissing(nlines)) 
+            prim_object = new(nlines,graphic)
+            astring     = new(nlines,string)
+            astring     = polytype + ispan(0,nlines-1,1)
+            first_marker = True
+            do i=0,nlines-1
+              ibeg = indices(i,0)
+              iend = indices(i,1)
+              if(iend.eq.ibeg)
+      else
+;
+; If the primitive is a polyline, then retrieve the pairs of non-missing
+; points, and plot them individually.
+                polytype2 = "polymarker"
+                if(first_marker)
+                  attsetvalues(gsid,gmres)
+                  first_marker = False
+                end if
+              else
+                polytype2 = "polyline"
+;
+              prim_object(i) = create astring(i) primitiveClass noparent
+                "prXArray"       : x(ibeg:iend)
+                "prYArray"       : y(ibeg:iend)
+                "prPolyType"     : polytype2
+                "prGraphicStyle" : gsid
+              end create
+              NhlAddPrimitive(plotid,prim_object(i),dummy)
+            end do
+          else
+            prim_object = new(1,graphic)
+          end if
+; If there's only one point in our line, then indicate it
+; with a polymarker.
+;
               polytype2 = "polymarker"
               if(first_marker)
                 attsetvalues_check(gsid,gmres)
@@ -1036,8 +1163,6 @@ end
               "prPolyType"     : polytype2
               "prGraphicStyle" : gsid
             end create
-    else
-      prim_object = new(1,graphic)
             NhlAddPrimitive(plotid,prim_object(i),dummy)
           end do
         else
@@ -1153,8 +1278,18 @@ end
 ;                plotid: plot object                                    ;
 ;                     x: 1-dimensional array of x points                ;
 ;                     y: 1-dimensional array of y points                ;
+; This procedure draws a polyline on the workstation "wks" (the variable;
     if(gsres.and..not.any(ismissing(getvaratts(gsres))))
       attsetvalues(gsid,gsres)
+; returned from a previous call to "gsn_open_wks") in the same data     ;
+; space as the data in "plotid" (returned from a previous call to one of;
+; the gsn_* plotting functions). "x" and "y" are the x and y locations  ;
+; of each point in the line, and should be in the same data space as the;
+; data from "plotid". "resources" is an optional list of resources.     ;
+      if(isatt(gsres,"gsLineColor"))
+        gmres = True
+        gmres@gsMarkerColor = gsres@gsLineColor
+      end if
 local i, gsid, plot_object, res, gs_res_index
 begin
 
@@ -1170,31 +1305,22 @@ begin
     gmres = False
 ;
 ; If we end up with a line with just one point, then we draw it with
+; a polymarker. Thus, we need to make sure the marker will be the
+; same color as the line.
+; 
+    if(isatt(gsres,"gsLineColor"))
+      gmres = True
+      gmres@gsMarkerColor = gsres@gsLineColor
+    end if
+
 ;
-; Since the data contains missing values, loop through each point and only
-; draw the non-missing points.
+; Convert data to float, since NhlDataPolyline only takes floats.
+             attsetvalues(gsid,gmres)
+    xf = tofloat(x)
+    yf = tofloat(y)
 ;
-      ibeg = -1   ; First non-missing point in a group.
-      do i = 0,dimsizes(xf)-1
-        if(.not.ismissing(xf(i)).and..not.ismissing(yf(i)))
-          if(ibeg.lt.0)    ; on the first point of the line
-            ibeg = i
-            iend = i       ; Represents last non-missing point in a group
-          else
-            iend = i
-          end if
-          is_missing = False
-        else
-          is_missing = True
-        end if
-        if(ibeg.gt.0.and.(is_missing.or.iend.eq.dimsizes(xf)-1))
-          if(iend.gt.ibeg)
-            NhlDataPolyline(plotid,gsid,xf(ibeg:iend),yf(ibeg:iend))
-          else    ; iend = ibeg --> only one point
-            NhlDataPolymarker(plotid,gsid,xf(ibeg),yf(ibeg))
-          end if
-          ibeg = -1   ; Reinitialize
 ; Since NhlDataPolyline doesn't accept missing values, this routine steps
+; through all the points, and only draws the ones that aren't missing. If
 ; a single point is surrounded by missing values, then a marker is drawn.
 ;
     if(.not.any(ismissing(xf)).and..not.any(ismissing(yf)))
@@ -1281,27 +1407,17 @@ begin
       "vpYF"      : 1.0
       "vpWidthF"  : 1.0
       "vpHeightF" : 1.0
-      ibeg = -1   ; First non-missing point in a group.
-      do i = 0,dimsizes(xf)-1
-        if(.not.ismissing(xf(i)).and..not.ismissing(yf(i)))
-          if(ibeg.lt.0)    ; on the first point of the line
-            ibeg = i
-            iend = i       ; Represents last non-missing point in a group
-          else
-            iend = i
-          end if
-          is_missing = False
-        else
-          is_missing = True
-        end if
-        if(ibeg.gt.0.and.(is_missing.or.iend.eq.dimsizes(xf)-1))
-          if(iend.gt.ibeg)
-            NhlNDCPolyline(canvas,gsid,xf(ibeg:iend),yf(ibeg:iend))
-          else    ; iend = ibeg --> only one point
-            NhlNDCPolymarker(canvas,gsid,xf(ibeg),yf(ibeg))
-          end if
-          ibeg = -1   ; Reinitialize
+    end create
+
+    gsres = get_res_eq(resources,"gs")
+    attsetvalues_check(gsid,gsres)
 ;
+; Convert data to float, since NhlDataPolyline only takes floats.
+;
+    xf = tofloat(x)
+    yf = tofloat(y)
+;
+; Since NhlNDCPolyline doesn't accept missing values, this routine steps
 ; through all the points, and only draws the ones that aren't missing. If
 ; a single point is surrounded by missing values, then a marker is drawn.
 ;
@@ -3086,16 +3202,9 @@ begin
 
 function gsn_add_text(wks:graphic,plotid:graphic,text:string,x:numeric, \
                       y:numeric, resources:logical )
-local txid, txres, amres, x2, y2, just, res2, wksname, am_ids
+local txid, txres, amres, just, res2, wksname, am_ids
 begin
   res2 = resources
-;
-; annomanager can't accept doubles, so have to demote doubles if they
-; come in.
-;
-  x2 = x
-  y2 = y
-
 ;
 ; The "txFuncCode" can't be set during a setvalues  call. It must be
 ; set during the creation of the object.  
@@ -3148,8 +3257,8 @@ begin
   just  = get_res_value(res2,"amJust","CenterLeft")
 
   setvalues am_ids(0)
-    "amDataXF"       : x2
-    "amDataYF"       : y2
+    "amDataXF"       : x
+    "amDataYF"       : y
     "amResizeNotify" : True
     "amTrackData"    : True
     "amJust"         : just
@@ -4558,6 +4667,7 @@ begin
 ;
 ; If gsnShape was set to True, then resize the X or Y axis so that
 ; the scales are proportionally correct.
+; 
     if(shape)
       gsnp_shape_plot(plot_object)
     end if
