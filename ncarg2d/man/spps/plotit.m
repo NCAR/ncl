@@ -32,6 +32,10 @@ the plotting device.  Metacode coordinates were used in calls to the
 routine PLOTIT and are returned in calls to FL2INT.
 .SH SYNOPSIS
 CALL PLOTIT (IX,IY,IP)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/ncargC.h>
+.sp
+void c_plotit(int ix, int iy, int ip);
 .SH DESCRIPTION 
 .IP IX 12
 (an input expression of type INTEGER) is the X metacode coordinate of the
@@ -52,6 +56,9 @@ range of 'PB' is between 2 and 50.  For example, to set 'PB' to 2, use
 "CALL SETUSV ('PB',2)".
 .sp
 The SPPS polyline buffer is provided to increase drawing efficiency.
+.SH C-BINDING DESCRIPTION
+The C-binding argument descriptions are the same as the FORTRAN
+argument descriptions.
 .SH ACCESS
 To use PLOTIT, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.
