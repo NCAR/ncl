@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: build,v 1.2 1993-02-25 16:16:52 clyne Exp $
+#      $Id: build,v 1.3 1993-03-05 20:20:13 clyne Exp $
 #
 #########################################################################
 #									#
@@ -21,7 +21,7 @@
 #	Description:	generate an NCAR G binary tar file for the platform
 #			this script is run on.
 #
-#	Usage:		build [-debug] [-quick] [-nomake]
+#	Usage:		build [-debug] [-quick] [-nomake] [-root <root>]
 #
 #	Environment:	NCARG	path to NCAR G source
 #
@@ -34,7 +34,10 @@
 #
 #			-nomake		Skip making NCAR Graphics. Assume
 #					its already been done.
-
+#			-root <root>	Use 'root' as the directory root
+#					for the build. The default is
+#					to use /ncargbin
+#
 #
 #	Return the leaf of a directory path
 #
@@ -156,7 +159,7 @@ sub	create_tars {
 	local($cmd, $dir);
 
 	foreach $dir (@dirs) {
-		$cmd = "cd $build_dir/$dir; tar -cf ../$dir.tar .";
+		$cmd = "cd $build_dir/$dir; tar -cfb ../$dir.tar 20 .";
 		system($cmd);
 		if ($? != 0) {
 			print "\"$cmd\" exited with error\n";
@@ -233,15 +236,18 @@ while ($ARGV[0] =~ /-/) {
 		$do_quick = 1;
 		$do_nomake = 1;
         }
+        elsif (/-root/) {
+		$buildDirRoot = shift @ARGV;
+        }
 	else {
-		print STDERR "Usage: $progName [-debug] [-quick] [-nomake]\n";
+		print STDERR "Usage: $progName [-debug] [-quick] [-nomake] [-root <root>]\n";
 		print STDERR "Terminating build session\n";
 		exit 1;
 	}
 }
 
 if (@ARGV) {
-	print STDERR "Usage: $progName [-debug] [-quick] [-nomake]\n";
+	print STDERR "Usage: $progName [-debug] [-quick] [-nomake] [-root <roog>]\n";
 	print STDERR "Terminating build session\n";
 	exit 1;
 }

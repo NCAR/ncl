@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: read_tape,v 1.1 1993-02-20 00:11:27 clyne Exp $
+#      $Id: read_tape,v 1.2 1993-03-05 20:20:28 clyne Exp $
 #
 #########################################################################
 #									#
@@ -10,7 +10,7 @@
 #									#
 #########################################################################
 #
-#	File:		read_tarfile
+#	File:		read_tape
 #
 #	Author:		John Clyne
 #			National Center for Atmospheric Research
@@ -21,7 +21,7 @@
 #	Description:	Read and un-tar tar files into 
 #			the specified directories. 
 #
-#	Usage:		read_tarfile <device> <directory>
+#	Usage:		read_tape <device> <offset> <directory...>
 #
 #	Environment:
 #
@@ -38,12 +38,15 @@
 #
 #						path
 #
-#			directory	: Directory to untar $device into.
+#			offset		: number of files to skip before
+#					reading.
+#			directory...	: List of directories to untar
+#					files into. 
 #
 
 
-if  ($#argv != 2) then 
-	echo "Usage: $0 <device> <directory>" > /dev/tty
+if  ($#argv < 3) then 
+	echo "Usage: $0 <device> <offset> <directory...>" > /dev/tty
         exit 1
 endif
 
@@ -108,7 +111,7 @@ if ("$rhost" != "") then
 
 endif
 
-echo "Place tape in device and hit <RETURN> when ready. Ctrl-C to abort" > /dev/tty
+echo -n "Place tape in device and hit <RETURN> when ready. Ctrl-C to abort " > /dev/tty
 set answer = $<
 sleep	10	# play it safe - wait for tape to mount
 
@@ -163,7 +166,7 @@ while ($#argv)
 
 	if ("$directory" != "/dev/null") then
 		pushd $directory > /dev/null
-		$rsh $rhost $ruser dd if=$devpath bs=20b | $tar
+		$rsh $rhost $ruser dd if=$devpath bs=10240 | $tar
 #
 #	Seem to get inconsistent exit codes from dd. However, files
 #	are usually unpacked ok
@@ -186,7 +189,7 @@ while ($#argv)
 		echo "" > /dev/tty
 		echo "" > /dev/tty
 		echo "Skipping unselected file... " > /dev/tty
-		$rsh $rhost $ruser dd if=$devpath bs=20b of=/dev/null
+		$rsh $rhost $ruser dd if=$devpath bs=10240 of=/dev/null
 		if ($status != 0) then
 			exit 1
 		endif

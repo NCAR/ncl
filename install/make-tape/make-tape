@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-tape,v 1.1 1993-02-20 00:13:49 clyne Exp $
+#      $Id: make-tape,v 1.2 1993-03-05 20:20:56 clyne Exp $
 #
 #########################################################################
 #									#
@@ -20,7 +20,12 @@
 #
 #	Description:	Write an NCAR G binary distribution tape.
 #
-#	Usage:		make-tape [-debug]
+#	Usage:		make-tape 	[-debug] 
+#					[-root <directory>]
+#					[-inter] 
+#					[-nrdevice <device>] 
+#					[-rhost <rhost>] 
+#					[-<arch>]
 #
 #	Environment:
 #
@@ -34,8 +39,15 @@
 #		$build_root/$arch/{bin,inc,lib,man}.tar	: distribution tar files
 #
 #
-#	Options:	-debug	: print tape writing commands and exit.
-
+#	Options:	-debug			: print tape writing commands 
+#						  and exit.
+#			-root <directory>	: root of ncarg build directory
+#						  default is /ncargbin
+#			-inter			: interactive mode - prompt 
+#						  for platforms
+#			-nrdevice <device>	: no rewind tape device
+#			-rhost <rhost>		: remote host 
+#			-arch <arch>		: platforms to include.
 #
 #	globals
 #
@@ -96,7 +108,7 @@ sub	write {
 
 	foreach $file (@files) {
 		
-		$cmd = "cd $path; $rsh dd obs=20b of=$nrdevice < $file";
+		$cmd = "cd $path; $rsh dd obs=10240 of=$nrdevice < $file";
 		do my_system ($cmd);
 	}
 
@@ -188,11 +200,10 @@ $rhost = "windom";		# remote tapedrive host
 $do_inter = 0;			# do interactive mode?
 $build_root = "/ncargbin";	
 $install_dir = "INSTALL";
-$toc_file = "$build_root/INSTALL/var/TOC";
 $rsh;				# remote shell command (undefine if local)
 @archs;				# architectures to write binaries for
 $index = 0;			# index for toc
-$usage = "[-debug] [-inter] [-nrdevice <device>] [-rhost <rhost>] [-<arch>]";
+$usage = "[-debug] [-root <path>] [-inter] [-nrdevice <device>] [-rhost <rhost>] [-<arch>]";
 
 
 #
@@ -220,6 +231,9 @@ while ($ARGV[0] =~ /-/) {
 	elsif (/-nrdevice/) {
 		$nrdevice = shift @ARGV;
 	}
+	elsif (/-root/) {
+		$build_root = shift @ARGV;
+	}
 	else {
 		foreach $arch (@Archs) {
 			if (/-$arch/) {
@@ -231,6 +245,9 @@ while ($ARGV[0] =~ /-/) {
 		exit 1;
 	}
 }
+
+$toc_file = "$build_root/INSTALL/var/TOC";
+
 print "rhost=$rhost\n";
 $rsh = "rsh $rhost" if (! ($rhost eq ""));
 
@@ -270,7 +287,7 @@ sleep 10;	# be safe - wait for tape to mount
 #
 #	generate the tar file with the install script
 #
-$cmd = "cd $build_root/$install_dir; tar -cf ../install.tar .";
+$cmd = "cd $build_root/$install_dir; tar -cfb ../install.tar 20 .";
 do my_system("$cmd");
 
 #

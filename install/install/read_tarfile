@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: read_tarfile,v 1.1 1993-02-20 00:11:29 clyne Exp $
+#      $Id: read_tarfile,v 1.2 1993-03-05 20:20:30 clyne Exp $
 #
 #########################################################################
 #									#
@@ -122,7 +122,7 @@ if (! -w "$directory") then
 	exit 1
 endif
 
-$rsh $ruser $rhost dd if=$devpath bs=20b | (cd $directory; $tar)
+$rsh $ruser $rhost dd if=$devpath bs=10240 | (cd $directory; $tar)
 
 #
 #	Seem to get inconsistent exit codes from brain-damaged dd. Blow
