@@ -1,5 +1,5 @@
 C
-C     $Id: mp03f.f,v 1.4 1995-04-01 00:43:16 haley Exp $
+C     $Id: mp03f.f,v 1.5 1995-04-01 23:10:08 dbrown Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -53,8 +53,7 @@ C
 C
 C Create an application context. Set the app dir to the current
 C directory so the application looks for a resource file in the working
-C directory. The resource file sets most of the ContourPlot resources
-C that remain fixed throughout the life of the ContourPlot object.
+C directory. 
 C
       call NhlFRLCreate(rlist,'SETRL')
       call NhlFRLClear(rlist)
@@ -97,14 +96,14 @@ C globe.
      1     rlist,ierr)
 
 C
-C Create a Contour object, supplying the ScalarField object as data,
+C Create a ContourPlot object, supplying the ScalarField object as data,
 C and setting the size of the viewport.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetinteger(rlist,'cnScalarFieldData',dataid,ierr)
       call NhlFRLSetstring(rlist,'cnLabelDrawOrder','postdraw',ierr)
-      call NhlFCreate(cnid,'Contour1',NhlFContourLayerClass,wid,rlist,
-     1     ierr)
+      call NhlFCreate(cnid,'Contour1',NhlFContourPlotLayerClass,
+     1     wid,rlist,ierr)
 C
 C Create a MapPlot object, setting the fill to draw over the main draw,
 C and masking out the oceans.
@@ -113,7 +112,7 @@ C
       call NhlFRLSetfloat(rlist,'vpYF',0.775,ierr)
       call NhlFRLSetfloat(rlist,'vpHeightF',0.45,ierr)
       call NhlFRLSetstring(rlist,'mpFillOn','true',ierr)
-      call NhlFRLSetstring(rlist,'ovTitleDisplayMode','always',ierr)
+      call NhlFRLSetstring(rlist,'pmTitleDisplayMode','always',ierr)
       call NhlFRLSetstring(rlist,'tiMainString','mp03f',ierr)
       call NhlFRLSetstring(rlist,'mpFillDrawOrder','postdraw',ierr)
       call NhlFRLSetstring(rlist,'mpAreaMaskingOn','true',ierr)
@@ -121,10 +120,9 @@ C
      1     1,ierr)
       call NhlFCreate(mapid,'Map1',NhlFMapPlotLayerClass,wid,rlist,ierr)
 C
-C Overlay the Contour object on the MapPlot object
+C Overlay the ContourPlot on the MapPlot
 C
-      call NhlFAddToOverlay(mapid,cnid,-1,ierr)
-    
+      call NhlFAddOverlay(mapid,cnid,-1,ierr)
       call NhlFDraw(mapid,ierr)
       call NhlFFrame(wid,ierr)
 C

@@ -14,7 +14,7 @@ mp04.mp04Work.Map0.mpOutlineOn : false
 mp04.mp04Work.Map0.mpLabelsOn : false
 mp04.mp04Work.Map0.mpCenterRotF : 17.0
 
-mp04.mp04Work.Map0.ovTitleDisplayMode : always
+mp04.mp04Work.Map0.pmTitleDisplayMode : always
 mp04.mp04Work.Map0.tiMainString : mp04
 
 mp04.mp04Work.Map0*anResizeNotify : true

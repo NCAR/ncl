@@ -1,5 +1,5 @@
 C
-C     $Id: mp01f.f,v 1.5 1995-04-01 00:43:14 haley Exp $
+C     $Id: mp01f.f,v 1.6 1995-04-01 23:10:04 dbrown Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -67,9 +67,7 @@ C
 C Draw the default MapPlot object
 C
       call NhlFRLClear(rlist)
-      call NhlFRLSetfloat(rlist,'vpYF',0.775,ierr)
-      call NhlFRLSetfloat(rlist,'vpHeightF',0.45,ierr)
-      call NhlFRLSetstring(rlist,'ovTitleDisplayMode','always',ierr)
+      call NhlFRLSetstring(rlist,'pmTitleDisplayMode','always',ierr)
       call NhlFRLSetstring(rlist,'tiMainString','mp01f - Frame 1',ierr)
       call NhlFCreate(mapid,'Map0',NhlFMapPlotLayerClass,wid,rlist,ierr)
       call NhlFDraw(mapid,ierr)
@@ -80,11 +78,13 @@ C all the outlines (Geophysical, National, and US States).
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'tiMainString','mp01f - Frame 2',ierr)
-      call NhlFRLSetfloat(rlist,'vpYF',0.9,ierr)
-      call NhlFRLSetfloat(rlist,'vpHeightF',0.8,ierr)
+      call NhlFRLSetfloat(rlist,'vpYF',0.85,ierr)
+      call NhlFRLSetfloat(rlist,'vpXF',0.15,ierr)
+      call NhlFRLsetfloat(rlist,'vpHeightF',0.7,ierr)
+      call NhlFRLsetfloat(rlist,'vpWidthF',0.7,ierr)
       call NhlFRLSetstring(rlist,'mpFillOn','TRUE',ierr)
       call NhlFRLSetstring(rlist,'mpOutlineBoundarySets',
-     1  'allBoundaries',ierr) 
+     1  'allBoundaries',ierr)
       call NhlFRLSetstring(rlist,'mpProjection','orthographic',ierr)
       call NhlFRLSetfloat(rlist,'mpCenterLatF',10.0,ierr)
       call NhlFRLSetfloat(rlist,'mpCenterLonF',-90.0,ierr)

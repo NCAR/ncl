@@ -14,7 +14,7 @@
  *
  *  Date:       Fri Oct 14 11:42:41 MDT 1994
  *
- *  Description:    Illustrates use of AnnoManager and MapPlot objects.
+ *  Description:    Illustrates use of Annotation objects.
  */
 
 #include <stdio.h>
@@ -44,8 +44,8 @@ main(int argc, char *argv[])
 {
     int appid,wid,mapid;
     int rlist,grlist;
-    int i, num_anno_ids;
-    int *anno_ids;
+    int i, num_am_ids;
+    int *am_ids;
     int NCGM=1;
 
     Anno_List anno_list[] = {
@@ -115,12 +115,12 @@ main(int argc, char *argv[])
     }
 
 /*
- * Annotation objects are generic object containers that the Overlay
- * object creates as wrappers for arbitrary view objects. They allow
- * the user to set the view object's size and location relative to
- * the viewport of the Overlay plot. They may be located relative to one
+ * AnnoManager objects allow the PlotManager to manipulate any View class
+ * object as an annotation a uniform fashion. They allow
+ * the user to set the View object's size and location relative to
+ * the viewport of a Plot. They may be located relative to one
  * of the viewport sides, or, as in this example, aligned with the plot's 
- * data space (anTrackData is set True in the resource file).
+ * data space (amTrackData is set True in the resource file).
  *
  * Create a TextItem for each place name to be included on the map.
  * Collect the object ids into an array.
@@ -134,30 +134,30 @@ main(int argc, char *argv[])
     }
 
 /* 
- * Since the MapPlot object is by default an Overlay plot, you can
- * make each TextItem View object into an Annotation simply by setting the 
- * ovAnnoViews resource with the array of TextItem ids. 
+ * Since the MapPlot object is by default a PlotManager, you can
+ * make each TextItem View object into an annotation simply by setting the 
+ * pmAnnoViews resource with the array of TextItem ids. 
  */
     NhlRLClear(rlist);
-    NhlRLSetIntegerArray(rlist,NhlNovAnnoViews,text_ids,NhlNumber(text_ids));
+    NhlRLSetIntegerArray(rlist,NhlNpmAnnoViews,text_ids,NhlNumber(text_ids));
     NhlCreate(&mapid,"Map0",NhlmapPlotLayerClass,wid,rlist);
 
 /*
- * Retrieve the ids of the Annotation objects created by the Overlay and
- * then set their location in data coordinate space. The Annotation objects
- * are arranged in the same order as the TextItems in the ovAnnoViews
+ * Retrieve the ids of the AnnoManager objects created by the PlotManager and
+ * then set their location in data coordinate space. The AnnoManager objects
+ * are arranged in the same order as the TextItems in the pmAnnoViews
  * resource.
  */
     grlist = NhlRLCreate(NhlGETRL);
     NhlRLClear(grlist);
-    NhlRLGetIntegerArray(grlist,NhlNovAnnotations,&anno_ids,&num_anno_ids);
+    NhlRLGetIntegerArray(grlist,NhlNpmAnnoManagers,&am_ids,&num_am_ids);
     NhlGetValues(mapid,grlist);
 
-    for (i = 0; i < num_anno_ids; i++) {
+    for (i = 0; i < num_am_ids; i++) {
         NhlRLClear(rlist);
-        NhlRLSetFloat(rlist,NhlNanDataXF,anno_list[i].lon);
-        NhlRLSetFloat(rlist,NhlNanDataYF,anno_list[i].lat);
-        NhlSetValues(anno_ids[i],rlist);
+        NhlRLSetFloat(rlist,NhlNamDataXF,anno_list[i].lon);
+        NhlRLSetFloat(rlist,NhlNamDataYF,anno_list[i].lat);
+        NhlSetValues(am_ids[i],rlist);
     }
 
 /*

@@ -14,13 +14,13 @@ C                       PO 3000, Boulder, Colorado
 C
 C      Date:            Tue Jan 24 10:49:54 MST 1995
 C
-C     Description:      Illustrates use of AnnoManager object on a MapPlot.    
+C     Description:      Illustrates use of AnnoManager objects.    
 C
       external NhlFAppLayerClass
       external NhlFNcgmWorkstationLayerClass
       external NhlFMapPlotLayerClass
-      external NhlFTextItemLayerClass
-      external NhlFAnnotationlayerclass
+      external NhlFtextitemLayerClass
+      external nhlfannomanagerlayerclass
 C
 C Define enough frames for a fairly smooth animation.
 C
@@ -28,10 +28,10 @@ C
 
       character*50 name(NDIM)
       real lat(NDIM),lon(NDIM)
-      integer num_anno_ids
-      data num_anno_ids/NDIM/
-      integer anno_ids(NDIM), text_ids(NDIM)
-      data anno_ids/25*-1/
+      integer num_am_ids
+      data num_am_ids/NDIM/
+      integer am_ids(NDIM), text_ids(NDIM)
+      data am_ids/25*-1/
 
       integer ret
       data ret/-1/
@@ -90,46 +90,47 @@ C
      1        rlist,ierr)
       endif
 C
-C Annotation objects are generic object containers that the Overlay
-C object knows how to manipulate in a uniform fashion. They may be 
-C manipulated in NDC space like the Title or LabelBar objects, or, as
-C in this example, aligned with with the plot object's data space.
+C AnnoManager objects allow the PlotManager to manipulate any View class
+C object as an annotation a uniform fashion. They allow
+C the user to set the View object's size and location relative to
+C the viewport of a Plot. They may be located relative to one
+C of the viewport sides, or, as in this example, aligned with the plot's 
+C data space (amTrackData is set True in the resource file).
 C
 C Create a TextItem for each place name to be included on the map.
-C Then create an Annotation object for each TextItem. Register each
-C Annotation with the MapPlot object, the creator of the Overlay.
+C Collect the object ids into an array.
 C
       do 10 i = 1,NDIM
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'txString',name(i),ierr)
-         call NhlFCreate(text_ids(i),name(i),NhlFTextItemLayerClass,wid,
+         call NhlFCreate(text_ids(i),name(i),NhlFtextitemLayerClass,wid,
      1    rlist,ierr)
  10   continue
 C
-C Since the MapPlot object is by default an Overlay plot, you can
-C make each TextItem View object into an Annotation simply by setting
-C the  ovAnnoViews resource with the array of TextItem ids. 
+C Since the MapPlot object is by default a PlotManager, you can
+C make each TextItem View object into an annotation simply by setting
+C the pmAnnoViews resource with the array of TextItem ids. 
 C
       call NhlFRLClear(rlist)
-      call NhlFRLSetintegerarray(rlist,'ovAnnoViews',text_ids,NDIM,ierr)
+      call NhlFRLSetintegerarray(rlist,'pmAnnoViews',text_ids,NDIM,ierr)
       call NhlFCreate(mapid,'Map0',NhlFMapPlotLayerClass,wid,rlist,ierr)
 C
-C Retrieve the ids of the Annotation objects created by the Overlay and
-C then set their location in data coordinate space. The Annotation
+C Retrieve the ids of the AnnoManager objects created by the PlotManager and
+C then set their location in data coordinate space. The AnnoManager
 C objects are arranged in the same order as the TextItems in the
-C ovAnnoViews resource.
+C pmAnnoViews resource.
 C
       call NhlFRLCreate(grlist,'GETRL')
       call NhlFRLClear(grlist)
-      call NhlFRLGetintegerarray(grlist,'ovAnnotations',anno_ids,
-     +                           num_anno_ids,ierr)
+      call NhlFRLGetintegerarray(grlist,'pmAnnoManagers',am_ids,
+     +                           num_am_ids,ierr)
       call NhlFGetValues(mapid,grlist,ierr)
 
-      do 20 i=1,num_anno_ids
+      do 20 i=1,num_am_ids
          call NhlFRLClear(rlist)
-         call NhlFRLSetfloat(rlist,'anDataXF',lon(i),ierr)
-         call NhlFRLSetfloat(rlist,'anDataYF',lat(i),ierr)
-         call NhlFSetValues(anno_ids(i),rlist,ierr)
+         call NhlFRLSetfloat(rlist,'amDataXF',lon(i),ierr)
+         call NhlFRLSetfloat(rlist,'amDataYF',lat(i),ierr)
+         call NhlFSetValues(am_ids(i),rlist,ierr)
  20   continue
 C
 C Create FRAME_COUNT plots, varying the center longitude by an equal

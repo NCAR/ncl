@@ -1,5 +1,5 @@
 /*
- *      $Id: mp01c.c,v 1.5 1995-03-22 18:20:15 haley Exp $
+ *      $Id: mp01c.c,v 1.6 1995-04-01 23:10:03 dbrown Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -71,7 +71,7 @@ main(int argc, char *argv[])
  * Draw the default MapPlot object
  */
     NhlRLClear(rlist);
-    NhlRLSetString(rlist,NhlNovTitleDisplayMode,"always");
+    NhlRLSetString(rlist,NhlNpmTitleDisplayMode,"always");
     NhlRLSetString(rlist,NhlNtiMainString,"mp01c - Frame 1");
     NhlCreate(&mapid,"Map0",NhlmapPlotLayerClass,wid,rlist);
     NhlDraw(mapid);
@@ -83,11 +83,13 @@ main(int argc, char *argv[])
  */
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNtiMainString,"mp01c - Frame 2");
-    NhlRLSetFloat(rlist,NhlNvpYF,0.9);
-    NhlRLSetFloat(rlist,NhlNvpHeightF,0.8);
     NhlRLSetString(rlist,NhlNmpFillOn,"true");
     NhlRLSetString(rlist,NhlNmpOutlineBoundarySets,"allBoundaries"); 
     NhlRLSetString(rlist,NhlNmpProjection,"orthographic");
+    NhlRLSetFloat(rlist,NhlNvpXF,0.15);
+    NhlRLSetFloat(rlist,NhlNvpYF,0.85);
+    NhlRLSetFloat(rlist,NhlNvpWidthF,0.7);
+    NhlRLSetFloat(rlist,NhlNvpHeightF,0.7);
     NhlRLSetFloat(rlist,NhlNmpCenterLatF,10.0);
     NhlRLSetFloat(rlist,NhlNmpCenterLonF,-90.0);
     NhlRLSetFloat(rlist,NhlNmpCenterRotF,45.0);

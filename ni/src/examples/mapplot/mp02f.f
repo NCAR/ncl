@@ -1,5 +1,5 @@
 C
-C     $Id: mp02f.f,v 1.7 1995-04-01 00:43:15 haley Exp $
+C     $Id: mp02f.f,v 1.8 1995-04-01 23:10:05 dbrown Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -84,7 +84,7 @@ C By default the geophysical boundary set is used both for outline and
 C fill.
 C
       call NhlFRLClear(rlist)
-      call NhlFRLSetstring(rlist,'ovTitleDisplayMode','always',ierr)
+      call NhlFRLSetstring(rlist,'pmTitleDisplayMode','always',ierr)
       call NhlFRLSetstring(rlist,'tiMainString','mp02f - Frame 1',
      1    ierr)
       call NhlFRLSetstring(rlist,'mpFillOn','TRUE',ierr)

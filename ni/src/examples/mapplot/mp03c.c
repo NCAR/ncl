@@ -1,5 +1,5 @@
 /*
- *      $Id: mp03c.c,v 1.5 1995-03-22 18:20:24 haley Exp $
+ *      $Id: mp03c.c,v 1.6 1995-04-01 23:10:07 dbrown Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -30,7 +30,7 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/MapPlot.h>
-#include <ncarg/hlu/Contour.h>
+#include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/ScalarField.h>
 
 main(int argc, char *argv[])
@@ -56,8 +56,7 @@ main(int argc, char *argv[])
 /*
  * Create an application context. Set the app dir to the current
  * directory so the application looks for a resource file in the working
- * directory. The resource file sets most of the Contour resources that
- * remain fixed throughout the life of the Contour object.
+ * directory. 
  */
     rlist = NhlRLCreate(NhlSETRL);
     NhlRLClear(rlist);
@@ -107,7 +106,7 @@ main(int argc, char *argv[])
     NhlRLClear(rlist);
     NhlRLSetInteger(rlist,NhlNcnScalarFieldData,dataid);
     NhlRLSetString(rlist,NhlNcnLabelDrawOrder,"postdraw");
-    NhlCreate(&cnid,"Contour1",NhlcontourLayerClass,wid,rlist);
+    NhlCreate(&cnid,"Contour1",NhlcontourPlotLayerClass,wid,rlist);
 
 /*
  * Create a MapPlot object, setting the fill to draw over the main draw,
@@ -116,7 +115,7 @@ main(int argc, char *argv[])
 
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNmpFillOn,"true");
-    NhlRLSetString(rlist,NhlNovTitleDisplayMode,"always");
+    NhlRLSetString(rlist,NhlNpmTitleDisplayMode,"always");
     NhlRLSetString(rlist,NhlNtiMainString,"mp03c");
     NhlRLSetString(rlist,NhlNmpFillDrawOrder,"postdraw");
     NhlRLSetString(rlist,NhlNmpAreaMaskingOn,"true");
@@ -127,7 +126,7 @@ main(int argc, char *argv[])
 /*
  * Overlay the Contour object on the MapPlot object
  */
-    NhlAddToOverlay(mapid,cnid,-1);
+    NhlAddOverlay(mapid,cnid,-1);
     
     NhlDraw(mapid);
     NhlFrame(wid);

@@ -6,24 +6,28 @@
 ! overlaid on the MapPlot, the Contour's view should be set to the same
 ! size as the MapPlot's.
 !
-*vpYF: 0.775
-*vpHeightF: 0.45
-*vpXF: 0.1
-*vpWidthF: 0.8
+*mp03Work.Contour1.vpYF: 0.775
+*mp03Work.Contour1.vpHeightF: 0.45
+*mp03Work.Contour1.vpXF: 0.1
+*mp03Work.Contour1.vpWidthF: 0.8
+*mp03Work.Map1.vpYF: 0.775
+*mp03Work.Map1.vpHeightF: 0.45
+*mp03Work.Map1.vpXF: 0.1
+*mp03Work.Map1.vpWidthF: 0.8
 !
 ! no tick marks
 !
-*mp03Work.Contour1*ovTickMarkDisplayMode : nocreate
-*mp03Work.Map1*ovTickMarkDisplayMode : nocreate
+*mp03Work.Contour1*pmTickMarkDisplayMode : nocreate
+*mp03Work.Map1*pmTickMarkDisplayMode : nocreate
 !
 ! display a labelbar
 !
-*mp03Work.Contour1*ovLabelBarDisplayMode : always
+*mp03Work.Contour1*pmLabelBarDisplayMode : always
 *mp03Work.Contour1*lbOrientation : horizontal
-*mp03Work.Contour1*ovLabelBarSide : bottom
-*mp03Work.Contour1*ovLabelBarWidthF : 0.8
-*mp03Work.Contour1*ovLabelBarHeightF : 0.25
-*mp03Work.Contour1*ovLabelBarOrthogonalOffsetF : 0.1
+*mp03Work.Contour1*pmLabelBarSide : bottom
+*mp03Work.Contour1*pmLabelBarWidthF : 0.8
+*mp03Work.Contour1*pmLabelBarHeightF : 0.25
+*mp03Work.Contour1*pmLabelBarOrthogonalOffsetF : 0.1
 *mp03Work.Contour1*lbTitleOn : false
 *mp03Work.Contour1*lbPerimOn : false
 *mp03Work.Contour1*lbLeftMarginF : 0.0
