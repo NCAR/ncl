@@ -1,5 +1,5 @@
 /*
- *      $Id: AlphaOSF1,v 1.5 1995-03-27 14:11:27 haley Exp $
+ *      $Id: AlphaOSF1,v 1.6 1997-01-09 16:51:30 haley Exp $
  */
 /************************************************************************
 *									*
@@ -21,7 +21,8 @@
  *			the DEC Alpha architecture running OSF1.
  */
 #define ByteSwapped
-#define	HdfDefines	-DMIPSEL
 #define	StdDefines	-DByteSwapped -DSYSV -std1
 #define	FCppCommand	/lib/cpp
 #define CtoFLibraries   -lots -lfor -lm
+#define HdfDefines      -DDEC_ALPHA
+

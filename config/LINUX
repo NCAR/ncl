@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX,v 1.1 1996-01-13 00:37:44 haley Exp $
+ *      $Id: LINUX,v 1.2 1997-01-09 16:51:31 haley Exp $
  */
 /************************************************************************
 *									*
@@ -30,7 +30,6 @@
 #define CcOptions       -ansi
 #define COptimizeFlag   
 #define FOptimizeFlag   
-#define HDFlib          -ldf -ljpeg
 
 #define	ArchRecLibSearch	-L/usr/X11/lib -L/usr/local/lib
 #define	ArchRecIncSearch	-I/usr/X11/include -I/usr/local/include
