@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.16 2002-07-17 17:22:51 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.17 2003-05-31 00:32:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3072,6 +3072,7 @@ static void SetLineAttrs
                 float	p0,p1,jcrt;
                 int	slen;
                 char	buffer[128];
+		int     i;
                 
                 dpat = dash_pattern % Mpp->dash_table->num_elements;
                 sp = (NhlString *) Mpp->dash_table->data;
@@ -3085,6 +3086,16 @@ static void SetLineAttrs
                 jcrt = jcrt > 1 ? jcrt : 1;
                 strcpy(buffer,sp[dpat]);
 	
+		/*
+		 * since dashchar recognizes only a single quote as
+		 * the space indicator, we must change the the 
+		 * underscores in the pattern into spaces.
+		 */
+		for (i = 0; i < strlen(buffer); i++) {
+			if (buffer[i] == '_')
+				buffer[i] = '\'';
+		}
+
                 c_dashdc(buffer,jcrt,4);
                 _NhlLLErrCheckPrnt(NhlWARNING,entry_name);
                 Dash_Pattern = dash_pattern;

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.116 2003-04-04 18:33:25 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.117 2003-05-31 00:32:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,7 @@
 #include <math.h>
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/ContourPlotP.h>
-#include <ncarg/hlu/Workstation.h>
+#include <ncarg/hlu/WorkstationI.h>
 #include <ncarg/hlu/IrregularTransObjP.h>
 #include <ncarg/hlu/MapTransObj.h>
 #include <ncarg/hlu/CurvilinearTransObjP.h>
@@ -3099,6 +3099,7 @@ static NhlErrorTypes cnInitDraw
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlString		e_text;
 	NhlContourPlotLayerPart	*cnp = &(cnl->contourplot);
 	NhlTransformLayerPart	*tfp = &(cnl->trans);
 	int m,n;
@@ -3113,6 +3114,21 @@ static NhlErrorTypes cnInitDraw
 	subret = GetData(cnl,&cnp->data,&n,&m);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
+	/* update the dash table, which could have been edited */
+	
+	if (cnp->dash_table)
+		NhlFreeGenArray(cnp->dash_table);
+	subret = NhlVAGetValues(cnl->base.wkptr->base.id,
+				_NhlNwkDashTable,&cnp->dash_table,
+				NhlNwkDashTableLength,&cnp->dtable_len,
+				NULL);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: NhlFATAL error retrieving dash table";
+		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
+		cnp->dash_table = NULL;
+		return ret;
+	}
+	cnp->dtable = (NhlString *) cnp->dash_table->data;
 /*
  * Set up LLU interface coordinate boundaries 
  */
@@ -3150,7 +3166,7 @@ static NhlErrorTypes cnInitDraw
                 cnp->yc1 = 0;
                 cnp->ycn = ycount - 1;
 	}
-	
+
 	return ret;
 }
 
@@ -9399,28 +9415,13 @@ static NhlErrorTypes    ManageDynamicArrays
 
 /*
  * Line dash patterns
- * Since Conpack needs to know the actual strings, it is necessary to 
- * get a copy of the dash table.
  */
 		
-	if (cnp->dash_table == NULL) {
-		subret = NhlVAGetValues(cnew->base.wkptr->base.id,
-					_NhlNwkDashTable,&ga,
-					NhlNwkDashTableLength,&cnp->dtable_len,
-					NULL);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) {
-			e_text = "%s: NhlFATAL error retrieving dash table";
-			NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-			return ret;
-		}
-		cnp->dash_table = ga;
-		cnp->dtable = (NhlString *) ga->data;
+	subret = NhlVAGetValues(cnew->base.wkptr->base.id,
+				NhlNwkDashTableLength,&cnp->dtable_len,
+				NULL);
 
-		ga = NULL;
-	}
-	else {
-		ga = ocnp->line_dash_patterns;
-	}
+	ga = init ? NULL : ocnp->line_dash_patterns;
 	count = cnp->level_count;
 	subret = ManageGenArray(&ga,count,cnp->line_dash_patterns,Qdashindex,
 				NULL,&old_count,&init_count,&need_check,
@@ -10919,9 +10920,10 @@ void   (_NHLCALLF(hlucpchcl,HLUCPCHCL))
 	 */
 	_NHLCALLF(dprset,DPRSET)();
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-
+#if 0
 	c_dpsetc("CRG","'");
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+#endif
 
 	if (dpix < 0) 
 		dpix = NhlSOLIDLINE;

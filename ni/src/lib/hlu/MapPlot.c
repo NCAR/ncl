@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.90 2002-08-14 19:34:10 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.91 2003-05-31 00:32:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2052,6 +2052,21 @@ static NhlErrorTypes MapPlotPreDraw
 
         mpp->init_draw = True;
         
+	/* update the dash table, which could have been edited */
+	
+	if (mpp->dash_table)
+		NhlFreeGenArray(mpp->dash_table);
+	subret = NhlVAGetValues(mpl->base.wkptr->base.id,
+				_NhlNwkDashTable,&mpp->dash_table,
+				NULL);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: NhlFATAL error retrieving dash table";
+		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
+		mpp->dash_table = NULL;
+		return ret;
+	}
+
+
 	if (tfp->overlay_status == _tfNotInOverlay) {
 		subret = _NhlSetTrans((NhlLayer)tfp->trans_obj,(NhlLayer)mpl);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -5018,6 +5033,7 @@ void   (_NHLCALLF(hlumapusr,HLUMAPUSR))
 	NhlString *sp;
 	float	p0,p1,jcrt;
 	int	slen;
+	int     i;
 	char	buffer[128];
 	char	*entry_name = "mpDraw";
 
@@ -5081,7 +5097,17 @@ void   (_NHLCALLF(hlumapusr,HLUMAPUSR))
 	jcrt = (int) ((p1 - p0) / slen + 0.5);
 	jcrt = jcrt > 1 ? jcrt : 1;
 	strcpy(buffer,sp[dpat]);
-	
+
+	/*
+	 * since dashchar recognizes only a single quote as
+	 * the space indicator, we must change the the 
+	 * underscores in the pattern into spaces.
+	 */
+		 
+	for (i = 0; i < strlen(buffer); i++) {
+		if (buffer[i] == '_')
+			buffer[i] = '\'';
+	}	
 	c_dashdc(buffer,jcrt,4);
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 

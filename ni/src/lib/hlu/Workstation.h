@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.34 2003-02-27 18:14:35 grubin Exp $
+ *      $Id: Workstation.h,v 1.35 2003-05-31 00:33:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -19,8 +19,8 @@
  *
  *	Description:	Main workstation class from which all GKS workstations
  *			are subclassed. This main class manages the children
- *			of the workstation, a color map, the workstation ID, and
- *			the workstation type.
+ *			of the workstation, a color map, the workstation ID,
+ *			and the workstation type.
  */
 
 
@@ -118,6 +118,7 @@ typedef	int			NhlDashIndex;
 #define	NhlTDashIndexGenArray	"DashIndexGenArray"
 #define NhlSOLIDLINE		0
 
+
 /* Color stuff */
 
 typedef	int				NhlColorIndexFullEnum;
@@ -152,15 +153,6 @@ typedef	int	NhlFillIndex;
 #define NhlSOLIDFILL	0
 #define NhlWK_INITIAL_FILL_BUFSIZE 128
 
-typedef struct _NhlFillSpec {
-	int angle;
-	float spacing;
-	int dots_on;
-	int *dots_p;
-	int glyph;
-	int type;
-	int ici;
-} NhlFillSpec;
 
 /* Workstation marker stuff */
 
@@ -169,16 +161,6 @@ typedef	int	NhlMarkerIndex;
 #define	NhlTMarkerIndexGenArray	"MarkerIndexGenArray"
 #define NhlWK_DEF_MARKER	3
 
-typedef struct _NhlMarkerSpec {
-	char *marker;
-	float x_off;
-	float y_off;
-	float aspect_adj;
-	float size_adj;
-	NhlBoolean dynamic;
-} NhlMarkerSpec;
-
-typedef NhlMarkerSpec **NhlMarkerTable;
 
 typedef float NhlMarkerTableParams[4];
 
@@ -341,7 +323,8 @@ extern int NhlNewMarker(
 	float x_off, 
 	float y_off,
 	float aspect_adj,
-	float size_adj
+	float size_adj,
+	float angle
 #endif
 );
 
@@ -353,7 +336,8 @@ extern NhlErrorTypes NhlSetMarker(
 	float	x_off, 
 	float	y_off,
 	float	aspect_adj,
-	float	size_adj
+	float	size_adj,
+	float   angle
 #endif
 );
 

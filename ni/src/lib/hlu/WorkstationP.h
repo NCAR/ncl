@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.26 2001-01-23 23:58:58 dbrown Exp $
+ *      $Id: WorkstationP.h,v 1.27 2003-05-31 00:33:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -39,9 +39,12 @@ typedef enum _NhlCStatType{
 } _NhlCStat;
 
 /*
- * this is currently only used to set the char buffer length for the FortranI
+ * this is currently only used to set the char buffer length for the Fortran
+ * and to eliminate the possibility of buffer overflows.
  */
+
 #define	_NhlMAXMARKERLEN	(80)
+#define _NhlMAXDASHLEN          (128)
 
 typedef struct _NhlPrivateColor {
 	_NhlCStat	cstat;
@@ -134,9 +137,40 @@ typedef void (*NhlWorkstationNotify)(
 #define NhlInheritMarker ((NhlWorkstationMarker)_NhlInherit)
 #define NhlInheritNotify ((NhlWorkstationNotify)_NhlInherit)
 
+typedef struct _NhlDashSpec {
+	NhlString dpat;
+	NhlBoolean dynamic;
+} NhlDashSpec;
+
+typedef NhlDashSpec **NhlDashTable;
+
+typedef struct _NhlFillSpec {
+	int angle;
+	float spacing;
+	int dots_on;
+	int *dots_p;
+	int glyph;
+	int type;
+	int ici;
+	NhlBoolean dynamic;
+} NhlFillSpec;
+
+typedef NhlFillSpec **NhlFillTable;
+
+typedef struct _NhlMarkerSpec {
+	char *marker;
+	float x_off;
+	float y_off;
+	float aspect_adj;
+	float size_adj;
+	float angle;
+	NhlBoolean dynamic;
+} NhlMarkerSpec;
+
+typedef NhlMarkerSpec **NhlMarkerTable;
         
 typedef struct _NhlWorkstationLayerPart{
-	/* User settable resource fields */
+	/* User visible resource fields */
 
 	NhlGenArray	color_map;
 	int		color_map_len;
@@ -151,7 +185,7 @@ typedef struct _NhlWorkstationLayerPart{
 	int		*views;
 	int		*top_level_views;
 
-	/* Private settable resource fields */
+	/* Private resource fields */
 
 	NhlBoolean		reset;
 	NhlBoolean		set_public;
@@ -175,7 +209,7 @@ typedef struct _NhlWorkstationLayerPart{
 	_NhlFillStyleInfo	gs_fillinfo;
 	_NhlFillStyleInfo	*fip;
 
-	NhlGenArray	dash_table;
+	NhlGenArray	dash_table_strings;
 
 	NhlGenArray	marker_table_strings;
 	NhlGenArray	marker_table_params;
@@ -190,12 +224,10 @@ typedef struct _NhlWorkstationLayerPart{
 	_NhlCB		color_index_cb;
 	_NhlCB		colormap_cb;
 
-	int edge_char_size;
-	int edge_dash_dollar_size;
-	int marker_table_alloc_len;
-	NhlMarkerSpec	*markers_p;
-	int marker_line_char_size;
-	int marker_line_dash_dollar_size;
+	NhlDashTable dash_table;
+	int	       dash_table_alloc_len;
+	NhlMarkerTable marker_table;
+	int	       marker_table_alloc_len;
 
 	/* Export Values */
 

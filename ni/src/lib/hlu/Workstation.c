@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.98 2001-01-23 23:58:57 dbrown Exp $
+ *      $Id: Workstation.c,v 1.99 2003-05-31 00:32:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -60,24 +60,24 @@
  * 0 through (and including) NhlNwkDashTableLength as valid indexes.
  */
 
-static char *dash_patterns[] = { 
-		 "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",
-                 "$$$$''$$$$''$$$$''$$$$''$$$$''$$$$''$$$$''$$$$''",
-                 "$''$''$''$''$''$''$''$''$''$''$''$''$''$''$''$''",
-                 "$$$$''$''$$$$''$''$$$$''$''$$$$''$''$$$$''$''",
-                 "$$$$''$'$''$$$$''$'$''$$$$''$'$''$$$$''$'$''",
-                 "$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'",
-                 "$$$'$$$'$$$'$$$'$$$'$$$'$$$'$$$'$$$'$$$'$$$'$$$'",
-                 "$'$$'$'$$'$'$$'$'$$'$'$$'$'$$'$'$$'$'$$'$'$$'$'$$'",
-                 "$'$$$'$'$$$'$'$$$'$'$$$'$'$$$'$'$$$'$'$$$'$'$$$'",
-                 "$$'$$$$'$$'$$$$'$$'$$$$'$$'$$$$'$$'$$$$'$$'$$$$'",
-                 "$$$$'$$'$'$$'$$$$'$$'$'$$'$$$$'$$'$'$$'$$$$'$$'$'$$'",
-                 "$$''$$''$$''$$''$$''$$''$$''$$''$$''$$''$$''$$''",
-                 "$$$$$$''$$$$$$''$$$$$$''$$$$$$''$$$$$$''$$$$$$''",
-                 "$$$'$$$''$$$'$$$''$$$'$$$''$$$'$$$''$$$'$$$''",
-                 "$$'''$$'''$$'''$$'''$$'''$$'''$$'''$$'''$$'''$$'''",
-                 "$'$'''$'$'''$'$'''$'$'''$'$'''$'$'''$'$'''$'$'''",
-                 "$$$$$'''''$$$$$'''''$$$$$'''''$$$$$'''''$$$$$'''''",
+static NhlDashSpec Dash_Specs[] = { 
+  { "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",False },
+  { "$$$$__$$$$__$$$$__$$$$__$$$$__$$$$__$$$$__$$$$__",False },
+  { "$__$__$__$__$__$__$__$__$__$__$__$__$__$__$__$__",False },
+  { "$$$$__$__$$$$__$__$$$$__$__$$$$__$__$$$$__$__",False },
+  { "$$$$__$_$__$$$$__$_$__$$$$__$_$__$$$$__$_$__",False },
+  { "$$_$$_$$_$$_$$_$$_$$_$$_$$_$$_$$_$$_$$_$$_$$_$$_",False },
+  { "$$$_$$$_$$$_$$$_$$$_$$$_$$$_$$$_$$$_$$$_$$$_$$$_",False },
+  { "$_$$_$_$$_$_$$_$_$$_$_$$_$_$$_$_$$_$_$$_$_$$_$_$$_",False },
+  { "$_$$$_$_$$$_$_$$$_$_$$$_$_$$$_$_$$$_$_$$$_$_$$$_",False },
+  { "$$_$$$$_$$_$$$$_$$_$$$$_$$_$$$$_$$_$$$$_$$_$$$$_",False },
+  { "$$$$_$$_$_$$_$$$$_$$_$_$$_$$$$_$$_$_$$_$$$$_$$_$_$$_",False },
+  { "$$__$$__$$__$$__$$__$$__$$__$$__$$__$$__$$__$$__",False },
+  { "$$$$$$__$$$$$$__$$$$$$__$$$$$$__$$$$$$__$$$$$$__",False },
+  { "$$$_$$$__$$$_$$$__$$$_$$$__$$$_$$$__$$$_$$$__",False },
+  { "$$___$$___$$___$$___$$___$$___$$___$$___$$___$$___",False },
+  { "$_$___$_$___$_$___$_$___$_$___$_$___$_$___$_$___",False },
+  { "$$$$$_____$$$$$_____$$$$$_____$$$$$_____$$$$$_____",False }
 };
 
 /* 
@@ -90,27 +90,26 @@ static char *dash_patterns[] = {
  * all workstations.
  */
 
-static NhlFillSpec fill_specs[] = {
+static NhlFillSpec Fill_Specs[] = {
 
-{ 0,   0.0,  0, NULL, 0, 0, 0 },
-{ 0,   0.01, 0, NULL, 0, 1, 0 },
-{ 90,  0.01, 0, NULL, 0, 1, 0 },
-{ 45,  0.01, 0, NULL, 0, 1, 0 },
-{ 135, 0.01, 0, NULL, 0, 1, 0 },
-{ 0,   0.01, 0, NULL, 0, 2, 0 },
-{ 45,  0.01, 0, NULL, 0, 2, 0 },
-{ 22,  0.01, 0, NULL, 0, 1, 0 },
-{ 68,  0.01, 0, NULL, 0, 1, 0 },
-{ 112, 0.01, 0, NULL, 0, 1, 0 },
-{ 158, 0.01, 0, NULL, 0, 1, 0 },
-{ 22,  0.01, 0, NULL, 0, 2, 0 },
-{ 68,  0.01, 0, NULL, 0, 2, 0 },
-{ 0,   0.0003125, 0, NULL, 0, -3, 2 },
-{ 0,   0.0003125, 0, NULL, 0, -3, 3 },
-{ 0,   0.0003125, 0, NULL, 0, -4, 3 },
-{ 0,   0.0003125, 0, NULL, 0, -4, 4 },
-{ 45,  0.0075, 1, NULL, 0, 1, 0 }
-
+{ 0,   0.0,  0, NULL, 0, 0, 0, False},
+{ 0,   0.01, 0, NULL, 0, 1, 0, False},
+{ 90,  0.01, 0, NULL, 0, 1, 0, False},
+{ 45,  0.01, 0, NULL, 0, 1, 0, False},
+{ 135, 0.01, 0, NULL, 0, 1, 0, False},
+{ 0,   0.01, 0, NULL, 0, 2, 0, False},
+{ 45,  0.01, 0, NULL, 0, 2, 0, False},
+{ 22,  0.01, 0, NULL, 0, 1, 0, False},
+{ 68,  0.01, 0, NULL, 0, 1, 0, False},
+{ 112, 0.01, 0, NULL, 0, 1, 0, False},
+{ 158, 0.01, 0, NULL, 0, 1, 0, False},
+{ 22,  0.01, 0, NULL, 0, 2, 0, False},
+{ 68,  0.01, 0, NULL, 0, 2, 0, False},
+{ 0,   0.0003125, 0, NULL, 0, -3, 2, False},
+{ 0,   0.0003125, 0, NULL, 0, -3, 3, False},
+{ 0,   0.0003125, 0, NULL, 0, -4, 3, False},
+{ 0,   0.0003125, 0, NULL, 0, -4, 4, False},
+{ 45,  0.0075, 1, NULL, 0, 1, 0, False}
 };
 
 /* Note: the specs for the user-defined marker should be set to the same
@@ -119,24 +118,30 @@ static NhlFillSpec fill_specs[] = {
  * dynamic allocation flag.
  */
 
-static NhlMarkerSpec marker_specs[] = {
-{"",       0.0, 0.0, 1.3125, 1.0, False},    /* user-defined */
-{":F37:Z", 0.0, 0.0, 1.3125, 0.175, False}, /* 1 - dot (small filled circle)*/
-{":F18:+", 0.0, 0.075, 1.3125, 0.95, False}, /* 2 - plus sign */
-{":F1:*",  0.0, 0.0, 1.3125, 1.0, False},    /* 3 - asterisk */
-{":F19:x", 0.0, 0.075, 1.3125, 1.2, False},  /* 4 - hollow circle */
-{":F18:U", 0.0, 0.075, 1.3125, 1.1, False},  /* 5 - cross (x) */
-{":F19:Z", 0.0, 0.083, 1.3125, 1.45, False}, /* 6 - hollow square */
-{":F19:[", 0.0, -0.03, 1.5, 1.25, False},    /* 7 - up pointing triangle */
-{":F19:X", 0.0, 0.87, 2.15, 0.67, False},    /* 8 - down pointing triangle */
-{":F19:\\", 0.0, 0.075, 1.0, 1.15, False},   /* 9 - diamond */
-{":F19:`", 0.0, 0.08, 1.5, 1.55, False}, /* 10-left pointing filled triangle */
-{":F19:b", 0.0, 0.08, 1.5, 1.55, False},/* 11-right pointing filled triangle */
-{":F19:]", 0.0, 0.0625, 1.3125, 1.1, False}, /* 12 - five-pointed star */
-{":F19:m", 0.0, 0.0725, 1.3125, 1.1, False}, /* 13 - six-pointed star */
-{":F18:Z", 0.0, 0.0, 1.3125, 0.8, False},    /* 14 - circle with center dot */
-{":F37:[", 0.0, 0.0, 1.3125, 0.8, False},    /* 15 - circle with cross */
-{":F37:Z", 0.0, 0.0, 1.3125, 0.8, False}     /* 16 - filled circle */
+static NhlMarkerSpec Marker_Specs[] = {
+{"",       0.0, 0.0, 1.3125, 1.0, 0.0, False},    /* user-defined */
+{":F37:Z", 0.0, 0.0, 1.3125, 0.175, 0.0, False}, 
+					/* 1 - dot (small filled circle)*/
+{":F18:+", 0.0, 0.075, 1.3125, 0.95, 0.0, False}, /* 2 - plus sign */
+{":F1:*",  0.0, 0.0, 1.3125, 1.0, 0.0, False},    /* 3 - asterisk */
+{":F19:x", 0.0, 0.075, 1.3125, 1.2, 0.0, False},  /* 4 - hollow circle */
+{":F18:U", 0.0, 0.075, 1.3125, 1.1, 0.0, False},  /* 5 - cross (x) */
+{":F19:Z", 0.0, 0.083, 1.3125, 1.45, 0.0, False}, /* 6 - hollow square */
+{":F19:[", 0.0, -0.03, 1.5, 1.25, 0.0, False},    
+					/* 7 - up pointing triangle */
+{":F19:X", 0.0, 0.87, 2.15, 0.67, 0.0, False},    
+					/* 8 - down pointing triangle */
+{":F19:\\", 0.0, 0.075, 1.0, 1.15, 0.0, False},   /* 9 - diamond */
+{":F19:`", 0.0, 0.08, 1.5, 1.55, 0.0, False}, 
+					/* 10-left pointing filled triangle */
+{":F19:b", 0.0, 0.08, 1.5, 1.55, 0.0, False},
+					/* 11-right pointing filled triangle */
+{":F19:]", 0.0, 0.0625, 1.3125, 1.1, 0.0, False}, /* 12 - five-pointed star */
+{":F19:m", 0.0, 0.0725, 1.3125, 1.1, 0.0, False}, /* 13 - six-pointed star */
+{":F18:Z", 0.0, 0.0, 1.3125, 0.8, 0.0, False},    
+					/* 14 - circle with center dot */
+{":F37:[", 0.0, 0.0, 1.3125, 0.8, 0.0, False},    /* 15 - circle with cross */
+{":F37:Z", 0.0, 0.0, 1.3125, 0.8, 0.0, False}     /* 16 - filled circle */
 
 };
 
@@ -148,22 +153,22 @@ static NhlMarkerSpec marker_specs[] = {
  * the table pointer.
  * The marker table length kept here is the actual length of the table
  * including the 0 element, which does not represent a real marker. The
- * NhlNwkMarkerTableLength read-only resource equals marker_table_len - 1; 
+ * NhlNwkMarkerTableLength read-only resource equals Marker_Table_Len - 1; 
  * Allocation for new markers is in chunks, so the amount currently
  * allocated, and a pointer to the unused elements is also stored.
  */
 
 
-static NhlMarkerTable marker_table;
-static int marker_table_len;
-static int marker_table_alloc_len;
+static int Marker_Table_Len;
 
 /*
  * Likewise the fill table and dash table are global to all workstations
  * Therefore their length is keep statically by the Workstation Class
  */
-static int fill_table_len;
-static int dash_table_len;
+static int Fill_Table_Len;
+static NhlFillTable Fill_Table;
+static int Dash_Table_Len;
+static NhlDashTable Dash_Table;
 
 static NrmQuark intQ;
 static NrmQuark scalarQ;
@@ -407,7 +412,7 @@ static NhlResource resources[] = {
 
 
 	{_NhlNwkDashTable,_NhlCwkDashTable,NhlTStringGenArray,
-		sizeof(NhlGenArray),Oset(dash_table),NhlTImmediate,
+		sizeof(NhlGenArray),Oset(dash_table_strings),NhlTImmediate,
 		_NhlUSET((NhlPointer)NULL),_NhlRES_SGONLY|_NhlRES_PRIVATE,
 		(NhlFreeFunc)NhlFreeGenArray},
 	{_NhlNwkMarkerTableStrings,_NhlCwkMarkerTableStrings,
@@ -1941,11 +1946,11 @@ WorkstationClassInitialize
                 {1,		"Dash"},
 		{1,             "D4U2"},
                 {2,		"Dot"},
-		{1,             "DU2"},
+		{2,             "DU2"},
                 {3,		"DashDot"},
-		{1,             "D4U2DU2"},
+		{3,             "D4U2DU2"},
                 {4,		"DashDotDot"},
-		{1,             "D4U2DUDU2"},
+		{4,             "D4U2DUDU2"},
                 {5,		"D2U"},
                 {6,		"D3U"},
                 {7,		"DUD2U"},
@@ -1960,14 +1965,12 @@ WorkstationClassInitialize
                 {16,		"D5U5"},
 	};
 	NhlConvertArg	dashargsfullenum[] = {
-		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMINMAX)},
-		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)-1)},
-		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)16)}
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMIN)},
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)-1)}
 	};
 	NhlConvertArg	dashargs[] = {
-		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMINMAX)},
-		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)0)},
-		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)16)}
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMIN)},
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)0)}
 	};
         
 	_NhlEnumVals	colorvals[] = {
@@ -2047,6 +2050,10 @@ WorkstationClassInitialize
 		{15,	"circle_w_cross"},
 		{16,	"circle_filled"}
 	};
+	NhlConvertArg	markerargs[] = {
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMIN)},
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)-1)},
+	};
 
 	_NhlEnumVals	mrkline[] = {
 		{NhlLINES,	"Lines"},
@@ -2091,6 +2098,14 @@ WorkstationClassInitialize
 		NhlNumber(markervals));
 	(void)_NhlRegisterEnumType(NhlobjClass,NhlTMarkLineMode,mrkline,
 		NhlNumber(mrkline));
+
+	(void)NhlRegisterConverter
+                (NhlobjClass,NhlTScalar,NhlTMarkerIndex,_NhlCvtScalarToIndex,
+                 markerargs,NhlNumber(markerargs),False,NULL);
+	(void)NhlRegisterConverter
+                (NhlobjClass,NhlTGenArray,NhlTMarkerIndexGenArray,
+                 _NhlCvtGenArrayToIndexGenArray,markerargs,
+                 NhlNumber(markerargs),False,NULL);
 
 	(void)NhlRegisterConverter
                 (NhlobjClass,NhlTScalar,NhlTDashIndexFullEnum,
@@ -2305,24 +2320,28 @@ WorkstationClassInitialize
  * or dash patterns, and the marker table includes a 0 dummy element.
  */
 
-	marker_table_len = sizeof(marker_specs)/sizeof(NhlMarkerSpec);
-	marker_table_alloc_len = marker_table_len;
-	fill_table_len = sizeof(fill_specs)/sizeof(NhlFillSpec); 
-	dash_table_len = sizeof(dash_patterns)/sizeof(char *);
+	Marker_Table_Len = sizeof(Marker_Specs)/sizeof(NhlMarkerSpec);
+	Fill_Table_Len = sizeof(Fill_Specs)/sizeof(NhlFillSpec); 
+	Dash_Table_Len = sizeof(Dash_Specs)/sizeof(NhlDashSpec);
 	
 /*
- * Allocate the marker table
+ * Allocate the marker table, the fill table and the dash pattern table.
+ * The static "Spec" tables retain the default values, which can be 
+ * restored because only the Tables are visible to the Workstation instances.
  */
-	marker_table = (NhlMarkerTable) NhlMalloc(marker_table_len * 
-						  sizeof(NhlMarkerSpec *));
-	if (marker_table == NULL) {
+
+	Fill_Table = (NhlFillTable) NhlMalloc(Fill_Table_Len * 
+						  sizeof(NhlFillSpec *));
+	if (Fill_Table == NULL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  "WorkstationClassInitialize: NhlMalloc failed");
 		return NhlFATAL;
 	}
-	for (i = 0; i < marker_table_len; i++) {
-		marker_table[i] = &marker_specs[i];
+	for (i = 0; i < Fill_Table_Len; i++) {
+		Fill_Table[i] = &Fill_Specs[i];
 	}
+
+
 
 	dbdir = _NGGetNCARGEnv("database");
 	if(dbdir){
@@ -2335,7 +2354,7 @@ WorkstationClassInitialize
 	if(!NhlworkstationClassRec.work_class.rgb_dbm){
 		NhlPError(NhlWARNING,errno,
 			"WorkstationClassInitialize:Unable to access rgb color database - named colors unsupported");
-	}
+}
 	ret = NhlVACreate(&NhlworkstationClassRec.work_class.pal,"pal",
 					NhlpaletteClass,_NhlGetDefaultApp(),
 		_NhlNpalWorkClass,	NhlworkstationClass,
@@ -2823,8 +2842,7 @@ static NhlErrorTypes WorkstationInitialize
 	wp->cmap_changed = True;
 	retcode = DoCmap(newl,NULL,entry_name);
 
-	newl->work.fill_table_len = fill_table_len - 1;
-	newl->work.marker_table_len = marker_table_len - 1;
+	newl->work.fill_table_len = Fill_Table_Len - 1;
 /*
  * Since the marker specs are stored privately it is only necessary to
  * create a template GenArray initially. The data is not copied. 
@@ -2848,84 +2866,31 @@ static NhlErrorTypes WorkstationInitialize
 	}
 	ga->my_data = False;
 
-	if (newl->work.marker_table_params != NULL) {		
-		
-		subret = _NhlValidatedGenArrayCopy(&ga,
-						newl->work.marker_table_params,
-						   4*8096,False,False,
-						   _NhlNwkMarkerTableParams, 
-						   entry_name);
-		
-		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
-				return retcode;
-		if (subret > NhlWARNING) {
-			len1 = 
-			   newl->work.marker_table_params->len_dimensions[0];
-		}
-	}
-	newl->work.marker_table_params = ga;
-	mparams = (NhlMarkerTableParams *)newl->work.marker_table_params->data;
-
-	len2 = 0;
-	mstrings = NULL;
-	count[0] = 0;
-	if ((ga = NhlCreateGenArray((NhlPointer)mstrings,NhlTString,
-				    sizeof(NhlString),1,count)) == NULL) {
-		e_text = "%s: error creating %s GenArray";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  _NhlNwkMarkerTableParams);
+	newl->work.marker_table = (NhlMarkerTable) 
+		NhlMalloc(Marker_Table_Len * sizeof(NhlMarkerSpec *));
+	if (newl->work.marker_table == NULL) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return NhlFATAL;
 	}
-	ga->my_data = False;
-
-	if (newl->work.marker_table_strings != NULL) {		
-		subret = _NhlValidatedGenArrayCopy(&ga,
-					  newl->work.marker_table_strings,
-						   4*8096,False,False,
-						   _NhlNwkMarkerTableStrings, 
-						   entry_name);
-		
-		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
-				return retcode;
-		if (subret > NhlWARNING) {
-			len2 = 
-			    newl->work.marker_table_strings->len_dimensions[0];
-		}
+	for (i = 0; i < Marker_Table_Len; i++) {
+		newl->work.marker_table[i] = &Marker_Specs[i];
 	}
-	newl->work.marker_table_strings = ga;
-	mstrings = (NhlString *) newl->work.marker_table_strings->data;
+	newl->work.marker_table_alloc_len = Marker_Table_Len;
+	newl->work.marker_table_len = Marker_Table_Len - 1;
 
-	for (i=0; i<MAX(len1,len2); i++) {
-		float x, y, asp, size;
-		char *mstr;
-		if (i >= len1)
-			x = y = asp = size = -100.0; 
-		else {
-			x = mparams[i][0];
-			y = mparams[i][1];
-			asp = mparams[i][2];
-			size = mparams[i][3];
-		}
-		if (i >= len2)
-			mstr = NULL;
-		else
-			mstr = mstrings[i];
-
-		if (i < newl->work.marker_table_len) {
-			subret = NhlSetMarker(new->base.id,i+1,mstr,x,y,asp,
-									size);
-			if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
-				return retcode;
-		}
-		else {
-			i = NhlNewMarker(new->base.id,mstr,x,y,asp,size);
-			retcode = (NhlErrorTypes)MIN(retcode,i);
-			if(retcode < NhlWARNING)
-				return retcode;
-		}
+	newl->work.dash_table = (NhlDashTable) NhlMalloc(Dash_Table_Len * 
+						  sizeof(NhlDashSpec *));
+	if (newl->work.dash_table == NULL) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NhlFATAL;
 	}
-	
-	newl->work.dash_table_len = dash_table_len - 1;
+	for (i = 0; i < Dash_Table_Len; i++) {
+		newl->work.dash_table[i] = &Dash_Specs[i];
+	}
+	newl->work.dash_table_alloc_len = Dash_Table_Len;
+	newl->work.dash_table_len = Dash_Table_Len - 1;
+
+
 /*
  * Initialize the "default" graphics primatives - used privately only.
  */
@@ -3250,77 +3215,6 @@ WorkstationSetValues
 	 */
 	subret = _NhlAllocateColors(newl);
 	retcode = MIN(retcode,subret);
-
-	len1 = 0;
-	if (newl->work.marker_table_params != oldl->work.marker_table_params) {
-		subret = _NhlValidatedGenArrayCopy(
-					   &(oldl->work.marker_table_params),
-					   newl->work.marker_table_params,
-						   4*8096,False,False,
-						   _NhlNwkMarkerTableParams, 
-						   entry_name);
-		
-		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
-				return retcode;
-		if (subret > NhlWARNING) {
-			len1 = 
-			    newl->work.marker_table_params->len_dimensions[0];
-		}
-		newl->work.marker_table_params = 
-			oldl->work.marker_table_params;
-	}
-	
-	len2 = 0;	
-	if (newl->work.marker_table_strings != 
-	    oldl->work.marker_table_strings) {
-		subret=_NhlValidatedGenArrayCopy(
-					   &(oldl->work.marker_table_strings),
-					     newl->work.marker_table_strings,
-						 4*8096,False,False,
-						 _NhlNwkMarkerTableStrings, 
-						 entry_name);
-		
-		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
-				return retcode;
-		if (subret > NhlWARNING) {
-			len2 = 
-			   newl->work.marker_table_strings->len_dimensions[0];
-		}
-		newl->work.marker_table_strings =
-			oldl->work.marker_table_strings;
-	}
-
-	mparams = (NhlMarkerTableParams *)newl->work.marker_table_params->data;
-	mstrings = (NhlString *) newl->work.marker_table_strings->data;
-	for (i=0; i<MAX(len1,len2); i++) {
-		float x, y, asp, size;
-		char *mstr;
-		if (i >= len1)
-			x = y = asp = size = -100.0; 
-		else {
-			x = mparams[i][0];
-			y = mparams[i][1];
-			asp = mparams[i][2];
-			size = mparams[i][3];
-		}
-		if (i >= len2)
-			mstr = NULL;
-		else
-			mstr = mstrings[i];
-
-		if (i < newl->work.marker_table_len) {
-			subret = NhlSetMarker(new->base.id,i+1,mstr,x,y,asp,
-									size);
-			if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
-				return retcode;
-		}
-		else {
-			i = NhlNewMarker(new->base.id,mstr,x,y,asp,size);
-			retcode = (NhlErrorTypes)MIN(retcode,i);
-			if(retcode < NhlWARNING)
-				return retcode;
-		}
-	}
 	
 /*
  * Set the private line label resources
@@ -3600,14 +3494,14 @@ WorkstationGetValues
 			}
 			for (j=0; j<wl->work.marker_table_len; j++) {
 				if ((s_p[j] = (char *) NhlMalloc(strlen(
-				   marker_table[j+1]->marker) + 1)) == NULL) {
+				   wl->work.marker_table[j+1]->marker) + 1)) == NULL) {
 				       e_text = "%s: error allocating %s data";
 				       NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
 						 entry_name,
 						 _NhlNwkMarkerTableStrings);
 				       return NhlFATAL;
 			        }
-				strcpy(s_p[j], marker_table[j+1]->marker);
+				strcpy(s_p[j], wl->work.marker_table[j+1]->marker);
 			}
 			count[0] = wl->work.marker_table_len;
 			if ((ga = NhlCreateGenArray((NhlPointer)s_p,
@@ -3633,12 +3527,12 @@ WorkstationGetValues
 				return NhlFATAL;
 			}
 			for (j=0; j<wl->work.marker_table_len; j++) {
-				mtp_p[j][0] = marker_table[j+1]->x_off;
-				mtp_p[j][1] = marker_table[j+1]->y_off;
+				mtp_p[j][0] = wl->work.marker_table[j+1]->x_off;
+				mtp_p[j][1] = wl->work.marker_table[j+1]->y_off;
 				mtp_p[j][2] = 
-					marker_table[j+1]->aspect_adj;
+					wl->work.marker_table[j+1]->aspect_adj;
 				mtp_p[j][3] = 
-					marker_table[j+1]->size_adj;
+					wl->work.marker_table[j+1]->size_adj;
 			}
 			count[0] = wl->work.marker_table_len;
 			count[1] = 4;
@@ -3656,24 +3550,24 @@ WorkstationGetValues
 
 		} else if (args[i].quark == dash_table_name) {
 			if ((s_p = (NhlString *) 
-			     NhlMalloc(dash_table_len *
+			     NhlMalloc((wl->work.dash_table_len+1) *
 				       sizeof(NhlString))) == NULL) {
 				e_text = "%s: error allocating %s data";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
 					  entry_name,_NhlNwkDashTable);
 				return NhlFATAL;
 			}
-			for (j=0; j<dash_table_len; j++) {
+			for (j=0; j<=wl->work.dash_table_len; j++) {
 				if ((s_p[j] = (char *) NhlMalloc(strlen(
-				   dash_patterns[j])+1)) == NULL) {
+				   wl->work.dash_table[j]->dpat)+1)) == NULL) {
 				       e_text = "%s: error allocating %s data";
 				       NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
 						 entry_name,_NhlNwkDashTable);
 				       return NhlFATAL;
 			        }
-				strcpy(s_p[j], dash_patterns[j]);
+				strcpy(s_p[j], wl->work.dash_table[j]->dpat);
 			}
-			count[0] = dash_table_len;
+			count[0] = wl->work.dash_table_len+1;
 			if ((ga = NhlCreateGenArray((NhlPointer)s_p,
 						    NhlTString,
 						    sizeof(NhlString),
@@ -3790,9 +3684,31 @@ static NhlErrorTypes WorkstationDestroy
 	NhlWorkstationClassPart	*wcp =
                 &((NhlWorkstationClass)inst->base.layer_class)->work_class;
 	NhlErrorTypes	retcode = NhlNOERROR;
+	int i;
 
-	NhlFreeGenArray(wp->marker_table_strings);
-	NhlFreeGenArray(wp->marker_table_params);
+	if (wp->marker_table_strings)
+		NhlFreeGenArray(wp->marker_table_strings);
+	if (wp->marker_table_params)
+		NhlFreeGenArray(wp->marker_table_params);
+
+
+	for (i = 0; i <= wp->dash_table_len; i++) {
+		if (wp->dash_table[i]->dynamic) {
+			NhlFree(wp->dash_table[i]);
+		}
+	}
+	NhlFree(wp->dash_table);
+
+	/*
+	 * remember wp->marker_table_len is 1 less than the real number
+	 * of markers.
+	 */
+	for (i = 0; i <= wp->marker_table_len; i++) {
+		if (wp->marker_table[i]->dynamic) {
+			NhlFree(wp->marker_table[i]);
+		}
+	}
+	NhlFree(wp->marker_table);
 
 	if(wp->private_lineinfo.line_label_string != NULL)
 		NhlFree(wp->private_lineinfo.line_label_string);
@@ -4460,7 +4376,7 @@ WorkstationFill
 		;
 	else if ((ix = wkfp->fill_index) == NhlSOLIDFILL ||
                  ix == NhlUNSPECIFIEDFILL) {
-		/* fill_specs[ix].type  must be 0 */
+		/* Fill_Specs[ix].type  must be 0 */
 		gset_fill_int_style(GSTYLE_SOLID);
 		gset_linewidth(wkfp->fill_line_thickness);
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
@@ -4470,7 +4386,7 @@ WorkstationFill
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	}
 	else if (ix > 0) {
-		/* fill_specs[ix].type must not be 0 */
+		/* Fill_Specs[ix].type must not be 0 */
 		ix = 1 + (ix - 1) % wk_p->fill_table_len;
 		if (fill_background >= 0) {
 			gset_linewidth(1.0);
@@ -4484,15 +4400,15 @@ WorkstationFill
 		}
 		gset_linewidth(wkfp->fill_line_thickness);
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-		c_sfseti("TY", fill_specs[ix].type);
-		c_sfseti("DO", fill_specs[ix].dots_on);
+		c_sfseti("TY", Fill_Specs[ix].type);
+		c_sfseti("DO", Fill_Specs[ix].dots_on);
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-		if (fill_specs[ix].dots_on) {
+		if (Fill_Specs[ix].dots_on) {
 			gset_marker_colr_ind(fill_color);
 			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,-1);
 			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
-		if (fill_specs[ix].type > 0) { 
+		if (Fill_Specs[ix].type > 0) { 
  			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,fill_color);
 			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
@@ -4500,7 +4416,7 @@ WorkstationFill
 			gset_line_colr_ind(fill_color);
 			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
  			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,
-				 fill_specs[ix].ici);
+				 Fill_Specs[ix].ici);
 			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
 	}
@@ -5754,11 +5670,21 @@ _NhlSetLineInfo
 		}
 		
 		dollar_size = (x1 - x0) /
-			strlen(dash_patterns[ix]) + 0.5;
+			strlen(wkp->dash_table[ix]->dpat) + 0.5;
 		if(dollar_size < 1) dollar_size = 1;
 		
-		strcpy(buffer,dash_patterns[ix]);
-		
+		strcpy(buffer,wkp->dash_table[ix]->dpat);
+
+		/*
+		 * since dashchar recognizes only a single quote as
+		 * the space indicator, we must change the the 
+		 * underscores in the pattern into spaces.
+		 */
+		 
+		for (i = 0; i < strlen(buffer); i++) {
+			if (buffer[i] == '_')
+				buffer[i] = '\'';
+		}
 		c_dashdc(buffer,dollar_size,1);
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	}
@@ -5774,10 +5700,10 @@ _NhlSetLineInfo
 	 */
 	_NHLCALLF(dprset,DPRSET)();
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-
+#if 0
 	c_dpsetc("CRG","'");
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-
+#endif
 	if ((ix = wklp->dash_pattern) < 0) {
 		/* NhlWARNING - but it's a void function right now */
 		e_text = "%s: invalid dash pattern index";
@@ -5790,7 +5716,7 @@ _NhlSetLineInfo
 		NhlPError(NhlINFO,NhlEUNKNOWN,e_text,func,ix);
 		ix = 1 + (ix - 1) % wkp->dash_table_len; 
 	}
-        strncpy(buffer,dash_patterns[ix],buff_size);
+        strncpy(buffer,wkp->dash_table[ix]->dpat,buff_size);
 
 	tf = wklp->line_dash_seglen / (strlen(buffer)+.5);
 	c_dpsetr("WOG",tf);
@@ -5944,6 +5870,8 @@ _NhlSetFillInfo
         float			x0,x1;
         int			ll,ix;
         char			buffer[80];
+	int			i;
+	int			edge_dash_dollar_size;
 	
 
 	if (wkfp->edges_on && wkfp->edge_dash_pattern < 0) {
@@ -5974,14 +5902,25 @@ _NhlSetFillInfo
 			ix = 1 + (ix - 1) % wk_p->dash_table_len;
 		}
 		
-		wk_p->edge_dash_dollar_size = (x1 - x0) /
-			strlen(dash_patterns[ix]) + 0.5;
-		if(wk_p->edge_dash_dollar_size < 1)
-                        wk_p->edge_dash_dollar_size = 1;
+		edge_dash_dollar_size = (x1 - x0) /
+			strlen(wk_p->dash_table[ix]->dpat) + 0.5;
+		if(edge_dash_dollar_size < 1)
+                        edge_dash_dollar_size = 1;
 		
-		strcpy(buffer,dash_patterns[ix]);
+		strcpy(buffer,wk_p->dash_table[ix]->dpat);
+
+		/*
+		 * since dashchar recognizes only a single quote as
+		 * the space indicator, we must change the the 
+		 * underscores in the pattern into spaces.
+		 */
+		 
+		for (i = 0; i < strlen(buffer); i++) {
+			if (buffer[i] == '_')
+				buffer[i] = '\'';
+		}
 		
-		c_dashdc(buffer,wk_p->edge_dash_dollar_size,1);
+		c_dashdc(buffer,edge_dash_dollar_size,1);
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	}
 		
@@ -6016,9 +5955,9 @@ _NhlSetFillInfo
 	}
 
 	if (ix != NhlHOLLOWFILL) {
-		c_sfseti("AN", fill_specs[ix].angle);
+		c_sfseti("AN", Fill_Specs[ix].angle);
 		(void)_NhlLLErrCheckPrnt(NhlINFO,func);
-		c_sfsetr("SP", fill_specs[ix].spacing * 
+		c_sfsetr("SP", Fill_Specs[ix].spacing * 
 			 wkfp->fill_scale_factor);
 		(void)_NhlLLErrCheckPrnt(NhlINFO,func);
 	}
@@ -6049,6 +5988,7 @@ _NhlWorkstationFill
 	return (*wcp->fill_work)(instance,x,y,num_points);
 }
 
+
 /*
  * Adds a marker definition to the marker table and returns an index to
  * this marker. 
@@ -6062,67 +6002,78 @@ int NhlNewMarker
 	float	x_off, 
 	float	y_off,
 	float	aspect_adj,
-	float	size_adj
+	float	size_adj,
+	float   angle
 )
 #else
-(wid,mark_string,x_off,y_off,aspect_adj,size_adj)
+(wid,mark_string,x_off,y_off,aspect_adj,size_adj,angle)
 	int	wid;
 	char	*mark_string;
 	float	x_off;
 	float	y_off;
 	float	aspect_adj;
 	float	size_adj;
+	float   angle;
 #endif
 {
+	char func[] = "NhlNewMarker";
         NhlWorkstationLayer tinst = (NhlWorkstationLayer)_NhlGetLayer(wid);
-	NhlWorkstationLayerPart *wk_p;
+	NhlWorkstationLayerPart *wkp;
 	NhlMarkerSpec *m_p;
 	int i;
 
 	if((tinst == NULL) || !_NhlIsWorkstation(tinst)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"NhlNewMarker:Invalid workstation id = %d",wid);
+			"%s:Invalid workstation id = %d",func,wid);
 		return ((int)NhlFATAL);
 	}
 	
-	wk_p = &tinst->work;
+	wkp = &tinst->work;
 
-	if (marker_table_len == marker_table_alloc_len) {
-		marker_table_alloc_len += NhlWK_ALLOC_UNIT;
-		marker_table = (NhlMarkerTable) 
-			NhlRealloc(marker_table, 
-				   marker_table_alloc_len *
+	/*
+	 * remember wp->marker_table_len is 1 less than the real number
+	 * of markers.
+	 */
+	if (wkp->marker_table_len == wkp->marker_table_alloc_len - 1) {
+		wkp->marker_table_alloc_len += NhlWK_ALLOC_UNIT;
+		wkp->marker_table = (NhlMarkerTable) 
+			NhlRealloc(wkp->marker_table, 
+				   wkp->marker_table_alloc_len *
 				   sizeof(NhlMarkerSpec *));
-		if (marker_table == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-			     "_NhlNewMarker: marker table realloc failed");
+		if (wkp->marker_table == NULL) {
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			return((int)NhlFATAL);
 		}
-		m_p = (NhlMarkerSpec *)
-			NhlMalloc(NhlWK_ALLOC_UNIT * sizeof(NhlMarkerSpec));
-		if (m_p == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-			     "_NhlNewMarker: marker specs alloc failed");
-			return((int)NhlFATAL);
-		}
-		for (i=marker_table_len; i<marker_table_alloc_len; i++) {
-			marker_table[i] = &m_p[i - marker_table_len];
-		}
-	}
-/*
- * If the marker string is NULL use the default marker string
- */
-		
-	marker_table_len += 1;
-	wk_p->marker_table_len = marker_table_len - 1;
-	m_p = marker_table[marker_table_len - 1];
+		for (i =wkp->marker_table_len+1; 
+		     i < wkp->marker_table_alloc_len; i++) {
+                        wkp->marker_table[i] = NULL;
+                }
 
-	if (mark_string == NULL) {
-		mark_string = marker_table[NhlWK_DEF_MARKER]->marker;
+	}
+	if (mark_string == NULL || strlen(mark_string) == 0) {
+		wkp->marker_table_len++;
+		wkp->marker_table[wkp->marker_table_len] = 
+			&Marker_Specs[NhlWK_DEF_MARKER];
+		return (wkp->marker_table_len); 
         }
+	else if (strlen(mark_string) > _NhlMAXMARKERLEN) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  "%s: marker string exceeds max length",func);
+		return(NhlWARNING);
+	}
+		
+	m_p = (NhlMarkerSpec *) NhlMalloc(sizeof(NhlMarkerSpec));
+	if (m_p == NULL) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return((int)NhlFATAL);
+	}
+	wkp->marker_table[wkp->marker_table_len+1] = m_p;
+
+/*
+ * If the marker string is NULL or an empty string use the default marker
+ */
 	if ((m_p->marker = NhlMalloc(strlen(mark_string) + 1)) == NULL) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			  "_NhlNewMarker: marker string alloc failed");
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return((int)NhlFATAL);
 	}
 	strcpy(m_p->marker, mark_string);
@@ -6130,27 +6081,32 @@ int NhlNewMarker
 	if (x_off < 1.0 && x_off > -1.0)  
 		m_p->x_off = x_off;
 	else
-		m_p->x_off = marker_specs[0].x_off;
+		m_p->x_off = Marker_Specs[0].x_off;
 
 	if (y_off < 1.0 && y_off > -1.0)
 		m_p->y_off = y_off;
 	else
-		m_p->y_off = marker_specs[0].y_off;
+		m_p->y_off = Marker_Specs[0].y_off;
 
 	if (aspect_adj > 0.0)
 		m_p->aspect_adj = aspect_adj;
 	else
-		m_p->aspect_adj = marker_specs[0].aspect_adj;
+		m_p->aspect_adj = Marker_Specs[0].aspect_adj;
 
 	if (size_adj > 0.0)
 		m_p->size_adj = size_adj;
 	else
-		m_p->size_adj = marker_specs[0].size_adj;
+		m_p->size_adj = Marker_Specs[0].size_adj;
 
-	/* added markers are always dynamic */
+	if (angle >= 0.0)
+		m_p->angle = angle;
+	else
+		m_p->angle = Marker_Specs[0].angle;
+
 	m_p->dynamic = True;
 
-	return (wk_p->marker_table_len); 
+	wkp->marker_table_len++;
+	return (wkp->marker_table_len); 
 	
 }
 
@@ -6177,10 +6133,12 @@ void _NHLCALLF(nhlpfnewmarker,NHLPFNEWMARKER)
 	float		*yoff,
 	float		*aspadj,
 	float		*sizeadj,
+	float		*angle,
 	int		*indx_ret
+	
 )
 #else
-(wid,fmark,fmark_len,xoff,yoff,aspadj,sizeadj,indx_ret)
+(wid,fmark,fmark_len,xoff,yoff,aspadj,sizeadj,angle,indx_ret)
 	int		*wid;
 	_NhlFString	fmark;
 	int		*fmark_len;
@@ -6188,6 +6146,7 @@ void _NHLCALLF(nhlpfnewmarker,NHLPFNEWMARKER)
 	float		*yoff;
 	float		*aspadj;
 	float		*sizeadj;
+	float           *angle;
 	int		*indx_ret;
 #endif
 {
@@ -6200,14 +6159,18 @@ void _NHLCALLF(nhlpfnewmarker,NHLPFNEWMARKER)
 		return;
 	}
 
-	*indx_ret = NhlNewMarker(*wid,tstr,*xoff,*yoff,*aspadj,*sizeadj);
+	*indx_ret = NhlNewMarker(*wid,tstr,
+				 *xoff,*yoff,*aspadj,*sizeadj,*angle);
 
 	return;
 }
 
+
+
 /*
  * Allows modification of the characteristics of an existing marker, 
- * whether pre-defined or added using NhlNewMarker.
+ * whether pre-defined or added using NhlNewMarker. If NULL, causes default
+ * value to be restored. For added markers the default is index 1;
  */
 /*ARGSUSED*/
 NhlErrorTypes
@@ -6219,9 +6182,10 @@ NhlSetMarker
  float	x_off, 
  float	y_off,
  float	aspect_adj,
- float	size_adj)
+ float	size_adj,
+ float  angle)
 #else
-(instance,index,mark_string,x_off,y_off,aspect_adj,size_adj)
+(instance,index,mark_string,x_off,y_off,aspect_adj,size_adj,angle)
         int instance;
 	int   index;
 	char *mark_string; 
@@ -6229,42 +6193,70 @@ NhlSetMarker
 	float y_off;
 	float aspect_adj;
 	float size_adj;
+	float angle;
 #endif
 {
+	char func[] = "NhlSetMarker";
+        NhlWorkstationLayer wl = (NhlWorkstationLayer)_NhlGetLayer(instance);
+	NhlWorkstationLayerPart *wkp = &wl->work;
 	NhlMarkerSpec *m_p;
 	char *c_p;
 
-	if (index <= 0 || index > marker_table_len) {
+	if (index <= 0 || index > wkp->marker_table_len) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			  "_NhlEditMarker: invalid marker index");
+			  "%s: invalid marker index",func);
 		return(NhlWARNING);
 	}
 
-	m_p = marker_table[index];
+	m_p = wkp->marker_table[index];
+
+/*
+ * An empty string is a signal to restore the default value. If the index
+ * is in range of the original marker table, the original values are used.
+ * If the index indicates that it is an added marker, then the value for 
+ * index 1 are used.
+ */
+	if (mark_string == NULL || strlen(mark_string) == 0) {
+		if (m_p->dynamic) {
+			NhlFree(m_p->marker);
+			NhlFree(m_p);
+		}
+		if (index < sizeof(Marker_Specs)/sizeof(NhlMarkerSpec)) {
+			wkp->marker_table[index] = &Marker_Specs[index];
+		}
+		else {
+			wkp->marker_table[index] = 
+				&Marker_Specs[NhlWK_DEF_MARKER];
+		}
+		return (NhlNOERROR); 
+	}
+	else if (strlen(mark_string) > _NhlMAXMARKERLEN) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  "%s: marker string exceeds max length",func);
+		return(NhlWARNING);
+	}
 
 /* 
  * If the marker is one of the initial statically defined markers, make
- * a copy. This will allow the default markers to be restored if a method
- * of restoring defaults is implemented. All marker entries will have the
- * dynamic flag set true by the time this routine exits.
+ * a copy and mark it dynamic. The initial set of markers should
+ * be considered read-only for the WorkstationClass. Changes to the table
+ * are instance-specific.
  */
 	if (! m_p->dynamic) {
 		if ((m_p = (NhlMarkerSpec *) 
 		    NhlMalloc(sizeof(NhlMarkerSpec))) == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-			      "_NhlEditMarker: marker alloc failed");
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			return(NhlFATAL);
 		}
-		memcpy((char *) m_p, (char *) marker_table[index],
+		memcpy((char *) m_p, (char *) wkp->marker_table[index],
 			sizeof(NhlMarkerSpec));
-		marker_table[index] = m_p;
+		wkp->marker_table[index] = m_p;
 	}
 		
 	if (mark_string != NULL && 
 	    strcmp(mark_string, m_p->marker)) {
 		    if ((c_p = NhlMalloc(strlen(mark_string)+ 1 )) == NULL) {
-			    NhlPError(NhlFATAL,NhlEUNKNOWN,
-				 "_NhlEditMarker: marker string alloc failed");
+			    NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			    return(NhlFATAL);
 		    }
 		    strcpy(c_p, mark_string);
@@ -6277,22 +6269,27 @@ NhlSetMarker
 	if (x_off < 1.0 && x_off > -1.0)  
 		m_p->x_off = x_off;
 	else
-		m_p->x_off = marker_specs[0].x_off;
+		m_p->x_off = Marker_Specs[0].x_off;
 
 	if (y_off < 1.0 && y_off > -1.0)
 		m_p->y_off = y_off;
 	else
-		m_p->y_off = marker_specs[0].y_off;
+		m_p->y_off = Marker_Specs[0].y_off;
 
 	if (aspect_adj > 0.0)
 		m_p->aspect_adj = aspect_adj;
 	else
-		m_p->aspect_adj = marker_specs[0].aspect_adj;
+		m_p->aspect_adj = Marker_Specs[0].aspect_adj;
 
 	if (size_adj > 0.0)
 		m_p->size_adj = size_adj;
 	else
-		m_p->size_adj = marker_specs[0].size_adj;
+		m_p->size_adj = Marker_Specs[0].size_adj;
+
+	if (angle >= 0.0)
+		m_p->angle = angle;
+	else
+		m_p->angle = Marker_Specs[0].angle;
 
 	return (NhlNOERROR); 
 	
@@ -6322,10 +6319,11 @@ void _NHLCALLF(nhlpfsetmarker,NHLPFSETMARKER)
 	float		*yoff,
 	float		*aspadj,
 	float		*sizeadj,
+	float		*angle,
 	int		*err
 )
 #else
-(wid,indx,fmark,fmark_len,xoff,yoff,aspadj,sizeadj,err)
+(wid,indx,fmark,fmark_len,xoff,yoff,aspadj,sizeadj,angle,err)
 	int		*wid;
 	int		*indx;
 	_NhlFString	fmark;
@@ -6334,6 +6332,7 @@ void _NHLCALLF(nhlpfsetmarker,NHLPFSETMARKER)
 	float		*yoff;
 	float		*aspadj;
 	float		*sizeadj;
+	float		*angle;
 	int		*err;
 #endif
 {
@@ -6346,7 +6345,292 @@ void _NHLCALLF(nhlpfsetmarker,NHLPFSETMARKER)
 		return;
 	}
 
-	*err = NhlSetMarker(*wid,*indx,tstr,*xoff,*yoff,*aspadj,*sizeadj);
+	*err = NhlSetMarker(*wid,*indx,tstr,
+			    *xoff,*yoff,*aspadj,*sizeadj,*angle);
+
+	return;
+}
+
+
+/*
+ * Adds a marker definition to the marker table and returns an index to
+ * this marker. 
+ */
+/*ARGSUSED*/
+int NhlNewDashPattern
+#if  NhlNeedProto
+(
+	int	wid, 
+	char	*dash_string
+)
+#else
+(wid,dash_string)
+	int	wid;
+	char	*dash_string;
+#endif
+{
+	char			func[] = "NhlNewDashPattern";
+        NhlWorkstationLayer tinst = (NhlWorkstationLayer)_NhlGetLayer(wid);
+	NhlWorkstationLayerPart *wkp;
+	NhlDashSpec *d_p;
+	int i;
+
+	if((tinst == NULL) || !_NhlIsWorkstation(tinst)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Invalid workstation id = %d",func,wid);
+		return ((int)NhlFATAL);
+	}
+	
+	wkp = &tinst->work;
+
+	/*
+	 * remember wp->dash_table_len is 1 less than the real number
+	 * of dashs.
+	 */
+	if (wkp->dash_table_len == wkp->dash_table_alloc_len - 1) {
+		wkp->dash_table_alloc_len += NhlWK_ALLOC_UNIT;
+		wkp->dash_table = (NhlDashTable) 
+			NhlRealloc(wkp->dash_table, 
+				   wkp->dash_table_alloc_len *
+				   sizeof(NhlDashSpec *));
+		if (wkp->dash_table == NULL) {
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return((int)NhlFATAL);
+		}
+		for (i =wkp->dash_table_len+1; 
+		     i < wkp->dash_table_alloc_len; i++) {
+                        wkp->dash_table[i] = NULL;
+                }
+
+	}
+	if (dash_string == NULL || strlen(dash_string) == 0) {
+		wkp->dash_table_len++;
+		wkp->dash_table[wkp->dash_table_len] = &Dash_Specs[0];
+		return (wkp->dash_table_len); 
+	}
+	else {
+		if (strlen(dash_string) > _NhlMAXDASHLEN) {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  "%s: dash pattern exceeds max length",func);
+			return(NhlWARNING);
+		}
+		for (i = 0; i < strlen(dash_string); i++) {
+			if (! (*(dash_string + i) == '$' ||
+			       *(dash_string + i) == '_')) {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+			 "%s: invalid dash pattern specifier",func);
+				return((int)NhlWARNING);
+			}
+		}    
+	}	
+		
+	d_p = (NhlDashSpec *) NhlMalloc(sizeof(NhlDashSpec));
+	if (d_p == NULL) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return((int)NhlFATAL);
+	}
+	wkp->dash_table[wkp->dash_table_len+1] = d_p;
+	if ((d_p->dpat = NhlMalloc(strlen(dash_string) + 1)) == NULL) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return((int)NhlFATAL);
+	}
+	strcpy(d_p->dpat, dash_string);
+	
+	d_p->dynamic = True;
+
+	wkp->dash_table_len++;
+	return (wkp->dash_table_len); 
+	
+}
+
+/*
+ * Function:	nhlpfnewdashpattern
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhlpfnewdashpattern,NHLPFNEWDASHPATTERN)
+#if	NhlNeedProto
+(
+	int		*wid,
+	_NhlFString	fdash,
+	int		*fdash_len,
+	int		*indx_ret
+)
+#else
+(wid,fmark,fmark_len,xoff,yoff,aspadj,sizeadj,indx_ret)
+	int		*wid;
+	_NhlFString	fdash;
+	int		*fdash_len;
+	int		*indx_ret;
+#endif
+{
+	char	tstr[_NhlMAXDASHLEN];
+
+	if(!_NhlFstrToCstr(tstr,NhlNumber(tstr),fdash,*fdash_len)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"Can't convert Fortran string to C string");
+		*indx_ret = NhlFATAL;
+		return;
+	}
+
+	*indx_ret = NhlNewDashPattern(*wid,tstr);
+
+	return;
+}
+
+
+/*
+ * Allows modification of the characteristics of an existing dash pattern, 
+ */
+/*ARGSUSED*/
+NhlErrorTypes
+NhlSetDashPattern
+#if  NhlNeedProto
+(int instance, 
+ int	index,
+ char	*dash_string)
+#else
+(instance,index,dash_string)
+        int instance;
+	int   index;
+	char *dash_string; 
+#endif
+{
+	NhlWorkstationLayer	wl = (NhlWorkstationLayer)_NhlGetLayer(instance);
+	char			func[] = "NhlSetDashPattern";
+	NhlWorkstationLayerPart	*wkp = &wl->work;
+	NhlDashSpec *d_p;
+	char *c_p;
+	int i;
+
+	if (index <= 0 || index > wkp->dash_table_len) {
+		char *emsg = (index == 0) ?
+			"%s: dash index 0 cannot be modified" :
+			"%s: invalid dash index";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,emsg,func);
+		return(NhlWARNING);
+	}
+
+	d_p = wkp->dash_table[index];
+
+/*
+ * An empty string is a signal to restore the default value. If the index
+ * is in range of the original dash table, the original values are used.
+ * If the index indicates that it is an added dash, then the value for 
+ * index 0 (NhlSOLIDLINE) are used.
+ */
+	if (dash_string == NULL || strlen(dash_string) == 0) {
+		if (d_p->dynamic) {
+			NhlFree(d_p->dpat);
+			NhlFree(d_p);
+		}
+		if (index < sizeof(Dash_Specs)/sizeof(NhlDashSpec)) {
+			wkp->dash_table[index] = &Dash_Specs[index];
+		}
+		else {
+			wkp->dash_table[index] = &Dash_Specs[0];
+		}
+		return (NhlNOERROR); 
+	}
+	else {
+		if (strlen(dash_string) > _NhlMAXDASHLEN) {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  "%s: dash pattern exceeds max length",func);
+			return(NhlWARNING);
+		}
+		for (i = 0; i < strlen(dash_string); i++) {
+			if (! (*(dash_string + i) == '$' ||
+			       *(dash_string + i) == '_')) {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+			 "%s: invalid dash pattern specifier",func);
+				return(NhlWARNING);
+			}
+		}    
+	}	
+		
+/* 
+ * this routine is coded to allow expansion of the table.
+ * If the dash is one of the initial statically defined dashs, make
+ * a copy and mark it dynamic. The initial set of dash patterns should
+ * be considered read-only for the WorkstationClass. Changes to the table
+ * are instance-specific.
+ */
+	if (! d_p->dynamic) {
+		if ((d_p = (NhlDashSpec *) 
+		    NhlMalloc(sizeof(NhlDashSpec))) == NULL) {
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return(NhlFATAL);
+		}
+		memcpy(d_p, wkp->dash_table[index],
+			sizeof(NhlDashSpec));
+		wkp->dash_table[index] = d_p;
+	}
+		
+	if (strcmp(dash_string, d_p->dpat)) {
+		    if ((c_p = NhlMalloc(strlen(dash_string)+ 1 )) == NULL) {
+			    NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			    return(NhlFATAL);
+		    }
+		    strcpy(c_p, dash_string);
+		    if (d_p->dynamic) 
+			    NhlFree(d_p->dpat);
+		    d_p->dpat = c_p;
+	}
+	d_p->dynamic = True;
+
+	return (NhlNOERROR); 
+	
+}
+
+/*
+ * Function:	nhlpfsetdashpattern
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhlpfsetdashpattern,NHLPFSETDASHPATTERN)
+#if	NhlNeedProto
+(
+	int		*wid,
+	int		*indx,
+	_NhlFString	fdash_string,
+	int		*fdash_string_len,
+	int		*err
+)
+#else
+(wid,indx,fdash_string,fdash_string_len,err)
+	int		*wid;
+	int		*indx;
+	_NhlFString	fdash_string;
+	int		*fdash_string_len;
+#endif
+{
+	char	tstr[_NhlMAXDASHLEN];
+
+	if(!_NhlFstrToCstr(tstr,NhlNumber(tstr),fdash_string,
+			   *fdash_string_len)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"Can't convert Fortran string to C string");
+		*err = NhlFATAL;
+		return;
+	}
+
+	*err = NhlSetDashPattern(*wid,*indx,tstr);
 
 	return;
 }
@@ -6355,6 +6639,7 @@ static struct{
 	float	xoff;
 	float	yoff;
 	float	size;
+	float   angle;
 	char	*string;
 } minfo;
 
@@ -6374,8 +6659,8 @@ _NhlSetMarkerInfo
 {
 	char			func[] = "_NhlSetMarkerInfo";
         NhlWorkstationLayer	tinst = (NhlWorkstationLayer)instance;
-	NhlWorkstationLayerPart	*wk_p = &tinst->work;
-	_NhlMarkerStyleInfo	*mkp = wk_p->mip;
+	NhlWorkstationLayerPart	*wkp = &tinst->work;
+	_NhlMarkerStyleInfo	*mkp = wkp->mip;
 	int			index;
 	int			marker_color;
 	float			p_height, p_width;
@@ -6408,28 +6693,29 @@ _NhlSetMarkerInfo
 	if(index == 0){
 		p_width = 16.0;
 		p_height = 21.0;
-		minfo.size = marker_table[NhlWK_DEF_MARKER]->size_adj *
+		minfo.size = wkp->marker_table[NhlWK_DEF_MARKER]->size_adj *
 					mkp->marker_size;
 		minfo.xoff = minfo.size *
-			marker_table[NhlWK_DEF_MARKER]->x_off;
+			wkp->marker_table[NhlWK_DEF_MARKER]->x_off;
 		minfo.yoff = minfo.size *
-			marker_table[NhlWK_DEF_MARKER]->y_off;
-		minfo.string = marker_table[NhlWK_DEF_MARKER]->marker;
+			wkp->marker_table[NhlWK_DEF_MARKER]->y_off;
+		minfo.string = wkp->marker_table[NhlWK_DEF_MARKER]->marker;
 	}
 	else if (index > 0) {
-		index = 1 + (index - 1) % wk_p->marker_table_len;
-		if (marker_table[index]->aspect_adj <= 1.0) {
+		index = 1 + (index - 1) % wkp->marker_table_len;
+		if (wkp->marker_table[index]->aspect_adj <= 1.0) {
 			p_width = 21.0;
-			p_height = 21.0 * marker_table[index]->aspect_adj;
+			p_height = 21.0 * wkp->marker_table[index]->aspect_adj;
 		} else {
-			p_width = 21.0 / marker_table[index]->aspect_adj;
+			p_width = 21.0 / wkp->marker_table[index]->aspect_adj;
 			p_height = 21.0;
 		}
 
-		minfo.size = marker_table[index]->size_adj * mkp->marker_size;
-		minfo.xoff = minfo.size * marker_table[index]->x_off;
-		minfo.yoff = minfo.size * marker_table[index]->y_off;
-		minfo.string = marker_table[index]->marker;
+		minfo.size = wkp->marker_table[index]->size_adj * mkp->marker_size;
+		minfo.xoff = minfo.size * wkp->marker_table[index]->x_off;
+		minfo.yoff = minfo.size * wkp->marker_table[index]->y_off;
+		minfo.angle = wkp->marker_table[index]->angle;
+		minfo.string = wkp->marker_table[index]->marker;
 
 	}
 	c_pcsetr("PH",p_height);
@@ -6495,7 +6781,7 @@ WorkstationMarker
 		 * for 'SA' parameter of PlotChar.
 		 */
 		c_plchhq(x[i]+minfo.xoff,y[i]+minfo.yoff,minfo.string,
-			minfo.size*1.125,0.0,0.0);
+			minfo.size*1.125,minfo.angle,0.0);
 		if(_NhlLLErrCheckPrnt(NhlWARNING,func))
 			ret = NhlWARNING;
 	}

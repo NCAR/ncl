@@ -1,5 +1,5 @@
 /*
- *      $Id: MapRGDataHandler.c,v 1.3 2002-09-10 23:12:19 dbrown Exp $
+ *      $Id: MapRGDataHandler.c,v 1.4 2003-05-31 00:32:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -679,6 +679,7 @@ static void SetLineAttrs
                 float	p0,p1,jcrt;
                 int	slen;
                 char	buffer[128];
+		int     i;
                 
                 dpat = dash_pattern % Mpp->dash_table->num_elements;
                 sp = (NhlString *) Mpp->dash_table->data;
@@ -692,6 +693,11 @@ static void SetLineAttrs
                 jcrt = jcrt > 1 ? jcrt : 1;
                 strcpy(buffer,sp[dpat]);
 	
+		for (i = 0; i < strlen(buffer); i++) {
+			if (buffer[i] == '_')
+				buffer[i] = '\'';
+		}
+
                 c_dashdc(buffer,jcrt,4);
                 _NhlLLErrCheckPrnt(NhlWARNING,entry_name);
         }
