@@ -1,5 +1,5 @@
 /*
- *	$Id: hdf.c,v 1.10 1992-09-10 21:12:38 don Exp $
+ *	$Id: hdf.c,v 1.11 1992-09-10 21:54:48 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -396,6 +396,11 @@ HDFRead(ras)
 				break;
 
 			case RAS_DIRECT:
+				/*
+				This isn't tested yet and seems
+				to cause different effects in
+				different HDF releases.
+				*/
 #ifdef DEAD
 				status = DF24reqil(HDF_IL_PIXEL);
 #endif 
@@ -407,12 +412,6 @@ HDFRead(ras)
 
 			default:
 				break;
-		}
-	}
-
-	if (ras->type == RAS_DIRECT) {
-		if (dep->interlace == HDF_IL_SCANPLANE) {
-			(void) fprintf(stderr, "wooga!\n");
 		}
 	}
 
