@@ -10,6 +10,7 @@ static char	*ProgramName		= (char *) NULL;
 static struct {
 	boolean		type;
 	boolean		count;
+	boolean		resolution;
 	boolean		help;
 	boolean		verbose;
 	boolean		version;
@@ -21,6 +22,7 @@ static struct {
 static  OptDescRec      set_options[] = {
 	{"type",	0, NULL, "Print rasterfile encoding type"},
 	{"count",	0, NULL, "Print number of frames in rasterfile"},
+	{"resolution",	0, NULL, "Print spatial resolution"},
 	{"help",	0, NULL, "Print help information"},
 	{"verbose",	0, NULL, "Set verbose mode"},
 	{"Version",	0, NULL, "Print version number"},
@@ -31,6 +33,8 @@ static  OptDescRec      set_options[] = {
 static	Option	get_options[] = {
 {"type",    NCARGCvtToBoolean, (Voidptr) &opt.type, sizeof(opt.type)},
 {"count",   NCARGCvtToBoolean, (Voidptr) &opt.count, sizeof(opt.count)},
+{"resolution",   NCARGCvtToBoolean, (Voidptr) 
+				&opt.resolution, sizeof(opt.resolution)},
 {"help",    NCARGCvtToBoolean, (Voidptr) &opt.help, sizeof(opt.help)},
 {"verbose", NCARGCvtToBoolean, (Voidptr) &opt.verbose, sizeof(opt.verbose)},
 {"Version", NCARGCvtToBoolean, (Voidptr) &opt.version,sizeof(opt.version)},
@@ -92,8 +96,8 @@ main(argc, argv)
 			Usage(ProgramName, (char *) NULL, opt_id);
 		}
 		else {
-			if (opt.type || opt.count) {
-				(void) Print(argv[i]);
+			if (opt.type || opt.count || opt.resolution) {
+				(void) Print(argv[i], opt.format);
 			}
 			else {
 				status = PrintLs(argv[i], opt.format);
@@ -197,14 +201,15 @@ int PrintLs(name, fformat)
 }
 
 int
-Print(name)
+Print(name, fformat)
 	char	*name;
+	char	*fformat;
 {
 	int		status;
 	RasStat		ras_stat;
 	int		frame_count;
 
-	status = RasterStat(name, (char *) NULL, &ras_stat, &frame_count);
+	status = RasterStat(name, fformat, &ras_stat, &frame_count);
 	if (status == RAS_ERROR) {
 		(void) RasterPrintError(name);
 		return(RAS_ERROR);
@@ -221,6 +226,10 @@ Print(name)
 
 	if (opt.count) {
 		(void) fprintf(stdout, "%d\n", frame_count);
+	}
+
+	if (opt.resolution) {
+		(void) fprintf(stdout, "%dx%d\n", ras_stat.nx, ras_stat.ny);
 	}
 
 	return(RAS_OK);
