@@ -3676,7 +3676,6 @@ int** dimsizes_lon;
 					if(sign) {
 						reference_value = -reference_value;
 					}
-					fprintf(stdout,"%d) %g\n",i/4,reference_value);
 				}
 			} else if(nv == 0) {
 				the_start_off = ((int)thevarrec->thelist->rec_inq->gds[4])-1;
