@@ -1,10 +1,7 @@
 c --------------------------------------------------------------
-      SUBROUTINE DEOFTS7(X,NROW,NCOL,NOBS,MSTA,XMSG,NEVAL,EVEC,JOPT,XX,
-     +                  WRK,EVECTS,IER)
-      DOUBLE PRECISION XBAR
-      DOUBLE PRECISION XVAR
-      DOUBLE PRECISION XSTD
-      DOUBLE PRECISION CON
+      SUBROUTINE DEOFTS7(X,NROW,NCOL,NOBS,MSTA,XMSG
+     +                  ,NEVAL,EVEC,JOPT,IFLAG,XX,WRK,EVECTS,IER)
+      IMPLICIT NONE
 
 c f77
 
@@ -12,17 +9,14 @@ c takes output of prneof.f and creates a time series of the
 c .   eof amplitudes
 
 c nomenclature :
-C*PL*ERROR* Comment line too long
 c .   x         - matrix containing the data.  it contains n observations
 c .               for each of m stations or grid pts.
-C*PL*ERROR* Comment line too long
 c .   nrow,ncol - exact row (observation) and column (station) dimensions
 c .               of x in the calling routine.
 c .   nobs      - actual number of observations (nobs <= nrow)
 c .   msta      - actual number of stations     (msta <= ncol)
 c .   xmsg      - missing code (if no obs are missing set to some
 c .               number which will not be encountered)
-C*PL*ERROR* Comment line too long
 c .   neval     - no. of eigenvalues and eigen vectors computed by prneof.
 c .   evec      - array created by prneof
 c .               this must be dimensioned at least (ncol,neval) in the
@@ -39,9 +33,14 @@ c .   ier       - error code
 
       DOUBLE PRECISION X(NROW,NCOL),EVEC(NCOL,NEVAL),XX(NROW,NCOL),
      +                 WRK(NOBS),XMSG
-      INTEGER NEVAL
+      INTEGER NEVAL, JOPT, IFLAG, IER
       DOUBLE PRECISION EVECTS(NROW,NEVAL)
-      INTEGER IER
+
+      DOUBLE PRECISION XBAR
+      DOUBLE PRECISION XVAR
+      DOUBLE PRECISION XSTD
+      DOUBLE PRECISION CON
+      INTEGER M, N, K, KNTX
 
       IER = 0
       IF (NROW.LE.0 .OR. NCOL.LE.0) IER = IER + 1
@@ -56,7 +55,7 @@ c set to msg as default
 
       DO M = 1,NCOL
           DO N = 1,NROW
-              XX(N,M) = XMSG
+              XX(N,M) = X(N,M)
           END DO
       END DO
 
@@ -66,7 +65,12 @@ c set to msg as default
           END DO
       END DO
 
-c calculate each station/grid-pt  long-term mean and standard deviation
+c this if added Sept 2004 to allow computation without
+c removing the mean.
+
+      IF (JOPT.EQ.0 .AND. IFLAG.EQ.1) GO TO 10
+
+c calculate at each station/grid-pt: long-term mean + std. dev.
 
       DO M = 1,MSTA
           DO N = 1,NOBS
@@ -96,31 +100,30 @@ c c c write (*,"(//,'ANOMAILIES',/)")
 c c c do n=1,nobs
 c c c     write (*,"(i5 , 10(1x,f9.3) )") n, (xx(n,m),m=1,msta)
 c c c enddo
+   10 CONTINUE
 
 c calculate the amplitude time series
 
       DO K = 1,NEVAL
           DO N = 1,NOBS
+              KNTX = 0
               EVECTS(N,K) = 0.0D0
               DO M = 1,MSTA
                   IF (XX(N,M).NE.XMSG.AND.EVEC(M,K).NE.XMSG) THEN
+                      KNTX = KNTX + 1
                       EVECTS(N,K) = EVECTS(N,K) + EVEC(M,K)*XX(N,M)
                   END IF
               END DO
+              IF (KNTX.EQ.0) EVECTS(N,K) = XMSG
           END DO
       END DO
 
       RETURN
       END
 
-      SUBROUTINE DEOFTSCA(XX,NROW,NCOL,NOBS,MSTA,XMSG,NEVAL,EVEC,JOPT,
-     +                    EVECTS,PCRIT,IER,X,WRK)
-      DOUBLE PRECISION PCRIT
-      DOUBLE PRECISION PCRITX
-      DOUBLE PRECISION XBAR
-      DOUBLE PRECISION XVAR
-      DOUBLE PRECISION XSTD
-      DOUBLE PRECISION CON
+      SUBROUTINE DEOFTSCA(XX,NROW,NCOL,NOBS,MSTA,XMSG
+     +                   ,NEVAL,EVEC,JOPT,IFLAG,EVECTS,PCRIT,IER,X,WRK)
+      IMPLICIT NONE
 
 c takes output of prneof_ca.f and creates a time series of the
 c .   eof amplitudes. It is essential that xx and pcrit not change
@@ -156,16 +159,23 @@ c dimensions of xx
 c monthly data from station/grid pt
 c missing code (if any)
       DOUBLE PRECISION XX(NROW,NCOL),EVEC(NCOL,NEVAL),XMSG
-      INTEGER NEVAL
+      INTEGER NEVAL, JOPT, IFLAG
 c OUTPUT
 
 c monthly anomalies from long term monthly mean
       DOUBLE PRECISION EVECTS(NROW,NEVAL)
 c error code
       INTEGER IER
-c TEMPORARY ARRAYS
-c
+c temporaray arrays 
       DOUBLE PRECISION X(NROW,NCOL),WRK(NOBS)
+
+      DOUBLE PRECISION PCRIT
+      DOUBLE PRECISION PCRITX
+      DOUBLE PRECISION XBAR
+      DOUBLE PRECISION XVAR
+      DOUBLE PRECISION XSTD
+      DOUBLE PRECISION CON
+      INTEGER NSTA, NC, NR, KNTX, M, N, K
 
       IER = 0
 
@@ -175,19 +185,24 @@ c counts the total number of
       NSTA = 0
       DO NC = 1,MSTA
 c counter for this location
-          KNT = 0
+          KNTX = 0
           DO NR = 1,NOBS
               IF (XX(NR,NC).NE.XMSG) THEN
-                  KNT = KNT + 1
+                  KNTX = KNTX + 1
               END IF
           END DO
-          IF (DBLE(KNT)/DBLE(NOBS).GE.PCRITX) THEN
+          IF (DBLE(KNTX)/DBLE(NOBS).GE.PCRITX) THEN
               NSTA = NSTA + 1
               DO N = 1,NOBS
                   X(N,NSTA) = XX(N,NC)
               END DO
           END IF
       END DO
+
+c this if added Sept 2004 to allow computation without
+c removing the mean.
+
+      IF (JOPT.EQ.0 .AND. IFLAG.EQ.1) GO TO 10
 
 c calculate each station/grid-pt  long-term mean and standard deviation
 c use the "nsta" limit; this pertains to array x
@@ -213,17 +228,21 @@ c use the "nsta" limit; this pertains to array x
 c end nsta
 c
       END DO
+   10 CONTINUE
 
 c calculate the amplitude time series
 
       DO K = 1,NEVAL
           DO N = 1,NOBS
+              KNTX = 0
               EVECTS(N,K) = 0.0D0
               DO M = 1,NSTA
                   IF (X(N,M).NE.XMSG) THEN
+                      KNTX = KNTX + 1
                       EVECTS(N,K) = EVECTS(N,K) + EVEC(M,K)*X(N,M)
                   END IF
               END DO
+              if (KNTX.EQ.0) EVECTS(N,K) = XMSG
           END DO
       END DO
 
