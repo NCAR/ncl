@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourP.h,v 1.10 1994-06-24 00:39:29 dbrown Exp $
+ *      $Id: ContourP.h,v 1.11 1994-06-27 19:31:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -155,11 +155,15 @@ typedef struct _NhlContourLayerPart {
 	NhlAnnotationDisplayMode	display_legend;
 	NhlAnnotationDisplayMode	display_titles;
 	NhlAnnotationDisplayMode	display_tickmarks;
+	NhlBoolean	x_min_set;
 	float 		x_min;
+	NhlBoolean	x_max_set;
 	float		x_max;
 	NhlBoolean	x_log;
 	NhlBoolean	x_reverse;
+	NhlBoolean	y_min_set;
 	float 		y_min;
+	NhlBoolean	y_max_set;
 	float		y_max;
 	NhlBoolean	y_log;
 	NhlBoolean	y_reverse;

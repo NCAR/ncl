@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.17 1994-06-24 00:39:23 dbrown Exp $
+ *      $Id: Contour.c,v 1.18 1994-06-27 19:31:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -522,19 +522,35 @@ static NhlResource resources[] = {
 		 NhlTFloat,sizeof(float),Oset(constf_lbl_rec.ortho_pos),
 		 NhlTString,_NhlUSET("0.0"),0,NULL},
 
-	{ NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
-		Oset(x_min),NhlTString,_NhlUSET("0.0"),0,NULL},
-	{ NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
-		Oset(x_max),NhlTString,_NhlUSET("1.0"),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(x_min_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+	{NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
+		 Oset(x_min),NhlTProcedure,
+		 _NhlUSET((NhlPointer)ResourceUnset),NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(x_max_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+	{NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
+		 Oset(x_max),NhlTProcedure,
+		 _NhlUSET((NhlPointer)ResourceUnset),NULL},
 	{ NhlNtrXLog,NhlCtrXLog,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(x_log),NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
 	{ NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(x_reverse),
 		  NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(y_min_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
-		Oset(y_min),NhlTString,_NhlUSET("0.0"),0,NULL},
+		Oset(y_min),NhlTProcedure,
+		 _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(y_max_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
-		Oset(y_max),NhlTString,_NhlUSET("1.0"),0,NULL},
+		Oset(y_max),NhlTProcedure,
+		 _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{ NhlNtrYLog,NhlCtrYLog,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(y_log),NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
 	{ NhlNtrYReverse,NhlCtrYReverse,NhlTBoolean,sizeof(NhlBoolean),
@@ -687,7 +703,7 @@ static NhlErrorTypes AddDataBoundToAreamap(
 #endif
 );
 
-static NhlErrorTypes QualifyCoordBounds(
+static NhlErrorTypes SetCoordBounds(
 #ifdef NhlNeedProto
         NhlContourLayerPart	*cnp,
 	char			*entry_name
@@ -1653,6 +1669,14 @@ ContourInitialize
 		cnp->info_lbl.height = 0.01;
 	if (! cnp->constf_lbl.height_set) 
 		cnp->constf_lbl.height = 0.01;
+	if (! cnp->x_min_set)
+		cnp->x_min = 0.0;
+	if (! cnp->x_max_set)
+		cnp->x_max = 1.0;
+	if (! cnp->y_min_set)
+		cnp->y_min = 0.0;
+	if (! cnp->y_max_set)
+		cnp->y_max = 1.0;
 
 /* Initialize private members */
 
@@ -1677,32 +1701,16 @@ ContourInitialize
 	cnp->use_irr_trans = False;
 	cnp->const_field = False;
 
-	subret = QualifyCoordBounds(cnp,entry_name);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
-
-	if (! cnp->x_reverse) {
-		cnp->xc1 = cnp->x_min;
-		cnp->xcm = cnp->x_max;
-	}
-	else {
-		cnp->xc1 = cnp->x_max;
-		cnp->xcm = cnp->x_min;
-	}
-	if (! cnp->y_reverse) {
-		cnp->yc1 = cnp->y_min;
-		cnp->ycn = cnp->y_max;
-	}
-	else {
-		cnp->yc1 = cnp->y_max;
-		cnp->ycn = cnp->y_min;
-	}
-
 	subret = ManageData(cnew,(NhlContourLayer) req,True,args,num_args);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error setting view dependent resources";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
+
+
+	subret = SetCoordBounds(cnp,entry_name);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
 
 /* Manage constant field label */
@@ -1829,11 +1837,6 @@ ContourInitialize
 	cnp->info_lbl.height_set = False;
 	cnp->constf_lbl.height_set = False;
 
-	if (cnp->data_init) {
-		cnp->min_level_set = False;
-		cnp->max_level_set = False;
-	}
-
 	return ret;
 }
 
@@ -1909,9 +1912,14 @@ static NhlErrorTypes ContourSetValues
 		cnp->info_lbl.height_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNcnConstFLabelTextHeightF))
 		cnp->constf_lbl.height_set = True;
-
-	subret = QualifyCoordBounds(cnp,entry_name);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
+	if (_NhlArgIsSet(args,num_args,NhlNtrXMinF))
+		cnp->x_min_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtrXMaxF))
+		cnp->x_max_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtrYMinF))
+		cnp->y_min_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtrYMaxF))
+		cnp->y_max_set = True;
 
 /* Manage the data */
 
@@ -1922,6 +1930,8 @@ static NhlErrorTypes ContourSetValues
 		return(ret);
 	}
 
+	subret = SetCoordBounds(cnp,entry_name);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
 /* Set view dependent resources */
 
@@ -2041,11 +2051,6 @@ static NhlErrorTypes ContourSetValues
 	cnp->line_lbls.height_set = False;
 	cnp->info_lbl.height_set = False;
 	cnp->constf_lbl.height_set = False;
-
-	if (cnp->data_init) {
-		cnp->min_level_set = False;
-		cnp->max_level_set = False;
-	}
 
 	return ret;
 }
@@ -2171,7 +2176,7 @@ static NhlErrorTypes    ContourGetValues
 
 
 /*
- * Function:	QualifyCoordBounds
+ * Function:	SetCoordBounds
  *
  * Description: 
  *
@@ -2184,7 +2189,7 @@ static NhlErrorTypes    ContourGetValues
  * Side Effects:
  */
 /*ARGSUSED*/
-static NhlErrorTypes QualifyCoordBounds
+static NhlErrorTypes SetCoordBounds
 #if  __STDC__
 (
         NhlContourLayerPart	*cnp,
@@ -2200,6 +2205,35 @@ static NhlErrorTypes QualifyCoordBounds
 	char		*e_text;
 	float		ftmp;
 
+	if (cnp->data_init) {
+		if (! cnp->x_min_set)
+			cnp->x_min = MIN(cnp->sfp->x_start,cnp->sfp->x_end);
+		if (! cnp->x_max_set)
+			cnp->x_max = MAX(cnp->sfp->x_start,cnp->sfp->x_end);
+		if (! cnp->y_min_set)
+			cnp->y_min = MIN(cnp->sfp->y_start,cnp->sfp->y_end);
+		if (! cnp->y_max_set)
+			cnp->y_max = MAX(cnp->sfp->y_start,cnp->sfp->y_end);
+	}
+	else {
+		if (! cnp->x_reverse) {
+			cnp->xc1 = cnp->x_min;
+			cnp->xcm = cnp->x_max;
+		}
+		else {
+			cnp->xc1 = cnp->x_max;
+			cnp->xcm = cnp->x_min;
+		}
+		if (! cnp->y_reverse) {
+			cnp->yc1 = cnp->y_min;
+			cnp->ycn = cnp->y_max;
+		}
+		else {
+			cnp->yc1 = cnp->y_max;
+			cnp->ycn = cnp->y_min;
+		}
+	}
+		
 	if (cnp->x_min == cnp->x_max) {
 		e_text = "%s: Zero X coordinate span: defaulting";
 		ret = MIN(ret,NhlWARNING);
@@ -2217,7 +2251,7 @@ static NhlErrorTypes QualifyCoordBounds
 	}
 	if (cnp->x_log && cnp->x_min <= 0.0) {
 		e_text = 
-		    "%s: Log style invalid for X coordinates: setting %s off";
+		   "%s: Log style invalid for X coordinates: setting %s off";
 		ret = MIN(ret,NhlWARNING);
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrXLog);
 		cnp->x_log = False;
@@ -6307,7 +6341,7 @@ static NhlErrorTypes    SetupLevelsManual
 	zmin = cnp->min_level_val;
 	count = (zmax - zmin) / cnp->level_spacing + 1.001;
 
-	if (count > cnp->max_level_count) {
+	if (count > Nhl_cnMAX_LEVELS) {
 		ret = MIN(NhlWARNING,ret);
 		e_text =
       "%s: Level max count exceeded with specified level spacing: defaulting";
@@ -6506,14 +6540,17 @@ static NhlErrorTypes    SetupLevelsExplicit
 
 	zmin = MAX(cnp->min_level_val, cnp->zmin);
 	zmax = MIN(cnp->max_level_val, cnp->zmax);
+	count = cnp->levels->num_elements;
 
-	if ((count = cnp->levels->num_elements) > cnp->max_level_count) {
+	if ((count = cnp->levels->num_elements) > Nhl_cnMAX_LEVELS) {
 		count = cnp->max_level_count;
+		do_auto = True;
 		ret = MIN(NhlWARNING,ret);
 		e_text = 
-	  "%s: Explicit level array count exceeds max level count: defaulting";
+  "%s: Explicit level array count exceeds max level count: defaulting to Automatic level selection mode";
 		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
 	}
+
 	fp = (float *)cnp->levels->data;
 
 	ixmin = 0;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.17 1994-06-24 00:39:48 dbrown Exp $
+ *      $Id: Overlay.c,v 1.18 1994-06-27 19:31:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1589,6 +1589,8 @@ static NhlErrorTypes OverlayPostDraw
 			}
 			if (anlp->track_data && anlp->out_of_range)
 				continue;
+			if (anlp->plot_id < 1)
+				continue;
 			subret = NhlDraw(anlp->plot_id);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				e_text = "%s: error drawing annotation";
@@ -1690,15 +1692,9 @@ static NhlErrorTypes OverlayGetBB
 /*
  * Function:	RecordAnnotation
  *
- * Description: If the parent creates a new overlay trans object, or
- *		separates its own trans object from the overlay trans
- *		object it must notify the overlay object via a SetValues.
+ * Description: 
  *
- * In Args:	old	copy of old instance record
- *		reference	requested instance record
- *		new	new instance record	
- *		args 	list of resources and values for reference
- *		num_args	number of elements in args.
+ * In Args:	
  *
  * Out Args:	NONE
  *
@@ -1746,7 +1742,8 @@ static NhlAnnoRec *RecordAnnotation
 		return NULL;
 	}
 	anno_rec->ovl = (NhlLayer)ovl;
-	anno_rec->anno_id = NULL;
+	anno_rec->anno_id = -1;
+	anno_rec->plot_id = -1;
 	anno_rec->zone = zone;
 	anno_rec->type = type;
 	anno_rec->status = status;
@@ -2481,7 +2478,7 @@ static NhlErrorTypes InternalGetBB
 				continue;
 			else if (anno_list->status == NhlNEVER)
 				continue;
-			else if (anno_list->plot_id < 0)
+			else if (anno_list->plot_id < 1)
 				continue;
 			else if (anno_list->status == NhlCONDITIONAL) {
 				switch (anno_list->type) {
