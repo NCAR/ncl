@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.36 2003-06-10 23:21:08 dbrown Exp $
+ *      $Id: Workstation.h,v 1.37 2003-11-08 20:54:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -340,6 +340,21 @@ extern NhlErrorTypes NhlSetMarker(
 	float	aspect_adj,
 	float	size_adj,
 	float   angle
+#endif
+);
+
+extern int NhlNewDashPattern(
+#if  NhlNeedProto
+	int	wid, 
+	char	*dash_string
+#endif
+);
+
+extern NhlErrorTypes NhlSetDashPattern(
+#if	NhlNeedProto
+	int instance, 
+	int	index,
+	char	*dash_string
 #endif
 );
 
