@@ -1,5 +1,5 @@
 /*
- *      $Id: MapRGDataHandler.c,v 1.2 2001-12-05 00:19:04 dbrown Exp $
+ *      $Id: MapRGDataHandler.c,v 1.3 2002-09-10 23:12:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -636,6 +636,73 @@ static NhlErrorTypes mpGrid
 	return ret;
 }
 
+static void SetLineAttrs
+(
+	NhlMapPlotLayerPart	  *mpp,
+	NhlString		  entry_name
+        )
+{
+        int color,dash_pattern;
+        float thickness,dash_seglen;
+	int type = 1;
+
+        switch (type) {
+            case 1:
+            case 2:
+	    default:
+                    color = Mpp->geophysical.gks_color;
+                    dash_pattern = Mpp->geophysical.dash_pat;
+                    dash_seglen = Mpp->geophysical.dash_seglen;
+                    thickness = Mpp->geophysical.thickness;
+                    break;
+            case 3:
+                    color = Mpp->national.gks_color;
+                    dash_pattern = Mpp->national.dash_pat;
+                    dash_seglen = Mpp->national.dash_seglen;
+                    thickness = Mpp->national.thickness;
+                    break;
+            case 4:
+                    color = Mpp->us_state.gks_color;
+                    dash_pattern = Mpp->us_state.dash_pat;
+                    dash_seglen = Mpp->us_state.dash_seglen;
+                    thickness = Mpp->us_state.thickness;
+                    break;
+        }
+#if 0
+	/* dash patterns don't work because lines are drawn using GPL at
+	   the low level 
+	*/
+
+	{
+                int	dpat;
+                NhlString *sp;
+                float	p0,p1,jcrt;
+                int	slen;
+                char	buffer[128];
+                
+                dpat = dash_pattern % Mpp->dash_table->num_elements;
+                sp = (NhlString *) Mpp->dash_table->data;
+                slen = strlen(sp[dpat]);
+                p0 =  (float) c_kfpy(0.0);
+                _NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+                p1 = dash_seglen;
+                p1 = (float) c_kfpy(p1);
+                _NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+                jcrt = (int) ((p1 - p0) / slen + 0.5);
+                jcrt = jcrt > 1 ? jcrt : 1;
+                strcpy(buffer,sp[dpat]);
+	
+                c_dashdc(buffer,jcrt,4);
+                _NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+        }
+#endif
+	{
+              	gset_linewidth(thickness);
+                _NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+        }
+        return;
+}
+
 
 /*
  * Function:	mpOutline
@@ -673,7 +740,6 @@ static NhlErrorTypes mpOutline
 	int			i;
 	int 			irgl;
 
-
 	if (mrgp->fws_id < 1) {
 		mrgp->fws_id = 
 			_NhlNewWorkspace(NhlwsOTHER,NhlwsNONE,
@@ -695,6 +761,8 @@ static NhlErrorTypes mpOutline
 	mrgp->real_data_resolution = (NhlMapDataResolution) irgl;
 
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+
+	SetLineAttrs(mpp,entry_name);
 
 	subret = _NhlMdrgol(irgl,fws,entry_name);
 	ret = MIN(subret,ret);
