@@ -122,7 +122,6 @@ begin
 ; amount each time.
 ;
     do i = FRAME_COUNT,1,1
-    print(i)
       setvalues mapid
         "mpCenterLonF":  i * 360./FRAME_COUNT
       end setvalues
