@@ -666,6 +666,7 @@ GribFileRecord *therec;
 	step = therec->var_list;
 	
 	while(step != NULL) {
+		the_param = NULL;
 /*
 * Handle long_name, units, center, sub_center, model and _FillValue
 */	
@@ -675,25 +676,27 @@ GribFileRecord *therec;
 				break;
 			}
 		}
-		if(grib_rec->param_number < 128) {
-			the_param = &(params[grib_rec->param_tbl_index]);
-		} else {
-			switch((int)grib_rec->pds[4]) {
-				case 98:
-					the_param = &(params_ecmwf[grib_rec->param_tbl_index]);
-					break;
-				case 59:
-					the_param = &(params_fsl[grib_rec->param_tbl_index]);
-					break;
-				case 7:
+		if(grib_rec->param_tbl_index != -1) {
+			if(grib_rec->param_number < 128) {
+				the_param = &(params[grib_rec->param_tbl_index]);
+			} else {
+				switch((int)grib_rec->pds[4]) {
+					case 98:
+						the_param = &(params_ecmwf[grib_rec->param_tbl_index]);
+						break;
+					case 59:
+						the_param = &(params_fsl[grib_rec->param_tbl_index]);
+						break;
+					case 7:
 				case 8:
-				case 9:
-					the_param = &(params_nwsnmc[grib_rec->param_tbl_index]);
-					break;
-				defalut:
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unlocatable parameter number (%d) from center (%d), extension of NclGRIB required",grib_rec->param_number,(int)grib_rec->pds[4]);
-					break;
-
+					case 9:
+						the_param = &(params_nwsnmc[grib_rec->param_tbl_index]);
+						break;
+					defalut:
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unlocatable parameter number (%d) from center (%d), extension of NclGRIB required",grib_rec->param_number,(int)grib_rec->pds[4]);
+						break;
+	
+				}
 			}
 		}
 		
@@ -719,6 +722,28 @@ GribFileRecord *therec;
 			att_list_ptr->att_inq->name = NrmStringToQuark("units");
 			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 			*tmp_string = NrmStringToQuark(the_param->units);		
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+		} else {
+			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("long_name");
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			*tmp_string = grib_rec->long_name_q;		
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+/*
+* units
+*/
+			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("units");
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			*tmp_string = grib_rec->units_q;		
 			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
 			step->theatts = att_list_ptr;
 			step->n_atts++;
@@ -2567,7 +2592,7 @@ static GribRecordInqRec* _MakeMissingRec
 	grib_rec->level1 = -1;
 	grib_rec->var_name = NULL;
 	grib_rec->long_name_q = -1;
-	grib_rec->units_q;
+	grib_rec->units_q = -1;
 	grib_rec->start = 0;
 	grib_rec->bds_off= 0;
 	grib_rec->gds = NULL;
@@ -2615,6 +2640,24 @@ GribRecordInqRec* grib_rec;
 	grib_rec_list->next = node->thelist;
         node->thelist = grib_rec_list;
         node->n_entries++;
+}
+
+static int _IsDef
+#if NhlNeedProto
+(GribFileRecord *therec, int param_num)
+#else
+(therec, param_num)
+GribFileRecord *therec;
+int param_num;
+#endif
+{
+	GribParamList *step = therec->var_list;
+	while(step != NULL) {
+		if(step->param_number == param_num) return(1);
+		step = step->next;
+		
+	}
+	return(0);
 }
 
 static int _FirstCheck
@@ -2830,7 +2873,10 @@ int wr_status;
 						}
 					}
 					if( i ==  sizeof(params_index)/sizeof(int) ) {
-						NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number,grib_rec->param_number);
+						if(!_IsDef(therec,grib_rec->param_number)) {
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number,grib_rec->param_number);
+						}
+						i = -1;
 					} 
 				} else if(grib_rec != NULL) {
 					switch((int)grib_rec->pds[4]) {
@@ -2842,7 +2888,10 @@ int wr_status;
 							}
 						}
 						if( i ==  sizeof(params_ecmwf_index)/sizeof(int) ) {
-							NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number,grib_rec->param_number);
+							if(!_IsDef(therec,grib_rec->param_number)) {
+								NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number,grib_rec->param_number);
+							}
+							i = -1;
 						} 
 						break;
 					 case 59:
@@ -2853,7 +2902,10 @@ int wr_status;
 							}
 						}
 						if( i ==  sizeof(params_fsl_index)/sizeof(int) ) {
-							NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number,grib_rec->param_number);
+							if(!_IsDef(therec,grib_rec->param_number)) {
+								NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number,grib_rec->param_number);
+							}
+							i = -1;
 						} 
 						
 						break;
@@ -2867,7 +2919,10 @@ int wr_status;
 							}
 						}
 						if( i ==  sizeof(params_nwsnmc_index)/sizeof(int) ) {
-							NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number);
+							if(!_IsDef(therec,grib_rec->param_number)) {
+								NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number);
+							}
+							i = -1;
 						} 
 						break;
 					default:
@@ -2927,9 +2982,6 @@ int wr_status;
 					grib_rec->var_name = (char*)NclMalloc((unsigned)strlen((char*)buffer) + 1);
 					strcpy(grib_rec->var_name,(char*)buffer);
 					grib_rec->var_name_q = NrmStringToQuark(grib_rec->var_name);
-					if(grib_rec->var_name_q == NrmStringToQuark("ABS_V_GDS0")) {
-						fprintf(stdout,"here\n");
-					}
 					grib_rec->long_name_q = NrmStringToQuark(name_rec->long_name);
 					grib_rec->units_q = NrmStringToQuark(name_rec->units);
 					grib_rec->level_indicator = (int)grib_rec->pds[9];
