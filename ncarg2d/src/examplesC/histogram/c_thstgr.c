@@ -1,11 +1,14 @@
 /*
- *	$Id: c_thstgr.c,v 1.1 1994-05-13 14:28:14 haley Exp $
+ *	$Id: c_thstgr.c,v 1.2 1994-05-16 15:45:21 haley Exp $
  */
 #include <math.h>
 #include <stdio.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
+#define NDIM  320
+#define NCLS  17
+#define NWRK  374
   
 main()
 {
@@ -72,14 +75,11 @@ int *ierror;
  *                        5 times, exercising different options.
  *
  */
-    int ndim,ncls,nwrk,idum;
+    int idum;
     int i,j,iflag,nclass,npts;
-/*
- *  NWRK = NDIM + 3*(NCLS+1)
- */
-    char mon[37];
-    float dat1[2][320], x, arr7[7], work[374];
-    float class[17+1];
+    char mon[56], ifc[2];
+    float dat1[2][NDIM], x, arr7[7], work[NWRK];
+    float class[NCLS+1];
     float spac[2];
     int colours[15],npts2;
     float ty,tx;
@@ -88,7 +88,6 @@ int *ierror;
  *  Array DAT1 is filled with values to be used as input for HISTGR
  */
     strcpy( mon, "JANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC" );
-    ndim=320; ncls=17; nwrk=374;
 /*
  *  Define the RGB triples needed below.
  */
@@ -122,11 +121,16 @@ int *ierror;
  */
     c_entsr(&idum, 1);
 /*
+ * Change the Plotchar special character code from a : to a @
+ */
+	ifc[0] = '@';  ifc[1] = '\0';
+	c_pcsetc("FC",ifc);
+/*
  *  Frame 1:  Demonstrate the default version of HISTGR, IFLAG = 0.
  */
     iflag = 0;
     nclass = 11;
-    npts = 320;
+    npts = NDIM;
 
     for(i=1;i<=npts;i++){
         for(j=1;j<=2;j++){
@@ -154,7 +158,7 @@ int *ierror;
 
     c_plchlq (tx,ty,"DEMONSTRATION PLOT FOR DEFAULT VERSION OF HISTGR",16.,0.,0.);
 
-    c_histgr(&dat1[0][0], ndim, npts, iflag, class, nclass, work, nwrk);
+    c_histgr(&dat1[0][0], NDIM, npts, iflag, class, nclass, work, NWRK);
 /*
  *  Frame 2:  Demonstrate the comparison of two previously determined
  *            histograms, IFLAG = 3.
@@ -199,7 +203,7 @@ int *ierror;
 /*
  *  The second argument must be the actual dimension size of DAT1.
  */
-    c_histgr(&dat1[0][0], ndim, npts2, iflag, class, nclass, work, nwrk);
+    c_histgr(&dat1[0][0], NDIM, npts2, iflag, class, nclass, work, NWRK);
 /*
  *  Frame 3:  Put four plots on 1 frame by setting FRAME = OFF for the
  *            first 3 plots and FRAME = ON for the last plot.
@@ -208,8 +212,8 @@ int *ierror;
  *               NCLASS = 17 bins.
  */
     iflag = 0;
-    nclass = 17;
-    npts = 320;
+    nclass = NCLS;
+    npts = NDIM;
     for(i=1;i<=npts;i++){
         x = (float)i;
         dat1[0][i-1] = 10. * log10(0.1*x+1.);
@@ -225,7 +229,7 @@ int *ierror;
  *
  *  Choose large horizontal class labels.
  */
-    c_hstopc("TI=ON","OPTS CHANGED: HOR, WIN, FRA, MED, COL, SPA, and TIT",9,3);
+    c_hstopc("TI=ON","OPTIONS: HOR, WIN, FRA, MED, COL, SPA, & TIT",9,3);
     c_hstopl("HO=ON");
     c_hstopl("ME=ON");
 /*
@@ -257,7 +261,7 @@ int *ierror;
  *  Turn off the frame advance.
  */
     c_hstopl("FR=OF");
-    c_histgr(&dat1[0][0], ndim, npts, iflag, class, nclass, work, nwrk);
+    c_histgr(&dat1[0][0], NDIM, npts, iflag, class, nclass, work, NWRK);
 /*
  *     Plot 2:   IFLAG = 2, one set of 11 histogram classes and their
  *               associated values are plotted.
@@ -296,14 +300,14 @@ int *ierror;
  */
     c_hstopi("COL=OF",2,0,colours,8);
     c_hstopl("FR=OFF");
-    c_histgr(&dat1[0][0], ndim, npts2, iflag, class, nclass, work, nwrk);
+    c_histgr(&dat1[0][0], NDIM, npts2, iflag, class, nclass, work, NWRK);
 /*
  *     Plot 3:   IFLAG = 1, input values are sorted into a defined set of
  *               8 classes.
  */
     iflag = 1;
     nclass = 8;
-    npts = 320;
+    npts = NDIM;
     x = 0.;
     for(i=1;i<=npts;i++){
         dat1[0][i-1] = sin(x);
@@ -341,14 +345,14 @@ int *ierror;
     c_hstopl("MI=OFF");
     c_hstopl("FR=OFF");
     c_hstopl("SH=OFF");
-    c_histgr(&dat1[0][0], ndim, npts, iflag, class, nclass, work, nwrk);
+    c_histgr(&dat1[0][0], NDIM, npts, iflag, class, nclass, work, NWRK);
 /*
  *     Plot 4:   IFLAG = 0, input values are sorted into 11 equally sized
  *               bins over the range of the input values.
  */
     iflag = 0;
     nclass = 11;
-    npts = 320;
+    npts = NDIM;
     x = 0.;
     for(i=1;i<=npts;i++){
         dat1[0][i-1] = sin(x);
@@ -382,7 +386,7 @@ int *ierror;
     c_hstopr("SP=OF",spac,2);
     c_hstopl("PER=OFF");
     
-    c_histgr(&dat1[0][0], ndim, npts, iflag, class, nclass, work, nwrk);
+    c_histgr(&dat1[0][0], NDIM, npts, iflag, class, nclass, work, NWRK);
 
     *ierror = 0;
     return(1);
