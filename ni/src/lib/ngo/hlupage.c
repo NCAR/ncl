@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.32 1999-12-11 04:44:08 dbrown Exp $
+ *      $Id: hlupage.c,v 1.33 1999-12-14 00:28:56 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -2592,8 +2592,9 @@ static NhlErrorTypes ResetHluPage
 			      NULL);
 		NgXAppFreeXmString(rec->go->go.appmgr,xmstring);
 	}
-		      
-	XtMapWidget(rec->data_source_grid->grid);
+
+	if (rec->data_source_grid_managed)
+		XtMapWidget(rec->data_source_grid->grid);
 	XtUnmapWidget(rec->res_tree->tree);
  	XtMapWidget(pdp->form);
 	XtMapWidget(rec->res_tree->tree);
