@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.2 2003-02-23 00:11:05 haley Exp $
+;      $Id: shea_util.ncl,v 1.3 2003-03-27 21:38:04 shea Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -34,15 +34,35 @@ end
 ; -------------------------------------------------------
 function FixZeroContour (CNLVLS[*]:float, label:string)
 ; called internally
-local eps, indEps
+local eps, indEps, nEps, cnlvls, nClvl
 begin
-       cnlvls = CNLVLS                          ; historical
-       if (dimsizes(cnlvls).gt.1) then
+       cnlvls   = CNLVLS                          ; historical
+       nClvl    = dimsizes(cnlvls)
+       if (nClvl.gt.1) then
           ;eps    = 1.e-09                          ; arbitrary
            eps    = 1.e-05                          ; arbitrary
-           indEps=ind(fabs(cnlvls).le.eps) 
-           if (.not.ismissing(indEps)) then
-               cnlvls(indEps) = 0.0        ; the "zero" line ==>-0.8e-09
+           nEps   = num(fabs(cnlvls).le.eps)
+           if (nEps.gt.0 .and. nEps.ne.nClvl) then
+               indEps=ind(fabs(cnlvls).le.eps) 
+               cnlvls(indEps) = 0.0        
+          ;else                            ; debug print
+          ;    print (label+": no zero contours")
+           end if
+       end if
+       return (cnlvls)                                      
+end
+; -------------------------------------------------------
+function FixZeroContourEps (CNLVLS[*]:float, label:string, eps:numeric)
+; called internally
+local indEps, nEps, cnlvls, nClvl
+begin
+       cnlvls   = CNLVLS                          ; historical
+       nClvl    = dimsizes(cnlvls)
+       if (nClvl.gt.1) then
+           nEps   = num(fabs(cnlvls).le.eps)
+           if (nEps.gt.0 .and. nEps.ne.nClvl) then
+               indEps=ind(fabs(cnlvls).le.eps) 
+               cnlvls(indEps) = 0.0        
           ;else                            ; debug print
           ;    print (label+": no zero contours")
            end if
@@ -1556,6 +1576,7 @@ end
 ; ------------------------------------------------------------------
 function plot_xy2 (wks:graphic, x:numeric, yL:numeric,yR:numeric
                               , resL:logical, resR:logical)
+local  locResL, locResR, AttsL, AttsR, xyL, xyR, FRAME, DRAW 
  begin
     locResL = True
     if (resL) then
@@ -1679,6 +1700,7 @@ function plot_xy2 (wks:graphic, x:numeric, yL:numeric,yR:numeric
     if (resL .and. isatt(resL,"gsnFrame") .and. .not.resL@gsnFrame) then
         FRAME = False
     end if
+
     DRAW = True
     if (resL .and. isatt(resL,"gsnDraw") .and. .not.resL@gsnDraw) then
         DRAW = False
@@ -1960,6 +1982,7 @@ procedure drawNDCGrid(wks:graphic)
 ;          
 ; Example: drawNDCGrid(wks)
 ;       
+local colors, nu, numb, cmap, x6res, gh
 begin
         colors = gsn_retrieve_colormap(wks)	;Add gray color to color map
         nu = dimsizes(colors)
@@ -1994,3 +2017,205 @@ begin
 	x6res@gsLineLabelString=.99
 	gsn_polyline_ndc(wks,(/0.99,0.99/),(/0.,1./),x6res)
 end
+; -------------------------------------------------------
+function setColorContourClear (plot:graphic, cLow:numeric, cUp:numeric) 
+; operates on a plot object created by "gsn_csm.ncl" code
+; Make color contours between cLow and cUp clear
+; good for difference plots
+local cnlvls, cncnFillColors, n, N
+begin
+       cnlvls = get_cnLevels (plot)
+      ;print("setColorContourClear:  cnlvls="+cnlvls)
+
+       N = dimsizes(cnlvls)
+       if (ismissing(N) .or. N.le.0) then
+           print ("ZeroLineContour: dimsizes(cnlvls)=" \
+                  +N+" return (non-fatal)")
+           return (plot)               ; no change
+       else 
+           cnlvls = FixZeroContour (cnlvls, "ZeroLineContour")
+       end if
+
+       if (isatt(plot,"contour")) then
+           getvalues plot@contour       
+             "cnFillColors"   : cnFillColors
+           end getvalues
+       else
+           getvalues plot
+             "cnFillColors"   : cnFillColors
+           end getvalues
+       end if
+
+      ;print("setColorContourClear:  cnFillColors="+cnFillColors)
+
+       do n=0,N-1
+          if (cnlvls(n).gt.cLow .and. cnlvls(n).le.cUp) then
+              cnFillColors(n) = -1
+          end if
+       end do
+
+       if (isatt(plot,"contour")) then
+           setvalues plot@contour
+             "cnFillColors"    : cnFillColors
+           end setvalues
+       else
+           setvalues plot
+             "cnFillColors"    : cnFillColors
+           end setvalues
+       end if
+
+      return (plot)
+end
+
+;-------------------------------------------------------------------
+; Mary Haley
+;
+; This function adds the cone of influence (returned from the wavelet
+; function) as a shaded polygon. This function checks whether we're 
+; doing both sides or just the right or left side.
+;
+;     plot:  the plot to add the polygon to
+;        w:  the variable (returned from wavelet), must contain
+;            "coi" attribute.
+;     time:  the time values corresponding with the coi values
+;     gsres: optional list of GraphicStyle resources (for polygon fill).
+;
+function ShadeCOI(wks:graphic,plot:graphic,w,time, gsres:logical)
+local newtime, newcoi, ni, indices, do_both
+begin
+;
+; Error checking.
+;
+  if(.not.isatt(w,"coi")) then
+    print("ShadeCOI: 'w' must contain an attribute 'coi' that contains the cone of influence")
+    return(plot)
+  end if
+
+  if(dimsizes(w@coi).ne.dimsizes(time)) then
+    print("ShadeCOI: the length of 'w@coi' and 'time' must be the same")
+    return(plot)
+  end if
+;
+; Set up some polygon resources.
+;
+  set_attr(gsres,"gsFillIndex",5)
+  set_attr(gsres,"gsEdgeThicknessF",3.)
+  set_attr(gsres,"gsEdgesOn",True)
+
+;
+; Get the limits of the plot.
+;
+  getvalues plot
+    "trXMinF" : xmin
+    "trXMaxF" : xmax
+    "trYMinF" : ymin
+    "trYMaxF" : ymax
+  end getvalues
+
+;
+; Get area where shading is to occur.
+;
+  indices = ind((w@coi.gt.ymin.and.w@coi.lt.ymax).and. \
+                (xmin.le.time.and.time.le.xmax))
+
+  if(any(ismissing(indices))) then
+    print("ShadeCOI: couldn't find any COI values within range")
+    return(plot)
+  end if
+  
+;
+; Figure out if both parts of COI are present, or just one.
+;
+  ni  = dimsizes(indices)
+  if(any((indices(1:ni-1)-indices(0:ni-2)).gt.1)) then
+    do_both = True
+  else
+    do_both = False
+  end if
+  
+  if(do_both)
+;
+; Create some arrays to hold the polygon.
+;
+    newtime = new(ni+7,typeof(time))
+    newcoi  = new(ni+7,typeof(w@coi))
+
+    newtime(0)      = xmin
+    newtime(1)      = time(indices(0))
+    newtime(2:ni+1) = time(indices)
+    newtime(ni+2)   = time(indices(dimsizes(indices)-1))
+    newtime(ni+3)   = xmax
+    newtime(ni+4)   = xmax
+    newtime(ni+5)   = xmin
+    newtime(ni+6)   = xmin
+
+    newcoi(0)      = ymin
+    newcoi(1)      = ymin
+    newcoi(2:ni+1) = w@coi(indices)
+    newcoi(ni+2)   = ymin
+    newcoi(ni+3)   = ymin
+    newcoi(ni+4)   = ymax
+    newcoi(ni+5)   = ymax
+    newcoi(ni+6)   = ymin
+  else
+;
+; Create some arrays to hold the polygon.
+;
+    newtime = new(ni+6,typeof(time))
+    newcoi  = new(ni+6,typeof(w@coi))
+;
+; Figure out whether coi values are increasing or decreasing.
+;
+    if(w@coi(indices(0)).lt.w@coi(indices(ni-1))) then
+      increasing = True
+    else
+      increasing = False
+    end if
+
+    if(increasing) then
+      newtime(0)      = xmin
+      newtime(1)      = time(indices(0))
+      newtime(2:ni+1) = time(indices)
+      newtime(ni+2)   = xmax
+      newtime(ni+3)   = xmax
+      newtime(ni+4)   = xmin
+      newtime(ni+5)   = xmin
+  
+      newcoi(0)       = ymin
+      newcoi(1)       = ymin
+      newcoi(2:ni+1)  = w@coi(indices)
+      newcoi(ni+2)    = w@coi(indices(ni-1))
+      newcoi(ni+3)    = ymax
+      newcoi(ni+4)    = ymax
+      newcoi(ni+5)    = ymin
+    else
+      newtime(0)      = xmin
+      newtime(1)      = xmin
+      newtime(2:ni+1) = time(indices)
+      newtime(ni+2)   = time(indices(ni-1))
+      newtime(ni+3)   = xmax
+      newtime(ni+4)   = xmax
+      newtime(ni+5)   = xmin
+  
+      newcoi(0)       = ymax
+      newcoi(1)       = w@coi(indices(0))
+      newcoi(2:ni+1)  = w@coi(indices)
+      newcoi(ni+2)    = ymin
+      newcoi(ni+3)    = ymin
+      newcoi(ni+4)    = ymax
+      newcoi(ni+5)    = ymax
+    end if
+  end if
+;
+; Add cone of influence polygon.
+;
+  coi           = gsn_add_polygon(wks,plot,newtime,newcoi,gsres)
+  newstr        = unique_string("coi")
+  plot@$newstr$ = coi
+
+  delete(newtime)
+  delete(newcoi)
+
+  return(plot)
+end
+
