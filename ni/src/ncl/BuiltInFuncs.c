@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.79 1997-08-11 23:21:25 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.80 1997-08-21 19:54:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -6721,7 +6721,7 @@ NhlErrorTypes _Ncldim_product
 				j++;
 			}
 			if(j==m) {
-				memcpy(&(((char*)out_val)[i*sz]),&(tmp_md->multidval.type->type_class.default_mis),sz);
+				memcpy(&(((char*)out_val)[i*sz]),&(tmp_md->multidval.missing_value.value),sz);
 			} else {
 				memcpy(&(((char*)out_val)[i*sz]),&(((char*)tmp_md->multidval.val)[((i*m) + j)*sz]),sz);
 				j = j+1;
@@ -6817,7 +6817,7 @@ NhlErrorTypes _Ncldim_sum
 				j++;
 			}
 			if(j==m) {
-				memcpy(&(((char*)out_val)[i*sz]),&(tmp_md->multidval.type->type_class.default_mis),sz);
+				memcpy(&(((char*)out_val)[i*sz]),&(tmp_md->multidval.missing_value.value),sz);
 			} else {
 				memcpy(&(((char*)out_val)[i*sz]),&(((char*)tmp_md->multidval.val)[((i*m) + j)*sz]),sz);
 				j = j+1;
@@ -9554,7 +9554,7 @@ NhlErrorTypes _Ncldim_min
 				j++;
 			}
 			if(j==m) {
-				memcpy(&(((char*)out_val)[i*sz]),&(tmp_md->multidval.type->type_class.default_mis),sz);
+				memcpy(&(((char*)out_val)[i*sz]),&(tmp_md->multidval.missing_value.value),sz);
 			} else {
 				memcpy(&(((char*)out_val)[i*sz]),&(((char*)tmp_md->multidval.val)[((i*m) + j)*sz]),sz);
 				j = j+1;
@@ -9656,7 +9656,7 @@ NhlErrorTypes _Ncldim_max
 				j++;
 			}
 			if(j==m) {
-				memcpy(&(((char*)out_val)[i*sz]),&(tmp_md->multidval.type->type_class.default_mis),sz);
+				memcpy(&(((char*)out_val)[i*sz]),&(tmp_md->multidval.missing_value.value),sz);
 			} else {
 				memcpy(&(((char*)out_val)[i*sz]),&(((char*)tmp_md->multidval.val)[((i*m) + j)*sz]),sz);
 				j = j+1;
