@@ -238,6 +238,7 @@ data_limits:
       if (error_status) return (error_status);
       curdat = rootdat->nextdat;
       rootdat->nextdat = NULL;
+      free(rootdat);
       for (i0 = 0; i0 < datcnt; i0++)
       {  sumx += points[i0][0] = 
             curdat->values[0] * magx;

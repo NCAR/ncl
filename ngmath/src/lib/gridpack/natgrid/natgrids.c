@@ -1,5 +1,6 @@
 #include "nnghead.h"
 #include "nngheads.h"
+#include "nnexver.h"
 
 float *c_natgrids(int n, float x[], float y[], float z[],
                   int nxi, int nyi, float xi[], float yi[], int *ier)
