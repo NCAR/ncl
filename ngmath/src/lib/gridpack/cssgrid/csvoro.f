@@ -1,5 +1,5 @@
 C
-C	$Id: csvoro.f,v 1.10 2000-08-22 15:19:25 haley Exp $
+C	$Id: csvoro.f,v 1.11 2001-01-09 18:16:34 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -189,7 +189,7 @@ C
 C  Determine the number of circumcenters returned.
 C
         DO 20 I = 1,N2
-          IF (RLATO(I).EQ.-99999.) THEN
+          IF (RWK(3*N+I).EQ.-99999.) THEN
             NCA = I - 1
             GO TO 25
           END IF
