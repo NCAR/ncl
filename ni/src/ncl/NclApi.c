@@ -1,6 +1,5 @@
-
 /*
- *      $Id: NclApi.c,v 1.4 1994-07-15 17:08:14 ethan Exp $
+ *      $Id: NclApi.c,v 1.5 1994-07-21 23:16:12 boote Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +34,7 @@ extern "C" {
 
 FILE *the_err_file;
 extern FILE *yyin;
+extern int yyparse();
 int fd[2];
 
 extern char *the_input_buffer;
@@ -55,10 +55,10 @@ int NclInitServer
 	NhlOpen();
 	the_err_file = error_file;
 	
-	NhlSetValues(NhlErrGetID(),
-		NhlNbufferErrors,True,
-		NhlNerrorLevel,error_level,
-		NhlNprintErrors,False,NULL);
+	NhlVASetValues(NhlErrGetID(),
+		NhlNerrBuffer,True,
+		NhlNerrLevel,error_level,
+		NhlNerrPrint,False,NULL);
 	
 	return(_NclInitSymbol());
 	
@@ -142,7 +142,7 @@ int NclSubmitBlock2
 
 int NclSubmitCommand
 #if __STDC__
-(char * command);
+(char * command)
 #else
 (command)
 	char *command;
@@ -165,11 +165,12 @@ void NclPrintErrorMsgs
 #endif
 {
 	int num,i;
-	NhlErrMsg *msptr;
+	Const NhlErrMsg *msptr;
 
-	NhlErrGetMsg(&num,&msptr);
+	num = NhlErrNumMsgs();
 	for(i=0; i< num; i++) {
-		NhlErrFPrintMsg(the_err_file,&(msptr[i]));
+		NhlErrGetMsg(i,&msptr);
+		NhlErrFPrintMsg(the_err_file,msptr);
 	}
 	return;
 }

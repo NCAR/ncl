@@ -46,6 +46,12 @@ struct _NclSelectionRecord * /* rhs_sel_ptr */
 #endif
 );
 
+static NhlErrorTypes MyFileWriteVar(
+#ifdef  NhlNeedProto
+NclFile thefile, NclQuark var, struct _NclMultiDValDataRec *value,struct _NclSelectionRecord * sel_ptr,NclQuark *dim_names,int type
+#endif
+);
+
 static NhlErrorTypes FileWriteVar(
 #ifdef NhlNeedProto
 NclFile /*thefile */,

@@ -1,8 +1,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#ifndef MAKEAPI
-
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include "defs.h"
@@ -37,7 +35,6 @@ int nclwrap()
 		return(1);
 	}
 }
-#endif
 #ifdef __cplusplus
 }
 #endif

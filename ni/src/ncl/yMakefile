@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.12 1994-07-18 15:47:08 ethan Exp $
+#      $Id: yMakefile,v 1.13 1994-07-21 23:16:40 boote Exp $
 #
 #########################################################################
 #									#
@@ -28,101 +28,157 @@
 #
 #	Options:
 
+MYBIN		=	ncl
+MYLIB		=	libncl.a
+
+EXTRA_DEFINES	=
+
 #ifdef  HPUX
-SYS_LIBS        =       $(CTOFLIBS) -lm -lPW -ll
-#else
-SYS_LIBS        =       $(CTOFLIBS) -lm 
+ARCH_LIBS	=	-lPW
 #endif
 
-
-
-MYNAME = ncl
-
 PROG_LIBS	=	$(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
-EXTRA_LIBS	=	-ll $(NCDFLIBS) $(XMOTIFCLIENTLIBS) 
+DEPLIBS		=	$(DEPHLULIBS) $(DEPCNCARGLIBS) $(DEPNCARGLIBS)
+EXTRA_LIBS	=	-ll $(NCDFLIBS) $(XLIB)
+SYS_LIBS	=	$(CTOFLIBS) -lm $(ARCH_LIBS)
 
-HDRS	= AttSupport.h NclMultiDValfloatData.h DataSupport.h \
-	NclMultiDValintData.h FileSupport.h NclMultiDVallogicalData.h \
-	Keywords.h NclMultiDVallongData.h Machine.h NclMultiDValnclfileData.h \
-	NclApi.h NclMultiDValshortData.h NclAtt.h NclMultiDValstringData.h \
-	NclData.h NclVar.h NclDataDefs.h OpsFuncs.h NclFile.h OpsList.h \
-	NclFileInterfaces.h SrcTree.h NclHLUObj.h Symbol.h NclMdInc.h \
-	VarSupport.h NclMultiDValData.h defs.h NclMultiDValHLUObjData.h \
-	parser.h NclMultiDValdoubleData.h
+HDRS		=	$(GEN_HDRS) $(STATIC_HDRS)
 
+GEN_HDRS	=	NclMultiDValnclfileData.h NclMultiDVallogicalData.h \
+			NclMultiDValdoubleData.h NclMultiDValfloatData.h \
+			NclMultiDValintData.h NclMultiDVallongData.h \
+			NclMultiDValshortData.h NclMultiDValstringData.h \
+			parser.h
 
-API_SRCS	= NclApi.c
-EXE_SRCS	= Ncl.c
+STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
+			Machine.h NclApi.h NclAtt.h NclData.h NclDataDefs.h \
+			NclFile.h NclFileInterfaces.h NclHLUObj.h NclMdInc.h \
+			NclMultiDValData.h NclMultiDValHLUObjData.h NclVar.h \
+			OpsFuncs.h OpsList.h SrcTree.h Symbol.h VarSupport.h \
+			NclFileVar.h defs.h
 
-APISRCS		= $(API_SRCS) $(SRCS)
-EXESRCS		= $(EXE_SRCS) $(SRCS)
-ALLSRCS		= $(API_SRCS) $(EXE_SRCS) $(SRCS)
+API_SRCS	=	NclApi.c
+EXE_SRCS	=	Ncl.c yywrap.c
 
-SRCS	= AddBuiltIns.c AddFileFormats.c AddHLUObjs.c AddIntrinsics.c \
-	AttSupport.c DataSupport.c Execute.c FileSupport.c Formats.c \
-	InitData.c Machine.c Memory.c NclAtt.c NclData.c \
-	NclFile.c NclHLUObj.c NclMultiDValData.c NclMultiDValHLUObjData.c \
-	NclMultiDValdoubleData.c NclMultiDValfloatData.c NclMultiDValintData.c \
-	NclMultiDVallogicalData.c NclMultiDVallongData.c \
-	NclMultiDValnclfileData.c NclMultiDValshortData.c \
-	NclMultiDValstringData.c NclNetCdf.c NclVar.c OpsFuncs.c Printtoken.c \
-	SrcTree.c Symbol.c Translate.c VarSupport.c scaner.c parser.c yywrap.c
+APISRCS		=	$(API_SRCS) $(SRCS)
+EXESRCS		=	$(EXE_SRCS) $(SRCS)
+ALLSRCS		=	$(EXESRCS)
+SRCS		=	$(GEN_SRCS) $(STATIC_SRCS)
 
+GEN_SRCS	=	NclMultiDValdoubleData.c NclMultiDValfloatData.c \
+			NclMultiDValintData.c NclMultiDVallogicalData.c \
+			NclMultiDVallongData.c NclMultiDValnclfileData.c \
+			NclMultiDValshortData.c NclMultiDValstringData.c \
+			scanner.c parser.c
 
-API_OBJS	= NclApi.o
-EXE_OBJS	= Ncl.o
+STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
+			AddIntrinsics.c AttSupport.c DataSupport.c Execute.c \
+			FileSupport.c Formats.c InitData.c Machine.c Memory.c \
+			NclAtt.c NclData.c NclFile.c NclHLUObj.c \
+			NclMultiDValData.c NclMultiDValHLUObjData.c \
+			NclNetCdf.c NclVar.c OpsFuncs.c Printtoken.c SrcTree.c \
+			Symbol.c Translate.c VarSupport.c NclFileVar.c
 
-OBJS	= AddBuiltIns.o AddFileFormats.o AddHLUObjs.o AddIntrinsics.o \
-	AttSupport.o DataSupport.o Execute.o FileSupport.o Formats.o \
-	InitData.o Machine.o Memory.o NclAtt.o NclData.o \
-	NclFile.o NclHLUObj.o NclMultiDValData.o NclMultiDValHLUObjData.o \
-	NclMultiDValdoubleData.o NclMultiDValfloatData.o NclMultiDValintData.o \
-	NclMultiDVallogicalData.o NclMultiDVallongData.o \
-	NclMultiDValnclfileData.o NclMultiDValshortData.o \
-	NclMultiDValstringData.o NclNetCdf.o NclVar.o OpsFuncs.o Printtoken.o \
-	SrcTree.o Symbol.o Translate.o VarSupport.o scaner.o parser.o yywrap.o
+API_OBJS	=	NclApi.o
+EXE_OBJS	=	Ncl.o yywrap.o
 
-APIOBJS	= $(API_OBJS) $(OBJS)
-EXEOBJS	= $(EXE_OBJS) $(OBJS)
-ALLOBJS = $(API_OBJS) $(OBJS) $(EXE_OBJS)
+APIOBJS		=	$(API_OBJS) $(OBJS)
+EXEOBJS		=	$(EXE_OBJS) $(OBJS)
+ALLOBJS		=	$(EXEOBJS)
+OBJS		=	$(GEN_OBJS) $(STATIC_OBJS)
 
-InstallTarget(ncl,$(INSTALL_INC),$(XAPPPATH))
-InstallTarget(libncl.a,$(INSTALL_LIB),$(LIBPATH))
-DependTarget($(EXESRCS))
+GEN_OBJS	=	NclMultiDValdoubleData.o NclMultiDValfloatData.o \
+			NclMultiDValintData.o NclMultiDVallogicalData.o \
+			NclMultiDVallongData.o NclMultiDValnclfileData.o \
+			NclMultiDValshortData.o NclMultiDValstringData.o \
+			scanner.o parser.o
 
-ncl:: $(EXEOBJS) $(DEPLIBS)
-	$(CC_LD) $(CC_LDOPTIONS) -o ncl $(EXEOBJS) $(PROG_LIBS) $(CSTATIC) $(LDLIBS) $(CDYNAMIC) $(EXTRA_LDLIBS)
-InstallTarget(ncl, $(INSTALL_BIN),$(BINPATH))
-CleanFilesTarget(ncl $(ALLOBJS) parser.c parser.h scaner.c)
-
-libncl.a::
-	-$(RM) $(APIOBJS) parser.h parser.c scaner.c
-	$(YACC) -d -t -v ncl.y
-	$(LEX) ncl.l
-	$(CC_LD) $(CC_LDOPTIONS) -c $(TOP_INCLUDES) -DMAKE_API $(APISRCS)
-	-$(RM) libncl.a
-	@$(AR_QUICK) libncl.a $(ALLOBJS)
-	$(RANLIB) libncl.a
-	-$(RM) $(APIOBJS)
+STATIC_OBJS	=	AddBuiltIns.o AddFileFormats.o AddHLUObjs.o \
+			AddIntrinsics.o AttSupport.o DataSupport.o Execute.o \
+			FileSupport.o Formats.o InitData.o Machine.o Memory.o \
+			NclAtt.o NclData.o NclFile.o NclHLUObj.o \
+			NclMultiDValData.o NclMultiDValHLUObjData.o \
+			NclNetCdf.o NclVar.o OpsFuncs.o Printtoken.o SrcTree.o \
+			Symbol.o Translate.o VarSupport.o NclFileVar.o
 
 
-# Special dependencies
+LibraryTarget($(MYLIB),$(ALLOBJS))
+CProgram($(MYBIN),$(EXEOBJS),$(DEPLIBS))
+
+depend-local::	$(GEN_HDRS) $(GEN_SRCS)
+DependTarget($(ALLSRCS))
+
+CleanFilesTarget(lex.yy.c y.tab.c y.tab.h)
+CleanFilesTarget($(GEN_HDRS) $(GEN_SRCS))
+
+#
+# yacc and lex dependancies
+#
+
+#if	defined(SUN) && (MAJOR == 4)
+scanner.c:	lex.yy.c syms_lex.sh
+	$(SHELL) syms_lex.sh
+
+parser.h:	y.tab.h syms_tab_h.sh
+	$(SHELL) syms_tab_h.sh
+
+parser.c:	y.tab.c syms_tab_c.sh
+	$(SHELL) syms_tab_c.sh
+#else
+scanner.c:	lex.yy.c
+	$(CP) lex.yy.c scanner.c
+
+parser.h:	y.tab.h
+	$(CP) y.tab.h parser.h
+
+parser.c:	y.tab.c
+	$(CP) y.tab.c parser.c
+#endif
 
 lex.yy.c: ncl.l
 	$(LEX) ncl.l
 
-y.tab.c: ncl.y
-	$(YACC) -d -t -v ncl.y
+y.tab.c y.tab.h: ncl.y
+	$(YACC) -d -t ncl.y
 
-y.tab.h: ncl.y
-	$(YACC) -d -t -v ncl.y
+#
+# Data Object dependancies
+#
 
-Ncl.c: parser.h
+#define	MultiDValDataRule_h(type)\
+]\
+NclMultiDVal/**/type/**/Data.h:	data_h.sh NclMultiDValData.h.sed]\
+	@$(SHELL) data_h.sh type]
 
-Printtoken.c: parser.h
+#define MultiDValDataRule_c(type,xtra_dep)\
+]\
+NclMultiDVal/**/type/**/Data.c:	type/**/_data_c.sh op_funcs.sh NclMultiDVal/**/type/**/Data.c.specific xtra_dep]\
+	@$(SHELL) type/**/_data_c.sh]
 
-SrcTree.c: parser.h
+#define MultiDValDataRule(type,xtra_dep)\
+MultiDValDataRule_h(type)\
+MultiDValDataRule_c(type,xtra_dep)
 
-Translate.c: parser.h
+NUM_OP_TMPL	=	NclMultiDValData.c.sed \
+			MultiDValSimpleOpTemplate.c.sed \
+			MultiDValMonoOpTemplate.c.sed \
+			MultiDValSelectOpTemplate.c.sed \
+			MultiDValDivOpTemplate.c.sed \
+			MultiDValXorOpTemplate.c.sed \
+			MultiDValSelectFuncsTemplate.c.sed
 
-yywrap.c: parser.h
+STR_OP_TMPL	=	string_ops.c.sed string_sel.c.sed string_cmp.c.sed \
+			MultiDValSelectFuncsTemplate.c.sed
+
+FILE_OP_TMPL	=	NclMultiDValData.c.sed MultiDValSimpleOpTemplate.c.sed \
+			MultiDValSelectFuncsTemplate.c.sed
+
+
+MultiDValDataRule(double,$(NUM_OP_TMPL))
+MultiDValDataRule(float,$(NUM_OP_TMPL))
+MultiDValDataRule(int,$(NUM_OP_TMPL))
+MultiDValDataRule(long,$(NUM_OP_TMPL))
+MultiDValDataRule(short,$(NUM_OP_TMPL))
+MultiDValDataRule(logical,$(NUM_OP_TMPL))
+MultiDValDataRule(string,$(STR_OP_TMPL))
+MultiDValDataRule(nclfile,$(FILE_OP_TMPL))
