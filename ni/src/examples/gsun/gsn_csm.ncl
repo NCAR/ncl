@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.162 2004-04-29 20:10:53 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.163 2004-05-04 16:54:17 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -978,7 +978,7 @@ begin
   
 ;
 ; Only plots over maps can have 2D lat/lon coordinates. These plots are
-; identified by the following "type" strings.
+; identified by the following "valid_2dcoord_types" strings.
 ;
   valid_2dcoord_types = (/"contour_map","vector_map"/)
 ;
@@ -3024,7 +3024,8 @@ begin
 ; array. It is possible that if we have a 2D longitudate "coordinate"
 ; array, it will not be 360 in range, so we don't want to check 2D arrays.
 ;
-    if(isdimnamed(newdata,1).and.iscoord(newdata,newdata!1)) then 
+    res = False
+    if(is_valid_latlon_coord(newdata,"x","lon",res)) then
       first_val  = newdata&$newdata!1$(0)
       second_val = newdata&$newdata!1$(1)
       last_val   = newdata&$newdata!1$(mx-1)
@@ -3046,7 +3047,7 @@ begin
       end if
     end if
 
-    if(isdimnamed(newdata,1).and.iscoord(newdata,newdata!1)) then 
+    if(is_valid_latlon_coord(newdata,"x","lon",res)) then
       newdata&$newdata!1$(mx) = newdata&$newdata!1$(0) + 360
     else 
 ;
