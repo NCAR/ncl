@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.48 2001-05-09 21:17:24 haley Exp $
+#      $Id: yMakefile,v 1.49 2001-05-14 15:19:28 haley Exp $
 #
 #########################################################################
 #									#
@@ -84,7 +84,7 @@ FOBJS = aam.o areaAve.o areaRmse.o dbetai.o calcorc_dp.o chiin_dp.o \
 
 #if defined(alpha)
 EXFSRCS = d1mach_alpha.f
-EXFOBJS = d1mach_alpha.f
+EXFOBJS = d1mach_alpha.o
 #elif defined(linux)
 EXFSRCS = d1mach_linux.o
 EXFOBJS = d1mach_linux.o
