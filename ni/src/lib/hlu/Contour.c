@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.38 1994-11-11 20:02:26 dbrown Exp $
+ *      $Id: Contour.c,v 1.39 1994-11-11 22:12:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -101,7 +101,8 @@ static NhlResource resources[] = {
 
 	{NhlNcnScalarFieldData,NhlCcnScalarFieldData,_NhlTDataList,
 		 sizeof(NhlGenArray),
-		 Oset(scalar_field_data),NhlTImmediate,_NhlUSET(NULL),0,NULL},
+		 Oset(scalar_field_data),NhlTImmediate,_NhlUSET(NULL),0,
+						(NhlFreeFunc)NhlFreeGenArray},
 
 /* Level resources */
 
@@ -288,7 +289,7 @@ static NhlResource resources[] = {
 	{NhlNcnMaxDataValueFormat,NhlCcnMaxDataValueFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(max_data_format.fstring),NhlTImmediate,
-		 _NhlUSET(NULL),0,NULL},
+		 _NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
 
 /* Line label resources */
 
@@ -320,7 +321,7 @@ static NhlResource resources[] = {
 	{NhlNcnLineLabelFormat,NhlCcnLineLabelFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(line_lbls.format.fstring),NhlTString,
-		 _NhlUSET("*+g"),0,NULL},
+		 _NhlUSET("*+g"),0,(NhlFreeFunc)NhlFree},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(line_lbls.height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -372,11 +373,12 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNcnHighLabelString,NhlCcnHighLabelString,
 		 NhlTString,sizeof(NhlString),
-		 Oset(high_lbls.text),NhlTImmediate,_NhlUSET(NULL),0,NULL},
+		 Oset(high_lbls.text),NhlTImmediate,_NhlUSET(NULL),0,
+							(NhlFreeFunc)NhlFree},
 	{NhlNcnHighLabelFormat,NhlCcnHighLabelFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(high_lbls.format.fstring),NhlTImmediate,
-		 _NhlUSET("*+g"),0,NULL},
+		 _NhlUSET("*+g"),0,(NhlFreeFunc)NhlFree},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(high_lbls.height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -431,11 +433,12 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNcnLowLabelString,NhlCcnLowLabelString,
 		 NhlTString,sizeof(NhlString),
-		 Oset(low_lbls.text),NhlTImmediate,_NhlUSET(NULL),0,NULL},
+		 Oset(low_lbls.text),NhlTImmediate,_NhlUSET(NULL),0,
+							(NhlFreeFunc)NhlFree},
 	{NhlNcnLowLabelFormat,NhlCcnLowLabelFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(low_lbls.format.fstring),NhlTImmediate,
-		 _NhlUSET("*+g"),0,NULL},
+		 _NhlUSET("*+g"),0,(NhlFreeFunc)NhlFree},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(low_lbls.height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -490,11 +493,12 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNcnInfoLabelString,NhlCcnInfoLabelString,
 		 NhlTString,sizeof(NhlString),
-		 Oset(info_string),NhlTImmediate,_NhlUSET(NULL),0,NULL},
+		 Oset(info_string),NhlTImmediate,_NhlUSET(NULL),0,
+							(NhlFreeFunc)NhlFree},
 	{NhlNcnInfoLabelFormat,NhlCcnInfoLabelFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(info_lbl.format.fstring),NhlTImmediate,
-		 _NhlUSET("*+g"),0,NULL},
+		 _NhlUSET("*+g"),0,(NhlFreeFunc)NhlFree},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(info_lbl.height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -570,11 +574,12 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNcnConstFLabelString,NhlCcnConstFLabelString,
 		 NhlTString,sizeof(NhlString),
-		 Oset(constf_string),NhlTImmediate,_NhlUSET(NULL),0,NULL},
+		 Oset(constf_string),NhlTImmediate,_NhlUSET(NULL),0,
+							(NhlFreeFunc)NhlFree},
 	{NhlNcnConstFLabelFormat,NhlCcnConstFLabelFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(constf_lbl.format.fstring),NhlTImmediate,
-		 _NhlUSET("*+g"),0,NULL},
+		 _NhlUSET("*+g"),0,(NhlFreeFunc)NhlFree},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(constf_lbl.height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -1503,6 +1508,16 @@ static NrmQuark	Qline_dash_patterns = NrmNULLQUARK;
 static NrmQuark	Qline_thicknesses = NrmNULLQUARK; 
 static NrmQuark	Qllabel_strings = NrmNULLQUARK;
 static NrmQuark	Qllabel_colors = NrmNULLQUARK; 
+static NrmQuark	Qline_label_format = NrmNULLQUARK; 
+static NrmQuark	Qmax_data_value_format = NrmNULLQUARK; 
+static NrmQuark	Qhigh_label_string = NrmNULLQUARK; 
+static NrmQuark	Qhigh_label_format = NrmNULLQUARK; 
+static NrmQuark	Qlow_label_string = NrmNULLQUARK; 
+static NrmQuark	Qlow_label_format = NrmNULLQUARK; 
+static NrmQuark	Qinfo_label_string = NrmNULLQUARK; 
+static NrmQuark	Qinfo_label_format = NrmNULLQUARK; 
+static NrmQuark	Qconst_f_label_string = NrmNULLQUARK; 
+static NrmQuark	Qconst_f_label_format = NrmNULLQUARK; 
 
 #define NhlDASHBUFSIZE	128
 
@@ -1741,6 +1756,16 @@ ContourClassInitialize
 	Qline_thicknesses = NrmStringToQuark(NhlNcnLineThicknesses);
 	Qllabel_strings = NrmStringToQuark(NhlNcnLineLabelStrings);
 	Qllabel_colors = NrmStringToQuark(NhlNcnLineLabelColors);
+	Qline_label_format = NrmStringToQuark(NhlNcnLineLabelFormat);
+	Qmax_data_value_format = NrmStringToQuark(NhlNcnMaxDataValueFormat);
+	Qhigh_label_string = NrmStringToQuark(NhlNcnHighLabelString);
+	Qhigh_label_format = NrmStringToQuark(NhlNcnHighLabelFormat);
+	Qlow_label_string = NrmStringToQuark(NhlNcnLowLabelString);
+	Qlow_label_format = NrmStringToQuark(NhlNcnLowLabelFormat);
+	Qinfo_label_string = NrmStringToQuark(NhlNcnInfoLabelString);
+	Qinfo_label_format = NrmStringToQuark(NhlNcnInfoLabelFormat);
+	Qconst_f_label_string = NrmStringToQuark(NhlNcnConstFLabelString);
+	Qconst_f_label_format = NrmStringToQuark(NhlNcnConstFLabelFormat);
 
 	return NhlNOERROR;
 }
@@ -2282,6 +2307,7 @@ static NhlErrorTypes    ContourGetValues
         NhlContourLayer cl = (NhlContourLayer)l;
         NhlContourLayerPart *cnp = &(cl->contour);
         NhlGenArray ga;
+	NhlString ts;
         char *e_text;
         int i, count = 0;
         char *type = "";
@@ -2350,11 +2376,54 @@ static NhlErrorTypes    ContourGetValues
                                 return NhlFATAL;
                         }
                         *((NhlGenArray *)(args[i].value.ptrval)) = ga;
+			continue;
+                }
+
+		ts = NULL;
+		if(args[i].quark == Qline_label_format){
+			ts = cnp->line_lbls.format.fstring;
+		}
+		else if(args[i].quark == Qmax_data_value_format){
+			ts = cnp->max_data_format.fstring;
+		}
+		else if(args[i].quark == Qhigh_label_string){
+			ts = cnp->high_lbls.text;
+		}
+		else if(args[i].quark == Qhigh_label_format){
+			ts = cnp->high_lbls.format.fstring;
+		}
+		else if(args[i].quark == Qlow_label_string){
+			ts = cnp->low_lbls.text;
+		}
+		else if(args[i].quark == Qlow_label_format){
+			ts = cnp->low_lbls.format.fstring;
+		}
+		else if(args[i].quark == Qinfo_label_string){
+			ts = cnp->info_string;
+		}
+		else if(args[i].quark == Qinfo_label_format){
+			ts = cnp->info_lbl.format.fstring;
+		}
+		else if(args[i].quark == Qconst_f_label_string){
+			ts = cnp->constf_string;
+		}
+		else if(args[i].quark == Qconst_f_label_format){
+			ts = cnp->constf_lbl.format.fstring;
+		}
+                if (ts != NULL) {
+			*((NhlString*)(args[i].value.ptrval)) =
+							NhlMalloc(strlen(ts)+1);
+			if(!*((NhlString*)(args[i].value.ptrval))){
+                                e_text = "%s: error copying String";
+                                NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+		                                          "ContourGetValues");
+                                return NhlFATAL;
+                        }
+			strcpy(*((NhlString*)(args[i].value.ptrval)),ts);
                 }
         }
 
         return(NhlNOERROR);
-
 }
 
 
