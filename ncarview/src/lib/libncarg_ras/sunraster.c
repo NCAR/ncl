@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.15 1992-10-09 20:50:32 don Exp $
+ *	$Id: sunraster.c,v 1.16 1992-12-14 22:01:21 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -564,11 +564,34 @@ int
 SunClose(ras)
 	Raster	*ras;
 {
+	int		status;
+	char		*errmsg = "SunClose(\"%s\")";
+
+	if (ras->fp != (FILE *) NULL) {
+		if(ras->fp != stdin && ras->fp != stdout) {
+			status = fclose(ras->fp);
+			if (status != 0) {
+				ESprintf(errno, errmsg, ras->name);
+				return(RAS_ERROR);
+			}
+		}
+	}
+	else {
+		if (ras->fd != fileno(stdin) && ras->fd != fileno(stdout)) {
+			status = close(ras->fd);
+			if (status != 0) {
+				ESprintf(errno, errmsg, ras->name);
+				return(RAS_ERROR);
+			}
+		}
+	}
+
 	if (ras->data  != (unsigned char *) NULL) free( (char *) ras->data);
 	if (ras->red   != (unsigned char *) NULL) free( (char *) ras->red);
 	if (ras->green != (unsigned char *) NULL) free( (char *) ras->green);
 	if (ras->blue  != (unsigned char *) NULL) free( (char *) ras->blue);
 	if (ras->dep   !=  (char *) NULL)         free( (char *) ras->dep);
+
 	return(RAS_OK);
 }
 

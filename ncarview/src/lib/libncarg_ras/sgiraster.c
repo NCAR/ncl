@@ -1,5 +1,5 @@
 /*
- *	$Id: sgiraster.c,v 1.3 1992-09-24 22:55:35 don Exp $
+ *	$Id: sgiraster.c,v 1.4 1992-12-14 22:01:22 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -582,7 +582,28 @@ int
 SGIClose(ras)
 	Raster	*ras;
 {
-	SGIInfo	*dep;
+	int		status;
+	char		*errmsg = "SGIClose(\"%s\")";
+	SGIInfo		*dep;
+
+	if (ras->fp != (FILE *) NULL) {
+		if(ras->fp != stdin && ras->fp != stdout) {
+			status = fclose(ras->fp);
+			if (status != 0) {
+				ESprintf(errno, errmsg, ras->name);
+				return(RAS_ERROR);
+			}
+		}
+	}
+	else {
+		if (ras->fd != fileno(stdin) && ras->fd != fileno(stdout)) {
+			status = close(ras->fd);
+			if (status != 0) {
+				ESprintf(errno, errmsg, ras->name);
+				return(RAS_ERROR);
+			}
+		}
+	}
 
 	if (ras->data  != (unsigned char *) NULL) free( (char *) ras->data);
 	if (ras->red   != (unsigned char *) NULL) free( (char *) ras->red);
@@ -593,8 +614,7 @@ SGIClose(ras)
 
 	dep = (SGIInfo *) ras->dep;
 
-	if (dep->rowstart != (unsigned long *) NULL)
-						  free( (void *) dep->rowstart);
+	if (dep->rowstart != (unsigned long *)NULL) free((void *)dep->rowstart);
 	if (dep->rowsize  != (long *) NULL)	  free( (void *) dep->rowsize);
 	if (ras->dep      !=  (char *) NULL)      free( (char *) ras->dep);
 	return(RAS_OK);
