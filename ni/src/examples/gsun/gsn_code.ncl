@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.25 1999-12-10 20:39:38 haley Exp $
+;      $Id: gsn_code.ncl,v 1.26 1999-12-16 19:49:26 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1114,8 +1114,8 @@ begin
     shape     = get_special_res_value(res2,"gsnShape",False)
     scale     = get_special_res_value(res2,"gsnScale",shape)
     sprdcols  = get_special_res_value(res2,"gsnSpreadColors",False)
-    min_index = get_special_res_value(res2,"gsnStartSpreadColor",2)
-    max_index = get_special_res_value(res2,"gsnEndSpreadColor",-1)
+    min_index = get_special_res_value(res2,"gsnSpreadColorStart",2)
+    max_index = get_special_res_value(res2,"gsnSpreadColorEnd",-1)
     plot_object = create wksname + "_contour" contourPlotClass wks
         "trXTensionF"       : xtension
         "trYTensionF"       : ytension
@@ -1254,8 +1254,8 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
     scale     = get_special_res_value(res2,"gsnScale",False)
     shape     = get_special_res_value(res2,"gsnShape",scale)
     sprdcols  = get_special_res_value(res2,"gsnSpreadColors",False)
-    min_index = get_special_res_value(res2,"gsnStartSpreadColor",2)
-    max_index = get_special_res_value(res2,"gsnEndSpreadColor",-1)
+    min_index = get_special_res_value(res2,"gsnSpreadColorStart",2)
+    max_index = get_special_res_value(res2,"gsnSpreadColorEnd",-1)
 
     sfres = get_res_eq(res2,"sf")
 ; Check for existence of data@long_name and use it in a title it
@@ -2135,8 +2135,8 @@ begin
     shape     = get_special_res_value(res2,"gsnShape",False)
     scale     = get_special_res_value(res2,"gsnScale",shape)
     sprdcols  = get_special_res_value(res2,"gsnSpreadColors",False)
-    min_index = get_special_res_value(res2,"gsnStartSpreadColor",2)
-    max_index = get_special_res_value(res2,"gsnEndSpreadColor",-1)
+    min_index = get_special_res_value(res2,"gsnSpreadColorStart",2)
+    max_index = get_special_res_value(res2,"gsnSpreadColorEnd",-1)
     end if
     if(isatt(v,"_FillValue")) then
         setvalues data_object
@@ -2529,8 +2529,8 @@ begin
     shape     = get_special_res_value(res2,"gsnShape",False)
     scale     = get_special_res_value(res2,"gsnScale",shape)
     sprdcols  = get_special_res_value(res2,"gsnSpreadColors",False)
-    min_index = get_special_res_value(res2,"gsnStartSpreadColor",2)
-    max_index = get_special_res_value(res2,"gsnEndSpreadColor",-1)
+    min_index = get_special_res_value(res2,"gsnSpreadColorStart",2)
+    max_index = get_special_res_value(res2,"gsnSpreadColorEnd",-1)
     end if
 
 ; Create plot object.
@@ -2654,8 +2654,8 @@ begin
     shape     = get_special_res_value(res2,"gsnShape",False)
     scale     = get_special_res_value(res2,"gsnScale",shape)
     sprdcols  = get_special_res_value(res2,"gsnSpreadColors",False)
-    min_index = get_special_res_value(res2,"gsnStartSpreadColor",2)
-    max_index = get_special_res_value(res2,"gsnEndSpreadColor",-1)
+    min_index = get_special_res_value(res2,"gsnSpreadColorStart",2)
+    max_index = get_special_res_value(res2,"gsnSpreadColorEnd",-1)
             "vfMissingVValueV" :v@_FillValue
         end setvalues
     end if
@@ -2823,8 +2823,8 @@ begin
     shape     = get_special_res_value(res2,"gsnShape",False)
     scale     = get_special_res_value(res2,"gsnScale",shape)
     sprdcols  = get_special_res_value(res2,"gsnSpreadColors",False)
-    min_index = get_special_res_value(res2,"gsnStartSpreadColor",2)
-    max_index = get_special_res_value(res2,"gsnEndSpreadColor",-1)
+    min_index = get_special_res_value(res2,"gsnSpreadColorStart",2)
+    max_index = get_special_res_value(res2,"gsnSpreadColorEnd",-1)
 ; Create plot object.
 
     vector_object = create wksname + "_vector" vectorPlotClass wks
