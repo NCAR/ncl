@@ -1,5 +1,5 @@
 /*
- *	$Id: in.c,v 1.8 1992-10-15 16:49:22 clyne Exp $
+ *	$Id: in.c,v 1.9 1992-11-19 21:49:26 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -20,6 +20,7 @@
 #include	"in.h"
 #include	"cgmc.h"
 #include	"bitops.h"
+#include	"fill.h"
 
 
 /*	in.c:

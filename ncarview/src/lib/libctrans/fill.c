@@ -1,5 +1,5 @@
 /*
- *	$Id: fill.c,v 1.12 1992-11-06 00:29:58 clyne Exp $
+ *	$Id: fill.c,v 1.13 1992-11-19 21:49:19 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -60,7 +60,7 @@ extern	boolean Moreparm;
  *		type E.
  *
  */
-fill_E(cgmc,instr,p_len)
+int	fill_E(cgmc,instr,p_len)
 	CGMC  	*cgmc;
 	Instr	*instr;
 	int	p_len;		/* expected number of parameters of type E*/
@@ -106,7 +106,7 @@ fill_E(cgmc,instr,p_len)
  *		type CD.
  *
  */
-fill_CD(cgmc,instr,p_len)
+int	fill_CD(cgmc,instr,p_len)
 	CGMC  	*cgmc;
 	Instr	*instr;
 	int		p_len;		/* expected number of parameters 
@@ -162,7 +162,7 @@ fill_CD(cgmc,instr,p_len)
  *		type CI.
  *
  */
-fill_CI(cgmc,instr,p_len)
+int	fill_CI(cgmc,instr,p_len)
 	CGMC  	*cgmc;
 	Instr	*instr;
 	int		p_len;		/* expected number of parameters 
@@ -212,7 +212,7 @@ fill_CI(cgmc,instr,p_len)
  *		type CO.
  *
  */
-fill_CO(cgmc,instr,p_len)
+int	fill_CO(cgmc,instr,p_len)
 	CGMC  	*cgmc;
 	Instr	*instr;
 	int		p_len;		/* expected number of parameters 
@@ -319,7 +319,7 @@ fill_CO(cgmc,instr,p_len)
  *		Dtype .
  *
  */
-fill_D(cgmc,instr,p_len)
+int	fill_D(cgmc,instr,p_len)
 	CGMC  	*cgmc;
 	Instr	*instr;
 	int		p_len;		/* expected number of parameters 
@@ -363,7 +363,7 @@ fill_D(cgmc,instr,p_len)
  *		Itype .
  *
  */
-fill_I(cgmc,instr,p_len)
+int	fill_I(cgmc,instr,p_len)
 	CGMC  	*cgmc;
 	Instr	*instr;
 	int		p_len;		/* expected number of parameters 
@@ -415,7 +415,7 @@ fill_I(cgmc,instr,p_len)
  *		IXtype .
  *
  */
-fill_IX(cgmc,instr,p_len)
+int	fill_IX(cgmc,instr,p_len)
 	CGMC  	*cgmc;
 	Instr	*instr;
 	int		p_len;		/* expected number of parameters 
@@ -467,7 +467,7 @@ fill_IX(cgmc,instr,p_len)
  *		Ptype .
  *
  */
-fill_P(cgmc,instr,p_len)
+int	fill_P(cgmc,instr,p_len)
 	CGMC  	*cgmc;
 	Instr	*instr;
 	int		p_len;		/* expected number of parameters 
@@ -547,7 +547,7 @@ fill_P(cgmc,instr,p_len)
  *		Rtype .
  *
  */
-fill_R(cgmc,instr,p_len)
+int	fill_R(cgmc,instr,p_len)
 	CGMC  	*cgmc;
 	Instr	*instr;
 	int		p_len;		/* expected number of parameters 
@@ -602,7 +602,7 @@ fill_R(cgmc,instr,p_len)
  * Convert a CGM string, which may contain non-printing characters,
  * to a C string with all non-printint characters removed, including nul.
  */
-void	cgm2Cstring(s, t, n)
+static	void	cgm2Cstring(s, t, n)
 	char	*s;
 	char	*t;
 	int	n;
@@ -623,7 +623,7 @@ void	cgm2Cstring(s, t, n)
  *		Stype .
  *
  */
-fill_S(cgmc,instr)
+int	fill_S(cgmc,instr)
 	CGMC  	*cgmc;
 	Instr	*instr;
 {
@@ -733,7 +733,7 @@ fill_S(cgmc,instr)
  *		VDCtype .
  *
  */
-fill_VDC(cgmc,instr,p_len)
+int	fill_VDC(cgmc,instr,p_len)
 	CGMC  	*cgmc;
 	Instr	*instr;
 	int		p_len;		/* expected number of parameters 
@@ -812,7 +812,7 @@ fill_VDC(cgmc,instr,p_len)
  *
  */
 
-fill_special(cgmc,instr,class,id)
+int	fill_special(cgmc,instr,class,id)
 	CGMC 	*cgmc;
 	Instr	*instr;
 	int 	class, id;	/* cgm command class and id*/
@@ -820,17 +820,38 @@ fill_special(cgmc,instr,class,id)
 	switch (class) {
 	case 1 :
 		switch(id) {
-		case M_E_L : 	/* metafile element list*/
+
+		case MF_ELIST_ID : 	/* metafile element list*/
 			instr->data_length = fill_I(cgmc,instr,1);
 			return(fill_IX(cgmc,instr,N));
 			
 		default :
-			ESprintf(E_UNKNOWN, "Can't parse CGM element");
+			ESprintf(
+				E_UNKNOWN, 
+				"Can't parse CGM element(class=%d, id=%d)", 
+				class, id
+			);
+			return (-1);
+		}
+	case 2 :
+		switch(id) {
+
+		case SCALE_MODE_ID : 	/* scaling mode	*/
+			instr->data_length = fill_E(cgmc,instr,1);
+			return(fill_R(cgmc,instr,N));
+
+			
+		default :
+			ESprintf(
+				E_UNKNOWN, 
+				"Can't parse CGM element(class=%d, id=%d)", 
+				class, id
+			);
 			return (-1);
 		}
 	case 4 :
 		switch(id) {
-		case TEXT :	/* text*/
+		case TEXT_ID :	/* text*/
 			if (!Moreparm) {
 				instr->data_length = fill_P(cgmc, instr,1);
 
@@ -839,7 +860,10 @@ fill_special(cgmc,instr,class,id)
 
 			return(fill_S(cgmc,instr));
 
-		case CELL :	/* cell array*/
+		case POLYGON_SET_ID :	/* polygon set (not supported)	*/
+			return(0);
+
+		case CELL_ARRAY_ID :	/* cell array*/
 			/* note: cell arrays require a special 
 			 * routine
 			 */
@@ -853,7 +877,7 @@ fill_special(cgmc,instr,class,id)
 
 			return(fill_Cellarray(cgmc,instr));
 
-		case G_D_P :	/* generalized draw primitive*/
+		case G_D_P_ID :	/* generalized draw primitive*/
 			if (!Moreparm) {
 				instr->data_length = fill_I(cgmc, instr,2);
 
@@ -864,17 +888,21 @@ fill_special(cgmc,instr,class,id)
 			return(fill_S(cgmc,instr));
 
 		default : 
-			ESprintf(E_UNKNOWN, "Can't parse CGM element");
+			ESprintf(
+				E_UNKNOWN, 
+				"Can't parse CGM element(class=%d, id=%d)", 
+				class, id
+			);
 			return (-1);
 		}
 
 	case 5 :
 		switch(id) {
-		case TEXT_A :	/* text alignment*/
+		case TEXT_ALIGN_ID :	/* text alignment*/
 			instr->data_length = fill_E(cgmc,instr, 2);
 			return(fill_R(cgmc,instr,2));
 
-		case PATTERN :	/* pattern table*/
+		case PATTERN_TAB_ID :	/* pattern table*/
 			instr->data_length = fill_IX(cgmc,instr,1);
 			instr->data_length = fill_I(cgmc,instr,3);
 			/* this code needs to be adjusted 
@@ -882,26 +910,37 @@ fill_special(cgmc,instr,class,id)
 			 */
 			return(fill_CO(cgmc,instr,N));
 
-		case COLOUR_T :	/* colour table*/
+		case COLOR_TABLE_ID :	/* colour table*/
 			instr->data_length = fill_CI(cgmc,instr,1);
 			return(fill_CD(cgmc,instr,N));
 
 		default :
-			ESprintf(E_UNKNOWN, "Can't parse CGM element");
+			ESprintf(
+				E_UNKNOWN, 
+				"Can't parse CGM element(class=%d, id=%d)", 
+				class, id
+			);
 			return (-1);
 		}
 	case 6 :
 		switch(id) {
-		case ESCAPE :	/* escape*/
+		case ESCAPE_ID :	/* escape*/
 			instr->data_length = fill_I(cgmc,instr,1);
 			return(fill_S(cgmc,instr));
 
 		default:
-			ESprintf(E_UNKNOWN, "Can't parse CGM element");
+			ESprintf(
+				E_UNKNOWN, 
+				"Can't parse CGM element(class=%d, id=%d)", 
+				class, id
+			);
 			return (-1);
 		}
 	default : 
-		ESprintf(E_UNKNOWN, "Can't parse CGM element");
+		ESprintf(
+			E_UNKNOWN, "Can't parse CGM element(class=%d, id=%d)", 
+			class, id
+		);
 		return (-1);
 	}
 }
@@ -918,7 +957,7 @@ fill_special(cgmc,instr,class,id)
  *		Graphics installers guide)
  *
  */
-fill_Cellarray(cgmc,instr)
+static	int	fill_Cellarray(cgmc,instr)
 	CGMC  	*cgmc;
 	Instr	*instr;
 

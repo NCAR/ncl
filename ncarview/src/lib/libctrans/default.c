@@ -1,5 +1,5 @@
 /*
- *	$Id: default.c,v 1.13 1992-11-06 23:17:46 clyne Exp $
+ *	$Id: default.c,v 1.14 1992-11-19 21:49:15 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -371,8 +371,17 @@ CGMC *c;
 	dt->c_v_e_max.green = c->cd[1].green;
 	dt->c_v_e_max.blue = c->cd[1].blue;
 
-	ESprintf(ENOSYS, "Unsupported CGM element");
-	return (-1);
+	if (dt->c_v_e_min.red != 0 
+		|| dt->c_v_e_min.green !=0 
+		|| dt->c_v_e_min.blue != 0 
+		|| dt->c_v_e_max.red != 255 
+		|| dt->c_v_e_max.green != 255 
+		|| dt->c_v_e_max.blue != 255) {
+
+		ESprintf(ENOSYS, "Unsupported CGM element");
+		return (-1);
+	}
+	return(0);
 }
 
 /*ARGSUSED*/
