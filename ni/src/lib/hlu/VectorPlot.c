@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.42 1997-09-23 00:03:13 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.43 1997-12-17 01:16:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -479,7 +479,7 @@ static NhlResource resources[] = {
 		 NhlTString,sizeof(NhlString),Oset(zerof_lbl.string2),
 		 NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
 
-/* Constant field label resources */
+/* Zero field label resources */
 
 	{NhlNvcZeroFLabelOn,NhlCvcZeroFLabelOn,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(zerof_lbl.on),
@@ -2156,7 +2156,6 @@ static NhlErrorTypes VectorPlotSetValues
 
 	if (_NhlArgIsSet(args,num_args,NhlNvcLevelSpacingF))
 		vcp->level_spacing_set = True;
-
 	if (_NhlArgIsSet(args,num_args,NhlNvcLabelFontHeightF))
 		vcp->lbls.height_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNvcRefAnnoFontHeightF))
@@ -2851,7 +2850,7 @@ static NhlErrorTypes VectorPlotGetBB
  * of the complete overlay. If it is a member of an overlay, return
  * only the VectorPlot's viewport, since it does not 'own' any of its
  * annotations. If it is not in an overlay at all, return its viewport
- * plus the info label and constant field annotation viewports 
+ * plus the info label and zero field annotation viewports 
  * (instantiated directly by the VectorPlot) as appropriate.
  */
 	if (vctp->overlay_status == _tfCurrentOverlayBase) {
@@ -4513,11 +4512,11 @@ static NhlErrorTypes ManageLabels
 			vcp->refvec_anno.aap->arrow_edge_color;
 	}
 
-/* Manage constant field label */
+/* Manage zero field label */
 
 	subret = ManageZeroFLabel(vcnew,vcold,init,sargs,nargs);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error managing constant field label";
+		e_text = "%s: error managing zero field label";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
@@ -5782,7 +5781,7 @@ static NhlErrorTypes ManageVecAnno
 /*
  * Function:	ManageZeroFLabel
  *
- * Description: If a constant field is detected a constant field label
+ * Description: If a zero field is detected a zero field label
  *		is created, or turned on.
  *		If there is an PlotManager an AnnoManager object is 
  *		created so that the overlay object can manage the
@@ -5834,8 +5833,8 @@ static NhlErrorTypes ManageZeroFLabel
 	entry_name = (init) ? InitName : SetValuesName;
 
 /*
- * The constant field label resource must be turned on AND a constant
- * field condition must exist for the constant field annotation  
+ * The zero field label resource must be turned on AND a zero
+ * field condition must exist for the zero field annotation  
  * to be displayed.
  */
 
@@ -6674,7 +6673,7 @@ static NhlErrorTypes    ManageVectorData
 	vcp->a_params.uvmn = vcp->vfp->mag_min;
 	vcp->a_params.uvmx = vcp->vfp->mag_max;
 
-	vcp->zero_field = _NhlCmpFAny(vcp->zmax,vcp->zmin,8) <= 0.0 ?
+	vcp->zero_field = _NhlCmpFAny(vcp->zmax,0.0,NhlvcPRECISION) <= 0.0 ?
 		True : False;
 	if (vcp->zero_field) {
 		e_text = 
@@ -7725,7 +7724,7 @@ static NhlErrorTypes    SetupLevelsManual
 		do_automatic = True;
 	}
                 
-	if (vcp->level_spacing <= 0.0) {
+	if (vcp->level_spacing <= 0.0 && vcp->level_count > 1) {
 	e_text = "%s: Invalid level spacing value: using AUTOMATICLEVELS mode";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		ret = MIN(ret,NhlWARNING);
@@ -7747,30 +7746,31 @@ static NhlErrorTypes    SetupLevelsManual
 	if (vcp->max_level_set) {
 		lmax = vcp->max_level_val;
 	}
-        else if (vcp->zero_field) {
-                lmax = vcp->min_level_val;
+        else if (vcp->zero_field || spacing == 0.0) {
+                vcp->max_level_val = lmax = vcp->min_level_val;
 	}
 	else {
 		lmax = floor(((max - lmin) / spacing) * spacing + lmin);
-		if (_NhlCmpFAny(lmax,vcp->zmax,6) == 0.0) {
+		if (_NhlCmpFAny(lmax,max,NhlvcPRECISION) == 0.0) {
 			lmax -= spacing;
 		}
+		lmax = MAX(lmin,lmax);
 		vcp->max_level_val = lmax;
 	}
 
-	if (vcp->zero_field) {
+	if (vcp->zero_field || spacing == 0.0) {
 		count = 1;
 	}
 	else {
 		count = (lmax - lmin) / vcp->level_spacing;
 		rem = lmax - lmin - vcp->level_spacing * count; 
-		if (_NhlCmpFAny(rem,0.0,6) != 0.0)
-		  count += 2;
+		if (_NhlCmpFAny(rem,0.0,NhlvcPRECISION) != 0.0)
+			count += 2;
 		else
-		  count += 1;
+			count += 1;
 	}
 
-	if (count <= 1) {
+	if (count <= 1 && spacing > 0.0) {
 		e_text = 
 		  "%s: vcLevelSpacingF value equals or exceeds data range";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
@@ -7849,17 +7849,19 @@ static NhlErrorTypes    SetupLevelsEqual
 	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
 	int			i;
 	float			lmin,lmax,size;
+	NhlBoolean		zero_or_equal = False;
 
 	lmin = min;
 	lmax = max;
 
-        if (! vcp->zero_field) {
-                size = (lmax - lmin) / (vcp->max_level_count + 1);
-                vcp->level_count = vcp->max_level_count;
+        if (vcp->zero_field || _NhlCmpFAny(lmin,lmax,NhlvcPRECISION) == 0.0) {
+                vcp->level_count = 1;
+                vcp->level_spacing = 0.0;
+		zero_or_equal = True;
         }
         else {
-                vcp->level_count = 1;
-                size = vcp->level_spacing;
+                size = (lmax - lmin) / (vcp->max_level_count + 1);
+                vcp->level_count = vcp->max_level_count;
         }
 	if ((*levels = (float *) 
 	     NhlMalloc(vcp->level_count * sizeof(float))) == NULL) {
@@ -7867,8 +7869,13 @@ static NhlErrorTypes    SetupLevelsEqual
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
-	for (i=0; i < vcp->level_count; i++) {
-		(*levels)[i] = vcp->zmin + (i+1) * size;
+	if (zero_or_equal) {
+		(*levels)[0] = lmax;
+	}
+	else {
+		for (i=0; i < vcp->level_count; i++) {
+			(*levels)[i] = lmin + (i+1) * size;
+		}
 	}
 	
 	vcp->min_level_val = (*levels)[0];
@@ -7922,14 +7929,16 @@ static NhlErrorTypes    SetupLevelsAutomatic
 	float			lmin,lmax,ftmp,ftest;
 	float			spacing;
 	NhlBoolean		choose_spacing = True;
+	NhlBoolean	        zero_or_equal = False;
 
 	lmin = min;
 	lmax = max;
 
-        if (vcp->zero_field) {
+        if (vcp->zero_field || _NhlCmpFAny(lmin,lmax,NhlvcPRECISION) == 0.0) {
                 choose_spacing = False;
                 count = 1;
-                spacing = vcp->level_spacing;
+                spacing = 0.0;
+		zero_or_equal = True;
         }
         
 	if (vcp->level_spacing_set) {
@@ -7937,11 +7946,11 @@ static NhlErrorTypes    SetupLevelsAutomatic
 		lmin = ceil(lmin / spacing) * spacing;
 		lmax = MIN(lmax,floor(lmax / spacing) * spacing);
 		count =	(int)((lmax - lmin) / vcp->level_spacing + 1.5);
-		if (_NhlCmpFAny(lmin,vcp->zmin,6) == 0.0) {
+		if (_NhlCmpFAny(lmin,min,NhlvcPRECISION) == 0.0) {
 			lmin += spacing;
 			count--;
 		}
-		if (_NhlCmpFAny(lmax,vcp->zmax,6) == 0.0) {
+		if (_NhlCmpFAny(lmax,max,NhlvcPRECISION) == 0.0) {
 			lmax -= spacing;
 			count--;
 		}
@@ -7964,25 +7973,31 @@ static NhlErrorTypes    SetupLevelsAutomatic
 				MAX(vcp->max_level_count, count);
 			choose_spacing = False;
 		}
+                count = MAX(count,1);
 	}
 	if (choose_spacing) {
-		subret = ChooseSpacingLin(&lmin,&lmax,&spacing,7,
+		subret = ChooseSpacingLin(&lmin,&lmax,&spacing,NhlvcPRECISION,
 					  vcp->max_level_count,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) {
 			e_text = "%s: error choosing spacing";
 			NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
 			return ret;
 		}
-		if (_NhlCmpFAny(lmin,min,6) == 0.0) {
+		if (_NhlCmpFAny(lmin,min,NhlvcPRECISION) == 0.0) {
 			lmin += spacing;
 		}
 		ftmp = lmin;
 		ftest = max;
 		count = 0;
-		while (_NhlCmpFAny(ftmp,ftest,6) < 0.0) {
+		while (_NhlCmpFAny(ftmp,ftest,NhlvcPRECISION) < 0.0) {
 			count++;
 			ftmp = lmin + count * spacing;
 		}
+                if (count < 1) {
+                        count = 1;
+                        spacing = 0.0;
+                        zero_or_equal = True;
+                }
 	}
 
 	if ((*levels = (float *) NhlMalloc(count * sizeof(float))) == NULL) {
@@ -7990,8 +8005,15 @@ static NhlErrorTypes    SetupLevelsAutomatic
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(NhlFATAL);
 	}
-	for (i =  0; i <  count; i++)
-		(*levels)[i] = lmin + i * spacing;
+	if (zero_or_equal) {
+		(*levels)[0] = max;
+	}
+	else {
+		for (i=0; i < count; i++) {
+			(*levels)[i] = lmin + i * spacing;
+		}
+	}
+        (*levels)[count-1] = MIN((*levels)[count-1],max);
 
 	vcp->level_spacing = spacing;
 	vcp->level_count = count;
@@ -8051,7 +8073,7 @@ static NhlErrorTypes    SetupLevelsExplicit
         if (init && vcp->levels == NULL) {
                 do_automatic = True;
         }
-	if (vcp->levels == NULL || vcp->levels->num_elements < 1) {
+	else if (vcp->levels == NULL || vcp->levels->num_elements < 1) {
 		ret = MIN(NhlWARNING,ret);
 		e_text = 
 	      "%s: %s is NULL: using AUTOMATICLEVELS mode";
@@ -8117,9 +8139,7 @@ static NhlErrorTypes    SetupLevelsExplicit
                 vcp->level_spacing = ftmp / (count - 1);
         }
         else {
-                vcp->level_spacing =
-                        (fabs(fp[0] - min) + fabs(max - fp[0]))
-                        / 2.0;
+                vcp->level_spacing = 0.0;
         }
         
 	vcp->min_level_val = fp[0];
@@ -8135,8 +8155,8 @@ static NhlErrorTypes    SetupLevelsExplicit
                 do_automatic = True;
 	}
 			
-	if (max <= vcp->min_level_val || 
-	    min > vcp->max_level_val) {
+	if (vcp->level_count > 1 &&
+            (max <= vcp->min_level_val || min > vcp->max_level_val)) {
 		e_text =
           "%s: Data values out of range of levels set by EXPLICITLEVELS mode";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
@@ -8204,8 +8224,8 @@ static NhlErrorTypes ChooseSpacingLin
 	int	i;
 	char	*e_text;
 
-	if(_NhlCmpFAny(*tend,*tstart,8)<=0.0) {
-		e_text = "%s: Vector field is constant";
+	if(_NhlCmpFAny(*tend,*tstart,NhlvcPRECISION)<=0.0) {
+		e_text = "%s: Scalar level extent is near 0.0";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(NhlFATAL);
 	}
@@ -8507,4 +8527,12 @@ static void   load_hlucp_routines
 	}
 	return;
 }
+
+
+
+
+
+
+
+
 
