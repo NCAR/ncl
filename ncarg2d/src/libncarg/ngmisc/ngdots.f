@@ -159,7 +159,10 @@ C
           IF (ICDFLG .EQ. 0) THEN
             CALL GFA(NP,CIRCXX,CIRCYY)
           ELSE
+            CALL GQPLCI(IER,IPLCO)
+            CALL GSPLCI(ICOLOR)
             CALL GPL(NP,CIRCXX,CIRCYY)
+            CALL GSPLCI(IPLCO)
           ENDIF
    60   CONTINUE
 C
