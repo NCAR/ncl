@@ -1,5 +1,5 @@
 /*
- * $Id: basic03c.c,v 1.9 1995-06-22 21:07:27 haley Exp $
+ * $Id: basic03c.c,v 1.10 1995-06-28 23:37:15 scheitln Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -30,7 +30,6 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/ScalarField.h>
-#include <ncarg/hlu/hlu.h>
 
 main()
 {
