@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.51 1997-03-06 00:21:10 ethan Exp $
+#      $Id: yMakefile,v 1.52 1997-04-11 18:28:11 haley Exp $
 #
 #########################################################################
 #									#
@@ -46,8 +46,8 @@ EXTRA_DEFINES = $(OS1_DEF) $(MAJOR_DEF)
 
 API_DEFS	=	-DMAKEAPI
 
-PROG_LIBS	=	$(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
-DEPLIBS		=	$(DEPHLULIBS) $(DEPCNCARGLIBS) $(DEPNCARGLIBS)
+PROG_LIBS	=	$(HLULIBS) $(NCARGLIBS)
+DEPLIBS		=	$(DEPHLULIBS) $(DEPNCARGLIBS)
 EXTRA_LIBS	=	-ll $(NCDFLIBS) $(HDFLIB)
 SYS_LIBS	=	$(XLIB) $(CTOFLIBS) -lm $(ARCH_LIBS)
 
@@ -142,7 +142,7 @@ EXEOBJS		=	$(EXE_OBJS) $(OBJS)  $(HACKOBJS) \
 
 LibraryTarget($(MYLIB),$(ALLOBJS))
 LibraryTarget($(MYLIB_API),$(APIOBJS))
-BuildSharedLibTarget(libNGncl,$(APIOBJS),1,0,$(HLULIB) $(CNCARGLIB) $(NCARGCLIB) -ll $(NCDFLIBS) $(HDFLIB) $(CTOFLIBS) -lm -lc)
+BuildSharedLibTarget(libNGncl,$(APIOBJS),1,0,$(HLULIB) $(NCARGCLIB) -ll $(NCDFLIBS) $(HDFLIB) $(CTOFLIBS) -lm -lc)
 CProgram($(MYBIN),$(EXEOBJS),$(DEPLIBS))
 BuildIncludes($(INSTALL_HDRS),ncarg/ncl,../..)
 InstallTarget($(INSTALL_HDRS),$(INSTALL_INC),$(NCLINCPATH))
