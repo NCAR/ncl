@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.54 2001-01-13 02:17:31 haley Exp $
+;      $Id: gsn_code.ncl,v 1.55 2001-01-13 19:20:23 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -65,6 +65,7 @@ undef("gsn_open_ps")
 undef("gsn_open_x11")
 undef("gsn_open_ncgm")
 undef("gsn_open_wks")
+undef("output_ps")
 undef("gsn_define_colormap")
 undef("gsn_retrieve_colormap")
 undef("gsn_polygon")
@@ -78,6 +79,7 @@ undef("gsn_polymarker")
 undef("gsn_add_polymarker")
 undef("gsn_polymarker_ndc")
 undef("gsn_labelbar_ndc")
+undef("gsn_panel_return")
 undef("gsn_panel")
 undef("gsn_attach_plots")
 undef("columns")
@@ -96,6 +98,7 @@ undef("gsn_text_ndc")
 undef("gsn_draw_colormap")
 undef("gsn_vector")
 undef("gsn_vector_contour")
+undef("gsn_streamline_contour")
 undef("gsn_vector_contour_map")
 undef("gsn_vector_map")
 undef("gsn_vector_scalar")
@@ -821,6 +824,7 @@ begin
   return(coords)
 end
 
+
   dy = scale * (top - vpy) ; Calculate distance from plot's top position
                            ; to its topmost annotation.
 ;
@@ -1163,6 +1167,7 @@ end
 
 ;***********************************************************************;
 ; Function : gsn_open_x11                                               ;
+;               name : name of X11 window                               ;
 ;                                                                       ;
 ; This function opens an X11 output window and returns the workstation  ;
 ; id.                                                                   ;
@@ -1336,6 +1341,76 @@ begin
         "appDefaultParent" : True
         "appUsrDir"        : res_dir
     end create
+
+;**********************************************************************;
+; Procedure : output_ps                                                ;
+;            plots[*] : graphic                                        ;
+;              psname : string                                         ;
+;              pstype : string                                         ;
+;              orient : string                                         ;
+;                                                                      ;
+; This procedure computes the smallest bounding box that can contain   ;
+; all of the plots, and then it uses this information to send the      ;
+; output to a PostScript file, using the full page.                    ;
+;                                                                      ;
+;**********************************************************************;
+
+procedure output_ps(plots,psname,pstype,orient)
+begin
+;
+; Get max and min of bounding box of all plots.
+; 
+  nplots = dimsizes(plots)  ; number of plots
+
+  bb = NhlGetBB(plots)
+  if(nplots.gt.1) then
+    new_bb    = new(4,float)
+    new_bb(0) = max(bb(:,0))
+    new_bb(1) = min(bb(:,1))
+    new_bb(2) = min(bb(:,2))
+    new_bb(3) = max(bb(:,3))
+  else
+    new_bb = bb
+  end if
+;
+; Compute device coordinates.
+;
+  coords = compute_ps_device_coords(new_bb,orient,8.5,11.,0.5)
+
+;
+; Retrieve current workstation so that we can retrieve the colormap.
+; Assume all plots have same workstation parent, and thus the same
+; colormap.
+;
+  wks = NhlGetParentId(plots(0))
+
+  getvalues wks
+    "wkColorMap" : cmap
+  end getvalues
+
+;
+; Set PostScript resources.
+;
+  wks_type = pstype
+  wks_type@wkDeviceLowerX = coords(0)
+  wks_type@wkDeviceLowerY = coords(1)
+  wks_type@wkDeviceUpperX = coords(2)
+  wks_type@wkDeviceUpperY = coords(3)
+  wks_type@wkOrientation  = coords@orientation
+  wks_type@wkColorMap     = cmap
+
+  wks2 = gsn_open_wks(wks_type,psname)   ; Open PostScript workstation.
+
+  do i = 0,nplots-1
+    NhlChangeWorkstation(plots(i),wks2)  ; Change workstation to new one.
+
+    draw(plots(i))                       ; Draw plot to new workstation.
+  end do
+
+  frame(wks2)
+  delete(wks2)
+
+end
 
 
     if(type.eq."x11".or.type.eq."X11") then
@@ -1981,8 +2056,8 @@ end
 ; plots will be drawn in 2 rows and 3 columns.                          ;
 ;                                                                       ;
 ; However, if you set gsnPanelRowSpec to True, and dims to an array of  ;
-procedure gsn_panel(wks:graphic,plot[*]:graphic,dims[*]:integer,\
-                    resources:logical)
+; integers, then each integer will represent the number of plots in that;
+; row.  For example, setting gsnPanelRowSpec = (/2,3,1/) will cause     ;
 ; there to be two plots in the first row, three in the second row, and  ;
 ; one in the third row.                                                 ;
 ;                                                                       ;
@@ -2032,9 +2107,11 @@ begin
     end do
   else
     if(ddims.ne.2)
-  panel_debug   = get_res_value(res,"gsnPanelDebug",False)
-  panel_center = get_res_value(res,"gsnPanelCenter",True)
+  panel_save     = get_res_value(res,"gsnPanelSave",False)
+  panel_debug    = get_res_value(res,"gsnPanelDebug",False)
+  panel_center   = get_res_value(res,"gsnPanelCenter",True)
   panel_labelbar = get_res_value(res,"gsnPanelLabelBar",False)
+  calldraw       = get_res_value(res,"gsnDraw",True)
   callframe      = get_res_value(res,"gsnFrame",True)
   xwsp_perc      = get_res_value(res,"gsnPanelXWhiteSpacePercent",1.)
   ywsp_perc      = get_res_value(res,"gsnPanelYWhiteSpacePercent",1.)
@@ -2147,6 +2224,7 @@ begin
       contour_plot = plot@contour
       plot_type = "contour"
     else
+      if(isatt(plot,"vector")) then
         vector_plot = plot@vector
         plot_type = "vector"
       end if
@@ -2314,6 +2392,20 @@ begin
       fig_index = 0
       just      = justs(fig_index)
 ;
+; If we want to save the plots, then create array to hold them.
+; We only do this because we might also need to return the resized
+; plots PLUS the labelbar object.
+;
+  if(panel_save) then
+    if(panel_labelbar) then
+      newplots = new(nplots+1,graphic)
+    else 
+      newplots = new(nplots,graphic)
+    end if
+  else
+    newplots = plot
+  end if
+    if(vpw .lt. vph) then
 ; Loop through each row and draw each plot in the new scaled-down size.
     end if
     para  = get_res_value(amres,"amParallelPosF",  paras(fig_index) * \
@@ -2379,12 +2471,14 @@ begin
             text = create "string" textItemClass wks
               "txString"              : panel_strings(nplot)
 
-        draw(pplot)  ; Draw the scaled down plot.
+        if(calldraw)
+          draw(pplot)  ; Draw the scaled down plot.
+        end if
 
-        if(added_anno) then
+        if(added_anno.and..not.panel_save) then
           NhlRemoveAnnotation(pplot,anno)
         end if
-         if(panel_labelbar.or.draw_boxes) then
+        if(panel_labelbar.or.draw_boxes) then
           bb = NhlGetBB(pplot) ; Get bounding box of plot
               "amZone"           : 0
               "amJust"           : just
@@ -2400,12 +2494,16 @@ begin
 ;
 ; Save this plot.
 
-        setvalues pplot
-          "vpXF"      : old_vpx
-          "vpYF"      : old_vpy
-          "vpWidthF"  : old_vpwidth
-          "vpHeightF" : old_vpheight
-        end setvalues
+        if(.not.panel_save)
+          setvalues pplot
+            "vpXF"      : old_vpx
+            "vpYF"      : old_vpy
+            "vpWidthF"  : old_vpwidth
+            "vpHeightF" : old_vpheight
+          end setvalues
+        else
+          newplots(nplot) = pplot
+        end if
         delete(pplot)
 ;
         newplots(nplot) = pplot
@@ -2497,7 +2595,12 @@ begin
 ; Create and draw the labelbar.
           set_attr(lbres,"vpYF",y_top-(tmp_range - lbres@vpHeightF)/2.)
       labelbar = create_labelbar(wks,dimsizes(colors),colors,levels,lbres)
-      draw(labelbar)
+      if(calldraw)
+        draw(labelbar)
+      end if
+      if(panel_save) then
+        newplots(nplots) = labelbar
+      end if
 ; Check if we want different fill patterns or fill scales.  If so, we
        print("Warning: gsn_panel: unrecognized plot type, thus unable to extract information for creating a labelbar.")
 ;
@@ -2506,6 +2609,18 @@ begin
   if(callframe)
     frame(wks)   ; Advance the frame.
                              (/bot,bot,top,top,bot/),gsres)
+    end do
+  end if
+;
+; Restore plots to original size.
+;
+  if(.not.panel_save) then
+    do i=0,nplots-1
+      if(.not.ismissing(plot(i)))
+        if(added_anno.and..not.ismissing(anno(i)))
+          NhlRemoveAnnotation(plot(i),anno(i))
+        setvalues plot(i)
+  plots = gsn_panel_return(wks,plot,dims,resources)
           "vpHeightF" : old_vp(i,3)
         end setvalues
       end if
@@ -4161,12 +4276,12 @@ begin
         "trYMaxF" : trymax
       end create
       attsetvalues_check(plot_object,llres)
-; This function creates and draws vectors and contours over a map plot  ;
-; to the workstation "wks" (the variable returned from a previous call  ;
-; to "gsn_open_wks").  "u" and "v" are the 2-dimensional arrays to be   ;
+
+      overlay(plot_object,overlay_plot_object)
+      plot_object@contour = overlay_plot_object
     end if
-; "resources" is an optional list of resources. The id of the map plot  ;
-; is returned.                                                          ;
+
+    draw_and_frame(wks,plot_object,calldraw,callframe,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -4287,6 +4402,138 @@ begin
                spread_colors(wks,vector_object,min_index,max_index))
 
       attsetvalues(contour_object,cnres2)
+      attsetvalues(vector_object,vcres2)
+    end if
+
+    overlay(vector_object,contour_object)
+
+;
+; If gsnScale was set to True, then make sure the X and Y axis labels
+; and tick marks are the same size.
+; 
+    if(scale)
+      gsnp_scale_plot(vector_object)
+    end if
+
+    draw_and_frame(wks,vector_object,calldraw,callframe,maxbb)
+
+; Return plot object and data object (as attribute of plot object).
+
+    vector_object@vfdata = vfdata_object
+    vector_object@sfdata = sfdata_object
+    vector_object@contour = contour_object
+    return(vector_object)
+end
+
+;***********************************************************************;
+; Function : gsn_streamline_contour                                     ;
+;                   wks: workstation object                             ;
+;                     u: 2-dimensional U data                           ;
+;                     v: 2-dimensional V data                           ;
+
+;                  data: 2-dimensional scalar field                     ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function creates and draws streamlines and contours to the       ;
+; workstation "wks" (the variable returned from a previous call to      ;
+; "gsn_open_wks").  "u" and "v" are the 2-dimensional arrays to be      ;
+; streamlines, and "data" is the scalar field to be contoured.          ;
+; "resources" is an optional list of resources. The id of the streamline;
+; plot is returned.                                                     ;
+;                                                                       ;
+; Special resources ("gsn" prefix) allowed:                             ;
+;                                                                       ;
+;   gsnDraw                                                             ;
+;   gsnFrame                                                            ;
+;   gsnShape                                                            ;
+;   gsnScale                                                            ;
+;   gsnSpreadColors                                                     ;
+;   gsnSpreadColorStart                                                 ;
+;   gsnSpreadColorEnd                                                   ;
+;                                                                       ;
+;***********************************************************************;
+function gsn_streamline_contour(wks:graphic,u[*][*]:numeric,\
+                                v[*][*]:numeric,data[*][*]:numeric,\
+                                resources:logical)
+local i, vfdata_object, sfdata_object, contour_object, res, \
+vf_res_index, st_res_index, sf_res_index, res2
+begin
+    res2      = resources
+
+;
+; Create the streamline field object.
+;
+    wksname = get_res_value_keep(wks,"name","gsnapp")
+
+    vfdata_object = create wksname + "_vfdata" vectorFieldClass noparent
+        "vfUDataArray" : u
+        "vfVDataArray" : v
+    end create
+
+;
+; Check for missing values.
+;
+    if(isatt(u,"_FillValue")) then
+        setvalues vfdata_object
+            "vfMissingUValueV" :u@_FillValue
+        end setvalues
+    end if
+    if(isatt(v,"_FillValue")) then
+        setvalues vfdata_object
+            "vfMissingVValueV" :v@_FillValue
+        end setvalues
+    end if
+
+; Create the scalar field object.
+
+    sfdata_object = create wksname + "_sfdata" scalarFieldClass noparent
+        "sfDataArray" : data
+    end create
+
+; Check for a missing value.
+    if(isatt(data,"_FillValue")) then
+        setvalues sfdata_object
+            "sfMissingValueV" :data@_FillValue
+        end setvalues
+    end if
+
+; Create streamline plot object.
+
+    stream_object = create wksname + "_stream" streamlinePlotClass wks
+        "stVectorFieldData" : vfdata_object
+    end create
+
+; Create contour plot object.
+
+    contour_object = create wksname + "_contour" contourPlotClass wks
+        "cnScalarFieldData" : sfdata_object
+    end create
+
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",True)
+    maxbb     = get_bb_res(res2)
+    shape     = get_res_value(res2,"gsnShape",False)
+    scale     = get_res_value(res2,"gsnScale",shape)
+    sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
+    min_index = get_res_value(res2,"gsnSpreadColorStart",2)
+    max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
+
+    vfres = get_res_eq(res2,"vf")
+    sfres = get_res_eq(res2,"sf")
+    cnres = get_res_eq(res2,(/"cn","vp"/))
+    stres = get_res_ne(res2,(/"vf","sf","cn","vp"/))
+
+    attsetvalues_check(vfdata_object,vfres)
+    attsetvalues_check(sfdata_object,sfres)
+    attsetvalues_check(contour_object,cnres)
+    draw_and_frame(wks,stream_object,calldraw,callframe)
+
+    if(sprdcols)
+      cnres2 = True
+
+      set_attr(cnres2,"cnFillColors",\
+               spread_colors(wks,contour_object,min_index,max_index))
+
       attsetvalues(contour_object,cnres2)
     end if
 

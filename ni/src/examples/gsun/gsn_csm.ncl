@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.55 2001-01-13 02:17:32 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.56 2001-01-13 19:20:25 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -86,6 +86,7 @@ undef("gsn_csm_vector_map_polar")
 undef("gsn_csm_vector_map_other")
 undef("gsn_csm_streamline_map_ce")
 undef("gsn_csm_streamline_map_polar")
+undef("gsn_csm_streamline_scalar_map_ce")
 undef("gsn_csm_vector_scalar_map_ce")
 undef("gsn_csm_vector_scalar_map_polar")
 undef("gsn_csm_vector_scalar_map_other")
@@ -4580,6 +4581,234 @@ begin
 
 ; Initialize.
     mpres          = True
+    res2 = get_resources(resources)
+
+; Check for cyclic point (default is True).
+
+; Function : gsn_csm_streamline_scalar_map_ce                               ;
+    if(get_res_value(res2,"gsnAddCyclic",True))
+      unew = gsn_add_cyclic_point(u)
+      vnew = gsn_add_cyclic_point(v)
+    else
+      unew = u
+      vnew = v
+; This function is similar to gsn_csm_streamline_map_ce except it colors the;
+; vectors according to a scalar field.                                  ;
+;                                                                       ;
+; There's a special resource associated with this function called       ;
+; "gsnScalarContour".  If it's set to True, then the scalar field will  ;
+; be drawn as a contour plot.  Otherwise, the vectors will be colored   ;
+; according to the scalar field. This resource defaults to False.       ;
+; Check for coordinate variables. These values will determine where to 
+; overlay streamlines on map.
+function gsn_csm_streamline_scalar_map_ce(wks:graphic,u[*][*]:numeric,\
+    check_for_y_lat_coord(unew,res2,"vector")
+    check_for_lon_coord(unew,res2,"vector")
+
+; Check for left/right titles at top. Use attributes "long_name" and
+; "units" if they exist.
+
+    set_right_subtitle(unew,res2,mpres)
+    set_left_subtitle(unew,res2,mpres)
+
+; Check if frame and/or draw are not supposed to be called.
+    res2 = resources
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",True)
+    maxbb     = get_bb_res(res2)
+
+; Check for subtitles at top and add to mpres if exist.
+
+    set_subtitles_res(res2,mpres)
+;
+; By default, mpOutlineOn is False, unless mpFillOn is set to False, then
+; it is set back to True.
+;
+   if(check_attr(res2,"mpFillOn",False,False))
+      set_attr(res2,"mpOutlineOn",True)
+    end if
+
+; This section tests for regular resources.
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
+    stres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am"/))
+
+; Before we create the objects, turn off draw and frame for them.
+    stres           = True
+    mpres           = True
+    stres@gsnDraw   = False
+    stres@gsnFrame  = False
+    mpres@gsnDraw   = False
+    mpres@gsnFrame  = False
+
+    stream_object = gsn_streamline(wks,unew,vnew,stres) ; Create streamlines.
+    map_object = gsn_csm_map(wks,mpres)     ; Create map.
+    overlay(map_object,stream_object)       ; Overlay streamlines on map.
+
+; Retrieve some font heights and make the X/Y axis labels the same
+; size, and the info label size the same as the tick mark label size.
+
+    getvalues map_object
+      "tiXAxisFontHeightF"   : xfontf
+      "tiYAxisFontHeightF"   : yfontf
+    end getvalues
+
+                                          ; the size of the X/Y axis labels.
+;
+; Check if user setting own font heights.
+;
+    main_font_height = get_res_value(res2,"tiMainFontHeightF", \
+                                     1.1*font_height)
+    setvalues map_object
+      "tiMainFontHeightF"    : main_font_height  ; main title size
+    end setvalues
+
+; Draw all this stuff: map plot, subtitles, and tick marks.
+
+    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+
+; Return plot object and data object (as attribute of plot object).
+
+    map_object@data       = stream_object@data
+    map_object@streamline = stream_object
+    return(map_object)
+end
+
+
+;***********************************************************************;
+; Function : gsn_csm_streamline_contour_map_ce                          ;
+;                   wks: workstation object                             ;
+;                     u: 2-dimensional data                             ;
+;                     v: 2-dimensional data                             ;
+;                  data: 2-dimensional scalar data                      ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function is similar to gsn_csm_streamline_map_ce except it       ;
+; overlays contours.                                                    ;
+      set_attr(res2,"mpFillOn",False)
+;***********************************************************************;
+
+function gsn_csm_streamline_contour_map_ce(wks:graphic,u[*][*]:numeric,\
+                   v[*][*]:numeric,data[*][*]:numeric,resources:logical)
+local i, stream_object, map_object, res, res2, \
+calldraw, callframe, min_lat, max_lat, unew, vnew, datanew, \
+map_vpwf, map_vphf, vpwf, vphf, lbar_on
+begin
+
+; Initialize.
+    infolabel_on   = False
+    lbar_on        = True
+    mpres          = True
+    res2 = get_resources(resources)
+
+; Check for cyclic point (default is True).
+
+    if(get_res_value(res2,"gsnAddCyclic",True))
+      unew    = gsn_add_cyclic_point(u)
+      vnew    = gsn_add_cyclic_point(v)
+      datanew = gsn_add_cyclic_point(data)
+    else
+      unew    = u
+      vnew    = v
+      datanew = data
+    end if
+
+; Check for coordinate variables. These values will determine where to 
+; overlay vector on map.
+
+    check_for_y_lat_coord(unew,res2,"vector")
+    check_for_lon_coord(unew,res2,"vector")
+
+    if(.not.(isatt(res2,"vfXArray")))
+      set_attr(res2,"vfXCStartV",-180.)
+    mpres@gsnTickMarksOn = get_res_value(res2,"gsnTickMarksOn",True)
+    end if
+
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
+    stres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am"/))
+
+    set_right_subtitle(unew,res2,mpres)
+    set_left_subtitle(unew,res2,mpres)
+
+; Check if frame and/or draw are not supposed to be called.
+
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",True)
+    maxbb     = get_bb_res(res2)
+
+    lbres = get_res_eq(res2,(/"lb","pm"/))
+
+; Check for subtitles at top and add to mpres if exist.
+
+    set_subtitles_res(res2,mpres)
+
+;
+; Check for other special resources.
+;
+    if(isatt(res2,"gsnMajorLonSpacing"))
+      mpres@gsnMajorLonSpacing = res2@gsnMajorLonSpacing
+      delete(res2@gsnMajorLonSpacing)
+    end if
+    if(isatt(res2,"gsnMajorLatSpacing"))
+      mpres@gsnMajorLatSpacing = res2@gsnMajorLatSpacing
+      delete(res2@gsnMajorLatSpacing)
+    end if
+
+    if(isatt(res2,"gsnMinorLonSpacing"))
+      mpres@gsnMinorLonSpacing = res2@gsnMinorLonSpacing
+      delete(res2@gsnMinorLonSpacing)
+    end if
+    if(isatt(res2,"gsnMinorLatSpacing"))
+      mpres@gsnMinorLatSpacing = res2@gsnMinorLatSpacing
+      delete(res2@gsnMinorLatSpacing)
+    end if
+
+    lbar_on = False
+; Turn on labelbar if cnFillOn is True and it wasn't explicitly 
+; turned off.
+    if(check_attr(res2,"cnFillOn",True,False))
+      set_attr(res2,"cnFillDrawOrder","Predraw")
+      set_attr(res2,"cnInfoLabelOn",False)
+      if(.not.isatt(lbres,"lbLabelBarOn").or.\
+         check_attr(lbres,"lbLabelBarOn",True,False))
+        set_attr(res2,"cnLineLabelsOn",False)
+        lbar_on = True   ; Turn on a labelbar
+      end if
+    end if
+
+    check_for_y_lat_coord(datanew,res2,"contour")
+    check_for_lon_coord(datanew,res2,"contour")
+
+    if(.not.(isatt(res2,"sfXArray")))
+      set_attr(res2,"sfXCStartV",-180.)
+      set_attr(res2,"sfXCEndV",   180.)
+    end if
+
+    if(.not.(isatt(res2,"sfYArray")))
+      set_attr(res2,"sfYCStartV",-90.)
+      set_attr(res2,"sfYCEndV",   90.)
+    end if
+
+    if(check_attr(res2,"lbLabelBarOn",False,False))
+      lbar_on = False
+    end if
+
+; Turn off info label if labelbar is on, unless otherwise specified by user.
+    if(lbar_on)
+      set_attr(res2,"cnInfoLabelOn",False)
+    else
+      set_attr(res2,"cnInfoLabelOn",True)
+    end if
+;
+
+; Tickmarks.
+    draw_and_frame(wks,map_object,calldraw,callframe)
+    display_mode = get_display_mode(res2,"pmTickMarkDisplayMode","nocreate")
+    if(display_mode.eq.1.or.display_mode.eq.2) then
+      mpres@gsnTickMarksOn = get_res_value(res2,"gsnTickMarksOn",False)
+    else
+      mpres@gsnTickMarksOn = get_res_value(res2,"gsnTickMarksOn",True)
+    end if
+
 ; This section tests for regular resources.
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
     stres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm"/))
