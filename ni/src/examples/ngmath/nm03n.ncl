@@ -14,6 +14,8 @@
 ;
 ;   Date:       Mon Dec 15 10:48:08 MST 1997
 ;
+;   Description: How to compute aspects and slopes.
+;
 begin
 ;
 ; Define constants

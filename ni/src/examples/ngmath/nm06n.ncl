@@ -14,6 +14,8 @@
 ;
 ;   Date:       Tue Dec 16 10:29:03 MST 1997
 ;
+;   Description: Smoothing in a simple 2D interpolation.
+;
 begin
 
   NUM = 171

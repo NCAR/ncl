@@ -1,5 +1,5 @@
 /*
- *      $Id: nm03c.c,v 1.2 1997-12-16 15:42:12 haley Exp $
+ *      $Id: nm03c.c,v 1.3 1997-12-17 16:14:05 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -17,7 +17,7 @@
  *
  *  Date:       Fri Dec 12 09:43:32 MST 1997
  *
- *  Description:
+ *  Description: How to compute aspects and slopes.
  */
 
 #include <math.h>

@@ -6,13 +6,15 @@
 ;                                                                       ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-;   File:       nm05n.ncl
+;   File:       nm04n.ncl
 ;
 ;   Author:     Fred Clare (converted to NCL by Mary Haley)
 ;           National Center for Atmospheric Research
 ;           PO 3000, Boulder, Colorado
 ;
 ;   Date:       Tue Dec 16 10:18:13 MST 1997
+;
+;   Description: Simple 3D interpolation.
 ;
 begin
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: nm05c.c,v 1.1 1997-12-16 18:19:58 haley Exp $
+ *      $Id: nm05c.c,v 1.2 1997-12-17 16:14:17 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -17,7 +17,8 @@
  *
  *  Date:       Tue Dec 16 10:05:38 MST 1997
  *
- *  Description: Simple example of natural neighbor linear interpolation.
+ *  Description: How to vary the exponent of the distances in a
+ *               2D interpolation.
  */
 
 #include <stdio.h>

@@ -14,6 +14,9 @@
 ;
 ;   Date:       Tue Dec 16 10:18:13 MST 1997
 ;
+;   Description: How to vary the exponent of the distances in a
+;                2D interpolation.
+;
 begin
 
   NUM = 6

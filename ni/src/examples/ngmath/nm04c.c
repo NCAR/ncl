@@ -1,5 +1,5 @@
 /*
- *      $Id: nm04c.c,v 1.2 1997-12-16 20:17:09 haley Exp $
+ *      $Id: nm04c.c,v 1.3 1997-12-17 16:14:12 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -17,7 +17,7 @@
  *
  *  Date:       Tue Dec 16 08:28:46 MST 1997
  *
- *  Description: Simple example of natural neighbor linear interpolation.
+ *  Description: Simple 3D interpolation.
  */
 
 #include <stdio.h>
