@@ -3216,7 +3216,7 @@ int wr_status;
 							break;
 						}
 					}
-					if(i == grid_tbl_len) {
+					if((i == grid_tbl_len) || (grid[grib_rec->grid_tbl_index].get_grid == NULL)){
 						grib_rec->grid_tbl_index = -1;
 						if(grib_rec->has_gds) {
 							for(i = 0; i < grid_gds_tbl_len ; i++) {
