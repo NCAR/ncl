@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.23 1997-02-24 22:12:35 boote Exp $
+ *      $Id: StreamlinePlot.c,v 1.24 1997-04-02 21:04:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -6830,7 +6830,7 @@ void (_NHLCALLF(hlustmpta,HLUSTMPTA))
 		ye = *ynd + *dv;
 
                 if (Stp->map_direction) {
-			_NhlCompcToData(trans_p,xda,yda,1,&xdata,&ydata,
+			_NhlCompcToData(Trans_Obj,xda,yda,1,&xdata,&ydata,
 					&status,NULL,NULL);
 			if(status) {
 				*ist = -5;
