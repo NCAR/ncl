@@ -15,7 +15,7 @@
 /*
 **  Stuff that should be edited by Configure
 */
-VERSION		= 3.1.4
+VERSION		= 3.2.x
 BINROOT		= /usr/local/bin
 LIBROOT		= /usr/local/lib
 INCROOT		= /usr/local/include
@@ -37,6 +37,7 @@ BINDIR            = bin
 LIBDIR            = lib
 INCDIR            = include
 MANDIR            = man
+DOCDIR            = doc
 TMPDIR            = tmp
 DBDIR             = database
 FONTCAPDIR        = fontcaps
@@ -67,6 +68,7 @@ LIBNCARGPATH      = $(LIBPATH)/$(NCARGDIR)
 DBPATH            = $(LIBNCARGPATH)/$(DBDIR)
 FONTCAPPATH       = $(LIBNCARGPATH)/$(FONTCAPDIR)
 GRAPHCAPPATH      = $(LIBNCARGPATH)/$(GRAPHCAPDIR)
+DOCPATH           = $(LIBNCARGPATH)/$(DOCDIR)
 EXAMPLESPATH      = $(LIBNCARGPATH)/$(EXAMPLESDIR)
 ROBJPATH          = $(LIBNCARGPATH)/$(ROBJDIR)
 TESTSPATH         = $(LIBNCARGPATH)/$(TESTSDIR)
@@ -124,7 +126,7 @@ FCPP              = /lib/cpp
 F77               = f77
 F77_LD            = $(F77)
 FDEBUG            =
-FOPT              = -g
+FOPT              =
 FMISC             =
 FFLAGS            = $(OS) $(ARCH) $(FDEFINES) $(FDEBUG) $(FOPT) $(FMISC)\
                     $(FLOAT_OPT)
@@ -148,6 +150,7 @@ INSTALL           = install -c
 INSTALL_RM        = $(RM)
 INSTALL_BIN       = 0755
 INSTALL_MAN       = 0644
+INSTALL_DOC       = 0644
 INSTALL_APP       = 0644
 INSTALL_LIB       = 0644
 INSTALL_DB        = 0644
