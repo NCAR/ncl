@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.30 1996-12-20 00:42:13 ethan Exp $
+ *      $Id: SrcTree.c,v 1.31 1997-02-18 20:03:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -857,6 +857,7 @@ NclSrcListNode *dec_list;
 				tmp1->theargs[i].n_dims= j;
 			} else {
 				tmp1->theargs[i].is_dimsizes = 0;
+				tmp1->theargs[i].n_dims = -1;
 			}
 			tmp1->theargs[i].arg_data_type = var_dec->data_type;
 			tmp1->theargs[i].arg_sym = var_dec->var;
