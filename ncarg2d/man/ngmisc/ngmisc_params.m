@@ -167,7 +167,7 @@ your local PostScript interpreter to determine this value.
 .IP "\'PC\'   -   Integer     -   depends on the workstation type" 
 The X11 workstation indicated by the integer should use a "private" X color
 model.  (-1) indicates the next X11 workstation created.
-.IP "\'PE\'   -   Integer   -   10"
+.IP "\'PE\'   -   Integer   -   20"
 Percentage error allowed in matching requested colors in X Window output
 where the window shares a single color map with all the other current
 X windows.  The value "0" is special and is the same as the value "100"
