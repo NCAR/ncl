@@ -2536,6 +2536,7 @@ GribParamList* thevarrec;
 	int nv = -1;
 	int pl = -1;
 	int the_start_off = 32;
+	static int count = 0;
 	
 
 
@@ -2571,7 +2572,14 @@ GribParamList* thevarrec;
 		complex_packing = 0;
 	}
 	if(therec->has_gds) {
-		ijswap = (int)(therec->gds[27]&(unsigned char)0040);
+/*
+		fprintf(stdout,"%d)--> %d\n",count++,(int)therec->gds[27]);
+*/
+		if(((int)therec->pds[4] == 7)&&((int)therec->pds[25]==1)) {
+			ijswap = 0;
+		} else {
+			ijswap = (int)(therec->gds[27]&(unsigned char)0040);
+		}
 	} else {
 		ijswap = 0;
 	}
