@@ -1,5 +1,5 @@
 C
-C      $Id: vc07f.f,v 1.1 1996-07-03 16:48:09 haley Exp $
+C      $Id: vc07f.f,v 1.2 1996-07-03 17:04:26 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -28,7 +28,6 @@ C
       external NhlFVectorFieldClass
       external NhlFVectorPlotClass
       external NhlFScalarFieldClass
-      external NhlFStreamlinePlotClass
       external NhlFContourPlotClass
       external NhlFMapPlotClass
 
@@ -188,6 +187,16 @@ C
       call NhlFRLSetInteger(rlist,'vcScalarFieldData',sfield,ierr)
       call NhlFCreate(vcid,'vectorplot',NhlFvectorPlotClass,wid,rlist,
      +     ierr)
+
+      call NhlFRLClear(grlist)
+      call NhlFRLGetFloat(grlist,'vcMinMagnitudeF',vmin,ierr)
+      call NhlFRLGetFloat(grlist,'vcMaxMagnitudeF',vmax,ierr)
+      call NhlFGetValues(vcid,grlist,ierr)
+
+      call NhlFRLClear(rlist)
+      call NhlFRLSetFloat(rlist,'vcMinMagnitudeF',vmin+0.1*(vmax-vmin),
+     +     ierr)
+      call NhlFSetValues(vcid,rlist,ierr)
 C
 C Create a ContourPlot object.
 C
