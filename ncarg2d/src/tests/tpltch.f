@@ -1,5 +1,5 @@
 C
-C $Id: tpltch.f,v 1.3 1992-11-17 22:34:05 kennison Exp $
+C $Id: tpltch.f,v 1.4 1992-12-09 23:39:31 kennison Exp $
 C
       SUBROUTINE TPLTCH (IERR)
 C
@@ -60,21 +60,21 @@ C
      +                                                     16.,0.,0.)
 C
       DO 101 I=1,5
-	CALL PLCHHQ (.5,.75-.03*REAL(I),MSG(I),.015,0.,0.)
+	CALL PLCHHQ (.1025,.75-.03*REAL(I),MSG(I),.015,0.,-1.)
   101 CONTINUE
 C
       CALL PLCHMQ (.5,.52,'DEMONSTRATING THE USE OF CALLS TO PLCHMQ',
      +                                                     16.,0.,0.)
 C
       DO 102 I=1,5
-	CALL PLCHMQ (.5,.5-.03*REAL(I),MSG(I),.015,0.,0.)
+	CALL PLCHMQ (.1025,.50-.03*REAL(I),MSG(I),.015,0.,-1.)
   102 CONTINUE
 C
       CALL PLCHLQ (.5,.27,'DEMONSTRATING THE USE OF CALLS TO PLCHLQ',
      +                                                     16.,0.,0.)
 C
       DO 103 I=1,5
-	CALL PLCHLQ (.5,.25-.03*REAL(I),MSG(I),.015,0.,0.)
+	CALL PLCHLQ (.1025,.25-.03*REAL(I),MSG(I),.015,0.,-1.)
   103 CONTINUE
 C
 C Advance the frame.
