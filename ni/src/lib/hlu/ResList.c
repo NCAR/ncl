@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.c,v 1.18 1998-05-27 19:22:09 boote Exp $
+ *      $Id: ResList.c,v 1.19 1999-06-09 00:29:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1293,6 +1293,8 @@ NhlRLGet
 	_NhlArgVal	value;
 	unsigned int	size = 0;
 	NrmQuark	typeQ = NrmStringToQuark(type);
+
+	NhlINITVAR(value);
 
 	/*
 	 * default type is "long"

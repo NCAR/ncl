@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.93 1999-03-29 18:31:40 dbrown Exp $
+ *      $Id: Workstation.c,v 1.94 1999-06-09 00:29:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2553,8 +2553,9 @@ DoCmap
 			fg_changed = True; 
 
 		for(i=0;i < nwp->color_map_len;i++){
-			if (tcp[i][0] < 0.0)
+			if (tcp[i][0] < 0.0) {
 				continue;
+			}
 			pcmap[i].red = tcp[i][0];
 			pcmap[i].green = tcp[i][1];
 			pcmap[i].blue = tcp[i][2];
@@ -2767,11 +2768,15 @@ static NhlErrorTypes WorkstationInitialize
 
 	/*
 	 * Initialize colormap with _NhlCOLUNSET, then call DoCmap to fill cmap
-	 * with appropriate values.
+	 * with appropriate values. (To avoid purify errors set the whole
+	 * struct to 0, _NhlCOLUNSET is the 0 enum value.)
 	 */
+	memset(wp->private_color_map,(char)0,
+	       sizeof(NhlPrivateColor)* _NhlMAX_COLOR_MAP);
+#if 0
 	for(i=0;i < _NhlMAX_COLOR_MAP;i++)
 		wp->private_color_map[i].cstat = _NhlCOLUNSET;
-
+#endif
 	wp->cmap_changed = True;
 	retcode = DoCmap(newl,NULL,entry_name);
 
@@ -5295,6 +5300,7 @@ _NhlAllocateColors
 
 	NhlINITVAR(sel);
 	NhlINITVAR(cbdata);
+	NhlINITVAR(old);
 	cbdata.ptrval = &ccdata;
 	ccdata.pid = wl->base.id;
 

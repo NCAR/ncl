@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.23 1998-10-28 00:46:59 dbrown Exp $
+ *      $Id: WorkstationP.h,v 1.24 1999-06-09 00:29:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,7 @@
 #define _NhlMAX_COLOR_MAP	256
 
 typedef enum _NhlCStatType{
-	_NhlCOLUNSET,
+	_NhlCOLUNSET = 0,
 	_NhlCOLSET,
 	_NhlCOLREMOVE,
 	_NhlCOLNEW,
