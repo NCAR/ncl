@@ -127,7 +127,7 @@ observation
 Rain and snow or ice pellets (NOT falling as showers) during past
 hour, but NOT at time of observation
 .IP " 24" 6
-Freezing dirzzle or freezing rain (NOT falling as showers) during
+Freezing drizzle or freezing rain (NOT falling as showers) during
 past hour, but NOT at time of observation
 .IP " 25" 6
 Showers of rain during past hour, but NOT at time of observation
@@ -140,7 +140,7 @@ at time of observation
 .IP " 28" 6
 Fog during past hour, but NOT at time of observation
 .IP " 29" 6
-Thunderstorm (with or without percipitation) during past hour, 
+Thunderstorm (with or without precipitation) during past hour, 
 but NOT at time of observation
 .IP " 30" 6
 Slight or moderate dust storm or sandstorm, has decreased during past hour
@@ -359,7 +359,7 @@ Thick As, greater part sufficiently dense to hide sun (or moon), or Ns
 Thin Ac, mostly semitransparent: cloud elements not changing much and at
 a single level
 .IP "  4" 6
-Thin Ac in pathches; cloud elements continually changing and/or occurring
+Thin Ac in patches; cloud elements continually changing and/or occurring
 at more than one level
 .IP "  5" 6
 Thin Ac in bands or in a layer gradually spreading over sky and usually
