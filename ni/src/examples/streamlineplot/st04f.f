@@ -1,5 +1,5 @@
 C
-C      $Id: st04f.f,v 1.5 1997-10-08 17:27:44 haley Exp $
+C      $Id: st04f.f,v 1.6 1998-06-14 22:17:14 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -148,7 +148,7 @@ C
  15   filename(1:flen) = dir
       do 20 j = 1,6
           filename(flen+1:flen+cdflens(j)) = cdffiles(j)
-          ncid(j) = ncopn(filename,0,ierr)
+          ncid(j) = ncopn(filename(1:flen+cdflens(j)),0,ierr)
  20   continue
 C      
 C The second argument to 'ncopn' should be NCNOWRIT, but since we
