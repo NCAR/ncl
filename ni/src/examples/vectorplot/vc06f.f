@@ -1,5 +1,5 @@
 C
-C  $Id: vc06f.f,v 1.3 1997-02-05 15:28:56 haley Exp $
+C  $Id: vc06f.f,v 1.4 1997-10-08 21:39:35 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -74,7 +74,7 @@ C
 C Open the netCDF file.
 C
       call gngpat(filenameUV,'data',ierr)
-      flen = 18
+      flen = 17
       do 10 i=1,256
          if( filenameUV(i:i).eq.char(0) ) then
             filenameUV(i:i+flen)='/cdf/941110_UV.cdf'
@@ -87,7 +87,7 @@ C
 C Open the netCDF file.
 C
       call gngpat(filenamePsl,'data',ierr)
-      flen = 18
+      flen = 16
       do 11 i=1,256
          if( filenamePsl(i:i).eq.char(0) ) then
             filenamePsl(i:i+flen)='/cdf/941110_P.cdf'

@@ -41,6 +41,8 @@
 !
 ! ContourPlot resources
 !
+*cnLowLabelsOn            : true
+*cnHighLabelsOn            : true
 *cnHighLabelBackgroundColor: 7
 *cnHighLabelFontColor      : 0
 *cnHighLabelPerimColor     : 0
