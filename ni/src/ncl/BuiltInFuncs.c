@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.20 1995-11-03 00:00:34 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.21 1995-11-04 00:49:18 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -54,6 +54,7 @@ extern "C" {
 #include "ApiRecords.h"
 #include "TypeSupport.h"
 #include "NclBuiltInSupport.h"
+#include "FileSupport.h"
 
 extern int cmd_line;
 
@@ -4371,4 +4372,482 @@ NhlErrorTypes _NclIdoubletofloat
 		NCL_float,
 		0
 	));
+}
+
+NhlErrorTypes _NclIIsVar
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry arg;
+	NclMultiDValData tmp_md;
+	int i;
+	logical *outval;
+	NclQuark *vals;
+	NclSymbol* s;
+
+	
+	arg  = _NclGetArg(0,1,DONT_CARE);
+	switch(arg.kind) {
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(arg.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = arg.u.data_obj;
+		break;
+	}
+
+	outval = (logical*)NclMalloc((unsigned)sizeof(logical)*tmp_md->multidval.totalelements);
+	vals = (NclQuark*)tmp_md->multidval.val;
+	if(tmp_md->multidval.missing_value.has_missing) {
+		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+			if(vals[i] != tmp_md->multidval.missing_value.value.stringval) {
+				s = _NclLookUp(NrmQuarkToString(vals[i]));
+				if(( s == NULL)||(s->type != VAR)) {
+					outval[i] = 0;
+				} else {
+					outval[i] = 1;
+				}
+			} else {
+				outval[i] = 0;
+			}
+		}
+	} else {
+		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+			s = _NclLookUp(NrmQuarkToString(vals[i]));
+			if(( s == NULL)||(s->type != VAR)) {
+				outval[i] = 0;
+			} else {
+				outval[i] = 1;
+			}
+		}
+	}
+	
+	return(NclReturnValue(
+		(void*)outval,
+		tmp_md->multidval.n_dims,
+		tmp_md->multidval.dim_sizes,
+		NULL,
+		NCL_logical,
+		0
+	));
+}
+NhlErrorTypes _NclIIsAtt
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry arg0,arg1,arg2;
+	NclMultiDValData tmp_md,att_md;
+	int i;
+	logical *outval;
+	NclVar tmp_var;
+	NclQuark *vals;
+	NclSymbol* s;
+	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
+	int dims = 1;
+
+	
+	arg1  = _NclGetArg(0,2,DONT_CARE);
+	arg2  = _NclGetArg(1,2,DONT_CARE);
+
+	switch(arg1.kind) {
+	case NclStk_VAR:
+		tmp_var = arg1.u.data_var;
+		break;
+	case NclStk_VAL:
+		tmp_var = NULL;
+		break;
+	}
+	switch(arg2.kind) {
+	case NclStk_VAR:
+		att_md = _NclVarValueRead(arg2.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		att_md = arg2.u.data_obj;
+		break;
+	}
+	
+	
+
+	if(tmp_var == NULL) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsAtt: Non variable passed returning missing");
+		NclReturnValue(
+			&miss,
+			1,
+			&dims,
+			&((NclTypeClass)nclTypelogicalClass)->type_class.default_mis,
+			NCL_logical,
+			1
+		);
+		return(NhlWARNING);
+	}
+	outval = (logical*)NclMalloc((unsigned)sizeof(logical)*att_md->multidval.totalelements);
+	vals = (NclQuark*)att_md->multidval.val;
+	if(att_md->multidval.missing_value.has_missing) {
+		for(i = 0; i < att_md->multidval.totalelements; i++) {
+			if(vals[i] != att_md->multidval.missing_value.value.stringval) {
+				outval[i] = _NclVarIsAtt(tmp_var,NrmQuarkToString(vals[i]));
+			} else {
+				outval[i] = 0;
+			}
+		}
+	} else {
+		for(i = 0; i < att_md->multidval.totalelements; i++) {
+			outval[i] = _NclVarIsAtt(tmp_var,NrmQuarkToString(vals[i]));
+		}
+	}
+	
+	return(NclReturnValue(
+		(void*)outval,
+		att_md->multidval.n_dims,
+		att_md->multidval.dim_sizes,
+		NULL,
+		NCL_logical,
+		0
+	));
+}
+
+NhlErrorTypes _NclIIsDim
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry arg0,arg1,arg2;
+	NclMultiDValData tmp_md,dim_md;
+	int i;
+	logical *outval;
+	NclVar tmp_var;
+	NclQuark *vals;
+	NclSymbol* s;
+	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
+	int dims = 1;
+
+	
+	arg1  = _NclGetArg(0,2,DONT_CARE);
+	arg2  = _NclGetArg(1,2,DONT_CARE);
+
+	switch(arg1.kind) {
+	case NclStk_VAR:
+		tmp_var = arg1.u.data_var;
+		break;
+	case NclStk_VAL:
+		tmp_var = NULL;
+		break;
+	}
+	switch(arg2.kind) {
+	case NclStk_VAR:
+		dim_md = _NclVarValueRead(arg2.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		dim_md = arg2.u.data_obj;
+		break;
+	}
+	
+	
+
+	if(tmp_var == NULL) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsAtt: Non variable passed returning missing");
+		NclReturnValue(
+			&miss,
+			1,
+			&dims,
+			&((NclTypeClass)nclTypelogicalClass)->type_class.default_mis,
+			NCL_logical,
+			1
+		);
+		return(NhlWARNING);
+	}
+	outval = (logical*)NclMalloc((unsigned)sizeof(logical)*dim_md->multidval.totalelements);
+	vals = (NclQuark*)dim_md->multidval.val;
+	if(dim_md->multidval.missing_value.has_missing) {
+		for(i = 0; i < dim_md->multidval.totalelements; i++) {
+			if(vals[i] != dim_md->multidval.missing_value.value.stringval) {
+				outval[i] = _NclIsDim(tmp_var,NrmQuarkToString(vals[i])) == -1 ? 0:1;
+			} else {
+				outval[i] = 0;
+			}
+		}
+	} else {
+		for(i = 0; i < dim_md->multidval.totalelements; i++) {
+			outval[i] = _NclIsDim(tmp_var,NrmQuarkToString(vals[i])) == -1 ? 0:1;
+		}
+	}
+	
+	return(NclReturnValue(
+		(void*)outval,
+		dim_md->multidval.n_dims,
+		dim_md->multidval.dim_sizes,
+		NULL,
+		NCL_logical,
+		0
+	));
+}
+
+NhlErrorTypes _NclIIsFileVar
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry arg0,arg1;
+	NclMultiDValData tmp_md,file_md;
+	int i;
+	logical *outval;
+	NclQuark *vals;
+	NclSymbol* s;
+	NclFile file_ptr;
+	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
+	int dims = 1;
+
+	
+	arg0  = _NclGetArg(0,2,DONT_CARE);
+	arg1  = _NclGetArg(1,2,DONT_CARE);
+	switch(arg0.kind) {
+	case NclStk_VAR:
+		file_md = _NclVarValueRead(arg0.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		file_md = arg0.u.data_obj;
+		break;
+	}
+	switch(arg1.kind) {
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(arg1.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = arg1.u.data_obj;
+		break;
+	}
+	
+	file_ptr = (NclFile)_NclGetObj(*(obj*)(file_md->multidval.val));
+
+	if(file_ptr != NULL) {
+		outval = (logical*)NclMalloc((unsigned)sizeof(logical)*tmp_md->multidval.totalelements);
+		vals = (NclQuark*)tmp_md->multidval.val;
+		if(tmp_md->multidval.missing_value.has_missing) {
+			for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+				if(vals[i] != tmp_md->multidval.missing_value.value.stringval) {
+					outval[i] = _NclFileIsVar(file_ptr,vals[i]) == -1 ? 0 : 1;
+				} else {
+					outval[i] = 0;
+				}
+			}
+		} else {
+			for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+				outval[i] = _NclFileIsVar(file_ptr,vals[i]) == -1 ? 0 : 1;
+			}
+		}
+	
+		return(NclReturnValue(
+			(void*)outval,
+			tmp_md->multidval.n_dims,
+			tmp_md->multidval.dim_sizes,
+			NULL,
+			NCL_logical,
+			0
+		));
+	} else {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsFileVar: undefined file returning missing value");
+		NclReturnValue(
+			&miss,
+			1,
+			&dims,
+			&((NclTypeClass)nclTypelogicalClass)->type_class.default_mis,
+			NCL_logical,
+			1
+		);
+		return(NhlWARNING);
+	}
+
+}
+
+NhlErrorTypes _NclIIsFileVarAtt
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry arg0,arg1,arg2;
+	NclMultiDValData tmp_md,file_md,att_md;
+	int i;
+	logical *outval;
+	NclQuark var;
+	NclQuark *vals;
+	NclSymbol* s;
+	NclFile file_ptr;
+	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
+	int dims = 1;
+
+	
+	arg0  = _NclGetArg(0,3,DONT_CARE);
+	arg1  = _NclGetArg(1,3,DONT_CARE);
+	arg2  = _NclGetArg(2,3,DONT_CARE);
+	switch(arg0.kind) {
+	case NclStk_VAR:
+		file_md = _NclVarValueRead(arg0.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		file_md = arg0.u.data_obj;
+		break;
+	}
+	switch(arg1.kind) {
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(arg1.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = arg1.u.data_obj;
+		break;
+	}
+	switch(arg2.kind) {
+	case NclStk_VAR:
+		att_md = _NclVarValueRead(arg2.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		att_md = arg2.u.data_obj;
+		break;
+	}
+	
+	file_ptr = (NclFile)_NclGetObj(*(obj*)(file_md->multidval.val));
+	var =*(NclQuark*)tmp_md->multidval.val;
+	
+
+	if(file_ptr != NULL) {
+		outval = (logical*)NclMalloc((unsigned)sizeof(logical)*att_md->multidval.totalelements);
+		vals = (NclQuark*)att_md->multidval.val;
+		if(att_md->multidval.missing_value.has_missing) {
+			for(i = 0; i < att_md->multidval.totalelements; i++) {
+				if(vals[i] != att_md->multidval.missing_value.value.stringval) {
+					outval[i] = _NclFileVarIsAtt(file_ptr,var,vals[i]) == -1 ? 0 : 1;
+				} else {
+					outval[i] = 0;
+				}
+			}
+		} else {
+			for(i = 0; i < att_md->multidval.totalelements; i++) {
+				outval[i] = _NclFileVarIsAtt(file_ptr,var,vals[i]) == -1 ? 0 : 1;
+			}
+		}
+	
+		return(NclReturnValue(
+			(void*)outval,
+			att_md->multidval.n_dims,
+			att_md->multidval.dim_sizes,
+			NULL,
+			NCL_logical,
+			0
+		));
+	} else {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsFileVar: undefined file returning missing value");
+		NclReturnValue(
+			&miss,
+			1,
+			&dims,
+			&((NclTypeClass)nclTypelogicalClass)->type_class.default_mis,
+			NCL_logical,
+			1
+		);
+		return(NhlWARNING);
+	}
+
+}
+
+
+NhlErrorTypes _NclIIsFileVarDim
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry arg0,arg1,arg2;
+	NclMultiDValData tmp_md,file_md,dim_md;
+	int i;
+	logical *outval;
+	NclQuark var;
+	NclQuark *vals;
+	NclSymbol* s;
+	NclFile file_ptr;
+	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
+	int dims = 1;
+
+	
+	arg0  = _NclGetArg(0,3,DONT_CARE);
+	arg1  = _NclGetArg(1,3,DONT_CARE);
+	arg2  = _NclGetArg(2,3,DONT_CARE);
+	switch(arg0.kind) {
+	case NclStk_VAR:
+		file_md = _NclVarValueRead(arg0.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		file_md = arg0.u.data_obj;
+		break;
+	}
+	switch(arg1.kind) {
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(arg1.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		tmp_md = arg1.u.data_obj;
+		break;
+	}
+	switch(arg2.kind) {
+	case NclStk_VAR:
+		dim_md = _NclVarValueRead(arg2.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		dim_md = arg2.u.data_obj;
+		break;
+	}
+	
+	file_ptr = (NclFile)_NclGetObj(*(obj*)(file_md->multidval.val));
+	var =*(NclQuark*)tmp_md->multidval.val;
+	
+
+	if(file_ptr != NULL) {
+		outval = (logical*)NclMalloc((unsigned)sizeof(logical)*dim_md->multidval.totalelements);
+		vals = (NclQuark*)dim_md->multidval.val;
+		if(dim_md->multidval.missing_value.has_missing) {
+			for(i = 0; i < dim_md->multidval.totalelements; i++) {
+				if(vals[i] != dim_md->multidval.missing_value.value.stringval) {
+					outval[i] = _NclFileVarIsDim(file_ptr,var,vals[i]) == -1 ? 0 : 1;
+				} else {
+					outval[i] = 0;
+				}
+			}
+		} else {
+			for(i = 0; i < dim_md->multidval.totalelements; i++) {
+				outval[i] = _NclFileVarIsDim(file_ptr,var,vals[i]) == -1 ? 0 : 1;
+			}
+		}
+	
+		return(NclReturnValue(
+			(void*)outval,
+			dim_md->multidval.n_dims,
+			dim_md->multidval.dim_sizes,
+			NULL,
+			NCL_logical,
+			0
+		));
+	} else {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsFileVar: undefined file returning missing value");
+		NclReturnValue(
+			&miss,
+			1,
+			&dims,
+			&((NclTypeClass)nclTypelogicalClass)->type_class.default_mis,
+			NCL_logical,
+			1
+		);
+		return(NhlWARNING);
+	}
+
 }

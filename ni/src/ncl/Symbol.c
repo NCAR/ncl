@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.24 1995-06-29 21:56:21 ethan Exp $
+ *      $Id: Symbol.c,v 1.25 1995-11-04 00:49:30 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -284,10 +284,14 @@ int *dimsizes;
 			the_args->dim_sizes[i] = -1;
 		}
 	}
-	
-	the_args->arg_data_type = _NclLookUp(type_name);
-	if(the_args->arg_data_type == NULL) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"Error adding argument template for intrinisic function");
+
+	if(type_name != NULL) {	
+		the_args->arg_data_type = _NclLookUp(type_name);
+		if(the_args->arg_data_type == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error adding argument template for intrinisic function");
+		}
+	} else {
+		the_args->arg_data_type = NULL;
 	}
 	the_args->arg_sym = NULL;
 	return;

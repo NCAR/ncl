@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.22 1995-11-03 00:00:37 ethan Exp $
+ *      $Id: DataSupport.c,v 1.23 1995-11-04 00:49:22 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1079,6 +1079,56 @@ void _NclResetMissingValue
 	return;
 }
 
+struct _NclMultiDValDataRec *_NclCreateFalse
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int *val = (int*)NclMalloc((unsigned)sizeof(int));
+	int dim_sizes = 1;
+	
+
+	*val = 0;
+	return(_NclCreateMultiDVal(
+		NULL,
+		nclMultiDValDataClass,
+		Ncl_MultiDValData,
+		Ncl_MultiDValData,
+		(void*)val,
+		NULL,
+		1,
+		&dim_sizes,
+		TEMPORARY,
+		NULL,
+		(NclTypeClass)nclTypelogicalClass));
+}
+struct _NclMultiDValDataRec *_NclCreateTrue
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int *val = (int*)NclMalloc((unsigned)sizeof(int));
+	int dim_sizes = 1;
+	
+
+	*val = 1;
+	return(_NclCreateMultiDVal(
+		NULL,
+		nclMultiDValDataClass,
+		Ncl_MultiDValData,
+		Ncl_MultiDValData,
+		(void*)val,
+		NULL,
+		1,
+		&dim_sizes,
+		TEMPORARY,
+		NULL,
+		(NclTypeClass)nclTypelogicalClass));
+}
 struct _NclMultiDValDataRec *_NclCreateMissing
 #if NhlNeedProto
 (void)

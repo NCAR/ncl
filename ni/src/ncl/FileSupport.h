@@ -1,5 +1,5 @@
 /*
- *      $Id: FileSupport.h,v 1.3 1995-01-28 01:50:56 ethan Exp $
+ *      $Id: FileSupport.h,v 1.4 1995-11-04 00:49:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -146,7 +146,7 @@ struct _NclSelectionRecord * /*sel_ptr;*/
 #endif
 );
 
-extern int _NclFileIsVarAtt(
+extern int _NclFileVarIsAtt(
 #if	NhlNeedProto
 NclFile /*file*/,
 NclQuark /* var */,

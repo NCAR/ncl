@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.12 1995-04-14 22:02:03 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.13 1995-11-04 00:49:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -174,10 +174,47 @@ void
 #endif
 );
 
+NhlErrorTypes _NclIIsVar(
+#if     NhlNeedProto
+void
+#endif
+);
+
+NhlErrorTypes _NclIIsFileVar(
+#if     NhlNeedProto
+void
+#endif
+);
+
+NhlErrorTypes _NclIIsAtt(
+#if     NhlNeedProto
+void
+#endif
+);
+
+NhlErrorTypes _NclIIsFileVarAtt(
+#if     NhlNeedProto
+void
+#endif
+);
+
+NhlErrorTypes _NclIIsDim(
+#if     NhlNeedProto
+void
+#endif
+);
+
+NhlErrorTypes _NclIIsFileVarDim(
+#if     NhlNeedProto
+void
+#endif
+);
+
+
 void _NclAddBuiltIns
-#if	NhlNeedProto
+#if     NhlNeedProto
 (void)
-#else 
+#else
 ()
 #endif
 {
@@ -510,6 +547,49 @@ void _NclAddBuiltIns
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
 	NclRegisterFunc( _NclIchartoint,args,"chartoint",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsVar,args,"isvar",nargs);
+
+	nargs = 0;
+	args = NewArgs(2);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,nargs,"file",1,dimsizes); nargs++;
+	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsFileVar,args,"isfilevar",nargs);
+
+	nargs = 0;
+	args = NewArgs(2);
+	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsAtt,args,"isatt",nargs);
+
+	nargs = 0;
+	args = NewArgs(3);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,nargs,"file",1,dimsizes); nargs++;
+	SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
+	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsFileVarDim,args,"isfilevardim",nargs);
+
+	nargs = 0;
+	args = NewArgs(3);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,nargs,"file",1,dimsizes); nargs++;
+	SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
+	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsFileVarAtt,args,"isfilevaratt",nargs);
+	
+	nargs = 0;
+	args = NewArgs(2);
+	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsDim,args,"isdim",nargs);
+
+
+
 /*
 	nargs = 0;
 	args = NewArgs(1);

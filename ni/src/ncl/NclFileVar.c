@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclFileVar.c,v 1.12 1995-11-03 00:00:47 ethan Exp $
+ *      $Id: NclFileVar.c,v 1.13 1995-11-04 00:49:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -414,10 +414,10 @@ char* attname;
 	if(theval != NULL) 
 		thefile = (NclFile)_NclGetObj(*(int*)theval->multidval.val);
 	if((thefile != NULL)&&(attname != NULL)) {
-		if(_NclFileIsAtt(thefile,NrmStringToQuark(attname)) != -1) {
-			return(1);
-		} else {
+		if(_NclFileIsAtt(thefile,NrmStringToQuark(attname))== -1) {
 			return(0);
+		} else {
+			return(1);
 		}
 	} else {
 		return(0);
@@ -441,12 +441,9 @@ char * dimname;
 	if(theval != NULL) 
 		thefile = (NclFile)_NclGetObj(*(int*)theval->multidval.val);
 	if((thefile != NULL)&&(dimname != NULL)) {
-		index = _NclFileIsDim(thefile,NrmStringToQuark(dimname));
-		if(index != -1) {
-			return(1);
-		}
+		return(_NclFileIsDim(thefile,NrmStringToQuark(dimname)));
 	}
-	return(0);
+	return(-1);
 }
 
 static struct _NclMultiDValDataRec *FileVarReadDim
