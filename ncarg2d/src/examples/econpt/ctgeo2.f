@@ -1144,7 +1144,7 @@ C duplicate points and edges and setting up the pointers defining
 C the adjacency of the triangles.
 C
 C GTGEO2 calls a routine (CTTMTL) that make it easy to create an
-C arbitrary triangular mesh.  The "quicksorts" used by this method
+C arbitrary triangular mesh.  The "tree-sorts" used by this method
 C are very inefficient for objects that are partially ordered, so,
 C as the triangles of the mesh are generated, they are stored in a
 C triangle buffer from which they can be dumped in random order by
@@ -1612,41 +1612,6 @@ C
           NFOI=NFOI+1
           IFOI(NFOI)=NTBF
         END IF
-C
-        RETURN
-C
-      END
-
-
-      SUBROUTINE STPIEN (ITRI,NTRI,IEDG)
-C
-        DIMENSION ITRI(*),IEDG(*)
-C
-C This subroutine sets the triangle pointers in the edge nodes pointed
-C to by a triangle node just defined.
-C
-        IF (IEDG(ITRI(NTRI+1)+2).EQ.IEDG(ITRI(NTRI+2)+1).OR.
-     +      IEDG(ITRI(NTRI+1)+2).EQ.IEDG(ITRI(NTRI+2)+2)) THEN
-          IEDG(ITRI(NTRI+1)+3)=NTRI+1
-        ELSE
-          IEDG(ITRI(NTRI+1)+4)=NTRI+1
-        END IF
-C
-        IF (IEDG(ITRI(NTRI+2)+2).EQ.IEDG(ITRI(NTRI+3)+1).OR.
-     +      IEDG(ITRI(NTRI+2)+2).EQ.IEDG(ITRI(NTRI+3)+2)) THEN
-          IEDG(ITRI(NTRI+2)+3)=NTRI+2
-        ELSE
-          IEDG(ITRI(NTRI+2)+4)=NTRI+2
-        END IF
-C
-        IF (IEDG(ITRI(NTRI+3)+2).EQ.IEDG(ITRI(NTRI+1)+1).OR.
-     +      IEDG(ITRI(NTRI+3)+2).EQ.IEDG(ITRI(NTRI+1)+2)) THEN
-          IEDG(ITRI(NTRI+3)+3)=NTRI+3
-        ELSE
-          IEDG(ITRI(NTRI+3)+4)=NTRI+3
-        END IF
-C
-C Done.
 C
         RETURN
 C

@@ -1066,7 +1066,7 @@ C
 C
 C Construct a triangular mesh using SEAM data from Houjun Wang,
 C using a routine (CTTMTL) that makes it easy to create an arbitrary
-C triangular mesh (first used above in GTGEO2).  The "quicksorts"
+C triangular mesh (first used above in GTGEO2).  The "tree-sorts"
 C used by this method are very inefficient for objects that are
 C partially ordered, so, as the triangles of the mesh are generated,
 C they are stored in a triangle buffer from which they can be dumped

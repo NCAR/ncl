@@ -841,7 +841,7 @@ C
 C
 C Construct a triangular mesh using data from Brett Estrade, using a
 C routine (CTTMTL) that makes it easy to create an arbitrary triangular
-C mesh.  The "quicksorts" used by this method are very inefficient for
+C mesh.  The "tree-sorts" used by this method are very inefficient for
 C objects that are partially ordered, so, as the triangles of the mesh
 C are generated, they are stored in a triangle buffer from which they
 C can be dumped in random order by calls to the routine CTTMTL.

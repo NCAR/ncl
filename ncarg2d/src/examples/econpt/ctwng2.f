@@ -163,7 +163,7 @@ C
 C Declare sort arrays to be used in GTWNG2 to keep track of where points
 C and edges were put in the structure defining the triangular mesh.
 C
-        DIMENSION IPPP(2,MNOP),IPPE(2,MNOE)
+        DIMENSION IPPP(3,MNOP),IPPE(2,MNOE)
 C
 C Declare real and integer workspaces needed by CONPACKT.
 C
@@ -1071,15 +1071,15 @@ C
      +                   ITRI,MTRI,NTRI,LOTN,
      +                   IPPP,IPPE,CLAT,CLON)
 C
-        DIMENSION RPNT(MPNT),IEDG(MEDG),ITRI(MTRI),IPPP(2,*),IPPE(2,*)
+        DIMENSION RPNT(MPNT),IEDG(MEDG),ITRI(MTRI),IPPP(3,*),IPPE(2,*)
 C
 C Construct a triangular mesh using SEAM data from Houjun Wang,
-C using a routine (CTTMTL) that makes it easy to create an arbitrary
-C triangular mesh (first used above in GTGEO2).  The "quicksorts"
-C used by this method are very inefficient for objects that are
-C partially ordered, so, as the triangles of the mesh are generated,
-C they are stored in a triangle buffer from which they can be dumped
-C in random order by calls to the routine CTTMTL.
+C using a routine (CTTMTX) that makes it easy to create an arbitrary
+C triangular mesh.  The "quicksorts" used by this method are very
+C inefficient for objects that are partially ordered, so, as the
+C triangles of the mesh are generated, they are stored in a triangle
+C buffer from which they can be dumped in random order by calls to
+C the routine CTTMTX.
 C
 C Declare the array to use as the buffer for the triangles, so that the
 C order in which they are processed can be somewhat randomized.  Up to
@@ -1088,7 +1088,7 @@ C of the triangles and speed up the process.  MBUF is the number of
 C triangles that will fit in the buffer at once, and KBUF is the number
 C of those that are dumped whenever the buffer is found to be full; it
 C turns out that it's better to dump more than 1 at a time (I suppose
-C because the call and loop set-up time for CTTMTL are non-trivial, so
+C because the call and loop set-up time for CTTMTX are non-trivial, so
 C it's better to dump a few triangles while you're there).  So ... use
 C MBUF > KBUF > 1.
 C
@@ -1152,6 +1152,11 @@ C Define the dimensions of the grid within each quadrilateral.
 C
         DATA NOPX,NOPY / 3,3 /
 C
+C Define the value of an epsilon to be used by CTTMTX in testing
+C coordinate values for equality.
+C
+        DATA EPST / 1.E-5 /
+C
 C Read the data.
 C
         NQDR=0
@@ -1199,7 +1204,7 @@ C
         DO 106 J=1,NQDR
 C
 C Compute the latitudes and longitudes of the four corner points of
-C the quadrilateral.
+C the quadrilateral and perturb the coordinates a little.
 C
           DO 103 I=1,4
             UCRD(I)=UCEN(INUM(J))+XCRD(I,J)*UCOX(INUM(J))+
@@ -1209,9 +1214,9 @@ C
             WCRD(I)=WCEN(INUM(J))+XCRD(I,J)*WCOX(INUM(J))+
      +                            YCRD(I,J)*WCOY(INUM(J))
             DTMP=SQRT(UCRD(I)**2+VCRD(I)**2+WCRD(I)**2)
-            UCRD(I)=UCRD(I)/DTMP
-            VCRD(I)=VCRD(I)/DTMP
-            WCRD(I)=WCRD(I)/DTMP
+            UCRD(I)=UCRD(I)/DTMP+PRTURB(1.E-6)
+            VCRD(I)=VCRD(I)/DTMP+PRTURB(1.E-6)
+            WCRD(I)=WCRD(I)/DTMP+PRTURB(1.E-6)
             CALL XYZLLP (UCRD(I),VCRD(I),WCRD(I),RLAT(I,J),RLON(I,J))
   103     CONTINUE
 C
@@ -1291,7 +1296,8 @@ C If the triangle buffer is almost full, dump a few randomly-chosen
 C triangles from it to make room for two new ones.
 C
               IF (NBUF.GE.MBM1) THEN
-                CALL CTTMTL (KBUF,TBUF,MBUF,NBUF,
+                CALL CTTMTX (KBUF,TBUF,MBUF,NBUF,
+     +                       EPST,
      +                       IPPP,MPPP,NPPP,
      +                       IPPE,MPPE,NPPE,
      +                       RPNT,MPNT,NPNT,LOPN,
@@ -1344,7 +1350,8 @@ C
 C Output all triangles remaining in the buffer.
 C
         IF (NBUF.NE.0) THEN
-          CALL CTTMTL (NBUF,TBUF,MBUF,NBUF,
+          CALL CTTMTX (NBUF,TBUF,MBUF,NBUF,
+     +                 EPST,
      +                 IPPP,MPPP,NPPP,
      +                 IPPE,MPPE,NPPE,
      +                 RPNT,MPNT,NPNT,LOPN,
@@ -1783,6 +1790,23 @@ C
 C
         X=MOD(9821.D0*X+.211327D0,1.D0)
         FRAN=REAL(X)
+C
+        RETURN
+C
+      END
+
+
+      FUNCTION PRTURB (RMAG)
+C
+C Random perturbation on the order of + or - RMAG.
+C
+        DOUBLE PRECISION X
+        SAVE X
+C
+        DATA X / 2.718281828459045 /
+C
+        X=MOD(9821.D0*X+.211327D0,1.D0)
+        PRTURB=2.*RMAG*(REAL(X)-.5)
 C
         RETURN
 C

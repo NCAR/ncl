@@ -859,7 +859,7 @@ C
 C
 C Construct a triangular mesh using data from Tom Gross, using a routine
 C (CTTMTL) that makes it easy to create an arbitrary triangular mesh.
-C The "quicksorts" used by this method are very inefficient for objects
+C The "tree-sorts" used by this method are very inefficient for objects
 C that are partially ordered, so, as the triangles of the mesh are
 C generated, they are stored in a triangle buffer from which they can
 C be dumped in random order by calls to the routine CTTMTL.

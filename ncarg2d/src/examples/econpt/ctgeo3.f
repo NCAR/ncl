@@ -924,7 +924,7 @@ C
 C       include 'netcdf.inc'
 C
 C GTGEO3 calls a routine (CTTMTL) that allows one to easily create an
-C arbitrary triangular mesh.  The "quicksorts" used by the method are
+C arbitrary triangular mesh.  The "tree-sorts" used by the method are
 C very inefficient for objects that are partially ordered, so, as the
 C triangles of the mesh are generated, they are stored in a triangle
 C buffer from which they can be dumped in random order by calls to the
