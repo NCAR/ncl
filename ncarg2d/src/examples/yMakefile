@@ -1,11 +1,11 @@
 #
-#	$Id: yMakefile,v 1.8 1993-04-16 17:01:01 haley Exp $
+#	$Id: yMakefile,v 1.9 1993-04-16 17:23:47 haley Exp $
 #
 NCARG	= ../../..
 
 SUBDIRS = \
 	eareas eautog ecolcv econpa eezmap eezmpa elblba emisc epltch esoftf \
-	espps esrfac estitl estrml evelvc fsoftfill
+	espps esrfac estitl estrml evelvc
 
 MakeSubdirs($(SUBDIRS))
 MakefilesSubdirs($(SUBDIRS))
