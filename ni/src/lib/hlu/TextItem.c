@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.24 1995-03-17 00:45:50 ethan Exp $
+ *      $Id: TextItem.c,v 1.25 1995-04-04 16:49:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -539,7 +539,7 @@ static NhlErrorTypes    TextItemInitialize
 			tnew->text.font_thickness_set ||
 			tnew->text.constant_spacing_set){
 
-			NhlPError(NhlWARNING,NhlEUNKNOWN,
+			NhlPError(NhlINFO,NhlEUNKNOWN,
 			"%s: Cannot set x,y,width,and height when other text attributes have been specified also, proceding with other text attribute requests",func);
 		}
 		else{
@@ -649,8 +649,8 @@ static NhlErrorTypes TextItemSetValues
 				+((tmpvy1-tmpvy0)*(tmpvy1-tmpvy0))));
 		
 		} else {
-		  NhlPError(NhlWARNING,NhlEUNKNOWN,"TextItemSetValues: Can not change x,y,width,and height when other text attribute changes have been requested also, preceding with other text attribute requests");
-		  ret = MIN(ret,NhlWARNING);
+		  NhlPError(NhlINFO,NhlEUNKNOWN,"TextItemSetValues: Can not change x,y,width,and height when other text attribute changes have been requested also, preceding with other text attribute requests");
+		  ret = MIN(ret,NhlINFO);
 		}
 	} 
 
