@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.60 2002-04-19 22:56:32 akash Exp $
+#      $Id: yMakefile,v 1.61 2002-10-24 14:02:49 haley Exp $
 #
 #########################################################################
 #									#
@@ -36,8 +36,8 @@ CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c cdf_dpW.c chiinvW.c \
 	paleoW.c prcwatW.c preshybW.c pressigW.c probtestW.c randomW.c  \
 	rcmW.c regcoefW.c relhumW.c remapW.c rhombtriW.c shgridW.c  \
 	sindexW.c slpW.c skewtW.c smth9W.c sortW.c specxW.c sph2W.c \
-	sphintW.c sstoiW.c statW.c svdW.c taperW.c tdpackW.c trvsphW.c \
-	varimaxW.c vibetaW.c waveletW.c wgneW.c wmapW.c wrunaveW.c  \
+	sphintW.c sstoiW.c statW.c svdW.c taperW.c tdpackW.c tempnamW.c \
+	trvsphW.c varimaxW.c vibetaW.c waveletW.c wgneW.c wmapW.c wrunaveW.c  \
 	wrapper.c vinth2pW.c vinth2peW.c zonmpsiW.c
 
 COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cdf_dpW.o chiinvW.o \
@@ -51,8 +51,8 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cdf_dpW.o chiinvW.o \
 	paleoW.o prcwatW.o preshybW.o pressigW.o probtestW.o randomW.o  \
 	rcmW.o regcoefW.o relhumW.o remapW.o rhombtriW.o shgridW.o  \
 	sindexW.o slpW.o skewtW.o smth9W.o sortW.o specxW.o sph2W.o \
-	sphintW.o sstoiW.o statW.o svdW.o taperW.o tdpackW.o trvsphW.o \
-	varimaxW.o vibetaW.o waveletW.o wgneW.o wmapW.o wrunaveW.o  \
+	sphintW.o sstoiW.o statW.o svdW.o taperW.o tdpackW.o tempnamW.o \
+	trvsphW.o varimaxW.o vibetaW.o waveletW.o wgneW.o wmapW.o wrunaveW.o  \
 	wrapper.o vinth2pW.o vinth2peW.o zonmpsiW.o
 
 FSRCS = aam.f areaAve.f areaRmse.f calcorc_dp.f cdf_dp.f cfftb.f cfftb1.f \

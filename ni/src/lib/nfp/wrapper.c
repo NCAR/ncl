@@ -420,6 +420,8 @@ extern NhlErrorTypes dcdfnorp_W(void);
 extern NhlErrorTypes dcdfnorx_W(void);
 extern NhlErrorTypes dcdfchip_W(void);
 extern NhlErrorTypes ind_resolve_W(void);
+extern NhlErrorTypes unique_string_W(void);
+extern NhlErrorTypes tempnam_W(void);
 
 void NclAddUserFuncs(void)
 {
@@ -5315,6 +5317,28 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
 
     NclRegisterFunc(ind_resolve_W, args, "ind_resolve", nargs);
+
+/*
+ *  Register unique_string.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);  nargs++;
+    NclRegisterFunc(unique_string_W, args, "unique_string", nargs);
+
+/*
+ *  Register tempnam.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);  nargs++;
+
+    NclRegisterFunc(tempnam_W, args, "tempnam", nargs);
 
     return;
 }
