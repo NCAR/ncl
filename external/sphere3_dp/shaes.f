@@ -462,7 +462,7 @@ c ****************************************************************
       END
 
       SUBROUTINE DSHAESI(NLAT,NLON,WSHAES,LSHAES,WORK,LWORK,DWORK,
-     +                  LDWORK,LERROR)
+     +                  LDWORK,IERROR)
       DOUBLE PRECISION WSHAES
       DOUBLE PRECISION WORK
       DIMENSION WSHAES(*),WORK(*)
