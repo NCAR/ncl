@@ -41,8 +41,6 @@ extern double *c_cssgridd(int, double [], double [], double [],
 extern void   c_csvorod(int, double [], double [], int, int,
                 double [], double [], double [], int *,
                 int *, int [], int *);
-extern void   c_cstransd(int, double *, double *, double *, double *, double *);
-extern void   c_csscoordd(double, double, double, double *, double *, double *);
 extern void   c_csc2sd(int, double *, double *, double *, double *, double *);
 extern void   c_css2cd(int, double *, double *, double *, double *, double *);
 extern void   c_cssetd(char *, double);
@@ -72,7 +70,7 @@ NhlErrorTypes css2c_W(void)
  */
   for (i = 1; i < 5; i++) {
     if (ndims[i] != ndims[0]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"cstrans: all arguments "
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"css2c: all arguments "
                 "must have the same number of dimensions\n");
       return(NhlFATAL);
     }
@@ -84,7 +82,7 @@ NhlErrorTypes css2c_W(void)
   for (j = 0; j < ndims[0]; j++) {
     for (i = 1; i < 5; i++) {
       if (dsizes[i][j] != dsizes[0][j]) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"cstrans: all arguments "
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"css2c: all arguments "
                   "must have the same dimension sizes\n");
         return(NhlFATAL);
       }
@@ -103,13 +101,13 @@ NhlErrorTypes css2c_W(void)
  *  Check that all arguments are either all float or all double.
  */
   if ((atypes[0] != NCL_float) && (atypes[0] != NCL_double)) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"cstrans: all arguments "
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"css2c: all arguments "
                 "must be all float or all double\n");
       return(NhlFATAL);
   }
   for (i = 1; i < 5; i++) {
     if (atypes[i] != atypes[0]) {
-            NhlPError(NhlFATAL,NhlEUNKNOWN,"cstrans: all arguments "
+            NhlPError(NhlFATAL,NhlEUNKNOWN,"css2c: all arguments "
               "must be all float or all double\n");
     return(NhlFATAL);
     }
@@ -184,7 +182,7 @@ NhlErrorTypes csc2s_W(void)
  */
   for (i = 1; i < 5; i++) {
     if (ndims[i] != ndims[0]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"csscoord: all arguments "
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"csc2s: all arguments "
                 "must have the same number of dimensions\n");
       return(NhlFATAL);
     }
@@ -196,7 +194,7 @@ NhlErrorTypes csc2s_W(void)
   for (j = 0; j < ndims[0]; j++) {
     for (i = 1; i < 5; i++) {
       if (dsizes[i][j] != dsizes[0][j]) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"csscoord: all arguments "
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"csc2s: all arguments "
                   "must have the same dimension sizes\n");
         return(NhlFATAL);
       }
@@ -215,13 +213,13 @@ NhlErrorTypes csc2s_W(void)
  *  Check that all arguments are either all float or all double.
  */
   if ((atypes[0] != NCL_float) && (atypes[0] != NCL_double)) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"csscoord: all arguments "
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"csc2s: all arguments "
                 "must be all float or all double\n");
       return(NhlFATAL);
   }
   for (i = 1; i < 5; i++) {
     if (atypes[i] != atypes[0]) {
-            NhlPError(NhlFATAL,NhlEUNKNOWN,"csscoord: all arguments "
+            NhlPError(NhlFATAL,NhlEUNKNOWN,"csc2s: all arguments "
               "must be all float or all double\n");
     return(NhlFATAL);
     }
