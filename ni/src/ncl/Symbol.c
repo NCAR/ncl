@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.59 1999-11-10 19:51:37 ethan Exp $
+ *      $Id: Symbol.c,v 1.60 1999-11-10 22:31:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2050,8 +2050,12 @@ NclApiDataList *_NclGetDefinedProcFuncInfo
 		
 									tmp->u.func->theargs[j].dim_sizes[k]= tmpargs[j].dim_sizes[k];
 								}
-								tmp->u.func->theargs[j].arg_data_type = NrmStringToQuark(tmpargs[j].arg_data_type->name);
-								tmp->u.func->theargs[j].arg_sym= NrmStringToQuark(tmpargs[j].arg_sym->name);
+								tmp->u.func->theargs[j].arg_data_type = NrmNULLQUARK;
+								tmp->u.func->theargs[j].arg_sym = NrmNULLQUARK;
+								if (tmpargs[j].arg_data_type && tmpargs[j].arg_data_type->name)
+									tmp->u.func->theargs[j].arg_data_type = NrmStringToQuark(tmpargs[j].arg_data_type->name);
+								if (tmpargs[j].arg_sym && tmpargs[j].arg_sym->name)
+									tmp->u.func->theargs[j].arg_sym= NrmStringToQuark(tmpargs[j].arg_sym->name);
 								tmp->u.func->theargs[j].is_dimsizes= tmpargs[j].is_dimsizes;
 							}
 						} else {
