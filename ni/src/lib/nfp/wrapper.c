@@ -414,6 +414,7 @@ extern NhlErrorTypes dcdfgamp_W(void);
 extern NhlErrorTypes dcdfgamx_W(void);
 extern NhlErrorTypes dcdfnorp_W(void);
 extern NhlErrorTypes dcdfnorx_W(void);
+extern NhlErrorTypes dcdfchip_W(void);
 extern NhlErrorTypes ind_resolve_W(void);
 
 void NclAddUserFuncs(void)
@@ -5244,6 +5245,17 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(dcdfnorx_W,args,"cdfnor_x",nargs);
+
+/*
+ *  Registering dcdfchip_W.
+*/
+	nargs	=	0;
+	args = NewArgs(2);
+
+	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+	NclRegisterFunc(dcdfchip_W,args,"cdfchi_p",nargs);
 
 /*
  *  Register ind_resolve.

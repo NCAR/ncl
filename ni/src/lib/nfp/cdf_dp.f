@@ -279,3 +279,30 @@ c error messages for cdfnor_{p,x} functions
 
       RETURN
       END
+c ------------
+c NCLFORTSTART
+      SUBROUTINE DCDFCHIP(N,X,DF,P,IER)
+c NCL: p = cdfchi_p(x,df)
+      IMPLICIT NONE
+c input
+      INTEGER N
+      DOUBLE PRECISION X(N),DF(N)
+c output
+      INTEGER IER
+      DOUBLE PRECISION P(N)
+c NCLEND
+c local
+      INTEGER WHICH, I
+      DOUBLE PRECISION Q,BOUND
+
+C iwhich = 1 : Calculate P and Q from X and DF
+c              Q not returned
+      WHICH = 1
+      BOUND = -999.D0
+      DO I=1,N
+         CALL CDFCHI(WHICH,P(I),Q,X(I),DF(I),IER,BOUND)
+         IF (IER.NE.0) CALL CDFGERR('CDFCHI_P',IER)
+      END DO
+
+      RETURN
+      END

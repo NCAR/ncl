@@ -18,6 +18,7 @@
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/ngmath.h>
 #include <ncarg/ncargC.h>
+#include "wrapper.h"
 
 /*
  *  The following is required in order to obtain an NCL object ID

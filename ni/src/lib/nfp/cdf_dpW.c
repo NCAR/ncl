@@ -11,6 +11,7 @@
 #include <ncarg/ncl/NclBuiltInSupport.h>
 #include <ncarg/gks.h>
 #include <ncarg/ncl/NclBuiltIns.h>
+#include "wrapper.h"
 
 extern void NGCALLF(dcdfbinp,DCDFBINP)(int*, double*, double*, double*, double*, int*);
 extern void NGCALLF(dcdfbins,DCDFBINS)(int*, double*, double*, double*, double*, int*);
@@ -20,6 +21,7 @@ extern void NGCALLF(dcdfgamp,DCDFGAMP)(int*, double*, double*, double*, double*,
 extern void NGCALLF(dcdfgamx,DCDFGAMX)(int*, double*, double*, double*, double*, int*);
 extern void NGCALLF(dcdfnorp,DCDFNORP)(int*, double*, double*, double*, double*, int*);
 extern void NGCALLF(dcdfnorx,DCDFNORX)(int*, double*, double*, double*, double*, int*);
+extern void NGCALLF(dcdfchip,DCDFCHIP)(int*, double*, double*, double*, int*);
 
 NhlErrorTypes dcdfbinp_W( void ) {
 	void	*s, *xn, *pr, *p;
@@ -1114,3 +1116,121 @@ NhlErrorTypes dcdfnorx_W( void ) {
 	return(NclReturnValue(x,p_ndims, p_dimsizes, NULL, type_x, 0));
 }
 
+
+NhlErrorTypes dcdfchip_W( void ) {
+	void	*x, *df, *p;
+	int	dummy=0;
+	int x_dimsizes[NCL_MAX_DIMENSIONS], df_dimsizes[NCL_MAX_DIMENSIONS];
+	int x_ndims, df_ndims;
+
+	/* Declaring temporary variables */
+
+	int i, size_x;
+	double *tmp_x, *tmp_df, *tmp_p;
+	NclBasicDataTypes type_x, type_df, type_p;
+
+	/*
+	* Retrieve arguments.
+	*/
+	x = (void*) NclGetArgValue(
+		0,
+		2,
+		&x_ndims,
+		x_dimsizes,
+		NULL,
+		NULL,
+		&type_x,
+		2);
+
+	df = (void*) NclGetArgValue(
+		1,
+		2,
+		&df_ndims,
+		df_dimsizes,
+		NULL,
+		NULL,
+		&type_df,
+		2);
+
+
+	/*
+	* Make sure all of the input arguments are of equal dimensions.
+	*/
+	if(x_ndims != df_ndims) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN, "dcdfchip: The input arrays must have the same number of dimensions");
+		return(NhlFATAL);
+	}
+	else {
+		for(i=0;i<x_ndims;i++) {
+			if(x_dimsizes[i] != df_dimsizes[i]) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN, "dcdfchip: The input arrays must have the same dimension sizes");
+				return(NhlFATAL);
+			}
+		}
+	}
+	
+	/*
+	* Compute the total size of the output array.
+	*/
+	size_x = 1;
+	for(i=0; i < x_ndims; i++)
+		size_x *= x_dimsizes[i];
+
+	/*
+	* Coerce input arguments.
+	*/
+	tmp_x = (double *)coerce_input_double(x,type_x, size_x, 0, NULL, NULL);
+	if(tmp_x == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfchip: Unable to coerce 'x' to double");
+		return(NhlFATAL);
+	}
+
+	tmp_df = (double *)coerce_input_double(df,type_df, size_x, 0, NULL, NULL);
+	if(tmp_df == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfchip: Unable to coerce 'df' to double");
+		return(NhlFATAL);
+	}
+
+
+	/*
+	* Allocate space for output array.
+	*/
+	if(type_x != NCL_double && type_df != NCL_double) {
+		type_p = NCL_float;
+		p = (void *) calloc(size_x, sizeof(float));
+		tmp_p = (double *) calloc(size_x, sizeof(double));
+		if(p == NULL || tmp_p == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfchip: Unable to allocate memory for output array");
+			return(NhlFATAL);
+		}
+	}
+	else {
+		type_p = NCL_double;
+		p = (double *) calloc(size_x, sizeof(double));
+		if(p == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfchip: Unable to allocate memory for output array");
+			return(NhlFATAL);
+		}
+	}
+
+
+	if(type_p == NCL_double)
+		tmp_p = (double *)p;
+		
+	/*
+	* Call the Fortran version of this routine.
+	*/
+	NGCALLF(dcdfchip,DCDFCHIP)(&size_x, tmp_x, tmp_df, tmp_p, &dummy);
+
+	if(type_p == NCL_float)
+		coerce_output_float_only(p,tmp_p,size_x,0);
+
+	/*
+	* Free memory.
+	*/
+	if(type_x != NCL_double) NclFree(tmp_x);
+	if(type_df != NCL_double) NclFree(tmp_df);
+	if(type_p != NCL_double) NclFree(tmp_p);
+
+	return(NclReturnValue(p,x_ndims, x_dimsizes, NULL, type_p, 0));
+}
