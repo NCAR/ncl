@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MathFuncs.c.sed,v 1.2 1995-02-04 01:41:28 ethan Exp $
+ *      $Id: MathFuncs.c.sed,v 1.3 1997-04-14 23:57:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@
 #include "defs.h"
 #include "NclDataDefs.h"
 #include "NclBuiltInSupport.h"
+#include "NclMdInc.h"
 
 
 

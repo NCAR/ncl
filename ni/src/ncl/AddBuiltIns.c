@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.28 1997-04-11 17:27:36 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.29 1997-04-14 23:57:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -505,83 +505,83 @@ void _NclAddBuiltIns
 	int nargs = 0;
 
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_Nclsinh,args,"sinh",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_Nclcosh,args,"cosh",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_Ncltanh,args,"tanh",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_Nclsin,args,"sin",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_Nclcos,args,"cos",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_Ncltan,args,"tan",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_Nclasin,args,"asin",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_Nclacos,args,"acos",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_Nclatan,args,"atan",nargs);
 
 	nargs = 0;
 	args = NewArgs(2);
-	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
-	SetArgTemplate(args,1,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,1,"numeric",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_Nclatan2,args,"atan2",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_Nclceil,args,"ceil",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_Nclfloor,args,"floor",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_Nclfabs,args,"fabs",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_Ncllog,args,"log",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_Ncllog10,args,"log10",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_Nclsqrt,args,"sqrt",nargs);
 
 	nargs = 0;
@@ -980,7 +980,7 @@ void _NclAddBuiltIns
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args,nargs,"logical",1,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"logical",NclANY,NclANY); nargs++;
 	NclRegisterFunc( _Nclnum,args,"num",nargs);
 
 	nargs = 0;

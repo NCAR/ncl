@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MathTemplate.c.sed,v 1.2 1995-03-25 00:59:00 ethan Exp $
+ *      $Id: MathTemplate.c.sed,v 1.3 1997-04-14 23:57:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,13 +31,22 @@ NhlErrorTypes _NclFUNCNAME
 {
 	NclScalar missing,missing2;
 	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
-	OUTDATATYPE *out_val;
-	ARG0TYPE *value;
+	void *out_val;
+	float *fout_val;
+	double *dout_val;
+	void *value;
+	float *fvalue;
+	double *dvalue;
+	int  *ivalue;
+	long *lvalue;
+	byte *bvalue;
+	short *svalue;
+	
 	NclBasicDataTypes type;
 	int total=1;
 	int i;
 
-	value = (ARG0TYPE*)NclGetArgValue(
+	value = (void*)NclGetArgValue(
 			0,
 			1,
 			&n_dims,
@@ -49,32 +58,158 @@ NhlErrorTypes _NclFUNCNAME
 	for(i = 0; i < n_dims; i++) {
 		total *= dimsizes[i];
 	}
-
-	out_val = (OUTDATATYPE*)NclMalloc(total*sizeof(OUTDATATYPE));
-
-	if(has_missing) {
-		for( i = 0 ; i < total; i ++ ) {
-			if(value[i] != missing.ARG0TYPEval) {
-				out_val[i] = (OUTDATATYPE)FUNCNAME((CAST)value[i]);
-			} else {
-				out_val[i] = (OUTDATATYPE)missing.ARG0TYPEval;
+	switch(type) {
+	case NCL_float:
+		fvalue = (float*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(fvalue[i] != missing.floatval) {
+					fout_val[i] = (float)FUNCNAME((CAST)fvalue[i]);
+				} else {
+					fout_val[i] = (float)missing.floatval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)FUNCNAME((CAST)fvalue[i]);
 			}
 		}
-	} else {
-		for( i = 0 ; i < total; i ++ ) {
-			out_val[i] = (OUTDATATYPE)FUNCNAME((CAST)value[i]);
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_double:
+		dvalue = (double*)value;
+		out_val = (void*)NclMalloc(total*sizeof(double));
+		dout_val = (double*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(dvalue[i] != missing.doubleval) {
+					dout_val[i] = (double)FUNCNAME((CAST)dvalue[i]);
+				} else {
+					dout_val[i] = (double)missing.doubleval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				dout_val[i] = (double)FUNCNAME((CAST)dvalue[i]);
+			}
 		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_double,
+			0
+		));
+	case NCL_int:
+		ivalue = (int*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(ivalue[i] != missing.intval) {
+					fout_val[i] = (float)FUNCNAME((CAST)ivalue[i]);
+				} else {
+					fout_val[i] = (float)missing.intval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)FUNCNAME((CAST)ivalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_short:
+		svalue = (short*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(svalue[i] != missing.shortval) {
+					fout_val[i] = (float)FUNCNAME((CAST)svalue[i]);
+				} else {
+					fout_val[i] = (float)missing.shortval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)FUNCNAME((CAST)svalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_long:
+		lvalue = (long*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(lvalue[i] != missing.longval) {
+					fout_val[i] = (float)FUNCNAME((CAST)lvalue[i]);
+				} else {
+					fout_val[i] = (float)missing.longval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)FUNCNAME((CAST)lvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_float,
+			0
+		));
+	case NCL_byte:
+		bvalue = (byte*)value;
+		out_val = (void*)NclMalloc(total*sizeof(float));
+		fout_val = (float*)out_val;
+		if(has_missing) {
+			for( i = 0 ; i < total; i ++ ) {
+				if(bvalue[i] != missing.byteval) {
+					fout_val[i] = (float)FUNCNAME((CAST)bvalue[i]);
+				} else {
+					fout_val[i] = (float)missing.byteval;
+				}
+			}
+		} else {
+			for( i = 0 ; i < total; i ++ ) {
+				fout_val[i] = (float)FUNCNAME((CAST)bvalue[i]);
+			}
+		}
+		return(NclReturnValue(
+			out_val,
+			n_dims,
+			dimsizes,
+			(has_missing ? &missing : NULL),
+			NCL_float,
+			0
+		));
+	default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNCNAME: a non-numeric type was passed to this function, can not continue");
 	}
-
-		
-
-
-	return(NclReturnValue(
-		out_val,
-		n_dims,
-		dimsizes,
-		(has_missing ? &missing : NULL),
-		type,
-		0
-	));
 }

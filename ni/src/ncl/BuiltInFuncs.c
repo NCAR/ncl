@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.64 1997-04-11 17:27:32 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.65 1997-04-14 23:57:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -7555,7 +7555,8 @@ NhlErrorTypes _Nclmask
 	NclMultiDValData tmp_md1 = NULL;
 	NclMultiDValData tmp_md2 = NULL;
 	void **out_val;
-	int i;
+	int j,i;
+	int diff, n;
 	void *tmp = NULL;
 	logical *tmp0 = NULL;
 	void *mask_grid = NULL;
@@ -7597,9 +7598,18 @@ NhlErrorTypes _Nclmask
 	if(tmp_md2 == NULL)
 		return(NhlFATAL);
 
-	if(tmp_md0->multidval.n_dims != tmp_md1->multidval.n_dims) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"mask: number of dimensions of parameter 0 and parameter 1 do not match");
+	if(tmp_md0->multidval.n_dims  < tmp_md1->multidval.n_dims) {
+	
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"mask: mask variable (parameter 1) has more dimensions than parameter 0, can't mask");
 		return(NhlFATAL);
+	} else if (tmp_md0->multidval.n_dims >  tmp_md1->multidval.n_dims) {
+		diff = tmp_md0->multidval.n_dims  - tmp_md1->multidval.n_dims;
+		for(i = 0; i <  tmp_md1->multidval.n_dims; i++) {
+			if(tmp_md0->multidval.dim_sizes[diff + i] != tmp_md1->multidval.dim_sizes[i]) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"mask: dimension sizes  of parameter 0 and parameter 1 do not match");
+				return(NhlFATAL);
+			}
+		}
 	} else {
 		for(i = 0; i < tmp_md0->multidval.n_dims; i++) {
 			if(tmp_md0->multidval.dim_sizes[i] != tmp_md1->multidval.dim_sizes[i]) {
@@ -7617,7 +7627,7 @@ NhlErrorTypes _Nclmask
 			if(_Nclcoerce((NclTypeClass)tmp_md2->multidval.data_type,tmp,tmp_md1->multidval.val,tmp_md1->multidval.totalelements,NULL,NULL,(NclTypeClass)tmp_md1->multidval.type) == NhlFATAL)  {
 				NclFree(tmp);
 
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"mask: parameter 1 and parameter must be the same types or coercible to each other");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"mask: parameter 1 and parameter 2 must be the same types or coercible to each other");
 				return(NhlFATAL);
 			} else {
 				mask_val = tmp_md2->multidval.val;
@@ -7634,43 +7644,42 @@ NhlErrorTypes _Nclmask
 		mask_val = tmp_md2->multidval.val;
 		mask_type = tmp_md1->multidval.type;
 	}
-	tmp0 = (logical*)NclMalloc(sizeof(logical)*tmp_md1->multidval.totalelements);
-	_Nclne(mask_type,tmp0,mask_grid,mask_val,NULL,NULL,tmp_md1->multidval.totalelements,1);
-	out_val = (void*)NclMalloc(tmp_md0->multidval.totalsize);
-	memcpy(out_val,tmp_md0->multidval.val,tmp_md0->multidval.totalsize);
-	if(tmp_md0->multidval.missing_value.has_missing) {
-		for(i = 0; i < tmp_md1->multidval.totalelements; i++) {
-			if(tmp0[i]) {
-				memcpy(&(((char*)out_val)[i*tmp_md0->multidval.type->type_class.size]),&tmp_md0->multidval.missing_value.value,tmp_md0->multidval.type->type_class.size);
-			} 
-		}
-		return(NclReturnValue(
-			out_val,
-			tmp_md0->multidval.n_dims,
-			tmp_md0->multidval.dim_sizes,
-			&tmp_md0->multidval.missing_value.value,
-			tmp_md0->multidval.data_type,
-			0
-		));
+	tmp0 = (logical*)NclMalloc(sizeof(logical)*tmp_md0->multidval.totalelements);
+	if(tmp_md0->multidval.totalelements != tmp_md1->multidval.totalelements) {
+		n = tmp_md0->multidval.totalelements/tmp_md1->multidval.totalelements;
 	} else {
-		for(i = 0; i < tmp_md1->multidval.totalelements; i++) {
-			if(tmp0[i]) {
-				memcpy(&(((char*)out_val)[i*tmp_md0->multidval.type->type_class.size]),&tmp_md0->multidval.type->type_class.default_mis,tmp_md0->multidval.type->type_class.size);
-			} 
-		}
-	
-		if(tmp != NULL) 	
-			NclFree(tmp);
-		NclFree(tmp0);
-		return(NclReturnValue(
-			out_val,
-			tmp_md0->multidval.n_dims,
-			tmp_md0->multidval.dim_sizes,
-			&tmp_md0->multidval.type->type_class.default_mis,
-			tmp_md0->multidval.data_type,
-			0
-		));
+		n = 1;
 	}
+	out_val = (void*)NclMalloc(tmp_md0->multidval.totalsize);
+	for(j = 0; j < n; j++ ) {
+		_Nclne(mask_type,tmp0,mask_grid,&((char*)mask_val)[j*tmp_md1->multidval.totalsize],NULL,NULL,tmp_md1->multidval.totalelements,1);
+		memcpy(&((char*)out_val)[j*tmp_md1->multidval.totalsize],&((char*)tmp_md0->multidval.val)[j*tmp_md1->multidval.totalsize],tmp_md1->multidval.totalsize);
+		if(tmp_md0->multidval.missing_value.has_missing) {
+			for(i = 0; i < tmp_md1->multidval.totalelements; i++) {
+				if(tmp0[i]) {
+					memcpy(&(((char*)out_val)[j*tmp_md1->multidval.totalsize+ (i*tmp_md0->multidval.type->type_class.size)]),&tmp_md0->multidval.missing_value.value,tmp_md0->multidval.type->type_class.size);
+				} 
+			}
+		} else {
+			for(i = 0; i < tmp_md1->multidval.totalelements; i++) {
+				if(tmp0[i]) {
+					memcpy(&(((char*)out_val)[j*tmp_md1->multidval.totalsize+ (i*tmp_md0->multidval.type->type_class.size)]),&tmp_md0->multidval.type->type_class.default_mis,tmp_md0->multidval.type->type_class.size);
+				} 
+			}
+		
+		}
+	}
+	if(tmp != NULL) 	
+		NclFree(tmp);
+	NclFree(tmp0);
+	return(NclReturnValue(
+		out_val,
+		tmp_md0->multidval.n_dims,
+		tmp_md0->multidval.dim_sizes,
+		&tmp_md0->multidval.missing_value.value,
+		tmp_md0->multidval.data_type,
+		0
+	));
 }
 
 NhlErrorTypes _Nclmin

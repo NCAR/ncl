@@ -1,6 +1,6 @@
 
 #
-#      $Id: math_funcs.sh,v 1.2 1996-12-17 18:41:14 ethan Exp $
+#      $Id: math_funcs.sh,v 1.3 1997-04-14 23:57:10 ethan Exp $
 #
 #########################################################################
 #									#
@@ -38,8 +38,6 @@ MathTemplate.h.sed >> MathFuncs.h
 
 sed \
 -e 's/FUNCNAME/sinh/g' \
--e 's/OUTDATATYPE/float/g' \
--e 's/ARG0TYPE/float/g' \
 -e 's/CAST/double/g' \
 MathTemplate.c.sed > .tmp.$$
 
@@ -49,8 +47,6 @@ MathTemplate.h.sed >> MathFuncs.h
 
 sed \
 -e 's/FUNCNAME/cosh/g' \
--e 's/OUTDATATYPE/float/g' \
--e 's/ARG0TYPE/float/g' \
 -e 's/CAST/double/g' \
 MathTemplate.c.sed >> .tmp.$$
 
@@ -60,8 +56,6 @@ MathTemplate.h.sed >> MathFuncs.h
 
 sed \
 -e 's/FUNCNAME/tanh/g' \
--e 's/OUTDATATYPE/float/g' \
--e 's/ARG0TYPE/float/g' \
 -e 's/CAST/double/g' \
 MathTemplate.c.sed >> .tmp.$$
 
@@ -71,8 +65,6 @@ MathTemplate.c.sed >> .tmp.$$
 
 #sed \
 #-e 's/FUNCNAME/asinh/g' \
-#-e 's/OUTDATATYPE/float/g' \
-#-e 's/ARG0TYPE/float/g' \
 #-e 's/CAST/double/g' \
 #MathTemplate.c.sed >> .tmp.$$
 
@@ -82,8 +74,6 @@ MathTemplate.c.sed >> .tmp.$$
 
 #sed \
 #-e 's/FUNCNAME/acosh/g' \
-#-e 's/OUTDATATYPE/float/g' \
-#-e 's/ARG0TYPE/float/g' \
 #-e 's/CAST/double/g' \
 #MathTemplate.c.sed >> .tmp.$$
 
@@ -93,8 +83,6 @@ MathTemplate.c.sed >> .tmp.$$
 
 #sed \
 #-e 's/FUNCNAME/atanh/g' \
-#-e 's/OUTDATATYPE/float/g' \
-#-e 's/ARG0TYPE/float/g' \
 #-e 's/CAST/double/g' \
 #MathTemplate.c.sed >> .tmp.$$
 
@@ -104,8 +92,6 @@ MathTemplate.h.sed >> MathFuncs.h
 
 sed \
 -e 's/FUNCNAME/sin/g' \
--e 's/OUTDATATYPE/float/g' \
--e 's/ARG0TYPE/float/g' \
 -e 's/CAST/double/g' \
 MathTemplate.c.sed >> .tmp.$$
 
@@ -115,8 +101,6 @@ MathTemplate.h.sed >> MathFuncs.h
 
 sed \
 -e 's/FUNCNAME/cos/g' \
--e 's/OUTDATATYPE/float/g' \
--e 's/ARG0TYPE/float/g' \
 -e 's/CAST/double/g' \
 MathTemplate.c.sed >> .tmp.$$
 
@@ -126,8 +110,6 @@ MathTemplate.h.sed >> MathFuncs.h
 
 sed \
 -e 's/FUNCNAME/tan/g' \
--e 's/OUTDATATYPE/float/g' \
--e 's/ARG0TYPE/float/g' \
 -e 's/CAST/double/g' \
 MathTemplate.c.sed >> .tmp.$$
 
@@ -137,8 +119,6 @@ MathTemplate.h.sed >> MathFuncs.h
 
 sed \
 -e 's/FUNCNAME/asin/g' \
--e 's/OUTDATATYPE/float/g' \
--e 's/ARG0TYPE/float/g' \
 -e 's/CAST/double/g' \
 MathTemplate.c.sed >> .tmp.$$
 
@@ -148,8 +128,6 @@ MathTemplate.h.sed >> MathFuncs.h
 
 sed \
 -e 's/FUNCNAME/acos/g' \
--e 's/OUTDATATYPE/float/g' \
--e 's/ARG0TYPE/float/g' \
 -e 's/CAST/double/g' \
 MathTemplate.c.sed >> .tmp.$$
 
@@ -159,8 +137,6 @@ MathTemplate.h.sed >> MathFuncs.h
 
 sed \
 -e 's/FUNCNAME/atan/g' \
--e 's/OUTDATATYPE/float/g' \
--e 's/ARG0TYPE/float/g' \
 -e 's/CAST/double/g' \
 MathTemplate.c.sed >> .tmp.$$
 
@@ -171,8 +147,6 @@ MathTemplate.h.sed >> MathFuncs.h
 
 sed \
 -e 's/FUNCNAME/ceil/g' \
--e 's/OUTDATATYPE/float/g' \
--e 's/ARG0TYPE/float/g' \
 -e 's/CAST/double/g' \
 MathTemplate.c.sed >> .tmp.$$
 
@@ -182,8 +156,6 @@ MathTemplate.h.sed >> MathFuncs.h
 
 sed \
 -e 's/FUNCNAME/floor/g' \
--e 's/OUTDATATYPE/float/g' \
--e 's/ARG0TYPE/float/g' \
 -e 's/CAST/double/g' \
 MathTemplate.c.sed >> .tmp.$$
 
@@ -193,8 +165,6 @@ MathTemplate.h.sed >> MathFuncs.h
 
 sed \
 -e 's/FUNCNAME/fabs/g' \
--e 's/OUTDATATYPE/float/g' \
--e 's/ARG0TYPE/float/g' \
 -e 's/CAST/double/g' \
 MathTemplate.c.sed >> .tmp.$$
 
@@ -204,8 +174,6 @@ MathTemplate.c.sed >> .tmp.$$
 
 #sed \
 #-e 's/FUNCNAME/trunc/g' \
-#-e 's/OUTDATATYPE/float/g' \
-#-e 's/ARG0TYPE/float/g' \
 #-e 's/CAST/double/g' \
 #MathTemplate.c.sed >> .tmp.$$
 
@@ -215,8 +183,6 @@ MathTemplate.h.sed >> MathFuncs.h
 
 sed \
 -e 's/FUNCNAME/log/g' \
--e 's/OUTDATATYPE/float/g' \
--e 's/ARG0TYPE/float/g' \
 -e 's/CAST/double/g' \
 MathTemplate.c.sed >> .tmp.$$
 
@@ -226,8 +192,6 @@ MathTemplate.h.sed >> MathFuncs.h
 
 sed \
 -e 's/FUNCNAME/log10/g' \
--e 's/OUTDATATYPE/float/g' \
--e 's/ARG0TYPE/float/g' \
 -e 's/CAST/double/g' \
 MathTemplate.c.sed >> .tmp.$$
 
@@ -237,8 +201,6 @@ MathTemplate.h.sed >> MathFuncs.h
 
 sed \
 -e 's/FUNCNAME/sqrt/g' \
--e 's/OUTDATATYPE/float/g' \
--e 's/ARG0TYPE/float/g' \
 -e 's/CAST/double/g' \
 MathTemplate.c.sed >> .tmp.$$
 
@@ -248,8 +210,6 @@ MathTemplate.c.sed >> .tmp.$$
 
 #sed \
 #-e 's/FUNCNAME/rint/g' \
-#-e 's/OUTDATATYPE/float/g' \
-#-e 's/ARG0TYPE/float/g' \
 #-e 's/CAST/double/g' \
 #MathTemplate.c.sed >> .tmp.$$
 
@@ -259,9 +219,9 @@ MathTemplate.h.sed >> MathFuncs.h
 
 sed \
 -e 's/FUNCNAME/atan2/g' \
--e 's/OUTDATATYPE/float/g' \
 -e 's/ARG0TYPE/float/g' \
 -e 's/ARG1TYPE/float/g' \
+-e 's/OUTDATATYPE/float/g' \
 -e 's/CAST/double/g' \
 MathTemplate2.c.sed >> .tmp.$$
 
