@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.75 2001-09-25 17:07:11 haley Exp $
+;      $Id: gsn_code.ncl,v 1.76 2001-10-04 04:12:10 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1572,9 +1572,11 @@ begin
     upper_x  = get_res_value_keep(type,"wkDeviceUpperX",576)
     upper_y  = get_res_value_keep(type,"wkDeviceUpperY",666)
     cmap     = get_res_value_keep(type,"wkColorMap","default")
+    cmodel   = get_res_value_keep(type,"wkColorModel","rgb")
 
     ps = create res_file psWorkstationClass defaultapp
       "wkColorMap"     : cmap
+      "wkColorModel"   : cmodel
       "wkOrientation"  : orient
       "wkPSResolution" : resltn
       "wkPSFileName"   : name
