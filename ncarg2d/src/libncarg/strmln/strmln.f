@@ -1,5 +1,5 @@
 C
-C       $Id: strmln.f,v 1.15 1996-02-15 22:08:37 dbrown Exp $
+C       $Id: strmln.f,v 1.16 1996-03-18 09:15:02 dbrown Exp $
 C
       SUBROUTINE STRMLN (U,V,WORK,IMAX,IPTSX,JPTSY,NSET,IER)
 C
@@ -124,7 +124,6 @@ C
 C The remainder of the original STRMLN discussion follows the code
 C
 C
-C
 C ---------------------------------------------------------------------
 C
 C NOTE:
@@ -167,7 +166,7 @@ C
      +                ICKX       ,ITRP       ,ICYK       ,RVNL       ,
      +                ISVF       ,RUSV       ,RVSV       ,RNDA       ,
      +                ISPC       ,RPSV       ,RCDS       ,RSSP       ,
-     +                RDFM
+     +                RDFM       ,RSMD       ,RAMD       ,IGBS
 C
 C Text related parameters
 C Note: graphical text output is not yet implemented for the
@@ -198,7 +197,7 @@ C IPNPTS - Number of points in the point buffer -- not less than 3
 C IPLSTL - Streamline-crossover-check circular list length
 C IPGRCT - Number of groups supported for area masking
 C
-      PARAMETER (IPNPTS = 10, IPLSTL = 750, IPGRCT = 64)
+      PARAMETER (IPNPTS = 256, IPLSTL = 750, IPGRCT = 64)
 C
 C --------------------------------------------------------------------
 C

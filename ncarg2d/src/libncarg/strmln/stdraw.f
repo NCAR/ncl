@@ -1,5 +1,5 @@
 C
-C       $Id: stdraw.f,v 1.12 1996-02-01 20:25:02 dbrown Exp $
+C       $Id: stdraw.f,v 1.13 1996-03-18 09:14:59 dbrown Exp $
 C
       SUBROUTINE STDRAW  (U,V,UX,VY,IAM,STUMSL)
 C
@@ -65,7 +65,7 @@ C
      +                ICKX       ,ITRP       ,ICYK       ,RVNL       ,
      +                ISVF       ,RUSV       ,RVSV       ,RNDA       ,
      +                ISPC       ,RPSV       ,RCDS       ,RSSP       ,
-     +                RDFM
+     +                RDFM       ,RSMD       ,RAMD       ,IGBS
 C
 C Text related parameters
 C Note: graphical text output is not yet implemented for the
@@ -96,7 +96,7 @@ C IPNPTS - Number of points in the point buffer -- not less than 3
 C IPLSTL - Streamline-crossover-check circular list length
 C IPGRCT - Number of groups supported for area masking
 C
-      PARAMETER (IPNPTS = 10, IPLSTL = 750, IPGRCT = 64)
+      PARAMETER (IPNPTS = 256, IPLSTL = 750, IPGRCT = 64)
 C
 C --------------------------------------------------------------------
 C
@@ -187,6 +187,7 @@ C XT,YT    - Temporary x and y values
 C XU1,YU1  - Previous X and Y user coordinate values
 C NCT      - Iteration count for determining the streamline edge
 C LI       - Index into circular crossover checking list
+C IZO      - Zero field flag
 C
 C --------------------------------------------------------------------
 C
@@ -198,10 +199,17 @@ C
       ISK = I1MACH(5) - 2
       IS1 = ISK + 1
 C
-C Stream spacing and critical displacement
+C Stream spacing (setting depends on whether grid relative sizing is
+C in effect) and critical displacement
 C
-      SSP=RSSP*FW2W
+      IF (IGBS.EQ.0) THEN
+         SSP=RSSP*FW2W
+      ELSE
+         SSP=RSSP*FW2W/REAL(IXDM)
+      END IF
       CDS=RCDS*DFMG
+      SMD=RSMD*FW2W
+      AMD=RAMD*FW2W
 C
 C Stream and arrow counters
 C
@@ -222,16 +230,20 @@ C
       SGN = 1.0
       IPC = 0
       ICT = 0
+      IUC = 0
+      JSV = IYD1
 C
 C
 C Compute the X and Y normalized (and possibly transformed)
 C displacement components (UX and VY).
 C
+      IZO = 1
       DO  40 J=IYD1,IYDN
          DO  30 I=IXD1,IXDM
 C
             CALL STMPUV(U(I,J),V(I,J),UIJ,VIJ,IST)
             IF (UIJ.NE.0. .OR. VIJ.NE.0.) THEN
+               IZO = 0
                CVF = VNML/SQRT(UIJ*UIJ + VIJ*VIJ)
                UIJ = CVF*UIJ
                VIJ = CVF*VIJ
@@ -267,6 +279,14 @@ C
  30      CONTINUE
  40   CONTINUE
 C
+C If Zero field bail out
+C
+      IF (IZO .EQ. 1) THEN
+         LCT = 0
+         ITO = 0
+         GO TO 190
+      END IF
+C
 C
 C Start a streamline. Experience has shown that a pleasing picture
 C will be produced if new streamlines are started only in grid
@@ -290,7 +310,7 @@ C
          LCT=LCT+1
          ITO = ITO+ICT
          ICT = 0
-         DO  70 J=IYD1,IYM1
+         DO  70 J=JSV,IYM1
             DO  60 I=IXD1,IXM1
                CALL GBYTES(UX(I,J),IUX,ISK,2,0,1)
                IF (IAND(IUX,IPONE) .EQ. IPZERO) GO TO 80
@@ -319,6 +339,8 @@ C
          JSV = J
          IDR = 1
          SGN = +1.0
+         IUC = 0
+         DST = 0.0
 C
       ELSE
 C
@@ -328,6 +350,8 @@ C
          SGN = -1.
          I = ISV
          J = JSV
+         DST = 0.0
+         ITO = ITO+ICT
       END IF
 C
 C Initiate the drawing sequence, resetting counters.
@@ -376,21 +400,28 @@ C
 C
       END IF
 C
+      ICT=1
       IPC=1
       PX(IPC)=XUS
       PY(IPC)=YUS
 C      
 C Check grid box directional arrow eligibility
+C If a minimum arrow distance is set then the first arrow is not drawn
 C
-      CALL GBYTES(UX(I,J),IUX,ISK,2,0,1)
+      IF (AMD.LE.0.0) THEN
+         CALL GBYTES(UX(I,J),IUX,ISK,2,0,1)
 C
-      IF (IDR.NE.0 .AND. IAND(IUX,IPTWO).EQ.0) THEN
-         CALL STARDR(XUS,YUS,XND,YND,TA,IAM,STUMSL,IST)
-         IF (IST.EQ.0) THEN
-            CALL SBYTES(UX(I,J),IPONE,ISK,1,0,1)
+         IF (IDR.NE.0 .AND. IAND(IUX,IPTWO).EQ.0) THEN
+            IAC=IAC+1
+            CALL STARDR(XUS,YUS,XND,YND,TA,IAM,STUMSL,IST)
+            IF (IST.EQ.0) THEN
+               CALL SBYTES(UX(I,J),IPONE,ISK,1,0,1)
+            END IF
+C
          END IF
-C
       END IF
+C
+      ADS = 0.0
 C
 C Loop to this point until streamline ends
 C
@@ -472,9 +503,9 @@ C
             YN1=YND+(YN2-YND)/PTHREE
             XND=XN1+CSA*DFMG*DUV
             YND=YN1+SNA*DFMG*DUV
-            xd = xnd - xn1
-            yd = ynd - yn1
-            DST = DST + sqrt(xd*xd+yd*yd)
+            XD = XND - XN1
+            YD = YND - YN1
+            DST = DST + SQRT(XD*XD+YD*YD)
 C
 C If the increment takes the line outside the viewport, find an
 C interpolated point on the grid edge. Set a flag indicating
@@ -577,7 +608,6 @@ C
             END IF
             XNS=XND
             YNS=YND
-            GO TO 110
          END IF
 C
 C If the circular list does not need to be checked for
@@ -613,7 +643,21 @@ C
             IF (IST .NE. 0) GO TO 50
          END IF
 C
-C Check (3) (performed any time streamline crossover is checked)
+C Check (3) -- postpone actually drawing the arrow until after the 
+C crossover check, if crossover detected the arrow will not be drawn.
+C
+         IDA = 0
+         CALL GBYTES(UX(I,J),IUX,ISK,2,0,1)
+         IF (IAND(IUX,IPTWO) .EQ. 0) THEN
+            IF (DST-ADS .GT. AMD) THEN
+               ADS = DST
+               IDA = 1
+            END IF
+         END IF
+C
+      END IF
+C
+C Check (4) (performed any time streamline crossover is checked)
 C
       DO 140 LI=1,LCU
          IF (ABS(XND-XLS(LI)) .LE. SSP .AND.
@@ -639,17 +683,15 @@ C
          IF (LBC.GT.IPLSTL) LBC = 1
       END IF
 C
-C Check (4)
-C
-         CALL GBYTES(UX(I,J),IUX,ISK,2,0,1)
-         IF (IAND(IUX,IPTWO) .EQ. 0) THEN
-            CALL STARDR(XUS,YUS,XND,YND,TA,IAM,STUMSL,IST)
-            IF (IST .EQ. 0) THEN
-               CALL SBYTES(UX(I,J),IPONE,ISK,1,0,1)
-            END IF
+      IF (IDA.EQ.1) THEN
+         CALL STARDR(XUS,YUS,XND,YND,TA,IAM,STUMSL,IST)
+         IAC = IAC + 1
+         IF (IST .EQ. 0) THEN
+            CALL SBYTES(UX(I,J),IPONE,ISK,1,0,1)
          END IF
-C
+         IDA = 0
       END IF
+
 C
 C Return to top of drawing loop
 C
@@ -659,6 +701,10 @@ C
 C Final exit
 C
   190 CONTINUE
+C
+      IF (IZO .EQ. 1) THEN
+         CALL STZERO
+      END IF
 C
 C Plot statistics
 C
@@ -746,7 +792,7 @@ C
      +                ICKX       ,ITRP       ,ICYK       ,RVNL       ,
      +                ISVF       ,RUSV       ,RVSV       ,RNDA       ,
      +                ISPC       ,RPSV       ,RCDS       ,RSSP       ,
-     +                RDFM
+     +                RDFM       ,RSMD       ,RAMD       ,IGBS
 C
 C Text related parameters
 C Note: graphical text output is not yet implemented for the
@@ -777,7 +823,7 @@ C IPNPTS - Number of points in the point buffer -- not less than 3
 C IPLSTL - Streamline-crossover-check circular list length
 C IPGRCT - Number of groups supported for area masking
 C
-      PARAMETER (IPNPTS = 10, IPLSTL = 750, IPGRCT = 64)
+      PARAMETER (IPNPTS = 256, IPLSTL = 750, IPGRCT = 64)
 C
 C --------------------------------------------------------------------
 C
@@ -829,7 +875,6 @@ C PLWFCT - Linewidth factor, arrow size is increased by this
 C          much when the linewidth is greater than 1.0
 
       PARAMETER (PHFANG=0.5, PLWFCT=0.15)
-c$$$      character *10 lbl
 C
 C ---------------------------------------------------------------------
 C
@@ -852,10 +897,6 @@ C
 C
  10   CONTINUE
 C
-      IAC=IAC+1
-c$$$      cwrite(lbl,*) iac
-c$$$      call vvtxln(lbl,10,lb,le)
-c$$$      call plchhq(ax(2),ay(2),lbl(lb:le),0.01,0.0,0.0)
       CALL STLNSG(AX,AY,3,IAM,STUMSL)
       
 C
@@ -926,7 +967,7 @@ C
      +                ICKX       ,ITRP       ,ICYK       ,RVNL       ,
      +                ISVF       ,RUSV       ,RVSV       ,RNDA       ,
      +                ISPC       ,RPSV       ,RCDS       ,RSSP       ,
-     +                RDFM
+     +                RDFM       ,RSMD       ,RAMD       ,IGBS
 C
 C Text related parameters
 C Note: graphical text output is not yet implemented for the
@@ -957,7 +998,7 @@ C IPNPTS - Number of points in the point buffer -- not less than 3
 C IPLSTL - Streamline-crossover-check circular list length
 C IPGRCT - Number of groups supported for area masking
 C
-      PARAMETER (IPNPTS = 10, IPLSTL = 750, IPGRCT = 64)
+      PARAMETER (IPNPTS = 256, IPLSTL = 750, IPGRCT = 64)
 C
       DIMENSION IAI(IPGRCT),IAG(IPGRCT)
       DIMENSION XO(IPNPTS), YO(IPNPTS)
@@ -1035,7 +1076,7 @@ C
      +                ICKX       ,ITRP       ,ICYK       ,RVNL       ,
      +                ISVF       ,RUSV       ,RVSV       ,RNDA       ,
      +                ISPC       ,RPSV       ,RCDS       ,RSSP       ,
-     +                RDFM
+     +                RDFM       ,RSMD       ,RAMD       ,IGBS
 C
 C Text related parameters
 C Note: graphical text output is not yet implemented for the
@@ -1066,7 +1107,7 @@ C IPNPTS - Number of points in the point buffer -- not less than 3
 C IPLSTL - Streamline-crossover-check circular list length
 C IPGRCT - Number of groups supported for area masking
 C
-      PARAMETER (IPNPTS = 10, IPLSTL = 750, IPGRCT = 64)
+      PARAMETER (IPNPTS = 256, IPLSTL = 750, IPGRCT = 64)
 C
 C ---------------------------------------------------------------------
 C
@@ -1152,7 +1193,7 @@ C
      +                ICKX       ,ITRP       ,ICYK       ,RVNL       ,
      +                ISVF       ,RUSV       ,RVSV       ,RNDA       ,
      +                ISPC       ,RPSV       ,RCDS       ,RSSP       ,
-     +                RDFM
+     +                RDFM       ,RSMD       ,RAMD       ,IGBS
 C
 C Text related parameters
 C Note: graphical text output is not yet implemented for the
@@ -1183,7 +1224,7 @@ C IPNPTS - Number of points in the point buffer -- not less than 3
 C IPLSTL - Streamline-crossover-check circular list length
 C IPGRCT - Number of groups supported for area masking
 C
-      PARAMETER (IPNPTS = 10, IPLSTL = 750, IPGRCT = 64)
+      PARAMETER (IPNPTS = 256, IPLSTL = 750, IPGRCT = 64)
 C
 C --------------------------------------------------------------------
 C
@@ -1235,6 +1276,149 @@ C Allow mapping using FU,FV functions
 C
       UO = FU(UT,VT)
       VO = FV(UT,VT)
+C
+C Done
+C
+      RETURN
+      END
+C
+C ---------------------------------------------------------------------
+C
+      SUBROUTINE STZERO
+C
+C ---------------------------------------------------------------------
+C
+C NOTE:
+C Since implicit typing is used for all real and integer variables
+C a consistent length convention has been adopted to help clarify the
+C significance of the variables encountered in the code for this 
+C utility. All local variable and subroutine parameter identifiers 
+C are limited to 1,2,or 3 characters. Four character names identify  
+C members of common blocks. Five and 6 character variable names 
+C denote PARAMETER constants or subroutine or function names.
+C
+C Declare the ST common blocks.
+C
+      PARAMETER (IPLVLS = 64)
+C
+C Integer and real common block variables
+C
+C
+      COMMON / STPAR /
+     +                IUD1       ,IVD1       ,IPD1       ,
+     +                IXD1       ,IXDM       ,IYD1       ,IYDN       ,
+     +                IXM1       ,IYM1       ,IXM2       ,IYM2       ,
+     +                IWKD       ,IWKU       ,ISET       ,IERR       ,
+     +                IXIN       ,IYIN       ,IMSK       ,ICPM       ,
+     +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
+     +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
+     +                ITHN       ,IPLR       ,ISST       ,
+     +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
+C
+      COMMON / STTRAN /
+     +                UVPS       ,
+     +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
+     +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
+     +                UXC1       ,UXCM       ,UYC1       ,UYCN 
+C
+C Stream algorithm parameters
+C
+      COMMON / STSTRM /
+     +                ISGD       ,IAGD       ,RARL       ,ICKP       ,
+     +                ICKX       ,ITRP       ,ICYK       ,RVNL       ,
+     +                ISVF       ,RUSV       ,RVSV       ,RNDA       ,
+     +                ISPC       ,RPSV       ,RCDS       ,RSSP       ,
+     +                RDFM       ,RSMD       ,RAMD       ,IGBS
+C
+C Text related parameters
+C Note: graphical text output is not yet implemented for the
+C       Streamline utility.
+C
+      COMMON / STTXP /
+     +                FCWM    ,ICSZ    ,
+     +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
+     +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,
+     +                FZFS    ,FZFX    ,FZFY    ,IZFP    ,IZFC  ,
+     +                FILS    ,FILX    ,FILY    ,IILP    ,IILC 
+C
+C Character variable declartions
+C
+      CHARACTER*160 CSTR
+      PARAMETER (IPCHSZ=80)
+      CHARACTER*(IPCHSZ)  CMNT,CMXT,CZFT,CILT
+C
+C Text string parameters
+C
+      COMMON / STCHAR / CSTR,CMNT,CMXT,CZFT,CILT
+C
+      SAVE /STPAR/, /STTRAN/, /STSTRM/, /STTXP/, /STCHAR/
+C
+C Internal buffer lengths
+C
+C IPNPTS - Number of points in the point buffer -- not less than 3
+C IPLSTL - Streamline-crossover-check circular list length
+C IPGRCT - Number of groups supported for area masking
+C
+      PARAMETER (IPNPTS = 256, IPLSTL = 750, IPGRCT = 64)
+C --------------------------------------------------------------------
+C
+C The mapping common block: made available to user mapping routines
+C
+      COMMON /STMAP/
+     +                IMAP       ,LNLG       ,INVX       ,INVY       ,
+     +                XLOV       ,XHIV       ,YLOV       ,YHIV       ,
+     +                WXMN       ,WXMX       ,WYMN       ,WYMX       ,
+     +                XVPL       ,XVPR       ,YVPB       ,YVPT       ,
+     +                XGDS       ,YGDS       ,NXCT       ,NYCT       ,
+     +                ITRT       ,FW2W       ,FH2H       ,
+     +                DFMG       ,VNML       ,RBIG       ,IBIG
+C
+      SAVE /STMAP/
+C
+C Math constants
+C
+      PARAMETER (PDTOR  = 0.017453292519943,
+     +           PRTOD  = 57.2957795130823,
+     +           P1XPI  = 3.14159265358979,
+     +           P2XPI  = 6.28318530717959,
+     +           P1D2PI = 1.57079632679489,
+     +           P5D2PI = 7.85398163397448) 
+C
+      IF (CZFT(1:1) .EQ. ' ') THEN
+         RETURN
+      END IF
+C
+      CALL GQPLCI(IER,IOC)
+      CALL GQTXCI(IER,IOT)
+C
+C Turn clipping off and SET to an identity transform
+C
+      CALL GQCLIP(IER,ICL,IAR)
+      CALL GSCLIP(0)
+      CALL GETSET(VPL,VPR,VPB,VPT,WDL,WDR,WDB,WDT,ILG)
+      CALL SET(0.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1)
+C     
+      XF = XVPL + FZFX * FW2W
+      YF = YVPB + FZFY * FH2H
+      CALL VVTXLN(CZFT,IPCHSZ,IB,IE)
+      CALL VVTXIQ(CZFT(IB:IE),FZFS*FW2W,W,H)
+      CALL VVTXPO(IZFP,XF,YF,W,H,XW,YW)
+      IF (IZFC .GE. 0) THEN
+         CALL GSTXCI(IZFC)
+         CALL GSPLCI(IZFC)
+      ELSE
+         CALL  GSPLCI(IOT)
+      END IF
+C     
+      CALL PLCHHQ(XW,YW,CZFT(IB:IE),FZFS*FW2W,0.0,0.0)
+C     
+      CALL GSTXCI(IOT)
+      CALL GSPLCI(IOC)
+C     
+C     Restore clipping and the set transformation.
+C     
+      CALL GSCLIP(ICL)
+      CALL SET(VPL,VPR,VPB,VPT,WDL,WDR,WDB,WDT,ILG)
 C
 C Done
 C

@@ -1,16 +1,16 @@
 #
-#	$Id: yMakefile,v 1.6 1996-02-01 20:25:03 dbrown Exp $
+#	$Id: yMakefile,v 1.7 1996-03-18 09:15:04 dbrown Exp $
 #
 MYNAME	= strmln
 
 GENERIC_SRCS    = stcycl.f stdraw.f ezstrm.f stdudv.f strmln.f \
-	 	  stinit.f stream.f stdata.f \
+	 	  stinit.f stream.f stdata.f stsetc.f stgetc.f \
 		  stseti.f stsetr.f stgeti.f stgetr.f \
          	  stmpxy.f stumxy.f strset.f stumsl.f \
 		  chkcyc.f drwstr.f gnewpt.f sthluint.f hlustmpxy.f
 
 GENERIC_OBJS    = stcycl.o stdraw.o ezstrm.o stdudv.o strmln.o \
-	 	  stinit.o stream.o stdata.o \
+	 	  stinit.o stream.o stdata.o stsetc.o stgetc.o \
 		  stseti.o stsetr.o stgeti.o stgetr.o \
          	  stmpxy.o stumxy.o strset.o stumsl.o \
 		  chkcyc.o drwstr.o gnewpt.o sthluint.o hlustmpxy.o

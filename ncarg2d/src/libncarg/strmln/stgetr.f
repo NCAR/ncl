@@ -1,5 +1,5 @@
 C
-C       $Id: stgetr.f,v 1.6 1993-12-03 21:18:40 kennison Exp $
+C       $Id: stgetr.f,v 1.7 1996-03-18 09:15:01 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -58,7 +58,7 @@ C
      +                ICKX       ,ITRP       ,ICYK       ,RVNL       ,
      +                ISVF       ,RUSV       ,RVSV       ,RNDA       ,
      +                ISPC       ,RPSV       ,RCDS       ,RSSP       ,
-     +                RDFM
+     +                RDFM       ,RSMD       ,RAMD       ,IGBS
 C
 C Text related parameters
 C Note: graphical text output is not yet implemented for the
@@ -89,7 +89,7 @@ C IPNPTS - Number of points in the point buffer -- not less than 3
 C IPLSTL - Streamline-crossover-check circular list length
 C IPGRCT - Number of groups supported for area masking
 C
-      PARAMETER (IPNPTS = 10, IPLSTL = 750, IPGRCT = 64)
+      PARAMETER (IPNPTS = 256, IPLSTL = 750, IPGRCT = 64)
 C
 C --------------------------------------------------------------------
 C
@@ -122,8 +122,8 @@ C
       IF (LEN(CNM).LT.3) THEN
         CSTR(1:46)='STGETI OR STGETR - PARAMETER NAME TOO SHORT - '
         CSTR(47:46+LEN(CNM))=CNM
-        CALL SETER (CSTR(1:46+LEN(CNM)),1,2)
-        STOP
+        CALL SETER (CSTR(1:46+LEN(CNM)),1,1)
+        RETURN
       END IF
 C
 C Check for incorrect use of the index parameter.
@@ -133,8 +133,8 @@ C
          IF (IPAI.LT.1.OR.IPAI.GT.NLVL) THEN
             CSTR(1:46)='STGETI OR STGETR - GETTING XXX - PAI INCORRECT'
             CSTR(28:30)=CNM(1:3)
-            CALL SETER (CSTR(1:46),2,2)
-            STOP
+            CALL SETER (CSTR(1:46),2,1)
+            RETURN
          END IF
       END IF
 C
@@ -268,40 +268,19 @@ C
          RVL=RSSP
       ELSE IF (CNM(1:3).EQ.'DFM'.OR. CNM(1:3).EQ.'dfm') THEN
          RVL=RDFM
+      ELSE IF (CNM(1:3).EQ.'SMD'.OR. CNM(1:3).EQ.'smd') THEN
+         RVL=RSMD
+      ELSE IF (CNM(1:3).EQ.'AMD'.OR. CNM(1:3).EQ.'amd') THEN
+         RVL=RAMD
+      ELSE IF (CNM(1:3).EQ.'GBS'.OR. CNM(1:3).EQ.'gbs') THEN
+         RVL=REAL(IGBS)
 C
 C ---------------------------------------------------------------------
 C
 C Values in STTXP
 C
-C
-C character multiplier
-C
-      ELSE IF (CNM(1:3).EQ.'CWM'.OR.CNM(1:3).EQ.'cwm') THEN
-        RVL=FCWM
-C
 C character attributes
 C
-      ELSE IF (CNM(1:3).EQ.'MNS'.OR.CNM(1:3).EQ.'mns') THEN
-         RVL=FMNS
-      ELSE IF (CNM(1:3).EQ.'MNX'.OR.CNM(1:3).EQ.'mnx') THEN
-         RVL=FMNX
-      ELSE IF (CNM(1:3).EQ.'MNY'.OR.CNM(1:3).EQ.'mny') THEN
-         RVL=FMNY
-      ELSE IF (CNM(1:3).EQ.'MNP'.OR. CNM(1:3).EQ.'mnp') THEN
-         RVL=REAL(IMNP)
-      ELSE IF (CNM(1:3).EQ.'MNC'.OR. CNM(1:3).EQ.'mnc') THEN
-         RVL=REAL(IMNC)
-C
-      ELSE IF (CNM(1:3).EQ.'MXS'.OR.CNM(1:3).EQ.'mxs') THEN
-         RVL=FMXS
-      ELSE IF (CNM(1:3).EQ.'MXX'.OR.CNM(1:3).EQ.'mxx') THEN
-         RVL=FMXX
-      ELSE IF (CNM(1:3).EQ.'MXY'.OR.CNM(1:3).EQ.'mxy') THEN
-         RVL=FMXY
-      ELSE IF (CNM(1:3).EQ.'MXP'.OR. CNM(1:3).EQ.'mxp') THEN
-         RVL=REAL(IMXP)
-      ELSE IF (CNM(1:3).EQ.'MXC'.OR. CNM(1:3).EQ.'mxc') THEN
-         RVL=REAL(IMXC)
 C
       ELSE IF (CNM(1:3).EQ.'ZFS'.OR.CNM(1:3).EQ.'zfs') THEN
          RVL=FZFS
@@ -313,17 +292,6 @@ C
          RVL=REAL(IZFP)
       ELSE IF (CNM(1:3).EQ.'ZFC'.OR. CNM(1:3).EQ.'zfc') THEN
          RVL=REAL(IZFC)
-C
-      ELSE IF (CNM(1:3).EQ.'ILS'.OR.CNM(1:3).EQ.'ils') THEN
-         RVL=FILS
-      ELSE IF (CNM(1:3).EQ.'ILX'.OR.CNM(1:3).EQ.'ilx') THEN
-         RVL=FILX
-      ELSE IF (CNM(1:3).EQ.'ILY'.OR.CNM(1:3).EQ.'ily') THEN
-         RVL=FILY
-      ELSE IF (CNM(1:3).EQ.'ILP'.OR. CNM(1:3).EQ.'ilp') THEN
-         RVL=REAL(IILP)
-      ELSE IF (CNM(1:3).EQ.'ILC'.OR. CNM(1:3).EQ.'ilc') THEN
-         RVL=REAL(IILC)
 C
 C ---------------------------------------------------------------------
 C
@@ -377,8 +345,8 @@ C
       ELSE
          CSTR(1:46)='STGETI OR STGETR - PARAMETER NAME NOT KNOWN - '
          CSTR(47:49)=CNM(1:3)
-         CALL SETER (CSTR(1:49),3,2)
-         STOP
+         CALL SETER (CSTR(1:49),3,1)
+         RETURN
       END IF
 C
 C Done.

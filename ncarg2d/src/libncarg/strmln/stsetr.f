@@ -1,5 +1,5 @@
 C
-C       $Id: stsetr.f,v 1.6 1993-12-03 21:18:57 kennison Exp $
+C       $Id: stsetr.f,v 1.7 1996-03-18 09:15:04 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -57,7 +57,7 @@ C
      +                ICKX       ,ITRP       ,ICYK       ,RVNL       ,
      +                ISVF       ,RUSV       ,RVSV       ,RNDA       ,
      +                ISPC       ,RPSV       ,RCDS       ,RSSP       ,
-     +                RDFM
+     +                RDFM       ,RSMD       ,RAMD       ,IGBS
 C
 C Text related parameters
 C Note: graphical text output is not yet implemented for the
@@ -88,7 +88,7 @@ C IPNPTS - Number of points in the point buffer -- not less than 3
 C IPLSTL - Streamline-crossover-check circular list length
 C IPGRCT - Number of groups supported for area masking
 C
-      PARAMETER (IPNPTS = 10, IPLSTL = 750, IPGRCT = 64)
+      PARAMETER (IPNPTS = 256, IPLSTL = 750, IPGRCT = 64)
 C
 C --------------------------------------------------------------------
 C
@@ -121,8 +121,8 @@ C
       IF (LEN(CNM).LT.3) THEN
         CSTR(1:46)='STSETI OR STSETR - PARAMETER NAME TOO SHORT - '
         CSTR(47:46+LEN(CNM))=CNM
-        CALL SETER (CSTR(1:46+LEN(CNM)),1,2)
-        STOP
+        CALL SETER (CSTR(1:46+LEN(CNM)),1,1)
+        RETURN
       END IF
 C
 C Check for incorrect use of the index parameter.
@@ -132,8 +132,8 @@ C
          IF (IPAI.LT.1.OR.IPAI.GT.IPLVLS) THEN
             CSTR(1:46)='STSETI OR STSETR - SETTING XXX - PAI INCORRECT'
             CSTR(28:30)=CNM(1:3)
-            CALL SETER (CSTR(1:46),2,2)
-            STOP
+            CALL SETER (CSTR(1:46),2,1)
+            RETURN
          END IF
       END IF
 C
@@ -264,39 +264,32 @@ C
          RSSP=RVL
       ELSE IF (CNM(1:3).EQ.'DFM'.OR. CNM(1:3).EQ.'dfm') THEN
          RDFM=RVL
+      ELSE IF (CNM(1:3).EQ.'SMD'.OR. CNM(1:3).EQ.'smd') THEN
+         RSMD=RVL
+      ELSE IF (CNM(1:3).EQ.'AMD'.OR. CNM(1:3).EQ.'amd') THEN
+         RAMD=RVL
+      ELSE IF (CNM(1:3).EQ.'GBS'.OR. CNM(1:3).EQ.'gbs') THEN
+         IGBS=INT(RVL)
+C
+C This parameter is special in that it causes RSSP,RDFM, and RARL
+C to be reset.
+C
+        IF (IGBS .EQ. 0) THEN
+           RARL = 0.012
+           RDFM = 0.02
+           RSSP = 0.015
+        ELSE
+           RARL = 0.33
+           RDFM = 0.33
+           RSSP = 0.5
+        END IF
 C
 C ---------------------------------------------------------------------
 C
 C Values in STTXP
 C
-C Character multiplier
-C
-      ELSE IF (CNM(1:3).EQ.'CWM'.OR.CNM(1:3).EQ.'cwm') THEN
-        FCWM=RVL
-C
 C Character attributes
 C
-      ELSE IF (CNM(1:3).EQ.'MNS'.OR.CNM(1:3).EQ.'mns') THEN
-         FMNS=RVL
-      ELSE IF (CNM(1:3).EQ.'MNX'.OR.CNM(1:3).EQ.'mnx') THEN
-         FMNX=RVL
-      ELSE IF (CNM(1:3).EQ.'MNY'.OR.CNM(1:3).EQ.'mny') THEN
-         FMNY=RVL
-      ELSE IF (CNM(1:3).EQ.'MNP'.OR. CNM(1:3).EQ.'mnp') THEN
-         IMNP=INT(RVL)
-      ELSE IF (CNM(1:3).EQ.'MNC'.OR. CNM(1:3).EQ.'mnc') THEN
-         IMNC=INT(RVL)
-C
-      ELSE IF (CNM(1:3).EQ.'MXS'.OR.CNM(1:3).EQ.'mxs') THEN
-         FMXS=RVL
-      ELSE IF (CNM(1:3).EQ.'MXX'.OR.CNM(1:3).EQ.'mxx') THEN
-         FMXX=RVL
-      ELSE IF (CNM(1:3).EQ.'MXY'.OR.CNM(1:3).EQ.'mxy') THEN
-         FMXY=RVL
-      ELSE IF (CNM(1:3).EQ.'MXP'.OR. CNM(1:3).EQ.'mxp') THEN
-         IMXP=INT(RVL)
-      ELSE IF (CNM(1:3).EQ.'MXC'.OR. CNM(1:3).EQ.'mxc') THEN
-         IMXC=INT(RVL)
 C
       ELSE IF (CNM(1:3).EQ.'ZFS'.OR.CNM(1:3).EQ.'zfs') THEN
          FZFS=RVL
@@ -308,17 +301,6 @@ C
          IZFP=INT(RVL)
       ELSE IF (CNM(1:3).EQ.'ZFC'.OR. CNM(1:3).EQ.'zfc') THEN
          IZFC=INT(RVL)
-C
-      ELSE IF (CNM(1:3).EQ.'ILS'.OR.CNM(1:3).EQ.'ils') THEN
-         FILS=RVL
-      ELSE IF (CNM(1:3).EQ.'ILX'.OR.CNM(1:3).EQ.'ilx') THEN
-         FILX=RVL
-      ELSE IF (CNM(1:3).EQ.'ILY'.OR.CNM(1:3).EQ.'ily') THEN
-         FILY=RVL
-      ELSE IF (CNM(1:3).EQ.'ILP'.OR. CNM(1:3).EQ.'ilp') THEN
-         IILP=INT(RVL)
-      ELSE IF (CNM(1:3).EQ.'ILC'.OR. CNM(1:3).EQ.'ilc') THEN
-         IILC=INT(RVL)
 C
 C ---------------------------------------------------------------------
 C
@@ -334,8 +316,8 @@ C
       ELSE
         CSTR(1:46)='STSETI OR STSETR - PARAMETER NAME NOT KNOWN - '
         CSTR(47:49)=CNM(1:3)
-        CALL SETER (CSTR(1:49),3,2)
-        STOP
+        CALL SETER (CSTR(1:49),3,1)
+        RETURN
       END IF
 C
       GOTO 9900
@@ -344,8 +326,8 @@ C
 C
       CSTR(1:50)='STSETI OR STSETR - PARAMETER VALUE OUT OF RANGE - '
       CSTR(51:53)=CNM(1:3)
-      CALL SETER (CSTR(1:53),3,2)
-      STOP
+      CALL SETER (CSTR(1:53),3,1)
+      RETURN
 C      
  9900 CONTINUE
 C

@@ -1,5 +1,5 @@
 C
-C       $Id: strset.f,v 1.6 1993-12-03 21:18:52 kennison Exp $
+C       $Id: strset.f,v 1.7 1996-03-18 09:15:03 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -51,7 +51,7 @@ C
      +                ICKX       ,ITRP       ,ICYK       ,RVNL       ,
      +                ISVF       ,RUSV       ,RVSV       ,RNDA       ,
      +                ISPC       ,RPSV       ,RCDS       ,RSSP       ,
-     +                RDFM
+     +                RDFM       ,RSMD       ,RAMD       ,IGBS
 C
 C Text related parameters
 C Note: graphical text output is not yet implemented for the
@@ -82,7 +82,7 @@ C IPNPTS - Number of points in the point buffer -- not less than 3
 C IPLSTL - Streamline-crossover-check circular list length
 C IPGRCT - Number of groups supported for area masking
 C
-      PARAMETER (IPNPTS = 10, IPLSTL = 750, IPGRCT = 64)
+      PARAMETER (IPNPTS = 256, IPLSTL = 750, IPGRCT = 64)
 C
 C --------------------------------------------------------------------
 C
@@ -174,7 +174,7 @@ C STSTRM
 C
       ISGD = 2
       IAGD = 2
-      RARL = 0.015
+      RARL = 0.012
       ICKP = 35
       ICKX = -99
       ITRP = 0
@@ -186,43 +186,26 @@ C
       RPSV = 1.0E12
       ISPC = -1
       RCDS = 2.0
-      RSSP = 0.02
+      RSSP = 0.015
       RDFM = 0.02
+      RSMD = 0.0
+      RAMD = 0.0
+      IGBS = 0
 C
 C ---------------------------------------------------------------------
 C
 C
-      FCWM = 1.0
-      ICSZ = IPCHSZ
-      FMNS = 0.0075
-      FMNX = 0.475
-      FMNY = -0.01
-      IMNP = 4
-      IMNC = -1
-      FMXS = 0.0075
-      FMXX = 0.525
-      FMXY = -0.01
-      IMXP = 2
-      IMXC = -1
       FZFS = 0.033
       FZFX = 0.5
       FZFY = 0.5
       IZFP = 0
       IZFC = -1
-      FILS = 0.05
-      FILX = 0.0
-      FILY = 0.0
-      IILP = -1
-      IILC = -1
 C
 C ---------------------------------------------------------------------
 C
 C STCHAR values
 C
-      CMNT = 'Minimum Speed'
-      CMXT = 'Maximum Speed'
       CZFT = 'ZERO FIELD'
-      CILT = 'Streamlines' 
 C
 C ---------------------------------------------------------------------
 C

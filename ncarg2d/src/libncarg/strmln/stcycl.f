@@ -1,5 +1,5 @@
 C
-C       $Id: stcycl.f,v 1.5 1993-12-03 21:18:28 kennison Exp $
+C       $Id: stcycl.f,v 1.6 1996-03-18 09:14:58 dbrown Exp $
 C
       SUBROUTINE STCYCL(U,V)
 C
@@ -49,7 +49,7 @@ C
      +                ICKX       ,ITRP       ,ICYK       ,RVNL       ,
      +                ISVF       ,RUSV       ,RVSV       ,RNDA       ,
      +                ISPC       ,RPSV       ,RCDS       ,RSSP       ,
-     +                RDFM
+     +                RDFM       ,RSMD       ,RAMD       ,IGBS
 C
 C Text related parameters
 C Note: graphical text output is not yet implemented for the
@@ -80,7 +80,7 @@ C IPNPTS - Number of points in the point buffer -- not less than 3
 C IPLSTL - Streamline-crossover-check circular list length
 C IPGRCT - Number of groups supported for area masking
 C
-      PARAMETER (IPNPTS = 10, IPLSTL = 750, IPGRCT = 64)
+      PARAMETER (IPNPTS = 256, IPLSTL = 750, IPGRCT = 64)
 C
 C ---------------------------------------------------------------------
 C

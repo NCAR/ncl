@@ -1,5 +1,5 @@
 C
-C       $Id: stdata.f,v 1.9 1996-02-07 19:06:27 dbrown Exp $
+C       $Id: stdata.f,v 1.10 1996-03-18 09:14:59 dbrown Exp $
 C
       BLOCK DATA STDATA
 C
@@ -47,7 +47,7 @@ C
      +                ICKX       ,ITRP       ,ICYK       ,RVNL       ,
      +                ISVF       ,RUSV       ,RVSV       ,RNDA       ,
      +                ISPC       ,RPSV       ,RCDS       ,RSSP       ,
-     +                RDFM
+     +                RDFM       ,RSMD       ,RAMD       ,IGBS
 C
 C Text related parameters
 C Note: graphical text output is not yet implemented for the
@@ -78,7 +78,7 @@ C IPNPTS - Number of points in the point buffer -- not less than 3
 C IPLSTL - Streamline-crossover-check circular list length
 C IPGRCT - Number of groups supported for area masking
 C
-      PARAMETER (IPNPTS = 10, IPLSTL = 750, IPGRCT = 64)
+      PARAMETER (IPNPTS = 256, IPLSTL = 750, IPGRCT = 64)
 C
 C --------------------------------------------------------------------
 C
@@ -414,43 +414,28 @@ C                 accurate approximation of the streamline.
 C
       DATA RDFM / 0.02 /
 C
+C RSMD -- 'SMD' - Streamline minimum distance as a fraction of the 
+C                 viewport width.
+C
+      DATA RSMD / 0.0 /
+C
+C RAMD -- 'AMD' - Arrow minimum distance as a fraction of the 
+C                 viewport width.
+C
+      DATA RAMD / 0.0 /
+C
+C IGBS -- 'GBS' - Grid based spacing flag
+C
+      DATA IGBS / 0 /
+C
 C End of STSTRM
 C --------------------------------------------------------------------
 C
 C STTXP - Text parameters 
 C
-C FCWM -- 'CWM' -- character width multiple, scale factor for all 
-C                  text put out by the Streamline utility
-C
-      DATA FCWM / 1.0 /
-C
 C ICCM -- internal - maximum length of character strings
 C
       DATA ICSZ / IPCHSZ /
-C
-C FMNS -- 'MNS' -- size of text for minimum vector string as FVPW
-C FMNX -- 'MNX' -- X position of minimum vector string as FVPW
-C FMNY -- 'MNY' -- Y position of minimum vector string as FVPW
-C IMNP -- 'MNP' -- minimum vector string position flag
-C IMNC -- 'MNC' -- color of text for minimum vector label
-C 
-      DATA FMNS / 0.0075 /
-      DATA FMNX / 0.475 /
-      DATA FMNY / -0.01 /
-      DATA IMNP / 4 /
-      DATA IMNC / -1 /
-C
-C FMXS -- 'MXS' -- size of text for maximum vector string as FVPW
-C FMXX -- 'MXX' -- X position of maximum vector string as FVPW
-C FMXY -- 'MXY' -- Y position of maximum vector string as FVPW
-C IMXP -- 'MXP' -- maximum vector string position flag
-C IMXC -- 'MXC' -- color of text for maximum vector label
-C 
-      DATA FMXS / 0.0075 /
-      DATA FMXX / 0.525 /
-      DATA FMXY / -0.01 /
-      DATA IMXP / 2 /
-      DATA IMXC / -1 /
 C
 C FZFS -- 'ZFS' -- size of text for zero field string as FVPW
 C FZFX -- 'ZFX' -- X position of zero field string as FVPW
@@ -464,27 +449,11 @@ C
       DATA IZFP / 0 /
       DATA IZFC / -1 /
 C
-C The informational label has not yet been implemented
-C FILS -- 'ILS' -- size of text for informational label string as FVPW
-C FILX -- 'ILX' -- X position of informational label string as FVPW
-C FILY -- 'ILY' -- Y position of informational label string as FVPW
-C IILP -- 'ILP' -- informational label string position flag
-C IILC -- 'ILC' -- color of text for informational label
-C 
-      DATA FILS / 0.05 /
-      DATA FILX / 0.0 /
-      DATA FILY / 0.0 /
-      DATA IILP / 0 /
-      DATA IILC / -1 /
-C
 C ---------------------------------------------------------------------
 C
 C Beginning of STCHAR initialization
 C
-      DATA CMNT / 'Minimum Speed' /
-      DATA CMXT / 'Maximum Speed' /
       DATA CZFT / 'ZERO FIELD' /
-      DATA CILT / 'Streamlines' /
 C
 C End of STCHAR initialization
 C
@@ -528,7 +497,6 @@ C FW2W,FH2H -- fraction of viewport to fraction of viewspace
 C
 C RBIG,IBIG -- maximum expressible real and integer values
 C
-C
 C ---------------------------------------------------------------------
 C
 C STRMLN compatibility common blocks
@@ -559,33 +527,4 @@ C
 C
 C End of STR03 initialization
 C
-C ---------------------------------------------------------------------
-C
-C REVISION HISTORY ----------------------------------------------------
-C
-C FEBRUARY, 1979   ADDED REVISION HISTORY
-C                  MODIFIED CODE TO CONFORM TO FORTRAN 66 STANDARD
-C
-C JULY, 1979       FIXED HI VECTOR TRAP AND MESSAGE INDICATING
-C                  MAXIMUM VECTOR PLOTTED.
-C
-C DECEMBER, 1979   CHANGED THE STATISTICS CALL FROM CRAYLIB TO NSSL
-C
-C MARCH, 1981      FIXED SOME FRINGE-CASE ERRORS, CHANGED THE CODE TO
-C                  USE FL2INTT AND PLOTIT INSTEAD OF MXMY, FRSTPT, AND
-C                  VECTOR, AND MADE THE ARROWHEADS NARROWER (45 DEGREES
-C                  APART, RATHER THAN 60 DEGREES APART)
-C
-C FEBRUARY, 1984   PROVIDED A DIMENSION STATEMENT FOR A VARIABLE INTO
-C                  WHICH A TEN-CHARACTER STRING WAS BEING ENCODED.  ON
-C                  THE CRAY, WHEN THE ENCODE WAS DONE, A WORD FOLLOWING
-C                  THE VARIABLE WAS CLOBBERED, BUT THIS APPARENTLY MADE
-C                  NO DIFFERENCE.  ON AT LEAST ONE OTHER MACHINE, THE
-C                  CODE BLEW UP.  (ERROR REPORTED BY GREG WOODS)
-C
-C JULY, 1984       CONVERTED TO FORTRAN77 AND GKS.
-C
-C MARCH, 1990      CORRECTED THE USE OF SET CALLS.
-C
-C ---------------------------------------------------------------------
       END

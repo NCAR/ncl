@@ -1,20 +1,19 @@
 C
-C       $Id: stream.f,v 1.11 1996-03-18 09:15:02 dbrown Exp $
 C
-      SUBROUTINE STREAM (U,V,P,IAM,STUMSL,WRK)
 C
-      DIMENSION  U(IUD1,*), V(IVD1,*), P(IPD1,*), IAM(*), WRK(*)
+C-----------------------------------------------------------------------
 C
-      EXTERNAL STUMSL
+      SUBROUTINE STSETC (CNM,CVL)
 C
-C Input parameters:
+      CHARACTER*(*) CNM,CVL
 C
-C U,V    - arrays containing vector field data
-C P      - 2-d scalar data array. (dummy - not implemented yet)
-C IAM    - An area map array, may be dummied if 'MSK' is zero
-C STUMSL - User modifiable masked drawing function; also may
-C          be dummied if 'MSK is zero
-C WRK    - workspace 
+C This subroutine is called to give a specified character value to a
+C specified parameter.
+C
+C CNM is the name of the parameter whose value is to be set.
+C
+C CVL is a character variable containing the new value of the
+C parameter.
 C
 C ---------------------------------------------------------------------
 C
@@ -115,62 +114,32 @@ C
      +           P1D2PI = 1.57079632679489,
      +           P5D2PI = 7.85398163397448) 
 C
-C -----------------------------------------------------------------
+C ---------------------------------------------------------------------
 C
-C Check for valid area map and area group overflow if masking is enabled
+C Check for a parameter name that is too short.
 C
-      IF (IMSK.GT.0) THEN
-         IF (IAM(7).GT.IPGRCT) THEN
-            CSTR(1:29)='STREAM - TOO MANY AREA GROUPS'
-            CALL SETER (CSTR(1:29),1,1)
-            RETURN
-         END IF
-         IF (IAM(7).LE.0) THEN
-            CSTR(1:25)='STREAM - INVALID AREA MAP'
-            CALL SETER (CSTR(1:29),2,1)
-            RETURN
-         END IF
+      IF (LEN(CNM).LT.3) THEN
+        CSTR(1:36)='STSETC - PARAMETER NAME TOO SHORT - '
+        CSTR(37:36+LEN(CNM))=CNM
+        CALL SETER (CSTR(1:36+LEN(CNM)),1,1)
+        RETURN
       END IF
 C
-C Save the line color, text color and linewidth.
-C Then set up the new linewidth values
-C 
-      CALL GQPLCI(IER,IOC)
-      CALL GQTXCI(IER,IOT)
-      CALL GQLWSC(IER,ROW)
-      CALL GSLWSC(WDLV)
+C Set the proper parameter.
 C
-C Calculation of NDC sizing values varies based on whether grid 
-C relative sizing is in effect.
-C
-      IF (IGBS .EQ. 0) THEN
-         RNDA=RARL*FW2W
-         DFMG=RDFM*FW2W
+      IF (CNM(1:3).EQ.'ZFT'.OR.CNM(1:3).EQ.'zft') THEN
+         CZFT=CVL
       ELSE
-         RNDA=RARL*FW2W/REAL(IXDM)
-         DFMG=RDFM*FW2W/REAL(IXDM)
+C
+         CSTR(1:36)='STSETC - PARAMETER NAME NOT KNOWN - '
+         CSTR(37:39)=CNM(1:3)
+         CALL SETER (CSTR(1:39),3,1)
+         RETURN
+C
       END IF
 C
-C If not using the FX,FY routines, then the vector normalization
-C value is fixed. 
-C
-      IF (ICPM.LT.1) THEN
-         VNML=0.3333333
-      ELSE
-         VNML=RVNL
-      END IF
-C
-C Draw the streamlines.
-C Break the work array into two parts.  See STDRAW for further
-C comments on this.
-C
-      CALL STDRAW (U,V,WRK(1),WRK(IXDM*IYDN+1),IAM,STUMSL)
-C
-C Reset the polyline color, text color, and the linewidth
-C
-      CALL GSPLCI(IOC)
-      CALL GSLWSC(ROW)
-      CALL GSTXCI(IOT)
+C Done.
 C
       RETURN
+C
       END
