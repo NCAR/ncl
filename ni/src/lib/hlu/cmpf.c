@@ -35,7 +35,10 @@ int sig_digit;
 * need to convert <a> so its not a negative, so logs can be taken
 */
         a_final = fabs(a);
-        sign = (int)(a_final/a);
+	if(a < 0.0)
+		sign = -1;
+	else
+		sign = 1;
 /*
 * Converts number to value between 0.0 and 1.0
 */
@@ -221,8 +224,14 @@ float	_NhlCmpFAny
 * store sign info and make sure both numbers are positive so log10 can be
 * used. 
 */
-	signa = ((float)fabs(a))/a;
-	signb = ((float)fabs(b))/b;
+	if(a < 0.0)
+		signa = -1;
+	else
+		signa = 1;
+	if(b < 0.0)
+		signb = -1;
+	else
+		signb = 1;
 	a_final = fabs(a);
 	b_final = fabs(b);
 /*
