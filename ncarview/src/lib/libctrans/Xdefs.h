@@ -37,7 +37,7 @@ Colormap	Cmap;		/* current colormap for $win	*/
 int		ColorModel;	/* color model			*/
 boolean		MyCmap;		/* I created Cmap		*/
 boolean		RoCmap;		/* Read Only Cmap		*/
-int		ColorErr;	/* % color error allowed	*/
+float		ColorErr;	/* % color error allowed	*/
 /*
  *      If true the driver will not attempt to set the background
  *      color or clear the window.
