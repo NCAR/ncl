@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.6 1992-10-05 19:18:50 ncargd Exp $
+#   $Id: ncargex.csh,v 1.7 1993-01-13 18:41:31 haley Exp $
 #
 
 set example_dir=`ncargpath SED_EXAMPLESDIR`
@@ -47,10 +47,23 @@ tgflas tgrida thafto thstgr tisohr tisosr tlblba tpltch tpwrtx \
 tpwry tpwrzi tpwrzs tpwrzt tsoftf tsrfac tstitl tstrml tthree \
 tvelvc)
 
-set tutor_list=(\
+set tutor_conpack=(\
+ccpback ccpcff ccpcfx ccpcir ccpcis ccpcit ccpclc ccpcld ccpcldm ccpcldr \
+ccpcll ccpclu ccpcnrc ccpdflt ccpezct ccpfil ccpga ccphand ccphl ccphlt \
+ccpila ccpils ccpilt ccpklb ccplbam ccplbdr ccpline ccpllb ccpllc ccplll \
+ccpllo ccpllp ccpllt ccpllw ccpmap ccpmpxy ccpncls ccpnet ccpnof ccpnsd \
+ccppc ccppc1 ccppc2 ccppc3 ccppc4 ccppkcl ccprc ccprect ccprwc ccprwu \
+ccpscam ccpset ccpsps1 ccpsps2 ccpspv ccptitle ccpvp ccpvs cidsfft colcon)
+
+set tutor_areas=(\
+cardb1 caredg carline cardb2 carfill carmap)
+
+set tutor_ezmap=(\
 cezmap1 cezmap2 cezmap3 cmpclr cmpdd cmpdrw cmpel cmpfil cmpgci \
 cmpgrd cmpgrp cmpita cmpitm cmplab cmplbl cmplot cmpmsk cmpou cmppos \
 cmpsat cmpsup cmptit cmptra cmpusr)
+
+set tutor_list=( $tutor_areas $tutor_ezmap $tutor_conpack )
 
 set alias_list=(\
 agupwrtx areas autograph conrecq conrecs conrecsup colconv conran \
@@ -94,7 +107,7 @@ while ($#argv > 0)
         case "-alltutorial":
 		case "-U":
             shift
-            set names=($tutor_list "mpex03" "mpex05")
+            set names=($tutor_list "mpex03" "mpex05" "arex01")
             breaksw
         
         case "-clean":
@@ -254,6 +267,32 @@ if ( "$name" == "cmptit" ) then
     set copy_files=($copy_files cmpcc.f)
     set f_files=($f_files cmpcc.f)
     set rmfiles="cmpcc.o"
+endif
+
+if ( "$name" == "ccpcir" || "$name" == "ccpcncrc" || "$name" == "ccpezct" || \
+     "$name" == "ccphl" || "$name" == "ccpmap" || "$name" == "ccpvp" ) then
+    set copy_files=($copy_files ggdini.f)
+    set f_files=($f_files ggdini.f)
+    set rmfiles="ggdini.o"
+endif
+
+if ( "$name" == "ccpmpxy" ) then
+    set copy_files=($copy_files cpmpxy1.dat cpmpxy2.dat)
+    set f_files=($f_files)
+    set rmfiles=(cpmpxy1.dat cpmpxy2.dat)
+endif
+
+if ( "$name" == "ccpila" ) then
+    set copy_files=($copy_files ccpila.dat)
+    set f_files=($f_files)
+    set rmfiles="ccpila.dat"
+endif
+
+if ( "$name" == "ccpils" || "$name" == "ccpilt" || "$name" == "ccplbdr" || \
+     "$name" == "ccptitle" ) then
+    set copy_files=($copy_files ccpall.dat)
+    set f_files=($f_files)
+    set rmfiles="ccpall.dat"
 endif
 
 set rmfiles=($rmfiles $copy_files)
