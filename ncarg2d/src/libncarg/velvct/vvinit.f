@@ -1,5 +1,5 @@
 C
-C	$Id: vvinit.f,v 1.5 1993-02-19 21:51:24 dbrown Exp $
+C	$Id: vvinit.f,v 1.6 1993-03-15 22:57:06 dbrown Exp $
 C
 C-----------------------------------------------------------------------
 C
@@ -135,8 +135,8 @@ C
       IXDM=M
       IYDN=N
       IF (IXDM.GT.IUD1 .OR. IXDM.GT.IVD1) THEN
-         CSTR(1:40)='VVINIT - FIRST ARRAY DIMENSIONS EXCEEDED'
-         CALL SETER (CSTR(1:40),1,2)
+         CSTR(1:45)='VVINIT - U AND/OR V ARRAY DIMENSIONS EXCEEDED'
+         CALL SETER (CSTR(1:45),1,2)
          STOP
       END IF
 C

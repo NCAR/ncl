@@ -1,5 +1,5 @@
 C
-C	$Id: vvectr.f,v 1.5 1993-02-19 21:51:13 dbrown Exp $
+C	$Id: vvectr.f,v 1.6 1993-03-15 22:57:03 dbrown Exp $
 C
       SUBROUTINE VVECTR (U,V,P,IAM,VVUDMV,WRK)
 C
@@ -187,10 +187,6 @@ C VPL,VPR,VPB,VPT,WDL,WDR,WDB,WDT,ILG - Saved SET call values
 C IER,ICL,IAR - Clip query values
 C 
 C ---------------------------------------------------------------------
-C
-C The following call is for gathering statistics on library use at ncar.
-C
-      CALL Q8QST4 ('NSSL','VELVCT','VVECTR','VERSION  6')
 C
 C Check for valid area map and area group overflow if masking is enabled
 C

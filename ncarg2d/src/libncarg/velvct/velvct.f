@@ -1,5 +1,5 @@
 C
-C	$Id: velvct.f,v 1.7 1993-02-24 01:24:51 dbrown Exp $
+C	$Id: velvct.f,v 1.8 1993-03-15 22:56:58 dbrown Exp $
 C
       SUBROUTINE VELVCT (U,LU,V,LV,M,N,FLO,HI,NSET,LENGTH,ISPV,SPV)
 C
@@ -236,11 +236,6 @@ C
 C
 C -------------------------------------------------------------------
 C
-C The following call is for gathering statistics on library use at ncar.
-C
-C
-      CALL Q8QST4 ('CRAYLIB','VELVCT','VELVEC','VERSION  4')
-C
 C Save the values of all internal parameters that might be reset
 C
       CALL VVGETR('VLC - Vector Low Cutoff Value', SVLC)
@@ -396,7 +391,7 @@ C Initialize the vector plotting routine and plot the vectors
 C
       CALL VVINIT(U,LU,V,LV,IDM,IDM,M,N,IDM,IDM)
 C
-      CALL VVECTR(U,V,IDM,IDM,IDM)
+      CALL VVECTR(U,V,IDM,IDM,IDM,IDM)
 C
 C Restore original SET values, if required.
 C
@@ -665,7 +660,7 @@ C     RETURN
 C     END
 C
 C The basic notion behind the coding of the MXF and MYF functions is as
-C follows.  Since UU and VV are the longitudinal and latitudinal components,
+C follows.Since UU and VV are the longitudinal and latitudinal components,
 C respectively, of a velocity vector having units of distance over time,
 C 1.E-6*UU/COS(latitude) and 1.E-6*VV represent the change in longitude
 C and latitude, respectively, of a particle moving with the flow field
