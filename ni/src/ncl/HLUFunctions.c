@@ -3124,15 +3124,25 @@ NhlErrorTypes _NclINhlAppGetDefaultParentId
 
 	
 	tmp = NhlAppGetDefaultParentId();
-	tmp_layer = _NhlGetLayer(tmp);
-	tmp_hlu = _NclHLUObjCreate(NULL,NULL,Ncl_HLUObj,0,STATIC,tmp,-1,tmp_layer->base.layer_class);
-	out_ids = (obj*)NclMalloc(sizeof(obj));
-	*out_ids = tmp_hlu->obj.id;
-	data_out.kind = NclStk_VAL;
-	data_out.u.data_obj = _NclMultiDValHLUObjDataCreate(
-		NULL,NULL, Ncl_MultiDValHLUObjData,
-		0,(void*)out_ids,&((NclTypeClass)nclTypeobjClass)->type_class.default_mis,n_dims_,
-		&len_dims,TEMPORARY,NULL);
+	if(tmp) {
+		tmp_layer = _NhlGetLayer(tmp);
+		tmp_hlu = _NclHLUObjCreate(NULL,NULL,Ncl_HLUObj,0,STATIC,tmp,-1,tmp_layer->base.layer_class);
+		out_ids = (obj*)NclMalloc(sizeof(obj));
+		*out_ids = tmp_hlu->obj.id;
+		data_out.kind = NclStk_VAL;
+		data_out.u.data_obj = _NclMultiDValHLUObjDataCreate(
+			NULL,NULL, Ncl_MultiDValHLUObjData,
+			0,(void*)out_ids,&((NclTypeClass)nclTypeobjClass)->type_class.default_mis,n_dims_,
+			&len_dims,TEMPORARY,NULL);
+	} else {
+		out_ids = (obj*)NclMalloc(sizeof(obj));
+		*out_ids = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
+		data_out.kind = NclStk_VAL;
+		data_out.u.data_obj = _NclMultiDValHLUObjDataCreate(
+			NULL,NULL, Ncl_MultiDValHLUObjData,
+			0,(void*)out_ids,&((NclTypeClass)nclTypeobjClass)->type_class.default_mis,n_dims_,
+			&len_dims,TEMPORARY,NULL);
+	}
 	_NclPlaceReturn(data_out);
 	return(ret);
 }
