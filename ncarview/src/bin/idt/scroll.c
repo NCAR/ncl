@@ -1,5 +1,5 @@
 /*
- *	$Id: scroll.c,v 1.4 1991-12-19 10:02:07 clyne Exp $
+ *	$Id: scroll.c,v 1.5 1992-04-03 23:21:02 clyne Exp $
  */
 /*
  *	scroll.c

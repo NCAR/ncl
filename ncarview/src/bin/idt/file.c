@@ -1,5 +1,5 @@
 /*
- *	$Id: file.c,v 1.6 1992-01-27 12:10:23 clyne Exp $
+ *	$Id: file.c,v 1.7 1992-04-03 23:20:46 clyne Exp $
  */
 /*
  *	file.c

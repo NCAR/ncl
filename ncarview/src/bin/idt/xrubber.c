@@ -1,5 +1,5 @@
 /*
- *	$Id: xrubber.c,v 1.4 1991-06-18 14:50:51 clyne Exp $
+ *	$Id: xrubber.c,v 1.5 1992-04-03 23:21:37 clyne Exp $
  */
 /*
  *	xrubber.c

@@ -1,5 +1,5 @@
 /*
- *	$Id: display.c,v 1.5 1991-08-15 17:14:35 clyne Exp $
+ *	$Id: display.c,v 1.6 1992-04-03 23:20:43 clyne Exp $
  */
 /*
  *	Display.c

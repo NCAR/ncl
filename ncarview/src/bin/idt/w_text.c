@@ -1,5 +1,5 @@
 /*
- *	$Id: w_text.c,v 1.3 1991-08-20 18:43:53 clyne Exp $
+ *	$Id: w_text.c,v 1.4 1992-04-03 23:21:34 clyne Exp $
  */
 /*
  *	w_text.c

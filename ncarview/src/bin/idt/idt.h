@@ -1,5 +1,5 @@
 /*
- *	$Id: idt.h,v 1.6 1992-02-13 18:36:41 clyne Exp $
+ *	$Id: idt.h,v 1.7 1992-04-03 23:20:56 clyne Exp $
  */
 #ifndef	_idt_
 #define	_idt_

@@ -1,5 +1,5 @@
 /*
- *      $Id: xt_env.c,v 1.2 1991-08-15 17:16:44 clyne Exp $
+ *      $Id: xt_env.c,v 1.3 1992-04-03 23:21:42 clyne Exp $
  */
 /*
  *	File:		xt_env.c

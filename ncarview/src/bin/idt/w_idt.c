@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.18 1992-02-13 18:36:48 clyne Exp $
+ *	$Id: w_idt.c,v 1.19 1992-04-03 23:21:27 clyne Exp $
  */
 /*
  *	w_idt.c

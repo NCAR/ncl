@@ -1,5 +1,5 @@
 /*
- *	$Id: spooler.c,v 1.2 1991-01-09 10:53:23 clyne Exp $
+ *	$Id: spooler.c,v 1.3 1992-04-03 23:21:05 clyne Exp $
  */
 /*
  *	spooler.c

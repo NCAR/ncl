@@ -1,5 +1,5 @@
 /*
- *	$Id: w_display.c,v 1.7 1992-02-13 18:36:43 clyne Exp $
+ *	$Id: w_display.c,v 1.8 1992-04-03 23:21:15 clyne Exp $
  */
 /*
  *	w_display.c

@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.4 1991-08-15 17:14:25 clyne Exp $
+ *	$Id: commands.c,v 1.5 1992-04-03 23:20:39 clyne Exp $
  */
 /*
  *	commands.c

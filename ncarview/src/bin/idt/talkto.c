@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.9 1992-02-10 17:33:23 clyne Exp $
+ *	$Id: talkto.c,v 1.10 1992-04-03 23:21:09 clyne Exp $
  */
 /*
  *	talkto.c

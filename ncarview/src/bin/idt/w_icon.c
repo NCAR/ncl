@@ -1,5 +1,5 @@
 /*
- *	$Id: w_icon.c,v 1.1 1991-08-15 17:14:55 clyne Exp $
+ *	$Id: w_icon.c,v 1.2 1992-04-03 23:21:24 clyne Exp $
  */
 /*
  *	w_icon.c

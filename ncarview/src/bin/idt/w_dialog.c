@@ -1,5 +1,5 @@
 /*
- *	$Id: w_dialog.c,v 1.2 1991-01-09 10:53:37 clyne Exp $
+ *	$Id: w_dialog.c,v 1.3 1992-04-03 23:21:12 clyne Exp $
  */
 /*
  *	w_dialog.c

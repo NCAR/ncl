@@ -1,5 +1,5 @@
 /*
- *      $Id: kludge.c,v 1.2 1991-08-20 18:43:49 clyne Exp $
+ *      $Id: kludge.c,v 1.3 1992-04-03 23:20:59 clyne Exp $
  */
 /*
  *	File:		kludge
