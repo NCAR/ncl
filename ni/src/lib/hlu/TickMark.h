@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.h,v 1.14 1997-08-14 16:30:41 dbrown Exp $
+ *      $Id: TickMark.h,v 1.15 1998-03-12 00:57:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -354,7 +354,7 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlNtmYRLabelFontQuality	"tmYRLabelFontQuality"
 #define NhlNtmYRLabelConstantSpacingF	"tmYRLabelConstantSpacingF"
 
-#define NhlNtmYRLabelDeltaF		"tmYRRLabelDeltaF"
+#define NhlNtmYRLabelDeltaF		"tmYRLabelDeltaF"
 
 /*
 * -------------> Still need to come up with resources for 
