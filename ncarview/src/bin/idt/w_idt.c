@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.29 1992-12-14 22:31:14 clyne Exp $
+ *	$Id: w_idt.c,v 1.30 1993-03-31 17:09:18 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -466,13 +466,13 @@ static	void Quit(widget, closure, call_data)
  *
  * on entry
  *	parent		: the parent widget of the control panel
- *	select_action	: action to be executed on a file selection
+ *	*select_action	: action to be executed on a file selection
  */
 
 static void
 create_main_panel(parent, select_action)
 	Widget parent;
-	FuncPtrPasser	select_action;
+	FuncPtrPasser	*select_action;
 {
 	Widget paned, form, text, select_file, quit;
 	Cardinal n;
@@ -539,7 +539,7 @@ create_main_panel(parent, select_action)
 		commandWidgetClass, form ,args,n);
 
 	XtAddCallback(select_file, XtNcallback, Select_file, 
-					(XtPointer) &select_action);
+					(XtPointer) select_action);
 
 	n = 0;
 	XtSetArg(args[n], XtNfromHoriz, select_file); n++;
@@ -632,7 +632,7 @@ main(argc, argv)
 	/*
 	 * the main control panel
 	 */
-	create_main_panel(toplevel, select_action);
+	create_main_panel(toplevel, &select_action);
 
 	XtRealizeWidget(toplevel);
 	if (meta_fname) {
