@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.43 1994-12-16 20:03:56 boote Exp $
+ *      $Id: Contour.c,v 1.44 1994-12-23 01:20:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -791,14 +791,6 @@ static NhlResource resources[] = {
 	{NhlNlgDrawLineLabels,NhlClgDrawLineLabels,NhlTBoolean,
 		 sizeof(NhlBoolean), Oset(draw_lgnd_line_lbls),
 		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
-	{NhlNlbLabelStrings, NhlClbLabelStrings, NhlTStringGenArray,
-		 sizeof(NhlPointer),Oset(labelbar_labels),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
-		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNlbTitleString, NhlClbTitleString, NhlTString,
-		 sizeof(NhlPointer),Oset(labelbar_title),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
-		 (NhlFreeFunc)NhlFree},
 	{NhlNovTickMarkDisplayMode,NhlCovTickMarkDisplayMode,
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		  Oset(display_tickmarks),
@@ -1519,6 +1511,8 @@ static NrmQuark	Qinfo_label_string = NrmNULLQUARK;
 static NrmQuark	Qinfo_label_format = NrmNULLQUARK; 
 static NrmQuark	Qconst_f_label_string = NrmNULLQUARK; 
 static NrmQuark	Qconst_f_label_format = NrmNULLQUARK; 
+static NrmQuark	Qlb_label_strings = NrmNULLQUARK; 
+static NrmQuark	Qlb_title_string = NrmNULLQUARK; 
 
 #define NhlDASHBUFSIZE	128
 
@@ -1854,7 +1848,6 @@ ContourClassPartInitialize
 					NhlNlgItemTextHeights,
 					NhlNlgDrawLineLabels,
 					NhlNlbBoxCount,
-					NhlNlbTitleString,
 					NhlNlbLabelStrings,
 					NhlNlbMonoFillColor,
 					NhlNlbFillColors,
@@ -2395,7 +2388,7 @@ static NhlErrorTypes    ContourGetValues
                         count = cnp->line_lbls.mono_color ? 
 				1 : cnp->level_count;
                         type = NhlNcnLineLabelColors;
-                }
+                } 
                 if (ga != NULL) {
                         if ((ga = GenArraySubsetCopy(ga, count)) == NULL) {
                                 e_text = "%s: error copying %s GenArray";
@@ -2437,6 +2430,9 @@ static NhlErrorTypes    ContourGetValues
 		}
 		else if(args[i].quark == Qconst_f_label_format){
 			ts = cnp->constf_lbl.format.fstring;
+		} 
+		else if(args[i].quark == Qlb_title_string) {
+			ts = cnp->labelbar_title;
 		}
                 if (ts != NULL) {
 			*((NhlString*)(args[i].value.ptrval)) =
@@ -5449,8 +5445,6 @@ static NhlErrorTypes ManageLabelBar
 			strcpy(cnp->labelbar_title,cnnew->base.name);
 			strcat(cnp->labelbar_title,title_add);
 		}
-		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbTitleString,cnp->labelbar_title);
 
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbBoxCount,cnp->fill_count);
