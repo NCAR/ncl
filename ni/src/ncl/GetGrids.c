@@ -132,6 +132,8 @@ NhlDummyWorkstationClassRec NhldummyWorkstationClassRec = {
         },
 	{
 /* current_wks_count	*/	&DummyWksCount,                
+/* gks_wks_recs		*/	NULL,
+/* hlu_wks_flag		*/	NULL,
 /* def_background	*/	{0.0,0.0,0.0},
 /* pal			*/	NhlInheritPalette,
 /* open_work		*/	DummyWorkstationOpen,
@@ -143,7 +145,9 @@ NhlDummyWorkstationClassRec NhldummyWorkstationClassRec = {
 /* clear_work		*/	DummyWorkstationOpen,
 /* lineto_work 		*/	(NhlWorkstationLineTo)DummyWorkstationOpen,
 /* fill_work		*/	(NhlWorkstationFill)DummyWorkstationOpen,
-/* marker_work		*/	(NhlWorkstationMarker)DummyWorkstationOpen
+/* marker_work		*/	(NhlWorkstationMarker)DummyWorkstationOpen,
+/* notify_work		*/	NULL
+
 	},
 	{
 				NULL
