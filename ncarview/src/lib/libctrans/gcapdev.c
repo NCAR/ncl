@@ -1,5 +1,5 @@
 /*
- *	$Id: gcapdev.c,v 1.19 1992-11-25 16:11:29 clyne Exp $
+ *	$Id: gcapdev.c,v 1.20 1992-11-25 16:27:55 clyne Exp $
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -479,6 +479,7 @@ void	gcap_devline(x1, y1, x2, y2)
 {
 	int	i;	/* loop variable */
 	SignedChar	s_char_;
+	boolean		first_point_sent = FALSE;
 
 
 	if (POLY_FLAG) {
@@ -490,12 +491,15 @@ void	gcap_devline(x1, y1, x2, y2)
 				break;
 			case XC:
 				(void)formatcoord((long) x1, (long)0, 1);
+				first_point_sent = TRUE;
 				break;
 			case YC:
 				(void)formatcoord((long) y1, (long)0, 1);
+				first_point_sent = TRUE;
 				break;
 			case XYC:
 				(void)formatcoord((long) x1, (long) y1, 2);
+				first_point_sent = TRUE;
 				break;
 			default:
 				buffer(&s_char_,1);
@@ -505,14 +509,17 @@ void	gcap_devline(x1, y1, x2, y2)
 
 
 		/*
-		 * send the coordinates of the line
+		 * send the coordinates of the line. Only send the first
+		 * point if it was not sent as part of the LINE_DRAW_START.
 		 */
-		if (LINE_POINT_START_SIZE)
-			buffer(LINE_POINT_START,LINE_POINT_START_SIZE); 
+		if (! first_point_sent) {
+			if (LINE_POINT_START_SIZE)
+				buffer(LINE_POINT_START,LINE_POINT_START_SIZE); 
 
-		(void)formatcoord((long) x1, (long) y1, 2);
-		if (LINE_POINT_TERM_SIZE)
-			buffer(LINE_POINT_TERM,LINE_POINT_TERM_SIZE);
+			(void)formatcoord((long) x1, (long) y1, 2);
+			if (LINE_POINT_TERM_SIZE)
+				buffer(LINE_POINT_TERM,LINE_POINT_TERM_SIZE);
+		}
 
 		if (LINE_POINT_START_SIZE)
 			buffer(LINE_POINT_START,LINE_POINT_START_SIZE); 
