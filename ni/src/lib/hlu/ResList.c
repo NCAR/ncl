@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.c,v 1.14 1995-12-19 20:39:24 boote Exp $
+ *      $Id: ResList.c,v 1.15 1997-01-08 23:05:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -736,6 +736,38 @@ NhlRLSetFloat
 }
 
 /*
+ * Function:	NhlRLSetDouble
+ *
+ * Description:	This function is used to set a resource with the value
+ *		specified as the given type.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLSetDouble
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	double		value
+)
+#else
+(id,name,value)
+	int		id;
+	NhlString	name;
+	double		value;
+#endif
+{
+	return NhlRLSet(id,name,NhlTDouble,value);
+}
+
+/*
  * Function:	NhlRLSetString
  *
  * Description:	This function is used to set a resource with the value
@@ -895,6 +927,43 @@ NhlRLSetMDFloatArray
 }
 
 /*
+ * Function:	NhlRLSetMDDoubleArray
+ *
+ * Description:	This function is used to set an array resource with the value
+ *		specified as the given type.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLSetMDDoubleArray
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	double		*data,
+	int		num_dimensions,
+	int		*len_dimensions
+)
+#else
+(id,name,data,num_dimensions,len_dimensions)
+	int		id;
+	NhlString	name;
+	double		*data;
+	int		num_dimensions;
+	int		*len_dimensions;
+#endif
+{
+	return NhlRLSetMDArray(id,name,data,NhlTDouble,sizeof(double),
+						num_dimensions,len_dimensions);
+}
+
+/*
  * Function:	NhlRLSetArray
  *
  * Description:	This function is used to set an array resource with the value
@@ -999,6 +1068,41 @@ NhlRLSetFloatArray
 #endif
 {
 	return NhlRLSetMDArray(id,name,data,NhlTFloat,sizeof(float),1,
+								&num_elements);
+}
+
+/*
+ * Function:	NhlRLSetDoubleArray
+ *
+ * Description:	This function is used to set an array resource with the value
+ *		specified as the given type.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLSetDoubleArray
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	double		*data,
+	int		num_elements
+)
+#else
+(id,name,data,num_elements)
+	int		id;
+	NhlString	name;
+	double		*data;
+	int		num_elements;
+#endif
+{
+	return NhlRLSetMDArray(id,name,data,NhlTDouble,sizeof(double),1,
 								&num_elements);
 }
 
@@ -1178,6 +1282,38 @@ NhlRLGetFloat
 #endif
 {
 	return NhlRLGet(id,name,NhlTFloat,value);
+}
+
+/*
+ * Function:	NhlRLGetDouble
+ *
+ * Description:	This function is used to retrieve a resource into the address
+ *		specified.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLGetDouble
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	double		*value
+)
+#else
+(id,name,value)
+	int		id;
+	NhlString	name;
+	double		*value;
+#endif
+{
+	return NhlRLGet(id,name,NhlTDouble,value);
 }
 
 /*
@@ -1641,6 +1777,43 @@ NhlRLGetMDFloatArray
 #endif
 {
 	return NhlRLGetMDTypeArray(id,name,floatQ,sizeof(float),
+			(NhlPointer*)data,num_dimensions,len_dimensions);
+}
+
+/*
+ * Function:	NhlRLGetMDDoubleArray
+ *
+ * Description:	This function is used to retrieve the resource given as an
+ *		array of the type specified.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLGetMDDoubleArray
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	double		**data,
+	int		*num_dimensions,
+	int		**len_dimensions
+)
+#else
+(id,name,data,num_dimensions,len_dimensions)
+	int		id;
+	NhlString	name;
+	double		**data;
+	int		*num_dimensions;
+	int		**len_dimensions;
+#endif
+{
+	return NhlRLGetMDTypeArray(id,name,doubleQ,sizeof(double),
 			(NhlPointer*)data,num_dimensions,len_dimensions);
 }
 
@@ -2155,6 +2328,41 @@ NhlRLGetFloatArray
 #endif
 {
 	return NhlRLGetTypeArray(id,name,NhlTFloat,sizeof(float),
+						(NhlPointer*)data,num_elements);
+}
+
+/*
+ * Function:	NhlRLGetDoubleArray
+ *
+ * Description:	This function is used to set an array resource with the value
+ *		specified as the given type.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlRLGetDoubleArray
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	double		**data,
+	int		*num_elements
+)
+#else
+(id,name,data,num_elements)
+	int		id;
+	NhlString	name;
+	double		**data;
+	int		*num_elements;
+#endif
+{
+	return NhlRLGetTypeArray(id,name,NhlTDouble,sizeof(double),
 						(NhlPointer*)data,num_elements);
 }
 

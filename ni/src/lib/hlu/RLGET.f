@@ -1,5 +1,5 @@
 C
-C $Id: RLGET.f,v 1.3 1994-12-09 22:27:24 boote Exp $
+C $Id: RLGET.f,v 1.4 1997-01-08 23:05:52 boote Exp $
 C
 C****************************************************************
 C								*
@@ -32,6 +32,13 @@ C
       	call nhl_frlgetfloat(id,name,len(name),fval,ierr)
       end
 C
+      subroutine nhlfrlgetdouble(id,name,dval,ierr)
+	integer id,ierr
+	double precision dval
+	character*(*) name
+      	call nhl_frlgetdouble(id,name,len(name),dval,ierr)
+      end
+C
       subroutine nhlfrlgetstring(id,name,sval,ierr)
 	integer id,ierr
 	character*(*) name,sval
@@ -55,6 +62,15 @@ C
      %	ilendim,ierr)
       end
 C
+      subroutine nhlfrlgetmddoublearray(id,name,darr,inumdim,ilendim,
+     %	ierr)
+	integer id,inumdim,ilendim,ierr
+	character*(*) name
+	double precision darr(*)
+	call nhl_frlgetmddoublearray(id,name,len(name),darr,inumdim,
+     %	ilendim,ierr)
+      end
+C
       subroutine nhlfrlgetintegerarray(id,name,iarr,iarr_len,ierr)
 	integer id,iarr_len,iarr(iarr_len),ierr
 	character*(*) name
@@ -67,6 +83,13 @@ C
 	character*(*) name
 	real farr(farr_len)
 	call nhl_frlgetfloatarray(id,name,len(name),farr,farr_len,ierr)
+      end
+C
+      subroutine nhlfrlgetdoublearray(id,name,darr,darr_len,ierr)
+	integer id,darr_len,ierr
+	character*(*) name
+	real darr(darr_len)
+	call nhl_frlgetdoublearray(id,name,len(name),darr,darr_len,ierr)
       end
 C
       subroutine nhlfrlgetstringarray(id,name,carr,carr_len,ierr)

@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.h,v 1.6 1994-10-31 01:08:41 boote Exp $
+ *      $Id: ResList.h,v 1.7 1997-01-08 23:05:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -83,6 +83,14 @@ extern NhlErrorTypes NhlRLSetFloat(
 #endif
 );
 
+extern NhlErrorTypes NhlRLSetDouble(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	double		value		/* value to set resname to	*/
+#endif
+);
+
 extern NhlErrorTypes NhlRLSetString(
 #if	NhlNeedProto
 	int		id,		/* RL list			*/
@@ -123,6 +131,16 @@ extern NhlErrorTypes NhlRLSetMDFloatArray(
 #endif
 );
 
+extern NhlErrorTypes NhlRLSetMDDoubleArray(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	double		*data,		/* array			*/
+	int		num_dimensions,	/* number dimensions in array	*/
+	int		*len_dimensions	/* len each dimension in array	*/
+#endif
+);
+
 extern NhlErrorTypes NhlRLSetArray(
 #if	NhlNeedProto
 	int		id,		/* RL list			*/
@@ -148,6 +166,15 @@ extern NhlErrorTypes NhlRLSetFloatArray(
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
 	float		*data,		/* array			*/
+	int		num_elements	/* number elements in array	*/
+#endif
+);
+
+extern NhlErrorTypes NhlRLSetDoubleArray(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	double		*data,		/* array			*/
 	int		num_elements	/* number elements in array	*/
 #endif
 );
@@ -184,6 +211,14 @@ extern NhlErrorTypes NhlRLGetFloat(
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
 	float		*value		/* addr to put value in		*/
+#endif
+);
+
+extern NhlErrorTypes NhlRLGetDouble(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	double		*value		/* addr to put value in		*/
 #endif
 );
 
@@ -227,6 +262,16 @@ extern NhlErrorTypes NhlRLGetMDFloatArray(
 #endif
 );
 
+extern NhlErrorTypes NhlRLGetMDDoubleArray(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	double		**data,		/* array			*/
+	int		*num_dimensions,/* number dimensions in array	*/
+	int		**len_dimensions/* len each dimension in array	*/
+#endif
+);
+
 extern NhlErrorTypes NhlRLGetArray(
 #if	NhlNeedProto
 	int		id,		/* RL list			*/
@@ -252,6 +297,15 @@ extern NhlErrorTypes NhlRLGetFloatArray(
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
 	float		**data,		/* array			*/
+	int		*num_elements	/* number elements in array	*/
+#endif
+);
+
+extern NhlErrorTypes NhlRLGetDoubleArray(
+#if	NhlNeedProto
+	int		id,		/* RL list			*/
+	NhlString	resname,	/* resource to set		*/
+	double		**data,		/* array			*/
 	int		*num_elements	/* number elements in array	*/
 #endif
 );

@@ -1,5 +1,5 @@
 /*
- *      $Id: Fortran.c,v 1.12 1995-12-19 20:39:07 boote Exp $
+ *      $Id: Fortran.c,v 1.13 1997-01-08 23:05:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,7 @@
 
 static NrmQuark	intQ;
 static NrmQuark	floatQ;
+static NrmQuark	doubleQ;
 static NrmQuark	stringQ;
 static NrmQuark	genQ;
 static NrmQuark	strgenQ;
@@ -342,6 +343,51 @@ _NHLCALLF(nhl_frlsetfloat,NHL_FRLSETFLOAT)
 }
 
 /*
+ * Function:	nhl_frlsetdouble
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global private fortran
+ * Returns:	
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_frlsetdouble,NHL_FRLSETDOUBLE)
+#if	NhlNeedProto
+(
+	int		*id,
+	_NhlFString	fname,
+	int		*fname_len,
+	double		*dval,
+	int		*err
+)
+#else
+(id,fname,fname_len,dval,err)
+	int		*id;
+	_NhlFString	fname;
+	int		*fname_len;
+	double		*dval;
+	int		*err;
+#endif
+{
+	_NhlArgVal	val;
+
+	val.dblval = *dval;
+
+	if(_NhlRLInsert(*id,NhlSETRL,_NhlFstrToQuark(fname,*fname_len),doubleQ,
+						val,sizeof(double),NULL))
+		*err = NhlNOERROR;
+	else
+		*err = NhlFATAL;
+
+	return;
+}
+
+/*
  * Function:	nhl_frlsetstring
  *
  * Description:	
@@ -528,6 +574,48 @@ _NHLCALLF(nhl_frlsetmdfloatarray,NHL_FRLSETMDFLOATARRAY)
 }
 
 /*
+ * Function:	nhl_frlsetmddoublearray
+ *
+ * Description:	Set a multidimentional int array
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	private fortran global
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_frlsetmddoublearray,NHL_FRLSETMDFLOATARRAY)
+#if	NhlNeedProto
+(
+	int		*id,
+	_NhlFString	fname,
+	int		*fname_len,
+	double		*data,
+	int		*numdim,
+	int		*lendim,
+	int		*err
+)
+#else
+(id,fname,fname_len,data,numdim,lendim,err)
+	int		*id;
+	_NhlFString	fname;
+	int		*fname_len;
+	double		*data;
+	int		*numdim;
+	int		*lendim;
+	int		*err;
+#endif
+{
+	*err = NhlFSetMDArray(*id,fname,*fname_len,data,NhlTDouble,
+						sizeof(double),*numdim,lendim);
+
+	return;
+}
+
+/*
  * Function:	nhl_frlsetintegerarray
  *
  * Description:	Set a multidimentional int array
@@ -603,6 +691,46 @@ _NHLCALLF(nhl_frlsetfloatarray,NHL_FRLSETFLOATARRAY)
 {
 	*err = NhlFSetMDArray(*id,fname,*fname_len,data,NhlTFloat,sizeof(float),
 								1,numelements);
+
+	return;
+}
+
+/*
+ * Function:	nhl_frlsetdoublearray
+ *
+ * Description:	Set a multidimentional int array
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	private fortran global
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_frlsetdoublearray,NHL_FRLSETDOUBLEARRAY)
+#if	NhlNeedProto
+(
+	int		*id,
+	_NhlFString	fname,
+	int		*fname_len,
+	double		*data,
+	int		*numelements,
+	int		*err
+)
+#else
+(id,fname,fname_len,data,numelements,err)
+	int		*id;
+	_NhlFString	fname;
+	int		*fname_len;
+	double		*data;
+	int		*numelements;
+	int		*err;
+#endif
+{
+	*err = NhlFSetMDArray(*id,fname,*fname_len,data,NhlTDouble,
+						sizeof(double),1,numelements);
 
 	return;
 }
@@ -759,6 +887,51 @@ _NHLCALLF(nhl_frlgetfloat,NHL_FRLGETFLOAT)
 	val.ptrval = fptr;
 
 	if(_NhlRLInsert(*id,NhlGETRL,_NhlFstrToQuark(fname,*fname_len),floatQ,
+						val,sizeof(NhlPointer),NULL))
+		*err = NhlNOERROR;
+	else
+		*err = NhlFATAL;
+
+	return;
+}
+
+/*
+ * Function:	nhl_frlgetdouble
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	private Fortran global
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_frlgetdouble,NHL_FRLGETDOUBLE)
+#if	NhlNeedProto
+(
+	int		*id,
+	_NhlFString	fname,
+	int		*fname_len,
+	double		*dptr,
+	int		*err
+)
+#else
+(id,fname,fname_len,dptr,err)
+	int		*id;
+	_NhlFString	fname;
+	int		*fname_len;
+	double		*dptr;
+	int		*err;
+#endif
+{
+	_NhlArgVal	val;
+
+	val.ptrval = dptr;
+
+	if(_NhlRLInsert(*id,NhlGETRL,_NhlFstrToQuark(fname,*fname_len),doubleQ,
 						val,sizeof(NhlPointer),NULL))
 		*err = NhlNOERROR;
 	else
@@ -1338,6 +1511,51 @@ _NHLCALLF(nhl_frlgetmdfloatarray,NHL_FRLGETMDFLOATARRAY)
 }
 
 /*
+ * Function:	nhl_frlgetmddoublearray
+ *
+ * Description:	fortran func
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global private fortran
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_frlgetmddoublearray,NHL_FRLGETMDDOUBLEARRAY)
+#if	NhlNeedProto
+(
+	int		*id,
+	_NhlFString	fname,
+	int		*fname_len,
+	double		*arr,
+	int		*num_dim,
+	int		*len_dim,
+	int		*err
+)
+#else
+(id,fname,fname_len,arr,num_dim,len_dim,err)
+	int		*id;
+	_NhlFString	fname;
+	int		*fname_len;
+	double		*arr;
+	int		*num_dim;
+	int		*len_dim;
+	int		*err;
+#endif
+{
+	if(GetFArray(*id,fname,*fname_len,arr,doubleQ,sizeof(double),num_dim,
+								len_dim))
+		*err = NhlNOERROR;
+	else
+		*err = NhlFATAL;
+
+	return;
+}
+
+/*
  * Function:	nhl_frlgetintegerarray
  *
  * Description:	fortran func
@@ -1415,6 +1633,49 @@ _NHLCALLF(nhl_frlgetfloatarray,NHL_FRLGETFLOATARRAY)
 #endif
 {
 	if(GetFArray(*id,fname,*fname_len,arr,floatQ,sizeof(float),NULL,
+								num_elements))
+		*err = NhlNOERROR;
+	else
+		*err = NhlFATAL;
+
+	return;
+}
+
+/*
+ * Function:	nhl_frlgetdoublearray
+ *
+ * Description:	fortran func
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global private fortran
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_frlgetdoublearray,NHL_FRLGETDOUBLEARRAY)
+#if	NhlNeedProto
+(
+	int		*id,
+	_NhlFString	fname,
+	int		*fname_len,
+	double		*arr,
+	int		*num_elements,
+	int		*err
+)
+#else
+(id,fname,fname_len,arr,num_elements,err)
+	int		*id;
+	_NhlFString	fname;
+	int		*fname_len;
+	double		*arr;
+	int		*num_elements;
+	int		*err;
+#endif
+{
+	if(GetFArray(*id,fname,*fname_len,arr,doubleQ,sizeof(double),NULL,
 								num_elements))
 		*err = NhlNOERROR;
 	else
@@ -1612,6 +1873,7 @@ FortranInit
 
 	intQ = NrmStringToQuark(NhlTInteger);
 	floatQ = NrmStringToQuark(NhlTFloat);
+	doubleQ = NrmStringToQuark(NhlTDouble);
 	stringQ = NrmStringToQuark(NhlTString);
 	genQ = NrmStringToQuark(NhlTGenArray);
 	strgenQ = NrmStringToQuark(NhlTStringGenArray);

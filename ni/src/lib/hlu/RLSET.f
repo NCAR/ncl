@@ -1,5 +1,5 @@
 C
-C $Id: RLSET.f,v 1.4 1994-12-29 21:45:35 haley Exp $
+C $Id: RLSET.f,v 1.5 1997-01-08 23:05:52 boote Exp $
 C
 C****************************************************************
 C								*
@@ -33,6 +33,13 @@ C
       	call nhl_frlsetfloat(id,name,len(name),fval,ierr)
       end
 C
+      subroutine nhlfrlsetdouble(id,name,dval,ierr)
+	integer id,ierr
+	double precision dval
+	character*(*) name
+      	call nhl_frlsetdouble(id,name,len(name),dval,ierr)
+      end
+C
       subroutine nhlfrlsetstring(id,name,sval,ierr)
 	integer id,ierr
 	character*(*) name,sval
@@ -56,6 +63,15 @@ C
      %	ilendim,ierr)
       end
 C
+      subroutine nhlfrlsetmddoublearray(id,name,darr,inumdim,ilendim,
+     %	ierr)
+	integer id,inumdim,ilendim,ierr
+	character*(*) name
+	double precision darr(*)
+	call nhl_frlsetmddoublearray(id,name,len(name),darr,inumdim,
+     %	ilendim,ierr)
+      end
+C
       subroutine nhlfrlsetintegerarray(id,name,iarr,iarr_len,ierr)
 	integer id,iarr_len,iarr(iarr_len),ierr
 	character*(*) name
@@ -68,6 +84,13 @@ C
 	character*(*) name
 	real farr(farr_len)
 	call nhl_frlsetfloatarray(id,name,len(name),farr,farr_len,ierr)
+      end
+C
+      subroutine nhlfrlsetdoublearray(id,name,darr,darr_len,ierr)
+	integer id,darr_len,ierr
+	character*(*) name
+	double precision darr(darr_len)
+	call nhl_frlsetdoublearray(id,name,len(name),darr,darr_len,ierr)
       end
 C
       subroutine nhlfrlsetstringarray(id,name,carr,carr_len,ierr)
