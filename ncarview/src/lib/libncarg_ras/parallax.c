@@ -1,5 +1,5 @@
 /*
- *	$Id: parallax.c,v 1.9 1992-07-17 22:59:54 don Exp $
+ *	$Id: parallax.c,v 1.10 1992-09-10 20:59:22 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -39,6 +39,7 @@
  *		
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <fcntl.h>
 #include <string.h>
 #include <sys/types.h>
@@ -77,7 +78,7 @@ Raster *
 ParallaxOpen(name)
 	char	*name;
 {
-	(void) RasterSetError(RAS_E_UNSUPPORTED_FUNCTIONS);
+	(void) ESprintf(RAS_E_UNSUPPORTED_FUNCTION, "ParallaxOpen()");
 	return( (Raster *) NULL );
 }
 
@@ -107,7 +108,6 @@ ParallaxOpenWrite(name, nx, ny, comment, encoding)
 	Raster		*ras;
 	int		status;
 	Raster		*RasterCreate();
-	char		*calloc();
 
 	/* Allocate the Raster structure and load some symbols. */
 
@@ -282,7 +282,7 @@ int
 ParallaxRead(ras)
 	Raster	*ras;
 {
-	(void) RasterSetError(RAS_E_UNSUPPORTED_FUNCTIONS);
+	(void) ESprintf(RAS_E_UNSUPPORTED_FUNCTION, "ParallaxRead()");
 	return(RAS_ERROR);
 }
 
@@ -349,6 +349,7 @@ ParallaxSetFunctions(ras)
 static int
 ParallaxInit()
 {
+	char		*errmsg = "ParallaxInit()";
 	static int	arg;
 	int		status;
 	caddr_t		mmap();
@@ -364,20 +365,22 @@ ParallaxInit()
 
 	parallax_fd = open(VFB_DEVICE, O_RDWR);
 	if (parallax_fd == -1) {
-		(void) RasterSetError(RAS_E_SYSTEM);
-		return( RAS_ERROR );
+		(void) ESprintf(errno, "ParallaxInit() - open(%s, %d)",
+				VFB_DEVICE,O_RDWR);
+		return(RAS_ERROR);
 	}
 	
 	/* Open the VME bus for memory mapped I/O. */
 
 	if (parallax_vmefd != -1) {
-		(void) RasterSetError(RAS_E_UNSUPPORTED_FUNCTIONS);
+		(void) ESprintf(RAS_E_PROGRAMMING,
+				"ParallaxInit() called twice");
 		return(RAS_ERROR);
 	}
 
 	if ( (parallax_vmefd = open(VFB_VME_DEVICE, O_RDWR)) == -1) {
-		(void) RasterSetError(RAS_E_SYSTEM);
-		return( RAS_ERROR );
+		(void) ESprintf(errno, errmsg);
+		return(RAS_ERROR);
 	}
 
 	/* Map the Parallax structure into virtual memory. */
@@ -387,85 +390,86 @@ ParallaxInit()
 		(off_t) VFB_VME_ADDRESS);
 
 	if ( (int) parallax == -1) {
-		(void) RasterSetError(RAS_E_SYSTEM);
-		return( RAS_ERROR );
+		(void) ESprintf(errno, 
+			"Yikes, the Parallax mmap() call failed!");
+		return(RAS_ERROR);
 	}
 
 	/* Sync the frame buffer */
 	arg = 0;
 	status = ioctl(parallax_fd, TVIOSYNC, &arg);
 	if ( status == -1) {
-		(void) RasterSetError(RAS_E_PARALLAX);
-		return( RAS_ERROR );
+		(void) ESprintf(errno, "ParallaxInit() - ioctl(TVIOSYNC)");
+		return(RAS_ERROR);
 	}
 
 	/* Input video will be NTSC composite video. */
 	arg = TVIO_NTSC;
 	status = ioctl(parallax_fd, TVIOSFORMAT, &arg);
 	if ( status == -1) {
-		(void) RasterSetError(RAS_E_PARALLAX);
-		return( RAS_ERROR );
+		(void) ESprintf(errno, "ParallaxInit() - ioctl(TVIOSFORMAT)");
+		return(RAS_ERROR);
 	}
 
 	/* Set compression ratio to be 1:1 */
 	arg = 1;
 	status = ioctl(parallax_fd, TVIOSCOMPRESS, &arg);
 	if ( status == -1) {
-		(void) RasterSetError(RAS_E_PARALLAX);
-		return( RAS_ERROR );
+		(void) ESprintf(errno, "ParallaxInit() - ioctl(TVIOSCOMPRESS)");
+		return(RAS_ERROR);
 	}
 
 	/* Direct video to video monitor, rather than to Sun screen. */
 	arg = TVIO_VIDEOOUT;
 	status = ioctl(parallax_fd, TVIOSOUT, &arg);
 	if ( status == -1) {
-		(void) RasterSetError(RAS_E_PARALLAX);
-		return( RAS_ERROR );
+		(void) ESprintf(errno, "ParallaxInit() - ioctl(TVIOSOUT)");
+		return(RAS_ERROR);
 	}
 
 	/* Output is RS-170A (component RGBS), not YUV (Betacam). */
 	arg = TVIO_RGB;
 	status = ioctl(parallax_fd, TVIOSCOMPOUT, &arg);
 	if ( status == -1) {
-		(void) RasterSetError(RAS_E_PARALLAX);
-		return( RAS_ERROR );
+		(void) ESprintf(errno, "ParallaxInit() - ioctl(TVIOSCOMPOUT)");
+		return(RAS_ERROR);
 	}
 
 	/* Set Genlock on i.e. sync to incoming blackburst signal. */
-	arg = TRUE;
+	arg = True;
 	status = ioctl(parallax_fd, TVIOSGENLOCK, &arg);
 	if ( status == -1) {
-		(void) RasterSetError(RAS_E_PARALLAX);
-		return( RAS_ERROR );
+		(void) ESprintf(errno, "ParallaxInit() - ioctl(TVIOSGENLOCK)");
+		return(RAS_ERROR);
 	}
 
 	/* Set Genlock to sync on composite sync input. */
 	arg = TVIO_NTSC;
 	status = ioctl(parallax_fd, TVIOSSYNC, &arg);
 	if ( status == -1) {
-		(void) RasterSetError(RAS_E_PARALLAX);
-		return( RAS_ERROR );
+		(void) ESprintf(errno,"ParallaxInit() - ioctl(TVIOSSYNC/NTSC)");
+		return(RAS_ERROR);
 	}
 
 	/* Set Chroma Demodulation to automatic. */
 	arg = TVIO_AUTO;
 	status = ioctl(parallax_fd, TVIOSSYNC, &arg);
 	if ( status == -1) {
-		(void) RasterSetError(RAS_E_PARALLAX);
-		return( RAS_ERROR );
+		(void) ESprintf(errno,"ParallaxInit() - ioctl(TVIOSSYNC/AUTO)");
+		return(RAS_ERROR);
 	}
 
 	/* Sync the frame buffer */
 	arg = 0;
 	status = ioctl(parallax_fd, TVIOSYNC, &arg);
 	if ( status == -1) {
-		(void) RasterSetError(RAS_E_PARALLAX);
-		return( RAS_ERROR );
+		(void) ESprintf(errno, "ParallaxInit() - ioctl(TVIOSYNC)");
+		return(RAS_ERROR);
 	}
 
 	status = ParallaxClear(0, 0, 0);
 	if (status != RAS_OK) {
-		(void) RasterSetError(RAS_E_PARALLAX);
+		(void) ESprintf(RAS_E_PARALLAX, "ParallaxClear(0,0,0)");
 		return(RAS_ERROR);
 	}
 
