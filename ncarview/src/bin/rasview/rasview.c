@@ -1,5 +1,5 @@
 /*
- *	$Id: rasview.c,v 1.16 1994-04-14 18:45:24 clyne Exp $
+ *	$Id: rasview.c,v 1.17 1995-05-03 22:39:40 clyne Exp $
  */
 /*
  *	rasview.c
@@ -29,6 +29,7 @@ static	struct	{
 	boolean	version;	/* print version		*/
 	boolean movie;		/* movie mode			*/
 	char	*ifmt;		/* input format			*/
+	int	scale;		/* image scale factor		*/
 	boolean	not_used;	/* "-" option, we toss it	*/
 	} opt;
 
@@ -41,6 +42,7 @@ static	OptDescRec	set_options[] = {
 	{"Version", 0, NULL, "Print version number end exit"},
 	{"movie", 0, NULL, "Display frames in movie mode"},
 	{"ifmt", 1, NULL, "Input format"},
+	{"scale", 1, "1", "Integral, image scaling factor"},
         {"", 0, NULL, "Read rasterfile from the standard input"},
 	{NULL}
 };
@@ -59,6 +61,8 @@ static	Option	get_options[] = {
 	},
 	{"ifmt", NCARGCvtToString, (Voidptr)&opt.ifmt,sizeof(opt.ifmt)
 	},
+	{"scale", NCARGCvtToInt, (Voidptr)&opt.scale,sizeof(opt.scale)
+	},
 	{"", NCARGCvtToBoolean, (Voidptr) &opt.not_used, sizeof(opt.not_used)
 	},
 	{
@@ -69,6 +73,79 @@ static	Option	get_options[] = {
 static	int	oD;
 static	char	*progName;
 
+Raster	*raster_scale(
+	Raster	*src, 
+	int	scale
+) {
+	int		dst_nx;
+	int		dst_ny;
+	unsigned char	*src_data, *dst_data;
+	unsigned char	*cptr;
+	int		x,y;
+	int		row_i, col_i;
+	int		row_len;
+
+	static	Raster	*dst = NULL;
+
+	dst_nx = src->nx * scale;
+	dst_ny = src->ny * scale;
+
+	if (! dst) {
+		dst = RasterCreate(dst_nx, dst_ny, src->type);
+		if (! dst) { 
+			(void) fprintf (
+				stderr, "%s: RasterCreate(%d,%d) [ %s ]\n",
+				progName, dst_nx, dst_ny, ErrGetMsg()
+			);
+			return(NULL);
+		}
+	}
+
+	if (src->type == RAS_INDEXED) { 
+		RasterCopyColormap(src, dst);
+		row_len = src->nx;
+	}
+	else {
+		row_len = src->nx * 3;
+	}
+
+	src_data = src->data;
+	dst_data = dst->data;
+	cptr = src_data;
+	for(y=0; y<dst->ny; y++) {
+
+		row_i = y % scale;
+
+		for(x=0; x<dst->nx; x++) {
+
+			col_i = x % scale;
+
+			if (src->type == RAS_INDEXED) {
+
+
+				*dst_data++ = *src_data;
+
+				if (col_i == (scale - 1)) src_data++;
+			}
+			else {
+
+				*dst_data++ = src_data[0];
+				*dst_data++ = src_data[1];
+				*dst_data++ = src_data[2];
+
+				if (col_i == (scale - 1)) src_data+=3;
+			}
+
+		}
+		if (row_i == (scale - 1)) {
+			cptr += row_len;
+		}
+		src_data = cptr;
+	}
+
+	return(dst);
+	
+}
 /*
  *	display_image
  *
@@ -285,16 +362,27 @@ main(argc, argv)
 		 */
 		count = 0;
 		for (;;) {
+			Raster	*rasptr;
+
 			if ((status = RasterRead(ras)) != RAS_OK) {
 				break;
 			}
+
+			rasptr = ras;
+
+			if (opt.scale > 1) {
+				rasptr = raster_scale(ras, opt.scale);
+				if (! rasptr) exit(1);
+			}
+
 			if (verbose) {
 				count++;
 				(void) fprintf(stderr,
 					"	image number: %d\n",count);
 			}
 
-			exit_status += display_image(ras, context, verbose);
+
+			exit_status += display_image(rasptr, context, verbose);
 		}
 
 		(void) RasterClose(ras);
