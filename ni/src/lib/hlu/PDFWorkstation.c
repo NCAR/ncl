@@ -1,5 +1,5 @@
 /*
- *      $Id: PDFWorkstation.c,v 1.2 2003-03-06 23:22:50 grubin Exp $
+ *      $Id: PDFWorkstation.c,v 1.3 2003-11-25 22:41:18 dbrown Exp $
  */
 
 # include   <stdio.h>
@@ -175,7 +175,8 @@ NhlPDFWorkstationClassRec NhlpdfWorkstationClassRec = {
         /* lineto_work       */     NhlInheritLineTo,
         /* fill_work         */     NhlInheritFill,
         /* marker_work       */     NhlInheritMarker,
-        /* notify_work       */     NULL
+        /* notify_work       */     NULL,
+	/* update_drawbb     */      NULL
     },
 
     {

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.103 2003-07-15 21:36:08 dbrown Exp $
+ *      $Id: Workstation.c,v 1.104 2003-11-25 22:41:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -650,7 +650,8 @@ NhlWorkstationClassRec NhlworkstationClassRec = {
 /* lineto_work 		*/	WorkstationLineTo,
 /* fill_work		*/	WorkstationFill,
 /* marker_work		*/	WorkstationMarker,
-/* notify_work		*/	NULL
+/* notify_work		*/	NULL,
+/* update_drawbb        */      NULL
 	}
 };
 
@@ -2067,7 +2068,8 @@ WorkstationClassInitialize
 	_NhlEnumVals	fontqlist[] = {
 		{NhlHIGH,	"High"},
 		{NhlMEDIUM,	"Medium"},
-		{NhlLOW,	"Low"}
+		{NhlLOW,	"Low"},
+		{NhlWORKSTATION, "Workstation"}
 	};
 
 	_NhlEnumVals	textdirlist[] = {
@@ -6908,6 +6910,52 @@ _NhlDefaultPlot
 	
 	return _NhlGetLayer(wl->work.def_plot_id);
 }
+
+/*
+ * Function: _NhlUpdateDrawBB	
+ *
+ * Description:	updates the workstation bounding box with most recently
+ *              drawn objects 
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+
+extern NhlErrorTypes _NhlUpdateDrawBB
+#if	NhlNeedProto
+(
+	NhlLayer	vl
+)
+#else
+(wkid,vid)
+	NhlLayer	vl;
+#endif
+
+{
+	NhlLayer wkl = vl->base.wkptr;
+	NhlWorkstationClassPart *wcp =
+	&((NhlWorkstationClass)wkl->base.layer_class)->work_class;
+	NhlBoundingBox bbox;
+	NhlErrorTypes ret;
+
+	if (!wcp->update_drawbb)
+		return NhlNOERROR;
+
+	ret = NhlGetBB(vl->base.id,&bbox); 
+
+	if (ret < NhlWARNING)
+		return ret;
+
+	return MIN(ret,(*wcp->update_drawbb)(wkl,&bbox));
+	
+	
+}
+
 
 /*
  * Function:	NhlIsWorkstation

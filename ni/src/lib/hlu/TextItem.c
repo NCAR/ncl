@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.49 2000-02-24 02:08:49 dbrown Exp $
+ *      $Id: TextItem.c,v 1.50 2003-11-25 22:41:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,8 @@
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/WorkstationI.h>
+#include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 
 #define DEFSTRING "NOTHING"
 #define DEGTORAD 0.017453293
@@ -369,6 +371,31 @@ DoPcCalc
 		c_pcseti("FN",1);
 	else
 		c_pcseti("FN",tnew->text.font);
+	if (tnew->text.qual < 3){
+		c_pcseti("QU",tnew->text.qual);
+	}
+	else {
+		char *wkclassname = 
+		  tnew->base.wkptr->base.layer_class->base_class.class_name;
+		int font = 1;
+		Gtext_font_prec gtfp;
+		if (wkclassname == 
+		    NhlpsWorkstationClass->base_class.class_name ||
+			wkclassname ==
+			NhlpdfWorkstationClass->base_class.class_name) {
+			font = - (int)tnew->text.font;
+			if (font == 0 || font == -1) {
+				font = 1;
+			}
+			gtfp.font = font;
+			gtfp.prec = GPREC_STROKE;
+			gset_text_font_prec(&gtfp);
+			c_pcseti("QU",2);
+		}
+		else {
+			c_pcseti("QU",0);
+		}
+	}
 	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
 
 /*
@@ -432,6 +459,7 @@ static NhlErrorTypes    TextItemInitialize
 
         tnew->text.new_draw_req = True;
         tnew->text.trans_dat = NULL;
+	tnew->text.last_wks = tnew->base.wkptr;
         
 	if(!tnew->text.pos_x_set) tnew->text.pos_x = 0.5;
 	if(!tnew->text.pos_y_set) tnew->text.pos_y = 0.5;
@@ -495,6 +523,9 @@ static NhlErrorTypes    TextItemInitialize
 			break;
 		case NhlLOW:
 			tnew->text.qual = 2;
+			break;
+		case NhlWORKSTATION:
+			tnew->text.qual = 3;
 			break;
 	}
 
@@ -705,6 +736,9 @@ static NhlErrorTypes TextItemSetValues
 	case NhlLOW:
 		tnew->text.qual = 2;
 		break;
+	case NhlWORKSTATION:
+		tnew->text.qual = 3;
+		break;
 	}
 
 	ret1 = DoPcCalc(tnew);
@@ -793,6 +827,18 @@ static NhlErrorTypes    TextItemDraw
 	NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
 	char buf[10];
 	char *e_text, *func = "TextItemDraw";
+	NhlBoolean recalc = False;
+	NhlBoolean use_gtx = False;
+
+	/*
+	 * If the workstation has changed, then workstation-specific
+	 * stuff needs to be redone.
+	 */
+	if (tlayer->text.last_wks != tlayer->base.wkptr) {
+		recalc = True;
+		tlayer->text.new_draw_req = True;
+		tlayer->text.last_wks = tlayer->base.wkptr;
+	}
 
 	if (tlayer->view.use_segments && ! tlayer->text.new_draw_req
 	    && tlayer->text.trans_dat 
@@ -813,7 +859,6 @@ static NhlErrorTypes    TextItemDraw
 	c_pcsetr("CS",tlayer->text.constant_spacing);
 	c_pcsetr("PH",tlayer->text.real_ph_height);
 	c_pcsetr("PW",tlayer->text.real_ph_width);
-	c_pcseti("QU",tlayer->text.qual);
 	c_pcseti("FN",tlayer->text.font);
         c_pcsetr("CL",tlayer->text.font_thickness);
 	c_pcseti("OC",_NhlGetGksCi
@@ -838,13 +883,36 @@ static NhlErrorTypes    TextItemDraw
 		if ((ret = MIN(subret,ret)) < NhlWARNING)
 			return ret;
 	}
-        
-	if(tlayer->text.qual == 2){
-		Gtext_font_prec gtfp;
-		gtfp.font = 1;
-		gtfp.prec = GPREC_STROKE;
-		gset_text_font_prec(&gtfp);
+	if (tlayer->text.qual < 3){
+		c_pcseti("QU",tlayer->text.qual);
 	}
+	else {
+		char *wkclassname = 
+		  tlayer->base.wkptr->base.layer_class->base_class.class_name;
+		int font = 1;
+		Gtext_font_prec gtfp;
+		if (wkclassname == 
+		    NhlpsWorkstationClass->base_class.class_name ||
+			wkclassname ==
+			NhlpdfWorkstationClass->base_class.class_name) {
+			font = - (int)tlayer->text.font;
+			if (font == 0 || font == -1) {
+				font = 1;
+			}
+			gtfp.font = font;
+			gtfp.prec = GPREC_STROKE;
+			gset_text_font_prec(&gtfp);
+			c_pcseti("QU",2);
+			use_gtx = True;
+		}
+		else {
+			c_pcseti("QU",0);
+		}
+	}
+	if (recalc) {
+		DoPcCalc(tlayer);
+	}
+
 	NhlVASetValues(tlayer->base.wkptr->base.id,
 		_NhlNwkReset,	True,
 		NULL);
@@ -888,8 +956,8 @@ static NhlErrorTypes    TextItemDraw
 
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	c_plchhq(tlayer->text.real_x_pos,tlayer->text.real_y_pos,
-		tlayer->text.real_string,tlayer->text.real_size,
-		tlayer->text.angle,tlayer->text.cntr);
+		 tlayer->text.real_string,tlayer->text.real_size,
+		 tlayer->text.angle,tlayer->text.cntr);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
 	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
@@ -933,6 +1001,16 @@ static NhlErrorTypes    TextItemSegDraw
 	NhlErrorTypes ret = NhlNOERROR;
 	char buf[10];
 	char *func = "TextItemDraw";
+	NhlBoolean recalc = False;
+
+	/*
+	 * If the workstation has changed, then workstation-specific
+	 * stuff needs to be redone.
+	 */
+	if (tlayer->text.last_wks != tlayer->base.wkptr) {
+		recalc = True;
+		tlayer->text.last_wks = tlayer->base.wkptr;
+	}
 
 	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
 
@@ -941,19 +1019,40 @@ static NhlErrorTypes    TextItemSegDraw
 	c_pcsetr("PH",tlayer->text.real_ph_height);
 	c_pcsetr("PW",tlayer->text.real_ph_width);
         c_pcsetr("CL",tlayer->text.font_thickness);
-	c_pcseti("QU",tlayer->text.qual);
-	if(tlayer->text.qual == 2){
-		Gtext_font_prec gtfp;
-		gtfp.font = 1;
-		gtfp.prec = GPREC_STROKE;
-		gset_text_font_prec(&gtfp);
-	}
 	c_pcseti("FN",tlayer->text.font);
 	c_pcseti("OC",_NhlGetGksCi(tlayer->base.wkptr,tlayer->text.font_color));
 	c_pcseti("CC",_NhlGetGksCi(tlayer->base.wkptr,tlayer->text.font_color));
 	sprintf(buf,"%c",tlayer->text.func_code);
 	c_pcsetc("FC",buf);
 
+	if (tlayer->text.qual < 3){
+		c_pcseti("QU",tlayer->text.qual);
+	}
+	else {
+		char *wkclassname = 
+		  tlayer->base.wkptr->base.layer_class->base_class.class_name;
+		int font = 1;
+		Gtext_font_prec gtfp;
+		if (wkclassname == 
+		    NhlpsWorkstationClass->base_class.class_name ||
+			wkclassname ==
+			NhlpdfWorkstationClass->base_class.class_name) {
+			font = - (int)tlayer->text.font;
+			if (font == 0 || font == -1) {
+				font = 1;
+			}
+			gtfp.font = font;
+			gtfp.prec = GPREC_STROKE;
+			gset_text_font_prec(&gtfp);
+			c_pcseti("QU",2);
+		}
+		else {
+			c_pcseti("QU",0);
+		}
+	}
+	if (recalc) {
+		DoPcCalc(tlayer);
+	}
 	c_set(fl,fr,fb,ft,fl,fr,fb,ft,1);
 
 	gset_linewidth((Gdouble)tlayer->text.font_thickness);

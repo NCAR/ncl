@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstationP.h,v 1.7 2003-03-06 23:22:50 grubin Exp $
+ *      $Id: PSWorkstationP.h,v 1.8 2003-11-25 22:41:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -73,7 +73,8 @@ typedef struct _NhlPSWorkstationLayerPart {
 	/* Private internal fields */
 
 	NhlBoolean		dev_bounds_updated;
-	
+
+	NhlBoundingBox          bbox;
 } NhlPSWorkstationLayerPart;
 
 typedef struct _NhlPSWorkstationLayerRec {

@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.28 2003-06-10 23:21:08 dbrown Exp $
+ *      $Id: WorkstationP.h,v 1.29 2003-11-25 22:41:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -107,6 +107,14 @@ typedef void (*NhlWorkstationNotify)(
 #endif
 );
 
+typedef NhlErrorTypes (*NhlWorkstationUpdateDrawBB)(
+#if	NhlNeedProto
+	NhlLayer	wl,
+	NhlBoundingBox *bbox
+#endif
+);
+
+
 #define NhlWK_ALLOC_UNIT 16
 
 /*
@@ -136,6 +144,7 @@ typedef void (*NhlWorkstationNotify)(
 #define NhlInheritFill   ((NhlWorkstationFill)_NhlInherit)
 #define NhlInheritMarker ((NhlWorkstationMarker)_NhlInherit)
 #define NhlInheritNotify ((NhlWorkstationNotify)_NhlInherit)
+#define NhlInheritGetDrawBB ((NhlWorkstationGetDrawBB)_NhlInherit)
 
 typedef struct _NhlDashSpec {
 	NhlString dpat;
@@ -272,6 +281,7 @@ typedef struct _NhlWorkstationClassPart{
 	NhlWorkstationFill		fill_work;
 	NhlWorkstationMarker		marker_work;
         NhlWorkstationNotify		notify_work;
+        NhlWorkstationUpdateDrawBB	update_drawbb;
 } NhlWorkstationClassPart;
 
 typedef struct _NhlWorkstationClassRec{

@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationI.h,v 1.13 2003-06-04 19:04:24 dbrown Exp $
+ *      $Id: WorkstationI.h,v 1.14 2003-11-25 22:41:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 #define	_NWORKSTATIONI_H
 
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/View.h>
 #include <ncarg/hlu/Workstation.h>
 
 typedef struct _NhlworkColorChangeDataRec
@@ -296,6 +297,7 @@ extern NhlErrorTypes _NhlFreeColor(
 #endif
 );
 
+
 extern int _NhlGetColor(
 #if	NhlNeedProto
         NhlLayer	l,
@@ -318,6 +320,12 @@ extern int _NhlNewColor(
 extern NhlLayer _NhlDefaultPlot(
 #if	NhlNeedProto
         NhlLayer  l
+#endif
+);
+
+extern NhlErrorTypes _NhlUpdateDrawBB(
+#if	NhlNeedProto
+	NhlLayer	vl
 #endif
 );
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.c,v 1.17 2001-02-07 02:44:03 dbrown Exp $
+ *      $Id: PSWorkstation.c,v 1.18 2003-11-25 22:41:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -138,6 +138,19 @@ static NhlErrorTypes PSWorkstationActivate(
 #endif
 );
 
+static NhlErrorTypes PSWorkstationClear(
+#if	NhlNeedProto
+	NhlLayer	l	/* instance	*/
+#endif
+);
+
+static NhlErrorTypes PSUpdateDrawBB(
+#if	NhlNeedProto
+	NhlLayer	wl,
+	NhlBoundingBox *bbox
+#endif
+);
+
 NhlPSWorkstationClassRec NhlpsWorkstationClassRec = {
         {
 /* class_name			*/	"psWorkstationClass",
@@ -186,11 +199,12 @@ NhlPSWorkstationClassRec NhlpsWorkstationClassRec = {
 /* deactivate_work	*/	NhlInheritDeactivate,
 /* alloc_colors		*/	NhlInheritAllocateColors,
 /* update_work		*/	NhlInheritUpdate,
-/* clear_work		*/	NhlInheritClear,
+/* clear_work		*/	PSWorkstationClear,
 /* lineto_work		*/	NhlInheritLineTo,
 /* fill_work		*/	NhlInheritFill,
 /* marker_work		*/	NhlInheritMarker,
-/* notify_work		*/	NULL
+/* notify_work		*/	NULL,
+/* update_drawbb        */      PSUpdateDrawBB
 	},
 	{
 /* foo	*/			0
@@ -594,7 +608,7 @@ PSWorkstationOpen
 
 
 	c_ngsetc("me",pp->filename);
-	c_ngseti("co",(pp->resolution/72 + 1));
+	c_ngseti("co",pp->resolution/72);
 	c_ngseti("cm",pp->color_model);
 
 	if (pp->suppress_background && pp->suppress_bbinfo)
@@ -619,10 +633,11 @@ PSWorkstationOpen
 	w = pp->upper_x - pp->lower_x;
 	h = pp->upper_y - pp->lower_y;
 	d = MAX(w,h);
-	work->work.vswidth_dev_units = d/72*pp->resolution;
-
+	work->work.vswidth_dev_units = (d/72)*pp->resolution;
+	pp->bbox.set = 0;
 	return ret;
 }
+
 /*
  * Function:	PSWorkstationActivate
  *
@@ -648,7 +663,7 @@ PSWorkstationActivate
 	NhlLayer	l;	
 #endif
 {
-	char	func[] = "PSWorkstationClear";
+	char	func[] = "PSWorkstationActivate";
 	NhlWorkstationClass lc = (NhlWorkstationClass) NhlworkstationClass;
 	NhlWorkstationLayerPart *wp = &((NhlWorkstationLayer)l)->work;
 	NhlPSWorkstationLayerPart *pp = &((NhlPSWorkstationLayer)l)->ps;
@@ -666,7 +681,143 @@ PSWorkstationActivate
 	w = pp->upper_x - pp->lower_x;
 	h = pp->upper_y - pp->lower_y;
 	d = MAX(w,h);
-	wp->vswidth_dev_units = d/72*pp->resolution;
+	wp->vswidth_dev_units = (d/72)*pp->resolution;
 
 	return (*(lc->work_class.activate_work))(l);
+}
+
+/*
+ * Function:	PSWorkstationClear
+ *
+ * Description:	This function is used to clear the workstation
+ *
+ * In Args:	
+ *		NhlLayer	l	workstation layer to update
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+PSWorkstationClear
+#if	NhlNeedProto
+(
+	NhlLayer	l	/* workstation layer to update	*/
+)
+#else
+(l)
+	NhlLayer	l;	/* workstation layer to update	*/
+#endif
+{
+	char	func[] = "PSWorkstationClear";
+	NhlWorkstationClass lc = (NhlWorkstationClass) NhlworkstationClass;
+	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
+	NhlPSWorkstationLayerPart *pp = &((NhlPSWorkstationLayer)l)->ps;
+	int w,h;
+	int bblx,bbux,bbly,bbuy;
+	float s,xoff, yoff;
+
+
+	w = pp->upper_x - pp->lower_x;
+	h = pp->upper_y - pp->lower_y;
+
+	if (w > h) {
+		xoff = pp->lower_x + (w - h) / 2.0;
+		yoff = pp->lower_y;
+	}
+	else {
+		xoff = pp->lower_x;
+		yoff = pp->lower_y + (w - h) / 2.0;
+	}
+	xoff = pp->lower_x;
+	yoff = pp->lower_y;
+	if (pp->orientation == NhlPORTRAIT) {
+		s = MIN(w,h);
+		bblx = xoff + s * pp->bbox.l;
+		bbly = yoff + s * pp->bbox.b;
+
+		s = MAX(w,h);
+		bbux = xoff + s * pp->bbox.r;
+		if (xoff + s * pp->bbox.r > bbux)
+			bbux++;
+		bbuy = yoff + s * pp->bbox.t;
+		if (yoff + s * pp->bbox.t > bbuy)
+			bbuy++;
+	}
+	else {
+		s = MIN(w,h);
+		bblx = xoff + s * pp->bbox.b - 1;
+		bbly = yoff + s * (1.0 - pp->bbox.r) -1;
+
+		s = MAX(w,h);
+		bbux = xoff + s * pp->bbox.t;
+		if (xoff + s * pp->bbox.t > bbux)
+			bbux++;
+		bbuy = yoff + s * (1.0 - pp->bbox.l);
+		if (yoff + s * (1.0 - pp->bbox.l) > bbuy)
+			bbuy++;
+	}
+
+	pp->bbox.set = 0;
+
+
+	c_ngseti("AX",bblx);
+	c_ngseti("BX",bbux);
+	c_ngseti("AY",bbly);
+	c_ngseti("BY",bbuy);
+
+	return (*(lc->work_class.clear_work))(l);
+}
+
+
+/*
+ * Function:	PSUpdateDrawBB
+ *
+ * Description:	
+ *
+ * In Args:	
+ *		NhlLayer	wl
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes PSUpdateDrawBB
+#if	NhlNeedProto
+(
+	NhlLayer	wl,
+	NhlBoundingBox *bbox
+)
+#else
+(wl)
+	NhlLayer	wl,
+	NhlBoundingBox *bbox
+#endif
+{
+	char	func[] = "PSUpdateDrawBB";
+	NhlWorkstationLayerPart *wp = &((NhlWorkstationLayer)wl)->work;
+	NhlPSWorkstationLayerPart *pp = &((NhlPSWorkstationLayer)wl)->ps;
+
+	if (! pp->bbox.set) {
+		pp->bbox.l = bbox->l;
+		pp->bbox.r = bbox->r;
+		pp->bbox.b = bbox->b;
+		pp->bbox.t = bbox->t;
+		pp->bbox.set = 1;
+	}
+	else {
+		if (bbox->l < pp->bbox.l)
+			pp->bbox.l = bbox->l;
+		if (bbox->r > pp->bbox.r)
+			pp->bbox.r = bbox->r;
+		if (bbox->b < pp->bbox.b)
+			pp->bbox.b = bbox->b;
+		if (bbox->t > pp->bbox.t)
+			pp->bbox.t = bbox->t;
+	}
+	return NhlNOERROR;
 }

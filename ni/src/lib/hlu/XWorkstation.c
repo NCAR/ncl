@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.34 2000-03-29 03:59:06 dbrown Exp $
+ *      $Id: XWorkstation.c,v 1.35 2003-11-25 22:41:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -189,7 +189,8 @@ NhlXWorkstationClassRec NhlxWorkstationClassRec = {
 /* lineto_work 		*/	NhlInheritLineTo,
 /* fill_work		*/	NhlInheritFill,
 /* marker_work		*/	NhlInheritMarker,
-/* notify_work		*/	NULL
+/* notify_work		*/	NULL,
+/* update_drawbb        */      NULL
 	},
 	{
 /* foo */	NULL

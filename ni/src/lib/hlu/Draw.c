@@ -1,5 +1,5 @@
 /*
- *      $Id: Draw.c,v 1.17 1998-02-20 22:40:26 dbrown Exp $
+ *      $Id: Draw.c,v 1.18 2003-11-25 22:41:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -220,7 +220,6 @@ NhlErrorTypes _NhlPlotManagerDraw
 	}
 
 	subret = CallPreDraw(layer,layer->base.layer_class);
-
 	if ((ret = MIN(subret, ret)) < NhlWARNING) {
 		e_text = "%s: PreDraw error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
@@ -240,6 +239,10 @@ NhlErrorTypes _NhlPlotManagerDraw
 	if ((ret = MIN(subret, ret)) < NhlWARNING) {
 		e_text = "%s: PostDraw error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+	}
+
+	if (_NhlTopLevelView(layer->base.id) == layer->base.id) {
+		subret = _NhlUpdateDrawBB(layer);
 	}
 
 	return ret;

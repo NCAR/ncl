@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItemP.h,v 1.10 1998-02-24 02:21:17 dbrown Exp $
+ *      $Id: TextItemP.h,v 1.11 2003-11-25 22:41:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -76,6 +76,7 @@ typedef struct _NhlTextItemLayerPart{
 	float	yperim[5];
 	NhlBoolean	new_draw_req;	
         NhlTransDat	*trans_dat;	/* segment transform data */
+	NhlLayer last_wks;
 }NhlTextItemLayerPart;
 
 typedef struct _NhlTextItemLayerRec{

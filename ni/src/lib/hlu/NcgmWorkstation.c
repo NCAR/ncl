@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.39 1998-10-22 17:35:47 boote Exp $
+ *      $Id: NcgmWorkstation.c,v 1.40 2003-11-25 22:41:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -198,7 +198,8 @@ NhlNcgmWorkstationClassRec NhlncgmWorkstationClassRec = {
 /* lineto_work		*/	NhlInheritLineTo,
 /* fill_work		*/	NhlInheritFill,
 /* marker_work		*/	NhlInheritMarker,
-/* notify_work		*/	NcgmWorkstationNotify
+/* notify_work		*/	NcgmWorkstationNotify,
+/* update_drawbb        */      NULL
 	},
 	{
 /* current_ncgm_wkid	*/	NhlNULLOBJID

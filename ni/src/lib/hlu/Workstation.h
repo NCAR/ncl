@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.37 2003-11-08 20:54:41 dbrown Exp $
+ *      $Id: Workstation.h,v 1.38 2003-11-25 22:41:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -173,7 +173,8 @@ typedef enum _NhlMarkLineMode{
 	NhlMARKLINES = 2
 } NhlMarkLineMode;
 
-typedef enum {NhlHIGH,NhlMEDIUM,NhlLOW} NhlFontQuality;
+
+typedef enum {NhlHIGH,NhlMEDIUM,NhlLOW,NhlWORKSTATION} NhlFontQuality;
 typedef enum {NhlDOWN,NhlACROSS} NhlTextDirection;
 
 #define NhlTFontQuality		"FontQuality"
