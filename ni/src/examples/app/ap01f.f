@@ -65,7 +65,7 @@ C Since the appDefaultParent resource was set to True for
 C 'ap01', we can use either 0 or appid as the Parent id.
 C They mean the same thing.
 C
-      if (NCGM) then
+      if (NCGM.eq.1) then
 C
 C Create a metafile workstation.
 C
@@ -74,7 +74,7 @@ C
          call NhlFCreate(workid,'x',
      &        NhlFNcgmWorkstationClass,0,rlist,ierr)
 
-      elseif (X11) then
+      elseif (X11.eq.1) then
 C
 C Create an X workstation.
 C
@@ -83,7 +83,7 @@ C
          call NhlFCreate(workid,'x',
      &        NhlFXWorkstationClass,0,rlist,ierr)
 
-      elseif (PS) then
+      elseif (PS.eq.1) then
 C
 C Create a PS workstation.
 C
