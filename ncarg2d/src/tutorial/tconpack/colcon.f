@@ -36,10 +36,9 @@ C Close frame and close GKS
         EXTERNAL MASK
         EXTERNAL COLOR
 C
-C Set color fill and line type to solid
+C Set color fill to solid
 C
         CALL GSFAIS (1)
-        CALL DASHDB(65535)
 C
 C Initialize Areas
 C
@@ -47,10 +46,10 @@ C
 C
 C Initialize Ezmap and add to area map
 C
-        CALL MAPSTR ('GR - GRID SPACING',0.)
-        CALL MAPSTC ('OU - OUTLINES','CO')
+        CALL MAPSTR ('GR',0.)
+        CALL MAPSTC ('OU','CO')
         CALL MAPROJ(PROJ,PLAT,PLON,0.0)
-        IF (PROJ.EQ.'SV') CALL MAPSTR ('SA - SATELLITE DISTANCE',10.)
+        IF (PROJ.EQ.'SV') CALL MAPSTR ('SA',10.)
         CALL MAPSET('CO',RLATMN,RLONMN,RLATMX,RLONMX)
         CALL MAPINT
         CALL MAPBLA(MAP)
@@ -59,7 +58,7 @@ C Initialize Conpack and add to area map
 C
         CALL CPSETI('SET - DO-SET-CALL FLAG',0)
         CALL CPSETI('MAP - MAPPING FLAG',1)
-	CALL CPSETR('ORV - OUT OF RANGE FLAG',1.E12)
+        CALL CPSETR('ORV - OUT OF RANGE FLAG',1.E12)
         CALL CPSETR('XC1 - X COORDINATE AT INDEX 1',RLONMN)
         CALL CPSETR('XCM - X COORDINATE AT INDEX M',RLONMX)
         CALL CPSETR('YC1 - Y COORDINATE AT INDEX 1',RLATMN)
@@ -71,8 +70,8 @@ C
         CALL CPCLAM(ZREG, RWRK, IWRK, MAP)
         CALL CPLBAM(ZREG, RWRK, IWRK, MAP)
 C Choose a color for every contour level
-	CALL CPGETI('NCL - NUMBER OF CONTOUR LEVELS',NCLL)
-	CALL COLOR (NCLL)
+        CALL CPGETI('NCL',NCLL)
+        CALL COLOR (NCLL+1)
 C Fill contours and areas over land
         CALL ARSCAM(MAP, XWRK, YWRK, NWRK, IAREA, IGRP, NOGRPS, FILL)
 
@@ -90,14 +89,14 @@ C
         CALL CPGETR('ZMN - Z DATA ARRAY DIMENSION N',ZMN)
         WRITE (LBLS(1), '(F8.3)') ZMN
         DO 10, I=1,NCLL
-           LFIN(I)=I+1
+           LFIN(I)=I+2
            CALL CPSETI('PAI - PARAMETER ARRAY INDEX',I)
            CALL CPGETR('CLV - CONTOUR LEVEL VALUES',CLV)
            WRITE (LBLS(I+1), '(F8.3)') CLV
  10     CONTINUE
-        LFIN(NCLL+1)=NCLL+2
+        LFIN(NCLL+1)=NCLL+3
         WRITE (LBLS(NCLL+2),'(A4)') 'LAND'
-        LFIN(NCLL+2)=NCLL+3
+        LFIN(NCLL+2)=2
         CALL LBLBAR(0,XMIN,XMAX,YBOT,YTOP,NCLL+2,1.,.5,LFIN,1,LBLS,
      +          NCLL+2,1)
         
@@ -131,8 +130,7 @@ C If the area is over land, fill with gray
               CALL GSFACI(2)
               CALL GFA(NWRK-1,XWRK,YWRK)
            ENDIF
-        ENDIF
-        
+        ENDIF        
         RETURN
         END
 
@@ -157,7 +155,7 @@ C over land.
 
         IF ((IDMAP.GT.0).AND.(IDCONT.GT.0).AND.(MAPACI(IDMAP).EQ.1))
      +          THEN
-          CALL CURVED(XWRK,YWRK,NWRK)
+          CALL CURVE(XWRK,YWRK,NWRK)
         ENDIF
         
         RETURN
@@ -212,10 +210,24 @@ C
   104   CONTINUE
 C
         DO 106 J=1,N
-          DO 105 I=1,M
+          DO 105 I=1,M-1
             DATA(I,J)=(DATA(I,J)-DMIN)/(DMAX-DMIN)*(DHGH-DLOW)+DLOW
   105     CONTINUE
   106   CONTINUE
+C
+        DO 107 J=1,N
+          DATA(M,J)=(DATA(M,J)+DATA(1,J))/2.0
+  107   CONTINUE
+
+        DO 108 J=1,N
+          DATA(M-1,J)=(DATA(M-1,J)+DATA(M,J)+DATA(1,J))/3.0
+  108   CONTINUE
+
+        DO 109 J=1,N
+          DATA(M-2,J)=(DATA(M-2,J)+DATA(M-1,J)+DATA(M,J)+DATA(1,J))/4.0
+  109   CONTINUE
+C
+C
 C
         RETURN
 C
@@ -240,7 +252,7 @@ C
         RETURN
       END
 
-	SUBROUTINE COLOR (N)
+        SUBROUTINE COLOR (N)
 
 C BACKGROUND COLOR
 C BLACK
@@ -265,3 +277,4 @@ C Choose other foreground colors spaced equally around the spectrum
 
         RETURN
         END
+
