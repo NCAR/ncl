@@ -1,5 +1,5 @@
 /*
- *	$Id: binary.c,v 1.5 1994-06-03 22:30:18 clyne Exp $
+ *	$Id: binary.c,v 1.6 1995-01-10 17:25:17 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -34,13 +34,9 @@
 #include <fcntl.h>
 #include <string.h>
 #include "ncarg_ras.h"
+#include "options.h"
 
 #define BINARY_FORMAT_NAME	"bin"
-
-extern int			OptionInX;
-extern int			OptionInY;
-extern int			OptionInInvert;
-extern int			OptionIndexed;
 
 Raster *
 BinaryOpen(name)
@@ -117,7 +113,7 @@ BinaryRead(ras)
 			ras->file_type	= RAS_INDEXED;
 			ras->type	= RAS_INDEXED;
 			ras->length	= ras->nx * ras->ny;
-			ras->ncolor	= 256;
+			ras->ncolor	= 0;
 		}
 		else {
 			ras->file_type	= RAS_DIRECT;
@@ -130,8 +126,17 @@ BinaryRead(ras)
 
 		ras->data = (unsigned char *) ras_calloc(ras->length, 1);
 		if (ras->data == (unsigned char *) NULL) {
-			(void) ESprintf(errno, "BinaryRead(\"%s\")", ras->name);
+			(void) ESprintf(errno, "ras_calloc(%d,1)", ras->length);
 			return(RAS_ERROR);
+		}
+
+		if (OptionInOffset) {
+			if (fseek(ras->fp,(long) OptionInOffset,SEEK_SET) < 0) {
+				(void) ESprintf(
+					errno, "fseek(,%d,)", OptionInOffset
+				);
+				return(RAS_ERROR);
+			}
 		}
 	}
 
@@ -141,7 +146,7 @@ BinaryRead(ras)
 			return(RAS_EOF);
 		}
 		else if (status != ras->length) {
-			(void) ESprintf(errno, "BinaryRead(\"%s\")", ras->name);
+			(void) ESprintf(errno, "fread(,1,%d,)", ras->length);
 			return(RAS_ERROR);
 		}
 	}
@@ -152,7 +157,7 @@ BinaryRead(ras)
 		}
 		for(y=0; y<ras->ny; y++) {
 			p = &DIRECT_RED(ras, 0, ras->ny-y-1);
-			length = ras->ny * 3;
+			length = ras->nx * 3;
 			status = fread((char *) p, 1, length, ras->fp);
 			if (status == 0) {
 				return(RAS_EOF);
@@ -270,6 +275,26 @@ BinaryWrite(ras)
 {
 
 	int	nb;
+
+	if (OptionOutCMap) {
+		nb = write(ras->fd, (char *) ras->red, ras->ncolor);
+		if (nb != ras->ncolor) {
+			(void) ESprintf( errno, "write(%d,,%d)", ras->fd, ras->ncolor);
+			return(RAS_ERROR);
+		}
+
+		nb = write(ras->fd, (char *) ras->green, ras->ncolor);
+		if (nb != ras->ncolor) {
+			(void) ESprintf( errno, "write(%d,,%d)", ras->fd, ras->ncolor);
+			return(RAS_ERROR);
+		}
+
+		nb = write(ras->fd, (char *) ras->blue, ras->ncolor);
+		if (nb != ras->ncolor) {
+			(void) ESprintf( errno, "write(%d,,%d)", ras->fd, ras->ncolor);
+			return(RAS_ERROR);
+		}
+	}
 
 	nb = write(ras->fd, (char *) ras->data, ras->length);
 	if (nb != ras->length) {
