@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans_wks.c.sed,v 1.14 1994-03-09 19:26:09 clyne Exp $
+ *	$Id: ictrans_wks.c.sed,v 1.15 1994-04-20 17:47:52 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -342,7 +342,7 @@ wrtwks_(unit, buffer, length, status)
 		return(0);
 	}
 
-	if ( (*length * sizeof(long)) != RECORDSIZE)
+	if ( (*length * sizeof(int)) != RECORDSIZE)
 	{
 		(void) fprintf(stderr, 
 			"Error in wrtwks_() : Invalid length (%d)\n",
@@ -398,7 +398,7 @@ rdwks_(unit, buffer, length, status)
 		return(0);
 	}
 
-	if ( (*length * sizeof(long)) != RECORDSIZE)
+	if ( (*length * sizeof(int)) != RECORDSIZE)
 	{
 		(void) fprintf(stderr, 
 			"Error in rdwks_() : Invalid length (%d)\n",
