@@ -31,7 +31,7 @@ begin
 ;  a = file1->sst(0,:,:)
 ;  b = a
 ;  b(:,0:165) = a(:,15:180)
-   b(:,165:180) = a(:,0:15)
+;  b(:,165:180) = a(:,0:15)
 ;
 ; Create an sst data object.
 ;
