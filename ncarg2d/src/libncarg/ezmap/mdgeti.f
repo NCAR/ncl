@@ -1,5 +1,5 @@
 C
-C $Id: mdgeti.f,v 1.1 2001-08-16 23:09:27 kennison Exp $
+C $Id: mdgeti.f,v 1.2 2001-11-02 22:36:53 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -52,8 +52,9 @@ C
         INTEGER          ICIN
         SAVE   /MAPCMQ/
 C
-        COMMON /MAPRGD/  ICOL(5),ICSF(5),NILN,NILT
-        INTEGER          ICOL,ICSF,NILN,NILT
+        COMMON /MAPRGD/  ICOL(5),ICSF(5),IDPF,LCRA,NILN,NILT,OLAT,OLON
+        INTEGER          ICOL,ICSF,IDPF,LCRA,NILN,NILT
+        REAL             OLAT,OLON
         SAVE   /MAPRGD/
 C
         COMMON /MAPSAT/  ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
@@ -140,6 +141,8 @@ C
           IVAL=INT(PLTR)
         ELSE IF (WHCH(1:2).EQ.'RO'.OR.WHCH(1:2).EQ.'ro') THEN
           IVAL=INT(ROTA)
+        ELSE IF (WHCH(1:2).EQ.'RP'.OR.WHCH(1:2).EQ.'rp') THEN
+          IVAL=IDPF
         ELSE IF (WHCH(1:2).EQ.'SA'.OR.WHCH(1:2).EQ.'sa') THEN
           IVAL=INT(SALT)
         ELSE IF (WHCH(1:2).EQ.'S1'.OR.WHCH(1:2).EQ.'s1') THEN

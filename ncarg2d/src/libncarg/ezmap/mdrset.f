@@ -1,5 +1,5 @@
 C
-C $Id: mdrset.f,v 1.1 2001-08-16 23:09:39 kennison Exp $
+C $Id: mdrset.f,v 1.2 2001-11-02 22:37:17 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -85,8 +85,9 @@ C
         INTEGER          ICIN
         SAVE   /MAPCMQ/
 C
-        COMMON /MAPRGD/  ICOL(5),ICSF(5),NILN,NILT
-        INTEGER          ICOL,ICSF,NILN,NILT
+        COMMON /MAPRGD/  ICOL(5),ICSF(5),IDPF,LCRA,NILN,NILT,OLAT,OLON
+        INTEGER          ICOL,ICSF,IDPF,LCRA,NILN,NILT
+        REAL             OLAT,OLON
         SAVE   /MAPRGD/
 C
         COMMON /MAPSAT/  ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
@@ -158,8 +159,9 @@ C
           ICOL(I)=1
           ICSF(I)=MOD(I-1,2)
   102   CONTINUE
-        NILN=32
-        NILT=32
+        IDPF=1
+        NILN=50
+        NILT=50
         ALFA=0.D0
         BETA=0.D0
         DCSA=1.D0

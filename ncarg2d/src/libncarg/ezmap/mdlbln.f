@@ -1,5 +1,5 @@
 C
-C $Id: mdlbln.f,v 1.2 2001-09-12 17:28:59 kennison Exp $
+C $Id: mdlbln.f,v 1.3 2001-11-02 22:36:58 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

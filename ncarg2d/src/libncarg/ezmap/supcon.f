@@ -1,5 +1,5 @@
 C
-C $Id: supcon.f,v 1.10 2001-08-16 23:09:46 kennison Exp $
+C $Id: supcon.f,v 1.11 2001-11-02 22:37:21 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

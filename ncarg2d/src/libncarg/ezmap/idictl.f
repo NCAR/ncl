@@ -1,5 +1,5 @@
 C
-C $Id: idictl.f,v 1.9 2001-08-16 23:09:14 kennison Exp $
+C $Id: idictl.f,v 1.10 2001-11-02 22:36:30 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

@@ -1,5 +1,5 @@
 C
-C $Id: mapeod.f,v 1.9 2001-08-16 23:09:16 kennison Exp $
+C $Id: mapeod.f,v 1.10 2001-11-02 22:36:32 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

@@ -1,5 +1,5 @@
 C
-C $Id: mapbd.f,v 1.16 2001-08-16 23:09:15 kennison Exp $
+C $Id: mapbd.f,v 1.17 2001-11-02 22:36:31 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -145,8 +145,9 @@ C The common block MAPRGD contains two arrays of color indices and
 C a couple of point-interpolation values used by the routines that plot
 C data from the RANGS/GSHHS dataset.
 C
-        COMMON /MAPRGD/  ICOL(5),ICSF(5),NILN,NILT
-        INTEGER          ICOL,ICSF,NILN,NILT
+        COMMON /MAPRGD/  ICOL(5),ICSF(5),IDPF,LCRA,NILN,NILT,OLAT,OLON
+        INTEGER          ICOL,ICSF,IDPF,LCRA,NILN,NILT
+        REAL             OLAT,OLON
         SAVE   /MAPRGD/
 C
 C The common block MAPSAT contains parameters for the satellite-view
@@ -470,12 +471,22 @@ C interpolation is to reduce the probability of having little gaps
 C along the seams between adjacent cells.  (If it is not done and a
 C projection is used that maps the 1-degree cells into patches whose
 C edges are neither horizontal nor vertical, the gaps can be quite
-C noticeable.)
+C noticeable.)  OLAT and OLON are temporary variables in which some
+C values are passed from MPRGSX to MPRGFA; they do not need to be
+C initialized.  IDPF is a flag indicating how the RANGS/GSHHS data
+C to be processed.  IDPF = 0 means that the data are to be used in
+C are unedited form (MDRGSQ is called).  IDPF = 1 means that the data
+C are to be edited and that polygon fills are to be done using direct
+C calls to GFA, without using an area map (MDRGSX is called).  IDPF =
+C 2 means that the data are to be edited and that fills are to be done
+C using an area map (MDRGSX is called).
 C
       DATA ICOL / 1 , 1 , 1 , 1 , 1 /
       DATA ICSF / 0 , 1 , 0 , 1 , 0 /
 C
-      DATA NILN,NILT / 32 , 32 /
+      DATA IDPF / 1 /
+C
+      DATA NILN,NILT / 50 , 50 /
 C
 C Variables in MAPSAT:
 C

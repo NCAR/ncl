@@ -1,5 +1,5 @@
 C
-C $Id: mdrgsc.f,v 1.1 2001-08-16 23:09:38 kennison Exp $
+C $Id: mdrgsc.f,v 1.2 2001-11-02 22:37:17 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -32,8 +32,9 @@ C
 C Declare required common blocks.  See MAPBD for descriptions of these
 C common blocks and the variables in them.
 C
-        COMMON /MAPRGD/  ICOL(5),ICSF(5),NILN,NILT
-        INTEGER          ICOL,ICSF,NILN,NILT
+        COMMON /MAPRGD/  ICOL(5),ICSF(5),IDPF,LCRA,NILN,NILT,OLAT,OLON
+        INTEGER          ICOL,ICSF,IDPF,LCRA,NILN,NILT
+        REAL             OLAT,OLON
         SAVE   /MAPRGD/
 C
 C Declare local variables.

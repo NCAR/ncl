@@ -1,5 +1,5 @@
 C
-C $Id: rbgdfe.f,v 1.4 2001-08-16 23:09:45 kennison Exp $
+C $Id: rbgdfe.f,v 1.5 2001-11-02 22:37:20 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

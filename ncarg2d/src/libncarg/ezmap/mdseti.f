@@ -1,5 +1,5 @@
 C
-C $Id: mdseti.f,v 1.1 2001-08-16 23:09:40 kennison Exp $
+C $Id: mdseti.f,v 1.2 2001-11-02 22:37:18 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -67,8 +67,9 @@ C
         INTEGER          ICIN
         SAVE   /MAPCMQ/
 C
-        COMMON /MAPRGD/  ICOL(5),ICSF(5),NILN,NILT
-        INTEGER          ICOL,ICSF,NILN,NILT
+        COMMON /MAPRGD/  ICOL(5),ICSF(5),IDPF,LCRA,NILN,NILT,OLAT,OLON
+        INTEGER          ICOL,ICSF,IDPF,LCRA,NILN,NILT
+        REAL             OLAT,OLON
         SAVE   /MAPRGD/
 C
         COMMON /MAPSAT/  ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
@@ -117,8 +118,8 @@ C
         ELSE IF (WHCH(1:2).EQ.'G2'.OR.WHCH(1:2).EQ.'g2') THEN
           IGI2=IVAL
         ELSE IF (WHCH(1:2).EQ.'II'.OR.WHCH(1:2).EQ.'ii') THEN
-          NILN=MAX(1,MIN(256,MOD(IVAL,1000)))
-          NILT=MAX(1,MIN(256,IVAL/1000))
+          NILN=MAX(1,MIN(999,MOD(IVAL,1000)))
+          NILT=MAX(1,MIN(999,IVAL/1000))
         ELSE IF (WHCH(1:2).EQ.'LA'.OR.WHCH(1:2).EQ.'la') THEN
           LBLF=IVAL.NE.0
         ELSE IF (WHCH(1:2).EQ.'LS'.OR.WHCH(1:2).EQ.'ls') THEN
@@ -131,6 +132,8 @@ C
         ELSE IF (WHCH(1:2).EQ.'RE'.OR.WHCH(1:2).EQ.'re') THEN
           PLTR=IVAL
           INTF=.TRUE.
+        ELSE IF (WHCH(1:2).EQ.'RP'.OR.WHCH(1:2).EQ.'rp') THEN
+          IDPF=MAX(0,MIN(2,IVAL))
         ELSE IF (WHCH(1:2).EQ.'SA'.OR.WHCH(1:2).EQ.'sa') THEN
           SALT=DBLE(IVAL)
           IF (ABS(SALT).GT.1.D0) THEN

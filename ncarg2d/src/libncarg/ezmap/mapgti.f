@@ -1,5 +1,5 @@
 C
-C $Id: mapgti.f,v 1.15 2001-08-16 23:09:18 kennison Exp $
+C $Id: mapgti.f,v 1.16 2001-11-02 22:36:36 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

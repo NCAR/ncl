@@ -1,5 +1,5 @@
 C
-C $Id: mdpsav.f,v 1.1 2001-08-16 23:09:35 kennison Exp $
+C $Id: mdpsav.f,v 1.2 2001-11-02 22:37:14 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -57,8 +57,9 @@ C
         INTEGER          ICIN
         SAVE   /MAPCMQ/
 C
-        COMMON /MAPRGD/  ICOL(5),ICSF(5),NILN,NILT
-        INTEGER          ICOL,ICSF,NILN,NILT
+        COMMON /MAPRGD/  ICOL(5),ICSF(5),IDPF,LCRA,NILN,NILT,OLAT,OLON
+        INTEGER          ICOL,ICSF,IDPF,LCRA,NILN,NILT
+        REAL             OLAT,OLON
         SAVE   /MAPRGD/
 C
         COMMON /MAPSAT/  ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
@@ -78,7 +79,7 @@ C
      +                              ILTS,JPRJ,ELPF,LBLF,PRMF,DDTS,DPLT,
      +                              IGI1,IGI2,NOVS,ICIN,ALFA,BETA,DCSA,
      +                              DCSB,DSNA,DSNB,SALT,SSMO,SRSS,ICOL,
-     +                              ICSF,NILN,NILT
+     +                              ICSF,NILN,NILT,IDPF
 C
 C Done.
 C

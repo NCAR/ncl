@@ -1,5 +1,5 @@
 C
-C $Id: mdrgol.f,v 1.3 2001-09-26 15:20:33 kennison Exp $
+C $Id: mdrgol.f,v 1.4 2001-11-02 22:37:17 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,9 +20,10 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      SUBROUTINE MDRGOL (IRGL)
+      SUBROUTINE MDRGOL (IRGL,RWRK,LRWK)
 C
-        INTEGER IRGL
+        INTEGER IRGL,LRWK
+        REAL RWRK(LRWK)
 C
 C This routine is called to draw RANGS/GSHHS outlines in the current
 C EZMAP window.  The argument IRGL specifies the level of resolution
@@ -49,15 +50,22 @@ C
         LOGICAL          ELPF,INTF,LBLF,PRMF
         SAVE   /MAPCM4/
 C
-        COMMON /MAPRGD/  ICOL(5),ICSF(5),NILN,NILT
-        INTEGER          ICOL,ICSF,NILN,NILT
+        COMMON /MAPRGD/  ICOL(5),ICSF(5),IDPF,LCRA,NILN,NILT,OLAT,OLON
+        INTEGER          ICOL,ICSF,IDPF,LCRA,NILN,NILT
+        REAL             OLAT,OLON
         SAVE   /MAPRGD/
 C
 C Declare local variables.
 C
-        DOUBLE PRECISION RLAT,RLON,UPRJ,VPRJ
-        INTEGER          ICAT,ICEL,IERR,IGCF,ILAT,ILON,IPLC,IRIM
+        DOUBLE PRECISION P,Q,RLAT,RLON,UPRJ,VPRJ
+        INTEGER          I,J,ICAT,ICEL,IERR,IGCF,ILAT,ILON,IPLC,IRIM,
+     +                   IWGF,NPTS
         REAL             DUMI(4)
+C
+C Declare a local, dummy, area-map array to hand off to MDRGSX, which
+C doesn't need a real one just to draw outlines.
+C
+        INTEGER          IAMA(1)
 C
 C Check for an uncleared prior error.
 C
@@ -102,54 +110,64 @@ C
           RETURN
         END IF
 C
-C Look for 1-degree squares that are visible and plot polylines in them.
+C Look for 1-degree lat/lon "squares" that are visible and plot
+C polylines in them.
 C
-        DO 103 ILON=0,359
-          DO 102 ILAT = -90,89
-            CALL MDPTRA (DBLE(ILAT)     ,DBLE(ILON)     ,UPRJ,VPRJ)
-            IF (UPRJ.NE.1.D12) GO TO 101
-            CALL MDPTRA (DBLE(ILAT)     ,DBLE(ILON)+1.D0,UPRJ,VPRJ)
-            IF (UPRJ.NE.1.D12) GO TO 101
-            CALL MDPTRA (DBLE(ILAT)+1.D0,DBLE(ILON)     ,UPRJ,VPRJ)
-            IF (UPRJ.NE.1.D12) GO TO 101
-            CALL MDPTRA (DBLE(ILAT)+1.D0,DBLE(ILON)+1.D0,UPRJ,VPRJ)
-            IF (UPRJ.NE.1.D12) GO TO 101
-            CALL MDPTRA (DBLE(ILAT)+.5D0,DBLE(ILON)+.5D0,UPRJ,VPRJ)
-            IF (UPRJ.NE.1.D12) GO TO 101
-            CALL MDPTRI (UMIN,VMIN,RLAT,RLON)
-            IF (RLON.LT.DBLE(ILON)) RLON=RLON+360.D0
-            IF (RLON.GT.DBLE(ILON+360)) RLON=RLON-360.D0
-            IF (RLAT.GE.DBLE(ILAT).AND.RLAT.LE.DBLE(ILAT+1).AND.
-     +          RLON.GE.DBLE(ILON).AND.RLON.LE.DBLE(ILON+1)) GO TO 101
-            CALL MDPTRI (UMIN,VMAX,RLAT,RLON)
-            IF (RLON.LT.DBLE(ILON)) RLON=RLON+360.D0
-            IF (RLON.GT.DBLE(ILON+360)) RLON=RLON-360.D0
-            IF (RLAT.GE.DBLE(ILAT).AND.RLAT.LE.DBLE(ILAT+1).AND.
-     +          RLON.GE.DBLE(ILON).AND.RLON.LE.DBLE(ILON+1)) GO TO 101
-            CALL MDPTRI (UMAX,VMIN,RLAT,RLON)
-            IF (RLON.LT.DBLE(ILON)) RLON=RLON+360.D0
-            IF (RLON.GT.DBLE(ILON+360)) RLON=RLON-360.D0
-            IF (RLAT.GE.DBLE(ILAT).AND.RLAT.LE.DBLE(ILAT+1).AND.
-     +          RLON.GE.DBLE(ILON).AND.RLON.LE.DBLE(ILON+1)) GO TO 101
-            CALL MDPTRI (UMAX,VMAX,RLAT,RLON)
-            IF (RLON.LT.DBLE(ILON)) RLON=RLON+360.D0
-            IF (RLON.GT.DBLE(ILON+360)) RLON=RLON-360.D0
-            IF (RLAT.GE.DBLE(ILAT).AND.RLAT.LE.DBLE(ILAT+1).AND.
-     +          RLON.GE.DBLE(ILON).AND.RLON.LE.DBLE(ILON+1)) GO TO 101
-            CALL MDPTRI (.5*(UMIN+UMAX),.5*(VMIN+VMAX),RLAT,RLON)
-            IF (RLON.LT.DBLE(ILON)) RLON=RLON+360.D0
-            IF (RLON.GT.DBLE(ILON+360)) RLON=RLON-360.D0
-            IF (RLAT.GE.DBLE(ILAT).AND.RLAT.LE.DBLE(ILAT+1).AND.
-     +          RLON.GE.DBLE(ILON).AND.RLON.LE.DBLE(ILON+1)) GO TO 101
-            GO TO 102
-  101       CALL MDRGSQ (ICAT,ICEL,IRIM,ILAT,ILON,0)
-            IF (ICFELL('MDRGOL',6).NE.0) GO TO 104
-  102     CONTINUE
-  103   CONTINUE
+        NPTS=7
+C
+C Set the flag IWGF to say whether or not the whole globe is shown by
+C the current projection.  If so (IWGF=1), there's no need to waste the
+C time required to check each 1-degree square for intersection with
+C the window.
+C
+        IWGF=0
+        IF (BLAM-SLAM.GT.179.D0.AND.BLOM-SLOM.GT.359.D0) IWGF=1
+C
+C Loop through all the 1-degree lat/lon squares; for each one, do a
+C quick test to see if the square is entirely invisible and, if not,
+C do more exhaustive tests to see if part of it is visible.
+C
+        DO 105 ILON=0,359
+          IF (IWGF.EQ.0.AND.
+     +        (DBLE(ILON   ).GT.BLOM.OR.
+     +         DBLE(ILON+1 ).LT.SLOM).AND.
+     +        (DBLE(ILON-360).GT.BLOM.OR.
+     +         DBLE(ILON-359).LT.SLOM).AND.
+     +        (DBLE(ILON+360).GT.BLOM.OR.
+     +         DBLE(ILON+361).LT.SLOM))                        GO TO 105
+          DO 104 ILAT = -90,89
+            IF (IWGF.EQ.0.AND.
+     +          (DBLE(ILAT).GT.BLAM.OR.DBLE(ILAT+1).LT.SLAM))  GO TO 104
+            DO 102 I=1,NPTS
+              P=DBLE(I-1)/DBLE(NPTS-1)
+              DO 101 J=1,NPTS
+                Q=DBLE(J-1)/DBLE(NPTS-1)
+                CALL MDPTRA (DBLE(ILAT)+P,DBLE(ILON)+Q,UPRJ,VPRJ)
+                IF (UPRJ.NE.1.D12)                             GO TO 103
+                CALL MDPTRI (UMIN+P*(UMAX-UMIN),VMIN+Q*(VMAX-VMIN),
+     +                                                   RLAT,RLON)
+                IF (RLON.LT.DBLE(ILON)) RLON=RLON+360.D0
+                IF (RLON.GT.DBLE(ILON+360)) RLON=RLON-360.D0
+                IF (RLAT.GE.DBLE(ILAT).AND.RLAT.LE.DBLE(ILAT+1).AND.
+     +              RLON.GE.DBLE(ILON).AND.RLON.LE.DBLE(ILON+1))
+     +                                                         GO TO 103
+  101         CONTINUE
+  102       CONTINUE
+                                                               GO TO 104
+  103       IF (IDPF.EQ.0) THEN
+              CALL MDRGSQ (ICAT,ICEL,IRIM,ILAT,ILON,0,
+     +                                       RWRK,RWRK(LRWK/2+1),LRWK/2)
+            ELSE
+              CALL MDRGSX (ICAT,ICEL,IRIM,ILAT,ILON,0,IRGL,
+     +                                IAMA,1,RWRK,RWRK(LRWK/2+1),LRWK/2)
+            END IF
+            IF (ICFELL('MDRGOL',6).NE.0)                       GO TO 106
+  104     CONTINUE
+  105   CONTINUE
 C
 C Restore the polyline color to its original value.
 C
-  104   CALL GSPLCI (IPLC)
+  106   CALL GSPLCI (IPLC)
 C
 C Reset the clipping flag.
 C

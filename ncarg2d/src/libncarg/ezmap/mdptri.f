@@ -1,5 +1,5 @@
 C
-C $Id: mdptri.f,v 1.1 2001-08-16 23:09:35 kennison Exp $
+C $Id: mdptri.f,v 1.2 2001-11-02 22:37:15 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

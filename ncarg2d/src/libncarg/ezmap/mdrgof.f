@@ -1,5 +1,5 @@
 C
-C $Id: mdrgof.f,v 1.1 2001-08-16 23:09:38 kennison Exp $
+C $Id: mdrgof.f,v 1.2 2001-11-02 22:37:17 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -48,7 +48,7 @@ C
         IF (ICFELL('MDRGOF',1).NE.0) RETURN
 C
         DO 101 I=1,112
-          IF (FLNM(I:I).EQ.' '.OR.FLNM.EQ.CHAR(0)) THEN
+          IF (FLNM(I:I).EQ.' '.OR.FLNM(I:I).EQ.CHAR(0)) THEN
             INAM=I
             IF (I.NE.1) THEN
               IF (FLNM(I-1:I-1).NE.'/') THEN

@@ -1,5 +1,5 @@
 C
-C $Id: mdrgsq.f,v 1.4 2001-09-26 15:20:33 kennison Exp $
+C $Id: mdrgsq.f,v 1.5 2001-11-02 22:37:17 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,9 +20,10 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      SUBROUTINE MDRGSQ (ICAT,ICEL,IRIM,ILAT,ILON,IFLL)
+      SUBROUTINE MDRGSQ (ICAT,ICEL,IRIM,ILAT,ILON,IFLL,XCRA,YCRA,MCRA)
 C
-        INTEGER ICAT,ICEL,IRIM,ILAT,ILON,IFLL
+        INTEGER ICAT,ICEL,IRIM,ILAT,ILON,IFLL,MCRA
+        REAL XCRA(MCRA),YCRA(MCRA)
 C
 C This routine, given the file identifiers ICAT, ICEL, and IRIM for a
 C particular level of the RANGS/GSHHS data, the integer latitude and
@@ -30,13 +31,16 @@ C longitude ILAT and ILON (-90.LE.ILAT.LE.89 and 0.LE.ILON.LE.359) of
 C the lower left-hand corner of a particular 1-degree square, and a
 C flag IFLL, retrieves the polygons within the specified square, maps
 C them by calling MDPTRN, and then either fills them (if IFLL is
-C non-zero) or just draws them (if IFLL is zero).
+C non-zero) or just draws them (if IFLL is zero).  The arrays XCRA and
+C YCRA are used to hold the coordinates of points defining polygons
+C retrieved from the data arrays.
 C
 C Declare required common blocks.  See MAPBD for descriptions of these
 C common blocks and the variables in them.
 C
-        COMMON /MAPRGD/  ICOL(5),ICSF(5),NILN,NILT
-        INTEGER          ICOL,ICSF,NILN,NILT
+        COMMON /MAPRGD/  ICOL(5),ICSF(5),IDPF,LCRA,NILN,NILT,OLAT,OLON
+        INTEGER          ICOL,ICSF,IDPF,LCRA,NILN,NILT
+        REAL             OLAT,OLON
         SAVE   /MAPRGD/
 C
 C Declare local variables.
@@ -46,14 +50,6 @@ C
 C
         DOUBLE PRECISION DLAT,DLON,PLAT,PLON,QLAT,QLON,RLAT,RLON,XCRD,
      +                   XLAT,XLON,YCRD
-C
-C The arrays XCRA and YCRA are used to hold the coordinates of points
-C defining polygons retrieved from the data arrays.  Each is dimensioned
-C MCRA, where MCRA is as defined in the parameter statement.
-C
-        PARAMETER (MCRA=16384)
-C
-        REAL XCRA(MCRA),YCRA(MCRA)
 C
 C CTM4 and CTM1 are character temporaries into which we can read a group
 C of four bytes or a single byte, respectively.  (Because the data are
@@ -81,14 +77,14 @@ C
         CALL NGSEEK (ICAT,4*((89-ILAT)*360+ILON),0,ISTA)
 C
         IF (ISTA.LT.0) THEN
-          CALL SETER ('MDRGSQ - SEEK FAILURE IN CAT FILE ',1,1)
+          CALL SETER ('MDRGSQ - SEEK FAILURE IN CAT FILE',1,1)
           RETURN
         END IF
 C
         CALL NGRDCH (ICAT,CTM4,4,ISTA)
 C
         IF (ISTA.NE.4) THEN
-          CALL SETER ('MDRGSQ - READ FAILURE IN CAT FILE ',2,1)
+          CALL SETER ('MDRGSQ - READ FAILURE IN CAT FILE',2,1)
           RETURN
         END IF
 C
@@ -102,7 +98,7 @@ C
         CALL NGSEEK (ICEL,IPOS,0,ISTA)
 C
         IF (ISTA.LT.0) THEN
-          CALL SETER ('MDRGSQ - SEEK FAILURE IN CEL FILE ',3,1)
+          CALL SETER ('MDRGSQ - SEEK FAILURE IN CEL FILE',3,1)
           RETURN
         END IF
 C
@@ -111,7 +107,7 @@ C
   101   CALL NGRDCH (ICEL,CTM1,1,ISTA)
 C
         IF (ISTA.NE.1) THEN
-          CALL SETER ('MDRGSQ - READ FAILURE IN CEL FILE ',4,1)
+          CALL SETER ('MDRGSQ - READ FAILURE IN CEL FILE',4,1)
           RETURN
         END IF
 C
@@ -135,7 +131,7 @@ C
           CALL NGRDCH (ICEL,CTM4,4,ISTA)
 C
           IF (ISTA.NE.4) THEN
-            CALL SETER ('MDRGSQ - READ FAILURE IN CEL FILE ',5,1)
+            CALL SETER ('MDRGSQ - READ FAILURE IN CEL FILE',5,1)
             RETURN
           END IF
 C
@@ -160,7 +156,7 @@ C
   102     CALL NGRDCH (ICEL,CTM1,1,ISTA)
 C
           IF (ISTA.NE.1) THEN
-            CALL SETER ('MDRGSQ - READ FAILURE IN CEL FILE ',6,1)
+            CALL SETER ('MDRGSQ - READ FAILURE IN CEL FILE',6,1)
             RETURN
           END IF
 C
@@ -197,7 +193,7 @@ C
               CALL NGRDCH (ICEL,CTM4,4,ISTA)
 C
               IF (ISTA.NE.4) THEN
-                CALL SETER ('MDRGSQ - READ FAILURE IN CEL FILE ',7,1)
+                CALL SETER ('MDRGSQ - READ FAILURE IN CEL FILE',7,1)
                 RETURN
               END IF
 C
@@ -214,7 +210,7 @@ C
               CALL NGRDCH (ICEL,CTM4,4,ISTA)
 C
               IF (ISTA.NE.4) THEN
-                CALL SETER ('MDRGSQ - READ FAILURE IN CEL FILE ',8,1)
+                CALL SETER ('MDRGSQ - READ FAILURE IN CEL FILE',8,1)
                 RETURN
               END IF
 C
@@ -255,17 +251,19 @@ C
 C
                     DO 103 IINT=IBEG,IEND,IDIR
                       XLON=DBLE(ILON)+DBLE(IINT)*DLON
-                      IF (NCRA+1.LT.MCRA) THEN
-                        NCRA=NCRA+1
-                        CALL MDPTRN (XLAT,XLON,XCRD,YCRD)
-                        IF (ICFELL('MDRGSQ',9).NE.0) RETURN
-                        XCRA(NCRA)=REAL(XCRD)
-                        YCRA(NCRA)=REAL(YCRD)
-                        IF (XCRD.EQ.1.D12) NCRA=NCRA-1
-                      ELSE
-                        CALL SETER
-     +                     ('MDRGSQ - COORDINATE BUFFER OVERFLOW ',10,1)
-                        RETURN
+                      IF ((XLON-RLON)*(QLON-XLON).GT.0.D0) THEN
+                        IF (NCRA+1.LT.MCRA) THEN
+                          NCRA=NCRA+1
+                          CALL MDPTRN (XLAT,XLON,XCRD,YCRD)
+                          IF (ICFELL('MDRGSQ',9).NE.0) RETURN
+                          XCRA(NCRA)=REAL(XCRD)
+                          YCRA(NCRA)=REAL(YCRD)
+                          IF (XCRD.EQ.1.D12) NCRA=NCRA-1
+                        ELSE
+                          CALL SETER
+     +                      ('MDRGSQ - COORDINATE BUFFER OVERFLOW',10,1)
+                          RETURN
+                        END IF
                       END IF
   103               CONTINUE
 C
@@ -280,17 +278,19 @@ C
 C
                     DO 104 IINT=IBEG,IEND,IDIR
                       XLAT=DBLE(ILAT)+DBLE(IINT)*DLAT
-                      IF (NCRA+1.LT.MCRA) THEN
-                        NCRA=NCRA+1
-                        CALL MDPTRN (XLAT,XLON,XCRD,YCRD)
-                        IF (ICFELL('MDRGSQ',11).NE.0) RETURN
-                        XCRA(NCRA)=REAL(XCRD)
-                        YCRA(NCRA)=REAL(YCRD)
-                        IF (XCRD.EQ.1.D12) NCRA=NCRA-1
-                      ELSE
-                        CALL SETER
-     +                     ('MDRGSQ - COORDINATE BUFFER OVERFLOW ',12,1)
-                        RETURN
+                      IF ((XLAT-RLAT)*(QLAT-XLAT).GT.0.D0) THEN
+                        IF (NCRA+1.LT.MCRA) THEN
+                          NCRA=NCRA+1
+                          CALL MDPTRN (XLAT,XLON,XCRD,YCRD)
+                          IF (ICFELL('MDRGSQ',11).NE.0) RETURN
+                          XCRA(NCRA)=REAL(XCRD)
+                          YCRA(NCRA)=REAL(YCRD)
+                          IF (XCRD.EQ.1.D12) NCRA=NCRA-1
+                        ELSE
+                          CALL SETER
+     +                      ('MDRGSQ - COORDINATE BUFFER OVERFLOW',12,1)
+                          RETURN
+                        END IF
                       END IF
   104               CONTINUE
 C
@@ -315,7 +315,7 @@ C
                   IF (XCRD.EQ.1.D12) NCRA=NCRA-1
                 ELSE
                   CALL SETER
-     +                     ('MDRGSQ - COORDINATE BUFFER OVERFLOW ',14,1)
+     +                      ('MDRGSQ - COORDINATE BUFFER OVERFLOW',14,1)
                   RETURN
                 END IF
               END IF
@@ -358,7 +358,7 @@ C
             CALL NGRDCH (ICEL,CTM4,4,ISTA)
 C
             IF (ISTA.NE.4) THEN
-              CALL SETER ('MDRGSQ - READ FAILURE IN CEL FILE ',15,1)
+              CALL SETER ('MDRGSQ - READ FAILURE IN CEL FILE',15,1)
               RETURN
             END IF
 C
@@ -372,7 +372,7 @@ C
             CALL NGRDCH (ICEL,CTM4,4,ISTA)
 C
             IF (ISTA.NE.4) THEN
-              CALL SETER ('MDRGSQ - READ FAILURE IN CEL FILE ',16,1)
+              CALL SETER ('MDRGSQ - READ FAILURE IN CEL FILE',16,1)
               RETURN
             END IF
 C
@@ -391,7 +391,7 @@ C
               CALL NGSEEK (IRIM,IPOS,0,ISTA)
 C
               IF (ISTA.LT.0) THEN
-                CALL SETER ('MDRGSQ - SEEK FAILURE IN RIM FILE ',17,1)
+                CALL SETER ('MDRGSQ - SEEK FAILURE IN RIM FILE',17,1)
                 RETURN
               END IF
 C
@@ -404,7 +404,7 @@ C
                 CALL NGRDCH (IRIM,CTM4,4,ISTA)
 C
                 IF (ISTA.NE.4) THEN
-                  CALL SETER ('MDRGSQ - READ FAILURE IN RIM FILE ',18,1)
+                  CALL SETER ('MDRGSQ - READ FAILURE IN RIM FILE',18,1)
                   RETURN
                 END IF
 C
@@ -421,7 +421,7 @@ C
                 CALL NGRDCH (IRIM,CTM4,4,ISTA)
 C
                 IF (ISTA.NE.4) THEN
-                  CALL SETER ('MDRGSQ - READ FAILURE IN RIM FILE ',19,1)
+                  CALL SETER ('MDRGSQ - READ FAILURE IN RIM FILE',19,1)
                   RETURN
                 END IF
 C
@@ -455,7 +455,7 @@ C
                   IF (XCRD.EQ.1.D12) NCRA=NCRA-1
                 ELSE
                   CALL SETER
-     +                     ('MDRGSQ - COORDINATE BUFFER OVERFLOW ',21,1)
+     +                     ('MDRGSQ - COORDINATE BUFFER OVERFLOW',21,1)
                   RETURN
                 END IF
 C
@@ -504,17 +504,19 @@ C
 C
                   DO 107 IINT=IBEG,IEND,IDIR
                     XLON=DBLE(ILON)+DBLE(IINT)*DLON
-                    IF (NCRA+1.LT.MCRA) THEN
-                      NCRA=NCRA+1
-                      CALL MDPTRN (XLAT,XLON,XCRD,YCRD)
-                      IF (ICFELL('MDRGSQ',22).NE.0) RETURN
-                      XCRA(NCRA)=REAL(XCRD)
-                      YCRA(NCRA)=REAL(YCRD)
-                      IF (XCRD.EQ.1.D12) NCRA=NCRA-1
-                    ELSE
-                      CALL SETER
-     +                     ('MDRGSQ - COORDINATE BUFFER OVERFLOW ',23,1)
-                      RETURN
+                    IF ((XLON-RLON)*(QLON-XLON).GT.0.D0) THEN
+                      IF (NCRA+1.LT.MCRA) THEN
+                        NCRA=NCRA+1
+                        CALL MDPTRN (XLAT,XLON,XCRD,YCRD)
+                        IF (ICFELL('MDRGSQ',22).NE.0) RETURN
+                        XCRA(NCRA)=REAL(XCRD)
+                        YCRA(NCRA)=REAL(YCRD)
+                        IF (XCRD.EQ.1.D12) NCRA=NCRA-1
+                      ELSE
+                        CALL SETER
+     +                     ('MDRGSQ - COORDINATE BUFFER OVERFLOW',23,1)
+                        RETURN
+                      END IF
                     END IF
   107             CONTINUE
 C
@@ -529,17 +531,19 @@ C
 C
                   DO 108 IINT=IBEG,IEND,IDIR
                     XLAT=DBLE(ILAT)+DBLE(IINT)*DLAT
-                    IF (NCRA+1.LT.MCRA) THEN
-                      NCRA=NCRA+1
-                      CALL MDPTRN (XLAT,XLON,XCRD,YCRD)
-                      IF (ICFELL('MDRGSQ',24).NE.0) RETURN
-                      XCRA(NCRA)=REAL(XCRD)
-                      YCRA(NCRA)=REAL(YCRD)
-                      IF (XCRD.EQ.1.D12) NCRA=NCRA-1
-                    ELSE
-                      CALL SETER
-     +                     ('MDRGSQ - COORDINATE BUFFER OVERFLOW ',25,1)
-                      RETURN
+                    IF ((XLAT-RLAT)*(QLAT-XLAT).GT.0.D0) THEN
+                      IF (NCRA+1.LT.MCRA) THEN
+                        NCRA=NCRA+1
+                        CALL MDPTRN (XLAT,XLON,XCRD,YCRD)
+                        IF (ICFELL('MDRGSQ',24).NE.0) RETURN
+                        XCRA(NCRA)=REAL(XCRD)
+                        YCRA(NCRA)=REAL(YCRD)
+                        IF (XCRD.EQ.1.D12) NCRA=NCRA-1
+                      ELSE
+                        CALL SETER
+     +                     ('MDRGSQ - COORDINATE BUFFER OVERFLOW',25,1)
+                        RETURN
+                      END IF
                     END IF
   108             CONTINUE
 C
@@ -556,6 +560,8 @@ C
               XCRA(NCRA)=REAL(XCRD)
               YCRA(NCRA)=REAL(YCRD)
               IF (XCRD.EQ.1.D12) NCRA=NCRA-1
+              IF (ILAT.GE.55.AND.ILAT.LE.57.AND.ILON.EQ.82.AND.
+     +                                                 ITYP.EQ.2) ITYP=1
               IF (ICSF(ITYP+1).GE.0.AND.NCRA.GT.2) THEN
                 CALL GSFACI (ICSF(ITYP+1))
                 CALL GFA (NCRA,XCRA,YCRA)

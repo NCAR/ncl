@@ -1,5 +1,5 @@
 C
-C $Id: mapgrd.f,v 1.13 2001-08-16 23:09:17 kennison Exp $
+C $Id: mapgrd.f,v 1.14 2001-11-02 22:36:34 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

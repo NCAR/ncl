@@ -1,5 +1,5 @@
 C
-C $Id: mdscal.f,v 1.1 2001-09-19 17:10:36 kennison Exp $
+C $Id: mdscal.f,v 1.2 2001-11-02 22:37:18 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
