@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.70 2001-06-07 17:29:01 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.71 2001-06-15 22:26:40 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2508,12 +2508,12 @@ min_lon, max_lon, res2, tmres, ticks_on
     latlon_res@gsnFrame             = False
     latlon_res@cnInfoLabelOn        = False
     ticks_on     = get_res_value(res2,"gsnTickMarksOn",True)
-    lat_spacing  = get_res_value(res2,"gsnMajorLatSpacing",0)
+    tmplon(242:,190)  = -999.0
     tmplon@_FillValue = -999.0
-    lon_spacing  = get_res_value(res2,"gsnMajorLonSpacing",0)
+
     latlon_res@cnMinLevelValF     = -90
-    mlat_spacing = get_res_value(res2,"gsnMinorLatSpacing",0)
-    mlon_spacing = get_res_value(res2,"gsnMinorLonSpacing",0)
+    latlon_res@cnMaxLevelValF     = 270
+    lon_object = gsn_contour(wks,tmplon,latlon_res)
 
     setvalues plot
 ;
@@ -3043,12 +3043,12 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
 ; all start with "lon_", so the first occurrence of this string will
 ; be the consecutive start of the lon label annotations.
 ;
-    lat_spacing  = get_res_value(res2,"gsnMajorLatSpacing",0)
-    lon_spacing  = get_res_value(res2,"gsnMajorLonSpacing",0)
+    lat_spacing  = get_res_value(res2,"gsnMajorLatSpacing",0.)
+    lon_spacing  = get_res_value(res2,"gsnMajorLonSpacing",0.)
     lat_spacing  = get_res_value(res2,"tmXBTickSpacingF",lat_spacing)
     lon_spacing  = get_res_value(res2,"tmYLTickSpacingF",lon_spacing)
-    mlat_spacing = get_res_value(res2,"gsnMinorLatSpacing",0)
-    mlon_spacing = get_res_value(res2,"gsnMinorLonSpacing",0)
+    mlat_spacing = get_res_value(res2,"gsnMinorLatSpacing",0.)
+    mlon_spacing = get_res_value(res2,"gsnMinorLonSpacing",0.)
       names = NhlName(am_ids)
       found = False
       i = 0
@@ -6642,6 +6642,13 @@ begin
   maxbb     = get_bb_res(res1_tmp)
 
   res1_tmp@gsnDraw  = False
+  res1_tmp@gsnFrame = False
+
+; Default for first plot is to turn fill on and turn off lines and line
+; labels.
+
+  if(.not.isatt(res1_tmp,"cnFillOn"))
+    res1_tmp@cnFillOn = True
     set_attr(res1_tmp,"cnInfoLabelOn",False)
   end if 
   set_attr(res1_tmp,"cnLinesOn",False)
@@ -6652,7 +6659,8 @@ begin
   res2_tmp@gsnDraw  = False
   res2_tmp@gsnFrame = False
 
-callframe, left_string, center_string, right_string, main_zone, ncurves
+; Check for cyclic point (default is True).
+yabove, ybelow, ya_ind, yb_ind, xinterp, yinterp, nya, nyb, bar_chart
   if(get_res_value(res2_tmp,"gsnAddCyclic",True))
     datanew = gsn_add_cyclic_point(data2)
   else
@@ -6671,7 +6679,7 @@ callframe, left_string, center_string, right_string, main_zone, ncurves
       if(check_attr(res1_tmp,"lbOrientation","horizontal",True))
         set_attr(res2_tmp,"cnInfoLabelOrthogonalPosF",-0.01)
       else
-; Calculate number of X and Y points.
+        set_attr(res2_tmp,"cnInfoLabelOrthogonalPosF",0.12)
       end if
     else
       set_attr(res2_tmp,"cnInfoLabelOrthogonalPosF",0.12)
@@ -6705,7 +6713,7 @@ callframe, left_string, center_string, right_string, main_zone, ncurves
         if(.not.(ncurves.eq.nyref.or.ncurves.eq.1.or.nyref.eq.1))
           print("gsn_csm_xy: Fatal: the number of reference lines must either equal the number")
           print("of curves, or else the number of curves and/or reference lines must be one.")
-          exit
+          return
         end if
 
 ; If gsnXRefLine is set to some value, then a reference line will be    ;
@@ -6718,7 +6726,7 @@ callframe, left_string, center_string, right_string, main_zone, ncurves
 ; The resource gsnXYBarChartBarWidth can be used to specify the width   ;
 ; of each bar. The smallest dx is used by default.                      ;
 ;                                                                       ;
-            exit
+; Tick marks will be made to point outwards.                            ;
 ;                                                                       ;
 ; If the user sets lgLabelFontHeightF to change the size of the legend  ;
 ; labels, then lgAutoManage will be set to False (unless it is being    ;
@@ -6731,13 +6739,13 @@ callframe, left_string, center_string, right_string, main_zone, ncurves, \
 yabove, ybelow, ya_ind, yb_ind, xinterp, yinterp, bar_chart
 begin
             print("gsn_csm_xy: Fatal: there must either be an above-line fill color for every reference line, or one global above-line fill color specified ")
-            exit
+; Initialize.
     main_zone     = 2         ; Zone for main title (may change later)
     xref_line_on  = False     ; X reference line flag
     yref_line_on  = False     ; Y reference line flag
     yref_fill_on  = False     ; Whether to fill above/below Y ref line.
     res2          = get_resources(resources)
-          yref_line_above = "transparent"  ; defaults to no fill.
+    left_string   = False
     center_string = False
     right_string  = False
     bar_chart     = False
@@ -6746,12 +6754,29 @@ begin
 
     calldraw  = get_res_value(res2,"gsnDraw", True)
     callframe = get_res_value(res2,"gsnFrame",True)
-            exit
+    maxbb     = get_bb_res(res2)
 
 ; Calculate number of Y points.
 
     ndimsy = dimsizes(dimsizes(y))
-          yref_line_below = "transparent"    ; defaults to no fill.
+    ndimsx = dimsizes(dimsizes(x))
+
+      end if
+    if(ndimsy.eq.1)
+; Check if we want a bar chart. If so, we can only have
+; one curve for now. Also, gsnYRefLine must be set.
+    end if
+      bar_chart = get_res_value(res2,"gsnXYBarChart",False)
+      if(bar_chart)
+        if(ncurves.gt.1.or.ndimsx.gt.1)
+          print("gsn_csm_xy: Warning: if drawing a bar chart, you can only have one curve.")
+          print("Drawing a regular XY plot instead.")
+          bar_chart = False
+        end if
+;
+          print("gsn_csm_xy: Warning: if drawing a bar chart, you must set gsnYRefLine.")
+         .not.all(dimsizes(x).eq.dimsizes(y)))).or.\
+        ((ndimsx.eq.1.or.ndimsy.eq.1).and.nptsx.ne.npts))
         end if
       end if
       if(isatt(res2,"gsnShape").and.res2@gsnShape)
@@ -6789,9 +6814,10 @@ begin
                    dimsizes(res2@gsnAboveYRefLineColor).eq.1))
             print("gsn_csm_xy: Fatal: there must either be an above-line fill color for every reference line, or one global above-line fill color specified")
             return
-; Check if we want fill above or below Y reference value.
+          end if
+; want to do a bar chart or a regular curve.
           yref_fill_on    = True
-    if(yref_fill_on)
+          delete(res2@gsnAboveYRefLineColor)
 
           yref_line_above = -1  ; defaults to no fill.
         end if
@@ -6809,8 +6835,100 @@ begin
           yref_line_below = -1    ; defaults to no fill.
       npts = ref_line_interp(x,y,xinterp,yinterp,yref_line)
 ;
-      xinterp = x
-      yinterp = y
+; If yref_fill_on is True, and we have more than one curve, then there
+; should be the same number of reference lines as curves.
+; Bar chart is desired.
+        if(yref_fill_on.and.ncurves.gt.1.and.ncurves.ne.nyref.and.nyref.ne.1)
+        nx = dimsizes(x) 
+            print("must either equal the number of curves, or be one.")
+; Get smallest distance between X values. This will become the
+; bar width, unless bar width is set explicitly.
+        end if          ; Check for Y ref line.
+        dx = min( x(1:nx-1) - x(0:nx-2) )
+        if(isatt(res2,"gsnXYBarChartBarWidth"))
+          bar_width = get_res_value(res2,"gsnXYBarChartBarWidth",0.)
+          if(bar_width.gt.dx)
+            print("gsn_csm_xy: Warning: The bar width you selected ("+bar_width+") is larger than the smallest delta x ("+dx+").")
+            print("Defaulting to " + dx + ".")
+            bar_width = dx
+          end if
+        else
+          bar_width = dx
+        end if
+        if(ismissing(bar_width).or.bar_width.le.0)
+          print("gsn_csm_xy: Fatal: The x array is not monotonically increasing.")
+          print("Cannot draw a bar chart.")
+          return
+        end if
+        xref_line    = get_res_value(res2,"gsnXRefLine",0.)
+; Get the indices where the y curve is above and below the ref line.
+    res2          = True
+        ya_ind = ind(y.gt.yref_line)
+        yb_ind = ind(y.lt.yref_line)
+    res2@gsnFrame = False   ; frame since we take care of that later.
+; Create new array to hold bar charts.  For each old y point, we need
+; four new y points to represent the rectangle, and then an extra point
+; for the reference line.
+; If user explicitly sets X or Y tick marks, then don't label the X 
+        if(.not.any(ismissing(ya_ind)))
+          if(isatt(y,"_FillValue"))
+            yabove = new(4*dimsizes(ya_ind)+1,double,y@_FillValue)
+          else
+            yabove = new(4*dimsizes(ya_ind)+1,double,1e36)
+          end if 
+          nya = dimsizes(yabove)
+          yabove(0:nya-5:4) = yref_line
+          yabove(1:nya-4:4) = y(ya_ind)
+          yabove(2:nya-3:4) = y(ya_ind)
+          yabove(3:nya-2:4) = yref_line
+          yabove(nya-1)     = yref_line   ; last point
+          xabove = new(nya,double)
+          xabove(0:nya-5:4) = x(ya_ind) - bar_width/2.
+          xabove(1:nya-4:4) = x(ya_ind) - bar_width/2.
+          xabove(2:nya-3:4) = x(ya_ind) + bar_width/2.
+          xabove(3:nya-2:4) = x(ya_ind) + bar_width/2.
+          xabove(nya-1)     = xabove(0)   ; last point
+        else
+          nya = 0
+        end if  
+        if(.not.any(ismissing(yb_ind)))
+          if(isatt(y,"_FillValue"))
+            ybelow = new(4*dimsizes(yb_ind)+1,double,y@_FillValue)
+          else
+            ybelow = new(4*dimsizes(yb_ind)+1,double,1e36)
+          end if 
+          nyb = dimsizes(ybelow)
+          ybelow(0:nyb-5:4) = yref_line
+          ybelow(1:nyb-4:4) = y(yb_ind)
+          ybelow(2:nyb-3:4) = y(yb_ind)
+          ybelow(3:nyb-2:4) = yref_line
+          ybelow(nyb-1)     = yref_line   ; last point
+          xbelow = new(nyb,double)
+          xbelow(0:nyb-5:4) = x(yb_ind) - bar_width/2.
+          xbelow(1:nyb-4:4) = x(yb_ind) - bar_width/2.
+          xbelow(2:nyb-3:4) = x(yb_ind) + bar_width/2.
+          xbelow(3:nyb-2:4) = x(yb_ind) + bar_width/2.
+          xbelow(nyb-1)     = xbelow(0)   ; last point
+        else
+          nyb = 0
+        end if  
+      set_attr(res2,"tiXAxisString","")
+; Combine the two sets of polygons.
+        yinterp@_FillValue = y@_FillValue
+        xinterp = new(nya+nyb,double)
+        yinterp = new(nya+nyb,double)
+        if(nya.gt.0)
+          xinterp(0:nya-1) = xabove
+          yinterp(0:nya-1) = yabove
+        end if 
+        if(nyb.gt.0)
+          xinterp(nya:) = xbelow
+          yinterp(nya:) = ybelow
+        end if 
+; Figure out if we want filled bars or outlined bars.
+;
+        if(bar_outline_only)
+;
 ; For each old y point, we need two new y points to represent
 ; the horizontal line.
 ;
@@ -6848,7 +6966,7 @@ begin
           xbelow = new((/ncurves,5*npts/),double,1e36)
           ybelow = new((/ncurves,5*npts/),double,1e36)
 ;
-    if(yref_fill_on)
+; Arrays to hold number of points in each set of above/below points.
 ;
           nabove = new(ncurves,integer)
           nbelow = new(ncurves,integer)
@@ -6877,6 +6995,31 @@ begin
 
             if(na_max.gt.0)
               xinterp(0:2*ncurves-1:2,0:na_max-1) = xabove(:,0:na_max-1)
+              yinterp(0:2*ncurves-1:2,0:na_max-1) = yabove(:,0:na_max-1)
+              yinterp(0:2*ncurves-1:2,4:na_max-1:5) = yinterp@_FillValue
+    if(yref_fill_on.and.bar_chart)
+            if(nb_max.gt.0)
+      if(yref_line_above.gt.0.and.nya.gt.0)
+        gsres@gsFillColor = yref_line_above
+        var_string = systemfunc("echo polygons$$")
+        xy_object@$var_string$ = gsn_add_polygon(wks,xy_object,xabove, \
+                                                 yabove,gsres)
+        setvalues xy_object
+          "tfPolyDrawOrder" : "Predraw"
+        end setvalues
+      end if
+      if(yref_line_below.gt.0.and.nyb.gt.0)
+        gsres@gsFillColor = yref_line_below
+        var_string = systemfunc("echo polygons$$")
+        xy_object@$var_string$ = gsn_add_polygon(wks,xy_object,xbelow, \
+                                                 ybelow,gsres)
+        setvalues xy_object
+          "tfPolyDrawOrder" : "Predraw"
+        end setvalues
+      end if
+
+; Add lat/lon labels to X/Y axes if appropriate units exist.
+
     res2@gsnXYPlot = True
     res2@gsnXAxis = True
 
@@ -6922,7 +7065,7 @@ begin
 
     if(yref_fill_on.and.bar_chart.and..not.bar_outline_only)
       gsres = True
-        yline = fspan(yref_line(i),yref_line(i),2)
+      do i=0,ncurves-1 
 ;
 ;
         gsres@gsFillColor = yref_line_above(0)
@@ -7484,7 +7627,7 @@ begin
 
         print("gsn_csm_pres_hgt: Fatal: The coordinate array for the first dimension of the input data must be in Pascals or millibars")
         print("and it must contain the attribute 'units' (set to 'pa' or 'mb') to indicate which one it is.")
-        print("Execution halted.")
+      "trXMinF"   : min_lat
       "trXMaxF"   : max_lat
     end getvalues
 
@@ -7492,8 +7635,8 @@ begin
                          mlat_spacing,res2)
 
 ; Draw all this stuff: contour plot and subtitles.
-      print("Execution halted.")
-      exit
+    draw_and_frame(wks,contour_object,calldraw,callframe,maxbb)
+
 ; Return contour plot object.
 
     return(contour_object)
