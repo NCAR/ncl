@@ -1,20 +1,21 @@
 #
-#   $Id: yMakefile,v 1.4 1995-02-03 18:16:28 haley Exp $
+#   $Id: yMakefile,v 1.5 1995-02-06 18:07:09 haley Exp $
 #
 #   Makefile for HLU XYPlot examples
 #
 
-NCGMS   =   xy01c.ncgm xy02c.ncgm xy03c.ncgm xy11c.ncgm xy12c.ncgm \
-            xy13c.ncgm xy11f.ncgm
+NCGMS   =   xy01c.ncgm xy02c.ncgm xy03c.ncgm xy04c.ncgm xy05c.ncgm \
+			xy11c.ncgm xy12c.ncgm xy13c.ncgm xy11f.ncgm
 
 PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
-SRCS        = xy01c.c xy02c.c xy03c.c xy11c.c xy12c.c xy13c.c xy11f.f
+SRCS        = xy01c.c xy02c.c xy03c.c xy04c.c xy05c.c xy11c.c xy12c.c \
+				xy13c.c xy11f.f
 INCLUDES    = xy13c.h 
 DATA        = xy12c.asc
-RES         = xy01.res xy02.res xy03.res
+RES         = xy01.res xy02.res xy03.res xy04.res xy05.res
 EXFILES     = $(SRCS) $(INCLUDES) $(DATA) $(RES)
 
 InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))
@@ -22,6 +23,8 @@ InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))
 HLUCExampleTarget(xy01c,xy01c.o)
 HLUCExampleTarget(xy02c,xy02c.o)
 HLUCExampleTarget(xy03c,xy03c.o)
+HLUCExampleTarget(xy04c,xy04c.o)
+HLUCExampleTarget(xy05c,xy05c.o)
 HLUCExampleTarget(xy11c,xy11c.o)
 HLUCExampleTarget(xy12c,xy12c.o)
 HLUCExampleTarget(xy13c,xy13c.o)

@@ -1,5 +1,5 @@
 /*
-**      $Id: xy01c.c,v 1.3 1995-02-04 23:56:34 haley Exp $
+**      $Id: xy01c.c,v 1.4 1995-02-06 18:07:02 haley Exp $
 */
 /************************************************************************
 *                                                                       *
@@ -51,8 +51,8 @@ main()
  * Initialize some data for the XY plot
  */
 	for( i = 0; i < NPTS; i++ ) {
-		theta=PI100*(float)(i);
-		ydra[i]=500.+.9*(float)(i)*sin(theta);
+		theta = PI100*(float)(i);
+		ydra[i] = 500.+.9*(float)(i)*sin(theta);
 	}
 /*
  * Initialize the HLU library and set up resource template.
