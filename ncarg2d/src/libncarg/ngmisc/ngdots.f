@@ -125,9 +125,10 @@ C
 C
 C  Scale factor for non-square aspect ratios.
 C
-      BSCALE = (TWIN(2)-TWIN(1))/(TWIN(4)-TWIN(3))
+      WSCALE = (TWIN(2)-TWIN(1))/(TWIN(4)-TWIN(3))
+      VSCALE = (TVPT(4)-TVPT(3))/(TVPT(2)-TVPT(1))
       DO 20 I=1,NP
-        CIRCX(I) = BSCALE*CIRCX(I)
+        CIRCX(I) = WSCALE*VSCALE*CIRCX(I)
    20 CONTINUE
 C
 C  Draw filled dots if the size is large enough.
