@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.15 1996-02-28 02:11:28 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.16 1996-02-29 01:03:29 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -408,8 +408,39 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,1,"graphic",1,NclANY);nargs++;
 	SetArgTemplate(args,2,"float",1,NclANY);nargs++;
 	SetArgTemplate(args,3,"float",1,NclANY);nargs++;
+	NclRegisterProc(_NclIDataPolygon,args,"NhlDataPolygon",nargs);
+
+	nargs = 0;
+	args = NewArgs(4);
+	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,1,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"float",1,NclANY);nargs++;
+	NclRegisterProc(_NclIDataPolymarker,args,"NhlDataPolymarker",nargs);
+
+	nargs = 0;
+	args = NewArgs(4);
+	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,1,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"float",1,NclANY);nargs++;
 	NclRegisterProc(_NclINDCPolyline,args,"NhlNDCPolyline",nargs);
+
+	nargs = 0;
+	args = NewArgs(4);
+	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,1,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"float",1,NclANY);nargs++;
+	NclRegisterProc(_NclINDCPolygon,args,"NhlNDCPolygon",nargs);
 	
+	nargs = 0;
+	args = NewArgs(4);
+	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,1,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"float",1,NclANY);nargs++;
+	NclRegisterProc(_NclINDCPolymarker,args,"NhlNDCPolymarker",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);

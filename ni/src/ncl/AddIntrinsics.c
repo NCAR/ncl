@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.17 1996-01-31 23:53:42 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.18 1996-02-29 01:03:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -351,10 +351,14 @@ void _NclAddIntrinsics
 	args[0].is_dimsizes = 0;
 	_NclRegisterFunc(_NclIAll,args,"all",1,IFUNC);
 	args = NclCalloc(2,sizeof(NclArgTemplate));
-	args[0].arg_data_type = NULL;
-	args[0].is_dimsizes = 0;
-	args[1].arg_data_type = NULL;
-	args[1].is_dimsizes = 0;
+	args[0].arg_data_type = _NclLookUp("graphic");
+	args[0].is_dimsizes = 1;
+	args[0].dim_sizes[0] = 1;
+	args[0].n_dims = 1;
+	args[1].arg_data_type = _NclLookUp("graphic");
+	args[1].is_dimsizes = 1;
+	args[1].dim_sizes[0] = 1;
+	args[1].n_dims = 1;
 	_NclRegisterProc(_NclIAddToOverlay,args,"overlay",2,IPROC);
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = NULL;
@@ -472,7 +476,8 @@ void _NclAddIntrinsics
 	args[1].is_dimsizes = 0;
 	args[1].n_dims = 1;
 	args[2].arg_data_type = _NclLookUp("string");
-	args[2].is_dimsizes = 0;
+	args[2].is_dimsizes = 1;
+	args[2].dim_sizes[0] = 1;
 	args[2].n_dims = 1;
 	_NclRegisterFunc(_NclIcbinread,args,"cbinread",3,IFUNC);
 
@@ -486,6 +491,7 @@ void _NclAddIntrinsics
 	args[1].n_dims = 1;
 	args[2].arg_data_type = _NclLookUp("string");
 	args[2].is_dimsizes = 0;
+	args[2].dim_sizes[0] = 1;
 	args[2].n_dims = 1;
 	_NclRegisterFunc(_NclIfbinread,args,"fbinread",3,IFUNC);
 
@@ -498,7 +504,8 @@ void _NclAddIntrinsics
 	args[1].is_dimsizes = 0;
 	args[1].n_dims = 1;
 	args[2].arg_data_type = _NclLookUp("string");
-	args[2].is_dimsizes = 0;
+	args[2].dim_sizes[0] = 1;
+	args[2].is_dimsizes = 1;
 	args[2].n_dims = 1;
 	_NclRegisterFunc(_NclIasciiread,args,"asciiread",3,IFUNC);
 
@@ -514,7 +521,7 @@ void _NclAddIntrinsics
 	args[0].dim_sizes[0] = 1;
 	args[0].is_dimsizes = 1;
 	args[0].n_dims = 1;
-	args[1].arg_data_type = NULL;
+	args[1].arg_data_type = _NclLookUp("numeric");
 	args[1].is_dimsizes = 0;
 	_NclRegisterProc(_NclIcbinwrite,args,"cbinwrite",2,IPROC);
 
@@ -532,7 +539,7 @@ void _NclAddIntrinsics
 	args[0].dim_sizes[0] = 1;
 	args[0].is_dimsizes = 1;
 	args[0].n_dims = 1;
-	args[1].arg_data_type = NULL;
+	args[1].arg_data_type = _NclLookUp("numeric");
 	args[1].is_dimsizes = 0;
 	_NclRegisterProc(_NclIfbinwrite,args,"fbinwrite",2,IPROC);
 

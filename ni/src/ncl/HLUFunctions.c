@@ -1287,7 +1287,7 @@ NhlErrorTypes _NclIRemoveAnnotation
 			}
 		}
 	} else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIRemovnnotation: First paramter is a missing value, returning missing values");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIRemoveAnnotation: First paramter is a missing value, returning missing values");
 		return(NhlWARNING);
 	}
 	return(ret);
@@ -1342,6 +1342,350 @@ NhlErrorTypes _NclIUpdateData
 				ret = NhlWARNING;
 			}
 		}
+	}
+	return(ret);
+}
+NhlErrorTypes _NclIDataPolymarker
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int nargs = 4;
+	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing_,n_dims_,dimsizes_[NCL_MAX_DIMENSIONS];
+	int has_missing1,n_dims1,dimsizes1[NCL_MAX_DIMENSIONS];
+	int has_missing2,n_dims2,dimsizes2[NCL_MAX_DIMENSIONS];
+	NclBasicDataTypes type;
+        int total=1;
+        int total_=1;
+        int i,j=0,k=0;
+	NclHLUObj *tmp_hlu_ptr;
+	NclHLUObj *tmp_style_hlu_ptr;
+	NclScalar missing;
+	NclScalar missing_;
+	NclScalar missing1;
+	NclScalar missing2;
+	obj *ncl_hlu_obj_ids;
+	obj *style_hlu_obj_ids;
+	float *x;
+	float *y;
+	NhlErrorTypes ret = NhlNOERROR;
+	
+	ncl_hlu_obj_ids = (obj*)NclGetArgValue(
+			0,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+
+	style_hlu_obj_ids = (obj*)NclGetArgValue(
+			1,
+			nargs,
+			&n_dims_,
+			dimsizes_,
+			&missing_,
+			&has_missing_,
+			&type,
+			0);
+
+	x = (float*)NclGetArgValue(
+			2,
+			nargs,
+			&n_dims1,
+			dimsizes1,
+			&missing1,
+			&has_missing1,
+			NULL,
+			0);
+
+	y = (float*)NclGetArgValue(
+			3,
+			nargs,
+			&n_dims2,
+			dimsizes2,
+			&missing2,
+			&has_missing2,
+			NULL,
+			0);
+
+	
+	total *= dimsizes[0];
+	total_ *= dimsizes_[0];
+
+	if((total == total_)||(total_ == 1)){
+		tmp_hlu_ptr  = (NclHLUObj*)NclMalloc(total*sizeof(NclHLUObj));
+		tmp_style_hlu_ptr  = (NclHLUObj*)NclMalloc(total_*sizeof(NclHLUObj));
+		if((has_missing)&&(has_missing_)) {
+			if(total_ != 1) {
+				for( i = 0; i < total; i++) {
+					if((ncl_hlu_obj_ids[i] != missing.objval)&&(style_hlu_obj_ids[i] != missing_.objval)) {
+						tmp_hlu_ptr[j] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+						if(total_ > 1) {
+							tmp_style_hlu_ptr[j] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+						}
+						j++;
+					}
+				}
+			} else {
+				if(style_hlu_obj_ids[0] == missing_.objval) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolymarker: a missing value for the style object was detected, can't perform draw");
+					return(NhlWARNING);
+				}
+				for( i = 0; i < total; i++) {
+					if(ncl_hlu_obj_ids[i] != missing.objval) {
+						tmp_hlu_ptr[j] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+						if(total_ > 1) {
+							tmp_style_hlu_ptr[j] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+						}
+						j++;
+					}
+				}
+			}
+			if(total_ == 1) {
+				tmp_style_hlu_ptr[0] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[0]);
+				k = 1;
+			} else {
+				k = j;
+			}
+		} else if(has_missing) {
+			for( i = 0; i < total; i++) {
+				if(ncl_hlu_obj_ids[i] != missing.objval) {
+					tmp_hlu_ptr[j] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+					if(total_ > 1) {
+						tmp_style_hlu_ptr[j] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+					}
+					j++;
+				}
+			}
+			if(total_ == 1) {
+				tmp_style_hlu_ptr[0] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[0]);
+				k = 1;
+			} else {
+				k = j;
+			}
+		} else {
+			for( i = 0; i < total; i++) {
+				tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+				if(total_ > 1) {
+					tmp_style_hlu_ptr[i] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+				}
+			}
+			if(total_ == 1) {
+				tmp_style_hlu_ptr[0] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[0]);
+				k = 1;
+			} else {
+				k = total;
+			}
+		
+			j = total;
+		}
+		if(dimsizes1[0] != dimsizes2[0]) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolymarker: x and y parameters must have the same dimension size");
+			return(NhlWARNING);
+		}
+		if(has_missing1){
+			for( i = 0; i < n_dims1; i++) {
+				if(x[i] == missing1.floatval) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolymarker: missing value detected,  x and y parameters must not contain any missing values");
+					return(NhlWARNING);
+				}
+			}
+		}
+		if(has_missing2){
+			for( i = 0; i < n_dims2; i++) {
+				if(y[i] == missing2.floatval) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolymarker: missing value detected,  x and y parameters must not contain any missing values");
+					return(NhlWARNING);
+				}
+			}
+		}
+		for( i = 0; i < j; i++) {
+			if((tmp_hlu_ptr[i] != NULL)&&(((total_ == 1)&&(tmp_style_hlu_ptr[0] != NULL))||(tmp_style_hlu_ptr[i] != NULL))) {
+				if(NhlDataPolymarker(tmp_hlu_ptr[i]->hlu.hlu_id,((total_ == 1)? tmp_style_hlu_ptr[0]->hlu.hlu_id:tmp_style_hlu_ptr[i]->hlu.hlu_id),x,y,dimsizes1[0]) < NhlNOERROR) {
+					ret = NhlWARNING;
+				}
+			}
+		}
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolymarker: The must either be one style object or the same number of style objects as plots");
+		return(NhlWARNING);
+	}
+	return(ret);
+}
+NhlErrorTypes _NclIDataPolygon
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int nargs = 4;
+	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing_,n_dims_,dimsizes_[NCL_MAX_DIMENSIONS];
+	int has_missing1,n_dims1,dimsizes1[NCL_MAX_DIMENSIONS];
+	int has_missing2,n_dims2,dimsizes2[NCL_MAX_DIMENSIONS];
+	NclBasicDataTypes type;
+        int total=1;
+        int total_=1;
+        int i,j=0,k=0;
+	NclHLUObj *tmp_hlu_ptr;
+	NclHLUObj *tmp_style_hlu_ptr;
+	NclScalar missing;
+	NclScalar missing_;
+	NclScalar missing1;
+	NclScalar missing2;
+	obj *ncl_hlu_obj_ids;
+	obj *style_hlu_obj_ids;
+	float *x;
+	float *y;
+	NhlErrorTypes ret = NhlNOERROR;
+	
+	ncl_hlu_obj_ids = (obj*)NclGetArgValue(
+			0,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+
+	style_hlu_obj_ids = (obj*)NclGetArgValue(
+			1,
+			nargs,
+			&n_dims_,
+			dimsizes_,
+			&missing_,
+			&has_missing_,
+			&type,
+			0);
+
+	x = (float*)NclGetArgValue(
+			2,
+			nargs,
+			&n_dims1,
+			dimsizes1,
+			&missing1,
+			&has_missing1,
+			NULL,
+			0);
+
+	y = (float*)NclGetArgValue(
+			3,
+			nargs,
+			&n_dims2,
+			dimsizes2,
+			&missing2,
+			&has_missing2,
+			NULL,
+			0);
+
+	
+	total *= dimsizes[0];
+	total_ *= dimsizes_[0];
+
+	if((total == total_)||(total_ == 1)){
+		tmp_hlu_ptr  = (NclHLUObj*)NclMalloc(total*sizeof(NclHLUObj));
+		tmp_style_hlu_ptr  = (NclHLUObj*)NclMalloc(total_*sizeof(NclHLUObj));
+		if((has_missing)&&(has_missing_)) {
+			if(total_ != 1) {
+				for( i = 0; i < total; i++) {
+					if((ncl_hlu_obj_ids[i] != missing.objval)&&(style_hlu_obj_ids[i] != missing_.objval)) {
+						tmp_hlu_ptr[j] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+						if(total_ > 1) {
+							tmp_style_hlu_ptr[j] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+						}
+						j++;
+					}
+				}
+			} else {
+				if(style_hlu_obj_ids[0] == missing_.objval) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolygon: a missing value for the style object was detected, can't perform draw");
+					return(NhlWARNING);
+				}
+				for( i = 0; i < total; i++) {
+					if(ncl_hlu_obj_ids[i] != missing.objval) {
+						tmp_hlu_ptr[j] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+						if(total_ > 1) {
+							tmp_style_hlu_ptr[j] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+						}
+						j++;
+					}
+				}
+			}
+			if(total_ == 1) {
+				tmp_style_hlu_ptr[0] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[0]);
+				k = 1;
+			} else {
+				k = j;
+			}
+		} else if(has_missing) {
+			for( i = 0; i < total; i++) {
+				if(ncl_hlu_obj_ids[i] != missing.objval) {
+					tmp_hlu_ptr[j] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+					if(total_ > 1) {
+						tmp_style_hlu_ptr[j] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+					}
+					j++;
+				}
+			}
+			if(total_ == 1) {
+				tmp_style_hlu_ptr[0] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[0]);
+				k = 1;
+			} else {
+				k = j;
+			}
+		} else {
+			for( i = 0; i < total; i++) {
+				tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+				if(total_ > 1) {
+					tmp_style_hlu_ptr[i] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+				}
+			}
+			if(total_ == 1) {
+				tmp_style_hlu_ptr[0] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[0]);
+				k = 1;
+			} else {
+				k = total;
+			}
+		
+			j = total;
+		}
+		if(dimsizes1[0] != dimsizes2[0]) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolygon: x and y parameters must have the same dimension size");
+			return(NhlWARNING);
+		}
+		if(has_missing1){
+			for( i = 0; i < n_dims1; i++) {
+				if(x[i] == missing1.floatval) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolygon: missing value detected,  x and y parameters must not contain any missing values");
+					return(NhlWARNING);
+				}
+			}
+		}
+		if(has_missing2){
+			for( i = 0; i < n_dims2; i++) {
+				if(y[i] == missing2.floatval) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolygon: missing value detected,  x and y parameters must not contain any missing values");
+					return(NhlWARNING);
+				}
+			}
+		}
+		for( i = 0; i < j; i++) {
+			if((tmp_hlu_ptr[i] != NULL)&&(((total_ == 1)&&(tmp_style_hlu_ptr[0] != NULL))||(tmp_style_hlu_ptr[i] != NULL))) {
+				if(NhlDataPolygon(tmp_hlu_ptr[i]->hlu.hlu_id,((total_ == 1)? tmp_style_hlu_ptr[0]->hlu.hlu_id:tmp_style_hlu_ptr[i]->hlu.hlu_id),x,y,dimsizes1[0]) < NhlNOERROR) {
+					ret = NhlWARNING;
+				}
+			}
+		}
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolygon: The must either be one style object or the same number of style objects as plots");
+		return(NhlWARNING);
 	}
 	return(ret);
 }
@@ -1513,6 +1857,350 @@ NhlErrorTypes _NclIDataPolyline
 		}
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: The must either be one style object or the same number of style objects as plots");
+		return(NhlWARNING);
+	}
+	return(ret);
+}
+NhlErrorTypes _NclINDCPolygon
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int nargs = 4;
+	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing_,n_dims_,dimsizes_[NCL_MAX_DIMENSIONS];
+	int has_missing1,n_dims1,dimsizes1[NCL_MAX_DIMENSIONS];
+	int has_missing2,n_dims2,dimsizes2[NCL_MAX_DIMENSIONS];
+	NclBasicDataTypes type;
+        int total=1;
+        int total_=1;
+        int i,j=0,k=0;
+	NclHLUObj *tmp_hlu_ptr;
+	NclHLUObj *tmp_style_hlu_ptr;
+	NclScalar missing;
+	NclScalar missing_;
+	NclScalar missing1;
+	NclScalar missing2;
+	obj *ncl_hlu_obj_ids;
+	obj *style_hlu_obj_ids;
+	float *x;
+	float *y;
+	NhlErrorTypes ret = NhlNOERROR;
+	
+	ncl_hlu_obj_ids = (obj*)NclGetArgValue(
+			0,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+
+	style_hlu_obj_ids = (obj*)NclGetArgValue(
+			1,
+			nargs,
+			&n_dims_,
+			dimsizes_,
+			&missing_,
+			&has_missing_,
+			&type,
+			0);
+
+	x = (float*)NclGetArgValue(
+			2,
+			nargs,
+			&n_dims1,
+			dimsizes1,
+			&missing1,
+			&has_missing1,
+			NULL,
+			0);
+
+	y = (float*)NclGetArgValue(
+			3,
+			nargs,
+			&n_dims2,
+			dimsizes2,
+			&missing2,
+			&has_missing2,
+			NULL,
+			0);
+
+	
+	total *= dimsizes[0];
+	total_ *= dimsizes_[0];
+
+	if((total == total_)||(total_ == 1)){
+		tmp_hlu_ptr  = (NclHLUObj*)NclMalloc(total*sizeof(NclHLUObj));
+		tmp_style_hlu_ptr  = (NclHLUObj*)NclMalloc(total_*sizeof(NclHLUObj));
+		if((has_missing)&&(has_missing_)) {
+			if(total_ != 1) {
+				for( i = 0; i < total; i++) {
+					if((ncl_hlu_obj_ids[i] != missing.objval)&&(style_hlu_obj_ids[i] != missing_.objval)) {
+						tmp_hlu_ptr[j] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+						if(total_ > 1) {
+							tmp_style_hlu_ptr[j] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+						}
+						j++;
+					}
+				}
+			} else {
+				if(style_hlu_obj_ids[0] == missing_.objval) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolygon: a missing value for the style object was detected, can't perform draw");
+					return(NhlWARNING);
+				}
+				for( i = 0; i < total; i++) {
+					if(ncl_hlu_obj_ids[i] != missing.objval) {
+						tmp_hlu_ptr[j] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+						if(total_ > 1) {
+							tmp_style_hlu_ptr[j] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+						}
+						j++;
+					}
+				}
+			}
+			if(total_ == 1) {
+				tmp_style_hlu_ptr[0] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[0]);
+				k = 1;
+			} else {
+				k = j;
+			}
+		} else if(has_missing) {
+			for( i = 0; i < total; i++) {
+				if(ncl_hlu_obj_ids[i] != missing.objval) {
+					tmp_hlu_ptr[j] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+					if(total_ > 1) {
+						tmp_style_hlu_ptr[j] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+					}
+					j++;
+				}
+			}
+			if(total_ == 1) {
+				tmp_style_hlu_ptr[0] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[0]);
+				k = 1;
+			} else {
+				k = j;
+			}
+		} else {
+			for( i = 0; i < total; i++) {
+				tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+				if(total_ > 1) {
+					tmp_style_hlu_ptr[i] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+				}
+			}
+			if(total_ == 1) {
+				tmp_style_hlu_ptr[0] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[0]);
+				k = 1;
+			} else {
+				k = total;
+			}
+		
+			j = total;
+		}
+		if(dimsizes1[0] != dimsizes2[0]) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolygon: x and y parameters must have the same dimension size");
+			return(NhlWARNING);
+		}
+		if(has_missing1){
+			for( i = 0; i < n_dims1; i++) {
+				if(x[i] == missing1.floatval) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolygon: missing value detected,  x and y parameters must not contain any missing values");
+					return(NhlWARNING);
+				}
+			}
+		}
+		if(has_missing2){
+			for( i = 0; i < n_dims2; i++) {
+				if(y[i] == missing2.floatval) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolygon: missing value detected,  x and y parameters must not contain any missing values");
+					return(NhlWARNING);
+				}
+			}
+		}
+		for( i = 0; i < j; i++) {
+			if((tmp_hlu_ptr[i] != NULL)&&(((total_ == 1)&&(tmp_style_hlu_ptr[0] != NULL))||(tmp_style_hlu_ptr[i] != NULL))) {
+				if(NhlNDCPolygon(tmp_hlu_ptr[i]->hlu.hlu_id,((total_ == 1)? tmp_style_hlu_ptr[0]->hlu.hlu_id:tmp_style_hlu_ptr[i]->hlu.hlu_id),x,y,dimsizes1[0]) < NhlNOERROR) {
+					ret = NhlWARNING;
+				}
+			}
+		}
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolygon: The must either be one style object or the same number of style objects as plots");
+		return(NhlWARNING);
+	}
+	return(ret);
+}
+NhlErrorTypes _NclINDCPolymarker
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int nargs = 4;
+	int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+	int has_missing_,n_dims_,dimsizes_[NCL_MAX_DIMENSIONS];
+	int has_missing1,n_dims1,dimsizes1[NCL_MAX_DIMENSIONS];
+	int has_missing2,n_dims2,dimsizes2[NCL_MAX_DIMENSIONS];
+	NclBasicDataTypes type;
+        int total=1;
+        int total_=1;
+        int i,j=0,k=0;
+	NclHLUObj *tmp_hlu_ptr;
+	NclHLUObj *tmp_style_hlu_ptr;
+	NclScalar missing;
+	NclScalar missing_;
+	NclScalar missing1;
+	NclScalar missing2;
+	obj *ncl_hlu_obj_ids;
+	obj *style_hlu_obj_ids;
+	float *x;
+	float *y;
+	NhlErrorTypes ret = NhlNOERROR;
+	
+	ncl_hlu_obj_ids = (obj*)NclGetArgValue(
+			0,
+			nargs,
+			&n_dims,
+			dimsizes,
+			&missing,
+			&has_missing,
+			&type,
+			0);
+
+	style_hlu_obj_ids = (obj*)NclGetArgValue(
+			1,
+			nargs,
+			&n_dims_,
+			dimsizes_,
+			&missing_,
+			&has_missing_,
+			&type,
+			0);
+
+	x = (float*)NclGetArgValue(
+			2,
+			nargs,
+			&n_dims1,
+			dimsizes1,
+			&missing1,
+			&has_missing1,
+			NULL,
+			0);
+
+	y = (float*)NclGetArgValue(
+			3,
+			nargs,
+			&n_dims2,
+			dimsizes2,
+			&missing2,
+			&has_missing2,
+			NULL,
+			0);
+
+	
+	total *= dimsizes[0];
+	total_ *= dimsizes_[0];
+
+	if((total == total_)||(total_ == 1)){
+		tmp_hlu_ptr  = (NclHLUObj*)NclMalloc(total*sizeof(NclHLUObj));
+		tmp_style_hlu_ptr  = (NclHLUObj*)NclMalloc(total_*sizeof(NclHLUObj));
+		if((has_missing)&&(has_missing_)) {
+			if(total_ != 1) {
+				for( i = 0; i < total; i++) {
+					if((ncl_hlu_obj_ids[i] != missing.objval)&&(style_hlu_obj_ids[i] != missing_.objval)) {
+						tmp_hlu_ptr[j] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+						if(total_ > 1) {
+							tmp_style_hlu_ptr[j] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+						}
+						j++;
+					}
+				}
+			} else {
+				if(style_hlu_obj_ids[0] == missing_.objval) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolymarker: a missing value for the style object was detected, can't perform draw");
+					return(NhlWARNING);
+				}
+				for( i = 0; i < total; i++) {
+					if(ncl_hlu_obj_ids[i] != missing.objval) {
+						tmp_hlu_ptr[j] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+						if(total_ > 1) {
+							tmp_style_hlu_ptr[j] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+						}
+						j++;
+					}
+				}
+			}
+			if(total_ == 1) {
+				tmp_style_hlu_ptr[0] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[0]);
+				k = 1;
+			} else {
+				k = j;
+			}
+		} else if(has_missing) {
+			for( i = 0; i < total; i++) {
+				if(ncl_hlu_obj_ids[i] != missing.objval) {
+					tmp_hlu_ptr[j] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+					if(total_ > 1) {
+						tmp_style_hlu_ptr[j] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+					}
+					j++;
+				}
+			}
+			if(total_ == 1) {
+				tmp_style_hlu_ptr[0] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[0]);
+				k = 1;
+			} else {
+				k = j;
+			}
+		} else {
+			for( i = 0; i < total; i++) {
+				tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+				if(total_ > 1) {
+					tmp_style_hlu_ptr[i] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[i]);
+				}
+			}
+			if(total_ == 1) {
+				tmp_style_hlu_ptr[0] = (NclHLUObj)_NclGetObj(style_hlu_obj_ids[0]);
+				k = 1;
+			} else {
+				k = total;
+			}
+		
+			j = total;
+		}
+		if(dimsizes1[0] != dimsizes2[0]) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolymarker: x and y parameters must have the same dimension size");
+			return(NhlWARNING);
+		}
+		if(has_missing1){
+			for( i = 0; i < n_dims1; i++) {
+				if(x[i] == missing1.floatval) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolymarker: missing value detected,  x and y parameters must not contain any missing values");
+					return(NhlWARNING);
+				}
+			}
+		}
+		if(has_missing2){
+			for( i = 0; i < n_dims2; i++) {
+				if(y[i] == missing2.floatval) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"NDCPolymarker: missing value detected,  x and y parameters must not contain any missing values");
+					return(NhlWARNING);
+				}
+			}
+		}
+		for( i = 0; i < j; i++) {
+			if((tmp_hlu_ptr[i] != NULL)&&(((total_ == 1)&&(tmp_style_hlu_ptr[0] != NULL))||(tmp_style_hlu_ptr[i] != NULL))) {
+				if(NhlNDCPolymarker(tmp_hlu_ptr[i]->hlu.hlu_id,((total_ == 1)? tmp_style_hlu_ptr[0]->hlu.hlu_id:tmp_style_hlu_ptr[i]->hlu.hlu_id),x,y,dimsizes1[0]) < NhlNOERROR) {
+					ret = NhlWARNING;
+				}
+			}
+		}
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolymarker: The must either be one style object or the same number of style objects as plots");
 		return(NhlWARNING);
 	}
 	return(ret);
