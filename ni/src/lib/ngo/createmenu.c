@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenu.c,v 1.5 1998-03-23 22:48:40 dbrown Exp $
+ *      $Id: createmenu.c,v 1.6 1998-09-01 17:19:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -124,10 +124,10 @@ static void CreateCB
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,"error updating hlu page"));
                 return;
         }
-        if (! browse->go.up)
-                NgGOPopup(browse_id);
         
         NgPageOutputNotify(browse_id,page_id,_brNULL,NULL);
+        if (! browse->go.up)
+                NgGOPopup(browse_id);
         
         return;
 }
