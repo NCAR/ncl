@@ -1,5 +1,5 @@
 /*
- *      $Id: View.h,v 1.8 1995-02-17 10:23:38 boote Exp $
+ *      $Id: View.h,v 1.9 1995-03-21 22:37:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -83,6 +83,8 @@ typedef struct _NhlCoord {
 #define NhlCvpKeepAspect	"VpKeepAspect"
 #define NhlNvpUseSegments	"vpUseSegments"
 #define NhlCvpUseSegments	"VpUseSegments"
+#define NhlNvpAnnotationId	"vpAnnotationId"
+#define NhlCvpAnnotationId	"VpAnnotationId"
 
 NhlDOCTAG(NhlBoundingBox)
 typedef struct _NhlBoundingBox {

@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.35 1995-03-13 21:47:32 dbrown Exp $
+ *      $Id: Overlay.c,v 1.36 1995-03-21 22:36:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -389,6 +389,13 @@ static NhlErrorTypes OverlayDestroy(
 #endif
 );
 
+static NhlErrorTypes OverlayReparent(
+#if	NhlNeedProto
+	NhlLayer	layer,
+	NhlLayer	new_parent
+#endif
+);
+
 static NhlErrorTypes OverlayDraw(
 #if	NhlNeedProto
         NhlLayer	layer
@@ -587,7 +594,7 @@ NhlOverlayLayerClassRec NhloverlayLayerClassRec = {
 /* layer_set_values		*/	OverlaySetValues,
 /* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	OverlayGetValues,
-/* layer_reparent		*/	NULL,
+/* layer_reparent		*/	OverlayReparent,
 /* layer_destroy		*/	OverlayDestroy,
 
 /* child_resources		*/	NULL,
@@ -1403,7 +1410,8 @@ NhlLayer inst;
 			anlp = anlp->next;
 			if (i == 0 && free_anno->type == ovEXTERNAL) {
 				NhlVASetValues(free_anno->anno_id,
-					       NhlNanOverlayBaseId,-1,NULL);
+					       NhlNanOverlayId,
+					       NhlNULLOBJID,NULL);
 			}
 			NhlFree(free_anno);
 		}
@@ -1415,6 +1423,86 @@ NhlLayer inst;
 	NhlFreeGenArray(ovp->y_irr);
 
 	return(ret);
+}
+
+
+/*
+ * Function:	OverlayReparent
+ *
+ * Description:
+ *
+ * In Args:	layer		Overlay layer
+ *		new_parent	new parent
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+static NhlErrorTypes OverlayReparent
+#if	NhlNeedProto
+(
+	NhlLayer layer,
+	NhlLayer new_parent
+)
+#else
+(layer,new_parent)
+	NhlLayer layer;
+	NhlLayer new_parent;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+#if 0
+	char			*e_text;
+	char			*entry_name = "OverlayReparent";
+#endif
+	NhlOverlayLayer		ovl = (NhlOverlayLayer) layer;
+	NhlOverlayLayerPart	*ovp = &(ovl->overlay);
+	int			i;
+
+/*
+ * Note that children of the Overlay are reparented automatically;
+ * however, Member Plots and External Annotations need to be 
+ * reparented explicitly.
+ * Only the Overlay Base Plot should do this.
+ * All external annotations should be top level Since it's a overlay base its parents parent should be  
+ */
+	if (ovl->trans.overlay_status == _tfCurrentOverlayMember)
+		return NhlNOERROR;
+
+	for (i = 0; i < ovp->overlay_count; i++) {
+		NhlAnnoRec	*anlp = ovp->ov_recs[i]->anno_list;
+		
+/*
+ * Reparent member plot
+ */
+		if (i > 0) {
+			subret = _NhlReparent((NhlLayer)ovp->ov_recs[i]->plot,
+					      layer->base.wkptr);
+			if (MIN(ret,subret) < NhlWARNING) return ret;
+		}
+/*
+ * Reparent any external annotation whose parent is a Workstation.
+ */
+		for ( ; anlp != NULL; anlp = anlp->next) {
+
+			if (anlp->type == ovEXTERNAL && 
+			    anlp->plot_id != NhlNULLOBJID) {
+				NhlLayer plot = _NhlGetLayer(anlp->plot_id);
+
+				if (_NhlIsWorkstation(plot->base.parent)) {
+					subret = _NhlReparent(plot,
+							 layer->base.wkptr);
+					if (MIN(ret,subret) < NhlWARNING) 
+						return ret;
+				}
+			}
+		}
+	}
+	return ret;
+
 }
 
 /*
@@ -1673,7 +1761,7 @@ static NhlErrorTypes OverlayPostDraw
 			}
 			if (anlp->track_data && anlp->out_of_range)
 				continue;
-			if (anlp->plot_id < 1)
+			if (anlp->plot_id == NhlNULLOBJID)
 				continue;
 			subret = NhlDraw(anlp->plot_id);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -1826,8 +1914,8 @@ static NhlAnnoRec *RecordAnnotation
 		return NULL;
 	}
 	anno_rec->ovl = (NhlLayer)ovl;
-	anno_rec->anno_id = -1;
-	anno_rec->plot_id = -1;
+	anno_rec->anno_id = NhlNULLOBJID;
+	anno_rec->plot_id = NhlNULLOBJID;
 	anno_rec->zone = zone;
 	anno_rec->type = type;
 	anno_rec->status = status;
@@ -3212,7 +3300,7 @@ UpdateAnnoData
 			subret = NhlVAGetValues(
 				anlp->anno_id,
 				NhlNanOn,&on,
-				NhlNanPlotId,&anlp->plot_id,
+				NhlNanViewId,&anlp->plot_id,
 				NhlNanResizeNotify,&anlp->resize_notify,
 				NhlNanZone,&anlp->zone,
 				NhlNanSide,&anlp->side,
@@ -3274,7 +3362,7 @@ ManageTickMarks
 	NhlOverlayLayerPart	*ovp = &ovnew->overlay;
 	NhlOverlayLayerPart	*oovp = &ovold->overlay;
 	NhlTransformLayerPart	*tfp = &ovnew->trans;
-	int			tmpid = -1;
+	int			tmpid = NhlNULLOBJID;
 	char			buffer[_NhlMAXFNAMELEN];
         NhlSArg			sargs[ovTMARGCOUNT];
         int			nargs = 0;
@@ -3652,7 +3740,7 @@ ManageTitles
 	char			*e_text;
 	NhlOverlayLayerPart	*ovp = &ovnew->overlay;
 	NhlOverlayLayerPart	*oovp = &ovold->overlay;
-	int			tmpid = -1;
+	int			tmpid = NhlNULLOBJID;
 	NhlBoundingBox		bbox;
 	char			buffer[_NhlMAXFNAMELEN];
         NhlSArg			sargs[16];
@@ -3948,7 +4036,7 @@ ManageLabelBar
 	char			*e_text;
 	NhlOverlayLayerPart	*ovp = &ovnew->overlay;
 	NhlOverlayLayerPart	*oovp = &ovold->overlay;
-	int			tmpid = -1;
+	int			tmpid = NhlNULLOBJID;
 	NhlBoundingBox		bbox;
 	char			buffer[_NhlMAXFNAMELEN];
         NhlSArg			sargs[16];
@@ -4064,7 +4152,7 @@ ManageLabelBar
 		break;
 	default:
 		e_text = "%s: internal enumeration error";
-		anno_rec->plot_id = -1;
+		anno_rec->plot_id = NhlNULLOBJID;
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
 	}
@@ -4212,7 +4300,7 @@ ManageLegend
 	char			*e_text;
 	NhlOverlayLayerPart	*ovp = &ovnew->overlay;
 	NhlOverlayLayerPart	*oovp = &ovold->overlay;
-	int			tmpid = -1;
+	int			tmpid = NhlNULLOBJID;
 	NhlBoundingBox		bbox;
 	char			buffer[_NhlMAXFNAMELEN];
         NhlSArg			sargs[16];
@@ -4302,7 +4390,7 @@ ManageLegend
 		break;
 	default:
 		e_text = "%s: internal enumeration error";
-		anno_rec->plot_id = -1;
+		anno_rec->plot_id = NhlNULLOBJID;
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
 	}
@@ -4556,6 +4644,12 @@ NhlErrorTypes NhlAddToOverlay
 	}
 	if (base == plot) {
 		e_text = "%s: overlay member and base plot ids are the same";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	if (base->base.wkptr != plot->base.wkptr) {
+		e_text = 
+ 	"%s: Plot and Overlay Base Plot belong to different Workstations";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
@@ -4977,6 +5071,84 @@ _NHLCALLF(nhlf_removefromoverlay,NHLF_REMOVEFROMOVERLAY)
 	return;
 }
 
+
+/*
+ * Function:	GetPlotOverlay
+ *
+ * Description:	Gets the overlay belonging to the plot itself. 
+ *		For member plots looks through the base plot overlay
+ *		data structures.
+ *
+ * In Args:	transform	transform layer
+ *		entry_name      calling function name
+ *
+ * Out Args:	
+ *
+ * Return Values: overlay layer; NULL on error;
+ *
+ * Side Effects: NONE
+ */	
+
+NhlLayer GetPlotOverlay
+#if	NhlNeedProto
+(
+	NhlTransformLayer	transform, 
+	NhlString		entry_name
+)
+#else
+(transform, entry_name)
+	NhlTransformLayer	transform;
+	NhlString		entry_name;
+#endif
+{
+	char			*e_text;
+	NhlTransformLayerPart	*tfp = &transform->trans;
+	NhlOverlayLayer		ovl = (NhlOverlayLayer)tfp->overlay_object;
+
+	if (! tfp->overlay_on  ||
+	    tfp->overlay_status == _tfNotInOverlay ||
+	    ovl == NULL || ! _NhlIsTransform((NhlLayer) ovl) ||
+	    (ovl->base.layer_class)->base_class.class_name !=
+	    NhloverlayLayerClass->base_class.class_name) {
+		e_text = "%s: plot not associated with an Overlay";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NULL;
+	}
+	
+/*
+ * If the plot is an Overlay Base Plot, then simply return the base
+ * overlay. Otherwise, if the plot is currently an Overlay Member Plot
+ * we must look through the base Overlay's overlay part in order to find 
+ * its own Overlay object. (It might not have one; that is an error on
+ * the part of the caller.)
+ */
+	if (tfp->overlay_status == _tfCurrentOverlayBase) {
+		return (NhlLayer) ovl;
+	}
+	else {    /* tfp->overlay_status == _tfCurrentOverlayMember */
+		NhlOverlayLayerPart *ovp = &ovl->overlay;
+		int i;
+		NhlovRec *ov_rec = NULL;
+
+		for (i = 0; i < ovp->overlay_count; i++) {
+			if (ovp->ov_recs[i]->plot == transform) {
+				ov_rec = ovp->ov_recs[i];
+				break;
+			}
+		}
+		if (ov_rec == NULL) {
+			e_text = "%s: inconsistent overlay state";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NULL;
+		}
+		if (ov_rec->ov_obj == NULL) {
+			e_text = "%s: Overlay member but not an Overlay plot";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NULL;
+		}
+		return (NhlLayer) ov_rec->ov_obj;
+	}
+}
 /*
  * Function:	NhlAddAnnotation
  *
@@ -4995,36 +5167,28 @@ _NHLCALLF(nhlf_removefromoverlay,NHLF_REMOVEFROMOVERLAY)
 
 int NhlAddAnnotation
 #if	NhlNeedProto
-(int overlay_base_id, int anno_view_id)
+(int overlay_plot_id, int anno_view_id)
 #else
-(overlay_base_id, annotation_id)
-        int overlay_base_id;
+(overlay_plot_id, anno_view_id)
+        int overlay_plot_id;
 	int anno_view_id;
 #endif
 {
 	char			*e_text;
 	char			*entry_name = "NhlAddAnnotation";
-	NhlLayer		base = _NhlGetLayer(overlay_base_id);
+	NhlLayer		base = _NhlGetLayer(overlay_plot_id);
 	NhlLayer		anno_view = _NhlGetLayer(anno_view_id);
-	NhlTransformLayerPart	*base_tfp;
+	NhlLayer		plot_overlay;
 
 	if (base == NULL || ! _NhlIsTransform(base)) {
 		e_text = "%s: invalid base plot id";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
-/*
- * Make sure the base plot has an overlay; if so extract the overlay
- * layer pointer from the base plot's transform layer.
- */
-	base_tfp = &(((NhlTransformLayer)base)->trans);
-	if (! base_tfp->overlay_on ||
-	    base_tfp->overlay_object == NULL || 
-	    ! _NhlIsTransform(base_tfp->overlay_object)) {
-		e_text = "%s: no overlay initialized for base plot";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+
+	plot_overlay = GetPlotOverlay((NhlTransformLayer)base,entry_name);
+	if (plot_overlay == NULL)
 		return NhlFATAL;
-	}
 /*
  * Test the anno view layer pointer.
  */
@@ -5034,8 +5198,17 @@ int NhlAddAnnotation
 		return NhlFATAL;
 	}
 
-	return (_NhlAddAnnotation(base_tfp->overlay_object,
-				  anno_view,entry_name));
+/*
+ * Ensure that the overlay and the annotation view belong to the 
+ * same workstation
+ */
+	if (anno_view->base.wkptr != base->base.wkptr) {
+		e_text = 
+	   "%s: View object and Overlay Plot belong to different Workstations";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	return (_NhlAddAnnotation(plot_overlay,anno_view,entry_name));
 
 
 }
@@ -5057,20 +5230,20 @@ void
 _NHLCALLF(nhlf_addannotation,NHLF_ADDANNOTATION)
 #if	NhlNeedProto
 (
-	int	*overlay_base,
+	int	*overlay_plot,
 	int	*anno_view,
 	int	*anno_id,
 	int	*err
 )
 #else
-(overlay_base,annotation,anno_id,err)
-	int	*overlay_base;
+(overlay_plot,annotation,anno_id,err)
+	int	*overlay_plot;
 	int	*anno_view;
 	int	*anno_id;
 	int	*err;
 #endif
 {
-	*anno_id = NhlAddAnnotation(*overlay_base,*anno_view);
+	*anno_id = NhlAddAnnotation(*overlay_plot,*anno_view);
 	*err = (*anno_id < 0) ? *anno_id : NhlNOERROR;
 
 	return;
@@ -5103,7 +5276,7 @@ int _NhlAddAnnotation
 	NhlString	entry_name
 )
 #else
-(overlay, annotation, entry_name,anno_id)
+(overlay, anno_view, entry_name,anno_id)
 	NhlLayer	overlay; 
 	NhlLayer	anno_view;
 	NhlString	entry_name;
@@ -5116,9 +5289,16 @@ int _NhlAddAnnotation
 
 	if (entry_name == NULL) entry_name = "_NhlAddAnnotation";
 
-	if ((anno_id = _NhlGetAnnotationId(overlay,
-					   anno_view,entry_name)) >= 0) {
-		e_text = "%s: View object is already an annotation in overlay";
+	subret = NhlVAGetValues(anno_view->base.id,
+				NhlNvpAnnotationId,&anno_id,NULL);
+	if ((ret = MIN(ret,subret)) < NhlINFO) {
+		e_text = "%s: error getting values";
+		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
+		return (int) ret;
+	}
+
+	if (anno_id != NhlNULLOBJID) {
+		e_text = "%s: View object is already an annotation";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		return (int) NhlWARNING;
 	}
@@ -5171,7 +5351,7 @@ int _NhlAddAnnotation
 	subret = NhlVACreate(&anno_id,anno_view->base.name,
 			     NhlannotationLayerClass,
 			     overlay->base.parent->base.id,
-			     NhlNanPlotId, anno_view->base.id,
+			     NhlNanViewId, anno_view->base.id,
 			     NULL);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return (int) ret;
 
@@ -5187,6 +5367,11 @@ int _NhlAddAnnotation
 
 	ret =  MIN(subret,ret);
 
+	subret = _NhlSetAnnoView((NhlViewLayer)anno_view,
+				 overlay->base.id,anno_id);
+
+	ret =  MIN(subret,ret);
+
 	return (ret < NhlNOERROR) ? (int) ret : anno_id;
 
 }
@@ -5196,7 +5381,7 @@ int _NhlAddAnnotation
  *
  * Description:	
  *
- * In Args:	overlay_base_id	id of overlay base plot
+ * In Args:	overlay_plot_id	id of overlay base plot
  *		anno_id		id of Annotation object
  *
  * Out Args:	NONE
@@ -5209,38 +5394,32 @@ int _NhlAddAnnotation
 NhlErrorTypes NhlRemoveAnnotation
 #if	NhlNeedProto
 (
-	int overlay_base_id, 
+	int overlay_plot_id, 
 	int anno_id
 )
 #else
-(overlay_base_id, anno_id)
-        int overlay_base_id;
+(overlay_plot_id, anno_id)
+        int overlay_plot_id;
 	int anno_id;
 #endif
 {
 	char			*e_text;
 	char			*entry_name = "NhlRemoveAnnotation";
-	NhlLayer		base = _NhlGetLayer(overlay_base_id);
+	NhlLayer		base = _NhlGetLayer(overlay_plot_id);
 	NhlLayer		annotation = _NhlGetLayer(anno_id);
-	NhlTransformLayerPart	*base_tfp;
+	NhlLayer		plot_overlay;
 
 	if (base == NULL || ! _NhlIsTransform(base)) {
 		e_text = "%s: invalid base plot id";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
-/*
- * Make sure the base plot has an overlay; if so extract the overlay
- * layer pointer from the base plot's transform layer.
- */
-	base_tfp = &(((NhlTransformLayer)base)->trans);
-	if (! base_tfp->overlay_on ||
-	    base_tfp->overlay_object == NULL || 
-	    ! _NhlIsTransform(base_tfp->overlay_object)) {
-		e_text = "%s: no overlay initialized for base plot";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+
+
+	plot_overlay = GetPlotOverlay((NhlTransformLayer)base,entry_name);
+	if (plot_overlay == NULL)
 		return NhlFATAL;
-	}
+
 /*
  * Test the annotation layer pointer.
  */
@@ -5252,8 +5431,7 @@ NhlErrorTypes NhlRemoveAnnotation
 		return NhlFATAL;
 	}
 
-	return (_NhlRemoveAnnotation(base_tfp->overlay_object,
-				     annotation,entry_name));
+	return (_NhlRemoveAnnotation(plot_overlay,annotation,entry_name));
 
 }
 
@@ -5274,18 +5452,18 @@ void
 _NHLCALLF(nhlf_removeannotation,NHLF_REMOVEANNOTATION)
 #if	NhlNeedProto
 (
-	int	*overlay_base,
+	int	*overlay_plot,
 	int	*anno_view,
 	int	*err
 )
 #else
-(overlay_base,annotation,err)
-	int	*overlay_base;
+(overlay_plot,annotation,err)
+	int	*overlay_plot;
 	int	*anno_view;
 	int	*err;
 #endif
 {
-	*err = NhlRemoveAnnotation(*overlay_base,*anno_view);
+	*err = NhlRemoveAnnotation(*overlay_plot,*anno_view);
 
 	return;
 }
@@ -5327,6 +5505,8 @@ NhlErrorTypes _NhlRemoveAnnotation
 	int			anno_ix = -1;
 	int			i;
 
+	if (entry_name == NULL) entry_name = "_NhlRemoveAnnotation";
+
 	for (i = 0; i < ovp->anno_count; i++) {
 		if (ovp->anno_ids[i] == annotation->base.id) {
 			anno_ix = i;
@@ -5345,6 +5525,10 @@ NhlErrorTypes _NhlRemoveAnnotation
 	subret = _NhlUnregisterAnnotation(overlay,annotation,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 
+	subret = _NhlSetAnnoView((NhlViewLayer)
+				 _NhlGetLayer(ovp->view_ids[anno_ix]),
+				 NhlNULLOBJID,NhlNULLOBJID);
+
 /*
  * Delete the Annotation and View ids from their respective arrays
  */
@@ -5354,6 +5538,7 @@ NhlErrorTypes _NhlRemoveAnnotation
 		ovp->anno_ids[i] = ovp->anno_ids[i+1];
 	}
 	ovp->anno_count--;
+
 
 /*
  * Destroy the Annotation
@@ -5366,6 +5551,7 @@ NhlErrorTypes _NhlRemoveAnnotation
 	return ret;
 }
 
+#if 0
 /*
  * Function:	NhlGetAnnotationId
  *
@@ -5394,27 +5580,19 @@ int NhlGetAnnotationId
 	char			*entry_name = "NhlGetAnnotationId";
 	NhlLayer		base = _NhlGetLayer(overlay_base_id);
 	NhlLayer		anno_view = _NhlGetLayer(anno_view_id);
-	NhlTransformLayerPart	*base_tfp;
 	int			anno_id;
+	NhlLayer		plot_overlay;
 
 	if (base == NULL || ! _NhlIsTransform(base)) {
-		e_text = "%s: invalid overlay plot id";
+		e_text = "%s: invalid base plot id";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
 
-/*
- * Make sure the base plot has an overlay; if so extract the overlay
- * layer pointer from the base plot's transform layer.
- */
-	base_tfp = &(((NhlTransformLayer)base)->trans);
-	if (! base_tfp->overlay_on ||
-	    base_tfp->overlay_object == NULL || 
-	    ! _NhlIsTransform(base_tfp->overlay_object)) {
-		e_text = "%s: no overlay initialized for base plot";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+
+	plot_overlay = GetPlotOverlay((NhlTransformLayer)base,entry_name);
+	if (plot_overlay == NULL)
 		return NhlFATAL;
-	}
 
 /*
  * Test the anno view layer pointer.
@@ -5426,8 +5604,7 @@ int NhlGetAnnotationId
 		return NhlFATAL;
 	}
 
-	anno_id = _NhlGetAnnotationId(base_tfp->overlay_object,
-				      anno_view,entry_name);
+	anno_id = _NhlGetAnnotationId(plot_overlay,anno_view,entry_name);
 
 	if (anno_id < 0) {
 		e_text = "%s: View object is not an annotation in overlay";
@@ -5525,6 +5702,7 @@ int _NhlGetAnnotationId
 
 }
 
+#endif
 
 /*
  * Function:	NhlRegisterAnnotation
@@ -5557,36 +5735,28 @@ int _NhlGetAnnotationId
 
 NhlErrorTypes NhlRegisterAnnotation
 #if	NhlNeedProto
-(int overlay_base_id, int annotation_id)
+(int overlay_plot_id, int annotation_id)
 #else
-(overlay_base_id, annotation_id)
-        int overlay_base_id;
+(overlay_plot_id, annotation_id)
+        int overlay_plot_id;
 	int annotation_id;
 #endif
 {
 	char			*e_text;
 	char			*entry_name = "NhlRegisterAnnotation";
-	NhlLayer		base = _NhlGetLayer(overlay_base_id);
+	NhlLayer		base = _NhlGetLayer(overlay_plot_id);
 	NhlLayer		annotation = _NhlGetLayer(annotation_id);
-	NhlTransformLayerPart	*base_tfp;
+	NhlLayer		plot_overlay;
 
 	if (base == NULL || ! _NhlIsTransform(base)) {
-		e_text = "%s: invalid overlay plot id";
+		e_text = "%s: invalid base plot id";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
-/*
- * Make sure the base plot has an overlay; if so extract the overlay
- * layer pointer from the base plot's transform layer.
- */
-	base_tfp = &(((NhlTransformLayer)base)->trans);
-	if (! base_tfp->overlay_on ||
-	    base_tfp->overlay_object == NULL || 
-	    ! _NhlIsTransform(base_tfp->overlay_object)) {
-		e_text = "%s: no overlay initialized for base plot";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+
+	plot_overlay = GetPlotOverlay((NhlTransformLayer)base,entry_name);
+	if (plot_overlay == NULL)
 		return NhlFATAL;
-	}
 
 /*
  * Test the annotation layer pointer; if valid get its resource values.
@@ -5597,10 +5767,21 @@ NhlErrorTypes NhlRegisterAnnotation
 		return NhlFATAL;
 	}
 
-	return (_NhlRegisterAnnotation(base_tfp->overlay_object,
-				       annotation,entry_name));
+/*
+ * Ensure that the overlay and the annotation belong to the 
+ * same workstation
+ */
+	if (annotation->base.wkptr != base->base.wkptr) {
+		e_text = 
+	  "%s: View object and Overlay Plot belong to different Workstations";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	return (_NhlRegisterAnnotation(plot_overlay,annotation,entry_name));
 }
 
+#if 0
 /*
  * Function:	nhlf_registerannotation
  *
@@ -5618,22 +5799,23 @@ void
 _NHLCALLF(nhlf_registerannotation,NHLF_REGISTERANNOTATION)
 #if	NhlNeedProto
 (
-	int	*overlay_base,
+	int	*overlay_plot,
 	int	*annotation,
 	int	*err
 )
 #else
-(overlay_base,annotation,err)
-	int	*overlay_base;
+(overlay_plot,annotation,err)
+	int	*overlay_plot;
 	int	*annotation;
 	int	*err;
 #endif
 {
-	*err = NhlRegisterAnnotation(*overlay_base,*annotation);
+	*err = NhlRegisterAnnotation(*overlay_plot,*annotation);
 
 	return;
 }
 
+#endif
 
 /*
  * Function:	_NhlRegisterAnnotation
@@ -5679,7 +5861,7 @@ NhlErrorTypes _NhlRegisterAnnotation
 	subret = NhlVAGetValues(annotation->base.id,
 				NhlNanOn,&on,
 				NhlNanResizeNotify,&resize_notify,
-				NhlNanPlotId,&pid,
+				NhlNanViewId,&pid,
 				NhlNanZone,&zone,
 				NhlNanSide,&side,
 				NhlNanJust,&just,
@@ -5719,9 +5901,9 @@ NhlErrorTypes _NhlRegisterAnnotation
 	anrp->data_y = data_y;
 
 	subret = NhlVASetValues(annotation->base.id,
-				NhlNanOverlayBaseId,overlay->base.id,
+				NhlNanOverlayId,overlay->base.id,
 				NULL);
-	ret = MIN(subret,ret);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
 	return ret;
 }
@@ -5731,7 +5913,7 @@ NhlErrorTypes _NhlRegisterAnnotation
  *
  * Description:	
  *
- * In Args:	overlay_base_id	id of overlay plot
+ * In Args:	overlay_plot_id	id of overlay plot
  *		annotation_id	id of annotation object
  *
  * Out Args:	NONE
@@ -5743,36 +5925,29 @@ NhlErrorTypes _NhlRegisterAnnotation
 
 NhlErrorTypes NhlUnregisterAnnotation
 #if	NhlNeedProto
-(int overlay_base_id, int annotation_id)
+(int overlay_plot_id, int annotation_id)
 #else
-(overlay_base_id, annotation_id)
-        int overlay_base_id;
+(overlay_plot_id, annotation_id)
+        int overlay_plot_id;
 	int annotation_id;
 #endif
 {
 	char			*e_text;
 	char			*entry_name = "NhlUnregisterAnnotation";
-	NhlLayer		base = _NhlGetLayer(overlay_base_id);
+	NhlLayer		base = _NhlGetLayer(overlay_plot_id);
 	NhlLayer		annotation = _NhlGetLayer(annotation_id);
-	NhlTransformLayerPart	*base_tfp;
+	NhlLayer		plot_overlay;
 
 	if (base == NULL || ! _NhlIsTransform(base)) {
-		e_text = "%s: invalid overlay plot id";
+		e_text = "%s: invalid base plot id";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
-/*
- * Make sure the base plot has an overlay; if so extract the overlay
- * layer pointer from the base plot's transform layer.
- */
-	base_tfp = &(((NhlTransformLayer)base)->trans);
-	if (! base_tfp->overlay_on ||
-	    base_tfp->overlay_object == NULL || 
-	    ! _NhlIsTransform(base_tfp->overlay_object)) {
-		e_text = "%s: no overlay initialized for base plot";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+
+	plot_overlay = GetPlotOverlay((NhlTransformLayer)base,entry_name);
+	if (plot_overlay == NULL)
 		return NhlFATAL;
-	}
+
 /*
  * Test the annotation layer pointer.
  */
@@ -5782,11 +5957,11 @@ NhlErrorTypes NhlUnregisterAnnotation
 		return NhlFATAL;
 	}
 
-	return (_NhlUnregisterAnnotation(base_tfp->overlay_object,
-					 annotation,entry_name));
+	return (_NhlUnregisterAnnotation(plot_overlay,annotation,entry_name));
 
 }
 
+#if 0
 /*
  * Function:	nhlf_unregisterannotation
  *
@@ -5804,21 +5979,23 @@ void
 _NHLCALLF(nhlf_unregisterannotation,NHLF_UNREGISTERANNOTATION)
 #if	NhlNeedProto
 (
-	int	*overlay_base,
+	int	*overlay_plot,
 	int	*annotation,
 	int	*err
 )
 #else
-(overlay_base,annotation,err)
-	int	*overlay_base;
+(overlay_plot,annotation,err)
+	int	*overlay_plot;
 	int	*annotation;
 	int	*err;
 #endif
 {
-	*err = NhlUnregisterAnnotation(*overlay_base,*annotation);
+	*err = NhlUnregisterAnnotation(*overlay_plot,*annotation);
 
 	return;
 }
+
+#endif
 
 /*
  * Function:	_NhlUnregisterAnnotation
@@ -5852,11 +6029,14 @@ NhlErrorTypes _NhlUnregisterAnnotation
 	NhlString	entry_name;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	NhlOverlayLayerPart	*ovp;
 	NhlAnnoRec		*anrp;
-	int			i, found = False;
+	int			i;
+	int			view_id = NhlNULLOBJID - 1;
+
+	if (entry_name == NULL) entry_name = "_NhlUnregisterAnnotation";
 
 	ovp = &((NhlOverlayLayer)overlay)->overlay;
 
@@ -5867,28 +6047,29 @@ NhlErrorTypes _NhlUnregisterAnnotation
 
 		if (anrp->anno_id == annotation->base.id) {
 			ovp->ov_recs[i]->anno_list = anrp->next;
+			view_id = anrp->plot_id;
 			NhlFree(anrp);
-			found = True;
 			break;
 		}
 		while (anrp->next != NULL) {
 			if (anrp->next->anno_id == annotation->base.id) {
 				NhlAnnoRec	*free_anno = anrp->next;
 				anrp->next = free_anno->next;
+				view_id = free_anno->plot_id;
 				NhlFree(free_anno);
-				found = True;
 				break;
 			}
 			anrp = anrp->next;
 		}
 	}
-	if (! found) {
+	if (view_id < NhlNULLOBJID) {
 		e_text = "%s: annotation not found";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
-	ret = NhlVASetValues(annotation->base.id,
-			     NhlNanOverlayBaseId,-1,NULL);
+	subret = NhlVASetValues(annotation->base.id,
+			     NhlNanOverlayId,NhlNULLOBJID,NULL);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
 	return ret;
 
@@ -6259,7 +6440,7 @@ extern NhlErrorTypes _NhlManageOverlay
 	NhlTransformLayerPart	*tfp = &(((NhlTransformLayer)lnew)->trans);
 	NhlTransformLayerPart	*otfp = &(((NhlTransformLayer)lold)->trans);
 	NhlViewLayerPart		*vwp = &(((NhlViewLayer)lnew)->view);
-	int			tmpid = -1;
+	int			tmpid = NhlNULLOBJID;
 	char			buffer[_NhlMAXFNAMELEN];
 	NhlSArg			*lsargs;
 	int			lsarg_count = 8; /* Keep up to date!!! */

@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformI.h,v 1.1 1995-01-26 02:53:51 boote Exp $
+ *      $Id: TransformI.h,v 1.2 1995-03-21 22:37:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -22,11 +22,77 @@
 #ifndef	_NTransformI_h
 #define	_NTransformI_h
 
-#include <ncarg/hlu/Transform.h>
+/* Note:
+ * Does not include Transform.h -- because a number of objects that 
+ * need these functions are not Transform class objects.
+ */
 
 extern NhlBoolean _NhlIsOverlayMember(
 #if	NhlNeedProto
 	int	pid
+#endif
+);
+
+/* 
+ * private versions of the Annotation interface functions:
+ * assumes layer pointers are valid. If entry_name string is NULL,
+ * one is supplied.
+ */
+
+extern int _NhlAddAnnotation(
+#if	NhlNeedProto
+        NhlLayer	overlay,
+	NhlLayer	anno_view,
+	NhlString	entry_name
+#endif
+);
+
+extern NhlErrorTypes _NhlRemoveAnnotation(
+#if	NhlNeedProto
+        NhlLayer	overlay,
+	NhlLayer	annotation,
+	NhlString	entry_name
+#endif
+);
+
+#if 0
+int _NhlGetAnnotationId(
+#if	NhlNeedProto
+        NhlLayer	overlay,
+	NhlLayer	anno_view,
+	NhlString	entry_name
+#endif
+);
+
+#endif
+
+extern NhlErrorTypes NhlRegisterAnnotation(
+#if	NhlNeedProto
+        int	overlay_plot_id,
+	int	annotation_id
+#endif
+);
+
+extern NhlErrorTypes NhlUnregisterAnnotation(
+#if	NhlNeedProto
+        int	overlay_plot_id,
+	int	annotation_id
+#endif
+);
+
+extern NhlErrorTypes _NhlRegisterAnnotation(
+#if	NhlNeedProto
+        NhlLayer	overlay,
+	NhlLayer	annotation,
+	NhlString	entry_name
+#endif
+);
+
+extern NhlErrorTypes _NhlUnregisterAnnotation(
+#if	NhlNeedProto
+        NhlLayer	overlay,
+	NhlLayer	annotation,
+	NhlString	entry_name
 #endif
 );
 

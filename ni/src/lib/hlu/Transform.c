@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.15 1995-02-19 08:19:03 boote Exp $
+ *      $Id: Transform.c,v 1.16 1995-03-21 22:37:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -198,6 +198,7 @@ TransformClassPartInit
 		tlc->trans_class.data_polyline = sc->trans_class.data_polyline;
 	if(tlc->trans_class.ndc_polyline == NhlInheritPolyTransFunc)
 		tlc->trans_class.ndc_polyline = sc->trans_class.ndc_polyline;
+	return NhlNOERROR;
 }
 
 /*
@@ -680,7 +681,8 @@ _NhlIsOverlayMember
 
 	tl = (NhlTransformLayer)l;
 
-	if(tl->trans.overlay_status == _tfCurrentOverlayMember)
+	if (tl->trans.overlay_status == _tfCurrentOverlayMember ||
+	    tl->view.annotation_id)
 		return True;
 
 	return False;

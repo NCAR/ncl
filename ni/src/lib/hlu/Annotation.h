@@ -1,5 +1,5 @@
 /*
- *      $Id: Annotation.h,v 1.2 1994-06-07 18:54:12 dbrown Exp $
+ *      $Id: Annotation.h,v 1.3 1995-03-21 22:36:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,7 @@
 #include <ncarg/hlu/Base.h>
 
 #define NhlNanOn		"anOn"
-#define NhlNanPlotId		"anPlotId"
+#define NhlNanViewId		"anViewId"
 #define NhlNanResizeNotify	"anResizeNotify"
 #define NhlNanZone		"anZone"
 #define NhlNanSide		"anSide"
@@ -37,7 +37,7 @@
 #define NhlNanDataYF		"anDataYF"
 
 #define NhlCanOn		"AnOn"
-#define NhlCanPlotId		"AnPlotId"
+#define NhlCanViewId		"AnViewId"
 #define NhlCanResizeNotify	"AnResizeNotify"
 #define NhlCanZone		"AnZone"
 #define NhlCanSide		"AnSide"

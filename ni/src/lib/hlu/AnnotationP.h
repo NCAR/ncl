@@ -1,5 +1,5 @@
 /*
- *      $Id: AnnotationP.h,v 1.4 1995-03-13 21:47:14 dbrown Exp $
+ *      $Id: AnnotationP.h,v 1.5 1995-03-21 22:36:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -22,22 +22,22 @@
 #ifndef _NAnnotationP_h
 #define _NAnnotationP_h
 
-#include <ncarg/hlu/ViewP.h>
-#include <ncarg/hlu/OverlayI.h>
+#include <ncarg/hlu/BaseP.h>
+#include <ncarg/hlu/View.h>
 #include <ncarg/hlu/Annotation.h>
+#include <ncarg/hlu/TransformI.h>
 
 /* private resource */
 
-#define NhlNanOverlayBaseId	".anOverlayBaseId"
-#define NhlCanOverlayBaseId	".AnOverlayBaseId"
+#define NhlNanOverlayId		".anOverlayId"
+#define NhlCanOverlayId		".AnOverlayId"
 
 typedef struct _NhlAnnotationLayerPart{
 
 	/* public resource fields */
 
 	NhlBoolean		on;
-	int			plot_id;
-	int			overlay_base_id;
+	int			view_id;
 	NhlBoolean		resize_notify;
 	int			zone;
 	NhlPosition		side;
@@ -47,6 +47,10 @@ typedef struct _NhlAnnotationLayerPart{
 	NhlBoolean		track_data;
 	float			data_x;
 	float			data_y;
+
+	/* private resource */
+
+	int			overlay_id;
 
 }NhlAnnotationLayerPart;
 

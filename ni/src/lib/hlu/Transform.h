@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.h,v 1.6 1995-02-17 10:23:35 boote Exp $
+ *      $Id: Transform.h,v 1.7 1995-03-21 22:37:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -91,6 +91,45 @@ extern NhlErrorTypes NhlNDCPolyline(
 extern NhlBoolean NhlIsTransform(
 #if	NhlNeedProto
 	int	pid
+#endif
+);
+
+/* Overlay and Annotation access functions */
+
+extern NhlErrorTypes NhlAddToOverlay(
+#if	NhlNeedProto
+        int		base_plot_id,
+	int		member_plot_id,
+	int		after_plot_id
+#endif
+);
+
+extern NhlErrorTypes NhlRemoveFromOverlay(
+#if	NhlNeedProto
+        int		base_plot_id,
+	int		member_plot_id,
+	NhlBoolean	restore
+#endif
+);
+
+extern int NhlAddAnnotation(
+#if	NhlNeedProto
+        int	overlay_plot_id,
+	int	anno_view_id
+#endif
+);
+
+extern NhlErrorTypes NhlRemoveAnnotation(
+#if	NhlNeedProto
+        int	overlay_plot_id,
+	int	anno_id
+#endif
+);
+
+extern int NhlGetAnnotationId(
+#if	NhlNeedProto
+        int	overlay_plot_id,
+	int	anno_view_id
 #endif
 );
 

@@ -1,5 +1,5 @@
 C
-C $Id: OVERLAY.f,v 1.3 1995-03-13 21:47:31 dbrown Exp $
+C $Id: OVERLAY.f,v 1.4 1995-03-21 22:36:55 dbrown Exp $
 C
 C****************************************************************
 C								*
@@ -27,22 +27,22 @@ C
       	call nhlf_removefromoverlay(id_base,id_plot,irestore,ierr)
       end
 C
-      subroutine nhlfaddannotation(id_overlay_base,
+      subroutine nhlfaddannotation(id_overlay_plot,
      +     id_anno_view,id_anno,ierr)
-      	call nhlf_addannotation(id_overlay_base,
+      	call nhlf_addannotation(id_overlay_plot,
      +     id_anno_view,id_anno,ierr)
       end
 C
-      subroutine nhlfremoveannotation(id_overlay_base,
+      subroutine nhlfremoveannotation(id_overlay_plot,
      +     id_anno,ierr)
-      	call nhlf_removeannotation(id_overlay_base,
+      	call nhlf_removeannotation(id_overlay_plot,
      +     id_anno,ierr)
       end
 C
-      subroutine nhlfgetannotationid(id_overlay_base,
-     +     id_anno_view,id_anno,ierr)
-      	call nhlf_getannotationid(id_overlay_base,
-     +     id_anno_view,id_anno,ierr)
-      end
+c$$$      subroutine nhlfgetannotationid(id_overlay_base,
+c$$$     +     id_anno_view,id_anno,ierr)
+c$$$      	call nhlf_getannotationid(id_overlay_base,
+c$$$     +     id_anno_view,id_anno,ierr)
+c$$$      end
 C
 

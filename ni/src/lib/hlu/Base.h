@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.h,v 1.6 1995-03-13 21:47:16 dbrown Exp $
+ *      $Id: Base.h,v 1.7 1995-03-21 22:36:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,7 +28,7 @@
 extern NhlLayerClass NhlobjLayerClass;
 extern NhlLayerClass NhlbaseLayerClass;
 
-#define NhlNULLOBJID -1
+#define NhlNULLOBJID 0
 
 #define NhlTObjId		"ObjId"
 #define NhlTObjIdGenArray	"ObjIdGenArray"

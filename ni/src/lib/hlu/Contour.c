@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.54 1995-03-15 11:48:26 boote Exp $
+ *      $Id: Contour.c,v 1.55 1995-03-21 22:36:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1944,10 +1944,10 @@ ContourInitialize
 	cnp->label_aws_id = -1;
 	cnp->fill_aws_id = -1;
 	cnp->ezmap_aws_id = -1;
-	cnp->info_anno_id = -1;
-	cnp->constf_anno_id = -1;
-	cnp->info_lbl_rec.id = -1;
-	cnp->constf_lbl_rec.id = -1;
+	cnp->info_anno_id = NhlNULLOBJID;
+	cnp->constf_anno_id = NhlNULLOBJID;
+	cnp->info_lbl_rec.id = NhlNULLOBJID;
+	cnp->constf_lbl_rec.id = NhlNULLOBJID;
 	cnp->ref_level = 0;
 
 /* Initialize unset resources */
@@ -2642,14 +2642,14 @@ NhlLayer inst;
 
 	if (cntp->overlay_status == _tfCurrentOverlayMember ||
 	    cntp->overlay_status == _tfCurrentOverlayBase) {
-		if (cnp->info_anno_id != -1) {
+		if (cnp->info_anno_id != NhlNULLOBJID) {
 			subret = _NhlUnregisterAnnotation(cntp->overlay_object,
 					 _NhlGetLayer(cnp->info_anno_id),
 							  NULL);
 			if ((ret = MIN(subret,ret)) < NhlWARNING)
 				return NhlFATAL;
 		}
-		if (cnp->constf_anno_id != -1) {
+		if (cnp->constf_anno_id != NhlNULLOBJID) {
 			subret = _NhlUnregisterAnnotation(cntp->overlay_object,
 					 _NhlGetLayer(cnp->constf_anno_id),
 							  NULL);
@@ -2672,16 +2672,16 @@ NhlLayer inst;
 		(void) NhlDestroy(cntp->trans_obj->base.id);
 		cntp->trans_obj = NULL;
 	}
-	if (cnp->info_anno_id != -1) {
+	if (cnp->info_anno_id != NhlNULLOBJID) {
 		(void) NhlDestroy(cnp->info_anno_id);
 	}
-	if (cnp->constf_anno_id != -1) {
+	if (cnp->constf_anno_id != NhlNULLOBJID) {
 		(void) NhlDestroy(cnp->constf_anno_id);
 	}
-	if (cnp->info_lbl_rec.id != -1) {
+	if (cnp->info_lbl_rec.id != NhlNULLOBJID) {
  		(void) NhlDestroy(cnp->info_lbl_rec.id);
 	}
-	if (cnp->constf_lbl_rec.id != -1) {
+	if (cnp->constf_lbl_rec.id != NhlNULLOBJID) {
  		(void) NhlDestroy(cnp->constf_lbl_rec.id);
 	}
 
@@ -2800,7 +2800,7 @@ static NhlErrorTypes ContourGetBB
 	if (cntp->overlay_status == _tfCurrentOverlayMember)
 		return ret;
 
-	if (cnp->info_anno_id != -1 && ! cnp->display_constf) {
+	if (cnp->info_anno_id != NhlNULLOBJID && ! cnp->display_constf) {
 		subret = NhlVAGetValues(cnp->info_anno_id,
 					NhlNvpXF,&x,
 					NhlNvpYF,&y,
@@ -2810,7 +2810,7 @@ static NhlErrorTypes ContourGetBB
 
 		_NhlAddBBInfo(y,y-height,x+width,x,thebox);
 	}
-	if (cnp->constf_anno_id != -1 && cnp->display_constf) {
+	if (cnp->constf_anno_id != NhlNULLOBJID && cnp->display_constf) {
 		subret = NhlVAGetValues(cnp->constf_anno_id,
 					NhlNvpXF,&x,
 					NhlNvpYF,&y,
@@ -4055,10 +4055,29 @@ static NhlErrorTypes SetUpLLTransObj
         NhlSArg			sargs[16];
         int			nargs = 0;
 	NhlBoolean		yrev = False,xrev = False,oyrev,oxrev;
-
+#if 0
+	float			x,y,xr,yb;
+#endif
 
 	entry_name = (init) ? "ContourInitialize" : "ContourSetValues";
 
+#if 0
+	x = cnnew->view.x;
+	y = cnnew->view.y;
+	xr = x + cnnew->view.width;
+	yb = y - cnnew->view.height;
+	if (x < 0.0 || y > 1.0 || xr > 1.0 || yb < 0.0) {
+		e_text = "%s: View extent is outside NDC range: constraining";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		ret = MIN(ret,NhlWARNING);
+		x = MAX(x,0.0);
+		xr = MIN(xr,1.0);
+		y = MIN(y,1.0);
+		yb = MAX(yb,0.0);
+		_NhlInternalSetView((NhlViewLayer) cnnew,x,y,
+				    xr - x, y - yb, cnnew->view.keep_aspect);
+	}
+#endif
 	if (init)
 		tfp->trans_obj = NULL;
 	else if (ocnp->use_irr_trans && tfp->trans_obj != NULL) {
@@ -5640,7 +5659,7 @@ static NhlErrorTypes ManageInfoLabel
 					  &text_changed,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 
-	if (init || cnp->info_lbl_rec.id < 0) {
+	if (init || cnp->info_lbl_rec.id == NhlNULLOBJID) {
 		if (pos_changed) {
 			NhlSetSArg(&targs[(targc)++],NhlNtxPosXF,ilp->x_pos);
 			NhlSetSArg(&targs[(targc)++],NhlNtxPosYF,ilp->y_pos);
@@ -5837,15 +5856,16 @@ static NhlErrorTypes ManageConstFLabel
 
 	cnp->display_constf = cflp->on && cnp->const_field;
 
+#if 0
 	if (! cnp->display_constf && 
 	    (cnp->display_constf == ocnp->display_constf))
 		return NhlNOERROR;
-
+#endif
 	subret = ReplaceSubstitutionChars(cnp,ocnp,init,_cnCONSTF,
-					  &text_changed,entry_name);
+				  &text_changed,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 
-	if (init || cnp->constf_lbl_rec.id < 0) {
+	if (init || cnp->constf_lbl_rec.id == NhlNULLOBJID) {
 		if (pos_changed) {
 			NhlSetSArg(&targs[(targc)++],NhlNtxPosXF,cflp->x_pos);
 			NhlSetSArg(&targs[(targc)++],NhlNtxPosYF,cflp->y_pos);
@@ -6020,9 +6040,9 @@ static NhlErrorTypes ManageAnnotation
 		rec->on = cnp->constf_lbl.on && cnp->const_field;
 	}
 
-	if (*idp < 0) {
+	if (*idp <= NhlNULLOBJID) {
 		NhlSetSArg(&sargs[(nargs)++],NhlNanOn,rec->on);
-		NhlSetSArg(&sargs[(nargs)++],NhlNanPlotId,rec->id);
+		NhlSetSArg(&sargs[(nargs)++],NhlNanViewId,rec->id);
 		NhlSetSArg(&sargs[(nargs)++],NhlNanZone,rec->zone);
 		NhlSetSArg(&sargs[(nargs)++],NhlNanSide,rec->side);
 		NhlSetSArg(&sargs[(nargs)++],NhlNanJust,rec->just);
@@ -6061,8 +6081,10 @@ static NhlErrorTypes ManageAnnotation
 	}
 	if (rec->on != orec->on) 
 		NhlSetSArg(&sargs[(nargs)++],NhlNanOn,rec->on);
+#if 0
 	if (rec->id != orec->id) 
-		NhlSetSArg(&sargs[(nargs)++],NhlNanPlotId,rec->id);
+		NhlSetSArg(&sargs[(nargs)++],NhlNanViewId,rec->id);
+#endif
 	if (rec->zone != orec->zone) 
 		NhlSetSArg(&sargs[(nargs)++],NhlNanZone,rec->zone);
 	if (rec->side != orec->side) 

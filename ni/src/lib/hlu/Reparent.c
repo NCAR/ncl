@@ -1,5 +1,5 @@
 /*
- *      $Id: Reparent.c,v 1.7 1994-12-16 20:04:37 boote Exp $
+ *      $Id: Reparent.c,v 1.8 1995-03-21 22:37:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
  */
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/BaseP.h>
+#include <ncarg/hlu/TransformI.h>
 
 /*
  * Function:	CallReparent
@@ -238,6 +239,11 @@ NhlChangeWorkstation
 	if(!_NhlIsWorkstation(plot->base.parent)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"ChangeWorkstation-plot must be child of Workstation");
+		return NhlFATAL;
+	}
+	if(_NhlIsOverlayMember(plotid)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+		 "ChangeWorkstation-plot must not be an Overlay Member");
 		return NhlFATAL;
 	}
 

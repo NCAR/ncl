@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.15 1995-02-17 10:23:21 boote Exp $
+ *      $Id: LogLinTransObj.c,v 1.16 1995-03-21 22:36:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -390,9 +390,11 @@ NhlLayer   parent;
 	float width;
 	float height;
 	NhlLogLinTransObjLayer linstance = (NhlLogLinTransObjLayer)instance;
+	NhlString entry_name = "LlSetTrans";
+	NhlString e_text;
 	NhlErrorTypes ret;
+	float xr, yb;
 	
-
 	ret = NhlVAGetValues(parent->base.id,
 		NhlNvpXF,&x,
 		NhlNvpYF,&y,
@@ -401,10 +403,22 @@ NhlLayer   parent;
 	if(ret < NhlWARNING) {
 		return(ret);
 	}
-
-	c_set(x,x+width,y-height,y,linstance->lltrans.ul,linstance->lltrans.ur,
-		linstance->lltrans.ub,linstance->lltrans.ut,linstance->lltrans.log_lin_value);
-
+	xr = x + width;
+	yb = y - height;
+	if (x < 0.0 || y > 1.0 || xr > 1.0 || yb < 0.0) {
+		e_text = "%s: View extent is outside NDC range: constraining";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		ret = MIN(ret,NhlWARNING);
+		x = MAX(x,0.0);
+		xr = MIN(xr,1.0);
+		y = MIN(y,1.0);
+		yb = MAX(yb,0.0);
+		
+	}
+	c_set(x,xr,yb,y,
+	      linstance->lltrans.ul,linstance->lltrans.ur,
+	      linstance->lltrans.ub,linstance->lltrans.ut,
+	      linstance->lltrans.log_lin_value);
 	
 	return(NhlNOERROR);
 	

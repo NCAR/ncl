@@ -1,5 +1,5 @@
 /*
- *      $Id: ViewP.h,v 1.9 1995-02-19 08:19:10 boote Exp $
+ *      $Id: ViewP.h,v 1.10 1995-03-21 22:37:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -41,13 +41,28 @@ typedef struct _NhlLayerList{
 	struct _NhlLayerList *next;
 } NhlLayerListNode, *NhlLayerList;
 
+/* 
+ * private resource used by Overlay to set the Annotation id
+ * for a View object
+ */
+
+#define NhlNvpPrivateAnnoId	".vpPrivateAnnoId"
+#define NhlCvpPrivateAnnoId	".VpPrivateAnnoId"
+#define NhlNvpOverlayId		".vpOverlayId"
+#define NhlCvpOverlayId		".VpOverlayId"
+
 typedef struct _NhlViewLayerPart {
-	/* User setable resource fields */
+	/* User accessible resource fields */
 
 	float		x,y;
 	float		width,height;
 	NhlBoolean	keep_aspect;
 	NhlBoolean	use_segments;
+	int		annotation_id;
+
+	/* Private fields (set only through _NhlSetAnnoView) */
+
+	int		overlay_id;
 
 	/* Internal private fields */
 
@@ -166,6 +181,14 @@ extern NhlErrorTypes _NhlGetBB(
 #if	NhlNeedProto
 	NhlLayer	instance,
 	NhlBoundingBox* /* thebox */
+#endif
+);
+
+extern NhlErrorTypes _NhlSetAnnoView(
+#if	NhlNeedProto
+	NhlViewLayer	view,
+	int		overlay_id,
+        int		anno_id
 #endif
 );
 

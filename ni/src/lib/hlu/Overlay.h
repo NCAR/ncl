@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.h,v 1.14 1995-03-13 21:47:34 dbrown Exp $
+ *      $Id: Overlay.h,v 1.15 1995-03-21 22:36:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -45,7 +45,7 @@ typedef enum _NhlAnnotationDisplayMode {
 #define NhlNovPostDrawOrder	".ovPostDrawOrder"
 
 #define NhlNovAnnoViews		"ovAnnoViews"
-#define NhlNovAnnotations	">ovAnnotations"
+#define NhlNovAnnotations	"ovAnnotations"
 #define NhlNovFitToBB		"ovFitToBB"
 #define NhlNovBBLeftF		"ovBBLeftF"
 #define NhlNovBBRightF		"ovBBRightF"
@@ -89,7 +89,7 @@ typedef enum _NhlAnnotationDisplayMode {
 #define NhlCovPostDrawOrder	".OvPostDrawOrder"
 
 #define NhlCovAnnoViews		"OvAnnoViews"
-#define NhlCovAnnotations	".OvAnnotations"
+#define NhlCovAnnotations	"OvAnnotations"
 #define NhlCovFitToBB		"OvFitToBB"
 #define NhlCovBBLeftF		"OvBBLeftF"
 #define NhlCovBBRightF		"OvBBRightF"
@@ -125,44 +125,5 @@ typedef enum _NhlAnnotationDisplayMode {
 #define NhlCovLegendPosition	"OvLegendPosition"
 
 extern NhlLayerClass NhloverlayLayerClass;
-
-/* Public functions defined by the Overlay Class	*/
-extern NhlErrorTypes NhlAddToOverlay(
-#if	NhlNeedProto
-        int		base_id,
-	int		plot_id,
-	int		after_id
-#endif
-);
-
-extern NhlErrorTypes NhlRemoveFromOverlay(
-#if	NhlNeedProto
-        int		base_id,
-	int		plot_id,
-	NhlBoolean	restore
-#endif
-);
-
-extern int NhlAddAnnotation(
-#if	NhlNeedProto
-        int	overlay_base_id,
-	int	anno_view_id
-#endif
-);
-
-extern NhlErrorTypes NhlRemoveAnnotation(
-#if	NhlNeedProto
-        int	overlay_base_id,
-	int	anno_id
-#endif
-);
-
-int NhlGetAnnotationId(
-#if	NhlNeedProto
-        int	overlay_base_id,
-	int	anno_view_id
-#endif
-);
-
 
 #endif /*_NOverlay_h */

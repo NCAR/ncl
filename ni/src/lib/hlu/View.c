@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.15 1995-03-08 23:44:16 haley Exp $
+ *      $Id: View.c,v 1.16 1995-03-21 22:37:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,7 @@
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/Workstation.h>
 #include <ncarg/hlu/ConvertersP.h>
+#include <ncarg/hlu/TransformI.h>
 
 /*ARGSUSED*/
 static NhlErrorTypes
@@ -172,9 +173,19 @@ static NhlResource resources[] = {
 	{ NhlNvpUseSegments, NhlCvpUseSegments, NhlTBoolean, 
 		  sizeof(NhlBoolean),
 		  NhlOffset(NhlViewLayerRec,view.use_segments),
-		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL}
+		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+
+	{ NhlNvpAnnotationId, NhlCvpAnnotationId, NhlTObjId, 
+		  sizeof(int),NhlOffset(NhlViewLayerRec,view.annotation_id),
+		  NhlTImmediate,
+		  _NhlUSET((NhlPointer) NhlNULLOBJID),_NhlRES_GONLY,NULL},
 
 /* End-documented-resources */
+
+	{ NhlNvpOverlayId, NhlCvpOverlayId, NhlTObjId, 
+		  sizeof(int),NhlOffset(NhlViewLayerRec,view.overlay_id),
+		  NhlTImmediate,
+		  _NhlUSET((NhlPointer) NhlNULLOBJID),_NhlRES_NOACCESS,NULL}
 
 };
 
@@ -327,7 +338,6 @@ static NhlErrorTypes	ViewSetValues
 	NhlLayerList	step;
 	NhlSegTransList	steptrans;
 	NhlErrorTypes	ret = NhlNOERROR;
-
 
 	if((newl->view.x != oldl->view.x) ||
 	   (newl->view.y != oldl->view.y) ||
@@ -694,7 +704,13 @@ static NhlErrorTypes	ViewDestroy
 		NhlFree(step);
 		step = tmp;
 	}
-	
+
+	if (layer->view.overlay_id) {
+		_NhlRemoveAnnotation(_NhlGetLayer(layer->view.overlay_id),
+				     _NhlGetLayer(layer->view.annotation_id),
+				     "ViewDestroy");
+	}
+				     
 	return(NhlNOERROR);
 
 }
@@ -1123,6 +1139,51 @@ NhlBoolean	keep_asp;
         _NhlResetSegTransDat(theview->view.thetrans_children,xpoints,ypoints);
 	return;
 
+}
+
+/*
+ * Function:	_NhlSetAnnoView
+ *
+ * Description:	private function used by the Overlay to set the 
+ *		annotation fields without calling SetValues. A SetValues
+ * 		call results in unwanted effects in the layers sub-classed
+ *		from View.
+ *
+ * In Args:	view    	the view layer
+ *		overlay_id 	id of the Overlay 
+ *		anno_id		id of the Annotation object 
+ *
+ * Out Args:    none
+ *
+ * Return Values: NONE
+ *
+ * Side Effects: thebox  changes.
+ */
+NhlErrorTypes	_NhlSetAnnoView
+#if	NhlNeedProto
+(
+	NhlViewLayer 	view,
+	int		overlay_id,
+	int		anno_id
+)
+#else
+(view,overlay_id,anno_id)
+	NhlViewLayer 	view;
+	int		overlay_id;
+	int		anno_id;
+#endif
+{
+	char			*e_text;
+	char			*entry_name = "_NhlSetAnnoView";
+
+	if (view == NULL || ! _NhlIsView((NhlLayer)view)) {
+		e_text = "%s: invalid Annotation object id";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	view->view.overlay_id = overlay_id;
+	view->view.annotation_id = anno_id;
+	return NhlNOERROR;
 }
 
 /*

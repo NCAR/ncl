@@ -1,5 +1,5 @@
 /*
- *      $Id: Annotation.c,v 1.8 1994-12-16 20:03:50 boote Exp $
+ *      $Id: Annotation.c,v 1.9 1995-03-21 22:36:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,6 @@
  */
 
 #include <math.h>
-#include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/AnnotationP.h>
 
@@ -34,11 +33,9 @@ static NhlResource resources[] = {
 
 	{NhlNanOn,NhlCanOn,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(on),NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-	{NhlNanPlotId,NhlCanPlotId,NhlTInteger,sizeof(int),
-		 Oset(plot_id),NhlTImmediate,_NhlUSET((NhlPointer) -1),0,NULL},
-	{NhlNanOverlayBaseId,NhlCanOverlayBaseId,NhlTInteger,sizeof(int),
-		 Oset(overlay_base_id),
-		 NhlTImmediate,_NhlUSET((NhlPointer) -1),0,NULL},
+	{NhlNanViewId,NhlCanViewId,NhlTObjId,sizeof(int),
+		 Oset(view_id),NhlTImmediate,
+		 _NhlUSET((NhlPointer)NhlNULLOBJID),_NhlRES_CGONLY,NULL},
 	{NhlNanResizeNotify,NhlCanResizeNotify,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(resize_notify),NhlTImmediate,
 		 _NhlUSET((NhlPointer)False),0,NULL},
@@ -60,9 +57,13 @@ static NhlResource resources[] = {
 	{NhlNanDataXF,NhlCanDataXF,NhlTFloat,sizeof(NhlFont),
 		 Oset(data_x),NhlTString,_NhlUSET("0.0"),0,NULL },
 	{NhlNanDataYF,NhlCanDataYF,NhlTFloat,sizeof(NhlFont),
-		 Oset(data_y),NhlTString,_NhlUSET("0.0"),0,NULL }
+		 Oset(data_y),NhlTString,_NhlUSET("0.0"),0,NULL },
 
 /* End-documented-resources */
+
+	{NhlNanOverlayId,NhlCanOverlayId,NhlTObjId,sizeof(int),
+		 Oset(overlay_id),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlNULLOBJID),0,NULL}
 
 };
 
@@ -278,8 +279,8 @@ AnnotationDestroy
 	NhlAnnotationLayer 	an = (NhlAnnotationLayer) layer;
 	NhlErrorTypes		ret = NhlNOERROR;
 
-	if (an->annotation.overlay_base_id > -1) {
-		ret = NhlUnregisterAnnotation(an->annotation.overlay_base_id,
+	if (an->annotation.overlay_id > 0) {
+		ret = NhlUnregisterAnnotation(an->annotation.overlay_id,
 					      an->base.id);
 	}
 	return ret;
