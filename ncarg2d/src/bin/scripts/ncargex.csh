@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.69 1994-08-24 17:11:19 kennison Exp $
+#   $Id: ncargex.csh,v 1.70 1994-08-25 16:09:42 haley Exp $
 #
 
 #********************#
@@ -376,7 +376,8 @@ set fnd_gks    = (fgke02 fgke03 fcell fcell0 fgpm01 fgkgpl fgkgpm fgkgtx \
 set fnd_intgks = (fgke01 fgke04)
 set pdc_gks    = (pgkex01 pgkex02 pgkex03 pgkex04 pgkex05 pgkex06 pgkex07 \
                   pgkex08 pgkex09 pgkex10 pgkex11 pgkex12 pgkex13 pgkex14 \
-                  pgkex15 pgkex16 pgkex17 pgkex18 pgkex19 pgkex20 pgkex21)
+                  pgkex15 pgkex16 pgkex17 pgkex18 pgkex19 pgkex20 pgkex21 \
+                  pgkex22 pgkex23 pgkex24 pgkex25 pgkex26)
 set gks_list   = ($fnd_gks $pdc_gks)
 
 #****************************#
@@ -786,10 +787,18 @@ switch($name)
     case pgkex19:
     case pgkex20:
     case pgkex21:
+    case pgkex22:
+    case pgkex23:
         unset ncgmfile
         set graphic_type = "ps"
         set default_file = "gmeta1.ps"
         set message = "PostScript file is named"
+    breaksw
+
+    case pgkex26:
+    case fgke03:
+        unset ncgmfile
+        set graphic_type = "ncgm"
     breaksw
 
     default:
@@ -1163,13 +1172,13 @@ if (! $?NoRunOption) then
 	if ($?ncgmfile) setenv NCARG_GKS_OUTPUT $name.ncgm
     switch( $name )
         case mpexfi:
-            $name < mpexfi.dat
+            ./$name < mpexfi.dat
         breaksw
         case srex01:
-            $name < srex01.dat
+            ./$name < srex01.dat
         breaksw
         case agex13:
-            $name < agda13.dat
+            ./$name < agda13.dat
         breaksw
         case ffex02:
         case ffex03:
@@ -1185,6 +1194,8 @@ if (! $?NoRunOption) then
             ./$name < class1.dat
         breaksw
         case fgke03:
+        case pgkex26:
+            ./$name
             echo ""
             echo "Metafiles META01 and META02 produced."
             echo ""
@@ -1194,11 +1205,11 @@ if (! $?NoRunOption) then
         case tcolcv:
         case fcce02:
             set not_valid_metafile
+            ./$name
             echo ""
             echo "NOTE: This example is for testing purposes only."
             echo "      No metafile will produced."
             echo ""
-            ./$name
         breaksw
         default:
             ./$name
