@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.41 2003-10-31 00:34:04 haley Exp $
+ *      $Id: Template,v 1.42 2004-05-21 13:50:43 haley Exp $
  */
 /************************************************************************
 *									*
@@ -501,10 +501,6 @@ NGCOMM########################################################################
 #define	InstallRm	$(RM)
 #endif	/* InstallRm */
 
-#ifndef	FsplitCommand
-#define	FsplitCommand	fsplit
-#endif	/* FsplitCommand */
-
 #ifndef	BuildMFLAGS
 #define	BuildMFLAGS	NO
 #endif
@@ -761,7 +757,6 @@ YMAKE		= $(CONFIGSRC)/ymake -config $(CONFIGSRC) $(_YMAKE_EXTRA)
 NEWYMAKE	= $(NEWCONFIGSRC)/ymake -config $(NEWCONFIGSRC) $(_YMAKE_EXTRA)
 YMAKEDEP	= $(CONFIGSRC)/ymake-filter
 #endif
-FSPLIT		= FsplitCommand
 SHELL		= /bin/sh
 CALLCONV	= $(CONFIG_DIR)/callconv
 MKDIRHIER	= mkdir -p

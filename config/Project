@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.56 2003-11-26 22:01:41 grubin Exp $
+ *      $Id: Project,v 1.57 2004-05-21 13:50:43 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2003-11-26 22:01:41 $
+ *	$Date: 2004-05-21 13:50:43 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -419,6 +419,8 @@ FONTCSRC	= $(COMMONSRC)/fontcap
 
 GRAPHC		= _UseProg($(GRAPHCSRC),graphc)
 FONTC		= _UseProg($(FONTCSRC),fontc)
+IFTRAN      = $(NCARGLIBSRC)/Iftran/Iftran
+FSPLIT      = $(NCARGLIBSRC)/Iftran/Fsplit
 
 #ifdef	BuildRasterNetcdf
 NETCDFLIB	= $(NCDFLIBS) $(XDRLIB)
@@ -437,5 +439,3 @@ VDEFINE		= -DVERSION='"$(VERSION)"'
 PROJECTDEFINES	= ProjectDefines
 GKS_BUFFER_SIZE	= GksBufferSize
 PERL = /usr/local/bin/perl
-
-

@@ -94,7 +94,6 @@ LintCommand lint            $(LINT)
 InstallCommand  $(TOP)/utils/install -c $(INSTALL)
                     If UseInstalled - default is install -c
 InstallRm   $(RM)           $(INSTALL_RM)
-FsplitCommand   fsplit          $(FSPLIT)
 
 Other Make Symbols set in Template:
 
