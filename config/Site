@@ -1,5 +1,5 @@
 /*
- *      $Id: Site,v 1.5 1994-03-10 00:54:51 boote Exp $
+ *      $Id: Site,v 1.6 1994-04-06 21:40:53 boote Exp $
  *
  ************************************************************************
  *									*
@@ -35,17 +35,18 @@
 
 #ifdef SecondSite
 
+
 /*
- * Set YmakeRoot and others if needed - config.perl should eventually
- * set these things here instead of in each config file.
- * If these are not set the default is /usr/local for NcargRoot and
- * all the others are sub-dirs of that.
- * The NcargVersion variable is defaulted in Project.
+ * If you are using ymake from within the ncarg build tree, then YmakeRoot
+ * will default to /usr/local/ncarg.  If you are using ymake from outside
+ * the build tree, then YmakeRoot will default to the value of NCARG_ROOT
+ * or `ncargpath root`.
+ * If you are using ymake from within the ncarg build tree, then the other
+ * ???Root vars are built from the YmakeRoot var unless they are explicitly
+ * set here - From outside the build tree, they are build using the value
+ * of NCARG_ROOT or `ncargpath bin...` etc.
  */
-
-#define YmakeRoot /usr/local/ncarg
-#define	InstallYmake
-
+/* #define YmakeRoot /usr/local */
 /* #define BinRoot /usr/local/bin */
 /* #define LibRoot /usr/local/lib */
 /* #define IncRoot /usr/local/include */
@@ -56,6 +57,7 @@
  */
 /* #define TmpRoot /tmp */
 
+#define	InstallYmake
 #define LibSearch -L/X/X11/lib -L/usr/local/lib 
 #define IncSearch -I/X/X11/include -I/usr/local/include
 

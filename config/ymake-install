@@ -1,0 +1,107 @@
+#! /bin/csh -f
+#
+#	install: csh script version of the BSD install utility.
+#
+#	usage:	install [-c] [-m mode] [-o owner] [-g group] [-s] src dest
+#		-s indicates stripping of binaries after installation
+#		-c forces copy mode; included for backwards compatibility
+#		"dest" can be a filename or a directory name
+#
+#	Copyright 1988 - University Corportation for Atmospheric Research
+#	Summer 1988 - Don Middleton - Graphics Group
+#
+
+set mover=/bin/cp
+set chmod="/bin/chmod 755"
+#set chown="/etc/chown root"
+#set chgrp="/bin/chgrp wheel"
+#set strip="strip"
+
+while ($#argv > 0)
+
+	switch ($1)
+		case "-c":
+			set mover=/bin/cp
+			breaksw
+
+		case "-m":
+			set chmod="/bin/chmod $2"
+			shift
+			breaksw
+
+		case "-o":
+			set chown="/etc/chown $2"
+			shift
+			breaksw
+
+		case "-g":
+			set chgrp="/bin/chgrp $2"
+			shift
+			breaksw
+
+		case "-s":
+			set strip="strip"
+			shift
+			breaksw
+
+		default:
+			if (! $?src ) then
+				set src=$1
+			else
+				if (! $?dest) then
+					set dest=$1
+				else
+					echo "install: Too many arguments"
+					exit 1
+				endif
+			endif
+	endsw
+	shift
+end
+
+if (! $?src) then
+	echo "$0 : No source file specified"
+	exit 1
+endif
+
+if (! $?dest ) then
+	echo "$0 : No destination specified"
+	exit 1
+endif
+
+# avoid tragedies like installing onto an existing file
+
+if ( -d $src ) then
+	echo "$0 : Source cannot be a directory"
+endif
+
+if ("$src" == "$dest" || "$dest" == ".") then
+	echo "$0 : Cannot move a file onto itself"
+	exit 1
+else
+
+if (-d $dest) then
+	set newfile="$dest/$src"
+else
+	set newfile=$dest
+endif
+
+# finally perform the installation
+
+$mover $src $newfile
+
+if ($?chown) then
+	$chown $newfile
+endif
+
+if ($?chmod) then
+	$chmod $newfile
+endif
+
+if ($?chgrp) then
+	$chgrp $newfile
+endif
+
+if ($?strip) then
+	$strip $newfile
+endif
