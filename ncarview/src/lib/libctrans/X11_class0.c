@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.28 1993-03-31 18:35:29 clyne Exp $
+ *	$Id: X11_class0.c,v 1.29 1993-04-01 23:04:49 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -41,11 +41,13 @@
 #include "ctrandef.h"
 #include "translate.h"
 #include "Xcrm.h"
+#include "xresources.h"
+
 #define BORDER		1
 #define BORDERWIDTH	0
 #define	LOGO	"NCAR Graphics"
 
-#define	FONT	"8x13bold"
+#define	DEF_FONT	"8x13bold"
 
 extern	boolean	deviceIsInit;
 extern	boolean	Batch;
@@ -193,8 +195,8 @@ static	CoordModifier	dev_coord_mod = {0,0,1.0,1.0};
 
 Window	create_window(dpy, geometry, cmap, depth, visual)
 	Display		*dpy;
-	Colormap	cmap;
 	char		*geometry;
+	Colormap	cmap;
 	int		depth;
 	Visual		*visual;
 {
@@ -203,7 +205,13 @@ Window	create_window(dpy, geometry, cmap, depth, visual)
 	Window			win;
 	XSizeHints  		xsh;	/* Size hints for window manager*/
 
-	do_geometry(geometry, &xsh);
+	xsh.flags = 0L;
+	xsh.flags = XWMGeometry(
+		dpy, DefaultScreen(dpy), geometry, NULL, BORDERWIDTH, 
+		&xsh, &(xsh.x), &(xsh.y), &(xsh.base_width), &(xsh.base_height),
+		&(xsh.win_gravity)
+	);
+	xsh.flags &= ~(PMinSize | PMaxSize);
 
 	xswa.background_pixel = bg;		mask |= CWBackPixel;
 	xswa.border_pixel = bd;			mask |= CWBorderPixel;
@@ -213,7 +221,7 @@ Window	create_window(dpy, geometry, cmap, depth, visual)
 
 	win = XCreateWindow(
 		dpy, RootWindow(dpy,DefaultScreen(dpy)),
-		xsh.x, xsh.y, xsh.width, xsh.height,
+		xsh.x, xsh.y, xsh.base_width, xsh.base_height,
 		BORDERWIDTH, depth, InputOutput, visual, mask, &xswa
 	);
 
@@ -237,12 +245,17 @@ CGMC *c;
 	XKeyEvent		*key_event;
 	XTextProperty		textprop;
 	XClassHint 		class_hint;
+	XrmDatabase		xrm;
 	int			len;
 	char			keybuffer[8];
 	char			*dpy_env = "DISPLAY";
 	int			status = 0;
 	char			*prog_name;
+	char			class_name[80];
+	char			*geometry;
+	char			geom_string[80];
 	int			depth;		/* window depth	*/
+	char			*logo_font;
 
 	if (deviceIsInit) {
 		(void) X11_EndMF(c);
@@ -252,7 +265,6 @@ CGMC *c;
 
 	/*
 	 *      parse X11 specific command line args
-	 *      (currently only geometry accepted       )
 	 */
 	if (GetOptions(optionDesc, options) < 0) {
 		ESprintf(
@@ -284,12 +296,6 @@ CGMC *c;
 	if (x11_opts.ignorebg) {
 		ignoreBGChanges = TRUE;
 	}
-
-	/*
-	 *	load the font to use. See section 10.2 & 6.5.1
-	 */
-	if (!Batch && x11_opts.wid == -1)
-		fontstruct = XLoadQueryFont(dpy, FONT);
 
 	/*
 	 * set device viewport specification
@@ -359,12 +365,46 @@ CGMC *c;
 	 * Section 3.3.
 	 */
 	if (x11_opts.wid == -1) {
+
+		prog_name = (
+			(prog_name = strrchr(*Argv,'/')) ? ++prog_name : *Argv
+			);
+		strncpy(class_name, prog_name, sizeof(class_name) -1);
+		class_name[0] = toupper(class_name[0]);
+
 		/*
-		 *      Initialize the Resource manager. See 10.11
+		 *      Initialize the Resource manager. 
 		 */
-		XrmInitialize();
+		xrm = _CtOpenResources(
+			dpy, prog_name, class_name, 0, NULL, 
+			(XrmOptionDescRec *) NULL, 0
+		);
+
+		if (x11_opts.Geometry) {
+			geometry = x11_opts.Geometry;
+		}
+		else {
+			geometry = _CtGetResource(
+				xrm, prog_name, class_name, "geometry", 
+				"Geometry", "512x512"
+			);
+		}
+		strncpy(geom_string, geometry, sizeof(geom_string) -1);
+
+		/*
+		 *	load the font to use. See section 10.2 & 6.5.1
+		 */
+		if (!Batch) {
+			logo_font = _CtGetResource(
+					xrm, prog_name, class_name, "font",
+					"Font", DEF_FONT
+				);
+
+			fontstruct = XLoadQueryFont(dpy, logo_font);
+		}
+
 		drawable = create_window(
-			dpy, x11_opts.Geometry, Cmap, DspDepth, bestVisual
+			dpy, geom_string, Cmap, DspDepth, bestVisual
 		);
 
 		/*
@@ -379,9 +419,6 @@ CGMC *c;
 		 * Set the standard properties for the window managers. 
 		 * See Section  9.1.
 		 */
-		prog_name = (
-			(prog_name = strrchr(*Argv,'/')) ? ++prog_name : *Argv
-			);
 
 		xwmh.icon_pixmap = icon.pmap; xwmh.flags |= IconPixmapHint;
 		textprop.value = (unsigned char *) prog_name;
@@ -389,7 +426,7 @@ CGMC *c;
 		textprop.format = 8;
 		textprop.nitems = strlen(prog_name);
 		class_hint.res_name = (char *)NULL;
-		class_hint.res_class = "Ctrans";
+		class_hint.res_class = class_name;
 
 		XSetWMProperties(
 			dpy, (Window) drawable, &textprop, 
@@ -408,6 +445,8 @@ CGMC *c;
 		if (x11_opts.pcmap) {
 			XSetWindowColormap(dpy, drawable, Cmap);
 		}
+
+		_CtCloseResources(xrm);
 
 
 	}
@@ -817,75 +856,3 @@ CGMC *c;
 	return(0);
 }
 
-
-
-
-/* 
- *	do_geometry
- *	[internal]
- *
- *		parse command line arg for geometry string. Build complete
- *	geometry specification via command line arg, the resouce manager
- *	and system application default file
- *
- * on entry
- *	Geometry	: command line supplied geometry string
- * on exit
- *	xsh		: contains the geometry specification
- */
-do_geometry(Geometry, xsh)
-	char	*Geometry;
-	XSizeHints  *xsh;		/* Size hints for window manager*/
-{
-	char	*name;
-	char	Geostr[20];		/* default geometry string	*/
-	char	*str_type[20];
-	XrmDatabase	applicationDB;	/* pointer to application file	*/
-	XrmValue	value;
-
-	/*
-	 *	create full path name to application default file for 
-	 *	ctrans
-	 */
-	name = (char *) malloc ((unsigned) 
-		(strlen(APP_DEF) + strlen("ctrans") + 1));
-
-	(void) strcpy(name, APP_DEF);
-	(void) strcat(name, "ctrans");
-
-	/*
-	 *	get user default if no geometry specified
-	 */
-	if (!Geometry) {
-		Geometry = XGetDefault(dpy, "ctrans", "geometry");
-	}
-
-	/*
-	 *	get application default file if any
-	 */
-	if ((applicationDB = XrmGetFileDatabase(name)) != NULL) {
-
-		/* get the program default geometry string regardless of
-		 * whether it has been specified on commandl line or in
-		 * resource database, because those specifications may be
-		 * partial. We're going to use XGeometry to fill in the 
-		 * gaps
-		 */
-		if (XrmGetResource(applicationDB, "ctrans.geometry",
-			"Ctrans.Geometry", str_type, &value) == True) {
-
-			(void) strncpy(Geostr, value.addr, (int) value.size);
-		}
-		else
-			Geostr[0] = '\0';
-		
-	}
-	else {	/* no default applications file, bummer => hardwire	*/
-		(void) strcpy(Geostr, "=512x512-0-0");
-	}
-
-	xsh->flags = XGeometry(dpy, DefaultScreen(dpy), Geometry, Geostr, 
-		BORDERWIDTH, 1,1,0,0, 
-		&(xsh->x), &(xsh->y), &(xsh->width), &(xsh->height));
-
-}
