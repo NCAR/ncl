@@ -183,19 +183,19 @@ NhlErrorTypes   write_matrix_W(void)
         case NCL_int:
             /* fall through */
         case NCL_long:
-            NGCALLF(writematrixi, WRITEMATRIXI)(filename, &dimsz[1], &dimsz[0], data,
+            NGCALLF(writematrixi, WRITEMATRIXI)(filename, &dimsz[0], &dimsz[1], data,
                     format, title, &tspace, &rownumbers,
                     strlen(filename), strlen(format), strlen(title));
             break;
 
         case NCL_float:
-            NGCALLF(writematrixf, WRITEMATRIXF)(filename, &dimsz[1], &dimsz[0], data,
+            NGCALLF(writematrixf, WRITEMATRIXF)(filename, &dimsz[0], &dimsz[1], data,
                     format, title, &tspace, &rownumbers,
                     strlen(filename), strlen(format), strlen(title));
             break;
 
         case NCL_double:
-            NGCALLF(writematrixd, WRITEMATRIXD)(filename, &dimsz[1], &dimsz[0], data,
+            NGCALLF(writematrixd, WRITEMATRIXD)(filename, &dimsz[0], &dimsz[1], data,
                     format, title, &tspace, &rownumbers,
                     strlen(filename), strlen(format), strlen(title));
             break;

@@ -7,7 +7,7 @@ C NCL procedure: writematrixi(fname, x, fmtx, title, titsp, iopt)
 
       character*(*) title, fname, fmtx
       integer       ncol,nrow,iopt,titsp
-      integer       x(nrow,ncol)
+      integer       x(ncol,nrow)
 
 C NCLEND
 
@@ -34,12 +34,12 @@ c write to a file
           if (iopt.eq.0) then
               newfmt = "(" // fmtx // ")"
               do nr=1,nrow
-                 write (31,newfmt) (x(nr,nc),nc=1,ncol)
+                 write (31,newfmt) (x(nc,nr),nc=1,ncol)
               end do
           else
               newfmt = "(i5," // "1X," // fmtx // ")"
               do nr=1,nrow
-                 write (31,newfmt) nr-1, (x(nr,nc),nc=1,ncol)
+                 write (31,newfmt) nr-1, (x(nc,nr),nc=1,ncol)
               end do
           end if
           close (31)
@@ -53,12 +53,12 @@ c write to standard out
           if (iopt.eq.0) then
               newfmt = "(" // fmtx // ")"
               do nr=1,nrow
-                 write (*,newfmt) (x(nr,nc),nc=1,ncol)
+                 write (*,newfmt) (x(nc,nr),nc=1,ncol)
               end do
           else
               newfmt = "(i5," // "1X," // fmtx // ")"
               do nr=1,nrow
-                 write (*,newfmt) nr-1, (x(nr,nc),nc=1,ncol)
+                 write (*,newfmt) nr-1, (x(nc,nr),nc=1,ncol)
               end do
           end if
           print *," "
@@ -80,7 +80,7 @@ C NCL procedure: writematrixf(fname, x, fmtx, title, titsp, iopt)
       character*2 titspc
 
       integer       ncol,nrow,iopt
-      real          x(nrow,ncol)
+      real          x(ncol,nrow)
 
 C NCLEND
 
@@ -106,12 +106,12 @@ c write to a file
           if (iopt.eq.0) then
               newfmt = "(" // fmtx // ")" 
               do nr=1,nrow
-                 write (31,newfmt) (x(nr,nc),nc=1,ncol)
+                 write (31,newfmt) (x(nc,nr),nc=1,ncol)
               end do
           else
               newfmt = "(i5," // "1X," // fmtx // ")" 
               do nr=1,nrow
-                 write (31,newfmt) nr-1, (x(nr,nc),nc=1,ncol)
+                 write (31,newfmt) nr-1, (x(nc,nr),nc=1,ncol)
               end do
           end if
           close (31) 
@@ -125,12 +125,12 @@ c write to standard out
           if (iopt.eq.0) then
               newfmt = "(" // fmtx // ")" 
               do nr=1,nrow
-                 write (*,newfmt) (x(nr,nc),nc=1,ncol)
+                 write (*,newfmt) (x(nc,nr),nc=1,ncol)
               end do
           else
               newfmt = "(i5," // "1X," // fmtx // ")" 
               do nr=1,nrow
-                 write (*,newfmt) nr-1, (x(nr,nc),nc=1,ncol)
+                 write (*,newfmt) nr-1, (x(nc,nr),nc=1,ncol)
               end do
           end if
           print *," "
@@ -150,7 +150,7 @@ C NCL procedure: writematrixd(fname, x, fmtx, title, titsp, iopt)
 
       character*(*) title, fname, fmtx
       integer       ncol,nrow,iopt,titsp
-      double precision       x(nrow,ncol)
+      double precision       x(ncol,nrow)
 
 C NCLEND
       integer       nr, nc
@@ -177,12 +177,12 @@ c write to a file
           if (iopt.eq.0) then
               newfmt = "(" // fmtx // ")"
               do nr=1,nrow
-                 write (31,newfmt) (x(nr,nc),nc=1,ncol)
+                 write (31,newfmt) (x(nc,nr),nc=1,ncol)
               end do
           else
               newfmt = "(i5," // "1X," // fmtx // ")"
               do nr=1,nrow
-                 write (31,newfmt) nr-1, (x(nr,nc),nc=1,ncol)
+                 write (31,newfmt) nr-1, (x(nc,nr),nc=1,ncol)
               end do
           end if
           close (31)
@@ -196,12 +196,12 @@ c write to standard out
           if (iopt.eq.0) then
               newfmt = "(" // fmtx // ")"
               do nr=1,nrow
-                 write (*,newfmt) (x(nr,nc),nc=1,ncol)
+                 write (*,newfmt) (x(nc,nr),nc=1,ncol)
               end do
           else
               newfmt = "(i5," // "1X," // fmtx // ")"
               do nr=1,nrow
-                 write (*,newfmt) nr-1, (x(nr,nc),nc=1,ncol)
+                 write (*,newfmt) nr-1, (x(nc,nr),nc=1,ncol)
               end do
           end if
           print *," "
