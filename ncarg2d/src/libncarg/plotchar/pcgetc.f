@@ -1,5 +1,5 @@
 C
-C $Id: pcgetc.f,v 1.6 1993-01-12 02:41:02 kennison Exp $
+C $Id: pcgetc.f,v 1.7 1993-04-30 22:27:59 kennison Exp $
 C
       SUBROUTINE PCGETC (WHCH,CVAL)
 C
@@ -35,7 +35,7 @@ C of the character in the local collating sequence; provide for the
 C case that the parameter had not been initialized yet.
 C
       IF (WHCH(1:2).EQ.'FC'.OR.WHCH(1:2).EQ.'fc') THEN
-        IF (NFCC.EQ.0) NFCC=ICHAR(':')
+        IF (NFCC.LT.0) NFCC=ICHAR(':')
         CVAL=CHAR(NFCC)
       ELSE IF (WHCH(1:2).EQ.'FN'.OR.WHCH(1:2).EQ.'fn') THEN
         DO 101 I=1,LFNL

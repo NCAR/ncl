@@ -1,5 +1,5 @@
 C
-C $Id: pcblda.f,v 1.4 1993-01-12 02:40:49 kennison Exp $
+C $Id: pcblda.f,v 1.5 1993-04-30 22:27:57 kennison Exp $
 C
       BLOCK DATA PCBLDA
 C
@@ -260,9 +260,9 @@ C
       DATA LSCI / 16*-1 /
 C
 C NFCC is the position of the function code character in the collating
-C sequence - the default, an apostrophe, is set during initialization.
+C sequence - the default, a colon, is set during initialization.
 C
-      DATA NFCC / 0 /
+      DATA NFCC / -1 /
 C
 C NODF, if non-zero, selects one of the fonts defined by fontcaps,
 C characters from which are used in place of the "built-in" high

@@ -1,5 +1,5 @@
 C
-C $Id: plchhq.f,v 1.9 1993-03-30 21:55:38 kennison Exp $
+C $Id: plchhq.f,v 1.10 1993-04-30 22:28:02 kennison Exp $
 C
       SUBROUTINE PLCHHQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
@@ -200,7 +200,7 @@ C
 C If it hasn't already been done, initialize the numeric equivalent of
 C the function code character.
 C
-        IF (NFCC.EQ.0) NFCC=ICHAR(':')
+        IF (NFCC.LT.0) NFCC=ICHAR(':')
 C
 C Initialize the table IDPC.  For a given character "c", IDPC(ICHAR(c))
 C is the integer value of the equivalent of "c" in an augmented DPC
