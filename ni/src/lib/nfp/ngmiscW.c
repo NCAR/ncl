@@ -128,5 +128,5 @@ NhlErrorTypes nggcog_W(void)
  *  Make the call to c_nggcog.
  */
     c_nggcog(*clat, *clon, *crad, alat, alon, num_points);
-
+    return(NhlNOERROR);
 }

@@ -701,4 +701,6 @@ OK_NAME:
       return(NclReturnValue( (void *) ival, 1, &ret_size, NULL, NCL_int, 0));
     }
   }
+  NhlPError(NhlFATAL, NhlEUNKNOWN, "shgetp: impossible to get this message");
+  return(NhlFATAL);
 }

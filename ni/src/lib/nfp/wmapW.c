@@ -119,8 +119,8 @@ OK_NAME: pvalue = (void *) NclGetArgValue(
         return(NhlNOERROR);
       }
     }
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "The specified value for the parameter "
-              "has an invalid type");
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "wmsetp: The specified value for the "
+              "parameter has an invalid type");
     return(NhlFATAL);
   }
   else if (type_pvalue == NCL_float || type_pvalue == NCL_double) {
@@ -140,8 +140,8 @@ OK_NAME: pvalue = (void *) NclGetArgValue(
         }
       }
     }
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "The specified value for the parameter "
-              "has an invalid type");
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "wmsetp: The specified value for the "
+             "parameter has an invalid type");
     return(NhlFATAL);
   }
   else if (type_pvalue == NCL_string) {
@@ -156,8 +156,13 @@ OK_NAME: pvalue = (void *) NclGetArgValue(
         return(NhlNOERROR);
       }
     }
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "The specified value for the parameter "
-              "has an invalid type");
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "wmsetp: The specified value for the "
+              "parameter has an invalid type");
+    return(NhlFATAL);
+  }
+  else {
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "wmsetp: The specified value for the "
+              "parameter has an incorrect type");
     return(NhlFATAL);
   }
 }
@@ -278,6 +283,8 @@ OK_NAME:  for (i = 0; i < numpi; i++) {
       return(NclReturnValue((void *) qvalue, 1, &ret_size, NULL,NCL_string, 1));
     }
   }
+  NhlPError(NhlFATAL, NhlEUNKNOWN, "wmgetp: impossible to get this message");
+  return(NhlFATAL);
 }
 
 NhlErrorTypes wmbarb_W( void )

@@ -142,8 +142,8 @@ OK_NAME:  pvalue = (void *) NclGetArgValue(
         return(NhlNOERROR);
       }
     }
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "The specified value for the parameter "
-              "has an incorrect type");
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "ftsetp: The specified value for the "
+              "parameter has an incorrect type");
     return(NhlFATAL);
   }
   else if (type_pvalue == NCL_float || type_pvalue == NCL_double) {
@@ -163,8 +163,8 @@ OK_NAME:  pvalue = (void *) NclGetArgValue(
         }
       }
     }
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "The specified value for the parameter "
-              "has an incorrect type");
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "ftsetp: The specified value for the "
+              "parameter has an incorrect type");
     return(NhlFATAL);
   }
   else if (type_pvalue == NCL_string) {
@@ -179,8 +179,13 @@ OK_NAME:  pvalue = (void *) NclGetArgValue(
         return(NhlNOERROR);
       }
     }
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "The specified value for the parameter "
-              "has an incorrect type");
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "ftsetp: The specified value for the "
+              "parameter has an incorrect type");
+    return(NhlFATAL);
+  }
+  else {
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "ftsetp: The specified value for the "
+              "parameter has an incorrect type");
     return(NhlFATAL);
   }
 }
@@ -259,7 +264,7 @@ NhlErrorTypes ftgetp_W(void)
       goto OK_NAME;
     } 
   }
-  NhlPError(NhlFATAL, NhlEUNKNOWN, "ftsetp: unrecognized parameter name");
+  NhlPError(NhlFATAL, NhlEUNKNOWN, "ftgetp: unrecognized parameter name");
   return(NhlFATAL);
 
 /*
@@ -301,6 +306,8 @@ OK_NAME:  for (i = 0; i < numpi; i++) {
       return(NclReturnValue((void *) qvalue, 1, &ret_size, NULL,NCL_string, 1));
     }
   }
+  NhlPError(NhlFATAL, NhlEUNKNOWN, "ftgetp: impossible to get this message");
+  return(NhlFATAL);
 }
 
 NhlErrorTypes ftcurv_W(void)

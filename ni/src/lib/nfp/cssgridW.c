@@ -302,7 +302,9 @@ NhlErrorTypes csvoro_W(void)
       NhlPError(NhlFATAL, NhlEUNKNOWN, csmsg);
       return(NhlFATAL);
     }
-
+    else {
+      return(NhlNOERROR);
+    }
 }
  
 NhlErrorTypes csscoord_W(void)
@@ -453,7 +455,7 @@ NhlErrorTypes csscoord_W(void)
   for (i = 0; i < num_points; i++) {
     c_csscoord(x[i], y[i], z[i], latitudes+i, longitudes+i, &pnm);
   }
-
+  return(NhlNOERROR);
 }
 
 NhlErrorTypes cstrans_W(void)
@@ -592,6 +594,7 @@ NhlErrorTypes cstrans_W(void)
  *  Make the call to c_cstrans.
  */
   c_cstrans(num_points, latitudes, longitudes, x, y, z);
+  return(NhlNOERROR);
 
 }
 
