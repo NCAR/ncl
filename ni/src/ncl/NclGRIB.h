@@ -134,7 +134,7 @@ struct _GribRecordInqRec {
 	int level_indicator;
 	int level0;
 	int level1;
-	char pds[28];
+	unsigned char pds[28];
 	int pds_size;
 	char *var_name;
 	NclQuark long_name_q;
@@ -144,7 +144,7 @@ struct _GribRecordInqRec {
 	unsigned int bds_size;
 	int int_or_float;
 	int has_gds;
-	char *gds;
+	unsigned char *gds;
 	unsigned int gds_off;
 	unsigned int gds_size;
 	int gds_type;
@@ -230,14 +230,14 @@ typedef struct gridinfo {
 extern int CnvtToDecimal(
 #if     NhlNeedProto
 int /*n_bytes*/,
-char * /*val*/
+unsigned char * /*val*/
 #endif
 );
 
 extern unsigned int UnsignedCnvtToDecimal(
 #if     NhlNeedProto
 int /*n_bytes*/,
-char * /*val*/
+unsigned char * /*val*/
 #endif
 );
 

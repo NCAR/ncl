@@ -1969,11 +1969,11 @@ GribParamList* step;
 
 unsigned int UnsignedCnvtToDecimal
 #if	NhlNeedProto
-(int n_bytes,char *val)
+(int n_bytes,unsigned char *val)
 #else
 (n_bytes,val)
 int n_bytes;
-char *val;
+unsigned char *val;
 #endif
 {
 	CVT tmp;
@@ -1983,7 +1983,7 @@ char *val;
 	tmp.c[1] = (char)0;
 	tmp.c[2] = (char)0;
 	tmp.c[3] = (char)0;
-
+#ifndef ByteSwapped
 	if(n_bytes == 4) {
 		tmp.c[0] = val[i];
 		i++;
@@ -2000,15 +2000,33 @@ char *val;
 		tmp.c[3] = val[i];
 		i++;
 	}
+#else
+	if(n_bytes == 4) {
+                tmp.c[3] = val[i];
+                i++;
+        }
+        if(n_bytes >= 3) {
+                tmp.c[2] = val[i];
+                i++;
+        }
+        if(n_bytes >= 2) {
+                tmp.c[1] = val[i];
+                i++;
+        }
+        if(n_bytes >= 1) {
+                tmp.c[0] = val[i];
+                i++;
+        }
+#endif
 	return(tmp.value);
 }
 int CnvtToDecimal
 #if	NhlNeedProto
-(int n_bytes,char *val)
+(int n_bytes,unsigned char *val)
 #else
 (n_bytes,val)
 int n_bytes;
-char *val;
+unsigned char *val;
 #endif
 {
 	CVT tmp;
@@ -2019,6 +2037,7 @@ char *val;
 	tmp.c[2] = (char)0;
 	tmp.c[3] = (char)0;
 
+#ifndef ByteSwapped
 	if(n_bytes == 4) {
 		tmp.c[0] = val[i];
 		i++;
@@ -2035,6 +2054,24 @@ char *val;
 		tmp.c[3] = val[i];
 		i++;
 	}
+#else
+	if(n_bytes == 4) {
+		tmp.c[3] = val[i];
+		i++;
+	}
+	if(n_bytes >= 3) {
+		tmp.c[2] = val[i];
+		i++;
+	}
+	if(n_bytes >= 2) {
+		tmp.c[1] = val[i];
+		i++;
+	}
+	if(n_bytes >= 1) {
+		tmp.c[0] = val[i];
+		i++;
+	}
+#endif
 	return(tmp.ivalue);
 }
 
@@ -2052,10 +2089,10 @@ unsigned int *nextoff;
 {
         int i,ret1,ret2,ret3,ret4;
         char test[5];
-        char nd[4];
-        char is[4];
-        CVT version;
-        CVT size;
+        unsigned char nd[4];
+        unsigned char is[4];
+        unsigned int version;
+        unsigned int size;
 
 
         ret1 = 0;
@@ -2078,15 +2115,11 @@ unsigned int *nextoff;
                                 test[1] = is[1];
                                 test[2] = is[2];
                                 test[3] = is[3];
-                                version.value &= 0;
-                                version.c[3] = is[7];
-                                if((!strcmp(test,"GRIB"))&&(version.value ==1)){
+				version = UnsignedCnvtToDecimal(1,&(is[7]));
+                                if((!strcmp(test,"GRIB"))&&(version ==1)){
                                         *offset =  i - (ret1 + ret2);
-                                        size.c[0] = (char)0;
-                                        size.c[1] = (char)is[4];
-                                        size.c[2] = (char)is[5];
-                                        size.c[3] = (char)is[6];
-                                        ret3 = lseek(gribfile,i+size.value - (ret1 + ret2) - 4,SEEK_SET);
+					size = UnsignedCnvtToDecimal(3,&(is[4]));
+                                        ret3 = lseek(gribfile,i+size - (ret1 + ret2) - 4,SEEK_SET);
                                         ret4 = read(gribfile,(void*)nd,4);
                                         test[0] = nd[0];
                                         test[1] = nd[1];
@@ -2094,11 +2127,11 @@ unsigned int *nextoff;
                                         test[3] = nd[3];
                                         if(!strcmp("7777",test)) {
                                                 *nextoff = ret3 + ret4;
-                                                *totalsize = size.value;
+                                                *totalsize = size;
                                                 return(GRIBOK);
                                         } else {
                                                 *nextoff = i;
-                                                *totalsize = size.value;
+                                                *totalsize = size;
                                                 return(GRIBERROR);
                                         }
                                 }
@@ -2111,27 +2144,22 @@ unsigned int *nextoff;
 
 static int _GetLevels
 #if NhlNeedProto
-(int *l0,int *l1,int indicator,char* lv)
+(int *l0,int *l1,int indicator,unsigned char* lv)
 #else
 (l0,l1,indicator,lv)
 int *l0;
 int *l1;
 int indicator;
-char *lv;
+unsigned char *lv;
 #endif
 {
-	CVT tmp;
-	tmp.c[0] = (char)0;
-	tmp.c[1] = (char)0;
 	if(indicator  < 100) {
 		*l0 = -1;
 		*l1 = -1;
 	}
 	switch(indicator) {
 	case 100:
-		tmp.c[2] = lv[0];
-		tmp.c[3] = lv[1];
-		*l0 = tmp.ivalue;
+		*l0 = CnvtToDecimal(2,lv);
 		*l1 = -1;
 		return(1);
 	case 101:
@@ -2143,9 +2171,7 @@ char *lv;
 		*l1 = -1;
 		return(1);
 	case 103:
-		tmp.c[2] = lv[0];
-		tmp.c[3] = lv[1];
-		*l0 = tmp.ivalue;
+		*l0 = CnvtToDecimal(2,lv);
 		*l1 = -1;
 		break;
 	case 104:
@@ -2153,9 +2179,7 @@ char *lv;
 		*l1 = (int)lv[1];
 		break;
 	case 105:
-		tmp.c[2] = lv[0];
-		tmp.c[3] = lv[1];
-		*l0 = tmp.ivalue;
+		*l0 = CnvtToDecimal(2,lv);
 		*l1 = -1;
 		break;
 	case 106:
@@ -2163,9 +2187,8 @@ char *lv;
 		*l1 = (int)lv[1];
 		break;
 	case 107:
-		tmp.c[2] = lv[0];
-		tmp.c[3] = lv[1];
-		*l0 = tmp.ivalue;
+		*l0 = CnvtToDecimal(2,lv);
+		*l1 = -1;
 		*l1 = -1;
 		break;
 	case 108:
@@ -2173,9 +2196,7 @@ char *lv;
 		*l1 = (int)lv[1];
 		break;
 	case 109:
-		tmp.c[2] = lv[0];
-		tmp.c[3] = lv[1];
-		*l0 = tmp.ivalue;
+		*l0 = CnvtToDecimal(2,lv);
 		*l1 = -1;
 		break;
 	case 110:
@@ -2183,9 +2204,7 @@ char *lv;
 		*l1 = (int)lv[1];
 		break;
 	case 111:
-		tmp.c[2] = lv[0];
-		tmp.c[3] = lv[1];
-		*l0 = tmp.ivalue;
+		*l0 = CnvtToDecimal(2,lv);
 		*l1 = -1;
 		break;
 	case 112:
@@ -2193,9 +2212,7 @@ char *lv;
 		*l1 = (int)lv[1];
 		break;
 	case 113:
-		tmp.c[2] = lv[0];
-		tmp.c[3] = lv[1];
-		*l0 = tmp.ivalue;
+		*l0 = CnvtToDecimal(2,lv);
 		*l1 = -1;
 		break;
 	case 114:
@@ -2203,9 +2220,7 @@ char *lv;
 		*l1 = (int)lv[1];
 		break;
 	case 115:
-		tmp.c[2] = lv[0];
-		tmp.c[3] = lv[1];
-		*l0 = tmp.ivalue;
+		*l0 = CnvtToDecimal(2,lv);
 		*l1 = -1;
 		break;
 	case 116:
@@ -2213,15 +2228,11 @@ char *lv;
 		*l1 = (int)lv[1];
 		break;
 	case 117:
-		tmp.c[2] = lv[0];
-		tmp.c[3] = lv[1];
-		*l0 = tmp.ivalue;
+		*l0 = CnvtToDecimal(2,lv);
 		*l1 = -1;
 		break;
 	case 119:
-		tmp.c[2] = lv[0];
-		tmp.c[3] = lv[1];
-		*l0 = tmp.ivalue;
+		*l0 = CnvtToDecimal(2,lv);
 		*l1 = -1;
 		break;
 	case 120:
@@ -2233,9 +2244,7 @@ char *lv;
 		*l1 = (int)lv[1];
 		break;
 	case 125:
-		tmp.c[2] = lv[0];
-		tmp.c[3] = lv[1];
-		*l0 = tmp.ivalue;
+		*l0 = CnvtToDecimal(2,lv);
 		*l1 = -1;
 		break;
 	case 128:
@@ -2247,21 +2256,15 @@ char *lv;
 		*l1 = (int)lv[1];
 		break;
 	case 160:
-		tmp.c[2] = lv[0];
-		tmp.c[3] = lv[1];
-		*l0 = tmp.ivalue;
+		*l0 = CnvtToDecimal(2,lv);
 		*l1 = -1;
 		break;
 	case 200:
-		tmp.c[2] = lv[0];
-		tmp.c[3] = lv[1];
-		*l0 = tmp.ivalue;
+		*l0 = CnvtToDecimal(2,lv);
 		*l1 = -1;
 		break;
 	case 201:
-		tmp.c[2] = lv[0];
-		tmp.c[3] = lv[1];
-		*l0 = tmp.ivalue;
+		*l0 = CnvtToDecimal(2,lv);
 		*l1 = -1;
 		break;
 	case 1:
@@ -2278,14 +2281,13 @@ char *lv;
 
 static int _GetTimeOffset 
 #if	NhlNeedProto
-( int time_indicator, char *offset)
+( int time_indicator, unsigned char *offset)
 #else
 ( time_indicator, offset)
 int time_indicator;
-char *offset;
+unsigned char *offset;
 #endif
 {
-	CVT tmp;
 	switch(time_indicator) {
 		case 0: /* reference time + P1 */
 		case 1: /* reference time + P1 */
@@ -2297,11 +2299,7 @@ char *offset;
 			return((int)offset[1]);
 			break;
 		case 10:/* P1 occupies both bytes */
-			tmp.c[0] = 0;
-			tmp.c[1] = 0;
-			tmp.c[2] = offset[0];
-			tmp.c[3] = offset[1];
-			return(tmp.value);
+			return(UnsignedCnvtToDecimal(2,offset));
 			break;
 		case 51:
 		case 113:
@@ -2541,12 +2539,11 @@ int wr_status;
 	GribRecordInqRec *grib_rec = NULL;
 	GribRecordInqRecList *grib_rec_list = NULL;
 	GribParamList *step = NULL,*step2 = NULL, *tmpstep = NULL ;
-	CVT tmp;
 	int i,j,k,l;
 	int ret;
 	int toff;
-	char tmpc[4];
-	char buffer[80];
+	unsigned char tmpc[4];
+	unsigned char buffer[80];
 	GribRecordInqRecList **sortar,**ptr,**start_ptr;
 	TBLE2 *name_rec = NULL;
 	int tmp_month;
@@ -2581,6 +2578,7 @@ int wr_status;
 				grib_rec->has_bms = (grib_rec->pds[7] & (char)0100) ? 1 : 0;
 				grib_rec->param_number = (int)grib_rec->pds[8];
 				grib_rec->grid_number = (int)grib_rec->pds[6];
+			
 /*
 				if((grib_rec->has_gds) && (grib_rec->grid_number != 255)) {
 					fprintf(stdout,"Found one: %d\n",grib_rec->grid_number);
@@ -2613,7 +2611,7 @@ int wr_status;
 /*
 					fprintf(stdout,"%d\n",grib_rec->gds_type);
 */
-					grib_rec->gds = (char*)NclMalloc((unsigned)sizeof(char)*grib_rec->gds_size);
+					grib_rec->gds = (unsigned char*)NclMalloc((unsigned)sizeof(char)*grib_rec->gds_size);
 					lseek(fd,(unsigned)(grib_rec->start + 8 + grib_rec->pds_size),SEEK_SET);
 					read(fd,(void*)grib_rec->gds,grib_rec->gds_size);
 				} else {
@@ -2716,11 +2714,11 @@ int wr_status;
 
 				if((name_rec != NULL)&&(grib_rec != NULL)){
 					grib_rec->param_tbl_index = i;
-					strcpy(buffer,name_rec->abrev);
+					strcpy((char*)buffer,name_rec->abrev);
 					if((grib_rec->has_gds)&&(grib_rec->grid_number == 255)) {
-						sprintf(&(buffer[strlen(buffer)]),"_GDS%d",grib_rec->gds_type);
+						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_GDS%d",grib_rec->gds_type);
 					} else {
-						sprintf(&(buffer[strlen(buffer)]),"_%d",grib_rec->grid_number);
+						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_%d",grib_rec->grid_number);
 					}
 					for(i = 0; i < sizeof(level_index)/sizeof(int); i++) {
 						if(level_index[i] == (int)grib_rec->pds[9]) { 
@@ -2728,10 +2726,10 @@ int wr_status;
 						}
 					}
 					if(i < sizeof(level_index)/sizeof(int)) {
-						sprintf(&(buffer[strlen(buffer)]),"_%s",level_str[i]);
+						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_%s",level_str[i]);
 					} else {
 						if(((int)grib_rec->pds[9]) != 0) {
-							sprintf(&(buffer[strlen(buffer)]),"_%d",(int)grib_rec->pds[9]);
+							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_%d",(int)grib_rec->pds[9]);
 						}
 					}
 					switch((int)grib_rec->pds[20]) {
@@ -2740,20 +2738,20 @@ int wr_status;
 					case 2:
 						break;	
 					case 3:
-						sprintf(&(buffer[strlen(buffer)]),"_ave");
+						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_ave");
 						break;
 					case 4:
-						sprintf(&(buffer[strlen(buffer)]),"_acc");
+						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_acc");
 						break;
 					case 5:
-						sprintf(&(buffer[strlen(buffer)]),"_dif");
+						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_dif");
 						break;
 					default:
-						sprintf(&(buffer[strlen(buffer)]),"_%d",(int)grib_rec->pds[20]);
+						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_%d",(int)grib_rec->pds[20]);
 						break;
 					}
-					grib_rec->var_name = (char*)NclMalloc((unsigned)strlen(buffer) + 1);
-					strcpy(grib_rec->var_name,buffer);
+					grib_rec->var_name = (char*)NclMalloc((unsigned)strlen((char*)buffer) + 1);
+					strcpy(grib_rec->var_name,(char*)buffer);
 					grib_rec->var_name_q = NrmStringToQuark(grib_rec->var_name);
 					if(grib_rec->var_name_q == NrmStringToQuark("ABS_V_GDS0")) {
 						fprintf(stdout,"here\n");
@@ -2901,7 +2899,7 @@ int wr_status;
 					sortar[i] = grib_rec_list;	
 					grib_rec_list->rec_inq->time_offset = _GetTimeOffset(
 								(int)grib_rec_list->rec_inq->pds[20],
-								(char*)&(grib_rec_list->rec_inq->pds[18]));
+								&(grib_rec_list->rec_inq->pds[18]));
 					grib_rec_list = grib_rec_list->next;
 					i++;
 				}

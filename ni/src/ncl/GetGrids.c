@@ -286,15 +286,15 @@ float radtodeg = 5.729578e+01;
 
 static int is_gpoint
 #if NhlNeedProto
-( char *bms, int index)
+( unsigned char *bms, int index)
 #else
-(char *bms, int index)
+(unsigned char *bms, int index)
 #endif
 {
 	int i = 0;
 	int off = 0;
-	char test;
-	char test1;
+	unsigned char test;
+	unsigned char test1;
 
 	if(bms == NULL) {
 		return(1);
@@ -2471,14 +2471,14 @@ GribParamList* thevarrec;
 	int second_order = 0;
 	int additional_flags = 0;
 	int sign;
-	char tmp[4];
+	unsigned char tmp[4];
 	int number_of_bits;
 	int binary_scale_factor;
 	int decimal_scale_factor;
 	int unused_bits;
 	float reference_value;
 	float tmpb,tmpa;
-	char *bds;
+	unsigned char *bds;
 	int total = 0;
 	void *data = NULL;
 	int isize = sizeof(int)*8;
@@ -2488,12 +2488,12 @@ GribParamList* thevarrec;
 	int dnum = 0;
 	int total_gpoints = 0;
 	int grid_size = 0;
-	char *bms = NULL;
+	unsigned char *bms = NULL;
 	int numeric = 0;
 	
 
 
-	bds = (char*)NclMalloc((unsigned)therec->bds_size + 4); /* 4 added so that array bounds will never be ovewitten*/
+	bds = (unsigned char*)NclMalloc((unsigned)therec->bds_size + 4); /* 4 added so that array bounds will never be ovewitten*/
 	lseek(fd,therec->start + therec->bds_off,SEEK_SET);
 	read(fd,(void*)bds,therec->bds_size);
 	bds[therec->bds_size] = (char)0;
@@ -2502,7 +2502,7 @@ GribParamList* thevarrec;
 	bds[therec->bds_size + 3] = (char)0;
 
         if(therec->has_bms) {
-                bms = (char*)NclMalloc((unsigned)therec->bms_size);
+                bms = (unsigned char*)NclMalloc((unsigned)therec->bms_size);
                 lseek(fd,therec->start + therec->bms_off,SEEK_SET);
                 read(fd,(void*)bms,therec->bms_size);
                 numeric = CnvtToDecimal(2,&(bms[4]));
@@ -2527,9 +2527,9 @@ GribParamList* thevarrec;
 		decimal_scale_factor = -decimal_scale_factor;
 
 	number_of_bits = (int)bds[10];
-	tmp[0] = (char)(bds[3] & (char)0017);
+	tmp[0] = (unsigned char)(bds[3] & (char)0017);
 	unused_bits = CnvtToDecimal(1,tmp);
-	tmp[0] = (char)(bds[4] & (char)0177);
+	tmp[0] = (unsigned char)(bds[4] & (char)0177);
 	tmp[1] = bds[5];
 	binary_scale_factor = CnvtToDecimal(2,tmp);
 	if(bds[4] & (char)0200) {
@@ -2570,26 +2570,8 @@ GribParamList* thevarrec;
 			while((index < grid_size)&&(dnum < total)) {
 				if(is_gpoint(bms,index)) {
 					X = UnsignedCnvtToDecimal(4,&(bds[i]));
-/*
-				fprintf(stdout,"o:");
-				printbinary(X);
-*/
 					X = X << bboff;
-/*
-				fprintf(stdout,"l:");
-				printbinary(X);
-*/
 					X = X >> (isize - number_of_bits);
-/*
-				fprintf(stdout,"r:");
-				printbinary(X);
-				fprintf(stdout,"(%d,%d,%d):\t%d\n",tbits,i,bboff,X);
-					if((index >565)&&(index < 580)) {
-						fprintf(stdout,"%g\n",(float)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor)));
-
-					}
-*/
-
 					if(integer) {
 						((int*)data)[index] = (int)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
 						index++;
@@ -2672,14 +2654,14 @@ GribParamList* thevarrec;
 	int second_order = 0;
 	int additional_flags = 0;
 	int sign;
-	char tmp[4];
+	unsigned char tmp[4];
 	int number_of_bits;
 	int binary_scale_factor;
 	int decimal_scale_factor;
 	int unused_bits;
 	float reference_value;
 	float tmpb,tmpa;
-	char *bds;
+	unsigned char *bds;
 	int total = 0;
 	void *data = NULL;
 	int isize = sizeof(int)*8;
@@ -2690,7 +2672,7 @@ GribParamList* thevarrec;
 	
 
 
-	bds = (char*)NclMalloc((unsigned)therec->bds_size + 4);
+	bds = (unsigned char*)NclMalloc((unsigned)therec->bds_size + 4);
 	lseek(fd,therec->start + therec->bds_off,SEEK_SET);
 	read(fd,(void*)bds,therec->bds_size);
 	bds[therec->bds_size] = (char)0;
@@ -2711,9 +2693,9 @@ GribParamList* thevarrec;
 		decimal_scale_factor = -decimal_scale_factor;
 
 	number_of_bits = (int)bds[10];
-	tmp[0] = (char)(bds[3] & (char)0017);
+	tmp[0] = (unsigned char)(bds[3] & (char)0017);
 	unused_bits = CnvtToDecimal(1,tmp);
-	tmp[0] = (char)(bds[4] & (char)0177);
+	tmp[0] = (unsigned char)(bds[4] & (char)0177);
 	tmp[1] = bds[5];
 	binary_scale_factor = CnvtToDecimal(2,tmp);
 	if(bds[4] & (char)0200) {
@@ -2879,14 +2861,14 @@ GribParamList* thevarrec;
 	int second_order = 0;
 	int additional_flags = 0;
 	int sign;
-	char tmp[4];
+	unsigned char tmp[4];
 	int number_of_bits;
 	int binary_scale_factor;
 	int decimal_scale_factor;
 	int unused_bits;
 	float reference_value;
 	float tmpb,tmpa;
-	char *bds;
+	unsigned char *bds;
 	int total = 0;
 	int grid_size = 0;
 	void *data = NULL;
@@ -2896,7 +2878,7 @@ GribParamList* thevarrec;
 	int bboff;
 	int npole =0;
 	int polefirst = 0;
-	char *bms = NULL;
+	unsigned char *bms = NULL;
 	int numeric;
 	int gpoint = 0;
 	int dnum= 0;
@@ -2905,7 +2887,7 @@ GribParamList* thevarrec;
 	
 
 
-	bds = (char*)NclMalloc((unsigned)therec->bds_size + 4);
+	bds = (unsigned char*)NclMalloc((unsigned)therec->bds_size + 4);
 	lseek(fd,therec->start + therec->bds_off,SEEK_SET);
 	read(fd,(void*)bds,therec->bds_size);
 	bds[therec->bds_size] = (char)0;
@@ -2914,7 +2896,7 @@ GribParamList* thevarrec;
 	bds[therec->bds_size + 3] = (char)0;
 
 	if(therec->has_bms) {
-		bms = (char*)NclMalloc((unsigned)therec->bms_size);
+		bms = (unsigned char*)NclMalloc((unsigned)therec->bms_size);
 		lseek(fd,therec->start + therec->bms_off,SEEK_SET);
 		read(fd,(void*)bms,therec->bms_size);
 		numeric = CnvtToDecimal(2,&(bms[4]));
@@ -3261,7 +3243,7 @@ int* n_dims_lon;
 int** dimsizes_lon;
 #endif
 {
-	char *gds;
+	unsigned char *gds;
 	int la1;
 	int lo1;
 	int la2;
@@ -3275,7 +3257,7 @@ int** dimsizes_lon;
 	int vectors;
 	int is_thinned_lat;
 	int is_thinned_lon;
-	char tmp[4];
+	unsigned char tmp[4];
 	int sign;
 	int i;
 	
