@@ -1,10 +1,10 @@
 #
-#       $Id: yMakefile,v 1.3 2000-02-16 23:40:18 kennison Exp $
+#       $Id: yMakefile,v 1.4 2000-02-17 23:49:24 kennison Exp $
 #
 MYNAME  = etpack
 
-SRCS = tdex01.f tdex02.f tdex03.f tdex04.f
-OBJS = tdex01.o tdex02.o tdex03.o tdex04.o
+SRCS = tdex01.f tdex02.f tdex03.f tdex04.f tdex05.f tdex06.f
+OBJS = tdex01.o tdex02.o tdex03.o tdex04.o tdex05.o tdex06.o
 
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
@@ -16,3 +16,5 @@ FExampleTarget(tdex01,tdex01.o)
 FExampleTarget(tdex02,tdex02.o)
 FExampleTarget(tdex03,tdex03.o)
 FExampleTarget(tdex04,tdex04.o)
+FExampleTarget(tdex04,tdex05.o)
+FExampleTarget(tdex04,tdex06.o)
