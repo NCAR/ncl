@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.4 1993-06-03 15:12:20 ethan Exp $
+ *      $Id: XyPlot.c,v 1.5 1993-06-03 15:57:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -355,6 +355,8 @@ static NhlErrorTypes ScaleForMove(
 #ifdef NhlNeedProto
 XyPlotLayer /*xnew*/,
 XyPlotLayer /*xold */,
+_NhlArgList	/* args */,
+int		/* num_args*/,
 int 		/*c_or_s*/
 #endif
 );
@@ -487,7 +489,7 @@ static NhlErrorTypes XyPlotSetValues
 	NhlErrorTypes ret1 = NOERROR;
 	NhlErrorTypes ret2 = NOERROR;
 
-	ret1 = ScaleForMove(xnew,xold,SET);
+	ret1 = ScaleForMove(xnew,xold,args,num_args,SET);
 	if(ret1 < WARNING)
 		return(ret1);
 	else if(ret1 < ret2)
@@ -3269,27 +3271,34 @@ static NhlErrorTypes SetUpTitles
 
 static NhlErrorTypes ScaleForMove
 #if __STDC__
-(XyPlotLayer xnew, XyPlotLayer xold, int c_or_s)
+(XyPlotLayer xnew, XyPlotLayer xold, _NhlArgList args, int num_args, int c_or_s)
 #else 
 (xnew,xold,c_or_s)
 	XyPlotLayer xnew;
 	XyPlotLayer xold;
+	_NhlArgList args;
+	int num_args;
 	int	c_or_s;
 #endif
 {
-	if((c_or_s == SET)&&(xnew->view.height != xold->view.height)) {
-		if(!_NhlArgIsSet(args,num_args,NhlNxyLineLableFontHeightF)) {
-			xnew->xyplot.line_label_font_height= 
-				(xnew->view.height/xold->view.height) *
-				xold->xyplot.line_label_font_height;
-		}
+	float deltax,deltay;
+	if(c_or_s == CREATE) {
+		deltax = xnew->view.width/NHL_DEFAULT_VIEW_WIDTH;
+		deltay = xnew->view.height/NHL_DEFAULT_VIEW_HEIGHT;
+	} else {
+		deltax = xnew->view.width/xold->view.width;
+		deltay = xnew->view.height/xold->view.height;
 	}
-	if((c_or_s == SET)&&(xnew->view.width != xold->view.width)) {
-		if(!_NhlArgIsSet(args,num_args,NhlNxyDashSegmentLengthF)) {
+
+	if((_NhlArgIsSet(args,num_args,NhlNvpHeightF))&&(!_NhlArgIsSet(args,num_args,NhlNxyLineLabelFontHeightF))) {
+			xnew->xyplot.line_label_font_height= 
+				deltay *
+				xnew->xyplot.line_label_font_height;
+	}
+	if((_NhlArgIsSet(args,num_args,NhlNvpWidthF))&&(!_NhlArgIsSet(args,num_args,NhlNxyDashSegmentLengthF))) {
 			xnew->xyplot.dash_segment_length = 
-				(xnew->view.width/xold->view.width) *
-				xold->xyplot.dash_segment_length;
-		}
+				deltax *
+				xnew->xyplot.dash_segment_length;
 	}
 	return(NOERROR);
 }
