@@ -1,12 +1,15 @@
 #!/bin/csh -f
 #
-#	$Id: ncarvversion,v 1.6 1991-09-18 17:37:27 clyne Exp $
+#	$Id: ncarvversion,v 1.7 1992-02-14 12:56:15 clyne Exp $
 #
+
+set date = `date`
+set year = $date[6]
 
 echo ""
 cat <<EOF
-NCAR View - UNIX Version 3.1.2
-Copyright (C) 1991 - All Rights Reserved
+NCAR View - UNIX Version 
+Copyright (C) $year - All Rights Reserved
 University Corporation for Atmospheric Research
 EOF
 

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: gcaps.csh,v 1.3 1991-08-16 16:45:20 clyne Exp $
+#	$Id: gcaps.csh,v 1.4 1992-02-14 12:56:13 clyne Exp $
 #
 #
 #	Name		gcaps
@@ -13,11 +13,22 @@
 #			directory.
 # 
 
+set version = VERSION
 set dir = `ncargpar GRAPHCAPDIR`
-
 if ($status != 0) then
 	exit 1
 endif
+
+foreach arg ($argv)
+	switch ($arg)
+	case "-V"
+		echo "${0}: Version $version"
+		exit 0
+	default:
+		echo "Usage: $0 [-V]"
+		exit 1
+	endsw
+end
 
 if (! -d "$dir") then
   echo "Graphcap directory <$dir> does not exist."

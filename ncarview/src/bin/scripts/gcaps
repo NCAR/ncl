@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: gcaps,v 1.9 1991-09-18 17:37:25 clyne Exp $
+#	$Id: gcaps,v 1.10 1992-02-14 12:56:11 clyne Exp $
 #
 #
 #	Name		gcaps
@@ -13,11 +13,22 @@
 #			directory.
 # 
 
+set version = 
 set dir = `ncargpar GRAPHCAPDIR`
-
 if ($status != 0) then
 	exit 1
 endif
+
+foreach arg ($argv)
+	switch ($arg)
+	case "-V"
+		echo "${0}: Version $version"
+		exit 0
+	default:
+		echo "Usage: $0 [-V]"
+		exit 1
+	endsw
+end
 
 if (! -d "$dir") then
   echo "Graphcap directory <$dir> does not exist."
@@ -32,6 +43,6 @@ end
 
 echo ""
 echo "The following device specifiers are also valid:"
-foreach device ("" sun xwd nrif hdf CTXT   sunview sunraster X11 xbfr)
+foreach device ("" sun xwd nrif hdf CTXT    X11 xbfr)
 	echo "	$device"
 end
