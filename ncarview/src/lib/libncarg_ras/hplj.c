@@ -1,5 +1,5 @@
 /*
- *	$Id: hplj.c,v 1.4 1992-02-12 11:24:46 don Exp $
+ *	$Id: hplj.c,v 1.5 1992-03-23 21:45:27 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -378,12 +378,15 @@ int
 HPLJSetFunctions(ras)
 	Raster	*ras;
 {
+	extern	int	ImageCount_();
+
 	ras->Open        = HPLJOpen;
 	ras->OpenWrite   = HPLJOpenWrite;
 	ras->Read        = HPLJRead;
 	ras->Write       = HPLJWrite;
 	ras->Close       = HPLJClose;
 	ras->PrintInfo   = HPLJPrintInfo;
+	ras->ImageCount = ImageCount_;
 }
 
 /*

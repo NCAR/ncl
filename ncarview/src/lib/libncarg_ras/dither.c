@@ -1,5 +1,5 @@
 /*
- *	$Id: dither.c,v 1.3 1992-02-12 11:24:41 don Exp $
+ *	$Id: dither.c,v 1.4 1992-03-23 21:45:14 clyne Exp $
  */
 #include "ncarg_ras.h"
 

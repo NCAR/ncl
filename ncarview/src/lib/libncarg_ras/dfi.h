@@ -1,5 +1,5 @@
 /*
- *	$Id: dfi.h,v 1.4 1992-03-20 18:43:14 don Exp $
+ *	$Id: dfi.h,v 1.5 1992-03-23 21:45:10 clyne Exp $
  */
 /*****************************************************************************
 * 
@@ -23,16 +23,14 @@
 *****************************************************************************/
 
 #ifdef RCSID
-static char RcsId[] = "@(#)$Revision: 1.4 $"
+static char RcsId[] = "@(#)$Revision: 1.5 $"
 #endif
 /*
-$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libncarg_ras/Attic/dfi.h,v 1.4 1992-03-20 18:43:14 don Exp $
-$Log: dfi.h,v $
-Revision 1.4  1992-03-20 18:43:14  don
-Added changes so that SGI ANSI C Compiler wouldn't barf.
-Rewrote interface for resampling functions and added features.
-Added a man page.
-
+ * Revision 1.4  1992/03/20  18:43:14  don
+ * Added changes so that SGI ANSI C Compiler wouldn't barf.
+ * Rewrote interface for resampling functions and added features.
+ * Added a man page.
+ *
  * Revision 1.3  92/02/21  12:49:30  clyne
  * ported to HP
  * 

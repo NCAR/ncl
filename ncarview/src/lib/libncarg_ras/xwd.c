@@ -1,5 +1,5 @@
 /*
- *	$Id: xwd.c,v 1.7 1992-03-20 18:44:05 don Exp $
+ *	$Id: xwd.c,v 1.8 1992-03-23 21:46:11 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -490,10 +490,13 @@ int
 XWDSetFunctions(ras)
 	Raster	*ras;
 {
+	extern	int	ImageCount_();
+
 	ras->Open        = XWDOpen;
 	ras->OpenWrite   = XWDOpenWrite;
 	ras->Read        = XWDRead;
 	ras->Write       = XWDWrite;
 	ras->Close       = XWDClose;
 	ras->PrintInfo   = XWDPrintInfo;
+	ras->ImageCount  = ImageCount_;
 }

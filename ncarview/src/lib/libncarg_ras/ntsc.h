@@ -1,5 +1,5 @@
 /*
- *	$Id: ntsc.h,v 1.1 1992-02-12 16:04:51 clyne Exp $
+ *	$Id: ntsc.h,v 1.2 1992-03-23 21:45:42 clyne Exp $
  */
 #define MAX_PIXELS	256
 #define GAMMA		2.2

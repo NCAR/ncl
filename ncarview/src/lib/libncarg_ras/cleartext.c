@@ -1,5 +1,5 @@
 /*
- *	$Id: cleartext.c,v 1.3 1992-02-12 11:24:34 don Exp $
+ *	$Id: cleartext.c,v 1.4 1992-03-23 21:44:52 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -160,6 +160,8 @@ int
 ClearTextSetFunctions(ras)
 	Raster	*ras;
 {
+	extern	int	ImageCount_();
+
 	(void) fprintf(stderr, "ClearTextSetFunctions(%s)\n", ras->name);
 	ras->Open      = ClearTextOpen;
 	ras->OpenWrite = ClearTextOpenWrite;
@@ -167,5 +169,6 @@ ClearTextSetFunctions(ras)
 	ras->Write     = ClearTextWrite;
 	ras->Close     = ClearTextClose;
 	ras->PrintInfo = ClearTextPrintInfo;
+	ras->ImageCount = ImageCount_;
 	return(RAS_OK);
 }

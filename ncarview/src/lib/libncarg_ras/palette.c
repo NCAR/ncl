@@ -1,5 +1,5 @@
 /*
- *	$Id: palette.c,v 1.3 1991-11-15 17:09:48 don Exp $
+ *	$Id: palette.c,v 1.4 1992-03-23 21:45:45 clyne Exp $
  */
 #include <string.h>
 #include "ncarg_ras.h"

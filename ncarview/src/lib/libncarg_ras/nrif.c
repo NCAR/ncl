@@ -1,5 +1,5 @@
 /*
- *	$Id: nrif.c,v 1.7 1992-03-20 18:43:37 don Exp $
+ *	$Id: nrif.c,v 1.8 1992-03-23 21:45:39 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -670,10 +670,13 @@ int
 NrifSetFunctions(ras)
 	Raster	*ras;
 {
+	extern	int	ImageCount_();
+
 	ras->Open      = NrifOpen;
 	ras->OpenWrite = NrifOpenWrite;
 	ras->Read      = NrifRead;
 	ras->Write     = NrifWrite;
 	ras->Close     = NrifClose;
 	ras->PrintInfo = NrifPrintInfo;
+	ras->ImageCount = ImageCount_;
 }

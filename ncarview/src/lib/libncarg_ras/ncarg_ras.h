@@ -1,10 +1,16 @@
 /*
- *	$Id: ncarg_ras.h,v 1.6 1992-03-20 18:43:29 don Exp $
+ *	$Id: ncarg_ras.h,v 1.7 1992-03-23 21:45:34 clyne Exp $
  */
 #ifndef _RASTER_
 #define _RASTER_
 
 #include <stdio.h>
+
+/*
+ * included for 'struct stat'
+ */
+#include <sys/types.h>
+#include <sys/stat.h>
 
 /* Definitions related to machine portability */
 
@@ -94,9 +100,19 @@ struct RasterStruct {
 	int			(*Write)();
 	int			(*Close)();
 	int			(*PrintInfo)();
+	int			(*ImageCount)();
 };
 
 typedef struct RasterStruct Raster;
+
+struct	RasStatStruct {
+	struct stat	stat;	/* UNIX stat struct	*/
+	RasterEncoding	type;	/* Encoding type	*/
+	int		nx, 	/* horizontal dimention	*/
+			ny;	/* vertical dimension	*/
+};
+
+typedef	struct	RasStatStruct	RasStat;
 
 #define INDEXED_PIXEL(ras, x, y) \
 	ras->data[((y) * ras->nx) + (x)]

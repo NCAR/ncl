@@ -1,5 +1,5 @@
 /*
- *	$Id: dfgr.h,v 1.2 1991-08-16 11:09:26 clyne Exp $
+ *	$Id: dfgr.h,v 1.3 1992-03-23 21:45:06 clyne Exp $
  */
 /*****************************************************************************
 * 
@@ -23,12 +23,15 @@
 *****************************************************************************/
 
 /*
-$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libncarg_ras/Attic/dfgr.h,v 1.2 1991-08-16 11:09:26 clyne Exp $
+$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libncarg_ras/Attic/dfgr.h,v 1.3 1992-03-23 21:45:06 clyne Exp $
 
 $Log: dfgr.h,v $
-Revision 1.2  1991-08-16 11:09:26  clyne
-*** empty log message ***
+Revision 1.3  1992-03-23 21:45:06  clyne
+Added RasterStat() function for returning raster file status.
 
+ * Revision 1.2  91/08/16  11:09:26  clyne
+ * *** empty log message ***
+ * 
  * Revision 1.1  91/06/18  15:07:44  clyne
  * Initial revision
  * 

@@ -1,5 +1,5 @@
 /*
- *	$Id: parallax.c,v 1.7 1992-02-12 14:23:54 clyne Exp $
+ *	$Id: parallax.c,v 1.8 1992-03-23 21:45:48 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -310,12 +310,15 @@ int
 ParallaxSetFunctions(ras)
 	Raster	*ras;
 {
+	extern	int	ImageCount_();
+
 	ras->Open      = ParallaxOpen;
 	ras->OpenWrite = ParallaxOpenWrite;
 	ras->Read      = ParallaxRead;
 	ras->Write     = ParallaxWrite;
 	ras->Close     = ParallaxClose;
 	ras->PrintInfo = ParallaxPrintInfo;
+	ras->ImageCount = ImageCount_;
 	return(RAS_OK);
 }
 

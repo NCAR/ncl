@@ -1,5 +1,5 @@
 /*
- *	$Id: raster.c,v 1.12 1992-03-20 18:43:50 don Exp $
+ *	$Id: raster.c,v 1.13 1992-03-23 21:46:00 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -27,6 +27,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
+#include <errno.h>
+#include <ncarv.h>
 #include "ncarg_ras.h"
 #include "raster.h"
 #include "options.h"
@@ -616,4 +618,87 @@ RasterDestroy(ras)
 			free( (char *) ras);
 	}
 	return(True);
+}
+
+/*
+ *
+ *	RasterStat()
+ *
+ *	RasterStat() obtains information about the raster file named by path.
+ *	Read permission of the named file is required.
+ * 
+ *	If "format" is not NULL, "format" is used
+ *	as the assumed format of the image, otherwise
+ *	the format is derived from the file extension
+ *	contained in "path". 
+ *
+ *	The structure referenced by 'ras_stat' is filled in with information
+ *	about the file.
+ *
+ *	If 'icount' is non-null the number of images contained in 
+ *	the file are stored at the address referenced by 'icount'. Warning!
+ *	counting images can take a long time.
+ *
+ * on entry
+ *	*path		: path name to a raster file.
+ *	*format		: optional format specifier for file referenced
+ *			  by 'path'
+ *
+ * on exit
+ *	*ras_stat	: file status
+ *	*icount		: contains image count if non-null on entry.
+ *	return		: -1 => failure and ESprintf() is invoked.
+ *
+ */
+int	RasterStat(path, format, ras_stat, icount)
+	char		*path;
+	char		*format;
+	RasStat		*ras_stat;
+	int		*icount;
+{
+
+	Raster	*ras;
+	int	rc;
+
+	if (stat(path, &(ras_stat->stat)) < 0) {
+		ESprintf(errno, "stat(%s, )", path);
+		return(-1);
+	}
+
+	if ((ras = RasterOpen(path, format)) == (Raster *) NULL) {
+		ESprintf(
+			E_UNKNOWN, "RasterOpen(%s,%s) : %s", 
+			path,format,RasterGetError()
+		);
+		return(-1);
+	}
+
+	rc = RasterRead(ras);
+	if (rc == RAS_ERROR) {
+		ESprintf(E_UNKNOWN, "RasterRead() : %s", RasterGetError());
+		RasterClose(ras);
+		return(-1);
+	}
+	else if (rc == RAS_EOF) {
+		ESprintf(E_UNKNOWN, "RasterRead() : EOF");
+		RasterClose(ras);
+		return(-1);
+	}
+
+	ras_stat->type = ras->type;
+	ras_stat->nx = ras->nx;
+	ras_stat->ny = ras->ny;
+
+
+	/*
+	 * get frame count if 'icount' is not NULL
+	 */
+	if (icount) {
+		if ((*icount = ras->ImageCount(path,format)) < 0) {
+			RasterClose(ras);
+			return(-1);
+		}
+	}
+	(void) RasterClose(ras);
+	return(1);
 }

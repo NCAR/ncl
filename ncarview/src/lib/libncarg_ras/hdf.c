@@ -1,5 +1,5 @@
 /*
- *	$Id: hdf.c,v 1.6 1992-03-20 18:43:22 don Exp $
+ *	$Id: hdf.c,v 1.7 1992-03-23 21:45:21 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -348,11 +348,14 @@ int
 HDFSetFunctions(ras)
 	Raster	*ras;
 {
+	extern	int	ImageCount_();
+
 	ras->Open      = HDFOpen;
 	ras->OpenWrite = HDFOpenWrite;
 	ras->Read      = HDFRead;
 	ras->Write     = HDFWrite;
 	ras->Close     = HDFClose;
 	ras->PrintInfo = HDFPrintInfo;
+	ras->ImageCount = ImageCount_;
 	return(RAS_OK);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: composite.c,v 1.2 1992-02-12 11:43:49 don Exp $
+ *	$Id: composite.c,v 1.3 1992-03-23 21:44:55 clyne Exp $
  */
 #include <stdio.h>
 #include "ncarg_ras.h"

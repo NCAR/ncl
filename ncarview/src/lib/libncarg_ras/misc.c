@@ -1,5 +1,5 @@
 /*
- *	$Id: misc.c,v 1.5 1991-10-07 18:11:01 clyne Exp $
+ *	$Id: misc.c,v 1.6 1992-03-23 21:45:31 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -23,6 +23,7 @@
  *		are used by other members of the "libraster"
  *		package.
  */
+#include <ncarv.h>
 #include "ncarg_ras.h"
 
 extern char	*ProgramName;
@@ -122,4 +123,38 @@ _swaplong (bp, n)
 	*bp++ = c;
 	bp += 2;
     }
+}
+
+/*
+ *	ImageCount_()
+ *
+ *	Return the number of images in a file. Return -1 on error
+ */
+ImageCount_(name, format)
+	char	*name;
+	char	*format;
+{
+	Raster	*ras;
+	int	count;
+	int	rc;
+
+	if ((ras = RasterOpen(name, format)) == (Raster *) NULL) {
+		ESprintf(
+			E_UNKNOWN, "RasterOpen(%s,%s) : %s",
+			name,format,RasterGetError()
+			);
+		return(-1);
+	}
+
+	count = 0;
+	while ((rc = RasterRead(ras)) == RAS_OK) {
+		count++;
+	}
+	if (rc == RAS_ERROR) {
+		ESprintf(E_UNKNOWN, "RasterRead() : %s", RasterGetError());
+		count = -1;
+	}
+
+	RasterClose(ras);
+	return(count);
 }

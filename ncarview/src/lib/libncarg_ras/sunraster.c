@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.8 1992-03-20 18:43:58 don Exp $
+ *	$Id: sunraster.c,v 1.9 1992-03-23 21:46:08 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -474,11 +474,14 @@ int
 SunSetFunctions(ras)
 	Raster	*ras;
 {
+	extern	int	ImageCount_();
+
 	ras->Open      = SunOpen;
 	ras->OpenWrite = SunOpenWrite;
 	ras->Read      = SunRead;
 	ras->Write     = SunWrite;
 	ras->Close     = SunClose;
 	ras->PrintInfo = SunPrintInfo;
+	ras->ImageCount = ImageCount_;
 	return(RAS_OK);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: rasinfo.c,v 1.3 1991-11-15 17:09:05 don Exp $
+ *	$Id: rasinfo.c,v 1.4 1992-03-23 21:45:55 clyne Exp $
  */
 #include <stdio.h>
 #include <fcntl.h>

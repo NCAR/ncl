@@ -1,4 +1,4 @@
-/* $Id: avsraster.h,v 1.1 1991-11-15 17:05:12 don Exp $ */
+/* $Id: avsraster.h,v 1.2 1992-03-23 21:44:42 clyne Exp $ */
 
 typedef struct AVSInfoStruct {
 	unsigned short	unused1;

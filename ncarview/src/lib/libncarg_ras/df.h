@@ -1,5 +1,5 @@
 /*
- *	$Id: df.h,v 1.2 1991-08-16 11:10:45 clyne Exp $
+ *	$Id: df.h,v 1.3 1992-03-23 21:45:03 clyne Exp $
  */
 /*****************************************************************************
 * 
@@ -23,14 +23,17 @@
 *****************************************************************************/
 
 #ifdef RCSID
-static char RcsId[] = "@(#)$Revision: 1.2 $"
+static char RcsId[] = "@(#)$Revision: 1.3 $"
 #endif
 /*
-$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libncarg_ras/Attic/df.h,v 1.2 1991-08-16 11:10:45 clyne Exp $
+$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libncarg_ras/Attic/df.h,v 1.3 1992-03-23 21:45:03 clyne Exp $
 $Log: df.h,v $
-Revision 1.2  1991-08-16 11:10:45  clyne
-*** empty log message ***
+Revision 1.3  1992-03-23 21:45:03  clyne
+Added RasterStat() function for returning raster file status.
 
+ * Revision 1.2  91/08/16  11:10:45  clyne
+ * *** empty log message ***
+ * 
  * Revision 1.1  91/06/18  15:11:16  clyne
  * Initial revision
  * 

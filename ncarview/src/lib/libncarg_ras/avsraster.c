@@ -1,4 +1,4 @@
-/* $Id: avsraster.c,v 1.3 1992-03-20 18:43:09 don Exp $ */
+/* $Id: avsraster.c,v 1.4 1992-03-23 21:44:38 clyne Exp $ */
 
 /***********************************************************************
 *                                                                      *
@@ -327,11 +327,14 @@ int
 AVSSetFunctions(ras)
 	Raster	*ras;
 {
+	extern	int	ImageCount_();
+
 	ras->Open      = AVSOpen;
 	ras->OpenWrite = AVSOpenWrite;
 	ras->Read      = AVSRead;
 	ras->Write     = AVSWrite;
 	ras->Close     = AVSClose;
 	ras->PrintInfo = AVSPrintInfo;
+	ras->ImageCount= ImageCount_;
 	return(RAS_OK);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.h,v 1.5 1992-02-12 11:24:37 don Exp $
+ *	$Id: devices.h,v 1.6 1992-03-23 21:44:59 clyne Exp $
  */
 typedef struct RasterDeviceStruct {
 	char			*name;
@@ -9,6 +9,7 @@ typedef struct RasterDeviceStruct {
 	int			(*Write)();
 	int			(*Close)();
 	int			(*PrintInfo)();
+	int			(*ImageCount)();
 } RasterDevice;
 
 /*
@@ -24,6 +25,8 @@ extern int	ClearTextRead();
 extern int	ClearTextWrite();
 extern int	ClearTextClose();
 extern int	ClearTextPrintInfo();
+
+extern int	ImageCount_();
 
 #ifdef BuildRasterNrif
 extern Raster	*NrifOpen();
@@ -91,48 +94,56 @@ extern int	AVSPrintInfo();
 static RasterDevice rasdevices[] = {
 {
 	"cleartext", ClearTextOpen, ClearTextOpenWrite,
-	ClearTextRead, ClearTextWrite, ClearTextClose, ClearTextPrintInfo
+	ClearTextRead, ClearTextWrite, ClearTextClose, ClearTextPrintInfo,
+	ImageCount_
 },
 #ifdef BuildRasterNrif
 {
 	"nrif", NrifOpen, NrifOpenWrite, 
-	NrifRead, NrifWrite, NrifClose, NrifPrintInfo
+	NrifRead, NrifWrite, NrifClose, NrifPrintInfo,
+	ImageCount_
 },
 #endif
 #ifdef BuildRasterNrif
 {
 	"xwd", XWDOpen, XWDOpenWrite, 
-	XWDRead, XWDWrite, XWDClose, XWDPrintInfo
+	XWDRead, XWDWrite, XWDClose, XWDPrintInfo,
+	ImageCount_
 },
 #endif
 #ifdef BuildRasterHDF
 {
 	"hdf", HDFOpen, HDFOpenWrite, 
-	HDFRead, HDFWrite, HDFClose, HDFPrintInfo
+	HDFRead, HDFWrite, HDFClose, HDFPrintInfo,
+	ImageCount_
 },
 #endif
 #ifdef BuildRasterSun
 {
 	"sun", SunOpen, SunOpenWrite, 
-	SunRead, SunWrite, SunClose, SunPrintInfo
+	SunRead, SunWrite, SunClose, SunPrintInfo,
+	ImageCount_
 },
 #endif
 #ifdef BuildRasterHPLJ
 {
 	"hplj", HPLJOpen, HPLJOpenWrite, 
-	HPLJRead, HPLJWrite, HPLJClose, HPLJPrintInfo
+	HPLJRead, HPLJWrite, HPLJClose, HPLJPrintInfo,
+	ImageCount_
 },
 #endif
 #ifdef BuildRasterParallax
 {
 	"parallax", ParallaxOpen, ParallaxOpenWrite, 
-	ParallaxRead, ParallaxWrite, ParallaxClose, ParallaxPrintInfo
+	ParallaxRead, ParallaxWrite, ParallaxClose, ParallaxPrintInfo,
+	ImageCount_
 },
 #endif
 #ifdef BuildRasterAVS
 {
 	"avs", AVSOpen, AVSOpenWrite, 
-	AVSRead, AVSWrite, AVSClose, AVSPrintInfo
+	AVSRead, AVSWrite, AVSClose, AVSPrintInfo,
+	ImageCount_
 },
 #endif
 };
