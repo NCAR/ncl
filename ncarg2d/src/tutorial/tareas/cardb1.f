@@ -40,7 +40,7 @@ C
 C
 C Define color table
 C
-    CALL COLOR(IWKID)
+      CALL COLOR(IWKID)
 C
 C Define window from -1. to 1.
 C
