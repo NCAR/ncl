@@ -1,5 +1,5 @@
 /*
- *      $Id: MeshScalarField.c,v 1.2 2004-08-11 23:52:50 dbrown Exp $
+ *      $Id: MeshScalarField.c,v 1.3 2004-08-13 22:00:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -50,9 +50,6 @@ static NhlResource resources[] = {
 	{NhlNsfElementNodes,NhlCsfElementNodes,
 	 NhlTIntegerGenArray,sizeof(NhlGenArray),
 	 Oset(element_nodes),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
-	{NhlNsfNodeIndexes,NhlCsfNodeIndexes,
-	 NhlTIntegerGenArray,sizeof(NhlGenArray),
-	 Oset(node_indexes),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
 	{NhlNsfFirstNodeIndex,NhlCsfFirstNodeIndex,NhlTInteger,sizeof(int),
 	 Oset(first_node_index),NhlTImmediate,_NhlUSET(0),0,NULL},
 	{NhlNsfXCellBounds,NhlCsfXCellBounds,NhlTGenArray,sizeof(NhlGenArray),
@@ -72,14 +69,36 @@ static NhlResource resources[] = {
 	{NhlNsfCopyData,NhlCdiCopyData,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(copy_arrays),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),0,NULL},
-	{NhlNsfExchangeDimensions,NhlCsfExchangeDimensions,NhlTBoolean,
-		 sizeof(NhlBoolean),Oset(exchange_dimensions),NhlTImmediate,
-		 _NhlUSET((NhlPointer)False),0,NULL},
 	{NhlNsfDataMinV,NhlCsfDataMinV,NhlTVariable,sizeof(NhlGenArray),
 		 Oset(data_min),NhlTImmediate,_NhlUSET(NULL),0,NULL},
 	{NhlNsfDataMaxV,NhlCsfDataMaxV,NhlTVariable,sizeof(NhlGenArray),
 		 Oset(data_max),NhlTImmediate,_NhlUSET(NULL),0,NULL},
 
+   	{NhlNsfXCActualStartF,NhlCsfXCActualStartF,NhlTFloat,sizeof(float),
+		 Oset(x_actual_start),NhlTString,
+		 _NhlUSET("0.0"),_NhlRES_GONLY,NULL},
+	{NhlNsfXCActualEndF,NhlCsfXCActualEndF,NhlTFloat,sizeof(float),
+		 Oset(x_actual_end),NhlTString,
+		 _NhlUSET("1.0"),_NhlRES_GONLY,NULL},
+	{NhlNsfXCElementCount,NhlCsfXCElementCount,NhlTInteger,sizeof(int),
+		 Oset(xc_el_count),NhlTImmediate,
+         	 _NhlUSET(0),_NhlRES_GONLY,NULL},
+	{NhlNsfYCActualStartF,NhlCsfYCActualStartF,NhlTFloat,sizeof(float),
+		 Oset(y_actual_start),NhlTString,
+		 _NhlUSET("0.0"),_NhlRES_GONLY,NULL},
+	{NhlNsfYCActualEndF,NhlCsfYCActualEndF,NhlTFloat,sizeof(float),
+		 Oset(y_actual_end),NhlTString,
+         	_NhlUSET("1.0"),_NhlRES_GONLY,NULL},
+	{NhlNsfYCElementCount,NhlCsfYCElementCount,NhlTInteger,sizeof(int),
+		 Oset(yc_el_count),NhlTImmediate,
+	 _NhlUSET(0),_NhlRES_GONLY,NULL},
+#if 0
+	{NhlNsfNodeIndexes,NhlCsfNodeIndexes,
+	 NhlTIntegerGenArray,sizeof(NhlGenArray),
+	 Oset(node_indexes),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
+	{NhlNsfExchangeDimensions,NhlCsfExchangeDimensions,NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(exchange_dimensions),NhlTImmediate,
+		 _NhlUSET((NhlPointer)False),0,NULL},
 	{NhlNsfXCStartV,NhlCsfXCStartV,NhlTVariable,sizeof(NhlGenArray),
 		 Oset(x_start),NhlTImmediate,_NhlUSET(NULL),0,NULL},
 	{NhlNsfXCEndV,NhlCsfXCEndV,NhlTVariable,sizeof(NhlGenArray),
@@ -120,25 +139,7 @@ static NhlResource resources[] = {
 	{NhlNsfYCStride,NhlCsfYCStride,NhlTInteger,sizeof(int),
 		Oset(y_stride),NhlTImmediate,_NhlUSET((NhlPointer)1),0,NULL},
 
-   	{NhlNsfXCActualStartF,NhlCsfXCActualStartF,NhlTFloat,sizeof(float),
-		 Oset(x_actual_start),NhlTString,
-		 _NhlUSET("0.0"),_NhlRES_GONLY,NULL},
-	{NhlNsfXCActualEndF,NhlCsfXCActualEndF,NhlTFloat,sizeof(float),
-		 Oset(x_actual_end),NhlTString,
-		 _NhlUSET("1.0"),_NhlRES_GONLY,NULL},
-	{NhlNsfXCElementCount,NhlCsfXCElementCount,NhlTInteger,sizeof(int),
-		 Oset(xc_el_count),NhlTImmediate,
-         	 _NhlUSET(0),_NhlRES_GONLY,NULL},
-	{NhlNsfYCActualStartF,NhlCsfYCActualStartF,NhlTFloat,sizeof(float),
-		 Oset(y_actual_start),NhlTString,
-		 _NhlUSET("0.0"),_NhlRES_GONLY,NULL},
-	{NhlNsfYCActualEndF,NhlCsfYCActualEndF,NhlTFloat,sizeof(float),
-		 Oset(y_actual_end),NhlTString,
-         	_NhlUSET("1.0"),_NhlRES_GONLY,NULL},
-	{NhlNsfYCElementCount,NhlCsfYCElementCount,NhlTInteger,sizeof(int),
-		 Oset(yc_el_count),NhlTImmediate,
-         	_NhlUSET(0),_NhlRES_GONLY,NULL},
-
+#endif
 #undef Oset
 
 /*
@@ -167,18 +168,18 @@ static NhlResource resources[] = {
 		 sizeof(NhlGenArray),Oset(missing_value),NhlTImmediate,
 		 _NhlUSET(NULL),_NhlRES_PRIVATE,NULL},
 	{"no.res","No.res",NhlTVariable,sizeof(NhlGenArray),
-		 Oset(data_min),NhlTImmediate,_NhlUSET(NULL),_NhlRES_PRIVATE,NULL},
+	 Oset(data_min),NhlTImmediate,_NhlUSET(NULL), _NhlRES_PRIVATE,NULL},
 	{"no.res","No.res",NhlTVariable,sizeof(NhlGenArray),
-		 Oset(data_max),NhlTImmediate,_NhlUSET(NULL),_NhlRES_PRIVATE,NULL},
+	 Oset(data_max),NhlTImmediate,_NhlUSET(NULL),_NhlRES_PRIVATE,NULL},
 
 	{"no.res","No.res",NhlTVariable,sizeof(NhlGenArray),
-		 Oset(x_start),NhlTImmediate,_NhlUSET(NULL),_NhlRES_PRIVATE,NULL},
+	 Oset(x_start),NhlTImmediate,_NhlUSET(NULL),_NhlRES_PRIVATE,NULL},
 	{"no.res","No.res",NhlTVariable,sizeof(NhlGenArray),
-		 Oset(x_end),NhlTImmediate,_NhlUSET(NULL),_NhlRES_PRIVATE,NULL},
+	 Oset(x_end),NhlTImmediate,_NhlUSET(NULL),_NhlRES_PRIVATE,NULL},
 	{"no.res","No.res",NhlTVariable,sizeof(NhlGenArray),
-		 Oset(y_start),NhlTImmediate,_NhlUSET(NULL),_NhlRES_PRIVATE,NULL},
+	 Oset(y_start),NhlTImmediate,_NhlUSET(NULL),_NhlRES_PRIVATE,NULL},
 	{"no.res","No.res",NhlTVariable,sizeof(NhlGenArray),
-		 Oset(y_end),NhlTImmediate,_NhlUSET(NULL),_NhlRES_PRIVATE,NULL},
+	 Oset(y_end),NhlTImmediate,_NhlUSET(NULL),_NhlRES_PRIVATE,NULL},
 
 	{"no.res","No.res",
 		 NhlTVariable,sizeof(NhlGenArray),
@@ -1644,6 +1645,7 @@ MeshScalarFieldInitialize
 	sfp->xc_is_bounds = False;
 	sfp->yc_is_bounds = False;
 	sfp->istride = 1;
+	sfp->node_indexes = NULL;
         
 	if (sfp->d_arr == NULL) {
 		e_text = 
@@ -1701,6 +1703,7 @@ MeshScalarFieldInitialize
                                 return NhlFATAL;
                         }
 			sfp->changed |= _NhlsfXARR_CHANGED;
+			sfp->xc_el_count = sfp->d_el_count;
                 }
 	}
 	if (sfp->x_arr == NULL) {
@@ -1736,6 +1739,7 @@ MeshScalarFieldInitialize
                                 return NhlFATAL;
                         }
 			sfp->changed |= _NhlsfYARR_CHANGED;
+			sfp->yc_el_count = sfp->d_el_count;
                 }
 	}
 	if (sfp->y_arr == NULL) {
@@ -1745,6 +1749,7 @@ MeshScalarFieldInitialize
 			  entry_name,NhlNsfYArray,_NhlClassName(lc));
 		return NhlFATAL;
 	}
+
 #if 0
 	if (sfp->element_nodes == NULL && 
 		! (sfp->x_cell_bounds && sfp->y_cell_bounds)) {
@@ -2134,6 +2139,7 @@ MeshScalarFieldSetValues
                         NhlFreeGenArray(osfp->x_arr);
 			sfp->changed |= _NhlsfXARR_CHANGED;
                         status = True;
+			sfp->xc_el_count = sfp->d_el_count;
                 }
 	}
 
@@ -2179,6 +2185,7 @@ MeshScalarFieldSetValues
                         NhlFreeGenArray(osfp->y_arr);
 			sfp->changed |= _NhlsfYARR_CHANGED;
                         status = True;
+			sfp->yc_el_count = sfp->d_el_count;
                 }
 	}
 
@@ -3353,6 +3360,7 @@ MeshScalarFieldDestroy
 	NhlFreeGenArray(sfp->missing_value);
 	NhlFreeGenArray(sfp->data_min);
 	NhlFreeGenArray(sfp->data_max);
+#if 0
 	NhlFreeGenArray(sfp->x_start);
 	NhlFreeGenArray(sfp->x_end);
 	NhlFreeGenArray(sfp->y_start);
@@ -3361,6 +3369,7 @@ MeshScalarFieldDestroy
 	NhlFreeGenArray(sfp->x_subset_end);
 	NhlFreeGenArray(sfp->y_subset_start);
 	NhlFreeGenArray(sfp->y_subset_end);
+#endif
 
 	return NhlNOERROR;
 }
