@@ -1126,6 +1126,89 @@ int GdsCompare(unsigned char *a,unsigned char *b,int n) {
 	}
 	return(1);
 }
+void _Do109(GribFileRecord *therec,GribParamList *step) {
+	int dimsizes_level;
+	int tmp_file_dim_number;
+	int i;
+	char buffer[80];
+	NclGribFVarRec *test;
+	int ok = 0;
+	NclMultiDValData tmp_md;
+	float *af;
+	float *bf;
+	float *tmpf;
+	int nv;
+	int pl;
+	int the_start_off;
+	int sign;
+	float tmpb;
+	float tmpa;
+
+	for(i = 0; i < step->var_info.num_dimensions; i++) {
+		sprintf(buffer,"lv_HYBL%d",step->var_info.file_dim_num[i]);
+		if((tmp_md = _GribGetInternalVar(therec,NrmStringToQuark(buffer),&test)) != NULL) {
+			dimsizes_level = step->var_info.dim_sizes[i];
+			tmp_file_dim_number = step->var_info.file_dim_num[i];
+			ok = 1;
+			break;
+		}
+	}
+	sprintf(buffer,"lv_HYBL%d_a",tmp_file_dim_number);
+
+	if((_GribGetInternalVar(therec,NrmStringToQuark(buffer),&test) ==NULL)&&(ok)) {
+		nv = (int)step->thelist->rec_inq->gds[3];
+		pl = (int)step->thelist->rec_inq->gds[4];
+		if(nv == 0) {
+			return;
+		}
+		tmpf = (float*)NclMalloc(nv*sizeof(float));
+		the_start_off = 4*nv+(pl-1);
+		for(i = pl-1;i< the_start_off; i+=4) {
+			sign  = (step->thelist->rec_inq->gds[i] & (char) 0200)? 1 : 0;
+			tmpa = (float)(step->thelist->rec_inq->gds[i] & (char)0177);
+			tmpb = (float)CnvtToDecimal(3,&(step->thelist->rec_inq->gds[i+1]));
+			tmpf[(i-(pl-1))/4] = tmpb;
+			tmpf[(i-(pl-1))/4] *= (float)pow(2.0,-24.0);
+			tmpf[(i-(pl-1))/4] *= (float)pow(16.0,(double)(tmpa - 64));
+			if(sign) {
+				tmpf[(i-(pl-1))/4] = -tmpf[(i-(pl-1))/4];
+			}
+		}
+		af = (float*)NclMalloc(sizeof(float)*dimsizes_level);
+		bf = (float*)NclMalloc(sizeof(float)*dimsizes_level);
+		for(i =0; i < dimsizes_level; i++) {
+			af[i] = tmpf[((int*)tmp_md->multidval.val)[i] ]/100000.0;
+			bf[i] = tmpf[nv/2+((int*)tmp_md->multidval.val)[i]];
+		}
+		sprintf(buffer,"lv_HYBL%d_a",tmp_file_dim_number);
+		_GribAddInternalVar(therec,NrmStringToQuark(buffer),&tmp_file_dim_number,(NclMultiDValData)_NclCreateVal(
+			NULL,
+			NULL,
+			Ncl_MultiDValData,
+			0,
+			(void*)af,
+			NULL,
+			1,
+			&dimsizes_level,
+			TEMPORARY,
+			NULL,
+			nclTypefloatClass),NULL,0);
+		sprintf(buffer,"lv_HYBL%d_b",tmp_file_dim_number);
+		_GribAddInternalVar(therec,NrmStringToQuark(buffer),&tmp_file_dim_number,(NclMultiDValData)_NclCreateVal(
+			NULL,
+			NULL,
+			Ncl_MultiDValData,
+			0,
+			(void*)bf,
+			NULL,
+			1,
+			&dimsizes_level,
+			TEMPORARY,
+			NULL,
+			nclTypefloatClass),NULL,0);
+		
+	} 
+}
 static void _SetFileDimsAndCoordVars
 #if 	NhlNeedProto
 (GribFileRecord *therec)
@@ -1150,6 +1233,7 @@ GribFileRecord *therec;
 	NclGribFVarRec *test;
 	int n_dims_lat;
 	int n_dims_lon;
+	int n_dims_level;
 	int *dimsizes_lat = NULL;
 	int *dimsizes_lon = NULL;
 	float *tmp_lat = NULL;
@@ -1164,6 +1248,7 @@ GribFileRecord *therec;
 	NclQuark *tmp_string = NULL;
 	float *tmp_float = NULL;
 	int tmp_dimsizes = 1;
+	int dimsizes_level = 1;
 	int nlonatts = 0;
 	int nlatatts = 0;
 	GribAttInqRecList *lat_att_list_ptr;
@@ -1782,6 +1867,10 @@ GribFileRecord *therec;
 			}
 		}
 		if(is_err == NhlNOERROR) {
+			if(step->level_indicator == 109) {
+					_Do109(therec,step);
+			}
+
 			last = step;	
 			step = step->next;
 		} else {

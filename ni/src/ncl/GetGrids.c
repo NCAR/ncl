@@ -2516,6 +2516,9 @@ GribParamList* thevarrec;
 	int kret =1;
 	int kcode = 3;
 	int * num = NULL;
+	int nv = -1;
+	int pl = -1;
+	int the_start_off = 32;
 	
 
 
@@ -2678,9 +2681,18 @@ GribParamList* thevarrec;
 			*outdat = data;
 		}
 		if((therec->gds[6] & (char)0377)&&(therec->gds[7] & (char)0377)){
-			num = (int*)NclMalloc(sizeof(int)*((thevarrec->thelist->rec_inq->gds_size - 32)/2));
-                        for(i = 0; i < thevarrec->thelist->rec_inq->gds_size - 32; i+=2) {
-                        	num[i/2] = (int)UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[32+i]));
+			nv = (int)therec->gds[3];
+			pl = (int)therec->gds[4];
+			if((nv == 0)&&(therec->gds[4]&(char)0377)) {
+				the_start_off = 32;
+			} else if(nv != 0){
+				the_start_off = 4*nv+(pl-1);
+			} else if(nv == 0) {
+				the_start_off = ((int)therec->gds[4])-1;
+			}
+			num = (int*)NclMalloc(sizeof(int)*((thevarrec->thelist->rec_inq->gds_size - the_start_off)/2));
+                        for(i = 0; i < thevarrec->thelist->rec_inq->gds_size - the_start_off; i+=2) {
+                        	num[i/2] = (int)UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[the_start_off+i]));
                         }
 			NGCALLF(qu2reg2,QU2REG2)(*outdat,num,&(thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-2]),&(thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-1]),&kcode,&pmsval,&kret);
 
@@ -3634,15 +3646,42 @@ int** dimsizes_lon;
 		double la1;
 		double la2;
 		int ila1;
+		int nv=-1;
+		int pl =-1;
+		int the_start_off = 32;
 		int ila2;
 		int ilo1;
 		int ilo2;
 		int loinc;
 		int max_lon;
 		int num;
+		int sign;
+		float reference_value, tmpa,tmpb;
 		GribRecordInqRecList *step;
 
 		if((thevarrec->thelist != NULL)&&(thevarrec->thelist->rec_inq != NULL)) {
+			nv = (int)thevarrec->thelist->rec_inq->gds[3];
+			pl = (int)thevarrec->thelist->rec_inq->gds[4];
+			if((nv == 0)&&(thevarrec->thelist->rec_inq->gds[4]&(char)0377)) {
+				the_start_off = 32;
+			} else if(nv != 0){
+				the_start_off = 4*nv+(pl-1);
+				for(i = pl-1; i< the_start_off; i+=4) {
+					sign  = (thevarrec->thelist->rec_inq->gds[i] & (char) 0200)? 1 : 0;
+					tmpa = (float)(thevarrec->thelist->rec_inq->gds[i] & (char)0177);
+					tmpb = (float)CnvtToDecimal(3,&(thevarrec->thelist->rec_inq->gds[i+1]));
+					reference_value = tmpb;
+					reference_value *= (float)pow(2.0,-24.0);
+					reference_value *= (float)pow(16.0,(double)(tmpa - 64));
+					if(sign) {
+						reference_value = -reference_value;
+					}
+					fprintf(stdout,"%d) %g\n",i/4,reference_value);
+				}
+			} else if(nv == 0) {
+				the_start_off = ((int)thevarrec->thelist->rec_inq->gds[4])-1;
+			}
+			
 			*n_dims_lat = 1;
 			*dimsizes_lat = malloc(sizeof(int));
 			(*dimsizes_lat)[0] = (int)UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[8]));
@@ -3740,9 +3779,9 @@ int** dimsizes_lon;
 			*n_dims_lon = 1;
 			*dimsizes_lon = malloc(sizeof(int));
 			if((thevarrec->thelist->rec_inq->gds[6] & (char)0377)&&(thevarrec->thelist->rec_inq->gds[7] & (char)0377)){
-				max_lon = (int)UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[32]));
-				for(i = 0; i < thevarrec->thelist->rec_inq->gds_size - 32; i+=2) {
-					num = (int)UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[32+i]));
+				max_lon = (int)UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[the_start_off]));
+				for(i = 0; i < thevarrec->thelist->rec_inq->gds_size - the_start_off; i+=2) {
+					num = (int)UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[the_start_off+i]));
 					if(num > max_lon) {
 						max_lon = num;
 					}

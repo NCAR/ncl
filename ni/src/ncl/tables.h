@@ -442,7 +442,7 @@ char *level_str[] = {
         "HTGY",/*106*/
 	"SIGL",		/*107*/
 	"SIGY",	/*108*/
-	"HYBL",		/*109*/
+	"HYBL",		/*109*/ /* If you change this you better change _Get109A in NclGRIB.c */
 	"HYBY",/*110*/
 	"DBLL",	/*111*/
 	"DBLY", /*112*/
