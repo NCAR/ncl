@@ -1,21 +1,25 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.cry,v 1.14 1993-02-04 04:15:15 haley Exp $
+#	$Id: ncargcc.cry,v 1.15 1993-02-08 16:18:34 haley Exp $
 #
 
-set system="SED_SYSTEM_INCLUDE"
-set cc="SED_CC"
-set loadopts = "SED_LD_CFLAGS"
-set l = `ncargpath SED_LIBDIR`
-if ($status != 0) exit 1
+set system = "SED_SYSTEM_INCLUDE"
+set cc     = "SED_CC"
+set libdir = `ncargpath SED_LIBDIR`
+set incdir = `ncargpath SED_INCDIR`
+set ro     = "$libdir/SED_NCARGDIR/SED_ROBJDIR"
 
-if (! -d "$l") then
-  echo "Library directory <$l> does not exist."
+if (! -d "$libdir") then
+  echo "Library directory <$libdir> does not exist."
   exit 1
 endif
 
-set ro = $l/SED_NCARGDIR/SED_ROBJDIR
-set newargv = "$cc $loadopts"
+if (! -d "$incdir") then
+  echo "Include directory <$incdir> does not exist."
+  exit 1
+endif
+
+set newargv = "$cc $incdir"
 
 set ctrans_libs = ""
 set stub_file   = ""
@@ -31,8 +35,8 @@ set libX11      =       "-lX11"
 set f77libs     =       "-L/lib -lf -lio -lm -lp -lsci -lu -lc"
 
 set smooth = "$ro/libdashsmth.o"
-set quick = "$ro/libdashline.o $ro/libconrcqck.o $ro/libconraq.o"
-set super = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
+set quick  = "$ro/libdashline.o $ro/libconrcqck.o $ro/libconraq.o"
+set super  = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
 
 set libs
 
@@ -132,7 +136,7 @@ foreach arg ($argv)
 
 end
 
-set newargv = "$newargv -L$l $stub_file $ctrans_libs $libs $libcbind $libncarg $libgks $libncarg_c $liblocal $f77libs $libX11"
+set newargv = "$newargv -L$libdir $stub_file $ctrans_libs $libs $libcbind $libncarg $libgks $libncarg_c $liblocal $f77libs $libX11"
 
 echo $newargv
 eval $newargv

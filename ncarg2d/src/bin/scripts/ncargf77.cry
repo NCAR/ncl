@@ -1,20 +1,19 @@
 #!/bin/csh -f
 #
-#	$Id: ncargf77.cry,v 1.7 1993-01-26 16:50:12 haley Exp $
+#	$Id: ncargf77.cry,v 1.8 1993-02-08 16:18:38 haley Exp $
 #
 
-set system="SED_SYSTEM_INCLUDE"
-set fortran="SED_F77"
-set loadopts = 'SED_LD_FFLAGS'
-set l = `ncargpath SED_LIBDIR`
+set system  = "SED_SYSTEM_INCLUDE"
+set fortran = "SED_F77"
+set libdir  = `ncargpath SED_LIBDIR`
+set ro      = "$libdir/SED_NCARGDIR/SED_ROBJDIR"
 
-if (! -d "$l") then
-  echo "Library directory <$l> does not exist."
+if (! -d "$libdir") then
+  echo "Library directory <$libdir> does not exist."
   exit 1
 endif
 
-set ro = $l/SED_NCARGDIR/SED_ROBJDIR
-set newargv = "$fortran $loadopts"
+set newargv = "$fortran"
 
 set ctrans_libs = ""
 set stub_file = ""
@@ -38,11 +37,6 @@ set libs
 foreach arg ($argv)
 
 	switch ($arg)
-
-	case "-sungks":
-		echo "Using Sun GKS"
-		set libgks="-lgks77 -lgks -lsuntool -lsunwindow -lpixrect -lm"
-		breaksw
 
 	case "-smooth":
 		echo "Smooth f77 of NCAR Graphics"
@@ -135,7 +129,7 @@ foreach arg ($argv)
 	endsw
 end
 
-set newargv = "$newargv -L$l $stub_file $ctrans_libs $libs $libncarg $libgks $libncarg_c $liblocal $libX11 $libextern"
+set newargv = "$newargv -L$libdir $stub_file $ctrans_libs $libs $libncarg $libgks $libncarg_c $liblocal $libX11 $libextern"
 
 echo $newargv
 eval $newargv

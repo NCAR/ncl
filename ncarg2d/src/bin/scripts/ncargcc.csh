@@ -1,25 +1,25 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.17 1993-02-03 21:55:01 haley Exp $
+#	$Id: ncargcc.csh,v 1.18 1993-02-08 16:18:36 haley Exp $
 #
 
-set system="SED_SYSTEM_INCLUDE"
-set cc="SED_CC"
-set loadopts = "SED_LD_CFLAGS"
-set l = `ncargpath SED_LIBDIR`
-if ($status != 0) then
-        exit 1
-endif
+set system = "SED_SYSTEM_INCLUDE"
+set cc     = "SED_CC"
+set libdir = `ncargpath SED_LIBDIR`
+set incdir = `ncargpath SED_INCDIR`
+set ro     = "$libdir/SED_NCARGDIR/SED_ROBJDIR"
 
-
-if (! -d "$l") then
-  echo "Library directory <$l> does not exist."
+if (! -d "$libdir") then
+  echo "Library directory <$libdir> does not exist."
   exit 1
 endif
 
-set ro = $l/SED_NCARGDIR/SED_ROBJDIR
+if (! -d "$incdir") then
+  echo "Include directory <$incdir> does not exist."
+  exit 1
+endif
 
-set newargv = "$cc $loadopts"
+set newargv = "$cc -I$incdir"
 
 set ctrans_libs = ""
 set stub_file   = ""
@@ -27,15 +27,15 @@ set stub_file   = ""
 # set up default libraries
 
 if ("$system" == "Ardent" || "$system" == "AIX370") then
-  set libncarg    =       "$ro/libncarbd.o $l/libncarg.a"
+  set libncarg    =       "$ro/libncarbd.o $libdir/libncarg.a"
 else
-  set libncarg    =       "$l/libncarg.a"
+  set libncarg    =       "$libdir/libncarg.a"
 endif
 
-set libgks      = "$l/libncarg_gksC.a $l/libncarg_gks.a"
-set liblocal    = "$l/libncarg_loc.a"
-set libncarg_c  = "$l/libncarg_c.a"
-set libcbind    = "$l/libncargC.a"
+set libgks      = "$libdir/libncarg_gksC.a $libdir/libncarg_gks.a"
+set liblocal    = "$libdir/libncarg_loc.a"
+set libncarg_c  = "$libdir/libncarg_c.a"
+set libcbind    = "$libdir/libncargC.a"
 set libX11      = "-lX11"
 
 if ($system == "Cray2" || $system == "Cray") then

@@ -1,40 +1,34 @@
 #!/bin/csh -f
 #
-#	$Id: ncargf77.csh,v 1.7 1993-01-26 16:50:14 haley Exp $
+#	$Id: ncargf77.csh,v 1.8 1993-02-08 16:18:40 haley Exp $
 #
 
-set system="SED_SYSTEM_INCLUDE"
-set fortran="SED_F77"
-set loadopts = "SED_LD_FFLAGS"
-set l = `ncargpath SED_LIBDIR`
+set system  = "SED_SYSTEM_INCLUDE"
+set fortran = "SED_F77"
+set libdir  = `ncargpath SED_LIBDIR`
+set ro      = "$libdir/SED_NCARGDIR/SED_ROBJDIR"
 
-if ($status != 0) then
-        exit 1
-endif
-
-if (! -d "$l") then
-  echo "Library directory <$l> does not exist."
+if (! -d "$libdir") then
+  echo "Library directory <$libdir> does not exist."
   exit 1
 endif
 
-set ro = $l/SED_NCARGDIR/SED_ROBJDIR
-
-set newargv = "$fortran $loadopts"
+set newargv = "$fortran"
 
 set ctrans_libs = ""
-set stub_file = ""
+set stub_file   = ""
 
 #
 # set up default libraries
 #
 if ("$system" == "Ardent" || "$system" == "AIX370") then
-  set libncarg  =  "$ro/libncarbd.o $l/libncarg.a"
+  set libncarg  =  "$ro/libncarbd.o $libdir/libncarg.a"
 else
-  set libncarg  =  "$l/libncarg.a"
+  set libncarg  =  "$libdir/libncarg.a"
 endif
-set libgks     = "$l/libncarg_gks.a"
-set liblocal   = "$l/libncarg_loc.a"
-set libncarg_c = "$l/libncarg_c.a"
+set libgks     = "$libdir/libncarg_gks.a"
+set liblocal   = "$libdir/libncarg_loc.a"
+set libncarg_c = "$libdir/libncarg_c.a"
 
 set libextern  = "-lm"
 set libX11     = "-lX11"
