@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.h,v 1.9 1992-05-11 23:23:17 clyne Exp $
+ *	$Id: devices.h,v 1.10 1992-07-30 00:47:35 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -95,6 +95,7 @@
 static	OptDescRec	gcap_opts[] = {
 	{"window", 1, NULL, "Specify window transform - llx:lly:urx:ury"},
 	{"viewport", 1, NULL, "Specify viewport transform - llx:lly:urx:ury"},
+	{"simulatebg", 0, NULL, "Simulate background color with a big polygon"},
 	{NULL}
 	};
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: ctrans_api.c,v 1.12 1992-07-16 23:12:47 clyne Exp $
+ *      $Id: ctrans_api.c,v 1.13 1992-07-30 00:47:33 clyne Exp $
  */
 /*
  *	File:		ctrans_api.c
@@ -336,7 +336,7 @@ CtransRC	CtransSetMetafile(metafile)
 	/*
 	 * make sure the first element is a Begin Metafile element
 	 */
-	if (cgmc.class == DEL_ELEMENT && cgmc.command == BEG_MF) {
+	if (cgmc.class == DEL_ELEMENT && cgmc.command == BEG_MF_ID) {
 		if ((rc = Process(&cgmc)) == FATAL) return(FATAL);
 		if (rc == WARN) rcx = WARN;
 
@@ -355,8 +355,8 @@ CtransRC	CtransSetMetafile(metafile)
 	 */
 	while ((status = Instr_Dec(&cgmc)) > 0) {
 
-		if ((cgmc.class == DEL_ELEMENT && cgmc.command == BEG_PIC) || 
-			(cgmc.class == DEL_ELEMENT && cgmc.command == END_MF)){
+		if ((cgmc.class == DEL_ELEMENT && cgmc.command == BEG_PIC_ID) ||
+		(cgmc.class == DEL_ELEMENT && cgmc.command == END_MF_ID)){
 
 			break;	/* where done	*/
 		}
@@ -377,7 +377,7 @@ CtransRC	CtransSetMetafile(metafile)
 	frameCount = 0;
 
 	/*
-	 * 'cgmc' now contains a BEG_PIC or an END_METAFILE element
+	 * 'cgmc' now contains a BEG_PIC_ID or an END_METAFILE element
 	 */
 	return (rcx);
 }
@@ -409,14 +409,14 @@ CtransRC	CtransPlotFrame()
 	/*
 	 * See if we've reached the end of the file
 	 */
-	if (cgmc.class == DEL_ELEMENT && cgmc.command == END_MF) {
+	if (cgmc.class == DEL_ELEMENT && cgmc.command == END_MF_ID) {
 		return(EOM);
 	}
 
 	/*
 	 * current element better be a begin picture
 	 */
-	if (! (cgmc.class == DEL_ELEMENT && cgmc.command == BEG_PIC)) {
+	if (! (cgmc.class == DEL_ELEMENT && cgmc.command == BEG_PIC_ID)) {
 
 		CtransSetError_(ERR_INV_STATE);
 		return(FATAL);
@@ -437,7 +437,7 @@ CtransRC	CtransPlotFrame()
 		if ((rc = Process(&cgmc)) == FATAL) return(FATAL);
 		if (rc == WARN) rcx = WARN;
 
-		if (cgmc.class == DEL_ELEMENT && cgmc.command == END_PIC) {
+		if (cgmc.class == DEL_ELEMENT && cgmc.command == END_PIC_ID) {
 
 			break;	/* we're done	*/
 		}
@@ -511,7 +511,7 @@ void	CtransCloseBatch()
 	 */
 	if (deviceIsInit && ! (*deBug)) {
 		cgmc.class = DEL_ELEMENT;
-		cgmc.command = END_MF;
+		cgmc.command = END_MF_ID;
 		(void) Process(&cgmc);
 	}
 	/*
@@ -578,10 +578,10 @@ CtransRC	CtransLSeekBatch(offset, whence)
 	 */
 	while (skip != 0 && ((status = Instr_Dec(&cgmc)) > 0)) {
 
-		if (cgmc.class == DEL_ELEMENT && cgmc.command == BEG_PIC) {
+		if (cgmc.class == DEL_ELEMENT && cgmc.command == BEG_PIC_ID){
 			skip--;
 		}
-		if (cgmc.class == DEL_ELEMENT && cgmc.command == END_MF) {
+		if (cgmc.class == DEL_ELEMENT && cgmc.command == END_MF_ID) {
 			return(EOM);	/* seek past end of file	*/
 		}
 	}

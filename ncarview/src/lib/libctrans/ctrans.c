@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.21 1992-07-16 18:07:18 clyne Exp $
+ *	$Id: ctrans.c,v 1.22 1992-07-30 00:47:29 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -311,8 +311,8 @@ static	void	clear_device()
 DoEscapes(cgmc)
 	CGMC	*cgmc;
 {
-	while ((cgmc->class == ESC_ELEMENT && cgmc->command == ESCAPE) ||
-		(cgmc->class == DEL_ELEMENT && cgmc->command == NOOP)) {
+	while ((cgmc->class == ESC_ELEMENT && cgmc->command == ESCAPE_ID) ||
+		(cgmc->class == DEL_ELEMENT && cgmc->command == NOOP_ID)) {
 
 		if (Process(cgmc) != FATAL) {
 			(void) Instr_Dec(cgmc);
@@ -516,7 +516,7 @@ CtransRC	init_metafile(record, cgm_fd)
 		return(FATAL);
 	}
 	DoEscapes(&command);
-	if (command.class == DEL_ELEMENT && command.command == BEG_MF) {
+	if (command.class == DEL_ELEMENT && command.command == BEG_MF_ID) {
 		if ((rc = Process(&command)) == FATAL) return(FATAL);
 		if (rc == WARN) rcx = WARN;
 	}
@@ -541,7 +541,7 @@ CtransRC	init_metafile(record, cgm_fd)
 			/*
 			 * disable future CGM color table entries
 			 */
-			cmdtab[devnum][ATT_ELEMENT][COLOR_TABLE] = noop;
+			cmdtab[devnum][ATT_ELEMENT][COLOR_TABLE_ID] = noop;
 			
 		}
 	}
@@ -553,8 +553,8 @@ CtransRC	init_metafile(record, cgm_fd)
 		elog(ErrGetMsg());
 		return (FATAL);
 	}
-	while((command.class != DEL_ELEMENT || command.command != BEG_PIC)
-		&& (command.class != DEL_ELEMENT || command.command != END_MF)){
+	while((command.class != DEL_ELEMENT || command.command != BEG_PIC_ID) &&
+		(command.class != DEL_ELEMENT || command.command != END_MF_ID)){
 
 		if ((rc = Process(&command)) == FATAL) return(FATAL);
 		if (rc == WARN) rcx = WARN;
@@ -623,7 +623,7 @@ CtransRC	ctrans(record)
 	/*
 	 * see if we've reached the end of the file
 	 */
-	if (command.class == DEL_ELEMENT && command.command == END_MF) {
+	if (command.class == DEL_ELEMENT && command.command == END_MF_ID) {
 		/* 
 		 * process the END MF command	
 		 */
@@ -635,7 +635,7 @@ CtransRC	ctrans(record)
 	/*
 	 * current element better be a begin picture
 	 */
-	if (! (command.class == DEL_ELEMENT && command.command == BEG_PIC)) {
+	if (! (command.class == DEL_ELEMENT && command.command == BEG_PIC_ID)) {
 		ESprintf(E_UNKNOWN, "BEGIN PICTURE element expected");
 		elog(ErrGetMsg());
 		return(FATAL);
@@ -657,7 +657,7 @@ CtransRC	ctrans(record)
 		if ((rc = Process(&command)) == FATAL) return(FATAL);
 		if (rc == WARN) rcx = WARN;
 
-		if (command.class == DEL_ELEMENT && command.command == END_PIC){
+		if (command.class == DEL_ELEMENT && command.command == END_PIC_ID){
 
 			break;	/* we're done	*/
 		}
@@ -734,9 +734,9 @@ CtransRC	ctrans_merge(record1, record2)
 		if (rc == WARN) rcx = WARN;
 
 	} while (((command.class != DEL_ELEMENT) 
-			|| (command.command != END_PIC))
+			|| (command.command != END_PIC_ID))
 		&& ((command.class != DEL_ELEMENT) 
-			|| (command.command != END_MF)));
+			|| (command.command != END_MF_ID)));
 
 	/*
 	 * advance to second record (skip the END_PIC command)
@@ -757,8 +757,11 @@ CtransRC	ctrans_merge(record1, record2)
 			elog(ErrGetMsg());
 			return (FATAL);
 		}
-	}while((command.class != DEL_ELEMENT || command.command != BEG_PIC_B)
-		&& (command.class != DEL_ELEMENT || command.command != END_MF));
+	}while(
+		(command.class != DEL_ELEMENT || 
+		command.command != BEG_PIC_B_ID)
+		&& (command.class != DEL_ELEMENT || 
+		command.command != END_MF_ID));
 
 
 	/*
@@ -773,9 +776,9 @@ CtransRC	ctrans_merge(record1, record2)
 	 * 	Do until get a END PICTURE or END METAFILE element
 	 */
 	while (((command.class != DEL_ELEMENT) 
-			|| (command.command != END_PIC))
+			|| (command.command != END_PIC_ID))
 		&& ((command.class != DEL_ELEMENT) 
-			|| (command.command != END_MF))) {
+			|| (command.command != END_MF_ID))) {
 
 		if ((rc = Process(&command)) == FATAL) return(FATAL);
 		if (rc == WARN) rcx = WARN;
@@ -792,7 +795,7 @@ CtransRC	ctrans_merge(record1, record2)
 	if ((rc = Process(&command)) == FATAL) return(FATAL);
 	if (rc == WARN) rcx = WARN;
 
-	if (command.command == END_MF)
+	if (command.command == END_MF_ID)
 
 		/* end of metafile		*/
 		return(EOM);
@@ -879,7 +882,7 @@ void	close_metafile()
 	 */
 	if (deviceIsInit && ! (*deBug)) {
 		(void)(*cmdtab[devnum][DEL_ELEMENT][CLEAR_DEVICE])(&command);
-		(void)(*cmdtab[devnum][DEL_ELEMENT][END_MF])(&command);
+		(void)(*cmdtab[devnum][DEL_ELEMENT][END_MF_ID])(&command);
 	}
 }
 
@@ -983,7 +986,7 @@ CtransRC	SetDevice(gcap)
 	 */
 	if (deviceIsInit) {
 		int	devnum = devices[currdev].number;	
-		(void)(*cmdtab[devnum][DEL_ELEMENT][END_MF])(&command);
+		(void)(*cmdtab[devnum][DEL_ELEMENT][END_MF_ID])(&command);
 	}
 
 	/*

@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.14 1992-07-28 22:31:40 clyne Exp $
+ *	$Id: rast.c,v 1.15 1992-07-30 00:47:47 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -437,7 +437,7 @@ CGMC *c;
 
 
 
-clear_grid(grid)
+static	clear_grid(grid)
 	Raster	*grid;
 {
 	if (rasIsDirect) {
@@ -455,7 +455,7 @@ clear_grid(grid)
 	}
 }
 
-init_color_tab()
+static	init_color_tab()
 {
 
 	/*
@@ -473,7 +473,7 @@ init_color_tab()
 
 }
 	
-set_back_color(colr)
+static	set_back_color(colr)
 	CDtype	colr;
 {
 	colorTab.rgb[0].red = colr.red;

@@ -45,7 +45,7 @@ LoadPalette(cgmc, palette)
 	 * The cgmc will contain the CGM color table command
 	 */
 	cgmc->class = ATT_ELEMENT;
-	cgmc->command = COLOR_TABLE;
+	cgmc->command = COLOR_TABLE_ID;
 
 	/*
 	 * maximum color representable by the CGM

@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.23 1992-07-16 18:07:51 clyne Exp $
+ *	$Id: gcap.c,v 1.24 1992-07-30 00:47:39 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -75,6 +75,7 @@ static	CoordRect	VDCExtent;
 static	struct	GCapOpts_	{
 	char	*window;
 	char	*viewport;
+	boolean	sim_bg;
 	} gcap_opts;
 
 static	Option	options[] = {
@@ -84,17 +85,22 @@ static	Option	options[] = {
 	{"viewport", NCARGCvtToString,
 		(Voidptr) &gcap_opts.viewport, sizeof (gcap_opts.window)
 	},
+	{"simulatebg", NCARGCvtToBoolean,
+		(Voidptr) &gcap_opts.sim_bg, sizeof (gcap_opts.sim_bg)
+	},
 	{
 	NULL
 	}
 };
 
 extern	boolean	*softFill;
+boolean	doSimulateBG = FALSE;	/* simulate background color changes ?	*/
 
 /*
  * defines for the markers in the strings
  */
 #define MAD	-6	/* Colour Index */
+
 
 /*
  *	Below are the functions called from the jumptable
@@ -145,6 +151,7 @@ CGMC *c;
 	coord_mod.y_scale = YSCALE;
 
 
+	doSimulateBG = gcap_opts.sim_bg;
 	/*
 	 * set device viewport specification
 	 */

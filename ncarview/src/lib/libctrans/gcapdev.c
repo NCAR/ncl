@@ -1,7 +1,9 @@
 /*
- *	$Id: gcapdev.c,v 1.15 1992-07-16 18:07:55 clyne Exp $
+ *	$Id: gcapdev.c,v 1.16 1992-07-30 00:47:42 clyne Exp $
  */
 #include <stdio.h>
+#include <errno.h>
+#include <ncarv.h>
 #include "graphcap.h"
 #include "cgmc.h"
 #include "soft_fill.h"
@@ -11,6 +13,7 @@
 
 extern	int	formatveccnt(), formatcoord(), formatindex(), formatwidth(),
 		formatintensity();
+extern	boolean	doSimulateBG;
 
 /*
  * defines for the markers in the strings
@@ -20,6 +23,97 @@ extern	int	formatveccnt(), formatcoord(), formatindex(), formatwidth(),
 #define	XC 	-3	/* X Coord */
 #define	YC 	-4	/* Y Coord */
 #define	XYC 	-5	/* X-Y Coord Pair */
+
+
+
+/*
+ * simulate background color setting
+ */
+static	int	simulate_bg_color()
+{
+	static	boolean first = TRUE;
+	static	CGMC	cgmc;
+
+	Etype	fill_style = INT_STYLE;
+	CItype	fill_color = FILL_COLOUR.index;
+
+	void	gcap_update_color_table();
+
+        /*
+	 * create space for temp cmgc
+	 */
+	if (first) {
+		if (! (cgmc.e = (Etype *) malloc (sizeof(Etype)))) {
+			ESprintf(errno, "malloc(%d)", sizeof(Etype));
+			return(-1);
+		}
+		if (! (cgmc.ci = (CItype *) malloc (sizeof(CItype)))) {
+			ESprintf(errno, "malloc(%d)", sizeof(CItype));
+			return(-1);
+		}
+		if (! (cgmc.p = (Ptype *) malloc (5 * sizeof(Ptype)))) {
+			ESprintf(errno, "malloc(%d)", 5 * sizeof(Ptype));
+			return(-1);
+		}
+		first = FALSE;
+	}
+
+	if (COLOUR_TABLE_DAMAGE) {
+		gcap_update_color_table();
+		COLOUR_TABLE_DAMAGE = FALSE;
+	}
+
+	cgmc.more = FALSE;
+
+        /* set fill colour to background color	*/
+        cgmc.class = ATT_ELEMENT;
+        cgmc.command = FILL_COLOUR_ID;
+        cgmc.ci[0] = 0;		/* color index zero is background color	*/
+        cgmc.CInum = 1;
+        (void) Process(&cgmc);
+
+        /* set interior style to solid	*/
+        cgmc.class = ATT_ELEMENT;
+        cgmc.command = INTERIOR_STYLE_ID;
+        cgmc.e[0] = SOLID_S;
+        cgmc.Enum = 1;
+        (void) Process(&cgmc);
+
+	/*
+	 * draw a big rectangle
+	 */
+        cgmc.class = GRP_ELEMENT;
+        cgmc.command = POLYGON_ID;
+	cgmc.p[0].x = XMIN;
+	cgmc.p[0].y = YMIN;
+	cgmc.p[1].x = XMAX;
+	cgmc.p[1].y = YMIN;
+	cgmc.p[2].x = XMAX;
+	cgmc.p[2].y = YMAX;
+	cgmc.p[3].x = XMIN;
+	cgmc.p[3].y = YMAX;
+	cgmc.Pnum = 4;
+        (void) Process(&cgmc);
+
+	/*
+	 * restore polygon attributes
+	 */
+        /* set fill colour to background color	*/
+        cgmc.class = ATT_ELEMENT;
+        cgmc.command = FILL_COLOUR_ID;
+        cgmc.ci[0] = fill_color;
+        cgmc.CInum = 1;
+        (void) Process(&cgmc);
+
+        /* set interior style to solid	*/
+        cgmc.class = ATT_ELEMENT;
+        cgmc.command = INTERIOR_STYLE_ID;
+        cgmc.e[0] = fill_style;
+        cgmc.Enum = 1;
+        (void) Process(&cgmc);
+
+	return(0);
+}
 
 void	gcap_open(max_poly_points)
 	unsigned long	*max_poly_points;
@@ -55,6 +149,7 @@ boolean polysim;	/* True if to simulate polygons with lines */
 	int	line_width = ROUND(LINE_WIDTH);
 
 	int	ComLineSim();
+
 
 	/*
 	 *	If the line style is not the default then send the 
@@ -294,6 +389,7 @@ long	x1_,y1_,x2_,y2_;
 	long	x1, y1, x2, y2;
 	SignedChar	s_char_;
 
+
 	if (!(Clipper(x1_, y1_, x2_, y2_, &x1, &y1, &x2, &y2))) {
 		return;
 	}
@@ -374,6 +470,7 @@ void	gcap_devline(x1, y1, x2, y2)
 {
 	int	i;	/* loop variable */
 	SignedChar	s_char_;
+
 
 	if (POLY_FLAG) {
 		for(i=0;i<LINE_DRAW_START_SIZE;i++) {
@@ -729,4 +826,9 @@ void	gcap_update_color_table()
 		}
 	}	/* for	*/
 	}	/* else if  individual	*/
+
+	if (doSimulateBG && BACKCOLR_DAMAGE) {
+		BACKCOLR_DAMAGE = FALSE;
+		(void)	simulate_bg_color();
+	}
 }
