@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.5 1995-06-06 19:56:52 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.6 1995-06-15 01:36:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -273,6 +273,7 @@ typedef struct _NhlContourPlotLayerPart {
 	int		constf_anno_id;
 
 	NhlScalarFieldFloatLayerPart	*sfp;
+	NhlScalarFieldFloatLayerPart	*osfp;
 
 	NhlString	*dtable;
 	int		dtable_len;

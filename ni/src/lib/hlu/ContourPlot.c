@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.19 1995-06-08 01:47:20 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.20 1995-06-15 01:36:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2115,6 +2115,8 @@ ContourPlotInitialize
 	cnp->lgnd_ll_font_colors = NULL;
 	cnp->lgnd_ll_strings = NULL;
 	cnp->dash_table = NULL;
+	cnp->sfp = NULL;
+	cnp->osfp = NULL;
 
 /*
  * Set up the data
@@ -2845,11 +2847,15 @@ NhlLayer inst;
 	NhlFreeGenArray(cnp->fill_scales);
 	NhlFreeGenArray(cnp->line_colors);
 	NhlFree(cnp->gks_line_colors);
+	NhlFree(cnp->gks_fill_colors);
 	NhlFreeGenArray(cnp->line_dash_patterns);
 	NhlFreeGenArray(cnp->line_thicknesses);
 	NhlFreeGenArray(cnp->llabel_strings);
 	NhlFreeGenArray(cnp->llabel_colors);
 	NhlFree(cnp->gks_llabel_colors);
+
+	if (cnp->osfp != NULL)
+		NhlFree(cnp->osfp);
 /*
  * This array will be NULL unless the user has explicitly set
  * LegendLevelFlags.
@@ -2900,7 +2906,7 @@ NhlLayer inst;
         if (cnp->info_string != NULL)
                 NhlFree(cnp->info_string);
         if (cnp->no_data_string != NULL)
-                NhlFree(cnp->constf_string);
+                NhlFree(cnp->no_data_string);
         if (cnp->constf_string != NULL)
                 NhlFree(cnp->constf_string);
 
@@ -4225,6 +4231,18 @@ static NhlErrorTypes GetData
 		return NhlFATAL;
 	}
 
+	if (cnp->sfp != NULL && cnp->osfp == NULL) {
+		cnp->osfp = NhlMalloc(sizeof(NhlScalarFieldFloatLayerPart));
+		if (cnp->osfp == NULL) {
+			e_text = "%s: dynamic memory allocation error";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+	}
+	if (cnp->sfp != NULL) {
+		memcpy(cnp->osfp,
+		       cnp->sfp,sizeof(NhlScalarFieldFloatLayerPart));	
+	}
 	sfl = (NhlScalarFieldFloatLayer) _NhlGetDataSet(dlist[0],&new);
 	if (sfl == NULL) {
 		e_text = "%s: internal error retrieving data set";
@@ -4781,13 +4799,13 @@ static NhlErrorTypes SetUpLLTransObj
 	if (cnp->y_max != ocnp->y_max)
 		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,cnp->y_max);
 
-	if (ocnp->sfp == NULL) {
+	if (cnp->osfp == NULL) {
 		oxrev = False;
 		oyrev = False;
 	}
 	else {
-		oxrev = ocnp->sfp->x_start > ocnp->sfp->x_end;
-		oyrev = ocnp->sfp->y_start > ocnp->sfp->y_end;
+		oxrev = cnp->osfp->x_start > cnp->osfp->x_end;
+		oyrev = cnp->osfp->y_start > cnp->osfp->y_end;
 	}
 	if (cnp->x_reverse != ocnp->x_reverse || oxrev != xrev) {
 		if (cnp->x_min_set && cnp->x_max_set)
@@ -5018,10 +5036,10 @@ static NhlErrorTypes SetUpIrrTransObj
 		cnp->do_low_level_log = True;
 
 	if (init || tfp->trans_obj == NULL ||
-	    ocnp->sfp == NULL ||
-	    cnp->sfp->x_arr != ocnp->sfp->x_arr ||
-	    cnp->sfp->x_start != ocnp->sfp->x_start ||
-	    cnp->sfp->x_end != ocnp->sfp->x_end ||
+	    cnp->osfp == NULL ||
+	    cnp->sfp->x_arr != cnp->osfp->x_arr ||
+	    cnp->sfp->x_start != cnp->osfp->x_start ||
+	    cnp->sfp->x_end != cnp->osfp->x_end ||
 	    cnp->x_min != ocnp->x_min ||
 	    cnp->x_max != ocnp->x_max) {
 
@@ -5053,10 +5071,10 @@ static NhlErrorTypes SetUpIrrTransObj
 	}
 
 	if (init || tfp->trans_obj == NULL ||
-	    ocnp->sfp == NULL ||
-	    cnp->sfp->y_arr != ocnp->sfp->y_arr ||
-	    cnp->sfp->y_start != ocnp->sfp->y_start ||
-	    cnp->sfp->y_end != ocnp->sfp->y_end ||
+	    cnp->osfp == NULL ||
+	    cnp->sfp->y_arr != cnp->osfp->y_arr ||
+	    cnp->sfp->y_start != cnp->osfp->y_start ||
+	    cnp->sfp->y_end != cnp->osfp->y_end ||
 	    cnp->y_min != ocnp->y_min ||
 	    cnp->y_max != ocnp->y_max ||
 	    cnp->x_log != ocnp->x_log ||
@@ -5130,13 +5148,13 @@ static NhlErrorTypes SetUpIrrTransObj
 		return ret;
 	}
 
-	if (ocnp->sfp == NULL) {
+	if (cnp->osfp == NULL) {
 		oxrev = False;
 		oyrev = False;
 	}
 	else {
-		oxrev = ocnp->sfp->x_start > ocnp->sfp->x_end;
-		oyrev = ocnp->sfp->y_start > ocnp->sfp->y_end;
+		oxrev = cnp->osfp->x_start > cnp->osfp->x_end;
+		oyrev = cnp->osfp->y_start > cnp->osfp->y_end;
 	}
 	if (cnp->x_reverse != ocnp->x_reverse || xrev != oxrev) {
 		if (cnp->x_min_set && cnp->x_max_set)
@@ -5882,7 +5900,7 @@ static NhlErrorTypes ManageLegend
 			NhlSetSArg(&sargs[(*nargs)++],
 				   NhlNpmLegendDisplayMode,
 				   cnp->display_legend);
-			if (cnp->const_field != ocnp->const_field)
+			if (init || cnp->const_field != ocnp->const_field)
 				set_all = True;
 		}
 	}
@@ -6363,7 +6381,7 @@ static NhlErrorTypes ManageLabelBar
 			NhlSetSArg(&sargs[(*nargs)++],
 				   NhlNpmLabelBarDisplayMode,
 				   cnp->display_labelbar);
-			if (cnp->const_field != ocnp->const_field) 
+			if (init || cnp->const_field != ocnp->const_field) 
 				set_all = True;
 		}
 	}
@@ -7794,6 +7812,19 @@ static NhlErrorTypes    ManageData
 		return NhlFATAL;
 	}
 
+	if (cnp->sfp != NULL && cnp->osfp == NULL) {
+		cnp->osfp = NhlMalloc(sizeof(NhlScalarFieldFloatLayerPart));
+		if (cnp->osfp == NULL) {
+			e_text = "%s: dynamic memory allocation error";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+	}
+	if (cnp->sfp != NULL) {
+		memcpy(cnp->osfp,
+		       cnp->sfp,sizeof(NhlScalarFieldFloatLayerPart));	
+	}
+
  	sfl = (NhlScalarFieldFloatLayer) _NhlGetDataSet(dlist[0],&new);
 	if (sfl == NULL) {
 		cnp->data_init = False;
@@ -7801,6 +7832,7 @@ static NhlErrorTypes    ManageData
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
+	
 	cnp->sfp = (NhlScalarFieldFloatLayerPart *) &sfl->sfieldfloat;
 
 	cnp->zmin = cnp->sfp->data_min;
