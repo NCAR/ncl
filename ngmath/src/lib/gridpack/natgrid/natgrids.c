@@ -1,9 +1,4 @@
-/*
- *  Copyright (C) 1991-1996
- *          by
- *    David F. Watson
- */
-
+#include "nnghead.h"
 #include "nngheads.h"
 
 float **c_natgrids(int n, float x[], float y[], float z[],
@@ -132,13 +127,6 @@ void Initialize(int n, float x[], float y[], int nxi, int nyi,
    if (vertlap <= EPSILON) {
      vertlap = 0.01 * (yend - ystart);
    }
-}
-
-void Terminate()
-{
-   magx = magx_orig;
-   magy = magy_orig;
-   magz = magz_orig;
 }
 
 double armin(int num, float *x)

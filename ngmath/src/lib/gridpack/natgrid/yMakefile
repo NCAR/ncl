@@ -1,16 +1,19 @@
 #
-#       $Id: yMakefile,v 1.2 1997-02-19 22:59:14 fred Exp $
+#       $Id: yMakefile,v 1.3 1997-02-27 19:04:40 fred Exp $
 #
 
 MYNAME  = natgrid
 
-SOURCES = natgridd.c nncrunchd.c nnerror.c nnusers.c natgrids.c nncrunchs.c \
-                        nnuserd.c nnuser_f.f
+SOURCES = natgrid.c natgrids.c nncrunchd.c nnerror.c nnuserd.c  \
+	natgridd.c  nncrunch.c nncrunchs.c nnuser.c  nnusers.c  \
+	nnuser_f.f
 
-OBJECTS = natgridd.o nncrunchd.o nnerror.o nnusers.o natgrids.o nncrunchs.o \
-                        nnuserd.o nnuser_f.o
+OBJECTS = natgrid.o natgrids.o nncrunchd.o nnerror.o nnuserd.o  \
+	natgridd.o  nncrunch.o nncrunchs.o nnuser.o  nnusers.o  \
+	nnuser_f.o
 
-INCLUDES = nncheadd.h nncheads.h nngheadd.h nngheads.h nnuheadd.h nnuheads.h
+INCLUDES = nnchead.h nncheads.h nngheadd.h nnmhead.h nnuheadd.h \
+	nncheadd.h   nnghead.h  nngheads.h nnuhead.h nnuheads.h
 
 PartialLibraryTarget(../libngmath.a,$(OBJECTS))
 BuildIncludes($(INCLUDES),ncarg/math,..)

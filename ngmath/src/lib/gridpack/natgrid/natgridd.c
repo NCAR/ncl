@@ -1,9 +1,4 @@
-/*
- *  Copyright (C) 1991-1996
- *          by
- *    David F. Watson
- */
-
+#include "nnghead.h"
 #include "nngheadd.h"
 
 double **c_natgridd(int n, double x[], double y[], double z[],
@@ -18,7 +13,7 @@ double **c_natgridd(int n, double x[], double y[], double z[],
       asflag = 1;
       Initialized(n, x, y, nxi, nyi, xi, yi);
 
-      if (ReadData(n,x,y,z) != 0)
+      if (ReadDatad(n,x,y,z) != 0)
       {
          *ier = error_status;
          return ( (double **) NULL);
@@ -44,7 +39,7 @@ double **c_natgridd(int n, double x[], double y[], double z[],
       }
    }
 
-   data_out = MakeGrid(nxi, nyi, xi, yi);
+   data_out = MakeGridd(nxi, nyi, xi, yi);
    if (error_status)
    {
       *ier = error_status;
@@ -132,13 +127,6 @@ void Initialized(int n, double x[], double y[], int nxi, int nyi,
    if (vertlap <= EPSILON) {
      vertlap = 0.01 * (yend - ystart);
    }
-}
-
-void Terminate()
-{
-   magx = magx_orig;
-   magy = magy_orig;
-   magz = magz_orig;
 }
 
 double armind(int num, double *x)
