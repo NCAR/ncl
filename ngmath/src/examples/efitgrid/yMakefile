@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.3 2002-08-03 00:37:31 fred Exp $
+#	$Id: yMakefile,v 1.4 2003-08-05 22:34:23 haley Exp $
 #
 
 MYNAME	= edsgrid
@@ -10,7 +10,10 @@ SRCS = \
 	c_ftex07.c                               \
 	ftex01.f     ftex02.f     ftex03.f       \
 	ftex04.f     ftex05.f     ftex06.f       \
-	ftex07.f
+	ftex07.f                                 \
+	ftex01d.f    ftex02d.f    ftex03d.f       \
+	ftex04d.f    ftex05d.f    ftex06d.f       \
+	ftex07d.f
 
 OBJS = \
 	c_ftex01.o   c_ftex02.o   c_ftex03.o     \
@@ -18,7 +21,10 @@ OBJS = \
 	c_ftex07.o                               \
 	ftex01.o     ftex02.o     ftex03.o       \
 	ftex04.o     ftex05.o     ftex06.o       \
-	ftex07.o
+	ftex07.o                                 \
+	ftex01d.o    ftex02d.o    ftex03d.o       \
+	ftex04d.o    ftex05d.o    ftex06d.o       \
+	ftex07d.o
 
 PROG_LIBS               = $(NCARGLIBS) $(NGMATHLIBS)
 SYS_LIBS		= $(XLIB) $(CTOFLIBS)
@@ -32,6 +38,13 @@ FExampleTarget(ftex04,ftex04.o)
 FExampleTarget(ftex05,ftex05.o)
 FExampleTarget(ftex06,ftex06.o)
 FExampleTarget(ftex07,ftex07.o)
+FExampleTarget(ftex01d,ftex01d.o)
+FExampleTarget(ftex02d,ftex02d.o)
+FExampleTarget(ftex03d,ftex03d.o)
+FExampleTarget(ftex04d,ftex04d.o)
+FExampleTarget(ftex05d,ftex05d.o)
+FExampleTarget(ftex06d,ftex06d.o)
+FExampleTarget(ftex07d,ftex07d.o)
 CExampleTarget(c_ftex01,c_ftex01.o)
 CExampleTarget(c_ftex02,c_ftex02.o)
 CExampleTarget(c_ftex03,c_ftex03.o)

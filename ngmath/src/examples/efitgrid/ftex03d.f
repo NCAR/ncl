@@ -1,0 +1,189 @@
+C
+C     $Id: ftex03d.f,v 1.1 2003-08-05 22:34:23 haley Exp $
+C
+      PROGRAM FTEX03
+C
+C  Example of CURVSDP, CURVPSDP.
+C
+C  Define dimensions, declare arrays.
+C
+      PARAMETER (IDIM=10,IOUT=201)
+      DOUBLE PRECISION X
+      DOUBLE PRECISION Y
+      DOUBLE PRECISION YS
+      DOUBLE PRECISION YSP
+      DOUBLE PRECISION TEMP
+      DOUBLE PRECISION XO
+      DOUBLE PRECISION YO
+      DOUBLE PRECISION YOS
+      DOUBLE PRECISION YOSP
+      DOUBLE PRECISION SIGMA
+      DOUBLE PRECISION D
+      DOUBLE PRECISION S
+      DOUBLE PRECISION EPS
+      DOUBLE PRECISION XR
+      DOUBLE PRECISION XL
+      DOUBLE PRECISION XINC
+      DOUBLE PRECISION CURV2DP
+      DOUBLE PRECISION P
+      DOUBLE PRECISION CURVP2DP
+      DIMENSION X(IDIM),Y(IDIM),YS(IDIM),YSP(IDIM),TEMP(IDIM,11)
+      DIMENSION XO(IOUT),YOS(IOUT),YOSP(IOUT)
+C
+C Specify the input data.
+C
+C
+      DATA X/0.000D0,0.210D0,0.360D0,0.540D0,1.000D0,1.500D0,1.970D0,
+     +     2.300D0,2.500D0,2.700D0/
+      DATA Y/0.000D0,2.600D0,3.000D0,2.500D0,0.000D0,-1.000D0,0.000D0,
+     +     0.800D0,0.920D0,0.700D0/
+C
+C  Call CURVSDP setup.
+C
+      SIGMA = 1.0D0
+      D = 0.3D0
+      ISW = 1
+      S = DBLE(IDIM)
+      EPS = SQRT(2.D0/S)
+      CALL CURVSDP(IDIM,X,Y,D,ISW,S,EPS,YS,YSP,SIGMA,TEMP,IERR)
+C
+C  Call CURVP2DP and calculate the interpolated values and the integrals.
+C
+      XR = 5.D0
+      XL = -1.D0
+      XINC = (XR-XL)/ (IOUT-1)
+      DO 10 I = 1,IOUT
+          XO(I) = XL + (I-1)*XINC
+          YOS(I) = CURV2DP(XO(I),IDIM,X,YS,YSP,SIGMA)
+   10 CONTINUE
+C
+C  Call CURVPSDP setup.
+C
+      P = 3.D0
+      CALL CURVPSDP(IDIM,X,Y,P,D,ISW,S,EPS,YS,YSP,SIGMA,TEMP,IERR)
+C
+C  Call CURVP2DP and calculate the interpolated values.
+C
+      DO 15 I = 1,IOUT
+          YOSP(I) = CURVP2DP(XO(I),IDIM,X,YS,P,YSP,SIGMA)
+   15 CONTINUE
+C
+C This next section plots the data. You must have a double precision
+C version of NCAR Graphics in order for this section to compile and
+C run correctly.  For now, it is commented out.
+C
+C  Plot the results.
+C
+C      CALL DRWFT3(XL,XR,IDIM,X,Y,IOUT,XO,YO,YOS,YOSP)
+C
+      STOP
+      END
+C      SUBROUTINE DRWFT3(XL,XR,II,X,Y,IO,XO,YO,YOS,YOSP)
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+C      PARAMETER (IERRF=6,LUNIT=2,IWTYPE=1,IWKID=1)
+C      DOUBLE PRECISION XL
+C      DOUBLE PRECISION XR
+C      DOUBLE PRECISION X
+C      DOUBLE PRECISION Y
+C      DOUBLE PRECISION XO
+C      DOUBLE PRECISION YO
+C      DOUBLE PRECISION YOS
+C      DOUBLE PRECISION YOSP
+C      DOUBLE PRECISION YPOS_TOP
+C      DOUBLE PRECISION YB
+C      DOUBLE PRECISION YT
+C
+C      DATA YPOS_TOP/0.95D0/
+C
+C  Open GKS, open and activate a workstation.
+C
+C      CALL GOPKS(IERRF,ISZDM)
+C      CALL GOPWK(IWKID,LUNIT,IWTYPE)
+C      CALL GACWK(IWKID)
+C
+C  Define a color table.
+C
+C      CALL GSCR(IWKID,0,1.0D0,1.0D0,1.0D0)
+C      CALL GSCR(IWKID,1,0.0D0,0.0D0,0.0D0)
+C      CALL GSCR(IWKID,2,1.0D0,0.0D0,0.0D0)
+C      CALL GSCR(IWKID,3,0.0D0,1.0D0,0.0D0)
+C      CALL GSCR(IWKID,4,0.0D0,0.0D0,1.0D0)
+C      CALL GSCLIP(1)
+C
+C  Graph the interpolated function values and mark the original
+C  input data points.
+C
+C      YB = -2.0D0
+C      YT = 4.0D0
+C      CALL BKGFT3(XL,XR,YPOS_TOP,'CURVSDP',0.42D0,YB,YT)
+C      CALL GRIDAL(6,5,3,1,1,1,10,XL,YB)
+C
+C  Mark the original data points.
+C
+C      CALL GSMKSC(2.D0)
+C      CALL GSPMCI(4)
+C      CALL GPM(II,X,Y)
+C
+C  Graph the interpolated function values.
+C
+C      CALL GPL(IO,XO,YOS)
+C
+C  Graph the periodic function.
+C
+C      CALL BKGFT3(XL,XR,YPOS_TOP-0.5D0,'CURVPSDP',0.42D0,YB,YT)
+C      CALL GRIDAL(6,5,3,1,1,1,10,XL,YB)
+C      CALL GPL(IO,XO,YOSP)
+C      CALL GSPLCI(1)
+C
+C  Mark the original data points.
+C
+C      CALL GSMKSC(2.D0)
+C      CALL GSPMCI(4)
+C      CALL GPM(II,X,Y)
+C
+C      CALL FRAME
+C
+C      CALL GDAWK(IWKID)
+C      CALL GCLWK(IWKID)
+C      CALL GCLKS
+C
+C      RETURN
+C      END
+C      SUBROUTINE BKGFT3(XL,XR,YPOS,LABEL,XLP,YB,YT)
+C      DOUBLE PRECISION XL
+C      DOUBLE PRECISION XR
+C      DOUBLE PRECISION YPOS
+C      DOUBLE PRECISION XLP
+C      DOUBLE PRECISION YB
+C      DOUBLE PRECISION YT
+C      DOUBLE PRECISION XX
+C      DOUBLE PRECISION YY
+C      DIMENSION XX(2),YY(2)
+C      CHARACTER*(*) LABEL
+C
+C      CALL SET(0.D0,1.D0,0.D0,1.D0,0.D0,1.D0,0.D0,1.D0,1)
+C      CALL PCSETI('FN',21)
+C      CALL PLCHHQ(XLP,YPOS-0.03D0,LABEL,0.025D0,0.D0,-1.D0)
+C      CALL SET(0.13D0,0.93D0,YPOS-0.35D0,YPOS,XL,XR,YB,YT,1)
+C      XX(1) = XL
+C      XX(2) = XR
+C      YY(1) = 0.D0
+C      YY(2) = 0.D0
+C      CALL GSPLCI(2)
+C      CALL GPL(2,XX,YY)
+C      CALL GSPLCI(1)
+C
+C      CALL GASETI('LTY',1)
+C      CALL PCSETI('FN',21)
+C      CALL GASETR('XLS',0.02D0)
+C      CALL GASETC('XLF','(F4.1)')
+C      CALL GASETR('YLS',0.02D0)
+C      CALL GASETC('YLF','(F5.2)')
+C      CALL GASETR('XMJ',0.02D0)
+C      CALL GASETR('YMJ',0.02D0)
+C
+C      RETURN
+C      END
