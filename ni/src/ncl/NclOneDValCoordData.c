@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclOneDValCoordData.c,v 1.5 1996-05-17 01:09:28 ethan Exp $
+ *      $Id: NclOneDValCoordData.c,v 1.6 1996-05-22 21:51:53 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -593,7 +593,7 @@ NclTypeClass type;
 	thevalobj->onedval.mono_type = _Nclis_mono(type,val,missing_value,*dim_sizes);
 
 	if(!(thevalobj->onedval.mono_type & (NclINCREASING | NclDECREASING) )) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclOneDValCoordDataCreate: A non-monotonic value was passed in. Coordinate subscripting will not work on the coordinate object");
+		NhlPError(NhlINFO,NhlEUNKNOWN,"_NclOneDValCoordDataCreate: A non-monotonic value was passed in. Coordinate subscripting will not work on the coordinate object");
 	}
 
 	_NclCreateMultiDVal((NclObj)thevalobj,class_ptr,obj_type,(obj_type_mask | Ncl_OneDValCoordData),val,missing_value,n_dims,dim_sizes,status,sel_rec,(NclTypeClass)type);

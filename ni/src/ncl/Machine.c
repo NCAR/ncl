@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.48 1996-05-17 23:34:28 ethan Exp $
+ *      $Id: Machine.c,v 1.49 1996-05-22 21:51:49 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -715,7 +715,7 @@ void _NclPopFrame
 	int popping_from;
 #endif
 {
-	int i,j;
+	int i,j,k;
 	NclStackEntry data;
 
 	switch(popping_from) {
@@ -729,6 +729,11 @@ void _NclPopFrame
 					if(data.u.the_list->the_elements != NULL) {	
 						for( j = 0; j < data.u.the_list->n_elements; j++) {
 							if(data.u.the_list->the_elements[j].rec != NULL) {
+								for(k =0; k < data.u.the_list->the_elements[j].rec->n_entries;k++) {
+									if(data.u.the_list->the_elements[j].rec->selection[k].sel_type == Ncl_VECSUBSCR){
+                                        					NclFree(data.u.the_list->the_elements[j].rec->selection[k].u.vec.ind);
+									}
+								}
 								NclFree(data.u.the_list->the_elements[j].rec );
 							}
 						}
@@ -747,6 +752,11 @@ void _NclPopFrame
 					if(data.u.the_list->the_elements != NULL) {	
 						for( j = 0; j < data.u.the_list->n_elements; j++) {
 							if(data.u.the_list->the_elements[j].rec != NULL) {
+								for(k =0; k < data.u.the_list->the_elements[j].rec->n_entries;k++) {
+									if(data.u.the_list->the_elements[j].rec->selection[k].sel_type == Ncl_VECSUBSCR){
+                                        					NclFree(data.u.the_list->the_elements[j].rec->selection[k].u.vec.ind);
+									}
+								}
 								NclFree(data.u.the_list->the_elements[j].rec );
 							}
 						}
@@ -1354,6 +1364,7 @@ extern void _NclAddObjToParamList
 {
 	NclMultiDValData tmp_md;
 	NclFrame *tmp_fp;
+	int i;
 /*
 * guarenteed to have next frame pointer in the flist stack.
 */
@@ -1369,7 +1380,18 @@ extern void _NclAddObjToParamList
 			tmp_md = (NclMultiDValData)_NclGetObj(((NclVar)obj)->var.thevalue_id);
 			if(tmp_md->multidval.sel_rec != NULL) {
 				tmp_fp->parameter_map.u.the_list->the_elements[arg_num].rec = (NclSelectionRecord*)NclMalloc((unsigned)sizeof(NclSelectionRecord));
-            			memcpy((char*)tmp_fp->parameter_map.u.the_list->the_elements[arg_num].rec,(char*)tmp_md->multidval.sel_rec,sizeof(NclSelectionRecord));
+				tmp_fp->parameter_map.u.the_list->the_elements[arg_num].rec->n_entries = tmp_md->multidval.sel_rec->n_entries;
+				for(i = 0; i < tmp_md->multidval.sel_rec->n_entries; i++) {	
+					if(tmp_md->multidval.sel_rec->selection[i].sel_type == Ncl_VECSUBSCR) {
+						tmp_fp->parameter_map.u.the_list->the_elements[arg_num].rec->selection[i] = 
+							 tmp_md->multidval.sel_rec->selection[i];
+						tmp_fp->parameter_map.u.the_list->the_elements[arg_num].rec->selection[i].u.vec.ind = (long*)NclMalloc((unsigned)sizeof(long)*tmp_md->multidval.sel_rec->selection[i].u.vec.n_ind);
+						memcpy((void*)tmp_fp->parameter_map.u.the_list->the_elements[arg_num].rec->selection[i].u.vec.ind,(void*)tmp_md->multidval.sel_rec->selection[i].u.vec.ind,sizeof(long)*tmp_md->multidval.sel_rec->selection[i].u.vec.n_ind);
+					} else {
+						tmp_fp->parameter_map.u.the_list->the_elements[arg_num].rec->selection[i] = 
+							 tmp_md->multidval.sel_rec->selection[i];
+					}
+				}
 
 			} else {
 				tmp_fp->parameter_map.u.the_list->the_elements[arg_num].rec = NULL;
@@ -1941,6 +1963,7 @@ if(the_list != NULL) {
 * When the selection record for the initial parameter has been subselected dimension sizes 
 * may be different between the parameter and the internal parameter
 */
+							
 						}
 					}
 /* 

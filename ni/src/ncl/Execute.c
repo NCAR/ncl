@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.64 1996-05-17 23:34:24 ethan Exp $
+ *      $Id: Execute.c,v 1.65 1996-05-22 21:51:44 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2694,6 +2694,7 @@ NclExecuteReturnStatus _NclExecute
 				NhlErrorTypes ret = NhlNOERROR;
 				NclSelectionRecord *sel_ptr = NULL;
 				NclMultiDValData thevalue = NULL;
+				int i;
 				
 
 				ptr++;lptr++;fptr++;
@@ -2788,6 +2789,14 @@ NclExecuteReturnStatus _NclExecute
 					} else {	
 						_NclCleanUpStack(1);
 					}
+					if(sel_ptr != NULL) {
+						for(i = 0; i <  sel_ptr->n_entries; i++) { 
+							if(sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
+								NclFree(sel_ptr->selection[i].u.vec.ind);
+							}
+						}
+						NclFree(sel_ptr);
+					}
 				}
 			}
 			break;
@@ -2801,6 +2810,7 @@ NclExecuteReturnStatus _NclExecute
 				int nsubs = 0;
 				NclSelectionRecord *sel_ptr = NULL;
 				NhlErrorTypes ret = NhlNOERROR;
+				int i;
 				
 
 				ptr++;lptr++;fptr++;
@@ -2865,6 +2875,14 @@ NclExecuteReturnStatus _NclExecute
 							estatus = NhlFATAL;
 						}
 					} 
+					if(sel_ptr != NULL) {
+						for(i = 0; i <  sel_ptr->n_entries; i++) { 
+							if(sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
+								NclFree(sel_ptr->selection[i].u.vec.ind);
+							}
+						}
+						NclFree(sel_ptr);
+					}
 				}
 			}
 			break;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.35 1996-05-17 01:09:21 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.36 1996-05-22 21:51:40 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1936,10 +1936,9 @@ NhlErrorTypes _NclIqsort
 		tmp_md2 = (NclMultiDValData)_NclReadSubSection((NclData)tmp_md,sel_ptr,NULL);
 		_NclAssignToVar(args.u.data_var,tmp_md2,NULL);
 		if((args.u.data_var->var.dim_info[0].dim_quark != -1)&&(_NclIsCoord(args.u.data_var,NrmQuarkToString(args.u.data_var->var.dim_info[0].dim_quark)))) {
-			tmp_var = _NclReadCoordVar(args.u.data_var,NrmQuarkToString(args.u.data_var->var.dim_info[0].dim_quark),sel_ptr);
-			_NclWriteCoordVar(args.u.data_var,(NclMultiDValData)_NclGetObj(tmp_var->var.thevalue_id),NrmQuarkToString(args.u.data_var->var.dim_info[0].dim_quark),NULL);
+			tmp_var = _NclReadCoordVar(args.u.data_var,NrmQuarkToString(args.u.data_var->var.dim_info[0].dim_quark),NULL);
+			_NclWriteCoordVar(args.u.data_var,_NclVarValueRead(tmp_var,sel_ptr,NULL),NrmQuarkToString(args.u.data_var->var.dim_info[0].dim_quark),NULL);
 		}
-		return(NhlNOERROR);
 		break;
 	default:
 		return(NhlFATAL);
@@ -1949,6 +1948,14 @@ NhlErrorTypes _NclIqsort
 	qc_nc = NULL;
 	qc_missing = NULL;
 	qc_val = NULL;
+	if(sel_ptr != NULL) {
+		for(i = 0; i <  sel_ptr->n_entries; i++) {
+			if(sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
+				NclFree(sel_ptr->selection[i].u.vec.ind);
+			}
+		}
+		NclFree(sel_ptr);
+	}
 }
 NhlErrorTypes _NclIbsearch
 #if	NhlNeedProto

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.27 1996-05-09 23:30:41 ethan Exp $
+ *      $Id: NclVar.c,v 1.28 1996-05-22 21:51:55 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -728,6 +728,7 @@ NclStatus status)
 			for(i = 0; i<var_out->var.n_dims; i++) {
 				tmp_var = (NclVar)_NclGetObj(coords[i]);
 				if(coords[i] != -1) {
+					tmp_var->var.var_type = COORD;
 					_NclAddParent((NclObj)tmp_var,(NclObj)var_out);
 					var_out->var.coord_vars[i] = coords[i];
 				} else {
@@ -765,10 +766,12 @@ NclStatus status)
 					tmp_var = (NclVar)_NclGetObj(coords[i]);
 					if(!_NclSetStatus((NclObj)tmp_var,PERMANENT)) {
 						tmp_var = _NclCopyVar(tmp_var,NULL,NULL);
+						tmp_var->var.var_type = COORD;
 						_NclSetStatus((NclObj)tmp_var,PERMANENT);
 						var_out->var.coord_vars[i] = tmp_var->obj.id;
 						_NclAddParent((NclObj)tmp_var,(NclObj)var_out);
 					} else {
+						tmp_var->var.var_type = COORD;
 						_NclAddParent((NclObj)tmp_var,(NclObj)var_out);
 						var_out->var.coord_vars[i] = coords[i];
 					}
@@ -1530,6 +1533,9 @@ NclSelectionRecord *sel_ptr;
 * the coordinate array is not possible
 */
 					coord_var = _NclVarRead((NclVar)_NclGetObj(self->var.coord_vars[sel_ptr->selection[i].dim_num]),&tmp_sel);
+					if(tmp_sel.selection[0].sel_type == Ncl_VECSUBSCR) {
+						NclFree(tmp_sel.selection[0].u.vec.ind);
+					}
 					coords[j] = coord_var->obj.id; 
 				} else {
 					coords[j] = -1;
@@ -1845,14 +1851,18 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 */
 					tmp_sel.selection[0] = rhs_sel_ptr->selection[i];
 					tmp_sel.selection[0].dim_num = 0;
-					tmp_coord_array[i] = _NclCopyVal(_NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[i].dim_num].dim_quark),&tmp_sel),NULL,NULL),NULL);
+					tmp_coord_array[i] = _NclVarValueRead(_NclReadCoordVar(rhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[i].dim_num].dim_quark),NULL),&tmp_sel,NULL);
+					if((tmp_coord_array[i] != NULL)&&(tmp_coord_array[i]->obj.status == PERMANENT)) {
+						tmp_coord_array[i] = _NclCopyVal(tmp_coord_array[i],NULL);
+					}
 					
 				} else {
 					tmp_coord_array[i] = NULL;
 				}
 			} 
 			for(i = 0; i < lhs->var.n_dims; i++) {
-				_NclWriteDim(lhs,i,NrmQuarkToString(tmp_name_array[i]));
+				if(tmp_name_array[i] != -1)
+					_NclWriteDim(lhs,i,NrmQuarkToString(tmp_name_array[i]));
 			}
 			for(i = 0; i < lhs->var.n_dims; i++) {
 				if(tmp_coord_array[i] != NULL) {
