@@ -1,4 +1,4 @@
-; $Id: basic04n.ncl,v 1.1 1995-02-10 22:38:13 scheitln Exp $
+; $Id: basic04n.ncl,v 1.2 1995-02-27 17:56:17 scheitln Exp $
 ;
 ; This example demonstrates how to select and change the workstation
 ; device for drawing your output to an NCGM file or an X workstation window.
@@ -20,17 +20,17 @@
 ; object being created. The second argument, "xWorkstationLayerClass", or 
 ; "ncgmWorkstationLayerClass" identifies the type or class of the object 
 ; to create. In this case an X workstation or an NCGM workstation.
-; The third argument, "noparent", specifies the id of the objects parent.
-; In this case, the object has no parent, so the constant "noparent" is used. 
+; The third argument, "defaultapp", specifies the id of the objects parent.
+; In this case, the object has no parent, so the constant "defaultapp" is used. 
 
-xwks = create "xwks" xWorkstationLayerClass noparent 
+xwks = create "xwks" xWorkstationLayerClass defaultapp 
 end create
 
 ; The resource, wkMetaName, lets you specify the name of the output NCGM
 ; file.  In this example, it is called basic04.ncgm.  If omitted, the 
 ; default name, gmeta,  will be used.
 
-nwks = create "nwks" ncgmWorkstationLayerClass noparent 
+nwks = create "nwks" ncgmWorkstationLayerClass defaultapp 
         "wkMetaName" : "basic04.ncgm"
 end create
 
@@ -55,7 +55,7 @@ data1=(/(/3,4,4,5,5/), \
 ; contour object.  The sfDataArray resource is used to assign a data
 ; array to a scalar field data object.
 
-field1 = create "field1" scalarFieldLayerClass noparent
+field1 = create "field1" scalarFieldLayerClass defaultapp
         "sfDataArray" : data1
 end create
 

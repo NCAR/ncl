@@ -1,4 +1,4 @@
-; $Id: basic02n.ncl,v 1.2 1995-02-03 20:39:06 scheitln Exp $
+; $Id: basic02n.ncl,v 1.3 1995-02-27 17:56:15 scheitln Exp $
 ;
 ; The first frame in this example demonstrates how to set the view port 
 ; for a contour plot.
@@ -15,7 +15,7 @@
 ; output to an NCGM, file, X workstation window, or a PostScript file. 
 ; This example writes to an X Workstation.
 
-wks = create "wks" xWorkstationLayerClass noparent 
+wks = create "wks" xWorkstationLayerClass defaultapp 
       end create
 
 ; Create a plot object.  In this example, we will create a contour plot.

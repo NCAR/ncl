@@ -1,4 +1,4 @@
-; $Id: basic05n.ncl,v 1.2 1995-02-14 16:00:12 scheitln Exp $
+; $Id: basic05n.ncl,v 1.3 1995-02-27 17:56:18 scheitln Exp $
 ;
 ; This example demonstrates how to read and manipulate colormaps.
 
@@ -20,7 +20,7 @@ end do
 
 ; Create an XWorkstation object.
 
-wks = create "wks" xWorkstationLayerClass noparent
+wks = create "wks" xWorkstationLayerClass defaultapp
 end create
 
 ; Create a labelbar object. 

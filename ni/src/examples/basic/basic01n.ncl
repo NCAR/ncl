@@ -1,4 +1,4 @@
-; $Id: basic01n.ncl,v 1.1 1995-02-03 18:53:43 scheitln Exp $
+; $Id: basic01n.ncl,v 1.2 1995-02-27 17:56:14 scheitln Exp $
 ;
 ; This example demonstrates how to draw a contour plot using mostly
 ; defaults.  Note: no data is used in this example, so the output appears
@@ -26,10 +26,10 @@
 ; object being created.
 ; The second argument, "xWorkstationLayerClass", identifies the type or class 
 ; of the object to create. In this case an X workstation.
-; The third argument, "noparent", specifies the id of the objects parent.
-; In this case, the object has no parent, so the constant "noparent" is used. 
+; The third argument, "defaultapp", specifies the id of the objects parent.
+; In this case, the object has no parent, so the constant "defaultapp" is used. 
 
-wks = create "wks" xWorkstationLayerClass noparent 
+wks = create "wks" xWorkstationLayerClass defaultapp 
       end create
 
 ; ##########

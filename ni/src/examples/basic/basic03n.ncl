@@ -1,4 +1,4 @@
-; $Id: basic03n.ncl,v 1.1 1995-02-08 00:03:43 scheitln Exp $
+; $Id: basic03n.ncl,v 1.2 1995-02-27 17:56:16 scheitln Exp $
 ;
 ; This example demonstrates how to:
 ;   1. Create a scalar field data object and assign it to a plot.
@@ -13,7 +13,7 @@
 
 ; Choose the type of output you want to create. 
 
-wks = create "wks" xWorkstationLayerClass noparent 
+wks = create "wks" xWorkstationLayerClass defaultapp 
 end create
 
 ; Create a 5x5 integer variable. 
@@ -32,7 +32,7 @@ data1=(/(/3,4,4,5,5/), \
 ; contour object.  The sfDataArray resource is used to assign a data
 ; array to a scalar field data object.
 
-field1 = create "field1" scalarFieldLayerClass noparent
+field1 = create "field1" scalarFieldLayerClass defaultapp
 	"sfDataArray" : data1
 end create
 
@@ -62,7 +62,7 @@ frame(wks)
 ; The resource file contains resource assignments that control the
 ; characteristics of a plot.
 
-appid = create "basic03" appLayerClass noparent
+appid = create "basic03" appLayerClass defaultapp
 end create
 
 ; Create another workstation window and make it a child of the
