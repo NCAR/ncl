@@ -86,6 +86,7 @@ extern NhlErrorTypes rhomb_trunC_W(void);
 extern NhlErrorTypes tri_trunc_W(void);
 extern NhlErrorTypes tri_trunC_W(void);
 extern NhlErrorTypes pop_remap_W(void);
+extern NhlErrorTypes smth9_W(void);
 
 extern NhlErrorTypes nggcog_W(void);
 
@@ -1222,6 +1223,22 @@ void NclAddUserFuncs(void)
     NclRegisterProc(pop_remap_W,args,"pop_remap",nargs);
 
 /*
+ * Register "smth9"
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    dimsizes[0] = 1;
+
+    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+
+    NclRegisterFunc(smth9_W,args,"smth9",nargs);
+
+/*
  *  Register nggcog.
  */
     nargs = 0;
@@ -1276,7 +1293,7 @@ void NclAddUserFuncs(void)
  */
 	nargs = 0;
 	args = NewArgs(7);
-    dimsizes[0] = 1;
+	dimsizes[0] = 1;
 	SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 /*
  * Configure three parameters identically as single dimension float

@@ -95,12 +95,11 @@ NhlErrorTypes pop_remap_W( void )
  */
   if(!has_missing_src_array) {
 	NhlPError(NhlWARNING,NhlEUNKNOWN,"pop_remap: No missing values are being set.\nDefault missing values will be used.\nBe careful of results.");
-	xmsg = 1.e36;
+    xmsg = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
   }
   else {
-	xmsg = missing_src_array.floatval;
+    xmsg = missing_src_array.floatval;
   }
-
 /*
  * Check dimensions and calculate total size of arrays.
  */
@@ -118,7 +117,7 @@ NhlErrorTypes pop_remap_W( void )
  * Call Fortran popremap.
  */
   NGCALLF(popremap,POPREMAP)(dst_array,map_wts,dst_add,src_add,src_array,
-							 &ndst,&nlink,&nw,&nsrc,&xmsg);
+  			     &ndst,&nlink,&nw,&nsrc,&xmsg);
 
   return(NhlNOERROR);
 }

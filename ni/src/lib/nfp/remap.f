@@ -17,13 +17,17 @@ C NCLEND
       integer  n
 
       do n=1,ndst
-         dst_array(n) = 0.0                         ! initilize
+         dst_array(n) = xmsg                        ! initilize
       end do
 
       do n=1,nlink    
          if (src_array(src_add(n)).ne.xmsg) then    
-             dst_array(dst_add(n)) = dst_array(dst_add(n)) + 
-     &                               src_array(src_add(n))*map_wts(1,n)
+          if (dst_array(dst_add(n)).eq.xmsg) then
+              dst_array(dst_add(n)) = src_array(src_add(n))*map_wts(1,n)
+          else
+              dst_array(dst_add(n)) = dst_array(dst_add(n)) + 
+     &                                src_array(src_add(n))*map_wts(1,n)
+          end if
          end if
       end do
 
