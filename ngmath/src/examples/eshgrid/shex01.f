@@ -94,7 +94,7 @@ C
 C
 C  Mark the reference point in red.
 C
-      CALL TDMTRI(-5,PX,PY,PZ,DOTSIZE,RTRI,MTRI,NTRI,3,
+      CALL TDMTRI(-5,PX,PY,PZ,1.2*DOTSIZE,RTRI,MTRI,NTRI,3,
      +                0.,0.,0.,1.,1.,1.)
 C
 C  Draw.
