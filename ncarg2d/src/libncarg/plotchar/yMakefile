@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.7 1992-11-19 01:34:53 fred Exp $
+#	$Id: yMakefile,v 1.8 1992-11-30 16:42:49 kennison Exp $
 #
 NCARG	= ../../../..
 
@@ -89,5 +89,8 @@ FRule
 bofred.c:  bofred.c.sed Makefile
 	@$(CALLCONV) $(SYSTEM_INCLUDE) bofred.c bofred
 
+pcbnrd.c:  pcbnrd.c.sed Makefile
+	@$(CALLCONV) $(SYSTEM_INCLUDE) pcbnrd.c pcbnrd
+
 clean::
-	@-$(RM) $(FCPP_OBJS) bofred.c
+	@-$(RM) $(FCPP_OBJS) bofred.c pcbnrd.c
