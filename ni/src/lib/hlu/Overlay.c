@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.15 1994-06-07 18:54:16 dbrown Exp $
+ *      $Id: Overlay.c,v 1.16 1994-06-21 20:44:36 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1596,7 +1596,6 @@ static NhlAnnoRec *RecordAnnotation
 	ovAnnoType	type;
 	int		status;
 	int		zone;
-)
 #endif
 {
 	char			*e_text;
@@ -1681,7 +1680,6 @@ static NhlErrorTypes SetAnnoViews
 	int		zone;
 	NhlBoolean	first;
 	NhlString	entry_name;
-)
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
@@ -1790,7 +1788,6 @@ static NhlErrorTypes SetTickMarkView
 	NhlOverlayLayer	ovl;
 	NhlAnnoRec	*anno_rec;
 	NhlString	entry_name;
-)
 #endif
 {
 	return NhlVASetValues(anno_rec->plot_id,NULL);
@@ -1822,7 +1819,6 @@ static NhlErrorTypes SetTitleView
 	NhlOverlayLayer	ovl;
 	NhlAnnoRec	*anno_rec;
 	NhlString	entry_name;
-)
 #endif
 {
 	
@@ -2014,7 +2010,6 @@ static NhlErrorTypes SetViewTracking
 	NhlOverlayLayer	ovl;
 	NhlAnnoRec	*anno_rec;
 	NhlString	entry_name;
-)
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
@@ -2139,7 +2134,6 @@ static NhlErrorTypes SetExternalView
 	NhlOverlayLayer	ovl;
 	NhlAnnoRec	*anno_rec;
 	NhlString	entry_name;
-)
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
@@ -2304,7 +2298,7 @@ static NhlErrorTypes InternalGetBB
 	char		*entry_name
 )
 #else
-(instance,thebox,include_types,entry_name)
+(instance,thebox,zone,entry_name)
 	NhlLayer	instance;
 	NhlBoundingBox	*thebox;
 	int		zone;
@@ -2801,10 +2795,10 @@ UpdateAnnoData
 	NhlString	entry_name
 )
 #else
-(anno_rec,max_zone,entry_name)
+(anno_list,max_zone,entry_name)
 	NhlAnnoRec	*anno_list;
 	int		*max_zone;
-	NhlString	entry_name
+	NhlString	entry_name;
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
@@ -4636,9 +4630,9 @@ _NHLCALLF(nhlf_registerannotation,NHLF_REGISTERANNOTATION)
 )
 #else
 (overlay_base,annotation,err)
-	int	*overlay_base,
-	int	*annotation,
-	int	err
+	int	*overlay_base;
+	int	*annotation;
+	int	*err;
 #endif
 {
 	*err = NhlRegisterAnnotation(*overlay_base,*annotation);
@@ -4759,9 +4753,9 @@ _NHLCALLF(nhlf_unregisterannotation,NHLF_UNREGISTERANNOTATION)
 )
 #else
 (overlay_base,annotation,err)
-	int	*overlay_base,
-	int	*annotation,
-	int	err
+	int	*overlay_base;
+	int	*annotation;
+	int	*err;
 #endif
 {
 	*err = NhlUnregisterAnnotation(*overlay_base,*annotation);

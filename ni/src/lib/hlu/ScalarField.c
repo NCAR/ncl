@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.3 1994-05-17 22:26:14 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.4 1994-06-21 20:44:42 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1221,7 +1221,7 @@ GetIndexBounds
 	NhlString		entry_name
 )
 #else
-(sfp,icstart,icend,entry_name)
+(sfp,ctype,icstart,icend,entry_name)
  	NhlScalarFieldLayerPart *sfp;
 	sfCoord			ctype;
 	int			*icstart;

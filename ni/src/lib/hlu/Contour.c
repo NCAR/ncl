@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.15 1994-06-03 19:23:37 dbrown Exp $
+ *      $Id: Contour.c,v 1.16 1994-06-21 20:44:29 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -751,9 +751,8 @@ static NhlErrorTypes ManageConstFLabel(
 #endif
 );
 
-static NhlErrorTypes ManageAnnotation
+static NhlErrorTypes ManageAnnotation(
 #ifdef NhlNeedProto
-(
 	NhlContourLayer		cnnew,
 	NhlContourLayerPart	*ocnp,
 	NhlBoolean		init,
@@ -761,9 +760,8 @@ static NhlErrorTypes ManageAnnotation
 #endif
 );
 
-static NhlErrorTypes SetTextPosition
+static NhlErrorTypes SetTextPosition(
 #ifdef NhlNeedProto
-(
 	NhlContourLayer		cnnew,
 	NhlContourLayerPart	*ocnp,
 	_cnAnnoType		atype,
@@ -772,9 +770,8 @@ static NhlErrorTypes SetTextPosition
 #endif
 );
 
-static NhlErrorTypes ReplaceSubstitutionChars
+static NhlErrorTypes ReplaceSubstitutionChars(
 #ifdef NhlNeedProto
-(
 	NhlContourLayerPart	*cnp,
 	NhlContourLayerPart	*ocnp,
 	NhlBoolean		init,
@@ -4602,7 +4599,7 @@ static NhlErrorTypes SetTextPosition
 	NhlString		entry_name
 )
 #else 
-(cnnew,ocnp,atype,text_changed,entry_name)
+(cnnew,ocnp,atype,pos_changed,entry_name)
 	NhlContourLayer		cnnew;
 	NhlContourLayerPart	*ocnp;
 	_cnAnnoType		atype;
