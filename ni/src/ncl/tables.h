@@ -582,7 +582,45 @@ char *level_str[] = {
 	"EATM",	/*200*/
 	"EOCN",		/*201*/
 };
-
+char *level_units_str[] = {
+	"none" /*"SFC",	1*/,
+	"none" /*"CBL",	2*/,
+	"none" /*"CTL",	3*/,
+	"none" /*"0DEG",	4*/,
+	"none" /*"ADCL",	5*/,
+	"none" /*"MWSL",	6*/,
+	"none" /*"TRO",	7*/,
+	"none" /*"NTAT",	8*/,
+	"none" /*"SEAB",	9*/,
+	"(1/100) K"/*"TMPL",	20*/,
+        "hPa" /*"ISBL", 	100*/,
+        "hPa" /*"ISBY", 	101*/,
+        "hPa" /*"MSL", 	102*/,
+        "m" /*"GPML",	103*/,
+        "hm" /*"GPMY",	104*/,
+        "m" /*"HTGL",	105*/,
+        "hm" /*"HTGY",106*/,
+	"sigma" /*"SIGL",		107*/,
+	"sigma" /*"SIGY",	108*/,
+	"number" /*"HYBL",		109*/ /* If you change this you better change _Get109A in NclGRIB.c */,
+	"number" /*"HYBY", 110*/,
+	"cm" /*"DBLL",	111*/,
+	"cm" /*"DBLY", 112*/,
+	"K" /*"THEL",	113*/,
+	"K" /*"THEY", 114*/,
+	"hPa" /*"SPDL",	115*/,
+	"hPa" /*"SPDY", 116*/,
+	"10^-6Km^2/kgs" /*"PVL", 117*/,
+	"ETA value" /*"ETAL", 119*/,
+	"ETA value" /*"ETAY", 120*/,
+	"hPa" /*"IBYH", 	121*/,
+	"cm" /*"HGLH",	125*/,
+	"1.1 - sigma" /*"SGYH", 128*/,
+	"hPa" /*"IBYM", 141*/,
+	"m" /*"DBSL",	160*/,
+	"none" /*"EATM",	200*/,
+	"none" /*"EOCN",		201*/
+};
 char *level_str_long_name[] = {
 	"surface of the earth including sea surface", /*1*/
 	"cloud base level",	/*2*/
