@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: graphcap.m,v 1.5 1993-06-23 20:48:45 haley Exp $
+.\"	$Id: graphcap.m,v 1.6 1994-01-10 18:00:18 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH GRAPHCAP 5NCARG "April 1993" NCAR "NCAR GRAPHICS"
@@ -219,7 +219,7 @@ VT330 graphics terminal.
 VT340 graphics terminal (returns with white foreground and black background).
 .TP 15
 .B vt340w
-VT340 graphics terminal (returns with black background and white foreground).
+VT340 graphics terminal (returns with black foreground and white background).
 .TP 15
 .B X11
 X Window System interface (valid only for ctrans).
