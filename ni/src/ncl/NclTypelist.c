@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypelist.c,v 1.1 1999-11-12 18:36:42 ethan Exp $
+ *      $Id: NclTypelist.c,v 1.2 2003-05-12 23:37:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,7 +32,7 @@
 #include "DataSupport.h"
 
 /*
- *      $Id: NclTypelist.c,v 1.1 1999-11-12 18:36:42 ethan Exp $
+ *      $Id: NclTypelist.c,v 1.2 2003-05-12 23:37:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -53,7 +53,6 @@
  *	Description:	
  */
 #include <ncarg/hlu/BaseP.h>
-#include <ncarg/hlu/DataComm.h>
 #include <ncarg/hlu/Callbacks.h>
 #include "NclTypelogical.h"
 #include "NclHLUObj.h"
@@ -102,7 +101,7 @@ static NhlErrorTypes Ncl_Type_list_InitClass
 
 
 /*
- *      $Id: NclTypelist.c,v 1.1 1999-11-12 18:36:42 ethan Exp $
+ *      $Id: NclTypelist.c,v 1.2 2003-05-12 23:37:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -151,7 +150,7 @@ int nval;
 }
 
 /*
- *      $Id: NclTypelist.c,v 1.1 1999-11-12 18:36:42 ethan Exp $
+ *      $Id: NclTypelist.c,v 1.2 2003-05-12 23:37:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -239,7 +238,7 @@ NclTypeClass Ncl_Type_list_eq_type
 }
 
 /*
- *      $Id: NclTypelist.c,v 1.1 1999-11-12 18:36:42 ethan Exp $
+ *      $Id: NclTypelist.c,v 1.2 2003-05-12 23:37:38 dbrown Exp $
  */
 /************************************************************************
 *									*

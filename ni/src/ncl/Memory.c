@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Memory.c,v 1.14 1997-10-01 18:19:07 ethan Exp $
+ *      $Id: Memory.c,v 1.15 2003-05-12 23:37:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,7 +29,6 @@ extern "C" {
 #include "defs.h"
 #include "Symbol.h"
 #include "NclData.h"
-#include "Machine.h"
 #include "NclMultiDValData.h"
 
 unsigned long total = 0;

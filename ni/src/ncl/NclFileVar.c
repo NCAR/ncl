@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclFileVar.c,v 1.18 1999-11-12 18:36:40 ethan Exp $
+ *      $Id: NclFileVar.c,v 1.19 2003-05-12 23:37:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,6 @@
 #include "defs.h"
 #include "Symbol.h"
 #include "NclMdInc.h"
-#include "Machine.h"
 #include "NclAtt.h"
 #include "NclFile.h"
 #include "NclFileInterfaces.h"

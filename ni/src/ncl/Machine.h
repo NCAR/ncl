@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.h,v 1.22 1999-11-12 18:36:39 ethan Exp $
+ *      $Id: Machine.h,v 1.23 2003-05-12 23:37:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -64,52 +64,7 @@ typedef enum {
 			Ncl_BREAKS, 
 			Ncl_CONTINUES }NclExecuteReturnStatus ;
 
-typedef enum stack_value_types { 
-	NclStk_NOVAL = 0, NclStk_OFFSET = 01, 
-	NclStk_VAL = 02,NclStk_VAR = 04, NclStk_SUBREC = 010,
-	NclStk_PARAMLIST = 020, NclStk_RANGEREC = 040,
-	NclStk_VECREC = 0100, NclStk_FILE = 0200, NclStk_GRAPHIC = 0400,
-	NclStk_RETURNVAL = 01000, NclStk_STATIC_LINK = 02000, 
-	NclStk_DYNAMIC_LINK = 04000, NclStk_RET_OFFSET = 010000, NclStk_LIST = 020000
-	} NclStackValueTypes;
-
 typedef enum {NONE_P, VALUE_P, VAR_P} NclParamTypes;
-
-typedef struct _NclStackEntry{
-	NclStackValueTypes kind;
-	union {
-		unsigned long   offset;
-/*
-* All of the following must be pointers to pointers so changes
-* made such as allocating a new record can propagte to copies
-* an example is an array passed to a function with two parameters
-* twice.
-*/
-		struct _NclRangeRec {
-        		struct _NclMultiDValDataRec *start;
-        		struct _NclMultiDValDataRec *finish;
-        		struct _NclMultiDValDataRec *stride;
-			int is_single;
-		} range_rec;
-		struct _NclVecRec {
-			struct _NclMultiDValDataRec *vec;
-		} vec_rec;
-		struct _NclSubRec {
-			NclSubTypes sub_type;
-			char *name;
-			int tolerence;  /* applies only to coordinate variables */
-			union {
-				struct _NclRangeRec range;
-				struct _NclVecRec vec;
-			}u;
-		} sub_rec;
-		struct _NclParamRecList *the_list;
-		struct _NclVarRec	*data_var;
-		struct _NclMultiDValDataRec 	*data_obj;
-		struct _NclListRec 	*data_list;
-	}u;
-}NclStackEntry;
-
 
 typedef struct _NclFrame{
         NclStackEntry   func_ret_value;
@@ -118,11 +73,6 @@ typedef struct _NclFrame{
         NclStackEntry   return_pcoffset;
         NclStackEntry   parameter_map;
 }NclFrame;
-typedef struct _NclSubRec NclSubRec;
-
-typedef struct _NclRangeRec NclRangeRec;
-
-typedef struct _NclVecRec NclVecRec;
 
 typedef struct _NclParamRec {
 	NclParamTypes p_type;

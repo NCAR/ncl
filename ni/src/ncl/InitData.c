@@ -1,6 +1,6 @@
 
 /*
- *      $Id: InitData.c,v 1.2 1994-12-23 01:17:35 ethan Exp $
+ *      $Id: InitData.c,v 1.3 2003-05-12 23:37:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,7 @@
 
 
 #include <stdio.h>
-#include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include "defs.h"
 #include "NclData.h"

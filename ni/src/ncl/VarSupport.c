@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.24 2002-09-26 22:14:43 haley Exp $
+ *      $Id: VarSupport.c,v 1.25 2003-05-12 23:37:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,6 @@
 #include "defs.h"
 #include "Symbol.h"
 #include "NclMultiDValData.h"
-#include "Machine.h"
 #include "NclVar.h"
 #include "NclHLUVar.h"
 #include "NclCoordVar.h"

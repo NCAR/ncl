@@ -4,7 +4,6 @@
 #include "defs.h"
 #include "NclDataDefs.h"
 #include "Symbol.h"
-#include "Machine.h"
 #include "NclList.h"
 #include "NclMultiDValData.h"
 #include "DataSupport.h"

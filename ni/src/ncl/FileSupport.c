@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.19 2002-09-26 22:14:37 haley Exp $
+ *      $Id: FileSupport.c,v 1.20 2003-05-12 23:37:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,7 +29,6 @@
 #include "NclFileInterfaces.h"
 #include "DataSupport.h"
 #include "Symbol.h"
-#include "Machine.h"
 #include "NclCoordVar.h"
 #include "FileSupport.h"
 #include "VarSupport.h"
@@ -659,7 +658,7 @@ int _NclFileIsVar
 			fc = (NclFileClass)fc->obj_class.super_class;
 		}
 	}
-	return(0);
+	return(-1);
 }
 
 NhlErrorTypes _NclFileWriteVarVar
@@ -1280,8 +1279,10 @@ NclQuark  varname;
 	char *dimnames[100];
 	NclMultiDValData tmp_md;
 	NclVar tmp_var;
+	int vindex = -1;
 
-	if(_NclFileIsVar(thefile,varname)) {
+	vindex = _NclFileIsVar(thefile,varname);
+	if(vindex > -1) {
 		for(i = 0;i < thefile->file.n_vars;i++) {
 			if((thefile->file.var_info[i] != NULL)&&(thefile->file.var_info[i]->var_name_quark == varname)) {
 							

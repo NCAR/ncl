@@ -153,6 +153,58 @@ typedef enum {  Ncl_SUBSCR, Ncl_VECSUBSCR, Ncl_SUB_ALL, Ncl_SUB_VAL_DEF, Ncl_SUB
 
 typedef enum { COORD_VECT, COORD_RANGE, COORD_SINGLE, INT_VECT, INT_RANGE, INT_SINGLE } NclSubTypes;
 
+typedef	struct _NclRangeRec {
+	struct _NclMultiDValDataRec *start;
+	struct _NclMultiDValDataRec *finish;
+	struct _NclMultiDValDataRec *stride;
+	int is_single;
+} NclRangeRec;
+
+typedef	struct _NclVecRec {
+	struct _NclMultiDValDataRec *vec;
+} NclVecRec;;
+
+
+typedef	struct _NclSubRec {
+	NclSubTypes sub_type;
+	char *name;
+	int tolerence;  /* applies only to coordinate variables */
+	union {
+		struct _NclRangeRec range;
+		struct _NclVecRec vec;
+	}u;
+} NclSubRec;
+
+typedef enum stack_value_types { 
+	NclStk_NOVAL = 0, NclStk_OFFSET = 01, 
+	NclStk_VAL = 02,NclStk_VAR = 04, NclStk_SUBREC = 010,
+	NclStk_PARAMLIST = 020, NclStk_RANGEREC = 040,
+	NclStk_VECREC = 0100, NclStk_FILE = 0200, NclStk_GRAPHIC = 0400,
+	NclStk_RETURNVAL = 01000, NclStk_STATIC_LINK = 02000, 
+	NclStk_DYNAMIC_LINK = 04000, NclStk_RET_OFFSET = 010000, NclStk_LIST = 020000
+	} NclStackValueTypes;
+
+
+typedef struct _NclStackEntry{
+	NclStackValueTypes kind;
+	union {
+		unsigned long   offset;
+/*
+* All of the following must be pointers to pointers so changes
+* made such as allocating a new record can propagte to copies
+* an example is an array passed to a function with two parameters
+* twice.
+*/
+		struct _NclRangeRec range_rec;
+		struct _NclVecRec vec_rec;
+		struct _NclSubRec sub_rec;
+		struct _NclParamRecList *the_list;
+		struct _NclVarRec	*data_var;
+		struct _NclMultiDValDataRec 	*data_obj;
+		struct _NclListRec 	*data_list;
+	}u;
+}NclStackEntry;
+
 typedef struct _NclVectorSelection{
         int n_ind;
         long *ind;

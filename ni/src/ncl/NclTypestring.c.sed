@@ -1,6 +1,5 @@
-
 /*
- *      $Id: NclTypestring.c.sed,v 1.14 1998-06-08 22:29:36 ethan Exp $
+ *      $Id: NclTypestring.c.sed,v 1.15 2003-05-12 23:37:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +23,6 @@
 #include <stdio.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/Convert.h>
-#include <ncarg/hlu/ConvertP.h>
 #include <ncarg/hlu/NresDB.h>
 #include "defs.h"
 #include "Symbol.h"

@@ -12,258 +12,47 @@
 #include "NclGRIB.h"
 #include <math.h>
 
-#include <ncarg/hlu/hluP.h>
-#include <ncarg/hlu/BaseP.h>
-#include <ncarg/hlu/Workstation.h>
-#include <ncarg/hlu/WorkstationP.h>
-#include <ncarg/hlu/ConvertersP.h>
-#include <ncarg/hlu/FortranP.h>
-#include <ncarg/hlu/hluutil.h>
-#include <ncarg/hlu/ErrorI.h>
-#include <ncarg/hlu/TransformI.h>
-#include <ncarg/hlu/MapPlot.h>
-
-typedef struct _NhlDummyWorkstationLayerPart{
-	char *foo;
-} NhlDummyWorkstationLayerPart;
-
-typedef struct _NhlDummyWorkstationLayerRec{
-	NhlBaseLayerPart	base;
-	NhlWorkstationLayerPart	work;
-	NhlDummyWorkstationLayerPart	dwork;
-} NhlDummyWorkstationLayerRec;
-
-typedef struct _NhlDummyWorkstationClassPart{
-	char *foo;
-} NhlDummyWorkstationClassPart;
-
-typedef struct _NhlDummyWorkstationClassRec{
-	NhlBaseClassPart		base_class;
-	NhlWorkstationClassPart		work_class;
-	NhlDummyWorkstationClassPart		dwork_class;
-} NhlDummyWorkstationClassRec;
-	
 static void GenAtts(
-#if	NhlNeedProto
-GribParamList* thevarrec, GribAttInqRecList **lat_att_list, int * nlatatts, GribAttInqRecList **lon_att_list, int *lonatts
+#if     NhlNeedProto
+GribParamList* thevarrec, 
+GribAttInqRecList **lat_att_list, 
+int * nlatatts, 
+GribAttInqRecList **lon_att_list, 
+int *lonatts
 #endif
 );
 
-
-static NhlErrorTypes DummyWorkstationInitialize(
-#if	NhlNeedProto
-        NhlClass,	/* class */
-        NhlLayer,	/* req */
-        NhlLayer,	/* new */
-        _NhlArgList,	/* args */
-        int		/* num_args */
-#endif
-);
-
-
-static NhlErrorTypes DummyWorkstationDestroy(
-#if	NhlNeedProto
-        NhlLayer           /* inst */
-#endif
-);
-
-
-
-static NhlErrorTypes DummyWorkstationOpen(
-#if	NhlNeedProto
-	NhlLayer	/* instance */
-#endif
-);
-
-static NhlErrorTypes DummyWorkstationClose(
-#if	NhlNeedProto
-	NhlLayer	/* instance */
-#endif
-);
-
-static NhlErrorTypes DummyWorkstationActivate(
-#if	NhlNeedProto
-	NhlLayer	/* instance */
-#endif
-);
-
-static NhlErrorTypes DummyWorkstationDeactivate(
-#if	NhlNeedProto
-	NhlLayer	/* instance */
-#endif
-);
-
-static int	DummyWksCount = 0;
-
-NhlDummyWorkstationClassRec NhldummyWorkstationClassRec = {
-        {
-/* class_name			*/	"dummyWorkstationClass",
-/* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(NhlDummyWorkstationLayerRec),
-/* class_inited			*/	False,
-/* superclass			*/	(NhlClass)&NhlworkstationClassRec,
-/* cvt_table			*/	NULL,
-
-/* resources			*/	NULL,
-/* num_resources		*/	0,
-/* all_resources		*/	NULL,
-/* callbacks			*/	NULL,
-/* num_callbacks		*/	0,
-/* class_callbacks		*/	NULL,
-/* num_class_callbacks		*/	0,
-
-/* class_part_initialize	*/	NULL,
-/* class_initialize		*/	NULL,
-/* layer_initialize		*/	DummyWorkstationInitialize,
-/* layer_set_values		*/	NULL,
-/* layer_set_values_hook	*/	NULL,
-/* layer_get_values		*/	NULL,
-/* layer_reparent		*/	NULL,
-/* layer_destroy		*/	DummyWorkstationDestroy,
-
-/* child_resources		*/	NULL,
-
-/* layer_draw			*/	NULL,
-
-/* layer_pre_draw		*/	NULL,
-/* layer_draw_segonly		*/	NULL,
-/* layer_post_draw		*/	NULL,
-/* layer_clear			*/	NULL
-        },
-	{
-/* current_wks_count	*/	&DummyWksCount,                
-/* gks_wks_recs		*/	NULL,
-/* hlu_wks_flag		*/	NULL,
-/* def_background	*/	{0.0,0.0,0.0},
-/* rgb_dbm              */      NULL,
-/* pal			*/	NhlInheritPalette,
-/* open_work		*/	DummyWorkstationOpen,
-/* close_work		*/	DummyWorkstationClose,
-/* activate_work	*/	DummyWorkstationActivate,
-/* deactivate_work	*/	DummyWorkstationDeactivate,
-/* alloc_colors		*/	NULL,
-/* update_work		*/	DummyWorkstationOpen,
-/* clear_work		*/	DummyWorkstationOpen,
-/* lineto_work 		*/	(NhlWorkstationLineTo)DummyWorkstationOpen,
-/* fill_work		*/	(NhlWorkstationFill)DummyWorkstationOpen,
-/* marker_work		*/	(NhlWorkstationMarker)DummyWorkstationOpen,
-/* notify_work		*/	NULL
-
-	},
-	{
-				NULL
-	}
-};
-
-NhlClass NhldummyWorkstationClass = (NhlClass)&NhldummyWorkstationClassRec;
-
-static NhlErrorTypes DummyWorkstationInitialize
-#if  NhlNeedProto
-(
-	NhlClass	lc,
-	NhlLayer	req,
-	NhlLayer	new,
-	_NhlArgList	args,
-	int		num_args
-)
-#else
-(lc,req,new,args,num_args)
-	NhlClass 	lc;
-	NhlLayer	req;
-	NhlLayer	new;
-	_NhlArgList	args;
-	int		num_args;
-#endif
-{
-	NhlWorkstationLayer wks = (NhlWorkstationLayer)new;
-
-	wks->work.gkswkstype = -9999;
-	return(NhlNOERROR);
-}
-
-
-
-static NhlErrorTypes DummyWorkstationDestroy
-#if	NhlNeedProto
-(
-	NhlLayer	inst
-)
-#else
-(inst)
-	NhlLayer	inst;
-#endif
-{
-	NhlErrorTypes	retcode = NhlNOERROR;
-
-	return(retcode);
-}
-
-
-
-static NhlErrorTypes
-DummyWorkstationOpen
+static void InitMapTrans
 #if NhlNeedProto
 (
-	NhlLayer	l
+	char *proj,
+	float plat,
+	float plon,
+	float prot
 )
 #else
-(l)
-	NhlLayer	l;
-#endif
-{	
-	return(NhlNOERROR);
-}
+(proj,plat,plon,prot)
+	char *proj;
+	float plat;
+	float plon;
+	float prot;
 
-static NhlErrorTypes
-DummyWorkstationClose
-#if NhlNeedProto
-(
-	NhlLayer	l
-)
-#else
-(l)
-	NhlLayer	l;
 #endif
 {
-	return	NhlNOERROR;;
+	float rl[2] = {0,0};
+	float fl = 0.1,fr = 0.99 ,fb = 0.1 ,ft = 0.99;
+	int len;
+	NGstring str;
+
+	NGCALLF(mappos,MAPPOS)(&fl,&fr,&fb,&ft);
+	len = NGSTRLEN(proj);
+	str = NGCstrToFstr(proj,len);
+	NGCALLF(maproj,MAPROJ)(str,&plat,&plon,&prot);
+	len = NGSTRLEN("MA");
+	str = NGCstrToFstr("MA",len);
+	NGCALLF(mapset,MAPSET)(str,&rl,&rl,&rl,&rl);
+	NGCALLF(mdpint,MDPINT)();
 }
-
-static NhlErrorTypes
-DummyWorkstationActivate
-#if NhlNeedProto
-(
-	NhlLayer	l
-)
-#else
-(l)
-	NhlLayer	l;
-#endif
-{
-
-	return NhlNOERROR;
-}
-
-static NhlErrorTypes
-DummyWorkstationDeactivate
-#if NhlNeedProto
-(
-	NhlLayer	l
-)
-#else
-(l)
-	NhlLayer	l;
-#endif
-{
-	NhlErrorTypes		retcode = NhlNOERROR;
-
-	return retcode;
-}
-
-
-
-
-
-
 
 
 
@@ -618,26 +407,8 @@ int ny;
 	int i,j;
 	float *dummy = NULL;
 
-	if(mapid == -1) {
-		rlist = NhlRLCreate(NhlSETRL);
-		NhlRLClear(rlist);
-		NhlCreate(&vpid,"Map0",NhldummyWorkstationClass,0,rlist);
-		NhlRLClear(rlist);
-		NhlRLSetFloat(rlist,NhlNvpXF,0.01);
-		NhlRLSetFloat(rlist,NhlNvpYF,0.99);
-		NhlRLSetFloat(rlist,NhlNvpWidthF,0.98);
-		NhlRLSetFloat(rlist,NhlNvpHeightF,0.98);
-		NhlRLSetString(rlist,NhlNmpProjection,"MERCATOR");
-		NhlRLSetFloat(rlist,NhlNmpCenterLonF,(lon1-lon0)/2.0);
-		NhlRLSetFloat(rlist,NhlNmpCenterLatF,0.0);
-		NhlCreate(&mapid,"Map0",NhlmapPlotClass,vpid,rlist);
-	} else {
-		NhlRLClear(rlist);
-		NhlRLSetString(rlist,NhlNmpProjection,"MERCATOR");
-		NhlRLSetFloat(rlist,NhlNmpCenterLonF,(lon1 - lon0)/2.0);
-		NhlRLSetFloat(rlist,NhlNmpCenterLatF,0.0);
-		NhlSetValues(mapid,rlist);
-	}
+	InitMapTrans("ME",0.0,(lon1 - lon0)/2.0,0.0);
+	
 	*lat = (float*)NclMalloc(sizeof(float)*ny);
 	*lon = (float*)NclMalloc(sizeof(float)*nx);
 	dummy = (float*)NclMalloc(sizeof(float)* ( nx > ny ? nx : ny));
@@ -657,23 +428,21 @@ int ny;
 /*
 	tlon = (lon1-lon0) / 2.0;
 	tlat = (lat1-lat0) / 2.0;
-	NhlDataToNDC(mapid,&tlon,&tlat,1,&dumx,&dumy,NULL,NULL,&status,&orv);
+	NGCALLF(maptrn,MAPTRN)(&tlat,&tlon,&dumx,&dumy);
 	tlon = lon0 + dlon;
-	NhlDataToNDC(mapid,&lo1,&lat0,1,&nx0,&ny0,NULL,NULL,&status,&orv);
-	NhlDataToNDC(mapid,&tlon,&lat0,1,&nx1,&ny1,NULL,NULL,&status,&orv);
+	NGCALLF(maptrn,MAPTRN)(&lat0,&lo1,&nx0,&ny0);
+	NGCALLF(maptrn,MAPTRN)(&lat0,&tlon,&nx1,&ny1);
 	ndcdx = fabs(nx0 - nx1);
 	ndcdy = dy/dx * ndcdx;
-	NhlDataToNDC(mapid,&lon0,&lat0,1,&nx0,&ny0,NULL,NULL,&status,&orv);
+	NGCALLF(maptrn,MAPTRN)(&lat0,&lon0,&nx0,&ny0);
 	for(i = 0; i < ny; i++) {
-		(*lat)[i] = ny0 + i * ndcdy;
-		dummy[i] = dumx;
+		float tmplat = ny0 + i * ndcdy;
+		NGCALLF(maptri,MAPTRI)(&dumx,&tmplat,&((*lat)[i]),&(dummy[i]));
 	}
-	NhlNDCToData(mapid,dummy,*lat,ny,dummy,*lat,NULL,NULL,&status,&orv);
 	for(j = 0; j < nx; j++) {
-		dummy[j] = dumy;
-		(*lon)[j] = nx0 + j * ndcdx;
+		float tmplon = nx0 + j * ndcdx;
+		NGCALLF(maptri,MAPTRI)(&tmplon,&dumy,&(dummy[j]),&((*lon)[j]));
 	}
-	NhlNDCToData(mapid,*lon,dummy,nx,*lon,dummy,NULL,NULL,&status,&orv);
 	for(j = 0; j < nx; j++) {
 		(*lon)[j] = ((*lon)[j] < 0)? ((*lon)[j] + 360) : (*lon)[j];
 	}
@@ -750,27 +519,27 @@ int *nlonatts;
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 	*tmp_string = NrmStringToQuark("MERCATOR");
-	GribPushAtt(lat_att_list_ptr,NhlNmpProjection,tmp_string,1,nclTypestringClass); (*nlatatts)++;
+	GribPushAtt(lat_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 0.0;
-	GribPushAtt(lat_att_list_ptr,NhlNmpCenterLatF,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	GribPushAtt(lat_att_list_ptr,"mpCenterLatF",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 180.0;
-	GribPushAtt(lat_att_list_ptr,NhlNmpCenterLonF,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	GribPushAtt(lat_att_list_ptr,"mpCenterLonF",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 	*tmp_string = NrmStringToQuark("MERCATOR");
-	GribPushAtt(lon_att_list_ptr,NhlNmpProjection,tmp_string,1,nclTypestringClass); (*nlonatts)++;
+	GribPushAtt(lon_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 0.0;
-	GribPushAtt(lon_att_list_ptr,NhlNmpCenterLatF,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	GribPushAtt(lon_att_list_ptr,"mpCenterLatF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 180.0;
-	GribPushAtt(lon_att_list_ptr,NhlNmpCenterLonF,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	GribPushAtt(lon_att_list_ptr,"mpCenterLonF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
 	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts);
 }
@@ -831,27 +600,8 @@ void GenLambert
 	float orv;
 	int i,j;
 
-	if(mapid == -1) {
-		rlist = NhlRLCreate(NhlSETRL);
-		NhlRLClear(rlist);
-		NhlCreate(&vpid,"Map0",NhldummyWorkstationClass,0,rlist);
-		NhlRLClear(rlist);
-		NhlRLSetFloat(rlist,NhlNvpXF,0.01);
-		NhlRLSetFloat(rlist,NhlNvpYF,0.99);
-		NhlRLSetFloat(rlist,NhlNvpWidthF,0.98);
-		NhlRLSetFloat(rlist,NhlNvpHeightF,0.98);
-		NhlRLSetString(rlist,NhlNmpProjection,"LAMBERTCONFORMAL");
-		NhlRLSetFloat(rlist,NhlNmpLambertParallel1F,lat0);
-		NhlRLSetFloat(rlist,NhlNmpLambertParallel2F,lat1);
-		NhlRLSetFloat(rlist,NhlNmpLambertMeridianF,lon0);
-		NhlCreate(&mapid,"Map0",NhlmapPlotClass,vpid,rlist);
-	} else {
-		NhlRLClear(rlist);
-		NhlRLSetFloat(rlist,NhlNmpLambertParallel1F,lat0);
-		NhlRLSetFloat(rlist,NhlNmpLambertParallel2F,lat1);
-		NhlRLSetFloat(rlist,NhlNmpLambertMeridianF,lon0);
-		NhlSetValues(mapid,rlist);
-	}
+	InitMapTrans("LC",lat0,lon0,lat1);
+
 	*lat = (float*)NclMalloc(sizeof(float)*nx*ny);
 	*lon = (float*)NclMalloc(sizeof(float)*nx*ny);
         *dimsizes_lat = (int*)NclMalloc(sizeof(int)*2);
@@ -874,19 +624,19 @@ void GenLambert
 * lat0 is always closest to pole
 */
 		tlon = lon0 + dlon;
-		NhlDataToNDC(mapid,&lon0,&lat0,1,&nx0,&ny0,NULL,NULL,&status,&orv);
-		NhlDataToNDC(mapid,&tlon,&lat0,1,&nx1,&ny1,NULL,NULL,&status,&orv);
+		NGCALLF(maptrn,MAPTRN)(&lat0,&lon0,&nx0,&ny0);
+		NGCALLF(maptrn,MAPTRN)(&lat0,&tlon,&nx1,&ny1);
 		ndcdx = fabs(nx0 - nx1);
 		ndcdy = dy/dx * ndcdx;
-		NhlDataToNDC(mapid,&start_lon,&start_lat,1,&nx0,&ny0,NULL,NULL,&status,&orv);
+		NGCALLF(maptrn,MAPTRN)(&start_lat,&start_lon,&nx0,&ny0);
 		for(i = 0; i < ny; i++) {
 			for(j = 0; j < nx; j++) {
-				(*lon)[i * nx + j] = nx0 + j * ndcdx;
-				(*lat)[i * nx + j] = ny0 + i * ndcdy;
+				float tmpx =  nx0 + j * ndcdx;
+				float tmpy =  ny0 + i * ndcdy;
+				NGCALLF(maptri,MAPTRI)
+				(&tmpx,&tmpy,&((*lat)[i * nx + j]),&((*lon)[i * nx + j]));
 			}
 		}
-		NhlNDCToData(mapid,*lon,*lat,nx*ny,*lon,*lat,NULL,NULL,&status,&orv);
-
 	} else {
 /*
 * Northern case
@@ -898,18 +648,19 @@ void GenLambert
 * lat0 is always closest to pole
 */
 		tlon = lon0 + dlon;
-		NhlDataToNDC(mapid,&lon0,&lat0,1,&nx0,&ny0,NULL,NULL,&status,&orv);
-		NhlDataToNDC(mapid,&tlon,&lat0,1,&nx1,&ny1,NULL,NULL,&status,&orv);
+		NGCALLF(maptrn,MAPTRN)(&lat0,&lon0,&nx0,&ny0);
+		NGCALLF(maptrn,MAPTRN)(&lat0,&tlon,&nx1,&ny1);
 		ndcdx = fabs(nx0 - nx1);
 		ndcdy = dy/dx * ndcdx;
-		NhlDataToNDC(mapid,&start_lon,&start_lat,1,&nx0,&ny0,NULL,NULL,&status,&orv);
+		NGCALLF(maptrn,MAPTRN)(&start_lat,&start_lon,&nx0,&ny0);
 		for(i = 0; i < ny; i++) {
 			for(j = 0; j < nx; j++) {
-				(*lon)[i * nx + j] = nx0 + j * ndcdx;
-				(*lat)[i * nx + j] = ny0 + i * ndcdy;
+				float tmpx =  nx0 + j * ndcdx;
+				float tmpy =  ny0 + i * ndcdy;
+				NGCALLF(maptri,MAPTRI)
+				(&tmpx,&tmpy,&((*lat)[i * nx + j]),&((*lon)[i * nx + j]));
 			}
 		}
-		NhlNDCToData(mapid,*lon,*lat,nx*ny,*lon,*lat,NULL,NULL,&status,&orv);
 	}
 
 }
@@ -935,36 +686,36 @@ int *nlonatts;
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
-	GribPushAtt(lat_att_list_ptr,NhlNmpProjection,tmp_string,1,nclTypestringClass); (*nlatatts)++;
+	GribPushAtt(lat_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 25.0;
-	GribPushAtt(lat_att_list_ptr,NhlNmpLambertParallel1F,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	GribPushAtt(lat_att_list_ptr,"mpLambertParallel1F",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 25.0;
-	GribPushAtt(lat_att_list_ptr,NhlNmpLambertParallel2F,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	GribPushAtt(lat_att_list_ptr,"mpLambertParallel2F",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = -95.0;
-	GribPushAtt(lat_att_list_ptr,NhlNmpLambertMeridianF,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	GribPushAtt(lat_att_list_ptr,"mpLambertMeridianF",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
-	GribPushAtt(lon_att_list_ptr,NhlNmpProjection,tmp_string,1,nclTypestringClass); (*nlonatts)++;
+	GribPushAtt(lon_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 25.0;
-	GribPushAtt(lon_att_list_ptr,NhlNmpLambertParallel1F,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	GribPushAtt(lon_att_list_ptr,"mpLambertParallel1F",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 25.0;
-	GribPushAtt(lon_att_list_ptr,NhlNmpLambertParallel2F,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	GribPushAtt(lon_att_list_ptr,"mpLambertParallel2F",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = -95.0;
-	GribPushAtt(lon_att_list_ptr,NhlNmpLambertMeridianF,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	GribPushAtt(lon_att_list_ptr,"mpLambertMeridianF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
 	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts);
 }
@@ -1006,36 +757,36 @@ int *nlonatts;
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
-	GribPushAtt(lat_att_list_ptr,NhlNmpProjection,tmp_string,1,nclTypestringClass); (*nlatatts)++;
+	GribPushAtt(lat_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 25.0;
-	GribPushAtt(lat_att_list_ptr,NhlNmpLambertParallel1F,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	GribPushAtt(lat_att_list_ptr,"mpLambertParallel1F",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 25.0;
-	GribPushAtt(lat_att_list_ptr,NhlNmpLambertParallel2F,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	GribPushAtt(lat_att_list_ptr,"mpLambertParallel2F",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = -95.0;
-	GribPushAtt(lat_att_list_ptr,NhlNmpLambertMeridianF,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	GribPushAtt(lat_att_list_ptr,"mpLambertMeridianF",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
-	GribPushAtt(lon_att_list_ptr,NhlNmpProjection,tmp_string,1,nclTypestringClass); (*nlonatts)++;
+	GribPushAtt(lon_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 25.0;
-	GribPushAtt(lon_att_list_ptr,NhlNmpLambertParallel1F,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	GribPushAtt(lon_att_list_ptr,"mpLambertParallel1F",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 25.0;
-	GribPushAtt(lon_att_list_ptr,NhlNmpLambertParallel2F,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	GribPushAtt(lon_att_list_ptr,"mpLambertParallel2F",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = -95.0;
-	GribPushAtt(lon_att_list_ptr,NhlNmpLambertMeridianF,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	GribPushAtt(lon_att_list_ptr,"mpLambertMeridianF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
 	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts);
 }
@@ -1076,35 +827,35 @@ int *nlonatts;
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
-	GribPushAtt(lat_att_list_ptr,NhlNmpProjection,tmp_string,1,nclTypestringClass); (*nlatatts)++;
+	GribPushAtt(lat_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 25.0;
-	GribPushAtt(lat_att_list_ptr,NhlNmpLambertParallel1F,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	GribPushAtt(lat_att_list_ptr,"mpLambertParallel1F",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 25.0;
-	GribPushAtt(lat_att_list_ptr,NhlNmpLambertParallel2F,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	GribPushAtt(lat_att_list_ptr,"mpLambertParallel2F",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = -95.0;
-	GribPushAtt(lat_att_list_ptr,NhlNmpLambertMeridianF,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	GribPushAtt(lat_att_list_ptr,"mpLambertMeridianF",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
-	GribPushAtt(lon_att_list_ptr,NhlNmpProjection,tmp_string,1,nclTypestringClass); (*nlonatts)++;
+	GribPushAtt(lon_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 25.0;
-	GribPushAtt(lon_att_list_ptr,NhlNmpLambertParallel1F,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	GribPushAtt(lon_att_list_ptr,"mpLambertParallel1F",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 25.0;
-	GribPushAtt(lon_att_list_ptr,NhlNmpLambertParallel2F,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	GribPushAtt(lon_att_list_ptr,"mpLambertParallel2F",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = -95.0;
-	GribPushAtt(lon_att_list_ptr,NhlNmpLambertMeridianF,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	GribPushAtt(lon_att_list_ptr,"mpLambertMeridianF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
 	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts);
 }
@@ -1146,35 +897,35 @@ int *nlonatts;
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
-	GribPushAtt(lat_att_list_ptr,NhlNmpProjection,tmp_string,1,nclTypestringClass); (*nlatatts)++;
+	GribPushAtt(lat_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 25.0;
-	GribPushAtt(lat_att_list_ptr,NhlNmpLambertParallel1F,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	GribPushAtt(lat_att_list_ptr,"mpLambertParallel1F",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 25.0;
-	GribPushAtt(lat_att_list_ptr,NhlNmpLambertParallel2F,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	GribPushAtt(lat_att_list_ptr,"mpLambertParallel2F",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = -95.0;
-	GribPushAtt(lat_att_list_ptr,NhlNmpLambertMeridianF,tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	GribPushAtt(lat_att_list_ptr,"mpLambertMeridianF",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
-	GribPushAtt(lon_att_list_ptr,NhlNmpProjection,tmp_string,1,nclTypestringClass); (*nlonatts)++;
+	GribPushAtt(lon_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 25.0;
-	GribPushAtt(lon_att_list_ptr,NhlNmpLambertParallel1F,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	GribPushAtt(lon_att_list_ptr,"mpLambertParallel1F",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 25.0;
-	GribPushAtt(lon_att_list_ptr,NhlNmpLambertParallel2F,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	GribPushAtt(lon_att_list_ptr,"mpLambertParallel2F",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = -95.0;
-	GribPushAtt(lon_att_list_ptr,NhlNmpLambertMeridianF,tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	GribPushAtt(lon_att_list_ptr,"mpLambertMeridianF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
 	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts);
 }
@@ -3723,28 +3474,13 @@ int * nlonatts;
 	idir = ((unsigned char)0200 & (unsigned char)gds[27])?-1:1;
 	jdir = ((unsigned char)0100 & (unsigned char)gds[27])?1:-1;
 	if((latin1 < 0)&&(latin2 < 0)) {
+		float minlat,maxlat;
+
+		minlat = (latin1>latin2)?latin2:latin1;
+		maxlat = (latin1>latin2)?latin1:latin2;
 		
-		if(mapid == -1) {
-			rlist = NhlRLCreate(NhlSETRL);
-			NhlRLClear(rlist);
-			NhlCreate(&vpid,"Map0",NhldummyWorkstationClass,0,rlist);
-			NhlRLClear(rlist);
-			NhlRLSetFloat(rlist,NhlNvpXF,0.01);
-			NhlRLSetFloat(rlist,NhlNvpYF,0.99);
-			NhlRLSetFloat(rlist,NhlNvpWidthF,0.98);
-			NhlRLSetFloat(rlist,NhlNvpHeightF,0.98);
-			NhlRLSetString(rlist,NhlNmpProjection,"LAMBERTCONFORMAL");
-			NhlRLSetFloat(rlist,NhlNmpLambertParallel1F,(latin1<latin2)?latin1:latin2);
-			NhlRLSetFloat(rlist,NhlNmpLambertParallel2F,(latin1<latin2)?latin2:latin1);
-			NhlRLSetFloat(rlist,NhlNmpLambertMeridianF,lov);
-			NhlCreate(&mapid,"Map0",NhlmapPlotClass,vpid,rlist);
-		} else {
-			NhlRLClear(rlist);
-			NhlRLSetFloat(rlist,NhlNmpLambertParallel1F,(latin1<latin2)?latin1:latin2);
-			NhlRLSetFloat(rlist,NhlNmpLambertParallel2F,(latin1<latin2)?latin2:latin1);
-			NhlRLSetFloat(rlist,NhlNmpLambertMeridianF,lov);
-			NhlSetValues(mapid,rlist);
-		}
+		InitMapTrans("LC",minlat,lov,maxlat);
+
 		C = 2 * pi * EAR * cos(degtorad * latin1)*1000.0;
 		d_per_km = 360.0/C;
 		dlon = dx * d_per_km;
@@ -3752,40 +3488,33 @@ int * nlonatts;
 * latin1 is always closest to pole
 */
 		tlon = lov + dlon;
-		NhlDataToNDC(mapid,&lov,((latin1<latin2)?&latin1:&latin2),1,&nx0,&ny0,NULL,NULL,&status,&orv);
-		NhlDataToNDC(mapid,&lov,((latin1<latin2)?&latin1:&latin2),1,&nx1,&ny1,NULL,NULL,&status,&orv);
+		NGCALLF(maptrn,MAPTRN)(&minlat,&lov,&nx0,&ny0);
+		NGCALLF(maptrn,MAPTRN)(&minlat,&tlon,&nx1,&ny1);
 		deltax = fabs(nx0 - nx1);
 		deltay = dy/dx * deltax;
-		NhlDataToNDC(mapid,&lo1,&la1,1,&nx0,&ny0,NULL,NULL,&status,&orv);
+		NGCALLF(maptrn,MAPTRN)(&la1,&lo1,&nx0,&ny0);
 		for(j = 0; j < ny; j++) {
 			for(i = 0; i < nx; i++) {
 				(*lon)[j * nx + i] = nx0 + idir * i * deltax;
 				(*lat)[j * nx + i] = ny0 + jdir * j * deltay;
 			}
 		}
-		NhlNDCToData(mapid,*lon,*lat,nx*ny,*lon,*lat,NULL,NULL,&status,&orv);
-	} else {
-		if(mapid == -1) {
-			rlist = NhlRLCreate(NhlSETRL);
-			NhlRLClear(rlist);
-			NhlCreate(&vpid,"Map0",NhldummyWorkstationClass,0,rlist);
-			NhlRLClear(rlist);
-			NhlRLSetFloat(rlist,NhlNvpXF,0.01);
-			NhlRLSetFloat(rlist,NhlNvpYF,0.99);
-			NhlRLSetFloat(rlist,NhlNvpWidthF,0.98);
-			NhlRLSetFloat(rlist,NhlNvpHeightF,0.98);
-			NhlRLSetString(rlist,NhlNmpProjection,"LAMBERTCONFORMAL");
-			NhlRLSetFloat(rlist,NhlNmpLambertParallel1F,(latin1>latin2)?latin1:latin2);
-			NhlRLSetFloat(rlist,NhlNmpLambertParallel2F,(latin1>latin2)?latin2:latin1);
-			NhlRLSetFloat(rlist,NhlNmpLambertMeridianF,lov);
-			NhlCreate(&mapid,"Map0",NhlmapPlotClass,vpid,rlist);
-		} else {
-			NhlRLClear(rlist);
-			NhlRLSetFloat(rlist,NhlNmpLambertParallel1F,(latin1>latin2)?latin1:latin2);
-			NhlRLSetFloat(rlist,NhlNmpLambertParallel2F,(latin1>latin2)?latin2:latin1);
-			NhlRLSetFloat(rlist,NhlNmpLambertMeridianF,lov);
-			NhlSetValues(mapid,rlist);
+		for(j = 0; j < ny; j++) {
+			for(i = 0; i < nx; i++) {
+				float tmplon = (*lon)[j * nx + i];
+				float tmplat = (*lat)[j * nx + i];
+				NGCALLF(maptri,MAPTRI)
+				(&tmplon,&tmplat,&((*lat)[j * nx + i]),&((*lon)[j * nx + i]));
+			}
 		}
+	} else {
+		float minlat,maxlat;
+
+		
+		minlat = (latin1>latin2)?latin2:latin1;
+		maxlat = (latin1>latin2)?latin1:latin2;
+	
+		InitMapTrans("LC",maxlat,lov,minlat);
 /*
 * Northern case
 */
@@ -3796,43 +3525,29 @@ int * nlonatts;
 * latin1 is always closest to pole
 */
 		tlon = lov + dlon;
-		NhlDataToNDC(mapid,&lov,(latin1>latin2)?&latin1:&latin2,1,&nx0,&ny0,NULL,NULL,&status,&orv);
-		NhlDataToNDC(mapid,&tlon,(latin1>latin2)?&latin1:&latin2,1,&nx1,&ny1,NULL,NULL,&status,&orv);
+		NGCALLF(maptrn,MAPTRN)(&maxlat,&lov,&nx0,&ny0);
+		NGCALLF(maptrn,MAPTRN)(&maxlat,&tlon,&nx1,&ny1);
+		
 		deltax = fabs(nx0 - nx1);
 		deltay = dy/dx * deltax;
-		NhlDataToNDC(mapid,&lo1,&la1,1,&nx0,&ny0,NULL,NULL,&status,&orv);
+		NGCALLF(maptrn,MAPTRN)(&la1,&lo1,&nx0,&ny0);
+
 		for(j = 0; j < ny; j++) {
 			for(i = 0; i < nx; i++) {
 				(*lon)[j * nx + i] = nx0 + idir * i * deltax;
 				(*lat)[j * nx + i] = ny0 + jdir * j * deltay;
 			}
 		}
-		NhlNDCToData(mapid,*lon,*lat,nx*ny,*lon,*lat,NULL,NULL,&status,&orv);
-	}
-
-
-/*
-	deg_per_gp_y = 360.0 * (dy / (2 * pi * (ear*1000.0)));
-	tmp_x[0] = lov;
-	tmp_x[1] = lov;
-	tmp_x[2] = lo1;
-	tmp_y[0] = latin1 - deg_per_gp_y/2.0;
-	tmp_y[1] = latin1 + deg_per_gp_y/2.0;
-	tmp_y[2] = la1;
-	NhlDataToNDC(mapid,tmp_x,tmp_y,3,tmp_x,tmp_y,NULL,NULL,&status,&orv);
-	deltay = (float)fabs((double)(tmp_y[0] - tmp_y[1]));
-	deltax = (dx/dy) * deltay;
-	ndc_x_start = tmp_x[2];
-	ndc_y_start = tmp_y[2];
-	for(j = 0; j < ny; j++) {
-		for(i = 0; i < nx; i++) {
-			(*lon)[j * nx + i] = ndc_x_start + idir * i * deltax;
-			(*lat)[j * nx + i] = ndc_y_start + jdir * j * deltay;
+		for(j = 0; j < ny; j++) {
+			for(i = 0; i < nx; i++) {
+				float tmplon = (*lon)[j * nx + i];
+				float tmplat = (*lat)[j * nx + i];
+				NGCALLF(maptri,MAPTRI)
+				(&tmplon,&tmplat,&((*lat)[j * nx + i]),&((*lon)[j * nx + i]));
+			}
 		}
 	}
-	NhlNDCToData(mapid,*lon,*lat,nx*ny,*lon,*lat,NULL,NULL,&status,&orv);
 
-*/	
 
 	if(lon_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));
@@ -4203,25 +3918,7 @@ int * nlonatts;
 	jdir = ((unsigned char)0100 & (unsigned char)gds[27])?1:-1;
 
 	if(north) {
-		if(mapid == -1) {
-			rlist = NhlRLCreate(NhlSETRL);
-			NhlRLClear(rlist);
-			NhlCreate(&vpid,"Map0",NhldummyWorkstationClass,0,rlist);
-			NhlRLClear(rlist);
-			NhlRLSetFloat(rlist,NhlNvpXF,0.01);
-			NhlRLSetFloat(rlist,NhlNvpYF,0.99);
-			NhlRLSetFloat(rlist,NhlNvpWidthF,0.98);
-			NhlRLSetFloat(rlist,NhlNvpHeightF,0.98);
-			NhlRLSetString(rlist,NhlNmpProjection,"STEREOGRAPHIC");
-			NhlRLSetFloat(rlist,NhlNmpCenterLatF,90.0);
-			NhlRLSetFloat(rlist,NhlNmpCenterLonF,lov);
-			NhlCreate(&mapid,"Map0",NhlmapPlotClass,vpid,rlist);
-		} else {
-			NhlRLClear(rlist);
-			NhlRLSetFloat(rlist,NhlNmpCenterLatF,90.0);
-			NhlRLSetFloat(rlist,NhlNmpCenterLonF,lov);
-			NhlSetValues(mapid,rlist);
-		}
+		InitMapTrans("ST",90.0,lov,0.0);
 /*
 * Northern case
 */
@@ -4234,39 +3931,21 @@ int * nlonatts;
 * latin1 is always closest to pole
 */
 		tlon = lov + dlon;
-
-		NhlDataToNDC(mapid,&lov,&latin0,1,&nx0,&ny0,NULL,NULL,&status,&orv);
-		NhlDataToNDC(mapid,&tlon,&latin0,1,&nx1,&ny1,NULL,NULL,&status,&orv);
+		NGCALLF(maptrn,MAPTRN)(&latin0,&lov,&nx0,&ny0);
+		NGCALLF(maptrn,MAPTRN)(&latin0,&tlon,&nx1,&ny1);
 		deltax = fabs(nx0 - nx1);
 		deltay = dy/dx * deltax;
-		NhlDataToNDC(mapid,&lo1,&la1,1,&nx0,&ny0,NULL,NULL,&status,&orv);
+		NGCALLF(maptrn,MAPTRN)(&la1,&lo1,&nx0,&ny0);
 		for(j = 0; j < ny; j++) {
 			for(i = 0; i < nx; i++) {
-				(*lon)[j * nx + i] = nx0 + idir * i * deltax;
-				(*lat)[j * nx + i] = ny0 + jdir * j * deltay;
+				float tmpx = nx0 + idir * i * deltax;
+				float tmpy = ny0 + jdir * j * deltay;
+				NGCALLF(maptri,MAPTRI)
+				(&tmpx,&tmpy,&((*lat)[j * nx + i]),&((*lon)[j * nx + i]));
 			}
 		}
-		NhlNDCToData(mapid,*lon,*lat,nx*ny,*lon,*lat,NULL,NULL,&status,&orv);
 	} else {
-		if(mapid == -1) {
-			rlist = NhlRLCreate(NhlSETRL);
-			NhlRLClear(rlist);
-			NhlCreate(&vpid,"Map0",NhldummyWorkstationClass,0,rlist);
-			NhlRLClear(rlist);
-			NhlRLSetFloat(rlist,NhlNvpXF,0.01);
-			NhlRLSetFloat(rlist,NhlNvpYF,0.99);
-			NhlRLSetFloat(rlist,NhlNvpWidthF,0.98);
-			NhlRLSetFloat(rlist,NhlNvpHeightF,0.98);
-			NhlRLSetString(rlist,NhlNmpProjection,"STEREOGRAPHIC");
-			NhlRLSetFloat(rlist,NhlNmpCenterLatF,-90.0);
-			NhlRLSetFloat(rlist,NhlNmpCenterLonF,lov);
-			NhlCreate(&mapid,"Map0",NhlmapPlotClass,vpid,rlist);
-		} else {
-			NhlRLClear(rlist);
-			NhlRLSetFloat(rlist,NhlNmpCenterLatF,-90.0);
-			NhlRLSetFloat(rlist,NhlNmpCenterLonF,lov);
-			NhlSetValues(mapid,rlist);
-		}
+		InitMapTrans("ST",-90.0,lov,0.0);
 /*
 * Southern case
 */
@@ -4279,18 +3958,19 @@ int * nlonatts;
 * latin1 is always closest to pole
 */
 		tlon = dlon + lov;
-		NhlDataToNDC(mapid,&tlon,&latin0,1,&nx0,&ny0,NULL,NULL,&status,&orv);
-		NhlDataToNDC(mapid,&lov,&latin0,1,&nx1,&ny1,NULL,NULL,&status,&orv);
+		NGCALLF(maptrn,MAPTRN)(&latin0,&tlon,&nx0,&ny0);
+		NGCALLF(maptrn,MAPTRN)(&latin0,&lov,&nx1,&ny1);
 		deltax = fabs(nx0 - nx1);
 		deltay = dy/dx * deltax;
-		NhlDataToNDC(mapid,&lo1,&la1,1,&nx0,&ny0,NULL,NULL,&status,&orv);
+		NGCALLF(maptrn,MAPTRN)(&la1,&lo1,&nx0,&ny0);
 		for(j = 0; j < ny; j++) {
 			for(i = 0; i < nx; i++) {
-				(*lon)[j * nx + i] = nx0 + idir * i * deltax;
-				(*lat)[j * nx + i] = ny0 + jdir * j * deltay;
+				float tmpx = nx0 + idir * i * deltax;
+				float tmpy = ny0 + jdir * j * deltay;
+				NGCALLF(maptri,MAPTRI)
+				(&tmpx,&tmpy,&((*lat)[j * nx + i]),&((*lon)[j * nx + i]));
 			}
 		}
-		NhlNDCToData(mapid,*lon,*lat,nx*ny,*lon,*lat,NULL,NULL,&status,&orv);
 	}
 	if(lon_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));

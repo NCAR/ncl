@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclType.c.sed,v 1.7 1995-06-03 00:45:58 ethan Exp $
+ *      $Id: NclType.c.sed,v 1.8 2003-05-12 23:37:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -21,7 +21,7 @@
  *	Description:	
  */
 
-#include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/Convert.h>
 #include "defs.h"

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclCoordVar.c,v 1.10 1997-09-12 20:27:13 ethan Exp $
+ *      $Id: NclCoordVar.c,v 1.11 2003-05-12 23:37:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,6 @@
 #include "defs.h"
 #include "Symbol.h"
 #include "NclMdInc.h"
-#include "Machine.h"
 #include "DataSupport.h"
 #include "NclCoordVar.h"
 #include "NclOneDValCoordData.h"
