@@ -18,10 +18,10 @@ C      Description:    Demonstrates the LabelBar Object
 C                      Creates color bars with every 5th index of the
 C                      114 different colors in the default colormap.
 C
-      external nhlflabelbarlayerclass
-      external nhlfapplayerclass
-      external nhlfxworkstationlayerclass
-      external nhlfncgmworkstationlayerclass
+      external NhlFLabelBarLayerClass
+      external NhlFAppLayerClass
+      external NhlFXWorkstationLayerClass
+      external NhlFNcgmWorkstationLayerClass
         
       integer appid, wid, pid
       integer rlist, ierr
@@ -51,58 +51,58 @@ C
 C
 C Initialize the high level utility library
 C
-      call nhlfinitialize
+      call NhlFInitialize
 C
 C Create an application context. Set the app dir to the current
 C directory so the application looks for a resource file in the
 C working directory. In this example the resource file supplies the
 C plot title only.
 C
-      call nhlfrlcreate(rlist,'setrl')
-      call nhlfrlclear(rlist)
-      call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
-      call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
-      call nhlfcreate(appid,'lb02',nhlfapplayerclass,0,rlist,ierr)
+      call NhlFRLCreate(rlist,'setrl')
+      call NhlFRLClear(rlist)
+      call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
+      call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
+      call NhlFCreate(appid,'lb02',NhlFAppLayerClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
 C Create an NCGM workstation.
 C
-         call nhlfrlclear(rlist)
-         call nhlfrlsetstring(rlist,'wkMetaName','./lb02f.ncgm',ierr)
-         call nhlfcreate(wid,'lb02Work',
-     $        nhlfncgmworkstationlayerclass,0,rlist,ierr) 
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkMetaName','./lb02f.ncgm',ierr)
+         call NhlFCreate(wid,'lb02Work',
+     $        NhlFNcgmWorkstationLayerClass,0,rlist,ierr) 
       else 
 C
 C Create an X workstation.
 C
-         call nhlfrlclear(rlist)
-         call nhlfrlsetstring(rlist,'wkPause','True',ierr)
-         call nhlfcreate(wid,'lb02Work',nhlfxworkstationlayerclass,
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPause','True',ierr)
+         call NhlFCreate(wid,'lb02Work',NhlFXWorkstationLayerClass,
      $        0,rlist,ierr)
       endif
 C
 C Create a plot with 22 color indices (Every 5th one of the default
 C workstation colormap.
 C
-      call nhlfrlclear(rlist)
-      call nhlfrlsetintegerarray(rlist,'lbFillColors',
+      call NhlFRLClear(rlist)
+      call NhlFRLSetintegerarray(rlist,'lbFillColors',
      $     colors,22,ierr)
-      call nhlfrlsetstringarray(rlist,'lbLabelStrings',
+      call NhlFRLSetstringarray(rlist,'lbLabelStrings',
      $     line_labels,22,ierr)
-      call nhlfrlsetfloat(rlist,'vpXF',0.,ierr)
-      call nhlfrlsetfloat(rlist,'vpYF',1.,ierr)
-      call nhlfrlsetfloat(rlist,'vpWidthF',1.,ierr)
-      call nhlfrlsetfloat(rlist,'vpHeightF',1.,ierr)
-      call nhlfcreate(pid,'LabelBar',nhlflabelbarlayerclass,
+      call NhlFRLSetfloat(rlist,'vpXF',0.,ierr)
+      call NhlFRLSetfloat(rlist,'vpYF',1.,ierr)
+      call NhlFRLSetfloat(rlist,'vpWidthF',1.,ierr)
+      call NhlFRLSetfloat(rlist,'vpHeightF',1.,ierr)
+      call NhlFCreate(pid,'LabelBar',NhlFLabelBarLayerClass,
      $     wid,rlist,ierr)
 
-      call nhlfdraw(pid,ierr)
-      call nhlfframe(wid,ierr)
-      call nhlfdestroy(pid,ierr)
-      call nhlfdestroy(wid,ierr)
-      call nhlfdestroy(appid,ierr)
-      call nhlfclose
+      call NhlFDraw(pid,ierr)
+      call NhlFFrame(wid,ierr)
+      call NhlFDestroy(pid,ierr)
+      call NhlFDestroy(wid,ierr)
+      call NhlFDestroy(appid,ierr)
+      call NhlFClose
 
       stop
       end
