@@ -1,5 +1,5 @@
 ;
-;   $Id: tx08n.ncl,v 1.1 1996-01-04 17:36:59 haley Exp $
+;   $Id: tx08n.ncl,v 1.2 2003-03-03 17:27:02 grubin Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -28,6 +28,7 @@ begin
 NCGM=0
 X11=1
 PS=0
+PDF=0
 
 ;
 ; Create application.
@@ -51,6 +52,15 @@ else
       ixwk = create "tx08Work"  psWorkstationClass defaultapp
         "wkPSFileName"       : "tx08n.ps"
       end create
+    else
+      if (PDF .eq. 1) then
+;
+; Create a PDFWorkstation object.
+;
+        ixwk = create "tx08Work"  pdfWorkstationClass defaultapp
+          "wkPDFFileName"       : "tx08n.pdf"
+        end create
+      end if
     end if
   end if
 end if

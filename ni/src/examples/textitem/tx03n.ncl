@@ -1,5 +1,5 @@
 ;
-;    $Id: tx03n.ncl,v 1.10 1998-04-23 22:20:22 ethan Exp $
+;    $Id: tx03n.ncl,v 1.11 2003-03-03 17:27:02 grubin Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
@@ -43,6 +43,7 @@ end create
 NCGM=1
 X11=0
 PS=0
+PDF=0
 
 if (NCGM .eq. 1) then
 ;
@@ -67,6 +68,15 @@ else
       wid = create "tx03Work" psWorkstationClass defaultapp
         "wkPSFileName"         : "tx03n.ps"
       end create
+    else
+      if (PDF .eq. 1) then
+;
+; Create a PDFWorkstation object.
+;
+        wid = create "tx03Work" pdfWorkstationClass defaultapp
+          "wkPDFFileName"         : "tx03n.pdf"
+        end create
+      end if
     end if
   end if
 end if

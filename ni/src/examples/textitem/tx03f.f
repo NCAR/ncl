@@ -22,18 +22,20 @@ C
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFTextItemClass
 
       integer appid, wid, pid
       integer srlist, grlist,ierr
       integer i
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Default is to create a metafile.
 C
       NCGM=1
       X11=0
       PS=0
+      PDF=0
 C
 C Initialize the high level utility library
 C
@@ -73,6 +75,14 @@ C
          call NhlFRLClear(srlist)
          call NhlFRLSetString(srlist,'wkPSFileName','./tx03f.ps',ierr)
          call NhlFCreate(wid,'tx03Work',NhlFPSWorkstationClass,0,
+     1        srlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF object.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkPDFFileName','./tx03f.pdf',ierr)
+         call NhlFCreate(wid,'tx03Work',NhlFPDFWorkstationClass,0,
      1        srlist,ierr)
       endif
 C

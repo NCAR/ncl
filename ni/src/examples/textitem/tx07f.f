@@ -25,13 +25,14 @@ C
       external NhlFNcgmWorkstationClass
       external NhlFXWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFTextItemClass
 
       integer   i,ierr,appid,wid,exid,labid,rlist
       real ypos,aspect
       real bkg_color(3),spacings(3)
       character*25  label
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 
       data bkg_color/1.0,1.0,1.0/
       data spacings/0.0,1.5,0.6/
@@ -41,6 +42,7 @@ C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C  Initialize.
 C 
@@ -85,6 +87,17 @@ C
          call NhlFRLSetFloatArray(rlist,'wkBackgroundColor',
      &        bkg_color,3,ierr)
          call NhlFCreate(wid,'tx07Work',NhlFpsWorkstationClass,
+     &        0,rlist,ierr)
+      else if (PDF .eq. 1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkPDFFileName',
+     &        './tx07f.pdf',ierr)
+         call NhlFRLSetFloatArray(rlist,'wkBackgroundColor',
+     &        bkg_color,3,ierr)
+         call NhlFCreate(wid,'tx07Work',NhlFpdfWorkstationClass,
      &        0,rlist,ierr)
       endif
 C

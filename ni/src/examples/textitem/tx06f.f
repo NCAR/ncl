@@ -26,6 +26,7 @@ C
       external NhlFNcgmWorkstationClass
       external NhlFXWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFTextItemClass
 
       integer   appid, wid, pid, rlist, ierr
@@ -34,7 +35,7 @@ C
       real bkg_color(3)
       integer just
       real bb_top,bb_bottom,bb_left,bb_right
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 
       data labels/'Top Left','Center Left','Bottom Left',
      &     'Top Center','Center Center','Bottom Center',
@@ -50,6 +51,7 @@ C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C  Initialize the high level utility library and create application.
 C 
@@ -92,6 +94,16 @@ C
         call NhlFRLSetFloatArray(rlist,'wkBackgroundColor',
      &       bkg_color,3,ierr)
         call NhlFCreate(wid,'tx06Work',NhlFpsWorkstationClass,
+     &       0,rlist,ierr)
+      else if (PDF .eq. 1) then
+C
+C Create a PDF workstation.
+C
+        call NhlFRLClear(rlist)
+        call NhlFRLSetString(rlist,'wkPDFFileName','./tx06c.pdf',ierr)
+        call NhlFRLSetFloatArray(rlist,'wkBackgroundColor',
+     &       bkg_color,3,ierr)
+        call NhlFCreate(wid,'tx06Work',NhlFpdfWorkstationClass,
      &       0,rlist,ierr)
       endif
 C

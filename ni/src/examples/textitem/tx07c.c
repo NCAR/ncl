@@ -1,5 +1,5 @@
 /*
- *  $Id: tx07c.c,v 1.5 1995-06-22 21:08:47 haley Exp $
+ *  $Id: tx07c.c,v 1.6 2003-03-03 17:27:02 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -29,6 +29,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 
 main()
 {
@@ -36,7 +37,7 @@ main()
     float ypos, aspect;
     float bkg_color[] = {1., 1., 1.}, spacings[] = {0.0, 1.5, 0.6};
     char  label[25];
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 
 /*
  *  Initialize.
@@ -73,6 +74,16 @@ main()
         NhlRLSetString(rlist,NhlNwkPSFileName,"./tx07c.ps");
         NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
         NhlCreate(&wid,"tx07Work",NhlpsWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./tx07c.pdf");
+        NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
+        NhlCreate(&wid,"tx07Work",NhlpdfWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
 /*

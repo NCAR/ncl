@@ -1,5 +1,5 @@
 /*
- *  $Id: tx06c.c,v 1.4 1995-06-22 21:08:45 haley Exp $
+ *  $Id: tx06c.c,v 1.5 2003-03-03 17:27:02 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -28,6 +28,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 
 main()
 {
@@ -39,7 +40,7 @@ main()
     float bkg_color[] = {1., 1., 1.};
     int   just;
     NhlBoundingBox  t_box;
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 
 /*
  *  Initialize and set up application context.
@@ -77,6 +78,16 @@ main()
         NhlRLSetString(rlist,NhlNwkPSFileName,"./tx06c.ps");
         NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
         NhlCreate(&wid,"tx06Work",NhlpsWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./tx06c.pdf");
+        NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
+        NhlCreate(&wid,"tx06Work",NhlpdfWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
 /*

@@ -26,6 +26,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlfTextItemclass
 
@@ -33,7 +34,7 @@ C
       real height, angle, dtr
       real bkg_color(3)
       real x_coord, y_coord
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 
       dtr=0.017453292519943
       bkg_color(1)=1.0
@@ -45,6 +46,7 @@ C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize the high level utility library and create application.
 C
@@ -86,9 +88,20 @@ C
      &       './tx05f.ps',ierr)
         call NhlFRLSetFloatArray(rlist,'wkBackgroundColor',
      &       bkg_color,3,ierr)
-        call NhlFCreate(wid,'tx05Work',NhlFPsWorkstationClass,
+        call NhlFCreate(wid,'tx05Work',NhlFpsWorkstationClass,
      &       0,rlist,ierr)
 
+      else if (PDF .eq. 1) then
+C
+C Create a PDF workstation.
+C
+        call NhlFRLClear(rlist)
+        call NhlFRLSetString(rlist,'wkPDFFileName',
+     &       './tx05f.pdf',ierr)
+        call NhlFRLSetFloatArray(rlist,'wkBackgroundColor',
+     &       bkg_color,3,ierr)
+        call NhlFCreate(wid,'tx05Work',NhlFpdfWorkstationClass,
+     &       0,rlist,ierr)
       endif
 C
 C Create a TextItem object.

@@ -22,15 +22,17 @@ C
       external NhlFXWorkstationClass
       external NhlFNCGMWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXyPlotClass
       external NhlFTextItemClass
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Default is output to an X11 window.
 C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Create application.
 C
@@ -56,6 +58,13 @@ C Create a PS workstation.
 C
          call NhlFRLSetString(list,'wkPSFileName','./tx08f.ps',ierr)
          call NhlFCreate(ixwk,'tx08Work',NhlFPSWorkstationClass,0,
+     1        list,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLSetString(list,'wkPDFFileName','./tx08f.pdf',ierr)
+         call NhlFCreate(ixwk,'tx08Work',NhlFPDFWorkstationClass,0,
      1        list,ierr)
       endif
 C

@@ -24,6 +24,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
@@ -33,7 +34,7 @@ main()
     int text_item_id;
     int workstation_id;
     int i,rlist;
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 /*
  * Initialize the high level utility library
  */
@@ -76,6 +77,15 @@ main()
         NhlRLSetString(rlist,NhlNwkPSFileName,"./tx04c.ps");
         NhlCreate(&workstation_id,"tx04Work",
                   NhlpsWorkstationClass,NhlDEFAULT_APP,rlist); 
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./tx04c.pdf");
+        NhlCreate(&workstation_id,"tx04Work",
+                  NhlpdfWorkstationClass,NhlDEFAULT_APP,rlist); 
     }
 /*
  * This is the only creation of a text object for this entire program.

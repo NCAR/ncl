@@ -1,5 +1,5 @@
 /*
- *  $Id: tx05c.c,v 1.5 1995-06-22 21:08:43 haley Exp $
+ *  $Id: tx05c.c,v 1.6 2003-03-03 17:27:02 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -29,6 +29,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 
 #define MAX(A,B)       (((A) > (B)) ? (A) : (B))
 
@@ -38,7 +39,7 @@ main()
     float height, angle, dtr=0.017453292519943;
     float bkg_color[] = {1., 1., 1.};
     float x_coord, y_coord;
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 /*
  *  Initialize.
  */ 
@@ -74,6 +75,16 @@ main()
         NhlRLSetString(rlist,NhlNwkPSFileName,"./tx05c.ps");
         NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
         NhlCreate(&wid,"tx05Work",NhlpsWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./tx05c.pdf");
+        NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
+        NhlCreate(&wid,"tx05Work",NhlpdfWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
 /*

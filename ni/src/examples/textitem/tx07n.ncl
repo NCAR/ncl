@@ -1,5 +1,5 @@
 ;
-;   $Id: tx07n.ncl,v 1.6 1998-04-23 22:20:23 ethan Exp $
+;   $Id: tx07n.ncl,v 1.7 2003-03-03 17:27:02 grubin Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -40,6 +40,7 @@ cmap = (/ (/1.0, 1.0, 1.0/), \
 NCGM=0
 X11=1
 PS=0
+PDF=0
 
 if (NCGM .eq. 1) then
   workstation_id = create "tx07Work"  ncgmWorkstationClass defaultapp
@@ -67,6 +68,17 @@ else
         "wkColorMap"         : cmap
         "wkBackgroundColor"  : (/ 1., 1., 1. /)
       end create
+    else
+      if (PDF .eq. 1) then
+;
+; Create a PDFWorkstation object.
+;
+        workstation_id = create "tx07Work"  pdfWorkstationClass defaultapp
+          "wkPDFFileName"       : "tx07n.pdf"
+          "wkColorMap"         : cmap
+          "wkBackgroundColor"  : (/ 1., 1., 1. /)
+        end create
+      end if
     end if
   end if
 end if

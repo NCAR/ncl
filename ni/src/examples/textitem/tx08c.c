@@ -1,5 +1,5 @@
 /*
- *  $Id: tx08c.c,v 1.1 1996-01-04 17:08:36 haley Exp $
+ *  $Id: tx08c.c,v 1.2 2003-03-03 17:27:02 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -28,12 +28,13 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 
 main()
 {
     int ixwk, list, ixyplot, itx, ianno;
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 /*
  * Create application.
  */ 
@@ -64,6 +65,15 @@ main()
         NhlRLClear(list);
         NhlRLSetString(list,NhlNwkPSFileName,"./tx08c.ps");
         NhlCreate(&ixwk,"tx08Work",NhlpsWorkstationClass,
+                  NhlDEFAULT_APP,list);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(list);
+        NhlRLSetString(list,NhlNwkPDFFileName,"./tx08c.pdf");
+        NhlCreate(&ixwk,"tx08Work",NhlpdfWorkstationClass,
                   NhlDEFAULT_APP,list);
     }
 /*
