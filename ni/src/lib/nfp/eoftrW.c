@@ -2,19 +2,19 @@
 #include <math.h>
 #include "wrapper.h"
 
-extern void NGCALLF(drveoft,DRVEOFT)(double *, int *, int *, int *, int *,
-                                     double *, int *, double *, double *,
-                                     float *, double *, int *, int *,
-                                     double *, long long int *, double *,
-                                     int *, int *, int *, int *, int *,
-                                     double *, double *, int *);
+extern void NGCALLF(ddrveoft,DDRVEOFT)(double *, int *, int *, int *, int *,
+                                      double *, int *, double *, double *,
+                                      float *, double *, int *, int *,
+                                      double *, long long int *, double *,
+                                      int *, int *, int *, int *, int *,
+                                      double *, double *, int *);
 
-extern NGCALLF(tncleof,TNCLEOF)(double *, int *, int *, int *, int *,
-                                double *, int *, double *, double *,
-                                float *, double *, int *, int *, double *, 
-                                double *, double *, double *, double *,
-                                double *, long long int *, double *, int *, 
-                                int *, int *, int *, int *, int *);
+extern NGCALLF(dtncleof,DTNCLEOF)(double *, int *, int *, int *, int *,
+                                 double *, int *, double *, double *,
+                                 float *, double *, int *, int *, double *, 
+                                 double *, double *, double *, double *,
+                                 double *, long long int *, double *, int *, 
+                                 int *, int *, int *, int *, int *);
 
 NhlErrorTypes eofcov_tr_W( void )
 {
@@ -159,10 +159,10 @@ NhlErrorTypes eofcov_tr_W( void )
 /*
  * Call the Fortran 77 version of 'drveof' with the full argument list.
  */
-  NGCALLF(drveoft,DRVEOFT)(dx,&nrow,&ncol,&nobs,&msta,&missing_dx.doubleval,
-                           neval,eval,evec,pcvar,trace,&iopt,&jopt,cssm,
-                           &lcssm,work,&lwork,iwork,&liwork,ifail,
-                           &lifail,teof,weval,&ier);
+  NGCALLF(ddrveoft,DDRVEOFT)(dx,&nrow,&ncol,&nobs,&msta,&missing_dx.doubleval,
+                             neval,eval,evec,pcvar,trace,&iopt,&jopt,cssm,
+                             &lcssm,work,&lwork,iwork,&liwork,ifail,
+                             &lifail,teof,weval,&ier);
 /*
  * Check various possible error messages.
  */
@@ -592,10 +592,10 @@ NhlErrorTypes eofcor_tr_W( void )
 /*
  * Call the Fortran 77 version of 'drveof' with the full argument list.
  */
-  NGCALLF(drveoft,DRVEOFT)(dx,&nrow,&ncol,&nobs,&msta,&missing_dx.doubleval,
-                           neval,eval,evec,pcvar,trace,&iopt,&jopt,cssm,
-                           &lcssm,work,&lwork,iwork,&liwork,ifail,
-                           &lifail,teof,weval,&ier);
+  NGCALLF(ddrveoft,DDRVEOFT)(dx,&nrow,&ncol,&nobs,&msta,&missing_dx.doubleval,
+                             neval,eval,evec,pcvar,trace,&iopt,&jopt,cssm,
+                             &lcssm,work,&lwork,iwork,&liwork,ifail,
+                             &lifail,teof,weval,&ier);
 /*
  * Check various possible error messages.
  */
@@ -1063,10 +1063,10 @@ NhlErrorTypes eofcov_tr_pcmsg_W( void )
 /*
  * Call the Fortran 77 version of 'drveof' with the full argument list.
  */
-  NGCALLF(tncleof,TNCLEOF)(dx,&nrow,&ncol,&nobs,&msta,&missing_dx.doubleval,
-                           neval,eval,evec,pcvar,trace,&iopt,&jopt,dpcmsg,
-                           tmp_x,evecx,teof,weval,cssm,&lcssm,work,&lwork,
-                           iwork,&liwork,ifail,&lifail,&ier);
+  NGCALLF(dtncleof,DTNCLEOF)(dx,&nrow,&ncol,&nobs,&msta,&missing_dx.doubleval,
+                             neval,eval,evec,pcvar,trace,&iopt,&jopt,dpcmsg,
+                             tmp_x,evecx,teof,weval,cssm,&lcssm,work,&lwork,
+                             iwork,&liwork,ifail,&lifail,&ier);
 
 /*
  * Check various possible error messages.
@@ -1585,10 +1585,10 @@ NhlErrorTypes eofcor_tr_pcmsg_W( void )
 /*
  * Call the Fortran 77 version of 'drveof' with the full argument list.
  */
-  NGCALLF(tncleof,TNCLEOF)(dx,&nrow,&ncol,&nobs,&msta,&missing_dx.doubleval,
-                           neval,eval,evec,pcvar,trace,&iopt,&jopt,dpcmsg,
-                           tmp_x,evecx,teof,weval,cssm,&lcssm,work,&lwork,
-                           iwork,&liwork,ifail,&lifail,&ier);
+  NGCALLF(dtncleof,DTNCLEOF)(dx,&nrow,&ncol,&nobs,&msta,&missing_dx.doubleval,
+                             neval,eval,evec,pcvar,trace,&iopt,&jopt,dpcmsg,
+                             tmp_x,evecx,teof,weval,cssm,&lcssm,work,&lwork,
+                             iwork,&liwork,ifail,&lifail,&ier);
 
 /*
  * Check various possible error messages.

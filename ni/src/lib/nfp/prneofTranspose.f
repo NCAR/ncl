@@ -1,6 +1,6 @@
-      SUBROUTINE DRVEOFT(X,NROW,NCOL,NROBS,NCSTA,XMSG,NEVAL,EVAL,EVEC,
-     +                   PCVAR,TRACE,IOPT,JOPT,CSSM,LCSSM,WORK,LWORK,
-     +                   IWORK,LIWORK,IFAIL,LIFAIL,TEOF,WEVAL,IER)
+      SUBROUTINE DDRVEOFT(X,NROW,NCOL,NROBS,NCSTA,XMSG,NEVAL,EVAL,EVEC,
+     +                    PCVAR,TRACE,IOPT,JOPT,CSSM,LCSSM,WORK,LWORK,
+     +                    IWORK,LIWORK,IFAIL,LIFAIL,TEOF,WEVAL,IER)
 
       IMPLICIT NONE
       DOUBLE PRECISION XMSG
@@ -84,9 +84,9 @@ c .   of the *TRANSPOSE* of the input data matrix
 
       IER = 0
       IF (JOPT.EQ.0) THEN
-          CALL TVCMSSM(X,NROW,NCOL,NROBS,NCSTA,XMSG,CSSM,LCSSM,IER)
+          CALL DTVCMSSM(X,NROW,NCOL,NROBS,NCSTA,XMSG,CSSM,LCSSM,IER)
       ELSE
-          CALL TCRMSSM(X,NROW,NCOL,NROBS,NCSTA,XMSG,CSSM,LCSSM,IER)
+          CALL DTCRMSSM(X,NROW,NCOL,NROBS,NCSTA,XMSG,CSSM,LCSSM,IER)
       END IF
       IF (IER.NE.0) THEN
 C          WRITE (IPR,FMT=
@@ -105,7 +105,7 @@ c activate if print of cov/cor matrix [work] is desired
               LABEL(1:15) = 'DRVEOFT: correl matrix: '
           END IF
 C          WRITE (IPR,FMT='(//,a15,''sym storage mode'')') LABEL(1:15)
-          CALL SSMIOX(CSSM,NROBS)
+          CALL DSSMIOX(CSSM,NROBS)
       END IF
 
 c calculate the trace  before it is destroyed by dspevx
@@ -230,7 +230,7 @@ c calculate the eofs from the TRANSPOSED
 c ----------------------------------------------------------------------
 
 C NCLFORTSTART
-      SUBROUTINE TVCMSSM(X,NROW,NCOL,NRT,NCS,XMSG,VCM,LVCM,IER)
+      SUBROUTINE DTVCMSSM(X,NROW,NCOL,NRT,NCS,XMSG,VCM,LVCM,IER)
       IMPLICIT NONE
 
       INTEGER*8 LVCM
@@ -295,7 +295,7 @@ c calculate the var-cov between rows (obs)
       END
 c ----------------------------------------------------------------------
 C NCLFORTSTART
-      SUBROUTINE TCRMSSM(X,NROW,NCOL,NRT,NCS,XMSG,CRM,LCRM,IER)
+      SUBROUTINE DTCRMSSM(X,NROW,NCOL,NRT,NCS,XMSG,CRM,LCRM,IER)
       IMPLICIT NONE
 
       INTEGER NROW,NCOL,NRT,NCS,IER
@@ -371,10 +371,10 @@ c calculate the var-cov between columns (stations)
       RETURN
       END
 
-      SUBROUTINE TNCLEOF(XX,NROW,NCOL,NOBS,NSTA,XMSG,NEVAL,EVAL,EVEC,
-     +                   PCVAR,TRACE,IOPT,JOPT,PCRIT,X,EVECX,TEOF,
-     +                   WEVAL,CSSM,LCSSM,WORK,LWORK,IWORK,LIWORK,
-     +                   IFAIL,LIFAIL,IER)
+      SUBROUTINE DTNCLEOF(XX,NROW,NCOL,NOBS,NSTA,XMSG,NEVAL,EVAL,EVEC,
+     +                    PCVAR,TRACE,IOPT,JOPT,PCRIT,X,EVECX,TEOF,
+     +                    WEVAL,CSSM,LCSSM,WORK,LWORK,IWORK,LIWORK,
+     +                    IFAIL,LIFAIL,IER)
 
       IMPLICIT NONE
 
@@ -425,9 +425,9 @@ C      write (*,'(//'' sub tncldrv: nrow,ncol,nobs,msta= ''
 C     1              ,4i3)') nrow,ncol,nobs,msta
 
 
-      CALL DRVEOFT(X,NROW,NCOL,NOBS,MSTA,XMSG,NEVAL,EVAL,EVECX,
-     +             PCVAR,TRACE,IOPT,JOPT,CSSM,LCSSM,WORK,LWORK,
-     +             IWORK,LIWORK,IFAIL,LIFAIL,TEOF,WEVAL,IER)
+      CALL DDRVEOFT(X,NROW,NCOL,NOBS,MSTA,XMSG,NEVAL,EVAL,EVECX,
+     +              PCVAR,TRACE,IOPT,JOPT,CSSM,LCSSM,WORK,LWORK,
+     +              IWORK,LIWORK,IFAIL,LIFAIL,TEOF,WEVAL,IER)
 
 c before returning put the evecs in the correct location
 
