@@ -1,6 +1,4 @@
-C
-C	$Id: wmex14.f,v 1.4 2002-02-22 00:10:26 fred Exp $
-C
+
       PROGRAM WMEX14
 C
 C  An example of using the tools in the weather map library to
@@ -11,10 +9,15 @@ C  with a black background, set IBTYPE=1 below.
 C
       PARAMETER (IBTYPE=0)
 C
-C  Define error file, Fortran unit number, and workstation type,
-C  and workstation ID.
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=26, IWKID=1)
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=26,  IWKID=1)
 C
       INTEGER WMGTLN
 C

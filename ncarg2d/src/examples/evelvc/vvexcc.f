@@ -1,6 +1,4 @@
-C
-C	$Id: vvexcc.f,v 1.6 1994-07-08 16:29:19 stautler Exp $
-C
+
       SUBROUTINE GENDAT (DATA,IDIM,M,N,MLOW,MHGH,DLOW,DHGH)
 C
 C This is a routine to generate test data for two-dimensional graphics

@@ -1,13 +1,18 @@
-      PROGRAM CELLAR
+
+      PROGRAM PGKEX18
 C
 C  Produce an NX x NY  CELL ARRAY based on the Mandelbrot set--color
 C  the cells depending upon the speed of convergence or divergence.
 C
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-C  Define error file, Fortran unit number, and workstation type,
-C  and workstation ID.
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
       PARAMETER (NX=20, NY=20, NITER=101)
       INTEGER COLIA(NX,NY)
       COMPLEX Z

@@ -1,7 +1,7 @@
-      PROGRAM FILLSP
+
+      PROGRAM PGKEX23
 C
 C  Illustrate changing spacing between hatch pattern lines.
-C
 C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.

@@ -1,4 +1,5 @@
-      PROGRAM REOP
+
+      PROGRAM PGKEX27
 C
 C  This program illustrates apeending to metafiles, both to
 C  metafiles that have been suspended in the middle of a picture

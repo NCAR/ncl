@@ -1,7 +1,5 @@
-C
-C $Id: mpex09.f,v 1.4 2001-05-24 17:35:29 kennison Exp $
-C
-      PROGRAM MPEX09
+
+        PROGRAM MPEX09
 C
 C The program MPEX09 produces a set of plots showing the numbers
 C of all the segments in a chosen EZMAP outline dataset.  Certain
@@ -11,11 +9,15 @@ C dashes, un-comment the first card to do outline dataset 'CO',
 C the second to do 'US', the third to do 'PO', and the fourth to
 C do 'PS'.
 C
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-C Define error file, Fortran unit number, and workstation type,
-C and workstation ID.
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C The common block LIMITS communicates values between TESTIT and
 C the routines MAPEOD and MOVEIT.

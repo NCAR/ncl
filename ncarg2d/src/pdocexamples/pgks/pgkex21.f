@@ -1,7 +1,7 @@
-      PROGRAM CAPJON
+
+      PROGRAM PGKEX21
 C
 C  Illustrate line joins, caps, and miter limits.
-C
 C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.

@@ -1,7 +1,7 @@
-      PROGRAM NOMWID
+
+      PROGRAM PGKEX22
 C
 C  Illustrate setting nominal linewidth.
-C
 C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.

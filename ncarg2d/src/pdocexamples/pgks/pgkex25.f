@@ -1,5 +1,5 @@
-      PROGRAM LOGSCL
-C
+
+      PROGRAM PGKEX25
 C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.

@@ -1,3 +1,4 @@
+
       PROGRAM TSETER
 C
 C This test program demonstrates minimal functioning of the error-
@@ -5,11 +6,15 @@ C handling package used by NCAR Graphics.  It first produces a single
 C frame showing what output print lines to expect and then steps
 C through a simple set of tests that should produce those print lines.
 C
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-C Define error file, Fortran unit number, and workstation type,
-C and workstation ID.
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
 C
-        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C Make required character-variable declarations.  ERMSG receives the
 C error message returned by the character function SEMESS.

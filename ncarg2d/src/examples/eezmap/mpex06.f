@@ -1,15 +1,18 @@
-C
-C $Id: mpex06.f,v 1.4 2001-05-24 17:35:28 kennison Exp $
-C
+
       PROGRAM MPEX06
 C
 C This program produces a single frame showing satellite views
 C of the globe, each rotated by a different angle.
 C
-C  Define error file, Fortran unit number, and workstation type,
-C  and workstation ID.
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C Define the label for the top of the map.
 C

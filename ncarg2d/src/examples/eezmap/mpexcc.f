@@ -1,6 +1,4 @@
-C
-C $Id: mpexcc.f,v 1.2 2001-05-24 17:35:30 kennison Exp $
-C
+
       SUBROUTINE BNDARY
 C
 C Routine to draw the plotter-frame edge.

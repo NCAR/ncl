@@ -1,5 +1,5 @@
-C
-C	$Id: stex02.f,v 1.6 1995-06-14 13:57:12 haley Exp $
+
+      PROGRAM STEX02
 C
 C Example STEX02 demonstrates how both the field flow utilities -
 C Vectors and Streamlines - map into the non-uniform coordinate
@@ -18,10 +18,15 @@ C other than on a transitional basis. Therefore the comments show the
 C code required to create an identical plot using the Version 3.2 
 C interfaces.
 C
-C Define error file, Fortran unit number, and workstation type,
-C and workstation ID.
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C Open GKS, open workstation of type 1, activate workstation
 C

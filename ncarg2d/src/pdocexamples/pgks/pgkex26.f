@@ -1,4 +1,5 @@
-      PROGRAM MMETA
+
+      PROGRAM PGKEX26
 C
 C  Illustrate creating multiple metafiles in the same job.
 C

@@ -1,4 +1,5 @@
-      PROGRAM FULLB
+
+      PROGRAM PGKEX19
 C 
 C  Getting a PostScript plot to fill an entire page.
 C

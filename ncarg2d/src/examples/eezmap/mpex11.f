@@ -1,7 +1,5 @@
-C
-C $Id: mpex11.f,v 1.5 2003-03-03 17:42:23 haley Exp $
-C
-      PROGRAM MPEX11
+
+        PROGRAM MPEX11
 C
 C The object of this EZMAP example is to show off some capabilities of
 C new code in EZMAPB (created in April, 1998).  Three different parts of
@@ -10,10 +8,15 @@ C and water, level 2 includes continents, level 3 includes countries,
 C level 4 includes states within the US, and level 5 includes counties
 C within the states.
 C
-C Define error file, Fortran unit number, and workstation type,
-C and workstation ID.
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C LAMA is the length of an area map A for geographical boundaries;
 C in general, this value needs to be a bit larger than would have been

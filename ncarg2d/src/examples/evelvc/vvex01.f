@@ -1,6 +1,4 @@
-C
-C       $Id: vvex01.f,v 1.8 1995-06-14 13:57:16 haley Exp $
-C
+
       PROGRAM VVEX01
 C
 C This example overlays vectors on a polar contour plot using 
@@ -10,10 +8,15 @@ C with the result that the color of the vectors corresponds to the
 C contour level at each location. In the second frame the vectors 
 C are colored by magnitude.
 C
-C Define error file, Fortran unit number, and workstation type,
-C and workstation ID.
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C 
 C The contour, vector field component, and area map array declarations:
 C

@@ -1,6 +1,6 @@
-C
-C	$Id: tcolcv.f,v 1.2 1993-03-05 00:11:58 haley Exp $
-C
+
+      PROGRAM TCOLCV
+
       CALL TCOLCV(IERR)
 C
       STOP

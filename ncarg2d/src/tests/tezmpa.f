@@ -1,11 +1,15 @@
+
+      PROGRAM TEZMPA
 C
-C $Id: tezmpa.f,v 1.6 1999-08-19 15:34:27 haley Exp $
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
 C
-C Define error file, Fortran unit number, workstation type, and
-C workstation ID.
-C
-      PARAMETER (IERRF=6,LUNIT=2,IWTYPE=1,IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C Open GKS, open workstation of type 1, activate workstation.
 C

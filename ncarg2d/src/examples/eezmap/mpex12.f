@@ -1,7 +1,5 @@
-C
-C $Id: mpex12.f,v 1.4 2001-08-17 16:08:09 kennison Exp $
-C
-      PROGRAM MPEX12
+
+        PROGRAM MPEX12
 C
 C This example produces no graphical output.  Instead, it produces
 C print output demonstrating the use of some of the EZMAPB routines

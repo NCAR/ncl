@@ -1,6 +1,4 @@
-C
-C	$Id: bnchmk.f,v 1.4 1995-06-14 13:56:49 haley Exp $
-C
+
       PROGRAM BNCHMK
 C
 C     This program produces plots illustrating non-trivial
@@ -27,13 +25,16 @@ C     This will force the functions FX and FY supplied in this
 C     package to be loaded.  The documentation for FX explains
 C     the transformations provided.
 C
-
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-C Define error file, Fortran unit number, and workstation type,
-C and workstation ID.
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
-
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
+C
       PARAMETER ( M=70 , N=150 , NPR=155)
       PARAMETER (PI=3.14159 , TWOPI=2.*PI , EPS=PI/6.)
       DIMENSION A(M,NPR),B(M,N)

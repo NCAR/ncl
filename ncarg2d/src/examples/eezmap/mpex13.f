@@ -1,7 +1,5 @@
-C
-C $Id: mpex13.f,v 1.4 2003-03-03 17:42:23 haley Exp $
-C
-      PROGRAM TESTIT
+
+        PROGRAM MPEX13
 C
 C This program shows how to use EZMAP routines providing access to
 C the RANGS database ("Regionally Accessible Nested Global Shorelines")
@@ -64,10 +62,15 @@ C
 C Hopefully, these files will also be available from the NCAR Graphics
 C Web site.
 C
-C Define error file, Fortran unit number, and workstation type,
-C and workstation ID.
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C Declare arrays to hold center-point positions, angular half-widths,
 C grid spacings, resolutions, and titles for four different maps to

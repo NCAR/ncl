@@ -1,12 +1,15 @@
+
+      PROGRAM TDEX02
 C
-C $Id: tdex02.f,v 1.4 2003-02-28 20:46:25 haley Exp $
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-      PROGRAM XMPL02
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
 C
-C Define error file, Fortran unit number, and workstation type,
-C and workstation ID.
-C
-        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C Declare the size of the triangle array.
 C

@@ -1,10 +1,15 @@
+
+        PROGRAM TDSHPK
 C
-C $Id: tdshpk.f,v 1.6 1995-06-14 14:04:50 haley Exp $
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-C Define error file number, Fortran logical unit number, workstation type, and
-C workstation ID.
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
 C
-        PARAMETER (IERRF=6,LUNIT=2,IWTYPE=1,IWKID=1)
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C Open GKS, open workstation of type 1, activate workstation.
 C

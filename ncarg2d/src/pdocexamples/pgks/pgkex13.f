@@ -1,12 +1,18 @@
-      PROGRAM SPCEXP
+
+      PROGRAM PGKEX13
 C
 C  Illustrate character spacings and expansion factors.
 C
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-C  Define error file, Fortran unit number, and workstation type,
-C  and workstation ID.
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
+
       DIMENSION XP(2)
       CHARACTER*16 LABEL
       DATA XP(1),XP(2)/.5,2./
