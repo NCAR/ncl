@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.111 1998-05-26 16:19:59 kennison Exp $
+#   $Id: ncargex.csh,v 1.112 1998-06-19 20:54:47 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -544,11 +544,11 @@ set c_list = ($c_list $surface_clist)
 # set tdpack examples #
 #                     #
 #*********************#
-set tdpack_fex   = (tdex01 tdex02)
+set tdpack_fex   = (tdex01 tdex02 tdex03)
 set tdpack_ftst  = ()
 set tdpack_flist = ($tdpack_fex $tdpack_ftst)
 
-set tdpack_cex   = (c_tdex01)
+set tdpack_cex   = (c_tdex01 c_tdex03)
 set tdpack_clist = ($tdpack_cex)
 
 set f_list = ($f_list $tdpack_flist)
