@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ictrans.m,v 1.16 1993-05-04 22:03:47 haley Exp $
+.\"	$Id: ictrans.m,v 1.17 1994-03-07 18:58:51 clyne Exp $
 .\"
 .\" ictrans 3.01 90/06/22 
 .TH ICTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -654,6 +654,15 @@ temporary files. On most systems the default is
 .BR /tmp .
 On some systems the default is 
 .BR /usr/tmp .
+.TP
+.B TMPDIR
+If 
+.B NCARG_TMP
+is not set this environment variable specifies the directory path for
+scratch disk space. If neither 
+.B NCARG_TMP 
+.B TMPDIR
+is set a site-dependent, hard-coded default is used. 
 .SH FILES
 .PD 0
 .TP 28

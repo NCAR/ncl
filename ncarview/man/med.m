@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: med.m,v 1.14 1994-03-07 17:23:48 clyne Exp $
+.\"	$Id: med.m,v 1.15 1994-03-07 18:58:52 clyne Exp $
 .\"
 .\" @(#)med.l 1.0 90/02/15 NCAR; from UCB 4.3 and S5R4
 .tr ##
@@ -73,8 +73,15 @@ will exit.
 .BI \-l " local_dir"
 Use 
 .I local_dir 
-as the tmp directory for scratch disk space instead of the default,
-.IR $NCARG_TMP .
+as the tmp directory for scratch disk space. If 
+this option is not specified
+.B med
+will use the value of the
+.I $NCARG_TMP 
+or the 
+.I $TMPDIR
+environment variable. See ncargintro(1ncarg) for a discussion on NCAR 
+Graphics environment variables.
 .TP
 .B \-V
 Print the version number and then exit.
