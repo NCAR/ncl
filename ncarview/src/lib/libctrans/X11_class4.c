@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.24 1993-01-13 22:50:59 clyne Exp $
+ *	$Id: X11_class4.c,v 1.25 1993-01-22 01:36:13 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -57,43 +57,6 @@ static	struct	{	/* a pixmap for tileing a filled polygon*/
 	} tile = { 0,0, 0,0, 0,0, 0,0, 
 			0, 0, 0};	
 	
-/*	
- *	stuff needed to support line styles in X
- */
-#define	DASH_LIST_LEN		2
-#define	DOT_LIST_LEN		2
-#define	DASHDOT_LIST_LEN	4	
-#define	DASHDD_LIST_LEN		6	
-
-#define	DASHSIZE		4
-#define	DOTSIZE			1
-#define	GAPSIZE			4
-
-static	const	char	
-	dashlist[DASH_LIST_LEN] = {DASHSIZE,GAPSIZE};
-
-static	const	char	
-	dotlist[DOT_LIST_LEN] = {DOTSIZE,GAPSIZE};
-
-static	const	char	
-	dashdotlist[DASHDOT_LIST_LEN] = {DASHSIZE, GAPSIZE,DOTSIZE,GAPSIZE};
-
-static	const	char	
-	dashddlist[DASHDD_LIST_LEN] = {DASHSIZE,GAPSIZE,DOTSIZE,
-					GAPSIZE,DOTSIZE,GAPSIZE};
-
-static	struct	{	/* list of line styles. See section 5.4.2	*/
-	const char	*dash;
-	const char	*dot;
-	const char	*dash_dot;
-	const char	*dash_dot_dot;
-	} dashes = {
-		dashlist,
-		dotlist,
-		dashdotlist,
-		dashddlist,
-	};		
-
 
 /*
  *	The class 4 CGM elements functions
@@ -142,9 +105,25 @@ static	int	GCsetcolor(color, gc)
  *	on exit
  *		lineGC	: has line attribute linetype
  */
+#define    DASHSIZE	4
+#define    DOTSIZE	1
+#define    GAPSIZE	4
 static	int	GCsetlinetype(linetype)
 	IXtype	linetype;
 {
+	static	const	char	
+		dashlist[] = {DASHSIZE,GAPSIZE};
+
+	static	const	char	
+		dotlist[] = {DOTSIZE,GAPSIZE};
+
+	static	const	char	
+		dashdotlist[] = {DASHSIZE, GAPSIZE,DOTSIZE,GAPSIZE};
+
+	static	const	char	
+		dashddlist[] = {
+			DASHSIZE,GAPSIZE,DOTSIZE, GAPSIZE,DOTSIZE,GAPSIZE
+		};
 
 	if (linetype == L_SOLID)
 		gcv.line_style = LineSolid;
@@ -152,25 +131,25 @@ static	int	GCsetlinetype(linetype)
 	else {
 		switch(linetype) {
 		case L_DASH	:
-			XSetDashes(dpy, lineGC, 0, dashes.dash, DASH_LIST_LEN);
+			XSetDashes(dpy, lineGC, 0, dashlist, sizeof(dashlist));
 			break;
 
 		case L_DOT	:
-			XSetDashes(dpy, lineGC, 0, dashes.dot, DOT_LIST_LEN);
+			XSetDashes(dpy, lineGC, 0, dotlist, sizeof(dotlist));
 			break;
 
 		case L_DASH_DOT	:
 			XSetDashes(
 				dpy, lineGC, 0, 
-				dashes.dash_dot, DASHDOT_LIST_LEN
+				dashdotlist, sizeof(dashdotlist)
 			);
-
 			break;
 
 		case L_DASH_DOT_DOT:
-			XSetDashes(dpy, lineGC, 0, 
-				dashes.dash_dot_dot, DASHDD_LIST_LEN);
-
+			XSetDashes(
+				dpy, lineGC, 0, 
+				dashddlist, sizeof(dashddlist)
+			);
 			break;
 
 		default :
