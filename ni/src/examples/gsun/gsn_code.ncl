@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.120 2003-12-05 23:26:01 haley Exp $
+;      $Id: gsn_code.ncl,v 1.121 2003-12-08 20:22:07 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3730,12 +3730,15 @@ begin
       nplot = nplot + 1
     end do  ; end of columns
 ;
-; Retain the smallest x position.
+; Retain the smallest and largest x position, since xpos gets
+; deleted inside the loop
 ;
     if(nr.eq.0)
       min_xpos = min(xpos)
+      max_xpos = max(xpos)
     else
       min_xpos = min( (/min(xpos),min_xpos/) )
+      max_xpos = max( (/max(xpos),max_xpos/) )
     end if
     num_plots_left = nplots - nplot
     nr = nr + 1   ; increment rows
@@ -3933,8 +3936,7 @@ begin
 ; the rightmost plot, or the rightmost edge of the labelbar or
 ; text string (if they exist).
 ;
-        irgt                      = ncols - 1        ; 1st rightmost plot.
-        xrgt                      = xpos(irgt)+scaled_width+dxr
+        xrgt                      = max_xpos+scaled_width+dxr
         maxbb@gsnPanelInvsblRight = max((/xrgt,newrgt/))
       end if
     end if
@@ -3945,8 +3947,7 @@ begin
 ; the leftmost plot, or the leftmost edge of the labelbar or
 ; text string (if they exist).
 ;
-      ilft                     = 0             ; 1st leftmost plot.
-      xlft                     = xpos(ilft)-dxl
+      xlft                     = min_xpos-dxl
       maxbb@gsnPanelInvsblLeft = min((/xlft,newlft/))
     end if
 
