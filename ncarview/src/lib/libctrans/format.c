@@ -1,5 +1,5 @@
 /*
- *	$Id: format.c,v 1.6 1992-09-01 23:42:28 clyne Exp $
+ *	$Id: format.c,v 1.7 1992-09-15 22:54:51 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -38,6 +38,7 @@
 #include	"defines.h"
 #include	"graphcap.h"
 #include	"bitops.h"
+#include	"format.h"
 
 /*
  *	There is not a absolute value function for longs in in this C

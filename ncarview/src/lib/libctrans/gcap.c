@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.26 1992-09-01 23:42:32 clyne Exp $
+ *	$Id: gcap.c,v 1.27 1992-09-15 22:54:58 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -57,6 +57,7 @@
 #include "ctrandef.h"
 #include "soft_fill.h"
 #include "translate.h"
+#include "format.h"
 
 extern	FILE	*tty;
 extern	boolean	Batch;

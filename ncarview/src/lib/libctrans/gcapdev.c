@@ -1,5 +1,5 @@
 /*
- *	$Id: gcapdev.c,v 1.17 1992-09-01 23:42:36 clyne Exp $
+ *	$Id: gcapdev.c,v 1.18 1992-09-15 22:55:02 clyne Exp $
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,6 +12,7 @@
 #include "translate.h"
 #include "ctrandef.h"
 #include "default.h"
+#include "format.h"
 
 extern	boolean	doSimulateBG;
 
