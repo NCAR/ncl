@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.14 1994-08-31 02:34:23 boote Exp $
+ *      $Id: Project,v 1.15 1994-09-29 13:46:47 haley Exp $
  */
 /************************************************************************
 *									*
@@ -211,10 +211,10 @@ ROOTPATHCHECK		= "/lib/ncarg/fontcaps/font1"
  *		an error message is reported and NULL is returned from the
  *		functions and ncargpath reports the error.
  */
-NGENV_DESCRIPT	= '{"tmp","TMPDIR",NULL,$(TMPROOT),NULL,	\
+NGENV_DESCRIPT	= '{"tmp","TMPDIR",NULL,"$(TMPROOT)",NULL,	\
 		"fontcap","FONTCAP",NULL,NULL,NULL,		\
 		"graphcap","GRAPHCAP",NULL,NULL,NULL,		\
-		"root",NULL,NULL,$(ROOTPATH),$(ROOTPATHCHECK),\
+		"root",NULL,NULL,"$(ROOTPATH)",$(ROOTPATHCHECK),\
 		"usrresfile",NULL,NULL,$(USRRESFILE),NULL,	\
 		"gks_output",NULL,NULL,"gmeta",NULL,		\
 		"bin",NULL,"root",NULL,NULL,			\
