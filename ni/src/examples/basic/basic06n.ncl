@@ -1,4 +1,4 @@
-; $Id: basic06n.ncl,v 1.1 1995-05-24 18:59:41 fred Exp $
+; $Id: basic06n.ncl,v 1.2 1995-05-24 19:42:33 haley Exp $
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
 ;                Copyright (C)  1995                                    ;
@@ -104,13 +104,27 @@ cmap(2,:) = (/0.0, 1.0, 0.0/)
 cmap(3,:) = (/1.0, 0.0, 0.0/)
 
 ;
+; Set the display. Default is to display output to an X workstation.
+;
+NCGM=0
+
+if (NCGM .eq. 1) then
+;
+; Create an ncgmWorkstation object with default colormap.
+;
+  xwork_id = create "simple" ncgmWorkstationClass defaultapp
+      "wkMetaName" : "basic06n.ncgm"
+      "wkColorMap"         : cmap
+  end create
+else
+;
 ; Create an X11 output workstation and use the above color map.
 ;
-
-xwork_id = create "simple" xWorkstationClass defaultapp
-    "wkPause" : "True"
-    "wkColorMap"         : cmap
-end create
+  xwork_id = create "simple" xWorkstationClass defaultapp
+      "wkPause" : "True"
+      "wkColorMap"         : cmap
+  end create
+end if
 
 ;
 ; Create data for an XyPlot
