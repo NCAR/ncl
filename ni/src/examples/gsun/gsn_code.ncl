@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.30 2000-02-16 20:15:58 haley Exp $
+;      $Id: gsn_code.ncl,v 1.31 2000-02-23 19:52:12 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -198,13 +198,15 @@ end
 function get_res_value(res:logical,resname:string,default_val)
 local return_val
 begin
-  return_val = default_val
-
   if(res.and..not.any(ismissing(getvaratts(res)))) then
     if(isatt(res,resname)) then
       return_val = res@$resname$
       delete(res@$resname$)
+    else
+      return_val = default_val
     end if
+  else
+    return_val = default_val
   end if
 
   return(return_val)

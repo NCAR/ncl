@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.34 2000-02-16 20:17:38 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.35 2000-02-23 19:52:13 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1208,17 +1208,32 @@ end
 ;
 ; Otherwise, find the intersection where the two curves cross.
 ;
-                        mlon_spacing:numeric)
+              last = find_cross_xy(x(ept),x(ept+1),y1(ept),y1(ept+1), \
+                                   y2(ept),y2(ept+1))
             end if
           end if
 ;
 ; Initialize polygon.
 ;
           npts  = ept - bpt + 1
-  lcheck_arr  = (/ 20, 40, 60, 360/) ; lon range will determine
-                                     ; spacing of minor/major ticks
-  lspcng_arr  = (/  5, 10, 20, 30/)  ; spacings for major ticks
-  mlspcng_arr = (/  1,  2,  5, 10/)  ; spacings for minor ticks
+          npts2 = npts * 2
+          polygon_x(0)              = first(0)
+          polygon_y(0)              = first(1)
+          polygon_x(1:npts)         = x(bpt:ept)
+          polygon_y(1:npts)         = y1(bpt:ept)
+          polygon_x(npts+1)         = last(0)
+          polygon_y(npts+1)         = last(1)
+          polygon_x(npts+2:npts2+1) = x(ept:bpt)
+          polygon_y(npts+2:npts2+1) = y2(ept:bpt)
+          polygon_x(npts2+2)        = first(0)
+          polygon_y(npts2+2)        = first(1)
+;
+; Make sure polygons get drawn *after* the plot gets drawn.
+;
+          if(npoly.eq.0)
+            setvalues plot
+              "tfPolyDrawOrder" : "Predraw"
+            end setvalues
           end if
 ;
 ; Add polygon to XY plot.
@@ -1378,11 +1393,7 @@ begin
   if(min_lat.lt.-90.or.max_lat.gt.90) then
     print("get_lat_values: Warning: Your latitude values do not fall between -90 and 90 inclusive.")
     print("You will not get nice get 'nice' latitude labels.")
-  lon_index = ind(lon_values.gt.180.and.lon_values.lt.360)
-  if(.not.all(ismissing(lon_index)))
-    lon_labels(lon_index) = 360-lon_values(lon_index) + "W" ; west
-  end if
-  delete(lon_index)
+    lat_values = new(1,float,-999)
     return(lat_values)
   end if
 
@@ -1391,24 +1402,48 @@ begin
   lspcng_arr  = (/  5, 10, 20, 30/)  ; spacings for major ticks
   mlspcng_arr = (/  1,  2,  5, 10/)  ; spacings for minor ticks
 
+; Latitude range, will help determine latitude spacing.
+
   lat_range = max_lat - min_lat   ; lat/lat range
 
   lat_ind    = ind(lat_range.le.lcheck_arr)
   if(lat_spacing.le.0)
     lat_spcng = lspcng_arr(lat_ind(0))  ; spacing for lat major tickmarks
-  lon_index = ind(lon_values.gt.180)
+  else
+    lat_spcng = tointeger(lat_spacing)
+  end if
 
   if(mlat_spacing.le.0)
     mlat_spcng = mlspcng_arr(lat_ind(0)) ; spacing for lat minor tickmarks
   else
     mlat_spcng = tointeger(mlat_spacing)
-  lon_index = ind(lon_values.eq.0.or.fabs(lon_values).eq.180)
+  end if
+  delete(lat_ind)
+  
+;
+; This code will find the first integer value that is divisible
+; by the major lat spacing value.  This will end up being the first
+; labeled latitude value.
+;
+   start_lat = floattointeger(ceil(tofloat(min_lat)))
+   end_lat   = floattointeger(floor(tofloat(max_lat)))
+   lat = start_lat
+   found = False
+   do while(lat.le.end_lat.and..not.found)
+     if((lat % lat_spcng).eq.0)
+       start_lat = lat
+       found = True
+     end if
+     lat = lat + 1
+  end do
 
-    lon_labels(lon_index) = fabs(lon_values(lon_index))      ; 0 or 180
+; Calculate values for major and minor lat tickmark locations.
   lat_values       = ispan(start_lat,end_lat,lat_spcng)
   lat_values@minor = ispan(min(lat_values)-lat_spcng,max(lat_values)+lat_spcng,mlat_spcng)
   return(lat_values)
-  lon_index = ind(lon_values.eq.360)
+end
+
+;***********************************************************************;
 ; Function : get_lon_labels                                             ;
 ;                lon_values[*]: numeric                                 ;
 ;                                                                       ;
@@ -1465,9 +1500,11 @@ begin
   lon_index = ind(fabs(lon_values).eq.180.or.lon_values.eq.540)
   if(.not.all(ismissing(lon_index)))
     lon_labels(lon_index) = "180"
-                         lon_spacing:numeric,mlon_spacing:numeric)
+  end if
+                         range_array,lonspacing_array,mlonspacing_array)
 
-  lonvalues = get_lon_values(min_lon,max_lon,lon_spacing,mlon_spacing)
+  lonvalues = get_lon_values(min_lon,max_lon,lon_spacing,mlon_spacing,\
+                           range_array,lonspacing_array,mlonspacing_array)
   lonlabels = get_lon_labels(lonvalues)
   return(lon_labels)
   setvalues plot
@@ -1568,7 +1605,7 @@ end
 ; We want different defaults for longitude spacing, so set them up here.
 ;
     lon_range        = (/ 20,  40,  60, 180, 360/)
-   lonvalues = get_lon_values(min_lon,max_lon,lon_spacing,mlon_spacing)
+   lonvalues = get_lon_values(min_lon,max_lon,lon_spacing,mlon_spacing,0,0,0)
    latvalues = get_lat_values(min_lat,max_lat,lat_spacing,mlat_spacing)
 
     add_lon_labels(plot,min_lon,max_lon,0,0,lon_range, \
@@ -4224,7 +4261,14 @@ function gsn_csm_hov(wks:graphic,data:numeric,resources:logical)
       major_length = scale * min((/ylength,xlength/))
       minor_length = scale * min((/ymlength,xmlength/))
 
-      add_lon_labels(contour_plot,min_lon,max_lon,lon_spacing,mlon_spacing)
+      tmres = get_res_eq(res2,"tm")  ; Get tickmark resources
+      gsnp_point_tickmarks_outward(contour_plot,tmres,xlength,ylength,\
+                                                xmlength,ymlength,\
+                                                major_length,minor_length)
+    end if
+
+; Create a labelbar.
+                     lon_range,lon_spacing_arr,mlon_spacing_arr)
     if (lbar_on)
       lbres = get_res_eq(res2,(/"lb","pm"/))
       add_labelbar(wks,contour_object,3,font_height,"contour",lbres)
