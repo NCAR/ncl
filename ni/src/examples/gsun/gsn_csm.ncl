@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.95 2002-05-15 15:25:27 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.96 2002-06-10 22:47:20 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -681,24 +681,26 @@ end
 ; This procedure sets the tiYAxisString resource depending on current   ;
 ; resource and/or attribute settings.                                   ;
 ;***********************************************************************;
-procedure set_yaxis_string(res:logical,data:numeric)
+procedure set_yaxis_string(plot:graphic,res:logical,data:numeric)
 begin
-  is_xyplot = get_res_value_keep(res,"gsnXYPlot", False)
-  is_yaxis  = get_res_value_keep(res,"gsnYAxis", False)
+  tires = get_res_eq(res,(/"ti"/))  ; Get tickmark resources
+  is_xyplot = get_res_value_keep(tires,"gsnXYPlot", False)
+  is_yaxis  = get_res_value_keep(tires,"gsnYAxis", False)
 ;
 ; If the Y axis tickmarks are being labeled explicitly by the user, 
 ; then don't put a label on the Y axis.
 ;
-  if(check_attr(res,"tmYLMode","Explicit",True))
-    set_attr(res,"tiYAxisString","")
+  if(check_attr(tires,"tmYLMode","Explicit",True))
+    set_attr(tires,"tiYAxisString","")
   else
     if((is_xyplot.and.is_yaxis).or.(.not.is_xyplot)) then
       if(is_valid_ycoord(data).and.isatt(data&$data!0$,"long_name"))
-        set_attr(res,"tiYAxisString",data&$data!0$@long_name)
+        set_attr(tires,"tiYAxisString",data&$data!0$@long_name)
       end if
     end if
   end if
 
+  attsetvalues_check(plot,tires)
   return
 end
 
@@ -1415,7 +1417,7 @@ begin
   orthpos = get_res_value(amres,"amOrthogonalPosF",0.01*vph)
   ablank = stringtochar(" ")
   do i=0,2
-    if(strings(i).ne."")
+    if(.not.ismissing(strings(i)).and.strings(i).ne."")
 ;
 ; Check to make sure the string doesn't contain only blanks.
 ;
@@ -2590,7 +2592,7 @@ begin
 ;
 ; Only set a Y axis label if it is not a lat axis.
 ;
-    set_yaxis_string(res,data)
+    set_yaxis_string(plot,res,data)
   end if
 
   if((is_xyplot.and.is_xaxis.and.isatt(data,"units").and. \
@@ -3200,11 +3202,13 @@ begin
 
 ; This section tests for special resources: those that start with "gsn."
 
-    calldraw     = get_res_value(res2,"gsnDraw", True)
-    callframe    = get_res_value(res2,"gsnFrame",True)
-    maxbb        = get_bb_res(res2)
-    polar_dst    = get_res_value(res2,"gsnPolarLabelDistance",1.04)
-    ticks_on     = get_res_value(res2,"gsnTickMarksOn",True)
+    calldraw      = get_res_value(res2,"gsnDraw", True)
+    callframe     = get_res_value(res2,"gsnFrame",True)
+    maxbb         = get_bb_res(res2)
+    polar_dst     = get_res_value(res2,"gsnPolarLabelDistance",1.04)
+    ticks_on      = get_res_value(res2,"gsnTickMarksOn",True)
+    polar_time    = get_res_value(res2,"gsnPolarTime",False)
+    ut            = tofloat(get_res_value(res2,"gsnPolarUT",0.))
 
     left_string   = new(1,logical)
     center_string = new(1,logical)
@@ -3273,6 +3277,18 @@ begin
     set_attr(res2,"mpGridLonSpacingF",30.)
     set_attr(res2,"mpPerimOn",True)
 ;
+; If labeling the polar plot with time values, then we want slt = 0
+; to be at the bottom of the plot, so we need to rotate the map 
+; accordinly, by setting mpCenterLonF.
+;
+;  If slt = ut + lon/15, then at slt=0:
+;
+;   0 = ut + lon/15  --> lon/15 = -ut -->  lon = -ut*15.
+;
+    if(polar_time) then
+      set_attr(res2,"mpCenterLonF",-ut*15)
+    end if 
+;
 ; Set the spacing of the polar labels to the same as mpGridLonSpacingF,
 ; unless user has explicitly set gsnPolarLabelSpacing.
 ;
@@ -3332,7 +3348,15 @@ begin
       else
           plat = fspan(max_lat,max_lat,ngrid)
       end if 
-      plon = fspan(0.,360.-label_spacing,ngrid)
+      if(.not.polar_time) then
+        plon = fspan(0.,360.-label_spacing,ngrid)
+      else
+;
+; If labeling with time, we want time "0" to be labeled, and so
+; on, so make sure we shift plon accordingly.
+;
+        plon = fspan(0.,360.-label_spacing,ngrid) + (ut*15)
+      end if
 
 ; Create arrays to hold the NDC values that we're going to convert 
 ; the lat/lon values to.
@@ -3344,29 +3368,61 @@ begin
 ; drawing the labels in NDC space and NOT in lat/lon space.
 
       datatondc(map_object,plon,plat,xndc,yndc)
-
 ;
 ; Get center of plot in NDC coordinates.
 ;
       xcen = vpxf + vpwf/2.     ; X center
       ycen = vpyf - vphf/2.     ; Y center
 
-; Define an array of strings to label the longitude values.
-
+;
+; Determine if we want longitude labels, or time labels.
+; 
       labels = new(dimsizes(plon),string)
 
-      indexes = ind(plon.gt.0.and.plon.lt.180)
-      labels(indexes) = floattoint(plon(indexes)) + "E"
-      delete(indexes)
+      if(.not.polar_time) then
+; Define an array of strings to label the longitude values.
+        indexes = ind(plon.gt.0.and.plon.lt.180)
+        labels(indexes) = floattoint(plon(indexes)) + "E"
+        delete(indexes)
 
-      indexes = ind(plon.gt.180.and.plon.lt.360)
-      labels(indexes) = floattoint(360-plon(indexes)) + "W"
-      delete(indexes)
+        indexes = ind(plon.gt.180.and.plon.lt.360)
+        labels(indexes) = floattoint(360-plon(indexes)) + "W"
+        delete(indexes)
 
-      indexes = ind(plon.eq.0.or.plon.eq.0.or.plon.eq.180)
-      labels(indexes) = floattoint(plon(indexes))
-      delete(indexes)
-
+        indexes = ind(plon.eq.0.or.plon.eq.0.or.plon.eq.180)
+        labels(indexes) = floattoint(plon(indexes))
+        delete(indexes)
+      else
+;
+; Define an array of strings to label the time values.
+;
+; Calculate slt, given ut and lon (slt = ut + lon/15)
+;
+        slt = ut + plon/15
+        ind_lt_00 = ind(slt.lt.0)
+        ind_ge_24 = ind(slt.ge.24)
+        if(.not.any(ismissing(ind_lt_00))) then
+          slt(ind_lt_00) = slt(ind_lt_00) + 24
+        end if
+        if(.not.any(ismissing(ind_ge_24))) then
+          slt(ind_ge_24) = slt(ind_ge_24) - 24
+        end if
+        delete(ind_lt_00)
+        delete(ind_ge_24)
+; 
+; Convert "slt" to integer. If it is equal to the float version of "slt",
+; then we know that our values are effectively integers, and we can plot
+; them without decimal points. Otherwise, we'll go ahead and plot them
+; with decimal points.
+;
+        labels = new(dimsizes(slt),string)
+        islt = tointeger(slt)
+        if(all(slt.eq.islt)) then
+          labels = islt
+        else 
+          labels = slt
+        end if
+      end if
       num_labels = dimsizes(labels)
       text_ids = new(num_labels,graphic)
 
@@ -3718,9 +3774,11 @@ begin
     maxbb     = get_bb_res(res2)
 
 ;
-; Check for type of polar plot desired.
+; Check for type of polar plot and polar labels desired.
 ;
-    mpres@gsnPolar = get_polar_type(res2)
+    mpres@gsnPolar     = get_polar_type(res2)
+    mpres@gsnPolarTime = get_res_value(res2,"gsnPolarTime",False)
+    mpres@gsnPolarUT   = get_res_value(res2,"gsnPolarUT",0.)
 
 ; Check for subtitles at top and add to mpres if exist.
 
