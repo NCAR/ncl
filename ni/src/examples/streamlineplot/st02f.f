@@ -1,5 +1,5 @@
 C
-C      $Id: st02f.f,v 1.1 1996-05-10 17:05:11 haley Exp $
+C      $Id: st02f.f,v 1.2 1996-07-03 16:45:54 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -183,7 +183,7 @@ C
       call NhlFSetValues(stid,rlist,ierr)
 
       call NhlFDraw(stid,ierr)
-      callNhlFFrame(wid,ierr)
+      call NhlFFrame(wid,ierr)
 C
 C Decrease the line starting grid stride
 C
