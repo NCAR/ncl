@@ -1,5 +1,5 @@
 /*
- *      $Id: an01c.c,v 1.1 1995-01-24 23:21:41 haley Exp $
+ *      $Id: an01c.c,v 1.2 1995-01-27 22:40:16 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -101,7 +101,7 @@ main(int argc, char *argv[])
         rlist = NhlRLCreate(NhlSETRL);
         NhlRLClear(rlist);
 	NhlRLSetString(rlist,NhlNappUsrDir,"./");
-	NhlCreate(&appid,"an01",NhlappLayerClass,NhlNOPARENT,rlist);
+	NhlCreate(&appid,"an01",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
 #if XWORK
 /*
@@ -117,7 +117,7 @@ main(int argc, char *argv[])
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./an01c.ncgm");
         NhlCreate(&wid,"an01Work",
-                  NhlncgmWorkstationLayerClass,NhlNOPARENT,rlist);
+                  NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,rlist);
 #endif
 
 /* 
