@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.17 1999-08-13 18:51:23 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.18 1999-09-30 20:03:04 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2294,6 +2294,15 @@ begin
           isatt(lbres,"lbLabelBarOn").and.lbres@lbLabelBarOn)
           zmeans2 = dim_avg(datanew(lat | : ,lon | :))
           if(min(zmeans2).lt.0.and.max(zmeans2).gt.0)
+          if(isatt(lbres,"lbOrientation").and.\
+            (lbres@lbOrientation.eq."vertical".or.\
+             lbres@lbOrientation.eq."VERTICAL".or.\
+             lbres@lbOrientation.eq."Vertical"))
+            zmeans = new((/2,nmeans/),float)
+            zmeans(0,:) = zmeans2
+            zmeans(1,:) = fspan(0.,0.,nmeans)
+          else
+            zmeans = zmeans2
           end if
           delete(zmeans2)
         end if
@@ -3171,6 +3180,10 @@ begin
   res1_tmp@gsnDraw  = False
     set_attr(res1_tmp,"cnInfoLabelOn",False)
   end if 
+  set_attr(res1_tmp,"cnLinesOn",False)
+  set_attr(res1_tmp,"cnLineLabelsOn",False)
+
+  contour1 = gsn_csm_contour_map(wks,data1,res1_tmp)
 
   res2_tmp@gsnDraw  = False
   res2_tmp@gsnFrame = False
@@ -3326,6 +3339,14 @@ callframe, left_string, center_string, right_string, main_zone, ncurves, \
       else
         yref = yref_line
       end if
+          end if
+          if(isatt(y,"_FillValue"))
+            yinterp@_FillValue = y@_FillValue
+          end if
+          outlined_bars(x,y,xinterp,yinterp)
+        else
+;
+; Filled bars are desired.  
 ;
 ; Get bar widths.  They are either set by user via a resource, or 
 ; from the smallest dx.
