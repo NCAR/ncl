@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.h,v 1.7 1995-03-21 22:37:02 dbrown Exp $
+ *      $Id: Transform.h,v 1.8 1995-04-01 00:04:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -20,8 +20,8 @@
  *	Description:	Public header for Transform class.
  */
 
-#ifndef _NTransform_h
-#define _NTransform_h
+#ifndef _NTRANSFORM_h
+#define _NTRANSFORM_h
 
 #include <ncarg/hlu/View.h>
 
@@ -96,43 +96,36 @@ extern NhlBoolean NhlIsTransform(
 
 /* Overlay and Annotation access functions */
 
-extern NhlErrorTypes NhlAddToOverlay(
+extern NhlErrorTypes NhlAddOverlay(
 #if	NhlNeedProto
         int		base_plot_id,
-	int		member_plot_id,
+	int		overlay_plot_id,
 	int		after_plot_id
 #endif
 );
 
-extern NhlErrorTypes NhlRemoveFromOverlay(
+extern NhlErrorTypes NhlRemoveOverlay(
 #if	NhlNeedProto
         int		base_plot_id,
-	int		member_plot_id,
+	int		overlay_plot_id,
 	NhlBoolean	restore
 #endif
 );
 
 extern int NhlAddAnnotation(
 #if	NhlNeedProto
-        int	overlay_plot_id,
+        int	plot_id,
 	int	anno_view_id
 #endif
 );
 
 extern NhlErrorTypes NhlRemoveAnnotation(
 #if	NhlNeedProto
-        int	overlay_plot_id,
-	int	anno_id
-#endif
-);
-
-extern int NhlGetAnnotationId(
-#if	NhlNeedProto
-        int	overlay_plot_id,
-	int	anno_view_id
+        int	plot_id,
+	int	anno_manager_id
 #endif
 );
 
 extern NhlLayerClass NhltransformLayerClass;
 
-#endif /*_NTransform_h */
+#endif /*_NTRANSFORM_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.16 1995-03-21 22:37:01 dbrown Exp $
+ *      $Id: Transform.c,v 1.17 1995-04-01 00:04:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -682,7 +682,7 @@ _NhlIsOverlayMember
 	tl = (NhlTransformLayer)l;
 
 	if (tl->trans.overlay_status == _tfCurrentOverlayMember ||
-	    tl->view.annotation_id)
+	    tl->view.annomanager_id)
 		return True;
 
 	return False;

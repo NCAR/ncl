@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.28 1995-03-28 04:43:53 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.29 1995-04-01 00:04:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1189,7 +1189,7 @@ MapPlotClassPartInitialize
 	 * Register children objects
 	 */
 
-	subret = _NhlRegisterChildClass(lc,NhloverlayLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhlplotManagerLayerClass,
 					False,False,
 					NULL);
 
@@ -1660,7 +1660,7 @@ static NhlErrorTypes MapPlotSetValues
 
 	/* 1 arg */
 	if (Mpp->update_req) {
-		NhlSetSArg(&sargs[(nargs)++],NhlNovUpdateReq,True);
+		NhlSetSArg(&sargs[(nargs)++],NhlNpmUpdateReq,True);
 	}
 	
 	subret = _NhlManageOverlay(&Mpp->overlay_object,new,old,

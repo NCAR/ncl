@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.16 1995-03-21 22:37:05 dbrown Exp $
+ *      $Id: View.c,v 1.17 1995-04-01 00:04:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -175,8 +175,8 @@ static NhlResource resources[] = {
 		  NhlOffset(NhlViewLayerRec,view.use_segments),
 		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
 
-	{ NhlNvpAnnotationId, NhlCvpAnnotationId, NhlTObjId, 
-		  sizeof(int),NhlOffset(NhlViewLayerRec,view.annotation_id),
+	{ NhlNvpAnnoManagerId, NhlCvpAnnoManagerId, NhlTObjId, 
+		  sizeof(int),NhlOffset(NhlViewLayerRec,view.annomanager_id),
 		  NhlTImmediate,
 		  _NhlUSET((NhlPointer) NhlNULLOBJID),_NhlRES_GONLY,NULL},
 
@@ -707,7 +707,7 @@ static NhlErrorTypes	ViewDestroy
 
 	if (layer->view.overlay_id) {
 		_NhlRemoveAnnotation(_NhlGetLayer(layer->view.overlay_id),
-				     _NhlGetLayer(layer->view.annotation_id),
+				     _NhlGetLayer(layer->view.annomanager_id),
 				     "ViewDestroy");
 	}
 				     
@@ -1151,7 +1151,7 @@ NhlBoolean	keep_asp;
  *
  * In Args:	view    	the view layer
  *		overlay_id 	id of the Overlay 
- *		anno_id		id of the Annotation object 
+ *		anno_id		id of the AnnoManager object 
  *
  * Out Args:    none
  *
@@ -1177,12 +1177,12 @@ NhlErrorTypes	_NhlSetAnnoView
 	char			*entry_name = "_NhlSetAnnoView";
 
 	if (view == NULL || ! _NhlIsView((NhlLayer)view)) {
-		e_text = "%s: invalid Annotation object id";
+		e_text = "%s: invalid AnnoManager object id";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
 	view->view.overlay_id = overlay_id;
-	view->view.annotation_id = anno_id;
+	view->view.annomanager_id = anno_id;
 	return NhlNOERROR;
 }
 

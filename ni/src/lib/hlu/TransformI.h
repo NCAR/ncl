@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformI.h,v 1.2 1995-03-21 22:37:03 dbrown Exp $
+ *      $Id: TransformI.h,v 1.3 1995-04-01 00:04:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -19,8 +19,8 @@
  *
  *	Description:	
  */
-#ifndef	_NTransformI_h
-#define	_NTransformI_h
+#ifndef	_NTRANSFORMI_h
+#define	_NTRANSFORMI_h
 
 /* Note:
  * Does not include Transform.h -- because a number of objects that 
@@ -41,7 +41,7 @@ extern NhlBoolean _NhlIsOverlayMember(
 
 extern int _NhlAddAnnotation(
 #if	NhlNeedProto
-        NhlLayer	overlay,
+        NhlLayer	plot,
 	NhlLayer	anno_view,
 	NhlString	entry_name
 #endif
@@ -49,51 +49,40 @@ extern int _NhlAddAnnotation(
 
 extern NhlErrorTypes _NhlRemoveAnnotation(
 #if	NhlNeedProto
-        NhlLayer	overlay,
-	NhlLayer	annotation,
+        NhlLayer	plot,
+	NhlLayer	annomanager,
 	NhlString	entry_name
 #endif
 );
-
-#if 0
-int _NhlGetAnnotationId(
-#if	NhlNeedProto
-        NhlLayer	overlay,
-	NhlLayer	anno_view,
-	NhlString	entry_name
-#endif
-);
-
-#endif
 
 extern NhlErrorTypes NhlRegisterAnnotation(
 #if	NhlNeedProto
-        int	overlay_plot_id,
-	int	annotation_id
+        int	plot_id,
+	int	annomanager_id
 #endif
 );
 
 extern NhlErrorTypes NhlUnregisterAnnotation(
 #if	NhlNeedProto
-        int	overlay_plot_id,
-	int	annotation_id
+        int	plot_id,
+	int	annomanager_id
 #endif
 );
 
 extern NhlErrorTypes _NhlRegisterAnnotation(
 #if	NhlNeedProto
-        NhlLayer	overlay,
-	NhlLayer	annotation,
+        NhlLayer	plot,
+	NhlLayer	annomanager,
 	NhlString	entry_name
 #endif
 );
 
 extern NhlErrorTypes _NhlUnregisterAnnotation(
 #if	NhlNeedProto
-        NhlLayer	overlay,
-	NhlLayer	annotation,
+        NhlLayer	plot,
+	NhlLayer	annomanager,
 	NhlString	entry_name
 #endif
 );
 
-#endif	/* _NTransformI_h */
+#endif	/* _NTRANSFORMI_h */

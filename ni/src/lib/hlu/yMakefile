@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.27 1995-03-24 11:27:38 boote Exp $
+#      $Id: yMakefile,v 1.28 1995-04-01 00:04:28 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -35,15 +35,16 @@ HDRS		= Base.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		Workstation.h WorkstationI.h WorkstationP.h XWorkstation.h \
 		XWorkstationP.h XyPlot.h XyPlotP.h defs.h hluutil.h hlu.h \
 		hluP.h DataComm.h DataCommP.h DataCommF.h DataItem.h \
-		DataItemP.h DataMgr.h DataMgrF.h DataMgrP.h Legend.h LegendP.h \
-		LabelBar.h LabelBarP.h  CoordArrTable.h CoordArrTableP.h \
-		CoordArrTableFloatP.h CoordArrays.h CoordArraysP.h \
-		Contour.h ContourP.h Overlay.h OverlayI.h OverlayP.h \
-		LogLinPlot.h LogLinPlotP.h IrregularPlot.h IrregularPlotP.h \
-		MapPlot.h MapPlotP.h ResList.h ResListP.h Workspace.h \
-		WorkspaceI.h WorkspaceP.h FortranP.h ScalarField.h \
-		ScalarFieldP.h ScalarFieldFloatP.h Annotation.h AnnotationP.h \
-		FormatI.h App.h AppI.h AppP.h PSWorkstation.h PSWorkstationP.h
+		DataItemP.h DataMgr.h DataMgrF.h DataMgrP.h Legend.h \
+		LegendP.h LabelBar.h LabelBarP.h  CoordArrTable.h \
+		CoordArrTableP.h CoordArrTableFloatP.h CoordArrays.h \
+		CoordArraysP.h ContourPlot.h ContourPlotP.h PlotManager.h \
+		PlotManagerI.h PlotManagerP.h LogLinPlot.h LogLinPlotP.h \
+		IrregularPlot.h IrregularPlotP.h MapPlot.h MapPlotP.h \
+		ResList.h ResListP.h Workspace.h WorkspaceI.h WorkspaceP.h \
+		FortranP.h ScalarField.h ScalarFieldP.h ScalarFieldFloatP.h \
+		AnnoManager.h AnnoManagerP.h FormatI.h App.h AppI.h AppP.h \
+		PSWorkstation.h PSWorkstationP.h
 
 CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Create.c Destroy.c Draw.c Error.c GetValues.c \
@@ -54,9 +55,9 @@ CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		TransObj.c Transform.c VarArg.c View.c Workstation.c \
 		XWorkstation.c hlu.c DataComm.c DataItem.c DataMgr.c \
 		Legend.c LabelBar.c CoordArrTable.c CoordArrays.c \
-		Contour.c Overlay.c LogLinPlot.c IrregularPlot.c MapPlot.c  \
-		XyPlot.c ResList.c Workspace.c Fortran.c Futil.c \
-		ScalarField.c Annotation.c Format.c App.c PSWorkstation.c \
+		ContourPlot.c PlotManager.c LogLinPlot.c IrregularPlot.c \
+		MapPlot.c XyPlot.c ResList.c Workspace.c Fortran.c Futil.c \
+		ScalarField.c AnnoManager.c Format.c App.c PSWorkstation.c \
 		bsearch.c linaprox.c wksisact.c simpletrans.c wksisopn.c cmpf.c
 
 COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
@@ -68,18 +69,19 @@ COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		TransObj.o Transform.o VarArg.o View.o Workstation.o \
 		XWorkstation.o hlu.o DataComm.o DataItem.o DataMgr.o \
 		Legend.o LabelBar.o CoordArrTable.o CoordArrays.o \
-		Contour.o Overlay.o LogLinPlot.o IrregularPlot.o MapPlot.o \
-		XyPlot.o ResList.o Workspace.o Fortran.o Futil.o \
-		ScalarField.o Annotation.o Format.o App.o PSWorkstation.o \
-		bsearch.o linaprox.o wksisact.o simpletrans.o wksisopn.o cmpf.o
+		ContourPlot.o PlotManager.o LogLinPlot.o \
+		IrregularPlot.o MapPlot.o XyPlot.o ResList.o Workspace.o \
+		Fortran.o Futil.o ScalarField.o AnnoManager.o Format.o \
+		App.o PSWorkstation.o bsearch.o linaprox.o wksisact.o \
+		simpletrans.o wksisopn.o cmpf.o
 
-FSRCS		= DATACOMM.f ERROR.f HLU.f OVERLAY.f RLGEN.f RLSET.f \
+FSRCS		= DATACOMM.f ERROR.f HLU.f PLOTMANAGER.f RLGEN.f RLSET.f \
 		RLGET.f TRANSFORM.f VIEW.f WORKSPACE.f WORKSTATION.f \
 		DATAITEM.f APP.f \
 		coeff1.f interp.f sdot.f sgesl.f trip.f fitpack.f isamax.f \
 		search.f sscal.f saxpy.f sgefa.f terp1.f gerhnd.f
 
-FOBJS		= DATACOMM.o ERROR.o HLU.o OVERLAY.o RLGEN.o RLSET.o \
+FOBJS		= DATACOMM.o ERROR.o HLU.o PLOTMANAGER.o RLGEN.o RLSET.o \
 		RLGET.o TRANSFORM.o VIEW.o WORKSPACE.o WORKSTATION.o \
 		DATAITEM.o APP.o \
 		coeff1.o interp.o sdot.o sgesl.o trip.o fitpack.o isamax.o \

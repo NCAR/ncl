@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.h,v 1.9 1995-03-13 21:47:29 dbrown Exp $
+ *      $Id: MapPlot.h,v 1.10 1995-04-01 00:04:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -20,11 +20,11 @@
  *	Description:	Public header for MapPlot class.
  */
 
-#ifndef _NMapPlot_h
-#define _NMapPlot_h
+#ifndef _NMAPPLOT_h
+#define _NMAPPLOT_h
 
 #include <ncarg/hlu/MapTransObj.h>
-#include <ncarg/hlu/Overlay.h>
+#include <ncarg/hlu/PlotManager.h>
 
 #define NhlTMapBoundarySets	"mapboundarysets"
 typedef enum _NhlMapBoundarySets {
@@ -309,4 +309,4 @@ typedef enum _NhlMapShapeMode {
 
 extern NhlLayerClass NhlmapPlotLayerClass;
 
-#endif /*_NMapPlot_h */
+#endif /*_NMAPPLOT_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlotP.h,v 1.4 1994-01-27 21:23:11 boote Exp $
+ *      $Id: IrregularPlotP.h,v 1.5 1995-04-01 00:04:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,10 @@
 typedef struct _NhlIrregularPlotLayerPart {
 
 	/* Public resources */
+
+	/* Private resources */
+
+	NhlBoolean		update_req;
 
 	/* Private Fields */
 

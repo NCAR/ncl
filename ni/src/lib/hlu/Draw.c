@@ -1,5 +1,5 @@
 /*
- *      $Id: Draw.c,v 1.9 1995-03-28 04:43:52 dbrown Exp $
+ *      $Id: Draw.c,v 1.10 1995-04-01 00:03:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -170,11 +170,11 @@ CallPostDraw
 
 
 /*
- * Function:	_NhlOverlayDraw
+ * Function:	_NhlPlotManagerDraw
  *
- * Description:	This function checks to see if an object is an Overlay
- *		Base; if so the Overlay layer is substituted so that the
- *		Overlay can manage the drawing.
+ * Description:	This function checks to see if an object is a Base Plot;
+ *		if so the PlotManger layer is substituted so that the
+ *		PlotManager can manage each phase of the drawing.
  *		Then it calls the pre-draw, draw, and post-draw methods.
  *
  * In Args:	
@@ -187,7 +187,7 @@ CallPostDraw
  * Side Effect:	
  */
 
-NhlErrorTypes _NhlOverlayDraw
+NhlErrorTypes _NhlPlotManagerDraw
 #if	NhlNeedProto
 (
 	NhlLayer	layer
@@ -198,7 +198,7 @@ NhlErrorTypes _NhlOverlayDraw
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name = "_NhlOverlayDraw";
+	char			*entry_name = "_NhlPlotManagerDraw";
 	char			*e_text;
 	NhlTransformLayerPart	*tfp;
 	
@@ -258,7 +258,7 @@ NhlErrorTypes _NhlOverlayDraw
  *
  * Description:	This function first checks the overlay status of a plot.
  *		Attempts to draw Overlay Members return a WARNING. 
- *		It then calls _NhlOverlayDraw
+ *		It then calls _NhlPlotManagerDraw
  *
  * In Args:	
  *		int	id	id of object to draw
@@ -291,7 +291,7 @@ NhlDraw
 		return(NhlWARNING);
 	}
 
-	return _NhlOverlayDraw(_NhlGetLayer(id));
+	return _NhlPlotManagerDraw(_NhlGetLayer(id));
 
 }
 

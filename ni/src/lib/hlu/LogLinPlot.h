@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.h,v 1.3 1994-01-27 21:24:18 boote Exp $
+ *      $Id: LogLinPlot.h,v 1.4 1995-04-01 00:04:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -20,10 +20,10 @@
  *	Description:	Public header for LogLinPlot class.
  */
 
-#ifndef _NLogLinPlot_h
-#define _NLogLinPlot_h
+#ifndef _NLOGLINPLOT_h
+#define _NLOGLINPLOT_h
 
-#include <ncarg/hlu/Overlay.h>
+#include <ncarg/hlu/PlotManager.h>
 
 /*
  * LogLinPlot instance resources
@@ -35,4 +35,4 @@
 
 extern NhlLayerClass NhllogLinPlotLayerClass;
 
-#endif /*_NLogLinPlot_h */
+#endif /*_NLOGLINPLOT_h */

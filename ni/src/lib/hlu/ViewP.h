@@ -1,5 +1,5 @@
 /*
- *      $Id: ViewP.h,v 1.10 1995-03-21 22:37:07 dbrown Exp $
+ *      $Id: ViewP.h,v 1.11 1995-04-01 00:04:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -21,8 +21,8 @@
  *			NhlSegTransList typedef for storing output from the
  *			Segments utility.
  */
-#ifndef _NViewP_h
-#define _NViewP_h
+#ifndef _NVIEWP_h
+#define _NVIEWP_h
 
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/ViewI.h>
@@ -42,12 +42,10 @@ typedef struct _NhlLayerList{
 } NhlLayerListNode, *NhlLayerList;
 
 /* 
- * private resource used by Overlay to set the Annotation id
+ * private resource used by Overlay to set the Overlay id
  * for a View object
  */
 
-#define NhlNvpPrivateAnnoId	".vpPrivateAnnoId"
-#define NhlCvpPrivateAnnoId	".VpPrivateAnnoId"
 #define NhlNvpOverlayId		".vpOverlayId"
 #define NhlCvpOverlayId		".VpOverlayId"
 
@@ -58,7 +56,7 @@ typedef struct _NhlViewLayerPart {
 	float		width,height;
 	NhlBoolean	keep_aspect;
 	NhlBoolean	use_segments;
-	int		annotation_id;
+	int		annomanager_id;
 
 	/* Private fields (set only through _NhlSetAnnoView) */
 
@@ -188,7 +186,7 @@ extern NhlErrorTypes _NhlSetAnnoView(
 #if	NhlNeedProto
 	NhlViewLayer	view,
 	int		overlay_id,
-        int		anno_id
+        int		annomanager_id
 #endif
 );
 
@@ -202,4 +200,4 @@ extern NhlErrorTypes _NhlSetAnnoView(
 #define NHL_DEFAULT_VIEW_X_STR	".2"
 #define NHL_DEFAULT_VIEW_Y_STR	".8"
 
-#endif	/*_NViewP_h*/
+#endif	/*_NVIEWP_h*/

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.13 1995-02-19 08:17:55 boote Exp $
+ *      $Id: IrregularPlot.c,v 1.14 1995-04-01 00:04:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,16 @@
 #include <stdio.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/IrregularPlotP.h>
+
+
+#define	Oset(field)	NhlOffset(NhlIrregularPlotLayerRec,irrplot.field)
+static NhlResource resources[] = {
+
+	{ NhlNpmUpdateReq,NhlCpmUpdateReq,NhlTBoolean,sizeof(NhlBoolean),
+		  Oset(update_req),
+		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL}
+};
+#undef Oset
 
 /* base methods */
 
@@ -100,8 +110,8 @@ NhlIrregularPlotLayerClassRec NhlirregularPlotLayerClassRec = {
 /* class_inited			*/      False,
 /* superclass			*/      (NhlLayerClass)&NhltransformLayerClassRec,
 
-/* layer_resources		*/	NULL, /* resources */
-/* num_resources		*/	0, /*NhlNumber(resources), */
+/* layer_resources		*/	resources, /* resources */
+/* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
 
 /* class_part_initialize	*/	IrregularPlotClassPartInitialize,
@@ -231,7 +241,7 @@ IrregularPlotClassPartInitialize
 /*
  * Register children objects
  */
-	subret = _NhlRegisterChildClass(lc,NhloverlayLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhlplotManagerLayerClass,
 					False,False,NULL);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -301,6 +311,7 @@ IrregularPlotInitialize
 
 /* Initialize private fields */
 
+	irp->update_req = False;
 	irp->overlay_object = NULL;
 	
 	
@@ -360,7 +371,8 @@ static NhlErrorTypes IrregularPlotSetValues
 	char				*entry_name = "IrregularPlotSetValues";
 	NhlIrregularPlotLayer		inew = (NhlIrregularPlotLayer) new;
 	NhlIrregularPlotLayerPart	*irp = &(inew->irrplot);
-
+	NhlSArg				sargs[1];
+	int				nargs = 0;
 
 
 /* Set up the Irregular transformation */
@@ -370,10 +382,17 @@ static NhlErrorTypes IrregularPlotSetValues
 
 /* Manage the overlay */
 
+	/* 1 arg */
+
+	if (irp->update_req) {
+		NhlSetSArg(&sargs[nargs++],NhlNpmUpdateReq,True);
+	}
 	subret = _NhlManageOverlay(&irp->overlay_object,new,old,
-			       False,NULL,0,entry_name);
+			       False,sargs,nargs,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
+
+	irp->update_req = False;
 
 	return ret;
 }
@@ -410,7 +429,7 @@ NhlLayer inst;
 
 
 	if (irtp->overlay_status == _tfCurrentOverlayMember) {
-		subret = NhlRemoveFromOverlay(
+		subret = NhlRemoveOverlay(
 				irtp->overlay_object->base.parent->base.id,
 					      inst->base.id,False);
 		if ((ret = MIN(subret,ret)) < NhlWARNING)

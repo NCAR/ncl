@@ -1,5 +1,5 @@
 /*
- *      $Id: View.h,v 1.9 1995-03-21 22:37:06 dbrown Exp $
+ *      $Id: View.h,v 1.10 1995-04-01 00:04:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -19,8 +19,8 @@
  *
  *	Description:	Public header file for the ViewLayerClass.
  */
-#ifndef _NView_h
-#define _NView_h
+#ifndef _NVIEW_h
+#define _NVIEW_h
 
 #include <ncarg/hlu/Base.h>
 
@@ -83,8 +83,8 @@ typedef struct _NhlCoord {
 #define NhlCvpKeepAspect	"VpKeepAspect"
 #define NhlNvpUseSegments	"vpUseSegments"
 #define NhlCvpUseSegments	"VpUseSegments"
-#define NhlNvpAnnotationId	"vpAnnotationId"
-#define NhlCvpAnnotationId	"VpAnnotationId"
+#define NhlNvpAnnoManagerId	"vpAnnoManagerId"
+#define NhlCvpAnnoManagerId	"VpAnnoManagerId"
 
 NhlDOCTAG(NhlBoundingBox)
 typedef struct _NhlBoundingBox {
@@ -110,4 +110,4 @@ extern NhlBoolean NhlIsView(
 
 extern NhlLayerClass NhlviewLayerClass;
 
-#endif /*_NView_h*/
+#endif /*_NVIEW_h*/

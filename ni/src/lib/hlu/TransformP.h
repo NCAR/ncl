@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformP.h,v 1.11 1995-03-21 22:37:04 dbrown Exp $
+ *      $Id: TransformP.h,v 1.12 1995-04-01 00:04:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,11 +23,11 @@
  *			features.
  */
 
-#ifndef _NTransformP_h
-#define _NTransformP_h
+#ifndef _NTRANSFORMP_h
+#define _NTRANSFORMP_h
 
 #include <ncarg/hlu/ViewP.h>
-#include <ncarg/hlu/OverlayI.h>
+#include <ncarg/hlu/PlotManagerI.h>
 #include <ncarg/hlu/TransObjI.h>
 #include <ncarg/hlu/Transform.h>
 #include <ncarg/hlu/TransformI.h>
@@ -126,4 +126,4 @@ typedef struct _NhlTransformLayerRec *NhlTransformLayer;
 
 extern NhlTransformLayerClassRec NhltransformLayerClassRec;
 
-#endif  /* _NTransformP_h */
+#endif  /* _NTRANSFORMP_h */

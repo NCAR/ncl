@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.h,v 1.3 1994-01-27 21:23:09 boote Exp $
+ *      $Id: IrregularPlot.h,v 1.4 1995-04-01 00:04:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -20,11 +20,11 @@
  *	Description:	Public header for IrregularPlot class.
  */
 
-#ifndef _NIrregularPlot_h
-#define _NIrregularPlot_h
+#ifndef _NIRREGULARPLOT_h
+#define _NIRREGULARPLOT_h
 
-#include <ncarg/hlu/Overlay.h>
+#include <ncarg/hlu/PlotManager.h>
 
 extern NhlLayerClass NhlirregularPlotLayerClass;
 
-#endif /*_NIrregularPlot_h */
+#endif /*_NIRREGULARPLOT_h */

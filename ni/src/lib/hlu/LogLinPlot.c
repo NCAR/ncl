@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.c,v 1.13 1995-02-19 08:18:16 boote Exp $
+ *      $Id: LogLinPlot.c,v 1.14 1995-04-01 00:04:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,7 +29,7 @@
 #define	Oset(field)	NhlOffset(NhlLogLinPlotLayerRec,llplot.field)
 static NhlResource resources[] = {
 
-	{ NhlNovUpdateReq,NhlCovUpdateReq,NhlTBoolean,sizeof(NhlBoolean),
+	{ NhlNpmUpdateReq,NhlCpmUpdateReq,NhlTBoolean,sizeof(NhlBoolean),
 		  Oset(update_req),
 		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL}
 };
@@ -237,7 +237,7 @@ LogLinPlotClassPartInitialize
 /*
  * Register children objects
  */
-	subret = _NhlRegisterChildClass(lc,NhloverlayLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhlplotManagerLayerClass,
 					False,False,NULL);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -379,7 +379,7 @@ static NhlErrorTypes LogLinPlotSetValues
 	/* 1 arg */
 
 	if (llp->update_req) {
-		NhlSetSArg(&sargs[nargs++],NhlNovUpdateReq,True);
+		NhlSetSArg(&sargs[nargs++],NhlNpmUpdateReq,True);
 	}
 		
 	subret = _NhlManageOverlay(&llp->overlay_object,new,old,
@@ -421,7 +421,7 @@ NhlLayer inst;
 	NhlTransformLayerPart	*lltp = &(((NhlTransformLayer) inst)->trans);
 
 	if (lltp->overlay_status == _tfCurrentOverlayMember) {
-		subret = NhlRemoveFromOverlay(
+		subret = NhlRemoveOverlay(
 				lltp->overlay_object->base.parent->base.id,
 					      inst->base.id,False);
 		if ((ret = MIN(subret,ret)) < NhlWARNING)

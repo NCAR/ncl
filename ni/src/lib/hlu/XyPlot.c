@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.39 1995-03-31 13:03:36 boote Exp $
+ *      $Id: XyPlot.c,v 1.40 1995-04-01 00:04:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -305,19 +305,18 @@ static NhlResource resources[] = {
 #endif
 /* End-documented-resources */
 
-	{NhlNovTitleDisplayMode,NhlCovTitleDisplayMode,
+	{NhlNpmTitleDisplayMode,NhlCpmTitleDisplayMode,
 		NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		Oset(display_titles),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlCONDITIONAL),_NhlRES_DEFAULT,NULL},
-	{NhlNovTickMarkDisplayMode,NhlCovTickMarkDisplayMode,
+	{NhlNpmTickMarkDisplayMode,NhlCpmTickMarkDisplayMode,
 		NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		Oset(display_tickmarks),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlCONDITIONAL),_NhlRES_DEFAULT,NULL},
-	{NhlNovLegendDisplayMode,NhlCovLegendDisplayMode,
+	{NhlNpmLegendDisplayMode,NhlCpmLegendDisplayMode,
 		NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		Oset(display_legend),NhlTImmediate,
-		_NhlUSET((NhlPointer)NhlNEVER),_NhlRES_DEFAULT,NULL},
-
+		_NhlUSET((NhlPointer)NhlCONDITIONAL),_NhlRES_DEFAULT,NULL},
 	{_NhlNxyDSpecChanged,_NhlCxyDSpecChanged,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(dspec_changed),NhlTImmediate,NULL,_NhlRES_SONLY,NULL},
 };
@@ -801,7 +800,7 @@ XyPlotClassPartInitialize
 	/*
 	 * Register children objects
 	 */
-	ret = _NhlRegisterChildClass(lc,NhloverlayLayerClass,False,False,
+	ret = _NhlRegisterChildClass(lc,NhlplotManagerLayerClass,False,False,
 			NhlNlgDashIndex,NhlNlgDashIndexes,NhlNlgItemCount,
 			NhlNlgItemType,NhlNlgItemTypes,NhlNlgLabelStrings,
 			NhlNlgLineColor,NhlNlgLineColors,NhlNlgLineDashSegLenF,
@@ -823,7 +822,7 @@ XyPlotClassPartInitialize
 			NhlNlgMonoLineLabelFontHeight,NhlNlgMonoLineThickness,
 			NhlNlgMonoMarkerColor,NhlNlgMonoMarkerIndex,
 			NhlNlgMonoMarkerSize,NhlNlgMonoMarkerThickness,
-			NhlNovLabelBarDisplayMode,
+			NhlNpmLabelBarDisplayMode,
 			NULL);
 
 	/*
@@ -918,7 +917,7 @@ XyPlotChanges
 
 
 	if(xnew->xyplot.check_ranges){
-		NhlSetSArg(&sargs[nsargs++],NhlNovUpdateReq,True);
+		NhlSetSArg(&sargs[nsargs++],NhlNpmUpdateReq,True);
 		xnew->xyplot.check_ranges = False;
 	}
 
@@ -2704,7 +2703,7 @@ NhlLayer inst;
 
 	if(tfp->overlay_status == _tfCurrentOverlayMember)
 		ret =
-		NhlRemoveFromOverlay(tfp->overlay_object->base.parent->base.id,
+		NhlRemoveOverlay(tfp->overlay_object->base.parent->base.id,
 							inst->base.id,False);
 
 	if(xp->overlay != NULL){
@@ -2843,7 +2842,7 @@ XyPlotUpdateData
 	ret1 = MIN(ret1,ret2);
 
 	if(xl->xyplot.check_ranges){
-		NhlSetSArg(&sargs[nsargs++],NhlNovUpdateReq,True);
+		NhlSetSArg(&sargs[nsargs++],NhlNpmUpdateReq,True);
 		xl->xyplot.check_ranges = False;
 	}
 
@@ -4097,7 +4096,7 @@ SetUpTicks
 
 	if((calledfrom == _NhlCREATE) ||
 		(nxp->display_tickmarks != oxp->display_tickmarks)){
-		NhlSetSArg(&sargs[(*nargs)++],NhlNovTickMarkDisplayMode,
+		NhlSetSArg(&sargs[(*nargs)++],NhlNpmTickMarkDisplayMode,
 			nxp->display_tickmarks);
 	}
 
@@ -4153,7 +4152,7 @@ static NhlErrorTypes SetUpTitles
 
 	if((calledfrom == _NhlCREATE) ||
 		(nxp->display_titles != oxp->display_titles)){
-		NhlSetSArg(&sargs[(*nargs)++],NhlNovTitleDisplayMode,
+		NhlSetSArg(&sargs[(*nargs)++],NhlNpmTitleDisplayMode,
 			nxp->display_titles);
 	}
 
@@ -4209,7 +4208,7 @@ static NhlErrorTypes SetUpLegend
 
 	if((calledfrom == _NhlCREATE) ||
 		(nxp->display_legend != oxp->display_legend)){
-		NhlSetSArg(&sargs[(*nargs)++],NhlNovLegendDisplayMode,
+		NhlSetSArg(&sargs[(*nargs)++],NhlNpmLegendDisplayMode,
 			nxp->display_legend);
 	}
 

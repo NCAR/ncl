@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlotP.h,v 1.10 1995-03-31 13:03:38 boote Exp $
+ *      $Id: XyPlotP.h,v 1.11 1995-04-01 00:04:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -19,11 +19,11 @@
  *
  *	Description:	
  */
-#ifndef _NXyPlotP_h
-#define _NXyPlotP_h
+#ifndef _NXYPLOTP_h
+#define _NXYPLOTP_h
 
 #include <ncarg/hlu/DataCommP.h>
-#include <ncarg/hlu/OverlayI.h>
+#include <ncarg/hlu/PlotManagerI.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/TickMark.h>
 
@@ -237,4 +237,4 @@ typedef struct _NhlXyDataSpecLayerRec *NhlXyDataSpecLayer;
 typedef struct _NhlXyPlotLayerClassRec *NhlXyPlotLayerClass;
 typedef struct _NhlXyPlotLayerRec *NhlXyPlotLayer;
 
-#endif /* _NXyPlotP_h */
+#endif /* _NXYPLOTP_h */

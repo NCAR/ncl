@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.h,v 1.12 1995-03-31 13:03:37 boote Exp $
+ *      $Id: XyPlot.h,v 1.13 1995-04-01 00:04:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -19,11 +19,11 @@
  *
  *	Description:	public header for xyplotter
  */
-#ifndef _NXyPlot_h
-#define _NXyPlot_h
+#ifndef _NXYPLOT_h
+#define _NXYPLOT_h
 
 #include <ncarg/hlu/DataComm.h>
-#include <ncarg/hlu/Overlay.h>
+#include <ncarg/hlu/PlotManager.h>
 #include <ncarg/hlu/IrregularType2TransObj.h>
 #include <ncarg/hlu/LogLinTransObj.h>
 
@@ -190,4 +190,4 @@ typedef enum _NhlLineLabelMode{
 
 extern NhlLayerClass NhlxyPlotLayerClass;
 
-#endif /* _NXyPlot_h */
+#endif /* _NXYPLOT_h */

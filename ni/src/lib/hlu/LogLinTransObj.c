@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.16 1995-03-21 22:36:54 dbrown Exp $
+ *      $Id: LogLinTransObj.c,v 1.17 1995-04-01 00:04:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -912,6 +912,7 @@ int upordown;
 			
 			
 	}
+	return NhlNOERROR;
 	
 }
 
