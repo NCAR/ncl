@@ -1,5 +1,5 @@
 /*
- *  $Id: lg03c.c,v 1.6 1995-02-28 22:46:44 haley Exp $
+ *  $Id: lg03c.c,v 1.7 1995-03-01 17:08:05 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -31,7 +31,8 @@ main()
 {
     int appid, wid, pid;
     int rlist;
-    char labels[5][12];
+    char *labels[5] = {"Line_Type_0", "Line_Type_1", "Line_Type_2",
+                       "Line_Type_3", "Line_Type_4"};
     int colors[5];
     int types[5];
     int item_ind[5];
@@ -40,11 +41,6 @@ main()
 /*
  * Initialize data values
  */
-    labels[0] = "Line_Type_0";
-    labels[1] = "Line_Type_1";
-    labels[2] = "Line_Type_2";
-    labels[3] = "Line_Type_3";
-    labels[4] = "Line_Type_4";
     colors[0] = 40;
     colors[1] = 57;
     colors[2] = 65;
