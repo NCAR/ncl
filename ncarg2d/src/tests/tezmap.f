@@ -1,5 +1,5 @@
 C
-C	$Id: tezmap.f,v 1.3 1994-07-08 19:41:29 stautler Exp $
+C       $Id: tezmap.f,v 1.4 1995-04-26 23:49:12 kennison Exp $
 C
 C
 C Define error file, Fortran unit number, and workstation type,
@@ -402,7 +402,7 @@ C
 C Call PLCHLQ to write the plot title.
 C
       CALL PLCHLQ(TX,TY,
-     +     'EZMAP DEMONSTATION: SATELLITE VIEW PROJECTION',16.,0.,0.)
+     +     'EZMAP DEMONSTRATION: SATELLITE VIEW PROJECTION',16.,0.,0.)
       CALL FRAME
  100  CONTINUE
 C
