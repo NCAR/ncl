@@ -1,5 +1,5 @@
 /*
- *	$Id: options.c,v 1.11 1992-04-10 15:17:10 clyne Exp $
+ *	$Id: options.c,v 1.12 1992-04-22 15:13:13 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -361,6 +361,48 @@ LoadOptionTable(optd)
 	return(1);
 }
 
+/*
+ *	RemoveOptions
+ *	[exported]
+ *
+ *	Remove a list of application options from the option table. 
+ *	Only the 'option' field of the OptDescRec struct is referenced, 
+ *	all other fields are ignored. The options to be freed must have
+ *	previously been set with a call to LoadOptionTable().
+ *
+ *
+ * on entry
+ *	optd		: Null terminated list of options
+ *
+ */
+void	RemoveOptions(optd)
+	OptDescRec	*optd;
+{
+	int	i,j;
+
+	if (! optd[0].option) return ;
+
+	/*
+	 * look for the option in the option table.
+	 */
+	for (j=0; optd[j].option; j++) {
+		for (i=0; i < optDescRecNum; i++) {
+			if (strcmp(optDescRec[i].option, optd[j].option) == 0){
+				optDescRecNum--;
+				break;
+			}
+		}
+		/*
+		 * we won't enter this loop unless a match is found
+		 * and optDescRecNum is decremented
+		 */
+		for( ; i<optDescRecNum; i++) {
+			optDescRec[i] = optDescRec[i+1];
+		}
+		optDescRec[i].option = NULL;
+	}
+}
+
 
 /*
  *	ParseOptionTable
@@ -399,10 +441,10 @@ ParseOptionTable(argc, argv, optds)
 	 * if any options to be merged do so
 	 */
 	if (optds) {
-		(void) LoadOptionTable(optds);
+		if (LoadOptionTable(optds) == -1) return(-1);
 	}
 
-	if (! argv) return;
+	if (! argv) return(1);
 
 	
 	/*
@@ -509,7 +551,7 @@ ParseEnvOptions(envv, optds)
 	 * if any options to be merged do so
 	 */
 	if (optds) {
-		(void) LoadOptionTable(optds);
+		if (LoadOptionTable(optds) == -1) return(-1);
 	}
 
 	/*

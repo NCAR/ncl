@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.9 1992-04-10 18:23:45 clyne Exp $
+ *	$Id: c.h,v 1.10 1992-04-22 15:13:10 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -56,6 +56,7 @@ extern	int	NCARGCvtToString();
 extern	int	NCARGCvtToDimension2D();
 extern	int	GetOption();
 extern	int	LoadOptionTable();
+extern	void	RemoveOptions();
 extern	int	ParseOptionTable();
 extern	void	PrintOptionHelp();
 extern	char	**AToArgv();
