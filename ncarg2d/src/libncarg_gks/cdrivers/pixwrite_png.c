@@ -1,5 +1,5 @@
 /*
- *      $Id: pixwrite_png.c,v 1.7 2004-06-11 18:41:21 fred Exp $
+ *      $Id: pixwrite_png.c,v 1.8 2004-10-22 17:22:18 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -157,6 +157,8 @@ int PIX_Write_PNG (PIXddp *xi)
   }
 
   write_png(pixmap,width,height,8,fp);
+  fflush(fp);
+  fclose(fp);
   return 0;
 }
 
