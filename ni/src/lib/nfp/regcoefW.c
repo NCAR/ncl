@@ -24,8 +24,8 @@
 #define max(x,y)  ((x) > (y) ? (x) : (y))
 
 extern void NGCALLF(dregcoef,DREGCOEF)(double *,double *,int *,double *,
-				       double *,double *,int *,double *,
-				       double *,int *);
+                                       double *,double *,int *,double *,
+                                       double *,int *);
 
 NhlErrorTypes regcoef_W( void )
 {
@@ -53,8 +53,9 @@ NhlErrorTypes regcoef_W( void )
 /*
  * various
  */
-  int i, j, k, l1, l2, l3, ier = 0;
-  int total_size_x1,total_size_y1,total_size_x,total_size_y,total_size_rcoef;
+  int i, j, k, ly, lx, ln, ier = 0;
+  int total_size_x1, total_size_y1, total_size_x, total_size_y;
+  int total_size_rcoef;
 /*
  * Retrieve parameters
  *
@@ -66,8 +67,8 @@ NhlErrorTypes regcoef_W( void )
            4,
            &ndims_x, 
            dsizes_x,
-	   &missing_x,
-	   &has_missing_x,
+           &missing_x,
+           &has_missing_x,
            &type_x,
            2);
   y = (void*)NclGetArgValue(
@@ -75,9 +76,9 @@ NhlErrorTypes regcoef_W( void )
            4,
            &ndims_y, 
            dsizes_y,
-	   &missing_y,
-	   &has_missing_y,
-	   &type_y,
+           &missing_y,
+           &has_missing_y,
+           &type_y,
            2);
 /*
  * Get output vars.
@@ -87,8 +88,8 @@ NhlErrorTypes regcoef_W( void )
            4,
            &ndims_tval, 
            dsizes_tval,
-	   NULL,
-	   NULL,
+           NULL,
+           NULL,
            &type_tval,
            1);
   nptxy = (int*)NclGetArgValue(
@@ -96,25 +97,25 @@ NhlErrorTypes regcoef_W( void )
            4,
            &ndims_nptxy, 
            dsizes_nptxy,
-	   NULL,
-	   NULL,
+           NULL,
+           NULL,
            NULL,
            1);
 /*
  * The x and y coming in can be any dimension, but there are certain rules
  * about having the same dimensions.
  */
-  if( ndims_x < 1 || ndims_y < 1 || ndims_x > ndims_y ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The input arrays must be at least 2-dimensional, and y must have as many or more dimensions than x");
+  if( ndims_x > ndims_y ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The input array y must have as many or more dimensions than x");
     return(NhlFATAL);
   }
 /*
- * The dimensions of x must be the same as the right-most dimensions of y.
+ * Check the dimensions of x and y and see if they are the same.
  */
   ndims_extra = ndims_y - ndims_x;
   for(i = 0; i < ndims_x; i++ ) {
     if( dsizes_x[i] != dsizes_y[ndims_extra + i] ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The right-most dimensions of y must the same dimensions as x");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The rightmost dimensions of y must the same dimensions as x");
       return(NhlFATAL);
     }
   }
@@ -123,7 +124,7 @@ NhlErrorTypes regcoef_W( void )
  */
   npts = dsizes_x[ndims_x-1];
   if( npts < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The right-most dimension of x must be at least 2");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The rightmost dimension of x must be at least 2");
     return(NhlFATAL);
   }  
 /*
@@ -156,8 +157,8 @@ NhlErrorTypes regcoef_W( void )
   }
   for(i = 0; i < ndims_rcoef; i++ ) {
     if( dsizes_tval[i]  != dsizes_rcoef[i] || 
-	dsizes_nptxy[i] != dsizes_rcoef[i] ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The dimensions of tval and nptxy must be the same as the left-most dimensions of y");
+        dsizes_nptxy[i] != dsizes_rcoef[i] ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The dimensions of tval and nptxy must be the same as the leftmost dimensions of y");
       return(NhlFATAL);
     }
   }
@@ -218,8 +219,8 @@ NhlErrorTypes regcoef_W( void )
     }
   }
 /*
- * tval must be a float or double. It doesn't matter if the input is float
- * or double.
+ * tval must be a float or double. It doesn't matter what the input type
+ * is.
  */
   if(type_tval != NCL_float && type_tval != NCL_double) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: tval must be of type float or double");
@@ -235,7 +236,7 @@ NhlErrorTypes regcoef_W( void )
   }
 
 /*
- * Coerce data to double if necessary.
+ * Coerce x to double if necessary.
  */
   if(type_x != NCL_double) {
     dx = (double*)NclMalloc(sizeof(double)*total_size_x);
@@ -270,7 +271,7 @@ NhlErrorTypes regcoef_W( void )
   }
 
 /*
- * Coerce y to double.
+ * Coerce y to double if necessary.
  */
   if(type_y != NCL_double) {
     dy = (double*)NclMalloc(sizeof(double)*total_size_y);
@@ -304,10 +305,12 @@ NhlErrorTypes regcoef_W( void )
     dy = (double*)y;
   }
 /*
- * Allocate space for double tval. There's no need to do a coercion because
- * tval is an output variable.
+ * Allocate space for double precision tval. There's no need to do a
+ * coercion because tval is an output-only variable (i.e, there are no
+ * values coming in).  tval can only be float or double, so only allocate
+ * space for a d.p. array if tval is float.
  */
-  if(type_tval != NCL_double) {
+  if(type_tval == NCL_float) {
     dtval = (double*)NclMalloc(sizeof(double)*total_size_rcoef);
     if( dtval == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: Unable to allocate memory for coercing tval array to double precision");
@@ -333,23 +336,23 @@ NhlErrorTypes regcoef_W( void )
 /*
  * Call the f77 version of 'regcoef' with the full argument list.
  */
-  l1 = l3 = 0;
+  ly = ln = 0;
   for(i = 1; i <= total_size_y1; i++) {
-    l2 = 0;
+    lx = 0;
     for(j = 1; j <= total_size_x1; j++) {
-      NGCALLF(dregcoef,DREGCOEF)(&dx[l2],&dy[l1],&npts,&missing_dx.doubleval,
-				 &rcoef[l3],&dtval[l3],&nptxy[l3],
-				 xave,yave,&ier);
-      l1 += npts;
-      l2 += npts;
-      l3++;
+      NGCALLF(dregcoef,DREGCOEF)(&dx[lx],&dy[ly],&npts,&missing_dx.doubleval,
+                                 &rcoef[ln],&dtval[ln],&nptxy[ln],
+                                 xave,yave,&ier);
+      ly += npts;
+      lx += npts;
+      ln ++;
       if (ier == 5) {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The x and/or y array contains all missing values");
-	return(NhlFATAL);
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The x and/or y array contains all missing values");
+        return(NhlFATAL);
       }
       if (ier == 6) {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The x and/or y array contains less than 3 non-missing values");
-	return(NhlFATAL);
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The x and/or y array contains less than 3 non-missing values");
+        return(NhlFATAL);
       }
     }
   }
@@ -364,22 +367,25 @@ NhlErrorTypes regcoef_W( void )
   }
 
 /*
- * Be sure to coerce tval back to float if it came in as a float.
- * It doesn't matter if the input was float or double.
+ * If returning float values, we need to copy the coerced float values
+ * back to the original location of tval.  Do this by creating a pointer of
+ * type float that points to the original location, and then loop through
+ * the values and do the coercion.
  */
   if(type_tval == NCL_float) {
-    rtval = (float*)tval;
-    for( i = 0; i < total_size_rcoef; i++ ) {
-      rtval[i]  = (float)dtval[i];
-    }
-    free(dtval);
+    rtval = (float*)tval;     /* Float pointer to original tval array */
+    for( i = 0; i < total_size_rcoef; i++ ) rtval[i]  = (float)dtval[i];
+    NclFree(dtval);   /* Free up the double array */
   }
+
 /*
  * Return values. 
  */
-  if(type_x != NCL_double && type_y != NCL_double && type_tval != NCL_double) {
+  if(type_x != NCL_double && type_y != NCL_double) {
 /*
- * Copy double values to float values.
+ * None of the input is double, so return floats.
+ *
+ * First copy double values to float values.
  */
     rrcoef = (float*)NclMalloc(sizeof(float)*total_size_rcoef);
     if( rrcoef == NULL ) {
@@ -387,7 +393,10 @@ NhlErrorTypes regcoef_W( void )
       return(NhlFATAL);
     }
     for( i = 0; i < total_size_rcoef; i++ ) rrcoef[i] = (float)rcoef[i];
-    free(rcoef);
+/*
+ * Free up double precision values since we don't need them anymore.
+ */
+    NclFree(rcoef);
 /*
  * Return float values with missing value set.
  */
@@ -440,8 +449,8 @@ NhlErrorTypes regline_W( void )
            2,
            &ndims_x, 
            dsizes_x,
-	   &missing_x,
-	   &has_missing_x,
+           &missing_x,
+           &has_missing_x,
            &type_x,
            2);
   y = (void*)NclGetArgValue(
@@ -449,8 +458,8 @@ NhlErrorTypes regline_W( void )
            2,
            &ndims_y, 
            dsizes_y,
-	   &missing_y,
-	   &has_missing_y,
+           &missing_y,
+           &has_missing_y,
            &type_y,
            2);
 /*
@@ -621,7 +630,7 @@ NhlErrorTypes regline_W( void )
  * Call the f77 version of 'regline' with the full argument list.
  */
   NGCALLF(dregcoef,DREGCOEF)(&dx[0],&dy[0],&npts,&missing_dx.doubleval,
-			     rcoef,tval,nptxy,xave,yave,&ier);
+                             rcoef,tval,nptxy,xave,yave,&ier);
   if (ier == 5) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"regline: The x and/or y array contains all missing values");
     return(NhlFATAL);
@@ -646,7 +655,9 @@ NhlErrorTypes regline_W( void )
 
   if(type_x != NCL_double && type_y != NCL_double) {
 /*
- * Allocate space for output variables.
+ * None of the input is double, so return floats.
+ *
+ * Allocate space for coercing output to float.
  */
     rrcoef = (float *)NclMalloc(sizeof(float));
     rtval  = (float *)NclMalloc(sizeof(float));
@@ -656,9 +667,8 @@ NhlErrorTypes regline_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"regline: Unable to allocate memory for coercing output values back to floating point");
       return(NhlFATAL);
     }
-
 /*
- * None of the input is double, so return float values.
+ * Coerce double to float.
  */
     *rrcoef = (float)*rcoef;
     *rtval  = (float)*tval;
@@ -667,215 +677,214 @@ NhlErrorTypes regline_W( void )
 /*
  * Free up variables holding double precision values.
  */
-    free(rcoef);
-    free(tval);
-    free(xave);
-    free(yave);
+    NclFree(rcoef);
+    NclFree(tval);
+    NclFree(xave);
+    NclFree(yave);
 /*
  * Set up return structure.
  */
     return_md = _NclCreateVal(
-		      NULL,
-		      NULL,
-		      Ncl_MultiDValData,
-		      0,
-		      (void*)rrcoef,
-		      NULL,
-		      1,
-		      dsizes,
-		      TEMPORARY,
-		      NULL,
-		      (NclObjClass)nclTypefloatClass
-		      );
+                      NULL,
+                      NULL,
+                      Ncl_MultiDValData,
+                      0,
+                      (void*)rrcoef,
+                      &missing_rx,
+                      1,
+                      dsizes,
+                      TEMPORARY,
+                      NULL,
+                      (NclObjClass)nclTypefloatClass
+                      );
 /*
  * Set up attributes to return.
  */
     att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
 
     att_md = _NclCreateVal(
-		   NULL,
-		   NULL,
-		   Ncl_MultiDValData,
-		   0,
-		   rtval,
-		   NULL,
-		   1,
-		   dsizes,
-		   TEMPORARY,
-		   NULL,
-		   (NclObjClass)nclTypefloatClass
-		   );
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   rtval,
+                   NULL,
+                   1,
+                   dsizes,
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypefloatClass
+                   );
     _NclAddAtt(
-	       att_id,
-	       "tval",
-	       att_md,
-	       NULL
-	       );
+               att_id,
+               "tval",
+               att_md,
+               NULL
+               );
 
     att_md = _NclCreateVal(
-		   NULL,
-		   NULL,
-		   Ncl_MultiDValData,
-		   0,
-		   nptxy,
-		   NULL,
-		   1,
-		   dsizes,
-		   TEMPORARY,
-		   NULL,
-		   (NclObjClass)nclTypeintClass
-		   );
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   nptxy,
+                   NULL,
+                   1,
+                   dsizes,
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypeintClass
+                   );
     _NclAddAtt(
-	       att_id,
-	       "nptxy",
-	       att_md,
-	       NULL
-	       );
+               att_id,
+               "nptxy",
+               att_md,
+               NULL
+               );
     
     att_md = _NclCreateVal(
-		   NULL,
-		   NULL,
-		   Ncl_MultiDValData,
-		   0,
-		   rxave,
-		   NULL,
-		   1,
-		   dsizes,
-		   TEMPORARY,
-		   NULL,
-		   (NclObjClass)nclTypefloatClass
-		   );
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   rxave,
+                   NULL,
+                   1,
+                   dsizes,
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypefloatClass
+                   );
     _NclAddAtt(
-	       att_id,
-	       "xave",
-	       att_md,
-	       NULL
-	       );
+               att_id,
+               "xave",
+               att_md,
+               NULL
+               );
 
     att_md = _NclCreateVal(
-		   NULL,
-		   NULL,
-		   Ncl_MultiDValData,
-		   0,
-		   ryave,
-		   NULL,
-		   1,
-		   dsizes,
-		   TEMPORARY,
-		   NULL,
-		   (NclObjClass)nclTypefloatClass
-		   );
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   ryave,
+                   NULL,
+                   1,
+                   dsizes,
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypefloatClass
+                   );
     _NclAddAtt(
-	       att_id,
-	       "yave",
-	       att_md,
-	       NULL
-	       );
+               att_id,
+               "yave",
+               att_md,
+               NULL
+               );
   }
   else {
 /* 
- * Return doubles.
- */
-/*
+ * Either x and/or y are double, so return doubles.
+ *
  * Set up return structure.
  */
     return_md = _NclCreateVal(
-		      NULL,
-		      NULL,
-		      Ncl_MultiDValData,
-		      0,
-		      (void*)rcoef,
-		      NULL,
-		      1,
-		      dsizes,
-		      TEMPORARY,
-		      NULL,
-		      (NclObjClass)nclTypedoubleClass
-		      );
+                      NULL,
+                      NULL,
+                      Ncl_MultiDValData,
+                      0,
+                      (void*)rcoef,
+                      &missing_dx,
+                      1,
+                      dsizes,
+                      TEMPORARY,
+                      NULL,
+                      (NclObjClass)nclTypedoubleClass
+                      );
 /*
  * Set up attributes to return.
  */
     att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
 
     att_md = _NclCreateVal(
-		   NULL,
-		   NULL,
-		   Ncl_MultiDValData,
-		   0,
-		   tval,
-		   NULL,
-		   1,
-		   dsizes,
-		   TEMPORARY,
-		   NULL,
-		   (NclObjClass)nclTypedoubleClass
-		   );
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   tval,
+                   NULL,
+                   1,
+                   dsizes,
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypedoubleClass
+                   );
     _NclAddAtt(
-	       att_id,
-	       "tval",
-	       att_md,
-	       NULL
-	       );
+               att_id,
+               "tval",
+               att_md,
+               NULL
+               );
 
     att_md = _NclCreateVal(
-		   NULL,
-		   NULL,
-		   Ncl_MultiDValData,
-		   0,
-		   nptxy,
-		   NULL,
-		   1,
-		   dsizes,
-		   TEMPORARY,
-		   NULL,
-		   (NclObjClass)nclTypeintClass
-		   );
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   nptxy,
+                   NULL,
+                   1,
+                   dsizes,
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypeintClass
+                   );
     _NclAddAtt(
-	       att_id,
-	       "nptxy",
-	       att_md,
-	       NULL
-	       );
+               att_id,
+               "nptxy",
+               att_md,
+               NULL
+               );
     
     att_md = _NclCreateVal(
-		   NULL,
-		   NULL,
-		   Ncl_MultiDValData,
-		   0,
-		   xave,
-		   NULL,
-		   1,
-		   dsizes,
-		   TEMPORARY,
-		   NULL,
-		   (NclObjClass)nclTypedoubleClass
-		   );
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   xave,
+                   NULL,
+                   1,
+                   dsizes,
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypedoubleClass
+                   );
     _NclAddAtt(
-	       att_id,
-	       "xave",
-	       att_md,
-	       NULL
-	       );
+               att_id,
+               "xave",
+               att_md,
+               NULL
+               );
 
     att_md = _NclCreateVal(
-		   NULL,
-		   NULL,
-		   Ncl_MultiDValData,
-		   0,
-		   yave,
-		   NULL,
-		   1,
-		   dsizes,
-		   TEMPORARY,
-		   NULL,
-		   (NclObjClass)nclTypedoubleClass
-		   );
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   yave,
+                   NULL,
+                   1,
+                   dsizes,
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypedoubleClass
+                   );
     _NclAddAtt(
-	       att_id,
-	       "yave",
-	       att_md,
-	       NULL
-	       );
+               att_id,
+               "yave",
+               att_md,
+               NULL
+               );
   }
   tmp_var = _NclVarCreate(
                           NULL,

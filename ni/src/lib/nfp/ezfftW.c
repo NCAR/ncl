@@ -78,13 +78,6 @@ NhlErrorTypes ezfftf_W( void )
            &type_x,
            2);
 /*
- * Type of input array must float or double.
- */
-  if( type_x != NCL_double && type_x != NCL_float) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: The type of the input array must be float or double");
-    return(NhlFATAL);
-  }
-/*
  * Calculate size of output array.
  */
   npts   = dsizes_x[0];
@@ -93,7 +86,7 @@ NhlErrorTypes ezfftf_W( void )
   dsizes_cf[0] = 2;
   dsizes_cf[1] = npts2;
 /*
- * Coerce data to double if necessary.
+ * Coerce x to double if necessary.
  */
   if(type_x != NCL_double) {
     dx = (double*)NclMalloc(npts*sizeof(double));
@@ -111,6 +104,9 @@ NhlErrorTypes ezfftf_W( void )
                _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
   }
   else {
+/*
+ * x is already double precision
+ */
     dx = (double*)x;
   }
   dxbar = (double *)NclMalloc(sizeof(double));
@@ -136,7 +132,7 @@ NhlErrorTypes ezfftf_W( void )
 /*
  * Free up memory.
  */
-  free(work);
+  NclFree(work);
   if((void*)dx != x) {
     NclFree(dx);
   }
@@ -150,12 +146,13 @@ NhlErrorTypes ezfftf_W( void )
     rcf   = (float*)NclMalloc(npts22*sizeof(float));
     rxbar = (float*)NclMalloc(sizeof(float));
     if( rcf == NULL || rxbar == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Unable to allocate memory for return values");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Unable to allocate memory for output values");
       return(NhlFATAL);
     }
-    for( i = 0; i < npts22; i++ ) {
-      rcf[i] = (float)dcf[i];
-    }
+/*
+ * Copy double values to float.
+ */
+    for( i = 0; i < npts22; i++ ) rcf[i] = (float)dcf[i];
     *rxbar = (float)*dxbar;
 /*
  * Free up double precision versions of these variables.
@@ -323,14 +320,6 @@ NhlErrorTypes ezfftb_W( void )
            &type_xbar,
            2);
 /*
- * Types of input arrays must float or double.
- */
-  if( (type_cf   != NCL_double  && type_cf  != NCL_float) ||
-      (type_xbar != NCL_double && type_xbar != NCL_float)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: The types of the input arrays must be float or double");
-    return(NhlFATAL);
-  }
-/*
  * Calculate size of output array.
  */
   npts2 = dsizes_cf[1];
@@ -342,7 +331,7 @@ NhlErrorTypes ezfftb_W( void )
   if(type_cf != NCL_double) {
     dcf = (double*)NclMalloc(npts*sizeof(double));
     if ( dcf == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for coercing input array to double precision");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for coercing cf array to double precision");
       return(NhlFATAL);
     }
 
@@ -355,8 +344,14 @@ NhlErrorTypes ezfftb_W( void )
                _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_cf)));
   }
   else {
+/*
+ * cf is already double
+ */
     dcf = (double*)cf;
   }
+/*
+ * coerce xbar if necessary.
+ */
   if(type_xbar != NCL_double) {
     dxbar = (double*)NclMalloc(sizeof(double));
     if ( dxbar == NULL ) {
@@ -372,6 +367,9 @@ NhlErrorTypes ezfftb_W( void )
                _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_xbar)));
   }
   else {
+/*
+ * xbar is already double
+ */
     dxbar = (double*)xbar;
   }
 /*
@@ -399,7 +397,8 @@ NhlErrorTypes ezfftb_W( void )
 /*
  * Free up memory.
  */
-  free(work);
+  NclFree(work);
+
   if((void*)dcf != cf) {
     NclFree(dcf);
   }
@@ -410,18 +409,24 @@ NhlErrorTypes ezfftb_W( void )
  */
     rx = (float*)NclMalloc(sizeof(float)*npts);
     if( rx == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Unable to allocate memory for return array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
-    for( i = 0; i < npts; i++ ) {
-      rx[i] = (float)dx[i];
-    }
+    for( i = 0; i < npts; i++ ) rx[i] = (float)dx[i];
 
+/* 
+ * Free up double precision array.
+ */
     NclFree(dx);
-
+/*
+ * return float values 
+ */
     return(NclReturnValue((void*)rx,1,dsizes_x,NULL,NCL_float,0));
   }
   else {
+/*
+ * return double values
+ */
     return(NclReturnValue((void*)dx,1,dsizes_x,NULL,NCL_double,0));
   }
 }

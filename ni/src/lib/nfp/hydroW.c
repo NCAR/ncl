@@ -14,7 +14,7 @@
 #include <ncarg/gks.h>
 
 extern void NGCALLF(dhydro,DHYDRO)(double *,double *,double *,int *,
-				   double *,int *);
+                                   double *,int *);
 
 NhlErrorTypes hydro_W( void )
 {
@@ -131,9 +131,8 @@ NhlErrorTypes hydro_W( void )
   }
 
   size_zsfc = 1;
-  for( i = 0; i < ndims_zsfc; i++ ) {
-    size_zsfc *= dsizes_zsfc[i];
-  }
+  for( i = 0; i < ndims_zsfc; i++ ) size_zsfc *= dsizes_zsfc[i];
+
   size_p = nlvl * size_zsfc;
 /*
  * Coerce data to double if necessary.
@@ -145,12 +144,12 @@ NhlErrorTypes hydro_W( void )
       return(NhlFATAL);
     }
     _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-	       dp,
-	       p,
-	       size_p,
-	       NULL,
-	       NULL,
-	       _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_p)));
+               dp,
+               p,
+               size_p,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_p)));
   }
   else {
 /*
@@ -168,12 +167,12 @@ NhlErrorTypes hydro_W( void )
       return(NhlFATAL);
     }
     _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-	       dtkv,
-	       tkv,
-	       size_p,
-	       NULL,
-	       NULL,
-	       _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_tkv)));
+               dtkv,
+               tkv,
+               size_p,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_tkv)));
   }
   else {
 /*
@@ -192,12 +191,12 @@ NhlErrorTypes hydro_W( void )
       return(NhlFATAL);
     }
     _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-	       dzsfc,
-	       zsfc,
-	       size_zsfc,
-	       NULL,
-	       NULL,
-	       _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_zsfc)));
+               dzsfc,
+               zsfc,
+               size_zsfc,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_zsfc)));
   }
   else {
 /*
@@ -242,20 +241,20 @@ NhlErrorTypes hydro_W( void )
   if(type_p != NCL_double && type_tkv != NCL_double && 
      type_zsfc != NCL_double) {
 /*
- * Copy double values to float values.
+ * None of the input is double, so return a float.
+ *
+ * First copy double values to float values.
  */
     rzh = (float*)NclMalloc(sizeof(float)*size_p);
     if( rzh == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: Unable to allocate memory for return array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
-    for( i = 0; i < size_p; i++ ) {
-      rzh[i] = (float)zh[i];
-    }
+    for( i = 0; i < size_p; i++ ) rzh[i] = (float)zh[i];
 /*
  * Free double precision values.
  */
-    free(zh);
+    NclFree(zh);
 /*
  * Return float values.
  */
@@ -263,7 +262,7 @@ NhlErrorTypes hydro_W( void )
   }
   else {
 /*
- * Return float values.
+ * Return double values.
  */
     return(NclReturnValue((void*)zh,ndims_p,dsizes_p,NULL,NCL_double,0));
   }

@@ -14,7 +14,8 @@
 #include <math.h>
 #include <ncarg/gks.h>
 
-extern double NGCALLF(dflxedy,DFLXEDY)(double *,double *,int *,double *,int *);
+extern double NGCALLF(dflxedy,DFLXEDY)(double *,double *,int *,double *,
+                                       int *);
 
 NhlErrorTypes fluxEddy_W( void )
 {
@@ -133,20 +134,9 @@ NhlErrorTypes fluxEddy_W( void )
                NULL,
                _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
   }
-  else {
-/*
- * Get the default missing value.
- */ 
-    if(type_y != NCL_double) {
-      missing_dy.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-    }
-    else {
-      missing_dy.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-    }
-  }
 
 /*
- * Coerce data to double if necessary.
+ * Coerce x to double if necessary.
  */
   if(type_x != NCL_double) {
     dx = (double*)NclMalloc(sizeof(double)*size_xy);
@@ -180,6 +170,9 @@ NhlErrorTypes fluxEddy_W( void )
     dx = (double*)x;
   }
 
+/*
+ * Coerce y to double if necessary.
+ */
   if(type_y != NCL_double) {
     dy = (double*)NclMalloc(sizeof(double)*size_xy);
     if( dy == NULL ) {
@@ -251,16 +244,15 @@ NhlErrorTypes fluxEddy_W( void )
  */
     rfluxeddy = (float*)NclMalloc(sizeof(float)*size_fluxeddy);
     if( rfluxeddy == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"fluxEddy: Unable to allocate memory for return array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"fluxEddy: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
-    for( i = 0; i < size_fluxeddy; i++ ) {
-      rfluxeddy[i] = (float)fluxeddy[i];
-    }
+    for( i = 0; i < size_fluxeddy; i++ ) rfluxeddy[i] = (float)fluxeddy[i];
+
 /*
  * Free double precision array since we don't need it anymore.
  */
-    free(fluxeddy);
+    NclFree(fluxeddy);
 /*
  * Return float values.  A missing value is returned regardless if a
  * missing value was originally set (the default is used if none set).
@@ -269,6 +261,10 @@ NhlErrorTypes fluxEddy_W( void )
                           &missing_rx,NCL_float,0));
   }
   else {
+/*
+ * Return double values.  A missing value is returned regardless if a
+ * missing value was originally set (the default is used if none set).
+ */
     return(NclReturnValue((void*)fluxeddy,ndims_fluxeddy,dsizes_fluxeddy,
                           &missing_dx,NCL_double,0));
   }

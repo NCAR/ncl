@@ -28,10 +28,12 @@ NhlErrorTypes eof_varimax_W( void )
 /*
  * Input array variables
  */
-  NclStackEntry data;
-  NclMultiDValData tmp_md = NULL;
-  double *dinput;
-  int ndims, nvar, nfac, ldevec;
+  void *evec;
+  double *devec;
+  int ndims_evec, dsizes_evec[NCL_MAX_DIMENSIONS], has_missing_evec;
+  NclScalar missing_evec, missing_devec;
+  NclBasicDataTypes type_evec;
+  int nvar, nfac, ldevec, total_size_evec;
 /*
  * Work array variables.
  */
@@ -40,101 +42,97 @@ NhlErrorTypes eof_varimax_W( void )
  * Output array variable
  */
   float  *revec_out;
-  int dsizes_evec_out[NCL_MAX_DIMENSIONS];
   int i, found_missing;
 /*
  * Retrieve parameters
  */
-  data = _NclGetArg(0,1,DONT_CARE);
-  switch(data.kind) {
-  case NclStk_VAR:
-	tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-	break;
-  case NclStk_VAL:
-	tmp_md = (NclMultiDValData)data.u.data_obj;
-	break;
-  }
-  ndims = tmp_md->multidval.n_dims;
-  if( ndims < 2 ) {
+  evec = (void*)NclGetArgValue(
+           0,
+           1,
+           &ndims_evec, 
+           dsizes_evec,
+           &missing_evec,
+           &has_missing_evec,
+           &type_evec,
+           2);
+/*
+ * Check dimensions.
+ */
+  if( ndims_evec < 2 ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: The input array must be at least 2-dimensional");
     return(NhlFATAL);
   }
 
-  nfac = tmp_md->multidval.dim_sizes[0];
+/*
+ * Calculate size of output array.
+ */
+  nfac = dsizes_evec[0];
 
   nvar = 1;
-  for( i = 1; i <= ndims-1; i++ ) {
-    nvar *= tmp_md->multidval.dim_sizes[i];
-  }
+  for( i = 1; i <= ndims_evec-1; i++ ) nvar *= dsizes_evec[i];
   ldevec = nvar;
 
   if( nvar < 1 || nfac < 1 ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: The dimensions of the input array must both be at least 1");
     return(NhlFATAL);
   }
+  total_size_evec = nvar * nfac;
 
 /*
- * Check our input array to be sure it is a double or float.
+ * Coerce evec missing value to double.
  */
-  if( tmp_md->multidval.data_type != NCL_float && tmp_md->multidval.data_type != NCL_double ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: The input array must be a float or a double array");
+  if(has_missing_evec) {
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               &missing_devec,
+               &missing_evec,
+               1,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_evec)));
+  }
+
+/*
+ * Coerce evec to double no matter what, since we need to make a copy of
+ * the input array anyway.
+ */
+  devec = (double*)NclMalloc(sizeof(double)*total_size_evec);
+  if( devec == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: Unable to allocate memory for coercing evec array to double precision");
     return(NhlFATAL);
+  }
+  if(has_missing_evec) {
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               devec,
+               evec,
+               total_size_evec,
+               &missing_devec,
+               &missing_evec,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_evec)));
+  }
+  else {
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               devec,
+               evec,
+               total_size_evec,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_evec)));
   }
 
 /*
  * Check for a missing value.
  */
   found_missing = 0;
-  if(tmp_md->multidval.missing_value.has_missing) {
-    if( tmp_md->multidval.data_type == NCL_double ) {
-      i = 0;
-      while( i < nvar*nfac && !found_missing ) {
-		if(((double *)tmp_md->multidval.val)[i] == 
-		   tmp_md->multidval.missing_value.value.doubleval) {
-		  found_missing = 1;
-		}
-		i++;
-      }
-    }
-    else {
-      i = 0;
-      while( i < nvar*nfac && !found_missing ) {
-		if(((float *)tmp_md->multidval.val)[i] == 
-		   tmp_md->multidval.missing_value.value.floatval) {
-		  found_missing = 1;
-		}
-		i++;
-      }
+  if(has_missing_evec) {
+    i = 0;
+    while( i < total_size_evec && !found_missing ) {
+      if(devec[i] == missing_devec.doubleval) found_missing = 1;
+      i++;
     }
   }
   if(found_missing) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: The input array contains missing values.");
     return(NhlFATAL);
-  }
-/*
- * Allocate memory for return variable.
- */
-  for( i = 0; i <= ndims-1; i++ ) {
-    dsizes_evec_out[i] = tmp_md->multidval.dim_sizes[i];
-  }
-
-  dinput = (double *)NclMalloc(nfac*nvar*sizeof(double));
-  if( dinput == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: Unable to allocate memory for output array");
-    return(NhlFATAL);
-  }
-/*
- * Save input array to another variable.
- */
-  if( tmp_md->multidval.data_type == NCL_float ) {
-    for( i = 0; i < nvar*nfac; i++ ) {
-      dinput[i] = (double)((float *)tmp_md->multidval.val)[i];
-    }
-  }
-  else {
-    for( i = 0; i < nvar*nfac; i++ ) {
-      dinput[i] = (double)((double *)tmp_md->multidval.val)[i];
-    }
   }
 
 /*
@@ -150,32 +148,42 @@ NhlErrorTypes eof_varimax_W( void )
 /*
  * Call the Fortran 77 version of 'vors' with the full argument list.
  */
-  NGCALLF(vors,VORS)(&nvar, &nfac, dinput, a, b, w, &ldevec);
+  NGCALLF(vors,VORS)(&nvar, &nfac, devec, a, b, w, &ldevec);
 
 /*
  * Free unneeded memory.
  */
-  free((double*)w);
-  free((double*)a);
-  free((double*)b);
+  NclFree(w);
+  NclFree(a);
+  NclFree(b);
 
 /*
  * Convert input array so that tmp_md is not used and also to preserve input
  * array.
  */
-  if( tmp_md->multidval.data_type == NCL_float ) {
-	revec_out = (float *)NclMalloc(nfac*nvar*sizeof(float));
-	if( revec_out == NULL ) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: Unable to allocate memory for floating point output array");
-	  return(NhlFATAL);
-	}
-    for( i = 0; i < nvar*nfac; i++ ) {
-      revec_out[i] = (float)dinput[i];
+  if(type_evec == NCL_float) {
+    revec_out = (float *)NclMalloc(total_size_evec*sizeof(float));
+    if( revec_out == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: Unable to allocate memory for floating point output array");
+      return(NhlFATAL);
     }
-    return(NclReturnValue((void*)revec_out,ndims,dsizes_evec_out,NULL,NCL_float,0));
+    for( i = 0; i < total_size_evec; i++ ) revec_out[i] = (float)devec[i];
+/*
+ * Free double precision array.
+ */
+    NclFree(devec);
+/*
+ * Return float values
+ */
+    return(NclReturnValue((void*)revec_out,ndims_evec,dsizes_evec,NULL,
+                          NCL_float,0));
   }
   else {
-    return(NclReturnValue((void*)dinput,ndims,dsizes_evec_out,NULL,NCL_double,0));
+/*
+ * Return double values
+ */
+    return(NclReturnValue((void*)devec,ndims_evec,dsizes_evec,NULL,
+                          NCL_double,0));
   }
 }
 

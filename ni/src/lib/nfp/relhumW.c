@@ -77,7 +77,7 @@ NhlErrorTypes relhum_W( void )
  * Check dimensions and calculate total size of arrays.
  */
   if( ndims_t != ndims_w || ndims_t != ndims_p ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"relhum: The input arrays must be the same size");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"relhum: The input arrays must have the same number of dimensions");
     return(NhlFATAL);
   }
 /*
@@ -101,16 +101,16 @@ NhlErrorTypes relhum_W( void )
       return(NhlFATAL);
     }
     _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-	       dt,
-	       t,
-	       total,
-	       NULL,
-	       NULL,
-	       _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_t)));
+               dt,
+               t,
+               total,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_t)));
   }
   else {
 /*
- * Input is already double.
+ * t is already double.
  */
     dt = (double*)t;
   }
@@ -124,19 +124,22 @@ NhlErrorTypes relhum_W( void )
       return(NhlFATAL);
     }
     _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-	       dw,
-	       w,
-	       total,
-	       NULL,
-	       NULL,
-	       _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_w)));
+               dw,
+               w,
+               total,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_w)));
   }
   else {
 /*
- * Input is already double.
+ * w is already double.
  */
     dw = (double*)w;
   }
+/*
+ * Coerce p.
+ */
   if(type_p != NCL_double) {
     dp = (double*)NclMalloc(sizeof(double)*total);
     if( dp == NULL ) {
@@ -144,12 +147,12 @@ NhlErrorTypes relhum_W( void )
       return(NhlFATAL);
     }
     _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-	       dp,
-	       p,
-	       total,
-	       NULL,
-	       NULL,
-	       _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_p)));
+               dp,
+               p,
+               total,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_p)));
   }
   else {
 /*
@@ -188,21 +191,21 @@ NhlErrorTypes relhum_W( void )
  */
   if(type_t != NCL_double && type_w != NCL_double && type_p != NCL_double) {
 /*
- * Copy double values to float values.
+ * None of the input is double, so return float values.
+ *
+ * First copy double values to float values.
  */
     rrh = (float*)NclMalloc(sizeof(float)*total);
     if( rrh == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"relhum: Unable to allocate memory for return array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"relhum: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
-    for( i = 0; i < total; i++ ) {
-      rrh[i] = (float)rh[i];
-    }
-    free(rh);
+    for( i = 0; i < total; i++ ) rrh[i] = (float)rh[i];
+    NclFree(rh);
 /*
  * Return float values.
  */
-    return(NclReturnValue((void*)rh,ndims_t,dsizes_t,NULL,NCL_float,0));
+    return(NclReturnValue((void*)rrh,ndims_t,dsizes_t,NULL,NCL_float,0));
   }
   else {
 /*

@@ -10,6 +10,8 @@
 #include <ncarg/ncl/NclBuiltInSupport.h>
 #include <ncarg/gks.h>
 
+extern void NGCALLF(rdsstoi,RDSSTOI)(int *,int *,int *,int *,int *,float *);
+
 NhlErrorTypes rdsstoi_W( void )
 {
 /*

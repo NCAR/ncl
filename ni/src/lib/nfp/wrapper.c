@@ -2793,6 +2793,18 @@ NclScalar         *missing_rx)
                  _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
     }
   }
+  else {
+/*
+ * Get the default missing value, just in case.
+ */ 
+    if(type_x != NCL_double && missing_rx != NULL) {
+      missing_rx->floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      missing_dx->doubleval = (double)missing_rx->floatval;
+    }
+    else {
+      missing_dx->doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    }
+  }
 /*
  * Coerce x to double if necessary.
  */

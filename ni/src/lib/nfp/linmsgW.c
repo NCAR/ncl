@@ -113,21 +113,21 @@ NhlErrorTypes linmsg_W( void )
   }
   if(has_missing_x) {
     _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-	       dx,
-	       x,
-	       total_size_x,
-	       &missing_dx,
-	       &missing_x,
-	       _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+               dx,
+               x,
+               total_size_x,
+               &missing_dx,
+               &missing_x,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
   }
   else {
     _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-	       dx,
-	       x,
-	       total_size_x,
-	       NULL,
-	       NULL,
-	       _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+               dx,
+               x,
+               total_size_x,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
   }
 
 /*
@@ -145,27 +145,25 @@ NhlErrorTypes linmsg_W( void )
  */
     rx = (float*)NclMalloc(sizeof(float)*total_size_x);
     if( rx == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"linmsg: Unable to allocate memory for return array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"linmsg: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
-    for( i = 0; i < total_size_x; i++ ) {
-      rx[i] = (float)dx[i];
-    }
+    for( i = 0; i < total_size_x; i++ ) rx[i] = (float)dx[i];
 /*
  * Free double precision values.
  */
-    free(dx);
+    NclFree(dx);
 /*
  * Return float values with missing value set.
  */
     return(NclReturnValue((void*)rx,ndims_x,dsizes_x,&missing_rx,
-			  NCL_float,0));
+                          NCL_float,0));
   }
   else {
 /*
  * Return double values with missing value set.
  */
     return(NclReturnValue((void*)dx,ndims_x,dsizes_x,&missing_dx,
-			  NCL_double,0));
+                          NCL_double,0));
   }
 }
