@@ -1,0 +1,5 @@
+#
+#	$Id: yMakefile,v 1.1 1997-03-08 16:47:55 haley Exp $
+#
+#define IHaveSubdirs
+SUBDIRS = natgrid
