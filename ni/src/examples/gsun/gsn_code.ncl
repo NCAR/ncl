@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.82 2002-03-22 00:02:35 haley Exp $
+;      $Id: gsn_code.ncl,v 1.83 2002-04-04 22:07:12 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -471,32 +471,24 @@ begin
 
   if(res.and..not.any(ismissing(getvaratts(res))))
     attnames = getvaratts(res)
-    res2 = stringtochar(attnames(ind(attnames.ne."_FillValue")))
+    do i = 0, dimsizes(attnames)-1
+      res2 = stringtochar(attnames(i))
 ;
-; Only one resource set.
+; Loop through the resource prefixes and determine their length
+; so that we only check that many characters in the resource name.
 ;
-    if(dimsizes(dimsizes(res2)).eq.1)
-      if(any(chartostring(res2(0:1)).eq.res_prefix))
-        ret_res = True
-        ret_res@$attnames$ = res@$attnames$
-      end if
-    else
-;
-; Multiple resources set. They have to be checked differently than if
-; just one resource is set. 
-;
-      do j=0,dimsizes(res_prefix)-1
-        res_index = ind(chartostring(res2(:,0:1)).eq.res_prefix(j))
-        if(.not.all(ismissing(res_index)))
+      do j = 0, dimsizes(res_prefix)-1
+        res_prefix_c = stringtochar(res_prefix(j))
+        rpclen       = dimsizes(res_prefix_c)-1   ; Don't count null char
+        if(dimsizes(res2).ge.rpclen.and.\
+           any(chartostring(res2(0:rpclen-1)).eq.res_prefix(j)))
           ret_res = True
-          do i = 0,dimsizes(res_index)-1
-            ret_res@$attnames(res_index(i))$ = res@$attnames(res_index(i))$
-          end do
+          ret_res@$attnames(i)$ = res@$attnames(i)$
         end if
-        delete(res_index)
+        delete(res_prefix_c)
       end do
-    end if
-    delete(res2)
+      delete(res2)
+    end do
     delete(attnames)
   end if
   return(ret_res)
@@ -510,29 +502,36 @@ end
 ; Get a list of resources that don't start with res_prefix.             ;
 ;***********************************************************************;
 function get_res_ne(res,res_prefix:string)
-local i, ret_res, res2, attnames, res_index
+local i, j, ret_res, res2, attnames, res_index
 begin
   ret_res = False
 
   if(res.and..not.any(ismissing(getvaratts(res))))
     attnames = getvaratts(res)
-    res2 = stringtochar(attnames(ind(attnames.ne."_FillValue")))
-
-    if(dimsizes(dimsizes(res2)).eq.1)
-      if(all(chartostring(res2(0:1)).ne.res_prefix))
-        ret_res = True
-        ret_res@$attnames$ = res@$attnames$
-      end if
-    else
-      nres = dimsizes(res2(:,0))
-      do i = 0,nres-1
-        if(all(chartostring(res2(i,0:1)).ne.res_prefix))
-          ret_res = True
-          ret_res@$attnames(i)$ = res@$attnames(i)$
+    do i = 0, dimsizes(attnames)-1
+      res2 = stringtochar(attnames(i))
+;
+; Loop through the resource prefixes and determine their length
+; so that we only check that many characters in the resource name.
+;
+      j = 0
+      found = False
+      do while(.not.found.and.j.le.dimsizes(res_prefix)-1)
+        res_prefix_c = stringtochar(res_prefix(j))
+        rpclen       = dimsizes(res_prefix_c)-1   ; Don't count null char
+        if(dimsizes(res2).ge.rpclen.and.\
+          chartostring(res2(0:rpclen-1)).eq.res_prefix(j))
+          found = True
         end if
+        j = j + 1
+        delete(res_prefix_c)
       end do
-    end if
-    delete(res2)
+      if(.not.found) then
+        ret_res = True
+        ret_res@$attnames(i)$ = res@$attnames(i)$
+      end if
+      delete(res2)
+    end do
     delete(attnames)
   end if
   return(ret_res)
@@ -553,9 +552,6 @@ end
 function get_res_value(res:logical,resname:string,default_val)
 local return_val
 begin
-if (resname.eq."pmTickMarkDisplayMode")
-  print(default_val)
-end if
   if(res.and..not.any(ismissing(getvaratts(res)))) then
     if(isatt(res,resname)) then
       return_val = res@$resname$
@@ -5209,7 +5205,7 @@ begin
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
-    mpres = get_res_eq(res2,(/"mp","vp","pm"/))
+    mpres = get_res_eq(res2,(/"mp","vp","pmA","pmO","pmT"/))
     cnres = get_res_ne(res2,(/"mp","sf","vp"/))
 
     attsetvalues_check(map_object,mpres)
@@ -5488,7 +5484,7 @@ begin
     scale     = get_res_value(res2,"gsnScale",shape)
 
     vfres = get_res_eq(res2,"vf")
-    mpres = get_res_eq(res2,(/"mp","vp","pm"/))
+    mpres = get_res_eq(res2,(/"mp","vp","pmA","pmO","pmT"/))
     stres = get_res_ne(res2,(/"vf","mp","vp"/))
 
     attsetvalues_check(data_object,vfres)
@@ -6164,7 +6160,7 @@ begin
     vfres = get_res_eq(res2,"vf")
     sfres = get_res_eq(res2,"sf")
     cnres = get_res_eq(res2,(/"cn","tf"/))
-    mpres = get_res_eq(res2,(/"mp","vp","pm"/))
+    mpres = get_res_eq(res2,(/"mp","vp","pmA","pmO","pmT"/))
     vcres = get_res_ne(res2,(/"cn","mp","sf","vf","vp"/))
 
     attsetvalues_check(vfdata_object,vfres)
@@ -6282,7 +6278,7 @@ begin
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
     vfres = get_res_eq(res2,"vf")
-    mpres = get_res_eq(res2,(/"mp","vp","pm"/))
+    mpres = get_res_eq(res2,(/"mp","vp","pmA","pmO","pmT"/))
     vcres = get_res_ne(res2,(/"mp","vf","vp"/))
 
     attsetvalues_check(data_object,vfres)
@@ -6578,7 +6574,7 @@ begin
 
     vfres = get_res_eq(res2,"vf")
     sfres = get_res_eq(res2,"sf")
-    mpres = get_res_eq(res2,(/"mp","vp","pm"/))
+    mpres = get_res_eq(res2,(/"mp","vp","pmA","pmO","pmT"/))
     vcres = get_res_ne(res2,(/"mp","sf","vf","vp"/))
 
     attsetvalues_check(vfdata_object,vfres)

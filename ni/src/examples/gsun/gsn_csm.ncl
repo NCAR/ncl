@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.89 2002-03-22 00:02:35 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.90 2002-04-04 22:07:13 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3641,7 +3641,7 @@ end
 ;       is used for the right string title.                             ;
 ;    7. If either of the resources "gsnPolarNH" or "gsnPolarSH" are set ;
 ;       to True then only the northern or southern hemisphere is        ;
-    mpres = get_res_eq(res2,(/"mp","ti","vp","tx","am","pm"/))
+;       displayed.                                                      ;
 ;***********************************************************************;
 
 function gsn_csm_contour_map_polar(wks:graphic,data[*][*]:numeric, \
@@ -3887,7 +3887,7 @@ begin
           else
             map_vphf  = 0.7 ; make sure zonalplot will fit in view port
 
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pm"/))
+            set_attr(res2,"vpHeightF",0.7)
             set_attr(res2, "vpWidthF",0.7)
             set_attr(res2,     "vpXF",0.1)
             set_attr(res2,     "vpYF",0.9)
@@ -4162,7 +4162,7 @@ end
 ;                                                                       ;
 ; This function creates and draws a contour plot over a map plot to the ;
 ; workstation "wks" (the variable returned from a previous call to      ;
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pm"/))
+; "gsn_open_wks").  "data" is the 2-dimensional data to be contoured,   ;
 ; and "resources" is an optional list of resources. The Id of the map   ;
 ; plot is returned.                                                     ;
 ;                                                                       ;
@@ -4376,7 +4376,7 @@ end
 function gsn_csm_vector_map_ce(wks:graphic,u[*][*]:numeric,v[*][*]:numeric,\
                                 resources:logical)
 local i, vector_object, map_object, res, res2, calldraw, vcres, \
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pm"/))
+lbres, map_vpwf, map_vphf, vpwf, vphf, callframe, min_lat, max_lat, \
 lbar_on, lbar_zone, unew, vnew
 begin
 
@@ -4550,7 +4550,7 @@ begin
     map_object@data   = vector_object@data
     map_object@vector = vector_object
     return(map_object)
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pm"/))
+end
 
 ;***********************************************************************;
 ; Function : gsn_csm_vector_map_polar                                   ;
@@ -4716,7 +4716,7 @@ begin
 ; Return plot object and data object (as attribute of plot object).
 
     map_object@data   = vector_object@data
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pm"/))
+    map_object@vector = vector_object
     return(map_object)
 end
 
@@ -4902,7 +4902,7 @@ end
 ;       hasn't explicitly been set, then the value of this attribute    ;
 ;       is used for the right string title.                             ;
 ;***********************************************************************;
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pm"/))
+
 function gsn_csm_streamline_map_ce(wks:graphic,u[*][*]:numeric,\
                                    v[*][*]:numeric,resources:logical)
 local i, stream_object, map_object, stres, calldraw, callframe, \
@@ -5031,7 +5031,7 @@ begin
 
 ; Draw all this stuff: map plot, subtitles, and tick marks.
     draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pm"/))
+
 ; Return plot object and data object (as attribute of plot object).
 
     map_object@data       = stream_object@data
@@ -5152,7 +5152,7 @@ begin
     setvalues map_object
         "tiMainFontHeightF"    : main_font_height  ; main title size
     end setvalues
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pm"/))
+
 ; Draw all this stuff: map plot, subtitles, and tick marks.
     draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
 
@@ -5337,7 +5337,7 @@ begin
       set_attr(res2,"vfYCEndV",   90.)
     end if
 
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pm"/))
+; Check for left/right titles at top. Use attributes "long_name" and
 ; "units" if they exist.
 
     set_right_subtitle(unew,res2,mpres)
@@ -5539,7 +5539,7 @@ begin
     mpres = True
 
 ; Check for cyclic point (default is True).
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pm"/))
+
     if(get_res_value(res2,"gsnAddCyclic",True))
       unew    = gsn_add_cyclic_point(u)
       vnew    = gsn_add_cyclic_point(v)
@@ -5709,7 +5709,7 @@ calldraw, callframe, lbar_on, min_lat, max_lat, datanew, \
 res, res2, lbres, mpres, vcres, levels, colors, \
 lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just, \
 map_vpwf, map_vphf, vphf 
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pm"/))
+begin
 ; Initialize.
     infolabel_on   = False
     lbar_on        = False    ; Default is no labelbar.
@@ -6195,7 +6195,7 @@ begin
     maxbb     = get_bb_res(res2)
 
     lbres = get_res_eq(res2,(/"lb","pm"/))
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pm"/))
+
 ; Check for type of scalar field representation.
     scalar_contour = get_res_value(res2,"gsnScalarContour",False)
 
@@ -6457,7 +6457,7 @@ begin
 ; Check for left/right titles at top. Use attributes "long_name" and
 ; "units" if they exist.
 
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pm"/))
+    set_right_subtitle(unew,res2,mpres)
     set_left_subtitle(unew,res2,mpres)
 
 ; Check for draw and frame.
@@ -6670,7 +6670,7 @@ begin
 ; Check for coordinate variables. These values will determine where to 
 ; overlay vectors on map.
 
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pm"/))
+    check_for_y_lat_coord(unew,res2,"vector")
     check_for_lon_coord(unew,res2,"vector")
 
 ; Check for left/right titles at top. Use attributes "long_name" and
