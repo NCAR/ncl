@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.90 1995-09-18 19:34:02 haley Exp $
+#   $Id: ncargex.csh,v 1.91 1995-10-13 17:08:37 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -977,8 +977,8 @@ while ($#argv > 0)
 # String is xxx.yyy #
 #                   #
 #*******************#
-            set str1 = `expr "$ws_type" : '\(.*\)\..*'`
-            set str2 = `expr "$ws_type" : '.*\.\(.*\)'`
+            set str[1] = `expr "$ws_type" : '\(.*\)\..*'`
+            set str[2] = `expr "$ws_type" : '.*\.\(.*\)'`
             set num = 2
           endif
         endif
