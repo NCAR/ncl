@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: select_config,v 1.1 1993-02-20 00:11:40 clyne Exp $
+#      $Id: select_config,v 1.2 1993-03-26 00:20:16 clyne Exp $
 #
 #########################################################################
 #									#
@@ -130,6 +130,9 @@ EOF
 	Installation. In addition, the custom installation allows you
 	to choose the installation paths of the bin, lib, man, and 
 	include directories.
+
+	It is highly recommended that less experienced installers choose
+	the basic installation.
 EOF
 			$LOCALDIR/pause
 

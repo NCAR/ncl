@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: INSTALL,v 1.2 1993-03-03 17:02:34 clyne Exp $
+#      $Id: INSTALL,v 1.3 1993-03-26 00:20:09 clyne Exp $
 #
 #########################################################################
 #									#
@@ -139,7 +139,7 @@ EOF
 		breaksw
 
 	case "99":
-		more bambi1.ani
+		$PAGER bambi1.ani
 		breaksw
 	case "0":
 		exit 0

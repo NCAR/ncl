@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: select_dev,v 1.1 1993-02-20 00:11:42 clyne Exp $
+#      $Id: select_dev,v 1.2 1993-03-26 00:20:18 clyne Exp $
 #
 #########################################################################
 #									#
@@ -77,7 +77,7 @@ while (! $done)
 		switch ("$dev_type") 
 
 		case	"-t":
-			cat <<EOF | more > /dev/tty
+			cat <<EOF | $PAGER > /dev/tty
 
 
 
@@ -130,11 +130,27 @@ EOF
 			breaksw
 
 		case	"-c":
+			cat <<EOF | $PAGER > /dev/tty
+
+
+
+	Use this menu selection to specify the directory path of the 
+	"mount" point of your CD-ROM.  The currently defined source 
+	is printed in [] next to this menu item. 
+
+	If you used a command similar to
+
+		% mount -t cdfs /dev/something /cdrom
+
+	to mount your CD-ROM then your CD-ROM mount point is "/cdrom"
+
+EOF
+			$LOCALDIR/pause
 			breaksw
 
 		case	"-f":
 
-			cat <<EOF | more > /dev/tty
+			cat <<EOF | $PAGER > /dev/tty
 
 
 

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: install_soft,v 1.2 1993-03-22 18:20:35 clyne Exp $
+#      $Id: install_soft,v 1.3 1993-03-26 00:20:14 clyne Exp $
 #
 #########################################################################
 #									#
@@ -96,7 +96,7 @@ cat <<EOF
 
 	1.  Select distribution media		[ install from $INSTALL_SOURCE ]
         2.  Select source device		[ device: $device ]
-	3.  Select installation configuration	[ $INSTALL_TYPE ]
+	3.  Select installation type		[ $INSTALL_TYPE ]
 	4.  Show installation configuration
         5.  Perform installation
         6.  Help
@@ -200,6 +200,18 @@ EOF
 
 
 	case "5":
+		if ("$INSTALL_TYPE" == "?") then 
+			clear > /dev/tty
+			cat <<EOF  > /dev/tty
+
+
+
+	Installation type not selected. Please select an installation type.
+EOF
+			$LOCALDIR/pause
+			breaksw
+		endif
+
 		$LOCALDIR/perf_install $bin_path $inc_path $lib_path $man_path
 		if ($status != 0) then
 			$LOCALDIR/pause
@@ -209,7 +221,7 @@ EOF
 
 	case "6":
 		clear > /dev/tty
-		cat <<EOF | more > /dev/tty
+		cat <<EOF | $PAGER > /dev/tty
 
 
 	This is the NCAR Graphics installation menu. Use this menu
