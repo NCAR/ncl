@@ -1,12 +1,12 @@
 /*
- *	$Id: c_tst9.c,v 1.2 1994-06-21 15:00:55 haley Exp $
+ *	$Id: c_tst9.c,v 1.3 1994-06-27 20:26:44 haley Exp $
  */
 #include <stdio.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
 #define WSTYPE SED_WSTYPE
-#define WKID   1
+#define WKID 1 
 
 main()
 {
@@ -23,7 +23,7 @@ main()
 /*
  *  Open GKS, open and activate the metafile workstation.
  */
-    sprintf(label,"NCAR Graphics, Release 3.00");
+    sprintf(label,"NCAR Graphics, Release 4.0");
     gopen_gks("stdout",0);
     gopen_ws( WKID, NULL, WSTYPE);
     gactivate_ws( WKID );
@@ -56,25 +56,22 @@ main()
  */
     x = .5;
     for(i=1;i<=20;i++){
-        y = .1+.038*(20-i);
-        j = i;
-        if (i > 1) j=  (-i);
-        text_font_prec.font = j;
-        text_font_prec.prec = GPREC_STROKE;
-        gset_text_font_prec(&text_font_prec);
-        text_pos.x = x;
-        text_pos.y = y;
-        gtext(&text_pos,label);
+        y = .02+.043*(20-i);
+        c_pcseti( "FN", i );
+        if (i == 18) c_pcsetr( "AS", .25 );
+        if (i == 19) c_pcsetr( "AS", .5 );
+        if (i == 20) c_pcsetr( "AS", .25 );
+        c_plchhq(x,y,label,.02,0.,0.);
     }
 /*
  *  Label the plot (PLOTCHAR draws lines to plot characters,
  *  so the text color is controlled by the GKS polyline color).
  */
-    gset_line_colr_ind(2);
-    c_pcseti("CD",1);
-    gset_linewidth(2.);
-    c_plchhq(.5,.95,"Same string",.025,0.,0.);
-    c_plchhq(.5,.90,"using various fonts",.025,0.,0.);
+    c_pcseti("FN",25);
+    c_pcseti("CC",2);
+    c_pcsetr("AS",0.);
+    c_plchhq(.5,.98,"Same string",.032,0.,0.);
+    c_plchhq(.5,.92,"using various fonts",.032,0.,0.);
     c_frame();
 /*
  *  Deactivate and close the workstation, close GKS.

@@ -54,7 +54,7 @@ main()
     for( i = 0; i <= 4; i++ ) {
         gset_colr_rep(WKID,i,&rgbs[i]);
     }
-    tfp.font = 12;
+    tfp.font = -4;
     tfp.prec = GPREC_STROKE;
     gset_text_font_prec(&tfp);
 /*
@@ -157,7 +157,8 @@ main()
  */
     gset_line_colr_ind(2);
     gset_linewidth(2.);
-    c_pcseti("CD",1);
+    c_pcseti("FN",25);
+    c_pcseti("CC",2);
     c_plchhq(.39,.85,"Character heights &",.022,0.,0.);
     c_plchhq(.39,.80,"Character up vectors",.022,0.,0.);
     c_frame();
