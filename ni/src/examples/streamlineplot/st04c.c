@@ -1,5 +1,5 @@
 /*
- *      $Id: st04c.c,v 1.4 1997-01-27 17:40:32 haley Exp $
+ *      $Id: st04c.c,v 1.5 1997-04-09 21:05:09 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -83,7 +83,8 @@ main(int argc, char *argv[])
     int rlist, len_dims[2];
     long strt[1], cnt[1];
     long latlen, lonlen;
-    long timelen, *timestep;
+    long timelen;
+	int *timestep;
     int ncid[6], uid, vid, u5id, v5id, pid, tid;
     int latid, lonid;
     float *lon, *lat;
@@ -306,7 +307,7 @@ main(int argc, char *argv[])
     tmid = ncdimid(ncid[1],"timestep");
     ncdiminq(ncid[1],tmid,(char *)0,&timelen);
     tmid = ncvarid(ncid[1],"timestep");
-    timestep = (long *)malloc(sizeof(long)*timelen);
+    timestep = (int *)malloc(sizeof(int)*timelen);
 
     strt[0] = 0;
     cnt[0] = timelen;
