@@ -87,96 +87,72 @@ int operation;
 
 	if(lhs.kind == NclStk_VAL) {
 		lhs_type = lhs.u.data_obj->multidval.type->type_class.type;
+		lhs_data_obj = lhs.u.data_obj;
 	} else if(lhs.kind == NclStk_VAR) {
-		lhs_type = _NclGetVarRepValue(lhs.u.data_var);
+		lhs_data_obj = _NclVarValueRead(lhs.u.data_var,NULL,NULL);
+		lhs_type = lhs_data_obj->multidval.type->type_class.type;
 	} else {
 		return(NhlFATAL);
 	}
 
 	if(rhs.kind == NclStk_VAL) {
 		rhs_type = rhs.u.data_obj->multidval.type->type_class.type;
+		rhs_data_obj = rhs.u.data_obj;
 	} else if(rhs.kind == NclStk_VAR) {
-		rhs_type = _NclGetVarRepValue(rhs.u.data_var);
+		rhs_data_obj = _NclVarValueRead(rhs.u.data_var,NULL,NULL);
+		rhs_type = rhs_data_obj->multidval.type->type_class.type;
 	} else {
 		return(NhlFATAL);
 	}
 
-	if(lhs_type != rhs_type) {
+	if(lhs_type < rhs_type) {
 
-		if(rhs.kind == NclStk_VAL) {
 /*
 * No need to pass in missing value since it will be used appropriately
 * by the operator's function
 */
-			coerce_res = _NclCoerceData(rhs.u.data_obj,
-					lhs_type,NULL);
-		} else {
-/*
-* No need to pass in missing value since it will be used appropriately
-* by the operator's function
-*/
-			coerce_res = _NclCoerceVar(rhs.u.data_var,lhs_type,NULL);
-		}
+		coerce_res = _NclCoerceData(rhs_data_obj,lhs_type & NCL_VAL_TYPE_MASK,NULL);
 		if(coerce_res == NULL) {
-			if(lhs.kind == NclStk_VAL) {
 /*
 * No need to pass in missing value since it will be used appropriately
 * by the operator's function
 */
-			coerce_res = _NclCoerceData(lhs.u.data_obj,
-				rhs_type & NCL_VAL_TYPE_MASK,NULL);
-				if(coerce_res == NULL) {
+			coerce_res = _NclCoerceData(lhs_data_obj,rhs_type & NCL_VAL_TYPE_MASK,NULL);
+			if(coerce_res == NULL) {
 /*
 * Error message needed
 */
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce values for operation");
 					return(NhlFATAL);
-				} else {
-					lhs_data_obj = coerce_res;
-					if(rhs.kind == NclStk_VAL) {
-						rhs_data_obj = rhs.u.data_obj;
-					} else {
-						rhs_data_obj = _NclVarValueRead(rhs.u.data_var,NULL,NULL);
-					}
-				}
 			} else {
-/*
-* No need to pass in missing value since it will be used appropriately
-* by the operator's function
-*/
-				coerce_res = _NclCoerceVar(lhs.u.data_var,
-					rhs_type,NULL);
-				if(coerce_res == NULL) {
-/*
-* Error message needed
-*/
-					return(NhlFATAL);
-				} else {
-					lhs_data_obj = coerce_res;
-					if(rhs.kind == NclStk_VAL) {
-						rhs_data_obj = rhs.u.data_obj;
-					} else {
-						rhs_data_obj = _NclVarValueRead(rhs.u.data_var,NULL,NULL);
-					}
-				}
+				lhs_data_obj = coerce_res;
 			}
 		} else {
 			rhs_data_obj = coerce_res;
-			if(lhs.kind == NclStk_VAL) {
-				lhs_data_obj = lhs.u.data_obj;
+		}
+	} else if(lhs_type > rhs_type) {
+/*
+* No need to pass in missing value since it will be used appropriately
+* by the operator's function
+*/
+		coerce_res = _NclCoerceData(lhs_data_obj,rhs_type & NCL_VAL_TYPE_MASK,NULL);
+		if(coerce_res == NULL) {
+/*
+* No need to pass in missing value since it will be used appropriately
+* by the operator's function
+*/
+			coerce_res = _NclCoerceData(rhs_data_obj,lhs_type & NCL_VAL_TYPE_MASK,NULL);
+			if(coerce_res == NULL) {
+/*
+* Error message needed
+*/
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce values for operation");
+					return(NhlFATAL);
 			} else {
-				lhs_data_obj = _NclVarValueRead(lhs.u.data_var,NULL,NULL);
+				rhs_data_obj = coerce_res;
 			}
-		}
-	} else {
-		if(lhs.kind == NclStk_VAL) {
-			lhs_data_obj = lhs.u.data_obj;
 		} else {
-			lhs_data_obj = _NclVarValueRead(lhs.u.data_var,NULL,NULL);
-		}
-		if(rhs.kind == NclStk_VAL) {
-			rhs_data_obj = rhs.u.data_obj;
-		} else {
-			rhs_data_obj = _NclVarValueRead(rhs.u.data_var,NULL,NULL);
+			lhs_data_obj = coerce_res;
 		}
 	}
 	if((lhs_data_obj != NULL)&&(rhs_data_obj != NULL)) {
@@ -192,6 +168,7 @@ int operation;
 		if(result->u.data_obj != NULL)
 			result->kind = NclStk_VAL;
 	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unexpected error in operation");
 		return(NhlFATAL);
 	}
 
@@ -223,12 +200,8 @@ int operation;
 		} else {
 			if(lhs.u.data_var->obj.status != PERMANENT) {
 				if(result->u.data_obj->obj.id == lhs.u.data_var->var.thevalue_id) {
-					lhs.u.data_var->var.thevalue_id = -1;
+					(void)_NclStripVarData(lhs.u.data_var);
 					_NclDestroyObj((NclObj)lhs.u.data_var);
-					result->u.data_obj->obj.status = TEMPORARY;
-					result->u.data_obj->obj.ref_count = 0;
-					NclFree(result->u.data_obj->obj.parents);
-					result->u.data_obj->obj.parents = NULL;
 				} else {
 					_NclDestroyObj((NclObj)lhs.u.data_var);
 				}
@@ -261,12 +234,8 @@ int operation;
 		} else {
 			if(rhs.u.data_var->obj.status != PERMANENT) {
 				if(result->u.data_obj->obj.id == rhs.u.data_var->var.thevalue_id) {
-					rhs.u.data_var->var.thevalue_id = -1;
+					(void)_NclStripVarData(rhs.u.data_var);
 					_NclDestroyObj((NclObj)rhs.u.data_var);
-					result->u.data_obj->obj.status = TEMPORARY;
-					result->u.data_obj->obj.ref_count = 0;
-					NclFree(result->u.data_obj->obj.parents);
-					result->u.data_obj->obj.parents = NULL;
 				} else {
 					_NclDestroyObj((NclObj)rhs.u.data_var);
 				}
@@ -349,9 +318,11 @@ NhlErrorTypes _NclBuildArray
 			return(NhlNOERROR);
 		case NclStk_VAR:
 			result->kind = NclStk_VAL;
-			result->u.data_obj = _NclCopyVal(_NclVarValueRead(data.u.data_var,NULL,NULL),NULL);
 			if(data.u.data_var->obj.status != PERMANENT) {
+				result->u.data_obj = _NclStripVarData(data.u.data_var);
 				_NclDestroyObj((NclObj)data.u.data_var);
+			} else {
+				result->u.data_obj = _NclCopyVal(_NclVarValueRead(data.u.data_var,NULL,NULL),NULL);
 			}
 			return(NhlNOERROR);
 		}

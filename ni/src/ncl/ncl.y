@@ -1179,18 +1179,21 @@ filevarselector : FVAR {
 			$$ = _NclMakeIdnExpr(_NclMakeStringExpr($1));
 		}
 	| FSTRING primary EFSTRING {
+		_NclValOnly($2);
 		$$ = $2;
 	}
 coordvarselector : COORDV{
 			$$ = _NclMakeIdnExpr(_NclMakeStringExpr($1));
 	}
 	| CSTRING primary EFSTRING {
+		_NclValOnly($2);
 		$$ = $2;
 	}
 attributeselector : ATTNAME{
 			$$ = _NclMakeIdnExpr(_NclMakeStringExpr($1));
 	}
 	| ASTRING primary EFSTRING {
+		_NclValOnly($2);
 		$$ = $2;
 	}
 
@@ -1212,6 +1215,7 @@ identifier : vname {
 						$$ = _NclMakeFileVarRef($1,$2,$4,Ncl_FILEVAR);
 					}
 	| vname filevarselector DIM_MARKER primary	{
+						_NclValOnly($4);
 						$$ = _NclMakeFileVarDimRef($1,$2,$4);		
 					}
         | vname filevarselector attributeselector {
@@ -1233,6 +1237,7 @@ identifier : vname {
 						$$ = _NclMakeFileVarCoordRef($1,$2,$3,$5);
 					}
 	| vname DIM_MARKER primary  {
+						_NclValOnly($3);
 						$$ = _NclMakeVarDimRef($1,$3);		
 					}
         | vname attributeselector {
@@ -1338,42 +1343,59 @@ subscript1:  subexpr	 		{
 ;
 
 subexpr: expr				{
+						_NclValOnly($1);
 						$$ = _NclMakeSingleIndex($1);
 					}
 	|  COLON 			{
 						$$ = _NclMakeRangeIndex(NULL,NULL,NULL);
 					}
 	| expr COLON expr		{
+						_NclValOnly($1);
+						_NclValOnly($3);
 						$$ = _NclMakeRangeIndex($1,$3,NULL);
 					}
 	| COLON expr			{
+						_NclValOnly($2);
 						$$ = _NclMakeRangeIndex(NULL,$2,NULL);
 					}
 	| expr COLON 			{
+						_NclValOnly($1);
 						$$ = _NclMakeRangeIndex($1,NULL,NULL);
 					}
 	| expr COLON expr COLON 	{
+						_NclValOnly($1);
+						_NclValOnly($3);
 						$$ = _NclMakeRangeIndex($1,$3,NULL);
 					}
 	| COLON expr COLON 		{
+						_NclValOnly($2);
 						$$ = _NclMakeRangeIndex(NULL,$2,NULL);
 					}
 	| expr COLON COLON		{
+						_NclValOnly($1);
 						$$ = _NclMakeRangeIndex($1,NULL,NULL);
 					} 
 	| expr COLON expr COLON expr	{				
+						_NclValOnly($1);
+						_NclValOnly($3);
+						_NclValOnly($5);
 						$$ = _NclMakeRangeIndex($1,$3,$5);
 					}
 	| expr COLON COLON expr		{				
+						_NclValOnly($1);
+						_NclValOnly($4);
 						$$ = _NclMakeRangeIndex($1,NULL,$4);
 					}
 	| COLON expr COLON expr		{				
+						_NclValOnly($2);
+						_NclValOnly($4);
 						$$ = _NclMakeRangeIndex(NULL,$2,$4);
 					}
 	| COLON COLON 			{				
 						$$ = _NclMakeRangeIndex(NULL,NULL,NULL);
 					}
 	| COLON COLON expr		{				
+						_NclValOnly($3);
 						$$ = _NclMakeRangeIndex(NULL,NULL,$3);
 					}
 ;
@@ -1381,63 +1403,101 @@ expr :  primary				{
 						$$ = $1;
 					}
 	| '-' expr %prec UNOP		{
+						_NclValOnly($2);
 						$$ = _NclMakeUnaryExpr($2,Ncl_NEGEXPR);
 					}
 	| NOT expr %prec UNOP		{
+						_NclValOnly($2);
 						$$ = _NclMakeUnaryExpr($2,Ncl_NOTEXPR);
 					}
 	| expr '%' expr			{
+						_NclValOnly($1);
+						_NclValOnly($3);
 						$$ = _NclMakeExpr($1,$3,Ncl_MODEXPR);
 					}
 	| expr OR expr 			{
+						_NclValOnly($1);
+						_NclValOnly($3);
 						$$ = _NclMakeExpr($1,$3,Ncl_OREXPR);
 					} 
 	| expr AND expr			{			
+						_NclValOnly($1);
+						_NclValOnly($3);
 						$$ = _NclMakeExpr($1,$3,Ncl_ANDEXPR);
 					}
 	| expr XOR expr			{
+						_NclValOnly($1);
+						_NclValOnly($3);
 						$$ = _NclMakeExpr($1,$3,Ncl_XOREXPR);
 					}
 	| expr '<' expr			{
+						_NclValOnly($1);
+						_NclValOnly($3);
 						$$ = _NclMakeExpr($1,$3,Ncl_LTSELECTEXPR);
 					}
 	| expr '>' expr			{
+						_NclValOnly($1);
+						_NclValOnly($3);
 						$$ = _NclMakeExpr($1,$3,Ncl_GTSELECTEXPR);
 					}
 	| expr '+' expr			{
+						_NclValOnly($1);
+						_NclValOnly($3);
 						$$ = _NclMakeExpr($1,$3,Ncl_PLUSEXPR);
 					}
 	| expr '-' expr			{
+						_NclValOnly($1);
+						_NclValOnly($3);
 						$$ = _NclMakeExpr($1,$3,Ncl_MINUSEXPR);
 					}
 	| expr '*' expr			{
+						_NclValOnly($1);
+						_NclValOnly($3);
 						$$ = _NclMakeExpr($1,$3,Ncl_MULEXPR);
 					}
 	| expr '#' expr			{
+						_NclValOnly($1);
+						_NclValOnly($3);
 						$$ = _NclMakeExpr($1,$3,Ncl_MATMULEXPR);
 					}
 	| expr '/' expr			{
+						_NclValOnly($1);
+						_NclValOnly($3);
 						$$ = _NclMakeExpr($1,$3,Ncl_DIVEXPR);
 					}
 	| expr '^' expr			{
+						_NclValOnly($1);
+						_NclValOnly($3);
 						$$ = _NclMakeExpr($1,$3,Ncl_EXPEXPR);
 					}
 	| expr LE  expr			{
+						_NclValOnly($1);
+						_NclValOnly($3);
 						$$ = _NclMakeExpr($1,$3,Ncl_LEEXPR);
 					}
 	| expr GE expr			{
+						_NclValOnly($1);
+						_NclValOnly($3);
 						$$ = _NclMakeExpr($1,$3,Ncl_GEEXPR);
 					}
 	| expr GT expr			{
+						_NclValOnly($1);
+						_NclValOnly($3);
 						$$ = _NclMakeExpr($1,$3,Ncl_GTEXPR);
 					}
 	| expr LT expr			{
+						_NclValOnly($1);
+						_NclValOnly($3);
 						$$ = _NclMakeExpr($1,$3,Ncl_LTEXPR);
 					}
 	| expr EQ expr			{
+						_NclValOnly($1);
+						_NclValOnly($3);
 						$$ = _NclMakeExpr($1,$3,Ncl_EQEXPR);
 					}
 	| expr NE expr			{
+						_NclValOnly($1);
+						_NclValOnly($3);
 						$$ = _NclMakeExpr($1,$3,Ncl_NEEXPR);
 					}
 ;
@@ -1478,9 +1538,12 @@ primary : REAL				{
 						$$ = $2;
 					}
 	| NEW LP expr ',' datatype ',' expr RP	{
+						_NclValOnly($3);
+						_NclValOnly($7);
 						$$ = _NclMakeNewOp($3,$5,$7);
 					}
 	| NEW LP expr ',' datatype RP	{
+						_NclValOnly($3);
 						$$ = _NclMakeNewOp($3,$5,NULL);
 					}
 ;

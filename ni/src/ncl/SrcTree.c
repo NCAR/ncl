@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.29 1996-12-12 22:58:13 ethan Exp $
+ *      $Id: SrcTree.c,v 1.30 1996-12-20 00:42:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -74,7 +74,7 @@ char *src_tree_names[] = {"Ncl_BLOCK", "Ncl_RETURN", "Ncl_IFTHEN",
 * identifier references to determine the context of the reference
 */
 
-char *ref_node_names[] = { "Ncl_READIT", "Ncl_WRITEIT", "Ncl_PARAMIT" };
+char *ref_node_names[] = { "Ncl_READIT", "Ncl_WRITEIT", "Ncl_PARAMIT", "Ncl_VALONLY" };
 
 
 /*
@@ -3536,6 +3536,36 @@ void _NclFreeTree
 		(*node_list[i]->destroy_it)((struct ncl_genericnode*)node_list[i]);
 	}
 	_NclResetNodeList();
+}
+
+void _NclValOnly
+#if	NhlNeedProto
+(void *root)
+#else
+(root)
+void *root;
+#endif
+{
+	NclGenericNode *groot = (NclGenericNode*)root;
+	NclIdnExpr *idnexpr = NULL;
+	
+	if(groot->kind == Ncl_IDNEXPR) {
+		idnexpr = (NclIdnExpr*)((NclIdnExpr*)root)->idn_ref_node;
+		if (idnexpr != NULL) {
+			switch(((NclGenericRefNode*)idnexpr)->kind) {
+				case Ncl_VAR: 
+				case Ncl_VARCOORD: 
+				case Ncl_FILEVAR: 
+				case Ncl_FILEVARCOORD: 
+					((NclGenericRefNode*)idnexpr)->ref_type = Ncl_VALONLY;
+					break;
+				default:
+					break;
+			}
+		}
+	} else {
+		return;
+	}
 }
 #ifdef __cplusplus
 }

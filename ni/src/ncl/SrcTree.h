@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.19 1996-12-12 22:58:14 ethan Exp $
+ *      $Id: SrcTree.h,v 1.20 1996-12-20 00:42:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -53,7 +53,7 @@ typedef enum {Ncl_BLOCK, Ncl_RETURN, Ncl_IFTHEN, Ncl_IFTHENELSE,
 			Ncl_LOGICAL, Ncl_VARCOORDATT,Ncl_FILEVARCOORDATT
                         } NclSrcTreeTypes;
 
-typedef enum { Ncl_READIT, Ncl_WRITEIT, Ncl_PARAMIT } NclReferenceTypes;
+typedef enum { Ncl_READIT, Ncl_WRITEIT, Ncl_PARAMIT, Ncl_VALONLY } NclReferenceTypes;
 
 typedef struct ncl_genericnode NclGenericNode, NclBreak, NclContinue;
 typedef struct ncl_genericrefnode NclGenericRefNode;
@@ -1023,6 +1023,11 @@ void * /*size_expr*/
 );
 
 
+void _NclValOnly(
+#if	NhlNeedProto
+void * /*expr*/
+#endif
+);
 
 
 #endif /*_NCSrcTree_h*/

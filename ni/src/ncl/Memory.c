@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Memory.c,v 1.12 1995-06-17 01:21:36 ethan Exp $
+ *      $Id: Memory.c,v 1.13 1996-12-20 00:42:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -46,7 +46,6 @@ void
 #endif
 {
         void *ptr;
-	total += size;
 
         if(size == 0)
                 return NULL;
@@ -84,18 +83,6 @@ NclFree
 #else
                 free(ptr);
                 return NhlNOERROR;
-/*
-                ret = free(ptr);
-
-                if(ret == 0){
-
-                        NhlPError(NhlWARNING,errno,"Error in NclFree");
-                        return(NhlWARNING);
-                }
-                else{
-                        return(NhlNOERROR);
-                }
-*/
 #endif
         }
 }
@@ -197,42 +184,34 @@ void _NclFreeSubRec
 struct _NclSubRec * sub_rec;
 #endif
 {
-/*
-	if(sub_rec->name != NULL) {
-		NclFree(sub_rec->name);
-	}
-*/
 	switch(sub_rec->sub_type) {
 	case COORD_VECT:
 	case INT_VECT:
-		if((sub_rec->u.vec->vec != NULL)&&(sub_rec->u.vec->vec->obj.status != PERMANENT)) {
-			_NclDestroyObj((NclObj)sub_rec->u.vec->vec);
+		if((sub_rec->u.vec.vec != NULL)&&(sub_rec->u.vec.vec->obj.status != PERMANENT)) {
+			_NclDestroyObj((NclObj)sub_rec->u.vec.vec);
 		}
-		NclFree(sub_rec->u.vec);
 		break;
 	case COORD_RANGE:
 	case INT_RANGE:
 /*
 * This might happen when single indices are used
 */
-		if(sub_rec->u.range->start == sub_rec->u.range->finish) {
-			sub_rec->u.range->finish = NULL;
+		if(sub_rec->u.range.start == sub_rec->u.range.finish) {
+			sub_rec->u.range.finish = NULL;
 		}
-		if((sub_rec->u.range->start != NULL)&&(sub_rec->u.range->start->obj.status != PERMANENT)) {
-			_NclDestroyObj((NclObj)sub_rec->u.range->start);
+		if((sub_rec->u.range.start != NULL)&&(sub_rec->u.range.start->obj.status != PERMANENT)) {
+			_NclDestroyObj((NclObj)sub_rec->u.range.start);
 		} 
-		if((sub_rec->u.range->finish != NULL)&&(sub_rec->u.range->finish->obj.status != PERMANENT)) {
-			_NclDestroyObj((NclObj)sub_rec->u.range->finish);
+		if((sub_rec->u.range.finish != NULL)&&(sub_rec->u.range.finish->obj.status != PERMANENT)) {
+			_NclDestroyObj((NclObj)sub_rec->u.range.finish);
 		}
-		if((sub_rec->u.range->stride != NULL)&&(sub_rec->u.range->stride->obj.status != PERMANENT)) {
-			_NclDestroyObj((NclObj)sub_rec->u.range->stride);
+		if((sub_rec->u.range.stride != NULL)&&(sub_rec->u.range.stride->obj.status != PERMANENT)) {
+			_NclDestroyObj((NclObj)sub_rec->u.range.stride);
 		}
-		NclFree(sub_rec->u.range);
 		break;
 	default:
 		break;
 	}
-	NclFree(sub_rec);
 }
 
 

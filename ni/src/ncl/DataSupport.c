@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.31 1996-11-28 01:18:54 dbrown Exp $
+ *      $Id: DataSupport.c,v 1.32 1996-12-20 00:42:04 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -863,222 +863,105 @@ NclObj *result;
 		((lhs_data_obj->multidval.kind<< 1)
 		|(rhs_data_obj->multidval.kind));
 
-	if(tmp_result == NULL) {	
-		while((NclObjClass) data_part != nclObjClass){
-			switch(operation) {
-			case MOD_OP:
-			if(data_part->data_class.mod[f_selection] != NULL) {
-				*result = (NclObj)((*data_part->data_class.mod[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-			}
-			break;
-			case OR_OP:
-			if(data_part->data_class.or[f_selection] != NULL) {
-				*result = (NclObj)((*data_part->data_class.or[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-			}
-			break;
-			case AND_OP:
-			if(data_part->data_class.and[f_selection] != NULL) {
-				*result = (NclObj)((*data_part->data_class.and[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-			}
-			break;
-			case XOR_OP:
-			if(data_part->data_class.xor[f_selection] != NULL) {
-				*result = (NclObj)((*data_part->data_class.xor[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-			}
-			break;
-			case LTSEL_OP:
-			if(data_part->data_class.sel_lt[f_selection] != NULL) {
-				*result = (NclObj)((*data_part->data_class.sel_lt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-			}
-			break;
-			case GTSEL_OP:
-			if(data_part->data_class.sel_gt[f_selection] != NULL) {
-				*result = (NclObj)((*data_part->data_class.sel_gt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-			}
-			break;
-			case PLUS_OP:
-			if(data_part->data_class.plus[f_selection] != NULL) {
-				*result = (NclObj)((*data_part->data_class.plus[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-			}
-			break;
-			case MINUS_OP:
-			if(data_part->data_class.minus[f_selection] != NULL) {
-				*result = (NclObj)((*data_part->data_class.minus[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-			}
-			break;
-			case MUL_OP:
-			if(data_part->data_class.multiply[f_selection] != NULL) {
-				*result = (NclObj)((*data_part->data_class.multiply[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-			}
-			break;
-			case MAT_OP:
-			if(data_part->data_class.mat[f_selection] != NULL) {
-				*result = (NclObj)((*data_part->data_class.mat[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-			}
-			break;
-			case DIV_OP:
-			if(data_part->data_class.divide[f_selection] != NULL) {
-				*result = (NclObj)((*data_part->data_class.divide[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-			}
-			break;
-			case EXP_OP:
-			if(data_part->data_class.exponent[f_selection] != NULL) {
-				*result = (NclObj)((*data_part->data_class.exponent[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-			}
-			break;
-			case LE_OP:
-			if(data_part->data_class.le[f_selection] != NULL) {
-				*result = (NclObj)((*data_part->data_class.le[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-			}
-			break;
-			case GE_OP:
-			if(data_part->data_class.ge[f_selection] != NULL) {
-				*result = (NclObj)((*data_part->data_class.ge[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-			}
-			break;
-			case GT_OP:
-			if(data_part->data_class.gt[f_selection] != NULL) {
-				*result =(NclObj) ((*data_part->data_class.gt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-			}
-			break;
-			case LT_OP:
-			if(data_part->data_class.lt[f_selection] != NULL) {
-				*result = (NclObj)((*data_part->data_class.lt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-			}
-			break;
-			case EQ_OP:
-			if(data_part->data_class.eq[f_selection] != NULL) {
-				*result = (NclObj)((*data_part->data_class.eq[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-			}
-			break;
-			case NE_OP:
-			if(data_part->data_class.ne[f_selection] != NULL) {
-				*result = (NclObj)((*data_part->data_class.ne[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,NULL));
-			}
-			break;
-			default:
-				return(NhlFATAL);
-			}
-			if(*result != NULL) 
-				return(NhlNOERROR);
-			data_part = (NclDataClass)data_part->obj_class.super_class;
+	*result = NULL;
+	while((NclObjClass) data_part != nclObjClass){
+		switch(operation) {
+		case MOD_OP:
+		if(data_part->data_class.mod[f_selection] != NULL) {
+			*result = (NclObj)((*data_part->data_class.mod[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
 		}
-	} else {
-		while((NclObjClass) data_part != nclObjClass){
-			switch(operation) {
-			case MOD_OP:
-			if(data_part->data_class.mod[f_selection] != NULL) {
-				(void)((*data_part->data_class.mod[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
-				return(NhlNOERROR);
-			}
-			break;
-			case OR_OP:
-			if(data_part->data_class.or[f_selection] != NULL) {
-				(void)((*data_part->data_class.or[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
-				return(NhlNOERROR);
-			}
-			break;
-			case AND_OP:
-			if(data_part->data_class.and[f_selection] != NULL) {
-				(void)((*data_part->data_class.and[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
-				return(NhlNOERROR);
-			}
-			break;
-			case XOR_OP:
-			if(data_part->data_class.xor[f_selection] != NULL) {
-				(void)((*data_part->data_class.xor[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
-				return(NhlNOERROR);
-			}
-			break;
-			case LTSEL_OP:
-			if(data_part->data_class.sel_lt[f_selection] != NULL) {
-				(void)((*data_part->data_class.sel_lt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
-				return(NhlNOERROR);
-			}
-			break;
-			case GTSEL_OP:
-			if(data_part->data_class.sel_gt[f_selection] != NULL) {
-				(void)((*data_part->data_class.sel_gt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
-				return(NhlNOERROR);
-			}
-			break;
-			case PLUS_OP:
-			if(data_part->data_class.plus[f_selection] != NULL) {
-				(void)((*data_part->data_class.plus[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
-				return(NhlNOERROR);
-			}
-			break;
-			case MINUS_OP:
-			if(data_part->data_class.minus[f_selection] != NULL) {
-				(void)((*data_part->data_class.minus[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
-				return(NhlNOERROR);
-			}
-			break;
-			case MUL_OP:
-			if(data_part->data_class.multiply[f_selection] != NULL) {
-				(void)((*data_part->data_class.multiply[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
-				return(NhlNOERROR);
-			}
-			break;
-			case MAT_OP:
-			if(data_part->data_class.mat[f_selection] != NULL) {
-				(void)((*data_part->data_class.mat[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
-				return(NhlNOERROR);
-			}
-			break;
-			case DIV_OP:
-			if(data_part->data_class.divide[f_selection] != NULL) {
-				(void)((*data_part->data_class.divide[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
-				return(NhlNOERROR);
-			}
-			break;
-			case EXP_OP:
-			if(data_part->data_class.exponent[f_selection] != NULL) {
-				(void)((*data_part->data_class.exponent[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
-				return(NhlNOERROR);
-			}
-			break;
-			case LE_OP:
-			if(data_part->data_class.le[f_selection] != NULL) {
-				(void)((*data_part->data_class.le[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
-				return(NhlNOERROR);
-			}
-			break;
-			case GE_OP:
-			if(data_part->data_class.ge[f_selection] != NULL) {
-				(void)((*data_part->data_class.ge[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
-				return(NhlNOERROR);
-			}
-			break;
-			case GT_OP:
-			if(data_part->data_class.gt[f_selection] != NULL) {
-				(void) ((*data_part->data_class.gt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
-				return(NhlNOERROR);
-			}
-			break;
-			case LT_OP:
-			if(data_part->data_class.lt[f_selection] != NULL) {
-				(void)((*data_part->data_class.lt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
-				return(NhlNOERROR);
-			}
-			break;
-			case EQ_OP:
-			if(data_part->data_class.eq[f_selection] != NULL) {
-				(void)((*data_part->data_class.eq[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
-				return(NhlNOERROR);
-			}
-			break;
-			case NE_OP:
-			if(data_part->data_class.ne[f_selection] != NULL) {
-				(void)((*data_part->data_class.ne[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
-				return(NhlNOERROR);
-			}
-			break;
-			default:
-				return(NhlFATAL);
-			}
-			data_part = (NclDataClass)data_part->obj_class.super_class;
+		break;
+		case OR_OP:
+		if(data_part->data_class.or[f_selection] != NULL) {
+			*result = (NclObj)((*data_part->data_class.or[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
 		}
+		break;
+		case AND_OP:
+		if(data_part->data_class.and[f_selection] != NULL) {
+			*result = (NclObj)((*data_part->data_class.and[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+		}
+		break;
+		case XOR_OP:
+		if(data_part->data_class.xor[f_selection] != NULL) {
+			*result = (NclObj)((*data_part->data_class.xor[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+		}
+		break;
+		case LTSEL_OP:
+		if(data_part->data_class.sel_lt[f_selection] != NULL) {
+			*result = (NclObj)((*data_part->data_class.sel_lt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+		}
+		break;
+		case GTSEL_OP:
+		if(data_part->data_class.sel_gt[f_selection] != NULL) {
+			*result = (NclObj)((*data_part->data_class.sel_gt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+		}
+		break;
+		case PLUS_OP:
+		if(data_part->data_class.plus[f_selection] != NULL) {
+			*result = (NclObj)((*data_part->data_class.plus[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+		}
+		break;
+		case MINUS_OP:
+		if(data_part->data_class.minus[f_selection] != NULL) {
+			*result = (NclObj)((*data_part->data_class.minus[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+		}
+		break;
+		case MUL_OP:
+		if(data_part->data_class.multiply[f_selection] != NULL) {
+			*result = (NclObj)((*data_part->data_class.multiply[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+		}
+		break;
+		case MAT_OP:
+		if(data_part->data_class.mat[f_selection] != NULL) {
+			*result = (NclObj)((*data_part->data_class.mat[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+		}
+		break;
+		case DIV_OP:
+		if(data_part->data_class.divide[f_selection] != NULL) {
+			*result = (NclObj)((*data_part->data_class.divide[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+		}
+		break;
+		case EXP_OP:
+		if(data_part->data_class.exponent[f_selection] != NULL) {
+			*result = (NclObj)((*data_part->data_class.exponent[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+		}
+		break;
+		case LE_OP:
+		if(data_part->data_class.le[f_selection] != NULL) {
+			*result = (NclObj)((*data_part->data_class.le[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+		}
+		break;
+		case GE_OP:
+		if(data_part->data_class.ge[f_selection] != NULL) {
+			*result = (NclObj)((*data_part->data_class.ge[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+		}
+		break;
+		case GT_OP:
+		if(data_part->data_class.gt[f_selection] != NULL) {
+			*result =(NclObj) ((*data_part->data_class.gt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+		}
+		break;
+		case LT_OP:
+		if(data_part->data_class.lt[f_selection] != NULL) {
+			*result = (NclObj)((*data_part->data_class.lt[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+		}
+		break;
+		case EQ_OP:
+		if(data_part->data_class.eq[f_selection] != NULL) {
+			*result = (NclObj)((*data_part->data_class.eq[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+		}
+		break;
+		case NE_OP:
+		if(data_part->data_class.ne[f_selection] != NULL) {
+			*result = (NclObj)((*data_part->data_class.ne[f_selection])((NclData)lhs_data_obj,(NclData)rhs_data_obj,(NclData)tmp_result));
+		}
+		break;
+		default:
+			return(NhlFATAL);
+		}
+		if(*result != NULL) 
+			return(NhlNOERROR);
+		data_part = (NclDataClass)data_part->obj_class.super_class;
 	}
 	if(*result != NULL) {
 		return(NhlNOERROR);
@@ -1218,23 +1101,30 @@ struct _NclMultiDValDataRec *_NclCreateFalse
 ()
 #endif
 {
-	int *val = (int*)NclMalloc((unsigned)sizeof(int));
-	int dim_sizes = 1;
+	static int first = 1;
+	static NclMultiDValData tval = NULL;
+
+	if(first) {
+		int *val = (int*)NclMalloc((unsigned)sizeof(int));
+		int dim_sizes = 1;
+		*val = 0;
+		tval = _NclCreateMultiDVal(
+			NULL,
+			nclMultiDValDataClass,
+			Ncl_MultiDValData,
+			Ncl_MultiDValData,
+			(void*)val,
+			NULL,
+			1,
+			&dim_sizes,
+			PERMANENT,
+			NULL,
+			(NclTypeClass)nclTypelogicalClass);
+		first = 0;
+	} 
+	return(tval);
 	
 
-	*val = 0;
-	return(_NclCreateMultiDVal(
-		NULL,
-		nclMultiDValDataClass,
-		Ncl_MultiDValData,
-		Ncl_MultiDValData,
-		(void*)val,
-		NULL,
-		1,
-		&dim_sizes,
-		TEMPORARY,
-		NULL,
-		(NclTypeClass)nclTypelogicalClass));
 }
 struct _NclMultiDValDataRec *_NclCreateTrue
 #if NhlNeedProto
@@ -1243,23 +1133,30 @@ struct _NclMultiDValDataRec *_NclCreateTrue
 ()
 #endif
 {
-	int *val = (int*)NclMalloc((unsigned)sizeof(int));
-	int dim_sizes = 1;
+	static int first = 1;
+	static NclMultiDValData tval = NULL;
+
+	if(first) {
+		int *val = (int*)NclMalloc((unsigned)sizeof(int));
+		int dim_sizes = 1;
+		*val = 1;
+		tval = _NclCreateMultiDVal(
+			NULL,
+			nclMultiDValDataClass,
+			Ncl_MultiDValData,
+			Ncl_MultiDValData,
+			(void*)val,
+			NULL,
+			1,
+			&dim_sizes,
+			PERMANENT,
+			NULL,
+			(NclTypeClass)nclTypelogicalClass);
+		first = 0;
+	} 
+	return(tval);
 	
 
-	*val = 1;
-	return(_NclCreateMultiDVal(
-		NULL,
-		nclMultiDValDataClass,
-		Ncl_MultiDValData,
-		Ncl_MultiDValData,
-		(void*)val,
-		NULL,
-		1,
-		&dim_sizes,
-		TEMPORARY,
-		NULL,
-		(NclTypeClass)nclTypelogicalClass));
 }
 struct _NclMultiDValDataRec *_NclCreateMissing
 #if NhlNeedProto
@@ -1268,25 +1165,29 @@ struct _NclMultiDValDataRec *_NclCreateMissing
 ()
 #endif
 {
-	int *val = (int*)NclMalloc((unsigned)sizeof(int));
-	int dim_sizes = 1;
-	
+	static int first = 1;
+	static NclMultiDValData tval = NULL;
 
-	*val = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;	
-	return(_NclCreateMultiDVal(
-		NULL,
-		nclMultiDValDataClass,
-		Ncl_MultiDValData,
-		Ncl_MultiDValData,
-		(void*)val,
-		&((NclTypeClass)nclTypeintClass)->type_class.default_mis,
-		1,
-		&dim_sizes,
-		TEMPORARY,
-		NULL,
-		(NclTypeClass)nclTypeintClass));
+	if(first) {
+		int *val = (int*)NclMalloc((unsigned)sizeof(int));
+		int dim_sizes = 1;
+		*val = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+		tval = _NclCreateMultiDVal(
+			NULL,
+			nclMultiDValDataClass,
+			Ncl_MultiDValData,
+			Ncl_MultiDValData,
+			(void*)val,
+			&((NclTypeClass)nclTypeintClass)->type_class.default_mis,
+			1,
+			&dim_sizes,
+			PERMANENT,
+			NULL,
+			(NclTypeClass)nclTypeintClass);
+		first = 0;
+	} 
+	return(tval);
 }
-
 struct _NclMultiDValDataRec * _NclCreateVal
 #if	NhlNeedProto
 (NclObj inst, NclObjClass theclass, NclObjTypes obj_type, unsigned int obj_type_mask, void *val, NclScalar *missing_value, int n_dims, int *dim_sizes, NclStatus status, NclSelectionRecord *sel_rec,NclObjClass type)

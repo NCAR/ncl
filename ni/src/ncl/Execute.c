@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.75 1996-12-17 18:41:13 ethan Exp $
+ *      $Id: Execute.c,v 1.76 1996-12-20 00:42:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -94,27 +94,25 @@ NclExecuteReturnStatus _NclExecute
 * subscripting is going on
 */
 				data1.kind = NclStk_SUBREC;
-				data1.u.sub_rec = (NclSubRec*)NclMalloc(
-					sizeof(NclSubRec));
-				data1.u.sub_rec->tolerence = -1;
+				data1.u.sub_rec.tolerence = -1;
 				data = _NclPop();
 				if(data.kind == NclStk_VECREC) {
-					if(data.u.vec_rec->vec->multidval.type->type_class.type & mask ) {
-						data1.u.sub_rec->sub_type = INT_VECT;
-						data1.u.sub_rec->u.vec = data.u.vec_rec;
+					if(data.u.vec_rec.vec->multidval.type->type_class.type & mask ) {
+						data1.u.sub_rec.sub_type = INT_VECT;
+						data1.u.sub_rec.u.vec = data.u.vec_rec;
 					} else{
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal subscript. Vector subscripts must be integer");
 						estatus = NhlFATAL;
 					}
 				} else if(data.kind == NclStk_RANGEREC) {
-					if(((data.u.range_rec->start == NULL)
-						|| (data.u.range_rec->start->multidval.type->type_class.type & mask)) &&
-					((data.u.range_rec->finish == NULL)
-						||(data.u.range_rec->finish->multidval.type->type_class.type & mask)) &&
-					((data.u.range_rec->stride == NULL)
-						||(data.u.range_rec->stride->multidval.type->type_class.type & mask))) {
-						data1.u.sub_rec->sub_type = INT_RANGE;
-						data1.u.sub_rec->u.range = data.u.range_rec;
+					if(((data.u.range_rec.start == NULL)
+						|| (data.u.range_rec.start->multidval.type->type_class.type & mask)) &&
+					((data.u.range_rec.finish == NULL)
+						||(data.u.range_rec.finish->multidval.type->type_class.type & mask)) &&
+					((data.u.range_rec.stride == NULL)
+						||(data.u.range_rec.stride->multidval.type->type_class.type & mask))) {
+						data1.u.sub_rec.sub_type = INT_RANGE;
+						data1.u.sub_rec.u.range = data.u.range_rec;
 					} else {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal subscript. Subscripts must be integer when not using coordinate indexing");
 						estatus = NhlFATAL;
@@ -122,7 +120,7 @@ NclExecuteReturnStatus _NclExecute
 				}
 				if(estatus != NhlFATAL) {
 					if(*ptr == INT_SUBSCRIPT_OP) {
-						data1.u.sub_rec->name = NULL;
+						data1.u.sub_rec.name = NULL;
 					} else {
 						data = _NclPop();
 						switch(data.kind) {
@@ -130,7 +128,7 @@ NclExecuteReturnStatus _NclExecute
 /*
 * Taking for granted that syntax only allows string litterals here
 */
-							data1.u.sub_rec->name = NrmQuarkToString(*((NclQuark*) data.u.data_obj->multidval.val));
+							data1.u.sub_rec.name = NrmQuarkToString(*((NclQuark*) data.u.data_obj->multidval.val));
 							if(data.u.data_obj->obj.status != PERMANENT)
 								_NclDestroyObj((NclObj)data.u.data_obj);
 							
@@ -138,7 +136,7 @@ NclExecuteReturnStatus _NclExecute
 						}
 						default:	
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"Illegal type for coordinate name in coordinate subscript ignoring value");
-							data1.u.sub_rec->name = NULL;
+							data1.u.sub_rec.name = NULL;
 							break;
 						}
 					}
@@ -173,28 +171,25 @@ NclExecuteReturnStatus _NclExecute
 * been used
 */
 				data.kind = NclStk_RANGEREC;
-				data.u.range_rec = (NclRangeRec*)NclMalloc(
-					sizeof(NclRangeRec));
 				if(start.kind == NclStk_NOVAL) {
-					data.u.range_rec->start = NULL;
+					data.u.range_rec.start = NULL;
 				} else {
 					switch(start.kind) {
 					case NclStk_VAL:
 						if(start.u.data_obj !=NULL) {
-							data.u.range_rec->start = start.u.data_obj;
+							data.u.range_rec.start = start.u.data_obj;
 						} else {
 							estatus = NhlFATAL;
 						}
 						break;
 					case NclStk_VAR:
-						if(start.u.data_var->obj.status != PERMANENT) {
-							data.u.range_rec->start = _NclCopyVal(
-								_NclVarValueRead(start.u.data_var,NULL,NULL),NULL);
+						if(start.u.data_var->obj.status == TEMPORARY) {
+							data.u.range_rec.start = _NclStripVarData(start.u.data_var);
 							_NclDestroyObj((NclObj)start.u.data_var);
 						} else {
-							data.u.range_rec->start = _NclVarValueRead(start.u.data_var,NULL,NULL);
+							data.u.range_rec.start = _NclVarValueRead(start.u.data_var,NULL,NULL);
 						}
-						if(data.u.range_rec->start == NULL) {
+						if(data.u.range_rec.start == NULL) {
 							estatus = NhlFATAL;
 						}
 						break;
@@ -204,25 +199,24 @@ NclExecuteReturnStatus _NclExecute
 					}
 				}
 				if(finish.kind == NclStk_NOVAL) {
-					data.u.range_rec->finish = NULL;
+					data.u.range_rec.finish = NULL;
 				} else {
 					switch(finish.kind) {
 					case NclStk_VAL:
 						if(finish.u.data_obj !=NULL) {
-							data.u.range_rec->finish= finish.u.data_obj;
+							data.u.range_rec.finish= finish.u.data_obj;
 						} else {
 							estatus = NhlFATAL;
 						}
 						break;
 					case NclStk_VAR:
-						if(finish.u.data_var->obj.status != PERMANENT) {
-							data.u.range_rec->finish = _NclCopyVal(
-								_NclVarValueRead(finish.u.data_var,NULL,NULL),NULL);
+						if(finish.u.data_var->obj.status == TEMPORARY) {
+							data.u.range_rec.finish = _NclStripVarData(finish.u.data_var);
 							_NclDestroyObj((NclObj)finish.u.data_var);
 						} else {
-							data.u.range_rec->finish = _NclVarValueRead(finish.u.data_var,NULL,NULL);
+							data.u.range_rec.finish = _NclVarValueRead(finish.u.data_var,NULL,NULL);
 						}
-						if(data.u.range_rec->finish == NULL) {
+						if(data.u.range_rec.finish == NULL) {
 							estatus = NhlFATAL;
 						}
 						break;
@@ -232,25 +226,24 @@ NclExecuteReturnStatus _NclExecute
 					}
 				}
 				if(stride.kind == NclStk_NOVAL) {
-					data.u.range_rec->stride= NULL;
+					data.u.range_rec.stride= NULL;
 				} else {
 					switch(stride.kind) {
 					case NclStk_VAL:
 						if(stride.u.data_obj !=NULL) {
-							data.u.range_rec->stride= stride.u.data_obj;
+							data.u.range_rec.stride= stride.u.data_obj;
 						} else {
 							estatus = NhlFATAL;
 						}
 						break;
 					case NclStk_VAR:
-						if(stride.u.data_var->obj.status != PERMANENT) {
-							data.u.range_rec->stride = _NclCopyVal(
-								_NclVarValueRead(stride.u.data_var,NULL,NULL),NULL);
+						if(stride.u.data_var->obj.status == TEMPORARY) {
+							data.u.range_rec.stride = _NclStripVarData(stride.u.data_var);
 							_NclDestroyObj((NclObj)stride.u.data_var);
 						} else {
-							data.u.range_rec->stride = _NclVarValueRead(stride.u.data_var,NULL,NULL);
+							data.u.range_rec.stride = _NclVarValueRead(stride.u.data_var,NULL,NULL);
 						}
-						if(data.u.range_rec->stride == NULL){
+						if(data.u.range_rec.stride == NULL){
 							estatus = NhlFATAL;
 						}
 						break;
@@ -259,18 +252,18 @@ NclExecuteReturnStatus _NclExecute
 						break;
 					}
 				}
-				if((data.u.range_rec->start != NULL) &&
-					(data.u.range_rec->start->multidval.kind != SCALAR)) {
+				if((data.u.range_rec.start != NULL) &&
+					(data.u.range_rec.start->multidval.kind != SCALAR)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal Subscript. Only scalar values are allowed in subscript ranges.\n");
 					estatus = NhlFATAL;
 				}
-				if((data.u.range_rec->finish != NULL) &&
-					(data.u.range_rec->finish->multidval.kind != SCALAR)) {
+				if((data.u.range_rec.finish != NULL) &&
+					(data.u.range_rec.finish->multidval.kind != SCALAR)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal Subscript. Only scalar values are allowed in subscript ranges.\n");
 					estatus = NhlFATAL;
 				}
-				if((data.u.range_rec->stride != NULL) &&
-					(data.u.range_rec->stride->multidval.kind != SCALAR)) {
+				if((data.u.range_rec.stride != NULL) &&
+					(data.u.range_rec.stride->multidval.kind != SCALAR)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal Subscript. Only scalar values are allowed in subscript ranges.\n");
 					estatus = NhlFATAL;
 				}
@@ -289,58 +282,41 @@ NclExecuteReturnStatus _NclExecute
 				data = _NclPop();
 				switch(data.kind) {
 				case NclStk_VAR: 
-					val = _NclVarValueRead(data.u.data_var,NULL,NULL);
-					if(val == NULL){
-						estatus = NhlFATAL;
+					if(data.u.data_var->obj.status == TEMPORARY) {
+						val = _NclStripVarData(data.u.data_var);
+					} else {
+						val = _NclVarValueRead(data.u.data_var,NULL,NULL);
 					}
 					break;
 				case NclStk_VAL:
-					if(data.u.data_obj != NULL) {
 						val = data.u.data_obj;
-					} else {
-						estatus = NhlFATAL;
-					}
 					break;
 				default:
 					estatus = NhlFATAL;
 				}
-				if(estatus != NhlFATAL) {
+				if(val != NULL){
 					if(val->multidval.kind == SCALAR) {
 						data1.kind = NclStk_RANGEREC;
-						data1.u.range_rec = 
-							(NclRangeRec*)NclMalloc(
-							sizeof(NclRangeRec));
-						if(val->obj.status != PERMANENT) {
-							data1.u.range_rec->start = val;
-							data1.u.range_rec->finish = val;
-							data1.u.range_rec->stride=NULL;
-						} else {
-							data1.u.range_rec->start = _NclCopyVal(val,NULL);
-							data1.u.range_rec->finish = data1.u.range_rec->start;
-							data1.u.range_rec->stride=NULL;
-							if((data.kind == NclStk_VAR)&&(data.u.data_var->obj.status != PERMANENT)) {
-								_NclDestroyObj((NclObj)data.u.data_var);
-							}
+							data1.u.range_rec.start = val;
+							data1.u.range_rec.finish = val;
+							data1.u.range_rec.stride=NULL;
+						if((data.kind == NclStk_VAR)&&(data.u.data_var->obj.status != PERMANENT)) {
+							_NclDestroyObj((NclObj)data.u.data_var);
 						}
 						estatus = _NclPush(data1);
 					} else if(val->multidval.n_dims == 1) {
 						data1.kind = NclStk_VECREC;
-						data1.u.vec_rec =
-							(NclVecRec*)NclMalloc(
-							sizeof(NclVecRec));
-						if(val->obj.status != PERMANENT) {
-							data1.u.vec_rec->vec = val;
-						} else {
-							data1.u.vec_rec->vec = _NclCopyVal(val,NULL);
+							data1.u.vec_rec.vec = val;
 							if((data.kind == NclStk_VAR)&&(data.u.data_var->obj.status != PERMANENT)) {
 								_NclDestroyObj((NclObj)data.u.data_var);
 							}
-						}
 						estatus = _NclPush(data1);
 					} else {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal subscript. Subscripts must be scalar or one dimensional vectors\n");
 						estatus = NhlFATAL;
 					}
+				} else {
+					estatus = NhlFATAL;
 				}
 				break;
 			}
@@ -375,23 +351,21 @@ NclExecuteReturnStatus _NclExecute
 				data = _NclPop();
 	
 				data1.kind = NclStk_SUBREC;
-				data1.u.sub_rec = (NclSubRec*)NclMalloc(
-					sizeof(NclSubRec));
 				if(data.kind == NclStk_VECREC) {
-					data1.u.sub_rec->sub_type = COORD_VECT;
-					data1.u.sub_rec->u.vec = data.u.vec_rec;
+					data1.u.sub_rec.sub_type = COORD_VECT;
+					data1.u.sub_rec.u.vec = data.u.vec_rec;
 				} else if(data.kind == NclStk_RANGEREC) {
-					if(((data.u.range_rec->stride == NULL)
-						||(data.u.range_rec->stride->multidval.type->type_class.type & mask))) {
-						data1.u.sub_rec->sub_type = COORD_RANGE;
-						data1.u.sub_rec->u.range = data.u.range_rec;
+					if(((data.u.range_rec.stride == NULL)
+						||(data.u.range_rec.stride->multidval.type->type_class.type & mask))) {
+						data1.u.sub_rec.sub_type = COORD_RANGE;
+						data1.u.sub_rec.u.range = data.u.range_rec;
 					} else {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal subscript. stride must always be integer regardless of whether coordinate or integer subscripting is being used\n");
 						estatus = NhlFATAL;
 					}
 				}
 				if(*ptr == COORD_SUBSCRIPT_OP) {
-					data1.u.sub_rec->name = NULL;
+					data1.u.sub_rec.name = NULL;
 				} else {
 					data = _NclPop();
 					switch(data.kind) {
@@ -399,7 +373,7 @@ NclExecuteReturnStatus _NclExecute
 /*
 * Taking for granted that syntax only allows string litterals here
 */
-						data1.u.sub_rec->name = NrmQuarkToString(*(NclQuark*) data.u.data_obj->multidval.val);
+						data1.u.sub_rec.name = NrmQuarkToString(*(NclQuark*) data.u.data_obj->multidval.val);
 							
 						if(data.u.data_obj->obj.status != PERMANENT)
 							_NclDestroyObj((NclObj)data.u.data_obj);
@@ -407,7 +381,7 @@ NclExecuteReturnStatus _NclExecute
 					}
 					default:	
 						NhlPError(NhlWARNING,NhlEUNKNOWN,"Illegal type for coordinate name in coordinate subscript ignoring value");
-						data1.u.sub_rec->name = NULL;
+						data1.u.sub_rec.name = NULL;
 						break;
 					}
 				}
@@ -1276,11 +1250,13 @@ NclExecuteReturnStatus _NclExecute
 					logical dir;
 					logical result;
 					NclStackEntry data;
+
 					ptr++;lptr++;fptr++;
 					l_inc = (NclSymbol*)*ptr;
 					ptr++,lptr++,fptr++;
 					l_dir = (NclSymbol*)*ptr;
 					inc_var= _NclPop();
+
 					switch(inc_var.kind) {
 					case NclStk_VAL:
 						inc_md= inc_var.u.data_obj;
@@ -1608,6 +1584,7 @@ NclExecuteReturnStatus _NclExecute
 * Two Operand Instructions *
 ***************************/			
 			case PARAM_VAR_OP:
+			case VARVAL_READ_OP: 
 			case VAR_READ_OP: {
 				NhlErrorTypes ret = NhlNOERROR;
 				int i;
@@ -1624,50 +1601,45 @@ NclExecuteReturnStatus _NclExecute
 				var = _NclRetrieveRec(sym,READ_IT);
 				ptr++;lptr++;fptr++;
 				nsubs = *ptr;
-				if(var->u.data_var == NULL) {
+				if((var == NULL)||(var->u.data_var == NULL)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable (%s) is undefined",sym->name);
 					_NclCleanUpStack(nsubs);
 					estatus = NhlFATAL;
 				} else if(nsubs == 0) {
-					if(var != NULL) {
-						estatus = _NclPush(*var);
-					} else {
-						estatus = NhlFATAL;
-					}
+					estatus = _NclPush(*var);
 				} else if(nsubs != var->u.data_var->var.n_dims) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts do not match number of dimesions of variable,(%d) Subscripts used, (%d) Subscripts expected",nsubs,var->u.data_var->var.n_dims);
 					estatus = NhlFATAL;
 					_NclCleanUpStack(nsubs);
 				} else {
-					sel_ptr = (NclSelectionRecord*)NclMalloc
-						(sizeof(NclSelectionRecord));
+					sel_ptr = _NclGetVarSelRec(var->u.data_var);
 					sel_ptr->n_entries = nsubs;
 					for(i=0;i<nsubs;i++) {
 						dim_is_ref[i] = 0;
 					}
 					for(i=0;i<nsubs;i++) {
 						data =_NclPop();
-						switch(data.u.sub_rec->sub_type) {
+						switch(data.u.sub_rec.sub_type) {
 						case INT_VECT:
 /*
 * Need to free some stuff here
 */							
-							ret = _NclBuildVSelection(var->u.data_var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+							ret = _NclBuildVSelection(var->u.data_var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 							break;
 						case INT_RANGE:
 /*
 * Need to free some stuff here
 */							
-							ret = _NclBuildRSelection(var->u.data_var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+							ret = _NclBuildRSelection(var->u.data_var,&data.u.sub_rec.u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 							break;
 						case COORD_VECT:
-							ret = _NclBuildCoordVSelection(var->u.data_var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+							ret = _NclBuildCoordVSelection(var->u.data_var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 							break;
 						case COORD_RANGE:
-							ret = _NclBuildCoordRSelection(var->u.data_var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+							ret = _NclBuildCoordRSelection(var->u.data_var,&data.u.sub_rec.u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 							break;
 						}
-						_NclFreeSubRec(data.u.sub_rec);
+						_NclFreeSubRec(&data.u.sub_rec);
 						if(ret < NhlWARNING) {
 							estatus = NhlFATAL;
 							break;
@@ -1682,14 +1654,6 @@ NclExecuteReturnStatus _NclExecute
 					if(estatus != NhlFATAL) {
 						data1.kind = NclStk_VAR;
 						data1.u.data_var = _NclVarRead(var->u.data_var,sel_ptr);
-						if(sel_ptr != NULL) {
-							for(i = 0; i <  sel_ptr->n_entries; i++) { 
-								if(sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
-									NclFree(sel_ptr->selection[i].u.vec.ind);
-								}
-							}
-							NclFree(sel_ptr);
-						}
 						if(data1.u.data_var != NULL) {
 							estatus = _NclPush(data1);
 						} else {
@@ -1830,7 +1794,7 @@ NclExecuteReturnStatus _NclExecute
 						_NclCleanUpStack(nsubs+1);
 					}
 					if(nsubs != 0) {
-						sel_ptr = (NclSelectionRecord*)NclMalloc (sizeof(NclSelectionRecord));
+						sel_ptr = _NclGetVarSelRec(lhs_var->u.data_var);
 						sel_ptr->n_entries = nsubs;
 					} else {
 						sel_ptr = NULL;
@@ -1838,27 +1802,27 @@ NclExecuteReturnStatus _NclExecute
 					if(estatus != NhlFATAL) {
 						for(i=0;i<nsubs;i++) {
 							data =_NclPop();
-							switch(data.u.sub_rec->sub_type) {
+							switch(data.u.sub_rec.sub_type) {
 							case INT_VECT:
 /*
 * Need to free some stuff here
 */							
-								ret = _NclBuildVSelection(lhs_var->u.data_var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+								ret = _NclBuildVSelection(lhs_var->u.data_var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 								break;
 							case INT_RANGE:
 /*
 * Need to free some stuff here
 */								
-								ret = _NclBuildRSelection(lhs_var->u.data_var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+								ret = _NclBuildRSelection(lhs_var->u.data_var,&data.u.sub_rec.u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 								break;
 							case COORD_VECT:
-								ret = _NclBuildCoordVSelection(lhs_var->u.data_var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+								ret = _NclBuildCoordVSelection(lhs_var->u.data_var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 								break;
 							case COORD_RANGE:
-								ret = _NclBuildCoordRSelection(lhs_var->u.data_var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+								ret = _NclBuildCoordRSelection(lhs_var->u.data_var,&data.u.sub_rec.u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 								break;
 							}
-							_NclFreeSubRec(data.u.sub_rec);
+							_NclFreeSubRec(&data.u.sub_rec);
 							if(ret < NhlWARNING) {
 								estatus = NhlFATAL;
 								break;
@@ -1871,14 +1835,6 @@ NclExecuteReturnStatus _NclExecute
 							rhs_md = rhs.u.data_obj;
 							if(rhs_md != NULL) {
 								ret = _NclAssignToVar(lhs_var->u.data_var,rhs_md,sel_ptr);
-								if(sel_ptr != NULL) {
-									for(i = 0; i <  sel_ptr->n_entries; i++) { 
-										if(sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
-											NclFree(sel_ptr->selection[i].u.vec.ind);
-										}
-									}
-									NclFree(sel_ptr);
-								}
 								if(rhs_md->obj.status != PERMANENT) {
 									_NclDestroyObj((NclObj)rhs_md);
 								}
@@ -1895,14 +1851,6 @@ NclExecuteReturnStatus _NclExecute
 * to visit each element anyways
 */
 							estatus = _NclAssignVarToVar(lhs_var->u.data_var,sel_ptr,rhs.u.data_var,NULL);
-							if(sel_ptr != NULL) {
-								for(i = 0; i <  sel_ptr->n_entries; i++) { 
-									if(sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
-										NclFree(sel_ptr->selection[i].u.vec.ind);
-									}
-								}
-								NclFree(sel_ptr);
-							}
 							if(rhs.u.data_var->obj.status != PERMANENT) {
 								_NclDestroyObj((NclObj)rhs.u.data_var);
 							}
@@ -2661,25 +2609,25 @@ NclExecuteReturnStatus _NclExecute
 				if(var->u.data_var != NULL) {
 					if(_NclVarIsAtt(var->u.data_var,attname)) {
 						if(nsubs == 1) {
-							sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
+							sel_ptr = _NclGetVarSelRec(var->u.data_var);
 							sel_ptr->n_entries = 1;
 							data =_NclPop();
-							if(data.u.sub_rec->name != NULL) {
+							if(data.u.sub_rec.name != NULL) {
 								NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with variable attributes");
 								estatus = NhlWARNING;
 							}
-							switch(data.u.sub_rec->sub_type) {
+							switch(data.u.sub_rec.sub_type) {
 							case INT_VECT:
 /*
 * Need to free some stuff here
 */						
-								ret = _NclBuildVSelection(NULL,data.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+								ret = _NclBuildVSelection(NULL,&data.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 								break;
 							case INT_RANGE:
 /*
 * Need to free some stuff here
 */								
-								ret = _NclBuildRSelection(NULL,data.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+								ret = _NclBuildRSelection(NULL,&data.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 								break;
 							case COORD_VECT:
 							case COORD_RANGE:
@@ -2687,7 +2635,7 @@ NclExecuteReturnStatus _NclExecute
 								estatus = NhlFATAL;
 								break;
 							}
-						_NclFreeSubRec(data.u.sub_rec);
+							_NclFreeSubRec(&data.u.sub_rec);
 							if(ret < NhlWARNING) {
 								estatus = ret;
 								break;
@@ -2698,12 +2646,6 @@ NclExecuteReturnStatus _NclExecute
 						}
 						if(estatus != NhlFATAL) {
 							data.u.data_obj = _NclReadAtt(var->u.data_var,attname,sel_ptr);
-							if(sel_ptr != NULL) {
-								if(sel_ptr->selection[0].sel_type == Ncl_VECSUBSCR) {	
-									NclFree(sel_ptr->selection[0].u.vec.ind);
-								}
-								NclFree(sel_ptr);
-							}
 							if(data.u.data_obj == NULL) {
 								data.kind = NclStk_NOVAL;
 								estatus = NhlFATAL;
@@ -2808,19 +2750,19 @@ NclExecuteReturnStatus _NclExecute
 						if(coord_var != NULL) {
 							if(_NclVarIsAtt(coord_var,attname)) {
 								if(nsubs == 1) {
-									sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
+									sel_ptr = _NclGetVarSelRec(coord_var);
 									sel_ptr->n_entries = 1;
 									data =_NclPop();
-									if(data.u.sub_rec->name != NULL) {
+									if(data.u.sub_rec.name != NULL) {
 										NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with variable attributes");
 										estatus = NhlWARNING;
 									}
-									switch(data.u.sub_rec->sub_type) {
+									switch(data.u.sub_rec.sub_type) {
 									case INT_VECT:
-										ret = _NclBuildVSelection(NULL,data.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+										ret = _NclBuildVSelection(NULL,&data.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 										break;
 									case INT_RANGE:
-										ret = _NclBuildRSelection(NULL,data.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+										ret = _NclBuildRSelection(NULL,&data.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 										break;
 									case COORD_VECT:
 									case COORD_RANGE:
@@ -2828,7 +2770,7 @@ NclExecuteReturnStatus _NclExecute
 										estatus = NhlFATAL;
 										break;
 									}
-									_NclFreeSubRec(data.u.sub_rec);
+									_NclFreeSubRec(&data.u.sub_rec);
 									if(ret < NhlWARNING) {
 										estatus = ret;
 										break;
@@ -2839,12 +2781,6 @@ NclExecuteReturnStatus _NclExecute
 								}
 								if(estatus != NhlFATAL) {
 									data.u.data_obj = _NclReadAtt(coord_var,attname,sel_ptr);
-									if(sel_ptr != NULL) {
-										if(sel_ptr->selection[0].sel_type == Ncl_VECSUBSCR) {
-											NclFree(sel_ptr->selection[0].u.vec.ind);
-										}
-										NclFree(sel_ptr);
-									}
 									if(data.u.data_obj == NULL) {
 										data.kind = NclStk_NOVAL;
 										estatus = NhlFATAL;
@@ -2927,25 +2863,25 @@ NclExecuteReturnStatus _NclExecute
 					if(nsubs == 0) {
 						sel_ptr = NULL;
 					} else if(nsubs == 1){
-						sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
+						sel_ptr = _NclGetVarSelRec(var->u.data_var);
 						sel_ptr->n_entries = 1;
 						data =_NclPop();
-						if(data.u.sub_rec->name != NULL) {
+						if(data.u.sub_rec.name != NULL) {
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with coordinate variables since only one dimension applies");
 							estatus = NhlWARNING;
 						}
-						switch(data.u.sub_rec->sub_type) {
+						switch(data.u.sub_rec.sub_type) {
 						case INT_VECT:
 /*
 * Need to free some stuff here
 */						
-							ret = _NclBuildVSelection(var->u.data_var,data.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+							ret = _NclBuildVSelection(var->u.data_var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 							break;
 						case INT_RANGE:
 /*
 * Need to free some stuff here
 */							
-							ret = _NclBuildRSelection(var->u.data_var,data.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+							ret = _NclBuildRSelection(var->u.data_var,&data.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 							break;
 						case COORD_VECT:
 						case COORD_RANGE:
@@ -2955,7 +2891,7 @@ NclExecuteReturnStatus _NclExecute
 							estatus = NhlFATAL;
 							break;
 						}
-						_NclFreeSubRec(data.u.sub_rec);
+						_NclFreeSubRec(&data.u.sub_rec);
 						if(ret < NhlWARNING)
 							estatus = NhlFATAL;
 
@@ -3001,14 +2937,6 @@ NclExecuteReturnStatus _NclExecute
 						}
 					} else {	
 						_NclCleanUpStack(1);
-					}
-					if(sel_ptr != NULL) {
-						for(i = 0; i <  sel_ptr->n_entries; i++) { 
-							if(sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
-								NclFree(sel_ptr->selection[i].u.vec.ind);
-							}
-						}
-						NclFree(sel_ptr);
 					}
 				}
 			}
@@ -3099,25 +3027,25 @@ NclExecuteReturnStatus _NclExecute
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to subscript undefined coordinate variable attribute");
 							estatus = NhlFATAL;
 						} else if(nsubs == 1) {
-							sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
+							sel_ptr = _NclGetVarSelRec(coord_var);
 							sel_ptr->n_entries = 1;
 							data1 =_NclPop();
-							if(data1.u.sub_rec->name != NULL) {
+							if(data1.u.sub_rec.name != NULL) {
 								NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with variable attributes");
 								estatus = NhlWARNING;
 							}
-							switch(data1.u.sub_rec->sub_type) {
+							switch(data1.u.sub_rec.sub_type) {
 							case INT_VECT:
 	/*
 	* Need to free some stuff here
 	*/						
-								ret =_NclBuildVSelection(NULL,data1.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+								ret =_NclBuildVSelection(NULL,&data1.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 								break;
 							case INT_RANGE:
 	/*
 	* Need to free some stuff here
 	*/								
-								ret =_NclBuildRSelection(NULL,data1.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+								ret =_NclBuildRSelection(NULL,&data1.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 								break;
 							case COORD_VECT:
 							case COORD_RANGE:
@@ -3125,7 +3053,7 @@ NclExecuteReturnStatus _NclExecute
 								estatus = NhlFATAL;
 								break;
 							}
-							_NclFreeSubRec(data1.u.sub_rec);
+							_NclFreeSubRec(&data1.u.sub_rec);
 							if(ret < NhlWARNING) 
 								estatus = NhlFATAL;
 						} else if(nsubs != 0){
@@ -3154,16 +3082,7 @@ NclExecuteReturnStatus _NclExecute
 							if( ret < NhlINFO) {
 								estatus = ret;
 							}
-							if(sel_ptr != NULL) {
-								if(sel_ptr->selection[0].sel_type == Ncl_VECSUBSCR) {
-									NclFree(sel_ptr->selection[0].u.vec.ind);
-								}
-								NclFree(sel_ptr);
-							}
 						} else {
-							if(sel_ptr !=  NULL) {
-								NclFree(sel_ptr);
-							}
 							_NclCleanUpStack(1);
 						}
 					} else {
@@ -3174,6 +3093,7 @@ NclExecuteReturnStatus _NclExecute
 				}
 			}
 			break;
+			case VARVAL_COORD_OP:
 			case PARAM_VAR_COORD_OP:
 			case VAR_COORD_OP: {
 				NclStackEntry *var = NULL,cvar;
@@ -3230,35 +3150,34 @@ NclExecuteReturnStatus _NclExecute
 					if(nsubs == 0) {
 						sel_ptr = NULL;
 					} else if(nsubs == 1){
-						sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
+						sel_ptr = _NclGetVarSelRec(var->u.data_var);
 						sel_ptr->n_entries = 1;
 						data =_NclPop();
-						if(data.u.sub_rec->name != NULL) {
+						if(data.u.sub_rec.name != NULL) {
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with coordinate variables since only one dimension applies");
 							estatus = NhlWARNING;
 						}
-						switch(data.u.sub_rec->sub_type) {
+						switch(data.u.sub_rec.sub_type) {
 						case INT_VECT:
 /*
 * Need to free some stuff here
 */						
-							ret = _NclBuildVSelection(var->u.data_var,data.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+							ret = _NclBuildVSelection(var->u.data_var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 							break;
 						case INT_RANGE:
 /*
 * Need to free some stuff here
 */							
-							ret = _NclBuildRSelection(var->u.data_var,data.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+							ret = _NclBuildRSelection(var->u.data_var,&data.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 							break;
 						case COORD_VECT:
 						case COORD_RANGE:
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with coordinate variables ");
-							NclFree(sel_ptr);
 							sel_ptr = NULL;
 							estatus = NhlFATAL;
 							break;
 						}
-						_NclFreeSubRec(data.u.sub_rec);
+						_NclFreeSubRec(&data.u.sub_rec);
 						if(ret < NhlWARNING)
 							estatus = NhlFATAL;
 					} else {
@@ -3275,14 +3194,6 @@ NclExecuteReturnStatus _NclExecute
 							estatus = NhlFATAL;
 						}
 					} 
-					if(sel_ptr != NULL) {
-						for(i = 0; i <  sel_ptr->n_entries; i++) { 
-							if(sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
-								NclFree(sel_ptr->selection[i].u.vec.ind);
-							}
-						}
-						NclFree(sel_ptr);
-					}
 				}
 			}
 			break;
@@ -3368,21 +3279,21 @@ NclExecuteReturnStatus _NclExecute
 								sel_ptr->n_entries = nsubs;
 								for(i = 0 ; i < nsubs; i++) {
 									data = _NclPop();
-									switch(data.u.sub_rec->sub_type) {
+									switch(data.u.sub_rec.sub_type) {
 									case INT_VECT:
-										estatus = _NclBuildFileVSelection(file,var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+										estatus = _NclBuildFileVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 										break;
 									case INT_RANGE:
-										estatus = _NclBuildFileRSelection(file,var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+										estatus = _NclBuildFileRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 										break;
 									case COORD_VECT:
-										estatus = _NclBuildFileCoordVSelection(file,var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+										estatus = _NclBuildFileCoordVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 										break;
 									case COORD_RANGE:
-										estatus = _NclBuildFileCoordRSelection(file,var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+										estatus = _NclBuildFileCoordRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
 										break;
 									}
-									_NclFreeSubRec(data.u.sub_rec);
+									_NclFreeSubRec(&data.u.sub_rec);
 								}
 							} else if((nsubs != 0)&&(nsubs == subs_expected)) { 
 								sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
@@ -3391,21 +3302,21 @@ NclExecuteReturnStatus _NclExecute
 								for(i = 0 ; i < sel_ptr->n_entries; i++) {
 									if(file->file.file_dim_info[file->file.var_info[index]->file_dim_num[sel_ptr->n_entries - i - 1]]->dim_size != 1){
 										data = _NclPop();
-										switch(data.u.sub_rec->sub_type) {
+										switch(data.u.sub_rec.sub_type) {
 										case INT_VECT:
-											estatus = _NclBuildFileVSelection(file,var,data.u.sub_rec->u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec->name);
+											estatus = _NclBuildFileVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
 											break;
 										case INT_RANGE:
-											estatus = _NclBuildFileRSelection(file,var,data.u.sub_rec->u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec->name);
+											estatus = _NclBuildFileRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
 											break;
 										case COORD_VECT:
-											estatus = _NclBuildFileCoordVSelection(file,var,data.u.sub_rec->u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec->name);
+											estatus = _NclBuildFileCoordVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
 											break;
 										case COORD_RANGE:
-											estatus = _NclBuildFileCoordRSelection(file,var,data.u.sub_rec->u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec->name);
+											estatus = _NclBuildFileCoordRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
 											break;
 										}
-										_NclFreeSubRec(data.u.sub_rec);
+										_NclFreeSubRec(&data.u.sub_rec);
 									} else {
 			
 										sel_ptr->selection[sel_ptr->n_entries - i - 1].sel_type = Ncl_SUBSCR;
@@ -3497,6 +3408,7 @@ NclExecuteReturnStatus _NclExecute
 				break;
 			}
 			case PARAM_FILE_VAR_OP:
+			case FILE_VARVAL_OP : 
 			case FILE_VAR_OP : {
 /*
 * Changed to a two operand function 1/31/96
@@ -3586,21 +3498,21 @@ NclExecuteReturnStatus _NclExecute
 									for(i=0;i<sel_ptr->n_entries;i++) {
 										if((file->file.file_dim_info[file->file.var_info[index]->file_dim_num[sel_ptr->n_entries - i - 1]]->dim_size != 1)||(nsubs == file->file.var_info[index]->num_dimensions)){
 											data =_NclPop();
-											switch(data.u.sub_rec->sub_type) {
+											switch(data.u.sub_rec.sub_type) {
 											case INT_VECT:
-												ret = _NclBuildFileVSelection(file,var,data.u.sub_rec->u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec->name);
+												ret = _NclBuildFileVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
 												break;
 											case INT_RANGE:
-												ret = _NclBuildFileRSelection(file,var,data.u.sub_rec->u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec->name);
+												ret = _NclBuildFileRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
 												break;
 											case COORD_VECT:
-												estatus = _NclBuildFileCoordVSelection(file,var,data.u.sub_rec->u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec->name);
+												estatus = _NclBuildFileCoordVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
 												break;
 											case COORD_RANGE:
-												estatus = _NclBuildFileCoordRSelection(file,var,data.u.sub_rec->u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec->name);
+												estatus = _NclBuildFileCoordRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
 												break;
 											}
-											_NclFreeSubRec(data.u.sub_rec);
+											_NclFreeSubRec(&data.u.sub_rec);
 											if(ret < NhlWARNING) {
 												estatus = NhlFATAL;
 											}
@@ -3708,25 +3620,25 @@ NclExecuteReturnStatus _NclExecute
 				var = _NclRetrieveRec(thesym,WRITE_IT);
 				if(var->u.data_var != NULL) {
 					if(nsubs == 1) {
-						sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
+						sel_ptr = _NclGetVarSelRec(var->u.data_var);
 						sel_ptr->n_entries = 1;
 						data1 =_NclPop();
-						if(data1.u.sub_rec->name != NULL) {
+						if(data1.u.sub_rec.name != NULL) {
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with variable attributes");
 							estatus = NhlWARNING;
 						}
-						switch(data1.u.sub_rec->sub_type) {
+						switch(data1.u.sub_rec.sub_type) {
 						case INT_VECT:
 /*
 * Need to free some stuff here
 */						
-							ret =_NclBuildVSelection(NULL,data1.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+							ret =_NclBuildVSelection(NULL,&data1.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 							break;
 						case INT_RANGE:
 /*
 * Need to free some stuff here
 */								
-							ret =_NclBuildRSelection(NULL,data1.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+							ret =_NclBuildRSelection(NULL,&data1.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 							break;
 						case COORD_VECT:
 						case COORD_RANGE:
@@ -3734,7 +3646,7 @@ NclExecuteReturnStatus _NclExecute
 							estatus = NhlFATAL;
 							break;
 						}
-						_NclFreeSubRec(data1.u.sub_rec);
+						 _NclFreeSubRec(&data1.u.sub_rec);
 						if(ret < NhlWARNING) 
 							estatus = NhlFATAL;
 					} else if(nsubs != 0){
@@ -3763,16 +3675,7 @@ NclExecuteReturnStatus _NclExecute
 						if( ret < NhlINFO) {
 							estatus = ret;
 						}
-						if(sel_ptr != NULL) {
-							if(sel_ptr->selection[0].sel_type == Ncl_VECSUBSCR) {
-								NclFree(sel_ptr->selection[0].u.vec.ind);
-							}
-							NclFree(sel_ptr);
-						}
 					} else {
-						if(sel_ptr !=  NULL) {
-							NclFree(sel_ptr);
-						}
 						_NclCleanUpStack(1);
 					}
 				} else {
@@ -3892,16 +3795,16 @@ NclExecuteReturnStatus _NclExecute
 								sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
 								sel_ptr->n_entries = 1;
 								data1 =_NclPop();
-								if(data1.u.sub_rec->name != NULL) {
+								if(data1.u.sub_rec.name != NULL) {
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with variable attributes");
 									estatus = NhlWARNING;
 								}
-								switch(data1.u.sub_rec->sub_type) {
+								switch(data1.u.sub_rec.sub_type) {
 								case INT_VECT:
-									ret =_NclBuildVSelection(NULL,data1.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+									ret =_NclBuildVSelection(NULL,&data1.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 								break;
 								case INT_RANGE:
-									ret =_NclBuildRSelection(NULL,data1.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+									ret =_NclBuildRSelection(NULL,&data1.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 									break;
 								case COORD_VECT:
 								case COORD_RANGE:
@@ -3909,7 +3812,7 @@ NclExecuteReturnStatus _NclExecute
 									estatus = NhlFATAL;
 									break;
 								}
-								 _NclFreeSubRec(data1.u.sub_rec);
+								_NclFreeSubRec(&data1.u.sub_rec);
 								if(ret < NhlWARNING)
 									estatus = NhlFATAL;
 							} else if(nsubs != 0){
@@ -4043,22 +3946,22 @@ NclExecuteReturnStatus _NclExecute
 								sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
 								sel_ptr->n_entries = 1;
 								data1 =_NclPop();
-								if(data1.u.sub_rec->name != NULL) {
+								if(data1.u.sub_rec.name != NULL) {
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with variable attributes");
 									estatus = NhlWARNING;
 								}
-								switch(data1.u.sub_rec->sub_type) {
+								switch(data1.u.sub_rec.sub_type) {
 								case INT_VECT:
 /*
 * Need to free some stuff here
 */						
-									ret =_NclBuildVSelection(NULL,data1.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+									ret =_NclBuildVSelection(NULL,&data1.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 									break;
 								case INT_RANGE:
 /*
 * Need to free some stuff here
 */								
-									ret =_NclBuildRSelection(NULL,data1.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+									ret =_NclBuildRSelection(NULL,&data1.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 									break;
 								case COORD_VECT:
 								case COORD_RANGE:
@@ -4066,7 +3969,7 @@ NclExecuteReturnStatus _NclExecute
 									estatus = NhlFATAL;
 									break;
 								}
-								_NclFreeSubRec(data1.u.sub_rec);
+								_NclFreeSubRec(&data1.u.sub_rec);
 								if(ret < NhlWARNING) 
 									estatus = NhlFATAL;
 							} else if(nsubs != 0){
@@ -4190,22 +4093,22 @@ NclExecuteReturnStatus _NclExecute
 								sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
 								sel_ptr->n_entries = 1;
 								data =_NclPop();
-								if(data.u.sub_rec->name != NULL) {
+								if(data.u.sub_rec.name != NULL) {
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with coordinate variables since only one dimension applies");
 									estatus = NhlWARNING;
 								}
-								switch(data.u.sub_rec->sub_type) {
+								switch(data.u.sub_rec.sub_type) {
 								case INT_VECT:
 /*
 * Need to free some stuff here
 */						
-									estatus = _NclBuildFileVSelection(file,coord_name,data.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+									estatus = _NclBuildFileVSelection(file,coord_name,&data.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 									break;
 								case INT_RANGE:
 /*
 * Need to free some stuff here
 */							
-									estatus = _NclBuildFileRSelection(file,coord_name,data.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+									estatus = _NclBuildFileRSelection(file,coord_name,&data.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 									break;
 								case COORD_VECT:
 								case COORD_RANGE:
@@ -4215,7 +4118,7 @@ NclExecuteReturnStatus _NclExecute
 									estatus = NhlFATAL;
 									break;
 								}
-								_NclFreeSubRec(data.u.sub_rec);
+								_NclFreeSubRec(&data.u.sub_rec);
 							} else {
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate variables have only one dimension, %d subscripts used on coordinate variable reference",nsubs);
 								_NclCleanUpStack(nsubs +1);
@@ -4384,22 +4287,22 @@ NclExecuteReturnStatus _NclExecute
 								sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
 								sel_ptr->n_entries = 1;
 								data =_NclPop();
-								if(data.u.sub_rec->name != NULL) {
+								if(data.u.sub_rec.name != NULL) {
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with variable attributes");
 									estatus = NhlWARNING;
 								}
-								switch(data.u.sub_rec->sub_type) {
+								switch(data.u.sub_rec.sub_type) {
 								case INT_VECT:
 	/*
 	* Need to free some stuff here
 	*/						
-									ret = _NclBuildVSelection(NULL,data.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+									ret = _NclBuildVSelection(NULL,&data.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 									break;
 								case INT_RANGE:
 	/*
 	* Need to free some stuff here
 	*/								
-									ret = _NclBuildRSelection(NULL,data.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+									ret = _NclBuildRSelection(NULL,&data.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 									break;
 								case COORD_VECT:
 								case COORD_RANGE:
@@ -4407,7 +4310,7 @@ NclExecuteReturnStatus _NclExecute
 									estatus = NhlFATAL;
 									break;
 								}
-								_NclFreeSubRec(data.u.sub_rec);
+								_NclFreeSubRec(&data.u.sub_rec);
 								if(ret < NhlWARNING)
 									estatus = ret;
 							} else if(nsubs != 0) {
@@ -4515,22 +4418,22 @@ NclExecuteReturnStatus _NclExecute
 							sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
 							sel_ptr->n_entries = 1;
 							data =_NclPop();
-							if(data.u.sub_rec->name != NULL) {
+							if(data.u.sub_rec.name != NULL) {
 								NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with variable attributes");
 								estatus = NhlWARNING;
 							}
-							switch(data.u.sub_rec->sub_type) {
+							switch(data.u.sub_rec.sub_type) {
 							case INT_VECT:
 /*
 * Need to free some stuff here
 */						
-								ret = _NclBuildVSelection(NULL,data.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+								ret = _NclBuildVSelection(NULL,&data.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 								break;
 							case INT_RANGE:
 /*
 * Need to free some stuff here
 */								
-								ret = _NclBuildRSelection(NULL,data.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+								ret = _NclBuildRSelection(NULL,&data.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 								break;
 							case COORD_VECT:
 							case COORD_RANGE:
@@ -4538,7 +4441,7 @@ NclExecuteReturnStatus _NclExecute
 								estatus = NhlFATAL;
 								break;
 							}
-							_NclFreeSubRec(data.u.sub_rec);
+							_NclFreeSubRec(&data.u.sub_rec);
 							if(ret < NhlWARNING)
 								estatus = ret;
 						} else if(nsubs != 0) {
@@ -4568,6 +4471,7 @@ NclExecuteReturnStatus _NclExecute
 				}
 				break;
 			}
+			case FILEVARVAL_COORD_OP:
 			case FILEVAR_COORD_OP:
 			case PARAM_FILEVAR_COORD_OP: {
 				NclSymbol *file_sym;
@@ -4649,22 +4553,22 @@ NclExecuteReturnStatus _NclExecute
 							sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
 							sel_ptr->n_entries = 1;
 							data =_NclPop();
-							if(data.u.sub_rec->name != NULL) {
+							if(data.u.sub_rec.name != NULL) {
 								NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with coordinate variables since only one dimension applies");
 								estatus = NhlWARNING;
 							}
-							switch(data.u.sub_rec->sub_type) {
+							switch(data.u.sub_rec.sub_type) {
 							case INT_VECT:
 /*
 * Need to free some stuff here
 */						
-								ret = _NclBuildFileVSelection(file,var_name,data.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+								ret = _NclBuildFileVSelection(file,var_name,&data.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
 								break;
 							case INT_RANGE:
 /*
 * Need to free some stuff here
 */							
-								ret = _NclBuildFileRSelection(file,var_name,data.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+								ret = _NclBuildFileRSelection(file,var_name,&data.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
 								break;
 							case COORD_VECT:
 							case COORD_RANGE:
@@ -4674,7 +4578,7 @@ NclExecuteReturnStatus _NclExecute
 								estatus = NhlFATAL;
 								break;
 							}
-							_NclFreeSubRec(data.u.sub_rec);
+							_NclFreeSubRec(&data.u.sub_rec);
 							if(ret < NhlWARNING)
 								estatus = NhlFATAL;
 						} else {
@@ -4748,31 +4652,31 @@ NclExecuteReturnStatus _NclExecute
 /*
 * This branch is where wholesale assigment of rhs to lhs occurs. including coords,atts and values
 */
-					rhs_sel_ptr = (NclSelectionRecord*)NclMalloc((unsigned)sizeof(NclSelectionRecord));
+					rhs_sel_ptr = _NclGetVarSelRec(rhs_var->u.data_var);
 					rhs_sel_ptr->n_entries = rhs_nsubs;
 					for(i=0;i<rhs_nsubs;i++) {
 						data =_NclPop();
-						switch(data.u.sub_rec->sub_type) {
+						switch(data.u.sub_rec.sub_type) {
 						case INT_VECT:
 /*
 * Need to free some stuff here
 */							
-							ret = _NclBuildVSelection(rhs_var->u.data_var,data.u.sub_rec->u.vec,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec->name);
+							ret = _NclBuildVSelection(rhs_var->u.data_var,&data.u.sub_rec.u.vec,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec.name);
 							break;
 						case INT_RANGE:
 /*
 * Need to free some stuff here
 */								
-							ret = _NclBuildRSelection(rhs_var->u.data_var,data.u.sub_rec->u.range,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec->name);
+							ret = _NclBuildRSelection(rhs_var->u.data_var,&data.u.sub_rec.u.range,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec.name);
 							break;
 						case COORD_VECT:
-							ret = _NclBuildCoordVSelection(rhs_var->u.data_var,data.u.sub_rec->u.vec,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec->name);
+							ret = _NclBuildCoordVSelection(rhs_var->u.data_var,&data.u.sub_rec.u.vec,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec.name);
 							break;
 						case COORD_RANGE:
-							ret = _NclBuildCoordRSelection(rhs_var->u.data_var,data.u.sub_rec->u.range,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec->name);
+							ret = _NclBuildCoordRSelection(rhs_var->u.data_var,&data.u.sub_rec.u.range,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec.name);
 							break;
 						}
-						_NclFreeSubRec(data.u.sub_rec);
+						_NclFreeSubRec(&data.u.sub_rec);
 						if(ret < NhlWARNING) {
 							estatus = NhlFATAL;
 							break;
@@ -4784,14 +4688,6 @@ NclExecuteReturnStatus _NclExecute
 						if(lhs_var->u.data_var == NULL) {
 							estatus = NhlFATAL;
 						} else {
-							if(rhs_sel_ptr != NULL) {
-								for(i = 0; i <  rhs_sel_ptr->n_entries; i++) {
-									if(rhs_sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
-										NclFree(rhs_sel_ptr->selection[i].u.vec.ind);
-									}
-								}
-								NclFree(rhs_sel_ptr);
-							}
 							if(!_NclSetStatus((NclObj)lhs_var->u.data_var,PERMANENT)) {	
 								tmp_var = lhs_var->u.data_var;
 								lhs_var->u.data_var = _NclCopyVar(lhs_var->u.data_var,NULL,NULL);
@@ -4834,32 +4730,32 @@ NclExecuteReturnStatus _NclExecute
 						estatus = NhlFATAL;
 						_NclCleanUpStack(rhs_nsubs);
 					} else {
-						rhs_sel_ptr = (NclSelectionRecord*)NclMalloc((unsigned)sizeof(NclSelectionRecord));
+						rhs_sel_ptr = _NclGetVarSelRec(rhs_var->u.data_var);
 						rhs_sel_ptr->n_entries = rhs_nsubs;
 				
 						for(i=0;i<rhs_nsubs;i++) {
 							data =_NclPop();
-							switch(data.u.sub_rec->sub_type) {
+							switch(data.u.sub_rec.sub_type) {
 							case INT_VECT:
 /*
 * Need to free some stuff here
 */							
-								ret = _NclBuildVSelection(rhs_var->u.data_var,data.u.sub_rec->u.vec,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec->name);
+								ret = _NclBuildVSelection(rhs_var->u.data_var,&data.u.sub_rec.u.vec,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec.name);
 								break;
 							case INT_RANGE:
 /*
 * Need to free some stuff here
 */								
-								ret = _NclBuildRSelection(rhs_var->u.data_var,data.u.sub_rec->u.range,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec->name);
+								ret = _NclBuildRSelection(rhs_var->u.data_var,&data.u.sub_rec.u.range,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec.name);
 								break;
 							case COORD_VECT:
-								ret = _NclBuildCoordVSelection(rhs_var->u.data_var,data.u.sub_rec->u.vec,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec->name);
+								ret = _NclBuildCoordVSelection(rhs_var->u.data_var,&data.u.sub_rec.u.vec,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec.name);
 								break;
 							case COORD_RANGE:
-								ret = _NclBuildCoordRSelection(rhs_var->u.data_var,data.u.sub_rec->u.range,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec->name);
+								ret = _NclBuildCoordRSelection(rhs_var->u.data_var,&data.u.sub_rec.u.range,&(rhs_sel_ptr->selection[rhs_nsubs - i - 1]),rhs_nsubs - i - 1,data.u.sub_rec.name);
 								break;
 							}
-							_NclFreeSubRec(data.u.sub_rec);
+							_NclFreeSubRec(&data.u.sub_rec);
 							if(ret < NhlWARNING) {
 								estatus = NhlFATAL;
 								break;
@@ -4873,31 +4769,31 @@ NclExecuteReturnStatus _NclExecute
 						estatus = NhlFATAL;
 						_NclCleanUpStack(lhs_nsubs);
 					} else if (estatus != NhlFATAL) {
-						lhs_sel_ptr = (NclSelectionRecord*)NclMalloc((unsigned)sizeof(NclSelectionRecord));
+						lhs_sel_ptr = _NclGetVarSelRec(lhs_var->u.data_var); 
 						lhs_sel_ptr->n_entries = lhs_nsubs;
 						for(i=0;i<lhs_nsubs;i++) {
 							data =_NclPop();
-							switch(data.u.sub_rec->sub_type) {
+							switch(data.u.sub_rec.sub_type) {
 							case INT_VECT:
 /*
 * Need to free some stuff here
 */							
-								ret = _NclBuildVSelection(lhs_var->u.data_var,data.u.sub_rec->u.vec,&(lhs_sel_ptr->selection[lhs_nsubs - i - 1]),lhs_nsubs - i - 1,data.u.sub_rec->name);
+								ret = _NclBuildVSelection(lhs_var->u.data_var,&data.u.sub_rec.u.vec,&(lhs_sel_ptr->selection[lhs_nsubs - i - 1]),lhs_nsubs - i - 1,data.u.sub_rec.name);
 								break;
 							case INT_RANGE:
 /*
 * Need to free some stuff here
 */									
-								ret = _NclBuildRSelection(lhs_var->u.data_var,data.u.sub_rec->u.range,&(lhs_sel_ptr->selection[lhs_nsubs - i - 1]),lhs_nsubs - i - 1,data.u.sub_rec->name);
+								ret = _NclBuildRSelection(lhs_var->u.data_var,&data.u.sub_rec.u.range,&(lhs_sel_ptr->selection[lhs_nsubs - i - 1]),lhs_nsubs - i - 1,data.u.sub_rec.name);
 								break;
 							case COORD_VECT:
-								ret = _NclBuildCoordVSelection(lhs_var->u.data_var,data.u.sub_rec->u.vec,&(lhs_sel_ptr->selection[lhs_nsubs - i - 1]),lhs_nsubs - i - 1,data.u.sub_rec->name);
+								ret = _NclBuildCoordVSelection(lhs_var->u.data_var,&data.u.sub_rec.u.vec,&(lhs_sel_ptr->selection[lhs_nsubs - i - 1]),lhs_nsubs - i - 1,data.u.sub_rec.name);
 								break;
 							case COORD_RANGE:
-								ret = _NclBuildCoordRSelection(lhs_var->u.data_var,data.u.sub_rec->u.range,&(lhs_sel_ptr->selection[lhs_nsubs - i - 1]),lhs_nsubs - i - 1,data.u.sub_rec->name);
+								ret = _NclBuildCoordRSelection(lhs_var->u.data_var,&data.u.sub_rec.u.range,&(lhs_sel_ptr->selection[lhs_nsubs - i - 1]),lhs_nsubs - i - 1,data.u.sub_rec.name);
 								break;
 							}
-							_NclFreeSubRec(data.u.sub_rec);
+							_NclFreeSubRec(&data.u.sub_rec);
 							if(ret < NhlWARNING) {
 								estatus = NhlFATAL;
 								break;
@@ -4906,22 +4802,6 @@ NclExecuteReturnStatus _NclExecute
 					} 
 					if(estatus != NhlFATAL) {
 						ret = _NclAssignVarToVar(lhs_var->u.data_var,lhs_sel_ptr,rhs_var->u.data_var,rhs_sel_ptr);
-						if(lhs_sel_ptr != NULL) {
-							for(i = 0; i <  lhs_sel_ptr->n_entries; i++) { 
-								if(lhs_sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
-									NclFree(lhs_sel_ptr->selection[i].u.vec.ind);
-								}
-							}
-							NclFree(lhs_sel_ptr);
-						}
-						if(rhs_sel_ptr != NULL) {
-							for(i = 0; i <  rhs_sel_ptr->n_entries; i++) { 
-								if(rhs_sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
-									NclFree(rhs_sel_ptr->selection[i].u.vec.ind);
-								}
-							}
-							NclFree(rhs_sel_ptr);
-						}
 						if(ret < NhlINFO) {
 							estatus = ret;
 						}

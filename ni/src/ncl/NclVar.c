@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.35 1996-12-12 22:58:09 ethan Exp $
+ *      $Id: NclVar.c,v 1.36 1996-12-20 00:42:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -344,14 +344,14 @@ NclScalar *new_missing;
 	NclSelection *thesel;
 	NclMultiDValData thevalue;
 
-	for(i=0; i< NCL_MAX_DIMENSIONS; i++) {
-		dims_ref[i] = 0;
-	}
 	thevalue = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
 		
 	
 	if(thevalue != NULL) {
 		if(sel_ptr != NULL) {
+			for(i=0; i< sel_ptr->n_entries; i++) {
+				dims_ref[i] = 0;
+			}
 			thesel = sel_ptr->selection;
 			if(sel_ptr->n_entries != self->var.n_dims) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript has %d dimensions and %d dimensions were needed to reference variable %s",sel_ptr->n_entries,self->var.n_dims,self->var.thesym->name);
@@ -359,15 +359,15 @@ NclScalar *new_missing;
 			}
 			sel_ptr->selected_from_sym = self->var.thesym;
 			sel_ptr->selected_from_var = self;
+			for(i = sel_ptr->n_entries-1; i >= 0; i--) {
+					dims_ref[thesel[i].dim_num]++;
+			}
 			for(i = 0; i<sel_ptr->n_entries; i++) {
-				if(!dims_ref[thesel[i].dim_num]) {
-					dims_ref[thesel[i].dim_num] = 1;
-				} else {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension referenced more than once in subscript");
+				if(dims_ref[i] != 1) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension referenced more than once in subscript or not at all");
 					return(NULL);
 				}
 			}
-			
 			return(_NclReadSubSection((NclData)thevalue,sel_ptr,new_missing));
 		} else {
 			return((NclData)thevalue);
@@ -818,7 +818,7 @@ NclStatus status)
 			_NclCallCallBacks((NclObj)var_out,CREATED);
 		}
 	}
-	
+	var_out->var.sel_rec = NULL;
 	return(var_out);
 }
 
@@ -852,6 +852,14 @@ struct _NclObjRec*	self;
 	}
 	if(self_var->obj.cblist != NULL) {
 		_NhlCBDestroy(self_var->obj.cblist);
+	}
+	if(self_var->var.sel_rec != NULL) {
+		for(i = 0; i <  self_var->var.sel_rec->n_entries; i++) {
+			if(self_var->var.sel_rec->selection[i].sel_type == Ncl_VECSUBSCR){
+				NclFree(self_var->var.sel_rec->selection[i].u.vec.ind);
+			}
+		}
+		NclFree(self_var->var.sel_rec);
 	}
 	NclFree(self_var);
 	return;

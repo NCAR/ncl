@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.c,v 1.12 1996-07-16 20:58:17 ethan Exp $
+ *      $Id: NclData.c,v 1.13 1996-12-20 00:42:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -720,6 +720,22 @@ FILE *fp;
 	fprintf(fp,"The number of _NclGetObj calls was %d\n",num_get_obj);
 }
 
+static struct _NclObjRec *find_in_list
+#if     NhlNeedProto
+(NclObjList *ptr,int id)
+#else
+(NclObjList *ptr,int id)
+#endif
+{
+	while((ptr != NULL)&&(ptr->id < id)) {
+		ptr = ptr->next;
+	}
+	if((ptr == NULL) || (ptr->id != id)) {
+		return(NULL);
+	} else {
+		return(ptr->theobj);
+	}
+}
 struct _NclObjRec *_NclGetObj 
 #if	NhlNeedProto
 (int id)
@@ -728,27 +744,12 @@ struct _NclObjRec *_NclGetObj
 	int id;
 #endif
 {
-	int tmp;
-	NclObjList *ptr;
+	int tmp = abs(id % current_size);
+	NclObjList *ptr =  &objs[tmp]; 
+#ifdef NCLDEBUG
 	num_get_obj++;
-	if((id <0)||(id > current_id)) {
-		return(NULL);
-	} else {
-		tmp = id %current_size;
-		if((objs[tmp].id == -1)||((objs[tmp].next == NULL)&&(objs[tmp].id != id))) {
-			return(NULL);
-		}
-		ptr = &objs[tmp];
-		while((ptr != NULL)&&(ptr->id < id)) {
-			ptr = ptr->next;
-		}
-		if((ptr == NULL) || (ptr->id != id)) {
-			return(NULL);
-		} else {
-			return(ptr->theobj);
-		}
-		
-	}
+#endif
+	return((objs[tmp].id == id) ? objs[tmp].theobj : find_in_list(ptr,id));
 }
 int _NclRegisterObj
 #if	NhlNeedProto

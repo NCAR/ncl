@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.55 1996-12-12 22:58:07 ethan Exp $
+ *      $Id: Machine.c,v 1.56 1996-12-20 00:42:08 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -179,6 +179,10 @@ static void SetUpOpsStrings() {
 	ops_strings[PARAM_FILEVAR_COORD_ATT_OP] = "PARAM_FILEVAR_COORD_ATT_OP";
 	ops_strings[CRETURN_OP] = "CRETURN_OP";
 
+	ops_strings[VARVAL_READ_OP] = "VARVAL_READ_OP";
+	ops_strings[FILEVARVAL_COORD_OP] = "FILEVARVAL_COORD_OP";
+	ops_strings[VARVAL_COORD_OP] = "VARVAL_COORD_OP";
+	ops_strings[FILE_VARVAL_OP] = "FILE_VARVAL_OP";
 }
 
 static NhlErrorTypes IncreaseStackSize
@@ -911,48 +915,50 @@ void *_NclLeaveFrame
 }
 
 NhlErrorTypes _NclPush
-#if	NhlNeedProto
+#if     NhlNeedProto
 (NclStackEntry data)
 #else
 (data)
-	NclStackEntry data;
+        NclStackEntry data;
 #endif
 {
-	*(NclStackEntry*)(thestack + (sb+sb_off)) = data;
-	sb_off++;
-	if((sb+sb_off) >= cur_stacksize ) {
+        *(NclStackEntry*)(thestack + (sb+sb_off)) = data;
+        sb_off++;
+        if((sb+sb_off) >= cur_stacksize ) {
 /*
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"Push: Stack overflow");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"Push: Stack overflow");
 */
-		if(IncreaseStackSize() == NhlFATAL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Push: Stack overflow, could not increase stack size, memory allocation error");
-			return(NhlFATAL);
-		}
-	}
-	return(NhlNOERROR);
+                if(IncreaseStackSize() == NhlFATAL) {
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"Push: Stack overflow, could not increase stack size, memory allocation error");
+                        return(NhlFATAL);
+                }
+        }
+        return(NhlNOERROR);
 }
 
 NclStackEntry _NclPop
-#if	NhlNeedProto
+#if     NhlNeedProto
 (void)
 #else
 ()
 #endif
 {
-	NclStackEntry tmp;
-	if(thestack + (sb +sb_off) <= thestack) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"Pop: Stack underflow");
-		tmp.kind = NclStk_NOVAL;
-		tmp.u.offset = 0;
-		return(tmp);
-	} else {
-		sb_off--;
-		tmp = (*(NclStackEntry*)(thestack +(sb + sb_off)));
-		((NclStackEntry*)(thestack + (sb+sb_off)))->kind = NclStk_NOVAL;
-		((NclStackEntry*)(thestack + (sb+sb_off)))->u.offset = 0;
-		return(tmp);
-	}
+        NclStackEntry tmp;
+        NclStackEntry *tmp0 = (NclStackEntry*)(thestack +(sb + --sb_off));
+        if(tmp0 + 1 <= thestack) {
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"Pop: Stack underflow");
+                tmp.kind = NclStk_NOVAL;
+                tmp.u.offset = 0;
+                return(tmp);
+        } else {
+                tmp = *tmp0;
+                tmp0->kind = NclStk_NOVAL;
+                tmp0->u.offset = 0;
+                return(tmp);
+        }
 }
+
+
 int _NclPutIntInstr
 #if	NhlNeedProto
 (int val,int line,char* file)
@@ -1223,6 +1229,7 @@ void _NclPrintMachine
 */
 				fprintf(fp,"\t%d\n",*ptr);
 				break;
+			case FILEVARVAL_COORD_OP:
 			case FILEVAR_COORD_OP:
 			case ASSIGN_FILEVAR_COORD_OP:
 			case PARAM_FILEVAR_COORD_OP:
@@ -1240,6 +1247,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t%d\n",(int)*ptr);
 				break;
 			case VAR_COORD_OP:
+			case VARVAL_COORD_OP:
 			case ASSIGN_VAR_COORD_OP:
 			case PARAM_VAR_COORD_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
@@ -1284,6 +1292,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t%d\n",(int)*ptr);
 				break;
 			case FILE_VAR_OP :
+			case FILE_VARVAL_OP :
 			case ASSIGN_FILE_VAR_OP :
 			case PARAM_FILE_VAR_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
@@ -1298,6 +1307,7 @@ void _NclPrintMachine
 */
 				fprintf(fp,"\t%d\n",*ptr);
 				break;
+			case VARVAL_READ_OP :
 			case VAR_READ_OP :
 			case ASSIGN_VAR_OP :
 			case PARAM_VAR_OP :
@@ -2440,61 +2450,61 @@ void _NclCleanUpStack
 	int i;
 	NclStackEntry data;
 	for( i = 0 ; i < n; i++) {
-		data = _NclPop();
-		switch(data.kind) {
-		case NclStk_VAL:
-			if((data.u.data_obj != NULL)&&(data.u.data_obj->obj.status != PERMANENT)) {
-				_NclDestroyObj((NclObj)data.u.data_obj);
+			data = _NclPop();
+			switch(data.kind) {
+			case NclStk_VAL:
+				if((data.u.data_obj != NULL)&&(data.u.data_obj->obj.status != PERMANENT)) {
+					_NclDestroyObj((NclObj)data.u.data_obj);
+				}
+				break;
+			case NclStk_VAR:
+				if((data.u.data_var != NULL) &&( data.u.data_var->obj.status != PERMANENT)) {
+					_NclDestroyObj((NclObj)data.u.data_var);
+				} 
+				break;
+			case NclStk_SUBREC:
+					_NclFreeSubRec(data.u.sub_rec);
+				break;
+			default:
+				break;
 			}
-			break;
-		case NclStk_VAR:
-			if((data.u.data_var != NULL) &&( data.u.data_var->obj.status != PERMANENT)) {
-				_NclDestroyObj((NclObj)data.u.data_var);
-			} 
-			break;
-		case NclStk_SUBREC:
-				_NclFreeSubRec(data.u.sub_rec);
-			break;
-		default:
-			break;
 		}
 	}
-}
 
-int _NclPutRealInstr
-#if	NhlNeedProto
-(float val, int line, char* file)
-#else
-(val,line,file)
-float val;
-int line;
-char *file;
-#endif
-{
-/* 
-* Sometimes the parser needs to know the offset of the instruction it put
-* into the instruction list (i.e. function return addresses, loops and 
-* conditionals. Therefore it is necessary to return the offset of the instruct
-* being placed in the list.
-*/
-	int old_offset = (int)(mstk->the_rec->pc - mstk->the_rec->themachine);
+	int _NclPutRealInstr
+	#if	NhlNeedProto
+	(float val, int line, char* file)
+	#else
+	(val,line,file)
+	float val;
+	int line;
+	char *file;
+	#endif
+	{
+	/* 
+	* Sometimes the parser needs to know the offset of the instruction it put
+	* into the instruction list (i.e. function return addresses, loops and 
+	* conditionals. Therefore it is necessary to return the offset of the instruct
+	* being placed in the list.
+	*/
+		int old_offset = (int)(mstk->the_rec->pc - mstk->the_rec->themachine);
 
-/*
-* Check for overflow
-*/
-	if(mstk->the_rec->pc >= &(mstk->the_rec->themachine[mstk->the_rec->current_machine_size -1])) {
-/*
-* Will take care of updating mstk->the_rec->pc
-*/
-		IncreaseMachineSize();
+	/*
+	* Check for overflow
+	*/
+		if(mstk->the_rec->pc >= &(mstk->the_rec->themachine[mstk->the_rec->current_machine_size -1])) {
+	/*
+	* Will take care of updating mstk->the_rec->pc
+	*/
+			IncreaseMachineSize();
+		}
+		*((float*)mstk->the_rec->pc++) = val;
+		*(mstk->the_rec->lc++) = line;
+		*(mstk->the_rec->fn++) = file;
+		mstk->the_rec->pcoffset = (int)(mstk->the_rec->pc - mstk->the_rec->themachine);
+
+		return(old_offset);
 	}
-	*((float*)mstk->the_rec->pc++) = val;
-	*(mstk->the_rec->lc++) = line;
-	*(mstk->the_rec->fn++) = file;
-	mstk->the_rec->pcoffset = (int)(mstk->the_rec->pc - mstk->the_rec->themachine);
-
-	return(old_offset);
-}
-#ifdef __cplusplus
-}
+	#ifdef __cplusplus
+	}
 #endif

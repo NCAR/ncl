@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.h,v 1.18 1996-05-13 18:07:56 ethan Exp $
+ *      $Id: Machine.h,v 1.19 1996-12-20 00:42:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -85,9 +85,23 @@ typedef struct _NclStackEntry{
 * an example is an array passed to a function with two parameters
 * twice.
 */
-		struct _NclRangeRec	*range_rec;
-		struct _NclVecRec	*vec_rec;
-		struct _NclSubRec	*sub_rec;
+		struct _NclRangeRec {
+        		struct _NclMultiDValDataRec *start;
+        		struct _NclMultiDValDataRec *finish;
+        		struct _NclMultiDValDataRec *stride;
+		} range_rec;
+		struct _NclVecRec {
+			struct _NclMultiDValDataRec *vec;
+		} vec_rec;
+		struct _NclSubRec {
+			NclSubTypes sub_type;
+			char *name;
+			int tolerence;  /* applies only to coordinate variables */
+			union {
+				struct _NclRangeRec range;
+				struct _NclVecRec vec;
+			}u;
+		} sub_rec;
 		struct _NclParamRecList *the_list;
 		struct _NclVarRec	*data_var;
 		struct _NclMultiDValDataRec 	*data_obj;
@@ -102,25 +116,11 @@ typedef struct _NclFrame{
         NclStackEntry   return_pcoffset;
         NclStackEntry   parameter_map;
 }NclFrame;
-typedef struct _NclSubRec {
-	NclSubTypes sub_type; 
-	char *name;
-	int tolerence;	/* applies only to coordinate variables */
-	union {
-		struct _NclRangeRec *range;
-		struct _NclVecRec *vec;
-	}u;
-} NclSubRec;
+typedef struct _NclSubRec NclSubRec;
 
-typedef struct _NclRangeRec {
-	struct _NclMultiDValDataRec *start;
-	struct _NclMultiDValDataRec *finish;
-	struct _NclMultiDValDataRec *stride;
-}NclRangeRec;
+typedef struct _NclRangeRec NclRangeRec;
 
-typedef struct _NclVecRec {
-	struct _NclMultiDValDataRec *vec;
-}NclVecRec;
+typedef struct _NclVecRec NclVecRec;
 
 typedef struct _NclParamRec {
 	NclParamTypes p_type;

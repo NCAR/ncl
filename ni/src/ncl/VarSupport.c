@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.16 1996-10-15 00:05:35 ethan Exp $
+ *      $Id: VarSupport.c,v 1.17 1996-12-20 00:42:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,61 @@
 #include "VarSupport.h"
 #include "DataSupport.h"
 
+NclSelectionRecord* _NclGetVarSelRec
+#if	NhlNeedProto
+( struct _NclVarRec * inst)
+#else
+( inst)
+struct _NclVarRec * inst;
+#endif
+{
+	int i;
+
+	if(inst->var.sel_rec == NULL) {
+		inst->var.sel_rec = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
+		inst->var.sel_rec->selected_from_sym = NULL;
+		inst->var.sel_rec->selected_from_var = NULL;
+		inst->var.sel_rec->n_entries = inst->var.n_dims;
+		for(i = 0; i < inst->var.n_dims; i++ ) {
+			inst->var.sel_rec->selection[i].sel_type = Ncl_SUB_ALL;
+			inst->var.sel_rec->selection[i].dim_num = i;
+		}	
+		return(inst->var.sel_rec);
+	} else {
+		for(i = 0; i < inst->var.n_dims; i++) {	
+			if((inst->var.sel_rec->selection[i].sel_type == Ncl_VECSUBSCR)&&(inst->var.sel_rec->selection[i].u.vec.ind != NULL)) {
+
+				NclFree(inst->var.sel_rec->selection[i].u.vec.ind);	
+				inst->var.sel_rec->selection[i].u.vec.ind = NULL;
+				inst->var.sel_rec->selection[i].sel_type = Ncl_SUB_ALL;
+			}
+		}
+		return(inst->var.sel_rec);
+	}
+}
+
+
+struct _NclMultiDValDataRec* _NclStripVarData
+#if	NhlNeedProto
+(struct _NclVarRec * inst)
+#else
+(struct _NclVarRec * inst)
+#endif
+{
+	NclMultiDValData tmp;
+	if(inst->obj.status == TEMPORARY) {
+		tmp = (NclMultiDValData)_NclGetObj(inst->var.thevalue_id);	
+		tmp->obj.status = TEMPORARY;
+		tmp->obj.ref_count = 0;
+		NclFree(tmp->obj.parents);
+		tmp->obj.parents = NULL;
+		inst->var.thevalue_id = -1;
+		return(tmp);
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclStripVarData: Trying to strip data from PERMANENT variable! This is a bug please report it, thank you");
+		return(NULL);
+	}
+}
 
 struct _NclVarRec* _NclVarNclCreate
 #if	NhlNeedProto

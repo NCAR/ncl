@@ -77,9 +77,6 @@
 #define PARAM_VAR_COORD_OP			77
 #define VAR_READ_OP				78
 #define CRETURN_OP				79
-/*
-#define VAR_READ_COORD_OP			79
-*/
 #define INTRINSIC_FUNC_CALL			80
 #define INTRINSIC_PROC_CALL			81
 #define ASSIGN_VAR_VAR_OP			82
@@ -93,4 +90,8 @@
 #define FILEVAR_COORD_ATT_OP			90
 #define PARAM_FILEVAR_COORD_ATT_OP		91
 #define ASSIGN_FILEVAR_COORD_ATT_OP		92
-#define NUM_OPERATORS				93
+#define VARVAL_READ_OP				93
+#define FILEVARVAL_COORD_OP			94
+#define VARVAL_COORD_OP				95
+#define FILE_VARVAL_OP				96
+#define NUM_OPERATORS				97

@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.h,v 1.6 1996-04-23 00:10:29 ethan Exp $
+ *      $Id: VarSupport.h,v 1.7 1996-12-20 00:42:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -21,6 +21,18 @@
  */
 #ifndef _VarSupport_h
 #define _VarSupport_h
+
+extern NclSelectionRecord* _NclGetVarSelRec(
+#if     NhlNeedProto
+	struct _NclVarRec * /*inst*/
+#endif
+
+);
+extern struct _NclMultiDValDataRec* _NclStripVarData(
+#if     NhlNeedProto
+struct _NclVarRec * /*inst*/
+#endif
+);
 
 extern struct _NclMultiDValDataRec * _NclCoerceVar(
 #if     NhlNeedProto
