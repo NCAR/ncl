@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.143 2003-11-25 19:47:17 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.144 2003-11-26 05:32:05 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -644,24 +644,41 @@ end
 ;              newres: logical                                          ;
 ;                                                                       ;
 ; This procedure checks if gsnLeftString is set.  If not, then uses     ;
-; data@long_name if it exists.                                          ;
+; one of the valid "long_name" attributes, if they exist.               ;
 ;***********************************************************************;
 procedure set_left_subtitle(data:numeric,res:logical,newres:logical)
 begin
 ;
-; If gsnLeftString hasn't been set, then use data@long_name if it
-; exists.  Also have to delete data@long_name so it doesn't get
-; used in the title by gsn_code.ncl.
+; If gsnLeftString hasn't been set, then use one of several valid "long
+; names" if they exist. Also have to delete the attribute used so it
+; doesn't get used in the title by gsn_code.ncl. But, be careful here because
+; you don't want to remove the attribute from the actual data. 
+; Before calling this routine, you should be using a copy of your
+; data.
 ;
-  if(isatt(data,"long_name"))
+  data_atts        = getvaratts(data)
+  found_valid_name = False
+
+  if(.not.any(ismissing(data_atts))) then
+    valid_long_names = (/"long_name","description","DataFieldName"/)
+    n = 0
+    do while(n.lt.dimsizes(data_atts).and..not.found_valid_name)
+      if (any(valid_long_names.eq.data_atts(n))) then
+        newres = True
+        newres@gsnLeftString = get_res_value_keep(res,"gsnLeftString", \
+                                                  data@$data_atts(n)$)
+;
+; Delete so it doesn't get used for main title
+;
+        delete(data@$data_atts(n)$)
+        found_valid_name = True
+      end if
+      n = n + 1
+    end do
+  end if
+  if(.not.found_valid_name.and.isatt(res,"gsnLeftString"))
     newres = True
-    newres@gsnLeftString = get_res_value_keep(res,"gsnLeftString",data@long_name)
-    delete(data@long_name)  ; Delete so it doesn't get used for main title
-  else
-    if(isatt(res,"gsnLeftString"))
-      newres = True
-      newres@gsnLeftString = res@gsnLeftString
-    end if
+    newres@gsnLeftString = res@gsnLeftString
   end if
   return
 end
@@ -4463,8 +4480,8 @@ begin
       datanew = data
     end if
 
-; Check for left/right titles at top. Use attributes "long_name" and
-; "units" if they exist.
+; Check for left/right titles at top. Use valid "long_name" type attributes
+; and "units" if they exist.
 
     set_right_subtitle(datanew,res2,mpres)
     set_left_subtitle(datanew,res2,mpres)
@@ -4739,8 +4756,8 @@ begin
       delete(res2@gsnMinorLatSpacing)
     end if
 
-; Check for left/right titles at top. Use attributes "long_name" and
-; "units" if they exist.
+; Check for left/right titles at top. Use valid "long_name" type attributes
+; and "units" if they exist.
 
     set_right_subtitle(datanew,res2,mpres)
     set_left_subtitle(datanew,res2,mpres)
@@ -5041,8 +5058,8 @@ begin
     res2 = True
     set_attr(res2,"cnLineLabelBackgroundColor", "transparent")
 
-; Check for left/right titles at top. Use attributes "long_name" and
-; "units" if they exist.
+; Check for left/right titles at top. Use valid "long_name" type attributes
+; and "units" if they exist.
 
     set_right_subtitle(datanew,res2,mpres)
     set_left_subtitle(datanew,res2,mpres)
@@ -5242,8 +5259,8 @@ begin
       set_attr(res2,"vfYCEndV",   90.)
     end if
 
-; Check for left/right titles at top. Use attributes "long_name" and
-; "units" if they exist.
+; Check for left/right titles at top. Use valid "long_name" type attributes
+; and "units" if they exist.
 
     set_right_subtitle(unew,res2,mpres)
     set_left_subtitle(unew,res2,mpres)
@@ -5447,8 +5464,8 @@ begin
       vnew = v
     end if
 
-; Check for left/right titles at top. Use attributes "long_name" and
-; "units" if they exist.
+; Check for left/right titles at top. Use valid "long_name" type attributes
+; and "units" if they exist.
 
     set_right_subtitle(unew,res2,mpres)
     set_left_subtitle(unew,res2,mpres)
@@ -5624,8 +5641,8 @@ begin
     check_for_y_lat_coord(unew,res2,"vector_map")
     check_for_lon_coord(unew,res2,"vector_map")
 
-; Check for left/right titles at top. Use attributes "long_name" and
-; "units" if they exist.
+; Check for left/right titles at top. Use valid "long_name" type attributes
+; and "units" if they exist.
 
     set_right_subtitle(unew,res2,mpres)
     set_left_subtitle(unew,res2,mpres)
@@ -5792,8 +5809,8 @@ begin
       set_attr(res2,"vfYCEndV",   90.)
     end if
 
-; Check for left/right titles at top. Use attributes "long_name" and
-; "units" if they exist.
+; Check for left/right titles at top. Use valid "long_name" type attributes
+; and "units" if they exist.
 
     set_right_subtitle(unew,res2,mpres)
     set_left_subtitle(unew,res2,mpres)
@@ -5940,8 +5957,8 @@ begin
       vnew = v
     end if
 
-; Check for left/right titles at top. Use attributes "long_name" and
-; "units" if they exist.
+; Check for left/right titles at top. Use valid "long_name" type attributes
+; and "units" if they exist.
 
     set_right_subtitle(unew,res2,mpres)
     set_left_subtitle(unew,res2,mpres)
@@ -6074,8 +6091,8 @@ begin
     check_for_y_lat_coord(unew,res2,"vector_map")
     check_for_lon_coord(unew,res2,"vector_map")
 
-; Check for left/right titles at top. Use attributes "long_name" and
-; "units" if they exist.
+; Check for left/right titles at top. Use valid "long_name" type attributes
+; and "units" if they exist.
 
     set_right_subtitle(unew,res2,mpres)
     set_left_subtitle(unew,res2,mpres)
@@ -6201,8 +6218,8 @@ begin
       set_attr(res2,"vfYCEndV",   90.)
     end if
 
-; Check for left/right titles at top. Use attributes "long_name" and
-; "units" if they exist.
+; Check for left/right titles at top. Use valid "long_name" type attributes
+; and "units" if they exist.
 
     set_right_subtitle(unew,res2,mpres)
     set_left_subtitle(unew,res2,mpres)
@@ -6424,8 +6441,8 @@ begin
     check_for_y_lat_coord(unew,res2,"vector_map")
     check_for_lon_coord(unew,res2,"vector_map")
 
-; Check for left/right titles at top. Use attributes "long_name" and
-; "units" if they exist.
+; Check for left/right titles at top. Use valid "long_name" type attributes
+; and "units" if they exist.
 
     set_right_subtitle(unew,res2,mpres)
     set_left_subtitle(unew,res2,mpres)
@@ -6610,8 +6627,8 @@ begin
     check_for_y_lat_coord(unew,res2,"vector_map")
     check_for_lon_coord(unew,res2,"vector_map")
 
-; Check for left/right titles at top. Use attributes "long_name" and
-; "units" if they exist.
+; Check for left/right titles at top. Use valid "long_name" type attributes
+; and "units" if they exist.
 
     set_right_subtitle(unew,res2,mpres)
     set_left_subtitle(unew,res2,mpres)
@@ -6782,8 +6799,8 @@ begin
       datanew = data
     end if
 
-; Check for left/right titles at top. Use attributes "long_name" and
-; "units" if they exist.
+; Check for left/right titles at top. Use valid "long_name" type attributes
+; and "units" if they exist.
 
     set_right_subtitle(datanew,res2,res2)
     set_left_subtitle(datanew,res2,res2)
@@ -7070,8 +7087,8 @@ begin
       set_attr(res2,"vfYCEndV",   90.)
     end if
 
-; Check for left/right titles at top. Use attributes "long_name" and
-; "units" if they exist.
+; Check for left/right titles at top. Use valid "long_name" type attributes
+; and "units" if they exist.
 
     set_right_subtitle(datanew,res2,mpres)
     set_left_subtitle(datanew,res2,mpres)
@@ -7357,8 +7374,8 @@ begin
     check_for_y_lat_coord(unew,res2,"vector_map")
     check_for_lon_coord(unew,res2,"vector_map")
 
-; Check for left/right titles at top. Use attributes "long_name" and
-; "units" if they exist.
+; Check for left/right titles at top. Use valid "long_name" type attributes
+; and "units" if they exist.
 
     set_right_subtitle(datanew,res2,mpres)
     set_left_subtitle(datanew,res2,mpres)
@@ -7583,8 +7600,8 @@ begin
     check_for_y_lat_coord(unew,res2,"vector_map")
     check_for_lon_coord(unew,res2,"vector_map")
 
-; Check for left/right titles at top. Use attributes "long_name" and
-; "units" if they exist.
+; Check for left/right titles at top. Use valid "long_name" type attributes
+; and "units" if they exist.
 
     set_right_subtitle(datanew,res2,mpres)
     set_left_subtitle(datanew,res2,mpres)
@@ -8921,8 +8938,8 @@ begin
       set_attr(res2,"tiYAxisString","")
     end if
 
-; Check for left/right titles at top. Use attributes "long_name" and
-; "units" if they exist.
+; Check for left/right titles at top. Use valid "long_name" type attributes
+; and "units" if they exist.
 
     set_right_subtitle(datanew,res2,res2)
     set_left_subtitle(datanew,res2,res2)
@@ -9505,8 +9522,8 @@ begin
     callframe = get_res_value(res2,"gsnFrame",True)
     maxbb     = get_bb_res(res2)
 
-; Check for left/right titles at top. Use attributes "long_name" and
-; "units" if they exist.
+; Check for left/right titles at top. Use valid "long_name" type attributes
+; and "units" if they exist.
 
     set_right_subtitle(unew,res2,res2)
     set_left_subtitle(unew,res2,res2)
@@ -9776,8 +9793,8 @@ begin
     callframe = get_res_value(res2,"gsnFrame",True)
     maxbb     = get_bb_res(res2)
 
-; Check for left/right titles at top. Use attributes "long_name" and
-; "units" if they exist.
+; Check for left/right titles at top. Use valid "long_name" type attributes
+; and "units" if they exist.
 
     set_right_subtitle(unew,res2,res2)
     set_left_subtitle(unew,res2,res2)
