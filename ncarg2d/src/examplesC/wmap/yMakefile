@@ -1,10 +1,10 @@
 #
-#	$Id: yMakefile,v 1.1 1994-09-14 23:41:34 haley Exp $
+#	$Id: yMakefile,v 1.2 1994-09-16 20:28:12 stautler Exp $
 #
 
 CSRCS = c_wmex03.c c_wmex04.c
 
-SED_SRCS = c_wmex01.c
+SED_SRCS = c_wmex01.c c_wmex02.c
 
 GENERIC_SRCS = $(CSRCS) $(SED_SRCS)
 
@@ -20,3 +20,6 @@ c_wmex01.c: c_wmex01.c.sed Makefile
 	@-$(RM) $@
 	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ mapeod
 
+c_wmex02.c: c_wmex02.c.sed Makefile
+	@-$(RM) $@
+	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ mapeod
