@@ -1,5 +1,5 @@
 /*
-**      $Id: tx01c.c,v 1.1 1995-01-26 16:43:34 haley Exp $
+**      $Id: tx01c.c,v 1.2 1995-01-26 17:06:03 haley Exp $
 */
 /************************************************************************
 *                                                                       *
@@ -9,7 +9,7 @@
 *                                                                       *
 ************************************************************************/
 /*
-**  File:       ti01c.c
+**  File:       tx01c.c
 **
 **  Author:     Jeff Boote
 **          National Center for Atmospheric Research
@@ -48,15 +48,15 @@ main()
         rlist = NhlRLCreate(NhlSETRL);
         NhlRLClear(rlist);
 	NhlRLSetString(rlist,NhlNappUsrDir,"./");
-	NhlCreate(&app_id,"ti01",NhlappLayerClass,NhlNOPARENT,rlist);
+	NhlCreate(&app_id,"tx01",NhlappLayerClass,NhlNOPARENT,rlist);
 	
 /*
 * Create a meta file workstation giving the output file a conventional 
 * metafile name.
 */
         NhlRLClear(rlist);
-	NhlRLSetString(rlist,NhlNwkMetaName,"./ti01c.ncgm");
-	NhlCreate(&workstation_id,"ti01Work",
+	NhlRLSetString(rlist,NhlNwkMetaName,"./tx01c.ncgm");
+	NhlCreate(&workstation_id,"tx01Work",
 		  NhlncgmWorkstationLayerClass,NhlNOPARENT,rlist); 
 
 /*
@@ -69,7 +69,7 @@ main()
 	NhlRLSetString(rlist,NhlNtxString,"TextItem - VARIOUS CAPABILITIES");
 	NhlRLSetFloat(rlist,NhlNtxPosXF,.5);
 	NhlRLSetFloat(rlist,NhlNtxPosYF,.95);
-	NhlCreate(&text_item_id,"ti01TextItem",NhltextItemLayerClass,
+	NhlCreate(&text_item_id,"tx01TextItem",NhltextItemLayerClass,
 		  workstation_id,rlist);
 
 	NhlDraw(text_item_id);
@@ -827,5 +827,4 @@ main()
 	NhlDestroy(workstation_id);
 	NhlDestroy(app_id);
 	NhlClose();
-
 }
