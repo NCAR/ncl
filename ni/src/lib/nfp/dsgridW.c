@@ -2031,6 +2031,11 @@ NhlErrorTypes dspnt2_W( void )
   tmp_yo = coerce_input_double(yo,type_yo,nptso,has_missing_yo,&missing_yo,
                                &missing_dyo);
 
+  if(tmp_x == NULL || tmp_y == NULL || tmp_z == NULL || tmp_xo == NULL ||
+     tmp_yo == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dspnt2: Unable to allocate memory for coercing input arrays to double precision");
+    return(NhlFATAL);
+  }
 /*
  * Check for missing values. 
  */
@@ -2072,9 +2077,7 @@ NhlErrorTypes dspnt2_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dspnt2: ier = %d", ier);
     return(NhlFATAL);
   }
-  if(type_zo != NCL_double) {
-    for (i = 0; i < nptso; i++) ((float*)zo)[i] = (float)(*tmp_zo);
-  }
+  if(type_zo != NCL_double) coerce_output(zo,tmp_zo,nptso,0);
 /*
  * Free arrays
  */
@@ -2549,6 +2552,11 @@ NhlErrorTypes dspnt3_W( void )
   tmp_zo = coerce_input_double(zo,type_zo,nptso,has_missing_zo,&missing_zo,
                                &missing_dzo);
 
+  if(tmp_x == NULL || tmp_y == NULL || tmp_z == NULL || tmp_u == NULL || 
+     tmp_xo == NULL || tmp_yo == NULL || tmp_zo == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dspnt3: Unable to allocate memory for coercing input arrays to double precision");
+    return(NhlFATAL);
+  }
 /*
  * Check for missing values. 
  */
@@ -2594,16 +2602,14 @@ NhlErrorTypes dspnt3_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dspnt3: ier = %d", ier);
     return(NhlFATAL);
   }
-  if(type_uo != NCL_double) {
-    for (i = 0; i < nptso; i++) ((float*)uo)[i] = (float)(*tmp_uo);
-  }
+  if(type_uo != NCL_double) coerce_output(uo,tmp_uo,nptso,0);
 /*
  * Free arrays
  */
   if(type_x  != NCL_double) NclFree(tmp_x);
   if(type_y  != NCL_double) NclFree(tmp_y);
   if(type_z  != NCL_double) NclFree(tmp_z);
-  if(type_u  != NCL_double) NclFree(tmp_z);
+  if(type_u  != NCL_double) NclFree(tmp_u);
   if(type_xo != NCL_double) NclFree(tmp_xo);
   if(type_yo != NCL_double) NclFree(tmp_yo);
   if(type_zo != NCL_double) NclFree(tmp_zo);

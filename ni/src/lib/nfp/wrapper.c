@@ -157,12 +157,19 @@ extern NhlErrorTypes natgrid_W(void);
 extern NhlErrorTypes nnsetp_W (void);
 extern NhlErrorTypes nngetp_W (void);
 extern NhlErrorTypes nngetaspects_W(void);
+extern NhlErrorTypes nngetaspectd_W(void);
 extern NhlErrorTypes nngetslopes_W(void);
+extern NhlErrorTypes nngetsloped_W(void);
 extern NhlErrorTypes nngetwts_W(void);
 extern NhlErrorTypes nngetwtsd_W(void);
 extern NhlErrorTypes nnpntinits_W(void);
+extern NhlErrorTypes nnpntinitd_W(void);
+extern NhlErrorTypes nnpntinit_W(void);
 extern NhlErrorTypes nnpnts_W(void);
+extern NhlErrorTypes nnpntd_W(void);
+extern NhlErrorTypes nnpnt_W(void);
 extern NhlErrorTypes nnpntend_W(void);
+extern NhlErrorTypes nnpntendd_W(void);
 
 extern NhlErrorTypes dsgrid2s_W(void);
 extern NhlErrorTypes dsgrid2d_W(void);
@@ -179,11 +186,6 @@ extern NhlErrorTypes dspnt3_W(void);
 extern NhlErrorTypes dssetp_W(void);
 extern NhlErrorTypes dsgetp_W(void);
 
-extern NhlErrorTypes nngetaspectd_W(void);
-extern NhlErrorTypes nngetsloped_W(void);
-extern NhlErrorTypes nnpntinitd_W(void);
-extern NhlErrorTypes nnpntd_W(void);
-extern NhlErrorTypes nnpntendd_W(void);
 
 extern NhlErrorTypes shgrid_W(void);
 extern NhlErrorTypes shgetnp_W(void);
@@ -2402,7 +2404,7 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(nngetp_W, args, "nngetp", nargs);
 
 /*
- * Create private argument array
+ * Register nngetaspects.
  */
         nargs = 0;
         args = NewArgs(2);
@@ -2414,7 +2416,7 @@ void NclAddUserFuncs(void)
  */
         NclRegisterFunc(nngetaspects_W,args,"nngetaspects",nargs);
 /*
- * Create private argument array
+ * Register nngetaspectd.
  */
         nargs = 0;
         args = NewArgs(2);
@@ -2426,7 +2428,7 @@ void NclAddUserFuncs(void)
  */
         NclRegisterFunc(nngetaspectd_W,args,"nngetaspectd",nargs);
 /*
- * Create private argument array
+ * Register nngetslopes.
  */
         nargs = 0;
         args = NewArgs(2);
@@ -2437,7 +2439,7 @@ void NclAddUserFuncs(void)
  */
         NclRegisterFunc(nngetslopes_W,args,"nngetslopes",nargs);
 /*
- * Create private argument array
+ * Register nngetwts.
  */
         nargs = 0;
         args = NewArgs(6);
@@ -2454,7 +2456,7 @@ void NclAddUserFuncs(void)
  */
         NclRegisterProc(nngetwts_W,args,"nngetwts",nargs);
 /*
- * Create private argument array
+ * Register nngetwtsd.
  */
         nargs = 0;
         args = NewArgs(6);
@@ -2471,7 +2473,7 @@ void NclAddUserFuncs(void)
  */
         NclRegisterProc(nngetwtsd_W,args,"nngetwtsd",nargs);
 /*
- * Create private argument array
+ * Register nngetsloped.
  */
         nargs = 0;
         args = NewArgs(2);
@@ -2483,7 +2485,7 @@ void NclAddUserFuncs(void)
  */
         NclRegisterFunc(nngetsloped_W,args,"nngetsloped",nargs);
 /*
- * Create private argument array
+ * Register nnpntinits.
  */
         nargs = 0;
         args = NewArgs(3);
@@ -2495,7 +2497,7 @@ void NclAddUserFuncs(void)
  */
         NclRegisterProc(nnpntinits_W,args,"nnpntinits",nargs);
 /*
- * Create private argument array
+ * Register nnpntinitd.
  */
         nargs = 0;
         args = NewArgs(3);
@@ -2507,49 +2509,63 @@ void NclAddUserFuncs(void)
  */
         NclRegisterProc(nnpntinitd_W,args,"nnpntinitd",nargs);
 /*
- * Create private argument array
+ * Register nnpntinit.
+ */
+        nargs = 0;
+        args = NewArgs(3);
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+/*
+ * Register wrapper function pointer and argument templates
+ */
+        NclRegisterProc(nnpntinit_W,args,"nnpntinit",nargs);
+/*
+ * Register nnpnts.
  */
         nargs = 0;
         args = NewArgs(2);
-    dimsizes[0] = 1;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
 
 /*
  * Register wrapper function pointer and argument templates
  */
         NclRegisterFunc(nnpnts_W,args,"nnpnts",nargs);
 /*
- * Create private argument array
+ * Register nnpntd.
  */
         nargs = 0;
         args = NewArgs(2);
-    dimsizes[0] = 1;
-        SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
 /*
  * Register wrapper function pointer and argument templates
  */
         NclRegisterFunc(nnpntd_W,args,"nnpntd",nargs);
 /*
- * Create private argument array
+ * Register nnpnt.
  */
-        args = NewArgs(0);
         nargs = 0;
-    dimsizes[0] = 1;
+        args = NewArgs(2);
+        SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
+        SetArgTemplate(args, nargs, "numeric", 1, NclANY); nargs++;
 /*
  * Register wrapper function pointer and argument templates
  */
+        NclRegisterFunc(nnpnt_W,args,"nnpnt",nargs);
+/*
+ * Register nnpntend.
+ */
+        args = NewArgs(0);
+        nargs = 0;
+
         NclRegisterProc(nnpntend_W,args,"nnpntend",nargs);
 /*
- * Create private argument array
+ * Register nnppntendd.
  */
         args = NewArgs(0);
         nargs = 0;
-    dimsizes[0] = 1;
-/*
- * Register wrapper function pointer and argument templates
- */
         NclRegisterProc(nnpntendd_W,args,"nnpntendd",nargs);
 
 /*

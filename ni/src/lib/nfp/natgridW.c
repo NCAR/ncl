@@ -1285,6 +1285,7 @@ NhlErrorTypes nnpntinits_W( void )
   }
 }
 
+
 NhlErrorTypes nnpntinitd_W( void )
 {
   double *x;
@@ -1373,31 +1374,131 @@ NhlErrorTypes nnpntinitd_W( void )
   }
 }
 
+
+NhlErrorTypes nnpntinit_W( void )
+{
+  void *x, *y, *z;
+  double *tmp_x, *tmp_y, *tmp_z;
+  int dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  int dsizes_z[NCL_MAX_DIMENSIONS], has_missing_z;
+  NclScalar missing_x, missing_y, missing_z;
+  NclScalar missing_dx, missing_dy, missing_dz;
+  NclBasicDataTypes type_x, type_y, type_z;
+  int npts;
+/*
+ * Retrieve parameters
+ */
+  x = (void*)NclGetArgValue(
+                            0,
+                            3,
+                            NULL,
+                            dsizes_x,
+                            &missing_x,
+                            &has_missing_x,
+                            &type_x,
+                            2);
+  y = (void*)NclGetArgValue(
+                            1,
+                            3,
+                            NULL,
+                            dsizes_y,
+                            &missing_y,
+                            &has_missing_y,
+                            &type_y,
+                            2);
+  z = (void*)NclGetArgValue(
+                            2,
+                            3,
+                            NULL,
+                            dsizes_z,
+                            &missing_z,
+                            &has_missing_z,
+                            &type_z,
+                            2);
+
+/*
+ * Check sizes.
+ */
+  npts = dsizes_x[0];
+  if(dsizes_y[0] != npts || dsizes_z[0] != npts) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinit: the dimension sizes of parameters x, y and z must be identical");
+    return(NhlFATAL);
+  }
+/*
+ * Coerce missing values.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,NULL);
+  coerce_missing(type_z,has_missing_z,&missing_z,&missing_dz,NULL);
+/*
+ * Coerce input to double if necessary.
+ */
+  tmp_x = coerce_input_double(x,type_x,npts,0,NULL,NULL);
+  tmp_y = coerce_input_double(y,type_y,npts,0,NULL,NULL);
+  tmp_z = coerce_input_double(z,type_z,npts,0,NULL,NULL);
+
+  if(tmp_x == NULL || tmp_y == NULL || tmp_z == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+              "nnpntinit: Unable to allocate memory for coercing input to double");
+    return(NhlFATAL);
+  }
+/*
+ * Check for missing values. 
+ */
+  if(contains_missing(tmp_x,npts,has_missing_x,missing_dx.doubleval)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinit: x cannot contain any missing values" );
+    return(NhlFATAL);
+  }
+  if(contains_missing(tmp_y,dsizes_y[0],has_missing_y,missing_dy.doubleval)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinit: y cannot contain any missing values" );
+    return(NhlFATAL);
+  }
+  if(contains_missing(tmp_z,dsizes_z[0],has_missing_z,missing_dz.doubleval)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpntinit: z cannot contain any missing values" );
+    return(NhlFATAL);
+  }
+/*
+ * The following section allocates the work memory and calls the
+ * c_nnpntinitd function.
+ */
+   c_nnpntinitd(npts,tmp_x,tmp_y,tmp_z);
+   return(NhlNOERROR);
+}
+
+
 NhlErrorTypes nnpnts_W( void )
 {
   float *x;
   float *y;
   float *z;
-  int dsizes[1];
+  int dsizes_x[1], dsizes_y[1], i, npts;
 /*
  * Retrieve parameters
- */
-/*
+ *
  * Note any of the pointer parameters can be set to NULL, which
  * implies you don't care about its value. In this example
  * the type parameter is set to NULL because the function
  * is later registered to only accept floating point numbers.
  */
-  x = (float*)NclGetArgValue(0,2,NULL,NULL,NULL,NULL,NULL,2);
-  y = (float*)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
+  x = (float*)NclGetArgValue(0,2,NULL,dsizes_x,NULL,NULL,NULL,2);
+  y = (float*)NclGetArgValue(1,2,NULL,dsizes_y,NULL,NULL,NULL,2);
+
+  npts = dsizes_x[0];
+  if(dsizes_y[0] != npts) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpnts: the dimension sizes of parameters x and y must be identical");
+    return(NhlFATAL);
+  }
+
 /*
  * The following section allocates the output memory and calls the
  * c_nnpnts function.
  */
-  z = (float*)NclMalloc(sizeof(float));
-  c_nnpnts(x[0],y[0],&z[0]);
-  dsizes[0] = 1;
-  return(NclReturnValue((void*)z,1,dsizes,NULL,NCL_float,0));
+  z = (float*)calloc(npts,sizeof(float));
+  for(i = 0; i < npts; i++ ) {
+    c_nnpnts(x[i],y[i],&z[i]);
+  }
+  return(NclReturnValue((void*)z,1,dsizes_x,NULL,NCL_float,0));
 }
 
 
@@ -1426,6 +1527,99 @@ NhlErrorTypes nnpntd_W( void )
   c_nnpntd(*x,*y,z);
   dsizes[0] = 1;
   return(NclReturnValue((void*)z,1,dsizes,NULL,NCL_double,0));
+}
+
+
+
+NhlErrorTypes nnpnt_W( void )
+{
+  void *x, *y, *z;
+  double *tmp_x, *tmp_y, *tmp_z;
+  int dsizes_x[1], dsizes_y[1];
+  NclBasicDataTypes type_x, type_y, type_z;
+  int i, npts;
+
+/*
+ * Retrieve parameters
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value. In this example
+ * the type parameter is set to NULL because the function
+ * is later registered to only accept floating point numbers.
+ */
+  x = (void*)NclGetArgValue(0,2,NULL,dsizes_x,NULL,NULL,&type_x,2);
+  y = (void*)NclGetArgValue(1,2,NULL,dsizes_y,NULL,NULL,&type_y,2);
+
+  if(dsizes_x[0] != dsizes_y[0]) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpnt: the dimension sizes of parameters x and y must be identical");
+    return(NhlFATAL);
+  }
+  npts = dsizes_x[0];
+
+  if(type_x == NCL_double || type_y == NCL_double) {
+    type_z = NCL_double;
+    z      = (void*)calloc(npts,sizeof(double));
+  }
+  else {
+    type_z = NCL_float;
+    z      = (void*)calloc(npts,sizeof(float));
+    tmp_z  = (double*)calloc(1,sizeof(double));
+  }
+  if(z == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+              "nnpnt: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+/*
+ * Set up up variables to hold double input if necessary.
+ */
+  if(type_x != NCL_double) tmp_x  = (double*)calloc(1,sizeof(double));
+  if(type_y != NCL_double) tmp_y  = (double*)calloc(1,sizeof(double));
+
+/*
+ * The following section calls the c_nnpntd function and coerces the
+ * value back to a float if necessary.
+ */
+
+  for(i = 0; i < npts; i++) { 
+    if(type_x != NCL_double) {
+/*
+ * Coerce npts subsection of x (tmp_x) to double.
+ */
+      coerce_subset_input_double(x,tmp_x,i,type_x,1,NULL,NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_x to appropriate location in x.
+ */
+      tmp_x = &((double*)x)[i];
+    }
+
+    if(type_y != NCL_double) {
+/*
+ * Coerce npts subsection of y (tmp_y) to double.
+ */
+      coerce_subset_input_double(y,tmp_y,i,type_y,1,NULL,NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_y to appropriate location in y.
+ */
+      tmp_y = &((double*)y)[i];
+    }
+
+    if(type_z == NCL_double) {
+      tmp_z = &((double*)z)[i];
+    }
+    c_nnpntd(*tmp_x,*tmp_y,tmp_z);
+    if(type_z == NCL_float) ((float*)z)[i] = (float)tmp_z[0];
+  }
+
+  if(type_x != NCL_double) NclFree(tmp_x);
+  if(type_y != NCL_double) NclFree(tmp_y);
+  if(type_z != NCL_double) NclFree(tmp_z);
+
+  return(NclReturnValue(z,1,dsizes_x,NULL,type_z,0));
 }
 
 
