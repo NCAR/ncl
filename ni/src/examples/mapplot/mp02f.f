@@ -1,5 +1,5 @@
 C
-C     $Id: mp02f.f,v 1.4 1995-03-01 15:09:20 haley Exp $
+C     $Id: mp02f.f,v 1.5 1995-03-01 18:36:13 haley Exp $
 C
 C************************************************************************
 C                                                                       *
@@ -23,7 +23,7 @@ C
       external nhlfxworkstationlayerclass
       external nhlfmapplotlayerclass
       integer appid,wid,mapid
-      integer rlist,grlist
+      integer rlist
 C
 C String arrays for specifying areas
 C

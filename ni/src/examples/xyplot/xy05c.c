@@ -1,5 +1,5 @@
 /*
-**      $Id: xy05c.c,v 1.6 1995-02-22 16:35:44 haley Exp $
+**      $Id: xy05c.c,v 1.7 1995-03-01 18:37:43 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -29,10 +29,7 @@
 **                 also shows you how to use the xyYIrregularPoints
 **                 resource to define your own Y axis values.
 **
-**                 The "CoordArrays" object is used to set up the data,
-**                 and the "DataDep" object is used to describe
-**                 attributes of the data being plotted, like the
-**                 marker styles and sizes.
+**                 The "CoordArrays" object is used to set up the data.
 */
 
 #include <stdio.h>
@@ -52,9 +49,7 @@ int len[NCURVE] = {500,200,400,300};
 
 main()
 {
-    int     appid,xworkid,plotid,dataid[NCURVE],datadepid[NCURVE];
-    int     *dspec = datadepid;
-    int     num_dspec;
+    int     appid,xworkid,plotid,dataid[NCURVE];
     int     rlist;
     int     i, j;
     float   theta;

@@ -1,5 +1,5 @@
 C     
-C      $Id: xy05f.f,v 1.4 1995-02-22 16:35:45 haley Exp $
+C      $Id: xy05f.f,v 1.5 1995-03-01 18:37:45 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -29,10 +29,7 @@ C                  appearance of these multiple lines.  This example
 C                  also shows you how to use the xyYIrregularPoints
 C                  resource to define your own Y axis values.
 C
-C                  The "CoordArrays" object is used to set up the data,
-C                  and the "DataDep" object is used to describe
-C                  attributes of the data being plotted, like the
-C                  marker styles and sizes.
+C                  The "CoordArrays" object is used to set up the data.
 C
       external nhlfapplayerclass
       external nhlfxworkstationlayerclass
@@ -43,7 +40,7 @@ C
       parameter(PI100=.031415926535898)
 
       integer appid,xworkid,plotid
-      integer dataid(ncurve),datadepid(ncurve)
+      integer dataid(ncurve)
       integer rlist, i, j, len(NCURVE)
       real explicit_values(10)
       character*10 datastr

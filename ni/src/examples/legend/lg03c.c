@@ -1,5 +1,5 @@
 /*
- *  $Id: lg03c.c,v 1.7 1995-03-01 17:08:05 haley Exp $
+ *  $Id: lg03c.c,v 1.8 1995-03-01 18:33:52 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -36,7 +36,7 @@ main()
     int colors[5];
     int types[5];
     int item_ind[5];
-    float item_hgt, lnthik;
+    float lnthik;
 
 /*
  * Initialize data values

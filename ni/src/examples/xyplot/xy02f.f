@@ -1,5 +1,5 @@
 C
-C      $Id: xy02f.f,v 1.5 1995-02-22 16:35:34 haley Exp $
+C      $Id: xy02f.f,v 1.6 1995-03-01 18:37:42 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -35,7 +35,7 @@ C
       parameter(PI100=.031415926535898)
 
       integer appid,xworkid,plotid,dataid
-      integer rlist, i, j
+      integer rlist, i
       real   ydra(NPTS), theta
 C
 C Initialize some data for the XyPlot object.

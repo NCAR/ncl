@@ -28,7 +28,7 @@ C
       character*11 labels(5)
       integer colors(5)
       integer item_ind(5)
-      real item_hgt, lnthik(5)
+      real lnthik(5)
   
 C
 C Initialize data values

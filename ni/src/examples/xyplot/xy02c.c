@@ -1,5 +1,5 @@
 /*
-**      $Id: xy02c.c,v 1.9 1995-02-22 16:35:33 haley Exp $
+**      $Id: xy02c.c,v 1.10 1995-03-01 18:37:40 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -43,7 +43,7 @@ main()
 {
     int     appid,xworkid,plotid,dataid;
     int     rlist;
-    int     i, j;
+    int     i;
     float   ydra[NPTS], theta;
 /*
  * Initialize some data for the XyPlot object.

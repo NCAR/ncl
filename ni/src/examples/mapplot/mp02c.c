@@ -1,6 +1,6 @@
 
 /*
- *      $Id: mp02c.c,v 1.4 1995-02-11 07:26:53 dbrown Exp $
+ *      $Id: mp02c.c,v 1.5 1995-03-01 18:36:10 haley Exp $
  */
 /************************************************************************
 *									*
@@ -34,7 +34,7 @@ main(int argc, char *argv[])
 {
 
 	int appid,wid,mapid;
-	int rlist,grlist;
+	int rlist;
 /*
  * String arrays for specifying areas
  */

@@ -31,7 +31,7 @@ main()
     char *labels[5];
     NhlColorIndex colors[5];
     NhlMarkerIndex item_ind[5];
-    float item_hgt, mkthik[5];
+    float mkthik[5];
 
 /*
  * Initialize data values
