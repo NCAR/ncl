@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.45 2005-02-05 00:13:55 dbrown Exp $
+ *      $Id: DataSupport.c,v 1.46 2005-02-11 01:59:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -300,13 +300,27 @@ NclMultiDValData str_md;
 	char **buffer;
 	int i,n_dims;
 	string *value;
-	int max_len = 0,tmp_len =0,to = 0;
+	int max_len,tmp_len,to;
 	char *val = NULL;
 	int dim_sizes[NCL_MAX_DIMENSIONS];
+	string missingQ;
+	NhlBoolean has_missing = False;
+	NclScalar tmp_missing;
+
+	if (str_md->multidval.missing_value.has_missing) {
+		has_missing = True;
+		missingQ = str_md->multidval.missing_value.value.stringval;
+		/* default missing char value is 0 */
+		tmp_missing.charval = '\0';
+	}
 
 	buffer = (char**)NclMalloc((unsigned)str_md->multidval.totalelements*sizeof(char*));
 	value = (string*)str_md->multidval.val;
+	/* there has to at least be room for the end-of-string 0 byte */
+	max_len = 1;
 	for(i = 0; i < str_md->multidval.totalelements; i++) {
+		if (has_missing && value[i] == missingQ)
+			continue;
 		buffer[i] = NrmQuarkToString(value[i]);
 		tmp_len = strlen(buffer[i]) + 1;
 		if((buffer[i] != NULL) &&(tmp_len > max_len)) {
@@ -324,8 +338,13 @@ NclMultiDValData str_md;
 		n_dims = str_md->multidval.n_dims +1;
 	}
 	val = (char*)NclCalloc(max_len * str_md->multidval.totalelements,sizeof(char));
-	for(i = 0; i < str_md->multidval.totalelements; i++) {
-		strcpy(&(val[to]),buffer[i]);
+	for(i = 0, to = 0; i < str_md->multidval.totalelements; i++) {
+		if (has_missing && value[i] == missingQ) {
+			val[to] = '\0';
+		}
+		else {
+			strcpy(&(val[to]),buffer[i]);
+		}
 		to += max_len;
 	}
 	NclFree(buffer);
@@ -335,7 +354,7 @@ NclMultiDValData str_md;
 		Ncl_MultiDValData,
 		0,
 		val,
-		NULL,
+		(has_missing ? &tmp_missing : NULL),
 		n_dims,
 		dim_sizes,
 		TEMPORARY,
@@ -350,13 +369,18 @@ NclMultiDValData _NclCharMdToStringMd
 NclMultiDValData char_md;
 #endif
 {
-	int i;
+	int i,j;
 	int n_strings = 1;
 	char *buffer = NULL;
 	int len =0;
 	int from = 0;
 	string *value = NULL;
 	char *val = NULL;
+	string missingQ;
+	char missing;
+	char *cp;
+	NhlBoolean has_missing = False;
+	NclScalar tmp_missing;
 	
 	len = char_md->multidval.dim_sizes[char_md->multidval.n_dims -1];
 
@@ -365,12 +389,46 @@ NclMultiDValData char_md;
 	}
 	buffer = (char*)NclMalloc((unsigned)len + 1);
 	buffer[len] = '\0';
+	if (char_md->multidval.missing_value.has_missing) {
+		has_missing = True;
+		missing = char_md->multidval.missing_value.value.charval;
+		buffer[0] = missing;
+		buffer[1] = '\0';
+		missingQ = NrmStringToQuark(buffer);
+		tmp_missing.stringval = missingQ;
+	}
 	value = (string*) NclMalloc((unsigned)n_strings*sizeof(string));
 	val = (char*)char_md->multidval.val;
-	for(i = 0; i < n_strings ; i++) {
-		memcpy((void*)buffer,&(val[from]),len);
-		from += len;
-		value[i] = NrmStringToQuark(buffer);
+	if (has_missing) {
+		/*
+		 * A missing char ends the string. If it is the
+		 * only character in the string the string becomes
+		 * the missing value. Otherwise, the missing value is
+		 * replaced with a string-ending NULL character.
+		 */
+		for(i = 0; i < n_strings ; i++) {
+			memcpy((void*)buffer,&(val[from]),len);
+			if (buffer[0] == missing) {
+				value[i] = missingQ;
+			}
+			else {
+				for (cp = buffer; *cp != '\0'; cp++) {
+					if (*cp != missing)
+						continue;
+					*cp = '\0';
+					break;
+				}
+				value[i] = NrmStringToQuark(buffer);
+			}
+			from += len;
+		}
+	}
+	else {
+		for(i = 0; i < n_strings ; i++) {
+			memcpy((void*)buffer,&(val[from]),len);
+			value[i] = NrmStringToQuark(buffer);
+			from += len;
+		}
 	}
 	NclFree(buffer);
 	if(char_md->multidval.n_dims != 1) {
@@ -380,7 +438,7 @@ NclMultiDValData char_md;
 			Ncl_MultiDValData,
 			0,
 			(void*)value,
-			NULL,
+			(has_missing ? &tmp_missing : NULL),
 			char_md->multidval.n_dims -1,
 			char_md->multidval.dim_sizes,
 			TEMPORARY,
@@ -393,7 +451,7 @@ NclMultiDValData char_md;
 			Ncl_MultiDValData,
 			0,
 			(void*)value,
-			NULL,
+			(has_missing ? &tmp_missing : NULL),
 			char_md->multidval.n_dims,
 			&(char_md->multidval.n_dims),
 			TEMPORARY,
