@@ -1,5 +1,5 @@
 /*
- *      $Id: go.h,v 1.3 1999-03-12 23:33:02 dbrown Exp $
+ *      $Id: go.h,v 1.4 1999-05-22 00:36:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,13 @@
 
 #include <X11/Intrinsic.h>
 
+/*
+ * Environment variables
+ */ 
+
+#define NDV_PLOT_STYLE_PATH	"NDV_PLOT_STYLE_PATH"
+#define NDV_COLORMAP_PATH	"NDV_COLORMAP_PATH"
+
 extern NhlClass NggOClass;
 
 /*
@@ -39,6 +46,10 @@ extern NhlClass NggOClass;
 #define NgCgoEditFieldColor	"GoEditFieldColor"
 #define NgNgoSelectColor	"goSelectColor"
 #define NgCgoSelectColor	"GoSelectColor"
+#define NgNeditingTranslations  "editingTranslations"
+#define NgCeditingTranslations  "EditingTranslations"
+#define NgNtextFieldEditingTranslations  "textFieldEditingTranslations"
+#define NgCtextFieldEditingTranslations  "TextFieldEditingTranslations"
 
 /*
  * resources retrieved through Xt

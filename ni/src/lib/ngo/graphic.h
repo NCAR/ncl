@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.h,v 1.4 1999-02-23 03:56:48 dbrown Exp $
+ *      $Id: graphic.h,v 1.5 1999-05-22 00:36:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,7 @@ typedef struct _NgHluDataRec {
 	NhlBoolean	preview;
 	int		go_id;
 	NgCBWP		destroy_cb;
+	NhlBoolean	draw_req;
 } NgHluDataRec, *NgHluData;
 
 extern NgHluData NgGetHluData
@@ -47,7 +48,7 @@ void NgFreeHluData
 );
 	
 
-typedef void (*NgSetResProc)
+typedef int (*NgSetResProc)
 (
         int nclstate,
         NhlPointer res_proc_data,

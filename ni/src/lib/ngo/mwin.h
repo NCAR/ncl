@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.h,v 1.2 1998-11-18 19:45:19 dbrown Exp $
+ *      $Id: mwin.h,v 1.3 1999-05-22 00:36:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -58,6 +58,14 @@ extern int NgTopLevelViews(
 extern NgViewObj NgGetView(
 	NgWksState	wks_state,
 	int		view_id
+);
+
+extern void NgDrawUpdatedViews(
+	NgWksState	wks_state
+);
+
+extern void NgUpdateTransformation(
+	NgWksState	wks_state
 );
 
 #endif	/* _NG_MWIN_H */

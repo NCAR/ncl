@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.h,v 1.10 1999-02-23 03:56:51 dbrown Exp $
+ *      $Id: nclstate.h,v 1.11 1999-05-22 00:36:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -331,6 +331,7 @@ NgNclVisBlockEnd
         int		nclstate,
         int		block_id
         );
+
 
 extern NhlErrorTypes
 NgNclCopyShapedVar

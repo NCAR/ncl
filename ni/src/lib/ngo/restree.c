@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.20 1999-03-12 23:33:03 dbrown Exp $
+ *      $Id: restree.c,v 1.21 1999-05-22 00:36:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2454,22 +2454,23 @@ static void SelectCB
                                       NULL);
         }
         if (! off && editable) {
-                if (rtp->selected_row_xmstr)
-                        XmStringFree(rtp->selected_row_xmstr);
-                XtVaGetValues
-                        (pub_rtp->tree,
-                         XmNcolumnPtr,colptr,
-                         XmNrowPtr,rowptr,
-                         XmNcellString,&rtp->selected_row_xmstr,
-                         NULL);
                 XtVaSetValues(pub_rtp->tree,
                               XmNcolumn,2,
                               XmNrow,cb->row,
 			      XmNcellBackground,rtp->go->go.select_pixel,
                               NULL);
                 rtp->edit_row = cb->row;
-                if (_NhlIsSubtypeQ(Qenum,resp->res->nrm_type))
+                if (_NhlIsSubtypeQ(Qenum,resp->res->nrm_type)) {
+			if (rtp->selected_row_xmstr)
+				XmStringFree(rtp->selected_row_xmstr);
+			XtVaGetValues
+				(pub_rtp->tree,
+				 XmNcolumnPtr,colptr,
+				 XmNrowPtr,rowptr,
+				 XmNcellString,&rtp->selected_row_xmstr,
+				 NULL);
                         EditEnum(rtp,cb->row,resp);
+		}
 		else {
 			XmLGridEditBegin(pub_rtp->tree,True,cb->row,2);
 		}
@@ -2496,6 +2497,7 @@ static void EditCB
         XmLGridColumn	colptr;
         rtNodeData	*ndata;
         NhlBoolean	update = True;
+	NhlString	param = "CURRENT";
 
         cb = (XmLGridCallbackStruct *)cb_data;
         rowptr = XmLGridGetRow(pub_rtp->tree,XmCONTENT,cb->row);
@@ -2503,15 +2505,31 @@ static void EditCB
         rtp->size_update_req = False;
         
         switch (cb->reason) {
+	    char	*cur_string;
             case XmCR_EDIT_BEGIN:
 #if DEBUG_RESTREE        
                     fprintf(stderr,"edit begin\n");
 #endif
+		    if (rtp->selected_row_xmstr)
+			    XmStringFree(rtp->selected_row_xmstr);
+		    XtVaGetValues
+			    (pub_rtp->tree,
+			     XmNcolumnPtr,colptr,
+			     XmNrowPtr,rowptr,
+			     XmNcellString,&rtp->selected_row_xmstr,
+			     NULL);
+		    XmStringGetLtoR(rtp->selected_row_xmstr,
+				    XmFONTLIST_DEFAULT_TAG,&cur_string);
                     XtVaSetValues(rtp->text,
+				  XmNvalue,cur_string,
+                                  XmNcursorPosition,0,
+                                  XmNborderWidth,2,
+                                  XmNcursorPositionVisible,True,
 				  XmNbackground,rtp->go->go.select_pixel,
                                   NULL);
                     rtp->edit_row = cb->row;
                     rtp->manual_edit_started = True;
+		    XtFree(cur_string);
                     return;
             case XmCR_EDIT_CANCEL:
 #if DEBUG_RESTREE        
@@ -2530,6 +2548,14 @@ static void EditCB
 #if DEBUG_RESTREE        
                     fprintf(stderr,"edit insert\n");
 #endif
+		    if (rtp->selected_row_xmstr)
+			    XmStringFree(rtp->selected_row_xmstr);
+		    XtVaGetValues
+			    (pub_rtp->tree,
+			     XmNcolumnPtr,colptr,
+			     XmNrowPtr,rowptr,
+			     XmNcellString,&rtp->selected_row_xmstr,
+			     NULL);
 		    rtp->manual_edit_started = True;
                     XtVaSetValues(rtp->text,
                                   XmNcursorPosition,0,
@@ -2819,7 +2845,6 @@ NhlErrorTypes NgResTreeResUpdateComplete
 {
         NgResTreeRec *rtp;
         NgResTree *pub_rtp;
-	rtSetValNode *svp;
         int i,res_count = 0,row_count;
         NhlPointer *values;
         char buf[256];
@@ -2997,7 +3022,6 @@ NhlErrorTypes NgResTreeResUpdateComplete
              _NhlFreeConvertContext(context);   
         NhlFree(res_data);
         NhlFree(values);
-	EmptySetValList(rtp);
         NhlRLClear(Grlist);
 
         if (rtp->size_update_req) {
@@ -3165,7 +3189,7 @@ void NgResTreePreviewResList
         return;
 }
 
-void NgResTreeAddResList
+int NgResTreeAddResList
 (
         int		nclstate,
         NhlPointer	res_tree,
@@ -3185,12 +3209,15 @@ void NgResTreeAddResList
 #endif
 
         rtp = (NgResTreeRec *) res_tree;
-        if (!rtp) return;
+        if (!rtp) return 0;
         pub_rtp = &rtp->restree;
         
         for (svp = rtp->set_val_list; svp != NULL; svp = svp->next) {
                 res_count++;
         }
+	if (! res_count)
+		return 0;
+
         values = NhlMalloc(res_count * sizeof(NhlString));
         res_names = NhlMalloc(res_count * sizeof(NhlString));
         quote = NhlMalloc(res_count * sizeof(NhlBoolean));
@@ -3223,7 +3250,9 @@ void NgResTreeAddResList
         NhlFree(values);
         NhlFree(quote);
         
-        return;
+	EmptySetValList(rtp);
+
+        return res_count;
 }
 
 NhlString NgResTreeGetSetValue
@@ -3389,6 +3418,57 @@ NgResTree *NgDupResTree
                 DupSetValState(tortp,fromrtp);
 	return (NgResTree *) tortp;
         
+}
+
+static void
+SetValCB
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+{
+	NgResTree *pub_rtp = (NgResTree *)udata.ptrval;
+	_NhlValueSetCBData vsdata = (_NhlValueSetCBData) cbdata.ptrval;
+
+#if 1
+        fprintf(stderr,"in restree setval cb\n");
+#endif
+
+	NgResTreeResUpdateComplete(pub_rtp,vsdata->id,False);
+
+        return;
+}
+
+extern NhlErrorTypes NgResTreeInstallSetValCB
+(
+        NgResTree	*res_tree,
+        int		hlu_id,
+        NhlBoolean	install   /* if False this is actually "uninstall" */
+        )
+{
+	NhlArgVal sel,user_data;
+        NgResTreeRec *rtp;
+        
+        rtp = (NgResTreeRec *) res_tree;
+        if (!rtp) return NhlFATAL;
+
+	if (! install) {
+		if (hlu_id == rtp->hlu_id && _NhlGetLayer(hlu_id))
+			_NhlCBDelete(rtp->setval_cb);
+		rtp->setval_cb = NULL;
+		return NhlNOERROR;
+	}
+
+	rtp->hlu_id = hlu_id;
+	NhlINITVAR(sel);
+	NhlINITVAR(user_data);
+	sel.lngval = 0;
+	user_data.ptrval = rtp;
+	rtp->setval_cb = _NhlAddObjCallback
+		(_NhlGetLayer(hlu_id),_NhlCBobjValueSet,
+		 sel,SetValCB,user_data);
+
+	return NhlNOERROR;
 }
         
 NhlErrorTypes NgUpdateResTree
@@ -3567,7 +3647,11 @@ NhlErrorTypes NgUpdateResTree
                               XmNvalueChangedCallback,ScrollCB,rtp);
                 rtp->scroll_cbs_installed = True;
         }
-        
+
+
+        if (_NhlGetLayer(rtp->hlu_id)) {
+		NgResTreeInstallSetValCB(res_tree,rtp->hlu_id,True);
+	}
         return NhlNOERROR;
 }
 
@@ -3686,6 +3770,7 @@ NgResTree *NgCreateResTree
 	rtp->enum_info.up = False;
         rtp->htmlview_count = 0;
         rtp->duping_data_list = False;
+	rtp->setval_cb = NULL;
                 
         pub_rtp->tree = XtVaCreateManagedWidget
                 ("ResTree",xmlTreeWidgetClass,parent,
@@ -3804,6 +3889,9 @@ void NgDestroyResTree
 		}
                 NhlFree(rtp->class_info);
         }
+	if (rtp->setval_cb && _NhlGetLayer(rtp->hlu_id)) {
+		_NhlCBDelete(rtp->setval_cb);
+	}
 
         NhlFree(rtp);
         
@@ -3853,3 +3941,4 @@ static void ResTreeTextAction(
 #endif
 	return;
 }
+	

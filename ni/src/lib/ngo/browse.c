@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.27 1999-03-09 00:47:09 dbrown Exp $
+ *      $Id: browse.c,v 1.28 1999-05-22 00:36:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,7 @@
 #include <ncarg/ngo/browseP.h>
 #include <ncarg/ngo/nclstate.h>
 #include <ncarg/ngo/xutil.h>
+#include <ncarg/ngo/mwin.h>
 #include <ncarg/ngo/filepageP.h>
 #include <ncarg/ngo/varpageP.h>
 #include <ncarg/ngo/hlupageP.h>
@@ -671,6 +672,7 @@ CreateFolder
 				xmLabelGadgetClass,pane->folder,
 				NULL);
 	pane->has_folder = True;
+	_NgGOWidgetTranslations(go,pane->folder);
 
 
 	return;
@@ -906,6 +908,7 @@ AddPane
 			False,MapFirstPaneEH,pane);
 	}
         pane->managed = True;
+	_NgGOWidgetTranslations(go,pane->topform);
 
         height = theight / pcp->current_count;
 	if(height > 0){
@@ -1069,6 +1072,7 @@ NewTab
 		 NULL);
         XtAddEventHandler(tp->tab,FocusChangeMask,
                           False,TabFocusEH,(XtPointer)pane);
+	_NgGOWidgetTranslations(go,tp->tab);
         
         tp->managed = False;
 
@@ -2084,6 +2088,47 @@ static void CycleSelectionCB
 	
 }
 
+static void UpdatePagesCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+	NgGO		go = (NgGO) udata;
+	NgBrowse	browse = (NgBrowse)go;
+	NgBrowsePart	*np = &browse->browse;
+        brPaneControl	*pcp = &np->pane_ctrl;
+        brPage		*page;
+        brPane		*pane;
+        NrmQuark	qvar,qfile;
+        int		i,j;
+	NgWksState 	wks_state;
+        
+	NhlVAGetValues(go->go.appmgr,
+		       NgNappWksState,&wks_state,
+		       NULL);
+
+#if	DEBUG_DATABROWSER & DEBUG_ENTRY
+	fprintf(stderr,"CycleSelectionCB(IN)\n");
+#endif
+
+        for (i = 0; i < pcp->current_count; i++) {
+		pane = np->pane_ctrl.panes[i];
+                for (j = 0; j < pane->pagecount; j++) {
+                        brPage *page = (brPage *)XmLArrayGet(pane->pagelist,j);
+			if (! page->pdata->update_page)
+				continue;
+			(*page->pdata->update_page)(page);
+                }
+        }
+
+	NgDrawUpdatedViews(wks_state);
+	
+        return;
+	
+}
+
 static void HelpCB 
 (
 	Widget		w,
@@ -2139,7 +2184,7 @@ ChangeSizeEH
 			tdata.go = go;
 			tdata.qvar = qhtml = NrmStringToQuark("Start.html");
 			tdata.type = _brHTML;
-			XtAppAddTimeOut(go->go.x->app,50,
+			XtAppAddTimeOut(go->go.x->app,200,
 					BrowseTimeoutCB,&tdata);
 		}
         }
@@ -2213,7 +2258,7 @@ SetupPaneControl
         XtAddCallback(pcp->vcr->forward,XmNactivateCallback,PaneCtrlCB,go);
 
         label = XtVaCreateManagedWidget
-                ("Page:",xmLabelGadgetClass,
+                ("Pages:",xmLabelGadgetClass,
                  parent,
                  XmNleftAttachment,	XmATTACH_WIDGET,
                  XmNleftWidget,		pcp->vcr->form,
@@ -2247,6 +2292,20 @@ SetupPaneControl
                  XmNbottomOffset,	5,
                  NULL);
         XtAddCallback(pb,XmNactivateCallback,DeleteSelectionCB,go);
+
+        pb = XtVaCreateManagedWidget
+                ("Update",xmPushButtonWidgetClass,
+                 parent,
+                 XmNleftOffset,		15,
+                 XmNleftAttachment,	XmATTACH_WIDGET,
+                 XmNleftWidget,		pb,
+                 XmNrightAttachment,	XmATTACH_NONE,
+                 XmNbottomAttachment,	XmATTACH_NONE,
+                 XmNtopOffset,		5,
+                 XmNbottomOffset,	5,
+                 NULL);
+        XtAddCallback(pb,XmNactivateCallback,UpdatePagesCB,go);
+
         return;
 }
 
@@ -2277,8 +2336,12 @@ BrowseCreateWin
         XtAddEventHandler(go->go.manager,StructureNotifyMask,
                           False,ChangeSizeEH,(XtPointer)go);
 
-	_NgGOSetTitle(go,"NCAR DataVision",NULL);
+	_NgGOSetTitle(go,"NCAR DataVision Browser",NULL);
 	_NgGOCreateMenubar(go);
+
+	XtVaSetValues(go->go.close,
+		XmNsensitive,	False,
+		NULL);
 
 	XtVaSetValues(go->go.help,
 		XmNsensitive,	True,
@@ -2521,6 +2584,24 @@ extern NhlPointer NgPageData(
                 return NULL;
 
         return ((*page->pdata->public_page_data)(page));
+
+}
+
+extern NhlErrorTypes NgResetPage
+(
+        int		goid,
+        NgPageId	page_id
+        )        
+{
+        NgGO		go = (NgGO)_NhlGetLayer(goid);
+        brPage		*page = GetPageReference(go,page_id);
+
+        if (! page)
+                return NhlFATAL;
+        if (! page->pdata->reset_page)
+                return NhlFATAL;
+
+        return ((*page->pdata->reset_page)(page));
 
 }
 
@@ -2844,7 +2925,7 @@ extern NhlErrorTypes NgPostPageMessage
 		page_id = NgGetPageId(go->base.id,to_qvar,to_qfile);
 		if (page_id > NgNoPage) {
 #if 0
-			NgUpdatePage(go->base.id,page_id);
+			NgResetPage(go->base.id,page_id);
 #endif
 			NgPageMessageNotify(goid,page_id);
 		}

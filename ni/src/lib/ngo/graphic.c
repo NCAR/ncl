@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.c,v 1.10 1999-02-23 03:56:48 dbrown Exp $
+ *      $Id: graphic.c,v 1.11 1999-05-22 00:36:18 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -307,6 +307,8 @@ NhlErrorTypes NgUpdateGraphic
         int i;
         int block_id;
         NgGO go = (NgGO)_NhlGetLayer(goid);
+	int tcount = 0;
+	int hlu_id, *id_array, count;
 
         if (!go) {
                 NHLPERROR((NhlWARNING,NhlEUNKNOWN,"invalid graphic object"));
@@ -316,9 +318,37 @@ NhlErrorTypes NgUpdateGraphic
         block_id = NgNclVisBlockBegin(go->go.nclstate,_NgSETVAL,ncl_graphic,
                                       NULL,NULL);
         for (i = 0; i < res_proc_count; i++) {
-                (*res_procs[i])(go->go.nclstate,res_proc_data[i],block_id);
+                tcount += (*res_procs[i])
+			(go->go.nclstate,res_proc_data[i],block_id);
         }
+	if (! tcount)
+		return NhlNOERROR;
+
         NgNclVisBlockEnd(go->go.nclstate,block_id);
+
+        hlu_id = NgNclGetHluObjId
+                (go->go.nclstate,ncl_graphic,&count,&id_array);
+
+        for (i = 0; i < count; i++) {
+		NhlLayer l;
+                if (count > 1)
+                        hlu_id = id_array[i];
+		l = _NhlGetLayer(hlu_id);
+		if (l && _NhlIsView(l)) {
+			NhlLayer tl;
+			int top_id = _NhlTopLevelView(hlu_id);
+			tl = _NhlGetLayer(top_id);
+			if (tl) {
+				NgHluData hdata = 
+					(NgHluData) tl->base.gui_data2;
+				if (hdata)
+					hdata->draw_req = True;
+			}
+		}
+	}	
+        if (count > 1) {
+                NhlFree(id_array);
+        }
                 
         return NhlNOERROR;
 }
@@ -383,6 +413,7 @@ NhlErrorTypes NgDrawGraphic
 	char base_name[512];
         NgGO go = (NgGO)_NhlGetLayer(goid);
 	NgWksState wks_state;
+	NgHluData hdata;
 
         if (!go) {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,"invalid graphic object"));
@@ -422,7 +453,7 @@ NhlErrorTypes NgDrawGraphic
 	if (NhlIsClass(wk_id,NhlxWorkstationClass)) {
 		NhlLayer wkl = _NhlGetLayer(wk_id);
 		NgWksObj wko;
-		NgHluData hdata = (NgHluData) wkl->base.gui_data2;
+		hdata = (NgHluData) wkl->base.gui_data2;
 
 		wko = hdata ? (NgWksObj) hdata->gdata : NULL;
 		if (! wko) {
@@ -445,6 +476,10 @@ NhlErrorTypes NgDrawGraphic
 		NgUpdateViewBB(wks_state,hlu_id);
 	}
         
+
+	hdata = (NgHluData) layer->base.gui_data2;
+	hdata->draw_req = False;
+
         return NhlNOERROR;
 }
 
@@ -494,6 +529,7 @@ extern NgHluData NgGetHluData
 	hlu_data->preview = False;
 	hlu_data->qplotstyle = NrmNULLQUARK;
 	hlu_data->destroy_cb = NULL;
+	hlu_data->draw_req = False;
 
 	return hlu_data;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: xinteract.c,v 1.4 1999-02-23 03:56:56 dbrown Exp $
+ *      $Id: xinteract.c,v 1.5 1999-05-22 00:36:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,14 +29,6 @@
 #include <ncarg/gksP.h>
 #include <ncarg/ngo/xwkP.h>
 #include <ncarg/ngo/mwin.h>
-
-#ifdef  DEBUG
-#define XGRABSERVER(dpy)
-#define XUNGRABSERVER(dpy)
-#else
-#define XGRABSERVER(dpy)        XGrabServer(dpy)
-#define XUNGRABSERVER(dpy)      XUngrabServer(dpy)
-#endif
 
 typedef enum {MODX, MODY, MODPT, MOVE} RubberType;
 
@@ -1082,7 +1074,7 @@ extern void NgXCoordToNDC
 	float		*height
 )
 {
-	char func[] = "NgNDCToXCoord";
+	char func[] = "NgXCoordToNDC";
 	int dev_width, dev_height;
 	NgXWk xwks = (NgXWk)_NhlGetLayer(xwkid);
 	short	minX;

@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.13 1999-03-12 23:33:03 dbrown Exp $
+ *      $Id: shaper.c,v 1.14 1999-05-22 00:36:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -662,6 +662,8 @@ ToggleCoordGridCB
 			 NULL);
                 if (si->pdata)
                         (*si->geo_notify)(si->pdata);
+		_NgGOWidgetTranslations(si->go,si->all_selected_tgl);
+		_NgGOWidgetTranslations(si->go,si->datagrid->grid);
 	}
 	else if (set) {
 		XtManageChild(si->datagrid->grid);

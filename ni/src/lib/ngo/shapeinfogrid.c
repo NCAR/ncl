@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.13 1999-03-12 23:33:03 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.14 1999-05-22 00:36:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -532,6 +532,9 @@ CellFocusCB
                               XmNcolumn,cb->column,
 			      XmNcellBackground,sirp->go->go.select_pixel,
                               NULL);
+		if (sip->selected_dim != cb->column)
+			SetSelectedDim(sip,cb->column);
+		(*sip->dim_select_notify)(sip->notify_data);
         }
         return;
 }
@@ -823,11 +826,15 @@ DimEditCB
         XmLGridColumn colptr;
         XmLGridRow rowptr;
         Widget text;
+	NhlBoolean insert_mode = False;
         
         switch (cb->reason) {
+            case XmCR_EDIT_INSERT:
+		    insert_mode = True;
             case XmCR_EDIT_BEGIN:
 #if DEBUG_SHAPE_INFO_GRID      
-                    fprintf(stderr,"edit begin\n");
+                    fprintf(stderr,"edit begin %s\n",
+			    insert_mode ? "insert mode" : "");
 #endif
                     colptr = XmLGridGetColumn(sip->grid,XmCONTENT,cb->column);
                     rowptr = XmLGridGetRow(sip->grid,XmCONTENT,cb->row);
@@ -862,12 +869,6 @@ DimEditCB
 #endif
 		    sirp->manual_edit_started = False;
                     break;
-            case XmCR_EDIT_INSERT:
-#if DEBUG_SHAPE_INFO_GRID      
-                    fprintf(stderr,"edit insert\n");
-#endif
-		    sirp->manual_edit_started = True;
-                    return;
         }
 
         if (update) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: filepage.c,v 1.6 1999-02-23 03:56:47 dbrown Exp $
+ *      $Id: filepage.c,v 1.7 1999-05-22 00:36:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -105,6 +105,7 @@ NewFileRefPage
 	pdp->deactivate_page = NULL;
         pdp->public_page_data = NULL;
         pdp->update_page = NULL;
+        pdp->reset_page = NULL;
         pdp->page_focus_notify = NULL;
         pdp->page_message_notify = NULL;
         
@@ -128,6 +129,7 @@ NgGetFileRefPage
 	brPageData		*pdp;
 	brFileRefPageRec	*rec;
 	NgFileTree		*copy_filetree;
+	NhlBoolean		new = False;
 
 	if (copy_page) {
 		brFileRefPageRec *copy_rec = 
@@ -138,8 +140,10 @@ NgGetFileRefPage
 		if (!pdp->in_use)
 		  break;
 	}
-        if (! pdp)
+        if (! pdp) {
                 pdp = NewFileRefPage(go,pane);
+		new = True;
+	}
         if (! pdp)
                 return NULL;
         page->pdata = pdp;
@@ -178,6 +182,10 @@ NgGetFileRefPage
         
         pdp->in_use = True;
         rec->filetree->geo_data = (NhlPointer) page;
+
+        if (new)
+		_NgGOWidgetTranslations(go,pdp->form);
+
         return pdp;
 
 }

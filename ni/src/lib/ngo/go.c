@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.22 1999-03-12 23:33:02 dbrown Exp $
+ *      $Id: go.c,v 1.23 1999-05-22 00:36:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@
 #include <ncarg/ngo/xwk.h>
 #include <ncarg/ngo/graphic.h>
 #include <ncarg/ngo/print.h>
+#include <ncarg/ngo/Grid.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
@@ -39,6 +40,8 @@
 #include <Xm/PushBG.h>
 #include <Xm/ToggleBG.h>
 #include <Xm/SeparatoG.h>
+#include <Xm/List.h>
+#include <X11/cursorfont.h>
 
 #include <Xcb/xcbShells.h>
 
@@ -132,6 +135,18 @@ NgGOClassRec NggOClassRec = {
 };
 
 NhlClass NggOClass = (NhlClass)&NggOClassRec;
+
+
+static void DragItem(
+#if	NhlNeedProto
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+#endif
+);
+
+
 
 /*
  * Function:	GOClassPartInitialize
@@ -641,6 +656,7 @@ static XtActionsRec go_act[] = {
 	{"nclWindow", nclWindow,},
 	{"browseWindow", browseWindow,},
 	{"printPlot", printPlot,},
+	{ "DragItem", DragItem },
 };
 
 /*
@@ -969,7 +985,14 @@ GOCreateWin
 		{NgNglobalTranslations,NgCglobalTranslations,
 			XtRTranslationTable,sizeof(XtTranslations),
 			XtOffset(NgGO,go.global_trans),XtRImmediate,NULL},
-		};
+                {NgNeditingTranslations,NgCeditingTranslations,
+                        XtRTranslationTable,sizeof(XtTranslations),
+                        XtOffset(NgGO,go.editing_trans),XtRImmediate,NULL},
+                {NgNtextFieldEditingTranslations,
+			 NgCtextFieldEditingTranslations,
+                        XtRTranslationTable,sizeof(XtTranslations),
+                        XtOffset(NgGO,go.tf_editing_trans),XtRImmediate,NULL},
+ 		};
 
 	if(gp->subshell){
 		pp = &((NgGO)go->base.parent)->go;
@@ -1074,18 +1097,39 @@ InstallTranslations
 	if(!w)
 		return;
 
+
 	/*
 	 * Install global translations
 	 */
 	if(gp->global_trans && XtIsWidget(w))
 		XtOverrideTranslations(w,gp->global_trans);
 
-	/*
-	 * Install text translations
-	 */
-	if(XmIsText(w) || XmIsTextField(w)){
-		;
+
+        /*
+         * Install text translations
+         */
+        if(XmIsText(w) && ! XmLIsGrid(XtParent(w))){
+#if 0
+                printf("%s\n",XrmQuarkToString(w->core.xrm_name));
+#endif
+                XtOverrideTranslations(w,gp->editing_trans);
+#if 0
+		_XtDisplayTranslations(w,NULL,NULL,NULL);
+#endif
+        }
+	else if (XmIsTextField(w)) {
+#if 0
+                printf("%s\n",XrmQuarkToString(w->core.xrm_name));
+#endif
+                XtOverrideTranslations(w,gp->tf_editing_trans);
 	}
+#if 0
+
+	else if (XmIsList(w)) {
+                printf("%s\n",XrmQuarkToString(w->core.xrm_name));
+		_XtDisplayTranslations(w,NULL,NULL,NULL);
+	}
+#endif
 
 	if(XtIsComposite(w)){
 		WidgetList	list;
@@ -1744,6 +1788,7 @@ _NgGOCreateMenubar
 					xmPushButtonGadgetClass,gp->fmenu,
 		NULL);
 	XtAddCallback(close,XmNactivateCallback,_NgGODefActionCB,NULL);
+	go->go.close = close;
 
 	quit = XtVaCreateManagedWidget("quitApplication",
 					xmPushButtonGadgetClass,gp->fmenu,
@@ -2096,4 +2141,65 @@ NgGOWidgetToGoId
 	}
 
 	return goid;
+}
+
+static void DragItem(
+#if	NhlNeedProto
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+#endif
+)
+{
+	static NhlBoolean first = True;
+	static Cursor	DragCursor;
+	Display	        *dpy = XtDisplay(w);
+	Widget		pw;
+	Window		win;
+
+	pw =w;
+	while (! XtIsSubclass(pw,shellWidgetClass))
+		pw = XtParent(pw);
+	if (! pw)
+		return;
+
+	win = DefaultRootWindow(dpy);
+	win = XtWindow(pw);
+	
+	if (first) {
+		DragCursor = XCreateFontCursor(dpy,XC_sailboat);
+		first = False;
+	}
+		
+	printf("drag initiated\n");
+
+	XGRABSERVER(dpy);
+	if(XGrabPointer(dpy,win,False,
+			(Button2MotionMask|ButtonPressMask|ButtonReleaseMask),
+			GrabModeAsync,GrabModeAsync,None,DragCursor,
+			CurrentTime) != GrabSuccess){
+
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+						"Unable to grab pointer");
+			XUNGRABSERVER(dpy);
+			return;
+	}
+#if 0
+	XDefineCursor(dpy,win,DragCursor);
+        XSync(dpy,False);
+#endif
+
+	if (XmIsList(w)) {
+		printf("in a list\n");
+		
+	}
+
+	sleep(3);
+	
+	XUNGRABSERVER(dpy);
+	XUndefineCursor(dpy,win);
+	XUngrabPointer(dpy, CurrentTime);
+
+	return;
 }

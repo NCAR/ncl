@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.22 1999-02-23 03:56:50 dbrown Exp $
+ *      $Id: mwin.c,v 1.23 1999-05-22 00:36:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1510,7 +1510,6 @@ extern void SetViewBBOffscreen
 	int		pid
 	)
 {
-	char		func[]="NgUpdateViewBB";
 	NgObjTreeNode	vnode;
 	NgViewObj	vobj;
 
@@ -2691,7 +2690,7 @@ extern NhlErrorTypes NgUpdateViewBB
 	/*
 	 * bounding boxes only of interest if an XWorkstation
 	 */
-	if (! _NhlIsXWorkstation(_NhlGetLayer(l->base.wkptr->base.id)))
+	if (! (l->base.wkptr && _NhlIsXWorkstation(l->base.wkptr)))
 		return NhlNOERROR;
 
 	
@@ -2874,6 +2873,58 @@ extern NgViewObj NgGetView
 		return NULL;
 
 	return (NgViewObj) vwnode->ndata;
+}
+
+extern void NgUpdateTransformation(
+	NgWksState	wks_state
+)
+{
+	char		func[]="NgUpdateTransformation";
+	NgObjTree	otree = (NgWksState)wks_state;
+	NgObjTreeNode	vwnode,wknode;
+
+	for (wknode = otree->wklist; wknode; wknode = wknode->next) {
+		for (vwnode = wknode->cnodes; vwnode; vwnode = vwnode->next) {
+			UpdateViewBB(wknode,vwnode);
+			UpdateMemberViewBB(wknode,vwnode);
+		}
+	}
+}
+
+
+extern void NgDrawUpdatedViews(
+	NgWksState	wks_state
+)
+{
+	char		func[]="NgDrawUpdatedViews";
+	NgObjTree	otree = (NgWksState)wks_state;
+	NgObjTreeNode	vwnode,wknode;
+	NhlBoolean	draw_single;
+	int		selected_id;
+
+	for (wknode = otree->wklist; wknode; wknode = wknode->next) {
+		NgWksObj wkobj = (NgWksObj) wknode->ndata;
+		if (! wkobj->auto_refresh)
+			continue;
+		NhlVAGetValues(wkobj->wks_wrap_id,
+			       NgNxwkSelectedView,&selected_id,
+			       NgNxwkDrawSelectedViewOnly,&draw_single,
+			       NULL);
+		for (vwnode = wknode->cnodes; vwnode; vwnode = vwnode->next) {
+			NgHluData hdata;
+			NhlLayer l = _NhlGetLayer(vwnode->id);
+			if (! l)
+				continue;
+			if (draw_single && vwnode->id != selected_id)
+				continue;
+			hdata = (NgHluData) l->base.gui_data2;
+			if (! hdata)
+				continue;
+			if (hdata->draw_req)
+				NgDrawView
+					(otree->go->base.id,vwnode->id,True);
+		}
+	}
 }
 
 static void RowMoveAction

@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlview.c,v 1.12 1999-03-05 16:53:30 dbrown Exp $
+ *      $Id: htmlview.c,v 1.13 1999-05-22 00:36:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1107,6 +1107,7 @@ _NgCreateHtmlView(
         pub_hvp->user_page_id = NgNoPage;
         pub_hvp->locator = pub_hvp->name = NrmNULLQUARK;
         pub_hvp->managed = pub_hvp->mapped = False;
+	_NgGOWidgetTranslations(hvp->go,pub_hvp->htmlview);
         
         return pub_hvp;
 }

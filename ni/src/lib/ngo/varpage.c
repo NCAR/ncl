@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.c,v 1.12 1999-03-18 18:37:24 dbrown Exp $
+ *      $Id: varpage.c,v 1.13 1999-05-22 00:36:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -364,6 +364,7 @@ static void DataGridToggleCB
                               NULL);
                 rec->new_data = False;
                 rec->datagrid_managed = True;
+		_NgGOWidgetTranslations(page->go,rec->datagrid->grid);
         }
         else if (rec->new_data) {
 		NgUpdateDataGrid(rec->datagrid,page->qfile,pdp->dl->u.var,
@@ -449,6 +450,7 @@ UpdateShaper
                 XtVaSetValues(rec->data_ctrl_form,
                               XmNtopWidget,rec->shaper->frame,
                               NULL);
+		_NgGOWidgetTranslations(page->go,rec->shaper->frame);
         }
         else if (rec->new_shape) {
                 rec->shaper->start = rec->start;
@@ -790,6 +792,7 @@ NewVarPage
 	pdp->page_message_notify = VarPageMessageNotify;
         pdp->public_page_data = NULL;
         pdp->update_page = NULL;
+        pdp->reset_page = NULL;
         pdp->page_focus_notify = NULL;
         
         return pdp;
@@ -839,6 +842,7 @@ NgGetVarPage
 	NgVarTree		*copy_vartree;
         Widget			label,top_widget;
 	NhlBoolean		do_shaper = False;
+	NhlBoolean		new = False;
 
 	if (copy_page) {
 		copy_rec = (brVarPageRec *) copy_page->pdata->type_rec;
@@ -848,8 +852,10 @@ NgGetVarPage
 		if (!pdp->in_use)
 		  break;
 	}
-        if (! pdp)
+        if (! pdp) {
                 pdp = NewVarPage(go,pane);
+		new = True;
+	}
         if (! pdp)
                 return NULL;
         page->pdata = pdp;
@@ -1097,7 +1103,10 @@ NgGetVarPage
 
         pdp->in_use = True;
         AdjustVarPageGeometry((NhlPointer)page);
-        
+
+        if (new)
+		_NgGOWidgetTranslations(go,pdp->form);
+
 	return pdp;
 }
 

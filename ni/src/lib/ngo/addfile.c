@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.23 1999-03-12 23:33:01 dbrown Exp $
+ *      $Id: addfile.c,v 1.24 1999-05-22 00:36:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,7 +38,7 @@
 #include <Xm/Form.h>
 #include <Xm/Label.h>
 #include <Xm/List.h>
-#include <Xm/TextF.h>
+#include <Xm/Text.h>
 #include  <Xm/MessageB.h>
 #include  <Xm/LabelG.h>
 #include  <Xm/Frame.h>
@@ -324,7 +324,7 @@ AddFileScript
         if (!writable)
                 np->writable = False;
             
-	vname = XmTextFieldGetString(l->addfile.vname);
+	vname = XmTextGetString(l->addfile.vname);
 	if(!vname || (vname[0] == '\0')){
 		XtFree(vname);
 		return;
@@ -545,7 +545,7 @@ static void SetApplyForm
                               XmNbackground,Background,
                               XmNeditable,False,
                               NULL);
-                XmTextFieldSetString(np->vname,NrmQuarkToString(symbol));
+                XmTextSetString(np->vname,NrmQuarkToString(symbol));
                 if (!np->vname_added || np->cleared) {
                         np->vname_added = True;
                         XtVaSetValues(np->vname_label,
@@ -597,7 +597,7 @@ static void SetApplyForm
 		bname[0] = '\0';
 
         vname = NgNclGetSymName(go->go.nclstate,bname,False);
-	XmTextFieldSetString(np->vname,vname);
+	XmTextSetString(np->vname,vname);
                 
 	return;
 }
@@ -1296,9 +1296,9 @@ static void ClearApplyForm
 	XtVaSetValues(np->vname,
 		      XmNeditable,True,
 		      NULL);
-	vname = XmTextFieldGetString(l->addfile.vname);
-	XmTextFieldSetSelection(l->addfile.vname,0,strlen(vname),CurrentTime);
-	XmTextFieldRemove(l->addfile.vname);
+	vname = XmTextGetString(l->addfile.vname);
+	XmTextSetSelection(l->addfile.vname,0,strlen(vname),CurrentTime);
+	XmTextRemove(l->addfile.vname);
 	XtFree(vname);
 	XtSetSensitive(np->ok,False);
 	XtSetSensitive(np->apply,False);
@@ -2151,7 +2151,7 @@ AddFileCreateWin
 
 	np->vname =
                 XtVaCreateManagedWidget("vname",
-                                        xmTextFieldWidgetClass,applyform,
+                                        xmTextWidgetClass,applyform,
 					XmNtopAttachment, XmATTACH_NONE,
                                         XmNrightAttachment,XmATTACH_WIDGET,
                                         XmNrightWidget,np->rw_optmenu,
@@ -2572,7 +2572,7 @@ AddFileCreateWin
 
         np->filtertext = 
                 XtVaCreateManagedWidget("FilterText",
-                                        xmTextFieldWidgetClass,filterform,
+                                        xmTextWidgetClass,filterform,
                                         XmNleftAttachment,XmATTACH_WIDGET,
                                         XmNleftWidget,filterlabel,
                                         XmNresizeWidth,False,

@@ -1,5 +1,5 @@
 /*
- *      $Id: goP.h,v 1.12 1999-03-12 23:33:02 dbrown Exp $
+ *      $Id: goP.h,v 1.13 1999-05-22 00:36:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,15 @@
 #include <ncarg/ngo/xapp.h>
 #include <ncarg/ngo/varmenus.h>
 #include <ncarg/ngo/createmenu.h>
+
+
+#ifdef  DEBUG
+#define XGRABSERVER(dpy)
+#define XUNGRABSERVER(dpy)
+#else
+#define XGRABSERVER(dpy)        XGrabServer(dpy)
+#define XUNGRABSERVER(dpy)      XUngrabServer(dpy)
+#endif
 
 typedef struct _NgGOClassRec *NgGOClass;
 typedef struct _NgGORec *NgGO;
@@ -83,10 +92,13 @@ typedef struct _NgGOPart {
 	Widget		options;
 	Widget		window;
 	Widget		help;
+	Widget		close;
         NgCreateMenu	*create_menu;
         NgVarMenus	delete_menu;
         _NhlCB		gochange_cb;
 	XtTranslations	global_trans;
+	XtTranslations	editing_trans;
+	XtTranslations	tf_editing_trans;
 	int		print;
 	Pixel		edit_field_pixel;
 	Pixel		select_pixel;

@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.13 1999-03-12 19:13:49 dbrown Exp $
+ *      $Id: xwk.c,v 1.14 1999-05-22 00:36:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -19,6 +19,9 @@
  *
  *	Description:	
  */
+#include <stdlib.h>
+#include <dirent.h>
+
 #include <ncarg/gksP.h>
 #include <ncarg/ngo/xwkP.h>
 #include <ncarg/ngo/nclstate.h>
@@ -45,7 +48,13 @@ static NhlResource resources[] = {
 		_NhlRES_CONLY,NULL},
 	{NgNxwkSelectedView,NgCxwkSelectedView,NhlTPointer,
 	 sizeof(NhlPointer),Oset(selected_view_id),NhlTImmediate,
-	 _NhlUSET((NhlPointer)NhlNULLOBJID),_NhlRES_GONLY,NULL}
+	 _NhlUSET((NhlPointer)NhlNULLOBJID),_NhlRES_GONLY,NULL},
+	{NgNxwkDrawSelectedViewOnly,NgCxwkDrawSelectedViewOnly,NhlTBoolean,
+	 sizeof(NhlBoolean),Oset(draw_single_view),NhlTImmediate,
+	 _NhlUSET((NhlPointer)False),_NhlRES_NOSACCESS,NULL},
+	{NgNxwkAutoUpdate,NgCxwkAutoUpdate,NhlTBoolean,
+	 sizeof(NhlBoolean),Oset(auto_refresh),NhlTImmediate,
+	 _NhlUSET((NhlPointer)True),_NhlRES_NOSACCESS,NULL}
 };
 #undef	Oset
 
@@ -132,7 +141,7 @@ ColorCB
 	NgXAppExport	x;
 
 #if DEBUG_XWK
-	printf("in color callback\n");
+	fprintf(stderr,"in color callback\n");
 #endif
 
 	xp = &xwk->xwk;
@@ -189,7 +198,7 @@ void NgXWorkPopup
 	NgAppGrabFocus(appmgr,xwkid);
 	NgGOPopup(xwkid);
 #if DEBUG_XWK
-	printf("mapped = %d\n",xp->mapped);
+	fprintf(stderr,"mapped = %d\n",xp->mapped);
 #endif
 
 	/*
@@ -449,6 +458,160 @@ static XtActionsRec actions[] = {
 	{"colorMapEditor",	colorMapEditor,},
 };
 
+static void GetColormapsInPath
+(
+	NgXWk 		xwk,
+	NhlString 	path
+)
+{
+	struct dirent	*dirp;  
+	DIR		*dp;
+	int		i,j;
+	int		count;
+	char		fullpath[1024];
+	char		*endp;
+	float   	colormap[768] = { -1.0,-1.0,-1.0,-1.0,-1.0,-1.0 };
+	int		min_ix = 6;
+	float		max_cval;
+
+/*
+ * These colormaps do not overwrite the background and foreground
+ * colors. Initially we set foreground to black and background to white.
+ * but when the user actually loads one of these color maps these are
+ * replaced with the workstation's current background and foreground.
+ * Eventually there will be an option for specifying a range of indexes
+ * into which the colormap should fit.
+ */
+	
+	if ((dp = opendir(path)) == NULL) {
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+			   "Invalid colormap directory: %s",path));
+		return;
+	}
+
+	strcpy(fullpath,path);
+	endp = fullpath + strlen(fullpath);
+	*endp++ = '/';
+	*endp = '\0';
+
+	while ( (dirp = readdir(dp)) != NULL) {
+		char *cp;
+		FILE *fp;
+		char buf[256];
+		int dot_pos;
+
+		if (! strcmp(dirp->d_name, ".")  ||
+		    ! strcmp(dirp->d_name, ".."))
+			continue;	
+		if (! (cp = strrchr(dirp->d_name,'.')))
+			continue;
+		dot_pos = cp - dirp->d_name;
+		cp++;
+		if (! cp || 
+		    (strcmp(cp,"rgb") && 
+		     strcmp(cp,"ncmap") &&
+		     strcmp(cp,"gp"))) 
+			continue;
+		
+		strcpy(endp,dirp->d_name);
+		fp = fopen(fullpath,"r");
+		if (! fp) {
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+				   "Unable to open colormap file %s: ignoring",
+				   dirp->d_name));
+			continue;
+		}
+		i = min_ix;
+		max_cval = 0.0;
+		while (cp = fgets(buf,255,fp)) {
+			char *next,*tcp = cp;
+			float f;
+			while (isspace(*tcp))
+				tcp++;
+			if (! (isdigit(*tcp) || *tcp == '.'))
+				continue;
+			if (i > 767)
+				break;
+			while (1) {
+				f = strtod(tcp,&next);
+				if (next == tcp)
+					break;
+				tcp = next;
+				while (isspace(*tcp) || *tcp == ',')
+					tcp++;
+				colormap[i] = f;
+				max_cval = MAX(max_cval,colormap[i]);
+				i++;
+			}
+		}
+		count = i;
+		if (max_cval > 1.0) {
+			if (max_cval < 256.0) {
+				for (i = min_ix; i < count; i++) {
+					colormap[i] /= 255.0;
+				}
+			}
+			else if (max_cval <= 256.0) {
+				for (i = min_ix; i < count; i++) {
+					colormap[i] /= 256.0;
+				}
+			}
+			else if (max_cval < 65536.0) {
+				for (i = min_ix; i < count; i++) {
+					colormap[i] /= 65535.0;
+				}
+			}
+			else if (max_cval <= 65536.0) {
+				for (i = min_ix; i < count; i++) {
+					colormap[i] /= 65536.0;
+				}
+			}
+			else {
+				for (i = min_ix; i < count; i++) {
+					colormap[i] /= max_cval;
+				}
+			}
+		}
+		
+		*(endp + dot_pos) = '\0';
+		NhlPalSetColormap(NhlworkstationClass,endp,
+				  (NhlColor *)colormap,count / 3);
+		
+	}
+	
+	return;
+}
+ 
+
+static void ReadUserColormaps
+(
+	NgXWk xwk
+)
+{
+	NhlString path;
+	char buf[512];
+
+	path = getenv(NDV_COLORMAP_PATH);
+	if (path) {
+		char *cp,*last_cp = buf;
+		strcpy(buf,path);
+		while (cp = strchr(last_cp,':')) {
+			*cp = '\0';
+			if (*last_cp)
+				GetColormapsInPath(xwk,last_cp);
+			last_cp = cp + 1;
+		}
+		if (*last_cp)
+			GetColormapsInPath(xwk,last_cp);
+	}
+	else {
+		fprintf(stderr,"%s environment variable not set\n",
+			   NDV_COLORMAP_PATH);
+	}	
+
+	return;
+}
+
 /*
  * Function:	XWkInitialize
  *
@@ -488,6 +651,7 @@ XWkInitialize
 
 	if(init){
 		init = False;
+		ReadUserColormaps(xwk);
 		XtAppAddActions(xwk->go.x->app,actions,NhlNumber(actions));
 	}
 
@@ -547,8 +711,6 @@ XWkInitialize
 	xwk->xwk.views = NULL;
 	xwk->xwk.view_count = 0;
 	xwk->xwk.view_alloc_count = 0;
-	xwk->xwk.auto_refresh = True;
-	xwk->xwk.draw_single_view = False;
 	xwk->xwk.select_rect_vis = False;
 	xwk->xwk.manipulate_eh_active = False;
 	return NhlNOERROR;
@@ -575,7 +737,7 @@ MapGraphicsEH
 
 	xwk->xwk.mapped = (event->type == MapNotify);
 #if DEBUG_XWK
-	printf("EH mapped = %d\n",xwk->xwk.mapped);
+	fprintf(stderr,"EH mapped = %d\n",xwk->xwk.mapped);
 #endif
 
 	return;
@@ -658,7 +820,7 @@ XWkSetMainSize
 {
 	NgXWkPart	*xp = &xwk->xwk;
 	Widget		grVP;
-	Dimension	wSW,hSW,wVP,hVP,w,h;
+	Dimension	wSW,hSW,wVP,hVP,w,h,mw,mh;
 
 	XtVaSetValues(xwk->go.shell,
 		XmNmaxWidth,	WidthOfScreen(XtScreen(xwk->go.shell)),
@@ -675,27 +837,39 @@ XWkSetMainSize
 		XmNheight,	&hSW,
 		XmNclipWindow,	&grVP,
 		NULL);
-
+#if 0
 	XtVaGetValues(grVP,
 		XmNwidth,	&wVP,
 		XmNheight,	&hVP,
 		NULL);
-
 	XtVaSetValues(xp->graphicsSW,
 		XmNwidth,	(wSW + xp->grw - wVP),
 		XmNheight,	(hSW + xp->grh - hVP),
+		NULL);
+#endif
+	XtVaSetValues(xp->graphicsSW,
+		XmNwidth,	(xp->grw +4),
+		XmNheight,	(xp->grh +4),
 		NULL);
 
 	XtVaGetValues(xwk->go.shell,
 		XmNwidth,	&w,
 		XmNheight,	&h,
 		NULL);
-
+	XtVaGetValues(xwk->go.shell,
+		XmNminWidth,	&mw,
+		XmNminHeight,	&mh,
+		NULL);
+#if DEBUG_XWK
+	fprintf(stderr,"min width %d min height %d\n",mw,mh);
+#endif
+	
+#if 0
 	XtVaSetValues(xwk->go.shell,
 		XmNmaxWidth,	MIN(w,WidthOfScreen(XtScreen(xwk->go.shell))),
 		XmNmaxHeight,	MIN(h,HeightOfScreen(XtScreen(xwk->go.shell))),
 		NULL);
-
+#endif
 	return;
 }
 
@@ -753,7 +927,7 @@ DrawSingleViewOptionCB
 	NgXWk			xwk = (NgXWk)udata;
 
 #if DEBUG_XWK
-	printf("draw single view %s\n", xmcb->set ? "on" : "off");
+	fprintf(stderr,"draw single view %s\n", xmcb->set ? "on" : "off");
 #endif
 	xwk->xwk.draw_single_view = xmcb->set;
 
@@ -776,7 +950,7 @@ AutoRefreshOptionCB
 	NgWksObj		wksobj;
 
 #if DEBUG_XWK
-	printf("auto refresh %s\n", xmcb->set ? "on" : "off");
+	fprintf(stderr,"auto refresh %s\n", xmcb->set ? "on" : "off");
 #endif
 	xwk->xwk.auto_refresh = xmcb->set;
 
@@ -823,7 +997,7 @@ XWkCreateWin
 	w = XtVaCreateManagedWidget
 		("autoRefreshOption",xmToggleButtonGadgetClass,
 		 xwk->go.omenu,
-		 XmNset,True,
+		 XmNset,xp->auto_refresh,
 		 NULL);
 	XtAddCallback(w,XmNvalueChangedCallback,AutoRefreshOptionCB,xwk);
 
@@ -831,7 +1005,7 @@ XWkCreateWin
 	w = XtVaCreateManagedWidget
 		("drawSingleViewOption",xmToggleButtonGadgetClass,
 		 xwk->go.omenu,
-		 XmNset,False,
+		 XmNset,xp->draw_single_view,
 		 NULL);
 	XtAddCallback(w,XmNvalueChangedCallback,DrawSingleViewOptionCB,xwk);
 
@@ -851,8 +1025,11 @@ XWkCreateWin
 
 	xp->graphicsSW = XtVaCreateManagedWidget("xworkSW",
 				xmScrolledWindowWidgetClass,go->go.manager,
-		XmNscrollingPolicy,		XmAUTOMATIC,
-		XmNscrollBarDisplayPolicy,	XmSTATIC,
+		XmNscrollingPolicy,		XmAPPLICATION_DEFINED,
+#if 0
+		XmNscrollBarDisplayPolicy,	XmAS_NEEDED,
+                XmNvisualPolicy,		XmCONSTANT,
+#endif
 		XmNtopAttachment,		XmATTACH_WIDGET,
 		XmNtopWidget,			go->go.menubar,
 		NULL);
@@ -946,6 +1123,147 @@ XwkFreeColors
 	return;
 }
 
+static void
+ChangeSizeEH
+(
+	Widget		w,
+	XtPointer	udata,
+	XEvent		*event,
+	Boolean		*cont
+)
+{
+        NgGO go		= (NgGO) udata;
+	NgXWk		xwk = (NgXWk)go;
+	NgXWkPart	*xp = &xwk->xwk;
+	Widget		grVP;
+	Dimension	grw,grh,wSW,hSW,wVP,hVP,wS,hS;
+	static Dimension new_wh,w_off,h_off;
+	static NhlBoolean user_generated = True,redo = False;
+	static NhlBoolean first = True;
+	NgWksState wks_state;
+
+#if DEBUG_XWK
+	fprintf(stderr,"in xwk ChangeSizeEH\n");
+#endif
+
+	if(event->type != ConfigureNotify)
+		return;
+	if (user_generated && redo) {
+		redo = False;
+		return;
+	}
+	if (! user_generated) {
+		user_generated = True;
+
+		XtMapWidget(xp->graphicsSW);
+		XSync(go->go.x->dpy,False);
+
+		NhlVAGetValues(go->go.appmgr,
+			       NgNappWksState,&wks_state,
+			       NULL);
+
+		XtVaGetValues(xp->graphics,
+			      XmNwidth,&xp->grw,
+			      XmNheight,&xp->grh,
+			      NULL);
+		NgUpdateTransformation(wks_state);
+		if (xp->draw_single_view) {
+			NgDrawXwkView(xwk->base.id,xp->selected_view_id,True);
+		}
+		else {
+			_NgDrawAllViewsCB(w,(XtPointer)xwk,NULL);
+		}
+
+		return;
+	}
+#if DEBUG_XWK
+	fprintf(stderr,"EH height %d width %d\n",
+		event->xconfigure.height,
+		event->xconfigure.width);
+#endif
+
+
+	XtVaGetValues(xp->graphics,
+		      XmNwidth,		&grw,
+		      XmNheight,	&grh,
+		      NULL);
+
+	XtVaGetValues(xp->graphicsSW,
+		      XmNwidth,		&wSW,
+		      XmNheight,	&hSW,
+		      XmNclipWindow,	&grVP,
+		      NULL);
+#if DEBUG_XWK
+	fprintf(stderr,"wSW %d hSW %d\n",wSW,hSW);
+#endif
+
+	if (first) {
+		first = False;
+		w_off = wSW - grw;
+		h_off = hSW - grh;
+	}
+
+	new_wh = MIN(wSW - w_off,hSW - h_off);
+
+	if (new_wh != grw || new_wh != grh) {
+
+		XtSetMappedWhenManaged(xp->graphicsSW,False);
+		XtUnmapWidget(xp->graphicsSW);
+
+		user_generated = False;
+		XtVaSetValues(xp->graphics,
+			      XmNwidth,		new_wh,
+			      XmNheight,	new_wh,
+			      NULL);
+
+		XtVaSetValues(xp->graphicsSW,
+			      XmNwidth,(new_wh + w_off),
+			      XmNheight,(new_wh + h_off),
+			      NULL);
+
+		XtVaGetValues(xp->graphicsSW,
+			      XmNwidth,&wSW,
+			      XmNheight,&hSW,
+			      NULL);
+
+		if (wSW - w_off != hSW - h_off) {
+			new_wh = MAX(wSW-w_off,hSW-h_off);
+			redo = True;
+
+			XtVaSetValues(xp->graphics,
+				      XmNwidth,		new_wh,
+				      XmNheight,	new_wh,
+				      NULL);
+
+			XtVaSetValues(xp->graphicsSW,
+				      XmNwidth,(new_wh + w_off),
+				      XmNheight,(new_wh + h_off),
+				      NULL);
+		}
+
+		return;
+
+	}
+
+	NhlVAGetValues(go->go.appmgr,
+		       NgNappWksState,&wks_state,
+		       NULL);
+
+	XtVaGetValues(xp->graphics,
+		      XmNwidth,&xp->grw,
+		      XmNheight,&xp->grh,
+		      NULL);
+	NgUpdateTransformation(wks_state);
+	if (xp->draw_single_view) {
+		NgDrawXwkView(xwk->base.id,xp->selected_view_id,True);
+	}
+	else {
+		_NgDrawAllViewsCB(w,(XtPointer)xwk,NULL);
+	}
+
+	return;
+}
+
 static NhlBoolean
 XWkCreateWinHook
 (
@@ -967,6 +1285,9 @@ XWkCreateWinHook
 	XtRealizeWidget(go->go.shell);
 
 	XWkSetMainSize(xwk);
+
+        XtAddEventHandler(go->go.manager,StructureNotifyMask,
+                          False,ChangeSizeEH,(XtPointer)go);
 
 	/*
 	 * Only until pixmap backup's are working in gks...

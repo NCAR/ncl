@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlpage.c,v 1.2 1999-03-08 21:42:47 dbrown Exp $
+ *      $Id: htmlpage.c,v 1.3 1999-05-22 00:36:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -149,6 +149,7 @@ NewHtmlPage
 	pdp->deactivate_page = NULL;
         pdp->public_page_data = NULL;
         pdp->update_page = NULL;
+        pdp->reset_page = NULL;
         pdp->page_focus_notify = HtmlPageFocusNotify;
         pdp->page_message_notify = NULL;
 
@@ -171,6 +172,7 @@ NgGetHtmlPage
         NhlString		e_text;
 	brPageData		*pdp;
 	brHtmlPageRec		*rec,*copy_rec;
+	NhlBoolean		new = False;
 	
 
 	if (copy_page) {
@@ -182,6 +184,7 @@ NgGetHtmlPage
 	}
         if (! pdp) {
                 pdp = NewHtmlPage(go,pane,page);
+		new = True;
 		if (! pdp)
 			return NULL;
 		rec = (brHtmlPageRec *) pdp->type_rec;
@@ -202,6 +205,8 @@ NgGetHtmlPage
         GetHtmlView(page);
 
         pdp->in_use = True;
+        if (new)
+		_NgGOWidgetTranslations(go,pdp->form);
 
         return pdp;
 

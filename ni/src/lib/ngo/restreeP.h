@@ -1,5 +1,5 @@
 /*
- *      $Id: restreeP.h,v 1.6 1998-01-08 01:19:29 dbrown Exp $
+ *      $Id: restreeP.h,v 1.7 1999-05-22 00:36:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -184,6 +184,7 @@ typedef struct _NgResTreeRec
         int			htmlview_count;
         XmLArray		htmlview_list;
         Boolean			duping_data_list;
+        _NhlCB			setval_cb;
 } NgResTreeRec;
 
 #endif	/* _NG_RESTREEP_H_ */

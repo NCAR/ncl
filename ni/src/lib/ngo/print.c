@@ -1,5 +1,5 @@
 /*
- *      $Id: print.c,v 1.4 1998-11-20 21:51:29 dbrown Exp $
+ *      $Id: print.c,v 1.5 1999-05-22 00:36:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -256,9 +256,7 @@ static void CancelCB
 #if DEBUG_PRINT
         printf("releasing focus\n");
 #endif        
-        NgAppReleaseFocus(l->go.appmgr,l->base.id);
 	NgGOPopdown(l->base.id);
-        l->print.up = False;
 }
 
 
@@ -283,12 +281,7 @@ BasicErrorCB
 	NgGOSensitive(go->base.id,True);
 
 	if (close_dialog) {
-#if DEBUG_PRINT
-		printf("releasing focus\n");
-#endif        
-		NgAppReleaseFocus(l->go.appmgr,l->base.id);
 		NgGOPopdown(l->base.id);
-		l->print.up = False;
 	}
 
 	return;
@@ -326,12 +319,7 @@ OverwriteMessageCB
 	}
 
 	if (ret) {
-#if DEBUG_PRINT
-		printf("releasing focus\n");
-#endif        
-		NgAppReleaseFocus(l->go.appmgr,l->base.id);
 		NgGOPopdown(l->base.id);
-		l->print.up = False;
 	}
 
 	return;
@@ -1040,12 +1028,7 @@ PrintScriptOkCB
 			ret = SavePlotToFile(l,False);
 	}
 	if (ret) {
-#if DEBUG_PRINT
-		printf("releasing focus\n");
-#endif        
-		NgAppReleaseFocus(l->go.appmgr,l->base.id);
 		NgGOPopdown(l->base.id);
-		l->print.up = False;
 	}
 
 	return;
@@ -2403,6 +2386,27 @@ CreateDestinationDialog(
 
 	return;
 }
+static void
+Release
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cbdata
+)
+{
+	NgGO 		go = (NgGO) udata;
+	NgPrintPart	*np = &((NgPrint)go)->print;
+
+	if(!np->up)
+		return;
+#if DEBUG_PRINT
+		printf("releasing focus\n");
+#endif        
+	NgAppReleaseFocus(go->go.appmgr,go->base.id);
+	np->up = False;
+
+	return;
+}
 
 static NhlBoolean
 PrintCreateWin
@@ -2430,6 +2434,7 @@ PrintCreateWin
                       (XtPointer)go);
         XtAddEventHandler(go->go.shell,StructureNotifyMask,
                           False,MapEH,(XtPointer)go);
+	XtAddCallback(go->go.shell,XmNpopdownCallback,Release,go);
 #if 0
         form = XtVaCreateManagedWidget
 		("form",xmFormWidgetClass,go->go.manager,NULL);

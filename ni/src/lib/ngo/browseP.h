@@ -1,5 +1,5 @@
 /*
- *      $Id: browseP.h,v 1.7 1999-03-05 01:02:34 dbrown Exp $
+ *      $Id: browseP.h,v 1.8 1999-05-22 00:36:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -142,6 +142,10 @@ typedef NhlErrorTypes (*UpdatePage) (
         brPage *page
 );
 
+typedef NhlErrorTypes (*ResetPage) (
+        brPage *page
+);
+
 typedef NhlErrorTypes (*PageMessageNotify) (
         brPage *page
 );
@@ -166,6 +170,7 @@ typedef struct _brPageData
         PageFocusNotify		page_focus_notify;
         PublicPageData		public_page_data;
         UpdatePage		update_page;
+        ResetPage		reset_page;
 	PageMessageNotify	page_message_notify;
 } brPageData, *brPageDataList;
 

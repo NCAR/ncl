@@ -1,5 +1,5 @@
 /*
- *      $Id: ncledit.c,v 1.14 1999-02-27 03:18:32 dbrown Exp $
+ *      $Id: ncledit.c,v 1.15 1999-05-22 00:36:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -224,116 +224,6 @@ TextFocusCB
 }
 
 static void
-CheckInput
-(
-	Widget		w,
-	XtPointer	udata,
-	XtPointer	cbdata
-)
-{
-	NgNclEdit	ncl = (NgNclEdit)udata;
-	NgNclEditPart	*np = &ncl->ncledit;
-	XmTextVerifyPtr	ver = (XmTextVerifyPtr)cbdata;
-	char		*nl,*ptr;
-	int		oset,len;
-	int		max,ssize;
-
-	if(np->edit)
-		return;
-
-	if(ver->reason != XmCR_MODIFYING_TEXT_VALUE)
-		return;
-
-	/*
-	 * Don't allow things before submit_pos to be modified.
-	 */
-	if(ver->startPos < np->submit_pos){
-		if(ver->endPos < np->submit_pos){
-			/*
-			 * The insert cursor is completely before the
-			 * submit position.  Just take the text being
-			 * typed or pasted and put it at the end.
-			 */
-			ver->startPos = ver->endPos = XmTextGetLastPosition(w);
-		}
-		else{
-			/*
-			 * The endPos was in the valid edit area, so just
-			 * move the startPos up to submit position.
-			 * If start == end and the text has 0 length,
-			 * then the user is trying to backspace over the
-			 * prompt, so I disallow that.
-			 */
-			ver->startPos = np->submit_pos;
-			if(ver->startPos == ver->endPos &&
-							ver->text->length == 0){
-				ver->doit = False;
-				return;
-			}
-		}
-	}
-	XmTextShowPosition(w,ver->startPos);
-	XmTextShowPosition(np->prompt_text,
-					XmTextGetLastPosition(np->prompt_text));
-	/*
-	 * value of scrollbar doesn't get updated properly, so we need to use
-	 * the max value and slider size to tell the prompt_text the correct
-	 * slider value for the bottom of the window - which should be where
-	 * it is after the ShowPosition call from above.
-	 */
-	XtVaGetValues(np->vsbar,
-		XmNmaximum,	&max,
-		XmNsliderSize,	&ssize,
-		NULL);
-	XtVaSetValues(np->prompt_text,
-		XmNuserData,	max - ssize,
-		NULL);
-
-	if(ver->text->length <= 1)
-		return;
-
-	/*
-	 * Find first unescaped newline.
-	 */
-	nl = strchr(ver->text->ptr,'\n');
-	while(nl && nl != ver->text->ptr && *(nl - 1) == '\\')
-		nl = strchr(++nl,'\n');
-
-	if(!nl)
-		return;
-
-	/*
-	 * take first line of input and send it through
-	 */
-	oset = nl - ver->text->ptr + 1;
-	ptr = XtMalloc(sizeof(char)*(oset + 1));
-	if(!ptr){
-		NHLPERROR((NhlFATAL,ENOMEM,NULL));
-		ver->doit = False;
-		return;
-	}
-	strncpy(ptr,ver->text->ptr,oset);
-	ptr[oset] = '\0';
-	ver->text->ptr = ptr;
-	len = ver->text->length - oset;
-	ver->text->length = oset;
-
-	/*
-	 * take remaining input and put it in ncledit structure for processing
-	 * during activate() action.
-	 */
-	np->more_cmds = NhlMalloc(sizeof(char)*(len + 1));
-	if(!np->more_cmds){
-		NHLPERROR((NhlFATAL,ENOMEM,NULL));
-		return;
-	}
-	nl++;
-	strcpy(np->more_cmds,nl);
-
-	return;
-}
-
-static void
 ActivateCB
 (
 	Widget		w,
@@ -346,9 +236,10 @@ ActivateCB
 	NgNclEditPart	*np = &ncl->ncledit;
 	char		*cmd_stack[128];
 	char		*cmd_buff;
-	char		*nl;
+	char		*last_nl,*nl;
 	char		*cmd;
-	int		len;
+	int		len,nl_count = 0;
+	
 
 	if(np->edit)
 		return;
@@ -372,8 +263,9 @@ ActivateCB
 	 * Find first unescaped newline.
 	 */
 	nl = strchr(cmd_buff,'\n');
-	while(nl && nl != cmd_buff && *(nl - 1) == '\\')
+	while(nl && nl != cmd_buff && *(nl - 1) == '\\') {
 		nl = strchr(++nl,'\n');
+	}
 
 	if(!nl){
 		if(np->more_cmds){
@@ -428,6 +320,151 @@ FREE_MEM:
 }
 
 
+typedef struct _timer_data 
+{
+        Widget w;
+        XtPointer ncl;
+} timer_data;
+
+static void ActivateTimeoutCB 
+(
+	XtPointer	data,
+        XtIntervalId	*timer
+        )
+{
+	timer_data 	*tdata = (timer_data *)data;
+
+	ActivateCB(tdata->w,tdata->ncl,NULL);
+	return;
+}
+
+static void
+CheckInput
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cbdata
+)
+{
+	NgNclEdit	ncl = (NgNclEdit)udata;
+	NgNclEditPart	*np = &ncl->ncledit;
+	XmTextVerifyPtr	ver = (XmTextVerifyPtr)cbdata;
+	char		*nl,*ptr;
+	int		oset,len;
+	int		max,ssize;
+        static timer_data tdata;
+
+	if(np->edit)
+		return;
+
+	if(ver->reason != XmCR_MODIFYING_TEXT_VALUE)
+		return;
+
+	/*
+	 * Don't allow things before submit_pos to be modified.
+	 */
+	if(ver->startPos < np->submit_pos){
+		if(ver->endPos < np->submit_pos){
+			/*
+			 * The insert cursor is completely before the
+			 * submit position.  Just take the text being
+			 * typed or pasted and put it at the end.
+			 */
+			ver->startPos = ver->endPos = XmTextGetLastPosition(w);
+		}
+		else{
+			/*
+			 * The endPos was in the valid edit area, so just
+			 * move the startPos up to submit position.
+			 * If start == end and the text has 0 length,
+			 * then the user is trying to backspace over the
+			 * prompt, so I disallow that.
+			 */
+			ver->startPos = np->submit_pos;
+			if(ver->startPos == ver->endPos &&
+							ver->text->length == 0){
+				ver->doit = False;
+				return;
+			}
+		}
+	}
+/*
+ * no matter where on the line the NL was typed put it at the end
+ */
+	if (ver->text->length == 1 && *(ver->text->ptr) == '\n') {
+		ver->startPos = ver->endPos = XmTextGetLastPosition(w);
+	}
+
+	XmTextShowPosition(w,ver->startPos);
+	XmTextShowPosition(np->prompt_text,
+			   XmTextGetLastPosition(np->prompt_text));
+	/*
+	 * value of scrollbar doesn't get updated properly, so we need to use
+	 * the max value and slider size to tell the prompt_text the correct
+	 * slider value for the bottom of the window - which should be where
+	 * it is after the ShowPosition call from above.
+	 */
+	XtVaGetValues(np->vsbar,
+		XmNmaximum,	&max,
+		XmNsliderSize,	&ssize,
+		NULL);
+	XtVaSetValues(np->prompt_text,
+		XmNuserData,	max - ssize,
+		NULL);
+
+	if(ver->text->length <= 1)
+		return;
+
+	/*
+	 * Find first unescaped newline.
+	 */
+	nl = strchr(ver->text->ptr,'\n');
+	while(nl && nl != ver->text->ptr && *(nl - 1) == '\\')
+		nl = strchr(++nl,'\n');
+
+	if(!nl)
+		return;
+
+	/*
+	 * take first line of input and send it through
+	 */
+	oset = nl - ver->text->ptr + 1;
+	ptr = XtMalloc(sizeof(char)*(oset + 1));
+	if(!ptr){
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		ver->doit = False;
+		return;
+	}
+	strncpy(ptr,ver->text->ptr,oset);
+	ptr[oset] = '\0';
+	ver->text->ptr = ptr;
+	len = ver->text->length - oset;
+	ver->text->length = oset;
+
+	/*
+	 * take remaining input and put it in ncledit structure for processing
+	 * during activate() action.
+	 */
+	np->more_cmds = NhlMalloc(sizeof(char)*(len + 1));
+	if(!np->more_cmds){
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return;
+	}
+	nl++;
+	strcpy(np->more_cmds,nl);
+#if 0
+/*
+ * watch it: we're not setting the cbdata because we know that (for now)
+ * ActivateCB doesn't use it
+ */
+	ActivateCB(w,(XtPointer)ncl,NULL);
+#endif
+	tdata.w = w;
+	tdata.ncl = (XtPointer)ncl;
+        XtAppAddTimeOut(ncl->go.x->app,50,ActivateTimeoutCB,&tdata);
+
+	return;
+}
 static void
 SubmitCB
 (

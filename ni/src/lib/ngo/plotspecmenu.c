@@ -1,5 +1,5 @@
 /*
- *      $Id: plotspecmenu.c,v 1.8 1999-02-27 03:18:33 dbrown Exp $
+ *      $Id: plotspecmenu.c,v 1.9 1999-05-22 00:36:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -214,7 +214,7 @@ static void CreateCB
 		 * push button
 		 */
 		if (w == priv->create_dialog)
-			NgHluObjCreateUpdate(priv->go->base.id,page_id);
+			NgUpdatePage(priv->go->base.id,page_id);
                 
         }
         return;
@@ -571,7 +571,7 @@ GetPlotStylesInPath
 
 /*
  * Plot style directory search:
- * 	1. NDV_PLOT_STYLE_DIR environment variable
+ * 	1. NDV_PLOT_STYLE_PATH environment variable
  *	2. $NCARG_ROOT/lib/ncarg/plot_styles
  * all found plot styles are merged. if 2 plot styles have the same name
  * then the first one is used.
@@ -585,13 +585,23 @@ UpdatePlotStyles
 	NhlString path;
 	char buf[512];
 
-	path = getenv("NDV_PLOT_STYLE_DIR");
+	path = getenv(NDV_PLOT_STYLE_PATH);
 	if (path) {
-		GetPlotStylesInPath(priv,path);
+		char *cp,*last_cp = buf;
+		strcpy(buf,path);
+		while (cp = strchr(last_cp,':')) {
+			*cp = '\0';
+			if (*last_cp)
+				GetPlotStylesInPath(priv,last_cp);
+			last_cp = cp + 1;
+		}
+		if (*last_cp)
+			GetPlotStylesInPath(priv,last_cp);
 	}
 	else {
-		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-			   "NDV_PLOT_STYLE_DIR environment variable not set"));
+		fprintf(stderr,
+			"%s environment variable not set\n",
+			NDV_PLOT_STYLE_PATH);
 	}	
 
 	path = (char *) GetNCARGPath("root");
@@ -602,8 +612,8 @@ UpdatePlotStyles
 		GetPlotStylesInPath(priv,buf);	
 	}
 	else {
-		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-			   "NCARG_ROOT environment variable not set"));
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			   "NCARG_ROOT environment variable not set");
 	}	
 
 	return;

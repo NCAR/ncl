@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.h,v 1.4 1998-11-18 19:45:24 dbrown Exp $
+ *      $Id: xwk.h,v 1.5 1999-05-22 00:36:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,12 @@ extern NhlClass NgxWkClass;
 
 #define	NgNxwkSelectedView	"ngxwkSelectedView"
 #define	NgCxwkSelectedView	"ngXwkSelectedView"
+
+#define	NgNxwkDrawSelectedViewOnly	"ngxwkDrawSelectedViewOnly"
+#define	NgCxwkDrawSelectedViewOnly	"ngXwkDrawSelectedViewOnly"
+
+#define	NgNxwkAutoUpdate	"ngxwkAutoUpdate"
+#define	NgCxwkAutoUpdate	"ngXwkAutoUpdate"
 
 void NgXWorkPopup
 (

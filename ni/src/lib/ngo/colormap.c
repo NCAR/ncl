@@ -1,5 +1,5 @@
 /*
- *      $Id: colormap.c,v 1.2 1998-11-20 21:51:27 dbrown Exp $
+ *      $Id: colormap.c,v 1.3 1999-05-22 00:36:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -827,6 +827,8 @@ SetPaletteCB
 	NhlColor	*cmap;
 	int		cmap_len;
 	NhlErrorTypes	ret;
+	NhlGenArray	fg_ga,bg_ga;
+	float		*color;
 
 	XtVaGetValues(w,
 		XmNuserData,	&name,
@@ -836,6 +838,26 @@ SetPaletteCB
 								&cmap_len);
 	if(ret < NhlNOERROR)
 		return;
+
+	NhlVAGetValues(cp->work,
+		       NhlNwkBackgroundColor,&bg_ga,
+		       NhlNwkForegroundColor,&fg_ga,
+		       NULL);
+	if (! (bg_ga && fg_ga)) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			   "Unable to get background/foreground colors"));
+		return;
+	}
+
+	color = (float *) bg_ga->data;
+	cmap[0][0] = color[0];
+	cmap[0][1] = color[1];
+	cmap[0][2] = color[2];
+	color = (float *) fg_ga->data;
+	cmap[1][0] = color[0];
+	cmap[1][1] = color[1];
+	cmap[1][2] = color[2];
+
 
 	for(i=0;i < cmap_len;i++){
 		if(cmap[i][0] == -1.0)

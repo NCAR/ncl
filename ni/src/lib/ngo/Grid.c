@@ -1,5 +1,5 @@
 /*
- *      $Id: Grid.c,v 1.5 1998-03-23 22:48:38 dbrown Exp $
+ *      $Id: Grid.c,v 1.6 1999-05-22 00:36:12 dbrown Exp $
  */
 /*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
@@ -606,7 +606,20 @@ Ctrl ~Shift <Key>End:             XmLGridTraverse(TO_BOTTOM_RIGHT)\n\
 ~Ctrl ~Shift <KeyDown>space:      XmLGridSelect(BEGIN)\n\
 ~Ctrl Shift <KeyDown>space:       XmLGridSelect(EXTEND)\n\
 Ctrl ~Shift <KeyDown>space:       XmLGridSelect(TOGGLE)\n\
-<KeyUp>space:                     XmLGridSelect(END)";
+<KeyUp>space:                     XmLGridSelect(END) \n\
+~Meta ~Alt ~Shift Ctrl<Key>a:     XmLGridTraverse(TO_TOP_LEFT)	\n\
+~Meta ~Alt ~Shift Ctrl<Key>e:     XmLGridTraverse(TO_BOTTOM_RIGHT) \n\
+~Meta ~Alt ~Shift Ctrl<Key>n:     XmLGridTraverse(DOWN)		\n\
+~Meta ~Alt ~Shift Ctrl<Key>p:     XmLGridTraverse(UP) 		\n\
+~Meta ~Alt ~Shift Ctrl<Key>f:     XmLGridTraverse(RIGHT)	\n\
+~Meta ~Alt ~Shift Ctrl<Key>b:     XmLGridTraverse(LEFT)		\n\
+~Meta ~Alt ~Shift Ctrl<KeyPress>:	  XmLGridEdit()";
+
+#if 0
+Removing for now.
+~Meta ~Alt Ctrl	<Btn2Up>:	XmLGridEdit() paste-clipboard()		\n\
+~Meta ~Alt Ctrl<Key>y:		XmLGridEdit() paste-clipboard()
+#endif
 
 /* You can't put multiple actions for any translation
    where one translation changes the translation table
@@ -617,7 +630,53 @@ static char editTranslations[] =
 ~Ctrl Shift <Key>Tab:	        XmLGridEditComplete(LEFT)\n\
 ~Ctrl ~Shift <Key>Tab:	        XmLGridEditComplete(RIGHT)\n\
 ~Ctrl ~Shift <Key>osfUp:        XmLGridEditComplete(UP)\n\
-<Key>osfCancel:                 XmLGridEditCancel()";
+<Key>Return:	        	XmLGridEditComplete(CURRENT)\n\
+<Key>osfCancel:                 XmLGridEditCancel(CURRENT) \n\
+~Meta ~Alt ~Shift Ctrl<Key>n:	XmLGridEditComplete(DOWN) \n\
+~Meta ~Alt ~Shift Ctrl<Key>p:	XmLGridEditComplete(UP) \n\
+~Meta ~Alt        Ctrl<Key>g:   XmLGridEditCancel(CURRENT)  \n\
+Meta ~Ctrl<Key>A:               select-all()                    \n\
+Alt ~Ctrl<Key>A:                select-all()                    \n\
+~Meta ~Alt Ctrl<Key>a:          beginning-of-line()             \n\
+~Meta ~Alt  Shift Ctrl<Key>a:   beginning-of-line(extend)       \n\
+~Meta ~Alt ~Shift Ctrl<Key>b:   backward-character()            \n\
+~Meta ~Alt  Shift Ctrl<Key>b:   backward-character(extend)      \n\
+~Meta ~Alt        Ctrl<Key>d:   delete-next-character()         \n\
+~Meta ~Alt ~Shift Ctrl<Key>e:   end-of-line()                   \n\
+~Meta ~Alt  Shift Ctrl<Key>e:   end-of-line(extend)             \n\
+~Meta ~Alt ~Shift Ctrl<Key>f:   forward-character()             \n\
+~Meta ~Alt  Shift Ctrl<Key>f:   forward-character(extend)       \n\
+~Meta ~Alt        Ctrl<Key>h:   delete-previous-character()     \n\
+~Meta ~Alt        Ctrl<Key>space: set-anchor()                  \n\
+~Meta ~Alt        Ctrl<Key>2:   set-anchor()                    \n\
+~Meta ~Alt        Ctrl<Key>@:   set-anchor()                    \n\
+                                                                        \
+Meta ~Ctrl ~Shift<Key>b:        backward-word()                 \n\
+Alt ~Ctrl ~Shift<Key>b:        	backward-word()                 \n\
+Meta ~Ctrl  Shift<Key>b:        backward-word(extend)           \n\
+Alt ~Ctrl  Shift<Key>b:        	backward-word(extend)           \n\
+Meta ~Ctrl ~Shift<Key>f:        forward-word()                  \n\
+Alt ~Ctrl ~Shift<Key>f:        	forward-word()                  \n\
+Meta ~Ctrl  Shift<Key>f:        forward-word(extend)            \n\
+Alt ~Ctrl  Shift<Key>f:        	forward-word(extend)            \n\
+Meta ~Ctrl ~Shift<Key>osfLeft:  backward-word()                 \n\
+Alt ~Ctrl ~Shift<Key>osfLeft:  	backward-word()                 \n\
+Meta ~Ctrl  Shift<Key>osfLeft:  backward-word(extend)           \n\
+Alt ~Ctrl  Shift<Key>osfLeft:  	backward-word(extend)           \n\
+Meta ~Ctrl ~Shift<Key>osfRight:	forward-word()                   \n\
+Alt ~Ctrl ~Shift<Key>osfRight:	forward-word()                   \n\
+Meta ~Ctrl  Shift<Key>osfRight:	forward-word(extend)             \n\
+Alt ~Ctrl  Shift<Key>osfRight:	forward-word(extend)		\n\
+~Meta ~Alt Ctrl<Key>k:		kill-to-end-of-line()		\n\
+~Meta ~Alt Ctrl<Key>w:		key-select() kill-selection()	\n\
+~Meta ~Alt Ctrl<Key>y:		unkill()			\n\
+Meta ~Ctrl       <Key>d:	kill-next-word()		\n\
+Alt ~Ctrl       <Key>d:		kill-next-word()		\n\
+Meta ~Ctrl<Key>osfBackSpace:	kill-previous-word()		\n\
+Alt ~Ctrl<Key>osfBackSpace:	kill-previous-word()		\n\
+Meta ~Ctrl<Key>osfDelete:	kill-next-word()		\n\
+Alt ~Ctrl<Key>osfDelete:	kill-next-word()";
+
 
 static XtResource resources[] =
 	{
@@ -7002,6 +7061,8 @@ Cardinal *nparam;
 
 	g = (XmLGridWidget)XtParent(w);
 	TextAction(g, TEXT_EDIT_CANCEL);
+	if (*nparam == 1)
+		Traverse(w, event, params, nparam);
 	}
 
 static void EditComplete(w, event, params, nparam)
@@ -7057,11 +7118,14 @@ Cardinal *nparam;
 	cell = GetCell(g, row, col);
 	if (!rowp || !colp || !cell)
 		return;
+#if 0
 	if (XmLGridRowIsSelected(rowp) == False &&
 		XmLGridColumnIsSelected(colp) == False &&
 		XmLGridCellIsSelected(cell) == False)
 		return;
 	data = CopyDataCreate(g, 1, 0, 0, 0, 0);
+#endif
+	data = CopyDataCreate(g, 0, row, col, 1, 1);
 	if (!data)
 		return;
 	dragIcon = _XmGetTextualDragIcon((Widget)w);
@@ -7532,6 +7596,7 @@ Cardinal *nparam;
 	static XrmQuark qPAGE_LEFT, qPAGE_RIGHT, qPAGE_UP, qRIGHT;
 	static XrmQuark qTO_BOTTOM, qTO_BOTTOM_RIGHT, qTO_LEFT;
 	static XrmQuark qTO_RIGHT, qTO_TOP, qTO_TOP_LEFT, qUP;
+	static XrmQuark qCURRENT;
 	static int quarksValid = 0;
 	int extend, focusRow, focusCol, rowDir, colDir;
 	int rowLoc, colLoc, prevRowLoc, prevColLoc;
@@ -7543,6 +7608,7 @@ Cardinal *nparam;
 		return;
 	if (!quarksValid)
 		{
+		qCURRENT = XrmStringToQuark("CURRENT");
 		qDOWN = XrmStringToQuark("DOWN");
 		qEXTEND_DOWN = XrmStringToQuark("EXTEND_DOWN");
 		qEXTEND_LEFT = XrmStringToQuark("EXTEND_LEFT");
@@ -7640,6 +7706,10 @@ Cardinal *nparam;
 	else
 		prevColLoc = 1;
 	/* calculate new focus row, col and walk direction */
+	if (q == qCURRENT)
+		{
+		rowDir = 1;
+		}
 	if (q == qDOWN)
 		{
 		focusRow++;

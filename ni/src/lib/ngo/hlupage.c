@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.22 1999-03-12 19:13:48 dbrown Exp $
+ *      $Id: hlupage.c,v 1.23 1999-05-22 00:36:19 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -90,7 +90,7 @@ static void HluPageFocusNotify (
                 NgRestoreResTreeOverlays(rec->res_tree);
         return;
 }
-
+#if 0
 static void
 SetValCB
 (
@@ -112,12 +112,14 @@ SetValCB
  * The setvalue callback must be blocked for setvalues calls performed from
  * the hlupage itself.
  */
+#if 0
         if (rec->do_setval_cb)
                 NgResTreeResUpdateComplete(rec->res_tree,rec->hlu_id,False);
+#endif
 
         return;
 }
-
+#endif
 
 static NhlBoolean UpdateDataLink
 (
@@ -209,14 +211,21 @@ static void TalkToDataLinks
 	brHluPageRec	*rec = (brHluPageRec	*)pdp->type_rec;
 	NgPageReply 	link;
 	int		i, count;
+	brPage 		*skip_page = NULL;
 
 	if (! rec->datalinks)
 		return;
 
 	count = XmLArrayGetCount(rec->datalinks);
 
+
 	for (i = 0; i < count; i++) {
 		link = (NgPageReply) XmLArrayGet(rec->datalinks,i);
+		if (link->id == 0 && skip_id > 0) {
+			skip_page = _NgGetPageRef(rec->go->base.id,skip_id);
+			if (skip_page && skip_page->qvar == link->qvar)
+				link->id = skip_id;
+		}
 		if (link->id == skip_id)
 			continue;
 		switch (link->req) {
@@ -257,7 +266,7 @@ static NhlErrorTypes GetHluObjCreateMessage
 (
         brPage		*page,
 	NgPageMessage   message,
-	NhlBoolean	update
+	NhlBoolean	reset
         )
 {
         brPageData	*pdp = page->pdata;
@@ -341,10 +350,10 @@ static NhlErrorTypes GetHluObjCreateMessage
 			}
 		}
 	}
-	/* call update on this page */
+	/* call reset on this page */
 
-	if (update)
-		return NgUpdatePage(rec->go->base.id,page->id);
+	if (reset)
+		return NgResetPage(rec->go->base.id,page->id);
 	else
 		return NhlNOERROR;
 }
@@ -356,6 +365,11 @@ static void SetInputDataFlag
 {
 	int 		i,datavar_count = 0;
 
+	if (! rec->data_profile) {
+		rec->new_data = False;
+		rec->has_input_data = False;
+		return;
+	}
 /*
  * For has_input_data to be True all required, but at least one, data items
  * of type _NgDATAVAR must be set.
@@ -463,9 +477,11 @@ static NhlErrorTypes GetDoSetValCBMessage
  * setval_cb was disabled, then it will not have been updated correctly.
  * So do an update now, to ensure that it is.
  */
+#if 0
 	if (rec->do_setval_cb == True) {
 		NgResTreeResUpdateComplete(rec->res_tree,rec->hlu_id,False);
 	}
+#endif
 
 	return NhlNOERROR;
 }
@@ -543,7 +559,7 @@ static NhlErrorTypes GetVarDataMessage
 static NhlErrorTypes GetPageMessages
 (
         brPage 		*page,
-	NhlBoolean	update
+	NhlBoolean	reset
         )
 {
         brPageData	*pdp = page->pdata;
@@ -565,7 +581,7 @@ static NhlErrorTypes GetPageMessages
 		switch (messages[i]->mtype) {  
 		case _NgHLUOBJCREATE:
 			subret = GetHluObjCreateMessage
-				(page,messages[i],update);
+				(page,messages[i],reset);
 			ret = MIN(ret,subret);
 			break;
 		case _NgDATAPROFILELINK_REQ:
@@ -806,7 +822,7 @@ static void PreviewResList
 	return;
 }
 
-static void AddResList
+static int AddResList
 (
         int		nclstate,
         NhlPointer	data,
@@ -817,6 +833,9 @@ static void AddResList
 	NhlBoolean quote[16];
 	int i,lcount = 0;
 	NhlString res[16],values[16];
+
+	if (! res_data->res_count)
+		return 0;
 
 	for (i = 0; i < res_data->res_count; i++) {
 		if (res_data->values[i]) {
@@ -829,7 +848,7 @@ static void AddResList
 
         NgNclVisBlockAddResList(nclstate,block_id,lcount,res,values,quote);
 
-	return;
+	return res_data->res_count;
 }
 
 
@@ -1832,7 +1851,8 @@ static NhlErrorTypes
 UpdateInstance
 (
         brPage	*page,
-        int	wk_id
+        int	wk_id,
+	NhlBoolean do_draw
 )
 {
         NhlErrorTypes	ret = NhlNOERROR;
@@ -1886,7 +1906,7 @@ UpdateInstance
  * There is no auto callback for setvalues yet, so for updates the draw
  * must occur here
  */
-	if (NhlClassIsSubclass(rec->class,NhlviewClass) &&
+	if (do_draw && NhlClassIsSubclass(rec->class,NhlviewClass) &&
 	    _NhlIsClass(wl,NhlxWorkstationClass)) {
 		NgWksObj	wks = NULL;
 		int 		draw_id = _NhlTopLevelView(rec->hlu_id);
@@ -1979,8 +1999,10 @@ UpdateDataProfileFromResTree
 	int i;
 	NhlBoolean new_data = False;
 
-	if (! rec->data_profile)
+	if (! rec->data_profile) {
+		rec->new_data = False;
 		return;
+	}
 /*
  * If a data profile item is set in the restree, the restree value always
  * overrules
@@ -2010,14 +2032,16 @@ static void
 CreateUpdate
 (
         brPage		*page,
-        int		wk_id
+        int		wk_id,
+	NhlBoolean	do_draw,
+	NhlBoolean	propagate_profile
 )
 {
 	brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
         NhlBoolean 	already_created = False;
         int		i,hlu_id;
-	NhlLayer	wl = _NhlGetLayer(wk_id);
+	NhlLayer	l,wl = _NhlGetLayer(wk_id);
 	
 #if DEBUG_HLUPAGE
         fprintf(stderr,"CreateUpdate -- class %s, hlu_id %d\n",
@@ -2052,7 +2076,7 @@ CreateUpdate
                 rec->hlu_id = hlu_id;
                 rec->state = _hluPREVIEW;
                 rec->res_tree->preview_instance = True;
-		if (rec->new_data)
+		if (rec->new_data && propagate_profile)
 			TalkToDataLinks(page,_NgDATAPROFILE,NgNoPage);
         }
         else  if (rec->state == _hluPREVIEW) {
@@ -2092,14 +2116,17 @@ CreateUpdate
 						(rec->go->base.id,vdata);
 				}
 			}
-			TalkToDataLinks(page,_NgDATAPROFILE,NgNoPage);
+			if (propagate_profile)
+				TalkToDataLinks(page,_NgDATAPROFILE,NgNoPage);
 		}
-		for (i = 0; i < rec->data_profile->n_dataitems; i++)
-			rec->data_profile->ditems[i]->vdata->cflags = 0; 
+		if (rec->data_profile) {
+			for (i = 0; i < rec->data_profile->n_dataitems; i++)
+			       rec->data_profile->ditems[i]->vdata->cflags =0; 
+		}
 		rec->new_data = False;
         }
         else {
-                UpdateInstance(page,wk_id);
+                UpdateInstance(page,wk_id,do_draw);
                 already_created = True;
 		if (rec->new_data) {
 			for (i = 0; i < rec->data_profile->n_dataitems; i++) {
@@ -2111,13 +2138,17 @@ CreateUpdate
 						(rec->go->base.id,vdata);
 				}
 			}
-			TalkToDataLinks(page,_NgDATAPROFILE,NgNoPage);
+			if (propagate_profile)
+				TalkToDataLinks(page,_NgDATAPROFILE,NgNoPage);
 		}
-		for (i = 0; i < rec->data_profile->n_dataitems; i++)
-			rec->data_profile->ditems[i]->vdata->cflags = 0;
+		if (rec->data_profile) {
+			for (i = 0; i < rec->data_profile->n_dataitems; i++)
+			       rec->data_profile->ditems[i]->vdata->cflags = 0;
+		}
 		rec->new_data = False;
         }
         if (rec->hlu_id > NhlNULLOBJID && ! already_created) {
+#if 0
                 NhlArgVal sel,user_data;
                 
                 NhlINITVAR(sel);
@@ -2129,24 +2160,31 @@ CreateUpdate
                 rec->setval_cb = _NhlAddObjCallback
                         (_NhlGetLayer(rec->hlu_id),_NhlCBobjValueSet,
                          sel,SetValCB,user_data);
+#endif
+		NgResTreeResUpdateComplete(rec->res_tree,rec->hlu_id,False);
+		NgResTreeInstallSetValCB(rec->res_tree,rec->hlu_id,True);
         }
+#if 0
         NgResTreeResUpdateComplete(rec->res_tree,rec->hlu_id,False);
+#endif
 	rec->do_setval_cb = True;
 	TalkToDataLinks(page,_NgDOSETVALCB,NgNoPage);
 
-	if (rec->state == _hluCREATED &&
-	    NhlClassIsSubclass(rec->class,NhlviewClass) &&
-	    _NhlIsClass(wl,NhlxWorkstationClass)) {
-		NgWksObj	wks = NULL;
-		int 		draw_id = _NhlTopLevelView(rec->hlu_id);
-		NhlLayer 	drawl = _NhlGetLayer(draw_id);
+	l = _NhlGetLayer(rec->hlu_id);
+	if (l && _NhlIsView(l)) {
+		if (do_draw && rec->state == _hluCREATED) {
+			NgWksObj	wks = NULL;
+			int 	draw_id = _NhlTopLevelView(rec->hlu_id);
+			NhlLayer 	drawl = _NhlGetLayer(draw_id);
 		
-		if (drawl && wl) {
-			NgHluData hdata = (NgHluData) wl->base.gui_data2;
-			wks = hdata ? (NgWksObj) hdata->gdata : NULL;
-		}
-		if (wks) {
-			NgSetSelectedXwkView(wks->wks_wrap_id,draw_id);
+			if (drawl && wl) {
+				NgHluData hdata = 
+					(NgHluData) wl->base.gui_data2;
+				wks = hdata ? (NgWksObj) hdata->gdata : NULL;
+			}
+			if (wks) {
+				NgSetSelectedXwkView(wks->wks_wrap_id,draw_id);
+			}
 		}
 	}
 
@@ -2194,7 +2232,7 @@ static void CreateUpdateCB
 #endif
         
         wk_id = GetWorkstation(page,&work_created);
-	CreateUpdate(page,wk_id);
+	CreateUpdate(page,wk_id,True,True);
 
         return;
 }
@@ -2245,7 +2283,7 @@ static NhlErrorTypes HluPageMessageNotify (
                 
                 wk_id = GetWorkstation(page,&work_created);
                 
-		CreateUpdate(page,wk_id);
+		CreateUpdate(page,wk_id,True,True);
 
         }
         
@@ -2369,18 +2407,26 @@ DeactivateHluPage
  */
         if (l) {
 		SaveHluState(page);
-
+#if 0
 		if (rec->setval_cb) {
 			_NhlCBDelete(rec->setval_cb);
 		}
+#endif
 		if (rec->destroy_cb) {
 			NgCBWPDestroy(rec->destroy_cb);
 		}
 	}
 
 	rec->destroy_cb = NULL;
+#if 0
 	rec->setval_cb = NULL;
-        
+#endif
+
+	/* 
+	 * setting the last parameter False causing this routine to uninstall
+	 */
+        NgResTreeInstallSetValCB(rec->res_tree,rec->hlu_id,False);
+
         if (rec->create_update)
                 XtRemoveCallback(rec->create_update,
                                  XmNactivateCallback,CreateUpdateCB,page);
@@ -2478,8 +2524,27 @@ AdjustHluPageGeometry
 	
 	return;
 }
-        
+
 static NhlErrorTypes UpdateHluPage
+(
+        brPage *page
+)
+{
+        int		wk_id;
+        NhlBoolean	work_created;
+
+#if DEBUG_HLUPAGE
+        fprintf(stderr,"in UpdateHluPage\n");
+#endif
+        
+        wk_id = GetWorkstation(page,&work_created);
+	CreateUpdate(page,wk_id,False,False);
+
+        return NhlNOERROR;
+
+}
+        
+static NhlErrorTypes ResetHluPage
 (
         brPage *page
         )
@@ -2489,7 +2554,7 @@ static NhlErrorTypes UpdateHluPage
         NgHluPage 	*pub = &rec->public;
 	int		hlu_id,i;
 	NhlBoolean	preview = rec->state < _hluCREATED;
-	NhlBoolean	update;
+	NhlBoolean	reset;
         
 #if DEBUG_HLUPAGE
         fprintf(stderr,"in updata hlu page\n");
@@ -2587,6 +2652,9 @@ static NhlErrorTypes UpdateHluPage
                               XmNtopWidget,rec->create_update,
                               NULL);
                 rec->res_tree->geo_notify = AdjustHluPageGeometry;
+                rec->res_tree->preview_instance =
+                        rec->state == _hluCREATED ? False : True;
+		_NgGOWidgetTranslations(rec->go,rec->res_tree->tree);
         }
         else {
                 rec->res_tree->preview_instance =
@@ -2608,7 +2676,7 @@ static NhlErrorTypes UpdateHluPage
 		NhlBoolean work_created;
 		
                 int wk_id = GetWorkstation(page,&work_created);
-		CreateUpdate(page,wk_id);
+		CreateUpdate(page,wk_id,True,True);
 	}
         if (rec->state == _hluCREATED) {
 		XmString xmstring =
@@ -2673,7 +2741,9 @@ NewHluPage
         rec->class = NULL;
         rec->hlu_id = NhlNULLOBJID;
 	rec->app_id = NhlNULLOBJID;
+#if 0
         rec->setval_cb = NULL;
+#endif
         rec->destroy_cb = NULL;
         rec->do_setval_cb = False;
 	rec->data_profile = NULL;
@@ -2694,6 +2764,7 @@ NewHluPage
 	pdp->deactivate_page = DeactivateHluPage;
         pdp->public_page_data = PublicHluPageData;
         pdp->update_page = UpdateHluPage;
+        pdp->reset_page = ResetHluPage;
         pdp->page_focus_notify = HluPageFocusNotify;
         pdp->page_message_notify = HluPageMessageNotify;
         pdp->pane = pane;
@@ -2773,6 +2844,7 @@ NgGetHluPage
 	int			nclstate;
         XmString		xmstring;
 	NhlBoolean		update = False;
+	NhlBoolean		new = False;
 
         if (QFillValue == NrmNULLQUARK) {
                 QFillValue = NrmStringToQuark("_FillValue"); 
@@ -2803,8 +2875,11 @@ NgGetHluPage
 		if (!pdp->in_use)
 		  break;
 	}
-        if (! pdp)
+        if (! pdp) {
                 pdp = NewHluPage(go,pane,page);
+		new = True;
+	}
+		
         if (! pdp)
                 return NULL;
         page->pdata = pdp;
@@ -2822,6 +2897,7 @@ NgGetHluPage
                         rec->state = _hluPREVIEW;
                 else
                         rec->state = _hluCREATED;
+#if 0
                 NhlINITVAR(sel);
                 NhlINITVAR(user_data);
                 sel.lngval = 0;
@@ -2831,6 +2907,7 @@ NgGetHluPage
                 rec->setval_cb = _NhlAddObjCallback
                         (_NhlGetLayer(hlu_id),_NhlCBobjValueSet,
                          sel,SetValCB,user_data);
+#endif
 	}
 	if (save_state) {
 		RestoreHluState(rec,save_state);
@@ -2854,9 +2931,12 @@ NgGetHluPage
 
         if (! copy_page) {
                 if (rec->hlu_id > NhlNULLOBJID)
-                        UpdateHluPage(page);
+                        ResetHluPage(page);
 		else 
 			GetPageMessages(page,True);
+		if (new)
+			_NgGOWidgetTranslations(go,pdp->form);
+
                 return pdp;
         }
 
@@ -2937,26 +3017,8 @@ NgGetHluPage
 		}
 	}
 	GetPageMessages(page,True);
+	if (new)
+		_NgGOWidgetTranslations(go,pdp->form);
+
         return pdp;
-}
-
-extern void NgHluObjCreateUpdate
-(
-	int go_id,
-	int page_id
-)
-{
-        brPage		*page = (brPage *)_NgGetPageRef(go_id,page_id);
-        int		wk_id;
-        NhlBoolean	work_created;
-
-#if DEBUG_HLUPAGE
-        fprintf(stderr,"in CreateUpdateCB\n");
-#endif
-        
-        wk_id = GetWorkstation(page,&work_created);
-	CreateUpdate(page,wk_id);
-
-        return;
-
 }
