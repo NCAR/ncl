@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypeobj.c.specific,v 1.5 1995-11-03 00:01:02 ethan Exp $
+ *      $Id: NclTypeobj.c.specific,v 1.6 1995-12-19 20:42:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -157,8 +157,10 @@ static NhlErrorTypes Ncl_Type_obj_InitClass
 ()
 #endif
 {
-        NhlRegisterConverter(NhlTObjIdGenArray,NhlTNclData,CvtNhlTObjIdGenArrayToNclData,NULL,0,False,NULL);
-        NhlRegisterConverter(NhlTObjId,NhlTNclData,CvtNhlTObjIdToNclData,NULL,0,False,NULL);
+        NhlRegisterConverter(NhlbaseClass,NhlTObjIdGenArray,NhlTNclData,
+		CvtNhlTObjIdGenArrayToNclData,NULL,0,False,NULL);
+        NhlRegisterConverter(NhlbaseClass,NhlTObjId,NhlTNclData,
+		CvtNhlTObjIdToNclData,NULL,0,False,NULL);
 	nclTypeobjClassRec.type_class.default_mis.objval = -1;
 	return(NhlNOERROR);
 }

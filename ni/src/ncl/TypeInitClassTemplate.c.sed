@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeInitClassTemplate.c.sed,v 1.2 1995-02-17 01:01:17 ethan Exp $
+ *      $Id: TypeInitClassTemplate.c.sed,v 1.3 1995-12-19 20:42:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -105,8 +105,10 @@ static NhlErrorTypes Ncl_Type_DATATYPE_InitClass
 ()
 #endif
 {
-        NhlRegisterConverter(HLUGENTYPEREP,NhlTNclData,CvtHLUGENTYPEREPToNclData,NULL,0,False,NULL);
-        NhlRegisterConverter(HLUTYPEREP,NhlTNclData,CvtHLUTYPEREPToNclData,NULL,0,False,NULL);
+        NhlRegisterConverter(NhlbaseClass,HLUGENTYPEREP,NhlTNclData,
+		CvtHLUGENTYPEREPToNclData,NULL,0,False,NULL);
+        NhlRegisterConverter(NhlbaseClass,HLUTYPEREP,NhlTNclData,
+		CvtHLUTYPEREPToNclData,NULL,0,False,NULL);
 	nclTypeDATATYPEClassRec.type_class.default_mis.DATATYPEval = DEFAULT_MISS;
 	return(NhlNOERROR);
 }

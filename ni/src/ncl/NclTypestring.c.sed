@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypestring.c.sed,v 1.6 1995-05-23 15:54:20 ethan Exp $
+ *      $Id: NclTypestring.c.sed,v 1.7 1995-12-19 20:42:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -117,8 +117,10 @@ static NhlErrorTypes Ncl_Type_string_InitClass
 ()
 #endif
 {
-        NhlRegisterConverter(NhlTStringGenArray,NhlTNclData,CvtNhlTStringGenArrayToNclData,NULL,0,False,NULL);
-        NhlRegisterConverter(NhlTString,NhlTNclData,CvtNhlTStringToNclData,NULL,0,False,NULL);
+        NhlRegisterConverter(NhlbaseClass,NhlTStringGenArray,NhlTNclData,
+		CvtNhlTStringGenArrayToNclData,NULL,0,False,NULL);
+        NhlRegisterConverter(NhlbaseClass,NhlTString,NhlTNclData,
+		CvtNhlTStringToNclData,NULL,0,False,NULL);
 	nclTypestringClassRec.type_class.default_mis.stringval = -1;
 	return(NhlNOERROR);
 }

@@ -71,7 +71,7 @@ main() {
 	_NclInitTypeClasses();
 	_NclInitDataClasses();
 
-	_NhlRegSymConv(NhlTGenArray,NhlTNclData,NhlTGenArray,NhlTGenArray);
+	_NhlRegSymConv(NULL,NhlTGenArray,NhlTNclData,NhlTGenArray,NhlTGenArray);
 
 	if(cmd_line)	
 		fprintf(stdout_fp,"ncl %d> ",0);

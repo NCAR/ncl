@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.25 1995-12-14 00:07:13 ethan Exp $
+ *      $Id: NclApi.c,v 1.26 1995-12-19 20:42:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -132,7 +132,7 @@ int NclInitServer
 	_NclInitSymbol();
 	_NclInitTypeClasses();
 	_NclInitDataClasses();
-	_NhlRegSymConv(NhlTGenArray,NhlTNclData,NhlTGenArray,NhlTGenArray);
+	_NhlRegSymConv(NULL,NhlTGenArray,NhlTNclData,NhlTGenArray,NhlTGenArray);
 
 
 	the_input_buffer = "begin\nend\n";
