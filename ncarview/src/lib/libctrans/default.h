@@ -1,5 +1,5 @@
 /*
- *	$Id: default.h,v 1.6 1991-08-16 10:49:20 clyne Exp $
+ *	$Id: default.h,v 1.7 1991-10-04 15:19:07 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -20,10 +20,36 @@
  */
 
 
-#include 	<boolean.h> 
+#include 	<ncarv.h> 
 #include	<cgmdef.h>
 #include 	"cgmc.h"
 #include 	"text.h"
+
+typedef	struct	RGBTuple_	{	
+	unsigned short	red,
+			green,
+			blue;
+	} RGBTuple;
+
+/*
+ *	an element in the color lookup table
+ */
+typedef	struct	ColorElement_ {
+	RGBTuple	rgb;
+	boolean		damage;		/* element has been touched?	*/
+	boolean		defined;	/* element is defined?		*/
+	} ColorElement;
+
+/*
+ *	The color lookup table
+ */
+typedef	struct	ColorLUTable_ {
+	ColorElement	*ce;		/* color lookup table entries	*/
+	int		size;		/* num of elements in ce	*/
+	int		total_damage;	/* total ce's touched/modified	*/
+	boolean		damage;		/* has any ce been modified	*/
+	} ColorLUTable;
+			
 
 typedef struct {
 	Itype	mfversion;	/* METAFILE VERSION 		*/
@@ -257,11 +283,13 @@ static DEFAULTTABLE	defaulttable = {
 };
 
 static DEFAULTTABLE	picdefaulttable;
-DEFAULTTABLE	*dt = &defaulttable;
+DEFAULTTABLE		*dt = &defaulttable;
+ColorLUTable		*clut;
 
 #else	
 
-extern 	DEFAULTTABLE	*dt;
+extern 	DEFAULTTABLE		*dt;
+extern	ColorLUTable		*clut;
 
 #endif
 
@@ -397,6 +425,15 @@ extern 	DEFAULTTABLE	*dt;
 #define LINE_WIDTH_MODE		dt->line_width_mode
 #define LINE_WIDTH_DAMAGE	dt->line_width_damage
 
+#define	COLOUR_TABLE_DAMAGE	clut->damage
+#define	COLOUR_TOTAL_DAMAGE	clut->total_damage
+
+#define	COLOUR_INDEX_DAMAGE(I)	(clut->ce[(I)].damage)
+#define	COLOUR_INDEX_RED(I)	(clut->ce[(I)].rgb.red)
+#define	COLOUR_INDEX_GREEN(I)	(clut->ce[(I)].rgb.green)
+#define	COLOUR_INDEX_BLUE(I)	(clut->ce[(I)].rgb.blue)
+
+
 
 
 #ifdef	DEFAULT
@@ -417,6 +454,7 @@ typedef	struct	{
 	boolean		marker_size_access;
 	boolean		backcolr_access;
 	boolean		text_f_ind_access;
+	boolean		colour_table_access;
 } ACCESS_TABLE;
 
 ACCESS_TABLE	access_table = {
@@ -430,7 +468,8 @@ ACCESS_TABLE	access_table = {
 	TRUE,
 	TRUE,
 	TRUE,
-	FALSE
+	FALSE,
+	TRUE
 	};
 	
 ACCESS_TABLE	*at = &access_table;
@@ -446,6 +485,7 @@ ACCESS_TABLE	*at = &access_table;
 #define	MARKER_SIZE_ACCESS	at->marker_size_access
 #define	BACKCOLR_ACCESS		at->backcolr_access
 #define	TEXT_F_IND_ACCESS	at->text_f_ind_access
+#define	COLOUR_TABLE_ACCESS	at->colour_table_access
 	
 
 #endif
