@@ -139,7 +139,8 @@ extern NhlErrorTypes exp_tapersh_W(void);
 extern NhlErrorTypes exp_tapersh_wgts_W(void);
 extern NhlErrorTypes pop_remap_W(void);
 extern NhlErrorTypes smth9_W(void);
-extern NhlErrorTypes simpson_W(void);
+extern NhlErrorTypes simpeq_W(void);
+extern NhlErrorTypes simpne_W(void);
 
 extern NhlErrorTypes nggcog_W(void);
 
@@ -2095,7 +2096,22 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(smth9_W,args,"smth9",nargs);
 
 /*
- * Register "simpson"
+ * Register "simpne"
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+
+    NclRegisterFunc(simpne_W,args,"simpne",nargs);
+
+/*
+ * Register "simpeq"
  *
  * Create private argument array.
  */
@@ -2106,7 +2122,7 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
-    NclRegisterFunc(simpson_W,args,"simpson",nargs);
+    NclRegisterFunc(simpeq_W,args,"simpeq",nargs);
 
 /*
  *  Register nggcog.
