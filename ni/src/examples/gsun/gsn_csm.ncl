@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.171 2004-08-06 23:34:31 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.172 2004-08-26 13:38:13 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -5226,6 +5226,16 @@ begin
     if(infolabel_on)
       lbar_zone = infolabel_zone + 1
       cnres@cnInfoLabelZone = infolabel_zone
+    end if
+
+;
+; Increase labelbar zone if map tickmarks are on.
+;
+    if(lbar_on.and.\
+       check_attr(mpres,"pmTickMarkDisplayMode","Always",True).or.\
+       check_attr(mpres,"pmTickMarkDisplayMode",2,False).or.\
+       check_attr(mpres,"pmTickMarkDisplayMode",3,False)) then
+      lbar_zone = lbar_zone + 1
     end if
 
 ; Before we create the objects, turn off draw and frame for them.
