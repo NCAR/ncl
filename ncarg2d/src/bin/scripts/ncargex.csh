@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.68 1994-08-19 20:37:31 haley Exp $
+#   $Id: ncargex.csh,v 1.69 1994-08-24 17:11:19 kennison Exp $
 #
 
 #********************#
@@ -13,13 +13,13 @@ if ($#argv < 1) then
   echo "               [-allfundamental,-F] [-alltutorial,-U] [-allpdocs,-P]"
   echo "               [-areas] [-autograph] [-bivar] [-colconv] [-conpack] "
   echo "               [-conran_family] [-conrec_family] [-dashline]        "
-  echo "               [-ezmap] [-field_flow] [-gflash] [-gridall]          "
-  echo "               [-halftone] [-histogram] [-isosrfhr] [-isosurface]   "
-  echo "               [-labelbar] [-ngmisc] [-plotchar] [-polypack]        "
-  echo "               [-pwrite_family] [-scrolled_title] [-seter]          "
-  echo "               [-softfill] [-spps] [-streamlines] [-surface]        "
-  echo "               [-threed] [-vectors][-gks] [-misc] [-class]          "
-  echo "               [-clean] [-n] [-onebyone] names                      "
+  echo "               [-dashpack] [-ezmap] [-field_flow] [-gflash]         "
+  echo "               [-gridall] [-halftone] [-histogram] [-isosrfhr]      "
+  echo "               [-isosurface] [-labelbar] [-ngmisc] [-plotchar]      "
+  echo "               [-polypack] [-pwrite_family] [-scrolled_title]       "
+  echo "               [-seter] [-softfill] [-spps] [-streamlines]          "
+  echo "               [-surface] [-threed] [-vectors][-gks] [-misc]        "
+  echo "               [-class] [-clean] [-n] [-onebyone] names             "
   echo ""
   echo "See <man ncargex>                                                   "
   exit
@@ -161,6 +161,14 @@ set cnrc_family_list = (${tst_cnrc_family})
 set tst_dashline  = (tdashc tdashl tdashp tdashs)
 set fnd_dashline  = (fdlcurvd fdldashc fdldashd fdlsmth)
 set dashline_list = ($tst_dashline $fnd_dashline)
+
+#***********************#
+#                       #
+# set dashpack examples #
+#                       #
+#***********************#
+set tst_dashpack  = (tdshpk)
+set dashpack_list = ($tst_dashpack)
 
 #**********************#
 #                      #
@@ -405,6 +413,7 @@ set ex_list  = ($ex_areas $ex_autograph $ex_colconv $ex_conpack $ex_ezmap \
 
 set tst_list = ($tst_areas $tst_autograph $tst_colconv $tst_conpack \
                 ${tst_cnrn_family} ${tst_cnrc_family} $tst_dashline \
+                $tst_dashpack \
                 $tst_ezmap $tst_field $tst_gflash $tst_gridall $tst_halftone \
                 $tst_histogram $tst_isosrfhr $tst_isosurface $tst_labelbar \
                 $tst_plotchar $tst_polypack $tst_pwrite ${tst_scrlld_title} \
@@ -519,6 +528,11 @@ while ($#argv > 0)
         case "-dashline":
             shift
             set names=($names $dashline_list)
+            breaksw
+
+        case "-dashpack":
+            shift
+            set names=($names $dashpack_list)
             breaksw
 
         case "-ezmap":
