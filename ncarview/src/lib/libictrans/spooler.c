@@ -1,5 +1,5 @@
 /*
- *	$Id: spooler.c,v 1.13 1993-03-16 02:51:13 clyne Exp $
+ *	$Id: spooler.c,v 1.14 1994-03-08 23:21:38 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -82,7 +82,7 @@ static	last(argv, tpipe, fd, log_fp)
 
 	default:
 		spoolerJobs++;
-		(void) fprintf(log_fp, "[%d] %d\n", spoolerJobs, pid);
+		if (log_fp) (void) fprintf(log_fp,"[%d] %d\n",spoolerJobs, pid);
 		break;
 	}
 
@@ -118,7 +118,7 @@ static	first(argv, tpipe, log_fp)
 		_exit(127);
 	default:
 		spoolerJobs++;
-		(void) fprintf(log_fp, "[%d] %d\n", spoolerJobs, pid);
+		if (log_fp) (void) fprintf(log_fp,"[%d] %d\n",spoolerJobs,pid);
 	}
 }
 
@@ -158,7 +158,7 @@ static	middle(argv, out_pipe,in_pipe, log_fp)
 		_exit(127);
 	default:
 		spoolerJobs++;
-		(void) fprintf(log_fp, "[%d] %d\n", spoolerJobs, pid);
+		if (log_fp) (void) fprintf(log_fp,"[%d] %d\n",spoolerJobs,pid);
 		break;
 	}
 }
@@ -868,6 +868,7 @@ char	**GetSpoolers(alias)
  *	**argv		: null terminate command and option list
  *	argc		: num args in argv
  *	log_fp		: file descriptor for logging normal status messages
+ *			: If NULL nothing gets logged.
  * on exit:
  *	return		: < 0 => failure
  */

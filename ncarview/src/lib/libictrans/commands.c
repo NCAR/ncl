@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.30 1994-03-03 17:40:38 haley Exp $
+ *	$Id: commands.c,v 1.31 1994-03-08 23:21:32 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -208,11 +208,13 @@ int	iCFile(ic)
 		(void) fprintf(stderr, "Too many file names\n");
 		return(-1);
 	}
-	(void) fprintf(fp, "%s\n", argv[0]);
+
+	if (! ic->quiet) (void) fprintf(fp, "%s\n", argv[0]);
 
 		
 
-	if ((toc = CGM_initMetaEdit(argv[0], 1440, NULL,(FILE *) fp)) == NULL) {
+	toc = CGM_initMetaEdit(argv[0],1440,NULL, ic->quiet ? (FILE *) NULL : fp);
+	if (! toc) {
 		perror((char *) NULL);
 		return(-1);
 	}
@@ -239,7 +241,9 @@ int	iCFile(ic)
 	(void) strcpy(fileName, argv[0]);
 	*icState.file = fileName;
 
-	(void) fprintf(fp, "%d frames\n", CGM_NUM_FRAMES(toc));
+	if (! ic->quiet) {
+		(void) fprintf(fp, "%d frames\n", CGM_NUM_FRAMES(toc));
+	}
 	doMemFile = FALSE;
 	
 	return(1);
@@ -264,6 +268,7 @@ int	iCSave(ic)
 	char	**argv;
 
 	if (ic->cmd.name[0] == 'S') force = TRUE;
+	if (ic->quiet) force = TRUE;
 		
 	
 
@@ -289,7 +294,7 @@ int	iCSave(ic)
 		return(-1);
 	}
 
-	(void) fprintf(fp, "Saving to %s\n", argv[0]);
+	if (! ic->quiet) (void) fprintf(fp, "Saving to %s\n", argv[0]);
 
 	/*
 	 * check status of file to save to 
@@ -628,8 +633,12 @@ int	iCPlot(ic)
 		log_ct(WARN);
 	}
 
-	(void) fprintf(fp, "Plotted %d frames, last frame plotted: %d\n",
-							count, last_frame);
+	if (! ic->quiet) {
+		(void) fprintf(
+			fp, "Plotted %d frames, last frame plotted: %d\n",
+			count, last_frame
+		);
+	}
 
 	/*
 	 * restore interupts
@@ -680,7 +689,7 @@ int	iCMerge(ic)
 	GraphicsMode(FALSE);
 #endif
 
-	fprintf(fp,"Merged frames %d and %d\n", frame1, frame2); 
+	if (! ic->quiet) fprintf(fp,"Merged frames %d and %d\n", frame1,frame2);
 
 	return(1);
 }
@@ -765,7 +774,7 @@ static	print_file(ic, translator, dev_win_string)
 	/*
 	 * spawn the translator and filter chain	
 	 */
-	(void) PipeLine(argc, argv, fp);
+	(void) PipeLine(argc, argv, ic->quiet ? (FILE *) NULL : fp);
 
 	free((Voidptr) record);
 	free((Voidptr) argv);
@@ -869,7 +878,7 @@ print_mem_file(ic, translator, dev_win_string)
 	/*
 	 * spawn the translator to process the tmp file
 	 */
-	(void) PipeLine(argc, argv, fp);
+	(void) PipeLine(argc, argv, ic->quiet ? (FILE *) NULL : fp);
 
 	/*
 	 * wait until spooler starts reading tmpfile before we unlink
@@ -909,10 +918,10 @@ int	iCMovie(ic)
 	if (ic->cmd.data || !icState.movie) {
 		icState.movie = TRUE;
 		icState.movietime = time;
-		(void) fprintf(fp, "movie on %d seconds\n", time);
+		if (! ic->quiet) (void)fprintf(fp,"movie on %d seconds\n",time);
 	} else {
 		icState.movie = FALSE;
-		(void) fprintf(fp, "movie off\n");
+		if (! ic->quiet) (void) fprintf(fp, "movie off\n");
 	}
 	return(1);
 }
@@ -928,10 +937,10 @@ int	iCLoop(ic)
 	 */
 	if (icState.loop) {
 		icState.loop = FALSE;
-		(void) fprintf(fp, "loop off\n");
+		if (! ic->quiet) (void) fprintf(fp, "loop off\n");
 	} else {
 		icState.loop = TRUE;
-		(void) fprintf(fp, "loop on\n");
+		if (! ic->quiet) (void) fprintf(fp, "loop on\n");
 	}
 	return(1);
 }
@@ -951,9 +960,9 @@ int	iCDup(ic)
 	 */
 	if (dup) {
 		icState.dup = dup;
-		(void) fprintf(fp, "dup %d frames\n", dup);
+		if (! ic->quiet) (void) fprintf(fp, "dup %d frames\n", dup);
 	} else {
-		(void) fprintf(fp, "%d\n", icState.dup);
+		if (! ic->quiet) (void) fprintf(fp, "%d\n", icState.dup);
 	}
 	return(1);
 }
@@ -980,7 +989,11 @@ int	iCStartSegment(ic)
 		}
 		else {
 			icState.start_segment = start;
-			(void)fprintf(fp,"segment begins at frame %d\n",start);
+			if (! ic->quiet) {
+				(void) fprintf(
+					fp,"segment begins at frame %d\n",start
+				);
+			}
 
 			if (start > ic->current_frame) {
 				ic->current_frame = start;
@@ -1014,7 +1027,11 @@ int	iCStopSegment(ic)
 		}
 		else {
 			icState.stop_segment = stop;
-			(void) fprintf(fp, "segment ends at frame %d \n",stop);
+			if (! ic->quiet) {
+				(void) fprintf(
+					fp, "segment ends at frame %d \n",stop
+				);
+			}
 
 			if (stop < ic->current_frame) {
 				ic->current_frame = stop;
@@ -1037,7 +1054,7 @@ int	iCSkip(ic)
 	if (s) {
 		skip = atoi(s);
 		icState.skip = skip;
-		(void) fprintf(fp, "Skip %d frames\n", skip);
+		if (! ic->quiet) (void) fprintf(fp, "Skip %d frames\n", skip);
 	}
 	else {
 		(void) fprintf(fp, "%d\n", icState.skip);
@@ -1355,7 +1372,7 @@ int	iCShell(ic)
 	/*
 	 * echo the command to the screen
 	 */
-	(void) fprintf(fp, "! %s\n", s);
+	if (! ic->quiet) (void) fprintf(fp, "! %s\n", s);
 
 	/*
 	 * call the shell with the command
@@ -1408,7 +1425,10 @@ processMemoryCGM(ic, mem_file)
 	FILE		*fp = ic->fp;
 	CtransRC	ctrc;
 
-	if ((toc = CGM_initMetaEdit(mem_file, -1440, NULL,(FILE *) fp)) == NULL) {
+	toc = CGM_initMetaEdit(
+		mem_file, -1440, NULL, ic->quiet ? (FILE *) NULL : fp
+	);
+	if (! toc) {
 		perror((char *) NULL);
 		return(-1);
 	}
@@ -1424,7 +1444,7 @@ processMemoryCGM(ic, mem_file)
 	newFile = TRUE;
 
 
-	(void) fprintf(fp, "%d frames\n", CGM_NUM_FRAMES(toc));
+	if (! ic->quiet) (void) fprintf(fp, "%d frames\n", CGM_NUM_FRAMES(toc));
 	doMemFile = TRUE;
 	return(1);	
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.c,v 1.21 1993-03-25 16:54:14 clyne Exp $
+ *	$Id: ictrans.c,v 1.22 1994-03-08 23:21:35 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -53,6 +53,7 @@ static	struct	{
 	char	*pal;		/* optional color palette       */
 	int	fd;		/* output file descriptor	*/
 	boolean	version;	/* software fill of piolygons	*/
+	boolean	quiet;		/* operate quietly		*/
 	} opt;
 
 static	OptDescRec	set_options[] = {
@@ -66,6 +67,7 @@ static	OptDescRec	set_options[] = {
 	{"pal", 1, NULL, "'arg0' is a color palette file"},
         {"fdn", 1, "-1", ""},
         {"Version", 0, NULL, "Print version and exit"},
+        {"quiet", 0, NULL, "Operate more quietly"},
 	{NULL}
 };
 
@@ -86,6 +88,8 @@ static	Option	get_options[] = {
 	{"fdn", NCARGCvtToInt, (Voidptr) &(opt.fd), sizeof(opt.fd)},
 	{"Version", NCARGCvtToBoolean, (Voidptr) &opt.version, 
 						sizeof (opt.version )},
+	{"quiet", NCARGCvtToBoolean, (Voidptr) &opt.quiet, 
+						sizeof (opt.quiet )},
 
 	{NULL}
 	};
@@ -326,18 +330,6 @@ ICTrans(argc, argv, mem_cgm)
 		}
 		setbuf(fp, (char *) NULL);	/* make unbuffered	*/
 	}
-	else if (batch || ! isatty(fileno(stdin))) {
-
-		/*
-		 * graphics go to stdout, everything else goes to
-		 * bit bucket
-		 */
-		if ((fp = fopen(dev_null, "w")) == NULL) {
-			fprintf(stderr, "fopen(%s, w)\n", dev_null);
-			return(-1);
-		}
-		batch = TRUE;
-	}
 	else {
 		if ((fp = fopen(dev_tty, "w")) == NULL) {
 			fprintf(stderr, "fopen(%s, w)\n", dev_tty);
@@ -346,6 +338,18 @@ ICTrans(argc, argv, mem_cgm)
 		setbuf(fp, (char *) NULL);	/* make unbuffered	*/
 	}
 	icommand.fp = fp;
+	icommand.quiet = opt.quiet;
+
+	/*
+	 * if we're getting our commands from the command line or
+	 * if we're not attached to a tty operate quietly
+	 */
+	if (batch || ! isatty(fileno(stdin))) {
+		batch = TRUE;
+		icommand.quiet = TRUE;
+	}
+
+	icommand.batch = batch;
 
 	/*
 	 * prime the system by executing a file() command
@@ -385,7 +389,11 @@ ICTrans(argc, argv, mem_cgm)
 #endif
 
 			if (status > 0) {
-				(void) fprintf(fp, "Done	%d\n", status);
+				if (! icommand.quiet) {
+					(void) fprintf(
+						fp, "Done	%d\n", status
+					);
+				}
 				spoolerJobs--;
 			}
 			else {
