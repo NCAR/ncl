@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.136 2003-06-25 23:38:44 kennison Exp $
+#   $Id: ncargex.csh,v 1.137 2003-08-05 22:41:57 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -417,7 +417,8 @@ set c_list = ($c_list $labelbar_clist)
 set csagrid_flist = (csex01 csex02 csex03 csex04 csex05 csex06 csex07)
 set cssgrid_flist = (cssex01 cssex02 cssex03)
 set dsgrid_flist  = (dsex01 dsex01d dsex02 dsex03 dsex04 dsex05 dsex06)
-set fitgrid_flist = (ftex01 ftex02 ftex03 ftex04 ftex05 ftex06 ftex07)
+set fitgrid_flist = (ftex01  ftex02  ftex03  ftex04  ftex05  ftex06  ftex07 \
+                     ftex01d ftex02d ftex03d ftex04d ftex05d ftex06d ftex07d)
 set natgrid_flist = (nnex01 nnex01d nnex02 nnex03 nnex04 nnex05 nnex06 \
                      nnex07 nnex08 nnex09 nnex10)
 set shgrid_flist  = (shex01 shex02 shex03)
@@ -735,7 +736,7 @@ set list_cfnd = ($dashline_cfnd $field_cfnd $ngmisc_cfnd $spps_cfnd \
 set list_fpdc = ($gks_fpdc)
 set list_cpdc = ($gks_cpdc)
 
-set list_fps = (pgkex19 pgkex20 pgkex21 pgkex22 pgkex23 wmex13 wmex14)
+set list_fps = (pgkex19 pgkex20 pgkex21 pgkex22 pgkex23 wmex12 wmex13 wmex14)
 set list_cps = (c_pgkex21)
 
 #****************************************#
@@ -748,19 +749,22 @@ set list_cps = (c_pgkex21)
 #****************************************#
 set X11_option
 
-#**********************************#
-#                                  #
-# Default workstation type is NCGM #
-#                                  #
-#**********************************#
-set ws_type = "1"
-
 #*******************************#
 #                               #
 # Parse options on command line #
 #                               #
 #*******************************#
 set names
+
+#*******************************#
+#                               #
+# change_ws_type is used to keep#
+# track of whether the user     #
+# explicitly changed the ws type#
+#                               #
+#*******************************#
+unset change_ws_type
+set ws_type      = 1
 
 while ($#argv > 0)
 
@@ -1063,6 +1067,7 @@ while ($#argv > 0)
     case "-w":
       shift
       set ws_type = $1
+      set WS_type = $1
       if ( !(`expr "$ws_type" : '[0-9]'`)) then
 #***********************************************#
 #                                               #
@@ -1188,6 +1193,7 @@ invalid:
           echo ""
           exit 1
       endif
+      set change_ws_type
       shift
       breaksw
 
@@ -1248,7 +1254,6 @@ endif
 foreach name ($names)
 
 unset no_file
-unset tmp_ws_type
 unset tmp_msg
 set input
 set output
@@ -1347,7 +1352,21 @@ endif
 # Check this particular example to see #
 # if there's anything special about it #
 #                                      #
+# orig_ps_type is the original         #
+# workstation as it is set in the      #
+# example. Most examples are ws_type=1,#
+# so let orig_ws_type default to 1,    #
+# and change if necessary.             #
+#                                      #
+# If there's no workstation type       #
+# associated with an example, or if an #
+# example's workstation type shouldn't #
+# be messed with, then just unset      #
+# orig_ws_type.                        # 
+#                                      #
 #**************************************#
+set orig_ws_type = "1"
+
 switch($name)
     case pgkex19:
     case pgkex20:
@@ -1355,37 +1374,39 @@ switch($name)
     case pgkex22:
     case pgkex23:
     case c_pgkex21:
-      set tmp_ws_type = "20"
+      unset orig_ws_type
       echo ""
-      echo "  This example was set up to demonstrate the Postscript"
-      echo "  driver, so workstation type 20 is being used."
+      echo "  This example was set up to demonstrate how to use"
+      echo "  the Ngmisc routines to define the Postscript output."
       echo ""
     breaksw
 
     case wmex12:
     case wmex13:
     case wmex14:
-      set tmp_ws_type = "26"
-      echo ""
-      echo "  This example was set up to use the entire"
-      echo "  page when going to PostScript, so workstation"
-      echo "  type 26 is being used."
-      echo ""
+      set orig_ws_type = "26"
+      if (! $?change_ws_type) then
+        echo ""
+        echo "  This example was set up to use the entire"
+        echo "  page when going to PostScript, so workstation"
+        echo "  type 26 is being used."
+        echo ""
+      endif
     breaksw
 
     case pgkex26:
     case fgke03:
-      unset tmp_ws_type
+      unset orig_ws_type
+      set no_file
       echo ""
       echo "  This example was set up to demonstrate how to change"
       echo "  the name of the metafile from within the program."
       echo ""
       set tmp_msg = "Metafiles META01 and META02 produced."
-      set no_file
     breaksw
 
     case pgkex27:
-      unset tmp_ws_type
+      unset orig_ws_type
       echo ""
       echo "  This example was set up to demonstrate how to write"
       echo "  to more than one metafile at a time."
@@ -1396,18 +1417,19 @@ switch($name)
 
     case fgke01:
     case fgke04:
-      set tmp_ws_type = "8"
+      unset orig_ws_type
       echo ""
       echo "  This example was set up to demonstrate the X11"
       echo "  driver.  It also generates a graphic file."
       echo ""
+      set tmp_msg = "   "
     breaksw
 
     case nnex08:
     case nnex09:
     case nnex10:
     case mpex12:
-      unset tmp_ws_type
+      unset orig_ws_type
       set tmp_msg = "   "
       echo ""
       echo "  This example does not produce a metafile."
@@ -1418,7 +1440,14 @@ switch($name)
     case ccpcff:
     case tcolcv:
     case fcce02:
-      unset tmp_ws_type
+    case ftex01d:
+    case ftex02d:
+    case ftex03d:
+    case ftex04d:
+    case ftex05d:
+    case ftex06d:
+    case ftex07d:
+      unset orig_ws_type
       set no_file
       set tmp_msg = "   "
       echo ""
@@ -1427,10 +1456,8 @@ switch($name)
     breaksw
 endsw
 
-if ($?tmp_ws_type) then
-  set the_ws_type = "$tmp_ws_type"
-else
-  set the_ws_type = "$ws_type"
+if (! $?change_ws_type && $?orig_ws_type) then
+  set ws_type = $orig_ws_type
 endif
 
 #***************************************#
@@ -1440,7 +1467,7 @@ endif
 # created when the example is executed. #
 #                                       #
 #***************************************#
-if ("$the_ws_type" == "8" || "$the_ws_type" == "10" ) set no_file
+if ("$ws_type" == "8" || "$ws_type" == "10" ) set no_file
 
 #**************************************#
 #                                      #
@@ -1449,10 +1476,10 @@ if ("$the_ws_type" == "8" || "$the_ws_type" == "10" ) set no_file
 # it is going to be renamed to.        #
 #                                      #
 #**************************************#
-set suffix = "$suffix_names[$the_ws_type]"
+set suffix = "$suffix_names[$ws_type]"
 set graphic_file = "$name.$suffix"
-set default_file = $default_files[$the_ws_type]
-set msg = "$default_msgs[$the_ws_type] $graphic_file."
+set default_file = $default_files[$ws_type]
+set msg = "$default_msgs[$ws_type] $graphic_file."
 if ($?fprog) then
   set main = "$name.f"
 else
@@ -1463,7 +1490,7 @@ if ($?tmp_msg) then
   set msg = "$tmp_msg"
 endif
 
-if ("$the_ws_type" == "8") then
+if ("$ws_type" == "8") then
   echo ""
   echo "NOTE: This example is being run interactively and can only"
   echo "      be executed if you have X running and have your     "
@@ -1480,7 +1507,7 @@ endif
 # the output goes to stdout        #
 #                                  #
 #**********************************#
-if ("$the_ws_type" == "10") then
+if ("$ws_type" == "10") then
   set output = "$graphic_file"
 endif
 
@@ -1626,6 +1653,13 @@ switch ($name)
     case ftex05:
     case ftex06:
     case ftex07:
+    case ftex01d:
+    case ftex02d:
+    case ftex03d:
+    case ftex04d:
+    case ftex05d:
+    case ftex06d:
+    case ftex07d:
     case shex01:
     case shex02:
     case shex03:
@@ -1756,20 +1790,24 @@ endif
 echo "  Copying $main"
 echo ""
 cp $temp_dir/$main ./$main
-if ($?fprog && $the_ws_type != 1) then
+if ($?fprog && $?orig_ws_type && $?change_ws_type) then
+if($orig_ws_type != $ws_type) then
 ed << EOF - ./$main >& /dev/null
-g/IWTYPE=1/s//IWTYPE=$the_ws_type/g
+g/IWTYPE=$orig_ws_type/s//IWTYPE=$ws_type/g
 w
 q
 EOF
 endif
+endif
 
-if ($?cprog && $the_ws_type != 1) then
+if ($?cprog && $?is_ws_type && $?change_ws_type) then
+if($orig_ws_type != $ws_type) then
 ed << EOF - ./$main >& /dev/null
-g/define IWTYPE 1/s//define IWTYPE $the_ws_type/g
+g/define IWTYPE $orig_ws_type/s//define IWTYPE $ws_type/g
 w
 q
 EOF
+endif
 endif
 
 set src_files = ($extra_src_files $main)
