@@ -954,9 +954,22 @@ GribFileRecord *therec;
 						the_param = &(params_fsl[grib_rec->param_tbl_index]);
 						break;
 					case 7:
-				case 8:
+						switch((int)grib_rec->pds[5]){
+						case 96:
+							the_param = &(params_nwsnmc[grib_rec->param_tbl_index]);
+							break;
+						case 180:
+							the_param = &(params_nmcreanal[grib_rec->param_tbl_index]);
+							break;
+						default:
+							the_param = &(params_nmcreanal[grib_rec->param_tbl_index]);
+		
+							break;
+						}
+						break;
+				        case 8:
 					case 9:
-						the_param = &(params_nwsnmc[grib_rec->param_tbl_index]);
+						the_param = &(params_nmcreanal[grib_rec->param_tbl_index]);
 						break;
 					default:
 						NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unlocatable parameter number (%d) from center (%d), extension of NclGRIB required",grib_rec->param_number,(int)grib_rec->pds[4]);
@@ -3398,15 +3411,46 @@ int wr_status;
 						
 						break;
 					case 7:
+						switch((int)grib_rec->pds[5]) {
+						case 96:
+							for(i = 0; i < sizeof(params_nwsnmc_index)/sizeof(int); i++) {
+								if(params_nwsnmc_index[i] == grib_rec->param_number) {
+									name_rec = &(params_nwsnmc[i]);
+									break;
+								}
+							}
+							if( i ==  sizeof(params_nwsnmc_index)/sizeof(int) ) {
+								if(!_IsDef(therec,grib_rec->param_number)) {
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number,grib_rec->param_number);
+								}
+								i = -1;
+							} 
+						break;
+						case 180:
+						default:
+							for(i = 0; i < sizeof(params_nmcreanal_index)/sizeof(int); i++) {
+								if(params_nmcreanal_index[i] == grib_rec->param_number) {
+									name_rec = &(params_nmcreanal[i]);
+									break;
+								}
+							}
+							if( i ==  sizeof(params_nmcreanal_index)/sizeof(int) ) {
+								if(!_IsDef(therec,grib_rec->param_number)) {
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number,grib_rec->param_number);
+								}
+								i = -1;
+							} 
+						}
+						break;
 					case 8:
 					case 9:
-						for(i = 0; i < sizeof(params_nwsnmc_index)/sizeof(int); i++) {
-							if(params_nwsnmc_index[i] == grib_rec->param_number) {
-								name_rec = &(params_nwsnmc[i]);
+						for(i = 0; i < sizeof(params_nmcreanal_index)/sizeof(int); i++) {
+							if(params_nmcreanal_index[i] == grib_rec->param_number) {
+								name_rec = &(params_nmcreanal[i]);
 								break;
 							}
 						}
-						if( i ==  sizeof(params_nwsnmc_index)/sizeof(int) ) {
+						if( i ==  sizeof(params_nmcreanal_index)/sizeof(int) ) {
 							if(!_IsDef(therec,grib_rec->param_number)) {
 								NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number,grib_rec->param_number);
 							}
