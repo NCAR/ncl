@@ -1,5 +1,12 @@
-
+C
+C $Id: tdex04.f,v 1.3 2003-02-28 20:46:25 haley Exp $
+C
       PROGRAM XMPL04
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C This is a modified version of the TDPACK example "tdex01".  The two
 C surfaces have been modified to illustrate new capabilities.  The
@@ -105,7 +112,9 @@ C
 C
 C Open GKS.
 C
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Turn clipping off.
 C
@@ -390,7 +399,9 @@ C
 C
 C Close GKS.
 C
-        CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
 C Done.
 C

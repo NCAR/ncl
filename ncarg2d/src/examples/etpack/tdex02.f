@@ -1,7 +1,12 @@
 C
-C $Id: tdex02.f,v 1.3 2000-02-16 23:40:17 kennison Exp $
+C $Id: tdex02.f,v 1.4 2003-02-28 20:46:25 haley Exp $
 C
       PROGRAM XMPL02
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C Declare the size of the triangle array.
 C
@@ -107,7 +112,9 @@ C
 C
 C Open GKS.
 C
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Turn clipping off.
 C
@@ -952,7 +959,9 @@ C
 C
 C Close GKS.
 C
-        CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
 C Done.
 C

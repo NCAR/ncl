@@ -1,5 +1,12 @@
-
+C
+C $Id: tdex07.f,v 1.2 2003-02-28 20:46:25 haley Exp $
+C
       PROGRAM XMPL07
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C Create parameters specifying the maximum sizes of the arrays defining
 C data, the arrays required for dealing with the list of triangles, and
@@ -100,7 +107,9 @@ C
 C
 C Open GKS.
 C
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Turn clipping off.
 C
@@ -310,7 +319,9 @@ C
 C
 C Close GKS.
 C
-        CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
 C Done.
 C
