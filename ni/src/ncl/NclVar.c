@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.44 1997-03-19 18:25:03 ethan Exp $
+ *      $Id: NclVar.c,v 1.45 1997-06-10 15:06:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1233,6 +1233,8 @@ NclSelectionRecord *sel_ptr;
 	NclScalar *missing_ptr;
 	int miss_dim_sizes[NCL_MAX_DIMENSIONS];
 	NclVar self_var = (NclVar)self;
+	NclSelectionRecord mysel;
+
 
 /*
 * Preconditions value is a NclMultiDValData
@@ -1331,29 +1333,39 @@ NclSelectionRecord *sel_ptr;
 				} 
 	/*
 	* By changing this field to permanent the calling env will not destroy it
-	*/
-				if(!_NclSetStatus((NclObj)tmp_md,PERMANENT) ) {
-	/*
+	*
+	*			if(!_NclSetStatus((NclObj)tmp_md,PERMANENT) ) {
+	*
 	* this is ok since value is destroyed by calling env when value is STATIC.
 	* Note that if tmp_md came from _NclCoerceData it will not hit this branch
 	* so no memory is lost. The only way tmp_md can be PERMANENT or STATIC is
 	* if it came in from the calling env. Therefore no pointer is actually lost. 
-	*/
-					tmp_md1 = _NclCopyVal(tmp_md,NULL);
-					_NclSetStatus((NclObj)tmp_md1,PERMANENT);
-					tmp_md = tmp_md1;
-				}
-	/*
+	*
+	*				tmp_md1 = _NclCopyVal(tmp_md,NULL);
+	*				_NclSetStatus((NclObj)tmp_md1,PERMANENT);
+	*				tmp_md = tmp_md1;
+	*			}
+	*
 	* Since whole sale replacement of thevalue occurs, it is the responsiblity
 	* of this function to free the old storage
 	*
 	* BOGUS CODE ALERT----> switching to id's instead of pointers makes this a
 	* no-no
+	*
+	*
+	*			_NclDelParent((NclObj)thevalue,(NclObj)self);
+	*			_NclAddParent((NclObj)tmp_md,(NclObj)self);
+	*			self->var.thevalue_id = tmp_md->obj.id;
 	*/
-
-				_NclDelParent((NclObj)thevalue,(NclObj)self);
-				_NclAddParent((NclObj)tmp_md,(NclObj)self);
-				self->var.thevalue_id = tmp_md->obj.id;
+				mysel.n_entries = thevalue->multidval.n_dims;
+				for( i = 0; i < thevalue->multidval.n_dims; i++) {
+					mysel.selection[i].sel_type = Ncl_SUB_ALL;
+					mysel.selection[i].dim_num = i;
+					mysel.selection[i].u.sub.stride = 1;
+				}
+				ret = _NclWriteSubSection((NclData)thevalue,&mysel,(NclData)tmp_md);
+				if((tmp_md != value)&&(tmp_md->obj.status != PERMANENT))	
+					_NclDestroyObj((NclObj)tmp_md);
 				return(NhlNOERROR);
 			} else {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions on right hand side do not match number of dimension in left hand side");

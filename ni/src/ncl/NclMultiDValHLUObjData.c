@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.c,v 1.17 1997-05-09 21:38:01 ethan Exp $
+ *      $Id: NclMultiDValHLUObjData.c,v 1.18 1997-06-10 15:06:08 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1111,7 +1111,7 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
 /*
 * ADD HLUVALCHANGE
 */
-		if(*val != target_md->multidval.missing_value.value.objval) {
+		if((chckmiss)&&(*val != target_md->multidval.missing_value.value.objval)) {
 			tmp_ho = (NclHLUObj)_NclGetObj((int)*val);
 			if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
 				(void)_NclAddParent((NclObj)tmp_ho,(NclObj)target_md);
