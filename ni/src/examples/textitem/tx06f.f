@@ -90,7 +90,7 @@ C
 C Create a PS workstation.
 C
         call NhlFRLClear(rlist)
-        call NhlFRLSetString(rlist,'wkPSFileName','./tx06c.ps',ierr)
+        call NhlFRLSetString(rlist,'wkPSFileName','./tx06f.ps',ierr)
         call NhlFRLSetFloatArray(rlist,'wkBackgroundColor',
      &       bkg_color,3,ierr)
         call NhlFCreate(wid,'tx06Work',NhlFpsWorkstationClass,
@@ -100,7 +100,7 @@ C
 C Create a PDF workstation.
 C
         call NhlFRLClear(rlist)
-        call NhlFRLSetString(rlist,'wkPDFFileName','./tx06c.pdf',ierr)
+        call NhlFRLSetString(rlist,'wkPDFFileName','./tx06f.pdf',ierr)
         call NhlFRLSetFloatArray(rlist,'wkBackgroundColor',
      &       bkg_color,3,ierr)
         call NhlFCreate(wid,'tx06Work',NhlFpdfWorkstationClass,
