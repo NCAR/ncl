@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ncarg_path.c,v 1.12 1994-02-23 22:34:59 haley Exp $
+ *      $Id: ncarg_path.c,v 1.13 1994-03-01 14:58:23 haley Exp $
  */
 /*
  *	File:		ncarg_path.c
@@ -18,6 +18,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <errno.h>
 #include "c.h"
 #include "ncarg_path.h"
@@ -106,7 +108,7 @@ static	const char *dir_2_path(dir)
 	char	*file_check = "/usr/local/lib/ncarg/fontcaps/font1";
 	char	*env_name;
 	char	*s;
-	FILE	*fp;
+	struct stat	*sbuf;
 
 
 	if (! (env_name = create_env_name(dir))) {
@@ -136,12 +138,10 @@ static	const char *dir_2_path(dir)
  * Assume a default of "parent_default" for NCARG_ROOT.
  * First check for existence of the file "file_check".
  */
-			fp = fopen( file_check, "r" );
-			if( fp == NULL ) {
+			if( stat(file_check, sbuf) < 0 ) {
 				ESprintf(E_UNKNOWN, "%s environment variable not set", ROOT_ENV);
 				return(NULL);
 			}
-			fclose(fp);
 /*
  * Set status = 1 so we don't have to set this path time
  * the next time around.
