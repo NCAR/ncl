@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.6 1991-08-16 10:56:25 clyne Exp $
+ *	$Id: commands.c,v 1.7 1991-08-20 15:57:24 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -46,6 +46,7 @@ IcState	icState = {
 
 static	Directory	*Toc;
 static	short		loopAbort;
+static	char		buf[1024];
 
 
 int	iCHelp(ic)
@@ -54,6 +55,8 @@ int	iCHelp(ic)
 
 	int	i;
 	CmdOp	*c;
+	int	fd = ic->fd;
+
 	extern	int	NUM_CMDS;
 	extern	CmdOp	cmdOptab[];
 	extern	CmdOp	*getcmdOp();
@@ -64,11 +67,12 @@ int	iCHelp(ic)
 	 */
 	if (!ic->cmd.data) {
 		for (i = 0, c = &cmdOptab[0]; i < NUM_CMDS; i++, c++) {
-			(void) fprintf (
-				stderr,"%-10s : %s\n", c->c_name, c->c_help);
+			(void) sprintf (buf,"%-10s : %s\n",c->c_name,c->c_help);
+			(void) write (fd, buf, strlen(buf));
 		} 
-			(void) fprintf(stderr,
+			(void) sprintf(buf,
 			"\nfor usage of a specific command type: help <command>\n");
+			(void) write (fd, buf, strlen(buf));
 		return;
 	}
 
@@ -77,20 +81,19 @@ int	iCHelp(ic)
 	 * and print a usage message
 	 */
 	if ((c = getcmdOp(ic->cmd.data)) == (CmdOp *) -1) {
-		(void) fprintf (
-			stderr, "Ambiguous command < %s >", ic->cmd.data);
+		(void) fprintf(stderr,"Ambiguous command < %s >", ic->cmd.data);
 		return;
 	}
 	if (c == (CmdOp *) NULL) {
-		(void) fprintf (
-			stderr, "No such command < %s >\n", ic->cmd.data);
+		(void) fprintf(stderr,"No such command < %s >\n", ic->cmd.data);
 		return;
 	}
 
 	/*
 	 * print the useage message
 	 */
-	(void) fprintf(stderr, "<%s> usage: %s\n", c->c_name, c->c_usage);
+	(void) sprintf(buf, "<%s> usage: %s\n", c->c_name, c->c_usage);
+	(void) write (fd, buf, strlen(buf));
 		
 }
 
@@ -99,6 +102,7 @@ int	iCFile(ic)
 {
 
 	char	*s = ic->cmd.data;
+	int	fd = ic->fd;
 	static	char	*fileName = NULL;
 
 	int	argc;
@@ -108,10 +112,12 @@ int	iCFile(ic)
 
 	if (!s) {	/* if no file report current file	*/
 		if (*icState.file) {
-			(void) fprintf(stderr, "%s\n", *icState.file);
+			(void) sprintf(buf, "%s\n", *icState.file);
+			(void) write (fd, buf, strlen(buf));
 		}
 		else {
-			(void) fprintf(stderr, "No file\n");
+			(void) sprintf(buf, "No file\n");
+			(void) write (fd, buf, strlen(buf));
 		}
 		return;
 	}
@@ -127,7 +133,8 @@ int	iCFile(ic)
 		(void) fprintf(stderr, "Too many file names\n");
 		return;
 	}
-	(void) fprintf(stderr, "%s\n", argv[0]);
+	(void) sprintf(buf, "%s\n", argv[0]);
+	(void) write (fd, buf, strlen(buf));
 
 		
 
@@ -155,7 +162,8 @@ int	iCFile(ic)
 	(void) strcpy(fileName, argv[0]);
 	*icState.file = fileName;
 
-	(void) fprintf(stderr, "%d frames\n", CGM_NUM_FRAMES(toc));
+	(void) sprintf(buf, "%d frames\n", CGM_NUM_FRAMES(toc));
+	(void) write (fd, buf, strlen(buf));
 	
 }
 
@@ -164,6 +172,7 @@ int	iCSave(ic)
 {
 
 	char	*s = ic->cmd.data;		/* file to save to	*/
+	int	fd = ic->fd;
 	static	char	*saveFile = NULL;	/* save name of file	*/
 
 	int	start_frame, num_frames;
@@ -200,7 +209,8 @@ int	iCSave(ic)
 		return;
 	}
 
-	(void) fprintf(stderr, "Saving to %s\n", argv[0]);
+	(void) sprintf(buf, "Saving to %s\n", argv[0]);
+	(void) write (fd, buf, strlen(buf));
 
 	/*
 	 * check status of file to save to 
@@ -220,7 +230,8 @@ int	iCSave(ic)
 		}
 	}
 	else if (status == 0) {	/* file exists but is not a NCAR CGM	*/
-		(void)fprintf(stderr,"Non valid CGM, overwrite file? [y,n](y)");
+		(void) sprintf(buf,"Non valid CGM, overwrite file? [y,n](y)");
+		(void) write (fd, buf, strlen(buf));
 
 		while (c = getchar()) if (isalpha(c)) break; 
 
@@ -232,8 +243,8 @@ int	iCSave(ic)
 		}
 		while ((c = getchar()) != '\n');
 	} else  {		/* file exists and is a valid CGM	*/
-		(void) fprintf(stderr, 
-			"File exists, overwrite or append? [o,a](a)");
+		(void)sprintf(buf,"File exists, overwrite or append? [o,a](a)");
+		(void) write (fd, buf, strlen(buf));
 
 		while (c = getchar()) if (isalpha(c)) break; 
 
@@ -308,15 +319,18 @@ int	iCSave(ic)
 int	iCNextfile(ic)
 	ICommand	*ic;
 {
+	int	fd = ic->fd;
 
 	if (! *icState.file) {
-		(void) fprintf(stderr, "No more files\n");
+		(void) sprintf(buf, "No more files\n");
+		(void) write (fd, buf, strlen(buf));
 		return;
 	}
 
 
 	if (! *(icState.file + 1)) {
-		(void) fprintf(stderr, "No more files\n");
+		(void) sprintf(buf, "No more files\n");
+		(void) write (fd, buf, strlen(buf));
 		return;
 	}
 
@@ -345,6 +359,8 @@ int	iCPlot(ic)
 		abs_inc;	/* absolute value of inc	*/
 	int	num_frames;	/* number of frames in a list	*/
 	int	count = 0;	/* number of frames plotted	*/
+	int	fd = ic->fd;
+
 	register void (*istat)();
 
 	static	short	incCurrentFrame = FALSE;
@@ -459,8 +475,9 @@ int	iCPlot(ic)
 #endif
 
 
-	(void) fprintf(stderr, "Plotted %d frames, last frame plotted: %d\n",
-		count, last_frame);
+	(void) sprintf(buf, "Plotted %d frames, last frame plotted: %d\n",
+							count, last_frame);
+	(void) write (fd, buf, strlen(buf));
 
 	/*
 	 * restore interupts
@@ -517,6 +534,7 @@ int	iCMerge(ic)
 {
 	int	frame1, frame2;
 	int	record1, record2;
+	int	fd = ic->fd;
 	if (!Toc) return;
 
 	/*
@@ -553,7 +571,8 @@ int	iCMerge(ic)
 	GraphicsMode(FALSE);
 #endif
 
-	fprintf(stderr,"Merged frames %d and %d\n", frame1, frame2); 
+	sprintf(buf,"Merged frames %d and %d\n", frame1, frame2); 
+	(void) write (fd, buf, strlen(buf));
 
 }
 
@@ -570,6 +589,7 @@ int	iCPrint(ic)
 	int	argc;
 	char	**argv = NULL;
 	char	*binpath;
+	int	fd = ic->fd;
 	static char	*translator = NULL;
 	static char	*record_opt = NULL;
 
@@ -655,6 +675,7 @@ int	iCMovie(ic)
 	ICommand	*ic;
 {
 	int	time = 0;
+	int	fd = ic->fd;
 
 	if (ic->cmd.data) {
 		time = atoi(ic->cmd.data);
@@ -667,10 +688,12 @@ int	iCMovie(ic)
 	if (time || !icState.movie) {
 		icState.movie = TRUE;
 		icState.movietime = time;
-		(void) fprintf(stderr, "movie on %d seconds\n", time);
+		(void) sprintf(buf, "movie on %d seconds\n", time);
+		(void) write (fd, buf, strlen(buf));
 	} else {
 		icState.movie = FALSE;
-		(void) fprintf(stderr, "movie off\n");
+		(void) sprintf(buf, "movie off\n");
+		(void) write (fd, buf, strlen(buf));
 	}
 }
 
@@ -679,21 +702,25 @@ int	iCMovie(ic)
 int	iCLoop(ic)
 	ICommand	*ic;
 {
+	int	fd = ic->fd;
 	/*
 	 * toggle looping on or off
 	 */
 	if (icState.loop) {
 		icState.loop = FALSE;
-		(void) fprintf(stderr, "loop off\n");
+		(void) sprintf(buf, "loop off\n");
+		(void) write (fd, buf, strlen(buf));
 	} else {
 		icState.loop = TRUE;
-		(void) fprintf(stderr, "loop on\n");
+		(void) sprintf(buf, "loop on\n");
+		(void) write (fd, buf, strlen(buf));
 	}
 }
 int	iCDup(ic)
 	ICommand	*ic;
 {
 	int	dup = 0;
+	int	fd = ic->fd;
 
 	if (ic->cmd.data) {
 		dup = atoi(ic->cmd.data);
@@ -705,9 +732,11 @@ int	iCDup(ic)
 	 */
 	if (dup) {
 		icState.dup = dup;
-		(void) fprintf(stderr, "dup %d frames\n", dup);
+		(void) sprintf(buf, "dup %d frames\n", dup);
+		(void) write (fd, buf, strlen(buf));
 	} else {
-		(void) fprintf(stderr, "%d\n", icState.dup);
+		(void) sprintf(buf, "%d\n", icState.dup);
+		(void) write (fd, buf, strlen(buf));
 	}
 }
 
@@ -715,6 +744,7 @@ int	iCStartSegment(ic)
 	ICommand	*ic;
 {
 	int	start = 0;
+	int	fd = ic->fd;
 
 	if (ic->cmd.src_frames.num != 0) {
 		start = ic->cmd.src_frames.fc[0].start_frame; 
@@ -740,7 +770,8 @@ int	iCStartSegment(ic)
 			}
 		}
 	} else {
-		(void) fprintf(stderr, "%d\n", icState.start_segment);
+		(void) sprintf(buf, "%d\n", icState.start_segment);
+		(void) write (fd, buf, strlen(buf));
 	}
 }
 
@@ -748,6 +779,7 @@ int	iCStopSegment(ic)
 	ICommand	*ic;
 {
 	int	stop = 0;
+	int	fd = ic->fd;
 
 	if (ic->cmd.src_frames.num != 0) {
 		stop = ic->cmd.src_frames.fc[0].start_frame; 
@@ -773,7 +805,8 @@ int	iCStopSegment(ic)
 			}
 		}
 	} else {
-		(void) fprintf(stderr, "%d\n", icState.stop_segment);
+		(void) sprintf(buf, "%d\n", icState.stop_segment);
+		(void) write (fd, buf, strlen(buf));
 	}
 }
 
@@ -782,15 +815,18 @@ int	iCSkip(ic)
 	ICommand	*ic;
 {
 	char	*s = ic->cmd.data;
+	int	fd = ic->fd;
 	int	skip;
 
 	if (s) {
 		skip = atoi(s);
 		icState.skip = skip;
-		(void) fprintf(stderr, "Skip %d frames\n", skip);
+		(void) sprintf(buf, "Skip %d frames\n", skip);
+		(void) write (fd, buf, strlen(buf));
 	}
 	else {
-		(void) fprintf(stderr, "%d\n", icState.skip);
+		(void) sprintf(buf, "%d\n", icState.skip);
+		(void) write (fd, buf, strlen(buf));
 	}
 }
 
@@ -800,13 +836,16 @@ int	iCDevice(ic)
 	static	char *deviceName = NULL;
 	char	*dev;
 	char	*s = ic->cmd.data;
+	int	fd = ic->fd;
 
 	if (!s) {	/* if no device report current device	*/
 		if (icState.device) {
-			(void) fprintf(stderr, "%s\n", icState.device);
+			(void) sprintf(buf, "%s\n", icState.device);
+			(void) write (fd, buf, strlen(buf));
 		}
 		else {
-			(void) fprintf(stderr, "No device\n");
+			(void) sprintf(buf, "No device\n");
+			(void) write (fd, buf, strlen(buf));
 		}
 		return;
 	}
@@ -847,13 +886,16 @@ int	iCFont(ic)
 	static	char *fontName;
 	char	*font;
 	char	*s = ic->cmd.data;
+	int	fd = ic->fd;
 
 	if (!s) {	/* if no font report current font	*/
 		if (icState.font) {
-			(void) fprintf(stderr, "%s\n", icState.font);
+			(void) sprintf(buf, "%s\n", icState.font);
+			(void) write (fd, buf, strlen(buf));
 		}
 		else {
-			(void) fprintf(stderr, "No font\n");
+			(void) sprintf(buf, "No font\n");
+			(void) write (fd, buf, strlen(buf));
 		}
 		return;
 	}
@@ -896,6 +938,7 @@ int	iCList(ic)
 {
 	int	i,j;
 	int	frame;
+	int	fd = ic->fd;
 
 	static	short	incCurrentFrame = FALSE;
 
@@ -905,11 +948,14 @@ int	iCList(ic)
 		for (j = 0, frame = ic->cmd.src_frames.fc[i].start_frame; 
 			j < ic->cmd.src_frames.fc[i].num_frames; j++, frame++){
 
-			(void) fprintf(stderr, 
-			"\tFrame %d contains %d record(s) starting at record %d\n",
-			frame, 
-			CGM_NUM_RECORD(Toc, frame - 1), 
-			CGM_RECORD(Toc, frame - 1));
+			(void) sprintf(buf, 
+				"\tFrame %d contains %d record(s) starting at record %d\n",
+				frame, 
+				CGM_NUM_RECORD(Toc, frame - 1), 
+				CGM_RECORD(Toc, frame - 1));
+
+			
+			(void) write (fd, buf, strlen(buf));
 			
 		}
 
@@ -935,10 +981,12 @@ int	iCList(ic)
 
 		frame = ic->current_frame;
 
-		(void) fprintf(stderr, 
+		(void) sprintf(buf, 
 		"\tFrame %d contains %d record(s) starting at record %d\n",
-		frame, CGM_NUM_RECORD(Toc, frame - 1), 
-		CGM_RECORD(Toc, frame - 1));
+			frame, CGM_NUM_RECORD(Toc, frame - 1), 
+			CGM_RECORD(Toc, frame - 1));
+
+		(void) write (fd, buf, strlen(buf));
 
 		incCurrentFrame = TRUE;
 	}
@@ -953,6 +1001,7 @@ int	iCAlias(ic)
 {
 	char	*s = ic->cmd.data;
 	char	**aliases = NULL;
+	int	fd = ic->fd;
 
 	char	*cptr;
 	
@@ -988,7 +1037,8 @@ int	iCAlias(ic)
 	 * print out the spooler aliases
 	 */
 	for ( ; aliases && *aliases; aliases++) {
-		(void) fprintf(stderr, "%s\n", *aliases);
+		(void) sprintf(buf, "%s\n", *aliases);
+		(void) write (fd, buf, strlen(buf));
 	}
 	
 }
@@ -997,6 +1047,7 @@ int	iCSpooler(ic)
 	ICommand	*ic;
 {
 	char	*s = ic->cmd.data;
+	int	fd = ic->fd;
 
 	extern	char	*GetCurrentAlias();
 	
@@ -1013,7 +1064,8 @@ int	iCSpooler(ic)
 		}
 	} 
 	else {
-		(void) fprintf(stderr, "%s\n", GetCurrentAlias());
+		(void) sprintf(buf, "%s\n", GetCurrentAlias());
+		(void) write (fd, buf, strlen(buf));
 	}
 
 }
@@ -1027,6 +1079,7 @@ int	iCZoom(ic)
 {
 	char	*s = ic->cmd.data;
 	DevWindow	*dev_win = &icState.dev_window;
+	int	fd = ic->fd;
 
 	long	llx, lly, urx, ury;
 
@@ -1034,10 +1087,13 @@ int	iCZoom(ic)
 	 * if new coordinates not given report current
 	 */
 	if (!s) {
-		(void) fprintf(stderr, 
+		(void) sprintf(buf, 
 			"llx = %f, lly = %f, urx = %f, ury = %f\n",
 			dev_win->llx, dev_win->lly,
 			dev_win->urx, dev_win->ury);
+
+			
+		(void) write (fd, buf, strlen(buf));
 	
 		return;
 	}
@@ -1068,6 +1124,7 @@ int	iCShell(ic)
 	ICommand	*ic;
 {
 	char	*s = ic->cmd.data;
+	int	fd = ic->fd;
 
 	int	system();
 
@@ -1076,7 +1133,8 @@ int	iCShell(ic)
 	/*
 	 * echo the command to the screen
 	 */
-	(void) fprintf(stderr, "! %s\n", s);
+	(void) sprintf(buf, "! %s\n", s);
+	(void) write (fd, buf, strlen(buf));
 
 	/*
 	 * call the shell with the command
@@ -1088,14 +1146,19 @@ int	iCShell(ic)
 int	iCCount(ic)
 	ICommand	*ic;
 {
-	(void) fprintf(stderr, "%d\n", icState.num_frames);
+	int	fd = ic->fd;
+
+	(void) sprintf(buf, "%d\n", icState.num_frames);
+	(void) write (fd, buf, strlen(buf));
 }
 
 /*ARGSUSED*/
 int	iCCurrent(ic)
 	ICommand	*ic;
 {
-	(void) fprintf(stderr, "%d\n", ic->current_frame);
+	int	fd = ic->fd;
+	(void) sprintf(buf, "%d\n", ic->current_frame);
+	(void) write (fd, buf, strlen(buf));
 }
 
 /*ARGSUSED*/
@@ -1118,6 +1181,7 @@ processMemoryCGM(ic, mem_file)
 	char	*mem_file;
 {
 	Directory	*toc;
+	int		fd = ic->fd;
 
 	if ((toc = CGM_initMetaEdit(mem_file, -1440, NULL)) == NULL) {
 		perror((char *) NULL);
@@ -1132,7 +1196,8 @@ processMemoryCGM(ic, mem_file)
 	(void) init_metafile(0, CGM_FD(toc));
 
 
-	(void) fprintf(stderr, "%d frames\n", CGM_NUM_FRAMES(toc));
+	(void) sprintf(buf, "%d frames\n", CGM_NUM_FRAMES(toc));
+	(void) write (fd, buf, strlen(buf));
 	
 }
 

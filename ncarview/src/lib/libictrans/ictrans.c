@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.c,v 1.5 1991-08-16 10:56:49 clyne Exp $
+ *	$Id: ictrans.c,v 1.6 1991-08-20 15:57:31 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -56,6 +56,7 @@ static	struct	{
 	FloatType_ 	max_line_width;	/* maximun line width		*/
 	FloatType_ 	line_scale;	/* additional line scaling	*/
 	StringType_     pal;            /* optional color palette       */
+	IntType_	fd;		/* output file descriptor	*/
 	} commLineOpt;
 
 static	OptDescRec	set_options[] = {
@@ -67,6 +68,7 @@ static	OptDescRec	set_options[] = {
 	{"lmax", OptSepArg, "-1"},	
 	{"lscale", OptSepArg, "-1"},	
         {"pal", OptSepArg, NULL},
+        {"fdn", OptSepArg, "-1"},
 	{NULL}
 	};
 
@@ -87,6 +89,8 @@ static	Option	get_options[] = {
 							sizeof (FloatType_ )},
 	{"pal", StringType, (unsigned long) &(commLineOpt.pal),
 							sizeof(StringType_)},
+	{"fdn", IntType, (unsigned long) &(commLineOpt.fd),
+							sizeof(IntType_)},
 
 	{NULL}
 	};
@@ -244,6 +248,7 @@ ICTrans(argc, argv, mem_cgm)
 	icState.spool_alias = GetCurrentAlias();
 
 	init_icommand(&icommand);
+	icommand.fd = commLineOpt.fd == -1 ? fileno(stdout) : commLineOpt.fd;
 
 	/*
 	 * prime the system by executing a file() command
