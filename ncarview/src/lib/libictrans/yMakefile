@@ -1,6 +1,6 @@
 NCARG		= ../../../..
 #
-#	$Id: yMakefile,v 1.6 1992-02-13 18:27:11 clyne Exp $
+#	$Id: yMakefile,v 1.7 1992-02-19 18:21:46 clyne Exp $
 #
 
 LOCINCDIR	= ../../include
@@ -56,7 +56,8 @@ ictrans_wks.c: ictrans_wks.c.sed Makefile
 # Files that need to know installation directories
 
 commands.o:	Makefile
-	$(CC) $(CFLAGS) -DSPOOL_TRANS$(EQUALHACK)'"$(SPOOL_TRANS)"' -c $*.c
+	$(CC) $(CFLAGS) -DSPOOL_TRANS$(EQUALHACK)'"$(SPOOL_TRANS)"' \
+	-DTMPDIR$(EQUALHACK)'"$(TMPDIR)"' -c $*.c
 
 lex.yy.c: lex.l sedscript
 	lex lex.l

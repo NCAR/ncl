@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.11 1991-12-30 12:33:05 clyne Exp $
+ *	$Id: commands.c,v 1.12 1992-02-19 18:21:38 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -13,7 +13,10 @@
 
 #include <stdio.h>
 #include <signal.h>
+#include <fcntl.h>
 #include <ctype.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #ifndef	CRAY
 #include <sys/wait.h>
@@ -31,6 +34,10 @@
 #define	FORK	fork
 #endif
 
+#ifndef	TMPDIR
+#define	TMPDIR	"/tmp"
+#endif	TMPDIR
+
 #ifndef	DEBUG
 extern	char	*getFcapname();
 extern	char	*getGcapname();
@@ -47,6 +54,7 @@ IcState	icState = {
 static	Directory	*Toc;
 static	short		loopAbort;
 static	char		buf[1024];
+static	short		doMemFile = FALSE;
 
 
 int	iCHelp(ic)
@@ -164,6 +172,7 @@ int	iCFile(ic)
 
 	(void) sprintf(buf, "%d frames\n", CGM_NUM_FRAMES(toc));
 	(void) write (fd, buf, strlen(buf));
+	doMemFile = FALSE;
 	
 }
 
@@ -587,18 +596,8 @@ int	iCMerge(ic)
 int	iCPrint(ic)
 	ICommand	*ic;
 {
-	int	i,j;
-	int	frame;
-	int	count;
-	char	*record;
-	int	len = (sizeof (int) * 3) + 1;
-
-	int	argc;
-	char	**argv = NULL;
-	char	*binpath;
-	int	fd = ic->fd;
-	static char	*translator = NULL;
-	static char	*record_opt = NULL;
+	char		*binpath;
+	static	char	*translator = NULL;
 
 	if (!Toc) return;
 
@@ -616,9 +615,94 @@ int	iCPrint(ic)
 		(void) strcat(translator, "/");
 		(void) strcat (translator, SPOOL_TRANS); 
 
-		record_opt = icMalloc (strlen ("-record") + 1);
-		(void) strcpy (record_opt, "-record");
 	}
+
+	if (! doMemFile) {
+		print_file(ic, translator);
+	}
+	else {
+		print_mem_file(ic, translator);
+	}
+
+}
+
+print_mem_file(ic, translator)
+	ICommand	*ic;
+	char		*translator;
+{
+	char		*tmpfile, *create_tmp_fname();
+	int		argc = 0;
+	char		*argv[5];
+	int		fd = ic->fd;
+	time_t		access_time;
+	struct stat	stat_buf;
+	int		sanity = 60;
+
+
+	tmpfile = create_tmp_fname();
+
+	ic->cmd.data = tmpfile;
+
+	/*
+	 * save the frames to be printed out to disk
+	 */
+	iCSave(ic);
+
+	if (stat(tmpfile, &stat_buf) < 0) {
+		perror("ictrans");
+		return;
+	} 
+	access_time = stat_buf.st_atime;
+
+	/*
+	 * wait to ensure that when spooler accesses tmpfile it will have a 
+	 * different access time
+	 */
+	sleep(2);
+
+	argv[argc++] = translator;
+	argv[argc++] = tmpfile;
+	argv[argc] = NULL;
+
+
+	/*
+	 * spawn the translator to process the tmp file
+	 */
+	(void) PipeLine(argc, argv, fd);
+
+	/*
+	 * wait until spooler starts reading tmpfile before we unlink
+	 * it. tmpfile won't actually be removed until translator closes
+	 * it.
+	 */
+	while (sanity-- > 0) {
+		if (stat(tmpfile, &stat_buf) < 0) {
+			perror("ictrans");
+			return;
+		} 
+		if (access_time != stat_buf.st_atime) break;
+		sleep(1);
+	}
+		
+	(void) unlink(tmpfile);
+	free((char*) tmpfile);
+}
+
+static	print_file(ic, translator)
+	ICommand	*ic;
+	char		*translator;
+{
+	int	i,j;
+	int	frame;
+	int	count;
+	char	*record;
+	int	len = (sizeof (int) * 3) + 1;
+
+	int	argc;
+	char	**argv = NULL;
+	int	fd = ic->fd;
+	static char	*record_opt = "-record";
+
 
 
 	/*
@@ -1199,13 +1283,32 @@ processMemoryCGM(ic, mem_file)
 	ic->last_frame = CGM_NUM_FRAMES(toc);
 	Toc = toc;
 
+	icState.num_frames = CGM_NUM_FRAMES(toc);
+	icState.stop_segment = CGM_NUM_FRAMES(toc);
+
 	
 	(void) init_metafile(0, CGM_FD(toc));
 
 
 	(void) sprintf(buf, "%d frames\n", CGM_NUM_FRAMES(toc));
 	(void) write (fd, buf, strlen(buf));
+	doMemFile = TRUE;
 	
+}
+
+char	*create_tmp_fname()
+{
+	char	*fname;
+	char	pidbuf[20];
+
+	sprintf(pidbuf, "ictrans.%d", getpid());
+
+	fname = icMalloc(strlen(TMPDIR) + strlen("/") + strlen(pidbuf) + 1);
+	strcpy(fname, TMPDIR);
+	fname = strcat(fname, "/");
+	fname = strcat(fname, pidbuf);
+
+	return(fname);
 }
 
 
