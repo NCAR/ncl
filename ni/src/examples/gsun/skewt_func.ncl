@@ -1,5 +1,5 @@
 ;
-;      $Id: skewt_func.ncl,v 1.2 2003-02-23 00:11:05 haley Exp $
+;      $Id: skewt_func.ncl,v 1.3 2003-07-15 14:51:58 shea Exp $
 ;
 ; -------------------------------------------------
 ; Dennis Shea
@@ -809,7 +809,7 @@ function skewT_PlotData (wks:graphic, skewt_bkgd:graphic \
                                             ; were merged but no pressure
           idz = ind ( ismissing(P) .and.  .not. ismissing(Z) .and.   \
                      .not.ismissing(WSPD) .and. .not.ismissing(WDIR) )
-          if (.not.ismissing(idz)) then
+          if (.not.all(ismissing(idz))) then
               zw  = Z(idz)   
               if (localOpts@WspdWdir) then      ; wind spd,dir (?)
                   dirz = 0.017453*WDIR(idz)
