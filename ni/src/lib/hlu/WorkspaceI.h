@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkspaceI.h,v 1.4 1994-05-17 22:26:27 dbrown Exp $
+ *      $Id: WorkspaceI.h,v 1.5 1994-07-13 17:27:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,13 +24,9 @@
 
 #include <ncarg/hlu/Workspace.h>
 
-#define NhlTLabelAreaMap	"LabelAreaMap"
-#define NhlTEzmapAreaMap	"EzmapAreaMap"
-#define NhlTFillAreaMap		"FillAreaMap"
-#define NhlTOtherAreaMap	"OtherAreaMap"
-#define NhlTConpackFloat	"ConpackFloat"
-#define NhlTConpackInt		"ConpackInt"
-#define NhlTSegmentData		"SegmentData"
+typedef enum _NhlwsType {
+	NhlwsAREAMAP, NhlwsCNFLOAT, NhlwsCNINT, NhlwsSEGDATA
+} NhlwsType;
 
 typedef enum _NhlPersistence {
 	NhlwsNONE,
@@ -55,7 +51,7 @@ typedef struct _NhlWorkspace {
 
 extern int _NhlNewWorkspace(
 #ifdef NhlNeedProto
-	NhlString	type,
+	NhlwsType	type,
 	NhlPersistence	persistence,			    
 	int		req_size
 #endif

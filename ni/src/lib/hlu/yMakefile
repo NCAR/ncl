@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.16 1994-07-12 20:53:47 boote Exp $
+#      $Id: yMakefile,v 1.17 1994-07-13 17:27:45 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -41,7 +41,8 @@ HDRS		= Base.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		LogLinPlot.h LogLinPlotP.h IrregularPlot.h IrregularPlotP.h \
 		MapPlot.h MapPlotP.h ResList.h ResListP.h Workspace.h \
 		WorkspaceI.h WorkspaceP.h FortranP.h ScalarField.h \
-		ScalarFieldP.h  ScalarFieldFloatP.h Annotation.h AnnotationP.h
+		ScalarFieldP.h ScalarFieldFloatP.h Annotation.h AnnotationP.h \
+		FormatI.h
 
 CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Create.c Destroy.c Draw.c Error.c GetValues.c \
@@ -54,7 +55,7 @@ CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Legend.c LabelBar.c CoordArrTable.c CoordArrays.c \
 		Contour.c Overlay.c LogLinPlot.c IrregularPlot.c MapPlot.c  \
 		XyPlot.c ResList.c Workspace.c Fortran.c Futil.c \
-		ScalarField.c Annotation.c
+		ScalarField.c Annotation.c Format.c
 
 COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Create.o Destroy.o Draw.o Error.o GetValues.o \
@@ -67,7 +68,7 @@ COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Legend.o LabelBar.o CoordArrTable.o CoordArrays.o \
 		Contour.o Overlay.o LogLinPlot.o IrregularPlot.o MapPlot.o \
 		XyPlot.o ResList.o Workspace.o Fortran.o Futil.o \
-		ScalarField.o Annotation.o
+		ScalarField.o Annotation.o Format.o
 
 FSRCS		= DATACOMM.f ERROR.f HLU.f OVERLAY.f RLGEN.f RLSET.f \
 		RLGET.f TRANSFORM.f VIEW.f WORKSPACE.f WORKSTATION.f

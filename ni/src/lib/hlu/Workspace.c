@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.12 1994-07-12 20:53:21 boote Exp $
+ *      $Id: Workspace.c,v 1.13 1994-07-13 17:27:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -254,13 +254,6 @@ static NhlwsIdleRec	**IdleRecPool = NULL;
 static int		NextIdleRec;
 static int		IdleRecCount = 0;
 
-static NrmQuark Qlabel_area_map = NrmNULLQUARK;
-static NrmQuark Qezmap_area_map = NrmNULLQUARK;
-static NrmQuark Qfill_area_map = NrmNULLQUARK;
-static NrmQuark Qother_area_map = NrmNULLQUARK;
-static NrmQuark Qsegment_data = NrmNULLQUARK;
-static NrmQuark	Qconpack_int = NrmNULLQUARK;
-static NrmQuark	Qconpack_float = NrmNULLQUARK;
 static NrmQuark Qfloat = NrmNULLQUARK;
 static NrmQuark Qint = NrmNULLQUARK;
 static NrmQuark Qcurrent_size = NrmNULLQUARK;
@@ -597,13 +590,6 @@ void _NhlInitWorkspace
 	WSLayer = (NhlWorkspaceLayer)_NhlGetLayer(pid);
 	WSp = (NhlWorkspaceLayerPart *) &(WSLayer->workspace);
 	WSInited = True;
-	Qlabel_area_map = NrmStringToQuark(NhlTLabelAreaMap);
-	Qezmap_area_map = NrmStringToQuark(NhlTEzmapAreaMap);
-	Qfill_area_map = NrmStringToQuark(NhlTFillAreaMap);
-	Qother_area_map = NrmStringToQuark(NhlTOtherAreaMap);
-	Qsegment_data = NrmStringToQuark(NhlTSegmentData);
-	Qconpack_float = NrmStringToQuark(NhlTConpackFloat);
-	Qconpack_int = NrmStringToQuark(NhlTConpackInt);
 	Qfloat = NrmStringToQuark(NhlTFloat);
 	Qint = NrmStringToQuark(NhlTInteger);
 
@@ -748,13 +734,13 @@ void _NHLCALLF(nhl_fgetworkspaceobjectid,NHL_FGETWORKSPACEOBJECTID)
 int _NhlNewWorkspace
 #if	__STDC__
 (
-	NhlString	type,
+	NhlwsType	type,
 	NhlPersistence	persistence,			    
 	int		req_size
 )
 #else
 (type,persistence,req_size)
-	NhlString	type;
+	NhlwsType	type;
 	NhlPersistence	persistence;			    
 	int		req_size;
 	
@@ -778,7 +764,7 @@ int _NhlNewWorkspace
 	wsrp->next = WSp->ws_list;
 	WSp->ws_list = wsrp;
 	wsrp->ws_id = ++(WSp->last_ws_id);
-	wsrp->type = NrmStringToQuark(type);
+	wsrp->type = type;
 	wsrp->persistence = persistence;
 	wsrp->ws_data = NULL;
 	wsrp->ws_ptr = NULL;
@@ -1655,10 +1641,7 @@ static NhlErrorTypes	TrimWorkspace
 	NhlBoolean reduce_size = False;
 	float reduce_fac = 3.0;
 
-	if (wsrp->type == Qlabel_area_map || 
-	    wsrp->type == Qezmap_area_map ||
-	    wsrp->type == Qfill_area_map ||
-	    wsrp->type == Qother_area_map) {
+	if (wsrp->type == NhlwsAREAMAP) {
  		type_size = sizeof(int);
 		cur_size = wsrp->cur_size / type_size;
 		iws = (int *) wsrp->ws_ptr;
@@ -1670,14 +1653,14 @@ static NhlErrorTypes	TrimWorkspace
 		}
 				
 	}
-	else if (wsrp->type == Qconpack_float) {
+	else if (wsrp->type == NhlwsCNFLOAT) {
  		type_size = sizeof(float);
 		cur_size = wsrp->cur_size / type_size;
 		c_cpgeti("RWU",&size_used);
 		if ((new_size = size_used * reduce_fac) < cur_size)
 			reduce_size = True;
 	}
-	else if (wsrp->type == Qconpack_int) {
+	else if (wsrp->type == NhlwsCNINT) {
  		type_size = sizeof(int);
 		cur_size = wsrp->cur_size / type_size;
 		c_cpgeti("IWU",&size_used);
@@ -1764,21 +1747,15 @@ static NhlErrorTypes	EnlargeWorkspace
 	}
 	WSp->total_size += wsrp->cur_size;
 	wsrp->cur_size *= 2;
-	if (wsrp->type == Qlabel_area_map || 
-	    wsrp->type == Qezmap_area_map ||
-	    wsrp->type == Qfill_area_map ||
-	    wsrp->type == Qother_area_map) {
+	if (wsrp->type == NhlwsAREAMAP) {
 		nsize = wsrp->cur_size / sizeof(int);
 		c_armvam(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
 	}
-/*
- * Waiting for Conpack workspace move routines
- */
-	else if (wsrp->type == Qconpack_float) {
+	else if (wsrp->type == NhlwsCNFLOAT) {
 		int nsize = wsrp->cur_size/sizeof(float);
 		c_cpmvrw(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
 	}
-	else if (wsrp->type == Qconpack_int) {
+	else if (wsrp->type == NhlwsCNINT) {
 		int nsize = wsrp->cur_size/sizeof(int);
 		c_cpmviw(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
 	}

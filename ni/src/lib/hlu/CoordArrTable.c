@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.15 1994-07-12 20:51:30 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.16 1994-07-13 17:27:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -374,7 +374,7 @@ GetMinMax
 	float		*max
 )
 #else
-(table,table_lens,otable_lens,missing,min,max)
+(table,table_lens,otable_lens,miss,min,max)
 	NhlGenArray	table;
 	NhlGenArray	table_lens;
 	NhlGenArray	otable_lens;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.19 1994-07-12 20:51:03 boote Exp $
+ *      $Id: Contour.c,v 1.20 1994-07-13 17:27:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,12 +35,13 @@
  *
  * Description:	This function can be used to determine if a resource has
  *		been set at initialize time either in the Create call or
- *		from a resource data base. In order to use it the Boolean
- *		'..resource_set' variable MUST directly proceed the name
- *		of the resource variable it refers to in the LayerPart
- *		struct. Also a .nores Resource for the resource_set variable
+ *		from a resource data base. In order to use it a Boolean
+ *		variable (by convention '<var_name>_resource_set')
+ *		MUST directly proceed the declaration of the subject
+ *		resource variable in the LayerPart struct. Also a .nores 
+ *		NhlResource struct for the resource_set variable
  *		must directly preceed the Resource of interest in the 
- *		Resource initialization list in this module.
+ *		Resource initialization list of this module.
  *
  * In Args:	
  *		NrmName		name,
@@ -136,9 +137,42 @@ static NhlResource resources[] = {
 	{NhlNcnDelayLabels, NhlCcnDelayLabels, NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(delay_labels),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-	{NhlNcnDelayLines, NhlCcnDelayLines, NhlTBoolean,
+ 	{NhlNcnDelayLines, NhlCcnDelayLines, NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(delay_lines),
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+
+	{NhlNcnLabelScalingMode,NhlCcnLabelScalingMode,
+#if 0
+                 NhlTcnLabelScalingMode,sizeof(NhlcnLabelScalingMode),
+#endif
+		 NhlTInteger,sizeof(int),
+                 Oset(label_scaling_mode),NhlTImmediate,
+                 _NhlUSET((NhlPointer) NhlcnSCALEFACTOR),0,NULL},
+        {NhlNcnLabelScaleValueF,NhlCcnLabelScaleValueF,
+                 NhlTFloat,sizeof(float),Oset(label_scale_value),
+                 NhlTString,_NhlUSET("1.0"),0,NULL},
+        {NhlNcnLabelScaleFactorF,NhlCcnLabelScaleFactorF,
+                 NhlTFloat,sizeof(float),Oset(label_scale_factor),
+                 NhlTString,_NhlUSET("1.0"),0,NULL},
+	{NhlNcnMaxDataValueFormat,NhlCcnMaxDataValueFormat,
+		 NhlTString,sizeof(NhlString),
+		 Oset(max_data_format.fstring),NhlTImmediate,
+		 _NhlUSET(NULL),0,NULL},
+ 	{NhlNcnSmoothingOn,NhlCcnSmoothingOn,NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(smoothing_on),
+		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+ 	{NhlNcnSmoothingTensionF,NhlCcnSmoothingTensionF,NhlTFloat,
+		 sizeof(float),Oset(smoothing_tension),
+		 NhlTString,_NhlUSET("2.5"),0,NULL},
+ 	{NhlNcnSmoothingDistanceF,NhlCcnSmoothingDistanceF,NhlTFloat,
+		 sizeof(float),Oset(smoothing_distance),
+		 NhlTString,_NhlUSET("0.01"),0,NULL},
+ 	{NhlNcnCheckPointDistance,NhlCcnCheckPointDistance,NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(check_point_distance),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+ 	{NhlNcnMaxPointDistanceF,NhlCcnMaxPointDistanceF,
+                 NhlTFloat,sizeof(float),Oset(max_point_distance),
+		 NhlTString,_NhlUSET("0.05"),0,NULL},
 
 	{NhlNcnMonoLevelFlag, NhlCcnMonoLevelFlag, NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(mono_level_flag),
@@ -230,6 +264,10 @@ static NhlResource resources[] = {
 	{NhlNcnLineLabelsOn,NhlCcnLineLabelsOn,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(line_lbls.on),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+	{NhlNcnLineLabelFormat,NhlCcnLineLabelFormat,
+		 NhlTString,sizeof(NhlString),
+		 Oset(line_lbls.format.fstring),NhlTString,
+		 _NhlUSET("*+g"),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(line_lbls.height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -283,6 +321,10 @@ static NhlResource resources[] = {
 	{NhlNcnHighLabelString,NhlCcnHighLabelString,
 		 NhlTString,sizeof(NhlString),
 		 Oset(high_lbls.text),NhlTImmediate,_NhlUSET(NULL),0,NULL},
+	{NhlNcnHighLabelFormat,NhlCcnHighLabelFormat,
+		 NhlTString,sizeof(NhlString),
+		 Oset(high_lbls.format.fstring),NhlTImmediate,
+		 _NhlUSET("*+g"),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(high_lbls.height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -306,6 +348,9 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlHIGH),0,NULL},
 	{NhlNcnHighLabelConstantSpacingF,NhlCcnHighLabelConstantSpacingF,
 		 NhlTFloat,sizeof(float),Oset(high_lbls.cspacing),
+		 NhlTString,_NhlUSET("0.0"),0,NULL},
+	{NhlNcnHighLabelAngleF,NhlCcnHighLabelAngleF,
+		 NhlTFloat,sizeof(float),Oset(high_lbls.angle),
 		 NhlTString,_NhlUSET("0.0"),0,NULL},
 	{NhlNcnHighLabelFuncCode,NhlCcnHighLabelFuncCode,NhlTCharacter, 
 		 sizeof(char),Oset(high_lbls.fcode[0]),
@@ -332,6 +377,10 @@ static NhlResource resources[] = {
 	{NhlNcnLowLabelString,NhlCcnLowLabelString,
 		 NhlTString,sizeof(NhlString),
 		 Oset(low_lbls.text),NhlTImmediate,_NhlUSET(NULL),0,NULL},
+	{NhlNcnLowLabelFormat,NhlCcnLowLabelFormat,
+		 NhlTString,sizeof(NhlString),
+		 Oset(low_lbls.format.fstring),NhlTImmediate,
+		 _NhlUSET("*+g"),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(low_lbls.height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -355,6 +404,9 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlHIGH),0,NULL},
 	{NhlNcnLowLabelConstantSpacingF,NhlCcnLowLabelConstantSpacingF,
 		 NhlTFloat,sizeof(float),Oset(low_lbls.cspacing),
+		 NhlTString,_NhlUSET("0.0"),0,NULL},
+	{NhlNcnLowLabelAngleF,NhlCcnLowLabelAngleF,
+		 NhlTFloat,sizeof(float),Oset(low_lbls.angle),
 		 NhlTString,_NhlUSET("0.0"),0,NULL},
 	{NhlNcnLowLabelFuncCode,NhlCcnLowLabelFuncCode,NhlTCharacter, 
 		 sizeof(char),Oset(low_lbls.fcode[0]),
@@ -381,6 +433,10 @@ static NhlResource resources[] = {
 	{NhlNcnInfoLabelString,NhlCcnInfoLabelString,
 		 NhlTString,sizeof(NhlString),
 		 Oset(info_string),NhlTImmediate,_NhlUSET(NULL),0,NULL},
+	{NhlNcnInfoLabelFormat,NhlCcnInfoLabelFormat,
+		 NhlTString,sizeof(NhlString),
+		 Oset(info_lbl.format.fstring),NhlTImmediate,
+		 _NhlUSET("*+g"),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(info_lbl.height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -454,6 +510,10 @@ static NhlResource resources[] = {
 	{NhlNcnConstFLabelString,NhlCcnConstFLabelString,
 		 NhlTString,sizeof(NhlString),
 		 Oset(constf_string),NhlTImmediate,_NhlUSET(NULL),0,NULL},
+	{NhlNcnConstFLabelFormat,NhlCcnConstFLabelFormat,
+		 NhlTString,sizeof(NhlString),
+		 Oset(constf_lbl.format.fstring),NhlTImmediate,
+		 _NhlUSET("*+g"),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(constf_lbl.height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -605,8 +665,15 @@ typedef enum _cnValueType {
 	cnCONMAXVAL,
 	cnDATAMINVAL,
 	cnDATAMAXVAL,
-	cnSCALEFACTOR } cnValueType;
-	
+	cnSCALEFACTOR,
+	cnHIGHLOWLBLVAL } cnValueType;
+
+typedef enum _cnLabelType { 
+	cnLINELBL,
+	cnINFOLBL,
+	cnHIGHLBL,
+	cnLOWLBL,
+	cnCONSTFLBL } cnLabelType;
 
 /* base methods */
 
@@ -735,6 +802,41 @@ static NhlErrorTypes SetUpIrrTransObj(
 #endif
 );
 
+static NhlErrorTypes SetLabelFormats(
+#ifdef NhlNeedProto
+	NhlContourLayer	cnnew,
+	NhlContourLayer	cnold,
+	NhlBoolean	init
+#endif
+);
+
+static NhlErrorTypes ManageLabels(
+#ifdef NhlNeedProto
+	NhlContourLayer	cnnew,
+	NhlContourLayer	cnold,
+	NhlBoolean	init,
+	NhlSArg		*sargs,
+	int		*nargs
+#endif
+);
+
+static NhlErrorTypes SetLabelScale(
+#ifdef NhlNeedProto
+	NhlContourLayer	cnnew,
+	NhlContourLayer	cnold,
+	NhlBoolean	init
+#endif
+);
+
+static NhlErrorTypes ManageOverlay(
+#ifdef NhlNeedProto
+	NhlContourLayer	cnnew,
+	NhlContourLayer	cnold,
+	NhlBoolean	init,
+	NhlSArg		*sargs,
+	int		*nargs
+#endif
+);
 
 static NhlErrorTypes ManageTickMarks(
 #ifdef NhlNeedProto
@@ -775,6 +877,15 @@ static NhlErrorTypes ManageLabelBar(
 	NhlBoolean	init,
 	NhlSArg		*sargs,
 	int		*nargs
+#endif
+);
+
+static NhlErrorTypes SetLabelString(
+#ifdef NhlNeedProto
+	NhlString *dest_str,
+	NhlString source_str,
+	NhlString def_str,
+	NhlString entry_name
 #endif
 );
 
@@ -837,10 +948,20 @@ static void Substitute(
 );
 
 
+static NhlErrorTypes SetFormatRec(
+#ifdef NhlNeedProto
+	NhlFormatRec	*format,
+	NhlString	resource,
+	NhlString	entry_name
+#endif
+);
+
 static char *ContourFormat(
 #ifdef NhlNeedProto
 	NhlContourLayerPart	*cnp,
-	cnValueType		vtype
+	cnValueType		vtype,
+	NhlFormatRec		*format,
+	NhlString		entry_name
 #endif
 );
 
@@ -918,6 +1039,14 @@ static NhlErrorTypes    ManageViewDepResources(
         NhlBoolean	init,					    
 	_NhlArgList	args,
 	int		num_args
+#endif
+);
+
+static NhlErrorTypes    CopyTextAttrs(
+#ifdef NhlNeedProto
+	NhlcnLabelAttrs *dest,
+	NhlcnLabelAttrs *source,
+	NhlString	entry_name
 #endif
 );
 
@@ -1186,6 +1315,8 @@ static NhlBoolean	Constant_Labels;
 static NhlcnLabelAttrs *LLabel_AttrsP;
 static NhlcnLabelAttrs *High_Label_AttrsP;
 static NhlcnLabelAttrs *Low_Label_AttrsP;
+static NhlFormatRec 	*Ref_Format;
+static float		Label_Scale_Factor;
 
 static 	NhlBoolean	Color_Fill, Pattern_Fill;
 static NhlBoolean	Mono_Fill_Color, Mono_Fill_Pattern, Mono_Fill_Scale;
@@ -1494,7 +1625,6 @@ ContourClassPartInitialize
 	return ret;
 }
 
-
 /*
  * Function:	ContourInitialize
  *
@@ -1542,13 +1672,13 @@ ContourInitialize
 
 /* Initialize Contour float and integer workspaces */
 
-	if ((cnp->iws_id =_NhlNewWorkspace(NhlTConpackInt,NhlwsNONE,
+	if ((cnp->iws_id =_NhlNewWorkspace(NhlwsCNINT,NhlwsNONE,
 					   4000*sizeof(int))) < 0) {
 		e_text = "%s: integer workspace allocation error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
-	if ((cnp->fws_id = _NhlNewWorkspace(NhlTConpackFloat,NhlwsNONE,
+	if ((cnp->fws_id = _NhlNewWorkspace(NhlwsCNFLOAT,NhlwsNONE,
 					    4000*sizeof(float))) < 0) {
 		e_text = "%s: float workspace allocation error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
@@ -1596,11 +1726,9 @@ ContourInitialize
 	cnp->high_lbls.fcode[1] = '\0';
 	cnp->low_lbls.fcode[1] = '\0';
 	cnp->constf_lbl.fcode[1] = '\0';
-	cnp->line_lbls.text = NULL;
 	cnp->info_lbl.text = NULL;
-	cnp->high_lbls.text = NULL;
-	cnp->low_lbls.text = NULL;
 	cnp->constf_lbl.text = NULL;
+	cnp->line_lbls.text = NULL;
 	cnp->label_amap = NULL;
 	cnp->new_draw_req = True;
 	cnp->trans_dat = NULL;
@@ -1611,28 +1739,18 @@ ContourInitialize
 	cnp->ll_strings = NULL;
 	cnp->use_irr_trans = False;
 	cnp->const_field = False;
-
+/*
+ * Set up the data
+ */
 	subret = ManageData(cnew,(NhlContourLayer) req,True,args,num_args);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error setting view dependent resources";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
-
-
+ 
 	subret = SetCoordBounds(cnp,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
-
-
-/* Manage constant field label */
-
-	subret = ManageConstFLabel(cnew,
-				   (NhlContourLayer)req,True,sargs,&nargs);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error managing constant field label";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
 
 /* Set view dependent resources */
 
@@ -1643,11 +1761,33 @@ ContourInitialize
 		return(ret);
 	}
 
-/* Set up the dynamic arrays */
+/* Set the label formats - must precede dynamic array handling */
+
+	subret = SetLabelFormats(cnew,(NhlContourLayer)req,True);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error setting label formats";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(ret);
+	}
+
+/* Set up the dynamic arrays (line label array is handled here) */
 
 	subret = ManageDynamicArrays(new,req,True,args,num_args);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error initializing dynamic arrays";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(ret);
+	}
+
+
+/* 
+ * Set up the labels (except for the line label array) 
+ * Note: may add arguments to the Overlay argument list.
+ */
+
+	subret = ManageLabels(cnew,(NhlContourLayer)req,True,sargs,&nargs);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error initializing labels";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
@@ -1671,61 +1811,13 @@ ContourInitialize
 		}
 	}
 
-
-/* Manage TickMark object */
-
-	/* adds 1 arguments */
-	subret = ManageTickMarks(cnew,(NhlContourLayer) req,True,sargs,&nargs);
+/* 
+ * Manage the Overlay (including setting up the annotations managed by it)
+ */
+	subret = ManageOverlay(cnew,(NhlContourLayer)req,True,sargs,&nargs);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error managing TickMarks";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
-
-/* Manage Title object */
-
-	/* adds 1 arguments */
-	subret = ManageTitles(cnew,(NhlContourLayer) req,True,sargs,&nargs);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error managing Titles";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-
-/* Manage Legend object */
-
-	/* adds 18 arguments */
-	subret = ManageLegend(cnew,(NhlContourLayer) req,True,sargs,&nargs);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error managing Legend";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-
-/* Manage LabelBar object */
-
-	subret = ManageLabelBar(cnew,(NhlContourLayer) req,True,sargs,&nargs);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error managing LabelBar";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-
-/* Manage info label */
-
-	subret = ManageInfoLabel(cnew,(NhlContourLayer)req,True,sargs,&nargs);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error managing information label";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-
-/* Manage the overlay */
-
-	subret = _NhlManageOverlay(&cnp->overlay_object,new,req,
-			       True,sargs,nargs,entry_name);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) 
-		return ret;
 
 	if (cnew->trans.overlay_status != _tfNotInOverlay) {
 		if (cnp->constf_lbl.on) {
@@ -1791,7 +1883,7 @@ static NhlErrorTypes ContourSetValues
 	char			*entry_name = "ContourSetValues";
 	char			*e_text;
 	NhlContourLayer		cnew = (NhlContourLayer) new;
-	NhlContourLayerPart	*cnp = &(cnew->contour);
+ 	NhlContourLayerPart	*cnp = &(cnew->contour);
 	NhlContourLayer		cold = (NhlContourLayer) old;
 	/* Note that both ManageLegend and ManageLabelBar add to sargs */
 	NhlSArg			sargs[128];
@@ -1853,20 +1945,33 @@ static NhlErrorTypes ContourSetValues
 		return(ret);
 	}
 
-/* Manage constant field label */
 
-	subret = ManageConstFLabel(cnew,cold,False,sargs,&nargs);
+/* Set the label formats - must precede dynamic array handling */
+
+	subret = SetLabelFormats(cnew,cold,False);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error managing contour zero field label";
+		e_text = "%s: error setting label formats";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
 
-/* Manage the dynamic arrays */
+/* Manage the dynamic arrays  (line labels handled here) */
 
 	subret = ManageDynamicArrays(new,old,False,args,num_args);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error initializing dynamic arrays";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(ret);
+	}
+
+/* 
+ * Set up the labels (except for the line label array) 
+ * Note: may add arguments to the Overlay argument list.
+ */
+
+	subret = ManageLabels(cnew,cold,False,sargs,&nargs);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error managing labels";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
@@ -1890,68 +1995,13 @@ static NhlErrorTypes ContourSetValues
 			return(ret);
 		}
 	}
-
-
-/* Manage TickMarks object */
-
-	/* 18 arguments possible */
-	subret = ManageTickMarks(cnew,cold,False,sargs,&nargs);
+/* 
+ * Manage the Overlay (including the overlay annotations)
+ */
+	subret = ManageOverlay(cnew,cold,False,sargs,&nargs);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error managing TickMarks";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
-
-/* Manage Legend object */
-
-	/* 18 arguments possible */
-	subret = ManageTitles(cnew,cold,False,sargs,&nargs);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error managing Titles";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-
-/* Manage Legend object */
-
-	/* 18 arguments possible */
-	subret = ManageLegend(cnew,cold,False,sargs,&nargs);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error managing Legend";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-
-/* Manage LabelBar object */
-
-	subret = ManageLabelBar(cnew,cold,False,sargs,&nargs);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error managing LabelBar";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-
-
-/* Manage info label */
-
-	subret = ManageInfoLabel(cnew,cold,False,sargs,&nargs);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error managing contour information label";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
-	}
-
-/* Manage the overlay */
-
-	/* 1 arg */
-	if (cnp->update_req) {
-		cnp->new_draw_req = True;
-		NhlSetSArg(&sargs[nargs++],NhlNovUpdateReq,True);
-	}
-		
-	subret = _NhlManageOverlay(&cnp->overlay_object,new,old,
-				   False,sargs,nargs,entry_name);
-	ret = MIN(ret,subret);
 
 	cnp->update_req = False;
 	cnp->data_changed = False;
@@ -2354,6 +2404,33 @@ NhlLayer inst;
 	if (cnp->fill_aws_id >= 0)
 		_NhlFreeWorkspace(cnp->fill_aws_id);
 
+        if (cnp->max_data_format.fstring != NULL)
+                NhlFree(cnp->max_data_format.fstring);
+        if (cnp->info_string != NULL)
+                NhlFree(cnp->info_string);
+        if (cnp->constf_string != NULL)
+                NhlFree(cnp->constf_string);
+
+	if (cnp->line_lbls.format.fstring != NULL)
+                NhlFree(cnp->line_lbls.format.fstring);
+	if (cnp->high_lbls.format.fstring != NULL)
+                NhlFree(cnp->high_lbls.format.fstring);
+	if (cnp->low_lbls.format.fstring != NULL)
+                NhlFree(cnp->low_lbls.format.fstring);
+	if (cnp->info_lbl.format.fstring != NULL)
+                NhlFree(cnp->info_lbl.format.fstring);
+	if (cnp->constf_lbl.format.fstring != NULL)
+                NhlFree(cnp->constf_lbl.format.fstring);
+
+	if (cnp->high_lbls.text != NULL)
+                NhlFree(cnp->high_lbls.text);
+	if (cnp->low_lbls.text != NULL)
+                NhlFree(cnp->low_lbls.text);
+	if (cnp->info_lbl.text != NULL)
+                NhlFree(cnp->info_lbl.text);
+	if (cnp->constf_lbl.text != NULL)
+                NhlFree(cnp->constf_lbl.text);
+
 	return(ret);
 }
 
@@ -2454,8 +2531,18 @@ static NhlErrorTypes ContourDraw
 	c_cpseti("WSO", 3);
         c_cpseti("SET",0);
         c_cpseti("MAP",NhlcnMAPVAL);
-	c_cpseti("PIC",1);
+        if (cnp->check_point_distance)
+                c_cpsetr("PIT",cnp->max_point_distance);
+        else
+                c_cpsetr("PIT",0.0);
 
+        if (cnp->smoothing_on) {
+                c_cpsetr("T2D",cnp->smoothing_tension);
+                c_cpsetr("SSL",cnp->smoothing_distance);
+        }
+        else {
+                c_cpsetr("T2D",0.0);
+        }
 	gset_fill_colr_ind((Gint)_NhlGetGksCi(cl->base.wkptr,0));
 
 	subret = UpdateLineAndLabelParams(cl, &Do_Lines,&Do_Labels);
@@ -2483,20 +2570,18 @@ static NhlErrorTypes ContourDraw
 			    cnp->sfp->slow_len,Fws,Iws,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
-#if 0
 		{ float flx,frx,fby,fuy,wlx,wrx,wby,wuy; int ll;
 		  c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
 		  printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
 			 flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
 	        }
-#endif
 
 	Use_Area_Ws = False;
 	if (do_fill || (Do_Labels && cnp->label_masking)) {
 
 		if (cnp->label_aws_id < 0) {
 			cnp->label_aws_id = 
-				_NhlNewWorkspace(NhlTLabelAreaMap,
+				_NhlNewWorkspace(NhlwsAREAMAP,
 						 NhlwsDISK,25000*sizeof(int));
 			if (cnp->label_aws_id < 0) 
 				return MIN(ret,cnp->label_aws_id);
@@ -2518,9 +2603,7 @@ static NhlErrorTypes ContourDraw
 		if (Do_Lines) {
 			subret = _NhlCpclam(Data,Fws,Iws,Aws,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-#if 0
 			_NhlDumpAreaMap(Aws,entry_name);
-#endif
 		}
 
 		if (Do_Labels && cnp->label_masking) {
@@ -2748,17 +2831,23 @@ static NhlErrorTypes AddDataBoundToAreamap
 			if (! started) {
 				_NhlMapita(Aws,ya[i],xa[i],
 					   0,3,-1,0,entry_name);
+#if 0
 				c_mapit(ya[i],xa[i],0);
+#endif
 				started = True;
 			}
 			for (j = 0; j < _cnMAPBOUNDINC + 1; j++) {
 				_NhlMapita(Aws,ya[i]+j*yinc,xa[i]+j*xinc,
 					   1,3,-1,0,entry_name);
+#if 0
 				c_mapit(ya[i]+j*yinc,xa[i]+j*xinc,1);
+#endif
 			}
 		}
 		_NhlMapiqa(Aws,3,-1,0,entry_name);
+#if 0
 		c_mapiq();
+#endif
 	}
 	return NhlNOERROR;
 }
@@ -2870,6 +2959,8 @@ static NhlErrorTypes UpdateLineAndLabelParams
 	LLabel_AttrsP = &cnp->line_lbls;
 	High_Label_AttrsP = &cnp->high_lbls;
 	Low_Label_AttrsP = &cnp->low_lbls;
+	Ref_Format = &cnp->max_data_format;
+	Label_Scale_Factor = cnp->label_scale_factor;
 
 	LLabel_AttrsP->text = (NhlString *) cnp->llabel_strings->data;
 	LLabel_AttrsP->colors = (int *) cnp->gks_llabel_colors;
@@ -2981,18 +3072,14 @@ static NhlErrorTypes UpdateLineAndLabelParams
  */
 	if (! cnp->high_lbls.on)
 		c_cpsetc("HIT"," ");
-	else {
-		static char cval[21];
-		c_cpgetc("HIT",cval,20);
-		cnp->high_lbls.text = (NhlString *) cval;
-	}
+	else 
+		c_cpsetc("HIT",(NhlString)cnp->high_lbls.text);
+
 	if (! cnp->low_lbls.on)
 		c_cpsetc("LOT"," ");
-	else {
-		static char cval[21];
-		c_cpgetc("LOT",cval,20);
-		cnp->low_lbls.text = (NhlString *) cval;
-	}
+	else
+		c_cpsetc("LOT",(NhlString)cnp->low_lbls.text);
+
 /*
  * Due to the way Conpack works it is not possible to have different text
  * sizes, white space, background or perim on/off settings for the high
@@ -3126,7 +3213,7 @@ static NhlErrorTypes SetUpLLTransObj
 		tfp->trans_obj = NULL;
 	else if (ocnp->use_irr_trans && tfp->trans_obj != NULL) {
 		subret = NhlDestroy(tfp->trans_obj->base.id);
-		if ((ret = MIN(ret,subret) < NhlWARNING)) {
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: Error destroying irregular trans object";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NhlFATAL;
@@ -3386,7 +3473,7 @@ static NhlErrorTypes SetUpIrrTransObj
 
 	if (! ocnp->use_irr_trans && tfp->trans_obj != NULL) {
 		subret = NhlDestroy(tfp->trans_obj->base.id);
-		if ((ret = MIN(ret,subret) < NhlWARNING)) {
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: Error destroying irregular trans object";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NhlFATAL;
@@ -3519,6 +3606,457 @@ static NhlErrorTypes SetUpIrrTransObj
 }
 
 
+/*
+ * Function:	SetLabelFormats
+ *
+ * Description: Sets up the format records for all the Conpack label.
+ *
+ * In Args:	cnnew	new instance record
+ *		cnold	old instance record if not initializing
+ *		init	true if initialization
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:	Objects created and destroyed.
+ */
+static NhlErrorTypes SetLabelFormats
+#if  __STDC__
+(
+	NhlContourLayer	cnnew,
+	NhlContourLayer	cnold,
+	NhlBoolean	init
+)
+#else 
+(cnnew,cnold,init)
+	NhlContourLayer	cnnew;
+	NhlContourLayer	cnold;
+	NhlBoolean	init;
+#endif
+{
+	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlContourLayerPart	*cnp = &(cnnew->contour);
+	NhlContourLayerPart	*ocnp = &(cnold->contour);
+	NhlString entry_name;
+
+	entry_name =  init ? "ContourInitialize" : "ContourSetValues";
+
+	if (init) {
+		subret = SetFormatRec(&cnp->max_data_format,
+				      NhlNcnMaxDataValueFormat,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+
+		subret = SetFormatRec(&cnp->line_lbls.format,
+				      NhlNcnLineLabelFormat,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+
+		subret = SetFormatRec(&cnp->high_lbls.format,
+				      NhlNcnHighLabelFormat,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+
+		subret = SetFormatRec(&cnp->low_lbls.format,
+				      NhlNcnLowLabelFormat,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+
+		subret = SetFormatRec(&cnp->info_lbl.format,
+				      NhlNcnInfoLabelFormat,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+
+		subret = SetFormatRec(&cnp->constf_lbl.format,
+				      NhlNcnConstFLabelFormat,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+		
+		return ret;
+	}
+	if (cnp->line_lbls.format.fstring != ocnp->line_lbls.format.fstring) {
+		subret = SetFormatRec(&cnp->line_lbls.format,
+				      NhlNcnLineLabelFormat,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+		if (ocnp->line_lbls.format.fstring != NULL)
+			NhlFree(ocnp->line_lbls.format.fstring);
+	}
+	
+	if (cnp->high_lbls.format.fstring != ocnp->high_lbls.format.fstring) {
+		subret = SetFormatRec(&cnp->high_lbls.format,
+				      NhlNcnHighLabelFormat,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+		if (ocnp->high_lbls.format.fstring != NULL)
+			NhlFree(ocnp->high_lbls.format.fstring);
+	}
+	if (cnp->low_lbls.format.fstring != ocnp->low_lbls.format.fstring) {
+		subret = SetFormatRec(&cnp->low_lbls.format,
+				      NhlNcnLowLabelFormat,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+		if (ocnp->low_lbls.format.fstring != NULL)
+			NhlFree(ocnp->low_lbls.format.fstring);
+	}
+	if (cnp->info_lbl.format.fstring != ocnp->info_lbl.format.fstring) {
+		subret = SetFormatRec(&cnp->info_lbl.format,
+				      NhlNcnInfoLabelFormat,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+		if (ocnp->info_lbl.format.fstring != NULL)
+			NhlFree(ocnp->info_lbl.format.fstring);
+	}
+	if (cnp->constf_lbl.format.fstring != 
+	    ocnp->constf_lbl.format.fstring) {
+		subret = SetFormatRec(&cnp->constf_lbl.format,
+				      NhlNcnConstFLabelFormat,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+		if (ocnp->constf_lbl.format.fstring != NULL)
+			NhlFree(ocnp->constf_lbl.format.fstring);
+	}
+	return ret;
+}
+
+/*
+ * Function:	ManageLabels
+ *
+ * Description: Manages all the non-array label types (not line labels).
+ *
+ * In Args:	cnnew	new instance record
+ *		cnold	old instance record if not initializing
+ *		init	true if initialization
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:	Objects created and destroyed.
+ */
+static NhlErrorTypes ManageLabels
+#if  __STDC__
+(
+	NhlContourLayer	cnnew,
+	NhlContourLayer	cnold,
+	NhlBoolean	init,
+	NhlSArg		*sargs,
+	int		*nargs
+)
+#else 
+(cnnew,cnold, init, sargs, nargs)
+	NhlContourLayer	cnnew;
+	NhlContourLayer	cnold;
+	NhlBoolean	init;
+	NhlSArg		*sargs;
+	int		*nargs;
+#endif
+{
+	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlContourLayerPart	*cnp = &(cnnew->contour);
+	NhlContourLayerPart	*ocnp = &(cnold->contour);
+	char *tcp;
+	NhlString entry_name, e_text;
+
+	entry_name =  init ? "ContourInitialize" : "ContourSetValues";
+
+/*
+ * Set up the label strings and the format records
+ */
+	if (init) {
+		tcp = NULL;
+		subret = SetLabelString(&tcp,(NhlString)cnp->high_lbls.text,
+					NhlcnDEF_HIGH_LABEL,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+		cnp->high_lbls.text = (NhlPointer) tcp;
+
+		tcp = NULL;
+		subret = SetLabelString(&tcp,(NhlString)cnp->low_lbls.text,
+					NhlcnDEF_LOW_LABEL,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+		cnp->low_lbls.text = (NhlPointer) tcp;
+	}
+	else {
+
+		subret = SetLabelString((NhlString *)&ocnp->high_lbls.text,
+					(NhlString)cnp->high_lbls.text,
+					NhlcnDEF_HIGH_LABEL,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+
+		subret = SetLabelString((NhlString *)&ocnp->low_lbls.text,
+					(NhlString)cnp->low_lbls.text,
+					NhlcnDEF_LOW_LABEL,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+	}
+
+	if (cnp->high_use_line_attrs && cnp->line_lbls.on) {
+		subret = CopyTextAttrs(&cnp->high_lbls,
+				       &cnp->line_lbls,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+	}
+	
+	if (cnp->low_use_high_attrs && cnp->high_lbls.on) {
+		subret = CopyTextAttrs(&cnp->low_lbls,
+				       &cnp->high_lbls,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		cnp->low_lbls.angle = cnp->high_lbls.angle;
+	}
+
+	if (cnp->constf_use_info_attrs && cnp->info_lbl.on) {
+		subret = CopyTextAttrs(&cnp->constf_lbl,
+				       &cnp->info_lbl,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		cnp->constf_lbl.angle = cnp->info_lbl.angle;
+	}
+
+/* Manage constant field label */
+
+	subret = ManageConstFLabel(cnnew,cnold,init,sargs,nargs);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error managing constant field label";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(ret);
+	}
+	
+
+/* Manage info label */
+
+	subret = ManageInfoLabel(cnnew,cnold,init,sargs,nargs);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error managing information label";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(ret);
+	}
+	
+	return ret;
+}
+
+/*
+ * Function:	SetLabelScale
+ *
+ * Description: Determines the label scale factor based on the label
+ *		scale mode and the label scale value resources. Note that
+ *		the scale factor is the amount by which the label values
+ *		are multiplied to arrive at the true values in the scalar
+ *		field data. Therefore the data values are divided by the
+ *		scale factor to get the label values.
+ *
+ * In Args:	cnnew	new instance record
+ *		cnold	old instance record if not initializing
+ *		init	true if initialization
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:	
+ */
+static NhlErrorTypes SetLabelScale
+#if  __STDC__
+(
+	NhlContourLayer	cnnew,
+	NhlContourLayer	cnold,
+	NhlBoolean	init
+)
+#else 
+(cnnew,cnold, init)
+	NhlContourLayer	cnnew;
+	NhlContourLayer	cnold;
+	NhlBoolean	init;
+#endif
+{
+	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlContourLayerPart	*cnp = &(cnnew->contour);
+	NhlContourLayerPart	*ocnp = &(cnold->contour);
+	NhlString entry_name, e_text;
+	float sigval,t;
+	int power, i, count;
+	int divpwr,sig_digits;
+	float *fp;
+
+	if (! init &&
+	    ! cnp->data_changed &&
+	    (cnp->label_scaling_mode == ocnp->label_scaling_mode) &&
+	    (cnp->label_scale_value == ocnp->label_scale_value))
+		return ret;
+
+	entry_name =  init ? "ContourInitialize" : "ContourSetValues";
+
+	switch (cnp->label_scaling_mode) {
+	case NhlcnSCALEFACTOR:
+		if (cnp->label_scale_value <= 0.0) {
+			e_text = 
+			     "%s: invalid value for scale value: defaulting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
+			ret = MIN(ret,NhlWARNING);
+			cnp->label_scale_value = 1.0;
+		}
+		cnp->label_scale_factor = cnp->label_scale_value;
+		break;
+	case NhlcnCONFINETORANGE:
+		if (cnp->label_scale_value <= 0.0) {
+			e_text = 
+			     "%s: invalid value for scale value: defaulting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
+			ret = MIN(ret,NhlWARNING);
+			cnp->label_scale_value = 1.0;
+		}
+		sigval = MAX(fabs(cnp->zmin),fabs(cnp->zmax));
+		power = 1;
+		if (sigval >= cnp->label_scale_value) {
+			for (t = sigval/10.0;
+			     t >=cnp->label_scale_value; t /= 10.0) {
+				power++;
+			}
+			cnp->label_scale_factor = pow(10.0,(double)power);
+		}
+		else {
+			for (t = sigval * 10;
+			     t < cnp->label_scale_value; t *= 10.0) {
+				power++;
+			}
+			power--;
+			cnp->label_scale_factor = pow(10.0,-(double)power);
+		}
+		break;
+	case NhlcnTRIMZEROS:
+		sigval = MAX(fabs(cnp->zmin),fabs(cnp->zmax));
+		subret = _NhlGetScaleInfo(sigval,
+					  &divpwr,&sig_digits,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+		sig_digits = cnp->max_data_format.sig_digits;
+		if (divpwr < 0) 
+			power = divpwr;
+		else
+			power = MAX(0,divpwr - sig_digits);
+		cnp->label_scale_factor = pow(10.0,(double)power);
+		break;
+	case NhlcnMAXSIGDIGITSLEFT:
+		sigval = MAX(fabs(cnp->zmin),fabs(cnp->zmax));
+		subret = _NhlGetScaleInfo(sigval,
+					  &divpwr,&sig_digits,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+		sig_digits = cnp->max_data_format.sig_digits;
+		power = divpwr - sig_digits;
+		cnp->label_scale_factor = pow(10.0,(double)power);
+		break;
+	case NhlcnINTEGERLINELABELS:
+		if (cnp->const_field) {
+			fp = &cnp->zmax;
+			count = 1;
+		}
+		else {
+			fp = (float *) cnp->levels->data;
+			count = cnp->level_count;
+		}
+		sigval = BIGNUMBER;
+		power = 1000000;
+		for (i = 0; i < count; i++) {
+			if (_NhlCmpFAny(fp[i],0.0,
+				       cnp->max_data_format.sig_digits) == 0.0)
+				continue;
+
+			subret = _NhlGetScaleInfo(fp[i],
+					  &divpwr,&sig_digits,entry_name);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+			power = divpwr - sig_digits < power ?
+				divpwr - sig_digits : power;
+		}
+		cnp->label_scale_factor = pow(10.0,(double)power);
+		break;
+	default:
+		e_text = "%s: internal enumeration error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(ret);
+	}
+
+	return ret;
+}
+/*
+ * Function:	ManageOverlay
+ *
+ * Description: Sets up arguments for annotations handled internally by
+ *		the overlay object (TickMark,Title,Legend,LabelBar), then
+ *		calls the overlay interface function _NhlManageOverlay.
+ *
+ * In Args:	cnnew	new instance record
+ *		cnold	old instance record if not initializing
+ *		init	true if initialization
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:	
+ */
+static NhlErrorTypes ManageOverlay
+#if  __STDC__
+(
+	NhlContourLayer	cnnew,
+	NhlContourLayer	cnold,
+	NhlBoolean	init,
+	NhlSArg		*sargs,
+	int		*nargs
+)
+#else 
+(cnnew,cnold, init, sargs, nargs)
+	NhlContourLayer	cnnew;
+	NhlContourLayer	cnold;
+	NhlBoolean	init;
+	NhlSArg		*sargs;
+	int		*nargs;
+#endif
+{
+	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlContourLayerPart	*cnp = &(cnnew->contour);
+	NhlString entry_name, e_text;
+
+	entry_name =  init ? "ContourInitialize" : "ContourSetValues";
+
+/* Manage TickMarks object */
+
+	/* 18 arguments possible */
+	subret = ManageTickMarks(cnnew,cnold,init,sargs,nargs);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error managing TickMarks";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(ret);
+	}
+
+/* Manage Legend object */
+
+	/* 18 arguments possible */
+	subret = ManageTitles(cnnew,cnold,init,sargs,nargs);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error managing Titles";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(ret);
+	}
+
+/* Manage Legend object */
+
+	/* 18 arguments possible */
+	subret = ManageLegend(cnnew,cnold,init,sargs,nargs);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error managing Legend";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(ret);
+	}
+
+/* Manage LabelBar object */
+
+	subret = ManageLabelBar(cnnew,cnold,init,sargs,nargs);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error managing LabelBar";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(ret);
+	}
+
+/* Manage the overlay */
+
+	/* 1 arg */
+	if (cnp->update_req) {
+		cnp->new_draw_req = True;
+		NhlSetSArg(&sargs[(*nargs)++],NhlNovUpdateReq,True);
+	}
+		
+	subret = _NhlManageOverlay(&cnp->overlay_object,
+				   (NhlLayer)cnnew,(NhlLayer)cnold,init,
+				   sargs,*nargs,entry_name);
+	ret = MIN(ret,subret);
+	return ret;
+
+}
 /*
  * Function:	ManageTickMarks
  *
@@ -3996,6 +4534,59 @@ static NhlErrorTypes ManageLabelBar
 }
 
 /*
+ * Function:	SetLabelString
+ *
+ * Description: Creates a copy of a label string when required; does 
+ *	nothing if the destination and source strings are the same.
+ *
+ * In Args:	
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:	Objects created and destroyed.
+ */
+static NhlErrorTypes SetLabelString
+#if  __STDC__
+(
+	NhlString *dest_str,
+	NhlString source_str,
+	NhlString def_str,
+	NhlString entry_name
+)
+#else 
+(dest_str,source_str,def_str,entry_name)
+	NhlString *dest_str;
+	NhlString source_str;
+	NhlString def_str;
+	NhlString entry_name;
+#endif
+{
+	char		*e_text;
+	char		*lstring;
+
+	if (*dest_str == NULL ||
+	    *dest_str != source_str) {
+		int strsize = source_str == NULL ? 
+			strlen(def_str) + 1 : strlen(source_str) + 1;
+
+		if ((lstring = NhlMalloc(strsize)) == NULL) {
+			e_text = "%s: dynamic memory allocation error";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+		if (source_str == NULL)
+			strcpy(lstring,def_str);
+		else
+			strcpy(lstring,source_str);
+		if (*dest_str != NULL) 
+			NhlFree(*dest_str);
+		*dest_str = lstring;
+	}
+	return NhlNOERROR;
+}
+/*
  * Function:	ManageInfoLabel
  *
  * Description: If the information label label is 
@@ -4034,7 +4625,7 @@ static NhlErrorTypes ManageInfoLabel
 {
 	char			*e_text;
 	char			*entry_name;
-	NhlErrorTypes		ret,subret;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlContourLayerPart	*cnp = &(cnnew->contour);
 	NhlContourLayerPart	*ocnp = &(cnold->contour);
 	NhlTransformLayerPart	*tfp = &(cnnew->trans);
@@ -4075,13 +4666,7 @@ static NhlErrorTypes ManageInfoLabel
 
 	subret = ReplaceSubstitutionChars(cnp,ocnp,init,_cnINFO,
 					  &text_changed,entry_name);
-	if ((ret = MIN(ret,subret) < NhlWARNING)) return ret;
-
-	if (tfp->overlay_status == _tfNotInOverlay) {
-		subret = SetTextPosition(cnnew,ocnp,_cnINFO,
-					 &pos_changed,entry_name);
-		if ((ret = MIN(ret,subret) < NhlWARNING)) return ret;
-	}
+	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 
 	if (init || cnp->info_lbl_rec.id < 0) {
 		if (pos_changed) {
@@ -4185,7 +4770,13 @@ static NhlErrorTypes ManageInfoLabel
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
-	if (tfp->overlay_status != _tfNotInOverlay) {
+
+	if (tfp->overlay_status == _tfNotInOverlay) {
+		subret = SetTextPosition(cnnew,ocnp,_cnINFO,
+					 &pos_changed,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+	}
+	else {
 		subret = ManageAnnotation(cnnew,ocnp,init,_cnINFO);
 		ret = MIN(ret,subret);
 	}
@@ -4232,7 +4823,7 @@ static NhlErrorTypes ManageConstFLabel
 {
 	char			*e_text;
 	char			*entry_name;
-	NhlErrorTypes		ret,subret;
+	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
 	NhlContourLayerPart	*cnp = &(cnnew->contour);
 	NhlContourLayerPart	*ocnp = &(cnold->contour);
 	NhlTransformLayerPart	*tfp = &(cnnew->trans);
@@ -4279,13 +4870,7 @@ static NhlErrorTypes ManageConstFLabel
 
 	subret = ReplaceSubstitutionChars(cnp,ocnp,init,_cnCONSTF,
 					  &text_changed,entry_name);
-	if ((ret = MIN(ret,subret) < NhlWARNING)) return ret;
-
-	if (tfp->overlay_status == _tfNotInOverlay) {
-		subret = SetTextPosition(cnnew,ocnp,_cnCONSTF,
-					 &pos_changed,entry_name);
-		if ((ret = MIN(ret,subret) < NhlWARNING)) return ret;
-	}
+	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 
 	if (init || cnp->constf_lbl_rec.id < 0) {
 		if (pos_changed) {
@@ -4390,7 +4975,13 @@ static NhlErrorTypes ManageConstFLabel
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
-	if (tfp->overlay_status != _tfNotInOverlay) {
+
+	if (tfp->overlay_status == _tfNotInOverlay) {
+		subret = SetTextPosition(cnnew,ocnp,_cnCONSTF,
+					 &pos_changed,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+	}
+	else {
 		subret = ManageAnnotation(cnnew,ocnp,init,_cnCONSTF);
 		ret = MIN(ret,subret);
 	}
@@ -4573,27 +5164,46 @@ static NhlErrorTypes ReplaceSubstitutionChars
 		strcpy(buffer,cnp->info_string);
 		while (! done) {
 			if ((matchp = strstr(buffer,"$CIU$")) != NULL) {
-				subst = ContourFormat(cnp,cnCONINTERVAL);
+				subst = ContourFormat(cnp,cnCONINTERVAL,
+						      &cnp->info_lbl.format,
+						      entry_name);
+				if (subst == NULL) return NhlFATAL;
 				Substitute(matchp,5,subst);
 			}
 			else if ((matchp = strstr(buffer,"$CMN$")) != NULL) {
-				subst = ContourFormat(cnp,cnCONMINVAL);
+				subst = ContourFormat(cnp,cnCONMINVAL,
+						      &cnp->info_lbl.format,
+						      entry_name);
+				if (subst == NULL) return NhlFATAL;
 				Substitute(matchp,5,subst);
 			}
 			else if ((matchp = strstr(buffer,"$CMX$")) != NULL) {
-				subst = ContourFormat(cnp,cnCONMAXVAL);
+				subst = ContourFormat(cnp,cnCONMAXVAL,
+						      &cnp->info_lbl.format,
+						      entry_name);
+
+				if (subst == NULL) return NhlFATAL;
 				Substitute(matchp,5,subst);
 			}
 			else if ((matchp = strstr(buffer,"$SFU$")) != NULL) {
-				subst = ContourFormat(cnp,cnSCALEFACTOR);
+				subst = ContourFormat(cnp,cnSCALEFACTOR,
+						      &cnp->info_lbl.format,
+						      entry_name);
+				if (subst == NULL) return NhlFATAL;
 				Substitute(matchp,5,subst);
 			}
 			else if ((matchp = strstr(buffer,"$ZMN$")) != NULL) {
-				subst = ContourFormat(cnp,cnDATAMINVAL);
+				subst = ContourFormat(cnp,cnDATAMINVAL,
+						      &cnp->info_lbl.format,
+						      entry_name);
+				if (subst == NULL) return NhlFATAL;
 				Substitute(matchp,5,subst);
 			}
 			else if ((matchp = strstr(buffer,"$ZMX$")) != NULL) {
-				subst = ContourFormat(cnp,cnDATAMAXVAL);
+				subst = ContourFormat(cnp,cnDATAMAXVAL,
+						      &cnp->info_lbl.format,
+						      entry_name);
+				if (subst == NULL) return NhlFATAL;
 				Substitute(matchp,5,subst);
 			}
 			else {
@@ -4617,7 +5227,10 @@ static NhlErrorTypes ReplaceSubstitutionChars
 		strcpy(buffer,cnp->constf_string);
 		while (! done) {
 			if ((matchp = strstr(buffer,"$ZDV$")) != NULL) {
-				subst = ContourFormat(cnp,cnCONSTFVAL);
+				subst = ContourFormat(cnp,cnCONSTFVAL,
+						      &cnp->info_lbl.format,
+						      entry_name);
+				if (subst == NULL) return NhlFATAL;
 				Substitute(matchp,5,subst);
 			}
 			else {
@@ -4644,7 +5257,6 @@ static NhlErrorTypes ReplaceSubstitutionChars
 
 	return ret;
 }
-
 
 
 /*
@@ -4680,9 +5292,12 @@ static void Substitute
 	buflen = strlen(buf);
 	subst_count = strlen(subst);
 	if (subst_count - replace_count < 0) {
-		for (from = buf+replace_count,to = buf+subst_count; 
-		     from != NULL; )
-			*to++ = *from++;
+		for (from = buf+replace_count,to = buf+subst_count; ;
+		     to++,from++) { 
+			*to = *from;
+			if (*from == '\0')
+				break;
+		}
 	}
 	else if ((add = subst_count - replace_count) > 0) {
 		for (from = buf + buflen,to = buf + buflen + add; 
@@ -4691,6 +5306,81 @@ static void Substitute
 	}
 	strncpy(buf,subst,subst_count);
 }
+
+/*
+ * Function:	SetFormatRec
+ *
+ * Description: sets up the format record for a label type
+ *
+ * In Args:	NhlFormatRec *format -> to the format record
+ *		NhlString    resource    the format resource - for error.
+ *		NhlString    entry_name  the caller
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects: 
+ */
+static NhlErrorTypes SetFormatRec
+#if  __STDC__
+(
+	NhlFormatRec	*format,
+	NhlString	resource,
+	NhlString	entry_name
+)
+#else 
+(format,resource,entry_name)
+	NhlFormatRec	*format;
+	NhlString	resource;
+	NhlString	entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlFormatRec	*frec;
+
+	if ((frec = _NhlScanFString(format->fstring,entry_name)) == NULL) {
+		if (format->fstring == NULL) {
+			e_text = "%s: internal error getting format";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return(NhlFATAL);
+		}
+		else {
+			e_text = 
+			      "%s: error in format string for %s: defaulting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  e_text,entry_name,resource);
+			ret = NhlWARNING;
+			if ((frec = 
+			     _NhlScanFString(NULL,entry_name)) == NULL) {
+				e_text = "%s: internal error getting format";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name);
+				return(NhlFATAL);
+			}
+		}
+	}
+	memcpy(format,frec,sizeof(NhlFormatRec));
+
+/* 
+ * Since at this point the format string itself is not owned by the 
+ * Contour object, make a copy.
+ */
+	if (format->fstring != NULL) {
+		char *cp;
+		if ((cp = NhlMalloc(strlen(format->fstring)+1)) == NULL) {
+			e_text = "%s: dynamic memory allocation error";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+		strcpy(cp,format->fstring);
+		format->fstring = cp;
+	}
+
+	return ret;
+}
+
 /*
  * Function:	ContourFormat
  *
@@ -4711,41 +5401,53 @@ static char *ContourFormat
 #if  __STDC__
 (
 	NhlContourLayerPart	*cnp,
-	cnValueType		vtype
+	cnValueType		vtype,
+	NhlFormatRec		*format,
+	NhlString		entry_name
 )
 #else 
-(cnp,vtype)
+(cnp,vtype,format,entry_name)
 	NhlContourLayerPart	*cnp;
 	cnValueType		vtype;
+	NhlFormatRec		*format;
+	NhlString		entry_name;
 
 #endif
 {
-	static char		buffer[64];
+	char	*cp;
+	float  value;
 
 	switch (vtype) {
 
 	case cnCONSTFVAL:
-		sprintf(buffer,"%6.2f",cnp->zmax);
-		return buffer;
+		value = cnp->zmax / cnp->label_scale_factor;
+		break;
 	case cnCONINTERVAL:
-		sprintf(buffer,"%6.2f",cnp->level_spacing);
-		return buffer;
+		value = cnp->level_spacing / cnp->label_scale_factor;
+		break;
 	case cnCONMINVAL:
-		sprintf(buffer,"%6.2f",cnp->min_level_val);
-		return buffer;
+		value = cnp->min_level_val / cnp->label_scale_factor;
+		break;
 	case cnCONMAXVAL:
-		sprintf(buffer,"%6.2f",cnp->max_level_val);
-		return buffer;
+		value = cnp->max_level_val / cnp->label_scale_factor;
+		break;
 	case cnDATAMINVAL:
-		sprintf(buffer,"%6.2f",cnp->zmin);
-		return buffer;
+		value = cnp->zmin / cnp->label_scale_factor;
+		break;
 	case cnDATAMAXVAL:
-		sprintf(buffer,"%6.2f",cnp->zmax);
-		return buffer;
+		value = cnp->zmax / cnp->label_scale_factor;
 	case cnSCALEFACTOR:
-		buffer[0] = '\0';
-		return buffer;
+		value = cnp->label_scale_factor;
 	}
+
+	cp = _NhlFormatFloat(format,value,NULL,
+			     &cnp->max_data_format.sig_digits,
+			     &cnp->max_data_format.left_sig_digit,
+                             NULL,NULL,NULL,entry_name);
+	if (cp == NULL) 
+		return NULL;
+	return cp;
+	
 }
 /*
  * Function:	ConstrainJustification
@@ -4856,7 +5558,7 @@ ConstrainJustification
  *
  * Return Values:	Error Conditions
  *
- * Side Effects:	Objects created and destroyed.
+ * Side Effects:
  */
 static NhlErrorTypes SetTextPosition
 #if  __STDC__
@@ -4877,7 +5579,7 @@ static NhlErrorTypes SetTextPosition
 #endif
 {
 	char			*e_text;
-	NhlErrorTypes		ret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
 	NhlContourLayerPart	*cnp = &(cnnew->contour);
 	NhlAnnotationRec	*anno_rec;
 	NhlcnLabelAttrs		*lap;
@@ -4896,6 +5598,15 @@ static NhlErrorTypes SetTextPosition
 		lap = &cnp->constf_lbl;
 		olap = &ocnp->constf_lbl;
 		res_prefix = "NhlNcnConstFLabel";
+	}
+	subret = NhlVAGetValues(anno_rec->id,
+				NhlNvpWidthF,&width_vp,
+				NhlNvpHeightF,&height_vp,
+				NULL);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error getting internal annotation values";
+		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
+		return ret;
 	}
 
 	switch (anno_rec->side) {
@@ -4931,7 +5642,7 @@ static NhlErrorTypes SetTextPosition
 	if (anno_rec->just < NhlTOPLEFT || anno_rec->just > NhlTOPRIGHT) {
 		e_text = "%s: internal enumeration error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
-		return(ret);
+		return(NhlFATAL);
 	}
 	if (anno_rec->zone > 0)
 		lap->just = ConstrainJustification(anno_rec);
@@ -5126,38 +5837,95 @@ static NhlErrorTypes    ManageViewDepResources
 	subret = AdjustText(&cnp->line_lbls,cnew,cold,init);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
-	if (cnp->high_use_line_attrs && cnp->line_lbls.on) {
-		memcpy(&cnp->high_lbls,
-		       &cnp->line_lbls,sizeof(NhlcnLabelAttrs));
-	}
-	else {
-		subret = AdjustText(&cnp->high_lbls,cnew,cold,init);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-	}
-		
-	if (cnp->low_use_high_attrs && cnp->high_lbls.on) {
-		memcpy(&cnp->low_lbls,
-		       &cnp->high_lbls,sizeof(NhlcnLabelAttrs));
-	}
-	else {
-		subret = AdjustText(&cnp->low_lbls,cnew,cold,init);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-	}
+	subret = AdjustText(&cnp->high_lbls,cnew,cold,init);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+
+	subret = AdjustText(&cnp->low_lbls,cnew,cold,init);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
 	subret = AdjustText(&cnp->info_lbl,cnew,cold,init);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
-	if (cnp->constf_use_info_attrs && cnp->info_lbl.on) {
-		memcpy(&cnp->constf_lbl,
-		       &cnp->info_lbl,sizeof(NhlcnLabelAttrs));
-	}
-	else {
-		subret = AdjustText(&cnp->constf_lbl,cnew,cold,init);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-	}
+	subret = AdjustText(&cnp->constf_lbl,cnew,cold,init);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
 	return ret;
 }
+
+
+/*
+ * Function:  CopyTextAttrs
+ *
+ * Description: Copies the text attributes from one label type to another.
+ *              The format string is copied to into a separate memory
+ *		area; the text string and the angle are not copied.
+ *	       
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+/*ARGSUSED*/
+static NhlErrorTypes    CopyTextAttrs
+#if __STDC__
+(
+	NhlcnLabelAttrs *dest,
+	NhlcnLabelAttrs *source,
+	NhlString	entry_name
+)
+#else
+(dest,source,entry_name)
+	NhlcnLabelAttrs *dest;
+	NhlcnLabelAttrs *source;
+	NhlString	entry_name;
+#endif
+{
+	char 		*e_text;
+	char		*save_fstring;
+	NhlPointer	save_text;
+	float		save_angle;
+	
+	save_text = dest->text;
+	save_angle = dest->angle;
+	save_fstring = dest->format.fstring;
+
+	if (source->format.fstring == NULL) {
+		if (save_fstring)
+			NhlFree(save_fstring);
+		save_fstring = NULL;
+	}
+	else {
+		int	slen = 0,dlen = 0;
+		slen = strlen(source->format.fstring);
+		if (save_fstring)
+			dlen = strlen(save_fstring);
+		if (dlen < slen) {
+			if (save_fstring)
+				NhlFree(save_fstring);
+			if ((save_fstring = NhlMalloc(slen+1)) == NULL) {
+				e_text = "%s: dynamic memory allocation error";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name);
+				return NhlFATAL;
+			}
+		}
+		strcpy(save_fstring,source->format.fstring);
+	}
+	memcpy(dest,source,sizeof(NhlcnLabelAttrs));
+
+	dest->format.fstring = save_fstring;
+	dest->text = save_text;
+	dest->angle = save_angle;
+
+	return NhlNOERROR;
+}
+			
+
 
 /*
  * Function:  AdjustText
@@ -5292,9 +6060,18 @@ static NhlErrorTypes    ManageDynamicArrays
 
 /* 
  * If constant field don't bother setting up the arrays: they will not
- * be used
+ * be used -- but the label scaling still needs to be set up for the
+ * benefit of the constant field label
  */
-	if (cnp->const_field) return NhlNOERROR;
+	if (cnp->const_field) {
+		subret = SetLabelScale(cnew,cold,init);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			e_text = "%s: error setting up label scaling";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return(ret);
+		}
+		return NhlNOERROR;
+	}
 
 /* Determine the contour level state */
 
@@ -5330,7 +6107,15 @@ static NhlErrorTypes    ManageDynamicArrays
 		NhlFree(cnp->levels->data);
 		cnp->levels->data = (NhlPointer) levels;
 	}
-		
+
+/* Set up label scaling - the levels array must have been created */
+
+	subret = SetLabelScale(cnew,cold,init);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error setting up label scaling";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(ret);
+	}
 
 /*=======================================================================*/
 
@@ -5647,6 +6432,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	if (levels_modified || need_check) {
 		NhlString *sp = (NhlString *) ga->data;
 		NhlBoolean modified = False;
+		NhlString cp;
 
 		fp = (float *) cnp->levels->data;
 		init_count = levels_modified && 
@@ -5654,16 +6440,24 @@ static NhlErrorTypes    ManageDynamicArrays
 				0 : init_count;
 
 		for (i=init_count; i<count; i++) {
+			float fval = fp[i] / cnp->label_scale_factor;
+			NhlFormatRec *frec = &cnp->max_data_format;
+
 			if (sp[i] != NULL) NhlFree(sp[i]);
+			cp = _NhlFormatFloat(&cnp->line_lbls.format,fval,
+                                             NULL,
+					     &frec->sig_digits,
+					     &frec->left_sig_digit,
+                                             NULL,NULL,NULL,entry_name);
+			if (cp == NULL) return NhlFATAL;
 			if ((sp[i] = (char *) 
-			     NhlMalloc(7 * sizeof(char))) == NULL) {
+			     NhlMalloc(strlen(cp)+1)) == NULL) {
 				e_text = "%s: dynamic memory allocation error";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name);
 				return NhlFATAL;
 			}
-			sprintf(sp[i],"%6.2f",fp[i]);
-			sp[i][6] = '\0';
+			strcpy(sp[i],cp);
 			modified = True;
 		}
 		if (modified) ocnp->llabel_strings = NULL;
@@ -6135,23 +6929,26 @@ static NhlErrorTypes    SetupLevels
 	    cnp->min_level_set || cnp->max_level_set) {
 
 		cnp->new_draw_req = True;
-		if (cnp->min_level_val >= cnp->zmax) {
-			if (! cnp->data_changed) {
-				ret = MIN(NhlWARNING,ret);
-				e_text =
-     "%s: Set minimum level exceeds or equals data maximum value: defaulting";
-				NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-			}
+
+		if (cnp->min_level_val >= cnp->max_level_val) {
+			e_text =
+		"%s: Invalid level values set: defaulting to AUTOMATIC mode ";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
 			cnp->min_level_val = cnp->zmin;
-		}
-		if (cnp->max_level_val <= cnp->zmin) {
-			if (! cnp->data_changed) {
-				ret = MIN(NhlWARNING,ret);
-				e_text =
-  "%s: Set maximum level less than or equal to data mimimum value: defaulting";
-				NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-			}
 			cnp->max_level_val = cnp->zmax;
+			cnp->level_selection_mode = NhlcnAUTOMATIC;
+		}
+			
+		if (cnp->zmax <= cnp->min_level_val || 
+		    cnp->zmin > cnp->max_level_val) {
+			e_text =
+  "%s: Data values and min/max levels are disjoint sets: defaulting to AUTOMATIC mode ";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+			cnp->min_level_val = cnp->zmin;
+			cnp->max_level_val = cnp->zmax;
+			cnp->level_selection_mode = NhlcnAUTOMATIC;
 		}
 
 		switch (cnp->level_selection_mode) {
@@ -6805,12 +7602,35 @@ void   (_NHLCALLF(cpchhl,CPCHHL))
 #endif
 
 {
+	static char buf[128];
+	static NhlBoolean do_sub;
+	char *fstr,*sub;
+	float zdv;
 
-	if (*iflg == 2) {
+	if (*iflg == 1) {
+		strcpy(buf,(char *)High_Label_AttrsP->text);
+		if ((sub = strstr(buf,"$ZDV$")) == NULL) {
+			do_sub = False;
+			return;
+		}
+		do_sub = True;
+		c_cpgetr("zdv",&zdv);
+		zdv /= Label_Scale_Factor;
+		fstr = _NhlFormatFloat(&High_Label_AttrsP->format,zdv,
+                                       NULL,
+				       &Ref_Format->sig_digits,
+				       &Ref_Format->left_sig_digit,
+                                       NULL,NULL,NULL,"ContourDraw");
+		Substitute(sub,5,fstr);
+		c_cpsetc("CTM",buf);
+	}
+	else if (*iflg == 2) {
 		gset_fill_colr_ind(High_Label_AttrsP->gks_bcolor);
 	}
 	else if (*iflg == 3) {
 		if (! High_Label_AttrsP->on) return;
+		if (do_sub)
+			c_cpsetc("CTM",buf);
 		c_pcseti("CC",(int) High_Label_AttrsP->colors);
 		c_pcseti("OC",(int) High_Label_AttrsP->colors);
 		c_pcsetr("PH",High_Label_AttrsP->pheight);
@@ -6828,11 +7648,30 @@ void   (_NHLCALLF(cpchhl,CPCHHL))
 			gset_line_colr_ind(High_Label_AttrsP->gks_plcolor);
 		gset_linewidth(High_Label_AttrsP->perim_lthick);
 	}
+	else if (*iflg == 5) {
+		strcpy(buf,(char *)Low_Label_AttrsP->text);
+		if ((sub = strstr(buf,"$ZDV$")) == NULL) {
+			do_sub = False;
+			return;
+		}
+		do_sub = True;
+		c_cpgetr("zdv",&zdv);
+		zdv /= Label_Scale_Factor;
+		fstr = _NhlFormatFloat(&Low_Label_AttrsP->format,zdv,
+                                       NULL,
+				       &Ref_Format->sig_digits,
+				       &Ref_Format->left_sig_digit,
+                                       NULL,NULL,NULL,"ContourDraw");
+		Substitute(sub,5,fstr);
+		c_cpsetc("CTM",buf);
+	}
 	else if (*iflg == 6) {
 		gset_fill_colr_ind(Low_Label_AttrsP->gks_bcolor);
 	}
 	else if (*iflg == 7) {
 		if (! Low_Label_AttrsP->on) return;
+		if (do_sub)
+			c_cpsetc("CTM",buf);
 		c_pcseti("CC",(int) Low_Label_AttrsP->colors);
 		c_pcseti("OC",(int) Low_Label_AttrsP->colors);
 		c_pcsetr("PH",Low_Label_AttrsP->pheight);

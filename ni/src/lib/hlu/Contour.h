@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.h,v 1.10 1994-06-24 00:39:27 dbrown Exp $
+ *      $Id: Contour.h,v 1.11 1994-07-13 17:27:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -51,6 +51,15 @@ typedef enum _NhlcnLineLabelSpacingMode {
 
 #define NhlTcnLineLabelSpacingMode	"cnlinelabelspacingmode"
 
+/* Label scaling mode */
+
+typedef enum _NhlcnLabelScalingMode {
+	NhlcnSCALEFACTOR, NhlcnCONFINETORANGE,
+	NhlcnTRIMZEROS,NhlcnMAXSIGDIGITSLEFT,
+        NhlcnINTEGERLINELABELS } NhlcnLabelScalingMode;
+
+#define NhlTcnLabelScalingMode	"cnlabelscalinggmode"
+
 /*
  * DataDep objects resources
  */
@@ -75,6 +84,16 @@ typedef enum _NhlcnLineLabelSpacingMode {
 #define NhlNcnLineLabelInterval		"cnLineLabelInterval"
 #define NhlNcnDelayLabels		"cnDelayLabels"
 #define NhlNcnDelayLines		"cnDelayLines"
+
+#define NhlNcnLabelScalingMode		"cnLabelScalingMode"
+#define NhlNcnLabelScaleValueF		"cnLabelScaleValueF"
+#define NhlNcnLabelScaleFactorF		".cnLabelScaleFactorF" /*read-only*/
+#define NhlNcnMaxDataValueFormat	"cnMaxDataValueFormat"
+#define NhlNcnSmoothingOn		"cnSmoothingOn"
+#define NhlNcnSmoothingTensionF		"cnSmoothingTensionF"
+#define NhlNcnSmoothingDistanceF	"cnSmoothingDistanceF"
+#define NhlNcnCheckPointDistance	"cnCheckPointDistance"
+#define NhlNcnMaxPointDistanceF		"cnMaxPointDistanceF"
 
 #define NhlNcnMonoLevelFlag		"cnMonoLevelFlag"
 #define NhlNcnMonoFillColor		"cnMonoFillColor"
@@ -105,6 +124,7 @@ typedef enum _NhlcnLineLabelSpacingMode {
 #define NhlNcnLineLabelSpacing		"cnLineLabelSpacing"
 
 #define NhlNcnLineLabelsOn		"cnLineLabelsOn"
+#define NhlNcnLineLabelFormat		"cnLineLabelFormat"
 #define NhlNcnLineLabelTextHeightF	"cnLineLabelTextHeightF"
 #define NhlNcnLineLabelFont		"cnLineLabelFont"
 #define NhlNcnLineLabelFontAspectF	"cnLineLabelFontAspectF"
@@ -121,6 +141,7 @@ typedef enum _NhlcnLineLabelSpacingMode {
 
 #define NhlNcnHighLabelsOn		"cnHighLabelsOn"
 #define NhlNcnHighLabelString		"cnHighLabelString"
+#define NhlNcnHighLabelFormat		"cnHighLabelFormat"
 #define NhlNcnHighLabelTextHeightF	"cnHighLabelTextHeightF"
 #define NhlNcnHighLabelFont		"cnHighLabelFont"
 #define NhlNcnHighLabelFontColor	"cnHighLabelFontColor"
@@ -138,6 +159,7 @@ typedef enum _NhlcnLineLabelSpacingMode {
 
 #define NhlNcnLowLabelsOn		"cnLowLabelsOn"
 #define NhlNcnLowLabelString		"cnLowLabelString"
+#define NhlNcnLowLabelFormat		"cnLowLabelFormat"
 #define NhlNcnLowLabelTextHeightF	"cnLowLabelTextHeightF"
 #define NhlNcnLowLabelFont		"cnLowLabelFont"
 #define NhlNcnLowLabelFontColor		"cnLowLabelFontColor"
@@ -155,6 +177,7 @@ typedef enum _NhlcnLineLabelSpacingMode {
 
 #define NhlNcnInfoLabelOn		"cnInfoLabelOn"
 #define NhlNcnInfoLabelString		"cnInfoLabelString"
+#define NhlNcnInfoLabelFormat		"cnInfoLabelFormat"
 #define NhlNcnInfoLabelTextHeightF	"cnInfoLabelTextHeightF"
 #define NhlNcnInfoLabelTextDirection	"cnInfoLabelTextDirection"
 #define NhlNcnInfoLabelFont		"cnInfoLabelFont"
@@ -179,6 +202,7 @@ typedef enum _NhlcnLineLabelSpacingMode {
 
 #define NhlNcnConstFLabelOn		"cnConstFLabelOn"
 #define NhlNcnConstFLabelString		"cnConstFLabelString"
+#define NhlNcnConstFLabelFormat		"cnconstFLabelFormat"
 #define NhlNcnConstFLabelTextHeightF	"cnConstFLabelTextHeightF"
 #define NhlNcnConstFLabelTextDirection	"cnConstFLabelTextDirection"
 #define NhlNcnConstFLabelFont		"cnConstFLabelFont"
@@ -221,6 +245,16 @@ typedef enum _NhlcnLineLabelSpacingMode {
 #define NhlCcnDelayLabels		"CnDelayLabels"
 #define NhlCcnDelayLines		"CnDelayLines"
 
+#define NhlCcnLabelScalingMode		"CnLabelScalingMode"
+#define NhlCcnLabelScaleValueF		"CnLabelScaleValueF"
+#define NhlCcnLabelScaleFactorF		".CnLabelScaleFactorF" /*read-only*/
+#define NhlCcnMaxDataValueFormat	"CnMaxDataValueFormat"
+#define NhlCcnSmoothingOn		"CnSmoothingOn"
+#define NhlCcnSmoothingTensionF		"CnSmoothingTensionF"
+#define NhlCcnSmoothingDistanceF	"CnSmoothingDistanceF"
+#define NhlCcnCheckPointDistance	"CnCheckPointDistance"
+#define NhlCcnMaxPointDistanceF		"CnMaxPointDistanceF"
+
 #define NhlCcnMonoLevelFlag		"CnMonoLevelFlag"
 #define NhlCcnMonoFillColor		"CnMonoFillColor"
 #define NhlCcnMonoFillPattern		"CnMonoFillPattern"
@@ -250,6 +284,7 @@ typedef enum _NhlcnLineLabelSpacingMode {
 #define NhlCcnConstFUseInfoLabelRes	"CnConstFUseInfoLabelRes"
 
 #define NhlCcnLineLabelsOn		"CnLineLabelsOn"
+#define NhlCcnLineLabelFormat		"CnLineLabelFormat"
 #define NhlCcnLineLabelTextHeightF	"CnLineLabelTextHeightF"
 #define NhlCcnLineLabelFont		"CnLineLabelFont"
 #define NhlCcnLineLabelFontAspectF	"CnLineLabelFontAspectF"
@@ -266,6 +301,7 @@ typedef enum _NhlcnLineLabelSpacingMode {
 
 #define NhlCcnHighLabelsOn		"CnHighLabelsOn"
 #define NhlCcnHighLabelString		"CnHighLabelString"
+#define NhlCcnHighLabelFormat		"CnHighLabelFormat"
 #define NhlCcnHighLabelTextHeightF	"CnHighLabelTextHeightF"
 #define NhlCcnHighLabelFont		"CnHighLabelFont"
 #define NhlCcnHighLabelFontColor	"CnHighLabelFontColor"
@@ -283,6 +319,7 @@ typedef enum _NhlcnLineLabelSpacingMode {
 
 #define NhlCcnLowLabelsOn		"CnLowLabelsOn"
 #define NhlCcnLowLabelString		"CnLowLabelString"
+#define NhlCcnLowLabelFormat		"CnLowLabelFormat"
 #define NhlCcnLowLabelTextHeightF	"CnLowLabelTextHeightF"
 #define NhlCcnLowLabelFont		"CnLowLabelFont"
 #define NhlCcnLowLabelFontColor		"CnLowLabelFontColor"
@@ -301,6 +338,7 @@ typedef enum _NhlcnLineLabelSpacingMode {
 
 #define NhlCcnInfoLabelOn		"CnInfoLabelOn"
 #define NhlCcnInfoLabelString		"CnInfoLabelString"
+#define NhlCcnInfoLabelFormat		"CnInfoLabelFormat"
 #define NhlCcnInfoLabelSide		"CnInfoLabelSide"
 #define NhlCcnInfoLabelPosition		"CnInfoLabelPosition"
 #define NhlCcnInfoLabelJustification	"CnInfoLabelJusification"
@@ -330,6 +368,7 @@ typedef enum _NhlcnLineLabelSpacingMode {
 
 #define NhlCcnConstFLabelOn		"CnConstFLabelOn"
 #define NhlCcnConstFLabelString		"CnConstFLabelString"
+#define NhlCcnConstFLabelFormat		"CnConstFLabelFormat"
 #define NhlCcnConstFLabelTextHeightF	"CnConstFLabelTextHeightF"
 #define NhlCcnConstFLabelTextDirection	"CnConstFLabelTextDirection"
 #define NhlCcnConstFLabelFont		"CnConstFLabelFont"

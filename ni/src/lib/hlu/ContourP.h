@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourP.h,v 1.11 1994-06-27 19:31:30 dbrown Exp $
+ *      $Id: ContourP.h,v 1.12 1994-07-13 17:27:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,7 @@
 #include <ncarg/hlu/Contour.h>
 #include <ncarg/hlu/WorkspaceI.h>
 #include <ncarg/hlu/ScalarFieldFloatP.h>
+#include <ncarg/hlu/FormatI.h>
 
 #define Nhl_cnDEF_ARRAY_SIZE	16
 #define Nhl_cnMAX_LEVELS	256
@@ -43,13 +44,15 @@
 #define NhlcnMAPVAL		99
 #define NhlcnDEF_INFO_LABEL	"CONTOUR FROM $CMN$ TO $CMX$ BY $CIU$"
 #define NhlcnDEF_CONSTF_LABEL	"CONSTANT FIELD - VALUE IS $ZDV$"
+#define NhlcnDEF_HIGH_LABEL	"H:B:$ZDV$:E:"
+#define NhlcnDEF_LOW_LABEL	"L:B:$ZDV$:E:"
 
 typedef enum { _cnCONSTF, _cnINFO } _cnAnnoType;
 
 typedef struct _NhlcnLabelAttrs {
 	NhlBoolean		on;
 	NhlPointer		text; /* cast to NhlString or NhlString* */
-	NhlString		format;
+	NhlFormatRec		format;
 	NhlBoolean		height_set;
 	float			height;
 	NhlTextDirection	direction;
@@ -111,6 +114,16 @@ typedef struct _NhlContourLayerPart {
 	int		llabel_interval;
 	NhlBoolean	delay_labels;
 	NhlBoolean	delay_lines;
+
+        NhlcnLabelScalingMode	label_scaling_mode;
+        float		label_scale_value;
+        float		label_scale_factor;
+        NhlFormatRec	max_data_format;
+        NhlBoolean	smoothing_on;
+        float		smoothing_tension;
+        float		smoothing_distance;
+        NhlBoolean	check_point_distance;
+        float		max_point_distance;
 
 	NhlBoolean	mono_level_flag;
 	NhlBoolean	mono_fill_color;
