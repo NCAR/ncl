@@ -1,5 +1,5 @@
 /*
- *      $Id: c_mdrgsf.c,v 1.1 2001-10-10 02:51:34 haley Exp $
+ *      $Id: c_mdrgsf.c,v 1.2 2001-11-04 02:38:49 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,17 +26,25 @@
 
 #include <ncarg/ncargC.h>
 
-extern void NGCALLF(mdrgsf,MDRGSF)(int*);
+extern void NGCALLF(mdrgsf,MDRGSF)(int*,float*,int*,int*,int*);
 
 void c_mdrgsf
 #ifdef NeedFuncProto
 (
-    int irgl
+    int irgl,
+    float *rwrk,
+    int lrwk,
+    int *iama,
+    int lama
 )
 #else
 (irgl)
     int irgl;
+    float *rwrk;
+    int lrwk;
+    int *iama;
+    int lama;
 #endif
 {
-    NGCALLF(mdrgsf,MDRGSF)(&irgl);
+    NGCALLF(mdrgsf,MDRGSF)(&irgl,rwrk,&lrwk,iama,&lama);
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: c_mdrgol.c,v 1.1 2001-10-10 02:51:34 haley Exp $
+ *      $Id: c_mdrgol.c,v 1.2 2001-11-04 02:38:49 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,17 +26,21 @@
 
 #include <ncarg/ncargC.h>
 
-extern void NGCALLF(mdrgol,MDRGOL)(int*);
+extern void NGCALLF(mdrgol,MDRGOL)(int*,float*,int*);
 
 void c_mdrgol
 #ifdef NeedFuncProto
 (
-    int irgl
+    int irgl,
+    float *rwrk,
+    int lrwk,
 )
 #else
 (irgl)
     int irgl;
+    float *rwrk;
+    int lrwk;
 #endif
 {
-    NGCALLF(mdrgol,MDRGOL)(&irgl);
+    NGCALLF(mdrgol,MDRGOL)(&irgl,rwrk,&lrwk);
 }
