@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.24 1997-05-05 21:45:21 boote Exp $
+ *      $Id: ScalarField.c,v 1.25 1997-07-30 01:19:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1827,7 +1827,6 @@ CvtGenSFObjToFloatSFObj
 						 entry_name);
 		if ((ret = MIN(ret,subret))  < NhlWARNING) 
 			return ret;
-		sffp->x_arr = x_arr;
 	}
 	sfp->ix_start = ixstart;
 	sfp->ix_end = ixend;
@@ -1864,7 +1863,6 @@ CvtGenSFObjToFloatSFObj
 						 entry_name);
 		if ((ret = MIN(ret,subret))  < NhlWARNING) 
 			return ret;
-		sffp->y_arr = y_arr;
 	}
 	sfp->iy_start = iystart;
 	sfp->iy_end = iyend;
@@ -1907,6 +1905,10 @@ CvtGenSFObjToFloatSFObj
 		sffp->x_end = sfp->x_actual_end;
 		sffp->y_start = sfp->y_actual_start;
 		sffp->y_end = sfp->y_actual_end;
+		if (xirr)
+			sffp->x_arr = x_arr;
+		if (yirr)
+			sffp->y_arr = y_arr;
 	}
 	else {
 		if ((d_arr = 
@@ -1921,6 +1923,10 @@ CvtGenSFObjToFloatSFObj
 		sffp->x_end = sfp->y_actual_end;
 		sffp->y_start = sfp->x_actual_start;
 		sffp->y_end = sfp->x_actual_end;
+		if (xirr)
+			sffp->y_arr = x_arr;
+		if (yirr)
+			sffp->x_arr = y_arr;
 	}
 	sffp->d_arr = d_arr;
 

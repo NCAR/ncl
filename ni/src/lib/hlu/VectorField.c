@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.c,v 1.12 1997-05-05 21:45:28 boote Exp $
+ *      $Id: VectorField.c,v 1.13 1997-07-30 01:19:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2258,7 +2258,6 @@ CvtGenVFObjToFloatVFObj
 						 entry_name);
 		if ((ret = MIN(ret,subret))  < NhlWARNING) 
 			return ret;
-		vffp->x_arr = x_arr;
 	}
 	vfp->ix_start = ixstart;
 	vfp->ix_end = ixend;
@@ -2295,7 +2294,6 @@ CvtGenVFObjToFloatVFObj
 						 entry_name);
 		if ((ret = MIN(ret,subret))  < NhlWARNING) 
 			return ret;
-		vffp->y_arr = y_arr;
 	}
 	vfp->iy_start = iystart;
 	vfp->iy_end = iyend;
@@ -2359,6 +2357,10 @@ CvtGenVFObjToFloatVFObj
 		    < NhlWARNING) {
 			return NhlFATAL;
 		}
+		if (xirr)
+			vffp->x_arr = x_arr;
+		if (yirr)
+			vffp->y_arr = y_arr;
 	}
 	else {
 		if ((subret = 
@@ -2367,6 +2369,10 @@ CvtGenVFObjToFloatVFObj
 		    < NhlWARNING) {
 			return NhlFATAL;
 		}
+		if (xirr)
+			vffp->y_arr = x_arr;
+		if (yirr)
+			vffp->x_arr = y_arr;
 	}
 
 /*
