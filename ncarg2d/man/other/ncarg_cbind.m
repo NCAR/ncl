@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarg_cbind.m,v 1.8 1994-03-03 17:27:18 haley Exp $
+.\"	$Id: ncarg_cbind.m,v 1.9 1994-04-11 18:17:14 haley Exp $
 .\"
 .TH NCARG_CBIND 3NCARG "February 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -85,10 +85,11 @@ specify the columns and rows, so again, the values would be 20 and 10
 .SH CHARACTER STRINGS
 Another exception to the argument lists for the utility C-bindings has
 to do with routines that return character strings.  The NCAR Graphics
-routines that return strings do not have a string length as part of
-their argument lists, so you must pass an extra argument to the
-C-binding which specifies the maximum length of the string.  Also,
-all input strings passed to the C-bindings must be null-terminated!
+routines that return strings through the parameter list do not have a
+string length as part of their argument lists, so you must pass an
+extra argument to the C-binding which specifies the maximum length of
+the string.  Also, all input strings passed to the C-bindings must
+be null-terminated!
 .sp
 For example, in the routine \fBPCGETC\fP, you pass a parameter name
 and it returns the value of that parameter which in this case is a
@@ -104,6 +105,13 @@ argument will always be the last one in the list.  If more than one
 string length argument needs to be added, then each one should be added 
 at the end of the argument list in the order that their corresponding
 strings appear.
+.sp
+There are some routines like \fBAGDSHN\fP which are defined as character
+strings themselves.  In this case, the user does not need to pass
+a string length since it is already defined.  But, the string
+that is returned is declared statically, thus it will go away once
+you call the routine again.  If you need to save these character
+strings, be sure to copy them to your own local variable.
 .SH FUNCTION PROTOTYPES
 The C-bindings are intended to be ANSI C compliant.  To get the
 correct function prototypes for the utility C-bindings, you can
