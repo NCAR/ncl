@@ -5,9 +5,6 @@
 #include <ncarg/ncarg_ras.h>
 
 static char	*ProgramName		= (char *) NULL;
-int		OptionDebug		= False;
-char		*OptionColorfile	= (char *) NULL;
-int		OptionVerbose		= False;
 
 static struct {
 	boolean		type;
@@ -244,11 +241,10 @@ PrintLine(name, nx, ny, type, desc)
 		}
 	}
 	msgbuf[lastchar+1] = '\0';
-	(void) fprintf(stderr, "%s\n", msgbuf);
+	(void) fprintf(stdout, "%s\n", msgbuf);
 	return(RAS_OK);
 }
 
-void
 Usage(progName, message, opt_id)
 	char	*progName;
 	char	*message;
