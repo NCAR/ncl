@@ -230,9 +230,7 @@ int off;
 								}
 								if(tmp->n_entries == 0) {
 									if(prev != NULL) {
-/*
 										prev->next = tmp->next;
-*/
 										NclFree(tmp->ref_list);
 										tmp->n_entries = 0;
 										hlu_tab[index].ref_list = NULL;
@@ -240,10 +238,8 @@ int off;
 										NclFree(tmp);
 									} else {
 										NclFree(hlu_tab[index].ref_list);
-/*
 										hlu_tab[index].hlu_id = -1;
 										hlu_tab[index].ncl_hlu_id = -1;
-*/
 										hlu_tab[index].n_entries = 0;
 										hlu_tab[index].ref_list = NULL;
 										hlu_tab[index].next = NULL;
