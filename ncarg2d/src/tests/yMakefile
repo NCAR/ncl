@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.2 1992-09-29 17:05:07 ncargd Exp $
+#	$Id: yMakefile,v 1.3 1993-09-25 17:15:24 kennison Exp $
 #
 NCARG	= ../../..
 
@@ -10,16 +10,16 @@ GENERIC_SRCS = \
 	tconan.f tconaq.f tconas.f tconpa.f tconre.f tdashc.f tdashl.f \
 	tdashp.f tdashs.f tezmap.f tezmpa.f tgflas.f tgrida.f thafto.f \
 	thstgr.f tisohr.f tisosr.f tlblba.f tpltch.f tpwrtx.f tpwry.f \
-	tpwrzi.f tpwrzs.f tpwrzt.f tsoftf.f tsrfac.f tstitl.f tstrml.f \
-	tthree.f tvelvc.f
+	tpwrzi.f tpwrzs.f tpwrzt.f tseter.f tsoftf.f tsrfac.f tstitl.f \
+	tstrml.f tthree.f tvelvc.f
 
 TESTS = \
 	tagupw tareas tautog tcnqck tcnsmt tcnsup tcolcv \
 	tconan tconaq tconas tconpa tconre tdashc tdashl \
 	tdashp tdashs tezmap tezmpa tgflas tgrida thafto \
 	thstgr tisohr tisosr tlblba tpltch tpwrtx tpwry \
-	tpwrzi tpwrzs tpwrzt tsoftf tsrfac tstitl tstrml \
-	tthree tvelvc
+	tpwrzi tpwrzs tpwrzt tseter tsoftf tsrfac tstitl \
+	tstrml tthree tvelvc
 
 all::
 
