@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.36 1996-11-28 01:14:26 dbrown Exp $
+ *      $Id: hlu.c,v 1.37 1996-12-03 01:36:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1895,6 +1895,9 @@ _NhlIterateObjCallbacks
 {
 	NhlArgVal cbdata;
 
+#ifdef	DEBUG
+	memset((char*)&cbdata,0,sizeof(NhlArgVal));
+#endif
 	cbdata.lngval = 0;
 	_NhlCBIterate(GetObjCBList(l,cbname,False),task,cbdata);
 	return;
