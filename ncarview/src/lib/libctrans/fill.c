@@ -1,5 +1,5 @@
 /*
- *	$Id: fill.c,v 1.13 1992-11-19 21:49:19 clyne Exp $
+ *	$Id: fill.c,v 1.14 1992-12-11 16:04:06 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -805,148 +805,6 @@ int	fill_VDC(cgmc,instr,p_len)
 
 
 
-/* 	fill_special:
- *		cgm commands with more one type of parameter must be handled
- *		with this function. Each command is dealt with uniquely as
- *		required.
- *
- */
-
-int	fill_special(cgmc,instr,class,id)
-	CGMC 	*cgmc;
-	Instr	*instr;
-	int 	class, id;	/* cgm command class and id*/
-{
-	switch (class) {
-	case 1 :
-		switch(id) {
-
-		case MF_ELIST_ID : 	/* metafile element list*/
-			instr->data_length = fill_I(cgmc,instr,1);
-			return(fill_IX(cgmc,instr,N));
-			
-		default :
-			ESprintf(
-				E_UNKNOWN, 
-				"Can't parse CGM element(class=%d, id=%d)", 
-				class, id
-			);
-			return (-1);
-		}
-	case 2 :
-		switch(id) {
-
-		case SCALE_MODE_ID : 	/* scaling mode	*/
-			instr->data_length = fill_E(cgmc,instr,1);
-			return(fill_R(cgmc,instr,N));
-
-			
-		default :
-			ESprintf(
-				E_UNKNOWN, 
-				"Can't parse CGM element(class=%d, id=%d)", 
-				class, id
-			);
-			return (-1);
-		}
-	case 4 :
-		switch(id) {
-		case TEXT_ID :	/* text*/
-			if (!Moreparm) {
-				instr->data_length = fill_P(cgmc, instr,1);
-
-				instr->data_length = fill_E(cgmc, instr,1);
-			}
-
-			return(fill_S(cgmc,instr));
-
-		case POLYGON_SET_ID :	/* polygon set (not supported)	*/
-			return(0);
-
-		case CELL_ARRAY_ID :	/* cell array*/
-			/* note: cell arrays require a special 
-			 * routine
-			 */
-			if (!Moreparm) { 
-				instr->data_length = fill_P(cgmc, instr,3);
-
-				instr->data_length = fill_I(cgmc, instr,3);
-
-				instr->data_length = fill_E(cgmc, instr,1);
-			}
-
-			return(fill_Cellarray(cgmc,instr));
-
-		case G_D_P_ID :	/* generalized draw primitive*/
-			if (!Moreparm) {
-				instr->data_length = fill_I(cgmc, instr,2);
-
-				instr->data_length = fill_I(cgmc, instr,
-							(int) cgmc->i[1]);
-			}
-			
-			return(fill_S(cgmc,instr));
-
-		default : 
-			ESprintf(
-				E_UNKNOWN, 
-				"Can't parse CGM element(class=%d, id=%d)", 
-				class, id
-			);
-			return (-1);
-		}
-
-	case 5 :
-		switch(id) {
-		case TEXT_ALIGN_ID :	/* text alignment*/
-			instr->data_length = fill_E(cgmc,instr, 2);
-			return(fill_R(cgmc,instr,2));
-
-		case PATTERN_TAB_ID :	/* pattern table*/
-			instr->data_length = fill_IX(cgmc,instr,1);
-			instr->data_length = fill_I(cgmc,instr,3);
-			/* this code needs to be adjusted 
-			 * for colour prec
-			 */
-			return(fill_CO(cgmc,instr,N));
-
-		case COLOR_TABLE_ID :	/* colour table*/
-			instr->data_length = fill_CI(cgmc,instr,1);
-			return(fill_CD(cgmc,instr,N));
-
-		default :
-			ESprintf(
-				E_UNKNOWN, 
-				"Can't parse CGM element(class=%d, id=%d)", 
-				class, id
-			);
-			return (-1);
-		}
-	case 6 :
-		switch(id) {
-		case ESCAPE_ID :	/* escape*/
-			instr->data_length = fill_I(cgmc,instr,1);
-			return(fill_S(cgmc,instr));
-
-		default:
-			ESprintf(
-				E_UNKNOWN, 
-				"Can't parse CGM element(class=%d, id=%d)", 
-				class, id
-			);
-			return (-1);
-		}
-	default : 
-		ESprintf(
-			E_UNKNOWN, "Can't parse CGM element(class=%d, id=%d)", 
-			class, id
-		);
-		return (-1);
-	}
-}
-
-
-
 /* 
  *	fill_Cellarray:
  *		This routine extracts parameters from the CGM_Buf 
@@ -1209,3 +1067,148 @@ static	int	count;		/* number of cells processed in a row of data*/
 
 
 }
+
+
+
+/* 	fill_special:
+ *		cgm commands with more one type of parameter must be handled
+ *		with this function. Each command is dealt with uniquely as
+ *		required.
+ *
+ */
+
+int	fill_special(cgmc,instr,class,id)
+	CGMC 	*cgmc;
+	Instr	*instr;
+	int 	class, id;	/* cgm command class and id*/
+{
+	switch (class) {
+	case 1 :
+		switch(id) {
+
+		case MF_ELIST_ID : 	/* metafile element list*/
+			instr->data_length = fill_I(cgmc,instr,1);
+			return(fill_IX(cgmc,instr,N));
+			
+		default :
+			ESprintf(
+				E_UNKNOWN, 
+				"Can't parse CGM element(class=%d, id=%d)", 
+				class, id
+			);
+			return (-1);
+		}
+	case 2 :
+		switch(id) {
+
+		case SCALE_MODE_ID : 	/* scaling mode	*/
+			instr->data_length = fill_E(cgmc,instr,1);
+			return(fill_R(cgmc,instr,N));
+
+			
+		default :
+			ESprintf(
+				E_UNKNOWN, 
+				"Can't parse CGM element(class=%d, id=%d)", 
+				class, id
+			);
+			return (-1);
+		}
+	case 4 :
+		switch(id) {
+		case TEXT_ID :	/* text*/
+			if (!Moreparm) {
+				instr->data_length = fill_P(cgmc, instr,1);
+
+				instr->data_length = fill_E(cgmc, instr,1);
+			}
+
+			return(fill_S(cgmc,instr));
+
+		case POLYGON_SET_ID :	/* polygon set (not supported)	*/
+			return(0);
+
+		case CELL_ARRAY_ID :	/* cell array*/
+			/* note: cell arrays require a special 
+			 * routine
+			 */
+			if (!Moreparm) { 
+				instr->data_length = fill_P(cgmc, instr,3);
+
+				instr->data_length = fill_I(cgmc, instr,3);
+
+				instr->data_length = fill_E(cgmc, instr,1);
+			}
+
+			return(fill_Cellarray(cgmc,instr));
+
+		case G_D_P_ID :	/* generalized draw primitive*/
+			if (!Moreparm) {
+				instr->data_length = fill_I(cgmc, instr,2);
+
+				instr->data_length = fill_I(cgmc, instr,
+							(int) cgmc->i[1]);
+			}
+			
+			return(fill_S(cgmc,instr));
+
+		default : 
+			ESprintf(
+				E_UNKNOWN, 
+				"Can't parse CGM element(class=%d, id=%d)", 
+				class, id
+			);
+			return (-1);
+		}
+
+	case 5 :
+		switch(id) {
+		case TEXT_ALIGN_ID :	/* text alignment*/
+			instr->data_length = fill_E(cgmc,instr, 2);
+			return(fill_R(cgmc,instr,2));
+
+		case PATTERN_TAB_ID :	/* pattern table*/
+			instr->data_length = fill_IX(cgmc,instr,1);
+			instr->data_length = fill_I(cgmc,instr,3);
+			/* this code needs to be adjusted 
+			 * for colour prec
+			 */
+			return(fill_CO(cgmc,instr,N));
+
+		case COLOR_TABLE_ID :	/* colour table*/
+			instr->data_length = fill_CI(cgmc,instr,1);
+			return(fill_CD(cgmc,instr,N));
+
+		default :
+			ESprintf(
+				E_UNKNOWN, 
+				"Can't parse CGM element(class=%d, id=%d)", 
+				class, id
+			);
+			return (-1);
+		}
+	case 6 :
+		switch(id) {
+		case ESCAPE_ID :	/* escape*/
+			instr->data_length = fill_I(cgmc,instr,1);
+			return(fill_S(cgmc,instr));
+
+		default:
+			ESprintf(
+				E_UNKNOWN, 
+				"Can't parse CGM element(class=%d, id=%d)", 
+				class, id
+			);
+			return (-1);
+		}
+	default : 
+		ESprintf(
+			E_UNKNOWN, "Can't parse CGM element(class=%d, id=%d)", 
+			class, id
+		);
+		return (-1);
+	}
+}
+
+
+

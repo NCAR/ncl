@@ -1,6 +1,6 @@
 NCARG	= ../../../..
 #
-#	$Id: yMakefile,v 1.13 1992-09-09 15:09:44 clyne Exp $
+#	$Id: yMakefile,v 1.14 1992-12-11 16:04:08 clyne Exp $
 #
 
 
@@ -79,12 +79,12 @@ DCGIOBJS = cgi.o cgi_cell_sim.o
 # Declare code and macros for X11R3
 
 DX11SRCS = \
-	X11_class0.c X11_class1.c X11_class2.c X11_class3.c \
+	X11_class0.c X11_class1.c X11_class3.c \
 	X11_class4.c X11_class5.c X11_class6.c X11_class7.c \
 	Xcrm.c 
 
 DX11OBJS = \
-	X11_class0.o X11_class1.o X11_class2.o X11_class3.o \
+	X11_class0.o X11_class1.o X11_class3.o \
 	X11_class4.o X11_class5.o X11_class6.o X11_class7.o \
 	Xcrm.o 
 
