@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.11 1997-04-11 17:35:59 haley Exp $
+#	$Id: yMakefile,v 1.12 1997-04-11 17:59:32 haley Exp $
 #
 #	Makefile for libncarg.a
 #	Includes utilities and their corresponding test programs,
@@ -14,7 +14,7 @@ SUBDIRS = \
 	hafton histgr isosrf isosrfhr labelbar ngmisc plotchar \
 	polypack pwritx pwrity pwrzi pwrzs pwrzt softfill spps \
 	srface stitle strmln support threed velvct wmap \
-	areasC autogrphC bivarC colconvC conpackC \
+	areasC autogrphC colconvC conpackC \
 	commonC dashcharC dashpackC ezmapC gflashC gridalC \
 	histgrC isosrfC labelbarC ngmiscC plotcharC \
 	polypackC softfillC sppsC srfaceC stitleC \
