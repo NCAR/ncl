@@ -12,7 +12,7 @@ float armx(int, float *);
  *  appropritate metafile names will be generated for each plot
  *  in the subsequent code.
  */
-#define IWTYPE 8
+#define IWTYPE 1
 #define WKID   1
 
 /*

@@ -3,7 +3,7 @@ C
 C  Use the NCAR Graphics CONPACK package to draw a color contour 
 C  plot of the data in ZDAT.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWKID=1, ITYPE=8)
+      PARAMETER (IERRF=6, LUNIT=2, IWKID=1, IWTYPE=1)
 C
       DIMENSION ZDAT(NX,NY)
       DIMENSION RWRK(2000),IWRK(1000),IAMA(20000)
@@ -14,7 +14,7 @@ C
 C  Open GKS if not open; open and activate a workstation; define
 C  some colors.
 C
-      JTYPE = ITYPE
+      JTYPE = IWTYPE
       CALL GQOPS(ISTATE)
       IF (ISTATE .EQ. 0) THEN
         CALL GOPKS (IERRF, ISZDM)
@@ -129,12 +129,12 @@ C
 C  
       DIMENSION X(NX),Y(NY),Z(NX,NY),IWK(*)
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWKID=1, ITYPE=8)
+      PARAMETER (IERRF=6, LUNIT=2, IWKID=1, IWTYPE=8)
       DIMENSION S(6)
 C
 C  Open GKS, open and activate a workstation.
 C
-      JTYPE = ITYPE
+      JTYPE = IWTYPE
       CALL GQOPS(ISTATE)
       IF (ISTATE .EQ. 0) THEN
         CALL GOPKS (IERRF, ISZDM)
@@ -209,9 +209,9 @@ C  draw a vector plot of the vectors (U(I,J),V(I,J))
 C  for I=1,LX and J=1,LY.
 C
       DIMENSION U(LX,LY),V(LX,LY)
-      PARAMETER (IERRF=6, LUNIT=2, IWKID=1, ITYPE=8)
+      PARAMETER (IERRF=6, LUNIT=2, IWKID=1, IWTYPE=8)
 C
-      JTYPE = ITYPE
+      JTYPE = IWTYPE
       CALL GQOPS(ISTATE)
       IF (ISTATE .EQ. 0) THEN
         CALL GOPKS (IERRF, ISZDM)
