@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.29 2000-03-29 04:01:25 dbrown Exp $
+ *      $Id: restree.c,v 1.30 2003-02-04 22:02:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2517,6 +2517,7 @@ static void EditCB
         XmLGridColumn	colptr;
         rtNodeData	*ndata;
         NhlBoolean	update = True;
+	char		*cur_string = NULL;
 
         cb = (XmLGridCallbackStruct *)cb_data;
         rowptr = XmLGridGetRow(pub_rtp->tree,XmCONTENT,cb->row);
@@ -2524,7 +2525,6 @@ static void EditCB
         rtp->size_update_req = False;
         
         switch (cb->reason) {
-	    char	*cur_string;
             case XmCR_EDIT_INSERT:
 #if DEBUG_RESTREE        
                     fprintf(stderr,"edit insert\n");
@@ -2546,15 +2546,19 @@ static void EditCB
 			    XmTextSetInsertionPosition(rtp->text,0);
 		    }
 		    else {
-			    char *cur_string;
 			    rtp->text_dropped = False;
-			    XmStringGetLtoR(rtp->selected_row_xmstr,
-					    XmFONTLIST_DEFAULT_TAG,
-					    &cur_string);
-			    XmTextInsert(rtp->text,0,cur_string);
-			    XmTextSetInsertionPosition(rtp->text,
-						       strlen(cur_string));
-			    XtFree(cur_string);
+			    if (rtp->selected_row_xmstr) {
+				    XmStringGetLtoR(rtp->selected_row_xmstr,
+						    XmFONTLIST_DEFAULT_TAG,
+						    &cur_string);
+			    }
+			    if (cur_string) {
+				    XmTextInsert(rtp->text,0,cur_string);
+				    XmTextSetInsertionPosition
+					    (rtp->text,
+					     strlen(cur_string));
+				    XtFree(cur_string);
+			    }
 		    }
 		    rtp->manual_edit_started = True;
                     
@@ -2571,18 +2575,34 @@ static void EditCB
 			     XmNrowPtr,rowptr,
 			     XmNcellString,&rtp->selected_row_xmstr,
 			     NULL);
-		    XmStringGetLtoR(rtp->selected_row_xmstr,
-				    XmFONTLIST_DEFAULT_TAG,&cur_string);
-                    XtVaSetValues(rtp->text,
-				  XmNvalue,cur_string,
-                                  XmNcursorPosition,0,
-                                  XmNborderWidth,2,
-                                  XmNcursorPositionVisible,True,
-				  XmNbackground,rtp->go->go.select_pixel,
-                                  NULL);
+		    if (rtp->selected_row_xmstr) 
+			    XmStringGetLtoR(rtp->selected_row_xmstr,
+					    XmFONTLIST_DEFAULT_TAG,
+					    &cur_string);
+		    if (cur_string) {
+			    XtVaSetValues(rtp->text,
+					  XmNvalue,cur_string,
+					  XmNcursorPosition,0,
+					  XmNborderWidth,2,
+					  XmNcursorPositionVisible,True,
+					  XmNbackground,
+					  rtp->go->go.select_pixel,
+					  NULL);
+			    XtFree(cur_string);
+		    }
+		    else {
+			    cur_string = "";
+			    XtVaSetValues(rtp->text,
+					  XmNvalue,cur_string,
+					  XmNcursorPosition,0,
+					  XmNborderWidth,2,
+					  XmNcursorPositionVisible,True,
+					  XmNbackground,
+					  rtp->go->go.select_pixel,
+					  NULL);
+		    }
                     rtp->edit_row = cb->row;
                     rtp->manual_edit_started = True;
-		    XtFree(cur_string);
                     return;
             case XmCR_EDIT_CANCEL:
 #if DEBUG_RESTREE        
@@ -2600,8 +2620,9 @@ static void EditCB
         }
         if (update) {
                 rtResData *resp;
-                char *new_string,*cur_string = NULL;
-                
+                char *new_string;
+
+		cur_string = NULL;
                 XtVaGetValues(w,
                               XmNrowPtr,rowptr,
                               XmNrowUserData,&ndata,
@@ -2620,7 +2641,8 @@ static void EditCB
 				      XmNcellPixmap,Check_Pixmap,
 				      NULL);
 		}
-		XtFree(cur_string);
+		if (cur_string)
+		        XtFree(cur_string);
         }
         XtVaSetValues(pub_rtp->tree,
                       XmNcolumn,2,

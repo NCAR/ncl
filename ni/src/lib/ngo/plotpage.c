@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.c,v 1.20 2000-06-29 01:44:26 dbrown Exp $
+ *      $Id: plotpage.c,v 1.21 2003-02-04 22:02:55 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -47,6 +47,7 @@ static NrmQuark QGenArray = NrmNULLQUARK;
 static NrmQuark QngPlotClass = NrmNULLQUARK;
 static NrmQuark Qgrid_number = NrmNULLQUARK;
 static NrmQuark Qcorners = NrmNULLQUARK;
+static NrmQuark Qcoordinates = NrmNULLQUARK;
 
 static void
 XRegionCB(
@@ -64,6 +65,7 @@ static NhlBoolean IsGribVar
 	if (Qgrid_number == NrmNULLQUARK) {
 		Qgrid_number = NrmStringToQuark("grid_number");
 		Qcorners = NrmStringToQuark("corners");
+		Qcoordinates =  NrmStringToQuark("coordinates");
 	}
 
 	for (i = 0; i < vinfo->n_atts; i++) {
@@ -424,16 +426,23 @@ void GetGribDimGrids
 {
 	NclExtValueRec *val;
 	int grid_num;
-	char buf[32];
+	char buf[80];
+	char *cp;
 
-	val = NgNclReadAtt(vdata->qfile,vdata->qvar,NrmNULLQUARK,Qgrid_number);
-	grid_num = (int) NgNumericValToDouble(val,0);
+	*qgridlon = NrmNULLQUARK;
+	*qgridlat = NrmNULLQUARK;
+
+	val = NgNclReadAtt(vdata->qfile,vdata->qvar,NrmNULLQUARK,Qcoordinates);
+	if (! val)
+		return;
+	sprintf(buf,"%s",NrmQuarkToString(*((NrmQuark*) val->value)));
 	NclFreeExtValue(val);
+	cp = strchr(buf,' ');
+	*cp = '\0';
+	cp++;
 
-	sprintf(buf,"gridlat_%d",grid_num);
 	*qgridlat = NrmStringToQuark(buf);
-	sprintf(buf,"gridlon_%d",grid_num);
-	*qgridlon = NrmStringToQuark(buf);
+	*qgridlon = NrmStringToQuark(cp);
 	return;
 }
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.30 2000-03-21 02:35:30 dbrown Exp $
+ *      $Id: addfile.c,v 1.31 2003-02-04 22:02:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -281,7 +281,7 @@ static NhlBoolean RecognizedType
         NhlBoolean *writable
 )
 {
-	char *f_extens[] = { "cdf", "nc", "hdf", "hd", "grb", "ccm" };
+	char *f_extens[] = { "cdf", "nc", "hdf", "hd", "grb", "ccm", "hdfeos" };
 	char *dot_loc;
         int i;
 
