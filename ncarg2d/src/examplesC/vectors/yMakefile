@@ -1,8 +1,8 @@
 #
-#	$Id: yMakefile,v 1.1 1994-05-13 14:29:39 haley Exp $
+#	$Id: yMakefile,v 1.2 1994-05-16 15:48:13 haley Exp $
 #
 
-CSRCS = c_tvelvc.c c_vvex02.c
+CSRCS = c_tvelvc.c
 
 GENERIC_SRCS = $(CSRCS)
 
