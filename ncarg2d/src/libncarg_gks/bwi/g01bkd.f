@@ -1,5 +1,5 @@
 C
-C	$Id: g01bkd.f,v 1.2 1993-01-09 02:05:36 fred Exp $
+C	$Id: g01bkd.f,v 1.3 1993-03-19 01:28:21 fred Exp $
 C
       BLOCK DATA G01BKD
 C
@@ -116,9 +116,11 @@ C  FILL AREA INTERIOR STYLE, STYLE INDEX, COLOR INDEX.
 C
       DATA  MDFAIS/0/,  MDFASI/1/,  MDFACI/1/
 C
-C  ASF values.
+C  ASF values (these are defaulted to individual).  Note that the
+C  CGM values for bundled and individual are reversed from the GKS
+C  Fortran binding.
 C
-      DATA  MDASF/13*1/
+      DATA  MDASF/13*0/
 C
 C  Pointers into attribute structure, VALCHG variables.
 C

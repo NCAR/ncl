@@ -1,5 +1,5 @@
 C
-C	$Id: gupasf.f,v 1.2 1993-01-09 02:07:43 fred Exp $
+C	$Id: gupasf.f,v 1.3 1993-03-19 01:28:25 fred Exp $
 C
         SUBROUTINE GUPASF
 C
@@ -13,10 +13,12 @@ C
       INTEGER  I
 C
 C  Compute change flags for each GKS ASF;  compute aggregate.
+C  The CGM values for ASFs are reversed from those in GKS, so
+C  we perform that complement here.
 C
       ANYASF = .FALSE.
       DO 435 I=1,NGKASF
-        MRASF(I) = ID(I)
+        MRASF(I) = 1-ID(I)
         ASFCHG(I) = MRASF(I).NE.MSASF(I)
         ANYASF = ANYASF .OR. ASFCHG(I)
   435 CONTINUE

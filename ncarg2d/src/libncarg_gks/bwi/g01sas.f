@@ -1,5 +1,5 @@
 C
-C	$Id: g01sas.f,v 1.2 1993-01-09 02:06:40 fred Exp $
+C	$Id: g01sas.f,v 1.3 1993-03-19 01:28:23 fred Exp $
 C
       SUBROUTINE G01SAS (IPRIM, RERR)
 C
@@ -49,14 +49,19 @@ C
             ASPAIR(2)   = MRASF(MIX)
             CALL GPUTPR (ASPAIR, MEFW, 2, RERR)
             IF (RERR .NE. 0)  RETURN
-C
-C  Copy requested (GKS) ASF to sent, clear change flag.
-C
-            MSASF(MIX)  = MRASF(MIX)
-            ASFCHG(MIX) = .FALSE.
           END IF
         END IF
  20   CONTINUE
+C
+C  Copy requested (GKS) ASF to sent, clear change flag.
+C
+      DO 40 IX=1,NCGASF
+        MIX = MASMAP(IX)
+        IF (MIX .GT. 0) THEN
+          MSASF(MIX)  = MRASF(MIX)
+          ASFCHG(MIX) = .FALSE.
+        ENDIF
+   40 CONTINUE
 C
 C  Clear aggregate ASF change indicator.
 C
