@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.h,v 1.15 1998-03-12 00:57:56 dbrown Exp $
+ *      $Id: TickMark.h,v 1.16 1998-06-24 19:47:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -112,6 +112,7 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 * XAxis Bottom Resources only used for explicit mode
 */
 #define NhlNtmXBValues		"tmXBValues"
+#define NhlNtmXBMinorValues		"tmXBMinorValues"
 #define NhlNtmXBLabels		"tmXBLabels"
 
 /*
@@ -171,6 +172,7 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 * XAxis Top Resources only used for explicit mode
 */
 #define NhlNtmXTValues		"tmXTValues"
+#define NhlNtmXTMinorValues		"tmXTMinorValues"
 #define NhlNtmXTLabels		"tmXTLabels"
 
 /*
@@ -267,6 +269,7 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 * XAxis Left Resources only used for explicit mode
 */
 #define NhlNtmYLValues		"tmYLValues"
+#define NhlNtmYLMinorValues		"tmYLMinorValues"
 #define NhlNtmYLLabels		"tmYLLabels"
 
 /*
@@ -325,6 +328,7 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 * XAxis Right Resources only used for explicit mode
 */
 #define NhlNtmYRValues		"tmYRValues"
+#define NhlNtmYRMinorValues		"tmYRMinorValues"
 #define NhlNtmYRLabels		"tmYRLabels"
 
 /*
@@ -444,6 +448,7 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlCtmXBTickSpacingF	"TmXBTickSpacingF"
 #define NhlCtmXBSpacingType	"TmXBSpacingType"
 #define NhlCtmXBValues		"TmXBValues"
+#define NhlCtmXBMinorValues		"TmXBMinorValues"
 #define NhlCtmXBLabels		"TmXBLabels"
 #define NhlCtmXBLabelDeltaF	"TmXBLabelDeltaF"
 #define NhlCtmXTLabelStride	"TmXTLabelStride"
@@ -455,6 +460,7 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlCtmXTTickSpacingF	"TmXTTickSpacingF"
 #define NhlCtmXTSpacingType	"TmXTSpacingType"
 #define NhlCtmXTValues		"TmXTValues"
+#define NhlCtmXTMinorValues		"TmXTMinorValues"
 #define NhlCtmXTLabels		"TmXTLabels"
 #define NhlCtmXTLabelDeltaF	"TmXLabelDeltaF"
 #define NhlCtmYUseLeft		"TmYUseLeft"
@@ -483,6 +489,7 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlCtmYLTickSpacingF	"TmYLTickSpacingF"
 #define NhlCtmYLSpacingType	"TmYLSpacingType"
 #define NhlCtmYLValues		"TmYLValues"
+#define NhlCtmYLMinorValues		"TmYLMinorValues"
 #define NhlCtmYLLabels		"TmYLLabels"
 #define NhlCtmYLLabelDeltaF	"TmYLLabelDeltaF"
 #define NhlCtmYRLabelStride	"TmYRLabelStride"
@@ -494,6 +501,7 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlCtmYRTickSpacingF	"TmYRTickSpacingF"
 #define NhlCtmYRSpacingType	"TmYRSpacingType"
 #define NhlCtmYRValues		"TmYRValues"
+#define NhlCtmYRMinorValues		"TmYRMinorValues"
 #define NhlCtmYRLabels		"TmYRLabels"
 #define NhlCtmYRLabelDeltaF	"TmYRLabelDeltaF"
 

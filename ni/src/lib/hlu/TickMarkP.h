@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMarkP.h,v 1.14 1997-09-23 00:03:11 dbrown Exp $
+ *      $Id: TickMarkP.h,v 1.15 1998-06-24 19:47:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -82,6 +82,7 @@ typedef struct _NhlTickMarkLayerPart {
 	int		x_b_spacing_type;
 	NhlGenArray	x_b_irregular_points;
 	NhlGenArray	x_b_values;
+	NhlGenArray	x_b_minor_values;
 	NhlGenArray	x_b_labels;
 	float		x_b_major_thickness;
 	int		x_b_major_line_color;
@@ -118,6 +119,7 @@ typedef struct _NhlTickMarkLayerPart {
 	int		x_t_spacing_type;
 	NhlGenArray	x_t_irregular_points;
 	NhlGenArray	x_t_values;
+	NhlGenArray	x_t_minor_values;
 	NhlGenArray	x_t_labels;
 	float		x_t_major_thickness;
 	int		x_t_major_line_color;
@@ -189,6 +191,7 @@ typedef struct _NhlTickMarkLayerPart {
 	int		y_l_spacing_type;
 	NhlGenArray	y_l_irregular_points;
 	NhlGenArray	y_l_values;
+	NhlGenArray	y_l_minor_values;
 	NhlGenArray	y_l_labels;
 	float		y_l_major_thickness;
 	int		y_l_major_line_color;
@@ -225,6 +228,7 @@ typedef struct _NhlTickMarkLayerPart {
 	int		y_r_spacing_type;
 	NhlGenArray	y_r_irregular_points;
 	NhlGenArray	y_r_values;
+	NhlGenArray	y_r_minor_values;
 	NhlGenArray	y_r_labels;
 	float		y_r_major_thickness;
 	int		y_r_major_line_color;
