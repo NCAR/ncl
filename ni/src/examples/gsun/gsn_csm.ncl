@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.7 1999-04-28 04:28:17 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.8 1999-05-18 19:17:02 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -542,11 +542,29 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
     def_vpwf  = wharray(wh_ind(0))    ; default width for plot
     def_vphf  = def_vpwf              ; default height for plot
                                           ; the size of the X/Y axis labels.
+
+    set_attr(res2,"vpHeightF",min((/lat_range/lon_range,1./)) * def_vphf)
+    set_attr(res2,"vpXF",(1. - res2@vpWidthF)/2.)
+    if(isatt(res2,"tiMainFontHeightF"))
+      main_font_height = res2@tiMainFontHeightF
+    else
+      main_font_height = 1.3*font_height
+    end if
+    if(isatt(res2,"tiXAxisFontHeightF"))
+      x_font_height = res2@tiXAxisFontHeightF
+    else
+      x_font_height = font_height
+    end if
+    if(isatt(res2,"tiYAxisFontHeightF"))
+      y_font_height = res2@tiYAxisFontHeightF
+    else
+      y_font_height = font_height
+    end if
                                    "transparent"/)) ; (default,ocean,land,
-        "tiXAxisFontHeightF" : font_height   ; X axis label size
-        "tiYAxisFontHeightF" : font_height   ; Y axis label size
-        "tiMainFontHeightF"  : 1.3*font_height  ; main title size
-        "tiMainFont"         : "helvetica-bold"     ; main title font
+        "tiXAxisFontHeightF" : x_font_height      ; X axis label size
+        "tiYAxisFontHeightF" : y_font_height      ; Y axis label size
+        "tiMainFontHeightF"  : main_font_height ; main title size
+        "tiMainFont"         : "helvetica-bold" ; main title font
 ; By default, mpOutlineOn is False, unless mpFillOn is set to False,
 ;
 ; Add the tick mark object as an annotation of the map object, so that
@@ -880,13 +898,31 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
 ; Check for type of polar plot desired.
 ;
     polar_type = get_polar_type(res2)
-                                       ; of the height of the viewport.
+
+    if(polar_type.eq."NH")
+      min_lat    =   0 
+      max_lat    =  90
+    if(isatt(res2,"tiMainFontHeightF"))
+      main_font_height = res2@tiMainFontHeightF
+    else
+      main_font_height = 2.*font_height
+    end if
+    if(isatt(res2,"tiXAxisFontHeightF"))
+      x_font_height = res2@tiXAxisFontHeightF
+    else
+      x_font_height = 1.2*font_height
+    end if
+    if(isatt(res2,"tiYAxisFontHeightF"))
+      y_font_height = res2@tiYAxisFontHeightF
+    else
+      y_font_height = 1.2*font_height
+    end if
       center_lat = -90
-        "tiXAxisFontHeightF"   : 1.2*font_height      ; x axis font size
-        "tiYAxisFontHeightF"   : 1.2*font_height      ; y axis font size
-        "tiMainOffsetYF"       : main_offset          ; main title offset
-        "tiMainFont"           : "helvetica-bold"     ; main title font
-        "tiMainFontHeightF"    : 2. * font_height     ; main title size
+        "tiXAxisFontHeightF"   : x_font_height      ; x axis font size
+        "tiYAxisFontHeightF"   : y_font_height      ; y axis font size
+        "tiMainOffsetYF"       : main_offset        ; main title offset
+        "tiMainFont"           : "helvetica-bold"   ; main title font
+        "tiMainFontHeightF"    : main_font_height   ; main title size
     width  = get_res_value(res2,"vpWidthF",0.62)
     xpos   = get_res_value(res2,"vpXF",0.2)
 ;
@@ -1142,8 +1178,9 @@ function gsn_csm_map(wks:graphic,res:logical)
 local i, attnames, contour_object, map_object, res, cn_res_index, \
 mp_res_index, lbar_pos, lbar_zone, lbar_on, calldraw, callframe, \
 main_offset, addcyclic, datanew, res2, cnres, mapres, \
-vpwf, vphf, font_height, levels, colors, zonal_zone, lbar_zone, \
-infolabel_on, infolabel_zone
+vpwf, vphf, font_height, levels, colors, zonal_zone, \
+labelbar_res, infolabel_on, infolabel_zone, \
+lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just
     subres = get_res_eq(res2,(/"tx","am"/))  ; Get textitem resources
     subres                  = True
     set_attr(subres,"txFontHeightF",0.8*font_height)
@@ -1155,6 +1192,7 @@ infolabel_on, infolabel_zone
     res2          = resources ; Copy of resources
                   subres)
     mapres        = True      ; Will hold map resources
+    labelbar_res  = False
     cnres         = True      ; Will hold contour resources
     polar_nh      = False     ; Northern hemisphere
     polar_sh      = False     ; Southern hemisphere
@@ -1303,17 +1341,29 @@ end
              chartostring(res(0:1)).eq."vp")
              mapres@$attnames$  = res2@$attnames$
           else 
-             cnres@$attnames$  = res2@$attnames$
-             if(attnames.eq."cnFillOn".and.res2@$attnames$)
-               lbar_on = True   ; Turn on a labelbar
-               cnres@cnLineLabelsOn  = False
-             end if
+            if(chartostring(res(0:1)).eq."lb")
+                labelbar_res = True
+                num_labelbar_res = 1   ; Only 1 labelbar resource.
+            else
+              cnres@$attnames$  = res2@$attnames$
+              if(attnames.eq."cnFillOn".and.res2@$attnames$)
+                lbar_on = True   ; Turn on a labelbar
+                cnres@cnLineLabelsOn  = False
+              end if
+            end if
           end if
         else
+          lb_res_index = ind(chartostring(res(:,0:1)).eq."lb")
+          if(.not.all(ismissing(lb_res_index))) 
+            labelbar_res = True
+            num_labelbar_res = 2   ; Indicates there are two or more 
+                                   ; labelbar resources set.
+          end if
           mp_res_index = ind(chartostring(res(:,0:1)).eq."mp".or.\
                              chartostring(res(:,0:1)).eq."ti".or.\
                              chartostring(res(:,0:1)).eq."vp")
           cn_res_index = ind(chartostring(res(:,0:1)).ne."mp".and.\
+                             chartostring(res(:,0:1)).ne."lb".and.\
                              chartostring(res(:,0:1)).ne."ti".and.\
                              chartostring(res(:,0:1)).ne."vp")
           if(.not.all(ismissing(mp_res_index)))
@@ -1325,7 +1375,9 @@ end
             do i = 0,dimsizes(cn_res_index)-1
               cnres@$attnames(cn_res_index(i))$ = res2@$attnames(cn_res_index(i))$
             end do
-            if(isatt(cnres,"cnFillOn").and.cnres@cnFillOn)
+            if((isatt(cnres,"cnFillOn").and.cnres@cnFillOn).and.\
+                (.not.isatt(cnres,"lbLabelBarOn").or.\
+                isatt(cnres,"lbLabelBarOn").and.cnres@lbLabelBarOn))
               if(.not.(isatt(cnres,"cnMonoFillColor").and.cnres@cnMonoFillColor))
                 cnres@cnLineLabelsOn  = False
                 lbar_on = True   ; Turn on a labelbar
@@ -1365,12 +1417,30 @@ end
 ; Check for subtitles at top and add to mpres if exist.
 
     set_subtitles_res(res2,mpres)
-                                       ; of the height of the viewport.
+;
+; Tickmarks.
+;
+    mpres@gsnTickMarksOn = get_res_value(res2,"gsnTickMarksOn",True)
+    if(isatt(res2,"tiMainFontHeightF"))
+      main_font_height = res2@tiMainFontHeightF
+    else
+      main_font_height = 2.*font_height
+    end if
+    if(isatt(res2,"tiXAxisFontHeightF"))
+      x_font_height = res2@tiXAxisFontHeightF
+    else
+      x_font_height = 1.2*font_height
+    end if
+    if(isatt(res2,"tiYAxisFontHeightF"))
+      y_font_height = res2@tiYAxisFontHeightF
+    else
+      y_font_height = 1.2*font_height
+    end if
     if(isatt(res2,"gsnPolarLabelSpacing"))
-        "tiXAxisFontHeightF"   : 1.2*font_height      ; x axis font size
-        "tiYAxisFontHeightF"   : 1.2*font_height      ; y axis font size
-        "tiMainFont"           : "helvetica-bold"     ; main title font
-        "tiMainFontHeightF"    : 2. * font_height     ; main title size
+        "tiXAxisFontHeightF"   : x_font_height      ; x axis font size
+        "tiYAxisFontHeightF"   : y_font_height      ; y axis font size
+        "tiMainFont"           : "helvetica-bold"   ; main title font
+        "tiMainFontHeightF"    : main_font_height   ; main title size
     end if
 
     if(isatt(res2,"gsnPolarLabelDistance"))
@@ -1383,6 +1453,30 @@ end
         "cnLevels"     : levels
         "cnFillColors" : colors
       end getvalues
+
+; Generate a labelbar from the above information.
+; If lbOrientation has been set to "vertical", then we have to position
+; the labelbar differently.  The default is "horizontal".
+
+      lbar_orient = "horizontal"
+      lbar_side   = "bottom"
+      lbar_height = 0.20 * vphf
+      lbar_width  = 0.75 * vpwf
+      lbar_just   = "bottomcenter"
+
+      if(labelbar_res) then
+        if(isatt(res2,"lbOrientation").and.\
+          (res2@lbOrientation.eq."vertical".or.\
+           res2@lbOrientation.eq."VERTICAL".or.\
+           res2@lbOrientation.eq."Vertical"))
+          lbar_orient = "vertical"
+          lbar_side   = "right"
+          lbar_just   = "centerright"
+          lbar_height = vphf
+          lbar_width  = 0.15 * vpwf
+        end if
+      end if
+
 ;
 ; Generate a labelbar from the above information.
 ;
@@ -1395,25 +1489,47 @@ end
         "lbLabelFontHeightF": font_height
         "lbLabelStrings"    : levels
         "lbMonoFillPattern" : True
-        "lbOrientation"     : "Horizontal"
+        "lbOrientation"     : lbar_orient
         "lbPerimOn"         : False
-        "vpHeightF"         : 0.20 * vphf
-        "vpWidthF"          : 0.75 * vpwf
+        "vpHeightF"         : lbar_height
+        "vpWidthF"          : lbar_width
       end create
+
+; Check to see if any labelbar resources have been set and set them.
+
+      if(labelbar_res) then
+        if(num_labelbar_res.eq.1) then
+          setvalues labelbar_object
+            attnames : res2@$attnames$
+          end setvalues
+        else
+          lbres = True
+          do i = 0,dimsizes(lb_res_index)-1
+            lbres@$attnames(lb_res_index(i))$ = res2@$attnames(lb_res_index(i))$
+          end do
+          attsetvalues(labelbar_object,lbres)
+        end if
+      end if
+
 ; 
 ; Add labelbar as an annotation of the contour plot.
 ;
       anno = NhlAddAnnotation(contour_object,labelbar_object)
-      if(lbar_zone.eq.2)
-        lbar_pos = 0.06
+      if(lbar_orient.eq."vertical")
+        lbar_pos = 0.04
       else
-        lbar_pos = 0.0
+        if(lbar_zone.eq.2)
+          lbar_pos = 0.06
+        else
+          lbar_pos = 0.0
+        end if
       end if
+
       setvalues anno
         "amZone"          : lbar_zone      ; Just outside plot area
-        "amSide"          : "bottom"       ; Labelbar on bottom.
+        "amSide"          : lbar_side      ; Labelbar on bottom.
         "amParallelPosF"  : 0.5            ; 0.5 is center of plot
-        "amJust"          : "bottomcenter" ; Center it about the center
+        "amJust"          : lbar_just      ; Center it about the center
         "amResizeNotify"  : True           ; Resize labelbar if map resized.
         "amOrthogonalPosF": lbar_pos       ; Move away from bottom edge
       end setvalues
@@ -1473,6 +1589,7 @@ local i, attnames, contour_object, labelbar_object, xy_object, map_object, \
 cn_res_index, mp_res_index, calldraw, callframe, lbar_on, zonal_mean_plot,\
 min_lat, max_lat, addcyclic, datanew, res, res2, \
 labelbar_res, xy_res, mapres, cnres, levels, colors, \
+    cnres@gsnFrame  = False
 map_vpwf, map_vphf, vpwf, vphf
     mpres@gsnFrame = False
 
@@ -1673,7 +1790,7 @@ function gsn_csm_contour_map_ce(wks:graphic,data[*][*]:numeric,\
           else 
             if(chartostring(res(0:1)).eq."lb")
                 labelbar_res = True
-                num_labelbar_res = 1   ; Only 1 labelbarresource.
+                num_labelbar_res = 1   ; Only 1 labelbar resource.
             else
               cnres@$attnames$ = res2@$attnames$
               if(attnames.eq."cnFillOn".and.res2@$attnames$)
@@ -1774,10 +1891,28 @@ function gsn_csm_contour_map_ce(wks:graphic,data[*][*]:numeric,\
       mpres@gsnTickMarksOn = get_res_value(res2,"gsnTickMarksOn",True)
     end if
 
+; Check for subtitles at top and add to mpres if exist.
+
+    set_subtitles_res(res2,mpres)
+    if(isatt(res2,"tiMainFontHeightF"))
+      main_font_height = res2@tiMainFontHeightF
+    else
+      main_font_height = 1.3*font_height
+    end if
+    if(isatt(res2,"tiXAxisFontHeightF"))
+      x_font_height = res2@tiXAxisFontHeightF
+    else
+      x_font_height = font_height
+    end if
+    if(isatt(res2,"tiYAxisFontHeightF"))
+      y_font_height = res2@tiYAxisFontHeightF
+    else
+      y_font_height = font_height
+    end if
 ; or mpFillOn is set to False, then it is set back to True.
-        "tiXAxisFontHeightF"   : font_height   ; X axis label size
-        "tiYAxisFontHeightF"   : font_height   ; Y axis label size
-        "tiMainFontHeightF"    : 1.3*font_height  ; main title size
+        "tiXAxisFontHeightF"   : x_font_height     ; X axis label size
+        "tiYAxisFontHeightF"   : y_font_height     ; Y axis label size
+;
     if(check_attr(res2,"cnFillOn",True,False).or.\
        check_attr(res2,"mpFillOn",False,False))
     setvalues contour_object
@@ -1797,9 +1932,12 @@ function gsn_csm_contour_map_ce(wks:graphic,data[*][*]:numeric,\
             set_attr(mpres,     "vpYF",0.90)
 ; 
 ; Determine what the default labelbar width and height should be depending
-; on shape of plot.  For example, if the plot is square, then make the
-; labelbar the same width as the plot.  If the plot is 1:2, then make the
-; labelbar .75 * width of the plot.
+; on shape of plot (this is for a horizontal labelbar).  For example, if
+; the plot is square, then make the labelbar the same width as the plot.
+; If the plot is 1:2, then make the labelbar .75 * width of the plot.
+;
+; For a vertical labelbar, make the height the same as the height of the
+; plot.
 ;
       ratio1 = vpwf/vphf
       ratio2 = vphf/vpwf
@@ -1818,7 +1956,28 @@ function gsn_csm_contour_map_ce(wks:graphic,data[*][*]:numeric,\
       end getvalues
 
 ; Generate a labelbar from the above information.
+; If lbOrientation has been set to "vertical", then we have to position
+; the labelbar differently.  The default is "horizontal".
 ;
+      lbar_orient = "horizontal"
+      lbar_side   = "bottom"
+      lbar_height = 0.30 * vphf
+      lbar_width  = def_lvpwf * vpwf
+      lbar_just   = "bottomcenter"
+
+      if(labelbar_res) then
+        if(isatt(res2,"lbOrientation").and.\
+          (res2@lbOrientation.eq."vertical".or.\
+           res2@lbOrientation.eq."VERTICAL".or.\
+           res2@lbOrientation.eq."Vertical"))
+          lbar_orient = "vertical"
+          lbar_side   = "right"
+          lbar_just   = "centerright"
+          lbar_height = vphf
+          lbar_width  = 0.20 * vpwf
+        end if
+      end if
+
       labelbar_object = create "labelbar" labelBarClass  wks
         "lbAutoManage"      : False
         "lbBoxCount"        : dimsizes(colors)
@@ -1828,14 +1987,13 @@ function gsn_csm_contour_map_ce(wks:graphic,data[*][*]:numeric,\
         "lbLabelFontHeightF": xbfontf
         "lbLabelStrings"    : levels
         "lbMonoFillPattern" : True
-        "lbOrientation"     :"Horizontal"
+        "lbOrientation"     : lbar_orient
         "lbPerimOn"         : False
-        "vpHeightF"         : 0.30 * vphf
-        "vpWidthF"          : def_lvpwf * vpwf
+        "vpHeightF"         : lbar_height
+        "vpWidthF"          : lbar_width
       end create
 
 ; Check to see if any labelbar resources have been set and set them.
-
       if(labelbar_res) then
         if(num_labelbar_res.eq.1) then
           setvalues labelbar_object
@@ -1853,16 +2011,22 @@ function gsn_csm_contour_map_ce(wks:graphic,data[*][*]:numeric,\
 ; Add labelbar as an annotation of the contour plot.
 
       anno = NhlAddAnnotation(contour_object,labelbar_object)
+
       if(lbar_zone.eq.2)
-        lbar_pos = 0.06
+        if(lbar_orient.eq."vertical")
+          lbar_pos = 0.03
+        else
+          lbar_pos = 0.06
+        end if
       else
         lbar_pos = 0.0
       end if
+
       setvalues anno
         "amZone"          : lbar_zone      ; Just outside plot area
-        "amSide"          : "bottom"       ; Labelbar on bottom.
+        "amSide"          : lbar_side      ; Labelbar location
         "amParallelPosF"  : 0.5            ; 0.5 is center of plot
-        "amJust"          : "bottomcenter" ; Center it about the center
+        "amJust"          : lbar_just      ; Center it about the center
         "amResizeNotify"  : True           ; Resize labelbar if map resized.
         "amOrthogonalPosF": lbar_pos       ; Move away from bottom edge
       end setvalues
