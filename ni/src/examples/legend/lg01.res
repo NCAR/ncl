@@ -94,7 +94,7 @@
 ! lg01.lg01Work.Legend.lgTitleOffsetF         : .03
 !
 !       NDC extent allocated for the title when AutoManage is on.
-! lg01.lg01Work.Legend.lgMaxTitleExtentF      : .15
+! lg01.lg01Work.Legend.lgTitleExtentF      : .15
 !
 !       Rotation angle of the title
 ! lg01.lg01Work.Legend.lgTitleAngleF          : 0.
