@@ -1,5 +1,5 @@
 /*
- *      $Id: datavargrid.c,v 1.12 2000-01-27 17:44:34 dbrown Exp $
+ *      $Id: datavargrid.c,v 1.13 2000-02-08 01:29:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1410,6 +1410,14 @@ EditCB
                                   NULL);
 		    if (! dvp->text_dropped) {
 			    XmTextSetInsertionPosition(dvp->text,0);
+			    if (dvp->edit_save_string)
+				    XmStringFree(dvp->edit_save_string);
+			    XtVaGetValues
+				    (pub->grid,
+				     XmNcolumnPtr,colptr,
+				     XmNrowPtr,rowptr,
+				     XmNcellString,&dvp->edit_save_string,
+				     NULL);
 		    }
 		    else {
 			    char *cur_string;
@@ -1511,24 +1519,27 @@ EditCB
 			NgVarData vdata = 
 				dvp->public.plotdata[dvp->data_ix].vdata;
 			
-			if (! (vdata && vdata->qvar))
-				goto ret;
-			/*
-			 * this is a kludgy trick to force an update
-			 */
-			dvp->shaper->vinfo = NULL;
-			dvp->shaper->start = NULL;
-			dvp->shaper->finish = NULL;
-			dvp->shaper->stride = NULL;
+			if (vdata && vdata->qvar) {
+				/*
+				 * this is a kludgy trick to force an update
+				 */
+				dvp->shaper->vinfo = NULL;
+				dvp->shaper->start = NULL;
+				dvp->shaper->finish = NULL;
+				dvp->shaper->stride = NULL;
 
-			NgUpdateShaper(dvp->shaper,vdata->qfile,vdata->qvar,
-				       vdata->start,
-				       vdata->finish,vdata->stride);
+				NgUpdateShaper(dvp->shaper,
+					       vdata->qfile,vdata->qvar,
+					       vdata->start,
+					       vdata->finish,vdata->stride);
+			}
 		}
 	}
- ret:
+
 	if (save_text)
 		XtFree(save_text);
+	if (new_string)
+		XtFree(new_string);
 
 	return;
 }

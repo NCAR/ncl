@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.c,v 1.12 2000-01-20 03:38:24 dbrown Exp $
+ *      $Id: plotpage.c,v 1.13 2000-02-08 01:29:57 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -37,7 +37,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/View.h>
 #include <ncarg/hlu/WorkstationI.h>
-
+#include <ncarg/hlu/DataItem.h>
 
 static NrmQuark QString = NrmNULLQUARK;
 static NrmQuark QGenArray = NrmNULLQUARK;
@@ -1088,6 +1088,7 @@ static NhlBoolean CreateGraphic
 	NhlString	parent = NULL;
 	int		hlu_id;
 	NhlBoolean	required_resource_missing = False;
+	NhlString 	pstyle_name = NULL;
 
 	count = 0;
 	for (i = 0; i < dprof->n_dataitems; i++) {
@@ -1184,7 +1185,6 @@ static NhlBoolean CreateGraphic
 	setresdata[0] = (NhlPointer)resdata;
 
 	if (rec->app_id) {
-		NhlString pstyle_name;
 		if (resdata->res_count >= resdata->res_alloced) {
 			resdata = NgReallocResData(resdata,resdata->res_count);
 			if (! resdata)
@@ -1203,8 +1203,8 @@ static NhlBoolean CreateGraphic
 	if (NhlClassIsSubclass(obj_class,NhlviewClass) &&
 	    wk_id != NhlNULLOBJID ) 
 		parent = NgNclGetHLURef(rec->go->go.nclstate,wk_id);
-	else 
-		parent = NULL;
+	else
+		parent = pstyle_name;
 
 	sprintf(ncl_name,"%s_%s",
 		NrmQuarkToString(page->qvar),
@@ -1342,12 +1342,11 @@ static NhlBoolean UpdateGraphic
 		vdata = ditem->vdata;
 		if (! vdata->cflags  && ! ditem->save_to_compare) {
 			if (! (ditem->item_type == _NgCOORDVAR ||
-			       ditem->item_type == _NgMISSINGVAL)) {
+			       ditem->item_type == _NgMISSINGVAL))
 				continue;
-				if (! (ditem->ref_ditem &&
-					ditem->ref_ditem->vdata->cflags))
-					continue;
-			}
+			if (! (ditem->ref_ditem &&
+			       ditem->ref_ditem->vdata->cflags))
+				continue;
 		}
 		
 		if (count >= resdata->res_alloced) {
@@ -1420,6 +1419,37 @@ static NhlBoolean UpdateGraphic
 		 setresproc_count,&setresproc[rix],&setresdata[rix]);
 	if (ret < NhlWARNING)
 		return False;
+
+/*
+ * there's got to be a better way, but if it's a data object we're got
+ * to find the plot it belongs to and set the draw_req flag. temporary I hope.
+ */
+	if (NhlClassIsSubclass(dprof->obj_classes[obj_ix],NhldataItemClass)) {
+		for (i = 0; i < dprof->n_dataitems; i++) {
+			int j;
+			NgDataItem ditem = dprof->ditems[i];
+			if (! (ditem->vdata && ditem->vdata->expr_val))
+				continue;
+			if (strcmp(ncl_name,ditem->vdata->expr_val))
+				continue;
+			for (j = 0; j < dprof->obj_count; j++) {
+				if (dprof->qobjects[j] == ditem->qhlu_name)
+					break;
+			}
+			if (j == dprof->obj_count)
+				continue;
+			if (NgViewOn(rec->hlu_ids[j])) {
+				int top_id = _NhlTopLevelView(rec->hlu_ids[j]);
+				NhlLayer tl = _NhlGetLayer(top_id);
+				if (tl) {
+					NgHluData hdata = 
+						(NgHluData) tl->base.gui_data2;
+					if (hdata)
+						hdata->draw_req = True;
+				}
+			}
+		}
+	}
 
 	for (i = 0; i < dprof->n_dataitems; i++) {
 		NgDataItem ditem = dprof->ditems[i];
@@ -1684,7 +1714,6 @@ CreateInstance
 	}
 
 	return ret;
-
 /*
  * No explicit draw on create because it is handled automatically by
  * the ViewTree (mwin) create CB.
@@ -1714,6 +1743,7 @@ UpdateInstance
 		resdata->res_count = 0;
 		if (! UpdateGraphic(page,wk_id,i,resdata))
 			;
+			
 		if (NgViewOn(rec->hlu_ids[i]) &&
 			(do_draw || resdata->res_count)) {
 			int top_id = _NhlTopLevelView(rec->hlu_ids[i]);
@@ -1727,7 +1757,7 @@ UpdateInstance
 		}
 	}
 	NgFreeResData(resdata);
-
+	
 	/*
 	 * Controlling the vpOn resource at the plot page level presents a
 	 * special challenge. Sometimes the plot update functions have to 
@@ -2279,7 +2309,7 @@ static NhlPointer PublicPlotPageData (
 }
 static void SetValuesCB 
 (
-	Widget		w,
+	Widget		cbw,
 	XtPointer	udata,
 	XtPointer	cb_data
 )
