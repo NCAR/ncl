@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.12 1993-01-08 16:19:14 haley Exp $
+#	$Id: ncargcc.csh,v 1.13 1993-01-13 16:50:20 haley Exp $
 #
 
 set system="SED_SYSTEM_INCLUDE"
@@ -28,9 +28,12 @@ else
   set libncarg    =       "$l/libncarg.a"
 endif
 
-set libgks	= "$l/libncarg_gksC.a $l/libncarg_gks.a"
-set liblocal	= "$l/libncarg_loc.a"
+set libgks      = "$l/libncarg_gksC.a $l/libncarg_gks.a"
+set liblocal    = "$l/libncarg_loc.a"
+set libncarg_c  = "$l/libncarg_c.a"
 set libcbind    = "$l/libncargC.a"
+
+set lib_extern = "-lX11"
 
 if ($system == "Cray2" || $system == "Cray") then
   set f77libs     =       "-L/lib -lf -lio -lm -lp -lsci -lu -lc"
@@ -143,7 +146,7 @@ foreach arg ($argv)
 
 end
 
-set newargv = "$newargv $ctrans_libs $libs $libcbind $libncarg $libgks $liblocal $f77libs"
+set newargv = "$newargv $ctrans_libs $libs $libcbind $libncarg $libgks $libncarg_c $liblocal $f77libs $lib_extern"
 
 echo $newargv
 eval $newargv

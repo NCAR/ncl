@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargf77.csh,v 1.3 1992-09-29 15:31:41 ncargd Exp $
+#	$Id: ncargf77.csh,v 1.4 1993-01-13 16:50:23 haley Exp $
 #
 
 set system="SED_SYSTEM_INCLUDE"
@@ -28,8 +28,11 @@ if ("$system" == "Ardent" || "$system" == "AIX370") then
 else
   set libncarg  =  "$l/libncarg.a"
 endif
-set libgks   =  "$l/libncarg_gks.a"
-set liblocal =  "$l/libncarg_loc.a"
+set libgks     = "$l/libncarg_gks.a"
+set liblocal   = "$l/libncarg_loc.a"
+set libncarg_c = "$l/libncarg_c.a"
+
+set lib_extern = "-lX11 -lm"
 
 set smooth = "$l/libdashsmth.o"
 set quick = "$l/libdashline.o $l/libconrcqck.o $l/libconraq.o"
@@ -132,7 +135,7 @@ foreach arg ($argv)
   endsw
 end
 
-set newargv = "$newargv $ctrans_libs $libs $libncarg $libgks $liblocal"
+set newargv = "$newargv $ctrans_libs $libs $libncarg $libgks $libncarg_c $liblocal $lib_extern"
 
 echo $newargv
 eval $newargv

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargf77.cry,v 1.3 1992-09-22 14:40:59 ncargd Exp $
+#	$Id: ncargf77.cry,v 1.4 1993-01-13 16:50:21 haley Exp $
 #
 
 set system="SED_SYSTEM_INCLUDE"
@@ -19,9 +19,11 @@ set ctrans_libs = ""
 
 # set up default libraries
 
-set libncarg	=	"-lncarg"
-set libgks	=	"-lncarg_gks"
-set liblocal	=	"-lncarg_loc"
+set libncarg   = "-lncarg"
+set libgks     = "-lncarg_gks"
+set liblocal   = "-lncarg_loc"
+set libncarg_c = "-lncarg_c"
+set lib_extern = "-lX11 -lm"
 
 set smooth = "$l/libdashsmth.o"
 set quick = "$l/libdashline.o $l/libconrcqck.o $l/libconraq.o"
@@ -124,7 +126,7 @@ foreach arg ($argv)
 	endsw
 end
 
-set newargv = "$newargv -L$l $ctrans_libs $libs $libncarg $libgks $liblocal"
+set newargv = "$newargv -L$l $ctrans_libs $libs $libncarg $libgks $libncarg_c $liblocal $lib_extern"
 
 echo $newargv
 eval $newargv
