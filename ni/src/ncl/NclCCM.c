@@ -1251,37 +1251,37 @@ int	wr_status;
 		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("mfstrt"),1,_NclNameToTypeClass(NrmStringToQuark("integer")),&therec->header.iheader.MFSTRT,STATIC,SCALAR_DIM_NUMBER);
 
 
-		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("ozone_mss"),80,_NclNameToTypeClass(NrmStringToQuark("char")),&therec->header.cheader.LNHSTVO,STATIC,CHAR_DIM_NUMBER);
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("ozone_mss"),80,_NclNameToTypeClass(NrmStringToQuark("character")),&therec->header.cheader.LNHSTVO,STATIC,CHAR_DIM_NUMBER);
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("seq"),CcmVarName2(therec->header.cheader.LSHSTVO));
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("time"),CcmVarName(therec->header.cheader.LTHSTVO));
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("date"),CcmVarName(therec->header.cheader.LDHSTVO));
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("MSS pathname of ozone boundary data"));
 
-		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("tibnd_mss"),80,_NclNameToTypeClass(NrmStringToQuark("char")),&therec->header.cheader.LNHSTT,STATIC,CHAR_DIM_NUMBER);
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("tibnd_mss"),80,_NclNameToTypeClass(NrmStringToQuark("character")),&therec->header.cheader.LNHSTT,STATIC,CHAR_DIM_NUMBER);
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("seq"),CcmVarName2(therec->header.cheader.LSHSTT));
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("time"),CcmVarName(therec->header.cheader.LTHSTT));
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("date"),CcmVarName(therec->header.cheader.LDHSTT));
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("MSS pathname of time-invariant boundary data"));
 
-		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("sst_mss"),80,_NclNameToTypeClass(NrmStringToQuark("char")),&therec->header.cheader.LNHSTVS,STATIC,CHAR_DIM_NUMBER);
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("sst_mss"),80,_NclNameToTypeClass(NrmStringToQuark("character")),&therec->header.cheader.LNHSTVS,STATIC,CHAR_DIM_NUMBER);
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("seq"),CcmVarName2(therec->header.cheader.LSHSTVS));
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("time"),CcmVarName(therec->header.cheader.LTHSTVS));
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("date"),CcmVarName(therec->header.cheader.LDHSTVS));
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("MSS pathname of SST boundary data"));
 
-		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("init_mss"),80,_NclNameToTypeClass(NrmStringToQuark("char")),&therec->header.cheader.LNHSTI,STATIC,CHAR_DIM_NUMBER);
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("init_mss"),80,_NclNameToTypeClass(NrmStringToQuark("character")),&therec->header.cheader.LNHSTI,STATIC,CHAR_DIM_NUMBER);
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("seq"),CcmVarName2(therec->header.cheader.LSHSTI));
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("time"),CcmVarName(therec->header.cheader.LTHSTI));
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("date"),CcmVarName(therec->header.cheader.LDHSTI));
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("MSS pathname of initial data"));
 
-		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("first_mss"),80,_NclNameToTypeClass(NrmStringToQuark("char")),&therec->header.cheader.LNHSTF,STATIC,CHAR_DIM_NUMBER);
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("first_mss"),80,_NclNameToTypeClass(NrmStringToQuark("character")),&therec->header.cheader.LNHSTF,STATIC,CHAR_DIM_NUMBER);
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("seq"),CcmVarName2(therec->header.cheader.LSHSTF));
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("time"),CcmVarName(therec->header.cheader.LTHSTF));
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("date"),CcmVarName(therec->header.cheader.LDHSTF));
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("MSS pathname of first file for this case"));
 
-		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("current_mss"),80,_NclNameToTypeClass(NrmStringToQuark("char")),&therec->header.cheader.LNHSTC,STATIC,CHAR_DIM_NUMBER);
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("current_mss"),80,_NclNameToTypeClass(NrmStringToQuark("character")),&therec->header.cheader.LNHSTC,STATIC,CHAR_DIM_NUMBER);
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("seq"),CcmVarName2(therec->header.cheader.LSHSTC));
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("time"),CcmVarName(therec->header.cheader.LTHSTC));
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("date"),CcmVarName(therec->header.cheader.LDHSTC));
