@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.18 1993-11-12 02:42:53 boote Exp $
+ *      $Id: yMakefile,v 1.19 1994-04-07 21:20:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -73,10 +73,29 @@ All:
 	@date
 	@echo "Finished making <All>."
 
-# The Everything target is a *complete* build.  Makefiles
+# The Build target is a *complete* build.  Makefiles
 # are completely rebuilt for the current installation, object
 # code is removed (clean target), and all binaries and libraries
 # are rebuilt from the ground up.
+
+Build:
+	@echo ""
+	@echo "Making <Build>."
+	@$(MAKE) $(MFLAGS) me
+	@$(MAKE) $(MFLAGS) Info
+	@date
+	@$(MAKE) $(MFLAGS) Makefiles
+	@$(MAKE) $(MFLAGS) clean
+	@$(MAKE) $(MFLAGS) includes
+	@$(MAKE) $(MFLAGS) depend
+	@$(MAKE) $(MFLAGS) all
+	@date
+	@echo "Finished making <Build>."
+
+# The Everything target is a *complete* build.  Makefiles
+# are completely rebuilt for the current installation, object
+# code is removed (clean target), and all binaries and libraries
+# are rebuilt from the ground up.  It also installs everything.
 
 Everything:
 	@echo ""
@@ -89,8 +108,9 @@ Everything:
 	@$(MAKE) $(MFLAGS) includes
 	@$(MAKE) $(MFLAGS) depend
 	@$(MAKE) $(MFLAGS) all
+	@$(MAKE) $(MFLAGS) install
 	@date
-	@echo "Finished making <Everything>."
+	@echo "Finished making and Installing <Everything>."
 
 includes::
 	$(RM) -r include
