@@ -402,7 +402,7 @@ interface : function_def odata_defs
 * No wrapper info, so output records have not been built.
 */
 		int i,j,tmpj,nstrs;
-		NclSymbol *s;
+		NclSymbol *s,*s0;
 		NclSymbol *wp;
 		char buffer[BUFFSIZE];
 		char upper[BUFFSIZE];
@@ -481,6 +481,7 @@ interface : function_def odata_defs
 			arg->nd[2] = ';';
 			arg->nd[3] = '\n';
 			arg->nd[4] = '\0';
+			wp->u.wparam->getarg = arg;
 			thecall->arg_strings[i] = WNewVDef(s->name,s->u.farg->datatype,1,NULL,0);
 		}
 /*
@@ -511,6 +512,17 @@ interface : function_def odata_defs
 				thecall->arg_strings[i]->additional_src->next = tmp_src;
 
 				nstrs++;
+			} else {
+				for(j = 0; j < $1->u.func->args[i]->u.farg->n_dims; j++) {
+					if($1->u.func->args[i]->u.farg->dim_refs[j] != NULL) {
+						s0 = _NclLookUpInScope(current->wrec,$1->u.func->args[i]->name);
+						DoDimsizes(s0);
+						sprintf(buffer,"\tif(*%s != %s_dimsizes[%d]) {\n\t\tNhlPError(NhlFATAL,NhlEUNKNOWN,\"%s: dimension size of dimension (%d) of %s must be equal to the value of %s\");\n\t\treturn(NhlFATAL);\n\t}\n",$1->u.func->args[i]->u.farg->dim_refs[j]->name,$1->u.func->args[i]->name,j,$1->name,j,$1->u.func->args[i]->name,$1->u.func->args[i]->u.farg->dim_refs[j]->name);
+						tmp_src = thecall->arg_strings[i]->additional_src;
+						thecall->arg_strings[i]->additional_src = WNewAdditionalSrc(buffer,1);
+						thecall->arg_strings[i]->additional_src->next = tmp_src;
+					}
+				}
 			}
 		}
 		thecall->nstrs = nstrs;
@@ -525,7 +537,7 @@ interface : function_def odata_defs
 * No wrapper info, so output records have not been built.
 */
 		int i,j,nstrs,tmpj;
-		NclSymbol *s;
+		NclSymbol *s,*s0;
 		NclSymbol *wp;
 		char buffer[BUFFSIZE];
 		char lower[BUFFSIZE];
@@ -592,6 +604,7 @@ interface : function_def odata_defs
 			arg->nd[2] = ';';
 			arg->nd[3] = '\n';
 			arg->nd[4] = '\0';
+			wp->u.wparam->getarg = arg;
 			thecall->arg_strings[i] = WNewVDef(s->name,s->u.farg->datatype,1,NULL,0);
 		}
 /*
@@ -621,6 +634,17 @@ interface : function_def odata_defs
 				thecall->arg_strings[i]->additional_src = WNewAdditionalSrc(buffer,2);
 				thecall->arg_strings[i]->additional_src->next = tmp_src;
 				nstrs++;
+			} else {
+				for(j = 0; j < $1->u.subr->args[i]->u.farg->n_dims; j++) {
+					if($1->u.subr->args[i]->u.farg->dim_refs[j] != NULL) {
+						s0 = _NclLookUpInScope(current->wrec,$1->u.subr->args[i]->name);
+						DoDimsizes(s0);
+						sprintf(buffer,"\tif(*%s != %s_dimsizes[%d]) {\n\t\tNhlPError(NhlFATAL,NhlEUNKNOWN,\"%s: dimension size of dimension (%d) of %s must be equal to the value of %s\");\n\t\treturn(NhlFATAL);\n\t}\n",$1->u.subr->args[i]->u.farg->dim_refs[j]->name,$1->u.subr->args[i]->name,j,$1->name,j,$1->u.subr->args[i]->name,$1->u.subr->args[i]->u.farg->dim_refs[j]->name);
+						tmp_src = thecall->arg_strings[i]->additional_src;
+						thecall->arg_strings[i]->additional_src = WNewAdditionalSrc(buffer,1);
+						thecall->arg_strings[i]->additional_src->next = tmp_src;
+					}
+				}
 			}
 		}
 		thecall->nstrs = nstrs;
@@ -781,7 +805,9 @@ odata_defs :
 data_defs :  ftype name_list oEOLN_list 
 	{
 		WrapSrcListNode * tmp,*tmp2;
-
+/*
+*------> This is where problems with MD char arrays happens
+*/
 		tmp = $2;
 		while(tmp != NULL) {
 			tmp2 = tmp;
@@ -1053,7 +1079,7 @@ dim : FARG
 	{
 		$$ = (DimVal*)malloc(sizeof(DimVal));
 		$$->kind = 0;
-		$$->u.val = -2;
+		$$->u.val = -1;
 	}
 ;
 

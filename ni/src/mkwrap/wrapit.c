@@ -182,7 +182,7 @@ void DoDimsizes(NclSymbol* sym) {
 
 	sprintf(buffer,"%s_dimsizes",sym->name);
 	if( _NclLookUpInScope(current->crec,buffer) == NULL) {
-		(void)WNewVDef(buffer,NCL_int,0,"[NCL_MAX_DIMSIZES]",0);
+		(void)WNewVDef(buffer,NCL_int,0,"[NCL_MAX_DIMENSIONS]",0);
 		sym->u.wparam->getarg->dimsizes = (char*)malloc(strlen(buffer)+1);
 		strcpy(sym->u.wparam->getarg->dimsizes,buffer);
 	}
@@ -325,6 +325,7 @@ main(int argc,char* argv[])
 					upper[j] = lower[j] = tmp->therec->c_defstring[j];
 				}
 			}
+			upper[j] = lower[j] = '\0';
 
 			if(tmp->therec->f_or_p) {
 				fprintf(stdout,"\tNclRegisterFunc(%s_W,args,\"%s\",nargs);\n\n",tmp->therec->c_defstring,upper);
