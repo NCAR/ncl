@@ -1360,6 +1360,7 @@ int *dimsizes;
 	switch(packing) {
 	case 1:
 		tmp_off = MyRead(therec,fd,buffer,n_elem,tmp_off);
+		total = n_elem;
 		ctodpf(buffer,rbuffer,&total,&zero);
 		return(tmp_off);
 		break;
