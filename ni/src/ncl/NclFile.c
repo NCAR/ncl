@@ -1852,6 +1852,7 @@ struct _NclSelectionRecord *sel_ptr;
 			}
 		}
 	}
+	NhlPError(NhlFATAL,NhlEUNKNOWN,"FileReadVarAtt: (%s) is not an attribute of (%s)",NrmQuarkToString(attname),NrmQuarkToString(var));
 	return(NULL);
 }
 
@@ -3114,6 +3115,7 @@ struct _NclSelectionRecord *sel_ptr;
 			}
 		}
 	}
+	NhlPError(NhlFATAL,NhlEUNKNOWN,"FileReadVarAtt: (%s) is not an attribute of (%s)",NrmQuarkToString(attname),NrmQuarkToString(thefile->file.fname));
 	return(NULL);
 }
 
