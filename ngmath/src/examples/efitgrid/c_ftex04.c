@@ -1,5 +1,5 @@
 /*
- *  $Id: c_ftex04.c,v 1.1 1998-02-06 19:40:47 fred Exp $
+ *  $Id: c_ftex04.c,v 1.2 2003-08-06 15:36:17 haley Exp $
  */
 #include <stdio.h>
 #include <ncarg/ncargC.h>
@@ -12,7 +12,7 @@ void c_bkgft4(float, float, float, float, float, float,
               char *, float, float, float, int);
 
 /*
- *  Example of kurv1, kurv2, kurvd
+ *  Example of c_ftkurv and c_ftkurvd.
  */
 
 #define IDIM  11

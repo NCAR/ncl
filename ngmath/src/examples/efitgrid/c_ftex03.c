@@ -1,5 +1,5 @@
 /*
- *  $Id: c_ftex03.c,v 1.2 1998-06-05 16:11:39 haley Exp $
+ *  $Id: c_ftex03.c,v 1.3 2003-08-06 15:36:17 haley Exp $
  */
 #include <stdio.h>
 #include <ncarg/ncargC.h>
@@ -11,7 +11,7 @@ void c_drwft3(float, float, int, float [], float [],
 void c_bkgft3(float, float, float, char *, float, float, float);
 
 /*
- *  Example of curvs, curvps.
+ *  Example of c_ftcurvs and c_ftcurvps.
  */
 
 #define IDIM  10
