@@ -1,5 +1,5 @@
 C
-C $Id: cpex15.f,v 1.2 1997-02-05 15:31:08 haley Exp $
+C $Id: cpex15.f,v 1.3 2002-03-29 17:36:29 kennison Exp $
 C
       PROGRAM CPEX15
 C
@@ -61,11 +61,11 @@ C
 C
 C Define colors to use for various purposes.
 C
-	CALL GSCR   (IWKID,2,.5,.5,1.)  !  light blue (for labels)
-	CALL GSCR   (IWKID,3,1.,1.,.5)  !  light yellow (for labels)
-	CALL GSCR   (IWKID,4,1.,.5,.5)  !  light red (for labels)
-	CALL GSCR   (IWKID,5,1.,1.,1.)  !  white (for land areas)
-	CALL GSCR   (IWKID,6,.6,.6,.6)  !  gray (for ocean areas)
+        CALL GSCR   (IWKID,2,.5,.5,1.)  !  light blue (for labels)
+        CALL GSCR   (IWKID,3,1.,1.,.5)  !  light yellow (for labels)
+        CALL GSCR   (IWKID,4,1.,.5,.5)  !  light red (for labels)
+        CALL GSCR   (IWKID,5,1.,1.,1.)  !  white (for land areas)
+        CALL GSCR   (IWKID,6,.6,.6,.6)  !  gray (for ocean areas)
 C
 C Generate an array of test data.
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: cpex05.f,v 1.3 1995-06-14 13:56:23 haley Exp $
+C $Id: cpex05.f,v 1.4 2002-03-29 17:36:28 kennison Exp $
 C
       PROGRAM EXMPL5
 C
@@ -79,10 +79,6 @@ C
         CALL SFSETI ('ANGLE OF FILL LINES',15)
         CALL SFSETR ('SPACING OF FILL LINES',.000625)
 C
-C Get the current elapsed time, in seconds.
-C
-        TIME=SECOND(DUMI)
-C
 C Turn off line labels.
 C
         CALL CPSETI ('LLP - LINE LABEL POSITIONING',0)
@@ -141,7 +137,7 @@ C
 C
 C Compute and print statistics for the plot and label it.
 C
-        CALL CAPSAP ('EXAMPLE 5',TIME,IAMA,40000)
+        CALL CAPSAP ('EXAMPLE 5',IAMA,40000)
         CALL LABTOP ('EXAMPLE 5',.017)
 C
 C Put a boundary line at the edge of the plotter frame.
@@ -163,6 +159,8 @@ C
         STOP
 C
       END
+
+
       SUBROUTINE SHADAM (XCS,YCS,NCS,IAI,IAG,NAI)
 C
 C This version of SHADAM shades the area-map polygon whose edge is

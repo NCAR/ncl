@@ -1,5 +1,5 @@
 C
-C	$Id: cpex04.f,v 1.3 1995-06-14 13:56:22 haley Exp $
+C $Id: cpex04.f,v 1.4 2002-03-29 17:36:28 kennison Exp $
 C
       PROGRAM EXMPL4
 C
@@ -78,10 +78,6 @@ C
         CALL SFSETI ('ANGLE OF FILL LINES',45)
         CALL SFSETR ('SPACING OF FILL LINES',.000625)
 C
-C Get the current elapsed time, in seconds.
-C
-        TIME=SECOND(DUMI)
-C
 C Turn on the positioning of labels by the penalty scheme and provide a
 C little more room for X and Y coordinates defining contour lines, so
 C as not to have labels right next to each other on a contour line.
@@ -151,7 +147,7 @@ C
 C
 C Compute and print statistics for the plot and label it.
 C
-        CALL CAPSAP ('EXAMPLE 4',TIME,IAMA,30000)
+        CALL CAPSAP ('EXAMPLE 4',IAMA,30000)
         CALL LABTOP ('EXAMPLE 4',.017)
 C
   106   CONTINUE
@@ -175,6 +171,8 @@ C
         STOP
 C
       END
+
+
       SUBROUTINE DRAWCL (XCS,YCS,NCS,IAI,IAG,NAI)
 C
 C This version of DRAWCL draws the polyline defined by the points
@@ -203,6 +201,8 @@ C
         RETURN
 C
       END
+
+
       SUBROUTINE SHADAM (XCS,YCS,NCS,IAI,IAG,NAI)
 C
 C This version of SHADAM shades the polygon whose edge is defined by

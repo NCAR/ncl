@@ -1,5 +1,5 @@
 C
-C $Id: cpex01.f,v 1.4 1995-06-14 13:56:20 haley Exp $
+C $Id: cpex01.f,v 1.5 2002-03-29 17:36:27 kennison Exp $
 C
       PROGRAM EXMPL1
 C
@@ -68,10 +68,6 @@ C
 C
 C Example 1-1 ---------------------------------------------------------
 C
-C Get the current elapsed time, in seconds.
-C
-        TIME=SECOND(DUMI)
-C
 C Force PLOTCHAR to use characters of the lowest quality.
 C
         CALL PCSETI ('QU - QUALITY FLAG',2)
@@ -95,7 +91,7 @@ C
 C Compute and print statistics for the plot, label it, and put a
 C boundary line around the edge of the plotter frame.
 C
-        CALL CAPSAP ('EXAMPLE 1-1',TIME,IAMA,0)
+        CALL CAPSAP ('EXAMPLE 1-1',IAMA,0)
         CALL LABTOP ('EXAMPLE 1-1',.017)
         CALL BNDARY
 C
@@ -104,10 +100,6 @@ C
         CALL FRAME
 C
 C Example 1-2 ---------------------------------------------------------
-C
-C Get the current elapsed time, in seconds.
-C
-        TIME=SECOND(DUMI)
 C
 C Make PLOTCHAR use medium-quality characters.
 C
@@ -172,7 +164,7 @@ C
 C Compute and print statistics for the plot, label it, and put a
 C boundary line around the edge of the plotter frame.
 C
-        CALL CAPSAP ('EXAMPLE 1-2',TIME,IAMA,25000)
+        CALL CAPSAP ('EXAMPLE 1-2',IAMA,25000)
         CALL LABTOP ('EXAMPLE 1-2',.017)
         CALL BNDARY
 C
@@ -181,10 +173,6 @@ C
         CALL FRAME
 C
 C Example 1-3 ---------------------------------------------------------
-C
-C Get the current elapsed time, in seconds.
-C
-        TIME=SECOND(DUMI)
 C
 C Make PLOTCHAR use high-quality characters.
 C
@@ -235,7 +223,7 @@ C
 C Compute and print statistics for the plot, label it, and put a
 C boundary line around the edge of the plotter frame.
 C
-        CALL CAPSAP ('EXAMPLE 1-3',TIME,IAMA,25000)
+        CALL CAPSAP ('EXAMPLE 1-3',IAMA,25000)
         CALL LABTOP ('EXAMPLE 1-3',.017)
         CALL BNDARY
 C
@@ -244,10 +232,6 @@ C
         CALL FRAME
 C
 C Example 1-4 ---------------------------------------------------------
-C
-C Get the current elapsed time, in seconds.
-C
-        TIME=SECOND(DUMI)
 C
 C Turn on the 2D smoother.
 C
@@ -269,7 +253,7 @@ C
 C Compute and print statistics for the plot, label it, and put a
 C boundary line around the edge of the plotter frame.
 C
-        CALL CAPSAP ('EXAMPLE 1-4',TIME,IAMA,25000)
+        CALL CAPSAP ('EXAMPLE 1-4',IAMA,25000)
         CALL LABTOP ('EXAMPLE 1-4',.017)
         CALL BNDARY
 C
@@ -278,10 +262,6 @@ C
         CALL FRAME
 C
 C Example 1-5 ---------------------------------------------------------
-C
-C Get the current elapsed time, in seconds.
-C
-        TIME=SECOND(DUMI)
 C
 C Make CONPACK set up the contour levels again (the range of the data
 C may be increased by 3D interpolation), but force it to use the same
@@ -347,7 +327,7 @@ C
 C Compute and print statistics for the plot, label it, and put a
 C boundary line around the edge of the plotter frame.
 C
-        CALL CAPSAP ('EXAMPLE 1-5',TIME,IAMA,25000)
+        CALL CAPSAP ('EXAMPLE 1-5',IAMA,25000)
         CALL LABTOP ('EXAMPLE 1-5',.017)
         CALL BNDARY
 C
@@ -356,10 +336,6 @@ C
         CALL FRAME
 C
 C Example 1-6 ---------------------------------------------------------
-C
-C Get the current elapsed time, in seconds.
-C
-        TIME=SECOND(DUMI)
 C
 C Turn off the selection of contour levels, so that the set picked for
 C example 1-5 will be used.
@@ -411,7 +387,7 @@ C
 C Compute and print statistics for the plot, label it, and put a
 C boundary line around the edge of the plotter frame.
 C
-        CALL CAPSAP ('EXAMPLE 1-6',TIME,IAMA,25000)
+        CALL CAPSAP ('EXAMPLE 1-6',IAMA,25000)
         CALL LABTOP ('EXAMPLE 1-6',.017)
         CALL BNDARY
 C
@@ -432,6 +408,8 @@ C
         STOP
 C
       END
+
+
       SUBROUTINE DRAWCL (XCS,YCS,NCS,IAI,IAG,NAI)
 C
 C This version of DRAWCL draws the polyline defined by the points
@@ -460,6 +438,8 @@ C
         RETURN
 C
       END
+
+
       SUBROUTINE SHADER (XCS,YCS,NCS,IAI,IAG,NAI)
 C
 C This version of SHADER shades the polygon whose edge is defined by

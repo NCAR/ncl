@@ -1,5 +1,5 @@
 C
-C	$Id: cpex07.f,v 1.3 1995-06-14 13:56:25 haley Exp $
+C $Id: cpex07.f,v 1.4 2002-03-29 17:36:28 kennison Exp $
 C
       PROGRAM EXMPL7
 C
@@ -59,10 +59,6 @@ C Generate an array of test data.
 C
         CALL GENDAT (ZDAT,23,23,14,20,20,-136.148,451.834)
 C
-C Get the current elapsed time, in seconds.
-C
-        TIME=SECOND(DUMI)
-C
 C Force the plot into the upper portion of the frame.
 C
         CALL CPSETR ('VPB - VIEWPORT BOTTOM',.25)
@@ -112,7 +108,7 @@ C
 C Compute and print statistics for the plot, label it, and put a
 C boundary line at the edge of the plotter frame.
 C
-        CALL CAPSAP ('EXAMPLE 7',TIME,IAMA,12000)
+        CALL CAPSAP ('EXAMPLE 7',IAMA,12000)
         CALL LABTOP ('EXAMPLE 7',.017)
         CALL BNDARY
 C
@@ -131,6 +127,8 @@ C
         STOP
 C
       END
+
+
       SUBROUTINE COLRAM (XCRA,YCRA,NCRA,IAIA,IGIA,NAIA)
 C
         DIMENSION XCRA(*),YCRA(*),IAIA(*),IGIA(*)

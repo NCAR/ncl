@@ -1,5 +1,5 @@
 C
-C	$Id: cpexcc.f,v 1.2 1994-07-08 16:27:58 stautler Exp $
+C $Id: cpexcc.f,v 1.3 2002-03-29 17:36:29 kennison Exp $
 C
       SUBROUTINE GENDAT (DATA,IDIM,M,N,MLOW,MHGH,DLOW,DHGH)
 C
@@ -58,6 +58,8 @@ C
         RETURN
 C
       END
+
+
       FUNCTION FRAN ()
         DIMENSION RSEQ (100)
         SAVE ISEQ
@@ -76,7 +78,9 @@ C
         FRAN=RSEQ(ISEQ)
         RETURN
       END
-      SUBROUTINE CAPSAP (LABL,TIME,IAMA,LAMA)
+
+
+      SUBROUTINE CAPSAP (LABL,IAMA,LAMA)
 C
         DIMENSION IAMA(*)
 C
@@ -85,9 +89,7 @@ C
 C Compute and print the time required to draw the contour plot and how
 C much space was used in the various arrays.
 C
-        TIME=SECOND(DUMI)-TIME
         PRINT * , 'PLOT TITLE WAS ',LABL
-        PRINT * , 'TIME TO DRAW PLOT WAS  ',TIME
         CALL CPGETI ('IWU - INTEGER WORKSPACE USAGE',IIWU)
         CALL CPGETI ('RWU - REAL WORKSPACE USAGE',IRWU)
         PRINT * , 'INTEGER WORKSPACE USED ',IIWU
@@ -102,6 +104,8 @@ C
         RETURN
 C
       END
+
+
       SUBROUTINE LABTOP (LABL,SIZE)
 C
         CHARACTER*(*) LABL
@@ -128,6 +132,8 @@ C
         RETURN
 C
       END
+
+
       SUBROUTINE BNDARY
 C
 C Draw a line showing where the edge of the plotter frame is.
@@ -144,6 +150,8 @@ C
         RETURN
 C
       END
+
+
       SUBROUTINE DFCLRS(IWKID)
 C
 C Define a set of RGB color triples for colors 1 through 15.
@@ -182,24 +190,4 @@ C Done.
 C
         RETURN
 C
-      END
-      FUNCTION SECOND (DUMI)
-        SAVE IFLG
-        DATA IFLG / 0 /
-        IF (IFLG.EQ.0) THEN
-          IFLG=1
-          PRINT * , '**************************************************'
-          PRINT * , '** THE DUMMY FUNCTION "SECOND" HAS BEEN CALLED. **'
-          PRINT * , '** A ZERO WILL BE RETURNED AS ITS VALUE.  THIS  **'
-          PRINT * , '** MEANS THAT TIMING INFORMATION PRINTED WILL   **'
-          PRINT * , '** BE WRONG.  TO GET ACTUAL TIMINGS, YOU SHOULD **'
-          PRINT * , '** REPLACE THIS FUNCTION WITH ONE HAVING AS ITS **'
-          PRINT * , '** VALUE THE ELAPSED CPU TIME, IN SECONDS.  ON  **'
-          PRINT * , '** THE CRAY, UNDER COS, THE SYSTEM FUNCTION     **'
-          PRINT * , '** CALLED "SECOND" DOES THIS, SO YOU CAN JUST   **'
-          PRINT * , '** DELETE THE DUMMY ONE.                        **'
-          PRINT * , '**************************************************'
-        END IF
-        SECOND=0.
-        RETURN
       END

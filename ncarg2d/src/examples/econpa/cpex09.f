@@ -1,5 +1,5 @@
 C
-C	$Id: cpex09.f,v 1.3 1995-06-14 13:56:27 haley Exp $
+C       $Id: cpex09.f,v 1.4 2002-03-29 17:36:29 kennison Exp $
 C
       PROGRAM EXMPL9
 C

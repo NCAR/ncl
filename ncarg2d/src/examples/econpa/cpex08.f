@@ -1,5 +1,5 @@
 C
-C       $Id: cpex08.f,v 1.5 1996-07-24 20:16:56 kennison Exp $
+C $Id: cpex08.f,v 1.6 2002-03-29 17:36:29 kennison Exp $
 C
       PROGRAM EXMPL8
 C
@@ -73,10 +73,6 @@ C
 C Generate an array of test data.
 C
         CALL GENDAT (ZDAT,40,40,40,15,15,-10.,110.)
-C
-C Get the current elapsed time, in seconds.
-C
-        TIME=SECOND(DUMI)
 C
 C Initialize the area map.
 C
@@ -168,7 +164,7 @@ C
 C Compute and print statistics for the plot, label it, and put a
 C boundary line at the edge of the plotter frame.
 C
-        CALL CAPSAP ('EXAMPLE 8',TIME,IAMA,125000)
+        CALL CAPSAP ('EXAMPLE 8',IAMA,125000)
         CALL LABTOP ('EXAMPLE 8',.017)
         CALL BNDARY
 C
@@ -187,6 +183,8 @@ C
         STOP
 C
       END
+
+
       SUBROUTINE COLRAM (XCRA,YCRA,NCRA,IAIA,IGIA,NAGI)
 C
         DIMENSION XCRA(*),YCRA(*),IAIA(*),IGIA(*),IOCI(12)
@@ -236,6 +234,8 @@ C
         RETURN
 C
       END
+
+
       SUBROUTINE COLRCL (XCRA,YCRA,NCRA,IAIA,IGIA,NAGI)
 C
         DIMENSION XCRA(*),YCRA(*),IAIA(*),IGIA(*)
@@ -268,6 +268,8 @@ C
         RETURN
 C
       END
+
+
       SUBROUTINE COLRLL (XCRA,YCRA,NCRA,IAIA,IGIA,NAGI)
 C
         DIMENSION XCRA(*),YCRA(*),IAIA(*),IGIA(*)

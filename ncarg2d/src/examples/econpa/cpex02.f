@@ -1,5 +1,5 @@
 C
-C	$Id: cpex02.f,v 1.3 1995-06-14 13:56:21 haley Exp $
+C $Id: cpex02.f,v 1.4 2002-03-29 17:36:27 kennison Exp $
 C
       PROGRAM EXMPL2
 C
@@ -112,10 +112,6 @@ C Generate an array of test data.
 C
           CALL GENDAT (ZDAT,33,33,33,20,20,.000025,.000075)
 C
-C Get the current elapsed time, in seconds.
-C
-          TIME=SECOND(DUMI)
-C
 C Move the viewport to the proper quadrant.
 C
           CALL CPSETR ('VPL - VIEWPORT LEFT EDGE',
@@ -184,7 +180,7 @@ C
 C Compute and print statistics for the plot and label it.
 C
           LABL='EXAMPLE 2-'//CHAR(ICHAR('0')+IPLT)
-          CALL CAPSAP (LABL,TIME,IAMA,20000)
+          CALL CAPSAP (LABL,IAMA,20000)
           CALL LABTOP (LABL,.017)
 C
   102   CONTINUE
@@ -208,6 +204,8 @@ C
         STOP
 C
       END
+
+
       SUBROUTINE DRAWCL (XCS,YCS,NCS,IAI,IAG,NAI)
 C
 C This version of DRAWCL draws the polyline defined by the points
@@ -236,6 +234,8 @@ C
         RETURN
 C
       END
+
+
       SUBROUTINE SHADER (XCS,YCS,NCS,IAI,IAG,NAI)
 C
 C This version of SHADER shades the polygon whose edge is defined by

@@ -1,5 +1,5 @@
 C
-C	$Id: cpex06.f,v 1.3 1995-06-14 13:56:24 haley Exp $
+C $Id: cpex06.f,v 1.4 2002-03-29 17:36:28 kennison Exp $
 C
       PROGRAM EXMPL6
 C
@@ -42,10 +42,6 @@ C
 C Generate an array of test data.
 C
         CALL GENDAT (ZDAT,27,27,23,25,25,-362.362E11,451.834E11)
-C
-C Get the current elapsed time, in seconds.
-C
-        TIME=SECOND(DUMI)
 C
 C Increase the approximate number of contour levels used.
 C
@@ -132,7 +128,7 @@ C
 C Compute and print statistics for the plot, label it, and put a
 C boundary line at the edge of the plotter frame.
 C
-        CALL CAPSAP ('EXAMPLE 6',TIME,IAMA,10000)
+        CALL CAPSAP ('EXAMPLE 6',IAMA,10000)
         CALL LABTOP ('EXAMPLE 6',.017)
         CALL BNDARY
 C
@@ -151,6 +147,8 @@ C
         STOP
 C
       END
+
+
       SUBROUTINE DRAWCL (XCS,YCS,NCS,IAI,IAG,NAI)
 C
 C This version of DRAWCL draws the polyline defined by the points

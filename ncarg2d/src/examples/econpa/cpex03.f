@@ -1,5 +1,5 @@
 C
-C	$Id: cpex03.f,v 1.3 1995-06-14 13:56:21 haley Exp $
+C $Id: cpex03.f,v 1.4 2002-03-29 17:36:27 kennison Exp $
 C
       PROGRAM EXMPL3
 C
@@ -122,10 +122,6 @@ C
 C Do four different plots, one in each quadrant.
 C
         DO 108 IPLT=1,4
-C
-C Get the current elapsed time, in seconds.
-C
-          TIME=SECOND(DUMI)
 C
 C Compute viewport parameters.
 C
@@ -250,7 +246,7 @@ C
 C Compute and print statistics for the plot and label it.
 C
           LABL='EXAMPLE 3-'//CHAR(ICHAR('0')+IPLT)
-          CALL CAPSAP (LABL,TIME,IAMA,20000)
+          CALL CAPSAP (LABL,IAMA,20000)
           CALL LABTOP (LABL,.017)
 C
   108   CONTINUE
@@ -274,6 +270,8 @@ C
         STOP
 C
       END
+
+
       SUBROUTINE CPMPXY (IMAP,XINP,YINP,XOTP,YOTP)
 C
 C This version of CPMPXY implements four different mappings:
@@ -335,6 +333,8 @@ C
         RETURN
 C
       END
+
+
       SUBROUTINE DRAWCL (XCS,YCS,NCS,IAI,IAG,NAI)
 C
 C This version of DRAWCL draws the polyline defined by the points
@@ -363,6 +363,8 @@ C
         RETURN
 C
       END
+
+
       SUBROUTINE SHADER (XCS,YCS,NCS,IAI,IAG,NAI)
 C
 C This version of SHADER shades the polygon whose edge is defined by
