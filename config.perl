@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: config.perl,v 1.1 1992-09-21 22:07:42 ncargd Exp $
+#      $Id: config.perl,v 1.2 1992-10-14 16:26:09 clyne Exp $
 #
 #########################################################################
 #									#
@@ -503,6 +503,10 @@ if ($doVerbose) {
 
 EOF
 }
+
+
+$current_ver = &get_config_values($system, "VERSION");
+$isDirty = 1 if ($current_ver ne $softwareRelease);
 
 STARTOVER:
 
