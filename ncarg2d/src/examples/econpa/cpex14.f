@@ -1,5 +1,5 @@
 C
-C $Id: cpex14.f,v 1.4 2001-12-28 00:18:35 kennison Exp $
+C $Id: cpex14.f,v 1.5 2002-02-21 17:22:28 kennison Exp $
 C
       PROGRAM CPEX14
 C
@@ -1003,10 +1003,6 @@ C
 C
         DIMENSION XCRA(IDIM,*),YCRA(IDIM,*)
 C
-        PARAMETER (SPPI=3.14159265358979  ,SPTP=2.  *SPPI)
-C
-        PARAMETER (DPPI=3.14159265358979D0,DPTP=2.D0*DPPI)
-C
 C Declare variables which are needed when double-precision arithmetic
 C is executed.
 C
@@ -1064,7 +1060,8 @@ C
               ANXT=ATAN2(YCRA(INXT,JNXT)-YPNT,XCRA(INXT,JNXT)-XPNT)
             END IF
             ADIF=ANXT-ALST
-            IF (ABS(ADIF).GT.SPPI) ADIF=ADIF-SIGN(SPTP,ADIF)
+            IF (ABS(ADIF).GT.3.14159265358979)
+     +                             ADIF=ADIF-SIGN(6.28318530717958,ADIF)
             ANCH=ANCH+ADIF
   101     CONTINUE
 C
@@ -1073,7 +1070,7 @@ C be exactly zero, while if the point is inside the polygon, the total
 C angular change should be exactly plus or minus two pi.  We just test
 C for the absolute value of the change being less than pi.
 C
-          IF (ABS(ANCH).LT.SPPI) THEN
+          IF (ABS(ANCH).LT.3.14159265358979) THEN
             ISINPO=0
           ELSE
             ISINPO=1
@@ -1113,7 +1110,8 @@ C
      +                   DBLE(XCRA(INXT,JNXT)-XPNT))
             END IF
             DDIF=DNXT-DLST
-            IF (ABS(DDIF).GT.DPPI) DDIF=DDIF-SIGN(DPTP,DDIF)
+            IF (ABS(DDIF).GT.3.14159265358979D0)
+     +                           DDIF=DDIF-SIGN(6.28318530717958D0,DDIF)
             DACH=DACH+DDIF
   102     CONTINUE
 C
@@ -1122,7 +1120,7 @@ C be exactly zero, while if the point is inside the polygon, the total
 C angular change should be exactly plus or minus two pi.  We just test
 C for the absolute value of the change being less than or equal to pi.
 C
-          IF (ABS(DACH).LT.DPPI) THEN
+          IF (ABS(DACH).LT.3.14159265358979D0) THEN
             ISINPO=0
           ELSE
             ISINPO=1
