@@ -1,5 +1,5 @@
 #
-#       $Id:
+#       $Id: yMakefile,v 1.4 1999-01-01 00:51:30 fred Exp $
 #
 
 MAN = fitgrid fitgrid_params curv1 curv2 curvd curvi curvp1 curvp2          \
