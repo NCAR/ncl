@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.37 1996-10-25 21:42:11 boote Exp $
+#      $Id: yMakefile,v 1.38 1996-11-01 15:40:04 boote Exp $
 #
 #########################################################################
 #									#
@@ -104,7 +104,7 @@ InstallTarget($(HDRS),$(INSTALL_INC),$(HLUINCPATH))
 InstallTarget(sysresfile,$(INSTALL_INC),$(LIBNCARGPATH))
 DependTarget($(CSRCS))
 
-BuildSharedLibTarget(libNGhlu,$(OBJS),1,0,-lNGlluC -lNGllu -lNGgksC -lNGgks -lNGcommon -lftn -lm -lc)
+BuildSharedLibTarget(libNGhlu,$(OBJS),1,0,$(CNCARGLIB) $(NCARGLIB) $(CNCARGGKSLIB) $(NCARGGKSLIB) $(NCARGCLIB) $(CTOFLIBS) -lm -lc)
 
 /* This is used to expand the huge macros in this file	*/
 

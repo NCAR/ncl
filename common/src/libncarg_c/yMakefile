@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.26 1996-10-25 21:46:50 boote Exp $
+#	$Id: yMakefile,v 1.27 1996-11-01 15:40:10 boote Exp $
 #
 #
 #	Makefile for libncarg_c -- NCAR G common utilities
@@ -60,7 +60,7 @@ MY_DEFINES = -D_BSD_TYPES
 
 EXTRA_CDEFINES =	$(OS_DEF) $(VDEFINE) $(NGENVDEF) $(MY_DEFINES) -DNCARGURL='$(NCARGURL)'
 
-REQLIBS = $(CTOFLIBS)
+REQLIBS = $(CTOFLIBS) -lc
 
 LibraryTarget($(MYNAME),$(OBJS))
 InstallTarget($(HDRS),$(INSTALL_INC),$(NCARGINCPATH))
@@ -68,4 +68,4 @@ BuildIncludes($(HDRS),ncarg,..)
 DependTarget($(CSRCS))
 CleanFilesTarget($(FCPP_FSRCS))
 
-BuildSharedLibTarget(libNGcommon,$(OBJS),1,0,$(REQLIBS))
+BuildSharedLibTarget(libNGc,$(OBJS),1,0,$(REQLIBS))

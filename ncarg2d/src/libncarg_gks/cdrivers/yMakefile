@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.4 1996-10-25 21:41:30 boote Exp $
+#	$Id: yMakefile,v 1.5 1996-11-01 15:40:01 boote Exp $
 #
 
 MYNAME		= cdrivers
@@ -26,8 +26,8 @@ PartialLibraryTarget(libncarg_gks.a,$(OBJECTS))
 PartialLibraryTarget(libbasegks.a,$(BASICOBJ))
 
 BuildSharedLibTarget(libNGgksCTXT,$(CTXTOBJ),1,0,-lc)
-BuildSharedLibTarget(libNGgksX,$(XOBJ),1,0,-lNGcommon $(XLIB) -lm -lc)
-BuildSharedLibTarget(libNGgksPS,$(PSOBJ),1,0,-lNGcommon -lm -lc)
+BuildSharedLibTarget(libNGgksX,$(XOBJ),1,0,$(NCARGCLIB) $(XLIB) -lm -lc)
+BuildSharedLibTarget(libNGgksPS,$(PSOBJ),1,0,$(NCARGCLIB) -lm -lc)
 
 PartialSourceLibraryTarget($(MYNAME),srcncarg_gks.a,$(SOURCES))
 BuildIncludes($(INCLUDES),ncarg,..)

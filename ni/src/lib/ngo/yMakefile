@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.3 1996-10-25 21:47:20 boote Exp $
+#      $Id: yMakefile,v 1.4 1996-11-01 15:40:13 boote Exp $
 #
 #########################################################################
 #									#
@@ -21,11 +21,11 @@
 MYNAME		= libngo
 
 #ifdef	DEBUG
-DEBUG_LIB	=	-lXmu
+DEBUG_LIB	=	$(XMULIB)
 #endif
 
 EXTRA_CDEFINES	=	$(OS_DEF)
-CLIENT_LIBS	=	-lNGncl -lNGhlu -lXm -lXt -lX11 $(DEBUG_LIB) -lc
+CLIENT_LIBS	=	$(NCLAPILIB) $(HLULIB) $(XMOTIFCLIENTLIBS) $(DEBUG_LIB) -lc
 
 HDRS		= ngoP.h ngo.h appP.h app.h nclstateP.h nclstate.h \
 		$(XHDRS)
