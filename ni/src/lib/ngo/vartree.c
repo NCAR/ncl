@@ -1,5 +1,5 @@
 /*
- *      $Id: vartree.c,v 1.8 1998-02-20 00:11:30 dbrown Exp $
+ *      $Id: vartree.c,v 1.9 1998-03-23 22:48:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -837,8 +837,7 @@ static void ExpandDimList
                 }
                 sprintf(buf,"%s",
                         (drec[i].dim_quark <= NrmNULLQUARK ?
-                         Unnamed : NrmQuarkToString(drec[i].dim_quark)),
-                        drec[i].dim_size);
+                         Unnamed : NrmQuarkToString(drec[i].dim_quark)));
                 rowdefs[i].level = subtype / 10;
                 rowdefs[i].isExpanded = False;
                 rowdefs[i].pixmap = XmUNSPECIFIED_PIXMAP;

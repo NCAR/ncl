@@ -1,5 +1,5 @@
 /*
- *      $Id: ncledit.c,v 1.11 1997-10-03 20:08:08 dbrown Exp $
+ *      $Id: ncledit.c,v 1.12 1998-03-23 22:48:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -414,7 +414,7 @@ ActivateCB
 
 
 FREE_MEM:
-	_NgStackFree(cmd_buff,cmd_stack);
+	_NgStackFree((NhlPointer)cmd_buff,cmd_stack);
 	np->edit = False;
 	np->my_cmd = False;
 	if(np->more_cmds) NhlFree(np->more_cmds);

@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenu.c,v 1.4 1998-01-08 22:45:09 dbrown Exp $
+ *      $Id: createmenu.c,v 1.5 1998-03-23 22:48:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -620,6 +620,7 @@ NhlErrorTypes NgUpdateCreateMenu
 {
 	NgCreateMenu	*pub = create_menu;
 	CreateMenuRec	*priv = (CreateMenuRec	*)pub;
+        return NhlNOERROR;
 }
 
 NgCreateMenu *

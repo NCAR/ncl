@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.c,v 1.3 1998-02-11 21:52:48 dbrown Exp $
+ *      $Id: graphic.c,v 1.4 1998-03-23 22:48:41 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -247,7 +247,7 @@ NhlErrorTypes NgDestroyGraphic
                 NHLPERROR((NhlWARNING,NhlEUNKNOWN,"invalid graphic object"));
                 return (NhlErrorTypes) NhlFATAL;
         }
-        sprintf(buf,"destroy(%s)\ndelete(%s)\n",ncl_graphic);
+        sprintf(buf,"destroy(%s)\ndelete(%s)\n",ncl_graphic,ncl_graphic);
         (void)NgNclSubmitBlock(go->go.nclstate,buf);
                 
         return NhlNOERROR;
@@ -307,7 +307,7 @@ NhlErrorTypes NgDrawGraphic
         if (clear)
                 sprintf(buf,"clear(%s)\ndraw(%s)\n",wk_name,base_name);
         else
-                sprintf(buf,"draw(%s)\n",wk_name,base_name);
+                sprintf(buf,"draw(%s)\n",base_name);
         
         (void)NgNclSubmitBlock(go->go.nclstate,buf);
 

@@ -1,4 +1,4 @@
-/* $Id: MegaB.c,v 1.5 1998-01-24 02:10:36 dbrown Exp $ */
+/* $Id: MegaB.c,v 1.6 1998-03-23 22:48:39 dbrown Exp $ */
 /*
  * Copyright 1994 John L. Cwikla
  *
@@ -254,28 +254,28 @@ static XtActionsRec actions[] =
 
 static XmBaseClassExtRec		megaBBaseClassExtRec = 
 {
-	NULL,									 /* Next extension		*/
-	NULLQUARK,								/* record type XmQmotif */
-	XmBaseClassExtVersion,					/* version			  */
-	sizeof(XmBaseClassExtRec),				/* size				 */
-	XmInheritInitializePrehook,						/* initialize prehook	*/
-	XmInheritSetValuesPrehook,				/* set_values prehook	*/
-	XmInheritInitializePosthook,						/* initialize posthook  */
-	XmInheritSetValuesPosthook,				/* set_values posthook  */
-	XmInheritClass,							/* secondary class	  */
-	XmInheritSecObjectCreate,				 /* creation proc		*/
-	XmInheritGetSecResData,					/* getSecResData		*/
-	{0},									  /* fast subclass		*/
-	XmInheritGetValuesPrehook,				/* get_values prehook	*/
-	XmInheritGetValuesPosthook,				/* get_values posthook  */
-	(XtWidgetClassProc)NULL,				  /* classPartInitPrehook */
-	(XtWidgetClassProc)NULL,				  /* classPartInitPosthook*/
-	NULL,									 /* ext_resources		*/
-	NULL,									 /* compiled_ext_resources*/
-	0,										/* num_ext_resources	*/
-	FALSE,									/* use_sub_resources	*/
-	XmInheritWidgetNavigable,				 /* widgetNavigable	  */
-	XmInheritFocusChange,					 /* focusChange		  */
+	NULL,				 /* Next extension		*/
+	NULLQUARK,			/* record type XmQmotif */
+	XmBaseClassExtVersion,		/* version			  */
+	sizeof(XmBaseClassExtRec),	/* size				 */
+	XmInheritInitializePrehook,	/* initialize prehook	*/
+	XmInheritSetValuesPrehook,	/* set_values prehook	*/
+	XmInheritInitializePosthook,	/* initialize posthook  */
+	XmInheritSetValuesPosthook,	/* set_values posthook  */
+	XmInheritClass,			/* secondary class	  */
+	XmInheritSecObjectCreate,	/* creation proc		*/
+	XmInheritGetSecResData,		/* getSecResData		*/
+	{0},				/* fast subclass		*/
+	XmInheritGetValuesPrehook,	/* get_values prehook	*/
+	XmInheritGetValuesPosthook,	/* get_values posthook  */
+	(XtWidgetClassProc)NULL,	/* classPartInitPrehook */
+	(XtWidgetClassProc)NULL,	/* classPartInitPosthook*/
+	NULL,				/* ext_resources		*/
+	NULL,				/* compiled_ext_resources*/
+	0,				/* num_ext_resources	*/
+	FALSE,				/* use_sub_resources	*/
+	XmInheritWidgetNavigable,	/* widgetNavigable	  */
+	XmInheritFocusChange,		/* focusChange		  */
 };
 
 XmPrimitiveClassExtRec _XmMegaBPrimClassExtRec = 
@@ -284,46 +284,47 @@ XmPrimitiveClassExtRec _XmMegaBPrimClassExtRec =
 	NULLQUARK,
 	XmPrimitiveClassExtVersion,
 	sizeof(XmPrimitiveClassExtRec),
-	XmInheritBaselineProc,				  /* widget_baseline */
-	XmInheritDisplayRectProc,				/* widget_display_rect */
-	(XmWidgetMarginsProc)NULL,			  /* widget_margins */
+	XmInheritBaselineProc,			/* widget_baseline */
+	XmInheritDisplayRectProc,		/* widget_display_rect */
+	(XmWidgetMarginsProc)NULL,		/* widget_margins */
 };
 
 
 XmMegaButtonClassRec xmMegaButtonClassRec =
 {
 	{
-		(WidgetClass)&xmPushButtonClassRec,			  /* superclass */
-		"XmMegaButton",								 /* class_name */
-		(Cardinal)sizeof(XmMegaButtonRec),		 /* widget size */
-		(XtProc)classInit,							  /* class_init */
-		(XtWidgetClassProc)classPartInit,			/* class_part_init */
-		(XtEnum)FALSE,								/* class_inited */
-		(XtInitProc)initialize,						 /* initialize */
-		(XtArgsProc)NULL,								/* init_hook */
-		XtInheritRealize,							/* realize */
-		(XtActionList)actions,							  /* actions */
-		(Cardinal)XtNumber(actions),						/* num_actions */
-		(XtResourceList)resources,							/* resources */
-		(Cardinal)XtNumber(resources),						/* num_resources */
-		NULLQUARK,									/* xrm_class */
-		TRUE,										/* compress_motion */
-		(XtEnum)FALSE,								/* compress_exposur */
-		TRUE,										/* compress enterleave */
-		FALSE,									  /* visibility_interest */
-		(XtWidgetProc)destroy,							  /* destroy */
+		(WidgetClass)&xmPushButtonClassRec,  	/* superclass */
+		"XmMegaButton",		 	 	/* class_name */
+		(Cardinal)sizeof(XmMegaButtonRec),	/* widget size */
+		(XtProc)classInit,			/* class_init */
+		(XtWidgetClassProc)classPartInit,	/* class_part_init */
+		(XtEnum)FALSE,				/* class_inited */
+		(XtInitProc)initialize,			/* initialize */
+		(XtArgsProc)NULL,			/* init_hook */
+		XtInheritRealize,			/* realize */
+		(XtActionList)actions,			/* actions */
+		(Cardinal)XtNumber(actions),		/* num_actions */
+		(XtResourceList)resources,		/* resources */
+		(Cardinal)XtNumber(resources),		/* num_resources */
+		NULLQUARK,				/* xrm_class */
+		TRUE,					/* compress_motion */
+		(XtEnum)FALSE,				/* compress_exposur */
+		TRUE,				/* compress enterleave */
+		FALSE,				/* visibility_interest */
+		(XtWidgetProc)destroy,		/* destroy */
 		(XtWidgetProc)XtInheritResize,
 		(XtExposeProc)expose,
-		(XtSetValuesFunc)setValues,						  /* set_values */
-		(XtArgsFunc)NULL,								/* set_values_hook */
-		XtInheritSetValuesAlmost,					/* set_values_almost */
-		(XtArgsProc)NULL,								/* get_values_hook */
-		NULL, /* XtInheritAcceptFocus,						/* accept_focus */
-		XtVersion,									/* version */
-		(XtPointer)NULL,								/* callback_private */
+		(XtSetValuesFunc)setValues,	/* set_values */
+		(XtArgsFunc)NULL,		/* set_values_hook */
+		XtInheritSetValuesAlmost,	/* set_values_almost */
+		(XtArgsProc)NULL,		/* get_values_hook */
+		NULL, /* XtInheritAcceptFocus -- accept_focus */
+		XtVersion,			/* version */
+		(XtPointer)NULL,		/* callback_private */
 		XtInheritTranslations,
-		(XtGeometryHandler)NULL, /* XtInheritQueryGeometry,		  /* query_geometry */
-		XtInheritDisplayAccelerator,				 /* display_accelerator */
+		(XtGeometryHandler)NULL,
+				/* XtInheritQueryGeometry query_geometry */
+		XtInheritDisplayAccelerator,	 /* display_accelerator */
 		(XtPointer)&megaBBaseClassExtRec,										/* extension */
 	},
 	{ 	/* xmPrimitiveClass */

@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlview.c,v 1.5 1998-02-07 03:57:39 dbrown Exp $
+ *      $Id: htmlview.c,v 1.6 1998-03-23 22:48:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,7 +35,7 @@
 #include <ncarg/ngo/htmlviewP.h>
 #include <ncarg/ngo/nclstate.h>
 
-#if 0
+#if 1
 #define DOCTOP "ngdoc/ng4.0/"
 #else 
 #define DOCTOP "ngdoc/ng4.1alpha/"
@@ -411,6 +411,7 @@ FindEndOfResource
                                 level--;
                 }
         }
+        return NULL;
 }
 
 /*
@@ -513,24 +514,10 @@ _NgSetHtmlContent(
                       NULL);
 
         if (end) {
-#if 0                
-                height = form_height - scroll_height +
-                        end->y + 6- begin->y - begin->height;
-                work_height = end->y + 6 - begin->y - begin->height;
-#endif                
                 height = -10 + form_height - scroll_height +
                         end->y - begin->y - begin->height;
                 work_height = 5 + end->y - begin->y - begin->height;
         }
-#if 0        
-        else if (hr_end) {
-                height = form_height - scroll_height +
-                        hr_end->prev->y + hr_end->prev->height -
-                        begin->height - begin->y;
-                work_height = hr_end->prev->y + hr_end->prev->height -
-                        begin->height - begin->y;
-        }
-#endif        
         else {
                 height = form_height - scroll_height + work_height;
         }
@@ -1008,7 +995,7 @@ NhlErrorTypes NgSetHtmlViewPosition(
         fprintf(stderr,"in %s\n",func);
 #endif
         if (! pane)
-                return (int) NhlFATAL;
+                return NhlFATAL;
 
         for (i =0; i < pane->htmlview_count; i++) {
                 hv = XmLArrayGet(pane->htmlview_list,i);
@@ -1047,7 +1034,7 @@ NhlErrorTypes NgGetHtmlViewSize(
         fprintf(stderr,"in %s\n",func);
 #endif
         if (! pane)
-                return (int) NhlFATAL;
+                return NhlFATAL;
 
         for (i =0; i < pane->htmlview_count; i++) {
                 hv = XmLArrayGet(pane->htmlview_list,i);
@@ -1080,7 +1067,7 @@ NhlErrorTypes NgShowHtmlView(
         fprintf(stderr,"in %s\n",func);
 #endif
         if (! pane)
-                return (int) NhlFATAL;
+                return NhlFATAL;
 
         for (i =0; i < pane->htmlview_count; i++) {
                 hv = XmLArrayGet(pane->htmlview_list,i);
@@ -1112,7 +1099,7 @@ NhlErrorTypes NgReleaseHtmlView(
         fprintf(stderr,"in %s\n",func);
 #endif
         if (! pane)
-                return (int) NhlFATAL;
+                return NhlFATAL;
 
         for (i =0; i < pane->htmlview_count; i++) {
                 hv = XmLArrayGet(pane->htmlview_list,i);
@@ -1144,7 +1131,7 @@ NhlErrorTypes NgReleasePageHtmlViews(
         fprintf(stderr,"in %s\n",func);
 #endif
         if (! pane)
-                return (int) NhlFATAL;
+                return NhlFATAL;
 
         while (i < pane->htmlview_count) {
                 hv = XmLArrayGet(pane->htmlview_list,i);

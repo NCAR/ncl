@@ -1,5 +1,5 @@
 /*
- *      $Id: plotspecmenu.c,v 1.2 1998-01-08 22:45:11 dbrown Exp $
+ *      $Id: plotspecmenu.c,v 1.3 1998-03-23 22:48:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -109,12 +109,13 @@ static void CopyShapedVar
         int i;
 
         if (pub->qsymbol)
-                sprintf(buf,"%s = %s->%s(",NgNclGetSymName(priv->nsid,varname,False),
+                sprintf(buf,"%s = %s->%s(",
+                        NgNclGetSymName(priv->nsid,varname,False),
                         NrmQuarkToString(pub->qsymbol),
                         NrmQuarkToString(pub->vinfo->name));
         else
-                sprintf(buf,"%s = %s(",NgNclGetSymName(priv->nsid,varname,False),
-                        NrmQuarkToString(pub->qsymbol),
+                sprintf(buf,"%s = %s(",
+                        NgNclGetSymName(priv->nsid,varname,False),
                         NrmQuarkToString(pub->vinfo->name));
         for (i = 0; i < pub->vinfo->n_dims; i++) 
 		sprintf(&buf[strlen(buf)],"%d:%d:%d,",pub->start[i],
@@ -213,7 +214,7 @@ static void CreateDialog
         Widget  form,label,help;
         
         if (sink->type == ngNCLVARIABLE)
-                sprintf(buf,"Create Ncl Variable",sink->name);
+                sprintf(buf,"Create Ncl Variable");
         else
                 sprintf(buf,"Create %sPlot",sink->name);
         
@@ -326,6 +327,7 @@ NhlErrorTypes NgUpdatePlotSpecMenu
 {
 	NgPlotSpecMenu	*pub = plot_spec_menu;
 	PlotSpecMenuRec	*priv = (PlotSpecMenuRec	*)pub;
+        return NhlNOERROR;
 }
 
 NgPlotSpecMenu *

@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.9 1998-02-20 00:11:29 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.10 1998-03-23 22:48:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1059,7 +1059,7 @@ NewCoordValue
         int slen;
         int dim_size = sirp->vinfo->dim_info[column].dim_size;
         static NgShapeInfoGrid *last_sip = NULL;
-        static last_column = -1;
+        static int last_column = -1;
         static NclExtValueRec *val = NULL;
 
         if (sip != last_sip || column != last_column) {

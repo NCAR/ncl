@@ -1,5 +1,5 @@
 /*
- *      $Id: datagrid.c,v 1.5 1997-10-03 20:07:57 dbrown Exp $
+ *      $Id: datagrid.c,v 1.6 1998-03-23 22:48:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -233,7 +233,6 @@ static void FillVisibleGrid
 	
         last_row_read = start_row - 1;
 
-	cell_width;
         for (i = 0; i < nrows; i++) {
                 int total_len = 0;
                 

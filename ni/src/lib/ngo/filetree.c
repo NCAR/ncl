@@ -1,5 +1,5 @@
 /*
- *      $Id: filetree.c,v 1.7 1998-01-08 01:19:24 dbrown Exp $
+ *      $Id: filetree.c,v 1.8 1998-03-23 22:48:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -803,9 +803,7 @@ static void ExpandDimList
                         rowdefs[i].expands = True;
                         ndata->subdata[i].type = subtype;
                 }
-                sprintf(buf,"%s",
-                        NrmQuarkToString(drec[i].dim_quark),
-                        drec[i].dim_size);
+                sprintf(buf,"%s",NrmQuarkToString(drec[i].dim_quark));
                 rowdefs[i].level = subtype / 10;
                 rowdefs[i].isExpanded = False;
                 rowdefs[i].pixmap = XmUNSPECIFIED_PIXMAP;

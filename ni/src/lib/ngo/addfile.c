@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.18 1998-01-24 02:10:38 dbrown Exp $
+ *      $Id: addfile.c,v 1.19 1998-03-23 22:48:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -884,7 +884,7 @@ static void OpenForPreview
 	NgAddFile		l = (NgAddFile)go;
 	NgAddFilePart		*np = &l->addfile;
 	XmString dirspec;
-	static  first = True;
+	static NhlBoolean first = True;
 	NclApiDataList *vlist,*dl;
         char func[] = "OpenForPreview";
         NhlBoolean	writable;
@@ -1346,7 +1346,7 @@ static void SetSelectText
 	
 	stat(selecttext,&statbuf);
 	if (S_ISREG(statbuf.st_mode)) {
-		sprintf(Buffer,"%d",statbuf.st_size);
+		sprintf(Buffer,"%ld",(long)statbuf.st_size);
 		if (((getuid() == statbuf.st_uid) && 
 		    (statbuf.st_mode & S_IRUSR)) ||
 		    ((getgid() == statbuf.st_gid) &&

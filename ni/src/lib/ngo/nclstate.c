@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.16 1998-03-11 18:58:22 dbrown Exp $
+ *      $Id: nclstate.c,v 1.17 1998-03-23 22:48:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1147,7 +1147,7 @@ SubmitNclLine
 	else if(strstr(cmd_buff,"load"))
 		FuncPending(ncl);
 
-	_NgStackFree(cmd_buff,cmd_stack);
+	_NgStackFree((NhlPointer)cmd_buff,cmd_stack);
 
 	if(len == ns->line){
 		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
@@ -1312,7 +1312,7 @@ NgNclSubmitBlock
 	}
 
 	ResetNcl(ncl);
-	_NgStackFree(blk_buff,blk_stack);
+	_NgStackFree((NhlPointer)blk_buff,blk_stack);
 
 	SubmitPostSubmit(ncl);
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Grid.c,v 1.4 1998-01-08 01:19:18 dbrown Exp $
+ *      $Id: Grid.c,v 1.5 1998-03-23 22:48:38 dbrown Exp $
  */
 /*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
@@ -285,8 +285,8 @@ static void XmLGridCellSetValueSet(XmLGridCell cell, Boolean set);
 static void XmLGridCellSetInRowSpan(XmLGridCell cell, Boolean set);
 static void XmLGridCellSetInColumnSpan(XmLGridCell cell, Boolean set);
 static void XmLGridCellSetSelected(XmLGridCell cell, Boolean selected);
-static XmLGridCellAllocIcon(XmLGridCell cell);
-static XmLGridCellAllocPixmap(XmLGridCell cell);
+static void XmLGridCellAllocIcon(XmLGridCell cell);
+static void XmLGridCellAllocPixmap(XmLGridCell cell);
 static void XmLGridCellSetString(XmLGridCell cell, XmString string,
 	Boolean copy);
 static XmString XmLGridCellGetString(XmLGridCell cell);
@@ -297,7 +297,7 @@ static void XmLGridCellSetPixmap(XmLGridCell cell, Pixmap pixmap,
 static void XmLGridCellSetPixmask(XmLGridCell cell, Pixmap pixmask);
 static XmLGridCellPixmap *XmLGridCellGetPixmap(XmLGridCell cell);
 static void XmLGridCellClearTextString(XmLGridCell cell, Widget w);
-static int _XmLGridCellConfigureText(XmLGridCell cell, Widget w,
+static void _XmLGridCellConfigureText(XmLGridCell cell, Widget w,
 	XRectangle *rect);
 static int _XmLGridCellBeginTextEdit(XmLGridCell cell, Widget w,
 	XRectangle *clipRect);
@@ -475,8 +475,8 @@ static void XmLGridCellSetValueSet();
 static void XmLGridCellSetInRowSpan();
 static void XmLGridCellSetInColumnSpan();
 static void XmLGridCellSetSelected();
-static XmLGridCellAllocIcon();
-static XmLGridCellAllocPixmap();
+static void XmLGridCellAllocIcon();
+static void XmLGridCellAllocPixmap();
 static void XmLGridCellSetString();
 static XmString XmLGridCellGetString();
 static void XmLGridCellSetToggle();
@@ -485,7 +485,7 @@ static void XmLGridCellSetPixmap();
 static void XmLGridCellSetPixmask();
 static XmLGridCellPixmap *XmLGridCellGetPixmap();
 static void XmLGridCellClearTextString();
-static int _XmLGridCellConfigureText();
+static void _XmLGridCellConfigureText();
 static int _XmLGridCellBeginTextEdit();
 static void _XmLGridCellCompleteTextEdit();
 static void _XmLGridCellInsertText();
@@ -8393,7 +8393,7 @@ Boolean selected;
 		cell->cell.flags ^= XmLGridCellSelectedFlag;
 	}
 
-static XmLGridCellAllocIcon(cell)
+static void XmLGridCellAllocIcon(cell)
 XmLGridCell cell;
 	{
 	XmLGridCellIcon *icon;
@@ -8408,7 +8408,7 @@ XmLGridCell cell;
 	XmLGridCellSetValueSet(cell, True);
 	}
 
-static XmLGridCellAllocPixmap(cell)
+static void XmLGridCellAllocPixmap(cell)
 XmLGridCell cell;
 	{
 	XmLGridCellPixmap *pix;
@@ -8815,7 +8815,7 @@ XmLGridDrawStruct *ds;
 	}
 
 /* Only to be called by XmLGridCellAction() */
-static int _XmLGridCellConfigureText(cell, w, rect)
+static void _XmLGridCellConfigureText(cell, w, rect)
 XmLGridCell cell;
 Widget w;
 XRectangle *rect;
