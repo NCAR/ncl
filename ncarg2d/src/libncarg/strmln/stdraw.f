@@ -1,5 +1,5 @@
 C
-C	$Id: stdraw.f,v 1.2 1993-01-21 01:14:39 dbrown Exp $
+C	$Id: stdraw.f,v 1.3 1993-01-21 19:31:08 dbrown Exp $
 C
       SUBROUTINE STDRAW  (U,V,UX,VY,IAM,STUMSL)
 C
@@ -276,7 +276,7 @@ C
 C
 C First ensure that the point buffer is clear
 C
-      IF (IPC .GT. 1) CALL STLINE(PX,PY,IPC,IAM,STUMSL)
+      IF (IPC .GT. 1) CALL STLNSG(PX,PY,IPC,IAM,STUMSL)
 C
 C Find an available box for starting a streamline.
 C
@@ -397,7 +397,7 @@ C
 C Must be in same box --  Clear the point buffer if required
 C
          IF (IPC .EQ. IPNPTS) THEN
-            CALL STLINE(PX,PY,IPNPTS,IAM,STUMSL)
+            CALL STLNSG(PX,PY,IPNPTS,IAM,STUMSL)
             PX(1)=PX(IPNPTS)
             PY(1)=PY(IPNPTS)
             IPC=1
@@ -798,7 +798,7 @@ C
 C
  10   CONTINUE
 C
-      CALL STLINE(AX,AY,3,IAM,STUMSL)
+      CALL STLNSG(AX,AY,3,IAM,STUMSL)
 C
 C Done
 C
@@ -807,8 +807,13 @@ C
 C
 C ---------------------------------------------------------------------
 C
-      SUBROUTINE STLINE(X,Y,IPC,IAM,STUMSL)
+      SUBROUTINE STLNSG(X,Y,IPC,IAM,STUMSL)
 C
+C This routine draws a single streamline segment based on the current
+C contents of the point buffers. If masking is in effect the area
+C line drawing subroutine, ARDRLN is called. Otherwise CURVE is
+C invoked. 
+C  
 C Input parameters:
 C
 C X,Y - Point arrays
