@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.6 1992-11-02 14:39:01 haley Exp $
+#	$Id: yMakefile,v 1.7 1992-11-02 15:24:59 haley Exp $
 #
 NCARG	= ../../../..
 
@@ -95,4 +95,5 @@ MakefileTarget
 CleanTarget
 
 clean::
-	@-$(RM) ncargf77 ncargcc ncargex ncargCex ncargsrc ncargsrcy ncargfile
+	@-$(RM) ncargf77 ncargcc ncargex ncargCex ncargsrc ncargsrcy ncargfile \
+	ncargversion
