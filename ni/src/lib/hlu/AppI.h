@@ -1,5 +1,5 @@
 /*
- *      $Id: AppI.h,v 1.4 1996-04-05 21:15:32 boote Exp $
+ *      $Id: AppI.h,v 1.5 1996-05-09 23:16:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,9 @@
 #ifndef	_NAppI_h
 #define	_NAppI_h
 
+
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/Callbacks.h>
 #include <ncarg/hlu/App.h>
 
 #define	_NhlNappMode	"app.Mode"
@@ -67,5 +69,19 @@ extern NhlErrorTypes _NhlSortAppArgs(
 	int		*nargs_out
 #endif
 );
+
+/*
+* cbdata to cbfunc will be HLU Id of app whose
+* NhlNappDefaultParent resource has changed either
+* from True to False or False to True
+*/
+extern _NhlCB  NhlSetAppDefaultChangeCB(
+#if     NhlNeedProto
+        NhlClass        oc,
+        _NhlCBFunc      cbfunc,
+        NhlArgVal       udata
+#endif
+);
+
 
 #endif	/* _NAppI_h */

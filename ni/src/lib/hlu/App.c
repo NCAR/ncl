@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.21 1996-04-05 21:15:31 boote Exp $
+ *      $Id: App.c,v 1.22 1996-05-09 23:16:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -47,6 +47,15 @@ static NhlErrorTypes AppInitialize(
 #endif
 );
 
+static NhlErrorTypes AppSetValuesHook(
+#if	NhlNeedProto
+	NhlLayer	old,
+	NhlLayer	req,
+	NhlLayer	new,
+	_NhlArgList	args,
+	int		nargs
+#endif
+);
 static NhlErrorTypes AppSetValues(
 #if	NhlNeedProto
 	NhlLayer	old,
@@ -178,7 +187,7 @@ NhlAppClassRec NhlappClassRec = {
 /* class_initialize		*/	AppClassInitialize,
 /* layer_initialize		*/	AppInitialize,
 /* layer_set_values		*/	AppSetValues,
-/* layer_set_values_hook	*/	NULL,
+/* layer_set_values_hook	*/	AppSetValuesHook,
 /* layer_get_values		*/	AppGetValues,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	AppLayerDestroy,
@@ -385,6 +394,7 @@ AppClassPartInitialize
 
 	alcp->default_app = NULL;
 	alcp->current_app = NULL;
+	alcp->cblist = _NhlCBCreate(0,NULL,NULL);
 	InitBaseDB(alc);
 
 	return NhlNOERROR;
@@ -704,6 +714,38 @@ AppInitialize
 	return ret;
 }
 
+static NhlErrorTypes
+AppSetValuesHook
+#if	NhlNeedProto
+(
+	NhlLayer	old,
+	NhlLayer	req,
+	NhlLayer	new,
+	_NhlArgList	args,
+	int		nargs
+)
+#else
+(old,req,new,args,nargs)
+	NhlLayer	old;
+	NhlLayer	req;
+	NhlLayer	new;
+	_NhlArgList	args;
+	int		nargs;
+#endif
+{
+	NhlAppLayer apo = (NhlAppLayer)old;
+	NhlAppLayer apn = (NhlAppLayer)new;
+	NhlArgVal cbdata;
+	NhlArgVal selector;
+	
+
+	
+	if(apn->app.default_app != apo->app.default_app) {
+		selector.lngval = 0;
+		cbdata.lngval = apn->base.id;
+		_NhlCBCallCallbacks(((NhlAppClass)apn->base.layer_class)->app_class.cblist,selector,cbdata);
+	}
+}
 /*
  * Function:	AppSetValues
  *
@@ -1346,4 +1388,32 @@ void _NHLCALLF(nhl_fisapp,NHL_FISAPP)
 	*status = NhlIsApp(*id);
 
 	return;
+}
+
+
+/*
+* oc is need in case its an appClass subsclass
+*/
+_NhlCB  NhlSetAppDefaultChangeCB
+#if 	NhlNeedProto
+(
+NhlClass        oc,
+_NhlCBFunc      cbfunc,
+NhlArgVal       udata
+)
+#else
+(oc,cbfunc,udata)
+	NhlClass	oc;
+        _NhlCBFunc      cbfunc;
+        NhlArgVal       udata;
+#endif
+{
+	NhlAppClass apc = (NhlAppClass)oc;
+	NhlArgVal selector;
+
+	if(oc == NULL) {
+		apc = (NhlAppClass)NhlappClass;
+	}
+	selector.lngval = 0;
+	return(_NhlCBAdd(apc->app_class.cblist,selector,cbfunc,udata));
 }

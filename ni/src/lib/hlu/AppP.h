@@ -1,5 +1,5 @@
 /*
- *      $Id: AppP.h,v 1.5 1995-04-22 01:01:26 boote Exp $
+ *      $Id: AppP.h,v 1.6 1996-05-09 23:16:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -73,6 +73,7 @@ typedef struct _NhlAppClassPart {
 	int			error_id;
 	int			workspace_id;
 	NhlAppTable		app_objs;	/* except default_app */
+	_NhlCBList		cblist;
 } NhlAppClassPart;
 
 typedef struct _NhlAppClassRec {
