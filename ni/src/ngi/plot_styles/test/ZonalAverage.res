@@ -40,7 +40,7 @@
 ! All variables created inside the functions should be declared local.
 !
 
-*ndvFuncFiles : (/ test_style.ncl /)
+*ndvFuncFiles : (/ test_style.ncl , ../common.ncl /)
 !
 ! Handles for referencing data sets. The required dimensionality follows the
 ! colon. Eventually there may be support for specifying a dimensionality range.
@@ -102,8 +102,11 @@
 ! Zonal average XyPlot
 !
 *xy@xyCoordData : $ca$
-*xy@ndvUpdateFunc2 : pos_xy_anno($map$,$xy$)
-*xy@ndvUpdateFunc2%Profile : \
+*xy@ndvUpdateFunc4 : adjust_tickmarks($maptick$,$xy$,0,0,0)
+*xy@ndvUpdateFunc4%Profile : \
+	(/ Name : Xy TickMarks /)
+*xy@ndvUpdateFunc3 : pos_xy_anno($maptick$,$ca$,$xy$)
+*xy@ndvUpdateFunc3%Profile : \
 	(/ Name : Zonal Average Plot Pos /)
 *xy*amSide : right
 *xy*amZone : 3
@@ -112,6 +115,12 @@
 *xy*amResizeNotify : True
 *xy*tmYLLabelsOn : False
 *xy*tiMainString : Zonal Average
+*xy*xyComputeYMax : False
+*xy*xyComputeYMin : False
+!*xy*xyComputeXMax : False
+!*xy*xyComputeXMin : False
+*xy*tmXBFormat : *+^sg
+
 !
 ! Main data scalar field
 !
@@ -127,7 +136,7 @@
 *map@pmOverlays : (/ $cnplot$, $maptick$ /)
 *map@pmOverlays%Profile : (/ InitializeOnly : True /)
 
-*map@ndvUpdateFunc : set_map_limits_from_object($map$,$cnplot$,False,False)
+*map@ndvUpdateFunc : set_map_limits_from_object($map$,$cnplot$,0)
 *map@ndvUpdateFunc%Profile : (/ Name : Set Map Limits from Data Extent /)
 
 *map@pmAnnoViews : (/$xy$,$left_title$,$center_title$,$right_title$ /)
@@ -136,14 +145,18 @@
 !*map@ndvUpdateFunc1 : plot_title($map$,\
 	$left_title$,$geosf$@long_name,$right_title$,$geosf$@units,0.014,1)
 !*map@ndvUpdateFunc1%Profile : (/ Name : Plot Titles /)
+!*map@ndvUpdateFunc1 : plot_titles($map$,\
+!	$left_title$,$geosf$@long_name,\
+!	$center_title$,$geosf$!-3 + " " + $geosf$!-3@units,\
+!	$right_title$,$geosf$@units,0.014,1)
 *map@ndvUpdateFunc1 : plot_titles($map$,\
 	$left_title$,$geosf$@long_name,\
-	$center_title$,$geosf$!-3 + " " + $geosf$!-3@units,\
-	$right_title$,$geosf$@units,0.014,1)
+	$center_title$,"",\
+	$right_title$,$geosf$@units,0.012,1)
 *map@ndvUpdateFunc1%Profile : (/ Name : Plot Titles /)
 
-*map@ndvUpdateFunc2 : test_func ($geosf$!-3 )
-*map@ndvUpdateFunc2%Profile : (/ Name : Test Func /)
+!*map@ndvUpdateFunc2 : test_func ($geosf$!-3 )
+!*map@ndvUpdateFunc2%Profile : (/ Name : Test Func /)
 
 !*map*mpGeophysicalLineColor : Foreground
 *map*vpXF : 0.08
@@ -151,8 +164,8 @@
 !
 ! Loglinplot used to overlay tickmarks
 !
-*maptick@ndvUpdateFunc : map_tickmarks($map$,$maptick$)
-*maptick@ndvUpdateFunc%Profile : (/ Name : Lat-Lon Tickmarks /)
+*maptick@ndvUpdateFunc2 : map_tickmarks($map$,$maptick$,0.009,0.012,0.006)
+*maptick@ndvUpdateFunc2%Profile : (/ Name : Lat-Lon Tickmarks /)
 *maptick*tfDoNDCOverlay : True
 *maptick*pmTickMarkDisplayMode : always
 *maptick*amZone : 0
@@ -166,8 +179,12 @@
 *cnplot@cnFillColors : spread_colors($cnplot$,2,-1)
 *cnplot@cnFillColors%Profile : (/ Name : Level Colors , \
 				SaveForCompare : True /)
+*cnplot@ndvUpdateFunc : SetContourLevels($cnplot$,0,0,0)
+*cnplot@ndvUpdateFunc%Profile : (/ Name : Contour Level Control /)
 *cnplot@pmAnnoViews : (/ $timestamp$ /)
 *cnplot@pmAnnoViews%Profile : (/ InitializeOnly : True /)
+*cnplot@ndvUpdateFunc4 : adjust_labelbar($maptick$,$cnplot$,0,0)
+*cnplot@ndvUpdateFunc4%Profile : (/ Name : Contour Colorbar /)
 *cnplot*cnRasterModeOn : True
 *cnplot*cnRasterSmoothingOn : True
 *cnplot*cnLinesOn : False
@@ -193,10 +210,10 @@
 !
 ! the left title annotation
 !
-*left_title*amZone : 4
+*left_title*amZone : 3
 *left_title*amSide : top
 *left_title*amParallelPosF : 0.0
-*left_title*amOrthogonalPosF : 0.02
+*left_title*amOrthogonalPosF : 0.05
 *left_title*amJust : bottomleft
 *left_title*amResizeNotify : True
 !

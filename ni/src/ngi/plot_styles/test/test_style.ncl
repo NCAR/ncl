@@ -7,7 +7,15 @@ undef("fix_longitude")
 undef("fix_longitude_coord")
 undef("set_map_limits_from_object")
 undef("test_func")
-undef("plot_titles")
+undef("difference")
+undef("match_contour_plots")
+undef("add_annotations")
+undef("match_viewport")
+undef("adjust_plot_spacing")
+undef("set_colormap")
+undef("adjust_labelbar")
+undef("adjust_tickmarks")
+
 
 function test_func ( value )
 
@@ -33,12 +41,37 @@ begin
 	end if
 end
 
+function difference(data1, data2)
+
+local is,data
+
+begin
+	if (any(dimsizes(data1) - dimsizes(data2)) .ne. False) then
+		print("error: non-conformable data")
+		return 0
+	end if
+		 
+ 	is = isatt(data1,(/"_FillValue","missing_value"/))
+	if (is(0).eq.False .and. is(1).eq.True) then
+		data1@_FillValue = data1@missing_value
+	end if
+ 	is = isatt(data2,(/"_FillValue","missing_value"/))
+	if (is(0).eq.False .and. is(1).eq.True) then
+		data2@_FillValue = data2@missing_value
+	end if
+
+	data = data1
+	data = data1 - data2
+
+	return data
+end
 
 function spread_colors (plot : graphic, \
 			min_index : integer, \
 			max_index : integer)
 
-local ncols,lcount,fcols,icols,stride,rem,start,minix,maxix,nc,fmin,fmax
+local ncols,lcount,fcols,icols,stride,rem,start,minix,maxix,nc,fmin,fmax, \
+	colres,levelcountres
 
 begin
 	if (ismissing(plot))
@@ -142,7 +175,7 @@ function fix_longitude_coord(lon[*])
 ; Add a cyclic point a to coord var (representing longitude)
 
 local dims, newdata, ny, mx, mx1, sizes,lon,maxloninc,i,sign, \
-	loninc,monotonic,nonmono_ix1, nonmono_ix2,llon
+	loninc,monotonic,nonmono_ix1, nonmono_ix2,llon,tmp
 begin
 
     mx = dimsizes(lon)
@@ -182,7 +215,8 @@ begin
 	return lon
     end if
 
-    if (maxloninc + fabs(lon(mx-1) - lon(0)) .lt. 360) then
+    tmp = maxloninc + fabs(lon(mx-1) - lon(0))
+    if (floattointeger(tmp+0.5) .lt. 360) then
 	; it's not a global dataset -- cyclical point not needed
 	return lon
     end if
@@ -208,14 +242,17 @@ function fix_longitude(data[*][*])
 ;                    "mx" corresponds to "mlon"
 
 local dims, newdata, ny, mx, mx1, sizes,lon,maxloninc,i,sign, \
-	loninc,monotonic,nonmono_ix1, nonmono_ix2
+	loninc,monotonic,nonmono_ix1, nonmono_ix2,tmp
 begin
     dims    = dimsizes(data)
     ny      = dims(0)
     mx      = dims(1)
     mx1     = mx+1
-
+;
+    print("in fix_longitude")
+ 
     if (ismissing(data!1) .or. .not. iscoord(data,data!1)) then
+	print("returning")
 	return data
     end if
 
@@ -229,6 +266,7 @@ begin
 	
     if (fabs(lon(mx-1) - lon(0)).ge. 360.) then
 	; cyclic point already exists -- might be more points than we need
+	print("cyclic point not needed")
 	return data
     end if
 
@@ -256,8 +294,10 @@ begin
 	return data
     end if
 
-    if (maxloninc + fabs(lon(mx-1) - lon(0)) .lt. 360) then
+    tmp = maxloninc + fabs(lon(mx-1) - lon(0))
+    if (floattointeger(tmp+0.5) .lt. 360) then
 	; it's not a global dataset -- cyclical point not needed
+	print("cyclic point not added, range is: " + tmp)
 	return data
     end if
 
@@ -287,6 +327,16 @@ begin
 	    end if
     end if
 
+    if (isatt(data,"_FillValue")) then
+    	newdata@_FillValue = data@_FillValue
+    else
+	if (isatt(data,"missing_value")) then
+		newdata@_FillValue = data@missing_value
+	end if
+    end if
+	
+
+    print("added cyclic point")
     return(newdata)
 
 end
@@ -306,7 +356,319 @@ end
 ;
 ; If 1 is returned unnecessarily the result will be superfluous redraws of
 ; the plot in the ndv XWorkstation.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
+;
+
+;
+; This function defines a colormap in the given workstation.
+;
+; Input: the plot object containing the workstation and the color map.
+;
+; Output: 0 if okay, 1 if not.
+;
+function set_colormap (plot : graphic, colormap)
+begin
+  if (.not. isatt(plot,"ndvWks"))
+    print("SetColormap: using default color map")
+    return -1
+  end if
+
+  if(all(colormap.ne.""))
+    setvalues plot@ndvWks
+      "wkColorMap" : colormap
+    end setvalues
+    return 1
+  end if
+  return 0
+end
+
+; Function: match_viewport
+; Description: Matches the viewport size of an array of views to the size
+; of the model view. 
+;
+function match_viewport \
+	(model_view : graphic, views[*] : graphic)
+
+local i,mheight,mwidth,vheight,vwidth
+
+begin
+	ret = 0
+	getvalues model_view
+		"vpWidthF" : mwidth
+		"vpHeightF" : mheight
+	end getvalues
+
+	do i = 0, dimsizes(views) - 1
+		getvalues views(i)
+			"vpWidthF" : vwidth
+			"vpHeightF" : vheight
+		end getvalues
+		if (mwidth .ne. vwidth .or. \
+		    mheight .ne. vheight) then
+			setvalues views(i)
+				"vpWidthF" : mwidth
+				"vpHeightF" : mheight
+			end setvalues
+			ret = 1
+		end if
+	end do
+	
+	return ret
+end				
+
+;
+; adjust plot spacing
+;
+function adjust_plot_spacing(model_view : graphic, views[*] : graphic)
+
+local i,mheight,mwidth,vy,vheight,vbboxes,am,off,ret,blap,tlap
+
+begin
+	ret = 0
+	getvalues model_view
+		"vpWidthF" : mwidth
+		"vpHeightF" : mheight
+	end getvalues
+
+	vbboxes = NhlGetBB(views)
+;
+; this is cheating; estimating the effect of the map tickmarks, which
+; due to HLU difficulties are hard to place (this should be fixed)
+;
+        blap = (mheight / 0.6) * 0.1
+	do i = 0, dimsizes(views) - 1
+		getvalues views(i)
+			"vpYF" : vy
+			"vpHeightF" : vheight
+			"vpAnnoManagerId" : am
+		end getvalues
+	        tlap = vbboxes(i,0) - vy
+		print("b " + blap + " t " + tlap + " h " + mheight)
+		off = (blap + tlap) / mheight + 0.08
+		getvalues am
+			"amOrthogonalPosF" : oldoff
+		end getvalues
+		print ("old" + oldoff)
+		if (off .ne. oldoff) then
+			print("match vp off " + off)
+			setvalues am
+				"amOrthogonalPosF" : off
+			end setvalues
+			ret = 1
+		end if
+		blap = 0
+	end do
+	
+	return ret
+end				
+
+;
+; Description: spreads a range of a color table in both directions from
+; a defined level value. Useful for plots such a difference plot where a
+; particular level (e.g. 0) should always be the same color even though
+; it is not known in advance how many levels will be on each side of the 
+; color. 
+;
+
+function spread_colors_around_level_val \
+	(plot : graphic, \
+	 min_index : integer, \
+	 max_index : integer, \
+	 level_val : float)
+
+local ncols,lcount,fcols,icols,levels,colors, \
+	minix,maxix,cenix,valix,nc,tmin,tmax, \
+	fmin,fmax,fcen, \
+	colres,levelres,levelcountres
+
+begin
+	if (ismissing(plot))
+		return -1
+	end if
+;	print(plot)
+
+	if (isatt(plot,"ndvClass"))
+		class = plot@ndvClass
+		if (class.eq."contourPlotClass") then
+			colres = "cnFillColors"
+			levelcountres = "cnLevelCount"
+			levelres = "cnLevels"	
+		else
+			if (class.eq."vectorPlotClass") then
+				colres = "vcLevelColors"
+				levelcountres = "vcLevelCount"
+				levelres = "vcLevels"
+			else
+				return -1
+			end if
+		end if
+	else
+		return -1
+	end if
+	if (.not. isatt(plot,"ndvWks")) then
+		return -1
+	end if
+
+	getvalues plot@ndvWks
+		"wkColorMapLen" : ncols
+	end getvalues
+	getvalues plot
+		levelcountres : lcount
+		levelres : levels
+		colres : colors
+	end getvalues
+
+;	print("numcolors " + ncols + "level count " + lcount)
+	maxix = new(1,integer)
+	minix = new(1,integer)
+	maxix = max_index
+	minix = min_index
+
+;	print(minix)
+;	print(maxix)
+;	print(ncols)
+
+	if (maxix .eq. -1) then
+		maxix = ncols -1
+	end if
+
+	if (maxix .le. minix .or. minix .lt. 0) then
+		print("invalid parameters to spread_colors: defaulting")
+		maxix = ncols - 1
+		minix = 2
+	end if
+
+	tmax = min(ind(levels.gt.level_val))
+	tmin = max(ind(levels.le.level_val))
+	if (ismissing(tmin)) then
+		valix = tmax
+	else
+		if (ismissing(tmax)) then
+			valix = tmin
+		else
+			if (levels(tmax) - level_val .lt. \
+			    level_val - levels(tmin)) then
+				valix = tmax
+			else
+				valix = tmin
+			end if
+		end if
+	end if
+	
+	
+	minix = max((/0,minix/))
+	maxix = min((/ncols - 1,maxix/))
+	nc = maxix - minix + 1
+	cenix = minix + nc / 2
+
+	fmin = new(1,float)
+	fmax = new(1,float)
+	fcen = new(1,float)
+
+	fmin = minix
+	fmax = maxix
+	fcen = cenix
+	fcols = new(lcount + 1,float)
+	fcols(0:valix) = fspan(fmin,fcen,valix+1)
+	if (valix .lt. lcount) then
+	     fcols(valix+1:lcount) = fspan(fcen,fmax,lcount-valix)
+        end if
+
+	icols = floattointeger(fcols + 0.5)
+
+;	print(fcols)
+;	print(icols)
+
+	if (dimsizes(colors).ne.dimsizes(icols) .or. \
+	    any(colors-icols) .ne. 0) then
+		setvalues plot
+			colres : icols
+		end setvalues
+		return 1
+	end if
+
+	return 0
+end
+
+;
+; This function matches the contour settings of a second contour
+; object to the first, as well as it can.
+;
+; Input: two contour plots
+;
+; Output: 1 if changes were made, 0 if no change necessary, -1 if error.
+;
+
+function match_contour_plots(contour1:graphic, contour2: graphic)
+
+local mode1,spacing1,min1,max1,level1,fillcolors1 , \
+      mode2,spacing2,min2,max2,level2,fillcolors2
+
+begin
+
+  class_name = NhlClassName(contour1)
+  if(class_name.ne."contourPlotClass")
+   print\
+    ("match_contour_levels: the first argument must be a contour plot object.")
+    	return -1
+  end if
+  class_name = NhlClassName(contour2)
+  if(class_name.ne."contourPlotClass")
+   print\
+    ("match_contour_levels: the first argument must be a contour plot object.")
+    	return -1
+  end if
+
+  getvalues contour1
+	"cnLevelSelectionMode" : mode1
+	"cnLevelSpacingF" : spacing1
+	"cnMinLevelValF"  : min1
+        "cnMaxLevelValF"  : max1
+	"cnLevels"	  : levels1
+	"cnFillColors"	  : fillcolors1
+  end getvalues
+
+  getvalues contour2
+	"cnLevelSelectionMode" : mode2
+	"cnLevelSpacingF" : spacing2
+	"cnMinLevelValF"  : min2
+        "cnMaxLevelValF"  : max2
+	"cnLevels"	  : levels2
+	"cnFillColors"	  : fillcolors2
+  end getvalues
+
+  if (mode1 .eq. 2) then 
+	if (dimsizes(levels1).ne.dimsizes(levels2) .or. \
+	    any(levels1 - levels2) .ne. False .or. \
+	    any(fillcolors1 - fillcolors2) .ne. False) then
+		setvalues contour2
+		    "cnLevelSelectionMode" : 2
+		    "cnLevels" : levels1
+	 	    "cnFillColors" : fillcolors1
+		end setvalues
+        end if
+        return 1
+  end if
+
+  if (spacing1 .ne. spacing2 .or. \
+      min1 .ne. min2 .or. \
+      max1 .ne. max2 .or. \
+      dimsizes(fillcolors1).ne.dimsizes(fillcolors2) .or. \
+      any(fillcolors1 - fillcolors2) .ne. False) then
+	setvalues contour2
+	    "cnLevelSelectionMode" : "manuallevels"
+            "cnLevelSpacingF" : spacing1
+	    "cnMinLevelValF"  : min1
+            "cnMaxLevelValF"  : max1
+	    "cnFillColors" : fillcolors1
+	end setvalues
+	return 1
+  end if
+
+  return 0
+end
+
 
 function plot_title (plot : graphic, \
 		     ltitle : graphic, ltext : string, \
@@ -400,156 +762,13 @@ begin
 ;	print(ret)
 	return ret
 end	
- 
-;
-; Add three subtitles to top of plot (left, center, and right).
-;
-; Input: plot to add titles to, three text items representing each title,
-;        three strings representing the titles, and a max height and
-;        height factor for calculating the font height.
-;
-; Output: 0 if okay, 1 if not.
-;
-function plot_titles (plot : graphic, \
-             ltitle : graphic, ltext , \
-             ctitle : graphic, ctext , \
-             rtitle : graphic, rtext , \
-             max_height : float, height_factor : float )
 
-local vp_width,c1,c2,c3,height1,height2,height3,asp1,asp2,asp3,vpon1,vpon2,\
-      vpon3,text1,text2,text3,tchars,ltext_str,ctext_str,rtext_str,\
-      height,asp,sp_per_char,vpon,ret
-begin
-
-    print("entering plot_titles")
-    ret = 0
-;
-; need check to see if these objects are what they are supposed to be
-;
-    getvalues plot
-        "vpWidthF"  : vp_width
-    end getvalues
-
-    getvalues ltitle
-        "txFontAspectF" : asp1
-        "txFontHeightF" : height1
-        "txString"      : text1
-        "vpOn"          : vpon1
-    end getvalues
-
-    getvalues ctitle
-        "txFontAspectF" : asp2
-        "txFontHeightF" : height2
-        "txString"      : text2
-        "vpOn"          : vpon2
-    end getvalues
-
-    getvalues rtitle
-        "txFontAspectF" : asp3
-        "txFontHeightF" : height3
-        "txString"      : text3
-        "vpOn"          : vpon3
-    end getvalues
-
-;
-;   uniform aspect and height enforced for these titles
-;
-    asp = (asp1 + asp2 + asp3) / 3.0
-    print(ctext)
-    ltext_str = ltext + ""
-    ctext_str = ctext + "" 
-    print(ctext_str)
-    print(ctext + "")
-    rtext_str = rtext + ""
-    c1 = stringtochar(ltext_str)
-    c2 = stringtochar(ctext_str)
-    c3 = stringtochar(rtext_str)
-    print("end converting strings")
-    tchars = sizeof(c1) + sizeof(c2) + sizeof(c3) + 3
-;
-; assume constant spacing since that takes the most room
-;
-    sp_per_char = vp_width / tchars
-    
-    height = min((/max_height,sp_per_char/)) * height_factor
-
-    if (sizeof(c1).lt.2)
-        if (vpon1 .ne. False)
-            setvalues ltitle
-                "vpOn" : False
-            end setvalues
-            ret = 1
-        end if
-    else
-      if (.not. (asp1 .eq. asp .and. \
-           height1 .eq. height .and. \
-           text1 .eq. ltext .and. \
-           vpon1 .eq. True))
-        
-        setvalues ltitle
-            "txFontAspectF" : asp
-            "txFontHeightF" : height
-            "txString"      : ltext_str
-            "vpOn"          : True
-        end setvalues
-        ret = 1
-      end if
-    end if
-
-    if (sizeof(c2).lt.2)
-        if (vpon2 .ne. False)
-            setvalues ctitle
-                "vpOn" : False
-            end setvalues
-            ret = 1
-        end if
-    else
-      if (.not. (asp2 .eq. asp .and. \
-           height2 .eq. height .and. \
-           text2 .eq. ctext .and. \
-           vpon2 .eq. True))
-        
-        setvalues ctitle
-            "txFontAspectF" : asp
-            "txFontHeightF" : height
-            "txString"      : ctext_str
-            "vpOn"          : True
-        end setvalues
-        ret = 1
-      end if
-    end if
-
-    if (sizeof(c3).lt.2)
-        if (vpon3 .ne. False)
-            setvalues rtitle
-                "vpOn" : False
-            end setvalues
-            ret = 1
-        end if
-    else
-      if (.not. (asp3 .eq. asp .and. \
-           height3 .eq. height .and. \
-           text3 .eq. rtext .and. \
-           vpon3 .eq. True))
-    
-        setvalues rtitle
-            "txFontAspectF" : asp
-            "txFontHeightF" : height
-            "txString"      : rtext_str
-            "vpOn"          : True
-        end setvalues
-        ret = 1
-      end if
-    end if
-    
-    print("leaving plot_titles")
-    return ret
-end 
-
-function pos_xy_anno (base : graphic, xy : graphic)
+function pos_xy_anno (base : graphic, ca : graphic, xy : graphic)
 
 local width,vpheight,vpwidth,vpx,xyx,bb,bb1,vpheight0,vpwidth0, \
-	am,opos,opos0,ret
+	am,opos,opos0,ret,\
+	tmdisplay,xmin,xmax,ymin,ymax,ylmode,ylvalues,ylminorvalues,\
+	tmdisplay0,xmin0,xmax0,ymin0,ymax0,ylmode0,ylvalues0,ylminorvalues0
 
 begin
       ret = 0
@@ -558,26 +777,96 @@ begin
         "vpHeightF"    : vpheight
         "vpXF"         : vpx
         "vpWidthF"     : width
+	"pmTickMarkDisplayMode" : tmdisplay
+	"trYMinF"	: ymin
+	"trYMaxF"	: ymax
       end getvalues
+
+      if (tmdisplay .gt. 0) then
+	      getvalues base	
+		"tmYLMode"  :	ylmode
+	      end getvalues
+
+	      if (ylmode .eq. 2) then
+		      getvalues base	
+			"tmYLValues" :  ylvalues
+			"tmYLMinorValues" : ylminorvalues
+		      end getvalues
+	      end if
+      end if
+
+;      getvalues ca
+;	"caXMinV"	: xmin
+;	"caXMaxV"	: xmax
+;      end getvalues
 
       getvalues xy
 	"vpAnnoManagerId" : am
         "vpHeightF"    : vpheight0
         "vpWidthF"     : vpwidth0
         "vpXF"         : xyx
+	"pmTickMarkDisplayMode" : tmdisplay0
+	"trYMinF"	: ymin0
+	"trYMaxF"	: ymax0
+;	"trXMinF"	: xmin0
+;	"trXMaxF"	: xmax0
       end getvalues
 
-      vpwidth = min((/vpheight,width * .625/))
+      ylmode0 = 0
+      if (tmdisplay0 .ge. 0) then
+	      getvalues xy	
+		"tmYLMode"  :	ylmode0
+	      end getvalues
+	      if (ylmode0 .eq. 2) then
+		      getvalues xy	
+			"tmYLValues" :  ylvalues0
+			"tmYLMinorValues" : ylminorvalues0
+		      end getvalues
+	      end if
+      end if
+
+      vpwidth = min((/vpheight,width * .375/))
 
       if (.not. (vpwidth .eq. vpwidth0 .and. \
-		 vpheight .eq. vpheight0)) then
+		 vpheight .eq. vpheight0 .and. \
+		 ymin .eq. ymin0 .and. \
+		 ymax .eq. ymax0 .and. \
+;		 xmin .eq. xmin0 .and. \
+;		 xmax .eq. xmax0 .and. \
+		 tmdisplay .eq. tmdisplay0)) then
+
 ;	      print("vpwidth: " + vpwidth + " vpwidth0: " + vpwidth0)
 ;	      print("vpheight: " + vpheight + " vpheight0: " + vpheight0)
+
 	      setvalues xy
         	"vpHeightF"    : vpheight
 	        "vpWidthF"     : vpwidth
+		"pmTickMarkDisplayMode" : tmdisplay
+		"trYMinF"	: ymin
+		"trYMaxF"	: ymax
+;		"trXMinF"	: xmin
+;		"trXMaxF"	: xmax
+	      end setvalues
+
+	      ret = 1
+      end if
+      if (ylmode .eq. 2 .and. ylmode0 .ne. 2) then
+      		ylvalues0 = new(dimsizes(ylvalues),float)
+      		ylminorvalues0 = new(dimsizes(ylminorvalues),float)
+      end if
+      if (tmdisplay .gt. 0 .and. ylmode .eq. 2) then
+          if (ylmode0 .ne. 2 .or. \
+	      dimsizes(ylvalues) .ne. dimsizes(ylvalues0) .or. \
+	      any(ylvalues - ylvalues0) .ne. False .or. \
+	      dimsizes(ylminorvalues) .ne. dimsizes(ylminorvalues0) .or. \
+	      any(ylminorvalues - ylminorvalues0) .ne. False) then
+	      setvalues xy	
+		"tmYLMode"  :	ylmode
+		"tmYLValues" :  ylvalues
+		"tmYLMinorValues" : ylminorvalues
 	      end setvalues
 	      ret = 1
+           end if
       end if
 
       bb = NhlGetBB(base)
@@ -599,7 +888,7 @@ begin
 ;      print(bb1)
 ;      print(width)
 
-      opos = 0.001 + max((/0.0,xyx-bb1(2)/)) / width
+      opos = 0.02 + max((/0.0,xyx-bb1(2)/)) / width
 ;
 ;      print ("opos: " + opos + " xyx: " + xyx)
 ;
@@ -618,16 +907,275 @@ begin
 ;      print(ret)
       return ret	
 end
+;
+; Function: adjust_labelbar
+;
+; Description: 
+; Adjusts the labelbar label stride and font height automatically
+; if no parameters are modified from their default values, or under user
+; control otherwise. In the automatic mode, the stride is repeatedly set
+; until the labelbar font height is within a bounded range of a reference
+; value, obtained from the font height of the reference plot tickmark labels.
+; Under user control, the height is scaled by a user-supplied factor from
+; the reference value, and the stride may also be set.
+;
+; Parameters:
+; tick: a plot with tickmark labels from which to get a reference height
+; for the labelbar labels. If it doesn't exist it's an error. It it has
+; no tickmark labels a value of 0.015 * the viewport width is assumed
+;
+; plot: the graphic to which the labelbar is attached. It could be the
+; same as tick.
+;
+; stride: the stride value. If 0, the stride is calculated automatically
+;
+; font_height_factor: the factor applied to the reference font height
+; supplied by tick. If 0, then the labelbar determines font height based
+; on the stride and its own geometry.
+;
+function adjust_labelbar(reftick : graphic, plot : graphic, \
+			 stride : integer, font_height_factor : float)
+
+local dmode,vwidth,fheight,fheight0,stride0,\
+	automanage0,max_llen,spacing,fstride,ret
+
+begin
+	ret = 0 
+
+	if (.not. (isatt(reftick,"ndvClass") .and. \
+		NhlIsTransform(reftick) .and. \
+	    isatt(plot,"ndvClass") .and. NhlIsTransform(plot))) then
+		return -1;
+	end if
+
+	getvalues plot
+		"pmLabelBarDisplayMode" : dmode
+		"vpWidthF" : vwidth
+	end getvalues
+
+;
+; return if LabelBar not displayed
+;
+	if (dmode .lt. 1) then
+		return 0
+	end if
+;
+; see if the reference tickmark plot is displaying tickmarks
+; if not use a standard reference size
+;
+	getvalues reftick
+		"pmTickMarkDisplayMode" : dmode
+		"vpWidthF" : vwidth
+	end getvalues
+
+	if (dmode .lt. 1) then
+		fheight = min((/0.009,vwidth * 0.015/))
+	else
+		getvalues reftick
+			"tmXBLabelFontHeightF" : fheight
+		end getvalues
+	end if
+
+	getvalues plot
+		"lbLabelStride" : stride0
+		"lbLabelFontHeightF" : fheight0
+		"lbAutoManage" : automanage0
+		"lbMaxLabelLenF" : max_llen
+		"lbMinLabelSpacingF" : spacing	
+	end getvalues
+
+	print("stride0 " + stride0 + " stride " + stride)
+	if (font_height_factor .gt. 0) then
+		fheight = font_height_factor * fheight
+	end if
+
+	if (fheight .ne. fheight0 .or. automanage0 .eq. 1) then
+		ret = 1
+		setvalues plot
+			"lbAutoManage" : False
+			"lbLabelFontHeightF" : fheight
+		end setvalues
+		getvalues plot
+			"lbMaxLabelLenF" : max_llen
+		end getvalues
+	end if
+		
+	if (stride .gt. 0 .and. stride .ne. stride0) then
+;
+; explicit stride
+;
+
+		setvalues plot
+			"lbLabelStride" : stride
+		end setvalues
+		return 1
+	end if
+;
+; adjust the spacing value for a stride of 1
+;
+	if (stride0 .gt. 1) then
+		spacing = spacing / stride0
+	end if
+
+	stride = stride0
+	if (spacing .gt. 0) then
+		fstride = (max_llen + fheight / 2.0) / spacing
+		print(fstride)
+		stride = floattointeger(fstride)
+		print(stride)
+		if (fstride .gt. stride) then
+			stride = stride + 1
+		end if
+	end if
+	
+	if (stride .ne. stride0) then
+		setvalues plot
+			"lbLabelStride" : stride
+		end setvalues
+		ret = 1
+	end if
+
+	return ret
+end
 
 
-function map_tickmarks (map : graphic, tm : graphic)
+function adjust_tickmarks(reftick : graphic, plot : graphic, \
+			  xstride : integer, ystride : integer, \
+			  font_height_factor : float)
+
+local dmode,vwidth,fheight,xfheight,yfheight,\
+	xmaxlen,xspacing,oxstride,ixstride,fxstride,\
+	ymaxlen,yspacing,oystride,iystride,fystride
+
+
+begin
+	ret = 0
+
+	if (.not. (isatt(reftick,"ndvClass") .and. \
+		   NhlIsTransform(reftick) .and. \
+	           isatt(plot,"ndvClass") .and. NhlIsTransform(plot))) then
+		return -1;
+	end if
+
+	getvalues plot
+		"pmTickMarkDisplayMode" : dmode
+	end getvalues
+;
+; return if TickMark not displayed
+;
+	if (dmode .lt. 1) then
+		return 0
+	end if
+
+;
+; see if the reference tickmark plot is displaying tickmarks
+; if not use a standard reference size
+; we're assuming here that the ref tickmark plot uses the XB labels, hardly
+; a warranted assumption
+;
+	getvalues reftick
+		"pmTickMarkDisplayMode" : dmode
+		"vpWidthF" : vwidth
+	end getvalues
+
+	if (dmode .lt. 1) then
+		fheight = min((/0.009,vwidth * 0.015/))
+	else
+		getvalues reftick
+			"tmXBLabelFontHeightF" : fheight
+		end getvalues
+	end if
+;
+; first set the font heights if necessary
+;
+	getvalues plot
+		"tmXBLabelFontHeightF" :     xfheight
+		"tmYLLabelFontHeightF" :     yfheight
+	end getvalues
+
+	if (font_height_factor .gt. 0) then
+		fheight = font_height_factor * fheight
+	end if
+
+	print("fheight " + fheight + " xf " + xfheight + " yf " + yfheight)
+	if (xfheight .ne. fheight .or. yfheight .ne. fheight)
+		ret = 1
+		setvalues plot
+			"tmXBLabelFontHeightF" :     fheight
+			"tmYLLabelFontHeightF" :     fheight
+		end setvalues
+	end if
+	
+;
+; get all the tickmark info
+;
+	getvalues plot
+		"tmXBMaxLabelLenF" :     xmaxlen
+		"tmXBMinLabelSpacingF" : xspacing
+		"tmXBLabelStride" : 	 oxstride
+		"tmYLMaxLabelLenF" :     ymaxlen
+		"tmYLMinLabelSpacingF" : yspacing
+		"tmYLLabelStride" : 	 oystride
+	end getvalues
+;
+; get the spacing for a stride of 1
+;
+	if (oxstride .gt. 1) then
+		xspacing = xspacing / oxstride
+	end if
+	print ("xmaxlen " + xmaxlen + " xspacing " + xspacing + " oxstride " + oxstride)
+	ixstride = oxstride
+	if (xspacing .gt. 0) then
+		fxstride = (xmaxlen + fheight / 2.0) / xspacing
+		print(fxstride)
+		ixstride = floattointeger(fxstride)
+		print(ixstride)
+		if (fxstride .gt. ixstride) then
+			ixstride = ixstride + 1
+		end if
+	end if
+	print(ixstride)
+
+	if (oystride .gt. 1) then
+		yspacing = yspacing / oystride
+	end if
+	iystride = oystride
+	if (ymaxlen + fheight .gt. yspacing .and. yspacing .gt. 0) then
+		fystride = (ymaxlen + fheight) / yspacing
+		iystride = floattointeger(fystride)
+		if (fystride .gt. iystride) then
+			iystride = iystride + 1
+		end if
+	end if
+
+	if (xstride .ne. 0) then
+		ixstride = xstride
+	end if
+	if (ystride .ne. 0) then
+		iystride = ystride
+	end if
+	if (ixstride .ne. oxstride .or. iystride .ne. oystride) then
+		ret = 1
+		setvalues plot
+			"tmXBLabelStride" : 	 ixstride
+			"tmYLLabelStride" : 	 iystride
+		end setvalues
+	end if
+		
+	return ret
+end
+
+function map_tickmarks (map : graphic, tm : graphic,\
+			max_font_height : float,\
+			max_major_length : float,\
+			max_minor_length : float )
 	
 local	vpxf,vpyf,vpwf,vphf,min_lon,max_lon,min_lat,max_lat,center_lon, \
-	projection, \
-	lon_range,lat_range,lcheck_arr,lspcng_arr,mlspcng_arr, \
-	lon_ind,lon_spcng,mlon_spcng,lat_ind,lat_spcng,mlat_spcng, \
-	yvalues,myvalues,ylabels,indexy,xvalues,xlabels,mxvalues,indexx, \
-	quot,offset,height, \
+	projection,rel_lon,rel_lat,has_max_lon_span,adj_min_lon,adj_min_lat,\
+	lon_range,lat_range,lcheck_arr,lspcng_arr,mlspcng_arr,\
+	lon_ind,lon_spcng,mlon_spcng,lat_ind,lat_spcng,mlat_spcng,\
+	yvalues,myvalues,ylabels,indexy,xvalues,xvalues2,\
+	xlabels,mxvalues,indexx,height,\
 	major_length,minor_length,int_min_lat,int_min_lon,sign,round_val,tval,\
 	center_lat,center_rot,xmin0,ymin0,xmax0,ymax0,xbmode0,ylmode0, \
 	xlabels0,ylabels0,xvalues0,yvalues0,mxvalues0,myvalues0,\
@@ -650,7 +1198,12 @@ begin
       "mpCenterLatF" : center_lat
       "mpCenterRotF" : center_rot
       "mpProjection" : projection
+      "mpRelativeCenterLon" : rel_lon
+      "mpRelativeCenterLat" : rel_lat
     end getvalues
+
+;    print("max " + max_lon + "min " +  min_lon + "center " + center_lon)
+
 
 
 ;   print(min_lon)
@@ -676,25 +1229,6 @@ begin
 	end if
     end if
 
-    if (fabs(max_lon - min_lon) .ge. 360) then
-;	print("doing this")
-	tval = (max_lon + min_lon) / 2.0 
-;	print(tval)
-	quot = floattointeger(tval / 180.0)
-;	print(quot)
-	offset = tval - (quot * 180.0)
-;	print(offset)
-	if (offset.gt.0.0) then
-	    max_lon = max_lon - offset
-	    min_lon = min_lon - offset
-        end if
-    end if
-	
-;    print(max_lon)
-;    print(min_lon)
-    lon_range = max_lon - min_lon   ; longitude range
-    lat_range = max_lat - min_lat   ; latitude range
-
 ; Create a TickMark object to label the lat/lon grid.
 
     lcheck_arr  = (/ 20,  40,  60, 360/)  ; lat/lon range will determine
@@ -702,10 +1236,12 @@ begin
     lspcng_arr  = (/  5,  10,  20,  30/)  ; spacings for major ticks
     mlspcng_arr = (/  1,   2,   5,  10/)  ; spacings for minor ticks
 
-    lon_ind    = ind(lon_range.le.lcheck_arr)
-    lon_spcng  = lspcng_arr(lon_ind(0))  ; spacing for lon major tickmarks
-    mlon_spcng = mlspcng_arr(lon_ind(0)) ; spacing for lon minor tickmarks
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; first figure out the latitude tickmarks 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+    lat_range = max_lat - min_lat   ; latitude range
+	
     lat_ind    = ind(lat_range.le.lcheck_arr)
     lat_spcng  = lspcng_arr(lat_ind(0))  ; spacing for lat major tickmarks
     mlat_spcng = mlspcng_arr(lat_ind(0)) ; spacing for lat minor tickmarks
@@ -742,6 +1278,123 @@ begin
 	int_min_lat = round_val * (int_min_lat / round_val)
     end if	
 
+; Calculate values for latitude minor/major tickmark locations.
+
+    yvalues  = ispan(int_min_lat,\
+                     floattointeger(max_lat),lat_spcng)
+    myvalues = ispan(int_min_lat,\
+                     floattointeger(max_lat),mlat_spcng)
+
+; Create labels for latitude tick marks.
+
+    ylabels  = new(dimsizes(yvalues),string)
+    indexy = ind(yvalues.lt.0)
+    if(.not.all(ismissing(indexy)))
+        ylabels(indexy) = fabs(yvalues(indexy)) + "S"    ; south
+    end if
+    delete(indexy)
+
+    indexy = ind(yvalues.gt.0)
+    if(.not.all(ismissing(indexy)))
+        ylabels(indexy) = yvalues(indexy) + "N"    ; north
+    end if
+    delete(indexy)
+
+    indexy = ind(yvalues.eq.0)
+    if(.not.all(ismissing(indexy)))
+        ylabels(indexy) = yvalues(indexy)          ; equator
+    end if
+    delete(indexy)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; now figure out the longitude tickmarks 
+; it's a little tricky, because we need to consider the center longitude;
+; and whether Ezmap will decide to plot the maximal longitudinal extent.
+; It depends on where the center longitude is in relation to the maximum
+; and minimum longitudes.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;
+; first get everything into the canonical -180 to 180 range
+;
+;
+; not really sure how this condition should be handled
+;
+    do while (max_lon - min_lon .gt. 360) 
+		max_lon = max_lon - 360
+    end do
+;
+    if (rel_lon) then
+	center_lon = center_lon + min_lon + (max_lon - min_lon) / 2
+    end if
+    do while (fabs(center_lon) .gt. 180) 
+	if (center_lon .lt. -180) then
+		center_lon = center_lon + 360
+	else
+		if (center_lon .gt. 180) then
+			center_lon = center_lon - 360
+		end if
+	end if
+    end do
+    do while (fabs(min_lon) .gt. 180) 
+	if (min_lon .lt. -180) then
+		min_lon = min_lon + 360
+		max_lon = max_lon + 360
+	else
+		if (min_lon .gt. 180) then
+			min_lon = min_lon - 360
+			max_lon = max_lon - 360
+		end if
+	end if
+    end do
+	
+
+;    print("max " + max_lon + " min " +  min_lon + " center " + center_lon)
+
+    has_max_lon_span = False
+    if (max_lon - min_lon .ge. 359.5) then
+	has_max_lon_span = True
+    else
+	if (min_lon .gt. center_lon .and. \
+	    center_lon + 360 .gt. max_lon .and. \
+	    center_lon + 180 .lt. max_lon) then
+		has_max_lon_span = True
+	else
+		if (max_lon .lt. center_lon .and. \
+		    center_lon - 360 .lt. min_lon .and. \
+		    center_lon - 180 .gt. min_lon) then
+			has_max_lon_span = True
+		end if
+	end if
+    end if
+;
+; the center longitude only plays a role in the maximum span situation
+; may have to adjust into the 180 range again; but note that max_lon
+; may still be outside this range
+;
+    if (has_max_lon_span) then
+	lon_range = 360
+	min_lon = center_lon - 180
+	max_lon = center_lon + 180
+	if (min_lon .lt. -180) then
+		min_lon = min_lon + 360
+		max_lon = max_lon + 360
+	else
+		if (min_lon .gt. 180) then
+			min_lon = min_lon - 360
+			max_lon = max_lon - 360
+		end if
+	end if
+    else	
+	    lon_range = max_lon - min_lon   ; longitude range
+    end if
+
+;    print(max_lon)
+;    print(min_lon)
+
+    lon_ind    = ind(lon_range.le.lcheck_arr)
+    lon_spcng  = lspcng_arr(lon_ind(0))  ; spacing for lon major tickmarks
+    mlon_spcng = mlspcng_arr(lon_ind(0)) ; spacing for lon minor tickmarks
 
     if (lon_ind(0).eq.3) then
 	round_val = 10
@@ -774,74 +1427,54 @@ begin
 	int_min_lon = round_val * (int_min_lon / round_val)
     end if	
 
-; Calculate values for latitude minor/major tickmark locations.
-    yvalues  = ispan(int_min_lat,\
-                     floattointeger(max_lat),lat_spcng)
-    myvalues = ispan(int_min_lat,\
-                     floattointeger(max_lat),mlat_spcng)
-
-; Create labels for latitude tick marks.
-    ylabels  = new(dimsizes(yvalues),string)
-    indexy = ind(yvalues.lt.0)
-    if(.not.all(ismissing(indexy)))
-        ylabels(indexy) = fabs(yvalues(indexy)) + "S"    ; south
-    end if
-    delete(indexy)
-
-    indexy = ind(yvalues.gt.0)
-    if(.not.all(ismissing(indexy)))
-        ylabels(indexy) = yvalues(indexy) + "N"    ; north
-    end if
-    delete(indexy)
-
-    indexy = ind(yvalues.eq.0)
-    if(.not.all(ismissing(indexy)))
-        ylabels(indexy) = yvalues(indexy)          ; equator
-    end if
-    delete(indexy)
-
-
-
 ; Calculate values for longitude major tickmark locations.
     xvalues = ispan(int_min_lon,\
                     floattointeger(max_lon),lon_spcng)
+;    print(xvalues)
 
-
-; Convert to (-180,180) range if necessary.
-    if(any(xvalues.gt.180))
-        xvalues = xvalues-180
-        xvalues = ispan(min(xvalues),max(xvalues),lon_spcng)
-        min_lon = min_lon - 180
-        max_lon = max_lon - 180
-    end if
 ; Calculate values for longitude minor tickmark locations.
     mxvalues = ispan(floattointeger(min(xvalues)),\
                      floattointeger(max(xvalues)),mlon_spcng)
 
-; If the lon range is 360, then it is possible to have a center longitude
-; that is not equal to 0. If this is the case, then the lon labels need 
-; to change accordingly.
     xlabels  = new(dimsizes(xvalues),string)
 
-    xvalues2 = xvalues + center_lon
-    if(lon_range.eq.360.and.center_lon.gt.0)
-      indexx = ind(xvalues2.gt.180)
-      xvalues2(indexx) = xvalues2(indexx) - 360
-      delete(indexx)
+    xvalues2 = xvalues
+;    if(has_max_lon_span .and. center_lon.gt.0)
+;      indexx = ind(xvalues2.gt.180)
+;      xvalues2(indexx) = xvalues2(indexx) - 360
+;      delete(indexx)
+;    end if
+;    if(has_max_lon_span .and. center_lon.lt.0)
+;      indexx = ind(xvalues2.lt.-180)
+;      xvalues2(indexx) = xvalues2(indexx) + 360
+;      delete(indexx)
+;    end if
+
+    indexx = ind(xvalues2.gt.180)
+;    print(indexx)
+    if(.not.all(ismissing(indexx)))
+	    xvalues2(indexx) = xvalues2(indexx) - 360
     end if
-    if(lon_range.eq.360.and.center_lon.lt.0)
-      indexx = ind(xvalues2.lt.-180)
-      xvalues2(indexx) = xvalues2(indexx) + 360
-      delete(indexx)
+    delete(indexx)
+
+    indexx = ind(xvalues2.lt.-180)
+;    print(indexx)
+    if(.not.all(ismissing(indexx)))
+	    xvalues2(indexx) = xvalues2(indexx) + 360
     end if
+    delete(indexx)
+
+;    print(xvalues2)
 
     indexx = ind((xvalues2).lt.0)
+;    print(indexx)
     if(.not.all(ismissing(indexx)))
         xlabels(indexx) = fabs(xvalues2(indexx)) + "W"     ; west
     end if
     delete(indexx)
 
     indexx = ind(xvalues2.gt.0.and.xvalues2.lt.180)
+;    print(indexx)
     if(.not.all(ismissing(indexx)))
         xlabels(indexx) = fabs(xvalues2(indexx)) + "E"     ; east
     end if
@@ -923,10 +1556,11 @@ begin
 ; Make tickmark label sizes and lengths uniform sizes, and point tick
 ; marks outward.
 ;
-    major_length = (ylength0 + xlength0) / 2.
-    minor_length = (ymlength0 + xmlength0) / 2.
-    height = (xbheight0 + ylheight0) / 2.0
+    major_length = min((/max_major_length,(ylength0 + xlength0) / 2./))
+    minor_length = min((/max_minor_length,(ymlength0 + xmlength0) / 2./))
+    height = min((/max_font_height,xbheight0 + ylheight0 / 2.0/))
 
+    print ("height " + height + " xb " + xbheight0 + " yl " + ylheight0)
     if (.not. (xbheight0 .eq. height .and. \
 	       xlength0 .eq. major_length .and. \
 	       xmlength0 .eq. minor_length .and. \
@@ -959,13 +1593,48 @@ begin
 
 end
 
+function add_annotations(base : graphic, \
+			 annos[*] : graphic)
+
+local cur_annos,new_annos,cur_count,new_count
+
+begin
+
+;	if (.not. NhlIsTransform(base)) then
+;		return -1
+;	end if
+
+	print("in add_annotations")
+	getvalues base
+		"pmAnnoViews" : cur_annos
+	end getvalues
+
+	cur_count = dimsizes(cur_annos)
+	new_count = cur_count + dimsizes(annos)
+	new_annos = new(new_count,graphic)
+
+	print(cur_count + "   " + new_count)
+	new_annos(0:cur_count-1) = cur_annos
+	new_annos(cur_count:new_count-1) = annos
+
+	setvalues base
+		"pmAnnoViews" : new_annos
+	end setvalues
+
+	return 1
+end
+
+;
+; this function is tailored for cylindrical equidistant, though it
+; may be somewhat useful for other projections
+;
 
 function set_map_limits_from_object(map : graphic, \
 				    obj : graphic, \
-				    relative_lon : logical,
-				    relative_lat : logical)
+				    center_lon : float)
 
-local xmin,ymin,xmax,ymax,latlon0,xmin0,ymin0,xmax0,ymax0,rel_lat0,rel_lon0
+local xmin,ymin,xmax,ymax,latlon0,xmin0,ymin0,xmax0,ymax0,\
+	cen_lon0,cen_lon,rel_lon,rel_lon0
 
 begin
 
@@ -991,17 +1660,25 @@ begin
 		"mpMaxLonF"   : xmax0
 		"mpMinLatF"   : ymin0
 		"mpMaxLatF"   : ymax0
+		"mpCenterLonF" : cen_lon0
 		"mpRelativeCenterLon" : rel_lon0
-		"mpRelativeCenterLat" : rel_lat0
 	end getvalues
+
+	if (xmax - xmin .lt. 359.5) then
+		cen_lon = 0
+		rel_lon = True
+	else
+		cen_lon = center_lon
+		rel_lon = False
+        end if
 
 	if ( latlon0 .eq. 1 .and. \
 	     xmin0 .eq. xmin .and. \
 	     ymin0 .eq. ymin .and. \
 	     xmax0 .eq. xmax .and. \
 	     ymax0 .eq. ymax .and. \
-	     rel_lat0 .eq. relative_lat .and. \
-	     rel_lon0 .eq. relative_lon ) then
+	     cen_lon0 .eq. cen_lon .and. \
+	     rel_lon0 .eq. rel_lon ) then
 		return 0
 	end if
 	 
@@ -1010,8 +1687,8 @@ begin
 ;	print("ymin: " + ymin + " ymin0: " + ymin0)
 ;	print("xmax: " + xmax + " xmax0: " + xmax0)
 ;	print("ymax: " + ymax + " ymax0: " + ymax0)
-;	print("rel_lat: " + relative_lat + " rel_lat0: " + rel_lat0)
-;	print("rel_lon: " + relative_lon + " rel_lon0: " + rel_lon0)
+;	print("rel_lon: " + rel_lon + " rel_lon0: " + rel_lon0)
+;	print("cen_lon: " + cen_lon + " cen_lon0: " + cen_lon0)
 
 	setvalues map
 		"mpLimitMode" : "latlon"
@@ -1019,8 +1696,8 @@ begin
 		"mpMaxLonF"   : xmax
 		"mpMinLatF"   : ymin
 		"mpMaxLatF"   : ymax
-		"mpRelativeCenterLon" : relative_lon
-		"mpRelativeCenterLat" : relative_lat
+		"mpRelativeCenterLon" : rel_lon
+		"mpCenterLonF" : cen_lon
 	end setvalues
 
 	return 1
