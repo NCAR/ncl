@@ -310,6 +310,19 @@ extern	Directory	*CGM_editFrame(
 #endif
 );
 
+extern	const char	*CGM_ClassLookup(
+#ifdef	NeedFuncProto
+	unsigned	int class
+#endif
+);
+
+extern	const char	*CGM_ElementLookup(
+#ifdef	NeedFuncProto
+	unsigned	int class,
+	unsigned	int id
+#endif
+);
+
 NCARG_PROTO_END
 
 #endif	/* _cgm_tools_	*/

@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.22 1993-02-01 21:20:13 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.23 1993-07-19 22:28:05 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -366,6 +366,7 @@ Cgm_fd	CGM_open(metafile, record_size, type)
 #endif
 
 
+	errno = 0;
 	if (numOpen >= MAX_FILE) {
 		errno = ENOENT;
 		return(-1);
@@ -567,6 +568,7 @@ int	CGM_close(cgm_fd)
 {
 	int	error = 0;
 
+	errno = 0;
 	if (!(usedFd & (1 << cgm_fd))) {
 		errno = EBADF;
 		return(-1);	/* invalid file descriptor	*/
@@ -608,6 +610,7 @@ CGM_read(cgm_fd, buf)
 	Cgm_fd		cgm_fd;
 	unsigned char	*buf;
 {
+	errno = 0;
 	return(cgmTab[cgm_fd].read(cgm_fd, buf));
 }
 
@@ -629,6 +632,7 @@ CGM_write(cgm_fd, buf)
 	Cgm_fd		cgm_fd;
 	const unsigned char	*buf;
 {
+	errno = 0;
 	return(cgmTab[cgm_fd].write(cgm_fd, buf));
 }
 
@@ -654,6 +658,7 @@ CGM_lseek(cgm_fd, offset, whence)
 	int	r = cgmTab[cgm_fd].record_size;
 	long 	offset_ = r * offset;
 
+	errno = 0;
 	return(cgmTab[cgm_fd].seek(cgm_fd, offset_, whence));
 }
 
@@ -673,6 +678,7 @@ CGM_lseek(cgm_fd, offset, whence)
 CGM_flush(cgm_fd)
 	Cgm_fd	cgm_fd;
 {
+	errno = 0;
 	return(cgmTab[cgm_fd].flush(cgm_fd));
 }
 
@@ -721,6 +727,7 @@ Directory	*CGM_directory(cgm_fd, fp)
 	/*
 	 *	see if file descriptor is valid
 	 */
+	errno = 0;
 	if (cgm_fd < 0 || cgm_fd >= MAX_FILE) {
 		errno = EBADF;
 		return(dir);
@@ -1089,6 +1096,7 @@ int	CGM_getInstr(cgm_fd, instr)
 	 * we did not return all of the data on last call, copy that
 	 * data to beginning of the data buffer
 	 */
+	errno = 0;
 	if (pg->over_flow) {
 		(void) bcopy((char *) (instr->data + MAX_CGM_INS_LEN),
 				(char *) instr->data, (int) pg->over_flow);
@@ -1323,6 +1331,7 @@ int	CGM_putInstr(cgm_fd, instr)
 	/*
 	 *      if "more" is set then only write data, not the command itself
 	 */
+	errno = 0;
 	if (!pg->more) {
 
 		/*
@@ -1491,6 +1500,7 @@ int	CGM_flushOutputInstr(cgm_fd)
 	int	status;
 	Pg_struct	*pg = cgmTab[cgm_fd].pg_struct;
 
+	errno = 0;
 	status = put_output(cgm_fd, pg,
 		cgmTab[cgm_fd].record_size - pg->byte_count - HEADERSIZE);
 	pg->more = FALSE;
@@ -1551,6 +1561,7 @@ Directory	*ReallocDir(dir, num_frames)
 	/*
 	 * we only grow
 	 */
+	errno = 0;
 	if (dir_size > num_frames) return ((Directory *) NULL);
 
 	dir->d = (Directory_entry *) realloc ((char *) dir->d, (unsigned)
@@ -1593,6 +1604,7 @@ Directory	*CGM_copyCreateDir(d1)
 	int	dir_size = d1->dir_size;
 	int	des_size = d1->MFDes_size;
 
+	errno = 0;
 	if (! (d2 = init_dir())) return (Directory *) NULL;
 
 	/*
@@ -1668,6 +1680,7 @@ Directory	*init_dir()
 	Directory	*dir;
 	int	i;
 
+	errno = 0;
 	dir = (Directory *) malloc (sizeof( Directory));
 	if (! dir) {
 		return((Directory *) NULL);

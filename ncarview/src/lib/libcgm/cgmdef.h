@@ -119,69 +119,162 @@
  *	some of the CGM elements
  */
 
+typedef	enum {
+	DEL_ELEMENT,
+	DES_ELEMENT,
+	PIC_DEC_ELEMENT,
+	CON_ELEMENT,
+	GRP_ELEMENT,
+	ATT_ELEMENT,
+	ESC_ELEMENT
+} CGM_ElementClass;
 
 /* 
  *	cgm delimeter elements (class 0)	
  */
-#define	DEL_ELEMENT	0	
-
-#define	NOOP_ID		0	/* no operation		*/
-#define BEG_MF_ID	1	/* begin metafile	*/
-#define END_MF_ID	2	/* end metafile		*/
-#define BEG_PIC_ID	3	/* begin picture	*/
-#define BEG_PIC_B_ID	4	/* begin picture body	*/
-#define END_PIC_ID	5	/* end picture		*/
+typedef	enum {
+	NOOP_ID,		/* no operation		*/
+	BEG_MF_ID,		/* begin metafile	*/
+	END_MF_ID,		/* end metafile		*/
+	BEG_PIC_ID,		/* begin picture	*/
+	BEG_PIC_B_ID,		/* begin picture body	*/
+	END_PIC_ID,		/* end picture		*/
+} CGM_Class0Element;
 
 /*
  *	cgm descriptor elements (class 1)
  */
-#define	DES_ELEMENT	1
-
-#define	MF_VERSION_ID	1
-#define	MF_ELIST_ID	11
-#define	MF_DEFAULTS_ID	12
+typedef	enum {
+	MF_VERSION_ID = 1,
+	MF_DESCRIPTION_ID,
+	VDC_TYPE_ID,
+	INT_PREC_ID,
+	REAL_PREC_ID,
+	INDEX_PREC_ID,
+	COLOUR_PREC_ID,
+	COLOUR_INDEX_PREC_ID,
+	MAX_COLOUR_ID,
+	COLOUR_VAL_EXTEND_ID,
+	MF_ELIST_ID,
+	MF_DEFAULTS_ID,
+	FONT_LIST_ID,
+	CHAR_SET_LIST_ID,
+	CHAR_COD_ANN_ID,
+	NAME_PREC_ID,
+	MAX_VDC_EXTENT
+} CGM_Class1Element;
+	
 
 /*
  *	Picture Descriptor Elements
  */
-#define	PIC_DEC_ELEMENT	2
+typedef	enum {
+	SCALE_MODE_ID = 1,
+	COLOUR_SELECT_MODE_ID,
+	LINE_WIDTH_SPEC_MODE_ID,
+	MARKER_SIZE_SPEC_MODE_ID,
+	EDGE_WIDTH_SPEC_MODE_ID,
+	VDC_EXTENT_ID,
+	BACKGROUND_COLOUR_ID,
+} CGM_Class2Element;
 
-#define	SCALE_MODE_ID	1
+
+/*
+ *	CGM Control Elements
+ */
+typedef	enum {
+	VDC_INT_PREC_ID = 1,
+	VDC_REAL_PREC_ID,
+	AUXILLARY_COLOUR_ID,
+	TRANSPARENCY_ID,
+	CLIP_RECTANGLE_ID,
+	CLIP_INDICATOR_ID,
+} CGM_Class3Element;
 
 
 /*
  *	cgm graphical primitive elements (class 4)
  */
-#define	GRP_ELEMENT		4
 
-#define	POLYLINE_ID		1
-#define	DISJ_POLYLINE_ID	2
-#define	TEXT_ID			4
-#define POLYGON_ID		7
-#define POLYGON_SET_ID		8
-#define CELL_ARRAY_ID		9
-#define G_D_P_ID		10
+typedef	enum {
+	POLYLINE_ID = 1,
+	DISJ_POLYLINE_ID,
+	POLYMARKER_ID,
+	TEXT_ID,
+	RESTRICTED_TEXT_ID,
+	APPEND_TEXT_ID,
+	POLYGON_ID,
+	POLYGON_SET_ID,
+	CELL_ARRAY_ID,
+	G_D_P_ID,
+	RECTANGLE_ID,
+	CIRCLE_ID,
+	CIRULAR_ARC_3_PT_ID,
+	CIRULAR_ARC_3_PT_CLOSE_ID,
+	CIRULAR_ARC_CENTRE_ID,
+	CIRULAR_ARC_CENTRE_CLOSE_ID,
+	ELIPSE_ID,
+} CGM_Class4Element;
+
+	
 
 /*
  *	cgm attribute elements (class 4)
  */
-#define	ATT_ELEMENT		5
 
-#define	LINE_TYPE_ID		2
-#define	LINE_WIDTH_ID		3
-#define	LINE_COLOUR_ID		4
-#define	TEXT_ALIGN_ID		18
-#define	INTERIOR_STYLE_ID	22
-#define	FILL_COLOUR_ID		23
-#define	PATTERN_TAB_ID		32
-#define COLOR_TABLE_ID		34
+typedef	enum {
+	LINE_BUNDLE_INDEX_ID = 1,
+	LINE_TYPE_ID,
+	LINE_WIDTH_ID,
+	LINE_COLOUR_ID,
+	MARKER_BUNDLE_INDEX_ID,
+	MARKER_TYPE_ID,
+	MARKER_WIDTH_ID,
+	MARKER_COLOUR_ID,
+	TEXT_BUNDLE_INDEX_ID,
+	TEXT_FONT_INDEX_ID,
+	TEXT_PRECISION_ID,
+	CHAR_EXPAN_FACTOR_ID,
+	CHAR_SPACING_ID,
+	TEXT_COLOUR_ID,
+	CHAR_HEIGHT_ID,
+	CHAR_ORIENTATION_ID,
+	TEXT_PATH_ID,
+	TEXT_ALIGN_ID,
+	CHAR_SET_INDEX_ID,
+	ALT_CHAR_SET_INDEX_ID,
+	FILL_BUNDLE_INDEX_ID,
+	INTERIOR_STYLE_ID,
+	FILL_COLOUR_ID,
+	HATCH_INDEX_ID,
+	PATTERN_INDEX_ID,
+	EDGE_BUNDLE_ID,
+	EDGE_TYPE_ID,
+	EDGE_WIDTH_ID,
+	EDGE_COLOUR_ID,
+	EDGE_VISIBILITY_ID,
+	FILL_REF_PT_ID,
+	PATTERN_TAB_ID,
+	PATTERN_SIZE_ID,
+	COLOR_TABLE_ID,
+	ASPECT_SOURCE_FLAG_ID
+} CGM_Class5Element;
+	
 
 /*
  *	cgm escape elements (class 6)
  */
-#define	ESC_ELEMENT		6
+typedef	enum {
+	ESCAPE_ID = 1
+} CGM_Class6Element;
 
-#define	ESCAPE_ID		1
+/*
+ *	cgm external elements
+ */
+typedef	enum {
+	MESSAGE_ID = 1,
+	APPLICATION_ID
+} CGM_Class7Element;
 
 
 #endif	/* _cgmdef_	*/

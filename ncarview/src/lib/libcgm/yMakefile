@@ -11,8 +11,8 @@ MYNAME		= libcgm.a
 CDEFINES	= 
 
 INCLUDES	= cgm_tools.h cgmdef.h 
-SRCS		= cgm_tools.c meta_edit.c misc.c mem_file.c
-OBJECTS		= cgm_tools.o meta_edit.o misc.o mem_file.o
+SRCS		= cgm_tools.c meta_edit.c misc.c mem_file.c name.c
+OBJECTS		= cgm_tools.o meta_edit.o misc.o mem_file.o name.o
 
 EQUALHACK	= =
 
