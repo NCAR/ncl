@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularType2TransObj.c,v 1.17 1995-04-07 09:35:40 boote Exp $
+ *      $Id: IrregularType2TransObj.c,v 1.18 1995-04-07 10:42:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -126,7 +126,7 @@ static NhlErrorTypes  IrTransSetValues(
 
 static NhlErrorTypes IrTransInitialize(
 #if	NhlNeedProto
-        NhlLayerClass,     /* class */
+        NhlClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
         _NhlArgList,    /* args */
@@ -298,13 +298,13 @@ static NhlErrorTypes IrTransGetValues(
 #define NhlirDATA 0
 #define NhlirCOMPC 1
 
-NhlIrregularType2TransObjLayerClassRec NhlirregularType2TransObjLayerClassRec = {
+NhlIrregularType2TransObjClassRec NhlirregularType2TransObjClassRec = {
         {
-/* class_name			*/	"irregularType2TransObjLayerClass",
+/* class_name			*/	"irregularType2TransObjClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlIrregularType2TransObjLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhltransObjLayerClassRec,
+/* superclass			*/	(NhlClass)&NhltransObjClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -337,8 +337,8 @@ NhlIrregularType2TransObjLayerClassRec NhlirregularType2TransObjLayerClassRec = 
         }
 };
 
-NhlLayerClass NhlirregularType2TransObjLayerClass =
-			(NhlLayerClass)&NhlirregularType2TransObjLayerClassRec;
+NhlClass NhlirregularType2TransObjClass =
+			(NhlClass)&NhlirregularType2TransObjClassRec;
 
 
 
@@ -390,10 +390,10 @@ static NhlErrorTypes IrTransSetValues
 /*ARGSUSED*/
 static NhlErrorTypes IrTransInitialize
 #if	NhlNeedProto
-( NhlLayerClass class, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args)
+( NhlClass class, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args)
 #else
 (class,req,new,args,num_args)
-        NhlLayerClass	class;
+        NhlClass	class;
         NhlLayer		req;
         NhlLayer		new;
         _NhlArgList	args;
@@ -821,7 +821,7 @@ static NhlErrorTypes IrSetTrans
 	NhlIrregularType2TransObjLayerPart	*tp = &to->ir2trans;
 	NhlErrorTypes ret;
 
-	ret = (*NhltransObjLayerClassRec.trobj_class.set_trans)(tobj,vobj);
+	ret = (*NhltransObjClassRec.trobj_class.set_trans)(tobj,vobj);
 	if(ret < NhlWARNING)
 		return ret;
 

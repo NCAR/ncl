@@ -61,7 +61,7 @@ main() {
 	theoptr = NULL;
 #endif
 	NhlInitialize();
-	NhlVACreate(&appid,"ncl",NhlappLayerClass,NhlDEFAULT_APP,
+	NhlVACreate(&appid,"ncl",NhlappClass,NhlDEFAULT_APP,
 		NhlNappDefaultParent,1,NULL);
 	errid = NhlErrGetID();
 	NhlVASetValues(errid,

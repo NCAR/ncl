@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.32 1995-04-07 09:35:46 boote Exp $
+ *      $Id: Legend.c,v 1.33 1995-04-07 10:42:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -504,7 +504,7 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes    LegendInitialize(
 #if	NhlNeedProto
-        NhlLayerClass,     /* class */
+        NhlClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
         _NhlArgList,    /* args */
@@ -653,13 +653,13 @@ static NhlGenArray GenArraySubsetCopy(
 #endif
 );
 
-NhlLegendLayerClassRec NhllegendLayerClassRec = {
+NhlLegendClassRec NhllegendClassRec = {
 	{
-/* class_name			*/	"legendLayerClass",
+/* class_name			*/	"legendClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlLegendLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlviewLayerClassRec,
+/* superclass			*/	(NhlClass)&NhlviewClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -692,7 +692,7 @@ NhlLegendLayerClassRec NhllegendLayerClassRec = {
 	}
 };
 
-NhlLayerClass NhllegendLayerClass = (NhlLayerClass)&NhllegendLayerClassRec;
+NhlClass NhllegendClass = (NhlClass)&NhllegendClassRec;
 
 /*
  * Function:	nhlflegendclass
@@ -704,11 +704,11 @@ NhlLayerClass NhllegendLayerClass = (NhlLayerClass)&NhllegendLayerClassRec;
  * Out Args:	
  *
  * Scope:	global Fortran
- * Returns:	NhlLayerClass
+ * Returns:	NhlClass
  * Side Effect:	
  */
-NhlLayerClass
-_NHLCALLF(nhlflegendlayerclass,NHLFLEGENDLAYERCLASS)
+NhlClass
+_NHLCALLF(nhlflegendclass,NHLFLEGENDCLASS)
 #if	NhlNeedProto
 (
 	void
@@ -717,7 +717,7 @@ _NHLCALLF(nhlflegendlayerclass,NHLFLEGENDLAYERCLASS)
 ()
 #endif
 {
-	return NhllegendLayerClass;
+	return NhllegendClass;
 }
 
 static NrmQuark	Qfloat = NrmNULLQUARK;
@@ -760,14 +760,14 @@ static NrmQuark	Qitem_positions = NrmNULLQUARK;
 /*ARGSUSED*/
 static NhlErrorTypes    LegendInitialize
 #if	NhlNeedProto
-	(NhlLayerClass class, 
+	(NhlClass class, 
 	 NhlLayer req, 
 	 NhlLayer new, 
 	 _NhlArgList args,
 	 int num_args)
 #else
 (class,req,new,args,num_args)
-	NhlLayerClass	class;
+	NhlClass	class;
 	NhlLayer		req;
 	NhlLayer		new;
 	_NhlArgList	args;
@@ -3169,7 +3169,7 @@ static NhlErrorTypes    SetTitle
 		strcpy(buffer,tnew->base.name);
 		strcat(buffer,".Title");
 		subret = NhlVACreate(&lg_p->title_id,
-				 buffer,NhltextItemLayerClass,
+				 buffer,NhltextItemClass,
 				 tnew->base.id,
 				 NhlNtxFont,lg_p->title_font,
 				 NhlNtxString,lg_p->title_string,
@@ -3966,7 +3966,7 @@ static NhlErrorTypes    SetLabels
 		strcpy(buffer,tnew->base.name);
 		strcat(buffer,".Labels");
 		subret = NhlVACreate(&(lg_p->labels_id),buffer,
-				 NhlmultiTextLayerClass,tnew->base.id,
+				 NhlmultiTextClass,tnew->base.id,
 				 NhlNMtextNumStrings,lg_p->label_draw_count,
 				 NhlNMtextStrings,labels_p,
 				 NhlNMtextOrientation,mtext_orient,
@@ -5438,8 +5438,8 @@ static NhlErrorTypes    LegendClassInitialize
 	Qllabel_colors = NrmStringToQuark(NhlNlgLineLabelFontColors);
 	Qitem_positions = NrmStringToQuark(NhlNlgItemPositions);
 
-	_NhlInitializeLayerClass(NhltextItemLayerClass);
-	_NhlInitializeLayerClass(NhlmultiTextLayerClass);
+	_NhlInitializeClass(NhltextItemClass);
+	_NhlInitializeClass(NhlmultiTextClass);
 	return(NhlNOERROR);	
 }
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.h,v 1.3 1994-01-27 21:23:18 boote Exp $
+ *      $Id: IrregularTransObj.h,v 1.4 1995-04-07 10:41:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -64,6 +64,6 @@
 #define NhlCtrYUseLog		"TrYUseLog"
 
 
-extern NhlLayerClass	NhlirregularTransObjLayerClass;
+extern NhlClass	NhlirregularTransObjClass;
 
 #endif /* _NIrregularTransObj_h */

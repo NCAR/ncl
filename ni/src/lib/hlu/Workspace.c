@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.23 1995-04-07 00:40:04 dbrown Exp $
+ *      $Id: Workspace.c,v 1.24 1995-04-07 10:44:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -47,7 +47,7 @@ static NhlErrorTypes WorkspaceClassInitialize(
 
 static NhlErrorTypes WorkspaceInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc,	/* class	*/
+	NhlClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
 	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
@@ -210,14 +210,14 @@ static NhlResource resources[] = {
 	
 /* Class definition	*/
 
-NhlWorkspaceLayerClassRec NhlworkspaceLayerClassRec = {
+NhlWorkspaceClassRec NhlworkspaceClassRec = {
 	/* BaseClassPart */
 	{
-/* class_name			*/	"workspaceLayerClass",
+/* class_name			*/	"workspaceClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlWorkspaceLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlobjLayerClassRec,
+/* superclass			*/	(NhlClass)&NhlobjClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -241,8 +241,8 @@ NhlWorkspaceLayerClassRec NhlworkspaceLayerClassRec = {
 		
 };
 
-NhlLayerClass NhlworkspaceLayerClass = (NhlLayerClass)
-				&NhlworkspaceLayerClassRec;
+NhlClass NhlworkspaceClass = (NhlClass)
+				&NhlworkspaceClassRec;
 
 /* private static data */
 
@@ -299,7 +299,7 @@ WorkspaceClassInitialize
  * Description:	This function initializes an instance of an Workspace class
  *
  * In Args:	
- *	NhlLayerClass	lc,	class
+ *	NhlClass	lc,	class
  *	NhlLayer	req,	requested
  *	NhlLayer	new,	new
  *	_NhlArgList	args,	args
@@ -316,7 +316,7 @@ static NhlErrorTypes
 WorkspaceInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc,	/* class	*/
+	NhlClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
 	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
@@ -324,7 +324,7 @@ WorkspaceInitialize
 )
 #else
 (lc,req,new,args,nargs)
-	NhlLayerClass	lc;	/* class	*/
+	NhlClass	lc;	/* class	*/
 	NhlLayer	req;	/* requested	*/
 	NhlLayer	new;	/* new		*/
 	_NhlArgList	args;	/* args		*/
@@ -334,7 +334,7 @@ WorkspaceInitialize
 	NhlErrorTypes		ret = NhlNOERROR;
         char			*e_text;
         char    	        *entry_name = "WorkspaceInitialize";
-	NhlWorkspaceLayerClass	wsc = (NhlWorkspaceLayerClass)lc;
+	NhlWorkspaceClass	wsc = (NhlWorkspaceClass)lc;
 	NhlWorkspaceLayer	wsnew = (NhlWorkspaceLayer)new;
 	NhlWorkspaceLayerPart	*wsp = &(wsnew->workspace);
 

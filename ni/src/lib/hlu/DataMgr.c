@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgr.c,v 1.10 1995-03-03 02:56:27 boote Exp $
+ *      $Id: DataMgr.c,v 1.11 1995-04-07 10:41:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -18,7 +18,7 @@
  *	Date:		Thu Jun 24 10:22:34 MDT 1993
  *
  *	Description:	This class is used to control the conversion process
- *			of a NhlDataItemLayerClass.  There will be a DataMgr
+ *			of a NhlDataItemClass.  There will be a DataMgr
  *			created for each instance of a DataItem Class object.
  *			Since this class is basically the control mechanism
  *			for the DataItem class, it includes the Private
@@ -39,7 +39,7 @@
 
 static NhlErrorTypes DataMgrInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc,	/* class	*/
+	NhlClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
 	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
@@ -53,14 +53,14 @@ static NhlErrorTypes DataMgrDestroy(
 #endif
 );
 
-NhlDataMgrLayerClassRec NhldataMgrLayerClassRec = {
-	/* NhlBaseLayerClassPart */
+NhlDataMgrClassRec NhldataMgrClassRec = {
+	/* NhlBaseClassPart */
 	{
-/* class_name			*/	"dataMgrLayerClass",
+/* class_name			*/	"dataMgrClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlDataMgrLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlobjLayerClassRec,
+/* superclass			*/	(NhlClass)&NhlobjClassRec,
 
 /* layer_resources		*/	NULL,
 /* num_resources		*/	0,
@@ -75,13 +75,13 @@ NhlDataMgrLayerClassRec NhldataMgrLayerClassRec = {
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	DataMgrDestroy
 	},
-	/* NhlDataMgrLayerClassPart */
+	/* NhlDataMgrClassPart */
 	{
 /* foo				*/	0
 	}
 };
 	
-NhlLayerClass NhldataMgrLayerClass = (NhlLayerClass)&NhldataMgrLayerClassRec;
+NhlClass NhldataMgrClass = (NhlClass)&NhldataMgrClassRec;
 
 /************************************************************************
 *	New type converters - added to converter table by		*
@@ -102,7 +102,7 @@ NhlLayerClass NhldataMgrLayerClass = (NhlLayerClass)&NhldataMgrLayerClassRec;
  * Description:	This function initializes the DataMgr instance.
  *
  * In Args:	
- *		NhlLayerClass	lc,	class
+ *		NhlClass	lc,	class
  *		NhlLayer	req,	requested
  *		NhlLayer	new,	new
  *		_NhlArgList	args,	args
@@ -119,7 +119,7 @@ static NhlErrorTypes
 DataMgrInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc,	/* class	*/
+	NhlClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
 	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
@@ -127,7 +127,7 @@ DataMgrInitialize
 )
 #else
 (lc,req,new,args,nargs)
-	NhlLayerClass	lc;	/* class	*/
+	NhlClass	lc;	/* class	*/
 	NhlLayer	req;	/* requested	*/
 	NhlLayer	new;	/* new		*/
 	_NhlArgList	args;	/* args		*/

@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.16 1995-04-07 09:35:56 boote Exp $
+ *      $Id: NcgmWorkstation.c,v 1.17 1995-04-07 10:43:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -45,7 +45,7 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes NcgmWorkstationInitialize(
 #if	NhlNeedProto
-        NhlLayerClass,     /* class */
+        NhlClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
         _NhlArgList,        /* args */
@@ -56,7 +56,7 @@ static NhlErrorTypes NcgmWorkstationInitialize(
 
 static NhlErrorTypes NcgmWorkstationClassPartInitialize(
 #if	NhlNeedProto
-        NhlLayerClass      /* lc */
+        NhlClass      /* lc */
 #endif
 );
 
@@ -101,13 +101,13 @@ static NhlErrorTypes NcgmWorkstationOpen(
 */
 static _NhlNcgmStatus ncgm_is_initialized = _NhlUNINITED;
 
-NhlNcgmWorkstationLayerClassRec NhlncgmWorkstationLayerClassRec = {
+NhlNcgmWorkstationClassRec NhlncgmWorkstationClassRec = {
         {
-/* class_name			*/	"ncgmWorkstationLayerClass",
+/* class_name			*/	"ncgmWorkstationClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlNcgmWorkstationLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlworkstationLayerClassRec,
+/* superclass			*/	(NhlClass)&NhlworkstationClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -147,7 +147,7 @@ NhlNcgmWorkstationLayerClassRec NhlncgmWorkstationLayerClassRec = {
 	}
 };
 
-NhlLayerClass NhlncgmWorkstationLayerClass = (NhlLayerClass)&NhlncgmWorkstationLayerClassRec;
+NhlClass NhlncgmWorkstationClass = (NhlClass)&NhlncgmWorkstationClassRec;
 
 /*
  * Function:	nhlfncgmworkstationclass
@@ -159,11 +159,11 @@ NhlLayerClass NhlncgmWorkstationLayerClass = (NhlLayerClass)&NhlncgmWorkstationL
  * Out Args:	
  *
  * Scope:	global Fortran
- * Returns:	NhlLayerClass
+ * Returns:	NhlClass
  * Side Effect:	
  */
-NhlLayerClass
-_NHLCALLF(nhlfncgmworkstationlayerclass,NHLFNCGMWORKSTATIONLAYERCLASS)
+NhlClass
+_NHLCALLF(nhlfncgmworkstationclass,NHLFNCGMWORKSTATIONCLASS)
 #if	NhlNeedProto
 (
 	void
@@ -172,7 +172,7 @@ _NHLCALLF(nhlfncgmworkstationlayerclass,NHLFNCGMWORKSTATIONLAYERCLASS)
 ()
 #endif
 {
-	return NhlncgmWorkstationLayerClass;
+	return NhlncgmWorkstationClass;
 }
 
 
@@ -193,10 +193,10 @@ _NHLCALLF(nhlfncgmworkstationlayerclass,NHLFNCGMWORKSTATIONLAYERCLASS)
 /*ARGSUSED*/
 static NhlErrorTypes NcgmWorkstationInitialize
 #if	NhlNeedProto
-(NhlLayerClass class, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args)
+(NhlClass class, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args)
 #else
 (class,req,new,args,num_args)
-        NhlLayerClass class;
+        NhlClass class;
         NhlLayer req;
         NhlLayer new;
         _NhlArgList args;
@@ -205,8 +205,8 @@ static NhlErrorTypes NcgmWorkstationInitialize
 {
 	char				func[] = "NcgmWorkstationInitialize";
 	int				default_conid = NCGM_DEFAULT_CONID;
-	NhlNcgmWorkstationLayerClass	wclass=
-					(NhlNcgmWorkstationLayerClass)class;
+	NhlNcgmWorkstationClass	wclass=
+					(NhlNcgmWorkstationClass)class;
 	NhlNcgmWorkstationLayer		wnew = (NhlNcgmWorkstationLayer)new;
 	NhlNcgmWorkstationLayerPart	*np = &wnew->ncgm;
 	char				*tfname = NULL;
@@ -267,18 +267,18 @@ static NhlErrorTypes NcgmWorkstationInitialize
 
 static NhlErrorTypes NcgmWorkstationClassPartInitialize
 #if	NhlNeedProto
-(NhlLayerClass lc)
+(NhlClass lc)
 #else
 (lc)
-	NhlLayerClass lc;
+	NhlClass lc;
 #endif
 {
-	NhlNcgmWorkstationLayerClass wlc = (NhlNcgmWorkstationLayerClass)lc;
-	NhlLayerClass	sc = wlc->base_class.superclass;
+	NhlNcgmWorkstationClass wlc = (NhlNcgmWorkstationClass)lc;
+	NhlClass	sc = wlc->base_class.superclass;
 
-	if(sc != (NhlLayerClass)&NhlworkstationLayerClassRec) {
+	if(sc != (NhlClass)&NhlworkstationClassRec) {
 		wlc->ncgm_class.cgm_inited = 
-			((NhlNcgmWorkstationLayerClass)sc)->ncgm_class.cgm_inited;
+			((NhlNcgmWorkstationClass)sc)->ncgm_class.cgm_inited;
 	}
 	return(NhlNOERROR);
 }
@@ -305,7 +305,7 @@ static NhlErrorTypes NcgmWorkstationDestroy
 #endif
 {
 	NhlNcgmWorkstationLayer winst = (NhlNcgmWorkstationLayer)inst;
-	NhlNcgmWorkstationLayerClass wclass = (NhlNcgmWorkstationLayerClass)inst->base.layer_class;
+	NhlNcgmWorkstationClass wclass = (NhlNcgmWorkstationClass)inst->base.layer_class;
 
 	NhlFree(winst->ncgm.meta_name);
 	*(wclass->ncgm_class.cgm_inited) = _NhlUNINITED;
@@ -380,7 +380,7 @@ static NhlErrorTypes NcgmWorkstationOpen
 	
 	gescape(-1391,&indat,NULL,&outdat);
 
-	return (*NhlworkstationLayerClassRec.work_class.open_work)(instance);
+	return (*NhlworkstationClassRec.work_class.open_work)(instance);
 }
 static NhlErrorTypes NcgmWorkstationGetValues
 #if	NhlNeedProto

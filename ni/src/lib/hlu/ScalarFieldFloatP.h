@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarFieldFloatP.h,v 1.3 1994-06-24 00:39:59 dbrown Exp $
+ *      $Id: ScalarFieldFloatP.h,v 1.4 1995-04-07 10:43:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -29,11 +29,11 @@
 #include <ncarg/hlu/ScalarField.h>
 
 
-typedef struct _NhlScalarFieldFloatLayerClassRec 
-				*NhlScalarFieldFloatLayerClass;
+typedef struct _NhlScalarFieldFloatClassRec 
+				*NhlScalarFieldFloatClass;
 typedef struct _NhlScalarFieldFloatLayerRec *NhlScalarFieldFloatLayer;
 
-extern NhlLayerClass NhlscalarFieldFloatLayerClass;
+extern NhlClass NhlscalarFieldFloatClass;
 
 typedef struct _NhlScalarFieldFloatLayerPart{
 
@@ -64,15 +64,15 @@ typedef struct _NhlScalarFieldFloatLayerRec{
 	NhlScalarFieldFloatLayerPart	sfieldfloat;
 } NhlScalarFieldFloatLayerRec;
 
-typedef struct _NhlScalarFieldFloatLayerClassPart{
+typedef struct _NhlScalarFieldFloatClassPart{
 	int	foo;
-} NhlScalarFieldFloatLayerClassPart;
+} NhlScalarFieldFloatClassPart;
 
-typedef struct _NhlScalarFieldFloatLayerClassRec{
-	NhlObjLayerClassPart			base_class;
-	NhlScalarFieldFloatLayerClassPart	sfieldfloat_class;
-} NhlScalarFieldFloatLayerClassRec;
+typedef struct _NhlScalarFieldFloatClassRec{
+	NhlObjClassPart			base_class;
+	NhlScalarFieldFloatClassPart	sfieldfloat_class;
+} NhlScalarFieldFloatClassRec;
 
-extern NhlScalarFieldFloatLayerClassRec NhlscalarFieldFloatLayerClassRec;
+extern NhlScalarFieldFloatClassRec NhlscalarFieldFloatClassRec;
 
 #endif	/* _NScalarFieldFloatP_h */

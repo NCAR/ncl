@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.14 1995-02-19 08:17:54 boote Exp $
+ *      $Id: GetValues.c,v 1.15 1995-04-07 10:41:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -129,7 +129,7 @@ GetValues
  *		of a pointer into the internal data structure if the
  *		class wants to.
  *
- * In Args:	NhlLayerClass	lc;	class pointer
+ * In Args:	NhlClass	lc;	class pointer
  *		NhlLayer	l;	instance pointer
  *		_NhlArgList	args;	resources retrieving as well as values
  *		int		nargs;	number of args
@@ -144,14 +144,14 @@ static NhlErrorTypes
 CallGetValues
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc,	/* class pointer	*/
+	NhlClass	lc,	/* class pointer	*/
 	NhlLayer	l,	/* instance pointer	*/
 	_NhlArgList	args,	/* resources retrieving	*/
 	int		nargs	/* number of args	*/
 )
 #else
 (lc,l,args,nargs)
-	NhlLayerClass	lc;	/* class pointer	*/
+	NhlClass	lc;	/* class pointer	*/
 	NhlLayer	l;	/* instance pointer	*/
 	_NhlArgList	args;	/* resources retrieving	*/
 	int		nargs;	/* number of args	*/
@@ -206,7 +206,7 @@ _NhlGetValues
 #endif
 {
 	int			i;
-	NhlLayerClass		lc = _NhlClass(l);
+	NhlClass		lc = _NhlClass(l);
 	_NhlArg		stackargs[_NhlMAXARGLIST];
 	_NhlArgList		largs=stackargs;
 	int			nlargs;

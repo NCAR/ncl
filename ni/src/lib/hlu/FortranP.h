@@ -1,5 +1,5 @@
 /*
- *      $Id: FortranP.h,v 1.4 1995-01-24 01:25:13 boote Exp $
+ *      $Id: FortranP.h,v 1.5 1995-04-07 10:41:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -47,7 +47,7 @@ typedef NhlString _NhlFString;
 #define	_NhlTFExpStringArr	"_FExport_String_Arr"
 #define	_NhlTFExpArray		"_FExport_Array_"
 
-typedef NhlLayerClass (*_NhlClassFunc)(
+typedef NhlClass (*_NhlClassFunc)(
 #if	NhlNeedProto
 	void
 #endif

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItemP.h,v 1.5 1994-12-16 20:04:08 boote Exp $
+ *      $Id: DataItemP.h,v 1.6 1995-04-07 10:41:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -53,19 +53,19 @@ typedef struct _NhlDataItemLayerRec{
 	NhlDataItemLayerPart	dataitem;
 } NhlDataItemLayerRec;
 
-typedef struct _NhlDataItemLayerClassPart{
+typedef struct _NhlDataItemClassPart{
 	int	foo;
-} NhlDataItemLayerClassPart;
+} NhlDataItemClassPart;
 
-typedef struct _NhlDataItemLayerClassRec{
-	NhlBaseLayerClassPart	base_class;
-	NhlDataItemLayerClassPart	dataitem_class;
-} NhlDataItemLayerClassRec;
+typedef struct _NhlDataItemClassRec{
+	NhlBaseClassPart	base_class;
+	NhlDataItemClassPart	dataitem_class;
+} NhlDataItemClassRec;
 
-typedef struct _NhlDataItemLayerClassRec *NhlDataItemLayerClass;
+typedef struct _NhlDataItemClassRec *NhlDataItemClass;
 typedef struct _NhlDataItemLayerRec *NhlDataItemLayer;
 
-extern NhlDataItemLayerClassRec NhldataItemLayerClassRec;
+extern NhlDataItemClassRec NhldataItemClassRec;
 
 /*
  * Private API for DataItem sub-classes

@@ -1,5 +1,5 @@
 /*
- *      $Id: BaseP.h,v 1.7 1995-02-17 10:22:55 boote Exp $
+ *      $Id: BaseP.h,v 1.8 1995-04-07 10:40:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -18,7 +18,7 @@
  *	Date:		Mon Aug 31 13:37:49 MDT 1992
  *
  *	Description:	This file makes all the declarations neccessary to
- *			sub-class the BaseLayerClass.
+ *			sub-class the BaseClass.
  */
 #ifndef _NBaseP_h
 #define _NBaseP_h
@@ -35,17 +35,17 @@
 #define	_NhlClangMode	"Lang.Mode"
 
 typedef struct _NhlObjLayerRec *NhlObjLayer;
-typedef struct _NhlObjLayerClassRec *NhlObjLayerClass;
+typedef struct _NhlObjClassRec *NhlObjClass;
 
 typedef struct _NhlBaseLayerRec *NhlBaseLayer;
-typedef struct _NhlBaseLayerClassRec *NhlBaseLayerClass;
+typedef struct _NhlBaseClassRec *NhlBaseClass;
 
 typedef struct _NhlChildRec _NhlChildNode, *_NhlChildList;
 
 struct _NhlChildRec {
 	int			pid;
 	NhlBoolean		svalscalled;
-	NhlLayerClass		class;
+	NhlClass		class;
 	NrmNameList		resources;
 	_NhlChildList		next;
 };
@@ -64,7 +64,7 @@ struct _NhlAllChildRec {
 typedef struct _NhlObjLayerPart {
 	int		id;		/* index into global layer Table*/
 	NhlLayer	self;		/* pointer to self		*/
-	NhlLayerClass	layer_class;	/* pointer to ClassRec		*/
+	NhlClass	layer_class;	/* pointer to ClassRec		*/
 	NhlLayer	parent;		/* parent Layer			*/
 	NrmName		nrm_name;	/* Layer resource name quarkified*/
 	Const char	*name;		/* Layer resource name		*/
@@ -79,7 +79,7 @@ NhlDOCTAG(NhlBaseLayerPart)
 typedef struct _NhlBaseLayerPart {
 	int		id;		/* index into global layer Table*/
 	NhlLayer	self;		/* pointer to self		*/
-	NhlLayerClass	layer_class;	/* pointer to ClassRec		*/
+	NhlClass	layer_class;	/* pointer to ClassRec		*/
 	NhlLayer	parent;		/* parent Layer			*/
 	NrmName		nrm_name;	/* Layer resource name quarkified*/
 	Const char	*name;		/* Layer resource name		*/
@@ -108,7 +108,7 @@ typedef struct _NhlLayerRec {
 typedef struct _NhlChildResRec _NhlChildResNode, *_NhlChildResList;
 
 struct _NhlChildResRec {
-	NhlLayerClass		class;
+	NhlClass		class;
 	NhlBoolean		autosetval;
 	NrmNameList		resources;
 	_NhlChildResList	next;
@@ -116,7 +116,7 @@ struct _NhlChildResRec {
 
 typedef NhlErrorTypes (*NhlClassPartInitProc)(
 #if	NhlNeedProto
-	NhlLayerClass	/* lc to initialize */
+	NhlClass	/* lc to initialize */
 #endif
 );
 
@@ -128,7 +128,7 @@ typedef NhlErrorTypes (*NhlClassInitProc)(
 
 typedef NhlErrorTypes (*NhlInitProc)(
 #if	NhlNeedProto
-	NhlLayerClass,	/* class of instance to init	*/
+	NhlClass,	/* class of instance to init	*/
 	NhlLayer,	/* request layer		*/
 	NhlLayer,	/* new layer			*/
 	_NhlArgList,	/* args to set in layer		*/
@@ -173,12 +173,12 @@ typedef NhlErrorTypes (*NhlDestroyProc)(
 #endif
 );
 
-typedef struct _NhlObjLayerClassPart {
+typedef struct _NhlObjClassPart {
 	NhlString		class_name;
 	NrmClass		nrm_class;
 	unsigned int		layer_size;
 	int			class_inited;
-	NhlLayerClass 		superclass;
+	NhlClass 		superclass;
 
 	NhlResourceList		resources;
 	int			num_resources;
@@ -192,18 +192,18 @@ typedef struct _NhlObjLayerClassPart {
 	NhlGetValuesProc	layer_get_values;
 	NhlReparentProc		layer_reparent;
 	NhlDestroyProc		layer_destroy;
-} NhlObjLayerClassPart;
+} NhlObjClassPart;
 
 /*
  * NhlDOCREF(/design/hlu/Base.html,Base Object Design)
  */
-NhlDOCTAG(NhlBaseLayerClassPart)
-typedef struct _NhlBaseLayerClassPart {
+NhlDOCTAG(NhlBaseClassPart)
+typedef struct _NhlBaseClassPart {
 	NhlString		class_name;
 	NrmClass		nrm_class;
 	unsigned int		layer_size;
 	int			class_inited;
-	NhlLayerClass 		superclass;
+	NhlClass 		superclass;
 
 	NhlResourceList		resources;
 	int			num_resources;
@@ -217,7 +217,7 @@ typedef struct _NhlBaseLayerClassPart {
 	NhlGetValuesProc	layer_get_values;
 	NhlReparentProc		layer_reparent;
 	NhlDestroyProc		layer_destroy;
-/* NOTHING CAN BE ADDED ABOVE HERE WITHOUT ADDING IT TO ObjLayerClassPart */
+/* NOTHING CAN BE ADDED ABOVE HERE WITHOUT ADDING IT TO ObjClassPart */
 
 	_NhlChildResList	child_resources;
 
@@ -227,20 +227,20 @@ typedef struct _NhlBaseLayerClassPart {
 	NhlDrawProc		layer_draw_segonly;
 	NhlDrawProc		layer_post_draw;
 	NhlDrawProc		layer_clear;
-} NhlBaseLayerClassPart;
+} NhlBaseClassPart;
 
 typedef struct _NhlObjClassRec {
-	NhlObjLayerClassPart	base_class;
-} NhlObjLayerClassRec;
+	NhlObjClassPart	base_class;
+} NhlObjClassRec;
 
-typedef struct _NhlLayerClassRec {
-	NhlBaseLayerClassPart	base_class;
-} NhlBaseLayerClassRec, NhlLayerClassRec ;
+typedef struct _NhlClassRec {
+	NhlBaseClassPart	base_class;
+} NhlBaseClassRec, NhlClassRec ;
 
-extern NhlObjLayerClassRec NhlobjLayerClassRec;
-extern NhlLayerClassRec NhllayerClassRec;
+extern NhlObjClassRec NhlobjClassRec;
+extern NhlClassRec NhllayerClassRec;
 
-#define NhlbaseLayerClassRec NhllayerClassRec
+#define NhlbaseClassRec NhllayerClassRec
 
 #define _NhlName(instance) (((NhlLayer)instance)->base.name)
 #endif /* _NBaseP_h */	

@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.h,v 1.2 1994-01-27 21:25:00 boote Exp $
+ *      $Id: MultiText.h,v 1.3 1995-04-07 10:43:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -59,6 +59,6 @@ typedef enum _NhlMTextOrientatonType{
  * Definition and declaration of new class for global use
  */
 
-extern NhlLayerClass NhlmultiTextLayerClass;
+extern NhlClass NhlmultiTextClass;
 
 #endif  /* _NMultiText_h */

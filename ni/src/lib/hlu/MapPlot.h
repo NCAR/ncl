@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.h,v 1.11 1995-04-07 00:40:03 dbrown Exp $
+ *      $Id: MapPlot.h,v 1.12 1995-04-07 10:42:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -307,6 +307,6 @@ typedef enum _NhlMapShapeMode {
 #define NhlCmpLabelPerimThicknessF	"MpLabelPerimThicknessF"
 #define NhlCmpLabelPerimColor		"MpLabelPerimColor"
 
-extern NhlLayerClass NhlmapPlotLayerClass;
+extern NhlClass NhlmapPlotClass;
 
 #endif /*_NMAPPLOT_h */

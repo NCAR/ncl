@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.11 1995-03-13 21:47:30 dbrown Exp $
+ *      $Id: MapPlotP.h,v 1.12 1995-04-07 10:42:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -306,20 +306,20 @@ typedef struct _NhlMapPlotLayerRec {
 	NhlMapPlotLayerPart	mapplot;
 } NhlMapPlotLayerRec;
 
-typedef struct NhlMapPlotLayerClassPart{
+typedef struct NhlMapPlotClassPart{
 	void *foo;
-} NhlMapPlotLayerClassPart;
+} NhlMapPlotClassPart;
 
-typedef struct _NhlMapPlotLayerClassRec{
-	NhlBaseLayerClassPart		base_class;
-	NhlViewLayerClassPart		view_class;
-	NhlTransformLayerClassPart	trans_class;
-	NhlMapPlotLayerClassPart	mapplot_class;
-} NhlMapPlotLayerClassRec;
+typedef struct _NhlMapPlotClassRec{
+	NhlBaseClassPart		base_class;
+	NhlViewClassPart		view_class;
+	NhlTransformClassPart	trans_class;
+	NhlMapPlotClassPart	mapplot_class;
+} NhlMapPlotClassRec;
 
-typedef struct _NhlMapPlotLayerClassRec *NhlMapPlotLayerClass;
+typedef struct _NhlMapPlotClassRec *NhlMapPlotClass;
 typedef struct _NhlMapPlotLayerRec *NhlMapPlotLayer;
 
-extern NhlMapPlotLayerClassRec NhlmapPlotLayerClassRec;
+extern NhlMapPlotClassRec NhlmapPlotClassRec;
 
 #endif  /* _NMapPlotP_h */

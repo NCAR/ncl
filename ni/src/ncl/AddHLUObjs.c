@@ -2,7 +2,7 @@
 
 
 /*
- *      $Id: AddHLUObjs.c,v 1.11 1995-04-01 00:54:31 ethan Exp $
+ *      $Id: AddHLUObjs.c,v 1.12 1995-04-07 10:46:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,26 +32,26 @@ extern "C" {
 extern void _NclAddSingleObj(
 #if	NhlNeedProto
 char * /*name*/,
-struct _NhlLayerClassRec * /* the_ptr */
+struct _NhlClassRec * /* the_ptr */
 #endif
 );
 
 
-extern NhlLayerClass NhltickMarkLayerClass;
-extern NhlLayerClass NhltitleLayerClass;
-extern NhlLayerClass NhlxWorkstationLayerClass;
-extern NhlLayerClass NhlncgmWorkstationLayerClass;
-extern NhlLayerClass NhlcontourPlotLayerClass;
-extern NhlLayerClass NhltextItemLayerClass;
-extern NhlLayerClass NhlxyPlotLayerClass;
-extern NhlLayerClass NhllabelBarLayerClass;
-extern NhlLayerClass NhllegendLayerClass;
-extern NhlLayerClass NhlcoordArraysLayerClass;
-extern NhlLayerClass NhlscalarFieldLayerClass;
-extern NhlLayerClass NhlmapPlotLayerClass;
-extern NhlLayerClass NhlappLayerClass;
-extern NhlLayerClass NhlannoManagerLayerClass;
-extern NhlLayerClass NhlpsWorkstationLayerClass;
+extern NhlClass NhltickMarkClass;
+extern NhlClass NhltitleClass;
+extern NhlClass NhlxWorkstationClass;
+extern NhlClass NhlncgmWorkstationClass;
+extern NhlClass NhlcontourPlotClass;
+extern NhlClass NhltextItemClass;
+extern NhlClass NhlxyPlotClass;
+extern NhlClass NhllabelBarClass;
+extern NhlClass NhllegendClass;
+extern NhlClass NhlcoordArraysClass;
+extern NhlClass NhlscalarFieldClass;
+extern NhlClass NhlmapPlotClass;
+extern NhlClass NhlappClass;
+extern NhlClass NhlannoManagerClass;
+extern NhlClass NhlpsWorkstationClass;
 
 
 
@@ -63,21 +63,21 @@ void _NclAddHLUObjs
 ()
 #endif
 {
-	_NclAddSingleObj(NhltickMarkLayerClass->base_class.class_name,NhltickMarkLayerClass);
-	_NclAddSingleObj(NhltitleLayerClass->base_class.class_name,NhltitleLayerClass);
-	_NclAddSingleObj(NhlxWorkstationLayerClass->base_class.class_name,NhlxWorkstationLayerClass);
-	_NclAddSingleObj(NhlncgmWorkstationLayerClass->base_class.class_name,NhlncgmWorkstationLayerClass);
-	_NclAddSingleObj(NhlcontourPlotLayerClass->base_class.class_name,NhlcontourPlotLayerClass);
-	_NclAddSingleObj(NhltextItemLayerClass->base_class.class_name,NhltextItemLayerClass);
-	_NclAddSingleObj(NhlxyPlotLayerClass->base_class.class_name,NhlxyPlotLayerClass);
-	_NclAddSingleObj(NhllabelBarLayerClass->base_class.class_name,NhllabelBarLayerClass);
-	_NclAddSingleObj(NhllegendLayerClass->base_class.class_name,NhllegendLayerClass);
-	_NclAddSingleObj(NhlcoordArraysLayerClass->base_class.class_name,NhlcoordArraysLayerClass);
-	_NclAddSingleObj(NhlscalarFieldLayerClass->base_class.class_name,NhlscalarFieldLayerClass);
-	_NclAddSingleObj(NhlmapPlotLayerClass->base_class.class_name,NhlmapPlotLayerClass);
-	_NclAddSingleObj(NhlappLayerClass->base_class.class_name,NhlappLayerClass);
-	_NclAddSingleObj(NhlannoManagerLayerClass->base_class.class_name,NhlannoManagerLayerClass);
-	_NclAddSingleObj(NhlpsWorkstationLayerClass->base_class.class_name,NhlpsWorkstationLayerClass);
+	_NclAddSingleObj(NhltickMarkClass->base_class.class_name,NhltickMarkClass);
+	_NclAddSingleObj(NhltitleClass->base_class.class_name,NhltitleClass);
+	_NclAddSingleObj(NhlxWorkstationClass->base_class.class_name,NhlxWorkstationClass);
+	_NclAddSingleObj(NhlncgmWorkstationClass->base_class.class_name,NhlncgmWorkstationClass);
+	_NclAddSingleObj(NhlcontourPlotClass->base_class.class_name,NhlcontourPlotClass);
+	_NclAddSingleObj(NhltextItemClass->base_class.class_name,NhltextItemClass);
+	_NclAddSingleObj(NhlxyPlotClass->base_class.class_name,NhlxyPlotClass);
+	_NclAddSingleObj(NhllabelBarClass->base_class.class_name,NhllabelBarClass);
+	_NclAddSingleObj(NhllegendClass->base_class.class_name,NhllegendClass);
+	_NclAddSingleObj(NhlcoordArraysClass->base_class.class_name,NhlcoordArraysClass);
+	_NclAddSingleObj(NhlscalarFieldClass->base_class.class_name,NhlscalarFieldClass);
+	_NclAddSingleObj(NhlmapPlotClass->base_class.class_name,NhlmapPlotClass);
+	_NclAddSingleObj(NhlappClass->base_class.class_name,NhlappClass);
+	_NclAddSingleObj(NhlannoManagerClass->base_class.class_name,NhlannoManagerClass);
+	_NclAddSingleObj(NhlpsWorkstationClass->base_class.class_name,NhlpsWorkstationClass);
 	return;
 	
 }

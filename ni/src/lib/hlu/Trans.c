@@ -1,5 +1,5 @@
 /*
- *      $Id: Trans.c,v 1.12 1995-04-07 09:36:07 boote Exp $
+ *      $Id: Trans.c,v 1.13 1995-04-07 10:44:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,8 +24,8 @@
  *			to the HLU programmer to determine when an NhlSetTrans
  *			call is needed. In general a set is always needed in
  *			the ndc_to_data and data_to_ndc methods of the
- *			NhlTransformLayerClass. However it may not always be
- *			needed in the methods of the NhlTransObjLayerClass.<-----
+ *			NhlTransformClass. However it may not always be
+ *			needed in the methods of the NhlTransObjClass.<-----
  *
  */
 
@@ -51,9 +51,9 @@ NhlErrorTypes 	_NhlWinToNDC
 #endif
 {	
 	char			func[]="_NhlWinToNDC";
-	NhlTransObjLayerClass	i_class ;
+	NhlTransObjClass	i_class ;
 
-	i_class = (NhlTransObjLayerClass)instance->base.layer_class;
+	i_class = (NhlTransObjClass)instance->base.layer_class;
 
 
 	if(_NhlIsTransObj(instance)) {	
@@ -87,9 +87,9 @@ NhlErrorTypes 	_NhlNDCToWin
 #endif
 {	
 	char			func[]="_NhlNDCToWin";
-	NhlTransObjLayerClass	i_class ;
+	NhlTransObjClass	i_class ;
 
-	i_class = (NhlTransObjLayerClass)instance->base.layer_class;
+	i_class = (NhlTransObjClass)instance->base.layer_class;
 
 
 	if(_NhlIsTransObj(instance)){
@@ -122,9 +122,9 @@ NhlErrorTypes 	_NhlDataToCompc
 #endif
 {	
 	char			func[]="_NhlDataToCompc";
-	NhlTransObjLayerClass	i_class ;
+	NhlTransObjClass	i_class ;
 
-	i_class = (NhlTransObjLayerClass)instance->base.layer_class;
+	i_class = (NhlTransObjClass)instance->base.layer_class;
 
 
 	if(_NhlIsTransObj(instance)){
@@ -158,9 +158,9 @@ NhlErrorTypes 	_NhlCompcToData
 #endif
 {	
 	char			func[]="_NhlCompcToData";
-	NhlTransObjLayerClass	i_class ;
+	NhlTransObjClass	i_class ;
 
-	i_class = (NhlTransObjLayerClass)instance->base.layer_class;
+	i_class = (NhlTransObjClass)instance->base.layer_class;
 
 
 	if(_NhlIsTransObj(instance)){
@@ -194,9 +194,9 @@ NhlErrorTypes 	_NhlDataToWin
 #endif
 {	
 	char			func[]="_NhlDataToWin";
-	NhlTransObjLayerClass	i_class ;
+	NhlTransObjClass	i_class ;
 
-	i_class = (NhlTransObjLayerClass)instance->base.layer_class;
+	i_class = (NhlTransObjClass)instance->base.layer_class;
 
 
 	if(_NhlIsTransObj(instance)){
@@ -229,9 +229,9 @@ NhlErrorTypes 	_NhlWinToData
 #endif
 {	
 	char			func[]="_NhlWinToData";
-	NhlTransObjLayerClass	i_class ;
+	NhlTransObjClass	i_class ;
 
-	i_class = (NhlTransObjLayerClass)instance->base.layer_class;
+	i_class = (NhlTransObjClass)instance->base.layer_class;
 
 
 	if(_NhlIsTransObj(instance)){
@@ -264,9 +264,9 @@ NhlErrorTypes 	_NhlWinToCompc
 #endif
 {	
 	char			func[]="_NhlWinToCompc";
-	NhlTransObjLayerClass	i_class ;
+	NhlTransObjClass	i_class ;
 
-	i_class = (NhlTransObjLayerClass)instance->base.layer_class;
+	i_class = (NhlTransObjClass)instance->base.layer_class;
 
 
 	if(_NhlIsTransObj(instance)){
@@ -299,9 +299,9 @@ NhlErrorTypes 	_NhlCompcToWin
 #endif
 {	
 	char			func[]="_NhlCompcToWin";
-	NhlTransObjLayerClass	i_class ;
+	NhlTransObjClass	i_class ;
 
-	i_class = (NhlTransObjLayerClass)instance->base.layer_class;
+	i_class = (NhlTransObjClass)instance->base.layer_class;
 
 
 	if(_NhlIsTransObj(instance)){
@@ -327,7 +327,7 @@ NhlErrorTypes 	_NhlSetTrans
 #endif
 {
 	char			func[] = "_NhlSetTrans";
-	NhlTransObjLayerClass	i_class ;
+	NhlTransObjClass	i_class ;
 
 	if(!_NhlIsTransObj(instance) || !_NhlIsView(parent)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -335,7 +335,7 @@ NhlErrorTypes 	_NhlSetTrans
 		return NhlFATAL;
 	}
 
-	i_class = (NhlTransObjLayerClass)instance->base.layer_class;
+	i_class = (NhlTransObjClass)instance->base.layer_class;
 	if(i_class->trobj_class.set_trans != NULL)
 		return (*i_class->trobj_class.set_trans)(instance,parent);
 /*
@@ -373,10 +373,10 @@ NhlErrorTypes NhlDataToNDC
 #endif
 {
 	NhlLayer		tl = _NhlGetLayer(pid);
-	NhlTransformLayerClass	tc;
+	NhlTransformClass	tc;
 
 	if(tl && _NhlIsTransform(tl)) {
-		tc = (NhlTransformLayerClass)tl->base.layer_class;
+		tc = (NhlTransformClass)tl->base.layer_class;
 
 		return (*tc->trans_class.data_to_ndc)
 			(tl,x,y,n,xout,yout,xmissing,ymissing,status,oor);
@@ -470,10 +470,10 @@ NhlErrorTypes NhlNDCToData
 #endif
 {
 	NhlLayer		tl = _NhlGetLayer(pid);
-	NhlTransformLayerClass	tc;
+	NhlTransformClass	tc;
 
 	if(tl && _NhlIsTransform(tl)) {
-		tc = (NhlTransformLayerClass)tl->base.layer_class;
+		tc = (NhlTransformClass)tl->base.layer_class;
 
 		return (*tc->trans_class.ndc_to_data)
 			(tl,x,y,n,xout,yout,xmissing,ymissing,status,oor);
@@ -550,10 +550,10 @@ NhlErrorTypes NhlDataPolyline
 #endif
 {
 	NhlLayer		tl = _NhlGetLayer(pid);
-	NhlTransformLayerClass	tc;
+	NhlTransformClass	tc;
 
 	if(tl && _NhlIsTransform(tl)) {
-		tc = (NhlTransformLayerClass)tl->base.layer_class;
+		tc = (NhlTransformClass)tl->base.layer_class;
 
 		NhlVASetValues(tl->base.wkptr->base.id,
 			_NhlNwkSetPublic,	True,
@@ -622,10 +622,10 @@ NhlErrorTypes NhlNDCPolyline
 #endif
 {
 	NhlLayer		tl = _NhlGetLayer(pid);
-	NhlTransformLayerClass	tc;
+	NhlTransformClass	tc;
 
 	if(tl && _NhlIsTransform(tl)) {
-		tc = (NhlTransformLayerClass)tl->base.layer_class;
+		tc = (NhlTransformClass)tl->base.layer_class;
 
 		NhlVASetValues(tl->base.wkptr->base.id,
 			_NhlNwkSetPublic,	True,

@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.12 1995-03-15 11:48:38 boote Exp $
+ *      $Id: MultiText.c,v 1.13 1995-04-07 10:43:04 boote Exp $
  */
 /************************************************************************
 *									*
@@ -75,13 +75,13 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes MultiTextClassPartInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc
+	NhlClass	lc
 #endif
 );
 
 static NhlErrorTypes MultiTextInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc,	/* class	*/
+	NhlClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
 	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
@@ -119,13 +119,13 @@ static NhlErrorTypes MultiTextDestroy(
 
 /* Class definition	*/
 
-NhlMultiTextLayerClassRec NhlmultiTextLayerClassRec = {
+NhlMultiTextClassRec NhlmultiTextClassRec = {
 	{
-/* class_name			*/	"multiTextLayerClass",
+/* class_name			*/	"multiTextClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlMultiTextLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlviewLayerClassRec,
+/* superclass			*/	(NhlClass)&NhlviewClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -158,7 +158,7 @@ NhlMultiTextLayerClassRec NhlmultiTextLayerClassRec = {
 	}
 };
 
-NhlLayerClass NhlmultiTextLayerClass = (NhlLayerClass)&NhlmultiTextLayerClassRec;
+NhlClass NhlmultiTextClass = (NhlClass)&NhlmultiTextClassRec;
 
 /************************************************************************
 * New type converters - needed for new type's defined for this class	*
@@ -177,10 +177,10 @@ NhlLayerClass NhlmultiTextLayerClass = (NhlLayerClass)&NhlmultiTextLayerClassRec
 /*
  * Function:	MutliTextClassInitialize
  *
- * Description:	This function initializes the MultiText NhlLayerClass record.
+ * Description:	This function initializes the MultiText NhlClass record.
  *
  * In Args:
- *		NhlLayerClass	lc	NhlLayerClass being inited
+ *		NhlClass	lc	NhlClass being inited
  *
  * Out Args:	none
  *
@@ -192,17 +192,17 @@ static NhlErrorTypes
 MultiTextClassPartInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc	/* NhlLayerClass being inited	*/
+	NhlClass	lc	/* NhlClass being inited	*/
 )
 #else
 (lc)
-	NhlLayerClass	lc;	/* NhlLayerClass being inited	*/
+	NhlClass	lc;	/* NhlClass being inited	*/
 #endif
 {
 	/*
 	 * Register children classes
 	 */
-	return _NhlRegisterChildClass(lc,NhltextItemLayerClass,True,False,
+	return _NhlRegisterChildClass(lc,NhltextItemClass,True,False,
 				NhlNtxString,NhlNtxPosXF,NhlNtxPosYF,NULL);
 }
 
@@ -303,7 +303,7 @@ CalculateGeometry
  * Description:	This function initializes an instance of a MultiText layer.
  *
  * In Args:	
- *		NhlLayerClass	lc,	class
+ *		NhlClass	lc,	class
  *		NhlLayer		req,	requested
  *		_NhlArgList	args,	args
  *		int		nargs	nargs
@@ -320,7 +320,7 @@ static NhlErrorTypes
 MultiTextInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc,	/* class	*/
+	NhlClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
 	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
@@ -328,7 +328,7 @@ MultiTextInitialize
 )
 #else
 (lc,req,new,args,nargs)
-	NhlLayerClass	lc;	/* class	*/
+	NhlClass	lc;	/* class	*/
 	NhlLayer	req;	/* requested	*/
 	NhlLayer	new;	/* new		*/
 	_NhlArgList	args;	/* args		*/
@@ -377,7 +377,7 @@ MultiTextInitialize
 	strcat(name,"-TxtItm");
 
 	ret = _NhlVACreateChild(&mtnew->multitext.text_object,name,
-						NhltextItemLayerClass,new,
+						NhltextItemClass,new,
 		NhlNtxAngleF,		mtnew->multitext.angle,
 		NhlNtxFont,		mtnew->multitext.font,
 		NhlNtxJust,		mtnew->multitext.just,

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.28 1995-02-19 08:19:39 boote Exp $
+ *      $Id: hlu.h,v 1.29 1995-04-07 10:44:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -173,7 +173,7 @@ typedef void (*NhlFreeFunc)(
 #endif
 );
 
-typedef struct _NhlLayerClassRec *NhlLayerClass;
+typedef struct _NhlClassRec *NhlClass;
 
 /* These are here because they needs defs from above. */
 #include <ncarg/hlu/Error.h>
@@ -267,7 +267,7 @@ extern NhlErrorTypes NhlVACreate(
 #if	NhlNeedVarArgProto
 	int*,			/* return plot id			*/
 	Const char*,		/* name					*/
-	NhlLayerClass,		/* requested class			*/
+	NhlClass,		/* requested class			*/
 	int,			/* parent's id				*/
 	...			/* res names/values - NULL terminated	*/
 #endif
@@ -278,7 +278,7 @@ extern NhlErrorTypes NhlALCreate(
 #if	NhlNeedProto
 	int*,			/* return plot id	*/
 	Const char*,		/* name			*/
-	NhlLayerClass,		/* requested class	*/
+	NhlClass,		/* requested class	*/
 	int,			/* parent's id		*/
 	NhlSArgList,		/* setarg list		*/
 	int			/* number of Sarg's	*/
@@ -289,7 +289,7 @@ extern NhlErrorTypes NhlCreate(
 #if	NhlNeedProto
 	int*,			/* return plot id	*/
 	Const char*,		/* name			*/
-	NhlLayerClass,		/* requested class	*/
+	NhlClass,		/* requested class	*/
 	int,			/* parent's id		*/
 	int			/* RL list id		*/
 #endif

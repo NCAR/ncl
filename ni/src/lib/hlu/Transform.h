@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.h,v 1.9 1995-04-01 00:18:57 dbrown Exp $
+ *      $Id: Transform.h,v 1.10 1995-04-07 10:44:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -126,6 +126,6 @@ extern NhlErrorTypes NhlRemoveAnnotation(
 #endif
 );
 
-extern NhlLayerClass NhltransformLayerClass;
+extern NhlClass NhltransformClass;
 
 #endif /*_NTRANSFORM_h */

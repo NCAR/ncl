@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.h,v 1.7 1995-03-21 22:36:51 dbrown Exp $
+ *      $Id: Base.h,v 1.8 1995-04-07 10:40:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,8 +25,8 @@
 
 #include <ncarg/hlu/hlu.h>
 
-extern NhlLayerClass NhlobjLayerClass;
-extern NhlLayerClass NhlbaseLayerClass;
+extern NhlClass NhlobjClass;
+extern NhlClass NhlbaseClass;
 
 #define NhlNULLOBJID 0
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.17 1995-03-27 14:05:45 haley Exp $
+ *      $Id: Create.c,v 1.18 1995-04-07 10:41:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -46,8 +46,8 @@
  * Description:	This function is used to call the top to bottom ClassPartInit
  *		chained method.
  *
- * In Args:	NhlLayerClass	ancestor:
- *		NhlLayerClass	lc;
+ * In Args:	NhlClass	ancestor:
+ *		NhlClass	lc;
  *
  * Out Args:	
  *
@@ -60,13 +60,13 @@ static NhlErrorTypes
 CallClassPartInit
 #if	NhlNeedProto
 (
-	NhlLayerClass	ancestor,	/* ancestor		*/
-	NhlLayerClass	lc		/* class to update	*/
+	NhlClass	ancestor,	/* ancestor		*/
+	NhlClass	lc		/* class to update	*/
 )
 #else
 (ancestor, lc)
-	NhlLayerClass	ancestor;	/* ancestor		*/
-	NhlLayerClass	lc;		/* class to update	*/
+	NhlClass	ancestor;	/* ancestor		*/
+	NhlClass	lc;		/* class to update	*/
 #endif
 {
 	NhlErrorTypes ancestorerr = NhlNOERROR, thisclass = NhlNOERROR;
@@ -86,14 +86,14 @@ CallClassPartInit
 }
 
 /*
- * Function:	InitializeLayerClass
+ * Function:	InitializeClass
  *
  * Description:	This function is used to Initialize the Class structure
  *		of the given class.  It calls the Initialize function
  *		within the given class to do this.  Also, It initializes
  *		the given Classes superclass before doing itself.
  *
- * In Args:	NhlLayerClass	lc;	Class to initialize
+ * In Args:	NhlClass	lc;	Class to initialize
  *
  * Out Args:	
  *
@@ -102,55 +102,55 @@ CallClassPartInit
  * Side Effect:	The structure pointed to by lc is initialized.
  */
 static NhlErrorTypes
-InitializeLayerClass
+InitializeClass
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc	/* pointer to class to be initalized	*/
+	NhlClass	lc	/* pointer to class to be initalized	*/
 ) 
 #else
 (lc) 
-	NhlLayerClass	lc;	/* pointer to class to be initalized	*/
+	NhlClass	lc;	/* pointer to class to be initalized	*/
 #endif
 {
 	NhlErrorTypes ansestor, thisclass, classpart;
-	NhlLayerClass step;
+	NhlClass step;
 	int inited = 0x01;
 
 	if(lc->base_class.class_inited) return(NhlNOERROR);
 
 	step = lc;
 	while(step != NULL) {
-		if(step == NhlobjLayerClass)
-			inited |= (_NhlObjLayerClassFlag);
-		else if(step == NhlbaseLayerClass)
-			inited |= ( _NhlBaseLayerClassFlag );  
-		else if(step == NhlworkstationLayerClass)
-			inited |= (_NhlWorkstationLayerClassFlag);  
-		else if(step == NhlviewLayerClass)
-			inited |= (_NhlViewLayerClassFlag);
-		else if(step == NhltransformLayerClass)
-			inited |= (_NhlTransformLayerClassFlag);
-		else if(step == NhlerrorLayerClass)
-			inited |= (_NhlErrorLayerClassFlag);
-		else if(step == NhltransObjLayerClass)
-			inited |= (_NhlTransObjLayerClassFlag);
-		else if(step == NhldataCommLayerClass)
-			inited |= (_NhlDataCommLayerClassFlag);
-		else if(step == NhldataMgrLayerClass)
-			inited |= (_NhlDataMgrLayerClassFlag);
-		else if(step == NhldataItemLayerClass)
-			inited |= (_NhlDataItemLayerClassFlag);
-		else if(step == NhldataSpecLayerClass)
-			inited |= (_NhlDataSpecLayerClassFlag);
-		else if(step == NhlappLayerClass)
-			inited |= (_NhlAppLayerClassFlag);
+		if(step == NhlobjClass)
+			inited |= (_NhlObjClassFlag);
+		else if(step == NhlbaseClass)
+			inited |= ( _NhlBaseClassFlag );  
+		else if(step == NhlworkstationClass)
+			inited |= (_NhlWorkstationClassFlag);  
+		else if(step == NhlviewClass)
+			inited |= (_NhlViewClassFlag);
+		else if(step == NhltransformClass)
+			inited |= (_NhlTransformClassFlag);
+		else if(step == NhlerrorClass)
+			inited |= (_NhlErrorClassFlag);
+		else if(step == NhltransObjClass)
+			inited |= (_NhlTransObjClassFlag);
+		else if(step == NhldataCommClass)
+			inited |= (_NhlDataCommClassFlag);
+		else if(step == NhldataMgrClass)
+			inited |= (_NhlDataMgrClassFlag);
+		else if(step == NhldataItemClass)
+			inited |= (_NhlDataItemClassFlag);
+		else if(step == NhldataSpecClass)
+			inited |= (_NhlDataSpecClassFlag);
+		else if(step == NhlappClass)
+			inited |= (_NhlAppClassFlag);
 		step = step->base_class.superclass;
 	}
 
 	if((lc->base_class.superclass != NULL)
 		&&(!(lc->base_class.superclass->base_class.class_inited))){
 
-		ansestor = InitializeLayerClass(lc->base_class.superclass);
+		ansestor = InitializeClass(lc->base_class.superclass);
 		if(ansestor < NhlWARNING)
 			return(ansestor);
 	}
@@ -177,7 +177,7 @@ InitializeLayerClass
 }
 
 /*
- * Function:	_NhlInitializeLayerClass
+ * Function:	_NhlInitializeClass
  *
  * Description:	Global function to init a layer class. This is needed if
  *		The class you are writing depends upon a type defined
@@ -192,19 +192,19 @@ InitializeLayerClass
  * Returns:	
  * Side Effect:	
  */
-NhlDOCTAG(_NhlInitializeLayerClass)
+NhlDOCTAG(_NhlInitializeClass)
 NhlErrorTypes
-_NhlInitializeLayerClass
+_NhlInitializeClass
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc	/* pointer to class to be initalized	*/
+	NhlClass	lc	/* pointer to class to be initalized	*/
 ) 
 #else
 (lc) 
-	NhlLayerClass	lc;	/* pointer to class to be initalized	*/
+	NhlClass	lc;	/* pointer to class to be initalized	*/
 #endif
 {
-	return(InitializeLayerClass(lc));
+	return(InitializeClass(lc));
 }
 
 /*
@@ -214,7 +214,7 @@ _NhlInitializeLayerClass
  *		NhlLayer Class.  It calls the top to bottom initialize method
  *		of the classes.
  *
- * In Args:	NhlLayerClass	lc	Class of NhlLayer being initialized
+ * In Args:	NhlClass	lc	Class of NhlLayer being initialized
  *		NhlLayer	req	NhlLayer with requested values in it
  *		_NhlArgList	args	res names and values requested
  *		int		nargs	number of args
@@ -229,7 +229,7 @@ static NhlErrorTypes
 CallInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc,	/* Class of NhlLayer being initialized	*/
+	NhlClass	lc,	/* Class of NhlLayer being initialized	*/
 	NhlLayer	req,	/* NhlLayer with requested values in it	*/
 	NhlLayer	new,	/* NhlLayer to update			*/
 	_NhlArgList	args,	/* res names and values requested	*/
@@ -237,7 +237,7 @@ CallInitialize
 )
 #else
 (lc,req,new,args,nargs)
-	NhlLayerClass	lc;	/* Class of NhlLayer being initialized	*/
+	NhlClass	lc;	/* Class of NhlLayer being initialized	*/
 	NhlLayer	req;	/* NhlLayer with requested values in it	*/
 	NhlLayer	new;	/* NhlLayer to update			*/
 	_NhlArgList	args;	/* res names and values requested	*/
@@ -270,7 +270,7 @@ CallInitialize
  *		into the arglists.
  *
  * In Args:	Const NhlString	name		name to identify instance
- *		NhlLayerClass	lc		class of instance to create
+ *		NhlClass	lc		class of instance to create
  *		int		parentid	id# of parent
  *		NhlErrorTypes	*ret		return code
  *		_NhlArgList	args		resources to set in instance
@@ -289,7 +289,7 @@ _NhlCreate
 (
 	int		*pid,		/* return plot id		*/
 	Const char	*name,		/* name to identify instance	*/
-	NhlLayerClass	lc,		/* class of instance to create	*/
+	NhlClass	lc,		/* class of instance to create	*/
 	int		parentid,	/* id# of parent		*/
 	_NhlArgList	args,		/* resources to set in instance	*/
 	int		nargs,		/* number of args		*/
@@ -299,7 +299,7 @@ _NhlCreate
 (pid, name, lc, parentid, args, nargs, child)
 	int		*pid;		/* return plot id		*/
 	Const char	*name;		/* name to identify instance	*/
-	NhlLayerClass	lc;		/* class of instance to create	*/
+	NhlClass	lc;		/* class of instance to create	*/
 	int		parentid;	/* id# of parent		*/
 	_NhlArgList	args;		/* resources to set in instance	*/
 	int		nargs;		/* number of args		*/
@@ -320,12 +320,12 @@ _NhlCreate
 
 
 	if(!(lc->base_class.class_inited)){
-		ret = InitializeLayerClass(lc);
+		ret = InitializeClass(lc);
 		if(ret < NhlWARNING)
 			return(ret);
 	}
 
-	if(lc->base_class.class_inited & _NhlAppLayerClassFlag)
+	if(lc->base_class.class_inited & _NhlAppClassFlag)
 		parent = NULL;
 	else if(parentid == NhlDEFAULT_APP){
 		parent = _NhlGetCurrentApp();
@@ -340,7 +340,7 @@ _NhlCreate
 		parent = _NhlGetLayer(parentid);
 		if((parent == NULL) || (_NhlIsObj(parent) &&
 						!(lc->base_class.class_inited &
-						_NhlObjLayerClassFlag))){
+						_NhlObjClassFlag))){
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"%s:Invalid Parent id #%d",func,parentid);
 				return NhlFATAL;
@@ -582,12 +582,12 @@ _NhlCreate
  * Function:	NhlVACreate
  *
  * Description:	This function is used to create an instance of the given
- *		NhlLayerClass.  It takes it's varargs and packs them into
+ *		NhlClass.  It takes it's varargs and packs them into
  *		the internal arglist format needed - and then calls
  *		_NhlCreate. NhlDOCREF(#_NhlCreate,_NhlCreate is here.)
  *
  * In Args:	Const NhlString	name;		name of instance
- *		NhlLayerClass	lc;		NhlLayerClass to create
+ *		NhlClass	lc;		NhlClass to create
  *		int		parentid;	id of parent
  *		...				resource name/value pairs
  *
@@ -605,7 +605,7 @@ NhlVACreate
 (
 	int		*pid,		/* return plot id		*/
 	Const char	*name,		/* name of instance		*/
-	NhlLayerClass	lc,		/* NhlLayerClass to create	*/
+	NhlClass	lc,		/* NhlClass to create	*/
 	int		parentid,	/* id of parent			*/
 	...				/* resource name/value pairs	*/
 )
@@ -613,7 +613,7 @@ NhlVACreate
 (pid, name, lc, parentid, va_alist)
 	int		*pid;		/* return plot id		*/
 	Const char	*name;		/* name of instance		*/
-	NhlLayerClass	lc;		/* NhlLayerClass to create	*/
+	NhlClass	lc;		/* NhlClass to create	*/
 	int		parentid;	/* id of parent			*/
 	va_dcl				/* resource name/value pairs	*/
 #endif	/* NhlNeedVarArgProto */
@@ -642,11 +642,11 @@ NhlVACreate
  * Function:	NhlCreate
  *
  * Description:	This function is used to create an instance of the given
- *		NhlLayerClass.  This function is identical to NhlVACreate
+ *		NhlClass.  This function is identical to NhlVACreate
  *		except that it takes an RL list instead of using varargs.
  *
  * In Args:	Const NhlString	name;		name of instance
- *		NhlLayerClass	lc;		NhlLayerClass to create
+ *		NhlClass	lc;		NhlClass to create
  *		int		parentid;	id of parent
  *		NhlArgList	args,
  *		int		nargs
@@ -664,7 +664,7 @@ NhlCreate
 (
 	int		*pid,		/* plot id <return>		*/
 	Const char	*name,		/* name of instance		*/
-	NhlLayerClass	lc,		/* NhlLayerClass to create	*/
+	NhlClass	lc,		/* NhlClass to create	*/
 	int		parentid,	/* parent's id			*/
 	int		rlid		/* RL list of resources		*/
 )
@@ -672,7 +672,7 @@ NhlCreate
 (pid,name,lc,parentid,rlid)
 	int		*pid;		/* plot id <return>		*/
 	Const char	*name;		/* name of instance		*/
-	NhlLayerClass	lc;		/* NhlLayerClass to create	*/
+	NhlClass	lc;		/* NhlClass to create	*/
 	int		parentid;	/* parent's id			*/
 	int		rlid;		/* RL list of resources		*/
 #endif
@@ -701,7 +701,7 @@ NhlCreate
  * Description:	This function is used to create an instance of the given
  *		classfunc.  This function is identical to NhlCreate
  *		except that it is called from fortran and uses a classfunc
- *		instead of the NhlLayerClass pointer.
+ *		instead of the NhlClass pointer.
  *
  * In Args:	
  *
@@ -717,7 +717,7 @@ _NHLCALLF(nhl_fcreate,NHL_FCREATE)
 (
 	int		*pid,		/* plot id <return>		*/
 	_NhlFString	fname,		/* name of instance		*/
-	_NhlClassFunc	lc_func,	/* NhlLayerClass to create	*/
+	_NhlClassFunc	lc_func,	/* NhlClass to create	*/
 	int		*parentid,	/* parent's id			*/
 	int		*rlid,		/* RL list of resources		*/
 	int		*fname_len,	/* length of "name" char array	*/
@@ -727,7 +727,7 @@ _NHLCALLF(nhl_fcreate,NHL_FCREATE)
 (pid,fname,lc_func,parentid,rlid,fname_len,err_ret)
 	int		*pid;		/* plot id <return>		*/
 	_NhlFString	fname;		/* name of instance		*/
-	_NhlClassFunc	lc_func;	/* NhlLayerClass to create	*/
+	_NhlClassFunc	lc_func;	/* NhlClass to create	*/
 	int		*parentid;	/* parent's id			*/
 	int		*rlid;		/* RL list of resources		*/
 	int		*fname_len;	/* length of "name" char array	*/
@@ -738,7 +738,7 @@ _NHLCALLF(nhl_fcreate,NHL_FCREATE)
 	int		nargs;
 	char		cname[_NhlMAXRESNAMLEN];
 	char		*name;
-	NhlLayerClass	lc = NULL;
+	NhlClass	lc = NULL;
 	
 	/*
 	 * A better test would be nice, but what can we say.
@@ -776,11 +776,11 @@ _NHLCALLF(nhl_fcreate,NHL_FCREATE)
  * Function:	NhlALCreate
  *
  * Description:	This function is used to create an instance of the given
- *		NhlLayerClass.  This function is identical to NhlCreate
+ *		NhlClass.  This function is identical to NhlCreate
  *		except that it takes an arglist instead of using varargs.
  *
  * In Args:	Const NhlString	name;		name of instance
- *		NhlLayerClass	lc;		NhlLayerClass to create
+ *		NhlClass	lc;		NhlClass to create
  *		int		parentid;	id of parent
  *		NhlArgList	args,
  *		int		nargs
@@ -798,7 +798,7 @@ NhlALCreate
 (
 	int		*pid,		/* plot id <return>		*/
 	Const char	*name,		/* name of instance		*/
-	NhlLayerClass	lc,		/* NhlLayerClass to create	*/
+	NhlClass	lc,		/* NhlClass to create	*/
 	int		parentid,	/* parent's id			*/
 	NhlSArgList	args_in,	/* resource name/values		*/
 	int		nargs		/* number of resources		*/
@@ -807,7 +807,7 @@ NhlALCreate
 (pid, name, lc, parentid, args_in, nargs)
 	int		*pid;		/* plot id <return>		*/
 	Const char	*name;		/* name of instance		*/
-	NhlLayerClass	lc;		/* NhlLayerClass to create	*/
+	NhlClass	lc;		/* NhlClass to create	*/
 	int		parentid;	/* parent's id			*/
 	NhlSArgList	args_in;	/* resource name/values		*/
 	int		nargs;		/* number of resources		*/
@@ -847,7 +847,7 @@ NhlALCreate
  *
  *
  * In Args:	
- *		NhlLayerClass	lc	Class to init all_resources
+ *		NhlClass	lc	Class to init all_resources
  *
  * Out Args:	
  *
@@ -859,11 +859,11 @@ static NhlErrorTypes
 InitAllResources
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc	/* Class to init all_resources 	*/
+	NhlClass	lc	/* Class to init all_resources 	*/
 )
 #else
 (lc)
-	NhlLayerClass	lc;	/* Class to init all_resources 	*/
+	NhlClass	lc;	/* Class to init all_resources 	*/
 #endif
 {
 	NrmQuark		list[_NhlMAXRESLIST+1];
@@ -874,7 +874,7 @@ InitAllResources
 	int			num_all_res = 0;
 	_NhlChildResList	tnode;
 	
-	if(lc->base_class.class_inited & _NhlObjLayerClassFlag)
+	if(lc->base_class.class_inited & _NhlObjClassFlag)
 		tnode = NULL;
 	else
 		tnode = lc->base_class.child_resources;
@@ -940,8 +940,8 @@ InitAllResources
  *		to control exactly when the child's resources are set.
  *
  * In Args:	
- *		NhlLayerClass	parent,		parent class
- *		NhlLayerClass	child,		child class
+ *		NhlClass	parent,		parent class
+ *		NhlClass	child,		child class
  *		NhlBoolean	autosetval,	SetValue im/ex plicite
  *		NhlBoolean	forward,	T-frwd listed F-excl listed
  *		...
@@ -958,16 +958,16 @@ NhlErrorTypes
 _NhlRegisterChildClass
 #if	NhlNeedVarArgProto
 (
-	NhlLayerClass	parent,		/* parent class			*/
-	NhlLayerClass	child,		/* child class			*/
+	NhlClass	parent,		/* parent class			*/
+	NhlClass	child,		/* child class			*/
 	NhlBoolean	autosetval,	/* SetValue im/ex plicite	*/
 	NhlBoolean	forward,	/* T-frwd listed F-excl listed	*/
 	...				/* resource names		*/
 )
 #else
 (parent,child,autosetval,forward,va_alist)
-	NhlLayerClass	parent;		/* parent class			*/
-	NhlLayerClass	child;		/* child class			*/
+	NhlClass	parent;		/* parent class			*/
+	NhlClass	child;		/* child class			*/
 	NhlBoolean	autosetval;	/* SetValue im/ex plicite	*/
 	NhlBoolean	forward;	/* T-frwd listed F-excl listed	*/
 	va_dcl				/* resource names		*/
@@ -994,7 +994,7 @@ _NhlRegisterChildClass
 	 * it's resources are, and so it's resource list has been compiled.
 	 */
 	if(!(child->base_class.class_inited)){
-		ret = InitializeLayerClass(child);
+		ret = InitializeClass(child);
 		if(ret < NhlWARNING)
 			return(ret);
 	}
@@ -1003,7 +1003,7 @@ _NhlRegisterChildClass
 	 * ObjNhlLayer's do not support resource forwarding so they can not
 	 * have children or be children.
 	 */
-	if(parent->base_class.class_inited & _NhlObjLayerClassFlag){
+	if(parent->base_class.class_inited & _NhlObjClassFlag){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 "_NhlRegisterChildClass:%s is a sub-class of Obj so it can't register children",
 						parent->base_class.class_name);
@@ -1107,7 +1107,7 @@ _NhlRegisterChildClass
  * In Args:	
  *		int		*pid,		pid return
  *		Const NhlString	name,		name of child
- *		NhlLayerClass	class,		class to create
+ *		NhlClass	class,		class to create
  *		NhlLayer		parent,		parent of child
  *		_NhlArgList	sargs,		resources to set
  *		int		num_sargs	number of res to set
@@ -1125,7 +1125,7 @@ CreateChild
 (
 	int		*pid,		/* pid return		*/
 	Const char	*name,		/* name of child	*/
-	NhlLayerClass	class,		/* class to create	*/
+	NhlClass	class,		/* class to create	*/
 	NhlLayer	parent,		/* parent of child	*/
 	_NhlArgList	sargs,		/* resources to set	*/
 	int		num_sargs	/* number of res to set	*/
@@ -1134,7 +1134,7 @@ CreateChild
 (pid,name,class,parent,sargs,num_sargs)
 	int		*pid;		/* pid return		*/
 	Const char	*name;		/* name of child	*/
-	NhlLayerClass	class;		/* class to create	*/
+	NhlClass	class;		/* class to create	*/
 	NhlLayer	parent;		/* parent of child	*/
 	_NhlArgList	sargs;		/* resources to set	*/
 	int		num_sargs;	/* number of res to set	*/
@@ -1147,12 +1147,12 @@ CreateChild
 	_NhlArg			args[_NhlMAXARGLIST];
 	NrmQuarkList		child=NULL;
 	NrmQuarkList		child_lists[_NhlMAXTREEDEPTH+1];
-	NhlLayerClass		plc = _NhlClass(parent);
+	NhlClass		plc = _NhlClass(parent);
 	_NhlChildResList	tresnode=NULL;
 	_NhlChildArgList	targnode=NULL;
 	NhlErrorTypes		ret=NhlNOERROR;
 	_NhlChildList		tchldnode=NULL;
-	NhlLayerClass		tplc,tclc;
+	NhlClass		tplc,tclc;
 	NhlLayer		tpl;
 
 	if(_NhlIsObj(parent)){
@@ -1214,7 +1214,7 @@ CreateChild
 
 	if(child_lists[0] == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-		"%s NhlLayerClass is not a registered child class of %s",
+		"%s NhlClass is not a registered child class of %s",
 				_NhlClassName(class),_NhlClassName(plc));
 		return NhlFATAL;
 	}
@@ -1288,7 +1288,7 @@ CreateChild
  * In Args:	
  *		int		*pid,	pid return
  *		Const NhlString	name,	name of child
- *		NhlLayerClass	class,	class to create
+ *		NhlClass	class,	class to create
  *		NhlLayer		parent,	parent of child
  *		...			args to set in child
  *
@@ -1306,7 +1306,7 @@ _NhlVACreateChild
 (
 	int		*pid,	/* pid return		*/
 	Const char	*name,	/* name of child	*/
-	NhlLayerClass	class,	/* class to create	*/
+	NhlClass	class,	/* class to create	*/
 	NhlLayer	parent,	/* parent of child	*/
 	...			/* args to set in child	*/
 )
@@ -1314,7 +1314,7 @@ _NhlVACreateChild
 (pid,name,class,parent,va_alist)
 	int		*pid;	/* pid return		*/
 	Const char	*name;	/* name of child	*/
-	NhlLayerClass	class;	/* class to create	*/
+	NhlClass	class;	/* class to create	*/
 	NhlLayer	parent;	/* parent of child	*/
 	va_dcl
 #endif
@@ -1354,7 +1354,7 @@ _NhlVACreateChild
  * In Args:	
  *		int		*pid,		pid return
  *		Const NhlString	name,		name of child
- *		NhlLayerClass	class,		class to create
+ *		NhlClass	class,		class to create
  *		NhlLayer	parent,		parent of child
  *		NhlSArgList	args_in,	args in
  *		int		nargs		number args
@@ -1372,7 +1372,7 @@ _NhlALCreateChild
 (
 	int		*pid,		/* pid return		*/
 	Const char	*name,		/* name of child	*/
-	NhlLayerClass	class,		/* class to create	*/
+	NhlClass	class,		/* class to create	*/
 	NhlLayer	parent,		/* parent of child	*/
 	NhlSArgList	args_in,	/* args in		*/
 	int		nargs		/* number args		*/
@@ -1381,7 +1381,7 @@ _NhlALCreateChild
 (pid,name,class,parent,args_in,nargs)
 	int		*pid;		/* pid return		*/
 	Const char	*name;		/* name of child	*/
-	NhlLayerClass	class;		/* class to create	*/
+	NhlClass	class;		/* class to create	*/
 	NhlLayer	parent;		/* parent of child	*/
 	NhlSArgList	args_in;	/* args in		*/
 	int		nargs;		/* number args		*/

@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.10 1995-02-19 08:19:24 boote Exp $
+ *      $Id: XWorkstation.c,v 1.11 1995-04-07 10:44:27 boote Exp $
  */
 /************************************************************************
 *									*
@@ -143,7 +143,7 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes XWorkstationInitialize(
 #if	NhlNeedProto
-        NhlLayerClass,     /* class */
+        NhlClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
         _NhlArgList,        /* args */
@@ -171,14 +171,14 @@ static NhlErrorTypes XWorkstationClear(
 );
 
 
-NhlXWorkstationLayerClassRec NhlxWorkstationLayerClassRec = {
+NhlXWorkstationClassRec NhlxWorkstationClassRec = {
         {
-/* class_name			*/	"xWorkstationLayerClass",
+/* class_name			*/	"xWorkstationClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlXWorkstationLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)
-						&NhlworkstationLayerClassRec,
+/* superclass			*/	(NhlClass)
+						&NhlworkstationClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -218,8 +218,8 @@ NhlXWorkstationLayerClassRec NhlxWorkstationLayerClassRec = {
 	}
 };
 
-NhlLayerClass NhlxWorkstationLayerClass = (NhlLayerClass)
-						&NhlxWorkstationLayerClassRec;
+NhlClass NhlxWorkstationClass = (NhlClass)
+						&NhlxWorkstationClassRec;
 
 /*
  * Function:	nhlfxworkstationclass
@@ -231,11 +231,11 @@ NhlLayerClass NhlxWorkstationLayerClass = (NhlLayerClass)
  * Out Args:	
  *
  * Scope:	global Fortran
- * Returns:	NhlLayerClass
+ * Returns:	NhlClass
  * Side Effect:	
  */
-NhlLayerClass
-_NHLCALLF(nhlfxworkstationlayerclass,NHLFXWORKSTATIONLAYERCLASS)
+NhlClass
+_NHLCALLF(nhlfxworkstationclass,NHLFXWORKSTATIONCLASS)
 #if	NhlNeedProto
 (
 	void
@@ -244,7 +244,7 @@ _NHLCALLF(nhlfxworkstationlayerclass,NHLFXWORKSTATIONLAYERCLASS)
 ()
 #endif
 {
-	return NhlxWorkstationLayerClass;
+	return NhlxWorkstationClass;
 }
 
 /*
@@ -264,7 +264,7 @@ _NHLCALLF(nhlfxworkstationlayerclass,NHLFXWORKSTATIONLAYERCLASS)
 static NhlErrorTypes XWorkstationInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	class,
+	NhlClass	class,
 	NhlLayer	req,
 	NhlLayer	new,
 	_NhlArgList	args,
@@ -272,7 +272,7 @@ static NhlErrorTypes XWorkstationInitialize
 )
 #else
 (class,req,new,args,num_args)
-        NhlLayerClass	class;
+        NhlClass	class;
         NhlLayer	req;
         NhlLayer	new;
         _NhlArgList	args;
@@ -386,8 +386,8 @@ XWorkstationClear
 	NhlLayer	l;	/* workstation layer to clear	*/
 #endif
 {
-	NhlWorkstationLayerClass	lc = (NhlWorkstationLayerClass)
-						NhlworkstationLayerClass;
+	NhlWorkstationClass	lc = (NhlWorkstationClass)
+						NhlworkstationClass;
 	NhlXWorkstationLayer		xl = (NhlXWorkstationLayer)l;
 	Gescape_in_data			indat;
 	Gescape_out_data		*outdat;

@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.32 1995-04-07 09:36:04 boote Exp $
+ *      $Id: TickMark.c,v 1.33 1995-04-07 10:43:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -761,7 +761,7 @@ static NhlErrorTypes	TickMarkSetValues(
 
 static NhlErrorTypes	TickMarkInitialize(
 #if	NhlNeedProto
-        NhlLayerClass,     /* class */
+        NhlClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
         _NhlArgList,    /* args */
@@ -950,13 +950,13 @@ static char *ConvertToString(
 #endif
 );
 
-NhlTickMarkLayerClassRec NhltickMarkLayerClassRec = {
+NhlTickMarkClassRec NhltickMarkClassRec = {
         {
-/* class_name		*/      "tickMarkLayerClass",
+/* class_name		*/      "tickMarkClass",
 /* nrm_class		*/      NrmNULLQUARK,
 /* layer_size		*/      sizeof(NhlTickMarkLayerRec),
 /* class_inited		*/      False,
-/* superclass		*/      (NhlLayerClass)&NhlviewLayerClassRec,
+/* superclass		*/      (NhlClass)&NhlviewClassRec,
 
 /* layer_resources	*/      resources,
 /* num_resources	*/      NhlNumber(resources),
@@ -990,7 +990,7 @@ NhlTickMarkLayerClassRec NhltickMarkLayerClassRec = {
 };
 
 
-NhlLayerClass NhltickMarkLayerClass = (NhlLayerClass)&NhltickMarkLayerClassRec;
+NhlClass NhltickMarkClass = (NhlClass)&NhltickMarkClassRec;
 
 /*
  * Function:	nhlftickmarkclass
@@ -1002,11 +1002,11 @@ NhlLayerClass NhltickMarkLayerClass = (NhlLayerClass)&NhltickMarkLayerClassRec;
  * Out Args:	
  *
  * Scope:	global Fortran
- * Returns:	NhlLayerClass
+ * Returns:	NhlClass
  * Side Effect:	
  */
-NhlLayerClass
-_NHLCALLF(nhlftickmarklayerclass,NHLFTICKMARKLAYERCLASS)
+NhlClass
+_NHLCALLF(nhlftickmarkclass,NHLFTICKMARKCLASS)
 #if	NhlNeedProto
 (
 	void
@@ -1015,7 +1015,7 @@ _NHLCALLF(nhlftickmarklayerclass,NHLFTICKMARKLAYERCLASS)
 ()
 #endif
 {
-	return NhltickMarkLayerClass;
+	return NhltickMarkClass;
 }
 
 static NrmQuark Qfloat = NrmNULLQUARK;
@@ -1308,10 +1308,10 @@ static NhlErrorTypes	TickMarkSetValues
 /*ARGSUSED*/
 static NhlErrorTypes	TickMarkInitialize
 #if	NhlNeedProto
-( NhlLayerClass class, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args)
+( NhlClass class, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args)
 #else
 (class,req,new,args,num_args)
-	NhlLayerClass	class;
+	NhlClass	class;
 	NhlLayer		req;
 	NhlLayer		new;
 	_NhlArgList	args;
@@ -1715,7 +1715,7 @@ static NhlErrorTypes	TickMarkClassInitialize
 		{NhlGEOGRAPHIC,	"geographic"}
 	};
 
-	_NhlInitializeLayerClass(NhlmultiTextLayerClass);
+	_NhlInitializeClass(NhlmultiTextClass);
 
 	_NhlRegisterEnumType(NhlTTickMarkMode,tmarkmodes,
 							NhlNumber(tmarkmodes));
@@ -6297,7 +6297,7 @@ int		c_or_s;
 	if((c_or_s == CREATE)||(tnew->tick.xb_multi ==NULL)) {
                 strcpy(buffer,tnew->base.name);
                 strcat(buffer,".xb_Multi");
-                subret = NhlVACreate(&tmpid,buffer,NhlmultiTextLayerClass,tnew->base.id,
+                subret = NhlVACreate(&tmpid,buffer,NhlmultiTextClass,tnew->base.id,
                         NhlNMtextNumStrings,tmp,
                         NhlNMtextStrings,labels_for_multi,
                         NhlNMtextOrientation,NhlMTEXT_Y_CONST,
@@ -6414,7 +6414,7 @@ int		c_or_s;
 	if((c_or_s == CREATE)||(tnew->tick.xt_multi == NULL)) {
                 strcpy(buffer,tnew->base.name);
                 strcat(buffer,".xt_Multi");
-                subret = NhlVACreate(&tmpid,buffer,NhlmultiTextLayerClass,tnew->base.id,
+                subret = NhlVACreate(&tmpid,buffer,NhlmultiTextClass,tnew->base.id,
                         NhlNMtextNumStrings,tmp,
                         NhlNMtextStrings,labels_for_multi,
                         NhlNMtextOrientation,NhlMTEXT_Y_CONST,
@@ -6527,7 +6527,7 @@ int		c_or_s;
 	if((c_or_s == CREATE)||(tnew->tick.yl_multi == NULL)) {
                 strcpy(buffer,tnew->base.name);
                 strcat(buffer,".yl_Multi");
-                subret = NhlVACreate(&tmpid,buffer,NhlmultiTextLayerClass,tnew->base.id,
+                subret = NhlVACreate(&tmpid,buffer,NhlmultiTextClass,tnew->base.id,
                         NhlNMtextNumStrings,tmp,
                         NhlNMtextStrings,labels_for_multi,
                         NhlNMtextOrientation,NhlMTEXT_X_CONST,
@@ -6643,7 +6643,7 @@ int		c_or_s;
 	if((c_or_s == CREATE)||(tnew->tick.yr_multi == NULL)) {
                 strcpy(buffer,tnew->base.name);
                 strcat(buffer,".yr_Multi");
-                subret = NhlVACreate(&tmpid,buffer,NhlmultiTextLayerClass,tnew->base.id,
+                subret = NhlVACreate(&tmpid,buffer,NhlmultiTextClass,tnew->base.id,
                         NhlNMtextNumStrings,tmp,
                         NhlNMtextStrings,labels_for_multi,
                         NhlNMtextOrientation,NhlMTEXT_X_CONST,
@@ -6764,7 +6764,7 @@ int num_args;
 {
 	NhlSArg	sargs[20];
 	int nargs = 0;
-	NhlLayerClass trans_class = NULL;
+	NhlClass trans_class = NULL;
 	float *tmpycoordpoints;
         float *tmpxcoordpoints;
 	char buffer[_NhlMAXFNAMELEN];
@@ -6879,7 +6879,7 @@ int num_args;
 			case NhlGEOGRAPHIC:
 				break;
 			}
-			trans_class = NhlirregularType2TransObjLayerClass;
+			trans_class = NhlirregularType2TransObjClass;
 			NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,(tnew->tick.x_b_data_left>tnew->tick.x_b_data_right ? 1 : 0));
 			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,(tnew->tick.y_l_data_bottom >tnew->tick.y_l_data_top? 1 : 0));
 			NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_b_data_min);
@@ -6921,7 +6921,7 @@ int num_args;
 			}
 			NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,(tnew->tick.x_b_data_left>tnew->tick.x_b_data_right ? 1 : 0));
 			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,(tnew->tick.y_l_data_bottom >tnew->tick.y_l_data_top? 1 : 0));
-			trans_class = NhllogLinTransObjLayerClass;
+			trans_class = NhllogLinTransObjClass;
 		}
 		
 			strcpy(buffer,tnew->base.name);
@@ -6962,7 +6962,7 @@ int num_args;
 {	
 	NhlSArg	sargs[20];
 	int nargs = 0;
-	NhlLayerClass trans_class = NULL;
+	NhlClass trans_class = NULL;
 	float *tmpycoordpoints;
         float *tmpxcoordpoints;
 	char buffer[_NhlMAXFNAMELEN];
@@ -7064,7 +7064,7 @@ int num_args;
 			case NhlGEOGRAPHIC:
 				break;
 			}
-			trans_class = NhlirregularType2TransObjLayerClass;
+			trans_class = NhlirregularType2TransObjClass;
 			NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,(tnew->tick.x_t_data_left>tnew->tick.x_t_data_right ? 1 : 0));
 			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,(tnew->tick.y_r_data_bottom >tnew->tick.y_r_data_top? 1 : 0));
 			NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_t_data_min);
@@ -7104,7 +7104,7 @@ int num_args;
 			case NhlGEOGRAPHIC:
 				break;
 			}
-			trans_class = NhllogLinTransObjLayerClass;
+			trans_class = NhllogLinTransObjClass;
 			NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,(tnew->tick.x_t_data_left>tnew->tick.x_t_data_right ? 1 : 0));
 			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,(tnew->tick.y_r_data_bottom >tnew->tick.y_r_data_top? 1 : 0));
 		}

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.27 1995-03-31 13:03:39 boote Exp $
+ *      $Id: hlu.c,v 1.28 1995-04-07 10:44:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -574,7 +574,7 @@ _NHLCALLF(nhl_fclassname,NHL_FCLASSNAME)
  *
  * Description:	This function returns the name of a given class
  *
- * In Args:	NhlLayerClass	lc;	pointer to class struct
+ * In Args:	NhlClass	lc;	pointer to class struct
  *
  * Out Args:	
  *
@@ -586,11 +586,11 @@ Const char *
 _NhlClassName
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc	/* pointer to class struct	*/
+	NhlClass	lc	/* pointer to class struct	*/
 )
 #else
 (lc)
-	NhlLayerClass	lc;	/* pointer to class struct	*/
+	NhlClass	lc;	/* pointer to class struct	*/
 #endif
 {
 	return lc->base_class.class_name;
@@ -606,10 +606,10 @@ _NhlClassName
  * Out Args:	
  *
  * Scope:	Global, Public
- * Returns:	NhlLayerClass
+ * Returns:	NhlClass
  * Side Effect:	
  */
-NhlLayerClass
+NhlClass
 _NhlClass
 #if	NhlNeedProto
 (

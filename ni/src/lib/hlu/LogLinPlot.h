@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.h,v 1.4 1995-04-01 00:04:04 dbrown Exp $
+ *      $Id: LogLinPlot.h,v 1.5 1995-04-07 10:42:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,6 @@
  * LogLinPlot class resources
  */
 
-extern NhlLayerClass NhllogLinPlotLayerClass;
+extern NhlClass NhllogLinPlotClass;
 
 #endif /*_NLOGLINPLOT_h */

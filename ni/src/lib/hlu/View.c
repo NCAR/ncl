@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.17 1995-04-01 00:04:18 dbrown Exp $
+ *      $Id: View.c,v 1.18 1995-04-07 10:44:14 boote Exp $
  */
 /************************************************************************
 *									*
@@ -207,7 +207,7 @@ static NhlErrorTypes ViewSetValues(
 
 static NhlErrorTypes	ViewInitialize(
 #if	NhlNeedProto
-	NhlLayerClass,	/* class */
+	NhlClass,	/* class */
 	NhlLayer,		/* req */
 	NhlLayer,		/* new */
 	_NhlArgList,	/* args */
@@ -225,7 +225,7 @@ static NhlErrorTypes	ViewClassInitialize();
 
 static NhlErrorTypes	ViewClassPartInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	/* lc */
+	NhlClass	/* lc */
 #endif
 );
 
@@ -241,13 +241,13 @@ static NhlErrorTypes    ViewGetBB(
 );
 
 
-NhlViewLayerClassRec NhlviewLayerClassRec = {
+NhlViewClassRec NhlviewClassRec = {
         {
-/* class_name			*/	"viewLayerClass",
+/* class_name			*/	"viewClass",
 /* nrm_class			*/	NrmNULLQUARK, 
 /* layer_size			*/	sizeof(NhlViewLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlbaseLayerClassRec,  
+/* superclass			*/	(NhlClass)&NhlbaseClassRec,  
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -281,7 +281,7 @@ NhlViewLayerClassRec NhlviewLayerClassRec = {
 	}
 };
 	
-NhlLayerClass NhlviewLayerClass = (NhlLayerClass)&NhlviewLayerClassRec;
+NhlClass NhlviewClass = (NhlClass)&NhlviewClassRec;
 
 
 /*
@@ -499,7 +499,7 @@ p2 = (x[2],y[2])
 static NhlErrorTypes	ViewInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass 	class,
+	NhlClass 	class,
 	NhlLayer	req,
 	NhlLayer	new,
 	_NhlArgList	args,
@@ -507,14 +507,14 @@ static NhlErrorTypes	ViewInitialize
 )
 #else
 (class,req,new,args,num_args)
-	NhlLayerClass 		class;
+	NhlClass 		class;
 	NhlLayer		req;
 	NhlLayer		new;
 	_NhlArgList		args;
 #endif
 {
 	NhlViewLayer	newl = (NhlViewLayer) new;
-	NhlViewLayerClass	lcl = (NhlViewLayerClass) class;
+	NhlViewClass	lcl = (NhlViewClass) class;
 	float	x[3],y[3];
 	NhlErrorTypes ret = NhlNOERROR;
 /*
@@ -564,19 +564,19 @@ static NhlErrorTypes	ViewInitialize
 static NhlErrorTypes	ViewClassPartInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc
+	NhlClass	lc
 )
 #else
 (lc)
-	NhlLayerClass 	lc;
+	NhlClass 	lc;
 #endif
 {
-	NhlViewLayerClass	vlc = (NhlViewLayerClass)lc;
-	NhlLayerClass	sc = vlc->base_class.superclass;
+	NhlViewClass	vlc = (NhlViewClass)lc;
+	NhlClass	sc = vlc->base_class.superclass;
 
-	if(sc != &NhlbaseLayerClassRec) {
+	if(sc != &NhlbaseClassRec) {
 		vlc->view_class.segment_workstation = 
-			((NhlViewLayerClass)sc)->view_class.segment_workstation;
+			((NhlViewClass)sc)->view_class.segment_workstation;
 	}
 	return(NhlNOERROR);
 }
@@ -592,7 +592,7 @@ static NhlErrorTypes	ViewClassPartInitialize
  *
  * Return Values: NONE
  *
- * Side Effects: Sets the segment_workstation field in the NhlviewLayerClassRec
+ * Side Effects: Sets the segment_workstation field in the NhlviewClassRec
  * 		structure which is then propagated down the class heirarchy
  *		by ClassPartInitialize.
  */
@@ -646,9 +646,9 @@ static NhlErrorTypes	ViewClassInitialize()
 
 /*
  * GKS BETTER BE OPEN !!!!
- * Make sure the WorkstationLayerClass is initialized so GKS is sure to be open.
+ * Make sure the WorkstationClass is initialized so GKS is sure to be open.
  */
-	 ret = _NhlInitializeLayerClass(NhlworkstationLayerClass);
+	 ret = _NhlInitializeClass(NhlworkstationClass);
 	 if(ret < NhlWARNING)
 		return(ret);
 
@@ -657,7 +657,7 @@ static NhlErrorTypes	ViewClassInitialize()
 	}
 /* FORTRAN */ _NHLCALLF(gopwk,GOPWK)(&i,&cid,&wtp);
 	gactivate_ws(i);
-	NhlviewLayerClassRec.view_class.segment_workstation = i;
+	NhlviewClassRec.view_class.segment_workstation = i;
 	return(ret);
 }
 

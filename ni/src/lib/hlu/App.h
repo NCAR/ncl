@@ -1,5 +1,5 @@
 /*
- *      $Id: App.h,v 1.5 1995-04-03 07:17:51 boote Exp $
+ *      $Id: App.h,v 1.6 1995-04-07 10:40:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,7 +33,7 @@
 #define NhlNappDefaultParent	"appDefaultParent"
 #define NhlCappDefaultParent	"AppDefaultParent"
 
-extern NhlLayerClass NhlappLayerClass;
+extern NhlClass NhlappClass;
 
 extern int NhlAppGetDefaultParentId(
 #if	NhlNeedProto

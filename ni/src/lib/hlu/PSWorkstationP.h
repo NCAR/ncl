@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstationP.h,v 1.1 1995-03-24 11:27:35 boote Exp $
+ *      $Id: PSWorkstationP.h,v 1.2 1995-04-07 10:43:20 boote Exp $
  */
 /************************************************************************
 *									*
@@ -58,19 +58,19 @@ typedef struct _NhlPSWorkstationLayerRec {
 	NhlPSWorkstationLayerPart	ps;
 } NhlPSWorkstationLayerRec;
 
-typedef struct _NhlPSWorkstationLayerClassPart {
+typedef struct _NhlPSWorkstationClassPart {
 	int	*num_current;
-} NhlPSWorkstationLayerClassPart;
+} NhlPSWorkstationClassPart;
 
-typedef struct _NhlPSWorkstationLayerClassRec {
-	NhlBaseLayerClassPart			base_class;
-	NhlWorkstationLayerClassPart		work_class;
-	NhlPSWorkstationLayerClassPart		ps_class;
-} NhlPSWorkstationLayerClassRec;
+typedef struct _NhlPSWorkstationClassRec {
+	NhlBaseClassPart			base_class;
+	NhlWorkstationClassPart		work_class;
+	NhlPSWorkstationClassPart		ps_class;
+} NhlPSWorkstationClassRec;
 
 typedef struct _NhlPSWorkstationLayerRec *NhlPSWorkstationLayer;
-typedef struct _NhlPSWorkstationLayerClassRec *NhlPSWorkstationLayerClass;
+typedef struct _NhlPSWorkstationClassRec *NhlPSWorkstationClass;
 
-extern NhlPSWorkstationLayerClassRec NhlpsWorkstationLayerClassRec;
+extern NhlPSWorkstationClassRec NhlpsWorkstationClassRec;
 
 #endif /* _NPSWorkstationP_h */

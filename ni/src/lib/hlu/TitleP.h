@@ -1,5 +1,5 @@
 /*
- *      $Id: TitleP.h,v 1.4 1994-03-02 01:44:37 dbrown Exp $
+ *      $Id: TitleP.h,v 1.5 1995-04-07 10:44:04 boote Exp $
  */
 /************************************************************************
 *									*
@@ -105,18 +105,18 @@ typedef struct _NhlTitleLayerRec {
 	NhlTitleLayerPart	title;
 }NhlTitleLayerRec;
 
-typedef struct _NhlTitleLayerClassPart {
+typedef struct _NhlTitleClassPart {
 	void *foo;
-}NhlTitleLayerClassPart;
+}NhlTitleClassPart;
 
-typedef struct _NhlTitleLayerClassRec {
-	NhlBaseLayerClassPart	base_class;
-	NhlViewLayerClassPart	view_class;
-	NhlTitleLayerClassPart	title_class;
-}NhlTitleLayerClassRec;
+typedef struct _NhlTitleClassRec {
+	NhlBaseClassPart	base_class;
+	NhlViewClassPart	view_class;
+	NhlTitleClassPart	title_class;
+}NhlTitleClassRec;
 
-typedef struct _NhlTitleLayerClassRec *NhlTitleLayerClass;
+typedef struct _NhlTitleClassRec *NhlTitleClass;
 typedef struct _NhlTitleLayerRec	*NhlTitleLayer;
 
-extern NhlTitleLayerClassRec	NhltitleLayerClassRec;
+extern NhlTitleClassRec	NhltitleClassRec;
 #endif /* _NTitleP_h */

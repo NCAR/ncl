@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.h,v 1.4 1995-04-01 00:04:01 dbrown Exp $
+ *      $Id: IrregularPlot.h,v 1.5 1995-04-07 10:41:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,6 @@
 
 #include <ncarg/hlu/PlotManager.h>
 
-extern NhlLayerClass NhlirregularPlotLayerClass;
+extern NhlClass NhlirregularPlotClass;
 
 #endif /*_NIRREGULARPLOT_h */

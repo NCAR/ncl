@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.31 1995-04-07 09:35:53 boote Exp $
+ *      $Id: MapPlot.c,v 1.32 1995-04-07 10:42:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -508,13 +508,13 @@ static NhlErrorTypes MapPlotClassInitialize(
 
 static NhlErrorTypes MapPlotClassPartInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc
+	NhlClass	lc
 #endif
 );
 
 static NhlErrorTypes MapPlotInitialize(
 #if	NhlNeedProto
-        NhlLayerClass,     /* class */
+        NhlClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
         _NhlArgList,    /* args */
@@ -800,13 +800,13 @@ extern int (_NHLCALLF(nhlmaskgrid,NHLMASKGRID))(
 #endif
 );
 
-NhlMapPlotLayerClassRec NhlmapPlotLayerClassRec = {
+NhlMapPlotClassRec NhlmapPlotClassRec = {
         {
-/* class_name			*/      "mapPlotLayerClass",
+/* class_name			*/      "mapPlotClass",
 /* nrm_class			*/      NrmNULLQUARK,
 /* layer_size			*/      sizeof(NhlMapPlotLayerRec),
 /* class_inited			*/      False,
-/* superclass			*/      (NhlLayerClass)&NhltransformLayerClassRec,
+/* superclass			*/      (NhlClass)&NhltransformClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -847,7 +847,7 @@ NhlMapPlotLayerClassRec NhlmapPlotLayerClassRec = {
 	}
 };
 
-NhlLayerClass NhlmapPlotLayerClass = (NhlLayerClass)&NhlmapPlotLayerClassRec;
+NhlClass NhlmapPlotClass = (NhlClass)&NhlmapPlotClassRec;
 
 static NrmQuark	Qfloat = NrmNULLQUARK;
 static NrmQuark Qint = NrmNULLQUARK;
@@ -1050,11 +1050,11 @@ static int NatCOSegs[] = {
  * Out Args:	
  *
  * Scope:	global Fortran
- * Returns:	NhlLayerClass
+ * Returns:	NhlClass
  * Side Effect:	
  */
-NhlLayerClass
-_NHLCALLF(nhlfmapplotlayerclass,NHLFMAPPLOTLAYERCLASS)
+NhlClass
+_NHLCALLF(nhlfmapplotclass,NHLFMAPPLOTCLASS)
 #if	NhlNeedProto
 (
 	void
@@ -1063,7 +1063,7 @@ _NHLCALLF(nhlfmapplotlayerclass,NHLFMAPPLOTLAYERCLASS)
 ()
 #endif
 {
-	return NhlmapPlotLayerClass;
+	return NhlmapPlotClass;
 }
 
 /*
@@ -1157,11 +1157,11 @@ MapPlotClassInitialize
  * Function:	MapPlotClassPartInitialize
  *
  * Description:	This function initializes fields in the 
- *		NhlMapPlotLayerClassPart that cannot be initialized statically.
+ *		NhlMapPlotClassPart that cannot be initialized statically.
  *		Calls _NhlRegisterChildClass for the overlay manager object.
  *
  * In Args:	
- *		NhlLayerClass	lc	NhlLayer Class to init
+ *		NhlClass	lc	NhlLayer Class to init
  *
  * Out Args:	
  *
@@ -1174,11 +1174,11 @@ static NhlErrorTypes
 MapPlotClassPartInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc	/* NhlLayer Class to init	*/
+	NhlClass	lc	/* NhlLayer Class to init	*/
 )
 #else
 (lc)
-	NhlLayerClass	lc;	/* NhlLayer Class to init	*/
+	NhlClass	lc;	/* NhlLayer Class to init	*/
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
@@ -1189,18 +1189,18 @@ MapPlotClassPartInitialize
 	 * Register children objects
 	 */
 
-	subret = _NhlRegisterChildClass(lc,NhlplotManagerLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhlplotManagerClass,
 					False,False,
 					NULL);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhloverlayLayerClass");
+			  "NhloverlayClass");
 		return(NhlFATAL);
 	}
 
-	subret = _NhlRegisterChildClass(lc,NhlmapTransObjLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhlmapTransObjClass,
 					False,False,
 					NhlNmpPreserveAspectRatio,
 					NULL);
@@ -1208,7 +1208,7 @@ MapPlotClassPartInitialize
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhlmapTransObjLayerClass");
+			  "NhlmapTransObjClass");
 		return(NhlFATAL);
 	}
 
@@ -1396,7 +1396,7 @@ static NhlErrorTypes
 MapPlotInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	class,
+	NhlClass	class,
 	NhlLayer	req,
 	NhlLayer	new,
 	_NhlArgList	args,
@@ -1404,7 +1404,7 @@ MapPlotInitialize
 )
 #else
 (class,req,new,args,num_args)
-        NhlLayerClass   class;
+        NhlClass   class;
         NhlLayer        req;
         NhlLayer        new;
         _NhlArgList     args;
@@ -5167,7 +5167,7 @@ static NhlErrorTypes mpSetUpTransObj
 			preserve_aspect = False;
 
 		subret = _NhlVACreateChild(&tmpid,buffer,
-					   NhlmapTransObjLayerClass,
+					   NhlmapTransObjClass,
 					   (NhlLayer) mpnew, 
 					   NhlNmpPreserveAspectRatio,
 					   preserve_aspect,

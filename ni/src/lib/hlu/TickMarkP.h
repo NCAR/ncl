@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMarkP.h,v 1.7 1995-02-17 10:23:32 boote Exp $
+ *      $Id: TickMarkP.h,v 1.8 1995-04-07 10:44:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -282,19 +282,19 @@ typedef struct _NhlTickMarkLayerRec {
 	NhlTickMarkLayerPart	tick;
 }NhlTickMarkLayerRec;
 
-typedef struct _NhlTickMarkLayerClassPart {
+typedef struct _NhlTickMarkClassPart {
 	void *foo;
-}NhlTickMarkLayerClassPart;
+}NhlTickMarkClassPart;
 
-typedef struct _NhlTickMarkLayerClassRec {
-	NhlBaseLayerClassPart	base_class;
-	NhlViewLayerClassPart	view_class;
-	NhlTickMarkLayerClassPart	tick_class;
-}NhlTickMarkLayerClassRec;
+typedef struct _NhlTickMarkClassRec {
+	NhlBaseClassPart	base_class;
+	NhlViewClassPart	view_class;
+	NhlTickMarkClassPart	tick_class;
+}NhlTickMarkClassRec;
 
-typedef struct _NhlTickMarkLayerClassRec *NhlTickMarkLayerClass;
+typedef struct _NhlTickMarkClassRec *NhlTickMarkClass;
 typedef struct _NhlTickMarkLayerRec	*NhlTickMarkLayer;
 
-extern NhlTickMarkLayerClassRec	NhltickMarkLayerClassRec;
+extern NhlTickMarkClassRec	NhltickMarkClassRec;
 
 #endif /* _NTickMarkP_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgrP.h,v 1.4 1995-02-17 10:23:14 boote Exp $
+ *      $Id: DataMgrP.h,v 1.5 1995-04-07 10:41:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -59,19 +59,19 @@ typedef struct _NhlDataMgrLayerRec{
 	NhlDataMgrLayerPart	datamgr;
 } NhlDataMgrLayerRec;
 
-typedef struct _NhlDataMgrLayerClassPart{
+typedef struct _NhlDataMgrClassPart{
 	int	foo;
-} NhlDataMgrLayerClassPart;
+} NhlDataMgrClassPart;
 
-typedef struct _NhlDataMgrLayerClassRec{
-	NhlObjLayerClassPart		base_class;
-	NhlDataMgrLayerClassPart	datamgr_class;
-} NhlDataMgrLayerClassRec;
+typedef struct _NhlDataMgrClassRec{
+	NhlObjClassPart		base_class;
+	NhlDataMgrClassPart	datamgr_class;
+} NhlDataMgrClassRec;
 
-/* Exported Layer and LayerClass */
-typedef struct _NhlDataMgrLayerClassRec *NhlDataMgrLayerClass;
+/* Exported Layer and Class */
+typedef struct _NhlDataMgrClassRec *NhlDataMgrClass;
 typedef struct _NhlDataMgrLayerRec *NhlDataMgrLayer;
 
-extern NhlDataMgrLayerClassRec NhldataMgrLayerClassRec;
+extern NhlDataMgrClassRec NhldataMgrClassRec;
 
 #endif  /* _NDataMgrP_h */

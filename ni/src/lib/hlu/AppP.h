@@ -1,5 +1,5 @@
 /*
- *      $Id: AppP.h,v 1.3 1995-02-17 10:22:54 boote Exp $
+ *      $Id: AppP.h,v 1.4 1995-04-07 10:40:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +26,7 @@
 #include <ncarg/hlu/AppI.h>
 
 typedef struct _NhlAppLayerRec *NhlAppLayer;
-typedef struct _NhlAppLayerClassRec *NhlAppLayerClass;
+typedef struct _NhlAppClassRec *NhlAppClass;
 
 typedef struct _NhlAppLayerPart {
 	/* public resource fields */
@@ -53,20 +53,20 @@ struct _NhlAppTableRec{
 	NhlAppTable	next;
 };
 
-typedef struct _NhlAppLayerClassPart {
+typedef struct _NhlAppClassPart {
 	NhlAppLayer		default_app;
 	NhlAppLayer		current_app;
 	NrmDatabase		baseDB;
 	int			error_id;
 	int			workspace_id;
 	NhlAppTable		app_objs;	/* except default_app */
-} NhlAppLayerClassPart;
+} NhlAppClassPart;
 
-typedef struct _NhlAppLayerClassRec {
-	NhlBaseLayerClassPart	base_class;
-	NhlAppLayerClassPart	app_class;
-} NhlAppLayerClassRec;
+typedef struct _NhlAppClassRec {
+	NhlBaseClassPart	base_class;
+	NhlAppClassPart	app_class;
+} NhlAppClassRec;
 
-extern NhlAppLayerClassRec NhlappLayerClassRec;
+extern NhlAppClassRec NhlappClassRec;
 
 #endif /* _NAppP_h */	

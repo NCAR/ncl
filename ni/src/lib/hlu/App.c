@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.14 1995-04-03 07:17:49 boote Exp $
+ *      $Id: App.c,v 1.15 1995-04-07 10:40:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,9 +25,9 @@
 #include <ncarg/hlu/ErrorI.h>
 #include <ncarg/hlu/Workspace.h>
 
-static NhlErrorTypes AppLayerClassPartInitialize(
+static NhlErrorTypes AppClassPartInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc
+	NhlClass	lc
 #endif
 );
 
@@ -39,7 +39,7 @@ static NhlErrorTypes AppClassInitialize(
 
 static NhlErrorTypes AppInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc,
+	NhlClass	lc,
 	NhlLayer	req,
 	NhlLayer	new,
 	_NhlArgList	args,
@@ -145,19 +145,19 @@ static NhlResource resources[] = {
 };
 #undef Oset
 
-NhlAppLayerClassRec NhlappLayerClassRec = {
+NhlAppClassRec NhlappClassRec = {
 	{
-/* class_name			*/	"appLayerClass",
+/* class_name			*/	"appClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlAppLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlbaseLayerClassRec,
+/* superclass			*/	(NhlClass)&NhlbaseClassRec,
 
 /* resources			*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
 
-/* class_part_initialize	*/	AppLayerClassPartInitialize,
+/* class_part_initialize	*/	AppClassPartInitialize,
 /* class_initialize		*/	AppClassInitialize,
 /* layer_initialize		*/	AppInitialize,
 /* layer_set_values		*/	AppSetValues,
@@ -185,7 +185,7 @@ NhlAppLayerClassRec NhlappLayerClassRec = {
 	}
 };
 
-NhlLayerClass NhlappLayerClass = (NhlLayerClass)&NhlappLayerClassRec;
+NhlClass NhlappClass = (NhlClass)&NhlappClassRec;
 
 /*
  * Function:	nhlfappclass
@@ -200,8 +200,8 @@ NhlLayerClass NhlappLayerClass = (NhlLayerClass)&NhlappLayerClassRec;
  * Returns:	
  * Side Effect:	
  */
-NhlLayerClass
-_NHLCALLF(nhlfapplayerclass,NHLFAPPLAYERCLASS)
+NhlClass
+_NHLCALLF(nhlfappclass,NHLFAPPCLASS)
 #if	NhlNeedProto
 (
 	void
@@ -210,7 +210,7 @@ _NHLCALLF(nhlfapplayerclass,NHLFAPPLAYERCLASS)
 ()
 #endif
 {
-	return NhlappLayerClass;
+	return NhlappClass;
 }
 
 /*
@@ -230,11 +230,11 @@ static NhlErrorTypes
 InitBaseDB
 #if	NhlNeedProto
 (
-	NhlAppLayerClass	alc
+	NhlAppClass	alc
 )
 #else
 (alc)
-	NhlAppLayerClass	alc;
+	NhlAppClass	alc;
 #endif
 {
 	Const char		*sysfile=NULL;
@@ -275,7 +275,7 @@ InitBaseDB
 }
 
 /*
- * Function:	AppLayerClassPartInitialize
+ * Function:	AppClassPartInitialize
  *
  * Description:	This function is called to initialize the base_class
  *		part of every layer class record.  It basically initializes
@@ -285,7 +285,7 @@ InitBaseDB
  *		the rest of the library.
  *
  * In Args:	
- *		NhlLayerClass	lc	pointer to class structure to update
+ *		NhlClass	lc	pointer to class structure to update
  *
  * Out Args:	
  *
@@ -295,18 +295,18 @@ InitBaseDB
  */
 /*ARGSUSED*/
 static NhlErrorTypes
-AppLayerClassPartInitialize
+AppClassPartInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc	/* pointer to class structure to update	*/
+	NhlClass	lc	/* pointer to class structure to update	*/
 )
 #else
 (lc)
-	NhlLayerClass	lc;	/* pointer to class structure to update	*/
+	NhlClass	lc;	/* pointer to class structure to update	*/
 #endif
 {
-	NhlAppLayerClass	alc = (NhlAppLayerClass)lc;
-	NhlAppLayerClassPart	*alcp = &alc->app_class;
+	NhlAppClass	alc = (NhlAppClass)lc;
+	NhlAppClassPart	*alcp = &alc->app_class;
 
 	alcp->default_app = NULL;
 	alcp->current_app = NULL;
@@ -374,7 +374,7 @@ static NhlErrorTypes
 AppInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass		lc,
+	NhlClass		lc,
 	NhlLayer		req,
 	NhlLayer		new,
 	_NhlArgList		args,
@@ -382,7 +382,7 @@ AppInitialize
 )
 #else
 (lc,req,new,args,nargs)
-	NhlLayerClass		lc;
+	NhlClass		lc;
 	NhlLayer		req;
 	NhlLayer		new;
 	_NhlArgList		args;
@@ -392,7 +392,7 @@ AppInitialize
 	char			func[] = "AppInitialize";
 	NhlErrorTypes		ret = NhlNOERROR,lret = NhlNOERROR;
 	NhlAppLayer		anew = (NhlAppLayer)new;
-	NhlAppLayerClass	ac = (NhlAppLayerClass)anew->base.layer_class;
+	NhlAppClass	ac = (NhlAppClass)anew->base.layer_class;
 	Const char		*cs = NULL;
 	char			tname[_NhlMAXFNAMELEN];
 
@@ -420,7 +420,7 @@ AppInitialize
 			return NhlFATAL;
 		}
 
-		lret = NhlVACreate(&tint,anew->base.name,NhlappLayerClass,0,
+		lret = NhlVACreate(&tint,anew->base.name,NhlappClass,0,
 				_NhlNappMode,	lang_type,
 				_NhlNdefApp,	True,
 				NULL);
@@ -501,7 +501,7 @@ AppInitialize
 	 */
 	if(ac->app_class.error_id < 1){
 		ret = NhlVACreate(&ac->app_class.error_id,"error",
-				NhlerrorLayerClass,new->base.id,
+				NhlerrorClass,new->base.id,
 				_NhlNerrMode,	anew->app.init_mode,
 				NULL);
 		if(ret < NhlWARNING){
@@ -516,7 +516,7 @@ AppInitialize
 	 */
 	if(ac->app_class.workspace_id < 1){
 		lret = NhlVACreate(&ac->app_class.workspace_id,"workspace",
-					NhlworkspaceLayerClass,new->base.id,
+					NhlworkspaceClass,new->base.id,
 				NULL);
 		if(lret < NhlWARNING){
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -579,7 +579,7 @@ AppSetValues
 	NhlAppLayerPart		*np = &newapp->app;
 	NhlAppLayer		oldapp = (NhlAppLayer)old;
 	NhlAppLayerPart		*op = &oldapp->app;
-	NhlAppLayerClass	ac = (NhlAppLayerClass)new->base.layer_class;
+	NhlAppClass	ac = (NhlAppClass)new->base.layer_class;
 	NhlErrorTypes		ret = NhlNOERROR;
 
 	if(np->usr_appdir != op->usr_appdir){
@@ -653,7 +653,7 @@ AppGetValues
 	char			func[] = "AppGetValues";
 	NhlAppLayer		al = (NhlAppLayer)l;
 	NhlAppLayerPart		*alp = &al->app;
-	NhlAppLayerClass	alc = (NhlAppLayerClass)al->base.layer_class;
+	NhlAppClass	alc = (NhlAppClass)al->base.layer_class;
 	int			i;
 	NhlErrorTypes		ret = NhlNOERROR;
 	NhlString		tstring;
@@ -719,8 +719,8 @@ AppLayerDestroy
 	char			func[] = "AppLayerDestroy";
 	NhlAppLayer		al = (NhlAppLayer)l;
 	NhlAppLayerPart		*alp = &al->app;
-	NhlAppLayerClass	alc = (NhlAppLayerClass)al->base.layer_class;
-	NhlAppLayerClassPart	*alcp = &alc->app_class;
+	NhlAppClass	alc = (NhlAppClass)al->base.layer_class;
+	NhlAppClassPart	*alcp = &alc->app_class;
 	NhlErrorTypes		ret = NhlNOERROR;
 
 	NhlFree(alp->usr_appdir);
@@ -806,7 +806,7 @@ _NhlGetCurrentApp
 ()
 #endif
 {
-	return (NhlLayer)NhlappLayerClassRec.app_class.current_app;
+	return (NhlLayer)NhlappClassRec.app_class.current_app;
 }
 
 /*
@@ -834,7 +834,7 @@ _NhlGetResDB
 #endif
 {
 	NhlAppLayer		al = (NhlAppLayer)l->base.appobj;
-	NhlAppLayerClass	alc = (NhlAppLayerClass)al->base.layer_class;
+	NhlAppClass	alc = (NhlAppClass)al->base.layer_class;
 
 	if(((NhlLayer)al == l) || !al->app.appDB)
 		return alc->app_class.baseDB;
@@ -898,11 +898,11 @@ NhlAppGetDefaultParentId
 ()
 #endif
 {
-	if((NhlappLayerClassRec.app_class.current_app) &&
-			(NhlappLayerClassRec.app_class.current_app !=
-				NhlappLayerClassRec.app_class.default_app))
+	if((NhlappClassRec.app_class.current_app) &&
+			(NhlappClassRec.app_class.current_app !=
+				NhlappClassRec.app_class.default_app))
 
-		return NhlappLayerClassRec.app_class.current_app->base.id;
+		return NhlappClassRec.app_class.current_app->base.id;
 
 	return (int)NhlFATAL;
 }

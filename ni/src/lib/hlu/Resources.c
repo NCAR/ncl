@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.21 1995-03-20 19:58:41 boote Exp $
+ *      $Id: Resources.c,v 1.22 1995-04-07 10:43:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -747,7 +747,7 @@ _NhlGetResources
 #endif
 {
 	NrmQuark nameQ[_NhlMAXTREEDEPTH], classQ[_NhlMAXTREEDEPTH];
-	NhlLayerClass lc = _NhlClass(l);
+	NhlClass lc = _NhlClass(l);
 
 	/*
 	 * Get quarks list of names and classes to use in querying the Nrm
@@ -821,9 +821,9 @@ _NhlCompileResourceList
  *
  * Description:	This function combines the resources of the current layer
  *		class with the resources of it's superclass. If the current
- *		NhlLayerClass over-rides any of the resources in the super-class
+ *		NhlClass over-rides any of the resources in the super-class
  *
- * In Args:	NhlLayerClass	lc;	layer class to create resource list for
+ * In Args:	NhlClass	lc;	layer class to create resource list for
  *
  * Out Args:	lc->base_class.resources is updated.
  *
@@ -835,18 +835,18 @@ void
 _NhlGroupResources
 #if	NhlNeedProto
 (
-	NhlLayerClass lc	/* Class to create full reslist	for	*/
+	NhlClass lc	/* Class to create full reslist	for	*/
 )
 #else
 (lc)
-	NhlLayerClass lc;	/* Class to create full reslist	for	*/
+	NhlClass lc;	/* Class to create full reslist	for	*/
 #endif
 {
 	NrmResourceList	rlist;
 	int		num_rlist;
 	int		i,j,next;
 	NrmResourceList	classlist;
-	NhlLayerClass	sc = lc->base_class.superclass;
+	NhlClass	sc = lc->base_class.superclass;
 	unsigned int	super_size;
 	NhlBoolean	override;
 
@@ -1046,7 +1046,7 @@ _NhlMergeArgLists
  *		a resource of the given class.
  *
  * In Args:	
- *		NhlLayerClass	lc	class to check for res
+ *		NhlClass	lc	class to check for res
  *		NrmQuark	res	resource to look for
  *
  * Out Args:	
@@ -1059,12 +1059,12 @@ NhlBoolean
 _NhlResInClass
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc,	/* class to check for res	*/
+	NhlClass	lc,	/* class to check for res	*/
 	NrmQuark	res	/* resource to look for		*/
 )
 #else
 (lc,res)
-	NhlLayerClass	lc;	/* class to check for res	*/
+	NhlClass	lc;	/* class to check for res	*/
 	NrmQuark	res;	/* resource to look for		*/
 #endif
 {
@@ -1128,7 +1128,7 @@ _NhlSortChildArgs
 	NhlBoolean		getvalues;	/* called frm getvalues	*/
 #endif
 {
-	NhlLayerClass		lc = _NhlClass(l);
+	NhlClass		lc = _NhlClass(l);
 	int			i;
 	_NhlChildResList	reslist=NULL;
 	_NhlChildArgList	arglist=NULL;

@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.18 1995-04-07 09:35:50 boote Exp $
+ *      $Id: LogLinTransObj.c,v 1.19 1995-04-07 10:42:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -76,7 +76,7 @@ static NhlErrorTypes  LlTransSetValues(
 
 static NhlErrorTypes LlTransInitialize(
 #if	NhlNeedProto
-        NhlLayerClass,     /* class */
+        NhlClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
         _NhlArgList,    /* args */
@@ -156,13 +156,13 @@ int* 	/*status*/
 );
 
 
-NhlLogLinTransObjLayerClassRec NhllogLinTransObjLayerClassRec = {
+NhlLogLinTransObjClassRec NhllogLinTransObjClassRec = {
         {
-/* class_name			*/	"logLinTransObjLayerClass",
+/* class_name			*/	"logLinTransObjClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlLogLinTransObjLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhltransObjLayerClassRec,
+/* superclass			*/	(NhlClass)&NhltransObjClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -198,7 +198,7 @@ NhlLogLinTransObjLayerClassRec NhllogLinTransObjLayerClassRec = {
 	}
 };
 
-NhlLayerClass NhllogLinTransObjLayerClass = (NhlLayerClass)&NhllogLinTransObjLayerClassRec;
+NhlClass NhllogLinTransObjClass = (NhlClass)&NhllogLinTransObjClassRec;
 
 
 
@@ -292,10 +292,10 @@ static NhlErrorTypes LlTransSetValues
 /*ARGSUSED*/
 static NhlErrorTypes LlTransInitialize
 #if	NhlNeedProto
-( NhlLayerClass class, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args)
+( NhlClass class, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args)
 #else
 (class,req,new,args,num_args)
-        NhlLayerClass	class;
+        NhlClass	class;
         NhlLayer		req;
         NhlLayer		new;
         _NhlArgList	args;
@@ -385,7 +385,7 @@ static NhlErrorTypes LlSetTrans
 	NhlErrorTypes		ret;
 	float xr, yb;
 	
-	ret = (*NhltransObjLayerClassRec.trobj_class.set_trans)(tobj,vobj);
+	ret = (*NhltransObjClassRec.trobj_class.set_trans)(tobj,vobj);
 	if(ret < NhlWARNING)
 		return ret;
 

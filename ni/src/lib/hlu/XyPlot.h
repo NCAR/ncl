@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.h,v 1.13 1995-04-01 00:04:25 dbrown Exp $
+ *      $Id: XyPlot.h,v 1.14 1995-04-07 10:44:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -188,6 +188,6 @@ typedef enum _NhlLineLabelMode{
 	NhlCUSTOM
 } NhlLineLabelMode;
 
-extern NhlLayerClass NhlxyPlotLayerClass;
+extern NhlClass NhlxyPlotClass;
 
 #endif /* _NXYPLOT_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.h,v 1.15 1995-04-07 00:39:59 dbrown Exp $
+ *      $Id: Legend.h,v 1.16 1995-04-07 10:42:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -285,6 +285,6 @@ typedef enum _NhllgItemPlacementMode {
 
 /* end of resources */
 
-extern NhlLayerClass NhllegendLayerClass;
+extern NhlClass NhllegendClass;
 
 #endif  /* _NLegend_h */

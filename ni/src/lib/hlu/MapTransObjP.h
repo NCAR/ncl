@@ -1,5 +1,5 @@
 /*
- *      $Id: MapTransObjP.h,v 1.6 1995-02-11 02:42:09 dbrown Exp $
+ *      $Id: MapTransObjP.h,v 1.7 1995-04-07 10:43:02 boote Exp $
  */
 /************************************************************************
 *									*
@@ -126,19 +126,19 @@ typedef struct _NhlMapTransObjLayerRec {
 	NhlMapTransObjLayerPart	mptrans;
 } NhlMapTransObjLayerRec;
 
-typedef struct _NhlMapTransObjLayerClassPart {
+typedef struct _NhlMapTransObjClassPart {
 	char *foo;
-} NhlMapTransObjLayerClassPart;
+} NhlMapTransObjClassPart;
 
-typedef struct _NhlMapTransObjLayerClassRec {
-	NhlObjLayerClassPart		base_class;
-	NhlTransObjLayerClassPart	trobj_class;
-	NhlMapTransObjLayerClassPart	mptrans_class;
-} NhlMapTransObjLayerClassRec;
+typedef struct _NhlMapTransObjClassRec {
+	NhlObjClassPart		base_class;
+	NhlTransObjClassPart	trobj_class;
+	NhlMapTransObjClassPart	mptrans_class;
+} NhlMapTransObjClassRec;
 
 typedef struct _NhlMapTransObjLayerRec *NhlMapTransObjLayer;
-typedef struct _NhlMapTransObjLayerClassRec *NhlMapTransObjLayerClass;
+typedef struct _NhlMapTransObjClassRec *NhlMapTransObjClass;
 
-extern NhlMapTransObjLayerClassRec NhlmapTransObjLayerClassRec;
+extern NhlMapTransObjClassRec NhlmapTransObjClassRec;
 
 #endif /*_NMapTransObjP_h*/

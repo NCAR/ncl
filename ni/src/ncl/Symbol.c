@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.20 1995-02-04 01:41:45 ethan Exp $
+ *      $Id: Symbol.c,v 1.21 1995-04-07 10:46:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -848,11 +848,11 @@ void _NclPrintSym
 
 void _NclAddSingleObj
 #if	NhlNeedProto
-(char *name,struct _NhlLayerClassRec *the_ptr)
+(char *name,struct _NhlClassRec *the_ptr)
 #else
 (name,the_ptr)
 	char *name;
-	struct _NhlLayerClassRec *the_ptr;
+	struct _NhlClassRec *the_ptr;
 #endif
 {
 	NclSymbol *s;

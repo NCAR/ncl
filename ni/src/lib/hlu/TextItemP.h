@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItemP.h,v 1.7 1995-03-15 11:48:42 boote Exp $
+ *      $Id: TextItemP.h,v 1.8 1995-04-07 10:43:50 boote Exp $
  */
 /************************************************************************
 *									*
@@ -84,19 +84,19 @@ typedef struct _NhlTextItemLayerRec{
 	NhlTextItemLayerPart text;
 }NhlTextItemLayerRec;
 
-typedef struct _NhlTextItemLayerClassPart {
+typedef struct _NhlTextItemClassPart {
 	char *foo;
-}NhlTextItemLayerClassPart;
+}NhlTextItemClassPart;
 
-typedef struct _NhlTextItemLayerClassRec{
-	NhlBaseLayerClassPart base_class;
-	NhlViewLayerClassPart view_class;
-	NhlTextItemLayerClassPart text_class;
-}NhlTextItemLayerClassRec;
+typedef struct _NhlTextItemClassRec{
+	NhlBaseClassPart base_class;
+	NhlViewClassPart view_class;
+	NhlTextItemClassPart text_class;
+}NhlTextItemClassRec;
 
-typedef struct _NhlTextItemLayerClassRec *NhlTextItemLayerClass;
+typedef struct _NhlTextItemClassRec *NhlTextItemClass;
 typedef struct _NhlTextItemLayerRec	*NhlTextItemLayer;
 
-extern NhlTextItemLayerClassRec NhltextItemLayerClassRec;
+extern NhlTextItemClassRec NhltextItemClassRec;
 
 #endif  /*_NTextItemP_h*/

@@ -1,5 +1,5 @@
 /*
- *      $Id: AnnoManager.h,v 1.1 1995-04-01 00:03:53 dbrown Exp $
+ *      $Id: AnnoManager.h,v 1.2 1995-04-07 10:40:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -48,5 +48,5 @@
 #define NhlCamDataXF		"AmDataXF"
 #define NhlCamDataYF		"AmDataYF"
 
-extern NhlLayerClass NhlannoManagerLayerClass;
+extern NhlClass NhlannoManagerClass;
 #endif  /* _NANNOMANAGER_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjP.h,v 1.8 1995-04-07 09:36:10 boote Exp $
+ *      $Id: TransObjP.h,v 1.9 1995-04-07 10:44:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -18,7 +18,7 @@
  *	Date:		Fri Oct 16 10:48:21 MDT 1992
  *
  *	Description:	This is the public header file for the TransObj class.
- *			The NhlTransObjLayerClass is responsible for managing 
+ *			The NhlTransObjClass is responsible for managing 
  *			transformations DATA==>VIEWPORT definitions.
  */
 #ifndef _NTransObjP_h
@@ -80,7 +80,7 @@ typedef struct _NhlTransObjLayerRec {
 #define NhlInheritTransPoint	((NhlTransformPoint)_NhlInherit)
 #define NhlInheritLineTo	((NhlLineToProc)_NhlInherit)
 
-typedef struct _NhlTransObjLayerClassPart {
+typedef struct _NhlTransObjClassPart {
 	NhlSetTransFunc set_trans;
 	NhlErrorTypes	(*trans_type)();
 /*
@@ -107,17 +107,17 @@ typedef struct _NhlTransObjLayerClassPart {
 	NhlLineToProc	compc_lineto;
 	NhlLineToProc	win_lineto;
 	NhlLineToProc	NDC_lineto;
-} NhlTransObjLayerClassPart;
+} NhlTransObjClassPart;
 
-typedef struct _NhlTransObjLayerClassRec {
-	NhlObjLayerClassPart		base_class;
-	NhlTransObjLayerClassPart	trobj_class;
-} NhlTransObjLayerClassRec;
+typedef struct _NhlTransObjClassRec {
+	NhlObjClassPart		base_class;
+	NhlTransObjClassPart	trobj_class;
+} NhlTransObjClassRec;
 
-typedef struct _NhlTransObjLayerClassRec *NhlTransObjLayerClass;
+typedef struct _NhlTransObjClassRec *NhlTransObjClass;
 typedef struct _NhlTransObjLayerRec *NhlTransObjLayer;
 
-extern NhlTransObjLayerClassRec NhltransObjLayerClassRec;
+extern NhlTransObjClassRec NhltransObjClassRec;
 
 
 extern void _NhlTransClipLine(

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.c,v 1.9 1995-02-17 10:23:09 boote Exp $
+ *      $Id: DataItem.c,v 1.10 1995-04-07 10:41:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -47,13 +47,13 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes DataItemClassPartInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc
+	NhlClass	lc
 #endif
 );
 
 static NhlErrorTypes DataItemInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc,	/* class	*/
+	NhlClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
 	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
@@ -87,14 +87,14 @@ static NhlErrorTypes DataItemDestroy(
 #endif
 );
 
-NhlDataItemLayerClassRec NhldataItemLayerClassRec = {
-	/* NhlBaseLayerClassPart */
+NhlDataItemClassRec NhldataItemClassRec = {
+	/* NhlBaseClassPart */
 	{
-/* class_name			*/	"dataItemLayerClass",
+/* class_name			*/	"dataItemClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlDataItemLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlbaseLayerClassRec,
+/* superclass			*/	(NhlClass)&NhlbaseClassRec,
 
 /* resources			*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -118,13 +118,13 @@ NhlDataItemLayerClassRec NhldataItemLayerClassRec = {
 /* layer_post_draw		*/	NULL,
 /* layer_clear			*/	NULL
 	},
-	/* NhlDataItemLayerClassPart */
+	/* NhlDataItemClassPart */
 	{
 /* foo				*/	0
 	}
 };
 	
-NhlLayerClass NhldataItemLayerClass = (NhlLayerClass)&NhldataItemLayerClassRec;
+NhlClass NhldataItemClass = (NhlClass)&NhldataItemClassRec;
 
 /************************************************************************
 *	New type converters - added to converter table by		*
@@ -143,11 +143,11 @@ NhlLayerClass NhldataItemLayerClass = (NhlLayerClass)&NhldataItemLayerClassRec;
 /*
  * Function:	DataItemClassPartInitialize
  *
- * Description:	This function is used to initialize the NhlDataItemLayerClassPart
+ * Description:	This function is used to initialize the NhlDataItemClassPart
  *		record.
  *
  * In Args:	
- *		NhlLayerClass	lc
+ *		NhlClass	lc
  *
  * Out Args:	none
  *
@@ -159,11 +159,11 @@ static NhlErrorTypes
 DataItemClassPartInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc
+	NhlClass	lc
 )
 #else
 (lc)
-	NhlLayerClass	lc;
+	NhlClass	lc;
 #endif
 {
 	/*
@@ -171,7 +171,7 @@ DataItemClassPartInitialize
 	 * setvalues - and this class should not intercept any of the
 	 * resources for the manager.
 	 */
-	return _NhlRegisterChildClass(lc,NhldataMgrLayerClass,True,False,NULL);
+	return _NhlRegisterChildClass(lc,NhldataMgrClass,True,False,NULL);
 }
 
 /*
@@ -181,7 +181,7 @@ DataItemClassPartInitialize
  *		object.
  *
  * In Args:	
- *	NhlLayerClass	lc,	class
+ *	NhlClass	lc,	class
  *	NhlLayer	req,	requested
  *	NhlLayer	new,	new
  *	_NhlArgList	args,	args
@@ -198,7 +198,7 @@ static NhlErrorTypes
 DataItemInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc,	/* class	*/
+	NhlClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
 	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
@@ -206,7 +206,7 @@ DataItemInitialize
 )
 #else
 (lc,req,new,args,nargs)
-	NhlLayerClass	lc;	/* class	*/
+	NhlClass	lc;	/* class	*/
 	NhlLayer	req;	/* requested	*/
 	NhlLayer	new;	/* new		*/
 	_NhlArgList	args;	/* args		*/
@@ -236,7 +236,7 @@ DataItemInitialize
 	 */
 	strcpy(tstring,direq->base.name);
 	strcat(tstring,PFIX);
-	ret = _NhlVACreateChild(&tint,tstring,NhldataMgrLayerClass,new,
+	ret = _NhlVACreateChild(&tint,tstring,NhldataMgrClass,new,
 				NULL);
 
 	if(ret < NhlWARNING)
@@ -337,7 +337,7 @@ DataItemSetValuesHook
  * Function:	DataItemDestroy
  *
  * Description:	This function free's any memory that has been allocated
- *		on behalf of this instance of the NhlDataItemLayerClass.
+ *		on behalf of this instance of the NhlDataItemClass.
  *
  * In Args:	NhlLayer	l
  *

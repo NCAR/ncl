@@ -1,5 +1,5 @@
 /*
- *      $Id: BoundingBox.c,v 1.5 1994-12-16 20:03:53 boote Exp $
+ *      $Id: BoundingBox.c,v 1.6 1995-04-07 10:40:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -51,21 +51,21 @@ static NhlErrorTypes CallGetBB
 #if	NhlNeedProto
 (
 NhlLayer instance,
-NhlLayerClass class,
+NhlClass class,
 NhlBoundingBox *thebox
 )
 #else
 (instance,class,thebox)
 	NhlLayer	instance;
-	NhlLayerClass class;
+	NhlClass class;
 	NhlBoundingBox *thebox;
 #endif
 {
-	NhlViewLayerClass	vclass = (NhlViewLayerClass) class;
+	NhlViewClass	vclass = (NhlViewClass) class;
 	NhlErrorTypes ancestor=NhlNOERROR, ret = NhlNOERROR;
 
 	if(vclass->base_class.superclass->base_class.class_inited &
-							_NhlViewLayerClassFlag){
+							_NhlViewClassFlag){
 		ancestor =CallGetBB(instance,vclass->base_class.superclass,
 			thebox);
 

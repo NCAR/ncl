@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.h,v 1.8 1995-04-07 00:39:53 dbrown Exp $
+ *      $Id: LabelBar.h,v 1.9 1995-04-07 10:42:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -221,6 +221,6 @@ typedef enum _NhllbBoxSizingMode {
 
 /* end of resources */
 
-extern NhlLayerClass NhllabelBarLayerClass;
+extern NhlClass NhllabelBarClass;
 
 #endif  /* _NLabelBar_h */

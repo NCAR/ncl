@@ -1,5 +1,5 @@
 /*
- *      $Id: ErrorP.h,v 1.7 1994-09-06 21:51:29 boote Exp $
+ *      $Id: ErrorP.h,v 1.8 1995-04-07 10:41:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@
 #include <ncarg/hlu/ErrorI.h>
 
 typedef struct _NhlErrorLayerRec *NhlErrorLayer;
-typedef struct _NhlErrorLayerClassRec *NhlErrorLayerClass;
+typedef struct _NhlErrorClassRec *NhlErrorClass;
 
 typedef struct _NhlErrorLayerCRec *_NhlErrorLayerC;
 typedef struct _NhlErrorLayerCClassRec *_NhlErrorLayerCClass;
@@ -109,9 +109,9 @@ typedef struct _NhlErrorLayerFRec {
 	NhlErrorLayerFPart	ferror;
 } _NhlErrorLayerFRec;
 
-typedef struct _NhlErrorLayerClassPart {
+typedef struct _NhlErrorClassPart {
 	int num_error_instances;
-} NhlErrorLayerClassPart;
+} NhlErrorClassPart;
 
 typedef struct _NhlErrorLayerCClassPart {
 	int foo;
@@ -121,22 +121,22 @@ typedef struct _NhlErrorLayerFClassPart {
 	int foo;
 } NhlErrorLayerFClassPart;
 
-typedef struct _NhlErrorLayerClassRec {
-	NhlBaseLayerClassPart	base_class;
-	NhlErrorLayerClassPart	error_class;
-} NhlErrorLayerClassRec;
+typedef struct _NhlErrorClassRec {
+	NhlBaseClassPart	base_class;
+	NhlErrorClassPart	error_class;
+} NhlErrorClassRec;
 
 typedef struct _NhlErrorLayerCClassRec {
-	NhlObjLayerClassPart	base_class;
+	NhlObjClassPart	base_class;
 	NhlErrorLayerCClassPart	cerror_class;
 } _NhlErrorLayerCClassRec;
 
 typedef struct _NhlErrorLayerFClassRec {
-	NhlObjLayerClassPart	base_class;
+	NhlObjClassPart	base_class;
 	NhlErrorLayerFClassPart	ferror_class;
 } _NhlErrorLayerFClassRec;
 
-extern NhlErrorLayerClassRec NhlerrorLayerClassRec;
+extern NhlErrorClassRec NhlerrorClassRec;
 
 /*
  * Fortran functions that error.c calls

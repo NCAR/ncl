@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.c,v 1.14 1995-04-01 00:04:03 dbrown Exp $
+ *      $Id: LogLinPlot.c,v 1.15 1995-04-07 10:42:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -46,13 +46,13 @@ static NhlErrorTypes LogLinPlotClassInitialize(
 
 static NhlErrorTypes LogLinPlotClassPartInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc
+	NhlClass	lc
 #endif
 );
 
 static NhlErrorTypes LogLinPlotInitialize(
 #if	NhlNeedProto
-        NhlLayerClass,     /* class */
+        NhlClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
         _NhlArgList,    /* args */
@@ -99,13 +99,13 @@ static NhlErrorTypes SetUpTransObj(
 );
 
 
-NhlLogLinPlotLayerClassRec NhllogLinPlotLayerClassRec = {
+NhlLogLinPlotClassRec NhllogLinPlotClassRec = {
         {
-/* class_name			*/      "logLinPlotLayerClass",
+/* class_name			*/      "logLinPlotClass",
 /* nrm_class			*/      NrmNULLQUARK,
 /* layer_size			*/      sizeof(NhlLogLinPlotLayerRec),
 /* class_inited			*/      False,
-/* superclass			*/      (NhlLayerClass)&NhltransformLayerClassRec,
+/* superclass			*/      (NhlClass)&NhltransformClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -146,8 +146,8 @@ NhlLogLinPlotLayerClassRec NhllogLinPlotLayerClassRec = {
 	}
 };
 	
-NhlLayerClass NhllogLinPlotLayerClass = (NhlLayerClass)
-						&NhllogLinPlotLayerClassRec;
+NhlClass NhllogLinPlotClass = (NhlClass)
+						&NhllogLinPlotClassRec;
 
 /*
  * Function:	nhlfloglinplotclass
@@ -159,11 +159,11 @@ NhlLayerClass NhllogLinPlotLayerClass = (NhlLayerClass)
  * Out Args:	
  *
  * Scope:	global Fortran
- * Returns:	NhlLayerClass
+ * Returns:	NhlClass
  * Side Effect:	
  */
-NhlLayerClass
-_NHLCALLF(nhlfloglinplotlayerclass,NHLFLOGLINPLOTLAYERCLASS)
+NhlClass
+_NHLCALLF(nhlfloglinplotclass,NHLFLOGLINPLOTCLASS)
 #if	NhlNeedProto
 (
 	void
@@ -172,7 +172,7 @@ _NHLCALLF(nhlfloglinplotlayerclass,NHLFLOGLINPLOTLAYERCLASS)
 ()
 #endif
 {
-	return NhllogLinPlotLayerClass;
+	return NhllogLinPlotClass;
 }
 
 /*
@@ -206,11 +206,11 @@ LogLinPlotClassInitialize
  * Function:	LogLinPlotClassPartInitialize
  *
  * Description:	This function initializes fields in the 
- *		NhlLogLinPlotLayerClassPart that cannot be initialized statically.
+ *		NhlLogLinPlotClassPart that cannot be initialized statically.
  *		Calls _NhlRegisterChildClass for the overlay manager object.
  *
  * In Args:	
- *		NhlLayerClass	lc	NhlLayer Class to init
+ *		NhlClass	lc	NhlLayer Class to init
  *
  * Out Args:	
  *
@@ -223,11 +223,11 @@ static NhlErrorTypes
 LogLinPlotClassPartInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc	/* NhlLayer Class to init	*/
+	NhlClass	lc	/* NhlLayer Class to init	*/
 )
 #else
 (lc)
-	NhlLayerClass	lc;	/* NhlLayer Class to init	*/
+	NhlClass	lc;	/* NhlLayer Class to init	*/
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
@@ -237,23 +237,23 @@ LogLinPlotClassPartInitialize
 /*
  * Register children objects
  */
-	subret = _NhlRegisterChildClass(lc,NhlplotManagerLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhlplotManagerClass,
 					False,False,NULL);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhloverlayLayerClass");
+			  "NhloverlayClass");
 		return(NhlFATAL);
 	}
 
-	subret = _NhlRegisterChildClass(lc,NhllogLinTransObjLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhllogLinTransObjClass,
 					False,False,NULL);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhllogLinTransObjLayerClass");
+			  "NhllogLinTransObjClass");
 		return(NhlFATAL);
 	}
 
@@ -283,7 +283,7 @@ static NhlErrorTypes
 LogLinPlotInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	class,
+	NhlClass	class,
 	NhlLayer	req,
 	NhlLayer	new,
 	_NhlArgList	args,
@@ -291,7 +291,7 @@ LogLinPlotInitialize
 )
 #else
 (class,req,new,args,num_args)
-        NhlLayerClass   class;
+        NhlClass   class;
         NhlLayer        req;
         NhlLayer        new;
         _NhlArgList     args;
@@ -574,7 +574,7 @@ static NhlErrorTypes SetUpTransObj
 		strcat(buffer,".Trans");
 
 		subret = _NhlVACreateChild(&tmpid,buffer,
-					 NhllogLinTransObjLayerClass,
+					 NhllogLinTransObjClass,
 					 (NhlLayer) llnew, NULL);
 
 		ret = MIN(subret,ret);

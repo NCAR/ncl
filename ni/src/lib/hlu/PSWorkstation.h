@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.h,v 1.2 1995-03-29 10:01:46 boote Exp $
+ *      $Id: PSWorkstation.h,v 1.3 1995-04-07 10:43:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -77,6 +77,6 @@ typedef enum _NhlWorkOrientation{
 	NhlLANDSCAPE = 6
 } NhlWorkOrientation;
 
-extern NhlLayerClass NhlpsWorkstationLayerClass;
+extern NhlClass NhlpsWorkstationClass;
 
 #endif /* _NPSWorkstation_h */

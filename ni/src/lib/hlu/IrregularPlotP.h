@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlotP.h,v 1.5 1995-04-01 00:04:02 dbrown Exp $
+ *      $Id: IrregularPlotP.h,v 1.6 1995-04-07 10:41:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -52,20 +52,20 @@ typedef struct _NhlIrregularPlotLayerRec {
 	NhlIrregularPlotLayerPart	irrplot;
 } NhlIrregularPlotLayerRec;
 
-typedef struct NhlIrregularPlotLayerClassPart{
+typedef struct NhlIrregularPlotClassPart{
 	void *foo;
-} NhlIrregularPlotLayerClassPart;
+} NhlIrregularPlotClassPart;
 
-typedef struct _NhlIrregularPlotLayerClassRec{
-	NhlBaseLayerClassPart		base_class;
-	NhlViewLayerClassPart		view_class;
-	NhlTransformLayerClassPart	trans_class;
-	NhlIrregularPlotLayerClassPart	irrplot_class;
-} NhlIrregularPlotLayerClassRec;
+typedef struct _NhlIrregularPlotClassRec{
+	NhlBaseClassPart		base_class;
+	NhlViewClassPart		view_class;
+	NhlTransformClassPart	trans_class;
+	NhlIrregularPlotClassPart	irrplot_class;
+} NhlIrregularPlotClassRec;
 
-typedef struct _NhlIrregularPlotLayerClassRec *NhlIrregularPlotLayerClass;
+typedef struct _NhlIrregularPlotClassRec *NhlIrregularPlotClass;
 typedef struct _NhlIrregularPlotLayerRec *NhlIrregularPlotLayer;
 
-extern NhlIrregularPlotLayerClassRec NhlirregularPlotLayerClassRec;
+extern NhlIrregularPlotClassRec NhlirregularPlotClassRec;
 
 #endif  /* _NIrregularPlotP_h */

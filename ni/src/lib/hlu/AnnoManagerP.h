@@ -1,5 +1,5 @@
 /*
- *      $Id: AnnoManagerP.h,v 1.1 1995-04-01 00:03:53 dbrown Exp $
+ *      $Id: AnnoManagerP.h,v 1.2 1995-04-07 10:40:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -59,18 +59,18 @@ typedef struct _NhlAnnoManagerLayerRec{
 	NhlAnnoManagerLayerPart annomanager;
 }NhlAnnoManagerLayerRec;
 
-typedef struct _NhlAnnoManagerLayerClassPart {
+typedef struct _NhlAnnoManagerClassPart {
 	char *foo;
-}NhlAnnoManagerLayerClassPart;
+}NhlAnnoManagerClassPart;
 
-typedef struct _NhlAnnoManagerLayerClassRec{
-	NhlObjLayerClassPart		base_class;
-	NhlAnnoManagerLayerClassPart	annomanager_class;
-}NhlAnnoManagerLayerClassRec;
+typedef struct _NhlAnnoManagerClassRec{
+	NhlObjClassPart		base_class;
+	NhlAnnoManagerClassPart	annomanager_class;
+}NhlAnnoManagerClassRec;
 
-typedef struct _NhlAnnoManagerLayerClassRec	*NhlAnnoManagerLayerClass;
+typedef struct _NhlAnnoManagerClassRec	*NhlAnnoManagerClass;
 typedef struct _NhlAnnoManagerLayerRec		*NhlAnnoManagerLayer;
 
-extern NhlAnnoManagerLayerClassRec		NhlannoManagerLayerClassRec;
+extern NhlAnnoManagerClassRec		NhlannoManagerClassRec;
 
 #endif  /*_NANNOMANAGERP_h*/

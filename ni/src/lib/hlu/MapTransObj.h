@@ -1,5 +1,5 @@
 /*
- *      $Id: MapTransObj.h,v 1.6 1995-02-11 07:28:16 dbrown Exp $
+ *      $Id: MapTransObj.h,v 1.7 1995-04-07 10:43:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -175,6 +175,6 @@ typedef enum _NhlProjection {
 #define NhlCmpSatelliteAngle2F		"MpSatelliteAngle2F"
 #define NhlCmpEllipticalBoundary	"MpEllipticalBoundary"
 
-extern NhlLayerClass NhlmapTransObjLayerClass;
+extern NhlClass NhlmapTransObjClass;
 
 #endif /*_NMapTranObj_h */

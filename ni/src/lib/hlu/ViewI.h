@@ -1,5 +1,5 @@
 /*
- *      $Id: ViewI.h,v 1.3 1995-02-19 08:19:08 boote Exp $
+ *      $Id: ViewI.h,v 1.4 1995-04-07 10:44:16 boote Exp $
  */
 /************************************************************************
 *									*
@@ -88,7 +88,7 @@ float*          /* transform */
 
 extern void _NhlEndSegment();
 
-typedef struct _NhlViewLayerClassRec *NhlViewLayerClass;
+typedef struct _NhlViewClassRec *NhlViewClass;
 typedef struct _NhlViewLayerRec *NhlViewLayer;
 
 #endif	/* _NVIEWI_H */

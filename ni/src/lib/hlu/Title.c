@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.19 1995-03-15 11:48:49 boote Exp $
+ *      $Id: Title.c,v 1.20 1995-04-07 10:44:02 boote Exp $
  */
 /************************************************************************
 *									*
@@ -300,7 +300,7 @@ static NhlErrorTypes TitleGetValues(
 
 static NhlErrorTypes    TitleInitialize(
 #if NhlNeedProto
-        NhlLayerClass,     /* class */
+        NhlClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
         _NhlArgList,    /* args */
@@ -332,13 +332,13 @@ static NhlErrorTypes TitleDraw(
 
 
 
-NhlTitleLayerClassRec NhltitleLayerClassRec = {
+NhlTitleClassRec NhltitleClassRec = {
         {
-/* class_name                   */      "titleLayerClass",
+/* class_name                   */      "titleClass",
 /* nrm_class                    */      NrmNULLQUARK,
 /* layer_size                   */      sizeof(NhlTitleLayerRec),
 /* class_inited                 */      False,
-/* superclass                   */      (NhlLayerClass)&NhlviewLayerClassRec,
+/* superclass                   */      (NhlClass)&NhlviewClassRec,
 
 /* layer_resources              */      resources,
 /* num_resources                */      NhlNumber(resources),
@@ -371,7 +371,7 @@ NhlTitleLayerClassRec NhltitleLayerClassRec = {
 	}
 };
 
-NhlLayerClass NhltitleLayerClass = (NhlLayerClass)&NhltitleLayerClassRec;
+NhlClass NhltitleClass = (NhlClass)&NhltitleClassRec;
 
 /*
  * Function:	nhlftitleclass
@@ -383,11 +383,11 @@ NhlLayerClass NhltitleLayerClass = (NhlLayerClass)&NhltitleLayerClassRec;
  * Out Args:	
  *
  * Scope:	global Fortran
- * Returns:	NhlLayerClass
+ * Returns:	NhlClass
  * Side Effect:	
  */
-NhlLayerClass
-_NHLCALLF(nhlftitlelayerclass,NHLFTITLELAYERCLASS)
+NhlClass
+_NHLCALLF(nhlftitleclass,NHLFTITLECLASS)
 #if	NhlNeedProto
 (
 	void
@@ -396,7 +396,7 @@ _NHLCALLF(nhlftitlelayerclass,NHLFTITLELAYERCLASS)
 ()
 #endif
 {
-	return NhltitleLayerClass;
+	return NhltitleClass;
 }
 
 static NrmQuark	Qmain = NrmNULLQUARK;
@@ -471,10 +471,10 @@ static NhlErrorTypes    TitleClassInitialize
 /*ARGSUSED*/
 static NhlErrorTypes    TitleInitialize
 #if	NhlNeedProto
-(NhlLayerClass class, NhlLayer req,NhlLayer new,_NhlArgList args, int num_args)
+(NhlClass class, NhlLayer req,NhlLayer new,_NhlArgList args, int num_args)
 #else
 (class,req,new,args,num_args)
-        NhlLayerClass	class;
+        NhlClass	class;
         NhlLayer	req;
         NhlLayer	new;
         _NhlArgList	args;
@@ -605,7 +605,7 @@ static NhlErrorTypes    TitleInitialize
 	strcpy(buffer,tnew->base.name);
 	strcat(buffer,".YAxis");
 	ret1 = NhlVACreate(&(tnew->title.y_axis_id),
-		buffer,NhltextItemLayerClass,
+		buffer,NhltextItemClass,
 		tnew->base.id,
 		NhlNtxFont,tnew->title.y_axis_font,
 		NhlNtxString,tnew->title.y_axis_string,
@@ -718,7 +718,7 @@ static NhlErrorTypes    TitleInitialize
 */
 	strcat(buffer,".XAxis");
 	ret1 = NhlVACreate(&(tnew->title.x_axis_id),
-		buffer,NhltextItemLayerClass,
+		buffer,NhltextItemClass,
 		tnew->base.id,
 		NhlNtxFont,tnew->title.x_axis_font,
 		NhlNtxString,tnew->title.x_axis_string,
@@ -844,7 +844,7 @@ static NhlErrorTypes    TitleInitialize
 */
 	strcat(buffer,".Main");
 	ret1 = NhlVACreate(&(tnew->title.main_id),
-		buffer,NhltextItemLayerClass,
+		buffer,NhltextItemClass,
 		tnew->base.id,
 		NhlNtxFont,tnew->title.main_font,
 		NhlNtxString,tnew->title.main_string,

@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlotP.h,v 1.11 1995-04-01 00:04:26 dbrown Exp $
+ *      $Id: XyPlotP.h,v 1.12 1995-04-07 10:44:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -204,37 +204,37 @@ typedef struct _NhlXyPlotLayerRec {
 	NhlXyPlotLayerPart		xyplot;
 }NhlXyPlotLayerRec;
 
-typedef struct _NhlXyDataSpecLayerClassPart{
+typedef struct _NhlXyDataSpecClassPart{
 	int	foo;
-} NhlXyDataSpecLayerClassPart;
+} NhlXyDataSpecClassPart;
 
-typedef struct _NhlXyPlotLayerClassPart {
+typedef struct _NhlXyPlotClassPart {
 	char *foo;
-} NhlXyPlotLayerClassPart;
+} NhlXyPlotClassPart;
 
-typedef struct _NhlXyDataSpecLayerClassRec{
-	NhlBaseLayerClassPart		base_class;
-	NhlDataSpecLayerClassPart	dataspec_class;
-	NhlXyDataSpecLayerClassPart	xydata_class;
-} NhlXyDataSpecLayerClassRec;
+typedef struct _NhlXyDataSpecClassRec{
+	NhlBaseClassPart		base_class;
+	NhlDataSpecClassPart	dataspec_class;
+	NhlXyDataSpecClassPart	xydata_class;
+} NhlXyDataSpecClassRec;
 
-typedef struct _NhlXyPlotLayerClassRec {
-	NhlBaseLayerClassPart		base_class;
-	NhlViewLayerClassPart		view_class;
-	NhlTransformLayerClassPart	trans_class;
-	NhlDataCommLayerClassPart	datacomm_class;
-	NhlXyPlotLayerClassPart		xyplot_class;
-}NhlXyPlotLayerClassRec;
+typedef struct _NhlXyPlotClassRec {
+	NhlBaseClassPart		base_class;
+	NhlViewClassPart		view_class;
+	NhlTransformClassPart	trans_class;
+	NhlDataCommClassPart	datacomm_class;
+	NhlXyPlotClassPart		xyplot_class;
+}NhlXyPlotClassRec;
 
-extern NhlXyDataSpecLayerClassRec NhlxyDataSpecLayerClassRec;
-extern NhlXyPlotLayerClassRec NhlxyPlotLayerClassRec;
+extern NhlXyDataSpecClassRec NhlxyDataSpecClassRec;
+extern NhlXyPlotClassRec NhlxyPlotClassRec;
 
-extern NhlLayerClass NhlxyDataSpecLayerClass;
+extern NhlClass NhlxyDataSpecClass;
 
-typedef struct _NhlXyDataSpecLayerClassRec *NhlXyDataSpecLayerClass;
+typedef struct _NhlXyDataSpecClassRec *NhlXyDataSpecClass;
 typedef struct _NhlXyDataSpecLayerRec *NhlXyDataSpecLayer;
 
-typedef struct _NhlXyPlotLayerClassRec *NhlXyPlotLayerClass;
+typedef struct _NhlXyPlotClassRec *NhlXyPlotClass;
 typedef struct _NhlXyPlotLayerRec *NhlXyPlotLayer;
 
 #endif /* _NXYPLOTP_h */

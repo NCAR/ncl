@@ -29,7 +29,7 @@ struct  _NclApiDataList {
 struct _NclApiHLUObjInfoRec {
 	NclQuark name;
 	int obj_id;
-	NhlLayerClass obj_class;
+	NhlClass obj_class;
 };
 struct _NclApiHLUVarInfoRec {
 	NclQuark name;

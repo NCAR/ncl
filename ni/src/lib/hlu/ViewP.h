@@ -1,5 +1,5 @@
 /*
- *      $Id: ViewP.h,v 1.11 1995-04-01 00:04:20 dbrown Exp $
+ *      $Id: ViewP.h,v 1.12 1995-04-07 10:44:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -17,7 +17,7 @@
  *
  *	Date:		Tue Sep 1 10:01:24 MDT 1992
  *
- *	Description:	Private header file for NhlViewLayerClass. Contains
+ *	Description:	Private header file for NhlViewClass. Contains
  *			NhlSegTransList typedef for storing output from the
  *			Segments utility.
  */
@@ -104,17 +104,17 @@ typedef struct _NhlViewLayerRec {
 	NhlViewLayerPart view;
 } NhlViewLayerRec;
 
-typedef struct _NhlViewLayerClassPart {
+typedef struct _NhlViewClassPart {
 	int	segment_workstation;
 	NhlErrorTypes	(*get_bb)();
-} NhlViewLayerClassPart; 
+} NhlViewClassPart; 
 
-typedef struct _NhlViewLayerClassRec {
-	NhlBaseLayerClassPart	base_class;
-	NhlViewLayerClassPart	view_class;
-} NhlViewLayerClassRec;
+typedef struct _NhlViewClassRec {
+	NhlBaseClassPart	base_class;
+	NhlViewClassPart	view_class;
+} NhlViewClassRec;
 
-extern NhlViewLayerClassRec NhlviewLayerClassRec;
+extern NhlViewClassRec NhlviewClassRec;
 
 #define NhlDEFAULT_SEG_WKS 2
 #define NhlDEFAULT_CONNECTION_ID 1

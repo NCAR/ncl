@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManagerP.h,v 1.1 1995-04-01 00:04:13 dbrown Exp $
+ *      $Id: PlotManagerP.h,v 1.2 1995-04-07 10:43:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -215,20 +215,20 @@ typedef struct _NhlPlotManagerLayerRec {
 	NhlPlotManagerLayerPart	plotmanager;
 } NhlPlotManagerLayerRec;
 
-typedef struct NhlPlotManagerLayerClassPart{
+typedef struct NhlPlotManagerClassPart{
 	NhlPointer		foo;
-} NhlPlotManagerLayerClassPart;
+} NhlPlotManagerClassPart;
 
-typedef struct _NhlPlotManagerLayerClassRec{
-	NhlBaseLayerClassPart		base_class;
-	NhlViewLayerClassPart		view_class;
-	NhlTransformLayerClassPart	trans_class;
-	NhlPlotManagerLayerClassPart	plotmanager_class;
-} NhlPlotManagerLayerClassRec;
+typedef struct _NhlPlotManagerClassRec{
+	NhlBaseClassPart		base_class;
+	NhlViewClassPart		view_class;
+	NhlTransformClassPart	trans_class;
+	NhlPlotManagerClassPart	plotmanager_class;
+} NhlPlotManagerClassRec;
 
-typedef struct _NhlPlotManagerLayerClassRec *NhlPlotManagerLayerClass;
+typedef struct _NhlPlotManagerClassRec *NhlPlotManagerClass;
 typedef struct _NhlPlotManagerLayerRec	*NhlPlotManagerLayer;
 
-extern NhlPlotManagerLayerClassRec	NhlplotManagerLayerClassRec;
+extern NhlPlotManagerClassRec	NhlplotManagerClassRec;
 
 #endif  /* _NPLOTMANAGERP_h */

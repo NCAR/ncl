@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlotP.h,v 1.4 1994-10-07 18:48:00 dbrown Exp $
+ *      $Id: LogLinPlotP.h,v 1.5 1995-04-07 10:42:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -48,20 +48,20 @@ typedef struct _NhlLogLinPlotLayerRec {
 	NhlLogLinPlotLayerPart		llplot;
 } NhlLogLinPlotLayerRec;
 
-typedef struct NhlLogLinPlotLayerClassPart{
+typedef struct NhlLogLinPlotClassPart{
 	void *foo;
-} NhlLogLinPlotLayerClassPart;
+} NhlLogLinPlotClassPart;
 
-typedef struct _NhlLogLinPlotLayerClassRec{
-	NhlBaseLayerClassPart		base_class;
-	NhlViewLayerClassPart		view_class;
-	NhlTransformLayerClassPart	trans_class;
-	NhlLogLinPlotLayerClassPart	llplot_class;
-} NhlLogLinPlotLayerClassRec;
+typedef struct _NhlLogLinPlotClassRec{
+	NhlBaseClassPart		base_class;
+	NhlViewClassPart		view_class;
+	NhlTransformClassPart	trans_class;
+	NhlLogLinPlotClassPart	llplot_class;
+} NhlLogLinPlotClassRec;
 
-typedef struct _NhlLogLinPlotLayerClassRec	*NhlLogLinPlotLayerClass;
+typedef struct _NhlLogLinPlotClassRec	*NhlLogLinPlotClass;
 typedef struct _NhlLogLinPlotLayerRec	*NhlLogLinPlotLayer;
 
-extern NhlLogLinPlotLayerClassRec NhllogLinPlotLayerClassRec;
+extern NhlLogLinPlotClassRec NhllogLinPlotClassRec;
 
 #endif  /* _NLogLinPlotP_h */

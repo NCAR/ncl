@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTableP.h,v 1.3 1994-07-12 20:51:38 boote Exp $
+ *      $Id: CoordArrTableP.h,v 1.4 1995-04-07 10:41:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -71,19 +71,19 @@ typedef struct _NhlCoordArrTableLayerRec{
 	NhlCoordArrTableLayerPart	cat;
 } NhlCoordArrTableLayerRec;
 
-typedef struct _NhlCoordArrTableLayerClassPart{
+typedef struct _NhlCoordArrTableClassPart{
 	int	foo;
-} NhlCoordArrTableLayerClassPart;
+} NhlCoordArrTableClassPart;
 
-typedef struct _NhlCoordArrTableLayerClassRec{
-	NhlBaseLayerClassPart		base_class;
-	NhlDataItemLayerClassPart	dataitem_class;
-	NhlCoordArrTableLayerClassPart	cat_class;
-} NhlCoordArrTableLayerClassRec;
+typedef struct _NhlCoordArrTableClassRec{
+	NhlBaseClassPart		base_class;
+	NhlDataItemClassPart	dataitem_class;
+	NhlCoordArrTableClassPart	cat_class;
+} NhlCoordArrTableClassRec;
 
-typedef struct _NhlCoordArrTableLayerClassRec *NhlCoordArrTableLayerClass;
+typedef struct _NhlCoordArrTableClassRec *NhlCoordArrTableClass;
 typedef struct _NhlCoordArrTableLayerRec *NhlCoordArrTableLayer;
 
-extern NhlCoordArrTableLayerClassRec NhlcoordArrTableLayerClassRec;
+extern NhlCoordArrTableClassRec NhlcoordArrTableClassRec;
 
 #endif  /* _NCoordArrTableP_h */

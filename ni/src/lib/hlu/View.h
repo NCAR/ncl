@@ -1,5 +1,5 @@
 /*
- *      $Id: View.h,v 1.10 1995-04-01 00:04:19 dbrown Exp $
+ *      $Id: View.h,v 1.11 1995-04-07 10:44:15 boote Exp $
  */
 /************************************************************************
 *									*
@@ -17,7 +17,7 @@
  *
  *	Date:		Tue Sep 1 09:59:16 MDT 1992
  *
- *	Description:	Public header file for the ViewLayerClass.
+ *	Description:	Public header file for the ViewClass.
  */
 #ifndef _NVIEW_h
 #define _NVIEW_h
@@ -108,6 +108,6 @@ extern NhlBoolean NhlIsView(
 #endif
 );
 
-extern NhlLayerClass NhlviewLayerClass;
+extern NhlClass NhlviewClass;
 
 #endif /*_NVIEW_h*/

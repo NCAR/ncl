@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.16 1995-04-01 00:54:45 ethan Exp $
+ *      $Id: NclApi.c,v 1.17 1995-04-07 10:46:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -83,7 +83,7 @@ int NclInitServer
         theoptr = fopen("ncl.seq","w");
 */
 	NhlInitialize();
-	NhlVACreate(&appid,"ncl",NhlappLayerClass,NhlDEFAULT_APP,
+	NhlVACreate(&appid,"ncl",NhlappClass,NhlDEFAULT_APP,
                 NhlNappDefaultParent,1,NULL);
 
 
@@ -399,12 +399,12 @@ static NclApiDataList *del_list = NULL;
 
 void _NclAddToNewList
 #if	NhlNeedProto
-(int id,NclQuark name,NhlLayerClass cl_ptr)
+(int id,NclQuark name,NhlClass cl_ptr)
 #else
 (id,name,cl_ptr)
 int id;
 NclQuark name;
-NhlLayerClass cl_ptr;
+NhlClass cl_ptr;
 #endif
 {
 	NclApiDataList* tmp;
@@ -421,12 +421,12 @@ NhlLayerClass cl_ptr;
 
 void _NclAddToDelList
 #if	NhlNeedProto
-(int id,NclQuark name,NhlLayerClass cl_ptr)
+(int id,NclQuark name,NhlClass cl_ptr)
 #else
 (id,name,cl_ptr)
 int id;
 NclQuark name;
-NhlLayerClass cl_ptr;
+NhlClass cl_ptr;
 #endif
 {
 	NclApiDataList* tmp;

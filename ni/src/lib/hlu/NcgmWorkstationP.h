@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstationP.h,v 1.4 1995-04-07 09:35:57 boote Exp $
+ *      $Id: NcgmWorkstationP.h,v 1.5 1995-04-07 10:43:14 boote Exp $
  */
 /************************************************************************
 *									*
@@ -47,19 +47,19 @@ typedef struct _NhlNcgmWorkstationLayerRec {
 	NhlNcgmWorkstationLayerPart	ncgm;
 } NhlNcgmWorkstationLayerRec;
 
-typedef struct _NhlNcgmWorkstationLayerClassPart {
+typedef struct _NhlNcgmWorkstationClassPart {
 	_NhlNcgmStatus *cgm_inited;
-} NhlNcgmWorkstationLayerClassPart;
+} NhlNcgmWorkstationClassPart;
 
-typedef struct _NhlNcgmWorkstationLayerClassRec {
-	NhlBaseLayerClassPart			base_class;
-	NhlWorkstationLayerClassPart		work_class;
-	NhlNcgmWorkstationLayerClassPart	ncgm_class;
-} NhlNcgmWorkstationLayerClassRec;
+typedef struct _NhlNcgmWorkstationClassRec {
+	NhlBaseClassPart			base_class;
+	NhlWorkstationClassPart		work_class;
+	NhlNcgmWorkstationClassPart	ncgm_class;
+} NhlNcgmWorkstationClassRec;
 
 typedef struct _NhlNcgmWorkstationLayerRec *NhlNcgmWorkstationLayer;
-typedef struct _NhlNcgmWorkstationLayerClassRec *NhlNcgmWorkstationLayerClass;
+typedef struct _NhlNcgmWorkstationClassRec *NhlNcgmWorkstationClass;
 
-extern NhlNcgmWorkstationLayerClassRec NhlncgmWorkstationLayerClassRec;
+extern NhlNcgmWorkstationClassRec NhlncgmWorkstationClassRec;
 
 #endif /* _NCgmWorkstation_h */

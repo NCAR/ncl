@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiTextP.h,v 1.2 1994-01-27 21:25:03 boote Exp $
+ *      $Id: MultiTextP.h,v 1.3 1995-04-07 10:43:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -69,19 +69,19 @@ typedef struct _NhlMultiTextLayerRec{
 	NhlMultiTextLayerPart	multitext;
 }NhlMultiTextLayerRec;
 
-typedef struct _NhlMultiTextLayerClassPart {
+typedef struct _NhlMultiTextClassPart {
 	int foo;
-}NhlMultiTextLayerClassPart;
+}NhlMultiTextClassPart;
 
-typedef struct _NhlMultiTextLayerClassRec{
-	NhlBaseLayerClassPart	base_class;
-	NhlViewLayerClassPart	view_class;
-	NhlMultiTextLayerClassPart	multitext_class;
-}NhlMultiTextLayerClassRec;
+typedef struct _NhlMultiTextClassRec{
+	NhlBaseClassPart	base_class;
+	NhlViewClassPart	view_class;
+	NhlMultiTextClassPart	multitext_class;
+}NhlMultiTextClassRec;
 
-typedef struct _NhlMultiTextLayerClassRec *NhlMultiTextLayerClass;
+typedef struct _NhlMultiTextClassRec *NhlMultiTextClass;
 typedef struct _NhlMultiTextLayerRec	*NhlMultiTextLayer;
 
-extern NhlMultiTextLayerClassRec NhlmultiTextLayerClassRec;
+extern NhlMultiTextClassRec NhlmultiTextClassRec;
 
 #endif  /*_NMultiTextP_h*/

@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.18 1995-03-20 09:51:32 boote Exp $
+ *      $Id: Error.c,v 1.19 1995-04-07 10:41:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -104,7 +104,7 @@ static NhlResource fresources[] = {
 
 static NhlErrorTypes ErrorClassPartInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc
+	NhlClass	lc
 #endif
 );
 
@@ -116,7 +116,7 @@ static NhlErrorTypes ErrorClassInitialize(
 
 static NhlErrorTypes ErrorInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc,	/* class	*/
+	NhlClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
 	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
@@ -150,14 +150,14 @@ static NhlErrorTypes ErrorGetValues(
 
 /* Class definition	*/
 
-NhlErrorLayerClassRec NhlerrorLayerClassRec = {
+NhlErrorClassRec NhlerrorClassRec = {
 	/* BaseClassPart */
 	{
-/* class_name			*/	"errorLayerClass",
+/* class_name			*/	"errorClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlErrorLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlbaseLayerClassRec,
+/* superclass			*/	(NhlClass)&NhlbaseClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -187,11 +187,11 @@ NhlErrorLayerClassRec NhlerrorLayerClassRec = {
 static _NhlErrorLayerCClassRec _NhlerrorLayerCClassRec = {
 	/* BaseClassPart */
 	{
-/* class_name			*/	"errorCLayerClass",
+/* class_name			*/	"errorCClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(_NhlErrorLayerCRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlobjLayerClassRec,
+/* superclass			*/	(NhlClass)&NhlobjClassRec,
 
 /* layer_resources		*/	cresources,
 /* num_resources		*/	NhlNumber(cresources),
@@ -215,11 +215,11 @@ static _NhlErrorLayerCClassRec _NhlerrorLayerCClassRec = {
 static _NhlErrorLayerFClassRec _NhlerrorLayerFClassRec = {
 	/* BaseClassPart */
 	{
-/* class_name			*/	"errorFLayerClass",
+/* class_name			*/	"errorFClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(_NhlErrorLayerFRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlobjLayerClassRec,
+/* superclass			*/	(NhlClass)&NhlobjClassRec,
 
 /* layer_resources		*/	fresources,
 /* num_resources		*/	NhlNumber(fresources),
@@ -240,11 +240,11 @@ static _NhlErrorLayerFClassRec _NhlerrorLayerFClassRec = {
 	}
 };
 
-NhlLayerClass NhlerrorLayerClass = (NhlLayerClass)&NhlerrorLayerClassRec;
-static NhlLayerClass _NhlerrorLayerCClass =
-					(NhlLayerClass)&_NhlerrorLayerCClassRec;
-static NhlLayerClass _NhlerrorLayerFClass =
-					(NhlLayerClass)&_NhlerrorLayerFClassRec;
+NhlClass NhlerrorClass = (NhlClass)&NhlerrorClassRec;
+static NhlClass _NhlerrorLayerCClass =
+					(NhlClass)&_NhlerrorLayerCClassRec;
+static NhlClass _NhlerrorLayerFClass =
+					(NhlClass)&_NhlerrorLayerFClassRec;
 
 /************************************************************************
 * New type converters - needed for new type's defined for this class	*
@@ -274,11 +274,11 @@ static NhlErrorTypes
 ErrorClassPartInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc	/* NhlLayerClass to init */
+	NhlClass	lc	/* NhlClass to init */
 )
 #else
 (lc)
-	NhlLayerClass	lc;	/* NhlLayerClass to init */
+	NhlClass	lc;	/* NhlClass to init */
 #endif
 {
 	NhlErrorTypes		ret,lret;
@@ -333,7 +333,7 @@ ErrorClassInitialize
  * Description:	This function initializes an instance of an Error class
  *
  * In Args:	
- *	NhlLayerClass	lc,	class
+ *	NhlClass	lc,	class
  *	NhlLayer	req,	requested
  *	NhlLayer	new,	new
  *	_NhlArgList	args,	args
@@ -350,7 +350,7 @@ static NhlErrorTypes
 ErrorInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc,	/* class	*/
+	NhlClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
 	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
@@ -358,7 +358,7 @@ ErrorInitialize
 )
 #else
 (lc,req,new,args,nargs)
-	NhlLayerClass	lc;	/* class	*/
+	NhlClass	lc;	/* class	*/
 	NhlLayer	req;	/* requested	*/
 	NhlLayer	new;	/* new		*/
 	_NhlArgList	args;	/* args		*/
@@ -367,9 +367,9 @@ ErrorInitialize
 {
 	extern int	sys_nerr;
 	extern char	*sys_errlist[];
-	NhlErrorLayerClass	elc = (NhlErrorLayerClass)lc;
+	NhlErrorClass	elc = (NhlErrorClass)lc;
 	NhlErrorLayer		enew = (NhlErrorLayer)new;
-	NhlLayerClass		childclass;
+	NhlClass		childclass;
 	Const char		*tfname = NULL;
 	NhlErrorTypes		ret;
 	char			*fname = "ErrorInitialize";

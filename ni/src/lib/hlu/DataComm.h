@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.h,v 1.10 1995-03-29 10:01:45 boote Exp $
+ *      $Id: DataComm.h,v 1.11 1995-04-07 10:41:29 boote Exp $
  */
 /************************************************************************
 *									*
@@ -29,8 +29,8 @@
 /*
  * Class declarations
  */
-extern NhlLayerClass NhldataCommLayerClass;
-extern NhlLayerClass NhldataSpecLayerClass;
+extern NhlClass NhldataCommClass;
+extern NhlClass NhldataSpecClass;
 
 /*
  * Public API

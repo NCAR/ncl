@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.h,v 1.4 1995-04-04 06:48:02 boote Exp $
+ *      $Id: Workspace.h,v 1.5 1995-04-07 10:44:20 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,7 +33,7 @@
 #define NhlCwsThresholdSize	"WsThresholdSize"
 #define NhlCwsCurrentSize	"WsCurrentSize"
 
-extern NhlLayerClass NhlworkspaceLayerClass;
+extern NhlClass NhlworkspaceClass;
 
 extern int NhlGetWorkspaceObjectID(
 #if	NhlNeedProto

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.1 1995-04-01 00:03:58 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.2 1995-04-07 10:41:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -287,37 +287,37 @@ typedef struct _NhlContourPlotLayerRec {
 	NhlContourPlotLayerPart	contourplot;
 } NhlContourPlotLayerRec;
 
-typedef struct _NhlContourPlotDataDepLayerClassPart{
+typedef struct _NhlContourPlotDataDepClassPart{
 	NhlPointer		foo;
-} NhlContourPlotDataDepLayerClassPart;
+} NhlContourPlotDataDepClassPart;
 
-typedef struct NhlContourPlotLayerClassPart{
+typedef struct NhlContourPlotClassPart{
 	NhlPointer		foo;
-} NhlContourPlotLayerClassPart;
+} NhlContourPlotClassPart;
 
-typedef struct _NhlContourPlotDataDepLayerClassRec{
-	NhlBaseLayerClassPart		base_class;
-	NhlDataSpecLayerClassPart	dataspec_class;
-	NhlContourPlotDataDepLayerClassPart	cndata_class;
-} NhlContourPlotDataDepLayerClassRec;
+typedef struct _NhlContourPlotDataDepClassRec{
+	NhlBaseClassPart		base_class;
+	NhlDataSpecClassPart	dataspec_class;
+	NhlContourPlotDataDepClassPart	cndata_class;
+} NhlContourPlotDataDepClassRec;
 
-typedef struct _NhlContourPlotLayerClassRec{
-	NhlBaseLayerClassPart		base_class;
-	NhlViewLayerClassPart		view_class;
-	NhlTransformLayerClassPart	trans_class;
-	NhlDataCommLayerClassPart	datacomm_class;
-	NhlContourPlotLayerClassPart	contourplot_class;
-} NhlContourPlotLayerClassRec;
+typedef struct _NhlContourPlotClassRec{
+	NhlBaseClassPart		base_class;
+	NhlViewClassPart		view_class;
+	NhlTransformClassPart	trans_class;
+	NhlDataCommClassPart	datacomm_class;
+	NhlContourPlotClassPart	contourplot_class;
+} NhlContourPlotClassRec;
 
-typedef struct _NhlContourPlotDataDepLayerClassRec
-					*NhlContourPlotDataDepLayerClass;
+typedef struct _NhlContourPlotDataDepClassRec
+					*NhlContourPlotDataDepClass;
 typedef struct _NhlContourPlotDataDepLayerRec	*NhlContourPlotDataDepLayer;
 
-typedef struct _NhlContourPlotLayerClassRec	*NhlContourPlotLayerClass;
+typedef struct _NhlContourPlotClassRec	*NhlContourPlotClass;
 typedef struct _NhlContourPlotLayerRec		*NhlContourPlotLayer;
 
-extern NhlLayerClass			NhlcontourPlotDataDepLayerClass;
-extern NhlContourPlotDataDepLayerClassRec NhlcontourPlotDataDepLayerClassRec;
-extern NhlContourPlotLayerClassRec	NhlcontourPlotLayerClassRec;
+extern NhlClass			NhlcontourPlotDataDepClass;
+extern NhlContourPlotDataDepClassRec NhlcontourPlotDataDepClassRec;
+extern NhlContourPlotClassRec	NhlcontourPlotClassRec;
 
 #endif  /* _NCONTOURPLOTP_h */

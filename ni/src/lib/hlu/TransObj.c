@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.12 1995-04-07 09:36:08 boote Exp $
+ *      $Id: TransObj.c,v 1.13 1995-04-07 10:44:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -68,17 +68,17 @@ static NhlErrorTypes TransLineTo(
 
 static NhlErrorTypes TransObjClassPartInit(
 #if	NhlNeedProto
-	NhlLayerClass	lc
+	NhlClass	lc
 #endif
 );
 
-NhlTransObjLayerClassRec NhltransObjLayerClassRec = {
+NhlTransObjClassRec NhltransObjClassRec = {
 	{
-/* class_name */        "transObjLayerClass",
+/* class_name */        "transObjClass",
 /* nrm_class */         NrmNULLQUARK,
 /* layer_size */        sizeof(NhlTransObjLayerRec),
 /* class_inited */      False,
-/* superclass*/         (NhlLayerClass)&NhlobjLayerClassRec,
+/* superclass*/         (NhlClass)&NhlobjClassRec,
 
 /* layer_resources */   resources,
 /* num_resources */     NhlNumber(resources),
@@ -111,21 +111,21 @@ NhlTransObjLayerClassRec NhltransObjLayerClassRec = {
 	}
 };
 
-NhlLayerClass NhltransObjLayerClass = (NhlLayerClass)&NhltransObjLayerClassRec;
+NhlClass NhltransObjClass = (NhlClass)&NhltransObjClassRec;
 
 static NhlErrorTypes
 TransObjClassPartInit
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc
+	NhlClass	lc
 )
 #else
 (lc)
-	NhlLayerClass	lc;
+	NhlClass	lc;
 #endif
 {
-	NhlTransObjLayerClass	tlc = (NhlTransObjLayerClass)lc;
-	NhlTransObjLayerClass	sc = (NhlTransObjLayerClass)
+	NhlTransObjClass	tlc = (NhlTransObjClass)lc;
+	NhlTransObjClass	sc = (NhlTransObjClass)
 						lc->base_class.superclass;
 
 	if(tlc->trobj_class.win_to_ndc == NhlInheritTransPoint)
@@ -242,7 +242,7 @@ float y;
 int upordown;
 #endif
 {
-	NhlTransObjLayerClass tlc = (NhlTransObjLayerClass)
+	NhlTransObjClass tlc = (NhlTransObjClass)
 						instance->base.layer_class;
 
 	return((*tlc->trobj_class.data_lineto)(instance,x,y,upordown));
@@ -259,7 +259,7 @@ float y;
 int upordown;
 #endif
 {
-	NhlTransObjLayerClass tlc = (NhlTransObjLayerClass)
+	NhlTransObjClass tlc = (NhlTransObjClass)
 						instance->base.layer_class;
 
 	return((*tlc->trobj_class.win_lineto)(instance,x,y,upordown));
@@ -276,7 +276,7 @@ float y;
 int upordown;
 #endif
 {
-	NhlTransObjLayerClass tlc = (NhlTransObjLayerClass)
+	NhlTransObjClass tlc = (NhlTransObjClass)
 						instance->base.layer_class;
 
 	return((*tlc->trobj_class.compc_lineto)(instance,x,y,upordown));
@@ -293,7 +293,7 @@ float y;
 int upordown;
 #endif
 {
-	NhlTransObjLayerClass tlc = (NhlTransObjLayerClass)
+	NhlTransObjClass tlc = (NhlTransObjClass)
 						instance->base.layer_class;
 
 	return((*tlc->trobj_class.NDC_lineto)(instance,x,y,upordown));

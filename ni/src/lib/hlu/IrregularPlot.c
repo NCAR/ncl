@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.14 1995-04-01 00:04:00 dbrown Exp $
+ *      $Id: IrregularPlot.c,v 1.15 1995-04-07 10:41:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -50,13 +50,13 @@ static NhlErrorTypes IrregularPlotClassInitialize(
 
 static NhlErrorTypes IrregularPlotClassPartInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc
+	NhlClass	lc
 #endif
 );
 
 static NhlErrorTypes IrregularPlotInitialize(
 #if	NhlNeedProto
-        NhlLayerClass,     /* class */
+        NhlClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
         _NhlArgList,    /* args */
@@ -102,13 +102,13 @@ static NhlErrorTypes SetUpTransObj(
 #endif
 );
 
-NhlIrregularPlotLayerClassRec NhlirregularPlotLayerClassRec = {
+NhlIrregularPlotClassRec NhlirregularPlotClassRec = {
         {
-/* class_name			*/      "irregularPlotLayerClass",
+/* class_name			*/      "irregularPlotClass",
 /* nrm_class			*/      NrmNULLQUARK,
 /* layer_size			*/      sizeof(NhlIrregularPlotLayerRec),
 /* class_inited			*/      False,
-/* superclass			*/      (NhlLayerClass)&NhltransformLayerClassRec,
+/* superclass			*/      (NhlClass)&NhltransformClassRec,
 
 /* layer_resources		*/	resources, /* resources */
 /* num_resources		*/	NhlNumber(resources),
@@ -149,8 +149,8 @@ NhlIrregularPlotLayerClassRec NhlirregularPlotLayerClassRec = {
 	}
 };
 	
-NhlLayerClass NhlirregularPlotLayerClass = (NhlLayerClass)
-					&NhlirregularPlotLayerClassRec;
+NhlClass NhlirregularPlotClass = (NhlClass)
+					&NhlirregularPlotClassRec;
 
 /*
  * Function:	nhlfirregularplotclass
@@ -162,11 +162,11 @@ NhlLayerClass NhlirregularPlotLayerClass = (NhlLayerClass)
  * Out Args:	
  *
  * Scope:	global Fortran
- * Returns:	NhlLayerClass
+ * Returns:	NhlClass
  * Side Effect:	
  */
-NhlLayerClass
-_NHLCALLF(nhlfirregularplotlayerclass,NHLFIRREGULARPLOTLAYERCLASS)
+NhlClass
+_NHLCALLF(nhlfirregularplotclass,NHLFIRREGULARPLOTCLASS)
 #if	NhlNeedProto
 (
 	void
@@ -175,7 +175,7 @@ _NHLCALLF(nhlfirregularplotlayerclass,NHLFIRREGULARPLOTLAYERCLASS)
 ()
 #endif
 {
-	return NhlirregularPlotLayerClass;
+	return NhlirregularPlotClass;
 }
 
 /*
@@ -209,12 +209,12 @@ IrregularPlotClassInitialize
  * Function:	IrregularPlotClassPartInitialize
  *
  * Description:	This function initializes fields in the 
- *		NhlIrregularPlotLayerClassPart that cannot be initialized 
+ *		NhlIrregularPlotClassPart that cannot be initialized 
  *		statically.
  *		Calls _NhlRegisterChildClass for the overlay manager object.
  *
  * In Args:	
- *		NhlLayerClass	lc	NhlLayer Class to init
+ *		NhlClass	lc	NhlLayer Class to init
  *
  * Out Args:	
  *
@@ -227,11 +227,11 @@ static NhlErrorTypes
 IrregularPlotClassPartInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc	/* NhlLayer Class to init	*/
+	NhlClass	lc	/* NhlLayer Class to init	*/
 )
 #else
 (lc)
-	NhlLayerClass	lc;	/* NhlLayer Class to init	*/
+	NhlClass	lc;	/* NhlLayer Class to init	*/
 #endif
 {
 	NhlErrorTypes	ret = NhlNOERROR, subret = NhlNOERROR;
@@ -241,23 +241,23 @@ IrregularPlotClassPartInitialize
 /*
  * Register children objects
  */
-	subret = _NhlRegisterChildClass(lc,NhlplotManagerLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhlplotManagerClass,
 					False,False,NULL);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhloverlayLayerClass");
+			  "NhloverlayClass");
 		return(NhlFATAL);
 	}
 
-	subret = _NhlRegisterChildClass(lc,NhlirregularType2TransObjLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhlirregularType2TransObjClass,
 					False,False,NULL);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhlmapTransObjLayerClass");
+			  "NhlmapTransObjClass");
 		return(NhlFATAL);
 	}
 
@@ -287,7 +287,7 @@ static NhlErrorTypes
 IrregularPlotInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	class,
+	NhlClass	class,
 	NhlLayer	req,
 	NhlLayer	new,
 	_NhlArgList	args,
@@ -295,7 +295,7 @@ IrregularPlotInitialize
 )
 #else
 (class,req,new,args,num_args)
-        NhlLayerClass      class;
+        NhlClass      class;
         NhlLayer           req;
         NhlLayer           new;
         _NhlArgList     args;
@@ -580,7 +580,7 @@ static NhlErrorTypes SetUpTransObj
 		strcat(buffer,".Trans");
 
 		subret = _NhlVACreateChild(&tmpid,buffer,
-					 NhlirregularType2TransObjLayerClass,
+					 NhlirregularType2TransObjClass,
 					 (NhlLayer) irnew, NULL);
 
 		ret = MIN(subret,ret);

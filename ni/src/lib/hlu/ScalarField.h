@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.h,v 1.2 1994-05-17 22:26:18 dbrown Exp $
+ *      $Id: ScalarField.h,v 1.3 1995-04-07 10:43:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -81,6 +81,6 @@
 #define	NhlCsfXCStride		"SfXCStride"
 #define	NhlCsfYCStride		"SfYCStride"
 
-extern NhlLayerClass NhlscalarFieldLayerClass;
+extern NhlClass NhlscalarFieldClass;
 
 #endif /*_NScalarField_h */

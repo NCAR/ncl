@@ -1,5 +1,5 @@
 /*
- *      $Id: LegendP.h,v 1.13 1995-03-31 13:03:34 boote Exp $
+ *      $Id: LegendP.h,v 1.14 1995-04-07 10:42:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -210,20 +210,20 @@ typedef struct _NhlLegendLayerRec{
 	NhlLegendLayerPart legend;
 }NhlLegendLayerRec;
 
-typedef struct _NhlLegendLayerClassPart {
+typedef struct _NhlLegendClassPart {
 	char *foo;
-}NhlLegendLayerClassPart;
+}NhlLegendClassPart;
 
-typedef struct _NhlLegendLayerClassRec{
-	NhlBaseLayerClassPart base_class;
-	NhlViewLayerClassPart view_class;
-	NhlLegendLayerClassPart legend_class;
-}NhlLegendLayerClassRec;
+typedef struct _NhlLegendClassRec{
+	NhlBaseClassPart base_class;
+	NhlViewClassPart view_class;
+	NhlLegendClassPart legend_class;
+}NhlLegendClassRec;
 
-typedef struct _NhlLegendLayerClassRec *NhlLegendLayerClass;
+typedef struct _NhlLegendClassRec *NhlLegendClass;
 typedef struct _NhlLegendLayerRec	*NhlLegendLayer;
 
-extern NhlLegendLayerClassRec NhllegendLayerClassRec;
+extern NhlLegendClassRec NhllegendClassRec;
 
 
 #endif  /*_NLegendP_h*/

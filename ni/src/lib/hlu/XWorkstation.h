@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.h,v 1.2 1994-01-27 21:27:37 boote Exp $
+ *      $Id: XWorkstation.h,v 1.3 1995-04-07 10:44:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,6 @@
 #define NhlNwkPause	"wkPause"
 #define NhlCwkPause	"WkPause"
 
-extern NhlLayerClass NhlxWorkstationLayerClass;
+extern NhlClass NhlxWorkstationClass;
 
 #endif /* _NXWorkstation_h */

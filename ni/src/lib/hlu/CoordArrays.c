@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.26 1995-04-07 00:39:49 dbrown Exp $
+ *      $Id: CoordArrays.c,v 1.27 1995-04-07 10:41:19 boote Exp $
  */
 /************************************************************************
 *									*
@@ -176,7 +176,7 @@ static NhlErrorTypes CoordArraysClassInitialize(
 
 static NhlErrorTypes CoordArraysInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc,	/* class	*/
+	NhlClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
 	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
@@ -208,14 +208,14 @@ static NhlErrorTypes CoordArraysDestroy(
 #endif
 );
 
-NhlCoordArraysLayerClassRec NhlcoordArraysLayerClassRec = {
-	/* NhlBaseLayerClassPart */
+NhlCoordArraysClassRec NhlcoordArraysClassRec = {
+	/* NhlBaseClassPart */
 	{
-/* class_name			*/	"coordArraysLayerClass",
+/* class_name			*/	"coordArraysClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlCoordArraysLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhldataItemLayerClassRec,
+/* superclass			*/	(NhlClass)&NhldataItemClassRec,
 
 /* resources			*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -239,18 +239,18 @@ NhlCoordArraysLayerClassRec NhlcoordArraysLayerClassRec = {
 /* layer_post_draw		*/	NULL,
 /* layer_clear			*/	NULL
 	},
-	/* NhlDataItemLayerClassPart */
+	/* NhlDataItemClassPart */
 	{
 /* foo				*/	0
 	},
-	/* NhlCoordArraysLayerClassPart */
+	/* NhlCoordArraysClassPart */
 	{
 /* foo				*/	0
 	}
 };
 	
-NhlLayerClass NhlcoordArraysLayerClass = (NhlLayerClass)
-					&NhlcoordArraysLayerClassRec;
+NhlClass NhlcoordArraysClass = (NhlClass)
+					&NhlcoordArraysClassRec;
 
 /*
  * Function:	nhlfcoordarraysclass
@@ -262,11 +262,11 @@ NhlLayerClass NhlcoordArraysLayerClass = (NhlLayerClass)
  * Out Args:	
  *
  * Scope:	global Fortran
- * Returns:	NhlLayerClass
+ * Returns:	NhlClass
  * Side Effect:	
  */
-NhlLayerClass
-_NHLCALLF(nhlfcoordarrayslayerclass,NHLFCOORDARRAYSLAYERCLASS)
+NhlClass
+_NHLCALLF(nhlfcoordarraysclass,NHLFCOORDARRAYSCLASS)
 #if	NhlNeedProto
 (
 	void
@@ -275,7 +275,7 @@ _NHLCALLF(nhlfcoordarrayslayerclass,NHLFCOORDARRAYSLAYERCLASS)
 ()
 #endif
 {
-	return NhlcoordArraysLayerClass;
+	return NhlcoordArraysClass;
 }
 
 /************************************************************************
@@ -785,7 +785,7 @@ CvtCArrToCArrTabFlt
 
 	carrl = (NhlCoordArraysLayer)_NhlGetLayer(from->data.intval);
 	if((carrl == NULL)||
-			(carrl->base.layer_class != NhlcoordArraysLayerClass)){
+			(carrl->base.layer_class != NhlcoordArraysClass)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"%s:Called w/ improper \"from\" object",func);
 		return NhlFATAL;
@@ -793,7 +793,7 @@ CvtCArrToCArrTabFlt
 
 	cap = &carrl->carr;
 
-	ret = NhlALCreate(&fltid,"no.name",NhlcoordArrTableFloatLayerClass,
+	ret = NhlALCreate(&fltid,"no.name",NhlcoordArrTableFloatClass,
 							carrl->base.id,NULL,0);
 	*(int*)to->data.ptrval = fltid;
 
@@ -961,8 +961,8 @@ CoordArraysClassInitialize
 							NhlNumber(cast_mode));
 
 	ret = NhlRegisterConverter(
-			NhlcoordArraysLayerClass->base_class.class_name,
-			NhlcoordArrTableFloatLayerClass->base_class.class_name,
+			NhlcoordArraysClass->base_class.class_name,
+			NhlcoordArrTableFloatClass->base_class.class_name,
 			CvtCArrToCArrTabFlt,NULL,0,False,NULL);
 
 	return MIN(ret,lret);
@@ -1106,7 +1106,7 @@ CopyArray
  *		class object.
  *
  * In Args:	
- *	NhlLayerClass	lc,	class
+ *	NhlClass	lc,	class
  *	NhlLayer	req,	requested
  *	NhlLayer	new,	new
  *	_NhlArgList	args,	args
@@ -1123,7 +1123,7 @@ static NhlErrorTypes
 CoordArraysInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc,	/* class	*/
+	NhlClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
 	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
@@ -1131,7 +1131,7 @@ CoordArraysInitialize
 )
 #else
 (lc,req,new,args,nargs)
-	NhlLayerClass	lc;	/* class	*/
+	NhlClass	lc;	/* class	*/
 	NhlLayer	req;	/* requested	*/
 	NhlLayer	new;	/* new		*/
 	_NhlArgList	args;	/* args		*/
@@ -1649,7 +1649,7 @@ CoordArraysGetValues
  * Function:	CoordArraysDestroy
  *
  * Description:	This function free's any memory that has been allocated
- *		on behalf of this instance of the NhlCoordArraysLayerClass.
+ *		on behalf of this instance of the NhlCoordArraysClass.
  *
  * In Args:	NhlLayer	l
  *

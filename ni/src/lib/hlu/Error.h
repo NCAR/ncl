@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.h,v 1.6 1994-05-12 23:51:12 boote Exp $
+ *      $Id: Error.h,v 1.7 1995-04-07 10:41:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -57,7 +57,7 @@
 #define	ENOSYS	(90)
 #endif
 
-extern NhlLayerClass NhlerrorLayerClass;
+extern NhlClass NhlerrorClass;
 
 /************************************************************************
 *									*

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.29 1995-03-31 13:03:30 boote Exp $
+ *      $Id: DataComm.c,v 1.30 1995-04-07 10:41:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -48,7 +48,7 @@ static NhlResource dcresources[] = {
 
 static NhlErrorTypes DataCommClassPartInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc	/* pointer to class structure to update */
+	NhlClass	lc	/* pointer to class structure to update */
 #endif
 );
 
@@ -60,7 +60,7 @@ static NhlErrorTypes DataCommClassInitialize(
 
 static NhlErrorTypes DataCommInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc,	/* class	*/
+	NhlClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
 	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
@@ -108,14 +108,14 @@ static NhlErrorTypes DataCommDraw(
 #endif
 );
 
-NhlDataCommLayerClassRec NhldataCommLayerClassRec = {
-	/* NhlBaseLayerClassPart */
+NhlDataCommClassRec NhldataCommClassRec = {
+	/* NhlBaseClassPart */
 	{
-/* class_name			*/	"dataCommLayerClass",
+/* class_name			*/	"dataCommClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlDataCommLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhltransformLayerClassRec,
+/* superclass			*/	(NhlClass)&NhltransformClassRec,
 
 /* layer_resources		*/	dcresources,
 /* num_resources		*/	NhlNumber(dcresources),
@@ -139,12 +139,12 @@ NhlDataCommLayerClassRec NhldataCommLayerClassRec = {
 /* layer_post_draw		*/	NULL,
 /* layer_clear			*/	NULL
 	},
-	/* NhlViewLayerClassPart */
+	/* NhlViewClassPart */
 	{
 /* segment_wkid			*/	0,
 /* get_bb			*/	NULL
 	},
-	/* NhlTransformLayerClassPart */
+	/* NhlTransformClassPart */
 	{
 /* overlay_capability 		*/	_tfNotOverlayCapable,
 /* data_to_ndc			*/	NhlInheritTransFunc,
@@ -152,14 +152,14 @@ NhlDataCommLayerClassRec NhldataCommLayerClassRec = {
 /* data_polyline		*/	NhlInheritPolyTransFunc,
 /* ndc_polyline			*/	NhlInheritPolyTransFunc
 	},
-	/* NhlDataCommLayerClassPart */
+	/* NhlDataCommClassPart */
 	{
 /* data_offsets			*/	NULL,
 /* update_data			*/	NULL
 	}
 };
 	
-NhlLayerClass NhldataCommLayerClass = (NhlLayerClass)&NhldataCommLayerClassRec;
+NhlClass NhldataCommClass = (NhlClass)&NhldataCommClassRec;
 
 /*
  * DataSpec def's
@@ -180,14 +180,14 @@ static NhlErrorTypes DataSpecDestroy(
 #endif
 );
 
-NhlDataSpecLayerClassRec NhldataSpecLayerClassRec = {
-	/* NhlBaseLayerClassPart */
+NhlDataSpecClassRec NhldataSpecClassRec = {
+	/* NhlBaseClassPart */
 	{
-/* class_name			*/	"dataSpecLayerClass",
+/* class_name			*/	"dataSpecClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlDataSpecLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlbaseLayerClassRec,
+/* superclass			*/	(NhlClass)&NhlbaseClassRec,
 
 /* layer_resources		*/	dsresources,
 /* num_resources		*/	NhlNumber(dsresources),
@@ -202,13 +202,13 @@ NhlDataSpecLayerClassRec NhldataSpecLayerClassRec = {
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	DataSpecDestroy
 	},
-	/* NhlDataSpecLayerClassPart */
+	/* NhlDataSpecClassPart */
 	{
 /* foo				*/	0
 	}
 };
 	
-NhlLayerClass NhldataSpecLayerClass = (NhlLayerClass)&NhldataSpecLayerClassRec;
+NhlClass NhldataSpecClass = (NhlClass)&NhldataSpecClassRec;
 
 /************************************************************************
 *	New type converters - added to converter table by		*
@@ -579,12 +579,12 @@ CvtScalarToData
  * Function:	DataCommClassPartInitialize
  *
  * Description:	This function initializes the data_offsets field in the
- *		NhlDataCommLayerClassPart.  This is used to keep track of
+ *		NhlDataCommClassPart.  This is used to keep track of
  *		all the data resources so they can be set via the NhlAddData
  *		and NhlRemoveData functions.
  *
  * In Args:	
- *		NhlLayerClass	lc	pointer to class structure to update
+ *		NhlClass	lc	pointer to class structure to update
  *
  * Out Args:	
  *
@@ -596,14 +596,14 @@ static NhlErrorTypes
 DataCommClassPartInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc	/* pointer to class structure to update */
+	NhlClass	lc	/* pointer to class structure to update */
 )
 #else
 (lc)
-	NhlLayerClass	lc;	/* pointer to class structure to update */
+	NhlClass	lc;	/* pointer to class structure to update */
 #endif
 {
-	NhlDataCommLayerClass	dc = (NhlDataCommLayerClass)lc;
+	NhlDataCommClass	dc = (NhlDataCommClass)lc;
 
 	/*
 	 * This field can only be set by _NhlRegisterDataRes calls in
@@ -886,7 +886,7 @@ BADARRAY:
  * Description:	This function initializes the DataComm instance.
  *
  * In Args:	
- *		NhlLayerClass	lc,	class
+ *		NhlClass	lc,	class
  *		NhlLayer		req,	requested
  *		NhlLayer		new,	new
  *		_NhlArgList	args,	args
@@ -903,7 +903,7 @@ static NhlErrorTypes
 DataCommInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc,	/* class	*/
+	NhlClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
 	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
@@ -911,7 +911,7 @@ DataCommInitialize
 )
 #else
 (lc,req,new,args,nargs)
-	NhlLayerClass	lc;	/* class	*/
+	NhlClass	lc;	/* class	*/
 	NhlLayer	req;	/* requested	*/
 	NhlLayer	new;	/* new		*/
 	_NhlArgList	args;	/* args		*/
@@ -920,7 +920,7 @@ DataCommInitialize
 {
 	NhlErrorTypes		ret = NhlNOERROR;
 	NhlErrorTypes		lret = NhlNOERROR;
-	NhlDataCommLayerClass	cc = (NhlDataCommLayerClass)
+	NhlDataCommClass	cc = (NhlDataCommClass)
 							req->base.layer_class;
 	_NhlDataOffset		oset = cc->datacomm_class.data_offsets;
 	
@@ -982,7 +982,7 @@ DataCommSetValues
 	int		nargs;	/* nargs	*/
 #endif
 {
-	NhlDataCommLayerClass	cc = (NhlDataCommLayerClass)
+	NhlDataCommClass	cc = (NhlDataCommClass)
 							new->base.layer_class;
 	_NhlDataOffset		oset = cc->datacomm_class.data_offsets;
 	NhlErrorTypes		lret=NhlNOERROR,ret=NhlNOERROR;
@@ -1068,7 +1068,7 @@ DataCommGetValues
 	int		nargs;	/* nargs	*/
 #endif
 {
-	NhlDataCommLayerClass	cc = (NhlDataCommLayerClass)
+	NhlDataCommClass	cc = (NhlDataCommClass)
 							l->base.layer_class;
 	_NhlDataOffset		oset;
 	_NhlInternDataList	ilist;
@@ -1252,7 +1252,7 @@ DataCommSetValuesHook
 	int		nargs;	/* nargs	*/
 #endif
 {
-	NhlDataCommLayerClass	dc = (NhlDataCommLayerClass)
+	NhlDataCommClass	dc = (NhlDataCommClass)
 							new->base.layer_class;
 	_NhlDataOffset		oset = dc->datacomm_class.data_offsets;
 	NhlGenArray		*ol, *nl, *rl;
@@ -1349,23 +1349,23 @@ static NhlErrorTypes
 CallUpdateData
 #if	NhlNeedProto
 (
-	NhlDataCommLayerClass	lc,		/* class pointer	*/
+	NhlDataCommClass	lc,		/* class pointer	*/
 	NhlDataCommLayer	l,		/* instance pointer	*/
 	NhlDataCommLayer	old		/* instance pointer	*/
 )
 #else
 (lc,l,old)
-	NhlDataCommLayerClass	lc;		/* class pointer	*/
+	NhlDataCommClass	lc;		/* class pointer	*/
 	NhlDataCommLayer	l;		/* instance pointer	*/
 	NhlDataCommLayer	old;		/* instance pointer	*/
 #endif
 {
 	NhlErrorTypes	ret = NhlNOERROR, lret = NhlNOERROR;
-	NhlLayerClass	newlc = lc->base_class.superclass;
+	NhlClass	newlc = lc->base_class.superclass;
 
 	if((newlc != NULL) &&
-		(newlc->base_class.class_inited & _NhlDataCommLayerClassFlag)){
-		lret = CallUpdateData((NhlDataCommLayerClass)newlc,l,old);
+		(newlc->base_class.class_inited & _NhlDataCommClassFlag)){
+		lret = CallUpdateData((NhlDataCommClass)newlc,l,old);
 	}
 
 	if(lret < NhlWARNING)
@@ -1403,7 +1403,7 @@ UpdateData
 #endif
 {
 	NhlDataCommLayer		oldl;
-	NhlDataCommLayerClass	lc =(NhlDataCommLayerClass)
+	NhlDataCommClass	lc =(NhlDataCommClass)
 						_NhlClass((NhlLayer)dcomm);
 	NhlErrorTypes		ret = NhlNOERROR;
 
@@ -1486,7 +1486,7 @@ DataCommDestroy
 	NhlLayer	l;	/* layer to destroy	*/
 #endif
 {
-	NhlDataCommLayerClass	cc = (NhlDataCommLayerClass)l->base.layer_class;
+	NhlDataCommClass	cc = (NhlDataCommClass)l->base.layer_class;
 	_NhlDataOffset		oset = cc->datacomm_class.data_offsets;
 	NhlPointer		field;
 
@@ -1565,9 +1565,9 @@ DataSpecDestroy
  *		the call the super-class made.
  *		
  * In Args:	
- *		NhlDataCommLayerClass	dc,		DataComm sub-class
+ *		NhlDataCommClass	dc,		DataComm sub-class
  *		NhlString		res_name,	name of data resource
- *		NhlLayerClass		dataspec,	DataSpecific object
+ *		NhlClass		dataspec,	DataSpecific object
  *		NhlString		...		types requested
  *					NULL		end of list
  *
@@ -1581,18 +1581,18 @@ NhlErrorTypes
 _NhlRegisterDataRes
 #if	NhlNeedVarArgProto
 (
-	NhlDataCommLayerClass	dc,		/* DataComm sub-class	*/
+	NhlDataCommClass	dc,		/* DataComm sub-class	*/
 	NrmString		res_name,	/* name of data res	*/
 	NrmString		dsres_name,	/* name of dataspec res	*/
-	NhlLayerClass		dataspec,	/* DataSpecific object	*/
+	NhlClass		dataspec,	/* DataSpecific object	*/
 	...					/* types requested	*/
 )
 #else
 (dc,res_name,dsres_name,dataspec,va_alist)
-	NhlDataCommLayerClass	dc;		/* DataComm sub-class	*/
+	NhlDataCommClass	dc;		/* DataComm sub-class	*/
 	NrmString		res_name;	/* name of data res	*/
 	NrmString		dsres_name;	/* name of dataspec res	*/
-	NhlLayerClass		dataspec;	/* DataSpecific object	*/
+	NhlClass		dataspec;	/* DataSpecific object	*/
 	va_dcl					/* types requested	*/
 #endif
 {
@@ -1600,7 +1600,7 @@ _NhlRegisterDataRes
 	static NrmQuark	QDataSpecList=NrmNULLQUARK;
 	va_list		ap;
 	int		i,num_types = 0;
-	NhlLayerClass	tmp;
+	NhlClass	tmp;
 	NrmQuark	Qres_name,Qdsres_name;
 	NrmQuarkList	qlist=NULL;
 	unsigned int	offset = 0;
@@ -1658,8 +1658,8 @@ _NhlRegisterDataRes
 	}
 
 	VA_START(ap,dataspec);
-	for(tmp = (NhlLayerClass)(va_arg(ap,NhlLayerClass));tmp != NULL;
-				tmp = (NhlLayerClass)(va_arg(ap,NhlLayerClass)))
+	for(tmp = (NhlClass)(va_arg(ap,NhlClass));tmp != NULL;
+				tmp = (NhlClass)(va_arg(ap,NhlClass)))
 		num_types++;
 	va_end(ap);
 
@@ -1684,8 +1684,8 @@ _NhlRegisterDataRes
 
 	VA_START(ap,dataspec);
 	for(i=0;i < num_types;i++){
-		tmp = (NhlLayerClass)va_arg(ap,NhlLayerClass);
-		ret = _NhlInitializeLayerClass(tmp);
+		tmp = (NhlClass)va_arg(ap,NhlClass);
+		ret = _NhlInitializeClass(tmp);
 		if(ret < NhlWARNING)
 			return ret;
 		oset->qlist[i] = tmp->base_class.nrm_class;
@@ -1913,8 +1913,8 @@ _NhlGetDSpecId
 	int		ditemid;
 #endif
 {
-	NhlDataCommLayerClassPart	*cp =
-		&((NhlDataCommLayerClass)l->base.layer_class)->datacomm_class;
+	NhlDataCommClassPart	*cp =
+		&((NhlDataCommClass)l->base.layer_class)->datacomm_class;
 	_NhlDataOffset			oset;
 	_NhlInternDataList		ilist;
 	NhlGenArray			gen;

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.h,v 1.6 1995-02-17 10:23:11 boote Exp $
+ *      $Id: DataItem.h,v 1.7 1995-04-07 10:41:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -42,6 +42,6 @@ extern NhlBoolean NhlIsDataItem(
 #endif
 );
 
-extern NhlLayerClass NhldataItemLayerClass;
+extern NhlClass NhldataItemClass;
 
 #endif /*_NDataItem_h */

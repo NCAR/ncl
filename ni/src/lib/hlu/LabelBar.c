@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.31 1995-04-07 00:39:52 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.32 1995-04-07 10:42:20 boote Exp $
  */
 /************************************************************************
 *									*
@@ -395,7 +395,7 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes    LabelBarInitialize(
 #if	NhlNeedProto
-        NhlLayerClass,     /* class */
+        NhlClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
         _NhlArgList,    /* args */
@@ -551,13 +551,13 @@ static NhlBoolean    	LabelBarChanged(
 );
 #endif
 
-NhlLabelBarLayerClassRec NhllabelBarLayerClassRec = {
+NhlLabelBarClassRec NhllabelBarClassRec = {
 	{
-/* class_name			*/	"labelBarLayerClass",
+/* class_name			*/	"labelBarClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlLabelBarLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlviewLayerClassRec,
+/* superclass			*/	(NhlClass)&NhlviewClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -590,7 +590,7 @@ NhlLabelBarLayerClassRec NhllabelBarLayerClassRec = {
 	}
 };
 
-NhlLayerClass NhllabelBarLayerClass = (NhlLayerClass)&NhllabelBarLayerClassRec;
+NhlClass NhllabelBarClass = (NhlClass)&NhllabelBarClassRec;
 
 /*
  * Function:	nhlflabelbarclass
@@ -602,11 +602,11 @@ NhlLayerClass NhllabelBarLayerClass = (NhlLayerClass)&NhllabelBarLayerClassRec;
  * Out Args:	
  *
  * Scope:	global Fortran
- * Returns:	NhlLayerClass
+ * Returns:	NhlClass
  * Side Effect:	
  */
-NhlLayerClass
-_NHLCALLF(nhlflabelbarlayerclass,NHLFLABELBARLAYERCLASS)
+NhlClass
+_NHLCALLF(nhlflabelbarclass,NHLFLABELBARCLASS)
 #if	NhlNeedProto
 (
 	void
@@ -615,7 +615,7 @@ _NHLCALLF(nhlflabelbarlayerclass,NHLFLABELBARLAYERCLASS)
 ()
 #endif
 {
-	return NhllabelBarLayerClass;
+	return NhllabelBarClass;
 }
 
 static NrmQuark	Qfloat = NrmNULLQUARK;
@@ -650,14 +650,14 @@ static NrmQuark	Qtitle_string = NrmNULLQUARK;
 /*ARGSUSED*/
 static NhlErrorTypes    LabelBarInitialize
 #if	NhlNeedProto
-	(NhlLayerClass class, 
+	(NhlClass class, 
 	 NhlLayer req, 
 	 NhlLayer new, 
 	 _NhlArgList args,
 	 int num_args)
 #else
 (class,req,new,args,num_args)
-	NhlLayerClass	class;
+	NhlClass	class;
 	NhlLayer		req;
 	NhlLayer		new;
 	_NhlArgList	args;
@@ -2210,7 +2210,7 @@ static NhlErrorTypes    SetTitle
 		strcpy(buffer,tnew->base.name);
 		strcat(buffer,".Title");
 		ret1 = NhlVACreate(&lb_p->title_id,
-				 buffer,NhltextItemLayerClass,
+				 buffer,NhltextItemClass,
 				 tnew->base.id,
 				 NhlNtxFont,lb_p->title_font,
 				 NhlNtxString,lb_p->title_string,
@@ -2960,7 +2960,7 @@ static NhlErrorTypes    SetLabels
 		strcpy(buffer,tnew->base.name);
 		strcat(buffer,".Labels");
 		subret = NhlVACreate(&(lb_p->labels_id),buffer,
-				 NhlmultiTextLayerClass,tnew->base.id,
+				 NhlmultiTextClass,tnew->base.id,
 				 NhlNMtextNumStrings,lb_p->label_draw_count,
 				 NhlNMtextStrings,labels_p,
 				 NhlNMtextOrientation,mtext_orient,
@@ -4184,8 +4184,8 @@ static NhlErrorTypes    LabelBarClassInitialize
 	Qlabel_strings = NrmStringToQuark(NhlNlbLabelStrings);
 	Qbox_fractions = NrmStringToQuark(NhlNlbBoxFractions);
 
-	_NhlInitializeLayerClass(NhltextItemLayerClass);
-	_NhlInitializeLayerClass(NhlmultiTextLayerClass);
+	_NhlInitializeClass(NhltextItemClass);
+	_NhlInitializeClass(NhlmultiTextClass);
 
 	return(NhlNOERROR);	
 }

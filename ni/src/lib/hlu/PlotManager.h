@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.h,v 1.2 1995-04-04 06:47:59 boote Exp $
+ *      $Id: PlotManager.h,v 1.3 1995-04-07 10:43:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -124,6 +124,6 @@ typedef enum _NhlAnnotationDisplayMode {
 #define NhlCpmLegendYOffsetF	"PmLegendYOffset"
 #define NhlCpmLegendPosition	"PmLegendPosition"
 
-extern NhlLayerClass NhlplotManagerLayerClass;
+extern NhlClass NhlplotManagerClass;
 
 #endif /*_NPLOTMANAGER_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObjP.h,v 1.3 1994-01-27 21:24:32 boote Exp $
+ *      $Id: LogLinTransObjP.h,v 1.4 1995-04-07 10:42:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -53,19 +53,19 @@ typedef struct _NhlLogLinTransObjLayerRec {
 	NhlLogLinTransObjLayerPart	lltrans;
 } NhlLogLinTransObjLayerRec;
 
-typedef struct _NhlLogLinTransObjLayerClassPart {
+typedef struct _NhlLogLinTransObjClassPart {
 	char *foo;
-}NhlLogLinTransObjLayerClassPart;
+}NhlLogLinTransObjClassPart;
 
-typedef struct _NhlLogLinTransObjLayerClassRec {
-	NhlObjLayerClassPart		base_class;
-	NhlTransObjLayerClassPart	trobj_class;
-	NhlLogLinTransObjLayerClassPart	lltrans_class;
-}NhlLogLinTransObjLayerClassRec;
+typedef struct _NhlLogLinTransObjClassRec {
+	NhlObjClassPart		base_class;
+	NhlTransObjClassPart	trobj_class;
+	NhlLogLinTransObjClassPart	lltrans_class;
+}NhlLogLinTransObjClassRec;
 
-typedef struct _NhlLogLinTransObjLayerClassRec	*NhlLogLinTransObjLayerClass;
+typedef struct _NhlLogLinTransObjClassRec	*NhlLogLinTransObjClass;
 typedef struct _NhlLogLinTransObjLayerRec	*NhlLogLinTransObjLayer;
 
-extern NhlLogLinTransObjLayerClassRec NhllogLinTransObjLayerClassRec;
+extern NhlLogLinTransObjClassRec NhllogLinTransObjClassRec;
 
 #endif /* _NLogLinTransObjP_h */

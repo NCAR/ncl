@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArraysP.h,v 1.5 1994-07-28 22:11:55 boote Exp $
+ *      $Id: CoordArraysP.h,v 1.6 1995-04-07 10:41:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -73,19 +73,19 @@ typedef struct _NhlCoordArraysLayerRec{
 	NhlCoordArraysLayerPart		carr;
 } NhlCoordArraysLayerRec;
 
-typedef struct _NhlCoordArraysLayerClassPart{
+typedef struct _NhlCoordArraysClassPart{
 	int	foo;
-} NhlCoordArraysLayerClassPart;
+} NhlCoordArraysClassPart;
 
-typedef struct _NhlCoordArraysLayerClassRec{
-	NhlBaseLayerClassPart		base_class;
-	NhlDataItemLayerClassPart	dataitem_class;
-	NhlCoordArraysLayerClassPart	carr_class;
-} NhlCoordArraysLayerClassRec;
+typedef struct _NhlCoordArraysClassRec{
+	NhlBaseClassPart		base_class;
+	NhlDataItemClassPart	dataitem_class;
+	NhlCoordArraysClassPart	carr_class;
+} NhlCoordArraysClassRec;
 
-typedef struct _NhlCoordArraysLayerClassRec *NhlCoordArraysLayerClass;
+typedef struct _NhlCoordArraysClassRec *NhlCoordArraysClass;
 typedef struct _NhlCoordArraysLayerRec *NhlCoordArraysLayer;
 
-extern NhlCoordArraysLayerClassRec NhlcoordArraysLayerClassRec;
+extern NhlCoordArraysClassRec NhlcoordArraysClassRec;
 
 #endif  /* _NCoordArraysP_h */

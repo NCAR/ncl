@@ -1,5 +1,5 @@
 /*
- *      $Id: Reparent.c,v 1.8 1995-03-21 22:37:00 dbrown Exp $
+ *      $Id: Reparent.c,v 1.9 1995-04-07 10:43:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -46,13 +46,13 @@ CallReparent
 (
 	NhlLayer	l,	/* layer to call reparent for	*/
 	NhlLayer	parent,	/* layer to call reparent for	*/
-	NhlLayerClass	lc	/* class or superclass of l	*/
+	NhlClass	lc	/* class or superclass of l	*/
 )
 #else
 (l,parent,lc)
 	NhlLayer	l;	/* layer to call reparent for	*/
 	NhlLayer	parent;	/* layer to call reparent for	*/
-	NhlLayerClass	lc;	/* class or superclass of l	*/
+	NhlClass	lc;	/* class or superclass of l	*/
 #endif
 {
 	NhlErrorTypes	scret = NhlNOERROR;

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.24 1995-03-03 02:56:24 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.25 1995-04-07 10:41:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -121,7 +121,7 @@ static NhlErrorTypes CoordArrTableClassInitialize(
 
 static NhlErrorTypes CoordArrTableInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc,	/* class	*/
+	NhlClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
 	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
@@ -153,14 +153,14 @@ static NhlErrorTypes CoordArrTableDestroy(
 #endif
 );
 
-NhlCoordArrTableFloatLayerClassRec NhlcoordArrTableFloatLayerClassRec = {
-	/* NhlBaseLayerClassPart */
+NhlCoordArrTableFloatClassRec NhlcoordArrTableFloatClassRec = {
+	/* NhlBaseClassPart */
 	{
-/* class_name			*/	"coordArrTableFloatLayerClass",
+/* class_name			*/	"coordArrTableFloatClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlCoordArrTableFloatLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlobjLayerClassRec,
+/* superclass			*/	(NhlClass)&NhlobjClassRec,
 
 /* resources			*/	NULL,
 /* num_resources		*/	0,
@@ -181,14 +181,14 @@ NhlCoordArrTableFloatLayerClassRec NhlcoordArrTableFloatLayerClassRec = {
 	}
 };
 
-NhlCoordArrTableLayerClassRec NhlcoordArrTableLayerClassRec = {
-	/* NhlBaseLayerClassPart */
+NhlCoordArrTableClassRec NhlcoordArrTableClassRec = {
+	/* NhlBaseClassPart */
 	{
-/* class_name			*/	"coordArrTableLayerClass",
+/* class_name			*/	"coordArrTableClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlCoordArrTableLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhldataItemLayerClassRec,
+/* superclass			*/	(NhlClass)&NhldataItemClassRec,
 
 /* resources			*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -212,20 +212,20 @@ NhlCoordArrTableLayerClassRec NhlcoordArrTableLayerClassRec = {
 /* layer_post_draw		*/	NULL,
 /* layer_clear			*/	NULL
 	},
-	/* NhlDataItemLayerClassPart */
+	/* NhlDataItemClassPart */
 	{
 /* foo				*/	0
 	},
-	/* NhlCoordArrTableLayerClassPart */
+	/* NhlCoordArrTableClassPart */
 	{
 /* foo				*/	0
 	}
 };
 	
-NhlLayerClass NhlcoordArrTableLayerClass =
-				(NhlLayerClass)&NhlcoordArrTableLayerClassRec;
-NhlLayerClass NhlcoordArrTableFloatLayerClass = 
-			(NhlLayerClass)&NhlcoordArrTableFloatLayerClassRec;
+NhlClass NhlcoordArrTableClass =
+				(NhlClass)&NhlcoordArrTableClassRec;
+NhlClass NhlcoordArrTableFloatClass = 
+			(NhlClass)&NhlcoordArrTableFloatClassRec;
 
 static	NrmQuark	genQ = NrmNULLQUARK;
 static	NrmQuark	floatgenQ = NrmNULLQUARK;
@@ -685,7 +685,7 @@ CvtGenObjToFloatObj
 	}
 
 	catl = (NhlCoordArrTableLayer)_NhlGetLayer(from_val->data.intval);
-	if((catl==NULL)||(catl->base.layer_class!=NhlcoordArrTableLayerClass)){
+	if((catl==NULL)||(catl->base.layer_class!=NhlcoordArrTableClass)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"%s:Called w/ improper \"from\" object",func);
 		return NhlFATAL;
@@ -693,7 +693,7 @@ CvtGenObjToFloatObj
 
 	lpart = &catl->cat;
 
-	ret = NhlALCreate(&fltid,"no.name",NhlcoordArrTableFloatLayerClass,
+	ret = NhlALCreate(&fltid,"no.name",NhlcoordArrTableFloatClass,
 							catl->base.id,NULL,0);
 
 	*(int *)to_val->data.ptrval = fltid;
@@ -855,8 +855,8 @@ CoordArrTableClassInitialize
 	minyQ = NrmStringToQuark(NhlNctYMinV);
 
 	ret = NhlRegisterConverter(
-			NhlcoordArrTableLayerClass->base_class.class_name,
-			NhlcoordArrTableFloatLayerClass->base_class.class_name,
+			NhlcoordArrTableClass->base_class.class_name,
+			NhlcoordArrTableFloatClass->base_class.class_name,
 			CvtGenObjToFloatObj,NULL,0,False,NULL);
 
 	return ret;
@@ -1027,7 +1027,7 @@ GetTypeSize
  *		class object.
  *
  * In Args:	
- *	NhlLayerClass	lc,	class
+ *	NhlClass	lc,	class
  *	NhlLayer		req,	requested
  *	NhlLayer		new,	new
  *	_NhlArgList	args,	args
@@ -1044,7 +1044,7 @@ static NhlErrorTypes
 CoordArrTableInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc,	/* class	*/
+	NhlClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
 	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
@@ -1052,7 +1052,7 @@ CoordArrTableInitialize
 )
 #else
 (lc,req,new,args,nargs)
-	NhlLayerClass	lc;	/* class	*/
+	NhlClass	lc;	/* class	*/
 	NhlLayer	req;	/* requested	*/
 	NhlLayer	new;	/* new		*/
 	_NhlArgList	args;	/* args		*/
@@ -1820,7 +1820,7 @@ CoordArrTableGetValues
  * Function:	CoordArrTableDestroy
  *
  * Description:	This function free's any memory that has been allocated
- *		on behalf of this instance of the NhlCoordArrTableLayerClass.
+ *		on behalf of this instance of the NhlCoordArrTableClass.
  *
  * In Args:	NhlLayer	l
  *

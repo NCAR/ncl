@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkspaceP.h,v 1.4 1994-09-12 21:01:15 dbrown Exp $
+ *      $Id: WorkspaceP.h,v 1.5 1995-04-07 10:44:21 boote Exp $
  */
 /************************************************************************
 *									*
@@ -72,19 +72,19 @@ typedef struct _NhlWorkspaceLayerRec {
 	NhlWorkspaceLayerPart	workspace;
 } NhlWorkspaceLayerRec;
 
-typedef struct NhlWorkspaceLayerClassPart{
+typedef struct NhlWorkspaceClassPart{
 	int			num_ws_instances;
-} NhlWorkspaceLayerClassPart;
+} NhlWorkspaceClassPart;
 
-typedef struct _NhlWorkspaceLayerClassRec{
-	NhlBaseLayerClassPart		base_class;
-	NhlWorkspaceLayerClassPart	workspace_class;
-} NhlWorkspaceLayerClassRec;
+typedef struct _NhlWorkspaceClassRec{
+	NhlBaseClassPart		base_class;
+	NhlWorkspaceClassPart	workspace_class;
+} NhlWorkspaceClassRec;
 
-typedef struct _NhlWorkspaceLayerClassRec *NhlWorkspaceLayerClass;
+typedef struct _NhlWorkspaceClassRec *NhlWorkspaceClass;
 typedef struct _NhlWorkspaceLayerRec	*NhlWorkspaceLayer;
 
-extern NhlWorkspaceLayerClassRec		NhlworkspaceLayerClassRec;
+extern NhlWorkspaceClassRec		NhlworkspaceClassRec;
 
 /* Private external functions */
 

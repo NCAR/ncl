@@ -12,14 +12,14 @@ extern void _NclAddToDelList(
 #if	NhlNeedProto
 int /*id*/,
 NclQuark /*name*/,
-NhlLayerClass /*cl_ptr*/
+NhlClass /*cl_ptr*/
 #endif
 );
 extern void _NclAddToNewList(
 #if	NhlNeedProto
 int /*id*/,
 NclQuark /*name*/,
-NhlLayerClass /*cl_ptr*/
+NhlClass /*cl_ptr*/
 #endif
 );
 #endif /*MAKEAPI*/
@@ -228,7 +228,7 @@ NclObjClass nclHLUObjClass = (NclObjClass)&nclHLUObjClassRec;
 
 struct _NclHLUObjRec * _NclHLUObjCreate
 #if	NhlNeedProto
-(NclObj inst , NclObjClass theclass , NclObjTypes obj_type , unsigned int obj_type_mask, NclStatus status, int id,int parentid,NhlLayerClass class_ptr)
+(NclObj inst , NclObjClass theclass , NclObjTypes obj_type , unsigned int obj_type_mask, NclStatus status, int id,int parentid,NhlClass class_ptr)
 #else
 (inst , theclass , obj_type ,obj_type_mask, status,id,parentid,class_ptr)
 NclObj inst ;
@@ -238,7 +238,7 @@ unsigned int obj_type_mask;
 NclStatus status;
 int id;
 int parentid;
-NhlLayerClass class_ptr;
+NhlClass class_ptr;
 #endif
 {
 	NclHLUObj tmp,ptmp;

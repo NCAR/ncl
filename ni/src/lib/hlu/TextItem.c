@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.27 1995-04-07 09:36:01 boote Exp $
+ *      $Id: TextItem.c,v 1.28 1995-04-07 10:43:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -204,7 +204,7 @@ static NhlErrorTypes TextItemGetValues(
 
 static NhlErrorTypes    TextItemInitialize(
 #if	NhlNeedProto
-        NhlLayerClass,     /* class */
+        NhlClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
         _NhlArgList,    /* args */
@@ -252,13 +252,13 @@ float   * /*yot */
 #endif
 );
 
-NhlTextItemLayerClassRec NhltextItemLayerClassRec = {
+NhlTextItemClassRec NhltextItemClassRec = {
 	{
-/* class_name			*/	"textItemLayerClass",
+/* class_name			*/	"textItemClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlTextItemLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlviewLayerClassRec,
+/* superclass			*/	(NhlClass)&NhlviewClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -291,7 +291,7 @@ NhlTextItemLayerClassRec NhltextItemLayerClassRec = {
 	}
 };
 
-NhlLayerClass NhltextItemLayerClass = (NhlLayerClass)&NhltextItemLayerClassRec;
+NhlClass NhltextItemClass = (NhlClass)&NhltextItemClassRec;
 
 /*
  * Function:	nhlftextitemclass
@@ -303,11 +303,11 @@ NhlLayerClass NhltextItemLayerClass = (NhlLayerClass)&NhltextItemLayerClassRec;
  * Out Args:	
  *
  * Scope:	global Fortran
- * Returns:	NhlLayerClass
+ * Returns:	NhlClass
  * Side Effect:	
  */
-NhlLayerClass
-_NHLCALLF(nhlftextitemlayerclass,NHLFTEXTITEMLAYERCLASS)
+NhlClass
+_NHLCALLF(nhlftextitemclass,NHLFTEXTITEMCLASS)
 #if	NhlNeedProto
 (
 	void
@@ -316,7 +316,7 @@ _NHLCALLF(nhlftextitemlayerclass,NHLFTEXTITEMLAYERCLASS)
 ()
 #endif
 {
-	return NhltextItemLayerClass;
+	return NhltextItemClass;
 }
 
 static NrmQuark txstrQ = NrmNULLQUARK;
@@ -445,10 +445,10 @@ DoPcCalc
 /*ARGSUSED*/
 static NhlErrorTypes    TextItemInitialize
 #if	NhlNeedProto
-( NhlLayerClass class, NhlLayer req, NhlLayer new, _NhlArgList args,int num_args)
+( NhlClass class, NhlLayer req, NhlLayer new, _NhlArgList args,int num_args)
 #else
 (class,req,new,args,num_args)
-	NhlLayerClass	class;
+	NhlClass	class;
 	NhlLayer		req;
 	NhlLayer		new;
 	_NhlArgList	args;

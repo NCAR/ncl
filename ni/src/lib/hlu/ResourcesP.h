@@ -1,5 +1,5 @@
 /*
- *      $Id: ResourcesP.h,v 1.9 1995-02-19 08:18:32 boote Exp $
+ *      $Id: ResourcesP.h,v 1.10 1995-04-07 10:43:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -66,7 +66,7 @@ extern void _NhlResourceListInitialize(
 
 extern void _NhlGroupResources(
 #if	NhlNeedProto
-	NhlLayerClass lc	/* Class to create full reslist for	*/
+	NhlClass lc	/* Class to create full reslist for	*/
 #endif
 );
 
@@ -133,7 +133,7 @@ extern void _NhlFreeChildArgs(
 
 extern NhlBoolean _NhlResInClass(
 #if	NhlNeedProto
-	NhlLayerClass	lc,	/* class to check for res	*/
+	NhlClass	lc,	/* class to check for res	*/
 	NrmQuark	res	/* resource to look for		*/
 #endif
 );

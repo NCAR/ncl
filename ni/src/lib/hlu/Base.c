@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.10 1995-03-21 22:36:50 dbrown Exp $
+ *      $Id: Base.c,v 1.11 1995-04-07 10:40:50 boote Exp $
  */
 /************************************************************************
 *									*
@@ -34,9 +34,9 @@ static NhlErrorTypes BaseClassInitialize(
 #endif
 );
 
-static NhlErrorTypes BaseLayerClassPartInitialize(
+static NhlErrorTypes BaseClassPartInitialize(
 #if	NhlNeedProto
-	NhlLayerClass
+	NhlClass
 #endif
 );
 
@@ -59,19 +59,19 @@ static NhlErrorTypes BaseLayerReparent(
 #endif
 );
 
-NhlObjLayerClassRec NhlobjLayerClassRec = {
+NhlObjClassRec NhlobjClassRec = {
 	{
-/* class_name			*/	"objLayerClass",
+/* class_name			*/	"objClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlObjLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)NULL,
+/* superclass			*/	(NhlClass)NULL,
 
 /* resources			*/	NULL,
 /* num_resources		*/	0,
 /* all_resources		*/	NULL,
 
-/* class_part_initialize	*/	BaseLayerClassPartInitialize,
+/* class_part_initialize	*/	BaseClassPartInitialize,
 /* class_initialize		*/	BaseClassInitialize,
 /* layer_initialize		*/	NULL,
 /* layer_set_values		*/	NULL,
@@ -82,19 +82,19 @@ NhlObjLayerClassRec NhlobjLayerClassRec = {
 	}
 };
 
-NhlLayerClassRec NhllayerClassRec = {
+NhlClassRec NhllayerClassRec = {
 	{
-/* class_name			*/	"baseLayerClass",
+/* class_name			*/	"baseClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)NULL,
+/* superclass			*/	(NhlClass)NULL,
 
 /* resources			*/	NULL,
 /* num_resources		*/	0,
 /* all_resources		*/	NULL,
 
-/* class_part_initialize	*/	BaseLayerClassPartInitialize,
+/* class_part_initialize	*/	BaseClassPartInitialize,
 /* class_initialize		*/	BaseClassInitialize,
 /* layer_initialize		*/	NULL,
 /* layer_set_values		*/	NULL,
@@ -114,9 +114,9 @@ NhlLayerClassRec NhllayerClassRec = {
 	}
 };
 
-NhlLayerClass NhllayerClass = (NhlLayerClass)&NhllayerClassRec;
-NhlLayerClass NhlbaseLayerClass = (NhlLayerClass)&NhllayerClassRec;
-NhlLayerClass NhlobjLayerClass = (NhlLayerClass)&NhlobjLayerClassRec;
+NhlClass NhllayerClass = (NhlClass)&NhllayerClassRec;
+NhlClass NhlbaseClass = (NhlClass)&NhllayerClassRec;
+NhlClass NhlobjClass = (NhlClass)&NhlobjClassRec;
 
 /*
  * Function:	BaseClassInitialize
@@ -163,7 +163,7 @@ BaseClassInitialize
 }
 
 /*
- * Function:	BaseLayerClassPartInitialize
+ * Function:	BaseClassPartInitialize
  *
  * Description:	This function is called to initialize the base_class
  *		part of every layer class record.  It basically initializes
@@ -173,7 +173,7 @@ BaseClassInitialize
  *		the rest of the library.
  *
  * In Args:	
- *		NhlLayerClass	lc	pointer to class structure to update
+ *		NhlClass	lc	pointer to class structure to update
  *
  * Out Args:	
  *
@@ -182,14 +182,14 @@ BaseClassInitialize
  * Side Effect:	
  */
 static NhlErrorTypes
-BaseLayerClassPartInitialize
+BaseClassPartInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc	/* pointer to class structure to update	*/
+	NhlClass	lc	/* pointer to class structure to update	*/
 )
 #else
 (lc)
-	NhlLayerClass	lc;	/* pointer to class structure to update	*/
+	NhlClass	lc;	/* pointer to class structure to update	*/
 #endif
 {
 	lc->base_class.nrm_class = NrmStringToName(lc->base_class.class_name);

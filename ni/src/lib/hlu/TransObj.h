@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.h,v 1.5 1994-01-27 21:26:48 boote Exp $
+ *      $Id: TransObj.h,v 1.6 1995-04-07 10:44:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -18,7 +18,7 @@
  *	Date:		Fri Oct 16 10:48:21 MDT 1992
  *
  *	Description:	This is the public header file for the TransObj class.
- *			The TransObjLayerClass is responsible for managing 
+ *			The TransObjClass is responsible for managing 
  *			transformations DATA==>VIEWPORT definitions.
  */
 #ifndef _NTransObj_h
@@ -30,7 +30,7 @@
 #define NhlNtrOutOfRangeF	"trOutOfRangeF"
 #define NhlCtrOutOfRangeF	"TrOutOfRangeF"
 
-extern NhlLayerClass NhltransObjLayerClass;
+extern NhlClass NhltransObjClass;
 
 
 #endif  /*_NTransObj_h*/

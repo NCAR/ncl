@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.5 1995-04-07 09:35:35 boote Exp $
+ *      $Id: ContourPlot.c,v 1.6 1995-04-07 10:41:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -845,13 +845,13 @@ static NhlErrorTypes ContourPlotClassInitialize(
 
 static NhlErrorTypes ContourPlotClassPartInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc
+	NhlClass	lc
 #endif
 );
 
 static NhlErrorTypes ContourPlotInitialize(
 #if	NhlNeedProto
-        NhlLayerClass,  /* class */
+        NhlClass,  /* class */
         NhlLayer,       /* req */
         NhlLayer,       /* new */
         _NhlArgList,    /* args */
@@ -955,7 +955,7 @@ static NhlErrorTypes ContourPlotUpdateData(
 
 static NhlErrorTypes ContourPlotDataInitialize(
 #if	NhlNeedProto
-        NhlLayerClass	class,
+        NhlClass	class,
         NhlLayer	req,
         NhlLayer	new,
         _NhlArgList	args,
@@ -1399,15 +1399,15 @@ extern void   (_NHLCALLF(cpmpxy,CPMPXY))(
 );
 
 
-NhlContourPlotDataDepLayerClassRec NhlcontourPlotDataDepLayerClassRec = {
+NhlContourPlotDataDepClassRec NhlcontourPlotDataDepClassRec = {
 	/* base_class */
         {
-/* class_name			*/	"contourPlotDataDepLayerClass",
+/* class_name			*/	"contourPlotDataDepClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlContourPlotDataDepLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)
-						&NhldataSpecLayerClassRec,
+/* superclass			*/	(NhlClass)
+						&NhldataSpecClassRec,
 
 /* layer_resources		*/	data_resources,
 /* num_resources		*/	NhlNumber(data_resources),
@@ -1432,14 +1432,14 @@ NhlContourPlotDataDepLayerClassRec NhlcontourPlotDataDepLayerClassRec = {
 	}
 };
 
-NhlContourPlotLayerClassRec NhlcontourPlotLayerClassRec = {
+NhlContourPlotClassRec NhlcontourPlotClassRec = {
 	/* base_class */
         {
-/* class_name			*/      "contourPlotLayerClass",
+/* class_name			*/      "contourPlotClass",
 /* nrm_class			*/      NrmNULLQUARK,
 /* layer_size			*/      sizeof(NhlContourPlotLayerRec),
 /* class_inited			*/      False,
-/* superclass			*/  (NhlLayerClass)&NhldataCommLayerClassRec,
+/* superclass			*/  (NhlClass)&NhldataCommClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -1488,10 +1488,10 @@ NhlContourPlotLayerClassRec NhlcontourPlotLayerClassRec = {
 };
 	
 
-NhlLayerClass NhlcontourPlotDataDepLayerClass =
-		(NhlLayerClass) &NhlcontourPlotDataDepLayerClassRec;
-NhlLayerClass NhlcontourPlotLayerClass = 
-		(NhlLayerClass) &NhlcontourPlotLayerClassRec;
+NhlClass NhlcontourPlotDataDepClass =
+		(NhlClass) &NhlcontourPlotDataDepClassRec;
+NhlClass NhlcontourPlotClass = 
+		(NhlClass) &NhlcontourPlotClassRec;
 
 static NrmQuark	Qfloat = NrmNULLQUARK;
 static NrmQuark Qint = NrmNULLQUARK;
@@ -1537,11 +1537,11 @@ static NhlContourPlotLayerPart	*Cnp;
  * Out Args:	
  *
  * Scope:	global Fortran
- * Returns:	NhlLayerClass
+ * Returns:	NhlClass
  * Side Effect:	
  */
-NhlLayerClass
-_NHLCALLF(nhlfcontourplotlayerclass,NHLFCONTOURPLOTLAYERCLASS)
+NhlClass
+_NHLCALLF(nhlfcontourplotclass,NHLFCONTOURPLOTCLASS)
 #if	NhlNeedProto
 (
 	void
@@ -1550,7 +1550,7 @@ _NHLCALLF(nhlfcontourplotlayerclass,NHLFCONTOURPLOTLAYERCLASS)
 ()
 #endif
 {
-	return NhlcontourPlotLayerClass;
+	return NhlcontourPlotClass;
 }
 
 /*
@@ -1563,11 +1563,11 @@ _NHLCALLF(nhlfcontourplotlayerclass,NHLFCONTOURPLOTLAYERCLASS)
  * Out Args:	
  *
  * Scope:	global Fortran
- * Returns:	NhlLayerClass
+ * Returns:	NhlClass
  * Side Effect:	
  */
-NhlLayerClass
-_NHLCALLF(nhlfcontourplotdatadeplayerclass,NHLFCONTOURPLOTDATADEPLAYERCLASS)
+NhlClass
+_NHLCALLF(nhlfcontourplotdatadepclass,NHLFCONTOURPLOTDATADEPCLASS)
 #if	NhlNeedProto
 (
 	void
@@ -1576,7 +1576,7 @@ _NHLCALLF(nhlfcontourplotdatadeplayerclass,NHLFCONTOURPLOTDATADEPLAYERCLASS)
 ()
 #endif
 {
-	return NhlcontourPlotDataDepLayerClass;
+	return NhlcontourPlotDataDepClass;
 }
 
 /*
@@ -1585,7 +1585,7 @@ _NHLCALLF(nhlfcontourplotdatadeplayerclass,NHLFCONTOURPLOTDATADEPLAYERCLASS)
  * Description:	Initializes the ContourPlotData Dependent class instance.
  *
  * In Args:	
- *		NhlLayerClass	class,
+ *		NhlClass	class,
  *		NhlLayer		req,
  *		NhlLayer		new,
  *		_NhlArgList	args,
@@ -1602,7 +1602,7 @@ static NhlErrorTypes
 ContourPlotDataInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	class,
+	NhlClass	class,
 	NhlLayer		req,
 	NhlLayer		new,
 	_NhlArgList	args,
@@ -1610,7 +1610,7 @@ ContourPlotDataInitialize
 )
 #else
 (class,req,new,args,num_args)
-        NhlLayerClass      class;
+        NhlClass      class;
         NhlLayer           req;
         NhlLayer           new;
         _NhlArgList     args;
@@ -1778,11 +1778,11 @@ ContourPlotClassInitialize
  * Function:	ContourPlotClassPartInitialize
  *
  * Description:	This function initializes fields in the 
- *		NhlContourPlotLayerClassPart that cannot be initialized statically.
+ *		NhlContourPlotClassPart that cannot be initialized statically.
  *		Calls _NhlRegisterChildClass for the overlay manager object.
  *
  * In Args:	
- *		NhlLayerClass	lc	NhlLayer Class to init
+ *		NhlClass	lc	NhlLayer Class to init
  *
  * Out Args:	
  *
@@ -1795,11 +1795,11 @@ static NhlErrorTypes
 ContourPlotClassPartInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc	/* Layer Class to init	*/
+	NhlClass	lc	/* Layer Class to init	*/
 )
 #else
 (lc)
-	NhlLayerClass	lc;	/* Layer Class to init	*/
+	NhlClass	lc;	/* Layer Class to init	*/
 #endif
 {
 	NhlErrorTypes	ret = NhlNOERROR, subret = NhlNOERROR;
@@ -1809,7 +1809,7 @@ ContourPlotClassPartInitialize
 /*
  * Register children objects
  */
-	subret = _NhlRegisterChildClass(lc,NhlplotManagerLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhlplotManagerClass,
 					False,False,
 					NhlNpmLegendDisplayMode,
 					NhlNpmLabelBarDisplayMode,
@@ -1868,21 +1868,21 @@ ContourPlotClassPartInitialize
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhlplotManagerLayerClass");
+			  "NhlplotManagerClass");
 		return(NhlFATAL);
 	}
 
-	subret = _NhlRegisterDataRes((NhlDataCommLayerClass)lc,
+	subret = _NhlRegisterDataRes((NhlDataCommClass)lc,
 				     NhlNcnScalarFieldData,
 				     NULL,
-				     NhlcontourPlotDataDepLayerClass,
-				     NhlscalarFieldFloatLayerClass,
+				     NhlcontourPlotDataDepClass,
+				     NhlscalarFieldFloatClass,
 				     NULL);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering data resource %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhlcoordArrTableFloatLayerClass");
+			  "NhlcoordArrTableFloatClass");
 		return(NhlFATAL);
 	}
 
@@ -1911,7 +1911,7 @@ static NhlErrorTypes
 ContourPlotInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	class,
+	NhlClass	class,
 	NhlLayer		req,
 	NhlLayer		new,
 	_NhlArgList	args,
@@ -1919,7 +1919,7 @@ ContourPlotInitialize
 )
 #else
 (class,req,new,args,num_args)
-        NhlLayerClass      class;
+        NhlClass      class;
         NhlLayer           req;
         NhlLayer           new;
         _NhlArgList     args;
@@ -3450,7 +3450,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 #define _cnMAPBOUNDINC	100
 
 	if (cnp->trans_obj->base.layer_class->base_class.class_name ==
-	    NhlmapTransObjLayerClass->base_class.class_name) {
+	    NhlmapTransObjClass->base_class.class_name) {
 		ezmap = True;
 	}
 
@@ -4158,7 +4158,7 @@ static NhlErrorTypes SetUpLLTransObj
 		strcat(buffer,".Trans");
 
 		subret = NhlALCreate(&tmpid,buffer,
-				     NhllogLinTransObjLayerClass,
+				     NhllogLinTransObjClass,
 				     cnnew->base.id,sargs,nargs);
 
 		ret = MIN(subret,ret);
@@ -4498,7 +4498,7 @@ static NhlErrorTypes SetUpIrrTransObj
 		strcat(buffer,".Trans");
 
 		subret = NhlALCreate(&tmpid,buffer,
-				     NhlirregularType2TransObjLayerClass,
+				     NhlirregularType2TransObjClass,
 				     cnnew->base.id,sargs,nargs);
 
 		ret = MIN(subret,ret);
@@ -5684,7 +5684,7 @@ static NhlErrorTypes ManageInfoLabel
 
 		sprintf(buffer,"%s",cnnew->base.name);
 		strcat(buffer,".Text");
-		subret = NhlALCreate(&tmpid,buffer,NhltextItemLayerClass,
+		subret = NhlALCreate(&tmpid,buffer,NhltextItemClass,
 				     cnnew->base.id,targs,targc);
 		
 		if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -5893,7 +5893,7 @@ static NhlErrorTypes ManageConstFLabel
 
 		sprintf(buffer,"%s",cnnew->base.name);
 		strcat(buffer,".Text");
-		subret = NhlALCreate(&tmpid,buffer,NhltextItemLayerClass,
+		subret = NhlALCreate(&tmpid,buffer,NhltextItemClass,
 				     cnnew->base.id,targs,targc);
 		
 		if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -6050,7 +6050,7 @@ static NhlErrorTypes ManageAnnotation
 			   NhlNamOrthogonalPosF,rec->ortho_pos);
 		sprintf(buffer,"%s",cnnew->base.name);
 		strcat(buffer,".AnnoManager");
-		subret = NhlALCreate(&tmpid,buffer,NhlannoManagerLayerClass,
+		subret = NhlALCreate(&tmpid,buffer,NhlannoManagerClass,
 				     cnnew->base.id,sargs,nargs);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) {
 			e_text = "%s: error creating AnnoManager layer";

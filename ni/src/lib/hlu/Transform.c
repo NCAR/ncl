@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.19 1995-04-07 09:36:12 boote Exp $
+ *      $Id: Transform.c,v 1.20 1995-04-07 10:44:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -59,7 +59,7 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes TransformClassPartInit(
 #if	NhlNeedProto
-	NhlLayerClass	lc
+	NhlClass	lc
 #endif
 );
 
@@ -115,13 +115,13 @@ static NhlErrorTypes TransformNDCPolyline(
 #endif
 );
 
-NhlTransformLayerClassRec NhltransformLayerClassRec = {
+NhlTransformClassRec NhltransformClassRec = {
         {
-/* class_name			*/      "transformLayerClass",
+/* class_name			*/      "transformClass",
 /* nrm_class			*/      NrmNULLQUARK,
 /* layer_size			*/      sizeof(NhlTransformLayerRec),
 /* class_inited			*/      False,
-/* superclass			*/      (NhlLayerClass)&NhlviewLayerClassRec,
+/* superclass			*/      (NhlClass)&NhlviewClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -159,7 +159,7 @@ NhlTransformLayerClassRec NhltransformLayerClassRec = {
 	}
 };
 	
-NhlLayerClass NhltransformLayerClass = (NhlLayerClass)&NhltransformLayerClassRec;
+NhlClass NhltransformClass = (NhlClass)&NhltransformClassRec;
 
 /*
  * Function:	TransformClassPartInit
@@ -178,15 +178,15 @@ static NhlErrorTypes
 TransformClassPartInit
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc
+	NhlClass	lc
 )
 #else
 (lc)
-	NhlLayerClass	lc;
+	NhlClass	lc;
 #endif
 {
-	NhlTransformLayerClass	tlc = (NhlTransformLayerClass)lc;
-	NhlTransformLayerClass	sc = (NhlTransformLayerClass)
+	NhlTransformClass	tlc = (NhlTransformClass)lc;
+	NhlTransformClass	sc = (NhlTransformClass)
 						lc->base_class.superclass;
 
 	if(tlc->trans_class.data_to_ndc == NhlInheritTransFunc)
@@ -437,7 +437,7 @@ static NhlErrorTypes TransformDataPolyline
 	NhlTransformLayer		tl = (NhlTransformLayer) plot;
 	NhlTransformLayerPart	*tfp = &(tl->trans);
 	NhlTransObjLayer		top;
- 	NhlTransObjLayerClass 	tocp;
+ 	NhlTransObjClass 	tocp;
 	char			*e_text;
 	char			*entry_name = "TransformDataPolyline";
 	int			i;
@@ -466,7 +466,7 @@ static NhlErrorTypes TransformDataPolyline
 	        }
 	}
 
-	tocp = (NhlTransObjLayerClass) (top->base.layer_class);
+	tocp = (NhlTransObjClass) (top->base.layer_class);
 
 	subret = _NhlActivateWorkstation(tl->base.wkptr);
 
@@ -556,7 +556,7 @@ static NhlErrorTypes TransformNDCPolyline
 	NhlTransformLayer		tl = (NhlTransformLayer) plot;
 	NhlTransformLayerPart	*tfp = &(tl->trans);
 	NhlTransObjLayer		top;
- 	NhlTransObjLayerClass 	tocp;
+ 	NhlTransObjClass 	tocp;
 	int			i;
 
 	if (n < 2) {
@@ -582,7 +582,7 @@ static NhlErrorTypes TransformNDCPolyline
 			return(ret);
 	        }
 	}
-	tocp = (NhlTransObjLayerClass) (top->base.layer_class);
+	tocp = (NhlTransObjClass) (top->base.layer_class);
 
 	subret = _NhlActivateWorkstation(tl->base.wkptr);
 

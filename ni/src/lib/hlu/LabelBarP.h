@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBarP.h,v 1.7 1995-03-03 20:14:49 dbrown Exp $
+ *      $Id: LabelBarP.h,v 1.8 1995-04-07 10:42:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -150,19 +150,19 @@ typedef struct _NhlLabelBarLayerRec{
 	NhlLabelBarLayerPart	labelbar;
 }NhlLabelBarLayerRec;
 
-typedef struct _NhlLabelBarLayerClassPart {
+typedef struct _NhlLabelBarClassPart {
 	char *foo;
-}NhlLabelBarLayerClassPart;
+}NhlLabelBarClassPart;
 
-typedef struct _NhlLabelBarLayerClassRec{
-	NhlBaseLayerClassPart		base_class;
-	NhlViewLayerClassPart		view_class;
-	NhlLabelBarLayerClassPart	labelbar_class;
-}NhlLabelBarLayerClassRec;
+typedef struct _NhlLabelBarClassRec{
+	NhlBaseClassPart		base_class;
+	NhlViewClassPart		view_class;
+	NhlLabelBarClassPart	labelbar_class;
+}NhlLabelBarClassRec;
 
-typedef struct _NhlLabelBarLayerClassRec *NhlLabelBarLayerClass;
+typedef struct _NhlLabelBarClassRec *NhlLabelBarClass;
 typedef struct _NhlLabelBarLayerRec	*NhlLabelBarLayer;
 
-extern NhlLabelBarLayerClassRec NhllabelBarLayerClassRec;
+extern NhlLabelBarClassRec NhllabelBarClassRec;
 
 #endif  /*_NLabelBarP_h*/

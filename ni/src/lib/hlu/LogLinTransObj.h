@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.h,v 1.2 1994-01-27 21:24:28 boote Exp $
+ *      $Id: LogLinTransObj.h,v 1.3 1995-04-07 10:42:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -44,7 +44,7 @@
 #define NhlCtrYReverse	"TrYReverse"
 
 
-extern NhlLayerClass NhllogLinTransObjLayerClass;
+extern NhlClass NhllogLinTransObjClass;
 
 #endif /* LogLinTransObj_h */
 

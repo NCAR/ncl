@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.14 1995-01-31 22:26:09 ethan Exp $
+ *      $Id: Symbol.h,v 1.15 1995-04-07 10:46:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -126,7 +126,7 @@ typedef struct _NclSymbol {
 		struct _NclProcFuncInfo		*procfunc;
 		struct _NclBuiltInFuncInfo	*bfunc;
 		struct _NclBuiltInProcInfo 	*bproc;
-		struct _NhlLayerClassRec 	*obj_class_ptr;
+		struct _NhlClassRec 	*obj_class_ptr;
 	} u;
 	struct _NclSymbol *symnext;
 	struct _NclSymbol *sympre;
@@ -265,7 +265,7 @@ void
 #endif
 );
 
-struct _NhlLayerClassRec* _NclGetClassPtr(
+struct _NhlClassRec* _NclGetClassPtr(
 #if	NhlNeedProto
 int /* class_q */
 #endif

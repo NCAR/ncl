@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstationP.h,v 1.2 1994-01-27 21:27:39 boote Exp $
+ *      $Id: XWorkstationP.h,v 1.3 1995-04-07 10:44:29 boote Exp $
  */
 /************************************************************************
 *									*
@@ -54,19 +54,19 @@ typedef struct _NhlXWorkstationLayerRec {
 	NhlXWorkstationLayerPart	xwork;
 } NhlXWorkstationLayerRec;
 
-typedef struct _NhlXWorkstationLayerClassPart {
+typedef struct _NhlXWorkstationClassPart {
 	char *foo;
-} NhlXWorkstationLayerClassPart;
+} NhlXWorkstationClassPart;
 
-typedef struct _NhlXWorkstationLayerClassRec {
-	NhlBaseLayerClassPart		base_class;
-	NhlWorkstationLayerClassPart	work_class;
-	NhlXWorkstationLayerClassPart	xwork_class;
-} NhlXWorkstationLayerClassRec;
+typedef struct _NhlXWorkstationClassRec {
+	NhlBaseClassPart		base_class;
+	NhlWorkstationClassPart	work_class;
+	NhlXWorkstationClassPart	xwork_class;
+} NhlXWorkstationClassRec;
 
 typedef struct _NhlXWorkstationLayerRec *NhlXWorkstationLayer;
-typedef struct _NhlXWorkstationLayerClassRec *NhlXWorkstationLayerClass;
+typedef struct _NhlXWorkstationClassRec *NhlXWorkstationClass;
 
-extern NhlXWorkstationLayerClassRec NhlxWorkstationLayerClassRec;
+extern NhlXWorkstationClassRec NhlxWorkstationClassRec;
 
 #endif /* _XWorkstation_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.15 1995-03-29 20:58:40 dbrown Exp $
+ *      $Id: Workstation.h,v 1.16 1995-04-07 10:44:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -259,6 +259,6 @@ extern NhlBoolean NhlIsWorkstation(
 #endif
 );
 
-extern NhlLayerClass NhlworkstationLayerClass;
+extern NhlClass NhlworkstationClass;
 
 #endif	/* _NWorkstation_h */

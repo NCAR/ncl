@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.8 1995-03-29 20:58:42 dbrown Exp $
+ *      $Id: WorkstationP.h,v 1.9 1995-04-07 10:44:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -206,7 +206,7 @@ typedef struct _NhlWorkstationLayerRec {
 	NhlWorkstationLayerPart	work;
 } NhlWorkstationLayerRec;
 
-typedef struct _NhlWorkstationLayerClassPart {
+typedef struct _NhlWorkstationClassPart {
 	NhlWorkstationProc	open_work;
 	NhlWorkstationProc	close_work;
 	NhlWorkstationProc	activate_work;
@@ -216,17 +216,17 @@ typedef struct _NhlWorkstationLayerClassPart {
 	NhlWorkstationLineTo	lineto_work;
 	NhlWorkstationFill      fill_work;
 	NhlWorkstationMarker    marker_work;
-} NhlWorkstationLayerClassPart;
+} NhlWorkstationClassPart;
 
-typedef struct _NhlWorkstationLayerClassRec {
-	NhlBaseLayerClassPart		base_class;
-	NhlWorkstationLayerClassPart	work_class;
-} NhlWorkstationLayerClassRec;
+typedef struct _NhlWorkstationClassRec {
+	NhlBaseClassPart		base_class;
+	NhlWorkstationClassPart	work_class;
+} NhlWorkstationClassRec;
 	
 
 typedef struct _NhlWorkstationLayerRec *NhlWorkstationLayer;
-typedef struct _NhlWorkstationLayerClassRec *NhlWorkstationLayerClass;
+typedef struct _NhlWorkstationClassRec *NhlWorkstationClass;
 
-extern NhlWorkstationLayerClassRec NhlworkstationLayerClassRec;	
+extern NhlWorkstationClassRec NhlworkstationClassRec;	
 
 #endif	/* _NWorkstationP_h */

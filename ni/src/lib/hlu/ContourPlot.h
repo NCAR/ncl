@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.h,v 1.3 1995-04-07 00:39:48 dbrown Exp $
+ *      $Id: ContourPlot.h,v 1.4 1995-04-07 10:41:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -494,6 +494,6 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnDumpAreaMap		"CnDumpAreaMap"
 #define NhlCcnAreaMapCRange		"CnAreaMapCRange"
 
-extern NhlLayerClass			NhlcontourPlotLayerClass;
+extern NhlClass			NhlcontourPlotClass;
 
 #endif /*_NCONTOURPLOT_h */

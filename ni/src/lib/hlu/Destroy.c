@@ -1,5 +1,5 @@
 /*
- *      $Id: Destroy.c,v 1.8 1995-02-17 10:23:15 boote Exp $
+ *      $Id: Destroy.c,v 1.9 1995-04-07 10:41:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -35,7 +35,7 @@
  *
  * In Args:	
  *		NhlLayer	l,	NhlLayer to destroy
- *		NhlLayerClass	lc	class or superclass of l
+ *		NhlClass	lc	class or superclass of l
  *
  * Out Args:	
  *
@@ -48,12 +48,12 @@ CallDestroy
 #if	NhlNeedProto
 (
 	NhlLayer	l,	/* NhlLayer to destroy		*/
-	NhlLayerClass	lc	/* class or superclass of l	*/
+	NhlClass	lc	/* class or superclass of l	*/
 )
 #else
 (l,lc)
 	NhlLayer	l;	/* NhlLayer to destroy		*/
-	NhlLayerClass	lc;	/* class or superclass of l	*/
+	NhlClass	lc;	/* class or superclass of l	*/
 #endif
 {
 	NhlErrorTypes scret = NhlNOERROR;

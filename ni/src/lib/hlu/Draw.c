@@ -1,5 +1,5 @@
 /*
- *      $Id: Draw.c,v 1.12 1995-04-04 17:38:08 dbrown Exp $
+ *      $Id: Draw.c,v 1.13 1995-04-07 10:41:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -37,7 +37,7 @@
  *
  * In Args:	
  *		NhlLayer	l,	object to draw
- *		NhlLayerClass	class	class or super-class of object
+ *		NhlClass	class	class or super-class of object
  *
  * Out Args:	
  *
@@ -50,12 +50,12 @@ CallPreDraw
 #if	NhlNeedProto
 (
 	NhlLayer	l,	/* object to draw	*/
-	NhlLayerClass	class	/* class or super-class of object	*/
+	NhlClass	class	/* class or super-class of object	*/
 )
 #else
 (l,class)
 	NhlLayer	l;	/* object to draw	*/
-	NhlLayerClass	class;	/* class or super-class of object	*/
+	NhlClass	class;	/* class or super-class of object	*/
 #endif
 {
 	NhlErrorTypes superclassret = NhlNOERROR, localret = NhlNOERROR;
@@ -85,7 +85,7 @@ CallPreDraw
  *
  * In Args:	
  *		NhlLayer	l,	object to draw
- *		NhlLayerClass	class	class or super-class of object
+ *		NhlClass	class	class or super-class of object
  *
  * Out Args:	
  *
@@ -98,12 +98,12 @@ CallDraw
 #if	NhlNeedProto
 (
 	NhlLayer	l,	/* object to draw	*/
-	NhlLayerClass	class	/* class or super-class of object	*/
+	NhlClass	class	/* class or super-class of object	*/
 )
 #else
 (l,class)
 	NhlLayer	l;	/* object to draw	*/
-	NhlLayerClass	class;	/* class or super-class of object	*/
+	NhlClass	class;	/* class or super-class of object	*/
 #endif
 {
 	NhlErrorTypes superclassret = NhlNOERROR, localret = NhlNOERROR;
@@ -132,7 +132,7 @@ CallDraw
  *
  * In Args:	
  *		NhlLayer	l,	object to draw
- *		NhlLayerClass	class	class or super-class of object
+ *		NhlClass	class	class or super-class of object
  *
  * Out Args:	
  *
@@ -145,12 +145,12 @@ CallPostDraw
 #if	NhlNeedProto
 (
 	NhlLayer	l,	/* object to draw	*/
-	NhlLayerClass	class	/* class or super-class of object	*/
+	NhlClass	class	/* class or super-class of object	*/
 )
 #else
 (l,class)
 	NhlLayer	l;	/* object to draw	*/
-	NhlLayerClass	class;	/* class or super-class of object	*/
+	NhlClass	class;	/* class or super-class of object	*/
 #endif
 {
 	NhlErrorTypes superclassret = NhlNOERROR, localret = NhlNOERROR;
@@ -451,7 +451,7 @@ _NhlPostDraw
  *
  * In Args:	
  *		NhlLayer	l,	object to draw
- *		NhlLayerClass	class	class or super-class of object
+ *		NhlClass	class	class or super-class of object
  *
  * Out Args:	
  *
@@ -464,12 +464,12 @@ CallSegDraw
 #if	NhlNeedProto
 (
 	NhlLayer	l,	/* object to draw	*/
-	NhlLayerClass	class	/* class or super-class of object	*/
+	NhlClass	class	/* class or super-class of object	*/
 )
 #else
 (l,class)
 	NhlLayer	l;	/* object to draw	*/
-	NhlLayerClass	class;	/* class or super-class of object	*/
+	NhlClass	class;	/* class or super-class of object	*/
 #endif
 {
 	NhlErrorTypes superclassret = NhlNOERROR, localret = NhlNOERROR;

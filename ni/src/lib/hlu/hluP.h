@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.27 1995-04-01 00:04:27 dbrown Exp $
+ *      $Id: hluP.h,v 1.28 1995-04-07 10:44:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -75,68 +75,68 @@ typedef struct _NhlLayerRec *NhlLayer;
 /*
 * In order to recognize class types from the intrinsics the private header
 * and a one bit flag need to be included here and a new conditional stmnt
-* added to the InitializeLayerClass function in Create.c
+* added to the InitializeClass function in Create.c
 */
 
-#define _NhlObjLayerClassFlag		0x02
+#define _NhlObjClassFlag		0x02
 #define _NhlIsObj(instance) \
 	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
-							_NhlObjLayerClassFlag)
+							_NhlObjClassFlag)
 
-#define _NhlBaseLayerClassFlag 		0x04
+#define _NhlBaseClassFlag 		0x04
 #define _NhlIsBase(instance) \
 	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
-							_NhlBaseLayerClassFlag)
+							_NhlBaseClassFlag)
 
-#define _NhlWorkstationLayerClassFlag 	0x08
+#define _NhlWorkstationClassFlag 	0x08
 #define _NhlIsWorkstation(instance) \
 	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
-						_NhlWorkstationLayerClassFlag)
+						_NhlWorkstationClassFlag)
 
-#define _NhlViewLayerClassFlag 	0x010
+#define _NhlViewClassFlag 	0x010
 #define _NhlIsView(instance) \
 	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
-							_NhlViewLayerClassFlag)
+							_NhlViewClassFlag)
 
-#define _NhlTransformLayerClassFlag 	0x020
+#define _NhlTransformClassFlag 	0x020
 #define _NhlIsTransform(instance) \
 	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
-						_NhlTransformLayerClassFlag)
+						_NhlTransformClassFlag)
 
-#define _NhlErrorLayerClassFlag	0x040
+#define _NhlErrorClassFlag	0x040
 #define _NhlIsError(instance) \
 	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
-							_NhlErrorLayerClassFlag)
+							_NhlErrorClassFlag)
 
-#define _NhlTransObjLayerClassFlag		0x080
+#define _NhlTransObjClassFlag		0x080
 #define _NhlIsTransObj(instance) \
 	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
-							_NhlTransObjLayerClassFlag)
+							_NhlTransObjClassFlag)
 
-#define	_NhlDataCommLayerClassFlag	0x0100
+#define	_NhlDataCommClassFlag	0x0100
 #define	_NhlIsDataComm(instance) \
 	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
-							_NhlDataCommLayerClassFlag)
+							_NhlDataCommClassFlag)
 
-#define	_NhlDataItemLayerClassFlag	0x0200
+#define	_NhlDataItemClassFlag	0x0200
 #define	_NhlIsDataItem(instance) \
 	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
-							_NhlDataItemLayerClassFlag)
+							_NhlDataItemClassFlag)
 
-#define	_NhlDataMgrLayerClassFlag	0x0400
+#define	_NhlDataMgrClassFlag	0x0400
 #define	_NhlIsDataMgr(instance) \
 	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
-							_NhlDataMgrLayerClassFlag)
+							_NhlDataMgrClassFlag)
 
-#define	_NhlDataSpecLayerClassFlag	0x0800
+#define	_NhlDataSpecClassFlag	0x0800
 #define	_NhlIsDataSpec(instance) \
 	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
-							_NhlDataSpecLayerClassFlag)
+							_NhlDataSpecClassFlag)
 
-#define	_NhlAppLayerClassFlag	0x1000
+#define	_NhlAppClassFlag	0x1000
 #define	_NhlIsApp(instance) \
 	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
-							_NhlAppLayerClassFlag)
+							_NhlAppClassFlag)
 
 #define MIN(a,b)	(((a)<(b))?(a):(b))
 #define MAX(a,b)	(((a)>(b))?(a):(b))
@@ -174,7 +174,7 @@ typedef struct _NhlArgRec{
 typedef struct _NhlChildArgRec _NhlChildArgNode, *_NhlChildArgList; 
   
 struct _NhlChildArgRec{ 
-	NhlLayerClass		class; 
+	NhlClass		class; 
 	NhlBoolean		autosetval;
 	_NhlArgList		args; 
 	int			nargs; 
@@ -273,7 +273,7 @@ extern NhlErrorTypes _NhlVACreateChild(
 #if	NhlNeedVarArgProto
 	int		*pid,	/* pid return		*/
 	Const char	*name,	/* name of child	*/
-	NhlLayerClass	class,	/* class to create	*/
+	NhlClass	class,	/* class to create	*/
 	NhlLayer	parent,	/* parent of child	*/
 	...			/* args to set in child	*/
 #endif
@@ -283,7 +283,7 @@ extern NhlErrorTypes _NhlALCreateChild(
 #if	NhlNeedProto
 	int		*pid,		/* pid return		*/
 	Const char	*name,		/* name of child	*/
-	NhlLayerClass	class,		/* class to create	*/
+	NhlClass	class,		/* class to create	*/
 	NhlLayer	parent,		/* parent of child	*/
 	NhlSArgList	args_in,	/* args in		*/
 	int		nargs		/* number args		*/
@@ -318,15 +318,15 @@ extern NhlErrorTypes _NhlDestroyChild(
 /*VARARGS4*/
 extern NhlErrorTypes _NhlRegisterChildClass(
 #if	NhlNeedVarArgProto
-	NhlLayerClass	parent,		/* parent class			*/
-	NhlLayerClass	child,		/* child class			*/
+	NhlClass	parent,		/* parent class			*/
+	NhlClass	child,		/* child class			*/
 	NhlBoolean	autosetval,	/* SetValue im/ex plicite	*/
 	NhlBoolean	forward,	/* T-frwd listed F-excl listed	*/
 	...				/* resource names		*/
 #endif
 );
 
-extern NhlLayerClass _NhlClass(
+extern NhlClass _NhlClass(
 #if	NhlNeedProto
 	NhlLayer	/* layer	*/
 #endif
@@ -334,7 +334,7 @@ extern NhlLayerClass _NhlClass(
 
 extern Const char * _NhlClassName(
 #if	NhlNeedProto
-	NhlLayerClass  /* lc */
+	NhlClass  /* lc */
 #endif
 );
 
@@ -427,9 +427,9 @@ extern NhlErrorTypes _NhlSegDraw(
  * End of Draw.c functions
  */
 
-extern  NhlErrorTypes _NhlInitializeLayerClass(
+extern  NhlErrorTypes _NhlInitializeClass(
 #if	NhlNeedProto
-NhlLayerClass /* lc */
+NhlClass /* lc */
 #endif
 );
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataCommP.h,v 1.7 1995-02-17 10:23:08 boote Exp $
+ *      $Id: DataCommP.h,v 1.8 1995-04-07 10:41:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,10 +33,10 @@
 #define _NhlTAddData		".Add.Data"
 #define _NhlTRemoveData		".Rm.Data"
 
-typedef struct _NhlDataSpecLayerClassRec *NhlDataSpecLayerClass;
+typedef struct _NhlDataSpecClassRec *NhlDataSpecClass;
 typedef struct _NhlDataSpecLayerRec *NhlDataSpecLayer;
 
-typedef struct _NhlDataCommLayerClassRec *NhlDataCommLayerClass;
+typedef struct _NhlDataCommClassRec *NhlDataCommClass;
 typedef struct _NhlDataCommLayerRec *NhlDataCommLayer;
 
 typedef struct _NhlDataOffsetRec _NhlDataOffsetRec, *_NhlDataOffset;
@@ -66,7 +66,7 @@ struct _NhlDataOffsetRec{
 	unsigned int	offset;
 	NrmQuark	dsres_name;
 	unsigned int	dsoffset;
-	NhlLayerClass	dataspec_class;
+	NhlClass	dataspec_class;
 	NrmQuarkList	qlist;
 	_NhlDataOffset	next;
 };
@@ -92,19 +92,19 @@ typedef	NhlErrorTypes (*_NhlUpdateDataProc)(
 #endif
 );
 
-typedef struct _NhlDataCommLayerClassPart{
+typedef struct _NhlDataCommClassPart{
 	_NhlDataOffset		data_offsets;
 	_NhlUpdateDataProc	update_data;
-} NhlDataCommLayerClassPart;
+} NhlDataCommClassPart;
 
-typedef struct _NhlDataCommLayerClassRec{
-	NhlBaseLayerClassPart	base_class;
-	NhlViewLayerClassPart	view_class;
-	NhlTransformLayerClassPart	trans_class;
-	NhlDataCommLayerClassPart	datacomm_class;
-} NhlDataCommLayerClassRec;
+typedef struct _NhlDataCommClassRec{
+	NhlBaseClassPart	base_class;
+	NhlViewClassPart	view_class;
+	NhlTransformClassPart	trans_class;
+	NhlDataCommClassPart	datacomm_class;
+} NhlDataCommClassRec;
 
-extern NhlDataCommLayerClassRec NhldataCommLayerClassRec;
+extern NhlDataCommClassRec NhldataCommClassRec;
 
 /*
  * DataSpec definitions
@@ -127,16 +127,16 @@ typedef struct _NhlDataSpecLayerRec{
 	NhlDataSpecLayerPart	dataspec;
 } NhlDataSpecLayerRec;
 
-typedef struct _NhlDataSpecLayerClassPart{
+typedef struct _NhlDataSpecClassPart{
 	int	foo;
-} NhlDataSpecLayerClassPart;
+} NhlDataSpecClassPart;
 
-typedef struct _NhlDataSpecLayerClassRec{
-	NhlBaseLayerClassPart		base_class;
-	NhlDataSpecLayerClassPart	dataspec_class;
-} NhlDataSpecLayerClassRec;
+typedef struct _NhlDataSpecClassRec{
+	NhlBaseClassPart		base_class;
+	NhlDataSpecClassPart	dataspec_class;
+} NhlDataSpecClassRec;
 
-extern NhlDataSpecLayerClassRec NhldataSpecLayerClassRec;
+extern NhlDataSpecClassRec NhldataSpecClassRec;
 
 /*
  * Private API to be used by Sub-Classes for handling Data
@@ -145,10 +145,10 @@ extern NhlDataSpecLayerClassRec NhldataSpecLayerClassRec;
 /*VARARGS3*/
 extern NhlErrorTypes _NhlRegisterDataRes(
 #if	NhlNeedVarArgProto
-	NhlDataCommLayerClass	dc,		/* DataComm sub-class	*/
+	NhlDataCommClass	dc,		/* DataComm sub-class	*/
 	NrmString		data_res,	/* name of data res	*/
 	NrmString		dataspec_res,	/* name of data res	*/
-	NhlLayerClass		dataspec,	/* DataSpecific class	*/
+	NhlClass		dataspec,	/* DataSpecific class	*/
 	...					/* types requested	*/
 #endif
 );

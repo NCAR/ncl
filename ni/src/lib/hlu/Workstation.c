@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.34 1995-04-07 09:36:14 boote Exp $
+ *      $Id: Workstation.c,v 1.35 1995-04-07 10:44:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -525,13 +525,13 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes WorkstationClassPartInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	layerclass	/* layerclass to init	*/
+	NhlClass	layerclass	/* layerclass to init	*/
 #endif
 );
 
 static NhlErrorTypes WorkstationInitialize(
 #if	NhlNeedProto
-        NhlLayerClass,	/* class */
+        NhlClass,	/* class */
         NhlLayer,	/* req */
         NhlLayer,	/* new */
         _NhlArgList,	/* args */
@@ -662,13 +662,13 @@ NhlLayer	/* instance */
 */
 
 
-NhlWorkstationLayerClassRec NhlworkstationLayerClassRec = {
+NhlWorkstationClassRec NhlworkstationClassRec = {
         {
-/* class_name			*/	"workstationLayerClass",
+/* class_name			*/	"workstationClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlWorkstationLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlbaseLayerClassRec,
+/* superclass			*/	(NhlClass)&NhlbaseClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -705,7 +705,7 @@ NhlWorkstationLayerClassRec NhlworkstationLayerClassRec = {
 	}
 };
 
-NhlLayerClass NhlworkstationLayerClass = (NhlLayerClass)&NhlworkstationLayerClassRec;
+NhlClass NhlworkstationClass = (NhlClass)&NhlworkstationClassRec;
 
 /*
  * Function:	WorkstationClassInitialize
@@ -897,16 +897,16 @@ static NhlErrorTypes
 WorkstationClassPartInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	layerclass	/* layerclass to init	*/
+	NhlClass	layerclass	/* layerclass to init	*/
 )
 #else
 (layerclass)
-	NhlLayerClass	layerclass;	/* layerclass to init	*/
+	NhlClass	layerclass;	/* layerclass to init	*/
 #endif
 {
-	NhlWorkstationLayerClass	lc =
-					(NhlWorkstationLayerClass)layerclass;
-	NhlWorkstationLayerClass	sc = (NhlWorkstationLayerClass)
+	NhlWorkstationClass	lc =
+					(NhlWorkstationClass)layerclass;
+	NhlWorkstationClass	sc = (NhlWorkstationClass)
 						lc->base_class.superclass;
 
 	if(lc->work_class.open_work == NhlInheritOpen)
@@ -958,10 +958,10 @@ WorkstationClassPartInitialize
 /*ARGSUSED*/
 static NhlErrorTypes WorkstationInitialize
 #if  NhlNeedProto
-( NhlLayerClass class,  NhlLayer req, NhlLayer new, _NhlArgList args , int num_args  )
+( NhlClass class,  NhlLayer req, NhlLayer new, _NhlArgList args , int num_args  )
 #else
 ( class,  req, new, args , num_args  )
-	NhlLayerClass 	class;
+	NhlClass 	class;
 	NhlLayer		req;
 	NhlLayer		new;
 	_NhlArgList		args;
@@ -2950,8 +2950,8 @@ NhlErrorTypes _NhlOpenWorkstation
 #endif
 {
 	char				func[] = "_NhlOpenWorkstation";
-	NhlWorkstationLayerClassPart	*wc =
-		&((NhlWorkstationLayerClass)wks->base.layer_class)->work_class;
+	NhlWorkstationClassPart	*wc =
+		&((NhlWorkstationClass)wks->base.layer_class)->work_class;
 
 	if(_NhlIsWorkstation(wks)) {
 		return (*(wc->open_work))(wks);
@@ -2971,8 +2971,8 @@ NhlErrorTypes _NhlCloseWorkstation
 #endif
 {
 	char				func[] = "_NhlCloseWorkstation";
-	NhlWorkstationLayerClassPart	*wc =
-		&((NhlWorkstationLayerClass)wks->base.layer_class)->work_class;
+	NhlWorkstationClassPart	*wc =
+		&((NhlWorkstationClass)wks->base.layer_class)->work_class;
 
 	if(_NhlIsWorkstation(wks)) {
 		return (*(wc->close_work))(wks);
@@ -3005,8 +3005,8 @@ NhlErrorTypes _NhlActivateWorkstation
 #endif
 {
 	char				func[] = "_NhlActivateWorkstation";
-	NhlWorkstationLayerClassPart	*wc =
-		&((NhlWorkstationLayerClass)wks->base.layer_class)->work_class;
+	NhlWorkstationClassPart	*wc =
+		&((NhlWorkstationClass)wks->base.layer_class)->work_class;
 
 	if(_NhlIsWorkstation(wks)) {
 		return (*(wc->activate_work))(wks);
@@ -3040,8 +3040,8 @@ NhlErrorTypes _NhlDeactivateWorkstation
 #endif
 {
 	char				func[] = "_NhlDeactivateWorkstation";
-	NhlWorkstationLayerClassPart	*wc =
-		&((NhlWorkstationLayerClass)wks->base.layer_class)->work_class;
+	NhlWorkstationClassPart	*wc =
+		&((NhlWorkstationClass)wks->base.layer_class)->work_class;
 
 	if(_NhlIsWorkstation(wks)) {
 		return (*(wc->deactivate_work))(wks);
@@ -3079,7 +3079,7 @@ NhlUpdateWorkstation
 #endif
 {
 	NhlLayer			l = _NhlGetLayer(workid);
-	NhlWorkstationLayerClass	lc;
+	NhlWorkstationClass	lc;
 
 	if(l == (NhlLayer)NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -3093,7 +3093,7 @@ NhlUpdateWorkstation
 		return NhlFATAL;
 	}
 
-	lc = (NhlWorkstationLayerClass)l->base.layer_class;
+	lc = (NhlWorkstationClass)l->base.layer_class;
 
 	return (*(lc->work_class.update_work))(l);
 }
@@ -3155,7 +3155,7 @@ NhlClearWorkstation
 #endif
 {
 	NhlLayer			l = _NhlGetLayer(workid);
-	NhlWorkstationLayerClass	lc;
+	NhlWorkstationClass	lc;
 
 	if(l == (NhlLayer)NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -3169,7 +3169,7 @@ NhlClearWorkstation
 		return NhlFATAL;
 	}
 
-	lc = (NhlWorkstationLayerClass)l->base.layer_class;
+	lc = (NhlWorkstationClass)l->base.layer_class;
 
 	return (*(lc->work_class.clear_work))(l);
 }
@@ -3473,8 +3473,8 @@ float y;
 int upordown;
 #endif
 {
-	NhlWorkstationLayerClassPart *wcp =
-	&((NhlWorkstationLayerClass)instance->base.layer_class)->work_class;
+	NhlWorkstationClassPart *wcp =
+	&((NhlWorkstationClass)instance->base.layer_class)->work_class;
 
 	return (*wcp->lineto_work)(instance,x,y,upordown);
 }
@@ -3761,8 +3761,8 @@ NhlErrorTypes _NhlWorkstationFill
 	int		num_points;
 #endif
 {
-	NhlWorkstationLayerClassPart *wcp =
-	&((NhlWorkstationLayerClass)instance->base.layer_class)->work_class;
+	NhlWorkstationClassPart *wcp =
+	&((NhlWorkstationClass)instance->base.layer_class)->work_class;
 
 	return (*wcp->fill_work)(instance,x,y,num_points);
 }
@@ -4233,8 +4233,8 @@ NhlErrorTypes _NhlWorkstationMarker
 	int		num_points;
 #endif
 {
-	NhlWorkstationLayerClassPart *wcp =
-	&((NhlWorkstationLayerClass)instance->base.layer_class)->work_class;
+	NhlWorkstationClassPart *wcp =
+	&((NhlWorkstationClass)instance->base.layer_class)->work_class;
 
 	return (*wcp->marker_work)(instance,x,y,num_points);
 }

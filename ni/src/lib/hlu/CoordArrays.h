@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.h,v 1.8 1995-04-07 00:39:50 dbrown Exp $
+ *      $Id: CoordArrays.h,v 1.9 1995-04-07 10:41:21 boote Exp $
  */
 /************************************************************************
 *									*
@@ -57,6 +57,6 @@ typedef enum _NhlcaCastMode {
 	NhlSPLITVECTORS = 3
 } NhlcaCastMode;
 
-extern NhlLayerClass NhlcoordArraysLayerClass;
+extern NhlClass NhlcoordArraysClass;
 
 #endif /*_NCoordArrays_h */

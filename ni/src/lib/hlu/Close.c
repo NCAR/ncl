@@ -1,5 +1,5 @@
 /*
- *      $Id: Close.c,v 1.10 1995-02-17 10:22:56 boote Exp $
+ *      $Id: Close.c,v 1.11 1995-04-07 10:40:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -51,8 +51,8 @@ static void _NhlClose
 	/*
 	 * Destroy all remaining layer objects. By destroying the "default_app".
 	 */
-	if(NhlappLayerClassRec.app_class.default_app)
-		NhlDestroy(NhlappLayerClassRec.app_class.default_app->base.id);
+	if(NhlappClassRec.app_class.default_app)
+		NhlDestroy(NhlappClassRec.app_class.default_app->base.id);
 
 	return;
 }

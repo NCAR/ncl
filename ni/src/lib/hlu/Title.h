@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.h,v 1.2 1994-01-27 21:26:37 boote Exp $
+ *      $Id: Title.h,v 1.3 1995-04-07 10:44:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -122,6 +122,6 @@
 typedef NhlPosition	NhlTitlePositions;
 #define NhlTTitlePositions	"TitlePositions"
 
-extern NhlLayerClass NhltitleLayerClass;
+extern NhlClass NhltitleClass;
 
 #endif /*_NTitle_h */

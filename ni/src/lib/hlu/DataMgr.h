@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgr.h,v 1.2 1994-01-27 21:22:45 boote Exp $
+ *      $Id: DataMgr.h,v 1.3 1995-04-07 10:41:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,6 @@
  */
 typedef struct _NhlDHandleRec *_NhlDHandle;
 
-extern NhlLayerClass NhldataMgrLayerClass;
+extern NhlClass NhldataMgrClass;
 
 #endif /*_NDataMgr_h */

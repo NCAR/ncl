@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.h,v 1.7 1995-02-17 10:23:31 boote Exp $
+ *      $Id: TickMark.h,v 1.8 1995-04-07 10:43:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -470,6 +470,6 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlCtmYRLabels		"TmYRLabels"
 #define NhlCtmYRLabelDeltaF	"TmYRLabelDeltaF"
 
-extern NhlLayerClass NhltickMarkLayerClass;
+extern NhlClass NhltickMarkClass;
 
 #endif /*_NTickMark_h */

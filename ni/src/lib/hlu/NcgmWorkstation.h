@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.h,v 1.2 1994-01-27 21:25:10 boote Exp $
+ *      $Id: NcgmWorkstation.h,v 1.3 1995-04-07 10:43:12 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,6 @@
 #define	NhlNwkMetaName	"wkMetaName"
 #define NhlCwkMetaName	"WkMetaName"
 
-extern NhlLayerClass NhlncgmWorkstationLayerClass;
+extern NhlClass NhlncgmWorkstationClass;
 
 #endif /* _NNcgmWorkstation_h */

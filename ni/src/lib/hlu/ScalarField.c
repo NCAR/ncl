@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.14 1995-01-19 22:04:57 boote Exp $
+ *      $Id: ScalarField.c,v 1.15 1995-04-07 10:43:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -112,7 +112,7 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes ScalarFieldClassPartInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc	/* lc to init	*/
+	NhlClass	lc	/* lc to init	*/
 #endif
 );
 
@@ -124,7 +124,7 @@ static NhlErrorTypes ScalarFieldClassInitialize(
 
 static NhlErrorTypes ScalarFieldInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc,	/* class	*/
+	NhlClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
 	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
@@ -165,14 +165,14 @@ static NhlErrorTypes    CheckCopyVType(
 #endif
 );
 
-NhlScalarFieldFloatLayerClassRec NhlscalarFieldFloatLayerClassRec = {
-	/* NhlBaseLayerClassPart */
+NhlScalarFieldFloatClassRec NhlscalarFieldFloatClassRec = {
+	/* NhlBaseClassPart */
 	{
-/* class_name			*/	"scalarFieldFloatLayerClass",
+/* class_name			*/	"scalarFieldFloatClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlScalarFieldFloatLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlobjLayerClassRec,
+/* superclass			*/	(NhlClass)&NhlobjClassRec,
 
 /* resources			*/	NULL,
 /* num_resources		*/	0,
@@ -193,15 +193,15 @@ NhlScalarFieldFloatLayerClassRec NhlscalarFieldFloatLayerClassRec = {
 	}
 };
 
-NhlScalarFieldLayerClassRec NhlscalarFieldLayerClassRec = {
-	/* NhlBaseLayerClassPart */
+NhlScalarFieldClassRec NhlscalarFieldClassRec = {
+	/* NhlBaseClassPart */
 	{
-/* class_name			*/	"scalarFieldLayerClass",
+/* class_name			*/	"scalarFieldClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlScalarFieldLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)
-						&NhldataItemLayerClassRec,
+/* superclass			*/	(NhlClass)
+						&NhldataItemClassRec,
 /* resources			*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
@@ -224,20 +224,20 @@ NhlScalarFieldLayerClassRec NhlscalarFieldLayerClassRec = {
 /* layer_post_draw		*/	NULL,
 /* layer_clear			*/	NULL
 	},
-	/* NhlDataItemLayerClassPart */
+	/* NhlDataItemClassPart */
 	{
 /* foo				*/	0
 	},
-	/* NhlScalarFieldLayerClassPart */
+	/* NhlScalarFieldClassPart */
 	{
 /* foo				*/	0
 	}
 };
 	
-NhlLayerClass NhlscalarFieldLayerClass = (NhlLayerClass)
-					&NhlscalarFieldLayerClassRec;
-NhlLayerClass NhlscalarFieldFloatLayerClass = (NhlLayerClass)
-					&NhlscalarFieldFloatLayerClassRec;
+NhlClass NhlscalarFieldClass = (NhlClass)
+					&NhlscalarFieldClassRec;
+NhlClass NhlscalarFieldFloatClass = (NhlClass)
+					&NhlscalarFieldFloatClassRec;
 
 static	NrmQuark	Qfloat  = NrmNULLQUARK;
 static	NrmQuark	Qint  = NrmNULLQUARK;
@@ -279,11 +279,11 @@ typedef enum _sfCoord { sfXCOORD, sfYCOORD} sfCoord;
  * Out Args:	
  *
  * Scope:	global Fortran
- * Returns:	NhlLayerClass
+ * Returns:	NhlClass
  * Side Effect:	
  */
-NhlLayerClass
-_NHLCALLF(nhlfscalarfieldlayerclass,NHLFSCALARFIELDLAYERCLASS)
+NhlClass
+_NHLCALLF(nhlfscalarfieldclass,NHLFSCALARFIELDCLASS)
 #if	NhlNeedProto
 (
 	void
@@ -292,7 +292,7 @@ _NHLCALLF(nhlfscalarfieldlayerclass,NHLFSCALARFIELDLAYERCLASS)
 ()
 #endif
 {
-	return NhlscalarFieldLayerClass;
+	return NhlscalarFieldClass;
 }
 
 
@@ -1685,7 +1685,7 @@ CvtGenSFObjToFloatSFObj
 
 	sfl = (NhlScalarFieldLayer)_NhlGetLayer(from->data.intval);
 	if ((sfl == NULL) ||
-	    (sfl->base.layer_class != NhlscalarFieldLayerClass)){
+	    (sfl->base.layer_class != NhlscalarFieldClass)){
 		e_text = "%s:Called w/ improper \"from\" object";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
@@ -1703,7 +1703,7 @@ CvtGenSFObjToFloatSFObj
  * Create a scalar field float data object
  */
 	subret = NhlALCreate(to->data.ptrval,"no.name",
-			     NhlscalarFieldFloatLayerClass,
+			     NhlscalarFieldFloatClass,
 			     sfl->base.id,sargs,nargs);
 
 	if ((sffl = (NhlScalarFieldFloatLayer)
@@ -1985,8 +1985,8 @@ ScalarFieldClassInitialize
 	Qy_index_end  = NrmStringToQuark(NhlNsfYCEndIndex);
 
 	ret = NhlRegisterConverter(
-			NhlscalarFieldLayerClass->base_class.class_name,
-			NhlscalarFieldFloatLayerClass->base_class.class_name,
+			NhlscalarFieldClass->base_class.class_name,
+			NhlscalarFieldFloatClass->base_class.class_name,
 			CvtGenSFObjToFloatSFObj,NULL,0,False,NULL);
 	return ret;
 }
@@ -1998,7 +1998,7 @@ ScalarFieldClassInitialize
  *		of the layer class record of this class and of all sub-classes.
  *
  * In Args:	
- *		NhlLayerClass	lc	pointer to class structure
+ *		NhlClass	lc	pointer to class structure
  *
  * Out Args:	
  *
@@ -2010,16 +2010,16 @@ static NhlErrorTypes
 ScalarFieldClassPartInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc	/* pointer to class structure	*/
+	NhlClass	lc	/* pointer to class structure	*/
 )
 #else
 (lc)
-	NhlLayerClass	lc;	/* pointer to class structure	*/
+	NhlClass	lc;	/* pointer to class structure	*/
 #endif
 {
 	NhlErrorTypes		ret;
 
-	ret = _NhlRegisterChildClass(lc,NhlscalarFieldFloatLayerClass,
+	ret = _NhlRegisterChildClass(lc,NhlscalarFieldFloatClass,
 				     True,False,NULL);
 
 	return ret;
@@ -2033,7 +2033,7 @@ ScalarFieldClassPartInitialize
  *		class object.
  *
  * In Args:	
- *	NhlLayerClass	lc,	class
+ *	NhlClass	lc,	class
  *	NhlLayer	req,	requested
  *	NhlLayer	new,	new
  *	_NhlArgList	args,	args
@@ -2050,7 +2050,7 @@ static NhlErrorTypes
 ScalarFieldInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc,	/* class	*/
+	NhlClass	lc,	/* class	*/
 	NhlLayer	req,	/* requested	*/
 	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
@@ -2058,7 +2058,7 @@ ScalarFieldInitialize
 )
 #else
 (lc,req,new,args,nargs)
-	NhlLayerClass	lc;	/* class	*/
+	NhlClass	lc;	/* class	*/
 	NhlLayer	req;	/* requested	*/
 	NhlLayer	new;	/* new		*/
 	_NhlArgList	args;	/* args		*/
@@ -2532,8 +2532,8 @@ static NhlScalarFieldFloatLayer ForceConvert
 	from.data.intval = sfl->base.id;
 	to.size = sizeof(NhlScalarFieldFloatLayerRec);
 	to.data.ptrval = &id;
-	ret = NhlConvertData(NhlscalarFieldLayerClass->base_class.class_name,
-			NhlscalarFieldFloatLayerClass->base_class.class_name,
+	ret = NhlConvertData(NhlscalarFieldClass->base_class.class_name,
+			NhlscalarFieldFloatClass->base_class.class_name,
 			     &from,&to);
 	if (ret < NhlWARNING ||
 	    (sffl = (NhlScalarFieldFloatLayer) _NhlGetLayer(id)) == NULL) {
@@ -3063,7 +3063,7 @@ static NhlErrorTypes    ScalarFieldGetValues
  * Function:	ScalarFieldDestroy
  *
  * Description:	This function free's any memory that has been allocated
- *		on behalf of this instance of the NhlScalarFieldLayerClass.
+ *		on behalf of this instance of the NhlScalarFieldClass.
  *
  * In Args:	NhlLayer	l
  *

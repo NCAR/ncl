@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.6 1995-04-07 09:35:58 boote Exp $
+ *      $Id: PlotManager.c,v 1.7 1995-04-07 10:43:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -351,13 +351,13 @@ static NhlErrorTypes PlotManagerClassInitialize(
 
 static NhlErrorTypes PlotManagerClassPartInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc
+	NhlClass	lc
 #endif
 );
 
 static NhlErrorTypes PlotManagerInitialize(
 #if	NhlNeedProto
-        NhlLayerClass	class,
+        NhlClass	class,
         NhlLayer	req,
         NhlLayer	new,
         _NhlArgList	args,
@@ -576,13 +576,13 @@ static NhlErrorTypes DissolveOverlay(
 #endif
 );
 
-NhlPlotManagerLayerClassRec NhlplotManagerLayerClassRec = {
+NhlPlotManagerClassRec NhlplotManagerClassRec = {
         {
-/* class_name			*/      "plotManagerLayerClass",
+/* class_name			*/      "plotManagerClass",
 /* nrm_class			*/      NrmNULLQUARK,
 /* layer_size			*/      sizeof(NhlPlotManagerLayerRec),
 /* class_inited			*/      False,
-/* superclass			*/  (NhlLayerClass)&NhltransformLayerClassRec,
+/* superclass			*/  (NhlClass)&NhltransformClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -623,8 +623,8 @@ NhlPlotManagerLayerClassRec NhlplotManagerLayerClassRec = {
 	}
 };
 
-NhlLayerClass NhlplotManagerLayerClass = 
-		(NhlLayerClass)&NhlplotManagerLayerClassRec;
+NhlClass NhlplotManagerClass = 
+		(NhlClass)&NhlplotManagerClassRec;
 
 static NrmQuark Qplot_ids;
 static NrmQuark Qoverlay_recs;
@@ -687,10 +687,10 @@ PlotManagerClassInitialize
  * Function:	PlotManagerClassPartInitialize
  *
  * Description:	This function initializes fields in the 
- *		NhlPlotManagerLayerClassPart that cannot be initialized statically.
+ *		NhlPlotManagerClassPart that cannot be initialized statically.
  *
  * In Args:	
- *		NhlLayerClass	lc	NhlLayer Class to init
+ *		NhlClass	lc	NhlLayer Class to init
  *
  * Out Args:	
  *
@@ -703,16 +703,16 @@ static NhlErrorTypes
 PlotManagerClassPartInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc	/* NhlLayer Class to init	*/
+	NhlClass	lc	/* NhlLayer Class to init	*/
 )
 #else
 (lc)
-	NhlLayerClass	lc;	/* NhlLayer Class to init	*/
+	NhlClass	lc;	/* NhlLayer Class to init	*/
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
 
-	subret = _NhlRegisterChildClass(lc,NhltickMarkLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhltickMarkClass,
 					False,False,
 					NhlNtmXBDataLeftF,
 					NhlNtmXBDataRightF,
@@ -739,7 +739,7 @@ PlotManagerClassPartInitialize
 	if ((ret = MIN(subret,ret)) < NhlWARNING)
 		return ret;
 
-	subret = _NhlRegisterChildClass(lc,NhltitleLayerClass,False,False,
+	subret = _NhlRegisterChildClass(lc,NhltitleClass,False,False,
 					NhlNtiMainOffsetXF,
 					NhlNtiXAxisOffsetXF, 
 					NhlNtiYAxisOffsetYF, 
@@ -754,7 +754,7 @@ PlotManagerClassPartInitialize
 	if ((ret = MIN(subret,ret)) < NhlWARNING)
 		return ret;
 
-	subret = _NhlRegisterChildClass(lc,NhllabelBarLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhllabelBarClass,
 					False,False,
 					NhlNlbLabelBarOn,
 					NhlNlbJustification,
@@ -764,7 +764,7 @@ PlotManagerClassPartInitialize
 	if ((ret = MIN(subret,ret)) < NhlWARNING)
 		return ret;
 
-	subret = _NhlRegisterChildClass(lc,NhllegendLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhllegendClass,
 					False,False,
 					NhlNlgLegendOn,
 					NhlNlgJustification,
@@ -797,7 +797,7 @@ static NhlErrorTypes
 PlotManagerInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	class,
+	NhlClass	class,
 	NhlLayer		req,
 	NhlLayer		new,
 	_NhlArgList	args,
@@ -805,7 +805,7 @@ PlotManagerInitialize
 )
 #else
 (class,req,new,args,num_args)
-        NhlLayerClass      class;
+        NhlClass      class;
         NhlLayer           req;
         NhlLayer           new;
         _NhlArgList     args;
@@ -3495,17 +3495,17 @@ ManageTickMarks
 	trobj_name = (trobj->base.layer_class)->base_class.class_name;
 
 	if (trobj_name == 
-	    NhllogLinTransObjLayerClass->base_class.class_name) {
+	    NhllogLinTransObjClass->base_class.class_name) {
 		ovp->x_tm_style = (x_log == 1) ? NhlLOG : NhlLINEAR;
 		ovp->y_tm_style = (y_log == 1) ? NhlLOG : NhlLINEAR;
 	}
 	else if (trobj_name ==
-		 NhlirregularTransObjLayerClass->base_class.class_name) {
+		 NhlirregularTransObjClass->base_class.class_name) {
 		ovp->x_tm_style = NhlLINEAR;
 		ovp->y_tm_style = NhlLINEAR;
 	}
 	else if (trobj_name ==
-		 NhlmapTransObjLayerClass->base_class.class_name) {
+		 NhlmapTransObjClass->base_class.class_name) {
 		e_text = 
 	"%s: MAP tick mark style not yet implemented; turning tick marks off";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
@@ -3523,7 +3523,7 @@ ManageTickMarks
 			return MIN(subret,ret);
 		}
 	}
-	else if (trobj_name== NhlirregularType2TransObjLayerClass->base_class.class_name) {
+	else if (trobj_name== NhlirregularType2TransObjClass->base_class.class_name) {
 		tm_style = NhlIRREGULAR;
 		ovp->x_tm_style = NhlIRREGULAR;
 		ovp->y_tm_style = NhlIRREGULAR;
@@ -3644,7 +3644,7 @@ ManageTickMarks
 		}
 		strcpy(buffer,ovnew->base.name);
 		strcat(buffer,".TickMark");
-		subret = _NhlALCreateChild(&tmpid,buffer,NhltickMarkLayerClass,
+		subret = _NhlALCreateChild(&tmpid,buffer,NhltickMarkClass,
 					   (NhlLayer)ovnew,sargs,nargs);
 
 		if ((ret = MIN(ret,subret)) < NhlWARNING || 
@@ -3932,7 +3932,7 @@ ManageTitles
 		NhlSetSArg(&sargs[nargs++],
 			   NhlNtiMainPosition,ovp->ti_main_position);
 
-		subret = _NhlALCreateChild(&tmpid,buffer,NhltitleLayerClass,
+		subret = _NhlALCreateChild(&tmpid,buffer,NhltitleClass,
 					   (NhlLayer)ovnew,sargs,nargs);
 
 		if ((ret = MIN(ret,subret)) < NhlWARNING || 
@@ -4226,7 +4226,7 @@ ManageLabelBar
 	if (ovp->labelbar == NULL) {	
 		strcpy(buffer,ovnew->base.name);
 		strcat(buffer,".LabelBar");
-		subret = _NhlVACreateChild(&tmpid,buffer,NhllabelBarLayerClass,
+		subret = _NhlVACreateChild(&tmpid,buffer,NhllabelBarClass,
 				    (NhlLayer)ovnew,
 				    NhlNvpUseSegments,ovnew->view.use_segments,
 				    NhlNvpXF,ovp->lbar_x,
@@ -4464,7 +4464,7 @@ ManageLegend
 	if (ovp->legend == NULL) {	
 		strcpy(buffer,ovnew->base.name);
 		strcat(buffer,".Legend");
-		subret = _NhlVACreateChild(&tmpid,buffer,NhllegendLayerClass,
+		subret = _NhlVACreateChild(&tmpid,buffer,NhllegendClass,
 				    (NhlLayer)ovnew,
 				    NhlNvpUseSegments,ovnew->view.use_segments,
 				    NhlNvpXF,ovp->lgnd_x,
@@ -4638,7 +4638,7 @@ NhlErrorTypes NhlAddOverlay
 	NhlPlotManagerLayer	ovl;
 	NhlPlotManagerLayerPart	*ovp;
 	NhlTransformLayerPart	*plot_tfp;
-	NhlTransformLayerClassRec	*plot_classp;
+	NhlTransformClassRec	*plot_classp;
 
 	NhlGenArray		ga;
 	int			plot_count = 0;
@@ -4686,7 +4686,7 @@ NhlErrorTypes NhlAddOverlay
 /*
  * Test to ensure the added plot can handle becoming an overlay member. 
  */
-	plot_classp = (NhlTransformLayerClassRec *) _NhlClass(plot);
+	plot_classp = (NhlTransformClassRec *) _NhlClass(plot);
 	if (plot_classp->trans_class.overlay_capability ==
 	    					_tfNotOverlayCapable ||
 	    plot_classp->trans_class.overlay_capability ==
@@ -5127,7 +5127,7 @@ NhlLayer GetPlotOverlay
 	    tfp->overlay_status == _tfNotInOverlay ||
 	    ovl == NULL || ! _NhlIsTransform((NhlLayer) ovl) ||
 	    (ovl->base.layer_class)->base_class.class_name !=
-	    NhlplotManagerLayerClass->base_class.class_name) {
+	    NhlplotManagerClass->base_class.class_name) {
 		e_text = "%s: plot not associated with an PlotManager";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NULL;
@@ -5365,7 +5365,7 @@ int _NhlAddAnnotation
  */
 
 	subret = NhlVACreate(&anno_id,anno_view->base.name,
-			     NhlannoManagerLayerClass,
+			     NhlannoManagerClass,
 			     overlay->base.parent->base.id,
 			     NhlNamViewId, anno_view->base.id,
 			     NULL);
@@ -5441,7 +5441,7 @@ NhlErrorTypes NhlRemoveAnnotation
  */
 	if (annomanager == NULL || ! _NhlIsObj(annomanager) ||
 	(annomanager->base.layer_class)->base_class.class_name !=
-	    NhlannoManagerLayerClass->base_class.class_name) {
+	    NhlannoManagerClass->base_class.class_name) {
 		e_text = "%s: invalid AnnoManager object id";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
@@ -6283,7 +6283,7 @@ extern NhlErrorTypes _NhlManageOverlay
 		
 		tfp->overlay_trans_obj = tfp->trans_obj;
 		subret = _NhlALCreateChild(&tmpid,buffer,
-					   NhlplotManagerLayerClass,
+					   NhlplotManagerClass,
 					   lnew,lsargs,nargs);
 
 		ret = MIN(ret,subret);

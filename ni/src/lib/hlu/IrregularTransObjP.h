@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObjP.h,v 1.5 1994-01-27 21:23:20 boote Exp $
+ *      $Id: IrregularTransObjP.h,v 1.6 1995-04-07 10:42:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -73,20 +73,20 @@ typedef struct _NhlIrregularTransObjLayerRec {
 	NhlIrregularTransObjLayerPart	irtrans;
 } NhlIrregularTransObjLayerRec;
 
-typedef struct _NhlIrregularTransObjLayerClassPart {
+typedef struct _NhlIrregularTransObjClassPart {
 	char *foo;
-}NhlIrregularTransObjLayerClassPart;
+}NhlIrregularTransObjClassPart;
 
-typedef struct _NhlIrregularTransObjLayerClassRec {
-	NhlObjLayerClassPart			base_class;
-	NhlTransObjLayerClassPart		trobj_class;
-	NhlIrregularTransObjLayerClassPart	irtrans_class;
-}NhlIrregularTransObjLayerClassRec;
+typedef struct _NhlIrregularTransObjClassRec {
+	NhlObjClassPart			base_class;
+	NhlTransObjClassPart		trobj_class;
+	NhlIrregularTransObjClassPart	irtrans_class;
+}NhlIrregularTransObjClassRec;
 
-typedef struct _NhlIrregularTransObjLayerClassRec
-					*NhlIrregularTransObjLayerClass;
+typedef struct _NhlIrregularTransObjClassRec
+					*NhlIrregularTransObjClass;
 typedef struct _NhlIrregularTransObjLayerRec	*NhlIrregularTransObjLayer;
 
-extern NhlIrregularTransObjLayerClassRec NhlirregularTransObjLayerClassRec;
+extern NhlIrregularTransObjClassRec NhlirregularTransObjClassRec;
 
 #endif /* _NIrregularTransObjP_h */

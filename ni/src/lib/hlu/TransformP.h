@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformP.h,v 1.12 1995-04-01 00:04:17 dbrown Exp $
+ *      $Id: TransformP.h,v 1.13 1995-04-07 10:44:12 boote Exp $
  */
 /************************************************************************
 *									*
@@ -106,24 +106,24 @@ typedef NhlErrorTypes (*NhlTransPolyFunc)(
 #define	NhlInheritTransFunc	((NhlTransFunction)_NhlInherit)
 #define	NhlInheritPolyTransFunc	((NhlTransPolyFunc)_NhlInherit)
 
-typedef struct NhlTransformLayerClassPart{
+typedef struct NhlTransformClassPart{
 	NhltfOverlayCapability	overlay_capability;
 	NhlTransFunction	data_to_ndc;
 	NhlTransFunction	ndc_to_data;
 	NhlTransPolyFunc	data_polyline;
 	NhlTransPolyFunc	ndc_polyline;
-} NhlTransformLayerClassPart;
+} NhlTransformClassPart;
 
-typedef struct _NhlTransformLayerClassRec{
-	NhlBaseLayerClassPart	base_class;
-	NhlViewLayerClassPart	view_class;
-	NhlTransformLayerClassPart	trans_class;
-} NhlTransformLayerClassRec;
+typedef struct _NhlTransformClassRec{
+	NhlBaseClassPart	base_class;
+	NhlViewClassPart	view_class;
+	NhlTransformClassPart	trans_class;
+} NhlTransformClassRec;
 
 
-typedef struct _NhlTransformLayerClassRec *NhlTransformLayerClass;
+typedef struct _NhlTransformClassRec *NhlTransformClass;
 typedef struct _NhlTransformLayerRec *NhlTransformLayer;
 
-extern NhlTransformLayerClassRec NhltransformLayerClassRec;
+extern NhlTransformClassRec NhltransformClassRec;
 
 #endif  /* _NTRANSFORMP_h */

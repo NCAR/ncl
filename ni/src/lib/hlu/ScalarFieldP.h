@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarFieldP.h,v 1.4 1994-09-12 21:01:13 dbrown Exp $
+ *      $Id: ScalarFieldP.h,v 1.5 1995-04-07 10:43:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -82,20 +82,20 @@ typedef struct _NhlScalarFieldLayerRec{
 	NhlScalarFieldLayerPart		sfield;
 } NhlScalarFieldLayerRec;
 
-typedef struct _NhlScalarFieldLayerClassPart{
+typedef struct _NhlScalarFieldClassPart{
 	int	foo;
-} NhlScalarFieldLayerClassPart;
+} NhlScalarFieldClassPart;
 
-typedef struct _NhlScalarFieldLayerClassRec{
-	NhlBaseLayerClassPart		base_class;
-	NhlDataItemLayerClassPart	dataitem_class;
-	NhlScalarFieldLayerClassPart	sfield_class;
-} NhlScalarFieldLayerClassRec;
+typedef struct _NhlScalarFieldClassRec{
+	NhlBaseClassPart		base_class;
+	NhlDataItemClassPart	dataitem_class;
+	NhlScalarFieldClassPart	sfield_class;
+} NhlScalarFieldClassRec;
 
-typedef struct _NhlScalarFieldLayerClassRec *NhlScalarFieldLayerClass;
+typedef struct _NhlScalarFieldClassRec *NhlScalarFieldClass;
 typedef struct _NhlScalarFieldLayerRec *NhlScalarFieldLayer;
 
-extern NhlScalarFieldLayerClassRec NhlscalarFieldLayerClassRec;
+extern NhlScalarFieldClassRec NhlscalarFieldClassRec;
 
 #endif  /* _NScalarFieldP_h */
 

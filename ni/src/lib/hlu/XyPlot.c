@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.43 1995-04-07 09:36:17 boote Exp $
+ *      $Id: XyPlot.c,v 1.44 1995-04-07 10:44:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -363,7 +363,7 @@ static NhlErrorTypes XyPlotGetValues(
 
 static NhlErrorTypes XyDataInitialize(
 #if	NhlNeedProto
-        NhlLayerClass,     /* cname */
+        NhlClass,     /* cname */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
         _NhlArgList,    /* args */
@@ -373,7 +373,7 @@ static NhlErrorTypes XyDataInitialize(
 
 static NhlErrorTypes XyPlotInitialize(
 #if	NhlNeedProto
-        NhlLayerClass,     /* cptr */
+        NhlClass,     /* cptr */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
         _NhlArgList,    /* args */
@@ -383,7 +383,7 @@ static NhlErrorTypes XyPlotInitialize(
 
 static NhlErrorTypes XyPlotClassPartInitialize(
 #if	NhlNeedProto
-	NhlLayerClass	lc
+	NhlClass	lc
 #endif
 );
 
@@ -507,15 +507,15 @@ static NhlErrorTypes DrawCurves(
 #endif
 );
 
-NhlXyDataSpecLayerClassRec NhlxyDataSpecLayerClassRec = {
+NhlXyDataSpecClassRec NhlxyDataSpecClassRec = {
 	/* base_class */
         {
-/* class_name			*/	"xyDataSpecLayerClass",
+/* class_name			*/	"xyDataSpecClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlXyDataSpecLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)
-						&NhldataSpecLayerClassRec,
+/* superclass			*/	(NhlClass)
+						&NhldataSpecClassRec,
 
 /* layer_resources		*/	data_resources,
 /* num_resources		*/	NhlNumber(data_resources),
@@ -540,15 +540,15 @@ NhlXyDataSpecLayerClassRec NhlxyDataSpecLayerClassRec = {
 	}
 };
 
-NhlXyPlotLayerClassRec NhlxyPlotLayerClassRec = {
+NhlXyPlotClassRec NhlxyPlotClassRec = {
 	/* base_class */
         {
-/* class_name                   */      "xyPlotLayerClass",
+/* class_name                   */      "xyPlotClass",
 /* nrm_class                    */      NrmNULLQUARK,
 /* layer_size                   */      sizeof(NhlXyPlotLayerRec),
 /* class_inited                 */      False,
-/* superclass                   */      (NhlLayerClass)
-						&NhldataCommLayerClassRec,
+/* superclass                   */      (NhlClass)
+						&NhldataCommClassRec,
 
 /* layer_resources              */      resources,
 /* num_resources                */      NhlNumber(resources),
@@ -596,9 +596,9 @@ NhlXyPlotLayerClassRec NhlxyPlotLayerClassRec = {
 	}
 };
 
-NhlLayerClass NhlxyDataSpecLayerClass =
-				(NhlLayerClass)&NhlxyDataSpecLayerClassRec;
-NhlLayerClass NhlxyPlotLayerClass = (NhlLayerClass)&NhlxyPlotLayerClassRec;
+NhlClass NhlxyDataSpecClass =
+				(NhlClass)&NhlxyDataSpecClassRec;
+NhlClass NhlxyPlotClass = (NhlClass)&NhlxyPlotClassRec;
 
 /*
  * Function:	nhlfxyplotclass
@@ -610,11 +610,11 @@ NhlLayerClass NhlxyPlotLayerClass = (NhlLayerClass)&NhlxyPlotLayerClassRec;
  * Out Args:	
  *
  * Scope:	global Fortran
- * Returns:	NhlLayerClass
+ * Returns:	NhlClass
  * Side Effect:	
  */
-NhlLayerClass
-_NHLCALLF(nhlfxyplotlayerclass,NHLFXYPLOTLAYERCLASS)
+NhlClass
+_NHLCALLF(nhlfxyplotclass,NHLFXYPLOTCLASS)
 #if	NhlNeedProto
 (
 	void
@@ -623,7 +623,7 @@ _NHLCALLF(nhlfxyplotlayerclass,NHLFXYPLOTLAYERCLASS)
 ()
 #endif
 {
-	return NhlxyPlotLayerClass;
+	return NhlxyPlotClass;
 }
 
 static NrmQuark	Qfloat = NrmNULLQUARK;
@@ -758,7 +758,7 @@ XyPlotClassInitialize
 /*
  * Function:	XyPlotClassPartInitialize
  *
- * Description:	This function initializes fields in the NhlXyPlotLayerClassPart
+ * Description:	This function initializes fields in the NhlXyPlotClassPart
  *		that can not be done by static initialization.
  *		Takes care of calling _NhlRegisterChildClass for the title
  *		and the tick mark objects. This needs to be done so resource
@@ -775,7 +775,7 @@ XyPlotClassInitialize
  *		have correct transformation.
  *
  * In Args:	
- *		NhlLayerClass	lc	NhlLayer Class to init
+ *		NhlClass	lc	NhlLayer Class to init
  *
  * Out Args:	
  *
@@ -787,11 +787,11 @@ static NhlErrorTypes
 XyPlotClassPartInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	lc	/* NhlLayer Class to init	*/
+	NhlClass	lc	/* NhlLayer Class to init	*/
 )
 #else
 (lc)
-	NhlLayerClass	lc;	/* NhlLayer Class to init	*/
+	NhlClass	lc;	/* NhlLayer Class to init	*/
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR;
@@ -800,7 +800,7 @@ XyPlotClassPartInitialize
 	/*
 	 * Register children objects
 	 */
-	ret = _NhlRegisterChildClass(lc,NhlplotManagerLayerClass,False,False,
+	ret = _NhlRegisterChildClass(lc,NhlplotManagerClass,False,False,
 			NhlNlgDashIndex,NhlNlgDashIndexes,NhlNlgItemCount,
 			NhlNlgItemType,NhlNlgItemTypes,NhlNlgLabelStrings,
 			NhlNlgLineColor,NhlNlgLineColors,NhlNlgLineDashSegLenF,
@@ -829,9 +829,9 @@ XyPlotClassPartInitialize
 	 * Register Data Resources
 	 */
 
-	lret = _NhlRegisterDataRes((NhlDataCommLayerClass)lc,NhlNxyCoordData,
-			NhlNxyCoordDataSpec,NhlxyDataSpecLayerClass,
-			NhlcoordArrTableFloatLayerClass,NULL);
+	lret = _NhlRegisterDataRes((NhlDataCommClass)lc,NhlNxyCoordData,
+			NhlNxyCoordDataSpec,NhlxyDataSpecClass,
+			NhlcoordArrTableFloatClass,NULL);
 	return MIN(lret,ret);
 }
 
@@ -950,7 +950,7 @@ XyPlotChanges
  * Description:	Initializes the XyData Dependent class instance.
  *
  * In Args:	
- *		NhlLayerClass	class,
+ *		NhlClass	class,
  *		NhlLayer		req,
  *		NhlLayer		new,
  *		_NhlArgList	args,
@@ -967,7 +967,7 @@ static NhlErrorTypes
 XyDataInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	cptr,
+	NhlClass	cptr,
 	NhlLayer		req,
 	NhlLayer		new,
 	_NhlArgList	args,
@@ -975,7 +975,7 @@ XyDataInitialize
 )
 #else
 (cptr,req,new,args,num_args)
-        NhlLayerClass      cptr;
+        NhlClass      cptr;
         NhlLayer           req;
         NhlLayer           new;
         _NhlArgList     args;
@@ -1045,7 +1045,7 @@ static NhlErrorTypes
 XyPlotInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	cptr,
+	NhlClass	cptr,
 	NhlLayer		req,
 	NhlLayer		new,
 	_NhlArgList	args,
@@ -1053,7 +1053,7 @@ XyPlotInitialize
 )
 #else
 (cptr,req,new,args,num_args)
-        NhlLayerClass      cptr;
+        NhlClass      cptr;
         NhlLayer           req;
         NhlLayer           new;
         _NhlArgList     args;
@@ -1145,7 +1145,7 @@ XyPlotInitialize
  * Description:	Initializes the XyData Dependent class instance.
  *
  * In Args:	
- *		NhlLayerClass	class,
+ *		NhlClass	class,
  *		NhlLayer		req,
  *		NhlLayer		new,
  *		_NhlArgList	args,
@@ -3534,7 +3534,7 @@ SetUpTransObjs
 	int		tmpid;
 	float		tmpcoords[3];
 	char		*error_lead=NULL;
-	NhlLayerClass	trans_class = NULL;
+	NhlClass	trans_class = NULL;
 	NhlGenArray	gen;
 	NhlXyPlotLayerPart	*newxy = &xnew->xyplot;
 	NhlXyPlotLayerPart	*oldxy=NULL;
@@ -3600,7 +3600,7 @@ SetUpTransObjs
 
 		if(newxy->y_style == NhlIRREGULAR){
 
-			trans_class = NhlirregularType2TransObjLayerClass;
+			trans_class = NhlirregularType2TransObjClass;
 			newxy->have_irreg_trans = True;
 
 			gen = newxy->y_irregular_points;
@@ -3651,7 +3651,7 @@ SetUpTransObjs
 		else{
 			if(newxy->x_style == NhlIRREGULAR){
 
-				trans_class = NhlirregularType2TransObjLayerClass;
+				trans_class = NhlirregularType2TransObjClass;
 				newxy->have_irreg_trans = True;
 
 				gen = newxy->x_irregular_points;
@@ -3687,7 +3687,7 @@ SetUpTransObjs
 			 * X is not IRREG
 			 */
 			else{
-				trans_class = NhllogLinTransObjLayerClass;
+				trans_class = NhllogLinTransObjClass;
 				newxy->have_irreg_trans = False;
 
 				if(newxy->x_style == NhlLOG)

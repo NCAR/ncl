@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.16 1995-03-20 09:51:34 boote Exp $
+ *      $Id: SetValues.c,v 1.17 1995-04-07 10:43:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -34,7 +34,7 @@
  *		given layer.
  *
  * In Args:	
- *		NhlLayerClass	class,		Class of NhlLayer being set
+ *		NhlClass	class,		Class of NhlLayer being set
  *		NhlLayer	oldl,		NhlLayer w/ old values
  *		NhlLayer	reql,		NhlLayer w/ requested values
  *		NhlLayer	newl,		NhlLayer to update
@@ -51,7 +51,7 @@ static NhlErrorTypes
 CallSetValues
 #if	NhlNeedProto
 (
-	NhlLayerClass	class,		/* Class of NhlLayer being set	*/
+	NhlClass	class,		/* Class of NhlLayer being set	*/
 	NhlLayer	oldl,		/* NhlLayer w/ old values	*/
 	NhlLayer	reql,		/* NhlLayer w/ requested values	*/
 	NhlLayer	newl,		/* NhlLayer to update		*/
@@ -60,7 +60,7 @@ CallSetValues
 )
 #else
 (class,oldl,reql,newl,args,num_args) 
-	NhlLayerClass	class;		/* Class of NhlLayer being set	*/
+	NhlClass	class;		/* Class of NhlLayer being set	*/
 	NhlLayer	oldl;		/* NhlLayer w/ old values	*/
 	NhlLayer	reql;		/* NhlLayer w/ requested values	*/
 	NhlLayer	newl;		/* NhlLayer to update		*/
@@ -91,7 +91,7 @@ CallSetValues
  *		given layer.
  *
  * In Args:	
- *		NhlLayerClass	class,		Class of NhlLayer being set
+ *		NhlClass	class,		Class of NhlLayer being set
  *		NhlLayer	oldl,		NhlLayer w/ old values
  *		NhlLayer	reql,		NhlLayer w/ requested values
  *		NhlLayer	newl,		NhlLayer to update
@@ -108,7 +108,7 @@ static NhlErrorTypes
 CallSetValuesHook
 #if	NhlNeedProto
 (
-	NhlLayerClass	class,		/* Class of NhlLayer being set	*/
+	NhlClass	class,		/* Class of NhlLayer being set	*/
 	NhlLayer	oldl,		/* NhlLayer w/ old values	*/
 	NhlLayer	reql,		/* NhlLayer w/ requested values	*/
 	NhlLayer	newl,		/* NhlLayer to update		*/
@@ -117,7 +117,7 @@ CallSetValuesHook
 )
 #else
 (class,oldl,reql,newl,args,num_args) 
-	NhlLayerClass	class;		/* Class of NhlLayer being set	*/
+	NhlClass	class;		/* Class of NhlLayer being set	*/
 	NhlLayer	oldl;		/* NhlLayer w/ old values	*/
 	NhlLayer	reql;		/* NhlLayer w/ requested values	*/
 	NhlLayer	newl;		/* NhlLayer to update		*/
@@ -285,7 +285,7 @@ _NhlSetValues
 {
 	int			i;
 	NhlLayer		oldl, reql;
-	NhlLayerClass		lc = _NhlClass(l);
+	NhlClass		lc = _NhlClass(l);
 	NhlErrorTypes		ret=NhlNOERROR, lret=NhlNOERROR;
 	_NhlArg			stackargs[_NhlMAXARGLIST];
 	_NhlArgList		largs=stackargs;

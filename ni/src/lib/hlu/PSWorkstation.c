@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.c,v 1.2 1995-03-24 18:52:36 boote Exp $
+ *      $Id: PSWorkstation.c,v 1.3 1995-04-07 10:43:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -74,7 +74,7 @@ static NhlErrorTypes PSWorkstationClassInitialize(
 
 static NhlErrorTypes PSWorkstationInitialize(
 #if	NhlNeedProto
-        NhlLayerClass,     /* class */
+        NhlClass,     /* class */
         NhlLayer,          /* req */
         NhlLayer,          /* new */
         _NhlArgList,        /* args */
@@ -84,7 +84,7 @@ static NhlErrorTypes PSWorkstationInitialize(
 
 static NhlErrorTypes PSWorkstationClassPartInitialize(
 #if	NhlNeedProto
-        NhlLayerClass      /* lc */
+        NhlClass      /* lc */
 #endif
 );
 
@@ -124,13 +124,13 @@ static NhlErrorTypes PSWorkstationOpen(
 
 static int	NumCurrentPS = 0;
 
-NhlPSWorkstationLayerClassRec NhlpsWorkstationLayerClassRec = {
+NhlPSWorkstationClassRec NhlpsWorkstationClassRec = {
         {
-/* class_name			*/	"psWorkstationLayerClass",
+/* class_name			*/	"psWorkstationClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlPSWorkstationLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlworkstationLayerClassRec,
+/* superclass			*/	(NhlClass)&NhlworkstationClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -170,7 +170,7 @@ NhlPSWorkstationLayerClassRec NhlpsWorkstationLayerClassRec = {
 	}
 };
 
-NhlLayerClass NhlpsWorkstationLayerClass = (NhlLayerClass)&NhlpsWorkstationLayerClassRec;
+NhlClass NhlpsWorkstationClass = (NhlClass)&NhlpsWorkstationClassRec;
 
 /*
  * Function:	nhlfpsworkstationclass
@@ -182,11 +182,11 @@ NhlLayerClass NhlpsWorkstationLayerClass = (NhlLayerClass)&NhlpsWorkstationLayer
  * Out Args:	
  *
  * Scope:	global Fortran
- * Returns:	NhlLayerClass
+ * Returns:	NhlClass
  * Side Effect:	
  */
-NhlLayerClass
-_NHLCALLF(nhlfpsworkstationlayerclass,NHLFPSWORKSTATIONLAYERCLASS)
+NhlClass
+_NHLCALLF(nhlfpsworkstationclass,NHLFPSWORKSTATIONCLASS)
 #if	NhlNeedProto
 (
 	void
@@ -195,7 +195,7 @@ _NHLCALLF(nhlfpsworkstationlayerclass,NHLFPSWORKSTATIONLAYERCLASS)
 ()
 #endif
 {
-	return NhlpsWorkstationLayerClass;
+	return NhlpsWorkstationClass;
 }
 
 /*
@@ -215,20 +215,20 @@ static NhlErrorTypes
 PSWorkstationClassPartInitialize
 #if	NhlNeedProto
 (
-        NhlLayerClass	lc
+        NhlClass	lc
 )
 #else
 (lc)
-        NhlLayerClass	lc;
+        NhlClass	lc;
 #endif
 {
-	NhlPSWorkstationLayerClass	psc = (NhlPSWorkstationLayerClass)lc;
-	NhlPSWorkstationLayerClass	pssc;
+	NhlPSWorkstationClass	psc = (NhlPSWorkstationClass)lc;
+	NhlPSWorkstationClass	pssc;
 
-	if(psc->base_class.superclass==(NhlLayerClass)NhlworkstationLayerClass)
+	if(psc->base_class.superclass==(NhlClass)NhlworkstationClass)
 		return NhlNOERROR;
 
-	pssc = (NhlPSWorkstationLayerClass)psc->base_class.superclass;
+	pssc = (NhlPSWorkstationClass)psc->base_class.superclass;
 	psc->ps_class.num_current = pssc->ps_class.num_current;
 
 	return NhlNOERROR;
@@ -299,10 +299,10 @@ PSWorkstationClassInitialize
 /*ARGSUSED*/
 static NhlErrorTypes PSWorkstationInitialize
 #if	NhlNeedProto
-(NhlLayerClass lclass, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args)
+(NhlClass lclass, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args)
 #else
 (lclass,req,new,args,num_args)
-        NhlLayerClass lclass;
+        NhlClass lclass;
         NhlLayer req;
         NhlLayer new;
         _NhlArgList args;
@@ -310,8 +310,8 @@ static NhlErrorTypes PSWorkstationInitialize
 #endif
 {
 	char				func[]="PSWorkstationInitialize";
-	NhlPSWorkstationLayerClassPart	*pscp =
-				&((NhlPSWorkstationLayerClass)lclass)->ps_class;
+	NhlPSWorkstationClassPart	*pscp =
+				&((NhlPSWorkstationClass)lclass)->ps_class;
 	NhlPSWorkstationLayer		wnew = (NhlPSWorkstationLayer)new;
 	NhlPSWorkstationLayerPart	*np = &wnew->ps;
 	char				*tfname = NULL;
@@ -513,8 +513,8 @@ PSWorkstationDestroy
 #endif
 {
 	NhlPSWorkstationLayerPart	*psp = &((NhlPSWorkstationLayer)l)->ps;
-	NhlPSWorkstationLayerClassPart	*pscp =
-		&((NhlPSWorkstationLayerClass)l->base.layer_class)->ps_class;
+	NhlPSWorkstationClassPart	*pscp =
+		&((NhlPSWorkstationClass)l->base.layer_class)->ps_class;
 
 	NhlFree(psp->filename);
 	*(pscp->num_current)--;
@@ -556,7 +556,7 @@ PSWorkstationOpen
 	c_ngseti("ly",pp->lower_y);
 	c_ngseti("uy",pp->upper_y);
 
-	ret = (*NhlworkstationLayerClassRec.work_class.open_work)(l);
+	ret = (*NhlworkstationClassRec.work_class.open_work)(l);
 
 	c_ngseti("wo",_NhlWorkstationId(l));
 	c_ngseti("fu",pp->full_background);

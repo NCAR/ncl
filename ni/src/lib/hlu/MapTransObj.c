@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.18 1995-04-07 09:35:55 boote Exp $
+*      $Id: MapTransObj.c,v 1.19 1995-04-07 10:42:59 boote Exp $
 */
 /************************************************************************
 *									*
@@ -239,7 +239,7 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes MapTransInitialize(
 #if	NhlNeedProto
-NhlLayerClass,     /* class */
+NhlClass,     /* class */
 NhlLayer,          /* req */
 NhlLayer,          /* new */
 _NhlArgList,    /* args */
@@ -392,13 +392,13 @@ static NhlErrorTypes CheckMapLimits(
 #endif
 );
 
-NhlMapTransObjLayerClassRec NhlmapTransObjLayerClassRec = {
+NhlMapTransObjClassRec NhlmapTransObjClassRec = {
 {
-/* class_name			*/	"mapTransObjLayerClass",
+/* class_name			*/	"mapTransObjClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlMapTransObjLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhltransObjLayerClassRec,
+/* superclass			*/	(NhlClass)&NhltransObjClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -434,7 +434,7 @@ NhlMapTransObjLayerClassRec NhlmapTransObjLayerClassRec = {
 }
 };
 
-NhlLayerClass NhlmapTransObjLayerClass = (NhlLayerClass) &NhlmapTransObjLayerClassRec;
+NhlClass NhlmapTransObjClass = (NhlClass) &NhlmapTransObjClassRec;
 
 typedef struct _mpWinLimits {
 	float u_min;
@@ -494,7 +494,7 @@ NhlLayer parent;
 	float v_angle_lim, h_angle_lim, center_lat, center_lon;
 	float rl1[2],rl2[2],rl3[2],rl4[2];
 
-	ret =(*NhltransObjLayerClassRec.trobj_class.set_trans)(instance,parent);
+	ret =(*NhltransObjClassRec.trobj_class.set_trans)(instance,parent);
 
 	xl = minstance->trobj.x;
 	yt = minstance->trobj.y;
@@ -1172,10 +1172,10 @@ static NhlErrorTypes  MapTransSetValues
 /*ARGSUSED*/
 static NhlErrorTypes MapTransInitialize
 #if	NhlNeedProto
-( NhlLayerClass class,NhlLayer req,NhlLayer new,_NhlArgList args,int num_args)
+( NhlClass class,NhlLayer req,NhlLayer new,_NhlArgList args,int num_args)
 #else
 (class,req,new,args,num_args)
-	NhlLayerClass class;
+	NhlClass class;
 	NhlLayer	req;
 	NhlLayer	new;
 	_NhlArgList args;

@@ -1,5 +1,5 @@
 /*
- *      $Id: AnnoManager.c,v 1.1 1995-04-01 00:03:52 dbrown Exp $
+ *      $Id: AnnoManager.c,v 1.2 1995-04-07 10:40:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -83,7 +83,7 @@ static NhlErrorTypes AnnoManagerSetValues(
 
 static NhlErrorTypes    AnnoManagerInitialize(
 #if	NhlNeedProto
-        NhlLayerClass	class,
+        NhlClass	class,
         NhlLayer	req,
         NhlLayer	new,
         _NhlArgList	args,
@@ -99,13 +99,13 @@ static NhlErrorTypes	AnnoManagerDestroy(
 
 static NhlErrorTypes 	AnnoManagerClassInitialize();
 
-NhlAnnoManagerLayerClassRec NhlannoManagerLayerClassRec = {
+NhlAnnoManagerClassRec NhlannoManagerClassRec = {
 	{
-/* class_name			*/	"annoManagerLayerClass",
+/* class_name			*/	"annoManagerClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlAnnoManagerLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlobjLayerClassRec,
+/* superclass			*/	(NhlClass)&NhlobjClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -125,8 +125,8 @@ NhlAnnoManagerLayerClassRec NhlannoManagerLayerClassRec = {
 	}
 };
 
-NhlLayerClass NhlannoManagerLayerClass = 
-			(NhlLayerClass)&NhlannoManagerLayerClassRec;
+NhlClass NhlannoManagerClass = 
+			(NhlClass)&NhlannoManagerClassRec;
 
 /*
  * Function:	nhlfannomanagerclass
@@ -138,11 +138,11 @@ NhlLayerClass NhlannoManagerLayerClass =
  * Out Args:	
  *
  * Scope:	global Fortran
- * Returns:	NhlLayerClass
+ * Returns:	NhlClass
  * Side Effect:	
  */
-NhlLayerClass
-_NHLCALLF(nhlfannomanagerlayerclass,NHLFANNOMANAGERLAYERCLASS)
+NhlClass
+_NHLCALLF(nhlfannomanagerclass,NHLFANNOMANAGERCLASS)
 #if	NhlNeedProto
 (
 	void
@@ -151,7 +151,7 @@ _NHLCALLF(nhlfannomanagerlayerclass,NHLFANNOMANAGERLAYERCLASS)
 ()
 #endif
 {
-	return NhlannoManagerLayerClass;
+	return NhlannoManagerClass;
 }
 
 
@@ -173,7 +173,7 @@ static NhlErrorTypes
 AnnoManagerInitialize
 #if	NhlNeedProto
 (
-	NhlLayerClass	class,
+	NhlClass	class,
 	NhlLayer	req,
 	NhlLayer	new,
 	_NhlArgList	args,
@@ -181,7 +181,7 @@ AnnoManagerInitialize
 )
 #else
 (class,req,new,args,num_args)
-	NhlLayerClass	class;
+	NhlClass	class;
 	NhlLayer	req;
 	NhlLayer	new;
 	_NhlArgList	args;
