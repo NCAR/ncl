@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.25 1994-09-16 19:12:50 dbrown Exp $
+ *      $Id: Contour.c,v 1.26 1994-09-19 20:51:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -6726,12 +6726,13 @@ static NhlErrorTypes    ManageDynamicArrays
 			add += 1;
 		}
 		cnp->real_fill_count = cnp->fill_count + add;
-	}
 #if 0
-	printf("no of fill colors: %d\n", cnp->real_fill_count);
-	for (i=0;i< cnp->real_fill_count; i++)
-		printf("fill color %d: %d\n",i,cnp->real_fill_colors[i]);
-#endif		       
+		printf("no of fill colors: %d\n", cnp->real_fill_count);
+		for (i=0;i< cnp->real_fill_count; i++)
+			printf("fill color %d: %d\n",i,
+			       cnp->real_fill_colors[i]);
+#endif
+	}
 /*=======================================================================*/
 	
 /*
@@ -6812,12 +6813,13 @@ static NhlErrorTypes    ManageDynamicArrays
 				cnp->above_max.pattern;
 			add += 1;
 		}
-	}
 #if 0
-	printf("no of fill patterns: %d\n", cnp->real_fill_count);
-	for (i=0;i< cnp->real_fill_count; i++)
-		printf("fill pattern %d: %d\n",i,cnp->real_fill_patterns[i]);
+		printf("no of fill patterns: %d\n", cnp->real_fill_count);
+		for (i=0;i< cnp->real_fill_count; i++)
+			printf("fill pattern %d: %d\n",
+			       i,cnp->real_fill_patterns[i]);
 #endif
+	}
 /*=======================================================================*/
 	
 /*
@@ -6893,12 +6895,13 @@ static NhlErrorTypes    ManageDynamicArrays
 			add += 1;
 		}
 		cnp->real_fill_count = cnp->fill_count + add;
-	}
 #if 0
-	printf("no of fill scales: %d\n", cnp->real_fill_count);
-	for (i=0;i< cnp->real_fill_count; i++)
-		printf("fill scale %d: %f\n",i,cnp->real_fill_scales[i]);
+		printf("no of fill scales: %d\n", cnp->real_fill_count);
+		for (i=0;i< cnp->real_fill_count; i++)
+			printf("fill scale %d: %f\n",
+			       i,cnp->real_fill_scales[i]);
 #endif
+	}
 /*=======================================================================*/
 	
 /*
@@ -7535,17 +7538,19 @@ static NhlErrorTypes    SetupLevels
 
 	if (! cnp->min_level_set) cnp->min_level_val = cnp->zmin; 
 	if (! cnp->max_level_set) cnp->max_level_val = cnp->zmax; 
-	cnp->below_min.on = False;
-	cnp->above_max.on = False;
-		
+
 	if (init || cnp->data_changed ||
 	    cnp->levels != ocnp->levels ||
 	    cnp->level_selection_mode != ocnp->level_selection_mode ||
 	    cnp->max_level_count != ocnp->max_level_count ||
 	    cnp->level_spacing != ocnp->level_spacing ||
-	    cnp->min_level_set || cnp->max_level_set) {
+	    cnp->min_level_val != ocnp->min_level_val ||
+	    cnp->max_level_val != ocnp->max_level_val) {
 
 		cnp->new_draw_req = True;
+
+		cnp->below_min.on = False;
+		cnp->above_max.on = False;
 
 		if (cnp->min_level_val >= cnp->max_level_val) {
 			e_text =
