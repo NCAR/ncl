@@ -1,5 +1,5 @@
 C
-C	$Id: wmdrrg.f,v 1.2 1994-10-14 01:23:54 fred Exp $
+C	$Id: wmdrrg.f,v 1.3 2000-04-19 23:08:27 fred Exp $
 C
       SUBROUTINE WMDRRG(N,X,Y,ITYPE,NC,XC,YC)
 C
@@ -113,8 +113,16 @@ C
 C  Get the color index.
 C
         ICLEN = LEN(ITYPE)
-        IF (ICLEN .GT. 5) THEN
-          READ(ITYPE(6:ICLEN),'(I5)') NDX
+        IF (ICLEN .EQ. 6) THEN
+           READ(ITYPE(6:ICLEN),'(I1)') NDX
+        ELSE IF (ICLEN .EQ. 7) THEN
+           READ(ITYPE(6:ICLEN),'(I2)') NDX
+        ELSE IF (ICLEN .EQ. 8) THEN
+           READ(ITYPE(6:ICLEN),'(I3)') NDX
+        ELSE IF (ICLEN .EQ. 9) THEN
+           READ(ITYPE(6:ICLEN),'(I4)') NDX
+        ELSE IF (ICLEN .EQ. 10) THEN
+           READ(ITYPE(6:ICLEN),'(I5)') NDX
         ELSE
           NDX = 1
         ENDIF
