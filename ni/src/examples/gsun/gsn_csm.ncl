@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.134 2003-08-01 18:47:20 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.135 2003-08-05 20:29:51 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3302,7 +3302,7 @@ begin
 ;
 ; Calculate NDC coordinates of southern hemisphere semi-circle.
 ;
-  nscirc     = 25
+  nscirc     = 100
   scirc_xndc = new(nscirc,float) 
   scirc_yndc = new(nscirc,float) 
   scirc_lon  = new(nscirc,float) 
@@ -3314,7 +3314,7 @@ begin
 ;
 ; Calculate NDC coordinates of northern hemisphere semi-circle.
 ;
-  nncirc     = 25 
+  nncirc     = 100
   ncirc_xndc = new(nncirc,float) 
   ncirc_yndc = new(nncirc,float) 
   ncirc_lon  = new(nncirc,float) 
@@ -4157,8 +4157,8 @@ end
 ;       of these min/max lat/lon boundaries.  Note: mpProjection must   ;
 ;       be set to "LambertConformal".                                   ;
 ;    3. If the special resource "gsnMaskLambertConformalOutlineOn" is   ;
-;       set to True, then the lat/lon area of interest will be outlined ;
-;       in the foreground color.                                        ;
+;       set to False, then the lat/lon area of interest will not be     ;
+;       outlined in the foreground color.                               ;
 ;***********************************************************************;
 
 function gsn_csm_map_other(wks:graphic,resources:logical)
@@ -4176,7 +4176,7 @@ begin
     calldraw  = get_res_value(res2,"gsnDraw", True)
     callframe = get_res_value(res2,"gsnFrame",True)
     masklc    = get_res_value(res2,"gsnMaskLambertConformal",False)
-    maskoutln = get_res_value(res2,"gsnMaskLambertConformalOutlineOn",False)
+    maskoutln = get_res_value(res2,"gsnMaskLambertConformalOutlineOn",True)
     maxbb     = get_bb_res(res2)
     
     left_string   = new(1,logical)
