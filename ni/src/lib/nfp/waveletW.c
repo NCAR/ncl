@@ -16,16 +16,19 @@
 #include <math.h>
 
 extern void NGCALLF(waveleti,WAVELETI)(int *n, double *y, double *dt, 
-				       int *mother, double *param, 
-				       double *s0, double *dj, int *jtot,
-				       int *npad, int *noise,
-				       int *isigtest, double *siglvl,
-				       double *nadof, double *wave,
-				       double *scale, double *period, 
-				       double *coi, double *dof,
-				       double *ffttheor, double *signif,
-				       double *ymean, double *ysd, 
-				       double *lag1);
+                                       int *mother, double *param, 
+                                       double *s0, double *dj, int *jtot,
+                                       int *npad, int *noise,
+                                       int *isigtest, double *siglvl,
+                                       double *nadof, double *wave,
+                                       double *scale, double *period, 
+                                       double *coi, double *dof,
+                                       double *ffttheor, double *signif,
+                                       double *gws, double *ymean, 
+                                       double *ysd, double *lag1,
+                                       double *cdelta, double *psi0,
+				       double *power, double *phase,
+				       double *r1);
 
 NhlErrorTypes wavelet_W( void )
 {
@@ -50,11 +53,12 @@ NhlErrorTypes wavelet_W( void )
 /*
  * Output array variables
  */
-  void *wave, *scale, *period, *coi, *dof, *ffttheor, *signif;
-  void *mean, *st_dev, *lag1;
+  void *wave, *scale, *period, *coi, *dof, *ffttheor, *signif, *gws;
+  void *power, *phase, *r1, *mean, *st_dev, *lag1, *cdelta, *psi0;
   double *tmp_wave, *tmp_scale, *tmp_period, *tmp_coi, *tmp_dof; 
-  double *tmp_ffttheor, *tmp_signif;
-  double *tmp_mean, *tmp_st_dev, *tmp_lag1, var;
+  double *tmp_ffttheor, *tmp_signif, *tmp_gws, *tmp_power, *tmp_phase;
+  double *tmp_r1;
+  double *tmp_mean, *tmp_st_dev, *tmp_lag1, *tmp_cdelta, *tmp_psi0, var;
   int ndims_wave = 3, dsizes_wave[3]; 
   NclBasicDataTypes type_wave;
   NclObjClass type_output;
@@ -190,6 +194,13 @@ NhlErrorTypes wavelet_W( void )
           &type_nadof,
           2);
 /*
+ * We haven't implemented isigtest != 0, so default to 0 if it isn't.
+ */
+  if(*isigtest) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"wavelet: Only isigtest = 0 has been implmented. Defaulting to 0");
+    *isigtest = 0;
+  }
+/*
  * Get size of input array.
  */
   n = dsizes_y[0];
@@ -203,7 +214,7 @@ NhlErrorTypes wavelet_W( void )
   tmp_dj     = coerce_input_double(dj,type_dj,1,0,NULL,NULL);
   tmp_siglvl = coerce_input_double(siglvl,type_siglvl,1,0,NULL,NULL);
   tmp_nadof  = coerce_input_double(nadof,type_nadof,dsizes_nadof[0],0,
-				   NULL,NULL);
+                                   NULL,NULL);
 
   if(  tmp_y    == NULL || tmp_dt == NULL ||  tmp_param == NULL || 
       tmp_s0    == NULL || tmp_dj == NULL || tmp_siglvl == NULL ||
@@ -239,9 +250,15 @@ NhlErrorTypes wavelet_W( void )
   dof      = (void*)calloc(*jtot,size_output);
   ffttheor = (void*)calloc(*jtot,size_output);
   signif   = (void*)calloc(*jtot,size_output);
+  gws      = (void*)calloc(*jtot,size_output);
+  power    = (void*)calloc(*jtot*n,size_output);
+  phase    = (void*)calloc(*jtot*n,size_output);
+  r1       = (void*)calloc(1,size_output);
   mean     = (void*)calloc(1,size_output);
   st_dev   = (void*)calloc(1,size_output);
   lag1     = (void*)calloc(1,size_output);
+  cdelta   = (void*)calloc(1,size_output);
+  psi0     = (void*)calloc(1,size_output);
 
   tmp_wave     = coerce_output_double(wave,type_wave,size_wave);
   tmp_scale    = coerce_output_double(scale,type_wave,*jtot);
@@ -250,14 +267,22 @@ NhlErrorTypes wavelet_W( void )
   tmp_dof      = coerce_output_double(dof,type_wave,*jtot);
   tmp_ffttheor = coerce_output_double(ffttheor,type_wave,*jtot);
   tmp_signif   = coerce_output_double(signif,type_wave,*jtot);
+  tmp_gws      = coerce_output_double(gws,type_wave,*jtot);
+  tmp_power    = coerce_output_double(power,type_wave,*jtot*n);
+  tmp_phase    = coerce_output_double(phase,type_wave,*jtot*n);
+  tmp_r1       = coerce_output_double(r1,type_wave,1);
   tmp_mean     = coerce_output_double(mean,type_wave,1);
   tmp_st_dev   = coerce_output_double(st_dev,type_wave,1);
   tmp_lag1     = coerce_output_double(lag1,type_wave,1);
+  tmp_cdelta   = coerce_output_double(cdelta,type_wave,1);
+  tmp_psi0     = coerce_output_double(psi0,type_wave,1);
       
   if(   tmp_wave == NULL || tmp_scale == NULL ||   tmp_period == NULL || 
          tmp_coi == NULL ||   tmp_dof == NULL || tmp_ffttheor == NULL ||
-      tmp_signif == NULL ||  tmp_mean == NULL ||   tmp_st_dev == NULL ||
-        tmp_lag1 == NULL) {
+      tmp_signif == NULL ||   tmp_gws == NULL ||     tmp_mean == NULL ||
+       tmp_power == NULL || tmp_phase == NULL ||   tmp_st_dev == NULL ||
+        tmp_lag1 == NULL ||tmp_cdelta == NULL ||     tmp_psi0 == NULL ||
+          tmp_r1 == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wavelet: Unable to allocate memory for output variables");
     return(NhlFATAL);
   }
@@ -265,10 +290,11 @@ NhlErrorTypes wavelet_W( void )
  * Call the Fortran routine.
  */
   NGCALLF(waveleti,WAVELETI)(&n,tmp_y,tmp_dt,mother,tmp_param,tmp_s0,tmp_dj,
-			     jtot,npad,noise,isigtest,tmp_siglvl,tmp_nadof,
-			     tmp_wave,tmp_scale,tmp_period,tmp_coi,tmp_dof,
-			     tmp_ffttheor,tmp_signif,tmp_mean,tmp_st_dev,
-			     tmp_lag1);
+                             jtot,npad,noise,isigtest,tmp_siglvl,tmp_nadof,
+                             tmp_wave,tmp_scale,tmp_period,tmp_coi,tmp_dof,
+                             tmp_ffttheor,tmp_signif,tmp_gws,tmp_mean,
+                             tmp_st_dev,tmp_lag1,tmp_cdelta,tmp_psi0,
+			     tmp_power,tmp_phase,tmp_r1);
   if(type_wave == NCL_float) {
     coerce_output(wave,tmp_wave,size_wave,0);
     coerce_output(scale,tmp_scale,*jtot,0);
@@ -277,9 +303,15 @@ NhlErrorTypes wavelet_W( void )
     coerce_output(dof,tmp_dof,*jtot,0);
     coerce_output(ffttheor,tmp_ffttheor,*jtot,0);
     coerce_output(signif,tmp_signif,*jtot,0);
+    coerce_output(gws,tmp_gws,*jtot,0);
+    coerce_output(power,tmp_power,*jtot*n,0);
+    coerce_output(phase,tmp_phase,*jtot*n,0);
+    coerce_output(r1,tmp_r1,1,0);
     coerce_output(mean,tmp_mean,1,0);
     coerce_output(st_dev,tmp_st_dev,1,0);
     coerce_output(lag1,tmp_lag1,1,0);
+    coerce_output(cdelta,tmp_cdelta,1,0);
+    coerce_output(psi0,tmp_psi0,1,0);
   }
 /*
  * Free memory.
@@ -300,26 +332,32 @@ NhlErrorTypes wavelet_W( void )
     NclFree(tmp_dof);
     NclFree(tmp_ffttheor);
     NclFree(tmp_signif);
+    NclFree(tmp_gws);
+    NclFree(tmp_power);
+    NclFree(tmp_phase);
+    NclFree(tmp_r1);
     NclFree(tmp_mean);
     NclFree(tmp_st_dev);
     NclFree(tmp_lag1);
+    NclFree(tmp_cdelta);
+    NclFree(tmp_psi0);
   }
 /*
  * Set up variable to return.
  */
   return_md = _NclCreateVal(
-			    NULL,
-			    NULL,
-			    Ncl_MultiDValData,
-			    0,
-			    (void*)wave,
-			    NULL,
-			    ndims_wave,
-			    dsizes_wave,
-			    TEMPORARY,
-			    NULL,
-			    type_output
-			    );
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            (void*)wave,
+                            NULL,
+                            ndims_wave,
+                            dsizes_wave,
+                            TEMPORARY,
+                            NULL,
+                            type_output
+                            );
 /*
  * Set up attributes to return.
  */
@@ -327,191 +365,315 @@ NhlErrorTypes wavelet_W( void )
 
   dsizes[0] = *jtot;
   att_md = _NclCreateVal(
-			 NULL,
-			 NULL,
-			 Ncl_MultiDValData,
-			 0,
-			 (void*)scale,
-			 NULL,
-			 1,
-			 dsizes,
-			 TEMPORARY,
-			 NULL,
-			 type_output
-			 );
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)scale,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
   _NclAddAtt(
-	     att_id,
-	     "scale",
-	     att_md,
-	     NULL
-	     );
+             att_id,
+             "scale",
+             att_md,
+             NULL
+             );
 
   dsizes[0] = *jtot;
   att_md = _NclCreateVal(
-			 NULL,
-			 NULL,
-			 Ncl_MultiDValData,
-			 0,
-			 (void*)period,
-			 NULL,
-			 1,
-			 dsizes,
-			 TEMPORARY,
-			 NULL,
-			 type_output
-			 );
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)period,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
   _NclAddAtt(
-	     att_id,
-	     "period",
-	     att_md,
-	     NULL
-	     );
+             att_id,
+             "period",
+             att_md,
+             NULL
+             );
 
   dsizes[0] = n;
   att_md = _NclCreateVal(
-			 NULL,
-			 NULL,
-			 Ncl_MultiDValData,
-			 0,
-			 (void*)coi,
-			 NULL,
-			 1,
-			 dsizes,
-			 TEMPORARY,
-			 NULL,
-			 type_output
-			 );
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)coi,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
   _NclAddAtt(
-	     att_id,
-	     "coi",
-	     att_md,
-	     NULL
-	     );
+             att_id,
+             "coi",
+             att_md,
+             NULL
+             );
 
 
   dsizes[0] = *jtot;
   att_md = _NclCreateVal(
-			 NULL,
-			 NULL,
-			 Ncl_MultiDValData,
-			 0,
-			 (void*)dof,
-			 NULL,
-			 1,
-			 dsizes,
-			 TEMPORARY,
-			 NULL,
-			 type_output
-			 );
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)dof,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
   _NclAddAtt(
-	     att_id,
-	     "dof",
-	     att_md,
-	     NULL
-	     );
+             att_id,
+             "dof",
+             att_md,
+             NULL
+             );
 
   dsizes[0] = *jtot;
   att_md = _NclCreateVal(
-			 NULL,
-			 NULL,
-			 Ncl_MultiDValData,
-			 0,
-			 (void*)ffttheor,
-			 NULL,
-			 1,
-			 dsizes,
-			 TEMPORARY,
-			 NULL,
-			 type_output
-			 );
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)ffttheor,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
   _NclAddAtt(
-	     att_id,
-	     "ffttheor",
-	     att_md,
-	     NULL
-	     );
+             att_id,
+             "fft_theor",
+             att_md,
+             NULL
+             );
 
   dsizes[0] = *jtot;
   att_md = _NclCreateVal(
-			 NULL,
-			 NULL,
-			 Ncl_MultiDValData,
-			 0,
-			 (void*)signif,
-			 NULL,
-			 1,
-			 dsizes,
-			 TEMPORARY,
-			 NULL,
-			 type_output
-			 );
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)signif,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
   _NclAddAtt(
-	     att_id,
-	     "signif",
-	     att_md,
-	     NULL
-	     );
+             att_id,
+             "signif",
+             att_md,
+             NULL
+             );
   
+  dsizes[0] = *jtot;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)gws,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "gws",
+             att_md,
+             NULL
+             );
+  
+  dsizes[0] = *jtot*n;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)power,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "power",
+             att_md,
+             NULL
+             );
+
+  dsizes[0] = *jtot*n;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)phase,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "phase",
+             att_md,
+             NULL
+             );
+
   dsizes[0] = 1;
   att_md = _NclCreateVal(
-			 NULL,
-			 NULL,
-			 Ncl_MultiDValData,
-			 0,
-			 (void*)mean,
-			 NULL,
-			 1,
-			 dsizes,
-			 TEMPORARY,
-			 NULL,
-			 type_output
-			 );
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)r1,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
   _NclAddAtt(
-	     att_id,
-	     "mean",
-	     att_md,
-	     NULL
-	     );
+             att_id,
+             "r1",
+             att_md,
+             NULL
+             );
+
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)mean,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "mean",
+             att_md,
+             NULL
+             );
 
   att_md = _NclCreateVal(
-			 NULL,
-			 NULL,
-			 Ncl_MultiDValData,
-			 0,
-			 (void*)st_dev,
-			 NULL,
-			 1,
-			 dsizes,
-			 TEMPORARY,
-			 NULL,
-			 type_output
-			 );
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)st_dev,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
   _NclAddAtt(
-	     att_id,
-	     "st_dev",
-	     att_md,
-	     NULL
-	     );
+             att_id,
+             "stdev",
+             att_md,
+             NULL
+             );
 
   att_md = _NclCreateVal(
-			 NULL,
-			 NULL,
-			 Ncl_MultiDValData,
-			 0,
-			 (void*)lag1,
-			 NULL,
-			 1,
-			 dsizes,
-			 TEMPORARY,
-			 NULL,
-			 type_output
-			 );
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)lag1,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
   _NclAddAtt(
-	     att_id,
-	     "lag1",
-	     att_md,
-	     NULL
-	     );
+             att_id,
+             "lag1",
+             att_md,
+             NULL
+             );
+
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)cdelta,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "cdelta",
+             att_md,
+             NULL
+             );
+
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)psi0,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "psi0",
+             att_md,
+             NULL
+             );
 
   tmp_var = _NclVarCreate(
                           NULL,

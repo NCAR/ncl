@@ -1,7 +1,8 @@
 C NCLFORTSTART
       SUBROUTINE WAVELETI(N,Y,DT,MOTHER,PARAM,S0,DJ,JTOT,NPAD,NOISE,
      +                    ISIGTEST,SIGLVL,NADOF,WAVE,SCALE,PERIOD,COI,
-     +                    DOF,FFTTHEOR,SIGNIF,YMEAN,YSD,LAG1)
+     +                    DOF,FFTTHEOR,SIGNIF,GWS,YMEAN,YSD,LAG1,
+     +                    CDELTA,PSI0,POWER,PHASE,R1)
       IMPLICIT NONE
 
 C     wave = wavelet (y,mother \
@@ -21,13 +22,14 @@ C                                             OUTPUT: must be allocated
 C                                                     in interface
       DOUBLE PRECISION WAVE(N,JTOT,2)
 C                                             RETURN AS ATTRIBUTES
-      DOUBLE PRECISION SCALE(JTOT),PERIOD(JTOT),COI(N)
+      DOUBLE PRECISION SCALE(JTOT),PERIOD(JTOT),COI(N),GWS(JTOT)
+      DOUBLE PRECISION POWER(N,JTOT),PHASE(N,JTOT)
       DOUBLE PRECISION DOF(JTOT),FFTTHEOR(JTOT),SIGNIF(JTOT)
-      DOUBLE PRECISION YMEAN,YSD,LAG1
+      DOUBLE PRECISION YMEAN,YSD,LAG1,CDELTA,PSI0,R1
 C NCLEND
 C                                             LOCAL and  AUTOMATIC
       DOUBLE COMPLEX CWAVE(N,JTOT)
-      DOUBLE PRECISION YVAR,CDELTA,PSI0
+      DOUBLE PRECISION YVAR,RAD
       INTEGER J,K
 C
       YMEAN = 0.0D0
@@ -47,9 +49,13 @@ C
           COI(K) = 0.0D0
       END DO
 
+      RAD = 4.D0*ATAN(1.)/180.d0
+
     1 DO J = 1,JTOT
           DO K = 1,N
               CWAVE(K,J) = (0.0D0,0.0D0)
+              POWER(K,J) = 0.0D0
+              PHASE(K,J) = 0.0D0
           END DO
       END DO
 C                                             CALCULATE SOME STATS
@@ -59,10 +65,15 @@ C                                             CALL USING COMPLEX
      +             CWAVE,SCALE,PERIOD,COI)
 C                                             RETURN REALS to NCL
       DO J = 1,JTOT
-          DO K = 1,N
-              WAVE(K,J,1) = DBLE(CWAVE(K,J))
-              WAVE(K,J,2) = DIMAG(CWAVE(K,J))
-          END DO
+        GWS(J) = 0.0D0
+        DO K = 1,N
+          WAVE(K,J,1) = DBLE(CWAVE(K,J))
+          WAVE(K,J,2) = DIMAG(CWAVE(K,J))
+          POWER(K,J)  = WAVE(K,J,1)**2 + WAVE(K,J,2)**2
+          PHASE(K,J)  = ATAN2(DIMAG(CWAVE(K,J)),DBLE(CWAVE(K,J)))/RAD
+          GWS(J) = GWS(J) + WAVE(K,J,1)**2 + WAVE(K,J,2)**2
+        END DO
+        GWS(J) = GWS(J)/DBLE(N)
       END DO
 C                            NADOF could be used here
       IF (ISIGTEST.EQ.1) THEN
@@ -75,9 +86,15 @@ C                            NADOF could be used here
               DOF(2) = NADOF(2)
           END IF
       END IF
+
+      R1 = LAG1
+      IF (NOISE.EQ.0) THEN
+          R1 = 0.0D0
+      END IF
+
 C                                             SIGNIFICANCE TESTING
       CALL WAVE_SIGNIF(ISIGTEST,N,Y,DT,MOTHER,PARAM,DJ,JTOT,SCALE,
-     +                 PERIOD,LAG1,SIGLVL,DOF,FFTTHEOR,SIGNIF,YMEAN,
+     +                 PERIOD,R1,SIGLVL,DOF,FFTTHEOR,SIGNIF,YMEAN,
      +                 YVAR,CDELTA,PSI0)
 
       RETURN
@@ -151,13 +168,10 @@ C -----------------------------------------------------
       YVAR  = MAX( (YVAR-YTMP)/N , 0.D0 ) ! prevent possible roundoff
       YMEAN = YMEAN/N
 
-      LAG1    = 0.0
-      IF (NOISE.EQ.1) THEN
-          DO K=1,N-1
-             LAG1 = LAG1 + (Y(K+1)-YMEAN)*(Y(K)-YMEAN)
-          END DO 
-          LAG1 = (LAG1/(N-1.))/YVAR
-      END IF
+      DO K=1,N-1
+         LAG1 = LAG1 + (Y(K+1)-YMEAN)*(Y(K)-YMEAN)
+      END DO 
+      LAG1 = (LAG1/(N-1.))/YVAR
 
       YSD   = SQRT(YVAR)
 
