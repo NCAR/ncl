@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.133 2001-01-04 22:59:27 haley Exp $
+ *      $Id: BuiltInFuncs.c,v 1.134 2001-01-08 22:15:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -5105,7 +5105,7 @@ NhlErrorTypes _NclIfloattolong
 ()
 #endif
 {
-	static int maxlong = -1;
+	static long maxlong = -1;
 	NclScalar missing,missing2;
         int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
         long *out_val;
@@ -5651,7 +5651,7 @@ NhlErrorTypes _NclIdoubletolong
 ()
 #endif
 {
-	static int maxlong = -1;
+	static long maxlong = -1;
 	NclScalar missing,missing2;
         int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
         long *out_val;
