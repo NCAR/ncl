@@ -1,4 +1,4 @@
-; $Id: basic08n.ncl,v 1.2 1996-04-10 14:36:50 haley Exp $
+; $Id: basic08n.ncl,v 1.3 1998-04-23 22:19:45 ethan Exp $
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
 ;                Copyright (C)  1995                                    ;
@@ -216,19 +216,9 @@ PS=0
 ; the viewable area. Draw an immediate mode line indicating the boundary 
 ; that defines the margin
 ;
-  x = new(5, float)
-  y = new(5, float)
 
-  x(0) = 0.05
-  x(1) = 0.95
-  x(2) = 0.95
-  x(3) = 0.05
-  x(4) = 0.05
-  y(0) = 0.05
-  y(1) = 0.05
-  y(2) = 0.95
-  y(3) = 0.95
-  y(4) = 0.05
+  x = (/ 0.05, 0.95, 0.95, 0.05, 0.05 /)
+  y = (/ 0.05, 0.05, 0.95, 0.95, 0.05 /)
   NhlNDCPolyline(ll_id,gid,x,y)
 
 ;
@@ -241,16 +231,8 @@ PS=0
 ; The second frame illustrates use of the draw_bounded_plot procedure
 ; to place several plots with varying aspect ratios in a single frame.
 ;
-  x(0) = 0.025
-  x(1) = 0.475
-  x(2) = 0.475
-  x(3) = 0.025
-  x(4) = 0.025
-  y(0) = 0.525
-  y(1) = 0.525
-  y(2) = 0.975
-  y(3) = 0.975
-  y(4) = 0.525
+  x = (/ 0.025, 0.475, 0.475, 0.025, 0.025 /)
+  y = (/ 0.525, 0.525, 0.975, 0.975, 0.525 /)
   NhlNDCPolyline(ll_id,gid,x,y)
 
 ;
@@ -274,16 +256,8 @@ PS=0
 ; second plot.
 ;
 
-  x(0) = 0.525
-  x(1) = 0.975
-  x(2) = 0.975
-  x(3) = 0.525
-  x(4) = 0.525
-  y(0) = 0.525
-  y(1) = 0.525
-  y(2) = 0.975
-  y(3) = 0.975
-  y(4) = 0.525
+  x = (/ 0.525, 0.975, 0.975, 0.525, 0.525 /)
+  y = (/ 0.525, 0.525, 0.975, 0.975, 0.525 /)
   NhlNDCPolyline(ll_id,gid,x,y)
 
 ;
@@ -307,16 +281,8 @@ PS=0
 ; Draw an immediate mode line indicating the desired boundary of the
 ; third plot.
 ;
-  x(0) = 0.125
-  x(1) = 0.875
-  x(2) = 0.875
-  x(3) = 0.125
-  x(4) = 0.125
-  y(0) = 0.1
-  y(1) = 0.1
-  y(2) = 0.4
-  y(3) = 0.4
-  y(4) = 0.1
+  x = (/ 0.125, 0.875, 0.875, 0.125, 0.125 /)
+  y = (/ 0.1, 0.1, 0.4, 0.4, 0.1 /)
   NhlNDCPolyline(ll_id,gid,x,y)
 
 ;

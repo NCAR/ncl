@@ -1,4 +1,4 @@
-; $Id: basic05n.ncl,v 1.11 1997-06-04 16:53:28 haley Exp $
+; $Id: basic05n.ncl,v 1.12 1998-04-23 22:19:44 ethan Exp $
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
 ;                Copyright (C)  1995                                    ;
@@ -28,7 +28,7 @@
 begin
 
 ; Initialize numeric labels for the labelbar annotation.
-colorindices=new(232,integer)
+
 colorindices = ispan(1,232,1)
 
 ;
@@ -78,11 +78,11 @@ end if
 lbar = create "LabelBar" labelBarClass wks
     "lbLabelStrings" : colorindices       ; Assign the labels
     "lbLabelStride" :  5                  ; Label every 5th entry
-    "lbMonoFillPattern" : "TRUE"          ; Single pattern used for fill
+    "lbMonoFillPattern" : True          ; Single pattern used for fill
     "lbFillPattern" : "SolidFill"         ; Set fill pattern to solid
-    "lbBoxLinesOn" : "FALSE"              ; Turn off lines between colors
+    "lbBoxLinesOn" : False              ; Turn off lines between colors
     "lbBoxCount" : 31                     ; Display 31 entries
-    "lbPerimOn" : "FALSE"                 ; Turn off labelbar perimeter
+    "lbPerimOn" : False                 ; Turn off labelbar perimeter
     "lbTitleString" : "Default Colormap"  ; Plot title
     "lbTitleFont" : "Helvetica-bold"      ; Title font
     "lbLabelFont" : "Helvetica"           ; Label font
@@ -267,9 +267,9 @@ end getvalues
 ; Change the first entry in the colormap array to blue, the
 ; second to green, and the fourth to red.
 
-cmap(0,:) = (/0.0,0.0,1.0/)   ; Background color
-cmap(1,:) = (/0.0,1.0,0.0/)   ; Foreground color
-cmap(3,:) = (/1.0,0.0,0.0/)   ; Colormap entry 3
+cmap((/0,1,3/),:) = (/ (/0.0,0.0,1.0/), \   ; Background color
+		(/0.0,1.0,0.0/), \   ; Foreground color
+		(/1.0,0.0,0.0/) /)   ; Colormap entry 3
 
 ; Reassign the colormap 
 setvalues wks
@@ -301,12 +301,12 @@ newcmap = new((/100,3/), float)
 ; Assign new RGB values to each entry of the colormap.
 
 ; Set the first entry (background color) to black
-newcmap(0,:) = (/0.,0.,0./)
 
-ff = fspan(1.,99.,1)
-newcmap(:,0) = 1.-(ff/99.)
-newcmap(:,1) = ff/99.
-newcmap(:,2) = ff/99.
+ff = fspan(.0,1.0,dimsizes(newcmap(:,0)))
+newcmap(:,0) = 1.-ff
+newcmap(:,1) = ff
+newcmap(:,2) = ff
+newcmap(0,:) = 0.0
 
 ; Assign the new color map to the workstation object.
 setvalues wks

@@ -1,5 +1,5 @@
 ;
-; $Id: basic09n.ncl,v 1.4 1997-01-25 22:51:46 haley Exp $
+; $Id: basic09n.ncl,v 1.5 1998-04-23 22:19:46 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
@@ -23,17 +23,6 @@
 
 begin
 
-;
-; 'min2' function
-;
-function min2(i:integer,j:integer)
-begin  
-  if (i .le. j) then
-    return(i)
-  else
-    return(j)
-  end if
-end
 
 ;
 ; Set the display. Default is to display output to an X workstation
@@ -147,7 +136,7 @@ do j = 1,div
 ;
 ; Loop over each font
 ;
-  do i=(j-1)*num_lines,min2(num_fonts-1,j*num_lines-1)
+  do i=(j-1)*num_lines,min(num_fonts-1,j*num_lines-1)
 ;
 ; Font number and name
 ;

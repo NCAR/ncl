@@ -1,4 +1,4 @@
-; $Id: basic06n.ncl,v 1.4 1995-06-29 00:15:41 scheitln Exp $
+; $Id: basic06n.ncl,v 1.5 1998-04-23 22:19:45 ethan Exp $
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
 ;                Copyright (C)  1995                                    ;
@@ -97,11 +97,10 @@ end
 ; Define a simple color map (color index 0 defines the background color).
 ;
 
-cmap = new( (/4, 3/), float)
-cmap(0,:) = (/1.0, 1.0, 1.0/)
-cmap(1,:) = (/0.0, 0.0, 1.0/)
-cmap(2,:) = (/0.0, 1.0, 0.0/)
-cmap(3,:) = (/1.0, 0.0, 0.0/)
+cmap = (/ (/1.0, 1.0, 1.0/), \
+	 (/0.0, 0.0, 1.0/), \
+	 (/0.0, 1.0, 0.0/), \
+	 (/1.0, 0.0, 0.0/) /)
 
 ;
 ; Set the display. Default is to display output to an X workstation.
