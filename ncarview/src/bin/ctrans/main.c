@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.25 1992-09-21 21:26:40 clyne Exp $
+ *	$Id: main.c,v 1.26 1992-10-16 14:43:55 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -32,6 +32,7 @@
 #include	<fcntl.h>
 #include	<signal.h>
 #include        <string.h>
+#include        <ncarg/c.h>
 #include        <ncarg/ctrans.h>
 #include	"main.h"
 
@@ -290,14 +291,15 @@ char	**argv;
 					 * list of metafiles to process
 					 */
 
-	char	**meta_files = (char **) 
-			malloc ((unsigned) ((argc * sizeof(char *)) + 1));
+	char	**meta_files;
 	int	i,j;
 	int	od;
 	CtransRC	ctrc;
 
 	logFP = stderr;			/* log to stderr by default	*/
 	progName = (progName = strrchr(argv[0], '/')) ? ++progName : *argv;
+
+ 	meta_files = (char **) malloc ((unsigned) ((argc * sizeof(char *)) +1));
 
 	/*
 	 *	parse command line argument. Separate ctrans specific

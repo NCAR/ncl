@@ -7,7 +7,7 @@
 # define YYLERR yysvec
 # define YYSTATE (yyestate-yysvec-1)
 # define YYOPTIM 1
-# define YYLMAX BUFSIZ
+# define YYLMAX 200
 # define output(c) putc(c,yyout)
 # define input() (((yytchar=yysptr>yysbuf?U(*--yysptr):my_getc(yyin))==10?(yylineno++,yytchar):yytchar)==EOF?0:yytchar)
 # define unput(c) {yytchar= (c);if(yytchar=='\n')yylineno--;*yysptr++=yytchar;}
@@ -26,6 +26,18 @@ struct yysvf {
 	int *yystops;};
 struct yysvf *yyestate;
 extern struct yysvf yysvec[], *yybgin;
+extern int yylook();
+#ifdef __cplusplus
+extern "C" {
+#endif
+extern int yywrap();
+extern int my_yylex();
+extern int yyreject();
+extern int yyracc(int);
+extern int yyless(int);
+#ifdef __cplusplus
+}
+#endif
 #include <ctype.h>
 #include "lex.h"
 static	short	have_command = 0;
@@ -892,10 +904,8 @@ char yymatch[] = {
 char yyextra[] = {
 0,0,0,0,0,0,0,0,
 0};
-#ifndef lint
-static	char ncform_sccsid[] = "@(#)ncform 1.6 88/02/08 SMI"; /* from S5R2 1.2 */
-#endif
-
+/* #ident	"@(#)libl:lib/ncform	1.3" */
+#ident	"$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libictrans/Attic/lex.yy.c,v 1.10 1992-10-16 14:45:06 clyne Exp $"
 int yylineno =1;
 # define YYU(x) x
 # define NLSTATE yyprevious=YYNEWLINE
@@ -906,7 +916,27 @@ char *yysptr = yysbuf;
 int *yyfnd;
 extern struct yysvf *yyestate;
 int yyprevious = YYNEWLINE;
-yylook(){
+int yyback(int * p, int m) {
+if (p==0) return(0);
+while (*p)
+	{
+	if (*p++ == m)
+		return(1);
+	}
+return(0);
+}
+	/* the following are only used in the lex library */
+int yyinput(){
+	return(input());
+	}
+void yyoutput(int c) {
+	output(c);
+	}
+void yyunput(int c) {
+	unput(c);
+	}
+
+int yylook(){
 	register struct yysvf *yystate, **lsp;
 	register struct yywork *yyt;
 	struct yysvf *yyz;
@@ -1054,26 +1084,5 @@ yylook(){
 # endif
 		}
 	}
-yyback(p, m)
-	int *p;
-{
-if (p==0) return(0);
-while (*p)
-	{
-	if (*p++ == m)
-		return(1);
-	}
-return(0);
-}
-	/* the following are only used in the lex library */
-yyinput(){
-	return(input());
-	}
-yyoutput(c)
-  int c; {
-	output(c);
-	}
-yyunput(c)
-   int c; {
-	unput(c);
-	}
+
+

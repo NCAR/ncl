@@ -11,6 +11,7 @@
 #ifndef	_cgm_tools_
 #define _cgm_tools_
 
+#include <ncarg/c.h>
 #include <ncarg/cgmdef.h>
 
 typedef	int	Cgm_fd;		/* a file descriptor for a metafile	*/
