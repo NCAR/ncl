@@ -56,11 +56,23 @@ C-bindings, load the NCAR Graphics libraries ncargC, ncarg_gksC,
 ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 When error conditions are detected, the support routine SETER
-is called in such a way that it writes a message to the standard
+is called. By default, SETER writes a message to the standard
 error file (as defined by I1MACH(4)) and then terminates
-execution. The possible error messages are as follows:
+execution.  It is possible to put SETER into recovery mode and
+regain control after a recoverable error (which includes almost
+all of the possible errors).
+.sp
+The possible error messages are listed below.  Unless otherwise indicated,
+these errors are recoverable.
+.sp
+ARDBPA - INITIALIZATION DONE IMPROPERLY
+.sp
+ARDBPA - BAD POINTERS IN AREA MAP (fatal)
 .sp
 ARDRLN - INITIALIZATION DONE IMPROPERLY
+.sp
+ARDRLN/XXXXXX, where XXXXXX is an ARPRAM error message.  This error message
+indicates an error during an ARPRAM call done by ARDRLN.
 .sp
 ARDRLN - ALGORITHM FAILURE
 .sp
@@ -74,13 +86,28 @@ ARGETI - PARAMETER NAME TOO SHORT - x
 .sp
 ARGETI - PARAMETER NAME NOT KNOWN - xx
 .sp
+ARGETR - PARAMETER NAME TOO SHORT - x
+.sp
+ARGETR - PARAMETER NAME NOT KNOWN - xx
+.sp
 ARGTAI - INITIALIZATION DONE IMPROPERLY
+.sp
+ARGTAI/XXXXXX, where XXXXXX is an ARPRAM error message.  This error message
+indicates an error during an ARPRAM call done by ARDRLN.
 .sp
 ARGTAI - MAI TOO SMALL
 .sp
 ARGTAI - ALGORITHM FAILURE
 .sp
-ARINAM - AREA-MAP ARRAY IS TOO SMALL
+ARINAM - AREA-MAP ARRAY IS TOO SMALL (fatal)
+.sp
+ARINIT - VALUE OF 'LC' IS TOO LARGE (fatal)
+.sp
+ARMPIA - MULTIPLE-PRECISION QUANTITY TOO BIG (fatal)
+.sp
+ARMVAM - INITIALIZATION DONE IMPROPERLY
+.sp
+ARMVAM - NEW AREA-MAP ARRAY IS TOO SMALL
 .sp
 ARPRAM - INITIALIZATION DONE IMPROPERLY
 .sp
@@ -90,9 +117,10 @@ ARPRAM - AREA-MAP ARRAY OVERFLOW
 .sp
 ARPRAM - ALGORITHM FAILURE
 .sp
-ARPRAM - AREA-MAP ARRAY OVERFLOW
-.sp
 ARSCAM - INITIALIZATION DONE IMPROPERLY
+.sp
+ARSCAM/XXXXXX, where XXXXXX is an ARPRAM error message.  This error message
+indicates an error during an ARPRAM call done by ARDRLN.
 .sp
 ARSCAM - ALGORITHM FAILURE
 .sp
@@ -105,6 +133,10 @@ ARSCAM - AREA-MAP ARRAY OVERFLOW
 ARSETI - PARAMETER NAME TOO SHORT - x
 .sp
 ARSETI - PARAMETER NAME NOT KNOWN - xx
+.sp
+ARSETR - PARAMETER NAME TOO SHORT - x
+.sp
+ARSETR - PARAMETER NAME NOT KNOWN - xx
 .SH SEE ALSO
 Online:
 areas_params, ardbpa, ardrln, aredam, argeti, argetr, argtai, arinam,
