@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarg_ras.l,v 1.1 1992-03-20 18:43:32 don Exp $
+.\"	$Id: ncarg_ras.l,v 1.2 1992-03-31 00:08:38 don Exp $
 .\"
 .\" NCAR View ncarg_ras.l 3.00 9/13/89 Clyne
 .TH NCAR Raster Libraries 1NCARV "March 1992" NCAR "NCAR View 3.01"
@@ -67,6 +67,11 @@ ParallaxWrite,
 .B Raster *src;
 .B Raster *dst;
 .B int verbose;
+.PP
+.B int
+.B RasterRGBScale(src, scale)
+.B Raster *src;
+.B float scale;
 .fi
 .SH DESCRIPTION
 .PP
@@ -108,6 +113,11 @@ RAS_DIRECT. The size of "dst" is the size of
 the resampled image. Aspect ratio is not necessarily
 preserved. If "verbose" is not equal to zero, the 
 function will report it's progress on stderr.
+.IP RasterRGBScale(src, scale)
+"src" is a pointer to a source raster structure
+of any encoding type. The variable "scale" will be used
+to scale the RGB space. R' = R * scale; G' = G * scale;
+B' = B * scale.
 .IP
 Gives nice results but is damn slow.
 .SH "SEE ALSO"
