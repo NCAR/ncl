@@ -1,5 +1,5 @@
 /*
- *	$Id: meta_edit.c,v 1.17 1993-01-08 04:31:19 clyne Exp $
+ *	$Id: meta_edit.c,v 1.18 1993-02-01 21:20:23 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -284,7 +284,7 @@ write_header(src_fd, dest_fd, dir)
 {
 	int	i;
 
-	if ((CGM_lseek(src_fd, 0, L_SET)) < 0) {
+	if ((CGM_lseek(src_fd, 0, SEEK_SET)) < 0) {
 		return(-1);
 	}
 
@@ -325,7 +325,7 @@ write_trailer(src_fd, dest_fd, dir)
 		 dir->d[dir->num_frames - 1].num_record;
 
 
-	if ((CGM_lseek(src_fd, offset, L_SET)) < 0) {
+	if ((CGM_lseek(src_fd, offset, SEEK_SET)) < 0) {
 		return(-1);
 	}	/* go to end of last frame	*/
 
@@ -371,7 +371,7 @@ write_frame(src_fd, dest_fd, tmp_fd,  list, dir, index)
 	if (list.list[index].utype == ACTUAL) {
 		frame = list.list[index].uval.frame;
 		offset = dir->d[frame].record;
-		if ((CGM_lseek(src_fd, offset, L_SET)) < 0) {
+		if ((CGM_lseek(src_fd, offset, SEEK_SET)) < 0) {
 			return(-1);
 		}
 
@@ -386,7 +386,7 @@ write_frame(src_fd, dest_fd, tmp_fd,  list, dir, index)
 	} 
 	else {
 		offset= list.list[index].uval.frame_entry.start_rec;
-		if ((CGM_lseek(tmp_fd, offset, L_SET)) < 0) {
+		if ((CGM_lseek(tmp_fd, offset, SEEK_SET)) < 0) {
 			return(-1);
 		}
 
@@ -678,9 +678,9 @@ Directory	*CGM_readFrames(ncar_cgm, start_frame, num_frames, target,
 	for (i = 0, src = start_frame; i < num_frames; i++, src++) {
 	
 		/* move to next frame to be read in	*/
-		if ((CGM_lseek(fd, dir->d[src].record, L_SET)) < 0) {
+		if ((CGM_lseek(fd, dir->d[src].record, SEEK_SET)) < 0) {
 
-			(void) CGM_lseek(workingList.tmp_fd, save_offset,L_SET);
+			(void) CGM_lseek(workingList.tmp_fd, save_offset,SEEK_SET);
 			workingList.offset = save_offset; /* reset file ptr */
 			CGM_freeDirectory(dir);
 			(void) CGM_close(fd);
@@ -691,7 +691,7 @@ Directory	*CGM_readFrames(ncar_cgm, start_frame, num_frames, target,
 		for (j = 0; j < dir->d[src].num_record; j++) {
 			if((CGM_read(fd, tmpBuf)) < 0) {
 				(void)CGM_lseek(
-					workingList.tmp_fd,save_offset, L_SET);
+					workingList.tmp_fd,save_offset, SEEK_SET);
 
 				workingList.offset = save_offset;
 				CGM_freeDirectory(dir);
@@ -700,7 +700,7 @@ Directory	*CGM_readFrames(ncar_cgm, start_frame, num_frames, target,
 			}
 			if((CGM_write(workingList.tmp_fd, tmpBuf)) < 0) {
 				(void) CGM_lseek (
-					workingList.tmp_fd,save_offset, L_SET);
+					workingList.tmp_fd,save_offset, SEEK_SET);
 
 				workingList.offset = save_offset;
 				CGM_freeDirectory(dir);
@@ -1283,7 +1283,7 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 	/*
 	 * move file pointer to start of last record in file
 	 */
-	if (CGM_lseek(fd, -1, L_XTND) < 0 ) {
+	if (CGM_lseek(fd, -1, SEEK_END) < 0 ) {
 		(void) CGM_close(tmp_fd);
 		(void) CGM_close(fd);
 		return(-1);
@@ -1330,7 +1330,7 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 	/*
 	 *	append the desired frames to the file
 	 */
-	(void) CGM_lseek(fd, -1, L_XTND);	/* overwrite last record*/
+	(void) CGM_lseek(fd, -1, SEEK_END);	/* overwrite last record*/
 	for (i = 0; i < num_frames; i++, start_frame++ ) {
 		if (write_frame(workingFd, fd, tmp_fd, workingList, 
 						saveDir,start_frame) < 0){
@@ -1400,7 +1400,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 			return (ERR);
 		}
 		if (CGM_lseek(b_fd, saveDir->d[workingList.list[bottom]
-			.uval.frame].record, L_SET) < 0)
+			.uval.frame].record, SEEK_SET) < 0)
 
 			return(ERR);
 
@@ -1411,7 +1411,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 			return (ERR);
 		}
 		if (CGM_lseek(b_fd,workingList.list[bottom].
-			uval.frame_entry.start_rec, L_SET) < 0) {
+			uval.frame_entry.start_rec, SEEK_SET) < 0) {
 
 		(void) CGM_close(b_fd);
 		return(ERR);
@@ -1428,7 +1428,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 			return (ERR);
 		}
 		if (CGM_lseek(t_fd, saveDir->d[workingList.list[top]
-			.uval.frame] .record, L_SET) < 0) {
+			.uval.frame] .record, SEEK_SET) < 0) {
 
 			(void) CGM_close(b_fd);
 			(void) CGM_close(t_fd);
@@ -1443,7 +1443,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 			return (ERR);
 		}
 		if (CGM_lseek(t_fd, workingList.list[top]
-			.uval.frame_entry.start_rec, L_SET) < 0) {
+			.uval.frame_entry.start_rec, SEEK_SET) < 0) {
 
 		(void) CGM_close(b_fd);
 		(void) CGM_close(t_fd);
@@ -1579,7 +1579,7 @@ Directory	*CGM_editFrame(frame, edit_instr, num_occur)
 			return (ERR);
 		}
 		if (CGM_lseek(fd, saveDir->d[workingList.list[frame]
-			.uval.frame].record, L_SET) < 0) {
+			.uval.frame].record, SEEK_SET) < 0) {
 
 			return(ERR);
 		}
@@ -1591,7 +1591,7 @@ Directory	*CGM_editFrame(frame, edit_instr, num_occur)
 			return (ERR);
 		}
 		if (CGM_lseek(fd, workingList.list[frame]
-			.uval.frame_entry.start_rec, L_SET) < 0) {
+			.uval.frame_entry.start_rec, SEEK_SET) < 0) {
 
 		(void) CGM_close(fd);
 		return(ERR);

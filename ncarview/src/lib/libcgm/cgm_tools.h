@@ -103,10 +103,10 @@ typedef	struct {
  */
 #define	MEM_FILE	-1
 
-#ifndef	L_SET
-#define	L_SET	0
-#define	L_INCR	1
-#define	L_XTND	2
+#ifndef	SEEK_SET
+#define	SEEK_SET	0
+#define	SEEK_CUR	1
+#define	SEEK_END	2
 #endif
 
 

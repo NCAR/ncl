@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.21 1992-11-10 19:50:24 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.22 1993-02-01 21:20:13 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -45,9 +45,6 @@
 #include	"internals.h"
 #include	"mem_file.h"
 	
-#ifndef	L_SET
-#define	L_SET	0
-#endif
 /*LINTLIBRARY*/
 
 static	int	noop()
@@ -644,7 +641,7 @@ CGM_write(cgm_fd, buf)
  *	cgm_fd		: valid file descriptor for *reading* returned 
  *			  by CGM_open
  *	offset		: record number to go to.
- *	whence		: as described in unix man page for lseek
+ *	whence		: one of (SEEK_SET, SEEK_CUR, SEEK_END)
  * on exit
  *	return		: == numbytes write in if successful else
  *			  == -1 if an error occured
@@ -901,7 +898,7 @@ Directory	*CGM_directory(cgm_fd, fp)
 	/*
 	 *	reset the file pointer to the beginning of the file
 	 */
-	(void) CGM_lseek(cgm_fd, 0, L_SET);
+	(void) CGM_lseek(cgm_fd, 0, SEEK_SET);
 
 	if (error == 0 && state == END)
 		dir->status = CGM_OK;

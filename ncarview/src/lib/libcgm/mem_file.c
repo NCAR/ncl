@@ -1,5 +1,5 @@
 /*
- *	$Id: mem_file.c,v 1.8 1992-09-11 17:51:00 clyne Exp $
+ *	$Id: mem_file.c,v 1.9 1993-02-01 21:20:20 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -245,15 +245,15 @@ int	CGM_lseekMemFile(fd, offset, whence)
 	long	off;	/* offset from base in bytes	*/
 
 	switch (whence) {
-	case L_SET:	/* from base			*/
+	case SEEK_SET:	/* from base			*/
 		off = (offset * r);
 		break;
 
-	case L_INCR:	/* from current location	*/
+	case SEEK_CUR:	/* from current location	*/
 		off = cgm_iobuf[fd]._ptr - cgm_iobuf[fd]._base + (offset * r);
 		break;
 
-	case L_XTND:	/* from end of file		*/
+	case SEEK_END:	/* from end of file		*/
 		off = *cgm_iobuf[fd].len + (offset * r);
 		break;
 		
