@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.82 2002-11-21 00:11:50 dbrown Exp $
+ *      $Id: TickMark.c,v 1.83 2004-02-20 00:54:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1440,6 +1440,10 @@ static NhlErrorTypes	TickMarkSetValues
 	NhlErrorTypes ret = NhlNOERROR;
 	NhlErrorTypes realret = NhlNOERROR;
 	int		view_args = 0;
+        float	fl,fr,fb,ft,ul,ur,ub,ut;
+	int ll;
+
+ 	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
 
 	if (tnew->view.use_segments != told->view.use_segments)
 		tnew->tick.new_draw_req = True;
@@ -1763,6 +1767,7 @@ static NhlErrorTypes	TickMarkSetValues
 	tnew->tick.x_t_minor_outward_length_set = False;
 	tnew->tick.y_l_minor_outward_length_set = False;
 	tnew->tick.y_r_minor_outward_length_set = False;
+	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
 
 	return(realret);
 }
@@ -1814,6 +1819,10 @@ static NhlErrorTypes	TickMarkInitialize
 	int i;
 	NhlErrorTypes ret = NhlNOERROR;
 	NhlErrorTypes realret = NhlNOERROR;
+        float	fl,fr,fb,ft,ul,ur,ub,ut;
+	int ll;
+
+ 	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
 
 	if (! tnew->tick.x_b_precision_set)
 		tnew->tick.x_b_precision = 4;
@@ -2139,6 +2148,8 @@ static NhlErrorTypes	TickMarkInitialize
 	tnew->tick.x_t_minor_outward_length_set = False;
 	tnew->tick.y_l_minor_outward_length_set = False;
 	tnew->tick.y_r_minor_outward_length_set = False;
+
+	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
 
 	return(realret);
 }
@@ -7788,6 +7799,7 @@ int		c_or_s;
 	NhlErrorTypes subret = NhlNOERROR;
 	char *error_lead;
 	float label_spacing;
+
 
 	if(c_or_s == SET )
 		error_lead = "TickMarkSetValues";
