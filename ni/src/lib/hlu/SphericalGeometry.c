@@ -1,5 +1,5 @@
 /*
- *      $Id: SphericalGeometry.c,v 1.1 2002-07-02 01:26:40 dbrown Exp $
+ *      $Id: SphericalGeometry.c,v 1.2 2002-11-07 00:33:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,7 @@
 #include <fortran.h>
 #endif
 
+#include <float.h>
 #include <ncarg/hlu/SphericalGeometryP.h>
 
 double abgcdp
@@ -384,7 +385,9 @@ void fpiqdp
         *xfra=(dst2*xfr1-dst1*xfr2)/(dst2-dst1);
         ipgcdp(aqdp,bqdp,xfra,pqdp);
         ipgcdp(cqdp,dqdp,xfra,qqdp);
-        if (*xfra<=xfr1||*xfra>=xfr2) break;
+	if (*xfra - xfr1 < DBL_EPSILON ||
+	    *xfra - xfr2 > -DBL_EPSILON) 
+		break;
         dsta=dpgcdp(pqdp,qqdp,eqdp);
         if (dsta==0.) break;
         if (dst1*dsta>0.) {
@@ -902,7 +905,9 @@ void fpiqsp
         *xfra=(dst2*xfr1-dst1*xfr2)/(dst2-dst1);
         ipgcsp(aqsp,bqsp,xfra,pqsp);
         ipgcsp(cqsp,dqsp,xfra,qqsp);
-        if (*xfra<=xfr1||*xfra>=xfr2) break;
+	if (*xfra - xfr1 < FLT_EPSILON ||
+	    *xfra - xfr2 > -FLT_EPSILON) 
+		break;
         dsta=dpgcsp(pqsp,qqsp,eqsp);
         if (dsta==0.f) break;
         if (dst1*dsta>0.f) {
