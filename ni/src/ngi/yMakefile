@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.16 1998-09-25 19:50:55 dbrown Exp $
+#      $Id: yMakefile,v 1.17 1999-02-27 03:14:59 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -19,6 +19,10 @@
 #
 #	Description:
 
+#define IHaveSubdirs
+
+SUBDIRS = plot_styles 
+
 MYNAME	= ngi
 
 #ifdef	RESDEBUG
@@ -36,7 +40,7 @@ EXTRA_DEFINES	=	-DNGDEMO $(OS1_DEF) $(MAJOR_DEF) $(DEBUGDEFS)
 EXTRA_LDFLAGS	=
 
 PROG_LIBS	=	$(NGOLIB) $(DBLIB) $(NCLAPILIB) \
-			$(HLULIBS) $(NCARGLIBS) -lXmHTML $(XCBLIB)
+			$(HLULIBS) $(NCARGLIBS) -lXmHTML_d $(XCBLIB)
 DEPLIBS		=	$(DEPNGOLIB) $(DEPNCLAPILIB) $(DEPHLULIBS) \
 			$(DEPNCARGLIBS)
 EXTRA_LIBS	=	$(NCDFLIBS) -lXpm $(HDFLIB)
