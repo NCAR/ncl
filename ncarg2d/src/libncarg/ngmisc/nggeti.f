@@ -1,5 +1,5 @@
 C
-C	$Id: nggeti.f,v 1.13 2001-02-06 21:17:48 fred Exp $
+C	$Id: nggeti.f,v 1.14 2002-04-04 22:04:16 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -131,6 +131,18 @@ C
       ELSE IF (CNP(1:2).EQ.'CA' .OR. CNP(1:2).EQ.'ca' .OR. 
      +    CNP(1:2).EQ.'Ca') THEN
         IVP = ILCAP
+        GO TO 110
+      ELSE IF (CNP(1:2).EQ.'LT' .OR. CNP(1:2).EQ.'lt' .OR. 
+     +    CNP(1:2).EQ.'Lt') THEN
+        IVP = LOGOTYP
+        GO TO 110
+      ELSE IF (CNP(1:2).EQ.'LC' .OR. CNP(1:2).EQ.'lc' .OR. 
+     +    CNP(1:2).EQ.'Lc') THEN
+        IVP = LOGOCOL
+        GO TO 110
+      ELSE IF (CNP(1:2).EQ.'LB' .OR. CNP(1:2).EQ.'lb' .OR. 
+     +    CNP(1:2).EQ.'Lb') THEN
+        IVP = LOGOSND
         GO TO 110
       ELSE IF (CNP(1:2).EQ.'LX' .OR. CNP(1:2).EQ.'lx' .OR. 
      +    CNP(1:2).EQ.'Lx') THEN

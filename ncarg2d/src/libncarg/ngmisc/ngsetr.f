@@ -1,5 +1,5 @@
 C
-C	$Id: ngsetr.f,v 1.4 2000-08-22 15:05:13 haley Exp $
+C	$Id: ngsetr.f,v 1.5 2002-04-04 22:04:17 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -123,6 +123,27 @@ C
         WRITE(IDR(7:15), 550) RMITER
   550   FORMAT(F9.3)
         CALL GESC(-1520,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  OX - X NDC coordinate position for logos.
+C
+      ELSE IF (CNP(1:2).EQ.'OX' .OR. CNP(1:2).EQ.'ox' .OR.
+     +         CNP(1:2).EQ.'Ox') THEN
+        OXLOGO = RVP
+        GO TO 120
+C
+C  OY - Y NDC coordinate position for logos.
+C
+      ELSE IF (CNP(1:2).EQ.'OY' .OR. CNP(1:2).EQ.'oy' .OR.
+     +         CNP(1:2).EQ.'Oy') THEN
+        OYLOGO = RVP
+        GO TO 120
+C
+C  OS - NDC height specification for logos.
+C
+      ELSE IF (CNP(1:2).EQ.'OS' .OR. CNP(1:2).EQ.'os' .OR.
+     +         CNP(1:2).EQ.'Os') THEN
+        OLSIZE = RVP
         GO TO 120
 C
 C  NO - Nominal linewidth.

@@ -1,5 +1,5 @@
 C
-C	$Id: ngblda.f,v 1.12 2001-02-06 21:17:47 fred Exp $
+C	$Id: ngblda.f,v 1.13 2002-04-04 22:04:15 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -103,5 +103,20 @@ C
 C  Flag to NGDOTS to indicate whether to draw dots (=0) or circles (=1).
 C
       DATA ICDFLG/0/
+C
+C  Logo type (1=full NCAR logo, 2=UCAR logo star, 
+C             3="NCAR" in Bell Gothic Black font, 
+C             4="UCAR" in Bell Gothic Black font, 
+C             5=UCAR star logo, plus "UCAR" in Bell Gothic Black font) 
+C
+      DATA LOGOTYP/1/
+C
+C  Color indices for logos (primary and secondary colors).
+C
+      DATA LOGOCOL,LOGOSND/1,1/ 
+C
+C  Default X,Y NDC coordinate position for logos, and the default  size.
+C
+      DATA OXLOGO,OYLOGO,OLSIZE/0.93,0.05,0.07/
 C
       END

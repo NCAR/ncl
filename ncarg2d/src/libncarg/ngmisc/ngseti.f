@@ -1,5 +1,5 @@
 C
-C	$Id: ngseti.f,v 1.17 2001-02-06 21:17:48 fred Exp $
+C	$Id: ngseti.f,v 1.18 2002-04-04 22:04:17 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -347,6 +347,39 @@ C
         ENDIF
         WRITE(IDR(7:7), 520) ILCAP
         CALL GESC(-1519,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  LB - Color index for secondary color for logos.
+C
+      ELSE IF (CNP(1:2).EQ.'LB' .OR. CNP(1:2).EQ.'lb' .OR.
+     +         CNP(1:2).EQ.'Lb') THEN
+        IF (IVP .LT. 0) THEN
+          LOGOSND = 1
+        ELSE
+          LOGOSND = IVP
+        ENDIF
+        GO TO 120
+C
+C  LC - Color index for logos to non-PostScript workstations.
+C
+      ELSE IF (CNP(1:2).EQ.'LC' .OR. CNP(1:2).EQ.'lc' .OR.
+     +         CNP(1:2).EQ.'Lc') THEN
+        IF (IVP .LT. 0) THEN
+          LOGOCOL = 1
+        ELSE
+          LOGOCOL = IVP
+        ENDIF
+        GO TO 120
+C
+C  LT - Logo type.
+C
+      ELSE IF (CNP(1:2).EQ.'LT' .OR. CNP(1:2).EQ.'lt' .OR.
+     +         CNP(1:2).EQ.'Lt') THEN
+        IF (IVP.LT.1 .OR. IVP.GT.5) THEN
+          LOGOTYP = 1
+        ELSE
+          LOGOTYP = IVP
+        ENDIF
         GO TO 120
 C
 C  LX - Lower left X coordinate on PostScript output page.

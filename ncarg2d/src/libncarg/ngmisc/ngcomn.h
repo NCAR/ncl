@@ -1,5 +1,5 @@
 C
-C $Id: ngcomn.h,v 1.14 2001-02-06 21:17:47 fred Exp $
+C $Id: ngcomn.h,v 1.15 2002-04-04 22:04:15 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -59,12 +59,20 @@ C    ICDFLG  -  Flags whether NGDOTS draws circles or dots (0=dots;
 C               1=circles).
 C      ISUP  -  Suppress bkg. and/or bounding box for PS (0=neither;
 C               1=suppress both; 2= suppress bkg.; 3=suppress bb.
+C   LOGOCOL  -  Color index to be used for logos.
+C   LOGOSND  -  Secondary color index for logos.
+C   LOGOTYP  -  Logo type (1 = NCAR, 2 = UCAR).
+C   OXLOGO   -  Color index to be used for logos.
+C   OYLOGO   -  Secondary color index for logos.
+C   OLSIZE   -  Logo type (1 = NCAR, 2 = UCAR).
 C
-      COMMON /NGCOMI/  IWKID, IFULLB,   IXPS, ISTKMX, IPTHMX, 
-     +                ILJOIN, ILCAP,    ILLX,   ILLY,   IURX,
-     +                  IURY, FILSPC, HATSPC, RNLSCL, ICOSCL,
-     +                RMITER, IERRMX, IGKSCP, IPERCX,  IPSCM,
-     +                IPRIVX, ICDFLG,   ISCX,   IMCX,   IPCX,
-     +                  ISUP, NLLX,     NLLY,   NURX,   NURY
+      COMMON /NGCOMI/  IWKID, IFULLB,   IXPS,  ISTKMX,  IPTHMX, 
+     +                ILJOIN, ILCAP,    ILLX,    ILLY,    IURX,
+     +                  IURY, FILSPC, HATSPC,  RNLSCL,  ICOSCL,
+     +                RMITER, IERRMX, IGKSCP,  IPERCX,   IPSCM,
+     +                IPRIVX, ICDFLG,   ISCX,    IMCX,    IPCX,
+     +                  ISUP, NLLX,     NLLY,    NURX,    NURY,
+     +               LOGOTYP, LOGOCOL, LOGOSND       ,  OXLOGO,
+     +                OYLOGO, OLSIZE
       COMMON /NGCOMC/ CFILNM, CPICNM, CSEGNM
       CHARACTER CFILNM*256, CPICNM*80, CSEGNM*15

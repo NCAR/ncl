@@ -1,5 +1,5 @@
 C
-C	$Id: nggetr.f,v 1.3 2000-08-22 15:05:11 haley Exp $
+C	$Id: nggetr.f,v 1.4 2002-04-04 22:04:16 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -74,6 +74,18 @@ C
       ELSE IF (CNP(1:2).EQ.'NO' .OR. CNP(1:2).EQ.'no' .OR. 
      +    CNP(1:2).EQ.'No') THEN
         RVP = RNLSCL
+        GO TO 110
+      ELSE IF (CNP(1:2).EQ.'OX' .OR. CNP(1:2).EQ.'ox' .OR. 
+     +    CNP(1:2).EQ.'Ox') THEN
+        RVP = OXLOGO
+        GO TO 110
+      ELSE IF (CNP(1:2).EQ.'OY' .OR. CNP(1:2).EQ.'oy' .OR. 
+     +    CNP(1:2).EQ.'Oy') THEN
+        RVP = OYLOGO
+        GO TO 110
+      ELSE IF (CNP(1:2).EQ.'OS' .OR. CNP(1:2).EQ.'os' .OR. 
+     +    CNP(1:2).EQ.'Os') THEN
+        RVP = OLSIZE
         GO TO 110
       ELSE
         CTM(1:36) = 'NGGETR - Parameter name not known - '
