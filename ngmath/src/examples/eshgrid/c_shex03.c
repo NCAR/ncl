@@ -1,5 +1,5 @@
 /*
- *  $Id: c_shex03.c,v 1.2 2000-09-19 23:54:05 fred Exp $
+ *  $Id: c_shex03.c,v 1.3 2002-05-03 20:48:13 fred Exp $
  */
 
 #include <math.h>
@@ -33,20 +33,20 @@ main ()
   int   i,j,k,ier;
 
   for (i = 0; i < NI; i++) {
-    xi[i] = XMIN+(XMAX-XMIN)*dsrnd1();    
-    yi[i] = YMIN+(YMAX-YMIN)*dsrnd1();    
-    zi[i] = ZMIN+(ZMAX-ZMIN)*dsrnd1();    
+    xi[i] = XMIN+(XMAX-(XMIN))*dsrnd1();    
+    yi[i] = YMIN+(YMAX-(YMIN))*dsrnd1();    
+    zi[i] = ZMIN+(ZMAX-(ZMIN))*dsrnd1();    
     ui[i] = 0.75*xi[i]*xi[i] - 1.6*yi[i]*yi[i] + 2.0*zi[i]*zi[i];
   }
 
   for (i = 0; i < NX; i++) {
-    xo[i] = XMIN+((float)i/(float)(NX-1))*(XMAX-XMIN);
+    xo[i] = XMIN+((float)i/(float)(NX-1))*(XMAX-(XMIN));
   }
   for (j = 0; j < NY; j++) {
-    yo[j] = YMIN+((float)j/(float)(NY-1))*(YMAX-YMIN);
+    yo[j] = YMIN+((float)j/(float)(NY-1))*(YMAX-(YMIN));
   }
   for (k = 0; k < NZ; k++) {
-    zo[k] = ZMIN+((float)k/(float)(NZ-1))*(ZMAX-ZMIN);
+    zo[k] = ZMIN+((float)k/(float)(NZ-1))*(ZMAX-(ZMIN));
   }
  
   ff = c_shgrid(NI,xi,yi,zi,ui,NX,NY,NZ,xo,yo,zo,&ier);

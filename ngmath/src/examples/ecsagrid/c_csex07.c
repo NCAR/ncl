@@ -1,5 +1,5 @@
 /*
- *  $Id: c_csex07.c,v 1.2 1999-01-28 23:55:28 fred Exp $
+ *  $Id: c_csex07.c,v 1.3 2002-05-03 20:48:08 fred Exp $
  */
 
 #include <math.h>
@@ -74,8 +74,8 @@ main ()
  *  Create the data array for the surface.
  */
   for (i = 0; i < NDATA; i++) {
-    xi[i] = XMIN+(XMAX-XMIN)*dsrnd1();    
-    yi[i] = YMIN+(YMAX-YMIN)*dsrnd1();    
+    xi[i] = XMIN+(XMAX-(XMIN))*dsrnd1();    
+    yi[i] = YMIN+(YMAX-(YMIN))*dsrnd1();    
     zi[i] = xi[i] + yi[i];
     t1 = 1.0/(pow(fabs(xi[i]-0.1),2.75) + pow(fabs(yi[i]),2.75) + 0.09);
     t2 = 1.0/(pow(fabs(xi[i]+0.1),2.75) + pow(fabs(yi[i]),2.75) + 0.09);
@@ -83,8 +83,8 @@ main ()
   }
   for (j = 0; j < NY; j++) {
     for (i = 0; i < NX; i++) {
-      xo[indx] = XMIN+((float)i/(float)(NX-1))*(XMAX-XMIN);
-      yo[indx] = YMIN+((float)j/(float)(NY-1))*(YMAX-YMIN);
+      xo[indx] = XMIN+((float)i/(float)(NX-1))*(XMAX-(XMIN));
+      yo[indx] = YMIN+((float)j/(float)(NY-1))*(YMAX-(YMIN));
       indx++;
     }
   }
@@ -112,10 +112,10 @@ main ()
  *  Create the output grid for plotting.
  */
   for (i = 0; i < NX; i++) {
-    xp[i] = XMIN+((float)(i)/(float)(NX-1))*(XMAX-XMIN);
+    xp[i] = XMIN+((float)(i)/(float)(NX-1))*(XMAX-(XMIN));
   }
   for (j = 0; j < NY; j++) {
-    yp[j] = YMIN+((float)(j)/(float)(NY-1))*(YMAX-YMIN);
+    yp[j] = YMIN+((float)(j)/(float)(NY-1))*(YMAX-(YMIN));
   }
 
 /*
