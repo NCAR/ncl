@@ -3,14 +3,14 @@
 /*
 **  Stuff that should be edited by Configure
 */
-VERSION           = 3.1.3a
-BINROOT           = /usr/local/bin
-LIBROOT           = /usr/local/lib
-INCROOT           = /usr/local/include
-MANROOT           = /usr/local/man
-TMPROOT           = /tmp
-LOCAL_LIB_SEARCH  = -L/usr/lib/X11R4 -L/usr/local/lib
-LOCAL_INC_SEARCH  = -I/usr/include/X11R4 -I/usr/local/include
+VERSION		= 3.2.alpha
+BINROOT		= /red/u2/ncarg_test/hp/bin
+LIBROOT		=  /red/u2/ncarg_test/hp/lib
+INCROOT		=  /red/u2/ncarg_test/hp/include
+MANROOT		=  /red/u2/ncarg_test/hp/man
+TMPROOT		= /tmp
+LOCAL_LIB_SEARCH		= -L/usr/lib/X11R4 -L/usr/local/lib
+LOCAL_INC_SEARCH		= -I/usr/include/X11R4 -I/usr/local/include
 
 /*
 **  Order of assignment to LIB_SEARCH and to INC_SEARCH is 
@@ -79,26 +79,26 @@ YMAKE             = $(CONFIGPATH)/ymake -I$(CONFIGPATH)
 MAKE              = make
 FLOAT_OPT         = 
 OS                = -DSYSV
-ARCH              = 
+ARCH              = -DHP9000       /* for HDF libraries */
 VDEFINE           = -DVERSION='"$(VERSION)"'
 CC                = c89
 CC_LD             = $(CC)
 CDEBUG            = 
 COPT              = -O
-CMISC             = -DNeedFuncProto
+CMISC             = -DNeedFuncProto -D_HPUX_SOURCE
 CINC              = $(INC_SEARCH)
 CFLAGS            = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
                     $(FLOAT_OPT) $(CINC) $(VDEFINE)
 LD_CFLAGS         = $(LIB_SEARCH) $(CFLAGS) 
 CPP               = /lib/cpp
 FCPP              = $(NCARG)/utils/fcpp $(CPP)
-FC                = f77
-F77               = f77
+FC                = fort77
+F77               = fort77
 F77_LD            = $(F77)
 FDEBUG            = 
 FOPT              = -O
 FMISC             =
-FFLAGS            = $(OS) $(ARCH) $(FDEFINES) $(FDEBUG) $(FOPT) $(FMISC)\
+FFLAGS            = $(FDEFINES) $(FDEBUG) $(FOPT) $(FMISC)\
                     $(FLOAT_OPT)
 LD_FFLAGS         = $(LIB_SEARCH) $(FFLAGS)
 LD                = ld
