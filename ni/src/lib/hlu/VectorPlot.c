@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.83 2003-09-25 23:48:10 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.84 2003-09-26 16:48:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4651,6 +4651,8 @@ static NhlErrorTypes SetUpCrvTransObj
         int			nargs = 0;
 	NhlClass		trans_class;
 
+	entry_name = (init) ? "VectorPlotInitialize" : "VectorPlotSetValues";
+
 	/*
 	 * By now the grid_type should only be spherical or curvilinear 
 	 * Otherwise fatal error.
@@ -4668,9 +4670,6 @@ static NhlErrorTypes SetUpCrvTransObj
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
-
-	entry_name = (init) ? "VectorPlotInitialize" : "VectorPlotSetValues";
-	
 
 	if (init)
 		tfp->trans_obj = NULL;

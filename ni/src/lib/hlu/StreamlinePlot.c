@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.68 2003-09-10 21:29:57 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.69 2003-09-26 16:48:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2344,7 +2344,7 @@ static NhlErrorTypes stInitDraw
                 stp->yc1 = 0;
                 stp->ycn = ycount - 1;
         }
-	else if (tfp->grid_type == NhltrCURVILINEAR) {
+	else if (tfp->grid_type >= NhltrCURVILINEAR) {
                 int xcount,ycount;
 
 		xcount = stp->vfp->x_arr->len_dimensions[1];
@@ -3528,16 +3528,19 @@ static NhlErrorTypes SetUpCrvTransObj
         int			nargs = 0;
 	NhlClass		trans_class;
 
+	entry_name = (init) ? 
+		"StreamlinePlotInitialize" : "StreamlinePlotSetValues";
+	
 	/*
 	 * By now the grid_type should only be spherical or curvilinear 
 	 * Otherwise fatal error.
 	 */ 
 
 	switch (tfp->grid_type) {
-	case NhlBASICGRID:
+	case NhltrCURVILINEAR:
 		trans_class =  NhlcurvilinearTransObjClass;
 		break;
-	case NhlSPHERICALGRID:
+	case NhltrSPHERICAL:
 		trans_class =  NhlsphericalTransObjClass;
 		break;
 	default:
@@ -3546,9 +3549,6 @@ static NhlErrorTypes SetUpCrvTransObj
 		return NhlFATAL;
 	}
 
-	entry_name = (init) ? 
-		"StreamlinePlotInitialize" : "StreamlinePlotSetValues";
-	
 
 	if (init)
 		tfp->trans_obj = NULL;
