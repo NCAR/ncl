@@ -25,7 +25,7 @@ C
       integer appid, wid, pid
       integer rlist, ierr
 
-      character*8 labels(5)
+      character*11 labels(5)
       integer colors(5)
       integer item_ind(5)
       real item_hgt, lnthik(5)

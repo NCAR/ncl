@@ -1,5 +1,5 @@
 /*
- *  $Id: lg03c.c,v 1.5 1995-02-21 23:05:49 haley Exp $
+ *  $Id: lg03c.c,v 1.6 1995-02-28 22:46:44 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -31,7 +31,7 @@ main()
 {
     int appid, wid, pid;
     int rlist;
-    char *labels[5];
+    char labels[5][12];
     int colors[5];
     int types[5];
     int item_ind[5];
