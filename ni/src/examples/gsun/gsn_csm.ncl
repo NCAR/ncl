@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.87 2002-02-05 04:28:46 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.88 2002-02-22 05:33:29 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2457,6 +2457,7 @@ end
 
 ;***********************************************************************;
 ; Procedure : add_lat_labels_yaxis                                      ;
+;               plot: graphic                                           ;
 ;             min_lat: numeric                                          ;
 ;             max_lat: numeric                                          ;
 ;         lat_spacing: numeric                                          ;
@@ -2470,11 +2471,8 @@ end
 procedure add_lat_labels_yaxis(plot:graphic,min_lat:numeric,max_lat:numeric,\
                                lat_spacing:numeric,mlat_spacing:numeric, \)
                                res:logical)
-  else
-;
-; Only set a X axis label if it is not a lat axis.
-;
-    set_xaxis_string(res,data)
+local tmres, latvalues, latlabels
+begin
   tmres = get_res_eq(res,(/"tm","ti"/))  ; Get tickmark resources
 
   lat_spacing2 = get_res_value(tmres,"tmYLTickSpacingF",lat_spacing)
@@ -2515,9 +2513,13 @@ begin
 ;
 ; If the plot coming in is an XY plot, then it won't have 
 ; coordinate variables associated with it.  Instead, we have
-  else
+; to determine if it's the X or Y data coming in, and then see
+; if the data contains a valid "units" attribute.
 ;
-; Only set a X axis label if it is not a lon axis.
+
+  if(.not.set_xaxis) then
+;
+; Only set a X axis label if it is not a lat or lon axis.
 ;
     set_xaxis_string(res,data)
   end if

@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.80 2002-02-05 04:28:45 haley Exp $
+;      $Id: gsn_code.ncl,v 1.81 2002-02-22 05:33:28 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -82,6 +82,7 @@ undef("gsn_polymarker")
 undef("gsn_add_polymarker")
 undef("gsn_polymarker_ndc")
 undef("gsn_labelbar_ndc")
+undef("gsn_legend_ndc")
 undef("gsn_text_ndc_return")
 undef("gsn_text_ndc")
 undef("gsn_text")
@@ -2272,6 +2273,42 @@ begin
 
     draw(lbid)
     delete(lbid)
+end
+
+;***********************************************************************;
+; Procedure : gsn_legend_ndc                                            ;
+;                   wks: workstation object                             ;
+;                  nitems: number of legend items                       ;
+;                labels: labels for items                               ;
+;                     x: X NDC position of legend                       ;
+;                     y: Y NDC position of legend                       ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This procedure draws a legend on the workstation "wks" (the           ;
+; variable returned from a previous call to "gsn_open_wks").            ;
+; "resources" is an optional list of resources.                         ;
+;***********************************************************************;
+procedure gsn_legend_ndc(wks:graphic, nitems:integer, labels:string, \
+                         x,y,resources:logical )
+local i, lgid, res, lg_res_index, lgres
+begin
+    wksname = get_res_value_keep(wks,"name","gsnapp")
+
+    lgid = create wksname + "_legend" legendClass wks
+      "vpXF"           : x
+      "vpYF"           : y
+      "lgItemCount"    : nitems
+      "lgLabelStrings" : labels
+    end create
+
+    lgres = get_res_eq(resources,(/"lg","vp"/))
+    if(lgres.and..not.any(ismissing(getvaratts(lgres))))
+      attsetvalues_check(lgid,lgres)
+    end if
+
+; Draw legend.
+
+    draw(lgid)
 end
 
 ;***********************************************************************;
