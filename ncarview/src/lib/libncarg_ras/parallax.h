@@ -1,5 +1,5 @@
 /*
- *	$Id: parallax.h,v 1.3 1992-03-23 21:45:52 clyne Exp $
+ *	$Id: parallax.h,v 1.4 1992-09-10 20:58:43 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -29,14 +29,6 @@
  *		this board but the last time I reviewed it, it
  *		was almost entirely incorrect.)
  */
-
-#ifndef TRUE
-#define TRUE	1
-#endif
-
-#ifndef FALSE
-#define FALSE	0
-#endif
 
 #define	VFB_WIDTH		640
 #define	VFB_HEIGHT		512
