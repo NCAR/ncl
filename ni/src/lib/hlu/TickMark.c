@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.41 1995-06-27 20:28:58 dbrown Exp $
+ *      $Id: TickMark.c,v 1.42 1995-06-30 20:40:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -258,13 +258,20 @@ static NhlResource resources[] = {
 		sizeof(NhlColorIndex),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_major_line_color),
 		NhlTImmediate,_NhlUSET( (NhlPointer)NhlFOREGROUND),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, tick.x_b_major_length_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtmXBMajorLengthF, NhlCtmMajorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_major_length),
-		NhlTString,_NhlUSET( ".02"),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, 
+			   tick.x_b_major_outward_length_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtmXBMajorOutwardLengthF, NhlCtmMajorOutwardLengthsF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.x_b_major_outward_length),
-		NhlTString, _NhlUSET("0.0"),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{ NhlNtmXBMinorThicknessF, NhlCtmMinorThicknessesF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_minor_thickness),
@@ -273,20 +280,30 @@ static NhlResource resources[] = {
 		sizeof(NhlColorIndex),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_minor_line_color),
 		NhlTImmediate,_NhlUSET( (NhlPointer)NhlFOREGROUND),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, tick.x_b_minor_length_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtmXBMinorLengthF, NhlCtmMinorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_minor_length),
-		NhlTString,_NhlUSET( ".01"),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, 
+			   tick.x_b_minor_outward_length_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtmXBMinorOutwardLengthF, NhlCtmMinorOutwardLengthsF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.x_b_minor_outward_length),
-		NhlTString,_NhlUSET( "0.0"),0,NULL},	
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{NhlNtmXBLabelFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		NhlOffset(NhlTickMarkLayerRec, tick.x_b_label_font),
 		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, tick.x_b_label_font_height_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtmXBLabelFontHeightF, NhlCtmLabelFontHeightsF, NhlTFloat, 
-		sizeof(float),
-		NhlOffset(NhlTickMarkLayerRec, tick.x_b_label_font_height),
-		NhlTString,_NhlUSET( "0.02" ),0,NULL},
+		 sizeof(float),
+		 NhlOffset(NhlTickMarkLayerRec, tick.x_b_label_font_height),
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{NhlNtmXBLabelFontColor,NhlCtmLabelFontColors,NhlTColorIndex,
 		sizeof(NhlColorIndex),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_label_font_color),
@@ -353,35 +370,52 @@ static NhlResource resources[] = {
 		sizeof(NhlColorIndex),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_major_line_color),
 		NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, tick.x_t_major_length_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtmXTMajorLengthF, NhlCtmMajorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_major_length),
-		NhlTString,_NhlUSET( ".02"),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, 
+			   tick.x_t_major_outward_length_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtmXTMajorOutwardLengthF, NhlCtmMajorOutwardLengthsF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.x_t_major_outward_length),
-		NhlTString,_NhlUSET( "0.0"),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{ NhlNtmXTMinorThicknessF, NhlCtmMinorThicknessesF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_minor_thickness),
 		NhlTString,_NhlUSET( "1.0" ),0,NULL},
-	{NhlNtmXTMinorLineColor, NhlCtmMinorLineColors, NhlTColorIndex,
+	{NhlNtmXTMinorLineColor,NhlCtmMinorLineColors,NhlTColorIndex,
 		sizeof(NhlColorIndex),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_minor_line_color),
-		NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
+		NhlTImmediate,_NhlUSET( (NhlPointer)NhlFOREGROUND),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, tick.x_t_minor_length_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtmXTMinorLengthF, NhlCtmMinorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_minor_length),
-		NhlTString,_NhlUSET( ".01"),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, 
+			   tick.x_t_minor_outward_length_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtmXTMinorOutwardLengthF, NhlCtmMinorOutwardLengthsF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.x_t_minor_outward_length),
-		NhlTString,_NhlUSET( "0.0"),0,NULL},	
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{NhlNtmXTLabelFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		NhlOffset(NhlTickMarkLayerRec, tick.x_t_label_font),
 		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, tick.x_t_label_font_height_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtmXTLabelFontHeightF, NhlCtmLabelFontHeightsF, NhlTFloat, 
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.x_t_label_font_height),
-		NhlTString,_NhlUSET( "0.02" ),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{NhlNtmXTLabelFontColor,NhlCtmLabelFontColors,NhlTColorIndex,
 		sizeof(NhlColorIndex),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_label_font_color),
@@ -562,13 +596,21 @@ static NhlResource resources[] = {
 		sizeof(NhlColorIndex),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_major_line_color),
 		NhlTImmediate,_NhlUSET( (NhlPointer)1),0,NULL},
+
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, tick.y_l_major_length_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtmYLMajorLengthF, NhlCtmMajorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_major_length),
-		NhlTString,_NhlUSET( ".02"),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, 
+			   tick.y_l_major_outward_length_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtmYLMajorOutwardLengthF, NhlCtmMajorOutwardLengthsF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_l_major_outward_length),
-		NhlTString,_NhlUSET( "0.0"),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{ NhlNtmYLMinorThicknessF, NhlCtmMinorThicknessesF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_minor_thickness),
@@ -577,20 +619,30 @@ static NhlResource resources[] = {
 		sizeof(NhlColorIndex),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_minor_line_color),
 		NhlTImmediate,_NhlUSET( (NhlPointer)NhlFOREGROUND),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, tick.y_l_minor_length_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtmYLMinorLengthF, NhlCtmMinorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_minor_length),
-		NhlTString,_NhlUSET( ".01"),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, 
+			   tick.y_l_minor_outward_length_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtmYLMinorOutwardLengthF, NhlCtmMinorOutwardLengthsF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_l_minor_outward_length),
-		NhlTString,_NhlUSET( "0.0"),0,NULL},	
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{NhlNtmYLLabelFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_l_label_font),
 		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, tick.y_l_label_font_height_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtmYLLabelFontHeightF, NhlCtmLabelFontHeightsF, NhlTFloat, 
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_l_label_font_height),
-		NhlTString,_NhlUSET( "0.02" ),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{NhlNtmYLLabelFontColor,NhlCtmLabelFontColors,NhlTColorIndex,
 		sizeof(NhlColorIndex),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_label_font_color),
@@ -659,13 +711,21 @@ static NhlResource resources[] = {
 		sizeof(NhlColorIndex),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_major_line_color),
 		NhlTImmediate,_NhlUSET( (NhlPointer)1),0,NULL},
+
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, tick.y_r_major_length_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtmYRMajorLengthF, NhlCtmMajorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_major_length),
-		NhlTString,_NhlUSET( ".02"),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, 
+			   tick.y_r_major_outward_length_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtmYRMajorOutwardLengthF, NhlCtmMajorOutwardLengthsF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_r_major_outward_length),
-		NhlTString,_NhlUSET( "0.0"),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{ NhlNtmYRMinorThicknessF, NhlCtmMinorThicknessesF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_minor_thickness),
@@ -674,20 +734,30 @@ static NhlResource resources[] = {
 		sizeof(NhlColorIndex),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_minor_line_color),
 		NhlTImmediate,_NhlUSET( (NhlPointer)NhlFOREGROUND),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, tick.y_r_minor_length_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtmYRMinorLengthF, NhlCtmMinorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_minor_length),
-		NhlTString,_NhlUSET( ".01"),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, 
+			   tick.y_r_minor_outward_length_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtmYRMinorOutwardLengthF, NhlCtmMinorOutwardLengthsF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_r_minor_outward_length),
-		NhlTString,_NhlUSET( "0.0"),0,NULL},	
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{NhlNtmYRLabelFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_r_label_font),
 		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTickMarkLayerRec, tick.y_r_label_font_height_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtmYRLabelFontHeightF, NhlCtmLabelFontHeightsF, NhlTFloat, 
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_r_label_font_height),
-		NhlTString,_NhlUSET( "0.02" ),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{NhlNtmYRLabelFontColor,NhlCtmLabelFontColors,NhlTColorIndex,
 		sizeof(NhlColorIndex),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_label_font_color),
@@ -1193,6 +1263,46 @@ static NhlErrorTypes	TickMarkSetValues
 		tnew->tick.y_l_precision_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNtmYRPrecision)) 
 		tnew->tick.y_r_precision_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmXBLabelFontHeightF)) 
+		tnew->tick.x_b_label_font_height_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmXTLabelFontHeightF)) 
+		tnew->tick.x_t_label_font_height_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYLLabelFontHeightF)) 
+		tnew->tick.y_l_label_font_height_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYRLabelFontHeightF)) 
+		tnew->tick.y_r_label_font_height_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmXBMajorLengthF)) 
+		tnew->tick.x_b_major_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmXTMajorLengthF)) 
+		tnew->tick.x_t_major_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYLMajorLengthF)) 
+		tnew->tick.y_l_major_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYRMajorLengthF)) 
+		tnew->tick.y_r_major_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmXBMajorOutwardLengthF)) 
+		tnew->tick.x_b_major_outward_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmXTMajorOutwardLengthF)) 
+		tnew->tick.x_t_major_outward_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYLMajorOutwardLengthF)) 
+		tnew->tick.y_l_major_outward_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYRMajorOutwardLengthF)) 
+		tnew->tick.y_r_major_outward_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmXBMinorLengthF)) 
+		tnew->tick.x_b_minor_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmXTMinorLengthF)) 
+		tnew->tick.x_t_minor_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYLMinorLengthF)) 
+		tnew->tick.y_l_minor_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYRMinorLengthF)) 
+		tnew->tick.y_r_minor_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmXBMinorOutwardLengthF)) 
+		tnew->tick.x_b_minor_outward_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmXTMinorOutwardLengthF)) 
+		tnew->tick.x_t_minor_outward_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYLMinorOutwardLengthF)) 
+		tnew->tick.y_l_minor_outward_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYRMinorOutwardLengthF)) 
+		tnew->tick.y_r_minor_outward_length_set = True;
 
 	if (num_args > view_args)
 	    tnew->tick.new_draw_req = True;
@@ -1388,6 +1498,26 @@ static NhlErrorTypes	TickMarkSetValues
 	tnew->tick.x_t_precision_set = False;
 	tnew->tick.y_l_precision_set = False;
 	tnew->tick.y_r_precision_set = False;
+	tnew->tick.x_b_label_font_height_set = False;
+	tnew->tick.x_t_label_font_height_set = False;
+	tnew->tick.y_l_label_font_height_set = False;
+	tnew->tick.y_r_label_font_height_set = False;
+	tnew->tick.x_b_major_length_set = False;
+	tnew->tick.x_t_major_length_set = False;
+	tnew->tick.y_l_major_length_set = False;
+	tnew->tick.y_r_major_length_set = False;
+	tnew->tick.x_b_major_outward_length_set = False;
+	tnew->tick.x_t_major_outward_length_set = False;
+	tnew->tick.y_l_major_outward_length_set = False;
+	tnew->tick.y_r_major_outward_length_set = False;
+	tnew->tick.x_b_minor_length_set = False;
+	tnew->tick.x_t_minor_length_set = False;
+	tnew->tick.y_l_minor_length_set = False;
+	tnew->tick.y_r_minor_length_set = False;
+	tnew->tick.x_b_minor_outward_length_set = False;
+	tnew->tick.x_t_minor_outward_length_set = False;
+	tnew->tick.y_l_minor_outward_length_set = False;
+	tnew->tick.y_r_minor_outward_length_set = False;
 
 	return(realret);
 }
@@ -1448,6 +1578,46 @@ static NhlErrorTypes	TickMarkInitialize
 		tnew->tick.y_l_precision = 4;
 	if (! tnew->tick.y_r_precision_set)
 		tnew->tick.y_r_precision = 4;
+	if (! tnew->tick.x_b_label_font_height_set)
+		tnew->tick.x_b_label_font_height = 0.02;
+	if (! tnew->tick.x_t_label_font_height_set)
+		tnew->tick.x_t_label_font_height = 0.02;
+	if (! tnew->tick.y_l_label_font_height_set)
+		tnew->tick.y_l_label_font_height = 0.02;
+	if (! tnew->tick.y_r_label_font_height_set)
+		tnew->tick.y_r_label_font_height = 0.02;
+	if (! tnew->tick.x_b_major_length_set)
+		tnew->tick.x_b_major_length = 0.02;
+	if (! tnew->tick.x_t_major_length_set)
+		tnew->tick.x_t_major_length = 0.02;
+	if (! tnew->tick.y_l_major_length_set)
+		tnew->tick.y_l_major_length = 0.02;
+	if (! tnew->tick.y_r_major_length_set)
+		tnew->tick.y_r_major_length = 0.02;
+	if (! tnew->tick.x_b_major_outward_length_set)
+		tnew->tick.x_b_major_outward_length = 0.0;
+	if (! tnew->tick.x_t_major_outward_length_set)
+		tnew->tick.x_t_major_outward_length = 0.0;
+	if (! tnew->tick.y_l_major_outward_length_set)
+		tnew->tick.y_l_major_outward_length = 0.0;
+	if (! tnew->tick.y_r_major_outward_length_set)
+		tnew->tick.y_r_major_outward_length = 0.0;
+	if (! tnew->tick.x_b_minor_length_set)
+		tnew->tick.x_b_minor_length = 0.01;
+	if (! tnew->tick.x_t_minor_length_set)
+		tnew->tick.x_t_minor_length = 0.01;
+	if (! tnew->tick.y_l_minor_length_set)
+		tnew->tick.y_l_minor_length = 0.01;
+	if (! tnew->tick.y_r_minor_length_set)
+		tnew->tick.y_r_minor_length = 0.01;
+	if (! tnew->tick.x_b_minor_outward_length_set)
+		tnew->tick.x_b_minor_outward_length = 0.0;
+	if (! tnew->tick.x_t_minor_outward_length_set)
+		tnew->tick.x_t_minor_outward_length = 0.0;
+	if (! tnew->tick.y_l_minor_outward_length_set)
+		tnew->tick.y_l_minor_outward_length = 0.0;
+	if (! tnew->tick.y_r_minor_outward_length_set)
+		tnew->tick.y_r_minor_outward_length = 0.0;
 
 	tnew->tick.new_draw_req = True;
 	tnew->tick.trans_dat = NULL;
@@ -1667,6 +1837,31 @@ static NhlErrorTypes	TickMarkInitialize
 	}
 	if(ret < realret)
 		realret = ret;
+
+	tnew->tick.x_b_precision_set = False;
+	tnew->tick.x_t_precision_set = False;
+	tnew->tick.y_l_precision_set = False;
+	tnew->tick.y_r_precision_set = False;
+	tnew->tick.x_b_label_font_height_set = False;
+	tnew->tick.x_t_label_font_height_set = False;
+	tnew->tick.y_l_label_font_height_set = False;
+	tnew->tick.y_r_label_font_height_set = False;
+	tnew->tick.x_b_major_length_set = False;
+	tnew->tick.x_t_major_length_set = False;
+	tnew->tick.y_l_major_length_set = False;
+	tnew->tick.y_r_major_length_set = False;
+	tnew->tick.x_b_major_outward_length_set = False;
+	tnew->tick.x_t_major_outward_length_set = False;
+	tnew->tick.y_l_major_outward_length_set = False;
+	tnew->tick.y_r_major_outward_length_set = False;
+	tnew->tick.x_b_minor_length_set = False;
+	tnew->tick.x_t_minor_length_set = False;
+	tnew->tick.y_l_minor_length_set = False;
+	tnew->tick.y_r_minor_length_set = False;
+	tnew->tick.x_b_minor_outward_length_set = False;
+	tnew->tick.x_t_minor_outward_length_set = False;
+	tnew->tick.y_l_minor_outward_length_set = False;
+	tnew->tick.y_r_minor_outward_length_set = False;
 
 	return(realret);
 }
@@ -3731,13 +3926,18 @@ static void SetTop
 	tnew->tick.x_t_labels = tnew->tick.x_b_labels;
 	tnew->tick.x_t_major_thickness = tnew->tick.x_b_major_thickness;
 	tnew->tick.x_t_major_line_color = tnew->tick.x_b_major_line_color;
+	tnew->tick.x_t_major_length_set = tnew->tick.x_b_major_length_set;
 	tnew->tick.x_t_major_length = tnew->tick.x_b_major_length;
+	tnew->tick.x_t_major_outward_length_set = tnew->tick.x_b_major_outward_length_set;
 	tnew->tick.x_t_major_outward_length = tnew->tick.x_b_major_outward_length;
 	tnew->tick.x_t_minor_thickness = tnew->tick.x_b_minor_thickness;
 	tnew->tick.x_t_minor_line_color = tnew->tick.x_b_minor_line_color;
+	tnew->tick.x_t_minor_length_set = tnew->tick.x_b_minor_length_set;
 	tnew->tick.x_t_minor_length = tnew->tick.x_b_minor_length;
+	tnew->tick.x_t_minor_outward_length_set = tnew->tick.x_b_minor_outward_length_set;
 	tnew->tick.x_t_minor_outward_length = tnew->tick.x_b_minor_outward_length;
 	tnew->tick.x_t_label_font = tnew->tick.x_b_label_font;
+	tnew->tick.x_t_label_font_height_set = tnew->tick.x_b_label_font_height_set;
 	tnew->tick.x_t_label_font_height = tnew->tick.x_b_label_font_height;
 	tnew->tick.x_t_label_font_color = tnew->tick.x_b_label_font_color;
        	tnew->tick.x_t_label_font_aspect = tnew->tick.x_b_label_font_aspect;
@@ -3802,13 +4002,18 @@ NhlTickMarkLayer	tnew;
 	tnew->tick.y_r_values = tnew->tick.y_l_values;
 	tnew->tick.y_r_labels = tnew->tick.y_l_labels;
 	tnew->tick.y_r_major_thickness = tnew->tick.y_l_major_thickness;tnew->tick.y_r_major_line_color = tnew->tick.y_l_major_line_color;
+	tnew->tick.y_r_major_length_set = tnew->tick.y_l_major_length_set;
 	tnew->tick.y_r_major_length = tnew->tick.y_l_major_length;
 	tnew->tick.y_r_major_outward_length = tnew->tick.y_l_major_outward_length;
+	tnew->tick.y_r_major_outward_length_set = tnew->tick.y_l_major_outward_length_set;
 	tnew->tick.y_r_minor_thickness = tnew->tick.y_l_minor_thickness;
 	tnew->tick.y_r_minor_line_color = tnew->tick.y_l_minor_line_color;
+	tnew->tick.y_r_minor_length_set = tnew->tick.y_l_minor_length_set;
 	tnew->tick.y_r_minor_length = tnew->tick.y_l_minor_length;
+	tnew->tick.y_r_minor_outward_length_set = tnew->tick.y_l_minor_outward_length_set;
 	tnew->tick.y_r_minor_outward_length = tnew->tick.y_l_minor_outward_length;
 	tnew->tick.y_r_label_font = tnew->tick.y_l_label_font;
+	tnew->tick.y_r_label_font_height_set = tnew->tick.y_l_label_font_height_set;
 	tnew->tick.y_r_label_font_height = tnew->tick.y_l_label_font_height;
 	tnew->tick.y_r_label_font_color = tnew->tick.y_l_label_font_color;
 	tnew->tick.y_r_label_font_aspect = tnew->tick.y_l_label_font_aspect;
@@ -7462,119 +7667,58 @@ static NhlErrorTypes ScaleValuesForMove
 		deltay = tnew->view.height/told->view.height;
 	}
 
-
-	if(((!_NhlArgIsSet(args,num_args,NhlNvpXF))||
-		(!_NhlArgIsSet(args,num_args,NhlNvpYF))||
-		(!_NhlArgIsSet(args,num_args,NhlNvpWidthF))||
-		(!_NhlArgIsSet(args,num_args,NhlNvpHeightF)))
-		&& (_NhlCmpFAny(deltax,1.0,4) != 0.0)||
-		(_NhlCmpFAny(deltay,1.0,4) != 0.0)) {
 /*
-* Deal with TickMarkLabels first
-*/
-		if((!_NhlArgIsSet(args,num_args,NhlNtmXBLabelFontHeightF))&&
-			(!_NhlArgIsSet(args,num_args,NhlNtmXBLabelFontAspectF))&&
-			(!_NhlArgIsSet(args,num_args,NhlNtmXBLabelAngleF)))  {
-/*
-* All X axis ticks scale proportional to changes in X Axis to reduce possiblity
-* of text overruns
-*/
+ * X fonts and Y ticks change relative to the X-Axis
+ */
+	if (_NhlCmpFAny(deltax,1.0,4) != 0.0) {
+		if (! tnew->tick.x_b_label_font_height_set)
 			tnew->tick.x_b_label_font_height *= deltax;
-		}
-		if((!_NhlArgIsSet(args,num_args,NhlNtmXTLabelFontHeightF))&&
-			(!_NhlArgIsSet(args,num_args,NhlNtmXTLabelFontAspectF))&&
-			(!_NhlArgIsSet(args,num_args,NhlNtmXTLabelAngleF)))  {
-/*
-* All X axis ticks scale proportional to changes in X Axis to reduce possiblity
-* of text overruns
-*/
+		if (! tnew->tick.x_t_label_font_height_set)
 			tnew->tick.x_t_label_font_height *= deltax;
-		}
-		if((!_NhlArgIsSet(args,num_args,NhlNtmYLLabelFontHeightF))&&
-			(!_NhlArgIsSet(args,num_args,NhlNtmYLLabelFontAspectF))&&
-			(!_NhlArgIsSet(args,num_args,NhlNtmYLLabelAngleF)))  {
-/*
-* All Y axis ticks scale proportional to changes in Y Axis to reduce possiblity
-* of text overruns
-*/
-			tnew->tick.y_l_label_font_height *= deltay;
-		}
-		if((!_NhlArgIsSet(args,num_args,NhlNtmYRLabelFontHeightF))&&
-			(!_NhlArgIsSet(args,num_args,NhlNtmYRLabelFontAspectF))&&
-			(!_NhlArgIsSet(args,num_args,NhlNtmYRLabelAngleF)))  {
-/*
-* All Y axis ticks scale proportional to changes in Y Axis to reduce possiblity
-* of text overruns
-*/
-			tnew->tick.y_r_label_font_height *= deltay;
-		}
-/*
-* Now deal with scalling tick mark lengths
-*/
-		if(!_NhlArgIsSet(args,num_args,NhlNtmXBMajorLengthF)) {
-/*
-* X ticks are affected by changes is height
-*/
-			tnew->tick.x_b_major_length *= deltay;
-		}
-		if(!_NhlArgIsSet(args,num_args,NhlNtmXBMinorLengthF)){
-			tnew->tick.x_b_minor_length *= deltay;
-		}
-		if(!_NhlArgIsSet(args,num_args,NhlNtmXBMajorOutwardLengthF)){
-			tnew->tick.x_b_major_outward_length *= deltay;
-		}
-		if(!_NhlArgIsSet(args,num_args,NhlNtmXBMinorOutwardLengthF)){
-			tnew->tick.x_b_minor_outward_length *= deltay;
-		}
-
-		if(!_NhlArgIsSet(args,num_args,NhlNtmXTMajorLengthF)) {
-/*
-* X ticks are affected by changes is height
-*/
-			tnew->tick.x_t_major_length *= deltay;
-		}
-		if(!_NhlArgIsSet(args,num_args,NhlNtmXTMinorLengthF)){
-			tnew->tick.x_t_minor_length *= deltay;
-		}
-		if(!_NhlArgIsSet(args,num_args,NhlNtmXTMajorOutwardLengthF)){
-			tnew->tick.x_t_major_outward_length *= deltay;
-		}
-		if(!_NhlArgIsSet(args,num_args,NhlNtmXTMinorOutwardLengthF)){
-			tnew->tick.x_t_minor_outward_length *= deltay;
-		}
-
-		if(!_NhlArgIsSet(args,num_args,NhlNtmYRMajorLengthF)) {
-/*
-* X ticks are affected by changes is height
-*/
-			tnew->tick.y_r_major_length *= deltay;
-		}
-		if(!_NhlArgIsSet(args,num_args,NhlNtmYRMinorLengthF)){
-			tnew->tick.y_r_minor_length *= deltay;
-		}
-		if(!_NhlArgIsSet(args,num_args,NhlNtmYRMajorOutwardLengthF)){
-			tnew->tick.y_r_major_outward_length *= deltay;
-		}
-		if(!_NhlArgIsSet(args,num_args,NhlNtmYRMinorOutwardLengthF)){
-			tnew->tick.y_r_minor_outward_length *= deltay;
-		}
-
-		if(!_NhlArgIsSet(args,num_args,NhlNtmYLMajorLengthF)) {
-/*
-* X ticks are affected by changes is height
-*/
-			tnew->tick.y_l_major_length *= deltay;
-		}
-		if(!_NhlArgIsSet(args,num_args,NhlNtmYLMinorLengthF)){
-			tnew->tick.y_l_minor_length *= deltay;
-		}
-		if(!_NhlArgIsSet(args,num_args,NhlNtmYLMajorOutwardLengthF)){
-			tnew->tick.y_l_major_outward_length *= deltay;
-		}
-		if(!_NhlArgIsSet(args,num_args,NhlNtmYLMinorOutwardLengthF)){
-			tnew->tick.y_l_minor_outward_length *= deltay;
-		}
+		if (! tnew->tick.y_l_major_length_set)
+			tnew->tick.y_l_major_length *= deltax;
+		if (! tnew->tick.y_l_major_outward_length_set)
+			tnew->tick.y_l_major_outward_length *= deltax;
+		if (! tnew->tick.y_l_minor_length_set)
+			tnew->tick.y_l_minor_length *= deltax;
+		if (! tnew->tick.y_l_minor_outward_length_set)
+			tnew->tick.y_l_minor_outward_length *= deltax;
+		if (! tnew->tick.y_r_major_length_set)
+			tnew->tick.y_r_major_length *= deltax;
+		if (! tnew->tick.y_r_major_outward_length_set)
+			tnew->tick.y_r_major_outward_length *= deltax;
+		if (! tnew->tick.y_r_minor_length_set)
+			tnew->tick.y_r_minor_length *= deltax;
+		if (! tnew->tick.y_r_minor_outward_length_set)
+			tnew->tick.y_r_minor_outward_length *= deltax;
 	}
+
+/*
+ * Y fonts and X ticks change relative to the Y-Axis
+ */
+	if (_NhlCmpFAny(deltay,1.0,4) != 0.0) {
+		if (! tnew->tick.y_l_label_font_height_set)
+			tnew->tick.y_l_label_font_height *= deltay;
+		if (! tnew->tick.y_r_label_font_height_set)
+			tnew->tick.y_r_label_font_height *= deltay;
+		if (! tnew->tick.x_b_major_length_set)
+			tnew->tick.x_b_major_length *= deltay;
+		if (! tnew->tick.x_b_major_outward_length_set)
+			tnew->tick.x_b_major_outward_length *= deltay;
+		if (! tnew->tick.x_b_minor_length_set)
+			tnew->tick.x_b_minor_length *= deltay;
+		if (! tnew->tick.x_b_minor_outward_length_set)
+			tnew->tick.x_b_minor_outward_length *= deltay;
+		if (! tnew->tick.x_t_major_length_set)
+			tnew->tick.x_t_major_length *= deltay;
+		if (! tnew->tick.x_t_major_outward_length_set)
+			tnew->tick.x_t_major_outward_length *= deltay;
+		if (! tnew->tick.x_t_minor_length_set)
+			tnew->tick.x_t_minor_length *= deltay;
+		if (! tnew->tick.x_t_minor_outward_length_set)
+			tnew->tick.x_t_minor_outward_length *= deltay;
+	}
+
 	return(NhlNOERROR);
 }
 

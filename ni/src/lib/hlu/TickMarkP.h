@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMarkP.h,v 1.10 1995-06-22 01:59:12 dbrown Exp $
+ *      $Id: TickMarkP.h,v 1.11 1995-06-30 20:40:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -83,13 +83,18 @@ typedef struct _NhlTickMarkLayerPart {
 	NhlGenArray	x_b_labels;
 	float		x_b_major_thickness;
 	int		x_b_major_line_color;
+	NhlBoolean	x_b_major_length_set;
 	float 		x_b_major_length;
+	NhlBoolean	x_b_major_outward_length_set;
 	float		x_b_major_outward_length;
 	float		x_b_minor_thickness;
 	int		x_b_minor_line_color;
+	NhlBoolean	x_b_minor_length_set;
 	float		x_b_minor_length;
+	NhlBoolean	x_b_minor_outward_length_set;
 	float		x_b_minor_outward_length;
 	NhlFont		x_b_label_font;	
+	NhlBoolean	x_b_label_font_height_set;
 	float		x_b_label_font_height;
 	int		x_b_label_font_color;
 	float		x_b_label_font_aspect;
@@ -110,13 +115,18 @@ typedef struct _NhlTickMarkLayerPart {
 	NhlGenArray	x_t_labels;
 	float		x_t_major_thickness;
 	int		x_t_major_line_color;
+	NhlBoolean	x_t_major_length_set;
 	float 		x_t_major_length;
+	NhlBoolean	x_t_major_outward_length_set;
 	float		x_t_major_outward_length;
 	float		x_t_minor_thickness;
 	int		x_t_minor_line_color;
+	NhlBoolean	x_t_minor_length_set;
 	float		x_t_minor_length;
+	NhlBoolean	x_t_minor_outward_length_set;
 	float		x_t_minor_outward_length;
 	NhlFont		x_t_label_font;	
+	NhlBoolean	x_t_label_font_height_set;
 	float		x_t_label_font_height;
 	int		x_t_label_font_color;
 	float		x_t_label_font_aspect;
@@ -170,13 +180,18 @@ typedef struct _NhlTickMarkLayerPart {
 	NhlGenArray	y_l_labels;
 	float		y_l_major_thickness;
 	int		y_l_major_line_color;
+	NhlBoolean	y_l_major_length_set;
 	float 		y_l_major_length;
+	NhlBoolean	y_l_major_outward_length_set;
 	float		y_l_major_outward_length;
 	float		y_l_minor_thickness;
 	int		y_l_minor_line_color;
+	NhlBoolean	y_l_minor_length_set;
 	float		y_l_minor_length;
+	NhlBoolean	y_l_minor_outward_length_set;
 	float		y_l_minor_outward_length;
 	NhlFont		y_l_label_font;	
+	NhlBoolean	y_l_label_font_height_set;
 	float		y_l_label_font_height;
 	int		y_l_label_font_color;
 	float		y_l_label_font_aspect;
@@ -197,13 +212,18 @@ typedef struct _NhlTickMarkLayerPart {
 	NhlGenArray	y_r_labels;
 	float		y_r_major_thickness;
 	int		y_r_major_line_color;
+	NhlBoolean	y_r_major_length_set;
 	float 		y_r_major_length;
+	NhlBoolean	y_r_major_outward_length_set;
 	float		y_r_major_outward_length;
 	float		y_r_minor_thickness;
 	int		y_r_minor_line_color;
+	NhlBoolean	y_r_minor_length_set;
 	float		y_r_minor_length;
+	NhlBoolean	y_r_minor_outward_length_set;
 	float		y_r_minor_outward_length;
 	NhlFont		y_r_label_font;	
+	NhlBoolean	y_r_label_font_height_set;
 	float		y_r_label_font_height;
 	int		y_r_label_font_color;
 	float		y_r_label_font_aspect;
