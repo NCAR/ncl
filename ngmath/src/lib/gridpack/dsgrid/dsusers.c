@@ -40,7 +40,7 @@ void c_dssetr(char *pnam, float dval)
    }
    else {
       sprintf(ds_emsg,"\n  Parameter name supplied is: %s\n",pnam);
-      DSErrorHnd(4, "c_dsgetc", ds_filee, ds_emsg);
+      DSErrorHnd(4, "c_dssetr", ds_filee, ds_emsg);
    }
 }
 

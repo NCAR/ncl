@@ -19,13 +19,13 @@ float    *c_dsgrid3s(int, float [], float [], float [], float [],
 double   *c_dsgrid3d(int, double [], double [], double [], double [],
                      int, int, int, double [], double [], double [], int *);
 void     c_dspnt3d(int, double [], double [], double [], double [],
-                   int, double [], double [], double [], double [], int *);
+                   int, double [], double [], double [], double *, int *);
 void     c_dspnt2d(int, double [], double [], double [],
-                   int, double [], double [], double [], int *);
+                   int, double [], double [], double *, int *);
 void     c_dspnt3s(int, float [], float [], float [], float [],
-                   int, float [], float [], float [], float [], int *);
+                   int, float [], float [], float [], float *, int *);
 void     c_dspnt2s(int, float [], float [], float [],
-                   int, float [], float [], float [], int *);
+                   int, float [], float [], float *, int *);
 double   dotd(DSpointd3, DSpointd3);
 float    dot_s(DSpoints3, DSpoints3);
 double   ivalue(int, double *, double, double, double);

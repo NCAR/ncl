@@ -2,7 +2,7 @@
 #include "dstypes.h"
 #include "dsproto.h"
 
-#define  MAX_ERROR 30
+#define  MAX_ERROR 14
 
 extern   int   ds_error_status;
 
