@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.14 1997-02-27 20:08:07 boote Exp $
+ *	$Id: ps.c,v 1.15 1997-05-29 17:26:02 fred Exp $
  */
 /*
  *
@@ -412,7 +412,7 @@ void PSpreamble (PSddp *psa, preamble_type type)
 
 	if (type == FOR_FILE) {
 		if ((psa->type == EPSF) || (psa->type == EPSI)) {
-			(void) fprintf(fp, "%%%!PS-Adobe-2.0 EPSF-2.0\n");
+			(void) fprintf(fp, "%%!PS-Adobe-2.0 EPSF-2.0\n");
 		}
 		else {
 			(void) fprintf(fp, "%%%!PS-Adobe-2.0\n");
