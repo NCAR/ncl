@@ -1,5 +1,5 @@
 C
-C $Id: icapnt.f,v 1.1 2003-05-28 15:44:36 kennison Exp $
+C $Id: icapnt.f,v 1.2 2003-05-30 20:30:00 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,7 +20,8 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      FUNCTION ICAPNT (XCRD,YCRD,ZCRD,DVAL,RPNT,LOPN,IPPP,MPPP,NPPP)
+      FUNCTION ICAPNT (XCRD,YCRD,ZCRD,DVAL,RPNT,LOPN,IPPP,MPPP,NPPP,
+     +                                                         EPST)
 C
       DIMENSION RPNT(LOPN,MPPP),IPPP(2,MPPP)
 C
@@ -39,11 +40,11 @@ C initialize a search index to point to the first one, and loop.
 C
         ITMP=1
 C
-C If the search index now points at the point we want, return its index.
+C If the search index is of the point we want, return its index.
 C
-  101   IF (XCRD.EQ.RPNT(1,ITMP).AND.
-     +      YCRD.EQ.RPNT(2,ITMP).AND.
-     +      ZCRD.EQ.RPNT(3,ITMP)) THEN
+  101   IF (ABS(XCRD-RPNT(1,ITMP)).LE.EPST.AND.
+     +      ABS(YCRD-RPNT(2,ITMP)).LE.EPST.AND.
+     +      ABS(ZCRD-RPNT(3,ITMP)).LE.EPST) THEN
 C
           ICAPNT=ITMP
 C

@@ -1,5 +1,5 @@
 C
-C $Id: cttmtl.f,v 1.1 2003-05-28 15:44:35 kennison Exp $
+C $Id: cttmtl.f,v 1.2 2003-05-30 20:30:00 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -47,6 +47,16 @@ C triangle with index IBUF will be processed.
 C
       IBUF=1+MAX(0,MIN(NBUF-1,INT(REAL(NBUF)*CTFRAN())))
 C
+C Compute a value of EPST, to be used in ICAPNT in a test to determine
+C whether or not two points should be treated as identical.
+C
+      EPST=.01*MAX(MAX(TBUF(1,IBUF),TBUF(6,IBUF),TBUF(11,IBUF))-
+     +             MIN(TBUF(1,IBUF),TBUF(6,IBUF),TBUF(11,IBUF)),
+     +             MAX(TBUF(2,IBUF),TBUF(7,IBUF),TBUF(12,IBUF))-
+     +             MIN(TBUF(2,IBUF),TBUF(7,IBUF),TBUF(12,IBUF)),
+     +             MAX(TBUF(3,IBUF),TBUF(8,IBUF),TBUF(13,IBUF))-
+     +             MIN(TBUF(3,IBUF),TBUF(8,IBUF),TBUF(13,IBUF)))
+C
 C Use the function ICAPNT to get indices for each of the three points
 C of the triangle in the point list and form the base indices (IPP1,
 C IPP2, and IPP3) of the three points in the point list.
@@ -55,7 +65,7 @@ C
      +             TBUF( 2,IBUF),
      +             TBUF( 3,IBUF),
      +             TBUF( 4,IBUF),
-     +             RPNT,LOPN,IPPP,MPPP,NPPP)-1)*LOPN
+     +             RPNT,LOPN,IPPP,MPPP,NPPP,EPST)-1)*LOPN
 C
       IF (ICFELL('CTTMTL',1).NE.0) RETURN
 C
@@ -63,7 +73,7 @@ C
      +             TBUF( 7,IBUF),
      +             TBUF( 8,IBUF),
      +             TBUF( 9,IBUF),
-     +             RPNT,LOPN,IPPP,MPPP,NPPP)-1)*LOPN
+     +             RPNT,LOPN,IPPP,MPPP,NPPP,EPST)-1)*LOPN
 C
       IF (ICFELL('CTTMTL',2).NE.0) RETURN
 C
@@ -71,7 +81,7 @@ C
      +             TBUF(12,IBUF),
      +             TBUF(13,IBUF),
      +             TBUF(14,IBUF),
-     +             RPNT,LOPN,IPPP,MPPP,NPPP)-1)*LOPN
+     +             RPNT,LOPN,IPPP,MPPP,NPPP,EPST)-1)*LOPN
 C
       IF (ICFELL('CTTMTL',3).NE.0) RETURN
 C
