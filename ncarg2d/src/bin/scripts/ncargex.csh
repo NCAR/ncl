@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.31 1993-04-12 14:41:53 haley Exp $
+#   $Id: ncargex.csh,v 1.32 1993-04-12 14:49:04 haley Exp $
 #
 
 #********************#
@@ -39,6 +39,7 @@ if (! -d "$example_dir") then
   exit 1
 endif
 set fund_dir = $example_dir
+set pdoc_dir = $example_dir
 
 set test_dir=`ncargpath SED_TESTSDIR`
 if ($status != 0) then
@@ -662,6 +663,12 @@ foreach known ($fnd_list)
     endif
 end
 
+foreach known ($pdc_list)
+    if ("$name" == "$known") then
+        set type="Programmer"
+    endif
+end
+
 #***********************************************#
 #                                               #
 # If you just want to see what list of examples #
@@ -694,6 +701,10 @@ switch ($type)
 
     case Tutorial:
         echo "NCAR Graphics Fortran Tutorial Example <$name>"
+    breaksw
+
+    case Programmer:
+        echo "NCAR Graphics Fortran Programmer Doc Example <$name>"
     breaksw
 
     case Unknown:
@@ -868,6 +879,7 @@ foreach file($copy_files)
     echo "  Copying $file"
     if ( $type == "Example")      cp $example_dir/$file .
     if ( $type == "Fundamentals") cp $fund_dir/$file .
+    if ( $type == "Programmer")   cp $pdoc_dir/$file .
     if ( $type == "Tutorial" )    cp $tutor_dir/$file .
     if ( $type == "Test" )        cp $test_dir/$file .
 end
