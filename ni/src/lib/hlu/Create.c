@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.37 1998-03-12 02:35:17 dbrown Exp $
+ *      $Id: Create.c,v 1.38 1999-03-27 00:44:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -329,6 +329,8 @@ _NhlCreate
 	int			i;
 	NrmValue		from,to;
 	static NrmQuark		Qint = NrmNULLQUARK;
+
+	*pid = -4;
 
 	if(Qint == NrmNULLQUARK)
 		Qint = NrmPermStringToQuark(NhlTInteger);

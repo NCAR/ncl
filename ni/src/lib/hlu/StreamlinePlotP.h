@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlotP.h,v 1.10 1998-11-06 22:16:14 dbrown Exp $
+ *      $Id: StreamlinePlotP.h,v 1.11 1999-03-27 00:44:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,6 @@
 #include <ncarg/hlu/VectorFieldFloatP.h>
 #include <ncarg/hlu/ScalarFieldFloatP.h>
 #include <ncarg/hlu/FormatI.h>
-#include <ncarg/hlu/VecAnno.h>
 
 #define Nhl_stDEF_ARRAY_SIZE	16
 #define Nhl_stMAX_LEVELS	255
