@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.65 2000-02-16 01:43:29 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.66 2000-02-28 18:48:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -634,6 +634,8 @@ static NhlErrorTypes    LabelBarInitialize
 	lb_p->title_x = 0.0;
 	lb_p->title_y = 1.0;
 	lb_p->trans_dat = NULL;
+	lb_p->label_draw_count = 0;
+	lb_p->label_locs = NULL;
 
 /*
  * Ensure that the label and title angles range is between -360 and 360
