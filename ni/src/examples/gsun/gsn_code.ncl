@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.8 1999-02-16 17:38:01 haley Exp $
+;      $Id: gsn_code.ncl,v 1.9 1999-02-19 22:33:49 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3289,7 +3289,7 @@ begin
     trxmin = get_res_value_keep(res2,"trXMinF",trxmin2)
     trxmax = get_res_value_keep(res2,"trXMaxF",trxmax2)
     trymin = get_res_value_keep(res2,"trYMinF",trymin2)
-; set some dash patterns to use instead.
+    trymax = get_res_value_keep(res2,"trYMaxF",trymax2)
 
     plot_object = create wksname + "_xy" xyPlotClass wks
         "xyCoordData" : data_object
@@ -3299,6 +3299,9 @@ begin
       set_attr(res2,"tiXAxisString",x@long_name)
     end if
     if(isatt(y,"long_name")) then
+        "xyMarkers" : (/0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,\
+                        0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,\
+                        0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16/)
     end setvalues
     if((res2).and..not.any(ismissing(getvaratts(res2))))
 

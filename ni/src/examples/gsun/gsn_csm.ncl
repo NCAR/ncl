@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.1 1999-02-11 00:44:38 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.2 1999-02-19 22:33:51 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -39,6 +39,7 @@ undef("gsn_csm_map")
 undef("gsn_csm_contour_map_polar")
 undef("gsn_csm_contour_map_ce")
 undef("gsn_csm_contour_map")
+undef("gsn_csm_xy")
 
 function gsn_add_cyclic_point(data[*][*]:float)
 ;
@@ -134,7 +135,7 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
 ; object for it.
 
         if(isatt(res2,"gsnLeftString"))
-            lft_str_object = create "ezplot1_left_string" textItemClass wks
+            lft_str_object = create "left_string" textItemClass wks
               "txString" : res2@gsnLeftString
             end create
             left_string = True
@@ -146,7 +147,7 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
 ; object for it.
 
         if(isatt(res2,"gsnCenterString"))
-            ctr_str_object = create "ezplot1_center_string" textItemClass wks
+            ctr_str_object = create "center_string" textItemClass wks
               "txString" : res2@gsnCenterString
             end create
             center_string = True
@@ -158,7 +159,7 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
 ; object for it.
 
         if(isatt(res2,"gsnRightString"))
-            rgt_str_object = create "ezplot1_right_string" textItemClass wks
+            rgt_str_object = create "right_string" textItemClass wks
               "txString" : res2@gsnRightString
             end create
             right_string = True
@@ -169,7 +170,7 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
 
 ; Create the map object.
 
-    map_object = create "ezplot1_map" mapPlotClass wks
+    map_object = create "map" mapPlotClass wks
       "vpXF"            : map_vpxf
       "vpYF"            : map_vpyf
       "vpWidthF"        : map_vpwidthf
@@ -350,7 +351,7 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
 
 ; Create a TickMark object to label lat/lon grid.
 
-    tickmark_object = create "ezplot1_tickmarks" tickMarkClass wks
+    tickmark_object = create "tickmarks" tickMarkClass wks
        "vpXF"            : vpxf       ; Set the viewport location of the
        "vpYF"            : vpyf       ; tick marks to be the same as 
        "vpWidthF"        : vpwidthf   ; the map.
@@ -1736,6 +1737,213 @@ local res2
     return(gsn_csm_contour_map_ce(wks,data,res2))
   end if
   delete(res2)
+end
+
+
+;***********************************************************************;
+; Function : gsn_csm_contour_map_overlay                                ;
+;                   wks: workstation object                             ;
+;                 data1: 2-dimensional data                             ;
+;                 data2: 2-dimensional data                             ;
+;                  res1: optional resources                             ;
+;                  res2: optional resources                             ;
+;                                                                       ;
+; This is similar to gsn_csm_contour_map, only it overlays an           ;
+; additional contour plot.                                              ;
+;                                                                       ;
+;***********************************************************************;
+
+function gsn_csm_contour_map_overlay(wks:graphic,data1[*][*]:numeric,\
+                                data2[*][*]:numeric,res1:logical,res2:logical)
+local calldraw, callframe, res1_tmp, res2_tmp
+begin
+  res1_tmp  = get_resources(res1)   ; Transfer attributes
+  res2_tmp  = get_resources(res2)   ; Transfer attributes
+; If "gsnYReferenceLine" is set to some value, then a reference line    ;
+; will be drawn.
+  end if 
+
+  res2_tmp@gsnDraw  = False
+  res2_tmp@gsnFrame = False
+local res, xy_object, res2, xfontf, yfontf, font_height, \
+lft_str_object, ctr_str_object, rgt_str_object, calldraw, callframe, \
+left_string, center_string, right_string, sub_zone, main_zone
+  if(get_res_value(res2_tmp,"gsnAddCyclic",True))
+    datanew = gsn_add_cyclic_point(data2)
+  else
+
+    calldraw      = True
+    callframe     = True
+
+    sub_zone      = 2         ; Zone for subtitles
+    datanew = data2
+    left_string   = False     ; Default is no subtitles unless
+    center_string = False     ; they are explicitly set with the
+    right_string  = False     ; special "gsn" resources.
+    tickmark_res  = False
+    res2 = resources
+
+; This function creates and draws a titled XY plot to the workstation   ;
+; "wks" (the variable returned from a previous call to "gsn_open_wks"). ;
+; "resources" is an optional list of  resources. The Id of the map plot ;
+; is returned.                                                          ;
+
+; Check if frame and/or draw are not supposed to be called.
+
+        if(isatt(res2,"gsnDraw"))
+            if(.not.res2@gsnDraw)
+                calldraw = False
+            end if
+            delete(res2@gsnDraw)
+        end if
+        if(isatt(res2,"gsnFrame"))
+            if(.not.res2@gsnFrame)
+                callframe = False
+            end if
+            delete(res2@gsnFrame)
+        end if
+
+;                                                                       ;
+; This function behaves differently from gsn_xy in that it will         ;
+; add additional titles to the top of the plot if any of the special    ;
+        if(isatt(res2,"gsnShape").and.res2@gsnShape)
+            sub_zone      = sub_zone+1  ; Zone for subtitles
+            main_zone     = main_zone+1 ; Zone for main title
+        end if
+; "tiMainString" can be set to create a regular title).                 ;
+; Check for left subtitle at top. If it exists, create a TextItem
+; object for it.
+; If gsnYRefLine is set to some value(s), then reference line(s) will be;
+        if(isatt(res2,"gsnLeftString"))
+            lft_str_object = create "left_string" textItemClass wks
+              "txString" : res2@gsnLeftString
+            end create
+            left_string = True
+            main_zone   = main_zone+1
+            delete(res2@gsnLeftString)
+        end if
+      if(isatt(res2,"gsnShape").and.res2@gsnShape)
+; Check for center subtitle at top. If it exists, create a TextItem
+; object for it.
+      end if
+        if(isatt(res2,"gsnCenterString"))
+            ctr_str_object = create "center_string" textItemClass wks
+              "txString" : res2@gsnCenterString
+            end create
+            center_string = True
+            main_zone     = main_zone+1
+            delete(res2@gsnCenterString)
+        end if
+        delete(res2@gsnYRefLine)
+; Check for right subtitle at top. If it exists, create a TextItem
+; object for it.
+
+        if(isatt(res2,"gsnRightString"))
+            rgt_str_object = create "right_string" textItemClass wks
+              "txString" : res2@gsnRightString
+            end create
+            right_string = True
+            main_zone    = main_zone+1
+            delete(res2@gsnRightString)
+        end if
+    end if
+            print("gsn_csm_xy: Fatal: you must specify either one Y reference line color")
+            return
+          end if
+        else
+    xy_object = gsn_xy(wks,x,y,res2)   ; Create an XY plot.
+
+; Get title label sizes and tickmark lengths.
+    getvalues xy_object
+      "tiXAxisFontHeightF"   : xfontf
+      "tiYAxisFontHeightF"   : yfontf
+
+      "tmYLMajorLengthF"     : ylength
+      "tmXBMajorLengthF"     : xlength
+      "tmYLMinorLengthF"     : ymlength
+      "tmXBMinorLengthF"     : xmlength
+    end getvalues
+          yref_fill_on    = True
+; Make tick marks same length and point outward.
+    if(xref_line_on)
+    major_length = min((/ylength,xlength/))
+    minor_length = min((/ymlength,xmlength/))
+    setvalues xy_object
+      "tmXBMajorLengthF"     : major_length
+      "tmXBMinorLengthF"     : minor_length
+      "tmYLMajorLengthF"     : major_length
+      "tmYLMinorLengthF"     : minor_length
+      "tmXBMajorOutwardLengthF" : major_length
+      "tmXBMinorOutwardLengthF" : minor_length
+      "tmYLMajorOutwardLengthF" : major_length
+      "tmYLMinorOutwardLengthF" : minor_length
+    end setvalues
+      end getvalues
+    font_height = min((/xfontf,yfontf/))  ; Make label sizes a function of
+                                          ; the size of the X/Y axis labels.
+
+; Leftmost subtitle.
+    if(left_string)
+      setvalues lft_str_object
+        "txFontHeightF" : font_height
+      end setvalues
+
+      anno = NhlAddAnnotation(xy_object,lft_str_object)
+      setvalues anno
+        "amZone"          : sub_zone     ; Just outside plot area
+        "amSide"          : "top"        ; Subtitle at top.
+        "amParallelPosF"  : 0.0          ; 0.0 is right edge of plot
+        "amJust"          : "bottomleft" ; Left justify
+        "amOrthogonalPosF": 0.05         ; Move away from top edge
+        "amResizeNotify"  : True         ; Resize subtitle if plot resized.
+      end setvalues
+    end if
+
+; Center subtitle.
+    if(center_string)
+      setvalues ctr_str_object
+        "txFontHeightF" : font_height
+      end setvalues
+      anno = NhlAddAnnotation(xy_object,ctr_str_object)
+      setvalues anno
+        "amZone"          : sub_zone       ; Just outside plot area
+        "amSide"          : "top"          ; Subtitle at top.
+        "amParallelPosF"  : 0.5            ; 0.5 is center of plot
+        "amJust"          : "bottomcenter" ; Center it about the center
+        "amOrthogonalPosF": 0.05           ; Move away from top edge
+        "amResizeNotify"  : True           ; Resize subtitle if plot resized.
+      end setvalues
+    end if
+main_zone, datanew, popgrid, contour_plot
+; Rightmost subtitle.
+    if(right_string)
+      setvalues rgt_str_object
+        "txFontHeightF" : font_height
+      end setvalues
+;
+      anno = NhlAddAnnotation(xy_object,rgt_str_object)
+      setvalues anno
+        "amZone"          : sub_zone      ; Just outside plot area
+        "amSide"          : "top"         ; Subtitle at top.
+        "amParallelPosF"  : 1.0           ; 1.0 is right edge of plot
+        "amJust"          : "bottomright" ; Right justify
+        "amOrthogonalPosF": 0.05          ; Move away from top edge
+        "amResizeNotify"  : True          ; Resize subtitle if plot resized.
+      end setvalues
+    end if
+    set_right_subtitle(datanew,res2,res2)
+; Draw all this stuff: XY plot and subtitles.
+    if(calldraw)
+        draw(xy_object) 
+    end if
+
+    if(callframe)
+        frame(wks)           ; advance the frame
+    end if
+      set_attr(res2,"cnLineLabelsOn",False)
+; Return XY plot object.
+    end if
+    return(xy_object)
       "tiXAxisFontHeightF"   : xfontf
 
                   right_string,subres)
