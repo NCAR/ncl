@@ -1,34 +1,17 @@
 #
-#	$Id: yMakefile,v 1.1 1997-02-19 19:11:25 fred Exp $
+#       $Id: yMakefile,v 1.2 1997-02-19 22:59:14 fred Exp $
 #
 
-MYNAME	= natgrid
+MYNAME  = natgrid
 
-GENERIC_SRCS = \
-natgridd.c      nncrunchd.c     nnerror.c       nnusers.c
-natgrids.c      nncrunchs.c     nnuserd.c
+SOURCES = natgridd.c nncrunchd.c nnerror.c nnusers.c natgrids.c nncrunchs.c \
+                        nnuserd.c nnuser_f.f
 
-GENERIC_OBJS = \
-natgridd.o      nncrunchd.o     nnerror.o       nnusers.o
-natgrids.o      nncrunchs.o     nnuserd.o
-
-SOURCES = $(GENERIC_SRCS)
-
-OBJECTS = $(GENERIC_OBJS)
-
-OTHER_SRCS = nnuser_f.f
-
-OTHER_OBJS = nnuser_f.f
+OBJECTS = natgridd.o nncrunchd.o nnerror.o nnusers.o natgrids.o nncrunchs.o \
+                        nnuserd.o nnuser_f.o
 
 INCLUDES = nncheadd.h nncheads.h nngheadd.h nngheads.h nnuheadd.h nnuheads.h
 
-PartialLibraryTarget(libngmath.a,$(OBJECTS))
-
-natgrids.o  : natgrids.c nngheads.h
-natgridd.o  : natgridd.c nngheadd.h
-nncrunchs.o : nncrunchs.c nncheads.h nnuheads.h
-nncrunchd.o : nncrunchd.c nncheadd.h nnuheadd.h
-nnusers.o   : nnusers.c nnuheads.h
-nnuserd.o   : nnuserd.c nnuheadd.h
-nnerror.o   : nnerror.c
-nnuser_f.o  : nnuser_f.f
+PartialLibraryTarget(../libngmath.a,$(OBJECTS))
+BuildIncludes($(INCLUDES),ncarg/math,..)
+InstallTarget($(INCLUDES),$(INSTALL_INC),$(NCARGINCPATH)/math)
