@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.67 2003-07-16 00:28:43 dbrown Exp $
+ *      $Id: NclVar.c,v 1.68 2003-08-08 00:10:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -349,19 +349,8 @@ NclScalar *new_missing;
 	
 	if(thevalue != NULL) {
 		if(sel_ptr != NULL) {
-			int is_array = 0;
 			for(i=0; i< sel_ptr->n_entries; i++) {
 				dims_ref[i] = 0;
-				switch (sel_ptr->selection[i].sel_type) {
-				case Ncl_VECSUBSCR:
-					if (sel_ptr->selection[i].u.vec.n_ind > 0)
-						is_array = 1;
-					break;
-				default:
-					if (! sel_ptr->selection[i].u.sub.is_single)
-						is_array = 1;
-					break;
-				}
 			}
 			thesel = sel_ptr->selection;
 			if(sel_ptr->n_entries != self->var.n_dims) {
@@ -380,7 +369,6 @@ NclScalar *new_missing;
 				}
 			}
 			thevalue = (NclMultiDValData)_NclReadSubSection((NclData)thevalue,sel_ptr,new_missing);
-			thevalue->multidval.is_array = is_array;
 			if(thevalue == NULL) {	
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occurred reading %s",((self->var.thesym != NULL)?self->var.thesym->name:"unknown"));
 			}
@@ -728,10 +716,6 @@ NclStatus status)
 			var_out->var.dim_info[i].dim_size = -1;
 			var_out->var.dim_info[i].dim_num = i;
 			var_out->var.dim_info[i].dim_quark = -1;
-		}
-		if (status == PERMANENT && var_out->var.n_dims == 1 && var_out->var.dim_info[0].dim_size == 1) {
-			NclMultiDValData tmd = (NclMultiDValData)_NclGetObj(var_out->var.thevalue_id);
-			tmd->multidval.is_array = 0;
 		}
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to assign non-value data type to variable (%s)",v_name);
