@@ -1,12 +1,12 @@
 #
-#	$Id: yMakefile,v 1.11 1994-11-11 22:09:41 haley Exp $
+#	$Id: yMakefile,v 1.12 1998-02-04 20:22:54 haley Exp $
 #
 
 MAN1	= fontc graphc ncargpath
 MAN3	= 
 MAN5	= fontcap graphcap
 MAN6	=
-MAN8	= ncargmv ncargtar
+MAN8	= 
 
 MAN	= $(MAN1) $(MAN3) $(MAN5) $(MAN6) $(MAN8)
 
