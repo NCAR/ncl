@@ -1,0 +1,16 @@
+NCARG	= ../..
+
+
+APP	= \ 
+	Cgm_edit Idt
+
+all:
+
+
+install::
+	@for name in $(APP); do\
+	($(INSTALL) -m $(INSTALL_APP) $$name.ad $(XAPPDIR)/$$name);\
+	done
+
+MakefileTarget
+CleanTarget

@@ -1,0 +1,6 @@
+Cgm_edit*geometry:			-0-0
+Cgm_edit*text.width:			750
+Cgm_edit*text.height:			350
+Cgm_edit*metafile*foreground:		yellow
+Cgm_edit*metafile*confirm*foreground:	red
+Cgm_edit*confirm.foreground:		red

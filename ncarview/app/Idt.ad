@@ -1,0 +1,32 @@
+!
+!
+! File:		Idt.ad
+! Description	X11 Application Default file for idt
+! Author	John Clyne
+!
+Idt*input:				True
+!
+! the default file filter is '*'. i.e. match everything. Changing it to 
+! '*.cgm' would inform the file selector to only display files ending with .cgm
+!
+Idt*file*file finder.value:		*
+Idt*file*file finder.label:		file finder
+Idt*file*file finder*value.translations: #override \n\
+	 <Key>Return: finderTranslation()
+!
+! default selected file is metafile gmeta
+!
+Idt*file*selection.label:		selection
+Idt*file*selection.value:		gmeta
+Idt*file*selection*value.translations:	#override \n\
+	 <Key>Return: okFileTranslation()
+Idt*file*Text.translations: 	#override \n\
+	 <Key>Return: selectFileTranslation() \n\
+	 <Btn1Down>: select-start() selectFileTranslation()
+!
+Idt*simpleDialog*dialog*value.translations: #override \n\
+	 <Key>Return: okSDTranslation()
+
+Idt*scrollbar*orientation:		horizontal
+Idt*scrollbar*length:			100
+Idt*iconPixmap:				/usr/include/X11/bitmaps/ncarv_idt.bits
