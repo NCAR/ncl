@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: psblack.m,v 1.7 1998-02-04 05:13:36 haley Exp $
+.\"	$Id: psblack.m,v 1.8 1998-11-03 23:29:23 fred Exp $
 .\"
 .TH PSBLACK 1NCARG "May 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -16,9 +16,10 @@ and writes a PostScript file as output.  In
 the output file the filter forces a black background
 and scales the intensity values (values with
 R=G=B) so that any intensity greater than or equal
-to .8 is mapped to white.  This filter is potentially
-useful for any PostScript files created by NCAR
-Graphics.
+to .8 is mapped to white.  
+This filter works only
+on PostScript files produced by ctrans - the CGM translator
+in the NCAR Graphics software.
 .SH SEE ALSO
 ctrans(1NCARG), pswhite(1NCARG)
 .SH COPYRIGHT
