@@ -1,5 +1,5 @@
 /*
- *      $Id: lmlw.c,v 1.1 1997-01-03 01:37:51 boote Exp $
+ *      $Id: lmlw.c,v 1.2 1997-08-25 20:22:04 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@
 #include <XmL/Tree.h>
 
 static WidgetClass loadxmlw[4];
+static void	*loadxmlf[2];
 
 int
 NgLoadXmlWidgetLib
@@ -38,6 +39,9 @@ NgLoadXmlWidgetLib
 	loadxmlw[1] = xmlGridWidgetClass;
 	loadxmlw[2] = xmlProgressWidgetClass;
 	loadxmlw[3] = xmlTreeWidgetClass;
+
+	loadxmlf[0] = XmLGridEditCancel;
+	loadxmlf[1] = XmLGridRowColumnToXY;
 
 	return i+1;
 }
