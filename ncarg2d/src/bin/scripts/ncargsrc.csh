@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargsrc.csh,v 1.3 1994-08-11 19:15:44 haley Exp $
+#	$Id: ncargsrc.csh,v 1.4 1995-08-02 14:19:39 haley Exp $
 #
 
 # If no arguments, tell user how "ncargsrc" works.
@@ -57,14 +57,14 @@ The command
 (in which the sole argument is "-index") produces a file called "INDEX" that
 contains a listing of the contents of all the source libraries.
 
-The following three source libraries are normally searched first:
+The following two source libraries are normally searched first:
 
     srcncarg.a      -  NCAR Graphics utilities (including the default members
 		       of the CONRAN, CONREC, and DASH families).
     srcncarg_gks.a  -  NCAR Graphics GKS package.
 
 The following eight source libraries are normally searched after the first
-three:
+two:
 
     srcagupwrtx.a   -  a version of the AUTOGRAPH routine AGPWRT that
 		       uses PWRITX.
@@ -142,10 +142,10 @@ The following table lists all of the named collections of routines in the
 source libraries:
 
     srcncarg.a      -  areas autogrph colconv common concom conpack conran
-		       conrec conterp dashchar ezmap ezmapa gflash gridal
-		       hafton histgr isosrf isosrfhr labelbar plotchar
+		       conrec conterp dashchar dashpack ezmap ezmapa gflash gridal
+		       hafton histgr isosrf isosrfhr labelbar plotchar polypack
 		       pwritx pwrity pwrzi pwrzs pwrzt softfill spps srface
-		       stitle strmln support threed velvct
+		       stitle strmln support threed velvct wmap
     srcncarg_gks.a  -  awi bwi
     srcagupwrtx.a   -  agupwrtx
     srcconraq.a     -  conraq
