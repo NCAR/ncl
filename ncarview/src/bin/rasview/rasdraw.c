@@ -1,5 +1,5 @@
 /*
- *	$Id: rasdraw.c,v 1.13 1993-12-16 22:26:03 haley Exp $
+ *	$Id: rasdraw.c,v 1.14 1994-06-03 22:31:05 clyne Exp $
  */
 /*
  *	rasdraw.c
@@ -274,7 +274,7 @@ static	int	load_palette(ras, context)
 		 * if load_pal is true load palette from ras else try and 
 		 * load default palette.
 		 */
-		if (context->load_pal) {
+		if (context->load_pal && ras->red && ras->green &&ras->blue) {
 			(void) load_palette_(ras->red, ras->green, ras->blue, 
 						(unsigned) ras->ncolor,context);
 		}
