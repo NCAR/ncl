@@ -1,5 +1,5 @@
 /*
- *      $Id: ngi.c,v 1.4 1997-02-27 20:20:35 boote Exp $
+ *      $Id: ngi.c,v 1.5 1997-06-11 20:47:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -74,7 +74,7 @@ main
 	 * This object initializes things in the hlu library so every
 	 * object created after it gets its id in the _NhlNguiData.
 	 */
-	NhlVACreate(&nxapp,"ngi",NgxappMgrClass,appid,
+	NhlVACreate(&nxapp,"NgNGO",NgxappMgrClass,appid,
 		NgNappName,			"ngi",
 		NgNappClass,			"Ngi",
 		NgNxappArgc,			argc,

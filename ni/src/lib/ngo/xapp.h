@@ -1,5 +1,5 @@
 /*
- *      $Id: xapp.h,v 1.4 1997-06-04 18:08:38 dbrown Exp $
+ *      $Id: xapp.h,v 1.5 1997-06-11 20:47:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,8 @@
 
 #include <X11/Intrinsic.h>
 #include <Xm/Xm.h>
+
+#include <Xcb/xcbShells.h>
 
 #define	NgNxappDpy	"ngxappDpy"
 #define	NgCxappDpy	"ngXappDpy"
@@ -62,6 +64,8 @@ struct NgXAppExportRec{
 
 	Atom		wm_delete_window;
 	Cursor		wait;
+
+	Xcb		xcb;
 };
 
 /*

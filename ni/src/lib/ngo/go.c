@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.6 1997-06-04 18:08:28 dbrown Exp $
+ *      $Id: go.c,v 1.7 1997-06-11 20:47:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,8 @@
 #include <Xm/RowColumn.h>
 #include <Xm/CascadeBG.h>
 #include <Xm/PushBG.h>
+
+#include <Xcb/xcbShells.h>
 
 #ifdef	DEBUG
 #include <X11/Xmu/Editres.h>
@@ -134,7 +136,7 @@ GOClassPartInitialize
 	NhlErrorTypes	ret = NhlNOERROR;
 
 	gc->go_class.dialog = transientShellWidgetClass;
-	gc->go_class.toplevel = applicationShellWidgetClass;
+	gc->go_class.toplevel = xcbApplicationShellWidgetClass;
 	gc->go_class.manager = xmFormWidgetClass;
 
 	if(lc == NggOClass)
@@ -629,13 +631,15 @@ GODestroy
 	NgAppRemoveGO(go->appmgr,l->base.id);
 
 	_NhlCBDelete(go->appdestroy_cb);
+
+	if(go->iowin != None)
+		XDestroyWindow(go->x->dpy,go->iowin);
+
 	if(go->shell){
 		XtRemoveCallback(go->shell,XmNdestroyCallback,DestroyFunc,
 							(XtPointer)l->base.id);
 		XtDestroyWidget(go->shell);
 	}
-	if(go->iowin != None)
-		XDestroyWindow(go->x->dpy,go->iowin);
 
 	return NhlNOERROR;
 }
@@ -758,6 +762,7 @@ GOCreateWin
 	NgXAppExport		x = gp->x;
 	XWindowAttributes	att;
 	char			mgrname[_NhlMAXRESNAMLEN];
+	Xcb			xcb;
 	XtResource		xtres[] = {
 		{NgNglobalTranslations,NgCglobalTranslations,
 			XtRTranslationTable,sizeof(XtTranslations),
@@ -771,9 +776,22 @@ GOCreateWin
 				"%s:parent GO has invalid shell!",func));
 			return False;
 		}
+		xcb = XcbGetXcbFromWidget(pp->shell);
+		if(!xcb){
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"%s:Unable to retrieve ColorBroker!",func));
+			return False;
+		}
 		gp->pshell = pp->shell;
 		gp->shell = XtVaCreatePopupShell(go->base.name,
 						gc->go_class.dialog,pp->shell,
+#ifdef	XcbDIALOG
+			XcbNparentBroker,	xcb,
+#else
+			XmNdepth,		XcbGetDepth(xcb),
+			XmNcolormap,		XcbGetColormap(xcb),
+			XmNvisual,		XcbGetVisual(xcb),
+#endif
 			XmNdeleteResponse,	XmDO_NOTHING,
 			XmNmappedWhenManaged,	False,
 			XmNautoUnmanage,	False,
@@ -795,6 +813,7 @@ GOCreateWin
 			XmNautoUnmanage,	False,
 			XmNallowShellResize,	True,
 			XmNuserData,		go->base.id,
+			XcbNparentBroker,	x->xcb,
 			NULL);
 	}
 	XmAddWMProtocolCallback(gp->shell,x->wm_delete_window,_NgGOPopdownCB,

@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.4 1997-06-04 18:08:28 dbrown Exp $
+ *      $Id: mwin.c,v 1.5 1997-06-11 20:47:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -28,12 +28,14 @@
 
 #include <Xm/Xm.h>
 #include <Xm/RowColumn.h>
-#include <Xm/MenuShell.h>
 #include <Xm/CascadeBG.h>
 #include <Xm/PushB.h>
 #include <Xm/PushBG.h>
 #include <Xm/PanedW.h>
 #include <Xm/Form.h>
+
+#include <Xm/MenuShell.h>
+#include <Xcb/xcbShells.h>
 
 #include <XmL/Tree.h>
 
@@ -866,6 +868,10 @@ MWCreateWin
 		NULL);
 	fmenu = XtVaCreateWidget("fmenu",xmRowColumnWidgetClass,menush,
 		XmNrowColumnType,	XmMENU_PULLDOWN,
+		XmNresizeHeight,	True,
+		XmNresizeWidth,		True,
+		XmNwidth,		25,
+		XmNheight,		25,
 		NULL);
 
 	emenu = XtVaCreateWidget("emenu",xmRowColumnWidgetClass,menush,

@@ -1,5 +1,5 @@
 /*
- *      $Id: util.c,v 1.3 1997-01-03 01:38:02 boote Exp $
+ *      $Id: util.c,v 1.4 1997-06-11 20:47:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -155,6 +155,12 @@ NgHashString
 #define	M_PROTECT	0x4000
 #define	M_MASK		0xffff
 #define	M_ASCII		0x00ff
+
+#ifdef	Linux
+typedef ushort	ushort_t;
+typedef unchar	uchar_t;
+typedef uint	uint_t;
+#endif
 
 typedef ushort_t NgGlobChar;
 

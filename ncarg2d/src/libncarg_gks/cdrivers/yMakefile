@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.6 1996-11-24 22:21:54 boote Exp $
+#	$Id: yMakefile,v 1.7 1997-06-11 20:46:49 boote Exp $
 #
 
 MYNAME		= cdrivers
@@ -25,9 +25,9 @@ EXTRA_CDEFINES	= $(OS_DEF) -DCTXT -DX11 -DPS
 PartialLibraryTarget(libncarg_gks.a,$(OBJECTS))
 PartialLibraryTarget(libbasegks.a,$(BASICOBJ))
 
-BuildSharedPartialLib(libNGgksCTXT,$(CTXTOBJ),1,0,-lc)
-BuildSharedPartialLib(libNGgksX,$(XOBJ),1,0,$(NCARGCLIB) $(XLIB) -lm -lc)
-BuildSharedPartialLib(libNGgksPS,$(PSOBJ),1,0,$(NCARGCLIB) -lm -lc)
+BuildSharedPartialLib(libNGgksCTXT,$(CTXTOBJ),1,0,NullArgument)
+BuildSharedPartialLib(libNGgksX,$(XOBJ),1,0,NullArgument)
+BuildSharedPartialLib(libNGgksPS,$(PSOBJ),1,0,NullArgument)
 
 PartialSourceLibraryTarget($(MYNAME),srcncarg_gks.a,$(SOURCES))
 BuildIncludes($(INCLUDES),ncarg,..)

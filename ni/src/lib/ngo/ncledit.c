@@ -1,5 +1,5 @@
 /*
- *      $Id: ncledit.c,v 1.7 1997-06-04 18:08:29 dbrown Exp $
+ *      $Id: ncledit.c,v 1.8 1997-06-11 20:47:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -39,7 +39,10 @@
 #include <Xm/Text.h>
 #include <Xm/RowColumn.h>
 #include <Xm/CascadeBG.h>
+
 #include <Xm/MenuShell.h>
+#include <Xcb/xcbShells.h>
+
 
 static char RSTSTR[] = "You must finish entering block, or press reset";
 static char ERRSTR[] = "Error!";

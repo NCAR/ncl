@@ -1,5 +1,5 @@
 /*
- *      $Id: Palette.c,v 1.4 1997-02-24 22:12:32 boote Exp $
+ *      $Id: Palette.c,v 1.5 1997-06-11 20:46:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1051,7 +1051,7 @@ PaletteInitialize
 	NhlConvertArg		arg;
 	
 	arg.addressmode = NhlLAYEROFFSET;
-	arg.size = sizeof(int);
+	arg.size = sizeof(NhlPointer);
 	arg.data.ptrval = (NhlPointer)NhlOffset(NhlWorkstationLayerRec,
 							base.layer_class);
 

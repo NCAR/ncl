@@ -1,5 +1,5 @@
 /*
- *      $Id: ngo.h,v 1.2 1996-10-16 16:21:24 boote Exp $
+ *      $Id: ngo.h,v 1.3 1997-06-11 20:47:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -30,7 +30,7 @@
 		: stack_array)
 
 #define _NgStackFree(ptr,stack_array)	\
-		if((ptr) != ((NhlPointer)(stack_array))) NhlFree(ptr); else
+		if((ptr) != ((NhlPointer)(stack_array))) NhlFree(ptr)
 
 extern void NgDestroyMeCB(
 	NhlArgVal	cbdata,

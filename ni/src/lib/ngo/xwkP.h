@@ -1,5 +1,5 @@
 /*
- *      $Id: xwkP.h,v 1.1 1997-02-27 20:25:47 boote Exp $
+ *      $Id: xwkP.h,v 1.2 1997-06-11 20:47:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -39,6 +39,12 @@ typedef struct _NgXWkPart {
 	NhlBoolean		mapped;
 
 	NgCBWP			xwork_destroycb;
+
+	NhlBoolean		my_broker;
+	Xcb			xcb;
+	Xcb			pxcb;
+	_NhlCB			broker_destroyCB;
+	_NhlCB			broker_cfaultCB;
 
 	Widget			graphicsSW;
 	Widget			graphics;

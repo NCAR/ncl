@@ -1,5 +1,5 @@
 /*
- *      $Id: xapp.c,v 1.5 1997-06-04 18:08:38 dbrown Exp $
+ *      $Id: xapp.c,v 1.6 1997-06-11 20:47:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -21,6 +21,7 @@
  */
 #include <ncarg/ngo/xappP.h>
 #include <ncarg/hlu/AppI.h>
+#include <ncarg/hlu/ConvertersP.h>
 
 #include <ncarg/ngo/addfile.h>
 #include <ncarg/ngo/load.h>
@@ -56,6 +57,30 @@ static NhlResource resources[] = {
 	{NgNxappBrowseWindow,NgCxappBrowseWindow,NhlTInteger,sizeof(int),
 		Oset(browse_window),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
 		_NhlRES_GONLY,NULL},
+	{XtNvisual,XtCVisual,NhlTString,sizeof(NhlString),
+		Oset(vis_name),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
+		_NhlRES_RONLY,NULL},
+	{XcbNcolorMode,XcbCcolorMode,XcbRColorMode,sizeof(XcbMode),
+		Oset(color_mode),NhlTImmediate,
+		_NhlUSET((NhlPointer)XcbMIXEDCMAP),_NhlRES_RCONLY,NULL},
+	{XcbNmaxColorCells,XcbCmaxColorCells,NhlTInteger,sizeof(int),
+		Oset(max_colors),NhlTImmediate,_NhlUSET((NhlPointer)0),
+		_NhlRES_RCONLY,NULL},
+	{XcbNminColorCells,XcbCminColorCells,NhlTInteger,sizeof(int),
+		Oset(min_colors),NhlTImmediate,_NhlUSET((NhlPointer)20),
+		_NhlRES_RCONLY,NULL},
+	{XcbNredLevels,XcbCredLevels,NhlTInteger,sizeof(int),
+		Oset(red_levels),NhlTImmediate,_NhlUSET((NhlPointer)0),
+		_NhlRES_RCONLY,NULL},
+	{XcbNgreenLevels,XcbCgreenLevels,NhlTInteger,sizeof(int),
+		Oset(green_levels),NhlTImmediate,_NhlUSET((NhlPointer)0),
+		_NhlRES_RCONLY,NULL},
+	{XcbNblueLevels,XcbCblueLevels,NhlTInteger,sizeof(int),
+		Oset(blue_levels),NhlTImmediate,_NhlUSET((NhlPointer)0),
+		_NhlRES_RCONLY,NULL},
+	{XcbNrgbError,XcbCrgbError,NhlTInteger,sizeof(int),
+		Oset(rgb_error),NhlTImmediate,_NhlUSET((NhlPointer)-1),
+		_NhlRES_RCONLY,NULL},
 };
 #undef	Oset
 
@@ -185,12 +210,21 @@ XAppMgrClassInitialize
 	void
 )
 {
+	_NhlEnumVals	cmodes[] = {
+		{XcbSHAREDCMAP,		"sharedcmap"},
+		{XcbMIXEDCMAP,		"mixedcmap"},
+		{XcbPRIVATECMAP,	"privatecmap"}
+	};
+
 	XtToolkitInitialize();
 
 	qexp = NrmStringToQuark(NgNxappExport);
 	qafile = NrmStringToQuark(NgNxappAddFile);
 	qlfile = NrmStringToQuark(NgNxappLoadFile);
 	qbrowse = NrmStringToQuark(NgNxappBrowseWindow);
+
+	_NhlRegisterEnumType(NgxappMgrClass,XcbRColorMode,cmodes,
+							NhlNumber(cmodes));
 
 	_NhlInitializeClass(NgxWkClass);
 
@@ -309,6 +343,8 @@ XAppMgrInitialize
 	NgXAppMgrClass	ac = (NgXAppMgrClass)lc;
 	NgXAppMgrPart	*xapp = &((NgXAppMgr)new)->xapp;
 	NgAppMgrPart	*app = &((NgXAppMgr)new)->app;
+	unsigned long	mask = 0;
+	XcbAttrRec	xcbattr;
 
 	if(!xapp->x.app){
 		if(xapp->x.dpy)
@@ -350,6 +386,86 @@ XAppMgrInitialize
 	xapp->addfile = NhlDEFAULT_APP;
 	xapp->loadfile = NhlDEFAULT_APP;
 	xapp->browse_window = NhlDEFAULT_APP;
+
+	mask |= XcbMODE;
+	xcbattr.mode = xapp->color_mode;
+
+	mask |= XcbSCREEN;
+	xcbattr.scr = DefaultScreen(xapp->x.dpy);
+
+	if(!xapp->vis_name || (strcasecmp(xapp->vis_name,"XcbVisual") == 0))
+		;
+	else if(strcasecmp(xapp->vis_name,"DefaultVisual") == 0){
+		mask |= XcbVIS;
+		xcbattr.vis =DefaultVisualOfScreen(
+					DefaultScreenOfDisplay(xapp->x.dpy));
+	}
+	else{
+		unsigned long	vmask;
+		XVisualInfo	*vinfo,tmpl;
+		int		i,vc,depth=0;
+		char		*endptr;
+
+		if(strcasecmp(xapp->vis_name,"StaticGray") == 0)
+			vc = StaticGray;
+		else if(strcasecmp(xapp->vis_name,"StaticColor") == 0)
+			vc = StaticColor;
+		else if(strcasecmp(xapp->vis_name,"TrueColor") == 0)
+			vc = TrueColor;
+		else if(strcasecmp(xapp->vis_name,"GrayScale") == 0)
+			vc = GrayScale;
+		else if(strcasecmp(xapp->vis_name,"PseudoColor") == 0)
+			vc = PseudoColor;
+		else if(strcasecmp(xapp->vis_name,"DirectColor") == 0)
+			vc = DirectColor;
+		else if(isdigit((int)*xapp->vis_name) &&
+			(vc = (int)strtol(xapp->vis_name,&endptr,0)) &&
+			(xapp->vis_name != endptr))
+			;
+		else{
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+				"Invalid Visual name \"%s\"",xapp->vis_name));
+			goto NOVIS;
+		}
+		vmask = VisualScreenMask | VisualClassMask;
+		tmpl.screen = DefaultScreen(xapp->x.dpy);
+		tmpl.class = vc;
+		vinfo = XGetVisualInfo(xapp->x.dpy,vmask,&tmpl,&vc);
+		if(!vinfo){
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+				"Unable to find visual match for \"%s\"",
+							xapp->vis_name));
+			goto NOVIS;
+		}
+		mask |= XcbVIS;
+		for(i=0;i<vc;i++)
+			if(vinfo[i].depth > depth)
+				xcbattr.vis = vinfo[i].visual;
+		XFree(vinfo);
+	}
+NOVIS:
+
+	if(xapp->max_colors){
+		mask |= XcbMAXNCOLS;
+		xcbattr.max_ncols = xapp->max_colors;
+	}
+
+	if(xapp->min_colors){
+		mask |= XcbMINNCOLS;
+		xcbattr.min_ncols = xapp->min_colors;
+	}
+
+	mask |= XcbRGBLEVELS;
+	xcbattr.rlevels = xapp->red_levels;
+	xcbattr.glevels = xapp->green_levels;
+	xcbattr.blevels = xapp->blue_levels;
+
+	if(xapp->rgb_error != -1){
+		mask |= XcbRGBERR;
+		xcbattr.rgberr = xapp->rgb_error;
+	}
+
+	xapp->x.xcb = XcbCreate(xapp->x.dpy,&xcbattr,mask);
 
 	return NhlNOERROR;
 }

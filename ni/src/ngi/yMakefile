@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.5 1997-01-03 01:37:53 boote Exp $
+#      $Id: yMakefile,v 1.6 1997-06-11 20:47:11 boote Exp $
 #
 #########################################################################
 #									#
@@ -31,12 +31,12 @@ PRODUCTIONHDRS	=	$(GENHDRS)
 EXTRA_DEFINES	=	-DNGDEMO $(OS1_DEF) $(MAJOR_DEF) $(DEBUGDEFS)
 EXTRA_LDFLAGS	=
 
-PROG_LIBS	=	-lXmL $(NGOLIB) $(DBLIB) $(NCLAPILIB) $(HLULIBS) \
-			$(CNCARGLIBS) $(NCARGLIBS)
+PROG_LIBS	=	-lXmL $(NGOLIB) -lXcb $(DBLIB) $(NCLAPILIB) $(HLULIBS) \
+			$(NCARGLIBS)
 DEPLIBS		=	$(DEPNGOLIB) $(DEPNCLAPILIB) $(DEPHLULIBS) \
-			$(DEPCNCARGLIBS) $(DEPNCARGLIBS)
-EXTRA_LIBS	=
-SYS_LIBS	=	$(XMOTIFCLIENTLIBS) $(CTOFLIBS) -lm
+			$(DEPNCARGLIBS)
+EXTRA_LIBS	=	$(NCDFLIBS) $(HDFLIB)
+SYS_LIBS	=	$(XMOTIFCLIENTLIBS) $(DEBUGLIBS) $(CTOFLIBS) -lm
 
 
 GENHDRS		= ngi.res.h

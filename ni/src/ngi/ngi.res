@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.7 1997-03-04 03:08:53 dbrown Exp $
+!      $Id: ngi.res,v 1.8 1997-06-11 20:47:10 boote Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -25,9 +25,15 @@
 !									!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+!!! DEBUGING !!!
+NgNGO*synchronous:	True
+*dragInitiatorProtocolStyle:	XmDRAG_NONE
+*dragReceiverProtocolStyle:	XmDRAG_NONE
+
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! These resources will *hopefully* be replaced by a configuration dialog!
-! in and "Options" menu.						!
+! in an "Options" menu.						!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 NgNGO*loadfileMGR.pattern:	*.ncl
@@ -43,14 +49,30 @@ NgNGO*addfileMGR*directory:	.
 !									!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+! Change the following line to "XcbVisual" to get the best visual
+! for the display (in this programmers humble opinion...).  However,
+! this may cause some colormap flashing on some displays.
+!NgNGO*visual:	XcbVisual
+ngi.NgNGO*visual:	PseudoColor
+NgNGO*visual:	PseudoColor
+NgNGO*depth:	8
+
+NgNGO*colorMode:	mixedcmap
+
+NgNGO*maxColorCells:	0
+NgNGO*rgbError:		5
+
 NgNGO*background:	#b2b2b2
 NgNGO*foreground:	black
-NgNGO*XmList*background:	#bebebe
-NgNGO*XmList*foreground:	black
-NgNGO*XmText*background:	#bebebe
-NgNGO*XmText*foreground:	black
-NgNGO*XmTextField*background:	#bebebe
-NgNGO*XmTextField*foreground:	black
+NgNGO*topShadowColor:	#e1e1e1
+NgNGO*bottomShadowColor:	#656565
+NgNGO*highlightColor:	black
+NgNGO*troughColor:	#a2a2a2
+NgNGO*armColor:		#a2a2a2
+NgNGO*selectColor:	#a2a2a2
+
+NgNGO*XmList.background:	#bfbfbf
+NgNGO*XmText.background:	#bfbfbf
 
 !*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
 
@@ -65,6 +87,17 @@ NgNGO*menubar*FontList:	-*-helvetica-bold-r-normal-*-*-120-*-*-*-*-iso8859-*
 NgNGO*XmText*FontList:	-*-helvetica-medium-r-normal-*-*-120-*-*-*-*-iso8859-*
 NgNGO*XmTextField*FontList:	-*-helvetica-medium-r-normal-*-*-120-*-*-*-*-iso8859-*
 NgNGO*XmFrame*XmLabel.FontList:	-*-helvetica-medium-r-normal-*-*-120-*-*-*-*-iso8859-*
+
+!
+! Motif 2.0 versions of above...(Not tested.)
+!
+!NgNGO*renderTable: bold, medium
+!NgNGO*renderTable*bold.fontName:	-*-helvetica-bold-r-normal-*-*-120-*-*-*-*-iso8859-*
+!NgNGO*renderTable*medium.fontName:	-*-helvetica-medium-r-normal-*-*-120-*-*-*-*-iso8859-*
+!NgNGO*renderTable*renditionForeground:	UNSPECIFIED_PIXEL
+!NgNGO*renderTable*renditionBackground:	UNSPECIFIED_PIXEL
+!NgNGO*renderTable*fontType:		FONT_IS_FONT
+!NgNGO*renderTable*underlineType:	AS_IS
 
 !*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
 

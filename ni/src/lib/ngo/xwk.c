@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.2 1997-06-04 18:08:38 dbrown Exp $
+ *      $Id: xwk.c,v 1.3 1997-06-11 20:47:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -19,6 +19,7 @@
  *
  *	Description:	
  */
+#include <ncarg/gksP.h>
 #include <ncarg/ngo/xwkP.h>
 
 #include <X11/Intrinsic.h>
@@ -30,6 +31,8 @@
 #include <Xm/PushBG.h>
 #include <Xm/ScrolledW.h>
 #include <Xm/DrawingA.h>
+
+#include <Xcb/xcbP.h>
 
 #define	Oset(field)	NhlOffset(NgXWkRec,xwk.field)
 static NhlResource resources[] = {
@@ -135,7 +138,6 @@ NgXWorkPreOpenCB
 	NgXAppExport		x;
 	int			xwkid,appmgr;
 	XtInputMask		mask;
-	Dimension		w,h;
 
 	/*
 	 * Eventually, set up a *controlling* window, that doesn't actually
@@ -186,11 +188,6 @@ NgXWorkPreOpenCB
 	}
 
 	NgAppReleaseFocus(appmgr,xwkid);
-
-	XtVaGetValues(xwk->go.shell,
-		XmNwidth,	&w,
-		XmNheight,	&h,
-		NULL);
 
 	return;
 }
@@ -290,12 +287,8 @@ XWkInitialize
 	np->xwork_destroycb = NgCBWPAdd(xwk->go.appmgr,NULL,NULL,
 		(NhlLayer)np->xwork,_NhlCBobjDestroy,sel,WorkDestroyCB,udata);
 
-	/*
-	 * Create a "color" context for this window, with the "xappmgr"
-	 * one as the parent.
-	 * call gescape with the NGESC_CNATIVE(NGC_XALLOCCOLOR) to setup
-	 * gks to use the "color" context.
-	 */
+	np->my_broker = False;
+	np->xcb = NULL;
 
 	/*
 	 * Set size of graphics window - should eventually retrieve
@@ -329,6 +322,10 @@ XWkDestroy
  */
 		NhlDestroy(xp->xwork->base.id);
 	}
+
+	_NhlCBDelete(xp->broker_destroyCB);
+	if(xp->my_broker)
+		XcbDestroy(xp->xcb);
 
 	return NhlNOERROR;
 }
@@ -404,6 +401,46 @@ XWkSetMainSize
 	return;
 }
 
+static void
+BrokerDestroy
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+{
+	NgXWk		xwk = (NgXWk)udata.ptrval;
+	NgXWkPart	*xp = &xwk->xwk;
+
+	NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+		"%s:Xcb destroyed before X Workstation!",xwk->base.name));
+
+	xp->my_broker = False;
+	NhlDestroy(xwk->base.id);
+
+	return;
+}
+
+static void
+CFault
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+{
+	Colormap	cmap = cbdata.ulngval;
+	NgXWk		xwk = (NgXWk)udata.ptrval;
+	NgXWkPart	*xp = &xwk->xwk;
+
+	XtVaSetValues(xp->graphics,
+		XmNcolormap,	cmap,
+		NULL);
+
+	if(cmap != XcbGetColormap(xp->pxcb))
+		XtSetWMColormapWindows(xwk->go.shell,&xp->graphics,1);
+
+	return;
+}
+
 static NhlBoolean
 XWkCreateWin
 (
@@ -416,127 +453,15 @@ XWkCreateWin
 	NgXAppExport		x = go->go.x;
 	Widget			manager;
 	Widget			menubar;
+	XcbAttrRec		xcbattr;
+	unsigned long		mask = 0;
+	XcbMode			cmode;
 
 	manager = XtVaCreateManagedWidget("mgr",xmFormWidgetClass,
 								go->go.manager,
 		NULL);
 
 	menubar = _NgGOCreateMenubar(go,manager);
-
-#if	NOT
-	Widget			menush,fmenu,emenu;
-	Widget			vmenu,omenu,wmenu,hmenu;
-	Widget			file,edit,view,options,window,help;
-	Widget			addfile,load,close,quit;
-	Widget			ncledit,browse;
-
-	menubar =XtVaCreateManagedWidget("menubar",xmRowColumnWidgetClass,
-									manager,
-		XmNrowColumnType,	XmMENU_BAR,
-		NULL);
-
-	menush = XtVaCreatePopupShell("menush",xmMenuShellWidgetClass,
-								go->go.shell,
-		XmNwidth,		5,
-		XmNheight,		5,
-		XmNallowShellResize,	True,
-		XtNoverrideRedirect,	True,
-		NULL);
-	fmenu = XtVaCreateWidget("fmenu",xmRowColumnWidgetClass,menush,
-		XmNrowColumnType,	XmMENU_PULLDOWN,
-		NULL);
-
-	emenu = XtVaCreateWidget("emenu",xmRowColumnWidgetClass,menush,
-		XmNrowColumnType,	XmMENU_PULLDOWN,
-		NULL);
-
-	vmenu = XtVaCreateWidget("vmenu",xmRowColumnWidgetClass,menush,
-		XmNrowColumnType,	XmMENU_PULLDOWN,
-		NULL);
-
-	omenu = XtVaCreateWidget("omenu",xmRowColumnWidgetClass,menush,
-		XmNrowColumnType,	XmMENU_PULLDOWN,
-		NULL);
-
-	wmenu = XtVaCreateWidget("wmenu",xmRowColumnWidgetClass,menush,
-		XmNrowColumnType,	XmMENU_PULLDOWN,
-		NULL);
-
-	hmenu = XtVaCreateWidget("hmenu",xmRowColumnWidgetClass,menush,
-		XmNrowColumnType,	XmMENU_PULLDOWN,
-		NULL);
-
-	file = XtVaCreateManagedWidget("file",xmCascadeButtonGadgetClass,
-									menubar,
-		XmNsubMenuId,	fmenu,
-		NULL);
-
-	edit = XtVaCreateManagedWidget("edit",xmCascadeButtonGadgetClass,
-									menubar,
-		XmNsubMenuId,	emenu,
-		NULL);
-
-	view = XtVaCreateManagedWidget("view",xmCascadeButtonGadgetClass,
-									menubar,
-		XmNsubMenuId,	vmenu,
-		NULL);
-
-	options = XtVaCreateManagedWidget("options",xmCascadeButtonGadgetClass,
-									menubar,
-		XmNsubMenuId,	omenu,
-		NULL);
-
-	window = XtVaCreateManagedWidget("window",xmCascadeButtonGadgetClass,
-									menubar,
-		XmNsubMenuId,	wmenu,
-		NULL);
-
-	help = XtVaCreateManagedWidget("help",xmCascadeButtonGadgetClass,
-									menubar,
-		XmNsubMenuId,	hmenu,
-		NULL);
-
-	XtVaSetValues(menubar,
-		XmNmenuHelpWidget,	help,
-		NULL);
-
-	addfile = XtVaCreateManagedWidget("addFile",
-					xmPushButtonGadgetClass,fmenu,
-		NULL);
-	XtAddCallback(addfile,XmNactivateCallback,_NgGODefActionCB,NULL);
-
-	load = XtVaCreateManagedWidget("loadScript",
-					xmPushButtonGadgetClass,fmenu,
-		NULL);
-	XtAddCallback(load,XmNactivateCallback,_NgGODefActionCB,NULL);
-
-	close = XtVaCreateManagedWidget("closeWindow",
-					xmPushButtonGadgetClass,fmenu,
-		NULL);
-	XtAddCallback(close,XmNactivateCallback,_NgGODefActionCB,NULL);
-
-	quit = XtVaCreateManagedWidget("quitApplication",
-					xmPushButtonGadgetClass,fmenu,
-		NULL);
-	XtAddCallback(quit,XmNactivateCallback,_NgGODefActionCB,NULL);
-
-	ncledit = XtVaCreateManagedWidget("nclWindow",
-					xmPushButtonGadgetClass,wmenu,
-		NULL);
-	XtAddCallback(ncledit,XmNactivateCallback,_NgGODefActionCB,NULL);
-        
-	browse = XtVaCreateManagedWidget("browseWindow",
-					xmPushButtonGadgetClass,wmenu,
-		NULL);
-	XtAddCallback(browse,XmNactivateCallback,_NgGODefActionCB,NULL);
-
-	XtManageChild(fmenu);
-	XtManageChild(emenu);
-	XtManageChild(vmenu);
-	XtManageChild(omenu);
-	XtManageChild(wmenu);
-	XtManageChild(hmenu);
-#endif
 
 	xp->graphicsSW = XtVaCreateManagedWidget("xworkSW",
 					xmScrolledWindowWidgetClass,manager,
@@ -546,16 +471,93 @@ XWkCreateWin
 		XmNtopWidget,			menubar,
 		NULL);
 
+	XtVaGetValues(go->go.shell,
+		XcbNcolorMode,		&cmode,
+		XcbNcolorBroker,	&xp->pxcb,
+		NULL);
+
+	/*
+	 * This breaks the data abstraction, but I don't have time to
+	 * add all the layers in between right now.  And I probably never
+	 * will...
+	 * (Changing min_ncols in the shell's Xcb should make it so that
+	 * the graphics window only has a different colormap then the
+	 * rest of the window in the MOST extreme cases, since gks can
+	 * only allocate 256 colors...)
+	 */
+	if(xp->pxcb)
+		xp->pxcb->min_ncols = 256;
+
+	mask |= XcbMODE;
+	xcbattr.mode = (cmode == XcbSHAREDCMAP)?XcbSHAREDCMAP:XcbMIXEDCMAP;
+
+	mask |= XcbPARENT;
+	xcbattr.parent = xp->pxcb;
+
+	xp->xcb = XcbCreate(x->dpy,&xcbattr,mask);
+	if(!xp->xcb)
+		xp->xcb = xp->pxcb;
+	else
+		xp->my_broker = True;
+
 	xp->graphics = XtVaCreateManagedWidget("graphics",
 					xmDrawingAreaWidgetClass,xp->graphicsSW,
+		XmNbottomShadowColor,	0,
+		XmNhighlightColor,	0,
+		XmNtopShadowColor,	0,
+		XmNbackground,		0,
+		XmNborderColor,		0,
+		XmNdepth,		XcbGetDepth(xp->xcb),
+		XmNcolormap,		XcbGetColormap(xp->xcb),
 		NULL);
 
 	XtAddEventHandler(xp->graphics,StructureNotifyMask,False,MapGraphicsEH,
 								(XtPointer)xwk);
 
+	if(xp->xcb){
+		NhlArgVal	sel,udata;
+
+		NhlINITVAR(sel);
+		NhlINITVAR(udata);
+		udata.ptrval = xwk;
+		xp->broker_destroyCB = _NhlCBAdd(xp->xcb->destroyCBL,sel,
+							BrokerDestroy,udata);
+		xp->broker_cfaultCB = _NhlCBAdd(xp->xcb->cfaultCBL,sel,CFault,
+									udata);
+	}
+
 	return True;
 }
 
+static void
+XwkAllocColor
+(
+	void	*cref,
+	void	*color_def
+)
+{
+	Xcb	xcb = (Xcb)cref;
+	XColor	*xcol = (XColor*)color_def;
+
+	XcbAllocROColor(xcb,xcol);
+
+	return;
+}
+
+static void
+XwkFreeColors
+(
+	void		*cref,
+	unsigned long	*pixels,
+	int		npixels
+)
+{
+	Xcb	xcb = (Xcb)cref;
+
+	XcbFreeColors(xcb,pixels,npixels);
+
+	return;
+}
 
 static NhlBoolean
 XWkCreateWinHook
@@ -569,17 +571,25 @@ XWkCreateWinHook
 	NgXAppExport		x = go->go.x;
 	XSetWindowAttributes	xswa;
 	Dimension		dim;
+	_NGCXAllocColor		xalloccolor;
+	Gescape_in_data		gesc_in;
 
 	/*
 	 * Geometry hacks follow...
 	 */
 	XtRealizeWidget(go->go.shell);
 
+	XWkSetMainSize(xwk);
+
+	/*
+	 * Only until pixmap backup's are working in gks...
+	 */
 	xswa.backing_store = WhenMapped;
 	XChangeWindowAttributes(x->dpy,XtWindow(xp->graphics),
 							CWBackingStore,&xswa);
 
-	XWkSetMainSize(xwk);
+	if(XcbGetColormap(xp->xcb) != XcbGetColormap(xp->pxcb))
+		XtSetWMColormapWindows(xwk->go.shell,&xp->graphics,1);
 
 	/*
 	 * Set the workstation X window now that we have it.
@@ -588,6 +598,20 @@ XWkCreateWinHook
 			xp->xwork->work.gkswksconid = XtWindow(xp->graphics);
 	xp->xwork->work.gkswkstype = 7;
 	xp->xwork->xwork.pause = False;
+
+	/*
+	 * Send the escape element to get gks to allocate colors from
+	 * the broker.
+	 */
+	gesc_in.escape_r1.data = &xalloccolor;
+	gesc_in.escape_r1.size = 0;
+	xalloccolor.type = NGC_XALLOCCOLOR;
+	xalloccolor.work_id = -1;
+	xalloccolor.xalloc_color = XwkAllocColor;
+	xalloccolor.xfree_colors = XwkFreeColors;
+	xalloccolor.cref = xp->xcb;
+	gescape(NGESC_CNATIVE,&gesc_in,NULL,NULL);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,"XWkCreateWinHook");
 
 	return True;
 }
