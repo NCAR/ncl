@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.26 1992-10-16 14:43:55 clyne Exp $
+ *	$Id: main.c,v 1.27 1993-01-11 21:19:23 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -54,6 +54,7 @@ static	struct	{
 	float 	max_line_width;	/* maximun line width		*/
 	float 	line_scale;	/* additional line scaling	*/
 	char	*pal;		/* optional color palette	*/
+	boolean	quiet;	/* optional color palette	*/
 	boolean	version;	/* print the verison number	*/
 	boolean	verbose;	/* operate in verbose mode	*/
 	boolean	help;		/* print usage string		*/
@@ -72,6 +73,7 @@ static	OptDescRec	set_options[] = {
 	{"lmax", 1, "-1", "Set maximum line width"},
 	{"lscale", 1, "-1", "Scale all lines by 'arg0'"},
 	{"pal", 1, NULL, "'arg0' is a color palette file"},
+	{"quiet", 0, NULL, "Be quiet - Don't report non-fatal errors"},
         {"Version", 0, NULL, "Print version and exit"},
         {"verbose", 0, NULL, "Operate in verbose mode"},
         {"help", 0, NULL, "Print usage and exit"},
@@ -105,6 +107,8 @@ static	Option	get_options[] = {
 	},
 	{"pal", NCARGCvtToString, (Voidptr) &(opt.pal), sizeof(opt.pal)
 	},
+        {"quiet",NCARGCvtToBoolean,(Voidptr)&opt.quiet,sizeof(opt.quiet)
+	},
         {"Version",NCARGCvtToBoolean,(Voidptr)&opt.version,sizeof(opt.version)
 	},
         {"verbose",NCARGCvtToBoolean,(Voidptr)&opt.verbose,sizeof(opt.verbose)
@@ -128,6 +132,7 @@ static	char	*progName;
 extern	boolean *softFill;
 extern	boolean *deBug;
 extern	boolean *doBell;
+extern	char	*sys_errlist[];
 	
 
 usage(od, progName, msg)
@@ -226,7 +231,7 @@ int	process(record, batch, sleep_time, verbose, do_all)
 			return(-1);
 
 		case	WARN:
-			log_ct(WARN);
+			if (! opt.quiet) log_ct(WARN);
 			break;
 
 		case	OK:
@@ -459,7 +464,7 @@ char	**argv;
 		if ((cgm_fd = CGM_open(*meta_files, NCAR_REC_SIZE, "r")) < 0) {
 			fprintf(
 				logFP, "%s: Can't open metafile(%s) [ %s ]\n",
-				progName, *meta_files, ErrGetMsg()
+				progName, *meta_files, sys_errlist[errno]
 			);
 			continue;
 		}
@@ -477,7 +482,7 @@ char	**argv;
 			continue;	/* skip to next metafile	*/
 		}
 		else if (ctrc == WARN) {
-			log_ct(WARN);
+			if (! opt.quiet) log_ct(WARN);
 		}
 
 	
