@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.33 1995-04-01 00:54:51 ethan Exp $
+#      $Id: yMakefile,v 1.34 1995-04-05 16:18:12 haley Exp $
 #
 #########################################################################
 #									#
@@ -113,7 +113,11 @@ API_OBJS	=	NclApi.o scanapi.o parseapi.o ioapi.o NclHLUObjapi.o
 EXE_OBJS	=	Ncl.o scanner.o parser.o io.o NclHLUObj.o 
 
 APIOBJS		=	$(API_OBJS) $(OBJS)
+#ifdef HPUX
+EXEOBJS		=	$(EXE_OBJS) $(OBJS)  hphack.o
+#else
 EXEOBJS		=	$(EXE_OBJS) $(OBJS) 
+#endif
 ALLOBJS		=	$(EXEOBJS)
 OBJS		=	$(GEN_OBJS) $(STATIC_OBJS) $(FOBJS)
 
