@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.88 2002-06-28 14:56:50 haley Exp $
+;      $Id: gsn_code.ncl,v 1.89 2002-07-30 15:17:31 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -57,6 +57,7 @@ undef("get_display_mode")
 undef("attsetvalues_check")
 undef("spread_colors")
 undef("check_for_irreg2loglin")
+undef("overlay_irregular")
 undef("get_plot_not_loglin")
 undef("fix_zero_contour")
 undef("maximize_bb")
@@ -717,12 +718,13 @@ levelcountres
 begin
   class = NhlClassName(plot)
   if(.not.any(class.eq.(/"contourPlotClass","logLinPlotClass",\
-                         "vectorPlotClass"/)))
+                         "irregularPlotClass","vectorPlotClass"/)))
     print("spread_colors: invalid plot: defaulting")
     return(ispan(2,255,1))
   end if
 
-  if (class.eq."contourPlotClass".or.class.eq."logLinPlotClass")
+  if (class.eq."contourPlotClass".or.class.eq."logLinPlotClass".or.\
+      class.eq."irregularPlotClass")
     levelcountres = "cnLevelCount"
   else
     levelcountres = "vcLevelCount"
@@ -857,6 +859,155 @@ begin
   end if
 
   return
+end
+
+;***********************************************************************;
+; Function : overlay_irregular                                          ;
+;                        wks:graphic                                    ;
+;                    wksname: string                                    ;
+;        overlay_plot_object: graphic                                   ;
+;                data_object: graphic                                   ;
+;                    xlinear: logical                                   ;
+;                    ylinear: logical                                   ;
+;                       xlog: logical                                   ;
+;                       ylog: logical                                   ;
+;                       type: string                                    ;
+;                      llres: logical                                   ;
+;                                                                       ;
+; If xlinear and/or ylinear are set to linear or log, then overlay      ;
+; plot on an irregularPlotClass so that we can linearize or logize      ;
+; the appropriate axis.                                                 ;
+;***********************************************************************;
+function overlay_irregular(wks,wksname,overlay_plot_object:graphic,\
+                           data_object:graphic,xlinear:logical, \
+                           ylinear:logical,xlog:logical,ylog:logical,\
+                           type:string,llres:logical)
+local xaxistype,yaxistype,trxmin,trymin,trxmax,trymax,Xpts,Ypts
+begin
+
+  if(xlinear) then
+    xaxistype = "LinearAxis"
+  else  
+    if(xlog) then
+      xaxistype = "LogAxis"
+    else
+      xaxistype = "IrregularAxis"
+    end if
+  end if
+
+  if(ylinear) then
+    yaxistype = "LinearAxis"
+  else  
+    if(ylog) then
+      yaxistype = "LogAxis"
+    else
+      yaxistype = "IrregularAxis"
+    end if
+  end if
+;
+; Retrieve information about existing plot so we can use these values
+; to create new overlay plot object.
+;
+  getvalues overlay_plot_object
+    "trXMinF"    : trxmin
+    "trXMaxF"    : trxmax
+    "trYMinF"    : trymin
+    "trYMaxF"    : trymax
+  end getvalues
+
+  if(type.eq."contour") then
+    getvalues data_object
+      "sfXArray"   : Xpts
+      "sfYArray"   : Ypts
+    end getvalues
+  else 
+    if(type.eq."vector".or.type.eq."streamline") then
+      getvalues data_object
+        "vfXArray"   : Xpts
+        "vfYArray"   : Ypts
+      end getvalues
+    end if
+  end if
+;
+; If x/yaxistype is irregular, then we must set trX/YCoordPoints.
+; Oherwise, we can't set trX/YCoordPoints, because we'll get an
+; error message. So, we have to do all kinds of tests to see which
+; axes are irregular, and which ones are log or linear.
+;
+; Also, if Xpts or Ypts are missing, this means the corresponding
+; axis can't be irregular.
+;
+  if(any(ismissing(Xpts)).and.xaxistype.eq."IrregularAxis") then
+    xaxistype = "LinearAxis"
+  end if
+
+  if(any(ismissing(Ypts)).and.yaxistype.eq."IrregularAxis") then
+    yaxistype = "LinearAxis"
+  end if
+;
+; If both axes at this point are Irregular, then there is no point
+; in overlaying it on an irregular plot class. We then have
+; three possible cases:
+;
+;   Case 1: Both X and Y axes are either linear or log.
+;   Case 2: X axis is irregular and Y axis is linear or log.
+;   Case 3: Y axis is irregular and X axis is linear or log.
+;
+  if(xaxistype.eq."IrregularAxis".and.yaxistype.eq."IrregularAxis") then
+    return(overlay_plot_object)
+  else
+;
+; Case 1
+;
+    if(xaxistype.ne."IrregularAxis".and. \
+       yaxistype.ne."IrregularAxis") then
+      plot_object = create wksname + "_irregular" irregularPlotClass wks
+        "trXAxisType"    : xaxistype
+        "trYAxisType"    : yaxistype
+        "trXMinF"        : trxmin
+        "trXMaxF"        : trxmax
+        "trYMinF"        : trymin
+        "trYMaxF"        : trymax
+      end create
+    end if
+;
+; Case 2
+;
+    if(xaxistype.eq."IrregularAxis".and. \
+       yaxistype.ne."IrregularAxis") then
+      plot_object = create wksname + "_irregular" irregularPlotClass wks
+        "trXAxisType"    : xaxistype
+        "trYAxisType"    : yaxistype
+        "trXCoordPoints" : Xpts
+        "trXMinF"        : trxmin
+        "trXMaxF"        : trxmax
+        "trYMinF"        : trymin
+        "trYMaxF"        : trymax
+      end create
+    end if
+;
+; Case 3
+;
+    if(yaxistype.eq."IrregularAxis".and. \
+       xaxistype.ne."IrregularAxis") then
+      plot_object = create wksname + "_irregular" irregularPlotClass wks
+        "trXAxisType"    : xaxistype
+        "trYAxisType"    : yaxistype
+        "trYCoordPoints" : Ypts
+        "trXMinF"        : trxmin
+        "trXMaxF"        : trxmax
+        "trYMinF"        : trymin
+        "trYMaxF"        : trymax
+      end create
+    end if
+
+    attsetvalues_check(plot_object,llres)
+
+    overlay(plot_object,overlay_plot_object)
+    plot_object@$type$ = overlay_plot_object
+  end if
+
+  return(plot_object)
 end
 
 ;***********************************************************************;
@@ -5290,33 +5441,17 @@ begin
     if(scale)
       gsnp_scale_plot(plot_object)
     end if
-
+;
 ; Check if we need to force the X or Y axis to be linear or log.
-; If so, then we have to overlay it on a LogLin Plot.
-
+;
     if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
       overlay_plot_object = plot_object
       delete(plot_object)
 
-      getvalues overlay_plot_object
-        "trXMinF"    : trxmin
-        "trXMaxF"    : trxmax
-        "trYMinF"    : trymin
-        "trYMaxF"    : trymax
-      end getvalues
-
-      plot_object = create wksname + "_loglin" logLinPlotClass wks
-        "trXLog"  : force_x_log
-        "trYLog"  : force_y_log
-        "trXMinF" : trxmin
-        "trXMaxF" : trxmax
-        "trYMinF" : trymin
-        "trYMaxF" : trymax
-      end create
-      attsetvalues_check(plot_object,llres)
-
-      overlay(plot_object,overlay_plot_object)
-      plot_object@contour = overlay_plot_object
+      plot_object = overlay_irregular(wks,wksname,overlay_plot_object,\
+                                      data_object,force_x_linear,\
+                                      force_y_linear,force_x_log, \
+                                      force_y_log,"contour",llres)
     end if
 
     draw_and_frame(wks,plot_object,calldraw,callframe,maxbb)
@@ -5592,25 +5727,10 @@ begin
       overlay_plot_object = plot_object
       delete(plot_object)
 
-      getvalues overlay_plot_object
-        "trXMinF"    : trxmin
-        "trXMaxF"    : trxmax
-        "trYMinF"    : trymin
-        "trYMaxF"    : trymax
-      end getvalues
-
-      plot_object = create wksname + "_loglin" logLinPlotClass wks
-        "trXLog"  : force_x_log
-        "trYLog"  : force_y_log
-        "trXMinF" : trxmin
-        "trXMaxF" : trxmax
-        "trYMinF" : trymin
-        "trYMaxF" : trymax
-      end create
-      attsetvalues_check(plot_object,llres)
-
-      overlay(plot_object,overlay_plot_object)
-      plot_object@contour = overlay_plot_object
+      plot_object = overlay_irregular(wks,wksname,overlay_plot_object,\
+                                      data_object,force_x_linear,\
+                                      force_y_linear,force_x_log, \
+                                      force_y_log,"streamline",llres)
     end if
 
     draw_and_frame(wks,plot_object,calldraw,callframe,maxbb)
@@ -5855,6 +5975,159 @@ begin
 end
 
 ;***********************************************************************;
+; Procedure : gsn_draw_named_colors                                     ;
+;                   wks: workstation object                             ;
+;                   colors: colors array                                ;
+;                   box: array defining number of rows and columns      ;
+;                                                                       ;
+; This procedure takes a named color array and draws it.                ;
+; wks is a variable returned from a previous call to "gsn_open_wks".    ;
+;***********************************************************************;
+procedure gsn_draw_named_colors(wks:graphic,colors[*]:string, box[2]:integer)
+local ncolors, ntotal, nrows, ncols, offset, width, height, \
+xpos, ypos, xbox, ybox
+
+begin
+  nrows   = box(0)                   ; # of rows of colors per page.
+  ncols   = box(1)                   ; # of columns of colors per page.
+
+  if(typeof(colors).ne."string".or.dimsizes(dimsizes(colors)).ne.1)
+    print("The input array is not a one dimensional array of named color strings")
+    exit
+  end if
+
+  if((nrows.gt.16).or.(ncols.gt.8))
+    print("Number of rows should be less than 16 and Number of columns should be less than 8.")
+    exit
+  end if
+
+  ncolors = dimsizes(colors)     ; # of colors given
+
+  getvalues wks
+    "wkColorMap" : oldcmap    ; Get current color map.
+  end getvalues
+
+;
+; Find out the rgb values of each color and put it into
+; an array
+;
+  rgb_values = get_rgb_values(colors)
+  rgb_val = new(ncolors, string)
+  do l =0, ncolors-1, 1
+	rgb_val(l) = sprintf("%.2f", rgb_values(l,0)) + "," + \
+                     sprintf("%.2f", rgb_values(l,1)) + "," + \
+                     sprintf("%.2f", rgb_values(l,2))
+  end do
+
+;
+; npages number of frames.
+;
+  ntotal = ncols * nrows
+
+  npages = floattoint(ncolors/ntotal)
+  if(npages*ntotal.lt.ncolors)
+    npages = npages+1
+  end if
+
+;
+; X and Y positions of text and box in the view port.
+;
+  width  = 1./ncols
+  height = 1./nrows
+  xpos  = fspan(0,1-width,ncols)
+  ypos  = fspan(1-height,0,nrows)
+
+;
+; Box coordinates.
+;
+  xbox = (/0,width, width,     0,0/)
+  ybox = (/0,    0,height,height,0/)
+
+;
+; Calculate font height.
+;
+  font_heights = (/.0143, .0143, .0143, .0141, .013, .011, .0093, .0085/)
+  font_height = font_heights(ncols-1)
+  font_space  = font_height/2.
+
+  gonres   = True   ; variables to hold list of resources
+  lineres  = True
+  txres    = True
+
+  txres@txFontHeightF         = font_height
+  txres@txFont                = "helvetica-bold"
+  txres@txPerimOn             = True
+  txres@txPerimColor          = "black"  ; Or close to black if 
+  txres@txFontColor           = "black"  ; black is not in color map.
+  txres@txBackgroundFillColor = "white"  ; Or close to white.
+
+  lineres@gsLineColor         = "black"
+
+  kk = 0
+  offset = 2
+  do k = 1,ncolors,ntotal
+    start = kk*ntotal
+    colorindex = 0
+;
+; Set the colormap
+;
+    if(npages.eq.1)
+      cmapnew = new(ncolors-start+2,string)
+      cmapnew(0)  = "White"     ; white background
+      cmapnew(1)  = "Black"     ; black background
+      cmapnew(2:) = colors(start:ncolors-1)
+    else
+      cmapnew = new(ntotal+2,string)
+      cmapnew(0)  = "White"     ; white background
+      cmapnew(1)  = "Black"     ; black background
+      cmapnew(2:) = colors(start:start+ntotal-1)
+    end if
+
+    setvalues wks
+      "wkColorMap" : cmapnew
+    end setvalues
+    delete(cmapnew)
+
+    jj = 0
+    do j=k,min((/k+ntotal-1,ncolors/)),nrows
+      ii = 0
+      do i=j,min((/j+nrows-1,ncolors/))
+
+            ; Draw box and fill in the appropriate color.
+        gonres@gsFillColor = offset + colorindex
+        gsn_polygon_ndc(wks,xbox+xpos(jj),ybox+ypos(ii),gonres) ; Draw box.
+
+            ; Outline box in black.
+        gsn_polyline_ndc(wks,xbox+xpos(jj),ybox+ypos(ii),lineres)
+
+            ; Draw color label.
+        txres@txJust                = "BottomLeft"
+        text = gsn_text_ndc_return(wks,colors(i-1),font_space+xpos(jj),ypos(ii)+font_space,txres)
+        txres@txJust                = "TopLeft"
+        gsn_text_ndc(wks,rgb_val(i-1),font_space+xpos(jj),height+ypos(ii)-font_space,txres)
+
+        ii = ii + 1
+        colorindex = colorindex + 1
+      end do
+      jj = jj +1
+    end do
+    kk = kk + 1
+    npages = npages - 1
+    frame(wks)   ; Advance the frame.
+  end do
+
+;
+; Put the original color map back.
+;
+    setvalues wks
+      "wkColorMap" : oldcmap
+    end setvalues
+    delete(oldcmap)
+
+end
+
+
+;***********************************************************************;
 ; Function : gsn_vector                                                 ;
 ;                   wks: workstation object                             ;
 ;                     u: 2-dimensional U array                          ;
@@ -5970,25 +6243,10 @@ begin
       overlay_plot_object = plot_object
       delete(plot_object)
 
-      getvalues overlay_plot_object
-        "trXMinF"    : trxmin
-        "trXMaxF"    : trxmax
-        "trYMinF"    : trymin
-        "trYMaxF"    : trymax
-      end getvalues
-
-      plot_object = create wksname + "_loglin" logLinPlotClass wks
-        "trXLog"  : force_x_log
-        "trYLog"  : force_y_log
-        "trXMinF" : trxmin
-        "trXMaxF" : trxmax
-        "trYMinF" : trymin
-        "trYMaxF" : trymax
-      end create
-      attsetvalues_check(plot_object,llres)
-
-      overlay(plot_object,overlay_plot_object)
-      plot_object@vector = overlay_plot_object
+      plot_object = overlay_irregular(wks,wksname,overlay_plot_object,\
+                                      data_object,force_x_linear,\
+                                      force_y_linear,force_x_log, \
+                                      force_y_log,"vector",llres)
     end if
 
     draw_and_frame(wks,plot_object,calldraw,callframe,maxbb)
@@ -6654,25 +6912,10 @@ begin
       overlay_plot_object = plot_object
       delete(plot_object)
 
-      getvalues overlay_plot_object
-        "trXMinF"    : trxmin
-        "trXMaxF"    : trxmax
-        "trYMinF"    : trymin
-        "trYMaxF"    : trymax
-      end getvalues
-
-      plot_object = create wksname + "_loglin" logLinPlotClass wks
-        "trXLog"  : force_x_log
-        "trYLog"  : force_y_log
-        "trXMinF" : trxmin
-        "trXMaxF" : trxmax
-        "trYMinF" : trymin
-        "trYMaxF" : trymax
-      end create
-      attsetvalues_check(plot_object,llres)
-
-      overlay(plot_object,overlay_plot_object)
-      plot_object@vector = overlay_plot_object
+      plot_object = overlay_irregular(wks,wksname,overlay_plot_object,\
+                                      data_object,force_x_linear,\
+                                      force_y_linear,force_x_log, \
+                                      force_y_log,"vector",llres)
     end if
 
     draw_and_frame(wks,plot_object,calldraw,callframe,maxbb)
@@ -7069,4 +7312,3 @@ begin
   xy = gsn_xy(wks,x,y,res2)
   return(xy)
 end
-

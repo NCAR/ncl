@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.99 2002-06-21 04:17:51 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.100 2002-07-30 15:17:31 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -812,7 +812,7 @@ function check_class_name(plot:graphic,plot_type:string)
 begin
   class_name = NhlClassName(plot)
 
-  if(class_name.eq."logLinPlotClass")
+  if(class_name.eq."logLinPlotClass".or.class_name.eq."irregularPlotClass")
     new_plot = plot@$plot_type$
   else
     new_plot = plot
@@ -1560,12 +1560,13 @@ begin
   set_attr(amres,"amOrthogonalPosF",orth)
 
   class_name = NhlClassName(plot)
-  if(class_name.eq."logLinPlotClass")
+  if(class_name.eq."logLinPlotClass".or.class_name.eq."irregularPlotClass")
     the_plot = plot@contour
   else
     the_plot = plot
   end if
-  if(class_name.eq."contourPlotClass".or.class_name.eq."logLinPlotClass")
+  if(class_name.eq."contourPlotClass".or.class_name.eq."logLinPlotClass".or.\
+     class_name.eq."irregularPlotClass")
     getvalues the_plot
       "cnLevels"          : levels
       "cnFillColors"      : colors
@@ -2488,8 +2489,10 @@ begin
     if(.not.(isatt(tmres,"tiXAxisString").and.tmres@tiXAxisString.ne.""))
       set_attr(tmres,"tiXAxisOn"      , False)
     end if
+
     attsetvalues(plot,tmres)
   end if
+
   return
 end
 
@@ -7220,10 +7223,13 @@ end
 ; instead of a line plot. You need to also set gsnYRefLine in order to  ;
 ; use this resource.                                                    ;
 ;                                                                       ;
+; The resource gsnXYBarChartColors can be used to specify an array of   ;
+; bar colors.                                                           ;
+;                                                                       ;
 ; The resource gsnXYBarChartBarWidth can be used to specify the width   ;
 ; of each bar. The smallest dx is used by default.                      ;
 ;                                                                       ;
-; The resource gsnAbove/BelowYRefLineBarcolors can be used to specify   ;
+; The resource gsnAbove/BelowYRefLineBarColors can be used to specify   ;
 ; an array of bar colors.                                               ;
 ;                                                                       ;
 ; Tick marks will be made to point outwards.                            ;
@@ -7362,6 +7368,8 @@ begin
 ;
       bar_chart        = get_res_value(res2,"gsnXYBarChart",False)
       bar_outline_only = get_res_value(res2,"gsnXYBarChartOutlineOnly",False)
+      bar_chart_orient = lower_case(get_res_value(res2, \
+                                    "gsnXYBarChartOrientation","vertical"))
       if(bar_chart.and..not.bar_outline_only)
         if(.not.yref_line_on) then
 ;
@@ -7478,6 +7486,8 @@ begin
 ;
           mlt_above_bar_colors = False
           mlt_below_bar_colors = False
+          mlt_above_bar_pttrns = False
+          mlt_below_bar_pttrns = False
           if(isatt(res2,"gsnAboveYRefLineBarColors")) then
             yref_fill_on         = True
             mlt_above_bar_colors = True
@@ -7492,14 +7502,57 @@ begin
           end if  
           if(.not.mlt_above_bar_colors.and.isatt(res2,"gsnXYBarChartColors")) then
             yref_fill_on         = True
-            mlt_above_bar_colors = True
-            bar_colors_above = get_res_value(res2,"gsnXYBarChartColors",1)
-          end if  
-          if(isatt(res2,"gsnBelowYRefLineBarColors")) then
-            yref_fill_on         = True
             mlt_below_bar_colors = True
             bar_colors_below = get_res_value(res2,"gsnBelowYRefLineBarColors",1)
+;
+; If both gsnBelowYRefLineBarColors and gsnXYBarChartColors are set,
+; then only use the first one.
+;
+            if(isatt(res2,"gsnXYBarChartColors")) then
+              delete(res2@gsnXYBarChartColors)
+            end if
           end if
+
+          if(isatt(res2,"gsnXYBarChartColors")) then
+            yref_fill_on         = True
+            mlt_above_bar_colors = True
+            mlt_below_bar_colors = True
+            bar_colors_above = get_res_value(res2,"gsnXYBarChartColors",1)
+            bar_colors_below = bar_colors_above
+          end if
+          if(isatt(res2,"gsnAboveYRefLineBarPatterns")) then
+            yref_fill_on         = True
+            mlt_above_bar_pttrns = True
+            bar_pttrns_above = get_res_value(res2,"gsnAboveYRefLineBarPatterns",1)
+;
+; If both gsnAboveYRefLineBarPatterns and gsnXYBarChartPatterns are set,
+; then only use the first one.
+;
+            if(isatt(res2,"gsnXYBarChartPatterns")) then
+              delete(res2@gsnXYBarChartPatterns)
+            end if
+          end if  
+
+          if(isatt(res2,"gsnBelowYRefLineBarPatterns")) then
+            yref_fill_on         = True
+            mlt_below_bar_pttrns = True
+            bar_pttrns_below = get_res_value(res2,"gsnBelowYRefLineBarPatterns",1)
+;
+; If both gsnBelowYRefLineBarPatterns and gsnXYBarChartPatterns are set,
+; then only use the first one.
+;
+            if(isatt(res2,"gsnXYBarChartPatterns")) then
+              delete(res2@gsnXYBarChartPatterns)
+            end if
+          end if  
+
+          if(isatt(res2,"gsnXYBarChartPatterns")) then
+            yref_fill_on         = True
+            mlt_above_bar_pttrns = True
+            mlt_below_bar_pttrns = True
+            bar_pttrns_above = get_res_value(res2,"gsnXYBarChartPatterns",1)
+            bar_pttrns_below = bar_pttrns_above
+          end if  
 ;
 ; Loop across curves and figure out which points are above and
 ; below references lines.  First create arrays to hold points
@@ -7646,13 +7699,23 @@ begin
             end if
           end if
 ;
-; Multiple bar colors.
+; Multiple bar colors and/or patterns.
 ;
-          if(mlt_above_bar_colors) then
-            nca = dimsizes(bar_colors_above)
+          if(mlt_above_bar_colors.or.mlt_above_bar_pttrns) then
+            if(mlt_above_bar_colors) then
+              nca = dimsizes(bar_colors_above)
+            end if
+            if(mlt_above_bar_pttrns) then
+              npa = dimsizes(bar_pttrns_above)
+            end if
             do ii = 0,npts-1
               var_string2 = var_string + "above" + ii
-              gsres@gsFillColor = bar_colors_above(ii%nca)
+              if(mlt_above_bar_colors) then
+                gsres@gsFillColor = bar_colors_above(ii%nca)
+              end if
+              if(mlt_above_bar_pttrns) then
+                gsres@gsFillIndex = bar_pttrns_above(ii%npa)
+              end if
               xy_object@$var_string2$ = gsn_add_polygon(wks,xy_object, \
                                                      xabove(i,ii*5:ii*5+4), \
                                                      yabove(i,ii*5:ii*5+4), \
@@ -7675,12 +7738,24 @@ begin
               gsres@gsFillColor = yref_line_below(i)
             end if
           end if
-
-          if(mlt_below_bar_colors) then
-            ncb = dimsizes(bar_colors_below)
+;
+; Multiple bar colors and/or patterns.
+;
+          if(mlt_below_bar_colors.or.mlt_below_bar_pttrns) then
+            if(mlt_below_bar_colors) then
+              ncb = dimsizes(bar_colors_below)
+            end if
+            if(mlt_below_bar_pttrns) then
+              npb = dimsizes(bar_colors_pttrns)
+            end if
             do ii = 0,npts-1
               var_string2 = var_string + "below" + ii
-              gsres@gsFillColor = bar_colors_below(ii%ncb)
+              if(mlt_below_bar_colors) then
+                gsres@gsFillColor = bar_colors_below(ii%ncb)
+              end if
+              if(mlt_below_bar_pttrns) then
+                gsres@gsFillIndex = bar_colors_pttrns(ii%npb)
+              end if
               xy_object@$var_string2$ = gsn_add_polygon(wks,xy_object, \
                                                      xbelow(i,ii*5:ii*5+4), \
                                                      ybelow(i,ii*5:ii*5+4), \
@@ -8552,13 +8627,13 @@ begin
     vcres = get_res_ne(res2,(/"tx"/))
     vector_object = gsn_vector(wks,unew,vnew,vcres)
 
-; Add lat/lon labels to X/Y axes if appropriate coordinate arrays exist.
-
-    add_latlon_labels(vector_object,unew,res2)
-
 ; Get some information from vector plot that was created.
 
     vector_plot = check_class_name(vector_object,"vector")
+
+; Add lat/lon labels to X/Y axes if appropriate coordinate arrays exist.
+
+    add_latlon_labels(vector_plot,unew,res2)
 
     getvalues vector_plot
       "vpWidthF"             : width
@@ -8809,13 +8884,17 @@ begin
     stres = get_res_ne(res2,(/"tx"/))
     stream_object = gsn_streamline(wks,unew,vnew,stres)
 
+; Get some information from streamline plot that was created.
+
+    streamline_plot = check_class_name(stream_object,"streamline")
+
 ; Add lat/lon labels to X/Y axes if appropriate coordinate arrays exist.
 
-    add_latlon_labels(stream_object,unew,res2)
+    add_latlon_labels(streamline_plot,unew,res2)
 
 ; Get some information from streamline plot that was created.
 
-    getvalues stream_object
+    getvalues streamline_plot
       "vpWidthF"             : width
       "vpHeightF"            : height
   
@@ -8856,7 +8935,7 @@ begin
     minor_length = scale * minor_length
 
     tmres = get_res_eq(res2,"tm")  ; Get tickmark resources
-    gsnp_point_tickmarks_outward(stream_object,tmres,xlength,ylength,\
+    gsnp_point_tickmarks_outward(streamline_plot,tmres,xlength,ylength,\
                                                xmlength,ymlength,\
                                                major_length,minor_length)
 
