@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.175 2005-02-07 21:58:20 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.176 2005-02-18 22:18:34 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3286,6 +3286,8 @@ NhlErrorTypes _NclIasciiwrite
 }
 
 
+#if 0
+/* This routine has been replaced by two routines: asciifloat and asciiinteger */
 int asciinumeric
 #if NhlNeedProto
 (FILE *fp, char* format,void *retvalue)
@@ -3504,6 +3506,151 @@ int asciinumeric
 		return(0);
 	}
 }
+#endif
+
+/*
+ * Read float types (double and float)
+ * There is a system dependency for strtod in its handling of 
+ * the '0x' prefix. 
+ * For predictable results, force 0x to be read as a '0'. 
+ */
+int asciifloat(char *buf, char **end, int type, void *retvalue) {
+	double tmpd;
+	const char *initchars = "0123456789+-.nN";
+	int i;
+	
+	i = strcspn(buf,initchars);
+	while (buf[i] != '\0') {
+		if (buf[i] == '0' && 
+		    (buf[i+1] == 'x' || buf[i+1] == 'X')) {
+			tmpd = 0;
+			*end = &(buf[i+1]);
+		}
+		else {
+			tmpd = strtod(&(buf[i]),end);
+		}
+		if (*end == &(buf[i])) {
+			i++;
+			i += strcspn(&(buf[i]),initchars);
+			continue;
+		}
+		switch (type) {
+		case Ncl_Typefloat:
+			*((float*)retvalue) = (float) tmpd;
+			break;
+		case Ncl_Typedouble:
+			*((double*)retvalue) =  tmpd;
+			break;
+		}
+		i = *end - buf;
+		i += strcspn(*end,initchars);
+		*end = &(buf[i]);
+		return 1;
+	}
+	*end = &(buf[i]);
+	return 0;
+}
+
+
+/*
+ * Read all the integer types:
+ * Note that the file is scanned as a float but read as integer.
+ * This may seem weird but is for compatibility with the old code.
+ * Example: encountering the string 3e4, the scanner ingests this
+ * as one number, but when read as an integer the 'e4' is ignored,
+ * resulting in the single value '3'. 
+ * A sequence of digits prefaced with '.' is treated as 0.
+ * Ox is recognized as a prefacing a hex value for all integer types,
+ * but 0 is recognized as a preface for an octal value only if reading
+ * as Ncl_Typebyte,
+ * Overflow is handled simply by bit truncation.
+ * Nan is not valid for integers.
+ */
+int asciiinteger(char *buf, char **end, int type, void *retvalue) {
+	double tmpd;
+	const char *initchars = "0123456789+-.";
+	int i;
+	int ishex = 0;
+	long tmpi;
+	char *cp,*iend;
+	
+	i = strcspn(buf,initchars);
+	while (buf[i] != '\0') {
+		/* don't depend on strtod understanding hex */
+		if (buf[i] == '0' && 
+		    (buf[i+1] == 'x' || buf[i+1] == 'X')) {
+			ishex = 1;
+			tmpi = strtol(&(buf[i]),end,16);
+			/* 
+			 * Skip fractional hex part for consistency 
+			 * with decimal behavior
+			 */
+			if (**end == '.') {
+				(*end)++;
+				while (isxdigit(**end)) {
+					(*end)++;
+				}
+			}
+		}
+		else {
+			tmpd = strtod(&(buf[i]),end);
+		}
+		if (*end == &(buf[i])) {
+			i++;
+			i += strcspn(&(buf[i]),initchars);
+			ishex = 0;
+			continue;
+		}
+		if (! ishex) {
+			if (type == Ncl_Typebyte) {
+				/* accept octal or decimal */
+				tmpi = strtol(&(buf[i]),&iend,0);
+			}
+			else {
+				tmpi = strtol(&(buf[i]),&iend,10);
+			}
+		}
+		if (iend == &(buf[i])) {
+			/* for compatibility with the old way
+			 * values that start with '.' are treated as 0
+			 */
+			if (buf[i] == '.' && isdigit(buf[i+1])) {
+			    tmpi = 0;
+			}
+			else {
+				i++;
+				i += strcspn(&(buf[i]),initchars);
+				ishex = 0;
+				continue;
+			}
+		}
+
+		switch (type) {
+		case Ncl_Typelong:
+			*((long*)retvalue) = tmpi;
+			break;
+		case Ncl_Typeint:
+			*((int*)retvalue) =  (int)tmpi;
+			break;
+		case Ncl_Typeshort:
+			*((short*)retvalue) =  (short)tmpi;
+			break;
+		case Ncl_Typebyte:
+			*((byte*)retvalue) =  (byte)tmpi;
+			break;
+		}
+		i = *end - buf;
+		i += strcspn(*end,initchars);
+		*end = &(buf[i]);
+		return 1;
+	}
+	*end = &(buf[i]);
+	return 0;
+}
+			
+
+
+
 NhlErrorTypes _NclIasciiread
 #if	NhlNeedProto
 (void)
@@ -3524,15 +3671,15 @@ NhlErrorTypes _NclIasciiread
 	int size = 1;
 	int i,j;
 	void *tmp_ptr;
-	struct stat buf;
-	FILE *fd = NULL;
+	struct stat statbuf;
+	FILE *fp = NULL;
 	int totalsize = 0;
 	int n;
 	char *step = NULL;
 	NclStackEntry data_out;
 	int has_unlimited = 0;
-
-
+	int bufsize = 4096;
+	char buf[4096];
 
 
 	fpath = _NclGetArg(0,3,DONT_CARE);
@@ -3554,7 +3701,7 @@ NhlErrorTypes _NclIasciiread
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: An error in the file path was detected could not resolve file path");
 			return(NhlFATAL);
 		}
-		if(stat(path_string,&buf) == -1) {
+		if(stat(path_string,&statbuf) == -1) {
 			NhlPError(NhlFATAL, NhlEUNKNOWN,"asciiread: Unable to open input file (%s)",path_string);
 			return(NhlFATAL);
 		}
@@ -3617,8 +3764,8 @@ NhlErrorTypes _NclIasciiread
 		totalsize = size;
 		
 		tmp_ptr = NclMalloc(size*thetype->type_class.size);
-		fd = fopen(path_string,"r");
-		if((tmp_ptr != NULL)&&(fd != NULL)) {
+		fp = fopen(path_string,"r");
+		if((tmp_ptr != NULL)&&(fp != NULL)) {
 			
 			tmp_md = _NclCreateMultiDVal(
 				NULL,
@@ -3635,46 +3782,57 @@ NhlErrorTypes _NclIasciiread
 			if(tmp_md == NULL) 
 				return(NhlFATAL);
 
-			if(thetype->type_class.type & NCL_TYPE_NUMERIC_MASK) {
-				for(i = 0; ((i < totalsize)&&(!feof(fd))); i++) {
-					if(asciinumeric(fd,thetype->type_class.format,tmp_ptr)) {
+			if (thetype->type_class.type == Ncl_Typefloat ||
+			    thetype->type_class.type == Ncl_Typedouble) {
+				char *end = "";
+				for(i = 0; ((i < totalsize)&&(!feof(fp))); i++) {
+					if (*end == '\0') {
+						if (! fgets(buf,bufsize,fp)) {
+							i--;
+							break;
+						}
+						end = buf;
+					}
+					if (asciifloat(end,&end,thetype->type_class.type,tmp_ptr)) {
 						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
 					} else {
 						i--;
 						break;
 					}
 				}
-				if(i < totalsize) {
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"asciiread: End of file reached and only (%d) elements were read from the file, filling remaining elements with the default missing value for the requested type",i+1);
-					if(feof(fd)) i++;
-					for(;i<totalsize;i++) {
-						memcpy(tmp_ptr,&(thetype->type_class.default_mis),thetype->type_class.size);
+			}
+			else if(thetype->type_class.type & NCL_TYPE_NUMERIC_MASK) {
+				char *end = "";
+				for(i = 0; ((i < totalsize)&&(!feof(fp))); i++) {
+					if (*end == '\0') {
+						if (! fgets(buf,bufsize,fp)) {
+							i--;
+							break;
+						}
+						end = buf;
+					}
+					if (asciiinteger(end,&end,thetype->type_class.type,tmp_ptr)) {
 						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+					} else {
+						i--;
+						break;
 					}
 				}
-				
 			} else if(thetype->type_class.type==Ncl_Typechar) {
-				for(i = 0; ((i<totalsize) && !feof(fd)); i++) {
-					*(char*)tmp_ptr = fgetc(fd);
+				for(i = 0; ((i<totalsize) && !feof(fp)); i++) {
+					*(char*)tmp_ptr = fgetc(fp);
 					tmp_ptr = (void*)((char*)tmp_ptr+1);
 				}
-				if(i < totalsize) {	
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"asciiread: End of file reached and only (%d) elements were read from the file, filling remaining elements with the default missing value for the requested type",i+1);
-					if(feof(fd)) i++;
-					for(;i<totalsize;i++) {
-						*(char*)tmp_ptr = thetype->type_class.default_mis.charval;
-						tmp_ptr = (void*)((char*)tmp_ptr+1);
-					}
-				}
+
 			} else if(thetype->type_class.type==Ncl_Typestring) {
 				char buffer[NCL_MAX_STRING+1];
 				char *step;
 
 				step =buffer;
-				for(i = 0; ((i<totalsize) && !feof(fd)); i++) {
+				for(i = 0; ((i<totalsize) && !feof(fp)); i++) {
 					for(j = 0; j < NCL_MAX_STRING; j++) {
-						if(!feof(fd)) {
-							*step = fgetc(fd);
+						if(!feof(fp)) {
+							*step = fgetc(fp);
 							if(*step == '\n') {
 								*step = '\0';
 								*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
@@ -3691,63 +3849,86 @@ NhlErrorTypes _NclIasciiread
 					}
 					if(j >= NCL_MAX_STRING) {
 						buffer[NCL_MAX_STRING] = '\0';
-						while(!feof(fd)&&(fgetc(fd) != '\n'));
+						while(!feof(fp)&&(fgetc(fp) != '\n'));
 						*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
 						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
 					} 
-				}
-				if( i < totalsize ) {
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"asciiread: End of file reached and only (%d) elements were read from the file, filling remaining elements with the default missing value for the requested type",i+1);
-					if(feof(fd)) i++;
-					for(;i<totalsize;i++) {
-						*(NclQuark*)tmp_ptr = thetype->type_class.default_mis.stringval; 
-						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
-
-					}
 				}
 			} else {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: Attempt to read unsupported type");
 				return(NhlFATAL);
 			}
-
-
+			if(i < totalsize) {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"asciiread: End of file reached and only (%d) elements were read from the file, filling remaining elements with the default missing value for the requested type",i+1);
+				if(feof(fp)) 
+					i++;
+				for(;i<totalsize;i++) {
+					memcpy(tmp_ptr,
+					       &(thetype->type_class.default_mis),thetype->type_class.size);
+					tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+				}
+			}
 			data_out.kind = NclStk_VAL;
 			data_out.u.data_obj = tmp_md;
 			_NclPlaceReturn(data_out);
-			fclose(fd);
+			fclose(fp);
 			return(ret);
-		} else if (fd == NULL) {
+		} else if (fp == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: could not open file check permissions");
 		}
 	} else if(size == -1) {
-		fd = fopen(path_string,"r");
-		if(fd != NULL) {
+		fp = fopen(path_string,"r");
+		if(fp != NULL) {
 			tmp_ptr = NclMalloc(thetype->type_class.size);
 
-			if(thetype->type_class.type & NCL_TYPE_NUMERIC_MASK) {
-		
+			if (thetype->type_class.type == Ncl_Typefloat ||
+			    thetype->type_class.type == Ncl_Typedouble) {
+				char *end = "";
 				totalsize = 0;
-				while(!feof(fd)) {
-					if(asciinumeric(fd,thetype->type_class.format,tmp_ptr)) {
+				while (! feof(fp)) {
+					if (*end == '\0') {
+						if (! fgets(buf,bufsize,fp)) {
+							break;
+						}
+						end = buf;
+					}
+					if (asciifloat(end,&end,thetype->type_class.type,tmp_ptr)) {
+						totalsize++;
+					} else {
+						break;
+					}
+				}
+			}
+			else if(thetype->type_class.type & NCL_TYPE_NUMERIC_MASK) {
+				char *end = "";
+				totalsize = 0;
+				while (! feof(fp)) {
+					if (*end == '\0') {
+						if (! fgets(buf,bufsize,fp)) {
+							break;
+						}
+						end = buf;
+					}
+					if (asciiinteger(end,&end,thetype->type_class.type,tmp_ptr)) {
 						totalsize++;
 					} else {
 						break;
 					}
 				}
 			} else if(thetype->type_class.type==Ncl_Typechar) {
-				stat(path_string,&buf);
-				totalsize = buf.st_size;
+				stat(path_string,&statbuf);
+				totalsize = statbuf.st_size;
 			} else if(thetype->type_class.type==Ncl_Typestring) {
 				totalsize = 0;
-				while(!feof(fd)) {
-					if(fgetc(fd) == '\n') {
+				while(!feof(fp)) {
+					if(fgetc(fp) == '\n') {
                                                 totalsize++;
                                         } 
                                 }
 			}
 			NclFree(tmp_ptr);
 			if (totalsize == 0) {
-				fclose(fd);
+				fclose(fp);
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
 	      "asciiread: No elements read from file, returning a single element with the default missing value for the requested type");
 				tmp_ptr = NclMalloc(1*thetype->type_class.size);
@@ -3774,8 +3955,8 @@ NhlErrorTypes _NclIasciiread
 			}
 			tmp_ptr = NclMalloc(totalsize*thetype->type_class.size);
 			dimsizes[0] = totalsize;
-			fclose(fd);
-			fd = fopen(path_string,"r");
+			fclose(fp);
+			fp = fopen(path_string,"r");
 
 
 
@@ -3795,18 +3976,46 @@ NhlErrorTypes _NclIasciiread
 			if(tmp_md == NULL) 
 				return(NhlFATAL);
 
-			if(thetype->type_class.type & NCL_TYPE_NUMERIC_MASK) {
-				for(i = 0; ((i < totalsize)&&(!feof(fd))); i++) {
-					if(asciinumeric(fd,thetype->type_class.format,tmp_ptr)) {
+			if (thetype->type_class.type == Ncl_Typefloat ||
+			    thetype->type_class.type == Ncl_Typedouble) {
+				char *end = "";
+				for(i = 0; ((i < totalsize)&&(!feof(fp))); i++) {
+					if (*end == '\0') {
+						if (! fgets(buf,bufsize,fp)) {
+							i--;
+							break;
+						}
+						end = buf;
+					}
+					if (asciifloat(end,&end,thetype->type_class.type,tmp_ptr)) {
 						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
 					} else {
 						i--;
 						break;
 					}
 				}
-			} else if(thetype->type_class.type==Ncl_Typechar) {
-				for(i = 0; ((i<totalsize) && !feof(fd)); i++) {
-					*(char*)tmp_ptr = fgetc(fd);
+			}
+			else if(thetype->type_class.type & NCL_TYPE_NUMERIC_MASK) {
+				char *end = "";
+				for(i = 0; ((i < totalsize)&&(!feof(fp))); i++) {
+					if (*end == '\0') {
+						if (! fgets(buf,bufsize,fp)) {
+							i--;
+							break;
+						}
+						end = buf;
+					}
+					if (asciiinteger(end,&end,thetype->type_class.type,tmp_ptr)) {
+						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+					} else {
+						i--;
+						break;
+					}
+				}
+			} 
+			else if(thetype->type_class.type==Ncl_Typechar) {
+				for(i = 0; ((i<totalsize) && !feof(fp)); i++) {
+					*(char*)tmp_ptr = fgetc(fp);
 					tmp_ptr = (void*)((char*)tmp_ptr+1);
 				}
 			} else if(thetype->type_class.type==Ncl_Typestring) {
@@ -3814,10 +4023,10 @@ NhlErrorTypes _NclIasciiread
 				char *step;
 
 				step =buffer;
-				for(i = 0; ((i<totalsize) && !feof(fd)); i++) {
+				for(i = 0; ((i<totalsize) && !feof(fp)); i++) {
 					for(j = 0; j < NCL_MAX_STRING; j++) {
-						if(!feof(fd)) {
-							*step = fgetc(fd);
+						if(!feof(fp)) {
+							*step = fgetc(fp);
 							if(*step == '\n') {
 								*step = '\0';
 								*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
@@ -3834,7 +4043,7 @@ NhlErrorTypes _NclIasciiread
 					}
 					if(j >= NCL_MAX_STRING) {
 						buffer[NCL_MAX_STRING] = '\0';
-						while(!feof(fd)&&(fgetc(fd) != '\n'));
+						while(!feof(fp)&&(fgetc(fp) != '\n'));
 						*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
 						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
 					} 
@@ -3848,9 +4057,9 @@ NhlErrorTypes _NclIasciiread
 			data_out.kind = NclStk_VAL;
 			data_out.u.data_obj = tmp_md;
 			_NclPlaceReturn(data_out);
-			fclose(fd);
+			fclose(fp);
 			return(ret);
-		} else if (fd == NULL) {
+		} else if (fp == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: could not open file check permissions");
 		}
 	} else {
