@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.12 1993-09-24 14:45:55 haley Exp $
+.\"	$Id: ncargex.m,v 1.13 1993-09-24 21:09:48 kennison Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "March 1993" NCAR "NCAR GRAPHICS"
@@ -35,6 +35,7 @@ ncargex \- NCAR Graphics Fortran Examples
 [\f\B\-pwritx\fR]
 [\f\B\-pwrity\fR]
 [\f\B\-scrolled_title\fR]
+[\f\B\-seter\fR]
 [\f\B\-softfill\fR]
 [\f\B\-spps\fR]
 [\f\B\-streamlines\fR]
@@ -162,6 +163,9 @@ Generate all pwrity examples.
 .sp
 .IP "\-scrolled_title\fR"
 Generate all scrolled examples.
+.sp
+.IP "\-seter\fR"
+Generate all seter examples.
 .sp
 .IP "\-softfill\fR"
 Generate all softfill examples.
@@ -295,6 +299,9 @@ listed according to which utility they belong with:
 .sp
 .I "SCROLLED TITLE Examples:"
 	fslfont slex01 tstitl
+.sp
+.I "SETER Examples:"
+	tseter
 .sp
 .I "SOFTFILL Examples:"
 	fsfsgfa fsfwrld sfex01 sfex02 tsoftf
