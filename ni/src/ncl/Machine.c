@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.36 1995-03-25 00:58:55 ethan Exp $
+ *      $Id: Machine.c,v 1.37 1995-03-27 21:10:55 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1343,9 +1343,10 @@ void _NclRemapIntrParameters
 		break;
 	}
 	the_list = tmp_fp->parameter_map.u.the_list;
+if(the_list != NULL) {
 	for (i = nargs -1 ; i > -1; i--) {
 		data = _NclPop();
-		if(the_list->the_elements[i].p_type == VAR_P) {
+		if((the_list->the_elements[i].p_type == VAR_P)&&(data.u.data_var != NULL)) {
 			if((the_list->the_elements[i].var_sym != NULL)&&(the_list->the_elements[i].rec != NULL)) {
 
 /* 
@@ -1727,7 +1728,7 @@ void _NclRemapIntrParameters
 					}
 				}
 			}
-		} else if(the_list->the_elements[i].p_type == VALUE_P) {
+		} else if((the_list->the_elements[i].p_type == VALUE_P)&&(data.u.data_obj != NULL)) {
 			if(data.kind == NclStk_VAR) { 
 /*
 * Need to turn data part into a temporary variable and still destroy variable
@@ -1795,6 +1796,7 @@ void _NclRemapIntrParameters
 			}
 		}
 	}
+} 
 }
 void _NclRemapParameters
 #if	NhlNeedProto
