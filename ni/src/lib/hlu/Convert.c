@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.c,v 1.12 1995-12-19 20:38:57 boote Exp $
+ *      $Id: Convert.c,v 1.13 1996-01-16 21:22:30 haley Exp $
  */
 /************************************************************************
 *									*
@@ -89,7 +89,7 @@ _NhlCreateConvertContext
 #endif
 {
 	_NhlConvertContext	context = NULL;
-	_NhlConvertContextRec	init = {0,{NULL},NULL};
+	_NhlConvertContextRec   init = {NULL,0,{NULL},NULL};
 
 	context = (_NhlConvertContext)NhlMalloc(sizeof(_NhlConvertContextRec));
 	if(context == NULL){
