@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.28 2004-01-25 23:00:01 shea Exp $
+;      $Id: contributed.ncl,v 1.29 2004-01-27 23:15:27 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -3860,9 +3860,13 @@ begin
    Q_eof_ts = (/ eof_varimax(Q_eof_ts) /)
    Q_eof_ts@long_name = "Q-mode Varimax Rotation"
 
+   if (isatt(Q_eof_ts,"ts_mean") then   
+       delete(Q_eof_ts@ts_mean)         ; not applicable to Q_eof_ts
+   end if
                                         ; get the % variance
    Q_eof_ts2  = Q_eof_ts
    Q_eof_ts2  = Q_eof_ts^2              ; square all values
+   Q_mode_sum = dim_sum(Q_eof_ts2)      ; sum of squares
    Q_mode_var = dim_variance(Q_eof_ts2) ; variance of each Q mode
    Q_tot_var  = sum(Q_mode_var)         ; sum ... should be neval
    Q_pcvar    = (dim_variance(Q_eof_ts2)/Q_tot_var)*100.  ; % each Q mode
