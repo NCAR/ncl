@@ -1,5 +1,5 @@
 /*
- *	$Id: parallax.c,v 1.8 1992-03-23 21:45:48 clyne Exp $
+ *	$Id: parallax.c,v 1.9 1992-07-17 22:59:54 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -463,7 +463,7 @@ ParallaxInit()
 		return( RAS_ERROR );
 	}
 
-	status = ParallaxClear();
+	status = ParallaxClear(0, 0, 0);
 	if (status != RAS_OK) {
 		(void) RasterSetError(RAS_E_PARALLAX);
 		return(RAS_ERROR);
@@ -473,16 +473,31 @@ ParallaxInit()
 }
 
 int
-ParallaxClear()
+ParallaxClear(r, g, b)
+	int	r, g, b;
 {
 	int		dx, dy;
 	unsigned long	*fb_lptr;
+	unsigned char	*fb_cptr;
 
 	for(dy=0; dy<VFB_HEIGHT; dy++) {
-		fb_lptr = &parallax->fb.line[dy].pixel[0].lwd;
-		for(dx=0; dx<VFB_WIDTH; dx++) {
-			*fb_lptr++ = 0l;
+		if (r == 0 && g == 0 && b == 0) {
+			fb_lptr = &parallax->fb.line[dy].pixel[0].lwd;
+			for(dx=0; dx<VFB_WIDTH; dx++) {
+				*fb_lptr++ = 0l;
+			}
 		}
+		else {
+			fb_cptr = (unsigned char *) 
+					&parallax->fb.line[dy].pixel[0].lwd;
+			for(dx=0; dx<VFB_WIDTH; dx++) {
+				*fb_cptr++ = 0;
+				*fb_cptr++ = b;
+				*fb_cptr++ = g;
+				*fb_cptr++ = r;
+			}
+		}
+			
 	}
 	return(RAS_OK);
 }
