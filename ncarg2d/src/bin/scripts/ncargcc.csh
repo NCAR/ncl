@@ -1,20 +1,8 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.26 1994-03-01 22:48:48 haley Exp $
+#	$Id: ncargcc.csh,v 1.27 1994-03-24 15:05:06 haley Exp $
 #
 
-#*******************#
-#                   #
-#   NCARGCC USAGE   #
-#                   #
-#*******************#
-if ($#argv < 1) then
-  echo "usage: ncargcc [-smooth] [-quick] [-super] [-agupwrtx] [-ictrans]"
-  echo "               [-noX11] [cc options] ... filename                "
-  echo ""
-  echo "See <man ncargcc>                                                "
-  exit
-endif
 #*********************************************#
 #                                             #
 # Make sure NCARG_ROOT is set for this script #
@@ -26,6 +14,8 @@ setenv NCARG_ROOT  `ncargpath root`
 set XLIBPATH = ""
 set system   = "SED_SYSTEM_INCLUDE"
 set cc       = "SED_CC"
+set defines  = "SED_STDDEF SED_PROJDEF"
+set loadopt  = "SED_LDCFLAGS"
 set libdir   = `ncargpath SED_LIBDIR`
 set incdir   = `ncargpath SED_INCDIR`
 set ro       = "$libdir/SED_NCARGDIR/SED_ROBJDIR"
@@ -40,10 +30,9 @@ if (! -d "$incdir") then
   exit 1
 endif
 
-set loadopts = "SED_ALLDEFINES"
 set libextra = ""
 
-set newargv = "$cc -I$incdir $loadopts"
+set newargv = "$cc -I$incdir $defines $loadopt"
 
 set ctrans_libs = ""
 set stub_file   = ""

@@ -1,20 +1,7 @@
 #!/bin/csh -f
 #
-#   $Id: ncargf77.csh,v 1.14 1994-03-01 22:48:50 haley Exp $
+#   $Id: ncargf77.csh,v 1.15 1994-03-24 15:05:07 haley Exp $
 #
-
-#********************#
-#                    #
-#   NCARGF77 USAGE   #
-#                    #
-#********************#
-if ($#argv < 1) then
-  echo "usage: ncargf77 [-smooth] [-quick] [-super] [-agupwrtx] [-ictrans]"
-  echo "                [-noX11] [Fortran 77 options] ... filename        "
-  echo ""
-  echo "See <man ncargf77>                                                "
-  exit
-endif
 
 #*********************************************#
 #                                             #
@@ -26,9 +13,9 @@ setenv NCARG_ROOT  `ncargpath root`
 set XLIBPATH = ""
 set system   = "SED_SYSTEM_INCLUDE"
 set fortran  = "SED_F77"
+set loadopt  = "SED_LDFLAGS"
 set libdir   = `ncargpath SED_LIBDIR`
 set ro       = "$libdir/SED_NCARGDIR/SED_ROBJDIR"
-set loadopts = ""
 set libextra = ""
 
 if (! -d "$libdir") then
@@ -36,16 +23,11 @@ if (! -d "$libdir") then
   exit 1
 endif
 
-#
-# Set up special cases
-#
-if ("$system" == "Sun3") then
-  set loadopts = "-fswitch"
-else if ("$system" == "Sun4Solaris") then
+if ("$system" == "Sun4Solaris") then
   set libextra = "/usr/ucblib/libucb.a"
 endif    
 
-set newargv = "$fortran $loadopts"
+set newargv = "$fortran $loadopt"
 
 set ctrans_libs = ""
 set stub_file   = ""

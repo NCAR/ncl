@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.22 1994-02-23 22:41:44 haley Exp $
+#	$Id: yMakefile,v 1.23 1994-03-24 15:05:09 haley Exp $
 #
 
 #ifdef	BuildNCARGSourceLibrary
@@ -23,7 +23,7 @@ sedscript:      Makefile
 ncargf77: ncargf77.csh Makefile
 	@sed \
 	-e 's+SED_F77+$(F77)+' \
-	-e 's+SED_LD_FFLAGS+$(LD_FFLAGS)+' \
+	-e 's+SED_LDFLAGS+$(FC_LDOPTIONS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
@@ -33,12 +33,14 @@ ncargf77: ncargf77.csh Makefile
 ncargcc: ncargcc.csh Makefile
 	@sed \
 	-e 's+SED_CC+$(CC)+' \
+	-e 's+SED_STDDEF+$(STD_DEFINES)+' \
+	-e 's+SED_PROJDEF+$(PROJECTDEFINES)+' \
+	-e 's+SED_LDCFLAGS+$(CC_LDOPTIONS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_INCDIR+$(INCDIR)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
 	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
-	-e 's+SED_ALLDEFINES+$(ALLDEFINES)+' \
 	<ncargcc.csh >ncargcc
 
 ncargex: ncargex.csh Makefile
