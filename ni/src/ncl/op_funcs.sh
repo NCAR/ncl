@@ -392,8 +392,8 @@ then
 sed \
 -e "s/OUTDATATYPE/float/g" \
 -e "s/DATATYPE/$1/g" \
--e "s/LEFTMISSING/((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval/g" \
--e "s/RIGHTMISSING/((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval/g" \
+-e "s/LEFTMISSING/lhs_m->$1val/g" \
+-e "s/RIGHTMISSING/rhs_m->$1val/g" \
 -e 's/FNAME/pow/' \
 -e 's/OPER/\^/' \
 -e 's/FUNCNAME/exponent/' \
