@@ -1,5 +1,5 @@
 /*
- *      $Id: load.c,v 1.1 1996-10-16 16:21:19 boote Exp $
+ *      $Id: load.c,v 1.2 1996-11-24 22:27:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -155,9 +155,7 @@ LoadScriptOkCB
 	sprintf(line,"load \"%s\"\n",dirstr);
 	XtFree(dirstr);
 
-#if	NOT
 	NgGOPopdown(l->base.id);
-#endif
 
 	NhlVAGetValues(l->go.appmgr,
 		NgNappNclState,	&nsid,
@@ -180,6 +178,10 @@ LoadCreateWin
 {
 	char		func[]="LoadCreateWin";
 	NgLoadPart	*np = &((NgLoad)go)->load;
+
+	XtVaSetValues(go->go.manager,
+		XmNresizePolicy,	XmRESIZE_GROW,
+		NULL);
 
 	XtUnmanageChild(XmSelectionBoxGetChild(go->go.manager,
 							XmDIALOG_HELP_BUTTON));

@@ -1,5 +1,5 @@
 /*
- *      $Id: ncledit.c,v 1.2 1996-10-16 16:21:21 boote Exp $
+ *      $Id: ncledit.c,v 1.3 1996-11-24 22:27:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 #include <ncarg/ngo/ncleditP.h>
 #include <ncarg/ngo/nclstate.h>
 #include <ncarg/ngo/xutil.h>
+#include <ncarg/ngo/addfile.h>
 #include <ncarg/ngo/load.h>
 
 #include <Xm/Xm.h>
@@ -113,6 +114,118 @@ NgNclEditClassRec NgnclEditClassRec = {
 
 NhlClass NgnclEditClass = (NhlClass)&NgnclEditClassRec;
 
+/*
+ * Function:	addFile
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static void
+addFile
+(
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+)
+{
+	char		func[] = "addFile";
+	int		goid = NhlDEFAULT_APP;
+	NgNclEdit	ncl = NULL;
+
+	goid = NgGOWidgetToGoId(w);
+	if(goid == NhlDEFAULT_APP){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid Widget",func));
+		return;
+	}
+
+	if((*num_params == 1) || (*num_params > 2)){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"%s:wrong number of params",func));
+		return;
+	}
+	else if(*num_params == 2){
+		int		appmgr = NhlDEFAULT_APP;
+		int		nclstate = NhlDEFAULT_APP;
+		struct stat	buf;
+		char		line[512];
+
+		if((strlen(params[0])+strlen(params[1])) > (sizeof(line) - 19)){
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"%s:parameters too long:%s:%s",
+				func,params[0],params[1]));
+			return;
+		}
+		NhlVAGetValues(goid,
+			_NhlNguiData,	&appmgr,
+			NULL);
+		NhlVAGetValues(appmgr,
+			NgNappNclState,	&nclstate,
+			NULL);
+
+		if(!NhlIsClass(nclstate,NgnclStateClass)){
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"%s:invalid nclstate obj",func));
+			return;
+		}
+
+		/*
+		 * Check to see if file exists and is text...
+		 */
+
+		if(stat(params[1],&buf) != 0){
+			NHLPERROR((NhlFATAL,errno,"%s:unable to access file %s",
+							func,params[0]));
+			return;
+		}
+		/*
+		 * Submit it to nclstate.
+		 */
+		sprintf(line,"%s = addfile(\"%s\",\"r\")\n",
+							params[0],params[1]);
+		(void)NgNclSubmitBlock(nclstate,line);
+
+		return;
+	}
+
+	ncl = (NgNclEdit)_NhlGetLayer(goid);
+	if(!ncl || !_NhlIsClass((NhlLayer)ncl,NgnclEditClass)){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid window",func));
+		return;
+	}
+
+	/*
+	 * Popup addfile selection box.
+	 */
+	if(ncl->ncledit.addfile == NhlDEFAULT_APP){
+		NhlVACreate(&ncl->ncledit.addfile,"addfile",NgaddFileClass,goid,
+			NULL);
+	}
+	NgGOPopup(ncl->ncledit.addfile);
+
+	return;
+}
+
+/*
+ * Function:	loadScript
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
 static void
 loadScript
 (
@@ -198,6 +311,7 @@ loadScript
 }
 
 static XtActionsRec ncl_act[] = {
+	{"addFile", addFile,},
 	{"loadScript", loadScript,},
 };
 
@@ -248,6 +362,7 @@ NEInitialize
 	np->my_focus = False;
 
 	np->load = NhlDEFAULT_APP;
+	np->addfile = NhlDEFAULT_APP;
 
 	return NhlNOERROR;
 }
@@ -679,7 +794,7 @@ NECreateWin
 	Widget		cmenu,cmenush;
 	Widget		hmenu,hmenush;
 	Widget		file,edit,config,help;
-	Widget		close,quit;
+	Widget		addfile,load,close,quit;
 	Widget		pane,sform,sform1;
 	Widget		slabel;
 	Widget		hoframe,holabel;
@@ -746,6 +861,16 @@ NECreateWin
 	XtVaSetValues(menubar,
 		XmNmenuHelpWidget,	help,
 		NULL);
+
+	addfile = XtVaCreateManagedWidget("addFile",
+					xmPushButtonGadgetClass,fmenu,
+		NULL);
+	XtAddCallback(addfile,XmNactivateCallback,_NgGODefActionCB,NULL);
+
+	load = XtVaCreateManagedWidget("loadScript",
+					xmPushButtonGadgetClass,fmenu,
+		NULL);
+	XtAddCallback(load,XmNactivateCallback,_NgGODefActionCB,NULL);
 
 	close = XtVaCreateManagedWidget("closeWindow",
 					xmPushButtonGadgetClass,fmenu,

@@ -1,5 +1,5 @@
 /*
- *      $Id: xutil.h,v 1.1 1996-10-10 18:55:33 boote Exp $
+ *      $Id: xutil.h,v 1.2 1996-11-24 22:27:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -75,6 +75,11 @@ extern NhlBoolean NgXListManage(
 	NgNclCBType	ltype,	/* list type			*/
 	NgXListTest	tfunc,	/* T/F test for inclusion	*/
 	NhlPointer	closure	/* sent to tfunc with NgNclObj	*/
+);
+
+extern void NgXFileSearchProc(
+	Widget		w,
+	XtPointer	cbdata
 );
 
 #endif	/* _NG_XUTIL_H */

@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.2 1996-10-16 16:21:18 boote Exp $
+ *      $Id: go.c,v 1.3 1996-11-24 22:27:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -504,7 +504,7 @@ GOCreateWin
 	XtGetApplicationResources(gp->shell,go,xtres,XtNumber(xtres),NULL,0);
 
 	/*
-	 * I set both BulletinBoard and RowColumn and resources since Xt
+	 * I set both BulletinBoard and RowColumn resources since Xt
 	 * doesn't complain if you try to set resources that don't exist.
 	 */
 	sprintf(mgrname,"%sMGR",go->base.name);

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.4 1996-11-01 15:40:13 boote Exp $
+#      $Id: yMakefile,v 1.5 1996-11-24 22:27:36 boote Exp $
 #
 #########################################################################
 #									#
@@ -27,18 +27,18 @@ DEBUG_LIB	=	$(XMULIB)
 EXTRA_CDEFINES	=	$(OS_DEF)
 CLIENT_LIBS	=	$(NCLAPILIB) $(HLULIB) $(XMOTIFCLIENTLIBS) $(DEBUG_LIB) -lc
 
-HDRS		= ngoP.h ngo.h appP.h app.h nclstateP.h nclstate.h \
+HDRS		= ngoP.h ngo.h appP.h app.h nclstateP.h nclstate.h util.h \
 		$(XHDRS)
-SRCS		= ngo.c app.c nclstate.c $(XSRCS)
-OBJS		= ngo.o app.o nclstate.o $(XOBJS)
+SRCS		= ngo.c app.c nclstate.c util.c $(XSRCS)
+OBJS		= ngo.o app.o nclstate.o util.o $(XOBJS)
 
 XHDRS		= xappP.h xapp.h goP.h go.h ncleditP.h ncledit.h xutil.h \
-		loadP.h load.h
-XSRCS		= xapp.c go.c ncledit.c xutil.c load.c
-XOBJS		= xapp.o go.o ncledit.o xutil.o load.o
+		loadP.h load.h addfileP.h addfile.h
+XSRCS		= xapp.c go.c ncledit.c xutil.c load.c addfile.c
+XOBJS		= xapp.o go.o ncledit.o xutil.o load.o addfile.o
 
 
-BuildLibTarget($(MYNAME),$(OBJS))
 BuildSharedLibTarget(libNGgo,$(OBJS),1,0,$(CLIENT_LIBS))
+BuildLibTarget($(MYNAME),$(OBJS))
 BuildIncludes($(HDRS),ncarg/ngo,../..)
 DependTarget($(SRCS))

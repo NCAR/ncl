@@ -1,5 +1,5 @@
 /*
- *      $Id: ncleditP.h,v 1.2 1996-10-16 16:21:22 boote Exp $
+ *      $Id: ncleditP.h,v 1.3 1996-11-24 22:27:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -69,6 +69,7 @@ typedef struct _NgNclEditPart {
 	_NhlCB		erroutputcb;
 
 	int		load;
+	int		addfile;
 
 } NgNclEditPart;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: xapp.c,v 1.1 1996-10-10 18:55:30 boote Exp $
+ *      $Id: xapp.c,v 1.2 1996-11-24 22:27:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -493,7 +493,7 @@ NgXAppCreateXmString
 	}
 
 	/*
-	 * If it is a multiline text string it is faster to call
+	 * If it is not a multiline text string it is faster to call
 	 * XmStringCreate.
 	 */
 	if(strchr(str,'\n'))

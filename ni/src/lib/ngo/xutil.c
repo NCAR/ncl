@@ -1,5 +1,5 @@
 /*
- *      $Id: xutil.c,v 1.2 1996-10-16 16:21:25 boote Exp $
+ *      $Id: xutil.c,v 1.3 1996-11-24 22:27:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,9 @@
 #include <ncarg/hlu/BaseI.h>
 #include <ncarg/ngo/xutil.h>
 #include <ncarg/ngo/xapp.h>
+#include <ncarg/ngo/util.h>
 
+#include <Xm/FileSB.h>
 #include <Xm/List.h>
 
 typedef struct NgXListRec NgXListRec, *NgXList;
@@ -414,6 +416,99 @@ NgXListManage
 		XmNuserData,	list,
 		NULL);
 	XtAddCallback(list->xmlist,XmNdestroyCallback,CleanUpXCB,list);
+
+	return;
+}
+
+void
+NgXFileSearchProc
+(
+	Widget		w,
+	XtPointer	cbdata
+)
+{
+	XmFileSelectionBoxCallbackStruct	*cbs =
+				(XmFileSelectionBoxCallbackStruct*)cbdata;
+	char		*mask;
+	nglob_t		nglob_buf;
+	XmString	*flist = NULL;
+	unsigned char	ftype;
+	int		i,j=0;
+	struct stat	stat_buff;
+	
+	if(!XmStringGetLtoR(cbs->mask,XmFONTLIST_DEFAULT_TAG,&mask)){
+		XtVaSetValues(w,
+			XmNlistUpdated,	True,
+			NULL);
+		return;
+	}
+
+	if(Ngglob(mask,
+		NgGLOB_BRACE|NgGLOB_NOMAGIC|NgGLOB_QUOTE|NgGLOB_TILDE,
+		NULL,&nglob_buf)){
+		XtFree(mask);
+		Ngglobfree(&nglob_buf);
+		XtVaSetValues(w,
+			XmNlistUpdated,	True,
+			NULL);
+		return;
+	}
+
+	if(nglob_buf.ngl_pathc > 0){
+		flist = (XmString*)XtMalloc(sizeof(XmString) *
+							nglob_buf.ngl_pathc);
+		if(!flist){
+			XtFree(mask);
+			Ngglobfree(&nglob_buf);
+			XtVaSetValues(w,
+				XmNlistUpdated,	True,
+				NULL);
+			return;
+		}
+	
+		XtVaGetValues(w,
+			XmNfileTypeMask,	&ftype,
+			NULL);
+	
+		switch(ftype){
+			case XmFILE_ANY_TYPE:
+				for(i=0;i<nglob_buf.ngl_pathc;i++)
+					flist[i] =
+					XmStringCreate(nglob_buf.ngl_pathv[i],
+							XmFONTLIST_DEFAULT_TAG);
+				break;
+			case XmFILE_REGULAR:
+				for(i=0;i<nglob_buf.ngl_pathc;i++){
+					if(stat(nglob_buf.ngl_pathv[i],
+								&stat_buff))
+						continue;
+					if(S_ISREG(stat_buff.st_mode))
+						flist[j++] = XmStringCreate(nglob_buf.ngl_pathv[i],XmFONTLIST_DEFAULT_TAG);
+				}
+				break;
+			case XmFILE_DIRECTORY:
+				for(i=0;i<nglob_buf.ngl_pathc;i++){
+					if(stat(nglob_buf.ngl_pathv[i],
+								&stat_buff))
+						continue;
+					if(S_ISDIR(stat_buff.st_mode))
+						flist[j++] = XmStringCreate(nglob_buf.ngl_pathv[i],XmFONTLIST_DEFAULT_TAG);
+				}
+				break;
+		}
+	}
+
+	XtVaSetValues(w,
+		XmNdirSpec,		cbs->dir,
+		XmNlistUpdated,		True,
+		XmNfileListItems,	flist,
+		XmNfileListItemCount,	j,
+		NULL);
+	XtFree(mask);
+	Ngglobfree(&nglob_buf);
+	for(i=0;i<j;i++)
+		XmStringFree(flist[i]);
+	XtFree((XtPointer)flist);
 
 	return;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: goP.h,v 1.2 1996-10-16 16:21:18 boote Exp $
+ *      $Id: goP.h,v 1.3 1996-11-24 22:27:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -105,7 +105,7 @@ extern void _NgIGOSensitive(
  * Convenience functions to register a callback that will automatically
  * call NgGOPop{up,down}.  udata is goid.
  */
-extern void _NgGOPopdownCB(
+extern void _NgGOPopupCB(
 	Widget		w,
 	XtPointer	udata,
 	XtPointer	cbdata
