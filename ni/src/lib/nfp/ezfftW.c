@@ -98,7 +98,7 @@ NhlErrorTypes ezfftf_W( void )
   if(type_x != NCL_double) {
     dx = (double*)NclMalloc(npts*sizeof(double));
     if ( dx == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Cannot allocate memory for coercing input array to double" );
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Cannot allocate memory for coercing input array to double precision");
       return(NhlFATAL);
     }
 
@@ -342,7 +342,7 @@ NhlErrorTypes ezfftb_W( void )
   if(type_cf != NCL_double) {
     dcf = (double*)NclMalloc(npts*sizeof(double));
     if ( dcf == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for coercing input array to double" );
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for coercing input array to double precision");
       return(NhlFATAL);
     }
 
@@ -360,7 +360,7 @@ NhlErrorTypes ezfftb_W( void )
   if(type_xbar != NCL_double) {
     dxbar = (double*)NclMalloc(sizeof(double));
     if ( dxbar == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for coercing xbar to double" );
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for coercing xbar to double precision");
       return(NhlFATAL);
     }
     _Nclcoerce((NclTypeClass)nclTypedoubleClass,

@@ -14,9 +14,10 @@
 #include <math.h>
 #include <ncarg/gks.h>
 
-extern double NGCALLF(dflxedy,DFLXEDY)(double *,double *,int *,double *,int *);
+extern void NGCALLF(dcalcorc,DCALCORC)(double*,double*,double*,double*,int*,
+                                       double*,double*,double*,int*);
 
-NhlErrorTypes fluxEddy_W( void )
+NhlErrorTypes escorc_W( void )
 {
 /*
  * Input array variables
@@ -26,70 +27,65 @@ NhlErrorTypes fluxEddy_W( void )
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
   NclScalar missing_x, missing_y;
-  NclScalar missing_dx, missing_dy, missing_rx;
+  NclScalar missing_rx, missing_dx, missing_dy;
   NclBasicDataTypes type_x, type_y;
 /*
  * Output array variables
  */
-  double *fluxeddy;
-  float *rfluxeddy;
-  int ndims_fluxeddy, size_fluxeddy, dsizes_fluxeddy[NCL_MAX_DIMENSIONS];
-  int size_xy;
+  double *corc;
+  float *rcorc;
+  int ndims_corc, dsizes_corc[NCL_MAX_DIMENSIONS];
 /*
- * Declare various variables for random purposes.
+ * various
  */
-  int i, j, ntime, ier;
-
+  int i, j, l1, l2, l3, ier = 0, nxy;
+  int total_size_x1, total_size_x, total_size_y1, total_size_y;
+  int total_size_corc;
+  double xave, xstd;
 /*
- * Retrieve arguments.
+ * Retrieve parameters
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
  */
   x = (void*)NclGetArgValue(
-          0,
-          2,
-          &ndims_x,
-          dsizes_x,
-          &missing_x,
-          &has_missing_x,
-          &type_x,
-          2);
-
+           0,
+           2,
+           &ndims_x, 
+           dsizes_x,
+           &missing_x,
+           &has_missing_x,
+           &type_x,
+           2);
   y = (void*)NclGetArgValue(
-          1,
-          2,
-          &ndims_y,
-          dsizes_y,
-          &missing_y,
-          &has_missing_y,
-          &type_y,
-          2);
+           1,
+           2,
+           &ndims_y, 
+           dsizes_y,
+           &missing_y,
+           &has_missing_y,
+           &type_y,
+           2);
 /*
- * x and y must have the same dimensions.
+ * The last dimension of x and y both must be the same.
  */
-  if( ndims_x < 1 || ndims_x != ndims_y ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"fluxEddy: The input arrays x and y must have the same number of dimensions");
+  if( dsizes_x[ndims_x-1] != dsizes_y[ndims_y-1] ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"escorc: The last dimension of x must be equal to the last dimension of y");
     return(NhlFATAL);
   }
-  ntime = dsizes_x[ndims_x-1];
-
-  for( i = 0; i < ndims_x; i++ ) {
-    if(dsizes_x[i] != dsizes_y[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"fluxEddy: The input arrays x and y must have the same dimension sizes");
-      return(NhlFATAL);
-    }
-  }
+      
 /*
- * Compute the total size of the output array (minus the last dimension).
+ * Compute the total number of elements in our arrays.
  */
-  size_fluxeddy = size_xy = 1;
+  nxy = dsizes_x[ndims_x-1];
 
-  dsizes_fluxeddy[0] = 1;
-  for( i = 0; i < ndims_x-1; i++ ) {
-    size_fluxeddy *= dsizes_x[i];
-    dsizes_fluxeddy[i] = dsizes_x[i];
-  }
-  size_xy = size_fluxeddy * dsizes_x[ndims_x-1];
-  ndims_fluxeddy  = ndims_x - 1 < 1 ? 1 : ndims_x - 1;
-        
+  total_size_x1 = 1;
+  for(i = 0; i < ndims_x-1; i++) total_size_x1 *= dsizes_x[i];
+  total_size_x = total_size_x1 * nxy;
+
+  total_size_y1 = 1;
+  for(i = 0; i < ndims_y-1; i++) total_size_y1 *= dsizes_y[i];
+  total_size_y = total_size_y1 * nxy;
 /*
  * Coerce missing values to double.
  */
@@ -149,16 +145,16 @@ NhlErrorTypes fluxEddy_W( void )
  * Coerce data to double if necessary.
  */
   if(type_x != NCL_double) {
-    dx = (double*)NclMalloc(sizeof(double)*size_xy);
+    dx = (double*)NclMalloc(sizeof(double)*total_size_x);
     if( dx == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"fluxEddy: Unable to allocate memory for coercing x array to double precision");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"escorc: Unable to allocate memory for coercing x array to double precision");
       return(NhlFATAL);
     }
     if(has_missing_x) {
       _Nclcoerce((NclTypeClass)nclTypedoubleClass,
                  dx,
                  x,
-                 size_xy,
+                 total_size_x,
                  &missing_dx,
                  &missing_x,
                  _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
@@ -167,7 +163,7 @@ NhlErrorTypes fluxEddy_W( void )
       _Nclcoerce((NclTypeClass)nclTypedoubleClass,
                  dx,
                  x,
-                 size_xy,
+                 total_size_x,
                  NULL,
                  NULL,
                  _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
@@ -181,16 +177,16 @@ NhlErrorTypes fluxEddy_W( void )
   }
 
   if(type_y != NCL_double) {
-    dy = (double*)NclMalloc(sizeof(double)*size_xy);
+    dy = (double*)NclMalloc(sizeof(double)*total_size_y);
     if( dy == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"fluxEddy: Unable to allocate memory for coercing y array to double precision");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"escorc: Unable to allocate memory for coercing y array to double precision");
       return(NhlFATAL);
     }
     if(has_missing_y) {
       _Nclcoerce((NclTypeClass)nclTypedoubleClass,
                  dy,
                  y,
-                 size_xy,
+                 total_size_y,
                  &missing_dy,
                  &missing_y,
                  _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
@@ -199,7 +195,7 @@ NhlErrorTypes fluxEddy_W( void )
       _Nclcoerce((NclTypeClass)nclTypedoubleClass,
                  dy,
                  y,
-                 size_xy,
+                 total_size_y,
                  NULL,
                  NULL,
                  _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
@@ -211,25 +207,45 @@ NhlErrorTypes fluxEddy_W( void )
  */
     dy = (double*)y;
   }
-
-/*
- * Allocate space for output value.
+/* 
+ * Get size of output variables.
  */
-  fluxeddy = (double *)NclMalloc(size_fluxeddy*sizeof(double));
-  if( fluxeddy == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"fluxEddy: Unable to allocate memory for output array");
+  total_size_corc = total_size_x1 * total_size_y1;
+
+  corc = (double*)NclMalloc(total_size_corc*sizeof(double));
+  if (corc == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"escorc: Unable to allocate space for output array");
     return(NhlFATAL);
   }
 
+  ndims_corc = ndims_x + ndims_y - 2;
+  if(!ndims_corc) ndims_corc = 1;
+
+  dsizes_corc[0] = 1;
+
+  for( i = 0; i < ndims_x-1; i++ ) dsizes_corc[i] = dsizes_x[i];
+  for( i = 0; i < ndims_y-1; i++ ) dsizes_corc[ndims_x-1+i] = dsizes_y[i];
+
 /*
- * Call the Fortran version of this routine.
- *
+ * Call the f77 version of 'descros' with the full argument list.
  */
-  j = 0;
-  for( i = 0; i < size_fluxeddy; i++ ) {
-    fluxeddy[i] = NGCALLF(dflxedy,DFLXEDY)(&dx[j],&dy[j],&ntime,
-                                           &missing_dx.doubleval,&ier);
-    j += ntime;
+  l2 = l3 = 0;
+
+  for(i = 1; i <= total_size_x1; i++) {
+    l1 = 0;
+    for(j = 1; j <= total_size_y1; j++) {
+      xave = xstd = missing_dx.doubleval;
+      NGCALLF(dcalcorc,DCALCORC)(&dx[l2],&xave,&xstd,&missing_dx.doubleval,
+                                 &nxy,&dy[l1],&missing_dy.doubleval,
+                                 &corc[l3],&ier);
+      if(ier || xstd == 0.) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"escorc: error encountered in series or xstd = 0.0");
+        return(NhlFATAL);
+      }
+      l3++;
+      l1 += nxy;
+    }
+    l2 += nxy;
   }
 
 /*
@@ -241,7 +257,6 @@ NhlErrorTypes fluxEddy_W( void )
   if((void*)dy != y) {
     NclFree(dy);
   }
-
 /*
  * Return values. 
  */
@@ -249,28 +264,33 @@ NhlErrorTypes fluxEddy_W( void )
 /*
  * Copy double values to float values.
  */
-    rfluxeddy = (float*)NclMalloc(sizeof(float)*size_fluxeddy);
-    if( rfluxeddy == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"fluxEddy: Unable to allocate memory for return array");
+    rcorc = (float*)NclMalloc(sizeof(float)*total_size_corc);
+    if( rcorc == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"escorc: Unable to allocate memory for return array");
       return(NhlFATAL);
     }
-    for( i = 0; i < size_fluxeddy; i++ ) {
-      rfluxeddy[i] = (float)fluxeddy[i];
+    for( i = 0; i < total_size_corc; i++ ) {
+      rcorc[i] = (float)corc[i];
     }
 /*
  * Free double precision array since we don't need it anymore.
  */
-    free(fluxeddy);
+    free(corc);
+
 /*
  * Return float values.  A missing value is returned regardless if a
  * missing value was originally set (the default is used if none set).
  */
-    return(NclReturnValue((void*)rfluxeddy,ndims_fluxeddy,dsizes_fluxeddy,
-                          &missing_rx,NCL_float,0));
+    return(NclReturnValue((void*)rcorc,ndims_corc,dsizes_corc,&missing_rx,
+                          NCL_float,0));
   }
   else {
-    return(NclReturnValue((void*)fluxeddy,ndims_fluxeddy,dsizes_fluxeddy,
-                          &missing_dx,NCL_double,0));
+/*
+ * Return double values.
+ */
+    return(NclReturnValue((void*)corc,ndims_corc,dsizes_corc,&missing_dx,
+                          NCL_double,0));
   }
 }
+
 

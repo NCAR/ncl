@@ -178,6 +178,7 @@ extern NhlErrorTypes esacr_W(void);
 extern NhlErrorTypes esacv_W(void);
 extern NhlErrorTypes esccr_W(void);
 extern NhlErrorTypes esccv_W(void);
+extern NhlErrorTypes escorc_W(void);
 extern NhlErrorTypes ezfftf_W(void);
 extern NhlErrorTypes ezfftb_W(void);
 
@@ -2379,6 +2380,17 @@ void NclAddUserFuncs(void)
 
     NclRegisterFunc(esccv_W,args,"esccv",nargs);
 /*
+ * Register "escorc".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(escorc_W,args,"escorc",nargs);
+/*
  * Register "ezfftf".
  *
  * Create private argument array.
@@ -2467,9 +2479,9 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(3);
 
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(pslhyp_W,args,"pslhyp",nargs);
 
@@ -2479,10 +2491,10 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(4);
 
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(pslec_W,args,"pslec",nargs);
 
@@ -2492,12 +2504,12 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(6);
 
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(pslhor_W,args,"pslhor",nargs);
 /*
@@ -2614,8 +2626,8 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(2);
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     NclRegisterFunc(fluxEddy_W,args,"fluxEddy",nargs);
 
 /*
@@ -2624,14 +2636,14 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(8);
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
     NclRegisterFunc(cz2ccm_W,args,"cz2ccm",nargs);
 
 /*

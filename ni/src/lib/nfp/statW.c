@@ -1262,7 +1262,7 @@ NhlErrorTypes esacr_W( void )
   void *x;
   double *dx;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  NclScalar missing_x;
+  NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x;
   int *mxlag;
 /*
@@ -1275,7 +1275,7 @@ NhlErrorTypes esacr_W( void )
  * various
  */
   int i, l1, l2, total_size_x1, total_size_x, total_size_acr, ier = 0, npts;
-  double xmsg, xmean, xvar, *acv;
+  double xmean, xvar, *acv;
 /*
  * Retrieve parameters
  *
@@ -1291,14 +1291,6 @@ NhlErrorTypes esacr_W( void )
            &has_missing_x,
            &type_x,
            2);
-/*
- * Type of input array must double or float.
- */
-  if( type_x != NCL_double && type_x != NCL_float) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"esacr: The type of the first input array must be float or double");
-    return(NhlFATAL);
-  }
-
 /*
  * Get second argument.
  */
@@ -1333,40 +1325,77 @@ NhlErrorTypes esacr_W( void )
   for(i = 0; i < ndims_x-1; i++) total_size_x1 *= dsizes_x[i];
   total_size_x = total_size_x1 * npts;
 /*
+ * Check for missing values.
+ */
+  if(has_missing_x) {
+/*
+ * Coerce missing value to double.
+ */
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               &missing_dx,
+               &missing_x,
+               1,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+
+    if(type_x != NCL_double) {
+      _Nclcoerce((NclTypeClass)nclTypefloatClass,
+                 &missing_rx,
+                 &missing_x,
+                 1,
+                 NULL,
+                 NULL,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+  }
+  else {
+/*
+ * Get the default missing value.
+ */ 
+    if(type_x != NCL_double) {
+      missing_rx.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      missing_dx.doubleval = (double)missing_rx.floatval;
+    }
+    else {
+      missing_dx.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    }
+  }
+/*
  * Coerce data to double if necessary.
  */
   if(type_x != NCL_double) {
     dx = (double*)NclMalloc(sizeof(double)*total_size_x);
     if( dx == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"esacr: Unable to allocate memory for coercing weight array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esacr: Unable to allocate memory for coercing x array to double precision");
       return(NhlFATAL);
     }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-           dx,
-           x,
-           total_size_x,
-           NULL,
-           NULL,
-           _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    if(has_missing_x) {
+      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+                 dx,
+                 x,
+                 total_size_x,
+                 &missing_dx,
+                 &missing_x,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+    else {
+      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+                 dx,
+                 x,
+                 total_size_x,
+                 NULL,
+                 NULL,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
   }
   else {
+/*
+ * Input is already double.
+ */
     dx = (double*)x;
   }
 
-/*
- * Test for a missing value.
- */
-  if( has_missing_x ) {
-    if(type_x == NCL_double) {
-      xmsg = (double)missing_x.doubleval;
-    }
-    else {
-      xmsg = (double)missing_x.floatval;
-    }
-  }
-  else {
-    xmsg = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-  }
 /* 
  * Get size of output variables.
  */
@@ -1387,9 +1416,9 @@ NhlErrorTypes esacr_W( void )
   l1 = l2 = 0;
     
   for(i = 1; i <= total_size_x1; i++) {
-    xvar = xmean = xmsg;
-    NGCALLF(desauto,DESAUTO)(&dx[l1],&npts,&xmsg,&xmean,&xvar,
-                             mxlag,&acv[l2],&acr[l2],&ier);
+    xvar = xmean = missing_dx.doubleval;
+    NGCALLF(desauto,DESAUTO)(&dx[l1],&npts,&missing_dx.doubleval,&xmean,
+                             &xvar,mxlag,&acv[l2],&acr[l2],&ier);
     l1 += npts;
     l2 += (*mxlag+1);
     if (ier == -2) {
@@ -1422,25 +1451,22 @@ NhlErrorTypes esacr_W( void )
     for( i = 0; i < total_size_acr; i++ ) {
       racr[i] = (float)acr[i];
     }
+/*
+ * Free double precision values.
+ */
     free(acr);
-    if( has_missing_x ) {
-      return(NclReturnValue((void*)racr,ndims_x,dsizes_acr,&missing_x,
-                NCL_float,0));
-    }
-    else {
-      return(NclReturnValue((void*)racr,ndims_x,dsizes_acr,NULL,
-                NCL_float,0));
-    }
+/*
+ * Return float values with missing value set.
+ */
+    return(NclReturnValue((void*)racr,ndims_x,dsizes_acr,&missing_rx,
+                          NCL_float,0));
   }
   else {
-    if( has_missing_x ) {
-      return(NclReturnValue((void*)acr,ndims_x,dsizes_acr,&missing_x,
-                NCL_double,0));
-    }
-    else {
-      return(NclReturnValue((void*)acr,ndims_x,dsizes_acr,NULL,
-                NCL_double,0));
-    }
+/*
+ * Return double values with missing value set.
+ */
+    return(NclReturnValue((void*)acr,ndims_x,dsizes_acr,&missing_dx,
+                          NCL_double,0));
   }
 }
 
@@ -1452,7 +1478,7 @@ NhlErrorTypes esacv_W( void )
   void *x;
   double *dx;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  NclScalar missing_x;
+  NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x;
   int *mxlag;
 /*
@@ -1465,7 +1491,7 @@ NhlErrorTypes esacv_W( void )
  * various
  */
   int i, l1, l2, total_size_x1, total_size_x, total_size_acv, ier = 0, npts;
-  double xmsg, xmean, xvar, *acr;
+  double xmean, xvar, *acr;
 /*
  * Retrieve parameters
  *
@@ -1481,14 +1507,6 @@ NhlErrorTypes esacv_W( void )
            &has_missing_x,
            &type_x,
            2);
-/*
- * Type of input array must double or float.
- */
-  if( type_x != NCL_double && type_x != NCL_float) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"esacv: The type of the first input array must be float or double");
-    return(NhlFATAL);
-  }
-
 /*
  * Get second argument.
  */
@@ -1523,40 +1541,77 @@ NhlErrorTypes esacv_W( void )
   for(i = 0; i < ndims_x-1; i++) total_size_x1 *= dsizes_x[i];
   total_size_x = total_size_x1 * npts;
 /*
+ * Check for missing values.
+ */
+  if(has_missing_x) {
+/*
+ * Coerce missing value to double.
+ */
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               &missing_dx,
+               &missing_x,
+               1,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+
+    if(type_x != NCL_double) {
+      _Nclcoerce((NclTypeClass)nclTypefloatClass,
+                 &missing_rx,
+                 &missing_x,
+                 1,
+                 NULL,
+                 NULL,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+  }
+  else {
+/*
+ * Get the default missing value.
+ */ 
+    if(type_x != NCL_double) {
+      missing_rx.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      missing_dx.doubleval = (double)missing_rx.floatval;
+    }
+    else {
+      missing_dx.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    }
+  }
+/*
  * Coerce data to double if necessary.
  */
   if(type_x != NCL_double) {
     dx = (double*)NclMalloc(sizeof(double)*total_size_x);
     if( dx == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"esacv: Unable to allocate memory for coercing weight array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esacv: Unable to allocate memory for coercing x array to double precision");
       return(NhlFATAL);
     }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-           dx,
-           x,
-           total_size_x,
-           NULL,
-           NULL,
-           _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    if(has_missing_x) {
+      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+                 dx,
+                 x,
+                 total_size_x,
+                 &missing_dx,
+                 &missing_x,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+    else {
+      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+                 dx,
+                 x,
+                 total_size_x,
+                 NULL,
+                 NULL,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
   }
   else {
+/*
+ * Input is already double.
+ */
     dx = (double*)x;
   }
 
-/*
- * Test for a missing value.
- */
-  if( has_missing_x ) {
-    if(type_x == NCL_double) {
-      xmsg = (double)missing_x.doubleval;
-    }
-    else {
-      xmsg = (double)missing_x.floatval;
-    }
-  }
-  else {
-    xmsg = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-  }
 /* 
  * Get size of output variables.
  */
@@ -1577,9 +1632,9 @@ NhlErrorTypes esacv_W( void )
   l1 = l2 = 0;
 
   for(i = 1; i <= total_size_x1; i++) {
-    xvar = xmean = xmsg;
-    NGCALLF(desauto,DESAUTO)(&dx[l1],&npts,&xmsg,&xmean,&xvar,
-                             mxlag,&acv[l2],&acr[l2],&ier);
+    xvar = xmean = missing_dx.doubleval;
+    NGCALLF(desauto,DESAUTO)(&dx[l1],&npts,&missing_dx.doubleval,&xmean,
+                             &xvar,mxlag,&acv[l2],&acr[l2],&ier);
     l1 += npts;
     l2 += (*mxlag+1);
     if (ier == -2) {
@@ -1612,25 +1667,22 @@ NhlErrorTypes esacv_W( void )
     for( i = 0; i < total_size_acv; i++ ) {
       racv[i] = (float)acv[i];
     }
+/*
+ * Free double precision values.
+ */
     free(acv);
-    if( has_missing_x ) {
-      return(NclReturnValue((void*)racv,ndims_x,dsizes_acv,&missing_x,
-                NCL_float,0));
-    }
-    else {
-      return(NclReturnValue((void*)racv,ndims_x,dsizes_acv,NULL,
-                NCL_float,0));
-    }
+/*
+ * Return float values with missing value set.
+ */
+    return(NclReturnValue((void*)racv,ndims_x,dsizes_acv,&missing_rx,
+                          NCL_float,0));
   }
   else {
-    if( has_missing_x ) {
-      return(NclReturnValue((void*)acv,ndims_x,dsizes_acv,&missing_x,
-                NCL_double,0));
-    }
-    else {
-      return(NclReturnValue((void*)acv,ndims_x,dsizes_acv,NULL,
-                NCL_double,0));
-    }
+/*
+ * Return double values with missing value set.
+ */
+    return(NclReturnValue((void*)acv,ndims_x,dsizes_acv,&missing_dx,
+                          NCL_double,0));
   }
 }
 
@@ -1644,6 +1696,7 @@ NhlErrorTypes esccr_W( void )
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
   NclScalar missing_x, missing_y;
+  NclScalar missing_rx, missing_dx, missing_dy;
   NclBasicDataTypes type_x, type_y;
   int *mxlag;
 /*
@@ -1651,13 +1704,15 @@ NhlErrorTypes esccr_W( void )
  */
   double *ccr;
   float *rccr;
-  int *dsizes_ccr;
+  int ndims_ccr, *dsizes_ccr;
 /*
  * various
  */
-  int i, l1, l2, total_size_x1, total_size_x, total_size_ccr;
+  int i, j, lx, ly, lc;
+  int total_size_x1, total_size_x, total_size_y1, total_size_y;
+  int total_size_ccr;
   int ier = 0, ier_count, npts;
-  double xmsg, ymsg, xmean, xsd, ymean, ysd, *ccv;
+  double xmean, xsd, ymean, ysd, *ccv;
 /*
  * Retrieve parameters
  *
@@ -1692,27 +1747,15 @@ NhlErrorTypes esccr_W( void )
            NULL,
            2);
 /*
- * Types of input arrays must float or double.
+ * The last dimension of x and y must be the same.
  */
-  if( (type_x != NCL_double  && type_y != NCL_float) ||
-      (type_y !=  NCL_double && type_y != NCL_float)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: The types of the two input arrays must be float or double");
-    return(NhlFATAL);
-  }
-/*
- * X and Y dimensions must be the same.
- */
-  if( ndims_x != ndims_y ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: x and y must have the same number of dimensions");
+  if( dsizes_x[ndims_x-1] != dsizes_y[ndims_y-1] ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: the rightmost dimension of x and y must be the same");
       return(NhlFATAL);
   }
-  for( i = 0; i < ndims_x; i++ ) {
-      if( dsizes_x[i] != dsizes_y[i] ) {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: x and y dimensions must be the same");
-          return(NhlFATAL);
-      }
-  }
-      
+/*      
+ * Check rightmost dimension.
+ */
   npts = dsizes_x[ndims_x-1];
   if(npts < 2) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: npts must be >= 2");
@@ -1722,109 +1765,187 @@ NhlErrorTypes esccr_W( void )
  * Check mxlag
  */
   if( *mxlag < 0 || *mxlag > npts ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: mxlag must be between 0 and npts");
-      return(NhlFATAL);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: mxlag must be between 0 and npts");
+    return(NhlFATAL);
   }
 /*
- * Compute the total number of elements in our arrays.
+ * Compute the total number of elements in our x and y arrays.
  */
   total_size_x1 = 1;
   for(i = 0; i < ndims_x-1; i++) total_size_x1 *= dsizes_x[i];
   total_size_x = total_size_x1 * npts;
+
+  total_size_y1 = 1;
+  for(i = 0; i < ndims_y-1; i++) total_size_y1 *= dsizes_y[i];
+  total_size_y = total_size_y1 * npts;
+/*
+ * Coerce missing values to double.
+ *
+ * Use the default missing value if one isn't set.
+ */
+  if(has_missing_x) {
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               &missing_dx,
+               &missing_x,
+               1,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+
+    if(type_x != NCL_double) {
+      _Nclcoerce((NclTypeClass)nclTypefloatClass,
+                 &missing_rx,
+                 &missing_x,
+                 1,
+                 NULL,
+                 NULL,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+  }
+  else {
+/*
+ * Get the default missing value.
+ */ 
+    if(type_x != NCL_double) {
+      missing_dx.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      missing_rx.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    }
+    else {
+      missing_dx.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    }
+  }
+  if(has_missing_y) {
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               &missing_dy,
+               &missing_y,
+               1,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
+  }
+  else {
+/*
+ * Get the default missing value.
+ */ 
+    if(type_y != NCL_double) {
+      missing_dy.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    }
+    else {
+      missing_dy.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    }
+  }
 /*
  * Coerce data to double if necessary.
  */
   if(type_x != NCL_double) {
     dx = (double*)NclMalloc(sizeof(double)*total_size_x);
     if( dx == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: Unable to allocate memory for coercing weight array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: Unable to allocate memory for coercing x array to double precision");
       return(NhlFATAL);
     }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-           dx,
-           x,
-           total_size_x,
-           NULL,
-           NULL,
-           _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    if(has_missing_x) {
+      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+                 dx,
+                 x,
+                 total_size_x,
+                 &missing_dx,
+                 &missing_x,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+    else {
+      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+                 dx,
+                 x,
+                 total_size_x,
+                 NULL,
+                 NULL,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
   }
   else {
+/*
+ * Input is already double.
+ */
     dx = (double*)x;
   }
 
   if(type_y != NCL_double) {
-    dy = (double*)NclMalloc(sizeof(double)*total_size_x);
+    dy = (double*)NclMalloc(sizeof(double)*total_size_y);
     if( dy == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: Unable to allocate memory for coercing weight array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: Unable to allocate memory for coercing y array to double precision");
       return(NhlFATAL);
     }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-           dy,
-           y,
-           total_size_x,
-           NULL,
-           NULL,
-           _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
+    if(has_missing_y) {
+      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+                 dy,
+                 y,
+                 total_size_y,
+                 &missing_dy,
+                 &missing_y,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
+    }
+    else {
+      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+                 dy,
+                 y,
+                 total_size_y,
+                 NULL,
+                 NULL,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
+    }
   }
   else {
+/*
+ * Input is already double.
+ */
     dy = (double*)y;
   }
-/*
- * Test for a missing value.
- */
-  if( has_missing_x ) {
-    if(type_x == NCL_double) {
-      xmsg = (double)missing_x.doubleval;
-    }
-    else {
-      xmsg = (double)missing_x.floatval;
-    }
-  }
-  else {
-    xmsg = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-  }
-
-  if( has_missing_y ) {
-    if(type_y == NCL_double) {
-      ymsg = (double)missing_y.doubleval;
-    }
-    else {
-      ymsg = (double)missing_y.floatval;
-    }
-  }
-  else {
-    ymsg = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-  }
-
 /* 
  * Get size of output variables.
  */
-  total_size_ccr = total_size_x1*(*mxlag+1);
+  ndims_ccr = ndims_x + ndims_y - 1;
+  total_size_ccr = total_size_x1 * total_size_y1 * (*mxlag+1);
   ccr = (double*)NclMalloc(total_size_ccr*sizeof(double));
   ccv = (double*)NclMalloc(total_size_ccr*sizeof(double));
-  dsizes_ccr = (int*)NclMalloc(ndims_x*sizeof(int));
+  dsizes_ccr = (int*)NclMalloc(ndims_ccr*sizeof(int));
   if (ccv == NULL || ccr == NULL || dsizes_ccr == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: Unable to allocate space for output arrays\n" );
     return(NhlFATAL);
   }
-  dsizes_ccr[0] = 1;
+/*
+ * Calculate dimensions for ccr. If input is:
+ *
+ *    x(npts)     and y(npts)   ==> ccr(mxlag+1)
+ *    x(m,n,npts) and y(k,npts) ==> ccr(m,n,k,mxlag+1)
+ *    x(npts)     and y(k,npts) ==> ccr(k,mxlag+1)
+ *
+ *  etc.
+ */
   for( i = 0; i < ndims_x-1; i++ ) dsizes_ccr[i] = dsizes_x[i];
-  dsizes_ccr[ndims_x-1] = *mxlag+1;
+  for( i = 0; i < ndims_y-1; i++ ) dsizes_ccr[ndims_x-1+i] = dsizes_y[i];
+
+  dsizes_ccr[ndims_ccr-1] = *mxlag+1;
 /*
  * Call the f77 version of 'descros' with the full argument list.
  */
-  l1 = l2 = 0;
+  lx = lc = 0;
   ier_count = 0;
   for(i = 1; i <= total_size_x1; i++) {
-    xmean = ymean = xsd = ysd = xmsg;
-    NGCALLF(descros,DESCROS)(&dx[l1],&dy[l1],&npts,&xmsg,&ymsg,&xmean,&ymean,
-                             &xsd,&ysd,mxlag,&ccv[l2],&ccr[l2],&ier);
-    l1 += npts;
-    l2 += (*mxlag+1);
-    if(ier < 0) ier_count++;
-  }
-  if(ier_count > 0) {
+    ly = 0;
+    for(j = 1; j <= total_size_y1; j++) {
+      xmean = xsd = missing_dx.doubleval;
+      ymean = ysd = missing_dy.doubleval;
+      NGCALLF(descros,DESCROS)(&dx[lx],&dy[ly],&npts,&missing_dx.doubleval,
+                               &missing_dy.doubleval,&xmean,&ymean,&xsd,
+                               &ysd,mxlag,&ccv[lc],&ccr[lc],&ier);
+      ly += npts;
+      lc += (*mxlag+1);
+      if(ier < 0) ier_count++;
+    }
+    lx += npts;
+    if(ier_count > 0) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"esccr: Non-fatal conditions encountered: all missing or constant values");
+    }
   }
 /*
  * free memory.
@@ -1851,33 +1972,18 @@ NhlErrorTypes esccr_W( void )
       rccr[i] = (float)ccr[i];
     }
     free(ccr);
-
-    if( has_missing_x ) {
-      return(NclReturnValue((void*)rccr,ndims_x,dsizes_ccr,&missing_x,
-                            NCL_float,0));
-    }
-    else if( has_missing_y) {
-      return(NclReturnValue((void*)rccr,ndims_x,dsizes_ccr,&missing_y,
-                            NCL_float,0));
-    }
-    else {
-      return(NclReturnValue((void*)rccr,ndims_x,dsizes_ccr,NULL,
-                            NCL_float,0));
-    }
+/*
+ * Return float values with missing value set.
+ */
+    return(NclReturnValue((void*)rccr,ndims_ccr,dsizes_ccr,&missing_rx,
+                          NCL_float,0));
   }
   else {
-    if( has_missing_x ) {
-      return(NclReturnValue((void*)ccr,ndims_x,dsizes_ccr,&missing_x,
-                            NCL_double,0));
-    }
-    else if( has_missing_y) {
-      return(NclReturnValue((void*)ccr,ndims_x,dsizes_ccr,&missing_y,
-                            NCL_double,0));
-    }
-    else {
-      return(NclReturnValue((void*)ccr,ndims_x,dsizes_ccr,NULL,
-                            NCL_double,0));
-    }
+/*
+ * Return double values with missing value set.
+ */
+    return(NclReturnValue((void*)ccr,ndims_ccr,dsizes_ccr,&missing_dx,
+                          NCL_double,0));
   }
 }
 
@@ -1892,6 +1998,7 @@ NhlErrorTypes esccv_W( void )
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
   NclScalar missing_x, missing_y;
+  NclScalar missing_rx, missing_dx, missing_dy;
   NclBasicDataTypes type_x, type_y;
   int *mxlag;
 /*
@@ -1899,13 +2006,15 @@ NhlErrorTypes esccv_W( void )
  */
   double *ccv;
   float *rccv;
-  int *dsizes_ccv;
+  int ndims_ccv, *dsizes_ccv;
 /*
  * various
  */
-  int i, l1, l2, total_size_x1, total_size_x, total_size_ccv;
+  int i, j, lx, ly, lc;
+  int total_size_x1, total_size_x, total_size_y1, total_size_y;
+  int total_size_ccv;
   int ier = 0, ier_count, npts;
-  double xmsg, ymsg, xmean, xsd, ymean, ysd, *ccr;
+  double xmean, xsd, ymean, ysd, *ccr;
 /*
  * Retrieve parameters
  *
@@ -1940,27 +2049,15 @@ NhlErrorTypes esccv_W( void )
            NULL,
            2);
 /*
- * Types of input arrays must float or double.
+ * The last dimension of x and y must be the same.
  */
-  if( (type_x != NCL_double  && type_y != NCL_float) ||
-      (type_y !=  NCL_double && type_y != NCL_float)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: The types of the two input arrays must be float or double");
-    return(NhlFATAL);
-  }
-/*
- * X and Y dimensions must be the same.
- */
-  if( ndims_x != ndims_y ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: x and y must have the same number of dimensions");
+  if( dsizes_x[ndims_x-1] != dsizes_y[ndims_y-1] ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: the rightmost dimension of x and y must be the same");
       return(NhlFATAL);
   }
-  for( i = 0; i < ndims_x; i++ ) {
-      if( dsizes_x[i] != dsizes_y[i] ) {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: x and y dimensions must be the same");
-          return(NhlFATAL);
-      }
-  }
-      
+/*      
+ * Check rightmost dimension.
+ */
   npts = dsizes_x[ndims_x-1];
   if(npts < 2) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: npts must be >= 2");
@@ -1970,111 +2067,190 @@ NhlErrorTypes esccv_W( void )
  * Check mxlag
  */
   if( *mxlag < 0 || *mxlag > npts ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: mxlag must be between 0 and npts");
-      return(NhlFATAL);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: mxlag must be between 0 and npts");
+    return(NhlFATAL);
   }
 /*
- * Compute the total number of elements in our arrays.
+ * Compute the total number of elements in our x and y arrays.
  */
   total_size_x1 = 1;
   for(i = 0; i < ndims_x-1; i++) total_size_x1 *= dsizes_x[i];
   total_size_x = total_size_x1 * npts;
+
+  total_size_y1 = 1;
+  for(i = 0; i < ndims_y-1; i++) total_size_y1 *= dsizes_y[i];
+  total_size_y = total_size_y1 * npts;
+/*
+ * Coerce missing values to double.
+ *
+ * Use the default missing value if one isn't set.
+ */
+  if(has_missing_x) {
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               &missing_dx,
+               &missing_x,
+               1,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    if(type_x != NCL_double) {
+      _Nclcoerce((NclTypeClass)nclTypefloatClass,
+                 &missing_rx,
+                 &missing_x,
+                 1,
+                 NULL,
+                 NULL,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+  }
+  else {
+/*
+ * Get the default missing value.
+ */ 
+    if(type_x != NCL_double) {
+      missing_dx.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      missing_rx.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    }
+    else {
+      missing_dx.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    }
+  }
+
+  if(has_missing_y) {
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               &missing_dy,
+               &missing_y,
+               1,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
+  }
+  else {
+/*
+ * Get the default missing value.
+ */ 
+    if(type_y != NCL_double) {
+      missing_dy.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    }
+    else {
+      missing_dy.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    }
+  }
+
 /*
  * Coerce data to double if necessary.
  */
   if(type_x != NCL_double) {
     dx = (double*)NclMalloc(sizeof(double)*total_size_x);
     if( dx == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: Unable to allocate memory for coercing weight array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: Unable to allocate memory for coercing x array to double precision");
       return(NhlFATAL);
     }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-           dx,
-           x,
-           total_size_x,
-           NULL,
-           NULL,
-           _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    if(has_missing_x) {
+      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+                 dx,
+                 x,
+                 total_size_x,
+                 &missing_dx,
+                 &missing_x,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+    else {
+      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+                 dx,
+                 x,
+                 total_size_x,
+                 NULL,
+                 NULL,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
   }
   else {
+/*
+ * Input is already double.
+ */
     dx = (double*)x;
   }
 
   if(type_y != NCL_double) {
-    dy = (double*)NclMalloc(sizeof(double)*total_size_x);
+    dy = (double*)NclMalloc(sizeof(double)*total_size_y);
     if( dy == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: Unable to allocate memory for coercing weight array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: Unable to allocate memory for coercing y array to double precision");
       return(NhlFATAL);
     }
-    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-           dy,
-           y,
-           total_size_x,
-           NULL,
-           NULL,
-           _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
+    if(has_missing_y) {
+      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+                 dy,
+                 y,
+                 total_size_y,
+                 &missing_dy,
+                 &missing_y,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
+    }
+    else {
+      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+                 dy,
+                 y,
+                 total_size_y,
+                 NULL,
+                 NULL,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
+    }
   }
   else {
+/*
+ * Input is already double.
+ */
     dy = (double*)y;
   }
-/*
- * Test for a missing value.
- */
-  if( has_missing_x ) {
-    if(type_x == NCL_double) {
-      xmsg = (double)missing_x.doubleval;
-    }
-    else {
-      xmsg = (double)missing_x.floatval;
-    }
-  }
-  else {
-    xmsg = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-  }
-
-  if( has_missing_y ) {
-    if(type_y == NCL_double) {
-      ymsg = (double)missing_y.doubleval;
-    }
-    else {
-      ymsg = (double)missing_y.floatval;
-    }
-  }
-  else {
-    ymsg = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
-  }
-
 /* 
  * Get size of output variables.
  */
-  total_size_ccv = total_size_x1*(*mxlag+1);
+  ndims_ccv = ndims_x + ndims_y - 1;
+  total_size_ccv = total_size_x1 * total_size_y1 * (*mxlag+1);
   ccr = (double*)NclMalloc(total_size_ccv*sizeof(double));
   ccv = (double*)NclMalloc(total_size_ccv*sizeof(double));
-  dsizes_ccv = (int*)NclMalloc(ndims_x*sizeof(int));
+  dsizes_ccv = (int*)NclMalloc(ndims_ccv*sizeof(int));
   if (ccr == NULL || ccv == NULL || dsizes_ccv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: Unable to allocate space for output arrays\n" );
     return(NhlFATAL);
   }
-  dsizes_ccv[0] = 1;
+/*
+ * Calculate dimensions for ccv. If input is:
+ *
+ *    x(npts)     and y(npts)   ==> ccv(mxlag+1)
+ *    x(m,n,npts) and y(k,npts) ==> ccv(m,n,k,mxlag+1)
+ *    x(npts)     and y(k,npts) ==> ccv(k,mxlag+1)
+ *
+ *  etc.
+ */
   for( i = 0; i < ndims_x-1; i++ ) dsizes_ccv[i] = dsizes_x[i];
-  dsizes_ccv[ndims_x-1] = *mxlag+1;
+  for( i = 0; i < ndims_y-1; i++ ) dsizes_ccv[ndims_x-1+i] = dsizes_y[i];
+
+  dsizes_ccv[ndims_ccv-1] = *mxlag+1;
 /*
  * Call the f77 version of 'descros' with the full argument list.
  */
-  l1 = l2 = 0;
+  lx = lc = 0;
   ier_count = 0;
   for(i = 1; i <= total_size_x1; i++) {
-    xmean = ymean = xsd = ysd = xmsg;
-    NGCALLF(descros,DESCROS)(&dx[l1],&dy[l1],&npts,&xmsg,&ymsg,&xmean,&ymean,
-                             &xsd,&ysd,mxlag,&ccv[l2],&ccr[l2],&ier);
-    l1 += npts;
-    l2 += (*mxlag+1);
-    if(ier < 0) ier_count++;
-  }
-  if(ier_count > 0) {
+    ly = 0;
+    for(j = 1; j <= total_size_y1; j++) {
+      xmean = xsd = missing_dx.doubleval;
+      ymean = ysd = missing_dy.doubleval;
+      NGCALLF(descros,DESCROS)(&dx[lx],&dy[ly],&npts,&missing_dx.doubleval,
+                               &missing_dy.doubleval,&xmean,&ymean,&xsd,
+                               &ysd,mxlag,&ccv[lc],&ccr[lc],&ier);
+      ly += npts;
+      lc += (*mxlag+1);
+      if(ier < 0) ier_count++;
+    }
+    lx += npts;
+    if(ier_count > 0) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"esccv: Non-fatal conditions encountered: all missing or constant values");
+    }
   }
- /*
+/*
  * free memory.
  */
   if((void*)dx != x) {
@@ -2099,33 +2275,18 @@ NhlErrorTypes esccv_W( void )
       rccv[i] = (float)ccv[i];
     }
     free(ccv);
-
-    if( has_missing_x ) {
-      return(NclReturnValue((void*)rccv,ndims_x,dsizes_ccv,&missing_x,
-                            NCL_float,0));
-    }
-    else if( has_missing_y) {
-      return(NclReturnValue((void*)rccv,ndims_x,dsizes_ccv,&missing_y,
-                            NCL_float,0));
-    }
-    else {
-      return(NclReturnValue((void*)rccv,ndims_x,dsizes_ccv,NULL,
-                            NCL_float,0));
-    }
+/*
+ * Return float values with missing value set.
+ */
+    return(NclReturnValue((void*)rccv,ndims_ccv,dsizes_ccv,&missing_rx,
+                          NCL_float,0));
   }
   else {
-    if( has_missing_x ) {
-      return(NclReturnValue((void*)ccv,ndims_x,dsizes_ccv,&missing_x,
-                            NCL_double,0));
-    }
-    else if( has_missing_y) {
-      return(NclReturnValue((void*)ccv,ndims_x,dsizes_ccv,&missing_y,
-                            NCL_double,0));
-    }
-    else {
-      return(NclReturnValue((void*)ccv,ndims_x,dsizes_ccv,NULL,
-                            NCL_double,0));
-    }
+/*
+ * Return double values with missing value set.
+ */
+    return(NclReturnValue((void*)ccv,ndims_ccv,dsizes_ccv,&missing_dx,
+                          NCL_double,0));
   }
 }
 
