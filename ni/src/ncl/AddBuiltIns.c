@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.7 1995-01-31 22:25:41 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.8 1995-02-01 00:44:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,12 @@ extern "C" {
 #include "defs.h"
 #include "NclBuiltIns.h"
 #include "MathFuncs.h"
+
+extern NhlErrorTypes _Nclsystem(
+#if NhlNeedProto
+void
+#endif
+);
 
 void _NclAddBuiltIns
 #if	NhlNeedProto
@@ -114,6 +120,12 @@ void _NclAddBuiltIns
 	args = NewArgs(1);
 	SetArgTemplate(args,0,"float",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_Nclsqrt,args,"sqrt",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,0,"string",1,dimsizes);nargs++;
+	NclRegisterProc(_Nclsystem,args,"system",nargs);
 /*
 	nargs = 0;
 	args = NewArgs(1);

@@ -407,6 +407,46 @@ NhlErrorTypes _NclINhlNDCToData
 		return(NhlFATAL);
 	}
 }
+
+NhlErrorTypes _Nclsystem
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+        NclStackEntry val,data;
+        NclMultiDValData tmp_md = NULL;
+        logical *lval;
+        int dimsize = 1;
+	Const char* command;
+
+        val = _NclGetArg(0,1);
+/*
+* Should be constrained to be a SCALAR md
+*/
+        switch(val.kind) {
+        case NclStk_VAL:
+                tmp_md = val.u.data_obj;
+                break;
+        case NclStk_VAR:
+                tmp_md = _NclVarValueRead(val.u.data_var,NULL,NULL);
+                break;
+        default:
+                return(NhlFATAL);
+        }
+	if((tmp_md != NULL)&&(tmp_md->multidval.type->type_class.type & Ncl_Typestring)) {
+		command = NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val);
+		if(system(command)) {
+			return(NhlNOERROR);
+		} else {
+                	return(NhlFATAL);
+		}
+	} else {
+                return(NhlFATAL);
+	}
+}
+
 NhlErrorTypes _NclIIsMissing
 #if	NhlNeedProto
 (void)
