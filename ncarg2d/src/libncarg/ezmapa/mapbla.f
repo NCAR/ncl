@@ -1,5 +1,5 @@
 C
-C $Id: mapbla.f,v 1.7 1995-07-01 00:04:54 kennison Exp $
+C $Id: mapbla.f,v 1.8 1995-09-19 16:58:02 kennison Exp $
 C
       SUBROUTINE MAPBLA (IAMP)
 C
@@ -546,9 +546,9 @@ C
   305 CONTINUE
   306 CONTINUE
   307 CONTINUE
-10071 CONTINUE
-C
   308 CALL NGCLFI (IFDE)
+C
+10071 CONTINUE
 C
 C Done.
 C
