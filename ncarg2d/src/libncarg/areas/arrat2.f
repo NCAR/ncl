@@ -1,5 +1,5 @@
 C
-C $Id: arrat2.f,v 1.6 1994-03-16 23:11:38 kennison Exp $
+C $Id: arrat2.f,v 1.7 1994-03-17 17:47:42 kennison Exp $
 C
       FUNCTION ARRAT2 (YVL,XVL)
 C

@@ -1,5 +1,5 @@
 C
-C $Id: arinam.f,v 1.6 1994-03-16 23:11:25 kennison Exp $
+C $Id: arinam.f,v 1.7 1994-03-17 17:47:29 kennison Exp $
 C
       SUBROUTINE ARINAM (IAM,LAM)
 C

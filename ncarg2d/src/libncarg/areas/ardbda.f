@@ -1,5 +1,5 @@
 C
-C $Id: ardbda.f,v 1.6 1994-03-16 23:11:11 kennison Exp $
+C $Id: ardbda.f,v 1.7 1994-03-17 17:47:15 kennison Exp $
 C
       SUBROUTINE ARDBDA (X1,Y1,X2,Y2,IL,IR)
 C
@@ -28,12 +28,16 @@ C
       CHARACTER*6 CS
       CHARACTER*1 IC
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('ARDBDA - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Draw the body of the arrow.
 C
       CALL PLOTIF(X1,Y1,0)
-      IF (ICFELL('ARDBDA',1).NE.0) RETURN
-      CALL PLOTIF(X2,Y2,1)
       IF (ICFELL('ARDBDA',2).NE.0) RETURN
+      CALL PLOTIF(X2,Y2,1)
+      IF (ICFELL('ARDBDA',3).NE.0) RETURN
 C
 C Compute the length of the arrow.  If it's zero, quit.
 C
@@ -64,7 +68,7 @@ C
 10002   CONTINUE
   101   CONTINUE
         CALL PLCHLQ (XL,YL,CS(1:NC),RSI,0.,0.)
-        IF (ICFELL('ARDBDA',3).NE.0) RETURN
+        IF (ICFELL('ARDBDA',4).NE.0) RETURN
 C
         XR=XC+RDI*DY/DP
         YR=YC-RDI*DX/DP
@@ -78,7 +82,7 @@ C
 10003   CONTINUE
   102   CONTINUE
         CALL PLCHLQ (XR,YR,CS(1:NC),RSI,0.,0.)
-        IF (ICFELL('ARDBDA',4).NE.0) RETURN
+        IF (ICFELL('ARDBDA',5).NE.0) RETURN
 C
 10001 CONTINUE
 C
@@ -98,11 +102,11 @@ C
         X4=XT+RWA*DY/DP
         Y4=YT-RWA*DX/DP
         CALL PLOTIF (X3,Y3,0)
-        IF (ICFELL('ARDBDA',5).NE.0) RETURN
-        CALL PLOTIF (X2,Y2,1)
         IF (ICFELL('ARDBDA',6).NE.0) RETURN
-        CALL PLOTIF (X4,Y4,1)
+        CALL PLOTIF (X2,Y2,1)
         IF (ICFELL('ARDBDA',7).NE.0) RETURN
+        CALL PLOTIF (X4,Y4,1)
+        IF (ICFELL('ARDBDA',8).NE.0) RETURN
 10004 CONTINUE
 C
 C Done.

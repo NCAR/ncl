@@ -1,5 +1,5 @@
 C
-C $Id: argeti.f,v 1.9 1994-03-16 23:11:19 kennison Exp $
+C $Id: argeti.f,v 1.10 1994-03-17 17:47:23 kennison Exp $
 C
       SUBROUTINE ARGETI (IPN,IVL)
 C

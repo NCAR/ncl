@@ -1,5 +1,5 @@
 C
-C $Id: arscam.f,v 1.6 1994-03-16 23:11:40 kennison Exp $
+C $Id: arscam.f,v 1.7 1994-03-17 17:47:44 kennison Exp $
 C
       SUBROUTINE ARSCAM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,APR)
 C
@@ -48,13 +48,6 @@ C
 C Define some double-precision variables.
 C
       DOUBLE PRECISION DP1,DP2
-C
-C Declare a temporary variable to hold error messages and the SETER
-C function that returns the current error message.
-C
-      CHARACTER*80 MSG
-C
-      CHARACTER*113 SEMESS
 C
 C Define the arrays which determine the multiple-precision operations
 C to be done by ARMPIA.

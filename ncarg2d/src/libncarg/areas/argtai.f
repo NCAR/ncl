@@ -1,5 +1,5 @@
 C
-C $Id: argtai.f,v 1.6 1994-03-16 23:11:23 kennison Exp $
+C $Id: argtai.f,v 1.7 1994-03-17 17:47:27 kennison Exp $
 C
       SUBROUTINE ARGTAI (IAM,XCD,YCD,IAI,IAG,MAI,NAI,ICF)
 C
@@ -36,13 +36,6 @@ C Declare the BLOCK DATA routine external, which should force it to
 C load from a binary library.
 C
       EXTERNAL ARBLDA
-C
-C Declare a temporary variable to hold error messages and the SETER
-C function that returns the current error message.
-C
-      CHARACTER*80 MSG
-C
-      CHARACTER*113 SEMESS
 C
 C Force values retrieved by the calls to GETSET to be saved from call
 C to call.

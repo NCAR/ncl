@@ -1,5 +1,5 @@
 C
-C $Id: ardrln.f,v 1.6 1994-03-16 23:11:15 kennison Exp $
+C $Id: ardrln.f,v 1.7 1994-03-17 17:47:19 kennison Exp $
 C
       SUBROUTINE ARDRLN (IAM,XCD,YCD,NCD,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
 C
@@ -57,13 +57,6 @@ C
 C Declare the arrays which keep track of intersection points.
 C
       DIMENSION XCI(10),YCI(10),DSI(10)
-C
-C Declare a temporary variable to hold error messages and the SETER
-C function that returns the current error message.
-C
-      CHARACTER*80 MSG
-C
-      CHARACTER*113 SEMESS
 C
 C Define the arrays which determine the multiple-precision operations
 C to be done by ARMPIA.

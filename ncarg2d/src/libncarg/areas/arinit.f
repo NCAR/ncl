@@ -1,5 +1,5 @@
 C
-C $Id: arinit.f,v 1.8 1994-03-16 23:11:29 kennison Exp $
+C $Id: arinit.f,v 1.9 1994-03-17 17:47:32 kennison Exp $
 C
       SUBROUTINE ARINIT (IER)
 C

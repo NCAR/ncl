@@ -1,5 +1,5 @@
 C
-C $Id: argetr.f,v 1.5 1994-03-16 23:11:21 kennison Exp $
+C $Id: argetr.f,v 1.6 1994-03-17 17:47:25 kennison Exp $
 C
       SUBROUTINE ARGETR (IPN,RVL)
 C

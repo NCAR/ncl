@@ -1,5 +1,5 @@
 C
-C $Id: arpram.f,v 1.8 1994-03-16 23:11:35 kennison Exp $
+C $Id: arpram.f,v 1.9 1994-03-17 17:47:39 kennison Exp $
 C
       SUBROUTINE ARPRAM (IAM,IF1,IF2,IF3)
 C
@@ -47,13 +47,6 @@ C
 C Define some double precision variables.
 C
       DOUBLE PRECISION DPT,DP1,DP2,DX0,DY0,DLP
-C
-C Declare a temporary variable to hold error messages and the SETER
-C function that returns the current error message.
-C
-      CHARACTER*80 MSG
-C
-      CHARACTER*113 SEMESS
 C
 C Define the arrays which determine the multiple-precision operations
 C to be done by ARMPIA.

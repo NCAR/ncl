@@ -1,5 +1,5 @@
 C
-C $Id: ardbpa.f,v 1.9 1994-03-16 23:11:13 kennison Exp $
+C $Id: ardbpa.f,v 1.10 1994-03-17 17:47:17 kennison Exp $
 C
       SUBROUTINE ARDBPA (IAMA,IGIP,LABL)
 C
