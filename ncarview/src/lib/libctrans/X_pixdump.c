@@ -1,5 +1,5 @@
 /*
- *	$Id: X_pixdump.c,v 1.9 1991-08-16 10:47:35 clyne Exp $
+ *	$Id: X_pixdump.c,v 1.10 1991-09-09 17:12:43 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -18,6 +18,10 @@
 #include <ncarv.h>
 
 typedef unsigned long Pixel;
+
+#ifdef	X11R3
+typedef	unsigned long	CARD32;
+#endif
 
 
 /*
