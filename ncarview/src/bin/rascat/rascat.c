@@ -1,6 +1,6 @@
 
 /*
- *      $Id: rascat.c,v 1.13 1992-09-16 14:22:08 clyne Exp $
+ *      $Id: rascat.c,v 1.14 1992-09-24 17:40:29 clyne Exp $
  */
 /*
  *	File:		rascat.c
@@ -491,8 +491,6 @@ static	int	cvt_to_rsfunc(from, to)
 {
 	int	(**fptr)() = (int (**)()) to;
 
-	extern	int	RasterResampleBilinear();
-	extern	int	RasterResampleNearestNeighbor();
 
 	if (! from) {
 		*fptr = RasterResampleNearestNeighbor;
