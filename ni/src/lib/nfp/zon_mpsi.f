@@ -10,10 +10,9 @@ c                                                        INPUT
 c                                                        OUTPUT
       DOUBLE PRECISION ZMPSI(NLAT,KLEV)
 C NCLEND
-
 c                                                        LOCAL
       DOUBLE PRECISION PTMP(2*KLEV+1),DP(2*KLEV+1),VVPROF(2*KLEV+1)
-      DOUBLE PRECISION VBAR(MLON,NLAT),VTMP(MLON,NLAT,KLEV)
+      DOUBLE PRECISION VBAR(NLAT,KLEV),VTMP(MLON,NLAT,KLEV)
 
       CALL DZONMPSI(MLON,NLAT,KLEV,V,LAT,P,PS,VMSG,ZMPSI,PTMP,DP,VTMP,
      +              VBAR,VVPROF)
@@ -24,22 +23,22 @@ c --
       SUBROUTINE DZONMPSI(MLON,NLAT,KLEV,V,LAT,P,PS,VMSG,ZMPSI,PTMP,DP,
      +                    VTMP,VBAR,VVPROF)
       IMPLICIT NONE
+
       INTEGER MLON,NLAT,KLEV
       DOUBLE PRECISION V(MLON,NLAT,KLEV),LAT(NLAT),P(KLEV),
      +                 PS(MLON,NLAT),VMSG
 c                                                        output
       DOUBLE PRECISION ZMPSI(NLAT,KLEV)
-
 c                                             temporary / local
       DOUBLE PRECISION PTMP(0:2*KLEV),DP(0:2*KLEV),VVPROF(0:2*KLEV)
-      DOUBLE PRECISION VTMP(MLON,NLAT,KLEV),VBAR(MLON,NLAT)
+      DOUBLE PRECISION VTMP(MLON,NLAT,KLEV),VBAR(NLAT,KLEV)
 
       DOUBLE PRECISION PI,G,A,C,RAD,CON,PTOP,PBOT
       INTEGER ML,NL,KL,KNT,KFLAG
 
-      G = 9.80616D0
-      A = 6.37122D6
-      PI = 4.D0*ATAN(1.D0)
+      G   = 9.80616D0
+      A   = 6.37122D6
+      PI  = 4.D0*ATAN(1.D0)
       RAD = PI/180.D0
       CON = 2.D0*PI*A/G
 
