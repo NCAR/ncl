@@ -1,9 +1,9 @@
 #
-#	$Id: yMakefile,v 1.7 1994-04-08 22:24:09 haley Exp $
+#	$Id: yMakefile,v 1.8 1995-05-01 23:02:33 kennison Exp $
 #
 
-MAN =	pcdlsc pcgetc pcgeti pcgetr pchiqu pcloqu pcmequ pcmpxy pcpnwi pcsetc \
-	pcseti pcsetr plchhq plchlq plchmq plotchar plotchar_params
+MAN =   pcdlsc pcgetc pcgeti pcgetr pchiqu pcloqu pcmequ pcmpxy pcpnwi pcrset \
+	pcsetc pcseti pcsetr plchhq plchlq plchmq plotchar plotchar_params
 
 # Install preformatted troff documents on systems without troff
 #if UseCatDirs

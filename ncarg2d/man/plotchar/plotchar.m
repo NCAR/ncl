@@ -12,6 +12,12 @@ but it can also use characters from any of the fontcap-defined
 databases, it has an improved interface, and it has
 many more capabilities than PWRITX.
 .sp
+WARNING: PCHIQU/PLCHHQ uses the FORTRAN logical unit specified by the value
+of the internal parameter 'UN'; by default, that's unit 3.  If this will
+cause a problem for you, put a "CALL PCSETI ('UN',n)", where "n" is some
+FORTRAN logical unit that it's okay for PCHIQU/PLCHHQ to use, prior to the
+first use of PLHIQU/PLCHHQ in your program.
+.sp
 PCMEQU (or PLCHMQ) -
 Draws characters of "medium quality". It does this
 by drawing lines, just as PCHIQU does, but it does not
@@ -38,6 +44,9 @@ Retrieves the integer value of a specified internal parameter.
 .sp
 PCGETR -
 Retrieves the real value of a specified internal parameter.
+.SP
+PCRSET -
+Resets the values of all internal parameters to the default state.
 .sp
 PCSETC -
 Gives a new character value to a specified internal parameter.
@@ -86,6 +95,8 @@ c_pcgetc
 c_pcgeti
 .br
 c_pcgetr
+.br
+c_pcrset
 .br
 c_pcsetc
 .br
@@ -227,6 +238,7 @@ pcloqu,
 pcmequ,
 pcmpxy,
 pcpnwi,
+pcrset,
 pcsetc,
 pcseti,
 pcsetr,

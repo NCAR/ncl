@@ -70,6 +70,7 @@ pcloqu,
 pcmequ,
 pcmpxy,
 pcpnwi,
+pcrset,
 pcsetc,
 pcsetr,
 ncarg_cbind.

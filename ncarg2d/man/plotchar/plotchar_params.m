@@ -353,6 +353,20 @@ are still computed. This
 provides a way to get these
 quantities prior to actually
 drawing a particular string.
+.IP "\'UN\'   -   Integer   -   3"
+The FORTRAN logical unit number
+to be used in reading the data
+that defines the various character
+sets.  (The PWRITX database is
+always read using FORTRAN I/O on
+this unit, but, on Unix systems,
+at least, databases defined by
+fontcaps are read using C I/O
+and this unit number is not
+used for that purpose.)  Bottom
+line: If you plan to use FORTRAN
+unit 3, you should change the value
+of 'UN' to something other than 3.
 .IP "\'XB\'   -   Real   -   0."
 For retrieval only. The X
 position at the beginning of the
@@ -474,6 +488,7 @@ pcgetc,
 pcgeti,
 pcgetr,
 pcpnwi,
+pcrset,
 pcsetc,
 pcseti,
 pcsetr,

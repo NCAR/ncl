@@ -65,6 +65,7 @@ pcloqu,
 pcmequ,
 pcmpxy,
 pcpnwi,
+pcrset,
 pcseti,
 pcsetr,
 ncarg_cbind.
