@@ -1,5 +1,5 @@
 /*
- *	$Id: ncarg_ras.h,v 1.11 1992-09-14 22:20:36 don Exp $
+ *	$Id: ncarg_ras.h,v 1.12 1992-09-17 18:21:08 don Exp $
  */
 #ifndef _RASTER_
 #define _RASTER_
@@ -230,12 +230,12 @@ extern	Raster *RasterOpen(
 
 extern	Raster *RasterOpenWrite(
 #ifdef	NeedFuncProto
-        char    *name,
-        int     nx,
-        int     ny,
-        char    *comment,
-        int     encoding,
-        char    *format
+        char    	*name,
+        int     	nx,
+        int     	ny,
+        char   		*comment,
+        RasterEncoding	encoding,
+        char    	*format
 #endif
 	);
 
@@ -285,9 +285,9 @@ extern	int RasterCopyColormap(
 
 extern	Raster *RasterCreate(
 #ifdef	NeedFuncProto
-	int	nx,
-	int	ny,
-	int	encoding
+	int		nx,
+	int		ny,
+	RasterEncoding	encoding
 #endif
 	);
 
