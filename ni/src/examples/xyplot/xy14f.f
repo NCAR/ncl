@@ -1,5 +1,5 @@
 C
-C     $Id: xy14f.f,v 1.1 1995-10-17 17:09:55 haley Exp $
+C     $Id: xy14f.f,v 1.2 1998-08-18 22:56:01 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -167,7 +167,6 @@ C
       call NhlFRLSetInteger(srlist,'tiYAxisFont',22,ierr)
       call NhlFRLSetString(srlist,'tiYAxisString',
      +     'Temperature (degrees F)',ierr)
-      call NhlFRLSetFloat(srlist,'tiYAxisOffsetXF',0.1,ierr)
       call NhlFCreate(plotid,'XyPlot',NhlFXyPlotClass,xworkid,
      +     srlist,ierr)
       call NhlFDraw(plotid,ierr)
@@ -228,7 +227,6 @@ C
       call NhlFRLSetInteger(srlist,'tiYAxisFont',22,ierr)
       call NhlFRLSetString(srlist,'tiYAxisString','Rainfall in Inches',
      +     ierr)
-      call NhlFRLSetFloat(srlist,'tiYAxisOffsetXF',0.1,ierr)
       call NhlFCreate(plotid,'XyPlot',NhlFXyPlotClass,xworkid,
      +     srlist,ierr)
       call NhlFDraw(plotid,ierr)
@@ -297,7 +295,6 @@ C
       call NhlFRLSetString(srlist,'tiXAxisString',
      +     'Hours Since Midnight',ierr)
       call NhlFRLSetString(srlist,'tiYAxisString','Deviations',ierr)
-      call NhlFRLSetFloat(srlist,'tiYAxisOffsetXF',0.1,ierr)
       call NhlFRLSetInteger(srlist,'tiYAxisFont',22,ierr)
       call NhlFCreate(plotid,'XyPlot',NhlFxyPlotClass,xworkid,srlist,
      +     ierr)
@@ -373,7 +370,6 @@ C
       call NhlFRLSetInteger(srlist,'tiYAxisFont',22,ierr)
       call NhlFRLSetString(srlist,'tiYAxisString',
      +     'Temperature (degrees F)',ierr)
-      call NhlFRLSetFloat(srlist,'tiYAxisOffsetXF',0.1,ierr)
       call NhlFCreate(plotid,'XyPlot',NhlFxyPlotClass,xworkid,srlist,
      +     ierr)
 

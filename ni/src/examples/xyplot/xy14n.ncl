@@ -1,5 +1,5 @@
 ;
-;      $Id: xy14n.ncl,v 1.7 1998-04-15 21:40:50 ethan Exp $
+;      $Id: xy14n.ncl,v 1.8 1998-08-18 22:56:01 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -144,7 +144,6 @@ plotid = create "xyPlot" xyPlotClass xworkid
     "tiXAxisString": "Hours Since Midnight"
     "tiYAxisFont": 22
     "tiYAxisString": "Temperature (degrees F)"
-    "tiYAxisOffsetXF": 0.1
 end create
 
 draw(plotid)
@@ -198,7 +197,6 @@ plotid = create "xyPlot" xyPlotClass xworkid
     "tiXAxisString": "Hours Since Midnight"
     "tiYAxisFont": 22
     "tiYAxisString": "Rainfall in Inches"
-    "tiYAxisOffsetXF": 0.1
 end create
 
 draw(plotid)
@@ -253,7 +251,6 @@ plotid = create "xyPlot" xyPlotClass xworkid
     "tiXAxisFont": 22
     "tiXAxisString": "Hours Since Midnight"
     "tiYAxisString": "Deviations"
-    "tiYAxisOffsetXF": 0.1
     "tiYAxisFont": 22
 end create
 
@@ -320,7 +317,6 @@ plotid = create "xyPlot" xyPlotClass xworkid
     "tiXAxisString": "Hours Since Midnight"
     "tiYAxisFont": 22
     "tiYAxisString": "Temperature (degrees F)"
-    "tiYAxisOffsetXF": 0.1
 end create
 
 draw(plotid)

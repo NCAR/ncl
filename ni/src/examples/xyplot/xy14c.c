@@ -1,5 +1,5 @@
 /*
-**      $Id: xy14c.c,v 1.3 1996-01-04 16:48:55 haley Exp $
+**      $Id: xy14c.c,v 1.4 1998-08-18 22:56:00 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -169,7 +169,6 @@ main()
     NhlRLSetString(srlist,NhlNtiXAxisString, "Hours Since Midnight");
     NhlRLSetInteger(srlist,NhlNtiYAxisFont, 22);
     NhlRLSetString(srlist,NhlNtiYAxisString, "Temperature (degrees F)");
-    NhlRLSetFloat(srlist,NhlNtiYAxisOffsetXF, 0.1);
     NhlCreate(&plotid,"XyPlot",NhlxyPlotClass,work_id,srlist);
 
     NhlDraw(plotid);
@@ -225,7 +224,6 @@ main()
     NhlRLSetString(srlist,NhlNtiXAxisString, "Hours Since Midnight");
     NhlRLSetInteger(srlist,NhlNtiYAxisFont, 22);
     NhlRLSetString(srlist,NhlNtiYAxisString, "Rainfall in Inches");
-    NhlRLSetFloat(srlist,NhlNtiYAxisOffsetXF, 0.1);
     NhlCreate(&plotid,"XyPlot",NhlxyPlotClass,work_id,srlist);
     NhlDraw(plotid);
     NhlFrame(work_id);
@@ -288,7 +286,6 @@ main()
     NhlRLSetInteger(srlist,NhlNtiXAxisFont, 22);
     NhlRLSetString(srlist,NhlNtiXAxisString, "Hours Since Midnight");
     NhlRLSetString(srlist,NhlNtiYAxisString, "Deviations");
-    NhlRLSetFloat(srlist,NhlNtiYAxisOffsetXF, 0.1);
     NhlRLSetInteger(srlist,NhlNtiYAxisFont, 22);
     NhlCreate(&plotid,"XyPlot",NhlxyPlotClass,work_id,srlist);
 /*
@@ -360,7 +357,6 @@ main()
     NhlRLSetString(srlist,NhlNtiXAxisString, "Hours Since Midnight");
     NhlRLSetInteger(srlist,NhlNtiYAxisFont, 22);
     NhlRLSetString(srlist,NhlNtiYAxisString, "Temperature (degrees F)");
-    NhlRLSetFloat(srlist,NhlNtiYAxisOffsetXF, 0.1);
     NhlCreate(&plotid,"XyPlot",NhlxyPlotClass,work_id,srlist);
 
     NhlDraw(plotid);
