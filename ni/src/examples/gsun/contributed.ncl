@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.54 2004-11-17 20:41:06 shea Exp $
+;      $Id: contributed.ncl,v 1.55 2004-11-20 20:45:38 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -4955,6 +4955,88 @@ begin
   return (xSeaN)
 end
 
+
+;*************************************************************************
+; D. Shea
+; Compute annual means of monthly data
+; time must the rightmost dimension
+; x(time), x(npts,time),x(lat,lon,time), x(ntim,klev,lat,lon)
+; if, say, x(time,lat,lon) then reorder dimensions
+;          x(lat|:,lon|:,time|:) for input
+;
+undef("month_to_annual")
+function month_to_annual(x:numeric)
+local dimx, rankx, ntim, nyrs, npts, xAnn, nt, klev, nlat, mlon, i
+begin
+  dimx  = dimsizes (x)
+  rankx = dimsizes(dimx)
+  ntim  = dimx(rankx-1)
+
+  if (rankx.ge.5) then
+      print ("contributed: month_to_annual: rank="+rankx)
+      print ("----- rank currently not handled -----")
+  end if
+
+  nmos  = 12
+  modCheck ("clmMonLLT", ntim, nmos)   ; error check
+
+  nyrs  = ntim/nmos
+
+  if (rankx.eq.1) then
+       xAnn = new ( nyrs, typeof(x), getFillValue(x))
+       do nt=0,ntim-1,nmos
+           if (num(ismissing(x(nt:nt+nmos-1))).eq.0) then
+               xAnn(nt/nmos) = avg(x(nt:nt+nmos-1))
+           end if
+       end do
+  end if
+
+  if (rankx.eq.2) then
+       npts = dimx(0)
+       xAnn = new ( (/npts,nyrs/), typeof(x), getFillValue(x))
+       do nt=0,ntim-1,nmos
+           xAnn(:,nt/nmos) = dim_avg(x(:,nt:nt+nmos-1))
+       end do
+  end if
+
+  if (rankx.eq.3) then
+       nlat = dimx(0)
+       mlon = dimx(1)
+       xAnn = new ( (/nlat,mlon,nyrs/), typeof(x), getFillValue(x))
+       do nt=0,ntim-1,nmos
+           xAnn(:,:,nt/nmos) = dim_avg(x(:,:,nt:nt+nmos-1))
+       end do
+  end if
+
+  if (rankx.eq.4) then
+       klev = dimx(0)
+       nlat = dimx(1)
+       mlon = dimx(2)
+       xAnn = new ( (/klev,nlat,mlon,nyrs/), typeof(x), getFillValue(x))
+       do nt=0,ntim-1,nmos
+           xAnn(:,:,:,nt/nmos) = dim_avg(x(:,:,:,nt:nt+nmos-1))
+       end do
+  end if
+
+; copy attributes and add a couple of informational attributes
+; only need to do this if plotting or writing to netCDF file
+
+  copy_VarAtts (x,xAnn)
+
+  do i=0,rankx-2
+     if (.not.ismissing(x!i)) then
+         xAnn!i = x!i
+         if (iscoord(x,x!i)) then
+             xAnn&$x!i$ = x&$x!i$
+         end if
+     end if
+  end do
+
+  nn      = rankx-1
+  xAnn!nn = "year"
+  return(xAnn)
+end
+
 ; -------------------------------------------------------
 undef ("wave_number_spc")
 function wave_number_spc (x:numeric, gridType:string)
@@ -5950,6 +6032,11 @@ begin
   end if
   return(table)
 end
+
+;*************************************************************************
+; D. Shea
+; print Min and Max of a numeric variable using long_name [if present]
+;
 procedure printMinMax (x:numeric,optSpace:logical)  
 ;  Usage:   printMinMax (T,True)                   
 begin                                             
