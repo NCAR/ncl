@@ -1,5 +1,5 @@
 C
-C       $Id: stdata.f,v 1.12 2000-08-22 15:06:41 haley Exp $
+C       $Id: stdata.f,v 1.13 2001-06-13 23:10:41 dbrown Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -37,7 +37,7 @@ C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the ST common blocks.
 C
-      PARAMETER (IPLVLS = 64)
+      PARAMETER (IPLVLS = 256)
 C
 C Integer and real common block variables
 C
@@ -50,7 +50,7 @@ C
      +                IXIN       ,IYIN       ,IMSK       ,ICPM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
-     +                ITHN       ,IPLR       ,ISST       ,
+     +                IPLR       ,ISST       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
 C
       COMMON / STTRAN /
@@ -66,7 +66,9 @@ C
      +                ICKX       ,ITRP       ,ICYK       ,RVNL       ,
      +                ISVF       ,RUSV       ,RVSV       ,RNDA       ,
      +                ISPC       ,RPSV       ,RCDS       ,RSSP       ,
-     +                RDFM       ,RSMD       ,RAMD       ,IGBS
+     +                RDFM       ,RSMD       ,RAMD       ,IGBS       ,
+     +                ISTM       ,RVRL       ,RVFR       ,RVRM       ,
+     +                IVPO       ,RAFR       ,RDMX       ,RDMN
 C
 C Text related parameters
 C Note: graphical text output is not yet implemented for the
@@ -236,12 +238,11 @@ C
       DATA   IPAI /   1     /
 C
 C ICTV -- 'CTV' -- compute thresholds flag:
-C                  0 -- no vector coloring
-C                  < 0: color vectors by magnitude
-C                  > 0: color vectors by contents of scalar array P
-C                  +-1: number of levels and threshold values already
-C                       set
-C                  >1,<1: use CTV equally spaced levels
+C                  -2: color by scalar value, user sets TVL
+C                  -1: color by vector magnitude, user sets TVL
+C                   0: no coloring
+C                  +1: color by magnitude, STINIT sets TVL
+C                  +2: color by scalar array, STINIT sets TVL
 C
       DATA  ICTV /   0     /
 C
@@ -258,10 +259,6 @@ C
       DATA UVMX / 0.0 /
       DATA PMIN / 0.0 /
       DATA PMAX / 0.0 /
-C
-C ITHN -- 'THN' -- streamline thinning flag
-C
-      DATA ITHN / 0 /
 C
 C IPLR -- 'PLR' -- Polar coordinates for UV array flag
 C
@@ -405,8 +402,7 @@ C RNDA -- assigned the NDC value of the arrow size.
 C
 C ISPC -- 'SPC' -- Special color -- 
 C                      < 0: no P special value
-C                      = 0: don't draw streamline that has a P spec val
-C                      > 0: draw P special values using color SPC
+C                      >= 0: draw P special values using color SPC
 C
       DATA ISPC / -1 /
 C
@@ -433,8 +429,8 @@ C                 accurate approximation of the streamline.
 C
       DATA RDFM / 0.02 /
 C
-C RSMD -- 'SMD' - Streamline minimum distance as a fraction of the 
-C                 viewport width.
+C RSMD -- 'SMD' - Streamline minimum starting distance as fraction
+C                 of viewport width.
 C
       DATA RSMD / 0.0 /
 C
@@ -446,6 +442,55 @@ C
 C IGBS -- 'GBS' - Grid based spacing flag
 C
       DATA IGBS / 0 /
+C
+C ISTM -- 'STM' - Streamline mode (0 - normal, 1 - curly vectors)
+C
+      DATA ISTM / 0 /
+C
+C RVRL -- 'VRL' - Curly vector mode only: Vector reference length
+C                 (if 0.0 streamlines selects the value) -- as
+C                 fraction of viewport width.
+C
+      DATA RVRL / 0.0 /
+C
+C RVFR -- 'VFR' - Curly vector mode only: Fraction of the maximum 
+C                 length used to represent the minimum length vector. 
+C                 1.0 causes all vectors to become maximum length. 
+C                 0.0 means the minimum length is linearly scaled 
+C                 from the maximum length.
+C
+      DATA RVFR / 0.0 /
+C
+C RVRM -- 'VRM' - Curly vector mode only: Reference magnitude - 
+C                 the magnitude represented by the reference length.
+C                 If 0.0, the maximum magnitude is used as the 
+C                 reference magnitude.
+C
+      DATA RVRM / 0.0 /
+C
+C IVPO -- 'VPO' -- Curly vector mode only: 
+C                  vector position flag: < 0 - head at position,
+C                                          0 - center at position, 
+C                                        > 0 - tail at position
+C
+      DATA IVPO / 0 /
+C
+C RAFR -- 'AFR' - Curly vector mode only: fraction of full size
+C                 arrow length used for minimum arrow; others are
+C                 proportionally scaled. If 0.0 scaling is strictly
+C                 proportional
+C
+      DATA RAFR / 1.0 /
+C
+C RDMX -- 'DMX' - Curly vector mode only: (read only)
+C                 NDC length of maximum vector
+C
+      DATA RDMX / 0.0 /
+C
+C RDMN -- 'DMN' - Curly vector mode only: (read only)
+C                 NDC length of minimum vector
+C
+      DATA RDMN / 0.0 /
 C
 C End of STSTRM
 C --------------------------------------------------------------------

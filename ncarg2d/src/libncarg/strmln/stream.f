@@ -1,5 +1,5 @@
 C
-C       $Id: stream.f,v 1.13 2000-08-22 15:06:43 haley Exp $
+C       $Id: stream.f,v 1.14 2001-06-13 23:10:43 dbrown Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -48,7 +48,7 @@ C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the ST common blocks.
 C
-      PARAMETER (IPLVLS = 64)
+      PARAMETER (IPLVLS = 256)
 C
 C Integer and real common block variables
 C
@@ -61,7 +61,7 @@ C
      +                IXIN       ,IYIN       ,IMSK       ,ICPM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
-     +                ITHN       ,IPLR       ,ISST       ,
+     +                IPLR       ,ISST       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
 C
       COMMON / STTRAN /
@@ -77,7 +77,9 @@ C
      +                ICKX       ,ITRP       ,ICYK       ,RVNL       ,
      +                ISVF       ,RUSV       ,RVSV       ,RNDA       ,
      +                ISPC       ,RPSV       ,RCDS       ,RSSP       ,
-     +                RDFM       ,RSMD       ,RAMD       ,IGBS
+     +                RDFM       ,RSMD       ,RAMD       ,IGBS       ,
+     +                ISTM       ,RVRL       ,RVFR       ,RVRM       ,
+     +                IVPO       ,RAFR       ,RDMX       ,RDMN
 C
 C Text related parameters
 C Note: graphical text output is not yet implemented for the
@@ -179,11 +181,48 @@ C
          VNML=RVNL
       END IF
 C
-C Draw the streamlines.
-C Break the work array into two parts.  See STDRAW for further
-C comments on this.
+C Set up the indexes into the work array. The first 2 sections hold
+C the normalized vector values. If coloring by magnitude the next
+C section holds the magnitudes, and if thinning the final two sections
+C hold the thinning data.
 C
-      CALL STDRAW (U,V,WRK(1),WRK(IXDM*IYDN+1),IAM,STUMSL)
+      IU = 1
+      IV = IXDM*IYDN+1
+      IF (ABS(ICTV) .EQ. 1) THEN
+         IM = 2*IXDM*IYDN+1
+         IF (RSMD .GT. 0.0) THEN
+            IT = 3*IXDM*IYDN+1
+         ELSE
+            IT = 1
+         END IF
+      ELSE IF (RSMD .GT. 0.0) THEN
+         IT = 2*IXDM*IYDN+1
+      ELSE
+         IT = 1
+      END IF
+C
+C
+C Draw the streamlines.
+C Break the work array into parts.
+C If capatability mode is enabled use STDRCM (ST DRaw CoMpatible).
+C If mode is curly vector use STCRCV (ST Draw Curly Vector)
+C Otherwise use STDRAW
+C If coloring by magnitude, the magnitudes are stored in the
+C third part of the work array.
+C
+      IF (ICPM .GT. 0) THEN
+         CALL STDRCM(U,V,WRK(IU),WRK(IV),IAM,STUMSL)
+      ELSE IF (ISTM .EQ. 1) THEN
+         IF (ABS(ICTV) .EQ. 1) THEN
+            CALL STDRCV(U,V,WRK(IU),WRK(IV),WRK(IM),WRK(IT),IAM,STUMSL)
+         ELSE
+            CALL STDRCV(U,V,WRK(IU),WRK(IV),P,WRK(IT),IAM,STUMSL)
+         END IF
+      ELSE IF (ABS(ICTV) .EQ. 1) THEN
+         CALL STDRAW(U,V,WRK(IU),WRK(IV),WRK(IM),WRK(IT),IAM,STUMSL)
+      ELSE
+         CALL STDRAW (U,V,WRK(IU),WRK(IV),P,WRK(IT),IAM,STUMSL)
+      END IF
 C
 C Reset the polyline color, text color, and the linewidth
 C

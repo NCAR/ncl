@@ -1,5 +1,5 @@
 C
-C       $Id: stdudv.f,v 1.8 2000-08-22 15:06:42 haley Exp $
+C       $Id: stdudv.f,v 1.9 2001-06-13 23:10:42 dbrown Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -54,7 +54,7 @@ C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the ST common blocks.
 C
-      PARAMETER (IPLVLS = 64)
+      PARAMETER (IPLVLS = 256)
 C
 C Integer and real common block variables
 C
@@ -67,7 +67,7 @@ C
      +                IXIN       ,IYIN       ,IMSK       ,ICPM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
-     +                ITHN       ,IPLR       ,ISST       ,
+     +                IPLR       ,ISST       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
 C
       COMMON / STTRAN /
@@ -83,7 +83,9 @@ C
      +                ICKX       ,ITRP       ,ICYK       ,RVNL       ,
      +                ISVF       ,RUSV       ,RVSV       ,RNDA       ,
      +                ISPC       ,RPSV       ,RCDS       ,RSSP       ,
-     +                RDFM       ,RSMD       ,RAMD       ,IGBS
+     +                RDFM       ,RSMD       ,RAMD       ,IGBS       ,
+     +                ISTM       ,RVRL       ,RVFR       ,RVRM       ,
+     +                IVPO       ,RAFR       ,RDMX       ,RDMN
 C
 C Text related parameters
 C Note: graphical text output is not yet implemented for the

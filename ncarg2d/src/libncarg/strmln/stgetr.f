@@ -1,5 +1,5 @@
 C
-C       $Id: stgetr.f,v 1.9 2000-08-22 15:06:42 haley Exp $
+C       $Id: stgetr.f,v 1.10 2001-06-13 23:10:43 dbrown Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -48,7 +48,7 @@ C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the ST common blocks.
 C
-      PARAMETER (IPLVLS = 64)
+      PARAMETER (IPLVLS = 256)
 C
 C Integer and real common block variables
 C
@@ -61,7 +61,7 @@ C
      +                IXIN       ,IYIN       ,IMSK       ,ICPM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
-     +                ITHN       ,IPLR       ,ISST       ,
+     +                IPLR       ,ISST       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
 C
       COMMON / STTRAN /
@@ -77,7 +77,9 @@ C
      +                ICKX       ,ITRP       ,ICYK       ,RVNL       ,
      +                ISVF       ,RUSV       ,RVSV       ,RNDA       ,
      +                ISPC       ,RPSV       ,RCDS       ,RSSP       ,
-     +                RDFM       ,RSMD       ,RAMD       ,IGBS
+     +                RDFM       ,RSMD       ,RAMD       ,IGBS       ,
+     +                ISTM       ,RVRL       ,RVFR       ,RVRM       ,
+     +                IVPO       ,RAFR       ,RDMX       ,RDMN
 C
 C Text related parameters
 C Note: graphical text output is not yet implemented for the
@@ -293,6 +295,22 @@ C
          RVL=RAMD
       ELSE IF (CNM(1:3).EQ.'GBS'.OR. CNM(1:3).EQ.'gbs') THEN
          RVL=REAL(IGBS)
+      ELSE IF (CNM(1:3).EQ.'STM'.OR. CNM(1:3).EQ.'stm') THEN
+         RVL=REAL(ISTM)
+      ELSE IF (CNM(1:3).EQ.'VRL'.OR. CNM(1:3).EQ.'vrl') THEN
+         RVL=REAL(RVRL)
+      ELSE IF (CNM(1:3).EQ.'VFR'.OR. CNM(1:3).EQ.'vfr') THEN
+         RVL=REAL(RVFR)
+      ELSE IF (CNM(1:3).EQ.'VRM'.OR. CNM(1:3).EQ.'vrm') THEN
+         RVL=REAL(RVRM)
+      ELSE IF (CNM(1:3).EQ.'VPO'.OR. CNM(1:3).EQ.'vpo') THEN
+         RVL=REAL(IVPO)
+      ELSE IF (CNM(1:3).EQ.'AFR'.OR. CNM(1:3).EQ.'afr') THEN
+         RVL=REAL(RAFR)
+      ELSE IF (CNM(1:3).EQ.'DMX'.OR. CNM(1:3).EQ.'dmx') THEN
+         RVL=REAL(RDMX)
+      ELSE IF (CNM(1:3).EQ.'DMN'.OR. CNM(1:3).EQ.'dmn') THEN
+         RVL=REAL(RDMN)
 C
 C ---------------------------------------------------------------------
 C

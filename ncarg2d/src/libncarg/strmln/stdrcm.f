@@ -1,5 +1,5 @@
 C
-C       $Id: stdraw.f,v 1.18 2001-06-13 23:10:41 dbrown Exp $
+C       $Id: stdrcm.f,v 1.1 2001-06-13 23:10:42 dbrown Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,14 +20,14 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      SUBROUTINE STDRAW  (U,V,UX,VY,P,WRK,IAM,STUMSL)
+      SUBROUTINE STDRCM  (U,V,UX,VY,IAM,STUMSL)
 C
-C This routine draws the streamlines.
+C This routine draws the streamlines using methods compatible with the
+C old STRMLN and EZSTRM entry points (ICPM > 0). Curly vectors and
+C colored streamlines are not available.
 C
       DIMENSION  U(IUD1,*)             ,V(IVD1,*)
-      DIMENSION  P(IPD1,*)
       DIMENSION  UX(IXDM,IYDN)         ,VY(IXDM,IYDN)
-      DIMENSION  WRK(*)
       DIMENSION  IAM(*)
       EXTERNAL STUMSL
 C
@@ -35,8 +35,6 @@ C Input parameters:
 C
 C U,V    - Vector component arrays
 C UX,UY  - Work arrays
-C P      - Scalar value or magnitude array
-C WRK    - work array used for thinning vectors  
 C IAM    - Mask array
 C STUMSL - User-defined masked streamline drawing routine
 C
@@ -156,7 +154,7 @@ C
 C The XLS and YLS arrays serve as a circular list. they
 C are used to prevent lines from crossing one another.
 C
-      DIMENSION PX(IPNPTS), PY(IPNPTS), SV(IPNPTS)
+      DIMENSION PX(IPNPTS), PY(IPNPTS)
       DIMENSION XLS(IPLSTL), YLS(IPLSTL)
 C
 C Parameters:
@@ -202,26 +200,20 @@ C XUS, YUS - Current position in user coordinates
 C XND, YND - Current position in NDC space
 C XNS, YNS - value of XND and YND saved at the start of the streamline 
 C                           and after each progress check
-C XN1, YN1 - Previous position in NDC space
 C TA       - The tangent angle in NDC space
-C DUV      - The differential normalized interpolated vector magnitude
-C CSA,SNA  - Cosine and sine of the tangent angle
-C XN2,YN2  - The previous previous position in NDC space
-C TMG      - Temporary magnitude 
-C XT,YT    - Temporary x and y values
-C XU1,YU1  - Previous X and Y user coordinate values
-C NCT      - Iteration count for determining the streamline edge
 C LI       - Index into circular crossover checking list
 C IZO      - Zero field flag
-C IPD      - is partially drawn - part of the line has been drawn
-C ICN      - cancel line flag
-C ICA      - cancel arrow flag
-C DS       - current interpolated scalar value
-C DST      - current length of curly vector segment
+C SDM      - Dummy array variable 
+C ICF      - Saved value of the color flag
 C
 C --------------------------------------------------------------------
 C
 C Initialize local variables.
+C
+C Coloring flag
+C
+      ICF = ICTV
+      ICTV = 0
 C
 C Bit manipulation values
 C
@@ -261,15 +253,6 @@ C
       ICT = 0
       IUC = 0
       JSV = IYD1
-      DST = 0.0
-      XUS = 0.0
-      YUS = 0.0
-      XND = 0.0
-      YND = 0.0
-      TA = 0.0
-      IPD = 0
-      ICN = 0
-      ICA = 0
 C
 C
 C Compute the X and Y normalized (and possibly transformed)
@@ -304,10 +287,8 @@ C streamlines and directional arrows.
 C
             CALL SBYTES(UIJ,IPZERO,ISK,2,0,1)
 C
-            IF (RSMD.EQ.0) THEN
-               IF (MOD(I,ISGD).NE.0 .OR. MOD(J,ISGD).NE.0) THEN
-                  CALL SBYTES(UIJ,IPONE,IS1,1,0,1)
-               END IF
+            IF (MOD(I,ISGD).NE.0 .OR. MOD(J,ISGD).NE.0) THEN
+               CALL SBYTES(UIJ,IPONE,IS1,1,0,1)
             END IF
             IF (MOD(I,IAGD).NE.0 .OR. MOD(J,IAGD).NE.0) THEN
                CALL SBYTES(UIJ,IPONE,ISK,1,0,1)
@@ -327,12 +308,6 @@ C
          GO TO 190
       END IF
 C
-C If thinning the vectors based on the NDC distance between grid
-C points set up the thinning arrays
-C
-      IF (RSMD .GT. 0) THEN
-         CALL STTHIN(U,V,P,WRK(1),WRK(IXDM*IYDN+1))
-      END IF
 C
 C Start a streamline. Experience has shown that a pleasing picture
 C will be produced if new streamlines are started only in grid
@@ -345,11 +320,7 @@ C
 C
 C First ensure that the point buffer is clear
 C
-      IF (IPC .LE. 2 .OR. (IPD .EQ. 0 .AND. DST .LE. PSMALL)) ICN = 1
-      IF (ICN .EQ. 0) THEN
-         CALL STLNSG(PX,PY,SV,IPC,IAM,STUMSL)
-         IPD = 1
-      END IF
+      IF (IPC.GT.1) CALL STLNSG(PX,PY,SDM,IPC,IAM,STUMSL)
 C
       LST=0
 C
@@ -363,14 +334,7 @@ C
          DO  70 J=JSV,IYM1
             DO  60 I=IXD1,IXM1
                CALL GBYTES(UX(I,J),IUX,ISK,2,0,1)
-               IF (IAND(IUX,IPONE) .EQ. IPZERO) THEN
-                  IF (RSMD .GT. 0) THEN
-                     CALL STTHND(I,J,WRK(1),IS)
-                     IF (IS .EQ. 0) GO TO 80
-                  ELSE
-                     GO TO 80
-                  END IF
-               END IF
+               IF (IAND(IUX,IPONE) .EQ. IPZERO) GO TO 80
  60         CONTINUE
  70      CONTINUE
 C
@@ -398,9 +362,6 @@ C
          SGN = +1.0
          IUC = 0
          DST = 0.0
-         IPD = 0
-         ICN = 0
-         ICA = 0
 C
       ELSE
 C
@@ -424,35 +385,29 @@ C
       X = FLOAT(I)+0.5
       Y = FLOAT(J)+0.5
       CALL  STDUDV(UX,VY,I,J,X,Y,DU,DV)
-C
-C Get initial point in the various coordinate systems
-C and the tangent angle of the stream.
-C
       XDA=XLOV+(X-1.0)*XGDS
       YDA=YLOV+(Y-1.0)*YGDS
-      CALL HLUSTMPXY(XDA,YDA,XUS,YUS,IST)
-      IF (IST .LT. 0) GO TO 50
+      DU=DU*SGN
+      DV=DV*SGN
+C
+C Get initial point in the various coordinate systems
+C and the tangent angle of the stream. If the compatibility flag
+C is positive the FX,FY routines must be used.
+C
+      XUS=FX(X,Y)
+      IF (XUS.LT.WXMN .OR. XUS.GT.WXMX) GO TO 50 
+      YUS=FY(X,Y)
+      IF (YUS.LT.WYMN .OR. YUS.GT.WYMX) GO TO 50 
       XND=CUFX(XUS)
       YND=CUFY(YUS)
-      XOL = XND
-      YOL = YND
-      XN1=XND
-      YN1=YND
-      CALL HLUSTMPTA(XDA,YDA,XUS,YUS,XND,YND,DU,DV,TA,IST)
-      IF (IST .LT. 0) GO TO 50
+      TA=ATAN2(DV,DU)
 C
       XNS=XND
       YNS=YND
-      X0 = XND
-      Y0 = YND
       ICT=1
       IPC=1
       PX(IPC)=XUS
       PY(IPC)=YUS
-      IF (ICTV .NE. 0) THEN
-         CALL STITSV(P,I,J,X,Y,DS)
-         SV(IPC) = DS
-      END IF
 C      
 C Check grid box directional arrow eligibility
 C If a minimum arrow distance is set then the first arrow is not drawn
@@ -462,8 +417,7 @@ C
 C
          IF (IDR.NE.0 .AND. IAND(IUX,IPTWO).EQ.0) THEN
             IAC=IAC+1
-            CALL STARDR(XUS,YUS,XND,YND,TA,1.0,SV(IPC),IAM,STUMSL,IST)
-            IPD = 1
+            CALL STARDR(XUS,YUS,XND,YND,TA,1.0,0.0,IAM,STUMSL,IST)
             IF (IST.EQ.0) THEN
                CALL SBYTES(UX(I,J),IPONE,ISK,1,0,1)
             END IF
@@ -484,13 +438,9 @@ C
 C Must be in same box --  Clear the point buffer if required
 C
          IF (IPC .EQ. IPNPTS) THEN
-            CALL STLNSG(PX,PY,SV,IPNPTS,IAM,STUMSL)
-            IPD = 1
+            CALL STLNSG(PX,PY,SDM,IPNPTS,IAM,STUMSL)
             PX(1)=PX(IPNPTS)
             PY(1)=PY(IPNPTS)
-            IF (ICTV .NE. 0) THEN
-               SV(1)=SV(IPNPTS)
-            END IF
             IPC=1
          ENDIF
 C
@@ -499,11 +449,18 @@ C
          CALL STDUDV (UX,VY,I,J,X,Y,DU,DV)
          IF (DU.EQ.0.0 .AND. DV.EQ.0.0) GO TO 50
 C
-C Get the tangent angle of the streamline at the current point
-C in NDC space
-C
-         CALL HLUSTMPTA(XDA,YDA,XUS,YUS,XND,YND,DU,DV,TA,IST)
-         IF (IST.NE.0) GO TO 50
+C A new point is found in grid space, then transformed into
+C user and NDC space. There is no transformation of the tangent
+C angle.
+         X=X+SGN*DU
+         Y=Y+SGN*DV
+         XUS=FX(X,Y)
+         IF (XUS.LT.WXMN .OR. XUS.GT.WXMX) GO TO 50 
+         YUS=FY(X,Y)
+         IF (YUS.LT.WYMN .OR. YUS.GT.WYMX) GO TO 50 
+         XND=CUFX(XUS)
+         YND=CUFY(YUS)
+         TA=ATAN2(DV,DU)
 C
 C Count the point and add it to the point buffer
 C
@@ -511,134 +468,7 @@ C
          IPC=IPC+1
          PX(IPC)=XUS
          PY(IPC)=YUS
-         IF (ICTV .NE. 0) THEN
-            CALL STITSV(P,I,J,X,Y,DS)
-            SV(IPC) = DS
-         END IF
 C
-         IF (LST .EQ. 1) GO TO 50
-C
-C The increment in NDC space needs to be proportional to the
-C magnitude of the interpolated vector, in order to ensure that
-C progress checking works at points of convergence or divergence.
-C The square enhances the effectiveness of the technique.
-C
-         DUV=(DU*DU+DV*DV)/(VNML*VNML)
-         CSA=COS(TA)*SGN
-         SNA=SIN(TA)*SGN
-C
-C The current point is adjusted one third of the distance back to
-C the previous point. Empirically, in most cases, this seems to
-C decrease the inaccuracy resulting from the use of a finite valued
-C differential step.
-C
-         XN1=XND-(XND-XOL)/PTHREE
-         YN1=YND-(YND-YOL)/PTHREE
-         XOL=XND
-         YOL=YND
-         XND=XN1+CSA*DFMG*DUV
-         YND=YN1+SNA*DFMG*DUV
-         XD = XND - XOL
-         YD = YND - YOL
-         DST = DST + SQRT(XD*XD+YD*YD) 
-C     
-C     If distance is basically 0 at this point we might as well bail out of
-C     this line, because we're not going to make any progress.
-C     
-         IF (DST .LT. 1E-12) THEN
-            LST = 1
-         END IF
-C     
-C     If the increment takes the line outside the viewport, find an
-C     interpolated point on the grid edge. Set a flag indicating
-C     the end of the stream
-C     
-         IF (XND .LT. XVPL) THEN
-            XND = XVPL
-            IF (ABS(CSA).GT.0.1) THEN
-               TMG = (XND-XN1)/CSA
-               YND = YN1+SNA*TMG
-            ENDIF
-            LST = 1
-         ELSE IF (XND .GT. XVPR) THEN
-            XND = XVPR
-            IF (ABS(CSA).GT.0.1) THEN
-               TMG = (XND-XN1)/CSA
-               YND = YN1+SNA*TMG
-            ENDIF
-            LST = 1
-         ELSE IF (YND .LT. YVPB) THEN
-            YND = YVPB
-            IF (ABS(SNA).GT.0.1) THEN
-               TMG = (YND-YN1)/SNA
-               XND = XN1+CSA*TMG
-            END IF
-            LST = 1
-         ELSE IF (YND .GT. YVPT) THEN
-            YND = YVPT
-            IF (ABS(SNA).GT.0.1) THEN
-               TMG = (YND-YN1)/SNA
-               XND = XN1+CSA*TMG
-            END IF
-            LST = 1
-         END IF
-C     
-C     Now that the new point has been found in NDC space, find its
-C     coordinates in user, data, and grid space.
-C     
-         XU1=XUS
-         YU1=YUS
-         XUS=CFUX(XND)
-         YUS=CFUY(YND)
-C     
-C     Even if the point is within NDC and User boundaries it can still be 
-C     outside the data area. In this case we use an iterative technique to
-C     determine the end of the streamline.
-C     
-         CALL HLUSTIMXY(XUS,YUS,XDA,YDA,IST)
-         IF (IST.GE.0) THEN
-            X=(XDA-XLOV)/XGDS+1.0
-            Y=(YDA-YLOV)/YGDS+1.0
-         ELSE
-            NCT=1
-C     
-C     Loop to this point dividing the distance in half at each step
-C     
- 120        CONTINUE
-            XT=XU1+(XUS-XU1)/2.0
-            YT=YU1+(YUS-YU1)/2.0
-            IF (NCT.GE.PMXITR) GO TO 50
-            IF (ABS(XUS-XU1).LE.PSMALL .AND. 
-     +           ABS(YUS-YU1).LE.PSMALL) THEN
-               XUS=XU1
-               YUS=YU1
-               CALL HLUSTIMXY(XUS,YUS,XDA,YDA,IST)
-               IF (IST.LT.0) GO TO 50
-            ELSE
-               CALL HLUSTIMXY(XT,YT,XDA,YDA,IST)
-               NCT=NCT+1
-               IF (IST.LT.0) THEN
-                  XUS=XT
-                  YUS=YT
-               ELSE
-                  XU1=XT
-                  YU1=YT
-               END IF
-               GO TO 120
-            END IF
-C     
-            XND=CUFX(XUS)
-            YND=CUFY(YUS)
-            LST=1
-         END IF
-C     
-C     
-C     If on the top or right edge of the grid space, decrease the X and/or
-C     Y value by a small amount so the interpolation routine still works.
-C     
-         IF (IFIX(X).GE.IXDM) X=FLOAT(IXDM)-PSMALL
-         IF (IFIX(Y).GE.IYDN) Y=FLOAT(IYDN)-PSMALL
-C     
 C
 C Check streamline progress every 'ICKP' iterations.
 C
@@ -668,14 +498,21 @@ C
          J = IFIX(Y)
          NBX = NBX+1
 C
-C Check (1)
+C Check (1) (Only performed in compatibility mode)
+C
+         IF (I.LT.IXD1 .OR. I.GT.IXM1 
+     +        .OR. J.LT.IYD1 .OR. J.GT.IYM1) THEN
+            GO TO  50
+         END IF
+C
+C Check (2)
 C
          IF (ISVF.NE.0) THEN
             CALL STSVCK(U,V,I,J,IST)
             IF (IST .NE. 0) GO TO 50
          END IF
 C
-C Check (2) -- postpone actually drawing the arrow until after the 
+C Check (3) -- postpone actually drawing the arrow until after the 
 C crossover check, if crossover detected the arrow will not be drawn.
 C
          IDA = 0
@@ -689,7 +526,7 @@ C
 C
       END IF
 C
-C Check (3) (performed any time streamline crossover is checked)
+C Check (4) (performed any time streamline crossover is checked)
 C
       DO 140 LI=1,LCU
          IF (ABS(XND-XLS(LI)) .LE. SSP .AND.
@@ -716,7 +553,7 @@ C
       END IF
 C
       IF (IDA.EQ.1) THEN
-         CALL STARDR(XUS,YUS,XND,YND,TA,1.0,SV(IPC),IAM,STUMSL,IST)
+         CALL STARDR(XUS,YUS,XND,YND,TA,1.0,0.0,IAM,STUMSL,IST)
          IAC = IAC + 1
          IF (IST .EQ. 0) THEN
             CALL SBYTES(UX(I,J),IPONE,ISK,1,0,1)
@@ -751,6 +588,10 @@ C
 C Set the workspace used parameter
 C
       IWKU = 2*IXDM*IYDN
+C
+C Restore coloring flag
+C
+      ICTV = ICF
 C
       RETURN
       END
