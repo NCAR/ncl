@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.27 1996-04-04 23:42:11 haley Exp $
+ *      $Id: Project,v 1.28 1996-10-10 18:53:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -144,6 +144,7 @@ HLUDIR			= hlu
 HLUEXDIR		= hluex
 NCLDIR			= ncl
 NCLEXDIR		= nclex
+NGODIR			= ngo
 DATADIR			= data
 DBDIR			= database
 FONTCAPDIR		= fontcaps
@@ -193,6 +194,7 @@ NCLEXPATH		= $(LIBNCARGPATH)/$(NCLEXDIR)
 NCARGINCPATH		= $(INCPATH)/$(NCARGDIR)
 HLUINCPATH		= $(NCARGINCPATH)/$(HLUDIR)
 NCLINCPATH		= $(NCARGINCPATH)/$(NCLDIR)
+NGOINCPATH		= $(NCARGINCPATH)/$(NGODIR)
 USRRESFILE		= "~/.hluresfile"
 NCARGURL		= "ngurl"
 NCARGSITEFILE   = "ncargsite"
@@ -293,6 +295,7 @@ CTRANSLIBSRC	= $(NVIEWLIBSRC)/libctrans
 ICTRANSLIBSRC	= $(NVIEWLIBSRC)/libictrans
 NCARGRASLIBSRC	= $(NVIEWLIBSRC)/libncarg_ras
 HLULIBSRC	= $(NILIBSRC)/hlu
+NGOLIBSRC	= $(NILIBSRC)/ngo
 NCLLIBSRC	= $(NISRC)/ncl
 
 NCARGCLIB	= _UseLib(-L$(NCARGCLIBSRC),-lncarg_c)
@@ -303,6 +306,7 @@ CNCARGGKSLIB	= _UseLib(-L$(CNCARGGKSLIBSRC),-lncarg_gksC)
 CGMLIB		= _UseLib(-L$(CGMLIBSRC),-lcgm)
 NCARGRASLIB	= _UseLib(-L$(NCARGRASLIBSRC),-lncarg_ras)
 HLULIB		= _UseLib(-L$(HLULIBSRC),-lhlu)
+NGOLIB		= _UseLib(-L$(NGOLIBSRC),-lngo)
 NCLLIB		= _UseLib(-L$(NCLLIBSRC),-lncl)
 NCLAPILIB	= _UseLib(-L$(NCLLIBSRC),-lnclapi)
 
@@ -318,6 +322,7 @@ DEPCNCARGGKSLIB	= _DepLib($(CNCARGGKSLIBSRC),$(LIBROOT),libncarg_gksC.a)
 DEPCGMLIB	= _DepLib($(CGMLIBSRC),$(LIBROOT),libcgm.a)
 DEPNCARGRASLIB	= _DepLib($(NCARGRASLIBSRC),$(LIBROOT),libncarg_ras.a)
 DEPHLULIB	= _DepLib($(HLULIBSRC),$(LIBROOT),libhlu.a)
+DEPNGOLIB	= _DepLib($(NGOLIBSRC),$(LIBROOT),libngo.a)
 DEPNCLLIB	= _DepLib($(NCLLIBSRC),$(LIBROOT),libncl.a)
 DEPNCLAPILIB	= _DepLib($(NCLLIBSRC),$(LIBROOT),libnclapi.a)
 
