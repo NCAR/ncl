@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.10 1992-12-08 23:00:17 haley Exp $
+#	$Id: ncargcc.csh,v 1.11 1992-12-16 21:17:12 haley Exp $
 #
 
 set system="SED_SYSTEM_INCLUDE"
@@ -28,14 +28,13 @@ else
   set libncarg    =       "$l/libncarg.a"
 endif
 
-set libgks	=	"$l/libncarg_gks.a"
-set liblocal	=	"$l/libncarg_loc.a"
-set libcbind    = "$l/libncargC.a $l/libncarg_gksC.a"
+set libgks	= "$l/libncarg_gks.a"
+set liblocal	= "$l/libncarg_loc.a"
 
 if ($system == "Cray2" || $system == "Cray") then
   set f77libs     =       "-L/lib -lf -lio -lm -lp -lsci -lu -lc"
 else if ($system == "Sun4") then
-  set f77libs     =       "-Bstatic -L/usr/lang/SC1.0 -lF77 -lV77 -lm"
+  set f77libs     =       "-Bstatic -L/usr/lang/SC1.0 -lF77 -lV77 -lm -lc"
 else if ($system == "Sun3") then
   set f77libs     =       "-L/usr/lang/SC1.0 -lF77 -lV77 /usr/lib/fswitch/libm.a"
 else if ($system == "RS6000") then
@@ -93,13 +92,11 @@ foreach arg ($argv)
 	case "-conranquick":
 		echo "Quick Conran"
 		set libs = "$libs $l/libconraq.o"
-        set libcbind = "$libcbind"
 		breaksw
 
 	case "-conransuper":
 		echo "Super Conran"
 		set libs = "$libs $l/libconras.o $l/libdashsupr.o"
-        set libcbind = "$libcbind"
 		breaksw
 
 	case "-conrecsmooth":
@@ -145,7 +142,7 @@ foreach arg ($argv)
 
 end
 
-set newargv = "$newargv $ctrans_libs $libs $libcbind $libncarg $libgks $liblocal $f77libs"
+set newargv = "$newargv $ctrans_libs $libs $libncarg $libgks $liblocal $f77libs"
 
 echo $newargv
 eval $newargv
