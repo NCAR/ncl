@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.c,v 1.4 1996-03-18 09:32:48 dbrown Exp $
+ *      $Id: VectorField.c,v 1.5 1996-04-04 19:17:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -601,6 +601,13 @@ GetUVGenArrays
 		ow_ok = (ga != vfp->d_arr) ? True : False;
 		SplitArray(ga,ow_ok,uga,vga,entry_name);
 		*overwrite_ok = True;
+		if (vfp->exchange_uv_data) {
+			NhlGenArray tmp;
+			tmp = *uga;
+			*uga = *vga;
+			*vga = tmp;
+		}
+
 		return ret;
 	}
 	if ((*uga = GenToFloatGenArray(vfp->u_arr)) == NULL) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.10 1996-03-30 00:29:01 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.11 1996-04-04 19:17:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -219,7 +219,7 @@ static NhlResource resources[] = {
 	{NhlNvcMonoFillArrowFillColor,NhlCvcMonoFillArrowFillColor,
 		  NhlTBoolean,sizeof(NhlBoolean),
 		  Oset(mono_f_arrow_fill_color),NhlTImmediate,
-		  _NhlUSET((NhlPointer) False),0,NULL},
+		  _NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNvcFillArrowFillColor, NhlCvcFillArrowFillColor, NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(f_arrow_fill_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
@@ -233,22 +233,22 @@ static NhlResource resources[] = {
 		  _NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNvcFillArrowEdgeColor, NhlCvcFillArrowEdgeColor, NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(f_arrow_edge_color),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
 	{NhlNvcFillArrowEdgeThicknessF,NhlCvcFillArrowEdgeThicknessF,
 		  NhlTFloat,sizeof(float),Oset(f_arrow_edge_thickness),
 		 NhlTString,_NhlUSET("2.0"),0,NULL},
 	{NhlNvcFillArrowWidthF,NhlCvcFillArrowWidthF,
 		  NhlTFloat,sizeof(float),Oset(f_arrow_width),NhlTString,
-		  _NhlUSET("0.03"),0,NULL},
+		  _NhlUSET("0.1"),0,NULL},
 	{NhlNvcFillArrowMinFracWidthF,NhlCvcFillArrowMinFracWidthF,
 		  NhlTFloat,sizeof(float),Oset(f_arrow_min_width),NhlTString,
-		  _NhlUSET("0.00"),0,NULL},
+		  _NhlUSET("0.25"),0,NULL},
 	{NhlNvcFillArrowHeadXF,NhlCvcFillArrowHeadXF,
 		  NhlTFloat,sizeof(float),Oset(f_arrowhead_x),NhlTString,
 		  _NhlUSET("0.36"),0,NULL},
 	{NhlNvcFillArrowHeadMinFracXF,NhlCvcFillArrowHeadMinFracXF,
 		  NhlTFloat,sizeof(float),Oset(f_arrowhead_min_x),NhlTString,
-		  _NhlUSET("0.0"),0,NULL},
+		  _NhlUSET("0.25"),0,NULL},
 	{NhlNvcFillArrowHeadInteriorXF,NhlCvcFillArrowHeadInteriorXF,
 		  NhlTFloat,sizeof(float),Oset(f_arrowhead_interior),
 		 NhlTString,_NhlUSET("0.33"),0,NULL},
@@ -257,7 +257,7 @@ static NhlResource resources[] = {
 		  _NhlUSET("0.12"),0,NULL},
 	{NhlNvcFillArrowHeadMinFracYF,NhlCvcFillArrowHeadMinFracYF,
 		  NhlTFloat,sizeof(float),Oset(f_arrowhead_min_y),NhlTString,
-		  _NhlUSET("0.0"),0,NULL},
+		  _NhlUSET("0.25"),0,NULL},
 
 	{NhlNvcUseRefAnnoRes,NhlCvcUseRefAnnoRes,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(use_refvec_anno_attrs),
@@ -6618,14 +6618,13 @@ static NhlErrorTypes    ManageViewDepResources
 	NhlVectorPlotLayer		vcnew = (NhlVectorPlotLayer) new;
 	NhlVectorPlotLayerPart		*vcp = &(vcnew->vectorplot);
 	NhlVectorPlotLayer		vcold = (NhlVectorPlotLayer) old;
-	float				dvmx;
 
 	entry_name = (init) ? InitName : SetValuesName;
 
 /* adjust the reference length if it is not set */
 
 	if (! vcp->data_init) {
-		dvmx = vcnew->view.width * 0.05;
+		vcp->a_params.dvmx = vcnew->view.width * 0.05;
 	}
 	else if (init || vcp->data_changed) {
 		int nx,ny;
@@ -6634,15 +6633,14 @@ static NhlErrorTypes    ManageViewDepResources
 		ny = vcp->vfp->slow_len;
 		sx = vcnew->view.width / nx;
 		sy = vcnew->view.height / ny;
-		dvmx = sqrt((sx*sx + sy*sy) / 2.0);
+		vcp->a_params.dvmx = sqrt((sx*sx + sy*sy) / 2.0);
 	}
-	vcp->a_params.dvmx = dvmx;
 
 	if (vcp->ref_length > 0.0) {
 		vcp->real_ref_length = vcp->ref_length;
 	}
 	else if (init || vcp->data_changed || ! vcp->data_init) {
-		vcp->real_ref_length = dvmx;
+		vcp->real_ref_length = vcp->a_params.dvmx;
 		vcp->ref_length_set = True;
 	}
 
