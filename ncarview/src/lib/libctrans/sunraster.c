@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.4 1991-03-12 17:39:48 clyne Exp $
+ *	$Id: sunraster.c,v 1.5 1991-06-18 17:39:26 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -305,7 +305,7 @@ CGMC *c;
 	Pr_texture	*set_line_type();
 
 
-	op = PIX_SRC | PIX_COLOR(LINE_COLOUR.index);
+	op = PIX_SRC | PIX_COLOR(color_tab.index[LINE_COLOUR.index]);
 
 
 	/*
@@ -356,7 +356,8 @@ CGMC *c;
 		 * if the line is of zero width than draw nothing
 		 */
 		if (LINE_WIDTH == 0.0) {
-			op = PIX_DST | PIX_COLOR(LINE_COLOUR.index);
+			op = PIX_DST | 
+				PIX_COLOR(color_tab.index[LINE_COLOUR.index]); 
 		}
 
 		if (p > 1)
@@ -377,7 +378,7 @@ CGMC *c;
 	int	i;
 	unsigned	op = PIX_SRC;
 
-	op |= PIX_COLOR(MARKER_COLOUR.index);
+	op |= PIX_COLOR(color_tab.index[MARKER_COLOUR.index]); 
 
 	/*
 	 *	make sure marker attributes are set
@@ -505,7 +506,7 @@ CGMC *c;
 	extern	Ct_err	Instr_Dec();
 	extern	char	*realloc();
 
-	op |= PIX_COLOR(FILL_COLOUR.index);
+	op |= PIX_COLOR(color_tab.index[FILL_COLOUR.index]); 
 
 	/*
 	 *	make sure polygon attributes are set
