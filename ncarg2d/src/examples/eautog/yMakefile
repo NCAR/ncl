@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.6 1995-06-14 13:56:13 haley Exp $
+#	$Id: yMakefile,v 1.7 1996-02-06 21:59:32 haley Exp $
 #
 
 MYNAME	= eautog
@@ -23,7 +23,7 @@ FExampleTarget(agex02,agex02.o)
 FExampleTarget(agex03,agex03.o)
 FExampleTarget(agex04,agex04.o)
 FExampleTarget(agex05,agex05.o)
-FExampleTarget(agex05,agex05.o)
+FExampleTarget(agex06,agex06.o)
 FExampleTarget(agex07,agex07.o)
 FExampleTarget(agex08,agex08.o)
 FExampleTarget(agex09,agex09.o)
