@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-cdrom,v 1.1 1993-03-22 18:21:22 clyne Exp $
+#      $Id: make-cdrom,v 1.2 1993-04-29 18:15:35 clyne Exp $
 #
 #########################################################################
 #									#
@@ -274,8 +274,6 @@ while ($ARGV[0] =~ /-/) {
 	}
 }
 
-$toc_file = "$build_root/INSTALL/var/TOC";
-
 
 if (@ARGV) {
         print STDERR "Usage: $make-cdrom [-debug]\n";
@@ -305,7 +303,14 @@ $cmd = "cd $build_root/$install_dir; tar -cfb $scratch_dir/INSTALL.TAR 20 .";
 do my_system("$cmd");
 
 #
-# put symlinks in the scratch directory pointing into the build dir
+#	jam a symlink in pointing to the src tar file
+#
+$cmd = "ln -s $build_root/SRC.TAR $scratch_dir/SRC.TAR";
+do my_system($cmd);
+
+#
+# put symlinks in the scratch directory pointing into the build dir for
+# all the different architectures
 #
 foreach $arch (@archs) {
 	$cd_arch = $archMap{$arch};
