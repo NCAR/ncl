@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.16 1995-01-11 00:46:30 boote Exp $
+ *      $Id: Error.c,v 1.17 1995-03-07 15:28:25 haley Exp $
  */
 /************************************************************************
 *									*
@@ -459,7 +459,7 @@ ErrorInitialize
 				/* File is specified so open unit with file */
 				int	conn = 0;
 				int	ierr = 0;
-				_NHLCALLF(nhl_finqunit,NHLF_INQUNIT)
+				_NHLCALLF(nhl_finqunit,NHL_FINQUNIT)
 					(&fchild->ferror.eunit,&conn,&ierr);
 				if(ierr){
 					NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -491,7 +491,7 @@ ErrorInitialize
 						ffname = (_NhlFString)
 							_NhlCptrToFptr(tfname);
 						_NHLCALLF(nhl_fopnunit,
-								NHLF_OPNUNIT)
+								NHL_FOPNUNIT)
 							(&fchild->ferror.eunit,
 							ffname,&ffname_len,
 									&ierr);
@@ -545,7 +545,7 @@ ErrorInitialize
 						ffname = (_NhlFString)
 							_NhlCptrToFptr(tfname);
 						_NHLCALLF(nhl_fopnunit,
-								NHLF_OPNUNIT)
+								NHL_FOPNUNIT)
 							(&fchild->ferror.eunit,
 							ffname,&ffname_len,
 									&ierr);
@@ -729,12 +729,12 @@ ErrorSetValues
 		if(enew->error.private_eunit != fchild->ferror.eunit){
 
 			if(fchild->ferror.my_eunit)
-				_NHLCALLF(nhl_fclsunit,NHLF_CLSUNIT)
+				_NHLCALLF(nhl_fclsunit,NHL_FCLSUNIT)
 					(&eold->error.private_eunit,&ierr);
 
 			fchild->ferror.my_eunit = False;
 
-			_NHLCALLF(nhl_finqunit,NHLF_INQUNIT)
+			_NHLCALLF(nhl_finqunit,NHL_FINQUNIT)
 					(&fchild->ferror.eunit,&conn,&ierr);
 			if(ierr){
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -767,7 +767,7 @@ ErrorSetValues
 					ffname_len = strlen(tfname);
 					ffname = (_NhlFString)
 							_NhlCptrToFptr(tfname);
-					_NHLCALLF(nhl_fopnunit,NHLF_OPNUNIT)
+					_NHLCALLF(nhl_fopnunit,NHL_FOPNUNIT)
 						(&fchild->ferror.eunit,ffname,
 							&ffname_len,&ierr);
 				}
@@ -799,7 +799,7 @@ ErrorSetValues
 			tfname = enew->error.error_file;
 
 			if(fchild->ferror.my_eunit)
-				_NHLCALLF(nhl_fclsunit,NHLF_CLSUNIT)
+				_NHLCALLF(nhl_fclsunit,NHL_FCLSUNIT)
 					(&eold->error.private_eunit,&ierr);
 
 			fchild->ferror.my_eunit = False;
@@ -816,7 +816,7 @@ ErrorSetValues
 						_NHLCALLF(i1mach,I1MACH)(&conn);
 			}
 			else{
-				_NHLCALLF(nhl_finqunit,NHLF_INQUNIT)
+				_NHLCALLF(nhl_finqunit,NHL_FINQUNIT)
 					(&fchild->ferror.eunit,&conn,&ierr);
 				if(ierr){
 					NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -848,7 +848,7 @@ ErrorSetValues
 						ffname = (_NhlFString)
 							_NhlCptrToFptr(tfname);
 						_NHLCALLF(nhl_fopnunit,
-								NHLF_OPNUNIT)
+								NHL_FOPNUNIT)
 						(&fchild->ferror.eunit,ffname,
 							&ffname_len,&ierr);
 					}
@@ -927,7 +927,7 @@ ErrorDestroy
 		int ierr = 0;
 
 		if(fchild->ferror.my_eunit){
-			_NHLCALLF(nhl_fclsunit,NHLF_CLSUNIT)
+			_NHLCALLF(nhl_fclsunit,NHL_FCLSUNIT)
 						(&fchild->ferror.eunit,&ierr);
 			if(ierr){
 				NHLPERROR((NhlWARNING,NhlEUNKNOWN,
@@ -1087,7 +1087,7 @@ PrintMessage
 		message = NhlErrSPrintMsg(tbuf,msg);
 		fmessage_len = strlen(message);
 		fmessage = (_NhlFString)_NhlCptrToFptr(message);
-		_NHLCALLF(nhl_fprnmes,NHLF_PRNMES)
+		_NHLCALLF(nhl_fprnmes,NHL_FPRNMES)
 				(&errorLayer->error.private_eunit,fmessage,
 								&fmessage_len);
 
