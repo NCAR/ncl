@@ -2,7 +2,7 @@
 .na
 .nh
 .SH NAME
-HALFAX - Draws orthagonal axes intersecting at a specified point
+HALFAX - Draws orthogonal axes intersecting at a specified point
 and with a specified set of labels.
 .SH SYNOPSIS
 CALL HALFAX (MJRX,MNRX,MJRY,MNRY,XINT,YINT,IXLB,IYLB)
@@ -46,11 +46,9 @@ within each major division. For example, between 3. and
 \&. . 27. If MNRX(Y).GT.10., minor divisions are omitted.
 .RE
 .IP "XINT and YINT" 12
-(input expressions of type REAL), if IGPH has
-the value 10, are the user coordinates of the point of
-intersection of the two axes. For other values of IGPH for
-which one of the axes is of type HALFAX, XINT and/or YINT
-specify the position of that axis.
+(input expressions of type REAL)
+are the user coordinates of the point of
+intersection of the two axes.
 .IP IXLB 12
 (an input expression of type INTEGER) is defined as
 follows:
@@ -78,8 +76,8 @@ labeled.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
-.SH USAGE@@@
-The statement:
+.SH USAGE
+The statement
 .RS 3 
 .sp
 CALL HALFAX (MJRX,MNRX,MJRY,MNRY,XINT,YINT,IXLB,IYLB)
@@ -96,9 +94,9 @@ example:
 tgrida.
 .SH ACCESS
 To use HALFAX, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_halfax, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_halfax, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, 
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 gridall,

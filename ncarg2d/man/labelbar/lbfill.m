@@ -5,6 +5,7 @@
 LBFILL - A routine that is called by LBLBAR (when the argument IFTP is
 non-zero) to fill portions of the bar. The default version
 of this routine does color fill by calling GSFACI and GFA.
+A user-written version may be supplied to do a different kind of fill.
 .SH SYNOPSIS
 CALL LBFILL (IFTP, XCRA, YCRA, NCRA, INDX) 
 .SH DESCRIPTION 
@@ -56,7 +57,7 @@ the desired version, so that the default one from the package will not be
 loaded.
 .SH ACCESS
 To use LBFILL, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 labelbar, labelbar_params, lbgeti, lbgetr, lblbar, lbseti, lbsetr, ncarg_cbind

@@ -2,9 +2,7 @@
 .na
 .nh
 .SH NAME
-GAGETI - 
-Retrieves the value of a specified internal 
-parameter of type INTEGER.
+GAGETI - Retrieves the integer value of an internal parameter of Gridall.
 .SH SYNOPSIS
 CALL GAGETI (PNAM,IVAL)
 .SH C-BINDING SYNOPSIS
@@ -13,7 +11,7 @@ CALL GAGETI (PNAM,IVAL)
 void c_gageti (char *pnam, int *ival)
 .SH DESCRIPTION 
 .IP PNAM 12
-(an input expression of type CHARACTER) is a string
+(an input constant or variable of type CHARACTER) is a string
 three or more characters in length, the first three
 characters of which constitute the name of the internal
 parameter whose value is to be retrieved.
@@ -21,6 +19,8 @@ parameter whose value is to be retrieved.
 (an output variable of type INTEGER) 
 is the name of a variable into which the value of the
 internal parameter specified by PNAM is to be retrieved.
+If the internal parameter is of type REAL and has
+the value "r", "INT(r)" will be returned in IVAL.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
@@ -30,9 +30,9 @@ Gridall parameters.  For a complete list of parameters available
 in this utility, see the gridall_params man page.
 .SH ACCESS
 To use GAGETI, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_gageti, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_gageti, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the gridall man page for a description of all Gridall error
 messages and/or informational messages.

@@ -110,8 +110,8 @@ the end of the bar, and the ones in between with the divisions
 between the boxes.
 .RE
 .IP ""
-The labels are drawn by calls to the Plotchar routine PLCHHQ; 
-they are drawn in the color specified by the Labelbar internal
+The labels are drawn by calls to the Plotchar routine PLCHHQ.
+They are drawn in the color specified by the Labelbar internal
 parameter 'CLB' and using the polyline width specified by the
 Labelbar internal parameter 'WLB'.
 .IP NLBS 12
@@ -137,9 +137,9 @@ Use the ncarg command to see the following relevant examples:
 cpex05, cpex07, cpex08, elblba, tconpa, and tlblba.
 .SH ACCESS
 To use LBLBAR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_lblbar, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_lblbar, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the labelbar man page for a description of all Labelbar error
 messages and/or informational messages.

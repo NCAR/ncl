@@ -45,15 +45,27 @@ within each major division. For example, between 3. and
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
+.SH USAGE
+The statement
+.RS 3 
+.sp
+CALL GRIDL (MJRX,MNRX,MJRY,MNRY)
+.sp
+.RE
+is equivalent to 
+.RS 3
+.sp
+CALL GRIDAL (MJRX,MNRX,MJRY,MNRY,1,1,0,0.,0.)
+.RE
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 example: 
 tgrida.
 .SH ACCESS
 To use GRIDL, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_gridl, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_gridl, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 gridall,

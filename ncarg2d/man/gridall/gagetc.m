@@ -12,7 +12,7 @@ CALL GAGETC (PNAM,CVAL)
 void c_gagetc (char *pnam, char *cval, int len)
 .SH DESCRIPTION 
 .IP PNAM 12
-(an input expression of type CHARACTER) is a string
+(an input constant or variable of type CHARACTER) is a string
 three or more characters in length, the first three
 characters of which constitute the name of the internal
 parameter whose value is to be retrieved.
@@ -27,14 +27,14 @@ argument descriptions with the following exception:
 .IP len 12
 The size of cval as dimensioned in the calling program.
 .SH USAGE
-This routine allows you to retrieve set the current value of
+This routine allows you to retrieve the current value of
 Gridall parameters.  For a complete list of parameters available
 in this utility, see the gridall_params man page.
 .SH ACCESS
 To use GAGETC, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_gagetc, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_gagetc, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the gridall man page for a description of all Gridall error
 messages and/or informational messages.

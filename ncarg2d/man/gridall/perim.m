@@ -47,7 +47,19 @@ within each major division. For example, between 3. and
 .RE
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
-argument description.
+argument descriptions.
+.SH USAGE
+The statement
+.RS 3 
+.sp
+CALL PERIM (MJRX,MNRX,MJRY,MNRY)
+.sp
+.RE
+is equivalent to 
+.RS 3
+.sp
+CALL GRIDAL (MJRX,MNRX,MJRY,MNRY,0,0,5,0.,0.)
+.RE
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples:
@@ -56,9 +68,9 @@ tgrida,
 tstrml.
 .SH ACCESS
 To use PERIM, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_perim, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_perim, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 gridall,

@@ -31,7 +31,7 @@ FMTY=\'(E10.0)\'. The default for both formats is \'(E10.3)\'.
 NOTE: I formats are allowed by this version of Gridall; they
 were not allowed by previous versions.
 .IP NUMX 12
-(an input expression of type INTEGER) , if non-zero,
+(an input expression of type INTEGER), if non-zero,
 is the number of characters in each X-axis numeric label;
 if LBLX is a string produced by the format FMTX, then the
 label will be the substring LBLX(1:NUMX). If NUMX is 0,
@@ -134,9 +134,9 @@ example:
 tgrida.
 .SH ACCESS
 To use LABMOD, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_labmod, load
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_labmod, load
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, 
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 gridall,

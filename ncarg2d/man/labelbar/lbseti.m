@@ -2,8 +2,7 @@
 .na
 .nh
 .SH NAME
-LBSETI - Sets the value of internal parameters of
-type INTEGER in Labelbar.
+LBSETI - Gives an integer value to an internal parameter of Labelbar.
 .SH SYNOPSIS
 CALL LBSETI (PNAM, IVAL)
 .SH C-BINDING SYNOPSIS
@@ -12,12 +11,14 @@ CALL LBSETI (PNAM, IVAL)
 void c_lbseti (char *pnam, int ival)
 .SH DESCRIPTION 
 .IP PNAM 12
-(an input expression of type CHARACTER) is a string three or
+(an input constant or variable of type CHARACTER) is a string three or
 more characters in length, beginning with one of the six 
 character strings 'CBL', 'CFL', 'CLB', 'WBL', 'WFL', or 'WLB'.
 .IP IVAL 12
 (an input expression of type INTEGER) specifies the desired
 value of the parameter.
+If the internal parameter is of type REAL, the value REAL(IVAL) will be
+given to it.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
@@ -30,9 +31,9 @@ Use the ncargex command to see the following relevant
 examples: cpex07 and cpex08, and tconpa.
 .SH ACCESS
 To use LBSETI, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_lbseti, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_lbseti, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the labelbar man page for a description of all Labelbar error
 messages and/or informational messages.

@@ -2,8 +2,7 @@
 .na
 .nh
 .SH NAME
-LBSETR - Gives new values to internal parameters 
-of type REAL in Labelbar.
+LBSETR - Gives a real value to an internal parameter of Labelbar.
 .SH SYNOPSIS
 CALL LBSETR (PNAM, RVAL)
 .SH C-BINDING SYNOPSIS
@@ -12,12 +11,14 @@ CALL LBSETR (PNAM, RVAL)
 void c_lbsetr (char *pnam, float rval)
 .SH DESCRIPTION 
 .IP PNAM 12
-(an input expression of type CHARACTER) is a string three or 
+(an input constant or variable of type CHARACTER) is a string three or
 more characters in length, beginning with one of the six 
 character strings 'CBL', 'CFL', 'CLB', 'WBL', 'WFL', or 'WLB'.
 .IP RVAL 12
 (an input expression of type REAL) specifies the desired
 value of the parameter.
+If the internal parameter is of type INTEGER, the value INT(RVAL) will be
+given to it.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
@@ -27,9 +28,9 @@ This routine allows you to set the current value of Labelbar parameters. For a c
 Use the ncargex command to see the following relevant examples: cpex05, elblba, and tlblba.
 .SH ACCESS
 To use LBSETR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_lbsetr, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_lbsetr, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the labelbar man page for a description of all Labelbar error
 messages and/or informational messages.

@@ -2,9 +2,7 @@
 .na
 .nh
 .SH NAME
-GASETR - 
-Gives a new value to a specified internal parameter
-of type REAL.
+GASETR - Gives a real value to an internal parameter of Gridall.
 .SH SYNOPSIS
 CALL GASETR (PNAM,RVAL)
 .SH C-BINDING SYNOPSIS
@@ -13,7 +11,7 @@ CALL GASETR (PNAM,RVAL)
 void c_gasetr (char *pnam, float rval)
 .SH DESCRIPTION 
 .IP PNAM 12
-(an input expression of type CHARACTER) is a string
+(an input constant or variable of type CHARACTER) is a string
 three or more characters in length, the first three
 characters of which constitute the name of the internal
 parameter whose value is to be set.
@@ -21,6 +19,8 @@ parameter whose value is to be set.
 (an input expression of type REAL) 
 is the new value to be given to the internal parameter
 specified by PNAM.
+If the internal parameter is of type INTEGER, the value INT(RVAL) will be
+given to it.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
@@ -30,9 +30,9 @@ Gridall parameters.  For a complete list of parameters available
 in this utility, see the gridall_params man page.
 .SH ACCESS
 To use GASETR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_gasetr, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_gasetr, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the gridall man page for a description of all Gridall error
 messages and/or informational messages.

@@ -2,8 +2,7 @@
 .na
 .nh
 .SH NAME
-LBGETI - Retrieves the current value of internal parameters
-of type INTEGER in Labelbar.
+LBGETI - Retrieves the integer value of an internal parameter of Labelbar.
 .SH SYNOPSIS
 CALL LBGETI (PNAM, IVAL)
 .SH C-BINDING SYNOPSIS
@@ -12,13 +11,15 @@ CALL LBGETI (PNAM, IVAL)
 void c_lbgeti (char *pnam, int *ival)
 .SH DESCRIPTION 
 .IP PNAM 12
-(an input expression of type CHARACTER) is a string three or 
+(an input constant or variable of type CHARACTER) is a string three or
 more characters in length, beginning with one of the six 
 character strings 'CBL', 'CFL', 'CLB', 'WBL', 'WFL', or 'WLB'.
 .IP IVAL 12
 (an output variable of type INTEGER) is the name of a variable 
 into which the value of the parameter specified by PNAM is 
 to be retrieved.
+If the internal parameter is of type REAL and has
+the value "r", "INT(r)" will be returned in IVAL.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
@@ -28,9 +29,9 @@ Labelbar parameters. For a complete list of parameters available
 in this utility, see the labelbar_params man page.
 .SH ACCESS
 To use LBGETI, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_lbgeti, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_lbgeti, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the labelbar man page for a description of all Labelbar error
 messages and/or informational messages.

@@ -2,8 +2,7 @@
 .na
 .nh
 .SH NAME
-LBGETR - Retrieves an internal parameter of type REAL
-in Labelbar.
+LBGETR - Retrieves the real value of an internal parameter of Labelbar.
 .SH SYNOPSIS
 CALL LBGETR (PNAM, RVAL)
 .SH C-BINDING SYNOPSIS
@@ -12,13 +11,15 @@ CALL LBGETR (PNAM, RVAL)
 void c_lbgetr (char *pnam, float *rval)
 .SH DESCRIPTION 
 .IP PNAM 12
-(an input expression of type CHARACTER) is a string three or 
+(an input constant or variable of type CHARACTER) is a string three or
 more characters in length, beginning with one of the six 
 character strings 'CBL', 'CFL', 'CLB', 'WBL', 'WFL', or 'WLB'.
 .IP RVAL 12
 (an output variable of type REAL) is the name of a variable
 into which the value of the parameter specified by PNAM is to
 be retrieved.
+If the internal parameter is of type INTEGER and has
+the value "i", "REAL(i)" will be returned in RVAL.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the 
 FORTRAN argument descriptions.
@@ -28,9 +29,9 @@ Labelbar parameters. For a complete list of parameters
 available in this utility, see the labelbar_params man page.
 .SH ACCESS
 To use LBGETR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_lbgetr, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_lbgetr, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the labelbar man page for a description of all Labelbar error
 messages and/or informational messages.

@@ -27,7 +27,7 @@ Width of box lines. The default value is 0.
 Width of fill lines. The default value is 0.
 .IP "'WLB' - Real"
 Width of label lines. The default value is 0.
-.IP ""
+.PP
 Each of the "color" parameters may be given a negative value 
 to indicate that color is unspecified; in this case, the 
 color of an object drawn will be that specified by the 

@@ -19,14 +19,22 @@ See the description in the TICK4 man page.
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
 .SH USAGE
-This routine allows you to set the current value of
-Gridall parameters.  For a complete list of parameters available
-in this utility, see the gridall_params man page.
+The statement
+.RS 3 
+.sp
+CALL TICKS (LMJR,LMNR)
+.sp
+.RE
+is equivalent to 
+.RS 3
+.sp
+CALL TICK4 (LMJR,LMNR,LMJR,LMNR)
+.RE
 .SH ACCESS
 To use TICKS, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_ticks, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_ticks, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 gridall,
