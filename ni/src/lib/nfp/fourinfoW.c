@@ -106,21 +106,12 @@ NhlErrorTypes fourier_info_W( void )
     }
   }
 
-  if(type_sclphase != NCL_double) {
-    tmp_sclphase = (double*)calloc(1,sizeof(double));
-    if( tmp_sclphase == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: Unable to allocate memory for coercing input to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(sclphase,tmp_sclphase,0,type_sclphase,1,0,
-			       NULL,NULL);
+  tmp_sclphase = coerce_input_double(sclphase,type_sclphase,1,0,NULL,NULL);
+  if( tmp_sclphase == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: Unable to coerce input to double precision");
+    return(NhlFATAL);
   }
-  else {
-/*
- * Point temporary array to appropriate location.
- */
-    tmp_sclphase = &((double*)sclphase)[0];
-  }
+
 /*
  * Allocate space for output array and other output variables. 
  */
@@ -195,7 +186,7 @@ NhlErrorTypes fourier_info_W( void )
     else {
 
       NGCALLF(dfourinfo,DFOURINFO)(tmp_x,&npts,&nht,tmp_sclphase,tmp_amp,
-				   tmp_pha,tmp_pcv);
+                                   tmp_pha,tmp_pcv);
 
       if(type_finfo != NCL_double) {
         for(j = 0; j < nht; j++) {

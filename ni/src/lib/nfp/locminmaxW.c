@@ -122,48 +122,15 @@ NhlErrorTypes local_min_W( void )
     return(NhlFATAL);
   }
 /*
- * Coerce data to double if necessary.
+ * Coerce input to double if necessary.
  */
-  if(type_x != NCL_double) {
-    tmp_x = (double*)calloc(nxny,sizeof(double));
-    if( tmp_x == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"local_min: Unable to allocate memory for coercing x to double precision");
-      return(NhlFATAL);
-    }
+  tmp_x     = coerce_input_double(x,type_x,nxny,0,NULL,NULL);
+  tmp_delta = coerce_input_double(delta,type_delta,1,0,NULL,NULL);
+  if(tmp_x == NULL || tmp_delta == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"local_min: Unable to coerce input to double precision");
+    return(NhlFATAL);
   }
 
-  if(type_delta != NCL_double) {
-    tmp_delta = (double*)calloc(1,sizeof(double));
-    if( tmp_delta == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"local_min: Unable to allocate memory for coercing delta to double precision");
-      return(NhlFATAL);
-    }
-  }
-
-  if(type_x != NCL_double) {
-/*
- * Coerce x (tmp_x) to double.
- */
-    coerce_subset_input_double(x,tmp_x,0,type_x,nxny,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_x to x.
- */
-    tmp_x = &((double*)x)[0];
-  }
-  if(type_delta != NCL_double) {
-/*
- * Coerce delta (tmp_delta) to double.
- */
-    coerce_subset_input_double(delta,tmp_delta,0,type_delta,1,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_delta to delta.
- */
-    tmp_delta = &((double*)delta)[0];
-  }
 /*
  * Call the Fortran routine.
  */
@@ -453,46 +420,13 @@ NhlErrorTypes local_max_W( void )
 /*
  * Coerce data to double if necessary.
  */
-  if(type_x != NCL_double) {
-    tmp_x = (double*)calloc(nxny,sizeof(double));
-    if( tmp_x == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"local_max: Unable to allocate memory for coercing x to double precision");
-      return(NhlFATAL);
-    }
+  tmp_x     = coerce_input_double(x,type_x,nxny,0,NULL,NULL);
+  tmp_delta = coerce_input_double(delta,type_delta,1,0,NULL,NULL);
+  if( tmp_x == NULL || tmp_delta == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"local_max: Unable to coerce input to double precision");
+    return(NhlFATAL);
   }
 
-  if(type_delta != NCL_double) {
-    tmp_delta = (double*)calloc(1,sizeof(double));
-    if( tmp_delta == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"local_max: Unable to allocate memory for coercing delta to double precision");
-      return(NhlFATAL);
-    }
-  }
-
-  if(type_x != NCL_double) {
-/*
- * Coerce x (tmp_x) to double.
- */
-    coerce_subset_input_double(x,tmp_x,0,type_x,nxny,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_x to x.
- */
-    tmp_x = &((double*)x)[0];
-  }
-  if(type_delta != NCL_double) {
-/*
- * Coerce delta (tmp_delta) to double.
- */
-    coerce_subset_input_double(delta,tmp_delta,0,type_delta,1,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_delta to delta.
- */
-    tmp_delta = &((double*)delta)[0];
-  }
 /*
  * Call the Fortran routine.
  */

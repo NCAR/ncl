@@ -12,14 +12,14 @@ NhlErrorTypes nice_mnmxintvl_W( void )
 /*
  * Input array variables
  */
-  void *min, *max;
-  double tmp_min, tmp_max;
+  void *xmin, *xmax;
+  double *tmp_xmin, *tmp_xmax;
   int *max_levels;
   logical *outside;
-  int has_missing_min, has_missing_max;
-  NclScalar missing_min, missing_dmin, missing_rmin;
-  NclScalar missing_max, missing_dmax, missing_rmax;
-  NclBasicDataTypes type_min, type_max;
+  int has_missing_xmin, has_missing_xmax;
+  NclScalar missing_xmin, missing_dxmin, missing_rxmin;
+  NclScalar missing_xmax, missing_dxmax, missing_rxmax;
+  NclBasicDataTypes type_xmin, type_xmax;
 /*
  * Output array variables
  */
@@ -31,7 +31,7 @@ NhlErrorTypes nice_mnmxintvl_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int found_missing_min, found_missing_max, output_contains_msg;
+  int found_missing_xmin, found_missing_xmax, output_contains_msg;
 
 /*
  * Retrieve parameters
@@ -39,24 +39,24 @@ NhlErrorTypes nice_mnmxintvl_W( void )
  * Note that any of the pointer parameters can be set to NULL,
  * which implies you don't care about its value.
  */
-  min = (void*)NclGetArgValue(
+  xmin = (void*)NclGetArgValue(
           0,
           4,
           NULL,
           NULL,
-          &missing_min,
-          &has_missing_min,
-          &type_min,
+          &missing_xmin,
+          &has_missing_xmin,
+          &type_xmin,
           2);
 
-  max = (void*)NclGetArgValue(
+  xmax = (void*)NclGetArgValue(
           1,
           4,
           NULL,
           NULL,
-          &missing_max,
-          &has_missing_max,
-          &type_max,
+          &missing_xmax,
+          &has_missing_xmax,
+          &type_xmax,
           2);
 
   max_levels = (int*)NclGetArgValue(
@@ -83,14 +83,14 @@ NhlErrorTypes nice_mnmxintvl_W( void )
  * precision version of the missing value in case we need it for the
  * return value.
  */
-  coerce_missing(type_min,has_missing_min,&missing_min,&missing_dmin,
-                 &missing_rmin);
-  coerce_missing(type_max,has_missing_max,&missing_max,&missing_dmax,
-                 &missing_rmax);
+  coerce_missing(type_xmin,has_missing_xmin,&missing_xmin,&missing_dxmin,
+                 &missing_rxmin);
+  coerce_missing(type_xmax,has_missing_xmax,&missing_xmax,&missing_dxmax,
+                 &missing_rxmax);
 /*  
  * Set type of output based on the input types.
  */
-  if(type_min == NCL_double || type_max == NCL_double) {
+  if(type_xmin == NCL_double || type_xmax == NCL_double) {
     type_mnmxintvl = NCL_double;
   }
   else {
@@ -108,60 +108,50 @@ NhlErrorTypes nice_mnmxintvl_W( void )
   }
 
 /*
- * Call the C routine that calculates our "nice" values. If min or max
+ * Call the C routine that calculates our "nice" values. If xmin or xmax
  * is a missing value, then return a missing value in the output.
  */
   output_contains_msg = 0;   /* Flag to keep track of whether output contains
                                 any missing values.*/
 
 /*
- * If type_min is not double, then coerce subsection of min (tmp_min)
- * to double. Otherwise, point tmp_min to appropriate location in min.
+ * Coerce xmin/xmax to double if necessary.
  */
-  if(type_min != NCL_double) {
-    coerce_subset_input_double(min,&tmp_min,0,type_min,1,0,NULL,NULL);
+  tmp_xmin = coerce_input_double(xmin,type_xmin,1,0,NULL,NULL);
+  tmp_xmax = coerce_input_double(xmax,type_xmax,1,0,NULL,NULL);
+  if(tmp_xmin == NULL || tmp_xmax == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"nice_mnmxintvl: Unable to coerce input to double precision");
+    return(NhlFATAL);
   }
-  else {
-    tmp_min = ((double*)min)[0];
-  }
-/*
- * If type_max is not double, then coerce subsection of max (tmp_max)
- * to double. Otherwise, point tmp_max to appropriate location in max.
- */
-  if(type_max != NCL_double) {
-    coerce_subset_input_double(max,&tmp_max,0,type_max,1,0,NULL,NULL);
-  }
-  else {
-    tmp_max = ((double*)max)[0];
-  }
+
 /*
  * Check for missing values. If encountered, then set output
  * to a missing value.
  */
-  found_missing_min = (tmp_min == missing_dmin.doubleval) ? 1 : 0;
-  found_missing_max = (tmp_max == missing_dmax.doubleval) ? 1 : 0;
+  found_missing_xmin = (*tmp_xmin == missing_dxmin.doubleval) ? 1 : 0;
+  found_missing_xmax = (*tmp_xmax == missing_dxmax.doubleval) ? 1 : 0;
 
-  if(found_missing_min || found_missing_max) {
+  if(found_missing_xmin || found_missing_xmax) {
     output_contains_msg = 1;
-    if(found_missing_min) {
+    if(found_missing_xmin) {
       set_subset_output_missing(mnmxintvl,0,type_mnmxintvl,3,
-				missing_dmin.doubleval);
-      missing_dmnmxintvl = missing_dmin;
-      missing_rmnmxintvl = missing_rmin;
+                                missing_dxmin.doubleval);
+      missing_dmnmxintvl = missing_dxmin;
+      missing_rmnmxintvl = missing_rxmin;
     }
     else {
       set_subset_output_missing(mnmxintvl,0,type_mnmxintvl,3,
-				missing_dmax.doubleval);
-      missing_dmnmxintvl = missing_dmax;
-      missing_rmnmxintvl = missing_rmax;
+                                missing_dxmax.doubleval);
+      missing_dmnmxintvl = missing_dxmax;
+      missing_rmnmxintvl = missing_rxmax;
     }
   }
 /*
  * Call the internal C routine.
  */
   if(!output_contains_msg) {
-    _NhlGetEndpointsAndStepSize(tmp_min,tmp_max,*max_levels,
-				*outside,&min_out,&max_out,&step_size);
+    _NhlGetEndpointsAndStepSize(*tmp_xmin,*tmp_xmax,*max_levels,
+                                *outside,&min_out,&max_out,&step_size);
 
     if(type_mnmxintvl == NCL_float) {
       ((float*)mnmxintvl)[0] = (float)min_out;
@@ -175,6 +165,12 @@ NhlErrorTypes nice_mnmxintvl_W( void )
     }
   }
 /*
+ * Free tmp arrays.
+ */
+  if(type_xmin != NCL_double) NclFree(tmp_xmin);
+  if(type_xmax != NCL_double) NclFree(tmp_xmax);
+
+/*
  * Return values. If any of the min/max input contained a missing value, 
  * then this means that the output will also contain a missing value, so
  * we need to set it if this is the case.
@@ -183,11 +179,11 @@ NhlErrorTypes nice_mnmxintvl_W( void )
   if(output_contains_msg) {
     if(type_mnmxintvl == NCL_float) {
       return(NclReturnValue(mnmxintvl,1,dsizes_mnmxintvl,&missing_rmnmxintvl,
-			    type_mnmxintvl,0));
+                            type_mnmxintvl,0));
     }
     else {
       return(NclReturnValue(mnmxintvl,1,dsizes_mnmxintvl,&missing_dmnmxintvl,
-			    type_mnmxintvl,0));
+                            type_mnmxintvl,0));
     }
   }
   else {

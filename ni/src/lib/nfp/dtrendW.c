@@ -493,16 +493,17 @@ NhlErrorTypes dtrend_msg_W( void )
   coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
   coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,&missing_ry);
 /*
- * Coerce y to double no matter what, since input array also becomes
- * output array. 
+ * Coerce x (tmp_x) to double.
  */
-  if(type_x != NCL_double) {
-    tmp_x = (double*)calloc(npts,sizeof(double));
-    if( tmp_x == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_msg: Unable to allocate memory for coercing x array to double precision");
-      return(NhlFATAL);
-    }
+  tmp_x = coerce_input_double(x,type_x,npts,0,NULL,NULL);
+  if( tmp_x == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_msg: Unable to coerce x array to double precision");
+    return(NhlFATAL);
   }
+/*
+ * Allocate space for temporary y to allocate to double later if
+ * necessasry.
+ */
   if(type_y != NCL_double) {
     tmp_y = (double*)calloc(npts,sizeof(double));
     if( tmp_y == NULL ) {
@@ -544,18 +545,6 @@ NhlErrorTypes dtrend_msg_W( void )
     return(NhlFATAL);
   }
 
-/*
- * Coerce x (tmp_x) to double.
- */
-  if(type_x != NCL_double) {
-    coerce_subset_input_double(x,tmp_x,0,type_x,npts,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_x to x.
- */
-    tmp_x = &((double*)x)[0];
-  }
 /*
  * Call the Fortran version of this routine.
  */

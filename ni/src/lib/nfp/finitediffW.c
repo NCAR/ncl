@@ -392,42 +392,13 @@ NhlErrorTypes uv2vr_cfd_W( void )
     return(NhlFATAL);
   }
 /*
- * Coerdce lat/lon arrays to double if necessary.
+ * Coerce lat/lon arrays to double if necessary.
  */
-  if(type_lat != NCL_double) {
-    tmp_lat = (double*)calloc(nlat,sizeof(double));
-    if( tmp_lat == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vr_cfd: Unable to allocate memory for lat array");
-      return(NhlFATAL);
-    }
-/*
- * Coerce lat (tmp_lat) to double.
- */
-    coerce_subset_input_double(lat,tmp_lat,0,type_lat,nlat,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_lat to lat.
- */
-    tmp_lat = &((double*)lat)[0];
-  }
-
-  if(type_lon != NCL_double) {
-    tmp_lon = (double*)calloc(nlon,sizeof(double));
-    if( tmp_lon == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vr_cfd: Unable to allocate memory for lon array");
-      return(NhlFATAL);
-    }
-/*
- * Coerce lon (tmp_lon) to double.
- */
-    coerce_subset_input_double(lon,tmp_lon,0,type_lon,nlon,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_lon to lon.
- */
-    tmp_lon = &((double*)lon)[0];
+  tmp_lat = coerce_input_double(lat,type_lat,nlat,0,NULL,NULL);
+  tmp_lon = coerce_input_double(lon,type_lon,nlon,0,NULL,NULL);
+  if(tmp_lat == NULL || tmp_lon == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vr_cfd: Unable to coerce lat/lon arrays to double precision");
+    return(NhlFATAL);
   }
 
 /*
@@ -656,42 +627,13 @@ NhlErrorTypes uv2dv_cfd_W( void )
     return(NhlFATAL);
   }
 /*
- * Coerdce lat/lon arrays to double if necessary.
+ * Coerce lat/lon arrays to double if necessary.
  */
-  if(type_lat != NCL_double) {
-    tmp_lat = (double*)calloc(nlat,sizeof(double));
-    if( tmp_lat == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dv_cfd: Unable to allocate memory for lat array");
-      return(NhlFATAL);
-    }
-/*
- * Coerce lat (tmp_lat) to double.
- */
-    coerce_subset_input_double(lat,tmp_lat,0,type_lat,nlat,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_lat to lat.
- */
-    tmp_lat = &((double*)lat)[0];
-  }
-
-  if(type_lon != NCL_double) {
-    tmp_lon = (double*)calloc(nlon,sizeof(double));
-    if( tmp_lon == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dv_cfd: Unable to allocate memory for lon array");
-      return(NhlFATAL);
-    }
-/*
- * Coerce lon (tmp_lon) to double.
- */
-    coerce_subset_input_double(lon,tmp_lon,0,type_lon,nlon,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_lon to lon.
- */
-    tmp_lon = &((double*)lon)[0];
+  tmp_lat = coerce_input_double(lat,type_lat,nlat,0,NULL,NULL);
+  tmp_lon = coerce_input_double(lon,type_lon,nlon,0,NULL,NULL);
+  if(tmp_lat == NULL || tmp_lon == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dv_cfd: Unable to coerce lat/lon arrays to double precision");
+    return(NhlFATAL);
   }
 
 /*

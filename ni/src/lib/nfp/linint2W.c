@@ -15,9 +15,9 @@ extern void NGCALLF(dlinint2,DLININT2)(int *,double *,int *,double *,
 
 
 extern void NGCALLF(dlinint2pts,DLININT2PTS)(int *,double *,int *,double *,
-					     double *,int *,int *,double *,
-					     double *,double *,double *,
-					     int *);
+                                             double *,int *,int *,double *,
+                                             double *,double *,double *,
+                                             int *);
 
 NhlErrorTypes linint1_W( void )
 {
@@ -157,28 +157,11 @@ NhlErrorTypes linint1_W( void )
 /*
  * Coerce input arrays to double if necessary.
  */
-  if(type_xi != NCL_double) {
-    tmp_xi = (double*)calloc(nxi,sizeof(double));
-    if(tmp_xi == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: Unable to allocate memory for coercing input array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(xi,tmp_xi,0,type_xi,nxi,0,NULL,NULL);
-  }
-  else {
-    tmp_xi = &((double*)xi)[0];
-  }
-
-  if(type_xo != NCL_double) {
-    tmp_xo = (double*)calloc(nxo,sizeof(double));
-    if(tmp_xo == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: Unable to allocate memory for coercing input array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(xo,tmp_xo,0,type_xo,nxo,0,NULL,NULL);
-  }
-  else {
-    tmp_xo = &((double*)xo)[0];
+  tmp_xi = coerce_input_double(xi,type_xi,nxi,0,NULL,NULL);
+  tmp_xo = coerce_input_double(xo,type_xo,nxo,0,NULL,NULL);
+  if(tmp_xi == NULL || tmp_xo == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: Unable to coerce xi and xo to double precision");
+    return(NhlFATAL);
   }
 
   if(type_fi != NCL_double) {
@@ -411,52 +394,13 @@ NhlErrorTypes linint2_W( void )
 /*
  * Coerce input arrays to double if necessary.
  */
-  if(type_xi != NCL_double) {
-    tmp_xi = (double*)calloc(nxi,sizeof(double));
-    if(tmp_xi == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: Unable to allocate memory for coercing input array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(xi,tmp_xi,0,type_xi,nxi,0,NULL,NULL);
-  }
-  else {
-    tmp_xi = &((double*)xi)[0];
-  }
-
-  if(type_yi != NCL_double) {
-    tmp_yi = (double*)calloc(nyi,sizeof(double));
-    if(tmp_yi == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: Unable to allocate memory for coercing input array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(yi,tmp_yi,0,type_yi,nyi,0,NULL,NULL);
-  }
-  else {
-    tmp_yi = &((double*)yi)[0];
-  }
-
-  if(type_xo != NCL_double) {
-    tmp_xo = (double*)calloc(nxo,sizeof(double));
-    if(tmp_xo == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: Unable to allocate memory for coercing input array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(xo,tmp_xo,0,type_xo,nxo,0,NULL,NULL);
-  }
-  else {
-    tmp_xo = &((double*)xo)[0];
-  }
-
-  if(type_yo != NCL_double) {
-    tmp_yo = (double*)calloc(nyo,sizeof(double));
-    if(tmp_yo == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: Unable to allocate memory for coercing input array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(yo,tmp_yo,0,type_yo,nyo,0,NULL,NULL);
-  }
-  else {
-    tmp_yo = &((double*)yo)[0];
+  tmp_xi = coerce_input_double(xi,type_xi,nxi,0,NULL,NULL);
+  tmp_yi = coerce_input_double(yi,type_yi,nyi,0,NULL,NULL);
+  tmp_xo = coerce_input_double(xo,type_xo,nxo,0,NULL,NULL);
+  tmp_yo = coerce_input_double(yo,type_yo,nyo,0,NULL,NULL);
+  if(tmp_xi == NULL || tmp_yi == NULL || tmp_xo == NULL || tmp_yo == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: Unable to coerce input to double precision");
+    return(NhlFATAL);
   }
 
   if(type_fi != NCL_double) {
@@ -692,52 +636,14 @@ NhlErrorTypes linint2_points_W( void )
 /*
  * Coerce input arrays to double if necessary.
  */
-  if(type_xi != NCL_double) {
-    tmp_xi = (double*)calloc(nxi,sizeof(double));
-    if(tmp_xi == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: Unable to allocate memory for coercing input array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(xi,tmp_xi,0,type_xi,nxi,0,NULL,NULL);
-  }
-  else {
-    tmp_xi = &((double*)xi)[0];
-  }
+  tmp_xi = coerce_input_double(xi,type_xi,nxi,0,NULL,NULL);
+  tmp_yi = coerce_input_double(yi,type_yi,nyi,0,NULL,NULL);
+  tmp_xo = coerce_input_double(xo,type_xo,nxyo,0,NULL,NULL);
+  tmp_yo = coerce_input_double(yo,type_yo,nxyo,0,NULL,NULL);
 
-  if(type_yi != NCL_double) {
-    tmp_yi = (double*)calloc(nyi,sizeof(double));
-    if(tmp_yi == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: Unable to allocate memory for coercing input array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(yi,tmp_yi,0,type_yi,nyi,0,NULL,NULL);
-  }
-  else {
-    tmp_yi = &((double*)yi)[0];
-  }
-
-  if(type_xo != NCL_double) {
-    tmp_xo = (double*)calloc(nxyo,sizeof(double));
-    if(tmp_xo == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: Unable to allocate memory for coercing input array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(xo,tmp_xo,0,type_xo,nxyo,0,NULL,NULL);
-  }
-  else {
-    tmp_xo = &((double*)xo)[0];
-  }
-
-  if(type_yo != NCL_double) {
-    tmp_yo = (double*)calloc(nxyo,sizeof(double));
-    if(tmp_yo == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: Unable to allocate memory for coercing input array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(yo,tmp_yo,0,type_yo,nxyo,0,NULL,NULL);
-  }
-  else {
-    tmp_yo = &((double*)yo)[0];
+  if(tmp_xi == NULL || tmp_yi == NULL || tmp_xo == NULL || tmp_yo == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: Unable to coerce input to double precision");
+    return(NhlFATAL);
   }
 
   if(type_fi != NCL_double) {
@@ -761,8 +667,8 @@ NhlErrorTypes linint2_points_W( void )
     }
 
     NGCALLF(dlinint2pts,DLININT2PTS)(&nxi,tmp_xi,&nyi,tmp_yi,tmp_fi,wrap,
-				     &nxyo,tmp_xo,tmp_yo,tmp_fo,
-				     &missing_dfi.doubleval,&ier);
+                                     &nxyo,tmp_xo,tmp_yo,tmp_fo,
+                                     &missing_dfi.doubleval,&ier);
 
     if(ier) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"linint2_points: xi and yi must be monotonically increasing");

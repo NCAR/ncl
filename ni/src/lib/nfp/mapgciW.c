@@ -127,59 +127,31 @@ NhlErrorTypes gc_latlon_W( void )
 /*
  * Coerce input to double if necessary.
  */
-  type_lat = NCL_float;
-  if(type_lat1 != NCL_double) {
-    tmp_lat1 = (double*)calloc(1,sizeof(double));
-    if(tmp_lat1 == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"gc_latlon: Unable to allocate memory for coercing input values to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(lat1,tmp_lat1,0,type_lat1,1,0,NULL,NULL);
+  tmp_lat1 = coerce_input_double(lat1,type_lat1,1,0,NULL,NULL);
+  tmp_lon1 = coerce_input_double(lon1,type_lon1,1,0,NULL,NULL);
+  tmp_lat2 = coerce_input_double(lat2,type_lat2,1,0,NULL,NULL);
+  tmp_lon2 = coerce_input_double(lon2,type_lon2,1,0,NULL,NULL);
+
+  if(tmp_lon1 == NULL || tmp_lat1 == NULL ||
+     tmp_lon2 == NULL || tmp_lat2 == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gc_latlon: Unable to coerce lat/lon arrays to double precision");
+    return(NhlFATAL);
   }
-  else {
+
+  if(type_lat1 == NCL_double || type_lat2 == NCL_double) {
     type_lat = NCL_double;
-    tmp_lat1 = &((double*)lat1)[0];
-  }
-
-  type_lon = NCL_float;
-  if(type_lon1 != NCL_double) {
-    tmp_lon1 = (double*)calloc(1,sizeof(double));
-    if(tmp_lon1 == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"gc_latlon: Unable to allocate memory for coercing input values to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(lon1,tmp_lon1,0,type_lon1,1,0,NULL,NULL);
   }
   else {
+    type_lat = NCL_float;
+  }
+
+  if(type_lon1 == NCL_double || type_lon2 == NCL_double) {
     type_lon = NCL_double;
-    tmp_lon1 = &((double*)lon1)[0];
-  }
-
-  if(type_lat2 != NCL_double) {
-    tmp_lat2 = (double*)calloc(1,sizeof(double));
-    if(tmp_lat2 == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"gc_latlon: Unable to allocate memory for coercing input values to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(lat2,tmp_lat2,0,type_lat2,1,0,NULL,NULL);
   }
   else {
-    type_lat = NCL_double;
-    tmp_lat2 = &((double*)lat2)[0];
+    type_lon = NCL_float;
   }
 
-  if(type_lon2 != NCL_double) {
-    tmp_lon2 = (double*)calloc(1,sizeof(double));
-    if(tmp_lon2 == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"gc_latlon: Unable to allocate memory for coercing input values to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(lon2,tmp_lon2,0,type_lon2,1,0,NULL,NULL);
-  }
-  else {
-    type_lon = NCL_double;
-    tmp_lon2 = &((double*)lon2)[0];
-  }
 /*
  * Allocate space for output arrays.
  */

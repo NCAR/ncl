@@ -70,12 +70,10 @@ NhlErrorTypes y_skewt_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"y_skewt: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
-  if(type_pres != NCL_double) {
-    tmp_pres = (double*)calloc(np,sizeof(double));
-    if(tmp_pres == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"y_skewt: Unable to allocate memory for coercing pres array to double precision");
-      return(NhlFATAL);
-    }
+  tmp_pres = coerce_input_double(pres,type_pres,np,0,NULL,NULL);
+  if(tmp_pres == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"y_skewt: Unable to coerce 'pres' to double precision");
+    return(NhlFATAL);
   }
 
 /*
@@ -92,18 +90,6 @@ NhlErrorTypes y_skewt_W( void )
     return(NhlFATAL);
   }
 
-/*
- * Coerce subsection of pres (tmp_pres) to double.
- */
-  if(type_pres != NCL_double) {
-    coerce_subset_input_double(pres,tmp_pres,0,type_pres,np,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_pres to appropriate locations in pres.
- */
-    tmp_pres = &((double*)pres)[0];
-  }
 /*
  * Call Fortran routine.
  */
@@ -186,20 +172,12 @@ NhlErrorTypes x_skewt_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"x_skewt: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
-  if(type_temp != NCL_double) {
-    tmp_temp = (double*)calloc(nty,sizeof(double));
-    if(tmp_temp == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"x_skewt: Unable to allocate memory for coercing temp array to double precision");
-      return(NhlFATAL);
-    }
-  }
 
-  if(type_y != NCL_double) {
-    tmp_y = (double*)calloc(nty,sizeof(double));
-    if(tmp_y == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"x_skewt: Unable to allocate memory for coercing y array to double precision");
-      return(NhlFATAL);
-    }
+  tmp_temp = coerce_input_double(temp,type_temp,nty,0,NULL,NULL);
+  tmp_y    = coerce_input_double(y,type_y,nty,0,NULL,NULL);
+  if(tmp_temp == NULL || tmp_y == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"x_skewt: Unable to coerce input to double precision");
+    return(NhlFATAL);
   }
 
 /*
@@ -218,30 +196,6 @@ NhlErrorTypes x_skewt_W( void )
     return(NhlFATAL);
   }
 
-/*
- * Coerce subsection of temp (tmp_temp) to double.
- */
-  if(type_temp != NCL_double) {
-    coerce_subset_input_double(temp,tmp_temp,0,type_temp,nty,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_temp to appropriate locations in temp.
- */
-    tmp_temp = &((double*)temp)[0];
-  }
-/*
- * Coerce subsection of y (tmp_y) to double.
- */
-  if(type_y != NCL_double) {
-    coerce_subset_input_double(y,tmp_y,0,type_y,nty,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_y to appropriate locations in y.
- */
-    tmp_y = &((double*)y)[0];
-  }
 /*
  * Call Fortran routine.
  */
@@ -309,19 +263,12 @@ NhlErrorTypes tmr_skewt_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tmr_skewt: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
-  if(type_w != NCL_double) {
-    tmp_w = (double*)calloc(1,sizeof(double));
-    if(tmp_w == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"tmr_skewt: Unable to allocate memory for coercing w to double precision");
-      return(NhlFATAL);
-    }
-  }
-  if(type_p != NCL_double) {
-    tmp_p = (double*)calloc(1,sizeof(double));
-    if(tmp_p == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"tmr_skewt: Unable to allocate memory for coercing y to double precision");
-      return(NhlFATAL);
-    }
+
+  tmp_w = coerce_input_double(w,type_w,1,0,NULL,NULL);
+  tmp_p = coerce_input_double(p,type_p,1,0,NULL,NULL);
+  if(tmp_w == NULL || tmp_p == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tmr_skewt: Unable to coerce input to double precision");
+    return(NhlFATAL);
   }
 
 /*
@@ -340,30 +287,6 @@ NhlErrorTypes tmr_skewt_W( void )
     return(NhlFATAL);
   }
 
-/*
- * Coerce subsection of w (tmp_w) to double.
- */
-  if(type_w != NCL_double) {
-    coerce_subset_input_double(w,tmp_w,0,type_w,1,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_w to appropriate locations in w.
- */
-    tmp_w = &((double*)w)[0];
-  }
-/*
- * Coerce subsection of p (tmp_p) to double.
- */
-  if(type_p != NCL_double) {
-    coerce_subset_input_double(p,tmp_p,0,type_p,1,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_p to appropriate locations in p.
- */
-    tmp_p = &((double*)p)[0];
-  }
 /*
  * Call Fortran routine.
  */
@@ -430,20 +353,12 @@ NhlErrorTypes tda_skewt_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tda_skewt: Unable to allocate memory for output");
     return(NhlFATAL);
   }
-  if(type_o != NCL_double) {
-    tmp_o = (double*)calloc(1,sizeof(double));
-    if(tmp_o == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"tda_skewt: Unable to allocate memory for coercing o to double precision");
-      return(NhlFATAL);
-    }
-  }
 
-  if(type_p != NCL_double) {
-    tmp_p = (double*)calloc(1,sizeof(double));
-    if(tmp_p == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"tda_skewt: Unable to allocate memory for coercing y to double precision");
-      return(NhlFATAL);
-    }
+  tmp_o = coerce_input_double(o,type_o,1,0,NULL,NULL);
+  tmp_p = coerce_input_double(p,type_p,1,0,NULL,NULL);
+  if(tmp_o == NULL || tmp_p == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tda_skewt: Unable to coerce input to double precision");
+    return(NhlFATAL);
   }
 
 /*
@@ -462,30 +377,6 @@ NhlErrorTypes tda_skewt_W( void )
     return(NhlFATAL);
   }
 
-/*
- * Coerce subsection of o (tmp_o) to double.
- */
-  if(type_o != NCL_double) {
-    coerce_subset_input_double(o,tmp_o,0,type_o,1,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_o to appropriate locations in o.
- */
-    tmp_o = &((double*)o)[0];
-  }
-/*
- * Coerce subsection of p (tmp_p) to double.
- */
-  if(type_p != NCL_double) {
-    coerce_subset_input_double(p,tmp_p,0,type_p,1,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_p to appropriate locations in p.
- */
-    tmp_p = &((double*)p)[0];
-  }
 /*
  * Call Fortran routine.
  */
@@ -552,20 +443,12 @@ NhlErrorTypes satlft_skewt_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"satlft_skewt: Unable to allocate memory for output");
     return(NhlFATAL);
   }
-  if(type_thw != NCL_double) {
-    tmp_thw = (double*)calloc(1,sizeof(double));
-    if(tmp_thw == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"satlft_skewt: Unable to allocate memory for coercing thw to double precision");
-      return(NhlFATAL);
-    }
-  }
 
-  if(type_p != NCL_double) {
-    tmp_p = (double*)calloc(1,sizeof(double));
-    if(tmp_p == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"satlft_skewt: Unable to allocate memory for coercing p to double precision");
-      return(NhlFATAL);
-    }
+  tmp_thw = coerce_input_double(thw,type_thw,1,0,NULL,NULL);
+  tmp_p   = coerce_input_double(p,type_p,1,0,NULL,NULL);
+  if(tmp_thw == NULL || tmp_p == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"satlft_skewt: Unable to coerce input to double precision");
+    return(NhlFATAL);
   }
 
 /*
@@ -582,30 +465,6 @@ NhlErrorTypes satlft_skewt_W( void )
   if( satlftskewt == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"satlft_skewt: Unable to allocate memory for output");
     return(NhlFATAL);
-  }
-/*
- * Coerce subsection of thw (tmp_thw) to double.
- */
-  if(type_thw != NCL_double) {
-      coerce_subset_input_double(thw,tmp_thw,0,type_thw,1,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_thw to appropriate locations in thw.
- */
-    tmp_thw = &((double*)thw)[0];
-  }
-/*
- * Coerce subsection of p (tmp_p) to double.
- */
-  if(type_p != NCL_double) {
-    coerce_subset_input_double(p,tmp_p,0,type_p,1,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_p to appropriate locations in p.
- */
-    tmp_p = &((double*)p)[0];
   }
 /*
  * Call Fortran routine.
@@ -704,28 +563,12 @@ NhlErrorTypes ptlcl_skewt_W( void )
 /*
  * Create temp arrays to hold subarray of p, t, td, pc, and tc.
  */
-  if(type_t != NCL_double) {
-    tmp_t = (double*)calloc(1,sizeof(double));
-    if(tmp_t == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ptlcl_skewt: Unable to allocate memory for coercing t to double precision");
-      return(NhlFATAL);
-    }
-  }
-
-  if(type_p != NCL_double) {
-    tmp_p = (double*)calloc(1,sizeof(double));
-    if(tmp_p == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ptlcl_skewt: Unable to allocate memory for coercing p to double precision");
-      return(NhlFATAL);
-    }
-  }
-
-  if(type_td != NCL_double) {
-    tmp_td = (double*)calloc(1,sizeof(double));
-    if(tmp_td == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ptlcl_skewt: Unable to allocate memory for coercing td to double precision");
-      return(NhlFATAL);
-    }
+  tmp_t  = coerce_input_double(t,type_t,1,0,NULL,NULL);
+  tmp_p  = coerce_input_double(p,type_p,1,0,NULL,NULL);
+  tmp_td = coerce_input_double(td,type_td,1,0,NULL,NULL);
+  if(tmp_t == NULL || tmp_p == NULL || tmp_td == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ptlcl_skewt: Unable to coerce input to double precision");
+    return(NhlFATAL);
   }
 
   if(type_pc == NCL_float) {
@@ -743,43 +586,7 @@ NhlErrorTypes ptlcl_skewt_W( void )
       return(NhlFATAL);
     }
   }
-/*
- * Coerce subsection of t (tmp_t) to double.
- */
-  if(type_t != NCL_double) {
-    coerce_subset_input_double(t,tmp_t,0,type_t,1,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_t to appropriate locations in t.
- */
-    tmp_t = &((double*)t)[0];
-  }
 
-/*
- * Coerce subsection of p (tmp_p) to double.
- */
-  if(type_p != NCL_double) {
-    coerce_subset_input_double(p,tmp_p,0,type_p,1,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_p to appropriate locations in p.
- */
-    tmp_p = &((double*)p)[0];
-  }
-/*
- * Coerce subsection of td (tmp_td) to double.
- */
-  if(type_td != NCL_double) {
-    coerce_subset_input_double(td,tmp_td,0,type_td,1,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_td to appropriate locations in td.
- */
-    tmp_td = &((double*)td)[0];
-  }
 /*
  * Call Fortran routine.
  */
@@ -869,29 +676,15 @@ NhlErrorTypes showal_skewt_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"showal_skewt: Unable to allocate memory for output");
     return(NhlFATAL);
   }
-  if(type_t != NCL_double) {
-    tmp_t = (double*)calloc(nlvls,sizeof(double));
-    if(tmp_t == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"showal_skewt: Unable to allocate memory for coercing t to double precision");
-      return(NhlFATAL);
-    }
+
+  tmp_t  = coerce_input_double(t,type_t,nlvls,0,NULL,NULL);
+  tmp_p  = coerce_input_double(p,type_p,nlvls,0,NULL,NULL);
+  tmp_td = coerce_input_double(td,type_td,nlvls,0,NULL,NULL);
+  if(tmp_t == NULL || tmp_p == NULL || tmp_td == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"showal_skewt: Unable to coerce input to double precision");
+    return(NhlFATAL);
   }
 
-  if(type_p != NCL_double) {
-    tmp_p = (double*)calloc(nlvls,sizeof(double));
-    if(tmp_p == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"showal_skewt: Unable to allocate memory for coercing p to double precision");
-      return(NhlFATAL);
-    }
-  }
-
-  if(type_td != NCL_double) {
-    tmp_td = (double*)calloc(nlvls,sizeof(double));
-    if(tmp_td == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"showal_skewt: Unable to allocate memory for coercing td to double precision");
-      return(NhlFATAL);
-    }
-  }
 /*
  * Allocate space for output array
  */
@@ -908,43 +701,6 @@ NhlErrorTypes showal_skewt_W( void )
     return(NhlFATAL);
   }
 
-/*
- * Coerce subsection of t (tmp_t) to double.
- */
-  if(type_t != NCL_double) {
-    coerce_subset_input_double(t,tmp_t,0,type_t,nlvls,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_t to appropriate locations in t.
- */
-    tmp_t = &((double*)t)[0];
-  }
-
-/*
- * Coerce subsection of p (tmp_p) to double.
- */
-  if(type_p != NCL_double) {
-    coerce_subset_input_double(p,tmp_p,0,type_p,nlvls,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_p to appropriate locations in p.
- */
-    tmp_p = &((double*)p)[0];
-  }
-/*
- * Coerce subsection of td (tmp_td) to double.
- */
-  if(type_td != NCL_double) {
-    coerce_subset_input_double(td,tmp_td,0,type_td,nlvls,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_td to appropriate locations in td.n
- */
-    tmp_td = &((double*)td)[0];
-  }
 /*
  * Call Fortran routine.
  */
@@ -1024,21 +780,15 @@ NhlErrorTypes pw_skewt_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pw_skewt: Unable to allocate memory for output");
     return(NhlFATAL);
   }
-  if(type_p != NCL_double) {
-    tmp_p = (double*)calloc(n,sizeof(double));
-    if(tmp_p == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pw_skewt: Unable to allocate memory for coercing p to double precision");
-      return(NhlFATAL);
-    }
+
+  tmp_p  = coerce_input_double(p,type_p,n,0,NULL,NULL);
+  tmp_td = coerce_input_double(td,type_td,n,0,NULL,NULL);
+
+  if(tmp_p == NULL || tmp_td == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pw_skewt: Unable to coerce input to double precision");
+    return(NhlFATAL);
   }
 
-  if(type_td != NCL_double) {
-    tmp_td = (double*)calloc(n,sizeof(double));
-    if(tmp_td == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pw_skewt: Unable to allocate memory for coercing td to double precision");
-      return(NhlFATAL);
-    }
-  }
 /*
  * Allocate space for output array
  */
@@ -1055,31 +805,6 @@ NhlErrorTypes pw_skewt_W( void )
     return(NhlFATAL);
   }
 
-/*
- * Coerce subsection of p (tmp_p) to double.
- */
-  if(type_p != NCL_double) {
-    coerce_subset_input_double(p,tmp_p,0,type_p,n,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_p to appropriate locations in p.
- */
-    tmp_p = &((double*)p)[0];
-  }
-
-/*
- * Coerce subsection of td (tmp_td) to double.
- */
-  if(type_td != NCL_double) {
-    coerce_subset_input_double(td,tmp_td,0,type_td,n,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_td to appropriate locations in td.n
- */
-    tmp_td = &((double*)td)[0];
-  }
 /*
  * Call Fortran routine.
  */
@@ -1188,29 +913,15 @@ NhlErrorTypes cape_thermo_W( void )
 /*
  * Create temp arrays to hold subarray of penv, tenv, lclmb.
  */
-  if(type_tenv != NCL_double) {
-    tmp_tenv = (double*)calloc(nlvls,sizeof(double));
-    if(tmp_tenv == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"cape_thermo: Unable to allocate memory for coercing t to double precision");
-      return(NhlFATAL);
-    }
+  tmp_tenv  = coerce_input_double(tenv,type_tenv,nlvls,0,NULL,NULL);
+  tmp_penv  = coerce_input_double(penv,type_penv,nlvls,0,NULL,NULL);
+  tmp_lclmb = coerce_input_double(lclmb,type_lclmb,1,0,NULL,NULL);
+
+  if(tmp_tenv == NULL || tmp_penv == NULL || tmp_lclmb == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"cape_thermo: Unable to coerce input to double precision");
+    return(NhlFATAL);
   }
 
-  if(type_penv != NCL_double) {
-    tmp_penv = (double*)calloc(nlvls,sizeof(double));
-    if(tmp_penv == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"cape_thermo: Unable to allocate memory for coercing p to double precision");
-      return(NhlFATAL);
-    }
-  }
-
-  if(type_lclmb != NCL_double) {
-    tmp_lclmb = (double*)calloc(1,sizeof(double));
-    if(tmp_lclmb == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"cape_thermo: Unable to allocate memory for coercing lclmb to double precision");
-      return(NhlFATAL);
-    }
-  }
 /*
  * Allocate space for output array
  */
@@ -1245,44 +956,6 @@ NhlErrorTypes cape_thermo_W( void )
     return(NhlFATAL);
   }
 
-/*
- * Coerce subsection of tenv (tmp_tenv) to double.
- */
-  if(type_tenv != NCL_double) {
-    coerce_subset_input_double(tenv,tmp_tenv,0,type_tenv,nlvls,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_tenv to appropriate locations in tenv.
- */
-    tmp_tenv = &((double*)tenv)[0];
-  }
-
-/*
- * Coerce subsection of penv (tmp_penv) to double.
- */
-  if(type_penv != NCL_double) {
-    coerce_subset_input_double(penv,tmp_penv,0,type_penv,nlvls,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_penv to appropriate locations in penv.
- */
-    tmp_penv = &((double*)penv)[0];
-  }
-
-/*
- * Coerce subsection of lclmb (tmp_lclmb) to double.
- */
-  if(type_lclmb != NCL_double) {
-    coerce_subset_input_double(lclmb,tmp_lclmb,0,type_lclmb,1,0,NULL,NULL);
-  }
-  else {
-/*
- * Point tmp_lclmb to appropriate locations in lclmb.n
- */
-    tmp_lclmb = &((double*)lclmb)[0];
-  }
 /*
  * Call Fortran routine.
  */

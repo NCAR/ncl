@@ -110,12 +110,13 @@ NhlErrorTypes smth9_W( void )
     return(NhlFATAL);
   }
 /*
- * Space for p.
+ * Coerce p and q to double precision if necessary.
  */
-  tmp_p = (double*)calloc(1,sizeof(double));
-  tmp_q = (double*)calloc(1,sizeof(double));
+  tmp_p = coerce_input_double(p,type_p,1,0,NULL,NULL);
+  tmp_q = coerce_input_double(q,type_p,1,0,NULL,NULL);
+
   if(tmp_p == NULL || tmp_q == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"smth9: Unable to allocate memory for coercing p/q to double precision");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"smth9: Unable to coerce p/q to double precision");
     return(NhlFATAL);
   }
   
@@ -149,9 +150,6 @@ NhlErrorTypes smth9_W( void )
  */
   index_x = 0;
   
-  coerce_subset_input_double(p,tmp_p,0,type_p,1,0,NULL,NULL);
-  coerce_subset_input_double(q,tmp_q,0,type_p,1,0,NULL,NULL);
-
   for(i = 0; i < nt; i++ ) {
 /*
  * Coerce subsection of x (tmp_x) to double.
@@ -177,8 +175,8 @@ NhlErrorTypes smth9_W( void )
  */
   NclFree(work);
   NclFree(tmp_x);
-  NclFree(tmp_p);
-  NclFree(tmp_q);
+  if(type_p != NCL_double) NclFree(tmp_p);
+  if(type_q != NCL_double) NclFree(tmp_q);
 
 /*
  * Return values. 

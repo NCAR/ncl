@@ -128,17 +128,14 @@ NhlErrorTypes pres_hybrid_W( void )
 /*
  * Coerce data to double if necessary.
  */
-  if(type_p0 != NCL_double) {
-    tmp_p0 = (double*)calloc(1,sizeof(double));
-    if( tmp_p0 == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid: Unable to allocate memory for coercing p0 array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(p0,tmp_p0,0,type_p0,1,0,NULL,NULL);
+  tmp_p0  = coerce_input_double(p0,type_p0,1,0,NULL,NULL);
+  tmp_hya = coerce_input_double(hya,type_hya,klvl,0,NULL,NULL);
+  tmp_hyb = coerce_input_double(hyb,type_hyb,klvl,0,NULL,NULL);
+  if( tmp_p0 == NULL || tmp_hya == NULL || tmp_hyb == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid: Unable to coerce input to double precision");
+    return(NhlFATAL);
   }
-  else {
-    tmp_p0 = &((double*)p0)[0];
-  }
+
 /*
  * Coerce psfc.
  */
@@ -148,34 +145,6 @@ NhlErrorTypes pres_hybrid_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid: Unable to allocate memory for coercing psfc array to double precision");
       return(NhlFATAL);
     }
-  }
-/*
- * Coerce hya.
- */
-  if(type_hya != NCL_double) {
-    tmp_hya = (double*)calloc(klvl,sizeof(double));
-    if( tmp_hya == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid: Unable to allocate memory for coercing hya array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(hya,tmp_hya,0,type_hya,klvl,0,NULL,NULL);
-  }
-  else {
-    tmp_hya = &((double*)hya)[0];
-  }
-/*
- * Coerce hyb.
- */
-  if(type_hyb != NCL_double) {
-    tmp_hyb = (double*)calloc(klvl,sizeof(double));
-    if( tmp_hyb == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid: Unable to allocate memory for coercing hyb array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(hyb,tmp_hyb,0,type_hyb,klvl,0,NULL,NULL);
-  }
-  else {
-    tmp_hyb = &((double*)hyb)[0];
   }
 /*
  * Allocate space for output array.
@@ -355,16 +324,12 @@ NhlErrorTypes dpres_hybrid_W( void )
 /*
  * Coerce data to double if necessary.
  */
-  if(type_p0 != NCL_double) {
-    tmp_p0 = (double*)calloc(1,sizeof(double));
-    if( tmp_p0 == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_hybrid: Unable to allocate memory for coercing p0 array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(p0,tmp_p0,0,type_p0,1,0,NULL,NULL);
-  }
-  else {
-    tmp_p0 = &((double*)p0)[0];
+  tmp_p0  = coerce_input_double(p0,type_p0,1,0,NULL,NULL);
+  tmp_hya = coerce_input_double(hya,type_hya,klvl,0,NULL,NULL);
+  tmp_hyb = coerce_input_double(hyb,type_hyb,klvl,0,NULL,NULL);
+  if( tmp_hya == NULL || tmp_hyb == NULL || tmp_p0 == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_hybrid: Unable to coerce input to double precision");
+    return(NhlFATAL);
   }
 /*
  * Coerce psfc.
@@ -375,34 +340,6 @@ NhlErrorTypes dpres_hybrid_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_hybrid: Unable to allocate memory for coercing psfc array to double precision");
       return(NhlFATAL);
     }
-  }
-/*
- * Coerce hya.
- */
-  if(type_hya != NCL_double) {
-    tmp_hya = (double*)calloc(klvl,sizeof(double));
-    if( tmp_hya == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_hybrid: Unable to allocate memory for coercing hya array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(hya,tmp_hya,0,type_hya,klvl,0,NULL,NULL);
-  }
-  else {
-    tmp_hya = &((double*)hya)[0];
-  }
-/*
- * Coerce hyb.
- */
-  if(type_hyb != NCL_double) {
-    tmp_hyb = (double*)calloc(klvl,sizeof(double));
-    if( tmp_hyb == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_hybrid: Unable to allocate memory for coercing hyb array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(hyb,tmp_hyb,0,type_hyb,klvl,0,NULL,NULL);
-  }
-  else {
-    tmp_hyb = &((double*)hyb)[0];
   }
 /*
  * Allocate space for output array.
@@ -583,17 +520,14 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
 /*
  * Coerce data to double if necessary.
  */
-  if(type_p0 != NCL_double) {
-    tmp_p0 = (double*)calloc(1,sizeof(double));
-    if( tmp_p0 == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid_ccm: Unable to allocate memory for coercing p0 array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(p0,tmp_p0,0,type_p0,1,0,NULL,NULL);
+  tmp_p0  = coerce_input_double(p0,type_p0,1,0,NULL,NULL);
+  tmp_hya = coerce_input_double(hya,type_hya,klvl,0,NULL,NULL);
+  tmp_hyb = coerce_input_double(hyb,type_hyb,klvl,0,NULL,NULL);
+  if( tmp_hya == NULL || tmp_hyb == NULL || tmp_p0 == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid_ccm: Unable to coerce input to double precision");
+    return(NhlFATAL);
   }
-  else {
-    tmp_p0 = &((double*)p0)[0];
-  }
+
 /*
  * Coerce psfc.
  */
@@ -604,34 +538,7 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
       return(NhlFATAL);
     }
   }
-/*
- * Coerce hya.
- */
-  if(type_hya != NCL_double) {
-    tmp_hya = (double*)calloc(klvl,sizeof(double));
-    if( tmp_hya == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid_ccm: Unable to allocate memory for coercing hya array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(hya,tmp_hya,0,type_hya,klvl,0,NULL,NULL);
-  }
-  else {
-    tmp_hya = &((double*)hya)[0];
-  }
-/*
- * Coerce hyb.
- */
-  if(type_hyb != NCL_double) {
-    tmp_hyb = (double*)calloc(klvl,sizeof(double));
-    if( tmp_hyb == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid_ccm: Unable to allocate memory for coercing hyb array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(hyb,tmp_hyb,0,type_hyb,klvl,0,NULL,NULL);
-  }
-  else {
-    tmp_hyb = &((double*)hyb)[0];
-  }
+
 /*
  * Allocate space for output array.
  */
@@ -815,17 +722,14 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
 /*
  * Coerce data to double if necessary.
  */
-  if(type_p0 != NCL_double) {
-    tmp_p0 = (double*)calloc(1,sizeof(double));
-    if( tmp_p0 == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_hybrid_ccm: Unable to allocate memory for coercing p0 array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(p0,tmp_p0,0,type_p0,1,0,NULL,NULL);
+  tmp_p0  = coerce_input_double(p0,type_p0,1,0,NULL,NULL);
+  tmp_hya = coerce_input_double(hya,type_hya,klvl,0,NULL,NULL);
+  tmp_hyb = coerce_input_double(hyb,type_hyb,klvl,0,NULL,NULL);
+  if( tmp_hya == NULL || tmp_hyb == NULL || tmp_p0 == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_hybrid_ccm: Unable to coerce input to double precision");
+    return(NhlFATAL);
   }
-  else {
-    tmp_p0 = &((double*)p0)[0];
-  }
+
 /*
  * Coerce psfc.
  */
@@ -835,34 +739,6 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_hybrid_ccm: Unable to allocate memory for coercing psfc array to double precision");
       return(NhlFATAL);
     }
-  }
-/*
- * Coerce hya.
- */
-  if(type_hya != NCL_double) {
-    tmp_hya = (double*)calloc(klvl,sizeof(double));
-    if( tmp_hya == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_hybrid_ccm: Unable to allocate memory for coercing hya array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(hya,tmp_hya,0,type_hya,klvl,0,NULL,NULL);
-  }
-  else {
-    tmp_hya = &((double*)hya)[0];
-  }
-/*
- * Coerce hyb.
- */
-  if(type_hyb != NCL_double) {
-    tmp_hyb = (double*)calloc(klvl,sizeof(double));
-    if( tmp_hyb == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_hybrid_ccm: Unable to allocate memory for coercing hyb array to double precision");
-      return(NhlFATAL);
-    }
-    coerce_subset_input_double(hyb,tmp_hyb,0,type_hyb,klvl,0,NULL,NULL);
-  }
-  else {
-    tmp_hyb = &((double*)hyb)[0];
   }
 /*
  * Allocate space for output array.
