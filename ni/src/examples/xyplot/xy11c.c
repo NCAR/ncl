@@ -1,5 +1,5 @@
 /*
- *      $Id: xy11c.c,v 1.2 1995-01-30 16:31:13 haley Exp $
+ *      $Id: xy11c.c,v 1.3 1995-02-01 15:45:22 haley Exp $
  */
 /************************************************************************
 *									*
@@ -30,7 +30,7 @@
 #include <ncarg/hlu/XyPlot.h>
 
 /*
- * Create data array's to create plot
+ * Create data arrays to create plot
  */
 
 float Temp[]=	{	-13.500000,
@@ -144,27 +144,26 @@ main()
 	NhlRLSetInteger(rlist,NhlNtiMainOn,True);
 	NhlRLSetInteger(rlist,NhlNtiXAxisOn,True);
 	NhlRLSetInteger(rlist,NhlNtiYAxisOn,True);
-	NhlRLSetInteger(rlist,NhlNtiYAxisOn,True);
 
 	NhlCreate(&plotid,"xy_plot",NhlxyPlotLayerClass,xworkid,rlist);
 
 	NhlRLDestroy(rlist);
 
 	/*
-	 * Draw the Plot - It draws to it's parent X Workstation.
+	 * Draw the Plot - It draws to its parent X Workstation.
 	 */
 	NhlDraw(plotid);
 
 	/*
-	 * This flushes the X - buffer and then clears the Workstation.
+	 * This flushes the X buffer and then clears the Workstation.
 	 * NhlNwkPause is set to True so the clear will wait until the
-	 * user click's in the Window - ie. this call blocks until that time.
+	 * user clicks in the Window - ie. this call blocks until that time.
 	 */
 	NhlFrame(xworkid);
 
 	/*
 	 * This call essentually re-parents plotid to a new parent (ncgmwid).
-	 * so that the next time plotid is drawn it will draw to it's new
+	 * so that the next time plotid is drawn it will draw to its new
 	 * parent.
 	 */
 	NhlChangeWorkstation(plotid,ncgmwid);
@@ -179,8 +178,8 @@ main()
 	NhlFrame(ncgmwid);
 
 	/*
-	 * NhlDestroy destroy's the given id and all of it's children
-	 * so destroying ncgmwid will also destroy's plotid.
+	 * NhlDestroy destroys the given id and all of its children
+	 * so destroying ncgmwid will also destroys plotid.
 	 */
 	NhlDestroy(ncgmwid);
 	NhlDestroy(xworkid);
