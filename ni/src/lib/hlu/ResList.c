@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.c,v 1.17 1997-08-20 22:55:27 ethan Exp $
+ *      $Id: ResList.c,v 1.18 1998-05-27 19:22:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -620,6 +620,7 @@ NhlRLSet
 	unsigned int	size = 0;
 	NrmQuark	typeQ = NrmStringToQuark(type);
 
+	NhlINITVAR(value);
 	/*
 	 * default type is "int" since the ANSI standard says STDARGS should
 	 * propagate all "integral" types to int.

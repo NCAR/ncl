@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.47 1997-08-14 16:29:46 dbrown Exp $
+ *      $Id: Converters.c,v 1.48 1998-05-27 19:22:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1133,7 +1133,7 @@ _NhlCvtGenArrayToIndexGenArray
 	char		func[] = "_NhlCvtGenArrayToIndexGenArray";
 	char		buff[_NhlMAXRESNAMLEN];
 	char		*indxgen_name;
-	NhlGenArray	tgen;
+	NhlGenArray	gen;
 	int		*tint,i;
 	NrmValue	ival;
 	NhlErrorTypes	ret = NhlNOERROR;
@@ -1151,8 +1151,22 @@ _NhlCvtGenArrayToIndexGenArray
 		return NhlFATAL;
 	}
 
+	/*
+	 * if from is Generic GenArray, then this converter won't work.
+	 * Need to get the more specific name.
+	 */
+	if(from->typeQ == genQ){
+		NrmQuark	newfromQ;
+
+		gen = from->data.ptrval;
+		strcpy(buff,NrmQuarkToString(gen->typeQ));
+		strcat(buff,NhlTGenArray);
+		newfromQ = NrmStringToQuark(buff);
+		return _NhlReConvertData(newfromQ,to->typeQ,from,to);
+	}
+
 	ival.size = sizeof(NhlGenArray);
-	ival.data.ptrval = &tgen;
+	ival.data.ptrval = &gen;
 	if(_NhlReConvertData(from->typeQ,intgenQ,from,&ival) < NhlWARNING){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"%s:Unable to convert from %s to %s",func,
@@ -1161,10 +1175,10 @@ _NhlCvtGenArrayToIndexGenArray
 		return NhlFATAL;
 	}
 
-	tint = (int*)tgen->data;
+	tint = (int*)gen->data;
 
 	if(args[0].data.lngval == _NhlRngMINMAX){
-		for(i=0;i < tgen->num_elements;i++){
+		for(i=0;i < gen->num_elements;i++){
 			if(tint[i] < args[1].data.lngval ||
 					tint[i] > args[2].data.lngval){
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1176,7 +1190,7 @@ _NhlCvtGenArrayToIndexGenArray
 		}
 	}
 	else if(args[0].data.lngval == _NhlRngMIN){
-		for(i=0;i < tgen->num_elements;i++){
+		for(i=0;i < gen->num_elements;i++){
 			if(tint[i] < args[1].data.lngval){
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					"%s:Value %d is less than index min %d",					func,tint[i],args[1].data.lngval);
@@ -1185,7 +1199,7 @@ _NhlCvtGenArrayToIndexGenArray
 		}
 	}
 	else{
-		for(i=0;i < tgen->num_elements;i++){
+		for(i=0;i < gen->num_elements;i++){
 			if(tint[i] > args[1].data.lngval){
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					"%s:Value %d is more than index max %d",					func,tint[i],args[1].data.lngval);
@@ -1203,9 +1217,9 @@ _NhlCvtGenArrayToIndexGenArray
 		return NhlFATAL;
 	}
 	*indxgen_name = '\0';
-	tgen->typeQ = NrmStringToQuark(buff);
+	gen->typeQ = NrmStringToQuark(buff);
 
-	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
+	_NhlSetVal(NhlGenArray,sizeof(NhlGenArray),gen);
 }
 
 /************************************************************************
