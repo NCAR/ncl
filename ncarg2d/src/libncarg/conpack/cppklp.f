@@ -1,5 +1,5 @@
 C
-C $Id: cppklp.f,v 1.6 1996-02-29 17:44:15 kennison Exp $
+C $Id: cppklp.f,v 1.7 1997-01-17 20:42:47 kennison Exp $
 C
       SUBROUTINE CPPKLP (ZDAT,RWRK,IWRK)
 C
@@ -104,7 +104,7 @@ C
 C
 C Add the informational label, if any, to the list.
 C
-      CALL CPINLB (ZDAT,RWRK,IWRK,1,IWRK)
+      CALL CPINLB (ZDAT,RWRK,IWRK)
       IF (ICFELL('CPPKLP',6).NE.0) RETURN
 C
 C Save the index of the high/low labels.
@@ -113,7 +113,7 @@ C
 C
 C Add the high/low labels, if any, to the list.
 C
-      CALL CPHLLB (ZDAT,RWRK,IWRK,1,IWRK)
+      CALL CPHLLB (ZDAT,RWRK,IWRK)
       IF (ICFELL('CPPKLP',7).NE.0) RETURN
 C
 C Save the index of the contour-line labels.
