@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.26 1996-05-16 23:46:25 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.27 1996-05-17 19:18:56 haley Exp $
 */
 /************************************************************************
 *									*
@@ -1684,9 +1684,9 @@ int upordown;
 	int i,ifst;
 
 	if(upordown) {
-		(_NHLCALLF(mapiqd,MAPIQD))();
+		c_mapiqd();
 		ifst = 0;
-		(_NHLCALLF(mapitd,MAPITD))(&y,&x,&ifst);
+		c_mapitd(y,x,ifst);
 		x_last = x;
 		y_last = y;
 		return NhlNOERROR;
@@ -1708,7 +1708,7 @@ int upordown;
 		float yc = y_last + ydist *(i+1)/ (float)size;
 		float xc = x_last + xdist *(i+1)/ (float)size;
 		ifst = 2;
-		(_NHLCALLF(mapitd,MAPITD))(&yc,&xc,&ifst);
+		c_mapitd(yc,xc,ifst);
 	}
 	x_last = x;
 	y_last = y;
