@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.7 1991-08-05 17:44:56 clyne Exp $
+ *	$Id: X11_class4.c,v 1.8 1991-09-26 16:28:56 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -41,8 +41,6 @@
 #include	"Xcrm.h"
 #include	"soft_fill.h"
 #include	"translate.h"
-
-extern  Ct_err	Instr_Dec();
 
 extern	Colormap	Cmap;
 
@@ -454,7 +452,10 @@ CGMC *c;
 		 * see if more flag is set. If so get more data
 		 */
 		if (c->more) {
-			if (Instr_Dec(c) != OK) return (pre_err);
+			if (Instr_Dec(c) < 1) {
+				ct_error(T_FRE, "metafile");
+				return (DIE);
+			}
 		}
 		else break;	/* leave loop	*/
 	}
@@ -1337,7 +1338,10 @@ static	Ct_err	x11_cell_array(c, color_pal, P, Q, R, nx, ny)
 
 			/* make sure data available in cgmc     */
 			if (cgmc_index == c->Cnum && c->more) {
-				if (Instr_Dec(c) != OK) return (pre_err);
+				if (Instr_Dec(c) < 1) {
+					ct_error(T_FRE, "metafile");
+					return (DIE);
+				}
 				cgmc_index = 0;
 			}
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: clear_text.c,v 1.3 1991-08-16 10:49:05 clyne Exp $
+ *	$Id: clear_text.c,v 1.4 1991-09-26 16:29:07 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -37,10 +37,9 @@
 #include "text.h"
 
 #ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/clear_text.c,v 1.3 1991-08-16 10:49:05 clyne Exp $";
+static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/clear_text.c,v 1.4 1991-09-26 16:29:07 clyne Exp $";
 #endif
 
-extern	Ct_err	Instr_Dec();
 
 static	struct	{
 	BoolType_	data,	/* true if user wants element's parameters   */	
@@ -863,8 +862,10 @@ CGMC *c;
 				 * true when rendering super big cell arrays
 				 */
 				if (colorindex == c->Cnum && c->more) {
-					if (Instr_Dec(c) != OK)
-						return(pre_err);
+					if (Instr_Dec(c) < 1) {
+						ct_error(T_FRE, "metafile");
+						return(DIE);
+					}
 
 					colorindex = 0;
 				}

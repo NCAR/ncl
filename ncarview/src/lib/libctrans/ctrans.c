@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.8 1991-08-16 10:49:58 clyne Exp $
+ *	$Id: ctrans.c,v 1.9 1991-09-26 16:29:25 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -36,7 +36,7 @@
  * rev 1.01 clyne 4/18/90	: expanded application programmer interace
  */
 #ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.8 1991-08-16 10:49:58 clyne Exp $";
+static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.9 1991-09-26 16:29:25 clyne Exp $";
 #endif
 
 
@@ -69,7 +69,6 @@ extern Ct_err GP_Init();
 extern Ct_err Init_Font();
 extern Ct_err InitInput();
 extern Ct_err SetRecord();
-extern Ct_err Instr_Dec();
 
 extern	Ct_err	(*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1]) ();
 extern	struct	device	devices[];
@@ -233,13 +232,14 @@ Ct_err	init_ctrans(argc, argv, prog_name, gcap, fcap, stand_alone,				batch)
  *	cgm_fd		: CGM file descriptor returned from CGM_open
  *			  element of the metafile. 0 if first metafile
  * on exit
- *	return		== one of {OK, DIE, SICK}
+ *	return		: -1 => error, 0 => EOF, 1 => OK
  */
-Ct_err	init_metafile(record, cgm_fd)
+int	init_metafile(record, cgm_fd)
 	int	record;
 	Cgm_fd	cgm_fd;
 {
 
+	int	status;
 	int	devnum = devices[currdev].number;	
 
 	Ct_err	noop();
@@ -249,14 +249,14 @@ Ct_err	init_metafile(record, cgm_fd)
 	 */
 	if (!ctransIsInit) {
 		ct_error(T_NULL, "not in proper state");
-		return(DIE);
+		return(-1);
 	}
 
 	/*
 	 * initialize the input module
 	 */
 	if (InitInput(cgm_fd) != OK) {
-		return(pre_err);
+		return(-1);
 	}
 	/*
 	 *	Jump to the first frame in the metafile
@@ -264,21 +264,24 @@ Ct_err	init_metafile(record, cgm_fd)
  	 */
 	if (record != NEXT) {
 		if (SetRecord(record) != OK) {
-			return (pre_err);
+			return (-1);
 		}
 	}
 
 	/*
 	 *	make sure first element is a BEGIN METAFILE
 	 */
-	if (Instr_Dec(&command) != OK) {
-		return(pre_err);
+	if ((status = Instr_Dec(&command)) < 1) {
+		if (status < 0) {	/* else eof	*/
+			ct_error(T_FRE, "metafile");
+		}
+		return(status);
 	}
 	if (command.class == DEL_ELEMENT && command.command == BEG_MF) 
 		Process(&command);
 	else {
 		ct_error(T_FRE, "missing CGM BEGIN METAFILE element");
-		return(DIE);
+		return(-1);
 	}
 
 	/*
@@ -300,23 +303,25 @@ Ct_err	init_metafile(record, cgm_fd)
 	/*
 	 * 	process until the first frame or an end of metafile element	
 	 */
-	if (Instr_Dec(&command) != OK) {
-		return (pre_err);
+	if (Instr_Dec(&command) < 1) {
+		ct_error(T_FRE, "metafile");
+		return (-1);
 	}
 	while((command.class != DEL_ELEMENT || command.command != BEG_PIC)
 		&& (command.class != DEL_ELEMENT || command.command != END_MF)){
 
 		Process(&command);
 
-		if (Instr_Dec(&command) != OK) {
-			return (pre_err);
+		if (Instr_Dec(&command) < 1) {
+			ct_error(T_FRE, "metafile");
+			return (-1);
 		}
 	}	 
 
 	/*
 	 * 'command' now contains a BEG_PIC or an END_METAFILE element 
 	 */
-	return (OK);
+	return (1);
 
 }
 
@@ -357,8 +362,9 @@ Ct_err	ctrans(record)
 		if (SetRecord(record) != OK) {
 			return(pre_err);
 		}
-		if (Instr_Dec(&command) != OK) {
-			return(pre_err);
+		if (Instr_Dec(&command) < 1) {
+			ct_error(T_FRE, "metafile");
+			return(DIE);
 		}
 	}
 
@@ -394,7 +400,7 @@ Ct_err	ctrans(record)
 	/*
 	 * process elements until we get an end of picture 
 	 */
-	while ((status = Instr_Dec(&command)) == OK) {
+	while ((status = Instr_Dec(&command)) > 0) {
 
 		/*
 		 * execute the cgmc
@@ -407,8 +413,9 @@ Ct_err	ctrans(record)
 		}
 	}
 
-	if (status != OK) {
-		return(pre_err);
+	if (status < 1) {
+		ct_error(T_FRE, "metafile");
+		return(DIE);
 	}
 
 
@@ -416,8 +423,9 @@ Ct_err	ctrans(record)
 	 * get the next instruction. It should be either a Begin Pic or 
 	 * an End MF
 	 */
-	if (Instr_Dec(&command) != OK) {
-		return(pre_err);
+	if (Instr_Dec(&command) < 1) {
+		ct_error(T_FRE, "metafile");
+		return(DIE);
 	}
 
 	if (! Batch) clear_device();
@@ -462,8 +470,9 @@ Ct_err	ctrans_merge(record1, record2)
 	 * 	Do until get a END PICTURE or END METAFILE element
 	 */
 	do {
-		if (Instr_Dec(&command) != OK) {
-			return(pre_err);
+		if (Instr_Dec(&command) < 1) {
+			ct_error(T_FRE, "metafile");
+			return(DIE);
 		}
 
 		Process(&command);
@@ -486,8 +495,9 @@ Ct_err	ctrans_merge(record1, record2)
 	 */
 	do {
 
-		if (Instr_Dec(&command) != OK) {
-			return (pre_err);
+		if (Instr_Dec(&command) < 1) {
+			ct_error(T_FRE, "metafile");
+			return (DIE);
 		}
 	}while((command.class != DEL_ELEMENT || command.command != BEG_PIC_B)
 		&& (command.class != DEL_ELEMENT || command.command != END_MF));
@@ -496,8 +506,9 @@ Ct_err	ctrans_merge(record1, record2)
 	/*
 	 * get the next command
 	 */
-	if (Instr_Dec(&command) != OK) {
-		return (pre_err);
+	if (Instr_Dec(&command) < 1) {
+		ct_error(T_FRE, "metafile");
+		return (DIE);
 	}
 
 	/*
@@ -510,8 +521,9 @@ Ct_err	ctrans_merge(record1, record2)
 
 		Process(&command);
 
-		if (Instr_Dec(&command) != OK) {
-			return(pre_err);
+		if (Instr_Dec(&command) < 1) {
+			ct_error(T_FRE, "metafile");
+			return(DIE);
 		}
 	}
 
@@ -529,8 +541,9 @@ Ct_err	ctrans_merge(record1, record2)
 		 * end of a single frame. Get BEG_PIC command for next 
 		 * invocation of  ctrans()
 		 */
-		if (Instr_Dec(&command) != OK) {
-			return(pre_err);
+		if (Instr_Dec(&command) < 1) {
+			ct_error(T_FRE, "metafile");
+			return(DIE);
 		}
 		return(OK);
 	}

@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.4 1991-08-16 10:51:45 clyne Exp $
+ *	$Id: rast.c,v 1.5 1991-09-26 16:29:44 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -498,7 +498,6 @@ static	Ct_err	ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
 	register int	i,j,k,l;
 
 	void	SetUpCellArrayIndexing(), SetUpCellArrayAddressing();
-	Ct_err	Instr_Dec();
 
 	image_width = ABS(Pcoord.x - Qcoord.x) + 1;
 	image_height = ABS(Pcoord.y - Qcoord.y) + 1;
@@ -550,7 +549,10 @@ static	Ct_err	ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
 
 			/* make sure data available in cgmc     */
 			if (cgmc_index == c->Cnum && c->more) {
-				if (Instr_Dec(c) != OK) return (pre_err);
+				if (Instr_Dec(c) < 1) {
+					ct_error(T_FRE, "metafile");
+					return (DIE);
+				}
 				cgmc_index = 0;
 			}
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: cgi_cell_sim.c,v 1.3 1991-03-12 17:35:11 clyne Exp $
+ *	$Id: cgi_cell_sim.c,v 1.4 1991-09-26 16:29:03 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -34,7 +34,6 @@
  */
 
 
-extern	Ct_err	Instr_Dec();
 
 static	struct {
 	Cint	*colorind;	/* raster array of colour indecies	*/
@@ -138,8 +137,10 @@ cgi_packed_cell_sim(c, P, delta_pr_x, delta_pr_y, delta_qr_x, delta_qr_y,
 				 * true when rendering super big cell arrays
 				 */
 				if (index == c->Cnum && c->more) {
-					if (Instr_Dec(c) != OK)
-						return (pre_err);
+					if (Instr_Dec(c) < 1) {
+						ct_error(T_FRE, "metafile");
+						return (DIE);
+					}
 
 					index = 0;
 				}
@@ -215,8 +216,10 @@ cgi_packed_cell_sim(c, P, delta_pr_x, delta_pr_y, delta_qr_x, delta_qr_y,
 
 				/* make sure data available in cgmc	*/
 				if (index == c->Cnum && c->more) {
-					if (Instr_Dec(c) != OK)
-						return (pre_err);
+					if (Instr_Dec(c) < 1) {
+						ct_error(T_FRE, "metafile");
+						return (DIE);
+					}
 
 					index = 0;
 				}

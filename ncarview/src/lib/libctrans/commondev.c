@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.c,v 1.6 1991-08-16 10:53:03 clyne Exp $
+ *	$Id: commondev.c,v 1.7 1991-09-26 16:29:15 clyne Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -160,8 +160,6 @@ CGMC *c;
 	long	x1,y1,x2,y2;	/* the clipped line coords */
 	register long	n,p;
 
-	extern	Ct_err	Instr_Dec();
-
 	/*
 	 *	Make sure the line attributes are set
 	 */
@@ -214,8 +212,11 @@ CGMC *c;
 		* see if more flag is set. If so get more data
 		*/
 		if (c->more) {
-			if (Instr_Dec(c) != OK) return (pre_err);
+			if (Instr_Dec(c) < 1) {
+				ct_error(T_FRE, "metafile");
+				return (DIE);
 			}
+		}
 		else break;     /* leave loop   */
 
 	}	/* while (1)	*/
@@ -264,7 +265,10 @@ CGMC *c;
 		* see if more flag is set. If so get more data
 		*/
 		if (c->more) {
-			if (Instr_Dec(c) != OK) return (pre_err);
+			if (Instr_Dec(c) < 1) {
+				ct_error(T_FRE, "metafile");
+				return (DIE);
+			}
 
 			if (Clipper(x2,y2,c->p[0].x,c->p[0].y,
 				&x1, &y1, &x2, &y2)) {
@@ -419,8 +423,6 @@ CGMC *c;
 
 	extern	long	clipxmax, clipxmin, clipymax, clipymin;
 
-	extern	Ct_err	Instr_Dec();
-
 
 	if (CLIP_DAMAGE) {	/* has clipping changed	*/
 		CoordRect	device_win_coord;
@@ -545,7 +547,10 @@ CGMC *c;
 		 * see if more flag is set. If so get more data
 		 */
 		if (c->more) {
-			if (Instr_Dec(c) != OK) return (pre_err);
+			if (Instr_Dec(c) < 1) {
+				ct_error(T_FRE, "metafile");
+				return (DIE);
+			}
 		}
 		else break;	/* leave loop	*/
 	}

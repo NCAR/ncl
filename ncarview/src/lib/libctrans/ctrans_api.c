@@ -1,5 +1,5 @@
 /*
- *      $Id: ctrans_api.c,v 1.1 1991-08-16 10:55:56 clyne Exp $
+ *      $Id: ctrans_api.c,v 1.2 1991-09-26 16:29:31 clyne Exp $
  */
 /*
  *	File:		ctrans_api.c
@@ -27,6 +27,7 @@
 
 #include <stdio.h> 
 #include <fcntl.h> 
+#include <errno.h> 
 
 #ifdef	SYSV
 #include <string.h>
@@ -84,28 +85,33 @@ static	int	frameCount = 0;		/* current frame offset		*/
  * 			ctrans will look in the default font directory for the
  *			named font.
  *	metafile	: name of metafile to translate.
+ *	dev_argc	: device specific argument  count
+ *	dev_argv	: device specific arguments
  *
  * on exit
- *	return		: < 0 => error, else ok.
+ *	return		: < 0 => error, 0 => EOF, else ok.
  * 
  * Notes
  *	if metafile is null then SetMetafile must be called before plotting
  *	can begin. If device_name or font_name is null ctrans will use
  *	the value in GRAPHCAP and FONTCAP variables respectively. 
  */
-CtransOpenBatch(device_name, font_name, metafile)
+CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	char	*device_name,
 		*font_name,
 		*metafile;
+	int	dev_argc;
+	char	**dev_argv;
 {
 	char	*gcap,		/* the path to the graphcap	*/
 		*fcap;		/* path to the fontcap		*/
 
-	int	dummy;
+	char	**dev_argv_;
 
 	static	boolean softFillOption = FALSE;
 	static	boolean deBugOption = FALSE;
 	static	boolean bellOffOption = TRUE;
+	int	i;
 
 	char	*getGcapname(), *getFcapname();
 
@@ -147,50 +153,58 @@ CtransOpenBatch(device_name, font_name, metafile)
         }
 
 	/*
-	 * force the loading of device specific option defaults
+	 * force the loading of device specific option defaults. The process
+	 * is destructive to dev_argc/dev_argv so pass a copy of the arg list
 	 */
-	dummy = 0;
-	parseOptionTable(&dummy, (char **) NULL, devices[currdev].opt);
+	if (! (dev_argv_ = (char **) malloc ((dev_argc+1) * sizeof (char *)))){
+		CtransSetError_(errno);
+		return(-1);
+	}
+	for (i=0; i<dev_argc; i++) {
+		dev_argv_[i] = (char *) malloc (strlen(dev_argv[i] + 1));
+		(void) strcpy (dev_argv_[i], dev_argv[i]);
+	}
+	parseOptionTable(&dev_argc, (char **) dev_argv_, devices[currdev].opt);
 
 
 
-		/*
-		 * get path name to the font cap
-		 */
-		if (! (fcap = getFcapname(font_name))) {
-
-			/*
-			 * no font, try and use default font
-			 */
-			if ((fcap = getFcapname(DEFAULTFONT)) == NULL) {
-				CtransSetError_(ERR_NO_FONT);
-				return(-1);
-			}
-		}
+	/*
+	 * get path name to the font cap
+	 */
+	if (! (fcap = getFcapname(font_name))) {
 
 		/*
-		 * inform ctrans of which font to use
+		 * no font, try and use default font
 		 */
-		if (SetFont(fcap) < 0) {
-			CtransSetError_(ERR_INIT_FONT);
+		if ((fcap = getFcapname(DEFAULTFONT)) == NULL) {
+			CtransSetError_(ERR_NO_FONT);
 			return(-1);
 		}
-
-		init_cgmc(&cgmc);
-
-
-		/*
-		 * after we init the cgmc we want to set the initialize flag to
-		 * keep us from renitialzing the cgmc twice
-		 */
-		initialized = TRUE;
-
-		if (metafile) {
-			return(CtransSetMetafile(metafile));
-		}
-
-		return(1);
 	}
+
+	/*
+	 * inform ctrans of which font to use
+	 */
+	if (SetFont(fcap) < 0) {
+		CtransSetError_(ERR_INIT_FONT);
+		return(-1);
+	}
+
+	init_cgmc(&cgmc);
+
+
+	/*
+	 * after we init the cgmc we want to set the initialize flag to
+	 * keep us from renitialzing the cgmc twice
+	 */
+	initialized = TRUE;
+
+	if (metafile) {
+		return(CtransSetMetafile(metafile));
+	}
+
+	return(1);
+}
 
 /*
  *	CtransSetMetafile
@@ -201,14 +215,14 @@ CtransOpenBatch(device_name, font_name, metafile)
  *	metafile	: name of metafile
  *
  * on exit 
- *	return		: -1 => error, else ok
+ *	return		: -1 => error, 0 => EOF, else ok
  */
 CtransSetMetafile(metafile)
 	char	*metafile;
 {
-	Ct_err	status;
+	int	status;
 
-	Ct_err	Instr_Dec(), InitInput();
+	Ct_err	InitInput();
 
 	/*
 	 * make sure we've been initialized
@@ -243,11 +257,13 @@ CtransSetMetafile(metafile)
 	/*
 	 * get the first cgm element
 	 */
-	if (Instr_Dec(&cgmc) != OK) {
-		CtransSetError_(ERR_PAR_META);
-		(void) CGM_close(cgm_fd);
-		cgm_fd = -1;
-		return(-1);
+	if ((status = Instr_Dec(&cgmc)) < 1) {
+		if (status < 1) {	/* else eof	*/
+			CtransSetError_(ERR_PAR_META);
+			(void) CGM_close(cgm_fd);
+			cgm_fd = -1;
+		}
+		return(status);
 	}
 
 	/*
@@ -268,7 +284,7 @@ CtransSetMetafile(metafile)
 	 * process cgm elements until the first frame or an end of metafile 
 	 * element
 	 */
-	while ((status = Instr_Dec(&cgmc)) == OK) {
+	while ((status = Instr_Dec(&cgmc)) > 0) {
 
 		if ((cgmc.class == DEL_ELEMENT && cgmc.command == BEG_PIC) || 
 			(cgmc.class == DEL_ELEMENT && cgmc.command == END_MF)){
@@ -281,7 +297,7 @@ CtransSetMetafile(metafile)
 		Process(&cgmc);
 	}
 
-	if (status != OK) {
+	if (status < 1) {
 		CtransSetError_(ERR_INV_META);
 		(void) CGM_close(cgm_fd);
 		cgm_fd = -1;
@@ -307,9 +323,7 @@ CtransSetMetafile(metafile)
  */
 CtransPlotFrame()
 {
-	Ct_err	status;
-
-	Ct_err	Instr_Dec();
+	int	status;
 
 	/*
 	 * make sure we've been initialized
@@ -340,7 +354,7 @@ CtransPlotFrame()
 	/*
 	 * process elements until we get an end of picture 
 	 */
-	while ((status = Instr_Dec(&cgmc)) == OK) {
+	while ((status = Instr_Dec(&cgmc)) > 0) {
 
 		/*
 		 * execute the cgmc
@@ -353,7 +367,7 @@ CtransPlotFrame()
 		}
 	}
 
-	if (status != OK) {
+	if (status < 1) {
 		CtransSetError_(ERR_INV_META);
 		return(-1);
 	}
@@ -363,7 +377,7 @@ CtransPlotFrame()
 	 * get the next instruction. It should be either a Begin Pic or 
 	 * an End MF
 	 */
-	if (Instr_Dec(&cgmc) != OK) {
+	if (Instr_Dec(&cgmc) < 1) {
 		CtransSetError_(ERR_PAR_META);
 		return(-1);
 	}
@@ -472,9 +486,8 @@ CtransLSeekBatch(offset, whence)
 	unsigned	skip;
 	int		frame_count = frameCount;
 
-	Ct_err		status;
+	int		status;
 
-	Ct_err		Instr_Dec();
 
 	if (whence == L_SET) {
 		skip = offset - frameCount;
@@ -492,7 +505,7 @@ CtransLSeekBatch(offset, whence)
 	/*
 	 *
 	 */
-	while (skip != 0 && ((status = Instr_Dec(&cgmc)) == OK)) {
+	while (skip != 0 && ((status = Instr_Dec(&cgmc)) > 0)) {
 
 		if (cgmc.class == DEL_ELEMENT && cgmc.command == BEG_PIC) {
 			skip--;
@@ -502,7 +515,7 @@ CtransLSeekBatch(offset, whence)
 		}
 	}
 
-	if (status != OK) {
+	if (status < 1) {
 		CtransSetError_(ERR_INV_META);
 		return(-1);
 	}
@@ -530,7 +543,9 @@ void	CtransGraphicsMode(on)
  *	CtransGetErrorNumber
  *
  *	returns the current error number. The returned value is only 
- *	meaningful if an error has been indicated by one of the other routines
+ *	meaningful if an error has been indicated by one of the other routines.
+ *	A negative return value means the unix global variable 'errno' is 
+ *	the absolute of the return value.
  */
 CtransGetErrorNumber()
 {

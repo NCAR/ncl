@@ -1,6 +1,5 @@
-
 /*
- *      $Id: error.c,v 1.1 1991-08-16 10:55:11 clyne Exp $
+ *      $Id: error.c,v 1.2 1991-09-26 16:29:36 clyne Exp $
  */
 /*
  *	File:		error.c	
@@ -15,6 +14,12 @@
  *			the api defined by ctrans_api.c. 
  *
  */
+
+#include <errno.h>
+#include "ctrandef.h"
+
+extern	int	sys_nerr;
+extern	char	*sys_errlist[];
 
 /*
  *	the current error number. errorNumber is used as an index into
@@ -43,28 +48,36 @@ static	int	errorTableSize = sizeof (errorMessages) / sizeof (char **);
  *	Set the current error number. Error codes are defined in error.h
  *
  * on entry
- *	errno		: an error code defined in error.h
+ *	errno		: an error code defined in error.h. If negative then
+ *			  the unix global variable 'errno' is ABS(errno).	
  * on exit
  *	return		: < 0 => invalid error code, else ok.
  */
 CtransSetError_(errno)
 	int	errno;
 {
-	if ((errno > 0) && (errno < errorTableSize)) {
-		errorNumber = errno;
-		return(1);
+	if ((errno >= 0) &&  (errno >= errorTableSize)) {
+		/*
+		 * invalid error number
+		 */
+		return(-1);
+	}
+	if ((errno < 0) &&  (ABS(errno) >= sys_nerr)) {
+		/*
+		 * invalid error number
+		 */
+		return(-1);
 	}
 
-	/*
-	 * invalid error number
-	 */
-	return(-1);
+	errorNumber = errno;
+	return(1);
 }
 
 /*
  *	CtransGetErrorNumber_
  * 
- *	returns the current number
+ *	returns the current number. If negative then the unix global 
+ *	variable 'errno' is ABS(errno).	
  */
 CtransGetErrorNumber_()
 {
@@ -78,5 +91,7 @@ CtransGetErrorNumber_()
  */
 char	*CtransGetErrorMessage_()
 {
-	return(errorMessages[errorNumber]);
+	if (errorNumber >= 0) return(errorMessages[errorNumber]);
+
+	return(sys_errlist[ABS(errorNumber)]);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.7 1991-08-16 10:52:47 clyne Exp $
+ *	$Id: sunraster.c,v 1.8 1991-09-26 16:29:53 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -513,7 +513,6 @@ CGMC *c;
 
 	unsigned	op = PIX_SRC;
 
-	extern	Ct_err	Instr_Dec();
 	extern	char	*realloc();
 
 	op |= PIX_COLOR(color_tab.index[FILL_COLOUR.index]); 
@@ -566,7 +565,10 @@ CGMC *c;
 		 * see if more flag is set. If so get more data
 		 */
 		if (c->more) {
-			if (Instr_Dec(c) != OK) return (pre_err);
+			if (Instr_Dec(c) < 1) {
+				ct_error(T_FRE, "metafile");
+				 return (DIE);
+			}
 		}
 		else break;	/* leave loop	*/
 	}
@@ -1004,8 +1006,10 @@ static	Ct_err	raster_(c, P, rows, cols, nx, ny, width, height)
 
 			/* make sure data available in cgmc     */
 			if (index == c->Cnum && c->more) {
-				if (Instr_Dec(c) != OK)
-					return (pre_err);
+				if (Instr_Dec(c) < 1) {
+					ct_error(T_FRE, "metafile");
+					return (DIE);
+				}
 
 				index = 0;
 			}

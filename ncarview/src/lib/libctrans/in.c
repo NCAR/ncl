@@ -1,5 +1,5 @@
 /*
- *	$Id: in.c,v 1.2 1991-01-09 11:10:45 clyne Exp $
+ *	$Id: in.c,v 1.3 1991-09-26 16:29:41 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -208,12 +208,13 @@ Ct_err	SetRecord(recnum)
  *	Instr_Dec:
  *		extracts and decodes instruction and its parameters from 
  *		CGM_Buf. These are packaged and returned in the cgmc
- *	on entry
- *		InitInput and SetRecord have been invoked
- *	on exit
- *		cgmc : 	contains instruction and parameters
+ * on entry
+ *	InitInput and SetRecord have been invoked
+ * on exit
+ *	cgmc 		: contains instruction and parameters
+ *	return		: 1 => ok, 0 => eof, -1 => error
  */
-Ct_err	Instr_Dec(cgmc) 
+int	Instr_Dec(cgmc) 
 	CGMC *cgmc;
 {
 	enum ads p_type;	/* type of parameter(s) in CGM element	*/
@@ -225,8 +226,10 @@ Ct_err	Instr_Dec(cgmc)
 	 * fetch next raw CGM instruction from metafile
 	 */
 	if ((retnum = CGM_getInstr(cgmFd, &instr)) < 1) {
+		if (retnum < 0) {	/* else eof	*/
 			ct_error(T_FRE, "metafile");
-			return(DIE);
+		}
+		return(retnum);
 	}
 
 	/*
@@ -291,11 +294,11 @@ Ct_err	Instr_Dec(cgmc)
 
 	if (retnum < 0) {
 		ct_error(T_FRE, "metafile");
-		return(pre_err);
+		return(-1);
 	}
 
 	Moreparm = instr.more;	/* record more state	*/
-	return (OK);
+	return (1);
 }
 
 /* 

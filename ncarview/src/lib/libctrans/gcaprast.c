@@ -1,5 +1,5 @@
 /*
- *	$Id: gcaprast.c,v 1.3 1991-08-16 10:52:06 clyne Exp $
+ *	$Id: gcaprast.c,v 1.4 1991-09-26 16:29:38 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -33,7 +33,6 @@
 #include	"translate.h"
 
 extern 	long	GetInt();
-extern 	Ct_err	Instr_Dec();
 extern 	Ct_err	formatcoord();
 
 
@@ -380,8 +379,10 @@ CGMC	*c;
 
 			/* make sure data available in cgmc     */
 			if (index == c->Cnum && c->more) {
-				if (Instr_Dec(c) != OK)
-					return (pre_err);
+				if (Instr_Dec(c) < 1) {
+					ct_error(T_FRE, "metafile");
+					return (DIE);
+				}
 				
 				index = 0;
 			}
@@ -545,7 +546,10 @@ Ct_err	CellArray_(c, P, Q, R, nx, ny)
 
 			/* make sure data available in cgmc     */
 			if (cgmc_index == c->Cnum && c->more) {
-				if (Instr_Dec(c) != OK) return (pre_err);
+				if (Instr_Dec(c) < 1) {
+					ct_error(T_FRE, "metafile");
+					return (DIE);
+				}
 				cgmc_index = 0;
 			}
 
