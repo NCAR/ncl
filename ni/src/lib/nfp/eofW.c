@@ -8,13 +8,13 @@ extern void NGCALLF(ddrveof,DDRVEOF)(double *,int *,int *,int *,int *,
                                      long long int *, double *,int *,
                                      double *,int *,int *,int *,int *,int *);
 
-extern void NGCALLF(xrveoft,XRVEOFT)(double *dx_strip, int *nrow,
-                                      int *ncol, int *nrobs, int *mcsta,
-                                      double *xmsg, int *neval,
-                                      double *eval, double *evec,
-                                      double *pcvar, double *trace,
-                                      double *xdvar, double *xave, 
-                                      int *jopt, int *ier); 
+extern void NGCALLF(xrveoft,XRVEOFT)(double *dx_strip, double *dx_strip_t,
+                                     int *nrow, int *ncol, int *nrobs,
+                                     int *mcsta, double *xmsg, int *neval,
+                                     double *eval, double *evec,
+                                     double *pcvar, double *trace,
+                                     double *xdvar, double *xave, 
+                                     int *jopt, int *ier);
 
 
 extern void NGCALLF(dncldrv,DNCLDRV)(double *,double *,int *,int *,int *,
@@ -102,6 +102,7 @@ NhlErrorTypes eof_W( void )
  * Output array variables
  */
   double *evec, *wevec;
+  double *xdatat;
   float *revec;
   int total_size_evec, dsizes_evec[NCL_MAX_DIMENSIONS];
 
@@ -448,11 +449,13 @@ NhlErrorTypes eof_W( void )
  * Allocate memory for attributes.
  */
   if(transpose) {
-    evec  = (double *)calloc(total_size_evec,sizeof(double));
-    trace = (double *)calloc(1,sizeof(double));
-    eval  = (double *)calloc(*neval,sizeof(double));
-    pcvar = (double *)calloc(*neval,sizeof(double));
-    if(evec == NULL || trace == NULL || pcvar == NULL || eval == NULL) {
+    evec   = (double *)calloc(total_size_evec,sizeof(double));
+    trace  = (double *)calloc(1,sizeof(double));
+    eval   = (double *)calloc(*neval,sizeof(double));
+    pcvar  = (double *)calloc(*neval,sizeof(double));
+    xdatat = (double *)calloc(nrow*mcsta,sizeof(double));
+    if(evec == NULL || trace == NULL || pcvar == NULL || eval == NULL ||
+       xdatat == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for attribute arrays");
       return(NhlFATAL);
     }
@@ -521,7 +524,7 @@ NhlErrorTypes eof_W( void )
  * Call the Fortran 77 version of appropriate routine.
  */
   if(transpose) {
-    NGCALLF(xrveoft,XRVEOFT)(dx_strip,&nrow,&ncol,&nobs,&mcsta,
+    NGCALLF(xrveoft,XRVEOFT)(dx_strip,xdatat,&nrow,&ncol,&nobs,&mcsta,
                              &missing_dx.doubleval,neval,eval,evec,
                              pcvar,trace,xdvar,xave,&jopt,&ier);
 /*
@@ -655,6 +658,10 @@ NhlErrorTypes eof_W( void )
     NclFree(iwork);
     NclFree(ifail);
   }
+  else {
+    NclFree(xdatat);
+  }
+
   if(type_x != NCL_double) {
 /*
  * Set up return value.
@@ -1412,7 +1419,7 @@ NhlErrorTypes eofcov_tr_W( void )
  * Various.
  */
   double *dx_strip, *xave, *xdvar, *xvar, con, pcx, xsd;
-  double *pcrit;
+  double *pcrit, *xdatat;
   float *rpcrit;
   NclBasicDataTypes type_pcrit;
   int iopt = 0, jopt = 0, i, ier = 0;
@@ -1684,7 +1691,7 @@ NhlErrorTypes eofcov_tr_W( void )
   xvar     = (double *)calloc(ncol,sizeof(double));
   xdvar    = (double *)calloc(ncol,sizeof(double));
   if( dx_strip == NULL || xave == NULL || xvar == NULL || xdvar == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for stripping the data");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for stripping the data");
     return(NhlFATAL);
   }
 
@@ -1742,9 +1749,19 @@ NhlErrorTypes eofcov_tr_W( void )
     }
   }
 
-  NGCALLF(xrveoft,XRVEOFT)(dx_strip,&nrow,&ncol,&nobs,&mcsta,
-                                                   &missing_dx.doubleval,neval,eval,evec,
-                                                   pcvar,trace,xdvar,xave,&jopt,&ier);
+/*
+ * We have to allocate this array separately, because it depends
+ * on the value of "mcsta".
+ */
+  xdatat = (double *)calloc(nrow*mcsta,sizeof(double));
+  if(xdatat == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for stripping the data");
+    return(NhlFATAL);
+  }
+
+  NGCALLF(xrveoft,XRVEOFT)(dx_strip,xdatat,&nrow,&ncol,&nobs,&mcsta,
+                           &missing_dx.doubleval,neval,eval,evec,
+                           pcvar,trace,xdvar,xave,&jopt,&ier);
 
 /*
  * Check various possible error messages.
@@ -1769,6 +1786,7 @@ NhlErrorTypes eofcov_tr_W( void )
  */
   if((void*)dx != x) NclFree(dx);
   NclFree(dx_strip);
+  NclFree(xdatat);
   NclFree(xave);
   NclFree(xvar);
   NclFree(xdvar);
@@ -2116,7 +2134,7 @@ NhlErrorTypes eofcor_tr_W( void )
  * Various.
  */
   double *dx_strip, *xave, *xdvar, *xvar, con, pcx, xsd;
-  double *pcrit;
+  double *pcrit, *xdatat;
   float *rpcrit;
   NclBasicDataTypes type_pcrit;
   int iopt = 0, jopt = 1, i, ier = 0;
@@ -2445,9 +2463,19 @@ NhlErrorTypes eofcor_tr_W( void )
     }
   }
 
-  NGCALLF(xrveoft,XRVEOFT)(dx_strip,&nrow,&ncol,&nobs,&mcsta,
-                                                   &missing_dx.doubleval,neval,eval,evec,
-                                                   pcvar,trace,xdvar,xave,&jopt,&ier);
+/*
+ * We have to allocate this array separately, because it depends
+ * on the value of "mcsta".
+ */
+  xdatat = (double *)calloc(nrow*mcsta,sizeof(double));
+  if(xdatat == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_tr: Unable to allocate memory for stripping the data");
+    return(NhlFATAL);
+  }
+
+  NGCALLF(xrveoft,XRVEOFT)(dx_strip,xdatat,&nrow,&ncol,&nobs,&mcsta,
+                           &missing_dx.doubleval,neval,eval,evec,
+                           pcvar,trace,xdvar,xave,&jopt,&ier);
 
 /*
  * Check various possible error messages.
@@ -2472,6 +2500,7 @@ NhlErrorTypes eofcor_tr_W( void )
  */
   if((void*)dx != x) NclFree(dx);
   NclFree(dx_strip);
+  NclFree(xdatat);
   NclFree(xave);
   NclFree(xvar);
   NclFree(xdvar);

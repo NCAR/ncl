@@ -1,6 +1,6 @@
 C NCLFORTSTART
       SUBROUTINE TDRVPRC(X,NROW,NCOL,NROBS,NCSTA,XMSG,NEVAL,EVAL,EVEC,
-     +                   PCVAR,TRACE,IOPT,JOPT,PCRIT,IER)
+     +                   PCVAR,TRACE,IOPT,JOPT,PCRIT,IER,XDATA,XDATAT)
       IMPLICIT NONE
 
 c this operates on the TRANSPOSE of the array "x"
@@ -9,7 +9,8 @@ c Note for NCL: in *this* routine NROBS=NROW, NCSTA=NCOL
 
       INTEGER          NROW,NCOL,NROBS,NCSTA,NEVAL,IOPT,JOPT,IER
       DOUBLE PRECISION X(NROW,NCOL),EVAL(NEVAL),EVEC(NCOL,NEVAL),
-     +                 PCVAR(NEVAL),TRACE,XMSG,PCRIT
+     +                 PCVAR(NEVAL),TRACE,XMSG,PCRIT,XDATA(NROW,NCOL),
+     +                 XDATAT(NCSTA,NROW)
 C NCLEND
 
 c======== .so info=====================
@@ -19,8 +20,8 @@ c======================================
      
 
 c AUTOMATIC FORTRAN ARRAYS TO HOLD DATA AND DATA STATS
-      DOUBLE PRECISION XDATA(NROW,NCOL), 
-     +                 XAVE(NCOL), XVAR(NCOL), XDVAR(NCOL)
+      DOUBLE PRECISION XAVE(NCOL), XVAR(NCOL), XDVAR(NCOL)
+               
 
 C LOCAL VARIABLES
       DOUBLE PRECISION PCX, CON, XSD
@@ -77,7 +78,7 @@ c c c                 XDATA(NR,MCSTA) =  X(NR,NC)
 
 c pass the selected data (XDATA) to the EOF driver 
 
-      CALL XRVEOFT(XDATA,NROW,NCOL,NROBS,MCSTA,XMSG,
+      CALL XRVEOFT(XDATA,XDATAT,NROW,NCOL,NROBS,MCSTA,XMSG,
      +             NEVAL,EVAL,EVEC,PCVAR,TRACE,
      +             XDVAR,XAVE,JOPT,IER)
 
@@ -85,8 +86,8 @@ c pass the selected data (XDATA) to the EOF driver
       END
 
 c ---------------------------------------------------------
-      SUBROUTINE XRVEOFT(XDATA,NROW,NCOL,NROBS,NCSTA,XMSG,
-     +                   NEVAL,EVAL,EVEC,PCVAR,TRACE,
+      SUBROUTINE XRVEOFT(XDATA,XDATAT,NROW,NCOL,NROBS,NCSTA,
+     +                   XMSG,NEVAL,EVAL,EVEC,PCVAR,TRACE,
      +                   XDVAR,XAVE,JOPT,IER)
       IMPLICIT NONE
 
@@ -144,7 +145,8 @@ c .   ier       - error code
      +                 LSSM,LWORK,LIWORK,JOPT,IER
 
       DOUBLE PRECISION XDATA(NROW,NCOL),PCVAR(NEVAL),XMSG,TRACE,
-     +                 EVAL(NEVAL), EVEC(NCOL,NEVAL)                 
+     +                 EVAL(NEVAL), EVEC(NCOL,NEVAL),
+     +                 XDATAT(NCSTA,NROW)
 
 c temporary arrays (automatic or passed in via interface)
 
@@ -154,8 +156,7 @@ c temporary arrays (automatic or passed in via interface)
 
       DOUBLE PRECISION TEOFPC(NROW,NEVAL),
      +                 WEVAL(NROW),WEVEC(NCSTA,NEVAL),
-     +                 W2D(NROW,NEVAL), XAVE(NCOL),XDVAR(NCOL),
-     +                 XDATAT(NCSTA,NROW)
+     +                 W2D(NROW,NEVAL), XAVE(NCOL),XDVAR(NCOL)
       INTEGER          IFAIL(NROBS)
 
 c local
