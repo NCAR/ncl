@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.77 2001-04-30 21:38:31 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.78 2001-11-28 02:47:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,12 +29,14 @@
 #include <ncarg/hlu/LogLinTransObj.h>
 #include <ncarg/hlu/MapV40DataHandler.h>
 #include <ncarg/hlu/MapV41DataHandler.h>
+#include <ncarg/hlu/MapRGDataHandler.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/hluutil.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <limits.h>
+#include <math.h>
 #include <ncarg/c.h>
 
 #ifndef FLT_MAX
@@ -351,8 +353,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpGridSpacingF,NhlCmpGridSpacingF,
 		 NhlTFloat,sizeof(float),Oset(grid_spacing),
-		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),
-         	_NhlRES_PRIVATE,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNmpGridLatSpacingF,NhlCmpGridLatSpacingF,
 		 NhlTFloat,sizeof(float),Oset(grid_lat_spacing),
 		 NhlTString, _NhlUSET("15.0"),0,NULL},
@@ -446,59 +447,13 @@ static NhlResource resources[] = {
 		 sizeof(NhlColorIndex),Oset(labels.color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
 
+
 /* End-documented-resources */
 
 	{NhlNmpDumpAreaMap, NhlCmpDumpAreaMap,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(dump_area_map),
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),
          	 _NhlRES_PRIVATE,NULL},
-        {NhlNmpLabelTextDirection,NhlCTextDirection,
-		 NhlTTextDirection,sizeof(NhlTextDirection),
-		 Oset(labels.direction),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlACROSS),
-         	 _NhlRES_PRIVATE,NULL},
-	{NhlNmpLabelFont,NhlCFont,NhlTFont, 
-		 sizeof(int),Oset(labels.font),
-		 NhlTImmediate,_NhlUSET((NhlPointer) 1),
-         	 _NhlRES_PRIVATE,NULL},
-	{NhlNmpLabelFontAspectF,NhlCFontAspectF,NhlTFloat, 
-		 sizeof(float),Oset(labels.aspect),
-		 NhlTString, _NhlUSET("1.0"),_NhlRES_PRIVATE,NULL},
-	{NhlNmpLabelFontThicknessF,NhlCFontThicknessF,
-		 NhlTFloat,sizeof(float),Oset(labels.thickness),
-		 NhlTString, _NhlUSET("1.0"),_NhlRES_PRIVATE,NULL},
-	{NhlNmpLabelFontQuality,NhlCFontQuality,
-		 NhlTFontQuality, 
-		 sizeof(NhlFontQuality),Oset(labels.quality),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlHIGH),
-         	 _NhlRES_PRIVATE,NULL},
-	{NhlNmpLabelConstantSpacingF,NhlCTextConstantSpacingF,
-		 NhlTFloat,sizeof(float),Oset(labels.cspacing),
-		 NhlTString,_NhlUSET("0.0"),_NhlRES_PRIVATE,NULL},
-	{NhlNmpLabelAngleF,NhlCTextAngleF,
-		 NhlTFloat,sizeof(float),Oset(labels.angle),
-		 NhlTString,_NhlUSET("0.0"),_NhlRES_PRIVATE,NULL},
-	{NhlNmpLabelFuncCode,NhlCTextFuncCode,NhlTCharacter, 
-		 sizeof(char),Oset(labels.fcode[0]),
-		 NhlTString, _NhlUSET(":"),_NhlRES_PRIVATE,NULL},
-	{NhlNmpLabelBackgroundColor,NhlCFillBackgroundColor,
-		 NhlTColorIndex,sizeof(NhlColorIndex),Oset(labels.back_color),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),
-         	 _NhlRES_PRIVATE,NULL},
-	{NhlNmpLabelPerimOn,NhlCEdgesOn,NhlTInteger,
-		 sizeof(int),Oset(labels.perim_on),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),
-         	 _NhlRES_PRIVATE,NULL},
-	{NhlNmpLabelPerimSpaceF,NhlCEdgeBorderWidthF,
-		 NhlTFloat,sizeof(float),Oset(labels.perim_space),
-		 NhlTString,_NhlUSET("0.33"),_NhlRES_PRIVATE,NULL},
-	{NhlNmpLabelPerimColor,NhlCLineColor,NhlTColorIndex,
-		 sizeof(NhlColorIndex),Oset(labels.perim_lcolor),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),
-         	_NhlRES_PRIVATE,NULL},
-	{NhlNmpLabelPerimThicknessF,NhlCEdgeThicknessF,
-		 NhlTFloat,sizeof(float),Oset(labels.perim_lthick),
-        	 NhlTString, _NhlUSET("1.0"),_NhlRES_PRIVATE,NULL},
         
 	{"no.res","No.res",NhlTFloat,sizeof(float),
 		 NhlOffset(NhlMapPlotLayerRec,trans.x_min),NhlTString,
@@ -533,7 +488,114 @@ static NhlResource resources[] = {
 	{ "no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		  NhlOffset(NhlMapPlotLayerRec,trans.line_interpolation_on),
 	  	  NhlTImmediate,
-	  	  _NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL}
+	  	  _NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL},
+
+/* Intercepted resources */
+
+	{NhlNpmTickMarkDisplayMode,NhlCpmTickMarkDisplayMode,
+	 NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
+	 Oset(display_tickmarks),NhlTImmediate,
+
+	 _NhlUSET((NhlPointer) NhlNEVER),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 Oset(xb_major_length_set),NhlTImmediate,_NhlUSET((NhlPointer)True),
+	 _NhlRES_PRIVATE,NULL},
+	{NhlNtmXBMajorLengthF, NhlCtmMajorLengthsF, NhlTFloat,sizeof(float),
+	 Oset(xb_major_length),NhlTProcedure,
+	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 Oset(xt_major_length_set),NhlTImmediate,_NhlUSET((NhlPointer)True),
+	 _NhlRES_PRIVATE,NULL},
+	{NhlNtmXTMajorLengthF, NhlCtmMajorLengthsF, NhlTFloat,sizeof(float),
+	 Oset(xt_major_length),NhlTProcedure,
+	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 Oset(yl_major_length_set),NhlTImmediate,_NhlUSET((NhlPointer)True),
+	 _NhlRES_PRIVATE,NULL},
+	{NhlNtmYLMajorLengthF, NhlCtmMajorLengthsF, NhlTFloat,sizeof(float),
+	 Oset(yl_major_length),NhlTProcedure,
+	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 Oset(yr_major_length_set),NhlTImmediate,_NhlUSET((NhlPointer)True),
+	 _NhlRES_PRIVATE,NULL},
+	{NhlNtmYRMajorLengthF, NhlCtmMajorLengthsF, NhlTFloat,sizeof(float),
+	 Oset(yr_major_length),NhlTProcedure,
+	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 Oset(xb_font_height_set),NhlTImmediate,_NhlUSET((NhlPointer)True),
+	 _NhlRES_PRIVATE,NULL},
+	{NhlNtmXBLabelFontHeightF,NhlCFontHeightF,NhlTFloat,
+	 sizeof(float),Oset(xb_font_height),NhlTProcedure,
+	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 Oset(xt_font_height_set),NhlTImmediate,_NhlUSET((NhlPointer)True),
+	 _NhlRES_PRIVATE,NULL},
+	{NhlNtmXTLabelFontHeightF,NhlCFontHeightF,NhlTFloat,
+	 sizeof(float),Oset(xt_font_height),NhlTProcedure,
+	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 Oset(yl_font_height_set),NhlTImmediate,_NhlUSET((NhlPointer)True),
+	 _NhlRES_PRIVATE,NULL},
+	{NhlNtmYLLabelFontHeightF,NhlCFontHeightF,NhlTFloat,
+	 sizeof(float),Oset(yl_font_height),NhlTProcedure,
+	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 Oset(yr_font_height_set),NhlTImmediate,_NhlUSET((NhlPointer)True),
+	 _NhlRES_PRIVATE,NULL},
+	{NhlNtmYRLabelFontHeightF,NhlCFontHeightF,NhlTFloat,
+	 sizeof(float),Oset(yr_font_height),NhlTProcedure,
+	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 Oset(xb_on_set),NhlTImmediate,_NhlUSET((NhlPointer)True),
+	 _NhlRES_PRIVATE,NULL},
+	{NhlNtmXBOn,NhlCtmXBOn,NhlTBoolean,
+	 sizeof(NhlBoolean),Oset(xb_on),NhlTProcedure,
+	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 Oset(xt_on_set),NhlTImmediate,_NhlUSET((NhlPointer)True),
+	 _NhlRES_PRIVATE,NULL},
+	{NhlNtmXTOn,NhlCtmXTOn,NhlTBoolean,
+	 sizeof(NhlBoolean),Oset(xt_on),NhlTProcedure,
+	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 Oset(yl_on_set),NhlTImmediate,_NhlUSET((NhlPointer)True),
+	 _NhlRES_PRIVATE,NULL},
+	{NhlNtmYLOn,NhlCtmYLOn,NhlTBoolean,
+	 sizeof(NhlBoolean),Oset(yl_on),NhlTProcedure,
+	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 Oset(yr_on_set),NhlTImmediate,_NhlUSET((NhlPointer)True),
+	 _NhlRES_PRIVATE,NULL},
+	{NhlNtmYROn,NhlCtmYROn,NhlTBoolean,
+	 sizeof(NhlBoolean),Oset(yr_on),NhlTProcedure,
+	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 Oset(xb_labels_on_set),NhlTImmediate,_NhlUSET((NhlPointer)True),
+	 _NhlRES_PRIVATE,NULL},
+	{NhlNtmXBLabelsOn,NhlCtmXBLabelsOn,NhlTBoolean,
+	 sizeof(NhlBoolean),Oset(xb_labels_on),NhlTProcedure,
+	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 Oset(xt_labels_on_set),NhlTImmediate,_NhlUSET((NhlPointer)True),
+	 _NhlRES_PRIVATE,NULL},
+	{NhlNtmXTLabelsOn,NhlCtmXTLabelsOn,NhlTBoolean,
+	 sizeof(NhlBoolean),Oset(xt_labels_on),NhlTProcedure,
+	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 Oset(yl_labels_on_set),NhlTImmediate,_NhlUSET((NhlPointer)True),
+	 _NhlRES_PRIVATE,NULL},
+	{NhlNtmYLLabelsOn,NhlCtmYLLabelsOn,NhlTBoolean,
+	 sizeof(NhlBoolean),Oset(yl_labels_on),NhlTProcedure,
+	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 Oset(yr_labels_on_set),NhlTImmediate,_NhlUSET((NhlPointer)True),
+	 _NhlRES_PRIVATE,NULL},
+	{NhlNtmYRLabelsOn,NhlCtmYRLabelsOn,NhlTBoolean,
+	 sizeof(NhlBoolean),Oset(yr_labels_on),NhlTProcedure,
+	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL}
 
 };
 #undef Oset
@@ -643,6 +705,16 @@ static NhlErrorTypes    SetLineAttrs(
 	NhlMapPlotLayer mpnew,
 	NhlMapPlotLayer	mpold,
         NhlBoolean	init					    
+#endif
+);
+
+static NhlErrorTypes ManageTickMarks(
+#if	NhlNeedProto
+	NhlMapPlotLayer	mpnew,
+	NhlMapPlotLayer	mpold,
+	NhlBoolean	init,
+	NhlSArg		*sargs,
+	int		*nargs
 #endif
 );
 
@@ -880,10 +952,12 @@ MapPlotClassInitialize
 	};
 
 	_NhlEnumVals mapdatabaseversionlist[] =  {
-	{NhlNCARG4_0,		"NDV40"},
+	{NhlNCARG4_0,		"LowRes"},
 	{NhlNCARG4_0,		"Ncarg4_0"},
-	{NhlNCARG4_1,		"NDV41"},
-	{NhlNCARG4_1,		"Ncarg4_1"}
+	{NhlNCARG4_1,		"MediumRes"},
+	{NhlNCARG4_1,		"Ncarg4_1"},
+	{NhlRANGS_GSHHS,        "HighRes"},
+	{NhlRANGS_GSHHS,        "RANGS_GSHHS"}
 	};
 
 	load_hlumap_routines(False);
@@ -965,6 +1039,43 @@ MapPlotClassPartInitialize
 
 	subret = _NhlRegisterChildClass(lc,NhlplotManagerClass,
 					False,False,
+					NhlNpmTickMarkDisplayMode,
+					NhlNtmXBOn,
+					NhlNtmXBLabelsOn,
+					NhlNtmXBMode,
+					NhlNtmXBValues,
+					NhlNtmXBLabels,
+					NhlNtmXBLabelFuncCode,
+					NhlNtmXBLabelFontHeightF,
+					NhlNtmXBMajorLengthF,
+					NhlNtmXBMajorOutwardLengthF,
+					NhlNtmXTOn,
+					NhlNtmXTLabelsOn,
+					NhlNtmXTMode,
+					NhlNtmXTValues,
+					NhlNtmXTLabels,
+					NhlNtmXTLabelFuncCode,
+					NhlNtmXTLabelFontHeightF,
+					NhlNtmXTMajorLengthF,
+					NhlNtmXTMajorOutwardLengthF,
+					NhlNtmYLOn,
+					NhlNtmYLLabelsOn,
+					NhlNtmYLMode,
+					NhlNtmYLValues,
+					NhlNtmYLLabels,
+					NhlNtmYLLabelFuncCode,
+					NhlNtmYRLabelFontHeightF,
+					NhlNtmYLMajorLengthF,
+					NhlNtmYLMajorOutwardLengthF,
+					NhlNtmYROn,
+					NhlNtmYRLabelsOn,
+					NhlNtmYRMode,
+					NhlNtmYRValues,
+					NhlNtmYRLabels,
+					NhlNtmYRLabelFuncCode,
+					NhlNtmYRLabelFontHeightF,
+					NhlNtmYRMajorLengthF,
+					NhlNtmYRMajorOutwardLengthF,
 					NULL);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -1031,6 +1142,8 @@ MapPlotInitialize
 	char			*e_text;
         NhlMapPlotLayer		mpl = (NhlMapPlotLayer) new;
 	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
+        NhlSArg			sargs[64];
+        int			nargs = 0;
 
 #if 0
 	mpl->view.keep_aspect = True;
@@ -1114,13 +1227,36 @@ MapPlotInitialize
                            mpl,(NhlMapPlotLayer)req,args,num_args);
         
                 
+/* Manage TickMarks object */
+
+	/* 42 arguments possible */
+	subret = ManageTickMarks(mpl,NULL,True,sargs,&nargs);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error managing TickMarks";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(ret);
+	}
+
 /* Manage the overlay */
 
 	subret = _NhlManageOverlay(&mpp->overlay_object,new,req,
-				   _NhlCREATE,NULL,0,entry_name);
+				   _NhlCREATE,sargs,nargs,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
-        
+
+	if (mpp->overlay_object &&  mpp->display_tickmarks > NhlNOCREATE) {
+		NhlVAGetValues(mpp->overlay_object->base.id,
+			       NhlNtmXBMajorLengthF,&mpp->xb_major_length,
+			       NhlNtmXTMajorLengthF,&mpp->xt_major_length,
+			       NhlNtmYLMajorLengthF,&mpp->yl_major_length,
+			       NhlNtmYRMajorLengthF,&mpp->yr_major_length,
+			       NhlNtmXBLabelFontHeightF,&mpp->xb_font_height,
+			       NhlNtmXTLabelFontHeightF,&mpp->xt_font_height,
+			       NhlNtmYLLabelFontHeightF,&mpp->yl_font_height,
+			       NhlNtmYRLabelFontHeightF,&mpp->yr_font_height,
+			       NULL);
+	}
+
         mpp->view_changed = False;
 
 /*
@@ -1210,7 +1346,7 @@ static NhlErrorTypes MapPlotSetValues
 	char			*entry_name = "MapPlotSetValues";
 	char			*e_text;
 	int			view_args = 0;
-        NhlSArg			sargs[16];
+        NhlSArg			sargs[64];
         int			nargs = 0;
         NhlMapPlotLayer		mpl = (NhlMapPlotLayer) new;
 	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
@@ -1301,6 +1437,42 @@ static NhlErrorTypes MapPlotSetValues
                         mpp->grid_spacing;
         if (mpp->grid_lat_spacing <= 0.0) mpp->grid_lat_spacing = 15.0;
         if (mpp->grid_lon_spacing <= 0.0) mpp->grid_lon_spacing = 15.0;
+
+	if (_NhlArgIsSet(args,num_args,NhlNtmXBMajorLengthF)) 
+		mpp->xb_major_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmXTMajorLengthF)) 
+		mpp->xt_major_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYLMajorLengthF)) 
+		mpp->yl_major_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYRMajorLengthF)) 
+		mpp->yr_major_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmXBLabelFontHeightF)) 
+		mpp->xb_font_height_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmXTLabelFontHeightF)) 
+		mpp->xt_font_height_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYLLabelFontHeightF)) 
+		mpp->yl_font_height_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYRLabelFontHeightF)) 
+		mpp->yr_font_height_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmXBOn)) 
+		mpp->xb_on_set = True;
+/*
+ * once the following are set they remain set for the life of the object
+ */
+	if (_NhlArgIsSet(args,num_args,NhlNtmXTOn)) 
+		mpp->xt_on_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYLOn)) 
+		mpp->yl_on_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYROn)) 
+		mpp->yr_on_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmXBLabelsOn)) 
+		mpp->xb_labels_on_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmXTLabelsOn)) 
+		mpp->xt_labels_on_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYLLabelsOn)) 
+		mpp->yl_labels_on_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYRLabelsOn)) 
+		mpp->yr_labels_on_set = True;
         
         
 /* Set up the Map data handler */
@@ -1344,17 +1516,39 @@ static NhlErrorTypes MapPlotSetValues
         _NhlUpdateDrawList(mpp->map_data_handler,False,
                            mpl,ompl,args,num_args);
 
-/* Manage the overlay */
+/* Manage TickMarks object */
 
+	/* 42 arguments possible */
+	subret = ManageTickMarks(mpl,ompl,False,sargs,&nargs);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error managing TickMarks";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(ret);
+	}
+	
 	/* 1 arg */
 	if (mpp->update_req) {
 		NhlSetSArg(&sargs[(nargs)++],NhlNpmUpdateReq,True);
 	}
 	
+/* Manage the overlay */
+
 	subret = _NhlManageOverlay(&mpp->overlay_object,new,old,
 			       _NhlSETVALUES,sargs,nargs,entry_name);
 	ret = MIN(ret,subret);
 
+	if (mpp->overlay_object &&  mpp->display_tickmarks > NhlNOCREATE) {
+		NhlVAGetValues(mpp->overlay_object->base.id,
+			       NhlNtmXBMajorLengthF,&mpp->xb_major_length,
+			       NhlNtmXTMajorLengthF,&mpp->xt_major_length,
+			       NhlNtmYLMajorLengthF,&mpp->yl_major_length,
+			       NhlNtmYRMajorLengthF,&mpp->yr_major_length,
+			       NhlNtmXBLabelFontHeightF,&mpp->xb_font_height,
+			       NhlNtmXTLabelFontHeightF,&mpp->xt_font_height,
+			       NhlNtmYLLabelFontHeightF,&mpp->yl_font_height,
+			       NhlNtmYRLabelFontHeightF,&mpp->yr_font_height,
+			       NULL);
+	}
 	mpp->update_req = False;
 	mpp->view_changed = False;
 
@@ -1527,7 +1721,7 @@ static NhlErrorTypes    MapPlotGetValues
 /*
  * Function:  mpGenArraySubsetCopy
  *
- * Description: Since the internal GenArrays maintained by the Contour object
+ * Description: Since the internal GenArrays maintained by the MapPlot object
  *      may be bigger than the size currently in use, this function allows
  *      a copy of only a portion of the array to be created. This is for
  *      use by the GetValues routine when returning GenArray resources to
@@ -2121,6 +2315,7 @@ static NhlErrorTypes    mpAdjustText
 				mpnew->view.width / mpold->view.width;
 		}
 	}
+	lbl_attrs->aspect = 1.3125;
 
         if (lbl_attrs->aspect <= 0.0 ) {
 		e_text = "%s: Invalid value for text aspect ratio %d";
@@ -3238,6 +3433,9 @@ static NhlErrorTypes mpSetUpDataHandler
 		else if (mpp->database_version == NhlNCARG4_1) {
 			mapdh_class = NhlmapV41DataHandlerClass;
                 }		
+		else if (mpp->database_version == NhlRANGS_GSHHS) {
+			mapdh_class = NhlmapRGDataHandlerClass;
+                }		
                 
                 sprintf(buffer,"%s",mpnew->base.name);
                 strcat(buffer,".DataHandler");
@@ -3399,6 +3597,1160 @@ static NhlErrorTypes mpSetUpTransObj
 
 	return MIN(ret,subret);
 
+}
+
+typedef enum _coordStatus {
+	_OUTOFRANGE, _INCREASING, _DECREASING,_DEFERRED
+} coordStatus;
+
+typedef struct _tickStatus {
+	int index;
+	coordStatus status;
+} tickStatus;
+ 
+/*
+ * Function:	GetXAxisTicks
+ *
+ * Description: 
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:
+ */
+static NhlErrorTypes GetXAxisTicks
+#if	NhlNeedProto
+(
+	NhlTransformLayerPart	*tfp,
+	float lx,
+	float rx,
+	float y,
+	int *count,
+	float **values,
+	NhlString **labels
+)
+#else 
+(tfp,lx,rx,y,count,values,labels)
+	NhlTransformLayerPart	*tfp;
+	float lx;
+	float rx;
+	float y;
+	int *count;
+	float **values;
+	NhlString **labels;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
+	char *e_text;
+	double lon[101],lat[101],xw[101];
+	double minlon,maxlon,minlat,maxlat;
+	double xspan;
+	tickStatus ts[32];
+	double seg_nice[32];
+	coordStatus status,cstatus[32];
+	int six[32],eix[32];
+	int isl[32],iel[32];
+	int seg_count;
+	int statix;
+	double max_angle,nice;
+	int i,j,ipln,iqln;
+	double dlx,drx,dy;
+	double rlon,rlat,xwin,ywin;
+	float val;
+	char label[128];
+	int nchr;
+	int size;
+	int start_ix, end_ix;
+	float angle_div;
+	NhlBoolean dolat = False;
+	int max_count;
+	int max_seg;
+	int jstart,jend,jsign;
+
+	*values = NULL;
+	*labels = NULL;
+	*count = 0;
+	dlx = (double) lx;
+	drx = (double) rx;
+	dy = (double) y;
+
+	xspan = drx - dlx;
+	xw[0] = dlx;
+	c_mdptri(xw[0],dy,&lat[0],&lon[0]);
+	ts[0].index = 0;
+	if (lat[0] > 1e11) {
+		ts[0].status = _OUTOFRANGE;
+		minlon = minlat = 9999;
+		maxlon = maxlat = -9999;
+	}
+	else {
+		ts[0].status = _DEFERRED;
+		minlon = maxlon = lon[0];
+		minlat = maxlat = lat[0];
+	}
+	statix = 0;
+	for (i = 1; i < 101; i++) {
+		xw[i] = dlx + (double) (i) * 0.01 * (drx-dlx);
+		c_mdptri(xw[i],dy,
+			 &lat[i],&lon[i]);
+		if (lat[i] > 1e11)
+			continue;
+		if (lat[i-1] < 1e11 && fabs(lon[i] - lon[i-1]) > 180.0) {
+			lon[i] += (lon[i-1] - lon[i] > 0.0 ? 360.0 : -360.0);
+		}
+		if (minlon > lon[i]) minlon = lon[i];
+		if (maxlon < lon[i]) maxlon = lon[i];
+		if (minlat > lat[i]) minlat = lat[i];
+		if (maxlat < lat[i]) maxlat = lat[i];
+	}
+	if ((maxlon - minlon) < (maxlat - minlat))
+		dolat = True;
+	
+	for (i = 1; i < 101; i++) {
+		if (lat[i] > 1e11) {
+			switch (ts[statix].status) {
+			case _OUTOFRANGE:
+				break;
+			case _INCREASING:
+			case _DECREASING:
+				statix++;
+				ts[statix].index = i;
+				ts[statix].status = _OUTOFRANGE;
+				break;
+			case _DEFERRED:
+				ts[statix].status = _OUTOFRANGE;
+				break;
+			}
+		}
+		else {
+			double ang0,ang1;
+			if (dolat) {
+				ang0 = lat[i-1];
+				ang1 = lat[i];
+			}
+			else {
+				ang0 = lon[i-1];
+				ang1 = lon[i];
+			}
+			switch (ts[statix].status) {
+			case _OUTOFRANGE:
+				statix++;
+				ts[statix].index = i;
+				ts[statix].status = _DEFERRED;
+				continue;
+			case _INCREASING:
+				if (ang1 < ang0) {
+					statix++;
+					ts[statix].index = i;
+					ts[statix].status = _DECREASING;
+				}
+				break;
+			case _DECREASING:
+				if (ang1 > ang0) {
+					statix++;
+					ts[statix].index = i;
+					ts[statix].status = _INCREASING;
+				}
+				break;
+			case _DEFERRED:
+				if (ang1 > ang0) {
+					ts[statix].status = _INCREASING;
+				}
+				else {
+					ts[statix].status = _DECREASING;
+				}
+			}
+		}
+	}	
+	
+	start_ix = end_ix = -1;
+	seg_count = 0;
+	max_count = -999;
+	size = 0;
+	status = _OUTOFRANGE;
+
+	for (i = 0; i <= statix; i++) {
+		if (ts[i].status == _OUTOFRANGE) {
+			if (start_ix == -1)
+				continue;
+			if (ts[i].index - start_ix < 15) {
+				start_ix = -1;
+				continue;
+			}
+			end_ix = ts[i].index - 1;
+		}
+		else if (ts[i].status == _INCREASING ||
+			 ts[i].status == _DECREASING) {
+			if (start_ix == -1) {
+				start_ix = ts[i].index;
+				status = ts[i].status;
+				continue;
+			}
+			else if (ts[i].index - start_ix < 15) {
+				start_ix = ts[i].index;
+				continue;
+			}
+			end_ix = ts[i].index - 1;
+		}
+		angle_div = (end_ix - start_ix) / 25.0;
+		if (dolat) {
+			max_angle = 
+				fabs((lat[end_ix] - lat[start_ix])/ angle_div);
+			NGCALLF(mdgnin,MDGNIN)(&max_angle,&nice);
+			if (nice <= 0) {
+				start_ix = ts[i].index;
+				status = ts[i].status;
+				continue;
+			}
+			isl[seg_count] = (int) 
+				((lat[start_ix] + 90.0) / nice);
+			iel[seg_count] =  (int)
+				((lat[end_ix] + 90.0) / nice);
+		}
+		else {
+			max_angle = 
+				fabs((lon[end_ix] - lon[start_ix])/ angle_div);
+			NGCALLF(mdgnin,MDGNIN)(&max_angle,&nice);
+			if (nice <= 0) {
+				start_ix = ts[i].index;
+				status = ts[i].status;
+				continue;
+			}
+			isl[seg_count] = (int) 
+				((lon[start_ix] + 180.0) / nice);
+			iel[seg_count] =  (int)
+				((lon[end_ix] + 180.0) / nice);
+		}
+		seg_nice[seg_count] = nice;
+		cstatus[seg_count] = status;
+		six[seg_count] =  start_ix;
+		eix[seg_count] =  end_ix;
+		if (max_count < end_ix - start_ix) {
+			max_count = end_ix - start_ix;
+			max_seg = seg_count;
+		}
+		size += 2 + MAX(isl[seg_count],iel[seg_count]) -
+			MIN(isl[seg_count],iel[seg_count]);
+		seg_count++;
+		start_ix = ts[i].status == _OUTOFRANGE ? -1 : ts[i].index;
+		end_ix = -1;
+	}
+	if (start_ix > -1 && start_ix < 86 && end_ix == -1) {
+		end_ix = 100;
+		angle_div = (end_ix - start_ix) / 25.0;
+		if (dolat) {
+			max_angle = 
+				fabs((lat[end_ix] - lat[start_ix])/ angle_div);
+			NGCALLF(mdgnin,MDGNIN)(&max_angle,&nice);
+			if (nice > 0) {
+				isl[seg_count] = (int) 
+					((lat[start_ix] + 90.0) / nice);
+				iel[seg_count] =  (int)
+					((lat[end_ix] + 90.0) / nice);
+			}
+		}
+		else {
+			max_angle = 
+				fabs((lon[end_ix] - lon[start_ix])/ angle_div);
+			NGCALLF(mdgnin,MDGNIN)(&max_angle,&nice);
+			if (nice > 0) {
+				isl[seg_count] = (int) 
+					((lon[start_ix] + 180.0) / nice);
+				iel[seg_count] =  (int)
+					((lon[end_ix] + 180.0) / nice);
+			}
+		}
+		if (nice > 0) {
+			seg_nice[seg_count] = nice;
+			cstatus[seg_count] = status;
+			six[seg_count] =  start_ix;
+			eix[seg_count] =  end_ix;
+			if (max_count < end_ix - start_ix) {
+				max_count = end_ix - start_ix;
+				max_seg = seg_count;
+			}
+			size += 2 + MAX(isl[seg_count],iel[seg_count]) -
+				MIN(isl[seg_count],iel[seg_count]);
+			seg_count++;
+		}
+	}
+
+	if (size <= 0) {
+		return ret;
+	}
+		
+	*values = NhlMalloc(size * sizeof(float));
+	*labels = NhlMalloc(size * sizeof(NhlString));
+
+	nice = seg_nice[max_seg];
+	if (dolat) {
+		for (i = 0; i < seg_count; i++) {
+			if (cstatus[i] == _DECREASING) {
+				jstart = MAX(isl[i],iel[i]) + 2;
+				jend = MIN(isl[i],iel[i]) - 2;
+				jsign = -1;
+			} 
+			else {
+				jstart = MIN(isl[i],iel[i]) - 2;
+				jend = MAX(isl[i],iel[i]) + 2;
+				jsign = 1;
+			}
+			for (j = jstart; j != jend; j += jsign) {
+				rlat = (double) j * nice - 90.0;
+
+				if ((rlat > MIN(lat[six[i]],lat[eix[i]]) 
+				     - nice / 100.0) &&
+				    (rlat < MAX(lat[six[i]],lat[eix[i]]) + 
+				     nice / 100.0)) {
+					NGCALLF(mdilat,MDILAT)
+						(&(lat[six[i]]),&(lon[six[i]]),
+						 &(xw[six[i]]),&dy,
+						 &(lat[eix[i]]),&(lon[eix[i]]),
+						 &(xw[eix[i]]),&dy,
+						 &rlat,&xwin,&ywin);
+					if (*count > 0) {
+						if (fabs(xwin - (*values)
+						    [*count - 1]) < xspan / 10)
+							continue;
+					}
+					NGCALLF(mdlach,MDLACH)
+						(&rlat,label,&nchr,128);
+					label[nchr] = '\0';
+					(*values)[*count] = xwin;
+					(*labels)[*count] = NhlMalloc(nchr+1);
+					strcpy((*labels)[*count],label);
+					(*count)++;
+				}
+			}
+		}
+		return ret;
+	}
+	for (i = 0; i < seg_count; i++) {
+		if (cstatus[i] == _DECREASING) {
+			jstart = MAX(isl[i],iel[i]) + 2;
+			jend = MIN(isl[i],iel[i]) - 2;
+			jsign = -1;
+		} 
+		else {
+			jstart = MIN(isl[i],iel[i]) - 2;
+			jend = MAX(isl[i],iel[i]) + 2;
+			jsign = 1;
+		}
+		for (j = jstart; j != jend; j += jsign) {
+			rlon = (double) j * nice - 180.0;
+
+			if ((rlon > MIN(lon[six[i]],lon[eix[i]]) 
+			     - nice / 100.0) &&
+			    (rlon < MAX(lon[six[i]],lon[eix[i]]) + 
+			     nice / 100.0)) {
+				NGCALLF(mdilon,MDILON)
+					(&(lat[six[i]]),&(lon[six[i]]),
+					 &(xw[six[i]]),&dy,
+					 &(lat[eix[i]]),&(lon[eix[i]]),
+					 &(xw[eix[i]]),&dy,
+					 &rlon,&xwin,&ywin);
+				if (*count > 0) {
+					if (fabs(xwin - (*values)[*count - 1])
+					    < xspan / 10)
+						continue;
+				}
+				NGCALLF(mdloch,MDLOCH)
+					(&rlon,label,&nchr,128);
+				label[nchr] = '\0';
+									      
+				(*values)[*count] = xwin;
+				(*labels)[*count] = NhlMalloc(nchr+1);
+				strcpy((*labels)[*count],label);
+				(*count)++;
+			}
+		}
+	}
+	return ret;
+}
+
+/*
+ * Function:	GetYAxisTicks
+ *
+ * Description: 
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:
+ */
+static NhlErrorTypes GetYAxisTicks
+#if	NhlNeedProto
+(
+	NhlTransformLayerPart	*tfp,
+	float by,
+	float ty,
+	float x,
+	int *count,
+	float **values,
+	NhlString **labels
+)
+#else 
+(tfp,by,ty,x,count,values,labels)
+	NhlTransformLayerPart	*tfp;
+	float by;
+	float ty;
+	float x;
+	int *count;
+	float **values;
+	NhlString **labels;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
+	char *e_text;
+	double lon[101],lat[101],yw[101];
+	double minlon,maxlon,minlat,maxlat;
+	double yspan;
+	tickStatus ts[32];
+	double seg_nice[32];
+	coordStatus status,cstatus[32];
+	int six[32],eix[32];
+	int isl[32],iel[32];
+	int seg_count;
+	int statix;
+	double max_angle,nice;
+	int i,j,ipln,iqln;
+	double dby,dty,dx;
+	double rlon,rlat,xwin,ywin;
+	float val;
+	char label[128];
+	int nchr;
+	int size;
+	int start_ix, end_ix;
+	float angle_div;
+	NhlBoolean dolon = False;
+	int max_count;
+	int max_seg;
+	int jstart,jend,jsign;
+
+	*values = NULL;
+	*labels = NULL;
+	*count = 0;
+	dby = (double) by;
+	dty = (double) ty;
+	dx = (double) x;
+
+	yspan = dty - dby;
+	yw[0] = dby;
+	c_mdptri(dx,yw[0],&lat[0],&lon[0]);
+	ts[0].index = 0;
+	if (lat[0] > 1e11) {
+		ts[0].status = _OUTOFRANGE;
+		minlon = minlat = 9999;
+		maxlon = maxlat = -9999;
+	}
+	else {
+		ts[0].status = _DEFERRED;
+		minlon = maxlon = lon[0];
+		minlat = maxlat = lat[0];
+	}
+	statix = 0;
+	for (i = 1; i < 101; i++) {
+		yw[i] = dby + (double) (i) * 0.01 * (dty-dby);
+		c_mdptri(dx,yw[i],
+			 &lat[i],&lon[i]);
+		if (lat[i] > 1e11)
+			continue;
+		if (lat[i-1] < 1e11 && fabs(lon[i] - lon[i-1]) > 180.0) {
+			lon[i] += (lon[i-1] - lon[i] > 0.0 ? 360.0 : -360.0);
+		}
+		if (minlon > lon[i]) minlon = lon[i];
+		if (maxlon < lon[i]) maxlon = lon[i];
+		if (minlat > lat[i]) minlat = lat[i];
+		if (maxlat < lat[i]) maxlat = lat[i];
+	}
+	if ((maxlat - minlat) < (maxlon - minlon))
+		dolon = True;
+	
+	for (i = 1; i < 101; i++) {
+		if (lat[i] > 1e11) {
+			switch (ts[statix].status) {
+			case _OUTOFRANGE:
+				break;
+			case _INCREASING:
+			case _DECREASING:
+				statix++;
+				ts[statix].index = i;
+				ts[statix].status = _OUTOFRANGE;
+				break;
+			case _DEFERRED:
+				ts[statix].status = _OUTOFRANGE;
+				break;
+			}
+		}
+		else {
+			double ang0,ang1;
+			if (dolon) {
+				ang0 = lon[i-1];
+				ang1 = lon[i];
+			}
+			else {
+				ang0 = lat[i-1];
+				ang1 = lat[i];
+			}
+			switch (ts[statix].status) {
+			case _OUTOFRANGE:
+				statix++;
+				ts[statix].index = i;
+				ts[statix].status = _DEFERRED;
+				continue;
+			case _INCREASING:
+				if (ang1 < ang0) {
+					statix++;
+					ts[statix].index = i;
+					ts[statix].status = _DECREASING;
+				}
+				break;
+			case _DECREASING:
+				if (ang1 > ang0) {
+					statix++;
+					ts[statix].index = i;
+					ts[statix].status = _INCREASING;
+				}
+				break;
+			case _DEFERRED:
+				if (ang1 > ang0) {
+					ts[statix].status = _INCREASING;
+				}
+				else {
+					ts[statix].status = _DECREASING;
+				}
+			}
+		}
+	}	
+	
+	start_ix = end_ix = -1;
+	seg_count = 0;
+	max_count = -999;
+	size = 0;
+	status = _OUTOFRANGE;
+
+	for (i = 0; i <= statix; i++) {
+		if (ts[i].status == _OUTOFRANGE) {
+			if (start_ix == -1)
+				continue;
+			if (ts[i].index - start_ix < 15) {
+				start_ix = -1;
+				continue;
+			}
+			end_ix = ts[i].index - 1;
+		}
+		else if (ts[i].status == _INCREASING ||
+			 ts[i].status == _DECREASING) {
+			if (start_ix == -1) {
+				start_ix = ts[i].index;
+				status = ts[i].status;
+				continue;
+			}
+			else if (ts[i].index - start_ix < 15) {
+				start_ix = ts[i].index;
+				continue;
+			}
+			end_ix = ts[i].index - 1;
+		}
+		angle_div = (end_ix - start_ix) / 25.0;
+		if (dolon) {
+			max_angle = 
+				fabs((lon[end_ix] - lon[start_ix])/ angle_div);
+			NGCALLF(mdgnin,MDGNIN)(&max_angle,&nice);
+			if (nice <= 0) {
+				start_ix = ts[i].index;
+				status = ts[i].status;
+				continue;
+			}
+			isl[seg_count] = (int) 
+				((lon[start_ix] + 180.0) / nice);
+			iel[seg_count] =  (int)
+				((lon[end_ix] + 180.0) / nice);
+		}
+		else {
+			max_angle = 
+				fabs((lat[end_ix] - lat[start_ix])/ angle_div);
+			NGCALLF(mdgnin,MDGNIN)(&max_angle,&nice);
+			if (nice <= 0) {
+				start_ix = ts[i].index;
+				status = ts[i].status;
+				continue;
+			}
+			isl[seg_count] = (int) 
+				((lat[start_ix] + 90.0) / nice);
+			iel[seg_count] =  (int)
+				((lat[end_ix] + 90.0) / nice);
+		}
+		seg_nice[seg_count] = nice;
+		cstatus[seg_count] = status;
+		six[seg_count] =  start_ix;
+		eix[seg_count] =  end_ix;
+		if (max_count < end_ix - start_ix) {
+			max_count = end_ix - start_ix;
+			max_seg = seg_count;
+		}
+		size += 2 + MAX(isl[seg_count],iel[seg_count]) -
+			MIN(isl[seg_count],iel[seg_count]);
+		seg_count++;
+		start_ix = ts[i].status == _OUTOFRANGE ? -1 : ts[i].index;
+		end_ix = -1;
+	}
+	if (start_ix > -1 && start_ix < 86 && end_ix == -1) {
+		end_ix = 100;
+		angle_div = (end_ix - start_ix) / 25.0;
+		if (dolon) {
+			max_angle = 
+				fabs((lon[end_ix] - lon[start_ix])/ angle_div);
+			NGCALLF(mdgnin,MDGNIN)(&max_angle,&nice);
+			if (nice > 0) {
+				isl[seg_count] = (int) 
+					((lon[start_ix] + 180.0) / nice);
+				iel[seg_count] =  (int)
+					((lon[end_ix] + 180.0) / nice);
+			}
+		}
+		else {
+			max_angle = 
+				fabs((lat[end_ix] - lat[start_ix])/ angle_div);
+			NGCALLF(mdgnin,MDGNIN)(&max_angle,&nice);
+			if (nice > 0) {
+				isl[seg_count] = (int) 
+					((lat[start_ix] + 90.0) / nice);
+				iel[seg_count] =  (int)
+					((lat[end_ix] + 90.0) / nice);
+			}
+		}
+		if (nice > 0) {
+			seg_nice[seg_count] = nice;
+			cstatus[seg_count] = status;
+			six[seg_count] =  start_ix;
+			eix[seg_count] =  end_ix;
+			if (max_count < end_ix - start_ix) {
+				max_count = end_ix - start_ix;
+				max_seg = seg_count;
+			}
+			size += 2 + MAX(isl[seg_count],iel[seg_count]) -
+				MIN(isl[seg_count],iel[seg_count]);
+			seg_count++;
+		}
+	}
+
+	if (size <= 0) {
+		return ret;
+	}
+		
+	*values = NhlMalloc(size * sizeof(float));
+	*labels = NhlMalloc(size * sizeof(NhlString));
+
+	nice = seg_nice[max_seg];
+	if (dolon) {
+		for (i = 0; i < seg_count; i++) {
+			if (cstatus[i] == _DECREASING) {
+				jstart = MAX(isl[i],iel[i]) + 2;
+				jend = MIN(isl[i],iel[i]) - 2;
+				jsign = -1;
+			} 
+			else {
+				jstart = MIN(isl[i],iel[i]) - 2;
+				jend = MAX(isl[i],iel[i]) + 2;
+				jsign = 1;
+			}
+			for (j = jstart; j != jend; j += jsign) {
+				rlon = (double) j * nice - 180.0;
+
+				if ((rlon > MIN(lon[six[i]],lon[eix[i]]) 
+				     - nice / 100.0) &&
+				    (rlon < MAX(lon[six[i]],lon[eix[i]]) + 
+				     nice / 100.0)) {
+					NGCALLF(mdilon,MDILON)
+						(&(lat[six[i]]),&(lon[six[i]]),
+						 &dx,&(yw[six[i]]),
+						 &(lat[eix[i]]),&(lon[eix[i]]),
+						 &dx,&(yw[eix[i]]),
+						 &rlon,&xwin,&ywin);
+					if (*count > 0) {
+						if (fabs(ywin - (*values)
+						    [*count - 1]) < yspan / 10)
+							continue;
+					}
+					NGCALLF(mdloch,MDLOCH)
+						(&rlon,label,&nchr,128);
+					label[nchr] = '\0';
+					(*values)[*count] = ywin;
+					(*labels)[*count] = NhlMalloc(nchr+1);
+					strcpy((*labels)[*count],label);
+					(*count)++;
+				}
+			}
+		}
+		return ret;
+	}
+	for (i = 0; i < seg_count; i++) {
+		if (cstatus[i] == _DECREASING) {
+			jstart = MAX(isl[i],iel[i]) + 2;
+			jend = MIN(isl[i],iel[i]) - 2;
+			jsign = -1;
+		} 
+		else {
+			jstart = MIN(isl[i],iel[i]) - 2;
+			jend = MAX(isl[i],iel[i]) + 2;
+			jsign = 1;
+		}
+		for (j = jstart; j != jend; j += jsign) {
+			rlat = (double) j * nice - 90.0;
+
+			if ((rlat > MIN(lat[six[i]],lat[eix[i]]) 
+			     - nice / 100.0) &&
+			    (rlat < MAX(lat[six[i]],lat[eix[i]]) + 
+			     nice / 100.0)) {
+				NGCALLF(mdilat,MDILAT)
+					(&(lat[six[i]]),&(lon[six[i]]),
+					 &dx,&(yw[six[i]]),
+					 &(lat[eix[i]]),&(lon[eix[i]]),
+					 &dx,&(yw[eix[i]]),
+					 &rlat,&xwin,&ywin);
+				if (*count > 0) {
+					if (fabs(ywin - (*values)[*count - 1])
+					    < yspan / 10)
+						continue;
+				}
+				NGCALLF(mdlach,MDLACH)
+					(&rlat,label,&nchr,128);
+				label[nchr] = '\0';
+									      
+				(*values)[*count] = ywin;
+				(*labels)[*count] = NhlMalloc(nchr+1);
+				strcpy((*labels)[*count],label);
+				(*count)++;
+			}
+		}
+	}
+	return ret;
+}
+
+/*
+ * Function:	ManageTickMarks
+ *
+ * Description: If the MapPlot object has an overlay object attached, and
+ *		the TickMarks are activated, manages the TickMark resources 
+ *		relevant to the MapPlot object.
+ *
+ * In Args:	mpnew	new instance record
+ *		mpold	old instance record if not initializing
+ *		init	true if initialization
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:	Objects created and destroyed.
+ */
+static NhlErrorTypes ManageTickMarks
+#if	NhlNeedProto
+(
+	NhlMapPlotLayer	mpnew,
+	NhlMapPlotLayer	mpold,
+	NhlBoolean	init,
+	NhlSArg		*sargs,
+	int		*nargs
+)
+#else 
+(mpnew, mpold, init, sargs, nargs)
+	NhlMapPlotLayer	mpnew;
+	NhlMapPlotLayer	mpold;
+	NhlBoolean	init;
+	NhlSArg		*sargs;
+	int		*nargs;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
+	NhlMapPlotLayerPart	*mpp = &(mpnew->mapplot);
+	NhlMapPlotLayerPart	*ompp = &(mpold->mapplot);
+	NhlTransformLayerPart	*tfp = &(mpnew->trans);
+	char		*e_text;
+	float b,t,l,r;
+	NhlString *xblabels = NULL, *xtlabels = NULL;
+        NhlString *yllabels = NULL, *yrlabels = NULL;
+	float *xbvalues = NULL, *xtvalues = NULL;
+	float *ylvalues = NULL, *yrvalues = NULL;
+	int xbcount,xtcount,ylcount,yrcount;
+	NhlBoolean usebottom = True, useleft = True;
+	NhlBoolean xbon,ylon,xton,yron;
+	NhlBoolean xb_labels_on,yl_labels_on,xt_labels_on,yr_labels_on;
+	float deltax,deltay;
+	int i;
+
+ 	if (! tfp->plot_manager_on)
+		return NhlNOERROR;
+
+        if (mpp->display_tickmarks == NhlNOCREATE) {
+                if (init || ompp->display_tickmarks == NhlNOCREATE)
+                        return NhlNOERROR;
+                else
+                        mpp->display_tickmarks = NhlNEVER;
+        }
+
+	if (init || 
+	    mpp->display_tickmarks != ompp->display_tickmarks) {
+			NhlSetSArg(&sargs[(*nargs)++],
+				   NhlNpmTickMarkDisplayMode,
+				   mpp->display_tickmarks);
+	}
+	if (! (init || mpp->update_req 
+		|| mpp->xb_major_length_set
+		|| mpp->xt_major_length_set
+		|| mpp->yl_major_length_set
+		|| mpp->yr_major_length_set
+		|| mpp->xb_font_height_set
+		|| mpp->xt_font_height_set
+		|| mpp->yl_font_height_set
+	        || mpp->yr_font_height_set))
+		return ret;
+
+	if (init) {
+		mpp->xbvalues = NULL;
+		mpp->xblabels = NULL;
+		mpp->xtvalues = NULL;
+		mpp->xtlabels = NULL;
+		mpp->ylvalues = NULL;
+		mpp->yllabels = NULL;
+		mpp->yrvalues = NULL;
+		mpp->yrlabels = NULL;
+		if (! mpp->xb_major_length_set)
+			mpp->xb_major_length = 0.014;
+		if (! mpp->xt_major_length_set)
+			mpp->xt_major_length = 0.014;
+		if (! mpp->yl_major_length_set)
+			mpp->yl_major_length = 0.014;
+		if (! mpp->yr_major_length_set)
+			mpp->yr_major_length = 0.014;
+		if (! mpp->xb_font_height_set)
+			mpp->xb_font_height = 0.014;
+		if (! mpp->xt_font_height_set)
+			mpp->xt_font_height = 0.014;
+		if (! mpp->yl_font_height_set)
+			mpp->yl_font_height = 0.014;
+		if (! mpp->yr_font_height_set)
+			mpp->yr_font_height = 0.014;
+		deltax = mpnew->view.width/NHL_DEFAULT_VIEW_WIDTH;
+		deltay = mpnew->view.height/NHL_DEFAULT_VIEW_HEIGHT;
+	}
+	else {
+		deltax = mpnew->view.width/mpold->view.width;
+		deltay = mpnew->view.height/mpold->view.height;
+	}
+	if (_NhlCmpFAny2(deltax,1.0,4,_NhlMIN_NONZERO) != 0.0) {
+		if (! mpp->yl_major_length_set)
+			mpp->yl_major_length *= deltax;
+		if (! mpp->yr_major_length_set)
+			mpp->yr_major_length *= deltax;
+		if (! mpp->xb_font_height_set)
+			mpp->xb_font_height *= deltax;
+		if (! mpp->xt_font_height_set)
+			mpp->xt_font_height *= deltax;
+	}
+	if (_NhlCmpFAny2(deltay,1.0,4,_NhlMIN_NONZERO) != 0.0) {
+		if (! mpp->xb_major_length_set)
+			mpp->xb_major_length *= deltay;
+		if (! mpp->xt_major_length_set)
+			mpp->xt_major_length *= deltay;
+		if (! mpp->yl_font_height_set)
+			mpp->yl_font_height *= deltay;
+		if (! mpp->yr_font_height_set)
+			mpp->yr_font_height *= deltay;
+	}
+
+	if (mpp->xbvalues)
+		NhlFreeGenArray(mpp->xbvalues);
+	if (mpp->xblabels)
+		NhlFreeGenArray(mpp->xblabels);
+	if (mpp->xtvalues)
+		NhlFreeGenArray(mpp->xtvalues);
+	if (mpp->xtlabels)
+		NhlFreeGenArray(mpp->xtlabels);
+	if (mpp->ylvalues)
+		NhlFreeGenArray(mpp->ylvalues);
+	if (mpp->yllabels)
+		NhlFreeGenArray(mpp->yllabels);
+	if (mpp->yrvalues)
+		NhlFreeGenArray(mpp->yrvalues);
+	if (mpp->yrlabels)
+		NhlFreeGenArray(mpp->yrlabels);
+		
+	subret = _NhlSetTrans((NhlLayer)tfp->trans_obj,(NhlLayer)mpnew);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		e_text = "%s: Error setting transformation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text);
+		return NhlFATAL;
+	}
+
+	NhlVAGetValues(tfp->trans_obj->base.id,
+		       NhlNmpBottomWindowF,&b,
+		       NhlNmpTopWindowF,&t,
+		       NhlNmpLeftWindowF,&l,
+		       NhlNmpRightWindowF,&r,
+		       NULL);
+
+		
+	subret = GetXAxisTicks(tfp,l,r,b,&xbcount,&xbvalues,&xblabels);
+	ret = MIN(subret,ret);
+	subret = GetXAxisTicks(tfp,l,r,t,&xtcount,&xtvalues,&xtlabels);
+	ret = MIN(subret,ret);
+	subret = GetYAxisTicks(tfp,b,t,l,&ylcount,&ylvalues,&yllabels);
+	ret = MIN(subret,ret);
+	subret = GetYAxisTicks(tfp,b,t,r,&yrcount,&yrvalues,&yrlabels);
+	ret = MIN(subret,ret);
+	
+	NhlSetSArg(&sargs[(*nargs)++],NhlNtmEqualizeXYSizes,True);
+	if (! xbcount) {
+		xbon = False;
+		xb_labels_on = False;
+		mpp->xbvalues = NULL;
+		mpp->xblabels = NULL;
+	}
+	else {
+		xbon = True;
+		xb_labels_on = True;
+
+		mpp->xbvalues = NhlCreateGenArray
+			((NhlPointer)xbvalues,NhlTFloat,
+			 sizeof(float),1,&xbcount);
+		mpp->xblabels = NhlCreateGenArray
+			((NhlPointer)xblabels,NhlTString,
+			 sizeof(NhlString),1,&xbcount);
+		if (! (mpp->xbvalues && mpp->xblabels)) {
+			 NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			 return NhlFATAL;
+		}
+		mpp->xbvalues->my_data = mpp->xblabels->my_data = True;
+		NhlSetSArg(&sargs[(*nargs)++],NhlNtmXBMode,NhlEXPLICIT);
+		NhlSetSArg(&sargs[(*nargs)++],NhlNtmXBValues,mpp->xbvalues);
+		NhlSetSArg(&sargs[(*nargs)++],NhlNtmXBLabels,mpp->xblabels);
+		NhlSetSArg(&sargs[(*nargs)++],NhlNtmXBLabelFuncCode,':');
+	}
+	if (! xtcount) {
+		xton = False;
+		xt_labels_on = False;
+		mpp->xtvalues = NULL;
+		mpp->xtlabels = NULL;
+	}
+	else {
+ 		xton = True;
+		xt_labels_on = True;
+		if (xtcount == xbcount &&
+		    ! memcmp(xbvalues,xtvalues,xtcount * sizeof(float))) {
+			for (i = 0; i < xtcount; i++) {
+				if (strcmp(xblabels[i],xtlabels[i])) {
+					usebottom = False;
+					break;
+				}
+			}
+		}
+		else {
+			usebottom = False;
+		}
+
+		mpp->xtvalues = NhlCreateGenArray
+			((NhlPointer)xtvalues,NhlTFloat,
+			 sizeof(float),1,&xtcount);
+		mpp->xtlabels = NhlCreateGenArray
+			((NhlPointer)xtlabels,NhlTString,
+			 sizeof(NhlString),1,&xtcount);
+		if (! (mpp->xtvalues && mpp->xtlabels)) {
+			 NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			 return NhlFATAL;
+		}
+		mpp->xtvalues->my_data = mpp->xtlabels->my_data = True;
+		NhlSetSArg(&sargs[(*nargs)++],NhlNtmXTMode,NhlEXPLICIT);
+		NhlSetSArg(&sargs[(*nargs)++],NhlNtmXTValues,mpp->xtvalues);
+		NhlSetSArg(&sargs[(*nargs)++],NhlNtmXTLabels,mpp->xtlabels);
+		NhlSetSArg(&sargs[(*nargs)++],NhlNtmXTLabelFuncCode,':');
+	}
+
+	if (! ylcount) {
+		ylon = False;
+		yl_labels_on = False;
+		mpp->ylvalues = NULL;
+		mpp->yllabels = NULL;
+	}
+	else {
+ 		ylon = True;
+		yl_labels_on = True;
+		mpp->ylvalues = NhlCreateGenArray
+			((NhlPointer)ylvalues,NhlTFloat,
+			 sizeof(float),1,&ylcount);
+		mpp->yllabels = NhlCreateGenArray
+			((NhlPointer)yllabels,NhlTString,
+			 sizeof(NhlString),1,&ylcount);
+		if (! (mpp->ylvalues && mpp->yllabels)) {
+			 NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			 return NhlFATAL;
+		}
+		mpp->ylvalues->my_data = mpp->yllabels->my_data = True;
+		NhlSetSArg(&sargs[(*nargs)++],NhlNtmYLMode,NhlEXPLICIT);
+		NhlSetSArg(&sargs[(*nargs)++],NhlNtmYLValues,mpp->ylvalues);
+		NhlSetSArg(&sargs[(*nargs)++],NhlNtmYLLabels,mpp->yllabels);
+		NhlSetSArg(&sargs[(*nargs)++],NhlNtmYLLabelFuncCode,':');
+	}
+	if (! yrcount) {
+		yron = False;
+		yr_labels_on = False;
+		mpp->yrvalues = NULL;
+		mpp->yrlabels = NULL;
+	}
+	else {
+ 		yron = True;
+		yr_labels_on = True;
+		NhlSetSArg(&sargs[(*nargs)++],NhlNtmYROn,True);
+		if (yrcount == ylcount &&
+			 ! memcmp(ylvalues,yrvalues,yrcount * sizeof(float))) {
+			for (i = 0; i < yrcount; i++) {
+				if (strcmp(yllabels[i],yrlabels[i])) {
+					useleft = False;
+					break;
+				}
+			}
+		}
+		else {
+			useleft = False;
+		}
+
+		mpp->yrvalues = NhlCreateGenArray
+			((NhlPointer)yrvalues,NhlTFloat,
+			 sizeof(float),1,&yrcount);
+		mpp->yrlabels = NhlCreateGenArray
+			((NhlPointer)yrlabels,NhlTString,
+			 sizeof(NhlString),1,&yrcount);
+		if (! (mpp->yrvalues && mpp->yrlabels)) {
+			 NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			 return NhlFATAL;
+		}
+		mpp->yrvalues->my_data = mpp->yrlabels->my_data = True;
+		NhlSetSArg(&sargs[(*nargs)++],NhlNtmYRMode,NhlEXPLICIT);
+		NhlSetSArg(&sargs[(*nargs)++],NhlNtmYRValues,mpp->yrvalues);
+		NhlSetSArg(&sargs[(*nargs)++],NhlNtmYRLabels,mpp->yrlabels);
+		NhlSetSArg(&sargs[(*nargs)++],NhlNtmYRLabelFuncCode,':');
+	}
+	/*
+	 * If otherwise turned on (there is a valid set of ticks and labels), 
+	 * but explicitly set by the user, the user value prevails.
+	 */
+
+	if (xbon && mpp->xb_on_set)
+		xbon = mpp->xb_on;
+	if (xb_labels_on && mpp->xb_labels_on_set)
+		xb_labels_on = mpp->xb_labels_on;
+	if (ylon && mpp->yl_on_set)
+		ylon = mpp->yl_on;
+	if (yl_labels_on && mpp->yl_labels_on_set)
+		yl_labels_on = mpp->yl_labels_on;
+
+	/*
+	 * For the top and right, the default is to be on only if valid and
+	 * at least one side different from bottom and left. However, in the
+	 * valid case, the user's set value prevails.
+	 * 
+	 */
+	if (usebottom && useleft) {
+		NhlSetSArg(&sargs[(*nargs)++],NhlNtmXUseBottom,True);
+		NhlSetSArg(&sargs[(*nargs)++],NhlNtmYUseLeft,True);
+		if (xton && mpp->xt_on_set)
+			xton = mpp->xt_on;
+		else
+			xton = False;
+		if (xt_labels_on && mpp->xt_labels_on_set)
+			xt_labels_on = mpp->xt_labels_on;
+		else
+			xt_labels_on = False;
+		if (yron && mpp->yr_on_set)
+			yron = mpp->yr_on;
+		else
+			yron = False;
+		if (yr_labels_on && mpp->yr_labels_on_set)
+			yr_labels_on = mpp->yr_labels_on;
+		else
+			yr_labels_on = False;
+
+	}
+	else {
+		NhlSetSArg(&sargs[(*nargs)++],NhlNtmXUseBottom,False);
+		NhlSetSArg(&sargs[(*nargs)++],NhlNtmYUseLeft,False);
+		if (xton && mpp->xt_on_set)
+			xton = mpp->xt_on;
+		if (xt_labels_on && mpp->xt_labels_on_set)
+			xt_labels_on = mpp->xt_labels_on;
+		if (yron && mpp->yr_on_set)
+			yron = mpp->yr_on;
+		if (yr_labels_on && mpp->yr_labels_on_set)
+			yr_labels_on = mpp->yr_labels_on;
+	}
+
+	NhlSetSArg(&sargs[(*nargs)++],NhlNtmXBOn,xbon);
+	NhlSetSArg(&sargs[(*nargs)++],NhlNtmXTOn,xton);
+	NhlSetSArg(&sargs[(*nargs)++],NhlNtmYLOn,ylon);
+	NhlSetSArg(&sargs[(*nargs)++],NhlNtmYROn,yron);
+	NhlSetSArg(&sargs[(*nargs)++],NhlNtmXBLabelsOn,xb_labels_on);
+	NhlSetSArg(&sargs[(*nargs)++],NhlNtmXTLabelsOn,xt_labels_on);
+	NhlSetSArg(&sargs[(*nargs)++],NhlNtmYLLabelsOn,yl_labels_on);
+	NhlSetSArg(&sargs[(*nargs)++],NhlNtmYRLabelsOn,yr_labels_on);
+
+	if (init || mpp->xb_major_length_set) {
+		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNtmXBMajorLengthF,mpp->xb_major_length);
+		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNtmXBMajorOutwardLengthF,mpp->xb_major_length);
+	}
+	if (init || mpp->xt_major_length_set) {
+		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNtmXTMajorLengthF,mpp->xt_major_length);
+		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNtmXTMajorOutwardLengthF,mpp->xt_major_length);
+	}
+	if (init || mpp->yl_major_length_set) {
+		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNtmYLMajorLengthF,mpp->yl_major_length);
+		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNtmYLMajorOutwardLengthF,mpp->yl_major_length);
+	}
+	if (init || mpp->yr_major_length_set) {
+		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNtmYRMajorLengthF,mpp->yr_major_length);
+		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNtmYRMajorOutwardLengthF,mpp->yr_major_length);
+	}
+	if (init || mpp->xb_font_height_set) {
+		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNtmXBLabelFontHeightF,mpp->xb_font_height);
+	}
+	if (init || mpp->xt_font_height_set) {
+		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNtmXTLabelFontHeightF,mpp->xt_font_height);
+	}
+	if (init || mpp->yl_font_height_set) {
+		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNtmYLLabelFontHeightF,mpp->yl_font_height);
+	}
+	if (init || mpp->yr_font_height_set) {
+		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNtmYRLabelFontHeightF,mpp->yr_font_height);
+	}
+
+	mpp->xb_major_length_set = False;
+	mpp->xt_major_length_set = False;
+	mpp->yl_major_length_set = False;
+	mpp->yr_major_length_set = False;
+	mpp->xb_font_height_set = False;
+	mpp->xt_font_height_set = False;
+	mpp->yl_font_height_set = False;
+	mpp->yr_font_height_set = False;
+
+	return ret;
 }
 
 /*
