@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.30 1999-11-19 02:10:05 dbrown Exp $
+ *      $Id: hlupage.c,v 1.31 1999-12-11 01:02:35 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -464,8 +464,7 @@ static NhlErrorTypes GetDataProfileMessage
 
 	SetInputDataFlag(rec);
 
-	if (rec->new_data && page->qvar && rec->data_profile && 
-	    rec->data_source_grid) {
+	if (rec->new_data && rec->data_source_grid_managed) {
 		NgUpdateDataSourceGrid
 			(rec->data_source_grid,page->qvar,rec->data_profile);
 	}
@@ -550,8 +549,7 @@ static NhlErrorTypes GetVarDataMessage
 
 	SetInputDataFlag(rec);
 
-	if (rec->new_data && page->qvar && rec->data_profile && 
-	    rec->data_source_grid) {
+	if (rec->new_data && rec->data_source_grid_managed) {
 		NgUpdateDataSourceGrid
 			(rec->data_source_grid,
 			 page->qvar,rec->data_profile);
@@ -1560,6 +1558,9 @@ DProfSetValCB
  * the hlupage itself.
  */
 	dprof = rec->data_profile;
+	if (! dprof)
+		return;
+
 	for (i = 0; i < dprof->n_dataitems; i++) {
 
 		ditem = dprof->ditems[i];
@@ -1574,8 +1575,9 @@ DProfSetValCB
 	}
 	page = _NgGetPageRef(info->goid,info->pid);
 
-	NgUpdateDataSourceGrid
-		(rec->data_source_grid,page->qvar,rec->data_profile);
+	if (rec->data_source_grid_managed)
+		NgUpdateDataSourceGrid
+			(rec->data_source_grid,page->qvar,rec->data_profile);
 	
         return;
 }
@@ -1633,6 +1635,9 @@ CreateInstance
 
 		NgFreeResData(resdata);
 
+
+		rec->setval_info.pid = page->id;
+		rec->setval_info.goid = page->go->base.id;
 		udata.ptrval = &rec->setval_info;
 		for (i = 0; i < dprof->n_dataitems; i++) {
 			NgDataItem ditem = dprof->ditems[i];
@@ -1883,7 +1888,7 @@ UpdateDataProfileFromResTree
 			}
 		}
 	}
-	if (new_data) {
+	if (new_data && rec->data_source_grid_managed) {
 		NgUpdateDataSourceGrid
 			(rec->data_source_grid,page->qvar,rec->data_profile);
 		rec->new_data = True;
@@ -2325,6 +2330,12 @@ DeactivateHluPage
 	NgFreeDataProfile(rec->data_profile);
 	rec->data_profile = rec->public.data_profile = NULL;
         rec->activated = False;
+
+	if (rec->data_source_grid_managed) {
+		XtUnmapWidget(rec->data_source_grid->grid);
+		XtUnmanageChild(rec->data_source_grid->grid);
+		rec->data_source_grid_managed = False;
+	}
 }
 
 static void DestroyHluPage
@@ -2336,7 +2347,8 @@ static void DestroyHluPage
 	NhlLayer l = _NhlGetLayer(rec->hlu_id);
         
 	
-        NgDestroyDataSourceGrid(rec->data_source_grid);
+	if (rec->data_source_grid)
+		NgDestroyDataSourceGrid(rec->data_source_grid);
         NgDestroyResTree(rec->res_tree);
         
         NhlFree(data);
@@ -2415,7 +2427,7 @@ static NhlErrorTypes ResetHluPage
 	brHluPageRec	*rec = (brHluPageRec	*)pdp->type_rec;
         NgHluPage 	*pub = &rec->public;
 	int		i;
-	NhlBoolean	data_grid_managed = True;
+	NhlBoolean	has_data = False;
         
 #if DEBUG_HLUPAGE
         fprintf(stderr,"in updata hlu page\n");
@@ -2447,10 +2459,9 @@ static NhlErrorTypes ResetHluPage
                 return NhlFATAL;
         }
 
-	if (! (NhlClassIsSubclass(rec->class,NhldataCommClass) ||
-		NhlClassIsSubclass(rec->class,NhldataItemClass))) {
-			XtUnmanageChild(rec->data_source_grid->grid);
-			data_grid_managed = False;
+	if (NhlClassIsSubclass(rec->class,NhldataCommClass) ||
+	    NhlClassIsSubclass(rec->class,NhldataItemClass)) {
+		has_data = True;
 	}
 
 	if (! pub->data_profile) {
@@ -2473,15 +2484,36 @@ static NhlErrorTypes ResetHluPage
 	 * Not obvious by the name, but a new addition.
 	 */
 
-	if (! rec->data_profile->n_dataitems || page->qfile > NrmNULLQUARK) {
-		XtUnmanageChild(rec->data_source_grid->grid);
-		data_grid_managed = False;
+	if (page->qfile > NrmNULLQUARK || ! has_data) {
+		if(rec->data_source_grid_managed) {
+			XtUnmapWidget(rec->data_source_grid->grid);
+			XtUnmanageChild(rec->data_source_grid->grid);
+			rec->data_source_grid_managed = False;
+		}
+		XtVaSetValues(rec->create_update,
+			      XmNtopAttachment,XmATTACH_FORM,
+			      NULL);
+		XtVaSetValues(rec->auto_update,
+			      XmNtopAttachment,XmATTACH_FORM,
+			      NULL);
 	}
 	else {
+		if (! rec->data_source_grid_managed) {
+			XtManageChild(rec->data_source_grid->grid);	
+			XtMapWidget(rec->data_source_grid->grid);
+			rec->data_source_grid_managed = True;
+		}
+
+		XtVaSetValues(rec->create_update,
+			      XmNtopAttachment,XmATTACH_WIDGET,
+			      XmNtopWidget,rec->data_source_grid->grid,
+			      NULL);
+		XtVaSetValues(rec->auto_update,
+			      XmNtopAttachment,XmATTACH_WIDGET,
+			      XmNtopWidget,rec->data_source_grid->grid,
+			      NULL);
 		NgUpdateDataSourceGrid
 			(rec->data_source_grid,page->qvar,rec->data_profile);
-		if (! XtIsManaged(rec->data_source_grid->grid)) 
-			XtManageChild(rec->data_source_grid->grid);
 
 		SetInputDataFlag(rec);
 
@@ -2490,6 +2522,9 @@ static NhlErrorTypes ResetHluPage
 
 			NhlINITVAR(sel);
 			NhlINITVAR(udata);
+
+			rec->setval_info.pid = page->id;
+			rec->setval_info.goid = page->go->base.id;
 			udata.ptrval = &rec->setval_info;
 
 			for (i = 0; i < rec->data_profile->n_dataitems; i++) {
@@ -2556,28 +2591,7 @@ static NhlErrorTypes ResetHluPage
 			      NULL);
 		NgXAppFreeXmString(rec->go->go.appmgr,xmstring);
 	}
-	if (data_grid_managed) {
-		XtMapWidget(rec->data_source_grid->grid);
-		XtVaSetValues(rec->create_update,
-			      XmNtopAttachment,XmATTACH_WIDGET,
-			      XmNtopWidget,rec->data_source_grid->grid,
-			      NULL);
-		XtVaSetValues(rec->auto_update,
-			      XmNtopAttachment,XmATTACH_WIDGET,
-			      XmNtopWidget,rec->data_source_grid->grid,
-			      NULL); 
-	}
-	else {
-		XtUnmapWidget(rec->data_source_grid->grid);
-		XtVaSetValues(rec->create_update,
-			      XmNtopAttachment,XmATTACH_FORM,
-			      XmNtopWidget,rec->data_source_grid->grid,
-			      NULL);
-		XtVaSetValues(rec->auto_update,
-			      XmNtopAttachment,XmATTACH_FORM,
-			      XmNtopWidget,rec->data_source_grid->grid,
-			      NULL);
-	}
+	XtMapWidget(pdp->form);
 		      
         return NhlNOERROR;
 
@@ -2644,6 +2658,7 @@ NewHluPage
 	rec->data_objects = NULL;
 	rec->datalinks = NULL;
 	rec->preview_destroy = False;
+	rec->data_source_grid_managed = False;
 
 	pdp->form = XtVaCreateManagedWidget
 		("form",xmFormWidgetClass,pane->folder,
@@ -2660,19 +2675,12 @@ NewHluPage
         pdp->page_focus_notify = HluPageFocusNotify;
         pdp->page_message_notify = HluPageMessageNotify;
         pdp->pane = pane;
-        
-        rec->data_source_grid = NgCreateDataSourceGrid
-                (rec->go,pdp->form,page->qvar,rec->data_profile);
-        XtVaSetValues(rec->data_source_grid->grid,
-                      XmNbottomAttachment,XmATTACH_NONE,
-                      XmNrightAttachment,XmATTACH_NONE,
-                      NULL);
-        
+
+	XtUnmapWidget(pdp->form);
+
         rec->create_update = XtVaCreateManagedWidget
                 ("Create/Update",xmPushButtonGadgetClass,pdp->form,
 		 XmNtopOffset,8,
-                 XmNtopAttachment,XmATTACH_WIDGET,
-                 XmNtopWidget,rec->data_source_grid->grid,
                  XmNrightAttachment,XmATTACH_NONE,
                  XmNbottomAttachment,XmATTACH_NONE,
                  NULL);
@@ -2680,13 +2688,23 @@ NewHluPage
         rec->auto_update = XtVaCreateManagedWidget
                 ("Auto Update",xmToggleButtonGadgetClass,pdp->form,
 		 XmNtopOffset,8,
-                 XmNtopAttachment,XmATTACH_WIDGET,
-                 XmNtopWidget,rec->data_source_grid->grid,
                  XmNleftAttachment,XmATTACH_WIDGET,
                  XmNleftWidget,rec->create_update,
                  XmNrightAttachment,XmATTACH_NONE,
                  XmNbottomAttachment,XmATTACH_NONE,
                  NULL);
+
+	rec->data_source_grid = NgCreateDataSourceGrid
+		(rec->go,pdp->form,page->qvar,rec->data_profile);
+
+	XtVaSetValues(rec->data_source_grid->grid,
+		      XmNbottomAttachment,XmATTACH_NONE,
+		      XmNrightAttachment,XmATTACH_NONE,
+		      NULL);
+
+	if (XtIsManaged(rec->data_source_grid->grid)) {
+		XtUnmanageChild(rec->data_source_grid->grid);
+	}
         
         return pdp;
 }
@@ -2733,7 +2751,7 @@ _NgGetHluPage
 	int			nclstate;
         XmString		xmstring;
 	NhlBoolean		new = False;
-	NhlBoolean		data_grid_managed = True;
+	NhlBoolean		has_data = False;
 
         if (QString == NrmNULLQUARK) {
 		QString = NrmStringToQuark(NhlTString);
@@ -2871,30 +2889,47 @@ _NgGetHluPage
                 XtVaSetValues(rec->auto_update,
                               XmNset,True,
                               NULL);
-	if (! (rec->class && 
+	if (rec->class && 
 	       (NhlClassIsSubclass(rec->class,NhldataCommClass) ||
-		NhlClassIsSubclass(rec->class,NhldataItemClass)))) {
-		XtUnmanageChild(rec->data_source_grid->grid);
-		data_grid_managed = False;
+		NhlClassIsSubclass(rec->class,NhldataItemClass))) {
+		has_data = True;
+	}
+	if (page->qfile > NrmNULLQUARK || ! has_data) {
+		if (rec->data_source_grid_managed) {
+			XtUnmapWidget(rec->data_source_grid->grid);
+			XtUnmanageChild(rec->data_source_grid->grid);
+			rec->data_source_grid_managed = False;
+		}
+		XtVaSetValues(rec->create_update,
+			      XmNtopAttachment,XmATTACH_FORM,
+			      XmNtopWidget,rec->data_source_grid->grid,
+			      NULL);
+		XtVaSetValues(rec->auto_update,
+			      XmNtopAttachment,XmATTACH_FORM,
+			      XmNtopWidget,rec->data_source_grid->grid,
+			      NULL);
 	}
 	else {
 		rec->public.data_profile = NgCopyDataProfile
 			(copy_rec->public.data_profile);
 		rec->data_profile = rec->public.data_profile;
-		/*
-		 * If the hlu is in a plot array the page->qfile member is
-		 * set to the array qvar.
-		 */
-		if (! rec->data_profile->n_dataitems || page->qfile) {
-			XtUnmanageChild(rec->data_source_grid->grid);
-			data_grid_managed = False;
-		}
-		else {
-			NgUpdateDataSourceGrid
-				(rec->data_source_grid,
-				 page->qvar,rec->data_profile);
+		NgUpdateDataSourceGrid
+			(rec->data_source_grid,
+			 page->qvar,rec->data_profile);
+		if (! rec->data_source_grid_managed) {
 			XtManageChild(rec->data_source_grid->grid);
+			XtMapWidget(rec->data_source_grid->grid);
+			rec->data_source_grid_managed = True;
 		}
+
+		XtVaSetValues(rec->create_update,
+			      XmNtopAttachment,XmATTACH_WIDGET,
+			      XmNtopWidget,rec->data_source_grid->grid,
+			      NULL);
+		XtVaSetValues(rec->auto_update,
+			      XmNtopAttachment,XmATTACH_WIDGET,
+			      XmNtopWidget,rec->data_source_grid->grid,
+			      NULL); 
 		if (copy_rec->data_object_count) {
 			rec->data_objects = NhlMalloc
 				(sizeof(brDataObjInfo) * 
@@ -2910,29 +2945,8 @@ _NgGetHluPage
 			rec->data_object_count = copy_rec->data_object_count;
 		}
 	}
-	if (data_grid_managed) {
-		XtMapWidget(rec->data_source_grid->grid);
-		XtVaSetValues(rec->create_update,
-			      XmNtopAttachment,XmATTACH_WIDGET,
-			      XmNtopWidget,rec->data_source_grid->grid,
-			      NULL);
-		XtVaSetValues(rec->auto_update,
-			      XmNtopAttachment,XmATTACH_WIDGET,
-			      XmNtopWidget,rec->data_source_grid->grid,
-			      NULL); 
-	}
-	else {
-		XtUnmapWidget(rec->data_source_grid->grid);
-		XtVaSetValues(rec->create_update,
-			      XmNtopAttachment,XmATTACH_FORM,
-			      XmNtopWidget,rec->data_source_grid->grid,
-			      NULL);
-		XtVaSetValues(rec->auto_update,
-			      XmNtopAttachment,XmATTACH_FORM,
-			      XmNtopWidget,rec->data_source_grid->grid,
-			      NULL);
-	}
 	GetPageMessages(page,True);
+	ResetHluPage(page);
 	if (new)
 		_NgGOWidgetTranslations(go,pdp->form);
 

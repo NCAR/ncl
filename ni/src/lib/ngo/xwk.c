@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.27 1999-12-07 19:08:53 dbrown Exp $
+ *      $Id: xwk.c,v 1.28 1999-12-11 01:02:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -42,10 +42,10 @@
 #define	Oset(field)	NhlOffset(NgXWkRec,xwk.field)
 static NhlResource resources[] = {
 	{NgNxwkWork,NgCxwkWork,NhlTPointer,sizeof(NhlPointer),
-		Oset(xwork),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
-		_NhlRES_CONLY,NULL},
-	{NgNxwkSelectedView,NgCxwkSelectedView,NhlTPointer,
-	 sizeof(NhlPointer),Oset(selected_view_id),NhlTImmediate,
+	 Oset(xwork),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
+	 _NhlRES_CONLY,NULL},
+	{NgNxwkSelectedView,NgCxwkSelectedView,NhlTInteger,
+	 sizeof(int),Oset(selected_view_id),NhlTImmediate,
 	 _NhlUSET((NhlPointer)NhlNULLOBJID),_NhlRES_GONLY,NULL},
 	{NgNxwkDrawSelectedViewOnly,NgCxwkDrawSelectedViewOnly,NhlTBoolean,
 	 sizeof(NhlBoolean),Oset(draw_single_view),NhlTImmediate,
