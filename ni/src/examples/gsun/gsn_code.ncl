@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.127 2004-01-06 04:31:31 haley Exp $
+;      $Id: gsn_code.ncl,v 1.128 2004-01-06 21:15:55 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -6295,8 +6295,16 @@ begin
 
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
+;
+; "pmTitleDisplayMode" is one of those resources that has to be
+; set when the object is created, so we need to get its value
+; here and set it.  
+;
+    title_display = get_res_value(res2,"pmTitleDisplayMode","Always")
+
     plot_object = create wksname + "_map" mapPlotClass wks
-        "mpProjection" : projection
+        "mpProjection"       : projection
+        "pmTitleDisplayMode" : title_display
     end create
 
 ; Check to see if any resources were set.
