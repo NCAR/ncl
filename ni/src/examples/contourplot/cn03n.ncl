@@ -170,7 +170,7 @@ labellocs = (/ -90.0, -60.0, -30.0, 0.0, 30.0, 60.0, 90.0/)
 ;
 appid = create "cn03" appClass defaultapp
     "appUsrDir"        : "./"
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
 end create
 
 ;
@@ -193,7 +193,7 @@ else
 ; Create an X workstation.
 ;
     wid = create "cn03Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS .eq. 1) then

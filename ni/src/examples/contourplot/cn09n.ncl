@@ -33,30 +33,29 @@ a = addfile(filename,"r")
 ;
 ; set color table
 ;
-cmap = new((/23,3/),float)
-cmap(0,:) = (/0.0, 0.0, 0.0/)
-cmap(1,:) = (/1.0, 1.0, 1.0/)
-cmap(2,:) = (/0.0, 0.0, 0.0/)
-cmap(3,:) = (/1.0, 0.0, 0.0/)
-cmap(4,:) = (/0.0, 1.0, 0.0/)
-cmap(5,:) = (/0.0, 0.0, 1.0/)
-cmap(6,:) = (/1.0, 1.0, 0.0/)
-cmap(7,:) = (/0.0, 1.0, 1.0/)
-cmap(8,:) = (/1.0, 0.0, 1.0/)
-cmap(9,:) = (/0.5, 0.0, 0.0/)
-cmap(10,:) = (/0.5, 1.0, 1.0/)
-cmap(11,:) = (/0.0, 0.0, 0.5/)
-cmap(12,:) = (/1.0, 1.0, 0.5/)
-cmap(13,:) = (/0.5, 0.0, 1.0/)
-cmap(14,:) = (/1.0, 0.5, 0.0/)
-cmap(15,:) = (/0.0, 0.5, 1.0/)
-cmap(16,:) = (/0.5, 1.0, 0.0/)
-cmap(17,:) = (/0.5, 0.0, 0.5/)
-cmap(18,:) = (/0.5, 1.0, 0.5/)
-cmap(19,:) = (/1.0, 0.5, 1.0/)
-cmap(20,:) = (/0.0, 0.5, 0.0/)
-cmap(21,:) = (/0.5, 0.5, 1.0/)
-cmap(22,:) = (/1.0, 0.0, 0.5/)
+cmap = (/ (/0.0, 0.0, 0.0/), \
+	 (/1.0, 1.0, 1.0/), \
+	 (/0.0, 0.0, 0.0/), \
+	 (/1.0, 0.0, 0.0/), \
+	 (/0.0, 1.0, 0.0/), \
+	 (/0.0, 0.0, 1.0/), \
+	 (/1.0, 1.0, 0.0/), \
+	 (/0.0, 1.0, 1.0/), \
+	 (/1.0, 0.0, 1.0/), \
+	 (/0.5, 0.0, 0.0/), \
+	 (/0.5, 1.0, 1.0/), \
+	 (/0.0, 0.0, 0.5/), \
+	 (/1.0, 1.0, 0.5/), \
+	 (/0.5, 0.0, 1.0/), \
+	 (/1.0, 0.5, 0.0/), \
+	 (/0.0, 0.5, 1.0/), \
+	 (/0.5, 1.0, 0.0/), \
+	 (/0.5, 0.0, 0.5/), \
+	 (/0.5, 1.0, 0.5/), \
+	 (/1.0, 0.5, 1.0/), \
+	 (/0.0, 0.5, 0.0/), \
+	 (/0.5, 0.5, 1.0/), \
+	 (/1.0, 0.0, 0.5/) /)
 
 NCGM=1
 X11=0
@@ -77,7 +76,7 @@ else
 ;
     wks = create "cn09Work" xWorkstationClass defaultapp
         "wkColorMap" : cmap
-        "wkPause" : "True"
+        "wkPause" : True
     end create
   else
     if (PS.eq.1) then
@@ -106,9 +105,9 @@ field1 = create "field1" scalarFieldClass defaultapp
     "sfDataArray" : p(0,:,:) 
     "sfMissingValueV" : p@_FillValue
     "sfXCStartV" : a->lon(0)
-    "sfXCEndV" : a->lon(dimsizes(a->lon)- 1)
+    "sfXCEndV" : a->lon(filevardimsizes(a,"lon")- 1)
     "sfYCStartV" : a->lat(0)
-    "sfYCEndV" : a->lat(dimsizes(a->lat) - 1)
+    "sfYCEndV" : a->lat(filevardimsizes(a,"lat") - 1)
 end create
 
 ;
@@ -125,9 +124,9 @@ con1 = create "con1" contourPlotClass wks
     "cnInfoLabelOn" : "OFF"
     "cnHighLabelsOn" : "OFF"
     "cnLowLabelsOn" : "OFF"
-    "cnLineLabelsOn" : "False"
-    "cnLinesOn" : "False"
-    "cnFillOn" : "True"
+    "cnLineLabelsOn" : False
+    "cnLinesOn" : False
+    "cnFillOn" : True
     "tiMainString" : "Forecast Time " + 0
 end create
 

@@ -26,14 +26,25 @@ begin
 ;
 ; create a simple bull's eye pattern test data set
 ;
-M = 25
-N = 25
 
+M=25
+N=25
+ 
 T = new((/N,M/),float)
-T = onedtond(ispan(-M/2,(M-1)/2,1),(/N,M/))
-T!0 = "x"
-T!1 = "y"
-T = 100.0 - sqrt((8.*T(:,:))^2 + (8.*T(y | :, x | :))^2)
+len_dims = new((/2/),integer)
+ 
+;
+; create a simple bull's eye pattern test data set
+;
+PI = 3.14159
+ 
+jspn = ispan(-M/2,M/2,1)^2
+ispn = ispan(-N/2,N/2,1)^2
+do i = 0, dimsizes(ispn)-1
+        T(i,:) = ispn(i) + jspn
+end do
+T = 100.0 - sqrt(8^2 * T)
+
 
 ;
 ; Create an application context. Set the app dir to the current directory
@@ -42,7 +53,7 @@ T = 100.0 - sqrt((8.*T(:,:))^2 + (8.*T(y | :, x | :))^2)
 ;
 appid = create "cn01" appClass defaultapp
     "appUsrDir" : "./"
-        "appDefaultParent" : "True"
+        "appDefaultParent" : True
 end create
 
 ;
@@ -65,7 +76,7 @@ else
 ; Create an X workstation.
 ;
     wid = create "cn01Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS .eq. 1) then

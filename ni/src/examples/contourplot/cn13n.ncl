@@ -26,9 +26,6 @@ begin
   NCLS = 300
   NCOLORS = 66
   DTOR = .017453292519943
-  icra = new((/NCLS,NCLS/),float,1.e12)
-  x = new((/NCLS,NCLS/),float,1.e12)
-  y = new((/NCLS,NCLS/),float,1.e12)
 ;
 ; Declare variable for defining color map.
 ;
@@ -47,7 +44,7 @@ begin
 ;
   appid = create "cn13" appClass defaultapp
       "appUsrDir" : "./"
-      "appDefaultParent" : "True"
+      "appDefaultParent" : True
   end create
 ;
 ; Default is to display output to an X workstation
@@ -71,7 +68,7 @@ begin
 ;
       wid = create "cn13Work" xWorkstationClass defaultapp
           "wkColorMap"         : cmap
-          "wkPause" : "True"
+          "wkPause" : True
       end create
     else
       if (PS .eq. 1) then
@@ -106,7 +103,9 @@ begin
   ii!1 = "y"
 
   x = .05+.90*(ii+.5)/NCLS
+  x@_FillValue = 1e12
   y = .05+.90*(ii(y | :,x | : )+.5)/NCLS
+  y@_FillValue = 1e12
  
   do i=0,NCLS-1
     NhlNDCToData(mpid,x(i,:),y(i,:),x(i,:),y(i,:))
@@ -116,8 +115,10 @@ begin
 ; Now create a cell array.
 ;
   icra = 2 + ((.25*(1.+cos(DTOR*10.* y))+.25*(1.+sin(DTOR*10.*x ))*cos(DTOR* y))*(NCOLORS-2))
+  icra@_FillValue = 1e12
 
   icra = icra < NCOLORS-1
+
 ;
 ; Create a scalar field object.
 ;

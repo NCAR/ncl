@@ -47,7 +47,7 @@ len_dims = new((/3/),integer)
 ;
 appid = create "cn04" appClass defaultapp
     "appUsrDir" : "./"
-    "appDefaultParent" : "True"
+    "appDefaultParent" : True
 end create
 
 ;
@@ -70,7 +70,7 @@ else
 ; Create an X workstation.
 ;
     wid = create "cn04Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
     end create
   else
     if (PS .eq. 1) then
@@ -134,12 +134,8 @@ end getvalues
 ; specifies attributes of areas greater than the maximum contour level. 
 ;
 thicknesses(ind(lvlflags.eq.3)) = 2.0
-if(num(levels.ge.0.000045.and.levels.lt.0.000055).ne.0) then
-  pats(ind(levels.ge.0.000045.and.levels.lt.0.000055)) = 6
-end if
-if(num(levels.lt.0.000045.or.levels.ge.0.000055).ne.0) then
-  pats(ind(levels.lt.0.000045.or.levels.ge.0.000055)) = -1
-end if
+pats(:) = -1
+pats(ind(levels.ge. .000045 .and. levels.lt. .000055)) = 6
 pats(dimsizes(pats)-1) = -1
 
 ;

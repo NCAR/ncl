@@ -32,30 +32,29 @@ a = addfile(filename,"r")
 ;
 ; set color table
 ;
-cmap = new((/23,3/),float)
-cmap(0,:) = (/0.0, 0.0, 0.0/)
-cmap(1,:) = (/1.0, 1.0, 1.0/)
-cmap(2,:) = (/0.0, 0.0, 0.0/)
-cmap(3,:) = (/1.0, 0.0, 0.0/)
-cmap(4,:) = (/0.0, 1.0, 0.0/)
-cmap(5,:) = (/0.0, 0.0, 1.0/)
-cmap(6,:) = (/1.0, 1.0, 0.0/)
-cmap(7,:) = (/0.0, 1.0, 1.0/)
-cmap(8,:) = (/1.0, 0.0, 1.0/)
-cmap(9,:) = (/0.5, 0.0, 0.0/)
-cmap(10,:) = (/0.5, 1.0, 1.0/)
-cmap(11,:) = (/0.0, 0.0, 0.5/)
-cmap(12,:) = (/1.0, 1.0, 0.5/)
-cmap(13,:) = (/0.5, 0.0, 1.0/)
-cmap(14,:) = (/1.0, 0.5, 0.0/)
-cmap(15,:) = (/0.0, 0.5, 1.0/)
-cmap(16,:) = (/0.5, 1.0, 0.0/)
-cmap(17,:) = (/0.5, 0.0, 0.5/)
-cmap(18,:) = (/0.5, 1.0, 0.5/)
-cmap(19,:) = (/1.0, 0.5, 1.0/)
-cmap(20,:) = (/0.0, 0.5, 0.0/)
-cmap(21,:) = (/0.5, 0.5, 1.0/)
-cmap(22,:) = (/1.0, 0.0, 0.5/)
+cmap = (/ (/0.0, 0.0, 0.0/), \
+	 (/1.0, 1.0, 1.0/), \
+	 (/0.0, 0.0, 0.0/), \
+	 (/1.0, 0.0, 0.0/), \
+	 (/0.0, 1.0, 0.0/), \
+	 (/0.0, 0.0, 1.0/), \
+	 (/1.0, 1.0, 0.0/), \
+	 (/0.0, 1.0, 1.0/), \
+	 (/1.0, 0.0, 1.0/), \
+	 (/0.5, 0.0, 0.0/), \
+	 (/0.5, 1.0, 1.0/), \
+	 (/0.0, 0.0, 0.5/), \
+	 (/1.0, 1.0, 0.5/), \
+	 (/0.5, 0.0, 1.0/), \
+	 (/1.0, 0.5, 0.0/), \
+	 (/0.0, 0.5, 1.0/), \
+	 (/0.5, 1.0, 0.0/), \
+	 (/0.5, 0.0, 0.5/), \
+	 (/0.5, 1.0, 0.5/), \
+	 (/1.0, 0.5, 1.0/), \
+	 (/0.0, 0.5, 0.0/), \
+	 (/0.5, 0.5, 1.0/), \
+	 (/1.0, 0.0, 0.5/) /)
 
 NCGM=1
 X11=0
@@ -75,7 +74,7 @@ else
 ; Create an X workstation.
 ;
     wks = create "cn08Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
       "wkColorMap" : cmap
     end create
   else
@@ -100,8 +99,6 @@ end if
 field1 = create "field1" scalarFieldClass defaultapp
     "sfDataArray" : (a->T(0,:,:,0) - 273.15) * 9 / 5 + 32.0
     "sfMissingValueV":  a->T@_FillValue
-    "sfXCStartV" : a->lat(0)
-    "sfXCEndV": a->lat(dimsizes(a->lat) - 1)
     "sfXArray" : a->lat
     "sfYArray" : a->level
 end create
@@ -110,22 +107,12 @@ end create
 ; Determine extents of grid
 ;
 lat = a->lat
-if(lat(0) .lt. lat(dimsizes(lat)-1)) then
-    min_lat = lat(0)
-    max_lat = lat(dimsizes(lat)-1)
-else
-    max_lat = lat(0)
-    min_lat = lat(dimsizes(lat)-1)
-end if
+min_lat = min(lat)
+max_lat = max(lat)
 
 level = a->level
-if(level(0) .lt. level(dimsizes(level)-1)) then
-    min_level = level(0)
-    max_level = level(dimsizes(level)-1)
-else
-    max_level = level(0)
-    min_level = level(dimsizes(level)-1)
-end if
+min_level = min(level)
+max_level = max(level)
 
 ;
 ; Create contour using manual spacing.
@@ -135,7 +122,7 @@ con1 = create "con1" contourPlotClass wks
     "vpYF": .8
     "vpWidthF" : .6
     "vpHeightF" : .6
-    "cnFillOn" : "True"
+    "cnFillOn" : True
     "cnScalarFieldData" : field1
     "cnLevelSelectionMode" : "ManualLevels"
     "cnMaxLevelCount" : 25
@@ -146,7 +133,7 @@ con1 = create "con1" contourPlotClass wks
     "trXMaxF" : max_lat
     "trYMinF" : min_level
     "trYMaxF" : max_level
-    "trYReverse" : "True"
+    "trYReverse" : True
     "tiMainString" : "Longitude " + a->lon(0) + " Degrees"
 end create
 ;
@@ -158,7 +145,7 @@ frame(wks)
 ;
 ; Loop on remaining longitude values and reset the title every iteration
 ;
-do i = 1, dimsizes(a->lon) - 1 
+do i = 1, filevardimsizes(a,"lon") - 1 
     setvalues field1
         "sfDataArray" : (a->T(0,:,:,i) - 273.15) * 9 / 5 + 32.0
     end setvalues

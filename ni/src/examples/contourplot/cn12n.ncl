@@ -23,8 +23,7 @@
 
 begin
   N = 40
-  z = new((/N,N/),float)
-  len_dims = new((/2/),integer)
+  len_dims = (/N,N/)
 ;
 ; These are the geographical areas we want to fill.
 ;
@@ -46,7 +45,7 @@ begin
 ;
   appid = create "cn12" appClass defaultapp
       "appUsrDir" : "./"
-      "appDefaultParent" : "True"
+      "appDefaultParent" : True
   end create
 ;
 ; Default is to display output to an X workstation
@@ -68,7 +67,7 @@ begin
 ; Create an XWorkstation object.
 ;
       wid = create "cn12Work" xWorkstationClass defaultapp
-          "wkPause" : "True"
+          "wkPause" : True
       end create
     else
       if (PS .eq. 1) then
@@ -84,8 +83,6 @@ begin
 ;
 ; Read the input data and create a data object.
 ;
-  len_dims(0) = N
-  len_dims(1) = N
   z = asciiread("cn12n.asc",len_dims,"float")
 
   field1 = create "DataPlot" scalarFieldClass appid

@@ -32,24 +32,23 @@ a = addfile(filename,"r")
 ;
 ; Set the color map.
 ;
-cmap = new((/17,3/),float)
-cmap(0,:) = (/0.0, 0.0, 0.0/)
-cmap(1,:) = (/1.0, 1.0, 1.0/)
-cmap(2,:) = (/0.0, 0.0, 0.0/)
-cmap(3,:) = (/1.0, 0.0, 0.0/)
-cmap(4,:) = (/0.0, 1.0, 0.0/)
-cmap(5,:) = (/0.0, 0.0, 1.0/)
-cmap(6,:) = (/1.0, 1.0, 0.0/)
-cmap(7,:) = (/0.0, 1.0, 1.0/)
-cmap(8,:) = (/1.0, 0.0, 1.0/)
-cmap(9,:) = (/0.5, 0.0, 0.0/)
-cmap(10,:) = (/0.5, 1.0, 1.0/)
-cmap(11,:) = (/0.0, 0.0, 0.5/)
-cmap(12,:) = (/1.0, 1.0, 0.5/)
-cmap(13,:) = (/0.5, 0.0, 1.0/)
-cmap(14,:) = (/1.0, 0.5, 0.0/)
-cmap(15,:) = (/0.0, 0.5, 1.0/)
-cmap(16,:) = (/0.5, 1.0, 0.0/)
+cmap = (/ (/0.0, 0.0, 0.0/), \
+	(/1.0, 1.0, 1.0/), \
+	(/0.0, 0.0, 0.0/), \
+	(/1.0, 0.0, 0.0/), \
+	(/0.0, 1.0, 0.0/), \
+	(/0.0, 0.0, 1.0/), \
+	(/1.0, 1.0, 0.0/), \
+	(/0.0, 1.0, 1.0/), \
+	(/1.0, 0.0, 1.0/), \
+	(/0.5, 0.0, 0.0/), \
+	(/0.5, 1.0, 1.0/), \
+	(/0.0, 0.0, 0.5/), \
+	(/1.0, 1.0, 0.5/), \
+	(/0.5, 0.0, 1.0/), \
+	(/1.0, 0.5, 0.0/), \
+	(/0.0, 0.5, 1.0/), \
+	(/0.5, 1.0, 0.0/) /)
 
 NCGM=1
 X11=0
@@ -69,7 +68,7 @@ else
 ; Create an X workstation.
 ;
     wks = create "cn06Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause" : True
       "wkColorMap" : cmap
     end create
   else
@@ -93,9 +92,9 @@ field1 = create "field1" scalarFieldClass defaultapp
     "sfDataArray" : (a->T(0,0,:,:) - 273.15) * 9 / 5 + 32.0
     "sfMissingValueV":  a->T@_FillValue
     "sfXCStartV" : a->lon(0)
-    "sfXCEndV": a->lon(dimsizes(a->lon) - 1)
+    "sfXCEndV": a->lon(filevardimsizes(a,"lon") - 1)
     "sfYCStartV" : a->lat(0)
-    "sfYCEndV": a->lat(dimsizes(a->lat) - 1)
+    "sfYCEndV": a->lat(filevardimsizes(a,"lat") - 1)
 end create
 
 ;
@@ -111,8 +110,8 @@ con1 = create "con1" contourPlotClass wks
     "cnMinLevelValF" : -40.0
     "cnMaxLevelValF" : 110.0
     "cnLevelSpacingF" : 10.0
-    "cnFillOn" : "True"
-    "cnMonoFillPattern" : "True"
+    "cnFillOn" : True
+    "cnMonoFillPattern" : True
     "cnFillPatterns" : 0
     "trXMinF" : -140.0
     "trXMaxF" : -52.5
@@ -129,12 +128,12 @@ con1 = create "con1" contourPlotClass wks
     "tmYLMode" : "EXPLICIT"
     "tmYLValues" : (/60, 50, 40 , 30, 20/)
     "tmYLLabels" : (/"60N", "50N", "40N", "30N", "20N"/)
-    "cnLowLabelsOn" : "True"
-    "cnHighLabelsOn" : "True"
-    "tmXMajorGrid" : "True"
-    "tmYMajorGrid" : "True"
-    "tmXBMinorOn" : "False"
-    "tmYLMinorOn" : "False"
+    "cnLowLabelsOn" : True
+    "cnHighLabelsOn" : True
+    "tmXMajorGrid" : True
+    "tmYMajorGrid" : True
+    "tmXBMinorOn" : False
+    "tmYLMinorOn" : False
 end create
 
 draw(con1)
@@ -143,7 +142,7 @@ frame(wks)
 ;
 ; Loop on remaining fields of data and draw contour
 ;
-do i = 1, dimsizes(a->frtime) - 1
+do i = 1, filevardimsizes(a,"frtime") - 1
     setvalues field1
         "sfDataArray" : (a->T(i,0,:,:) - 273.15) * 9 / 5 + 32.0
     end setvalues

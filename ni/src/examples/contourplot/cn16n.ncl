@@ -24,10 +24,10 @@ begin
 ; The input sea surface temperature array of 0 to 360 longitude is
 ; shifted to 30E to 390 (30E) by array index manipulation.
 ;
-  a = file1->sst(0,:,:)
-  b = a
-  b(:,0:165) = a(:,15:180)
-  b(:,165:180) = a(:,0:15)
+  dims = filevardimsizes(file1,"sst")
+  b = new((/dims(1),dims(2)/),float)
+  b(:,0:165) = file1->sst(0,:,15:180)
+  b(:,165:180) = file1->sst(0,:,0:15)
 ;
 ; create an sst data object
 ;
@@ -36,7 +36,7 @@ begin
     "sfXCStartV"  : 30.
     "sfXCEndV"    : 390.
     "sfYCStartV"  : file1->lat(0)
-    "sfYCEndV"    : file1->lat(dimsizes(file1->lat)-1)
+    "sfYCEndV"    : file1->lat(filevardimsizes(file1,"lat")-1)
   end create
 ;
 ; Output to an X11 workstation
@@ -57,7 +57,7 @@ else
 ; Create an XWorkstation object.
 ;
    wid = create "cn16Work" xWorkstationClass defaultapp
-     "wkPause" : "True"
+     "wkPause" : True
    end create
   else
     if (PS .eq. 1) then
@@ -79,10 +79,10 @@ end if
     "vpYF" : .80
     "vpWidthF" : .80
     "vpHeightF" : .40
-    "cnInfoLabelOn" : "False"
-    "cnHighLabelsOn" : "False"
-    "cnLowLabelsOn" : "False"
-    "cnMonoLineColor" : "False"
+    "cnInfoLabelOn" : False
+    "cnHighLabelsOn" : False
+    "cnLowLabelsOn" : False
+    "cnMonoLineColor" : False
     "cnLineDrawOrder" : "predraw"
     "cnFillDrawOrder" : "predraw"
     "cnLabelDrawOrder" : "predraw"
@@ -98,18 +98,18 @@ end if
     "tmYLMode" : "EXPLICIT"
     "tmYLValues" : (/-90, -60,-30,0,30,60,90/)
     "tmYLLabels" : (/"90S","60S","30S","0","30N","60N","90N"/)
-    "tmXTLabelsOn" : "True"
-    "tmYRLabelsOn" : "True"
+    "tmXTLabelsOn" : True
+    "tmYRLabelsOn" : True
     "tmXBLabelFontHeightF" :  .015
     "tmYLLabelFontHeightF" :  .015
     "tmXBMajorOutwardLengthF" : .006
     "tmXBMajorLengthF" : .006
     "tmYLMajorOutwardLengthF" : .006
     "tmYLMajorLengthF" : .006
-    "tmXBMinorOn" : "False"
-    "tmXTMinorOn" : "False"
-    "tmYLMinorOn" : "False"
-    "tmYRMinorOn" : "False"
+    "tmXBMinorOn" : False
+    "tmXTMinorOn" : False
+    "tmYLMinorOn" : False
+    "tmYRMinorOn" : False
   end create
 ;
 ; The ice field is added as a raster contour.  Areas without ice
@@ -122,25 +122,25 @@ end if
     "vpYF" : .80
     "vpWidthF" : .80
     "vpHeightF" : .40
-    "tmXBOn" : "False"
-    "tmYLOn" : "False"
-    "tmXBMinorOn" : "False"
-    "tmYLMinorOn" : "False"
-    "tmXBLabelsOn"   : "False"
-    "tmYLLabelsOn"   : "False"
+    "tmXBOn" : False
+    "tmYLOn" : False
+    "tmXBMinorOn" : False
+    "tmYLMinorOn" : False
+    "tmXBLabelsOn"   : False
+    "tmYLLabelsOn"   : False
     "tiMainOn" : False
     "tmXBMajorLengthF" : 0.
     "tmYLMajorLengthF" : 0.
-    "cnFillOn" : "True"
-    "cnRasterModeOn" : "True"
+    "cnFillOn" : True
+    "cnRasterModeOn" : True
     "cnRasterCellSizeF" : cellsize
     "cnMinLevelValF" : -2.0
     "cnFillColors"   : (/2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1/)
-    "cnLineLabelsOn" : "False"
-    "cnLinesOn" : "False"
-    "cnMonoFillColor" : "False"
-    "cnInfoLabelOn" : "False"
-    "cnHighLabelsOn" : "False"
+    "cnLineLabelsOn" : False
+    "cnLinesOn" : False
+    "cnMonoFillColor" : False
+    "cnInfoLabelOn" : False
+    "cnHighLabelsOn" : False
   end create
 ;
 ; Create a MapPlot object.
@@ -151,13 +151,13 @@ end if
     "vpWidthF" : .80
     "vpHeightF" : .40
     "mpFillOn" : True
-    "mpLabelsOn" : "False"
+    "mpLabelsOn" : False
     "mpDefaultFillColor" : 11
     "mpLandFillColor" : 11
-    "mpOutlineOn" : "False"
-    "mpAreaMaskingOn" : "True"
+    "mpOutlineOn" : False
+    "mpAreaMaskingOn" : True
     "mpMaskAreaSpecifiers" : "Oceans"
-    "mpGridAndLimbOn" : "False"
+    "mpGridAndLimbOn" : False
     "mpLimitMode" : "latlon"
     "mpMinLonF" : 30.
     "mpMaxLonF" : 390.

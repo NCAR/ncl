@@ -36,41 +36,39 @@ file1 = addfile(ncargpath("data") + "/cdf/cn10n.cdf","r")
 ;
 ;  Set up color map.
 ;
-cmap = new( (/27, 3/), float)
 ;
 ;  Colors for contour fill areas varying from blue to red.
 ;
-cmap( 0,:) = (/1.00, 1.00, 1.00/)
-cmap( 1,:) = (/0.00,0.00, 0.00/)
-cmap( 2,:) = (/0.00, 0.15, 1.00/)
-cmap( 3,:) = (/0.00, 0.05, 1.00/)
-cmap( 4,:) = (/0.04, 0.00, 1.00/)
-cmap( 5,:) = (/0.14, 0.00, 1.00/)
-cmap( 6,:) = (/0.24, 0.00, 1.00/)
-cmap( 7,:) = (/0.34, 0.00, 1.00/)
-cmap( 8,:) = (/0.43, 0.00, 1.00/)
-cmap( 9,:) = (/0.53, 0.00, 1.00/)
-cmap(10,:) = (/0.63, 0.00, 1.00/)
-cmap(11,:) = (/0.73, 0.00, 1.00/)
-cmap(12,:) = (/0.83, 0.00, 1.00/)
-cmap(13,:) = (/0.92, 0.00, 1.00/)
-cmap(14,:) = (/1.00, 0.00, 0.98/)
-cmap(15,:) = (/1.00, 0.00, 0.88/)
-cmap(16,:) = (/1.00, 0.00, 0.78/)
-cmap(17,:) = (/1.00, 0.00, 0.68/)
-cmap(18,:) = (/1.00, 0.00, 0.59/)
-cmap(19,:) = (/1.00, 0.00, 0.49/)
-cmap(20,:) = (/1.00, 0.00, 0.39/)
-cmap(21,:) = (/1.00, 0.00, 0.29/)
-cmap(22,:) = (/1.00, 0.00, 0.20/)
-cmap(23,:) = (/1.00, 0.00, 0.10/)
-cmap(24,:) = (/1.00, 0.00, 0.00/)
-;
-;  Colors used for labels.
-;
-cmap(25,:) = (/0.00, 0.00, 0.00/)
-cmap(26,:) = (/0.40, 0.00, 0.40/)
-
+cmap = (/ (/1.00, 1.00, 1.00/), \
+	 (/0.00,0.00, 0.00/), \
+	 (/0.00, 0.15, 1.00/), \
+	 (/0.00, 0.05, 1.00/), \
+	 (/0.04, 0.00, 1.00/), \
+	 (/0.14, 0.00, 1.00/), \
+	 (/0.24, 0.00, 1.00/), \
+	 (/0.34, 0.00, 1.00/), \
+	 (/0.43, 0.00, 1.00/), \
+	 (/0.53, 0.00, 1.00/), \
+	 (/0.63, 0.00, 1.00/), \
+	 (/0.73, 0.00, 1.00/), \
+	 (/0.83, 0.00, 1.00/), \
+	 (/0.92, 0.00, 1.00/), \
+	 (/1.00, 0.00, 0.98/), \
+	 (/1.00, 0.00, 0.88/), \
+	 (/1.00, 0.00, 0.78/), \
+	 (/1.00, 0.00, 0.68/), \
+	 (/1.00, 0.00, 0.59/), \
+	 (/1.00, 0.00, 0.49/), \
+	 (/1.00, 0.00, 0.39/), \
+	 (/1.00, 0.00, 0.29/), \
+	 (/1.00, 0.00, 0.20/), \
+	 (/1.00, 0.00, 0.10/), \
+	 (/1.00, 0.00, 0.00/), \
+;				\
+;  Colors used for labels.	\
+; 				\
+	 (/0.00, 0.00, 0.00/), \
+	 (/0.40, 0.00, 0.40/) /)
 ;
 ; Default is to display output to an X workstation
 ;
@@ -117,12 +115,12 @@ end if
 ;
 
 field1 = create "field1" scalarFieldClass defaultapp
-  "sfDataArray" : (file1->mound)
+  "sfDataArray" : file1->mound
   "sfMissingValueV":  file1->mound@_FillValue
   "sfXCStartV" : file1->ydim(0)
-  "sfXCEndV": file1->ydim(dimsizes(file1->ydim) - 1)
+  "sfXCEndV": file1->ydim(filevardimsizes(file1,"ydim") - 1)
   "sfYCStartV" : file1->xdim(0)
-  "sfYCEndV": file1->xdim(dimsizes(file1->xdim) - 1)
+  "sfYCEndV": file1->xdim(filevardimsizes(file1,"xdim") - 1)
 end create
 
 ;
@@ -149,8 +147,8 @@ frame(workstation_id)
 ;
 
 setvalues con1
-  "cnFillOn": "True"
-  "cnMonoFillColor": "False"
+  "cnFillOn": True
+  "cnMonoFillColor": False
   "cnLevelSpacingF" : 2.0
   "cnSmoothingOn": True
   "cnMaxPointDistanceF" : 0.0
@@ -163,7 +161,7 @@ setvalues con1
   "cnHighLabelFont": 22
   "cnHighLabelFontHeightF": .025
   "cnHighLabelFontColor": 25
-  "cnInfoLabelOn": "False"
+  "cnInfoLabelOn": False
 
   "tmXBMinorPerMajor": 2
 
@@ -184,7 +182,7 @@ setvalues con1
 
   "tmBorderLineColor": 26
 
-  "tiMainOn": "True"
+  "tiMainOn": True
   "tiMainFont": 26
   "tiMainFontHeightF": .04
   "tiMainString": "The Hot Zone"
@@ -233,10 +231,10 @@ xy_id = create "XyPlotData" xyPlotClass workstation_id
   "vpWidthF" : .7
   "vpHeightF" : .7
 
-  "xyComputeYMax": "False"
-  "xyComputeYMin": "False"
+  "xyComputeYMax": False
+  "xyComputeYMin": False
 
-  "tiMainOn": "True"
+  "tiMainOn": True
   "tiMainFont": 26
   "tiMainFontHeightF": .0275
   "tiMainString": "For X = 10."
@@ -251,10 +249,10 @@ xy_id = create "XyPlotData" xyPlotClass workstation_id
   "tiYAxisFontColor": 26
   "tiYAxisFontHeightF": .025
 
-  "tmXTBorderOn": "False"
-  "tmYRBorderOn": "False"
-  "tmXTOn": "False"
-  "tmYROn": "False"
+  "tmXTBorderOn": False
+  "tmYRBorderOn": False
+  "tmXTOn": False
+  "tmYROn": False
   "tmYLMajorLineColor": 26
   "tmYLMinorLineColor": 26
   "tmYLMinorThicknessF": 2.
@@ -276,7 +274,7 @@ end create
 
 dataspec = NhlAddData(xy_id,"xyCoordData",y_dataid)
 setvalues dataspec
-  "xyMonoLineColor": "True"
+  "xyMonoLineColor": True
   "xyLineColor": 24
   "xyLineThicknessF": 2.
 end setvalues
@@ -300,7 +298,7 @@ frame(workstation_id)
 mapid = create "Map0" mapPlotClass workstation_id
   "pmTitleDisplayMode" : "always"
 
-  "tiMainOn": "True"
+  "tiMainOn": True
   "tiMainFont": 26
   "tiMainFontHeightF": .037
   "tiMainOffsetYF": -0.00
@@ -312,7 +310,7 @@ mapid = create "Map0" mapPlotClass workstation_id
   "vpWidthF" : .79
   "vpHeightF" : .79
 
-  "mpFillOn" : "False"
+  "mpFillOn" : False
   "mpOutlineBoundarySets" : "allBoundaries"
   "mpProjection" : "LambertConformal"
   "mpLambertParallel1F": 30.
@@ -325,8 +323,8 @@ mapid = create "Map0" mapPlotClass workstation_id
   "mpMaxLonF": -93.
   "mpUSStateLineColor": 25
   "mpUSStateLineThicknessF": 2.
-  "mpGridAndLimbOn": "False"
-  "mpPerimOn": "True"
+  "mpGridAndLimbOn": False
+  "mpPerimOn": True
   "mpPerimLineColor": 26
   "mpPerimLineThicknessF": 2.
 end create
@@ -341,16 +339,16 @@ end create
 
 con2 = create "con2" contourPlotClass workstation_id
   "cnScalarFieldData" : field2
-  "cnFillOn": "True"
-  "cnMonoFillColor": "False"
+  "cnFillOn": True
+  "cnMonoFillColor": False
   "cnLevelSpacingF" : 8.0
   "cnSmoothingOn": True
   "cnMaxPointDistanceF" : 0.0
   "cnLineColor": 0
-  "cnLineLabelsOn": "False"
-  "cnHighLabelsOn": "False"
-  "cnLowLabelsOn": "False"
-  "cnInfoLabelOn": "False"
+  "cnLineLabelsOn": False
+  "cnHighLabelsOn": False
+  "cnLowLabelsOn": False
+  "cnInfoLabelOn": False
   "cnFillColors": (/3,7,11,15,19,23/)
 ; "cnFillColors": (/2,5,8,11,14,17,20,23/)
 end create

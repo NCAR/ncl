@@ -27,14 +27,24 @@ begin
 ;
 ; create a simple bull's eye pattern test data set
 ;
-M = 25
-N = 25
-
+M=25
+N=25
+ 
 T = new((/N,M/),float)
-T = onedtond(ispan(-M/2,(M-1)/2,1),(/N,M/))
-T!0 = "x"
-T!1 = "y"
-T = 100.0 - sqrt((8.*T(:,:))^2 + (8.*T(y | :, x | :))^2)
+len_dims = new((/2/),integer)
+ 
+;
+; create a simple bull's eye pattern test data set
+;
+PI = 3.14159
+ 
+jspn = ispan(-M/2,M/2,1)^2
+ispn = ispan(-N/2,N/2,1)^2
+do i = 0, dimsizes(ispn)-1
+        T(i,:) = ispn(i) + jspn
+end do
+T = 100.0 - sqrt(8^2 * T)
+
 
 ;
 ; Create an application context. Set the app dir to the current directory
@@ -108,8 +118,8 @@ end create
 ; default thickness.
 ;
 setvalues cnid
-    "cnMonoLineDashPattern" : "false"
-    "cnMonoLineColor" : "false"
+    "cnMonoLineDashPattern" : False
+    "cnMonoLineColor" : False
     "cnLineThicknessF" : 2.0
 end setvalues
 
@@ -121,11 +131,11 @@ frame(wid)
 ;
 setvalues cnid
     "cnLineThicknessF" : 1.0
-    "cnMonoLineDashPattern" : "true"
-    "cnMonoLineColor" : "true"
-    "cnFillOn" : "true"
-    "cnMonoFillColor" : "true"
-    "cnMonoFillPattern" : "false"
+    "cnMonoLineDashPattern" : True
+    "cnMonoLineColor" : True
+    "cnFillOn" : True
+    "cnMonoFillColor" : True
+    "cnMonoFillPattern" : False
 end setvalues
 
 draw(cnid)
@@ -145,13 +155,10 @@ getvalues cnid
     "cnFillScales" : fscales
 end getvalues
 
-count = dimsizes(fscales)
-ii = ispan(0,count-1,1)
-fscales = 2.5 - 2.0 * ii / (count - 1)
-delete(ii)
+fscales = 2.5 - (2.0 * ispan(0,dimsizes(fscales)-1,1)) / (dimsizes(fscales) -1)
 
 setvalues cnid
-    "cnMonoFillScale" : "false"
+    "cnMonoFillScale" : False
     "cnFillScales" : fscales
 end setvalues
 
@@ -165,8 +172,8 @@ frame(wid)
 ;
 setvalues cnid
     "cnLineColor" : 0
-    "cnMonoFillColor" : "false"
-    "cnMonoFillPattern" : "true"
+    "cnMonoFillColor" : False
+    "cnMonoFillPattern" : True
 end setvalues
 
 draw(cnid)
@@ -183,15 +190,13 @@ getvalues cnid
     "cnFillColors" : colors
 end getvalues
 
-count = dimsizes(colors)
-colors(0:count/2-1) = colors(count-1:count-1-(count/2-1))
 
 setvalues cnid
-    "cnFillColors" : colors
-    "cnLinesOn" : "false"
-    "cnLineLabelsOn" : "false"
-    "cnHighLabelsOn" : "false"
-    "cnLowLabelsOn" : "false"
+    "cnFillColors" : colors(::-1)
+    "cnLinesOn" : False
+    "cnLineLabelsOn" : False
+    "cnHighLabelsOn" : False
+    "cnLowLabelsOn" : False
 end setvalues
 
 draw(cnid)
