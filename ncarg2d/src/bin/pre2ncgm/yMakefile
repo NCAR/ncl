@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:34:52 ncargd Exp $
+#	$Id: yMakefile,v 1.2 1992-09-29 15:42:39 ncargd Exp $
 #
 NCARG	= ../../../..
 
@@ -26,7 +26,7 @@ OBJECTS = $(GENERIC_OBJS) $(OTHER_OBJS)
 FCPP_OBJS	= fndarg.f metred.f mninst.f trans.f trassn.f \
 		trlate.f trndat.f
 
-LIBS = $(LIBDIR)/libncarg.a $(LIBDIR)/libncarg_gks.a $(LIBDIR)/libncarg_loc.a
+LIBS = $(LIBPATH)/libncarg.a $(LIBPATH)/libncarg_gks.a $(LIBPATH)/libncarg_loc.a
 
 all:: pre2ncgm.prog
 
