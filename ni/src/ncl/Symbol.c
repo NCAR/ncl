@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.9 1994-05-28 00:13:13 ethan Exp $
+ *      $Id: Symbol.c,v 1.10 1994-07-08 21:31:54 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -25,8 +25,9 @@ extern "C" {
 #include <stdio.h>
 #include <errno.h>
 #include <ncarg/hlu/hlu.h>
-#include <data_objs/NclData.h>
+#include <ncarg/hlu/NresDB.h>
 #include <defs.h>
+#include <data_objs/NclData.h>
 #include <Keywords.h>
 #include <Symbol.h>
 
@@ -108,6 +109,7 @@ int _NclInitSymbol
 	_NclAddIntrinsics();
 	_NclAddBuiltIns();
 	_NclAddHLUObjs();
+	_NclAddFileFormats();
 /*
 * After keywords are defined a new scope must be created. The Zero
 * level scope is just for keywords and does not need any memory on the

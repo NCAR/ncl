@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.12 1994-05-28 00:13:21 ethan Exp $
+ *      $Id: defs.h,v 1.13 1994-07-08 21:31:59 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,7 @@ extern "C" {
 
 
 #define NCL_MAX_DIMENSIONS 32
+#define NCL_MAX_FVARS 128
 #define NCL_MAX_STRING 256
 #define NCL_MAX_ATTRIBUTES 32
 #define NCL_MAX_SYMS_PER_STMNT 300
@@ -75,6 +76,8 @@ extern void _NclFreeSubRec(
 struct _NclSubRec	* /*sub_rec*/;
 #endif
 );
+
+typedef NrmQuark NclQuark;
 
 typedef struct _NclGenericVal {
 	int kind;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ProcFuncs.h,v 1.6 1994-05-28 00:13:05 ethan Exp $
+ *      $Id: ProcFuncs.h,v 1.7 1994-07-08 21:31:49 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -33,7 +33,7 @@ typedef NhlErrorTypes (*NclBuiltInProcWrapper)(
 	void
 #endif
 );
-typedef void (*NclIntrinsicProcWrapper)(
+typedef NhlErrorTypes (*NclIntrinsicProcWrapper)(
 #if	NhlNeedProto
 	void	
 #endif

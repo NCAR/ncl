@@ -4,8 +4,9 @@ extern "C" {
 #ifndef MAKEAPI
 
 #include <ncarg/hlu/hlu.h>
-#include <data_objs/NclData.h>
+#include <ncarg/hlu/NresDB.h>
 #include <defs.h>
+#include <data_objs/NclData.h>
 #include <Symbol.h>
 #include <SrcTree.h>
 #include <errno.h>
@@ -14,13 +15,13 @@ extern int loading;
 extern char *cur_load_file;
 extern int cur_line_number;
 extern int top_level_line;
-extern FILE *yyin;
+extern FILE *_yyin;
 extern int cmd_line;
-extern int yylineno;
-int yywrap() 
+extern int _yylineno;
+int _yywrap() 
 {
 	if(loading) {
-		yyin = stdin;
+		_yyin = stdin;
 		loading = 0;
 /*
 * Yeah I know the loses the pointer but the allocated string must

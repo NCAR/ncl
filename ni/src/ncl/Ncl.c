@@ -3,19 +3,20 @@ extern "C" {
 #endif
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
-#include <data_objs/NclData.h>
+#include <ncarg/hlu/NresDB.h>
 #include <defs.h>
+#include <data_objs/NclData.h>
 #include <Symbol.h>
 #include <y.tab.h>
 #include <Machine.h>
 #include <unistd.h>
 
-extern FILE *yyin;
+extern FILE *_yyin;
 FILE *thefptr;
 FILE *theoptr;
 int cmd_line;
 extern int cur_line_number;
-extern int yyparse();
+extern int _yyparse();
 
 #define BUFF_SIZE 512
 
@@ -23,13 +24,13 @@ extern int yyparse();
 main() {
 
 #ifdef YYDEBUG
-	extern int yydebug;
+	extern int _yydebug;
 /*		
-	extern FILE * yyerfp;
+	extern FILE * _yyerfp;
 */
-	yydebug = 1;
+	_yydebug = 1;
 /*
-	yyerfp = fopen("ncl.trace","w");
+	_yyerfp = fopen("ncl.trace","w");
 */
 
 #endif
@@ -44,7 +45,7 @@ main() {
 
 	if(cmd_line)	
 		fprintf(stdout,"ncl %d> ",0);
-	yyparse();
+	_yyparse();
 	fclose(thefptr);
 	fprintf(stdout,"Number of unfreed objects %d\n",_NclNumObjs());
 	_NclPrintUnfreedObjs(stdout);

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.12 1994-05-28 00:13:07 ethan Exp $
+ *      $Id: SrcTree.c,v 1.13 1994-07-08 21:31:51 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,8 +27,8 @@ extern "C" {
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 
-#include <data_objs/NclData.h>
 #include <defs.h>
+#include <data_objs/NclData.h>
 #include <Symbol.h>
 #include <SrcTree.h>
 #include <errno.h>

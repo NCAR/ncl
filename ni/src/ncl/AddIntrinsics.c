@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.3 1994-05-28 00:12:42 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.4 1994-07-08 21:31:30 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -26,12 +26,18 @@ extern "C" {
 #endif
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
-#include <data_objs/NclData.h>
+#include <ncarg/hlu/NresDB.h>
 #include <defs.h>
+#include <data_objs/NclData.h>
 #include <y.tab.h>
 #include <Symbol.h>
 #include <ProcFuncs.h>
 
+extern NhlErrorTypes _NclIAddFile(
+#ifdef NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes _NclIClear(
 #ifdef NhlNeedProto
 void
@@ -141,6 +147,16 @@ void _NclAddIntrinsics
 	args[0].dim_sizes[0] = 1;
 	args[0].n_dims = 1;
 	_NclRegisterProc(_NclIDumpStk,args,"dump",1,IPROC);
+	args = NclCalloc(2,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("string");
+	args[0].is_dimsizes = 1;
+	args[0].dim_sizes[0] = 1;
+	args[0].n_dims = 1;
+	args[1].arg_data_type = _NclLookUp("string");
+	args[1].is_dimsizes = 1;
+	args[1].dim_sizes[0] = 1;
+	args[1].n_dims = 1;
+	_NclRegisterProc(_NclIAddFile,args,"addfile",2,IFUNC);
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = NULL;
 	args[0].is_dimsizes = 0;

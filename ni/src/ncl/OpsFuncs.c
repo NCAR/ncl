@@ -3,6 +3,7 @@ extern "C" {
 #endif
 #include <stdio.h>
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/NresDB.h>
 #include <data_objs/NclMultiDValdoubleData.h>
 #include <data_objs/NclMultiDValfloatData.h>
 #include <data_objs/NclMultiDVallongData.h>
@@ -11,6 +12,7 @@ extern "C" {
 #include <data_objs/NclMultiDValstringData.h>
 #include <data_objs/NclMultiDValHLUObjData.h>
 #include <data_objs/NclMultiDVallogicalData.h>
+#include <data_objs/NclMultiDValnclfileData.h>
 #include <data_objs/NclHLUObj.h>
 #include <defs.h>
 #include <Symbol.h>
@@ -21,7 +23,79 @@ extern "C" {
 #include <OpsFuncs.h>
 #include <data_objs/NclVar.h>
 #include <data_objs/DataSupport.h>
+#include <data_objs/NclFileInterfaces.h>
+#include <data_objs/NclFile.h>
+#include <data_objs/FileSupport.h>
 #include <y.tab.h>
+
+NhlErrorTypes _NclIAddFile
+#if  __STDC__
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry path;
+	NclStackEntry rw_status;
+	NclStackEntry out_data;
+	NclMultiDValData p_md = NULL;
+	NclMultiDValData rw_md = NULL;
+	NclFile file = NULL;
+	NclMultiDValData out_md = NULL;
+	char *rw;
+	int rw_v;
+	int *id = (int*)NclMalloc((unsigned)sizeof(int));
+	int dim_size = 1;
+/*
+* Guarenteed to be scalar string
+*/
+	path =  _NclGetArg(0,2);
+	rw_status = _NclGetArg(1,2);
+
+	if(path.kind == NclStk_VAR) {
+		if(path.u.data_var != NULL) {
+			p_md = _NclVarValueRead(path.u.data_var,NULL,NULL);
+		}
+	} else if(path.kind == NclStk_VAL) {
+		p_md = path.u.data_obj;
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"addfile: incorrect type of object passed to addfile");
+		return(NhlFATAL);
+	}
+	if(rw_status.kind == NclStk_VAR) {
+		if(rw_status.u.data_var != NULL) {
+			rw_md = _NclVarValueRead(rw_status.u.data_var,NULL,NULL);
+		}
+	} else if(rw_status.kind == NclStk_VAL) {
+		rw_md = rw_status.u.data_obj;
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"addfile: incorrect type of object passed to addfile");
+		return(NhlFATAL);
+	}
+	rw = NrmQuarkToString(*(NclQuark*)rw_md->multidval.val);
+	if((strrchr(rw,'w') == NULL)&&(strrchr(rw,'W') == NULL)) {
+		rw_v = 1;
+	} else {
+		rw_v = 0;
+	}
+	file = _NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,*(NclQuark*)p_md->multidval.val,rw_v);
+	if(file != NULL) {
+		*id = file->obj.id;
+		out_md = _NclMultiDValnclfileCreate(NULL,NULL,Ncl_MultiDValnclfileData,0,id,NULL,1,&dim_size,TEMPORARY,NULL);
+		if(out_md != NULL) {
+			out_data.kind = NclStk_VAL;
+			out_data.u.data_obj = out_md;
+			_NclPlaceReturn(out_data);
+			return(NhlNOERROR);
+		} else {
+			_NclDestroyObj((NclObj)file);
+			return(NhlFATAL);
+		}
+	} else {
+		return(NhlFATAL);
+	}
+	
+}
 
 NhlErrorTypes _NclIAny
 #if __STDC__
@@ -1383,7 +1457,7 @@ NclStackEntry _NclCreateHLUObjOp
 	NclMultiDValData parent;
 #endif
 {
-	int i;
+	int i,j;
 	NclStackEntry *data,*resname;
 	NclStackEntry data_out;
 	int rl_list;
@@ -1393,6 +1467,7 @@ NclStackEntry _NclCreateHLUObjOp
 	int *tmp_id = NULL,tmp_ho_id;
 	int dim_size = 1;
 	int parent_id = -1;
+	int *ids;
 
 	if(parent != NULL) 	 {
 		if(parent->multidval.totalelements > 1) {
@@ -1443,11 +1518,37 @@ NclStackEntry _NclCreateHLUObjOp
 					(int)(tmp_md->multidval.totalsize/tmp_md->multidval.totalelements),
 					tmp_md->multidval.n_dims,
 					tmp_md->multidval.dim_sizes,
-					0);
+					1);
 			NhlRLSet(rl_list,NrmQuarkToString(
 				*(int*)(((NclMultiDValData)resname->u.data_obj)->multidval.val)),
 				NhlTGenArray,
 				gen_array[i]);
+		} else {
+/*
+* Totally temporary code 6/21
+*/
+			ids = (int*)NclMalloc((unsigned)sizeof(int)*tmp_md->multidval.totalelements);
+			for(j = 0; j < tmp_md->multidval.totalelements;j++) {
+				tmp_ho = (NclHLUObj)_NclGetObj(((int*)tmp_md->multidval.val)[j]);
+				ids[j] = tmp_ho->hlu.hlu_id;
+			}
+			if(tmp_md->obj.obj_type_mask & NCL_HLU_MASK){
+				gen_array[i] = _NhlCreateGenArray(
+					(NhlPointer)ids,
+					NhlTInteger,
+					sizeof(int),
+					1,
+					&tmp_md->multidval.totalelements,
+					0);
+				NhlRLSet(rl_list,NrmQuarkToString(
+					*(int*)(((NclMultiDValData)resname->u.data_obj)->multidval.val)),
+					NhlTGenArray,
+					gen_array[i]);
+			} else {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"The value associated with (%s) does not have an HLU representation",
+						NrmQuarkToString(*(int*)(((NclMultiDValData)resname->u.data_obj)->multidval.val)));
+				gen_array[i] = NULL;
+			}
 		}
 /*
 *-----> Need to deal with NULL hlu_type_rep

@@ -4,8 +4,8 @@ extern  "C" {
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 
-#include <data_objs/NclData.h>
 #include <defs.h>
+#include <data_objs/NclData.h>
 #include <Symbol.h>
 #include <SrcTree.h>
 #include <errno.h>

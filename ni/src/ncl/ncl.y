@@ -4,8 +4,9 @@
 #include <pfmt.h>
 */
 #include <ncarg/hlu/hluP.h>
-#include <data_objs/NclData.h>
+#include <ncarg/hlu/NresDB.h>
 #include <defs.h>
+#include <data_objs/NclData.h>
 #include <errno.h>
 #include <Symbol.h>
 #include <ctype.h>

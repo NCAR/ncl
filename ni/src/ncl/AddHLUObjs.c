@@ -2,7 +2,7 @@
 
 
 /*
- *      $Id: AddHLUObjs.c,v 1.2 1994-05-06 23:37:11 ethan Exp $
+ *      $Id: AddHLUObjs.c,v 1.3 1994-07-08 21:31:28 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@ extern "C" {
 #endif
 #include <stdio.h>
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/NresDB.h>
 #include <defs.h>
@@ -45,6 +46,8 @@ extern NhlLayerClass NhlxyDataDepLayerClass;
 extern NhlLayerClass NhllabelBarLayerClass;
 extern NhlLayerClass NhllegendLayerClass;
 extern NhlLayerClass NhlcoordArraysLayerClass;
+extern NhlLayerClass NhlscalarFieldLayerClass;
+
 
 
 void _NclAddHLUObjs
@@ -65,6 +68,7 @@ void _NclAddHLUObjs
 	_NclAddSingleObj("labelBarLayerClass",NhllabelBarLayerClass);
 	_NclAddSingleObj("legendLayerClass",NhllegendLayerClass);
 	_NclAddSingleObj("coordArraysLayerClass",NhlcoordArraysLayerClass);
+	_NclAddSingleObj("scalarFieldLayerClass",NhlscalarFieldLayerClass);
 	return;
 	
 }

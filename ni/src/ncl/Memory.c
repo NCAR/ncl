@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Memory.c,v 1.6 1994-04-07 16:48:17 ethan Exp $
+ *      $Id: Memory.c,v 1.7 1994-07-08 21:31:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -24,10 +24,11 @@
 extern "C" {
 #endif
 #include <ncarg/hlu/hlu.h>
+#include <ncarg/hlu/NresDB.h>
 #include <errno.h>
+#include <defs.h>
 #include <data_objs/NclData.h>
 #include <data_objs/NclMultiDValData.h>
-#include <defs.h>
 
 
 void
@@ -75,6 +76,9 @@ NclFree
                 free(ptr);
                 return NhlNOERROR;
 #else
+                free(ptr);
+                return NhlNOERROR;
+/*
                 ret = free(ptr);
 
                 if(ret == 0){
@@ -85,6 +89,7 @@ NclFree
                 else{
                         return(NhlNOERROR);
                 }
+*/
 #endif
         }
 }
@@ -186,9 +191,11 @@ void _NclFreeSubRec
 struct _NclSubRec * sub_rec;
 #endif
 {
+/*
 	if(sub_rec->name != NULL) {
 		NclFree(sub_rec->name);
 	}
+*/
 	switch(sub_rec->sub_type) {
 	case COORD_VECT:
 	case INT_VECT:
