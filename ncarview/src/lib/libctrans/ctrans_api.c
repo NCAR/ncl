@@ -1,5 +1,5 @@
 /*
- *      $Id: ctrans_api.c,v 1.19 1993-06-02 23:54:54 clyne Exp $
+ *      $Id: ctrans_api.c,v 1.20 1995-03-16 22:11:26 haley Exp $
  */
 /*
  *	File:		ctrans_api.c
@@ -357,7 +357,7 @@ CtransRC	CtransSetMetafile(metafile)
 	/*
 	 * make sure the first element is a Begin Metafile element
 	 */
-	if (cgmc.class == DEL_ELEMENT && cgmc.command == BEG_MF_ID) {
+	if (cgmc.cgmclass == DEL_ELEMENT && cgmc.command == BEG_MF_ID) {
 		if ((rc = Process(&cgmc)) == FATAL) return(FATAL);
 		if (rc == WARN) rcx = WARN;
 
@@ -376,8 +376,8 @@ CtransRC	CtransSetMetafile(metafile)
 	 */
 	while ((status = Instr_Dec(&cgmc)) > 0) {
 
-		if ((cgmc.class == DEL_ELEMENT && cgmc.command == BEG_PIC_ID) ||
-		(cgmc.class == DEL_ELEMENT && cgmc.command == END_MF_ID)){
+		if ((cgmc.cgmclass == DEL_ELEMENT && cgmc.command == BEG_PIC_ID) ||
+		(cgmc.cgmclass == DEL_ELEMENT && cgmc.command == END_MF_ID)){
 
 			break;	/* where done	*/
 		}
@@ -437,14 +437,14 @@ CtransRC	CtransPlotFrame()
 	/*
 	 * See if we've reached the end of the file
 	 */
-	if (cgmc.class == DEL_ELEMENT && cgmc.command == END_MF_ID) {
+	if (cgmc.cgmclass == DEL_ELEMENT && cgmc.command == END_MF_ID) {
 		return((CtransRC) EOM);
 	}
 
 	/*
 	 * current element better be a begin picture
 	 */
-	if (! (cgmc.class == DEL_ELEMENT && cgmc.command == BEG_PIC_ID)) {
+	if (! (cgmc.cgmclass == DEL_ELEMENT && cgmc.command == BEG_PIC_ID)) {
 		ESprintf(E_UNKNOWN, "BEGIN PICTURE element expected");
 		return(FATAL);
 	}
@@ -464,7 +464,7 @@ CtransRC	CtransPlotFrame()
 		if ((rc = Process(&cgmc)) == FATAL) return(FATAL);
 		if (rc == WARN) rcx = WARN;
 
-		if (cgmc.class == DEL_ELEMENT && cgmc.command == END_PIC_ID) {
+		if (cgmc.cgmclass == DEL_ELEMENT && cgmc.command == END_PIC_ID) {
 
 			break;	/* we're done	*/
 		}
@@ -520,7 +520,7 @@ CtransRC	CtransClearDisplay()
 		return(FATAL);
 	}
 
-	temp_cgmc.class = DEL_ELEMENT;
+	temp_cgmc.cgmclass = DEL_ELEMENT;
 	temp_cgmc.command = CLEAR_DEVICE;
 	(void) Process(&temp_cgmc);
 	return(OK);
@@ -553,7 +553,7 @@ void	CtransCloseBatch()
 	 * already been invoked and we are not in debug mode.
 	 */
 	if (deviceIsInit && ! (*deBug)) {
-		cgmc.class = DEL_ELEMENT;
+		cgmc.cgmclass = DEL_ELEMENT;
 		cgmc.command = END_MF_ID;
 		(void) Process(&cgmc);
 	}
@@ -621,10 +621,10 @@ CtransRC	CtransLSeekBatch(offset, whence)
 	 */
 	while (skip != 0 && ((status = Instr_Dec(&cgmc)) > 0)) {
 
-		if (cgmc.class == DEL_ELEMENT && cgmc.command == BEG_PIC_ID){
+		if (cgmc.cgmclass == DEL_ELEMENT && cgmc.command == BEG_PIC_ID){
 			skip--;
 		}
-		if (cgmc.class == DEL_ELEMENT && cgmc.command == END_MF_ID) {
+		if (cgmc.cgmclass == DEL_ELEMENT && cgmc.command == END_MF_ID) {
 			return((CtransRC) EOM);	/* seek past end of file */
 		}
 	}

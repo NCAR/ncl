@@ -235,7 +235,7 @@ int  VMStty (mode, buffer, arglen)
         struct  string_descr {
                 short   length;         /*  Length of the string   */
                 char    type;           /*  Type                   */
-                char    class;          /*  Class                  */
+                char    cgmclass;       /*  Class                  */
                 char    *address;       /*  Address of the string  */
         };
         struct  string_descr descr;
@@ -248,7 +248,7 @@ int  VMStty (mode, buffer, arglen)
                 {
                         descr.length  = strlen (cur_dev_name);                
                         descr.type    = 14;
-                        descr.class   = 1;
+                        descr.cgmclass   = 1;
                         descr.address = cur_dev_name;
                         error = sys$assign (&descr, &tty, 0, 0);
                 } 

@@ -1,5 +1,5 @@
 /*
- *	$Id: format.c,v 1.11 1993-06-24 22:09:23 clyne Exp $
+ *	$Id: format.c,v 1.12 1995-03-16 22:11:34 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -315,7 +315,7 @@ int	number;			/* the number of values to be sent */
 
 	int	i;		/* loop variable */
 
-	bzero(temp,coordoutsize);
+	memset(temp,0,coordoutsize);
 
 	dst = temp;
 
@@ -408,7 +408,7 @@ long	count;			/* the vector count pair */
 
 	int	i;		/* loop variable */
 
-	bzero(temp,veccntoutsize);
+	memset(temp,0,veccntoutsize);
 
 	dst = temp;
 
@@ -505,7 +505,7 @@ boolean	fillflag;		/* TRUE if the index is a fill colour */
 	if (fillflag && COLOUR_INDEX_ENCODING == TEK)
 		index = -index;
 
-	bzero(temp,indexoutsize);
+	memset(temp,0,indexoutsize);
 
 	dst = temp;
 
@@ -596,7 +596,7 @@ int	width;
 	int	i;		/* loop variable */
 
 	if (LINE_WIDTH_ENCODING == BINARY)
-		bzero(temp,widthoutsize);
+		memset(temp,0,widthoutsize);
 
 	dst = temp;
 
@@ -700,7 +700,7 @@ int	count;			/* range of data		*/
 	while (index < count) {
 
 	if (MAP_INTENSITY_ENCODING == BINARY)
-		bzero(temp,indexoutsize);
+		memset(temp,0,indexoutsize);
 
 	dst = temp;
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.28 1994-03-09 19:26:01 clyne Exp $
+ *	$Id: text.c,v 1.29 1995-03-16 22:11:51 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -775,21 +775,21 @@ static	int	open_line_draw()
 	cgmc.ci = &ci_array[0];
 	
 	/*set line width */
-	cgmc.class = ATT_ELEMENT;
+	cgmc.cgmclass = ATT_ELEMENT;
 	cgmc.command = LINE_WIDTH_ID;
 	cgmc.r[0] = 1.0;
 	cgmc.Rnum = 1;
 	if (Process(&cgmc) != OK) return(-1);
 
 	/*set line type	*/
-	cgmc.class = ATT_ELEMENT;
+	cgmc.cgmclass = ATT_ELEMENT;
 	cgmc.command = LINE_TYPE_ID;
 	cgmc.ix[0] = 1;
 	cgmc.IXnum = 1;
 	if (Process(&cgmc) != OK) return(-1);
 
 	/*set line colour to text colour	*/
-	cgmc.class = ATT_ELEMENT;
+	cgmc.cgmclass = ATT_ELEMENT;
 	cgmc.command = LINE_COLOUR_ID;
 	cgmc.ci[0] = TEXT_COLOUR.index;
 	cgmc.CInum = 1;
@@ -815,21 +815,21 @@ static	int	close_line_draw()
 	cgmc.ci = &ci_array[0];
 	
 	/*	restore line width */
-	cgmc.class = ATT_ELEMENT;
+	cgmc.cgmclass = ATT_ELEMENT;
 	cgmc.command = LINE_WIDTH_ID;
 	cgmc.r[0] = lineWidthSave;
 	cgmc.Rnum = 1;
 	if (Process(&cgmc) != OK) return(-1);
 
 	/*	restore line type	*/
-	cgmc.class = ATT_ELEMENT;
+	cgmc.cgmclass = ATT_ELEMENT;
 	cgmc.command = LINE_TYPE_ID;
 	cgmc.ix[0] = lineTypeSave;
 	cgmc.IXnum = 1;
 	if (Process(&cgmc) != OK) return(-1);
 
 	/*	restore line colour */
-	cgmc.class = ATT_ELEMENT;
+	cgmc.cgmclass = ATT_ELEMENT;
 	cgmc.command = LINE_COLOUR_ID;
 	cgmc.ci[0] = lineColourSave;
 	cgmc.CInum = 1;
@@ -848,7 +848,7 @@ static	int	line_draw(p, n)
 
 	if (n < 1) return(0);
 
-	cgmc.class = GRP_ELEMENT;
+	cgmc.cgmclass = GRP_ELEMENT;
 	cgmc.command = POLYLINE_ID;
 	cgmc.more = FALSE;
 	cgmc.p = p;

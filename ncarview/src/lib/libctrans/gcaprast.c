@@ -1,5 +1,5 @@
 /*
- *	$Id: gcaprast.c,v 1.17 1993-06-24 22:09:27 clyne Exp $
+ *	$Id: gcaprast.c,v 1.18 1995-03-16 22:11:38 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -187,7 +187,7 @@ long	count;			/* the vector count */
 
 	float	value;
 
-	bzero(temp,veccntoutsize);
+	memset(temp,0,veccntoutsize);
 
 	dst = temp;
 
@@ -273,7 +273,7 @@ int	count;
 
 	int	i;		/* loop variable */
 
-	bzero(temp,dataoutsize);
+	memset(temp,0,dataoutsize);
 
 	dst = temp;
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: fill.c,v 1.14 1992-12-11 16:04:06 clyne Exp $
+ *	$Id: fill.c,v 1.15 1995-03-16 22:11:30 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -352,7 +352,7 @@ int	fill_D(cgmc,instr,p_len)
 	cgmc->Dnum = numparm;	
   
 	/* extract parameters */
-	bcopy((char *) instr->data, (char *) cgmc->d, (int) numparm);
+	memmove((void *) cgmc->d, (const void *) instr->data, (size_t) numparm);
 
 	/* return number of bytes of data left in parameter feild*/
 	return((i = instr->data_length - (numparm * stepsize)) ? i : 0);
@@ -897,7 +897,7 @@ static	int	count;		/* number of cells processed in a row of data*/
 			 * can directly copy data since we're using 8-bit 
 			 * precision
 			 */
-			bcopy((char *) instr->data,(char *) cgmc->c+i, k);
+			memmove(cgmc->c+i,(const void *) instr->data,k);
 
 			count -= k;
 			numparm -= k;
@@ -1077,12 +1077,12 @@ static	int	count;		/* number of cells processed in a row of data*/
  *
  */
 
-int	fill_special(cgmc,instr,class,id)
+int	fill_special(cgmc,instr,cgmclass,id)
 	CGMC 	*cgmc;
 	Instr	*instr;
-	int 	class, id;	/* cgm command class and id*/
+	int 	cgmclass, id;	/* cgm command class and id*/
 {
-	switch (class) {
+	switch (cgmclass) {
 	case 1 :
 		switch(id) {
 
@@ -1094,7 +1094,7 @@ int	fill_special(cgmc,instr,class,id)
 			ESprintf(
 				E_UNKNOWN, 
 				"Can't parse CGM element(class=%d, id=%d)", 
-				class, id
+				cgmclass, id
 			);
 			return (-1);
 		}
@@ -1110,7 +1110,7 @@ int	fill_special(cgmc,instr,class,id)
 			ESprintf(
 				E_UNKNOWN, 
 				"Can't parse CGM element(class=%d, id=%d)", 
-				class, id
+				cgmclass, id
 			);
 			return (-1);
 		}
@@ -1156,7 +1156,7 @@ int	fill_special(cgmc,instr,class,id)
 			ESprintf(
 				E_UNKNOWN, 
 				"Can't parse CGM element(class=%d, id=%d)", 
-				class, id
+				cgmclass, id
 			);
 			return (-1);
 		}
@@ -1183,7 +1183,7 @@ int	fill_special(cgmc,instr,class,id)
 			ESprintf(
 				E_UNKNOWN, 
 				"Can't parse CGM element(class=%d, id=%d)", 
-				class, id
+				cgmclass, id
 			);
 			return (-1);
 		}
@@ -1197,14 +1197,14 @@ int	fill_special(cgmc,instr,class,id)
 			ESprintf(
 				E_UNKNOWN, 
 				"Can't parse CGM element(class=%d, id=%d)", 
-				class, id
+				cgmclass, id
 			);
 			return (-1);
 		}
 	default : 
 		ESprintf(
 			E_UNKNOWN, "Can't parse CGM element(class=%d, id=%d)", 
-			class, id
+			cgmclass, id
 		);
 		return (-1);
 	}

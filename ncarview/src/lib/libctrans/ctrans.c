@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.36 1994-03-09 19:25:54 clyne Exp $
+ *	$Id: ctrans.c,v 1.37 1995-03-16 22:11:24 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -302,12 +302,12 @@ static	void	decode_err(status)
 	}
 }
 
-static	const char	*element_name(class, id)
-	int	class, id;
+static	const char	*element_name(cgmclass, id)
+	int	cgmclass, id;
 {
 	const	char	*name;
 
-	name = CGM_ElementLookup((unsigned int) class, (unsigned int) id);
+	name = CGM_ElementLookup((unsigned int) cgmclass, (unsigned int) id);
 
 	if (! name) name = "Unknown";
 
@@ -327,29 +327,29 @@ CtransRC	Process(c)
 	int	devnum = devices[currdev].number;	
 	int	rc;
 
-	if ((c->class > MAXCLASS) || (c->command > MAXFUNCPERCLASS)) {
-		const char	*name = element_name(c->class, c->command);
+	if ((c->cgmclass > MAXCLASS) || (c->command > MAXFUNCPERCLASS)) {
+		const char	*name = element_name(c->cgmclass, c->command);
 
 		ESprintf(
 			EINVAL, 
 			"Illegal metafile element(class=%d, id=%d, name=\"%s\")",
-			c->class, c->command, name
+			c->cgmclass, c->command, name
 		);
 		elog(ErrGetMsg());
 		return(WARN);
 	}
-	else if (cmdtab[devnum][c->class][c->command]) {
-		rc = (*cmdtab[devnum][c->class][c->command])(c);
+	else if (cmdtab[devnum][c->cgmclass][c->command]) {
+		rc = (*cmdtab[devnum][c->cgmclass][c->command])(c);
 	}
 	else {
-		const char	*name = element_name(c->class, c->command);
+		const char	*name = element_name(c->cgmclass, c->command);
 		/*
 		 * no function for element
 		 */
 		ESprintf(
 			EINVAL, 
 			"Illegal metafile element(class=%d, id=%d, name=\"%s\")",
-			c->class, c->command, name
+			c->cgmclass, c->command, name
 		);
 		elog(ErrGetMsg());
 		return(WARN);
@@ -361,13 +361,13 @@ CtransRC	Process(c)
 	/*
 	 * fatal if descriptor or delimiter element
 	 */
-	else if (c->class == DEL_ELEMENT || c->class == DES_ELEMENT) {
-		const char	*name = element_name(c->class, c->command);
+	else if (c->cgmclass == DEL_ELEMENT || c->cgmclass == DES_ELEMENT) {
+		const char	*name = element_name(c->cgmclass, c->command);
 
 		ESprintf(
 			E_UNKNOWN, 
 			"Could not process CGM element(class=%d, id=%d, name=\"%s\") [ %s ]",
-			c->class, c->command, name, ErrGetMsg()
+			c->cgmclass, c->command, name, ErrGetMsg()
 		);
 		elog(ErrGetMsg());
 		return(FATAL);
@@ -376,12 +376,12 @@ CtransRC	Process(c)
 	 * non-fatal error (we hope)
 	 */
 	else {
-		const char	*name = element_name(c->class, c->command);
+		const char	*name = element_name(c->cgmclass, c->command);
 
 		ESprintf(
 			E_UNKNOWN, 
 			"Could not process CGM element(class=%d, id=%d, name=\"%s\") [ %s ]",
-			c->class, c->command, name, ErrGetMsg()
+			c->cgmclass, c->command, name, ErrGetMsg()
 		);
 		elog(ErrGetMsg());
 		return(WARN);
@@ -392,7 +392,7 @@ static	void	clear_device()
 {
 	CGMC	temp_cgmc;
 
-	temp_cgmc.class = DEL_ELEMENT;
+	temp_cgmc.cgmclass = DEL_ELEMENT;
 	temp_cgmc.command = CLEAR_DEVICE;
 	(void) Process(&temp_cgmc);
 }
@@ -404,8 +404,8 @@ static	void	clear_device()
 DoEscapes(cgmc)
 	CGMC	*cgmc;
 {
-	while ((cgmc->class == ESC_ELEMENT && cgmc->command == ESCAPE_ID) ||
-		(cgmc->class == DEL_ELEMENT && cgmc->command == NOOP_ID)) {
+	while ((cgmc->cgmclass == ESC_ELEMENT && cgmc->command == ESCAPE_ID) ||
+		(cgmc->cgmclass == DEL_ELEMENT && cgmc->command == NOOP_ID)) {
 
 		if (Process(cgmc) != FATAL) {
 			(void) Instr_Dec(cgmc);
@@ -598,7 +598,7 @@ CtransRC	init_metafile(record, cgm_fd)
 		return(FATAL);
 	}
 	DoEscapes(&command);
-	if (command.class == DEL_ELEMENT && command.command == BEG_MF_ID) {
+	if (command.cgmclass == DEL_ELEMENT && command.command == BEG_MF_ID) {
 		if ((rc = Process(&command)) == FATAL) return(FATAL);
 		if (rc == WARN) rcx = WARN;
 	}
@@ -635,8 +635,8 @@ CtransRC	init_metafile(record, cgm_fd)
 		decode_err(status);
 		return(FATAL);
 	}
-	while((command.class != DEL_ELEMENT || command.command != BEG_PIC_ID) &&
-		(command.class != DEL_ELEMENT || command.command != END_MF_ID)){
+	while((command.cgmclass != DEL_ELEMENT || command.command != BEG_PIC_ID) &&
+		(command.cgmclass != DEL_ELEMENT || command.command != END_MF_ID)){
 
 		if ((rc = Process(&command)) == FATAL) return(FATAL);
 		if (rc == WARN) rcx = WARN;
@@ -705,7 +705,7 @@ CtransRC	ctrans(record)
 	/*
 	 * see if we've reached the end of the file
 	 */
-	if (command.class == DEL_ELEMENT && command.command == END_MF_ID) {
+	if (command.cgmclass == DEL_ELEMENT && command.command == END_MF_ID) {
 		/* 
 		 * process the END MF command	
 		 */
@@ -717,7 +717,7 @@ CtransRC	ctrans(record)
 	/*
 	 * current element better be a begin picture
 	 */
-	if (! (command.class == DEL_ELEMENT && command.command == BEG_PIC_ID)) {
+	if (! (command.cgmclass == DEL_ELEMENT && command.command == BEG_PIC_ID)) {
 		ESprintf(E_UNKNOWN, "BEGIN PICTURE element expected");
 		elog(ErrGetMsg());
 		return(FATAL);
@@ -739,7 +739,7 @@ CtransRC	ctrans(record)
 		if ((rc = Process(&command)) == FATAL) return(FATAL);
 		if (rc == WARN) rcx = WARN;
 
-		if (command.class == DEL_ELEMENT && command.command == END_PIC_ID){
+		if (command.cgmclass == DEL_ELEMENT && command.command == END_PIC_ID){
 
 			break;	/* we're done	*/
 		}
@@ -811,9 +811,9 @@ CtransRC	ctrans_merge(record1, record2)
 	/*
 	 * 	Do until get a END PICTURE or END METAFILE element
 	 */
-	while (((command.class != DEL_ELEMENT) 
+	while (((command.cgmclass != DEL_ELEMENT) 
 			|| (command.command != END_PIC_ID))
-		&& ((command.class != DEL_ELEMENT) 
+		&& ((command.cgmclass != DEL_ELEMENT) 
 			|| (command.command != END_MF_ID))) {
 			
 
@@ -847,9 +847,9 @@ CtransRC	ctrans_merge(record1, record2)
 			return(FATAL);
 		}
 	}while(
-		(command.class != DEL_ELEMENT || 
+		(command.cgmclass != DEL_ELEMENT || 
 		command.command != BEG_PIC_B_ID)
-		&& (command.class != DEL_ELEMENT || 
+		&& (command.cgmclass != DEL_ELEMENT || 
 		command.command != END_MF_ID));
 
 
@@ -864,9 +864,9 @@ CtransRC	ctrans_merge(record1, record2)
 	/*
 	 * 	Do until get a END PICTURE or END METAFILE element
 	 */
-	while (((command.class != DEL_ELEMENT) 
+	while (((command.cgmclass != DEL_ELEMENT) 
 			|| (command.command != END_PIC_ID))
-		&& ((command.class != DEL_ELEMENT) 
+		&& ((command.cgmclass != DEL_ELEMENT) 
 			|| (command.command != END_MF_ID))) {
 
 		if ((rc = Process(&command)) == FATAL) return(FATAL);

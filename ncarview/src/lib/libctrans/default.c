@@ -1,5 +1,5 @@
 /*
- *	$Id: default.c,v 1.25 1995-01-09 22:18:44 clyne Exp $
+ *	$Id: default.c,v 1.26 1995-03-16 22:11:28 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -165,7 +165,7 @@ boolean		value;
 		/*
 		 * AIX - hosed as usual
 		 */
-		bcopy((char *) &defaulttable, (char *) &picdefaulttable, 
+		memmove((void *) &picdefaulttable,(const void *) &defaulttable, 
 			sizeof (DEFAULTTABLE));
 #else
 		picdefaulttable = defaulttable;

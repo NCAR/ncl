@@ -1,6 +1,6 @@
 
 /*
- *      $Id: fill.h,v 1.2 1992-11-19 21:49:24 clyne Exp $
+ *      $Id: fill.h,v 1.3 1995-03-16 22:11:31 haley Exp $
  */
 /************************************************************************
 *									*
@@ -107,7 +107,7 @@ extern	int	fill_special(
 #ifdef	NeedFuncProto
 	CGMC 	*cgmc,
 	Instr	*instr,
-	int 	class,
+	int 	cgmclass,
 	int	id
 #endif
 );

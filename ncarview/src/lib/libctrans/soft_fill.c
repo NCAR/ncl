@@ -1,5 +1,5 @@
 /*
- *	$Id: soft_fill.c,v 1.13 1995-01-14 00:25:11 clyne Exp $
+ *	$Id: soft_fill.c,v 1.14 1995-03-16 22:11:47 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -507,7 +507,7 @@ FillTable	*buildFillTable(point_list, count)
 
 	if (count < 2) return((FillTable *) NULL);
 
-	bzero((char *) fillTable.x_count, (int) yExtent * sizeof(int));
+	memset((char *) fillTable.x_count, 0, (int) yExtent * sizeof(int));
 
 	/*
 	 * find max y and min y.
@@ -531,7 +531,7 @@ FillTable	*buildFillTable(point_list, count)
 	 * calculate the number of x intercepts for all the polygon
 	 * edges
 	 */
-	bzero((char *) tableWidths, (int) yExtent * sizeof(int));
+	memset((char *) tableWidths, 0, (int) yExtent * sizeof(int));
 	for(i=1; i<=count; i++) {
 		DCtype y1, y2, tmp, yval;
 

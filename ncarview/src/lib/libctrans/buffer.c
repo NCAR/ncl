@@ -1,5 +1,5 @@
 /*
- *	$Id: buffer.c,v 1.6 1992-09-01 23:41:39 clyne Exp $
+ *	$Id: buffer.c,v 1.7 1995-03-16 22:11:19 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -75,7 +75,7 @@ buffer(str,count)
 
 	while ((tmp = OUTPUT_BUF_SIZE - outbufnum) < count) {
 
-		bcopy(str,&outbuf[outbufnum],tmp);
+		memmove(&outbuf[outbufnum],str,tmp);
 		(void)write(outFD,outbuf,OUTPUT_BUF_SIZE);
 		outbufnum = 0; 
 
@@ -83,7 +83,7 @@ buffer(str,count)
 		str += tmp;
 	}
 
-	bcopy(str,&outbuf[outbufnum],count);
+	memmove(&outbuf[outbufnum],str,count);
 	outbufnum += count;
 }
 

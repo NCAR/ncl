@@ -1,5 +1,5 @@
 /*
- *	$Id: in.c,v 1.11 1993-02-02 22:23:13 clyne Exp $
+ *	$Id: in.c,v 1.12 1995-03-16 22:11:40 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -239,12 +239,12 @@ int	Instr_Dec(cgmc)
 	/*
 	 * assign the class and id of the CGM element to cgmc 
 	 */
-	cgmc->class = instr.class;
+	cgmc->cgmclass = instr.cgmclass;
 	cgmc->command = instr.id;
 	cgmc->more = instr.more;
 
-	p_type = Command[cgmc->class][cgmc->command].p_type;
-	p_len = Command[cgmc->class][cgmc->command].p_len;
+	p_type = Command[cgmc->cgmclass][cgmc->command].p_type;
+	p_len = Command[cgmc->cgmclass][cgmc->command].p_len;
 
 	/*
 	 *	convert raw instr into cooked cgmc
@@ -285,7 +285,7 @@ int	Instr_Dec(cgmc)
 		retnum = fill_CO(cgmc,&instr,p_len); 
 		break;
 	case (int) SPECIAL: 
-		retnum = fill_special(cgmc,&instr,cgmc->class, cgmc->command);
+		retnum = fill_special(cgmc,&instr,cgmc->cgmclass, cgmc->command);
 		break;
 
 	case (int) na  : 

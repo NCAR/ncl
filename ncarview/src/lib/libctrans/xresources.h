@@ -1,5 +1,5 @@
 /*
- *      $Id: xresources.h,v 1.1 1993-04-01 23:04:57 clyne Exp $
+ *      $Id: xresources.h,v 1.2 1995-03-16 22:11:55 haley Exp $
  */
 
 #include <X11/Xlib.h>
@@ -35,7 +35,7 @@ extern	char	*_CtGetResource(
 	char		*parentname,
 	char		*parentclass,
 	char		*name,
-	char		*class,
+	char		*cgmclass,
 	char		*def
 #endif
 );

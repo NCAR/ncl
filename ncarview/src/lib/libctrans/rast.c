@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.34 1995-01-14 00:25:10 clyne Exp $
+ *	$Id: rast.c,v 1.35 1995-03-16 22:11:44 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -161,7 +161,7 @@ static	clear_grid(grid)
 		}
 	}
 	else {
-		bzero((char *) grid->data, grid->nx * grid->ny);
+		memset((char *) grid->data, 0, grid->nx * grid->ny);
 	}
 }
 

@@ -47,7 +47,7 @@ typedef unsigned char	Dtype;
 typedef	unsigned char	Ctype;		/*packed mode encoding of cell array*/
 
 typedef	struct	{
-	int	class;
+	int	cgmclass;
 	int	command;
 
 	unsigned int	CInum,CIspace;

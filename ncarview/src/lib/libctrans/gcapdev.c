@@ -1,5 +1,5 @@
 /*
- *	$Id: gcapdev.c,v 1.25 1994-03-09 19:25:57 clyne Exp $
+ *	$Id: gcapdev.c,v 1.26 1995-03-16 22:11:36 haley Exp $
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -69,21 +69,21 @@ static	int	simulate_bg_color()
 	cgmc.more = FALSE;
 
         /* set fill colour to background color	*/
-        cgmc.class = ATT_ELEMENT;
+        cgmc.cgmclass = ATT_ELEMENT;
         cgmc.command = FILL_COLOUR_ID;
         cgmc.ci[0] = 0;		/* color index zero is background color	*/
         cgmc.CInum = 1;
         (void) Process(&cgmc);
 
         /* set interior style to solid	*/
-        cgmc.class = ATT_ELEMENT;
+        cgmc.cgmclass = ATT_ELEMENT;
         cgmc.command = INTERIOR_STYLE_ID;
         cgmc.e[0] = SOLID_S;
         cgmc.Enum = 1;
         (void) Process(&cgmc);
 
         /* turn off clipping	*/
-        cgmc.class = CON_ELEMENT;
+        cgmc.cgmclass = CON_ELEMENT;
         cgmc.command = CLIP_INDICATOR_ID;
         cgmc.e[0] = 0;
         cgmc.Enum = 1;
@@ -93,7 +93,7 @@ static	int	simulate_bg_color()
 	/*
 	 * draw a big rectangle
 	 */
-        cgmc.class = GRP_ELEMENT;
+        cgmc.cgmclass = GRP_ELEMENT;
         cgmc.command = POLYGON_ID;
 	cgmc.p[0].x = XMIN;
 	cgmc.p[0].y = YMIN;
@@ -110,21 +110,21 @@ static	int	simulate_bg_color()
 	 * restore polygon attributes
 	 */
         /* set fill colour to background color	*/
-        cgmc.class = ATT_ELEMENT;
+        cgmc.cgmclass = ATT_ELEMENT;
         cgmc.command = FILL_COLOUR_ID;
         cgmc.ci[0] = fill_color;
         cgmc.CInum = 1;
         (void) Process(&cgmc);
 
         /* set interior style to solid	*/
-        cgmc.class = ATT_ELEMENT;
+        cgmc.cgmclass = ATT_ELEMENT;
         cgmc.command = INTERIOR_STYLE_ID;
         cgmc.e[0] = fill_style;
         cgmc.Enum = 1;
         (void) Process(&cgmc);
 
         /* restore clipping	*/
-        cgmc.class = CON_ELEMENT;
+        cgmc.cgmclass = CON_ELEMENT;
         cgmc.command = CLIP_INDICATOR_ID;
         cgmc.e[0] = clip_flag;
         cgmc.Enum = 1;
