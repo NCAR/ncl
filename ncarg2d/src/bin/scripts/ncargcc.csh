@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.29 1994-04-06 19:04:33 haley Exp $
+#	$Id: ncargcc.csh,v 1.30 1994-04-07 20:37:45 haley Exp $
 #
 
 #*********************************************#
@@ -10,6 +10,9 @@
 #*********************************************#
 setenv NCARG_ROOT  `ncargpath root`
 
+if ($status != 0) then
+	exit 1
+endif
 
 set XLIBPATH = ""
 set system   = "SED_SYSTEM_INCLUDE"

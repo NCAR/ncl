@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.58 1994-03-28 21:24:39 haley Exp $
+#   $Id: ncargex.csh,v 1.59 1994-04-07 20:37:46 haley Exp $
 #
 
 #********************#
@@ -32,12 +32,18 @@ endif
 #*********************************************#
 setenv NCARG_ROOT  `ncargpath root`
 
+if ($status != 0) then
+	exit 1
+endif
+
+
 #*********************************#
 #                                 #
 # Check for existing directories  #
 #                                 #
 #*********************************#
 set example_dir=`ncargpath SED_EXAMPLESDIR`
+
 if ($status != 0) then
         exit 1
 endif
@@ -50,6 +56,7 @@ set fund_dir = $example_dir
 set pdoc_dir = $example_dir
 
 set test_dir=`ncargpath SED_TESTSDIR`
+
 if ($status != 0) then
   exit 1
 endif
@@ -60,6 +67,7 @@ if (! -d "$test_dir") then
 endif
 
 set tutor_dir=`ncargpath SED_TUTORIALDIR`
+
 if ($status != 0) then
   exit 1
 endif
