@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.46 1996-03-26 21:48:54 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.47 1996-05-03 23:51:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2012,6 +2012,7 @@ static NhlGenArray mpGenArraySubsetCopy
                 }
         }
         gto->num_elements = length;
+	gto->my_data = True;
         return gto;
 }
 

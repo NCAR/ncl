@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.47 1996-04-16 18:10:56 dbrown Exp $
+ *      $Id: Legend.c,v 1.48 1996-05-03 23:51:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5172,6 +5172,7 @@ static NhlGenArray GenArraySubsetCopy
 		}
 	}
 	gto->num_elements = length;
+	gto->my_data = True;
 	return gto;
 			
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.21 1996-02-26 21:46:02 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.22 1996-05-03 23:51:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3664,6 +3664,10 @@ ManageTickMarks
 			}
 		}
 	}
+	if (x_coord_ga != NULL)
+		NhlFreeGenArray(x_coord_ga);
+	if (y_coord_ga != NULL)
+		NhlFreeGenArray(y_coord_ga);
 
 	return ret;
 }

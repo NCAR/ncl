@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.35 1996-05-03 03:30:53 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.36 1996-05-03 23:51:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2798,6 +2798,7 @@ static NhlGenArray GenArraySubsetCopy
                 }
         }
         gto->num_elements = length;
+	gto->my_data = True;
         return gto;
 }
 
@@ -3216,7 +3217,7 @@ static NhlErrorTypes cnInitAreamap
 	if (cnp->aws_id < 0) {
 		cnp->aws_id = 
 			_NhlNewWorkspace(NhlwsAREAMAP,
-					 NhlwsDISK,25000*sizeof(int));
+					 NhlwsNONE,200000*sizeof(int));
 		if (cnp->aws_id < 0) 
 			return MIN(ret,cnp->aws_id);
 	}

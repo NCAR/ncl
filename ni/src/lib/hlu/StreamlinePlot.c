@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.8 1996-04-26 01:11:35 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.9 1996-05-03 23:51:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2066,6 +2066,7 @@ static NhlGenArray GenArraySubsetCopy
                 }
         }
         gto->num_elements = length;
+	gto->my_data = True;
         return gto;
 }
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.21 1996-02-26 21:45:56 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.22 1996-05-03 23:51:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2087,6 +2087,7 @@ int nargs;
 	int i, count;
 	float *fp;
 	char *e_text;
+	NhlString entry_name = "IrTransGetValues";
 
 
 	for( i = 0; i < nargs ; i++) {
@@ -2121,13 +2122,24 @@ int nargs;
 		}
 		if (fp != NULL) {
 			NhlGenArray ga;
-			if ((ga = NhlCreateGenArray((NhlPointer)fp,
+			float *fdata;
+
+			fdata = NhlMalloc(count * sizeof(float));
+			if (fdata == NULL) {
+				e_text = "%s: dynamic memory allocation error";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name);
+				return NhlFATAL;
+			}
+			memcpy(fdata,fp,count * sizeof(float));
+
+			if ((ga = NhlCreateGenArray((NhlPointer)fdata,
                                                     NhlTFloat,sizeof(float),
                                                     1,&count))
                             == NULL) {
                                 e_text = "%s: error creating %s GenArray";
                                 NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                          e_text,"IrTransGetValues",
+                                          e_text,entry_name,
 					  NrmQuarkToString(args[i].quark));
                                 return NhlFATAL;
                         }

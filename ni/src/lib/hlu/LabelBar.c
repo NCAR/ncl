@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.45 1996-04-16 17:28:18 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.46 1996-05-03 23:51:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4125,6 +4125,7 @@ static NhlGenArray GenArraySubsetCopy
 		}
 	}
 	gto->num_elements = length;
+	gto->my_data = True;
 	return gto;
 			
 }

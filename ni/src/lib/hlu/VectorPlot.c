@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.15 1996-04-29 15:36:42 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.16 1996-05-03 23:51:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2552,6 +2552,7 @@ static NhlGenArray GenArraySubsetCopy
                 }
         }
         gto->num_elements = length;
+	gto->my_data = True;
         return gto;
 }
 
