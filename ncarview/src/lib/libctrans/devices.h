@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.h,v 1.6 1992-02-11 14:59:09 clyne Exp $
+ *	$Id: devices.h,v 1.7 1992-02-29 00:13:43 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -92,8 +92,16 @@
 
 #ifdef	DEVICES
 
+static	OptDescRec	gcap_opts[] = {
+	{"window", OptSepArg, NULL},
+	{"viewport", OptSepArg, NULL},
+	{NULL}
+	};
+
 static	OptDescRec	raster_opts[] = {
 	{"resolution", OptSepArg, "512x512"},
+	{"window", OptSepArg, NULL},
+	{"viewport", OptSepArg, NULL},
 	{"compress", OptIsArg, "false"},
 	{"landscape", OptIsArg, "false"},
 	{"rle", OptIsArg, "false"},
@@ -104,6 +112,8 @@ static	OptDescRec	raster_opts[] = {
 #ifdef	X11
 static	OptDescRec	X11_opts[] = {
 	{"geometry", OptSepArg, NULL},
+	{"window", OptSepArg, NULL},
+	{"viewport", OptSepArg, NULL},
 	{"foreground", OptSepArg, NULL},
 	{"background", OptSepArg, NULL},
 	{"reverse", OptIsArg, "false"},
@@ -137,7 +147,7 @@ struct device{
         boolean    use_common;	/* use common device interface		*/
 	OptDescRec	*opt;	/* command line options for the device	*/
 } devices[] = {
-        {"gcap",GCAP_I,TRUE,TRUE,"", TRUE, NULL}
+        {"gcap",GCAP_I,TRUE,TRUE,"", TRUE, gcap_opts}
         ,{"xwd",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
         ,{"nrif",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
         ,{"hdf",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}

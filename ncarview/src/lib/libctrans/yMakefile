@@ -1,6 +1,6 @@
 NCARG	= ../../../..
 #
-#	$Id: yMakefile,v 1.8 1992-02-20 14:47:22 clyne Exp $
+#	$Id: yMakefile,v 1.9 1992-02-29 00:14:05 clyne Exp $
 #
 
 LOCINCDIR	= ../../include
@@ -60,7 +60,7 @@ GENSRCS =  \
 	fill.c fontlist.c format.c gcap.c gcread.c in.c rast.c \
 	readfont.c rgbtohls.c text.c translate.c env.c \
 	soft_fill.c cell.c bsd-sysv.c commondev.c gcapdev.c gcaprast.c \
-	rastdev.c hatch.c pal.c ctrans_api.c error.c cgmmisc.c
+	rastdev.c hatch.c pal.c ctrans_api.c error.c cgmmisc.c misc.c
 
 
 GENOBJS	= \
@@ -68,7 +68,7 @@ GENOBJS	= \
 	fill.o fontlist.o format.o gcap.o gcread.o in.o rast.o \
 	readfont.o rgbtohls.o text.o translate.o env.o \
 	soft_fill.o cell.o bsd-sysv.o commondev.o gcapdev.o gcaprast.o \
-	rastdev.o hatch.o pal.o ctrans_api.o error.o cgmmisc.o
+	rastdev.o hatch.o pal.o ctrans_api.o error.o cgmmisc.o misc.o
 
 DEVSRCS	= cterror.c devices.c
 DEVOBJS	= cterror.o devices.o

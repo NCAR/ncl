@@ -1,5 +1,5 @@
 /*
- *	$Id: translate.c,v 1.4 1991-07-18 15:55:08 clyne Exp $
+ *	$Id: translate.c,v 1.5 1992-02-29 00:14:01 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -75,6 +75,10 @@ static	short	setDevWinCalled;
  */
 static	CoordRect	devWinExtent = {
 			DEVWIN_LLX, DEVWIN_LLY, DEVWIN_URX, DEVWIN_URY
+			};
+
+static	CoordRect	devViewport = {
+			0, 0, 32767, 32767
 			};
 
 static	void	coord_map(from, to, map)
@@ -181,6 +185,18 @@ transinit(dev_extent, dev_coord_modifier, device)
 {
 	CoordModifier	map;
 	CoordRect	vdc_extent;
+	double		xs, ys;
+	int		xt, yt;
+
+	xs = (double) (dev_extent->urx - dev_extent->llx) / 32767.0;
+	ys = (double) (dev_extent->ury - dev_extent->lly) / 32767.0;
+	xt = dev_extent->llx;
+	yt = dev_extent->lly;
+
+	dev_extent->llx = xs * devViewport.llx + xt;
+	dev_extent->lly = ys * devViewport.lly + yt;
+	dev_extent->urx = xs * devViewport.urx + xt;
+	dev_extent->ury = ys * devViewport.ury + yt;
 
 	/*
 	 * get the vdc extent as defined by the metafile
@@ -332,4 +348,13 @@ int	DevWinChanged()
 
 	setDevWinCalled = FALSE;
 	return (set);
+}
+
+void	SetDevViewport(llx, lly, urx, ury)
+	long	llx, lly, urx, ury;
+{
+	devViewport.llx = llx;
+	devViewport.lly = lly;
+	devViewport.urx = urx;
+	devViewport.ury = ury;
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.8 1992-02-07 16:23:11 clyne Exp $
+ *	$Id: rast.c,v 1.9 1992-02-29 00:13:57 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -34,25 +34,35 @@ extern	char	*strcpy();
 
 static	struct	RasterCommLineOpt_ {
 	StringType_	resolution;
+	StringType_	window;
+	StringType_	viewport;
 	StringType_	dpi;
 	BoolType_	rle;
 	BoolType_	compress;
-	} rasterCommLineOpt;
+	} rast_opts;
 
 static	Option	raster_opts[] = {
 	{
-	"resolution",StringType,(unsigned long) &rasterCommLineOpt.resolution,
+	"resolution",StringType,(unsigned long) &rast_opts.resolution,
 				sizeof (StringType_)
 	},
 	{
-	"dpi",StringType,(unsigned long) &rasterCommLineOpt.dpi,
+	"window",StringType,(unsigned long) &rast_opts.window,
+				sizeof (StringType_)
+	},
+	{
+	"viewport",StringType,(unsigned long) &rast_opts.viewport,
+				sizeof (StringType_)
+	},
+	{
+	"dpi",StringType,(unsigned long) &rast_opts.dpi,
 				sizeof(StringType_)
 	},
 	{
-	"rle",BoolType,(unsigned long) &rasterCommLineOpt.rle,sizeof(BoolType_)
+	"rle",BoolType,(unsigned long) &rast_opts.rle,sizeof(BoolType_)
 	},
 	{
-	"compress",BoolType,(unsigned long) &rasterCommLineOpt.compress,					sizeof (BoolType_)
+	"compress",BoolType,(unsigned long) &rast_opts.compress,					sizeof (BoolType_)
 	},
 	{
 	NULL
@@ -91,7 +101,7 @@ CGMC *c;
 	 * libraster. We don't have direct access to argc and argv so
 	 * we use this kludge.
 	 */
-	build_ras_arg(&ras_argc, ras_argv, rasterCommLineOpt);
+	build_ras_arg(&ras_argc, ras_argv, rast_opts);
 	if (RasterInit(&ras_argc, ras_argv) != RAS_OK) {
 		ct_error(T_NULL, RasterGetError());
 		return(DIE);
@@ -100,7 +110,7 @@ CGMC *c;
 	/*
 	 * find dimensions of buffer for rasterization
 	 */
-	get_resolution(&dev_extent, rasterCommLineOpt, devices[currdev].name);
+	get_resolution(&dev_extent, rast_opts, devices[currdev].name);
 	width = ABS(dev_extent.llx - dev_extent.urx) + 1;
 	height = ABS(dev_extent.lly - dev_extent.ury) + 1;
 
@@ -112,6 +122,36 @@ CGMC *c;
 	coord_mod.y_off = 0;
 	coord_mod.x_scale = 1.0;
 	coord_mod.y_scale = 1.0;
+
+	/*
+	 * set device viewport specification
+	 */
+	if (rast_opts.viewport) {
+		int	llx, lly, urx, ury;
+
+		if (CoordStringToInt(rast_opts.viewport,&llx,&lly,&urx,&ury)<0){
+			ct_error(NT_NULL, rast_opts.window);
+		}
+		else {
+			SetDevViewport(
+				(long) llx, (long) lly,(long) urx,(long) ury
+			);
+		}
+	}
+
+	/*
+	 * set device window specification
+	 */
+	if (rast_opts.window) {
+		int	llx, lly, urx, ury;
+
+		if (CoordStringToInt(rast_opts.window,&llx,&lly,&urx,&ury)<0){
+			ct_error(NT_NULL, rast_opts.window);
+		}
+		else {
+			SetDevWin((long) llx, (long) lly,(long) urx,(long) ury);
+		}
+	}
 
 	transinit(&dev_extent, coord_mod, TRUE);
 
@@ -582,10 +622,10 @@ static	Ct_err	ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
 
 
 
-static	build_ras_arg(ras_argc, ras_argv, rasterCommLineOpt)
+static	build_ras_arg(ras_argc, ras_argv, rast_opts)
 	int	*ras_argc;
 	char	**ras_argv;
-	struct	RasterCommLineOpt_ rasterCommLineOpt;
+	struct	RasterCommLineOpt_ rast_opts;
 {
 	int	i;
 
@@ -599,17 +639,17 @@ static	build_ras_arg(ras_argc, ras_argv, rasterCommLineOpt)
 	(void) strcpy(ras_argv[i], "-dpi");
 	i++;
 
-	ras_argv[i] = icMalloc((unsigned) strlen(rasterCommLineOpt.dpi) + 1);
-	(void) strcpy(ras_argv[i], rasterCommLineOpt.dpi);
+	ras_argv[i] = icMalloc((unsigned) strlen(rast_opts.dpi) + 1);
+	(void) strcpy(ras_argv[i], rast_opts.dpi);
 	i++;
 
-	if (rasterCommLineOpt.compress) {
+	if (rast_opts.compress) {
 		ras_argv[i] = icMalloc((unsigned) strlen("-compress") + 1);
 		(void) strcpy(ras_argv[i], "-compress");
 		i++;
 	}
 
-	if (rasterCommLineOpt.rle) {
+	if (rast_opts.rle) {
 		ras_argv[i] = icMalloc((unsigned) strlen("-rle") + 1);
 		(void) strcpy(ras_argv[i], "-rle");
 		i++;

@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.17 1992-02-28 00:20:12 clyne Exp $
+ *	$Id: gcap.c,v 1.18 1992-02-29 00:13:48 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -43,10 +43,7 @@
 
 #include <stdio.h>
 #include <math.h>
-
-#ifdef	SYSV
-#include	<sys/types.h>
-#endif
+#include <sys/types.h>
 
 #ifndef	L_SET
 #define	L_SET	0
@@ -74,6 +71,25 @@ extern	boolean	deviceIsInit;
 
 static	CoordRect	VDCExtent;
 
+static	struct	GCapOpts_	{
+	StringType_	window;
+	StringType_	viewport;
+	} gcap_opts;
+
+static	Option	options[] = {
+        {
+	"window", StringType,
+		(unsigned long) &gcap_opts.window, sizeof (StringType_ )
+	},
+	{
+	"viewport", StringType,
+		(unsigned long) &gcap_opts.viewport, sizeof (StringType_ )
+	},
+	{
+	NULL
+	}
+	};
+
 extern	boolean	*softFill;
 
 /*
@@ -98,6 +114,11 @@ CGMC *c;
 	extern	int	commHatchScaleFactor;
 
 	void	SetDevWin();
+
+	/*
+	 * parse gcap specific options
+	 */
+	getOptions((caddr_t) 0, options);
 	
 	/*
 	 * 	Init translation values and the formating routines
@@ -117,8 +138,44 @@ CGMC *c;
 	coord_mod.x_scale = XSCALE;
 	coord_mod.y_scale = YSCALE;
 
-	SetDevWin((long) DEV_WIN_LL_X, (long) DEV_WIN_LL_Y, 
-				(long) DEV_WIN_UR_X, (long) DEV_WIN_UR_Y);
+
+	/*
+	 * set device viewport specification
+	 */
+	if (gcap_opts.viewport) {
+		int	llx, lly, urx, ury;
+
+		if (CoordStringToInt(gcap_opts.viewport,&llx,&lly,&urx,&ury)<0){
+			ct_error(NT_NULL, gcap_opts.window);
+		}
+		else {
+			SetDevViewport(
+				(long) llx, (long) lly,(long) urx,(long) ury
+			);
+		}
+	}
+
+	/*
+	 * set device window specification from command line if given. Else
+	 * get information from the graphcap.
+	 */
+	if (gcap_opts.window) {
+		int     llx, lly, urx, ury;
+
+		if (CoordStringToInt(gcap_opts.window,&llx,&lly,&urx,&ury)<0){
+			ct_error(NT_NULL, gcap_opts.window);
+		}
+		else {
+			SetDevWin((long) llx, (long) lly,(long) urx,(long) ury);
+		}
+	}
+	else {
+		SetDevWin(
+			(long) DEV_WIN_LL_X, (long) DEV_WIN_LL_Y, 
+			(long) DEV_WIN_UR_X, (long) DEV_WIN_UR_Y
+		);
+	}
+
 	transinit(&dev_extent, coord_mod, TRUE);
 
 	formatinit();

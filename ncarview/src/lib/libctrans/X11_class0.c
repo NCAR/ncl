@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.10 1992-02-28 00:19:57 clyne Exp $
+ *	$Id: X11_class0.c,v 1.11 1992-02-29 00:13:38 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -63,27 +63,37 @@ extern	Ct_err	init_polygon();
 
 static	struct	{
 	StringType_	Geometry;
+	StringType_	window;
+	StringType_	viewport;
 	StringType_	foreground;
 	StringType_	background;
 	BoolType_	reverse;
-	} commLineOpt;
+	} x11_opts;
 
 static	Option	options[] =  {
 	{
 	"geometry", StringType, 
-		(unsigned long) &commLineOpt.Geometry, sizeof (StringType_ )
+		(unsigned long) &x11_opts.Geometry, sizeof (StringType_ )
+	},
+	{
+	"window", StringType, 
+		(unsigned long) &x11_opts.window, sizeof (StringType_ )
+	},
+	{
+	"viewport", StringType, 
+		(unsigned long) &x11_opts.viewport, sizeof (StringType_ )
 	},
 	{
 	"foreground", StringType, 
-		(unsigned long) &commLineOpt.foreground, sizeof (StringType_ )
+		(unsigned long) &x11_opts.foreground, sizeof (StringType_ )
 	},
 	{
 	"background", StringType, 
-		(unsigned long) &commLineOpt.background, sizeof (StringType_ )
+		(unsigned long) &x11_opts.background, sizeof (StringType_ )
 	},
 	{
 	"reverse", BoolType, 
-		(unsigned long) &commLineOpt.reverse, sizeof (BoolType_ )
+		(unsigned long) &x11_opts.reverse, sizeof (BoolType_ )
 	},
 	{
 	NULL
@@ -199,7 +209,35 @@ CGMC *c;
 	if (!Batch)
 		fontstruct = XLoadQueryFont(dpy, FONT);
 
+	/*
+	 * set device viewport specification
+	 */
+	if (x11_opts.viewport) {
+		int	llx, lly, urx, ury;
 
+		if (CoordStringToInt(x11_opts.viewport,&llx,&lly,&urx,&ury)<0){
+			ct_error(NT_NULL, x11_opts.window);
+		}
+		else {
+			SetDevViewport(
+				(long) llx, (long) lly,(long) urx,(long) ury
+			);
+		}
+	}
+
+	/*
+	 * set device window specification
+	 */
+	if (x11_opts.window) {
+		int	llx, lly, urx, ury;
+
+		if (CoordStringToInt(x11_opts.window,&llx,&lly,&urx,&ury)<0){
+			ct_error(NT_NULL, x11_opts.window);
+		}
+		else {
+			SetDevWin((long) llx, (long) lly,(long) urx,(long) ury);
+		}
+	}
 
 
 	if (stand_Alone) {
@@ -214,7 +252,7 @@ CGMC *c;
 		 *      XSizeHints struct to inform window manager. See section
 		 *      9.1.6 and 10.3
 		 */
-		do_geometry(commLineOpt.Geometry, &xsh);
+		do_geometry(x11_opts.Geometry, &xsh);
 
 
 		/*
@@ -257,8 +295,8 @@ CGMC *c;
 	 *	of window. These colours will be used if the user doesn't 
 	 *	supply his own colour table through the CGM.
 	 */
-	(void) init_color(commLineOpt.foreground, commLineOpt.background, 
-			(boolean) commLineOpt.reverse, &fg, &bg, &bd);
+	(void) init_color(x11_opts.foreground, x11_opts.background, 
+			(boolean) x11_opts.reverse, &fg, &bg, &bd);
 
 	/*
 	 * make sure we have a contrasting window background by default.
