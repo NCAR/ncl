@@ -11,6 +11,7 @@ extern "C" {
 #include <data_objs/NclMultiDValstringData.h>
 #include <data_objs/NclMultiDValHLUObjData.h>
 #include <data_objs/NclMultiDVallogicalData.h>
+#include <data_objs/NclHLUObj.h>
 #include <defs.h>
 #include <Symbol.h>
 #include <errno.h>
@@ -361,6 +362,7 @@ NhlErrorTypes _NclIFrame
 	NclStackEntry data;
 	NclMultiDValData tmp_md;
 	NhlErrorTypes ret = NhlNOERROR;
+	NclHLUObj hlu_ptr;
 	int *obj_ids,i;
 
 	data = _NclGetArg(0,1);
@@ -374,7 +376,10 @@ NhlErrorTypes _NclIFrame
 			if(tmp_md->obj.obj_type_mask & NCL_HLU_MASK) {
 				obj_ids = (int*)tmp_md->multidval.val;
 				for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
-					ret = NhlFrame(obj_ids[i]);
+					hlu_ptr = (NclHLUObj)_NclGetObj(obj_ids[i]);
+					if((hlu_ptr != NULL)&&(hlu_ptr->obj.obj_type_mask & Ncl_HLUObj)) {
+						ret = NhlFrame(hlu_ptr->hlu.hlu_id);
+					}
 				}
 			}
 		}
@@ -383,7 +388,10 @@ NhlErrorTypes _NclIFrame
 		if(data.u.data_obj->obj.obj_type_mask && NCL_HLU_MASK) {
 			obj_ids = (int*)tmp_md->multidval.val;
 			for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
-				ret = NhlFrame(obj_ids[i]);
+				hlu_ptr = (NclHLUObj)_NclGetObj(obj_ids[i]);
+				if((hlu_ptr != NULL)&&(hlu_ptr->obj.obj_type_mask & Ncl_HLUObj)) {
+					ret = NhlFrame(hlu_ptr->hlu.hlu_id);
+				}
 			}
 		}
 	}
@@ -398,6 +406,7 @@ NhlErrorTypes _NclIClear
 {
 	NclStackEntry data;
 	NclMultiDValData tmp_md;
+	NclHLUObj hlu_ptr;
 	int *obj_ids,i;
 
 	data = _NclGetArg(0,1);
@@ -411,7 +420,10 @@ NhlErrorTypes _NclIClear
 			if(tmp_md->obj.obj_type_mask & NCL_HLU_MASK) {
 				obj_ids = (int*)tmp_md->multidval.val;
 				for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
-					NhlClearWorkstation(obj_ids[i]);
+					hlu_ptr = (NclHLUObj)_NclGetObj(obj_ids[i]);
+					if((hlu_ptr != NULL)&&(hlu_ptr->obj.obj_type_mask & Ncl_HLUObj)) {
+						NhlClearWorkstation(hlu_ptr->hlu.hlu_id);
+					}
 				}
 			}
 		}
@@ -420,7 +432,10 @@ NhlErrorTypes _NclIClear
 		if(data.u.data_obj->obj.obj_type_mask && NCL_HLU_MASK) {
 			obj_ids = (int*)tmp_md->multidval.val;
 			for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
-				NhlClearWorkstation(obj_ids[i]);
+				hlu_ptr = (NclHLUObj)_NclGetObj(obj_ids[i]);
+				if((hlu_ptr != NULL)&&(hlu_ptr->obj.obj_type_mask & Ncl_HLUObj)) {
+					NhlClearWorkstation(hlu_ptr->hlu.hlu_id);
+				}
 			}
 		}
 	}
@@ -508,6 +523,7 @@ NhlErrorTypes _NclIUpdate
 {
 	NclStackEntry data;
 	NclMultiDValData tmp_md;
+	NclHLUObj hlu_ptr;
 	int *obj_ids,i;
 
 	data = _NclGetArg(0,1);
@@ -522,7 +538,10 @@ NhlErrorTypes _NclIUpdate
 			if(tmp_md->obj.obj_type_mask & NCL_HLU_MASK) {
 				obj_ids = (int*)tmp_md->multidval.val;
 				for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
-					NhlUpdateWorkstation(obj_ids[i]);
+					hlu_ptr = (NclHLUObj)_NclGetObj(obj_ids[i]);
+					if((hlu_ptr != NULL)&&(hlu_ptr->obj.obj_type_mask & Ncl_HLUObj)) {
+						NhlUpdateWorkstation(hlu_ptr->hlu.hlu_id);
+					}
 				}
 			}
 		}
@@ -531,7 +550,11 @@ NhlErrorTypes _NclIUpdate
 		if(data.u.data_obj->obj.obj_type_mask && NCL_HLU_MASK) {
 			obj_ids = (int*)tmp_md->multidval.val;
 			for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
-				NhlUpdateWorkstation(obj_ids[i]);
+				hlu_ptr = (NclHLUObj)_NclGetObj(obj_ids[i]);
+
+				if((hlu_ptr != NULL)&&(hlu_ptr->obj.obj_type_mask & Ncl_HLUObj)) {
+					NhlUpdateWorkstation(hlu_ptr->hlu.hlu_id);
+				}
 			}
 		}
 	} else {
@@ -550,6 +573,7 @@ NhlErrorTypes _NclIDraw
 	NclStackEntry data;
 	NclMultiDValData tmp_md;
 	int *obj_ids,i;
+	NclHLUObj hlu_ptr;
 
 	data = _NclGetArg(0,1);
 
@@ -562,7 +586,10 @@ NhlErrorTypes _NclIDraw
 			if(tmp_md->obj.obj_type_mask & NCL_HLU_MASK) {
 				obj_ids = (int*)tmp_md->multidval.val;
 				for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
-					NhlDraw(obj_ids[i]);
+					hlu_ptr = (NclHLUObj)_NclGetObj(obj_ids[i]);
+					if((hlu_ptr != NULL)&&(hlu_ptr->obj.obj_type_mask & Ncl_HLUObj)) {
+						NhlDraw(hlu_ptr->hlu.hlu_id);
+					}
 				}
 			}
 		}
@@ -571,7 +598,10 @@ NhlErrorTypes _NclIDraw
 		if(data.u.data_obj->obj.obj_type_mask && NCL_HLU_MASK) {
 			obj_ids = (int*)tmp_md->multidval.val;
 			for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
-				NhlDraw(obj_ids[i]);
+				hlu_ptr = (NclHLUObj)_NclGetObj(obj_ids[i]);
+				if((hlu_ptr != NULL)&&(hlu_ptr->obj.obj_type_mask & Ncl_HLUObj)) {
+					NhlDraw(hlu_ptr->hlu.hlu_id);
+				}
 			}
 		}
 	} else {
@@ -618,7 +648,7 @@ NhlErrorTypes _NclIDelete
 	NclStackEntry data;
 	NclStackEntry* var;
 	NclSymbol *thesym;
-	
+	int sub_sel = 0;
 
 	data = _NclGetArg(0,1);
 
@@ -627,7 +657,25 @@ NhlErrorTypes _NclIDelete
 		_NclDestroyObj((NclObj)data.u.data_obj);
 		break;
 	case NclStk_VAR:
-		if((data.u.data_var != NULL)&&(data.u.data_var->var.thesym != NULL)) {
+		if(data.u.data_var != NULL) {
+			switch(data.u.data_var->var.var_type) {
+				case VARSUBSEL:
+				case COORDSUBSEL:
+				case FILEVARSUBSEL:
+					sub_sel = 1;
+					break;
+				case NORMAL:
+				case COORD:
+				case FILEVAR: 
+				case PARAM:
+				case RETURNVAR:
+				case HLUOBJ :
+				default:
+					sub_sel = 0;
+					break;
+			}
+		}
+		if((data.u.data_var != NULL)&&(data.u.data_var->var.thesym != NULL)&&(!sub_sel)) {
 			var = _NclRetrieveRec(data.u.data_var->var.thesym,DONT_CARE);
 			thesym = data.u.data_var->var.thesym;
 			if(data.u.data_var->var.var_type == NORMAL) {
@@ -1341,7 +1389,8 @@ NclStackEntry _NclCreateHLUObjOp
 	int rl_list;
 	NhlGenArray *gen_array;
 	NclMultiDValData tmp_md = NULL;
-	int *tmp_id = NULL;
+	NclHLUObj tmp_ho = NULL;
+	int *tmp_id = NULL,tmp_ho_id;
 	int dim_size = 1;
 	int parent_id = -1;
 
@@ -1349,7 +1398,16 @@ NclStackEntry _NclCreateHLUObjOp
 		if(parent->multidval.totalelements > 1) {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"Objects only accept one object as their parent, a multi-element of array objects, using the first element");
 		}
-		parent_id = *(int*)parent->multidval.val;
+		tmp_ho = (NclHLUObj)_NclGetObj(*(int*)parent->multidval.val);
+		if((tmp_ho != NULL)&&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)) {
+			parent_id = tmp_ho->hlu.hlu_id;
+		} else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclCreateHLUObjOp: Parent value is not an hlu object or is undefined");
+			_NclCleanUpStack(2*nres);
+			data_out.kind = NclStk_NOVAL;
+			data_out.u.data_obj = NULL;
+			return(data_out);
+		}
 	}
 
 
@@ -1378,22 +1436,29 @@ NclStackEntry _NclCreateHLUObjOp
 			tmp_md = _NclVarValueRead(data->u.data_var,NULL,NULL);
 		break;
 		}
-		gen_array[i] = _NhlCreateGenArray(
-				(NhlPointer)tmp_md->multidval.val,
-				tmp_md->multidval.hlu_type_rep,
-				(int)(tmp_md->multidval.totalsize/tmp_md->multidval.totalelements),
-				tmp_md->multidval.n_dims,
-				tmp_md->multidval.dim_sizes,
-				0);
-		NhlRLSet(rl_list,NrmQuarkToString(
-			*(int*)(((NclMultiDValData)resname->u.data_obj)->multidval.val)),
-			NhlTGenArray,
-			gen_array[i]);
+		if(tmp_md->multidval.hlu_type_rep != NULL) {
+			gen_array[i] = _NhlCreateGenArray(
+					(NhlPointer)tmp_md->multidval.val,
+					tmp_md->multidval.hlu_type_rep,
+					(int)(tmp_md->multidval.totalsize/tmp_md->multidval.totalelements),
+					tmp_md->multidval.n_dims,
+					tmp_md->multidval.dim_sizes,
+					0);
+			NhlRLSet(rl_list,NrmQuarkToString(
+				*(int*)(((NclMultiDValData)resname->u.data_obj)->multidval.val)),
+				NhlTGenArray,
+				gen_array[i]);
+		}
+/*
+*-----> Need to deal with NULL hlu_type_rep
+*/
 	}
 
 	tmp_id = (int*)NclMalloc((unsigned)sizeof(int));
 
-	NhlCreate(tmp_id,the_hlu_obj,the_hlu_obj_class->u.obj_class_ptr,(parent_id == -1? NhlNOPARENT:parent_id),rl_list);
+	NhlCreate(&tmp_ho_id,the_hlu_obj,the_hlu_obj_class->u.obj_class_ptr,(parent_id == -1? NhlNOPARENT:parent_id),rl_list);
+	tmp_ho = _NclHLUObjCreate(NULL,nclHLUObjClass,Ncl_HLUObj,0,TEMPORARY,tmp_ho_id); 
+	*tmp_id = tmp_ho->obj.id;
 	tmp_md = _NclMultiDValHLUObjDataCreate(
 		NULL,
 		NULL,
@@ -1437,6 +1502,7 @@ int nres;
 	NhlGenArray *gen_array;
 	NclMultiDValData tmp_md = NULL;
 	int *obj_ids = NULL;
+	NclHLUObj hlu_ptr;
 
 
 	rl_list = NhlRLCreate(NhlSETRL);	
@@ -1482,7 +1548,10 @@ int nres;
 */
 	obj_ids = (int*)the_hlu_data_obj->multidval.val;
 	for(i = 0; i < the_hlu_data_obj->multidval.totalelements; i++ ) {
-		NhlSetValues(obj_ids[i],rl_list);
+		hlu_ptr = (NclHLUObj)_NclGetObj(obj_ids[i]);
+		if((hlu_ptr != NULL) &&(hlu_ptr->obj.obj_type_mask & Ncl_HLUObj)) {
+			NhlSetValues(hlu_ptr->hlu.hlu_id,rl_list);
+		}
 	}
 	for(i = 0; i < nres; i++) {
 		NhlFreeGenArray(gen_array[i]);
@@ -1521,9 +1590,6 @@ NclStackEntry missing_expr;
 	the_obj_type = _NclKeywordToObjType(data_type);
 	if(the_obj_type == NCL_VAL_NUMERIC_MASK) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"New: Keyword numeric is too general, can't determine the size of data");
-		return(NhlFATAL);
-	} else if(the_obj_type == Ncl_File) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"New: Can not make arrays of files");
 		return(NhlFATAL);
 	} else if(the_obj_type == Ncl_Var) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"New: Can not make arrays of vars without values and variable names");
