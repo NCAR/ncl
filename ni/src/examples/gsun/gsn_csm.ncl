@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.130 2003-05-28 22:11:59 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.131 2003-06-04 21:21:17 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -8391,7 +8391,7 @@ begin
     res2@gsnFrame = False   ; frame since we take care of that later.
     res2@gsnScale = True    ; force labels and ticks to be same.
 
-    cnres = get_res_ne(res2,(/"tx"/))
+    cnres = get_res_ne(res2,(/"tx","am"/))
     contour_object = gsn_contour(wks,datanew,cnres)
 
 ; Get some information from contour plot that was created.
