@@ -1,25 +1,7 @@
 #
-#	$Id: yMakefile,v 1.2 1994-09-16 20:28:12 stautler Exp $
+#	$Id: yMakefile,v 1.3 1994-10-31 04:17:52 haley Exp $
 #
 
-CSRCS = c_wmex03.c c_wmex04.c
+EXAMPLES = c_wmex01.c c_wmex02.c c_wmex03.c c_wmex04.c
 
-SED_SRCS = c_wmex01.c c_wmex02.c
-
-GENERIC_SRCS = $(CSRCS) $(SED_SRCS)
-
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
-CleanFilesTarget($(SED_SRCS))
-
-#
-# Files containing C functions that are called from FORTRAN or that have to
-# be modified to include a macro from the configuration file.
-#
-
-c_wmex01.c: c_wmex01.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ mapeod
-
-c_wmex02.c: c_wmex02.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ mapeod
+InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))

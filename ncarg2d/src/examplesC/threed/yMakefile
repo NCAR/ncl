@@ -1,24 +1,10 @@
 #
-#	$Id: yMakefile,v 1.6 1994-08-16 16:44:15 haley Exp $
+#	$Id: yMakefile,v 1.7 1994-10-31 04:15:19 haley Exp $
 #
 
-CSRCS =  c_fthex01.c c_fthex02.c c_fthex03.c c_fthex04.c c_tpwrzt.c \
-	c_tthre2.c c_tthree.c
+EXAMPLES =  c_fthex01.c c_fthex02.c c_fthex03.c c_fthex04.c c_fthex05.c
 
-SED_SRCS = c_fthex05.c
+TESTS = c_tpwrzt.c c_tthre2.c c_tthree.c
 
-GENERIC_SRCS = $(CSRCS) $(SED_SRCS)
-
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
-CleanFilesTarget($(SED_SRCS))
-
-
-#
-# Files containing C functions that are called from FORTRAN or that have to
-# be modified to include a macro from the configuration file.
-#
-
-c_fthex05.c: c_fthex05.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ temprt srfip1
-
+InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
+InstallTarget($(TESTS),$(INSTALL_LIB),$(TESTSPATH))
