@@ -9,11 +9,14 @@ extern "C" {
 #include "NclDataDefs.h"
 #include "NclFileInterfaces.h"
 
+#ifdef BuildHDFEOS
 extern NclFormatFunctionRecPtr HDFEOSAddFileFormat(
 #if	NhlNeedProto
 void
 #endif
 );
+#endif
+
 extern NclFormatFunctionRecPtr NetCdfAddFileFormat(
 #if	NhlNeedProto
 void
@@ -46,7 +49,9 @@ void _NclAddFileFormats
 	_NclRegisterFormat(NetCdfAddFileFormat,"cdf");
 	_NclRegisterFormat(NetCdfAddFileFormat,"nc");
 	_NclRegisterFormat(HDFAddFileFormat,"hdf");
+#ifdef BuildHDFEOS
 	_NclRegisterFormat(HDFEOSAddFileFormat,"hdfeos");
+#endif
 	_NclRegisterFormat(HDFAddFileFormat,"hd");
 	_NclRegisterFormat(GribAddFileFormat,"grb");
 	_NclRegisterFormat(CcmAddFileFormat,"ccm");
