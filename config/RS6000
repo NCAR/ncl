@@ -79,7 +79,7 @@ YMAKE             = $(CONFIGPATH)/ymake -I$(CONFIGPATH)
 
 MAKE              = make
 FLOAT_OPT         = 
-OS                = -DSYSV
+OS                = -DSYSV -D_POSIX_SOURCE
 ARCH              = -DRS6000
 VDEFINE           = -DVERSION='"$(VERSION)"'
 CC                = xlc
