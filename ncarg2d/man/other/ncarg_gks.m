@@ -10,9 +10,10 @@ aspects of NCAR Graphics' GKS behaviour.
 CGM output is directed to.
 .sp
 \fBNCARG_GKS_GENCGM\fP allows you to request the the NCAR GKS
-package generate standard CGM rather than NCGM (NCAR blocked CGM).
-Note that other NCAR Graphics utilities, such as translators, cannot
-read in generic CGM yet.
+package generate binary encoded CGM rather than NCGM (the NCAR 
+private encoding of binary encoded CGM).
+Note that other NCAR Graphics utilities, such as the metafile 
+translators, cannot read in generic CGM.
 .sp
 \fBNCARG_GKS_BUFSIZE\fP provides you with control over how CGM
 output is buffered.
@@ -54,12 +55,12 @@ input.
 .SH \fBNCARG_GKS_GENCGM\fP
 .sp
 If the \fBNCARG_GKS_GENCGM\fP environment variable is set, GKS
-will strip off the NCAR wrapper and generate a standard binary CGM
-stream. As mentioned above, other NCAR Graphics utilities
+will strip off the NCAR wrapper and generate a binary encode CGM.
+As mentioned above, other NCAR Graphics utilities
 such as translators don't yet support generic CGM as
 input. Thus, this option is useful primarily for getting CGM
 output into a form appropriate for use with other software
-packages that expect pure CGM.
+packages that expect binary encoded CGM.
 .sp
 \fIExample\fP:
 .sp
@@ -77,8 +78,8 @@ On Cray systems, the default buffer size is 1MB. All others
 use whatever the system default is, as specified in the file
 "stdio.h".
 .sp
-If the environment variable NCARG_GKS_BUFSIZE is set it overrides
-the defaults. If NCARG_GKS_BUFSIZE is set to \fIN\fP behaviour is
+If the environment variable NCARG_GKS_BUFSIZE is set, it overrides
+the defaults. If NCARG_GKS_BUFSIZE is set to \fIN,\fP behaviour is
 as follows:
 .sp
 If \fIN\fP is 0:
@@ -127,8 +128,8 @@ setenv NCARG_GKS_BUFSIZE 1024
 .sp
 .SH CAVEATS
 .sp
-It's worth saying one more time: if you output standard CGM rather
-then NCGM (NCAR CGM), NCAR Graphics generally won't deal with it.
+It's worth saying one more time: if you output binary encoded CGM rather
+than NCGM (NCAR CGM), NCAR Graphics generally won't deal with it.
 The one exception is that you can convert the file back to
 NCGM using \fIcgm2ncgm\fP.
 .SH "SEE ALSO"
