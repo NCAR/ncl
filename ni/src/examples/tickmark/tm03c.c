@@ -55,14 +55,14 @@ main()
         rlist = NhlRLCreate(NhlSETRL);
         NhlRLClear(rlist);
 	NhlRLSetString(rlist,NhlNappUsrDir,"./");
-	NhlCreate(&appid,"tm03",NhlappLayerClass,NhlNOPARENT,rlist);
+	NhlCreate(&appid,"tm03",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
 /*
  * Create an XWorkstation object.
  */
 	NhlRLClear(rlist);
 	NhlRLSetInteger(rlist,NhlNwkPause,True);
-	NhlCreate(&wid,"tm03Work",NhlxWorkstationLayerClass,NhlNULL_LAYER,
+	NhlCreate(&wid,"tm03Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
 									rlist);
         NhlRLClear(rlist);
 	NhlRLSetFloat(rlist,NhlNvpXF,.2);

@@ -1,5 +1,5 @@
 /*
-**      $Id: tx01c.c,v 1.2 1995-01-26 17:06:03 haley Exp $
+**      $Id: tx01c.c,v 1.3 1995-01-27 23:10:19 haley Exp $
 */
 /************************************************************************
 *                                                                       *
@@ -48,7 +48,7 @@ main()
         rlist = NhlRLCreate(NhlSETRL);
         NhlRLClear(rlist);
 	NhlRLSetString(rlist,NhlNappUsrDir,"./");
-	NhlCreate(&app_id,"tx01",NhlappLayerClass,NhlNOPARENT,rlist);
+	NhlCreate(&app_id,"tx01",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 	
 /*
 * Create a meta file workstation giving the output file a conventional 
@@ -57,7 +57,7 @@ main()
         NhlRLClear(rlist);
 	NhlRLSetString(rlist,NhlNwkMetaName,"./tx01c.ncgm");
 	NhlCreate(&workstation_id,"tx01Work",
-		  NhlncgmWorkstationLayerClass,NhlNOPARENT,rlist); 
+		  NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,rlist); 
 
 /*
 * This is the only creation of a text object for this entire program.

@@ -47,14 +47,14 @@ main()
         rlist = NhlRLCreate(NhlSETRL);
         NhlRLClear(rlist);
 	NhlRLSetString(rlist,NhlNappUsrDir,"./");
-	NhlCreate(&appid,"tx04",NhlappLayerClass,NhlNOPARENT,rlist);
+	NhlCreate(&appid,"tx04",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
 /*
  * Create an XWorkstation object.
  */
 	NhlRLClear(rlist);
 	NhlRLSetInteger(rlist,NhlNwkPause,True);
-	NhlCreate(&wid,"tx04Work",NhlxWorkstationLayerClass,NhlNULL_LAYER,
+	NhlCreate(&wid,"tx04Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
 									rlist);
 /*
  * Create 114 plots varying the fill color of the text bounding box

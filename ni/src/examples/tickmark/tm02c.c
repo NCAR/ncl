@@ -43,14 +43,14 @@ main()
         rlist = NhlRLCreate(NhlSETRL);
         NhlRLClear(rlist);
 	NhlRLSetString(rlist,NhlNappUsrDir,"./");
-	NhlCreate(&appid,"tm02",NhlappLayerClass,NhlNOPARENT,rlist);
+	NhlCreate(&appid,"tm02",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
 /*
  * Create an XWorkstation object.
  */
 	NhlRLClear(rlist);
 	NhlRLSetInteger(rlist,NhlNwkPause,True);
-	NhlCreate(&wid,"tm02Work",NhlxWorkstationLayerClass,NhlNULL_LAYER,
+	NhlCreate(&wid,"tm02Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
 									rlist);
 /*
  * Specify the viewport extent of the object.
