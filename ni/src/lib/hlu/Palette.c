@@ -1,5 +1,5 @@
 /*
- *      $Id: Palette.c,v 1.6 1998-10-22 17:35:48 boote Exp $
+ *      $Id: Palette.c,v 1.7 1999-09-23 19:47:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -19,10 +19,18 @@
  *
  *	Description:	
  */
+
+#include <stdlib.h>
+#include <dirent.h>
+
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/WorkstationP.h>
 #include <ncarg/hlu/ConvertP.h>
 #include <ncarg/hlu/ConvertersP.h>
+
+#define NDV_COLORMAP_PATH  	"NDV_COLORMAP_PATH"
+#define NCARG_COLORMAP_PATH  	"NCARG_COLORMAP_PATH"
+#define DEFAULT_COLORMAP_PATH 	".:$NCARG_ROOT/lib/ncarg/colormaps"
 
 #define Oset(field)	NhlOffset(NhlPaletteLayerRec,pal.field)
 static NhlResource resources[] = {
@@ -917,7 +925,7 @@ CvtStringToCmap
 	NhlPalList		cmaps;
 
 	if(nargs != 1 && args[0].addressmode != NhlLAYEROFFSET){
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"%s:Invalid args?",func);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid args?",func);
 		return NhlFATAL;
 	}
 	wc = *((NhlWorkstationClass*)args[0].data.ptrval);
@@ -943,7 +951,7 @@ CvtStringToCmap
 	}
 
 	if(!gen){
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"%s:Unable to convert string \"%s\" to %s",func,s1,
 			NhlTColorMap);
 		return NhlFATAL;
@@ -1049,7 +1057,7 @@ CvtStringGenArrayToCmap
 	NhlErrorTypes		ret = NhlNOERROR;
 
 	if(nargs != 1 && args[0].addressmode != NhlLAYEROFFSET){
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"%s:Invalid args?",func);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid args?",func);
 		return NhlFATAL;
 	}
 	wc = *((NhlWorkstationClass*)args[0].data.ptrval);
@@ -1083,7 +1091,8 @@ CvtStringGenArrayToCmap
 	}
 
 	dimlen[0] = fgen->num_elements;
-	tgen = _NhlConvertCreateGenArray(NULL,NhlTFloat,sizeof(float),2,dimlen);
+	tgen = _NhlConvertCreateGenArray
+		(NULL,NhlTFloat,sizeof(float),2,dimlen);
 	if(!tgen){
 		NhlPError(NhlFATAL,ENOMEM,"%s:unable to create array",func);
 		return NhlFATAL;
@@ -1479,4 +1488,241 @@ NhlPalSetColormap
 	list->gen = gen;
 
 	return NhlNOERROR;
+}
+
+
+static NhlErrorTypes GetColormapsInPath
+(
+	NhlClass	lc,
+	const char	*path,
+	char		*func
+)
+{
+	NhlErrorTypes	subret,ret = NhlNOERROR;
+	struct dirent	*dirp;  
+	DIR		*dp;
+	int		i;
+	int		count;
+	char		fullpath[1024];
+	char		*endp;
+	float   	colormap[768] = { -1.0,-1.0,-1.0,-1.0,-1.0,-1.0 };
+	int		min_ix = 6;
+	float		max_cval;
+
+/*
+ * These colormaps do not overwrite the background and foreground
+ * colors. Initially we set foreground to black and background to white.
+ * but when the user actually loads one of these color maps these are
+ * replaced with the workstation's current background and foreground.
+ * Eventually there will be an option for specifying a range of indexes
+ * into which the colormap should fit.
+ */
+	
+	if (! path) {
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+	   "%s: Invalid directory encountered in colormap path specification",
+			   func));
+		return NhlWARNING;
+	}
+
+	if ((dp = opendir(path)) == NULL) {
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+			   "%s: Invalid colormap directory: %s",func,path));
+		return NhlWARNING;
+	}
+
+	strcpy(fullpath,path);
+	endp = fullpath + strlen(fullpath);
+	*endp++ = '/';
+	*endp = '\0';
+
+	while ( (dirp = readdir(dp)) != NULL) {
+		char *cp;
+		FILE *fp;
+		char buf[256];
+		int dot_pos;
+
+		if (! strcmp(dirp->d_name, ".")  ||
+		    ! strcmp(dirp->d_name, ".."))
+			continue;	
+		if (! (cp = strrchr(dirp->d_name,'.')))
+			continue;
+		dot_pos = cp - dirp->d_name;
+		cp++;
+		if (! cp || 
+		    (strcmp(cp,"rgb") && 
+		     strcmp(cp,"ncmap") &&
+		     strcmp(cp,"gp"))) 
+			continue;
+		
+		strcpy(endp,dirp->d_name);
+		fp = fopen(fullpath,"r");
+		if (! fp) {
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+			   "%s: Unable to open colormap file %s: ignoring",
+				   func,dirp->d_name));
+			ret = MIN(NhlWARNING,ret);
+			continue;
+		}
+		i = min_ix;
+		max_cval = 0.0;
+		while (cp = fgets(buf,255,fp)) {
+			char *next,*tcp = cp;
+			float f;
+			while (isspace(*tcp))
+				tcp++;
+			if (! (isdigit(*tcp) || *tcp == '.'))
+				continue;
+			while (1) {
+				if (i > 767)
+					break;
+				f = strtod(tcp,&next);
+				if (next == tcp)
+					break;
+				tcp = next;
+				while (isspace(*tcp) || *tcp == ',')
+					tcp++;
+				colormap[i] = f;
+				max_cval = MAX(max_cval,colormap[i]);
+				i++;
+			}
+		}
+		fclose(fp);
+
+		count = i;
+		if (max_cval > 1.0) {
+			if (max_cval < 256.0) {
+				for (i = min_ix; i < count; i++) {
+					colormap[i] /= 255.0;
+				}
+			}
+			else if (max_cval <= 256.0) {
+				for (i = min_ix; i < count; i++) {
+					colormap[i] /= 256.0;
+				}
+			}
+			else if (max_cval < 65536.0) {
+				for (i = min_ix; i < count; i++) {
+					colormap[i] /= 65535.0;
+				}
+			}
+			else if (max_cval <= 65536.0) {
+				for (i = min_ix; i < count; i++) {
+					colormap[i] /= 65536.0;
+				}
+			}
+			else {
+				for (i = min_ix; i < count; i++) {
+					colormap[i] /= max_cval;
+				}
+			}
+		}
+		
+		*(endp + dot_pos) = '\0';
+		subret = NhlPalSetColormap(lc,endp,
+					   (NhlColor *)colormap,count / 3);
+		ret = MIN(ret,subret);
+		if (ret < NhlWARNING)
+			return ret;
+
+	}
+
+	closedir(dp);
+
+	return ret;
+}
+
+static NhlErrorTypes ReadUserColormaps
+(
+	NhlClass lc,
+	char	 *func
+)
+{
+	NhlErrorTypes subret,ret = NhlNOERROR;
+	const char *path;
+	char buf[1024];
+	char *cp;
+
+	path = getenv(NDV_COLORMAP_PATH);
+	if (! path)
+		path = getenv(NCARG_COLORMAP_PATH);
+	if (! path) {
+		fprintf(stderr,
+		     "%s environment variable not set:\n\tdefaulting to %s\n",
+			NDV_COLORMAP_PATH,DEFAULT_COLORMAP_PATH);
+		path = DEFAULT_COLORMAP_PATH;
+		
+	}
+	if (! path) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		   "%s: Path to colormap files not found; no colomaps loaded",
+			  func);
+		return NhlWARNING;
+	}
+	strcpy(buf,path);
+/*
+ * Search for directories in the path from the end of the path string. 
+ * That way, when duplicate names are found the files in directories at the
+ * front of the path will replace the ones at the end.
+ */
+	cp = strrchr(buf,':');
+	if (! cp) {
+		return GetColormapsInPath(lc,_NGResolvePath(buf),func);
+	}
+	while (cp) {
+		if (*(cp+1)) {
+			subret = GetColormapsInPath
+				(lc,_NGResolvePath(cp+1),func);
+			ret = MIN(subret,ret);
+		}
+		if (ret < NhlWARNING)
+			return ret;
+		*cp = '\0';
+		if (cp > buf) {
+			cp = strrchr(buf, ':');
+			if (! cp) {
+				subret = GetColormapsInPath
+					(lc,_NGResolvePath(buf),func);
+				ret = MIN(subret,ret);
+			}
+		}
+	}
+	return ret;
+}
+
+/*
+ * Function:	NhlPalLoadColormapFiles
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlErrorTypes
+NhlPalLoadColormapFiles
+#if	NhlNeedProto
+(
+	NhlClass	lc
+)
+#else
+(lc)
+	NhlClass	lc;
+
+#endif
+{
+	char		func[] = "NhlLoadColormapFiles";
+
+	_NhlInitializeClass(lc);
+	if(!(lc->base_class.class_inited & _NhlWorkstationClassFlag)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid Workstation Class",
+									func);
+		return NhlFATAL;
+	}
+
+	return ReadUserColormaps(lc,func);
 }
