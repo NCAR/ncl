@@ -1,5 +1,5 @@
 C
-C $Id: agaxis.f,v 1.5 1996-08-14 19:41:36 kennison Exp $
+C $Id: agaxis.f,v 1.6 1996-12-06 21:52:05 kennison Exp $
 C
       SUBROUTINE AGAXIS (IAXS,QTST,QSPA,WCWP,HCWP,XBGA,YBGA,XNDA,YNDA,
      +                   QLUA,UBGA,UNDA,FUNS,QBTP,BASE,QJDP,WMJL,WMJR,
@@ -272,7 +272,8 @@ C its direction cosines.
 C
       XDNP=XDNA*WCWP
       YDNP=YDNA*HCWP
-      AXLP=SQRT(XDNP*XDNP+YDNP*YDNP)
+      AXLP=MAX(ABS(XDNP),ABS(YDNP))
+      AXLP=AXLP*SQRT((XDNP/AXLP)**2+(YDNP/AXLP)**2)
       XDCA=XDNP/AXLP
       YDCA=YDNP/AXLP
 C
