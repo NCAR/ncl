@@ -1,0 +1,25 @@
+#
+#   $Id: yMakefile,v 1.1 1995-01-26 17:49:20 haley Exp $
+#
+#   Makefile for HLU Legend examples
+#
+
+NCGMS   =   lg01c.ncgm lg02c.ncgm lg03c.ncgm
+
+PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
+EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
+SYS_LIBS    =   $(CTOFLIBS) -lm
+
+SRCS        = lg01c.c lg02c.c lg03c.c
+RES         = lg01.res lg02.res lg03.res
+EXFILES     = $(SRCS) $(RES)
+
+InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))
+
+HLUCExampleTarget(lg01c,lg01c.o)
+HLUCExampleTarget(lg02c,lg02c.o)
+HLUCExampleTarget(lg03c,lg03c.o)
+
+CleanFilesTarget($(NCGMS))
+DependTarget($(SRCS))
+
