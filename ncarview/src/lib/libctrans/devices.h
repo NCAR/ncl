@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.h,v 1.20 1996-01-18 14:48:35 boote Exp $
+ *	$Id: devices.h,v 1.21 1996-03-29 18:44:19 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -121,11 +121,12 @@ static	OptDescRec	X11_opts[] = {
 	{"foreground", 1, NULL, "Default foreground color (X11 color only)"},
 	{"background", 1, NULL, "Default background color (X11 color only)"},
 	{"reverse", 0, NULL, "Do reverse video (X11 monochrome only)"},
-	{"wid", 1, "-1", "Drawing window id, 'arg0'"},
+	{"wid", 1, "0", "Drawing window id, 'arg0'"},
 	{"ignorebg", 0, NULL, "Ignore CGM requests to change background color"},
 	{"pcmap", 0, NULL, "Create a private colormap"},
 	{"scmap", 0, NULL, "Use a shared colormap"},
 	{"colerr", 1, "10", "Percent Color Error allowed"},
+	{"visual", 1, "0", "Visual Id"},
 	{NULL}
 	};
 #endif

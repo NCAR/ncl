@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.35 1996-01-18 14:48:31 boote Exp $
+ *	$Id: X11_class0.c,v 1.36 1996-03-29 18:44:16 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -59,48 +59,47 @@ extern	boolean	*softFill;
 extern	boolean	*doBell;
 extern	boolean	startedDrawing;
 
-extern	int	init_color();
 extern	int	init_polygon();
 
 /*
  * convert an decimal or  hexadecimal string to its integer value
  * if the string is preceded by "0x" or "0X" it is in hexadecimal form.
  */
-int     hex_to_int(from, to)
+int     hex_to_xid(from, to)
         const char      *from;  /* the string   */
         Voidptr to;
 {
-        int     *iptr   = (int *) to;
+        unsigned long	*ulptr   = (unsigned long *) to;
+	char		*ptr;
 
         if (! from) {
-                *iptr = 0;
+                *ulptr = None;
         }
-        else if (strchr(from, 'x') || strchr(from, 'X')) {
-		if (sscanf(from, "%i", iptr) != 1) {
-			ESprintf(E_UNKNOWN, "Convert(%s) to int failed", from);
+	else{
+		*ulptr = strtoul(from,&ptr,0);
+		if(*ulptr == 0 && from == ptr){
+		ESprintf(E_UNKNOWN,"Convert(%s) to unsigned long failed", from);
 			return(-1);
 		}
+
 	}
-	else if (sscanf(from, "%d", iptr) != 1) {
-                ESprintf(E_UNKNOWN, "Convert(%s) to int failed", from);
-                return(-1);
-        }
         return(1);
 }
 
 
 static	struct	{
-	char	*Geometry;
-	char	*window;
-	char	*viewport;
-	char	*foreground;
-	char	*background;
-	boolean	reverse;
-	int	wid;
-	boolean	ignorebg;
-	boolean	pcmap;
-	boolean	scmap;
-	int	colerr;
+	char		*Geometry;
+	char		*window;
+	char		*viewport;
+	char		*foreground;
+	char		*background;
+	boolean		reverse;
+	unsigned long	wid;
+	boolean		ignorebg;
+	boolean		pcmap;
+	boolean		scmap;
+	int		colerr;
+	unsigned long	visual_id;
 	} x11_opts;
 
 static	Option	options[] =  {
@@ -129,7 +128,7 @@ static	Option	options[] =  {
 		(Voidptr) &x11_opts.reverse, sizeof (x11_opts.reverse )
 	},
 	{
-	"wid", hex_to_int, 
+	"wid", hex_to_xid, 
 		(Voidptr) &x11_opts.wid, sizeof (x11_opts.wid )
 	},
 	{
@@ -147,6 +146,10 @@ static	Option	options[] =  {
 	{
 	"colerr", NCARGCvtToInt, 
 		(Voidptr) &x11_opts.colerr, sizeof (x11_opts.colerr )
+	},
+	{
+	"visual", hex_to_xid, 
+		(Voidptr) &x11_opts.visual_id, sizeof (x11_opts.visual_id )
 	},
 	{
 	NULL
@@ -357,7 +360,7 @@ CGMC *c;
 	 *	window to have been created with the default visual, depth
 	 *	and colormap;
 	 */
-	if(x11_opts.scmap || x11_opts.wid != -1)
+	if(x11_opts.scmap || x11_opts.wid != None)
 		ColorModel = CM_SHARED;
 	else if(x11_opts.pcmap)
 		ColorModel = CM_PRIVATE;
@@ -377,7 +380,8 @@ CGMC *c;
 	startedDrawing = FALSE;
 	(void) init_color(
 		x11_opts.foreground, x11_opts.background,
-		(boolean) x11_opts.reverse,&fg, &bg, &bd
+		(boolean) x11_opts.reverse,&fg, &bg, &bd,
+		(x11_opts.wid != None)?None:x11_opts.visual_id
 	);
 
 	/*
@@ -385,7 +389,7 @@ CGMC *c;
 	 * border width, and the border & background pixels. See 
 	 * Section 3.3.
 	 */
-	if (x11_opts.wid == -1) {
+	if (x11_opts.wid == None) {
 
 		prog_name = (
 			(prog_name = strrchr(*Argv,'/')) ? ++prog_name : *Argv
@@ -534,7 +538,7 @@ CGMC *c;
 	 * if we created out own window we need to map it and wait for 
 	 * it to become exposed
 	 */
-	if (x11_opts.wid == -1) {
+	if (x11_opts.wid == None) {
 		/* 
 		 * Select notification of Expose event that is generated when
 		 * the window is first mapped (becomes visible) to the screen.
@@ -575,7 +579,7 @@ CGMC *c;
 
 
 
-	if (!Batch && x11_opts.wid == -1) {
+	if (!Batch && x11_opts.wid == None) {
 		/*
 		 *	Select events for which we want future notification.
 		 *	These apply for the remainder of the program. 
@@ -702,7 +706,7 @@ CGMC *c;
 		dev.height = xwa.height;
 		dev.width = xwa.width;
 
-		if (fontstruct != NULL && !Batch && x11_opts.wid == -1) {
+		if(fontstruct != NULL && !Batch && x11_opts.wid ==None){
 
 			/*
 			 *	calculate possistion and heigth of title bar
@@ -784,7 +788,7 @@ CGMC *c;
 	 */
 	if (*doBell) XBell(dpy, 0);
 
-	if (Batch || x11_opts.wid != -1) {
+	if (Batch || x11_opts.wid != None) {
 		XSync(dpy, True);
 		return(0);
 	}

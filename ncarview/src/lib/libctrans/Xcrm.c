@@ -1,5 +1,5 @@
 /*
- *	$Id: Xcrm.c,v 1.18 1996-01-18 14:48:33 boote Exp $
+ *	$Id: Xcrm.c,v 1.19 1996-03-29 18:44:17 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -26,6 +26,7 @@
 
 #include 	<stdio.h>
 #include 	<stdlib.h>
+#include 	<errno.h>
 #include 	<math.h>
 #include	<X11/Xlib.h>
 #include	<X11/Xutil.h>
@@ -37,25 +38,52 @@
 #include	"default.h"
 #include	"ctrandef.h"
 
-extern	Pixeltype 	max_colour;
-extern	boolean		Color_ava;
 extern	boolean		startedDrawing;
 
+
+boolean			Color_ava = FALSE;	/* true if device has color*/
+Pixeltype		max_colour;		/* maximum r or g or b value
+						 * specifiable in the CGM
+						 */
 Pixeltype		Colortab[MAX_COLOR_SIZE];
 int			Colordef[MAX_COLOR_SIZE];
 
 static X11_ColorStatus	ColorStatus[MAX_COLOR_SIZE];
-static boolean		XIndexes[MAX_COLOR_SIZE];
+static int		*XIndexes = NULL;
+static int		MaxXCol;
+static boolean		XRefCount;
 
 void X11_initColorTable()
 {
 	int	i;
 
+	MaxXCol = 2;
+	for(i=1;i<DspDepth;i++){
+		MaxXCol*=2;
+	}
+
+	switch(bestVisual->class){
+		case TrueColor:
+		case StaticColor:
+		case StaticGray:
+		case DirectColor:
+			XRefCount = False;
+			break;
+		default:
+			XRefCount = True;
+	}
+
+	if(XRefCount){
+		XIndexes = malloc(sizeof(int)*MaxXCol); 
+		for(i=0;i<MaxXCol;i++)
+			XIndexes[i] = 0;
+	}
+
 	for(i=0;i<MAX_COLOR_SIZE;i++){
 		Colordef[i] = -1;
 		ColorStatus[i].ref_count = 0;
-		XIndexes[i] = False;
 	}
+
 	return;
 }
 
@@ -110,25 +138,33 @@ AllocColor(color,sindx)
 	int	*sindx;
 {
 	int	i,j;
-	XColor	colors[MAX_COLOR_SIZE];
+	XColor	*colors;
 	float	color_error = 0.0;
 	int	status = 0;
 	int	minindx = -1;
 	float	minval = 0;
 	float	curval;
 	float	tfloat;
+	Colormap	new;
 
-	if(!RoCmap){
+	if(!RoCmap && XRefCount){
+		boolean	colordone = False;
 		/*
 		 * Find unused X pixel - start from top of map, hopefully
 		 * this will help minimize flashing...
 		 */
-		for(i=MAX_COLOR_SIZE-1;i>=0;i--)
-			if(!XIndexes[i])
-				break;
+		for(i=MaxXCol-1;i>=0;i--){
+			if(!XIndexes[i]){
+				color->pixel = i;
+				XStoreColor(dpy,Cmap,color);
+				colordone = True;
+			}
+		}
+		/*
+		 * This goto will only happen in the most desperate situations.
+		 */
+		if(!colordone) goto COLORBUST;
 
-		color->pixel = i;
-		XStoreColor(dpy,Cmap,color);
 	}
 	else if(XAllocColor(dpy,Cmap,color)){
 		;
@@ -141,6 +177,7 @@ AllocColor(color,sindx)
 			case TrueColor:
 			case StaticColor:
 			case StaticGray:
+			case DirectColor:
 
 				Cmap = XCopyColormapAndFree(dpy,Cmap);
 				RoCmap = True;
@@ -152,18 +189,19 @@ AllocColor(color,sindx)
 			 */
 			default:
 
-				for(i=0;i<MAX_COLOR_SIZE;i++){
-					colors[i].pixel = i;
-					colors[i].flags = DoRed|DoBlue|DoGreen;
-					colors[i].pad = '\0';
-				}
-
-				XQueryColors(dpy,Cmap,colors,MAX_COLOR_SIZE);
-				free_colors();
-				Cmap = XCreateColormap(dpy,
+				new = XCreateColormap(dpy,
 					RootWindow(dpy,DefaultScreen(dpy)),
 					bestVisual,AllocAll);
-				XStoreColors(dpy,Cmap,colors,MAX_COLOR_SIZE);
+				if(colors = malloc(sizeof(XColor)*MaxXCol)){
+					for(i=0;i<MaxXCol;i++)
+						colors[i].pixel = i;
+					XQueryColors(dpy,Cmap,colors,MaxXCol);
+					XStoreColors(dpy,new,colors,MaxXCol);
+					free(colors);
+				}
+				free_colors();
+				XFreeColormap(dpy,Cmap);
+				Cmap = new;
 				RoCmap = False;
 
 				break;
@@ -175,6 +213,7 @@ AllocColor(color,sindx)
 		return AllocColor(color,sindx);
 	}
 	else{
+COLORBUST:
 		/*
 		 * unable to allocate a new color cell.
 		 * Use closest one of our current colors.
@@ -275,7 +314,8 @@ DoColor(i)
 			XFreeColors(dpy,Cmap,
 			&ColorStatus[Colordef[i]].xpixnum,1,0);
 			}
-			XIndexes[ColorStatus[Colordef[i]].xpixnum]--;
+			if(XRefCount)
+				XIndexes[ColorStatus[Colordef[i]].xpixnum]--;
 		}
 		Colordef[i] = -1;
 	}
@@ -301,7 +341,8 @@ DoColor(i)
 		ColorStatus[j].green = color.green;
 		ColorStatus[j].blue = color.blue;
 		ColorStatus[j].xpixnum = color.pixel;
-		XIndexes[color.pixel]++;
+		if(XRefCount)
+			XIndexes[color.pixel]++;
 	}
 	else if(sindx > -1){
 		ColorStatus[sindx].ref_count++;
@@ -367,6 +408,225 @@ int	X11_UpdateColorTable_()
 			COLOUR_INDEX_DAMAGE(i) = FALSE;
 
 		}	/* if	*/ }	/* for	*/
+
+	return (status);
+}
+
+/*	init_color: 	
+ *
+ *		intialize the color table and allocate default colours
+ * on entry
+ *	*foreground	: Default foreground color name
+ *	*background	: Default background color name
+ *
+ * on exit
+ *	Cmap		: contains the color map
+ *	bestVisual	: the visual to use.
+ *	DspDepth	: the display depth for this visual
+ *	Color_ava	: true if have a color display
+ *	fg, bg, bd	: set to default colours as described in name
+ */
+
+
+int	init_color(foreground,background,reverse,fg,bg,bd,vis_id)
+	char		*foreground,
+			*background;
+	boolean		reverse;
+	Pixeltype	*fg, *bg, *bd;
+	unsigned long	vis_id;
+{
+
+	int		i;
+	char		*name[2];
+	int		col_2_alloc;
+	int		status = 0;
+	XColor		*colors;
+	Colormap	def_cmap = DefaultColormap(dpy, DefaultScreen(dpy));
+	Visual		*def_vis = DefaultVisual(dpy, DefaultScreen(dpy));
+	int		def_depth = DefaultDepth(dpy, DefaultScreen(dpy));
+	int		osize,nsize;
+
+	static	XColor	color = {
+		0,0,0,0,(DoRed | DoGreen | DoBlue), '\0'
+		};
+
+	int	ColrTable();
+
+	col_2_alloc = 0;
+
+	if (background) name[col_2_alloc++] = background;
+	if (foreground) name[col_2_alloc++] = foreground;
+
+	/*
+	 * get the visual
+	 */
+	if(vis_id != None){
+		XVisualInfo	vinfo;
+		XVisualInfo	*vret;
+		int		num_vret;
+
+		vinfo.visualid = vis_id;
+		vret = XGetVisualInfo(dpy,VisualIDMask,&vinfo,&num_vret);
+		if(vret && num_vret == 1){
+			bestVisual = vret->visual;
+			DspDepth = vret->depth;
+		}
+		if(vret)
+			XFree(vret);
+	}
+	if(!bestVisual){
+		bestVisual = def_vis;
+		DspDepth = def_depth;
+	}
+	if(bestVisual != def_vis)
+		ColorModel = CM_PRIVATE;
+
+	if (DspDepth == 1) {
+
+		/* one plane monochrome display	*/
+
+		if (! reverse) {	/* if not reverse video	*/
+			*fg = WhitePixel(dpy, DefaultScreen(dpy));
+			*bd = WhitePixel(dpy, DefaultScreen(dpy));
+			*bg = BlackPixel(dpy, DefaultScreen(dpy));
+		}
+		else {	/* reverse video	*/
+			*fg = BlackPixel(dpy, DefaultScreen(dpy));
+			*bd = BlackPixel(dpy, DefaultScreen(dpy));
+			*bg = WhitePixel(dpy, DefaultScreen(dpy));
+		}
+
+		return (0);
+	}
+
+	/*
+	 * all output primitives will use Color_ava to see 
+	 * if they have a colour display
+	 */
+	Color_ava = TRUE;
+
+	/*
+	 * if we are requested to create a new color map or we are not
+	 * using the default visual we need to create our own color map
+	 */
+	if (ColorModel == CM_PRIVATE) {
+		MyCmap = TRUE;
+		switch(bestVisual->class){
+			/*
+			 * RO model
+			 */
+			case TrueColor:
+			case StaticColor:
+			case StaticGray:
+			case DirectColor:
+				RoCmap = True;
+				if(bestVisual == def_vis)
+					Cmap = XCopyColormapAndFree(dpy,
+								def_cmap);
+				else{
+					Cmap = XCreateColormap(dpy,
+					RootWindow(dpy,DefaultScreen(dpy)), 
+					bestVisual,AllocNone);
+					XFreeColormap(dpy,def_cmap);
+				}
+				break;
+
+			/*
+			 * RW model - copy current table to minimize flashing.
+			 */
+			default:
+				RoCmap = False;
+
+				for(i=1,osize=2;i<def_depth;i++) osize*=2;
+				for(i=1,nsize=2;i<DspDepth;i++) nsize*=2;
+				Cmap = XCreateColormap(dpy,
+					RootWindow(dpy,DefaultScreen(dpy)), 
+					bestVisual,AllocAll);
+				if(colors = malloc(sizeof(XColor)*osize)){
+					for(i=0;i<osize;i++)
+						colors[i].pixel = i;
+					XQueryColors(dpy,def_cmap,colors,osize);
+					XStoreColors(dpy,Cmap,colors,
+						(osize<nsize)?osize:nsize);
+					free(colors);
+				}
+				XFreeColormap(dpy,def_cmap);
+				break;
+		}
+	}
+	else {
+		MyCmap = FALSE;
+		RoCmap = True;
+		Cmap = def_cmap;
+	}
+
+	/* 
+	 * find max direct colour, DCP is direct colour precision in the CGM
+	 */
+	max_colour = (1 << DCP) - 1;
+
+	/* 
+	 * 	initialize the color table to empty 
+	 *	and mark all indexes as not defined
+	 */
+	X11_initColorTable();
+
+	/*
+	 * if the user requested that the default foreground and/or background
+	 * colors be overriden do so now
+	 */
+	if (col_2_alloc) {
+		CGMC	cgmc;
+		CItype	ci_array[1];
+		CDtype	cd_array[2];
+
+		cgmc.ci = &ci_array[0];
+		cgmc.cd = &cd_array[0];
+
+		for (i=0; i < col_2_alloc; i++) {
+
+			if (!XParseColor(dpy, Cmap, name[i], &color))  {
+				/* color name s not in database	*/
+				ESprintf(E_UNKNOWN,"XParseColor(,,%s,)",name[i]);
+				status = -1;
+			}
+			cgmc.cd[i].red = 0;
+			cgmc.cd[i].green = 0;
+			cgmc.cd[i].blue = 0;
+			if(color.flags & DoRed)
+				cgmc.cd[i].red = color.red /
+							X_MAX_RGB * max_colour;
+			if(color.flags & DoGreen)
+				cgmc.cd[i].green = color.green /
+							X_MAX_RGB* max_colour;
+			if(color.flags & DoBlue)
+				cgmc.cd[i].blue = color.blue /
+							X_MAX_RGB * max_colour;
+		}
+		cgmc.CDnum = col_2_alloc;
+
+		if (background) {
+			cgmc.ci[0] = 0;
+		}
+		else {
+			cgmc.ci[0] = 1;
+		}
+		cgmc.CInum = 1;
+
+		(void) ColrTable(&cgmc);
+	}
+
+	/*
+	 * load the default colors
+	 */
+	if (X11_UpdateColorTable_() < 0) status = -1;
+	COLOUR_TABLE_DAMAGE = FALSE;
+
+	/*
+	 * set default foreground, background and border colour
+	 */
+	*bg = Colortab[0];
+	*fg = *bd =  Colortab[1];
 
 	return (status);
 }

@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.25 1994-04-19 14:31:34 haley Exp $
+#	$Id: yMakefile,v 1.26 1996-03-29 18:44:19 boote Exp $
 #
 
 
@@ -82,12 +82,12 @@ DCGIOBJS = cgi.o cgi_cell_sim.o
 
 DX11SRCS = \
 	X11_class0.c X11_class1.c X11_class3.c \
-	X11_class4.c X11_class5.c X11_class6.c X11_class7.c \
+	X11_class4.c X11_class6.c X11_class7.c \
 	Xcrm.c xresources.c
 
 DX11OBJS = \
 	X11_class0.o X11_class1.o X11_class3.o \
-	X11_class4.o X11_class5.o X11_class6.o X11_class7.o \
+	X11_class4.o X11_class6.o X11_class7.o \
 	Xcrm.o xresources.o
 
 DSUNVSRCS = \

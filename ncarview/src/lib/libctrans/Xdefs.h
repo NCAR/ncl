@@ -31,7 +31,7 @@ typedef	struct  {
 Display		*dpy;		/* X server connection		*/
 Drawable	win = 0;	/* Window ID 			*/
 Drawable	drawable;	/* the drawable			*/
-Visual		*bestVisual;
+Visual		*bestVisual = NULL;
 int		DspDepth;	/* depth in pixels of display	*/
 Colormap	Cmap;		/* current colormap for $win	*/
 int		ColorModel;	/* color model			*/

@@ -16,6 +16,7 @@
 
 extern	void	X11_initColorTable();
 extern	int	X11_UpdateColorTable_();
+extern int	init_color();
 
 typedef struct X11_ColorStatus_{
 	int		ref_count;
