@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.61 2001-02-22 17:44:04 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.62 2001-03-01 02:57:27 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -21,8 +21,8 @@
 ;;               used by CGD for the CSM processor. To use the functions
 ;;               and procedures in this script, you must have the lines:
 ;;
-;;                   load "gsn_csm.ncl"
 ;;                   load "gsn_code.ncl"
+;;                   load "gsn_csm.ncl"
 ;; 
 ;;               at the top of your NCL script, before the begin statement.
 ;;
@@ -354,14 +354,14 @@ begin
 ; exists.  Also have to delete data@long_name so it doesn't get
 ; used in the title by gsn_code.ncl.
 ;
-  if(isatt(res,"gsnLeftString"))
+  if(isatt(data,"long_name"))
     newres = True
-    newres@gsnLeftString = res@gsnLeftString
+    newres@gsnLeftString = get_res_value_keep(res,"gsnLeftString",data@long_name)
+    delete(data@long_name)  ; Delete so it doesn't get used for main title
   else
-    if(isatt(data,"long_name"))
+    if(isatt(res,"gsnLeftString"))
       newres = True
-      newres@gsnLeftString = data@long_name
-      delete(data@long_name)  ; Delete so it doesn't get used for main title
+      newres@gsnLeftString = res@gsnLeftString
     end if
   end if
   return

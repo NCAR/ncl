@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.62 2001-02-22 17:44:03 haley Exp $
+;      $Id: gsn_code.ncl,v 1.63 2001-03-01 02:57:27 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -89,6 +89,7 @@ undef("gsn_attach_plots")
 undef("draw_bb")
 undef("gsn_define_colormap")
 undef("gsn_retrieve_colormap")
+undef("gsn_merge_colormaps")
 undef("columns")
 undef("compute_hist_vals")
 undef("compute_hist_from_range_vals")
@@ -1125,11 +1126,10 @@ begin
     newbb = bb
   end if
 
-
-  if(bot.lt.0.or.bot.gt.1.or.top.lt.0.or.top.gt.1.or. \
-     lft.lt.0.or.lft.gt.1.or.rgt.lt.0.or.rgt.gt.1)
-    print("compute_ps_device_coords: warning: bounding box values should be between 0 and 1 inclusive. Will continue anyway.")
-  end if
+  if(top_pnl)
+    top = max((/1.,max(newbb(:,0))/))
+  else
+    top = max(newbb(:,0))
   end if
   if(bot_pnl)
     bot = min((/0.,min(newbb(:,1))/))
@@ -3521,19 +3521,20 @@ end
 procedure draw_bb(wks:graphic,plot:graphic)
 ;
 ; Color names start in the 14th column of the rgb.txt file.
-;                  cmap: Colormap (n x 3 array)                         ;
+;
   names = chartostring(rgb_text_char(:,13:))
 
   ncolors = dimsizes(named_colors)
-; RGB values.                                                           ;
+  rgb_values = new((/ncolors,3/),float,-999)
 
   do i=0,ncolors-1
     index = ind(named_colors(i).eq.names)
     if(.not.ismissing(index))
-  if((typeof(cmap).eq."float".and.(dimsizes(dim_cmap).ne.2.or.dim_cmap(1).ne.3)).or.\
+      rgb_values(i,0) = red(index)
+      rgb_values(i,1) = green(index)
       rgb_values(i,2) = blue(index)
-    print("Warning: gsn_define_colormap: cmap must either be a 2-dimensional float array")
-    print("dimensioned n x 3 or a 1-dimensional string array.")
+    end if
+  end do
   return(rgb_values)
 end
 
@@ -3560,6 +3561,99 @@ begin
         "wkColorMap" : cmap
     end setvalues
   end if
+end
+
+;***********************************************************************;
+; Function : gsn_retrieve_colormap                                      ;
+;                   wks: workstation object                             ;
+;                                                                       ;
+; This function retrieves the current color map in use for workstation  ;
+; "wks". "wks is the workstation id returned from a call to             ;
+; gsn_open_wks.  The return variable will be an n x 3 array, where n is ;
+; the number of colors, and the 3 represents the R, G, and B values.    ;
+;***********************************************************************;
+function gsn_retrieve_colormap(wks:graphic)
+begin
+    getvalues wks
+        "wkColorMap" : cmap
+    end getvalues
+
+    return(cmap)
+end
+
+;***********************************************************************;
+; Procedure : gsn_merge_colormaps                                       ;
+;                   wks: workstation object                             ;
+;                  cmap1: colormap                                      ;
+;                  cmap2: colormap                                      ;
+;                                                                       ;
+; This procedure two colormaps into one, and then sets the workstaion   ;
+; to use this new colormap. If the merged colormaps exceed 255 colors,  ;
+; then only the first 255 colors will be used.                          ;
+;                                                                       ;
+; Both cmaps must either be an n x 3  float array, an array of color    ;
+; names, or a single string representing a pre-defined colormap name.   ;
+; Each colormap is assumed to have its own background/foreground color, ;
+; so the first two colors of the second color map are not included in   ;
+; the new color map.                                                    ;
+;***********************************************************************;
+procedure gsn_merge_colormaps(wks:graphic,cmap1,cmap2)
+local dim_cmap1, dim_cmap2, new_cmap1, new_cmap2, len_cmap1, len_cmap2
+begin
+  dim_cmap1 = dimsizes(cmap1)
+  dim_cmap2 = dimsizes(cmap2)
+;
+; Error checking.
+;
+  if((typeof(cmap1).eq."float".and.(dimsizes(dim_cmap1).ne.2.or.\
+                                   dim_cmap1(1).ne.3)).or.\
+     (typeof(cmap1).eq."string".and.dimsizes(dim_cmap1).ne.1))
+    print("Warning: gsn_merge_colormaps: cmap1 must either be an n x 3 float array,")
+    print("a single pre-defined colormap name, or a 1-dimensional string array of named colors.")
+  end if
+
+  if((typeof(cmap2).eq."float".and.(dimsizes(dim_cmap2).ne.2.or.\
+                                   dim_cmap2(1).ne.3)).or.\
+     (typeof(cmap2).eq."string".and.dimsizes(dim_cmap2).ne.1))
+    print("Warning: gsn_merge_colormaps: cmap2 must either be an n x 3 float array,")
+    print("a single pre-defined colormap name, or a 1-dimensional string array of named colors.")
+  end if
+
+;
+; Get first colormap in RGB values, and include background and
+; foreground colors.
+    gsn_define_colormap(wks,cmap2)
+    tmp_cmap2 = gsn_retrieve_colormap(wks)
+    new_cmap2 = tmp_cmap2(2:,:)
+      len_cmap2 = 0
+;
+; Test if the strings are named colors or a color map.
+; If it's a color map, then we will drop the foreground/background
+; colors and only append colors 2 and on.  If it is named colors, 
+; then we'll append all of the named colors.
+;
+    rgb_values = get_rgb_values(cmap2)
+    indices    = ind(.not.ismissing(rgb_values(:,0)))
+	if(all(ismissing(indices)))
+      gsn_define_colormap(wks,cmap2)    ; Must be a color map name.
+      tmp_cmap2 = gsn_retrieve_colormap(wks)
+      new_cmap2 = tmp_cmap2(2:,:)
+    else
+      new_cmap2 = new((/dimsizes(indices),3/),"float")
+      new_cmap2(:,0) = rgb_values(indices,0)   ; Must be named colors.
+      new_cmap2(:,1) = rgb_values(indices,1)
+      new_cmap2(:,2) = rgb_values(indices,2)
+    end if
+    len_cmap2 = dimsizes(new_cmap2(:,0))
+    delete(indices)
+    delete(rgb_values)
+  end if
+
+;
+; Make sure two colormaps don't total more than 256 colors.
+;
+  if(len_cmap1.ge.256) then
+    len_cmap1 = 256
 ; columns, compute_hist_vals, compute_hist_from_range_vals are          ;
 ; functions written by Ethan Alpert for computing histogram stuff.      ;
 
@@ -4333,7 +4427,6 @@ begin
 ;
     getvalues wks
       "wkColorMap" : cmap
-    delete(cmap)
     end getvalues
 
     if(ncolors.lt.maxcols-1) then
@@ -4397,6 +4490,14 @@ begin
   do k = 1,ncolors,ntotal
     jj = 0
     do j=k,min((/k+ntotal-1,ncolors/)),nrows
+      ii = 0
+      do i=j,min((/j+nrows-1,ncolors/))
+;
+; Draw box and fill in the appropriate color.
+;
+        gonres@gsFillColor = offset + (i-1)
+        gsn_polygon_ndc(wks,xbox+xpos(jj),ybox+ypos(ii),gonres) ; Draw box.
+;
 ; Outline box in black.
 ;
         gsn_polyline_ndc(wks,xbox+xpos(jj),ybox+ypos(ii),lineres)
