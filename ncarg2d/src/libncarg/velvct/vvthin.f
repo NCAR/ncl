@@ -1,5 +1,5 @@
 C
-C       $Id: vvthin.f,v 1.8 2000-08-22 15:07:37 haley Exp $
+C       $Id: vvthin.f,v 1.9 2002-01-26 01:54:46 dbrown Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -380,6 +380,9 @@ C
             ICM = MXX
             DO 600 II=MXX,1,-IXIN
                IF (JJ.EQ.J) THEN
+                  IF (II.EQ.1) THEN
+                     GO TO 601
+                  END IF
                   ICM = MXX - IXIN
                END IF
                IF (UFR(II,JJ).LT.0.0) THEN
@@ -426,6 +429,9 @@ C
             DO 800 JJ=MXY,1,-IYIN
                IF (II.EQ.I) THEN
                   ICM = MXY - IXIN
+                  IF (JJ.EQ.J) THEN
+                     GO TO 800
+                  END IF
                END IF   
                IF (UFR(II,JJ).LT.0.0) THEN
                   ICM = JJ - IYIN
