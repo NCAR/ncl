@@ -57,7 +57,7 @@ begin
   if (PS .eq. 1) then
     wks = gsn_open_wks("ps","nm13n")
   end if
-  if (PDf .eq. 1) then
+  if (PDF .eq. 1) then
     wks = gsn_open_wks("pdf","nm13n")
   end if
 

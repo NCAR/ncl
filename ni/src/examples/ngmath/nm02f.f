@@ -1,5 +1,5 @@
 C
-C      $Id: nm02f.f,v 1.3 2003-03-01 00:42:49 grubin Exp $
+C      $Id: nm02f.f,v 1.4 2003-03-04 17:42:27 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                       C
@@ -46,7 +46,7 @@ C
 C
 C Default is to display output to an NCGM workstation.
 C
-      NCGM=1
+      NCGM=0
       X11=1
       PS=0
       PDF=0
