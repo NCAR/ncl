@@ -1,5 +1,5 @@
 C
-C	$Id: gschup.f,v 1.2 1993-01-09 02:02:22 fred Exp $
+C	$Id: gschup.f,v 1.3 1997-10-15 00:19:14 fred Exp $
 C
       SUBROUTINE GSCHUP (CHUX,CHUY)
 C
@@ -69,10 +69,24 @@ C
       CALL GZW2NY(1,0.,ZYTMP)
       RX(1) = XTMP-ZXTMP 
       RY(1) = YTMP-ZYTMP 
+C
+C  If the character height transformed to NDC is large, reduce it
+C  to avoid possible overflow.
+C
+      IF (ABS(RX(1)).GT.1000. .OR. ABS(RY(1)).GT.1000.) THEN
+        AMX = MAX(ABS(RX(1)),ABS(RY(1)))
+        RX(1) = 1.E5*RX(1)/AMX
+        RY(1) = 1.E5*RY(1)/AMX
+      ENDIF
       CALL GZW2NX(1,XB,XTMP)
       CALL GZW2NY(1,YB,YTMP)
       RX(2) = XTMP-ZXTMP 
       RY(2) = YTMP-ZYTMP 
+      IF (ABS(RX(2)).GT.1000. .OR. ABS(RY(2)).GT.1000.) THEN
+        AMX = MAX(ABS(RX(2)),ABS(RY(2)))
+        RX(2) = 1.E5*RX(2)/AMX
+        RY(2) = 1.E5*RY(2)/AMX
+      ENDIF
 C
       CALL GZTOWK
       IF (RERR.NE.0) THEN
