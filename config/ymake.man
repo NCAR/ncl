@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\"	$Id: ymake.man,v 1.16 1997-03-05 19:19:54 haley Exp $
+.\"	$Id: ymake.man,v 1.17 1997-06-12 15:08:23 haley Exp $
 .\"
 .\"######################################################################
 .\"#									#
@@ -152,12 +152,12 @@ As mentioned above,
 two special variables, \fITOPDIR\fP and \fICURDIR,\fP are set to make
 referencing files using relative path names easier.  For example, the
 following command is generated automatically to build the \fIMakefile\fP in
-the directory \fIncarg2d/src/libncargC\fP (relative to the top of the sources):
+the directory \fIncarg2d/src/libncarg\fP (relative to the top of the sources):
 .ta .5i 1i
 .sp
 .nf
 	%  ../../.././config/ymake -config ../../.././config \\
-		-DTOPDIR\=../../../. -DCURDIR\=./ncarg2d/src/libncargC
+		-DTOPDIR\=../../../. -DCURDIR\=./ncarg2d/src/libncarg
 .fi
 .sp
 .ta
@@ -317,8 +317,6 @@ the \fI-local\fP parameter to \fBymake\fP these will not be defined.
 .br
 	\fINCARGLIB\fP	libncarg.a
 .br
-	\fICNCARGLIB\fP	libncargC.a
-.br
 	\fINCARGGKSLIB\fP	libncarg_gks.a
 .br
 	\fINGMATHLIB\fP	libngmath.a
@@ -340,8 +338,6 @@ Additionally, the following symbols have been defined that combine the above
 .RS .5i
 .IP \fINCARGLIBS\fP 1.5i
 $(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB)
-.IP \fICNCARGLIBS\fP 1.5i
-$(CNCARGLIB)
 .IP \fIHLULIBS\fP 1.5i
 $(HLULIB)
 .RE
@@ -357,8 +353,6 @@ the dependency list of a link command. (See the \fBFortranProgram\fP and
 	\fIDEPNCARGCLIB\fP
 .br
 	\fIDEPNCARGLIB\fP
-.br
-	\fIDEPCNCARGLIB\fP
 .br
 	\fIDEPNCARGGKSLIB\fP
 .br
@@ -377,8 +371,6 @@ the dependency list of a link command. (See the \fBFortranProgram\fP and
 	\fIDEPICTRANS_LIB\fP
 .br
 	\fIDEPNCARGLIBS\fP
-.br
-	\fIDEPCNCARGLIBS\fP
 .br
 	\fIDEPHLULIBS\fP
 .SH "COMPILE/LINK RULES"

@@ -187,7 +187,6 @@ NIBINSRC		$(NISRC)/bin
 NILIBSRC		$(NISRC)/lib
 NCARGCLIBSRC		$(COMMONSRC)/libncarg_c
 NCARGLIBSRC		$(NCARG2DSRC)/libncarg
-CNCARGLIBSRC		$(NCARG2DSRC)/libncargC
 NCARGGKSLIBSRC		$(NCARG2DSRC)/libncarg_gks
 NCARGOPTLIBSRC		$(NCARG2DSRC)/liboptional
 CGMLIBSRC		$(NVIEWLIBSRC)/libcgm
@@ -204,7 +203,6 @@ of these libraries.
 
 NCARGCLIB		dynamic -lncarg_c
 NCARGLIB		dynamic -lncarg
-CNCARGLIB		dynamic -lncargC
 NCARGGKSLIB		dynamic -lncarg_gks
 CGMLIB			dynamic -lcgm
 NCARGRASLIB		dynamic -lncarg_ras
@@ -217,7 +215,6 @@ These variable should be used with the new FortranProgram and CProgram Rules:
 
 DEPNCARGCLIB		dynamic
 DEPNCARGLIB		dynamic
-DEPCNCARGLIB		dynamic
 DEPNCARGGKSLIB		dynamic
 DEPCGMLIB		dynamic
 DEPNCARGRASLIB		dynamic
@@ -229,10 +226,8 @@ DEPICTRANS_LIB		$(ICTRANS_LIB)
 These are convenience symbols that include a number of the libs together.
 
 NCARGLIBS		$(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB)
-CNCARGLIBS		$(CNCARGLIB)
 HLULIBS			$(HLULIB)
 DEPNCARGLIBS		$(DEPNCARGLIB) $(DEPNCARGGKSLIB) $(DEPNCARGCLIB)
-DEPCNCARGLIBS		$(DEPCNCARGLIB)
 DEPHLULIBS		$(DEPHLULIB)
 
 GRAPHC			Determines if it should use installed version or not

@@ -1,5 +1,5 @@
 /*
- *      $Id: Cray,v 1.28 1997-01-15 15:39:55 haley Exp $
+ *      $Id: Cray,v 1.29 1997-06-12 15:08:26 haley Exp $
  */
 /************************************************************************
 *									*
@@ -22,14 +22,16 @@
  */
 #define	HdfDefines	-DUNICOS
 #define	StdDefines	-DSYSV -DUNICOS -DUSG
-#define FCompiler	cf77
+#define FCompiler	f90
 #define LdRelCommand	$(CONFIG_DIR)/ldrel
 #define	ArCommand	bld
 #define ArRegOpt        vr
 #define	FOptimizeFlag	-O 1
+#define BuildWithF90
 #define CppCommand  /opt/ctl/bin/cpp
 #define FCppCommand  /opt/ctl/bin/cpp
 
 #define DoesRanlib	NO
 #define GksBufferSize	1024
 #define UseCatDirs	YES
+
