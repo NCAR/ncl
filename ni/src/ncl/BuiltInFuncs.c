@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.75 1997-07-01 14:56:59 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.76 1997-07-02 18:02:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -10510,18 +10510,28 @@ NhlErrorTypes _NclIGetVarAtts
 			return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
 	}
 
-	data = _NclGetVarInfo(name);
-	if((data != NULL)&&(data->u.var->n_atts != 0)) {
-		ret = NclReturnValue((void*)data->u.var->attnames, 1, &data->u.var->n_atts, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
-		_NclFreeApiDataList((void*)data);
-		return(ret);
-	} else {
-		dimsizes = 1;
-		ret = NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
-		if(data != NULL) 
+	if((tmp_var->obj.obj_type == Ncl_Var)||(tmp_var->obj.obj_type == Ncl_HLUVar)){
+		data = _NclGetVarInfo(name);
+		if((data != NULL)&&(data->u.var->n_atts != 0)) {
+			ret = NclReturnValue((void*)data->u.var->attnames, 1, &data->u.var->n_atts, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
 			_NclFreeApiDataList((void*)data);
-		return(ret);
+			return(ret);
+		}
+	} else if(tmp_var->obj.obj_type == Ncl_FileVar) {
+		data = _NclGetFileInfo(name);
+		if((data != NULL)&&(data->u.file->n_atts != 0)) {
+			ret = NclReturnValue((void*)data->u.file->attnames, 1, &data->u.file->n_atts, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+			_NclFreeApiDataList((void*)data);
+			return(ret);
+		}
+	} else {
+		data = NULL;
 	}
+	dimsizes = 1;
+	ret = NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+	if(data != NULL) 
+		_NclFreeApiDataList((void*)data);
+	return(ret);
 
 }
 
@@ -10545,7 +10555,7 @@ NhlErrorTypes _NclIGetFileVarAtts
 
 
 
-        val = _NclGetArg(0,1,DONT_CARE);
+        val = _NclGetArg(0,2,DONT_CARE);
         switch(val.kind) {
 		case NclStk_VAR:
                 	tmp_var = val.u.data_var;

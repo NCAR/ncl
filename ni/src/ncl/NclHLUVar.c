@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclHLUVar.c,v 1.11 1997-05-09 21:38:01 ethan Exp $
+ *      $Id: NclHLUVar.c,v 1.12 1997-07-02 18:02:29 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -238,6 +238,7 @@ NclStatus status)
 	int *ncl_hlu_ids;
 	NhlArgVal udata;
 	int i;
+	NclMultiDValData tmp_md;
 
 	if(inst != NULL) {
 		hvar = (NclHLUVar) inst;
@@ -247,6 +248,7 @@ NclStatus status)
 	_NclVarCreate((NclVar)hvar,cptr,obj_type,obj_type_mask | Ncl_HLUVar,thesym,value,dim_info,att_id,coords,var_type,var_name,status);
 
 
+	tmp_md = (NclMultiDValData)_NclGetObj(hvar->var.thevalue_id);
 	if(((thesym != NULL)||(var_name != NULL))&&((var_type == NORMAL)||(var_type == HLUOBJ))) {
 		udata.ptrval = NclMalloc(sizeof(NclHLUUData));
 		if(thesym != NULL) {
@@ -256,9 +258,9 @@ NclStatus status)
 		}
 	
 		((NclHLUUData*)udata.ptrval)->aq = -1;
-		hvar->hvar.cb = _NclAddCallback((NclObj)value,NULL,_NclHLUVarValChange,HLUVALCHANGE,&udata);
-		for(i = 0; i < value->multidval.totalelements; i++) {
-			_NclAddHLURef(((obj*)value->multidval.val)[i],((NclHLUUData*)udata.ptrval)->vq,-1,i);
+		hvar->hvar.cb = _NclAddCallback((NclObj)tmp_md,NULL,_NclHLUVarValChange,HLUVALCHANGE,&udata);
+		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+			_NclAddHLURef(((obj*)tmp_md->multidval.val)[i],((NclHLUUData*)udata.ptrval)->vq,-1,i);
 		}
 	}
 	if(cptr == nclHLUVarClass) {
