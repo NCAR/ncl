@@ -1,24 +1,24 @@
 /*
- *      $Id: mp03c.c,v 1.4 1995-03-03 20:33:56 dbrown Exp $
+ *      $Id: mp03c.c,v 1.5 1995-03-22 18:20:24 haley Exp $
  */
-/************************************************************************
-*									*
-*			     Copyright (C)  1993			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
-************************************************************************/
+/***********************************************************************
+*                                                                      *
+*                Copyright (C)  1993                                   *
+*        University Corporation for Atmospheric Research               *
+*                All Rights Reserved                                   *
+*                                                                      *
+***********************************************************************/
 /*
- *	File:		mp03c.c
+ *  File:       mp03c.c
  *
- *	Author:		David Brown
- *			National Center for Atmospheric Research
- *			PO 3000, Boulder, Colorado
+ *  Author:     David Brown
+ *          National Center for Atmospheric Research
+ *          PO 3000, Boulder, Colorado
  *
- *	Date:		Fri Oct 14 11:42:41 MDT 1994
+ *  Date:       Fri Oct 14 11:42:41 MDT 1994
  *
- *	Description:	Demonstrates MapPlot masking; loosely emulates the
- *			LLU example 'colcon'
+ *  Description:    Demonstrates MapPlot masking; loosely emulates the
+ *          LLU example 'colcon'
  */
 
 #include <stdio.h>
@@ -36,110 +36,110 @@
 main(int argc, char *argv[])
 {
 
-	int appid,wid,mapid,dataid,cnid;
-	int rlist,grlist;
+    int appid,wid,mapid,dataid,cnid;
+    int rlist,grlist;
 
-	float Z[50*50];
-	int M = 50, N = 50;
-        int mlow = 13, mhigh = 18;
-        float dlow = 13.0, dhigh = 18.0;
-	int len_dims[2];
+    float Z[50*50];
+    int M = 50, N = 50;
+    int mlow = 13, mhigh = 18;
+    float dlow = 13.0, dhigh = 18.0;
+    int len_dims[2];
+    int NCGM=0;
 
-	extern void gendat();
+    extern void gendat();
 
-	NhlString mask_specs[] = { "oceans" };
+    NhlString mask_specs[] = { "oceans" };
 /*
  * Initialize the high level utility library
  */
-
-	NhlInitialize();
+    NhlInitialize();
 /*
- * Create an application context. Set the app dir to the current directory
- * so the application looks for a resource file in the working directory.
- * The resource file sets most of the Contour resources that remain fixed
- * throughout the life of the Contour object.
+ * Create an application context. Set the app dir to the current
+ * directory so the application looks for a resource file in the working
+ * directory. The resource file sets most of the Contour resources that
+ * remain fixed throughout the life of the Contour object.
  */
-        rlist = NhlRLCreate(NhlSETRL);
-        NhlRLClear(rlist);
-	NhlRLSetString(rlist,NhlNappUsrDir,"./");
-	NhlCreate(&appid,"mp03",NhlappLayerClass,NhlDEFAULT_APP,rlist);
+    rlist = NhlRLCreate(NhlSETRL);
+    NhlRLClear(rlist);
+    NhlRLSetString(rlist,NhlNappUsrDir,"./");
+    NhlCreate(&appid,"mp03",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
-#if NCGM
+    if(NCGM==1) {
 /*
- * Create a meta file workstation
+ * Create a meta file workstation.
  */
-        rlist = NhlRLCreate(NhlSETRL);
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./mp03c.ncgm");
         NhlCreate(&wid,"mp03Work",
                   NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,rlist);
-#else
+    }
+    else {
 /*
- * Create an X workstation
+ * Create an X workstation.
  */
         NhlRLClear(rlist);
-	NhlCreate(&wid,"mp03Work",NhlxWorkstationLayerClass,appid,rlist);
-#endif
+        NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlCreate(&wid,"mp03Work",NhlxWorkstationLayerClass,appid,rlist);
+    }
 
 /*
  * Call the routine 'gendat' to create the first array of contour
  * data. Create a ScalarField data object and hand it the data created by
- * 'gendat'. Define the extent of the data coordinates as the whole globe 
+ * 'gendat'. Define the extent of the data coordinates as the whole
+ * globe 
  */ 
 
-        NhlRLClear(rlist);
-	len_dims[0] = N;
-	len_dims[1] = M;
-        gendat(Z,M,M,N,mlow,mhigh,dlow,dhigh);
-        NhlRLSetMDFloatArray(rlist,NhlNsfDataArray,Z,2,len_dims);
-	NhlRLSetInteger(rlist,NhlNsfXCStartV,-180);
-        NhlRLSetInteger(rlist,NhlNsfXCEndV,180);
-	NhlRLSetInteger(rlist,NhlNsfYCStartV,-90);
-        NhlRLSetInteger(rlist,NhlNsfYCEndV,90);
-        NhlCreate(&dataid,"Gendat",NhlscalarFieldLayerClass,appid,
-		  rlist);
-
+    NhlRLClear(rlist);
+    len_dims[0] = N;
+    len_dims[1] = M;
+    gendat(Z,M,M,N,mlow,mhigh,dlow,dhigh);
+    NhlRLSetMDFloatArray(rlist,NhlNsfDataArray,Z,2,len_dims);
+    NhlRLSetInteger(rlist,NhlNsfXCStartV,-180);
+    NhlRLSetInteger(rlist,NhlNsfXCEndV,180);
+    NhlRLSetInteger(rlist,NhlNsfYCStartV,-90);
+    NhlRLSetInteger(rlist,NhlNsfYCEndV,90);
+    NhlCreate(&dataid,"Gendat",NhlscalarFieldLayerClass,appid,rlist);
 /*
  * Create a Contour object, supplying the ScalarField object as data,
  * and setting the size of the viewport.
  */
 
-        NhlRLClear(rlist);
-	NhlRLSetInteger(rlist,NhlNcnScalarFieldData,dataid);
-	NhlRLSetString(rlist,NhlNcnLabelDrawOrder,"postdraw");
-	NhlCreate(&cnid,"Contour1",NhlcontourLayerClass,wid,rlist);
+    NhlRLClear(rlist);
+    NhlRLSetInteger(rlist,NhlNcnScalarFieldData,dataid);
+    NhlRLSetString(rlist,NhlNcnLabelDrawOrder,"postdraw");
+    NhlCreate(&cnid,"Contour1",NhlcontourLayerClass,wid,rlist);
 
 /*
  * Create a MapPlot object, setting the fill to draw over the main draw,
  * and masking out the oceans.
  */
 
-	NhlRLClear(rlist);
-	NhlRLSetString(rlist,NhlNmpFillOn,"true");
-	NhlRLSetString(rlist,NhlNovTitleDisplayMode,"always");
-	NhlRLSetString(rlist,NhlNtiMainString,"mp03c");
-	NhlRLSetString(rlist,NhlNmpFillDrawOrder,"postdraw");
-	NhlRLSetString(rlist,NhlNmpAreaMaskingOn,"true");
-	NhlRLSetStringArray(rlist,NhlNmpMaskAreaSpecifiers,
-			    mask_specs,NhlNumber(mask_specs));
-	NhlCreate(&mapid,"Map1",NhlmapPlotLayerClass,wid,rlist);
+    NhlRLClear(rlist);
+    NhlRLSetString(rlist,NhlNmpFillOn,"true");
+    NhlRLSetString(rlist,NhlNovTitleDisplayMode,"always");
+    NhlRLSetString(rlist,NhlNtiMainString,"mp03c");
+    NhlRLSetString(rlist,NhlNmpFillDrawOrder,"postdraw");
+    NhlRLSetString(rlist,NhlNmpAreaMaskingOn,"true");
+    NhlRLSetStringArray(rlist,NhlNmpMaskAreaSpecifiers,
+                mask_specs,NhlNumber(mask_specs));
+    NhlCreate(&mapid,"Map1",NhlmapPlotLayerClass,wid,rlist);
 
 /*
  * Overlay the Contour object on the MapPlot object
  */
-	NhlAddToOverlay(mapid,cnid,-1);
-	
-	NhlDraw(mapid);
-	NhlFrame(wid);
+    NhlAddToOverlay(mapid,cnid,-1);
+    
+    NhlDraw(mapid);
+    NhlFrame(wid);
 
 /*
  * Destroy the objects created, close the HLU library and exit.
  */
 
-	NhlDestroy(mapid);
-	NhlDestroy(wid);
-	NhlClose();
-	exit(0);
+    NhlDestroy(mapid);
+    NhlDestroy(wid);
+    NhlClose();
+    exit(0);
 }
 
 #define max(x,y)    ((x) > (y) ? (x) : (y) )

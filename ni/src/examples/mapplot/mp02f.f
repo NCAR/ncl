@@ -1,13 +1,13 @@
 C
-C     $Id: mp02f.f,v 1.5 1995-03-01 18:36:13 haley Exp $
+C     $Id: mp02f.f,v 1.6 1995-03-22 18:20:21 haley Exp $
 C
-C************************************************************************
-C                                                                       *
-C                            Copyright (C)  1995                        *
-C                 University Corporation for Atmospheric Research       *
-C                            All Rights Reserved                        *
-C                                                                       *
-C************************************************************************
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      C
+C                            Copyright (C)  1995                       C
+C                 University Corporation for Atmospheric Research      C
+C                            All Rights Reserved                       C
+C                                                                      C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C      File:            mp02f.f
 C
@@ -17,9 +17,10 @@ C                       PO 3000, Boulder, Colorado
 C
 C      Date:            Tue Jan 24 10:08:49 MST 1995
 C
-C      Description:    	Demonstrates individual control of MapPlot areas
+C      Description:     Demonstrates individual control of MapPlot areas
 C
       external nhlfapplayerclass
+      external nhlfncgmworkstationlayerclass
       external nhlfxworkstationlayerclass
       external nhlfmapplotlayerclass
       integer appid,wid,mapid
@@ -38,6 +39,11 @@ C
       character*11 mask_specs(7)
       data mask_specs/'us-colorado','us-texas','us-kentucky',
      1            'bolivia','paraguay','nicaragua','oceans'/
+      integer NCGM
+C
+C Default is to display output to an X workstation
+C
+      NCGM=0
 C
 C Initialize the high level utility library
 C
@@ -53,11 +59,24 @@ C
       call nhlfrlclear(rlist)
       call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
       call nhlfcreate(appid,'mp02',nhlfapplayerclass,0,rlist,ierr)
+
+      if (NCGM.eq.1) then
+C
+C Create an NCGM workstation.
+C
+         call nhlfrlclear(rlist)
+         call nhlfrlsetstring(rlist,'wkMetaName','./mp02f.ncgm',ierr)
+         call nhlfcreate(wid,'mp02Work',nhlfncgmworkstationlayerclass,0,
+     1        rlist,ierr)
+      else 
 C
 C Create an X workstation
 C
-      call nhlfcreate(wid,'mp02Work',nhlfxworkstationlayerclass,0,
-     1     0,ierr)
+         call nhlfrlclear(rlist)
+         call nhlfrlsetinteger(rlist,'wkPause',1,ierr)
+         call nhlfcreate(wid,'mp02Work',nhlfxworkstationlayerclass,0,
+     1     rlist,ierr)
+      endif
 C
 C Create a plot focusing on North and South America
 C Outlines are on by default turn fill on.

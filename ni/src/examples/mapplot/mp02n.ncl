@@ -1,22 +1,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;									;
-;			     Copyright (C)  1993			;
-;	     University Corporation for Atmospheric Research		;
-;			     All Rights Reserved			;
-;									;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;/
+;                                                                      ;
+;                Copyright (C)  1993                                   ;
+;        University Corporation for Atmospheric Research               ;
+;                All Rights Reserved                                   ;
+;                                                                      ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-;	File:		mp02n.ncl
+;   File:       mp02n.ncl
 ;
-;	Author:		David Brown
-;			National Center for Atmospheric Research
-;			PO 3000, Boulder, Colorado
+;   Author:     David Brown
+;           National Center for Atmospheric Research
+;           PO 3000, Boulder, Colorado
 ;
-;			Translated to NCL by Ed Stautler
+;           Translated to NCL by Ed Stautler
 ;
-;	Date:		Fri Oct 14 11:42:41 MDT 1994
+;   Date:       Fri Oct 14 11:42:41 MDT 1994
 ;
-;	Description:	Demonstrates individual control of MapPlot areas
+;   Description:    Demonstrates individual control of MapPlot areas
 ;
 
 begin
@@ -24,66 +24,81 @@ begin
 ;
 ; String arrays for specifying areas
 ;
-	fill_specs = (/ "mexico","bolivia","brazil","nicaragua",  \
-		        "cuba","haiti","canada"                   /)
+    fill_specs = (/ "mexico","bolivia","brazil","nicaragua",  \
+                "cuba","haiti","canada"                   /)
 
-	outline_specs = (/ "argentina","paraguay","colombia",     \
-			   "us-colorado","us-texas","us-kentucky" /)
+    outline_specs = (/ "argentina","paraguay","colombia",     \
+               "us-colorado","us-texas","us-kentucky" /)
 
-	mask_specs = (/ "us-colorado","us-texas","us-kentucky",   \
-			"bolivia","paraguay","nicaragua","oceans" /)
+    mask_specs = (/ "us-colorado","us-texas","us-kentucky",   \
+            "bolivia","paraguay","nicaragua","oceans" /)
 ;
 ; Create an application context. Set the app dir to the current directory
 ; so the application looks for a resource file in the working directory.
 ; The resource file sets most of the Contour resources that remain fixed
 ; throughout the life of the Contour object.
 ;
-	appid = create "mp02" appLayerClass noparent
-		"appUsrDir" : "./"
-		"appDefaultParent" : "True"
-	end create
+    appid = create "mp02" appLayerClass noparent
+        "appUsrDir" : "./"
+        "appDefaultParent" : "True"
+    end create
 ;
-; Create a meta file workstation
+; Default is to display output to an X workstation
+;
+    NCGM=0
+
+    if (NCGM .eq. 1) then
+;
+; Create an ncgmWorkstation object.
 ;
         wid = create "mp02Work" ncgmWorkstationLayerClass noparent
-		"wkMetaName" : "./mp02n.ncgm"
-	end create
+            "wkMetaName" : "./mp02n.ncgm"
+        end create
+    else
+;
+; Create an XWorkstation object.
+;
+        wid = create "mp02Work" xWorkstationLayerClass defaultapp
+            "wkPause" : "True"
+        end create
+    end if
+
 ;
 ; Create a plot focusing on North and South America.
 ; Outlines are on by default, turn fill on.
 ; By default the geophysical boundary set is used both for outline and fill.
 ;
-	mapid = create "Map0" mapPlotLayerClass wid
-		"ovTitleDisplayMode" : "Always"
-		"tiMainString" : "mp02c - Frame 1"
-		"mpFillOn" : "True"
-		"mpProjection" : "Orthographic"
-		"mpCenterLatF" : 10.0
-		"mpCenterLonF" : -90.0
-		"mpCenterRotF" : 45.0
-		"mpLimitMode" : "LatLon"
-		"mpMinLatF" : -60.0
-		"mpMaxLatF" : 60.0
-		"mpMinLonF" : -135.0
-		"mpMaxLonF" : -45.0
+    mapid = create "Map0" mapPlotLayerClass wid
+        "ovTitleDisplayMode" : "Always"
+        "tiMainString" : "mp02n - Frame 1"
+        "mpFillOn" : "True"
+        "mpProjection" : "Orthographic"
+        "mpCenterLatF" : 10.0
+        "mpCenterLonF" : -90.0
+        "mpCenterRotF" : 45.0
+        "mpLimitMode" : "LatLon"
+        "mpMinLatF" : -60.0
+        "mpMaxLatF" : 60.0
+        "mpMinLonF" : -135.0
+        "mpMaxLonF" : -45.0
 ;
 ; Highlight selected countries using their "political" color.
 ;
-		"mpFillAreaSpecifiers" : fill_specs
-	end create
+        "mpFillAreaSpecifiers" : fill_specs
+    end create
 
-	draw(mapid)
-	frame(wid)
+    draw(mapid)
+    frame(wid)
 ;
 ; Individually outline some other countries and some US states.
 ;
-	setvalues mapid
-		"tiMainString" : "mp02c - Frame 2"
-		"mpOutlineSpecifiers" : outline_specs
-	end setvalues
+    setvalues mapid
+        "tiMainString" : "mp02n - Frame 2"
+        "mpOutlineSpecifiers" : outline_specs
+    end setvalues
 
-	draw(mapid)
-	frame(wid)
+    draw(mapid)
+    frame(wid)
 ;
 ; Turn off the base geophysical set for outlines and fill, leaving only
 ; the specified areas.
@@ -97,16 +112,16 @@ begin
 ; Lakes are drawn using mpInlandWaterFillColor, which is, by default, 
 ; set to the same color as mpOceanFillColor.
 ;
-	fill_specs(6) = "canada*"
-	setvalues mapid
-		"tiMainString" : "mp02c - Frame 3"
-		"mpFillBoundarySets" : "NoBoundaries"
-		"mpOutlineBoundarySets" : "NoBoundaries"
-		"mpFillAreaSpecifiers" : fill_specs
-	end setvalues
+    fill_specs(6) = "canada*"
+    setvalues mapid
+        "tiMainString" : "mp02n - Frame 3"
+        "mpFillBoundarySets" : "NoBoundaries"
+        "mpOutlineBoundarySets" : "NoBoundaries"
+        "mpFillAreaSpecifiers" : fill_specs
+    end setvalues
 
-	draw(mapid)
-	frame(wid)
+    draw(mapid)
+    frame(wid)
 ;
 ; You can also specify area groupings using certain predefined 
 ; string constants: set 'continents' on to demonstrate.
@@ -121,23 +136,23 @@ begin
 ; >>> memory requirements to increase substantially. Hopefully the 
 ; >>> performance can be improved before the release.
 ;
-	fill_specs(0) = "continents";
-	fill_specs(1) = "us";
-	setvalues mapid
-		"tiMainString" : "mp02c - Frame 4"
-		"mpFillBoundarySets" : "NoBoundaries"
-		"mpFillAreaSpecifiers" : fill_specs
-		"mpAreaMaskingOn" : "True"
-		"mpMaskAreaSpecifiers" : mask_specs
-	end setvalues
+    fill_specs(0) = "continents";
+    fill_specs(1) = "us";
+    setvalues mapid
+        "tiMainString" : "mp02n - Frame 4"
+        "mpFillBoundarySets" : "NoBoundaries"
+        "mpFillAreaSpecifiers" : fill_specs
+        "mpAreaMaskingOn" : "True"
+        "mpMaskAreaSpecifiers" : mask_specs
+    end setvalues
 
-	draw(mapid)
-	frame(wid)
+    draw(mapid)
+    frame(wid)
 ;
 ; Destroy the objects created, close the HLU library and exit.
 ;
-	delete(mapid)
-	delete(wid)
-	delete(appid)
+    delete(mapid)
+    delete(wid)
+    delete(appid)
 
 end

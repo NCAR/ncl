@@ -1,13 +1,14 @@
 C
-C     $Id: mp01f.f,v 1.3 1995-02-28 23:13:01 haley Exp $
+C     $Id: mp01f.f,v 1.4 1995-03-22 18:20:17 haley Exp $
 C
-C************************************************************************
-C                                                                       *
-C                            Copyright (C)  1995                        *
-C                 University Corporation for Atmospheric Research       *
-C                            All Rights Reserved                        *
-C                                                                       *
-C************************************************************************
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      C
+C                Copyright (C)  1993                                   C
+C        University Corporation for Atmospheric Research               C
+C                All Rights Reserved                                   C
+C                                                                      C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
 C
 C      File:            mp01f.f
 C
@@ -17,38 +18,53 @@ C                       PO 3000, Boulder, Colorado
 C
 C      Date:            Tue Jan 24 10:08:49 MST 1995
 C
-C      Description:    	Demonstrates basic MapPlot capabilities.
+C      Description:     Demonstrates basic MapPlot capabilities.
 C
       external nhlfapplayerclass
       external nhlfxworkstationlayerclass
+      external nhlfncgmworkstationlayerclass
       external nhlfmapplotlayerclass
       integer appid,wid,mapid
       integer rlist
+      integer NCGM
+C
+C Default is to display output to an X workstation
+C
+      NCGM=0
 C
 C Initialize the high level utility library
 C
       call nhlfinitialize
 C
-C Create an application context. Set the app dir to the current directory
-C so the application looks for a resource file in the working directory.
-C The resource file sets most of the Contour resources that remain fixed
-C throughout the life of the Contour object.
+C Create an application context. Set the app dir to the current
+C directory so the application looks for a resource file in the working
+C directory. The resource file sets most of the Contour resources that
+C remain fixed throughout the life of the Contour object.
 C
       call nhlfrlcreate(rlist,'SETRL')
       call nhlfrlclear(rlist)
       call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
       call nhlfcreate(appid,'mp01',nhlfapplayerclass,0,rlist,ierr)
+
+      if (NCGM.eq.1) then
+C
+C Create an NCGM workstation.
+C
+         call nhlfrlclear(rlist)
+         call nhlfrlsetstring(rlist,'wkMetaName','./mp01f.ncgm',ierr)
+         call nhlfcreate(wid,'mp01Work',nhlfncgmworkstationlayerclass,0,
+     1        rlist,ierr)
+      else 
 C
 C Create an X workstation
 C
-      call nhlfcreate(wid,'mp01Work',nhlfxworkstationlayerclass,0,
-     1     0,ierr)
+         call nhlfrlclear(rlist)
+         call nhlfrlsetinteger(rlist,'wkPause',1,ierr)
+         call nhlfcreate(wid,'mp01Work',nhlfxworkstationlayerclass,0,
+     1     rlist,ierr)
+      endif
 C
 C Draw the default MapPlot object
-C >>> Note that currently the MapPlot object does not have any means to
-C >>> enforce the aspect ratio. Hopefully that will be changed before
-C >>> the 4.0 release. For now adjust the window to create the proper
-C >>> aspect ratio
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetfloat(rlist,'vpYF',0.775,ierr)

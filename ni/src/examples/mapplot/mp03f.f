@@ -1,24 +1,28 @@
+C
+C     $Id: mp03f.f,v 1.3 1995-03-22 18:20:26 haley Exp $
+C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
-C			     Copyright (C)  1993			                       C
-C	     University Corporation for Atmospheric Research		       C
-C			     All Rights Reserved			                       C
+C                Copyright (C)  1993                                   C
+C        University Corporation for Atmospheric Research               C
+C                All Rights Reserved                                   C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C	File:		mp03f.f
+C   File:       mp03f.f
 C
-C	Author:		David Brown (converted to Fortran by Mary)
-C			National Center for Atmospheric Research
-C			PO 3000, Boulder, Colorado
+C   Author:     David Brown (converted to Fortran by Mary)
+C           National Center for Atmospheric Research
+C           PO 3000, Boulder, Colorado
 C
-C	Date:		Tue Jan 24 10:08:50 MST 1995
+C   Date:       Tue Jan 24 10:08:50 MST 1995
 C
-C	Description:	Demonstrates MapPlot masking; loosely emulates the
-C			LLU example 'colcon'
+C   Description:    Demonstrates MapPlot masking; loosely emulates the
+C           LLU example 'colcon'
 C
       external nhlfapplayerclass
       external nhlfncgmworkstationlayerclass
+      external nhlfxworkstationlayerclass
       external nhlfmapplotlayerclass
       external nhlfscalarfieldlayerclass
       external nhlfcontourlayerclass
@@ -37,6 +41,11 @@ C
 
       character*6 mask_specs(1)
       data mask_specs/'oceans'/
+      integer NCGM
+C
+C Default is to display output to an X workstation
+C
+      NCGM=0
 C
 C Initialize the high level utility library
 C
@@ -52,14 +61,23 @@ C
       call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
       call nhlfcreate(appid,'mp03',nhlfapplayerclass,0,rlist,ierr)
 
+      if (NCGM.eq.1) then
 C
-C Create a meta file workstation
+C Create an NCGM workstation.
 C
-      call nhlfrlcreate(rlist,'SETRL')
-      call nhlfrlclear(rlist)
-      call nhlfrlsetstring(rlist,'wkMetaName','./mp03f.ncgm',ierr)
-      call nhlfcreate(wid,'mp03Work',nhlfncgmworkstationlayerclass,0,
-     1     rlist,ierr)
+         call nhlfrlclear(rlist)
+         call nhlfrlsetstring(rlist,'wkMetaName','./mp03f.ncgm',ierr)
+         call nhlfcreate(wid,'mp03Work',nhlfncgmworkstationlayerclass,0,
+     1        rlist,ierr)
+      else 
+C
+C Create an X Workstation.
+C
+         call nhlfrlclear(rlist)
+         call nhlfrlsetinteger(rlist,'wkPause',1,ierr)
+         call nhlfcreate(wid,'mp03Work',nhlfxworkstationlayerclass,0,
+     1        rlist,ierr)
+      endif
 C
 C Call the routine 'gendat' to create the first array of contour
 C data. Create a ScalarField data object and hand it the data created
@@ -106,7 +124,7 @@ C
 C Overlay the Contour object on the MapPlot object
 C
       call nhlfaddtooverlay(mapid,cnid,-1,ierr)
-	
+    
       call nhlfdraw(mapid,ierr)
       call nhlfframe(wid,ierr)
 C
