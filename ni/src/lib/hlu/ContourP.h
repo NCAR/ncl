@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourP.h,v 1.13 1994-09-08 01:34:13 dbrown Exp $
+ *      $Id: ContourP.h,v 1.14 1994-09-12 21:01:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -46,7 +46,9 @@
 #define NhlcnDEF_CONSTF_LABEL	"CONSTANT FIELD - VALUE IS $ZDV$"
 #define NhlcnDEF_HIGH_LABEL	"H:B:$ZDV$:E:"
 #define NhlcnDEF_LOW_LABEL	"L:B:$ZDV$:E:"
-
+#ifndef FLT_MAX
+#define FLT_MAX			10.0e37
+#endif
 typedef enum { _cnCONSTF, _cnINFO } _cnAnnoType;
 
 typedef struct _NhlcnLabelAttrs {
@@ -127,6 +129,8 @@ typedef struct _NhlContourLayerPart {
 	NhlDrawOrder	label_order;
 	NhlDrawOrder	line_order;
 	NhlDrawOrder	fill_order;
+	NhlBoolean	lines_on;
+	NhlBoolean	fill_on;
 
         NhlcnLabelScalingMode	label_scaling_mode;
         float		label_scale_value;
@@ -246,6 +250,16 @@ typedef struct _NhlContourLayerPart {
 	int		constf_anno_id;
 
 	NhlScalarFieldFloatLayerPart	*sfp;
+
+	NhlString	*dtable;
+	int		dtable_len;
+	NhlLayer	trans_obj;
+	NhlBoolean	do_lines;
+	NhlBoolean	do_fill;
+	NhlBoolean	do_labels;
+	NhlWorkspace	*fws,*iws,*aws;
+	NhlBoolean	area_ws_inited;
+	float		*data;
 
 } NhlContourLayerPart;
 

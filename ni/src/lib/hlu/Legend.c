@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.13 1994-07-12 20:52:21 boote Exp $
+ *      $Id: Legend.c,v 1.14 1994-09-12 21:01:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4867,8 +4867,9 @@ static NhlErrorTypes    LegendDestroy
 
 	if (lg_p->title_string != NULL) {
 		NhlFree(lg_p->title_string);
-		NhlDestroy(lg_p->title_id);
 	}
+	if (lg_p->title_id >=0)
+		NhlDestroy(lg_p->title_id);
 
 	return(NhlNOERROR);
 }

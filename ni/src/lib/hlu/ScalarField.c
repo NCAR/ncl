@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.7 1994-07-25 23:33:28 ethan Exp $
+ *      $Id: ScalarField.c,v 1.8 1994-09-12 21:01:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -421,8 +421,8 @@ DataToFloatArray
 	if (ga != sfp->d_arr) overwrite_ok = True;
 
 	*new_data = False;
-	*dmin = BIGNUMBER;
-	*dmax = -BIGNUMBER;
+	*dmin = FLT_MAX;
+	*dmax = -FLT_MAX;
 	inlen_1 = ga->len_dimensions[1];
 	out_len[1] = (ixend - ixstart + 1) / sfp->x_stride +
 		((ixend - ixstart + 1) % sfp->x_stride > 0);
@@ -612,8 +612,8 @@ DataToFloatArrayExchDim
 	}
 	if (ga != sfp->d_arr) overwrite_ok = True;
 
-	*dmin = BIGNUMBER;
-	*dmax = -BIGNUMBER;
+	*dmin = FLT_MAX;
+	*dmax = -FLT_MAX;
 	inlen_1 = ga->len_dimensions[1];
 /*
  * Assign the dimension length according to the lengths needed by

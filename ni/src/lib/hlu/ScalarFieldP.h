@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarFieldP.h,v 1.3 1994-06-24 00:40:01 dbrown Exp $
+ *      $Id: ScalarFieldP.h,v 1.4 1994-09-12 21:01:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,10 @@
 #include <ncarg/hlu/DataItemP.h>
 #include <ncarg/hlu/ScalarField.h>
 #include <ncarg/hlu/ScalarFieldFloatP.h>
+
+#ifndef FLT_MAX
+#define FLT_MAX			10.0e37
+#endif
 
 typedef struct _NhlScalarFieldLayerPart{
 

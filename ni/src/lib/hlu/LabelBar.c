@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.14 1994-07-12 20:52:15 boote Exp $
+ *      $Id: LabelBar.c,v 1.15 1994-09-12 21:01:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4161,7 +4161,9 @@ static NhlErrorTypes    LabelBarDestroy
 
 	if (lb_p->title_string != NULL) {
 		NhlFree(lb_p->title_string);
-		NhlDestroy(lb_p->title_id);
 	}
+	if (lb_p->title_id >=0)
+		NhlDestroy(lb_p->title_id);
+
 	return(NhlNOERROR);
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.h,v 1.12 1994-09-08 01:34:11 dbrown Exp $
+ *      $Id: Contour.h,v 1.13 1994-09-12 21:01:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -43,6 +43,7 @@ typedef enum _NhlcnLevelUseMode {
 } NhlcnLevelUseMode;
 
 #define NhlTcnLevelUseMode	"cnlevelusemode"
+#define NhlTcnLevelUseModeGenArray	"cnlevelusemodegenarray"
 
 /* Line label spacing */
 
@@ -107,6 +108,8 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlNcnLabelDrawOrder		"cnLabelDrawOrder"
 #define NhlNcnLineDrawOrder		"cnLineDrawOrder"
 #define NhlNcnFillDrawOrder		"cnFillDrawOrder"
+#define NhlNcnLinesOn			"cnLinesOn"
+#define NhlNcnFillOn			"cnFillOn"
 
 #define NhlNcnLabelScalingMode		"cnLabelScalingMode"
 #define NhlNcnLabelScaleValueF		"cnLabelScaleValueF"
@@ -290,6 +293,8 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnLabelDrawOrder		"CnLabelDrawOrder"
 #define NhlCcnLineDrawOrder		"CnLineDrawOrder"
 #define NhlCcnFillDrawOrder		"CnFillDrawOrder"
+#define NhlCcnLinesOn			"CnLinesOn"
+#define NhlCcnFillOn			"CnFillOn"
 
 #define NhlCcnLabelScalingMode		"CnLabelScalingMode"
 #define NhlCcnLabelScaleValueF		"CnLabelScaleValueF"

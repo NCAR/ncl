@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.16 1994-09-08 17:15:36 ethan Exp $
+ *      $Id: Workspace.c,v 1.17 1994-09-12 21:01:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1945,8 +1945,11 @@ NhlErrorTypes _NhlArscam
 	float		x[NhlwsMAX_GKS_POINTS], y[NhlwsMAX_GKS_POINTS];
 	int		group_ids[NhlwsMAX_AREA_GROUPS];
 	int		area_ids[NhlwsMAX_AREA_GROUPS];
+	float		flx,frx,fby,fuy,wlx,wrx,wby,wuy; int ll;
 
 	c_entsr(&save_mode,1);
+
+	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
 
 	do {
 		c_arscam(wsrp->ws_ptr,x,y,NhlwsMAX_GKS_POINTS,
@@ -1977,6 +1980,8 @@ NhlErrorTypes _NhlArscam
 		}
 	} while (! done);
 	
+	c_set(flx,frx,fby,fuy,wlx,wrx,wby,wuy,ll);
+
 	c_retsr(save_mode);
 
 	return NhlNOERROR;

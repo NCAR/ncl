@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.11 1994-09-08 17:15:32 ethan Exp $
+ *      $Id: MapPlot.c,v 1.12 1994-09-12 21:01:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -95,7 +95,7 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer)NhlmpGEOPHYSICAL),0,NULL},
 	{NhlNmpOutlineDrawOrder,NhlCmpOutlineDrawOrder,NhlTDrawOrder,
 		 sizeof(NhlDrawOrder),Oset(outline_order),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlDRAW),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlPOSTDRAW),0,NULL},
 	{NhlNmpFillOn, NhlCmpFillOn, NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(fill_on),
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
@@ -268,7 +268,7 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNmpGridAndLimbDrawOrder,NhlCmpGridAndLimbDrawOrder,NhlTDrawOrder,
 		 sizeof(NhlDrawOrder),Oset(grid.order),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlDRAW),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlPOSTDRAW),0,NULL},
 	{NhlNmpGridLineColor,NhlCmpGridLineColor,NhlTInteger,
 		 sizeof(int),Oset(grid.color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
@@ -329,7 +329,7 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNmpLabelDrawOrder,NhlCmpLabelDrawOrder,NhlTDrawOrder,
 		 sizeof(NhlDrawOrder),Oset(labels.order),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlDRAW),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlPOSTDRAW),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(labels.height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -2428,7 +2428,7 @@ static NhlErrorTypes mpSetUpAreamap
 	NhlString	entry_name
 )
 #else
-(mp,aws,amap_type,entry_name)
+(mp,amap_type,entry_name)
         NhlMapPlotLayer mp;
 	NhlWorkspace	**aws;
 	int		amap_type;
@@ -3091,7 +3091,7 @@ static NhlErrorTypes    mpManageViewDepResources
 )
 #else
 (mpnew,mpold,init)
-	NhlMapPlotLayer mpnew; 
+	NhlMapPlotLayer mpnew;
 	NhlMapPlotLayer mpold;
 	NhlBoolean	init;
 #endif
@@ -3160,7 +3160,7 @@ static NhlErrorTypes    SetLineAttrs
 )
 #else
 (mpnew,mpold,init)
-	NhlMapPlotLayer mpnew; 
+	NhlMapPlotLayer mpnew;
 	NhlMapPlotLayer mpold;
 	NhlBoolean	init;
 #endif

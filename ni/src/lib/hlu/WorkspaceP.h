@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkspaceP.h,v 1.3 1994-09-08 01:34:47 dbrown Exp $
+ *      $Id: WorkspaceP.h,v 1.4 1994-09-12 21:01:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@
 #include <ncarg/hlu/WorkspaceI.h>
 
 #define NhlwsDEF_THRESHOLD	1048576
-#define NhlwsDEF_MAXIMUM	2097152
+#define NhlwsDEF_MAXIMUM	16777216
 #define NhlwsMIN_THRESHOLD	8096
 #define NhlwsMIN_MAXIMUM	262144
 #define NhlwsIDLE_REC_ALLOC	64

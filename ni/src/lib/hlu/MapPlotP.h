@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.7 1994-09-08 01:34:23 dbrown Exp $
+ *      $Id: MapPlotP.h,v 1.8 1994-09-12 21:01:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -96,7 +96,7 @@ typedef enum _mpOutlineSet {
 	mpCO,
 	mpPO, 
 	mpUS,
-	mpPS,
+	mpPS
 } mpOutlineSet;
 
 typedef enum _mpGlobalSetMode {

@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.20 1994-09-08 01:34:32 dbrown Exp $
+ *      $Id: Overlay.c,v 1.21 1994-09-12 21:01:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1367,7 +1367,6 @@ static NhlErrorTypes OverlayPreDraw
 		return NhlFATAL;
 	}
 	subret = _NhlSetTrans(Overlay_Trans_Obj,Overlay_Plot);
-	
         if ((ret = MIN(ret,subret)) < NhlWARNING) {
                 e_text = "%s: error setting transformation";
                 NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
@@ -1383,7 +1382,6 @@ static NhlErrorTypes OverlayPreDraw
 		Plot = (NhlLayer) ovp->ov_recs[i]->plot;
 
 		subret = _NhlPreDraw(Plot);
-
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error in plot pre-draw";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
@@ -1436,7 +1434,6 @@ static NhlErrorTypes OverlayDraw
 		return NhlFATAL;
 	}
 	subret = _NhlSetTrans(Overlay_Trans_Obj,Overlay_Plot);
-	
         if ((ret = MIN(ret,subret)) < NhlWARNING) {
                 e_text = "%s: error setting transformation";
                 NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
@@ -1452,7 +1449,6 @@ static NhlErrorTypes OverlayDraw
 		Plot = (NhlLayer) ovp->ov_recs[i]->plot;
 
 		subret = _NhlDraw(Plot);
-
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error in plot draw";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
@@ -1510,7 +1506,6 @@ static NhlErrorTypes OverlayPostDraw
 		return NhlFATAL;
 	}
 	subret = _NhlSetTrans(Overlay_Trans_Obj,Overlay_Plot);
-	
         if ((ret = MIN(ret,subret)) < NhlWARNING) {
                 e_text = "%s: error setting transformation";
                 NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
@@ -1529,7 +1524,6 @@ static NhlErrorTypes OverlayPostDraw
 		Plot = (NhlLayer) ovp->ov_recs[i]->plot;
 
 		subret = _NhlPostDraw(Plot);
-
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error in plot post-draw";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
