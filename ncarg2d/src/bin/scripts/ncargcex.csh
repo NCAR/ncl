@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.3 1993-02-03 21:55:02 haley Exp $
+#	$Id: ncargcex.csh,v 1.4 1993-02-18 17:44:58 haley Exp $
 #
 
 if ($#argv < 1) then
@@ -63,14 +63,14 @@ while ($#argv > 0)
             set List
             breaksw
 
-        case "-*":
-            echo "$0 : Unknown option <$1>"
-            exit 1
-            breaksw
-
         case "-noX11":
             shift
             set X11_option = "-noX11"
+            breaksw
+
+        case "-*":
+            echo "$0 : Unknown option <$1>"
+            exit 1
             breaksw
 
         default:

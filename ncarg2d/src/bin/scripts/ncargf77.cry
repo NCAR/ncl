@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargf77.cry,v 1.8 1993-02-08 16:18:38 haley Exp $
+#	$Id: ncargf77.cry,v 1.9 1993-02-18 17:45:00 haley Exp $
 #
 
 set system  = "SED_SYSTEM_INCLUDE"
@@ -25,7 +25,7 @@ set libgks     = "-lncarg_gks"
 set liblocal   = "-lncarg_loc"
 set libncarg_c = "-lncarg_c"
 
-set libextern  = "-lm"
+set libmath  = "-lm"
 set libX11     = "-lX11"
 
 set smooth = "$ro/libdashsmth.o"
@@ -129,7 +129,7 @@ foreach arg ($argv)
 	endsw
 end
 
-set newargv = "$newargv -L$libdir $stub_file $ctrans_libs $libs $libncarg $libgks $libncarg_c $liblocal $libX11 $libextern"
+set newargv = "$newargv -L$libdir $stub_file $ctrans_libs $libs $libncarg $libgks $libncarg_c $liblocal $libX11 $libmath"
 
 echo $newargv
 eval $newargv

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.cry,v 1.17 1993-02-08 18:50:05 haley Exp $
+#	$Id: ncargcc.cry,v 1.18 1993-02-18 17:44:55 haley Exp $
 #
 
 set system = "SED_SYSTEM_INCLUDE"
@@ -137,7 +137,7 @@ foreach arg ($argv)
 
 end
 
-set newargv = "$newargv -L$libdir $stub_file $ctrans_libs $libs $libcbind $libncarg $libgks $libncarg_c $liblocal $f77libs $libX11"
+set newargv = "$newargv $stub_file -L$libdir $ctrans_libs $libs $libcbind $libncarg $libgks $libncarg_c $liblocal $f77libs $libX11"
 
 echo $newargv
 eval $newargv

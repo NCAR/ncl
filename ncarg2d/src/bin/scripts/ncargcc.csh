@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.19 1993-02-08 18:50:07 haley Exp $
+#	$Id: ncargcc.csh,v 1.20 1993-02-18 17:44:57 haley Exp $
 #
 
 set system = "SED_SYSTEM_INCLUDE"
@@ -8,6 +8,7 @@ set cc     = "SED_CC"
 set libdir = `ncargpath SED_LIBDIR`
 set incdir = `ncargpath SED_INCDIR`
 set ro     = "$libdir/SED_NCARGDIR/SED_ROBJDIR"
+
 if (! -d "$libdir") then
   echo "Library directory <$libdir> does not exist."
   exit 1
@@ -22,6 +23,8 @@ set loadopts = ""
 
 if ("$system" == "Sun4") then
   set loadopts = "-Xa -DNeedFuncProto"
+else if ("$system" == "Sun4Solaris") then
+  set loadopts = "-Xc -DNeedFuncProto"
 else if ("$system" == "SGI4D") then
   set loadopts = "-ansiposix -DNeedFuncProto"
 else if ("$system" == "HPUX") then
@@ -53,6 +56,8 @@ if ($system == "Cray2" || $system == "Cray") then
   set f77libs     =       "-L/lib -lf -lio -lm -lp -lsci -lu -lc"
 else if ($system == "Sun4") then
   set f77libs     =       "-Bstatic -L/usr/lang/SC1.0 -lF77 -lV77 -lm -lc"
+else if ($system == "Sun4Solaris") then
+  set f77libs     =       "-L/opt/SUNWspro/SC2.0.1 -lF77 -lV77 -lM77 -lm"
 else if ($system == "Sun3") then
   set f77libs     =       "-L/usr/lang/SC1.0 -lF77 -lV77 /usr/lib/fswitch/libm.a"
 else if ($system == "RS6000") then

@@ -1,19 +1,27 @@
 #!/bin/csh -f
 #
-#	$Id: ncargf77.csh,v 1.8 1993-02-08 16:18:40 haley Exp $
+#	$Id: ncargf77.csh,v 1.9 1993-02-18 17:45:02 haley Exp $
 #
 
-set system  = "SED_SYSTEM_INCLUDE"
-set fortran = "SED_F77"
-set libdir  = `ncargpath SED_LIBDIR`
-set ro      = "$libdir/SED_NCARGDIR/SED_ROBJDIR"
+set system   = "SED_SYSTEM_INCLUDE"
+set fortran  = "SED_F77"
+set libdir   = `ncargpath SED_LIBDIR`
+set ro       = "$libdir/SED_NCARGDIR/SED_ROBJDIR"
+set loadopts = ""
+set libextra = ""
+
+if ("$system" == "Sun3") then
+  set loadopts = "-fswitch"
+else if ("$system" == "Sun4Solaris") then
+  set libextra = "/usr/ucblib/libucb.a"
+endif    
 
 if (! -d "$libdir") then
   echo "Library directory <$libdir> does not exist."
   exit 1
 endif
 
-set newargv = "$fortran"
+set newargv = "$fortran $loadopts"
 
 set ctrans_libs = ""
 set stub_file   = ""
@@ -30,7 +38,7 @@ set libgks     = "$libdir/libncarg_gks.a"
 set liblocal   = "$libdir/libncarg_loc.a"
 set libncarg_c = "$libdir/libncarg_c.a"
 
-set libextern  = "-lm"
+set libmath  = "-lm"
 set libX11     = "-lX11"
 
 set smooth = "$ro/libdashsmth.o"
@@ -139,7 +147,7 @@ foreach arg ($argv)
   endsw
 end
 
-set newargv = "$newargv $stub_file $ctrans_libs $libs $libncarg $libgks $libncarg_c $liblocal $libX11 $libextern"
+set newargv = "$newargv $stub_file $ctrans_libs $libs $libncarg $libgks $libncarg_c $liblocal $libX11 $libmath $libextra"
 
 echo $newargv
 eval $newargv
