@@ -16,7 +16,6 @@ C
       CALL GOPKS (IERRF, ISZDM)
       CALL GOPWK (IWKID, LUNIT, IWTYPE)
       CALL GACWK (IWKID)
-      CALL OPNGKS
       CALL GSCLIP (0)
 C
 C Set label sizes 

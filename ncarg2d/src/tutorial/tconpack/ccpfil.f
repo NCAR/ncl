@@ -148,12 +148,12 @@ C
       END
       SUBROUTINE COLOR(IWKID)
 C 
-C BACKGROUND COLOR
-C BLACK
+C Background color
+C Black
 C
       CALL GSCR(IWKID,0,0.,0.,0.)
 C 
-C FORGROUND COLORS
+C Foreground colors
 C White
 C
       CALL GSCR(IWKID,  1, 1.0, 1.0, 1.0)

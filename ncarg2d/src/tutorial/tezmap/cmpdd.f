@@ -1,104 +1,105 @@
 C
-C	$Id: cmpdd.f,v 1.4 1994-07-08 21:39:38 stautler Exp $
+C	$Id: cmpdd.f,v 1.5 1994-07-11 14:10:40 haley Exp $
 C
 C
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
 C
-        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C Open GKS, and turn off clipping.
 C
-        CALL GOPKS (IERRF, ISZDM)
-        CALL GOPWK (IWKID, LUNIT, IWTYPE)
-        CALL GACWK (IWKID)
-	CALL GSCLIP (0)
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
+      CALL GSCLIP (0)
 C
 C Call the mapping routine CMPDD
 C
-	CALL CMPDD(IWKID)
-
+      CALL CMPDD(IWKID)
 C
 C Close GKS and quit.
 C
-        CALL GDAWK (IWKID)
-        CALL GCLWK (IWKID)
-        CALL GCLKS
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
 
-	STOP
-	END
+      STOP
+      END
 
-	SUBROUTINE CMPDD(IWKID)
+      SUBROUTINE CMPDD(IWKID)
 C
 C CMPDD demonstrates setting the dash pattern for grid lines in Maps.
 C
 C Set up color table.
 C
-	CALL COLOR(IWKID)
+      CALL COLOR(IWKID)
 C
 C Draw Continental, political outlines in magenta
 C
-        CALL MAPSTC ('OU - OUTLINE DATASET SELECTOR','PO')
-        CALL MAPSTI ('C5 - CONTINENTAL OUTLINE COLOR',5)
-        CALL MAPSTI ('C7 - COUNTRY OUTLINE COLOR',5)
+      CALL MAPSTC ('OU - OUTLINE DATASET SELECTOR','PO')
+      CALL MAPSTI ('C5 - CONTINENTAL OUTLINE COLOR',5)
+      CALL MAPSTI ('C7 - COUNTRY OUTLINE COLOR',5)
 C
 C Draw grid lines and limb line in green
 C
-	CALL MAPSTI ('C2 - GRID COLOR',2)
-	CALL MAPSTI ('C4 - LIMB COLOR',2)
+      CALL MAPSTI ('C2 - GRID COLOR',2)
+      CALL MAPSTI ('C4 - LIMB COLOR',2)
 C
 C Draw labels and perimeter in white
 C
-	CALL MAPSTI ('C1 - PERIMETER COLOR',1)
-        CALL MAPSTI ('C3 - LABEL COLOR',1)
+      CALL MAPSTI ('C1 - PERIMETER COLOR',1)
+      CALL MAPSTI ('C3 - LABEL COLOR',1)
 C
 C Set up satellite projection
 C
-	CALL MAPROJ ('SV',40.,-50.,0.)
-	CALL MAPSTR ('SA - SATELLITE DISTANCE',5.)
-        CALL MAPSET ('MA',0.,0.,0.,0.)
+      CALL MAPROJ ('SV',40.,-50.,0.)
+      CALL MAPSTR ('SA - SATELLITE DISTANCE',5.)
+      CALL MAPSET ('MA',0.,0.,0.,0.)
 C
 C Set grid spacing to 10 degrees, and anchor grid curve at 10 degree 
 C intervals.
 C
-	CALL MAPSTR ('GR - GRID SPACING',10.)
-	CALL MAPSTR ('GD - GRID DRAWING RESOLUTION',10.)
+      CALL MAPSTR ('GR - GRID SPACING',10.)
+      CALL MAPSTR ('GD - GRID DRAWING RESOLUTION',10.)
 C
 C Change the dash pattern of the grid lines to be long dashes with short
 C spaces
 C
-	CALL MAPSTI ('DA - DASH PATTERN',64764)
+      CALL MAPSTI ('DA - DASH PATTERN',64764)
 C
 C Initialize Maps.
 C
-        CALL MAPINT
+      CALL MAPINT
 C
 C Draw the latitiude and longitude lines and the limb line
 C
-	CALL MAPGRD
+      CALL MAPGRD
 C
 C Advance the frame.
 C
-        CALL FRAME
+      CALL FRAME
 C
 C Done.
 C
-        RETURN
-	END
+      RETURN
+      END
       SUBROUTINE COLOR(IWKID)
 C
-C     BACKGROUND COLOR
-C     White
+C Background color
+C White
+C
       CALL GSCR(IWKID,0,1.,1.,1.)
 C
-C     FORGROUND COLORS
-	CALL GSCR(IWKID,1,0.,0.,0.)
-	CALL GSCR(IWKID,2,0.,.7,0.)
-	CALL GSCR(IWKID,3,1.,1.,0.)
-	CALL GSCR(IWKID,4,.3,.3,1.)
-	CALL GSCR(IWKID,5,1.,0.,1.)
-	CALL GSCR(IWKID,6,0.,1.,1.)
-	CALL GSCR(IWKID,7,1.,0.,0.)
+C Foreground colors
+C
+      CALL GSCR(IWKID,1,0.,0.,0.)
+      CALL GSCR(IWKID,2,0.,.7,0.)
+      CALL GSCR(IWKID,3,1.,1.,0.)
+      CALL GSCR(IWKID,4,.3,.3,1.)
+      CALL GSCR(IWKID,5,1.,0.,1.)
+      CALL GSCR(IWKID,6,0.,1.,1.)
+      CALL GSCR(IWKID,7,1.,0.,0.)
 
-	RETURN
-	END
+      RETURN
+      END

@@ -163,8 +163,8 @@ C
 
       SUBROUTINE COLOR (N,IWKID)
 C
-C BACKGROUND COLOR
-C BLACK
+C Background color
+C Black
 C
       CALL GSCR(IWKID,0,0.,0.,0.)
 C

@@ -39,7 +39,7 @@ C Draw Contours
 C
       CALL CPCLDR(ZREG,RWRK,IWRK)
 C     
-C Close frame and close GKS
+C Close frame
 C
       CALL FRAME
 C 

@@ -16,7 +16,6 @@ C
       CALL GOPKS (IERRF, ISZDM)
       CALL GOPWK (IWKID, LUNIT, IWTYPE)
       CALL GACWK (IWKID)
-      CALL OPNGKS
 C     
 C Initialize Conpack
 C

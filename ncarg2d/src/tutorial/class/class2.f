@@ -74,7 +74,7 @@ C
 C
 C Define a color table
 C
-C Bacground color is black
+C Background color is black
 C
       CALL GSCR(IWKID, 0, 0.0, 0.0, 0.0)
 C

@@ -33,7 +33,7 @@ C
       CALL AGSETC('LINE/TEXT.','POSITION (METERS)$')
 
       CALL EZXY (XDRA,YDRA,NPTS,
-     +	'Log scaling and publication quality text$')
+     +     'Log scaling and publication quality text$')
 
 C
 C Deactivate and close workstation, close GKS.

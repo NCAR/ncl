@@ -1,50 +1,48 @@
 C
-C	$Id: cmpel.f,v 1.2 1994-07-08 21:39:39 stautler Exp $
+C	$Id: cmpel.f,v 1.3 1994-07-11 14:10:42 haley Exp $
 C
 C
 C Define error file, Fortran unit number, and workstation type,
 C and workstation ID.
 C
-        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C Open GKS and turn off clipping.
 C
-        CALL GOPKS (IERRF, ISZDM)
-        CALL GOPWK (IWKID, LUNIT, IWTYPE)
-        CALL GACWK (IWKID)
-	CALL GSCLIP (0)
-
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
+      CALL GSCLIP (0)
 C
 C Call the routine which does all the work
 C
-	CALL CMPEL
-
+      CALL CMPEL
 C
 C Close GKS, and end program
 C
-        CALL GDAWK (IWKID)
-        CALL GCLWK (IWKID)
-        CALL GCLKS
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
 
-	STOP
-	END
+      STOP
+      END
 
-	SUBROUTINE CMPEL
+      SUBROUTINE CMPEL
 C
 C Satellite-view.
 C
 C Do this plot in white with Softfill over the water and no lat/lon
 C lines
 C
-	CALL MAPROJ ('SV',40.,10.,0.)
-	CALL MAPSTR ('SA - SATELLITE DISTANCE',5.)
-	CALL MAPSTC ('OU - OUTLINE DATASET SELECTOR','PO')
-	CALL MAPSTI ('PE - PERIMETER FLAG', 0)
-	CALL MAPSTI ('EL - ELLIPTICAL-PERIMETER SELECTOR', 1)
-	CALL MAPINT
-	CALL MAPLBL
-	CALL MAPLOT
-	CALL FRAME
+      CALL MAPROJ ('SV',40.,10.,0.)
+      CALL MAPSTR ('SA - SATELLITE DISTANCE',5.)
+      CALL MAPSTC ('OU - OUTLINE DATASET SELECTOR','PO')
+      CALL MAPSTI ('PE - PERIMETER FLAG', 0)
+      CALL MAPSTI ('EL - ELLIPTICAL-PERIMETER SELECTOR', 1)
+      CALL MAPINT
+      CALL MAPLBL
+      CALL MAPLOT
+      CALL FRAME
 
-	RETURN
-	END
+      RETURN
+      END

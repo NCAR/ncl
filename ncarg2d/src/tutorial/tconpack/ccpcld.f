@@ -42,7 +42,7 @@ C Set a different dash pattern for each contour line
       CALL CPBACK(Z, RWRK, IWRK)
       CALL CPCLDR(Z,RWRK,IWRK)
 C      
-C Close frame and close GKS
+C Close frame
 C
       CALL FRAME
 C 

@@ -1,4 +1,4 @@
-        PROGRAM ARFILL
+      PROGRAM ARFILL
 C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
