@@ -55,8 +55,10 @@ C
 C
 C Create an X workstation.
 C
+         call nhlfrlclear(rlist)
+         call nhlfrlsetstring(rlist,'wkPause','True',ierr)
          call nhlfcreate(wid,'lb01Work',nhlfxworkstationlayerclass,
-     $        0,0,ierr)
+     $        0,rlist,ierr)
       endif
 C
 C Specify the viewport extent of the object.

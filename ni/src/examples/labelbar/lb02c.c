@@ -102,19 +102,19 @@ main()
  * Create a meta file workstation.
  */
         NhlRLClear(rlist);
-		NhlRLSetString(rlist,NhlNwkMetaName,"./lb02c.ncgm");
-		NhlCreate(&wid,"lb02Work",NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,
-				  rlist);
-	}
-	else {
+        NhlRLSetString(rlist,NhlNwkMetaName,"./lb02c.ncgm");
+        NhlCreate(&wid,"lb02Work",NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,
+                  rlist);
+    }
+    else {
 /*
  * Create an X Workstation.
  */
-		NhlRLClear(rlist);
-		NhlRLSetInteger(rlist,NhlNwkPause,True);
-		NhlCreate(&wid,"lb02Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
-				  rlist);
-	}
+        NhlRLClear(rlist);
+        NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlCreate(&wid,"lb02Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
+                  rlist);
+    }
 /*
  * Create a plot with 22 color indices (Every 5th one of the default
  * workstation colormap.

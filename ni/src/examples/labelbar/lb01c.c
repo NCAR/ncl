@@ -49,19 +49,19 @@ main()
  * Create a meta file workstation.
  */
         NhlRLClear(rlist);
-		NhlRLSetString(rlist,NhlNwkMetaName,"./lb01c.ncgm");
-		NhlCreate(&wid,"lb01Work",NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,
-				  rlist);
-	}
-	else {
+        NhlRLSetString(rlist,NhlNwkMetaName,"./lb01c.ncgm");
+        NhlCreate(&wid,"lb01Work",NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,
+                  rlist);
+    }
+    else {
 /*
  * Create an X Workstation.
  */
-		NhlRLClear(rlist);
-		NhlRLSetInteger(rlist,NhlNwkPause,True);
-		NhlCreate(&wid,"lb01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
-				  rlist);
-	}
+        NhlRLClear(rlist);
+        NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlCreate(&wid,"lb01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
+                  rlist);
+    }
 /*
  * Specify the viewport extent of the object.
  */

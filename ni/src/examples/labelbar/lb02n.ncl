@@ -64,7 +64,9 @@ else
 ;
 ; Create an X Workstation object.
 ;
-  wid = create "lb02Work" xWorkstationLayerClass defaultapp end create
+  wid = create "lb02Work" xWorkstationLayerClass defaultapp
+    "wkPause" : "True"
+  end create
 end if
 
 ;

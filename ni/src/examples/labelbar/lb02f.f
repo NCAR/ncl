@@ -76,8 +76,10 @@ C
 C
 C Create an X workstation.
 C
+         call nhlfrlclear(rlist)
+         call nhlfrlsetstring(rlist,'wkPause','True',ierr)
          call nhlfcreate(wid,'lb02Work',nhlfxworkstationlayerclass,
-     $        0,0,ierr)
+     $        0,rlist,ierr)
       endif
 C
 C Create a plot with 22 color indices (Every 5th one of the default
