@@ -24,10 +24,7 @@ c_idbvip,
 .br
 c_idsfft
 .SH EXAMPLES
-To use Bivar routines, run "ncargex cbex01".  This will produce
-several files in your directory, cbex01, cbex01.f, and cbex01.ncgm.
-Edit cbex01.f and remove every line before the
-line "C PACKAGE BIVAR".  What remains is the Bivar package.
+See the example "cbex01".
 .SH ACCESS 
 To use the Bivar routines, load the NCAR Graphics libraries ncarg, ncarg_gks, 
 and ncarg_c, preferably in that order.  To use the Bivar C-bindings,
@@ -82,7 +79,8 @@ incorporating changes described in a Rocky Mountain Journal of
 Mathematics was obtained from Dr. Akima, and included in NCAR
 Graphics with his permission.
 .SH COPYRIGHT
-Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
-for Atmospheric Research
+Copyright (C) 1987-1995
 .br
-All Rights Reserved
+University Corporation for Atmospheric Research
+.br
+The use of this Software is governed by a License Agreement.
