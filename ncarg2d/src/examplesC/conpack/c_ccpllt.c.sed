@@ -37,7 +37,6 @@ int main()
 	char string[21];	/* string representation of value */
 
 	extern void getdat(float*,float*,float*);  /* get data */
-	extern void fl_to_char(char*,float);       /* number to string */
 
 						   /* Polyline processor */
 	extern int cpdrpl_(float*,float*,int*,int*,int*,int*);
@@ -75,7 +74,7 @@ int main()
 	   c_cpseti("PAI - PARAMETER ARRAY INDEX",i);
 	   c_cpseti("CLU - CONTOUR LINE USE FLAG",3);
 	   c_cpgetr("CLV - CONTOUR LEVEL VALUES",&value);
-	   fl_to_char(string,value);
+	   sprintf( string, "%6.2f:SRIL:O:N:C", value);
 	   c_cpsetc("LLT - LINE LABEL TEXT",string);
 	}
 /* Draw Perimeter */
@@ -97,60 +96,6 @@ int main()
         gclose_ws(IWKID);
         gclose_gks();
         return (0);
-}
-
-
-void fl_to_char(char* string, float value)
-{
-/*
-** Convert a floating point value to the character string
-** in the format of %10.2f.
-**
-** string	- returned character string
-** value	- value to be represented in string
-*/
-	int ivalue;	/* integer (truncated) value */
-	int divisor;	/* ivalue divider */
-	int index;	/* string index */
-	int char_val;	/* value to put in string */
-
-/* Find the largest divisor for the passed number */
-	ivalue = abs(value * 100.0);	
-	divisor = 1;
-	while (divisor <= ivalue)
-	{
-		divisor = divisor * 10;
-	}
-	divisor = divisor / 10;
-
-/* Initialize the string for a value of 0. */
-	strcpy(string," 0.00 C");
-	if (value < 0)
-	{
-		string[0] = '-';
-	}
-	index = 1;
-
-/* Find leading digit values and place them in the string */
-	while (divisor >= 1)
-	{
-		char_val = ivalue / divisor;
-		string[index++] = (char)('0' + char_val);
-		ivalue = ivalue - (char_val * divisor);
-		divisor = divisor / 10;
-		if (divisor == 10)
-		{
-			string[index++] = '.';
-		}	
-	}
-
-/* Adjust final string characters if needed */
-	if (abs(value) >= 0.01)
-	{
-		string[index++] = ' ';
-		string[index++] = 'C';
-		string[index] = '\0';
-	}
 }
 
 
