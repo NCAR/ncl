@@ -1,5 +1,5 @@
 C
-C	$Id: gwpasf.f,v 1.1 1993-01-09 02:10:00 fred Exp $
+C	$Id: gwpasf.f,v 1.2 1993-03-19 01:29:33 fred Exp $
 C
       SUBROUTINE GWPASF
 C
@@ -15,10 +15,12 @@ C
       SAVE
 C
 C  Compute change flags for each GKS ASF;  compute aggregate.
+C  The ASF values in GKS are reversed from those in the segments (which
+C  are being stored as CGM), so do that complementation here.
 C
       ANYASF = .FALSE.
       DO 435 I=1,NGKASF
-        MRASF(I) = ID(I)
+        MRASF(I) = 1-ID(I)
         ASFCHG(I) = MRASF(I).NE.MSASF(I)
         ANYASF = ANYASF .OR. ASFCHG(I)
   435 CONTINUE

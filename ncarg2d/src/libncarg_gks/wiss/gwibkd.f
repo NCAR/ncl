@@ -1,5 +1,5 @@
 C
-C	$Id: gwibkd.f,v 1.2 1993-01-11 21:58:30 fred Exp $
+C	$Id: gwibkd.f,v 1.3 1993-03-19 01:29:27 fred Exp $
 C
       BLOCKDATA GWIBKD
 C
@@ -85,7 +85,7 @@ C
 C
 C  ASF values.
 C
-      DATA  MDASF/13*1/
+      DATA  MDASF/13*0/
 C
 C  Pointers into attribute structure, VALCHG variables.
 C

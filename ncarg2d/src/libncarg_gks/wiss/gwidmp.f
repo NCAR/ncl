@@ -1,11 +1,12 @@
 C
-C	$Id: gwidmp.f,v 1.1 1993-01-09 02:09:16 fred Exp $
+C	$Id: gwidmp.f,v 1.2 1993-03-19 01:29:29 fred Exp $
 C
-      SUBROUTINE GWIDMP
+      SUBROUTINE GWIDMP(ICNTX,RCNTX)
 C
-C  This subroutine dumps the current state of all attributes.
-C  It also dumps out the clipping indicator and the clip rectangle.
-C
+C  This subroutine dumps the current state of all attributes as
+C  inherited from GKS at the time of the call.  The attributes
+C  are stored in the input arrays ICNTX and RCNTX.  See the awi
+C  routine GZSRAT for details on the ordering.
 C
       include 'gwiwdt.h'
       include 'gwiwsl.h'
@@ -18,7 +19,8 @@ C
       include 'gwiopc.h'
       include 'gksenu.h'
 C
-      INTEGER NUMO(2),RERR
+      INTEGER NUMO(2),RERR,ICNTX(31)
+      REAL    RCNTX(19)
       LOGICAL ASFTMP(13)
 C
       SAVE
@@ -27,15 +29,22 @@ C  Clipping indicator, and clip rectangle.
 C
       NBYTES = 1+(MEFW-1)/8
       CALL GWPTNI (CLCLIN, IDCLIN, NBYTES, RERR)
+      MRCLIP = ICNTX(1)
       CALL GWPTPR (MRCLIP, MEFW,     1, RERR)
+C
       NBYTES = 1 + (4*MVDCFW-1)/8
       CALL GWPTNI (CLCREC, IDCREC, NBYTES, RERR)
+      MRCREC(1) = INT(REAL(MXSCAL)*RCNTX(12))
+      MRCREC(2) = INT(REAL(MYSCAL)*RCNTX(14))
+      MRCREC(3) = INT(REAL(MXSCAL)*RCNTX(13))
+      MRCREC(4) = INT(REAL(MYSCAL)*RCNTX(15))
       CALL GWPTPR (MRCREC, MVDCFW,     4, RERR)
 C
 C  Line bundle index.
 C
       NBYTES = 1+(MIXFW-1)/8
       CALL GWPTNI (CLLBIX,  IDLBIX,  NBYTES,  RERR)
+      MRPLIX = ICNTX(2)
       CALL GWPTPR (MRPLIX, MIXFW,  1, RERR)
       MSPLIX         = MRPLIX
       VALCHG(IVPLIX) = .FALSE.
@@ -44,6 +53,7 @@ C  Line type.
 C
       NBYTES = 1+(MIXFW-1)/8
       CALL GWPTNI (CLLTYP,  IDLTYP,  NBYTES,  RERR)
+      MRLTYP = ICNTX(3)
       CALL GWPTPR (MRLTYP, MIXFW,  1, RERR)
       MSLTYP = MRLTYP
       VALCHG(IVLTYP) = .FALSE.
@@ -52,6 +62,7 @@ C  Linewidth scale factor.
 C
       NBYTES = 1+(2*MCFPP-1)/8
       CALL GWPTNI (CLLWID,  IDLWID,  NBYTES,  RERR)
+      ARLWSC = RCNTX(1)
       CALL GFLCNV (ARLWSC,NUMO)
       CALL GWPTPR (NUMO, MCFPP,  2, RERR)
       ASLWSC         = ARLWSC
@@ -61,6 +72,7 @@ C  Line color index.
 C
       NBYTES = 1+(MCIXFW-1)/8
       CALL GWPTNI (CLLCLR, IDLCLR, NBYTES,  RERR)
+      MRPLCI = ICNTX(4)
       CALL GWPTPR (MRPLCI, MCIXFW,  1, RERR)
       MSPLCI         = MRPLCI
       VALCHG(IVPLCI) = .FALSE.
@@ -69,6 +81,7 @@ C  Marker bundle index.
 C
       NBYTES = 1+(MIXFW-1)/8
       CALL GWPTNI (CLMBIX, IDMBIX, NBYTES,  RERR)
+      MRPMIX = ICNTX(5)
       CALL GWPTPR (MRPMIX, MIXFW,  1, RERR)
       MSPMIX = MRPMIX
       VALCHG(IVPMIX) = .FALSE.
@@ -77,6 +90,7 @@ C  Marker type.
 C
       NBYTES = 1+(MIXFW-1)/8
       CALL GWPTNI (CLMTYP, IDMTYP,  NBYTES,  RERR)
+      MRMTYP = ICNTX(6)
       CALL GWPTPR (MRMTYP, MIXFW,  1, RERR)
       MSMTYP = MRMTYP
       VALCHG(IVMTYP) = .FALSE.
@@ -85,6 +99,7 @@ C  Marker size.
 C
       NBYTES = 1+(2*MCFPP-1)/8
       CALL GWPTNI (CLMSIZ, IDMSIZ, NBYTES,  RERR)
+      ARMSZS = RCNTX(2)
       CALL GFLCNV (ARMSZS,NUMO)
       CALL GWPTPR (NUMO, MCFPP,  2, RERR)
       ASMSZS = ARMSZS
@@ -94,6 +109,7 @@ C  Marker color.
 C
       NBYTES = 1+(MCIXFW-1)/8
       CALL GWPTNI (CLMCLR, IDMCLR, NBYTES,  RERR)
+      MRPMCI = ICNTX(7)
       CALL GWPTPR (MRPMCI, MCIXFW,  1, RERR)
       MSPMCI = MRPMCI
       VALCHG(IVPMCI) = .FALSE.
@@ -102,6 +118,7 @@ C  Text bundle index.
 C
       NBYTES = 1+(MIXFW-1)/8
       CALL GWPTNI (CLTBIX, IDTBIX, NBYTES, RERR)
+      MRTXIX = ICNTX(8)
       CALL GWPTPR (MRTXIX, MIXFW, 1, RERR)
       MSTXIX         = MRTXIX
       VALCHG(IVTXIX) = .FALSE.
@@ -110,6 +127,7 @@ C  Text font.
 C
       NBYTES = 1+(MEFW-1)/8
       CALL GWPTNI (CLTFON, IDTFON, NBYTES, RERR)
+      MRTXFO = ICNTX(9)
       CALL GWPTPR (MRTXFO, MEFW, 1, RERR)
       MSTXFO         = MRTXFO
       VALCHG(IVTXFO) = .FALSE.
@@ -118,6 +136,7 @@ C  Text precision.
 C
       NBYTES         = 1+(MIXFW-1)/8
       CALL GWPTNI (CLTPRE, IDTPRE, NBYTES, RERR)
+      MRTXPR = ICNTX(10)
       CALL GWPTPR (MRTXPR, MIXFW, 1, RERR)
       MSTXPR         = MRTXPR
       VALCHG(IVTXPR) = .FALSE.
@@ -126,6 +145,7 @@ C  Character expansion factor.
 C
       NBYTES = 1+(2*MCFPP-1)/8
       CALL GWPTNI (CLCHEX, IDCHEX, NBYTES, RERR)
+      ARCHXP = RCNTX(3)
       CALL GFLCNV (ARCHXP, NUMO)
       CALL GWPTPR (NUMO, MCFPP, 2, RERR)
       ASCHXP         = ARCHXP
@@ -135,6 +155,7 @@ C  Character spacing.
 C
       NBYTES = 1+(2*MCFPP-1)/8
       CALL GWPTNI (CLCHSP, IDCHSP, NBYTES, RERR)
+      ARCHSP = RCNTX(4)
       CALL GFLCNV (ARCHSP, NUMO)
       CALL GWPTPR (NUMO, MCFPP, 2, RERR)
       ASCHSP         = ARCHSP
@@ -144,6 +165,7 @@ C  Text color index.
 C
       NBYTES = 1+(MCIXFW-1)/8
       CALL GWPTNI (CLTCLR, IDTCLR, NBYTES, RERR)
+      MRTXCI = ICNTX(11)
       CALL GWPTPR (MRTXCI, MCIXFW, 1, RERR)
       MSTXCI         = MRTXCI
       VALCHG(IVTXCI) = .FALSE.
@@ -152,6 +174,7 @@ C  Text path.
 C
       NBYTES = 1+(MEFW-1)/8
       CALL GWPTNI (CLTXPA, IDTXPA, NBYTES, RERR)
+      MRTXP = ICNTX(12)
       CALL GWPTPR (MRTXP , MEFW,  1, RERR)
       MSTXP         = MRTXP
       VALCHG(IVTXP) = .FALSE.
@@ -160,6 +183,8 @@ C  Text alignment.
 C
       NBYTES = 1+(2*MEFW + 4*MCFPP - 1)/8
       CALL GWPTNI (CLTXAL, IDTXAL, NBYTES, RERR)
+      MRTXAL(1) = ICNTX(13)
+      MRTXAL(2) = ICNTX(14)
       CALL GWPTPR (MRTXAL, MEFW, 2, RERR)
       NUMO(1) = 0
       NUMO(2) = 0
@@ -173,6 +198,23 @@ C  Character height.
 C
       NBYTES = 1+(MVDCFW-1)/8
       CALL GWPTNI (CLCHHT, IDCHHT, NBYTES, RERR)
+      UP   = SQRT(RCNTX(16)**2+RCNTX(17)**2)
+      BASE = SQRT(RCNTX(18)**2+RCNTX(19)**2)
+      DMAX = AMAX1(UP,BASE)
+      IF (DMAX .GT. 1.0)  THEN
+C
+C  A vector is longer than 1.0 NDC, scale down both vectors equally.
+C
+        FACTOR = 1.0/DMAX
+        RCNTX(16) = FACTOR*RCNTX(16)
+        RCNTX(17) = FACTOR*RCNTX(17)
+        RCNTX(18) = FACTOR*RCNTX(18)
+        RCNTX(19) = FACTOR*RCNTX(19)
+      END IF
+C
+      RTMP = 0.5+UP*REAL(MYSCAL)
+      MRCHH = MAXYVD
+      IF (RTMP .LT. REAL(MAXYVD)) MRCHH = INT(RTMP)
       CALL GWPTPR (MRCHH, MVDCFW,  1, RERR)
       MSCHH         = MRCHH
       VALCHG(IVCHH) = .FALSE.
@@ -181,6 +223,10 @@ C  Character up vector.
 C
       NBYTES = 1+(4*MVDCFW-1)/8
       CALL GWPTNI (CLCHOR, IDCHOR, NBYTES, RERR)
+      MRCHOV(1) = MIN0 (MAXYVD, IFIX (0.5 + MXSCAL*RCNTX(16)))
+      MRCHOV(2) = MIN0 (MAXYVD, IFIX (0.5 + MYSCAL*RCNTX(17)))
+      MRCHOV(3) = MIN0 (MAXYVD, IFIX (0.5 + MXSCAL*RCNTX(18)))
+      MRCHOV(4) = MIN0 (MAXYVD, IFIX (0.5 + MYSCAL*RCNTX(19)))
       CALL GWPTPR (MRCHOV(1) , MVDCFW,  4, RERR)
       MSCHOV(1)      = MRCHOV(1)
       MSCHOV(2)      = MRCHOV(2)
@@ -192,6 +238,7 @@ C  Fill bundle index.
 C
        NBYTES = 1+(MIXFW-1)/8
        CALL GWPTNI (CLFBIX, IDFBIX,  NBYTES,  RERR)
+       MRFAIX = ICNTX(15)
        CALL GWPTPR (MRFAIX, MIXFW,  1, RERR)
        MSFAIX = MRFAIX
        VALCHG(IVFAIX) = .FALSE.
@@ -200,6 +247,7 @@ C  Fill area interior style.
 C
        NBYTES = 1+(MEFW-1)/8
        CALL GWPTNI (CLINTS, IDINTS, NBYTES,  RERR)
+       MRFAIS = ICNTX(16)
        CALL GWPTPR (MRFAIS, MEFW,  1, RERR)
        MSFAIS = MRFAIS
        VALCHG(IVFAIS) = .FALSE.
@@ -208,6 +256,7 @@ C  Fill area style index--send pattern index and hatch index.
 C
        NBYTES = 1+(MIXFW-1)/8
        CALL GWPTNI (CLHAIX, IDHAIX, NBYTES,  RERR)
+       MRFASI = ICNTX(17)
        CALL GWPTPR (MRFASI, MIXFW, 1, RERR)
        CALL GWPTNI (CLPTIX, IDPTIX, NBYTES,  RERR)
        CALL GWPTPR (MRFASI, MIXFW, 1, RERR)
@@ -218,11 +267,13 @@ C  Fill area color index.
 C
        NBYTES = 1+(MCIXFW-1)/8
        CALL GWPTNI (CLFCLR, IDFCLR, NBYTES, RERR)
+       MRFACI = ICNTX(18)
        CALL GWPTPR (MRFACI, MCIXFW,  1, RERR)
        MSFACI = MRFACI
        VALCHG(IVFACI) = .FALSE.
 C
-C  Pattern size (currently not implemented).
+C  Pattern size (currently not implemented--be sure to transform
+C  the sizes as in the GKS GSPA routine if ever implemented).
 C
 C      NBYTES = 1+(4*MVDCFW-1)/8
 C      CALL GWPTNI (CLPTSZ, IDPTSZ, NBYTES, RERR)
@@ -233,7 +284,9 @@ C      MSPASZ(3) = MRPASZ(3)
 C      MSPASZ(4) = MRPASZ(4)
 C      VALCHG(IVPASZ) = .FALSE.
 C
-C  Pattern reference point (currently not implemented).
+C  Pattern reference point (currently not implemented--be sure to
+C  transform the reference point as in the GKS routine GSPARF if
+C  ever implemented).
 C
 C      NBYTES = 1+(2*MVDCFW-1)/8
 C      CALL GWPTNI (CLFRPT, IDFRPT, NBYTES, RERR)
@@ -248,13 +301,17 @@ C
         ASFTMP(I) = ASFCHG(I)
         ASFCHG(I) = .TRUE.
    20 CONTINUE
+      DO 40 I=1,NGKASF
+        ASFCHG(I) = .TRUE.
+C 
+C  Convert from GKS ASFs to CGM ASFs.
+C
+        MRASF(I) =  1-ICNTX(I+18)
+   40 CONTINUE
       CALL GWISAS (1, RERR)
       CALL GWISAS (2, RERR)
       CALL GWISAS (3, RERR)
       CALL GWISAS (4, RERR)
-      DO 30 I=1,NGKASF
-        ASFCHG(I) = ASFTMP(I)
-   30 CONTINUE
 C
 C  Clear aggregate change variable.
 C

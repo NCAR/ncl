@@ -1,7 +1,7 @@
 C
-C	$Id: gwiwdr.f,v 1.1 1993-01-09 02:09:50 fred Exp $
+C	$Id: gwiwdr.f,v 1.2 1993-03-19 01:29:31 fred Exp $
 C
-      SUBROUTINE GWIWDR
+      SUBROUTINE GWIWDR(ICNTX,RCNTX)
 C
 C***********************************************************************
 C***********************************************************************
@@ -15,6 +15,12 @@ C***********************************************************************
 C***********************************************************************
 C
       IMPLICIT INTEGER (A-Z)
+C
+C  The current GKS attribut context is passed in via the arrays
+C  ICNTX and RCNTX (see GZSRAT in awi for details on the order).
+C
+      INTEGER ICNTX(31)
+      REAL    RCNTX(15)
 C
 C  Include all COMMONs .
 C
@@ -191,7 +197,7 @@ C
 C
 C  Put the current attribute context into the segment.
 C
-      CALL GWIDMP
+      CALL GWIDMP(ICNTX,RCNTX)
 C
       RETURN
 C
