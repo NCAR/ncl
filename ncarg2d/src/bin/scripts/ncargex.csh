@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.38 1993-04-12 22:13:45 haley Exp $
+#   $Id: ncargex.csh,v 1.39 1993-04-13 22:23:53 haley Exp $
 #
 
 #********************#
@@ -982,6 +982,7 @@ switch ($name)
     breaksw
 
     case tstitl:
+    case fslfont:
         set rmfiles = ($rmfiles GNFB09)
     breaksw
 endsw
