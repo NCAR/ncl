@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.46 2004-08-17 17:41:27 shea Exp $
+;      $Id: contributed.ncl,v 1.47 2004-08-17 21:53:57 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -4073,7 +4073,7 @@ function eof_varimax_Wrap (data:numeric, eof:numeric, optEVX:logical)
 local eofEMX
 begin
   eofEVX = eof
-  eofEVX = eofunc_varimax(data, eof, optEVX) ; invoke built-in function
+  eofEVX = eofunc_varimax(eof, optEVX) ; invoke built-in function
   eofEVX@op = "Kaiser Varimax Rotation"
   return  (eofEVX)                        ; return
 end
