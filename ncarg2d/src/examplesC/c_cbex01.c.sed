@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cbex01.c.sed,v 1.3 1992-11-06 21:54:21 haley Exp $
+ *	$Id: c_cbex01.c.sed,v 1.4 1992-11-06 23:52:59 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -56,7 +56,7 @@ main()
  */
     float xran[9],yran[9],zran[9],xcnv[7],ycnv[7];
     float xdat[11],ydat[12],zdat[12][11],rwrk[1000];
-    float dumi[1][1], xval1, yval1, xval2, yval2;
+    float dumi[1][1], dumi2[1][1], xval1, yval1, xval2, yval2;
     int iwrk[1000];
     int i,j;
     extern void dfclrs();
@@ -168,7 +168,7 @@ main()
 /*
  * Initialize the drawing of the first contour plot.
  */
-    c_cprect (zdat,11,11,12,rwrk,1000,iwrk,1000);
+    c_cprect (&zdat[0][0],11,11,12,rwrk,1000,iwrk,1000);
 /*
  * Initialize the area map which will be used to keep contour lines from
  * passing through labels.
@@ -177,15 +177,15 @@ main()
 /*
  * Put label boxes in the area map.
  */
-    c_cplbam (zdat,rwrk,iwrk,iama);
+    c_cplbam (&zdat[0][0],rwrk,iwrk,iama);
 /*
  * Draw the contour lines, masked by the area map.
  */
-    c_cpcldm (zdat,rwrk,iwrk,iama,cpdrpl_);
+    c_cpcldm (&zdat[0][0],rwrk,iwrk,iama,cpdrpl_);
 /*
  * Draw all the labels.
  */
-    c_cplbdr (zdat,rwrk,iwrk);
+    c_cplbdr (&zdat[0][0],rwrk,iwrk);
 /*
  * Dump the polyline buffer and change the polyline color to orange.
  * Change the text color to orange, too, so that the AUTOGRAPH background
@@ -199,7 +199,7 @@ main()
  * it to pick up appropriate values from CONPACK"s SET call.
  */
     c_agseti ("SET.",4);
-    c_agstup (dumi,1,1,1,1,dumi,1,1,1,1);
+    c_agstup (&dumi[0][0],1,1,1,1,&dumi2[0][0],1,1,1,1);
     c_agback();
 /*
  * Dump the polyline buffer and change the polyline color to green.
@@ -288,7 +288,7 @@ main()
 /*
  * Initialize the drawing of the second contour plot.
  */
-    c_cprect (zdat,11,11,12,rwrk,1000,iwrk,1000);
+    c_cprect (&zdat[0][0],11,11,12,rwrk,1000,iwrk,1000);
 /*
  * Initialize the area map.
  */
@@ -302,15 +302,15 @@ main()
 /*
  * Put label boxes in the area map.
  */
-    c_cplbam (zdat,rwrk,iwrk,iama);
+    c_cplbam (&zdat[0][0],rwrk,iwrk,iama);
 /*
  * Draw contour lines, masked by the area map.
  */
-    c_cpcldm (zdat,rwrk,iwrk,iama,cpdrpl_);
+    c_cpcldm (&zdat[0][0],rwrk,iwrk,iama,cpdrpl_);
 /*
  * Draw labels.
  */
-    c_cplbdr (zdat,rwrk,iwrk);
+    c_cplbdr (&zdat[0][0],rwrk,iwrk);
 /*
  * Dump the polyline buffer and switch the polyline color to orange.
  */
@@ -320,7 +320,7 @@ main()
  * Use AUTOGRAPH to draw a background.
  */
     c_agseti ("SET.",4);
-    c_agstup (dumi,1,1,1,1,dumi,1,1,1,1);
+    c_agstup (&dumi[0][0],1,1,1,1,&dumi2[0][0],1,1,1,1);
     c_agback();
 /*
  * Dump the polyline buffer and switch the polyline color to yellow.
