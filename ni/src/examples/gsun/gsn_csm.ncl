@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.73 2001-06-29 21:14:34 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.74 2001-07-18 17:16:13 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1261,13 +1261,20 @@ begin
 
 ;
 ; Make sure the 0th contour (if it exists) really is "0" and not something
-; like "1.00001e-08".
+; like "1.00001e-08".  But, we also have to make sure we don't have 
+; values like 1e-10, 1e-9, etc, where we *do* want "1e-10" label and not
+; a "0". Don't even bother with checking if the minimum difference between
+; the levels is less than 1e-5.
 ;
-  do n=0,dimsizes(levels)-1
-    if(fabs(levels(n)).le.1.e-5) then
-      levels(n) = 0.0
-    end if
-  end do
+  nlevels = dimsizes(levels)-2
+  delta_levels = min( levels(1:nlevels-1) - levels(0:nlevels-2) )
+  if(delta_levels.ge.1e-5)
+    do n=1,dimsizes(levels)-2
+      if(fabs(levels(n)).le.1.e-5.and.levels(n-1).lt.0..and.levels(n+1).gt.0.)
+        levels(n) = 0.0
+      end if
+    end do
+  end if
   if(lbar_orient.eq."vertical") then
     if(type.eq."polar")
       orth = get_res_value(res,"pmLabelBarOrthogonalPosF",0.05)
@@ -1376,6 +1383,8 @@ begin
                          "200","150","100", "70", "50", "30", "10"/)
     res@tmYLMinorOn= False        ; No minor tick marks.
     set_attr(res,"tiYAxisString","Pressure (mb)")
+  end if
+
 ;
 ; Calculate "nice" height values for which to label the right axis
 ;
@@ -1385,7 +1394,6 @@ begin
     hrange = fabs(hgt(0)-hgt(dimsizes(hgt)-1))
     if(hrange.le.35) then
       step = 4
-    anumgons = 0  ; Count the number of polygons
     else
       if(hrange.le.70) then
         step = 7
@@ -1422,7 +1430,6 @@ end
 ;                 yin[*]: numeric                                       ;
 ;                    ref: numeric                                       ;
 ;   ref_line_above_color: integer or string or RGB value                ;
-    bnumgons    = 0
 ;   ref_line_below_color: integer or string or RGB value                ;
 ;                                                                       ;
 ; Take a set of X and Y points, and fill the Y points in one color if   ;
@@ -6918,7 +6925,7 @@ begin
 ;
 ; Outlines only.
           print("of curves, or be one.")
-; For each original y point, we need two new y points to represent
+          return
         end if
       end if                            ; Check if gsnYRefLine set.
           bar_width = new(nx-1,double)

@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.69 2001-06-26 15:30:03 haley Exp $
+;      $Id: gsn_code.ncl,v 1.70 2001-07-18 17:16:13 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2996,14 +2996,16 @@ begin
           "vcLevelColors"            : colors
         end getvalues
       end if
-          set_attr(lbres,"vpXF",(1. - lbres@vpWidthF)/2.)
+;
+; Set labelbar height, width, and font height.
 ;
       labelbar_height      = scale * labelbar_height
       labelbar_width       = scale * labelbar_width
       labelbar_font_height = font_height
 ;
 ; Set some labelbar resources.
-          set_attr(lbres,"vpYF",1.-(1. - lbres@vpHeightF)/2.)
+;
+      lbres = True
       set_attr(lbres,"vpWidthF", labelbar_width)
       set_attr(lbres,"vpHeightF",labelbar_height)
 ;
