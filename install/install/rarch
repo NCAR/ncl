@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: rarch,v 1.8 1997-01-29 15:30:48 haley Exp $
+#      $Id: rarch,v 1.9 1997-02-04 20:50:19 haley Exp $
 #
 #########################################################################
 #									#
@@ -126,6 +126,11 @@ case CRAY
 		echo UNICOS_C90
 		exit 0
 	endsw
+
+case UNIX_System_V:
+	echo UNIXSV_Fujitsu300
+	exit 0
+
 endsw
 
 echo unknown
