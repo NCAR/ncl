@@ -13,7 +13,7 @@ begin
     mx      = dims(1)
     mx1     = mx+1
 
-    newdata = new((/ny  ,mx1/),float)
+    newdata = new((/ny  ,mx1/),typeof(data))
 
     newdata(:,0:mx-1) = data             ; pass everything
     newdata(:,mx)     = (/ data(:,0) /)  ; value only

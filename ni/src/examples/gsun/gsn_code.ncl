@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.45 2000-09-11 17:18:32 haley Exp $
+;      $Id: gsn_code.ncl,v 1.46 2000-09-29 17:49:03 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -90,6 +90,9 @@ undef("gsn_xy")
 ;***********************************************************************;
 ; function : tofloat                                                    ;
 ;                x:numeric                                              ;
+;                                                                       ;
+; Convert input to float.                                               ;
+;                                                                       ;
 ;***********************************************************************;
 function tofloat(x:numeric)
 local xf
@@ -4450,6 +4453,7 @@ begin
 ;
 ; If gsnShape was set to True, then resize the X or Y axis so that
 ; the scales are proportionally correct.
+    if(shape)
       gsnp_shape_plot(plot_object)
     end if
 

@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.49 2000-09-13 21:56:18 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.50 2000-09-29 17:49:04 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -33,8 +33,9 @@
 ; procedures with the same name.                                        ;
 ;***********************************************************************;
 
-undef("xy_interp")
+undef("xy_ref_interp")
 undef("ref_line_interp")
+undef("find_cross_xy")
 undef("check_for_subtitles")
 undef("set_right_subtitle")
 undef("set_left_subtitle")
@@ -59,7 +60,8 @@ undef("get_polar_type")
 undef("add_subtitles")
 undef("add_labelbar")
 undef("set_pres_hgt_axes")
-undef("fill_xy")
+undef("fill_xy_ref")
+undef("fill_xy2")
 undef("get_lon_values")
 undef("get_lat_values")
 undef("get_lon_labels")
@@ -93,7 +95,7 @@ undef("gsn_csm_streamline")
 
 
 ;***********************************************************************;
-; Function : xy_interp                                                  ;
+; Function : xy_ref_interp                                              ;
 ;                  x1: numeric                                          ;
 ;                  x2: numeric                                          ;
 ;                  y1: numeric                                          ;
@@ -107,7 +109,8 @@ undef("gsn_csm_streamline")
 ; resources. The Id of the map plot is returned.                        ;
 ;***********************************************************************;
 
-function xy_interp(x1:numeric,x2:numeric,y1:numeric,y2:numeric,ref:numeric)
+function xy_ref_interp(x1:numeric,x2:numeric,y1:numeric,y2:numeric, \
+                       ref:numeric)
 begin
  return(x2-((y2-ref)*(x2-x1))/(y2-y1))
 end
@@ -208,9 +211,9 @@ begin
          .not.ismissing(ynew(j,i-1)).and..not.ismissing(xnew(j,i-1)))
         if((ynew(j,i-1).lt.refnew(j).and.ynew(j,i).gt.refnew(j)).or.\
            (ynew(j,i-1).gt.refnew(j).and.ynew(j,i).lt.refnew(j)))
-          xinterp(j,i+num_crosses)   = xy_interp(xnew(j,i-1),xnew(j,i),\
-                                                 ynew(j,i-1),ynew(j,i),\
-                                                 refnew(j))
+          xinterp(j,i+num_crosses)   = xy_ref_interp(xnew(j,i-1),xnew(j,i),\
+                                                     ynew(j,i-1),ynew(j,i),\
+                                                     refnew(j))
           xinterp(j,i+num_crosses+1) = xnew(j,i)
           yinterp(j,i+num_crosses)   = refnew(j)
           yinterp(j,i+num_crosses+1) = ynew(j,i)
@@ -224,6 +227,39 @@ begin
   delete(ynew)
   delete(refnew)
   return(npts)
+end
+
+;***********************************************************************;
+; Function : find_cross_xy                                              ;
+;                  x1: numeric                                          ;
+;                  x2: numeric                                          ;
+;                 y11: numeric                                          ;
+;                 y12: numeric                                          ;
+;                 y21: numeric                                          ;
+;                 y22: numeric                                          ;
+;                                                                       ;
+; Given two points of two curves:                                       ;
+;                                                                       ;
+;       (x1,y11) & (x2,y12) and (x1,y21) & (x2,y22)                     ;
+;                                                                       ;
+; compute the point at which the two curves cross.                      ;
+;                                                                       ;
+;***********************************************************************;
+
+function find_cross_xy(x1:double,x2:double,y11:double,y12:double, \
+                       y21:double,y22:double)
+begin
+  if((x2-x1).eq.0.or.(y12-y11+y21-y22).eq.0)
+    x0 = new(1,double,-9999)
+    y0 = new(1,double,-9999)
+    x0 = -9999
+    y0 = -9999
+  else
+    x0 = (x2*y21 - x2*y11 + x1*y12 - x1*y22)/(y12-y11+y21-y22)
+    y0 = (y11*y22 - y12*y21) / (y11-y12+y22-y21)
+;    y0 = (x0*(y22-y21)-x1*y22+x2*y21)/(x2-x1)
+  end if
+  return((/x0,y0/))
 end
 
 ;***********************************************************************;
@@ -1171,7 +1207,7 @@ end
 
 procedure set_pres_hgt_axes(pres:numeric,res:logical,add_hgt:logical)
 local hgt, hnice, pnice, ptmp
-; Function : fill_xy                                                    ;
+begin
   if(pres(0).lt.pres(dimsizes(pres)-1))
     ptmp = 1.* pres(::-1)    ; reverse values so descending order
   else
@@ -1185,8 +1221,8 @@ local hgt, hnice, pnice, ptmp
 ;
 ; Set up the "nice" pressure values for which to label the left axis.
 ;
-function fill_xy(wks:graphic,xy:graphic,xin[*]:numeric,yin[*]:numeric,\
-                 ref:numeric,ref_line_above_color,ref_line_below_color)
+  if(.not.isatt(res,"tmYLMode"))
+    res@tmYLMode   = "Explicit" ; Define own tick mark labels.
     res@tmYLValues = (/1000.,  850., 700., 500., 400., 300., 250.,\
                          200., 150., 100.,  70., 50., 30., 10./)
     res@tmYLLabels = (/"1000","850","700","500","400","300","250",\
@@ -1408,6 +1444,204 @@ begin
     create_gon = False
 
     do i=0,npts-1
+      if(.not.ismissing(yin(i)).and..not.ismissing(xin(i)))
+        if(yin(i).le.ref)
+          if(igon.eq.0)
+            xbelow_line = new(npts+2,typeof(xin))
+            ybelow_line = new(npts+2,typeof(yin))
+            ybelow_line(0) = yin(i)
+            xbelow_line(0) = xin(i)
+            igon = 1
+          else
+            xbelow_line(igon) = xin(i) 
+            ybelow_line(igon) = yin(i) 
+            igon = igon + 1
+          end if
+          if(i.eq.npts-1)      ; On the last point.
+            create_gon = True
+          end if
+        else
+          create_gon = True
+        end if
+      else
+        create_gon = True
+      end if   ; not ismissing
+      if(create_gon)
+        if(igon.gt.1)
+          ybelow_gon = new((/igon+3/),typeof(yin))
+          xbelow_gon = new((/igon+3/),typeof(xin))
+; Close up and draw polygon
+          if(ybelow_line(0).ne.ref)
+            xbelow_gon(0) = xbelow_line(0)
+            ybelow_gon(0) = ref
+            xbelow_gon(1:igon) = xbelow_line(0:igon-1)
+            ybelow_gon(1:igon) = ybelow_line(0:igon-1)
+            newgon = igon + 1
+          else
+            xbelow_gon(0:igon-1) = xbelow_line(0:igon-1)
+            ybelow_gon(0:igon-1) = ybelow_line(0:igon-1)
+            newgon = igon
+          end if
+          if(ybelow_line(igon-1).ne.ref)
+            xbelow_gon(newgon) = xbelow_line(igon-1)
+            ybelow_gon(newgon) = ref
+            newgon = newgon + 1
+          end if
+
+          polygons(ngons) = gsn_add_polygon(wks,xy,xbelow_gon(0:newgon-1), \
+                                            ybelow_gon(0:newgon-1),gsresb)
+          ngons = ngons + 1 
+; Delete temporary arrays so we can recreate them.
+          delete(xbelow_line)
+          delete(ybelow_line)
+          delete(xbelow_gon)
+          delete(ybelow_gon)
+        end if
+        igon       = 0
+        create_gon = False
+      end if
+    end do
+  end if
+  return(polygons)
+end
+
+;***********************************************************************;
+; Function : fill_xy2                                                   ;
+;                                                                       ;
+; This function takes as input two Y curves, defined on the same set    ;
+; of X points, and fills the area between the two curves with two       ;
+; different colors, depending on which curve is above the other one.    ;
+;                                                                       ;
+;***********************************************************************;
+function fill_xy2(wks,plot,xi:numeric,yi1:numeric,yi2:numeric,colora,colorb)
+local nx, ny1, ny2, y1_gt_y2, i, ab, bpt, ept, x, y1, y2, color, first, last
+begin
+  res = True
+;
+; Check length of arrays.
+;
+  nx  = dimsizes(xi)
+  ny1 = dimsizes(yi1)
+  ny2 = dimsizes(yi2)
+
+  if(nx.ne.ny1.or.nx.ne.ny2.or.nx.lt.2) 
+    print("fill_xy2: Error: x and y arrays must be the same length and at least two elements")
+    return 
+  end if
+
+  if(any(ismissing(xi)))
+    print("fill_xy2: Error: The x array cannot contain any missing values")
+    return 
+  end if
+;
+; Convert input arrays to double.
+;
+; If both y arrays are equal to each other, then just return.
+;
+  if(all(yi1.eq.yi2))
+    return(plot)
+  end if
+;
+; Convert input arrays to double.
+;
+  x  = new(dimsizes(xi),double)
+  y1 = new(ny1,double,1.e36)
+  y2 = new(ny1,double,1.e36)
+  x  = (/xi/)
+  y1 = (/yi1/)
+  y2 = (/yi2/)
+
+  res@gsFillColor = colora ; Color for when first curve is > second curve
+
+;
+; Compute a delta that will be used to determine if two points are
+; actually the same point. 
+;
+  range_y1 = max(y1) - min(y1)
+  range_y2 = max(y2) - min(y2)
+
+  delta_y1 = 0.01 * range_y1
+  delta_y2 = 0.01 * range_y2
+  if(delta_y1.eq.0)
+    delta = delta_y2
+  else
+    if(delta_y2.eq.0)
+      delta = delta_y1
+    else
+      delta = min((/delta_y1,delta_y2/))
+    end if
+  end if
+
+;
+; Create arrays for storing polygon points.
+;
+  first     = new(2,double)
+  last      = new(2,double)
+  polygon_x = new(2*nx+3,double)
+  polygon_y = new(2*nx+3,double)
+
+  npoly = 0     ; Number of polygons
+;
+; First fill in polygons where y1 is above y2, and then fill in
+; polygons where y2 is above y1.
+;
+  do ab = 0,1
+    if(ab.eq.1)
+      y1 = (/yi2/)
+      y2 = (/yi1/)
+      res@gsFillColor = colorb ; Color for when first curve is > second curve
+    end if
+;
+; Get areas where y1 > y2.
+;
+    y1_gt_y2 = y1.gt.y2
+
+    bpt = -1    ; Index of first point of polygon.
+    ept = -1    ; Index of last point of polygon.
+;
+; Loop through points.
+;
+    do i=0,nx-1
+      if(bpt.lt.0)
+        if(.not.ismissing(y1_gt_y2(i)).and.y1_gt_y2(i))
+          bpt = i
+          ept = i
+        end if
+      else
+        if(.not.ismissing(y1_gt_y2(i)).and.y1_gt_y2(i))
+          ept = i
+        end if
+        if(ismissing(y1_gt_y2(i)).or..not.y1_gt_y2(i).or.ept.eq.(nx-1))
+;
+; Draw polygon, If bpt is the very first point or ept is the
+; very last point, then these are special cases we have to
+; handle separately.
+;
+          if(bpt.eq.0.or.(bpt.gt.0.and.(ismissing(y1(bpt-1)).or.\
+                                        ismissing(y2(bpt-1)).or.\
+                                        ismissing(x(bpt-1)))))
+            first(0) =  x(bpt)
+            first(1) = y2(bpt)
+          else
+          var_string = "fill_polygon" + npoly
+;
+; If the two points are within delta of each other, then we'll
+; consider them to be the same point.
+;
+              first(0) =  x(bpt-1)
+              first(1) = y1(bpt-1)
+            else
+;
+; Otherwise, find the intersection where the two curves cross.
+;
+              first = find_cross_xy(x(bpt-1),x(bpt),y1(bpt-1), \
+                                    y1(bpt),y2(bpt-1),y2(bpt))
+            end if
+          end if
+          if(ept.eq.(nx-1).or.(ept.lt.(nx-1).and.(ismissing(y1(ept+1)).or.\
+                                                  ismissing(y2(ept+1)).or.\
+                                                  ismissing(x(ept+1)))))
+            last(0) =  x(ept)
             last(1) = y2(ept)
           else
             if(fabs(y1(ept+1)-y2(ept+1)).le.delta)
@@ -2258,13 +2492,14 @@ min_lon, max_lon, res2, tmres, ticks_on
     ratio2 = lon_range/lat_range
     ratio = min((/ratio1,ratio2/))
 
-    getvalues map_object
-        "tiXAxisFontHeightF"   : xfontf
-        "tiYAxisFontHeightF"   : yfontf
+    ratios  = (/0.50, 0.75, 1.00/)  ; lat/lon ratios
+    wharray = (/0.80, 0.70, 0.52/)  ; default widths/heights
+
     wh_ind    = ind(ratio.le.ratios)
     def_vpwf  = wharray(wh_ind(0))    ; default width for plot
     def_vphf  = def_vpwf              ; default height for plot
-                                          ; the size of the X/Y axis labels.
+
+    set_attr(res2,"vpWidthF",min((/lon_range/lat_range,1./)) * def_vpwf)
 
     set_attr(res2,"vpHeightF",min((/lat_range/lon_range,1./)) * def_vphf)
     set_attr(res2,"vpXF",(1. - res2@vpWidthF)/2.)
@@ -3743,8 +3978,6 @@ begin
     set_subtitles_res(res2,mpres)
 
 ;
-      "tiXAxisFontHeightF"   : xfontf
-      "tiYAxisFontHeightF"   : yfontf
 ; Check for other special resources.
 ;
     if(isatt(res2,"gsnMajorLonSpacing"))
@@ -3926,8 +4159,6 @@ begin
 
     check_for_y_lat_coord(unew,res2,"vector")
     check_for_lon_coord(unew,res2,"vector")
-      "tiXAxisFontHeightF"   : xfontf
-      "tiYAxisFontHeightF"   : yfontf
 
     if(.not.(isatt(res2,"vfXArray")))
       set_attr(res2,"vfXCStartV",-180.)
@@ -4591,7 +4822,8 @@ begin
             print("gsn_csm_xy: Fatal: There are no values above or below the chosen reference line.")
             print("Cannot draw a bar chart.")
         var_string = "polygons" + i
-        xy_object@$var_string$=fill_xy(wks,xy_object,xinterp(i,0:npts(i)-1), \
+            yinterp = y
+                                     xinterp(i,0:npts(i)-1), \
                                      yinterp(i,0:npts(i)-1),\
             yinterp = new((/2*ncurves,nab_max/),double,yabove@_FillValue)
 
