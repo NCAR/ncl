@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.148 2002-09-26 22:14:36 haley Exp $
+ *      $Id: BuiltInFuncs.c,v 1.149 2003-02-25 17:47:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -6664,6 +6664,7 @@ NhlErrorTypes _NclIIsCoord
 		0
 	));
 }
+
 NhlErrorTypes _NclIIsAtt
 #if	NhlNeedProto
 (void)
@@ -6783,7 +6784,7 @@ NhlErrorTypes _NclIIsDim
 	
 
 	if(tmp_var == NULL) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsAtt: Non variable passed returning missing");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsDim: Non variable passed returning missing");
 		NclReturnValue(
 			&miss,
 			1,
@@ -6818,6 +6819,114 @@ NhlErrorTypes _NclIIsDim
 		NCL_logical,
 		0
 	));
+}
+
+NhlErrorTypes _NclIIsNamedDim
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry arg0,arg1,arg2;
+	NclMultiDValData tmp_md,dim_md;
+	int i;
+	logical *outval;
+	NclVar tmp_var;
+	int *vals;
+	NclSymbol* s;
+	logical miss = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
+	int dimsize = 1;
+	int get_all = 0;
+
+	
+	arg1  = _NclGetArg(0,2,DONT_CARE);
+	arg2  = _NclGetArg(1,2,DONT_CARE);
+
+	switch(arg1.kind) {
+	case NclStk_VAR:
+		tmp_var = arg1.u.data_var;
+		break;
+	case NclStk_VAL:
+		tmp_var = NULL;
+		break;
+	}
+	switch(arg2.kind) {
+	case NclStk_VAR:
+		dim_md = _NclVarValueRead(arg2.u.data_var,NULL,NULL);
+		break;
+	case NclStk_VAL:
+		dim_md = arg2.u.data_obj;
+		break;
+	}
+	
+
+	if(tmp_var == NULL) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsNamedDim: Non variable passed returning missing");
+		NclReturnValue(
+			&miss,
+			1,
+			&dimsize,
+			&((NclTypeClass)nclTypelogicalClass)->type_class.default_mis,
+			NCL_logical,
+			1
+		);
+		return(NhlWARNING);
+	}
+	vals = (int*)dim_md->multidval.val;
+	if (vals[0] == -1 && dim_md->multidval.totalelements == 1) {
+		outval = (logical*)NclMalloc((unsigned)sizeof(logical)*tmp_var->var.n_dims);
+		for (i = 0; i < tmp_var->var.n_dims; i++) {
+			if (tmp_var->var.dim_info[i].dim_quark < 1)
+				outval[i] = 0;
+			else
+				outval[i] = 1;	
+		}
+		return(NclReturnValue(
+			(void*)outval,
+			1,
+			&tmp_var->var.n_dims,
+			NULL,
+			NCL_logical,
+			0
+			));
+	}
+		
+	outval = (logical*)NclMalloc((unsigned)sizeof(logical)*dim_md->multidval.totalelements);
+	if(dim_md->multidval.missing_value.has_missing) {
+		for(i = 0; i < dim_md->multidval.totalelements; i++) {
+			if (vals[i] < 0 || vals[i] > tmp_var->var.n_dims - 1)
+				outval[i] = 0;
+			else if(vals[i] != dim_md->multidval.missing_value.value.intval) {
+				if (tmp_var->var.dim_info[vals[i]].dim_quark < 1)
+					outval[i] = 0;
+				else
+					outval[i] = 1;	
+			}
+			else {
+				outval[i] = 0;
+			}
+		}
+	} else {
+		for(i = 0; i < dim_md->multidval.totalelements; i++) {
+			if (vals[i] < 0 || vals[i] > tmp_var->var.n_dims - 1)
+				outval[i] = 0;
+			else if (tmp_var->var.dim_info[vals[i]].dim_quark < 1)
+				outval[i] = 0;
+			else
+				outval[i] = 1;	
+
+		}
+	}
+	return(NclReturnValue(
+		(void*)outval,
+		dim_md->multidval.n_dims,
+		dim_md->multidval.dim_sizes,
+		NULL,
+		NCL_logical,
+		0
+	));
+	
 }
 
 NhlErrorTypes _NclIIsFileVar
