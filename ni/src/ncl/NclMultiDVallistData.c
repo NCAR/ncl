@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDVallistData.c,v 1.1 1999-11-12 18:36:42 ethan Exp $
+ *      $Id: NclMultiDVallistData.c,v 1.2 2000-03-10 20:33:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -33,7 +33,41 @@
 #include "NclTypelist.h"
 #include "ListSupport.h"
 
+static NhlErrorTypes MultiDValPrint
+#if     NhlNeedProto
+(NclObj self, FILE *fp)
+#else
+(self,fp)
+NclObj self;
+FILE *fp;
+#endif
+{
+	NclList tmp_list;
+	NclListObjList *step;
+	NclObjClass oc;
+	NclMultiDValData self_md = (NclMultiDValData)self;
+	NhlErrorTypes ret;
+	
 
+	tmp_list = _NclGetObj(*(obj*)self_md->multidval.val);
+
+	step = tmp_list->list.first;
+	
+	while(step != NULL) {
+		oc = _NclObjTypeToPointer(step->orig_type);
+		if(oc != NULL) {
+	 		ret = nclfprintf(fp,"\t%s\n",oc->obj_class.class_name);
+		} else {
+			ret = NhlWARNING;
+		}
+                if(ret < 0) {
+                        return(NhlWARNING);
+                }
+		step = step->next;
+	}
+        return(NhlNOERROR);
+	
+}
 static struct _NclDataRec *MultiDVal_list_ReadSection
 #if	NhlNeedProto
 (NclData self, NclSelectionRecord * sel,NclScalar *missing)
@@ -1596,7 +1630,7 @@ NclMultiDVallistDataClassRec nclMultiDVallistDataClassRec = {
 /* NclInitClassFunction initialize_class; 	*/	InitializelistDataClass,
 	(NclAddParentFunction)NULL,
                 (NclDelParentFunction)NULL,
-	/* NclPrintFunction print; 	*/	NULL,
+	/* NclPrintFunction print; 	*/	MultiDValPrint,
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
 /* NclCallBackList* modify_callback*/   NULL,

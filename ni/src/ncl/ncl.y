@@ -1783,22 +1783,26 @@ named_subscript_list:  subscript2 	{
 						NclSrcListNode *step;
                                                 
                                                 step = $1;
-                                                while(step->next != NULL) 
-                                                        step = step->next;
-                                                step->next = _NclMakeNewListNode();
-                                                step->next->next = NULL;
-                                                step->next->node = $3;
+						if(!is_error) {
+                                                	while(step->next != NULL) 
+                                                        	step = step->next;
+                                                	step->next = _NclMakeNewListNode();
+                                                	step->next->next = NULL;
+                                                	step->next->node = $3;
+						}
 						
 					}
 	| named_subscript_list ',' LBC subscript3 RBC {
 						NclSrcListNode *step;
                                          
                                                 step = $1;
-                                                while(step->next != NULL)
-                                                        step = step->next;
-                                                step->next = _NclMakeNewListNode();
-                                                step->next->next = NULL;
-                                                step->next->node = $4;
+						if(!is_error) {
+                                                	while(step->next != NULL)
+                                                        	step = step->next;
+                                                	step->next = _NclMakeNewListNode();
+                                                	step->next->next = NULL;
+                                                	step->next->node = $4;
+						}
                                                 
 					}
 	| named_subscript_list ',' error {
@@ -1825,22 +1829,26 @@ normal_subscript_list:  subscript0 	{
 						NclSrcListNode *step;
                                                 
                                                 step = $1;
-                                                while(step->next != NULL) 
-                                                        step = step->next;
-                                                step->next = _NclMakeNewListNode();
-                                                step->next->next = NULL;
-                                                step->next->node = $3;
+						if(!is_error){
+                                                	while(step->next != NULL) 
+                                                        	step = step->next;
+                                                	step->next = _NclMakeNewListNode();
+                                                	step->next->next = NULL;
+                                                	step->next->node = $3;
+						}
 						
 					}
 	| normal_subscript_list ',' LBC subscript1 RBC {
 						NclSrcListNode *step;
                                          
                                                 step = $1;
-                                                while(step->next != NULL)
-                                                        step = step->next;
-                                                step->next = _NclMakeNewListNode();
-                                                step->next->next = NULL;
-                                                step->next->node = $4;
+						if(!is_error){
+                                                	while(step->next != NULL)
+                                                        	step = step->next;
+                                                	step->next = _NclMakeNewListNode();
+                                                	step->next->next = NULL;
+                                                	step->next->node = $4;
+						}
                                                 
 					}
 	| normal_subscript_list ',' error {
