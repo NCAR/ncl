@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.24 1996-02-22 21:49:46 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.25 1996-03-07 17:25:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2230,8 +2230,13 @@ NhlErrorTypes _NclIasciiwrite
 	}
 	step = (char*)tmp_md->multidval.val;
 	for(i = 0; i < tmp_md->multidval.totalelements; i++) {
-		_Nclprint(tmp_md->multidval.type,fd,(void*)step);
-		nclfprintf(fd,"\n");
+		ret = _Nclprint(tmp_md->multidval.type,fd,(void*)step);
+		if(ret < NhlINFO) {
+			return(NhlWARNING);
+		}
+		if(nclfprintf(fd,"\n")< 0) {
+			return(NhlWARNING);
+		}
 		step = step + tmp_md->multidval.type->type_class.size;
 	}
 	if(!is_stdout) {

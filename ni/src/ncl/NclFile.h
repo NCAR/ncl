@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclFile.h,v 1.2 1994-12-23 01:18:19 ethan Exp $
+ *      $Id: NclFile.h,v 1.3 1996-03-07 17:26:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -224,8 +224,8 @@ typedef struct _NclFilePart {
 	int 		var_att_ids[NCL_MAX_FVARS];
 
 	int 	   	n_file_dims;
-	struct _NclFDimRec  	*file_dim_info[NCL_MAX_DIMENSIONS];
-	struct _NclFVarRec	*coord_vars[NCL_MAX_DIMENSIONS];
+	struct _NclFDimRec  	*file_dim_info[NCL_MAX_FVARS];
+	struct _NclFVarRec	*coord_vars[NCL_MAX_FVARS];
 
 	int		n_file_atts;
 	struct _NclFAttRec	*file_atts[NCL_MAX_FVARS];

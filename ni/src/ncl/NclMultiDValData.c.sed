@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.17 1996-01-18 22:14:14 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.18 1996-03-07 17:26:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1824,6 +1824,7 @@ FILE *fp;
         int ndims = self_md->multidval.n_dims;
 	int el_size;
 	int ret = 0;
+	NhlErrorTypes ret0 = NhlNOERROR;
 
 
 	el_size = self_md->multidval.type->type_class.size;
@@ -1851,7 +1852,10 @@ FILE *fp;
                 where = where + i[ndims - 1];
 
 	
-		_Nclprint(self_md->multidval.type,fp,(void*)((char*)self_md->multidval.val + (where * el_size)));
+		ret0 = _Nclprint(self_md->multidval.type,fp,(void*)((char*)self_md->multidval.val + (where * el_size)));
+		if(ret0 < NhlINFO) {
+			return(NhlWARNING);
+		}
 		ret = nclfprintf(fp,"\n");
 		if(ret < 0) {
 			return(NhlWARNING);
