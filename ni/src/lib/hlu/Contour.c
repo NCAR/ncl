@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.40 1994-11-17 20:49:24 boote Exp $
+ *      $Id: Contour.c,v 1.41 1994-11-17 22:40:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3071,11 +3071,11 @@ static NhlErrorTypes ContourPreDraw
 	if (cnl->view.use_segments && ! cnp->new_draw_req)
 		return cnSegDraw(cnl,NhlPREDRAW);
 
-	subret = cnInitDraw(cnl,entry_name);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
 	if (cnp->display_constf)
 		return NhlNOERROR;
+
+	subret = cnInitDraw(cnl,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
 	subret = cnDraw(cnl,NhlPREDRAW);
 	return MIN(subret,ret);
@@ -3430,39 +3430,34 @@ static NhlErrorTypes AddDataBoundToAreamap
 #if 0
 #define _cnMAPBOUNDINC	3700
 #endif
-#define _cnMAPBOUNDINC	2000
+#define _cnMAPBOUNDINC	100
 
-	if ( cnp->trans_obj->base.layer_class->base_class.nrm_class ==
-		   NhlmapTransObjLayerClass->base_class.nrm_class) {
+	if (cnp->trans_obj->base.layer_class->base_class.class_name ==
+	    NhlmapTransObjLayerClass->base_class.class_name) {
 		ezmap = True;
 	}
+
 #if 0
 	gset_linewidth(4.0);
 	gset_line_colr_ind(30);
 #endif
-	if (! ezmap) {
-		float wlx,wby,wrx,wuy;
-		float txmin,txmax,tymin,tymax;
 
-#if 0
+	if (! ezmap) {
+		float twlx,twrx,twby,twuy;
+		float gwlx,gwrx,gwby,gwuy;
+		float txmin,txmax,tymin,tymax;
+		float gxmin,gxmax,gymin,gymax;
+		NhlBoolean lbox, rbox, bbox, tbox;
+
 		ret = NhlVAGetValues(cnp->trans_obj->base.id,
 				     NhlNtrXMinF,&txmin,
 				     NhlNtrXMaxF,&txmax,
 				     NhlNtrYMinF,&tymin,
-				     NhlNtrYMaxF,&tymax,NULL);
-
-		txmin = MAX(cnp->xlb,txmin);
-		txmax = MIN(cnp->xub,txmax);
-		tymin = MAX(cnp->ylb,tymin);
-		tymax = MIN(cnp->yub,tymax);
-#endif
-		txmin = cnp->xlb;
-		txmax = cnp->xub;
-		tymin = cnp->ylb;
-		tymax = cnp->yub;
+				     NhlNtrYMaxF,&tymax,
+				     NULL);
 
 		_NhlDataToWin(cnp->trans_obj,(NhlLayer) cl,&txmin,&tymin,
-			      1,&wlx,&wby,&status,
+			      1,&twlx,&twby,&status,
 			      NULL,NULL);
 		if (status) {
 			e_text = "%s: data boundary is out of range";
@@ -3472,7 +3467,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 		}
 
 		_NhlDataToWin(cnp->trans_obj,(NhlLayer) cl,&txmax,&tymax,
-			      1,&wrx,&wuy,&status,
+			      1,&twrx,&twuy,&status,
 			      NULL,NULL);
 		if (status) {
 			e_text = "%s: data boundary is out of range";
@@ -3480,26 +3475,143 @@ static NhlErrorTypes AddDataBoundToAreamap
 			ret = MIN(ret,NhlWARNING);
 			return ret;
 		}
-		xa[0] = xa[1] = xa[4] = wlx;
-		xa[2] = xa[3] = wrx;
-		ya[0] = ya[3] = ya[4] = wuy;
-		ya[1] = ya[2] = wby;
-		xrev=wlx>wrx;
-		yrev=wby>wuy;
-		if (! (xrev || yrev) || (xrev && yrev)) 
-			_NhlAredam(cnp->aws,xa,ya,5,3,0,-1,entry_name);
-		else
-			_NhlAredam(cnp->aws,xa,ya,5,3,-1,0,entry_name);
+
+		gxmin = MAX(txmin,cnp->xlb);
+		gxmax = MIN(txmax,cnp->xub);
+		gymin = MAX(tymin,cnp->ylb);
+		gymax = MIN(tymax,cnp->yub);
+
+		_NhlDataToWin(cnp->trans_obj,(NhlLayer) cl,&gxmin,&gymin,
+			      1,&gwlx,&gwby,&status,
+			      NULL,NULL);
+		if (status) {
+			e_text = "%s: data boundary is out of range";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+			return ret;
+		}
+
+		_NhlDataToWin(cnp->trans_obj,(NhlLayer) cl,&gxmax,&gymax,
+			      1,&gwrx,&gwuy,&status,
+			      NULL,NULL);
+		if (status) {
+			e_text = "%s: data boundary is out of range";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+			return ret;
+		}
+
+		xrev = twlx > twrx;
+		yrev = twby > twuy;
+
+		if (! xrev) {
+			lbox = gwlx > twlx;
+			rbox = gwrx < twrx;
+		}
+		else {
+			lbox = gwlx < twlx;
+			rbox = gwrx > twrx;
+		}
+		if (! yrev) {
+			bbox = gwby > twby;
+			tbox = gwuy < twuy;
+		}
+		else {
+			bbox = gwby > twby;
+			tbox = gwuy < twuy;
+		}
+		if (lbox) {
+			xa[0] = xa[1] = xa[4] = twlx;
+			xa[2] = xa[3] = gwlx;
+			ya[0] = ya[3] = ya[4] = twuy;
+			ya[1] = ya[2] = twby;
+
+			if (! (xrev || yrev) || (xrev && yrev)) 
+				_NhlAredam(cnp->aws,xa,ya,
+					   5,17,9999,0,entry_name);
+			else
+				_NhlAredam(cnp->aws,xa,ya,
+					   5,17,0,9999,entry_name);
+		}
+		if (rbox) {
+			xa[0] = xa[1] = xa[4] = gwrx;
+			xa[2] = xa[3] = twrx;
+			ya[0] = ya[3] = ya[4] = twuy;
+			ya[1] = ya[2] = twby;
+			if (! (xrev || yrev) || (xrev && yrev)) 
+				_NhlAredam(cnp->aws,xa,ya,
+					   5,17,9999,0,entry_name);
+			else
+				_NhlAredam(cnp->aws,xa,ya,
+					   5,17,0,9999,entry_name);
+		}
+		if (bbox) {
+			xa[0] = xa[1] = xa[4] = gwlx;
+			xa[2] = xa[3] = gwrx;
+			ya[0] = ya[3] = ya[4] = gwby;
+			ya[1] = ya[2] = twby;
+			if (! (xrev || yrev) || (xrev && yrev)) 
+				_NhlAredam(cnp->aws,xa,ya,
+					   5,17,9999,0,entry_name);
+			else
+				_NhlAredam(cnp->aws,xa,ya,
+					   5,17,0,9999,entry_name);
+		}
+		if (tbox) {
+			xa[0] = xa[1] = xa[4] = gwlx;
+			xa[2] = xa[3] = gwrx;
+			ya[0] = ya[3] = ya[4] = twuy;
+			ya[1] = ya[2] = gwuy;
+			if (! (xrev || yrev) || (xrev && yrev)) 
+				_NhlAredam(cnp->aws,xa,ya,
+					   5,17,9999,0,entry_name);
+			else
+				_NhlAredam(cnp->aws,xa,ya,
+					   5,17,0,9999,entry_name);
+		}
+
 	}
 	else {
-		char            cval[4];
+		NhlBoolean	started = False;
+		float		xinc,yinc; 
+		int		j;
+		char		cval[4];
 
-                c_mpgetc("OU",cval,3);
-                c_mpsetc("OU","NO");
-                c_mpseti("G2",3);
-                c_mpseti("VS",1);
-                _NhlMapbla(cnp->aws,entry_name);
-                c_mpsetc("OU",cval);
+		xa[0] = xa[1] = xa[4] = cnp->xlb;
+		xa[2] = xa[3] = cnp->xub;
+		ya[0] = ya[3] = ya[4] = cnp->ylb;
+		ya[1] = ya[2] = cnp->yub;
+
+		for (i=0;  i < 4; i++) {
+			xinc = (xa[i+1] - xa[i]) / _cnMAPBOUNDINC;
+			yinc = (ya[i+1] - ya[i]) / _cnMAPBOUNDINC;
+			if (! started) {
+				_NhlMapita(cnp->aws,ya[i],xa[i],
+					   0,3,-1,0,entry_name);
+#if 0
+				c_mapit(ya[i],xa[i],0);
+#endif
+				started = True;
+			}
+			for (j = 0; j < _cnMAPBOUNDINC + 1; j++) {
+				_NhlMapita(cnp->aws,ya[i]+j*yinc,xa[i]+j*xinc,
+					   1,3,-1,0,entry_name);
+#if 0
+				c_mapit(ya[i]+j*yinc,xa[i]+j*xinc,1);
+#endif
+			}
+		}
+		_NhlMapiqa(cnp->aws,3,-1,0,entry_name);
+#if 0
+		c_mapiq();
+#endif
+
+		c_mpgetc("OU",cval,3);
+		c_mpsetc("OU","NO");
+		c_mpseti("G2",3);
+		c_mpseti("VS",1);
+		_NhlMapbla(cnp->aws,entry_name);
+		c_mpsetc("OU",cval);
 	}
 	return NhlNOERROR;
 }
@@ -5669,10 +5781,6 @@ static NhlErrorTypes ManageConstFLabel
  * field condition must exist for the constant field annotation to 
  * created and/or displayed.
  */
-	cnp->display_constf = cflp->on && cnp->const_field;
-
-	if (! cnp->display_constf && (init || ! ocnp->display_constf))
-		return NhlNOERROR;
 
 	if (init || cnp->constf_string != ocnp->constf_string) {
 		int strsize = cnp->constf_string == NULL ? 
@@ -5692,6 +5800,12 @@ static NhlErrorTypes ManageConstFLabel
 		if (! init && ocnp->constf_string != NULL) 
 			NhlFree(ocnp->constf_string);
 	}
+
+	cnp->display_constf = cflp->on && cnp->const_field;
+
+	if (! cnp->display_constf && 
+	    (cnp->display_constf == ocnp->display_constf))
+		return NhlNOERROR;
 
 	subret = ReplaceSubstitutionChars(cnp,ocnp,init,_cnCONSTF,
 					  &text_changed,entry_name);
@@ -7905,17 +8019,18 @@ static NhlErrorTypes    cnComputeRefLevel
 	int	i;
 	int	divpwr,sigdig,ref_level = 0;
 	int	min_sig_digits = 64;
-	float	test_fac = 1.0, test_val = fabs(cnp->zmax);
+	float	test_fac = 1.0;
+	float	test_val = MAX(fabs(cnp->zmax),fabs(cnp->zmin));
 	float	test_high = pow(10.0,cnp->max_data_format.sig_digits);
 	float	test_low  = pow(10.0,cnp->max_data_format.sig_digits - 1);
 
-	if (fabs(cnp->zmax) < test_low) {
+	if (test_val < test_low) {
 		while (test_val < test_low) {
 			test_val *= 10.0;
 			test_fac *= 10.0;
 		}
 	}
-	else if (fabs(cnp->zmax) >= test_high) {
+	else if (test_val >= test_high) {
 		while (test_val >= test_high) {
 			test_val /= 10.0;
 			test_fac /= 10.0;
@@ -8559,13 +8674,13 @@ int (_NHLCALLF(nhlfll,NHLFLL))
 	int i;
 	int pat_ix, col_ix;
 	float fscale;
-#if 0
+
 	for (i = 0; i < *nai; i++) {
-		if (iag[i] == 10 && iai[i] == -1) {
+		if (iag[i] == 17 && iai[i] == 9999) {
 			return 0;
 		}
 	}
-#endif
+
 	for (i = 0; i < *nai; i++) {
 		if (iag[i] == 3) {
 			if (iai[i] > 99 && 
