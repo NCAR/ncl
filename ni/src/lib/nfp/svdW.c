@@ -210,7 +210,7 @@ NhlErrorTypes svdcov_W( void )
 /*
  * Allocate memory for work array.
  */
-  lwk = ncolx*ncoly + pow(ncolx,2) + pow(ncoly,2) +
+  lwk = ncolx*ncoly + ncolx*ncolx + ncoly*ncoly +
         ntimes*ncolx + ntimes*ncoly + min(ncolx,ncoly) +
         max(3*min(ncolx,ncoly) + max(ncolx,ncoly), 5*min(ncolx,ncoly)-4);
   w = (double *)NclMalloc(lwk*sizeof(double));
@@ -666,7 +666,7 @@ NhlErrorTypes svdstd_W( void )
 /*
  * Allocate memory for work array.
  */
-  lwk = ncolx*ncoly + pow(ncolx,2) + pow(ncoly,2) +
+  lwk = ncolx*ncoly + ncolx*ncolx + ncoly*ncoly +
         ntimes*ncolx + ntimes*ncoly + min(ncolx,ncoly) +
         max(3*min(ncolx,ncoly) + max(ncolx,ncoly), 5*min(ncolx,ncoly)-4);
   w = (double *)NclMalloc(lwk*sizeof(double));
