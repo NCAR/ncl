@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ng4ex.csh,v 1.1 2000-04-18 21:22:49 haley Exp $
+#   $Id: ng4ex.csh,v 1.2 2001-07-05 21:44:14 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -362,7 +362,7 @@ set n_list = ($n_list $n_textitem)
 #***********************#
 set c_tickmark = (tm01c tm02c tm03c)
 set f_tickmark = (tm01f tm02f tm03f)
-set n_tickmark = (tm01n tm02n tm03n)
+set n_tickmark = (tm01n tm02n tm03n tm04n)
 set tickmark_list  = ($c_tickmark $f_tickmark $n_tickmark)
 set c_list = ($c_list $c_tickmark)
 set f_list = ($f_list $f_tickmark)
@@ -495,13 +495,13 @@ while ($#argv > 0)
       set ws_type = $1
       if ("$ws_type" == "NCGM" || "$ws_type" == "ncgm") then
         set NCGM
-        @@ num_set += 1
+        @ num_set += 1
       else if ("$ws_type" == "X11" || "$ws_type" == "x11") then
         set X11
-        @@ num_set += 1
+        @ num_set += 1
       else if ("$ws_type" == "PS" || "$ws_type" == "ps") then
         set PS
-        @@ num_set += 1
+        @ num_set += 1
       else
         echo ""
         echo "    '$ws_type' is not a valid workstation type."
