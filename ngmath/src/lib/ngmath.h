@@ -24,6 +24,12 @@ void   c_csvoro(int, float [], float [], int, int,
                 int *, int [], int *);
 void   c_cstrans(int, float *, float *, float *, float *, float *);
 void   c_csscoord(float, float, float, float *, float *, float *);
+void   c_cssetr(char *, float);
+void   c_csgetr(char *, float *);
+void   c_csseti(char *, int);
+void   c_csgeti(char *, int *);
+void   c_css2c(int, float *, float *, float *, float *, float *);
+void   c_csc2s(int, float *, float *, float *, float *, float *);
 
 int   *c_csstrid(int, double [], double [], int *, int *);
 double *c_cssgridd(int, double [], double [], double [],
@@ -33,6 +39,10 @@ void   c_csvorod(int, double [], double [], int, int,
                 int *, int [], int *);
 void   c_cstransd(int, double *, double *, double *, double *, double *);
 void   c_csscoordd(double, double, double, double *, double *, double *);
+void   c_cssetd(char *, double);
+void   c_csgetd(char *, double *);
+void   c_css2cd(int, double *, double *, double *, double *, double *);
+void   c_csc2sd(int, double *, double *, double *, double *, double *);
  
 /*
  *  Function prototypes for the csagrid package.
