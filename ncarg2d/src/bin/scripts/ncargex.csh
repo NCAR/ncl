@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.34 1993-04-12 17:26:01 haley Exp $
+#   $Id: ncargex.csh,v 1.35 1993-04-12 19:17:06 haley Exp $
 #
 
 #********************#
@@ -115,9 +115,9 @@ set ttr_conpack  = (ccpback ccpcff ccpcfx ccpcica ccpcir ccpcis ccpcit ccpclc \
                     ccpils ccpilt ccpklb ccplbam ccplbdr ccpline ccpllb \
                     ccpllc ccplll ccpllo ccpllp ccpllt ccpllw ccpmap \
                     ccpmovi ccpmpxy ccpncls ccpnet ccpnof ccpnsd ccppc ccppc1 \
-                    ccppc2 ccppc3 ccppc4 ccppkcl ccpt2d ccprc ccprect ccprwc \
-                    ccprwu ccpscam ccpset ccpsps1 ccpsps2 ccpspv ccptitle \
-                    ccpvp ccpvs colcon ${ttr_cbivar})
+                    ccppc2 ccppc3 ccppc4 ccppkcl ccppole ccpt2d ccprc ccprect \
+                    ccprwc ccprwu ccpscam ccpset ccpsps1 ccpsps2 ccpspv \
+                    ccptitle ccpvp ccpvs colcon ${ttr_cbivar})
 set conpack_list = ($ex_conpack $tst_conpack $ttr_conpack)
 
 #******************************#
