@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <errno.h>
 #include <ncarg/ncarg_ras.h>
 
 static char	*ProgramName		= (char *) NULL;
@@ -38,8 +39,9 @@ main(argc, argv)
 	int	argc;
 	char	*argv[];
 {
-	int	i;
-	int	opt_id;
+	int		status;
+	int		i;
+	int		opt_id;
 
 	ProgramName = argv[0];
 
@@ -91,7 +93,12 @@ main(argc, argv)
 				(void) Print(argv[i]);
 			}
 			else {
-				(void) PrintLs(argv[i]);
+				status = PrintLs(argv[i]);
+				if (status != RAS_OK) {
+					(void) fprintf(stderr,
+						"%s: %s\n",
+						ProgramName, ErrGetMsg());
+				}
 			}
 		}
 	}
@@ -102,13 +109,13 @@ int PrintLs(name)
 {
 	int		status;
 	Raster		*ras, *RasterOpen();
-	int		errno = 0;
+	int		error_number = 0;
 	char		*format, *desc;
 	struct stat	statb;
 
 	status = stat(name, &statb);
 	if (status < 0) {
-		(void) fprintf(stderr, "%s: Could not stat \"%s\"\n", name);
+		(void) ESprintf(errno, "stat(\"%s\",buf)", name);
 		return(RAS_ERROR);
 	}
 
@@ -126,8 +133,8 @@ int PrintLs(name)
 
 	ras = RasterOpen(name, (char *) NULL);
 	if (ras == (Raster *) NULL) {
-		errno = ErrGetNum();
-		if (errno == RAS_E_UNKNOWN_FORMAT) {
+		error_number = ErrGetNum();
+		if (error_number == RAS_E_UNKNOWN_FORMAT) {
 			(void) PrintLine(name,
 				0, 0, RAS_UNKNOWN, "Unknown Format");
 		}
@@ -137,8 +144,8 @@ int PrintLs(name)
 		}
 			
 		if (opt.verbose) {
-			errno = ErrGetNum();
-			if (errno != RAS_E_UNKNOWN_FORMAT) {
+			error_number = ErrGetNum();
+			if (error_number != RAS_E_UNKNOWN_FORMAT) {
 				(void) RasterPrintError(name);
 				return(RAS_ERROR);
 			}
