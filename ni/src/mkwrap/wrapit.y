@@ -6,7 +6,7 @@
 #include <ncarg/ncl/NclDataDefs.h>
 #include "WSymbol.h"
 #include "fstrings.h"
-
+extern char *yytext;
 void yyerror(char *);
 extern char* gettxt();
 typedef struct wrap_src_node_list {
@@ -128,7 +128,7 @@ char *CType(int datatype) {
 
 %token <void> '@' '&' ':' ',' '(' ')' '*' '[' ']' '=' '/' '#' '^' EOLN ENDOFIF 
 %token <integer> INT 
-%token <sym> BYTE1 INTEGER2 INTEGER4 INTEGER8 REAL4 REAL8 DIMENSION DATA SAVE COMMON
+%token <sym> BYTE1 INTEGER2 INTEGER4 INTEGER8 REAL4 REAL8 DIMENSION DATA SAVE COMMON IMPLICIT
 %token <sym> WPARAM FNAME UNDEF SUBROUTINE FUNCTION NEW IN OUT INOUT TYPE
 %token <sym> NOMISSING DIMSIZES PROCEDURE MISSING RETURN REAL PRECISION
 %token <sym> INTEGER FLOAT LONG DOUBLE BYTE CHARACTER STRNG 
@@ -760,7 +760,6 @@ arg_list : UNDEF
 		$1->u.farg->n_dims = 1;
 		sprintf(buffer,"FARG%d",nargs++);
 #if  YYDEBUG
-		fprintf(stdout,"Adding.. %s\n",buffer);
 #endif
 		s = _NclAddInScope(current->wrec,buffer,XFARG);
 		s->u.xref = $1;
@@ -780,7 +779,6 @@ arg_list : UNDEF
 		$1->u.farg->n_dims = 1;
 		sprintf(buffer,"FARG%d",nargs++);
 #if  YYDEBUG
-		fprintf(stdout,"Adding.. %s\n",buffer);
 #endif
 
 		s = _NclAddInScope(current->wrec,buffer,XFARG);
@@ -863,6 +861,12 @@ ftype : BYTE
 		$$->size = -1;
 	}
 	| DATA
+	{
+		$$ = (FTypeVal*)malloc(sizeof(FTypeVal));
+		$$->datatype = NCL_none;
+		$$->size = -1;
+	}
+	| IMPLICIT
 	{
 		$$ = (FTypeVal*)malloc(sizeof(FTypeVal));
 		$$->datatype = NCL_none;
@@ -2008,6 +2012,10 @@ void yyerror
 	char *s;
 #endif
 {
-	fprintf(stderr,"Syntax Error: exiting....\n");
+	char error_buffer[1024];
+	int i;
+
+	
+	fprintf(stderr,"Line: %d A syntax error occurred while parsinge: %s\n",yytext);
 	exit(0);
 }
