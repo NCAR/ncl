@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.4 1993-02-18 17:44:58 haley Exp $
+#	$Id: ncargcex.csh,v 1.5 1993-03-01 23:59:17 haley Exp $
 #
 
 if ($#argv < 1) then
@@ -22,7 +22,7 @@ endif
 
 set example_list=(\
 c_agex07 c_colcon c_mpex05 c_eezmpa c_elblba c_epltch c_cbex01 \
-c_slex01 c_sfex02)
+c_slex01 c_sfex02 c_gtxpac)
 
 set X11_option = ""
 
