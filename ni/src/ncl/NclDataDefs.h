@@ -105,7 +105,7 @@ NCL_obj = 	02000
 } NclBasicDataTypes;
 
 typedef NclQuark string; /* Makes this a quark type */
-typedef char byte;
+typedef unsigned char byte;
 typedef int logical;
 typedef int obj;
 
