@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkspaceI.h,v 1.13 1998-11-10 17:18:48 dbrown Exp $
+ *      $Id: WorkspaceI.h,v 1.14 2000-11-11 02:35:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -213,6 +213,7 @@ extern NhlErrorTypes _NhlCpcica(
 	float		ycpf,
 	float		xcqf,
 	float		ycqf,
+	float		min_cell_size,
 	NhlBoolean	smooth,
 	char		*entry_name
 #endif

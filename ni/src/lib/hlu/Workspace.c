@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.41 1998-11-12 21:40:04 dbrown Exp $
+ *      $Id: Workspace.c,v 1.42 2000-11-11 02:35:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,7 @@
  */
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include <ncarg/hlu/WorkspaceP.h>
 #include <ncarg/hlu/TransObjI.h>
 #include <ncarg/hlu/ContourPlotI.h>
@@ -2929,12 +2930,13 @@ NhlErrorTypes _NhlCpcica
 	float		ycpf,
 	float		xcqf,
 	float		ycqf,
+	float		min_cell_size,
 	NhlBoolean	smooth,
 	char		*entry_name
 )
 #else
 (zdat,flt_ws,int_ws,cell_ws,ica1,icam,ican,
- xcpf,ycpf,xcqf,ycqf,smooth,entry_name)
+ xcpf,ycpf,xcqf,ycqf,min_cell_size,smooth,entry_name)
 	float		*zdat;
 	NhlWorkspace	*flt_ws;
 	NhlWorkspace	*int_ws;
@@ -2946,6 +2948,7 @@ NhlErrorTypes _NhlCpcica
 	float		ycpf;
 	float		xcqf;
 	float		ycqf;
+	float		min_cell_size;
 	NhlBoolean	smooth;
 	char		*entry_name;
 #endif
@@ -2963,11 +2966,16 @@ NhlErrorTypes _NhlCpcica
 	int		err_num;
 	float		fl,fr,fb,ft,wl,wr,wb,wt;
 	int		ll;
-	int		start = 1;
+	int		startx = 1,starty = 1;
+	int		countx,county;
 	Gint		err_ind;
 	Gclip		clip_ind_rect;
 	float 		lxcpf,lycpf,lxcqf,lycqf;
-	float		xhalf,yhalf;
+	float		xstep,ystep;
+	float		lx = -999.,rx = -999.,by = -999. ,ty = -999.;
+	float		xedge,yedge;
+	int		xedge_ix,yedge_ix;
+	int		count;
 
 	if (! (fwsrp && fwsrp->ws_ptr && iwsrp && iwsrp->ws_ptr &&
 		cwsrp && cwsrp->ws_ptr)) { 
@@ -2983,12 +2991,10 @@ NhlErrorTypes _NhlCpcica
 		if (ret < NhlWARNING) return ret;
 	}
 
-	xhalf = 0.5 * (xcqf-xcpf) / (icam-1);
-	lxcpf = MAX(0.0,xcpf - xhalf);
-	lxcqf = MIN(1.0,xcqf + xhalf);
-	yhalf = 0.5 * (ycqf-ycpf) / (ican-1);
-	lycpf = MAX(0.0,ycpf - yhalf);
-	lycqf = MIN(1.0,ycqf + yhalf);
+	lxcpf = smooth ? MAX(0.0,xcpf) : xcpf;
+	lycpf = smooth ? MAX(0.0,ycpf) : ycpf;
+	lxcqf = smooth ? MIN(1.0,xcqf) : xcqf;
+	lycqf = smooth ? MIN(1.0,ycqf) : ycqf;
 
 	if (! smooth) {
 		ret = _NhlRasterFill(zdat,cwsrp->ws_ptr,ica1,icam,ican,
@@ -3052,9 +3058,141 @@ NhlErrorTypes _NhlCpcica
 	ginq_clip(&err_ind,&clip_ind_rect);
 	gset_clip_ind(GIND_CLIP);
 
-	_NHLCALLF(gca,GCA)(&lxcpf,&lycpf,&lxcqf,&lycqf,&icam,&ican,
-			   &start,&start,&icam,&ican,cwsrp->ws_ptr);
-	(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	countx = icam;
+	county = ican;
+	if (! smooth) {
+		float rem;
+		xstep = (lxcqf-lxcpf) / icam;
+		ystep = (lycqf-lycpf) / ican;
+		if (lxcpf < 0) {
+			count = -lxcpf / xstep;
+			rem = -lxcpf - count * xstep;
+			if (rem > 0.0)
+				count += 1;
+			startx += count;
+			countx -= count;
+			lx = xstep - rem;
+			lxcpf += count * xstep;
+		}
+		if (lxcqf > 1.0) {
+			count = (lxcqf - 1.0) / xstep;
+			rem = (lxcqf - 1.0) - count * xstep;
+			if (rem > 0.0)
+				count += 1;
+			countx -= count;
+			rx = 1.0 - (xstep -rem);
+			lxcqf -= count * xstep;
+		}
+		if (lycpf < 0) {
+			count = -lycpf / ystep;
+			rem = -lycpf - count * ystep;
+			if (rem > 0.0)
+				count += 1;
+			starty += count;
+			county -= count;
+			by = ystep -rem;
+			lycpf += count * ystep;
+		}
+		if (lycqf > 1.0) {
+			count = (lycqf - 1.0) / ystep;
+			rem = (lycqf - 1.0) - count * ystep;
+			if (rem > 0.0)
+				count += 1;
+			county -= count;
+			ty = 1.0 - (ystep - rem);
+			lycqf -= count * ystep;
+		}
+	}
+	if (countx > 0 && county > 0) {
+		_NHLCALLF(gca,GCA)(&lxcpf,&lycpf,&lxcqf,&lycqf,&icam,&ican,
+				   &startx,&starty,&countx,&county,
+				   cwsrp->ws_ptr);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	}
+
+	/* 
+	 * Fill around the edges if necessary -- the min_cell_size check
+	 * is required to prevent 0-sized arrays in device space, which
+	 * can cause core dumps, at least using the xWorkstation.
+	 */
+
+	count = 1;
+	if (lx > min_cell_size && county > 0) {
+		xedge = 0.0;
+		xedge_ix = MAX(1,startx-1);
+		_NHLCALLF(gca,GCA)(&xedge,&lycpf,&lx,&lycqf,&icam,&ican,
+				   &xedge_ix,&starty,&count,&county,
+				   cwsrp->ws_ptr);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	}
+	if (by > min_cell_size && countx > 0) {
+		yedge = 0.0;
+		yedge_ix = MAX(1,starty-1);
+		_NHLCALLF(gca,GCA)(&lxcpf,&yedge,&lxcqf,&by,&icam,&ican,
+				   &startx,&yedge_ix,&countx,&count,
+				   cwsrp->ws_ptr);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	}
+	if (rx > min_cell_size && county > 0) {
+		xedge = 1.0;
+		xedge_ix = startx + countx;
+		_NHLCALLF(gca,GCA)(&rx,&lycpf,&xedge,&lycqf,&icam,&ican,
+				   &xedge_ix,&starty,&count,&county,
+				   cwsrp->ws_ptr);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	}
+	if (ty > min_cell_size && countx > 0) {
+		yedge = 1.0;
+		yedge_ix = starty + county;
+		_NHLCALLF(gca,GCA)(&lxcpf,&ty,&lxcqf,&yedge,&icam,&ican,
+				   &startx,&yedge_ix,&countx,&count,
+				   cwsrp->ws_ptr);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	}
+	/* now do possible single cells at the corners */
+
+	if (lx > min_cell_size && by > min_cell_size) {
+		xedge = 0.0;
+		xedge_ix = MAX(1,startx - 1);
+		yedge = 0.0;
+		yedge_ix = MAX(1,starty -1);
+		_NHLCALLF(gca,GCA)(&xedge,&yedge,&lx,&by,&icam,&ican,
+				   &xedge_ix,&yedge_ix,&count,&count,
+				   cwsrp->ws_ptr);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	}
+	if (rx > min_cell_size && by > min_cell_size) {
+		xedge = 1.0;
+		xedge_ix = startx + countx;
+		yedge = 0.0;
+		yedge_ix = MAX(1,starty -1);
+		_NHLCALLF(gca,GCA)(&rx,&yedge,&xedge,&by,&icam,&ican,
+				   &xedge_ix,&yedge_ix,&count,&count,
+				   cwsrp->ws_ptr);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	}
+	if (lx > min_cell_size && ty > min_cell_size) {
+		xedge = 0.0;
+		xedge_ix = MAX(1,startx - 1);
+		yedge = 1.0;
+		yedge_ix = starty + county;
+		_NHLCALLF(gca,GCA)(&xedge,&ty,&lx,&yedge,&icam,&ican,
+				   &xedge_ix,&yedge_ix,&count,&count,
+				   cwsrp->ws_ptr);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	}
+	if (rx > min_cell_size && ty > min_cell_size) {
+		xedge = 1.0;
+		xedge_ix = startx + countx;
+		yedge = 1.0;
+		yedge_ix = starty + county;
+		_NHLCALLF(gca,GCA)(&rx,&ty,&xedge,&yedge,&icam,&ican,
+				   &xedge_ix,&yedge_ix,&count,&count,
+				   cwsrp->ws_ptr);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	}
+
+
 	gset_clip_ind(clip_ind_rect.clip_ind);
 
 	c_set(fl,fr,fb,ft,wl,wr,wb,wt,ll);

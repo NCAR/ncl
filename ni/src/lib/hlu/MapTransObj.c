@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.48 2000-05-16 01:35:26 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.49 2000-11-11 02:35:30 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -910,6 +910,54 @@ NhlLayer parent;
 	return (ret);
 
 }
+
+/*
+ * Function:	win_compare_check
+ *
+ * Description: 
+ *
+ * In Args:	
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+static NhlBoolean win_compare_check
+#if	NhlNeedProto
+(
+	NhlMapTransObjLayerPart *llp,
+	float	*x,
+ 	float	*y,
+	float   xmin,
+	float   xmax,
+	float   ymin,
+	float   ymax
+)
+#else
+(mtp,x,y,xmin,xmax,ymin,ymax)
+	NhlMapTransObjLayerPart *mtp;
+	float	*x;
+	float	*y;
+	float   xmin;
+	float   xmax;
+	float   ymin;
+	float   ymax;
+#endif
+{
+        int xmndif,xmxdif,ymndif,ymxdif;
+
+	if ((xmndif = _NhlCmpFAny2(*x,xmin,5,0.0001)) < 0 ||
+	    (xmxdif = _NhlCmpFAny2(*x,xmax,5,0.0001)) > 0 ||
+	    (ymndif = _NhlCmpFAny2(*y,ymin,5,0.0001)) < 0 ||
+	    (ymxdif = _NhlCmpFAny2(*y,ymax,5,0.0001)) > 0) {
+		return False;
+	}
+	return True;
+}
+
+
 /*
  * Function:	MapWinToNDC
  *
@@ -964,17 +1012,30 @@ int* status;
 			||(y[i] < ymin)
 			||(y[i] > ymax)) {
 			
-			xout[i] = yout[i] = minstance->trobj.out_of_range;
-			*status = 1;
+			if (! win_compare_check(mtp,&x[i],&y[i],
+						xmin,xmax,ymin,ymax)) {
+				*status = 1;
+				xout[i]=yout[i]=minstance->trobj.out_of_range;
+				continue;
+			}
+			strans(mtp->ul,mtp->ur,
+			       mtp->ub,mtp->ut,
+			       mtp->map_pos_l,
+			       mtp->map_pos_r,
+			       mtp->map_pos_b,
+			       mtp->map_pos_t,
+			       x[i],y[i],
+			       &(xout[i]),&(yout[i]));
+			
 		} else {
-               		strans(mtp->ul,mtp->ur,
-                       		mtp->ub,mtp->ut,
-                       		mtp->map_pos_l,
-				mtp->map_pos_r,
-				mtp->map_pos_b,
-				mtp->map_pos_t,
-				x[i],y[i],
-                       		&(xout[i]),&(yout[i]));
+			strans(mtp->ul,mtp->ur,
+			       mtp->ub,mtp->ut,
+			       mtp->map_pos_l,
+			       mtp->map_pos_r,
+			       mtp->map_pos_b,
+			       mtp->map_pos_t,
+			       x[i],y[i],
+			       &(xout[i]),&(yout[i]));
 		}
 	}
 
@@ -1135,8 +1196,8 @@ static NhlErrorTypes MapDataToWin
 * A problem could develop here if 1e12 is not represented identically in
 * FORTRAN and C because of arithmentic error
 */
-			if((xout[i] == 1e12)
-				||(yout[i] == 1e12)) {
+			if(_NhlCmpFAny2(xout[i],1e12,4,1e-6) == 0.0 ||
+			   _NhlCmpFAny2(yout[i],1e12,4,1e-6) == 0.0) {
 				*status = 1;
 				xout[i]=yout[i]=minstance->trobj.out_of_range;
 			}
@@ -1249,58 +1310,243 @@ static NhlErrorTypes GetMinMaxLatLon
 	float			*maxlat
 #endif
 {
-        float tlat,tlon,uval,vval;
-        float tmplon,tminlon,tmaxlon;
-        
-        *minlon = 180.0;
-        *maxlon = -180.0;
-        *minlat = 90.0;
-        *maxlat = -90.0;
-        tminlon = 360;
-        tmaxlon = 0;
-		
-        for (tlat = -90.0; tlat <= 90.0; tlat += 1.0) {
-                if (tlat == -90.0) {
-                        c_maptra(tlat,0,&uval,&vval);
-                        if (uval < 1E9 && vval < 1E9)
-                                *minlat = -90;
-                        continue;
-                }
-                if (tlat == 90.0) {
-                        c_maptra(tlat,0,&uval,&vval);
-                        if (uval < 1E9 && vval < 1E9)
-                                *maxlat = 90;
-                        continue;
-                }
-                for (tlon = -180.0; tlon <= 180.0; tlon += 1.0) {
-                        c_maptra(tlat,tlon,&uval,&vval);
-                        if (uval >= 1E9 || vval >= 1E9)
-                                continue;
-                        if (tlat < *minlat) *minlat = tlat;
-                        if (tlat > *maxlat) *maxlat = tlat;
-                        if (tlon < *minlon) *minlon = tlon;
-                        if (tlon > *maxlon) *maxlon = tlon;
-                        tmplon = tlon;
-                        if (tmplon < 0.0) tmplon += 360;
-                        if (tmplon < tminlon) tminlon = tmplon;
-                        if (tmplon > tmaxlon) tmaxlon = tmplon;
-                        
-                }
-        }
-        if (tmaxlon-tminlon < 359.0 && tmaxlon-tminlon < *maxlon-*minlon) {
-                *maxlon = tmaxlon;
-                *minlon = tminlon;
-        }
-        
-#if 0
-        printf("lat,lon min,max - %f,%f,%f,%f\n",
-	       *minlat,*maxlat,*minlon,*maxlon);
-#endif
+	NhlMapTransObjLayerPart	*mtp = &(mpl->mptrans);
+	float xloc[2],yloc[2],xout[2],yout[2],xt[2],yt[2];
+	int proj;
+	float clon,crot,clat;
+	NhlBoolean rel_lon,rel_lat;
+	NhlBoolean northpole = False, southpole = False;
+	float xdist,ydist,xinc,yinc;
+	float xmin = 999,ymin = 999,xmax = -999,ymax = -999,lastx;
+	int status;
+	float cycle_point;
+	float lat,lon,uval,vval;
+	int i,j, nsteps;
+	float ymin_u,ymin_v,ymax_u,ymax_v;
+	float xmin_u,xmin_v,xmax_u,xmax_v;
+	float xinc2,yinc2,xstart,ystart;
+	
+	proj = mtp->projection;
+	rel_lon = mtp->rel_center_lon;
+	clon = proj ==  NhlLAMBERTCONFORMAL ? 
+		mtp->lambert_meridian : mtp->center_lon;
+	if (rel_lon && mtp->map_limit_mode == NhlLATLON)
+		clon = (mtp->max_lon + mtp->min_lon) / 2.0 + clon;
 
+	crot = mtp->center_rot;
+
+	rel_lat = mtp->rel_center_lat;
+	clat = mtp->center_lat;
+	if (rel_lat && mtp->map_limit_mode == NhlLATLON)
+		clat = (mtp->max_lat + mtp->min_lat) / 2.0 + clat;
+
+	xloc[0] = mtp->left_window;
+	yloc[0] = mtp->bottom_window;
+	xloc[1] = mtp->right_window;
+	yloc[1] = mtp->top_window;
+	cycle_point = clon - 180;
+
+	/* if it's a straight cyleq or mercator, and the data boundary 
+	   line is not crossed then the data locs need no further processing */
+
+	if ((proj == NhlCYLINDRICALEQUIDISTANT || 
+	     proj == NhlMERCATOR) && clat == 0.0 && crot == 0.0) {
+		MapWinToData((NhlLayer)mpl,
+			     xloc,yloc,2,xout,yout,NULL,NULL,&status);
+		/* no problem */
+		if (_NhlCmpFAny2(xout[0],xout[1],6,1e-6)>= 0.0)
+			xout[0] -= 360;
+		while (xout[0] < cycle_point) {
+			xout[0] += 360;
+			xout[1] += 360;
+		}
+		while (xout[0] > cycle_point + 360) {
+			xout[0] -= 360;
+			xout[1] -= 360;
+		}
+		*minlon = xout[0];
+		*minlat = yout[0];
+		*maxlon = xout[1];
+		*maxlat = yout[1];
+		return NhlNOERROR;
+	}
+
+	/*
+	 * see if the north or south pole is inside the area
+	 */
+	xt[0] = xt[1] = clon;
+	yt[0] = -90;
+	yt[1] = 90;
+
+	
+	MapDataToWin((NhlLayer) mpl,xt,yt,2,xt,yt,NULL,NULL,&status);
+
+	if (yt[0] >= yloc[0] && yt[0] <= yloc[1] &&
+	    xt[0] >= xloc[0] && xt[0] <= xloc[1])
+		southpole = True;
+	if (yt[1] >= yloc[0] && yt[1] <= yloc[1] &&
+	    xt[1] >= xloc[0] && xt[1] <= xloc[1])
+		northpole = True;
+
+	/*
+	 * sample points along each edge and determine the min and max
+	 * data values
+	 */
+
+	xdist = xloc[1] - xloc[0];
+	ydist = yloc[1] - yloc[0];
+	nsteps = 100;
+	xinc = xdist / nsteps;
+	yinc = ydist / nsteps;
+	for (i = 0; i <= nsteps; i++) {
+		for (j = 0; j <= nsteps; j++) {
+			uval = xloc[0] + xinc * j;
+			vval = yloc[0] + yinc * i;
+			c_maptri(uval,vval,&lat,&lon);
+			if (lon > 1e9) 
+				continue;
+			while (lon < cycle_point)
+				lon += 360;
+			while (lon > cycle_point + 360)
+				lon -= 360;
+			if (xmin > lon) {
+				xmin = lon;
+				xmin_u = uval;
+				xmin_v = vval;
+			}
+			if (xmax < lon) {
+				xmax = lon;
+				xmax_u = uval;
+				xmax_v = vval;
+			}
+			if (ymin > lat) {
+				ymin = lat;
+				ymin_u = uval;
+				ymin_v = vval;
+			}
+			if (ymax < lat) {
+				ymax = lat;
+				ymax_u = uval;
+				ymax_v = vval;
+			}
+		}
+	}
+	xstart = MAX(xloc[0],xmin_u - xinc);
+	ystart = MAX(yloc[0],xmin_v - yinc);
+	xdist = MIN(xloc[1],xmin_u + xinc) - xstart;
+	ydist = MIN(yloc[1],xmin_v + yinc) - ystart;
+	nsteps = 20;
+	xinc2 = xdist / nsteps;
+	yinc2 = ydist / nsteps;
+
+	for (i = 1; i < nsteps; i++) {
+		for (j = 1; j < nsteps; j++) {
+			uval = xstart + xinc2 * j;
+			vval = ystart + yinc2 * i;
+			c_maptri(uval,vval,&lat,&lon);
+			if (lon > 1e9) 
+				continue;
+			while (lon < cycle_point)
+				lon += 360;
+			while (lon > cycle_point + 360)
+				lon -= 360;
+			if (xmin > lon) {
+				xmin = lon;
+			}
+		}
+	}
+	xstart = MAX(xloc[0],xmax_u - xinc);
+	ystart = MAX(yloc[0],xmax_v - yinc);
+	xdist = MIN(xloc[1],xmax_u + xinc) - xstart;
+	ydist = MIN(yloc[1],xmax_v + yinc) - ystart;
+	xinc2 = xdist / nsteps;
+	yinc2 = ydist / nsteps;
+	for (i = 1; i < nsteps; i++) {
+		for (j = 1; j < nsteps; j++) {
+			uval = xstart + xinc2 * j;
+			vval = ystart + yinc2 * i;
+			c_maptri(uval,vval,&lat,&lon);
+			if (lon > 1e9) 
+				continue;
+			while (lon < cycle_point)
+				lon += 360;
+			while (lon > cycle_point + 360)
+				lon -= 360;
+			if (xmax < lon) {
+				xmax = lon;
+			}
+		}
+	}
+	if (northpole || southpole) {
+		if (_NhlCmpFAny2(xmin,cycle_point,3,1e-6) == 0.0)
+			xmin = cycle_point;
+		if (_NhlCmpFAny2(xmax,cycle_point+360,3,1e-6) == 0.0)
+			xmax = cycle_point+360;
+	}
+	if (_NhlCmpFAny2(xmin,0.0,6,1e-6) == 0.0)
+		xmin = 0.0;
+	if (_NhlCmpFAny2(xmax,0.0,6,1e-6) == 0.0)
+		xmax = 0.0;
+	*minlon = xmin;
+	*maxlon = xmax;
+
+
+	if (southpole) 
+		*minlat = -90;
+	else {
+		xstart = MAX(xloc[0],ymin_u - xinc);
+		ystart = MAX(yloc[0],ymin_v - yinc);
+		xdist = MIN(xloc[1],ymin_u + xinc) - xstart;
+		ydist = MIN(yloc[1],ymin_v + yinc) - ystart;
+		xinc2 = xdist / nsteps;
+		yinc2 = ydist / nsteps;
+		for (i = 1; i < nsteps; i++) {
+			for (j = 1; j < nsteps; j++) {
+				uval = xstart + xinc2 * j;
+				vval = ystart + yinc2 * i;
+				c_maptri(uval,vval,&lat,&lon);
+				if (lat > 1e9) 
+					continue;
+				if (ymin > lat) {
+					ymin = lat;
+				}
+			}
+		}
+		if (_NhlCmpFAny2(ymin,0.0,6,1e-6) == 0.0)
+			ymin = 0.0;
+		*minlat = ymin;
+	}
+	if (northpole) {
+		*maxlat = 90;
+	}
+	else {
+		xstart = MAX(xloc[0],ymax_u - xinc);
+		ystart = MAX(yloc[0],ymax_v - yinc);
+		xdist = MIN(xloc[1],ymax_u + xinc) - xstart;
+		ydist = MIN(yloc[1],ymax_v + yinc) - ystart;
+		xinc2 = xdist / nsteps;
+		yinc2 = ydist / nsteps;
+		for (i = 1; i < nsteps; i++) {
+			for (j = 1; j < nsteps; j++) {
+				uval = xstart + xinc2 * j;
+				vval = ystart + yinc2 * i;
+				c_maptri(uval,vval,&lat,&lon);
+				if (lat > 1e9) 
+					continue;
+				if (ymax < lat) {
+					ymax = lat;
+				}
+			}
+		}
+		if (_NhlCmpFAny2(ymax,0.0,6,1e-6) == 0.0)
+			ymax = 0.0;
+		*maxlat = ymax;
+	}
+			    
         return NhlNOERROR;
-
+	
 }
-
+	
 /*
  * Function:	MapTransSetValues
  *
@@ -1591,25 +1837,50 @@ static NhlErrorTypes GetWindowLimits
 	NhlMapTransObjLayerPart	*mtp = &(mnew->mptrans);
         float tlat,tlon,uval,vval;
         float umin=1E12,umax=-1E12,vmin=1E12,vmax=-1E12;
-        float latmin=1E12,latmax=-1E12,lonmin=1E12,lonmax=-1E12;
+        float latmin,latmax,lonmin,lonmax,lonmax2;
 	float fl,fr,fb,ft,ul,ur,ub,ut;
         float latinc,loninc;
+	float clon;
 	int ll;
+	NhlBoolean two_step = False;
 
         *wl=*wr=*wb=*wt=0.0;
         c_mapset("MA",wl,wr,wb,wt);
         c_mapint();
-        c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
 #if 0
+        c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
         printf("vp - %f,%f,%f,%f user - %f,%f,%f,%f\n",
                fl,fr,fb,ft,ul,ur,ub,ut);
 #endif
+	clon = mtp->projection ==  NhlLAMBERTCONFORMAL ? 
+		mtp->lambert_meridian : mtp->center_lon;
+	if (mtp->rel_center_lon && mtp->map_limit_mode == NhlLATLON)
+		clon = (mtp->max_lon + mtp->min_lon) / 2.0 + clon;
+	
         latinc = MIN((mtp->max_lat - mtp->min_lat) / 20.0,1.0);
         loninc = MIN((mtp->max_lon - mtp->min_lon) / 20.0,1.0);
+	lonmin = mtp->min_lon;
+	lonmax = mtp->max_lon;
+
+	while (lonmax > lonmin + 360)
+		lonmax -=360;
+
+	while (lonmin < clon - 180) {
+		lonmin += 360;
+		lonmax += 360;
+	}
+	while (lonmin > clon + 180) {
+		lonmin -= 360;
+		lonmax -= 360;
+	}
+	if (lonmax > clon + 180) {
+		two_step = True;
+		lonmax2 = lonmax - 360;
+		lonmax = clon + 180;
+	}
         
         for (tlat = mtp->min_lat; tlat <= mtp->max_lat; tlat += latinc) {
-                for (tlon = mtp->min_lon;
-                     tlon <= mtp->max_lon; tlon += loninc) {
+                for (tlon = lonmin; tlon <= lonmax; tlon += loninc) {
                         c_maptra(tlat,tlon,&uval,&vval);
                         if (uval >= 1E9 || vval >= 1E9)
                                 continue;
@@ -1617,11 +1888,19 @@ static NhlErrorTypes GetWindowLimits
                         if (uval > umax) umax = uval;
                         if (vval < vmin) vmin = vval;
 			if (vval > vmax) vmax = vval;
-                        if (tlat < latmin) latmin = tlat;
-                        if (tlat > latmax) latmax = tlat;
-                        if (tlon < lonmin) lonmin = tlon;
-                        if (tlon > lonmax) lonmax = tlon;
                 }
+		if (two_step) {
+			for (tlon = clon - 180; 
+			     tlon <= lonmax2; tlon += loninc) {
+				c_maptra(tlat,tlon,&uval,&vval);
+				if (uval >= 1E9 || vval >= 1E9)
+					continue;
+				if (uval < umin) umin = uval;
+				if (uval > umax) umax = uval;
+				if (vval < vmin) vmin = vval;
+				if (vval > vmax) vmax = vval;
+			}
+		}
         }
         *wl = umin;
         *wr = umax;

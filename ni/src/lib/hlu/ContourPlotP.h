@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.23 1999-06-11 03:24:29 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.24 2000-11-11 02:35:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -206,6 +206,7 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlAnnotationRec	constf_lbl_rec;
 
 	NhlcnRegionAttrs	missing_val;
+	NhlBoolean		missing_val_perim_grid_bound_on;
 	NhlcnRegionAttrs	grid_bound;
 	NhlcnRegionAttrs	out_of_range;
 

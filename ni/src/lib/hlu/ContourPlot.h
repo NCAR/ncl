@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.h,v 1.13 1999-03-29 18:31:31 dbrown Exp $
+ *      $Id: ContourPlot.h,v 1.14 2000-11-11 02:35:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -266,6 +266,7 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlNcnConstFLabelOrthogonalPosF	"cnConstFLabelOrthogonalPosF"
 
 #define NhlNcnMissingValPerimOn		"cnMissingValPerimOn"
+#define NhlNcnMissingValPerimGridBoundOn "cnMissingValPerimGridBoundOn"
 #define NhlNcnMissingValPerimThicknessF	"cnMissingValPerimThicknessF"
 #define NhlNcnMissingValPerimDashPattern "cnMissingValPerimDashPattern"
 #define NhlNcnMissingValPerimColor	"cnMissingValPerimColor"
@@ -488,6 +489,7 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnConstFLabelPerimColor	"CnConstFLabelPerimColor"
 
 #define NhlCcnMissingValPerimOn		"CnMissingValPerimOn"
+#define NhlCcnMissingValPerimGridBoundOn "CnMissingValPerimGridBoundOn"
 #define NhlCcnMissingValPerimThicknessF	"CnMissingValPerimThicknessF"
 #define NhlCcnMissingValPerimDashPattern "CnMissingValPerimDashPattern"
 #define NhlCcnMissingValPerimColor	"CnMissingValPerimColor"
