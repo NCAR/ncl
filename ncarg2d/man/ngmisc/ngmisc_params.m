@@ -30,6 +30,9 @@ Specifying larger values for CO will increase the accuracy of coordinate
 positions at the expense of larger files (more space is needed to
 represent the larger integer coordinate values); smaller numbers reduce 
 the accuracy of coordinate positions, but reduce file sizes.
+.IP "\'ER\'   -   Integer   -   10"
+Specifies the maximum number of error messages that will be issued
+by NCAR GKS before it terminates execution.  ER must be larger than zero.
 .IP "\'FI\'   -   Real   -   0.0005"
 A real number in the range 0. to 1. (normalized device coordinate
 space) that specifies the spacing between fill lines used in software
@@ -118,6 +121,11 @@ must be named before the ncgm workstation is opened and subsequent
 pictures must be named immediately after creating the previous picture.  
 Not all pictures need be named and any picture that is not assigned a
 specific name is assigned blanks in the PICTURE NAME field of the ncgm.
+.IP "\'SE\'   -   Integer   -   1"
+Specifies whether the segments created in WISS in NCAR GKS will be
+erased when WISS is closed.  A value of "1" will cause the segments
+to be erased and a value of "0" will cause them to be saved for use
+after job termination.
 .IP "\'ST\'   -   Integer   -   200"
 Specifies the maximum size of the operand stack used in
 PostScript output from NCAR GKS.  The primary effect of setting
