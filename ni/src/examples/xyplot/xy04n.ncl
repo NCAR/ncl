@@ -1,5 +1,5 @@
 ;
-;      $Id: xy04n.ncl,v 1.9 1995-04-07 10:55:12 boote Exp $
+;      $Id: xy04n.ncl,v 1.10 1995-04-27 17:34:38 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -65,6 +65,19 @@ ydra = new((/ncurve,npts/), float)
 assigndata(ydra,ncurve,npts)
 
 ;
+; Modify the color map.  Color indices '0' and '1' are the background
+; and foreground colors respectively.
+;
+ncolors = 6
+cmap = new( (/ncolors,3/), float)
+cmap(0,:) = (/0.0,0.0,0.0/)
+cmap(1,:) = (/1.0,1.0,1.0/)
+cmap(2,:) = (/1.0,0.0,0.0/)
+cmap(3,:) = (/0.0,1.0,0.0/)
+cmap(4,:) = (/0.0,0.0,1.0/)
+cmap(5,:) = (/1.0,1.0,0.0/)
+
+;
 ; Create Application object.  The Application object name is used to
 ; determine the name of the resource file, which is "xy04.res" in this
 ; case.
@@ -85,6 +98,7 @@ if (NCGM .eq. 1) then
 ;
   xworkid = create "xy04Work" ncgmWorkstationClass defaultapp
       "wkMetaName" : "xy04n.ncgm"
+      "wkColorMap" : cmap
   end create
 else
 ;
@@ -92,6 +106,7 @@ else
 ;
   xworkid = create "xy04Work" xWorkstationClass defaultapp
       "wkPause" : "True"
+      "wkColorMap" : cmap
   end create
 end if
 

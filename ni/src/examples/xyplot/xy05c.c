@@ -1,5 +1,5 @@
 /*
-**      $Id: xy05c.c,v 1.11 1995-04-07 10:55:13 boote Exp $
+**      $Id: xy05c.c,v 1.12 1995-04-27 17:34:40 haley Exp $
 */
 /**********************************************************************
 *                                                                     *
@@ -42,6 +42,7 @@
 
 #define NCURVE  10
 #define NPTS    100
+#define NCOLORS 12
 #define PI      3.14159
 
 /*
@@ -53,14 +54,32 @@ int length[NCURVE];
 main()
 {
     int     appid,xworkid,plotid,dataid;
-    int     rlist;
-    int     i, j;
+    int     rlist, i, j, len[2];
+    float   cmap[NCOLORS][3];
     int NCGM=0;
 /*
  * Initialize the HLU library and set up resource template
  */
     NhlInitialize();
     rlist = NhlRLCreate(NhlSETRL);
+/*
+ * Modify the color map.  Color indices '0' and '1' are the background
+ * and foreground colors respectively.
+ */
+    cmap[0][0] = 0.00; cmap[0][1] = 0.00; cmap[0][2] = 0.00;
+    cmap[1][0] = 1.00; cmap[1][1] = 1.00; cmap[1][2] = 1.00;
+    cmap[2][0] = 0.00; cmap[2][1] = 0.00; cmap[2][2] = 1.00;
+    cmap[3][0] = 0.00; cmap[3][1] = 1.00; cmap[3][2] = 0.00;
+    cmap[4][0] = 0.00; cmap[4][1] = 1.00; cmap[4][2] = 0.75;
+    cmap[5][0] = 0.50; cmap[5][1] = 0.50; cmap[5][2] = 0.63;
+    cmap[6][0] = 1.00; cmap[6][1] = 0.00; cmap[6][2] = 0.00;
+    cmap[7][0] = 0.75; cmap[7][1] = 0.38; cmap[7][2] = 0.25;
+    cmap[8][0] = 0.75; cmap[8][1] = 0.00; cmap[8][2] = 0.75;
+    cmap[9][0] = 1.00; cmap[9][1] = 0.38; cmap[9][2] = 0.38;
+    cmap[10][0] = 1.00; cmap[10][1] = 0.83; cmap[10][2] = 0.00;
+    cmap[11][0] = 1.00; cmap[11][1] = 1.00; cmap[11][2] = 0.00;
+
+    len[0] = NCOLORS;  len[1] = 3;
 /*
  * Create Application object.  The Application object name is used to
  * determine the name of the resource file, which is "xy05.res" in this
@@ -77,6 +96,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./xy05c.ncgm");
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
         NhlCreate(&xworkid,"xy05Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
@@ -86,6 +106,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
         NhlCreate(&xworkid,"xy05Work",NhlxWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
@@ -100,7 +121,7 @@ main()
                       "Unable to malloc space for y array");
             exit(3);
         }
-		for( i = 0; i < length[j]; i++ ) {
+        for( i = 0; i < length[j]; i++ ) {
             y[j][i] = (float)(j+1)*sin((float)(2.*i*PI)/(float)(length[j]-1));
         }
     }

@@ -1,5 +1,5 @@
 /*
-**      $Id: xy06c.c,v 1.7 1995-04-07 17:06:21 haley Exp $
+**      $Id: xy06c.c,v 1.8 1995-04-27 17:34:44 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -57,7 +57,8 @@
  * You cannot request more than NSTATIONS station ids in the resource
  * file.
  */
-#define NSTATIONS  9
+#define NSTATIONS  8
+#define NCOLORS    NSTATIONS+2
 #define NHOURS     24
 
 /*
@@ -84,6 +85,7 @@ main()
     int     *dspec = datadepid;
     int     num_dspec;
     float   special_value = -9999.;
+    float   cmap[NCOLORS][3];
 /*
  * Declare variables for getting information from netCDF file.
  */
@@ -107,6 +109,21 @@ main()
     NhlInitialize();
     rlist = NhlRLCreate(NhlSETRL);
 /*
+ * Modify the color map.  Color indices '0' and '1' are the background
+ * and foreground colors respectively.
+ */
+    cmap[0][0] = 0.00; cmap[0][1] = 0.00; cmap[0][2] = 0.00;
+    cmap[1][0] = 1.00; cmap[1][1] = 1.00; cmap[1][2] = 1.00;
+    cmap[2][0] = 0.00; cmap[2][1] = 0.00; cmap[2][2] = 1.00;
+    cmap[3][0] = 0.00; cmap[3][1] = 1.00; cmap[3][2] = 0.00;
+    cmap[4][0] = 0.00; cmap[4][1] = 1.00; cmap[4][2] = 0.75;
+    cmap[5][0] = 0.50; cmap[5][1] = 0.50; cmap[5][2] = 0.63;
+    cmap[6][0] = 1.00; cmap[6][1] = 0.00; cmap[6][2] = 0.00;
+    cmap[7][0] = 0.75; cmap[7][1] = 0.38; cmap[7][2] = 0.25;
+    cmap[8][0] = 0.75; cmap[8][1] = 0.00; cmap[8][2] = 0.75;
+    cmap[9][0] = 1.00; cmap[9][1] = 1.00; cmap[9][2] = 0.00;
+    length[0] = NCOLORS;  length[1] = 3;
+/*
  * Create Application object.  The Application object name is used to
  * determine the name of the resource file, which is "xy06.res" in
  * this case.
@@ -122,6 +139,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./xy06c.ncgm");
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,length);
         NhlCreate(&xworkid,"xy06Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
@@ -131,6 +149,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,length);
         NhlCreate(&xworkid,"xy06Work",NhlxWorkstationClass,
               NhlDEFAULT_APP,rlist);
     }

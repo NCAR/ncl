@@ -1,5 +1,5 @@
 C     
-C      $Id: xy03f.f,v 1.12 1995-04-07 10:55:09 boote Exp $
+C      $Id: xy03f.f,v 1.13 1995-04-27 17:34:34 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -38,7 +38,8 @@ C
       parameter(PI100=.031415926535898)
 
       integer appid,xworkid,plotid,dataid
-      integer rlist, i
+      integer rlist, i, len(2)
+      real cmap(3,4)
       real xdra(NPTS), ydra(NPTS), theta
       integer NCGM
 C
@@ -59,6 +60,24 @@ C
       call NhlFInitialize
       call NhlFRLCreate(rlist,'setrl')
 C
+C Modify the color map.  Color indices '1' and '2' are the background
+C and foreground colors respectively.
+C
+      cmap(1,1) = 0.
+      cmap(2,1) = 0.
+      cmap(3,1) = 0.
+      cmap(1,2) = 1.
+      cmap(2,2) = 1.
+      cmap(3,2) = 1.
+      cmap(1,3) = 0.
+      cmap(2,3) = .5
+      cmap(3,3) = 1.
+      cmap(1,4) = 0.
+      cmap(2,4) = 1.
+      cmap(3,4) = 0.
+      len(1) = 3
+      len(2) = 4
+C
 C Create Application object.  The Application object name is used to
 C determine the name of the resource file, which is "xy03.res" in
 C this case.
@@ -74,6 +93,7 @@ C Create an NCGM workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkMetaName','./xy03f.ncgm',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
          call NhlFCreate(xworkid,'xy03Work',
      +        NhlFNcgmWorkstationClass,0,rlist,ierr)
       else
@@ -82,6 +102,7 @@ C Create an xworkstation object.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPause','True',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
          call NhlFCreate(xworkid,'xy03Work',NhlFXWorkstationClass,
      +        0,rlist,ierr)
       endif

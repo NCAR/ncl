@@ -4,23 +4,25 @@
 !
 *ctYTableType:  Float
 !
-! XyDataSpec resources for the C version of this example
+! XyDataSpec resources for the C version of this example.  This has to be
+! done because a CoordArrTable object was used in the C program, and thus
+! the resources must be stored in one array.
 !
-xy05.xy05Work.xyPlot.xyData.xyLineColors:     (/16,21,26,36,46,51,61,71,85,96/)
+xy05.xy05Work.xyPlot.xyData.xyLineColors:     (/11,10,9,8,7,6,5,4,3,2,1/)
 xy05.xy05Work.xyPlot.xyData.xyLineThicknesses: (/5.,5.,5.,5.,5.,5.,5.,5.,5.,5./)
 !
 ! XyDataSpec resources for the Fortran/ncl version of this example
 !
 *xyLineThicknesses:                            5.
-xy05.xy05Work.xyPlot.xyData0.xyLineColors:     16
-xy05.xy05Work.xyPlot.xyData1.xyLineColors:     21
-xy05.xy05Work.xyPlot.xyData2.xyLineColors:     26
-xy05.xy05Work.xyPlot.xyData3.xyLineColors:     36
-xy05.xy05Work.xyPlot.xyData4.xyLineColors:     46
-xy05.xy05Work.xyPlot.xyData5.xyLineColors:     51
-xy05.xy05Work.xyPlot.xyData6.xyLineColors:     61
-xy05.xy05Work.xyPlot.xyData7.xyLineColors:     71
-xy05.xy05Work.xyPlot.xyData8.xyLineColors:     85
-xy05.xy05Work.xyPlot.xyData9.xyLineColors:     96
+xy05.xy05Work.xyPlot.xyData0.xyLineColors:     11
+xy05.xy05Work.xyPlot.xyData1.xyLineColors:     10
+xy05.xy05Work.xyPlot.xyData2.xyLineColors:     9
+xy05.xy05Work.xyPlot.xyData3.xyLineColors:     8
+xy05.xy05Work.xyPlot.xyData4.xyLineColors:     7
+xy05.xy05Work.xyPlot.xyData5.xyLineColors:     6
+xy05.xy05Work.xyPlot.xyData6.xyLineColors:     5
+xy05.xy05Work.xyPlot.xyData7.xyLineColors:     4
+xy05.xy05Work.xyPlot.xyData8.xyLineColors:     3
+xy05.xy05Work.xyPlot.xyData9.xyLineColors:     2
 
 

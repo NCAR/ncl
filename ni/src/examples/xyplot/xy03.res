@@ -12,8 +12,8 @@ xy03.xy03Work.xyPlot.trYMaxF:               1000.
 !
 xy03.xy03Work.xyPlot.xyData.xyLineDashSegLenF:  0.3
 xy03.xy03Work.xyPlot.xyData.xyLineLabelFontHeightF:   0.03
-xy03.xy03Work.xyPlot.xyData.xyLineColor:        75
+xy03.xy03Work.xyPlot.xyData.xyLineColor:        2
 xy03.xy03Work.xyPlot.xyData.xyDashPattern:      2
 xy03.xy03Work.xyPlot.xyData.xyLineThicknessF:   2.0
 xy03.xy03Work.xyPlot.xyData.xyLabelMode:        LETTERED
-xy03.xy03Work.xyPlot.xyData.xyLineLabelColor:   65
+xy03.xy03Work.xyPlot.xyData.xyLineLabelFontColor:   3

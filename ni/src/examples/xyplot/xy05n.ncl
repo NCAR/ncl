@@ -1,5 +1,5 @@
 ;
-;      $Id: xy05n.ncl,v 1.10 1995-04-07 10:55:15 boote Exp $
+;      $Id: xy05n.ncl,v 1.11 1995-04-27 17:34:42 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                     ;
@@ -71,6 +71,25 @@ dataid = new(ncurve,graphic)
 assigndata(y,length,npts,ncurve)
 
 ;
+; Modify the color map.  Color indices '0' and '1' are the background
+; and foreground colors respectively.
+;
+ncolors = 12
+cmap = new( (/ncolors,3/), float)
+cmap(0,:) = (/0.00,0.00,0.00/)
+cmap(1,:) = (/1.00,1.00,1.00/)
+cmap(2,:) = (/0.00,0.00,1.00/)
+cmap(3,:) = (/0.00,1.00,0.00/)
+cmap(4,:) = (/0.00,1.00,0.75/)
+cmap(5,:) = (/0.50,0.50,0.63/)
+cmap(6,:) = (/1.00,0.00,0.00/)
+cmap(7,:) = (/0.75,0.38,0.25/)
+cmap(8,:) = (/0.75,0.00,0.75/)
+cmap(9,:) = (/1.00,0.38,0.38/)
+cmap(10,:) = (/1.00,0.83,0.00/)
+cmap(11,:) = (/1.00,1.00,0.00/)
+
+;
 ; Create Application object.  The Application object name is used to
 ; determine the name of the resource file, which is "xy05.res" in this
 ; case.
@@ -91,6 +110,7 @@ if (NCGM .eq. 1) then
 ;
   xworkid = create "xy05Work" ncgmWorkstationClass defaultapp
       "wkMetaName" : "xy05n.ncgm"
+      "wkColorMap" : cmap
   end create
 else
 ;
@@ -98,6 +118,7 @@ else
 ;
   xworkid = create "xy05Work" xWorkstationClass defaultapp
       "wkPause" : "True"
+      "wkColorMap" : cmap
   end create
 end if
 

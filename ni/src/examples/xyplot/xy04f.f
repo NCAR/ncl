@@ -1,5 +1,5 @@
 C     
-C      $Id: xy04f.f,v 1.11 1995-04-07 10:55:12 boote Exp $
+C      $Id: xy04f.f,v 1.12 1995-04-27 17:34:37 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -37,13 +37,24 @@ C
 C
 C Define the number of curves and points in each curve.
 C
-      parameter(NPTS=500,NCURVE=4)
+      parameter(NPTS=500,NCURVE=4,NCOLORS=6)
       parameter(PI100=.031415926535898)
 
       integer appid,xworkid,plotid,dataid
       integer rlist, i, j, len(2)
       real ydra(NPTS,NCURVE), theta
-      data len/NPTS,NCURVE/
+C
+C Modify the color map.  Color indices '1' and '2' are the background
+C and foreground colors respectively.
+C
+      real cmap(3,NCOLORS)
+      data cmap/0.,0.,0.,
+     +          1.,1.,1.,
+     +          1.,0.,0.,
+     +          0.,1.,0.,
+     +          0.,0.,1.,
+     +          1.,1.,0/
+
       integer NCGM
 C
 C Default is to an X workstation.
@@ -73,12 +84,15 @@ C
       call NhlFRLSetString(rlist,'appUsrDir','./',ierr)
       call NhlFCreate(appid,'xy04',NhlFAppClass,0,rlist,ierr)
 
+      len(1) = 3
+      len(2) = NCOLORS
       if (NCGM.eq.1) then
 C
 C Create an NCGM workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkMetaName','./xy04f.ncgm',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
          call NhlFCreate(xworkid,'xy04Work',
      +        NhlFNcgmWorkstationClass,0,rlist,ierr)
       else
@@ -87,6 +101,7 @@ C Create an xworkstation object.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPause','True',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
          call NhlFCreate(xworkid,'xy04Work',NhlFXWorkstationClass,
      +                0,rlist,ierr)
       endif
@@ -96,6 +111,8 @@ C as the value for the XYPlot data resource, 'xyCoordData'.
 C Since only the Y values are specified here, each Y value will be
 C paired with its integer array index.
 C
+      len(1) = NPTS
+      len(2) = NCURVE
       call NhlFRLClear(rlist)
       call NhlFRLSetMDFloatArray(rlist,'caYArray',ydra,2,len,ierr)
       call NhlFCreate(dataid,'xyData',NhlFCoordArraysClass,

@@ -200,8 +200,8 @@
 !      This resource indicates what color index to draw the line
 !      labels if xyLabelMode is set to LETTERED or CUSTOM. This value
 !      is only used if xyMonoLineLabelColor is True, or the
-!      xyLineLabelColors array doesn't specify enough values.
-! xy01.xy01Work.xyPlot.xyData.xyLineLabelColor     : FOREGROUND
+!      xyLineLabelFontColors array doesn't specify enough values.
+! xy01.xy01Work.xyPlot.xyData.xyLineLabelFontColor : FOREGROUND
 !
 !      This resource indicates what color index to draw the line labels
 !      in if xyLabelMode is set to NhlLETTERED or NhlCUSTOM. It is an
@@ -209,15 +209,15 @@
 !      labels in the corresponding coordinate arrays in the associated
 !      Data Object. If there are more coordinate arrays then the number
 !      of NhlColorIndex's in this resource, the remaining coordinate
-!      arrays will be drawn using the xyLineLabelColor resource.
-! xy01.xy01Work.xyPlot.xyData.xyLineLabelColors    : NULL
+!      arrays will be drawn using the xyLineLabelFontColor resource.
+! xy01.xy01Work.xyPlot.xyData.xyLineLabelFontColors: NULL
 !
 !      If this resource is True, then all the line labels for the
 !      corresponding coordinate arrays in the associated Data Object
-!      will be drawn with the color specified by the xyLineLabelColor
+!      will be drawn with the color specified by the xyLineLabelFontColor
 !      resource. Otherwise, each coordinate arrays markers are drawn
 !      with the color specified by the corresponding index in the
-!      xyLineLabelColors array resource.
+!      xyLineLabelFontColors array resource.
 ! xy01.xy01Work.xyPlot.xyData.xyMonoLineLabelColor  : False
 !
 !       This can be set to either NOLABELS, LETTERED, or CUSTOM.

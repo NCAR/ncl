@@ -18,10 +18,10 @@
 ! PHL = Philadelpha, SAN = San Diego, SEA = Seattle, ALB = Albuquerque
 ! LAS = Las Vegas
 !
-*xyExplicitLegendLabels: (/DEN,FTW,HNL,MIA,PHL,SAN,SEA,ALB,LAS/)
-*xyData.xyLineColors:    (/90,96,68,23,50,83,19,58,40/)
+*xyExplicitLegendLabels: (/DEN,FTW,HNL,MIA,PHL,SAN,SEA,ALB/)
+*xyData.xyLineColors:    (/2,3,4,5,6,7,8,9/)
 *xyData.xyMarkLineMode:  MARKLINES
-*xyData.xyMarkerColors:  (/90,96,68,23,50,83,19,58,40/)
+*xyData.xyMarkerColors:  (/2,3,4,5,6,7,8,9/)
 !
 ! Legend resources
 !

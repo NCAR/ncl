@@ -1,5 +1,5 @@
 /*
-**      $Id: xy04c.c,v 1.10 1995-04-07 10:55:11 boote Exp $
+**      $Id: xy04c.c,v 1.11 1995-04-27 17:34:36 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -46,17 +46,17 @@
  */
 #define NPTS  500
 #define NCURVE  4
+#define NCOLORS 6
 #define PI100 0.031415926535898
 
 float ydra[NCURVE][NPTS];
-int len[2] = {NCURVE,NPTS};
 
 main()
 {
     int     appid,xworkid,plotid,dataid;
-    int     rlist;
-    int     i, j;
+    int     rlist, i, j, len[2];
     float   theta;
+    float   cmap[NCOLORS][3];
     int NCGM=0;
 /*
  * Initialize data for the XyPlot object.
@@ -73,6 +73,17 @@ main()
     NhlInitialize();
     rlist = NhlRLCreate(NhlSETRL);
 /*
+ * Modify the color map.  Color indices '0' and '1' are the background
+ * and foreground colors respectively.
+ */
+    cmap[0][0] = cmap[0][1] = cmap[0][2] = 0.;
+    cmap[1][0] = cmap[1][1] = cmap[1][2] = 1.;
+    cmap[2][0] = 1.0; cmap[2][1] = 0.0; cmap[2][2] = 0.0;
+    cmap[3][0] = 0.0; cmap[3][1] = 1.0; cmap[3][2] = 0.0;
+    cmap[4][0] = 0.0; cmap[4][1] = 0.0; cmap[4][2] = 1.0;
+    cmap[5][0] = 1.0; cmap[5][1] = 1.0; cmap[5][2] = 0.0;
+    len[0] = NCOLORS;  len[1] = 3;
+/*
  * Create Application object.  The Application object name is used to
  * determine the name of the resource file, which is "xy04.res" in
  * this case.
@@ -88,6 +99,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./xy04c.ncgm");
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
         NhlCreate(&xworkid,"xy04Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
@@ -97,6 +109,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
         NhlCreate(&xworkid,"xy04Work",NhlxWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
@@ -106,6 +119,7 @@ main()
  * array index.  The id for this object will then later be used as
  * the value for the Data Dep resource, "dsDataItem".
  */
+    len[0] = NCURVE; len[1] = NPTS;
     NhlRLClear(rlist);
     NhlRLSetMDFloatArray(rlist,NhlNcaYArray,&ydra[0][0],2,len);
     NhlCreate(&dataid,"xyData",NhlcoordArraysClass,NhlDEFAULT_APP,

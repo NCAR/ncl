@@ -1,5 +1,5 @@
 ;
-;      $Id: xy06n.ncl,v 1.2 1995-04-17 20:33:37 haley Exp $
+;      $Id: xy06n.ncl,v 1.3 1995-04-27 17:34:46 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -90,6 +90,7 @@ end
 ;
 nhours = 24
 nstations = 3
+ncolors = 5
 stations = new(nstations,string)
 stations = (/"DEN","FTW","HNL"/)
 spv = -9999.0
@@ -100,6 +101,17 @@ spv = -9999.0
 temp = new((/nstations,nhours/),float,spv)
 pressure = new((/nstations,nhours/),float,spv)
 wind_speed = new((/nstations,nhours/),float,spv)
+
+;
+; Modify the color map.  Color indices '0' and '1' are the background
+; and foreground colors respectively.
+;
+cmap = new( (/ncolors,3/), float)
+cmap(0,:) = (/0.00,0.00,0.00/)
+cmap(1,:) = (/1.00,1.00,1.00/)
+cmap(2,:) = (/0.00,0.00,1.00/)
+cmap(3,:) = (/0.00,1.00,0.00/)
+cmap(4,:) = (/0.00,1.00,0.75/)
 
 ;
 ; Create application object.  The application name is used to 
@@ -122,6 +134,7 @@ if (NCGM .eq. 1) then
 ;
   xworkid = create "xy06Work" ncgmWorkstationClass defaultapp
       "wkMetaName" : "xy06n.ncgm"
+      "wkColorMap" : cmap
   end create
 else
 ;
@@ -129,6 +142,7 @@ else
 ;
   xworkid = create "xy06Work" xWorkstationClass defaultapp
       "wkPause" : "True"
+      "wkColorMap" : cmap
   end create
 end if
 

@@ -1,5 +1,5 @@
 /*
-**      $Id: xy03c.c,v 1.12 1995-04-07 10:55:08 boote Exp $
+**      $Id: xy03c.c,v 1.13 1995-04-27 17:34:33 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -47,10 +47,10 @@
 main()
 {
     int     appid,xworkid,plotid,dataid;
-    int     rlist;
-    int     i;
+    int     i, rlist, len[2];
     float   xdra[NPTS],ydra[NPTS], theta;
-    int NCGM=0;
+    float   cmap[4][3];
+    int     NCGM=0;
 /*
  * Initialize some data for the XyPlot object.
  */
@@ -64,6 +64,15 @@ main()
  */
     NhlInitialize();
     rlist = NhlRLCreate(NhlSETRL);
+/*
+ * Modify the color map.  Color indices '0' and '1' are the background
+ * and foreground colors respectively.
+ */
+    cmap[0][0] = cmap[0][1] = cmap[0][2] = 0.;
+    cmap[1][0] = cmap[1][1] = cmap[1][2] = 1.;
+    cmap[2][0] = 0.; cmap[2][1] = .5; cmap[2][2] = 1.;
+    cmap[3][0] = 0.; cmap[3][1] = 1.; cmap[3][2] = 0.;
+    len[0] = 4;  len[1] = 3;
 /*
  * Create Application object.  The Application object name is used to
  * determine the name of the resource file, which is "xy03.res" in
@@ -80,6 +89,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./xy03c.ncgm");
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
         NhlCreate(&xworkid,"xy03Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
@@ -89,6 +99,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
         NhlCreate(&xworkid,"xy03Work",NhlxWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }

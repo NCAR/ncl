@@ -1,5 +1,5 @@
 C
-C      $Id: xy06f.f,v 1.5 1995-04-07 17:06:22 haley Exp $
+C      $Id: xy06f.f,v 1.6 1995-04-27 17:34:45 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -49,7 +49,7 @@ C
 C You cannot request more than NSTATIONS station ids in the resource
 C file.
 C
-      parameter(NSTATIONS=9,NHOURS=24)
+      parameter(NSTATIONS=8,NHOURS=24,NCOLORS=10)
 C
 C Declare array that will hold station ids.
 C
@@ -84,6 +84,21 @@ C
       real temp(NHOURS,NSTATIONS)
       real pressure(NHOURS,NSTATIONS)
       real wind_speed(NHOURS,NSTATIONS)
+C
+C Modify the color map.  Color indices '1' and '2' are the background
+C and foreground colors respectively.
+C
+      real cmap(3,NCOLORS)
+      data cmap/0.00,0.00,0.00,
+     +          1.00,1.00,1.00,
+     +          0.00,0.00,1.00,
+     +          0.00,1.00,0.00,
+     +          0.00,1.00,0.75,
+     +          0.50,0.50,0.63,
+     +          1.00,0.00,0.00,
+     +          0.75,0.38,0.25,
+     +          0.75,0.00,0.75,
+     +          1.00,1.00,0.00/
 
       integer NCGM
 C
@@ -105,12 +120,17 @@ C
       call NhlFRLSetString(rlist,'appUsrDir','./',ierr)
       call NhlFCreate(appid,'xy06',NhlFAppClass,0,rlist,ierr)
 
+      length(1) = 3
+      length(2) = NCOLORS
+
       if (NCGM.eq.1) then
 C
 C Create an NCGM workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkMetaName','./xy06f.ncgm',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,length,
+     +        ierr)
          call NhlFCreate(xworkid,'xy06Work',
      +        NhlFNcgmWorkstationClass,0,rlist,ierr)
       else
@@ -119,6 +139,8 @@ C Create an xworkstation object.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPause','True',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,length,
+     +        ierr)
          call NhlFCreate(xworkid,'xy06Work',NhlFXWorkstationClass,
      +        0,rlist,ierr)
       endif

@@ -1,5 +1,5 @@
 C
-C      $Id: xy05f.f,v 1.10 1995-04-07 10:55:14 boote Exp $
+C      $Id: xy05f.f,v 1.11 1995-04-27 17:34:41 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                     C
@@ -34,7 +34,7 @@ C
       external NhlFCoordArraysClass
       external NhlFXyPlotClass
 
-      parameter(NPTS=100,NCURVE=10,PI=3.14159)
+      parameter(NPTS=100,NCURVE=10,NCOLORS=12,PI=3.14159)
 C
 C Create data arrays for XyPlot object.
 C
@@ -42,8 +42,26 @@ C
       integer length(NCURVE)
 
       integer appid,xworkid,plotid,dataid(NCURVE)
-      integer rlist, i, j
+      integer rlist, i, j, len(2)
       character*10 datastr
+C
+C Modify the color map.  Color indices '1' and '2' are the background
+C and foreground colors respectively.
+C
+      real cmap(3,NCOLORS)
+      data cmap/0.00,0.00,0.00,
+     +          1.00,1.00,1.00,
+     +          0.00,0.00,1.00,
+     +          0.00,1.00,0.00,
+     +          0.00,1.00,0.75,
+     +          0.50,0.50,0.63,
+     +          1.00,0.00,0.00,
+     +          0.75,0.38,0.25,
+     +          0.75,0.00,0.75,
+     +          1.00,0.38,0.38,
+     +          1.00,0.83,0.00,
+     +          1.00,1.00,0.00/
+
       integer NCGM
 C
 C Default is to an X workstation.
@@ -64,12 +82,15 @@ C
       call NhlFRLSetString(rlist,'appUsrDir','./',ierr)
       call NhlFCreate(appid,'xy05',NhlFAppClass,0,rlist,ierr)
 
+      len(1) = 3
+      len(2) = NCOLORS
       if (NCGM.eq.1) then
 C
 C Create an NCGM workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkMetaName','./xy05f.ncgm',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
          call NhlFCreate(xworkid,'xy05Work',
      +        NhlFNcgmWorkstationClass,0,rlist,ierr)
       else
@@ -78,6 +99,7 @@ C Create an xworkstation object.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPause','True',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
          call NhlFCreate(xworkid,'xy05Work',NhlFXWorkstationClass,
      +                0,rlist,ierr)
       endif

@@ -1,5 +1,5 @@
 ;
-;      $Id: xy03n.ncl,v 1.9 1995-04-07 10:55:10 boote Exp $
+;      $Id: xy03n.ncl,v 1.10 1995-04-27 17:34:35 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -58,6 +58,16 @@ xdra = new(npts, float)
 ydra = new(npts, float)
 
 ;
+; Modify the color map.  Color indices '0' and '1' are the background
+; and foreground colors respectively.
+;
+cmap = new( (/4,3/), float)
+cmap(0,:) = (/0.0,0.0,0.0/)
+cmap(1,:) = (/1.0,1.0,1.0/)
+cmap(2,:) = (/0.0,0.5,1.0/)
+cmap(3,:) = (/0.0,1.0,0.0/)
+
+;
 ; Initialize some data for the XyPlot object.
 ; 
 assigndata(xdra,ydra,npts)
@@ -83,13 +93,15 @@ if (NCGM .eq. 1) then
 ;
   xworkid = create "xy03Work" ncgmWorkstationClass defaultapp
       "wkMetaName" : "xy03n.ncgm"
+      "wkColorMap" : cmap
   end create
 else
 ;
 ; Create an XWorkstation object.
 ;
   xworkid = create "xy03Work" xWorkstationClass defaultapp
-      "wkPause" : "True"
+      "wkPause"   : "True"
+      "wkColorMap": cmap
   end create
 end if
 
