@@ -1,9 +1,9 @@
 #
-#	$Id: yMakefile,v 1.5 1994-10-31 14:36:59 haley Exp $
+#	$Id: yMakefile,v 1.6 1994-10-31 14:51:48 haley Exp $
 #
 
 EXAMPLES = c_fdlcurvd.c c_fdldashd.c c_fdldashc.c c_fdlsmth.c 
 TESTS = c_tdashl.c c_tdashp.c c_tdashs.c c_tdashc.c
 
-InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLES))
+InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
 InstallTarget($(TESTS),$(INSTALL_LIB),$(TESTSPATH))
