@@ -1,5 +1,5 @@
 C
-C       $Id: vvmpxy.f,v 1.6 1993-12-03 21:27:50 kennison Exp $
+C       $Id: vvmpxy.f,v 1.7 1994-06-10 19:16:06 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -205,7 +205,7 @@ C
 C
 C Project the starting value: bail out if outside the window
 C
-         CALL MAPTRN (Y,X,XB,YB)
+         CALL MAPTRA (Y,X,XB,YB)
          IF (XB .LT. WXMN .OR. XB .GT. WXMX .OR.
      +       YB .LT. WYMN .OR. YB .GT. WYMX) THEN
             IST=-5
@@ -233,7 +233,7 @@ C
          SGN=1.0
  20      CONTINUE
 
-         CALL MAPTRN(Y+SGN*V*DUV,X+SGN*U*DUV/CLT,XT,YT)
+         CALL MAPTRA(Y+SGN*V*DUV,X+SGN*U*DUV/CLT,XT,YT)
 
          DV1=SQRT((XT-XB)*(XT-XB)+(YT-YB)*(YT-YB))
          IF (DV1 .GT. RLEN) THEN
