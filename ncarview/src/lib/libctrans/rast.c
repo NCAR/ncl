@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.27 1993-02-03 22:34:11 clyne Exp $
+ *	$Id: rast.c,v 1.28 1993-02-04 19:53:30 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -468,9 +468,9 @@ CGMC *c;
 	 * a hack to make sure abekas a60,sgi, and avs files are 
 	 * direct encoded.
 	 */
-	if (strcmp(devices[currdev].name, "a60") ||
-		strcmp(devices[currdev].name, "sgi") ||
-		strcmp(devices[currdev].name, "avs") == 0) {
+	if ((strcmp(devices[currdev].name, "a60") == 0) ||
+		(strcmp(devices[currdev].name, "sgi") == 0) ||
+		(strcmp(devices[currdev].name, "avs") == 0)) {
 
 		rast_opts.direct = TRUE;
 	}
