@@ -1,5 +1,5 @@
 /*
- *      $Id: xcbShellsP.h,v 1.1 1997-06-11 20:49:24 boote Exp $
+ *      $Id: xcbShellsP.h,v 1.2 1997-10-23 18:47:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -21,6 +21,10 @@
  */
 #ifndef	XCB_SHELLSP_H
 #define	XCB_SHELLSP_H
+
+#ifdef Solaris
+#define OSF_v1_2_4
+#endif
 
 #include <Xcb/xcbShells.h>
 #include <X11/IntrinsicP.h>
