@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\"	$Id: ymake.man,v 1.11 1994-05-05 22:04:02 boote Exp $
+.\"	$Id: ymake.man,v 1.12 1994-08-11 16:53:13 haley Exp $
 .\"
 .\"######################################################################
 .\"#									#
@@ -309,8 +309,6 @@ specifying the file with a direct path name or "\-l" flag. If you use
 the \fI-local\fP parameter to \fBymake\fP these will not be defined.
 .LP
 .ta .5i 2i
-	\fINCARGLOCLIB\fP	libncarg_loc.a
-.br
 	\fINCARGCLIB\fP	libncarg_c.a
 .br
 	\fINCARGLIB\fP	libncarg.a

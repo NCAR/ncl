@@ -185,7 +185,6 @@ NVIEWLIBSRC		$(NVIEWSRC)/lib
 NISRC			$(TOP)/ni/src
 NIBINSRC		$(NISRC)/bin
 NILIBSRC		$(NISRC)/lib
-NCARGLOCLIBSRC		$(COMMONSRC)/libncarg_loc
 NCARGCLIBSRC		$(COMMONSRC)/libncarg_c
 NCARGLIBSRC		$(NCARG2DSRC)/libncarg
 CNCARGLIBSRC		$(NCARG2DSRC)/libncargC
@@ -205,7 +204,6 @@ in the distribution if ymake is being used in the distribution - but if ymake
 is being used from the installed space then they will use the installed versions
 of these libraries.
 
-NCARGLOCLIB		dynamic -lncarg_loc
 NCARGCLIB		dynamic -lncarg_c
 NCARGLIB		dynamic -lncarg
 CNCARGLIB		dynamic -lncargC

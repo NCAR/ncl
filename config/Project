@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.10 1994-08-10 22:09:05 boote Exp $
+ *      $Id: Project,v 1.11 1994-08-11 16:53:11 haley Exp $
  */
 /************************************************************************
 *									*
@@ -254,7 +254,6 @@ NISRC		= $(TOP)/ni/src
 NIBINSRC	= $(NISRC)/bin
 NILIBSRC	= $(NISRC)/lib
 
-NCARGLOCLIBSRC	= $(COMMONSRC)/libncarg_loc
 NCARGCLIBSRC	= $(COMMONSRC)/libncarg_c
 NCARGLIBSRC	= $(NCARG2DSRC)/libncarg
 CNCARGLIBSRC	= $(NCARG2DSRC)/libncargC
@@ -268,7 +267,6 @@ NCARGRASLIBSRC	= $(NVIEWLIBSRC)/libncarg_ras
 HLULIBSRC	= $(NILIBSRC)/hlu
 HLUUTILLIBSRC	= $(NILIBSRC)/hlu_util
 
-NCARGLOCLIB	= _UseLib(-L$(NCARGLOCLIBSRC),-lncarg_loc)
 NCARGCLIB	= _UseLib(-L$(NCARGCLIBSRC),-lncarg_c)
 NCARGLIB	= _UseLib(-L$(NCARGLIBSRC),-lncarg)
 CNCARGLIB	= _UseLib(-L$(CNCARGLIBSRC),-lncargC)
@@ -283,7 +281,6 @@ CTRANSLIB	= _DepLib($(CTRANSLIBSRC),$(ROBJROOT),libctrans.o)
 ICTRANSLIB	= _DepLib($(ICTRANSLIBSRC),$(ROBJROOT),libictrans.o)
 ICTRANS_LIB	= _DepLib($(ICTRANSLIBSRC),$(ROBJROOT),libictrans_.o)
 
-DEPNCARGLOCLIB	= _DepLib($(NCARGLOCLIBSRC),$(LIBROOT),libncarg_loc.a)
 DEPNCARGCLIB	= _DepLib($(NCARGCLIBSRC),$(LIBROOT),libncarg_c.a)
 DEPNCARGLIB	= _DepLib($(NCARGLIBSRC),$(LIBROOT),libncarg.a)
 DEPCNCARGLIB	= _DepLib($(CNCARGLIBSRC),$(LIBROOT),libncargC.a)
