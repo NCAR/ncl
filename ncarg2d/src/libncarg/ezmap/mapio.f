@@ -22,6 +22,10 @@ C
       COMMON /MAPCMB/ IERR
       SAVE /MAPCMB/
 C
+C Generic-to-UNIX Modification.
+C
+      CALL OPENMP (ITPN)
+C
       IF (IACT.EQ.1) THEN
 C
 C Position to the desired "file" within the dataset.
