@@ -17,8 +17,8 @@
 #define max(x,y)  ((x) > (y) ? (x) : (y))
 
 extern void NGCALLF(dregcoef,DREGCOEF)(double *,double *,int *,double *,
-                                       double *,double *,int *,double *,
-                                       double *,int *);
+                                       double *,double *,double *,int *,
+                                       double *,double *,int *);
 
 NhlErrorTypes regcoef_W( void )
 {
@@ -29,7 +29,7 @@ NhlErrorTypes regcoef_W( void )
   double *tmp_x, *tmp_y;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
   int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS];
-  NclScalar missing_x, missing_y, missing_dx, missing_dy, missing_rx;
+  NclScalar missing_x, missing_y, missing_dx, missing_dy, missing_ry;
   NclBasicDataTypes type_x, type_y;
   int has_missing_x, has_missing_y, npts;
 /*
@@ -204,12 +204,8 @@ NhlErrorTypes regcoef_W( void )
 /*
  * Coerce x and y missing values to double if necessary.
  */
-  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
-  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,NULL);
-  if(missing_dx.doubleval != missing_dy.doubleval) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"regcoef: The x and y missing values must be the same");
-    return(NhlFATAL);
-  }
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,&missing_ry);
 /*
  * Allocate space for temporary x and y input.
  */
@@ -275,7 +271,7 @@ NhlErrorTypes regcoef_W( void )
 /*
  * Coerce nxy subsection of x (tmp_x) to double.
  */
-        coerce_subset_input_double(x,tmp_x,lx,type_x,npts,0,
+        coerce_subset_input_double(x,tmp_x,lx,type_x,npts,has_missing_x,
                                    &missing_x,&missing_dx);
       }
       else {
@@ -289,7 +285,7 @@ NhlErrorTypes regcoef_W( void )
 /*
  * Coerce nxy subsection of y (tmp_y) to double.
  */
-        coerce_subset_input_double(y,tmp_y,lx,type_y,npts,0,
+        coerce_subset_input_double(y,tmp_y,lx,type_y,npts,has_missing_y,
                                    &missing_y,&missing_dy);
       }
       else {
@@ -303,8 +299,8 @@ NhlErrorTypes regcoef_W( void )
       if(type_rcoef == NCL_double) tmp_rcoef = &((double*)rcoef)[ln];
 
       NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
-                                 tmp_rcoef,tmp_tval,&nptxy[ln],
-                                 &xave,&yave,&ier);
+                                 &missing_dy.doubleval,tmp_rcoef,tmp_tval,
+                                 &nptxy[ln],&xave,&yave,&ier);
       if (ier == 5) ier_count5++;
       if (ier == 6) ier_count6++;
 /*
@@ -326,7 +322,7 @@ NhlErrorTypes regcoef_W( void )
 /*
  * Coerce npts subsection of x (tmp_x) to double.
  */
-          coerce_subset_input_double(x,tmp_x,lx,type_x,npts,0,
+          coerce_subset_input_double(x,tmp_x,lx,type_x,npts,has_missing_x,
                                      &missing_x,&missing_dx);
         }
         else {
@@ -337,7 +333,7 @@ NhlErrorTypes regcoef_W( void )
 /*
  * Coerce npts subsection of y (tmp_y) to double.
  */
-          coerce_subset_input_double(y,tmp_y,ly,type_y,npts,0,
+          coerce_subset_input_double(y,tmp_y,ly,type_y,npts,has_missing_y,
                                      &missing_y,&missing_dy);
         }
         else {
@@ -348,6 +344,7 @@ NhlErrorTypes regcoef_W( void )
         if(type_rcoef == NCL_double) tmp_rcoef = &((double*)rcoef)[ln];
         
         NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
+                                   &missing_dy.doubleval,
                                    tmp_rcoef,tmp_tval,&nptxy[ln],
                                    &xave,&yave,&ier);
         if (ier == 5) ier_count5++;
@@ -385,14 +382,14 @@ NhlErrorTypes regcoef_W( void )
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(rcoef,ndims_rcoef,dsizes_rcoef,&missing_rx,
+    return(NclReturnValue(rcoef,ndims_rcoef,dsizes_rcoef,&missing_ry,
                           NCL_float,0));
   }
   else {
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(rcoef,ndims_rcoef,dsizes_rcoef,&missing_dx,
+    return(NclReturnValue(rcoef,ndims_rcoef,dsizes_rcoef,&missing_dy,
                           NCL_double,0));
   }
 }
@@ -407,7 +404,7 @@ NhlErrorTypes regCoef_W( void )
   double *tmp_x, *tmp_y;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
   int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS];
-  NclScalar missing_x, missing_y, missing_dx, missing_dy, missing_rx;
+  NclScalar missing_x, missing_y, missing_dx, missing_dy, missing_ry;
   NclBasicDataTypes type_x, type_y;
   int has_missing_x, has_missing_y, npts;
 /*
@@ -543,12 +540,8 @@ NhlErrorTypes regCoef_W( void )
 /*
  * Coerce x and y missing values to double if necessary.
  */
-  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
-  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,NULL);
-  if(missing_dx.doubleval != missing_dy.doubleval) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef: The x and y missing values must be the same");
-    return(NhlFATAL);
-  }
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,&missing_ry);
 /*
  * Allocate space for temporary x and y input.
  */
@@ -608,7 +601,7 @@ NhlErrorTypes regCoef_W( void )
 /*
  * Coerce nxy subsection of x (tmp_x) to double.
  */
-        coerce_subset_input_double(x,tmp_x,lx,type_x,npts,0,
+        coerce_subset_input_double(x,tmp_x,lx,type_x,npts,has_missing_x,
                                    &missing_x,&missing_dx);
       }
       else {
@@ -622,7 +615,7 @@ NhlErrorTypes regCoef_W( void )
 /*
  * Coerce nxy subsection of y (tmp_y) to double.
  */
-        coerce_subset_input_double(y,tmp_y,lx,type_y,npts,0,
+        coerce_subset_input_double(y,tmp_y,lx,type_y,npts,has_missing_y,
                                    &missing_y,&missing_dy);
       }
       else {
@@ -638,8 +631,8 @@ NhlErrorTypes regCoef_W( void )
       }
 
       NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
-                                 tmp_rcoef,tmp_tval,&nptxy[ln],
-                                 &xave,&yave,&ier);
+                                 &missing_dy.doubleval,tmp_rcoef,tmp_tval,
+                                 &nptxy[ln],&xave,&yave,&ier);
       if (ier == 5) ier_count5++;
       if (ier == 6) ier_count6++;
 /*
@@ -663,7 +656,7 @@ NhlErrorTypes regCoef_W( void )
 /*
  * Coerce npts subsection of x (tmp_x) to double.
  */
-          coerce_subset_input_double(x,tmp_x,lx,type_x,npts,0,
+          coerce_subset_input_double(x,tmp_x,lx,type_x,npts,has_missing_x,
                                      &missing_x,&missing_dx);
         }
         else {
@@ -674,7 +667,7 @@ NhlErrorTypes regCoef_W( void )
 /*
  * Coerce npts subsection of y (tmp_y) to double.
  */
-          coerce_subset_input_double(y,tmp_y,ly,type_y,npts,0,
+          coerce_subset_input_double(y,tmp_y,ly,type_y,npts,has_missing_y,
                                      &missing_y,&missing_dy);
         }
         else {
@@ -687,8 +680,8 @@ NhlErrorTypes regCoef_W( void )
         }
         
         NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
-                                   tmp_rcoef,tmp_tval,&nptxy[ln],
-                                   &xave,&yave,&ier);
+                                   &missing_dy.doubleval,tmp_rcoef,tmp_tval,
+                                   &nptxy[ln],&xave,&yave,&ier);
         if (ier == 5) ier_count5++;
         if (ier == 6) ier_count6++;
 /*
@@ -738,7 +731,7 @@ NhlErrorTypes regCoef_W( void )
                       Ncl_MultiDValData,
                       0,
                       rcoef,
-                      &missing_rx,
+                      &missing_ry,
                       ndims_rcoef,
                       dsizes_rcoef,
                       TEMPORARY,
@@ -782,7 +775,7 @@ NhlErrorTypes regCoef_W( void )
                       Ncl_MultiDValData,
                       0,
                       rcoef,
-                      &missing_dx,
+                      &missing_dy,
                       ndims_rcoef,
                       dsizes_rcoef,
                       TEMPORARY,
@@ -867,7 +860,7 @@ NhlErrorTypes regline_W( void )
   double *dx, *dy;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
   int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS];
-  NclScalar missing_x, missing_y, missing_dx, missing_dy, missing_rx;
+  NclScalar missing_x, missing_y, missing_dx, missing_dy, missing_ry;
   NclBasicDataTypes type_x, type_y;
   int has_missing_x, has_missing_y, npts;
 /*
@@ -927,21 +920,14 @@ NhlErrorTypes regline_W( void )
 /*
  * Coerce x and y to double if necessary.
  */
-  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
-  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,NULL);
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,&missing_ry);
   dx = coerce_input_double(x,type_x,dsizes_x[0],has_missing_x,&missing_x,
                            &missing_dx);
   dy = coerce_input_double(y,type_y,dsizes_y[0],has_missing_y,&missing_y,
                            &missing_dy);
   if(dx == NULL || dy == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"regline: Unable to allocate memory for coercing x and y arrays to double precision");
-    return(NhlFATAL);
-  }
-/*
- * The x and y missing values must be the same.
- */
-  if(missing_dx.doubleval != missing_dy.doubleval) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"regline: The x and y missing values must be the same");
     return(NhlFATAL);
   }
 
@@ -963,7 +949,8 @@ NhlErrorTypes regline_W( void )
  * Call the f77 version of 'regline' with the full argument list.
  */
   NGCALLF(dregcoef,DREGCOEF)(&dx[0],&dy[0],&npts,&missing_dx.doubleval,
-                             rcoef,tval,nptxy,xave,yave,&ier);
+                             &missing_dy.doubleval,rcoef,tval,nptxy,xave,
+                             yave,&ier);
   if (ier == 5) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"regline: The x and/or y array contains all missing values");
   }
@@ -1018,7 +1005,7 @@ NhlErrorTypes regline_W( void )
                       Ncl_MultiDValData,
                       0,
                       (void*)rrcoef,
-                      &missing_rx,
+                      &missing_ry,
                       1,
                       dsizes,
                       TEMPORARY,
@@ -1122,7 +1109,7 @@ NhlErrorTypes regline_W( void )
                       Ncl_MultiDValData,
                       0,
                       (void*)rcoef,
-                      &missing_dx,
+                      &missing_dy,
                       1,
                       dsizes,
                       TEMPORARY,

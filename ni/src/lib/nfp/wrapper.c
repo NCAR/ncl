@@ -50,6 +50,7 @@ extern NhlErrorTypes eofcor_ts_W(void);
 extern NhlErrorTypes eofcov_ts_pcmsg_W(void);
 extern NhlErrorTypes eofcor_ts_pcmsg_W(void);
 extern NhlErrorTypes eof_varimax_W(void);
+extern NhlErrorTypes center_finite_diff_W(void);
 extern NhlErrorTypes svdcov_W(void);
 extern NhlErrorTypes svdstd_W(void);
 extern NhlErrorTypes svdcov_sv_W(void);
@@ -548,6 +549,19 @@ void NclAddUserFuncs(void)
     args = NewArgs(1);
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     NclRegisterFunc(eof_varimax_W,args,"eof_varimax",nargs);
+/*
+ * Register "center_finite_diff".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(center_finite_diff_W,args,"center_finite_diff",nargs);
 /*
  * Register "svdcov".
  *
