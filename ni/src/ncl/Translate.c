@@ -2213,7 +2213,7 @@ Unneeded translations
 		}
 		default:
 		
-		fprintf(fp,"UNRECOGNIZED ENUM VALUE!\n");
+		fprintf(stdout,"UNRECOGNIZED ENUM VALUE!\n");
 			break;
 	}
 	nesting--;

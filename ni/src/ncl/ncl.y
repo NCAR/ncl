@@ -1449,8 +1449,12 @@ procedure_def : proc_identifier LP arg_dec_list RP opt_eoln LOCAL opt_eoln local
 ;
 
 assignment :  identifier '=' expr		{
-						((NclGenericRefNode*)$1)->ref_type = Ncl_WRITEIT;
-						$$ = _NclMakeAssignment($1,$3);
+						if($1 != NULL) {
+							((NclGenericRefNode*)$1)->ref_type = Ncl_WRITEIT;
+							$$ = _NclMakeAssignment($1,$3);
+						} else {
+							$$ = NULL;
+						}
 						  
 					}
 	| identifier  error {
@@ -1733,6 +1737,8 @@ identifier : vname list_subscript 	{
 					}
 	| vname list_subscript LP RP error 			{
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: possibly an undefined procedure");
+					is_error += 1;
+
 					$$ = NULL;
 	}
 ;
@@ -1952,9 +1958,11 @@ subexpr: expr				{
 						_NclValOnly($3);
 						$$ = _NclMakeRangeIndex(NULL,NULL,$3);
 					}
+/*
 	| '*'				{
 						$$ = _NclMakeWildCardIndex();
 					}
+*/
 ;
 expr :  primary				{
 						$$ = $1;
