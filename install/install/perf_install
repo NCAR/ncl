@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: perf_install,v 1.2 1993-02-26 21:28:41 clyne Exp $
+#      $Id: perf_install,v 1.3 1993-03-22 18:20:37 clyne Exp $
 #
 #########################################################################
 #									#
@@ -63,7 +63,7 @@ else
 endif
 
 set instbls = ("$bin_path" "$inc_path" "$lib_path" "$man_path");
-set tars = ("bin.tar" "include.tar" "lib.tar" "man.tar")
+set tars = ("BIN.TAR" "INCLUDE.TAR" "LIB.TAR" "MAN.TAR")
 
 if ("$bin_path" != "/dev/null") then
 	set bin_line = "	Executables	$bin_path"
@@ -141,8 +141,68 @@ case	"tape":
 	breaksw
 
 case	"cdrom":
-	echo "$0 : Install from cdrom not supported" > /dev/tty
-	exit 1
+
+	#
+	# Ugh! ISO 9660 restricts file names to eight upper case characters,
+	# followed by a '.', followed by three more upper case characters.
+	# Need to map $SYSTEM into something that conforms.
+	#
+	switch ("$SYSTEM")
+
+	case	"HPUX_HP9000_7xx"
+		set cd_system = "HPUX.7XX"
+		breaksw
+
+	case	"AIX_RS6000"
+		set cd_system = "AIX.R6K"
+		breaksw
+
+	case	"SunOS_sun4"
+		set cd_system = "SUNOS.SN4"
+		breaksw
+
+	case	"SunOS_sun3"
+		set cd_system = "SUNOS.SN3"
+		breaksw
+
+	case	"Solaris_sun4"
+		set cd_system = "SOLARIS.SN4"
+		breaksw
+
+	case	"ULRTIX_RISC"
+		set cd_system = "ULTRIX.RIS"
+		breaksw
+
+	case	"IRIX_IP"
+		set cd_system = "IRIX.IP"
+		breaksw
+
+	case	"UNICOS_YMP"
+		set cd_system = "UNICOS.YMP"
+		breaksw
+	endsw
+
+	if (! $?cd_system)  then
+		echo "Unknown system ($SYSTEM)" > /dev/tty
+		exit 1
+	endif
+
+	# 
+	# read the tar file off the CDROM
+	#
+	while ($#instbls)
+		if ("$instbls[1]" != "/dev/null") then
+			set tarfile = $INSTALL_CD_DEV/$cd_system/$tars[1]
+			$LOCALDIR/read_tarfile $tarfile $instbls[1] > /dev/tty
+			if ($status != 0) then
+				exit 1
+			endif
+		endif
+
+		shift instbls
+		shift tars
+	end
+
 	breaksw
 
 case	"tar-file":

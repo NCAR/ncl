@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: install_soft,v 1.1 1993-02-20 00:11:15 clyne Exp $
+#      $Id: install_soft,v 1.2 1993-03-22 18:20:35 clyne Exp $
 #
 #########################################################################
 #									#
@@ -94,7 +94,7 @@ cat <<EOF
 
 
 
-	1.  Select installation source		[ install from $INSTALL_SOURCE ]
+	1.  Select distribution media		[ install from $INSTALL_SOURCE ]
         2.  Select source device		[ device: $device ]
 	3.  Select installation configuration	[ $INSTALL_TYPE ]
 	4.  Show installation configuration
@@ -112,8 +112,6 @@ EOF
 		set source = `$LOCALDIR/select_src`
 		if ($status == 0) then
 			setenv INSTALL_SOURCE $source
-		else
-			$LOCALDIR/pause
 		endif
 		breaksw
 
