@@ -1,5 +1,5 @@
 C
-C	$Id: ffex00.f,v 1.5 1995-06-14 14:01:21 haley Exp $
+C	$Id: ffex00.f,v 1.6 1999-04-09 15:28:33 haley Exp $
 C
       PROGRAM FFEX00
 C
@@ -13,7 +13,7 @@ C Continental boundaries are filled with a grayscale value
 C
       EXTERNAL FILL
 C
-      PARAMETER (LMAP=150000,NWRK=10000,ISIZ=5)
+      PARAMETER (LMAP=200000,NWRK=20000,ISIZ=5)
       INTEGER MAP(LMAP), IAREA(ISIZ), IGRP(ISIZ)
       REAL XWRK(NWRK), YWRK(NWRK)
 C
