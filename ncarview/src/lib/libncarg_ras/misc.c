@@ -1,5 +1,5 @@
 /*
- *	$Id: misc.c,v 1.2 1991-08-16 11:10:27 clyne Exp $
+ *	$Id: misc.c,v 1.3 1991-10-07 17:44:30 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -22,6 +22,7 @@
  *		This file contains miscellaneous functions that
  *		are used by other members of the "libraster"
  *		package.
+ *		fubar
  */
 #include "ncarg_ras.h"
 
