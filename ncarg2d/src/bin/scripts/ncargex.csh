@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.49 1993-09-21 14:35:04 haley Exp $
+#   $Id: ncargex.csh,v 1.50 1993-09-23 20:52:15 kennison Exp $
 #
 
 #********************#
@@ -66,7 +66,7 @@ endif
 #  Set areas examples  #
 #                      #
 #**********************#
-set ex_areas   = (arex01)
+set ex_areas   = (arex01 arex02)
 set tst_areas  = (tareas)
 set ttr_areas  = (cardb1 caredg carline cardb2 carfill carmap)
 set areas_list = ($ex_areas $tst_areas $ttr_areas)
