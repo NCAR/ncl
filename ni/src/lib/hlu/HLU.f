@@ -1,5 +1,5 @@
 C
-C $Id: HLU.f,v 1.3 1997-05-05 21:45:18 boote Exp $
+C $Id: HLU.f,v 1.4 1997-05-14 22:53:29 boote Exp $
 C
 C****************************************************************
 C								*
@@ -95,5 +95,5 @@ C
 C	Reparent.c
 C
       subroutine nhlfchangeworkstation(id_plot,id_work,ierr)
-      	call nhlf_changeworkstation(id_plot,id_work,ierr)
+      	call nhlfpchangeworkstation(id_plot,id_work,ierr)
       end

@@ -1,5 +1,5 @@
 C
-C $Id: DATACOMM.f,v 1.3 1997-05-05 21:45:07 boote Exp $
+C $Id: DATACOMM.f,v 1.4 1997-05-14 22:53:26 boote Exp $
 C
 C****************************************************************
 C								*
@@ -20,17 +20,17 @@ C
 C      Description:     
 C
       subroutine nhlfupdatedata(id_obj,ierr)
-	call nhlf_updatedata(id_obj,ierr)
+	call nhlfpupdatedata(id_obj,ierr)
       end
       subroutine nhlfadddata(id_plot,res_name,id_data,ierr)
 	character*(*) res_name
 	integer id_plot,id_data,ierr
-	call nhlf_adddata(id_plot,res_name,len(res_name),id_data,ierr)
+	call nhlfpadddata(id_plot,res_name,len(res_name),id_data,ierr)
       end
       subroutine nhlfremovedata(id_plot,res_name,id_data,ierr)
 	character*(*) res_name
 	integer id_plot,id_data,ierr
-	call nhlf_removedata(id_plot,res_name,len(res_name),id_data,ierr)
+	call nhlfpremovedata(id_plot,res_name,len(res_name),id_data,ierr)
       end
       subroutine nhlfisdatacomm(id,istat)
 

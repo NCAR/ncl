@@ -1,5 +1,5 @@
 /*
- *      $Id: BoundingBox.c,v 1.6 1995-04-07 10:40:54 boote Exp $
+ *      $Id: BoundingBox.c,v 1.7 1997-05-14 22:53:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -173,7 +173,7 @@ NhlErrorTypes NhlGetBB
  * Returns:	
  * Side Effect:	
  */
-void _NHLCALLF(nhlf_getbb,NHLF_GETBB)
+void _NHLCALLF(nhlfpgetbb,NHLFPGETBB)
 #if	NhlNeedProto
 (
 	int	*pid,

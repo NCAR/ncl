@@ -1,5 +1,5 @@
 C
-C $Id: PLOTMANAGER.f,v 1.2 1995-06-09 19:19:56 dbrown Exp $
+C $Id: PLOTMANAGER.f,v 1.3 1997-05-14 22:53:31 boote Exp $
 C
 C****************************************************************
 C								*
@@ -20,19 +20,19 @@ C
 C      Description:     
 C
       subroutine nhlfaddoverlay(id_base,id_plot,id_after,ierr)
-	call nhlf_addoverlay(id_base,id_plot,id_after,ierr)
+	call nhlfpaddoverlay(id_base,id_plot,id_after,ierr)
       end
 C
       subroutine nhlfremoveoverlay(id_base,id_plot,irestore,ierr)
-      	call nhlf_removeoverlay(id_base,id_plot,irestore,ierr)
+      	call nhlfpremoveoverlay(id_base,id_plot,irestore,ierr)
       end
 C
       subroutine nhlfaddannotation(plot_id,view_id,anno_manager_id)
-      	call nhlf_addannotation(plot_id,view_id,anno_manager_id)
+      	call nhlfpaddannotation(plot_id,view_id,anno_manager_id)
       end
 C
       subroutine nhlfremoveannotation(plot_id,anno_manager_id,ierr)
-      	call nhlf_removeannotation(plot_id,anno_manager_id,ierr)
+      	call nhlfpremoveannotation(plot_id,anno_manager_id,ierr)
       end
 C
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Reparent.c,v 1.11 1997-01-17 18:57:42 boote Exp $
+ *      $Id: Reparent.c,v 1.12 1997-05-14 22:53:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -237,7 +237,7 @@ NhlChangeWorkstation
  * Side Effect:	
  */
 void
-_NHLCALLF(nhlf_changeworkstation,NHLF_CHANGEWORKSTATION)
+_NHLCALLF(nhlfpchangeworkstation,NHLFPCHANGEWORKSTATION)
 #if	NhlNeedProto
 (
 	int	*pid,

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.41 1997-05-05 21:45:09 boote Exp $
+ *      $Id: DataComm.c,v 1.42 1997-05-14 22:53:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2050,7 +2050,7 @@ NhlAddData
  * Side Effect:	
  */
 void
-_NHLCALLF(nhlf_adddata,NHLF_ADDDATA)
+_NHLCALLF(nhlfpadddata,NHLFPADDDATA)
 #if	NhlNeedProto
 (
 	int		*pid,
@@ -2144,7 +2144,7 @@ NhlRemoveData
  * Side Effect:	
  */
 void
-_NHLCALLF(nhlf_removedata,NHLF_REMOVEDATA)
+_NHLCALLF(nhlfpremovedata,NHLFPREMOVEDATA)
 #if	NhlNeedProto
 (
 	int		*pid,
@@ -2234,7 +2234,7 @@ NhlUpdateData
  * Side Effect:	
  */
 void
-_NHLCALLF(nhlf_updatedata,NHLF_UPDATEDATA)
+_NHLCALLF(nhlfpupdatedata,NHLFPUPDATEDATA)
 #if	NhlNeedProto
 (
 	int	*id,

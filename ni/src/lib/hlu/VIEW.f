@@ -1,5 +1,5 @@
 C
-C $Id: VIEW.f,v 1.3 1997-05-05 21:45:28 boote Exp $
+C $Id: VIEW.f,v 1.4 1997-05-14 22:53:36 boote Exp $
 C
 C****************************************************************
 C								*
@@ -22,7 +22,7 @@ C
       subroutine nhlfgetbb(ipid,top,bottom,left,right,ierr)
 	integer ipid,ierr
 	real top,bottom,left,right
-	call nhlf_getbb(ipid,top,bottom,left,right,ierr)
+	call nhlfpgetbb(ipid,top,bottom,left,right,ierr)
       end
       subroutine nhlfisview(id,istat)
 

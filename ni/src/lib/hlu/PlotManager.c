@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.36 1997-02-27 20:13:04 boote Exp $
+ *      $Id: PlotManager.c,v 1.37 1997-05-14 22:53:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -5066,7 +5066,7 @@ NhlErrorTypes NhlAddOverlay
 }
 
 /*
- * Function:	nhlf_addoverlay
+ * Function:	nhlfpaddoverlay
  *
  * Description:	Fortran wrapper for NhlAddOverlay
  *
@@ -5079,7 +5079,7 @@ NhlErrorTypes NhlAddOverlay
  * Side Effect:	
  */
 void
-_NHLCALLF(nhlf_addoverlay,NHLF_ADDOVERLAY)
+_NHLCALLF(nhlfpaddoverlay,NHLFPADDOVERLAY)
 #if	NhlNeedProto
 (
 	int	*base,
@@ -5262,7 +5262,7 @@ NhlErrorTypes NhlRemoveOverlay
 }
 
 /*
- * Function:	nhlf_removeoverlay
+ * Function:	nhlfpremoveoverlay
  *
  * Description:	Fortran wrapper for NhlRemoveOverlay
  *
@@ -5275,7 +5275,7 @@ NhlErrorTypes NhlRemoveOverlay
  * Side Effect:	
  */
 void
-_NHLCALLF(nhlf_removeoverlay,NHLF_REMOVEOVERLAY)
+_NHLCALLF(nhlfpremoveoverlay,NHLFPREMOVEOVERLAY)
 #if	NhlNeedProto
 (
 	int	*base,
@@ -5464,7 +5464,7 @@ int NhlAddAnnotation
  * Side Effect:	
  */
 void
-_NHLCALLF(nhlf_addannotation,NHLF_ADDANNOTATION)
+_NHLCALLF(nhlfpaddannotation,NHLFPADDANNOTATION)
 #if	NhlNeedProto
 (
 	int	*plot_id,
@@ -5683,7 +5683,7 @@ NhlErrorTypes NhlRemoveAnnotation
  * Side Effect:	
  */
 void
-_NHLCALLF(nhlf_removeannotation,NHLF_REMOVEANNOTATION)
+_NHLCALLF(nhlfpremoveannotation,NHLFPREMOVEANNOTATION)
 #if	NhlNeedProto
 (
 	int	*plot,
