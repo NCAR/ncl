@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.49 1997-01-31 22:28:00 ethan Exp $
+#      $Id: yMakefile,v 1.50 1997-02-21 03:12:55 ethan Exp $
 #
 #########################################################################
 #									#
@@ -107,8 +107,8 @@ STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			HLUFunctions.c NclHDF.c NclGRIB.c date.c yywrap.c \
 			GetGrids.c
 
-FSRCS		=	fortranio.f
-FOBJS		=	fortranio.o
+FSRCS		=	fortranio.f gaus.f
+FOBJS		=	fortranio.o gaus.o
 
 GEN_OBJS	=	NclTypedouble.o NclTypefloat.o \
 			NclTypeint.o NclTypelogical.o \
