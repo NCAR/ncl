@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.20 1994-11-03 22:54:48 haley Exp $
+#	$Id: ncargcex.csh,v 1.21 1994-11-03 22:59:44 haley Exp $
 #
 
 #**************************#
@@ -136,10 +136,8 @@ set default_msgs = (\
 #  Set areas examples  #
 #                      #
 #**********************#
-set ex_areas   = (c_arex01 c_arex02)
 set tst_areas  = (c_tareas)
-set ttr_areas  = (c_cardb1 c_caredg c_carline c_cardb2 c_carfill c_carmap)
-set areas_list = ($ex_areas $tst_areas $ttr_areas)
+set areas_list = ($tst_areas)
 
 #**************************#
 #                          #
