@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: rasls.m,v 1.5 1993-05-04 22:04:19 haley Exp $
+.\"	$Id: rasls.m,v 1.6 1993-06-24 18:33:47 clyne Exp $
 .\"
 .TH RASLS 1NCARG "January 1993" NCARG "NCAR VIEW"
 .SH NAME
@@ -10,6 +10,7 @@ rasls \- list information on rasterfiles
 [\fB\-count\fR]
 [\fB\-verbose\fR]
 [\fB\-Version\fR]
+[\fB\-ifmt \fIfile_format\fR]
 [files]
 .SH DESCRIPTION
 .sp
@@ -39,6 +40,18 @@ parameters.
 .TP
 .BI \-Version
 Print the version number.
+.TP
+.BI \-ifmt " format"
+Specify the input file format.
+.I format
+is one of the file name extensions discussed
+in
+.B ras_formats(5NCARG)
+(without the ".", e.g.
+.BR xwd).
+When this option is
+specified file name extensions are not necessary and are ignored if present.
+All input files must have the same format.
 .sp
 .SH "SEE ALSO"
 .LP
