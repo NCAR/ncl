@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.39 1995-06-16 20:56:54 dbrown Exp $
+ *      $Id: Converters.c,v 1.40 1995-10-10 20:05:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -39,9 +39,11 @@ typedef enum { CHAR, LP, SPACE , RP , COMMA, ENDOFSTRING} _NhlTokens;
 
 static NrmQuark intQ;
 static NrmQuark stringQ;
+static NrmQuark quarkQ;
 static NrmQuark genQ;
 static NrmQuark intgenQ;
 static NrmQuark strgenQ;
+static NrmQuark quarkgenQ;
 static NrmQuark varQ;
 
 
@@ -853,6 +855,10 @@ NhlCvtGenArrayToEnumGenArray
 
 	if(tgen->typeQ == stringQ){
 		return _NhlReConvertData(strgenQ,to->typeQ,from,to);
+	}
+
+	if(tgen->typeQ == quarkQ){
+		return _NhlReConvertData(quarkgenQ,to->typeQ,from,to);
 	}
 
 	ival.size = sizeof(NhlGenArray);
@@ -3125,9 +3131,11 @@ _NhlConvertersInitialize
 
 	intQ = NrmStringToQuark(NhlTInteger);
 	stringQ = NrmStringToQuark(NhlTString);
+	quarkQ = NrmStringToQuark(NhlTQuark);
 	genQ = NrmStringToQuark(NhlTGenArray);
 	intgenQ = NrmStringToQuark(NhlTIntegerGenArray);
 	strgenQ = NrmStringToQuark(NhlTStringGenArray);
+	quarkgenQ = NrmStringToQuark(NhlTQuarkGenArray);
 	varQ = NrmStringToQuark(NhlTVariable);
 
 	/*
