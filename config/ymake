@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.21 1994-09-28 21:45:11 boote Exp $
+#	$Id: ymake,v 1.22 1996-01-13 00:30:06 haley Exp $
 #
 ######################################################################
 #
@@ -282,6 +282,7 @@ case IRIX:
 case ULTRIX:
 case HP-UX:
 case OSF1:
+case Linux:
         set opsys = $foo
         breaksw
 default:
@@ -358,6 +359,28 @@ case	AIX:
 	set vendor = IBM
 
 	breaksw
+
+case    Linux:
+    set os = $opsys
+
+    switch ("$mach")
+    case    i486:
+        set model = i486
+        set arch = i486
+        breaksw
+    case    i586:
+        set model = i586
+        set arch = i586
+        breaksw
+    default:
+        echo "$0 : Unknown machine type" > /dev/tty
+        exit 1
+    endsw
+
+    set sysincs = LINUX
+    set vendor = IBM
+
+    breaksw
 
 case	IRIX:
 	set os = $opsys
