@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.76 1996-12-20 00:42:06 ethan Exp $
+ *      $Id: Execute.c,v 1.77 1996-12-20 22:09:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1583,8 +1583,85 @@ NclExecuteReturnStatus _NclExecute
 /***************************
 * Two Operand Instructions *
 ***************************/			
+			case VARVAL_READ_OP: {
+				NhlErrorTypes ret = NhlNOERROR;
+				int i;
+				int nsubs;
+				NclStackEntry data;
+				NclStackEntry data1;
+				NclStackEntry* var;
+				NclSymbol *sym;
+				NclSelectionRecord *sel_ptr=NULL;
+				int dim_is_ref[NCL_MAX_DIMENSIONS];
+
+				ptr++;lptr++;fptr++;
+				sym = (NclSymbol*)*ptr;
+				var = _NclRetrieveRec(sym,READ_IT);
+				ptr++;lptr++;fptr++;
+				nsubs = *ptr;
+				if((var == NULL)||(var->u.data_var == NULL)) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable (%s) is undefined",sym->name);
+					_NclCleanUpStack(nsubs);
+					estatus = NhlFATAL;
+				} else if(nsubs == 0) {
+					estatus = _NclPush(*var);
+				} else if(nsubs != var->u.data_var->var.n_dims) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts do not match number of dimesions of variable,(%d) Subscripts used, (%d) Subscripts expected",nsubs,var->u.data_var->var.n_dims);
+					estatus = NhlFATAL;
+					_NclCleanUpStack(nsubs);
+				} else {
+					sel_ptr = _NclGetVarSelRec(var->u.data_var);
+					sel_ptr->n_entries = nsubs;
+					for(i=0;i<nsubs;i++) {
+						dim_is_ref[i] = 0;
+					}
+					for(i=0;i<nsubs;i++) {
+						data =_NclPop();
+						switch(data.u.sub_rec.sub_type) {
+						case INT_VECT:
+/*
+* Need to free some stuff here
+*/							
+							ret = _NclBuildVSelection(var->u.data_var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
+							break;
+						case INT_RANGE:
+/*
+* Need to free some stuff here
+*/							
+							ret = _NclBuildRSelection(var->u.data_var,&data.u.sub_rec.u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
+							break;
+						case COORD_VECT:
+							ret = _NclBuildCoordVSelection(var->u.data_var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
+							break;
+						case COORD_RANGE:
+							ret = _NclBuildCoordRSelection(var->u.data_var,&data.u.sub_rec.u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec.name);
+							break;
+						}
+						_NclFreeSubRec(&data.u.sub_rec);
+						if(ret < NhlWARNING) {
+							estatus = NhlFATAL;
+							break;
+						}
+						if(!dim_is_ref[(sel_ptr->selection[nsubs - i - 1]).dim_num]) {
+							dim_is_ref[(sel_ptr->selection[nsubs - i - 1]).dim_num] = 1;
+						} else {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in subscript # %d,dimension is referenced more than once",i);
+							estatus = NhlFATAL;
+						}
+					} 
+					if(estatus != NhlFATAL) {
+						data1.kind = NclStk_VAL;
+						data1.u.data_obj= _NclVarValueRead(var->u.data_var,sel_ptr,NULL);
+						if(data1.u.data_obj != NULL) {
+							estatus = _NclPush(data1);
+						} else {
+							estatus = NhlFATAL;
+						}
+					}
+				}
+			}
+			break;
 			case PARAM_VAR_OP:
-			case VARVAL_READ_OP: 
 			case VAR_READ_OP: {
 				NhlErrorTypes ret = NhlNOERROR;
 				int i;
@@ -3093,7 +3170,108 @@ NclExecuteReturnStatus _NclExecute
 				}
 			}
 			break;
-			case VARVAL_COORD_OP:
+			case VARVAL_COORD_OP: {
+				NclStackEntry *var = NULL,cvar;
+                                NclStackEntry data;
+                                NclSymbol* thesym = NULL;
+                                char *coord_name = NULL;
+                                int nsubs = 0;
+                                NclSelectionRecord *sel_ptr = NULL;
+                                NhlErrorTypes ret = NhlNOERROR;
+                                int i;
+				NclMultiDValData thevalue = NULL;
+
+				
+				cvar = _NclPop();
+				switch(cvar.kind) {
+				case NclStk_VAL: 
+					thevalue = cvar.u.data_obj;
+					break;
+				case NclStk_VAR:
+					thevalue = _NclVarValueRead(cvar.u.data_var,NULL,NULL);
+					break;
+				default:
+					thevalue = NULL;
+					estatus = NhlFATAL;
+					break;
+				}
+				if((thevalue == NULL)||(thevalue->multidval.kind != SCALAR)&&(thevalue->multidval.type != (NclTypeClass)nclTypestringClass)) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable Attribute names must be scalar string values can't continue");
+					estatus = NhlFATAL;
+				} else {
+					coord_name = NrmQuarkToString(*(NclQuark*)thevalue->multidval.val);
+					if(cvar.u.data_obj->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)cvar.u.data_obj);
+					}
+				}
+				thevalue = NULL;
+
+				ptr++;lptr++;fptr++;
+				thesym = (NclSymbol*)*ptr;
+/*
+				ptr++;lptr++;fptr++;
+				coord_name = NrmQuarkToString(*ptr);
+*/
+				ptr++;lptr++;fptr++;
+				nsubs = (int)*ptr;
+
+				var = _NclRetrieveRec(thesym,READ_IT);
+				if((var == NULL)||(var->u.data_var == NULL)) {
+					estatus = NhlFATAL;
+				} else if(_NclIsDim(var->u.data_var,coord_name) == -1) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a named dimension in variable (%s).",coord_name,thesym->name);
+					estatus = NhlFATAL;
+				} else {
+					if(nsubs == 0) {
+						sel_ptr = NULL;
+					} else if(nsubs == 1){
+						sel_ptr = _NclGetVarSelRec(var->u.data_var);
+						sel_ptr->n_entries = 1;
+						data =_NclPop();
+						if(data.u.sub_rec.name != NULL) {
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with coordinate variables since only one dimension applies");
+							estatus = NhlWARNING;
+						}
+						switch(data.u.sub_rec.sub_type) {
+						case INT_VECT:
+/*
+* Need to free some stuff here
+*/						
+							ret = _NclBuildVSelection(var->u.data_var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[0]),0,NULL);
+							break;
+						case INT_RANGE:
+/*
+* Need to free some stuff here
+*/							
+							ret = _NclBuildRSelection(var->u.data_var,&data.u.sub_rec.u.range,&(sel_ptr->selection[0]),0,NULL);
+							break;
+						case COORD_VECT:
+						case COORD_RANGE:
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with coordinate variables ");
+							sel_ptr = NULL;
+							estatus = NhlFATAL;
+							break;
+						}
+						_NclFreeSubRec(&data.u.sub_rec);
+						if(ret < NhlWARNING)
+							estatus = NhlFATAL;
+					} else {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate variables have only one dimension, %d subscripts used on coordinate variable reference",nsubs);
+						_NclCleanUpStack(nsubs);
+						estatus = NhlFATAL;
+					}
+					if(estatus != NhlFATAL) {
+						data.u.data_obj = _NclVarValueRead(_NclReadCoordVar(var->u.data_var,coord_name,NULL),sel_ptr,NULL);
+						if(data.u.data_obj != NULL) {
+							data.kind = NclStk_VAL;
+							estatus = _NclPush(data);
+						} else {
+							estatus = NhlFATAL;
+						}
+					} 
+				}
+			}
+			break;
 			case PARAM_VAR_COORD_OP:
 			case VAR_COORD_OP: {
 				NclStackEntry *var = NULL,cvar;
