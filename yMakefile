@@ -1,6 +1,6 @@
 NCARG	= .
 
-SUBDIRS	= common ncarg2d ncarview
+SUBDIRS	= common ncarg2d ncarview prototypes
 
 NEWDIRS	= $(BINPATH) $(LIBPATH) $(INCPATH) $(MANPATH) $(FONTCAPPATH) \
 	$(GRAPHCAPPATH) $(DBPATH) $(DOCPATH) $(ROBJPATH) $(EXAMPLESPATH) \
