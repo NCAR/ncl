@@ -14,15 +14,16 @@ C
 C  Open GKS if not open; open and activate a workstation; define
 C  some colors.
 C
+      JTYPE = ITYPE
       CALL GQOPS(ISTATE)
       IF (ISTATE .EQ. 0) THEN
         CALL GOPKS (IERRF, ISZDM)
-        IF (ITYPE .EQ. 1) THEN
+        IF (JTYPE .EQ. 1) THEN
           CALL NGSETC('ME','con.ncgm')
-        ELSE IF ( (ITYPE .GE. 20) .AND. (ITYPE .LE. 31) ) THEN
+        ELSE IF ( (JTYPE .GE. 20) .AND. (JTYPE .LE. 31) ) THEN
           CALL NGSETC('ME','con.ps')
         ENDIF
-        CALL GOPWK (IWKID, LUNIT, ITYPE)
+        CALL GOPWK (IWKID, LUNIT, JTYPE)
         CALL GACWK (IWKID)
         CALL GSCR(IWKID, 0, 1.00, 1.00, 1.00)
         CALL GSCR(IWKID, 1, 0.00, 0.00, 0.00)
@@ -133,15 +134,16 @@ C
 C
 C  Open GKS, open and activate a workstation.
 C
+      JTYPE = ITYPE
       CALL GQOPS(ISTATE)
       IF (ISTATE .EQ. 0) THEN
         CALL GOPKS (IERRF, ISZDM)
-        IF (ITYPE .EQ. 1) THEN
+        IF (JTYPE .EQ. 1) THEN
           CALL NGSETC('ME','srf.ncgm')
-        ELSE IF ( (ITYPE .GE. 20) .AND. (ITYPE .LE. 31) ) THEN
+        ELSE IF ( (JTYPE .GE. 20) .AND. (JTYPE .LE. 31) ) THEN
           CALL NGSETC('ME','srf.ps')
         ENDIF
-        CALL GOPWK (IWKID, LUNIT, ITYPE)
+        CALL GOPWK (IWKID, LUNIT, JTYPE)
         CALL GSCR(IWKID,0,1.,1.,1.)
         CALL GSCR(IWKID,1,0.,0.,0.)
         CALL GACWK (IWKID)
@@ -209,15 +211,16 @@ C
       DIMENSION U(LX,LY),V(LX,LY)
       PARAMETER (IERRF=6, LUNIT=2, IWKID=1, ITYPE=8)
 C
+      JTYPE = ITYPE
       CALL GQOPS(ISTATE)
       IF (ISTATE .EQ. 0) THEN
         CALL GOPKS (IERRF, ISZDM)
-        IF (ITYPE .EQ. 1) THEN
+        IF (JTYPE .EQ. 1) THEN
           CALL NGSETC('ME','vec.ncgm')
-        ELSE IF ( (ITYPE .GE. 20) .AND. (ITYPE .LE. 31) ) THEN
+        ELSE IF ( (JTYPE .GE. 20) .AND. (JTYPE .LE. 31) ) THEN
           CALL NGSETC('ME','vec.ps')
         ENDIF
-        CALL GOPWK (IWKID, LUNIT, ITYPE)
+        CALL GOPWK (IWKID, LUNIT, JTYPE)
         CALL GACWK (IWKID)
         CALL GSCR(IWKID, 0, 1.00, 1.00, 1.00)
         CALL GSCR(IWKID, 1, 0.00, 0.00, 0.00)

@@ -98,7 +98,6 @@ float y[] = {
     for (j = 0 ; j < NUMYOUT ; j++) {
       c_nnpnts(xo[i], yo[j], &rpnt);
       zo[i][j] = rpnt;
-      printf("%3d %3d %f\n", i, j, zo[i][j]);
     }
   }
 
