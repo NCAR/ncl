@@ -1,5 +1,5 @@
 C
-C      $Id: cn08f.f,v 1.3 1996-05-09 15:37:35 haley Exp $
+C      $Id: cn08f.f,v 1.4 1997-05-22 16:14:09 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -93,7 +93,7 @@ C
       call gngpat(filename,'data',ierr)
       do 10 i=1,256
          if( filename(i:i).eq.char(0) ) then
-            filename(i:i+16)='/cdf/contour.cdf'
+            filename(i:i+15)='/cdf/contour.cdf'
             goto 15
          endif
  10   continue
