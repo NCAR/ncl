@@ -1,5 +1,5 @@
 /*
- *	$Id: file.c,v 1.2 1991-01-09 10:52:30 clyne Exp $
+ *	$Id: file.c,v 1.3 1991-01-24 11:54:34 clyne Exp $
  */
 /*
  *	file.c
@@ -130,11 +130,11 @@ SetFileSelection(file)
 	}
 
 	/*
-	 * if file name already contains a path name don't cat on the 
-	 * current path name
+	 * if file name already contains a path name or currentPath is NULL
+	 * don't cat on the current path name
 	 */
 	if ((*file == '.' && (*(file+1) == '.' || *(file+1) == '/')) 
-					|| *file == '/' || *file == '~') {
+			|| *file == '/' || *file == '~' || (! currentPath)) {
 
 		currentFileSelection = icMalloc((unsigned) (strlen (file) +1));
 		(void) strcat(currentFileSelection, file);
