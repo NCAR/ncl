@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.12 1994-05-12 23:52:55 boote Exp $
+ *      $Id: Workstation.c,v 1.13 1994-06-07 18:54:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3262,16 +3262,19 @@ static NhlErrorTypes WorkstationFill
 	ginq_linewidth(&err_ind, &save_linewidth);
 	ginq_fill_int_style(&err_ind, &save_fillstyle);
 	ginq_linetype(&err_ind, &save_linetype);
-	fill_color = _NhlGetGksCi(inst->base.wkptr, wk_p->fill_color);
+	fill_color = (wk_p->fill_color == NhlTRANSPARENT) ? NhlTRANSPARENT : 
+		_NhlGetGksCi(inst->base.wkptr, wk_p->fill_color);
 	fill_background = (wk_p->fill_background < 0) ?
 		wk_p->fill_background :
 			_NhlGetGksCi(inst->base.wkptr, wk_p->fill_background);
 
 /*
- * Draw the fill, unless a negative fill index is specified
- * (implying no fill)
+ * Draw the fill, unless a negative fill index or Transparent fill color
+ * is specified (implying no fill)
  */
-	if ((ix = wk_p->fill_index) == NhlSOLIDFILL) {
+	if (fill_color == NhlTRANSPARENT)
+		;
+	else if ((ix = wk_p->fill_index) == NhlSOLIDFILL) {
 		/* fill_specs[ix].type  must be 0 */
 		gset_fill_int_style(1);
 		gset_linewidth(wk_p->fill_line_thickness);

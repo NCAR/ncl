@@ -1,5 +1,5 @@
 /*
- *      $Id: OverlayI.h,v 1.5 1994-06-03 19:24:07 dbrown Exp $
+ *      $Id: OverlayI.h,v 1.6 1994-06-07 18:54:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,6 @@
 #define	_NOVERLAYI_H
 
 #include <ncarg/hlu/ViewI.h>
-#include <ncarg/hlu/Annotation.h>
 #include <ncarg/hlu/Overlay.h>
 
 /*

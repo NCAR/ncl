@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.h,v 1.6 1994-06-03 19:24:05 dbrown Exp $
+ *      $Id: Overlay.h,v 1.7 1994-06-07 18:54:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,7 @@
 #include <ncarg/hlu/Title.h>
 #include <ncarg/hlu/LabelBar.h>
 #include <ncarg/hlu/Legend.h>
+#include <ncarg/hlu/Annotation.h>
 
 /*
  * defines for Display resources (temporary, should be enums)

@@ -1,5 +1,5 @@
 /*
- *      $Id: OverlayP.h,v 1.8 1994-06-03 19:24:09 dbrown Exp $
+ *      $Id: OverlayP.h,v 1.9 1994-06-07 18:54:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,23 +30,14 @@
 #define NhlOV_IRR_COUNT		16
 #define NhlOV_STD_VIEW_WIDTH	0.5
 #define NhlOV_STD_VIEW_HEIGHT	0.5
+#define NhlOV_DEF_TICKMARK_ZONE 2
+#define NhlOV_DEF_TITLE_ZONE	4
+#define NhlOV_DEF_LABELBAR_ZONE 6
+#define NhlOV_DEF_LEGEND_ZONE	7
 
 /* Zone/Display flags */
 
 #define NhlovMAXZONE		24
-#define NhlovZONEFLAG(zone)	1<<(zone)
-#define NhlovZONEFLAGSONLY(zonemap) (zonemap & 0x3fffffff) 
-#define NhlovINNERZONE		1<<0
-#define NhlovTICKMARKZONE	1<<1
-#define NhlovMIDDLEZONE		1<<2
-#define NhlovTITLEZONE		1<<3
-#define NhlovOUTERZONE		1<<4
-
-#define NhlovALLZONES   NhlovINNERZONE | NhlovTICKMARKZONE | \
-		NhlovMIDDLEZONE | NhlovTITLEZONE | NhlovOUTERZONE
-
-#define NhlovSETNEEDED		1<<30
-#define NhlovDISPLAYON		1<<31
 
 /* private resources */
 
@@ -61,6 +52,7 @@ typedef struct _NhlAnnoRec {
 	NhlLayer		ovl;
 	int			anno_id;
 	int			plot_id;
+	NhlBoolean		resize_notify;
 	int			zone;
 	NhlPosition		side;
 	NhlJustification	just;
@@ -68,6 +60,9 @@ typedef struct _NhlAnnoRec {
 	float			ortho_pos;
 	ovAnnoType		type;
 	int			status;
+	NhlBoolean		track_data;
+	float			data_x;
+	float			data_y;
 	struct _NhlAnnoRec	*next;
 } NhlAnnoRec;
 	

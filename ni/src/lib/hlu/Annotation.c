@@ -1,5 +1,5 @@
 /*
- *      $Id: Annotation.c,v 1.1 1994-06-03 19:23:28 dbrown Exp $
+ *      $Id: Annotation.c,v 1.2 1994-06-07 18:54:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,9 @@ static NhlResource resources[] = {
 		 Oset(on),NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNanPlotId,NhlCanPlotId,NhlTInteger,sizeof(int),
 		 Oset(plot_id),NhlTImmediate,_NhlUSET((NhlPointer) -1),0,NULL},
+	{NhlNanResizeNotify,NhlCanResizeNotify,NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(resize_notify),NhlTImmediate,
+		 _NhlUSET((NhlPointer)False),0,NULL},
 	{NhlNanZone,NhlCanZone,NhlTInteger,sizeof(int),
 		 Oset(zone),NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
 	{NhlNanSide, NhlCanSide,NhlTPosition,sizeof(NhlPosition),
@@ -41,11 +44,18 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer) NhlBOTTOM),0,NULL},
 	{NhlNanJust,NhlCanJust,NhlTJustification,
 		 sizeof(NhlJustification),Oset(just),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlTOPLEFT),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlCENTERCENTER),0,NULL},
 	{NhlNanOrthogonalPosF,NhlCanOrthogonalPosF,NhlTFloat,sizeof(float),
-		 Oset(ortho_pos),NhlTString,_NhlUSET("0.02"),0,NULL},
+		 Oset(ortho_pos),NhlTString,_NhlUSET("0.0"),0,NULL},
 	{NhlNanParallelPosF,NhlCanParallelPosF,NhlTFloat,sizeof(NhlFont),
 		 Oset(para_pos),NhlTString,_NhlUSET("0.0"),0,NULL },
+	{NhlNanTrackData,NhlCanTrackData,NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(track_data),NhlTImmediate,
+		 _NhlUSET((NhlPointer)False),0,NULL},
+	{NhlNanDataXF,NhlCanDataXF,NhlTFloat,sizeof(NhlFont),
+		 Oset(data_x),NhlTString,_NhlUSET("0.0"),0,NULL },
+	{NhlNanDataYF,NhlCanDataYF,NhlTFloat,sizeof(NhlFont),
+		 Oset(data_y),NhlTString,_NhlUSET("0.0"),0,NULL }
 };
 
 /*
@@ -135,6 +145,56 @@ _NHLCALLF(nhlfannotationclass,NHLFANNOTATIONCLASS)
 	return NhlannotationLayerClass;
 }
 
+
+/*
+ * Function:	AnnotationInitialize
+ *
+ * Description:	
+ *
+ * In Args:	Standard initialize parameters
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error condition
+ *
+ * Side Effects: Plotchar state affected
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+AnnotationInitialize
+#if __STDC__
+(
+	NhlLayerClass	class,
+	NhlLayer	req,
+	NhlLayer	new,
+	_NhlArgList	args,
+	int		num_args
+)
+#else
+(class,req,new,args,num_args)
+	NhlLayerClass	class;
+	NhlLayer	req;
+	NhlLayer	new;
+	_NhlArgList	args;
+	int		num_args;
+#endif
+{
+	NhlAnnotationLayer	annew = (NhlAnnotationLayer) new;
+	NhlErrorTypes		ret=NhlNOERROR;
+	NhlString		e_text, entry_name = "AnnotationInitialize";
+
+	if (annew->annotation.track_data) {
+		if (annew->annotation.zone > 1) {
+			e_text = 
+			      "%s: zone invalid for tracking data: resetting";
+			ret = MIN(NhlWARNING,ret);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			annew->annotation.zone = 1;
+		}
+	}
+	return ret;
+}
+
 /*
  * Function:	AnnotationSetValues
  *
@@ -168,51 +228,20 @@ AnnotationSetValues
 	int		num_args;
 #endif
 {
-	NhlAnnotationLayer told = (NhlAnnotationLayer) old;
-	NhlAnnotationLayer tnew = (NhlAnnotationLayer) new;
-	NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
+	NhlAnnotationLayer 	annew = (NhlAnnotationLayer) new;
+	NhlErrorTypes 		ret = NhlNOERROR;
+	NhlString		e_text, entry_name = "AnnotationSetValues";
 
-
-        return(MIN(ret,subret));
-}
-
-/*
- * Function:	AnnotationInitialize
- *
- * Description:	
- *
- * In Args:	Standard initialize parameters
- *
- * Out Args:	NONE
- *
- * Return Values: Error condition
- *
- * Side Effects: Plotchar state affected
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-AnnotationInitialize
-#if __STDC__
-(
-	NhlLayerClass	class,
-	NhlLayer	req,
-	NhlLayer	new,
-	_NhlArgList	args,
-	int		num_args
-)
-#else
-(class,req,new,args,num_args)
-	NhlLayerClass	class;
-	NhlLayer		req;
-	NhlLayer		new;
-	_NhlArgList	args;
-	int		num_args;
-#endif
-{
-	NhlAnnotationLayer	tnew = (NhlAnnotationLayer) new;
-	NhlErrorTypes	ret=NhlNOERROR,subret = NhlNOERROR;
-
-	return(MIN(ret,subret));
+	if (annew->annotation.track_data) {
+		if (annew->annotation.zone > 1) {
+			e_text = 
+			      "%s: zone invalid for tracking data: resetting";
+			ret = MIN(NhlWARNING,ret);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			annew->annotation.zone = 1;
+		}
+	}
+	return ret;
 }
 
 /*
@@ -238,9 +267,7 @@ AnnotationDestroy
 	NhlLayer	layer;
 #endif
 {
-	NhlAnnotationLayer anl = (NhlAnnotationLayer) layer;
-	
-	return(NhlNOERROR);
+	return (NhlNOERROR);
 }
 
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: AnnotationP.h,v 1.1 1994-06-03 19:23:32 dbrown Exp $
+ *      $Id: AnnotationP.h,v 1.2 1994-06-07 18:54:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,11 +31,15 @@ typedef struct _NhlAnnotationLayerPart{
 
 	NhlBoolean		on;
 	int			plot_id;
+	NhlBoolean		resize_notify;
 	int			zone;
 	NhlPosition		side;
 	NhlJustification	just;
 	float			para_pos;
 	float			ortho_pos;
+	NhlBoolean		track_data;
+	float			data_x;
+	float			data_y;
 
 }NhlAnnotationLayerPart;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Annotation.h,v 1.1 1994-06-03 19:23:30 dbrown Exp $
+ *      $Id: Annotation.h,v 1.2 1994-06-07 18:54:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,19 +26,27 @@
 
 #define NhlNanOn		"anOn"
 #define NhlNanPlotId		"anPlotId"
+#define NhlNanResizeNotify	"anResizeNotify"
 #define NhlNanZone		"anZone"
 #define NhlNanSide		"anSide"
 #define NhlNanJust		"anJust"
 #define NhlNanOrthogonalPosF	"anOrthogonalPosF"
 #define NhlNanParallelPosF	"anParallelPosF"
+#define NhlNanTrackData		"anTrackData"
+#define NhlNanDataXF		"anDataXF"
+#define NhlNanDataYF		"anDataYF"
 
 #define NhlCanOn		"AnOn"
 #define NhlCanPlotId		"AnPlotId"
+#define NhlCanResizeNotify	"AnResizeNotify"
 #define NhlCanZone		"AnZone"
 #define NhlCanSide		"AnSide"
 #define NhlCanJust		"AnJust"
 #define NhlCanOrthogonalPosF	"AnOrthogonalPosF"
 #define NhlCanParallelPosF	"AnParallelPosF"
+#define NhlCanTrackData		"AnTrackData"
+#define NhlCanDataXF		"AnDataXF"
+#define NhlCanDataYF		"AnDataYF"
 
 extern NhlLayerClass NhlannotationLayerClass;
 #endif  /* _NAnnotation_h */
