@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.9 1993-11-01 17:29:39 boote Exp $
+ *      $Id: Template,v 1.10 1993-11-02 15:53:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -209,10 +209,6 @@ NGCOMM########################################################################
 #ifndef	StdDefines
 #define	StdDefines	/**/
 #endif	/* StdDefines */
-
-#ifndef	SysDefines
-#define	SysDefines	$(OS_DEF)
-#endif
 
 #ifndef	Cdynamic
 #define	Cdynamic	/**/
@@ -526,9 +522,8 @@ EXTRA_LDLIBS	= $(SYS_LIBS) $(EXTRA_SYS_LIBS)
 
 ALLINCLUDES	= $(EXTRA_INCLUDES) $(TOP_INCLUDES) $(INC_SEARCH)
 STD_DEFINES	= StdDefines
-SYS_DEFINES	= SysDefines
 XTRA_CDEFINES	= $(EXTRA_CDEFINES) $(EXTRA_DEFINES)
-ALLDEFINES	= $(ALLINCLUDES) $(DEV_DEFINES) $(XTRA_CDEFINES) $(SYS_DEFINES) $(STD_DEFINES) $(PROJECTDEFINES) $(DEFINES)
+ALLDEFINES	= $(ALLINCLUDES) $(DEV_DEFINES) $(XTRA_CDEFINES) $(STD_DEFINES) $(PROJECTDEFINES) $(DEFINES)
 CFLAGS		= $(CCOPTIONS) $(COPT) $(ALLDEFINES)
 XTRA_CLDFLAGS	= $(EXTRA_CLDFLAGS) $(EXTRA_LDFLAGS)
 EXTRA_SYS_LIBS	= ExtraSysLibraries
@@ -706,6 +701,9 @@ InternalMakefileTarget
 
 all-local::
 
+install-local::
+	@echo "installing in $(CURRENT_DIR)"
+
 depend-local::
 
 includes-local::
@@ -721,8 +719,7 @@ InternalIncludesSubdirs($(SUBDIRS))
 
 #else	/* IHaveSubdirs */
 
-install::
-	@echo "install in $(CURRENT_DIR) done"
+install:: install-local
 
 Makefiles::
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.8 1993-11-01 17:29:30 boote Exp $
+ *	$Id: Rules,v 1.9 1993-11-02 15:53:38 boote Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -56,7 +56,7 @@ me: local-Makefile]
 ]\
 all-local:: names]\
 ]\
-install:: names]\
+install-local:: names]\
 	MakeDir(dest)]\
 	for name in names; do\]\
 	($(INSTALL) -m mode $$name dest);\]\
@@ -72,7 +72,7 @@ install:: names]\
 #define InstallLibTarget(library)\
 InstallTarget(library,$(INSTALL_LIB),$(LIBPATH))\
 ]\
-install::]\
+install-local::]\
 	$(RANLIB) $(LIBPATH)/library]
 #endif	/* InstallLibTarget */
 
@@ -137,9 +137,9 @@ dist-clean:: clean-local]\
 #ifndef	InternalInstallSubdirs
 #define InternalInstallSubdirs(dirs)\
 ]\
-install::]\
+install:: install-local]\
 	@for dir in dirs ; do\]\
-	(cd $$dir; echo "Installing $(CURRENT_DIR)/$$dir";\]\
+	(cd $$dir;\]\
 	$(MAKE) $(MFLAGS) install);\]\
 	done]
 #endif	/* InternalInstallSubdirs */
@@ -180,6 +180,12 @@ Makefiles::]\
 	(cd $$dir; echo "Making Makefiles in $(CURRENT_DIR)/$$dir";\]\
 	$(NEWYMAKE) -DTOPDIR\=../$(TOP) -DCURDIR\=$(CURRENT_DIR)/$$dir;\]\
 	$(MAKE) $(MFLAGS) Makefiles);\]\
+	done]\
+]\
+Makefiles-local::]\
+	@for dir in dirs ; do\]\
+	(cd $$dir; echo "Making Makefile in $(CURRENT_DIR)/$$dir";\]\
+	$(NEWYMAKE) -DTOPDIR\=../$(TOP) -DCURDIR\=$(CURRENT_DIR)/$$dir;\]\
 	done]
 #endif	/* InternalMakefilesSubdirs */
 
@@ -560,7 +566,7 @@ includes:: includes-local]\
 ]\
 all-local::]\
 ]\
-install::]\
+install-local::]\
 	MakeDir(destdir)]\
 	@for file in files; do \]\
 	$(INSTALL) -m $(INSTALL_MAN) $${file}suffix destdir/$${file}.section;\]\
@@ -577,7 +583,7 @@ install::]\
 ]\
 all-local::]\
 ]\
-install::]\
+install-local::]\
 	@if (test ! -f destdir/file.section) then \]\
 	echo "destdir/file.section must exist to create ManAliases to it";\]\
 	exit 1; else continue; fi]\
@@ -616,7 +622,7 @@ preformatted::]\
 ]\
 all-local::]\
 ]\
-install::]\
+install-local::]\
 	MakeDir($(XAPPPATH))]\
 	@for name in appfiles; do \]\
 	if (test -f $(XAPPPATH)/$$name) then \]\
