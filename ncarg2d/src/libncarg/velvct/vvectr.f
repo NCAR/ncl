@@ -1,5 +1,5 @@
 C
-C       $Id: vvectr.f,v 1.14 1998-01-16 20:43:50 dbrown Exp $
+C       $Id: vvectr.f,v 1.15 1998-08-25 00:26:51 dbrown Exp $
 C
       SUBROUTINE VVECTR (U,V,P,IAM,VVUDMV,WRK)
 C
@@ -526,7 +526,7 @@ C need to be treated as if they were drawn.
 C
  198        CONTINUE
 C
-            IF (UVM .LT. VMN) VMN=UVM
+            IF (UVMG .LT. VMN) VMN=UVMG
             IZC=IZC + 1
             GO TO 200
 C
