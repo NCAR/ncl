@@ -1,11 +1,11 @@
 #
-#	$Id: yMakefile,v 1.5 1993-01-23 15:15:08 haley Exp $
+#	$Id: yMakefile,v 1.6 1993-03-01 23:12:58 haley Exp $
 #
 NCARG	= ../../..
 
 CSRCS = \
 	c_colcon.c c_eezmpa.c c_elblba.c c_epltch.c \
-	c_mpex05.c c_sfex02.c c_slex01.c
+	c_sfex02.c c_slex01.c c_gtxpac.c
 
 SED_SRCS = \
 	c_cbex01.c c_agex07.c c_mpex05.c
