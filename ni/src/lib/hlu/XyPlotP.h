@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlotP.h,v 1.14 1998-04-16 03:09:34 dbrown Exp $
+ *      $Id: XyPlotP.h,v 1.15 1999-03-24 19:09:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -79,6 +79,13 @@ typedef struct _NhlXyDataSpecLayerPart{
 
 	NhlBoolean		llabel_fheight_set;
 	float			llabel_fheight;
+
+	NhlFont			llabel_font;
+	float			llabel_faspect;
+	float			llabel_fthickness;
+	NhlFontQuality		llabel_fquality;
+	float			llabel_cspacing;
+	char			llabel_func_code;
 	
 	/* Private fields	*/
 } NhlXyDataSpecLayerPart;
@@ -178,6 +185,12 @@ typedef struct _NhlXyPlotLayerPart {
 	NhlGenArray	missing_set;
 	NhlGenArray	xmissing;
 	NhlGenArray	ymissing;
+	NhlGenArray	llabel_fonts;
+	NhlGenArray	llabel_faspects;
+	NhlGenArray	llabel_fthicknesses;
+	NhlGenArray	llabel_fqualities;
+	NhlGenArray	llabel_cspacings;
+	NhlGenArray	llabel_func_codes;
 
 	NhlBoolean	dspec_changed;
 	NhlBoolean	new_draw_req;

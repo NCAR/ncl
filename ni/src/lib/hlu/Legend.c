@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.59 1998-11-06 22:16:08 dbrown Exp $
+ *      $Id: Legend.c,v 1.60 1999-03-24 19:09:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -999,17 +999,6 @@ static NhlErrorTypes LegendSetValues
 
 	ret1 = ManageDynamicArrays(new,old,args,num_args);
 	ret = MIN(ret,ret1);
-
-/*
- * Return now if the legend is turned off, the auto_manage flag is on
- * and it was previously on.
- */
-
-	if (lg_p->auto_manage && 
-	    (lg_p->auto_manage == olg_p->auto_manage) &&
-	    ! lg_p->legend_on) {
-		return ret;
-	}
 
 	ret1 = SetLegendGeometry(new,old,False,args,num_args);
 	ret = MIN(ret1,ret);

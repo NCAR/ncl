@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.h,v 1.17 1997-08-14 16:31:02 dbrown Exp $
+ *      $Id: XyPlot.h,v 1.18 1999-03-24 19:09:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,7 +35,6 @@
  * DataDep objects resources
  */
 #define	NhlNxyDashPattern	"xyDashPattern"
-#define	NhlCxyDashPattern	"XyDashPattern"
 #define NhlNxyDashPatterns	"xyDashPatterns"
 #define NhlCxyDashPatterns	"XyDashPatterns"
 #define	NhlNxyMonoDashPattern	"xyMonoDashPattern"
@@ -52,14 +51,12 @@
 #define NhlCxyExplicitLegendLabels	"XyExplicitLegendLabels"
 
 #define	NhlNxyLineColor		"xyLineColor"
-#define	NhlCxyLineColor		"XyLineColor"
 #define NhlNxyLineColors	"xyLineColors"
 #define NhlCxyLineColors	"XyLineColors"
 #define	NhlNxyMonoLineColor	"xyMonoLineColor"
 #define	NhlCxyMonoLineColor	"XyMonoLineColor"
 
 #define NhlNxyLineLabelFontColor	"xyLineLabelFontColor"
-#define NhlCxyLineLabelFontColor	"XyLineLabelFontColor"
 #define NhlNxyLineLabelFontColors	"xyLineLabelFontColors"
 #define NhlCxyLineLabelFontColors	"XyLineLabelFontColors"
 #define NhlNxyMonoLineLabelFontColor	"xyMonoLineLabelFontColor"
@@ -72,45 +69,61 @@
 #define NhlCxyExplicitLabels	"XyExplicitLabels"
 
 #define NhlNxyLineThicknessF	"xyLineThicknessF"
-#define NhlCxyLineThicknessF	"XyLineThicknessF"
 #define NhlNxyLineThicknesses	"xyLineThicknesses"
 #define NhlCxyLineThicknesses	"XyLineThicknesses"
 #define NhlNxyMonoLineThickness	"xyMonoLineThickness"
 #define NhlCxyMonoLineThickness	"XyMonoLineThickness"
 
 #define NhlNxyMarker		"xyMarker"
-#define NhlCxyMarker		"XyMarker"
 #define NhlNxyMarkers		"xyMarkers"
 #define NhlCxyMarkers		"XyMarkers"
 #define NhlNxyMonoMarker	"xyMonoMarker"
 #define NhlCxyMonoMarker	"XyMonoMarker"
 
 #define NhlNxyMarkerColor	"xyMarkerColor"
-#define NhlCxyMarkerColor	"XyMarkerColor"
 #define NhlNxyMarkerColors	"xyMarkerColors"
 #define NhlCxyMarkerColors	"XyMarkerColors"
 #define NhlNxyMonoMarkerColor	"xyMonoMarkerColor"
 #define NhlCxyMonoMarkerColor	"XyMonoMarkerColor"
 
 #define NhlNxyMarkerSizeF	"xyMarkerSizeF"
-#define NhlCxyMarkerSizeF	"XyMarkerSizeF"
 #define NhlNxyMarkerSizes	"xyMarkerSizes"
 #define NhlCxyMarkerSizes	"XyMarkerSizes"
 #define NhlNxyMonoMarkerSize	"xyMonoMarkerSize"
 #define NhlCxyMonoMarkerSize	"XyMonoMarkerSize"
 
 #define NhlNxyMarkerThicknessF		"xyMarkerThicknessF"
-#define NhlCxyMarkerThicknessF		"XyMarkerThicknessF"
 #define NhlNxyMarkerThicknesses		"xyMarkerThicknesses"
 #define NhlCxyMarkerThicknesses		"XyMarkerThicknesses"
 #define NhlNxyMonoMarkerThickness	"xyMonoMarkerThickness"
 #define NhlCxyMonoMarkerThickness	"XyMonoMarkerThickness"
 
 #define NhlNxyLineDashSegLenF		"xyLineDashSegLenF"
-#define NhlCxyLineDashSegLenF		"XyLineDashSegLenF"
-
 #define NhlNxyLineLabelFontHeightF	"xyLineLabelFontHeightF"
+
+#define NhlNxyLineLabelFont		"xyLineLabelFont"
+#define NhlNxyLineLabelFontAspectF	"xyLineLabelFontAspectF"
+#define NhlNxyLineLabelFontThicknessF	"xyLineLabelFontThicknessF"
+#define NhlNxyLineLabelFontQuality	"xyLineLabelFontQuality"
+#define NhlNxyLineLabelConstantSpacingF	"xyLineLabelConstantSpacingF"
+#define NhlNxyLineLabelFuncCode		"xyLineLabelFuncCode"
+
+#if 0
+/* 
+ * these have been replaced by more general class resources
+ */
+#define	NhlCxyLineColor		"XyLineColor"
+#define	NhlCxyDashPattern	"XyDashPattern"
+#define NhlCxyMarker		"XyMarker"
+#define NhlCxyMarkerColor	"XyMarkerColor"
+#define NhlCxyMarkerSizeF	"XyMarkerSizeF"
+#define NhlCxyMarkerThicknessF		"XyMarkerThicknessF"
+#define NhlCxyLineDashSegLenF		"XyLineDashSegLenF"
+#define NhlCxyLineThicknessF	"XyLineThicknessF"
 #define NhlCxyLineLabelFontHeightF	"XyLineLabelFontHeightF"
+#define NhlCxyLineLabelFontColor	"XyLineLabelFontColor"
+
+#endif
 
 /*
  * XyPlot's resource names

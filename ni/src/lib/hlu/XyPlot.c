@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.81 1998-11-13 01:42:52 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.82 1999-03-24 19:09:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,6 @@
 #include <ncarg/hlu/TickMark.h>
 #include <ncarg/hlu/Title.h>
 #include <ncarg/hlu/MapTransObj.h>
-#include <ncarg/hlu/Workstation.h>
 #include <ncarg/hlu/CoordArrTableFloatP.h>
 
 #define	XMISS_SET	0x01
@@ -83,7 +82,7 @@ static NhlResource data_resources[] = {
 
 /* Begin-documented-resources */
 
-	{NhlNxyLineColor,NhlCxyLineColor,NhlTColorIndex,sizeof(NhlColorIndex),
+	{NhlNxyLineColor,NhlCLineColor,NhlTColorIndex,sizeof(NhlColorIndex),
 		Oset(color),NhlTImmediate,(NhlPointer)NhlFOREGROUND,
 		_NhlRES_DEFAULT,NULL},
 	{NhlNxyLineColors,NhlCxyLineColors,NhlTColorIndexGenArray,
@@ -93,7 +92,7 @@ static NhlResource data_resources[] = {
 		Oset(mono_color),NhlTImmediate,(NhlPointer)False,
 		_NhlRES_DEFAULT,NULL},
 
-	{NhlNxyDashPattern,NhlCxyDashPattern,NhlTDashIndex,sizeof(NhlDashIndex),
+	{NhlNxyDashPattern,NhlCLineDashPattern,NhlTDashIndex,sizeof(NhlDashIndex),
 		Oset(dash),NhlTImmediate,(NhlPointer)NhlSOLIDLINE,
 		_NhlRES_DEFAULT,NULL},
 	{NhlNxyDashPatterns,NhlCxyDashPatterns,NhlTDashIndexGenArray,
@@ -103,7 +102,7 @@ static NhlResource data_resources[] = {
 		sizeof(NhlBoolean),Oset(mono_dash),NhlTImmediate,
 		(NhlPointer)False,_NhlRES_DEFAULT,NULL},
 
-	{NhlNxyLineThicknessF,NhlCxyLineThicknessF,NhlTFloat,sizeof(float),
+	{NhlNxyLineThicknessF,NhlCLineThicknessF,NhlTFloat,sizeof(float),
 		Oset(line_thickness),NhlTString,(NhlPointer)"1.0",
 		_NhlRES_DEFAULT,NULL},
 	{NhlNxyLineThicknesses,NhlCxyLineThicknesses,NhlTFloatGenArray,
@@ -123,7 +122,7 @@ static NhlResource data_resources[] = {
 		sizeof(NhlBoolean),Oset(mono_marker_mode),NhlTImmediate,
 		(NhlPointer)False,_NhlRES_DEFAULT,NULL},
 
-	{NhlNxyMarker,NhlCxyMarker,NhlTMarkerIndex,sizeof(NhlMarkerIndex),
+	{NhlNxyMarker,NhlCMarkerIndex,NhlTMarkerIndex,sizeof(NhlMarkerIndex),
 		Oset(marker),NhlTImmediate,(NhlPointer)0,_NhlRES_DEFAULT,NULL},
 	{NhlNxyMarkers,NhlCxyMarkers,NhlTMarkerIndexGenArray,
 		sizeof(NhlGenArray),Oset(markers),NhlTImmediate,
@@ -132,7 +131,7 @@ static NhlResource data_resources[] = {
 		sizeof(NhlBoolean),Oset(mono_marker),NhlTImmediate,
 		(NhlPointer)False,_NhlRES_DEFAULT,NULL},
 
-	{NhlNxyMarkerColor,NhlCxyMarkerColor,NhlTColorIndex,
+	{NhlNxyMarkerColor,NhlCMarkerColor,NhlTColorIndex,
 		sizeof(NhlColorIndex),Oset(marker_color),NhlTImmediate,
 		(NhlPointer)NhlFOREGROUND,_NhlRES_DEFAULT,(NhlFreeFunc)NULL},
 	{NhlNxyMarkerColors,NhlCxyMarkerColors,NhlTColorIndexGenArray,
@@ -145,7 +144,7 @@ static NhlResource data_resources[] = {
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
          	Oset(marker_size_set),NhlTImmediate,
          	(NhlPointer)True,_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
-	{NhlNxyMarkerSizeF,NhlCxyMarkerSizeF,NhlTFloat,
+	{NhlNxyMarkerSizeF,NhlCMarkerSizeF,NhlTFloat,
 		sizeof(float),Oset(marker_size),NhlTProcedure,
 		(NhlPointer)ResUnset,_NhlRES_DEFAULT,(NhlFreeFunc)NULL},
 	{NhlNxyMarkerSizes,NhlCxyMarkerSizes,NhlTFloatGenArray,
@@ -155,7 +154,7 @@ static NhlResource data_resources[] = {
 		sizeof(NhlBoolean),Oset(mono_marker_size),NhlTImmediate,
 		(NhlPointer)False,_NhlRES_DEFAULT,NULL},
 
-	{NhlNxyMarkerThicknessF,NhlCxyMarkerThicknessF,NhlTFloat,sizeof(float),
+	{NhlNxyMarkerThicknessF,NhlCMarkerThicknessF,NhlTFloat,sizeof(float),
 		Oset(marker_thickness),NhlTString,(NhlPointer)"1.0",
 		_NhlRES_DEFAULT,NULL},
 	{NhlNxyMarkerThicknesses,NhlCxyMarkerThicknesses,NhlTFloatGenArray,
@@ -173,7 +172,7 @@ static NhlResource data_resources[] = {
 		sizeof(NhlGenArray),Oset(labels),NhlTImmediate,
 		(NhlPointer)NULL,_NhlRES_DEFAULT,(NhlFreeFunc)NhlFreeGenArray},
 
-	{NhlNxyLineLabelFontColor,NhlCxyLineLabelFontColor,NhlTColorIndex,
+	{NhlNxyLineLabelFontColor,NhlCFontColor,NhlTColorIndex,
 		sizeof(NhlColorIndex),Oset(label_color),NhlTImmediate,
 		(NhlPointer)NhlFOREGROUND,_NhlRES_DEFAULT,(NhlFreeFunc)NULL},
 	{NhlNxyLineLabelFontColors,NhlCxyLineLabelFontColors,
@@ -192,16 +191,35 @@ static NhlResource data_resources[] = {
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
          	Oset(dash_seg_len_set),NhlTImmediate,
          	(NhlPointer)True,_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
-	{NhlNxyLineDashSegLenF,NhlCxyLineDashSegLenF,NhlTFloat,
+	{NhlNxyLineDashSegLenF,NhlCLineDashSegLenF,NhlTFloat,
 		sizeof(float),Oset(dash_seg_len),NhlTProcedure,
 		(NhlPointer)ResUnset,_NhlRES_DEFAULT,NULL},
 
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
 		Oset(llabel_fheight_set),NhlTImmediate,(NhlPointer)True,
 		_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
-	{NhlNxyLineLabelFontHeightF,NhlCxyLineLabelFontHeightF,NhlTFloat,
+	{NhlNxyLineLabelFontHeightF,NhlCFontHeightF,NhlTFloat,
 		sizeof(float),Oset(llabel_fheight),NhlTProcedure,
 		(NhlPointer)ResUnset,_NhlRES_DEFAULT,NULL},
+	{NhlNxyLineLabelFont,NhlCFont,NhlTFont,
+		sizeof(NhlFont),Oset(llabel_font),NhlTImmediate,
+		_NhlUSET((NhlPointer) 0),0,NULL},
+	{NhlNxyLineLabelFontAspectF,NhlCFontAspectF,NhlTFloat,
+	 	sizeof(float),Oset(llabel_faspect),NhlTString,
+	 	_NhlUSET("1.3125"),0,NULL},
+        {NhlNxyLineLabelFontThicknessF,NhlCFontThicknessF,
+                 NhlTFloat,sizeof(float),Oset(llabel_fthickness),
+                 NhlTString, _NhlUSET("1.0"),0,NULL},
+        {NhlNxyLineLabelFontQuality,NhlCFontQuality,
+                 NhlTFontQuality,
+                 sizeof(NhlFontQuality),Oset(llabel_fquality),
+                 NhlTImmediate,_NhlUSET((NhlPointer) NhlHIGH),0,NULL},
+        {NhlNxyLineLabelConstantSpacingF,NhlCTextConstantSpacingF,
+                 NhlTFloat,sizeof(float),Oset(llabel_cspacing),
+                 NhlTString,_NhlUSET("0.0"),0,NULL},
+        {NhlNxyLineLabelFuncCode,NhlCTextFuncCode,NhlTCharacter,
+                 sizeof(char),Oset(llabel_func_code),
+                 NhlTString, _NhlUSET(":"),0,NULL}
 
 /* End-documented-resources */
 
@@ -1343,6 +1361,18 @@ XyPlotInitialize
 					sizeof(float),0,NULL,True);
 	xp->ymissing = _NhlCreateGenArray(NULL,NhlTFloat,
 					sizeof(float),0,NULL,True);
+	xp->llabel_fonts = _NhlCreateGenArray(NULL,NhlTFont,
+					sizeof(NhlFont),0,NULL,True);
+	xp->llabel_faspects = _NhlCreateGenArray(NULL,NhlTFloat,
+					sizeof(float),0,NULL,True);
+	xp->llabel_fthicknesses = _NhlCreateGenArray(NULL,NhlTFloat,
+					sizeof(float),0,NULL,True);
+	xp->llabel_fqualities = _NhlCreateGenArray(NULL,NhlTFontQuality,
+					sizeof(NhlFontQuality),0,NULL,True);
+	xp->llabel_cspacings = _NhlCreateGenArray(NULL,NhlTFloat,
+					sizeof(float),0,NULL,True);
+	xp->llabel_func_codes = _NhlCreateGenArray(NULL,NhlTCharacter,
+					sizeof(char),0,NULL,True);
 
 	if(!xp->dash_indexes || !xp->item_types || !xp->lg_label_strings ||
 		!xp->line_colors || !xp->dash_seg_lens || !xp->llabel_colors ||
@@ -1351,7 +1381,9 @@ XyPlotInitialize
 		!xp->marker_indexes || !xp->marker_sizes ||
 		!xp->marker_thicknesses || !xp->xvectors || !xp->yvectors ||
 		!xp->len_vectors || !xp->missing_set || !xp->xmissing ||
-		!xp->ymissing){
+		!xp->ymissing || !xp->llabel_fonts || !xp->llabel_faspects ||
+		!xp->llabel_fthicknesses || !xp->llabel_fqualities ||
+		!xp->llabel_cspacings || !xp->llabel_func_codes){
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return NhlFATAL;
 	}
@@ -2018,6 +2050,12 @@ SetUpDataSpec
 	int				*missing_set;
 	float				*xmissing;
 	float				*ymissing;
+	NhlFont				*llabel_fonts;
+	float				*llabel_faspects;
+	float				*llabel_fthicknesses;
+	NhlFontQuality			*llabel_fqualities;
+	float				*llabel_cspacings;
+	char				*llabel_func_codes;
 	int				tint;
 
 	memset(buffer,'\0',sizeof(buffer));
@@ -2043,13 +2081,21 @@ SetUpDataSpec
 		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->marker_colors));
 		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->marker_indexes));
 		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->marker_sizes));
-		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->marker_thicknesses));
+		ret = MIN(ret,GrowGen
+			  (xlp->num_cpairs,xlp->marker_thicknesses));
 		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->xvectors));
 		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->yvectors));
 		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->len_vectors));
 		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->missing_set));
 		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->xmissing));
 		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->ymissing));
+		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->llabel_fonts));
+		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->llabel_faspects));
+		ret = MIN(ret,GrowGen
+			  (xlp->num_cpairs,xlp->llabel_fthicknesses));
+		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->llabel_fqualities));
+		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->llabel_cspacings));
+		ret = MIN(ret,GrowGen(xlp->num_cpairs,xlp->llabel_func_codes));
 
 		if(ret < NhlNOERROR){
 			xlp->size_cpair_arrays = 0;
@@ -2078,6 +2124,12 @@ SetUpDataSpec
 	missing_set = xlp->missing_set->data;
 	xmissing = xlp->xmissing->data;
 	ymissing = xlp->ymissing->data;
+	llabel_fonts = xlp->llabel_fonts->data;
+	llabel_faspects = xlp->llabel_faspects->data;
+	llabel_fthicknesses = xlp->llabel_fthicknesses->data;
+	llabel_fqualities = xlp->llabel_fqualities->data;
+	llabel_cspacings = xlp->llabel_cspacings->data;
+	llabel_func_codes = xlp->llabel_func_codes->data;
 
 	memset((char*)missing_set,0,
 			xlp->missing_set->size*xlp->missing_set->num_elements);
@@ -2287,7 +2339,8 @@ SetUpDataSpec
 		 */
 		if(dsp->marker_thicknesses != NULL &&
 						!dsp->mono_marker_thickness){
-			markerthicktable =(float*)dsp->marker_thicknesses->data;
+			markerthicktable =
+				(float*)dsp->marker_thicknesses->data;
 			len_markerthicktable =
 				dsp->marker_thicknesses->len_dimensions[0];
 		}
@@ -2409,8 +2462,8 @@ SetUpDataSpec
 			}
 			if(label) {
 
-				lg_label_strings[index] = NhlMalloc(sizeof(char)*
-								(strlen(label)+1));
+				lg_label_strings[index] = NhlMalloc
+					(sizeof(char)* (strlen(label)+1));
 				if(!lg_label_strings[index]){
 					NHLPERROR((NhlFATAL,ENOMEM,NULL));
 					return NhlFATAL;
@@ -2446,7 +2499,7 @@ SetUpDataSpec
 					dsp->marker_size  * xlp->vp_average;
 
 			if(j < len_markerthicktable)
-				marker_thicknesses[index] = markerthicktable[j];
+				marker_thicknesses[index] =markerthicktable[j];
 			else
 				marker_thicknesses[index] =
 							dsp->marker_thickness;
@@ -2459,7 +2512,12 @@ SetUpDataSpec
 				missing_set[index] |= YMISS_SET;
 				ymissing[index] = datal->flt.missing_y;
 			}
-
+			llabel_fonts[index] = dsp->llabel_font;
+			llabel_faspects[index] = dsp->llabel_faspect;
+			llabel_fthicknesses[index] = dsp->llabel_fthickness;
+			llabel_fqualities[index] = dsp->llabel_fquality;
+			llabel_cspacings[index] = dsp->llabel_cspacing;
+			llabel_func_codes[index] = dsp->llabel_func_code;
 		}
 	}
 
@@ -2522,6 +2580,12 @@ DrawCurves
 	int			*missing_set = xlp->missing_set->data;
 	float			*xmissing = xlp->xmissing->data;
 	float			*ymissing = xlp->ymissing->data;
+	NhlFont			*llabel_fonts = xlp->llabel_fonts->data;
+	float			*llabel_faspects = xlp->llabel_faspects->data;
+	float		*llabel_fthicknesses = xlp->llabel_fthicknesses->data;
+	NhlFontQuality	*llabel_fqualities = xlp->llabel_fqualities->data;
+	float		*llabel_cspacings = xlp->llabel_cspacings->data;
+	char		*llabel_func_codes = xlp->llabel_func_codes->data;
 	float			*tx,*ty;
 	int			size;
 
@@ -2566,6 +2630,12 @@ DrawCurves
 			_NhlNwkLineLabelFontColor,	llabel_colors[i],
 			_NhlNwkLineLabel,	llabel_strings[i],
 			_NhlNwkLineThicknessF,	line_thicknesses[i],
+			_NhlNwkLineLabelFont,	llabel_fonts[i],
+			_NhlNwkLineLabelFontAspectF, llabel_faspects[i],
+			_NhlNwkLineLabelFontThicknessF,llabel_fthicknesses[i], 
+			_NhlNwkLineLabelFontQuality, llabel_fqualities[i],
+			_NhlNwkLineLabelConstantSpacingF, llabel_cspacings[i],
+			_NhlNwkLineLabelFuncCode, llabel_func_codes[i], 
 			_NhlNwkMarkerColor,	marker_colors[i],
 			_NhlNwkMarkerIndex,	marker_indexes[i],
 			_NhlNwkMarkerSizeF,	marker_sizes[i],
@@ -4632,6 +4702,12 @@ static NhlErrorTypes SetUpLegend
 	NhlXyPlotLayerPart	*oxp = NULL;
 	NhlXyPlotLayerPart	*nxp = &xnew->xyplot;
 	NhlTransformLayerPart	*tfp = &xnew->trans;
+	NhlFont			*llabel_fonts = nxp->llabel_fonts->data;
+	float			*llabel_faspects = nxp->llabel_faspects->data;
+	float		*llabel_fthicknesses = nxp->llabel_fthicknesses->data;
+	NhlFontQuality	*llabel_fqualities = nxp->llabel_fqualities->data;
+	float		*llabel_cspacings = nxp->llabel_cspacings->data;
+	char		*llabel_func_codes = nxp->llabel_func_codes->data;
 
 	if(calledfrom == _NhlUPDATEDATA)
 		return NhlNOERROR;
@@ -4697,6 +4773,22 @@ static NhlErrorTypes SetUpLegend
 	NhlSetSArg(&sargs[(*nargs)++],NhlNlgMarkerSizes,nxp->marker_sizes);
 	NhlSetSArg(&sargs[(*nargs)++],NhlNlgMarkerThicknesses,
 						nxp->marker_thicknesses);
+	/* 
+	 * Unfortunately Legend doesn't yet support array resources for
+	 * these line label attributes (yet)
+	 */
+	NhlSetSArg(&sargs[(*nargs)++],NhlNlgLineLabelFont,llabel_fonts[0]);
+	NhlSetSArg(&sargs[(*nargs)++],
+		   NhlNlgLineLabelFontAspectF,llabel_faspects[0]);
+	NhlSetSArg(&sargs[(*nargs)++],
+		   NhlNlgLineLabelFontThicknessF,llabel_fthicknesses[0]);
+	NhlSetSArg(&sargs[(*nargs)++],
+		   NhlNlgLineLabelFontQuality,llabel_fqualities[0]);
+	NhlSetSArg(&sargs[(*nargs)++],
+		   NhlNlgLineLabelConstantSpacingF,llabel_cspacings[0]);
+	NhlSetSArg(&sargs[(*nargs)++],
+		   NhlNlgLineLabelFuncCode,llabel_func_codes[0]);
 
+		   
 	return NhlNOERROR;
 }

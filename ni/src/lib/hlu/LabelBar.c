@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.58 1998-11-06 22:16:07 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.59 1999-03-24 19:09:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -869,16 +869,6 @@ static NhlErrorTypes LabelBarSetValues
 	ret1 = ManageDynamicArrays(new,old,args,num_args);
 	ret = MIN(ret,ret1);
 
-/*
- * Return now if the labelbar is turned off, the auto_manage flag is on
- * and it was previously on.
- */
-
-	if (lb_p->auto_manage && 
-	    (lb_p->auto_manage == olb_p->auto_manage) &&
-	    ! lb_p->labelbar_on) {
-		return ret;
-	}
 
 /*
  * Calculate labelbar geometry
