@@ -1,5 +1,5 @@
 C
-C $Id: arinam.f,v 1.2 1993-06-03 22:44:27 kennison Exp $
+C $Id: arinam.f,v 1.3 1993-09-23 17:25:03 kennison Exp $
 C
       SUBROUTINE ARINAM (IAM,LAM)
 C
@@ -36,7 +36,7 @@ C
 C Log an error if the user's array is too small.
 C
       IF (.NOT.(LAM.LE.27)) GO TO 10001
-        CALL SETER ('ARINAM - AREA-MAP ARRAY IS TOO SMALL',1,1)
+        CALL SETER ('ARINAM - AREA-MAP ARRAY IS TOO SMALL',1,2)
         RETURN
 10001 CONTINUE
 C

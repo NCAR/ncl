@@ -1,5 +1,5 @@
 C
-C $Id: arini2.f,v 1.3 1993-06-03 22:44:29 kennison Exp $
+C $Id: arini2.f,v 1.4 1993-09-23 17:25:05 kennison Exp $
 C
       SUBROUTINE ARINI2 (ILC,RS1,RS2,RS3,DS1,DS2,DS3,RS4,RS5,RS6)
 C

@@ -1,5 +1,5 @@
 C
-C $Id: argtai.f,v 1.2 1993-06-03 22:44:24 kennison Exp $
+C $Id: argtai.f,v 1.3 1993-09-23 17:25:01 kennison Exp $
 C
       SUBROUTINE ARGTAI (IAM,XCD,YCD,IAI,IAG,MAI,NAI,ICF)
 C
@@ -37,6 +37,13 @@ C load from a binary library.
 C
       EXTERNAL ARBLDA
 C
+C Declare a temporary variable to hold error messages and the SETER
+C function that returns the current error message.
+C
+      CHARACTER*80 MSG
+C
+      CHARACTER*113 SEMESS
+C
 C Force values retrieved by the calls to GETSET to be saved from call
 C to call.
 C
@@ -59,7 +66,19 @@ C
 C If it has not already been done, find points of intersection and
 C incorporate them into the map and then adjust area identifiers.
 C
-      IF (IAM(4).EQ.0) CALL ARPRAM (IAM,0,0,0)
+      IF (.NOT.(IAM(4).EQ.0)) GO TO 10002
+        CALL ENTSR (IRO,1)
+        CALL ARPRAM (IAM,0,0,0)
+        IF (.NOT.(NERRO(IER).NE.0)) GO TO 10003
+          MSG(1:7)='ARGTAI/'
+          MSG(8:80)=SEMESS()
+          CALL ERROF
+          CALL RETSR (IRO)
+          CALL SETER (MSG,200+IER,1)
+          RETURN
+10003   CONTINUE
+          CALL RETSR (IRO)
+10002 CONTINUE
 C
 C Pull out the current value of the pointer IPX.
 C
@@ -68,33 +87,33 @@ C
 C Use GETSET to set up parameters allowing us to map x and y coordinates
 C from the user system to the local integer system.
 C
-      IF (.NOT.(ICF.NE.0.OR.ILL.EQ.0)) GO TO 10002
+      IF (.NOT.(ICF.NE.0.OR.ILL.EQ.0)) GO TO 10004
         CALL GETSET (FFL,FFR,FFB,FFT,FUL,FUR,FUB,FUT,ILL)
         ILX=(ILL-1)/2
         ILY=MOD(ILL-1,2)
-10002 CONTINUE
+10004 CONTINUE
 C
 C Convert the X and Y coordinates to values in the internal coordinate
 C range.
 C
-      IF (.NOT.(ILX.EQ.0)) GO TO 10003
+      IF (.NOT.(ILX.EQ.0)) GO TO 10005
         XCO=NINT(MAX(1.,MIN(RLM,
      +                      RLC*(FFL+(FFR-FFL)*(XCD-FUL)/(FUR-FUL)))))
-      GO TO 10004
-10003 CONTINUE
+      GO TO 10006
+10005 CONTINUE
         XCO=NINT(MAX(1.,MIN(RLM,
      +                      RLC*(FFL+(FFR-FFL)*(ALOG(XCD)-ALOG(FUL))/
      +                                       (ALOG(FUR)-ALOG(FUL))))))
-10004 CONTINUE
-      IF (.NOT.(ILY.EQ.0)) GO TO 10005
+10006 CONTINUE
+      IF (.NOT.(ILY.EQ.0)) GO TO 10007
         YCO=NINT(MAX(1.,MIN(RLM,
      +                      RLC*(FFB+(FFT-FFB)*(YCD-FUB)/(FUT-FUB)))))
-      GO TO 10006
-10005 CONTINUE
+      GO TO 10008
+10007 CONTINUE
         YCO=NINT(MAX(1.,MIN(RLM,
      +                      RLC*(FFB+(FFT-FFB)*(ALOG(YCD)-ALOG(FUB))/
      +                                       (ALOG(FUT)-ALOG(FUB))))))
-10006 CONTINUE
+10008 CONTINUE
 C
 C Adjust the X coordinate to keep it away from any integral value and
 C compute the integer coordinate which is just to the left of it.
@@ -106,95 +125,95 @@ C Retrieve the desired information from the area map.
 C
       NAI=0
 C
-10007 CONTINUE
-        IF (.NOT.(IAM(IPX+1).LE.IXO-IAM(2))) GO TO 10008
+10009 CONTINUE
+        IF (.NOT.(IAM(IPX+1).LE.IXO-IAM(2))) GO TO 10010
           IPX=IAM(IPX+5)
-        GO TO 10009
-10008   CONTINUE
-        IF (.NOT.(IAM(IAM(IPX+6)+1).GT.IXO-IAM(2))) GO TO 10010
-          IPX=IAM(IPX+6)
-        GO TO 10009
+        GO TO 10011
 10010   CONTINUE
-          GO TO 10011
-10009   CONTINUE
-      GO TO 10007
-10011 CONTINUE
+        IF (.NOT.(IAM(IAM(IPX+6)+1).GT.IXO-IAM(2))) GO TO 10012
+          IPX=IAM(IPX+6)
+        GO TO 10011
+10012   CONTINUE
+          GO TO 10013
+10011   CONTINUE
+      GO TO 10009
+10013 CONTINUE
 C
       IGI=LAM
 C
-10012 CONTINUE
-      IF (.NOT.(IGI.GT.IAM(6))) GO TO 10013
+10014 CONTINUE
+      IF (.NOT.(IGI.GT.IAM(6))) GO TO 10015
         IGI=IGI-1
-        IF (.NOT.(MOD(IAM(IGI),2).EQ.0)) GO TO 10014
+        IF (.NOT.(MOD(IAM(IGI),2).EQ.0)) GO TO 10016
           IAF=0
           YCI=RLP
           IPT=IPX
-10015     CONTINUE
-          IF (.NOT.(IAM(IPT+1).LE.IXO)) GO TO 10016
+10017     CONTINUE
+          IF (.NOT.(IAM(IPT+1).LE.IXO)) GO TO 10018
             IF (.NOT.(ABS(IAM(IPT+7)).EQ.IGI.AND.IAM(IAM(IPT+4)+1).GT.IX
-     +O))   GO TO 10017
-              IF (.NOT.(IAU.EQ.1)) GO TO 10018
+     +O))   GO TO 10019
+              IF (.NOT.(IAU.EQ.1)) GO TO 10020
                 YTM=REAL(IAM(IPT+2))+
      +          (XCO-REAL(IAM(IPT+1)))*
      +       (REAL(IAM(IAM(IPT+4)+2)-IAM(IPT+2))/                      R
      +EAL(IAM(IAM(IPT+4)+1)-IAM(IPT+1)))
-              GO TO 10019
-10018         CONTINUE
+              GO TO 10021
+10020         CONTINUE
                 YTM=REAL(DBLE(IAM(IPT+2))+
      +          (DBLE(XCO)-DBLE(IAM(IPT+1)))*
      +       (DBLE(IAM(IAM(IPT+4)+2)-IAM(IPT+2))/                      D
      +BLE(IAM(IAM(IPT+4)+1)-IAM(IPT+1))))
-10019         CONTINUE
-              IF (.NOT.(YTM.GE.YCO.AND.YTM.LT.YCI)) GO TO 10020
+10021         CONTINUE
+              IF (.NOT.(YTM.GE.YCO.AND.YTM.LT.YCI)) GO TO 10022
                 IAF=IPT+8
                 YCI=YTM
-10020         CONTINUE
-10017       CONTINUE
+10022         CONTINUE
+10019       CONTINUE
             IF (.NOT.(ABS(IAM(IAM(IPT+3)+7)).EQ.IGI.AND.IAM(IAM(IPT+3)+1
-     +).GT.IXO)) GO TO 10021
-              IF (.NOT.(IAU.EQ.1)) GO TO 10022
+     +).GT.IXO)) GO TO 10023
+              IF (.NOT.(IAU.EQ.1)) GO TO 10024
                 YTM=REAL(IAM(IPT+2))+
      +          (XCO-REAL(IAM(IPT+1)))*
      +       (REAL(IAM(IAM(IPT+3)+2)-IAM(IPT+2))/                      R
      +EAL(IAM(IAM(IPT+3)+1)-IAM(IPT+1)))
-              GO TO 10023
-10022         CONTINUE
+              GO TO 10025
+10024         CONTINUE
                 YTM=REAL(DBLE(IAM(IPT+2))+
      +          (DBLE(XCO)-DBLE(IAM(IPT+1)))*
      +       (DBLE(IAM(IAM(IPT+3)+2)-IAM(IPT+2))/                      D
      +BLE(IAM(IAM(IPT+3)+1)-IAM(IPT+1))))
-10023         CONTINUE
-              IF (.NOT.(YTM.GE.YCO.AND.YTM.LT.YCI)) GO TO 10024
+10025         CONTINUE
+              IF (.NOT.(YTM.GE.YCO.AND.YTM.LT.YCI)) GO TO 10026
                 IAF=IAM(IPT+3)+9
                 YCI=YTM
-10024         CONTINUE
-10021       CONTINUE
+10026         CONTINUE
+10023       CONTINUE
             IPT=IAM(IPT+5)
-          GO TO 10015
-10016     CONTINUE
+          GO TO 10017
+10018     CONTINUE
 C
-          IF (.NOT.(IAF.NE.0)) GO TO 10025
+          IF (.NOT.(IAF.NE.0)) GO TO 10027
             ITI=IAM(IAF)
             IF (ITI.GE.IAM(6)) ITI=IAM(ITI)/2
-          GO TO 10026
-10025     CONTINUE
+          GO TO 10028
+10027     CONTINUE
             ITI=-1
-10026     CONTINUE
+10028     CONTINUE
 C
-          IF (.NOT.(NAI.LT.MAI)) GO TO 10027
+          IF (.NOT.(NAI.LT.MAI)) GO TO 10029
             NAI=NAI+1
             IAI(NAI)=ITI
             IAG(NAI)=IAM(IGI)/2
-          GO TO 10028
-10027     CONTINUE
-            CALL SETER ('ARGTAI - MAI TOO SMALL',2,1)
+          GO TO 10030
+10029     CONTINUE
+            CALL SETER ('ARGTAI - MAI TOO SMALL',3,1)
             RETURN
-10028     CONTINUE
+10030     CONTINUE
 C
-10014   CONTINUE
+10016   CONTINUE
 C
-      GO TO 10012
-10013 CONTINUE
+      GO TO 10014
+10015 CONTINUE
 C
 C Restore the new value of IPX to the area map.
 C
@@ -202,9 +221,10 @@ C
 C
 C Check for a bad value of NAI.
 C
-      IF (.NOT.(NAI.NE.IAM(7))) GO TO 10029
-        CALL SETER ('ARGTAI - ALGORITHM FAILURE',3,1)
-10029 CONTINUE
+      IF (.NOT.(NAI.NE.IAM(7))) GO TO 10031
+        CALL SETER ('ARGTAI - ALGORITHM FAILURE',4,1)
+        RETURN
+10031 CONTINUE
 C
 C Done.
 C

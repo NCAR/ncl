@@ -1,11 +1,12 @@
 C
-C $Id: ardat2.f,v 1.2 1993-06-03 22:44:08 kennison Exp $
+C $Id: ardat2.f,v 1.3 1993-09-23 17:24:45 kennison Exp $
 C
       FUNCTION ARDAT2 (YVL,XVL)
 C
 C The function ARDAT2, given two double precision values YVL and XVL,
 C approximates the value of DATAN2 (YVL,XVL).  Because of the way in
-C which ARDAT2 is used, the approximation need not be very accurate.
+C which ARDAT2 is used, the approximation need not be very accurate;
+C what's important is that it should be fast.
 C
       DOUBLE PRECISION YVL,XVL
 C

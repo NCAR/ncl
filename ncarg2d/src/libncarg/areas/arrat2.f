@@ -1,11 +1,12 @@
 C
-C $Id: arrat2.f,v 1.2 1993-06-03 22:44:39 kennison Exp $
+C $Id: arrat2.f,v 1.3 1993-09-23 17:25:17 kennison Exp $
 C
       FUNCTION ARRAT2 (YVL,XVL)
 C
 C The function ARRAT2, given two real values YVL and XVL, approximates
 C the value of ATAN2 (YVL,XVL).  Because of the way in which ARRAT2 is
-C used, the approximation need not be very accurate.
+C used, the approximation need not be very accurate; what's important
+C is that it should be fast.
 C
       IF (.NOT.(XVL.LT.0..AND.YVL.LE.0.)) GO TO 10001
         IF (.NOT.(-XVL.GT.-YVL)) GO TO 10002

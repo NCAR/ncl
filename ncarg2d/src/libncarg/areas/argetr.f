@@ -1,5 +1,5 @@
 C
-C $Id: argetr.f,v 1.1 1993-06-03 22:44:22 kennison Exp $
+C $Id: argetr.f,v 1.2 1993-09-23 17:24:59 kennison Exp $
 C
       SUBROUTINE ARGETR (IPN,RVL)
 C
@@ -36,8 +36,8 @@ C
       IF (.NOT.(LEN(IPN).LT.2)) GO TO 10001
         CTM(1:36)='ARGETR - PARAMETER NAME TOO SHORT - '
         CTM(37:36+LEN(IPN))=IPN
-        CALL SETER (CTM(1:36+LEN(IPN)),1,2)
-        STOP
+        CALL SETER (CTM(1:36+LEN(IPN)),1,1)
+        RETURN
 10001 CONTINUE
 C
 C Get the appropriate parameter value.
@@ -82,8 +82,8 @@ C
 10011 CONTINUE
         CTM(1:36)='ARGETR - PARAMETER NAME NOT KNOWN - '
         CTM(37:38)=IPN(1:2)
-        CALL SETER (CTM(1:38),2,2)
-        STOP
+        CALL SETER (CTM(1:38),2,1)
+        RETURN
 10003 CONTINUE
 C
 C Done.

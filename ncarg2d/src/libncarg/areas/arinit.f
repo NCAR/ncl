@@ -1,5 +1,5 @@
 C
-C $Id: arinit.f,v 1.4 1993-06-03 22:44:31 kennison Exp $
+C $Id: arinit.f,v 1.5 1993-09-23 17:25:07 kennison Exp $
 C
       SUBROUTINE ARINIT
 C
@@ -40,7 +40,8 @@ C
           IAU=3
         GO TO 10003
 10005   CONTINUE
-          CALL SETER ('ARINIT - VALUE OF ''LC'' IS TOO LARGE',1,2)
+          CALL SETER ('ARINIT - VALUE OF ''LC'' IS TOO LARGE',2,2)
+          STOP
 10003   CONTINUE
 10001 CONTINUE
 C

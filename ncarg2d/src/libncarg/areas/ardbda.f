@@ -1,5 +1,5 @@
 C
-C $Id: ardbda.f,v 1.2 1993-06-03 22:44:10 kennison Exp $
+C $Id: ardbda.f,v 1.3 1993-09-23 17:24:48 kennison Exp $
 C
       SUBROUTINE ARDBDA (X1,Y1,X2,Y2,IL,IR)
 C

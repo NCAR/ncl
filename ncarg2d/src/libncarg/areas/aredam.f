@@ -1,5 +1,5 @@
 C
-C $Id: aredam.f,v 1.2 1993-06-03 22:44:18 kennison Exp $
+C $Id: aredam.f,v 1.3 1993-09-23 17:24:55 kennison Exp $
 C
       SUBROUTINE AREDAM (IAM,XCA,YCA,LCA,IGI,IDL,IDR)
 C
@@ -82,13 +82,14 @@ C it's not already there) and set IGN to its index.  If the identifier
 C is a new one, provide a boundary rectangle.
 C
       IGN=LAM
+C
 10004 CONTINUE
         IGN=IGN-1
         IF (.NOT.(IGN.GE.IAM(6))) GO TO 10005
           IF (MOD(IAM(IGN),2).EQ.0.AND.IAM(IGN)/2.EQ.IGI) GO TO 10006
         GO TO 10007
 10005   CONTINUE
-          IF (.NOT.(IGN.LE.IAM(5))) GO TO 10008
+          IF (.NOT.(IGN.LE.IAM(5)+50)) GO TO 10008
             CALL SETER ('AREDAM - AREA-MAP ARRAY OVERFLOW',2,1)
             RETURN
 10008     CONTINUE
@@ -98,25 +99,25 @@ C
           IRN=0
           IXN=0
           IYN=0
-          ASSIGN 10009 TO L10010
+          L10010=    1
           GO TO 10010
 10009     CONTINUE
           IAM(IPN+7)=0
           IAM(IPN+8)=0
           IYN=ILC
-          ASSIGN 10011 TO L10010
+          L10010=    2
           GO TO 10010
 10011     CONTINUE
           IXN=ILC
-          ASSIGN 10012 TO L10010
+          L10010=    3
           GO TO 10010
 10012     CONTINUE
           IYN=0
-          ASSIGN 10013 TO L10010
+          L10010=    4
           GO TO 10010
 10013     CONTINUE
           IXN=0
-          ASSIGN 10014 TO L10010
+          L10010=    5
           GO TO 10010
 10014     CONTINUE
           IAM(7)=IAM(7)+1
@@ -174,6 +175,13 @@ C
 10026   CONTINUE
 10023 CONTINUE
 C
+C Make sure there's room for LCA points in the area map.
+C
+      IF (.NOT.(IAM(5)+LCA*10.GE.IAM(6))) GO TO 10029
+        CALL SETER ('AREDAM - AREA-MAP ARRAY OVERFLOW',5,1)
+        RETURN
+10029 CONTINUE
+C
 C Proceed with adding the user's edge to the area map.  IXL and IYL are
 C the coordinates of the last point inserted in the area map.  IGL is
 C the group identifier of the last point.
@@ -185,53 +193,53 @@ C
 C Loop through the points in the user list.
 C
         ICA = 1
-        GO TO 10031
-10029   CONTINUE
+        GO TO 10032
+10030   CONTINUE
         ICA =ICA +1
-10031   CONTINUE
-        IF (ICA .GT.(LCA)) GO TO 10030
+10032   CONTINUE
+        IF (ICA .GT.(LCA)) GO TO 10031
 C
 C Get the x and y coordinates of the next point.
 C
-        IF (.NOT.(ILX.EQ.0)) GO TO 10032
+        IF (.NOT.(ILX.EQ.0)) GO TO 10033
           IXN=MAX(0,MIN(ILC,
      +          INT(RLC*(FFL+(FFR-FFL)*(XCA(ICA)-FUL)/(FUR-FUL))+.5)))
-        GO TO 10033
-10032   CONTINUE
+        GO TO 10034
+10033   CONTINUE
           IXN=MAX(0,MIN(ILC,
      +        INT(RLC*(FFL+(FFR-FFL)*(ALOG(XCA(ICA))-ALOG(FUL))/
      +                                    (ALOG(FUR)-ALOG(FUL)))+.5)))
-10033   CONTINUE
-        IF (.NOT.(ILY.EQ.0)) GO TO 10034
+10034   CONTINUE
+        IF (.NOT.(ILY.EQ.0)) GO TO 10035
           IYN=MAX(0,MIN(ILC,
      +          INT(RLC*(FFB+(FFT-FFB)*(YCA(ICA)-FUB)/(FUT-FUB))+.5)))
-        GO TO 10035
-10034   CONTINUE
+        GO TO 10036
+10035   CONTINUE
           IYN=MAX(0,MIN(ILC,
      +        INT(RLC*(FFB+(FFT-FFB)*(ALOG(YCA(ICA))-ALOG(FUB))/
      +                                    (ALOG(FUT)-ALOG(FUB)))+.5)))
-10035   CONTINUE
+10036   CONTINUE
 C
 C If the point to be inserted is distinct from the old point, add it.
 C If it's the first point, zero its group and area identifiers.  Update
 C the descriptors of the last point.
 C
-        IF (.NOT.(IXN.NE.IXL.OR.IYN.NE.IYL.OR.IGN.NE.IGL)) GO TO 10036
-          ASSIGN 10037 TO L10010
+        IF (.NOT.(IXN.NE.IXL.OR.IYN.NE.IYL.OR.IGN.NE.IGL)) GO TO 10037
+          L10010=    6
           GO TO 10010
-10037     CONTINUE
-          IF (.NOT.(ICA.EQ.1)) GO TO 10038
+10038     CONTINUE
+          IF (.NOT.(ICA.EQ.1)) GO TO 10039
             IAM(IPN+7)=0
             IAM(IPN+8)=0
             IAM(IPN+9)=0
-10038     CONTINUE
+10039     CONTINUE
           IXL=IXN
           IYL=IYN
           IGL=IGN
-10036   CONTINUE
+10037   CONTINUE
 C
-      GO TO 10029
-10030 CONTINUE
+      GO TO 10030
+10031 CONTINUE
 C
 C Restore the value of the pointer IPX to its position in the area map.
 C
@@ -249,10 +257,6 @@ C This internal procedure adds a new point to the area map.
 C
 10010 CONTINUE
         IPN=IAM(5)+1
-        IF (.NOT.(IAM(5)+10.GE.IAM(6))) GO TO 10039
-          CALL SETER ('AREDAM - AREA-MAP ARRAY OVERFLOW',5,1)
-          RETURN
-10039   CONTINUE
         IAM(5)=IAM(5)+10
         IAM(IPN)=IAM(IAM(22))+4
         IAM(IPN+1)=IXN
@@ -296,6 +300,6 @@ C
         IAM(IPN+7)=IGN
         IAM(IPN+8)=ILN
         IAM(IPN+9)=IRN
-      GO TO L10010 , (10037,10014,10013,10012,10011,10009)
+      GO TO (10009,10011,10012,10013,10014,10038) , L10010
 C
       END

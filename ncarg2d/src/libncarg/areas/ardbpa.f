@@ -1,5 +1,5 @@
 C
-C $Id: ardbpa.f,v 1.5 1993-06-03 22:44:12 kennison Exp $
+C $Id: ardbpa.f,v 1.6 1993-09-23 17:24:49 kennison Exp $
 C
       SUBROUTINE ARDBPA (IAMA,IGIP,LABL)
 C
@@ -24,6 +24,15 @@ C The common block ARCOM1 is used to communicate with the arrow-drawing
 C routine ARDBDA.
 C
       COMMON /ARCOM1/ DT
+C
+C Pull out the length of the area map and check for initialization.
+C
+      LAMA=IAMA(1)
+C
+      IF (.NOT.(IAU.EQ.0.OR.IAMA(LAMA).NE.LAMA)) GO TO 10001
+        CALL SETER ('ARDBPA - INITIALIZATION DONE IMPROPERLY',1,1)
+        RETURN
+10001 CONTINUE
 C
 C Save the current polyline color index and text color index.
 C
@@ -74,52 +83,59 @@ C
 C
   101 RXCO=RXCN
       RYCO=RYCN
+C
+      IF (.NOT.(INDX.LT.8.OR.INDX.GT.IAMA(5).OR.MOD(INDX-8,10).NE.0))
+     +GO TO 10002
+        CALL SETER ('ARDBPA - BAD POINTERS IN AREA MAP',2,2)
+        GO TO 102
+10002 CONTINUE
+C
       RXCN=REAL(IAMA(INDX+1))/RLC
       RYCN=REAL(IAMA(INDX+2))/RLC
 C
-      IF (.NOT.(IAMA(INDX+7).NE.0)) GO TO 10001
-        IGID=IABS(IAMA(INDX+7))
-        IF (.NOT.(IGID.LT.IAMA(6))) GO TO 10002
+      IF (.NOT.(IAMA(INDX+7).NE.0)) GO TO 10003
+        IGID=ABS(IAMA(INDX+7))
+        IF (.NOT.(IGID.LT.IAMA(6))) GO TO 10004
           IGID=IAMA(IAMA(1)-IGID)/2
-        GO TO 10003
-10002   CONTINUE
+        GO TO 10005
+10004   CONTINUE
           IGID=IAMA(IGID)/2
-10003   CONTINUE
-        IF (.NOT.(IGID.EQ.IGIP)) GO TO 10004
+10005   CONTINUE
+        IF (.NOT.(IGID.EQ.IGIP)) GO TO 10006
           IAIL=IAMA(INDX+8)
           IF (IAIL.GT.0) IAIL=IAMA(IAIL)/2
           IAIR=IAMA(INDX+9)
           IF (IAIR.GT.0) IAIR=IAMA(IAIR)/2
-          IF (.NOT.(IAMA(INDX+7).GT.0)) GO TO 10005
+          IF (.NOT.(IAMA(INDX+7).GT.0)) GO TO 10007
             IF (IAIL.LE.0.AND.IAIR.LE.0) ICLN=IDC+1
             IF (IAIL.LE.0.AND.IAIR.GT.0) ICLN=IDC+2
             IF (IAIL.GT.0.AND.IAIR.LE.0) ICLN=IDC+3
             IF (IAIL.GT.0.AND.IAIR.GT.0) ICLN=IDC+4
-          GO TO 10006
-10005     CONTINUE
+          GO TO 10008
+10007     CONTINUE
             ICLN=IDC+5
-10006     CONTINUE
-          IF (.NOT.(ICLN.NE.ICLO)) GO TO 10007
+10008     CONTINUE
+          IF (.NOT.(ICLN.NE.ICLO)) GO TO 10009
             CALL PLOTIF (0.,0.,2)
             CALL GSPLCI (ICLN)
             CALL GSTXCI (ICLN)
             ICLO=ICLN
-10007     CONTINUE
+10009     CONTINUE
           CALL ARDBDA (RXCO,RYCO,RXCN,RYCN,IAIL,IAIR)
-10004   CONTINUE
-      GO TO 10008
-10001 CONTINUE
+10006   CONTINUE
+      GO TO 10010
+10003 CONTINUE
         DT=0.
-10008 CONTINUE
+10010 CONTINUE
 C
-      IF (.NOT.(IAMA(INDX+3).NE.0)) GO TO 10009
+      IF (.NOT.(IAMA(INDX+3).NE.0)) GO TO 10011
         INDX=IAMA(INDX+3)
         GO TO 101
-10009 CONTINUE
+10011 CONTINUE
 C
 C Restore the original SET call.
 C
-      CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+  102 CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
 C
 C Restore the polyline color index and the text color index.
 C
