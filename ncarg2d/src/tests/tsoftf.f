@@ -66,51 +66,43 @@ C
 C
 C Declare required dimensioned arrays.
 C
-      DIMENSION XRA(200),YRA(200),DST(220),IND(240),XSV(101),YSV(101)
-      DIMENSION ID1(8,8),ID2(8,8),ID3(8,8),ID4(8,8)
-C
-C Declare an array to hold the GKS "aspect source flags".
-C
-        DIMENSION IAS(13)
-C
-C Initialize the values in the aspect-source-flag array.
-C
-        DATA IAS / 13*1 /
+        DIMENSION XRA(106),YRA(106),DST(126),IND(146),XSV(101),YSV(101)
+        DIMENSION ID1(8,8),ID2(8,8),ID3(8,8),ID4(8,8)
 C
 C Define four different dot patterns.
 C
-      DATA ID1 / 1,1,0,0,0,0,1,1,
-     +           1,1,0,1,1,0,1,1,
-     +           0,0,0,1,1,0,0,0,
-     +           0,1,1,1,1,1,1,0,
-     +           0,1,1,1,1,1,1,0,
-     +           0,0,0,1,1,0,0,0,
-     +           1,1,0,1,1,0,1,1,
-     +           1,1,0,0,0,0,1,1/
-      DATA ID2 / 0,0,0,0,0,0,0,0,
-     +           0,1,1,1,1,1,1,0,
-     +           0,1,1,1,1,1,1,0,
-     +           0,1,1,0,0,1,1,0,
-     +           0,1,1,0,0,1,1,0,
-     +           0,1,1,1,1,1,1,0,
-     +           0,1,1,1,1,1,1,0,
-     +           0,0,0,0,0,0,0,0/
-      DATA ID3 / 0,0,0,0,0,0,0,0,
-     +           0,0,0,0,1,0,0,0,
-     +           0,0,0,1,1,1,0,0,
-     +           0,1,0,0,1,0,0,1,
-     +           0,0,1,1,1,1,1,0,
-     +           0,0,0,0,1,0,0,0,
-     +           0,0,0,1,0,1,0,0,
-     +           0,1,1,0,0,0,1,1/
-      DATA ID4 / 0,0,0,0,0,0,0,0,
-     +           0,1,1,0,0,1,1,1,
-     +           0,1,1,0,0,1,1,0,
-     +           0,1,1,0,1,1,0,0,
-     +           0,1,1,1,1,0,0,0,
-     +           0,1,1,0,1,1,0,0,
-     +           0,1,1,0,0,1,1,0,
-     +           0,1,1,0,0,1,1,1/
+        DATA ID1 / 1,1,0,0,0,0,1,1,
+     +             1,1,0,1,1,0,1,1,
+     +             0,0,0,1,1,0,0,0,
+     +             0,1,1,1,1,1,1,0,
+     +             0,1,1,1,1,1,1,0,
+     +             0,0,0,1,1,0,0,0,
+     +             1,1,0,1,1,0,1,1,
+     +             1,1,0,0,0,0,1,1/
+        DATA ID2 / 0,0,0,0,0,0,0,0,
+     +             0,1,1,1,1,1,1,0,
+     +             0,1,1,1,1,1,1,0,
+     +             0,1,1,0,0,1,1,0,
+     +             0,1,1,0,0,1,1,0,
+     +             0,1,1,1,1,1,1,0,
+     +             0,1,1,1,1,1,1,0,
+     +             0,0,0,0,0,0,0,0/
+        DATA ID3 / 0,0,0,0,0,0,0,0,
+     +             0,0,0,0,1,0,0,0,
+     +             0,0,0,1,1,1,0,0,
+     +             0,1,0,0,1,0,0,1,
+     +             0,0,1,1,1,1,1,0,
+     +             0,0,0,0,1,0,0,0,
+     +             0,0,0,1,0,1,0,0,
+     +             0,1,1,0,0,0,1,1/
+        DATA ID4 / 0,0,0,0,0,0,0,0,
+     +             0,1,1,0,0,1,1,1,
+     +             0,1,1,0,0,1,1,0,
+     +             0,1,1,0,1,1,0,0,
+     +             0,1,1,1,1,0,0,0,
+     +             0,1,1,0,1,1,0,0,
+     +             0,1,1,0,0,1,1,0,
+     +             0,1,1,0,0,1,1,1/
 C
 C Initialize the error parameter.
 C
@@ -118,11 +110,7 @@ C
 C
 C Double the size of the GKS dot.
 C
-      CALL GSMKSC (2.)
-C
-C Set all the GKS aspect source flags to "individual".
-C
-        CALL GSASF (IAS)
+        CALL GSMKSC (2.)
 C
 C Force solid fill.
 C
@@ -189,7 +177,7 @@ C
 C Fill the first circle in color number 5.
 C
   101       CALL SFSETI ('TYPE OF FILL',0)
-            CALL SFSGFA (XRA,YRA,100,DST,102,IND,104,5)
+            CALL SFSGFA (XRA,YRA,100,DST,126,IND,146,5)
             GO TO 110
 C
 C Add a diamond-shaped hole to the circle and fill it in color number
@@ -208,7 +196,7 @@ C
             XRA(106)=XRA(100)
             YRA(106)=YRA(100)
             CALL SFSETI ('TYPE OF FILL',2)
-            CALL SFSGFA (XRA,YRA,106,DST,110,IND,114,9)
+            CALL SFSGFA (XRA,YRA,106,DST,126,IND,146,9)
             GO TO 110
 C
 C Create a more complicated hole in the third circle and fill it with
@@ -225,7 +213,7 @@ C
             XRA(105)=XRA(100)
             YRA(105)=YRA(100)
             CALL SFSETI ('TYPE OF FILL',-4)
-            CALL SFSGFA (XRA,YRA,105,DST,111,IND,117,11)
+            CALL SFSGFA (XRA,YRA,105,DST,126,IND,146,11)
             CALL SFSETI ('ANGLE OF FILL LINES',15)
             GO TO 110
 C
@@ -235,24 +223,24 @@ C
   104       CALL SFSETR ('SPACING OF FILL LINES',.005)
             CALL SFSETI ('ANGLE OF FILL LINES',0)
             CALL SFSETI ('DOT-FILL FLAG',1)
-            CALL SFWRLD (XRA,YRA,100,DST,102,IND,104)
+            CALL SFWRLD (XRA,YRA,100,DST,126,IND,146)
             GO TO 110
 C
 C Fill the fifth circle with a combination of lines and dots.
 C
   105       CALL SFSETR ('SPACING OF FILL LINES',.012)
             CALL SFSETI ('DOT-FILL FLAG',0)
-            CALL SFWRLD (XRA,YRA,100,DST,102,IND,104)
+            CALL SFWRLD (XRA,YRA,100,DST,126,IND,146)
             CALL SFSETR ('SPACING OF FILL LINES',.006)
             CALL SFSETI ('DOT-FILL FLAG',1)
-            CALL SFNORM (XRA,YRA,100,DST,102,IND,104)
+            CALL SFNORM (XRA,YRA,100,DST,126,IND,146)
             GO TO 110
 C
 C Fill the sixth circle with a specified dot pattern.
 C
   106       CALL SFSETR ('SPACING OF FILL LINES',.004)
             CALL SFSETP (ID1)
-            CALL SFWRLD (XRA,YRA,100,DST,102,IND,104)
+            CALL SFWRLD (XRA,YRA,100,DST,126,IND,146)
             GO TO 110
 C
 C Fill the seventh circle with a different dot pattern, tilted at an
@@ -260,7 +248,7 @@ C angle.
 C
   107       CALL SFSETI ('ANGLE OF FILL LINES',45)
             CALL SFSETP (ID2)
-            CALL SFWRLD (XRA,YRA,100,DST,102,IND,104)
+            CALL SFWRLD (XRA,YRA,100,DST,126,IND,146)
             GO TO 110
 C
 C Fill the eighth circle with a different dot pattern, using characters.
@@ -270,7 +258,7 @@ C
             CALL SFSETI ('ANGLE OF FILL LINES',0)
             CALL SFSETC ('CHARACTER SPECIFIER','O')
             CALL SFSETP (ID3)
-            CALL SFWRLD (XRA,YRA,100,DST,102,IND,104)
+            CALL SFWRLD (XRA,YRA,100,DST,126,IND,146)
             GO TO 110
 C
 C Fill the last circle with K's, both large and small.
@@ -279,7 +267,7 @@ C
             CALL SFSETR ('SPACING OF FILL LINES',.012)
             CALL SFSETC ('CHARACTER SPECIFIER','K')
             CALL SFSETP (ID4)
-            CALL SFWRLD (XRA,YRA,100,DST,102,IND,104)
+            CALL SFWRLD (XRA,YRA,100,DST,126,IND,146)
             GO TO 110
 C
 C Draw the circle.
@@ -302,6 +290,8 @@ C
  1001   FORMAT (' SOFTFILL TEST EXECUTED--SEE PLOT TO CERTIFY')
 C
       END
+
+
       SUBROUTINE SFCLRS(IWKID)
 C
 C Define a set of RGB color triples for colors 1 through 15.
