@@ -1,0 +1,37 @@
+C
+C	$Id: openmp.F.sed,v 1.1 1992-09-24 19:45:25 ncargd Exp $
+C
+      SUBROUTINE OPENMP (IUNIT)
+      CHARACTER*128 PARANM,FILENM
+      SAVE IOPEN
+      DATA PARANM / 'SED_DBDIR' /
+      DATA IOPEN / 0 /
+	  IF (IOPEN.EQ.0) THEN
+	  CALL GNGPAT (PARANM,FILENM,ISTATUS)
+	  IF (ISTATUS .NE. -1) THEN
+	  DO 101 I=1,119
+         IF (FILENM(I:I).EQ.' ') THEN
+            FILENM(I:I+9)='/ezmapdata'
+            GO TO 102
+         END IF
+ 101  CONTINUE
+      GO TO 104
+      ELSE
+         GO TO 103
+      ENDIF
+#if defined(ultrix) && defined(mips)
+ 102  OPEN (UNIT=IUNIT,FILE=FILENM,STATUS='OLD',FORM='UNFORMATTED',
+     +    READONLY,ERR=104)
+#else
+ 102  OPEN (UNIT=IUNIT,FILE=FILENM,STATUS='OLD',FORM='UNFORMATTED',
+     +    ERR=104)
+#endif
+	  IOPEN=1
+      END IF
+      RETURN
+ 103  WRITE (6,*) FILENM
+      GO TO 105
+ 104  WRITE (6,*) 'ERROR OPENING EZMAP DATA FILE - FILE NAME: ',FILENM
+ 105  CONTINUE
+      STOP
+      END
