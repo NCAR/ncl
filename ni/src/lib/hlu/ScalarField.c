@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.11 1994-11-07 03:10:12 ethan Exp $
+ *      $Id: ScalarField.c,v 1.12 1994-12-16 19:22:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -283,7 +283,7 @@ typedef enum _sfCoord { sfXCOORD, sfYCOORD} sfCoord;
  * Side Effect:	
  */
 NhlLayerClass
-_NHLCALLF(nhlfscalarfieldclass,NHLFSCALARFIELDCLASS)
+_NHLCALLF(nhlfscalarfieldlayerclass,NHLFSCALARFIELDLAYERCLASS)
 #if	__STDC__
 (
 	void

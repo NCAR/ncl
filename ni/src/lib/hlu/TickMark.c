@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.22 1994-11-23 22:41:55 ethan Exp $
+ *      $Id: TickMark.c,v 1.23 1994-12-16 19:22:19 boote Exp $
  */
 /************************************************************************
 *									*
@@ -993,7 +993,7 @@ NhlLayerClass NhltickMarkLayerClass = (NhlLayerClass)&NhltickMarkLayerClassRec;
  * Side Effect:	
  */
 NhlLayerClass
-_NHLCALLF(nhlftickmarkclass,NHLFTICKMARKCLASS)
+_NHLCALLF(nhlftickmarklayerclass,NHLFTICKMARKLAYERCLASS)
 #if	__STDC__
 (
 	void

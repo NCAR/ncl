@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.26 1994-11-17 20:49:25 boote Exp $
+ *      $Id: XyPlot.c,v 1.27 1994-12-16 19:22:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -728,7 +728,7 @@ NhlLayerClass NhlxyPlotLayerClass = (NhlLayerClass)&NhlxyPlotLayerClassRec;
  * Side Effect:	
  */
 NhlLayerClass
-_NHLCALLF(nhlfxydatadepclass,NHLFXYDATADEPCLASS)
+_NHLCALLF(nhlfxydatadeplayerclass,NHLFXYDATADEPLAYERCLASS)
 #if	__STDC__
 (
 	void
@@ -754,7 +754,7 @@ _NHLCALLF(nhlfxydatadepclass,NHLFXYDATADEPCLASS)
  * Side Effect:	
  */
 NhlLayerClass
-_NHLCALLF(nhlfxyplotclass,NHLFXYPLOTCLASS)
+_NHLCALLF(nhlfxyplotlayerclass,NHLFXYPLOTLAYERCLASS)
 #if	__STDC__
 (
 	void

@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.7 1994-11-07 03:10:47 ethan Exp $
+ *      $Id: XWorkstation.c,v 1.8 1994-12-16 19:22:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -235,7 +235,7 @@ NhlLayerClass NhlxWorkstationLayerClass = (NhlLayerClass)
  * Side Effect:	
  */
 NhlLayerClass
-_NHLCALLF(nhlfxworkstationclass,NHLFXWORKSTATIONCLASS)
+_NHLCALLF(nhlfxworkstationlayerclass,NHLFXWORKSTATIONLAYERCLASS)
 #if	__STDC__
 (
 	void

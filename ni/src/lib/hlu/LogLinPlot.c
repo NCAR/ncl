@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.c,v 1.10 1994-11-11 20:02:28 dbrown Exp $
+ *      $Id: LogLinPlot.c,v 1.11 1994-12-16 19:22:13 boote Exp $
  */
 /************************************************************************
 *									*
@@ -163,7 +163,7 @@ NhlLayerClass NhllogLinPlotLayerClass = (NhlLayerClass)
  * Side Effect:	
  */
 NhlLayerClass
-_NHLCALLF(nhlfloglinplotclass,NHLFLOGLINPLOTCLASS)
+_NHLCALLF(nhlfloglinplotlayerclass,NHLFLOGLINPLOTLAYERCLASS)
 #if	__STDC__
 (
 	void

@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.41 1994-11-17 22:40:35 dbrown Exp $
+ *      $Id: Contour.c,v 1.42 1994-12-16 19:22:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1524,6 +1524,7 @@ static NrmQuark	Qconst_f_label_format = NrmNULLQUARK;
 
 static NhlContourLayer	Cnl;
 static NhlContourLayerPart	*Cnp;
+
 /*
  * Function:	nhlfcontourclass
  *
@@ -1538,7 +1539,7 @@ static NhlContourLayerPart	*Cnp;
  * Side Effect:	
  */
 NhlLayerClass
-_NHLCALLF(nhlfcontourclass,NHLFCONTOURCLASS)
+_NHLCALLF(nhlfcontourlayerclass,NHLFCONTOURLAYERCLASS)
 #if	__STDC__
 (
 	void
@@ -1548,6 +1549,32 @@ _NHLCALLF(nhlfcontourclass,NHLFCONTOURCLASS)
 #endif
 {
 	return NhlcontourLayerClass;
+}
+
+/*
+ * Function:	nhlfcontourdatadeplayerclass
+ *
+ * Description:	fortran ref to contour class
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global Fortran
+ * Returns:	NhlLayerClass
+ * Side Effect:	
+ */
+NhlLayerClass
+_NHLCALLF(nhlfcontourdatadeplayerclass,NHLFCONTOURDATADEPLAYERCLASS)
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	return NhlcontourDataDepLayerClass;
 }
 
 /*

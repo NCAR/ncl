@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.9 1994-11-23 22:41:49 ethan Exp $
+ *      $Id: NcgmWorkstation.c,v 1.10 1994-12-16 19:22:16 boote Exp $
  */
 /************************************************************************
 *									*
@@ -163,7 +163,7 @@ NhlLayerClass NhlncgmWorkstationLayerClass = (NhlLayerClass)&NhlncgmWorkstationL
  * Side Effect:	
  */
 NhlLayerClass
-_NHLCALLF(nhlfncgmworkstationclass,NHLFNCGMWORKSTATIONCLASS)
+_NHLCALLF(nhlfncgmworkstationlayerclass,NHLFNCGMWORKSTATIONLAYERCLASS)
 #if	__STDC__
 (
 	void

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.18 1994-11-11 20:02:29 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.19 1994-12-16 19:22:14 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1002,7 +1002,7 @@ static int NatCOSegs[] = {
  * Side Effect:	
  */
 NhlLayerClass
-_NHLCALLF(nhlfmapplotclass,NHLFMAPPLOTCLASS)
+_NHLCALLF(nhlfmapplotlayerclass,NHLFMAPPLOTLAYERCLASS)
 #if	__STDC__
 (
 	void

@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.14 1994-11-07 03:10:15 ethan Exp $
+ *      $Id: TextItem.c,v 1.15 1994-12-16 19:22:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -315,7 +315,7 @@ NhlLayerClass NhltextItemLayerClass = (NhlLayerClass)&NhltextItemLayerClassRec;
  * Side Effect:	
  */
 NhlLayerClass
-_NHLCALLF(nhlftextitemclass,NHLFTEXTITEMCLASS)
+_NHLCALLF(nhlftextitemlayerclass,NHLFTEXTITEMLAYERCLASS)
 #if	__STDC__
 (
 	void

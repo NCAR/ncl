@@ -1,5 +1,5 @@
 /*
- *      $Id: Annotation.c,v 1.6 1994-11-07 03:08:50 ethan Exp $
+ *      $Id: Annotation.c,v 1.7 1994-12-16 19:22:04 boote Exp $
  */
 /************************************************************************
 *									*
@@ -141,7 +141,7 @@ NhlLayerClass NhlannotationLayerClass =
  * Side Effect:	
  */
 NhlLayerClass
-_NHLCALLF(nhlfannotationclass,NHLFANNOTATIONCLASS)
+_NHLCALLF(nhlfannotationlayerclass,NHLFANNOTATIONLAYERCLASS)
 #if	__STDC__
 (
 	void

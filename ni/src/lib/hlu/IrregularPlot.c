@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.10 1994-11-11 20:02:27 dbrown Exp $
+ *      $Id: IrregularPlot.c,v 1.11 1994-12-16 19:22:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -156,7 +156,7 @@ NhlLayerClass NhlirregularPlotLayerClass = (NhlLayerClass)
  * Side Effect:	
  */
 NhlLayerClass
-_NHLCALLF(nhlfirregularplotclass,NHLFIRREGULARPLOTCLASS)
+_NHLCALLF(nhlfirregularplotlayerclass,NHLFIRREGULARPLOTLAYERCLASS)
 #if	__STDC__
 (
 	void

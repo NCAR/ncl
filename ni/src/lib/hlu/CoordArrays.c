@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.17 1994-12-02 19:28:30 boote Exp $
+ *      $Id: CoordArrays.c,v 1.18 1994-12-16 19:22:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -121,9 +121,9 @@ static NhlResource resources[] = {
 		Oset(xcast_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{"no.res","No.Res",NhlTBoolean,sizeof(int),
 		Oset(ycast_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{NhlNcaXCast,NhlCcaXCast,NhlTcaCastMode,sizeof(int),
+	{NhlNcaXCast,NhlCcaCast,NhlTcaCastMode,sizeof(NhlcaCastMode),
 		Oset(xcast),NhlTProcedure,(NhlPointer)XCastSet,0,NULL},
-	{NhlNcaYCast,NhlCcaYCast,NhlTcaCastMode,sizeof(int),
+	{NhlNcaYCast,NhlCcaCast,NhlTcaCastMode,sizeof(NhlcaCastMode),
 		Oset(ycast),NhlTProcedure,(NhlPointer)YCastSet,0,NULL},
 	{NhlNcaCopyArrays,NhlCdiCopyData,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(copy_arrays),NhlTImmediate,(NhlPointer)True,0,NULL},
@@ -260,7 +260,7 @@ NhlLayerClass NhlcoordArraysLayerClass = (NhlLayerClass)
  * Side Effect:	
  */
 NhlLayerClass
-_NHLCALLF(nhlfcoordarraysclass,NHLFCOORDARRAYSCLASS)
+_NHLCALLF(nhlfcoordarrayslayerclass,NHLFCOORDARRAYSLAYERCLASS)
 #if	__STDC__
 (
 	void

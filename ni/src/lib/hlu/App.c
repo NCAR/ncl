@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.5 1994-11-07 03:08:53 ethan Exp $
+ *      $Id: App.c,v 1.6 1994-12-16 19:22:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -186,7 +186,7 @@ NhlLayerClass NhlappLayerClass = (NhlLayerClass)&NhlappLayerClassRec;
  * Side Effect:	
  */
 NhlLayerClass
-_NHLCALLF(nhlfappclass,NHLFAPPCLASS)
+_NHLCALLF(nhlfapplayerclass,NHLFAPPLAYERCLASS)
 #if	NhlNeedProto
 (
 	void

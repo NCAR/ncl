@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.18 1994-11-07 03:09:44 ethan Exp $
+ *      $Id: Legend.c,v 1.19 1994-12-16 19:22:12 boote Exp $
  */
 /************************************************************************
 *									*
@@ -543,7 +543,7 @@ NhlLayerClass NhllegendLayerClass = (NhlLayerClass)&NhllegendLayerClassRec;
  * Side Effect:	
  */
 NhlLayerClass
-_NHLCALLF(nhlflegendclass,NHLFLEGENDCLASS)
+_NHLCALLF(nhlflegendlayerclass,NHLFLEGENDLAYERCLASS)
 #if	__STDC__
 (
 	void

@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.14 1994-11-07 08:30:00 boote Exp $
+ *      $Id: Title.c,v 1.15 1994-12-16 19:22:21 boote Exp $
  */
 /************************************************************************
 *									*
@@ -381,7 +381,7 @@ NhlLayerClass NhltitleLayerClass = (NhlLayerClass)&NhltitleLayerClassRec;
  * Side Effect:	
  */
 NhlLayerClass
-_NHLCALLF(nhlftitleclass,NHLFTITLECLASS)
+_NHLCALLF(nhlftitlelayerclass,NHLFTITLELAYERCLASS)
 #if	__STDC__
 (
 	void

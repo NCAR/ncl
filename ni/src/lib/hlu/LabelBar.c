@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.19 1994-12-01 22:08:39 ethan Exp $
+ *      $Id: LabelBar.c,v 1.20 1994-12-16 19:22:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -513,7 +513,7 @@ NhlLayerClass NhllabelBarLayerClass = (NhlLayerClass)&NhllabelBarLayerClassRec;
  * Side Effect:	
  */
 NhlLayerClass
-_NHLCALLF(nhlflabelbarclass,NHLFLABELBARCLASS)
+_NHLCALLF(nhlflabelbarlayerclass,NHLFLABELBARLAYERCLASS)
 #if	__STDC__
 (
 	void
