@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.14 1995-09-19 23:07:44 ethan Exp $
+ *      $Id: NclNetCdf.c,v 1.15 1996-04-04 19:45:40 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -95,6 +95,16 @@ static NclBasicDataTypes NetMapToNcl
 	void *the_type;
 #endif
 {
+	static int first = 1;
+	static NclBasicDataTypes long_type;
+	if(first) {
+		if(sizeof(nclong) == _NclSizeOf(NCL_long)) {
+			long_type = NCL_long;
+		} else if(sizeof(nclong) == _NclSizeOf(NCL_int)) {
+			long_type = NCL_int;
+		} 
+		first = 0;
+	}
 	switch(*(nc_type*)the_type) {
 	case NC_BYTE:
 		return(NCL_byte);
@@ -103,7 +113,7 @@ static NclBasicDataTypes NetMapToNcl
 	case NC_SHORT:
 		return(NCL_short);
 	case NC_LONG:
-		return(NCL_long);
+		return(long_type);
 	case NC_FLOAT:
 		return(NCL_float);
 	case NC_DOUBLE:
@@ -121,7 +131,17 @@ static void *NetMapFromNcl
 	NclBasicDataTypes the_type;
 #endif
 {
+	static int first = 1;
+	static NclBasicDataTypes long_type;
 	void *out_type = (void*)NclMalloc((unsigned)sizeof(nc_type));;
+	if(first) {
+		if(sizeof(nclong) == _NclSizeOf(NCL_long)) {
+			long_type = NCL_long;
+		} else if(sizeof(nclong) == _NclSizeOf(NCL_int)) {
+			long_type = NCL_int;
+		} 
+		first = 0;
+	}
 
 	switch(the_type) {
 	case NCL_byte:
@@ -133,8 +153,14 @@ static void *NetMapFromNcl
 	case NCL_short:
 		*(nc_type*)out_type = NC_SHORT;
                 break;
+	case NCL_int:
 	case NCL_long:
-		*(nc_type*)out_type = NC_LONG;
+		if(long_type == the_type) {
+			*(nc_type*)out_type = NC_LONG;
+		} else {
+			NclFree(out_type);
+			out_type = NULL;
+		}
 		break;
 	case NCL_float:
 		*(nc_type*)out_type = NC_FLOAT;

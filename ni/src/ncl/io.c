@@ -317,7 +317,7 @@ void _NclEndCmdLinePager
 {
 	int id;
 	int status;
-
+#ifndef DONTUSEPAGER
 	_NclSetPrintFunc(vfprintf);
 	close(fileno(stdout_fp));
 	signal(SIGPIPE,SIG_DFL);
@@ -326,6 +326,7 @@ void _NclEndCmdLinePager
 	}
 	stdout_fp = stdout;
 	pager_id = -1;
+#endif
 	return;
 	
 }
@@ -343,7 +344,7 @@ void _NclStartCmdLinePager
 	char *arg0 = NULL;
 	int tmp = 1;
 
-	
+#ifndef DONTUSEPAGER
 	ret = pipe(fildes);
 	id = fork();
 	if(id == 0) {
@@ -388,4 +389,5 @@ void _NclStartCmdLinePager
 		}
 		return;
 	}
+#endif
 }
