@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.33 1997-07-02 15:24:26 boote Exp $
+ *      $Id: Resources.c,v 1.34 1997-07-03 07:39:21 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1018,6 +1018,7 @@ _NhlGroupResources
 
 		rlist[next++] = classlist[i];
 NEXTRES:
+		;
 	}
 
 SORT:
