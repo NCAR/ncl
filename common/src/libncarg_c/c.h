@@ -1,3 +1,6 @@
+/*
+ *	$Id: c.h,v 1.3 1992-02-13 14:03:02 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1990                         *
@@ -18,5 +21,7 @@
 #include <options.h>
 
 extern	char	*GetNCARGPath();
+
+extern	void	PrintVersion();
 
 #endif

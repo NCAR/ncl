@@ -1,5 +1,8 @@
 #
 #
+#	$Id: yMakefile,v 1.4 1992-02-13 14:03:04 clyne Exp $
+#
+#
 #	Makefile for libncarv -- NCAR View library of general routines
 #
 #
@@ -11,9 +14,14 @@ MYNAME		= libncarv.a
 
 CDEFINES	= -I$(LOCINCDIR)
 
+#ifdef	VMS
+VMSOBJS		= vms-unix.o
+VMSSRCS		= vms-unix.c
+#endif
+
 INCLUDES	= boolean.h options.h icmalloc.h ncarv.h common.h
-SRCS		= options.c icmalloc.c misc.c ncarg_path.c
-OBJECTS		= options.o icmalloc.o misc.o ncarg_path.o
+SRCS		= options.c icmalloc.c misc.c ncarg_path.c version.c $(VMSSRCS)
+OBJECTS		= options.o icmalloc.o misc.o ncarg_path.o version.o $(VMSOBJS)
 
 EQUALHACK	= =
 
