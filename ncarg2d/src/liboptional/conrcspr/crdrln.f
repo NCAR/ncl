@@ -1,5 +1,5 @@
 C
-C	$Id: crdrln.f,v 1.3 2000-08-22 15:10:13 haley Exp $
+C       $Id: crdrln.f,v 1.4 2004-06-29 17:14:39 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -46,11 +46,9 @@ C
       M = MM
       N = NN
       IF (IOFFP .EQ. 0) GO TO 101
-      ASSIGN 110 TO JUMP1
-      ASSIGN 115 TO JUMP2
+      JUMP = 1
       GO TO 102
-  101 ASSIGN 112 TO JUMP1
-      ASSIGN 116 TO JUMP2
+      JUMP = 2
   102 IX0 = IX
       IY0 = IY
       IS0 = IS
@@ -82,7 +80,7 @@ C
       IY = IY2
       GO TO 106
   109 IF (IS/2*2 .EQ. IS) GO TO 106
-      GO TO JUMP1,(110,112)
+      GO TO (110,112) , JUMP
   110 ISBIG = IS+(8-IS)/6*8
       IX3 = IX+INX(ISBIG-1)
       IY3 = IY+INY(ISBIG-1)
@@ -102,7 +100,7 @@ C
   113 X = IX
       ISUB = IY+IDY
       Y = CFCN(Z(IX,IY),Z(IX,ISUB))*FLOAT(IDY)+FLOAT(IY)
-  114 GO TO JUMP2,(115,116)
+  114 GO TO (115,116) , JUMP
   115 IF (.NOT.IPEN) GO TO 117
       IF (IPENO) GO TO 1151
 C
