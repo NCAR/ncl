@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.73 1999-11-12 18:36:46 ethan Exp $
+#      $Id: yMakefile,v 1.74 1999-11-12 19:11:28 ethan Exp $
 #
 #########################################################################
 #									#
@@ -88,7 +88,8 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
 			NclOneDValCoordData.h BuiltInFuncs.h HLUFunctions.h \
 			NclCallBacksI.h date.h NclGRIB.h date.h tables.h \
-			editline.h unix.h ListSupport.h NclList.h NclMultiDVallistData.h
+			editline.h unix.h ListSupport.h NclList.h NclMultiDVallistData.h NclTypelist.h
+	
 
 INSTALL_HDRS	=	defs.h NclApi.h ApiRecords.h NclVar.h NclBuiltIns.h \
 			NclDataDefs.h NclBuiltInSupport.h NclCallBacksI.h \
@@ -122,7 +123,8 @@ STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			NclOneDValCoordData.c BuiltInSupport.c BuiltInFuncs.c \
 			HLUFunctions.c NclHDF.c NclGRIB.c date.c yywrap.c \
 			GetGrids.c NclCCM.c craybin.c ctoiee.c complete.c \
-			editline.c sysunix.c ListSupport.c NclList.c NclMultiDVallistData.c
+			editline.c sysunix.c ListSupport.c NclList.c NclMultiDVallistData.c NclTypelist.c
+
 
 FSRCS		=	fortranio.f gaus.f vinth2p.f QU2REG.f
 FOBJS		=	fortranio.o gaus.o vinth2p.o QU2REG.o
@@ -145,7 +147,7 @@ STATIC_OBJS	=	AddBuiltIns.o AddFileFormats.o AddHLUObjs.o \
 			NclOneDValCoordData.o BuiltInSupport.o BuiltInFuncs.o \
 			HLUFunctions.o NclHDF.o NclGRIB.o date.o yywrap.o \
 			GetGrids.o NclCCM.o craybin.o ctoiee.o complete.o \
-			editline.o sysunix.o ListSupport.o NclList.o
+			editline.o sysunix.o ListSupport.o NclList.o NclMultiDVallistData.o NclTypelist.o
 
 OBJS		=	$(GEN_OBJS) $(STATIC_OBJS) $(FOBJS)
 
