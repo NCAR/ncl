@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.4 1992-03-26 18:22:53 clyne Exp $
+ *	$Id: c.h,v 1.5 1992-03-26 21:17:53 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -58,7 +58,7 @@ typedef	unsigned int	boolean;
 #ifndef	TRUE
 #define FALSE	0
 #define TRUE	!FALSE
-#endif	TRUE
+#endif	/* TRUE */
 
 
 #define	BYTESIZE	8
