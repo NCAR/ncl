@@ -1,5 +1,5 @@
 /*
- *      $Id: LegendP.h,v 1.11 1995-03-03 20:14:52 dbrown Exp $
+ *      $Id: LegendP.h,v 1.12 1995-03-29 20:58:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -102,12 +102,12 @@ typedef struct _NhlLegendLayerPart {
 	NhlBoolean	line_labels_on;
 	float		line_dash_seglen;
 
-	NhlFont		istring_font;
-	float		istring_aspect;
-	float		istring_thickness;
-	NhlFontQuality 	istring_quality;
-	float		istring_const_spacing;
-	char		istring_func_code;
+	NhlFont		ll_font;
+	float		ll_aspect;
+	float		ll_thickness;
+	NhlFontQuality 	ll_quality;
+	float		ll_const_spacing;
+	char		ll_func_code;
 
 	int		labels_on;
 	NhlPosition	label_pos;
@@ -196,8 +196,8 @@ typedef struct _NhlLegendLayerPart {
 	NhlBoolean	new_draw_req;	
         NhlTransDat	*trans_dat;	/* segment transform data */
 
-	float		istring_pheight;
-	float		istring_pwidth;
+	float		ll_pheight;
+	float		ll_pwidth;
 
 }NhlLegendLayerPart;
 

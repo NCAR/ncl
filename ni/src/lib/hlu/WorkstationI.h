@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationI.h,v 1.4 1995-02-19 08:19:21 boote Exp $
+ *      $Id: WorkstationI.h,v 1.5 1995-03-29 20:58:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -56,10 +56,20 @@
 #define _NhlCwkLineLabel	".WkLineLabel"
 #define _NhlNwkLineLabelFont	".wkLineLabelFont"
 #define _NhlCwkLineLabelFont	".WkLineLabelFont"
-#define _NhlNwkLineLabelColor	".wkLineLabelColor"
-#define _NhlCwkLineLabelColor	".WkLineLabelColor"
+#define _NhlNwkLineLabelFontColor	".wkLineLabelFontColor"
+#define _NhlCwkLineLabelFontColor	".WkLineLabelFontColor"
 #define _NhlNwkLineLabelFontHeightF	".wkLineLabelFontHeightF"
 #define _NhlCwkLineLabelFontHeightF	".WkLineLabelFontHeightF"
+#define _NhlNwkLineLabelFontAspectF	".wkLineLabelFontAspectF"
+#define _NhlCwkLineLabelFontAspectF	".WkLineLabelFontAspectF"
+#define _NhlNwkLineLabelFontThicknessF	".wkLineLabelFontThicknessF"
+#define _NhlCwkLineLabelFontThicknessF	".WkLineLabelFontThicknessF"
+#define _NhlNwkLineLabelFontQuality	".wkLineLabelFontQuality"
+#define _NhlCwkLineLabelFontQuality	".WkLineLabelFontQuality"
+#define _NhlNwkLineLabelConstantSpacingF	".wkLineLabelConstantSpacingF"
+#define _NhlCwkLineLabelConstantSpacingF	".WkLineLabelConstantSpacingF"
+#define _NhlNwkLineLabelFuncCode	".wkLineLabelFuncCode"
+#define _NhlCwkLineLabelFuncCode	".WkLineLabelFuncCode"
 
 #define _NhlNwkMarkerIndex	".wkMarkerIndex"
 #define _NhlCwkMarkerIndex	".WkMarkerIndex"

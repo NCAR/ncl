@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.28 1995-03-15 11:48:32 boote Exp $
+ *      $Id: Legend.c,v 1.29 1995-03-29 20:58:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -284,15 +284,15 @@ static NhlResource resources[] = {
 	 sizeof(NhlGenArray),
 	 NhlOffset(NhlLegendLayerRec,legend.item_positions),
 	 NhlTImmediate, _NhlUSET((NhlPointer) NULL ),0,NULL},
-{NhlNlgMonoLineLabelColor, NhlClgMonoLineLabelColor, NhlTBoolean,
+{NhlNlgMonoLineLabelFontColor, NhlClgMonoLineLabelFontColor, NhlTBoolean,
 	 sizeof(NhlBoolean), 
 	 NhlOffset(NhlLegendLayerRec,legend.mono_line_label_color),
 	 NhlTImmediate, _NhlUSET((NhlPointer) False),0,NULL},
-{NhlNlgLineLabelColor,NhlClgLineLabelColor,
+{NhlNlgLineLabelFontColor,NhlClgLineLabelFontColor,
 	 NhlTColorIndex,sizeof(NhlColorIndex),
 	 NhlOffset(NhlLegendLayerRec,legend.line_label_color),
 	 NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
-{NhlNlgLineLabelColors, NhlClgLineLabelColors, NhlTColorIndexGenArray,
+{NhlNlgLineLabelFontColors, NhlClgLineLabelFontColors, NhlTColorIndexGenArray,
 	 sizeof(NhlPointer), 
 	 NhlOffset(NhlLegendLayerRec,legend.line_label_colors),
 	 NhlTImmediate,
@@ -460,32 +460,31 @@ static NhlResource resources[] = {
 	 NhlOffset(NhlLegendLayerRec,legend.perim_dash_seglen),
 	 NhlTString, _NhlUSET("0.15"),0,NULL},
 
-/* End-documented-resources */
-
-/* Not implimented	*/
 {NhlNlgLineLabelFont,NhlClgLineLabelFont,NhlTFont, 
-	 sizeof(int),NhlOffset(NhlLegendLayerRec,legend.istring_font),
-	 NhlTImmediate,_NhlUSET((NhlPointer) 0),_NhlRES_NOACCESS,NULL},
+	 sizeof(int),NhlOffset(NhlLegendLayerRec,legend.ll_font),
+	 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
 {NhlNlgLineLabelFontAspectF,NhlClgLineLabelFontAspectF,NhlTFloat, 
 	 sizeof(float), 
-	 NhlOffset(NhlLegendLayerRec,legend.istring_aspect),
-	 NhlTString, _NhlUSET("1.3125"),_NhlRES_NOACCESS,NULL},
+	 NhlOffset(NhlLegendLayerRec,legend.ll_aspect),
+	 NhlTString, _NhlUSET("1.3125"),0,NULL},
 {NhlNlgLineLabelFontThicknessF,NhlClgLineLabelFontThicknessF,
 	 NhlTFloat,sizeof(float),
-	 NhlOffset(NhlLegendLayerRec,legend.istring_thickness),
-	 NhlTString, _NhlUSET("1.0"),_NhlRES_NOACCESS,NULL},
+	 NhlOffset(NhlLegendLayerRec,legend.ll_thickness),
+	 NhlTString, _NhlUSET("1.0"),0,NULL},
 {NhlNlgLineLabelFontQuality,NhlClgLineLabelFontQuality,NhlTFontQuality, 
 	 sizeof(NhlFontQuality), 
-	 NhlOffset(NhlLegendLayerRec,legend.istring_quality),
-	 NhlTImmediate,_NhlUSET((NhlPointer) NhlHIGH),_NhlRES_NOACCESS,NULL},
+	 NhlOffset(NhlLegendLayerRec,legend.ll_quality),
+	 NhlTImmediate,_NhlUSET((NhlPointer) NhlHIGH),0,NULL},
 {NhlNlgLineLabelConstantSpacingF,NhlClgLineLabelConstantSpacingF,
 	 NhlTFloat,sizeof(float), 
-	 NhlOffset(NhlLegendLayerRec,legend.istring_const_spacing),
-	 NhlTString,_NhlUSET("0.0"),_NhlRES_NOACCESS,NULL},
+	 NhlOffset(NhlLegendLayerRec,legend.ll_const_spacing),
+	 NhlTString,_NhlUSET("0.0"),0,NULL},
 {NhlNlgLineLabelFuncCode,NhlClgLineLabelFuncCode,NhlTCharacter, 
 	 sizeof(char),
-	 NhlOffset(NhlLegendLayerRec,legend.istring_func_code),
-	 NhlTString, _NhlUSET(":"),_NhlRES_NOACCESS,NULL},
+	 NhlOffset(NhlLegendLayerRec,legend.ll_func_code),
+	 NhlTString, _NhlUSET(":"),0,NULL},
+
+/* End-documented-resources */
 
 };
 
@@ -1167,7 +1166,8 @@ static NhlErrorTypes    InitializeDynamicArrays
 		i_p[i] = NhlLG_MIN_MARKER_INDEX + i;
 
 	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTMarkerIndex,
-				    sizeof(NhlMarkerIndex),1,&count)) == NULL) {
+				    sizeof(NhlMarkerIndex),
+				    1,&count)) == NULL) {
 		e_text = "%s: error creating %s GenArray";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNlgMarkerIndexes);
@@ -1622,7 +1622,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 	if ((i_p = (int *) NhlMalloc(count * sizeof(int))) == NULL) {
 		e_text = "%s: error creating %s array";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  NhlNlgLineLabelColors);
+			  NhlNlgLineLabelFontColors);
 		return NhlFATAL;
 	}
 	for (i=0; i < NhlLG_DEF_ITEM_COUNT; i++) 
@@ -1637,7 +1637,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 				    sizeof(int),1,&count)) == NULL) {
 		e_text = "%s: error creating %s GenArray";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  NhlNlgLineLabelColors);
+			  NhlNlgLineLabelFontColors);
 		return NhlFATAL;
 	}
 	ga->my_data = True;
@@ -1645,7 +1645,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 	if (lg_p->line_label_colors != NULL) {
 		ret_1 = _NhlValidatedGenArrayCopy(&ga,lg_p->line_label_colors,
 						  NhlLG_MAX_ITEMS,True,False,
-						  NhlNlgLineLabelColors, 
+						  NhlNlgLineLabelFontColors, 
 						  entry_name);
 		
 		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
@@ -2017,7 +2017,8 @@ static NhlErrorTypes    ManageDynamicArrays
 		
 		i_p = (int *) lg_p->marker_colors->data;
 
-		for (i=0; i<MIN(count,lg_p->marker_colors->num_elements); i++) {
+		for (i=0; 
+		     i<MIN(count,lg_p->marker_colors->num_elements); i++) {
 			if (! _NhlIsAllocatedColor(tnew->base.wkptr, i_p[i])) {
 				e_text =
 		"%s: %s index %d holds an invalid color value, %d: defaulting";
@@ -2319,7 +2320,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->line_label_colors),
 						  lg_p->line_label_colors,
 						  NhlLG_MAX_ITEMS,True,False,
-						  NhlNlgLineLabelColors, 
+						  NhlNlgLineLabelFontColors, 
 						  entry_name);
 		
 		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
@@ -2335,7 +2336,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		"%s: %s index %d holds an invalid color value, %d: defaulting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 					  entry_name,
-					  NhlNlgLineLabelColors,i,i_p[i]);
+					  NhlNlgLineLabelFontColors,i,i_p[i]);
 				ret = MIN(ret, NhlWARNING);
 				i_p[i] = NhlLG_DEF_COLOR;
 			}
@@ -2348,7 +2349,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		     NhlRealloc(i_p, count * sizeof (int))) == NULL) {
 			e_text = "%s: error allocating %s data";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-				  NhlNlgLineLabelColors);
+				  NhlNlgLineLabelFontColors);
 			return NhlFATAL;
 		}
 		for (i=lg_p->line_label_colors->num_elements; i<count; i++) {
@@ -2474,25 +2475,27 @@ static NhlErrorTypes    SetLegendGeometry
 	float title_off = 0.0, angle_adj = 0.0;
 	float title_angle, tan_t;
 
+#if 0
 /* 
  * Determine the principal width and height for the item string
  * based on aspect ratio. 21.0 is the default principle height. 
  * This code works the way the TextItem handles aspect ratio.
  */
-        if (lg_p->istring_aspect <= 0.0 ) {
-                lg_p->istring_aspect = 1.3125;
+        if (lg_p->ll_aspect <= 0.0 ) {
+                lg_p->ll_aspect = 1.3125;
 		e_text = "%s: Invalid value for %s";
                 NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 			  entry_name,NhlNlgLineLabelFontAspectF);
                 ret = NhlWARNING;
         }
-        if(lg_p->istring_aspect <= 1.0) {
-                lg_p->istring_pheight = 21.0 * lg_p->istring_aspect;
-                lg_p->istring_pwidth = 21.0;
+        if(lg_p->ll_aspect <= 1.0) {
+                lg_p->ll_pheight = 21.0 * lg_p->ll_aspect;
+                lg_p->ll_pwidth = 21.0;
         } else {
-                lg_p->istring_pwidth = 21.0 * 1.0/lg_p->istring_aspect;
-                lg_p->istring_pheight = 21.0;
+                lg_p->ll_pwidth = 21.0 * 1.0/lg_p->ll_aspect;
+                lg_p->ll_pheight = 21.0;
         }
+#endif
 
 /* Calculate the ndc margin from the fractional margin */
 
@@ -4751,7 +4754,7 @@ static NhlErrorTypes	LegendGetValues
 		else if (args[i].quark == Qllabel_colors) {
 			ga = lg_p->line_label_colors;
 			count = lg_p->item_count;
-			type = NhlNlgLineLabelColors;
+			type = NhlNlgLineLabelFontColors;
 		}
 		else if (args[i].quark == Qitem_positions) {
 			ga = lg_p->item_positions;
@@ -4980,17 +4983,6 @@ static NhlErrorTypes    LegendDraw
 	marker_sizes = (float *) lg_p->marker_sizes->data;
 	line_labels = (NhlString *) lg_p->line_labels->data;
 
-        c_pcsetr("PH",lg_p->istring_pheight);
-        c_pcsetr("PW",lg_p->istring_pwidth);
-	c_pcseti("CS",lg_p->istring_const_spacing);
-	c_pcseti("TE",0);
-	c_pcseti("FN",lg_p->istring_font);
-	c_pcseti("QU",lg_p->istring_quality);
-	sprintf(buffer,"%c",lg_p->istring_func_code);
-	c_pcsetc("FC",buffer);
-	c_pcseti("CC",-1);
-	c_pcseti("OC",-1);
-	
 	if (lg_p->orient == NhlHORIZONTAL) {
 
 		ypoints[0] = lg_p->adj_bar.b;
@@ -5061,11 +5053,9 @@ static NhlErrorTypes    LegendDraw
 			
 			if (lg_p->mono_line_label_font_height)
 				line_label_font_height =
-					lg_p->line_label_font_height *
-					1.0 / lg_p->istring_aspect;
+					lg_p->line_label_font_height;
 			else
-				line_label_font_height = font_heights[i] *
-					1.0 / lg_p->istring_aspect;
+				line_label_font_height = font_heights[i];
 
 			if (lg_p->mono_marker_size)
 				marker_size =  lg_p->marker_size;
@@ -5083,7 +5073,15 @@ static NhlErrorTypes    LegendDraw
 				  _NhlNwkLineLabelFontHeightF,
 						line_label_font_height,
 				  _NhlNwkLineColor,line_color, 
-				  _NhlNwkLineLabelColor,line_label_color, 
+				  _NhlNwkLineLabelFontColor,line_label_color,
+				  _NhlNwkLineLabelFont,lg_p->ll_font,
+				  _NhlNwkLineLabelFontAspectF,lg_p->ll_aspect,
+				  _NhlNwkLineLabelFontThicknessF,
+					       lg_p->ll_thickness,
+				  _NhlNwkLineLabelFontQuality,lg_p->ll_quality,
+				  _NhlNwkLineLabelConstantSpacingF,
+					       lg_p->ll_const_spacing,
+				  _NhlNwkLineLabelFuncCode,lg_p->ll_func_code,
 					       NULL);
 				_NhlSetLineInfo(lgl->base.wkptr,layer);
 				xpoints[0] = xpoints[0] + 
@@ -5177,11 +5175,9 @@ static NhlErrorTypes    LegendDraw
 			
 			if (lg_p->mono_line_label_font_height)
 				line_label_font_height =
-					lg_p->line_label_font_height *
-					1.0 / lg_p->istring_aspect;
+					lg_p->line_label_font_height;
 			else
-				line_label_font_height = font_heights[i] *
-					1.0 / lg_p->istring_aspect;
+				line_label_font_height = font_heights[i];
 
 			if (lg_p->mono_marker_size)
 				marker_size = lg_p->marker_size;
@@ -5192,15 +5188,21 @@ static NhlErrorTypes    LegendDraw
 
 			if (item_type != NhlMARKERS){
 				NhlVASetValues(lgl->base.wkptr->base.id,
-					     _NhlNwkLineLabel, string,
-					     _NhlNwkDashPattern,dash_index,
-					     _NhlNwkLineThicknessF, 
-					        line_thickness,
-					     _NhlNwkLineLabelFontHeightF,
-					        line_label_font_height,
-					     _NhlNwkLineColor, line_color, 
-					     _NhlNwkLineLabelColor, 
-					        line_label_color, 
+				  _NhlNwkLineLabel, string,
+				  _NhlNwkDashPattern,dash_index,
+				  _NhlNwkLineThicknessF,line_thickness,
+				  _NhlNwkLineLabelFontHeightF,
+					       line_label_font_height,
+				  _NhlNwkLineColor, line_color, 
+				  _NhlNwkLineLabelFontColor,line_label_color, 
+				  _NhlNwkLineLabelFont,lg_p->ll_font,
+				  _NhlNwkLineLabelFontAspectF,lg_p->ll_aspect,
+				  _NhlNwkLineLabelFontThicknessF,
+					       lg_p->ll_thickness,
+				  _NhlNwkLineLabelFontQuality,lg_p->ll_quality,
+				  _NhlNwkLineLabelConstantSpacingF,
+					       lg_p->ll_const_spacing,
+				  _NhlNwkLineLabelFuncCode,lg_p->ll_func_code,
 					     NULL);
 			   _NhlSetLineInfo(lgl->base.wkptr,layer);
 			   ypoints[0] = ypoints[0] + 
@@ -5306,7 +5308,7 @@ static NhlErrorTypes    LegendClassInitialize
 	Qline_label_font_heights = NrmStringToQuark(NhlNlgLineLabelFontHeights);
 	Qmarker_sizes = NrmStringToQuark(NhlNlgMarkerSizes);
 	Qlabel_strings = NrmStringToQuark(NhlNlgLabelStrings);
-	Qllabel_colors = NrmStringToQuark(NhlNlgLineLabelColors);
+	Qllabel_colors = NrmStringToQuark(NhlNlgLineLabelFontColors);
 	Qitem_positions = NrmStringToQuark(NhlNlgItemPositions);
 
 	_NhlInitializeLayerClass(NhltextItemLayerClass);

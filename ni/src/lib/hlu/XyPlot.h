@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.h,v 1.10 1995-03-24 11:27:37 boote Exp $
+ *      $Id: XyPlot.h,v 1.11 1995-03-29 20:58:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -58,12 +58,12 @@
 #define	NhlNxyMonoLineColor	"xyMonoLineColor"
 #define	NhlCxyMonoLineColor	"XyMonoLineColor"
 
-#define NhlNxyLineLabelColor		"xyLineLabelColor"
-#define NhlCxyLineLabelColor		"XyLineLabelColor"
-#define NhlNxyLineLabelColors		"xyLineLabelColors"
-#define NhlCxyLineLabelColors		"XyLineLabelColors"
-#define NhlNxyMonoLineLabelColor	"xyMonoLineLabelColor"
-#define NhlCxyMonoLineLabelColor	"XyMonoLineLabelColor"
+#define NhlNxyLineLabelFontColor	"xyLineLabelFontColor"
+#define NhlCxyLineLabelFontColor	"XyLineLabelFontColor"
+#define NhlNxyLineLabelFontColors	"xyLineLabelFontColors"
+#define NhlCxyLineLabelFontColors	"XyLineLabelFontColors"
+#define NhlNxyMonoLineLabelFontColor	"xyMonoLineLabelFontColor"
+#define NhlCxyMonoLineLabelFontColor	"XyMonoLineLabelFontColor"
 
 #define NhlNxyLabelMode		"xyLabelMode"
 #define NhlCxyLabelMode		"XyLabelMode"

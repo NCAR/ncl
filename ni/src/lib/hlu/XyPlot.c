@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.36 1995-03-24 11:27:36 boote Exp $
+ *      $Id: XyPlot.c,v 1.37 1995-03-29 20:58:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -163,13 +163,14 @@ static NhlResource data_resources[] = {
 		sizeof(NhlGenArray),Oset(labels),NhlTImmediate,
 		(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray},
 
-	{NhlNxyLineLabelColor, NhlCxyLineLabelColor,NhlTColorIndex,
+	{NhlNxyLineLabelFontColor, NhlCxyLineLabelFontColor,NhlTColorIndex,
 		sizeof(NhlColorIndex),Oset(label_color),NhlTImmediate,
 		(NhlPointer)NhlFOREGROUND,0,(NhlFreeFunc)NULL},
-	{NhlNxyLineLabelColors, NhlCxyLineLabelColors,NhlTColorIndexGenArray,
-		sizeof(NhlGenArray),Oset(label_colors),NhlTImmediate,
-		(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNxyMonoLineLabelColor,NhlCxyMonoLineLabelColor,NhlTBoolean,
+	{NhlNxyLineLabelFontColors,NhlCxyLineLabelFontColors,
+		 NhlTColorIndexGenArray,
+		 sizeof(NhlGenArray),Oset(label_colors),NhlTImmediate,
+		 (NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNxyMonoLineLabelFontColor,NhlCxyMonoLineLabelFontColor,NhlTBoolean,
 		sizeof(NhlBoolean),Oset(mono_label_color),NhlTImmediate,
 		(NhlPointer)False,0,NULL},
 
@@ -669,7 +670,7 @@ XyDataClassInitialize
 	Qmarksizes = NrmStringToQuark(NhlNxyMarkerSizes);
 	Qmarkercolors = NrmStringToQuark(NhlNxyMarkerColors);
 	Qlabels = NrmStringToQuark(NhlNxyExplicitLabels);
-	Qlabelcolors = NrmStringToQuark(NhlNxyLineLabelColors);
+	Qlabelcolors = NrmStringToQuark(NhlNxyLineLabelFontColors);
 	Qlinethicknesses = NrmStringToQuark(NhlNxyLineThicknesses);
 	Qmarkerthicknesses = NrmStringToQuark(NhlNxyMarkerThicknesses);
 	Qlglabelstrings = NrmStringToQuark(NhlNxyExplicitLegendLabels);
@@ -777,7 +778,7 @@ XyPlotClassPartInitialize
 			NhlNlgDashIndex,NhlNlgDashIndexes,NhlNlgItemCount,
 			NhlNlgItemType,NhlNlgItemTypes,NhlNlgLabelStrings,
 			NhlNlgLineColor,NhlNlgLineColors,NhlNlgLineDashSegLenF,
-			NhlNlgLineLabelColor,NhlNlgLineLabelColors,
+			NhlNlgLineLabelFontColor,NhlNlgLineLabelFontColors,
 			NhlNlgLineLabelConstantSpacingF,
 			NhlNlgLineLabelFont,NhlNlgLineLabelFontAspectF,
 			NhlNlgLineLabelFontHeightF,NhlNlgLineLabelFontHeights,
@@ -790,7 +791,7 @@ XyPlotClassPartInitialize
 			NhlNlgMarkerSizeF,NhlNlgMarkerSizes,
 			NhlNlgMarkerThicknessF,NhlNlgMarkerThicknesses,
 			NhlNlgMonoDashIndex,NhlNlgMonoItemType,
-			NhlNlgMonoLineColor,NhlNlgMonoLineLabelColor,
+			NhlNlgMonoLineColor,NhlNlgMonoLineLabelFontColor,
 			NhlNlgMonoLineLabelFontHeight,NhlNlgMonoLineThickness,
 			NhlNlgMonoMarkerColor,NhlNlgMonoMarkerIndex,
 			NhlNlgMonoMarkerSize,NhlNlgMonoMarkerThickness,
@@ -1237,7 +1238,7 @@ XyDataSetValues
 		if(gen && !dnew->xydata.label_colors){
 			NhlPError(NhlWARNING,ENOMEM,
 				"%s:Resetting %s to previous value",
-				func,NhlNxyLineLabelColors);
+				func,NhlNxyLineLabelFontColors);
 			dnew->xydata.label_colors = dold->xydata.label_colors;
 		}
 		else{
@@ -2224,7 +2225,7 @@ DrawCurves
 		NhlVASetValues(xlayer->base.wkptr->base.id,
 			_NhlNwkDashPattern,	dash_indexes[i],
 			_NhlNwkLineColor,	line_colors[i],
-			_NhlNwkLineLabelColor,	llabel_colors[i],
+			_NhlNwkLineLabelFontColor,	llabel_colors[i],
 			_NhlNwkLineLabel,	llabel_strings[i],
 			_NhlNwkLineThicknessF,	line_thicknesses[i],
 			_NhlNwkMarkerColor,	marker_colors[i],
@@ -4173,7 +4174,8 @@ static NhlErrorTypes SetUpLegend
 		NhlSetSArg(&sargs[(*nargs)++],NhlNlgMonoDashIndex,False);
 		NhlSetSArg(&sargs[(*nargs)++],NhlNlgMonoItemType,False);
 		NhlSetSArg(&sargs[(*nargs)++],NhlNlgMonoLineColor,False);
-		NhlSetSArg(&sargs[(*nargs)++],NhlNlgMonoLineLabelColor,False);
+		NhlSetSArg(&sargs[(*nargs)++],NhlNlgMonoLineLabelFontColor,
+			   						False);
 		NhlSetSArg(&sargs[(*nargs)++],NhlNlgMonoLineLabelFontHeight,
 									True);
 		NhlSetSArg(&sargs[(*nargs)++],NhlNlgMonoLineThickness,False);
@@ -4197,7 +4199,8 @@ static NhlErrorTypes SetUpLegend
 	NhlSetSArg(&sargs[(*nargs)++],NhlNlgItemTypes,nxp->item_types);
 	NhlSetSArg(&sargs[(*nargs)++],NhlNlgLabelStrings,nxp->lg_label_strings);
 	NhlSetSArg(&sargs[(*nargs)++],NhlNlgLineColors,nxp->line_colors);
-	NhlSetSArg(&sargs[(*nargs)++],NhlNlgLineLabelColors,nxp->llabel_colors);
+	NhlSetSArg(&sargs[(*nargs)++],NhlNlgLineLabelFontColors,
+		   					nxp->llabel_colors);
 	NhlSetSArg(&sargs[(*nargs)++],NhlNlgLineLabelStrings,
 							nxp->llabel_strings);
 	NhlSetSArg(&sargs[(*nargs)++],NhlNlgLineThicknesses,

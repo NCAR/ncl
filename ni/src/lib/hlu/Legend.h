@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.h,v 1.12 1995-03-15 11:48:34 boote Exp $
+ *      $Id: Legend.h,v 1.13 1995-03-29 20:58:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -98,9 +98,9 @@ typedef enum _NhllgItemPlacementMode {
 #define NhlNlgLabelStrings		"lgLabelStrings"
 #define NhlNlgItemPositions		"lgItemPositions"
 
-#define NhlNlgMonoLineLabelColor	"lgMonoLineLabelColor"
-#define NhlNlgLineLabelColor		"lgLineLabelColor"
-#define NhlNlgLineLabelColors		"lgLineLabelColors"
+#define NhlNlgMonoLineLabelFontColor	"lgMonoLineLabelFontColor"
+#define NhlNlgLineLabelFontColor	"lgLineLabelFontColor"
+#define NhlNlgLineLabelFontColors	"lgLineLabelFontColors"
 
 /*end of arrays */
 
@@ -215,9 +215,9 @@ typedef enum _NhllgItemPlacementMode {
 
 #define NhlClgLabelStrings		"LgLabelStrings"
 #define NhlClgItemPositions		"LgItemPositions"
-#define NhlClgMonoLineLabelColor	"LgMonoLineLabelColor"
-#define NhlClgLineLabelColor		"LgLineLabelColor"
-#define NhlClgLineLabelColors		"LgLineLabelColors"
+#define NhlClgMonoLineLabelFontColor	"LgMonoLineLabelFontColor"
+#define NhlClgLineLabelFontColor	"LgLineLabelFontColor"
+#define NhlClgLineLabelFontColors	"LgLineLabelFontColors"
 
 /*end of arrays */
 

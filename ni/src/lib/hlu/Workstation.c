@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.32 1995-03-29 10:01:54 boote Exp $
+ *      $Id: Workstation.c,v 1.33 1995-03-29 20:58:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -339,12 +339,28 @@ static NhlResource resources[] = {
         {NhlNwkLineLabelFont,NhlCwkLineLabelFont,NhlTFont,sizeof(NhlFont),
                 POset(line_label_font),NhlTImmediate,
 		_NhlUSET((NhlPointer)NULL),0,(NhlFreeFunc)NhlFree},
-	{NhlNwkLineLabelColor,NhlCwkLineLabelColor,NhlTColorIndex,
-		sizeof(NhlColorIndex),POset(line_label_color),NhlTImmediate,
+	{NhlNwkLineLabelFontColor,NhlCwkLineLabelFontColor,NhlTColorIndex,
+		sizeof(NhlColorIndex),POset(line_label_font_color),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
         {NhlNwkLineLabelFontHeightF,NhlCwkLineLabelFontHeightF,NhlTFloat,
                 sizeof(float),POset(line_label_font_height),NhlTString,
 		_NhlUSET("0.0125"),0,NULL},
+	{NhlNwkLineLabelFontAspectF,NhlCwkLineLabelFontAspectF,NhlTFloat, 
+		 sizeof(float),POset(line_label_font_aspect),
+		 NhlTString, _NhlUSET("1.3125"),0,NULL},
+	{NhlNwkLineLabelFontThicknessF,NhlCwkLineLabelFontThicknessF,
+		 NhlTFloat,sizeof(float),POset(line_label_font_thickness),
+		 NhlTString, _NhlUSET("1.0"),0,NULL},
+	{NhlNwkLineLabelFontQuality,NhlCwkLineLabelFontQuality,
+		 NhlTFontQuality,sizeof(NhlFontQuality), 
+		 POset(line_label_font_quality),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlHIGH),0,NULL},
+	{NhlNwkLineLabelConstantSpacingF,NhlCwkLineLabelConstantSpacingF,
+		 NhlTFloat,sizeof(float),POset(line_label_const_spacing),
+		 NhlTString,_NhlUSET("0.0"),0,NULL},
+	{NhlNwkLineLabelFuncCode,NhlCwkLineLabelFuncCode,NhlTCharacter, 
+		 sizeof(char),POset(line_label_func_code),
+		 NhlTString, _NhlUSET(":"),0,NULL},
 #undef POset
 #define POset(field) Oset(public_markinfo.field)
 	{NhlNwkMarkerIndex,NhlCwkMarkerIndex,NhlTMarkerIndex,
@@ -391,12 +407,30 @@ static NhlResource resources[] = {
         {_NhlNwkLineLabelFont, _NhlCwkLineLabelFont, NhlTFont, sizeof(NhlFont),
                 POset(line_label_font), NhlTImmediate,
 		_NhlUSET((NhlPointer)NULL),_NhlRES_SGONLY,(NhlFreeFunc)NhlFree},
-	{_NhlNwkLineLabelColor,_NhlCwkLineLabelColor,NhlTColorIndex,
-		sizeof(NhlColorIndex),POset(line_label_color),NhlTImmediate,
+	{_NhlNwkLineLabelFontColor,_NhlCwkLineLabelFontColor,NhlTColorIndex,
+		sizeof(NhlColorIndex),POset(line_label_font_color),
+		NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_SGONLY,NULL},
         {_NhlNwkLineLabelFontHeightF,_NhlCwkLineLabelFontHeightF,NhlTFloat,
                 sizeof(float),POset(line_label_font_height),NhlTString,
 		_NhlUSET("0.0125"),_NhlRES_SGONLY,NULL},
+	{_NhlNwkLineLabelFontAspectF,_NhlCwkLineLabelFontAspectF,NhlTFloat, 
+		 sizeof(float),POset(line_label_font_aspect),
+		 NhlTString, _NhlUSET("1.3125"),_NhlRES_SGONLY,NULL},
+	{_NhlNwkLineLabelFontThicknessF,_NhlCwkLineLabelFontThicknessF,
+		 NhlTFloat,sizeof(float),POset(line_label_font_thickness),
+		 NhlTString, _NhlUSET("1.0"),_NhlRES_SGONLY,NULL},
+	{_NhlNwkLineLabelFontQuality,_NhlCwkLineLabelFontQuality,
+		 NhlTFontQuality,sizeof(NhlFontQuality), 
+		 POset(line_label_font_quality),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlHIGH),
+		 _NhlRES_SGONLY,NULL},
+	{_NhlNwkLineLabelConstantSpacingF,_NhlCwkLineLabelConstantSpacingF,
+		 NhlTFloat,sizeof(float),POset(line_label_const_spacing),
+		 NhlTString,_NhlUSET("0.0"),_NhlRES_SGONLY,NULL},
+	{_NhlNwkLineLabelFuncCode,_NhlCwkLineLabelFuncCode,NhlTCharacter, 
+		 sizeof(char),POset(line_label_func_code),
+		 NhlTString, _NhlUSET(":"),_NhlRES_SGONLY,NULL},
 #undef POset
 
 #define POset(field) Oset(private_markinfo.field)
@@ -1311,7 +1345,7 @@ static NhlErrorTypes WorkstationInitialize
 	newl->work.default_markinfo = newl->work.private_markinfo;
 
 /*
- * Set the line label resource
+ * Set the line label resources
  */
         if(newl->work.public_lineinfo.line_label != NULL) {
 		char *tmp;
@@ -3244,6 +3278,7 @@ void _NhlSetLineInfo
 #endif
 {
 	char			func[] = "_NhlSetLineInfo";
+	char			*e_text;
         NhlWorkstationLayerPart	*wkp = &((NhlWorkstationLayer)instance)->work;
 	_NhlWorkLineInfo	*wklp = &wkp->private_lineinfo;
 	float			tf;
@@ -3269,15 +3304,14 @@ void _NhlSetLineInfo
 
 	if ((ix = wklp->dash_pattern) < 0) {
 		/* NhlWARNING - but it's a void function right now */
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			  "_NhlSetLineInfo: invalid dash pattern index");
+		e_text = "%s: invalid dash pattern index";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,func);
 		ix = wklp->dash_pattern = NhlSOLIDLINE;
 	}
 	else if (ix > wkp->dash_table_len) {
 		/* NhlINFO - but it's a void function right now */
-		NhlPError(NhlINFO,NhlEUNKNOWN,
-	"_NhlSetLineInfo: using mod function on dash pattern index: %d", ix);
-
+		e_text = "%s: using mod function on dash pattern index: %d";
+		NhlPError(NhlINFO,NhlEUNKNOWN,e_text,func,ix);
 		ix = 1 + (ix - 1) % wkp->dash_table_len; 
 	}
         strncpy(buffer,dash_patterns[ix],buff_size);
@@ -3301,10 +3335,13 @@ void _NhlSetLineInfo
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	}
 
-        if(wklp->line_label != NULL){
+        if (wklp->line_label != NULL) {
+		float	pwidth, pheight, height;
+		char	fcode[2];
+
 		buff_size = sizeof(buffer) - strlen(buffer) - 1;
 		tchar = &buffer[strlen(buffer)];
-		if(wklp->line_label_color == NhlTRANSPARENT){
+		if(wklp->line_label_font_color == NhlTRANSPARENT){
 			/*
 			 * Put spaces in for label.
 			 */
@@ -3327,27 +3364,45 @@ void _NhlSetLineInfo
 			}
 			
 			c_pcseti("CC",_NhlGetGksCi(plot->base.wkptr,
-							wklp->line_label_color));
+						wklp->line_label_font_color));
 			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+
 		}
+
+		if (wklp->line_label_font_aspect <= 0.0 ) {
+			/* NhlWARNING - but it's a void function right now */
+			wklp->line_label_font_aspect = 1.3125;
+			e_text = "%s: Aspect ratio cannot be zero or negative";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,func);
+		}
+		if(wklp->line_label_font_aspect <= 1.0) {
+			pheight = 21.0 * wklp->line_label_font_aspect;
+			pwidth = 21.0;
+		} else {
+			pwidth = 21.0 * 1.0 / wklp->line_label_font_aspect;
+			pheight = 21.0;
+		}
+		/*
+		 * The 1.125 factor compensates for the PLOTCHAR 'SA' parameter
+		 */
+		height = 1.125 * wklp->line_label_font_height * 
+			(1.0 / wklp->line_label_font_aspect);
+
+		c_dpsetr("WOC",height);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+		c_pcsetr("PH",pheight);
+		c_pcsetr("PW",pwidth);
+		c_pcseti("CS",wklp->line_label_const_spacing);
+		c_pcseti("FN",wklp->line_label_font);
+		c_pcseti("QU",wklp->line_label_font_quality);
+		fcode[0] = wklp->line_label_func_code;
+		fcode[1] = '\0';
+		c_pcsetc("FC",fcode);
+		c_pcsetr("CL",wklp->line_label_font_thickness);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
         }
 
 	c_dpsetc("DPT",buffer);
-	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-
-	/*
-	 * Use .8571 as multiplier to determine WOC from Font Height.
-	 * This comes from 16(PW)/21(PH)*1/.8888(SA) Principal Width and Height
-	 * and SIZA multiplyer in PlotChar.  Therefore, we need to make
-	 * sure plotchar is using these default values.  This means it is
-	 * not possible to change the font aspect in Line Labels -
-	 * ya gotta draw the line somewhere.
-	 */
-	c_pcseti("PW",16);
-	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-	c_pcseti("PH",21);
-	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-	c_dpsetr("WOC",wklp->line_label_font_height * 0.8571);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
         gset_linewidth(wklp->line_thickness);
@@ -3371,7 +3426,6 @@ static NhlErrorTypes WorkstationLineTo
 	char		func[] = "WorkstationLineTo";
 	static float	lastx,lasty;
 	static int	first = 0;
-	int		ix0,iy0,ix1,iy1;
 
 	if(upordown == 1) {
 		lastx = x;

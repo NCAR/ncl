@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.14 1995-03-03 20:15:00 dbrown Exp $
+ *      $Id: Workstation.h,v 1.15 1995-03-29 20:58:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9,7 +9,7 @@
 *									*
 ************************************************************************/
 /*
- *	File:		Workstation.c
+ *	File:		Workstation.h
  *
  *	Author:		Ethan Alpert
  *			National Center for Atmospheric Research
@@ -59,10 +59,20 @@
 #define NhlCwkLineLabel		"WkLineLabel"
 #define NhlNwkLineLabelFont	"wkLineLabelFont"
 #define NhlCwkLineLabelFont	"WkLineLabelFont"
-#define NhlNwkLineLabelColor	"wkLineLabelColor"
-#define NhlCwkLineLabelColor	"WkLineLabelColor"
+#define NhlNwkLineLabelFontColor	"wkLineLabelFontColor"
+#define NhlCwkLineLabelFontColor	"WkLineLabelFontColor"
 #define NhlNwkLineLabelFontHeightF	"wkLineLabelFontHeightF"
 #define NhlCwkLineLabelFontHeightF	"WkLineLabelFontHeightF"
+#define NhlNwkLineLabelFontAspectF	"wkLineLabelFontAspectF"
+#define NhlCwkLineLabelFontAspectF	"WkLineLabelFontAspectF"
+#define NhlNwkLineLabelFontThicknessF	"wkLineLabelFontThicknessF"
+#define NhlCwkLineLabelFontThicknessF	"WkLineLabelFontThicknessF"
+#define NhlNwkLineLabelFontQuality	"wkLineLabelFontQuality"
+#define NhlCwkLineLabelFontQuality	"WkLineLabelFontQuality"
+#define NhlNwkLineLabelConstantSpacingF	"wkLineLabelConstantSpacingF"
+#define NhlCwkLineLabelConstantSpacingF	"WkLineLabelConstantSpacingF"
+#define NhlNwkLineLabelFuncCode		"wkLineLabelFuncCode"
+#define NhlCwkLineLabelFuncCode		"WkLineLabelFuncCode"
 
 #define NhlNwkMarkerIndex	"wkMarkerIndex"
 #define NhlCwkMarkerIndex	"WkMarkerIndex"

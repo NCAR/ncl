@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.56 1995-03-28 04:43:50 dbrown Exp $
+ *      $Id: Contour.c,v 1.57 1995-03-29 20:58:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1836,9 +1836,9 @@ ContourClassPartInitialize
 					NhlNlgMarkerThicknessF,
 					NhlNlgMarkerThicknesses,
 					NhlNlgLineLabelStrings,
-					NhlNlgMonoLineLabelColor,
-					NhlNlgLineLabelColor,
-					NhlNlgLineLabelColors,
+					NhlNlgMonoLineLabelFontColor,
+					NhlNlgLineLabelFontColor,
+					NhlNlgLineLabelFontColors,
 					NhlNlgMonoLineLabelFontHeight,
 					NhlNlgLineLabelFontHeightF,
 					NhlNlgLineLabelFontHeights,
@@ -5200,11 +5200,11 @@ static NhlErrorTypes ManageLegend
 
 	if (init || 
 	    cnp->display_legend != ocnp->display_legend ||
-	    cnp->const_field != ocnp->const_field) {
-		if (cnp->const_field) {
-			e_text = "%s: constant field: turning legend off";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-			ret = MIN(ret,NhlWARNING);
+	    cnp->display_constf != ocnp->display_constf) {
+		if (cnp->display_constf) {
+		 e_text = "%s: constant field or no data: turning Legend off";
+			NhlPError(NhlINFO,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlINFO);
 			NhlSetSArg(&sargs[(*nargs)++],
 				   NhlNovLegendDisplayMode,NhlNEVER);
 		}
@@ -5232,12 +5232,12 @@ static NhlErrorTypes ManageLegend
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlgLabelStrings,cnp->llabel_strings);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgMonoLineLabelColor,
+			   NhlNlgMonoLineLabelFontColor,
 			   cnp->line_lbls.mono_color);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgLineLabelColor,cnp->line_lbls.color);
+			   NhlNlgLineLabelFontColor,cnp->line_lbls.color);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgLineLabelColors,cnp->llabel_colors);
+			   NhlNlgLineLabelFontColors,cnp->llabel_colors);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlgMonoLineColor,cnp->mono_line_color);
 		NhlSetSArg(&sargs[(*nargs)++],
@@ -5252,30 +5252,24 @@ static NhlErrorTypes ManageLegend
 			   NhlNlgLineThicknesses,cnp->line_thicknesses);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlgLineLabelStrings,cnp->ll_strings);
-  
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlgMonoLineLabelFontHeight,True);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlgLineLabelFontHeightF,cnp->line_lbls.height);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlgLineDashSegLenF,cnp->line_dash_seglen);
-
-#if 0 /* no support for text attributes in legend item strings yet */
-
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgItemStringFont,cnp->line_lbls.font);
+			   NhlNlgLineLabelFont,cnp->line_lbls.font);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgItemStringFontAspectF,cnp->line_lbls.aspect);
+			   NhlNlgLineLabelFontAspectF,cnp->line_lbls.aspect);
 		NhlSetSArg(&sargs[(*nargs)++],
-		      NhlNlgItemStringFontThicknessF,cnp->line_lbls.thickness);
+		      NhlNlgLineLabelFontThicknessF,cnp->line_lbls.thickness);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgItemStringFontQuality,cnp->line_lbls.quality);
+			   NhlNlgLineLabelFontQuality,cnp->line_lbls.quality);
 		NhlSetSArg(&sargs[(*nargs)++],
-		   NhlNlgItemStringConstantSpacingF,cnp->line_lbls.cspacing);
+		   NhlNlgLineLabelConstantSpacingF,cnp->line_lbls.cspacing);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgItemStringFuncCode,cnp->line_lbls.fcode);
-
-#endif		
+			   NhlNlgLineLabelFuncCode,cnp->line_lbls.fcode);
 	}
 	else {
 		if (cnp->level_count != ocnp->level_count)
@@ -5336,15 +5330,15 @@ static NhlErrorTypes ManageLegend
 				   cnp->line_thicknesses);
 		if (cnp->line_lbls.mono_color != ocnp->line_lbls.mono_color)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgMonoLineLabelColor,
+				   NhlNlgMonoLineLabelFontColor,
 				   cnp->line_lbls.mono_color);
 		if (cnp->line_lbls.color != ocnp->line_lbls.color)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgLineLabelColor,
+				   NhlNlgLineLabelFontColor,
 				   cnp->line_lbls.color);
 		if (cnp->llabel_colors != ocnp->llabel_colors)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgLineLabelColors,
+				   NhlNlgLineLabelFontColors,
 				   cnp->llabel_colors);
 		if (cnp->llabel_strings != ocnp->llabel_strings ||
 		    cnp->level_flags != ocnp->level_flags ||
@@ -5361,33 +5355,29 @@ static NhlErrorTypes ManageLegend
 			NhlSetSArg(&sargs[(*nargs)++],
 				   NhlNlgLineDashSegLenF,
 				   cnp->line_dash_seglen);
-
-#if 0 /* no support for text attributes in legend strings yet */
-
 		if (cnp->line_lbls.font != ocnp->line_lbls.font)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgItemStringFont,cnp->line_lbls.font);
+				   NhlNlgLineLabelFont,cnp->line_lbls.font);
 		if (cnp->line_lbls.aspect != ocnp->line_lbls.aspect)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgItemStringFontAspectF,
+				   NhlNlgLineLabelFontAspectF,
 				   cnp->line_lbls.aspect);
 		if (cnp->line_lbls.thickness != ocnp->line_lbls.thickness)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgItemStringFontThicknessF,
+				   NhlNlgLineLabelFontThicknessF,
 				   cnp->line_lbls.thickness);
 		if (cnp->line_lbls.quality != ocnp->line_lbls.quality)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgItemStringFontQuality,
+				   NhlNlgLineLabelFontQuality,
 				   cnp->line_lbls.quality);
 		if (cnp->line_lbls.cspacing != ocnp->line_lbls.cspacing)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgItemStringConstantSpacingF,
+				   NhlNlgLineLabelConstantSpacingF,
 				   cnp->line_lbls.cspacing);
 		if (cnp->line_lbls.fcode != ocnp->line_lbls.fcode)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgItemStringFuncCode,
+				   NhlNlgLineLabelFuncCode,
 				   cnp->line_lbls.fcode);
-#endif
 	}
 
 	return ret;
@@ -5444,11 +5434,11 @@ static NhlErrorTypes ManageLabelBar
 
 	if (init || 
 	    cnp->display_labelbar != ocnp->display_labelbar ||
-	    cnp->const_field != ocnp->const_field) {
-		if (cnp->const_field) {
-			e_text = "%s: constant field: turning labelbar off";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-			ret = MIN(ret,NhlWARNING);
+	    cnp->display_constf != ocnp->display_constf) {
+		if (cnp->display_constf) {
+	       e_text = "%s: constant field or no data: turning Labelbar off";
+			NhlPError(NhlINFO,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlINFO);
 			NhlSetSArg(&sargs[(*nargs)++],
 				   NhlNovLabelBarDisplayMode,NhlNEVER);
 		}
@@ -6981,8 +6971,11 @@ static NhlErrorTypes    AdjustText
                 lbl_attrp->pwidth = 21.0 * 1.0/lbl_attrp->aspect;
                 lbl_attrp->pheight = 21.0;
         }
+	/*
+	 * The 1.125 factor compensates for the PLOTCHAR 'SA' parameter
+	 */
         lbl_attrp->real_height = 
-		1.0 / lbl_attrp->aspect * lbl_attrp->height;
+		1.0 / lbl_attrp->aspect * lbl_attrp->height * 1.125;
 
 	return ret;
 }
@@ -8799,17 +8792,17 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 					tchar[i++] = '|';
 				tchar[i++] = ts[j++];
 			}
-			
 			c_pcseti("OC",llcol);
 			c_pcseti("CC",llcol);
-			c_pcsetr("PH",Cnp->line_lbls.pheight);
-			c_pcsetr("PW",Cnp->line_lbls.pwidth);
-			c_pcseti("CS",Cnp->line_lbls.cspacing);
-			c_pcseti("FN",Cnp->line_lbls.font);
-			c_pcseti("QU",Cnp->line_lbls.quality);
-			c_pcsetc("FC",Cnp->line_lbls.fcode);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
+		c_pcsetr("PH",Cnp->line_lbls.pheight);
+		c_pcsetr("PW",Cnp->line_lbls.pwidth);
+		c_pcseti("CS",Cnp->line_lbls.cspacing);
+		c_pcseti("FN",Cnp->line_lbls.font);
+		c_pcseti("QU",Cnp->line_lbls.quality);
+		c_pcsetc("FC",Cnp->line_lbls.fcode);
+		c_pcsetr("CL",Cnp->line_lbls.thickness);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	}
 
 	c_dpsetc("DPT",buffer);

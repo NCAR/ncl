@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.7 1995-02-19 08:19:22 boote Exp $
+ *      $Id: WorkstationP.h,v 1.8 1995-03-29 20:58:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 #define	_NWorkstationP_h
 
 #include	<ncarg/hlu/BaseP.h>
+#include	<ncarg/hlu/TextItem.h>
 #include 	<ncarg/hlu/WorkstationI.h>
 
 #define MAX_COLOR_MAP	256
@@ -109,8 +110,13 @@ typedef struct _NhlWorkLineInfo{
         float		line_thickness;
         NhlString	line_label;
 	NhlFont		line_label_font;
-	NhlColorIndex	line_label_color;
+	NhlColorIndex	line_label_font_color;
         float		line_label_font_height;
+	float		line_label_font_aspect;
+	float		line_label_font_thickness;
+	NhlFontQuality	line_label_font_quality;
+	float		line_label_const_spacing;
+	char		line_label_func_code;
 } _NhlWorkLineInfo;
 
 typedef struct _NhlMarkerInfo{
