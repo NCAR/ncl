@@ -3294,6 +3294,7 @@ int wr_status;
 	int tmp_hour;
 	int tmp_minute;
 	int version;
+	int error_count = 0;
 	NhlErrorTypes retvalue;
 
 	if(wr_status <= 0) {
@@ -3708,7 +3709,13 @@ int wr_status;
 				tmp_name_rec = NULL;
 			}
 		} else if(ret==GRIBERROR){
-			NhlPError(NhlWARNING, NhlEUNKNOWN, "NclGRIB: Detected incomplete record, skipping record");
+			error_count++;
+			if(error_count > 10) {
+				NhlPError(NhlFATAL, NhlEUNKNOWN, "NclGRIB: More than 10 incomplete records were found, grib file appears to be corrupted, make sure it is not a tar file or a COS blocked grib file.");
+				return(NULL);
+			} else {
+				NhlPError(NhlWARNING, NhlEUNKNOWN, "NclGRIB: Detected incomplete record, skipping record");
+			}
 		}
 		offset = nextoff;
 		grib_rec = NULL;
