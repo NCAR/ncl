@@ -1,10 +1,12 @@
 .\"
-.\"	$Id: ncarg_option.m,v 1.1 1992-04-22 15:13:07 clyne Exp $
+.\"	$Id: ncarg_option.m,v 1.2 1992-06-24 21:32:40 clyne Exp $
 .\"
 .TH OPTION 1NCAR  "March 1992" 
 .SH NAME
+CloseOptionTbl,
 GetOptions,
 LoadOptionTable,
+OptionOptionTbl,
 ParseOptionTable,
 PrintOptionHelp \- Option parsing utilities
 .SH SYNOPSIS
@@ -16,21 +18,29 @@ PrintOptionHelp \- Option parsing utilities
 .LP
 .nf
 .ft B
-int GetOptions(options)
+int OpenOptionTbl()
+.ft
+.fi
+.LP
+.nf
+.ft B
+int GetOptions(od, options)
+int od
 Option *options;
 .ft
 .fi
 .LP
 .nf
 .ft B
-int LoadOptionTable(optd)
+int LoadOptionTable(od, optd)
+int od
 OptDescRec *optd;
 .ft
 .fi
 .LP
 .nf
 .ft B
-int ParseOptionTable(argc, argv, optds)
+int ParseOptionTable(od, argc, argv, optds)
 int *argc;
 char **argv;
 OptDescRec *optds;
@@ -39,7 +49,7 @@ OptDescRec *optds;
 .LP
 .nf
 .ft B
-int ParseEnvOptions(envv, optds)
+int ParseEnvOptions(od, envv, optds)
 EnvOpt *envv;
 OptDescRec *optds;
 .ft
@@ -47,15 +57,38 @@ OptDescRec *optds;
 .LP
 .nf
 .ft B
-void PrintOptionHelp(fp)
+void PrintOptionHelp(od, fp)
 FILE *fp;
+.ft
+.fi
+.LP
+.nf
+.ft B
+int CloseOptionTbl(od)
+int od;
 .ft
 .fi
 .SH DESCRIPTION
 .LP
+.BR OpenOptionTbl(\|) 
+opens an option table for subsequent option parsing. There is a per-process
+limit on the number of open option tables. On success
+.BR OpenOptionTbl(\|) returns a non-negative option descriptor 
+for that option table. On failure, a
+.B -1
+is returned and 
+.BR ESprintf(\|)
+is invoked.
+.LP
+.BR CloseOptionTbl(\|) 
+deletes the option table referenced by 
+.BR od .
+.LP
 .BR GetOption(\|) 
 retrieves the values of command line options from the 
-option table previously stored with calls
+option table referenced by 
+.BR od .
+Option values may have been previously stored with calls
 to either 
 .BR LoadOptionTable(\|) 
 or 
@@ -140,7 +173,9 @@ with an appropriate error message. Otherwise
 returns a positive value.
 .LP
 .BR LoadOptionTable(\|)
-informs the option module of the valid application options. 
+informs the option table referenced by
+.B od
+of the valid application options. 
 .I optd
 is a NULL terminated array of named options with the following members:
 .LP
@@ -165,7 +200,8 @@ is a NULL terminated array of named options with the following members:
 .BR ParseOptionTable(\|)
 destructively merges the options specified by
 .I argv
-with the options already in the option table.
+with the options already in the option table referenced by
+.BR od .
 .I argv 
 is an NULL-terminated array of character pointers to options
 and their arguments. 
@@ -213,7 +249,9 @@ option names. The members of an EnvOpt struct are:
 .LP
 .BR PrintOptionHelp(\|)
 writes the help string associated with each option in the option
-table to the file pointer referenced by 
+table referenced by 
+.R od 
+to the file pointer referenced by 
 .IR fp .
 For each option in the option table the option name, followed by
 the string "arg0 arg1 ... argN", where N+1 is the number of 
@@ -262,21 +300,25 @@ main(argc, argv)
 	int	argc;
 	char	**argv;
 {
-	if (ParseOptionTable(&argc, argv, set_options) < 0) {
+	int	od;
+
+	od = OpenOptionTbl();
+	if (ParseOptionTable(od, &argc, argv, set_options) < 0) {
 		fprintf(
 			stderr,"%s : Error parsing command line options : %s\n",
 			argv[0], ErrGetMsg()
 		);
 		exit(1);
 	}
-        if (GetOptions(get_options) < 0) {
+        if (GetOptions(od, get_options) < 0) {
                 fprintf(
                         stderr,"%s : GetOptions() : %s\n",
                         argv[0], ErrGetMsg()
                 );
-		PrintOptionHelp(stderr);
+		PrintOptionHelp(od, stderr);
                 exit(1);
         }
+	(void) CloseOptionTbl(od);
 }
 .fi
 .ft $
