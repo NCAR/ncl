@@ -144,7 +144,8 @@ c                              local
 c      PRINT *," LININT2: NXI,NYI,NXO,NYO=",NXI,NYI,NXO,NYO
 c                              error checking
       IER = 0
-      IF (NXI.LE.2 .OR. NYI.LE.2 .OR. NXO.LE.2 .OR. NYO.LE.2) THEN
+c      IF (NXI.LE.2 .OR. NYI.LE.2 .OR. NXO.LE.2 .OR. NYO.LE.2) THEN
+      IF (NXI.LT.2 .OR. NYI.LT.2) THEN
           IER = 1
           RETURN
       END IF

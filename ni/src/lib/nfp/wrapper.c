@@ -240,7 +240,7 @@ extern NhlErrorTypes pres_hybrid_W(void);
 extern NhlErrorTypes pslhyp_W(void);
 extern NhlErrorTypes pslec_W(void);
 extern NhlErrorTypes pslhor_W(void);
-extern NhlErrorTypes great_circle_W(void);
+extern NhlErrorTypes gc_latlon_W(void);
 
 extern NhlErrorTypes monthday_W(void);
 extern NhlErrorTypes day_of_year_W(void);
@@ -2945,19 +2945,20 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(pslhor_W,args,"pslhor",nargs);
 
 /*
- * Register "great_circle".
+ * Register "gc_latlon".
  */
     nargs = 0;
-    args = NewArgs(5);
+    args = NewArgs(6);
 
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
-    NclRegisterFunc(great_circle_W,args,"great_circle",nargs);
+    NclRegisterFunc(gc_latlon_W,args,"gc_latlon",nargs);
 /*
  * Register "monthday".
  */
