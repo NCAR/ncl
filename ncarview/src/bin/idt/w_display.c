@@ -1,5 +1,5 @@
 /*
- *	$Id: w_display.c,v 1.5 1991-08-15 17:15:29 clyne Exp $
+ *	$Id: w_display.c,v 1.6 1991-12-19 10:02:03 clyne Exp $
  */
 /*
  *	w_display.c
@@ -58,7 +58,7 @@ static	Widget	popUp[MAX_DISPLAYS];
 
 static	Command_Id	command_Id;
 
-static	Widget	frameLabel;
+static	Widget	frameLabel[MAX_DISPLAYS];
 
 static	short	playMode = False;	/* True after Playback or Play is
 					 * selected. False after Stop is
@@ -143,7 +143,7 @@ void	create_tip_top_panel(paned, id)
         n = 0;
 	XtSetArg(args[n], XtNfromHoriz, scrollbar);	n++;
 	XtSetArg(args[n], XtNborderColor, XtDefaultBackground);	n++;
-        frameLabel = XtCreateManagedWidget(FRAME_LABEL_DISPLAY,
+        frameLabel[id] = XtCreateManagedWidget(FRAME_LABEL_DISPLAY,
 			labelWidgetClass,form,args,n);
 }
 
@@ -375,7 +375,7 @@ static  void    Playback(widget, client_data, call_data)
 
 	playMode = True;
 	simple_command(id, PLAYBACK);
-	UpdateFrameLabel("");
+	UpdateFrameLabel(id, "");
 
 }
 
@@ -389,7 +389,7 @@ static  void    Jogback(widget, client_data, call_data)
 	void	simple_command();
 
 	simple_command(id, JOGBACK);
-	UpdateFrameLabel("");
+	UpdateFrameLabel(id, "");
 
 }
 
@@ -422,7 +422,7 @@ static  void    Jog(widget, client_data, call_data)
 	void	simple_command();
 
 	simple_command(id, JOG);
-	UpdateFrameLabel("");
+	UpdateFrameLabel(id, "");
 
 }
 
@@ -437,7 +437,7 @@ static  void    Play(widget, client_data, call_data)
 
 	playMode = True;
 	simple_command(id, PLAY);
-	UpdateFrameLabel("");
+	UpdateFrameLabel(id, "");
 
 }
 
@@ -584,7 +584,7 @@ static  void    CurrentFrame(widget, client_data, call_data)
 	current = TalkTo(id, "current\n", SYNC);
 
 	if (current)
-		UpdateFrameLabel(current);
+		UpdateFrameLabel(id, current);
 
 }
 
@@ -714,7 +714,8 @@ static	void	simple_command(id, command)
 	Command1((caddr_t) &command_Id);
 }
 
-UpdateFrameLabel(frame_string)
+UpdateFrameLabel(id, frame_string)
+	int	id;
 	char	*frame_string;
 {
 	Arg		args[10];
@@ -727,7 +728,7 @@ UpdateFrameLabel(frame_string)
 	(void) strcat(s, frame_string);
 	
 	XtSetArg(args[0], XtNlabel, s);
-	XtSetValues(frameLabel, args, 1);
+	XtSetValues(frameLabel[id], args, 1);
 
 	cfree(s);
 }
