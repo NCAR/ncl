@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.30 1996-04-19 23:05:20 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.31 1996-04-23 00:10:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1629,12 +1629,28 @@ NhlErrorTypes _NclIDelete
 	NclSymbol *thesym;
 	int sub_sel = 0;
 	NclObj tmp;
+	NclRefList *rlist = NULL;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 
 	switch(data.kind) {
 	case NclStk_VAL:
-		_NclDestroyObj((NclObj)data.u.data_obj);
+		if(data.u.data_obj->obj.ref_count != 0) {
+			rlist = data.u.data_obj->obj.parents;
+			while(rlist != NULL) {
+				switch(rlist->pptr->obj.obj_type) {
+				case Ncl_Att:
+					_NclDeleteAttMDID((NclObj)rlist->pptr->obj.id,(NclObj)data.u.data_obj->obj.id);
+					break;
+				default:
+					_NclDelParent((NclObj)data.u.data_obj,(NclObj)rlist->pptr);
+					break;
+				}
+				rlist = rlist->next;
+			}
+		} else {
+			_NclDestroyObj((NclObj)data.u.data_obj);
+		}
 		break;
 	case NclStk_VAR:
 		if(data.u.data_var != NULL) {
@@ -1671,13 +1687,42 @@ NhlErrorTypes _NclIDelete
 				data.u.data_obj = NULL;
 				_NclPutRec(thesym,&data);
 			}
+			_NclDestroyObj((NclObj)tmp);
+			if(var != NULL) {
+				var->u.data_var = NULL;
+				var->kind = NclStk_NOVAL;
+			}
 		} else {
-			var = NULL;
-		}
-		_NclDestroyObj((NclObj)tmp);
-		if(var != NULL) {
-			var->u.data_var = NULL;
-			var->kind = NclStk_NOVAL;
+			if((data.u.data_obj->obj.ref_count != 0)&&(!sub_sel)) {
+				switch(data.u.data_obj->obj.obj_type) {
+				case Ncl_CoordVar:
+					rlist = data.u.data_obj->obj.parents;
+					while(rlist != NULL) {
+						if(rlist->pptr->obj.obj_type == Ncl_Var) {
+							_NclDeleteCoordVar((NclVar)rlist->pptr,NrmQuarkToString(data.u.data_var->var.var_quark));
+						} else {
+							_NclDelParent((NclObj)data.u.data_obj,(NclObj)rlist->pptr);
+						}
+						rlist = rlist->next;
+					}
+					break;
+				default:
+					rlist = data.u.data_obj->obj.parents;
+					while(rlist != NULL) {
+						_NclDelParent((NclObj)data.u.data_obj,(NclObj)rlist->pptr);
+						rlist = rlist->next;
+					}
+					break;
+				}
+			} else {
+				var = NULL;
+				tmp = (NclObj)data.u.data_var;
+				_NclDestroyObj((NclObj)tmp);
+				if(var != NULL) {
+					var->u.data_var = NULL;
+					var->kind = NclStk_NOVAL;
+				}
+			}
 		}
 		break;
 	default:

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.h,v 1.4 1995-06-17 00:03:43 boote Exp $
+ *      $Id: NclVar.h,v 1.5 1996-04-23 00:10:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -124,6 +124,12 @@ typedef struct _NclDataRec *(*NclVarCoerceFunc)(
 #endif
 );
 
+typedef NhlErrorTypes (*NclDeleteCoordinate)(
+#if     NhlNeedProto
+struct  _NclVarRec 	* /*self*/,
+char	*		/* coord_name */
+#endif
+);
 
 typedef NhlErrorTypes (*NclWriteCoordinate)(
 #if     NhlNeedProto
@@ -199,6 +205,7 @@ typedef struct _NclVarClassPart {
 	NclIsAFunc		is_coord_func;	
 	NclReadCoordinate	read_coordinate;
 	NclWriteCoordinate	write_coordinate;
+	NclDeleteCoordinate	delete_coordinate;
 } NclVarClassPart;
 
 typedef struct _NclVarPart {

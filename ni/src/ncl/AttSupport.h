@@ -1,5 +1,5 @@
 /*
- *      $Id: AttSupport.h,v 1.1 1994-07-14 20:45:40 ethan Exp $
+ *      $Id: AttSupport.h,v 1.2 1996-04-23 00:10:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -57,6 +57,13 @@ extern void _NclDeleteAtt(
 #if NhlNeedProto
 int /*id*/,
 char * /*attname*/
+#endif
+);
+
+extern void _NclDeleteAttMDID(
+#if NhlNeedProto
+int /*id*/,
+int /*md_id*/
 #endif
 );
 

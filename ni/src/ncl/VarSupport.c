@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.12 1996-04-02 00:35:16 ethan Exp $
+ *      $Id: VarSupport.c,v 1.13 1996-04-23 00:10:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -879,6 +879,34 @@ struct  _NclSelectionRecord *sel_ptr;
 		}
 	}
 	return(NULL);
+}
+
+NhlErrorTypes _NclDeleteCoordVar
+#if	NhlNeedProto
+(struct  _NclVarRec *self, char *coord_name)
+#else
+(self, value, coord_name, sel_ptr)
+struct  _NclVarRec *self;
+struct  _NclMultiDValDataRec  *value;
+char *coord_name;
+struct  _NclSelectionRecord *sel_ptr;
+#endif
+{
+	NclVarClass vc;
+
+        if(self == NULL) {
+                return(NhlFATAL);
+        } else {
+                vc = (NclVarClass)self->obj.class_ptr;
+        }
+        while((NclObjClass)vc != nclObjClass) {
+		if(vc->var_class.delete_coordinate != NULL) {
+			return((*vc->var_class.delete_coordinate)(self,coord_name));
+		} else {
+			vc = (NclVarClass)vc->obj_class.super_class;
+		}
+	}
+	return(NhlFATAL);
 }
 
 NhlErrorTypes _NclWriteCoordVar

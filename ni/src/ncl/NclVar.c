@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.22 1996-04-12 23:35:43 ethan Exp $
+ *      $Id: NclVar.c,v 1.23 1996-04-23 00:10:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -155,6 +155,12 @@ struct  _NclSelectionRecord * /*sel_ptr*/
 #endif
 );
 
+static NhlErrorTypes VarDeleteCoord(
+#if     NhlNeedProto
+struct  _NclVarRec      * /*self*/,
+char    *               /* coord_name */
+#endif
+);
 static NhlErrorTypes VarWriteCoord(
 #if     NhlNeedProto
 struct  _NclVarRec      * /*self*/,
@@ -246,7 +252,8 @@ NclVarClassRec nclVarClassRec = {
 
 /* NclIsAFunc is_coord_func */		VarIsACoord,
 /* NclReadCoordinate read_coordinate*/	VarReadCoord,
-/* NclWriteCoordinate write_coordinate*/ VarWriteCoord
+/* NclWriteCoordinate write_coordinate*/ VarWriteCoord,
+/* NclWriteCoordinate write_coordinate*/ VarDeleteCoord
 	}
 };
 
@@ -588,6 +595,7 @@ NclStatus status)
 	NclMultiDValData tmp = NULL,tmp_md = NULL;
 	NclScalar *tmp_s = NULL;
 	int tmp_dim_size =1;
+	NclAtt tmp_att;
 
 
 	ret = _NclInitClass(nclVarClass);
@@ -710,31 +718,58 @@ NclStatus status)
 			_NclAddAtt(att_id,NCL_MISSING_VALUE_ATT,tmp_md,NULL);
 		}
 	}
-	var_out->var.att_id = att_id;
-	if(att_id != -1) {
-		_NclAddParent(_NclGetObj(att_id),(NclObj)var_out);
-	} 
-	if(coords != NULL) {
-		for(i = 0; i<var_out->var.n_dims; i++) {
-			if(coords[i] != -1) {
+	if(var_type == PARAM) {
+		var_out->var.att_id = att_id;
+		if(att_id != -1) {
+			_NclAddParent(_NclGetObj(att_id),(NclObj)var_out);
+		} 
+		if(coords != NULL) {
+			for(i = 0; i<var_out->var.n_dims; i++) {
 				tmp_var = (NclVar)_NclGetObj(coords[i]);
-				if(!_NclSetStatus((NclObj)tmp_var,PERMANENT)) {
-					tmp_var = _NclCopyVar(tmp_var,NULL,NULL);
-					_NclSetStatus((NclObj)tmp_var,PERMANENT);
-					var_out->var.coord_vars[i] = tmp_var->obj.id;
-					_NclAddParent((NclObj)tmp_var,(NclObj)var_out);
-				} else {
+				if(coords[i] != -1) {
 					_NclAddParent((NclObj)tmp_var,(NclObj)var_out);
 					var_out->var.coord_vars[i] = coords[i];
+				} else {
+					var_out->var.coord_vars[i] = coords[i];
+
 				}
-			} else {
-				var_out->var.coord_vars[i] = coords[i];
 			}
 		}
-	}
-	_NclAddParent(_NclGetObj(var_out->var.thevalue_id),(NclObj)var_out);
-	if(class_ptr == nclVarClass) {
-		_NclCallCallBacks((NclObj)var_out,CREATED);
+	} else {
+		if(att_id != -1) {
+			if(!_NclSetStatus((NclObj)_NclGetObj(att_id),PERMANENT)) {
+				tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(att_id),NULL);
+				_NclSetStatus((NclObj)tmp_att,PERMANENT);
+				_NclAddParent((NclObj)tmp_att,(NclObj)var_out);
+				var_out->var.att_id = tmp_att->obj.id;
+			} else {
+				_NclAddParent(_NclGetObj(att_id),(NclObj)var_out);
+			}
+		} else {
+			var_out->var.att_id = att_id;
+		}
+		if(coords != NULL) {
+			for(i = 0; i<var_out->var.n_dims; i++) {
+				if(coords[i] != -1) {
+					tmp_var = (NclVar)_NclGetObj(coords[i]);
+					if(!_NclSetStatus((NclObj)tmp_var,PERMANENT)) {
+						tmp_var = _NclCopyVar(tmp_var,NULL,NULL);
+						_NclSetStatus((NclObj)tmp_var,PERMANENT);
+						var_out->var.coord_vars[i] = tmp_var->obj.id;
+						_NclAddParent((NclObj)tmp_var,(NclObj)var_out);
+					} else {
+						_NclAddParent((NclObj)tmp_var,(NclObj)var_out);
+						var_out->var.coord_vars[i] = coords[i];
+					}
+				} else {
+					var_out->var.coord_vars[i] = coords[i];
+				}
+			}
+		}
+		_NclAddParent(_NclGetObj(var_out->var.thevalue_id),(NclObj)var_out);
+		if(class_ptr == nclVarClass) {
+			_NclCallCallBacks((NclObj)var_out,CREATED);
+		}
 	}
 	
 	return(var_out);
@@ -1346,6 +1381,35 @@ struct _NclSelectionRecord *sel_ptr;
 		return(NULL);
 	}
 }
+
+static NhlErrorTypes VarDeleteCoord
+#if	NhlNeedProto
+(struct  _NclVarRec* self, char* coord_name)
+#else
+(self, coord_name )
+struct  _NclVarRec* self;
+char* coord_name;
+#endif
+{
+	int index;
+	NclDimRec tmp;
+	NclObj tmp_obj;
+
+	
+	index = VarIsADim(self,coord_name);
+	if((index>=0)&&(index < self->var.n_dims))  {
+		if((self->var.coord_vars[index] != -1)&&(_NclGetObj(self->var.coord_vars[index]) != NULL)) {
+			_NclDelParent(_NclGetObj(self->var.coord_vars[index]),(NclObj)self);
+			self->var.coord_vars[index] = -1;
+		} else {
+			self->var.coord_vars[index] = -1;
+		}
+		return(NhlNOERROR);
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%s) is not a named dimension. Can not assign coordinate variable",coord_name);
+		return(NhlFATAL);
+	}
+}
 static NhlErrorTypes VarWriteCoord
 #if	NhlNeedProto
 (struct  _NclVarRec* self, struct  _NclMultiDValDataRec* value, char* coord_name, struct  _NclSelectionRecord *sel_ptr)
@@ -1640,7 +1704,7 @@ struct _NclVarRec *storage;
 	}
 */
 	tmp_obj = (NclObj)_NclCopyAtt((NclAtt)_NclGetObj(thevar->var.att_id),NULL);
-	tmp_var = _NclVarNclCreate(NULL,thevar->obj.class_ptr,thevar->obj.obj_type,thevar->obj.obj_type_mask,NULL,(NclMultiDValData)_NclGetObj(thevar->var.thevalue_id),thevar->var.dim_info,((tmp_obj != NULL)?tmp_obj->obj.id:-1),thevar->var.coord_vars,thevar->var.var_type,new_name,TEMPORARY);
+	tmp_var = _NclVarNclCreate(NULL,thevar->obj.class_ptr,thevar->obj.obj_type,thevar->obj.obj_type_mask,NULL,(NclMultiDValData)_NclGetObj(thevar->var.thevalue_id),thevar->var.dim_info,((tmp_obj != NULL)?tmp_obj->obj.id:-1),thevar->var.coord_vars,thevar->var.var_type,(new_name == NULL)?NrmQuarkToString(thevar->var.var_quark):new_name,TEMPORARY);
 	
 
 	return(tmp_var);

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.56 1996-04-17 23:56:55 ethan Exp $
+ *      $Id: Execute.c,v 1.57 1996-04-23 00:10:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1654,7 +1654,7 @@ NclExecuteReturnStatus _NclExecute
 									lhs_var->kind = NclStk_NOVAL;
 								}
 							} 
-						} else if(rhs.kind == NclStk_VAR) {
+						} else if((rhs.kind == NclStk_VAR)&&(rhs.u.data_var->obj.status != TEMPORARY)) {
 /*
 * -----> need some modification here. Only time this happens is when a funcion
 * returns a variable. Otherwise ASSIGN_VAR_VAR_OP is used by the translator.
@@ -1695,6 +1695,24 @@ NclExecuteReturnStatus _NclExecute
 							if(rhs.u.data_var->obj.status != PERMANENT) {
 								_NclDestroyObj((NclObj)rhs.u.data_var);
 							}
+						} else if((rhs.kind == NclStk_VAR)&&(rhs.u.data_var->obj.status == TEMPORARY)) {
+/*
+* Since lhs is not defined and this is ASSIGN_VAR_OP the change var_type to VAR
+*/
+							lhs_var->u.data_var = rhs.u.data_var;
+							lhs_var->u.data_var->var.thesym = sym;
+							lhs_var->u.data_var->obj.obj_type = Ncl_Var;
+							lhs_var->u.data_var->var.var_type = NORMAL;
+							lhs_var->u.data_var->var.var_quark = NrmStringToQuark(sym->name);
+							if(lhs_var->u.data_var != NULL) {
+								(void)_NclChangeSymbolType(sym,VAR);
+								lhs_var->kind = NclStk_VAR;
+							} else {
+								NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not create variable (%s)",sym->name);
+								estatus = NhlWARNING;
+								lhs_var->kind = NclStk_NOVAL;
+							}
+							_NclSetStatus((NclObj)lhs_var->u.data_var,PERMANENT);
 						} else {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal right-hand side type for assignment");
 							estatus = NhlFATAL;

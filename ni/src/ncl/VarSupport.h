@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.h,v 1.5 1995-06-17 00:03:45 boote Exp $
+ *      $Id: VarSupport.h,v 1.6 1996-04-23 00:10:29 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -168,6 +168,14 @@ char    *               /* coord_name */,
 struct  _NclSelectionRecord * /*sel_ptr*/
 #endif
 );
+
+extern NhlErrorTypes _NclDeleteCoordVar(
+#if     NhlNeedProto
+	struct  _NclVarRec      * /*self*/,
+	char */* coord_name */
+#endif
+);
+
 
 extern struct _NclDimRec *_NclGetDimInfo(
 #if     NhlNeedProto

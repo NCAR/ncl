@@ -1,5 +1,5 @@
 /*
- *      $Id: AttSupport.c,v 1.3 1994-12-23 01:17:17 ethan Exp $
+ *      $Id: AttSupport.c,v 1.4 1996-04-23 00:10:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 #include <ncarg/hlu/NresDB.h>
 #include "defs.h"
 #include "NclAtt.h"
+#include "NclMultiDValData.h"
 
 
 void _NclAddAttParent
@@ -174,6 +175,54 @@ NclSelectionRecord *sel_ptr;
 	return(NULL);
 	
 }
+void _NclDeleteAttMDID
+#if	NhlNeedProto
+(int id, int md_id)
+#else
+(id, md_id)
+int id;
+int md_id;
+#endif
+{
+	NclAtt theattobj;
+	NclAttClass ac;
+	char *attname;
+	NclAttList *tmp;
+	NclMultiDValData tmp_md;
+
+	theattobj = (NclAtt)_NclGetObj(id);
+	if(theattobj == NULL) {
+		return;
+	} else {
+		ac = (NclAttClass)theattobj->obj.class_ptr;
+	}
+	tmp = theattobj->att.att_list;
+	attname = NULL;
+	while(tmp != NULL) {
+		tmp_md = tmp->attvalue;
+		if(tmp_md->obj.id == md_id) {
+			attname = NrmQuarkToString(tmp->quark);
+			break;
+		} else {
+			tmp= tmp->next;
+		}
+	}
+	if(tmp == NULL) {
+		return;
+	}
+	
+	while(ac != NULL) {
+		if(ac->att_class.del_att!= NULL) {
+			(*ac->att_class.del_att)(theattobj,attname);
+			return;
+		} else {
+			ac = (NclAttClass)ac->obj_class.super_class;
+		}
+	}
+	return;
+}
+
+
 
 void _NclDeleteAtt
 #if	NhlNeedProto
