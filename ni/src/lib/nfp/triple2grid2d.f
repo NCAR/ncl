@@ -32,40 +32,47 @@ C NCL    zgrid = triple2grid2d (x,y,z, lon2d,lat2d, opt)
 
 c                      local: re: rad earth (km) [only for mopt=1]
       INTEGER N,M,K
-      DOUBLE PRECISION DIST(KPTS),DMIN,RE,RLAT,RAD
+      DOUBLE PRECISION DIST(KPTS),DMIN,RE,RLAT,RAD,ATMP
       DATA RE/6371.2200D0/
 
       RAD = 4.D0*ATAN(1.0D0)/180.D0
 
       DO N = 1,NDIM
-          DO M = 1,MDIM
-              ZGRID(M,N) = ZMSG
-c                    do separately for optimization reasons
-              IF (MOPT.EQ.0) THEN
-                  DO K = 1,KPTS
-                      DIST(K) = SQRT((X(K)-LON2D(M,N))**2+
-     +                          (Y(K)-LAT2D(M,N))**2)
-                  END DO
-              ELSE
-                  RLAT = LAT2D(M,N)*RAD
-                  DO K = 1,KPTS
-                      DIST(K) = ACOS(SIN(RLAT)*SIN(Y(K)*RAD)+
-     +                          COS(RLAT)*COS(Y(K)*RAD)*
-     +                          COS((X(K)-LON2D(M,N))*RAD))*RE
-                  END DO
-              END IF
-c                    assign z(k) to nearest grid point
-              DMIN = 1.D+36
-              DO K = 1,KPTS
-                  IF (Z(K).NE.ZMSG) THEN
-                      IF (DIST(K).LT.DMIN .AND. DIST(K).LT.DISTMX) THEN
-                          DMIN = DIST(K)
-                          ZGRID(M,N) = Z(K)
-                      END IF
+         DO M = 1,MDIM
+            ZGRID(M,N) = ZMSG
+c           do separately for optimization reasons
+            IF (MOPT.EQ.0) THEN
+               DO K = 1,KPTS
+                  DIST(K) = SQRT((X(K)-LON2D(M,N))**2+
+     +                 (Y(K)-LAT2D(M,N))**2)
+               END DO
+            ELSE
+               RLAT = LAT2D(M,N)*RAD
+               DO K = 1,KPTS
+C
+C The ATMP variable is necessary to make sure the
+C value passed to ACOS is between -1 and 1.
+C (Otherwise, you might get "NaN".)
+C
+                  ATMP = SIN(RLAT)*SIN(Y(K)*RAD)
+     +                   + COS(RLAT)*COS(Y(K)*RAD)*
+     +                     COS((X(K)-LON2D(M,N))*RAD)
+                  ATMP  = MIN(1.D0,MAX(-1.D0,ATMP))
+                  DIST(K) = ACOS(ATMP)*RE
+               END DO
+            END IF
+c     assign z(k) to nearest grid point
+            DMIN = 1.D+36
+            DO K = 1,KPTS
+               IF (Z(K).NE.ZMSG) THEN
+                  IF (DIST(K).LT.DMIN .AND. DIST(K).LT.DISTMX) THEN
+                     DMIN = DIST(K)
+                     ZGRID(M,N) = Z(K)
                   END IF
-              END DO
+               END IF
+            END DO
 
-          END DO
+         END DO
       END DO
 
       RETURN
