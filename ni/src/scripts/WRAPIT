@@ -1,5 +1,5 @@
 #!/bin/csh -f
-set version = 040112    # YYMMDD
+set version = 040405    # YYMMDD
 echo " " 
 echo "WRAPIT Version: "$version 
 if ($argv[1]:q == "-h") then
@@ -296,9 +296,9 @@ switch ($OS)
      endif
    else                              # GNU g77
      if ($debug == 1) then
-       set fopts = "-v -c -ffortran-bounds-check" 
+       set fopts = "-v -c -ffortran-bounds-check -fno-second-underscore" 
      else
-       set fopts = "-c -O"
+       set fopts = "-c -O -fno-second-underscore"
      endif 
    endif  
    breaksw
