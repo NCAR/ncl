@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.74 1998-02-24 02:21:18 dbrown Exp $
+ *      $Id: Workstation.c,v 1.75 1998-02-27 23:16:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2104,7 +2104,17 @@ WorkstationOpen
 		&(wl->work.gkswkstype));
 	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
 		return NhlFATAL;
-	gset_clip_ind(GIND_NO_CLIP);
+/*
+ * HACK -- even though the default for the HLU library is that clipping
+ * is turned off, initially it must be turned on in order force GKS
+ * to write it into the Ncgm workstation. It is turned off at every
+ * workstation activate call. I'm putting this into Workstation rather
+ * than NcgmWorkstation so that this condition is an invariant for
+ * all workstations. View classes that need to clip must set clipping
+ * after calling workstation activate.
+ */
+        gset_clip_ind(GIND_CLIP);
+
 	if(_NhlLLErrCheckPrnt(NhlWARNING,func)){
 		return NhlFATAL;
 	}
@@ -2217,6 +2227,11 @@ WorkstationActivate
 	gactivate_ws(wl->work.gkswksid);
 	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
 		return NhlWARNING;
+
+#if DEBUG_NCGM
+	fprintf(stderr,"calling gset_clip_ind\n");
+#endif
+        gset_clip_ind(GIND_NO_CLIP);
 
 	return NhlNOERROR;
 }

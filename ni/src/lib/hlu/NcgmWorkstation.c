@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.30 1998-02-26 17:43:10 dbrown Exp $
+ *      $Id: NcgmWorkstation.c,v 1.31 1998-02-27 23:16:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -490,15 +490,15 @@ UpdateGKSState
 			action = 2;
 			np->new_frame = False;
 		}
+                                
 #if DEBUG_NCGM
-	fprintf(stderr,"calling ngreop iop %d for %s\n",action,np->meta_name);
+	fprintf(stderr,"calling ngreop iop %d for %s\n",2,np->meta_name);
 #endif
 		c_ngreop(wl->work.gkswksid,wl->work.gkswksconid,1,
 			 np->meta_name,2,
 			 np->gks_iat,np->gks_rat,0,0,NULL);
 		if(_NhlLLErrCheckPrnt(NhlFATAL,func))
 			return NhlFATAL;
-
 		wlc->ncgm_class.current_ncgm_wkid = l->base.id;
 	}
 
@@ -561,7 +561,6 @@ NcgmWorkstationOpen
 #if DEBUG_NCGM
 	fprintf(stderr,"opened metafile %s\n",winstance->ncgm.meta_name);
 #endif
-
 
 /*
  * initialize the GKS state variables
@@ -832,8 +831,6 @@ NcgmWorkstationUpdate
 		(NhlNcgmWorkstationClass)l->base.layer_class;
 	NhlNcgmWorkstationLayerPart	*np = &wl->ncgm;
 	NhlErrorTypes subret = NhlNOERROR,retcode = NhlNOERROR;
-	NhlBoolean new = False;
-	int i = 3;
 
  	if (! np->opened) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -858,7 +855,7 @@ NcgmWorkstationUpdate
  * call to avoid empty frames in certain situations. 
  */
 	if (! np->started) {
-		subret = TempClose(_NhlGetLayer
+                subret = TempClose(_NhlGetLayer
 				   (wlc->ncgm_class.current_ncgm_wkid),func);
 		retcode = MIN(retcode,subret);
 		wlc->ncgm_class.current_ncgm_wkid = NhlNULLOBJID;
@@ -900,8 +897,6 @@ NcgmWorkstationClear
 		(NhlNcgmWorkstationClass)l->base.layer_class;
 	NhlNcgmWorkstationLayerPart	*np = &wl->ncgm;
 	NhlErrorTypes subret = NhlNOERROR,retcode = NhlNOERROR;
-	NhlBoolean new = False;
-	int i = 3;
 
  	if (! np->opened) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
