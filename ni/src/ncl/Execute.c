@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.115 2000-09-29 17:53:15 ethan Exp $
+ *      $Id: Execute.c,v 1.116 2000-09-29 17:57:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2323,6 +2323,7 @@ void CallNEW_FRAME_OP(void) {
 					}
 					estatus = _NclPushFrame(proc,offset);
 				} else {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Procedure or Function (%s) is no longer defined, check for undef's",proc->name);
 					estatus = NhlFATAL;
 				}
 			}
