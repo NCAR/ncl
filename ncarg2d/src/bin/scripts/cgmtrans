@@ -1,0 +1,14 @@
+#!/bin/csh -f
+#
+#   $Id: cgmtrans,v 1.1 1995-04-20 20:10:31 haley Exp $
+#
+
+cat << 'EOF'
+
+    As scheduled, "cgmtrans" has been removed from Version 4.0 of NCAR 
+    Graphics.  Please use "ctrans", "ictrans", or "idt" instead.   See
+    man ctrans(1), ictrans(1), idt(1).  If this poses a hardship for you
+    contact scdinfo@ncar.ucar.edu or call the NCAR Graphics information 
+    line at  (303) 497-1201
+
+'EOF'
