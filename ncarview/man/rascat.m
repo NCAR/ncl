@@ -1,7 +1,7 @@
 .\"
-.\"	$Id: rascat.m,v 1.2 1992-11-06 19:42:36 clyne Exp $
+.\"	$Id: rascat.m,v 1.3 1992-12-01 23:21:39 clyne Exp $
 .\"
-.TH RASCAT 1-local "November 1992" NCAR "NCAR Local Command"
+.TH RASCAT 1NCARG "November 1992" NCARG "NCARG GRAPHICS"
 .SH NAME
 Rascat \- concatenate, convert raster files
 .SH SYNOPSIS

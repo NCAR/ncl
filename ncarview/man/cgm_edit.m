@@ -1,8 +1,8 @@
 .\"
-.\"	$Id: cgm_edit.m,v 1.4 1992-08-12 23:07:45 clyne Exp $
+.\"	$Id: cgm_edit.m,v 1.5 1992-12-01 23:21:14 clyne Exp $
 .\"
 .\" NCAR View: cgm_edit.man,v 1.0 89/09/10 clyne 
-.TH CGM_EDIT 1NCAR "7 September 1989"
+.TH CGM_EDIT 1NCARG "September 1989" NCARG "NCARG GRAPHICS"
 .SH NAME
 cgm_edit \- X window interface to the \fINCAR View\fR \fBcgm\fR library.
 .SH SYNOPSIS
@@ -132,7 +132,7 @@ Some of the options are meaningless for \fBcgm_edit\fP.
 /usr/lib/X11/app-defaults/Cgm_edit
 - Default resource file for \fBcgm_edit\fR
 .SH "SEE ALSO"
-X(1), xrdb(1), idt(local)
+X(1), xrdb(1), idt(1NCARG)
 .SH BUGS
 There is no \fIundo\fR command... yet.
 .SH CAVEATS

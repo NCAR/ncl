@@ -1,7 +1,7 @@
 .\"
-.\"	$Id: nriftohdf.m,v 1.5 1992-06-25 21:47:18 clyne Exp $
+.\"	$Id: nriftohdf.m,v 1.6 1992-12-01 23:21:36 clyne Exp $
 .\"
-.TH NRIFTOHDF 1-local "February 1990" NCAR "NCAR Local Command"
+.TH NRIFTOHDF 1NCARG "February 1990" NCARG "NCARG GRAPHICS"
 .SH NAME
 nriftohdf \- Filter to convert from nrif raster file to hdf format.
 .SH SYNOPSIS
@@ -38,9 +38,6 @@ Use run length encoding for data.
 .B \-V
 Print the version number and then exit.
 .SH "SEE ALSO"
-.BR ncartab (1-local),
-.br
-.ne 5
 .SH BUGS/CAVEATS
 .LP
 .B nriftohdf 

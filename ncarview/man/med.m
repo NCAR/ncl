@@ -1,9 +1,9 @@
 .\"
-.\"	$Id: med.m,v 1.8 1992-08-12 23:08:02 clyne Exp $
+.\"	$Id: med.m,v 1.9 1992-12-01 23:21:30 clyne Exp $
 .\"
 .\" @(#)med.l 1.0 90/02/15 NCAR; from UCB 4.3 and S5R4
 .tr ##
-.TH MED 1NCAR  "February 1990"
+.TH MED 1NCARG "February 1990" NCARG "NCARG GRAPHICS"
 .SH NAME
 med \- NCAR CGM metafile frame editor
 .SH SYNOPSIS
@@ -419,7 +419,7 @@ one could execute:
 .B "% med -e '4,5 me' -e 'w!' ncgm1
 .sp
 .SH "SEE ALSO"
-.BR cgm(local),
+.BR cgm(5NCARG),
 .IR ed(1),
 .BR sed(1V)
 .sp

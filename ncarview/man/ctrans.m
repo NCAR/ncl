@@ -1,8 +1,8 @@
 .\"
-.\"	$Id: ctrans.m,v 1.11 1992-08-12 23:07:47 clyne Exp $
+.\"	$Id: ctrans.m,v 1.12 1992-12-01 23:21:18 clyne Exp $
 .\"
 .\" ctrans 3.01 90/06/22
-.TH CTRANS 1NCAR "22 June 1990"
+.TH CTRANS 1NCARG "June 1990" NCARG "NCARG GRAPHICS"
 .SH NAME
 ctrans \- a Computer Graphics Metafile ( \fICGM\fR ) translator
 .SH SYNOPSIS
@@ -444,8 +444,7 @@ The binary NCAR Fontcap files
 .BR idt(1NCARG), 
 .BR ncarg_ras(1NCARG), 
 .BR med(1NCARG), 
-.BR ictrans(1NCARG),
-.BR plt(1NCARG)
+.BR ictrans(1NCARG)
 .SH CAVEATS
 Running in "movie" mode may give surprising results on slower devices, 
 such as dumb terminals. If too short a time interval is specified slow devices

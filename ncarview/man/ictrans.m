@@ -1,8 +1,8 @@
 .\"
-.\"	$Id: ictrans.m,v 1.11 1992-08-12 23:07:55 clyne Exp $
+.\"	$Id: ictrans.m,v 1.12 1992-12-01 23:21:25 clyne Exp $
 .\"
 .\" ictrans 3.01 90/06/22 
-.TH ICTRANS 1NCAR "22 June 1990"
+.TH ICTRANS 1NCARG "June 1990" NCARG "NCARG GRAPHICS"
 .SH NAME
 ictrans \- user interface to the CGM translator 
 .B ctrans
@@ -679,13 +679,12 @@ user's
 spooler config file
 .PD
 .SH SEE ALSO
-.BR ctrans(l),
-.BR fcaps(l),
-.BR gcaps(l),
-.BR idt(l),
-.BR ncar_ras(l),
-.BR med(l),
-.BR ncarv_spool(l)
+.BR ctrans(1NCARG),
+.BR fcaps(1NCARG),
+.BR gcaps(1NCARG),
+.BR idt(1NCARG),
+.BR med(1NCARG),
+.BR ncarv_spool(5NCARG)
 .SH CAVEATS
 Metafile frames written to an existing file via the 
 .B save

@@ -1,9 +1,9 @@
 .\"
-.\"	$Id: idt.m,v 1.10 1992-08-25 22:49:27 clyne Exp $
+.\"	$Id: idt.m,v 1.11 1992-12-01 23:21:28 clyne Exp $
 .\"
 .\" NCAR View: idt.man,v 1.0 89/09/10 clyne 
 .\" Revision 3.01 90/11/15 clyne
-.TH IDT 1NCAR "15 November 1990"
+.TH IDT 1NCARG "November 1990" NCARG "NCARG GRAPHICS"
 .SH NAME
 idt \- X window interactive image display tool
 .SH SYNOPSIS
@@ -482,11 +482,11 @@ $HOME/.ncarv_spool
 /usr/local/lib/ncarv_spool
 - System spooler configuration file
 .SH "SEE ALSO"
-.BR ctrans(l),
-.BR fcaps(l),
-.BR gcaps(l),
-.BR ictrans(l),
-.BR ncarv_spool(l),
+.BR ctrans(1NCARG),
+.BR fcaps(1NCARG),
+.BR gcaps(1NCARG),
+.BR ictrans(1NCARG),
+.BR ncarv_spool(5NCARG),
 .BR X(1),
 .BR xrdb(1)
 .SH BUGS
