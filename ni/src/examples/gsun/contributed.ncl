@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.42 2004-05-20 16:21:37 shea Exp $
+;      $Id: contributed.ncl,v 1.43 2004-06-23 20:31:14 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -1041,6 +1041,50 @@ begin
 
    return (FillValue)
 end
+
+;*************************************************************
+; D. Shea
+; use coersion for integer to float 
+; get around *irritating* lack of conversion function
+
+undef ("int2flt")
+function int2flt(i:integer)
+local dimi, fi
+begin
+  dimi = dimsizes(i)
+  fi   = new( dimi, "float")
+  fi   = i                    ; values + meta data
+  if (isatt(i,"_FillValue")) then
+      fi@_FillValue = i@_FillValue
+  else
+     delete(fi@_FillValue)
+  end if
+  return (fi)
+
+end
+
+;*************************************************************
+; D. Shea
+; use coersion for integer to float 
+; get around *irritating* lack of conversion function
+
+undef ("int2dble")
+function int2dble(i:integer)
+local dimi, di
+begin
+  dimi = dimsizes(i)
+  di   = new( dimi, "double")
+  di   = i                   ; values + meta data
+  if (isatt(i,"_FillValue")) then
+      di@_FillValue = i@_FillValue
+  else
+     delete(di@_FillValue)
+  end if
+  return (di)
+
+end
+
+
 ; *************************************************************
 ; D. Shea
 ; use coersion for float to double
