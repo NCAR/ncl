@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.55 2004-11-20 20:45:38 shea Exp $
+;      $Id: contributed.ncl,v 1.56 2004-12-16 17:21:47 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -4959,7 +4959,7 @@ end
 ;*************************************************************************
 ; D. Shea
 ; Compute annual means of monthly data
-; time must the rightmost dimension
+; time must the rightmost dimension and mod(dimsizes(time),12)=0
 ; x(time), x(npts,time),x(lat,lon,time), x(ntim,klev,lat,lon)
 ; if, say, x(time,lat,lon) then reorder dimensions
 ;          x(lat|:,lon|:,time|:) for input
@@ -4978,7 +4978,7 @@ begin
   end if
 
   nmos  = 12
-  modCheck ("clmMonLLT", ntim, nmos)   ; error check
+  modCheck ("month_to_annual", ntim, nmos)   ; error check
 
   nyrs  = ntim/nmos
 
