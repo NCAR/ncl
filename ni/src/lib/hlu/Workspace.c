@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.30 1996-05-08 01:12:28 dbrown Exp $
+ *      $Id: Workspace.c,v 1.31 1996-07-10 17:17:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2813,8 +2813,9 @@ NhlErrorTypes _NhlCpcica
 	char		*entry_name
 )
 #else
-(trans_obj,zdat,flt_ws,int_ws,amap_ws,entry_name)
-	NhlLayer	trans_obj,
+(trans_obj,zdat,flt_ws,int_ws,cell_ws,ica1,icam,ican,
+ xcpf,ycpf,xcqf,ycqf,entry_name)
+	NhlLayer	trans_obj;
 	float		*zdat;
 	NhlWorkspace	*flt_ws;
 	NhlWorkspace	*int_ws;
@@ -2901,6 +2902,7 @@ NhlErrorTypes _NhlCpcica
  */
 	c_getset(&fl,&fr,&fb,&ft,&wl,&wr,&wb,&wt,&ll);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+
 	c_set(fl,fr,fb,ft,fl,fr,fb,ft,1);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 
