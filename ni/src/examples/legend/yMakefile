@@ -1,24 +1,16 @@
 #
-#   $Id: yMakefile,v 1.3 1995-02-08 19:49:15 stautler Exp $
+#   $Id: yMakefile,v 1.4 1995-02-08 20:19:50 haley Exp $
 #
 #   Makefile for HLU Legend examples
 #
 
-<<<<<<< yMakefile
-NCGMS   =   lg01c.ncgm lg02c.ncgm lg03c.ncgm lg01f.ncgm lg02f.ncgm lg03f.ncgm
-
-=======
->>>>>>> 1.2
 PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
-<<<<<<< yMakefile
-SRCS        = lg01c.c lg02c.c lg03c.c lg01f.f lg02f.f lg03f.f
-=======
-SRCS        = lg01c.c lg02c.c lg03c.c
-OBJS        = lg01c.o lg02c.o lg03c.o
->>>>>>> 1.2
+SRCS        = lg01c.c lg02c.c lg03c.c lg01f.f lg02f.f lg03f.f \
+			lg01n.ncl lg02n.ncl lg03n.ncl
+OBJS        = lg01c.o lg02c.o lg03c.o lg01f.o lg02f.o lg03f.o 
 RES         = lg01.res lg02.res lg03.res
 EXFILES     = $(SRCS) $(RES)
 
@@ -28,14 +20,10 @@ HLUCExampleTarget(lg01c,lg01c.o)
 HLUCExampleTarget(lg02c,lg02c.o)
 HLUCExampleTarget(lg03c,lg03c.o)
 
-<<<<<<< yMakefile
 HLUFExampleTarget(lg01f,lg01f.o)
 HLUFExampleTarget(lg02f,lg02f.o)
 HLUFExampleTarget(lg03f,lg03f.o)
 
-CleanFilesTarget($(NCGMS))
-=======
 CleanFilesTarget($(OBJS))
->>>>>>> 1.2
 DependTarget($(SRCS))
 

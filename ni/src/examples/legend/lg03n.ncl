@@ -7,7 +7,7 @@
 ;                                                                      ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;/
 ;
-;      File:           lg03c.c
+;      File:           lg03n.ncl
 ;
 ;      Author:         Ed Stautler
 ;			National Center for Atmospheric Research

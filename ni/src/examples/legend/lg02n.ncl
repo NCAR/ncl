@@ -7,7 +7,7 @@
 ;                                                                      ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;/
 ;
-;      File:           lg02c.c
+;      File:           lg02n.ncl
 ;
 ;      Author:         Ed Stautler
 ;			National Center for Atmospheric Research
