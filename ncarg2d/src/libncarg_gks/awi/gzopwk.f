@@ -1,5 +1,5 @@
 C
-C	$Id: gzopwk.f,v 1.8 2003-01-06 23:26:55 fred Exp $
+C	$Id: gzopwk.f,v 1.9 2003-02-26 23:58:14 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -81,6 +81,19 @@ C
             RETURN
           ENDIF
    30   CONTINUE
+      ENDIF
+C
+C  Only one PDF workstation currently allowed.
+C
+      IF (WTYPE.EQ.GPDFP .OR. WTYPE.EQ.GPDFL) THEN
+        DO 50 I=1,NOPWK
+          IF (SWKTP(I).EQ.GPDFP .OR. SWKTP(I).EQ.GPDFL) THEN
+            ERS = 1
+            CALL GERHND(-353,EOPWK,ERF)
+            ERS = 0
+            RETURN
+          ENDIF
+   50   CONTINUE
       ENDIF
 C
 C  Make sure that WISS is not already open if the workstation

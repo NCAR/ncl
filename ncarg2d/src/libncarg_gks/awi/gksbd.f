@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.22 2003-01-06 23:26:54 fred Exp $
+C	$Id: gksbd.f,v 1.23 2003-02-26 23:58:13 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -249,7 +249,7 @@ C
      +             -214, -215, -216, -300, -301, -302, -303, -217,
      +             -218, -219, -220, -221, 2200, 2201, 2202, 2203,
      +             2204,   90, -113, -400, -401, -402, -403, -404,
-     +             -405, -406, -350, -351, -352/
+     +             -405, -406, -350, -351, -352, -353/
 C  Error 1
       DATA ERMSGS(  1)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN STAT
      +E GKCL'/
@@ -587,6 +587,9 @@ C  Error -351
 C  Error -352
       DATA ERMSGS(133)/' --PDF warning: requested character not availab
      +le, asterisk plotted, use Plotchar'/
+C  Error -353
+      DATA ERMSGS(134)/' -- Only one PDF workstation can be open at a ti
+     +me'/
 C
       DATA GNAM(001),GNAM(002),GNAM(003)/'GOPKS' ,'GCLKS' ,'GOPWK' /
       DATA GNAM(004),GNAM(005),GNAM(006)/'GCLWK' ,'GACWK' ,'GDAWK' /
