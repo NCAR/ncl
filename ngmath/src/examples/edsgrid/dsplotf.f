@@ -359,13 +359,35 @@ C
       END
       REAL FUNCTION DSRAND()
 C
-      DATA ISEED/1/
-      SAVE ISEED
+C  This function returns a pseudo-random number for each invocation.
+C  It is a FORTRAN 77 adaptation of the "Integer Version 2" minimal
+C  standard number generator whose Pascal code appears in the article:
 C
-      ISEED = ISEED*1103515245 + 12345
-      IT = IAND(ISHIFT(ISEED,-16),32767)
+C     Park, Steven K. and Miller, Keith W., "Random Number Generators:
+C     Good Ones are Hard to Find", Communications of the ACM,
+C     October, 1988.
 C
-      DSRAND = REAL(IT)/32767.
+      DATA JSEED,IFRST/123456789,0/
+      PARAMETER (MPLIER=16807,MODLUS=2147483647,MOBYMP=127773,
+     +           MOMDMP=2836)
+C
+      INTEGER HVLUE, LVLUE, TESTV, NEXTN
+      SAVE    NEXTN
+C
+      IF (IFRST .EQ. 0) THEN
+        NEXTN = JSEED
+        IFRST = 1
+      ENDIF
+C
+      HVLUE = NEXTN / MOBYMP
+      LVLUE = MOD(NEXTN, MOBYMP)
+      TESTV = MPLIER*LVLUE - MOMDMP*HVLUE
+      IF (TESTV .GT. 0) THEN
+        NEXTN = TESTV
+      ELSE
+        NEXTN = TESTV + MODLUS
+      ENDIF
+      DSRAND = REAL(NEXTN)/REAL(MODLUS)
 C
       RETURN
       END
