@@ -1,5 +1,5 @@
 /*
- *	$Id: raster.c,v 1.4 1991-12-02 23:58:03 don Exp $
+ *	$Id: raster.c,v 1.5 1991-12-17 16:07:16 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -23,6 +23,9 @@
  *		basic operations on the Raster data
  *		structure.
  *		
+ */
+/*
+ *	BOGUS comment to test CVS
  */
 #include <stdio.h>
 #include <string.h>
