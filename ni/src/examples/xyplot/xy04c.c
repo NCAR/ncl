@@ -1,5 +1,5 @@
 /*
-**      $Id: xy04c.c,v 1.7 1995-03-17 20:56:41 haley Exp $
+**      $Id: xy04c.c,v 1.8 1995-03-23 16:31:22 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -37,6 +37,7 @@
 #include <ncarg/hlu/ResList.h>
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/XWorkstation.h>
+#include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
 
@@ -56,6 +57,7 @@ main()
     int     rlist;
     int     i, j;
     float   theta;
+    int NCGM=0;
 /*
  * Initialize data for the XyPlot object.
  */
@@ -71,17 +73,33 @@ main()
     NhlInitialize();
     rlist = NhlRLCreate(NhlSETRL);
 /*
- * Create Application and XWorkstation objects.  The Application
- * object name is used to determine the name of the resource file,
- * which is "xy04.res" in this case.
+ * Create Application object.  The Application object name is used to
+ * determine the name of the resource file, which is "xy04.res" in
+ * this case.
  */
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"xy04",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
-    NhlCreate(&xworkid,"xy04Work",NhlxWorkstationLayerClass,
-              NhlDEFAULT_APP,0);
+    if (NCGM) {
+/*
+ * Create a meta file object.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkMetaName,"./xy04c.ncgm");
+        NhlCreate(&xworkid,"xy04Work",NhlncgmWorkstationLayerClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else {
+/*
+ * Create an XWorkstation object.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlCreate(&xworkid,"xy04Work",NhlxWorkstationLayerClass,
+                  NhlDEFAULT_APP,rlist);
+    }
 /*
  * Define the "CoordArrays" object.  Since only the Y values are
  * specified here, each Y value will be paired with its integer

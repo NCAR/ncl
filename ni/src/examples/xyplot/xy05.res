@@ -1,3 +1,11 @@
+!
+! XyPlot resources
+!
+xy05.xy05Work.xyPlot.trYMinF:                100.
+xy05.xy05Work.xyPlot.xyYStyle:               IRREGULAR
+!
+! XyDataSpec resources
+!
 xy05.xy05Work.xyPlot.xyData1.xyLineColor:    1
 xy05.xy05Work.xyPlot.xyData2.xyLineColor:    30
 xy05.xy05Work.xyPlot.xyData3.xyLineColor:    50
@@ -10,5 +18,3 @@ xy05.xy05Work.xyPlot.xyData2.xyMarkLineMode: MARKLINES
 xy05.xy05Work.xyPlot.xyData3.xyMarkLineMode: MARKERS
 xy05.xy05Work.xyPlot.xyData2.xyMarkerSizeF:  0.008
 xy05.xy05Work.xyPlot.xyData3.xyMarkerSizeF:  0.024
-xy05.xy05Work.xyPlot.trYMinF:                100.
-xy05.xy05Work.xyPlot.xyYStyle:               IRREGULAR

@@ -1,5 +1,5 @@
 C
-C      $Id: xy02f.f,v 1.7 1995-03-17 20:56:36 haley Exp $
+C      $Id: xy02f.f,v 1.8 1995-03-23 16:31:17 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -26,6 +26,7 @@ C                  The "CoordArrays" object is used to set up the data.
 C
       external nhlfapplayerclass
       external nhlfxworkstationlayerclass
+      external nhlfncgmworkstationlayerclass
       external nhlfxyplotlayerclass
       external nhlfcoordarrayslayerclass
 C
@@ -37,6 +38,11 @@ C
       integer appid,xworkid,plotid,dataid
       integer rlist, i
       real   ydra(NPTS), theta
+      integer NCGM
+C
+C Default is to an X workstation.
+C
+      NCGM=0
 C
 C Initialize some data for the XyPlot object.
 C
@@ -50,17 +56,32 @@ C
       call nhlfinitialize
       call nhlfrlcreate(rlist,'setrl')
 C
-C Create Application and XWorkstation objects.  The Application object
-C name is used to determine the name of the resource file, which is
-C "xy02.res" in this case.
+C Create Application object.  The Application object name is used to
+C determine the name of the resource file, which is "xy02.res" in
+C this case.
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
       call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
       call nhlfcreate(appid,'xy02',nhlfapplayerclass,0,rlist,ierr)
 
-      call nhlfcreate(xworkid,'xy02Work',nhlfxworkstationlayerclass,
-     +                0,0,ierr)
+      if (NCGM.eq.1) then
+C
+C Create an NCGM workstation.
+C
+         call nhlfrlclear(rlist)
+         call nhlfrlsetstring(rlist,'wkMetaName','./xy02f.ncgm',ierr)
+         call nhlfcreate(xworkid,'xy02Work',
+     +        nhlfncgmworkstationlayerclass,0,rlist,ierr)
+      else
+C
+C Create an xworkstation object.
+C
+         call nhlfrlclear(rlist)
+         call nhlfrlsetstring(rlist,'wkPause','True',ierr)
+         call nhlfcreate(xworkid,'xy02Work',nhlfxworkstationlayerclass,
+     +        0,rlist,ierr)
+      endif
 C
 C Define the data object.  Since only the Y values are specified here,
 C each Y value will be paired with its integer array index.  The id

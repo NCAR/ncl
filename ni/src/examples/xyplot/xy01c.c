@@ -1,5 +1,5 @@
 /*
-**      $Id: xy01c.c,v 1.10 1995-03-17 20:56:31 haley Exp $
+**      $Id: xy01c.c,v 1.11 1995-03-23 16:31:13 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -34,6 +34,7 @@
 #include <ncarg/hlu/ResList.h>
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/XWorkstation.h>
+#include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
 
@@ -49,6 +50,7 @@ main()
     int     rlist;
     int     i;
     float   ydra[NPTS], theta;
+    int NCGM=0;
 /*
  * Initialize some data for the XY plot.
  */
@@ -62,17 +64,33 @@ main()
     NhlInitialize();
     rlist = NhlRLCreate(NhlSETRL);
 /*
- * Create Application and XWorkstation objects.  The Application object
- * name is used to determine the name of the resource file, which is
- * "xy01.res" in this case.
+ * Create Application object.  The Application object name is used to
+ * determine the name of the resource file, which is "xy01.res" in
+ * this case.
  */
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"xy01",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
-    NhlCreate(&xworkid,"xy01Work",NhlxWorkstationLayerClass,
-              NhlDEFAULT_APP,0);
+    if (NCGM) {
+/*
+ * Create a meta file object.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkMetaName,"./xy01c.ncgm");
+        NhlCreate(&xworkid,"xy01Work",NhlncgmWorkstationLayerClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else {
+/*
+ * Create an XWorkstation object.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlCreate(&xworkid,"xy01Work",NhlxWorkstationLayerClass,
+                  NhlDEFAULT_APP,rlist);
+    }       
 /*
  * Define the data object.  Since only the Y values are specified here,
  * each Y value will be paired with its integer array index.  The id

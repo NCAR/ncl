@@ -1,5 +1,5 @@
 C     
-C      $Id: xy04f.f,v 1.6 1995-03-17 20:56:41 haley Exp $
+C      $Id: xy04f.f,v 1.7 1995-03-23 16:31:23 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -31,6 +31,7 @@ C                  dash patterns, and line label colors.
 C
       external nhlfapplayerclass
       external nhlfxworkstationlayerclass
+      external nhlfncgmworkstationlayerclass
       external nhlfcoordarrayslayerclass
       external nhlfxyplotlayerclass
 C
@@ -43,6 +44,11 @@ C
       integer rlist, i, j, len(2)
       real ydra(NPTS,NCURVE), theta
       data len/NPTS,NCURVE/
+      integer NCGM
+C
+C Default is to an X workstation.
+C
+      NCGM=0
 C
 C Initialize data for the XyPlot object.
 C
@@ -58,17 +64,32 @@ C
       call nhlfinitialize
       call nhlfrlcreate(rlist,'setrl')
 C
-C Create Application and XWorkstation objects.  The Application
-C object name is used to determine the name of the resource file,
-C which is "xy04.res" in this case.
+C Create Application object.  The Application object name is used to
+C determine the name of the resource file, which is "xy04.res" in
+C this case.
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
       call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
       call nhlfcreate(appid,'xy04',nhlfapplayerclass,0,rlist,ierr)
 
-      call nhlfcreate(xworkid,'xy04Work',nhlfxworkstationlayerclass,
-     +                0,0,ierr)
+      if (NCGM.eq.1) then
+C
+C Create an NCGM workstation.
+C
+         call nhlfrlclear(rlist)
+         call nhlfrlsetstring(rlist,'wkMetaName','./xy04f.ncgm',ierr)
+         call nhlfcreate(xworkid,'xy04Work',
+     +        nhlfncgmworkstationlayerclass,0,rlist,ierr)
+      else
+C
+C Create an xworkstation object.
+C
+         call nhlfrlclear(rlist)
+         call nhlfrlsetstring(rlist,'wkPause','True',ierr)
+         call nhlfcreate(xworkid,'xy04Work',nhlfxworkstationlayerclass,
+     +                0,rlist,ierr)
+      endif
 C
 C Define the data object.  The id for this object will later be used
 C as the value for the XYPlot data resource, 'xyCoordData'.

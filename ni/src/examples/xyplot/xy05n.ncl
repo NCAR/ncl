@@ -1,5 +1,5 @@
 ;
-;      $Id: xy05n.ncl,v 1.5 1995-03-01 22:10:44 haley Exp $
+;      $Id: xy05n.ncl,v 1.6 1995-03-23 16:31:28 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -91,16 +91,35 @@ assignexp(exp_vals,10)
 assigndata(ydra,npts,ncurve)
 
 ;
-; Create Application and XWorkstation objects.  The Application
-; object name is used to determine the name of the resource file,
-; which is "xy05.res" in this case.
+; Create Application object.  The Application object name is used to
+; determine the name of the resource file, which is "xy05.res" in this
+; case.
 ; 
 appid = create "xy05" appLayerClass defaultapp
     "appDefaultParent" : "True"
     "appUsrDir" : "./"
 end create
 
-xworkid = create "xy05Work" xWorkstationLayerClass defaultapp end create
+;
+; Default is to display output to an X workstation
+;
+NCGM=0
+
+if (NCGM .eq. 1) then
+;
+; Create an ncgmWorkstation object.
+;
+  xworkwid = create "xy05Work" ncgmWorkstationLayerClass defaultapp
+      "wkMetaName" : "xy05n.ncgm"
+  end create
+else
+;
+; Create an XWorkstation object.
+;
+  xworkid = create "xy05Work" xWorkstationLayerClass defaultapp
+      "wkPause" : "True"
+  end create
+end if
 
 ;
 ; Define the Data objects.  Since only the Y values are specified here,

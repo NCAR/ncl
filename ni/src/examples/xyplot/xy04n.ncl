@@ -1,5 +1,5 @@
 ;
-;      $Id: xy04n.ncl,v 1.5 1995-03-17 20:56:43 haley Exp $
+;      $Id: xy04n.ncl,v 1.6 1995-03-23 16:31:24 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -65,16 +65,35 @@ ydra = new((/ncurve,npts/), float)
 assigndata(ydra,ncurve,npts)
 
 ;
-; Create Application and XWorkstation objects.  The Application
-; object name is used to determine the name of the resource file,
-; which is "xy04.res" in this case.
+; Create Application object.  The Application object name is used to
+; determine the name of the resource file, which is "xy04.res" in this
+; case.
 ; 
 appid = create "xy04" appLayerClass defaultapp 
     "appDefaultParent" : "True"
     "appUsrDir" : "./"
 end create
 
-xworkid = create "xy04Work" xWorkstationLayerClass defaultapp end create
+;
+; Default is to display output to an X workstation
+;
+NCGM=0
+
+if (NCGM .eq. 1) then
+;
+; Create an ncgmWorkstation object.
+;
+  xworkwid = create "xy04Work" ncgmWorkstationLayerClass defaultapp
+      "wkMetaName" : "xy04n.ncgm"
+  end create
+else
+;
+; Create an XWorkstation object.
+;
+  xworkid = create "xy04Work" xWorkstationLayerClass defaultapp
+      "wkPause" : "True"
+  end create
+end if
 
 ;
 ; Define the data object.  The id for this object will later be used

@@ -1,5 +1,5 @@
 /*
-**      $Id: xy03c.c,v 1.9 1995-03-17 20:56:38 haley Exp $
+**      $Id: xy03c.c,v 1.10 1995-03-23 16:31:19 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -34,6 +34,7 @@
 #include <ncarg/hlu/ResList.h>
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/XWorkstation.h>
+#include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
 
@@ -49,6 +50,7 @@ main()
     int     rlist;
     int     i;
     float   xdra[NPTS],ydra[NPTS], theta;
+    int NCGM=0;
 /*
  * Initialize some data for the XyPlot object.
  */
@@ -63,17 +65,33 @@ main()
     NhlInitialize();
     rlist = NhlRLCreate(NhlSETRL);
 /*
- * Create Application and XWorkstation objects.  The Application object
- * name is used to determine the name of the resource file, which is
- * "xy03.res" in this case.
+ * Create Application object.  The Application object name is used to
+ * determine the name of the resource file, which is "xy03.res" in
+ * this case.
  */
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"xy03",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
-    NhlCreate(&xworkid,"xy03Work",NhlxWorkstationLayerClass,
-               NhlDEFAULT_APP,0);
+    if (NCGM) {
+/*
+ * Create a meta file object.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkMetaName,"./xy03c.ncgm");
+        NhlCreate(&xworkid,"xy03Work",NhlncgmWorkstationLayerClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else {
+/*
+ * Create an XWorkstation object.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlCreate(&xworkid,"xy03Work",NhlxWorkstationLayerClass,
+                  NhlDEFAULT_APP,rlist);
+    }
 /*
  * Define the data object.  The id for this object will later be used
  * as the value for the XyPlot data resource, "xyCoordData".

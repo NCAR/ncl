@@ -1,5 +1,5 @@
 /*
-**      $Id: xy05c.c,v 1.7 1995-03-01 18:37:43 haley Exp $
+**      $Id: xy05c.c,v 1.8 1995-03-23 16:31:26 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -38,6 +38,7 @@
 #include <ncarg/hlu/ResList.h>
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/XWorkstation.h>
+#include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
 
@@ -55,6 +56,7 @@ main()
     float   theta;
     float   explicit_values[10];
     char    datastr[11];
+    int NCGM=0;
 /*
  * Initialize some data for the XyPlot object.
  */
@@ -82,16 +84,33 @@ main()
     NhlInitialize();
     rlist = NhlRLCreate(NhlSETRL);
 /*
- * Create Application and XWorkstation objects.  The Application
- * object name is used to determine the name of the resource file,
- * which is "xy05.res" in this case.
+ * Create Application object.  The Application object name is used to
+ * determine the name of the resource file, which is "xy05.res" in
+ * this case.
  */
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"xy05",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
-    NhlCreate(&xworkid,"xy05Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,0);
+    if (NCGM) {
+/*
+ * Create a meta file object.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkMetaName,"./xy05c.ncgm");
+        NhlCreate(&xworkid,"xy05Work",NhlncgmWorkstationLayerClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else {
+/*
+ * Create an XWorkstation object.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlCreate(&xworkid,"xy05Work",NhlxWorkstationLayerClass,
+                  NhlDEFAULT_APP,rlist);
+    }
 /*
  * Define the Data objects.  Since only the Y values are specified here,
  * each Y value will be paired with its integer array index.  The array of
@@ -105,13 +124,12 @@ main()
         NhlCreate(&dataid[i],datastr,NhlcoordArraysLayerClass,
                   NhlDEFAULT_APP,rlist);
     }
-
 /*
  * This array of Data objects is now the resource value for
  * xyCoordData.  Tweak some more XYPlot resources in the resource file
  * An XyDataSpec object gets created by XyPlot internally to deal
  * with each DataItem that is in the xyCoordData resource.  So,
- * you can set Data Specific resources using the name of each data
+ * you can set XyDataSpec resources using the name of each data
  * item that you add.  See the resource file ("xy05.res").
  */
     NhlRLClear(rlist);
@@ -119,16 +137,15 @@ main()
     NhlRLSetFloatArray(rlist,NhlNxyYIrregularPoints,explicit_values,
                     NhlNumber(explicit_values));
     NhlCreate(&plotid,"xyPlot",NhlxyPlotLayerClass,xworkid,rlist);
-
 /*
  * Draw the plot (to its parent X Workstation)
  */
     NhlDraw(plotid);
     NhlFrame(xworkid);
-
 /*
  * NhlDestroy destroys the given id and all of its children
- * so destroying "appid will destroy "xworkid" which will also destroy "plotid".
+ * so destroying "appid will destroy "xworkid" which will also destroy
+ * "plotid".
  */
     NhlRLDestroy(rlist);
     NhlDestroy(appid);
