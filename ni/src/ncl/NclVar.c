@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.20 1996-04-02 00:35:13 ethan Exp $
+ *      $Id: NclVar.c,v 1.21 1996-04-10 18:03:41 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1131,178 +1131,182 @@ NclSelectionRecord *sel_ptr;
 * if sel_ptr is set n_entries == n_dims of thevalue field
 */
 	thevalue = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
-
-	if(sel_ptr == NULL) {
-		if(value->multidval.n_dims == thevalue->multidval.n_dims){
-			for(i = 0; i< thevalue->multidval.n_dims;i++) {
-				if(value->multidval.dim_sizes[i] != 
-					thevalue->multidval.dim_sizes[i]) {
-					
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension sizes of left hand side and right hand side of assignment do not match");
-					return(NhlFATAL);
-				}
-			}
-			if(thevalue->multidval.missing_value.has_missing ) {
 /*
-* _NclCoerceData is used regardless of the type since the missing value must 
-* also be set Therefore is the types are different two things get done at once.
-* If the types are the same then only the missing value is set. The Coerce 
-* functions are be smart enough to compare missing values to see if they are 
-* equal if they are and the types are equal then value is returned unchanged. 
-* if value is TEMPORARY and the types are equal then _NclResetMissingValue
-* is used by the coerce functions.
+* When id's are equal a write screws things up
 */
+	if(thevalue->obj.id != value->obj.id) {
+		if(sel_ptr == NULL) {
+			if(value->multidval.n_dims == thevalue->multidval.n_dims){
+				for(i = 0; i< thevalue->multidval.n_dims;i++) {
+					if(value->multidval.dim_sizes[i] != 
+						thevalue->multidval.dim_sizes[i]) {
+						
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension sizes of left hand side and right hand side of assignment do not match");
+						return(NhlFATAL);
+					}
+				}
+				if(thevalue->multidval.missing_value.has_missing ) {
+	/*
+	* _NclCoerceData is used regardless of the type since the missing value must 
+	* also be set Therefore is the types are different two things get done at once.
+	* If the types are the same then only the missing value is set. The Coerce 
+	* functions are be smart enough to compare missing values to see if they are 
+	* equal if they are and the types are equal then value is returned unchanged. 
+	* if value is TEMPORARY and the types are equal then _NclResetMissingValue
+	* is used by the coerce functions.
+	*/
+						tmp_md = _NclCoerceData(value,
+							thevalue->multidval.type->type_class.type,
+							&thevalue->multidval.missing_value.value); 
+						if(tmp_md==NULL) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mismatch, right hand side can't be coerced to type of left hand side");
+							return(NhlFATAL);
+						}
+				} else if(value->multidval.missing_value.has_missing) {
+	/*
+	* Only input value has missing values. In this situation a missing value 
+	* attribute must be created and inserted into the attlist.
+	*/
+					if(value->multidval.type->type_class.type != thevalue->multidval.type->type_class.type) {
+						tmp_md = _NclCoerceData(value,
+							thevalue->multidval.type->type_class.type,
+							NULL);
+						if(tmp_md == NULL) {	
+							return(NhlFATAL);
+						}
+					} else {
+						tmp_md = value;
+					}
+					
+	/*
+	* Need to create permanent storage hence the malloc
+	*/
+					missing_ptr = (NclScalar*)NclMalloc((unsigned)	
+							sizeof(NclScalar));
+					*missing_ptr = tmp_md->multidval.missing_value.value;
+					miss_dim_sizes[0] = 1;
+					
+					attvalue = _NclCreateMultiDVal(
+						NULL,
+						thevalue->obj.class_ptr,
+						thevalue->obj.obj_type,
+						0,
+						(void*)missing_ptr,
+						NULL,
+						1,
+						miss_dim_sizes,
+						PERMANENT,
+						NULL,
+						thevalue->multidval.type);
+					if(self_var->var.att_id == -1) {
+						self_var->var.att_id =
+							_NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)self_var);
+					}
+					_NclAddAtt(self_var->var.att_id,NCL_MISSING_VALUE_ATT,attvalue,NULL);
+				} else  {
+	/*
+	* Case where neither have missing values
+	*/
+					if(value->multidval.type->type_class.type != thevalue->multidval.type->type_class.type) {
+
+						tmp_md = _NclCoerceData(value,
+							thevalue->multidval.type->type_class.type,
+							NULL);
+						if(tmp_md == NULL) {	
+							return(NhlFATAL);
+						}
+					} else {
+						tmp_md = value;
+					}
+				} 
+	/*
+	* By changing this field to permanent the calling env will not destroy it
+	*/
+				if(!_NclSetStatus((NclObj)tmp_md,PERMANENT) ) {
+	/*
+	* this is ok since value is destroyed by calling env when value is STATIC.
+	* Note that if tmp_md came from _NclCoerceData it will not hit this branch
+	* so no memory is lost. The only way tmp_md can be PERMANENT or STATIC is
+	* if it came in from the calling env. Therefore no pointer is actually lost. 
+	*/
+					tmp_md1 = _NclCopyVal(tmp_md,NULL);
+					_NclSetStatus((NclObj)tmp_md1,PERMANENT);
+					tmp_md = tmp_md1;
+				}
+	/*
+	* Since whole sale replacement of thevalue occurs, it is the responsiblity
+	* of this function to free the old storage
+	*
+	* BOGUS CODE ALERT----> switching to id's instead of pointers makes this a
+	* no-no
+	*/
+
+				_NclDelParent((NclObj)thevalue,(NclObj)self);
+				_NclAddParent((NclObj)tmp_md,(NclObj)self);
+				self->var.thevalue_id = tmp_md->obj.id;
+				return(NhlNOERROR);
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions on right hand side do not match number of dimension in left hand side");
+				return(NhlFATAL);
+			}
+
+		} else {
+			if(sel_ptr->n_entries == thevalue->multidval.n_dims) {
+				if(value->multidval.type->type_class.type != thevalue->multidval.type->type_class.type) {
+	/*
+	* Don't care about the missing values here because the _subsection function 
+	* handles differences in missing values
+	*/
 					tmp_md = _NclCoerceData(value,
 						thevalue->multidval.type->type_class.type,
-						&thevalue->multidval.missing_value.value); 
+						NULL);
 					if(tmp_md==NULL) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mismatch, right hand side can't be coerced to type of left hand side");
 						return(NhlFATAL);
 					}
-			} else if(value->multidval.missing_value.has_missing) {
-/*
-* Only input value has missing values. In this situation a missing value 
-* attribute must be created and inserted into the attlist.
-*/
-				if(value->multidval.type->type_class.type != thevalue->multidval.type->type_class.type) {
-					tmp_md = _NclCoerceData(value,
-						thevalue->multidval.type->type_class.type,
-						NULL);
-					if(tmp_md == NULL) {	
-						return(NhlFATAL);
-					}
 				} else {
+	/*
+	* Handle missing value diffs here
+	*/
 					tmp_md = value;
 				}
-				
-/*
-* Need to create permanent storage hence the malloc
-*/
-				missing_ptr = (NclScalar*)NclMalloc((unsigned)	
-						sizeof(NclScalar));
-				*missing_ptr = tmp_md->multidval.missing_value.value;
-				miss_dim_sizes[0] = 1;
-				
-				attvalue = _NclCreateMultiDVal(
-					NULL,
-					thevalue->obj.class_ptr,
-					thevalue->obj.obj_type,
-					0,
-					(void*)missing_ptr,
-					NULL,
-					1,
-					miss_dim_sizes,
-					PERMANENT,
-					NULL,
-					thevalue->multidval.type);
-				if(self_var->var.att_id == -1) {
-					self_var->var.att_id =
-						_NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)self_var);
+	/*
+	* Number of subscripts is already guarenteed to be the same in Execute
+	* _subsection function handle the differences in missing values so no need 
+	* to have Coerce convert it before this call
+	*/
+				ret = _NclWriteSubSection((NclData)thevalue,sel_ptr,(NclData)tmp_md);
+				if((tmp_md != value)&&(tmp_md->obj.status != PERMANENT)) {
+					_NclDestroyObj((NclObj)tmp_md);
 				}
-				_NclAddAtt(self_var->var.att_id,NCL_MISSING_VALUE_ATT,attvalue,NULL);
-			} else  {
-/*
-* Case where neither have missing values
-*/
-				if(value->multidval.type->type_class.type != thevalue->multidval.type->type_class.type) {
 
+				return(ret);
+			} else if( value->multidval.kind == SCALAR) {
+				if(value->multidval.type->type_class.type != thevalue->multidval.type->type_class.type) {
+	/*
+	* Don't care about the missing values here because the _subsection function 
+	* handles differences in missing values
+	*/
 					tmp_md = _NclCoerceData(value,
 						thevalue->multidval.type->type_class.type,
 						NULL);
-					if(tmp_md == NULL) {	
+					if(tmp_md==NULL) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mismatch, right hand side can't be coerced to type of left hand side");
 						return(NhlFATAL);
 					}
 				} else {
+	/*
+	* Handle missing value diffs here
+	*/
 					tmp_md = value;
 				}
+				_NclWriteSubSection((NclData)thevalue, sel_ptr, (NclData)tmp_md);
+				return(ret);
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions on right hand side do not match number of dimension in left hand side");
+				return(NhlFATAL);
 			} 
-/*
-* By changing this field to permanent the calling env will not destroy it
-*/
-			if(!_NclSetStatus((NclObj)tmp_md,PERMANENT) ) {
-/*
-* this is ok since value is destroyed by calling env when value is STATIC.
-* Note that if tmp_md came from _NclCoerceData it will not hit this branch
-* so no memory is lost. The only way tmp_md can be PERMANENT or STATIC is
-* if it came in from the calling env. Therefore no pointer is actually lost. 
-*/
-				tmp_md1 = _NclCopyVal(tmp_md,NULL);
-				_NclSetStatus((NclObj)tmp_md1,PERMANENT);
-				tmp_md = tmp_md1;
-			}
-/*
-* Since whole sale replacement of thevalue occurs, it is the responsiblity
-* of this function to free the old storage
-*
-* BOGUS CODE ALERT----> switching to id's instead of pointers makes this a
-* no-no
-*/
-
-			_NclDelParent((NclObj)thevalue,(NclObj)self);
-			_NclAddParent((NclObj)tmp_md,(NclObj)self);
-			self->var.thevalue_id = tmp_md->obj.id;
-			return(NhlNOERROR);
-		} else {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions on right hand side do not match number of dimension in left hand side");
-			return(NhlFATAL);
 		}
-
-	} else {
-		if(sel_ptr->n_entries == thevalue->multidval.n_dims) {
-			if(value->multidval.type->type_class.type != thevalue->multidval.type->type_class.type) {
-/*
-* Don't care about the missing values here because the _subsection function 
-* handles differences in missing values
-*/
-				tmp_md = _NclCoerceData(value,
-					thevalue->multidval.type->type_class.type,
-					NULL);
-				if(tmp_md==NULL) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mismatch, right hand side can't be coerced to type of left hand side");
-					return(NhlFATAL);
-				}
-			} else {
-/*
-* Handle missing value diffs here
-*/
-				tmp_md = value;
-			}
-/*
-* Number of subscripts is already guarenteed to be the same in Execute
-* _subsection function handle the differences in missing values so no need 
-* to have Coerce convert it before this call
-*/
-			ret = _NclWriteSubSection((NclData)thevalue,sel_ptr,(NclData)tmp_md);
-			if((tmp_md != value)&&(tmp_md->obj.status != PERMANENT)) {
-				_NclDestroyObj((NclObj)tmp_md);
-			}
-
-			return(ret);
-		} else if( value->multidval.kind == SCALAR) {
-			if(value->multidval.type->type_class.type != thevalue->multidval.type->type_class.type) {
-/*
-* Don't care about the missing values here because the _subsection function 
-* handles differences in missing values
-*/
-				tmp_md = _NclCoerceData(value,
-					thevalue->multidval.type->type_class.type,
-					NULL);
-				if(tmp_md==NULL) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mismatch, right hand side can't be coerced to type of left hand side");
-					return(NhlFATAL);
-				}
-			} else {
-/*
-* Handle missing value diffs here
-*/
-				tmp_md = value;
-			}
-			_NclWriteSubSection((NclData)thevalue, sel_ptr, (NclData)tmp_md);
-			return(ret);
-		} else {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions on right hand side do not match number of dimension in left hand side");
-			return(NhlFATAL);
-		} 
 	}
 }
 static struct _NclVarRec *VarReadCoord
@@ -1680,50 +1684,52 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 	if((lhs_md == NULL)||(rhs_md == NULL) ) {
 		return(NhlFATAL);
 	}
-
-	if((lhs->obj.id == rhs->obj.id)||(lhs->var.thevalue_id == rhs->var.thevalue_id)) {
 /*
-* Situation where left and right hand side share same value or are identical. A situation where
-* they could have different id's but share the same value is when a global and a function parameter
-* reference the same data value.
+* Unless the following is true nothing needs to be done
 */
-		rhs_md = _NclVarValueRead(rhs,rhs_sel_ptr,NULL);
-		if(rhs_md == NULL) {
-			return(NhlFATAL);
-		}
+	if((lhs->obj.id !=rhs->obj.id)||(lhs->var.thevalue_id != rhs->var.thevalue_id)) {
+		if((lhs->obj.id == rhs->obj.id)||(lhs->var.thevalue_id == rhs->var.thevalue_id)) {
+	/*
+	* Situation where left and right hand side share same value or are identical. A situation where
+	* they could have different id's but share the same value is when a global and a function parameter
+	* reference the same data value.
+	*/
+			rhs_md = _NclVarValueRead(rhs,rhs_sel_ptr,NULL);
+			if(rhs_md == NULL) {
+				return(NhlFATAL);
+			}
 
-	
-		ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
+		
+			ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
 
-		if(rhs_md->obj.status != PERMANENT) {
-			_NclDestroyObj((NclObj)rhs_md);
-		}
-		if(ret < NhlWARNING) {
+			if(rhs_md->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)rhs_md);
+			}
+			if(ret < NhlWARNING) {
+				return(ret);
+			}
+			return(ret);
+		} else if((lhs_sel_ptr != NULL)&&(rhs_sel_ptr != NULL)) {
+			_NclReadThenWriteSubSection((NclData)lhs_md, lhs_sel_ptr, (NclData)rhs_md, rhs_sel_ptr);
+
+		} else if(rhs_sel_ptr == NULL) {
+			ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
+			if(ret < NhlWARNING){
+				return(ret);
+			} 
+			return(ret);
+		} else {
+	/*
+	* lhs_sel_ptr == NULL &&  rhs_sel_ptr != NULL
+	*/
+			rhs_md = _NclVarValueRead(rhs,rhs_sel_ptr,NULL);
+
+			ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
+			if(ret < NhlWARNING) {
+				return(ret);
+			}
 			return(ret);
 		}
-		return(ret);
-	} else if((lhs_sel_ptr != NULL)&&(rhs_sel_ptr != NULL)) {
-		_NclReadThenWriteSubSection((NclData)lhs_md, lhs_sel_ptr, (NclData)rhs_md, rhs_sel_ptr);
-
-	} else if(rhs_sel_ptr == NULL) {
-		ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
-		if(ret < NhlWARNING){
-			return(ret);
-		} 
-		return(ret);
-	} else {
-/*
-* lhs_sel_ptr == NULL &&  rhs_sel_ptr != NULL
-*/
-		rhs_md = _NclVarValueRead(rhs,rhs_sel_ptr,NULL);
-
-		ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
-		if(ret < NhlWARNING) {
-			return(ret);
-		}
-		return(ret);
 	}
-
-	
 	return(NhlNOERROR);
 }
