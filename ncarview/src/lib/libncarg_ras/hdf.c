@@ -1,5 +1,5 @@
 /*
- *	$Id: hdf.c,v 1.14 1994-03-07 18:41:31 clyne Exp $
+ *	$Id: hdf.c,v 1.15 1994-10-12 19:17:13 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -43,7 +43,7 @@
 #include <ncarg/c.h>
 #include <hdf/dfgr.h>
 #include "ncarg_ras.h"
-#include "hdf.h"
+#include "hdfP.h"
 #include "options.h"
 
 #define	TMPFILE	"/hdf.XXXXXX"

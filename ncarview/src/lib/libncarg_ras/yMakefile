@@ -1,4 +1,4 @@
-#	$Id: yMakefile,v 1.43 1994-03-09 19:26:31 clyne Exp $
+#	$Id: yMakefile,v 1.44 1994-10-12 19:17:15 haley Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -123,29 +123,8 @@ BuildIncludes($(INCLUDES),ncarg,..)
 InstallTarget($(INCLUDES),$(INSTALL_INC),$(NCARGINCPATH))
 DependTarget($(SRCS))
 
-dither.o:	ncarg_ras.h
-error.o:	ncarg_ras.h error.h
-hdf.o:          ncarg_ras.h options.h Makefile
-misc.o:		ncarg_ras.h
-hdf.o:		ncarg_ras.h hdf.h
-nrif.o:		ncarg_ras.h nrif.h
-palette.o:	ncarg_ras.h
-raster.o:	ncarg_ras.h raster.h options.h devices.h Makefile
-sunraster.o:	ncarg_ras.h sunraster.h
-xwd.o:		ncarg_ras.h
-
-hppcl.o:	ncarg_ras.h hppcl.h
-cleartext.o:	ncarg_ras.h
-avsraster.o:	ncarg_ras.h avsraster.h
-ntsc.o:		ncarg_ras.h ntsc.h
-color.o:	ncarg_ras.h
-sgiraster.o:	ncarg_ras.h sgiraster.h
-binary.o:	ncarg_ras.h
-abekas.o:	ncarg_ras.h abekas.h
-netcdf.o:	ncarg_ras.h netcdflocal.h
-
-rasls.o:	ncarg_ras.h
-rascopy.o:	ncarg_ras.h
+hdf.o:      Makefile
+raster.o:	Makefile
 
 saber_src: $(SRCS)
 	#setopt load_flags $(CFLAGS)
@@ -161,3 +140,4 @@ test: rasls.o rascopy.o
 
 lint:
 	lint -I$(CINC) $(SRCS) 1> lint.out 2>&1
+
