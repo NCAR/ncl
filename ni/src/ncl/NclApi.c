@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.21 1995-06-03 00:45:23 ethan Exp $
+ *      $Id: NclApi.c,v 1.22 1995-06-07 21:31:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -180,6 +180,9 @@ int NclSubmitBlock1
 	*the_input_buffer_ptr = '\n';
 	the_input_buffer_ptr = the_input_buffer;
         the_input_buffer_size = script_size+1;
+	if(force_reset) {
+		_NclDeleteNewSymStack();
+	}
 #if     defined(SunOS) && (MAJOR == 4)
         state = nclparse((first||force_reset? 1: 0));
 #else
@@ -224,6 +227,10 @@ int NclSubmitBlock2
 	*the_input_buffer_ptr = '\n';
 	the_input_buffer_size = size +1;
 	the_input_buffer_ptr = the_input_buffer;
+	if(force_reset) {
+                _NclDeleteNewSymStack();
+        }
+
 #if     defined(SunOS) && (MAJOR == 4)
         state = nclparse((first||force_reset? 1: 0));
 #else
@@ -246,6 +253,11 @@ int NclSubmitCommand
 	int state;
 	the_input_buffer_ptr = the_input_buffer = command;
 	the_input_buffer_size = strlen(command);
+
+	if(force_reset) {
+                _NclDeleteNewSymStack();
+        }
+
 #if     defined(SunOS) && (MAJOR == 4)
         state = nclparse((first||force_reset? 1: 0));
 #else
