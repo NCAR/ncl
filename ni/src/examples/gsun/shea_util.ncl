@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.4 2003-05-06 20:05:25 haley Exp $
+;      $Id: shea_util.ncl,v 1.5 2003-09-14 02:07:30 shea Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -2138,5 +2138,54 @@ begin
   delete(newcoi)
 
   return(plot)
+end
+
+undef ("histX")
+function histX (x[*]:numeric)             ; 13 Sept 2003
+; create an x-axis that will form a coordinate pair with histY
+; the purpose is to create a curve that has histogram characteristics
+; MUST be used with "histY"
+local npt, N, N1, N2, N3, k, n, xNew
+begin
+  npt = dimsizes(x)   
+  N   = 2*npt        
+  N1  = N-1        
+  N2  = N-2       
+  N3  = N-3      
+
+  k         = 0 
+  xNew      = new ( N , float)
+  xNew(0)   = x(0)
+  do n=1,N3,2
+     k = k+1
+     xNew(n:n+1) = (x(k-1)+x(k))*0.5
+  end do
+  xNew(N1)  = x(npt-1)
+
+  return(xNew)
+end
+
+undef ("histY")
+function histY (y[*]:numeric)             ; 13 Sept 2003
+; create a y-axis that will form a coordinate pair with histX
+; the purpose is to create a curve that has histogram characteristics
+; MUST be used with "histX"
+local npt, N, N1, N2, N3, k, n, yNew
+begin
+  npt = dimsizes(y)
+  N   = 2*npt
+  N1  = N-1    
+  N2  = N-2   
+  N3  = N-3  
+
+  k         = -1
+  yNew      = new ( N , float)
+  do n=0,N2,2
+     k = k+1
+     yNew(n:n+1) = y(k)
+  end do
+  yNew(N1)   = y(npt-1)
+
+  return(yNew)
 end
 
