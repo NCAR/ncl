@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.28 1993-11-29 22:33:43 clyne Exp $
+ *	$Id: commands.c,v 1.29 1993-11-29 23:55:57 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -35,6 +35,7 @@ IcState	icState = {
 static	Directory	*Toc;
 static	short		loopAbort;
 static	short		doMemFile = FALSE;
+static	short		newFile = FALSE;
 
 
 static	CtransRC	plotit(frame)
@@ -224,17 +225,7 @@ int	iCFile(ic)
 	icState.stop_segment = CGM_NUM_FRAMES(toc);
 
 	
-	ctrc = init_metafile(0, CGM_FD(toc));
-	if (ctrc == FATAL) {
-		(void) CGM_termMetaEdit();
-		log_ct(FATAL);
-		Toc = NULL;
-		return(-1);
-	}
-	else if (ctrc == WARN) {
-		log_ct(WARN);
-	}
-		
+	newFile = TRUE;
 
 
 	/*
@@ -475,6 +466,21 @@ int	iCPlot(ic)
 	CtransRC	status = OK;
 
 	if (!Toc) return(-1);
+
+	if (newFile) {
+		ctrc = init_metafile(0, CGM_FD(Toc));
+		if (ctrc == FATAL) {
+			(void) CGM_termMetaEdit();
+			log_ct(FATAL);
+			Toc = NULL;
+			return(-1);
+		}
+		else if (ctrc == WARN) {
+			log_ct(WARN);
+			return(-1);
+		}
+		newFile = FALSE;
+	}
 
 	/*
 	 * put the device in graphics mode for plotting
@@ -1081,17 +1087,7 @@ int	iCDevice(ic)
 		return(-1);
 	}
 
-	ctrc = init_metafile(0, CGM_FD(Toc));
-	if (ctrc == FATAL) {
-		(void) CGM_termMetaEdit();
-		log_ct(FATAL);
-		Toc = NULL;
-		return(-1);
-	}
-	else if (ctrc == WARN) {
-		log_ct(WARN);
-	}
-
+	newFile = TRUE;
 
 	if (deviceName) free ((Voidptr) deviceName);
 	if ( !(deviceName = malloc((unsigned) (strlen ( s ) + 1)))) {
@@ -1425,17 +1421,7 @@ processMemoryCGM(ic, mem_file)
 	icState.stop_segment = CGM_NUM_FRAMES(toc);
 
 	
-	(void) init_metafile(0, CGM_FD(toc));
-	ctrc = init_metafile(0, CGM_FD(Toc));
-	if (ctrc == FATAL) {
-		(void) CGM_termMetaEdit();
-		log_ct(FATAL);
-		Toc = NULL;
-		return(-1);
-	}
-	else if (ctrc == WARN) {
-		log_ct(WARN);
-	}
+	newFile = TRUE;
 
 
 	(void) fprintf(fp, "%d frames\n", CGM_NUM_FRAMES(toc));
