@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.41 2000-08-22 15:11:38 haley Exp $
+ *	$Id: X11_class0.c,v 1.42 2001-09-26 20:53:20 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -635,7 +635,7 @@ CGMC *c;
 
 			/* press space or return for next frame	*/
 				if (len == 1 && (keybuffer[0] == ' '
-					|| keybuffer[0] == ''))
+					|| keybuffer[0] == 0x0D))
 				
 					return (status);
 				break;
@@ -859,7 +859,7 @@ CGMC *c;
 			 * press space or return for next frame
 			 */
 			if (len == 1 && (keybuffer[0] == ' '
-				|| keybuffer[0] == '')) {
+				|| keybuffer[0] == 0x0D)) {
 
 				loop = FALSE;
 			}
