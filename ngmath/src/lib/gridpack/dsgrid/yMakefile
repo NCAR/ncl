@@ -1,0 +1,16 @@
+#
+#       $Id: yMakefile,v 1.1 1997-08-05 23:15:57 fred Exp $
+#
+ 
+MYNAME  = dsgrid
+ 
+SOURCES = dsgrid3d.c dsgrid2d.c dsgrid3s.c dsgrid2s.c  dsuser.c  \
+	  dsusers.c  dsuserd.c  dssprtd.c  dssprts.c   dserror.c \
+	  dsuser_f.f
+ 
+OBJECTS = dsgrid3d.o dsgrid2d.o dsgrid3s.o dsgrid2s.o  dsuser.o  \
+	  dsusers.o  dsuserd.o  dssprtd.o  dssprts.o   dserror.o \
+	  dsuser_f.o
+ 
+PartialLibraryTarget(../libngmath.a,$(OBJECTS))
+DependTarget($(SOURCES))
