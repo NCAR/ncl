@@ -1,10 +1,12 @@
 #
-#	$Id: yMakefile,v 1.1 1994-05-13 14:28:58 haley Exp $
+#	$Id: yMakefile,v 1.2 1994-05-26 14:36:08 haley Exp $
 #
+
+CSRCS = c_fspponts.c
 
 SED_SRCS = c_spps.c
 
-GENERIC_SRCS = $(SED_SRCS)
+GENERIC_SRCS = $(CSRCS) $(SED_SRCS)
 
 InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 CleanFilesTarget($(SED_SRCS))
