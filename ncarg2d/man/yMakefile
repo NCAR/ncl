@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:30:19 ncargd Exp $
+#	$Id: yMakefile,v 1.2 1992-10-02 15:06:26 ncargd Exp $
 #
 NCARG	= ../..
 
@@ -47,7 +47,7 @@ preformatted:
 install::
 	@for name in $(MANS); do\
 	($(INSTALL) -m $(INSTALL_MAN) $$name.p \
-	$(MANDIR)/$$name.$(MAN_SECTION) );\
+	$(MANLPATH)/$$name.$(MANL_SECTION) );\
 	done
 
 #else
@@ -55,19 +55,19 @@ install::
 install::
 	@for name in $(MANS); do\
 	(sed \
-	-e 's@MACRO_SOURCE3@$(MANDIR)/ncargmac3.$(MAN_SECTION)@' \
-	-e 's@MACRO_SOURCE@$(MANDIR)/ncargmac.$(MAN_SECTION)@' \
-	<$$name.m >$$name.$(MAN_SECTION));\
+	-e 's@MACRO_SOURCE3@$(MANLPATH)/ncargmac3.$(MANL_SECTION)@' \
+	-e 's@MACRO_SOURCE@$(MANLPATH)/ncargmac.$(MANL_SECTION)@' \
+	<$$name.m >$$name.$(MANL_SECTION));\
 	done
 
 install::
 	@for name in $(MANS); do\
-	($(INSTALL) -m $(INSTALL_MAN) $$name.$(MAN_SECTION) $(MANDIR));\
+	($(INSTALL) -m $(INSTALL_MAN) $$name.$(MANL_SECTION) $(MANLPATH));\
 	done
 
 install::
 	@-for name in $(MANS); do\
-	($(RM) $$name.$(MAN_SECTION));\
+	($(RM) $$name.$(MANL_SECTION));\
 	done
 #endif
 
