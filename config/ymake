@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.29 1997-04-23 22:31:42 haley Exp $
+#	$Id: ymake,v 1.30 1997-08-22 16:01:46 haley Exp $
 #
 ######################################################################
 #
@@ -436,6 +436,10 @@ case    HP-UX:
         case    9000/7*:
                 set model = `echo $mach | cut -c7-8`
                 set arch = HP9k7$model
+                breaksw
+        case    9000/8*:
+                set model = `echo $mach | cut -c7-8`
+                set arch = HP9k8$model
                 breaksw
         default:
                 echo "$0 : Unknown machine type" > /dev/tty
