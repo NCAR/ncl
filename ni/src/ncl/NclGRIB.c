@@ -1,4 +1,8 @@
 #include <stdlib.h>
+#include <errno.h>
+#include <stdio.h>
+#include <dirent.h>
+#include <math.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/Callbacks.h>
@@ -11,7 +15,27 @@
 #include "date.h"
 #include "NclGRIB.h"
 #include "tables.h"
-#include <math.h>
+#include "cptec_254_gtb.h"
+#include "dwd_002_gtb.h"
+#include "dwd_201_gtb.h"
+#include "dwd_202_gtb.h"
+#include "dwd_203_gtb.h"
+#include "ecmwf_128_gtb.h"
+#include "ecmwf_129_gtb.h"
+#include "ecmwf_130_gtb.h"
+#include "ecmwf_131_gtb.h"
+#include "ecmwf_140_gtb.h"
+#include "ecmwf_150_gtb.h"
+#include "ecmwf_160_gtb.h"
+#include "ecmwf_170_gtb.h"
+#include "ecmwf_180_gtb.h"
+#include "ncep_opn_gtb.h"
+#include "ncep_reanal_gtb.h"
+#include "omb_gtb.h"
+#include "fsl0_gtb.h"
+#include "fsl1_gtb.h"
+#include "fsl2_gtb.h"
+#include "fnmoc_gtb.h"
 
 #define NCL_GRIB_CACHE_SIZE  150
 
@@ -22,6 +46,8 @@ extern GridGDSInfoRecord grid_gds[];
 extern int grid_tbl_len;
 extern int grid_gds_tbl_len;
 static void  *vbuf;
+static PtableInfo *Ptables = NULL;
+
 extern void GribPushAtt(
 #if NhlNeedProto
 GribAttInqRecList **att_list_ptr,char* name,void *val,int dimsize,NclObjClass type
@@ -313,6 +339,30 @@ int natts;
 
 }
 
+static void _GribFreeGribRec
+#if	NhlNeedProto
+(GribRecordInqRec *grib_rec)
+#else
+(grib_rec)
+GribRecordInqRec *grib_rec;
+#endif
+{
+	if(grib_rec->var_name != NULL) {
+		NclFree(grib_rec->var_name);
+	}
+	if(grib_rec->gds != NULL) {
+		NclFree(grib_rec->gds);
+	}
+	if(grib_rec->pds != NULL) {
+		NclFree(grib_rec->pds);
+	}
+	if(grib_rec->the_dat != NULL) {
+		_NclDestroyObj((NclObj)grib_rec->the_dat);
+	}
+	NclFree(grib_rec);
+}
+
+
 static void _GribFreeParamRec0
 #if	NhlNeedProto
 (GribParamList * vstep)
@@ -332,16 +382,7 @@ GribParamList * vstep;
 		list = vstep->thelist;
 		for(i= 0; i< vstep->n_entries; i++) {
 			if(list->rec_inq != NULL) {
-				if(list->rec_inq->var_name != NULL) {
-					NclFree(list->rec_inq->var_name);
-				}
-				if(list->rec_inq->gds != NULL) {
-					NclFree(list->rec_inq->gds);
-				}
-				if(list->rec_inq->the_dat != NULL) {
-					_NclDestroyObj((NclObj)list->rec_inq->the_dat);
-				}
-				NclFree(list->rec_inq);
+				_GribFreeGribRec(list->rec_inq);
 			}
 			tlist = list;
 			list = list->next;
@@ -390,16 +431,7 @@ GribParamList * vstep;
 		}
 		for(i= 0; i< vstep->n_entries; i++) {
 			if(vstep->thelist[i].rec_inq != NULL) {
-				if(vstep->thelist[i].rec_inq->var_name != NULL) {
-					NclFree(vstep->thelist[i].rec_inq->var_name);
-				}
-				if(vstep->thelist[i].rec_inq->gds != NULL) {
-					NclFree(vstep->thelist[i].rec_inq->gds);
-				}
-				if(vstep->thelist[i].rec_inq->the_dat != NULL) {
-					_NclDestroyObj((NclObj)vstep->thelist[i].rec_inq->the_dat);
-				}
-				NclFree(vstep->thelist[i].rec_inq);
+				_GribFreeGribRec(vstep->thelist[i].rec_inq);
 			}
 		}
 		if(vstep->forecast_time != NULL) {
@@ -571,8 +603,12 @@ int** lv_vals1;
 			tmp = strt->next;
                         strt->next = strt->next->next;
 			thevar->n_entries--;
+/*
+ * dib note 2002-12-13: doesn't free the_dat -- why not??
+ */
 			if(tmp->rec_inq->var_name != NULL) NclFree(tmp->rec_inq->var_name);
 			if(tmp->rec_inq->gds != NULL) NclFree(tmp->rec_inq->gds);
+			if(tmp->rec_inq->pds != NULL) NclFree(tmp->rec_inq->pds);
                         NclFree(tmp->rec_inq);
                         NclFree(tmp);
 
@@ -919,7 +955,6 @@ GribFileRecord *therec;
 	GribParamList *step = NULL;
 	NclQuark *tmp_string = NULL;
 	int *tmp_int = NULL;
-	TBLE2 *the_param = NULL;
 	int tmp_dimsizes = 1;
 	GribRecordInqRec *grib_rec = NULL;
 	GribAttInqRecList *att_list_ptr= NULL;
@@ -932,7 +967,6 @@ GribFileRecord *therec;
 	step = therec->var_list;
 	
 	while(step != NULL) {
-		the_param = NULL;
 /*
 * Handle long_name, units, center, sub_center, model and _FillValue
 */	
@@ -940,42 +974,6 @@ GribFileRecord *therec;
 			if(step->thelist[i].rec_inq != NULL) {
 				grib_rec = step->thelist[i].rec_inq;
 				break;
-			}
-		}
-		if(grib_rec->param_tbl_index != -1) {
-			if(grib_rec->param_number < 128) {
-				the_param = &(params[grib_rec->param_tbl_index]);
-			} else {
-				switch((int)grib_rec->pds[4]) {
-					case 98:
-						the_param = &(params_ecmwf[grib_rec->param_tbl_index]);
-						break;
-					case 59:
-						the_param = &(params_fsl[grib_rec->param_tbl_index]);
-						break;
-					case 7:
-						switch((int)grib_rec->pds[5]){
-						case 96:
-							the_param = &(params_nwsnmc[grib_rec->param_tbl_index]);
-							break;
-						case 180:
-							the_param = &(params_nmcreanal[grib_rec->param_tbl_index]);
-							break;
-						default:
-							the_param = &(params_nmcreanal[grib_rec->param_tbl_index]);
-		
-							break;
-						}
-						break;
-				        case 8:
-					case 9:
-						the_param = &(params_nmcreanal[grib_rec->param_tbl_index]);
-						break;
-					default:
-						NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unlocatable parameter number (%d) from center (%d), extension of NclGRIB required",grib_rec->param_number,(int)grib_rec->pds[4]);
-						break;
-	
-				}
 			}
 		}
 
@@ -1117,7 +1115,7 @@ GribFileRecord *therec;
 		step->theatts = att_list_ptr;
 		step->n_atts++;
 		
-		if(the_param!=NULL) {
+		if(grib_rec->ptable_rec !=NULL) {
 /*
 * units
 */
@@ -1126,7 +1124,7 @@ GribFileRecord *therec;
 			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
 			att_list_ptr->att_inq->name = NrmStringToQuark("units");
 			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-			*tmp_string = NrmStringToQuark(the_param->units);		
+			*tmp_string = NrmStringToQuark(grib_rec->ptable_rec->units);		
 			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
 			step->theatts = att_list_ptr;
 			step->n_atts++;
@@ -1138,7 +1136,7 @@ GribFileRecord *therec;
 			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
 			att_list_ptr->att_inq->name = NrmStringToQuark("long_name");
 			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-			*tmp_string = NrmStringToQuark(the_param->long_name);		
+			*tmp_string = NrmStringToQuark(grib_rec->ptable_rec->long_name);		
 			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
 			step->theatts = att_list_ptr;
 			step->n_atts++;
@@ -3064,10 +3062,14 @@ unsigned char *offset;
 		case 114:
 		case 115:
 		case 116:
-		case 117:
 		case 118:
 		case 123:
 		case 124:
+			return 0;
+			break;
+		case 117:
+			return((int)offset[0]);
+			break;
 		default:
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown or unsupported time range indicator detected, continuing");
 			return(-1);
@@ -3204,7 +3206,7 @@ static GribRecordInqRec* _MakeMissingRec
 
 	grib_rec->var_name_q = -1;
 	grib_rec->param_number = -1;
-	grib_rec->param_tbl_index = -1;
+	grib_rec->ptable_rec = NULL;
 	grib_rec->grid_number = -1;
 	grib_rec->grid_tbl_index = -1;
 	grib_rec->grid_gds_tbl_index = -1;
@@ -3217,6 +3219,8 @@ static GribRecordInqRec* _MakeMissingRec
 	grib_rec->units_q = -1;
 	grib_rec->start = 0;
 	grib_rec->bds_off= 0;
+	grib_rec->pds = NULL;
+	grib_rec->pds_size = 0;
 	grib_rec->gds = NULL;
 	grib_rec->bds_size = 0;
 	grib_rec->has_gds= 0;
@@ -3400,6 +3404,284 @@ int unit_code;
 	return time_period;
 }
 
+static PtableInfo *InitParamTableInfo
+#if	NhlNeedProto
+(
+int center,
+int subcenter,
+int version,
+char *tablename
+)
+#else
+(center,subcenter,version,name)
+int center;
+int subcenter;
+int version;
+char *tablename;
+#endif
+{
+	PtableInfo *ptable = NhlMalloc(sizeof(PtableInfo));
+
+	if (ptable) {
+		ptable->table = NclMalloc(256 * sizeof(TBLE2));
+	}
+	if (! ptable || ! ptable->table) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NULL;
+	}
+	ptable->pcount = 0;
+	ptable->center = center;
+	ptable->subcenter = subcenter;
+	ptable->version = version;
+	ptable->name = tablename;
+
+	return ptable;
+}
+
+#define EATSPACE(cp) if (cp) {while (isspace(*(cp))) {(cp)++;}}
+#define EATSPACE_REV(cp) if (cp) {while (isspace(*(cp))) {(cp)--;}}
+#define TOKENSTART(cp) if ((cp) && *(cp)) {(cp) = strstr((cp),sepstr); if (cp) (cp) += seplen; EATSPACE(cp)}
+#define TOKENEND(cp) if (*(cp)) {char *endcp = strstr((cp),sepstr); if (endcp) (cp) = endcp-1; \
+				else cp = (cp)+strlen(cp)-1; EATSPACE_REV(cp)}
+
+		
+static PtableInfo *AddPtable
+#if	NhlNeedProto
+(
+PtableInfo *ptables,
+FILE *fp,
+char *name
+)
+#else
+(ptables,fp,name)
+PtableInfo *ptables;
+FILE *fp;
+char *name;
+#endif
+{
+	char buf[512];
+	int center = -1 ,subcenter = -1 ,version = -1;
+	int index;
+	char *cp,*lcp;
+	char sepstr[3] = "";
+	int seplen;
+	int len;
+	char *tablename = NULL;
+	TBLE2 *param;
+	char *abrev, *units, *long_name;
+	PtableInfo *ptable = NULL;
+	int i;
+	int table_count = 0;
+	
+	while (fgets(buf,510,fp)) {
+		cp = buf;
+		EATSPACE(cp);
+		if (*cp == '!')
+			continue;
+		index = strtol(cp,&lcp,10);
+		if (lcp == cp)
+			continue;
+		cp = lcp;
+
+		/*
+		 * Look for a separator string: it's either a single non-space, non-alphanumeric character; or
+		 * it's at least two space characters in a row.
+		 */
+		  
+		if (! sepstr[0]) { 
+			EATSPACE(cp);
+			if (! isalnum(*cp)) {
+				sepstr[0] = *cp;
+				sepstr[1] = '\0';
+				seplen = 1;
+			}
+			else if (cp - lcp > 1) {
+				sepstr[0] = ' ';
+				sepstr[1] = ' ';
+				sepstr[2] = '\0';
+				seplen = 2;
+			}
+			else { /* no sepstr : this is not a valid parameter table */
+				return ptables;
+			}
+			cp = lcp;
+		}
+		if (index <= 0) {
+			TOKENSTART(cp);
+			if (cp)
+				center =  strtol(cp,&cp,10);
+			TOKENSTART(cp);
+			if (cp)
+				subcenter =  strtol(cp,&cp,10);
+			TOKENSTART(cp);
+			if (cp)
+				version =  strtol(cp,&cp,10);
+			TOKENSTART(cp);
+			if (cp) {
+				lcp = cp;
+				TOKENEND(lcp);
+				len = lcp - cp + 1;
+				if (len > 0) {
+					tablename = NclMalloc(len + 1);
+					strncpy(tablename,cp,len);
+					tablename[len] = '\0';
+				}
+				cp = lcp + 1;
+			}
+			else {
+				/* use the base filename for the tablename */
+				if (table_count) {
+					char buf[10];
+					sprintf(buf,"_%d",table_count);
+					tablename = NclMalloc(strlen(name)+strlen(buf)+1);
+					sprintf(tablename,"%s%s",name,buf);
+				}
+				else {
+					tablename = NclMalloc(strlen(name)+1);
+					strcpy(tablename,name);
+				}				
+			}
+			table_count++;
+			/*
+			 * we have a new table: if this file contains several,
+			 * wrap up the previous one and initalize the new one
+			 */
+			if (ptable) {
+				ptable->next = ptables;
+				ptables = ptable;
+				ptable->table = NclRealloc(ptable->table, ptable->pcount * sizeof(TBLE2));
+			}
+			ptable = InitParamTableInfo(center,subcenter,version,tablename);
+			if (! ptable)
+				return (ptables);
+			continue;
+		}
+		param = &(ptable->table[ptable->pcount++]);
+		param->num = index;
+		TOKENSTART(cp);
+		if (cp) {
+			lcp = cp;
+			TOKENEND(lcp);
+			len = lcp - cp + 1;
+			abrev = NclMalloc(len + 1);
+			strncpy(abrev,cp,len);
+			abrev[len] = '\0';
+			cp = lcp + 1;
+			param->abrev = abrev;
+		}
+		TOKENSTART(cp);
+		if (cp) {
+			lcp = cp;
+			TOKENEND(lcp);
+			len = lcp - cp + 1;
+			units = NclMalloc(len + 1);
+			strncpy(units,cp,len);
+			units[len] = '\0';
+			cp = lcp + 1;
+			param->units = units;
+		}
+		TOKENSTART(cp);
+		if (cp) {
+			lcp = cp;
+			TOKENEND(lcp);
+			len = lcp - cp + 1;
+			long_name = NclMalloc(len + 1);
+			strncpy(long_name,cp,len);
+			long_name[len] = '\0';
+			cp = lcp + 1;
+			param->long_name = long_name;
+		}
+	}
+	if (ptable) {
+		ptable->next = ptables;
+		ptables = ptable;
+		ptable->table = NclRealloc(ptable->table, ptable->pcount * sizeof(TBLE2));
+	}
+	return ptables;
+	
+}
+		
+
+static void InitPtables
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	char *path;
+	DIR *d;
+	FILE *fp = NULL;
+	PtableInfo *ptables = NULL;
+
+	struct dirent *ent;
+	char buffer[4*NCL_MAX_STRING];
+ 
+	path = getenv("NCL_GRIB_PTABLE_PATH");
+
+	if (! path)
+		return;
+		
+	d = opendir(_NGResolvePath(path));
+	if (! d && errno == ENOTDIR) {
+		fp = fopen(_NGResolvePath(path),"r");
+		if (!fp) 
+			return;
+	}
+	else if (! d) {
+		return;
+	}
+
+	if (fp) { /* getenv returned a filepath */
+		char *s = strrchr(path,'/');
+		char *e = strstr(path,".gtb");
+		if (! s)
+			s = path;
+		else
+			s++;
+		if (! e)
+			e = &(path[strlen(path)]);
+		strncpy(buffer,s,e-s);
+		buffer[e-s] = '\0';
+		ptables = AddPtable(ptables,fp,buffer);
+	}
+	else {
+		while((ent = readdir(d)) != NULL) {
+			char *e;
+			if ((&(ent->d_name[strlen(ent->d_name)]) - strstr(ent->d_name,".gtb")  != 4))
+				continue;
+			sprintf(buffer,"%s/%s",_NGResolvePath(path),ent->d_name);
+			fp = fopen(buffer,"r");
+			if (! fp)
+				continue;
+			e = strstr(ent->d_name,".gtb");
+			strncpy(buffer,ent->d_name,e-ent->d_name);
+			buffer[e-ent->d_name] = '\0';
+			ptables = AddPtable(ptables,fp,buffer);
+		}
+	}
+
+	Ptables = ptables;
+
+	if (0) {
+		/* debugging */
+		PtableInfo *ptable;
+		int i;
+		TBLE2 *param;
+
+		for (ptable = Ptables; ptable; ptable = ptable->next) {
+			printf("Table: %s, center: %d, subcenter %d, Ptable version: %d\n",
+			       ptable->name,ptable->center,ptable->subcenter,ptable->version);
+			for (i = 0; i < ptable->pcount; i++) {
+				param = &(ptable->table[i]);
+				printf("\t%d %s %s %s\n",param->num,param->abrev,param->units,param->long_name);
+			}
+		}
+	}
+
+	return;
+}
+
 
 static void *GribGetFileRec
 #if	NhlNeedProto
@@ -3436,7 +3718,12 @@ int wr_status;
 	int version;
 	int error_count = 0;
 	int rec_num = 0;
+	int subcenter, center, process,ptable_version;
 	NhlErrorTypes retvalue;
+
+	if (! Ptables) {
+		InitPtables();
+	}
 
 	if(wr_status <= 0) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Grib files are read only continuing but opening file as read only");
@@ -3453,6 +3740,7 @@ int wr_status;
 				done = 1;
 			} 
 			if((ret != GRIBERROR)&&(size != 0)) {
+				int tmp_size;
 				rec_num++;
 				grib_rec = NclMalloc((unsigned)sizeof(GribRecordInqRec));
 				grib_rec->rec_num = rec_num;
@@ -3461,15 +3749,27 @@ int wr_status;
 				grib_rec->version = version;
 				grib_rec->var_name = NULL;
 				fseek(fd,offset+(version?8:4),SEEK_SET);
-				fread((void*)grib_rec->pds,1,version?28:24,fd);
+				tmp_size = sizeof(buffer) < size ? sizeof(buffer) : size;
+				fread((void*)buffer,1,tmp_size,fd);
+				grib_rec->pds_size = CnvtToDecimal(3,&(buffer[0]));
+				grib_rec->pds =  NclMalloc((unsigned)grib_rec->pds_size);
+				if (grib_rec->pds_size > tmp_size) {
+					fread((void*)grib_rec->pds,1,grib_rec->pds_size,fd);
+				}
+				else {
+					memcpy(grib_rec->pds,buffer,grib_rec->pds_size);
+				}
 /*
 				fprintf(stdout,"Found: %d\n",(int)(int)grib_rec->pds[8]);
 */
-				grib_rec->the_dat = NULL;
 				grib_rec->has_gds = (grib_rec->pds[7] & (char)0200) ? 1 : 0;
 				grib_rec->has_bms = (grib_rec->pds[7] & (char)0100) ? 1 : 0;
 				grib_rec->param_number = (int)grib_rec->pds[8];
 				grib_rec->grid_number = (int)grib_rec->pds[6];
+				center = (int)grib_rec->pds[4];
+				subcenter = (int)grib_rec->pds[25];
+				process = (int)grib_rec->pds[5];
+				ptable_version = (int)grib_rec->pds[3];
 /*
 				grib_rec->grid_number = 255;
 */
@@ -3511,7 +3811,6 @@ int wr_status;
 
 				if(grib_rec != NULL) {
 					grib_rec->time_offset = 0;
-					grib_rec->pds_size = CnvtToDecimal(3,&(grib_rec->pds[0]));
 					if(grib_rec->has_gds) {
 						fseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size),SEEK_SET);
 						fread((void*)buffer,1,6,fd);
@@ -3585,101 +3884,169 @@ int wr_status;
 
 		
 				name_rec = NULL;	
-				if((grib_rec != NULL) &&(grib_rec->param_number < 128)) {	
-					for(i = 0; i < sizeof(params_index)/sizeof(int); i++) {
-						if(params_index[i] == grib_rec->param_number) {
-							name_rec = &(params[i]);
+				if (grib_rec != NULL) {
+					TBLE2 *ptable = NULL;
+					int ptable_count = 0;
+					switch(center) {
+					case 98:           /* ECMWF */
+						switch (ptable_version) {
+						case 128:
+							ptable = &ecmwf_128_params[0];
+							ptable_count = sizeof(ecmwf_128_params)/sizeof(TBLE2);
+							break;
+						case 129:
+							ptable = &ecmwf_129_params[0];
+							ptable_count = sizeof(ecmwf_129_params)/sizeof(TBLE2);
+							break;
+						case 130:
+							ptable = &ecmwf_130_params[0];
+							ptable_count = sizeof(ecmwf_130_params)/sizeof(TBLE2);
+							break;
+						case 131:
+							ptable = &ecmwf_131_params[0];
+							ptable_count = sizeof(ecmwf_131_params)/sizeof(TBLE2);
+							break;
+						case 140:
+							ptable = &ecmwf_140_params[0];
+							ptable_count = sizeof(ecmwf_140_params)/sizeof(TBLE2);
+							break;
+						case 150:
+							ptable = &ecmwf_150_params[0];
+							ptable_count = sizeof(ecmwf_150_params)/sizeof(TBLE2);
+							break;
+						case 160:
+							ptable = &ecmwf_160_params[0];
+							ptable_count = sizeof(ecmwf_160_params)/sizeof(TBLE2);
+							break;
+						case 170:
+							ptable = &ecmwf_170_params[0];
+							ptable_count = sizeof(ecmwf_170_params)/sizeof(TBLE2);
+							break;
+						case 180:
+							ptable = &ecmwf_180_params[0];
+							ptable_count = sizeof(ecmwf_180_params)/sizeof(TBLE2);
+							break;
+						}
+						break;
+					case 78: /* DWD */
+						switch (ptable_version) {
+						case 2:
+							ptable = &dwd_002_params[0];
+							ptable_count = sizeof(dwd_002_params)/sizeof(TBLE2);
+							break;
+						case 201:
+							ptable = &dwd_201_params[0];
+							ptable_count = sizeof(dwd_201_params)/sizeof(TBLE2);
+							break;
+						case 202:
+							ptable = &dwd_202_params[0];
+							ptable_count = sizeof(dwd_202_params)/sizeof(TBLE2);
+							break;
+						case 203:
+							ptable = &dwd_203_params[0];
+							ptable_count = sizeof(dwd_203_params)/sizeof(TBLE2);
+							break;
+						}
+						break;
+					case 59: /* FSL */
+						switch (subcenter) {
+						case 0: /* FSL: The NOAA Forecast Systems Laboratory, Boulder, CO, USA */
+							ptable = &fsl0_params[0];
+							ptable_count = sizeof(fsl0_params)/sizeof(TBLE2);
+							break;
+						case 1: /* RAPB: FSL/FRD Regional Analysis and Prediction Branch */
+							ptable = &fsl1_params[0];
+							ptable_count = sizeof(fsl1_params)/sizeof(TBLE2);
+							break;
+						case 2: /* LAPB: FSL/FRD Local Analysis and Prediction Branch */
+							ptable = &fsl2_params[0];
+							ptable_count = sizeof(fsl2_params)/sizeof(TBLE2);
+							break;
+						}
+						break;
+					case 58: /* FNMOC */
+						ptable = &fnmoc_params[0];
+						ptable_count = sizeof(fnmoc_params)/sizeof(TBLE2);
+						break;
+					case 46: /* CPTEC */
+						if (ptable_version == 254) {
+							ptable = &cptec_254_params[0];
+							ptable_count = sizeof(cptec_254_params)/sizeof(TBLE2);
+						}
+						break;
+					case 8:
+					case 9: /* NCEP reanalysis */
+						ptable = &ncep_reanal_params[0];
+						ptable_count = sizeof(ncep_reanal_params)/sizeof(TBLE2);
+						break;
+					case 7: /* NCEP */
+						switch (ptable_version) {
+						case 0:
+						case 1:
+						case 2:
+						case 3:
+							if (subcenter == 1) { 
+								/* reanalysis */
+								ptable = &ncep_reanal_params[0];
+								ptable_count = sizeof(ncep_reanal_params)/sizeof(TBLE2);
+							}
+							else if (subcenter != 0 || (process != 80 && process != 180) ||
+								 (ptable_version != 1 && ptable_version != 2)) {
+								/* operational */
+								ptable = &ncep_opn_params[0];
+								ptable_count = sizeof(ncep_opn_params)/sizeof(TBLE2);
+							}
+							else {
+								/* not able to tell -- default to operational */
+								ptable = &ncep_opn_params[0];
+								ptable_count = sizeof(ncep_opn_params)/sizeof(TBLE2);
+							}
+							break;
+						case 128: /* ocean modeling branch */
+							ptable = &omb_params[0];
+							ptable_count = sizeof(omb_params)/sizeof(TBLE2);
+							break;
+						}
+						break;
+					}
+					/*
+					 * if there are user-provided tables see if any match. (-1 matches anything)
+					 *
+					 */
+					if (Ptables) {
+						PtableInfo *pt;
+						for (pt = Ptables; pt != NULL; pt = pt->next) {
+							if (!((pt->center == -1 || pt->center == center) &&
+							      (pt->subcenter == -1 || pt->subcenter == subcenter) &&
+							      (pt->version == -1 || pt->version == ptable_version)))
+								continue;
+							ptable = pt->table;
+							ptable_count = pt->pcount;
 							break;
 						}
 					}
-					if( i ==  sizeof(params_index)/sizeof(int) ) {
+					if (ptable == NULL && ptable_version <= 3 && grib_rec->param_number < 128) {
+						/* 
+						 * if the ptable_version <= 3 and the parameter # is less than 128 then 
+						 * the NCEP operational table is the legitimate default; 
+						 */
+						ptable = &ncep_opn_params[0];
+						ptable_count = sizeof(ncep_opn_params)/sizeof(TBLE2);
+					}
+					for (i = 0; i < ptable_count; i++) {
+ 						if (ptable[i].num == grib_rec->param_number) {
+							name_rec = ptable + i;
+							break;
+						}
+					}
+					if (i == ptable_count) {
 						if(!_IsDef(therec,grib_rec->param_number)) {
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number,grib_rec->param_number);
 						}
 						i = -1;
-					} 
-				} else if(grib_rec != NULL) {
-					switch((int)grib_rec->pds[4]) {
-					case 98: 
-						for(i = 0; i < sizeof(params_ecmwf_index)/sizeof(int); i++) {
-							if(params_ecmwf_index[i] == grib_rec->param_number) {
-								name_rec = &(params_ecmwf[i]);
-								break;
-							}
-						}
-						if( i ==  sizeof(params_ecmwf_index)/sizeof(int) ) {
-							if(!_IsDef(therec,grib_rec->param_number)) {
-								NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number,grib_rec->param_number);
-							}
-							i = -1;
-						} 
-						break;
-					 case 59:
-						for(i = 0; i < sizeof(params_fsl_index)/sizeof(int); i++) {
-							if(params_fsl_index[i] == grib_rec->param_number) {
-								name_rec = &(params_fsl[i]);
-								break;
-							}
-						}
-						if( i ==  sizeof(params_fsl_index)/sizeof(int) ) {
-							if(!_IsDef(therec,grib_rec->param_number)) {
-								NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number,grib_rec->param_number);
-							}
-							i = -1;
-						} 
-						
-						break;
-					case 7:
-						switch((int)grib_rec->pds[5]) {
-						case 96:
-							for(i = 0; i < sizeof(params_nwsnmc_index)/sizeof(int); i++) {
-								if(params_nwsnmc_index[i] == grib_rec->param_number) {
-									name_rec = &(params_nwsnmc[i]);
-									break;
-								}
-							}
-							if( i ==  sizeof(params_nwsnmc_index)/sizeof(int) ) {
-								if(!_IsDef(therec,grib_rec->param_number)) {
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number,grib_rec->param_number);
-								}
-								i = -1;
-							} 
-						break;
-						case 180:
-						default:
-							for(i = 0; i < sizeof(params_nmcreanal_index)/sizeof(int); i++) {
-								if(params_nmcreanal_index[i] == grib_rec->param_number) {
-									name_rec = &(params_nmcreanal[i]);
-									break;
-								}
-							}
-							if( i ==  sizeof(params_nmcreanal_index)/sizeof(int) ) {
-								if(!_IsDef(therec,grib_rec->param_number)) {
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number,grib_rec->param_number);
-								}
-								i = -1;
-							} 
-						}
-						break;
-					case 8:
-					case 9:
-						for(i = 0; i < sizeof(params_nmcreanal_index)/sizeof(int); i++) {
-							if(params_nmcreanal_index[i] == grib_rec->param_number) {
-								name_rec = &(params_nmcreanal[i]);
-								break;
-							}
-						}
-						if( i ==  sizeof(params_nmcreanal_index)/sizeof(int) ) {
-							if(!_IsDef(therec,grib_rec->param_number)) {
-								NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number,grib_rec->param_number);
-							}
-							i = -1;
-						} 
-						break;
-					default:
-						NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unlocatable parameter number (%d) from center (%d), using default variable name (VAR_%d)",grib_rec->param_number,(int)grib_rec->pds[4],grib_rec->param_number);
 					}
 				}
+					
 				if((name_rec == NULL)&&(grib_rec!=NULL)) {
 					tmp_name_rec = NclMalloc(sizeof(TBLE2));
 					tmp_name_rec->abrev = NclMalloc(strlen("VAR_") + 4);
@@ -3689,10 +4056,17 @@ int wr_status;
 					tmp_name_rec->units= NclMalloc(strlen("unknown") + 1);
 					sprintf(tmp_name_rec->units,"unknown");
 					name_rec = tmp_name_rec;
+					i = -1;
 				}
 
 				if((name_rec != NULL)&&(grib_rec != NULL)){
-					grib_rec->param_tbl_index = i;
+					if (i < 0) {
+						grib_rec->ptable_rec = NULL;
+					}
+					else {
+						grib_rec->ptable_rec = name_rec;
+					}
+						
 					strcpy((char*)buffer,name_rec->abrev);
 					if((grib_rec->has_gds)&&(grib_rec->grid_number == 255)) {
 						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_GDS%d",grib_rec->gds_type);

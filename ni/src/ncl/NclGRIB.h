@@ -36,15 +36,21 @@ typedef struct ft_list {
 }FTLIST;
 
 typedef struct tble2 {
-        char *num;
+        int  num;
         char *long_name;
         char *units;
         char *abrev;
 }TBLE2;
 
-
-
-	
+typedef struct _ptableinfo {
+	struct _ptableinfo *next;
+	int center;
+	int subcenter;
+	int version;
+	char *name;
+	int pcount;
+	TBLE2 *table;
+} PtableInfo;
 
 #define GRIBEOF  0
 #define GRIBERROR -1
@@ -155,7 +161,7 @@ struct _GribAttInqRecList {
 struct _GribRecordInqRec {
 	NclQuark var_name_q;
 	int param_number;
-	int param_tbl_index;
+	TBLE2 *ptable_rec;
 	int grid_tbl_index;
 	int grid_number;
 	int version;
@@ -171,7 +177,7 @@ struct _GribRecordInqRec {
 	int level_indicator;
 	int level0;
 	int level1;
-	unsigned char pds[28];
+	unsigned char *pds;
 	int pds_size;
 	char *var_name;
 	NclQuark long_name_q;
