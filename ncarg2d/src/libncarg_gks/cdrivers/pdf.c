@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.13 2003-03-01 00:32:09 fred Exp $
+ *      $Id: pdf.c,v 1.14 2003-03-04 19:29:54 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -689,7 +689,7 @@ static void PDFinit(PDFddp *psa, int *coords)
   psa->path_size           = MAX_PATH;
   psa->line_join           = ROUND;
   psa->line_cap            = ROUNDED;
-  psa->nominal_width_scale = .5;
+  psa->nominal_width_scale = .75;
   psa->full_background     = FALSE;
   psa->suppress_flag       = SUPPRESS_FLAG;
   psa->miter_limit         = MITER_LIMIT_DEFAULT;
@@ -3253,7 +3253,7 @@ PDFEsc(GKSC *gksc)
   case -1516:  /* Linewidth scale */
     strng = strtok(sptr, " ");
     strng = strtok((char *) NULL, " ");
-    psa->nominal_width_scale = 0.5 * (float) atof(strng);
+    psa->nominal_width_scale = 1.0 * (float) atof(strng);
     break;
   case -1517:  /* Full background */
     strng = strtok(sptr, " ");

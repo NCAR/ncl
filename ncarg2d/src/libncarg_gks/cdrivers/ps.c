@@ -1,5 +1,5 @@
 /*
- *      $Id: ps.c,v 1.31 2003-02-28 19:53:02 fred Exp $
+ *      $Id: ps.c,v 1.32 2003-03-04 19:29:54 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1039,7 +1039,7 @@ static void PSinit(PSddp *psa, int *coords)
         psa->path_size = MAX_PATH;
         psa->line_join = ROUND;
         psa->line_cap = ROUNDED;
-        psa->nominal_width_scale = .5;
+        psa->nominal_width_scale = .75;
         psa->full_background = FALSE;
         psa->suppress_flag = SUPPRESS_FLAG;
         psa->miter_limit = MITER_LIMIT_DEFAULT;
