@@ -1,5 +1,5 @@
 C
-C	$Id: g01mio.f,v 1.3 1994-03-30 02:08:27 fred Exp $
+C	$Id: g01mio.f,v 1.4 1994-04-29 20:27:29 fred Exp $
 C
       SUBROUTINE G01MIO (OP, UNIT, FNAME, BUFFER, LENGTH, ERROR)
 C------------------------------------------------------------------------------
@@ -30,33 +30,33 @@ C	potential conflicts with user code writing to LU 6.
 C
 C------------------------------------------------------------------------------
 C
-C  CENTRAL I/O ROUTINE FOR METAFILE GENERATOR.
+C  Central I/O routine for NCAR GKS.
 C
 C    INPUT PARAMETERS
-C      OP     - OPERATION,
-C               =1, OPEN WORKSTATION FOR OUTPUT ON IABS(UNIT).
-C               =2, CLOSE WORKSTATION FOR OUTPUT ON IABS(UNIT).
-C               =3, WRITE BUFFER TO IABS(UNIT).
-C               =4, READ IABS(UNIT) TO BUFFER
-C               =5, POSITION THE RECORD POINTER TO THE BEGINNING
-C                   OF THE FILE.
-C               =6, POSITION THE RECORD POINTER TO THE PREVIOUS RECORD.
-C               =7, FLUSH THE I/O BUFFERS FOR UNIT
-C      UNIT   - IABS(UNIT) IS THE FORTRAN LUN ON WHICH OP IS
-C               TO OCCUR.
-C      FNAME  - FILENAME USED FOR OPEN.
-C      BUFFER - BUFFER CONTAINING DATA FOR A WRITE OPERATION.
-C      LENGTH - LENGTH OF DATA IN BUFFER.
+C      OP     - Operation:
+C                 = 1, open workstation for reading and writing on 
+C                      IABS(UNIT).
+C                 = 2, close workstation on IABS(UNIT).
+C                 = 3, write buffer to IABS(UNIT).
+C                 = 4, read IABS(UNIT) to buffer.
+C                 = 5, position the record pointer to the beginning
+C                      of the file.
+C                 = 6, position the record pointer to the previous 
+C                      record.
+C                 = 7, flush the I/O buffers for UNIT.
+C                 = 8, open workstation for reading only on IABS(UNIT).
+C      UNIT   - IABS(UNIT) is the Fortran LUN on which OP is to occur.
+C      FNAME  - filename used for open.
+C      BUFFER - buffer containing data for a read/write operation.
+C      LENGTH - length of data in BUFFER.
 C
 C    OUTPUT PARAMETERS
-C      ERROR  - ERROR INDICATOR, =    0 IF NO ERRORS.
-C                                =   -1 IF EOF
-C                                = -105 IF OPEN ERROR
-C                                =  302 IF READ ERROR
-C                                =  303 IF WRITE ERROR
+C      ERROR  - error indicator  =    0 if no errors.
+C                                =   -1 if EOF.
+C                                = -105 if open error.
+C                                =  302 if read error.
+C                                =  303 if write error.
 C
-C
-C  SUBROUTINE ARGUMENTS.
 C
       INTEGER  OP, UNIT, LENGTH, BUFFER(LENGTH), ERROR
       CHARACTER*(*) FNAME
@@ -73,9 +73,11 @@ C
       COMMON  /G01CHA/  MPNAME
       CHARACTER*80      MPNAME
 C
-C  LOCAL VARIABLES.
+C  Local variables:  IAUNIT is the Fortran LUN.
+C                    IRDWTF is a read/write flag (0 for read only; 
+C                           1 for read and write).
 C
-      INTEGER IAUNT
+      INTEGER IAUNT,IRDWTF
 C
 C
       ERROR = 0
@@ -85,7 +87,8 @@ C
 C Open the workstation with filename FNAME
 
       IF (OP.EQ.1) THEN
-	CALL OPNWKS(IAUNT, FNAME, ERROR)
+        IRDWTF = 1
+	CALL OPNWKS(IAUNT, IRDWTF, FNAME, ERROR)
 
 C Close the workstation attached to IAUNT
 
@@ -116,6 +119,10 @@ C Flush the I/O buffers for a given unit
 
       ELSE IF (OP.EQ.7) THEN
 	CALL FLSWKS(IAUNT, ERROR)
+
+      ELSE IF (OP.EQ.8) THEN
+        IRDWTF = 0
+	CALL OPNWKS(IAUNT, IRDWTF, FNAME, ERROR)
 
       ENDIF
 

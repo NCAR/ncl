@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c.sed,v 1.13 1994-04-14 16:55:17 haley Exp $
+ *      $Id: wks.c.sed,v 1.14 1994-04-29 20:27:33 fred Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -73,7 +73,7 @@
 *	Author:		Don Middleton
 *			NCAR Scientific Computing Division
 *
-*	Last Revised:	October 1991
+*	Last Revised:	April, 1994
 *
 ***********************************************************************/
 
@@ -133,13 +133,13 @@ static struct
 ************************************************************************/
 
 #ifdef cray
-opnwks_(unit, fname_, status)
+opnwks_(unit, rdwt, fname_, status)
 	_fcd	fname_;
 #else
-int	opnwks_(unit, fname, status)
+int	opnwks_(unit, rdwt, fname, status)
 	char	*fname;
 #endif
-	int	*status, *unit;
+	int	*unit, *rdwt, *status;
 {
 	int		i, pipes[2], stat;
 	char	*p;
@@ -326,22 +326,15 @@ int	opnwks_(unit, fname, status)
 	}
 	else {
 		/*
-		 * If file already exists  open it for reading/writing
-		 * If it does not exist create it and open it for
-		 * reading/writing. We can't use "w+" for all cases because
-		 * it truncates existing files. Similarly, opening a file
-		 * "r+" fails if the file does not exist
-		 * clyne@ncar Mon Apr 20 15:01:23 MDT 1992
+		 * Set the read/write mode of the file according to the
+		 * read/write flag argument.  Files to be written will
+		 * be truncated if they exist.
 		 */
-		if (access(mftab[*unit].name, F_OK) == 0 )  {
-			otype = "r+";	/* file exists	*/
+		if (*rdwt == 0)  {
+			otype = "r";
 		}
 		else {
 			otype = "w+";
-		}
-
-		if (!strcmp(mftab[*unit].name, "gmeta")) {
-			otype = "w+";	/* create the file	*/
 		}
 
 		mftab[*unit].fp = fopen(mftab[*unit].name, otype);

@@ -1,5 +1,5 @@
 C
-C	$Id: g01seg.f,v 1.3 1993-01-15 18:25:00 fred Exp $
+C	$Id: g01seg.f,v 1.4 1994-04-29 20:27:31 fred Exp $
 C
       SUBROUTINE G01SEG
 C
@@ -52,7 +52,7 @@ C  Open the segment for reading.
 C
       CALL GTNLEN(STR,ILEN,IER)
       STR(ILEN+1:ILEN+1) = CHAR(0)
-      CALL G01MIO(1, IFUNIT, STR(1:ILEN), IDUM1, IDUM2, IER)
+      CALL G01MIO(8, IFUNIT, STR(1:ILEN), IDUM1, IDUM2, IER)
       IF (IER .NE. 0) THEN
         RERR = -105
         GO TO 110

@@ -1,5 +1,5 @@
 C
-C	$Id: g01flb.f,v 1.2 1993-01-09 02:06:05 fred Exp $
+C	$Id: g01flb.f,v 1.3 1994-04-29 20:27:27 fred Exp $
 C
       SUBROUTINE G01FLB(GKSERR)
 C
@@ -24,7 +24,7 @@ C
       DATA FLAGS( 5),FLAGS( 6),FLAGS( 7),FLAGS( 8)/0,0,0,0/
       DATA FLAGS( 9),FLAGS(10),FLAGS(11),FLAGS(12)/0,0,0,0/
 C
-C  Define the, buffer reset point and clear the new frame flag.
+C  Define the buffer reset point and clear the new frame flag.
 C
       DATA BFREST,CLEAR/32,0/
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.8 1994-04-28 23:28:12 fred Exp $
+C	$Id: gesc.f,v 1.9 1994-04-29 20:26:39 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -206,7 +206,7 @@ C
         NAMET = ' '
         NAMET(1:ILEN) = IDR(1)(24:24+ILEN-1)
         NAMET(ILEN+1:ILEN+1) = CHAR(0)
-        CALL G01MIO(1, IFUNIT, NAMET(1:ILEN+1), IDUM1, IDUM2, IER)
+        CALL G01MIO(8, IFUNIT, NAMET(1:ILEN+1), IDUM1, IDUM2, IER)
         IF (IER .NE. 0) THEN
           RERR = -105
           GO TO 110

@@ -1,5 +1,5 @@
 C
-C	$Id: gzcpwk.f,v 1.3 1994-03-30 02:06:07 fred Exp $
+C	$Id: gzcpwk.f,v 1.4 1994-04-29 20:26:42 fred Exp $
 C
       SUBROUTINE GZCPWK(WKID)
 C
@@ -56,7 +56,7 @@ C
    10 CONTINUE
    20 CONTINUE
       STR(ILEN+1:ILEN+1) = CHAR(0)
-      CALL G01MIO(1, WCONID, STR(1:ILEN), IDUM1, IDUM2, IER)
+      CALL G01MIO(8, WCONID, STR(1:ILEN), IDUM1, IDUM2, IER)
       IF (IER .NE. 0) THEN
         RERR = -105
         RETURN
