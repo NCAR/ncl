@@ -1,0 +1,54 @@
+#!/bin/csh -f
+#
+#	ldrel:	A csh script written to serve as the BSD "ld -r"
+#		relocatable loader function on systems that don't
+#		have it.
+#
+
+if ($#argv < 1) then
+	echo "usage: ldrel [-r] -o outfile file1 file2 filen..."
+	exit 1
+endif
+
+while ($#argv > 0)
+	
+	switch ($1)
+
+		case "-r":
+			shift
+			breaksw
+
+		case "-o":
+			shift
+			if (! $?outfile) then
+				set outfile=$1
+			endif
+			shift
+			breaksw
+
+		case "-*":
+			echo "Invalid option <$1>"
+			exit 1
+			breaksw
+
+		default:
+			if ( ! $?inlist) then
+				set inlist = $1
+			else
+				set inlist = ($inlist $1)
+			endif
+			shift
+	endsw
+end
+
+if (! $?inlist) then
+	echo 'Error: No input files'
+	exit 1
+endif
+
+if (! $?outfile) then
+	echo 'Error: No output file specified'
+	exit 1
+endif
+
+/bin/cat $inlist >$outfile

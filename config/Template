@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.16 1994-03-08 17:40:19 haley Exp $
+ *      $Id: Template,v 1.17 1994-04-06 19:42:57 boote Exp $
  */
 /************************************************************************
 *									*
@@ -435,11 +435,7 @@ NGCOMM########################################################################
 #endif	/* LintCommand */
 
 #ifndef InstallCommand
-#ifndef	UseInstalled
-#define	InstallCommand	$(TOP)/utils/install -c
-#else	/* UseInstalled */
-#define	InstallCommand	install -c
-#endif	/* UseInstalled	*/
+#define	InstallCommand	$(CONFIG_DIR)/install -c
 #endif	/* InstallCommand */
 
 #ifndef	InstallRm

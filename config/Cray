@@ -1,5 +1,5 @@
 /*
- *      $Id: Cray,v 1.24 1994-03-31 01:05:43 boote Exp $
+ *      $Id: Cray,v 1.25 1994-04-06 19:42:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +26,7 @@
 #define	HdfDefines	-DUNICOS
 #define	StdDefines	-DSYSV -DUNICOS -DUSG
 #define FCompiler	cf77
-#define LdRelCommand	$(TOP)/utils/ldrel
+#define LdRelCommand	$(CONFIG_DIR)/ldrel
 #define	ArCommand	bld
 #define ArRegOpt        vr
 #define	FOptimizeFlag	-O 1
