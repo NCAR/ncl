@@ -607,7 +607,7 @@ C     DATA IMACH( 4) /          7 /
 C     DATA IMACH( 5) /         32 /     
 C     DATA IMACH( 6) /          4 /     
 C     DATA IMACH( 7) /          2 /     
-C     DATA IMACH( 8) /         32 /     
+C     DATA IMACH( 8) /         31 /     
 C     DATA IMACH( 9) / 2147483647 /     
 C     DATA IMACH(10) /          2 /     
 C     DATA IMACH(11) /         24 /     
