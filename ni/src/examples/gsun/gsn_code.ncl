@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.97 2002-10-23 15:10:31 haley Exp $
+;      $Id: gsn_code.ncl,v 1.98 2002-10-24 14:26:02 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4813,12 +4813,12 @@ begin
 ; function.
 ;
   if(compare)
-    var_string0 = systemfunc("echo hpolygons0$$")
-    var_string1 = systemfunc("echo hpolygons1$$")
+    var_string0 = unique_string("hpolygons0")
+    var_string1 = unique_string("hpolygons1")
     xy@$var_string0$ = polygons0
     xy@$var_string1$ = polygons1
   else
-    var_string = systemfunc("echo hpolygons$$")
+    var_string = unique_string("hpolygons")
     xy@$var_string$ = polygons
   end if
   return(xy)

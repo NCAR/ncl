@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.107 2002-10-12 13:36:32 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.108 2002-10-24 14:26:04 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2214,7 +2214,8 @@ begin
 ;
 ; Add polygon to XY plot.
 ;
-          var_string = systemfunc("echo fill_polygon$$") + npoly
+          var_string = unique_string("fill_polygon"+npoly)
+
           plot@$var_string$ = gsn_add_polygon(wks,plot, \
                                               polygon_x(0:npts2+2), \
                                               polygon_y(0:npts2+2),res)
@@ -7798,7 +7799,7 @@ begin
         if(dimsizes(yref_line_below).gt.1)
           fill_below = yref_line_below(i)
         end if
-        var_string = systemfunc("echo polygons$$") + i
+        var_string = unique_string("polygons"+i)
         xy_object@$var_string$=fill_xy_ref(wks,xy_object, \
                                      xinterp(i,0:new_npts(i)-1), \
                                      yinterp(i,0:new_npts(i)-1),\
@@ -7812,7 +7813,7 @@ begin
     if(yref_fill_on.and.bar_chart.and..not.bar_outline_only)
       gsres = True
       do i=0,ncurves-1 
-        var_string = systemfunc("echo polygons$$") + i
+        var_string = unique_string("polygons"+i)
 ;
 ; Fill above reference line.
 ;
@@ -7926,7 +7927,7 @@ begin
           gsres@gsLineColor = xref_line_color(i)
         end if
         xline = fspan(xref_line(i),xref_line(i),2)
-        var_string = systemfunc("echo xpolyline$$") + i
+        var_string = unique_string("xpolyline"+i)
         xy_object@$var_string$ = gsn_add_polyline(wks,xy_object,xline,yline, \
                                                   gsres)
       end do
@@ -7953,7 +7954,7 @@ begin
           gsres@gsLineColor = yref_line_color(i)
         end if
         yline = fspan(tofloat(yref_line(i)),tofloat(yref_line(i)),2)
-        var_string = systemfunc("echo ypolyline$$") + i
+        var_string = unique_string("ypolyline"+i)
 
         xy_object@$var_string$ = gsn_add_polyline(wks,xy_object,xline, \
                                                   yline,gsres)
