@@ -1497,7 +1497,7 @@ int	wr_status;
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An error occurred while indexing latitude data records. This file is not a valid CCM history file");
 						NclFree(therec);
 						fclose(fd);
-			NclFree(vbuf);
+						NclFree(vbuf);
 						return(NULL);
 					}
 					therec->lat_rec_offsets[i*tmp_iheader.NOREC+(index-1)] = coff;
@@ -1538,7 +1538,7 @@ int	wr_status;
 					NclFree(therec);
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM character header for file (%s)",NrmQuarkToString(path));
 					fclose(fd);
-			NclFree(vbuf);
+					NclFree(vbuf);
 					return(NULL);
 				}
 				cb = tmp_off / BLOCK_SIZE;
@@ -1580,7 +1580,7 @@ int	wr_status;
 					}
 					break;
 				}
-				if((i == time_var_size)||((i == time_var_size-1)&&(bogus_mfilth))) {
+				if((n_time == time_var_size)||((n_time == time_var_size-1)&&(bogus_mfilth))) {
 					time_var_size *=2;
 					time_var = (double*)NclRealloc(time_var,sizeof(double)*time_var_size);
 					date = (int*)NclRealloc(date,sizeof(int)*time_var_size);
@@ -1600,7 +1600,7 @@ int	wr_status;
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM character header for file (%s)",NrmQuarkToString(path));
 */
 					fclose(fd);
-			NclFree(vbuf);
+					NclFree(vbuf);
 					return(NULL);
 				}
 				cb = tmp_off / BLOCK_SIZE;
@@ -1610,7 +1610,7 @@ int	wr_status;
 					NclFree(therec);
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM real header for file (%s)",NrmQuarkToString(path));
 					fclose(fd);
-			NclFree(vbuf);
+					NclFree(vbuf);
 					return(NULL);
 				}
 				if(!CompareHeaders(&initial_iheader,&initial_cheader,&initial_rheader,
@@ -1618,7 +1618,7 @@ int	wr_status;
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Comparison of headers failed, headers for timestep number (%d) vary unacceptably from initial header, NCL doesn't handle this",i+1);
 					NclFree(therec);
 					fclose(fd);
-			NclFree(vbuf);
+					NclFree(vbuf);
 					return(NULL);
 
 				} else {
