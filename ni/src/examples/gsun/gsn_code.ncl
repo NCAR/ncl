@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.122 2003-12-08 20:46:26 haley Exp $
+;      $Id: gsn_code.ncl,v 1.123 2003-12-11 20:48:54 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -45,6 +45,8 @@ undef("tofloat")
 undef("tointeger")
 undef("stringtoxxx")
 undef("lower_case")
+undef("get_long_name_units_string")
+undef("copy_var_atts")
 undef("cat_strings")
 undef("get_resources")
 undef("set_attr")
@@ -399,6 +401,52 @@ begin
   return(charactertostring(namec))
 end
 
+
+;***********************************************************************;
+; Function : get_long_name_units_string                                 ;
+;            data : numeric                                             ;
+;                                                                       ;
+; This function checks if the long_name and units attributes exist, and ;
+; if so, constructs a string using them. A missing value is returned    ;
+; otherwise.                                                            ;
+;***********************************************************************;
+function get_long_name_units_string(data)
+begin
+  lu_string = new(1,string)
+  if(isatt(data,"long_name")) then
+    lu_string = data@long_name
+    if(isatt(data,"units").and.data@units.ne."") then
+      lu_string = lu_string + " (" + data@units + ")"
+    end if
+  end if
+  return(lu_string)
+end        
+
+;***********************************************************************;
+; Procedure : copy_var_atts                                             ;
+;               var_from                                                ;
+;               var_to                                                  ;
+;              att_names: string                                        ;
+; This is almost identical to D Shea's "copy_VarAtts" routine, except   ;
+; it allows you to specify which atts to copy.                          ;
+;***********************************************************************;
+procedure copy_var_atts(var_from,var_to,att_names)
+local i
+begin                                       
+  if(ismissing(att_names).or.att_names.eq."") then
+    att_names_copy = getvaratts(var_from)
+  else
+    att_names_copy = att_names
+  end if
+  if(.not.all(ismissing(att_names_copy)))
+    do i = 0,dimsizes(att_names_copy)-1
+      if (isatt(var_from,att_names_copy(i)).and.\
+          .not.isatt(var_to,att_names_copy(i))) then
+	 var_to@$att_names_copy(i)$ = var_from@$att_names_copy(i)$
+      end if
+    end do
+  end if
+end
 
 ;***********************************************************************;
 ; Function : cat_strings                                                ;
@@ -1715,6 +1763,7 @@ end
 ;               plot:graphic                                            ;
 ;           calldraw:logical                                            ;
 ;          callframe:logical                                            ;
+;            ispanel: logical                                           ;
 ;              maxbb:logical                                            ;
 ;                                                                       ;
 ; By default, all of the plotting routines will draw the plot and       ;
@@ -1725,19 +1774,21 @@ end
 ; or PDF window.                                                        ; 
 ;***********************************************************************;
 procedure draw_and_frame(wks:graphic,plot:graphic,calldraw:logical, \
-                         callframe:logical,maxbb:logical)
-local nplots, class, coords, dims
+                         callframe:logical,ispanel:logical,maxbb:logical)
+local nplots, class, coords 
 begin
   if(maxbb) then
 ;
-; If dealing with multiple plots on an NCGM or X11 window, then this
-; means we have a panel plot, and we don't need to maximize the space.
+; If dealing with panel plots, then this means that the viewport 
+; coordinates have already been calculated to maximize the plots in
+; the unit square, so we don't need to do it again here. However, we
+; will still need to calculate the optimal device  coordinates if the
+; output is PDF or PS.
 ;
-    dims = dimsizes(plot)
-    if(dimsizes(dims).eq.1 .and. dims(0).eq.1) then
+    if(.not.ispanel) then
 ;
-; First, optimize the plot size in the viewport. This may involve making
-; it bigger or smaller.
+; First, optimize the plot size in the viewport (unit square). This 
+; may involve making it bigger or smaller.
 ;
       coords = maximize_bb(plot,maxbb)
       setvalues plot
@@ -2909,7 +2960,7 @@ begin
         "txFuncCode" : res2@txFuncCode
       end create
       attsetvalues_check(txid(i),txres)       ; Set text resources.
-      draw_and_frame(wks,txid(i),calldraw,callframe,maxbb)
+      draw_and_frame(wks,txid(i),calldraw,callframe,0,maxbb)
     end do
   else
     do i=0,tlen-1
@@ -2919,7 +2970,7 @@ begin
         "txPosYF"  : y(i)
       end create
       attsetvalues_check(txid(i),txres)       ; Set text resources.
-      draw_and_frame(wks,txid(i),calldraw,callframe,maxbb)
+      draw_and_frame(wks,txid(i),calldraw,callframe,0,maxbb)
     end do
   end if
 
@@ -3017,7 +3068,7 @@ begin
         "txFuncCode" : res2@txFuncCode
       end create
       attsetvalues_check(txid(i),txres)            ; Set text resources.
-      draw_and_frame(wks,txid(i),calldraw,callframe,maxbb)
+      draw_and_frame(wks,txid(i),calldraw,callframe,0,maxbb)
     end do
   else 
     do i=0,tlen-1
@@ -3027,7 +3078,7 @@ begin
         "txPosYF"    : y2(i)
       end create
       attsetvalues_check(txid(i),txres)            ; Set text resources.
-      draw_and_frame(wks,txid(i),calldraw,callframe,maxbb)
+      draw_and_frame(wks,txid(i),calldraw,callframe,0,maxbb)
     end do
   end if
 end
@@ -3429,12 +3480,40 @@ begin
     print("than gsnPanelBottom ("+y_bot+").")
     exit
   end if
+
+;
+; We assume all plots are the same size, so if we get the size of
+; one of them, then this should represent the size of the rest
+; of them.  Also, count the number of non-missing plots for later.
+; Since some of the plots might be missing, grab the first one that
+; isn't, and use this one to determine plot size.
+;
+  ind_nomsg = ind(.not.ismissing(plot(0:nplots-1)))
+  if(.not.any(ismissing(ind_nomsg))) then
+    valid_plot = ind_nomsg(0)
+    bb     = NhlGetBB(plot(valid_plot))   ; Get bounding box of plot with
+    top    = bb(0)                        ; all of its annotations.
+    bottom = bb(1)
+    left   = bb(2)
+    right  = bb(3)
+    delete(bb)
+  else
+    print("Error: ngl_panel: all of the plots passed to gsn_panel appear to be invalid")
+    exit
+  end if
+  nvalid_plots = dimsizes(ind_nomsg)
+  delete(ind_nomsg)
+
+  if(panel_debug) then
+    print("There are " + nvalid_plots + " valid plots out of " + nplots + " total plots")
+  end if
+
 ;
 ; Get the type of plots we have. "plot" can be a map, in which case
 ; the vector or contour plot overlaid on it will be indicated
 ; by "plot@contour" or "plot@vector"
 ;
-  new_plot = get_plot_not_loglin(plot)
+  new_plot = get_plot_not_loglin(plot(valid_plot))
 
 ;
 ; Get the font height.
@@ -3469,16 +3548,7 @@ begin
     pfont_height = get_res_value(res,"gsnPanelFigureStringsFontHeightF",\
                                  font_height)
   end if
-;
-; We assume all plots are the same size, so if we get the size of
-; the first one, this should be the size of all of them.
-;
-  bb = NhlGetBB(plot(0))   ; Get bounding box of plot with
-  top    = bb(0)           ; all of its annotations.
-  bottom = bb(1)
-  left   = bb(2)
-  right  = bb(3)
-  delete(bb)
+
 ;
 ; plot_width  : total width of plot with all of its annotations
 ; plot_height : total height of plot with all of its annotations
@@ -3576,7 +3646,7 @@ begin
   xsp = xrange - new_total_width*ncols  ; Calculate total amt of white space
   ysp = yrange - new_total_height*nrows ; left in both X and Y directions.
 
-  getvalues plot(0)
+  getvalues plot(valid_plot)
     "vpXF"      : vpx
     "vpYF"      : vpy
     "vpWidthF"  : vpw
@@ -3593,6 +3663,8 @@ begin
                                      ; position to its bottommost annotation.
 
   ypos = y_top - ywsp - dyt -(ysp/2.+new_total_height*ispan(0,nrows-1,1))
+  min_ypos = min(ypos)
+  max_ypos = max(ypos)
   delete(top)
   delete(bottom)
   delete(right)
@@ -3915,6 +3987,16 @@ begin
                                         ; labelbar and text string if they
                                         ; exist.  
     end if
+    getvalues newplots(valid_plot)
+      "vpXF"      : vpx
+      "vpYF"      : vpy
+      "vpWidthF"  : vpw
+      "vpHeightF" : vph
+    end getvalues
+    dxl = vpx-newbb(valid_plot,2)
+    dxr = newbb(valid_plot,3)-(vpx+vpw)
+    dyt = (newbb(valid_plot,0)-vpy)
+    dyb = (vpy-vph)-newbb(valid_plot,1)
 ;
 ; Get largest bounding box that encompasses all non-missing graphical
 ; objects.
@@ -3924,57 +4006,44 @@ begin
     newlft = min(newbb(:,2))
     newrgt = max(newbb(:,3))
     delete(newbb)
-    if(.not.rgt_pnl.and.nplots.gt.ncols)
+
 ;
-; Double check that this little calculation doesn't yield array
-; indices that are out-of-bounds.
+; This section checks to see if all plots along one side are 
+; missing, because if they are, we have to pretend like they
+; are just invisible (i.e. do the maximization as if the invisible
+; plots were really there).  This section needs to take
+; place even if no plots are missing, because it's possible the
+; user specified fewer plots than panels.
 ;
-       if(((ncols-1).ge.0.and.(ncols-1).le.(nplots-1)).and.\
-          all(ismissing(plot(ncols-1:nplots-1:ncols))))
-;
-; The rightmost graphical object is either the rightmost edge of
-; the rightmost plot, or the rightmost edge of the labelbar or
-; text string (if they exist).
-;
-        xrgt                      = max_xpos+scaled_width+dxr
-        maxbb@gsnPanelInvsblRight = max((/xrgt,newrgt/))
+    xlft = min_xpos - dxl
+    xrgt = max_xpos + vpw + dxr
+    xtop = max_ypos + dyt
+    xbot = min_ypos - vph - dyb
+    if(.not.rgt_pnl.and.xrgt.gt.newrgt) then
+      maxbb@gsnPanelInvsblRight = xrgt
+      if(panel_debug)
+        print("gsnPanelInvsblRight = " + maxbb@gsnPanelInvsblRight)
       end if
     end if
 
-    if(.not.lft_pnl.and.all(ismissing(plot(0:nplots-1:ncols))))
-;
-; The leftmost graphical object is either the leftmost edge of
-; the leftmost plot, or the leftmost edge of the labelbar or
-; text string (if they exist).
-;
-      xlft                     = min_xpos-dxl
-      maxbb@gsnPanelInvsblLeft = min((/xlft,newlft/))
+    if(.not.lft_pnl.and.xlft.lt.newlft) then
+      maxbb@gsnPanelInvsblLeft = xlft
+      if(panel_debug)
+        print("gsnPanelInvsblLeft = " + maxbb@gsnPanelInvsblLeft)
+      end if
     end if
 
-    if(.not.top_pnl.and.all(ismissing(plot(0:ncols-1))))
-;
-; The topmost graphical object is either the topmost edge of
-; the topmost plot, or the topmost edge of the labelbar or
-; text string (if they exist).
-;
-      xtop                    = ypos(0)+dyt
-      maxbb@gsnPanelInvsblTop = max((/xtop,newtop/))
+    if(.not.top_pnl.and.xtop.gt.newtop) then
+      maxbb@gsnPanelInvsblTop = xtop
+      if(panel_debug)
+        print("gsnPanelInvsblTop = " + maxbb@gsnPanelInvsblTop)
+      end if
     end if
 
-    if(.not.bot_pnl.and.nplots.gt.(nrows-1)*ncols)
-;
-; Double check that this little calculation doesn't yield array
-; indices that are out-of-bounds.
-;
-      if(((nplots-ncols).ge.0.and.(nplots-ncols).le.(nplots-1)).and. \
-         all(ismissing(plot(nplots-ncols:nplots-1))))
-;
-; The bottommost graphical object is either the bottommost edge of
-; the bottommost plot, or the bottommost edge of the labelbar or
-; text string (if they exist).
-;
-        xbot                       = ypos(nrows-1)-scaled_height-dyb
-        maxbb@gsnPanelInvsblBottom = min((/xbot,newbot/))
+    if(.not.bot_pnl.and.xbot.lt.newbot) then
+      maxbb@gsnPanelInvsblBottom = xbot
+      if(panel_debug)
+        print("gsnPanelInvsblBottom = " + maxbb@gsnPanelInvsblBottom)
       end if
     end if
   end if
@@ -3984,9 +4053,9 @@ begin
 ; if so indicated.
 ;
   if(draw_boxes)
-    draw_and_frame(wks,newplots,calldraw,False,maxbb)
+    draw_and_frame(wks,newplots,calldraw,False,1,maxbb)
   else
-    draw_and_frame(wks,newplots,calldraw,callframe,maxbb)
+    draw_and_frame(wks,newplots,calldraw,callframe,1,maxbb)
   end if  
 ;
 ; Draw bounding boxes around each plot object for debugging purposes.
@@ -4710,7 +4779,7 @@ begin
   if(.not.maxbb) then
     maxbb = get_bb_res(res2)
   end if
-  draw_and_frame(wks,base,False,False,maxbb)
+  draw_and_frame(wks,base,False,False,0,maxbb)
 
   return(annos)
 end
@@ -5788,11 +5857,12 @@ begin
 ;
 ; 8. Set some post-resources for labeling the other axis, if desired.
 ;
-  if(isatt(xdata,"long_name")) then
+  axis_string = get_long_name_units_string(xdata)
+  if(.not.ismissing(axis_string)) then
     if(horizontal) then
-      set_attr(res2,"tiYAxisString",xdata@long_name)
+      set_attr(res2,"tiYAxisString",axis_string)
     else
-      set_attr(res2,"tiXAxisString",xdata@long_name)
+      set_attr(res2,"tiXAxisString",axis_string)
     end if
   else
     if(setinterval) then
@@ -5950,7 +6020,7 @@ begin
 ;
 ; 15. Draw and advance frame.
 ;
-  draw_and_frame(wks,histogram,calldraw,callframe,maxbb)
+  draw_and_frame(wks,histogram,calldraw,callframe,0,maxbb)
 ;
 ; 16. Return histogram and the values.
 ;
@@ -6093,7 +6163,7 @@ begin
                                       force_y_log,"contour",llres)
     end if
 
-    draw_and_frame(wks,plot_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,plot_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -6206,7 +6276,7 @@ begin
       gsnp_scale_plot(contour_object)
     end if
 
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -6254,7 +6324,7 @@ begin
 
     attsetvalues_check(plot_object,res2)
 
-    draw_and_frame(wks,plot_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,plot_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object.
 
@@ -6372,7 +6442,7 @@ begin
                                       force_y_log,"streamline",llres)
     end if
 
-    draw_and_frame(wks,plot_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,plot_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -6465,7 +6535,7 @@ begin
       gsnp_scale_plot(stream_object)
     end if
 
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -6888,7 +6958,7 @@ begin
                                       force_y_log,"vector",llres)
     end if
 
-    draw_and_frame(wks,plot_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,plot_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -7022,7 +7092,7 @@ begin
       gsnp_scale_plot(vector_object)
     end if
 
-    draw_and_frame(wks,vector_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,vector_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -7154,7 +7224,7 @@ begin
       gsnp_scale_plot(stream_object)
     end if
 
-    draw_and_frame(wks,stream_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,stream_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -7296,7 +7366,7 @@ begin
       gsnp_scale_plot(vector_object)
     end if
 
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -7404,7 +7474,7 @@ begin
       gsnp_scale_plot(vector_object)
     end if
 
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -7557,7 +7627,7 @@ begin
                                       force_y_log,"vector",llres)
     end if
 
-    draw_and_frame(wks,plot_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,plot_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -7687,7 +7757,7 @@ begin
       gsnp_scale_plot(vector_object)
     end if
 
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -7779,14 +7849,17 @@ begin
         "trYMaxF"     : trymax
     end create
 
-; Check for existence of x@long_name and y@long_name and use them
-; to label X and Y axes.
+; Check for existence of x/y@long_name/units and use them to
+; label X and Y axes.
 
-    if(isatt(x,"long_name")) then
-      set_attr(res2,"tiXAxisString",x@long_name)
+    xaxis_string = get_long_name_units_string(x)
+    yaxis_string = get_long_name_units_string(y)
+
+    if(.not.ismissing(xaxis_string)) then
+      set_attr(res2,"tiXAxisString",xaxis_string)
     end if
-    if(isatt(y,"long_name")) then
-      set_attr(res2,"tiYAxisString",y@long_name)
+    if(.not.ismissing(yaxis_string)) then
+      set_attr(res2,"tiYAxisString",yaxis_string)
     end if
 
 ; By default, only solid lines get drawn if there are multiple lines, so
@@ -7904,7 +7977,7 @@ begin
       gsnp_scale_plot(plot_object)
     end if
 
-    draw_and_frame(wks,plot_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,plot_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 

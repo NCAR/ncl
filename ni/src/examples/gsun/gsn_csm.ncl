@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.149 2003-12-05 23:26:02 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.150 2003-12-11 20:48:54 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -40,7 +40,10 @@ undef("outlined_bars")
 undef("filled_bars")
 undef("find_cross_xy")
 undef("get_valid_long_names")
+undef("get_valid_units")
 undef("get_valid_long_name_value")
+undef("get_valid_units_value")
+undef("get_csm_long_name_units_string")
 undef("check_for_subtitles")
 undef("set_right_subtitle")
 undef("set_left_subtitle")
@@ -54,9 +57,7 @@ undef("is_valid_lon2d_attr")
 undef("check_for_coord_arrays")
 undef("check_class_name")
 undef("get_allowed_latnames")
-undef("get_allowed_latnames_without_units")
 undef("get_allowed_lonnames")
-undef("get_allowed_lonnames_without_units")
 undef("get_allowed_pres_units_mb")
 undef("get_allowed_pres_units_pa")
 undef("get_allowed_pres_units_hpa")
@@ -524,6 +525,18 @@ begin
 end
 
 ;***********************************************************************;
+; Function : get_valid_units()                                          ;
+;                                                                       ;
+; This function returns the list of valid names that can be used for    ;
+; "units".                                                              ;
+;                                                                       ;
+;***********************************************************************;
+function get_valid_units()
+begin
+  return((/"units","Units","UNITS","unit","Unit","UNIT"/))
+end
+
+;***********************************************************************;
 ; Function : get_valid_long_name_value()                                ;
 ;                                                                       ;
 ; This function returns the attribute and the attribute value of the    ;
@@ -551,6 +564,60 @@ begin
   
   return(new(1,string))
 end
+
+;***********************************************************************;
+; Function : get_valid_units_value()                                    ;
+;                                                                       ;
+; This function returns the attribute and the attribute value of the    ;
+; valid units, if it exists, and missing otherwise.                     ;
+;***********************************************************************;
+function get_valid_units_value(data)
+local data_atts, n, found_valid_name, data_atts
+begin
+  data_atts        = getvaratts(data)
+  found_valid_name = False
+  
+  if(.not.any(ismissing(data_atts))) then
+    valid_units = get_valid_units()
+    n = 0
+    do while(n.lt.dimsizes(valid_units).and..not.found_valid_name)
+      if (any(valid_units(n).eq.data_atts)) then
+;
+; Return both the attribute name and its value.
+;
+        return((/valid_units(n),data@$valid_units(n)$/))
+      end if
+      n = n + 1
+    end do
+  end if
+  
+  return(new(1,string))
+end
+
+;***********************************************************************;
+; Function : get_csm_long_name_units_string                             ;
+;            data : numeric                                             ;
+;                                                                       ;
+; This function checks if a valid long_name and units attributes exist, ;
+; and if so, constructs a string using them. A missing value is returned;
+; otherwise.                                                            ;
+;***********************************************************************;
+function get_csm_long_name_units_string(data)
+local lname, uname
+begin
+  lu_string = new(1,string)
+  lname = get_valid_long_name_value(data)
+  uname = get_valid_units_value(data)
+
+  if(.not.any(ismissing(lname))) then
+    lu_string = lname(1)
+    if(.not.any(ismissing(uname)).and.uname(1).ne."") then
+      lu_string = lu_string + " (" + uname(1) + ")"
+    end if
+  end if
+  return(lu_string)
+end        
+
 
 ;***********************************************************************;
 ; Procedure : check_for_subtitles                                       ;
@@ -667,19 +734,19 @@ end
 procedure set_right_subtitle(data:numeric,res:logical,newres:logical)
 begin
 ;
-; If gsnRightString hasn't been set, then use data@units if it
-; exists.
+; If gsnRightString hasn't been set, then use the valid units 
+; attribute if it exists.
 ;
   if(isatt(res,"gsnRightString"))
     newres = True
     newres@gsnRightString = res@gsnRightString
   else
-    if(isatt(data,"units"))
+    uname = get_valid_units_value(data)
+    if(.not.any(ismissing(uname)))    
       newres = True
-      newres@gsnRightString = data@units
+      newres@gsnRightString = uname(1)
     end if
   end if
-
   return
 end
 
@@ -838,9 +905,9 @@ begin
     set_attr(tires,"tiXAxisString","")
   else
     if(.not.is_xyplot.and.is_valid_xcoord(data)) then
-      lname = get_valid_long_name_value(data&$data!1$)
-      if(.not.any(ismissing(lname))) then
-        set_attr(tires,"tiXAxisString",lname(1))
+      xaxis_string = get_csm_long_name_units_string(data&$data!1$)
+      if(.not.ismissing(xaxis_string)) then
+        set_attr(tires,"tiXAxisString",xaxis_string)
       end if
     end if
   end if
@@ -858,6 +925,7 @@ end
 ; resource and/or attribute settings.                                   ;
 ;***********************************************************************;
 procedure set_yaxis_string(plot:graphic,res:logical,data:numeric)
+local title, tires, is_xyplot
 begin
   tires = get_res_eq(res,(/"ti"/))  ; Get tickmark resources
   is_xyplot = get_res_value_keep(res,"gsnXYPlot", False)
@@ -869,9 +937,9 @@ begin
     set_attr(tires,"tiYAxisString","")
   else
     if(.not.is_xyplot.and.is_valid_ycoord(data)) then
-      lname = get_valid_long_name_value(data&$data!0$)
-      if(.not.any(ismissing(lname))) then
-        set_attr(tires,"tiYAxisString",lname(1))
+      yaxis_string = get_csm_long_name_units_string(data&$data!0$)
+      if(.not.ismissing(yaxis_string)) then
+        set_attr(tires,"tiYAxisString",yaxis_string)
       end if
     end if
   end if
@@ -1023,18 +1091,6 @@ begin
 end
 
 ;***********************************************************************;
-; Function : get_allowed_latnames_without_units                         ;
-;                                                                       ;
-; Get list of names allowed for a latitude coordinate array.  These     ; 
-; are latitudes names from a grib file, so their units are assumed to   ;
-; be "degrees_north".                                                   ;
-;***********************************************************************;
-function get_allowed_latnames_without_units()
-begin
-  return((/"g0_lat_2","g0_lat_3","g0_lat_4","g4_lat_0"/))
-end
-
-;***********************************************************************;
 ; Function : get_allowed_lonnames                                       ;
 ;                                                                       ;
 ; Get list of names allowed for a longitude coordinate array.           ; 
@@ -1044,18 +1100,6 @@ function get_allowed_lonnames()
 begin
   return((/"lon","Lon","Longitude","LON","longitude","LONGITUDE","hlon",\
            "long","lon_u","lon_t","lon_98","lon1","lon2","xc"/))
-end
-
-;***********************************************************************;
-; Function : get_allowed_lonnames_without_units                         ;
-;                                                                       ;
-; Get list of names allowed for a longitude coordinate array.  These    ; 
-; are longitudes names from a grib file, so their units are assumed to  ;
-; be "degrees_east".                                                    ;
-;***********************************************************************;
-function get_allowed_lonnames_without_units()
-begin
-  return((/"g0_lon_2","g0_lon_3","g0_lon_4","g4_lon_1"/))
 end
 
 ;***********************************************************************;
@@ -3779,7 +3823,7 @@ begin
 
 ; Draw all this stuff: map plot, subtitles, and tick marks.
 
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and tickmark object.
 
@@ -4181,7 +4225,7 @@ begin
     add_subtitles(wks,map_object,left_string,center_string,right_string, \
                   subres)
 
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
     return(map_object)
 end
@@ -4356,7 +4400,7 @@ begin
 
 ; Draw all this stuff: map plot, subtitles, and tick marks.
 
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and tickmark object.
 
@@ -4566,7 +4610,7 @@ begin
       add_labelbar(wks,contour_object,lbar_zone,font_height,"polar",lbres)
     end if
   
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -4947,7 +4991,7 @@ begin
 
 ; Draw all this stuff: map plot, subtitles, and tick marks.
 
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -5139,7 +5183,7 @@ begin
 
 ; Draw all this stuff: map plot, subtitles, and tick marks.
 
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -5370,7 +5414,7 @@ begin
     end if
   
 ; Draw all this stuff: map plot, subtitles, and tick marks.
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -5544,7 +5588,7 @@ begin
     end if
   
 ; Draw all this stuff: map plot, subtitles, and tick marks.
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -5699,7 +5743,7 @@ begin
 
 ; Draw all this stuff: map plot, subtitles, and tick marks.
 
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -5869,7 +5913,7 @@ begin
     end setvalues
 
 ; Draw all this stuff: map plot, subtitles, and tick marks.
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -5999,7 +6043,7 @@ begin
     end setvalues
 
 ; Draw all this stuff: map plot, subtitles, and tick marks.
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -6122,7 +6166,7 @@ begin
 
 ; Draw all this stuff: map plot, subtitles, and tick marks.
 
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -6352,7 +6396,7 @@ begin
     end if
   
 ; Draw all this stuff: map plot, subtitles, and tick marks.
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -6536,7 +6580,7 @@ begin
     end if
   
 ; Draw all this stuff: map plot, subtitles, and tick marks.
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -6712,7 +6756,7 @@ begin
   
 ; Draw all this stuff: map plot, subtitles, and tick marks.
 
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -6978,7 +7022,7 @@ begin
                   right_string,subres)
 
 ; Draw all this stuff: vector/contour plot, subtitles, and tick marks.
-    draw_and_frame(wks,vector_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,vector_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -7275,7 +7319,7 @@ begin
   
 
 ; Draw all this stuff: map plot, subtitles, and tick marks.
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -7498,7 +7542,7 @@ begin
     end if
   
 ; Draw all this stuff: map plot, subtitles, and tick marks.
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -7725,7 +7769,7 @@ begin
   
 ; Draw all this stuff: map plot, subtitles, and tick marks.
 
-    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -7983,7 +8027,7 @@ begin
   overlay(contour1,contour2)
 
 ; Draw all this stuff: contour plots and subtitles.
-    draw_and_frame(wks,contour1,calldraw,callframe,maxbb)
+    draw_and_frame(wks,contour1,calldraw,callframe,0,maxbb)
 
 ; Return contour plot object.
 
@@ -8253,13 +8297,8 @@ begin
       xinterp = new((/nyref,2*npts/),double,1e36)
       yinterp = new((/nyref,2*npts/),double,1e36)
 
-      if(isatt(x,"_FillValue"))
-        xinterp@_FillValue = x@_FillValue
-      end if
-
-      if(isatt(y,"_FillValue"))
-        yinterp@_FillValue = y@_FillValue
-      end if
+      copy_var_atts(x,xinterp,"")
+      copy_var_atts(y,yinterp,"")
 
       new_npts = ref_line_interp(x,y,xinterp,yinterp,yref_line)
     else
@@ -8277,12 +8316,9 @@ begin
           yinterp = new((/ncurves,nyb/),double,1e36)
           xinterp = new((/ncurves,nyb/),double,1e36)
 
-          if(isatt(x,"_FillValue"))
-            xinterp@_FillValue = x@_FillValue
-          end if
-          if(isatt(y,"_FillValue"))
-            yinterp@_FillValue = y@_FillValue
-          end if
+          copy_var_atts(x,xinterp,"")
+          copy_var_atts(y,yinterp,"")
+
           outlined_bars(x,y,xinterp,yinterp)
         else
 ;
@@ -8483,6 +8519,9 @@ begin
           else
             xinterp = new((/2*ncurves,nab_max/),double,xabove@_FillValue)
             yinterp = new((/2*ncurves,nab_max/),double,yabove@_FillValue)
+
+            copy_var_atts(x,xinterp,"")
+            copy_var_atts(y,yinterp,"")
 
             if(na_max.gt.0)
               xinterp(0:2*ncurves-1:2,0:na_max-1) = xabove(:,0:na_max-1)
@@ -8794,7 +8833,7 @@ begin
                   subres)
 
 ; Draw all this stuff: XY plot and subtitles.
-    draw_and_frame(wks,xy_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,xy_object,calldraw,callframe,0,maxbb)
 
 ; Return XY plot object.
 
@@ -9029,7 +9068,7 @@ begin
                   right_string,subres)
 
 ; Draw all this stuff: contour plot and subtitles.
-    draw_and_frame(wks,contour_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,contour_object,calldraw,callframe,0,maxbb)
 
 ; Return contour plot object.
 
@@ -9106,7 +9145,7 @@ begin
     end if
 
 ; Draw all this stuff: contour plot and subtitles.
-    draw_and_frame(wks,contour_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,contour_object,calldraw,callframe,0,maxbb)
 
 ; Return contour plot object.
 
@@ -9171,7 +9210,7 @@ begin
                          lat_spacing,mlat_spacing,res2)
 
 ; Draw all this stuff: contour plot and subtitles.
-    draw_and_frame(wks,contour_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,contour_object,calldraw,callframe,0,maxbb)
 
 ; Return contour plot object.
 
@@ -9236,7 +9275,7 @@ begin
                          mlat_spacing,res2)
 
 ; Draw all this stuff: contour plot and subtitles.
-    draw_and_frame(wks,contour_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,contour_object,calldraw,callframe,0,maxbb)
 
 ; Return contour plot object.
 
@@ -9280,9 +9319,9 @@ begin
     mlat_spacing = get_res_value(res2,"gsnMinorLatSpacing",0)
 
     if(is_valid_ycoord(data))
-      lname = get_valid_long_name_value(data&$data!0$)
-      if(.not.any(ismissing(lname))) then
-        set_attr(res2,"tiYAxisString",lname(1))
+      title = get_csm_long_name_units_string(data&$data!0$)
+      if(.not.ismissing(title)) then
+        set_attr(res2,"tiYAxisString",title)
       end if
     end if
 
@@ -9435,7 +9474,7 @@ begin
     overlay(loglin_object,contour_object)
 
 ; Draw all this stuff: contour plot and subtitles.
-    draw_and_frame(wks,loglin_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,loglin_object,calldraw,callframe,0,maxbb)
 
 ; Return loglin plot with contour plot object as an attribute.
 
@@ -9612,7 +9651,7 @@ begin
                   right_string,subres)
 
 ; Draw all this stuff: vector plot and subtitles.
-    draw_and_frame(wks,vector_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,vector_object,calldraw,callframe,0,maxbb)
 
 ; Return vector plot object.
 
@@ -9706,7 +9745,7 @@ begin
 
 ; Draw all this stuff: vector over contour plot.
 
-  draw_and_frame(wks,contour,calldraw,callframe,maxbb)
+  draw_and_frame(wks,contour,calldraw,callframe,0,maxbb)
 
 ; Return contour/vector plot with data objects as attributes.
 
@@ -9865,7 +9904,7 @@ begin
                   right_string,subres)
 
 ; Draw all this stuff: streamline plot and subtitles.
-    draw_and_frame(wks,stream_object,calldraw,callframe,maxbb)
+    draw_and_frame(wks,stream_object,calldraw,callframe,0,maxbb)
 
 ; Return streamline plot object.
 
@@ -9939,7 +9978,7 @@ begin
 
 ; Draw all this stuff: streamline over contour plot.
 
-  draw_and_frame(wks,contour,calldraw,callframe,maxbb)
+  draw_and_frame(wks,contour,calldraw,callframe,0,maxbb)
 
 ; Return contour/streamline plot with data objects as attributes.
 
