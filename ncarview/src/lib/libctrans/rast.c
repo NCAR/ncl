@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.22 1993-01-16 03:45:49 clyne Exp $
+ *	$Id: rast.c,v 1.23 1993-01-19 16:36:29 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -39,6 +39,7 @@ static	struct	Opts {
 	char	*viewport;
 	char	*dpi;
 	boolean	rle;
+	boolean	landscape;
 	boolean	compress;
 	boolean	direct;
 	char	*outfile;
@@ -58,6 +59,9 @@ static	Option	raster_opts[] = {
 				sizeof(rast_opts.dpi)
 	},
 	{"rle",NCARGCvtToBoolean,(Voidptr) &rast_opts.rle,sizeof(rast_opts.rle)
+	},
+	{"landscape",NCARGCvtToBoolean,(Voidptr) &rast_opts.landscape,
+			sizeof(rast_opts.landscape)
 	},
 	{"compress",NCARGCvtToBoolean,(Voidptr) &rast_opts.compress,					sizeof (rast_opts.compress)
 	},
@@ -111,6 +115,15 @@ static	build_ras_arg(ras_argc, ras_argv, rast_opts)
 			return(-1);
 		}
 		(void) strcpy(ras_argv[i], "-compress");
+		i++;
+	}
+
+	if (rast_opts.landscape) {
+		if (! (ras_argv[i] = malloc((unsigned) strlen("-landscape")+1))){
+			ESprintf(errno, "malloc(%d)", strlen("-landscape") + 1);
+			return(-1);
+		}
+		(void) strcpy(ras_argv[i], "-landscape");
 		i++;
 	}
 
@@ -181,7 +194,7 @@ get_resolution(dev_extent, opts, name)
 	 * of dots per inch.  We assume a full size picture is 6 by 6 inches
 	 */
 	if (! strcmp(name, "hplj")) {
-		dpi = atoi(opts.resolution);
+		dpi = atoi(opts.dpi);
 		width = 6 * dpi;
 		height = 6 * dpi;
 	}
