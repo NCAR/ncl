@@ -1,5 +1,5 @@
 C
-C	$Id: gdsg.f,v 1.3 1993-01-13 22:32:46 fred Exp $
+C	$Id: gdsg.f,v 1.4 1993-01-15 18:24:41 fred Exp $
 C
       SUBROUTINE GDSG(SGNA)
 C
@@ -96,20 +96,6 @@ C
   201   CONTINUE
       ENDIF
    10 CONTINUE
-C
-C  Invoke workstation interface.
-C
-C     FCODE = 84
-C     CONT  = 0
-C     CALL GZROI(0)
-C     IL1 = 1
-C     IL2 = 1
-C     CALL GZTOWK
-C     IF (RERR .NE. 0) THEN
-C       ERS = 1
-C       CALL GERHND(RERR,EDSG,ERF)
-C       ERS = 0
-C     ENDIF
 C
       RETURN
       END
