@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.8 1999-05-18 19:17:02 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.9 1999-06-03 19:50:53 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -40,6 +40,7 @@ undef("gsn_csm_contour_map_polar")
 undef("gsn_csm_contour_map_ce")
 undef("gsn_csm_contour_map")
 undef("gsn_csm_xy")
+undef("gsn_csm_hov")
 
 function gsn_add_cyclic_point(data[*][*]:float)
 ;
@@ -531,6 +532,16 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
       "tmXBMinorOutwardLengthF" : minor_length
       "tmYLMajorOutwardLengthF" : major_length
       "tmYLMinorOutwardLengthF" : minor_length
+      "tmXTLabelFontHeightF" : min((/xbfontf,ylfontf/))
+      "tmYRLabelFontHeightF" : min((/xbfontf,ylfontf/))
+      "tmXTMajorLengthF"     : major_length
+      "tmXTMinorLengthF"     : minor_length
+      "tmYRMajorLengthF"     : major_length
+      "tmYRMinorLengthF"     : minor_length
+      "tmXTMajorOutwardLengthF" : major_length
+      "tmXTMinorOutwardLengthF" : minor_length
+      "tmYRMajorOutwardLengthF" : major_length
+      "tmYRMinorOutwardLengthF" : minor_length
     end setvalues
     ratio2 = lon_range/lat_range
     ratio = min((/ratio1,ratio2/))
@@ -1915,10 +1926,19 @@ function gsn_csm_contour_map_ce(wks:graphic,data[*][*]:numeric,\
 ;
     if(check_attr(res2,"cnFillOn",True,False).or.\
        check_attr(res2,"mpFillOn",False,False))
-    setvalues contour_object
-        "cnInfoLabelFontHeightF"    : xbfontf
+      set_attr(res2,"mpOutlineOn",True)
+    end if
+    lbres = get_res_eq(res2,(/"lb","pm"/))
+      setvalues contour_object
         "cnLineLabelFontHeightF"    : xbfontf
-    end setvalues
+      end setvalues
+    if(cnres)
+      if(check_attr(cnres,"cnFillOn",True,False))
+        set_attr(cnres,"cnInfoLabelOn",False)
+      setvalues contour_object
+        "cnInfoLabelFontHeightF"    : xbfontf
+      end setvalues
+          if(check_attr(lbres,"lbOrientation","vertical",True))
             set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
 ; Retrieve the view port size of the map plot so we know how big
 ; to make labelbar and where to put zonal means plot (if there is one).
@@ -2153,8 +2173,7 @@ local calldraw, callframe, res1_tmp, res2_tmp
 begin
   res1_tmp  = get_resources(res1)   ; Transfer attributes
   res2_tmp  = get_resources(res2)   ; Transfer attributes
-; If "gsnYReferenceLine" is set to some value, then a reference line    ;
-; will be drawn.
+    set_attr(res1_tmp,"cnInfoLabelOn",False)
   end if 
 
   res2_tmp@gsnDraw  = False
@@ -2244,10 +2263,27 @@ left_string, center_string, right_string, sub_zone, main_zone
             return
           end if
         else
+          yref_line_color = "foreground"  ; defaults to foreground color.
+        end if
+
+    if(isatt(res2,"tmXBMode").and..not.isatt(res2,"tiXAxisString"))
+      if(res2@tmXBMode.eq."Explicit".or.res2@tmXBMode.eq."EXPLICIT")
+        res2@tiXAxisString = ""
+      end if
+;
+        if(isatt(res2,"gsnAboveYRefLineColor"))
+    if(isatt(res2,"tmYLMode").and..not.isatt(res2,"tiYAxisString"))
+      if(res2@tmYLMode.eq."Explicit".or.res2@tmYLMode.eq."EXPLICIT")
+        res2@tiYAxisString = ""
+      end if
+            print("gsn_csm_xy: Fatal: there must either be an above-line fill color for every reference line, or one global above-line fill color specified")
+            return
     xy_object = gsn_xy(wks,x,y,res2)   ; Create an XY plot.
 
 ; Get title label sizes and tickmark lengths.
     getvalues xy_object
+      "vpWidthF"             : width
+      "vpHeightF"            : height
       "tiXAxisFontHeightF"   : xfontf
       "tiYAxisFontHeightF"   : yfontf
 
@@ -2257,10 +2293,26 @@ left_string, center_string, right_string, sub_zone, main_zone
       "tmXBMinorLengthF"     : xmlength
     end getvalues
           yref_fill_on    = True
-; Make tick marks same length and point outward.
-    if(xref_line_on)
+    font_height = min((/xfontf,yfontf/))  ; Make label sizes a function of
+                                          ; the size of the X/Y axis labels.
     major_length = min((/ylength,xlength/))
     minor_length = min((/ymlength,xmlength/))
+
+; If the plot is close to square in size, then make the 
+; three top titles and the tick marks smaller.
+
+    ratio = height/width
+    if(ratio.gt.1) 
+      ratio = 1./ratio
+    end if
+    if(ratio.gt.0.5)
+	  font_height = 0.75 * font_height
+	  major_length = 0.75 * major_length
+	  minor_length = 0.75 * minor_length
+; For each old y point, we need two new y points to represent
+; the horizontal line.
+; Make tick marks same length and point outward.
+    if(xref_line_on)
     setvalues xy_object
       "tmXBMajorLengthF"     : major_length
       "tmXBMinorLengthF"     : minor_length
@@ -2270,10 +2322,16 @@ left_string, center_string, right_string, sub_zone, main_zone
       "tmXBMinorOutwardLengthF" : minor_length
       "tmYLMajorOutwardLengthF" : major_length
       "tmYLMinorOutwardLengthF" : minor_length
+      "tmXTMajorLengthF"     : major_length
+      "tmXTMinorLengthF"     : minor_length
+      "tmYRMajorLengthF"     : major_length
+      "tmYRMinorLengthF"     : minor_length
+      "tmXTMajorOutwardLengthF" : major_length
+      "tmXTMinorOutwardLengthF" : minor_length
+      "tmYRMajorOutwardLengthF" : major_length
+      "tmYRMinorOutwardLengthF" : minor_length
     end setvalues
       end getvalues
-    font_height = min((/xfontf,yfontf/))  ; Make label sizes a function of
-                                          ; the size of the X/Y axis labels.
 
 ; Leftmost subtitle.
     if(left_string)
@@ -2337,6 +2395,433 @@ main_zone, datanew, popgrid, contour_plot
 ; Return XY plot object.
     end if
     return(xy_object)
+      delete(res2@lbLabelBarOn)
+
+
+
+
+    end if
+
+    res2          = True
+    res2@gsnDraw  = False   ; Internally, don't draw plot or advance
+    res2@gsnFrame = False   ; frame since we take care of that later.
+    res2@gsnScale = True    ; force labels and ticks to be same.
+; This function creates and draws a titled Hovmoller plot to the        ;
+    cnres = get_res_ne(res2,(/"tx"/))
+    contour_object = gsn_contour(wks,datanew,cnres)
+; Id of the map plot is returned.                                       ;
+;                                                                       ;
+; This function behaves differently from gsn_contour in that it will    ;
+; add additional titles to the top of the plot if any of the special    ;
+; GSUN resources "gsnLeftString," "gsnCenterString," and/or             ;
+; "gsnRightString" are set, They are used to title the top left, center,;
+; and right of the plot (in addition, the regular resource              ;
+; "tiMainString" can be set to create a regular title).                 ;
+; Get some information from contour plot that was created.
+; If cnFillOn is True, then a labelbar will be drawn.                   ;
+;                                                                       ;
+; Tick marks will be made to point outwards.                            ;
+
+; Add lat/lon labels to X/Y axes if appropriate coordinate arrays exist.
+
+function gsn_csm_hov(wks:graphic,data:numeric,resources:logical)
+local res, contour_object, res2, xfontf, yfontf, font_height, lbar_on, \
+lft_str_object, ctr_str_object, rgt_str_object, calldraw, callframe, \
+left_string, center_string, right_string, sub_zone, main_zone, datanew
+      "vpWidthF"             : width
+      "vpHeightF"            : height
+  
+
+    calldraw      = True
+    callframe     = True
+
+    addcyclic     = False     ; Default is to not add a cyclic point.
+    sub_zone      = 2         ; Zone for subtitles
+    main_zone     = 2         ; Zone for main title (may change later)
+    lbar_on       = False     ; Default is no labelbar
+    left_string   = False     ; Default is no subtitles unless
+    center_string = False     ; they are explicitly set with the
+    right_string  = False     ; special "gsn" resources.
+    res2 = resources
+      "tiYAxisFontHeightF"   : yfontf
+; The default is to add a cyclic point.
+    if((res2).and.isatt(res2,"gsnAddCyclic"))
+        if(res2@gsnAddCyclic)
+            addcyclic = True
+        end if
+        delete(res2@gsnAddCyclic)
+                                          ; function of the size of the
+                                          ; X/Y axis labels.
+    if(addcyclic)
+        datanew = gsn_add_cyclic_point(data)
+    else
+        datanew = data
+    ratios     = (/0.5,0.75,1.0/)
+
+; This section tests for more special resources: those that start
+; with "gsn."
+    font_height  = scale * font_height
+    if((res2).and..not.any(ismissing(getvaratts(res2))))
+    if(popgrid.ne."") then
+; Check if frame and/or draw are not supposed to be called.
+    else
+        if(isatt(res2,"gsnDraw"))
+            if(.not.res2@gsnDraw)
+                calldraw = False
+            end if
+            delete(res2@gsnDraw)
+        end if
+        if(isatt(res2,"gsnFrame"))
+            if(.not.res2@gsnFrame)
+                callframe = False
+            end if
+            delete(res2@gsnFrame)
+        end if
+
+;
+; Check if gsnShape set.
+;
+        if(isatt(res2,"gsnShape").and.res2@gsnShape)
+            sub_zone      = sub_zone+1  ; Zone for subtitles
+            main_zone     = main_zone+1 ; Zone for main title
+        end if
+
+; Check for left title. If the data has an attribute called "long_name",
+; then use this string for the left title.
+      lbres = get_res_eq(res2,(/"lb","pm"/))
+        if(isatt(datanew,"long_name").and..not.isatt(res2,"gsnLeftString"))
+            res2@gsnLeftString = datanew@long_name
+            delete(datanew@long_name)
+        end if
+  
+; Check for right title at top. If the data has an attribute called "units",
+; then use this string for the right title.
+    subres = get_res_eq(res2,(/"tx","am"/))  ; Get textitem resources
+        if(isatt(datanew,"units").and..not.isatt(res2,"gsnRightString"))
+            res2@gsnRightString = datanew@units
+        end if
+    add_subtitles(wks,contour_object,left_string,center_string,\
+; Check for left subtitle at top. If it exists, create a TextItem
+; object for it.
+; workstation "wks" (the variable returned from a previous call to      ;
+        if(isatt(res2,"gsnLeftString"))
+            lft_str_object = create "left_string" textItemClass wks
+              "txString" : res2@gsnLeftString
+            end create
+            left_string = True
+            main_zone   = main_zone+1
+            delete(res2@gsnLeftString)
+        end if
+
+; Check for center subtitle at top. If it exists, create a TextItem
+; object for it.
+
+        if(isatt(res2,"gsnCenterString"))
+            ctr_str_object = create "center_string" textItemClass wks
+              "txString" : res2@gsnCenterString
+            end create
+            center_string = True
+            main_zone     = main_zone+1
+            delete(res2@gsnCenterString)
+        end if
+
+; Check for right subtitle at top. If it exists, create a TextItem
+; object for it.
+
+        if(isatt(res2,"gsnRightString"))
+            rgt_str_object = create "right_string" textItemClass wks
+              "txString" : res2@gsnRightString
+            end create
+            right_string = True
+            main_zone    = main_zone+1
+            delete(res2@gsnRightString)
+        end if
+    end if
+; draws a specially-labelled longitude X axis.                          ;
+; Use coordinate variable for X if it exists.
+
+    if(iscoord(datanew,"lon").and..not.isatt(res2,"sfXArray"))
+      res2@sfXArray  = datanew&lon
+    end if
+
+; Use coordinate variable for Y if it exists.
+; Initialize.
+    if(.not.ismissing(datanew!0).and.iscoord(data,datanew!0).and.\
+        .not.isatt(res2,"sfYArray")) then 
+      res2@sfYArray  = datanew&$datanew!0$
+      if(.not.isatt(res2,"tiYAxisString").and.\
+         isatt(datanew&$datanew!0$,"long_name"))
+        res2@tiYAxisString = datanew&$datanew!0$@long_name
+      end if
+    calldraw     = get_res_value(res2,"gsnDraw", True)
+    callframe    = get_res_value(res2,"gsnFrame",True)
+; Check for a missing value.
+    lon_spacing  = get_res_value(res2,"gsnMajorLonSpacing",0)
+    if(isatt(datanew,"_FillValue").and..not.isatt(res2,"sfMissingValueV")) then
+      res2@sfMissingValueV = datanew@_FillValue
+    end if
+;
+; Turn on a labelbar if fill is True and if the labelbar is not explicitly
+; being turned off.
+;
+    if((isatt(res2,"cnFillOn").and.res2@cnFillOn).and. \
+       (.not.isatt(res2,"lbLabelBarOn").or.\
+        (isatt(res2,"lbLabelBarOn").and.res2@lbLabelBarOn)))
+  
+      lbar_on   = True
+      lbar_zone = 3
+      if(isatt(res2,"lbOrientation").and.\
+        (res2@lbOrientation.eq."vertical".or.\
+         res2@lbOrientation.eq."VERTICAL".or.\
+         res2@lbOrientation.eq."Vertical"))
+        lbar_side   = "right"
+        lbar_orient = "vertical"
+        lbar_just   = "centerright"
+        delete(res2@lbOrientation)
+      else
+        lbar_just   = "bottomcenter"
+        lbar_side   = "bottom"
+        lbar_orient = "horizontal"
+      end if
+      res2@cnLineLabelsOn         = False    ; Turn off line labels
+      res2@cnInfoLabelOn          = False    ; Turn off info label
+    end if
+
+; Set some more contour plot resources.
+
+    res2@gsnDraw  = False   ; Internally, don't draw plot or advance
+    res2@gsnFrame = False   ; frame since we take care of that later.
+
+    contour_object = gsn_contour(wks,datanew,res2)   ; Create a contour plot.
+       isatt(res2,"sfXCEndV")))
+; Get title label sizes and tickmark lengths.
+    getvalues contour_object
+      "vpWidthF"     : vpwf
+      "vpHeightF"    : vphf
+
+      "cnLevels"     : levels
+      "cnFillColors" : colors
+
+      "tiXAxisFontHeightF"   : xfontf
+      "tiYAxisFontHeightF"   : yfontf
+
+      "trXMinF"              : min_lon
+      "trXMaxF"              : max_lon
+
+      "tmYLMajorLengthF"     : ylength
+      "tmXBMajorLengthF"     : xlength
+      "tmYLMinorLengthF"     : ymlength
+      "tmXBMinorLengthF"     : xmlength
+    end getvalues
+; Use coordinate variable for Y if it exists.
+    lon_range = max_lon - min_lon   ; longitude range
+
+; Create a TickMark object to label the lat/lon grid.
+
+    lcheck_arr  = (/ 20,  40,  60, 180, 360/) ; lon range will determine
+                                              ; spacing of minor/major ticks
+    lspcng_arr  = (/ 10,  20,  30,  45, 60/)  ; spacings for major ticks
+    mlspcng_arr = (/  5,   5,  10,  15, 30/)  ; spacings for minor ticks
+
+    lon_ind    = ind(lon_range.le.lcheck_arr)
+    lon_spcng  = lspcng_arr(lon_ind(0))  ; spacing for lon major tickmarks
+    mlon_spcng = mlspcng_arr(lon_ind(0)) ; spacing for lon minor tickmarks
+    res2@gsnDraw   = False
+    lon_starts = ispan(0,360,10)            ; Pick a nice valeu
+    delete(lon_ind)                         ; to start the longitude
+    lon_ind    = ind(min_lon.le.lon_starts) ; labelling.
+    start_lon  = lon_starts(lon_ind(0))
+    contour_object = gsn_csm_contour(wks,data,res2) ; Create a contour plot.
+    lon_ends = ispan(360,0,10)            ; Pick a nice value
+    delete(lon_ind)                       ; to end the longitude
+    lon_ind    = ind(max_lon.ge.lon_ends) ; labelling.
+    end_lon  = lon_ends(lon_ind(0))
+
+; Calculate values for longitude major tickmark locations.
+    return(contour_object)
+    xvalues = ispan(start_lon,end_lon,lon_spcng)
+    xlabels  = new(dimsizes(xvalues),string)
+; Function : gsn_csm_time_lat                                           ;
+; Calculate values for longitude minor tickmark locations.
+    mxvalues = ispan(floattointeger(min(xvalues)),\
+                     floattointeger(max(xvalues)),mlon_spcng)
+; workstation "wks" (the variable returned from a previous call to      ;
+    xlabels  = new(dimsizes(xvalues),string)
+
+    indexx = ind(xvalues.gt.180.and.xvalues.lt.360)
+    if(.not.all(ismissing(indexx)))
+        xlabels(indexx) = 360-xvalues(indexx) + "W" ; west
+function gsn_csm_time_lat(wks:graphic,data[*][*]:numeric,resources:logical)
+    delete(indexx)
+
+    indexx = ind((xvalues).lt.0)
+    if(.not.all(ismissing(indexx)))
+        xlabels(indexx) = fabs(xvalues(indexx)) + "W"     ; west
+; Return contour plot object.
+    delete(indexx)
+
+    indexx = ind(xvalues.gt.0.and.xvalues.lt.180)
+    if(.not.all(ismissing(indexx)))
+        xlabels(indexx) = xvalues(indexx) + "E"     ; east
+    end if
+    delete(indexx)
+
+    indexx = ind(xvalues.gt.180)
+    if(.not.all(ismissing(indexx)))
+        xlabels(indexx) = 360-xvalues(indexx) + "W"     ; west
+    end if
+    delete(indexx)
+;***********************************************************************;
+    indexx = ind(xvalues.eq.0.or.fabs(xvalues).eq.180)
+    if(.not.all(ismissing(indexx)))
+        xlabels(indexx) = fabs(xvalues(indexx))           ; 0 or 180
+;                                                                       ;
+    delete(indexx)
+; This function creates and draws a titled contour plot to the          ;
+    indexx = ind(xvalues.eq.360)
+    if(.not.all(ismissing(indexx)))
+        xlabels(indexx) = "0"
+    end if
+    delete(indexx)
+; Id of the contour plot is returned.                                   ;
+    font_height = 0.7*min((/xfontf,yfontf/)) ; Make label sizes a function of
+                                             ; the size of the X/Y axis labels.
+    if (lbar_on)
+      if (lbar_orient.eq."vertical")
+        lbar_width =  0.2 * vpwf       ; width of labelbar
+        lbar_height = vphf             ; height of labelbar
+      else
+        lbar_width =  vpwf
+        lbar_height = 0.2 * vphf
+      end if
+
+      labelbar_object = create "labelbar" labelBarClass  wks
+         "lbAutoManage"      : False
+         "lbBoxCount"        : dimsizes(colors)
+         "lbFillColors"      : colors
+         "lbFillPattern"     : "SolidFill"
+         "lbLabelAlignment"  : "InteriorEdges"
+         "lbLabelFontHeightF": font_height
+         "lbLabelStrings"    : levels
+         "lbMonoFillPattern" : True
+         "lbOrientation"     : lbar_orient
+         "lbPerimOn"         : False
+         "vpHeightF"         : lbar_height
+         "vpWidthF"          : lbar_width
+      end create
+    end if
+
+; Make tick marks same length and point outward.
+
+    major_length = 0.5 * min((/ylength,xlength/))
+    minor_length = 0.5 * min((/ymlength,xmlength/))
+; This function behaves differently from gsn_csm_contour in that it     ;
+    setvalues contour_object
+      "tmXBLabelFontHeightF"    : font_height
+      "tmYLLabelFontHeightF"    : font_height
+      "tmXBMajorLengthF"        : major_length
+      "tmXBMinorLengthF"        : minor_length
+      "tmYLMajorLengthF"        : major_length
+      "tmYLMinorLengthF"        : minor_length
+      "tmXBMajorOutwardLengthF" : major_length
+      "tmXBMinorOutwardLengthF" : minor_length
+      "tmYLMajorOutwardLengthF" : major_length
+      "tmYLMinorOutwardLengthF" : minor_length
+
+      "tmXTLabelFontHeightF"    : font_height
+      "tmYRLabelFontHeightF"    : font_height
+      "tmXTMajorLengthF"        : major_length
+      "tmXTMinorLengthF"        : minor_length
+      "tmYRMajorLengthF"        : major_length
+      "tmYRMinorLengthF"        : minor_length
+      "tmXTMajorOutwardLengthF" : major_length
+      "tmXTMinorOutwardLengthF" : minor_length
+      "tmYRMajorOutwardLengthF" : major_length
+      "tmYRMinorOutwardLengthF" : minor_length
+      set_attr(res2,"tiYAxisString",data&$data!0$@long_name)
+      "tmXBMode"         : "Explicit" ; Indicate that we want to 
+      "tmXBLabels"       : xlabels    ; explicitly label the X axis.
+      "tmXBValues"       : xvalues
+      "tmXBMinorValues"  : mxvalues
+    end setvalues
+
+; Add labelbar as an annotation of the contour plot.
+        pres_reverse =  False          ; pres values weren't already reversed
+    if (lbar_on)
+      anno = NhlAddAnnotation(contour_object,labelbar_object)
+        pres = 1.*data&$data!0$
+      end if
+        "amZone"          : lbar_zone      ; Just outside plot area
+        "amSide"          : lbar_side      ; Labelbar location
+        "amParallelPosF"  : 0.5            ; 0.5 is center of plot
+        "amJust"          : lbar_just      ; Center it about the center
+        "amResizeNotify"  : True           ; Resize labelbar if map resized.
+; If pressure values are Pascals, convert them to millibars.
+;
+  
+; Set up three subtitles at top, if they exist.
+; Leftmost subtitle.
+    if(left_string)
+      setvalues lft_str_object
+        "txFontHeightF" : font_height
+      end setvalues
+
+      anno = NhlAddAnnotation(contour_object,lft_str_object)
+      setvalues anno
+        "amZone"          : sub_zone     ; Just outside plot area
+        "amSide"          : "top"        ; Subtitle at top.
+        "amParallelPosF"  : 0.0          ; 0.0 is right edge of plot
+        "amJust"          : "bottomleft" ; Left justify
+        "amOrthogonalPosF": 0.025        ; Move away from top edge
+        "amResizeNotify"  : True         ; Resize subtitle if plot resized.
+      end setvalues
+    end if
+
+; Center subtitle.
+    if(center_string)
+      setvalues ctr_str_object
+        "txFontHeightF" : font_height
+      end setvalues
+      anno = NhlAddAnnotation(contour_object,ctr_str_object)
+      setvalues anno
+        "amZone"          : sub_zone       ; Just outside plot area
+        "amSide"          : "top"          ; Subtitle at top.
+        "amParallelPosF"  : 0.5            ; 0.5 is center of plot
+        "amJust"          : "bottomcenter" ; Center it about the center
+        "amOrthogonalPosF": 0.025          ; Move away from top edge
+        "amResizeNotify"  : True           ; Resize subtitle if plot resized.
+      end setvalues
+    end if
+
+; Rightmost subtitle.
+    if(right_string)
+      setvalues rgt_str_object
+        "txFontHeightF" : font_height
+      end setvalues
+
+      anno = NhlAddAnnotation(contour_object,rgt_str_object)
+      setvalues anno
+        "amZone"          : sub_zone      ; Just outside plot area
+        "amSide"          : "top"         ; Subtitle at top.
+        "amParallelPosF"  : 1.0           ; 1.0 is right edge of plot
+        "amJust"          : "bottomright" ; Right justify
+        "amOrthogonalPosF": 0.025         ; Move away from top edge
+        "amResizeNotify"  : True          ; Resize subtitle if plot resized.
+      end setvalues
+    end if
+        if(any(data&$data!0$@units.eq.get_allowed_pres_units_pa()))
+; Draw all this stuff: contour plot and subtitles.
+    if(calldraw)
+        draw(contour_object) 
+    end if
+      "vpYF"                 : yvp
+    if(callframe)
+        frame(wks)           ; advance the frame
+    end if
+      "trXMinF"              : xmin
+; Return contour plot object.
+      "trYMinF"              : ymin
+    return(contour_object)
       "tiXAxisFontHeightF"   : xfontf
 
 
