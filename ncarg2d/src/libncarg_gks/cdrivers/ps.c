@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.11 1996-03-16 21:43:49 boote Exp $
+ *	$Id: ps.c,v 1.12 1996-05-09 00:05:30 fred Exp $
  */
 /*
  *
@@ -2123,6 +2123,19 @@ ps_Polyline(gksc)
 		   psa->attributes.ps_colr_ind = requested_color;
 	   }
 	}
+	if (psa->color == MONO) {         
+	   requested_color = psa->attributes.line_colr_ind;
+	   current_color = psa->attributes.ps_colr_ind;
+	   if (requested_color != current_color) {
+                   if (requested_color == 0) {
+		        (void) fprintf(psa->file_pointer,"0 O\n");
+                   }
+                   else {
+		        (void) fprintf(psa->file_pointer,"1 O\n");
+                   } 
+		   psa->attributes.ps_colr_ind = requested_color;
+	   }
+	}
 
 	ps_linewidth = (int) ((psa->nominal_width_scale) * 
 				(psa->attributes.linewidth)/(psa->scaling));
@@ -2168,6 +2181,19 @@ ps_Polymarker(gksc)
 	   current_color = psa->attributes.ps_colr_ind;
 	   if (requested_color != current_color) {
 		   (void) fprintf(psa->file_pointer, "%d O\n", requested_color);
+		   psa->attributes.ps_colr_ind = requested_color;
+	   }
+	}
+	if (psa->color == MONO) {         
+	   requested_color = psa->attributes.marker_colr_ind;
+	   current_color = psa->attributes.ps_colr_ind;
+	   if (requested_color != current_color) {
+                   if (requested_color == 0) {
+		        (void) fprintf(psa->file_pointer,"0 O\n");
+                   }
+                   else {
+		        (void) fprintf(psa->file_pointer,"1 O\n");
+                   } 
 		   psa->attributes.ps_colr_ind = requested_color;
 	   }
 	}
@@ -2244,6 +2270,19 @@ ps_Text(gksc)
                    (void) fprintf(psa->file_pointer, "%d O\n", requested_color);
                    psa->attributes.ps_colr_ind = requested_color;
            }
+	}
+	if (psa->color == MONO) {         
+	   requested_color = psa->attributes.text_colr_ind;
+	   current_color = psa->attributes.ps_colr_ind;
+	   if (requested_color != current_color) {
+                   if (requested_color == 0) {
+		        (void) fprintf(psa->file_pointer,"0 O\n");
+                   }
+                   else {
+		        (void) fprintf(psa->file_pointer,"1 O\n");
+                   } 
+		   psa->attributes.ps_colr_ind = requested_color;
+	   }
 	}
 
 	up_x = psa->attributes.char_up_vec_x;
@@ -2605,6 +2644,19 @@ ps_FillArea(gksc)
 		   psa->attributes.ps_colr_ind = requested_color;
 	   }
     	}
+	if (psa->color == MONO) {         
+	   requested_color = psa->attributes.fill_colr_ind;
+	   current_color = psa->attributes.ps_colr_ind;
+	   if (requested_color != current_color) {
+                   if (requested_color == 0) {
+		        (void) fprintf(psa->file_pointer,"0 O\n");
+                   }
+                   else {
+		        (void) fprintf(psa->file_pointer,"1 O\n");
+                   } 
+		   psa->attributes.ps_colr_ind = requested_color;
+	   }
+	}
 
 	/*
 	 *  Set up the line attributes to be used.
