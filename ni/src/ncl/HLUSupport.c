@@ -233,7 +233,7 @@ int off;
 										prev->next = tmp->next;
 										NclFree(tmp->ref_list);
 										tmp->n_entries = 0;
-										hlu_tab[index].ref_list = NULL;
+										tmp->ref_list = NULL;
 
 										NclFree(tmp);
 									} else {
