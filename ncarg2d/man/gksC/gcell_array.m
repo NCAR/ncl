@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gcell_array.m,v 1.1 1993-03-21 01:29:05 haley Exp $
+.\"	$Id: gcell_array.m,v 1.2 1993-03-29 22:41:43 haley Exp $
 .\"
 .TH GCELL_ARRAY 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -14,23 +14,28 @@ assigned a color and drawn with that color.
 .sp
 void gcell_array(const Grect *rect, const Gpat_rep *colr_array);
 .SH DESCRIPTION
-.IP rect 12
-(Input) - X and Y world coordinates of point 1 and 2.
+.IP rect.p.x 12
+(Gfloat Input) - X world coordinate of point 1.
+.IP rect.p.y 12
+(Gfloat Input) - Y world coordinate of point 1.
+.IP rect.q.x 12
+(Gfloat Input) - X world coordinate of point 2.
+.IP rect.q.y 12
+(Gfloat Input) - Y world coordinate of point 2.
 .IP colr_array.dims.size_x 12
-(Input) - X dimension of the color index array 
+(Gint, Input) - X dimension of the color index array 
 colr_array.colr_array.
 .IP colr_array.dims.size_y 12
-(Input) - Y dimension of the color index array 
+(Gint, Input) - Y dimension of the color index array 
 colr_array.colr_array.
 .IP colr_array.colr_array 12
-(Input) - An array of color indices 
-dimensioned colr_array.dims.size_x x colr_array.dims.size_y which is 
-used to determine the color of each 
-cell drawn.
+(Gint *, Input) - An array of color indices 
+dimensioned colr_array.dims.size_x by colr_array.dims.size_y which is 
+used to determine the color of each cell drawn.
 .SH USAGE
 Points 1 and 2 must be diagonally opposite corner 
 points of a rectangle to be divided into colr_array.dims.size_x cells in 
-the X dimension and colr_array.dims_size_y cells in the Y dimension.
+the X dimension and colr_array.dims.size_y cells in the Y dimension.
 .SH ACCESS
 To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
 and ncarg_loc libraries.

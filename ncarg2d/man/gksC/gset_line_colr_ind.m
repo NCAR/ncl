@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_line_colr_ind.m,v 1.1 1993-03-21 01:31:39 haley Exp $
+.\"	$Id: gset_line_colr_ind.m,v 1.2 1993-03-29 22:42:38 haley Exp $
 .\"
 .TH GSET_LINE_COLR_IND 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -12,7 +12,7 @@ void gset_line_colr_ind(Gint line_colr_ind);
 .IP line_colr_ind 12
 (Input) - A color index. 
 .SH USAGE
-All lines drawn with calls to the GPL output primitive 
+All lines drawn with calls to the gpolyline output primitive 
 will be drawn with the color associated with index line_colr_ind 
 until gset_line_colr_ind is called again and a new index is assigned.
 .sp

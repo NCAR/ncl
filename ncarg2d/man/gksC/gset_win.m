@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_win.m,v 1.1 1993-03-21 01:32:11 haley Exp $
+.\"	$Id: gset_win.m,v 1.2 1993-03-29 22:42:48 haley Exp $
 .\"
 .TH GSET_WIN 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -26,10 +26,16 @@ GKS. It is also fixed within GKS; that is, it is illegal to call
 gset_win with tran_num = 0.
 .IP 1 
 A normalization transformation in which the window is defined by 
-win_limits.x_min to win_limits.xmax and win_limits.ymin to win_limits.ymax.
+win_limits.x_min to win_limits.x_max and win_limits.y_min to win_limits.y_max.
 .RE
-.IP win_limits 12
-(Input) The coordinates of the window.
+.IP win_limits.x_min 12
+(Gfloat, Input) - The left horizontal coordinate of the window.  x_min < x_max
+.IP win_limits.x_max 12
+(Gfloat, Input) - The right horizontal coordinate of the window.
+.IP win_limits.y_min 12
+(Gfloat, Input) - The bottom vertical coordinate of the window. y_min < y_max
+.IP win_limits.y_max 12
+(Gfloat, Input) - The top vertical coordinate of the window.
 .SH ACCESS
 To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
 and ncarg_loc libraries.

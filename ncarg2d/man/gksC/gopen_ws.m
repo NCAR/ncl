@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gopen_ws.m,v 1.1 1993-03-21 01:30:52 haley Exp $
+.\"	$Id: gopen_ws.m,v 1.2 1993-03-29 22:42:21 haley Exp $
 .\"
 .TH GOPEN_WS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -47,7 +47,7 @@ segmentation functions WISS must be opened first.
 .sp
 For workstations of type 7 the connection ID is the X11 window ID
 for the existing window.  This number should be passed as a string; for
-example "3" for an X11 window ID of 3.
+example, "3" for an X11 window ID of 3.
 .sp
 For workstations of type 8 an X11 window will be created at open
 workstation time.  The connection ID is irrelevant for workstations

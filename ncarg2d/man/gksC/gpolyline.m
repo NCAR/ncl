@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gpolyline.m,v 1.1 1993-03-21 01:30:55 haley Exp $
+.\"	$Id: gpolyline.m,v 1.2 1993-03-29 22:42:23 haley Exp $
 .\"
 .TH GPOLYLINE 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -11,10 +11,10 @@ line segments connecting a sequence of user-specified coordinate pairs.
 void gpolyline(const Gpoint_list *point_list);
 .SH DESCRIPTION
 .IP point_list.num_points 12
-(Input) - The number of points in the line to be drawn. Must be larger than one.
+(Gint, Input) - The number of points in the line to be drawn. Must be larger than one.
 .IP point_list.points 12
-(Input) - The X and Y coordinates (specified in world coordinates) of the 
-point_list.num_points points to be connected by line segments.  
+(Gint *, Input) - The X and Y coordinates (specified in world coordinates) of 
+the point_list.num_points points to be connected by line segments.  
 .SH USAGE
 Note that the coordinate pairs must be in world coordinates and not
 user coordinates.  Among other things, this means that the log scaling

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_asfs.m,v 1.1 1993-03-21 01:29:39 haley Exp $
+.\"	$Id: ginq_asfs.m,v 1.2 1993-03-29 22:41:56 haley Exp $
 .\"
 .TH GINQ_ASFS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -19,31 +19,31 @@ meaning of the error indicators.
 .IP list_asf 12
 (Output) - A structure of settings for the thirteen attributes:
 .RS
-.IP linetype
+.IP list_asfs.linetype
 Linetype
-.IP linewidth
+.IP list_asfs.linewidth
 Linewidth scale factor
-.IP line_colr_ind
+.IP list_asfs.line_colr_ind
 Polyline color index
-.IP marker_type
+.IP list_asfs.marker_type
 Marker type
-.IP marker_size
+.IP list_asfs.marker_size
 Marker size scale factor
-.IP marker_colr_ind
+.IP list_asfs.marker_colr_ind
 Polymarker color index
-.IP text_font_prec
+.IP list_asfs.text_font_prec
 Text font and precision
-.IP char_expan
+.IP list_asfs.char_expan
 Character expansion factor
-.IP char_space
+.IP list_asfs.char_space
 Character spacing
-.IP text_colr_ind
+.IP list_asfs.text_colr_ind
 Text color index
-.IP fill_int_style
+.IP list_asfs.fill_int_style
 Fill area interior style
-.IP fill_style_ind
+.IP list_asfs.fill_style_ind
 Fill area style index
-.IP fill_colr_ind
+.IP list_asfs.fill_colr_ind
 Fill area color index
 .RE
 .sp

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_colr_rep.m,v 1.1 1993-03-21 01:31:27 haley Exp $
+.\"	$Id: gset_colr_rep.m,v 1.2 1993-03-29 22:42:36 haley Exp $
 .\"
 .TH GSET_COLR_REP 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -12,15 +12,15 @@ void gset_colr_rep(Gint ws_id, Gint colr_ind, const Gcolr_rep *colr_rep);
 .SH DESCRIPTION
 .IP ws_id 12
 (Input) - A workstation identifier.
-ws_id must be the same as that used in some previous GOPWK call.
+ws_id must be the same as that used in some previous gopen_ws call.
 .IP colr_ind 12
 (Input) - A color index.
 .IP colr_rep.rgb.red 12
-(Input) - An intensity value for red between 0. and 1. inclusive.
+(Gfloat, Input) - An intensity value for red between 0. and 1. inclusive.
 .IP colr_rep.rgb.green 12
-(Input) - An intensity value for green between 0. and 1. inclusive.
+(Gfloat, Input) - An intensity value for green between 0. and 1. inclusive.
 .IP colr_rep.rgb.blue 12
-(Input) - An intensity value for blue between 0. and 1. inclusive.
+(Gfloat, Input) - An intensity value for blue between 0. and 1. inclusive.
 .SH USAGE
 Color in GKS is "indexed", i.e. color attributes are
 assigned to primitives by using a color index.  The GKS

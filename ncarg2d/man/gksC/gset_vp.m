@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_vp.m,v 1.1 1993-03-21 01:32:07 haley Exp $
+.\"	$Id: gset_vp.m,v 1.2 1993-03-29 22:42:46 haley Exp $
 .\"
 .TH GSET_VP 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -29,9 +29,19 @@ A normalization transformation in which the viewport is defined
 by vp_limits.x_min to vp_limits.x_max and vp_limits.y_min to 
 vp_limits.y_max.
 .RE
-.IP vp_limits 12
-(Input) The coordinates of the viewport.
+.IP vp_limits.x_min 12
+(Real, Input) - The left horizontal coordinate of 
+the viewport.
+.IP vp_limits.x_max 12
+(Real, Input) - The right horizontal coordinate of 
+the viewport.
 0. \(<= vp_limits.x_min < vp_limits.x_max \(<= 1.
+.IP vp_limits.y_min 12
+(Real, Input) - The bottom vertical coordinate of 
+the viewport.
+.IP vp_limits.y_max 12
+(Real, Input) - The top vertical coordinate of the 
+viewport.
 0. \(<= vp_limits.y_min < vp_limits.y_max \(<= 1.
 .IP Defaults: 12
 tran_num = 0, vp_limits.x_min = 0.0, vp_limits.x_max = 1.0,
@@ -41,7 +51,7 @@ To use the GKS C-binding routines, load the ncarg_gksC and ncarg_gks
 libraries.
 .SH SEE ALSO
 Online: 
-.BR c_set(3NCARG),
+.BR set(3NCARG),
 .BR gset_win(3NCARG),
 .BR gsel_norm_tran(3NCARG),
 .BR ginq_clip(3NCARG),

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gfill_area.m,v 1.1 1993-03-21 01:29:36 haley Exp $
+.\"	$Id: gfill_area.m,v 1.2 1993-03-29 22:41:53 haley Exp $
 .\"
 .TH GFILL_AREA 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -10,10 +10,10 @@ gfill_area (Fill area) - output primitive for filling polygonal areas.
 void gfill_area(const Gpoint_list *point_list);
 .SH DESCRIPTION
 .IP point_list.num_points 12
-(Input) - The number of points in the polygon to be filled.  
+(Gint, Input) - The number of points in the polygon to be filled.  
 Must be greater than two.
 .IP point_list.points 12
-(Input) - The X and Y world coordinates of the polygon.
+(Gpoint *, Input) - The X and Y world coordinates of the polygon.
 .SH USAGE
 The area to be filled is delimited by the sequence of
 straight line segments connecting the successive 

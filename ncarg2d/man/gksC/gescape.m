@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gescape.m,v 1.1 1993-03-21 01:29:30 haley Exp $
+.\"	$Id: gescape.m,v 1.2 1993-03-29 22:41:48 haley Exp $
 .\"
 .TH GESCAPE 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -17,37 +17,41 @@ void gescape(Gint func_id, const Gescape_in_data *in_data, Gstore *store_data,Ge
 A function identifier specifying the requested activity.  The legal
 values for func_id are "-1391" for changing a metafile name and "-1396"
 for effecting a pause in an X window.
-.IP in_data->escape_r1.size 12
-(Input) - 
+.IP in_data.escape_r1.size 12
+(size_t, Input) - 
 Size of the input data record array (for input data record, see below).
-.IP in_data->escape_r1.data 12
-(Input) - Input data record.  For calls to gescape
-with func_id equal to -1391 the input data record should contain the
-desired metafile name left justified and blank filled; for calls to
-gescape with func_id equal to -1396 the input data record should contain
-the workstation identifier encoded as a five character number.
-.IP out_data->escape_r1.size 12
-(Output) - Size of the output data record array.  Not currently in use
+.IP in_data.escape_r1.data 12
+(void *, Input) - Input data record.  For calls to gescape
+with func_id equal to -1391 the input data record should be a character string
+containing the desired metafile name left justified and blank filled; for 
+calls to gescape with func_id equal to -1396 the input data record should be 
+a character string containing the workstation identifier encoded as a five 
+character number.
+.IP store_data 12
+(void *, Input) - Storage for output data.  Not currently in use for NCAR GKS.
+.IP out_data.escape_r1.size 12
+(size_t, Output) - Size of the output data record array.  Not currently in use
 for NCAR GKS.
-.IP out_data->escape_r1.data 12
-(Output) -  Output data record.    Not currently in use for NCAR GKS.
+.IP out_data.escape_r1.data 12
+(void *, Output) -  Output data record.    Not currently in use for NCAR GKS.
 .SH USAGE
 The sizes of the data records must always be at least "1" in value.
 .SH EXAMPLES
 gescape can be used to dynamically change the name of
 an output metafile and to do so one should use the calls
 gopen_gks and gopen_ws instead of c_opngks.  If you are using c_opngks,
-see the man page for c_setusv(3NCARG) for changing the name of the metafile.
+see the man page for setusv(3NCARG) for changing the name of the metafile.
 .sp
 To change the name of the output metafile inside your program,
 you should make a call similar to the following:
 .nf
-
+      
+       int str_len = 12;
        Gescape_in_data in_data;
        gopen_gks("stdout",0);
-       in_data.escape_r1.data = (Gdata *)malloc(12*sizeof(char));
+       in_data.escape_r1.data = (Gdata *)malloc(str_len*sizeof(char));
        strcpy(in_data.escape_r1.data, "new.cgm.name" );
-       in_data.escape_r1.size = 12;
+       in_data.escape_r1.size = str_len;
        gescape(-1391,&in_data,NULL,NULL);
 
 .fi
@@ -64,15 +68,16 @@ line, and then pause waiting for a mouse click or a key click.
 .nf
    
        Gescape_in_data in_data;
+       int str_len = 5;
 
        gopen_gks("stdout",0);
        gopen_ws(3,NULL,8);
        gactivate_ws(3);
        c_line(0.,0.,1.,1.);
        c_sflush();
-       in_data.escape_r1.data = (Gdata *)malloc(5*sizeof(char));
+       in_data.escape_r1.data = (Gdata *)malloc(str_len*sizeof(char));
        strcpy(in_data.escape_r1.data, "    3" );
-       in_data.escape_r1.size = 5
+       in_data.escape_r1.size = str_len;
        gescape(-1396,&in_data,NULL,NULL);
 
        gdeactivate_ws(3);

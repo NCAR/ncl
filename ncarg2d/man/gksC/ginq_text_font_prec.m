@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_text_font_prec.m,v 1.1 1993-03-21 01:30:44 haley Exp $
+.\"	$Id: ginq_text_font_prec.m,v 1.2 1993-03-29 22:42:18 haley Exp $
 .\"
 .TH GINQ_TEXT_FONT_PREC 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -15,14 +15,14 @@ void ginq_text_font_prec(Gint *err_ind, Gtext_font_prec *text_font_prec);
 a non-zero error indicator is returned in err_ind, otherwise a zero is returned.
 Consult "User's Guide for NCAR GKS-0A Graphics" for a description of the
 meaning of the error indicators.
-.IP text_font_prec->font 12
+.IP text_font_prec.font 12
 (Output) - 
 Gives the font number as set by default or by a call to
-gset_text_font_prec.  Font number one is a simple default ASCII font. Values for
-font between -2 and -20 (inclusive) are Hershey fonts.
-.IP text_font_prec->prec 12
+gset_text_font_prec.  Font number one is a simple default ASCII font. 
+Values for font between -2 and -20 (inclusive) are Hershey fonts.
+.IP text_font_prec.prec 12
 (Output) - Gives the text precision as set by default or by a call to
-gset_text_font_prec.
+gset_text_font_prec.  Possible values include:
 .RS
 .IP GPREC_STRING
 String precision (good)

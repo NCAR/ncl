@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_text_align.m,v 1.1 1993-03-21 01:30:39 haley Exp $
+.\"	$Id: ginq_text_align.m,v 1.2 1993-03-29 22:42:15 haley Exp $
 .\"
 .TH GINQ_TEXT_ALIGN 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -15,7 +15,7 @@ void ginq_text_align(Gint *err_ind, Gtext_align *text_align);
 a non-zero error indicator is returned in err_ind, otherwise a zero is returned.
 Consult "User's Guide for NCAR GKS-0A Graphics" for a description of the
 meaning of the error indicators.
-.IP text_align->hor 12
+.IP text_align.hor 12
 (Output) - Returns the current horizontal text alignment:
 .RS
 .IP GHOR_NORM
@@ -27,7 +27,7 @@ Center
 .IP GHOR_RIGHT
 Right
 .RE
-.IP text_align->vert 12
+.IP text_align.vert 12
 (Output) - Returns the current vertical text alignment:
 .RS
 .IP GVERT_NORM
@@ -48,27 +48,27 @@ To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
 and ncarg_loc libraries.
 .SH SEE ALSO
 Online: 
-.BR gtext,
-.BR gset_text_path,
-.BR gset_text_align,
-.BR gset_text_font_prec,
-.BR gset_char_ht,
-.BR gset_char_space,
-.BR gset_char_up_vec,
-.BR gset_char_expan,
-.BR gset_colr_rep,
-.BR gset_text_colr_ind,
-.BR ginq_text_path,
-.BR ginq_text_align,
-.BR ginq_text_font_prec,
-.BR ginq_char_ht,
-.BR ginq_char_space,
-.BR ginq_char_up_vec,
-.BR ginq_char_expan,
-.BR plotchar,
-.BR ngdots,
-.BR gks,
-.BR ncarg_gks_cbind
+.BR gtext(3NCARG),
+.BR gset_text_path(3NCARG),
+.BR gset_text_align(3NCARG),
+.BR gset_text_font_prec(3NCARG),
+.BR gset_char_ht(3NCARG),
+.BR gset_char_space(3NCARG),
+.BR gset_char_up_vec(3NCARG),
+.BR gset_char_expan(3NCARG),
+.BR gset_colr_rep(3NCARG),
+.BR gset_text_colr_ind(3NCARG),
+.BR ginq_text_path(3NCARG),
+.BR ginq_text_align(3NCARG),
+.BR ginq_text_font_prec(3NCARG),
+.BR ginq_char_ht(3NCARG),
+.BR ginq_char_space(3NCARG),
+.BR ginq_char_up_vec(3NCARG),
+.BR ginq_char_expan(3NCARG),
+.BR plotchar(3NCARG),
+.BR ngdots(3NCARG),
+.BR gks(3NCARG),
+.BR ncarg_gks_cbind(3NCARG)
 .sp
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"

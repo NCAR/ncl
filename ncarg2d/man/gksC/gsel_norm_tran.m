@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gsel_norm_tran.m,v 1.1 1993-03-21 01:31:09 haley Exp $
+.\"	$Id: gsel_norm_tran.m,v 1.2 1993-03-29 22:42:28 haley Exp $
 .\"
 .TH GSEL_NORM_TRAN 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -36,8 +36,8 @@ and ncarg_loc libraries.
 .SH SEE ALSO
 Online: 
 .BR set(3NCARG),
-.BR gsup(3NCARG),
 .BR gset_win(3NCARG),
+.BR gset_vp(3NCARG),
 .BR ginq_clip(3NCARG),
 .BR gks(3NCARG),
 .BR ncarg_gks_cbind(3NCARG)

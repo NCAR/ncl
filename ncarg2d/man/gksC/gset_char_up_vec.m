@@ -1,7 +1,7 @@
 .\"
-.\"	$Id: gset_char_up_vec.m,v 1.1 1993-03-21 01:31:22 haley Exp $
+.\"	$Id: gset_char_up_vec.m,v 1.2 1993-03-29 22:42:33 haley Exp $
 .\"
-.TH GSET_CHAR_UP_vec 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH GSET_CHAR_UP_VEC 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
 gset_char_up_vec (Set character up vector) - specifies the angle at which subsequent
 text is to be drawn with gtext.
@@ -11,9 +11,9 @@ text is to be drawn with gtext.
 void gset_char_up_vec(const Gvec *char_up_vec);
 .SH DESCRIPTION
 .IP char_up_vec.delta_x 12
-(Input) - Gives the X (horizontal) world coordinate of a vector.
+(Gfloat, Input) - Gives the X (horizontal) world coordinate of a vector.
 .IP char_up_vec.delta_y 12
-(Input) - Gives the Y (vertical) world coordinate of a vector. 
+(Gfloat, Input) - Gives the Y (vertical) world coordinate of a vector. 
 .SH USAGE
 The coordinates (char_up_vec.delta_x, char_up_vec.delta_y) relative to the 
 point (0.,0.) 

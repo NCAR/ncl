@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_char_ht.m,v 1.1 1993-03-21 01:29:44 haley Exp $
+.\"	$Id: ginq_char_ht.m,v 1.2 1993-03-29 22:41:58 haley Exp $
 .\"
 .TH GINQ_CHAR_HT 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -35,7 +35,7 @@ Online:
 .BR ginq_text_path(3NCARG),
 .BR ginq_text_align(3NCARG),
 .BR ginq_text_font_prec(3NCARG),
-.BR inq_char_space(3NCARG),
+.BR ginq_char_space(3NCARG),
 .BR ginq_char_up_vec(3NCARG),
 .BR ginq_char_expan(3NCARG),
 .BR plotchar(3NCARG),

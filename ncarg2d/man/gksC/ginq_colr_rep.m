@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_colr_rep.m,v 1.1 1993-03-21 01:29:55 haley Exp $
+.\"	$Id: ginq_colr_rep.m,v 1.2 1993-03-29 22:42:05 haley Exp $
 .\"
 .TH GINQ_COLR_REP 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -22,9 +22,10 @@ color values that are actually being used on the specified workstation
 (frequently a workstation will not be able to represent a requested 
 color value precisely).
 .RS
-.IP 0 
-Returns the color value set for index CI either by default or by a call to gset_colr_rep.
-.IP 1 
+.IP GINQ_SET
+Returns the color value set for index colr_ind either by default or by a call 
+to gset_colr_rep.
+.IP GINQ_REALIZED
 Returns the color value actually used by the workstation to represent the 
 requested color.
 .RE
@@ -33,14 +34,14 @@ requested color.
 a non-zero error indicator is returned in err_ind, otherwise a zero is returned.
 Consult "User's Guide for NCAR GKS-0A Graphics" for a description of the
 meaning of the error indicators.
-.IP colr_rep->rgb.red 12
-(Output) - Returns an intensity value for red in the 
+.IP colr_rep.rgb.red 12
+(Gfloat, Output) - Returns an intensity value for red in the 
 range 0. to 1. inclusive.
-.IP colr_rep->rgb.green 12
-(Output) - Returns an intensity value for green in the 
+.IP colr_rep.rgb.green 12
+(Gfloat, Output) - Returns an intensity value for green in the 
 range 0. to 1. inclusive.
-.IP colr_rep->rgb.blue 12
-(Output) - Returns an intensity value for blue in the 
+.IP colr_rep.rgb.blue 12
+(Gfloat, Output) - Returns an intensity value for blue in the 
 range 0. to 1. inclusive.
 .SH USAGE
 For details on setting and using color indices see the man page for gset_colr_rep.

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_seg_tran.m,v 1.1 1993-03-21 01:31:55 haley Exp $
+.\"	$Id: gset_seg_tran.m,v 1.2 1993-03-29 22:42:41 haley Exp $
 .\"
 .TH GSET_SEG_TRAN 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -13,7 +13,7 @@ void gset_seg_tran(Gint seg_name, const Gtran_matrix tran_matrix);
 .IP seg_name 12
 (Input) A segment name as used in a previous gcreate_seg call.
 .IP tran_matrix 12
-(Input) - A 2x3 array giving the GKS segment transformation to
+(Gfloat, Input) - A 2x3 array giving the GKS segment transformation to
 be associated with the segment specified in seg_name.
 .SH USAGE
 When the segment named in seg_name is displayed, the coordinates of its
@@ -38,8 +38,7 @@ Online:
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"
 .SH COPYRIGHT
-Copyright 1987(3NCARG),
-1988, 1989, 1991, 1993 University Corporation
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved

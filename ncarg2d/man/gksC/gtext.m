@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gtext.m,v 1.1 1993-03-21 01:32:17 haley Exp $
+.\"	$Id: gtext.m,v 1.2 1993-03-29 22:42:51 haley Exp $
 .\"
 .TH GTEXT 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -9,10 +9,12 @@ precision, orientation, color, character spacing, etc.
 .SH SYNOPSIS
 void gtext(const Gpoint *text_pos, const char *char_string);
 .SH DESCRIPTION
-.IP text_pos 12
-(Input) The x and y world coordinates of the text alignment of the first 
-character 
-in char_string.
+.IP text_pos.x 12
+(Gfloat, Input) The x world coordinate of the text alignment of the first 
+character in char_string.
+.IP text_pos.y 12
+(Gfloat, Input) The y world coordinate of the text alignment of the first 
+character in char_string.
 .IP char_string 12
 (Input) The characters to be drawn.
 .SH ACCESS

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_text_font_prec.m,v 1.1 1993-03-21 01:32:02 haley Exp $
+.\"	$Id: gset_text_font_prec.m,v 1.2 1993-03-29 22:42:44 haley Exp $
 .\"
 .TH GSET_TEXT_FONT_PREC 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -11,8 +11,8 @@ and precision.
 void gset_text_font_prec(const Gtext_font_prec *text_font_prec);
 .SH DESCRIPTION
 .IP text_font_prec.font 12
-(Input) Specifies the text font to be used in subsequent calls to the gtext 
-output primitive. Options are:
+(Gint, Input) Specifies the text font to be used in subsequent calls to 
+the gtext output primitive. Options are:
 .RS
 .IP "  1"
 ASCII font (default)
@@ -54,7 +54,7 @@ Hershey math symbols
 Hershey symbol set 1
 .IP "-20"
 Hershey symbol set 2
-.PP
+.sp
 The Hershey fonts are not standardized by GKS but are 
 locally implemented in NCAR GKS-0A. GKS requires that 
 such locally implemented fonts be assigned negative 
@@ -79,7 +79,7 @@ Character precision (better).
 Stroke precision (best). This is the default for NCAR GSK-0A.
 .RE
 .SH USAGE
-If one accesses the Hershey fonts via GSET_TEXT_FONT_PREC and GTX, then
+If one accesses the Hershey fonts via gset_text_font_prec and gtext, then
 the characters are not stroked until viewing time.  If
 one accesses the Hershey fonts via PLOTCHAR, then the characters
 are stroked by PLOTCHAR itself.  This can make a significant

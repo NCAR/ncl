@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gclose_gks.m,v 1.1 1993-03-21 01:29:10 haley Exp $
+.\"	$Id: gclose_gks.m,v 1.2 1993-03-29 22:41:45 haley Exp $
 .\"
 .TH GCLOSE_GKS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -14,7 +14,7 @@ terminated.  No graphics calls depending on GKS should be made
 during the time that GKS is closed.  If output to a CGM has been
 the exclusive requirement of the graphics job, and the SPPS entry c_opngks
 has been used to open GKS and to open and activate a CGM workstation,
-then CLSGKS can be used to deactivate and close the CGM workstation,
+then c_clsgks can be used to deactivate and close the CGM workstation,
 and to close GKS, making a direct call to gclose_gks unnecessary in that
 case.
 .SH ACCESS

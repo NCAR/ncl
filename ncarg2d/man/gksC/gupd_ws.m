@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gupd_ws.m,v 1.2 1993-03-21 01:32:19 haley Exp $
+.\"	$Id: gupd_ws.m,v 1.3 1993-03-29 22:42:54 haley Exp $
 .\"
 .TH GUPD_WS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -15,14 +15,21 @@ void gupd_ws(Gint ws_id, Gupd_regen_flag upd_regen_flag);
 ws_id must be the same as that used in some previous gopen_ws call.
 .IP upd_regen_flag 12
 (Input) A flag to specify if the current picture should be regenerated.  The 
-possible values for this are "0" for postpone, and
-"1" for perform.  For the workstation types supported in NCAR GKS,
-this flag should always be set to "1".
+possible values include:
+.RS
+.IP GUPD_NOT_PEND 12
+Postpone
+.IP GUPD_PEND
+Perform
+.RE
+.sp
+For the workstation types supported in NCAR GKS, this flag should always be 
+set to GUPD_PEND.
 .SH USAGE
 A call to gupd_ws flushes all buffers to bring the workstation up to date.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC and ncarg_gks
-libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
+and ncarg_loc libraries.
 .SH SEE ALSO
 Online: 
 .BR sflush(3NCARG),

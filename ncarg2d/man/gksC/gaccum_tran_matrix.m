@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gaccum_tran_matrix.m,v 1.1 1993-03-21 01:28:58 haley Exp $
+.\"	$Id: gaccum_tran_matrix.m,v 1.2 1993-03-29 22:41:40 haley Exp $
 .\"
 .TH GACCUM_TRAN_MATRIX 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -14,31 +14,47 @@ done with respect to a user-defined fixed point.
 void gaccum_tran_matrix(const Gtran_matrix t_matrix, const Gpoint *point, const Gvec *shift, Gdouble angle, const Gvec *scale, Gcoord_switch coord_switch, Gtran_matrix tran_matrix);
 .SH DESCRIPTION
 .IP t_matrix 12
-(Input) - A 2x3 GKS transformation matrix.
-.IP point 12
-(Input) - X and Y coordinate values for a fixed point to be used for
-the scaling and rotation parts of the output transformation.  X and Y are
+(Gfloat, Input) - A 2x3 GKS transformation matrix.
+.IP point.x 12
+(Gfloat, Input) - X coordinate value for a fixed point to be used for
+the scaling and rotation parts of the output transformation.  point.x is
 either in world coordinates or normalized device coordinates depending on the 
 setting of the argument coord_switch described below.
-.IP shift 12
-(Input) - The X and Y components of a shift vector to be used for the
-scaling part of the output transformation.  shift is either in world
+.IP point.y 12
+(Gfloat, Input) - Y coordinate value for a fixed point to be used for
+the scaling and rotation parts of the output transformation.  point.y is
+either in world coordinates or normalized device coordinates depending on the 
+setting of the argument coord_switch described below.
+.IP shift.delta_x 12
+(Gfloat, Input) - The X component of a shift vector to be used for the
+scaling part of the output transformation.  shift.delta_x is either in world
+coordinates or normalized device coordinates depending on the 
+setting of the argument coord_switch described below.
+.IP shift.delta_y 12
+(Gfloat, Input) - The Y component of a shift vector to be used for the
+scaling part of the output transformation.  shift.delta_y is either in world
 coordinates or normalized device coordinates depending on the 
 setting of the argument coord_switch described below.
 .IP angle 12
 (Input) - The rotation angle, in radians, to be used for the
 rotation part of the output transformation.
-.IP scale 12
-(Input) - X and Y coordinate scale factors to be used in the scaling
+.IP scale.delta_x 12
+(Gfloat, Input) - X coordinate scale factor to be used in the scaling
+part of the output transformation.
+.IP scale.delta_y 12
+(Gfloat, Input) - Y coordinate scale factor to be used in the scaling
 part of the output transformation.
 .IP coord_switch 12
 (Input) - A coordinate switch to indicate whether the
 values for the arguments point and shift (described above) are in
-world coordinates or normalized device coordinates.  coord_switch=GCOORD_WS 
-indicates world coordinates and coord_switch=GCOORD_NDC indicates normalized 
-device coordinates.
+world coordinates or normalized device coordinates.  Possible values include:
+.RS
+.IP GCOORD_WC
+World coordinates
+.IP GCOORD_NDC
+Normalized device coordinates
 .IP tran_matrix 12
-(Output) - A 2x3 array that contains the GKS
+(Gfloat, Output) - A 2x3 array that contains the GKS
 transformation matrix in a form that can be used as input to other
 GKS functions such as gset_seg_tran.  This matrix is constructed by composing
 the scale, rotate, and shift input, described above, with the original

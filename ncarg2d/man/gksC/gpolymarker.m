@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gpolymarker.m,v 1.1 1993-03-21 01:30:58 haley Exp $
+.\"	$Id: gpolymarker.m,v 1.2 1993-03-29 22:42:26 haley Exp $
 .\"
 .TH GPOLYMARKER 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -11,10 +11,10 @@ symmetric symbols to mark user-specified coordinate positions.
 void gpolymarker(const Gpoint_list *point_list);
 .SH DESCRIPTION
 .IP point_list.num_points 12
-(Input) - The number of markers to be drawn.  Must be greater than zero.
+(Gint, Input) - The number of markers to be drawn.  Must be greater than zero.
 .IP point_list.points 12
-(Input) - The X and Y coordinates of the point_list.num_points markers to be 
-drawn, in world coordinates.
+(Gpoint *, Input) - The X and Y coordinates of the point_list.num_points 
+markers to be drawn, in world coordinates.
 .SH USAGE
 By default, the polymarker type is an asterisk. To 
 select other polymarker types and attributes, see the man
