@@ -1,3 +1,4 @@
+/* ECMWF local table 2 version 150 (Ocean - preliminary) */
 TBLE2 ecmwf_150_params[] = {
 {129, "Ocean potential temperature", "deg C", "POT_OC"},
 {130, "Ocean salinity", "psu", "SALTY_OC"},
