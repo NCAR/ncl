@@ -1409,7 +1409,16 @@ GribFileRecord *therec;
 				therec->it_dims = ptr;
 				therec->n_it_dims++;
 				step->var_info.file_dim_num[current_dim] = tmp->dim_number;
-				_GribAddInternalVar(therec,tmp->dim_name,&tmp->dim_number,(NclMultiDValData)step->yymmddhh,NULL,0);
+				
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				*tmp_string = NrmStringToQuark("mm/dd/yyyy (hh:mm)");
+				GribPushAtt(&tmp_att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				*tmp_string = NrmStringToQuark("Initial time of first record");
+				GribPushAtt(&tmp_att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
+
+				_GribAddInternalVar(therec,tmp->dim_name,&tmp->dim_number,(NclMultiDValData)step->yymmddhh,tmp_att_list_ptr,2);
+				tmp_att_list_ptr = NULL;
 				step->yymmddhh = NULL;
 			} else {
 				step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
@@ -1463,7 +1472,17 @@ GribFileRecord *therec;
 				therec->ft_dims = ptr;
 				therec->n_ft_dims++;
 				step->var_info.file_dim_num[current_dim] = tmp->dim_number;
-				_GribAddInternalVar(therec,tmp->dim_name,&tmp->dim_number,(NclMultiDValData)step->forecast_time,NULL,0);
+
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				*tmp_string = NrmStringToQuark("hours");
+				GribPushAtt(&tmp_att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
+
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				*tmp_string = NrmStringToQuark("Forecast offset from initial time");
+				GribPushAtt(&tmp_att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
+
+				_GribAddInternalVar(therec,tmp->dim_name,&tmp->dim_number,(NclMultiDValData)step->forecast_time,tmp_att_list_ptr,2);
+				tmp_att_list_ptr = NULL;
 				step->forecast_time = NULL;
 			} else {
 				step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
@@ -1527,9 +1546,26 @@ GribFileRecord *therec;
 				therec->lv_dims = ptr;
 				therec->n_lv_dims++;
 				step->var_info.file_dim_num[current_dim] = tmp->dim_number;
+
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				if(i < sizeof(level_index)/sizeof(int)) {
+					*tmp_string = NrmStringToQuark(level_units_str[i]);
+				} else {
+					*tmp_string = NrmStringToQuark("unknown");
+				}
+				GribPushAtt(&att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
+
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				if(i < sizeof(level_index)/sizeof(int)) {
+					*tmp_string = NrmStringToQuark(level_str_long_name[i]);
+				} else {
+					*tmp_string = NrmStringToQuark("unknown");
+				}
+				GribPushAtt(&att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
 				
 
-				_GribAddInternalVar(therec,tmp->dim_name,&tmp->dim_number,(NclMultiDValData)step->levels,NULL,0);
+				_GribAddInternalVar(therec,tmp->dim_name,&tmp->dim_number,(NclMultiDValData)step->levels,att_list_ptr,2);
+				att_list_ptr = NULL;
 				step->levels = NULL;
 			} else {
 				step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
@@ -1599,9 +1635,47 @@ GribFileRecord *therec;
 				therec->n_lv_dims++;
 				step->var_info.file_dim_num[current_dim] = tmp->dim_number;
 				sprintf(name_buffer,"%s%s",buffer,"_l0");
-				_GribAddInternalVar(therec,NrmStringToQuark(name_buffer),&tmp->dim_number,(NclMultiDValData)step->levels0,NULL,0);
+
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				if(i < sizeof(level_index)/sizeof(int)) {
+					*tmp_string = NrmStringToQuark(level_units_str[i]);
+				} else {
+					*tmp_string = NrmStringToQuark("unknown");
+				}
+				GribPushAtt(&att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
+
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				if(i < sizeof(level_index)/sizeof(int)) {
+					*tmp_string = NrmStringToQuark(level_str_long_name[i]);
+				} else {
+					*tmp_string = NrmStringToQuark("unknown");
+				}
+				GribPushAtt(&att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
+
+				_GribAddInternalVar(therec,NrmStringToQuark(name_buffer),&tmp->dim_number,(NclMultiDValData)step->levels0,att_list_ptr,2);
+
+				att_list_ptr = NULL;
+
 				sprintf(name_buffer,"%s%s",buffer,"_l1");
-				_GribAddInternalVar(therec,NrmStringToQuark(name_buffer),&tmp->dim_number,(NclMultiDValData)step->levels1,NULL,0);
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				if(i < sizeof(level_index)/sizeof(int)) {
+					*tmp_string = NrmStringToQuark(level_units_str[i]);
+				} else {
+					*tmp_string = NrmStringToQuark("unknown");
+				}
+				GribPushAtt(&att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
+
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				if(i < sizeof(level_index)/sizeof(int)) {
+					*tmp_string = NrmStringToQuark(level_str_long_name[i]);
+				} else {
+					*tmp_string = NrmStringToQuark("unknown");
+				}
+				GribPushAtt(&att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
+				_GribAddInternalVar(therec,NrmStringToQuark(name_buffer),&tmp->dim_number,(NclMultiDValData)step->levels1,att_list_ptr,2);
+
+
+				att_list_ptr = NULL;
 				step->levels0 = NULL;
 				step->levels1 = NULL;
 			} else {
