@@ -1,5 +1,5 @@
 /*
- *	$Id: hplj.c,v 1.8 1993-01-17 06:51:43 don Exp $
+ *	$Id: hplj.c,v 1.9 1993-01-19 16:35:26 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -44,10 +44,262 @@
 static char	*FormatName = "hplj";
 static char	*Comment = "hplj file from NCAR raster utilities";
 
-extern char	*strcpy();
-static		create_data_space();
-static char	*_HPLJPosition();
 
+/*
+ * determine the starting position for the raster image. i.e. the device
+ * coordinate system. The LaserJet does internal pixel 
+ * replication  whenever dpi is not the max value, 300. We need to remember
+ * this when we calculate starting position of image.
+ */
+static	void	start_position(nx, ny, dpi, orientation, start_x, start_y)
+	int	nx, ny;		/* dimension of image	*/
+	int	dpi;		/* dots per inch	*/
+	int	orientation;
+	int	*start_x,	/* starting x coord in dpi	*/
+		*start_y;	/* starting y coord in dpi	*/
+
+{
+	char	buf[80];
+	char	*cptr;
+	int	total_width;	/* width of page in dpi		*/
+	int	total_height;	/* height of page in dpi	*/
+	int	image_width;	/* actual width of image after pixel rep.  */
+	int	image_height;	/* actual height of image after pixel rep. */
+
+	total_width = HPLJ_PAPER_WIDTH * HPLJ_MAX_RES;
+	total_height = HPLJ_PAPER_HEIGHT * HPLJ_MAX_RES;
+	image_width = nx * HPLJ_MAX_RES / dpi;
+	image_height = ny * HPLJ_MAX_RES / dpi;
+
+	if (orientation == RAS_LANDSCAPE) {
+		*start_y = (total_width - image_width) / 2;
+		*start_x = ((total_height - image_height) / 2);
+	}
+	else {
+		*start_y = (total_height - image_height) / 2;
+		*start_x = (total_width - image_width) / 2;
+	}
+}
+
+/*
+ *	encode and write a single scanline
+ *
+ * on entry
+ *	*fp		: file pointer to write to
+ *	x,y		: starting position of the scanline
+ *	*data		: formatted scanline
+ *	data_len	: num bytes in data_len
+ * on exit
+ *	return		: 0 => ok, else failure
+ */
+scanline(fp, x, y, data, data_len)
+	FILE		*fp;
+	int		x;
+	int		y;
+	unsigned char	*data;
+	int		data_len;
+{
+	unsigned char	buf[BUFSIZ];
+	int		len;
+
+	/*
+	 * position the cursor
+	 */
+	sprintf((char *) buf, HPLJ_POSITION, x, y);
+	len = strlen((char *) buf);
+	if (fwrite((char *) buf, 1, len, fp) != len) {
+		ESprintf(errno, "fwrite(,1,%d,)", len);
+		return(-1);
+	}
+
+	/*
+	 * Enter graphics mode
+	 */
+	sprintf((char *) buf, HPLJ_START);
+	len = strlen((char *) buf);
+	if (fwrite((char *) buf, 1, len, fp) != len) {
+		ESprintf(errno, "fwrite(,1,%d,)", len);
+		return(-1);
+	}
+
+	/*
+	 * send the data stream header
+	 */
+	sprintf((char *) buf, HPLJ_TRANSFER, data_len);
+	len = strlen((char *) buf);
+	if (fwrite((char *) buf, 1, len, fp) != len) {
+		ESprintf(errno, "fwrite(,1,%d,)", len);
+		return(-1);
+	}
+
+	/*
+	 * send the scan line
+	 */
+	if (fwrite((char *) data, 1, data_len, fp) != data_len) {
+		ESprintf(errno, "fwrite(,1,%d,)", len);
+		return(-1);
+	}
+
+	/*
+	 * Exit graphics mode
+	 */
+	sprintf((char *) buf, HPLJ_END);
+	len = strlen((char *) buf);
+	if (fwrite((char *) buf, 1, len, fp) != len) {
+		ESprintf(errno, "fwrite(,1,%d,)", len);
+		return(-1);
+	}
+
+	return(0);
+}
+
+/*
+ *	format and encode in portrait mode
+ *
+ *	encode the generic raster image into a compressed HP PCL raster
+ *	format and write the resultant image out to disk
+ */
+static	int	write_compressed_port(ras)
+	Raster	*ras;
+{
+	HPLJ_Info	*hplj = (HPLJ_Info *) ras->dep;	
+
+	int		step = HPLJ_MAX_RES / hplj->dpi;
+	int		ry, rx;
+	int		hx, hy;
+	int		run;	/* num contiguous "on" bits in a run	*/
+	int		hx_;	/* first x coord set in a scan line	*/
+
+	unsigned char	data[BUFSIZ];
+	unsigned char	*ptr;
+	int		data_len;
+	unsigned char	mask;	/* byte-sized bit mask	*/
+
+
+	/*
+	 * scan convert each line in the generic image into PCL format. 
+	 * Perform the necessary 8-bit to 1-bit dithering required by
+	 * PCL format.
+	 */
+	for (ry=0, hy=hplj->start_y; ry<ras->ny; ry++, hy+=step) {
+
+		/*
+		 * find first set bit. We need to reset the position
+		 * at the beginning of each scan line so we might as
+		 * well skip any leading zeros. At the end of this
+		 * loop rx and hx will be set appropriately for the first bit.
+		 */
+		for(rx=0, hx = hplj->start_x; rx<ras->nx; rx++, hx+= step) {
+			if (INDEXED_PIXEL(ras, rx, ry)) {
+				hx_ = hx;
+				break;
+			}
+		}
+
+		if (rx >= ras->nx) continue;	/* empty scan line	*/
+
+		/*
+		 * compress a single scan line from bytes into bits.
+		 *
+ 		 * N.B. we're guaranteed to have at least one set bit
+		 * in the scanline by the above conditional.
+		 */
+		bzero((char *) data, sizeof(data));
+		for (mask=0x80,ptr=data,data_len=1; rx<ras->nx; rx++, hx+=step){
+
+                        if (! mask) {
+                                mask = 0x80;    /* reset mask   */
+                                ptr++;          /* end of byte  */
+				data_len++;
+                        }
+			if (INDEXED_PIXEL(ras, rx, ry)) {
+                                *ptr |= mask;
+			}
+                        mask >>= 1;
+                }
+
+		if (scanline(ras->fp, hx_, hy, data, data_len) < 0) {
+			return(-1);
+		}
+
+	}
+
+	return(0);
+}
+
+/*
+ *	format and encode in landscape mode
+ *
+ *	encode the generic raster image into a compressed HP PCL raster
+ *	format and write the resultant image out to disk
+ */
+static	int	write_compressed_land(ras)
+	Raster	*ras;
+{
+	HPLJ_Info	*hplj = (HPLJ_Info *) ras->dep;	
+
+	int		step = HPLJ_MAX_RES / hplj->dpi;
+	int		rx, ry;
+	int		hy, hx;
+	int		run;	/* num contiguous "on" bits in a run	*/
+	int		hy_;	/* first y coord set in a scan line	*/
+
+	unsigned char	data[BUFSIZ];
+	unsigned char	*ptr;
+	int		data_len;
+	unsigned char	mask;	/* byte-sized bit mask	*/
+
+
+	/*
+	 * scan convert each line in the generic image into PCL format. 
+	 * Perform the necessary 8-bit to 1-bit dithering required by
+	 * PCL format.
+	 */
+	for (rx=0, hx=hplj->start_x; rx<ras->nx; rx++, hx+=step) {
+
+		/*
+		 * find first set bit. We need to reset the position
+		 * at the beginning of each scan line so we might as
+		 * well skip any leading zeros. At the end of this
+		 * loop ry and hy will be set appropriately for the first bit.
+		 */
+		for(ry=0, hy = hplj->start_y; ry<ras->ny; ry++, hy+= step) {
+			if (INDEXED_PIXEL(ras, rx, ry)) {
+				hy_ = hy;
+				break;
+			}
+		}
+
+		if (ry >= ras->ny) continue;	/* empty scan line	*/
+
+		/*
+		 * compress a single scan line from by into bits.
+		 *
+ 		 * N.B. we're guaranteed to have at least one set bit
+		 * in the scanline by the above conditional.
+		 */
+		bzero((char *) data, sizeof(data));
+		for (mask=0x80,ptr=data,data_len=1; ry<ras->ny; ry++, hy+=step){
+
+                        if (! mask) {
+                                mask = 0x80;    /* reset mask   */
+                                ptr++;          /* end of byte  */
+				data_len++;
+                        }
+			if (INDEXED_PIXEL(ras, rx, ry)) {
+                                *ptr |= mask;
+			}
+                        mask >>= 1;
+                }
+
+		if (scanline(ras->fp, hx, hy_, data, data_len) < 0) {
+			return(-1);
+		}
+
+	}
+
+	return(0);
+}
 
 /*ARGSUSED*/
 Raster *
@@ -62,14 +314,13 @@ int
 HPLJPrintInfo(ras)
 	Raster	*ras;
 {
-	HPLJ_Info	*dep = (HPLJ_Info *) ras->dep;
-	HPLJ_Ras	*rdep = (HPLJ_Ras *) &(dep->ras);	
+	HPLJ_Info	*hplj = (HPLJ_Info *) ras->dep;
 
 	(void) fprintf(stderr, "\n");
 	(void) fprintf(stderr, "HPLJ Rasterfile Information\n");
 	(void) fprintf(stderr, "--------------------------\n");
 
-	if (strcmp(rdep->orientation, HPLJ_LANDSCAPE) == 0)
+	if (hplj->orientation ==  RAS_LANDSCAPE) 
 		(void) fprintf(stderr, "orientation:	landscape\n");
 	else 
 		(void) fprintf(stderr, "orientation:	portrait\n");
@@ -78,8 +329,8 @@ HPLJPrintInfo(ras)
 	 * print out encoding info here if we knew it
 	 */
 
-	(void) fprintf(stderr, "row length:	%d\n", dep->row_size);
-	(void) fprintf(stderr, "resolution:	%ddpi\n", dep->dpi);
+	(void) fprintf(stderr, "row length:	%d\n", hplj->row_size);
+	(void) fprintf(stderr, "resolution:	%ddpi\n", hplj->dpi);
 	
 }
 
@@ -94,18 +345,21 @@ HPLJOpenWrite(name, nx, ny, comment, encoding)
 	RasterEncoding	encoding;
 {
 	Raster		*ras;
-	HPLJ_Info	*dep;
-	HPLJ_Ras	*rdep;
+	HPLJ_Info	*hplj;
 	int		dpi;
-	int	orientation;
 
 	if (name == (char *) NULL) {
 		(void) ESprintf(RAS_E_NULL_NAME, "HPLJOpenWrite()");
 		return( (Raster *) NULL );
 	}
 
+	if (encoding != RAS_INDEXED) {
+		(void) ESprintf(RAS_E_UNSUPPORTED_ENCODING,
+			"Only INDEXED is supported for HPLJ");
+		return( (Raster *) NULL );
+	}
+
 	dpi = OptionDotsPerInch;
-	orientation = OptionOrientation;
 
 	if ( !(dpi == 75 || dpi == 100 || dpi == 150 || dpi == 300)) {
 		(void) ESprintf(RAS_E_UNSUPPORTED_RESOLUTION,
@@ -125,63 +379,36 @@ HPLJOpenWrite(name, nx, ny, comment, encoding)
 
 	if (ras->dep == (char *) NULL) {
 		(void) ESprintf(errno, "HPLJOpenWrite()");
+		ras_free(ras);
 		return( (Raster *) NULL );
 	}
 
-	dep = (HPLJ_Info *) ras->dep;
-	rdep = (HPLJ_Ras *) &(dep->ras);
+	hplj = (HPLJ_Info *) ras->dep;
 
+	hplj->do_compress = OptionCompression;	/* currently ignored	*/
+	hplj->orientation = OptionOrientation;
+	hplj->dpi = dpi;
 
-	/*
-	 * 	set up HPLJ_Info struct
-	 */
-	dep->dpi = dpi;
-
-	rdep->reset = ras_malloc((unsigned) strlen(HPLJ_RESET) + 1);
-	(void) strcpy(rdep->reset, HPLJ_RESET);
-	
-	if (orientation == RAS_LANDSCAPE) { /* landscape or portrait mode? */
-	    rdep->orientation=ras_malloc((unsigned)strlen(HPLJ_LANDSCAPE)+1);
-	    (void) strcpy(rdep->orientation, HPLJ_LANDSCAPE);
-	} 
-	else {
-	    rdep->orientation = ras_malloc((unsigned) strlen(HPLJ_PORTRAIT) +1);
-	    (void) strcpy(rdep->orientation, HPLJ_PORTRAIT);
-	}
-
-	rdep->encoding = ras_malloc((unsigned) strlen(HPLJ_ENCODING) + 1);
-	(void) strcpy(rdep->encoding, HPLJ_ENCODING);
 
 	/* 
 	 * find starting position
 	 */
-	rdep->position = _HPLJPosition(nx, ny, dpi, orientation);
-
-	rdep->start_graph = ras_malloc((unsigned) strlen(HPLJ_START) + 1);
-	(void) strcpy(rdep->start_graph, HPLJ_START);
-
-	if (create_data_space(dep, nx, ny) < 0) {
-		(void) ESprintf(errno, "HPLJOpenWrite()/create_data_space()");
-		return( (Raster *) NULL );
-	}
-
-	rdep->end_graph = ras_malloc((unsigned) strlen(HPLJ_END) + 1);
-	(void) strcpy(rdep->end_graph, HPLJ_END);
-	
-	rdep->eject = ras_malloc((unsigned) strlen(HPLJ_EJECT) + 1);
-	(void) strcpy(rdep->eject, HPLJ_EJECT);
+	start_position(
+		nx,ny,dpi,hplj->orientation,&(hplj->start_x), &(hplj->start_y)
+	);
 
 	if (!strcmp(name, "stdout")) {
-		ras->fd = fileno(stdout);
+		ras->fp = stdout;
 	}
 	else {
-		ras->fd = open(name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		ras->fp = fopen(name, "w");
 
-		if (ras->fd == -1) {
+		if (ras->fp == NULL) {
 			(void) ESprintf(errno, "HPLJOpenWrite(\"%s\")",name);
 			return( (Raster *) NULL );
 		}
 	}
+	ras->fd = fileno(ras->fp);
 
 	ras->name = (char *) ras_calloc((unsigned) strlen(name) + 1, 1);
 	(void) strcpy(ras->name, name);
@@ -200,15 +427,8 @@ HPLJOpenWrite(name, nx, ny, comment, encoding)
 	ras->green	= (unsigned char *)ras_calloc((unsigned)ras->ncolor, 1);
 	ras->blue	= (unsigned char *)ras_calloc((unsigned)ras->ncolor, 1);
 	ras->data	= (unsigned char *)ras_calloc((unsigned)ras->length, 1);
+	ras->type 	= encoding;
 
-	if (encoding != RAS_INDEXED) {
-		(void) ESprintf(RAS_E_UNSUPPORTED_ENCODING,
-			"Only INDEXED is supported for HPLJ");
-		return( (Raster *) NULL );
-	}
-	else {
-		ras->type = RAS_INDEXED;
-	}
 
 	HPLJSetFunctions(ras);
 
@@ -223,13 +443,10 @@ HPLJWrite(ras)
 	int		nb;
 	int		i,j;
 
-	HPLJ_Info	*dep = (HPLJ_Info *) ras->dep;	
-	HPLJ_Ras	*rdep = (HPLJ_Ras *) &(dep->ras);	
-	unsigned char	mask;
-	unsigned char	*lras,	/* pointer to data in ras->data	*/
-			*hp;	/* pointer to data in ras->dep->ras.data*/
-	unsigned char	*ptr;
-	int		len;	/* length of dep->trans_data		*/
+	HPLJ_Info	*hplj = (HPLJ_Info *) ras->dep;	
+
+	unsigned char	buf[BUFSIZ];
+	int		len;
 
 	if (ras == (Raster *) NULL) {
 		(void) ESprintf(RAS_E_BOGUS_RASTER_STRUCTURE,errmsg,ras->name);
@@ -237,106 +454,63 @@ HPLJWrite(ras)
 	}
 
 	/*
-	 * crunch 8-bit per pixel image into bi-level image. Load HP
-	 * "Transfer Raster Data" instruction while we're at it
-	 */
-	len = strlen(dep->trans_data);
-	lras = ras->data;
-	hp = rdep->data;
-	for (i=0; i < ras->ny; i++) {
-		mask = 0x80;
-		/* 
-		 * insert control string
-		 */
-		bcopy(dep->trans_data, (char*) hp, len); 
-		ptr = hp + len;		/* begining data for this row	*/
-		
-		/*
-		 * load a row of data with bits
-		 */
-		for (j=0; j < ras->nx; j++) {
-			if (! mask) {
-				mask = 0x80;	/* reset mask	*/
-				ptr++;		/* end of byte	*/
-			}
-			if (*lras) 
-				*ptr |= mask;
-			mask >>= 1;
-			lras++;
-		}
-		hp += dep->row_size;	/* skip to next row	*/
-	}
-
-	/*
 	 * reset the printer
 	 */
-	nb = write(ras->fd, (char *) rdep->reset, strlen(rdep->reset));
-	if (nb != strlen(rdep->reset)) {
-		(void) ESprintf(errno, "HPLJWrite()");
-		return(RAS_ERROR);
+	sprintf((char *) buf, HPLJ_RESET);
+	len = strlen((char *) buf);
+	if (fwrite((char *) buf, 1, len, ras->fp) != len) {
+		ESprintf(errno, "fwrite(,1,%d,)", len);
+		return(-1);
 	}
 
 	/*
-	 * set orientation (landscape or portrait
+	 * set the orientation (portrait or landscape)
 	 */
-	nb = write(ras->fd,(char *)rdep->orientation,strlen(rdep->orientation));
-	if (nb != strlen(rdep->orientation)) {
-		(void) ESprintf(errno, errmsg, ras->name);
-		return(RAS_ERROR);
+	if (hplj->orientation == RAS_LANDSCAPE) {
+		sprintf((char *) buf, HPLJ_LANDSCAPE);
+	}
+	else {
+		sprintf((char *) buf, HPLJ_PORTRAIT);
+	}
+	len = strlen((char *) buf);
+	if (fwrite((char *) buf, 1, len, ras->fp) != len) {
+		ESprintf(errno, "fwrite(,1,%d,)", len);
+		return(-1);
 	}
 
 	/*
- 	 * data encoding format
+	 * set the resolution in dots per inch
 	 */
-	nb = write(ras->fd, (char *) rdep->encoding, strlen(rdep->encoding));
-	if (nb != strlen(rdep->encoding)) {
-		(void) ESprintf(errno, errmsg, ras->name);
-		return(RAS_ERROR);
+	sprintf((char *) buf, HPLJ_RESOLUTION, hplj->dpi);
+	len = strlen((char *) buf);
+	if (fwrite((char *) buf, 1, len, ras->fp) != len) {
+		ESprintf(errno, "fwrite(,1,%d,)", len);
+		return(-1);
 	}
 
-	/*
- 	 * position of upper right corner of image
-	 */
-	nb = write(ras->fd, (char *) rdep->position, strlen(rdep->position));
-	if (nb != strlen(rdep->position)) {
-		(void) ESprintf(errno, errmsg, ras->name);
-		return(RAS_ERROR);
-	}
 
 	/*
- 	 * put printer in raster graphics mode
+	 * encode and write the image
 	 */
-	nb = write(ras->fd,(char *)rdep->start_graph,strlen(rdep->start_graph));
-	if (nb != strlen(rdep->start_graph)) {
-		(void) ESprintf(errno, errmsg, ras->name);
-		return(RAS_ERROR);
+	if (hplj->orientation ==  RAS_LANDSCAPE) {
+		if (write_compressed_land(ras) < 0) {
+			return(RAS_ERROR);
+		}
 	}
-
-	/*
- 	 * Send data 
-	 */
-	nb = write(ras->fd, (char *) rdep->data, dep->image_size);
-	if (nb != dep->image_size) {
-		(void) ESprintf(errno, errmsg, ras->name);
-		return(RAS_ERROR);
-	}
-
-	/*
- 	 * Exit raster graphics mode
-	 */
-	nb = write(ras->fd, (char *) rdep->end_graph, strlen(rdep->end_graph));
-	if (nb != strlen(rdep->end_graph)) {
-		(void) ESprintf(errno, errmsg, ras->name);
-		return(RAS_ERROR);
+	else {
+		if (write_compressed_port(ras) < 0) {
+			return(RAS_ERROR);
+		}
 	}
 
 	/*
  	 * Eject page
 	 */
-	nb = write(ras->fd, (char *) rdep->eject, strlen(rdep->eject));
-	if (nb != strlen(rdep->eject)) {
-		(void) ESprintf(errno, errmsg, ras->name);
-		return(RAS_ERROR);
+	sprintf((char *) buf, HPLJ_EJECT);
+	len = strlen((char *) buf);
+	if (fwrite((char *) buf, 1, len, ras->fp) != len) {
+		ESprintf(errno, "fwrite(,1,%d,)", len);
+		return(-1);
 	}
 
 	return(RAS_OK);
@@ -347,19 +521,12 @@ HPLJClose(ras)
 	Raster	*ras;
 {
 	int		status;
-	HPLJ_Info	*dep = (HPLJ_Info *) ras->dep;
+	HPLJ_Info	*hplj = (HPLJ_Info *) ras->dep;
 
-	if (dep) {
-		if (dep->ras.reset) ras_free(dep->ras.reset);
-		if (dep->ras.orientation) ras_free(dep->ras.orientation);
-		if (dep->ras.encoding) ras_free(dep->ras.encoding);
-		if (dep->ras.position) ras_free(dep->ras.position);
-		if (dep->ras.start_graph) ras_free(dep->ras.start_graph);
-		if (dep->ras.data) ras_free((char *) dep->ras.data);
-		if (dep->ras.end_graph) ras_free(dep->ras.end_graph);
-		if (dep->ras.eject) ras_free(dep->ras.eject);
-		if (dep->trans_data) ras_free(dep->trans_data);
+	if (hplj) {
+		ras_free(hplj);
 	}
+
 	status = GenericClose(ras);
 	return(status);
 }
@@ -387,97 +554,3 @@ HPLJSetFunctions(ras)
 	ras->ImageCount = ImageCount_;
 }
 
-/*
- * determine the starting position for the raster image and build the 
- * control string  which represents it. The LaserJet does internal pixel 
- * replication  whenever dpi is not the max value, 300. We need to remember
- * this when we calculate starting position of image.
- */
-static	char	*_HPLJPosition(nx, ny, dpi, orientation)
-	int	nx, ny;		/* dimension of image	*/
-	int	dpi;		/* dots per inch	*/
-
-	int	orientation;
-{
-	char	buf[80];
-	char	*cptr;
-	int	total_width;	/* width of page in dpi		*/
-	int	total_height;	/* height of page in dpi	*/
-	int	image_width;	/* actual width of image after pixel rep.  */
-	int	image_height;	/* actual height of image after pixel rep. */
-	int	x_start,	/* starting x coord in dpi	*/
-		y_start;	/* starting y coord in dpi	*/
-
-	total_width = HPLJ_PAPER_WIDTH * HPLJ_MAX_RES;
-	total_height = HPLJ_PAPER_HEIGHT * HPLJ_MAX_RES;
-	image_width = nx * HPLJ_MAX_RES / dpi;
-	image_height = ny * HPLJ_MAX_RES / dpi;
-
-	if (orientation == RAS_LANDSCAPE) {
-		y_start = (total_width - image_width) / 2;
-		x_start = ((total_height - image_height) / 2) + image_height;
-	}
-	else {
-		y_start = (total_height - image_height) / 2;
-		x_start = (total_width - image_width) / 2;
-	}
-
-	bzero(buf, 80);
-	(void) sprintf(buf, "*p%dx%dY", x_start, y_start);
-
-	if ((cptr = ras_malloc((unsigned)strlen(buf) + 1)) == NULL)return(NULL);
-
-	(void) strcpy(cptr, buf);
-	return(cptr);
-	
-}
-
-/*
- * alloc  memory for bi-level encoded image  and set up HP "Transfer
- * Raster Data" command. Also, zero out memory for image.
- */
-static	create_data_space(hplj, nx, ny)
-	HPLJ_Info	*hplj;
-	int	nx, ny;		/* dimension of image			*/
-{
-
-	char	*trans_data;	/* transfer raster data command		*/
-	int	num_bytes;	/* number of bytes in a scan line	*/
-	int	row_size;	/* num_bytes + size of trans_data	*/
-	unsigned char	*data;	/* space for bi-level image		*/
-
-	char	buf[80];
-
-
-	/*
-	 * find out how may 8-bit bytes needed to encode image a i pixel
-	 * per bit
- 	 */
-	num_bytes = nx / 8;
-	if (nx % 8) num_bytes++; 
-
-	/*
-	 * set up transfer raster data command
-	 */
-	bzero(buf, 80);
-	(void) sprintf(buf, "*b%dW", num_bytes);
-	if ((trans_data = ras_malloc((unsigned)strlen(buf)+1))==NULL)return(-1);
-	(void) strcpy(trans_data, buf);
-
-	/*
-	 * alloc memory for bi-level image
-	 */
-	row_size = num_bytes + strlen(trans_data);
-
-	data = (unsigned char *) ras_malloc ((unsigned) (row_size * ny));
-	if (! data) return(-1);
-
-	bzero((char *) data, row_size * ny);
-
-	hplj->trans_data = trans_data;
-	hplj->row_size = row_size;
-	hplj->image_size = row_size * ny;
-	hplj->ras.data = data;
-
-	return(1);
-}
