@@ -16,6 +16,12 @@ of these coordinate systems.
 The NCAR Graphics user coordinate system allows for axis reversal and
 non-linear axes which are two important extensions to the GKS
 world coordinate system.
+.sp
+Plotter address units (PAUs) were used frequently in various SPPS routines
+and parameters.  PAUs are no longer used in NCAR Graphics.  Wherever
+they might still be encountered, simply think of them as integer scaled
+NDC units where 1 PAU = 1 integer scaled NDC based upon the formula
+PAU = INDC = NDCs * 1024.
 .SH SYNOPSIS
 OPNGKS - Opens GKS, opens workstation 1 to receive metacode output and
 activates workstation 1.

@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: ngpict.m,v 1.2 1993-03-21 02:43:27 haley Exp $
+.\"     $Id: ngpict.m,v 1.3 1993-03-23 23:12:51 haley Exp $
 .\"
 .TH NGPICT 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .na
@@ -86,7 +86,13 @@ a non-fatal error is reported if NGPICT is called while a segment is
 open.
 .SH SEE ALSO
 Online:
-frame, gflash, gopwk, opngks, gclrwk, gupwk.
+frame(3NCARG),
+gflash(3NCARG),
+gopwk(3NCARG),
+opngks(3NCARG),
+gclrwk(3NCARG),
+gupwk(3NCARG),
+ncarg_cbind(3NCARG)
 .sp
 Hardcopy:  
 User's Guide for NCAR GKS-0A Graphics;

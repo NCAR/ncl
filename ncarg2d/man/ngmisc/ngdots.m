@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: ngdots.m,v 1.2 1993-03-21 02:43:20 haley Exp $
+.\"     $Id: ngdots.m,v 1.3 1993-03-23 23:12:46 haley Exp $
 .\"
 .TH NGDOTS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .na
@@ -71,7 +71,11 @@ Warning messages will be issued if one calls NGDOTS after having
 called SET with any final argument other than "1".
 .SH SEE ALSO
 Online:
-gpm, point, points, set
+gpm(3NCARG),
+point(3NCARG),
+points(3NCARG),
+set(3NCARG),
+ncarg_cbind(3NCARG)
 .sp
 Hardcopy:  
 User's Guide for NCAR GKS-0A Graphics;

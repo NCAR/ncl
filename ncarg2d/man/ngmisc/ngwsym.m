@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: ngwsym.m,v 1.2 1993-03-21 02:43:29 haley Exp $
+.\"     $Id: ngwsym.m,v 1.3 1993-03-23 23:12:53 haley Exp $
 .\"
 .TH NGWSYM 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .na
@@ -88,7 +88,8 @@ If an illegal font, or symbol number within a font, is requested,
 then a warning is issued.
 .SH SEE ALSO
 Online:
-plotchar
+plotchar(3NCARG),
+ncarg_cbind(3NCARG)
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

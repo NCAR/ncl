@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: ngmisc.m,v 1.2 1993-03-21 02:43:23 haley Exp $
+.\"     $Id: ngmisc.m,v 1.3 1993-03-23 23:12:49 haley Exp $
 .\"
 .TH NGMISC 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -27,7 +27,10 @@ See the man pages for the individual functions for details on all
 appropriate messages.
 .SH SEE ALSO
 Online:
-ngdots, ngpict, ngwsym, ncarg_cbind
+ngdots(3NCARG),
+ngpict(3NCARG),
+ngwsym(3NCARG),
+ncarg_cbind(3NCARG)
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
