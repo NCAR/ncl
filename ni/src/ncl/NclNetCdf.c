@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.22 1997-09-05 22:13:12 ethan Exp $
+ *      $Id: NclNetCdf.c,v 1.23 1997-10-01 18:21:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -222,7 +222,7 @@ int wr_status;
 	if(wr_status > 0) {
 		cdfid = ncopen(NrmQuarkToString(path),NC_NOWRITE);
 	} else {
-		cdfid = ncopen(NrmQuarkToString(path),NC_WRITE);
+		cdfid = ncopen(NrmQuarkToString(path),(NC_WRITE|NC_NOCLOBBER));
 	}
 
 	if(cdfid == -1) {
@@ -371,7 +371,7 @@ NclQuark path;
 {
 	int id = 0;
 
-	id = nccreate(NrmQuarkToString(path),NC_NOCLOBBER);
+	id = nccreate(NrmQuarkToString(path),(NC_WRITE|NC_NOCLOBBER));
 	if(id > -1) {
 		ncendef(id);
 		ncclose(id);
