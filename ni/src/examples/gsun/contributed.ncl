@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.3 2003-03-10 18:53:18 shea Exp $
+;      $Id: contributed.ncl,v 1.4 2003-03-11 00:21:35 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -66,6 +66,12 @@
 ; All routines had local variables explicitly declared.
 ; All 'undef' statements were activated.
 ; Numerous regridding routines had changes made to them. [lat/lon stuff]
+;
+; -------------     Feb-Mar 2003
+; added clmMonTLLL, stdMonTLLL
+; namelist
+; merge_VarAtts
+; timeCoads2YYYYMM
 ;
 ; Contributed.ncl
 ;
@@ -202,6 +208,12 @@ end
 ; Basically a function version of copy_VarAtts which is a procedure
 ; copy attributes associated with "var_from" to "var_to" and
 ; return as a new variable.
+
+; xNew = merge_VarAtts( x2, x1)
+;        will result in attributes associated with x2 to be
+;        added to those associated with x1. If duplictae
+;        attributes exist those associated with x2 will
+;        replace those associated with x1.
 
 undef("merge_VarAtts")
 function merge_VarAtts(var_from,var_to)    
