@@ -239,6 +239,19 @@ NhlErrorTypes isnan_ieee_W( void )
   return(NclReturnValue(isnan,ndims_x,dsizes_x,NULL,NCL_logical,0));
 }
 
+NhlErrorTypes get_ncl_version_W(void)
+{
+  string *sversion;
+  int ret_size = 1;
+
+/*
+ * There are no input arguments to retrieve.
+ * Just get the version number and return it.
+ */
+  *sversion = NrmStringToQuark(GetNCARGVersion());
+  return(NclReturnValue((void *)sversion, 1, &ret_size, NULL, NCL_string, 0));
+}
+
 NhlErrorTypes replace_ieeenan_W( void )
 {
 /*

@@ -431,8 +431,10 @@ extern NhlErrorTypes dcdfchip_W(void);
 extern NhlErrorTypes ind_resolve_W(void);
 extern NhlErrorTypes unique_string_W(void);
 extern NhlErrorTypes tempnam_W(void);
+extern NhlErrorTypes get_ncl_version_W(void);
 
 extern NhlErrorTypes write_matrix_W(void);
+extern NhlErrorTypes ctwrap_W(void);
 
 
 void NclAddUserFuncs(void)
@@ -5621,6 +5623,28 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "string", 1, dimsizes);  nargs++;
 
     NclRegisterFunc(tempnam_W, args, "tempnam", nargs);
+
+/*
+ *  Register get_ncl_version.
+ */
+    nargs = 0;
+    args = NewArgs(0);
+    NclRegisterFunc(get_ncl_version_W, args, "get_ncl_version", nargs);
+
+/*
+ *  Register ctwrap.
+ */
+    nargs = 0;
+    args = NewArgs(5);
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "graphic", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "float", 2, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "float", 2, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "float", 2, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "logical", 1, dimsizes);  nargs++;
+
+    NclRegisterProc(ctwrap_W, args, "ctwrap", nargs);
 
 /*
  * Register "write_matrix"
