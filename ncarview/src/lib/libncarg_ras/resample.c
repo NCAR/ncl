@@ -1,5 +1,5 @@
 /*
- *	$Id: resample.c,v 1.10 1993-01-17 06:51:55 don Exp $
+ *	$Id: resample.c,v 1.11 1997-11-13 23:09:44 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -106,20 +106,20 @@ int	RasterResampleBilinear(src, dst, verbose)
 	for(dy=0; dy<dst->ny; dy++) {
 		fy = dy * (((float)src->ny - 1)/((float)dst->ny - 1));
 		y1 = floor(fy);
-		y2 = y1 + 1;
+		y2 = y1 < src->ny-1 ? y1 + 1 : y1;
 		fracy  = fy - y1;
 		if (verbose && dy % 50 == 0) {
 			(void) fprintf(stderr, "Reconstructing row %d\n", dy);
 		}
 		for(dx=0; dx<dst->nx; dx++) {
 			x1 = x1v[dx];
-			x2 = x1 + 1;
+			x2 = x1 < src->nx-1 ? x1 + 1 : x1;
 			fracx  = fracxv[dx];
 
 			rgbptr11 = &src->data[y1*3*src->nx + x1*3];
-			rgbptr21 = rgbptr11 + 3;
+			rgbptr21 = &src->data[y1*3*src->nx + x2*3];
 			rgbptr12 = &src->data[y2*3*src->nx + x1*3];
-			rgbptr22 = rgbptr12 + 3;
+			rgbptr22 = &src->data[y2*3*src->nx + x2*3];
 
 			if (src->type == RAS_DIRECT) {
 				p11 = (float) *rgbptr11;
