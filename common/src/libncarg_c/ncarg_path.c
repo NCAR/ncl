@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ncarg_path.c,v 1.13 1994-03-01 14:58:23 haley Exp $
+ *      $Id: ncarg_path.c,v 1.14 1994-03-07 17:49:57 clyne Exp $
  */
 /*
  *	File:		ncarg_path.c
@@ -66,7 +66,10 @@ static	char	*create_env_name(postfix)
  *			$DIR is $dir in caps, is set return its contents.
  *			If not, proceed.
  *
- *			2) If the value of $dir is "tmp" return the value
+ *			2) If the value of $dir is "tmp" and the env varable
+ *			"TMPDIR" is set return its value. If not, proceed. 
+ *
+ *			2a) If the value of $dir is "tmp" return the value
  *			of the manifest constant DEFAULT_TMP. If not, proceed.
  *
  *			3) If the environment variable NCARG_ROOT is set
@@ -126,6 +129,8 @@ static	const char *dir_2_path(dir)
 	 * tmp is a special case
 	 */
 	if (strcmp("tmp", dir) == 0) {
+		if (s = getenv("TMPDIR")) return(s);
+
 		return(DEFAULT_TMP);
 	}
 
