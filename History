@@ -801,4 +801,18 @@
 	user was having on a Macintosh.
 07/21/92 - In GRIDAL, turned optimization back on for compilation on
 	DECstations.
+07/27/92 - In AREAS, AUTOGRAPH, CONPACK, EZMAP, EZMAPA, GRIDAL, ISOSRF,
+	LABELBAR, PLOTCHAR, SOFTFILL:  removed write-ups from code files.
+	Due to the advent of the programmer documents, they will no
+	longer be necessary.  The AUTOGRAPH write-up is in abbreviate
+	form.  
 
+	Took out statistics-gathering calls to Q8QST4.  
+
+	Modified code to accept either lower-case or upper-case keywords
+	in calls to routines in the parameter-access interface.  In GRIDAL,
+	added new parameter access routines.  In EZMAP, renamed parameter
+	access routines.
+
+	In LABELBAR, made it possible for user to turn off drawing of
+	box outlines by the routine LBLBAR.
