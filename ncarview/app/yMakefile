@@ -6,6 +6,7 @@ APP	= \
 
 all:
 
+#ifdef  BuildUnsupportedAthenaApplications
 
 install::
 	@for name in $(APP); do \
@@ -14,6 +15,11 @@ install::
                 cp $(XAPPDIR)/$$name $(XAPPDIR)/$$name.bak ; fi; \
 	($(INSTALL) -m $(INSTALL_APP) $$name.ad $(XAPPDIR)/$$name); \
 	done
+#else
+
+install::
+
+#endif
 
 MakefileTarget
 CleanTarget
