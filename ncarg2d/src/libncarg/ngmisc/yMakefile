@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.9 1996-10-25 21:44:38 boote Exp $
+#	$Id: yMakefile,v 1.10 1999-03-25 03:09:01 haley Exp $
 #
 MYNAME	= ngmisc
 
@@ -21,3 +21,12 @@ PartialLibraryTarget(libncarg.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
 
 PartialLibraryTarget(libNGllu.a,$(OBJECTS))
+
+ngblda.o: ngcomn.h
+ngdots.o: ngcomn.h
+nggetc.o: ngcomn.h
+nggeti.o: ngcomn.h
+nggetr.o: ngcomn.h
+ngsetc.o: ngcomn.h
+ngseti.o: ngcomn.h
+ngsetr.o: ngcomn.h
