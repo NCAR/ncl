@@ -1,5 +1,5 @@
 C
-C $Id: mpex13.f,v 1.1 2001-08-17 22:57:16 kennison Exp $
+C $Id: mpex13.f,v 1.2 2001-08-17 23:12:53 kennison Exp $
 C
       PROGRAM TESTIT
 C
@@ -117,6 +117,17 @@ C
 C Define the character size to be used for lat/lon labels.
 C
         DATA CHSZ / .014 /
+C
+C Tell the user what he needs to do to get this to run.
+C
+        PRINT * , ' '
+        PRINT * , 'This example will not run properly until you have'
+        PRINT * , 'downloaded the RANGS/GSHHS data, supplied a routine'
+        PRINT * , 'for EZMAP to call to find out which directory the'
+        PRINT * , 'data are in, and removed these PRINTs and the STOP'
+        PRINT * , 'which follows them.  See code for full information.'
+        PRINT * , ' '
+        STOP
 C
 C Open GKS.
 C
