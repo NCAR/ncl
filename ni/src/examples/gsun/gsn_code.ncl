@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.16 1999-04-09 16:14:33 haley Exp $
+;      $Id: gsn_code.ncl,v 1.17 1999-06-16 00:00:11 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2864,7 +2864,7 @@ begin
         end if
     end if
         "cnScalarFieldData" : sfdata_object
-    overlay(contour_object,vector_object)
+    cnres = get_res_eq(res2,(/"cn","vp"/))
     vcres = get_res_ne(res2,(/"vf","sf","cn","vp"/))
 
     attsetvalues_check(vfdata_object,vfres)
@@ -2895,7 +2895,7 @@ begin
     if(sprdcols)
       cnres2 = True
     if(calldraw)
-        draw(contour_object)
+        draw(vector_object)
     end if
 
     if(callframe)
@@ -2904,10 +2904,10 @@ begin
 
       set_attr(cnres2,"cnFillColors",\
                spread_colors(wks,contour_object,min_index,max_index))
-    contour_object@vfdata = vfdata_object
-    contour_object@sfdata = sfdata_object
-    contour_object@vector = vector_object
-    return(contour_object)
+      set_attr(vcres2,"vcLevelColors",\
+               spread_colors(wks,vector_object,min_index,max_index))
+
+      attsetvalues(contour_object,cnres2)
       attsetvalues(contour_object,cnres2)
     end if
 
@@ -3113,8 +3113,8 @@ begin
         end if
     end if
 
+    vcres = get_res_ne(res2,(/"cn","mp","sf","vf","vp"/))
 
-    overlay(map_object,vector_object)
     attsetvalues_check(vfdata_object,vfres)
     attsetvalues_check(sfdata_object,sfres)
     attsetvalues_check(map_object,mpres)
