@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.3 1991-02-04 10:06:36 clyne Exp $
+ *	$Id: X11_class4.c,v 1.4 1991-04-02 16:05:53 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -136,6 +136,7 @@ CGMC *c;
 
 	static	boolean	MoreData = FALSE;
 	static	XPoint	P;
+	int	x,y;
 
 	/*
 	 *	make sure line attributes are set
@@ -174,14 +175,14 @@ CGMC *c;
 	}
 
 	/*
-	 *	a single pair of points with same coordinates is a point
+	 * This is a hack to ensure that something gets drawn in the
+	 * case that all the points are the same. XDrawLines will NOT
+	 * draw anything if all points in vertices list are identical
 	 */
-	if ((c->Pnum == 2) && (c->p[0].x == c->p[1].x) 
-		 	  && (c->p[0].y == c->p[1].y)) {
+	if (((x = XConvert(c->p[0].x)) == XConvert(c->p[1].x)) 
+		  && ((y = YConvert(c->p[0].y)) == YConvert(c->p[1].y))) {
 	
-		XDrawPoint(dpy,drawable,lineGC,(int) XConvert(c->p[0].x),
-				(int) YConvert(c->p[0].y));
-		return (OK);
+		XDrawPoint(dpy, drawable, lineGC, x, y);
 	}
 
 	n = p = 0;
