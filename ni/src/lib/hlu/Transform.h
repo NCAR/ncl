@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.h,v 1.8 1995-04-01 00:04:15 dbrown Exp $
+ *      $Id: Transform.h,v 1.9 1995-04-01 00:18:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,13 +29,13 @@
  * Public Transform instance resources
  */
 
-#define NhlNtfOverlayOn	"tfOverlayOn"
+#define NhlNtfPlotManagerOn	"tfPlotManagerOn"
 
 /*
  * Public Transform class resources
  */
 
-#define NhlCtfOverlayOn	"TfOverlayOn"
+#define NhlCtfPlotManagerOn	"TfPlotManagerOn"
 
 /*
  * Public Functions defined by the Transform Class

@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.1 1995-04-01 00:04:10 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.2 1995-04-01 00:18:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4978,7 +4978,7 @@ NhlErrorTypes NhlRemoveOverlay
 	if (plot_id == base_id) {
 		NhlSArg			sarg;
 
-		NhlSetSArg(&sarg,NhlNtfOverlayOn,False);
+		NhlSetSArg(&sarg,NhlNtfPlotManagerOn,False);
 		subret = NhlALSetValues(base_id,&sarg,1); 
 		return MIN(subret,ret);
 	}
@@ -6235,7 +6235,7 @@ extern NhlErrorTypes _NhlManageOverlay
 		else if (method != _NhlCREATE) {
 			e_text = "%s: resetting create-only resource: %s";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-				  entry_name,NhlNtfOverlayOn);
+				  entry_name,NhlNtfPlotManagerOn);
 			tfp->overlay_on = False;
 			return NhlWARNING;
 		}
