@@ -1,5 +1,5 @@
 C
-C	$Id: stgeti.f,v 1.2 1993-02-25 19:32:04 dbrown Exp $
+C	$Id: stgeti.f,v 1.3 1993-03-31 00:31:15 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -16,6 +16,7 @@ C
 C IVL is an integer variable in which the desired value is to be
 C returned by STGETI.
 C
+C ---------------------------------------------------------------------
 C
 C Use STGETR to retrieve the real value, fix it, and return it to the
 C user.

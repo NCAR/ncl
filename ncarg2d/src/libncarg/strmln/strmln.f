@@ -1,5 +1,5 @@
 C
-C	$Id: strmln.f,v 1.9 1993-03-08 18:38:11 dbrown Exp $
+C	$Id: strmln.f,v 1.10 1993-03-31 00:31:26 dbrown Exp $
 C
       SUBROUTINE STRMLN (U,V,WORK,IMAX,IPTSX,JPTSY,NSET,IER)
 C
@@ -199,6 +199,8 @@ C IPGRCT - Number of groups supported for area masking
 C
       PARAMETER (IPNPTS = 10, IPLSTL = 750, IPGRCT = 64)
 C
+C --------------------------------------------------------------------
+C
 C The mapping common block: made available to user mapping routines
 C
       COMMON /STMAP/
@@ -220,8 +222,6 @@ C
      +           P2XPI  = 6.28318530717959,
      +           P1D2PI = 1.57079632679489,
      +           P5D2PI = 7.85398163397448) 
-C
-C --------------------------------------------------------------------
 C
 C ------------------------------------------------------------------
 C

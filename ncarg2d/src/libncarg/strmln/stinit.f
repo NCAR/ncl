@@ -1,5 +1,5 @@
 C
-C	$Id: stinit.f,v 1.4 1993-02-20 00:31:40 dbrown Exp $
+C	$Id: stinit.f,v 1.5 1993-03-31 00:31:19 dbrown Exp $
 C
 C-----------------------------------------------------------------------
 C
@@ -30,6 +30,10 @@ C
 C Output parameters:
 C
 C None
+C
+C Force the block data routine, which sets default variables, to load. 
+C
+      EXTERNAL STDATA
 C
 C ---------------------------------------------------------------------
 C
@@ -106,6 +110,8 @@ C IPGRCT - Number of groups supported for area masking
 C
       PARAMETER (IPNPTS = 10, IPLSTL = 750, IPGRCT = 64)
 C
+C --------------------------------------------------------------------
+C
 C The mapping common block: made available to user mapping routines
 C
       COMMON /STMAP/
@@ -127,12 +133,6 @@ C
      +           P2XPI  = 6.28318530717959,
      +           P1D2PI = 1.57079632679489,
      +           P5D2PI = 7.85398163397448) 
-C
-C --------------------------------------------------------------------
-C
-C Force the block data routine, which sets default variables, to load. 
-C
-      EXTERNAL STDATA
 C
 C ---------------------------------------------------------------------
 C

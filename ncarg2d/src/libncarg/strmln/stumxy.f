@@ -1,5 +1,5 @@
 C
-C	$Id: stumxy.f,v 1.2 1993-02-25 19:32:21 dbrown Exp $
+C	$Id: stumxy.f,v 1.3 1993-03-31 00:31:35 dbrown Exp $
 C
 C-----------------------------------------------------------------------
 C
@@ -18,6 +18,7 @@ C
 C XUS,YUS - Point in user coordinate space
 C IST     - Status code indicating success or failure
 C
+C --------------------------------------------------------------------
 C
 C The mapping common block: made available to user mapping routines
 C
@@ -40,8 +41,6 @@ C
      +           P2XPI  = 6.28318530717959,
      +           P1D2PI = 1.57079632679489,
      +           P5D2PI = 7.85398163397448) 
-C
-C --------------------------------------------------------------------
 C
 C -------------------------------------------------------------
 C
@@ -73,6 +72,7 @@ C
 C XDA,YDA - Point in data coordinate space
 C IST     - Status code indicating success or failure
 C
+C --------------------------------------------------------------------
 C
 C The mapping common block: made available to user mapping routines
 C
@@ -95,8 +95,6 @@ C
      +           P2XPI  = 6.28318530717959,
      +           P1D2PI = 1.57079632679489,
      +           P5D2PI = 7.85398163397448) 
-C
-C --------------------------------------------------------------------
 C
 C ---------------------------------------------------------------------
 C
@@ -128,6 +126,7 @@ C
 C TA      - Streamline tangent angle in NDC space
 C IST     - Status code indicating success or failure
 C
+C --------------------------------------------------------------------
 C
 C The mapping common block: made available to user mapping routines
 C
@@ -150,8 +149,6 @@ C
      +           P2XPI  = 6.28318530717959,
      +           P1D2PI = 1.57079632679489,
      +           P5D2PI = 7.85398163397448) 
-C
-C --------------------------------------------------------------------
 C
 C ---------------------------------------------------------------------
 C

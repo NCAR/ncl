@@ -1,5 +1,5 @@
 C
-C	$Id: stmpxy.f,v 1.4 1993-03-11 21:41:59 dbrown Exp $
+C	$Id: stmpxy.f,v 1.5 1993-03-31 00:31:22 dbrown Exp $
 C
 C ---------------------------------------------------------------------
 C
@@ -16,6 +16,7 @@ C
 C XUS,YUS - Point in user coordinate space
 C IST     - Status code indicating success or failure
 C
+C --------------------------------------------------------------------
 C
 C The mapping common block: made available to user mapping routines
 C
@@ -38,8 +39,6 @@ C
      +           P2XPI  = 6.28318530717959,
      +           P1D2PI = 1.57079632679489,
      +           P5D2PI = 7.85398163397448) 
-C
-C --------------------------------------------------------------------
 C
 C -------------------------------------------------------------
 C
@@ -81,6 +80,7 @@ C
 C XDA,YDA - Point in data coordinate space
 C IST     - Status code indicating success or failure
 C
+C --------------------------------------------------------------------
 C
 C The mapping common block: made available to user mapping routines
 C
@@ -103,8 +103,6 @@ C
      +           P2XPI  = 6.28318530717959,
      +           P1D2PI = 1.57079632679489,
      +           P5D2PI = 7.85398163397448) 
-C
-C --------------------------------------------------------------------
 C
 C ---------------------------------------------------------------------
 C
@@ -163,6 +161,7 @@ C fraction of the fixed (in NDC space) increment distance.
 C The transformation type parameter is implemented for the polar
 C mapping only.
 C
+C --------------------------------------------------------------------
 C
 C The mapping common block: made available to user mapping routines
 C
@@ -185,8 +184,6 @@ C
      +           P2XPI  = 6.28318530717959,
      +           P1D2PI = 1.57079632679489,
      +           P5D2PI = 7.85398163397448) 
-C
-C --------------------------------------------------------------------
 C
 C ---------------------------------------------------------------------
 C
@@ -364,7 +361,7 @@ C
             GO TO 20
          END IF
 C
-         TA=ATAN2((SGN*YTF-YND),(SGN*XTF-XND))
+         TA=ATAN2((SGN*(YTF-YND)),(SGN*(XTF-XND)))
 C
       ELSE IF (IMAP .EQ. 2) THEN
 C

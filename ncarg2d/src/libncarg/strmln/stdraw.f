@@ -1,5 +1,5 @@
 C
-C	$Id: stdraw.f,v 1.7 1993-02-25 19:32:01 dbrown Exp $
+C	$Id: stdraw.f,v 1.8 1993-03-31 00:31:12 dbrown Exp $
 C
       SUBROUTINE STDRAW  (U,V,UX,VY,IAM,STUMSL)
 C
@@ -98,6 +98,8 @@ C IPGRCT - Number of groups supported for area masking
 C
       PARAMETER (IPNPTS = 10, IPLSTL = 750, IPGRCT = 64)
 C
+C --------------------------------------------------------------------
+C
 C The mapping common block: made available to user mapping routines
 C
       COMMON /STMAP/
@@ -120,7 +122,7 @@ C
      +           P1D2PI = 1.57079632679489,
      +           P5D2PI = 7.85398163397448) 
 C
-C --------------------------------------------------------------------
+C ---------------------------------------------------------------------
 C
 C Local declarations
 C
@@ -182,6 +184,7 @@ C TMG      - Temporary magnitude
 C LI       - Index into circular crossover checking list
 C
 C --------------------------------------------------------------------
+C
 C Initialize local variables.
 C If not using the FX,FY routines, then the vector normalization
 C value is fixed. 
@@ -561,19 +564,7 @@ C
             IF (IST .NE. 0) GO TO 50
          END IF
 C
-C Check (3)
-C
-         CALL GBYTES(UX(I,J),IUX,ISK,2,0,1)
-         IF (IAND(IUX,IPTWO) .EQ. 0) THEN
-            CALL STARDR(XUS,YUS,XND,YND,TA,IAM,STUMSL,IST)
-            IF (IST .EQ. 0) THEN
-               CALL SBYTES(UX(I,J),IPONE,ISK,1,0,1)
-            END IF
-         END IF
-C
-      END IF
-C
-C Check (4) (performed any time streamline crossover is checked)
+C Check (3) (performed any time streamline crossover is checked)
 C
       DO 140 LI=1,LCU
          IF (ABS(XND-XLS(LI)) .LE. SSP .AND.
@@ -597,6 +588,18 @@ C
       IF (NBX.GE.5) THEN
          LBC = LBC+1
          IF (LBC.GT.IPLSTL) LBC = 1
+      END IF
+C
+C Check (4)
+C
+         CALL GBYTES(UX(I,J),IUX,ISK,2,0,1)
+         IF (IAND(IUX,IPTWO) .EQ. 0) THEN
+            CALL STARDR(XUS,YUS,XND,YND,TA,IAM,STUMSL,IST)
+            IF (IST .EQ. 0) THEN
+               CALL SBYTES(UX(I,J),IPONE,ISK,1,0,1)
+            END IF
+         END IF
+C
       END IF
 C
 C Return to top of drawing loop
@@ -727,6 +730,8 @@ C IPGRCT - Number of groups supported for area masking
 C
       PARAMETER (IPNPTS = 10, IPLSTL = 750, IPGRCT = 64)
 C
+C --------------------------------------------------------------------
+C
 C The mapping common block: made available to user mapping routines
 C
       COMMON /STMAP/
@@ -749,8 +754,7 @@ C
      +           P1D2PI = 1.57079632679489,
      +           P5D2PI = 7.85398163397448) 
 C
-C --------------------------------------------------------------------
-C
+C ---------------------------------------------------------------------
 C
 C Point buffers
 C
@@ -936,8 +940,6 @@ C IST - status value, 0 if no special values in neighborhood
 C
 C ---------------------------------------------------------------------
 C
-C ---------------------------------------------------------------------
-C
 C NOTE:
 C Since implicit typing is used for all real and integer variables
 C a consistent length convention has been adopted to help clarify the
@@ -1011,6 +1013,8 @@ C IPGRCT - Number of groups supported for area masking
 C
       PARAMETER (IPNPTS = 10, IPLSTL = 750, IPGRCT = 64)
 C
+C ---------------------------------------------------------------------
+C
       IST = 0
 C
       IF (U(I,J).EQ.RUSV) THEN
@@ -1046,7 +1050,7 @@ C Input parameters:
 C
 C UI,VI  - Input values of U,V
 C
-C Output parameters:
+C     Output parameters:
 C
 C UO,VO  - Output mapped component values
 C IST    - Status value
@@ -1126,6 +1130,8 @@ C IPGRCT - Number of groups supported for area masking
 C
       PARAMETER (IPNPTS = 10, IPLSTL = 750, IPGRCT = 64)
 C
+C --------------------------------------------------------------------
+C
 C The mapping common block: made available to user mapping routines
 C
       COMMON /STMAP/
@@ -1147,8 +1153,6 @@ C
      +           P2XPI  = 6.28318530717959,
      +           P1D2PI = 1.57079632679489,
      +           P5D2PI = 7.85398163397448) 
-C
-C --------------------------------------------------------------------
 C
 C Statement functions for field tranformations
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: stseti.f,v 1.2 1993-02-25 19:32:17 dbrown Exp $
+C	$Id: stseti.f,v 1.3 1993-03-31 00:31:31 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -16,6 +16,8 @@ C
 C IVL is an integer variable containing the new value of the parameter.
 C
 C The real work is done by STSETR
+C
+C ---------------------------------------------------------------------
 C
 C Float the integer value and pass it on to STSETR.
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: stdata.f,v 1.6 1993-03-08 18:38:06 dbrown Exp $
+C	$Id: stdata.f,v 1.7 1993-03-31 00:31:10 dbrown Exp $
 C
       BLOCK DATA STDATA
 C
@@ -80,6 +80,8 @@ C IPGRCT - Number of groups supported for area masking
 C
       PARAMETER (IPNPTS = 10, IPLSTL = 750, IPGRCT = 64)
 C
+C --------------------------------------------------------------------
+C
 C The mapping common block: made available to user mapping routines
 C
       COMMON /STMAP/
@@ -102,9 +104,8 @@ C
      +           P1D2PI = 1.57079632679489,
      +           P5D2PI = 7.85398163397448) 
 C
-C --------------------------------------------------------------------
-C *********************************************************************
-C 
+C ---------------------------------------------------------------------
+C
 C Initialization of STPAR
 C
 C IUD1 -- 'UD1' -- First dimension of U
@@ -479,8 +480,9 @@ C
 C
 C End of STCHAR initialization
 C
-C *********************************************************************
-C 
+C
+C ---------------------------------------------------------------------
+C
 C STMAP initialization
 C
 C IMAP -- 'MAP' -- the mapping transformation to use
@@ -518,7 +520,8 @@ C FW2W,FH2H -- fraction of viewport to fraction of viewspace
 C
 C RBIG,IBIG -- maximum expressible real and integer values
 C
-C *********************************************************************
+C
+C ---------------------------------------------------------------------
 C
 C REVISION HISTORY ----------------------------------------------------
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: stcycl.f,v 1.3 1993-01-21 23:50:33 dbrown Exp $
+C	$Id: stcycl.f,v 1.4 1993-03-31 00:31:07 dbrown Exp $
 C
       SUBROUTINE STCYCL(U,V)
 C
@@ -81,6 +81,8 @@ C IPLSTL - Streamline-crossover-check circular list length
 C IPGRCT - Number of groups supported for area masking
 C
       PARAMETER (IPNPTS = 10, IPLSTL = 750, IPGRCT = 64)
+C
+C ---------------------------------------------------------------------
 C
       DO  10 J=IYD1,IYDN
 C

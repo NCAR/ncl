@@ -1,5 +1,5 @@
 C
-C	$Id: stsetr.f,v 1.4 1993-02-25 19:32:19 dbrown Exp $
+C	$Id: stsetr.f,v 1.5 1993-03-31 00:31:33 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -90,6 +90,8 @@ C IPGRCT - Number of groups supported for area masking
 C
       PARAMETER (IPNPTS = 10, IPLSTL = 750, IPGRCT = 64)
 C
+C --------------------------------------------------------------------
+C
 C The mapping common block: made available to user mapping routines
 C
       COMMON /STMAP/
@@ -112,7 +114,7 @@ C
      +           P1D2PI = 1.57079632679489,
      +           P5D2PI = 7.85398163397448) 
 C
-C --------------------------------------------------------------------
+C ---------------------------------------------------------------------
 C
 C Check for a parameter name that is too short.
 C
