@@ -10,11 +10,11 @@ CALL MAPGRM (IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_mapgrm (int iama, float *xcra, float *ycra, \\
+void c_mapgrm (int *iama, float *xcra, float *ycra, \\
 .br
 int mcra, int *iaai, int *iagi, int mnog, \\
 .br
-int ulpr(float *xcra, float *ycra, int *ncs, \\
+int (*ulpr)(float *xcra, float *ycra, int *ncs, \\
 .br
 int *iaai, int *iagi, int *nai))
 .SH DESCRIPTION 

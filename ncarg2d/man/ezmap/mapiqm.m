@@ -12,7 +12,7 @@ void c_mapiqm (int *iama, float *xcra, float *ycra, \\
 .br
 int mcra, int *iaai, int *iagi, int nogi, \\
 .br
-int ulpr(float *xcra, float *ycra, int *mcra, \\
+int (*ulpr)(float *xcra, float *ycra, int *mcra, \\
 .br
 int *iaai, int *iagi, int *nogi))
 .SH DESCRIPTION 

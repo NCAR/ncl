@@ -15,9 +15,9 @@ void c_mapitm (float rlat, float rlon, int ifst, \\
 .br
 int *iama, float *xcra, float *ycra, int mcra, \\
 .br
-int * iaai, int *iagi, int nogi, \\
+int *iaai, int *iagi, int nogi, \\
 .br
-int ulpr(float *xcra, 
+int (*ulpr)(float *xcra, 
 float *ycra, int *mcra, \\
 .br
 int *iaai, int *iagi, int *nogi))
