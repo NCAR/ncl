@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.37 1998-02-07 03:51:00 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.38 1998-02-11 01:44:07 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -235,9 +235,6 @@ static NhlResource resources[] = {
           NhlOffset(NhlMapTransObjLayerRec,trobj.y_reverse),
           NhlTImmediate,_NhlUSET(False),_NhlRES_PRIVATE,NULL},
         
-{ "no.res", "No.res",NhlTFloat,sizeof(float),
-	 NhlOffset(NhlMapTransObjLayerRec,trobj.out_of_range),
-	 NhlTString,_NhlUSET("1.0e12"),_NhlRES_PRIVATE,NULL},
 {NhlNmpTransChanged,NhlNmpTransChanged,NhlTBoolean,sizeof(NhlBoolean),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.trans_changed),
 	 NhlTImmediate,_NhlUSET((NhlPointer) True),_NhlRES_PRIVATE,NULL},
