@@ -1,5 +1,5 @@
 C
-C      $Id: cn06f.f,v 1.2 1996-01-22 21:51:50 haley Exp $
+C      $Id: cn06f.f,v 1.3 1996-01-23 15:34:20 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -100,10 +100,9 @@ C
 C Open NetCDF file.
 C
       call gngpat(filename,'data',ierr)
-      flen = 16
       do 10 i=1,256
          if( filename(i:i).eq.char(0) ) then
-            filename(i:i+flen)='/cdf/contour.cdf'
+            filename(i:i+16)='/cdf/contour.cdf'
             goto 15
          endif
  10   continue

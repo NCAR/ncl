@@ -1,5 +1,5 @@
 C
-C      $Id: cn08f.f,v 1.1 1995-09-28 19:24:42 haley Exp $
+C      $Id: cn08f.f,v 1.2 1996-01-23 15:34:22 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -91,10 +91,9 @@ C
 C  Open data file containing grid of global temperatures.
 C
       call gngpat(filename,'data',ierr)
-      flen = 16
       do 10 i=1,256
          if( filename(i:i).eq.char(0) ) then
-            filename(i:i+flen)='/cdf/contour.cdf'
+            filename(i:i+16)='/cdf/contour.cdf'
             goto 15
          endif
  10   continue
