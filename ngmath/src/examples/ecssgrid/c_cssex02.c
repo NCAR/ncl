@@ -1,5 +1,5 @@
 /*
- *      $Id: c_cssex02.c,v 1.5 1999-06-11 21:52:27 fred Exp $
+ *      $Id: c_cssex02.c,v 1.6 1999-06-29 17:40:39 fred Exp $
  */
 
 #include <stdlib.h>
@@ -147,7 +147,9 @@ main()
   c_cstrans(N, y, x, x, y, z);
 
 /*
- *  Create the triangulation.
+ *  Create the triangulation.  This step is not necessary if all
+ *  you want to do is obtain interpolated values.  It is here since
+ *  a plot of the triangulation is to be drawn as an independent picture.
  */
   ltri = c_csstri(N, x, y, z, &nt, &ier);
 

@@ -1,5 +1,5 @@
 C
-C       $Id: cssex02.f,v 1.4 1999-06-11 21:52:27 fred Exp $
+C       $Id: cssex02.f,v 1.5 1999-06-29 17:40:40 fred Exp $
 C
        PROGRAM CSSEX02
 C 
@@ -28,7 +28,7 @@ C
 C
 C  Size of the interpolated output grid.
 C
-      PARAMETER (NI=72, NJ=144)
+      PARAMETER (NI=73, NJ=145)
 C
 C  Size of workspaces, etc. for triangulation and interpolation.
 C
@@ -40,7 +40,7 @@ C
       REAL    RWK(NMAX)
       REAL    RLAT(NMAX), RLON(NMAX),  FVAL(NMAX),
      +        X(NMAX),    Y(NMAX),     Z(NMAX), 
-     +        PLAT(NMAX), PLON(NMAX),  DLAT(NMAX),   DLON(NMAX)
+     +        PLAT(NI),   PLON(NJ)
       REAL    FF(NI,NJ),  ZDAT(NJ,NI)
 C
 C  Storage for the triangulation, work space, and Voronoi vertices.
@@ -206,11 +206,9 @@ C
 C  Grid the data using NI longitudes and NJ latitudes.
 C
       DO 200 I=1,NI
-        DLAT(I) = (-90.+(I-1)*2.5)
         PLAT(I) = D2R*(-90.+(I-1)*2.5)
   200 CONTINUE
       DO 210 J=1,NJ
-        DLON(J) = (-180.+(J-1)*2.5)
         PLON(J) = D2R*(-180.+(J-1)*2.5)
   210 CONTINUE
 C
@@ -243,6 +241,10 @@ C
       CALL CPSETI ('MAP - MAPPING FLAG',1)
       CALL CPSETR ('ORV - OUT-OF-RANGE VALUE',1.E12)
 C
+C  Reverse the indices, since CSSGRID returns FF as a function
+C  of latitude and longitude, whereas Conpack wants longitude as
+C  the first dimension.
+C
       DO 350 I=1,NI
         DO 360 J=1,NJ
           ZDAT(J,I) = FF(I,J)
@@ -254,7 +256,7 @@ C
       CALL CPLBAM (ZDAT,RWRK,IWRK,IAMA)
       CALL CPCLDM (ZDAT,RWRK,IWRK,IAMA,DRAWCL)
 C
-C  Plot title.
+C  Plot picture title.
 C
       CALL SET(0.,1.,0.,1.,0.,1.,0.,1.,1)
       CALL PLCHHQ(0.50,0.95,':F26:Contour Plot of Gridded Data',
