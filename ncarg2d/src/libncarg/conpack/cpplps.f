@@ -1,6 +1,6 @@
 C
-C $Id: cpplps.f,v 1.9 2000-08-22 15:02:51 haley Exp $
-C                                                                      
+C $Id: cpplps.f,v 1.10 2000-11-19 00:12:12 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -464,6 +464,8 @@ C
                 ELSE
                   IF (ABS(RWRK(IPTX+NXYC)-RWRK(IPTX+1)).GT..0001.OR.ABS(
      +RWRK(IPTY+NXYC)-RWRK(IPTY+1)).GT..0001) GO TO 10016
+                  IF ((RWRK(IPTX+1)-XCLB)**2+(RWRK(IPTY+1)-YCLB)**2.GT.C
+     +RAD**2)     GO TO 10016
                   L=2
                 END IF
                 IF (K.NE.I) THEN
@@ -473,7 +475,7 @@ C
      +                               ATAN2(RWRK(IPTY+K)-RWRK(IPTY+J),
      +                                     RWRK(IPTX+K)-RWRK(IPTX+J)))
                   IF (CDAP.GT.180.) CDAP=ABS(CDAP-360.)
-                  CDIR=CDIR+ABS(CDAP)
+                  CDIR=CDIR+CDAP
                 END IF
               GO TO 10015
 10016         CONTINUE
