@@ -1,5 +1,5 @@
 /*
- *	$Id: ncarg_ras.h,v 1.16 1993-02-10 19:19:06 don Exp $
+ *	$Id: ncarg_ras.h,v 1.17 1995-04-20 18:50:43 clyne Exp $
  */
 #ifndef _RASTER_
 #define _RASTER_
@@ -401,6 +401,23 @@ extern	int RasterInvert(
 	Raster		*dst
 #endif
 );
+
+
+extern int	RasterInitError();
+
+extern int	RasterSetError(
+#ifdef	NeedFuncProto
+	int	error_number
+#endif
+);
+
+extern const char *RasterGetError();
+
+extern int	RasterEsprintfError();
+
+extern int	RasterPrintError();
+
+
 
 /********* Function definitions for Generic driver ********************/
 
