@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.8 1996-04-02 00:35:03 ethan Exp $
+ *      $Id: FileSupport.c,v 1.9 1996-05-15 22:51:44 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -157,7 +157,7 @@ NhlErrorTypes _NclBuildFileCoordRSelection
 					range->start= tmp_md;
 				}
 			}
-			if(_NclGetCoordRange(coord_md,range->finish->multidval.val,NULL,&sel->u.sub.start,&sel->u.sub.finish) == NhlFATAL) {
+			if(_NclGetCoordRange(coord_md,range->start->multidval.val,NULL,&sel->u.sub.start,&sel->u.sub.finish) == NhlFATAL) {
                                 NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not obtain coordinate indexes, unable to perform subscript (%d)",dim_num);
 				if(cvar->obj.status != PERMANENT) {
 					_NclDestroyObj((NclObj)cvar);

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclHLUVar.c,v 1.7 1996-05-09 23:30:29 ethan Exp $
+ *      $Id: NclHLUVar.c,v 1.8 1996-05-15 22:51:46 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -52,7 +52,7 @@ NclHLUVarClassRec nclHLUVarClassRec = {
 		(NclObjClass)&nclVarClassRec,
 		0,
 		(NclGenericFunction)NULL,
-		(NclSetStatusFunction)NULL /*VarSetStatus*/,
+		(NclSetStatusFunction)NULL,
 		(NclInitPartFunction)NULL,
 		(NclInitClassFunction)InitializeHLUVarClass,
 		(NclAddParentFunction)NULL,

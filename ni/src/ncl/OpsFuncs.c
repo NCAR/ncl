@@ -1285,7 +1285,7 @@ int nres;
 								(obj_ids[k]!= the_hlu_data_obj->multidval.missing_value.value.objval))  {
 								hlu_ptr = (NclHLUObj)_NclGetObj(obj_ids[k]);
 								if((hlu_ptr != NULL) &&(hlu_ptr->obj.obj_type_mask & Ncl_HLUObj)) {
-									_NclAddHLUToExpList(hlu_ptr,ids[j]);
+									_NclAddHLUToExpList(hlu_ptr,tmp_ho->obj.id);
 								}
 							} 
 						}

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.60 1996-05-09 23:30:01 ethan Exp $
+ *      $Id: Execute.c,v 1.61 1996-05-15 22:51:40 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1752,6 +1752,7 @@ NclExecuteReturnStatus _NclExecute
 								lhs_var->kind = NclStk_NOVAL;
 							}
 							_NclSetStatus((NclObj)lhs_var->u.data_var,PERMANENT);
+							_NclCallCallBacks((NclObj)lhs_var->u.data_var,CREATED);
 						} else {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal right-hand side type for assignment");
 							estatus = NhlFATAL;
