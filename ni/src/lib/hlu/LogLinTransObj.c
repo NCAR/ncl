@@ -1,6 +1,6 @@
 
 /*
- *      $Id: LogLinTransObj.c,v 1.1 1993-04-30 17:22:39 boote Exp $
+ *      $Id: LogLinTransObj.c,v 1.2 1993-05-27 19:11:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -52,7 +52,7 @@ static NhlResource resources[] = {
 		NhlTString,"0" },
 	{ NhlNtrYReverse,NhlCtrYReverse,NhlTInteger,sizeof(int),
 		NhlOffset(LogLinTransObjLayerRec,lltrans.y_reverse),
-		NhlTString,"0"},
+		NhlTString,"0"}
 };
 
 /*
@@ -83,6 +83,30 @@ static NhlErrorTypes LlTransInitialize(
 /*
 * TransObjClass Methods defined
 */
+
+static NhlErrorTypes LlNDCLineTo(
+#if     NhlNeedProto
+Layer   /* instance */,
+Layer   /* parent */,
+float   /* x */,
+float   /* y */,
+int     /* upordown */
+#endif
+);
+static NhlErrorTypes LlDataLineTo(
+#if     NhlNeedProto
+Layer   /* instance */,
+Layer   /* parent */,
+float   /* x */,
+float   /* y */,
+int     /* upordown */
+#endif
+);
+
+
+
+
+
 
 static NhlErrorTypes LlSetTrans(
 #ifdef NhlNeedProto
@@ -121,7 +145,6 @@ float*  /*ymissing*/
 );
 
 
-
 LogLinTransObjLayerClassRec logLinTransObjLayerClassRec = {
         {
 /* superclass			*/	(LayerClass)&transObjLayerClassRec,
@@ -156,8 +179,15 @@ LogLinTransObjLayerClassRec logLinTransObjLayerClassRec = {
 /* data_to_compc	*/	NULL,
 /* compc_to_data	*/	NULL,
 /* win_to_compc		*/	NULL,
-/* compc_to_win		*/	NULL 
-        }
+/* compc_to_win		*/	NULL,
+/* data_lineto 		*/      LlDataLineTo,
+/* compc_lineto 	*/      LlDataLineTo,
+/* win_lineto 		*/      LlDataLineTo,
+/* NDC_lineto 		*/      LlNDCLineTo
+        },
+	{
+		NULL
+	}
 };
 
 LayerClass logLinTransObjLayerClass = (LayerClass)&logLinTransObjLayerClassRec;
@@ -795,3 +825,150 @@ static NhlErrorTypes LlNDCToWin
 	}
 }
 
+
+static NhlErrorTypes LlDataLineTo
+#if __STDC__
+(Layer instance, Layer parent,float x, float y, int upordown )
+#else
+(instance, parent,x, y, upordown )
+Layer instance;
+Layer parent;
+float x;
+float y;
+int upordown;
+#endif
+{
+	LogLinTransObjLayer llinst = (LogLinTransObjLayer)instance;
+	static float lastx,lasty;
+	static call_frstd = 1;
+	float currentx,currenty;
+	float xpoints[2];
+	float ypoints[2];
+	int ix0,ix1,iy0,iy1;
+	float holdx,holdy;
+
+/*
+* if true the moveto is being performed
+*/
+	if(upordown) {
+		lastx = x;
+		lasty = y;
+		call_frstd = 1;
+/* FORTRAN */		lastd_();
+		return(NOERROR);
+	} else {
+		currentx = x;
+		currenty = y;
+		holdx = lastx;
+		holdy = lasty;
+		_NhlTransClipLine(llinst->lltrans.x_min,
+			llinst->lltrans.x_max,
+			llinst->lltrans.y_min,
+			llinst->lltrans.y_max,
+			&lastx,
+			&lasty,
+			&currentx,
+			&currenty,
+			-9999.0);
+		if((lastx == -9999.0)||(lasty == -9999)||(currentx == -9999.0)||(currenty == -9999.0)){
+/*
+* Line has gone completely out of window
+*/
+			lastx = x;	
+			lasty = y;
+			call_frstd = 1;
+/* FORTRAN */		lastd_();
+			return(NOERROR);
+		} else {
+                        if((lastx != holdx)||(lasty!= holdy)) {
+                                call_frstd = 1;
+/* FORTRAN */                   lastd_();
+                        }
+			if(call_frstd == 1) {
+				ix0 = c_kumx(lastx);
+				iy0 = c_kumy(lasty);
+/* FORTRAN */			cfvld_(&call_frstd,&ix0,&iy0);
+				call_frstd = 2;
+			}
+			ix1 = c_kumx(currentx);
+			iy1 = c_kumy(currenty);
+/* FORTRAN */		cfvld_(&call_frstd,&ix1,&iy1);
+			lastx = x;
+			lasty = y;
+			return(NOERROR);
+		}
+			
+			
+	}
+	
+}
+
+static NhlErrorTypes LlNDCLineTo
+#if __STDC__
+(Layer instance, Layer parent, float x, float y, int upordown)
+#else
+(instance, parent, x, y, upordown)
+Layer instance;
+Layer parent;
+float x;
+float y;
+int upordown;
+#endif
+{
+	LogLinTransObjLayer llinst = (LogLinTransObjLayer)instance;
+	static float lastx,lasty;
+	static call_frstd = 1;
+	float currentx,currenty;
+	int ix0,ix1,iy0,iy1;
+	float xvp,yvp,widthvp,heightvp;
+	float holdx,holdy;
+
+/*
+* if true the moveto is being performed
+*/
+	if(upordown) {
+		lastx = x;
+		lasty = y;
+		call_frstd = 1;
+		return(NOERROR);
+	} else {
+		currentx = x;
+		currenty = y;
+		holdx = lastx;
+		holdy = lasty;
+		NhlGetValues(parent->base.id,
+			NhlNvpXF,&xvp,
+			NhlNvpYF,&yvp,
+			NhlNvpWidthF,&widthvp,
+			NhlNvpHeightF,&heightvp,NULL);
+		_NhlTransClipLine( xvp, xvp+widthvp, yvp-heightvp, yvp,
+			&lastx, &lasty, &currentx, &currenty,
+			-9999.0);
+		if((lastx == -9999.0)||(lasty == -9999)||(currentx == -9999.0)||(currenty == -9999.0)){
+/*
+* Line has gone completely out of window
+*/
+			lastx = x;	
+			lasty = y;
+			call_frstd = 1;
+/* FORTRAN */		lastd_();
+			return(NOERROR);
+		} else {
+			if(call_frstd == 1) {
+				ix0 = c_kfmx(lastx);
+				iy0 = c_kfmy(lasty);
+/* FORTRAN */			cfvld_(&call_frstd,&ix0,&iy0);
+				call_frstd = 2;
+			}
+			ix1 = c_kfmx(currentx);
+			iy1 = c_kfmy(currenty);
+/* FORTRAN */		cfvld_(&call_frstd,&ix1,&iy1);
+			lastx = x;
+			lasty = y;
+			return(NOERROR);
+		}
+			
+			
+	}
+	
+}

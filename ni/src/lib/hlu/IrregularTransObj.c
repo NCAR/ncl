@@ -1,6 +1,6 @@
 
 /*
- *      $Id: IrregularTransObj.c,v 1.1 1993-04-30 17:22:12 boote Exp $
+ *      $Id: IrregularTransObj.c,v 1.2 1993-05-27 19:11:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -256,7 +256,11 @@ IrregularTransObjLayerClassRec irregularTransObjLayerClassRec = {
 /* data_to_compc	*/	IrDataToCompc,
 /* compc_to_data	*/	IrCompcToData,
 /* win_to_compc		*/	IrWinToCompc,
-/* compc_to_win		*/	IrCompcToWin
+/* compc_to_win		*/	IrCompcToWin,
+/* data_lineto */       NULL,
+/* compc_lineto */      NULL,
+/* win_lineto */        NULL,
+/* NDC_lineto */        NULL
         }
 };
 

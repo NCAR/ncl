@@ -1,5 +1,5 @@
 /*
- *      $Id: VarArg.h,v 1.1 1993-04-30 17:25:40 boote Exp $
+ *      $Id: VarArg.h,v 1.2 1993-05-27 19:11:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,7 @@
 #ifndef	_VARARG_H_
 #define	_VARARG_H_
 
-#if	(__STDC__ && !(__CENTERLINE__ && sun))
+#ifdef	__STDC__
 #include <stdarg.h>
 #define VA_START(ap,last)       va_start(ap,last) 
 #else

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MapTransObj.c,v 1.1 1993-04-30 17:22:52 boote Exp $
+ *      $Id: MapTransObj.c,v 1.2 1993-05-27 19:11:19 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -234,7 +234,11 @@ MapTransObjLayerClassRec mapTransObjLayerClassRec = {
 /* data_to_compc	*/	NULL,
 /* compc_to_data	*/	NULL,
 /* win_to_compc		*/	MapWinToData,
-/* compc_to_win		*/	MapDataToWin
+/* compc_to_win		*/	MapDataToWin,
+/* data_lineto */       NULL,
+/* compc_lineto */      NULL,
+/* win_lineto */        NULL,
+/* NDC_lineto */        NULL
         }
 };
 

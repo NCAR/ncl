@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.1 1993-04-30 17:26:50 boote Exp $
+ *      $Id: hluP.h,v 1.2 1993-05-27 19:11:42 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -499,17 +499,64 @@ extern NhlErrorTypes _NhlWinToCompc(
 	float * /*ymissing */
 #endif
 );
-NhlErrorTypes   _NhlSetTrans(
+extern NhlErrorTypes   _NhlSetTrans(
 #ifdef NhlNeedProto
 Layer /* instance*/,
 Layer  parent
 #endif
 );
 
-NhlErrorTypes _NhlInitializeLayerClass(
+extern  NhlErrorTypes _NhlInitializeLayerClass(
 #ifdef NhlNeedProto
 LayerClass /* lc */
 #endif
 );
+
+extern NhlErrorTypes _NhlDataLineTo(
+#ifdef NhlNeedProto
+Layer   /* instance */,
+Layer   /* parent */,
+float   /* x */,
+float   /* y */,
+int     /* upordown */
+#endif
+);
+extern NhlErrorTypes _NhlCompcLineTo(
+#ifdef NhlNeedProto
+Layer   /* instance */,
+Layer   /* parent */,
+float   /* x */,
+float   /* y */,
+int     /* upordown */
+#endif
+);
+extern NhlErrorTypes _NhlWinLineTo(
+#ifdef NhlNeedProto
+Layer   /* instance */,
+Layer   /* parent */,
+float   /* x */,
+float   /* y */,
+int     /* upordown */
+#endif
+);
+extern NhlErrorTypes _NhlNDCLineTo(
+#ifdef NhlNeedProto
+Layer   /* instance */,
+Layer   /* parent */,
+float   /* x */,
+float   /* y */,
+int     /* upordown */
+#endif
+);
+
+extern void _NhlSetLineInfo(
+#ifdef NhlNeedProto
+        Layer   /* instance */,
+        Layer   /* plot */
+#endif
+);
+
+
+
 
 #endif /* HLUP_H */

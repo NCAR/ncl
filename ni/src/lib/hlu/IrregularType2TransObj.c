@@ -1,6 +1,6 @@
 
 /*
- *      $Id: IrregularType2TransObj.c,v 1.1 1993-04-30 17:22:26 boote Exp $
+ *      $Id: IrregularType2TransObj.c,v 1.2 1993-05-27 19:11:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -235,6 +235,37 @@ float*	/*ymissing*/
 #endif /*NOTYET*/
 
 
+static NhlErrorTypes IrNDCLineTo(
+#if     NhlNeedProto
+Layer   /* instance */,
+Layer   /* parent */,
+float   /* x */,
+float   /* y */,
+int     /* upordown */
+#endif
+);
+static NhlErrorTypes IrDataLineTo(
+#if     NhlNeedProto
+Layer   /* instance */,
+Layer   /* parent */,
+float   /* x */,
+float   /* y */,
+int     /* upordown */
+#endif
+);
+
+static NhlErrorTypes IrWinLineTo(
+#if     NhlNeedProto
+Layer   /* instance */,
+Layer   /* parent */,
+float   /* x */,
+float   /* y */,
+int     /* upordown */
+#endif
+);
+
+
+
 IrregularType2TransObjLayerClassRec irregularType2TransObjLayerClassRec = {
         {
 /* superclass			*/	(LayerClass)&transObjLayerClassRec,
@@ -269,7 +300,11 @@ IrregularType2TransObjLayerClassRec irregularType2TransObjLayerClassRec = {
 /* data_to_compc	*/	IrDataToCompc,
 /* compc_to_data	*/	IrCompcToData,
 /* win_to_compc		*/	NULL,
-/* compc_to_win		*/	NULL
+/* compc_to_win		*/	NULL,
+/* data_lineto 		*/      IrDataLineTo,
+/* compc_lineto		*/      IrWinLineTo,
+/* win_lineto 		*/      IrWinLineTo,
+/* NDC_lineto 		*/      IrNDCLineTo
         }
 };
 
@@ -838,3 +873,242 @@ static NhlErrorTypes IrCompcToData
 }
 
 
+static NhlErrorTypes IrDataLineTo
+#if __STDC__
+(Layer instance, Layer parent,float x, float y, int upordown )
+#else
+(instance, parent,x, y, upordown )
+Layer instance;
+Layer parent;
+float x;
+float y;
+int upordown;
+#endif
+{
+	IrregularType2TransObjLayer ir2inst = (IrregularType2TransObjLayer)instance;
+	static float lastx,lasty;
+	static call_frstd = 1;
+	float currentx,currenty;
+	float xpoints[2];
+	float ypoints[2];
+	float holdx,holdy;
+	int ix0,ix1,iy0,iy1;
+
+/*
+* if true the moveto is being performed
+*/
+	if(upordown) {
+		lastx = x;
+		lasty = y;
+		call_frstd = 1;
+/* FORTRAN */		lastd_();
+		return(NOERROR);
+	} else {
+		currentx = x;
+		currenty = y;
+		holdx = lastx;
+		holdy = lasty;
+		_NhlTransClipLine(ir2inst->ir2trans.x_min,
+			ir2inst->ir2trans.x_max,
+			ir2inst->ir2trans.y_min,
+			ir2inst->ir2trans.y_max,
+			&lastx,
+			&lasty,
+			&currentx,
+			&currenty,
+			-9999.0);
+		if((lastx == -9999.0)||(lasty == -9999)||(currentx == -9999.0)||(currenty == -9999.0)){
+/*
+* Line has gone completely out of window
+*/
+			lastx = x;	
+			lasty = y;
+			call_frstd = 1;
+/* FORTRAN */		lastd_();
+			return(NOERROR);
+		} else {
+			xpoints[0] = lastx;
+			xpoints[1] = currentx;
+			ypoints[0] = lasty;
+			ypoints[1] = currenty;
+			IrDataToCompc(instance,parent,xpoints,ypoints,2,xpoints,ypoints,NULL,NULL);
+			if((lastx != holdx)||(lasty!= holdy)) {
+				call_frstd = 1;
+/* FORTRAN */			lastd_();
+			}
+			if(call_frstd == 1) {
+				ix0 = c_kumx(xpoints[0]);
+				iy0 = c_kumy(ypoints[0]);
+/* FORTRAN */			cfvld_(&call_frstd,&ix0,&iy0);
+				call_frstd = 2;
+			}
+			ix1 = c_kumx(xpoints[1]);
+			iy1 = c_kumy(ypoints[1]);
+/* FORTRAN */		cfvld_(&call_frstd,&ix1,&iy1);
+			lastx = x;
+			lasty = y;
+			return(NOERROR);
+		}
+			
+			
+	}
+	
+}
+
+static NhlErrorTypes IrWinLineTo
+#if __STDC__
+(Layer instance, Layer parent, float x, float y, int upordown)
+#else
+(instance, parent, x, y, upordown)
+Layer instance;
+Layer parent;
+float x;
+float y;
+int upordown;
+#endif
+{
+	IrregularType2TransObjLayer ir2inst = (IrregularType2TransObjLayer)instance;
+	static float lastx,lasty;
+	static call_frstd = 1;
+	float currentx,currenty;
+	float xpoints[2];
+	float ypoints[2];
+	int ix0,ix1,iy0,iy1;
+	float xmin,ymin,xmax,ymax;
+	float holdx, holdy;
+
+/*
+* if true the moveto is being performed
+*/
+	xmin = MIN(ir2inst->ir2trans.ur,ir2inst->ir2trans.ul);
+	xmax = MAX(ir2inst->ir2trans.ur,ir2inst->ir2trans.ul);
+	ymin = MIN(ir2inst->ir2trans.ub,ir2inst->ir2trans.ut);
+	ymax = MAX(ir2inst->ir2trans.ub,ir2inst->ir2trans.ut);
+	if(upordown) {
+		lastx = x;
+		lasty = y;
+		call_frstd = 1;
+		return(NOERROR);
+	} else {
+		currentx = x;
+		currenty = y;
+		holdx = lastx;
+		holdy = lasty;
+		_NhlTransClipLine(
+			xmin, xmax, ymin, ymax,
+			&lastx, &lasty, &currentx, &currenty,
+			-9999.0);
+		if((lastx == -9999.0)||(lasty == -9999)||(currentx == -9999.0)||(currenty == -9999.0)){
+/*
+* Line has gone completely out of window
+*/
+			lastx = x;	
+			lasty = y;
+			call_frstd = 1;
+/* FORTRAN */		lastd_();
+			return(NOERROR);
+		} else {
+                        if((lastx != holdx)||(lasty!= holdy)) {
+                                call_frstd = 1;
+/* FORTRAN */                   lastd_();
+                        }
+
+			if(call_frstd == 1) {
+				ix0 = c_kumx(lastx);
+				iy0 = c_kumy(lasty);
+/* FORTRAN */			cfvld_(&call_frstd,&ix0,&iy0);
+				call_frstd = 2;
+			}
+			ix1 = c_kumx(currentx);
+			iy1 = c_kumy(currenty);
+/* FORTRAN */		cfvld_(&call_frstd,&ix1,&iy1);
+			lastx = x;
+			lasty = y;
+			return(NOERROR);
+		}
+			
+			
+	}
+	
+}
+
+
+static NhlErrorTypes IrNDCLineTo
+#if __STDC__
+(Layer instance, Layer parent,float x, float y, int upordown )
+#else
+(instance, parent,x, y, upordown )
+Layer instance;
+Layer parent;
+float x;
+float y;
+int upordown;
+#endif
+{
+	IrregularType2TransObjLayer ir2inst = (IrregularType2TransObjLayer)instance;
+	static float lastx,lasty;
+	static call_frstd = 1;
+	float currentx,currenty;
+	float xpoints[2];
+	float ypoints[2];
+	int ix0,ix1,iy0,iy1;
+	float xvp,yvp,widthvp,heightvp;
+	float holdx,holdy;
+
+/*
+* if true the moveto is being performed
+*/
+	if(upordown) {
+		lastx = x;
+		lasty = y;
+		call_frstd = 1;
+/* FORTRAN */		lastd_();
+		return(NOERROR);
+	} else {
+		currentx = x;
+		currenty = y;
+		holdx = lastx;
+		holdy = lasty;
+                NhlGetValues(parent->base.id,
+                        NhlNvpXF,&xvp,
+                        NhlNvpYF,&yvp,
+                        NhlNvpWidthF,&widthvp,
+                        NhlNvpHeightF,&heightvp,NULL);
+
+		_NhlTransClipLine(
+			xvp, xvp+widthvp, yvp-heightvp, yvp,
+			&lastx, &lasty, &currentx, &currenty,
+			-9999.0);
+		if((lastx == -9999.0)||(lasty == -9999)||(currentx == -9999.0)||(currenty == -9999.0)){
+/*
+* Line has gone completely out of window
+*/
+			lastx = x;	
+			lasty = y;
+			call_frstd = 1;
+/* FORTRAN */		lastd_();
+			return(NOERROR);
+		} else {
+                        if((lastx != holdx)||(lasty!= holdy)) {
+                                call_frstd = 1;
+/* FORTRAN */                   lastd_();
+                        }
+
+			if(call_frstd == 1) {
+				ix0 = c_kfmx(lastx);
+				iy0 = c_kfmy(lasty);
+/* FORTRAN */			cfvld_(&call_frstd,&ix0,&iy0);
+				call_frstd = 2;
+			}
+			ix1 = c_kfmx(currentx);
+			iy1 = c_kfmy(currenty);
+/* FORTRAN */		cfvld_(&call_frstd,&ix1,&iy1);
+			lastx = x;
+			lasty = y;
+			return(NOERROR);
+		}
+			
+			
+	}
+	
+}

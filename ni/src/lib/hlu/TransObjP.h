@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TransObjP.h,v 1.1 1993-04-30 17:25:22 boote Exp $
+ *      $Id: TransObjP.h,v 1.2 1993-05-27 19:11:29 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -28,14 +28,26 @@
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/TransObj.h>
 
-
+typedef NhlErrorTypes (*NhlLineToProc)(
+#if	NhlNeedProto
+Layer   /* instance */,
+Layer   /* parent */,
+float   /* x */,
+float   /* y */,
+int     /* upordown */
+#endif
+);
 typedef struct _TransObjLayerPart {
-/* Publicly setable resources */
-	int foo;
-/*
-* Dummy variable
-*/
-	
+	/* Publicly set values */
+	int dash_pattern;
+	char *line_label;
+	float line_thickness;	
+	int line_color;	
+	float line_label_font_height;
+	float line_dash_seglen;
+	/* private fields */
+	int char_size;
+	int dash_dollar_size;
 }TransObjLayerPart;
 
 
@@ -64,6 +76,13 @@ typedef struct _TransObjLayerClassPart {
 	NhlErrorTypes	(*compc_to_data)();
 	NhlErrorTypes	(*win_to_compc)();
 	NhlErrorTypes	(*compc_to_win)();
+/*
+* Drawing primatives
+*/
+	NhlLineToProc	data_lineto;
+	NhlLineToProc	compc_lineto;
+	NhlLineToProc	win_lineto;
+	NhlLineToProc	NDC_lineto;
 } TransObjLayerClassPart;
 
 typedef struct _TransObjLayerClassRec {
@@ -74,7 +93,21 @@ typedef struct _TransObjLayerClassRec {
 extern TransObjLayerClassRec transObjLayerClassRec;
 
 
+extern char *dash_patterns[];
 
+extern void _NhlTransClipLine(
+#ifdef NhlNeedProto
+float /*xl*/,
+float /*xr*/,
+float /*yt*/,
+float /*yb*/,
+float * /*x0*/,
+float * /*y0*/,
+float * /*x1*/,
+float * /*y1*/,
+float /*missing*/
+#endif
+);
 
 #endif  /*_NTransObjP_h*/
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.1 1993-04-30 17:23:53 boote Exp $
+ *      $Id: Resources.c,v 1.2 1993-05-27 19:11:22 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -520,6 +520,7 @@ GetResources
 
 				if(resources[i].nrm_type == QString){
 					to.addr = resources[i].nrm_default_addr;
+					if(to.addr != NULL)
 					to.size=strlen((Const char*)to.addr)+1;
 				}
 				else{

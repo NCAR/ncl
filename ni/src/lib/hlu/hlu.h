@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.1 1993-04-30 17:26:44 boote Exp $
+ *      $Id: hlu.h,v 1.2 1993-05-27 19:11:40 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@
 
 #include <ncarg/hlu/defs.h>
 
-#if	__STDC__ && !(__CENTERLINE__ && sun) 
+#ifdef	__STDC__ 
 #define NeedVarArgProto         True 
 #else
 #define NeedVarArgProto		False

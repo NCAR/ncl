@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.2 1993-05-10 20:23:11 ethan Exp $
+ *      $Id: XyPlot.c,v 1.3 1993-05-27 19:11:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -399,13 +399,6 @@ XyPlotLayer /*xold */,
 int 		/*c_or_s*/
 #endif
 );
-static NhlErrorTypes ConvertDataToWin(
-#ifdef NhlNeedProto
-XyPlotLayer /*xnew*/,
-XyPlotLayer /*xold */,
-int 		/*c_or_s*/
-#endif
-);
 
 static NhlErrorTypes DrawCurves(
 #ifdef NhlNeedProto
@@ -463,8 +456,6 @@ LayerClass xyPlotLayerClass = (LayerClass)&xyPlotLayerClassRec;
  *		SetUpTransObjs - Creates and sets transformation objects
  *		SetUpTicks - Creates and sets ticks
  *		SetUpTitles - Creates and sets titles
- *		ConvertDataToWin - Uses transformation object created in 
- *					SetUpTransObjs to map data to window.
  *
  * In Args:	old	copy of old instance record
  *		reference	requested instance record
@@ -534,12 +525,6 @@ static NhlErrorTypes XyPlotSetValues
 	else if(ret1 < ret2)
 		ret2= ret1;
 
-	ret1 = ConvertDataToWin(xnew,xold,SET);
-	if(ret1 < WARNING)
-		return(ret1);
-	else if(ret1 < ret2)
-		ret2= ret1;
-
 	return(ret2);
 }
 
@@ -554,8 +539,6 @@ static NhlErrorTypes XyPlotSetValues
  *              SetUpTransObjs - Creates and sets transformation objects
  *              SetUpTicks - Creates and sets ticks
  *              SetUpTitles - Creates and sets titles
- *              ConvertDataToWin - Uses transformation object created in 
- *                                      SetUpTransObjs to map data to window.
  *
  * In Args: 	class	objects layer_class
  *		req	instance record of requested values
@@ -611,12 +594,6 @@ static NhlErrorTypes XyPlotInitialize
 		ret2= ret1;
 
 	ret1 = SetUpTitles(xnew,NULL,CREATE);
-	if(ret1 < WARNING)
-		return(ret1);
-	else if(ret1 < ret2)
-		ret2= ret1;
-
-	ret1 = ConvertDataToWin(xnew,NULL,CREATE);
 	if(ret1 < WARNING)
 		return(ret1);
 	else if(ret1 < ret2)
@@ -850,12 +827,11 @@ static NhlErrorTypes DrawCurves
 XyPlotLayer xlayer;
 #endif
 {
-	int i,ll;
-	float fr,fl,fb,ft,ur,ul,ub,ut;
+	int i,j;
 	NhlErrorTypes ret = NOERROR;
 	NhlErrorTypes ret1 = NOERROR;
 	char buffer[80];
-	float x0,x1,y0,y1;
+	int upordownflag = 1;
 
 	for(i = 0; i< 80; i++)
 		buffer[i] = '\0';
@@ -873,201 +849,216 @@ XyPlotLayer xlayer;
 		return(FATAL);
 	} else if(ret < ret1)
 		ret1 = ret;
-/*
-* Now that a set has been done I can compute the plotter coordinates needed
-* for the call to c_dashdc from the dash_segment_length and 
-* line_label_font_height fields.
-*/
-
-	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
-/*
-* First compute value for font height by creating a vector in NDC and
-* using c_kfpy to compute equivalent plotter coordinates. THe
-* take the distance between the two points to get the plotter height
-*/
-	y0 = fb;
-	y1 = fb + xlayer->xyplot.line_label_font_height;
-	y0 = (float)c_kfpy(y0);
-	y1 = (float)c_kfpy(y1);
-
-	xlayer->xyplot.char_size = (int)(y1-y0);
-	if(xlayer->xyplot.char_size < 4) {
-		xlayer->xyplot.char_size = 4;
-	}
-
-/*
-* Next compute the value for the dash pattern length. This is different
-* since c_dashdc wants a length for the individual '$' and ''' and the
-* resource NhlNxyDashSegmentLength is advertised as the length at which
-* a dash pattern will start repeating it self. Since 32 element dash
-* pattern strings are used dividing by 32 should be sufficient.
-* This resource depends on width.
-*/
-	x0 = fl;
-	x1 = fl + xlayer->xyplot.dash_segment_length;
-	x0 = (float)c_kfpy(x0);
-        x1 = (float)c_kfpy(x1);
-
-
 	
-	
-	
-/*
-* AUTOGRAPH ERROR DETECTION NEEDED
-*/
-	if(xlayer->xyplot.thexmissing != NULL)	
-		c_agsetf("NULL/1.",*xlayer->xyplot.thexmissing);
-	c_agsetf("FRAME.",2.0);
-	c_agsetf("SET.",4.0);
-	c_agsetf("WINDOW.",(float)xlayer->xyplot.clip);
-
-	if(!(xlayer->xyplot.noxvalues)&&!(xlayer->xyplot.noyvalues)){
-		c_agstup(xlayer->xyplot.x_final_values[0],1,1,
-			(xlayer->xyplot.curve_lengths[0]),1,
-			xlayer->xyplot.y_final_values[0],1,1,
-			(xlayer->xyplot.curve_lengths[0]),1);
-	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
-	} else if(xlayer->xyplot.noxvalues) {
-		c_agstup(xlayer->xyplot.dummy_array_final,1,1,
-			xlayer->xyplot.dummy_array_length,1,
-			xlayer->xyplot.y_final_values[0],1,1,
-			xlayer->xyplot.curve_lengths[0],1);
-	} else if(xlayer->xyplot.noyvalues) {
-		c_agstup(xlayer->xyplot.x_final_values[0],1,1,
-			xlayer->xyplot.curve_lengths[0],1,
-			xlayer->xyplot.dummy_array_final,1,1,
-			xlayer->xyplot.dummy_array_length,1);
-	} else {
-		c_agstup(xlayer->xyplot.dummy_array_final,1,1,
-			xlayer->xyplot.dummy_array_length,1,
-			xlayer->xyplot.dummy_array_final,1,1,
-			xlayer->xyplot.dummy_array_length,1);
-	}
-	gset_linewidth((Gdouble)xlayer->xyplot.curve_thickness);
-	for(i=0; i< xlayer->xyplot.num_curves; i++) {
-		if(xlayer->xyplot.curve_colors!= NULL) {
-			gset_line_colr_ind((Gint)_NhlGetGksCi(
-				xlayer->base.wkptr, 
-				xlayer->xyplot.curve_colors[i]));	
-		} else {
-			gset_line_colr_ind((Gint)_NhlGetGksCi(
-				xlayer->base.wkptr, 0));	
-		}
+	for( i = 0; i< xlayer->xyplot.num_curves; i++ ) {	
+		upordownflag = 1;
 		switch(xlayer->xyplot.curve_line_label_mode) {
 		case NOLABELS:
-			if(xlayer->xyplot.curve_dash_patterns != NULL) {
-/*
-* No labels but dash patterns
-*/
-				xlayer->xyplot.dash_dollar_size = (int)((x1-x0)/
-					strlen( dash[(xlayer->xyplot.curve_dash_patterns[i]-1)%16])+.5);
-				if(xlayer->xyplot.dash_dollar_size < 1) {
-					xlayer->xyplot.dash_dollar_size = 1;
-				}
-				strcpy(buffer,dash[(xlayer->xyplot.curve_dash_patterns[i]-1)%16]);
-				c_dashdc(buffer,xlayer->xyplot.dash_dollar_size,
-					xlayer->xyplot.char_size);
-
-			} else {
-/*
-* No labels and No dash patterns
-*/
-				strcpy(buffer,dash[0]);
-				xlayer->xyplot.dash_dollar_size = (int)((x1-x0)/
-					strlen(dash[0])+.5);
-				if(xlayer->xyplot.dash_dollar_size < 1) {
-					xlayer->xyplot.dash_dollar_size = 1;
-				}
-				c_dashdc(buffer,xlayer->xyplot.dash_dollar_size,
-					xlayer->xyplot.char_size);
-			}
+		NhlSetValues(xlayer->xyplot.thetrans->base.id,
+			NhlNtrDashPattern,((xlayer->xyplot.curve_dash_patterns == NULL)?1:xlayer->xyplot.curve_dash_patterns[i]),
+			NhlNtrLineThicknessF,xlayer->xyplot.curve_thickness,
+			NhlNtrLineColor,((xlayer->xyplot.curve_colors == NULL)?0:xlayer->xyplot.curve_colors[i]),
+			NhlNtrLineLabelFontHeightF, xlayer->xyplot.line_label_font_height,
+			NhlNtrLineLabel,NULL,
+			NULL);
 			break;
 		case CUSTOM:	
-			if(xlayer->xyplot.curve_dash_patterns != NULL) {
-/*
-* Label and dash patterns
-*/
-				strcpy(buffer,dash[(xlayer->xyplot.curve_dash_patterns[i]-1)%16]);
-				xlayer->xyplot.dash_dollar_size = (int)((x1-x0)/
-                                        strlen(dash[(xlayer->xyplot.curve_dash_patterns[i]-1)%16])+.5);
-				if(xlayer->xyplot.dash_dollar_size < 1) {
-					xlayer->xyplot.dash_dollar_size = 1;
-				}
-
-				if(xlayer->xyplot.curve_line_labels[i] != NULL) {
-					strcpy(&(buffer[strlen(dash[(xlayer->xyplot.curve_dash_patterns[i]-1)%16])-strlen(xlayer->xyplot.curve_line_labels[i])]),xlayer->xyplot.curve_line_labels[i]);
-				}	
-				c_dashdc(buffer,xlayer->xyplot.dash_dollar_size,						xlayer->xyplot.char_size);
-			} else {
-/*
-* labels but no dash patterns
-*/
-				strcpy(buffer,dash[0]);
-				xlayer->xyplot.dash_dollar_size = (int)((x1-x0)/
-                                        strlen(dash[0])+.5);
-				if(xlayer->xyplot.dash_dollar_size < 1) {
-					xlayer->xyplot.dash_dollar_size = 1;
-				}
-				if(xlayer->xyplot.curve_line_labels[i] != NULL) {
-					strcpy(&(buffer[strlen(dash[0])-strlen(xlayer->xyplot.curve_line_labels[i])]),xlayer->xyplot.curve_line_labels[i]);
-				}	
-				c_dashdc(buffer,xlayer->xyplot.dash_dollar_size,						xlayer->xyplot.char_size);
-			}
+		NhlSetValues(xlayer->xyplot.thetrans->base.id,
+			NhlNtrDashPattern,((xlayer->xyplot.curve_dash_patterns == NULL)?1:xlayer->xyplot.curve_dash_patterns[i]),
+			NhlNtrLineThicknessF,xlayer->xyplot.curve_thickness,
+			NhlNtrLineColor,((xlayer->xyplot.curve_colors == NULL)?0:xlayer->xyplot.curve_colors[i]),
+			NhlNtrLineLabelFontHeightF, xlayer->xyplot.line_label_font_height,
+			NhlNtrLineLabel,((xlayer->xyplot.curve_line_labels == NULL)? NULL: xlayer->xyplot.curve_line_labels[i]),
+			NULL);
 			break;
 		case LETTERED:
-			if(xlayer->xyplot.curve_dash_patterns != NULL) {
-				strcpy(buffer,dash[(xlayer->xyplot.curve_dash_patterns[i]-1)%16]);
-				xlayer->xyplot.dash_dollar_size = (int)((x1-x0)/
-                                        strlen(dash[(xlayer->xyplot.curve_dash_patterns[i]-1)%16])+.5);
-				if(xlayer->xyplot.dash_dollar_size < 1) {
-					xlayer->xyplot.dash_dollar_size = 1;
-				}
-				buffer[strlen(dash[(xlayer->xyplot.curve_dash_patterns[i]-1)%16])-1] = (char)((int)'A' + i%26);
-				c_dashdc(buffer,xlayer->xyplot.dash_dollar_size,
-					xlayer->xyplot.char_size);
-			} else {
-/*
-* Lettered labels but no dash patterns(easy case)
-*/				
-				strcpy(buffer,dash[0]);
-				xlayer->xyplot.dash_dollar_size = (int)((x1-x0)/
-                                        strlen(dash[0])+.5);
-				if(xlayer->xyplot.dash_dollar_size < 1) {
-					xlayer->xyplot.dash_dollar_size = 1;
-				}
-				buffer[strlen(dash[0])-1] = (char)((int)'A' + i%26);
-				c_dashdc(buffer,xlayer->xyplot.dash_dollar_size,
-					xlayer->xyplot.char_size);
-			}
+			buffer[0] = (char)((int)'A' + i % 26);
+			buffer[1] = '\0';
+		NhlSetValues(xlayer->xyplot.thetrans->base.id,
+			NhlNtrDashPattern,((xlayer->xyplot.curve_dash_patterns == NULL)?1:xlayer->xyplot.curve_dash_patterns[i]),
+			NhlNtrLineThicknessF,xlayer->xyplot.curve_thickness,
+			NhlNtrLineColor,((xlayer->xyplot.curve_colors == NULL)?0:xlayer->xyplot.curve_colors[i]),
+			NhlNtrLineLabelFontHeightF, xlayer->xyplot.line_label_font_height,
+			NhlNtrLineLabel,buffer,
+			NULL);
 			break;
 		}
-		if(!(xlayer->xyplot.noxvalues)&&!(xlayer->xyplot.noyvalues)){
-			c_agcurv(xlayer->xyplot.x_final_values[i],
-				1,
-				xlayer->xyplot.y_final_values[i],
-				1,
-				(xlayer->xyplot.curve_lengths[i]),
-				0
-				);
-				
-		} else if(xlayer->xyplot.noxvalues) {
-                        c_agcurv(xlayer->xyplot.dummy_array_final,
-                                1,
-                                xlayer->xyplot.y_final_values[i],
-                                1,
-                                xlayer->xyplot.curve_lengths[i],
-                                0
-                                );
-		} else if(xlayer->xyplot.noyvalues) {
-			c_agcurv(xlayer->xyplot.x_final_values[i],
-				1,
-				xlayer->xyplot.dummy_array_final,
-				1,
-				xlayer->xyplot.curve_lengths[i],
-				0
-				);	
+		_NhlSetLineInfo(xlayer->xyplot.thetrans,(Layer)xlayer);
+
+
+		if((xlayer->xyplot.thexmissing == NULL)&&(xlayer->xyplot.theymissing == NULL)) {
+			if(xlayer->xyplot.noxvalues) {
+				for(j = 0 ; j< xlayer->xyplot.curve_lengths[i]; j++) {	
+					_NhlDataLineTo(xlayer->xyplot.thetrans,
+						(Layer)xlayer,
+						xlayer->xyplot.dummy_array[j],
+						(xlayer->xyplot.y_values[i])[j],	
+						upordownflag);
+					if(upordownflag) {
+						upordownflag = 0;
+					}
+				}
+		
+			} else if(xlayer->xyplot.noyvalues){
+				for(j = 0 ; j< xlayer->xyplot.curve_lengths[i]; j++) {	
+					_NhlDataLineTo(xlayer->xyplot.thetrans,
+						(Layer)xlayer,
+						(xlayer->xyplot.x_values[i])[j],
+						xlayer->xyplot.dummy_array[j],	
+						upordownflag);
+					if(upordownflag) {
+						upordownflag = 0;
+					}
+				}
+			} else {
+				for(j = 0 ; j< xlayer->xyplot.curve_lengths[i]; j++) {	
+					_NhlDataLineTo(xlayer->xyplot.thetrans,
+						(Layer)xlayer,
+						(xlayer->xyplot.x_values[i])[j],
+						(xlayer->xyplot.y_values[i])[j],	
+						upordownflag);
+					if(upordownflag) {
+						upordownflag = 0;
+					}
+				}
+			}
+		} else if(xlayer->xyplot.thexmissing == NULL) {
+			if(xlayer->xyplot.noxvalues) {
+				for(j = 0 ; j< xlayer->xyplot.curve_lengths[i]; j++) {	
+					if((xlayer->xyplot.y_values[i])[j] != *xlayer->xyplot.theymissing) {
+						_NhlDataLineTo(xlayer->xyplot.thetrans,
+							(Layer)xlayer,
+							xlayer->xyplot.dummy_array[j],
+							(xlayer->xyplot.y_values[i])[j],	
+							upordownflag);
+						if(upordownflag) {
+							upordownflag = 0;
+						}
+					} else {
+						upordownflag = 1;
+					}
+				}
+		
+			} else if(xlayer->xyplot.noyvalues){
+				for(j = 0 ; j< xlayer->xyplot.curve_lengths[i]; j++) {	
+					_NhlDataLineTo(xlayer->xyplot.thetrans,
+						(Layer)xlayer,
+						(xlayer->xyplot.x_values[i])[j],
+						xlayer->xyplot.dummy_array[j],	
+						upordownflag);
+					if(upordownflag) {
+						upordownflag = 0;
+					}
+				}
+			} else {
+				for(j = 0 ; j< xlayer->xyplot.curve_lengths[i]; j++) {	
+					if((xlayer->xyplot.y_values[i])[j] != *xlayer->xyplot.theymissing) {
+						_NhlDataLineTo(xlayer->xyplot.thetrans,
+							(Layer)xlayer,
+							(xlayer->xyplot.x_values[i])[j],
+							(xlayer->xyplot.y_values[i])[j],	
+							upordownflag);
+						if(upordownflag) {
+							upordownflag = 0;
+						}
+					} else {
+						upordownflag = 1;
+					}
+				}
+			}
+		} else if(xlayer->xyplot.theymissing == NULL) {
+			if(xlayer->xyplot.noxvalues) {
+				for(j = 0 ; j< xlayer->xyplot.curve_lengths[i]; j++) {	
+					_NhlDataLineTo(xlayer->xyplot.thetrans,
+						(Layer)xlayer,
+						xlayer->xyplot.dummy_array[j],
+						(xlayer->xyplot.y_values[i])[j],	
+						upordownflag);
+					if(upordownflag) {
+						upordownflag = 0;
+					}
+				}
+		
+			} else if(xlayer->xyplot.noyvalues){
+				for(j = 0 ; j< xlayer->xyplot.curve_lengths[i]; j++) {	
+					if((xlayer->xyplot.x_values[i])[j] != *xlayer->xyplot.thexmissing) {
+						_NhlDataLineTo(xlayer->xyplot.thetrans,
+							(Layer)xlayer,
+							(xlayer->xyplot.x_values[i])[j],
+							xlayer->xyplot.dummy_array[j],	
+							upordownflag);
+						if(upordownflag) {
+							upordownflag = 0;
+						}
+					} else {	
+						upordownflag = 1;
+					}
+				}
+			} else {
+				for(j = 0 ; j< xlayer->xyplot.curve_lengths[i]; j++) {	
+					if((xlayer->xyplot.x_values[i])[j] != *xlayer->xyplot.thexmissing) {
+						_NhlDataLineTo(xlayer->xyplot.thetrans,
+							(Layer)xlayer,
+							(xlayer->xyplot.x_values[i])[j],
+							(xlayer->xyplot.y_values[i])[j],	
+							upordownflag);
+						if(upordownflag) {
+							upordownflag = 0;
+						}
+					} else {
+						upordownflag = 1;
+					}
+				}
+			}
+		} else {
+			if(xlayer->xyplot.noxvalues) {
+				for(j = 0 ; j< xlayer->xyplot.curve_lengths[i]; j++) {	
+					if((xlayer->xyplot.y_values[i])[j]!= *xlayer->xyplot.theymissing) {
+						_NhlDataLineTo(xlayer->xyplot.thetrans,
+							(Layer)xlayer,
+							xlayer->xyplot.dummy_array[j],	
+							(xlayer->xyplot.y_values[i])[j],
+							upordownflag);
+						if(upordownflag) {
+							upordownflag = 0;
+						}
+					} else {
+						upordownflag = 1;
+					}
+				}
+		
+			} else if(xlayer->xyplot.noyvalues){
+				for(j = 0 ; j< xlayer->xyplot.curve_lengths[i]; j++) {	
+					if((xlayer->xyplot.x_values[i])[j]!= *xlayer->xyplot.thexmissing) {
+						_NhlDataLineTo(xlayer->xyplot.thetrans,
+							(Layer)xlayer,
+							(xlayer->xyplot.x_values[i])[j],
+							xlayer->xyplot.dummy_array[j],	
+							upordownflag);
+						if(upordownflag) {
+							upordownflag = 0;
+						}
+					} else {
+						upordownflag = 1;
+					}
+				}
+			} else {
+				for(j = 0 ; j< xlayer->xyplot.curve_lengths[i]; j++) {	
+					if(((xlayer->xyplot.x_values[i])[j]!= *xlayer->xyplot.thexmissing)&&((xlayer->xyplot.y_values[i])[j]!= *xlayer->xyplot.theymissing)) {
+						_NhlDataLineTo(xlayer->xyplot.thetrans,
+							(Layer)xlayer,
+							(xlayer->xyplot.x_values[i])[j],
+							(xlayer->xyplot.y_values[i])[j],	
+							upordownflag);
+						if(upordownflag) {
+							upordownflag = 0;
+						}
+					} else {
+						upordownflag = 1;
+					}
+				}
+			}
 		}
-		bzero(buffer,80);
 	}
 	
 	ret = _NhlDeactivateWorkstation(xlayer->base.wkptr);	
@@ -1355,11 +1346,9 @@ Layer inst;
 	for(i = 0; i< xinst->xyplot.num_curves; i++) {
 		if(!xinst->xyplot.noxvalues) {
 			NhlFree(xinst->xyplot.x_values[i]);
-			NhlFree(xinst->xyplot.x_final_values[i]);
 		}
 		if(!xinst->xyplot.noyvalues) {
 			NhlFree(xinst->xyplot.y_values[i]);
-			NhlFree(xinst->xyplot.y_final_values[i]);
 		}
 		if((xinst->xyplot.curve_line_labels != NULL)&&(xinst->xyplot.curve_line_labels[i] != NULL)) {
 			NhlFree(xinst->xyplot.curve_line_labels[i]);
@@ -1382,7 +1371,6 @@ Layer inst;
 	}
 	if(xinst->xyplot.dummy_array != NULL) {
 		NhlFree(xinst->xyplot.dummy_array);
-		NhlFree(xinst->xyplot.dummy_array_final);
 	}
 	if(xinst->xyplot.y_alternate_coords!= NULL) {
 		NhlFree(xinst->xyplot.y_alternate_coords);
@@ -1554,14 +1542,8 @@ static NhlErrorTypes CheckValues
 				if(xold->xyplot.dummy_array != NULL) {
 					NhlFree((void*)xold->xyplot.dummy_array);
 				}
-				if(xold->xyplot.dummy_array_final != NULL) {
-					NhlFree((void*)xold->xyplot.dummy_array_final);
-				}
 			}
 			xnew->xyplot.dummy_array = 
-				(float*)NhlMalloc((unsigned)sizeof(float)*
-					xnew->xyplot.dummy_array_length);
-			xnew->xyplot.dummy_array_final = 
 				(float*)NhlMalloc((unsigned)sizeof(float)*
 					xnew->xyplot.dummy_array_length);
 			if( xnew->xyplot.dummy_array == NULL) {
@@ -1611,14 +1593,8 @@ if((xnew->xyplot.y_bottom > (xnew->xyplot.y_values[i])[j])&&((xnew->xyplot.theym
 				if(xold->xyplot.dummy_array != NULL){
 					NhlFree((void*)xold->xyplot.dummy_array);
 				}
-				if(xold->xyplot.dummy_array_final != NULL){
-					NhlFree((void*)xold->xyplot.dummy_array_final);
-				}
 			}
 			xnew->xyplot.dummy_array = 
-				(float*)NhlMalloc((unsigned)sizeof(float)*
-					xnew->xyplot.dummy_array_length);
-			xnew->xyplot.dummy_array_final = 
 				(float*)NhlMalloc((unsigned)sizeof(float)*
 					xnew->xyplot.dummy_array_length);
 			if( xnew->xyplot.dummy_array == NULL) {
@@ -1644,7 +1620,6 @@ if((xnew->xyplot.x_left > (xnew->xyplot.x_values[i])[j])&&((xnew->xyplot.thexmis
 			}
 		} else {
 			xnew->xyplot.dummy_array = NULL;
-			xnew->xyplot.dummy_array_final = NULL;
 			if((xnew->xyplot.x_left == 0.0)
 				&&(xnew->xyplot.x_right == 0.0)) {
 				xnew->xyplot.x_right = -1e30;
@@ -1747,22 +1722,12 @@ static NhlErrorTypes InternalizePointers
 		if((c_or_s == SET)&&(!xold->xyplot.noxvalues)){
 			for(i=0; i < xold->xyplot.num_curves;i++) {
 				NhlFree(xold->xyplot.x_values[i]);
-				NhlFree(xold->xyplot.x_final_values[i]);
 			}
 			NhlFree(xold->xyplot.x_values);
-			NhlFree(xold->xyplot.x_final_values);
 		}
 		tmpfptrptr = (float**)NhlMalloc((unsigned)sizeof(float*)
 				*xnew->xyplot.num_curves);
 		if(tmpfptrptr == NULL) {
-			NhlPError(FATAL,E_UNKNOWN,"%s: Cannot continue because of malloc failure",error_lead);
-			return(FATAL);
-		}
-
-		xnew->xyplot.x_final_values = (float**)NhlMalloc(
-					(unsigned)sizeof(float*)
-					*xnew->xyplot.num_curves);
-		if(xnew->xyplot.x_final_values == NULL) {
 			NhlPError(FATAL,E_UNKNOWN,"%s: Cannot continue because of malloc failure",error_lead);
 			return(FATAL);
 		}
@@ -1772,14 +1737,6 @@ static NhlErrorTypes InternalizePointers
 					(unsigned)sizeof(float)*
 					xnew->xyplot.curve_lengths[i]);
 			if(tmpfptrptr[i] == NULL) {
-				NhlPError(FATAL,E_UNKNOWN,"%s: Cannot continue because of malloc failure",error_lead);
-				return(FATAL);
-			}
-
-			xnew->xyplot.x_final_values[i] = (float*)NhlMalloc(
-					(unsigned)sizeof(float)*
-					xnew->xyplot.curve_lengths[i]);
-			if(xnew->xyplot.x_final_values[i] == NULL) {
 				NhlPError(FATAL,E_UNKNOWN,"%s: Cannot continue because of malloc failure",error_lead);
 				return(FATAL);
 			}
@@ -1794,23 +1751,13 @@ static NhlErrorTypes InternalizePointers
 		if((c_or_s == SET)&&(!xold->xyplot.noyvalues)) {
 			for(i=0; i < xold->xyplot.num_curves;i++) {
 				NhlFree(xold->xyplot.y_values[i]);
-				NhlFree(xold->xyplot.y_final_values[i]);
 			}
 			NhlFree(xold->xyplot.y_values);
-			NhlFree(xold->xyplot.y_final_values);
 		} 
 		tmpfptrptr = (float**)NhlMalloc(
 				(unsigned)sizeof(float*)*
 				xnew->xyplot.num_curves);
 		if(tmpfptrptr == NULL) {
-			NhlPError(FATAL,E_UNKNOWN,"%s: Cannot continue because of malloc failure",error_lead);
-			return(FATAL);
-		}
-
-		xnew->xyplot.y_final_values = (float**)NhlMalloc(
-				(unsigned)sizeof(float*)*
-				xnew->xyplot.num_curves);
-		if(xnew->xyplot.y_final_values == NULL) {
 			NhlPError(FATAL,E_UNKNOWN,"%s: Cannot continue because of malloc failure",error_lead);
 			return(FATAL);
 		}
@@ -1823,15 +1770,6 @@ static NhlErrorTypes InternalizePointers
 				NhlPError(FATAL,E_UNKNOWN,"%s: Cannot continue because of malloc failure",error_lead);
 				return(FATAL);
 			}
-
-			xnew->xyplot.y_final_values[i] = (float*)NhlMalloc(
-				(unsigned)sizeof(float)*
-				xnew->xyplot.curve_lengths[i]);
-			if( xnew->xyplot.y_final_values[i] == NULL) {
-				NhlPError(FATAL,E_UNKNOWN,"%s: Cannot continue because of malloc failure",error_lead);
-				return(FATAL);
-			}
-
 			bcopy((char*)(xnew->xyplot.y_values[i]),
 				(char*)(tmpfptrptr[i]),
 				sizeof(float)*xnew->xyplot.curve_lengths[i]);
@@ -3327,211 +3265,6 @@ static NhlErrorTypes SetUpTitles
 	} 
 }
 
-
-/*
- * Function:	ConvertDataToWin
- *
- * Description: Used to convert data values to values in the window coordinates
- *		used by the main XyPlot TransObj. It is not important to know
- *		what the actual coordinate system is but just that values
- *		be converted to it prior to drawing. Window coordinates or
- *		NDC coordinates are the only ones that can be directly draw
- *		in. Window coordinates are not absolute so they really don't
- *		have to be generated every time the plot moves.  Values in
- *		*_values resources are converted and stored in *_final_values.
- *		Another feature of this function is the combination of missing
- *		values. AUTOGRAPH only accepts one misisng value value for 
- *		both x and y vectors. The XyPlot object allows one each, so
- *		all of the missing values in one vector must be converted to
- *		the value of the other vector.
- *		
- *
- * In Args:	xnew 	new instance record
- *		xold	old instance record if c_or_s == SET
- *		c_or_s  either SET or CREATE
- *
- * Out Args:	NONE
- *
- * Return Values:	Error Conditions
- *
- * Side Effects:	NONE
- */
-/*ARGSUSED*/
-static NhlErrorTypes ConvertDataToWin
-#if __STDC__
-(XyPlotLayer xnew, XyPlotLayer xold, int c_or_s)
-#else 
-(xnew,xold,c_or_s)
-	XyPlotLayer xnew;
-	XyPlotLayer xold;
-	int	c_or_s;
-#endif
-{
-	int i,j;
-	int istrans;
-	char *error_lead;
-	NhlErrorTypes ret = NOERROR;
-	NhlErrorTypes ret1 = NOERROR;
-	
-	if(c_or_s == CREATE) {
-		error_lead = "XyPlotInitialize";
-	} else {
-		error_lead = "XyPlotSetValues";
-	}
-/*
-* By this point tick marks and titles as well as transformations are setup.
-* Now its time to transform data if it needs to be.
-*/
-
-	ret = _NhlSetTrans((Layer)xnew->xyplot.thetrans,(Layer)xnew);
-	if(ret < WARNING) {
-		NhlPError(FATAL,E_UNKNOWN,"%s: Could not set tranformation for mapping data, cannot continue",error_lead);
-		return(FATAL);
-	} else if(ret < ret1) 
-		ret1 = ret;
-
-	if(!(xnew->xyplot.noxvalues)&&!(xnew->xyplot.noyvalues)) {
-		for(i = 0; i < xnew->xyplot.num_curves;i++) {
-			ret = _NhlDataToWin((Layer)xnew->xyplot.thetrans,
-				(Layer)xnew,
-				xnew->xyplot.x_values[i],
-				xnew->xyplot.y_values[i],
-				xnew->xyplot.curve_lengths[i],
-				xnew->xyplot.x_final_values[i],
-				xnew->xyplot.y_final_values[i],
-				&istrans,xnew->xyplot.thexmissing,
-				xnew->xyplot.theymissing);
-			if(ret < WARNING) {
-				NhlPError(FATAL,E_UNKNOWN,"%s: An internal error has occured in the transformation mapping the data, can not continue",error_lead); 
-				return(FATAL);
-			} else if( ret < ret1)
-				ret = ret1;
-
-			if(!istrans) {
-				bcopy((char*)xnew->xyplot.x_values[i],
-					(char*)xnew->xyplot.x_final_values[i],
-					sizeof(float)*xnew->xyplot.curve_lengths[i]);
-				bcopy((char*)xnew->xyplot.y_values[i],
-					(char*)xnew->xyplot.y_final_values[i],
-					sizeof(float)*xnew->xyplot.curve_lengths[i]);
-			}
-
-/*
-* Problems exist when data is out of range for IRREGULAR style projections
-* This is a temporary fix so that drastically out of range data is not sent
-* to the autograph routines. ----> NOTE that passing data that is out of
-* bounds to _NhlDataToWin could result in NaN which on some machines will cause
-* abnormal termination.
-*/
-			if((xnew->xyplot.x_style == IRREGULAR)||(xnew->xyplot.y_style == IRREGULAR)) {
-			for(j = 0; j< xnew->xyplot.curve_lengths[i]; j++) {
-				if(((xnew->xyplot.x_values[i])[j] < xnew->xyplot.x_irr_min)||((xnew->xyplot.x_values[i])[j] > xnew->xyplot.x_irr_max)){
-					(xnew->xyplot.x_final_values[i])[j] =
-						*xnew->xyplot.thexmissing;
-				}
-				if(((xnew->xyplot.y_values[i])[j] < xnew->xyplot.y_irr_min)||((xnew->xyplot.y_values[i])[j] > xnew->xyplot.y_irr_max)){
-					(xnew->xyplot.y_final_values[i])[j] =
-						*xnew->xyplot.theymissing;
-				}
-			}
-			}
-/*
-* Since Autograph only takes one value for missing values if the two missing
-* values are not equal then one needs to replace the other. X replaces Y is 
-* the convention I've adopted.
-*/
-		if(((xnew->xyplot.thexmissing != NULL)&&(xnew->xyplot.theymissing != NULL))&&(*xnew->xyplot.thexmissing != *xnew->xyplot.theymissing))  {
-			for(j=0; j < xnew->xyplot.curve_lengths[i]; j++) {
-				if(xnew->xyplot.y_final_values[i][j] == *xnew->xyplot.theymissing)	{
-					xnew->xyplot.y_final_values[i][j] = *xnew->xyplot.thexmissing;
-				}
-			}
-			xnew->xyplot.theymissing = xnew->xyplot.thexmissing;
-		} else if( xnew->xyplot.thexmissing == NULL) {
-			xnew->xyplot.thexmissing = xnew->xyplot.theymissing;
-		}
-		}
-	} else if(xnew->xyplot.noxvalues) {
-		xnew->xyplot.thexmissing = NULL;	
-		for(i = 0; i < xnew->xyplot.num_curves;i++) {
-
-			ret = _NhlDataToWin((Layer)xnew->xyplot.thetrans,
-				(Layer)xnew,
-				xnew->xyplot.dummy_array,
-				xnew->xyplot.y_values[i],
-				xnew->xyplot.curve_lengths[i],
-				xnew->xyplot.dummy_array_final,
-				xnew->xyplot.y_final_values[i],
-				&istrans,xnew->xyplot.thexmissing,
-				xnew->xyplot.theymissing);
-			if(ret< WARNING) {
-				NhlPError(FATAL,E_UNKNOWN,"%s: An internal error has occured in the transformation mapping data can not continue",error_lead); 
-				return(FATAL);
-			} else if( ret < ret1)
-				ret1 = ret;
-
-			if(!istrans) {
-				bcopy((char*)xnew->xyplot.dummy_array,
-					(char*)xnew->xyplot.dummy_array_final,
-					sizeof(float)*xnew->xyplot.curve_lengths[i]);
-				bcopy((char*)xnew->xyplot.y_values[i],
-					(char*)xnew->xyplot.y_final_values[i],
-					sizeof(float)*xnew->xyplot.curve_lengths[i]);
-			}
-			if(xnew->xyplot.y_style == IRREGULAR) {
-			for(j = 0; j< xnew->xyplot.curve_lengths[i]; j++) {
-				if(((xnew->xyplot.y_values[i])[j] < xnew->xyplot.y_irr_min)||((xnew->xyplot.y_values[i])[j] > xnew->xyplot.y_irr_max)){
-					(xnew->xyplot.y_final_values[i])[j] =
-						*xnew->xyplot.theymissing;
-				}
-			}
-			}
-		}
-/*
-* Since Autograph only takes one value for missing values if the two missing
-* values are not equal then one needs to replace the other. X replaces Y is 
-* the convention I've adopted.
-*/
-		xnew->xyplot.thexmissing = xnew->xyplot.theymissing;
-	} else if(xnew->xyplot.noyvalues) {
-		xnew->xyplot.theymissing = NULL;	
-		for(i = 0; i < xnew->xyplot.num_curves;i++) {
-
-			ret = _NhlDataToWin((Layer)xnew->xyplot.thetrans,
-				(Layer)xnew,
-				xnew->xyplot.x_values[i],
-				xnew->xyplot.dummy_array,
-				xnew->xyplot.curve_lengths[i],
-				xnew->xyplot.x_final_values[i],
-				xnew->xyplot.dummy_array_final,
-				&istrans,xnew->xyplot.thexmissing,
-				xnew->xyplot.theymissing);
-			if(ret < WARNING) {
-				NhlPError(FATAL,E_UNKNOWN,"%s: An internal error has occured in the transformation mapping data, can not continue",error_lead); 
-				return(FATAL);
-			} else if(ret < ret1)
-				ret1 = ret;
-
-			if(!istrans) {
-				bcopy((char*)xnew->xyplot.dummy_array,
-					(char*)xnew->xyplot.dummy_array_final,
-					sizeof(float)*xnew->xyplot.curve_lengths[i]);
-				bcopy((char*)xnew->xyplot.x_values[i],
-					(char*)xnew->xyplot.x_final_values[i],
-					sizeof(float)*xnew->xyplot.curve_lengths[i]);
-			}
-			if(xnew->xyplot.x_style == IRREGULAR) {
-			for(j = 0; j< xnew->xyplot.curve_lengths[i]; j++) {
-				if(((xnew->xyplot.x_values[i])[j] < xnew->xyplot.x_irr_min)||((xnew->xyplot.x_values[i])[j] > xnew->xyplot.x_irr_max)){
-					(xnew->xyplot.x_final_values[i])[j] =
-						*xnew->xyplot.thexmissing;
-				}
-			}
-			}
-		}
-	}
-	return(ret1);
-}
 
 
 static NhlErrorTypes ScaleForMove
