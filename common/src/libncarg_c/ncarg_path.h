@@ -1,6 +1,5 @@
-
 /*
- *      $Id: ncarg_path.h,v 1.1 1992-09-09 17:38:17 clyne Exp $
+ *      $Id: ncarg_path.h,v 1.2 1994-08-05 23:03:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,9 +31,16 @@
 #endif
 #endif	/* PATH_MAX	*/
 
+#define	PREFIX			"NCARG_"
 
-#define	DEFAULT_TMP	"/tmp"
-#define	PREFIX		"NCARG_"
-#define	ROOT_ENV	"NCARG_ROOT"
+#ifndef	_NGPATHDELIMITER
+#define	_NGPATHDELIMITER	"/"
+#endif	/* _NGPATHDELIMITER */
+
+extern const char *get_ncarg_path_err(
+#ifdef	NeedFuncProto
+	void
+#endif
+);
 
 #endif

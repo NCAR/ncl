@@ -1,6 +1,5 @@
-
 /*
- *      $Id: ncarg_path.c,v 1.17 1994-05-11 21:51:56 haley Exp $
+ *      $Id: ncarg_path.c,v 1.18 1994-08-05 23:03:37 boote Exp $
  */
 /*
  *	File:		ncarg_path.c
@@ -20,9 +19,15 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
+#include <pwd.h>
 #include <errno.h>
-#include "c.h"
+#include <ncarg/c.h>
 #include "ncarg_path.h"
+
+#ifdef	cray
+#include <fortran.h>
+#endif
 
 /*
  *	Create a string by concatenating the names $PREFIX and $postfix
@@ -55,225 +60,382 @@ static	char	*create_env_name(postfix)
 }
 
 /*
- * Function:		dir_2_path
+ * Function:	_NGResolvePath
  *
- * Description:		This function attempts to services requests for
- *			generating a fully-qualified path name from a given
- *			directory name, $dir. The name resolution algorithm
- *			is as follows:
+ * Description:	This function takes a pathname and returns a pathname with
+ *		all "~"'s and environment "$var"'s resolved.
  *
- *			1) If the environment variable NCARG_$DIR, where
- *			$DIR is $dir in caps, is set return its contents.
- *			If not, proceed.
+ * In Args:	char 	*rawfname	fname as provided
  *
- *			2) If the value of $dir is "tmp" and the env varable
- *			"TMPDIR" is set return its value. If not, proceed. 
+ * Out Args:	
  *
- *			2a) If the value of $dir is "tmp" return the value
- *			of the manifest constant DEFAULT_TMP. If not, proceed.
- *
- *			3) If the environment variable NCARG_ROOT is set
- *			return the string $NCARG_ROOT/$dir. If not,
- *			return NULL.
- *
- *			Examples:
- *
- *			If the env. var. 'NCARG_BIN' is set to '/usr/local/bin'
- *			dir_2_path("bin") will return '/usr/local/bin'.
- *
- *			If the env. var. 'NCARG_ROOT' is set to '/usr/local' 
- *			and the env. var. 'NCARG_LIB' is not set 
- *			dir_2_path("lib") will return '/usr/local/lib'.
- *
- *
- *			dir_2_path() invokes ESprintf() on error.
- *
- *			
- *
- * In Args:	
- *	dir		The directory name.
- *
- * Out Args:
- *
- * Return Values:
- *	NULL		=> error
- *	path		The directory path
- *
- * Side Effects:
+ * Scope:	Global Private
+ * Returns:	char *
+ * Side Effect:	
  */
-static	const char *dir_2_path(dir)
-	const char *dir;
+const char
+*_NGResolvePath
+#if	NeedFuncProto
+(
+	const char	*rawfname	/* fname as provided	*/
+)
+#else
+(rawfname)
+	const char	*rawfname;	/* fname as provided	*/
+#endif
 {
-	static	status = 0;
-	static 	char	root_path[PATH_MAX];
-	static char	buf[PATH_MAX];
-	char	*parent_default = "/usr/local";
-	char	*file_check = "/usr/local/lib/ncarg/fontcaps/font1";
-	char	*env_name;
-	char	*s;
-	struct stat	sbuf;
+	static char	fname[PATH_MAX];
+	char		tmpfname[PATH_MAX];
+	char		buffer[PATH_MAX];
+	char		*piece = NULL;
+	char		*tptr;
+	const char	*cs;
+	struct passwd	*pw = NULL;
+	int		first = 1;
 
-
-	if (! (env_name = create_env_name(dir))) {
+	if(rawfname == NULL){
 		return(NULL);
 	}
 
-	if ((s = getenv(env_name))) {
-		free(env_name);
-		return(s);
-	}
+	fname[0] = '\0';
 
-	free(env_name);
+	strcpy(tmpfname,rawfname);
+	strcpy(buffer,_NGPATHDELIMITER);
+	if(tmpfname[0] == buffer[0])
+		strcpy(fname,_NGPATHDELIMITER);
+	piece = strtok(tmpfname,_NGPATHDELIMITER);
 
-	/*
-	 * tmp is a special case
-	 */
-	if (strcmp("tmp", dir) == 0) {
-		if (s = getenv("TMPDIR")) return(s);
+	while(piece != NULL){
 
-		return(DEFAULT_TMP);
-	}
+		if(first)
+			first = 0;
+		else
+			strcat(fname,_NGPATHDELIMITER);
 
-	if (!status) {
-		if((s = getenv(ROOT_ENV))) {
-			strcpy(root_path, s);
+		switch(*piece){
+
+			case '~':
+
+				if(*(piece+1) != '\0')	/* different username */
+					pw = getpwnam((piece+1));
+				else			/* this username      */
+					pw = getpwuid(getuid());
+
+				if(pw == NULL){
+					ESprintf(E_UNKNOWN,
+						"Unable to Resolve \'~\' in %s",
+								rawfname);
+					return(NULL);
+				}
+				strcat(fname,pw->pw_dir);
+
+				break;
+
+			case '$':
+
+				if(!strncmp(piece+1,PREFIX,strlen(PREFIX)))
+					cs = _NGGetNCARGEnv(piece+ 1+
+								strlen(PREFIX));
+				else
+					cs = getenv(piece + 1);
+
+				if(cs == NULL){
+					ESprintf(E_UNKNOWN,
+						"Unable to Resolve %s in %s",
+								piece,rawfname);
+					return(NULL);
+				}
+				strcat(fname,cs);
+
+				break;
+
+			default:
+
+				strcat(fname,piece);
 		}
-		else {
-/*
- * Assume a default of "parent_default" for NCARG_ROOT.
- * First check for existence of the file "file_check".
- */
-			if( stat(file_check, &sbuf) < 0 ) {
-				ESprintf(E_UNKNOWN, "%s environment variable not set", ROOT_ENV);
-				return(NULL);
-			}
-/*
- * Set status = 1 so we don't have to set this path time
- * the next time around.
- */
-			status = 1;
-			strcpy(root_path, parent_default);
-			fprintf(stderr, "\nWarning: %s environment variable not set.", ROOT_ENV);
-			fprintf(stderr, "\n         Assuming %s as the value for %s.\n",
-                    parent_default, ROOT_ENV);
-			fprintf(stderr, "\n         Please see the 'ncargintro' man page for");
-			fprintf(stderr, "\n         information on NCARG_ROOT\n");
-		}
+
+		piece = strtok(NULL,_NGPATHDELIMITER);
 	}
-	/*
-	 * root is another special case
-	 */
-	if (strcmp("root", dir) == 0){
-		return(root_path);
-	}
-	sprintf(buf, "%s/%s", root_path, dir );
-	return(buf);
+
+	return(fname);
 }
 
 /*
- * Function:	GetNCARGPath
+ * Function:	GetNCARGEnv
  *
- * Description:		Given a directory name return the complete path to
- *			this directory. GetNCARGPath() know about the following
- *			directories: $BINDIR, $LIBDIR, $TMPDIR, $DBDIR, 
- *			$FONTCAPDIR, $GRAPHCAPDIR, $EXAMPESDIR, $TESTSDIR, 
- *			$TUTORIALDIR, $XAPPDIR, and $INCDIR. For $BINDIR, $LIBDIR,
- *          $TMPDIR and $INCDIR
- *			GetNCARGPath() simply calls dir_2_path with dir as
- *			its argument. For the rest of the directories the
- *			path is created as:
+ * Description:		
+ *			To get GetNCARGEnv to know about additional vars
+ *			simply add them to the directvars,ngdirectdirs,
+ *			ngrootdirs, or nglibdirs lists.
+ *			These lists are NULL terminated.
  *
- *				dir_2_path($LIBDIR)/$NCARGDIR/$dir 
+ *			The directvars is a list of env vars that ncarg uses
+ *			but that don't necessarily fit in the ncarg root
+ *			tree and the env name doesn't start with "NCARG_".
  *
- *			For example if LIBDIR="lib", NCARGDIR="ncarg",
- *			dir="xapp"  and the NCARG_LIB env variable is set
- *			to /usr/local/lib the returned value would be
- *			/usr/local/lib/ncarg/xapp.
+ *			The ngdirectdirs are ncarg env vars that must be
+ *			specified directly to override the default values.
+ *			They can not be determined from other variables.
  *
+ *			The ngrootdirs are ncarg env vars that specify
+ *			filenames/dirnames that are exactly under $NCARG_ROOT if
+ *			they are not specified directly.
+ *
+ *			The nglibdirs are ncarg env vars that specify
+ *			filenames/dirnames that are exactly under
+ *			$NCARG_ROOT/lib/ncarg if they are not specified
+ *			directly.
+ *
+ *			This function memorizes the return values that it
+ *			reports so that if they are requested again it can
+ *			just return the value instead of having to recalc.
  * In Args:	
- *	dir		The directory.
+ *	name
  *
  * Out Args:
  *
  * Return Values:
  *	NULL		=> Error, ESprintf() invoked.
- *	path		Else, the directory path is returned
+ *	path		Else, the env var value is returned.
  *
  * Side Effects:
  */
-const	char	*GetNCARGPath(dir)
-	const char	*dir;
+const	char	*_NGGetNCARGEnv(name)
+	const char	*name;
 {
-	/*
-	 * these should all be passed in as macros from the makefile
-	 */
-	char	*root = "root";
-	char	*bin = "bin";
-	char	*lib = "lib";
-	char	*tmp = "tmp";
-	char	*inc = "include";
-	char	*man = "man";
-	char	*config = "config";
-	char	*db = "database";
-	char	*fontcap = "fontcaps";
-	char	*graphcap = "graphcaps";
-	char	*examples = "examples";
-	char	*tests = "tests";
-	char	*tutorial = "tutorial";
-	char	*xapp = "xapp";
-	char	*ncarg = "ncarg";
+	static char	*env_vars[] = ENV_DEFS;
+	static char	*env_vals[(sizeof(env_vars)/sizeof(env_vars[0]))] =
+					{ NULL };
 
-	const char	*libpath;
+	int		i=0;
+	char		**current;
+
 	static	char	buf[PATH_MAX];
+	int		found = 0;
+	char		*env_name=NULL;
+	char		*direct_val=NULL;
+	char		localname[PATH_MAX];
+	char		*s = localname;
+	const char	*cs = NULL;
 
-	if ((strcmp(root, dir) == 0) 
-		|| (strcmp(bin, dir) == 0)
-		|| (strcmp(lib, dir) == 0)
-		|| (strcmp(tmp, dir) == 0)
-		|| (strcmp(inc, dir) == 0)
-		|| (strcmp(man, dir) == 0)) {
-
-		return(dir_2_path(dir));
+	strcpy(localname,name);
+	while (*s) {
+		if (isupper(*s)) {
+			*s = tolower(*s);
+		}
+		s++;
 	}
-	else if (strcmp(config, dir) == 0){
-		char	*env_name=NULL,*s=NULL;
 
-		if (! (env_name = create_env_name(config))) {
-			return(NULL);
+	/*
+	 * directvars section.
+	 */
+	current = env_vars;
+	while(*current != NULL){
+		if(!strcmp(*current,localname)){
+			found = 1;
+			break;
 		}
+		current+=5; i++;
+	}
+	if(!found){
+		ESprintf(E_UNKNOWN, "Unknown environment specifier (%s)", name);
+		return(NULL);
+	}
 
-		if ((s = getenv(env_name))) {
-			free(env_name);
-			return(s);
-		}
+	/*
+	 * if it was previously calculated just return it...
+	 */
+	if(env_vals[i])
+		return env_vals[i];
+
+	/*
+	 * get the actual Environment vars name...
+	 */
+	if(*(current+1))
+		env_name = *(current+1);
+	else
+		env_name = create_env_name(localname);
+
+	if(!env_name){
+		ESprintf(E_UNKNOWN,"Unable to create Env Name?? for (%s)",name);
+		return NULL;
+	}
+
+	/*
+	 * See if the user set the env var directly...
+	 */
+	direct_val = getenv(env_name);
+	if(env_name != *(current+1))
 		free(env_name);
 
-		libpath = dir_2_path(lib);
-	}
-	else if ((strcmp(db, dir) == 0)
-		||  (strcmp(fontcap, dir) == 0)
-		||  (strcmp(graphcap, dir) == 0)
-		||  (strcmp(examples, dir) == 0)
-		||  (strcmp(tests, dir) == 0)
-		||  (strcmp(tutorial, dir) == 0)
-		||  (strcmp(xapp, dir) == 0)) {
+	/*
+	 * if not, look for a default or calculate...
+	 */
+	if(!direct_val){
+		/*
+		 * Is there a parent directory specified?
+		 */
+		if(*(current+2)){
+			cs = _NGGetNCARGEnv(*(current+2));
+			if(!cs)
+				return NULL;
+			strcpy(buf,cs);
+			strcat(buf,_NGPATHDELIMITER);
+			strcat(buf,localname);
+			direct_val = buf;
+		}
+		/*
+		 * Is there a backup default specified?
+		 */
+		else if(*(current+3)){
+			direct_val = *(current+3);
 
-		libpath = dir_2_path(lib);
-	}
-	else {
-		ESprintf(E_UNKNOWN, "Unknown directory specifier (%s)", dir);
-		return(NULL);
+			/*
+			 * See if there is a check file for this default.
+			 */
+			if(*(current+4)){
+				struct stat	sbuf;
+
+				strcpy(buf,direct_val);
+				strcat(buf,*(current+4));
+
+				if(stat(buf, &sbuf) < 0){
+					ESprintf(E_UNKNOWN,
+					"%s environment variable not set",
+								env_name);
+					return NULL;
+				}
+
+#define	EMSGSTR "\nWarning: %s environment variable not set.\n\tAssuming %s as the value for %s.\n\tPlease see the 'ncargintro' man page for\n\tinformation on the %s environment variable\n"
+				fprintf(stderr,EMSGSTR,env_name,direct_val,
+							env_name,env_name);
+			}
+		}
+		/*
+		 * it's default value is NULL.
+		 */
+		else
+			return NULL;
 	}
 
-	if (! libpath) {
-		return(NULL);
+	cs = _NGResolvePath(direct_val);
+	env_vals[i] = malloc(strlen(cs)+1);
+	if(!env_vals[i]){
+		ESprintf(errno, "malloc(%s)",strlen(cs)+1);
+		return NULL;
 	}
 
-	strcpy(buf, libpath);
-	strcat(buf, "/");
-	strcat(buf, ncarg);
-	strcat(buf, "/");
-	strcat(buf, dir);
+	strcpy(env_vals[i],cs);
 
-	return(buf);
+	return env_vals[i];
+}
+
+/*
+ * Function:	GetNCARGPath
+ *
+ * Description:	This function just calls GetNCARGEnv.  The only reason I
+ *		made a new name for it is that GetNCARGEnv returns all
+ *		kinds of env var's, not just path names.
+ *						jeff
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+const	char	*GetNCARGPath(path)
+	const char	*path;
+{
+	return _NGGetNCARGEnv(path);
+}
+
+static	char	ErrMsgBuf[256];
+
+/*
+ *	return an error message when get_ncarg_path fails
+ */
+const	char	*get_ncarg_path_err()
+{
+	return(ErrMsgBuf);
+}
+
+/*
+ * Function:	gngpat	- Get NCAR G Path
+ *
+ * Description:		This function provides a entry point for Fortran
+ *			to the function _NGGetNCARGEnv(). The parameters
+ *			pathlen and dirlen are provided by the fortran compiler.
+ *			The fortran calling syntax should be:
+ *
+ *				call gngpat(path, dir, status)
+ *
+ * In Args:		
+ *	*dir 		: The directory 
+ *
+ * Out Args:
+ *	*path		: if status == 1 $path contains the path to $dir.
+ *			  If status == -1 $path contains an error message.
+ *	*status		: -1 on failure, else ok
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+void
+NGCALLF(gngpat,GNGPAT)
+#ifdef	cray
+(path_, dir_, status)
+	_fcd	path_;
+	_fcd	dir_;
+	int	*status;
+#else
+(path, dir, status, pathlen, dirlen)
+	char	path[];
+	char	dir[];
+	int	*status;
+	int	pathlen;
+	int	dirlen;
+#endif
+{
+
+#ifdef	cray
+	int	pathlen = _fcdlen(path_);
+	int	dirlen = _fcdlen(dir_);
+	char	*path = path_;
+	char	*dir = dir_;
+#endif
+
+	const char	*s;
+	char	*dir_C = malloc(dirlen + 1);
+
+
+	if (! dir_C) {
+		*status = -1;
+		strcpy(path, "Malloc failed");
+		return;
+	}
+
+	strncpy(dir_C, dir, dirlen);
+	dir_C[dirlen] = '\0';	/* strncpy does not null terminate	*/
+
+
+	bzero(path, pathlen);
+	if ((s = _NGGetNCARGEnv(dir_C)) == NULL) {
+		*status = -1;
+		strncpy(path, ErrMsgBuf, pathlen-1);
+		return;
+	}
+
+	if ((int) strlen(s) >= pathlen) {
+		*status = -1;
+		strncpy(path, "Directory path too long", pathlen-1);
+		return;
+	}
+
+	free((char *) dir_C);
+	*status = 1;
+	strcpy(path, s);
 }

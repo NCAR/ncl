@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.15 1994-01-06 15:38:26 haley Exp $
+#	$Id: yMakefile,v 1.16 1994-08-05 23:03:39 boote Exp $
 #
 #
 #	Makefile for libncarg_c -- NCAR G common C utilities
@@ -16,30 +16,17 @@ VMSSRCS		= vms-unix.c
 
 HDRS		= c.h 
 SRCS		= options.c misc.c ncarg_path.c version.c \
-		error.c atoargv.c usleep.c $(VMSSRCS)
+		error.c atoargv.c usleep.c env.c $(VMSSRCS)
 OBJS		= options.o misc.o ncarg_path.o version.o \
-		error.o atoargv.o usleep.o $(VMSOBJS)
+		error.o atoargv.o usleep.o env.o $(VMSOBJS)
 
 #if defined(IRIX) && (MAJOR == 5)
-EXTRA_CDEFINES = $(VDEFINE) -D_BSD_TYPES
-#else
-EXTRA_CDEFINES = $(VDEFINE)
+MY_DEFINES = -D_BSD_TYPES
 #endif
+
+EXTRA_CDEFINES =	$(VDEFINE) $(NGENVDEF) $(MY_DEFINES)
 
 LibraryTarget($(MYNAME),$(OBJS))
 InstallTarget($(HDRS),$(INSTALL_INC),$(NCARGINCPATH))
 BuildIncludes($(HDRS),ncarg,..)
-
-#test_opt:	test_opt.o
-#	$(CC_LD) $(LD_CFLAGS) -o test_opt test_opt.o $(LIBPATH)/libncarg_c.a
-#
-#lint:
-#	$(LINT) -I$(CINC) $(SRCS) 1> lint.out 2>&1
-#
-#saber_src: $(SRCS)
-#	#setopt load_flags $(CFLAGS) $(CINCS)
-#	#load $(SRCS) $(LIBS)
-#
-#saber_obj: $(OBJS)
-#	#setopt load_flags $(CFLAGS) $(CINCS)
-#	#load $(OBJS) $(LIBS)
+DependTarget($(SRCS))

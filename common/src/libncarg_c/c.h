@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.18 1994-03-09 19:07:24 clyne Exp $
+ *	$Id: c.h,v 1.19 1994-08-05 23:03:35 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -16,6 +16,30 @@
 
 #include <stdio.h>
 #include <sys/types.h>
+
+/*
+ * Fortran function macro.  This macro needs to surround any "C" reference
+ * to a function that is written in fortran or is written in "C" to be
+ * Fortran callable.
+ */
+#ifndef	NGCALLF
+#ifdef	UNICOS
+/* Brain dead cray's have to be different from everything else! */
+#define	NGCALLF(reg,caps)	caps
+
+#elif	defined(AIX) || defined(HPUX)
+/* No munging of names - wow how unique */
+#define	NGCALLF(reg,caps)	reg
+
+#else
+/* Regular old BSD conventions */
+#ifdef	__STDC__
+#define	NGCALLF(reg,caps)	reg##_
+#else
+#define	NGCALLF(reg,caps)	reg/**/_
+#endif	/* __STDC__ */
+#endif	/* UNICOS else ... */
+#endif	/* NGCALLF */
 
 #ifdef	__STDC__
 #include <stdarg.h>
@@ -369,6 +393,30 @@ extern	void	PrintVersion(
 extern	const char	*GetNCARGPath(
 #ifdef	NeedFuncProto
 	const char	*dir
+#endif
+);
+
+extern	const char	*_NGGetNCARGEnv(
+#ifdef	NeedFuncProto
+	const char	*name
+#endif
+);
+
+extern	const char	*_NGResolvePath(
+#ifdef	NeedFuncProto
+	const char	*rawfname
+#endif
+);
+
+extern	char *getFcapname(
+#ifdef	NeedFuncProto
+	const char	*device
+#endif
+);
+
+extern	char *getGcapname(
+#ifdef	NeedFuncProto
+	const char	*device
 #endif
 );
 
