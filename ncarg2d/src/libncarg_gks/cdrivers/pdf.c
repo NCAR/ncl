@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.4 2003-02-20 19:12:46 fred Exp $
+ *      $Id: pdf.c,v 1.5 2003-02-21 01:14:16 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3488,6 +3488,10 @@ int PDFPutStreamDict(FILE *fp, int obj_num, int obj_contents_num) {
   tbcnt += 14;
   fprintf(fp,"/MediaBox [0 0 612 792]\n");
   tbcnt += 24;
+  if (port_land == LANDSCAPE) {
+    fprintf(fp,"/Rotate -90\n");
+    tbcnt += 12;
+  }
   fprintf(fp,"/Contents %6d 0 R\n",obj_contents_num);
   tbcnt += 21;
   fprintf(fp,"/Resources << /ProcSet 2 0 R\n");
