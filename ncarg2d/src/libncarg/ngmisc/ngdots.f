@@ -19,14 +19,42 @@ C  is 512 and the minimum is 16.
 C
       DIMENSION X(NUM),Y(NUM),TWIN(4),TVPT(4)
       DIMENSION CIRCX(513),CIRCY(513),CIRCXX(513),CIRCYY(513)
+      INTEGER   OLDASF(13),NEWASF(13)
 C
 C  PI and number of points per unit of arc length.
 C
       DATA PI,NPU/3.1415927,1200/
 C
-C  Size cutoff for increasing the number of points and minimum dot size.
+C  Size below which markers are drawn in addition to the filled dots
+C  to insure that the dots do not disappear by falling between pixels.
 C
-      DATA PC,SM/.03,.0015/
+      DATA DM/.05/
+C
+C  Size cutoff for increasing the number of points at smaller sizes
+C  so that the dots look round.
+C
+      DATA PC/.03/
+C
+C  Minimum dot size.  Below this tolerance, only dot markers are drawn.
+C
+      DATA SM/.001/
+C
+      DATA IFIRST/0/
+C
+      SAVE IFIRST
+C
+C  If log scaling or mirror imaging has been requested, issue a
+C  warning that only GKS world coordinates are accepted.
+C
+      CALL GETUSV('LS',LSV)
+      CALL GETUSV('MI',MIV)
+      IF ((LSV.NE.1 .OR. MIV.NE.1) .AND. IFIRST.EQ.0) THEN
+        PRINT *, 'NGDOTS -- **Warning**'
+        PRINT *, '          Log scaling or mirror-imaging have been requ
+     +ested via a SET call;'
+        PRINT *, '          NGDOTS accepts only GKS world coordinates.'
+        IFIRST = 1
+      ENDIF
 C
 C  Calculate the number of points to use in calculating the points
 C  in the first octant of the circle.
@@ -100,30 +128,69 @@ C
         CIRCX(I) = BSCALE*CIRCX(I)
    20 CONTINUE
 C
+C  Draw filled dots if the size is large enough.
+C
+      IF (SD .GE. SM) THEN
+C
 C  Save the fill color index and interior style.
 C
-      CALL GQFACI(IER,ICOLRO)
-      CALL GQFAIS(IER,ISTYLO)
+        CALL GQFACI(IER,ICOLRO)
+        CALL GQFAIS(IER,ISTYLO)
 C
 C  Set the fill style to solid and the fill collor to ICOLOR.
 C
-      CALL GSFAIS(1)
-      CALL GSFACI(ICOLOR)
+        CALL GSFAIS(1)
+        CALL GSFACI(ICOLOR)
 C
 C  Draw the dots.
 C
-      DO 60 I=1,NUM
-        DO 70 J=1,NP
-          CIRCXX(J) = X(I) + CIRCX(J)
-          CIRCYY(J) = Y(I) + CIRCY(J)
-   70   CONTINUE
-        CALL GFA(NP,CIRCXX,CIRCYY)
-   60 CONTINUE
+        DO 60 I=1,NUM
+          DO 70 J=1,NP
+            CIRCXX(J) = X(I) + CIRCX(J)
+            CIRCYY(J) = Y(I) + CIRCY(J)
+   70     CONTINUE
+          CALL GFA(NP,CIRCXX,CIRCYY)
+   60   CONTINUE
 C
 C  Restore the fill color and style.
 C
-      CALL GSFACI(ICOLRO)
-      CALL GSFAIS(ISTYLO)
+        CALL GSFACI(ICOLRO)
+        CALL GSFAIS(ISTYLO)
+      ENDIF
+C
+C  Draw polymarkers if the size is small enough (not that there is
+C  an overlap where both dots and markers are drawn)..
+C
+      IF (SD .LT. DM) THEN
+C
+C  Save current GKS attributes.
+C
+        CALL GQASF(IER,OLDASF)
+        CALL GQMK (IER,MTYPEO)
+        CALL GQMKSC(IER,SZSFO)
+        CALL GQPMCI(IER,IMCOLO)
+C
+C  Set attributes for polymarkers and draw them.
+C
+        DO 80 I=1,13
+          NEWASF(I) = OLDASF(I)
+   80   CONTINUE
+        NEWASF(4) = 1
+        NEWASF(5) = 1
+        NEWASF(6) = 1
+        CALL GSASF(NEWASF)
+        CALL GSMK(1)
+        CALL GSMKSC(1.0)
+        CALL GSPMCI(ICOLOR)
+        CALL GPM(NUM,X,Y)
+C
+C  Restore original attributes.
+C
+        CALL GSASF(OLDASF)
+        CALL GSMK(MTYPEO)
+        CALL GSMKSC(SZSFO)
+        CALL GSPMCI(IMCOLO)
+      ENDIF
 C
       RETURN
       END
