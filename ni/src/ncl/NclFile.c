@@ -2382,7 +2382,7 @@ int type;
 					mis_md = _NclCreateMultiDVal(
 						NULL,
 						NULL,
-						lhs_type,
+						Ncl_MultiDValData,
 						0,
 						(void*)tmp_mis,
 						NULL,
