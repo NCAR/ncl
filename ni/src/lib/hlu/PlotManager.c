@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.46 1998-02-20 22:41:05 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.47 1998-02-25 21:40:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2799,11 +2799,11 @@ static NhlErrorTypes InternalGetBB
                 if (! _NhlViewOn((NhlLayer) ovl_basep->pm_recs[i]->plot))
                                 continue;
 		for ( ; anno_list != NULL; anno_list = anno_list->next) {
-			if (anno_list->zone > zone || anno_list->zone < 2)
+			if (anno_list->plot_id <= NhlNULLOBJID)
+				continue;
+			else if (anno_list->zone > zone || anno_list->zone < 2)
 				continue;
 			else if (! anno_list->viewable)
-				continue;
-			else if (anno_list->plot_id < 1)
 				continue;
 			else if (anno_list->status == NhlCONDITIONAL) {
 				switch (anno_list->type) {
@@ -3824,6 +3824,8 @@ ManageTickMarks
 	if (y_coord_ga != NULL)
 		NhlFreeGenArray(y_coord_ga);
 
+        anno_rec->viewable = ovp->display_tickmarks > NhlNEVER;
+        
 	return ret;
 }
 
@@ -3879,6 +3881,7 @@ ManageTitles
  * Update the annotation record (titles do not use all the fields).
  */
 	anno_rec->status = ovp->display_titles;
+        anno_rec->viewable = ovp->display_titles > NhlNEVER;
 	anno_rec->zone = ovp->title_zone > 0 ? ovp->title_zone : 0;
 
 /*
@@ -4207,9 +4210,12 @@ ManageLabelBar
 		return(NhlFATAL);
 	}
 	if (init || ovp->display_labelbar != oovp->display_labelbar) {
-		if (ovp->display_labelbar > NhlNEVER)
+		if (ovp->display_labelbar > NhlNEVER) {
+                        anno_rec->viewable = True;
 			NhlSetSArg(&sargs[nargs++],NhlNlbLabelBarOn,True);
+                }
 		else {
+                        anno_rec->viewable = False;
 			NhlSetSArg(&sargs[nargs++],NhlNlbLabelBarOn,False);
 #if 0
 			if (! init) 
@@ -4489,9 +4495,12 @@ ManageLegend
 		return(NhlFATAL);
 	}
 	if (init || ovp->display_legend != oovp->display_legend) {
-		if (ovp->display_legend > NhlNEVER)
+		if (ovp->display_legend > NhlNEVER) {
+                        anno_rec->viewable = True;
 			NhlSetSArg(&sargs[nargs++],NhlNlgLegendOn,True);
+                }
 		else {
+                        anno_rec->viewable = False;
 			NhlSetSArg(&sargs[nargs++],NhlNlgLegendOn,False);
 #if 0
 			if (! init) 
@@ -4603,7 +4612,7 @@ ManageLegend
 	}
 
 /*
- * If no title exists, create it; otherwise just set the relevant
+ * If no legend exists, create it; otherwise just set the relevant
  * resources.
  */
 	if (ovp->legend == NULL) {	
@@ -5943,6 +5952,8 @@ NhlErrorTypes _NhlRegisterAnnotation
  * does not initialize.
  */
 	anrp->status = on ? NhlALWAYS : NhlNEVER;
+        anrp->viewable = on; /* later this will be adjusted based on the
+                                viewable status of the owner plot */
 	anrp->anno_id = annomanager->base.id;
 	anrp->plot_id = pid;
 	anrp->resize_notify = resize_notify;
