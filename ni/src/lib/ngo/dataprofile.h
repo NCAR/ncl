@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.h,v 1.8 1999-12-07 19:08:38 dbrown Exp $
+ *      $Id: dataprofile.h,v 1.9 1999-12-24 01:29:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -137,15 +137,18 @@ typedef NhlBoolean (*ValueDefined)
 
 typedef char NgValType;     /* types of resource values and res func args */ 
 
-#define _NgEXPR		0   /* anything with more than one term */
-#define _NgGRAPHIC	1
-#define _NgVAR		2
-#define _NgVAR_SUBSET	3
-#define _NgARRAY	4
-#define _NgFUNC		5
+#define _NgEXPR			0   /* anything with more than one term */
+#define _NgFUNC			1
+#define _NgARRAY		2
+#define _NgOBJ_REF		3
+#define _NgDATA_REF		4
+#define _NgDATA_ATTR_REF	5
+#define _NgDATA_COORD_REF	6
+#define _NgDATA_COORD_ATTR_REF	7
 
 typedef struct _NgArgInfoRec {
 	NhlString		sval;
+	NhlBoolean		modified;
 	NrmQuark		qargdatatype;
 	NrmQuark		qargname;
 	NgValType		valtype;

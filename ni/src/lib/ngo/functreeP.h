@@ -1,5 +1,5 @@
 /*
- *      $Id: functreeP.h,v 1.1 1999-12-07 19:08:44 dbrown Exp $
+ *      $Id: functreeP.h,v 1.2 1999-12-24 01:29:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -65,7 +65,7 @@ typedef struct _ftCompDataRec
 	int		argix;
 	NhlBoolean	ft_cb;
 	NhlBoolean	modified;
-	char		*new_value;  /* allocated by Xm - use XtFree */
+	char		*new_value;
 } ftCompDataRec, *ftCompData;
 
 

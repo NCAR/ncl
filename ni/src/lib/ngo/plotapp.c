@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.14 1999-12-11 01:02:36 dbrown Exp $
+ *      $Id: plotapp.c,v 1.15 1999-12-24 01:29:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -79,7 +79,6 @@ typedef struct _FuncInfoRec {
  * This record lists the functions referenced by a single resource value.
  */
 
-#define RESFUNCMAX 8
 #define DELIM_MAX 32
 
 typedef struct _ResFuncRec {
@@ -90,6 +89,13 @@ typedef struct _ResFuncRec {
 	int		delim_count; /* == nparams + 1 (unless 0 params) */
 	short		delim_pos[DELIM_MAX]; /* locs of '(', ',' ,')' */
 } ResFuncRec, *ResFunc;
+
+typedef struct _ResSymRec {
+	struct _ResSymRec *next;
+	NhlBoolean	is_graphic;
+	short		sym_pos; /* num chars from beginning of string */
+	int		paren_level; /* nesting depth */
+} ResSymRec, *ResSym;
 		
 
 /*
@@ -123,8 +129,8 @@ typedef union _AppSym {
 
 typedef char RefKind;
 
-#define _NgOBJ_REF	0
-#define _NgDATA_REF	1
+#define OBJ_REF	0
+#define DATA_REF	1
 
 /*
  * When references to objects or data appear in the resfile they are 
@@ -135,10 +141,10 @@ typedef char RefKind;
  */
 typedef char RefType;
 
-#define _NgREF_REGULAR		0
-#define _NgREF_COORD		1
-#define _NgREF_ATTR		2
-#define _NgREF_SUBSET		3
+#define REF_REGULAR		0
+#define REF_COORD		1
+#define REF_ATTR		2
+#define REF_SUBSET		3
 
 typedef struct _AppResSymRefRec {
 	struct _AppResSymRefRec *next;
@@ -309,6 +315,11 @@ static NrmQuark *QFakeRes[] = {
 static NhlString NclKeywords[] = {
 	"True","False","noparent","defaultapp","null" };
 static NrmQuark QNclKeywords[NhlNumber(NclKeywords)];
+
+static NrmQuark *QFiles = NULL;
+static NrmQuark *QVars = NULL;
+static NrmQuark *QHluVars = NULL;
+static int QFile_Count,QVar_Count,QHluVar_Count;
 
 static NhlBoolean UpdateBufSize
 (
@@ -531,6 +542,70 @@ static NclApiDataList *GetNclFuncData
 	return NULL;
 }
 
+NhlBoolean IsHluVar
+(
+	PlotApp		papp,
+	NhlString	sym
+)
+{
+	int i;
+	NrmQuark qsym; 
+
+	qsym = NrmStringToQuark(sym);
+
+	if (! QHluVars) {
+		QHluVars = NclGetHLUVarSymNames(&QHluVar_Count);
+	}
+	for (i = 0; i < QHluVar_Count; i++) {
+		if (qsym == QHluVars[i])
+			return True;
+	}
+	return False;
+}
+
+NhlBoolean IsFile
+(
+	PlotApp		papp,
+	NhlString	sym
+)
+{
+	int i;
+	NrmQuark qsym; 
+
+	qsym = NrmStringToQuark(sym);
+
+	if (! QFiles) {
+		QFiles = NclGetFileSymNames(&QFile_Count);
+	}
+	for (i = 0; i < QFile_Count; i++) {
+		if (qsym == QFiles[i])
+			return True;
+	}
+	return False;
+}
+
+NhlBoolean IsVar
+(
+	PlotApp		papp,
+	NhlString	sym
+)
+{
+	int i;
+	NrmQuark qsym; 
+
+	qsym = NrmStringToQuark(sym);
+
+	if (! QVars) {
+		QVars = NclGetVarSymNames(&QVar_Count);
+	}
+	for (i = 0; i < QVar_Count; i++) {
+		if (qsym == QVars[i])
+			return True;
+	}
+	return False;
+}
+
+
 NhlBoolean IsFunc
 (
 	PlotApp		papp,
@@ -538,9 +613,11 @@ NhlBoolean IsFunc
 	FuncInfo	*finfo
 )
 {
-	NrmQuark qfsym = NrmStringToQuark(fsym);
+	NrmQuark 	qfsym; 
 	FuncInfo	tfinfo;
 	NclApiDataList	*fdl;
+
+	qfsym = NrmStringToQuark(fsym);
 /*
  * First see if the symbol has already been loaded.
  */
@@ -573,14 +650,14 @@ NhlBoolean IsFunc
 	return True;
 }
 
-NhlBoolean SingleFunctionResVal
+NhlBoolean SingleFunction
 (
 	ResFunc rfunc,
 	char	*buf
 )
 {
-	if (rfunc->func_pos == 0 
-	    && rfunc->delim_pos[rfunc->delim_count-1] == strlen(buf) - 1)
+	if (strlen(buf) == 
+	    rfunc->delim_pos[rfunc->delim_count-1] - rfunc->func_pos + 1) 
 		return True;
 	return False;
 }
@@ -603,7 +680,7 @@ NhlBoolean CheckFunctions
 
 		fprintf(stderr,"func: %s -- ",
 			NrmQuarkToString(rf->finfo->qfunc));
-		if (SingleFunctionResVal(rf,buf))
+		if (SingleFunction(rf,buf))
 			fprintf(stderr,"single-term func\n");
 		else if (rf->paren_level > 1)
 			fprintf(stderr,"func is parameter\n");
@@ -710,6 +787,7 @@ static NhlBoolean ParseResourceValue
 	ResFunc rf,rfuncs = NULL;
 	FuncInfo finfo;
 	int sym_start_pos;
+	NrmQuark qcur_file = NrmNULLQUARK, qcur_var = NrmNULLQUARK;
 
 	*rfuncs_ret = NULL;
 /*
@@ -868,7 +946,6 @@ static NhlBoolean ParseResourceValue
 			}
 			break;
 		case INATTRIBUTE:
-		case INFILEVAR:
 		case INCOORDVAR:
 			if (begin) {
 				if (! (isalpha(*ch) || *ch == '_'))
@@ -893,6 +970,27 @@ static NhlBoolean ParseResourceValue
 				continue; /* look at this char again */
 			}
 			break;
+		case INFILEVAR:
+			if (begin) {
+				if (! (isalpha(*ch) || *ch == '_'))
+					bogus = True;
+				begin = False;
+				start_sym = ch;
+				sym_start_pos = bufpos;
+			}
+			else if (! (isalnum(*ch) || *ch == '_')) {
+				len = ch - start_sym;
+				strncpy(symbuf,start_sym,len);
+				symbuf[len] = '\0';
+#if DEBUG_PLOTAPP
+				fprintf(stderr,"file var: %s\n",symbuf);
+#endif
+
+				symbol_end = True;
+				state = BASIC;
+				continue; /* look at this char again */
+			}
+			break;
 		case INSYMBOL:
 			if (! (isalnum(*ch) || *ch == '_')) {
 				symbol_end = True;
@@ -906,15 +1004,15 @@ static NhlBoolean ParseResourceValue
 				if (IsKeyword(symbuf)) {
 					continue; /* look at this char again */
 				}
+#if DEBUG_PLOTAPP
+				fprintf(stderr,"symbol found: %s\n",symbuf);
+#endif
 				if (! NclSymbolDefined(symbuf)) {
 					bogus = True;
 					undefined = True;
 					break;
 				}
-#if DEBUG_PLOTAPP
-				fprintf(stderr,"symbol found: %s\n",symbuf);
-#endif
-				if (IsFunc(papp,symbuf,&finfo)) {
+				else if (IsFunc(papp,symbuf,&finfo)) {
 					ResFunc rfunc = 
 						NhlMalloc(sizeof(ResFuncRec));
 					if (! rfunc) {
@@ -929,6 +1027,23 @@ static NhlBoolean ParseResourceValue
 					rfunc->func_pos = sym_start_pos;
 					rfunc->next = rfuncs;
 					rfuncs = rfunc;
+				}
+				else if (IsHluVar(papp,symbuf)) {
+#if DEBUG_PLOTAPP
+					fprintf(stderr,"hlu var: %s\n",symbuf);
+#endif
+				}
+				else if (IsFile(papp,symbuf)) {
+					qcur_file = NrmStringToQuark(symbuf);
+#if DEBUG_PLOTAPP
+					fprintf(stderr,"file: %s\n",symbuf);
+#endif
+				}
+				else if (IsVar(papp,symbuf)) {
+#if DEBUG_PLOTAPP
+					fprintf(stderr,"var: %s\n",symbuf);
+#endif
+					;
 				}
 				continue; /* look at this char again */
 			}
@@ -1762,16 +1877,16 @@ static void RecordObjResRefs
 
 			switch (*(ep+1)) {
 			default:
-				rtype = _NgREF_REGULAR;
+				rtype = REF_REGULAR;
 				break;
 			case '!':
-				rtype = _NgREF_COORD;
+				rtype = REF_COORD;
 				break;
 			case '@':
-				rtype = _NgREF_ATTR;
+				rtype = REF_ATTR;
 				break;
 			case '(':
-				rtype = _NgREF_SUBSET;
+				rtype = REF_SUBSET;
 				break;
 			}
 		}
@@ -1797,7 +1912,7 @@ static void RecordObjResRefs
 				symref->next = res->symrefs;
 				res->symrefs = symref;
 				symref->sym.d = appdata;
-				symref->kind = _NgDATA_REF;
+				symref->kind = DATA_REF;
 				symref->rtype = rtype;
 				symref->offset = sp - Buffer;
 				symref->count = ep - sp;
@@ -1820,7 +1935,7 @@ static void RecordObjResRefs
 				symref->next = res->symrefs;
 				res->symrefs = symref;
 				symref->sym.o = appobj;
-				symref->kind = _NgOBJ_REF;
+				symref->kind = OBJ_REF;
 				symref->rtype = rtype;
 				symref->offset = sp - Buffer;
 				symref->count  = ep - sp;
@@ -1863,16 +1978,17 @@ static void RecordDataResRefs
 		if (ep < Buffer + rlen + 1) {
 			switch (*(ep+1)) {
 			default:
-				rtype = _NgREF_REGULAR;
+				rtype = REF_REGULAR;
 				break;
 			case '!':
-				rtype = _NgREF_COORD;
+
+				rtype = REF_COORD;
 				break;
 			case '@':
-				rtype = _NgREF_ATTR;
+				rtype = REF_ATTR;
 				break;
 			case '(':
-				rtype = _NgREF_SUBSET;
+				rtype = REF_SUBSET;
 				break;
 			}
 		}
@@ -1890,7 +2006,7 @@ static void RecordDataResRefs
 				symref->next = res->symrefs;
 				res->symrefs = symref;
 				symref->sym.d = appdata;
-				symref->kind = _NgDATA_REF;
+				symref->kind = DATA_REF;
 				symref->rtype = rtype;
 				symref->offset = sp - Buffer;
 				symref->count = ep - sp;
@@ -1913,7 +2029,7 @@ static void RecordDataResRefs
 				symref->next = res->symrefs;
 				res->symrefs = symref;
 				symref->sym.o = appobj;
-				symref->kind = _NgOBJ_REF;
+				symref->kind = OBJ_REF;
 				symref->rtype = rtype;
 				symref->offset = sp - Buffer;
 				symref->count = ep - sp;
@@ -2013,6 +2129,14 @@ static void ParseAppResources
 	RecordObjectAndDataReferences(papp);
 
 	NhlFreeGenArray(appres);
+
+	if (QFiles)
+		NclFree(QFiles);
+	if (QVars)
+		NclFree(QVars);
+	if (QHluVars)
+		NclFree(QHluVars);
+	QFiles = QVars = QHluVars = NULL;
 
 	return;
 }
@@ -3299,7 +3423,8 @@ static NhlBoolean ReplaceDataSymRef
 	AppResSymRef	sref,
 	int		offset,
 	NhlString	*buffer,
-	int		*bufsize
+	int		*bufsize,
+	NhlBoolean	*single_term
 )
 {
 	char		tbuf[512];
@@ -3313,6 +3438,8 @@ static NhlBoolean ReplaceDataSymRef
 	NhlBoolean	status = False;
 	NhlBoolean	is_coord_attr = False;
 	int		spos;
+
+	*single_term = False;
 
 	if (! dt->qvar) /* this data is not specified yet */
 		return False;
@@ -3328,7 +3455,7 @@ static NhlBoolean ReplaceDataSymRef
 	vinfo = dt->dl->u.var;
 	vd = &dt->vd_rec;
 	switch (sref->rtype) {
-	case _NgREF_ATTR:
+	case REF_ATTR:
 		/* first see if the attribute named is actually an
 		 * attribute of this var
 		 * the attribute starts beyond the char count by 2
@@ -3369,7 +3496,7 @@ static NhlBoolean ReplaceDataSymRef
 		}
 		status = True;
 		break;
-	case _NgREF_COORD:
+	case REF_COORD:
 		/*
 		 * the coordinate index is beyond the char count by 2
 		 */
@@ -3378,7 +3505,7 @@ static NhlBoolean ReplaceDataSymRef
 		coord_ix = strtol(cp,&sp,10);
 		if (! (sp > cp)) {
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-			"Syntax error in res file coord index specification"));
+		     "Syntax error in res file coord index specification"));
 			return False;
 		}
 		spos = sp - *buffer;
@@ -3393,7 +3520,7 @@ static NhlBoolean ReplaceDataSymRef
 		}
 		if (coord_ix < 0 || coord_ix > 4) {
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-			   "Invalid coord index in res file specification"));
+			  "Invalid coord index in res file specification"));
 			return False;
 		}
 		qdim = dt->qdims[coord_ix];
@@ -3401,9 +3528,18 @@ static NhlBoolean ReplaceDataSymRef
 		/* check for coordinate attribute */
 		if (*sp == '@') { 
 			status = True;
-			if (!(qdim > NrmNULLQUARK && 
-			      MatchCoordAttr(dt->qfile,dt->qvar,
-					     qdim,sp+1,&sp))) {
+			if (qdim <= NrmNULLQUARK) {
+				sp++;
+				if (isalpha(*sp) || *sp == '_')
+					sp++;
+				while (isalnum(*sp) || *sp == '_')
+					sp++;
+				sprintf(tbuf,"\"\"");
+				spos = sp - *buffer;
+				break;
+			}
+			else if (! MatchCoordAttr(dt->qfile,dt->qvar,
+						  qdim,sp+1,&sp)) {
 				sprintf(tbuf,"\"\"");
 				spos = sp - *buffer;
 				break;
@@ -3453,7 +3589,7 @@ static NhlBoolean ReplaceDataSymRef
 			status = True;
 		}
 		break;
-	case _NgREF_REGULAR:
+	case REF_REGULAR:
 		if (dt->qfile) {
 			sprintf(tbuf,"%s->%s",
 				NrmQuarkToString(dt->qfile),
@@ -3480,7 +3616,15 @@ static NhlBoolean ReplaceDataSymRef
 		break;
 	}
 
-	if (! UpdateBufSize(strlen(*buffer) + strlen(tbuf)+4,buffer,bufsize))
+	if (offset == 0 && spos == strlen(*buffer))
+		*single_term = True;
+
+#if DEBUG_PLOTAPP
+	fprintf(stderr,"single term: %s\n", *single_term ? "True" : "False");
+#endif
+		
+	if (! UpdateBufSize
+	    (strlen(*buffer) + strlen(tbuf)+4,buffer,bufsize))
 		return False;
 
 	sp = *buffer + spos;
@@ -3503,13 +3647,16 @@ static NhlBoolean ReplaceObjSymRef
 	NhlString	plotname,
 	int		offset,
 	NhlString	*buffer,
-	int		*bufsize
+	int		*bufsize,
+	NhlBoolean	*single_term
 )
 {
 	char		tbuf[512];
 	int		i,ix = -1;
 	char		*sp,*ep;
 	int		n_to_move;
+
+	*single_term = False;
 
 	if (offset < 0)
 		offset = sref->offset;
@@ -3526,11 +3673,16 @@ static NhlBoolean ReplaceObjSymRef
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Internal error"));
 		return False;
 	}
-	sprintf(tbuf,"%s_%s",plotname,NrmQuarkToString(papp->qobj_deps[ix]));
+	sprintf(tbuf,"%s_%s",plotname,NrmQuarkToString(papp->qobj_deps[ix]));   
+
 
 	if (! UpdateBufSize(strlen(*buffer) + strlen(tbuf)+4,buffer,bufsize))
 		return False;
+
 	sp = *buffer + offset + sref->count + 1;
+	if (offset == 0 && sp - *buffer == strlen(*buffer))
+		*single_term = True;
+
 	ep = *buffer + offset + strlen(tbuf);
 	n_to_move = strlen(sp);
 	memmove(ep,sp,n_to_move);
@@ -3550,18 +3702,19 @@ static NhlBoolean ReplaceSymRef
 	NhlString	plotname,
 	int		offset,
 	NhlString	*buffer,
-	int		*bufsize
+	int		*bufsize,
+	NhlBoolean	*single_term
 )
 {
 	int  i;
 	
 
-	if (sref->kind == _NgDATA_REF) {
+	if (sref->kind == DATA_REF) {
 		for (i = 0; i < papp->data_count; i++) {
 			if (sref->sym.d == Data_Table[i].appdata) {
 				return ReplaceDataSymRef
 					(papp,res,i,sref,
-					 offset,buffer,bufsize);
+					 offset,buffer,bufsize,single_term);
 			}
 		}
 	}
@@ -3571,7 +3724,7 @@ static NhlBoolean ReplaceSymRef
 			if (sref->sym.o == appobj) {
 				return ReplaceObjSymRef
 					(papp,res,appobj,sref,plotname,
-					 offset,buffer,bufsize);
+					 offset,buffer,bufsize,single_term);
 			}
 		}
 	}
@@ -3579,34 +3732,40 @@ static NhlBoolean ReplaceSymRef
 	return False;
 }
 
-static void SetFuncInfo
+static NhlString SetFuncInfo
 (
 	PlotApp		papp,
 	ResFunc		rfuncs,
 	NgResInfo	rinfo,
 	NhlString	plotname,
-	NhlString	valbuf
+	NhlString	valbuf,
+	NhlBoolean	user_set
 )
 {
 	AppObjRes res = (AppObjRes) rinfo->rdata;
-	ResFunc rf;
+	ResFunc rf,orf = NULL;
 	int i;
 	NclApiFuncInfoRec *finfo = NULL;
+	int outlen;
+	NhlString outval;
+	NhlString inval;
 /*
  * Find out if a function in the resource value qualifies as a 
- * SingleFunctionResVal
+ * SingleFunction
  */
 	for (rf = rfuncs; rf; rf = rf->next) {
-		if (SingleFunctionResVal(rf,valbuf))
+		if (SingleFunction(rf,valbuf))
 			break;
 	}
 	if (! rf)
-		return;
+		return NULL;
 
 	if (rf->finfo && rf->finfo->dl)
 		finfo = rf->finfo->dl->u.func;
+	if (! finfo)
+		return NULL;
 
-	if (rinfo->argcount != finfo->nparams) {
+	if (rinfo->qsym != finfo->name) {
 		if (rinfo->argcount)
 			NgFreeArgInfo(rinfo->args,rinfo->argcount);
 		if (! finfo->nparams) {
@@ -3617,10 +3776,11 @@ static void SetFuncInfo
 				(finfo->nparams * sizeof(NgArgInfoRec));
 			if (! rinfo->args) {
 				NHLPERROR((NhlFATAL,ENOMEM,NULL));
-				return;
+				return NULL;
 			}
 			for (i = 0; i < finfo->nparams; i++) {
 				rinfo->args[i].sval = NULL;
+				rinfo->args[i].modified = False;
 			}
 		}
 		rinfo->argcount = finfo->nparams;
@@ -3628,51 +3788,110 @@ static void SetFuncInfo
 	
 	rinfo->qsym = rf->finfo->qfunc;
 	rinfo->valtype = _NgFUNC;
+	outlen = strlen(NrmQuarkToString(rinfo->qsym)) + rf->delim_count + 1;
 
 #if DEBUG_PLOTAPP
 	fprintf(stderr,"single term func %s\n",NrmQuarkToString(rinfo->qsym));
 #endif
+	/*
+	 * if the rfuncs passed in is not the same as the res->rfuncs then
+	 * some parameter of a function has been modified by the user. We
+	 * need a pointer to both of these so that we can use the original
+	 * value (with substitution strings) for all parameters that have
+	 * *not* been modified.
+	 */
+	if (rfuncs != res->rfuncs) {
+		for (orf = res->rfuncs; orf; orf = orf->next) {
+			if (orf->finfo->qfunc == rinfo->qsym)
+				break;
+		}
+	}
+	if (!orf) {
+		orf = rf;
+		inval = valbuf;
+	}
+	else {
+		inval = res->value;
+	}
+
 	for (i = 0; i < finfo->nparams; i++) {
-		int bix = rf->delim_pos[i] + 1;
-		int eix = rf->delim_pos[i+1] - 1;
-		AppResSymRef sref;
+		AppResSymRef sref = NULL;
 		char *buf = NULL;
 		int  bufsize = 0;
 		int len,offset;
 		NclApiArgTemplate *arg = &finfo->theargs[i];
 		char *name = "unknown";
 		char *type = "any";
+		NhlBoolean single_term_param = False;
+		NgArgInfo arginfo = &rinfo->args[i];
 		
-		while (isspace(valbuf[bix]))
-			bix++;
-		while (isspace(valbuf[eix]))
-			eix--;
-		len = eix - bix + 1;
-		if (! UpdateBufSize(len,&buf,&bufsize))
-			return;
-		strncpy(buf,&valbuf[bix],len);
-		buf[len] = '\0';
-		if (valbuf == res->value) {
-			for (sref = res->symrefs; sref; sref = sref->next) {
-				if (sref->offset < bix || 
-				    sref->offset + sref->count > eix)
-					continue;
-				offset = sref->offset - bix;
-				ReplaceSymRef(papp,res,sref,plotname,offset,
-					      &buf,&bufsize);
+		if (! (user_set && arginfo->modified && arginfo->sval)) {
+			int bix = orf->delim_pos[i] + 1;
+			int eix = orf->delim_pos[i+1] - 1;
+			while (isspace(inval[bix]))
+				bix++;
+			while (isspace(inval[eix]))
+				eix--;
+			len = eix - bix + 1;
+			if (! UpdateBufSize(len,&buf,&bufsize))
+				return NULL;
+			strncpy(buf,&inval[bix],len);
+			buf[len] = '\0';
+
+			if (strchr(buf,'$')) {
+				for (sref = res->symrefs; 
+				     sref; sref = sref->next) {
+					if (sref->offset < bix || 
+					    sref->offset + sref->count > eix)
+						continue;
+					offset = sref->offset - bix;
+					ReplaceSymRef
+						(papp,res,sref,plotname,offset,
+						 &buf,&bufsize,
+						 &single_term_param);
+					if (single_term_param)
+						break;
+				}
+			}
+			if (arginfo->sval)
+				NhlFree(arginfo->sval);
+			arginfo->sval = buf;
+			arginfo->modified = False;
+		}
+		arginfo->qargdatatype = arg->arg_data_type;
+		arginfo->qargname = arg->arg_sym;
+		if (! single_term_param) {
+			ResFunc trf;
+			arginfo->valtype = _NgEXPR;
+			for (trf = rfuncs; trf; trf = trf->next) {
+				if (SingleFunction(trf,arginfo->sval)) {
+					arginfo->valtype = _NgFUNC;
+					break;
+				}
 			}
 		}
-		if (rinfo->args[i].sval)
-			NhlFree(rinfo->args[i].sval);
-		rinfo->args[i].sval = buf;
-		rinfo->args[i].qargdatatype = arg->arg_data_type;
-		rinfo->args[i].qargname = arg->arg_sym;
+		else if (sref) {
+			if (sref->kind == OBJ_REF) 
+				arginfo->valtype = _NgOBJ_REF;
+			else if (sref->rtype == REF_REGULAR)
+				arginfo->valtype = _NgDATA_REF;
+			else if (sref->rtype == REF_ATTR)
+				arginfo->valtype = _NgDATA_ATTR_REF;
+			else if (sref->rtype == REF_COORD) {
+				if (strchr(buf,'@'))
+					arginfo->valtype = 
+						_NgDATA_COORD_ATTR_REF;
+				else
+					arginfo->valtype = 
+						_NgDATA_COORD_REF;
+			}
+		}
+		outlen += strlen(arginfo->sval);
 /*
  * not using these yet
  */
-		rinfo->args[i].valtype = _NgEXPR;
-		rinfo->args[i].argcount = 0;
-		rinfo->args[i].args = NULL;
+		arginfo->argcount = 0;
+		arginfo->args = NULL;
 
 #if DEBUG_PLOTAPP
 		if (arg->arg_sym > NrmNULLQUARK)
@@ -3680,13 +3899,31 @@ static void SetFuncInfo
 		if (arg->arg_data_type > NrmNULLQUARK)
 			type = NrmQuarkToString(arg->arg_data_type);
 
-		fprintf(stderr,"\tparam %d name: %s type %s dims %d val: %s\n",
-			i+1,name,type,arg->n_dims,buf);
+		fprintf(stderr,
+		      "\tparam %d name: %s type %s dims %d val: %s vtype %d\n",
+			i+1,name,type,arg->n_dims,buf,arginfo->valtype);
 #endif
 		
 	}
+	outval = NhlMalloc(outlen);
+	if (! outval) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NULL;
+	}
+	sprintf(outval,"%s(",NrmQuarkToString(rinfo->qsym));
+	for (i = 0; i < finfo->nparams; i++) {
+		NgArgInfo arginfo = &rinfo->args[i];
+		sprintf(&outval[strlen(outval)],"%s,",arginfo->sval);
+	}
+	/* 
+	 * if there are params there will be an extra comma so write over it
+	 */
+	if (finfo->nparams)
+		outval[strlen(outval)-1] = ')';
+	else
+		outval[strlen(outval)] = ')';
 				
-	return;
+	return outval;
 }
 
 static void SubstituteVarSyms
@@ -3725,6 +3962,7 @@ static void SubstituteVarSyms
 
 		if (ditem->vdata->set_state == _NgUSER_EXPRESSION) {
 			int bogus, bogus_pos;
+			NhlString newval;
 			bogus = ParseResourceValue
 				(papp,NrmQuarkToString(res->qres),
 				 ditem->vdata->expr_val,
@@ -3733,24 +3971,44 @@ static void SubstituteVarSyms
 				FreeResFuncs(rfuncs);
 				continue;
 			}
-			if (! UpdateBufSize(strlen(ditem->vdata->expr_val),
-					    &Buffer,&BufSize))
-				return;
-			strcpy(Buffer,ditem->vdata->expr_val);
-			SetFuncInfo(papp,rfuncs,rinfo,plotname,Buffer);
-			FreeResFuncs(rfuncs);
+			if (rfuncs) {
+				newval = SetFuncInfo
+					(papp,rfuncs,rinfo,plotname,
+					 ditem->vdata->expr_val,True);
+				FreeResFuncs(rfuncs);
+				NgSetExpressionVarData
+					(papp->go_id,
+					 ditem->vdata,newval,_NgNOEVAL,True);
+				NhlFree(newval);
+			}
 		}
 		else {
-			SetFuncInfo
-				(papp,res->rfuncs,rinfo,plotname,res->value);
+			NhlBoolean single_term;
+
+			if (res->rfuncs) {	
+				NhlString newval;
+
+				newval = SetFuncInfo
+					(papp,res->rfuncs,
+					 rinfo,plotname,res->value,False);
+				if (newval) {
+					NgSetExpressionVarData
+						(papp->go_id,
+						 ditem->vdata,newval,
+						 _NgNOEVAL,False);
+					NhlFree(newval);
+					continue;
+				}
+			}
 			if (! UpdateBufSize(strlen(res->value),
 					    &Buffer,&BufSize))
 				return;
 			strcpy(Buffer,res->value);
 			for (sref = res->symrefs; sref; sref = sref->next) {
-				status = ReplaceSymRef(papp,res,sref,plotname,
-						       -1,&Buffer,&BufSize);
-				if (! status)
+				status = ReplaceSymRef
+					(papp,res,sref,plotname,-1,
+					 &Buffer,&BufSize,&single_term);
+				if (! status || single_term)
 					break;
 			}
 			if (status) {
@@ -3760,6 +4018,13 @@ static void SubstituteVarSyms
 			}
 		}
 	}
+	if (QFiles)
+		NclFree(QFiles);
+	if (QVars)
+		NclFree(QVars);
+	if (QHluVars)
+		NclFree(QHluVars);
+	QFiles = QVars = QHluVars = NULL;
 		
 	return;
 }

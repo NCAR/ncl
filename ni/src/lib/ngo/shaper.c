@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.19 1999-12-07 19:08:50 dbrown Exp $
+ *      $Id: shaper.c,v 1.20 1999-12-24 01:29:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,7 @@
 #include <Xm/ToggleB.h>
 #include <Xm/ToggleBG.h>
 #include <Xm/MessageB.h>
+#include <Xm/DrawnBP.h>
 #include  <ncarg/ngo/Grid.h>
 
 #include <ncarg/ngo/xutil.h>

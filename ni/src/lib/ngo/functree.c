@@ -1,5 +1,5 @@
 /*
- *      $Id: functree.c,v 1.1 1999-12-07 19:08:42 dbrown Exp $
+ *      $Id: functree.c,v 1.2 1999-12-24 01:29:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -294,7 +294,7 @@ static void ExpandComponentInfo
 		cdata->argix = i;
 		cdata->modified = False;
 		cdata->ft_cb = False;
-		cdata->new_value = False;
+		cdata->new_value = NULL;
 
 		sprintf(buf,"%s",NrmQuarkToString(arginfo->qargname));
                 rowdefs[i].level = ndata->type / 10 + 1;
@@ -801,7 +801,7 @@ static void SetExpressionMode
 			    cdata->argix = -1;
 			    cdata->modified = False;
 			    cdata->ft_cb = False;
-			    cdata->new_value = False;
+			    cdata->new_value = NULL;
 
 			    if (ditem->vdata->expr_val)
 				    sprintf(buf,"%s",ditem->vdata->expr_val);
@@ -1048,7 +1048,6 @@ static void EditCB
 			    XmTextSetInsertionPosition(ftp->text,0);
 		    }
 		    else {
-			    char *cur_string;
 			    ftp->text_dropped = False;
 			    XmStringGetLtoR(ftp->selected_row_xmstr,
 					    XmFONTLIST_DEFAULT_TAG,
@@ -1122,9 +1121,14 @@ static void EditCB
                 new_string = XmTextGetString(ftp->text);
 		if (!cur_string || strcmp(new_string,cur_string)) {
                 	comp = (ftCompData)ndata->info;
-			comp->new_value = new_string;
+			if (comp->new_value)
+				NhlFree(comp->new_value);
+			comp->new_value = NhlMalloc(strlen(new_string)+1);
+			strcpy(comp->new_value,new_string);
 		}
-		XtFree(cur_string);
+		if (cur_string)
+			XtFree(cur_string);
+		XtFree(new_string);
         }
         XtVaSetValues(pub->tree,
                       XmNcolumn,1,
@@ -1204,11 +1208,7 @@ NhlErrorTypes NgUpdateFuncTree
 	}
 	else {
 		switch (rinfo->valtype) {
-		case _NgGRAPHIC:
-		case _NgVAR:
-		case _NgVAR_SUBSET:
-		case _NgARRAY:
-		case _NgEXPR:
+		default:
 			SetExpressionMode(ftp,ndata,ditem,rinfo);
 			break;
 #if 0
@@ -1473,6 +1473,10 @@ NhlString NgGetFuncTreeValue
 			value = NhlRealloc(value,size);
 		}
 		sprintf(&value[strlen(value)],"%s,",cdata->new_value);
+		NhlFree(rinfo->args[i].sval);
+		rinfo->args[i].sval = cdata->new_value;
+		rinfo->args[i].modified = True;
+		cdata->new_value = NULL;
 		*is_new_value = True;
 	}
 	if (rinfo->argcount)
