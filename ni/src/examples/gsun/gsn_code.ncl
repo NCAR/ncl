@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.49 2000-10-20 19:49:22 haley Exp $
+;      $Id: gsn_code.ncl,v 1.50 2000-10-27 20:49:48 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -38,6 +38,7 @@
 ; procedures with the same name.                                        ;
 ;***********************************************************************;
 
+undef("tofloat")
 undef("set_attr")
 undef("get_res_eq")
 undef("get_res_ne")
@@ -1069,83 +1070,74 @@ end
   if(.not.any(polytype.eq.(/"polymarker","polygon","polyline"/)))
     print("Warning: gsn_add_primitive: Do not recognize primitive type '"+ polytype + "'.")
    return(0)
-; Can't have missing values if this is a polygon, so just return 
-; a dummy primitive object.
+  end if
+
 ; Create a graphic style object.  We have to do this instead of using
-      if(polytype.eq."polygon")
-        prim_object = new(1,graphic)
-        print("Warning: gsn_add_primitive: Your polygon contains missing points. Cannot draw it.")
-      else
+; the default one, because if we add two primitive objects to a plot
+; and assign each one a different color, the two objects will have the
+; same color as the last color that was set.
+
+    gsid = create "graphic_style" graphicStyleClass wks end create
 ;
-; If the primitive is a polymarker, then just draw the non-missing
-; polymarkers.
+; Set graphic style resources, if any.
 ;
-        if(polytype.eq."polymarker")
-          inds = ind(.not.ismissing(x).and..not.ismissing(y))
-          if(.not.any(ismissing(inds)))
-            x2 = x(inds)
-            y2 = y(inds)
-            prim_object = create polytype primitiveClass noparent
-              "prXArray"       : x2
-              "prYArray"       : y2
-              "prPolyType"     : polytype
-              "prGraphicStyle" : gsid
-            end create
-            delete(x2)
-            delete(y2)
-            delete(inds)
+    gsres = get_res_eq(resources,"gs")
+    gmres = False
+    attsetvalues_check(gsid,gsres)
+    if(isatt(gsres,"gsLineColor"))
+      gmres = True
+      gmres@gsMarkerColor = gsres@gsLineColor
     end if
 
     if(any(ismissing(x)).or.any(ismissing(y)))
-            dummy = new(1,graphic)
-            NhlAddPrimitive(plotid,prim_object,dummy)
-          else
-            prim_object = new(1,graphic)
-          end if
+;
+; If the primitive is a polymarker or polygon, then just use the
 ; non-missing values.
+;
+      if(polytype.eq."polygon".or.polytype.eq."polymarker")
+        inds = ind(.not.ismissing(x).and..not.ismissing(y))
         if(.not.any(ismissing(inds)))
-; If the primitive is a polylines, then retrieve the pairs of non-missing
+          x2 = x(inds)
           y2 = y(inds)
           prim_object = create polytype primitiveClass noparent
-          dummy = new(1,graphic)
-          indices = get_non_missing_pairs(x,y)
-          i = 0
+            "prXArray"       : x2
+            "prYArray"       : y2
+            "prPolyType"     : polytype
             "prGraphicStyle" : gsid
           end create
           delete(x2)
-          nlines = dimsizes(ind(.not.ismissing(indices(:,0))))
-          if(.not.ismissing(nlines)) 
-            prim_object = new(nlines,graphic)
-            astring     = new(nlines,string)
-            astring     = polytype + ispan(0,nlines-1,1)
-            first_marker = True
-            do i=0,nlines-1
-              ibeg = indices(i,0)
-              iend = indices(i,1)
-              if(iend.eq.ibeg)
+          delete(y2)
+          delete(inds)
+;
+; Add primitive to the plot object.
+;
+          dummy = new(1,graphic)
+          NhlAddPrimitive(plotid,prim_object,dummy)
+        else
+          prim_object = new(1,graphic)
+        end if
       else
 ;
 ; If the primitive is a polyline, then retrieve the pairs of non-missing
 ; points, and plot them individually.
-                polytype2 = "polymarker"
-                if(first_marker)
-                  attsetvalues(gsid,gmres)
-                  first_marker = False
-                end if
-              else
-                polytype2 = "polyline"
 ;
-              prim_object(i) = create astring(i) primitiveClass noparent
-                "prXArray"       : x(ibeg:iend)
-                "prYArray"       : y(ibeg:iend)
-                "prPolyType"     : polytype2
-                "prGraphicStyle" : gsid
-              end create
-              NhlAddPrimitive(plotid,prim_object(i),dummy)
-            end do
-          else
-            prim_object = new(1,graphic)
-          end if
+        dummy = new(1,graphic)
+                attsetvalues(gsid,gmres)
+        i = 0
+;
+; Get the number of non-missing pairs of lines.
+;
+        nlines = dimsizes(ind(.not.ismissing(indices(:,0))))
+        if(.not.ismissing(nlines)) 
+          prim_object = new(nlines,graphic)
+          astring     = new(nlines,string)
+          astring     = polytype + ispan(0,nlines-1,1)
+          first_marker = True
+          do i=0,nlines-1
+            ibeg = indices(i,0)
+            iend = indices(i,1)
+            if(iend.eq.ibeg)
+;
 ; If there's only one point in our line, then indicate it
 ; with a polymarker.
 ;
