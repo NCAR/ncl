@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.2 1993-10-19 17:51:07 boote Exp $
+ *      $Id: LabelBar.c,v 1.3 1993-10-23 00:34:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -419,18 +419,6 @@ static NhlErrorTypes   	AdjustLabels(
 	int		max_strlen,
 	float		area_x,
 	float		area_y
-#endif
-);
-
-static NhlErrorTypes ValidatedGenArrayCopy(
-#ifdef NhlNeedProto
-	NhlGenArray	*gnew, 
-	NhlGenArray	gold,
-	NrmQuark	type,
-	int		max_ex,
-	void		*def_val,
-	char		*res_name,
-	char		*caller
 #endif
 );
 
@@ -966,9 +954,6 @@ static NhlErrorTypes    ManageDynamicArrays
 	int  *i_p;
 	float *f_p;
 	NhlString *s_p;
-	int def_int;
-	float def_float;
-	char *def_string;
 
 /*=======================================================================*/
 /*
@@ -983,20 +968,23 @@ static NhlErrorTypes    ManageDynamicArrays
 	count = lb_p->mono_fill_color ? 1 : lb_p->box_count;
 
 	if (lb_p->fill_colors != olb_p->fill_colors) {
-		def_int = NhlLB_DEF_COLOR; 
-		ret_1 = ValidatedGenArrayCopy(&(lb_p->fill_colors),
-					      olb_p->fill_colors,Qint,
-					      NhlLB_MAX_BOXES,&def_int,
-					      NhlNlbFillColors, entry_name);
+		ret_1 = _NhlValidatedGenArrayCopy(&(olb_p->fill_colors),
+						  lb_p->fill_colors,
+						  NhlLB_MAX_BOXES,True,False,
+						  NhlNlbFillColors, 
+						  entry_name);
 		
 		if ((ret = MIN(ret,ret_1)) < WARNING) 
 				return ret;
+		lb_p->fill_colors = olb_p->fill_colors;
 		i_p = (int *) lb_p->fill_colors->data;
-		for (i=0; i<MIN(count,lb_p->fill_colors->num_elements); i++) {
+
+		for (i=0;i<MIN(count,lb_p->fill_colors->num_elements); i++) {
 			if (i_p[i] < 0 || i_p[i] > len) {
 				e_text =
 		"%s: %s index %d holds an invalid color value, %d: defaulting";
-				NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+				NhlPError(WARNING,E_UNKNOWN,e_text,
+					  entry_name,
 					  NhlNlbFillColors, i, i_p[i]);
 				ret = MIN(ret, WARNING);
 				i_p[i] = NhlLB_DEF_COLOR;
@@ -1043,18 +1031,20 @@ static NhlErrorTypes    ManageDynamicArrays
 		     NhlNwkFillTableLength, &len, NULL);
 
 	if (lb_p->fill_patterns != olb_p->fill_patterns) {
-		def_int = NhlLB_DEF_PATTERN;
-		ret_1 = ValidatedGenArrayCopy(&(lb_p->fill_patterns),
-					      olb_p->fill_patterns,Qint,
-					      NhlLB_MAX_BOXES,&def_int,
-					      NhlNlbFillPatterns, entry_name);
+		ret_1 = _NhlValidatedGenArrayCopy(&(olb_p->fill_patterns),
+						  lb_p->fill_patterns,
+						  NhlLB_MAX_BOXES,
+						  True,False,
+						  NhlNlbFillPatterns, 
+						  entry_name);
 		
 		if ((ret = MIN(ret,ret_1)) < WARNING) 
 				return ret;
+		lb_p->fill_patterns = olb_p->fill_patterns;
 		i_p = (int *) lb_p->fill_patterns->data;
 		for (i=0; i<MIN(count,
 				lb_p->fill_patterns->num_elements); i++) {
-			if (i_p[i] < NhlHOLLOWFILL || i_p[i] > len) {
+			if (i_p[i] < NhlHOLLOWFILL) {
 				e_text =
 	      "%s: %s index %d holds an invalid pattern value, %d: defaulting";
 				NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
@@ -1076,7 +1066,7 @@ static NhlErrorTypes    ManageDynamicArrays
 			return FATAL;
 		}
 		for (i=lb_p->fill_patterns->num_elements; i<count; i++) {
-			i_p[i] = (i < len) ? i : NhlLB_DEF_PATTERN;
+			i_p[i] = i + 1;
 		}
 
 		lb_p->fill_patterns->data = (NhlPointer) i_p;
@@ -1089,17 +1079,18 @@ static NhlErrorTypes    ManageDynamicArrays
  */
 
 	count = lb_p->mono_fill_scale ? 1 : lb_p->box_count;
-	def_float = 1.0;
 
 	if (lb_p->fill_scales != olb_p->fill_scales) {
-		
-		ret_1 = ValidatedGenArrayCopy(&(lb_p->fill_scales),
-					      olb_p->fill_scales,Qfloat,
-					      NhlLB_MAX_BOXES,&def_float,
-					      NhlNlbFillScales, entry_name);
+		ret_1 = _NhlValidatedGenArrayCopy(&(olb_p->fill_scales),
+						  lb_p->fill_scales,
+						  NhlLB_MAX_BOXES,
+						  True,False,
+						  NhlNlbFillScales, 
+						  entry_name);
 		
 		if ((ret = MIN(ret,ret_1)) < WARNING) 
 				return ret;
+		lb_p->fill_scales = olb_p->fill_scales;
 		f_p = (float *) lb_p->fill_scales->data;
 		for (i=0; i<MIN(count,lb_p->fill_scales->num_elements); i++) {
 			if (f_p[i] <= 0.0) {
@@ -1148,17 +1139,18 @@ static NhlErrorTypes    ManageDynamicArrays
 	else
 		count = lb_p->box_count + 1;
 	lb_p->current_label_count = count;
-	def_string = "";
 
 	if (lb_p->label_strings != olb_p->label_strings) {
-		
-		ret_1 = ValidatedGenArrayCopy(&(lb_p->label_strings),
-					      olb_p->label_strings,Qstring,
-					      NhlLB_MAX_BOXES,&def_string,
-					      NhlNlbLabelStrings, entry_name);
+		ret_1 = _NhlValidatedGenArrayCopy(&(olb_p->label_strings),
+						  lb_p->label_strings,
+						  NhlLB_MAX_LBL_STRINGS,
+						  True,False,
+						  NhlNlbLabelStrings, 
+						  entry_name);
 		
 		if ((ret = MIN(ret,ret_1)) < WARNING) 
 				return ret;
+		lb_p->label_strings = olb_p->label_strings;
 	}
 
 	if (lb_p->label_strings->num_elements < count) {
@@ -1203,14 +1195,16 @@ static NhlErrorTypes    ManageDynamicArrays
  */
 	count = lb_p->box_count+1;
 	if (lb_p->box_fractions != olb_p->box_fractions) {
-		def_float = -1.0;
-		ret_1 = ValidatedGenArrayCopy(&(lb_p->box_fractions),
-					      olb_p->box_fractions,Qfloat,
-					      NhlLB_MAX_BOXES+1,&def_float,
-					      NhlNlbBoxFractions, entry_name);
+		ret_1 = _NhlValidatedGenArrayCopy(&(olb_p->box_fractions),
+						  lb_p->box_fractions,
+						  NhlLB_MAX_BOXES+1,
+						  True,False,
+						  NhlNlbBoxFractions, 
+						  entry_name);
 		
 		if ((ret = MIN(ret,ret_1)) < WARNING) 
 			return ret;
+		lb_p->box_fractions = olb_p->box_fractions;
 	}
 	
 	if (lb_p->box_fractions->num_elements < count) {
@@ -1287,9 +1281,6 @@ static NhlErrorTypes    InitializeDynamicArrays
 	int *i_p;
 	float * f_p;
 	NhlString *s_p;
-	float def_float;
-	int def_int;
-	char *def_string;
 
 /*=======================================================================*/
 /* 
@@ -1328,20 +1319,17 @@ static NhlErrorTypes    InitializeDynamicArrays
 	}
 	ga->my_data = True;
 
-	if (lb_p->fill_colors == NULL) {
-		lb_p->fill_colors = ga;
-	}
-	else {
-		def_int =  NhlLB_DEF_COLOR;
-		ret_1 = ValidatedGenArrayCopy(&(lb_p->fill_colors),
-					      ga,Qint,
-					      NhlLB_MAX_BOXES,&def_int,
-					      NhlNlbFillColors, entry_name);
+	if (lb_p->fill_colors != NULL) {
+		ret_1 = _NhlValidatedGenArrayCopy(&ga,lb_p->fill_colors,
+						  NhlLB_MAX_BOXES,
+						  True,False,
+						  NhlNlbFillColors, 
+						  entry_name);
 		
 		if ((ret = MIN(ret,ret_1)) < WARNING) 
 				return ret;
-		i_p = (int *) lb_p->fill_colors->data;
 	}
+	lb_p->fill_colors = ga;
 
 	/* check for validity, and copy the GKS index into a private array */
 
@@ -1352,6 +1340,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 		return FATAL;
 	}
 
+	i_p = (int *) lb_p->fill_colors->data;
 	for (i=0; i<count; i++) {
 		if (i_p[i] < 0 || i_p[i] > len) {
 			e_text =
@@ -1383,7 +1372,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 		for (i=0; i < NhlLB_DEF_BOX_COUNT; i++) 
 			i_p[i] = def_patterns[i];
 		for (i=NhlLB_DEF_BOX_COUNT; i<count; i++)
-			i_p[i] = (i<len) ? i : NhlLB_DEF_PATTERN;
+			i_p[i] = i + 1;
 
 	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTInteger,
 				    sizeof(int),1,&count)) == NULL) {
@@ -1396,25 +1385,24 @@ static NhlErrorTypes    InitializeDynamicArrays
 
 /* If an item types resource array has been passed in, copy it to the ga */
 
-	if (lb_p->fill_patterns == NULL) {
-		lb_p->fill_patterns = ga;
-	}
-	else {
-		def_int = NhlLB_DEF_PATTERN;
-		ret_1 = ValidatedGenArrayCopy(&(lb_p->fill_patterns),
-					      ga,Qint,
-					      NhlLB_MAX_BOXES,&def_int,
-					      NhlNlbFillPatterns, entry_name);
+	if (lb_p->fill_patterns != NULL) {
+		ret_1 = _NhlValidatedGenArrayCopy(&ga,lb_p->fill_patterns,
+						  NhlLB_MAX_BOXES,
+						  True,False,
+						  NhlNlbFillPatterns, 
+						  entry_name);
 		
 		if ((ret = MIN(ret,ret_1)) < WARNING) 
 				return ret;
-		i_p = (int *) lb_p->fill_patterns->data;
 	}
+	lb_p->fill_patterns = ga;
+
 /*
  * Replace any invalid elements in the array with the default value
  */
+	i_p = (int *) lb_p->fill_patterns->data;
 	for (i=0; i<count; i++) {
-		if (i_p[i] < NhlHOLLOWFILL || i_p[i] > len) {
+		if (i_p[i] < NhlHOLLOWFILL) {
 			e_text =
 	       "%s: %s index %d holds an invalid color value, %d: defaulting";
 			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
@@ -1448,23 +1436,21 @@ static NhlErrorTypes    InitializeDynamicArrays
 
 /* If an item types resource array has been passed in, copy it to the ga */
 
-	if (lb_p->fill_scales == NULL) {
-		lb_p->fill_scales = ga;
-	}
-	else {
-		def_float=1.0;
-		ret_1 = ValidatedGenArrayCopy(&(lb_p->fill_scales),
-					      ga,Qfloat,
-					      NhlLB_MAX_BOXES,&def_float,
-					      NhlNlbFillScales, entry_name);
+	if (lb_p->fill_scales != NULL) {
+		ret_1 = _NhlValidatedGenArrayCopy(&ga,lb_p->fill_scales,
+						  NhlLB_MAX_BOXES,
+						  True,False,
+						  NhlNlbFillScales, 
+						  entry_name);
 		
 		if ((ret = MIN(ret,ret_1)) < WARNING) 
 				return ret;
-		f_p = (float *) lb_p->fill_scales->data;
 	}
+	lb_p->fill_scales = ga;
 /*
  * Replace any invalid elements in the array with the default value
  */
+	f_p = (float *) lb_p->fill_scales->data;
 	for (i=0; i<count; i++) {
 		if (f_p[i] <= 0.0) {
 			e_text =
@@ -1529,20 +1515,18 @@ static NhlErrorTypes    InitializeDynamicArrays
 
 /* If a label strings resource array has been passed in, copy it to the ga */
 
-	if (lb_p->label_strings == NULL) {
-		lb_p->label_strings = ga;
-	}
-	else {
-		def_string="";
-		ret_1 = ValidatedGenArrayCopy(&(lb_p->label_strings),
-					      ga,Qstring,
-					      NhlLB_MAX_LBL_STRINGS,
-					      &def_string,
-					      NhlNlbLabelStrings, entry_name);
+	if (lb_p->label_strings != NULL) {
+		ret_1 = _NhlValidatedGenArrayCopy(&ga,lb_p->label_strings,
+						  NhlLB_MAX_LBL_STRINGS,
+						  True,False,
+						  NhlNlbLabelStrings, 
+						  entry_name);
 		
 		if ((ret = MIN(ret,ret_1)) < WARNING) 
 				return ret;
 	}
+	lb_p->label_strings = ga;
+
 /*
  * Copy function should have replaced any NULL strings - nothing else is
  * invalid.
@@ -1580,19 +1564,17 @@ static NhlErrorTypes    InitializeDynamicArrays
 		
 /* If a box fractions array has been passed in, copy it to the ga */
 
-	if (lb_p->box_fractions == NULL) {
-		lb_p->box_fractions = ga;
-	}
-	else {
-		def_float=-1.0;
-		ret_1 = ValidatedGenArrayCopy(&(lb_p->box_fractions),
-					      ga,Qfloat,
-					      NhlLB_MAX_BOXES+1,&def_float,
-					      NhlNlbBoxFractions, entry_name);
+	if (lb_p->box_fractions != NULL) {
+		ret_1 = _NhlValidatedGenArrayCopy(&ga,lb_p->box_fractions,
+						  NhlLB_MAX_BOXES+1,
+						  True,False,
+						  NhlNlbBoxFractions, 
+						  entry_name);
 		
 		if ((ret = MIN(ret,ret_1)) < WARNING) 
 				return ret;
 	}
+	lb_p->box_fractions = ga;
 		
 /*
  * Allocate the location array: use one more than
@@ -2129,7 +2111,7 @@ static NhlErrorTypes    ManageBoxFractionsArray
 		}
 		else if (first_neg != -1) {
 			if (box_fractions[i] > 1.0 ||
-			    box_fractions[i] <
+			    box_fractions[i] <=
 			    box_fractions[first_neg-1]) {
 				NhlPError(WARNING,E_UNKNOWN,
 		    "Modifying invalid box fraction array element: %d",i);
@@ -2143,7 +2125,7 @@ static NhlErrorTypes    ManageBoxFractionsArray
 			}
 		}
 		else if (box_fractions[i] > 1.0 ||
-			 (box_fractions[i] < box_fractions[i-1])) {
+			 (box_fractions[i] <= box_fractions[i-1])) {
 			NhlPError(WARNING,E_UNKNOWN,
 		        "Modifying invalid box fraction array element: %d",i);
 			ret = WARNING;
@@ -3832,182 +3814,4 @@ static NhlErrorTypes    LabelBarDestroy
 		NhlDestroy(lb_p->title_id);
 	}
 	return(NOERROR);
-}
-
-/*
- * Function:    ValidatedGenArrayCopy
- *
- * Description: Copies int, float or string generic arrays, with checking.
- *		If gold is NULL, or gold has fewer elements than gnew,
- *              makes a copy of the array. If gold has enough room, the
- *              data only is copied from gnew to the already allocated gold, 
- *              then gnew is made to point to the gold array.
- *		The type and element size of gnew are checked, as well as
- *		the number of elements in gnew. If any of these are invalid,
- *              A warning is returned and gnew is pointed to the unmodified
- *		gold array.
- *
- * In Args:     
- *
- * Out Args:
- *
- * Scope:       
- * Returns:     if successful NOERROR, FATAL on memory allocation errors
- *              WARNING if the new GenArray is invalid in some way.
- *
- * Side Effect: the pointer to the new gen array is modified to point to
- *              allocated data with the new array data. The gold array may
- *              no longer be allocated. 
- */
-
-static NhlErrorTypes ValidatedGenArrayCopy
-#if __STDC__
-	(NhlGenArray	*gnew, 
-	 NhlGenArray	gold,
-	 NrmQuark	type,
-	 int		max_el,
-	 void		*def_val,
-	 char		*res_name,
-	 char		*caller)
-#else
-(gnew,gold,type,max_el,def_val,res_name,caller)
-	(NhlGenArray	*gnew; 
-	 NhlGenArray	gold;
-	 NrmQuark	type;
-	 int		max_el;
-	 void		*def_value;
-	 char		*res_name;
-	 char		*caller;
-#endif
-{
-	NhlGenArray 	ga;
-	char		*e_text;
-	int		i;
-
-	ga = *gnew;
-	
-	if (ga == NULL) {
-		e_text = 
-		 "%s: %s NULL array passed in: ignoring";
-		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
-		*gnew = gold;
-		return WARNING;
-	}
-	if (ga->num_elements <= 0) {
-		e_text = 
-		 "%s: %s invalid element count: ignoring";
-		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
-		*gnew=gold;
-		return WARNING;
-	}
-	else if (ga->num_elements > max_el) {
-		e_text =
-		 "%s: %s exceeds maximum number of elements, %d: ignoring";
-		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name,max_el);
-		*gnew=gold;
-		return WARNING;
-	}
-
-	if (type == Qint) {
-		if (ga->typeQ != Qint || ga->size != sizeof(int)) {
-			e_text =
-			   "%s: %s must be a generic integer array: ignoring";
-			NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
-			*gnew = gold;
-			return WARNING; 
-		}
-	}
-	else if (type == Qfloat) {
-		if (ga->typeQ != Qfloat || ga->size != sizeof(float)) {
-			e_text =
-			   "%s: %s must be a generic float array: ignoring";
-			NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
-			*gnew = gold;
-			return WARNING; 
-		}
-	}
-	else if (type == Qstring) {
-		if (ga->typeQ != Qstring || ga->size != sizeof(char *)) {
-			e_text =
-			   "%s: %s must be a generic string array: ignoring";
-			NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
-			*gnew = gold;
-			return WARNING; 
-		}
-	}
-	else {
-		e_text = "%s: %s type is unrecognized: ignoring";
-		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
-		*gnew = gold;
-		return WARNING; 
-	}
-
-	if (gold == NULL) { 
-		if ((*gnew = _NhlCopyGenArray(ga,True)) == NULL) {
-			e_text = "%s: error copying %s GenArray";
-			NhlPError(FATAL,E_UNKNOWN,e_text,caller, res_name);
-			return FATAL;
-		}
-	}
-	else if (ga->num_elements > gold->num_elements) {
-		if ((*gnew = _NhlCopyGenArray(ga,True)) == NULL) {
-			e_text = "%s: error copying %s GenArray";
-			NhlPError(FATAL,E_UNKNOWN,e_text,caller,res_name);
-			return FATAL;
-		}
-		NhlFreeGenArray(gold);
-	}
-	else if (type == Qint) {
-		memcpy((void *)gold->data, (Const void *)ga->data,
-			       ga->num_elements * sizeof(int));
-		*gnew = gold;
-	} 
-	else if (type == Qfloat) {
-		memcpy((void *)gold->data, (Const void *)ga->data,
-			       ga->num_elements * sizeof(float));
-		*gnew = gold;
-	}
-	else if (type == Qstring) {
-		NhlString *from = (NhlString *) ga->data;
-		NhlString *to = (NhlString *) gold->data;
-		for (i=0; i<ga->num_elements; i++,to++,from++) {
-			if (*from == NULL) {
-				*to = (NhlString) 
-					NhlRealloc(*to,
-						   strlen((char *)def_val)+1);
-				if (*to == NULL) {
-					e_text = "%s: error copying %s string";
-					NhlPError(FATAL,E_UNKNOWN,e_text,
-						  caller,res_name);
-					return FATAL;
-				}
-				strcpy(*to,(char *)def_val);
-			}
-			else if (*to == NULL) {
-				*to = (NhlString) NhlMalloc(strlen(from[i])+1);
-				if (*to == NULL) {
-					e_text = "%s: error copying %s string";
-					NhlPError(FATAL,E_UNKNOWN,e_text,
-						  caller,res_name);
-					return FATAL;
-				}
-				strcpy(*to,*from);
-			}
-			else if (strcmp(*to,*from)) {
-				*to = (NhlString) 
-					NhlRealloc(*to, strlen(*from)+1);
-				if (*to == NULL) {
-					e_text = "%s: error copying %s string";
-					NhlPError(FATAL,E_UNKNOWN,e_text,
-						  caller,res_name);
-					return FATAL;
-				}
-				strcpy(*to,*from);
-			}
-		}
-		*gnew = gold;
-	}
-
-	return NOERROR;
-
 }

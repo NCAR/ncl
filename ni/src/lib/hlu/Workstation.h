@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Workstation.h,v 1.2 1993-10-19 17:53:18 boote Exp $
+ *      $Id: Workstation.h,v 1.3 1993-10-23 00:35:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,17 +30,15 @@
 
 #include <ncarg/hlu/Base.h>
 
-#define NhlWK_INIT_FILL_TABLE_LEN	16
-#define NhlWK_INIT_DASH_TABLE_LEN	16
-#define NhlWK_INIT_MARKER_TABLE_LEN	16
-#define NhlWK_DEF_MARKER		3
 
 #define NhlNwkColorMap		"wkColorMap"
 #define NhlCwkColorMap		"WkColorMap"
-#define NhlNwkColorMapLen	"wkColorMapLen"
-#define NhlCwkColorMapLen	"WkColorMapLen"
-#define NhlNwkBkgndColor	"wkBkgndColor"
-#define NhlCwkBkgndColor	"WkBkgndColor"
+#define NhlNwkColorMapLen	".wkColorMapLen"
+#define NhlCwkColorMapLen	".WkColorMapLen"
+#define NhlNwkBackgroundColor	"wkBackgroundColor"
+#define NhlCwkBackgroundColor	"WkBackgroundColor"
+#define NhlNwkForegroundColor	"wkForegroundColor"
+#define NhlCwkForegroundColor	"WkForegroundColor"
 #define NhlNwkDashPattern       "wkDashPattern"
 #define NhlNwkLineLabel         "wkLineLabel"
 #define NhlNwkLineThicknessF    "wkLineThicknessF"
@@ -84,8 +82,8 @@
 #define NhlCwkEdgeColor         "WkEdgeColor"
 
 #define NhlNwkMarkerTableLength	".wkMarkerTableLength" /* read-only */
-#define NhlNwkMarkerTableStrings ".wkMarkerTableStrings" /* read-only */
-#define NhlNwkMarkerTableParams  ".wkMarkerTableParams"  /* read-only */
+#define NhlNwkMarkerTableStrings "wkMarkerTableStrings" /* read-only */
+#define NhlNwkMarkerTableParams  "wkMarkerTableParams"  /* read-only */
 #define NhlNwkMarkerIndex	"wkMarkerIndex"
 #define NhlNwkMarkerString	"wkMarkerString"
 #define NhlNwkMarkerColor       "wkMarkerColor"
@@ -101,8 +99,8 @@
 #define NhlNwkMarkerLineColor     	"wkMarkerLineColor"
 
 #define NhlCwkMarkerTableLength	".WkMarkerTableLength" /* read-only */
-#define NhlCwkMarkerTableStrings ".WkMarkerTableStrings" /* read-only */
-#define NhlCwkMarkerTableParams  ".WkMarkerTableParams"  /* read-only */
+#define NhlCwkMarkerTableStrings "WkMarkerTableStrings" /* read-only */
+#define NhlCwkMarkerTableParams  "WkMarkerTableParams"  /* read-only */
 #define NhlCwkMarkerIndex	"WkMarkerIndex"
 #define NhlCwkMarkerString	"WkMarkerString"
 #define NhlCwkMarkerColor       "WkMarkerColor"
@@ -117,17 +115,25 @@
 #define NhlCwkMarkerLineDashSegLenF	"WkMarkerLineDashSegLenF"
 #define NhlCwkMarkerLineColor     	"WkMarkerLineColor"
 
-typedef struct _NhlColor {
-	float	red;
-	float	green;
-	float	blue;
-} NhlColor;
+/* Define for dash pattern index 0 */
+
+#define NhlSOLIDLINE	0
+
+/* Colormap stuff */
+
+#define NhlBACKGROUND 0
+#define NhlFOREGROUND 1
+#define NhlTRANSPARENT -1
+
+typedef float NhlColor[3];
 
 #define NhlTColorPtr "colorptr"
 #define NhlTColor    "color"
 
 /* Workstation Fill stuff */
 
+#define NhlHOLLOWFILL	-1
+#define NhlSOLIDFILL	0
 #define NhlWK_INITIAL_FILL_BUFSIZE 128
 
 typedef struct _NhlFillSpec {
@@ -140,6 +146,10 @@ typedef struct _NhlFillSpec {
 	int ici;
 } NhlFillSpec;
 
+/* Workstation marker stuff */
+
+#define NhlWK_DEF_MARKER	3
+
 typedef struct _NhlMarkerSpec {
 	char *marker;
 	float x_off;
@@ -149,23 +159,9 @@ typedef struct _NhlMarkerSpec {
 	NhlBoolean dynamic;
 } NhlMarkerSpec;
 
-typedef NhlMarkerSpec ** NhlMarkerTable;
+typedef NhlMarkerSpec **NhlMarkerTable;
 
-/* 
- * The marker table params contains all floats, and therefore can
- * be converted into a 2-d Fortran array. It is used only in the 
- * WorkstationGetValues function.
- */
-
-typedef struct _NhlMarkerTableParams {
-	float x_off;
-	float y_off;
-	float aspect_adj;
-	float size_adj;
-} NhlMarkerTableParams;
-
-#define NhlTMarkerTableParamsPtr "marker_table_params_ptr"
-#define NhlTMarkerTableParams    "marker_table_params"
+typedef float NhlMarkerTableParams[4];
 
 extern LayerClass workstationLayerClass;
 
@@ -173,3 +169,7 @@ typedef struct _WorkstationLayerRec *WorkstationLayer;
 typedef struct _WorkstationLayerClassRec *WorkstationLayerClass;
 
 #endif	/* _NWorkstation_h */
+
+
+
+

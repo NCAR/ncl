@@ -1,6 +1,6 @@
 
 /*
- *      $Id: LabelBar.h,v 1.2 1993-10-19 17:51:14 boote Exp $
+ *      $Id: LabelBar.h,v 1.3 1993-10-23 00:34:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,7 @@
 #define NhlLB_MAX_BOXES   	256
 #define NhlLB_MAX_LBL_STRINGS  	(NhlLB_MAX_BOXES + 1)
 #define NhlLB_DEF_BOX_COUNT   	16
-#define NhlLB_DEF_COLOR   	0
+#define NhlLB_DEF_COLOR   	NhlFOREGROUND
 #define NhlLB_DEF_PATTERN 	1
 #define NhlLB_DEF_VALUE   	0.0
 #define NhlLB_DEF_STRING  	"Label_"

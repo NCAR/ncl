@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.2 1993-10-19 17:53:20 boote Exp $
+ *      $Id: WorkstationP.h,v 1.3 1993-10-23 00:35:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -97,9 +97,10 @@ typedef NhlErrorTypes (*NhlWorkstationMarker)(
 typedef struct _WorkstationLayerPart {
 	/* User setable resource fields */
 
-	NhlColor	*color_map;
+	NhlGenArray	color_map;
 	int		color_map_len;
-	NhlColor	*bkgnd_color;
+	NhlGenArray	bkgnd_color;
+	NhlGenArray	foregnd_color;
         int dash_pattern;
         char *line_label;
         float line_thickness;
@@ -121,9 +122,9 @@ typedef struct _WorkstationLayerPart {
 	float	edge_dash_seglen;
 	int	edge_color;
 
-	int	marker_table_len;
-	char	**marker_table_strings;
-	NhlMarkerTableParams *marker_table_params;
+	int		marker_table_len;
+	NhlGenArray	marker_table_strings;
+	NhlGenArray	marker_table_params;
 
 	char	*marker_string;
 	int	marker_index;
@@ -150,8 +151,6 @@ typedef struct _WorkstationLayerPart {
         int dash_dollar_size;
 	int edge_char_size;
 	int edge_dash_dollar_size;
-	int real_fill_table_len; 
-	int real_marker_table_len;
 	int marker_table_alloc_len;
 	NhlMarkerSpec	*markers_p;
 	int marker_line_char_size;

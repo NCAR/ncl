@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.3 1993-10-19 17:53:40 boote Exp $
+ *      $Id: hlu.c,v 1.4 1993-10-23 00:35:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1033,10 +1033,10 @@ _NhlCreateGenArray
 					NhlMalloc(num_dimensions * sizeof(int));
 			if(gen->len_dimensions == NULL)
 				return NULL;
-			gen->num_elements = 0;
+			gen->num_elements = 1;
 			for(i=0;i < num_dimensions;i++){
 				gen->len_dimensions[i] = len_dimensions[i];
-				gen->num_elements += len_dimensions[i];
+				gen->num_elements *= len_dimensions[i];
 			}
 		}
 
@@ -1210,4 +1210,219 @@ NhlFreeGenArray
 	(void)NhlFree(gen);
 
 	return;
+}
+
+
+/*
+ * Function:    _NhlValidatedGenArrayCopy
+ *
+ * Description: Copies Generic Arrays, with checking, from gfrom to gto.
+ *
+ *		Pointer gto must point to an allocated Generic Array that
+ *		is assumed to be valid and serves as a template for 
+ *		validated the user-supplied gfrom Generic Array. It need not
+ *		contain any actual data (num_elements may be 0).
+ *		The type, type size, number of dimensions, and
+ *		length of all dimensions except the first, must match 
+ *		between both arrays for the copy to proceed. The first
+ *		dimension of the gfrom array may be greater or smaller 
+ *		than the first dimension of the gto array. If greater the
+ *		gto array is freed if non-NULL, and the routine performs a 
+ *		complete copy. Otherwise, it copies the data only into
+ *		the space already assigned to the gto array. In this 
+ *		situation, the setting of the exact_count parameter controls
+ *		whether the num_elements field of the gto array is possibly
+ *		adjusted (downward only) to reflect the actual number of 
+ *		elements in the gfrom array.
+ *
+ * In Args:     NhlGenArray	gfrom -- the generic array that is copied. 
+ *		int		max_el   -- the maximum number of elements
+ *					    permitted
+ *		NhlBoolean	copy_data -- whether to allocate storage
+ *					     space for the data.
+ *		NhlBoolean	exact_count -- whether to copy the size
+ *					       info when a data only copy is
+ *					       performed. If False, the
+ *					     num_elements and len_dimension[0]
+ *					     of gto will reflect the allocated
+ *					       space in gto rather than the
+ *					       number of elements copied from
+ *					       the gfrom array.
+ *		char *		res_name -- The associated resource name
+ *		char *		caller -- name of the user calling routine
+ *
+ * Out Args:	NhlGenArray *	gto -- Pointer to a destination Generic Array.
+ *				       All its fields are assumed to contain 
+ *				       valid information.
+ *
+ * Scope:       Global Private
+ *
+ * Returns:     If successful NOERROR; FATAL on memory allocation errors;
+ *              WARNING if the from GenArray is invalid in some way.
+ *
+ * Side Effect: When string data is copied, all NULL string pointers are 
+ *		replaced with single-byte strings containing only a NULL
+ *		terminator.
+ *
+ */
+
+NhlErrorTypes _NhlValidatedGenArrayCopy
+#if __STDC__
+	(NhlGenArray	*gto, 
+	 NhlGenArray	gfrom,
+	 int		max_el,
+	 NhlBoolean	copy_data,
+	 NhlBoolean	exact_count,
+	 char		*res_name,
+	 char		*caller)
+#else
+(gto,gfrom,max_el,copy_data,exact_count,res_name,caller)
+	(NhlGenArray	*gto; 
+	 NhlGenArray	gfrom;
+	 NrmQuark	type;
+	 NhlBoolean	copy_data;
+	 NhlBoolean	exact_count;
+	 char		*res_name;
+	 char		*caller;
+#endif
+{
+	char		*e_text;
+	int		i;
+	int		el_count;
+	static NrmQuark Qstring;
+	static NhlBoolean first = True;
+
+	if (first) {
+		Qstring = NrmStringToQuark(NhlTString);
+		first = False;
+	}
+
+	if (gfrom == NULL || (*gto) == NULL) {
+		e_text = 
+		 "%s: %s NULL array passed in: copy not performed";
+		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
+		return WARNING;
+	}
+	if (gfrom->num_elements <= 0) {
+		e_text = 
+		 "%s: %s invalid element count: ignoring";
+		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
+		return WARNING;
+	}
+	else if (gfrom->num_elements > max_el) {
+		e_text =
+		 "%s: %s exceeds maximum number of elements, %d: ignoring";
+		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name,max_el);
+		return WARNING;
+	}
+	if (gfrom->num_dimensions != (*gto)->num_dimensions) {
+		e_text = 
+		 "%s: %s invalid dimensionality: copy not performed";
+		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
+		return WARNING;
+	}
+/*
+ * All dimensions except the first (index 0) must match in length
+ */
+	el_count = gfrom->len_dimensions[0];
+	for (i=1; i<gfrom->num_dimensions; i++) {
+		el_count *= gfrom->len_dimensions[i];
+		if (gfrom->len_dimensions[i] != (*gto)->len_dimensions[i]) {
+			e_text = 
+			    "%s: %s dimensional mismatch: copy not performed";
+			NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
+			return WARNING;
+		}
+	}
+	if (el_count != gfrom->num_elements) {
+		e_text = 
+		 "%s: %s invalid element count: copy not performed";
+		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
+		return WARNING;
+	}
+
+	if (gfrom->typeQ != (*gto)->typeQ) {
+		e_text = "%s: %s type mismatch: copy not performed";
+		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
+		return WARNING; 
+	}
+	if (gfrom->size != (*gto)->size) {
+		e_text = "%s: %s type size mismatch: copy not performed";
+		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
+		return WARNING; 
+	}
+	
+	if (gfrom->num_elements > (*gto)->num_elements) {
+		NhlFreeGenArray((*gto));
+		if (((*gto) = _NhlCopyGenArray(gfrom,copy_data)) == NULL) {
+			e_text = "%s: error copying %s GenArray";
+			NhlPError(FATAL,E_UNKNOWN,e_text,caller,res_name);
+			return FATAL;
+		}
+		return NOERROR;
+	}
+	else if (!copy_data)
+			(*gto)->data = gfrom->data;
+	else if (gfrom->typeQ != Qstring) {
+		memcpy((void *)(*gto)->data, (Const void *)gfrom->data,
+		       gfrom->num_elements * gfrom->size);
+	} 
+	else {
+		NhlString *from = (NhlString *) gfrom->data;
+		NhlString *to = (NhlString *) (*gto)->data;
+		for (i=0; i<gfrom->num_elements; i++,to++,from++) {
+			if (*from == NULL) {
+				*to = (NhlString) 
+					NhlRealloc(*to,
+						   strlen("")+1);
+				if (*to == NULL) {
+					e_text = "%s: error copying %s string";
+					NhlPError(FATAL,E_UNKNOWN,e_text,
+						  caller,res_name);
+					return FATAL;
+				}
+				strcpy(*to,"");
+			}
+			else if (*to == NULL) {
+				*to = (NhlString) NhlMalloc(strlen(*from)+1);
+				if (*to == NULL) {
+					e_text = "%s: error copying %s string";
+					NhlPError(FATAL,E_UNKNOWN,e_text,
+						  caller,res_name);
+					return FATAL;
+				}
+				strcpy(*to,*from);
+			}
+			else if (strcmp(*to,*from)) {
+				*to = (NhlString) 
+					NhlRealloc(*to, strlen(*from)+1);
+				if (*to == NULL) {
+					e_text = "%s: error copying %s string";
+					NhlPError(FATAL,E_UNKNOWN,e_text,
+						  caller,res_name);
+					return FATAL;
+				}
+				strcpy(*to,*from);
+			}
+		}
+		if (exact_count) {
+			to = (NhlString *)(*gto)->data + gfrom->num_elements;
+			for (i=gfrom->num_elements;
+			     i<(*gto)->num_elements; i++) {
+				NhlFree(*to++);
+			}
+		}
+				
+	}
+
+/* 
+ * ASSERT: (*gto)->num_elements >= gfrom->num_elements
+ */
+	if (exact_count) {
+		(*gto)->num_elements = gfrom->num_elements;
+		(*gto)->len_dimensions[0] = gfrom->len_dimensions[0];
+	}
+
+	return NOERROR;
+
 }

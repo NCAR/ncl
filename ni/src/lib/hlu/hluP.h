@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.4 1993-10-19 17:53:45 boote Exp $
+ *      $Id: hluP.h,v 1.5 1993-10-23 00:35:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -120,6 +120,17 @@ struct _NhlChildArgRec{
 
 typedef struct NhlGenArrayRec_ NhlGenArrayRec;
 
+/*
+ * The len_dimensions member of the following struct points to an array
+ * containing the length of each dimension of the data array. It should
+ * have num_dimensions elements. The fastest varying dimension (rightmost
+ * dimension in C) corresponds to the highest numbered element of the 
+ * len_dimensions array. The num_elements member is equal to the 
+ * product of the value in each element of len_dimensions, and so contains
+ * the total number of elements of the array viewed as a single
+ * dimensional array.
+ */
+
 struct NhlGenArrayRec_{
 	int		num_dimensions;
 	int		*len_dimensions;
@@ -154,6 +165,18 @@ extern NhlGenArray _NhlCopyGenArray(
 #if	NhlNeedProto
 	NhlGenArray	gen,		/* public gen array	*/
 	NhlBoolean	copy_data	/* copy data part?	*/
+#endif
+);
+
+extern NhlErrorTypes _NhlValidatedGenArrayCopy(
+#ifdef NhlNeedProto
+	 NhlGenArray	*gto, 		/* destination gen array */
+	 NhlGenArray	gfrom,		/* source gen array */
+	 int		max_el,	      /* maximum number of elements allowed */
+	 NhlBoolean	copy_data,	/* copy data part? */
+	 NhlBoolean	exact_count,    /* ensure dest counts match source */
+	 char		*res_name,	/* associated resource name */
+	 char		*caller		/* the user-level calling function */
 #endif
 );
 

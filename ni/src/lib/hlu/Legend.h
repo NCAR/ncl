@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Legend.h,v 1.2 1993-10-19 17:51:33 boote Exp $
+ *      $Id: Legend.h,v 1.3 1993-10-23 00:34:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,7 @@
 #define NhlLG_MAX_BOXES   	256
 #define NhlLG_MAX_LBL_STRINGS  	(NhlLG_MAX_BOXES)
 #define NhlLG_DEF_BOX_COUNT   	16
-#define NhlLG_DEF_COLOR   	0
+#define NhlLG_DEF_COLOR   	NhlFOREGROUND
 #define NhlLG_DEF_LINE_INDEX	1
 #define NhlLG_MIN_LINE_INDEX	1
 #define NhlLG_DEF_MARKER_INDEX  1

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.3 1993-10-19 17:53:43 boote Exp $
+ *      $Id: hlu.h,v 1.4 1993-10-23 00:35:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -105,12 +105,6 @@ typedef	int	NhlBoolean;
 
 typedef	struct NhlGenArrayRec_ *NhlGenArray;
 
-typedef	struct NhlArray1DRec_{
-	int		len;
-	NhlString	type;
-	NhlPointer	data;
-} NhlArray1DRec, *NhlArray1D;
-
 typedef enum _NhlErrType{
 	FATAL	= -4,
 	WARNING	= -3,
@@ -153,11 +147,6 @@ typedef enum _NhlJustification {
 	NhlBOTTOMRIGHT
 } NhlJustification;
 
-/* 
- * Special Fill index values
- */
-#define NhlHOLLOWFILL	-1
-#define NhlSOLIDFILL	0
 
 #define NhlOffset(p_type,field) \
         ((unsigned int) (((char *) (&(((p_type*)NULL)->field))) - ((char *) NULL)))

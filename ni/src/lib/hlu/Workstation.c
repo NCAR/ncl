@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.2 1993-10-19 17:53:13 boote Exp $
+ *      $Id: Workstation.c,v 1.3 1993-10-23 00:35:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,6 +38,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/WorkstationP.h>
 #include <ncarg/hlu/hluutil.h>
@@ -163,7 +164,16 @@ static NhlColor def_color[] = {
 {0.000000, 0.000000, 0.031373}
 };
 
-char *dash_patterns[] = { "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",
+/* 
+ * There are currently 15 pre-defined dash patterns provided plus solid
+ * (index 0, or NhlSOLIDLINE). The solid line is element 0 of the dash
+ * pattern table but is not counted in the number of dash patterns 
+ * returned to the user. Therefore the user can use fill pattern indexes 
+ * 0 through (and including) NhlNwkDashTableLength as valid indexes.
+ */
+
+char *dash_patterns[] = { 
+		 "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",
                  "$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'",
                  "$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'",
                  "$$$'$$$'$$$'$$$'$$$'$$$'$$$'$$$'$$$'$$$'$$$'$$$'",
@@ -179,7 +189,18 @@ char *dash_patterns[] = { "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",
                  "$'$'''$'$'''$'$'''$'$'''$'$'''$'$'''$'$'''$'$'''",
                  "$$$$$'$'$$$$$'$'$$$$$'$'$$$$$'$$$$$'$'$$$$$'$'",
                  "$$$$$'$'$'$$$$$'$'$'$$$$$'$'$'$$$$$'$'$'$$$$$'$'$'",
+                 "$$$$$'''''$$$$$'''''$$$$$'''''$$$$$'''''$$$$$'''''",
 };
+
+/* 
+ * There are 16 pre-defined fill patterns, plus solid (index 0, 
+ * or NhlSOLIDFILL ) and hollow (index -1, or NhlNhlHOLLOWFILL). 
+ * Solid is element 0 of the fill specification table, but
+ * is not counted in the number of fill patterns returned to the user.
+ * Therefore the user can use fill indexes -1 through NhlNwkFillTableLength
+ * as valid fill pattern indexes. The fill pattern table is global to
+ * all workstations.
+ */
 
 static NhlFillSpec fill_specs[] = {
 
@@ -206,12 +227,12 @@ static NhlFillSpec fill_specs[] = {
 /* Note: the specs for the user-defined marker should be set to the same
  * values as the default marker - currently the asterisk
  * spec-values: marker string, x_off, y_off, aspect ratio (h/w), size factor,
- * dynamic allocation flag
+ * dynamic allocation flag.
  */
 
 static NhlMarkerSpec marker_specs[] = {
 {"",       0.0, 0.0, 1.3125, 1.0, False},    /* user-defined */
-{":F37:Z", 0.0, 0.0, 1.3125, 0.175, False},  /* 1 - dot (small filled circle)*/
+{":F37:Z", 0.0, 0.0, 1.3125, 0.175, False}, /* 1 - dot (small filled circle)*/
 {":F18:+", 0.0, 0.075, 1.3125, 0.95, False}, /* 2 - plus sign */
 {":F1:*",  0.0, 0.0, 1.3125, 1.0, False},    /* 3 - asterisk */
 {":F19:x", 0.0, 0.075, 1.3125, 1.2, False},  /* 4 - hollow circle */
@@ -248,21 +269,33 @@ static NhlMarkerTable marker_table;
 static int marker_table_len;
 static int marker_table_alloc_len;
 
+/*
+ * Likewise the fill table and dash table are global to all workstations
+ * Therefore their length is keep statically by the Workstation Class
+ */
+static int fill_table_len;
+static int dash_table_len;
+
 static NrmQuark colormap_name;
 static NrmQuark colormaplen_name;
 static NrmQuark bkgnd_name;
+static NrmQuark foregnd_name;
 static NrmQuark	marker_tbl_strings_name;
 static NrmQuark marker_tbl_params_name;
 
 #define Oset(field) NhlOffset(WorkstationLayerRec,work.field)
 static NhlResource resources[] = {
-	{ NhlNwkColorMap, NhlCwkColorMap, NhlTColorPtr , sizeof(NhlColor*),
-		Oset(color_map), NhlTImmediate, (NhlPointer)def_color},
+	{ NhlNwkColorMap, NhlCwkColorMap, NhlTGenArray , sizeof(NhlPointer),
+		Oset(color_map), NhlTImmediate, NULL},
 	{ NhlNwkColorMapLen, NhlCwkColorMapLen, NhlTInteger, sizeof(int),
-		Oset(color_map_len),NhlTImmediate,
+		Oset(color_map_len),NhlTImmediate, 
 					(NhlPointer)NhlNumber(def_color)},
-	{ NhlNwkBkgndColor, NhlCwkBkgndColor, NhlTColorPtr, sizeof(NhlColor*),
-		Oset(bkgnd_color), NhlTImmediate, NULL},
+	{ NhlNwkBackgroundColor, NhlCwkBackgroundColor, NhlTGenArray, 
+		  sizeof(NhlPointer),
+		  Oset(bkgnd_color), NhlTImmediate, NULL},
+	{ NhlNwkForegroundColor, NhlCwkForegroundColor, NhlTGenArray, 
+		  sizeof(NhlPointer),
+		  Oset(foregnd_color), NhlTImmediate, NULL},
         { NhlNwkDashPattern, NhlCwkDashPattern, NhlTInteger, sizeof(int),
 		Oset(dash_pattern),NhlTImmediate,(NhlPointer)0},
         { NhlNwkLineLabel, NhlCwkLineLabel, NhlTString, sizeof(char*),
@@ -272,19 +305,21 @@ static NhlResource resources[] = {
         { NhlNwkLineLabelFontHeightF, NhlCwkLineLabelFontHeightF, NhlTFloat,
                 sizeof(float),
                 Oset(line_label_font_height), NhlTString,"0.0125" },
-        { NhlNwkLineDashSegLenF, NhlCwkLineDashSegLenF,NhlTFloat, sizeof(float),
-                Oset(line_dash_seglen),NhlTString, ".15" },
+        { NhlNwkLineDashSegLenF, NhlCwkLineDashSegLenF,NhlTFloat, 
+		  sizeof(float),
+		  Oset(line_dash_seglen),NhlTString, ".15" },
         { NhlNwkLineColor, NhlCwkLineColor,NhlTInteger, sizeof(int),
                 Oset(line_color),NhlTImmediate,(NhlPointer)1},
 	{ NhlNwkDashTableLength, NhlCwkDashTableLength, NhlTInteger, 
 		sizeof(int),Oset(dash_table_len),NhlTImmediate,
-					(NhlPointer)NhlWK_INIT_DASH_TABLE_LEN},
+					(NhlPointer)0},
 	{ NhlNwkFillIndex, NhlCwkFillIndex, NhlTInteger, sizeof(int),
 		Oset(fill_index), NhlTImmediate,(NhlPointer)0},
 	{ NhlNwkFillColor, NhlCwkFillColor, NhlTInteger, sizeof(int),
-		Oset(fill_color),NhlTImmediate,(NhlPointer)1},
+		Oset(fill_color),NhlTImmediate,(NhlPointer)NhlFOREGROUND},
 	{ NhlNwkFillBackground, NhlCwkFillBackground, NhlTInteger, sizeof(int),
-		  Oset(fill_background), NhlTImmediate,(NhlPointer)-1},
+		  Oset(fill_background), NhlTImmediate,
+		  (NhlPointer)NhlTRANSPARENT},
 	{ NhlNwkFillScaleFactorF,NhlCwkFillScaleFactorF,
 		  NhlTFloat,sizeof(float),
 		Oset(fill_scale_factor),NhlTString,"1.0"},
@@ -292,7 +327,7 @@ static NhlResource resources[] = {
 		sizeof(float),Oset(fill_line_thickness),NhlTString,"1.0"},
 	{ NhlNwkFillTableLength, NhlCwkFillTableLength, NhlTInteger, 
 		sizeof(int),Oset(fill_table_len),NhlTImmediate,
-					(NhlPointer)NhlWK_INIT_FILL_TABLE_LEN},
+					(NhlPointer)0},
 	{ NhlNwkDrawEdges, NhlCwkDrawEdges, NhlTInteger, sizeof(int),
 		Oset(edges_on),NhlTString,"0"},
         { NhlNwkEdgeDashPattern, NhlCwkEdgeDashPattern, NhlTInteger,sizeof(int),
@@ -306,12 +341,12 @@ static NhlResource resources[] = {
 
 	{ NhlNwkMarkerTableLength, NhlCwkMarkerTableLength, NhlTInteger, 
 		  sizeof(int),Oset(marker_table_len),NhlTImmediate,
-		  (NhlPointer)NhlWK_INIT_MARKER_TABLE_LEN},
-	{ NhlNwkMarkerTableStrings, NhlCwkMarkerTableStrings, NhlTStringPtr,
-		  sizeof(NhlString *),Oset(marker_table_strings),NhlTImmediate,
+		  (NhlPointer)0},
+	{ NhlNwkMarkerTableStrings, NhlCwkMarkerTableStrings, NhlTGenArray,
+		  sizeof(NhlPointer),Oset(marker_table_strings),NhlTImmediate,
 		  (NhlPointer)NULL},
 	{ NhlNwkMarkerTableParams, NhlCwkMarkerTableParams, 
-		  NhlTMarkerTableParamsPtr, sizeof(NhlMarkerTableParams *),
+		  NhlTGenArray, sizeof(NhlPointer),
 		  Oset(marker_table_params), NhlTImmediate,
 		  (NhlPointer)NULL},
 	{ NhlNwkMarkerIndex, NhlCwkMarkerIndex, NhlTInteger, sizeof(int),
@@ -478,6 +513,8 @@ Layer	/* instance */
 #endif
 ); 
 
+
+
 /*
 * Default color map
 */
@@ -553,7 +590,8 @@ static NhlErrorTypes WorkstationClassInitialize()
 	(void)NrmStringToQuark(NhlTColor);
 	colormap_name = NrmStringToQuark(NhlNwkColorMap);
 	colormaplen_name = NrmStringToQuark(NhlNwkColorMapLen);
-	bkgnd_name = NrmStringToQuark(NhlNwkBkgndColor);
+	bkgnd_name = NrmStringToQuark(NhlNwkBackgroundColor);
+	foregnd_name = NrmStringToQuark(NhlNwkForegroundColor);
 	marker_tbl_strings_name = NrmStringToQuark(NhlNwkMarkerTableStrings);
 	marker_tbl_params_name = NrmStringToQuark(NhlNwkMarkerTableParams);
 
@@ -569,14 +607,17 @@ static NhlErrorTypes WorkstationClassInitialize()
 	}
 	
 /*
- * The 0 entry for the marker array holds some default values; it is
- * not a real marker; the MarkerTableLength resource that the user can
- * look at does not include this entry. Note that there must be
- * NhlWK_INIT_MARKER_TABLE_LEN + 1 entries in the marker_specs array.
+ * The static variables that hold the lengths of the marker, fill and
+ * dash tables are the actual length of the arrays. In each case the
+ * length of the table returned to the user is one less than the actual
+ * array length. Solid fill and solid lines are not included as fill
+ * or dash patterns, and the marker table includes a 0 dummy element.
  */
 
-	marker_table_len = NhlWK_INIT_MARKER_TABLE_LEN + 1;
+	marker_table_len = sizeof(marker_specs)/sizeof(NhlMarkerSpec);
 	marker_table_alloc_len = marker_table_len;
+	fill_table_len = sizeof(fill_specs)/sizeof(NhlFillSpec); 
+	dash_table_len = sizeof(dash_patterns)/sizeof(char *);
 	
 /*
  * Allocate the marker table
@@ -673,25 +714,32 @@ static NhlErrorTypes WorkstationInitialize
 #endif
 {
 	WorkstationLayer newl = (WorkstationLayer) new;
-	NhlColor* tmp;
+	NhlColor* tcolor = NULL;
 	int i;
-	NhlErrorTypes retcode = NOERROR;
+	NhlErrorTypes retcode = NOERROR, subret;
+	NhlGenArray ga;
+	char *e_text;
+	char *entry_name = "WorkstationInitialize";
+	int count[2];
+	int len1, len2;
+	NhlMarkerTableParams *mparams;
+	NhlString *mstrings;
 
 /* 
  * In case someone tries to set the value of the read-only fill table size
  * the actual size is maintained in a private variable. If the resource
  * has been set, issue a warning, then replace with the real value.
  */
-	newl->work.real_fill_table_len = NhlWK_INIT_FILL_TABLE_LEN;
 	if (_NhlArgIsSet(args,num_args,NhlNwkFillTableLength)) {
 		NhlPError(WARNING,E_UNKNOWN,
 			  "Attempt to set read-only resource ignored");
 		retcode = MIN(WARNING, retcode);
 	}
-	newl->work.fill_table_len = newl->work.real_fill_table_len;
+	newl->work.fill_table_len = fill_table_len - 1;
 
 /*
- * Handle marker resources
+ * Same for marker table (note marker table element 0 is not reported
+ * to the user)
  */
 
 	if (_NhlArgIsSet(args,num_args,NhlNwkMarkerTableLength)) {
@@ -700,6 +748,113 @@ static NhlErrorTypes WorkstationInitialize
 		retcode = MIN(WARNING, retcode);
 	}
 	newl->work.marker_table_len = marker_table_len - 1;
+/*
+ * Since the marker specs are stored privately it is only necessary to
+ * create a template GenArray initially. The data is not copied. 
+ * If either of the
+ * marker table resources (marker strings or marker params) is set, 
+ * the default marker table is modifed to fit the largest of the 
+ * two resources. If one resource is smaller than the other, or NULL, then
+ * default values are supplied for each missing item.
+ */
+
+	len1 = 0;
+	mparams = NULL;
+	count[0] = 0;
+	count[1] = 4;
+	if ((ga = NhlCreateGenArray((NhlPointer)mparams,NhlTFloat,
+				    sizeof(float),2,count)) == NULL) {
+		e_text = "%s: error creating %s GenArray";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			  NhlNwkMarkerTableParams);
+		return FATAL;
+	}
+	ga->my_data = False;
+
+	if (newl->work.marker_table_params != NULL) {		
+		
+		subret = _NhlValidatedGenArrayCopy(&ga,
+						newl->work.marker_table_params,
+						   4*8096,False,False,
+						   NhlNwkMarkerTableParams, 
+						   entry_name);
+		
+		if ((retcode = MIN(retcode,subret)) < WARNING) 
+				return retcode;
+		if (subret > WARNING) {
+			len1 = 
+			   newl->work.marker_table_params->len_dimensions[0];
+		}
+	}
+	newl->work.marker_table_params = ga;
+	mparams = (NhlMarkerTableParams *)newl->work.marker_table_params->data;
+
+	len2 = 0;
+	mstrings = NULL;
+	count[0] = 0;
+	if ((ga = NhlCreateGenArray((NhlPointer)mstrings,NhlTString,
+				    sizeof(NhlString),1,count)) == NULL) {
+		e_text = "%s: error creating %s GenArray";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			  NhlNwkMarkerTableParams);
+		return FATAL;
+	}
+	ga->my_data = False;
+
+	if (newl->work.marker_table_strings != NULL) {		
+		subret = _NhlValidatedGenArrayCopy(&ga,
+					  newl->work.marker_table_strings,
+						   4*8096,False,False,
+						   NhlNwkMarkerTableStrings, 
+						   entry_name);
+		
+		if ((retcode = MIN(retcode,subret)) < WARNING) 
+				return retcode;
+		if (subret > WARNING) {
+			len2 = 
+			    newl->work.marker_table_strings->len_dimensions[0];
+		}
+	}
+	newl->work.marker_table_strings = ga;
+	mstrings = (NhlString *) newl->work.marker_table_strings->data;
+
+	for (i=0; i<MAX(len1,len2); i++) {
+		float x, y, asp, size;
+		char *mstr;
+		if (i >= len1)
+			x = y = asp = size = -100.0; 
+		else {
+			x = mparams[i][0];
+			y = mparams[i][1];
+			asp = mparams[i][2];
+			size = mparams[i][3];
+		}
+		if (i >= len2)
+			mstr = NULL;
+		else
+			mstr = mstrings[i];
+
+		if (i < newl->work.marker_table_len) {
+			subret = NhlSetMarker(new,i+1,mstr,x,y,asp,size);
+			if ((retcode = MIN(retcode,subret)) < WARNING) 
+				return retcode;
+		}
+		else {
+			subret = NhlNewMarker(new,mstr,x,y,asp,size);
+			if ((retcode = MIN(retcode,subret)) < WARNING) 
+				return retcode;
+		}
+	}
+	
+/*
+ * Same for dash pattern table
+ */
+	if (_NhlArgIsSet(args,num_args,NhlNwkDashTableLength)) {
+		NhlPError(WARNING,E_UNKNOWN,
+			  "Attempt to set read-only resource ignored");
+		retcode = MIN(WARNING, retcode);
+	}
+	newl->work.dash_table_len = dash_table_len - 1;
 
 	newl->work.gkswksid = (int)FATAL;
 	newl->work.gkswkstype = (int)FATAL;
@@ -715,70 +870,183 @@ static NhlErrorTypes WorkstationInitialize
 	}
 
 /*
-* If the background is not set at initialize it is set to black. The back
-* ground color is a set once at create time resource
-*/
-	if(newl->work.bkgnd_color != NULL) {
-		tmp = newl->work.bkgnd_color;
-/*
-* this may change when defaults work. Specifically a malloc may not be needed.
-*/
-		newl->work.bkgnd_color = (NhlColor*)NhlMalloc(sizeof(NhlColor));
-		newl->work.bkgnd_color->red = tmp->red;
-		newl->work.bkgnd_color->green = tmp->green;
-		newl->work.bkgnd_color->blue = tmp->blue;
-		newl->work.private_color_map[BACKGROUND].ci = 0;
-		newl->work.private_color_map[BACKGROUND].red = tmp->red;
-		newl->work.private_color_map[BACKGROUND].green = tmp->green;
-		newl->work.private_color_map[BACKGROUND].blue = tmp->blue;
-	} else {
-		newl->work.bkgnd_color = (NhlColor*)NhlMalloc(sizeof(NhlColor));
-		newl->work.bkgnd_color->red = 0.0;
-		newl->work.bkgnd_color->green = 0.0;
-		newl->work.bkgnd_color->blue = 0.0;
-		newl->work.private_color_map[BACKGROUND].ci = 0;
+ * Process the background resource: default to black. 
+ * The background color can only be set at create time.
+ */
+	if ((tcolor = (NhlColor*)NhlMalloc(sizeof(NhlColor))) == NULL) {
+		e_text = "%s: error creating %s array";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			  NhlNwkBackgroundColor);
+		return FATAL;
 	}
-	
+	for (i=0; i<3; i++)
+		(*tcolor)[i] = 0.0;
+	count[0] = 3;
+	if ((ga = NhlCreateGenArray((NhlPointer)tcolor,NhlTFloat,
+				    sizeof(float),1,count)) == NULL) {
+		e_text = "%s: error creating %s GenArray";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			  NhlNwkBackgroundColor);
+		return FATAL;
+	}
+	ga->my_data = True;
+
+	if (newl->work.bkgnd_color != NULL) {
+		subret = _NhlValidatedGenArrayCopy(&ga,newl->work.bkgnd_color,
+						   3,True,False,
+						   NhlNwkBackgroundColor, 
+						   entry_name);
+		
+		if ((retcode = MIN(retcode,subret)) < WARNING) 
+				return retcode;
+
+	}
+	newl->work.bkgnd_color = ga;
+
+	tcolor = (NhlColor *) newl->work.bkgnd_color->data;
+	for (i=0; i<3; i++) {
+		if ((*tcolor)[i] < 0.0 || (*tcolor)[i] > 1.0) {
+			int j;
+			e_text =
+			   "%s: %s holds an invalid color value: defaulting";
+			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+				  NhlNwkBackgroundColor);
+			retcode = MIN(retcode, WARNING);
+			for (j=0; j<3; j++)
+				(*tcolor)[i] = 0.0;
+			break;
+		}
+	}
+	newl->work.private_color_map[NhlBACKGROUND].ci = 0;
+	newl->work.private_color_map[NhlBACKGROUND].red =  (*tcolor)[0];
+	newl->work.private_color_map[NhlBACKGROUND].green = (*tcolor)[1];
+	newl->work.private_color_map[NhlBACKGROUND].blue = (*tcolor)[2];
+
+/* 
+ * If the colormap generic array resource is not set, create one using
+ * the static color entries defined in this module. Note that since the
+ * values are stored in a private map, it is not necessary to keep a
+ * copy of the actual colormap resource data. The color map length is
+ * a read-only parameter. When the user supplies a colormap, the length
+ * of the map is determined from the size of the supplied GenArray. Note
+ * that background color is not counted in the number of colors in the
+ * colormap.
+ */
+	newl->work.num_private_colors = NhlNumber(def_color) + 1;
+
+	if (_NhlArgIsSet(args,num_args,NhlNwkColorMapLen)) {
+		NhlPError(WARNING,E_UNKNOWN,
+			  "Attempt to set read-only resource ignored");
+		retcode = MIN(WARNING, retcode);
+	}
+	newl->work.color_map_len = newl->work.num_private_colors - 1;
+
+
+	ga = newl->work.color_map;
+
+	count[0] = newl->work.color_map_len;
+	count[1] = 3;
+	if ((ga = NhlCreateGenArray((NhlPointer)def_color,NhlTFloat,
+			       sizeof(float),2,count)) == NULL) {
+		e_text = "%s: error creating %s GenArray";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			  NhlNwkColorMap);
+		return FATAL;
+	}
+	newl->work.color_map->my_data = False;
+
+	if (newl->work.color_map != NULL) {		
+		subret = _NhlValidatedGenArrayCopy(&ga,newl->work.color_map,
+						   3*MAX_COLOR_MAP,False,False,
+						   NhlNwkColorMap, entry_name);
+		
+		if ((retcode = MIN(retcode,subret)) < WARNING) 
+				return retcode;
+		if (subret > WARNING) {
+			newl->work.color_map_len = 
+				newl->work.color_map->len_dimensions[0];
+		}
+	}
+	newl->work.color_map = ga;
+	newl->work.num_private_colors = newl->work.color_map_len + 1;
 
 /*
-* Need to process Color Map checking to see if it is null is just temporary
-* until the defaults work
-*/
-	if(newl->work.color_map != NULL) {
-		if(newl->work.color_map_len >= MAX_COLOR_MAP) {
-/*
-* COLOR MAPS CAN ONLY HAVE MAX_COLOR_MAP colors including the background color. 
-* Since the background color is a resource then the actual number of aceptable
-* colors is MAX_COLOR_MAP - 1
-*/
-			retcode = MIN(WARNING, retcode);
-		}
-		newl->work.num_private_colors = ((newl->work.color_map_len < (MAX_COLOR_MAP ))? newl->work.color_map_len +1 : MAX_COLOR_MAP );
-		for(i = 1; i < newl->work.num_private_colors; i++)  {
-/*
-* SETALMOST is changed to a GKS color index when the workstation is opened
-* for now the ci will be the same as the array index but this may change
-* and hence the need for the ci field.
-*/
-			newl->work.private_color_map[i].ci = SETALMOST;
-			newl->work.private_color_map[i].red = 
-						newl->work.color_map[i-1].red;
-			newl->work.private_color_map[i].green = 
-						newl->work.color_map[i-1].green;
-			newl->work.private_color_map[i].blue = 
-						newl->work.color_map[i-1].blue;
-		}
-	} else {
-/*
-* ERROR IF NO COLOR MAP EXISTS AT ALL!!!
-*/
-		NhlPError(FATAL,E_UNKNOWN,"No color map provided to worksation and not able to default yet");
-		return(FATAL);
+ * SETALMOST is changed to a GKS color index when the workstation is opened
+ * for now the ci will be the same as the array index but this may change
+ * and hence the need for the ci field. Should values be checked?
+ */
+	tcolor = newl->work.color_map->data;
+	for (i=1; i<newl->work.num_private_colors; i++)  {
+		newl->work.private_color_map[i].ci = SETALMOST;
+		newl->work.private_color_map[i].red = tcolor[i-1][0];
+		newl->work.private_color_map[i].green = tcolor[i-1][1];
+		newl->work.private_color_map[i].blue =  tcolor[i-1][2];
 	}
 
+/*
+ * Process the foreground color resource: the foreground color is always
+ * color index #1. It is set automatically when the colormap is loaded
+ * but an explicitly set foreground color overrides the value loaded using
+ * the colormap resource.
+ */
+
+	tcolor = NULL;
+	count[0] = 0;
+	if ((ga = NhlCreateGenArray((NhlPointer)tcolor,NhlTFloat,
+				    sizeof(float),1,count)) == NULL) {
+		e_text = "%s: error creating %s GenArray";
+		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			  NhlNwkForegroundColor);
+		return FATAL;
+	}
+	ga->my_data = False;
+
+	if (newl->work.foregnd_color != NULL) {
+		subret = _NhlValidatedGenArrayCopy(&ga,
+						   newl->work.foregnd_color,
+						   3,True,False,
+						   NhlNwkForegroundColor, 
+						   entry_name);
+		
+		if ((retcode = MIN(retcode,subret)) < WARNING) 
+				return retcode;
+		
+		if (subret > WARNING) {
+			tcolor = (NhlColor *) ga->data;
+			for (i=0; i<3; i++) {
+				if ((*tcolor)[i] < 0.0 || (*tcolor)[i] > 1.0) {
+					e_text =
+			    "%s: %s holds an invalid color value: not set";
+					NhlPError(WARNING,E_UNKNOWN,
+						  e_text,entry_name,
+						  NhlNwkForegroundColor);
+					subret = WARNING;
+					retcode = MIN(retcode, subret);
+					break;
+				}
+			}
+		}
+		if (subret > WARNING) {
+			newl->work.private_color_map[NhlFOREGROUND].ci = 
+				SETALMOST;
+			newl->work.private_color_map[NhlFOREGROUND].red = 
+				(*tcolor)[0];
+			newl->work.private_color_map[NhlFOREGROUND].green =
+				(*tcolor)[1];
+			newl->work.private_color_map[NhlFOREGROUND].blue =
+				(*tcolor)[2];
+		}
+
+	}
+	newl->work.foregnd_color = ga;
+
+/*
+ * Set the line label resource
+ */
         if(newl->work.line_label != NULL) {
 		char *tmp;
-                tmp = (char*)NhlMalloc((unsigned)strlen(newl->work.line_label)+1);
+                tmp = (char*)
+			NhlMalloc((unsigned)strlen(newl->work.line_label)+1);
                 strcpy(tmp,newl->work.line_label);
                 newl->work.line_label = tmp;
         }
@@ -814,10 +1082,13 @@ static NhlErrorTypes WorkstationDestroy
 	WorkstationLayer	winst = (WorkstationLayer) inst;
 	LayerList	step,tmp;
 	NhlErrorTypes	retcode = NOERROR;
-/*
-	NhlFree(winst->work.bkgnd_color);
-	NhlFree(winst->work.color_map);
-*/
+
+	NhlFreeGenArray(winst->work.bkgnd_color);
+	NhlFreeGenArray(winst->work.foregnd_color);
+	NhlFreeGenArray(winst->work.color_map);
+	NhlFreeGenArray(winst->work.marker_table_strings);
+	NhlFreeGenArray(winst->work.marker_table_params);
+
 /*
 * Questionable whether the destruction of a workstation should result in the
 * destruction of all of the children. Here only the LayerList if freed
@@ -860,18 +1131,25 @@ static NhlErrorTypes    WorkstationSetValues
 	WorkstationLayer	newl = (WorkstationLayer) new;
 	int i;
 	WorkstationLayer	oldl = (WorkstationLayer) old;
-	NhlErrorTypes	retcode = NOERROR,retcode1 = NOERROR;
+	NhlErrorTypes	retcode = NOERROR,subret = NOERROR;
 	char *tmp;
+	int count;
+	char *entry_name = "WorkstationSetValues";
+	NhlColor *tcolor;
+	int len1,len2;
+	NhlMarkerTableParams *mparams;
+	NhlString *mstrings;
+	char *e_text;
 
 /*
  * Check to ensure that no one has messed with the read only fill table
  * size.
  */
-	if (newl->work.fill_table_len != newl->work.real_fill_table_len) {
+	if (newl->work.fill_table_len != fill_table_len - 1) {
 		NhlPError(WARNING,E_UNKNOWN,
 			  "Attempt to set read-only resource ignored");
 		retcode = MIN(WARNING, retcode);
-		newl->work.fill_table_len = newl->work.real_fill_table_len;
+		newl->work.fill_table_len = fill_table_len - 1;
 	}
 
 /*
@@ -886,47 +1164,190 @@ static NhlErrorTypes    WorkstationSetValues
 			marker_table_len - 1;
 	}
 
-/*
-* -----------> Issue since the color_map field is not directly used by any
-* methods other that setvalues and getvalues does the color_map resource 
-* need to be copied in to static memory ????<--------
-*/
-	if(newl->work.color_map != oldl->work.color_map) {
-		if(newl->work.color_map_len >= MAX_COLOR_MAP) {
-/*
-* COLOR MAPS CAN ONLY HAVE MAX_COLOR_MAP colors including the background color. 
-* Since the background color is a resource then the actual number of aceptable
-* colors is MAX_COLOR_MAP - 1
-*/
-			NhlPError(WARNING,E_UNKNOWN,"Maximum color map size exceeded");
-			retcode = WARNING;
+	len1 = 0;
+	if (newl->work.marker_table_params != oldl->work.marker_table_params) {
+		subret = _NhlValidatedGenArrayCopy(
+					   &(oldl->work.marker_table_params),
+					   newl->work.marker_table_params,
+						   4*8096,False,False,
+						   NhlNwkMarkerTableParams, 
+						   entry_name);
+		
+		if ((retcode = MIN(retcode,subret)) < WARNING) 
+				return retcode;
+		if (subret > WARNING) {
+			len1 = 
+			    newl->work.marker_table_params->len_dimensions[0];
 		}
-		newl->work.num_private_colors = ((newl->work.color_map_len < (MAX_COLOR_MAP ))? newl->work.color_map_len +1 : MAX_COLOR_MAP );
-		for(i = 1; i < newl->work.num_private_colors ; i++) {
-/*
-* SETALMOST is changed to a GKS color index when the workstation is opened
-* for now the ci will be the same as the array index but this may change
-* and hence the need for the ci field.
-*/
-			newl->work.private_color_map[i].ci = SETALMOST;
-			newl->work.private_color_map[i].red = 
-						newl->work.color_map[i-1].red;
-			newl->work.private_color_map[i].green = 
-						newl->work.color_map[i-1].green;
-			newl->work.private_color_map[i].blue = 
-						newl->work.color_map[i-1].blue;
+		newl->work.marker_table_params = 
+			oldl->work.marker_table_params;
+	}
+	
+	len2 = 0;	
+	if (newl->work.marker_table_strings != 
+	    oldl->work.marker_table_strings) {
+		subret=_NhlValidatedGenArrayCopy(
+					   &(oldl->work.marker_table_strings),
+					     newl->work.marker_table_strings,
+						 4*8096,False,False,
+						 NhlNwkMarkerTableStrings, 
+						 entry_name);
+		
+		if ((retcode = MIN(retcode,subret)) < WARNING) 
+				return retcode;
+		if (subret > WARNING) {
+			len2 = 
+			   newl->work.marker_table_strings->len_dimensions[0];
+		}
+		newl->work.marker_table_strings =
+			oldl->work.marker_table_strings;
+	}
+
+	mparams = (NhlMarkerTableParams *)newl->work.marker_table_params->data;
+	mstrings = (NhlString *) newl->work.marker_table_strings->data;
+	for (i=0; i<MAX(len1,len2); i++) {
+		float x, y, asp, size;
+		char *mstr;
+		if (i >= len1)
+			x = y = asp = size = -100.0; 
+		else {
+			x = mparams[i][0];
+			y = mparams[i][1];
+			asp = mparams[i][2];
+			size = mparams[i][3];
+		}
+		if (i >= len2)
+			mstr = NULL;
+		else
+			mstr = mstrings[i];
+
+		if (i < newl->work.marker_table_len) {
+			subret = NhlSetMarker(new,i+1,mstr,x,y,asp,size);
+			if ((retcode = MIN(retcode,subret)) < WARNING) 
+				return retcode;
+		}
+		else {
+			subret = NhlNewMarker(new,mstr,x,y,asp,size);
+			if ((retcode = MIN(retcode,subret)) < WARNING) 
+				return retcode;
 		}
 	}
+	
+/*
+ * Likewise for the dash table
+ */
+
+	if (newl->work.dash_table_len != dash_table_len - 1) {
+		NhlPError(WARNING,E_UNKNOWN,
+			  "Attempt to set read-only resource ignored");
+		retcode = MIN(WARNING, retcode);
+		newl->work.dash_table_len = dash_table_len - 1;
+	}
+
+/*
+ * The background color cannot change once the workstation is initialized
+ */
 	if(newl->work.bkgnd_color != oldl->work.bkgnd_color ) {
-/*
-* ERROR BACKGROUND COLOR CANNOT CHANGE ONCE THE WORKSTATION IS INITIALIZED
-*/
-	NhlPError(WARNING,E_UNKNOWN,"Background color can't change once the workstation is initialized");
-		retcode = WARNING;
+		NhlPError(WARNING,E_UNKNOWN,"Illegal Background color change");
+		retcode = MIN(WARNING, retcode);
 	}
-	if(retcode != NOERROR)
-		retcode1 = retcode;
-	retcode = AllocateColors((Layer)newl);
+
+/*
+ * The color map len resource is read only also. 
+ */
+	if (newl->work.color_map_len != newl->work.num_private_colors - 1) {
+		NhlPError(WARNING,E_UNKNOWN,
+			  "Attempt to set read-only resource ignored");
+		retcode = MIN(WARNING, retcode);
+		newl->work.color_map_len = newl->work.num_private_colors - 1;
+	}
+
+	if (newl->work.color_map != oldl->work.color_map) {
+		count = MIN(MAX_COLOR_MAP,
+			    newl->work.color_map->len_dimensions[0]);
+		subret = _NhlValidatedGenArrayCopy(&(oldl->work.color_map),
+					       newl->work.color_map,
+					       3*MAX_COLOR_MAP,False,False,
+					       NhlNwkColorMap, entry_name);
+		
+		if ((retcode = MIN(retcode,subret)) < WARNING) 
+				return retcode;
+		newl->work.color_map = oldl->work.color_map;
+
+		if (subret > WARNING) {
+			newl->work.color_map_len = count;
+			newl->work.num_private_colors = 
+				newl->work.color_map_len + 1;
+			tcolor = newl->work.color_map->data;
+			for (i=1; i<newl->work.num_private_colors; i++)  {
+				newl->work.private_color_map[i].ci = SETALMOST;
+				newl->work.private_color_map[i].red = 
+					tcolor[i-1][0];
+				newl->work.private_color_map[i].green = 
+					tcolor[i-1][1];
+				newl->work.private_color_map[i].blue =  
+					tcolor[i-1][2];
+			}
+		}
+	}
+	
+
+/*
+ * Process the foreground color resource: the foreground color is always
+ * color index #1. It is set automatically when the colormap is loaded
+ * but an explicitly set foreground color overrides the value loaded using
+ * the colormap resource.
+ */
+	if (newl->work.foregnd_color != oldl->work.foregnd_color) {
+		subret = _NhlValidatedGenArrayCopy(&(oldl->work.foregnd_color),
+					       newl->work.foregnd_color,
+					       3,True,False,
+					       NhlNwkForegroundColor, 
+					       entry_name);
+		
+		if ((retcode = MIN(retcode,subret)) < WARNING) 
+				return retcode;
+		newl->work.foregnd_color = oldl->work.foregnd_color;
+		tcolor = (NhlColor *) newl->work.foregnd_color->data;
+
+		if (subret > WARNING) {
+			for (i=0; i<3; i++) {
+				if ((*tcolor)[i] < 0.0 || (*tcolor)[i] > 1.0) {
+					e_text =
+			    "%s: %s holds an invalid color value: not set";
+					NhlPError(WARNING,E_UNKNOWN,
+						  e_text,entry_name,
+						  NhlNwkForegroundColor);
+					subret = WARNING;
+					retcode = MIN(retcode, subret);
+					break;
+				}
+			}
+		}
+		if (subret > WARNING) {
+			newl->work.private_color_map[NhlFOREGROUND].ci = 
+				SETALMOST;
+			newl->work.private_color_map[NhlFOREGROUND].red = 
+				(*tcolor)[0];
+			newl->work.private_color_map[NhlFOREGROUND].green =
+				(*tcolor)[1];
+			newl->work.private_color_map[NhlFOREGROUND].blue =
+				(*tcolor)[2];
+		}
+
+	}
+		
+/*
+ * Allocate the colors now that both the color table and the foreground have
+ * been set.
+ */
+	subret = AllocateColors((Layer)newl);
+	retcode = MIN(retcode,subret);
+
+/*
+ * Set the line label
+ */
+
         if( (oldl->work.line_label != newl->work.line_label)) {
 
                 if(oldl->work.line_label != NULL){
@@ -934,13 +1355,14 @@ static NhlErrorTypes    WorkstationSetValues
                         oldl->work.line_label = NULL;
                 }
                 if(newl->work.line_label != NULL) {
-                        tmp = (char*)NhlMalloc((unsigned)strlen(newl->work.line_label)+1);
+                        tmp = (char*)NhlMalloc((unsigned)
+					  strlen(newl->work.line_label)+1);
                         strcpy(tmp,newl->work.line_label);
                         newl->work.line_label = tmp;
                 }
         }
 
-	return((retcode < retcode1)? retcode : retcode1);
+	return(retcode);
 }
 
 /*
@@ -1321,9 +1743,12 @@ static NhlErrorTypes AllocateColors
 */
 	for( i = 0; i < MAX_COLOR_MAP; i++) {
 		if(thework->work.private_color_map[i].ci == SETALMOST) {
-			tmpcolrrep.rgb.red = thework->work.private_color_map[i].red;
-			tmpcolrrep.rgb.green = thework->work.private_color_map[i].green;
-			tmpcolrrep.rgb.blue= thework->work.private_color_map[i].blue;
+			tmpcolrrep.rgb.red = 
+				thework->work.private_color_map[i].red;
+			tmpcolrrep.rgb.green = 
+				thework->work.private_color_map[i].green;
+			tmpcolrrep.rgb.blue= 
+				thework->work.private_color_map[i].blue;
 			gset_colr_rep(thework->work.gkswksid,i,&tmpcolrrep);
 			thework->work.private_color_map[i].ci = i;
 		}
@@ -1441,7 +1866,7 @@ int _NhlNewColor
  * Side Effects: 
  *	Memory is allocated when the following resources are retrieved:
  *		NhlNwkColorMap
- *		NhlNwkBkgndColor
+ *		NhlNwkBackgroundColor
  *		NhlNwkMarkerTableStrings
  *		NhlNwkMarkerTableParams
  *	The user is responsible for freeing this memory.
@@ -1461,59 +1886,143 @@ static NhlErrorTypes	WorkstationGetValues
 	int i,j;
 	NhlColor* tmp;
 	NhlPrivateColor *private;
+	NhlGenArray ga;
+	int count[2];
 	NhlMarkerTableParams *mtp_p;
-	char **c_pp;
+	char **s_p = NULL;
+	char *e_text;
+	char *entry_name = "WorkstationGetValues";
 
 	for( i = 0; i< num_args; i++ ) {
+
 		if(args[i].quark == colormap_name) {
 			private = wl->work.private_color_map;
-			
-			tmp = (NhlColor*)NhlMalloc(wl->work.num_private_colors
-					*sizeof(NhlColor) - 1);
+			tmp = (NhlColor*)
+				NhlMalloc(wl->work.color_map_len
+					  *sizeof(NhlColor));
 			for(j = 0; j< wl->work.num_private_colors -1; j++) {
-				tmp[j].red = private[j + 1].red;
-				tmp[j].green = private[j + 1].green;
-				tmp[j].blue = private[j + 1].blue;
+				tmp[j][0] = private[j + 1].red;
+				tmp[j][1] = private[j + 1].green;
+				tmp[j][2] = private[j + 1].blue;
 			}
-			*((NhlColor**)(args[i].value)) = tmp;
-		} else if (args[i].quark == colormaplen_name) {
-			*((int*)args[i].value) = 
-				wl->work.num_private_colors -1;
+			count[0] = wl->work.color_map_len;
+			count[1] = 3;
+			if ((ga = NhlCreateGenArray((NhlPointer)tmp,
+						    NhlTFloat,sizeof(float),
+						    2,count)) == NULL) {
+				e_text = "%s: error creating %s GenArray";
+				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+					  NhlNwkColorMap);
+				return FATAL;
+			}
+			ga->my_data = True;
+			*((NhlGenArray *)(args[i].value)) = ga;
 		} else if (args[i].quark == bkgnd_name) {
+
 			tmp = (NhlColor*) NhlMalloc(sizeof(NhlColor));
-			tmp->red = 
-				wl->work.private_color_map[BACKGROUND].red;
-			tmp->green=
-				wl->work.private_color_map[BACKGROUND].green;
-			tmp->blue= 
-				wl->work.private_color_map[BACKGROUND].blue;
-			*((NhlColor **)(args[i].value)) = tmp;
+			(*tmp)[0] = 
+				wl->work.private_color_map[NhlBACKGROUND].red;
+			(*tmp)[1] =
+			      wl->work.private_color_map[NhlBACKGROUND].green;
+			(*tmp)[2] = 
+				wl->work.private_color_map[NhlBACKGROUND].blue;
+			count[0] = 3;
+			if ((ga = NhlCreateGenArray((NhlPointer)tmp,
+						    NhlTFloat,sizeof(float),
+						    1,count)) == NULL) {
+				e_text = "%s: error creating %s GenArray";
+				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+					  NhlNwkBackgroundColor);
+				return FATAL;
+			}
+			ga->my_data = True;
+			*((NhlGenArray *)(args[i].value)) = ga;
+
+		} else if (args[i].quark == foregnd_name) {
+
+			tmp = (NhlColor*) NhlMalloc(sizeof(NhlColor));
+			(*tmp)[0] = 
+			      wl->work.private_color_map[NhlFOREGROUND].red;
+			(*tmp)[1] =
+			    wl->work.private_color_map[NhlFOREGROUND].green;
+			(*tmp)[2] = 
+			     wl->work.private_color_map[NhlFOREGROUND].blue;
+			count[0] = 3;
+			if ((ga = NhlCreateGenArray((NhlPointer)tmp,
+						    NhlTFloat,sizeof(float),
+						    1,count)) == NULL) {
+				e_text = "%s: error creating %s GenArray";
+				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+					  NhlNwkForegroundColor);
+				return FATAL;
+			}
+			ga->my_data = True;
+			*((NhlGenArray *)(args[i].value)) = ga;
 
 		} else if (args[i].quark == marker_tbl_strings_name) {
-			c_pp = (char **) 
-				NhlMalloc(wl->work.marker_table_len *
-					  sizeof(char *));
-			for (j=0; j<wl->work.marker_table_len; j++) {
-				c_pp[j] = (char *) 
-					NhlMalloc(strlen(
-					      marker_table[j+1]->marker) + 1);
-				strcpy(c_pp[j], marker_table[j+1]->marker);
+			if ((s_p = (NhlString *) 
+			     NhlMalloc(wl->work.marker_table_len *
+				       sizeof(NhlString))) == NULL) {
+				e_text = "%s: error allocating %s data";
+				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+					  NhlNwkMarkerTableStrings);
+				return FATAL;
 			}
-			*(char ***)args[i].value =  c_pp;
+			for (j=0; j<wl->work.marker_table_len; j++) {
+				if ((s_p[j] = (char *) NhlMalloc(strlen(
+				   marker_table[j+1]->marker) + 1)) == NULL) {
+				       e_text = "%s: error allocating %s data";
+				       NhlPError(FATAL,E_UNKNOWN,e_text,
+						 entry_name,
+						 NhlNwkMarkerTableStrings);
+				       return FATAL;
+			        }
+				strcpy(s_p[j], marker_table[j+1]->marker);
+			}
+			count[0] = wl->work.marker_table_len;
+			if ((ga = NhlCreateGenArray((NhlPointer)s_p,
+						    NhlTString,
+						    sizeof(NhlString),
+						    1,count)) == NULL) {
+				e_text = "%s: error creating %s GenArray";
+				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+					  NhlNwkMarkerTableStrings);
+				return FATAL;
+			}
+			ga->my_data = True;
+			*((NhlGenArray *)(args[i].value)) = ga;
 
 		} else if (args[i].quark == marker_tbl_params_name) {
-			mtp_p = (NhlMarkerTableParams *)
-				NhlMalloc(wl->work.marker_table_len *
-					  sizeof(NhlMarkerTableParams));
+			if ((mtp_p = (NhlMarkerTableParams *)
+			     NhlMalloc(wl->work.marker_table_len *
+				    sizeof(NhlMarkerTableParams))) == NULL) {
+				e_text = "%s: error allocating %s data";
+				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+					  NhlNwkMarkerTableParams);
+				return FATAL;
+			}
 			for (j=0; j<wl->work.marker_table_len; j++) {
-				mtp_p[j].x_off = marker_table[j+1]->x_off;
-				mtp_p[j].y_off = marker_table[j+1]->y_off;
-				mtp_p[j].aspect_adj = 
+				mtp_p[j][0] = marker_table[j+1]->x_off;
+				mtp_p[j][1] = marker_table[j+1]->y_off;
+				mtp_p[j][2] = 
 					marker_table[j+1]->aspect_adj;
-				mtp_p[j].size_adj = 
+				mtp_p[j][3] = 
 					marker_table[j+1]->size_adj;
 			}
-			*(NhlMarkerTableParams **)args[i].value = mtp_p;
+			count[0] = wl->work.marker_table_len;
+			count[1] = 4;
+			if ((ga = NhlCreateGenArray((NhlPointer)mtp_p,
+						    NhlTFloat,
+						    sizeof(float),
+						    2,count)) == NULL) {
+				e_text = "%s: error creating %s GenArray";
+				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+					  NhlNwkMarkerTableParams);
+				return FATAL;
+			}
+			ga->my_data = True;
+			*((NhlGenArray *)(args[i].value)) = ga;
+
 		}
 	}
 	return(NOERROR);
@@ -2062,11 +2571,11 @@ void _NhlSetLineInfo
         WorkstationLayer tinst = (WorkstationLayer)instance;
         float   fl,fr,fb,ft,ul,ur,ub,ut;
         float  y0,y1,x0,x1;
-        int ll,i;
+        int ll;
         char buffer[80];
+	int ix;
 
-        for(i = 0; i< 80; i++)
-                buffer[i] = '\0';
+	memset((void *) buffer, (char) 0, 80 * sizeof(char));
 
         c_sflush();
 
@@ -2086,18 +2595,33 @@ void _NhlSetLineInfo
         x0 = (float)c_kfpy(x0);
         x1 = (float)c_kfpy(x1);
 
+	if ((ix = tinst->work.dash_pattern) < 0) {
+		/* WARNING - but it's a void function right now */
+		NhlPError(WARNING,E_UNKNOWN,
+			  "_NhlSetLineInfo: invalid dash pattern index");
+		ix = tinst->work.dash_pattern = NhlSOLIDLINE;
+	}
+	else if (ix > tinst->work.dash_table_len) {
+		/* INFO - but it's a void function right now */
+		NhlPError(INFO,E_UNKNOWN,
+	"_NhlSetLineInfo: using mod function on dash pattern index: %d", ix);
+
+		ix = 1 + (ix - 1) % tinst->work.dash_table_len; 
+	}
+
         tinst->work.dash_dollar_size = (int)((x1-x0)/
-                strlen(dash_patterns[(tinst->work.dash_pattern-1)%16])+.5);
+                strlen(dash_patterns[ix])+.5);
         if(tinst->work.dash_dollar_size < 1)
                         tinst->work.dash_dollar_size = 1;
 
-        strcpy(buffer,dash_patterns[(tinst->work.dash_pattern-1)%16]);
+        strcpy(buffer,dash_patterns[ix]);
         if(tinst->work.line_label != NULL) {
-                  strcpy(&(buffer[strlen(dash_patterns[(tinst->work.dash_pattern-1)%16])
-                        - strlen(tinst->work.line_label)]) ,
-                        tinst->work.line_label);
+                  strcpy(&(buffer[strlen(dash_patterns[ix])
+				  - strlen(tinst->work.line_label)]),
+			 tinst->work.line_label);
         }
-        gset_line_colr_ind((Gint)_NhlGetGksCi(plot->base.wkptr,tinst->work.line_color));
+        gset_line_colr_ind((Gint)_NhlGetGksCi(
+			    plot->base.wkptr,tinst->work.line_color));
 
         gset_linewidth(tinst->work.line_thickness);
         c_dashdc(buffer,tinst->work.dash_dollar_size,tinst->work.char_size);
@@ -2200,10 +2724,16 @@ void _NhlSetFillInfo
         float  x0,x1;
         int ll,ix;
         char buffer[80];
+	
 
-
-	if (wk_p->edges_on && (wk_p->edge_dash_pattern % 16) > 0) {
-		memset((void *) buffer, 0, 80 * sizeof(char));
+	if (wk_p->edges_on && wk_p->edge_dash_pattern < 0) {
+		/* WARNING - but it's a void function right now */
+		NhlPError(WARNING,E_UNKNOWN,
+			  "_NhlSetFillInfo: invalid edge dash pattern index");
+		wk_p->edge_dash_pattern = NhlSOLIDLINE;
+	}
+	else if (wk_p->edges_on && wk_p->edge_dash_pattern > 0) {
+		memset((void *) buffer, (char) 0, 80 * sizeof(char));
 
 		c_sflush();
 
@@ -2214,7 +2744,14 @@ void _NhlSetFillInfo
 		x0 = (float)c_kfpy(x0);
 		x1 = (float)c_kfpy(x1);
 	
-		ix = wk_p->edge_dash_pattern % 16;
+		if ((ix = wk_p->edge_dash_pattern) > wk_p->dash_table_len) {
+			/* INFO - but it's a void function right now */
+			NhlPError(INFO,E_UNKNOWN,
+	"_NhlSetLineInfo: using mod function on dash pattern index: %d", ix);
+
+			ix = 1 + (ix - 1) % wk_p->dash_table_len;
+		}
+		
 		wk_p->edge_dash_dollar_size = (x1 - x0) /
 			strlen(dash_patterns[ix]) + 0.5;
 		if(wk_p->edge_dash_dollar_size < 1)
@@ -2224,7 +2761,7 @@ void _NhlSetFillInfo
 		
 		c_dashdc(buffer,wk_p->edge_dash_dollar_size,1);
 	}
-
+		
 /*
  * Make sure the scale factor is okay
  */
@@ -2234,20 +2771,28 @@ void _NhlSetFillInfo
 		"_NhlSetFillInfo: fill scale factor must be greater than 0.0");
 		wk_p->fill_scale_factor = 1.0;
 	}
+		
 /*
  * An out-of-bounds fill index should have been caught at a higher
- * level. Silently set to hollow fill.
+ * level. 
  */
 
-	if ((ix = wk_p->fill_index) > wk_p->fill_table_len ||
-	    ix < NhlHOLLOWFILL) {
+	if ((ix = wk_p->fill_index) < NhlHOLLOWFILL) {
 		/* WARNING - but it's a void function right now */
 		NhlPError(WARNING,E_UNKNOWN,
 			   "_NhlSetFillInfo: invalid fill index");
 		wk_p->fill_index = NhlHOLLOWFILL;
-
+		
 	}
-	else if (wk_p->fill_index != NhlHOLLOWFILL) {
+	else if (ix > wk_p->fill_table_len) {
+		/* INFO - but it's a void function right now */
+		NhlPError(INFO,E_UNKNOWN,
+	 "_NhlSetLineInfo: using mod function on fill index: %d", ix);
+
+		ix = 1 + (ix - 1) % wk_p->fill_table_len;
+	}
+
+	if (ix != NhlHOLLOWFILL) {
 		c_sfseti("AN", fill_specs[ix].angle);
 		c_sfsetr("SP", fill_specs[ix].spacing * 
 			 wk_p->fill_scale_factor);
@@ -2276,7 +2821,7 @@ static NhlErrorTypes WorkstationFill
 	static int msize;
 	static int nst, nnd;
         float   fl,fr,fb,ft,ul,ur,ub,ut;
-	int ll, i;
+	int ll, ix;
 	Gfill_int_style save_fillstyle;
 	Gint save_linecolor;
 	Gint save_linetype;
@@ -2284,8 +2829,8 @@ static NhlErrorTypes WorkstationFill
 	Gint err_ind;
 	Gint fill_color;
 	Gint fill_background;
-
-/* 
+	
+	/* 
  * Create or enlarge the workspace arrays as required
  */
 
@@ -2337,15 +2882,16 @@ static NhlErrorTypes WorkstationFill
  * Draw the fill, unless a negative fill index is specified
  * (implying no fill)
  */
-	if ((i = wk_p->fill_index) == NhlSOLIDFILL) {
-		/* fill_specs[i].type  must be 0 */
+	if ((ix = wk_p->fill_index) == NhlSOLIDFILL) {
+		/* fill_specs[ix].type  must be 0 */
 		gset_fill_int_style(1);
 		gset_linewidth(wk_p->fill_line_thickness);
 		c_sfseti("type of fill", 0);
 		c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,fill_color);
 	}
-	else if (i > 0) {
-		/* fill_specs[i].type must not be 0 */
+	else if (ix > 0) {
+		/* fill_specs[ix].type must not be 0 */
+		ix = 1 + (ix - 1) % wk_p->fill_table_len;
 		if (fill_background >= 0) {
 			gset_linewidth(1.0);
 			gset_fill_int_style(1);
@@ -2354,14 +2900,14 @@ static NhlErrorTypes WorkstationFill
 				 fill_background);
 		}
 		gset_linewidth(wk_p->fill_line_thickness);
-		c_sfseti("TY", fill_specs[i].type);
-		if (fill_specs[i].type > 0) { 
+		c_sfseti("TY", fill_specs[ix].type);
+		if (fill_specs[ix].type > 0) { 
  			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,fill_color);
 		}
 		else {
 			gset_line_colr_ind(fill_color);
  			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,
-				 fill_specs[i].ici);
+				 fill_specs[ix].ici);
 		}
 	}
 
@@ -2590,7 +3136,7 @@ NhlErrorTypes NhlSetMarker
 		marker_table[index] = m_p;
 	}
 		
-	if (marker_string != NULL || 
+	if (marker_string != NULL && 
 	    strcmp(marker_string, m_p->marker)) {
 		    if ((c_p = NhlMalloc(strlen(marker_string)+ 1 )) == NULL) {
 			    NhlPError(FATAL,E_UNKNOWN,
@@ -2646,8 +3192,13 @@ void _NhlSetMarkerInfo
         char buffer[80];
 
 
-	if (wk_p->marker_lines_on && 
-	    (wk_p->marker_line_dash_pattern % 16) > 0) {
+	if (wk_p->marker_lines_on && wk_p->marker_line_dash_pattern < 0) {
+		/* WARNING - but it's a void function right now */
+		NhlPError(WARNING,E_UNKNOWN,
+		  "_NhlSetMarkerInfo: invalid marker dash pattern index");
+		wk_p->marker_line_dash_pattern = NhlSOLIDLINE;
+	}
+	else if (wk_p->edges_on && wk_p->marker_line_dash_pattern > 0) {
 		memset((void *) buffer, 0, 80 * sizeof(char));
 
 		c_sflush();
@@ -2659,7 +3210,14 @@ void _NhlSetMarkerInfo
 		x0 = (float)c_kfpy(x0);
 		x1 = (float)c_kfpy(x1);
 	
-		ix = wk_p->marker_line_dash_pattern % 16;
+		if ((ix = wk_p->marker_line_dash_pattern) > 
+		    wk_p->dash_table_len) {
+			/* INFO - but it's a void function right now */
+			NhlPError(INFO,E_UNKNOWN,
+       "_NhlSetMarkerInfo: using mod function on dash pattern index: %d", ix);
+
+			ix = 1 + (ix - 1) % wk_p->dash_table_len;
+		}
 		wk_p->marker_line_dash_dollar_size = (x1 - x0) /
 			strlen(dash_patterns[ix]) + 0.5;
 		if(wk_p->marker_line_dash_dollar_size < 1)
@@ -2684,13 +3242,16 @@ void _NhlSetMarkerInfo
  * level. Error and set to default marker.
  */
 
-	if ((ix = wk_p->marker_index) > wk_p->marker_table_len ||
-	    ix < 0) {
+	if ((ix = wk_p->marker_index) < 0) {
 		/* WARNING - but it's a void function right now */
 		NhlPError(WARNING,E_UNKNOWN,
 			   "_NhlSetMarkerInfo: invalid marker index");
 		wk_p->marker_index = NhlWK_DEF_MARKER;
-
+	}
+	else if (ix >wk_p->fill_table_len) {
+		/* INFO - but it's a void function right now */
+		NhlPError(INFO,E_UNKNOWN,
+	 "_NhlSetLineInfo: using mod function on marker index: %d", ix);
 	}
 
         return;
@@ -2762,7 +3323,7 @@ static NhlErrorTypes WorkstationMarker
 	gset_linewidth(wk_p->marker_thickness);
 	c_pcseti("OC",marker_color);
 	c_pcseti("CC",marker_color);
-	if ((index = wk_p->marker_index) == 0) {
+	if ((index = wk_p->marker_index) <= 0) {
 		/* the marker string is used to define the marker */
 		x_off = wk_p->marker_size * wk_p->marker_x_off;
 		y_off = wk_p->marker_size * wk_p->marker_y_off;
@@ -2793,6 +3354,7 @@ static NhlErrorTypes WorkstationMarker
 
 	}
 	else if (index > 0) {
+		index = 1 + (index - 1) % wk_p->marker_table_len;
 		for (i=0; i<num_points; i++) {
 			if (marker_table[index]->aspect_adj <= 1.0) {
 				p_height = 21.0 * 
@@ -2879,4 +3441,3 @@ int num_points;
         return(CallWorkstationMarker(instance->base.layer_class,
 				     instance,x,y,num_points));
 }
-
