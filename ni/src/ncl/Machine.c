@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.10 1994-03-03 21:54:20 ethan Exp $
+ *      $Id: Machine.c,v 1.11 1994-03-03 23:37:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -244,7 +244,7 @@ void _NclNewMachine
 	tmp->thefiles = (char**)NclCalloc(NCL_FUNC_MACHINE_SIZE,sizeof(char*));
 	tmp->thelines = (int*)NclCalloc(NCL_FUNC_MACHINE_SIZE,sizeof(int));
 	if(tmp->themachine == NULL ){
-		NhlPError(FATAL,errno,"_NhlNewMachine: Can't allocate space for new machine");
+		NhlPError(NhlFATAL,errno,"_NhlNewMachine: Can't allocate space for new machine");
 		return;
 	}
 	tmp->pc = tmp->themachine;
@@ -295,7 +295,7 @@ void _NclResetMachine
 {
 	fp = NULL;
 	if(sb != thestack) {
-		NhlPError(WARNING,E_UNKNOWN,"ResetMachine: reseting non-empty stack, memory may leak!");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"ResetMachine: reseting non-empty stack, memory may leak!");
 	}
 	sb = thestack;
 	mstk->pcoffset = 0;
@@ -317,8 +317,8 @@ static NhlErrorTypes IncreaseMachineSize
 	mstk->thelines = (int*)NclRealloc(mstk->themachine,mstk->current_machine_size*2);
 	mstk->current_machine_size *=2;
 	if(mstk->themachine == NULL) {
-		NhlPError(FATAL,errno,"IncreaseMachineSize: Unable to increase the size of the machine");
-		return(FATAL);
+		NhlPError(NhlFATAL,errno,"IncreaseMachineSize: Unable to increase the size of the machine");
+		return(NhlFATAL);
 
 	}
 /*
@@ -326,7 +326,7 @@ static NhlErrorTypes IncreaseMachineSize
 * from the current pcoffset value
 */
 	mstk->pc = &(mstk->themachine[mstk->pcoffset]);
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 	
 
@@ -344,8 +344,8 @@ NhlErrorTypes _NclInitMachine
 	mstk->thefiles = (char**)NclCalloc(NCL_MACHINE_SIZE,sizeof(char*));
 	mstk->thelines = (int*)NclCalloc(NCL_MACHINE_SIZE,sizeof(int));
 	if(mstk->themachine == NULL ){
-		NhlPError(FATAL,errno,"_NhlInitMachine: Can't allocate space for machine");
-		return(FATAL);
+		NhlPError(NhlFATAL,errno,"_NhlInitMachine: Can't allocate space for machine");
+		return(NhlFATAL);
 	}
 	mstk->pc = mstk->themachine;
 	mstk->lc = mstk->thelines;
@@ -362,10 +362,10 @@ NhlErrorTypes _NclInitMachine
 		sizeof(NclStackEntry));
 	current_level_1_size = NCL_LEVEL_1_SIZE;
 	if(level_1_vars == NULL) {
-		NhlPError(FATAL,errno,"_NhlInitMachine: Can't allocate space for machine");
-		return(FATAL);
+		NhlPError(NhlFATAL,errno,"_NhlInitMachine: Can't allocate space for machine");
+		return(NhlFATAL);
 	}
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 NhlErrorTypes _NclPutLevel1Var
@@ -378,11 +378,11 @@ NhlErrorTypes _NclPutLevel1Var
 #endif
 { 	
 	if((offset >= current_level_1_size)||(offset < 0)){
-		return(WARNING);
+		return(NhlWARNING);
 	} else {
 		
 		level_1_vars[offset] = *therec;
-		return(NOERROR);
+		return(NhlNOERROR);
 	}
 }
 NclStackEntry *_NclGetLevel1Var
@@ -428,7 +428,7 @@ NclStackEntry *therec;
 */
 		previous++;
 		*((NclStackEntry*)((NclStackEntry*)previous + the_sym->offset)) = *therec;
-		return(NOERROR);
+		return(NhlNOERROR);
 	}
 }
 
@@ -460,7 +460,7 @@ NclSymbol* the_sym;
 		previous++;
 		return((NclStackEntry*)((NclStackEntry*)previous + the_sym->offset));
 	} else {
-		NhlPError(FATAL,E_UNKNOWN,"Attempt to reference keyword (%s) as variable",the_sym->name);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to reference keyword (%s) as variable",the_sym->name);
 		return(NULL);
 	}
 }
@@ -539,7 +539,7 @@ void _NclPush
 	*(sb) = data;
 	sb++;
 	if((sb) >= &(thestack[NCL_STACK_SIZE -1]) ) {
-		NhlPError(FATAL,E_UNKNOWN,"Push: Stack overflow");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Push: Stack overflow");
 	}
 	return;
 }
@@ -553,7 +553,7 @@ NclStackEntry _NclPop
 {
 	NclStackEntry tmp;
 	if(sb <= thestack) {
-		NhlPError(FATAL,E_UNKNOWN,"Pop: Stack underflow");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Pop: Stack underflow");
 		tmp.kind = NclStk_NOVAL;
 		tmp.u.offset = 0;
 		return(tmp);

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.6 1993-12-21 19:18:30 ethan Exp $
+#      $Id: yMakefile,v 1.7 1994-03-03 23:38:11 ethan Exp $
 #
 #########################################################################
 #									#
@@ -58,13 +58,14 @@ ALLSRCS		= $(API_SRCS) $(EXE_SRCS) $(SRCS)
 
 SRCS	= Machine.c Memory.c Printtoken.c SrcTree.c Symbol.c Translate.c \
 	ncl.y ncl.l yywrap.c y.tab.c lex.yy.c Execute.c AddBuiltIns.c \
-	OpsFuncs.c
+	OpsFuncs.c AddIntrinsics.c
 
 API_OBJS	= NclApi.o
 EXE_OBJS	= Ncl.o
 
 OBJS	= Machine.o Memory.o Printtoken.o SrcTree.o Symbol.o Translate.o \
-	lex.yy.o y.tab.o yywrap.o Execute.o AddBuiltIns.o OpsFuncs.o
+	lex.yy.o y.tab.o yywrap.o Execute.o AddBuiltIns.o OpsFuncs.o \
+	AddIntrinsics.o
 
 APIOBJS	= $(API_OBJS) $(OBJS)
 EXEOBJS	= $(EXE_OBJS) $(OBJS)

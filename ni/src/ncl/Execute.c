@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.10 1994-03-03 21:54:17 ethan Exp $
+ *      $Id: Execute.c,v 1.11 1994-03-03 23:37:53 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -58,7 +58,7 @@ NclExecuteReturnStatus _NclExecute
 	int *lptr;
 	char **fptr;
 	NclValue *machine;
-	NhlErrorTypes status = NOERROR;
+	NhlErrorTypes status = NhlNOERROR;
 
 	machine = _NclGetCurrentMachine();
 	ptr = machine + start_offset;
@@ -99,8 +99,8 @@ NclExecuteReturnStatus _NclExecute
 						data1.u.sub_rec->sub_type = INT_VECT;
 						data1.u.sub_rec->u.vec = data.u.vec_rec;
 					} else{
-						NhlPError(FATAL,E_UNKNOWN,"Illegal subscript. Vector subscripts must be integer");
-						status = FATAL;
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal subscript. Vector subscripts must be integer");
+						status = NhlFATAL;
 					}
 				} else if(data.kind == NclStk_RANGEREC) {
 					if(((data.u.range_rec->start == NULL)
@@ -112,8 +112,8 @@ NclExecuteReturnStatus _NclExecute
 						data1.u.sub_rec->sub_type = INT_RANGE;
 						data1.u.sub_rec->u.range = data.u.range_rec;
 					} else {
-						NhlPError(FATAL,E_UNKNOWN,"Illegal subscript. Subscripts must be integer when not using coordinate indexing");
-						status = FATAL;
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal subscript. Subscripts must be integer when not using coordinate indexing");
+						status = NhlFATAL;
 					}
 				}
 				if(*ptr == INT_SUBSCRIPT_OP) {
@@ -132,7 +132,7 @@ NclExecuteReturnStatus _NclExecute
 						break;
 					}
 					default:	
-						NhlPError(WARNING,E_UNKNOWN,"Illegal type for coordinate name in coordinate subscript ignoring value");
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"Illegal type for coordinate name in coordinate subscript ignoring value");
 						data1.u.sub_rec->name = NULL;
 						break;
 					}
@@ -167,18 +167,18 @@ NclExecuteReturnStatus _NclExecute
 						if(start.u.data_obj !=NULL) {
 						data.u.range_rec->start = start.u.data_obj;
 						} else {
-							status = FATAL;
+							status = NhlFATAL;
 						}
 						break;
 					case NclStk_VAR:
 						data.u.range_rec->start = 
 								_NclVarValueRead(start.u.data_var,NULL,NULL);
 						if(data.u.range_rec->start == NULL) {
-							status = FATAL;
+							status = NhlFATAL;
 						}
 						break;
 					default:
-						status = FATAL;
+						status = NhlFATAL;
 						break;
 					}
 				}
@@ -190,17 +190,17 @@ NclExecuteReturnStatus _NclExecute
 						if(finish.u.data_obj !=NULL) {
 						data.u.range_rec->finish= finish.u.data_obj;
 						} else {
-							status = FATAL;
+							status = NhlFATAL;
 						}
 						break;
 					case NclStk_VAR:
 						data.u.range_rec->finish= _NclVarValueRead(finish.u.data_var,NULL,NULL);
 						if(data.u.range_rec->finish == NULL) {
-							status = FATAL;
+							status = NhlFATAL;
 						}
 						break;
 					default:
-						status = FATAL;
+						status = NhlFATAL;
 						break;
 					}
 				}
@@ -212,34 +212,34 @@ NclExecuteReturnStatus _NclExecute
 						if(stride.u.data_obj !=NULL) {
 						data.u.range_rec->stride= stride.u.data_obj;
 						} else {
-							status = FATAL;
+							status = NhlFATAL;
 						}
 						break;
 					case NclStk_VAR:
 						data.u.range_rec->stride= _NclVarValueRead(stride.u.data_var,NULL,NULL);
 						if(data.u.range_rec->stride == NULL){
-							status = FATAL;
+							status = NhlFATAL;
 						}
 						break;
 					default:
-						status = FATAL;
+						status = NhlFATAL;
 						break;
 					}
 				}
 				if((data.u.range_rec->start != NULL) &&
 					(data.u.range_rec->start->multidval.kind != SCALAR)) {
-					NhlPError(FATAL,E_UNKNOWN,"Illegal Subscript. Only scalar values are allowed in subscript ranges.\n");
-					status = FATAL;
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal Subscript. Only scalar values are allowed in subscript ranges.\n");
+					status = NhlFATAL;
 				}
 				if((data.u.range_rec->finish != NULL) &&
 					(data.u.range_rec->finish->multidval.kind != SCALAR)) {
-					NhlPError(FATAL,E_UNKNOWN,"Illegal Subscript. Only scalar values are allowed in subscript ranges.\n");
-					status = FATAL;
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal Subscript. Only scalar values are allowed in subscript ranges.\n");
+					status = NhlFATAL;
 				}
 				if((data.u.range_rec->stride != NULL) &&
 					(data.u.range_rec->stride->multidval.kind != SCALAR)) {
-					NhlPError(FATAL,E_UNKNOWN,"Illegal Subscript. Only scalar values are allowed in subscript ranges.\n");
-					status = FATAL;
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal Subscript. Only scalar values are allowed in subscript ranges.\n");
+					status = NhlFATAL;
 				}
 				_NclPush(data);
 				break;
@@ -254,20 +254,20 @@ NclExecuteReturnStatus _NclExecute
 				case NclStk_VAR: 
 					val = _NclVarValueRead(data.u.data_var,NULL,NULL);
 					if(val == NULL){
-						status = FATAL;
+						status = NhlFATAL;
 					}
 					break;
 				case NclStk_VAL:
 					if(data.u.data_obj != NULL) {
 						val = data.u.data_obj;
 					} else {
-						status = FATAL;
+						status = NhlFATAL;
 					}
 					break;
 				default:
-					status = FATAL;
+					status = NhlFATAL;
 				}
-				if(status != FATAL) {
+				if(status != NhlFATAL) {
 					if(val->multidval.kind == SCALAR) {
 						data1.kind = NclStk_RANGEREC;
 						data1.u.range_rec = 
@@ -285,8 +285,8 @@ NclExecuteReturnStatus _NclExecute
 						data1.u.vec_rec->vec = val;
 						_NclPush(data1);
 					} else {
-						NhlPError(FATAL,E_UNKNOWN,"Illegal subscript. Subscripts must be scalar or one dimensional vectors\n");
-						status = FATAL;
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal subscript. Subscripts must be scalar or one dimensional vectors\n");
+						status = NhlFATAL;
 					}
 				}
 				break;
@@ -320,8 +320,8 @@ NclExecuteReturnStatus _NclExecute
 						data1.u.sub_rec->sub_type = COORD_RANGE;
 						data1.u.sub_rec->u.range = data.u.range_rec;
 					} else {
-						NhlPError(FATAL,E_UNKNOWN,"Illegal subscript. stride must always be integer regardless of whether coordinate or integer subscripting is being used\n");
-						status = FATAL;
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal subscript. stride must always be integer regardless of whether coordinate or integer subscripting is being used\n");
+						status = NhlFATAL;
 					}
 				}
 				if(*ptr == COORD_SUBSCRIPT_OP) {
@@ -340,7 +340,7 @@ NclExecuteReturnStatus _NclExecute
 						break;
 					}
 					default:	
-						NhlPError(WARNING,E_UNKNOWN,"Illegal type for coordinate name in coordinate subscript ignoring value");
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"Illegal type for coordinate name in coordinate subscript ignoring value");
 						data1.u.sub_rec->name = NULL;
 						break;
 					}
@@ -709,7 +709,7 @@ NclExecuteReturnStatus _NclExecute
 				default:
 					data_md = NULL;
 /* ---------> Error message here < +++++++++ */				
-					status = FATAL;
+					status = NhlFATAL;
 					break;
 				}
 				if((data_md != NULL)&&(data_md->obj.obj_type_mask & valid_dims)&&(data_md->multidval.kind == SCALAR)&&(var!= NULL)&&(var->u.data_var != NULL)) {	
@@ -734,13 +734,13 @@ NclExecuteReturnStatus _NclExecute
 						dim_num
 						);
 					if(data.u.data_obj == NULL) {
-						status = FATAL;
+						status = NhlFATAL;
 					} else {
 						data.kind = NclStk_VAL;
 						_NclPush(data);
 					}
 				} else {
-					status = FATAL;
+					status = NhlFATAL;
 				}
 			}
 			break;
@@ -811,7 +811,7 @@ NclExecuteReturnStatus _NclExecute
 						dim_num= *(long*)dim_ref_md->multidval.val;
 					}
 
-					if(status != FATAL) {
+					if(status != NhlFATAL) {
 					status = _NclWriteDim(
 						data_var->u.data_var,
 						dim_num,
@@ -824,7 +824,7 @@ NclExecuteReturnStatus _NclExecute
 						_NclDestroyObj((NclObj)dim_ref_md);
 					}
 				} else {
-					status = FATAL;
+					status = NhlFATAL;
 				}
 			}
 			break;
@@ -833,7 +833,7 @@ NclExecuteReturnStatus _NclExecute
 ***************************/			
 			case PARAM_VAR_OP:
 			case VAR_READ_OP: {
-				NhlErrorTypes ret = NOERROR;
+				NhlErrorTypes ret = NhlNOERROR;
 				int i;
 				int nsubs;
 				NclStackEntry data;
@@ -849,15 +849,15 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				nsubs = *ptr;
 				if(var->u.data_var == NULL) {
-					NhlPError(FATAL,E_UNKNOWN,"Variable (%s) is undefined",sym->name);
-					status = FATAL;
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable (%s) is undefined",sym->name);
+					status = NhlFATAL;
 				} else if(nsubs == 0) {
 					if(var != NULL) {
 						_NclPush(*var);
 					}
 				} else if(nsubs != var->u.data_var->var.n_dims) {
-					NhlPError(FATAL,E_UNKNOWN,"Number of subscripts do not match number of dimesions of variable,(%d) Subscripts used, (%d) Subscripts expected",nsubs,var->u.data_var->var.n_dims);
-					status = FATAL;
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts do not match number of dimesions of variable,(%d) Subscripts used, (%d) Subscripts expected",nsubs,var->u.data_var->var.n_dims);
+					status = NhlFATAL;
 				} else {
 					sel_ptr = (NclSelectionRecord*)NclMalloc
 						(sizeof(NclSelectionRecord));
@@ -885,30 +885,30 @@ NclExecuteReturnStatus _NclExecute
 							break;
 						}
 						_NclFreeSubRec(data.u.sub_rec);
-						if(ret < WARNING) {
-							status = FATAL;
+						if(ret < NhlWARNING) {
+							status = NhlFATAL;
 						}
 						if(!dim_is_ref[(sel_ptr->selection[nsubs - i - 1]).dim_num]) {
 							dim_is_ref[(sel_ptr->selection[nsubs - i - 1]).dim_num] = 1;
 						} else {
-							NhlPError(FATAL,E_UNKNOWN,"Error in subscript # %d,dimension is referenced more than once",i);
-							status = FATAL;
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in subscript # %d,dimension is referenced more than once",i);
+							status = NhlFATAL;
 						}
 					} 
-					if(status != FATAL) {
+					if(status != NhlFATAL) {
 						data1.kind = NclStk_VAR;
 						data1.u.data_var = _NclVarRead(var->u.data_var,sel_ptr);
 						if(data1.u.data_var != NULL) {
 							_NclPush(data1);
 						} else {
-							status = FATAL;
+							status = NhlFATAL;
 						}
 					}
 				}
 			}
 			break;
 			case VAR_OP : {
-				NhlErrorTypes ret = NOERROR;
+				NhlErrorTypes ret = NhlNOERROR;
 				int dim_is_ref[NCL_MAX_DIMENSIONS];
 				int i;
 				int nsubs;
@@ -954,17 +954,17 @@ NclExecuteReturnStatus _NclExecute
 							break;
 						}
 						_NclFreeSubRec(data.u.sub_rec);
-						if(ret < WARNING) {
-							status = FATAL;
+						if(ret < NhlWARNING) {
+							status = NhlFATAL;
 						}
 						if(!dim_is_ref[(sel_ptr->selection[nsubs - i - 1]).dim_num]) {
 							dim_is_ref[(sel_ptr->selection[nsubs - i - 1]).dim_num] = 1;
 						} else {
-							NhlPError(FATAL,E_UNKNOWN,"Error in subscript # %d,dimension is referenced more than once",i);
-							status = FATAL;
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in subscript # %d,dimension is referenced more than once",i);
+							status = NhlFATAL;
 						}
 					}
-					if(status != FATAL) {
+					if(status != NhlFATAL) {
 						data1.kind = NclStk_VAL;
 						data1.u.data_obj = _NclVarValueRead(var->u.data_var,sel_ptr,NULL);
 						_NclPush(data1);
@@ -980,7 +980,7 @@ NclExecuteReturnStatus _NclExecute
 				NclSelectionRecord *sel_ptr = NULL;
 				int i,nsubs;	
 				NclSymbol *sym = NULL;
-				NhlErrorTypes ret = NOERROR;
+				NhlErrorTypes ret = NhlNOERROR;
 			
 
 			ptr++;lptr++;fptr++;
@@ -990,12 +990,12 @@ NclExecuteReturnStatus _NclExecute
 			nsubs = *ptr;
 
 			lhs_var = _NclRetrieveRec(sym);
-			if((status != FATAL)&&(lhs_var != NULL)) {
+			if((status != NhlFATAL)&&(lhs_var != NULL)) {
 				if(lhs_var->kind == NclStk_NOVAL) {
 					if(nsubs != 0) {
-						status = FATAL;
-						NhlPError(FATAL,E_UNKNOWN,"Assign: %s is undefined, can not subscript an undefined variable",sym->name);
-						status = FATAL;
+						status = NhlFATAL;
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Assign: %s is undefined, can not subscript an undefined variable",sym->name);
+						status = NhlFATAL;
 						for(i=0;i<nsubs;i++) {
 /*
 * code for building selection record
@@ -1023,8 +1023,8 @@ NclExecuteReturnStatus _NclExecute
 									(void)_NclChangeSymbolType(sym,VAR);
 									lhs_var->kind = NclStk_VAR;
 								} else {
-									NhlPError(WARNING,E_UNKNOWN,"Could not create variable (%s)",sym->name);
-									status = WARNING;
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not create variable (%s)",sym->name);
+									status = NhlWARNING;
 									lhs_var->kind = NclStk_NOVAL;
 								}
 							} 
@@ -1043,20 +1043,20 @@ NclExecuteReturnStatus _NclExecute
 									(void)_NclChangeSymbolType(sym,VAR);
 									lhs_var->kind = NclStk_VAR;
 								} else {
-									NhlPError(WARNING,E_UNKNOWN,"Could not create variable (%s)",sym->name);
-									status = WARNING;
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not create variable (%s)",sym->name);
+									status = NhlWARNING;
 									lhs_var->kind = NclStk_NOVAL;
 								}
 							} 
 						} else {
-							NhlPError(FATAL,E_UNKNOWN,"Illegal right-hand side type for assignment");
-							status = FATAL;
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal right-hand side type for assignment");
+							status = NhlFATAL;
 						}
 					}
 				} else if(lhs_var->kind == NclStk_VAR) {
 					if((nsubs != lhs_var->u.data_var->var.n_dims)&&(nsubs != 0)) {
-						NhlPError(FATAL,E_UNKNOWN,"Number of subscripts (%d) and number of dimensions (%d) do not match for variable (%s)",nsubs,lhs_var->u.data_var->var.n_dims,sym->name);
-						status = FATAL;
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts (%d) and number of dimensions (%d) do not match for variable (%s)",nsubs,lhs_var->u.data_var->var.n_dims,sym->name);
+						status = NhlFATAL;
 						for(i=0;i<nsubs;i++) {
 /*
 * Need to free this stuff
@@ -1092,12 +1092,12 @@ NclExecuteReturnStatus _NclExecute
 							break;
 						}
 						_NclFreeSubRec(data.u.sub_rec);
-						if(ret < WARNING) {
-							status = FATAL;
+						if(ret < NhlWARNING) {
+							status = NhlFATAL;
 						}
 					}
 					rhs = _NclPop();	
-					if(status != FATAL) {
+					if(status != NhlFATAL) {
 						if(rhs.kind == NclStk_VAL) {
 							rhs_md = rhs.u.data_obj;
 						} else if(rhs.kind == NclStk_VAR) {
@@ -1108,21 +1108,21 @@ NclExecuteReturnStatus _NclExecute
 */
 							rhs_md = _NclVarValueRead(rhs.u.data_var,NULL,NULL);
 						} else {
-							NhlPError(FATAL,E_UNKNOWN,"Illegal right-hand side type for assignment");
-							status = FATAL;
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal right-hand side type for assignment");
+							status = NhlFATAL;
 						}
 						ret = _NclAssignToVar(lhs_var->u.data_var,rhs_md,sel_ptr);
 						if(rhs_md->obj.status != PERMANENT) {
 							_NclDestroyObj((NclObj)rhs_md);
 						}
-						if(ret <= WARNING) {
+						if(ret <= NhlWARNING) {
 							status = ret;
 						}
 					}
 					
 				} else {
-					NhlPError(FATAL,E_UNKNOWN,"Assignment not supported for left-hand type");
-					status = FATAL;
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment not supported for left-hand type");
+					status = NhlFATAL;
 				}
 
 			} else {
@@ -1164,7 +1164,7 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry *var = NULL;
 				NclSelectionRecord *sel_ptr = NULL;
 				NclStackEntry data;
-				NhlErrorTypes ret = NOERROR;
+				NhlErrorTypes ret = NhlNOERROR;
 
 				ptr++;lptr++;fptr++;
 				thesym = (NclSymbol*)(*ptr);
@@ -1181,8 +1181,8 @@ NclExecuteReturnStatus _NclExecute
 							sel_ptr->n_entries = 1;
 							data =_NclPop();
 							if(data.u.sub_rec->name != NULL) {
-								NhlPError(WARNING,E_UNKNOWN,"Named dimensions can not be used with variable attributes");
-								status = WARNING;
+								NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with variable attributes");
+								status = NhlWARNING;
 							}
 							switch(data.u.sub_rec->sub_type) {
 							case INT_VECT:
@@ -1199,33 +1199,33 @@ NclExecuteReturnStatus _NclExecute
 								break;
 							case COORD_VECT:
 							case COORD_RANGE:
-								NhlPError(FATAL,E_UNKNOWN,"Coordinate indexing can not be used with variable attributes");
-								status = FATAL;
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with variable attributes");
+								status = NhlFATAL;
 								break;
 							}
 						_NclFreeSubRec(data.u.sub_rec);
-							if(ret < WARNING)
+							if(ret < NhlWARNING)
 								status = ret;
 						} else if(nsubs != 0) {
-							NhlPError(FATAL,E_UNKNOWN,"Attributes only have one dimension, %d subscripts used",nsubs);		
-							status = FATAL;
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Attributes only have one dimension, %d subscripts used",nsubs);		
+							status = NhlFATAL;
 						}
 					} else {
-						status = FATAL;
-						NhlPError(FATAL,E_UNKNOWN,"Attempt to reference attribute (%s) which is undefined",attname);
+						status = NhlFATAL;
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to reference attribute (%s) which is undefined",attname);
 					}
-					if(status != FATAL) {
+					if(status != NhlFATAL) {
 						data.u.data_obj = _NclReadAtt(var->u.data_var,attname,sel_ptr);
 						if(data.u.data_obj == NULL) {
 							data.kind = NclStk_NOVAL;
-							status = FATAL;
+							status = NhlFATAL;
 						} else {
 							data.kind = NclStk_VAL;
 						}
 					}
 				} else {
-					NhlPError(FATAL,E_UNKNOWN,"Variable (%s) is still undefined, unable to reference attribute %s",thesym->name,attname);
-					status = FATAL;
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable (%s) is still undefined, unable to reference attribute %s",thesym->name,attname);
+					status = NhlFATAL;
 				}
 				_NclPush(data);
 			}
@@ -1236,7 +1236,7 @@ NclExecuteReturnStatus _NclExecute
 				NclSymbol* thesym = NULL;
 				char *coord_name = NULL;
 				int nsubs = 0,i;
-				NhlErrorTypes ret = NOERROR;
+				NhlErrorTypes ret = NhlNOERROR;
 				NclSelectionRecord *sel_ptr = NULL;
 				NclMultiDValData thevalue = NULL;
 				
@@ -1250,10 +1250,10 @@ NclExecuteReturnStatus _NclExecute
 
 				var = _NclRetrieveRec(thesym);
 				if((var == NULL)||(var->u.data_var == NULL)) {
-					status = FATAL;
+					status = NhlFATAL;
 				} else if(_NclIsDim(var->u.data_var,coord_name) == -1) {
-					NhlPError(FATAL,E_UNKNOWN,"(%s) is not a named dimension in variable (%s).",coord_name,thesym->name);
-					status = FATAL;
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a named dimension in variable (%s).",coord_name,thesym->name);
+					status = NhlFATAL;
 				} else {
 					if(nsubs == 0) {
 						sel_ptr = NULL;
@@ -1262,8 +1262,8 @@ NclExecuteReturnStatus _NclExecute
 						sel_ptr->n_entries = 1;
 						data =_NclPop();
 						if(data.u.sub_rec->name != NULL) {
-							NhlPError(WARNING,E_UNKNOWN,"Named dimensions can not be used with coordinate variables since only one dimension applies");
-							status = WARNING;
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with coordinate variables since only one dimension applies");
+							status = NhlWARNING;
 						}
 						switch(data.u.sub_rec->sub_type) {
 						case INT_VECT:
@@ -1280,24 +1280,24 @@ NclExecuteReturnStatus _NclExecute
 							break;
 						case COORD_VECT:
 						case COORD_RANGE:
-							NhlPError(FATAL,E_UNKNOWN,"Coordinate indexing can not be used with coordinate variables ");
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with coordinate variables ");
 							NclFree(sel_ptr);
 							sel_ptr = NULL;
-							status = FATAL;
+							status = NhlFATAL;
 							break;
 						}
 						_NclFreeSubRec(data.u.sub_rec);
-						if(ret < WARNING)
-							status = FATAL;
+						if(ret < NhlWARNING)
+							status = NhlFATAL;
 
 					} else {
-						NhlPError(FATAL,E_UNKNOWN,"Coordinate variables have only one dimension, %d subscripts on left hand side of assignement",nsubs);
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate variables have only one dimension, %d subscripts on left hand side of assignement",nsubs);
 						for(i = 0; i < nsubs; i++) {
 							(void)_NclPop();
 						}
-						status = FATAL;
+						status = NhlFATAL;
 					}
-					if(status != FATAL) {
+					if(status != NhlFATAL) {
 						data = _NclPop();
 						switch(data.kind) {
 						case NclStk_VAL: 
@@ -1308,7 +1308,7 @@ NclExecuteReturnStatus _NclExecute
 							break;
 						default:
 							thevalue = NULL;
-							status = FATAL;
+							status = NhlFATAL;
 						break;
 						}
 					
@@ -1333,7 +1333,7 @@ NclExecuteReturnStatus _NclExecute
 				char *coord_name = NULL;
 				int nsubs = 0,i;
 				NclSelectionRecord *sel_ptr = NULL;
-				NhlErrorTypes ret = NOERROR;
+				NhlErrorTypes ret = NhlNOERROR;
 				
 
 				ptr++;lptr++;fptr++;
@@ -1345,10 +1345,10 @@ NclExecuteReturnStatus _NclExecute
 
 				var = _NclRetrieveRec(thesym);
 				if((var == NULL)||(var->u.data_var == NULL)) {
-					status = FATAL;
+					status = NhlFATAL;
 				} else if(_NclIsDim(var->u.data_var,coord_name) == -1) {
-					NhlPError(FATAL,E_UNKNOWN,"(%s) is not a named dimension in variable (%s).",coord_name,thesym->name);
-					status = FATAL;
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a named dimension in variable (%s).",coord_name,thesym->name);
+					status = NhlFATAL;
 				} else {
 					if(nsubs == 0) {
 						sel_ptr = NULL;
@@ -1357,8 +1357,8 @@ NclExecuteReturnStatus _NclExecute
 						sel_ptr->n_entries = 1;
 						data =_NclPop();
 						if(data.u.sub_rec->name != NULL) {
-							NhlPError(WARNING,E_UNKNOWN,"Named dimensions can not be used with coordinate variables since only one dimension applies");
-							status = WARNING;
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with coordinate variables since only one dimension applies");
+							status = NhlWARNING;
 						}
 						switch(data.u.sub_rec->sub_type) {
 						case INT_VECT:
@@ -1375,29 +1375,29 @@ NclExecuteReturnStatus _NclExecute
 							break;
 						case COORD_VECT:
 						case COORD_RANGE:
-							NhlPError(FATAL,E_UNKNOWN,"Coordinate indexing can not be used with coordinate variables ");
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with coordinate variables ");
 							NclFree(sel_ptr);
 							sel_ptr = NULL;
-							status = FATAL;
+							status = NhlFATAL;
 							break;
 						}
 						_NclFreeSubRec(data.u.sub_rec);
-						if(ret < WARNING)
-							status = FATAL;
+						if(ret < NhlWARNING)
+							status = NhlFATAL;
 					} else {
-						NhlPError(FATAL,E_UNKNOWN,"Coordinate variables have only one dimension, %d subscripts used on coordinate variable reference",nsubs);
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate variables have only one dimension, %d subscripts used on coordinate variable reference",nsubs);
 						for(i = 0; i < nsubs; i++) {
 							(void)_NclPop();
 						}
-						status = FATAL;
+						status = NhlFATAL;
 					}
-					if(status != FATAL) {
+					if(status != NhlFATAL) {
 						data.u.data_var = _NclReadCoordVar(var->u.data_var,coord_name,sel_ptr);
 						if(data.u.data_var != NULL) {
 							data.kind = NclStk_VAR;
 							_NclPush(data);
 						} else {
-							status = FATAL;
+							status = NhlFATAL;
 						}
 					} 
 				}
@@ -1414,7 +1414,7 @@ NclExecuteReturnStatus _NclExecute
 				NclSymbol *thesym = NULL;
 				char *attname = NULL;
 				int nsubs;
-				NhlErrorTypes ret = NOERROR;
+				NhlErrorTypes ret = NhlNOERROR;
 				NclStackEntry *var = NULL;
 				NclStackEntry value;
 				NclMultiDValData value_md = NULL;
@@ -1429,14 +1429,14 @@ NclExecuteReturnStatus _NclExecute
 				nsubs = (int)(*ptr);
 	
 				var = _NclRetrieveRec(thesym);
-				if((var->u.data_var != NULL)&&!(status < INFO)) {
+				if((var->u.data_var != NULL)&&!(status < NhlINFO)) {
 					if(nsubs == 1) {
 						sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
 						sel_ptr->n_entries = 1;
 						data1 =_NclPop();
 						if(data1.u.sub_rec->name != NULL) {
-							NhlPError(WARNING,E_UNKNOWN,"Named dimensions can not be used with variable attributes");
-							status = WARNING;
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with variable attributes");
+							status = NhlWARNING;
 						}
 						switch(data1.u.sub_rec->sub_type) {
 						case INT_VECT:
@@ -1453,35 +1453,35 @@ NclExecuteReturnStatus _NclExecute
 							break;
 						case COORD_VECT:
 						case COORD_RANGE:
-							NhlPError(FATAL,E_UNKNOWN,"Coordinate indexing can not be used with variable attributes");
-							status = FATAL;
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with variable attributes");
+							status = NhlFATAL;
 							break;
 						}
 						_NclFreeSubRec(data1.u.sub_rec);
-						if(ret < WARNING) 
-							status = FATAL;
+						if(ret < NhlWARNING) 
+							status = NhlFATAL;
 					} else if(nsubs != 0){
-						NhlPError(FATAL,E_UNKNOWN,"Attempt to subscript attribute with more than one dimension");
-						status = FATAL;
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to subscript attribute with more than one dimension");
+						status = NhlFATAL;
 					}
-					if(!(status < INFO)) {
+					if(!(status < NhlINFO)) {
 						value = _NclPop();
 						if(value.kind == NclStk_VAR) {
 							value_md = _NclVarValueRead(value.u.data_var,NULL,NULL);
 							if(value_md == NULL) {
-								status = FATAL;
+								status = NhlFATAL;
 							}
 						} else if(value.kind == NclStk_VAL){
 							value_md = value.u.data_obj;
 						} else {
-							NhlPError(FATAL,E_UNKNOWN,"Attempt to assign illegal type or value to variable attribute");
-							status = FATAL;
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to assign illegal type or value to variable attribute");
+							status = NhlFATAL;
 						}
 						ret = _NclWriteAtt(var->u.data_var,attname,value_md,sel_ptr);
 						if(value_md->obj.status != PERMANENT) {
 							_NclDestroyObj((NclObj)value_md);
 						}
-						if( ret < INFO) {
+						if( ret < NhlINFO) {
 							status = ret;
 						}
 					} else {
@@ -1492,8 +1492,8 @@ NclExecuteReturnStatus _NclExecute
 
 					}
 				} else {
-					NhlPError(FATAL,E_UNKNOWN,"Variable (%s) is undefined, can not assign attribute (%s)",thesym->name,attname);
-					status = FATAL;
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable (%s) is undefined, can not assign attribute (%s)",thesym->name,attname);
+					status = NhlFATAL;
 				}
 			}
 			break;
@@ -1512,7 +1512,7 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 			break;
 			case ASSIGN_VAR_VAR_OP: {
-				NhlErrorTypes ret = NOERROR;
+				NhlErrorTypes ret = NhlNOERROR;
 				int dim_is_ref[NCL_MAX_DIMENSIONS];
 				int i;
 				int rhs_nsubs=0,lhs_nsubs=0;
@@ -1537,14 +1537,14 @@ NclExecuteReturnStatus _NclExecute
 				lhs_nsubs = *ptr;
 
 				if((rhs_var == NULL)||(rhs_var->kind == NclStk_NOVAL)) {
-					NhlPError(FATAL,E_UNKNOWN," Assign: %s is undefined",rhs_sym->name);
-					status = FATAL;
+					NhlPError(NhlFATAL,NhlEUNKNOWN," Assign: %s is undefined",rhs_sym->name);
+					status = NhlFATAL;
 				}
 
-				if((status!=FATAL)&&(lhs_var != NULL)&&(lhs_var->kind == NclStk_NOVAL)) {
+				if((status!=NhlFATAL)&&(lhs_var != NULL)&&(lhs_var->kind == NclStk_NOVAL)) {
 					if(lhs_nsubs != 0) {
-						NhlPError(FATAL,E_UNKNOWN,"Assign: %s is undefined, can not subscript an undefined variable",lhs_sym->name);
-						status = FATAL;
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Assign: %s is undefined, can not subscript an undefined variable",lhs_sym->name);
+						status = NhlFATAL;
 						for(i= 0; i< lhs_nsubs;i++) {
 							(void)_NclPop();
 						}
@@ -1574,8 +1574,8 @@ NclExecuteReturnStatus _NclExecute
 							break;
 						}
 						_NclFreeSubRec(data.u.sub_rec);
-						if(ret < WARNING) {
-							status = FATAL;
+						if(ret < NhlWARNING) {
+							status = NhlFATAL;
 						}
 					} 
 					lhs_var->kind = NclStk_VAR;
@@ -1603,7 +1603,7 @@ NclExecuteReturnStatus _NclExecute
 						lhs_var->kind = NclStk_VAR;
 						lhs_var->u.data_var = _NclCopyVar(rhs_var->u.data_var,NULL,NULL);
 					}
-				} else if((status !=FATAL)&&(lhs_var->kind == NclStk_VAR)&&(lhs_var->u.data_var != NULL)) {
+				} else if((status !=NhlFATAL)&&(lhs_var->kind == NclStk_VAR)&&(lhs_var->u.data_var != NULL)) {
 /*
 * When the target variable is already defined just normal assignment occurs if it is not subscripted
 * if it is then the _NclAssignVarToVar is used which is different then the normal assignment provided
@@ -1633,8 +1633,8 @@ NclExecuteReturnStatus _NclExecute
 								break;
 							}
 							_NclFreeSubRec(data.u.sub_rec);
-							if(ret < WARNING) {
-								status = FATAL;
+							if(ret < NhlWARNING) {
+								status = NhlFATAL;
 							}
 						} 
 					} else {
@@ -1663,15 +1663,15 @@ NclExecuteReturnStatus _NclExecute
 								break;
 							}
 							_NclFreeSubRec(data.u.sub_rec);
-							if(ret < WARNING) {
-								status = FATAL;
+							if(ret < NhlWARNING) {
+								status = NhlFATAL;
 							}
 						} 
 					} else {
 						lhs_sel_ptr = NULL;
 					}
 					ret = _NclAssignVarToVar(lhs_var->u.data_var,lhs_sel_ptr,rhs_var->u.data_var,rhs_sel_ptr);
-					if(ret < INFO) {
+					if(ret < NhlINFO) {
 						status = ret;
 					}
 				}
@@ -1680,20 +1680,20 @@ NclExecuteReturnStatus _NclExecute
 			default:
 				break;
 		}
-		if(status < INFO) {
+		if(status < NhlINFO) {
 			if(*fptr == NULL) {
-				NhlPError(status,E_UNKNOWN,"Execute: Error occured at or near line %d\n",(cmd_line ? (*lptr)-1: *lptr));
+				NhlPError(status,NhlEUNKNOWN,"Execute: Error occured at or near line %d\n",(cmd_line ? (*lptr)-1: *lptr));
 			} else {
-				NhlPError(status,E_UNKNOWN,"Execute: Error occured at or near line %d in file %s\n", *lptr, *fptr);
+				NhlPError(status,NhlEUNKNOWN,"Execute: Error occured at or near line %d in file %s\n", *lptr, *fptr);
 			}
-			if(status < WARNING) {
+			if(status < NhlWARNING) {
 /*
 * need to clean up stack !!! for current level
 */
 				return(Ncl_ERRORS);
 			}
 		}	
-		status = NOERROR;	
+		status = NhlNOERROR;	
 		ptr++;lptr++;fptr++;
 	}
 }

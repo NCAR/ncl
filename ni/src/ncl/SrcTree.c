@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.8 1994-03-03 21:54:31 ethan Exp $
+ *      $Id: SrcTree.c,v 1.9 1994-03-03 23:38:03 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -108,7 +108,7 @@ void _NclRegisterNode
 		node_list = (NclGenericNode**)NclMalloc((unsigned)
 				sizeof(NclGenericNode*) * cur_node_list_size);
 		if(node_list == NULL) {		
-			NhlPError(FATAL,E_UNKNOWN,"_NclRegisterNode: Error while trying to allocate memory for source tree, can't continue");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclRegisterNode: Error while trying to allocate memory for source tree, can't continue");
 			return;
 		}
 	}
@@ -117,7 +117,7 @@ void _NclRegisterNode
 		node_list = (NclGenericNode**)NclRealloc(node_list,(unsigned)
 				sizeof(NclGenericNode*) * cur_node_list_size);
 		if(node_list == NULL) {		
-			NhlPError(FATAL,E_UNKNOWN,"_NclRegisterNode: Error while trying to allocate memory for source tree, can't continue");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclRegisterNode: Error while trying to allocate memory for source tree, can't continue");
 			return;
 		}
 	}
@@ -213,7 +213,7 @@ void *_NclMakeReturn
 	NclReturn *tmp = (NclReturn*)NclMalloc((unsigned)sizeof(NclReturn));
 	
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_RETURN;
@@ -252,7 +252,7 @@ NclSrcListNode * block_stmnt_list;
 	NclIfThen* tmp = (NclIfThen*)NclMalloc((unsigned)sizeof(NclIfThen));
 	
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_IFTHEN;
@@ -294,7 +294,7 @@ NclSrcListNode * block_stmnt_list2;
 					(unsigned)sizeof(NclIfThenElse));
 	
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_IFTHENELSE;
@@ -513,7 +513,7 @@ NclSrcListNode *_NclMakeNewListNode
 	NclSrcListNode *tmp = (NclSrcListNode*)NclMalloc(
 					(unsigned)sizeof(NclSrcListNode));
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->node = NULL;
@@ -549,7 +549,7 @@ NclSrcListNode * block_stmnt_list;
 {
 	NclDoFromTo *tmp = (NclDoFromTo*)NclMalloc((unsigned)sizeof(NclDoFromTo));
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_DOFROMTO;
@@ -594,7 +594,7 @@ NclSrcListNode *block_stmnt_list;
 	NclDoFromToStride *tmp = (NclDoFromToStride*)NclMalloc(
 					(unsigned)sizeof(NclDoFromToStride));
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_DOFROMTOSTRIDE;
@@ -638,7 +638,7 @@ NclSrcTreeTypes type;
 	NclProcCall *tmp = (NclProcCall*)NclMalloc(
 					(unsigned)sizeof(NclProcCall));
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = type;
@@ -687,7 +687,7 @@ NclSymTableListNode* thescope;
 
 
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_FUNCDEF;
@@ -703,7 +703,7 @@ NclSymTableListNode* thescope;
 * Create argument numbers and type template and attach it to functions symbol
 */
 	if(tmp1 == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	if(tmp->dec_list != NULL) {
@@ -794,7 +794,7 @@ NclSymTableListNode *thescope;
 	NclExternFuncDef *tmp = (NclExternFuncDef*)NclMalloc(
 					(unsigned)sizeof(NclExternFuncDef));
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_EXTERNFUNCDEF;
@@ -807,7 +807,7 @@ NclSymTableListNode *thescope;
 	tmp->path_info_string = (char*)NclMalloc(
 					(unsigned)strlen(path_info_string)+1);
 	if(tmp->path_info_string == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	strcpy(tmp->path_info_string,path_info_string);
@@ -844,7 +844,7 @@ NclSymbol* param_type;
 					sizeof(NclLocalVarDec));
 	
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_LOCALVARDEC;
@@ -884,7 +884,7 @@ void * _NclMakeDimSizeNode
 	NclDimSizeListNode *tmp = (NclDimSizeListNode*)NclMalloc((unsigned)
 					sizeof(NclDimSizeListNode));
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_DIMSIZELISTNODE;
@@ -936,7 +936,7 @@ NclSymTableListNode *thescope;
         int i=0,j=0;
 
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_PROCDEF;
@@ -949,7 +949,7 @@ NclSymTableListNode *thescope;
 	tmp->block = block;
 	tmp->scope = thescope;
         if(tmp1 == NULL) {
-                NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+                NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
                 return(NULL);
         }
         if(tmp->dec_list != NULL) {
@@ -1039,7 +1039,7 @@ NclSymTableListNode *thescope;
 	NclExternProcDef *tmp = (NclExternProcDef*)NclMalloc(
 					(unsigned)sizeof(NclExternProcDef));
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	
@@ -1054,7 +1054,7 @@ NclSymTableListNode *thescope;
 	tmp->path_info_string = (char*)NclMalloc(
 					(unsigned)strlen(path_info_string)+1);
 	if(tmp->path_info_string == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	_NclRegisterNode((NclGenericNode*)tmp);
@@ -1087,7 +1087,7 @@ void *expr;
 	NclAssign *tmp = (NclAssign*)NclMalloc((unsigned)sizeof(NclAssign));
 	
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_ASSIGN;
@@ -1127,7 +1127,7 @@ NclSrcListNode *subscript_list;
 {
 	NclIdnRef *tmp = (NclIdnRef*)NclMalloc((unsigned)sizeof(NclIdnRef));
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_IDNREF;
@@ -1167,7 +1167,7 @@ char * dimname;
 	NclSubscript *tmp = (NclSubscript*)NclMalloc(
 					(unsigned)sizeof(NclSubscript));
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_INTSUBSCRIPT;
@@ -1226,7 +1226,7 @@ char *dimname;
 	NclSubscript *tmp = (NclSubscript*)NclMalloc(
 					(unsigned)sizeof(NclSubscript));
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_COORDSUBSCRIPT;
@@ -1271,7 +1271,7 @@ void* _NclMakeSingleIndex
 					sizeof(NclSingleIndex));
 	
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_SINGLEINDEX;
@@ -1312,7 +1312,7 @@ void * stride;
 					sizeof(NclRangeIndex));
 	
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_RANGEINDEX;
@@ -1353,7 +1353,7 @@ NclSrcTreeTypes type;
 	NclMonoExpr *tmp = (NclMonoExpr*)NclMalloc((unsigned)
 					sizeof(NclMonoExpr));
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = type;
@@ -1426,7 +1426,7 @@ NclSrcTreeTypes type;
 	NclDualExpr *tmp = (NclDualExpr*)NclMalloc((unsigned)
 					sizeof(NclDualExpr));
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = type;
@@ -1465,7 +1465,7 @@ float real;
 	NclReal *tmp = (NclReal*)NclMalloc((unsigned)sizeof(NclReal));
 	
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_REAL;	
@@ -1504,7 +1504,7 @@ int integer;
 	NclInt *tmp = (NclInt*)NclMalloc((unsigned)sizeof(NclInt));
 	
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_INT;	
@@ -1556,7 +1556,7 @@ char * str;
 	NclString *tmp = (NclString*)NclMalloc((unsigned)sizeof(NclString));
 	
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_STRING;	
@@ -1567,7 +1567,7 @@ char * str;
 	if(str != NULL) {
 		tmp->string = (char*)NclMalloc((unsigned)strlen(str)+1);
 		if(tmp->string == NULL) {	
-			NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+			NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 			return(NULL);
 		}
 	}
@@ -1603,7 +1603,7 @@ NclSrcTreeTypes type;
 {
 	NclFuncCall * tmp = (NclFuncCall*)NclMalloc((unsigned)sizeof(NclFuncCall));
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = type;
@@ -1644,7 +1644,7 @@ NclRclList* rc_list;
 	NclArray *tmp = (NclArray*)NclMalloc((unsigned)sizeof(NclArray));
 	
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_ARRAY;
@@ -1682,7 +1682,7 @@ NclRclList *_NclMakeRowList
 	NclRclList *tmp = (NclRclList*)NclMalloc((unsigned)sizeof(NclRclList));
 
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	return(tmp);
@@ -1713,7 +1713,7 @@ NclSrcListNode * statements;
 {
 	NclDoWhile *tmp = (NclDoWhile*)NclMalloc((unsigned)sizeof(NclDoWhile));
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_DOWHILE;
@@ -1751,7 +1751,7 @@ NclSrcListNode *statements;
 {
 	NclBlock *tmp = (NclBlock*)NclMalloc((unsigned)sizeof(NclBlock));
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_BLOCK;
@@ -2650,7 +2650,7 @@ int type;
 {
         NclFileVar *tmp = (NclFileVar*)NclMalloc((unsigned)sizeof(NclFileVar));
         if(tmp == NULL) {
-                NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+                NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
                 return(NULL);
         }
         tmp->kind = type;
@@ -2661,7 +2661,7 @@ int type;
 	tmp->dfile = dfile;
         tmp->filevar= (char*)NclMalloc((unsigned)strlen(filevar)+1);;
 	if(tmp->filevar == NULL) {
-		NhlPError(FATAL,errno,"_MakeFileVarRef: Memory allocation error");
+		NhlPError(NhlFATAL,errno,"_MakeFileVarRef: Memory allocation error");
 		return(NULL);
 	}
 	strcpy(tmp->filevar,filevar);
@@ -2684,7 +2684,7 @@ NclSrcListNode *subscript_list;
 	NclVar * tmp = (NclVar*)NclMalloc((unsigned)sizeof(NclVar));
 	
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_VAR;
@@ -2710,7 +2710,7 @@ void *dim_expr;
 {
 	NclVarDim *tmp = (NclVarDim*)NclMalloc((unsigned)sizeof(NclVarDim));
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_VARDIM;
@@ -2749,7 +2749,7 @@ void *dim_expr;
 {
 	NclFileVarDim *tmp = (NclFileVarDim*)NclMalloc((unsigned)sizeof(NclFileVarDim));
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_FILEVARDIM;
@@ -2761,7 +2761,7 @@ void *dim_expr;
 	tmp->dim_expr = dim_expr;
 	tmp->filevar= (char*)NclMalloc((unsigned)strlen(filevar)+1) ;
 	if(tmp->filevar == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	strcpy(tmp->filevar,filevar);
@@ -2796,7 +2796,7 @@ NclSrcListNode *subscript_list;
 {
 	NclFileVarAtt *tmp =(NclFileVarAtt*)NclMalloc((unsigned)sizeof(NclFileVarAtt));
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_FILEVARATT;
@@ -2807,13 +2807,13 @@ NclSrcListNode *subscript_list;
 	tmp->filesym = file;
 	tmp->attname= (char*)NclMalloc((unsigned)strlen(attname)+1);
 	if(tmp->attname == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}	
 	strcpy(tmp->attname,attname);
 	tmp->filevar = (char*)NclMalloc((unsigned)strlen(filevar)+1);;
 	if(tmp->filevar== NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}	
 	strcpy(tmp->filevar,filevar);
@@ -2847,7 +2847,7 @@ NclSrcListNode *subscript_list;
 {
 	NclVarAtt *tmp =(NclVarAtt*)NclMalloc((unsigned)sizeof(NclVarAtt));
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_VARATT;
@@ -2858,7 +2858,7 @@ NclSrcListNode *subscript_list;
 	tmp->sym = var;
 	tmp->attname= (char*)NclMalloc((unsigned)strlen(attname)+1);
 	if(tmp->attname == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}	
 	strcpy(tmp->attname,attname);
@@ -2896,7 +2896,7 @@ NclSrcListNode *subscript_list;
 	NclFileCoord *tmp= (NclFileCoord*)NclMalloc((unsigned)sizeof(NclFileCoord));
 
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_FILEVARCOORD;
@@ -2907,14 +2907,14 @@ NclSrcListNode *subscript_list;
 	tmp->filesym = var;
 	tmp->filevar = (char*)NclMalloc((unsigned)strlen(filevar)+1);
 	if(tmp->filevar== NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}	
 	strcpy(tmp->filevar,filevar);
 
 	tmp->coord_name = (char*)NclMalloc((unsigned)strlen(coord)+1);
 	if(tmp->coord_name == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}	
 	strcpy(tmp->coord_name,coord);
@@ -2949,7 +2949,7 @@ NclSrcListNode *subscript_list;
 	NclCoord *tmp= (NclCoord*)NclMalloc((unsigned)sizeof(NclCoord));
 
 	if(tmp == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}
 	tmp->kind = Ncl_VARCOORD;
@@ -2960,7 +2960,7 @@ NclSrcListNode *subscript_list;
 	tmp->sym = var;
 	tmp->coord_name = (char*)NclMalloc((unsigned)strlen(coord)+1);
 	if(tmp->coord_name == NULL) {
-		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
 	}	
 	strcpy(tmp->coord_name,coord);

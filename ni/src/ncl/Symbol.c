@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.6 1994-03-03 21:54:37 ethan Exp $
+ *      $Id: Symbol.c,v 1.7 1994-03-03 23:38:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -69,7 +69,7 @@ int _NclInitSymbol
 	thetablelist = (NclSymTableListNode *) NclMalloc((unsigned)
 				sizeof(NclSymTableListNode));
 	if(thetablelist == NULL) {
-		NhlPError(FATAL,errno,"InitSymbol: Can't create symbol table list");
+		NhlPError(NhlFATAL,errno,"InitSymbol: Can't create symbol table list");
 		return(0);
 	}
 
@@ -80,7 +80,7 @@ int _NclInitSymbol
 	thetablelist->previous = NULL;
 
 	if(thetablelist->this_scope == NULL) {
-		NhlPError(FATAL,errno,"InitSymbol: Can't create symbol table");
+		NhlPError(NhlFATAL,errno,"InitSymbol: Can't create symbol table");
 		return(0);
 	}
 /*
@@ -100,7 +100,7 @@ int _NclInitSymbol
 		tmp = _NclAddSym(keytab[i].keyword,keytab[i].token);
 		i++;
 		if(tmp == NULL) {
-			NhlPError(FATAL,E_UNKNOWN,"InitSymbol: An error occurred while adding keywords, can't continue");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"InitSymbol: An error occurred while adding keywords, can't continue");
 			return(0);
 			
 		}
@@ -132,13 +132,13 @@ void _NclRegisterFunc
 
 	s = _NclLookUp(fname);
 	if(s != NULL) {
-		NhlPError(FATAL,E_UNKNOWN,"_NclRegisterFunc: %s is already a defined symbol can't add it as built-in ",fname);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclRegisterFunc: %s is already a defined symbol can't add it as built-in ",fname);
 		return;
 	} else {
 		s = _NclAddSym(fname,ftype);
 		s->u.bfunc = (NclBuiltInFuncInfo*)NclMalloc((unsigned)sizeof(NclBuiltInFuncInfo));
 		if(s->u.bfunc == NULL)  {
-			NhlPError(FATAL,E_UNKNOWN,"_NclRegisterFunc: Memory allocation error can't add %s",fname);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclRegisterFunc: Memory allocation error can't add %s",fname);
 			return;
 		}
 		s->u.bfunc->nargs = nargs;
@@ -164,13 +164,13 @@ void _NclRegisterProc
 
 	s = _NclLookUp(fname);
 	if(s != NULL) {
-		NhlPError(FATAL,E_UNKNOWN,"_NclRegisterProc: %s is already a defined symbol can't add it as built-in ",fname);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclRegisterProc: %s is already a defined symbol can't add it as built-in ",fname);
 		return;
 	} else {
 		s = _NclAddSym(fname,ftype);
 		s->u.bproc = (NclBuiltInProcInfo*)NclMalloc((unsigned)sizeof(NclBuiltInProcInfo));
 		if(s->u.bproc == NULL)  {
-			NhlPError(FATAL,E_UNKNOWN,"_NclRegisterProc: Memory allocation error can't add %s",fname);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclRegisterProc: Memory allocation error can't add %s",fname);
 			return;
 		}
 		s->u.bproc->nargs = nargs;
@@ -209,7 +209,7 @@ int _NclNewScope
 					sizeof(NclSymTableListNode));
 	
 	if(news == NULL) {
-		NhlPError(FATAL, errno, "NewScope: Can't create a new symbol table node");
+		NhlPError(NhlFATAL, errno, "NewScope: Can't create a new symbol table node");
 		return(0);
 	}
 
@@ -218,7 +218,7 @@ int _NclNewScope
 
 
 	if(news->this_scope == NULL) {
-		NhlPError(FATAL, errno, "NewScope: Can't create a new symbol table");
+		NhlPError(NhlFATAL, errno, "NewScope: Can't create a new symbol table");
 		return(0);
 	}
 
@@ -267,7 +267,7 @@ NclSymTableListNode * _NclPopScope
 	NclSymTableListNode *tmp1;
 	
 	if(thetablelist == NULL) {
-		NhlPError(FATAL,E_UNKNOWN,"PopScope: Symbol table stack underflow");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"PopScope: Symbol table stack underflow");
 		return(NULL);
 	}
 
@@ -348,7 +348,7 @@ NclSymbol *_NclAddSym
 	index = hash_pjw(name);
 	s = (NclSymbol*)NclMalloc((unsigned)sizeof(NclSymbol));
 	if(s == NULL) {
-		NhlPError(FATAL,errno,"NclAddSym: Unable to create new symbol table entry");
+		NhlPError(NhlFATAL,errno,"NclAddSym: Unable to create new symbol table entry");
 		return(s);
 	}
 	
@@ -475,7 +475,7 @@ void _NclDeleteSym
 	if((sym->sympre == NULL) &&(sym->symnext == NULL)) {
 		step->this_scope[sym->ind].thelist = NULL;
 		if(step->this_scope[sym->ind].nelem != 0) {
-			NhlPError(FATAL,E_UNKNOWN,"_NhlDeleteSym: Ack!! a big problem has just occured in the symbol table");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NhlDeleteSym: Ack!! a big problem has just occured in the symbol table");
 		}
 	} else if(sym->sympre == NULL) {
 		sym->symnext->sympre = NULL;
@@ -632,7 +632,7 @@ NclSymbol *_NclAddInScope
 	index = hash_pjw(name);
 	s = (NclSymbol*)NclMalloc((unsigned)sizeof(NclSymbol));
 	if(s == NULL) {
-		NhlPError(FATAL,errno,"NclAddSymInScope: Unable to create new symbol table entry");
+		NhlPError(NhlFATAL,errno,"NclAddSymInScope: Unable to create new symbol table entry");
 		return(s);
 	}
 	

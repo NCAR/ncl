@@ -24,7 +24,7 @@ extern int cur_line_number;
 extern int last_line_length;
 extern char cur_line_text[512];
 extern int ok_to_start_vsblk;
-#define ERROR(x)  NhlPError(FATAL,E_UNKNOWN,"%s",(x))
+#define ERROR(x)  NhlPError(NhlFATAL,NhlEUNKNOWN,"%s",(x))
 int is_error = 0;
 
 extern int rec; 
@@ -160,7 +160,7 @@ statement_list :  statement eoln			{
 								if(recfp != NULL){ 
 									rec =1;
 								} else {
-									NhlPError(WARNING,errno,"Could not open record file");
+									NhlPError(NhlWARNING,errno,"Could not open record file");
 									rec = 0;
 								}
 								if(cmd_line)
@@ -174,7 +174,7 @@ statement_list :  statement eoln			{
 								if(recfp != NULL){ 
 									rec =1;
 								} else {
-									NhlPError(WARNING,errno,"Could not open record file");
+									NhlPError(NhlWARNING,errno,"Could not open record file");
 									rec = 0;
 								}
 								if(cmd_line) {
@@ -195,7 +195,7 @@ statement_list :  statement eoln			{
 	
 
 								if(loading) {
-									NhlPError(WARNING,E_UNKNOWN,"Recursive script file loading is not supported");
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"Recursive script file loading is not supported");
 								} else {
 									tmp_file = fopen(_NhlResolvePath($2),"r");	
 									if(tmp_file != NULL) {
@@ -207,7 +207,7 @@ statement_list :  statement eoln			{
 										cur_load_file = (char*)NclMalloc((unsigned)strlen($2)+1);
 										strcpy(cur_load_file,$2);
 									} else {
-										NhlPError(WARNING,E_UNKNOWN,"Could not open %s",$2);
+										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",$2);
 										loading = 0;
 									}
 								}
@@ -217,7 +217,7 @@ statement_list :  statement eoln			{
 	
 
 								if(loading) {
-									NhlPError(WARNING,E_UNKNOWN,"Recursive script file loading is not supported");
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"Recursive script file loading is not supported");
 								} else {
 									tmp_file = fopen(_NhlResolvePath($3),"r");	
 									if(tmp_file != NULL) {
@@ -229,7 +229,7 @@ statement_list :  statement eoln			{
 										cmd_line = isatty(fileno(tmp_file));
 										strcpy(cur_load_file,$3);
 									} else {
-										NhlPError(WARNING,E_UNKNOWN,"Could not open %s",$3);
+										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",$3);
 										loading = 0;
 									}
 								}
@@ -312,7 +312,7 @@ block_statement_list : statement eoln {
 								if(recfp != NULL){ 
 									rec =1;
 								} else {
-									NhlPError(WARNING,errno,"Could not open record file");
+									NhlPError(NhlWARNING,errno,"Could not open record file");
 									rec = 0;
 								}
 								$$ = $1;
@@ -324,7 +324,7 @@ block_statement_list : statement eoln {
 								if(recfp != NULL){ 
 									rec =1;
 								} else {
-									NhlPError(WARNING,errno,"Could not open record file");
+									NhlPError(NhlWARNING,errno,"Could not open record file");
 									rec = 0;
 								}
 								if(cmd_line)
@@ -342,7 +342,7 @@ block_statement_list : statement eoln {
 	
 
 								if(loading) {
-									NhlPError(WARNING,E_UNKNOWN,"Recursive script file loading is not supported");
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"Recursive script file loading is not supported");
 								} else {
 									tmp_file = fopen(_NhlResolvePath($2),"r");	
 									if(tmp_file != NULL) {
@@ -354,7 +354,7 @@ block_statement_list : statement eoln {
 										cur_load_file = (char*)NclMalloc((unsigned)strlen($2)+1);
 										strcpy(cur_load_file,$2);
 									} else {
-										NhlPError(WARNING,E_UNKNOWN,"Could not open %s",$2);
+										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",$2);
 										loading = 0;
 									}
 								}
@@ -367,7 +367,7 @@ block_statement_list : statement eoln {
 	
 
 								if(loading) {
-									NhlPError(WARNING,E_UNKNOWN,"Recursive script file loading is not supported");
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"Recursive script file loading is not supported");
 								} else {
 									tmp_file = fopen(_NhlResolvePath($3),"r");	
 									if(tmp_file != NULL) {
@@ -379,7 +379,7 @@ block_statement_list : statement eoln {
 										cur_load_file = (char*)NclMalloc((unsigned)strlen((char*)$3)+1);
 										strcpy(cur_load_file,$3);
 									} else {
-										NhlPError(WARNING,E_UNKNOWN,"Could not open %s",$3);
+										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",$3);
 										loading = 0;
 									}
 								}
@@ -714,7 +714,7 @@ procedure : IPROC opt_arg_list    {
 						}
 						if(count != $1->u.procfunc->nargs) {
 							is_error += 1;
-							NhlPError(FATAL,E_UNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
 							$$ = NULL;
 						} else {
 							$$ = _NclMakeProcCall($1,$2,Ncl_INTRINSICPROCCALL); 
@@ -731,7 +731,7 @@ procedure : IPROC opt_arg_list    {
 						}
 						if(count != $1->u.procfunc->nargs) {
 							is_error += 1;
-							NhlPError(FATAL,E_UNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
 							$$ = NULL;
 						} else {
 							$$ = _NclMakeProcCall($1,$2,Ncl_BUILTINPROCCALL); 
@@ -749,7 +749,7 @@ procedure : IPROC opt_arg_list    {
 	| NPROC 		{ 
 						if($1->u.procfunc->nargs != 0) {
 							is_error += 1;
-							NhlPError(FATAL,E_UNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
 							$$ = NULL;
 						} else {
 							$$ = _NclMakeProcCall($1,NULL,Ncl_PROCCALL); 
@@ -1372,7 +1372,7 @@ function: FUNC opt_arg_list		{
 						}
 						if(count != $1->u.procfunc->nargs) {
 							is_error += 1;
-							NhlPError(FATAL,E_UNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
 							$$ = NULL;
 						} else {
 							$$ = _NclMakeFuncCall($1,$2,Ncl_BUILTINFUNCCALL);
@@ -1389,7 +1389,7 @@ function: FUNC opt_arg_list		{
 						}
 						if(count != $1->u.procfunc->nargs) {
 							is_error += 1;
-							NhlPError(FATAL,E_UNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
 							$$ = NULL;
 						} else {
 							$$ = _NclMakeFuncCall($1,$2,Ncl_INTRINSICFUNCCALL);
@@ -1406,7 +1406,7 @@ function: FUNC opt_arg_list		{
 						}
 						if(count != $1->u.procfunc->nargs) {
 							is_error += 1;
-							NhlPError(FATAL,E_UNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
 							$$ = NULL;
 						} else {
 							$$ = _NclMakeFuncCall($1,$2,Ncl_EXTERNFUNCCALL);
@@ -1423,7 +1423,7 @@ function: FUNC opt_arg_list		{
 						}
 						if(count != $1->u.procfunc->nargs) {
 							is_error += 1;
-							NhlPError(FATAL,E_UNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
 							$$ = NULL;
 						} else {
 							$$ = _NclMakeFuncCall($1,$2,Ncl_FUNCCALL);
@@ -1432,7 +1432,7 @@ function: FUNC opt_arg_list		{
 	| IFUNC 				{
 						if($1->u.procfunc->nargs != 0) {
 							is_error += 1;
-							NhlPError(FATAL,E_UNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
 							$$ = NULL;
 						} else {
 							$$ = _NclMakeFuncCall($1,NULL,Ncl_INTRINSICFUNCCALL);
@@ -1441,7 +1441,7 @@ function: FUNC opt_arg_list		{
 	| FUNC 				{
 						if($1->u.procfunc->nargs != 0) {
 							is_error += 1;
-							NhlPError(FATAL,E_UNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
 							$$ = NULL;
 						} else {
 							$$ = _NclMakeFuncCall($1,NULL,Ncl_BUILTINFUNCCALL);
@@ -1450,7 +1450,7 @@ function: FUNC opt_arg_list		{
 	| EFUNC 			{
 						if($1->u.procfunc->nargs != 0) {
 							is_error += 1;
-							NhlPError(FATAL,E_UNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
 							$$ = NULL;
 						} else {
 							$$ = _NclMakeFuncCall($1,NULL,Ncl_EXTERNFUNCCALL);
@@ -1459,7 +1459,7 @@ function: FUNC opt_arg_list		{
 	| NFUNC 			{
 						if($1->u.procfunc->nargs != 0) {
 							is_error += 1;
-							NhlPError(FATAL,E_UNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
 							$$ = NULL;
 						} else {
 							$$ = _NclMakeFuncCall($1,NULL,Ncl_FUNCCALL);
@@ -1515,11 +1515,11 @@ yyerror
 			for(i=0; i<last_line_length-1;i++) sprintf(&(error_buffer[len+i]),"-");
 			sprintf(&(error_buffer[len+last_line_length-1]),"^\n");
 			if(loading) {
-				NhlPError(FATAL,E_UNKNOWN,"%s: line %d in file %s before or near \\n \n%s\n",s,cur_line_number,cur_load_file,error_buffer);
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d in file %s before or near \\n \n%s\n",s,cur_line_number,cur_load_file,error_buffer);
 			} else if(cmd_line){
-				NhlPError(FATAL,E_UNKNOWN,"%s: line %d before or near \\n \n%s\n",s,cur_line_number-1,error_buffer);
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near \\n \n%s\n",s,cur_line_number-1,error_buffer);
 			} else {
-				NhlPError(FATAL,E_UNKNOWN,"%s: line %d before or near \\n \n%s\n",s,cur_line_number,error_buffer);
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near \\n \n%s\n",s,cur_line_number,error_buffer);
 			} 
 		} else {
 			sprintf(error_buffer,"%s\n",cur_line_text);
@@ -1527,15 +1527,15 @@ yyerror
 			for(i=0; i<cur_line_length-1;i++) sprintf(&(error_buffer[len+i]),"-");
 			sprintf(&(error_buffer[len+cur_line_length-1]),"^\n");
 			if(loading) {
-				NhlPError(FATAL,E_UNKNOWN,"%s: line %d in file %s before or near %s \n%s\n",s,cur_line_number,cur_load_file,yytext,error_buffer);
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d in file %s before or near %s \n%s\n",s,cur_line_number,cur_load_file,yytext,error_buffer);
 			} else if(cmd_line){
-				NhlPError(FATAL,E_UNKNOWN,"%s: line %d before or near %s \n%s\n",s,cur_line_number-1,yytext,error_buffer);
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near %s \n%s\n",s,cur_line_number-1,yytext,error_buffer);
 			} else {
-				NhlPError(FATAL,E_UNKNOWN,"%s: line %d before or near %s \n%s\n",s,cur_line_number,yytext,error_buffer);
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near %s \n%s\n",s,cur_line_number,yytext,error_buffer);
 			}
 		}
 	} else if(is_error == NCL_MAX_ERROR) {
-			NhlPError(FATAL,E_UNKNOWN,"Maximum number of errors exceeded, no more will be printed");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Maximum number of errors exceeded, no more will be printed");
 	}
 	return(0);
 }

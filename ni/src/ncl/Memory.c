@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Memory.c,v 1.4 1994-03-03 21:54:24 ethan Exp $
+ *      $Id: Memory.c,v 1.5 1994-03-03 23:37:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -48,7 +48,7 @@ void
         ptr = (void *)malloc(size);
 
         if(ptr == NULL)
-                NhlPError(FATAL,errno,"NclMalloc Failed");
+                NhlPError(NhlFATAL,errno,"NclMalloc Failed");
 
         return(ptr);
 }
@@ -67,22 +67,22 @@ NclFree
         register int ret;
 
         if(ptr == NULL)
-                return(NOERROR);
+                return(NhlNOERROR);
 
         else{
 #ifdef  __sgi 
                 free(ptr);
-                return NOERROR;
+                return NhlNOERROR;
 #else
                 ret = free(ptr);
 
                 if(ret == 0){
 
-                        NhlPError(WARNING,errno,"Error in NclFree");
-                        return(WARNING);
+                        NhlPError(NhlWARNING,errno,"Error in NclFree");
+                        return(NhlWARNING);
                 }
                 else{
-                        return(NOERROR);
+                        return(NhlNOERROR);
                 }
 #endif
         }
@@ -127,7 +127,7 @@ void
 	ptr = (void *)calloc(num, size);
 
 	if(ptr == NULL)
-		NhlPError(FATAL,errno,"NhlCalloc Failed");
+		NhlPError(NhlFATAL,errno,"NhlCalloc Failed");
 
 	return(ptr);
 }
@@ -170,7 +170,7 @@ void
 		tptr = (void *)realloc(ptr,size);
 
 		if(tptr == NULL)
-			NhlPError(FATAL,errno,"NhlRealloc Failed");
+			NhlPError(NhlFATAL,errno,"NhlRealloc Failed");
 
 		return(tptr);
 	}

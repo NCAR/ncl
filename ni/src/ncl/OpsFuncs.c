@@ -110,7 +110,7 @@ int operation ;
 	NclMultiDValData lhs_data_obj = NULL;
 	NclMultiDValData rhs_data_obj = NULL;
 	NclMultiDValData coerce_res = NULL;
-	NhlErrorTypes ret = NOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
 	int lhs_type;
 	int rhs_type;
 
@@ -120,7 +120,7 @@ int operation ;
 	} else if(lhs.kind == NclStk_VAR) {
 		lhs_type = _NclGetVarRepValue(lhs.u.data_var);
 	} else {
-		return(FATAL);
+		return(NhlFATAL);
 	}
 
 	if(rhs.kind == NclStk_VAL) {
@@ -128,7 +128,7 @@ int operation ;
 	} else if(rhs.kind == NclStk_VAR) {
 		rhs_type = _NclGetVarRepValue(rhs.u.data_var);
 	} else {
-		return(FATAL);
+		return(NhlFATAL);
 	}
 
 	if(lhs_type != rhs_type) {
@@ -167,7 +167,7 @@ int operation ;
 /*
 * Error message needed
 */
-				return(FATAL);
+				return(NhlFATAL);
 			} else {
 				if(lhs.u.data_obj->obj.status != PERMANENT) {
 					_NclDestroyObj((NclObj)lhs.u.data_obj);
@@ -206,7 +206,7 @@ int operation ;
 	if((lhs_data_obj != NULL)&&(rhs_data_obj != NULL)) {
 		ret = _NclCallDualOp(lhs_data_obj,rhs_data_obj,operation,result);
 	} else {
-		return(FATAL);
+		return(NhlFATAL);
 	}
 
 	if(lhs_data_obj->obj.status !=PERMANENT ) {
@@ -231,7 +231,7 @@ int operation;
 #endif
 {
 	NclMultiDValData operand_md;
-	NhlErrorTypes ret = NOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
 	
 	
         if(operand.kind == NclStk_VAL) {
@@ -239,7 +239,7 @@ int operation;
 	} else if(operand.kind == NclStk_VAR) {
 		operand_md = _NclVarValueRead(operand.u.data_var,NULL,NULL);
         } else {
-                return(FATAL);
+                return(NhlFATAL);
         }
 
 	ret = _NclCallMonoOp(operand_md,result,operation);
@@ -288,8 +288,8 @@ NhlErrorTypes _NclBuildArray
 	} else if(data_ptr->kind == NclStk_VAR) {
 		obj_type = _NclGetVarRepValue(data_ptr->u.data_var);
 	} else {
-		NhlPError(FATAL,E_UNKNOWN,"_NclBuildArray: attempt to build array out of illegal data type, can't continue");
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: attempt to build array out of illegal data type, can't continue");
+		return(NhlFATAL);
 	}
 	if(obj_type & NCL_VAL_NUMERIC_MASK) {
 		must_be_numeric =1;
@@ -298,8 +298,8 @@ NhlErrorTypes _NclBuildArray
 		must_be_numeric =0;
 		result_type = obj_type & NCL_VAL_CHARSTR_MASK;
 	} else {
-		NhlPError(FATAL,E_UNKNOWN,"_NclBuildArray: attempt to build array out of illegal data type or undefined element, can't continue");
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: attempt to build array out of illegal data type or undefined element, can't continue");
+		return(NhlFATAL);
 	}
 
 /*
@@ -314,8 +314,8 @@ NhlErrorTypes _NclBuildArray
 		} else if(data_ptr->kind == NclStk_VAR) {
 			obj_type = _NclGetVarRepValue(data_ptr->u.data_var);
 		} else {
-			NhlPError(FATAL,E_UNKNOWN,"_NclBuildArray: attempt to build array out of illegal data type, can't continue");
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: attempt to build array out of illegal data type, can't continue");
+			return(NhlFATAL);
 		}
 		if((must_be_numeric)&&
 			( obj_type &NCL_VAL_NUMERIC_MASK)) {
@@ -328,8 +328,8 @@ NhlErrorTypes _NclBuildArray
 				result_type = (obj_type & NCL_VAL_CHARSTR_MASK);
 			}
 		} else {
-			NhlPError(FATAL,E_UNKNOWN,"_NclBuildArray: can not combine character or string types with numeric types, can't continue");
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: can not combine character or string types with numeric types, can't continue");
+			return(NhlFATAL);
 		}
 	}
 /*
@@ -350,7 +350,7 @@ NhlErrorTypes _NclBuildArray
 * This should not happen because the beginning loops assure that all elements
 * are coercible to result_type.
 */
-				NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
 			} else if(coerce_res->multidval.missing_value.has_missing) {
 				still_no_missing = 0;
 /*
@@ -379,8 +379,8 @@ NhlErrorTypes _NclBuildArray
 * This should not happen because the beginning loops assure that all elements
 * are coercible to result_type.
 */
-				NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
-				return(FATAL);
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+				return(NhlFATAL);
 			} else if(theobj->multidval.missing_value.has_missing){
 				still_no_missing = 0;
 /*
@@ -397,8 +397,8 @@ NhlErrorTypes _NclBuildArray
 		} else {
 			theobj = _NclVarValueRead(data.u.data_var,NULL,NULL);
 			if(theobj == NULL) {
-				NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
-				return(FATAL);
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+				return(NhlFATAL);
 			} else if(theobj->multidval.missing_value.has_missing){
 /*
 * I do this so I can just pass mis_ptr in regardless later on. It
@@ -411,8 +411,8 @@ NhlErrorTypes _NclBuildArray
 			}
 		}
 	} else {
-		NhlPError(FATAL,E_UNKNOWN,"_NclBuildArray: unknown stack data type");
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: unknown stack data type");
+		return(NhlFATAL);
 	}
 
 
@@ -435,10 +435,10 @@ NhlErrorTypes _NclBuildArray
 	}
 	value = (void*)NclMalloc((unsigned)partsize*n_items);
 	if(value == NULL) {
-		NhlPError(FATAL,E_UNKNOWN,"_NclBuildArray : Memory allocation failure\n");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray : Memory allocation failure\n");
 		result->kind = NclStk_NOVAL;
 		result->u.data_obj = NULL; 
-		return(FATAL);
+		return(NhlFATAL);
 	}
 /*
 ****** HEY THIS DOESN"T WORK FOR STRINGS 
@@ -463,8 +463,8 @@ NhlErrorTypes _NclBuildArray
 * This should not happen because the beginning loops assure that all elements
 * are coercible to result_type.
 */
-					NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
-					return(FATAL);
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+					return(NhlFATAL);
 				} else if((still_no_missing)	
 					&&(coerce_res->multidval.missing_value.has_missing)) {
 					still_no_missing = 0;
@@ -509,8 +509,8 @@ NhlErrorTypes _NclBuildArray
 * This should not happen because the beginning loops assure that all elements
 * are coercible to result_type.
 */
-					NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
-					return(FATAL);
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+					return(NhlFATAL);
 				} else if((still_no_missing)&&
 					(theobj->multidval.missing_value.has_missing)) {
 					still_no_missing = 0;
@@ -523,8 +523,8 @@ NhlErrorTypes _NclBuildArray
 			} else {
 				theobj = _NclVarValueRead(data.u.data_var,NULL,NULL);
 				if(theobj == NULL) {
-					NhlPError(FATAL,E_UNKNOWN,"An Error occured that should not have happend");
-					return(FATAL);
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"An Error occured that should not have happend");
+					return(NhlFATAL);
 				} else if((still_no_missing)&&
 					(theobj->multidval.missing_value.has_missing)) {
 					still_no_missing = 0;
@@ -543,8 +543,8 @@ NhlErrorTypes _NclBuildArray
 				}
 			}
 		} else {
-			NhlPError(FATAL,E_UNKNOWN,"_NclBuildArray: unknown stack data type");
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: unknown stack data type");
+			return(NhlFATAL);
 		}
 		memcpy(ptr,(char*)theobj->multidval.val,partsize);
 		ptr += partsize;
@@ -559,9 +559,9 @@ NhlErrorTypes _NclBuildArray
 */
 	result->u.data_obj = _NclCreateVal(NULL,NULL,result_type,0,value,NULL,ndims,dim_sizes,TEMPORARY,NULL);
 	if(result->u.data_obj != NULL) 
-		return(NOERROR);
+		return(NhlNOERROR);
 	else 
-		return(FATAL);
+		return(NhlFATAL);
 }
 
 
