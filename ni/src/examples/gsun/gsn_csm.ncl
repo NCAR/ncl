@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.92 2002-04-16 21:23:36 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.93 2002-05-09 02:40:09 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2183,6 +2183,13 @@ begin
 
   lon_range = max_lon - min_lon   ; lat/lon range
 
+  if(lon_range.gt.360)
+    print("get_lon_values: Warning: The range your of longitude values is greater than 360.")
+    print("You will not get 'nice' longitude labels.")
+    lon_values = new(1,float,-999)
+    return(lon_values)
+  end if
+
   lon_ind    = ind(lon_range.le.lcheck_arr)
 
   if(lon_spacing.le.0)
@@ -2423,21 +2430,23 @@ begin
   lon_spacing2 = get_res_value(tmres,"tmXBTickSpacingF",lon_spacing)
   lonvalues   = get_lon_values(min_lon,max_lon,lon_spacing2,mlon_spacing,\
                              range_array,lonspacing_array,mlonspacing_array)
-  lonlabels   = get_lon_labels(lonvalues)
+  if(.not.any(ismissing(lonvalues)))
+    lonlabels   = get_lon_labels(lonvalues)
 
-  tmres = True
-  set_attr(tmres,"tmXBMode"         , "Explicit")
-  set_attr(tmres,"tmXBLabels"       , lonlabels)
-  set_attr(tmres,"tmXBValues"       , lonvalues)
-  set_attr(tmres,"tmXBMinorValues"  , lonvalues@minor)
+    tmres = True
+    set_attr(tmres,"tmXBMode"         , "Explicit")
+    set_attr(tmres,"tmXBLabels"       , lonlabels)
+    set_attr(tmres,"tmXBValues"       , lonvalues)
+    set_attr(tmres,"tmXBMinorValues"  , lonvalues@minor)
 ;
 ; If the user has set tiXAxisString explicitly, then don't set tiXAxisOn
 ; to False.
 ;
-  if(.not.(isatt(tmres,"tiXAxisString").and.tmres@tiXAxisString.ne.""))
-    set_attr(tmres,"tiXAxisOn"      , False)
+    if(.not.(isatt(tmres,"tiXAxisString").and.tmres@tiXAxisString.ne.""))
+      set_attr(tmres,"tiXAxisOn"      , False)
+    end if
+    attsetvalues(plot,tmres)
   end if
-  attsetvalues(plot,tmres)
   return
 end
 
