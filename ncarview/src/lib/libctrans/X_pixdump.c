@@ -1,5 +1,5 @@
 /*
- *	$Id: X_pixdump.c,v 1.3 1991-02-04 13:23:21 clyne Exp $
+ *	$Id: X_pixdump.c,v 1.4 1991-02-06 15:25:47 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -10,9 +10,7 @@
 *                      NCAR View V3.01 - UNIX Release                  *
 *                                                                      *
 ***********************************************************************/
-/*
- * #include <X11/Xos.h>
- */
+#include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/XWDFile.h>
@@ -260,7 +258,6 @@ static	int get_Xcolors(dpy, visual, colormap, colors)
     }
 
     XQueryColors(dpy, colormap, *colors, ncolors);
-#define	DEBUG
 #ifdef	DEBUG
 	for (i=0; i < ncolors; i++) {
 		fprintf(stderr, "Index [%d] (%d %d %d)\n", i, (*colors)[i].red,
