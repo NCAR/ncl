@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.40 1995-06-03 00:45:20 ethan Exp $
+ *      $Id: Machine.c,v 1.41 1995-06-08 17:30:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -818,6 +818,8 @@ NhlErrorTypes _NclPushFrame
 			tmp->parameter_map.u.the_list->the_elements[i].rec = NULL;
 		}
 	} else {
+		tmp->parameter_map.kind = NclStk_PARAMLIST;
+		tmp->parameter_map.u.the_list = NULL;
 		tmp->parameter_map.u.the_list = NULL;
 	}
 	tmp_fp = tmp;
@@ -1975,6 +1977,7 @@ void _NclRemapParameters
 	}
 
 	the_list = tmp_fp->parameter_map.u.the_list;
+if(the_list != NULL) {
 	for (i = nargs -1 ; i > -1; i--) {
 		data = _NclPop();
 		if(the_list->the_elements[i].p_type == VAR_P) {
@@ -2419,6 +2422,7 @@ void _NclRemapParameters
 			}
 		}
 	}
+}
 }
 
 void _NclDumpStack
