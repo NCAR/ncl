@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.16 1992-08-26 18:28:43 clyne Exp $
+ *	$Id: rast.c,v 1.17 1992-09-01 23:42:56 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -12,11 +12,13 @@
 ***********************************************************************/
 		
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <sys/types.h>
 #include <errno.h>
-#include <ncarv.h>
-#include <ncarg_ras.h>
+#include <ncarg/c.h>
+#include <ncarg/ncarg_ras.h>
 #include "cgmc.h"
 #include "rast.h"
 #include "translate.h"
@@ -28,9 +30,6 @@ extern	boolean	*softFill;
 extern	boolean	deviceIsInit;
 extern  int  	currdev;
 extern  int  	optionDesc;
-
-extern	char	*RasterGetError();
-extern	char	*strcpy();
 
 
 static	struct	Opts {
@@ -76,6 +75,143 @@ Raster	*rastGrid;		/* struct for creating output file	*/
 boolean	rasIsDirect;		/* direct encoded image?		*/
 static	CoordRect	VDCExtent;
 
+static	build_ras_arg(ras_argc, ras_argv, rast_opts)
+	int	*ras_argc;
+	char	**ras_argv;
+	struct	Opts rast_opts;
+{
+	int	i;
+
+	i = 0;
+
+	if (! (ras_argv[i] = malloc((unsigned) strlen("ctrans") + 1))) {
+		ESprintf(errno, "malloc(%d)", strlen("ctrans") + 1);
+		return(-1);
+	}
+	(void) strcpy(ras_argv[i], "ctrans");
+	i++;
+
+	if (! (ras_argv[i] = malloc((unsigned) strlen("-dpi") + 1))) {
+		ESprintf(errno, "malloc(%d)", strlen("-dpi") + 1);
+		return(-1);
+	}
+	(void) strcpy(ras_argv[i], "-dpi");
+	i++;
+
+	if (! (ras_argv[i] = malloc((unsigned) strlen(rast_opts.dpi) + 1))) {
+		ESprintf(errno, "malloc(%d)", strlen(rast_opts.dpi) + 1);
+		return(-1);
+	}
+	(void) strcpy(ras_argv[i], rast_opts.dpi);
+	i++;
+
+	if (rast_opts.compress) {
+		if (! (ras_argv[i] = malloc((unsigned) strlen("-compress")+1))){
+			ESprintf(errno, "malloc(%d)", strlen("-compress") + 1);
+			return(-1);
+		}
+		(void) strcpy(ras_argv[i], "-compress");
+		i++;
+	}
+
+	if (rast_opts.rle) {
+		if (! (ras_argv[i] = malloc((unsigned) strlen("-rle") + 1))) {
+			ESprintf(errno, "malloc(%d)", strlen("-rle") + 1);
+			return(-1);
+		}
+		(void) strcpy(ras_argv[i], "-rle");
+		i++;
+	}
+
+	*ras_argc = i;
+	return(1);
+}
+
+
+static	clear_grid(grid)
+	Raster	*grid;
+{
+	if (rasIsDirect) {
+		int	x, y;
+
+		for(y=0; y<grid->ny; y++)
+		for(x=0; x<grid->nx; x++) {
+			DIRECT_RED(grid, x, y) = colorTab.rgb[0].red;
+			DIRECT_GREEN(grid, x, y) = colorTab.rgb[0].green;
+			DIRECT_BLUE(grid, x, y) = colorTab.rgb[0].blue;
+		}
+	}
+	else {
+		bzero((char *) grid->data, grid->nx * grid->ny);
+	}
+}
+
+static	init_color_tab()
+{
+
+	/*
+	 * set rgb-component pointers to default portion of 
+	 * RasColorMap
+	 */
+	colorTab.rgb = &colorTab.default_rgb[0];
+
+	/*
+	 * record the foreground and background color in the
+	 * colorTab. These values can be overwritten by the CGM
+	 */
+	colorTab.rgb[0].red = colorTab.rgb[0].green = colorTab.rgb[0].blue =0;
+	colorTab.rgb[1].red = colorTab.rgb[1].green = colorTab.rgb[1].blue =255;
+
+}
+	
+static	set_back_color(colr)
+	CDtype	colr;
+{
+	colorTab.rgb[0].red = colr.red;
+	colorTab.rgb[0].green = colr.green;
+	colorTab.rgb[0].blue = colr.blue;
+}
+
+#define DEFAULT_WIDTH   512	/* default raster width         */
+#define DEFAULT_HEIGHT  512	/* default raster height        */
+get_resolution(dev_extent, opts, name)
+	CoordRect	*dev_extent;
+	struct	Opts opts;
+	char	*name;
+{
+	int	width = DEFAULT_WIDTH;
+	int	height = DEFAULT_HEIGHT;
+	int	dpi;
+
+	/*
+	 * this is a hack to figure out the resolution for output to an
+	 * hp laserjet. With the laserjet users specify resolution in terms
+	 * of dots per inch.  We assume a full size picture is 6 by 6 inches
+	 */
+	if (! strcmp(name, "hplj")) {
+		dpi = atoi(opts.resolution);
+		width = 6 * dpi;
+		height = 6 * dpi;
+	}
+	else {
+		char	*cptr = opts.resolution;
+
+		if (sscanf(cptr, "%dx%d", &width, &height) != 2){
+			/*
+			 * error
+			 */
+		}
+	}
+
+	/*
+	 * 	Init translation values and the formating routines
+	 */
+	dev_extent->llx = 0;
+	dev_extent->lly = height - 1;
+	dev_extent->ury = 0;
+	dev_extent->urx = width - 1;
+}
+
 static	boolean	ras_is_clipped(offset)
 	long	offset;
 {
@@ -98,6 +234,197 @@ static	boolean	ras_is_clipped(offset)
 	if (y < ymin || y > ymax) return (TRUE);
 	return(FALSE);
 }
+
+
+/*ARGSUSED*/
+static	int	ras_non_rect_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
+	CGMC		*c;
+        Ptype  Pcoord, Qcoord, Rcoord;
+        int     nx, ny;
+{
+        return(0);      /* non rectangular cell arrays are not supported */
+}
+
+
+
+/*
+ *	ras_cell_array
+ *	[internal]
+ *
+ *	render a rectangular cell array
+ *
+ * on entry
+ *	P,Q,R		: corners of the cell array (See CGM standard)
+ *	nx		: number of cells in x direction
+ *	ny		: number of cells in y direction
+ * on exit
+ *	return		: 0 => Ok, else error
+ */
+static	int	ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
+	CGMC		*c;
+	Ptype	Pcoord, Qcoord, Rcoord;
+	int	nx, ny;
+{
+	unsigned int	image_height,	/* image height in pixels	*/
+			image_width,	/* image width in pixels	*/
+			image_size,	/* size of image data in bytes	*/
+			pad,
+			pixel_size,	/* pixel size in bytes		*/
+			bytes_per_line;	/* bytes per scan line		*/
+	unsigned char	*data,		/* image data			*/
+			*cptr;
+
+	int		step_x,		/* step size for incrementing in
+					 * x direction within the image
+					 */
+			step_y;		/* step size for incrementing in
+					 * y direction within the image
+					 */
+
+	int		start_x, 
+			start_y;	/* destination of image in drawable */
+
+	int		*rows, 
+			*cols;		/* information about the number of
+					 * pixels making up a row (col) in
+					 * a the cell at row (col)[i]
+					 */
+	int		xoff, yoff;	/* offset to cell array dest.	*/
+	unsigned char	*index_array,	/* color indeces for a cell row	*/
+			index;		/* color index for current cell */
+	int		cgmc_index;	/* index into the cgmc		*/
+
+
+	register int	i,j,k,l;
+
+	void	SetUpCellArrayIndexing(), SetUpCellArrayAddressing();
+
+	image_width = ABS(Pcoord.x - Qcoord.x) + 1;
+	image_height = ABS(Pcoord.y - Qcoord.y) + 1;
+
+	/*
+	 * don't know how to handle a cell array with zero dimension
+	 */
+	if (nx == 0 || ny == 0) return (0);
+
+	rows = (int *) malloc ((unsigned) ny * sizeof (int));
+	if (! rows) {
+		ESprintf(errno, "malloc(%d)", ny * sizeof(int));
+		return(-1);
+	}
+	cols = (int *) malloc ((unsigned) nx * sizeof (int));
+	if (! cols) {
+		ESprintf(errno, "malloc(%d)", nx * sizeof(int));
+		return(-1);
+	}
+	index_array = (unsigned char *) malloc ((unsigned) nx * sizeof (int));
+	if (! index_array) {
+		ESprintf(errno, "malloc(%d)", nx * sizeof(int));
+		return(-1);
+	}
+
+	pixel_size = rasIsDirect ? 3 : 1;
+	bytes_per_line = rastGrid->nx * pixel_size;
+
+	image_size = image_height * bytes_per_line;
+	pad = pixel_size * (rastGrid->nx - image_width);
+	data = rastGrid->data;
+
+ 
+	/*
+	 * calculate x & y steping size, position of image in the window,
+	 * and starting address for data destination
+	 */
+	xoff = MIN3(Pcoord.x, Qcoord.x, Rcoord.x) * pixel_size;
+	yoff = MIN3(Pcoord.y, Qcoord.y, Rcoord.y);
+	SetUpCellArrayAddressing(
+		Pcoord, Qcoord, Rcoord, image_size, pad, pixel_size,
+		bytes_per_line, xoff, yoff, &step_x, &step_y, 
+		&start_x, &start_y, (char **) &data
+	);
+
+	/*
+	 * set up rows and cols arrays with info about number of pixels
+	 * making up each cell. We do this to avoid floating point arithmatic
+	 * later on
+	 */
+	SetUpCellArrayIndexing(image_width, image_height, 
+				rows, cols, (unsigned) nx, (unsigned) ny);
+
+
+	/*
+	 * process the rows
+	 */
+	cgmc_index = 0;
+	for (i=0; i<ny; i++) {
+
+		/* 
+		 * load array of color indecies for row[i] of cells
+		 */
+                for (k=0; k<nx; k++) {
+
+			/* make sure data available in cgmc     */
+			if (cgmc_index >= c->Cnum && c->more) {
+				if (Instr_Dec(c) < 1) {
+					return (-1);
+				}
+				cgmc_index = 0;
+			}
+                        index_array[k] = (unsigned char) c->c[cgmc_index];
+			cgmc_index++;
+                }
+
+                /*      
+		 * the rows of pixels per cell[i]
+		 */
+                for (j=0; j < rows[i]; j++) {
+
+			cptr = data;
+			/*
+			 * the coloumns
+			 */
+			for (k=0; k<nx; k++) {
+
+
+				/*
+				 * the coloums of pixels per cell
+				 */
+				index = index_array[k];
+				for (l=0; l<cols[k]; l++) {
+
+				if (!ras_is_clipped(
+					(long) (cptr - rastGrid->data))
+					) {
+
+				if (rasIsDirect) {
+					cptr[0] = colorTab.rgb[index].red;
+					cptr[1] = colorTab.rgb[index].green;
+					cptr[2] = colorTab.rgb[index].blue;
+				}
+				else {
+					*cptr = index;
+				}
+				}	/* clipped	*/
+
+				cptr += step_x;
+				}	/* for	*/
+			
+			}
+			data += step_y;	/* skip to next row	*/
+		}
+	}
+
+	free((Voidptr) rows);
+	free((Voidptr) cols);
+	free((Voidptr) index_array);
+
+	return(0);
+}
+
+
+
+
+
 	
 
 /*
@@ -138,7 +465,9 @@ CGMC *c;
 	 * libraster. We don't have direct access to argc and argv so
 	 * we use this kludge.
 	 */
-	build_ras_arg(&ras_argc, ras_argv, rast_opts);
+	if (build_ras_arg(&ras_argc, ras_argv, rast_opts) < 0) {
+		return(-1);
+	}
 	if (RasterInit(&ras_argc, ras_argv) != RAS_OK) {
 		ESprintf(E_UNKNOWN, "RasterInit(,)");
 		return(-1);
@@ -204,7 +533,7 @@ CGMC *c;
 	 * initialize the software fill module. This needs to
 	 * be initialized every time the window changes sizes
 	 */
-	initSoftSim(0, width-1, 0, height-1);
+	if (initSoftSim(0, width-1, 0, height-1) < 0) return(-1);
 
 	/*
 	 * tweek soft fill option to do software filling 
@@ -217,7 +546,7 @@ CGMC *c;
 	/*
 	 * create the raster buffer
 	 */
-	encoding = rasIsDirect ? RAS_DIRECT : RAS_INDEXED;
+	encoding = (int) (rasIsDirect ? RAS_DIRECT : RAS_INDEXED);
 	if ((rastGrid = (RasterOpenWrite(rast_opts.outfile, width, height,
 		VERSION,encoding,devices[currdev].name))) == NULL) {
 
@@ -362,9 +691,6 @@ CGMC *c;
 int	Ras_CellArray(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"Ras_CellArray\n");
-#endif DEBUG
 
 #define	PACKED_MODE	1
 
@@ -440,303 +766,3 @@ CGMC *c;
 
 
 
-static	clear_grid(grid)
-	Raster	*grid;
-{
-	if (rasIsDirect) {
-		int	x, y;
-
-		for(y=0; y<grid->ny; y++)
-		for(x=0; x<grid->nx; x++) {
-			DIRECT_RED(grid, x, y) = colorTab.rgb[0].red;
-			DIRECT_GREEN(grid, x, y) = colorTab.rgb[0].green;
-			DIRECT_BLUE(grid, x, y) = colorTab.rgb[0].blue;
-		}
-	}
-	else {
-		bzero((char *) grid->data, grid->nx * grid->ny);
-	}
-}
-
-static	init_color_tab()
-{
-
-	/*
-	 * set rgb-component pointers to default portion of 
-	 * RasColorMap
-	 */
-	colorTab.rgb = &colorTab.default_rgb[0];
-
-	/*
-	 * record the foreground and background color in the
-	 * colorTab. These values can be overwritten by the CGM
-	 */
-	colorTab.rgb[0].red = colorTab.rgb[0].green = colorTab.rgb[0].blue =0;
-	colorTab.rgb[1].red = colorTab.rgb[1].green = colorTab.rgb[1].blue =255;
-
-}
-	
-static	set_back_color(colr)
-	CDtype	colr;
-{
-	colorTab.rgb[0].red = colr.red;
-	colorTab.rgb[0].green = colr.green;
-	colorTab.rgb[0].blue = colr.blue;
-}
-
-#define DEFAULT_WIDTH   512	/* default raster width         */
-#define DEFAULT_HEIGHT  512	/* default raster height        */
-get_resolution(dev_extent, opts, name)
-	CoordRect	*dev_extent;
-	struct	Opts opts;
-	char	*name;
-{
-	int	width = DEFAULT_WIDTH;
-	int	height = DEFAULT_HEIGHT;
-	int	dpi;
-
-	/*
-	 * this is a hack to figure out the resolution for output to an
-	 * hp laserjet. With the laserjet users specify resolution in terms
-	 * of dots per inch.  We assume a full size picture is 6 by 6 inches
-	 */
-	if (! strcmp(name, "hplj")) {
-		dpi = atoi(opts.resolution);
-		width = 6 * dpi;
-		height = 6 * dpi;
-	}
-	else {
-		char	*cptr = opts.resolution;
-
-		if (sscanf(cptr, "%dx%d", &width, &height) != 2){
-			/*
-			 * error
-			 */
-		}
-	}
-
-	/*
-	 * 	Init translation values and the formating routines
-	 */
-	dev_extent->llx = 0;
-	dev_extent->lly = height - 1;
-	dev_extent->ury = 0;
-	dev_extent->urx = width - 1;
-}
-
-
-
-/*ARGSUSED*/
-static	int	ras_non_rect_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
-	CGMC		*c;
-        Ptype  Pcoord, Qcoord, Rcoord;
-        int     nx, ny;
-{
-        return(0);      /* non rectangular cell arrays are not supported */
-}
-
-
-
-/*
- *	ras_cell_array
- *	[internal]
- *
- *	render a rectangular cell array
- *
- * on entry
- *	P,Q,R		: corners of the cell array (See CGM standard)
- *	nx		: number of cells in x direction
- *	ny		: number of cells in y direction
- * on exit
- *	return		: 0 => Ok, else error
- */
-static	int	ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
-	CGMC		*c;
-	Ptype	Pcoord, Qcoord, Rcoord;
-	int	nx, ny;
-{
-	unsigned int	image_height,	/* image height in pixels	*/
-			image_width,	/* image width in pixels	*/
-			image_size,	/* size of image data in bytes	*/
-			pad,
-			pixel_size,	/* pixel size in bytes		*/
-			bytes_per_line;	/* bytes per scan line		*/
-	unsigned char	*data,		/* image data			*/
-			*cptr;
-
-	int		step_x,		/* step size for incrementing in
-					 * x direction within the image
-					 */
-			step_y;		/* step size for incrementing in
-					 * y direction within the image
-					 */
-
-	int		start_x, 
-			start_y;	/* destination of image in drawable */
-
-	int		*rows, 
-			*cols;		/* information about the number of
-					 * pixels making up a row (col) in
-					 * a the cell at row (col)[i]
-					 */
-	int		xoff, yoff;	/* offset to cell array dest.	*/
-	unsigned char	*index_array,	/* color indeces for a cell row	*/
-			index;		/* color index for current cell */
-	int		cgmc_index;	/* index into the cgmc		*/
-
-
-	register int	i,j,k,l;
-
-	void	SetUpCellArrayIndexing(), SetUpCellArrayAddressing();
-
-	image_width = ABS(Pcoord.x - Qcoord.x) + 1;
-	image_height = ABS(Pcoord.y - Qcoord.y) + 1;
-
-	/*
-	 * don't know how to handle a cell array with zero dimension
-	 */
-	if (nx == 0 || ny == 0) return (0);
-
-	rows = (int *) icMalloc ((unsigned) ny * sizeof (int));
-	cols = (int *) icMalloc ((unsigned) nx * sizeof (int));
-	index_array = (unsigned char *) icMalloc ((unsigned) nx * sizeof (int));
-
-	pixel_size = rasIsDirect ? 3 : 1;
-	bytes_per_line = rastGrid->nx * pixel_size;
-
-	image_size = image_height * bytes_per_line;
-	pad = pixel_size * (rastGrid->nx - image_width);
-	data = rastGrid->data;
-
- 
-	/*
-	 * calculate x & y steping size, position of image in the window,
-	 * and starting address for data destination
-	 */
-	xoff = MIN3(Pcoord.x, Qcoord.x, Rcoord.x) * pixel_size;
-	yoff = MIN3(Pcoord.y, Qcoord.y, Rcoord.y);
-	SetUpCellArrayAddressing(
-		Pcoord, Qcoord, Rcoord, image_size, pad, pixel_size,
-		bytes_per_line, xoff, yoff, &step_x, &step_y, 
-		&start_x, &start_y, (char **) &data
-	);
-
-	/*
-	 * set up rows and cols arrays with info about number of pixels
-	 * making up each cell. We do this to avoid floating point arithmatic
-	 * later on
-	 */
-	SetUpCellArrayIndexing(image_width, image_height, 
-				rows, cols, (unsigned) nx, (unsigned) ny);
-
-
-	/*
-	 * process the rows
-	 */
-	cgmc_index = 0;
-	for (i=0; i<ny; i++) {
-
-		/* 
-		 * load array of color indecies for row[i] of cells
-		 */
-                for (k=0; k<nx; k++) {
-
-			/* make sure data available in cgmc     */
-			if (cgmc_index >= c->Cnum && c->more) {
-				if (Instr_Dec(c) < 1) {
-					return (-1);
-				}
-				cgmc_index = 0;
-			}
-                        index_array[k] = (unsigned char) c->c[cgmc_index];
-			cgmc_index++;
-                }
-
-                /*      
-		 * the rows of pixels per cell[i]
-		 */
-                for (j=0; j < rows[i]; j++) {
-
-			cptr = data;
-			/*
-			 * the coloumns
-			 */
-			for (k=0; k<nx; k++) {
-
-
-				/*
-				 * the coloums of pixels per cell
-				 */
-				index = index_array[k];
-				for (l=0; l<cols[k]; l++) {
-
-				if (!ras_is_clipped(
-					(long) (cptr - rastGrid->data))
-					) {
-
-				if (rasIsDirect) {
-					cptr[0] = colorTab.rgb[index].red;
-					cptr[1] = colorTab.rgb[index].green;
-					cptr[2] = colorTab.rgb[index].blue;
-				}
-				else {
-					*cptr = index;
-				}
-				}	/* clipped	*/
-
-				cptr += step_x;
-				}	/* for	*/
-			
-			}
-			data += step_y;	/* skip to next row	*/
-		}
-	}
-
-	free((char *) rows);
-	free((char *) cols);
-	free((char *) index_array);
-
-	return(0);
-}
-
-
-
-
-
-
-
-static	build_ras_arg(ras_argc, ras_argv, rast_opts)
-	int	*ras_argc;
-	char	**ras_argv;
-	struct	Opts rast_opts;
-{
-	int	i;
-
-	i = 0;
-
-	ras_argv[i] = icMalloc((unsigned) strlen("ctrans") + 1);
-	(void) strcpy(ras_argv[i], "ctrans");
-	i++;
-
-	ras_argv[i] = icMalloc((unsigned) strlen("-dpi") + 1);
-	(void) strcpy(ras_argv[i], "-dpi");
-	i++;
-
-	ras_argv[i] = icMalloc((unsigned) strlen(rast_opts.dpi) + 1);
-	(void) strcpy(ras_argv[i], rast_opts.dpi);
-	i++;
-
-	if (rast_opts.compress) {
-		ras_argv[i] = icMalloc((unsigned) strlen("-compress") + 1);
-		(void) strcpy(ras_argv[i], "-compress");
-		i++;
-	}
-
-	if (rast_opts.rle) {
-		ras_argv[i] = icMalloc((unsigned) strlen("-rle") + 1);
-		(void) strcpy(ras_argv[i], "-rle");
-		i++;
-	}
-
-	*ras_argc = i;
-}

@@ -1,10 +1,11 @@
 /*
- *	$Id: commondev.c,v 1.15 1992-07-16 18:07:13 clyne Exp $
+ *	$Id: commondev.c,v 1.16 1992-09-01 23:41:49 clyne Exp $
  */
-#include <stdio.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
-#include <ncarv.h>
+#include <ncarg/c.h>
 #include "commondev.h"
 #include "gcapdev.h"
 #include "rastdev.h"
@@ -50,6 +51,66 @@ static	unsigned long	maxPolyPoints = ~0;
 int	commFillScaleFactor = 1;
 int	commHatchScaleFactor = 1;
 
+#define	SEGMENTS	64
+static	quick_circle(xc,yc,radius)
+	int	xc, yc;
+	int	radius;
+{
+	long		x1, y1;
+	register long	x2, y2;
+	int		i;
+	double		inc = (2.0 * (double) M_PI) / (double) SEGMENTS;	
+	register double	theta = 0.0;
+
+	x2 = ((long) ((float) radius * cos(theta))) + xc;
+	y2 = ((long) ((float) radius * sin(theta))) + yc;;
+
+	for (i = 0; i < SEGMENTS; i++) {
+		theta += inc;
+		x1 = x2;
+		y1 = y2;
+		x2 = ((long) ((float) radius * cos(theta))) + xc;
+		y2 = ((long) ((float) radius * sin(theta))) + yc;;
+		dev->line(x1, y1, x2, y2);
+	}
+}
+
+static	void	fat_segment(x1, y1, x2, y2, dx, dy, line_width) 
+	VDCtype	x1, y1, x2, y2;
+	VDCtype	dx, dy;
+	int	line_width;
+{
+
+	int	num_lines;
+	int	i;
+
+	if (line_width == 1) return;
+
+	dx /= 2;
+	dy /= 2;
+
+	
+	/*
+	 * move starting point to first scan line.
+	 */
+	x1 = x1 - ((line_width - 1) * dx);
+	y1 = y1 - ((line_width - 1) * dy);
+	x2 = x2 - ((line_width - 1) * dx);
+	y2 = y2 - ((line_width - 1) * dy);
+
+	/*
+	 * how many lines we need to draw
+	 */
+	num_lines = (2 * line_width) - 1;
+
+	for (i = 0; i < num_lines; i++) {
+		dev->line(x1, y1, x2, y2);
+
+		x1 += dx; y1 += dy;
+		x2 += dx; y2 += dy;
+	}
+}
+
 ComSetDevice(name)
 	char	*name;
 {
@@ -73,7 +134,7 @@ ComSetDevice(name)
 
 ComClose()
 {
-	if (coordBuf) cfree ((char *) coordBuf);
+	if (coordBuf) free ((Voidptr) coordBuf);
 	coordBuf = NULL;
 
 	dev->close();
@@ -85,8 +146,8 @@ init_common()
 	/*
 	 * allocate memory for coordinate buffer
 	 */
-	if (coordBuf) cfree ((char *) coordBuf);
-	coordBuf = (Ptype *) icMalloc (1024 * (unsigned) sizeof(Ptype));
+	if (coordBuf) free ((Voidptr) coordBuf);
+	coordBuf = (Ptype *) malloc (1024 * (unsigned) sizeof(Ptype));
 	coordBufSize = 1024;
 
 	VDCExtent.llx = XMIN;
@@ -109,7 +170,6 @@ ComSimPoly(p_list, n, skip)
 	FillTable       *fill_table;
 	int     j;
 	DCtype	i;
-	extern  FillTable       *buildFillTable();
 
 	if (n < 2)
 		return;
@@ -308,6 +368,7 @@ CGMC *c;
 	for(i=0; i<c->Pnum; i+=2) {
 		dev->line(c->p[i].x, c->p[i].y, c->p[i+1].x, c->p[i+1].y);
 	}
+	return(0);
 }
 
 
@@ -477,9 +538,14 @@ CGMC *c;
 		 */
 		if (coordBufSize < (num_points * 2)) {
 
-			if ((coordBuf = (Ptype *) 
-				icRealloc ((char *) coordBuf, (unsigned) 
-				(num_points*sizeof(Ptype)*2))) == NULL ) {
+			if (! (coordBuf = (Ptype *) 
+				realloc ((char *) coordBuf, (unsigned) 
+				(num_points*sizeof(Ptype)*2)))) {
+
+				ESprintf(
+					errno, "realloc(%d)", 
+					num_points * sizeof(Ptype) * 2
+				);
 
 				return (-1);
 			}
@@ -654,29 +720,6 @@ CGMC *c;
 }
 
 
-#define	SEGMENTS	64
-static	quick_circle(xc,yc,radius)
-	int	xc, yc;
-	int	radius;
-{
-	long		x1, y1;
-	register long	x2, y2;
-	int		i;
-	double		inc = (2.0 * (double) M_PI) / (double) SEGMENTS;	
-	register double	theta = 0.0;
-
-	x2 = ((long) ((float) radius * cos(theta))) + xc;
-	y2 = ((long) ((float) radius * sin(theta))) + yc;;
-
-	for (i = 0; i < SEGMENTS; i++) {
-		theta += inc;
-		x1 = x2;
-		y1 = y2;
-		x2 = ((long) ((float) radius * cos(theta))) + xc;
-		y2 = ((long) ((float) radius * sin(theta))) + yc;;
-		dev->line(x1, y1, x2, y2);
-	}
-}
 
 
 
@@ -861,8 +904,6 @@ ComFatLine(x1, y1, x2, y2, line_width, pix_width)
 
 	VDCtype	dx, dy;		/* increment in x or y direction	*/
 
-	void	fat_segment();
-
 	pix_width = (pix_width == 0) ? 1 : pix_width;
 
 	/*
@@ -894,38 +935,3 @@ ComFatLine(x1, y1, x2, y2, line_width, pix_width)
 	fat_segment(x1, y1, x2, y2, dx, dy, line_width);
 }
 
-static	void	fat_segment(x1, y1, x2, y2, dx, dy, line_width) 
-	VDCtype	x1, y1, x2, y2;
-	VDCtype	dx, dy;
-	int	line_width;
-{
-
-	int	num_lines;
-	int	i;
-
-	if (line_width == 1) return;
-
-	dx /= 2;
-	dy /= 2;
-
-	
-	/*
-	 * move starting point to first scan line.
-	 */
-	x1 = x1 - ((line_width - 1) * dx);
-	y1 = y1 - ((line_width - 1) * dy);
-	x2 = x2 - ((line_width - 1) * dx);
-	y2 = y2 - ((line_width - 1) * dy);
-
-	/*
-	 * how many lines we need to draw
-	 */
-	num_lines = (2 * line_width) - 1;
-
-	for (i = 0; i < num_lines; i++) {
-		dev->line(x1, y1, x2, y2);
-
-		x1 += dx; y1 += dy;
-		x2 += dx; y2 += dy;
-	}
-}

@@ -16,4 +16,4 @@ extern	int	CtransSetError_();
 extern	int	CtransGetErrorNumber_();
 extern	char	*CtransGetErrorMessage_();
 
-#endif	_ctrans_error_
+#endif	/* _ctrans_error_	*/

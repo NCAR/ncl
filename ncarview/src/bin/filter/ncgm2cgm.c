@@ -1,5 +1,5 @@
 /*
- *	$Id: ncgm2cgm.c,v 1.6 1992-06-24 21:00:15 clyne Exp $
+ *	$Id: ncgm2cgm.c,v 1.7 1992-09-01 23:38:21 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -11,8 +11,9 @@
 *                                                                      *
 ***********************************************************************/
 #include 	<stdio.h>
+#include 	<stdlib.h>
 #include	<fcntl.h>
-#include	<cgm_tools.h>
+#include	<ncarg/cgm_tools.h>
 #include	"filter.h"
 
 /*	ncgm2cgm:	(NCAR CGM to vanilla CGM filter)
@@ -32,7 +33,6 @@
  * rev 1.02 clyne 2/27/90       : blew up on valid (but non NCAR CGM ) records
  */
 
-extern	char	*malloc();
 
 static	unsigned char	*outBuf;	/* the output buffer	*/
 static	unsigned char	*outPtr;	/* pointer into outBuf	*/

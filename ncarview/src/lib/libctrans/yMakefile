@@ -1,6 +1,6 @@
 NCARG	= ../../../..
 #
-#	$Id: yMakefile,v 1.11 1992-07-16 18:08:41 clyne Exp $
+#	$Id: yMakefile,v 1.12 1992-09-01 23:43:32 clyne Exp $
 #
 
 
@@ -114,7 +114,7 @@ CDEFINES	= $(DDEFINES)
 all::
 	@$(CAT) Copyright
 
-InstallAllTarget($(INCLUDES), $(INSTALL_INC), $(INCDIR))
+InstallAllTarget($(INCLUDES), $(INSTALL_INC), $(INCDIR)/ncarg)
 
 all::	$(MYNAME)
 
@@ -127,15 +127,15 @@ MakefileTarget
 CleanTarget
 
 saber_src: $(SRCS)
-	#setopt load_flags $(CFLAGS) $(CINCS)
+	#setopt load_flags $(CFLAGS) $(CINC)
 	#load $(SRCS) $(LIBS)
 
 saber_obj: $(OBJS)
-	#setopt load_flags $(CFLAGS) $(CINCS)
+	#setopt load_flags $(CFLAGS) $(CINC)
 	#load $(OBJS) $(LIBS)
 
 
 lint: $(HDR) $(SRCS)
-	lint $(CDEFINES) $(LINTLIBS) $(SRCS)  1> lint.out 2>&1
+	lint $(CDEFINES) $(CINC) $(LINTLIBS) $(SRCS)  1> lint.out 2>&1
 #	lint $(SRCS) $(LIBS) > lint.out
 

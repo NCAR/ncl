@@ -1,18 +1,14 @@
 /*
- *	$Id: env.c,v 1.4 1992-04-03 20:57:09 clyne Exp $
+ *	$Id: env.c,v 1.5 1992-09-01 23:42:17 clyne Exp $
  */
 		
 
 #include <ctype.h>
 #include <stdio.h>
-
-#ifdef SYSV
+#include <stdlib.h>
 #include <string.h>
-#else
-#include <strings.h>
-#endif SYSV
 
-#include <ncarv.h>
+#include <ncarg/c.h>
 
 /*	env.c
  *
@@ -45,9 +41,6 @@
  */ 
 
 
-extern	char	*getenv();
-extern	char	*calloc();
-
 
 /*      getFcapname
  *
@@ -58,7 +51,7 @@ extern	char	*calloc();
  *		return() = 	path to fontcap
  */
 char *  getFcapname( device )
-	char	*device;
+	const char	*device;
 {
 	char	*path;
 	char	*fcap;
@@ -106,7 +99,7 @@ char *  getFcapname( device )
  *		return() = 	path to graphcap
  */
 char *  getGcapname( device )
-	char	*device;
+	const char	*device;
 {
 	char	*path;
 	char	*gcap;

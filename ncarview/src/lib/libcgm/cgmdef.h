@@ -166,4 +166,4 @@
 #define	ESCAPE_ID		1
 
 
-#endif	_cgmdef_
+#endif	/* _cgmdef_	*/

@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class5.c,v 1.10 1992-07-16 18:06:53 clyne Exp $
+ *	$Id: X11_class5.c,v 1.11 1992-09-01 23:41:22 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -32,10 +32,11 @@
 
 
 #include 	<stdio.h>
+#include 	<stdlib.h>
 #include 	<errno.h>
 #include	<X11/Xlib.h>
 #include	<X11/Xutil.h>
-#include	<ncarv.h>
+#include	<ncarg/c.h>
 #include	"Xdefs.h"
 #include	"default.h"
 #include	"cgmc.h"
@@ -179,8 +180,16 @@ int	init_color(foreground, background, reverse, fg, bg, bd)
 	 */
 	if (col_2_alloc) {
 		CGMC	cgmc;
-		cgmc.ci = (CItype *) icMalloc(sizeof(CItype));
-		cgmc.cd = (CDtype *) icMalloc(col_2_alloc * sizeof(CDtype));
+		cgmc.ci = (CItype *) malloc(sizeof(CItype));
+		if (! cgmc.ci) {
+			ESprintf(errno, "malloc(%d)", sizeof(CItype));
+			return(-1);
+		}
+		cgmc.cd = (CDtype *) malloc(col_2_alloc * sizeof(CDtype));
+		if (! cgmc.cd) {
+			ESprintf(errno, "malloc(%d)", col_2_alloc * sizeof(CDtype));
+			return(-1);
+		}
 
 		for (i=0; i < col_2_alloc; i++) {
 
@@ -203,9 +212,9 @@ int	init_color(foreground, background, reverse, fg, bg, bd)
 		}
 		cgmc.CInum = 1;;
 
-		ColrTable(&cgmc);
-		free ((char *) cgmc.ci);
-		free ((char *) cgmc.cd);
+		(void) ColrTable(&cgmc);
+		free ((Voidptr) cgmc.ci);
+		free ((Voidptr) cgmc.cd);
 	}
 
 	/*

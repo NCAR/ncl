@@ -1,5 +1,5 @@
 /*
- *	$Id: w_dialog.c,v 1.5 1992-08-24 23:01:21 clyne Exp $
+ *	$Id: w_dialog.c,v 1.6 1992-09-01 23:39:04 clyne Exp $
  */
 /*
  *	w_dialog.c
@@ -22,7 +22,7 @@
 #include <X11/Xaw/Dialog.h>
 #include <X11/Xaw/Command.h>
 
-#include <ncarv.h>
+#include <ncarg/c.h>
 #include "idt.h"
 
 /*

@@ -1,13 +1,13 @@
 NCARG	= ../../../..
 #
-#	$Id: yMakefile,v 1.5 1992-08-12 22:58:55 clyne Exp $
+#	$Id: yMakefile,v 1.6 1992-09-01 23:39:36 clyne Exp $
 #
 
 MYNAME	= med
 
 EQUALHACK	= =
 
-LOCLIB	= $(LIBDIR)/libcgm.a $(LIBDIR)/libncarv.a 
+LOCLIB	= $(LIBDIR)/libcgm.a $(LIBDIR)/libncarg_c.a 
 
 SRCS	= \
 	cmd_tab.c commands.c error.c med.c 
@@ -31,11 +31,3 @@ CleanTarget
 
 lint: $(HDR) $(SRCS)
 	lint $(CDEFINES) $(LINTLIBS) $(SRCS)  1> lint.out 2>&1
-
-cmd_tab.o:	med.h
-
-commands.o:	../../include/cgm_tools.h med.h
-
-error.o:	med.h
-
-med.o:		med.h

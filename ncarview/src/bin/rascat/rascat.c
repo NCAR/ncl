@@ -1,6 +1,6 @@
 
 /*
- *      $Id: rascat.c,v 1.10 1992-08-17 15:03:01 clyne Exp $
+ *      $Id: rascat.c,v 1.11 1992-09-01 23:39:46 clyne Exp $
  */
 /*
  *	File:		rascat.c
@@ -67,15 +67,10 @@
  */
 #include <stdio.h>
 #include <errno.h>
-
-#ifdef	SYSV
-#include <strings.h>
-#else
 #include <string.h>
-#endif
 
-#include <ncarv.h>
-#include <ncarg_ras.h>
+#include <ncarg/c.h>
+#include <ncarg/ncarg_ras.h>
 
 
 int	cvt_to_rsfunc();

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarg_option.m,v 1.2 1992-06-24 21:32:40 clyne Exp $
+.\"	$Id: ncarg_option.m,v 1.3 1992-09-01 23:47:21 clyne Exp $
 .\"
 .TH OPTION 1NCAR  "March 1992" 
 .SH NAME
@@ -26,7 +26,7 @@ int OpenOptionTbl()
 .ft B
 int GetOptions(od, options)
 int od
-Option *options;
+const Option *options;
 .ft
 .fi
 .LP
@@ -41,6 +41,7 @@ OptDescRec *optd;
 .nf
 .ft B
 int ParseOptionTable(od, argc, argv, optds)
+int od
 int *argc;
 char **argv;
 OptDescRec *optds;
@@ -50,7 +51,8 @@ OptDescRec *optds;
 .nf
 .ft B
 int ParseEnvOptions(od, envv, optds)
-EnvOpt *envv;
+int od
+const EnvOpt *envv;
 OptDescRec *optds;
 .ft
 .fi
@@ -58,6 +60,7 @@ OptDescRec *optds;
 .nf
 .ft B
 void PrintOptionHelp(od, fp)
+int od
 FILE *fp;
 .ft
 .fi

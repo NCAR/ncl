@@ -1,5 +1,5 @@
 /*
- *	$Id: display.c,v 1.9 1992-08-24 23:01:06 clyne Exp $
+ *	$Id: display.c,v 1.10 1992-09-01 23:38:47 clyne Exp $
  */
 /*
  *	Display.c
@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
-#include <ncarv.h>
+#include <ncarg/c.h>
 #include "display.h"
 #include "talkto.h"
 

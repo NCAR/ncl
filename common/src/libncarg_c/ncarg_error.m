@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarg_error.m,v 1.2 1992-08-12 18:59:39 clyne Exp $
+.\"	$Id: ncarg_error.m,v 1.3 1992-09-01 23:47:19 clyne Exp $
 .\"
 .TH ERROR 1NCAR  "February 1992" 
 .SH NAME
@@ -16,15 +16,15 @@ ErrorList \- Formatted error reporting
 .LP
 .nf
 .ft B
-char *ESprintf(err_code, format [ , arg] ... )
+const char *ESprintf(err_code, format [ , arg] ... )
 unsigned err_code;
-char *format;
+const char *format;
 .ft
 .fi
 .LP
 .nf
 .ft B
-char *ErrGetMsg()
+const char *ErrGetMsg()
 .ft
 .fi
 .LP
@@ -39,13 +39,13 @@ int ErrGetNum()
 int	ErrorList(start, num, err_list)
 unsigned start;
 unsigned num;
-char **err_list;
+const char **err_list;
 .ft
 .fi
 .LP
 .nf
 .ft B
-char *ESPRINTF(err_code, format ([ , arg] ...) )
+char *ESPRINTF(err_code, (format [ , arg] ...) )
 unsigned err_code;
 char *format;
 .ft
@@ -95,7 +95,8 @@ are the values defined by the special cpp names,
 .B __FILE__ 
 and 
 .BR __LINE__ ,
-respectively. The variable argument list must be enclosed in their own
+respectively. The format string AND the variable argument list 
+MUST be enclosed in their own
 set of parentheses or the C preprocessor will complain.
 .LP
 .BR ErrGetMsg(\|)

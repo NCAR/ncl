@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans_mem.c,v 1.5 1992-07-14 23:09:39 clyne Exp $
+ *	$Id: ictrans_mem.c,v 1.6 1992-09-01 23:44:00 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -31,12 +31,13 @@
  */
 
  
+#include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#include <stdio.h>
 #include <fcntl.h>
-#include <cgm_tools.h>
-#include <ncarv.h>
+#include <ncarg/c.h>
+#include <ncarg/cgm_tools.h>
 #include "ictrans_mem.h"
 
 
@@ -81,9 +82,9 @@ ictrans_args(unit, args)
 		init++;
 	}
 
-	if (Args[unit]) cfree((char *) Args);
+	if (Args[unit]) free((Voidptr) Args);
 
-	Args[unit] = icMalloc(strlen(args) + 1);
+	Args[unit] = malloc((unsigned) (strlen(args) + 1));
 
 	(void) strcpy(Args[unit], args);	/* store the arg list	*/
 	return(1);
@@ -131,7 +132,9 @@ ictrans_open(unit, record_size)
 	 * create a unique name for the memory file to open
 	 */
 	(void) sprintf(sunit, "%d", unit);
-	fname = icMalloc(strlen(SCRATCH) + strlen(sunit) + 1);
+	if ( !(fname = malloc(strlen(SCRATCH) + strlen(sunit) + 1))) {
+		return(-1);
+	}
 	(void) strcpy(fname, SCRATCH);
 	(void) strcat(fname, sunit);
 
@@ -197,7 +200,7 @@ ictrans_free(unit)
 
 	CGM_unlinkMemFile(fname);	/* remove the file	*/
 
-	if (fname) cfree((char *)fname);
+	if (fname) free((Voidptr)fname);
 	
 	open_files[unit].fname = NULL;	/* free an entry in the open_file tab*/
 	open_files[unit].fd = -1;
@@ -275,7 +278,9 @@ ictrans_invoke(unit)
 	/*
 	 * build the argv list from args;
 	 */
-	argv = (char **) icMalloc ((argc + 2) * sizeof (char *));
+	if (! (argv = (char **) malloc ((argc + 2) * sizeof (char *)))) {
+		return(-1);
+	}
 
 	argv[0] = ICTRANS_NAME;
 	for (i = 1, s = args; i < argc; i++) {
@@ -283,7 +288,9 @@ ictrans_invoke(unit)
 			s++;
 
 		len = s - args;		/* length of arg	*/
-		argv[i] = icMalloc (len + 1);
+		if ( !(argv[i] = malloc ((unsigned) len + 1))) {
+			return(-1);
+		}
 		(void) strncpy(argv[i], args, len);
 		argv[i][len] = '\0';
 
@@ -297,7 +304,9 @@ ictrans_invoke(unit)
 	/*
 	 *	call ictrans 
 	 */
-	ICTrans(argc, argv, open_files[unit].fname);
+	if (ICTrans(argc, argv, open_files[unit].fname) < 0) {
+		return(-1);
+	}
 
 	return (1);
 }

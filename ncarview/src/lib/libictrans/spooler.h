@@ -44,4 +44,4 @@ typedef	struct	{
 
 typedef	int	Pipe[2];	/* pipe for filters to talk through	*/
 
-#endif	_spooler_
+#endif	/* _spooler_	*/

@@ -1,5 +1,5 @@
 /*
- *	$Id: gcread.c,v 1.7 1992-07-16 18:08:03 clyne Exp $
+ *	$Id: gcread.c,v 1.8 1992-09-01 23:42:41 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -36,7 +36,37 @@
 #include "graphcap.h"
 #include "ctrandef.h"
 
-extern	char	*strcpy();
+/*
+ *	F_2_Cstring:
+ *	[internal]
+ *
+ *	convert an array of integers in to  a C string
+ *
+ * on entry
+ *	Fstring		: an integer array
+ *	len		: num elements to be converted in Fstring
+ * on exit
+ *	Fstring		: converted to a C string
+ *	
+ */
+static
+F_2_Cstring(Fstring, len)
+	int	*Fstring;	
+	int	len;
+{
+   
+	int	i;
+	SignedChar	*ptr;
+
+	for (i=0,ptr = (SignedChar *) Fstring; i<len; i++, ptr++,Fstring++){
+		*ptr = (SignedChar) *Fstring; 
+	}
+
+	/*
+	 *	add null C string terminator
+	 */
+	*ptr = '\0';
+}
 
 /*
  *	GP_Init:
@@ -196,37 +226,6 @@ int	GP_Init(gcfile)
 
 
 
-/*
- *	F_2_Cstring:
- *	[internal]
- *
- *	convert an array of integers in to  a C string
- *
- * on entry
- *	Fstring		: an integer array
- *	len		: num elements to be converted in Fstring
- * on exit
- *	Fstring		: converted to a C string
- *	
- */
-static
-F_2_Cstring(Fstring, len)
-	int	*Fstring;	
-	int	len;
-{
-   
-	int	i;
-	SignedChar	*ptr;
-
-	for (i=0,ptr = (SignedChar *) Fstring; i<len; i++, ptr++,Fstring++){
-		*ptr = (SignedChar) *Fstring; 
-	}
-
-	/*
-	 *	add null C string terminator
-	 */
-	*ptr = '\0';
-}
 
 #ifdef	DEBUG_GCAP
 /*
@@ -429,4 +428,4 @@ print_graphcap()
 	(void) fprintf (stderr, "RASTER_HORIZONTAL_INSTR_TERM   %s\n", 
 						RASTER_HOR_TERM); 
 }
-#endif	DEBUG_GCAP
+#endif	/* DEBUG_GCAP	*/

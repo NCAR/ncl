@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ctrans.h,v 1.1 1992-07-16 18:07:21 clyne Exp $
+ *      $Id: ctrans.h,v 1.2 1992-09-01 23:42:00 clyne Exp $
  */
 /*
  *	File:		ctrans.h
@@ -14,8 +14,8 @@
  *	Description:	header file for ctrans.c
  */
 
-#include <cgm_tools.h>
-#include <ncarv.h>
+#include <ncarg/cgm_tools.h>
+#include <ncarg/c.h>
 
 #ifndef	_ctrans_
 #define	_ctrans_
@@ -32,13 +32,12 @@ typedef	enum	{
 
 extern	CtransRC	init_ctrans(
 #ifdef	NeedFuncProto
-	int*,		/* argc		*/
-	char**,		/* argv		*/ 
-	char*,		/* prog_name	*/
-	char*,		/* gcap		*/
-	char*,		/* fcap		*/
-	boolean,	/* stand_alone	*/
-	boolean	/* batch	*/
+	int	*argc,
+	char	**argv,
+	const char	*gcap,
+	const char	*fcap,
+	boolean	stand_alone,
+	boolean	batch
 #endif
 );
 
@@ -47,8 +46,8 @@ extern	CtransRC	init_ctrans(
 
 extern	CtransRC	init_metafile(
 #ifdef	NeedFuncProto
-	int,		/* record,	*/
-	Cgm_fd		/*  cgm_fd	*/
+	int	record,
+	Cgm_fd	cgm_fd
 #endif
 );
 
@@ -59,38 +58,38 @@ extern	void	close_metafile(
 
 extern	CtransRC	ctrans(
 #ifdef	NeedFuncProto
-	int		/* record	*/)
+	int	record
 #endif
 );
 
 extern	CtransRC	ctrans_merge(
 #ifdef	NeedFuncProto
-	int,		/* record1	*/ 	
-	int		/* record2	*/
+	int	record1,
+	int	record2
 #endif
 );
 
 extern	CtransRC	SetDevice(
 #ifdef	NeedFuncProto
-	char*		/* gcap		*/
+	const char	*gcap
 #endif
 );
 
 extern	CtransRC	SetFont(
 #ifdef	NeedFuncProto
-	char*		/* fcap		*/
+	const char	*fcap
 #endif
 );
 
 extern	void	SetDefaultPalette(
 #ifdef	NeedFuncProto
-	char*		/* pal_fname	*/
+	const char	*pal_fname
 #endif
 );
 
 extern	void	GraphicsMode(
 #ifdef	NeedFuncProto
-	boolean		/* on	*/
+	boolean	on
 #endif
 );
 
@@ -101,13 +100,13 @@ extern	void	close_ctrans(
 
 extern	char	*getGcapname(
 #ifdef	NeedFuncProto
-	char*		/* gcap		*/
+	const char	*gcap
 #endif
 );
 
 extern	char	*getFcapname(
 #ifdef	NeedFuncProto
-	char*		/* fcap		*/
+	const char*	fcap
 #endif
 );
 
@@ -136,17 +135,17 @@ extern	void	CtransClear(
 
 extern	CtransRC	CtransOpenBatch(
 #ifdef	NeedFuncProto
-	char*,		/* device_name	*/
-	char*,		/* font_name	*/
-	char*,		/* metafile	*/
-	int,		/* dev_argc	*/
-	char**		/* dev_argv	*/
+	const char	*device_name,
+	const char	*font_name,
+	const char	*metafile,
+	int	*dev_argc,
+	char	**dev_argv
 #endif
 );
 
 extern	CtransRC	CtransSetMetafile(
 #ifdef	NeedFuncProto
-	char*,		/* metafile	*/
+	const char	*metafile
 #endif
 );
 
@@ -167,24 +166,24 @@ void	CtransCloseBatch(
 
 extern	CtransRC	CtransLSeekBatch(
 #ifdef	NeedFuncProto
-	unsigned,	/* offset	*/
-	unsigned	/* whence	*/
+	unsigned	offset,
+	unsigned	whence
 #endif
 );
 
 void	CtransGraphicsMode(
 #ifdef	NeedFuncProto
-	boolean		/* on	*/
+	boolean	on
 #endif
 );
 
-CtransGetErrorNumber(
+extern	int	CtransGetErrorNumber(
 #ifdef	NeedFuncProto
 #endif
 );
 
 
-char	*CtransGetErrorMessage(
+extern	char	*CtransGetErrorMessage(
 #ifdef	NeedFuncProto
 #endif
 );

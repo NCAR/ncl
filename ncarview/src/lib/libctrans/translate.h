@@ -66,5 +66,47 @@ extern	long	R_Y_Off;
 extern	double	R_X_Scale;
 extern	double	R_Y_Scale;
 
-#endif
 
+
+extern	void	transinit(
+#ifdef	NeedFuncProto
+	CoordRect	*dev_extent,
+	CoordModifier	dev_coord_modifier,
+	int		device
+#endif
+);
+
+extern	void	SetDevWin(
+#ifdef	NeedFuncProto
+	long	llx, 
+	long	lly, 
+	long	urx, 
+	long	ury
+#endif
+);
+
+
+extern	void	GetDevWin(
+#ifdef	NeedFuncProto
+	CoordRect	*dev_win_coord
+#endif
+);
+
+
+extern	int	DevWinChanged(
+#ifdef	NeedFuncProto
+#endif
+);
+
+
+extern	void	SetDevViewport(
+#ifdef	NeedFuncProto
+	long	llx,
+	long	lly,
+	long	urx,
+	long	ury
+#endif
+);
+
+
+#endif

@@ -11,7 +11,7 @@
 #ifndef	_cgm_tools_
 #define _cgm_tools_
 
-#include <cgmdef.h>
+#include <ncarg/cgmdef.h>
 
 typedef	int	Cgm_fd;		/* a file descriptor for a metafile	*/
 
@@ -56,9 +56,6 @@ typedef	struct	{
 #define	CGM_STATUS(D)		((D)->status)
 #define	CGM_FD(D)		((D)->cgm_fd)
 
-#ifndef	CGM_TOOLS
-	extern	Directory	*CGM_directory();
-#endif
 
 
 
@@ -76,19 +73,6 @@ typedef	struct {
 	int	more;			/* boolean, 1 => more data to follow */
 	} Instr;	
 
-/*
- *	externs for meta_edit capabilities
- */
-#ifndef	META_EDIT
-	extern	Directory	*CGM_copyFrames();
-	extern	Directory	*CGM_deleteFrames();
-	extern	Directory	*CGM_editFrame();
-	extern	Directory	*CGM_initMetaEdit();
-	extern	Directory	*CGM_mergeFrames();
-	extern	Directory	*CGM_moveFrames();
-	extern	Directory	*CGM_readFrames();
-	extern	Directory	*CGM_copyCreateDir();
-#endif
 
 /*
  *	the valid frame types. See section on NCAR CGM in the NCAR
@@ -124,4 +108,204 @@ typedef	struct {
 #define	L_XTND	2
 #endif
 
-#endif	_cgm_tools_
+
+
+/*
+**
+**	C G M    T O O L S
+**
+*/
+
+
+extern	Cgm_fd	CGM_open(
+#ifdef	NeedFuncProto
+	const char	*metafile,
+	int		record_size,
+	const char	*type
+#endif
+);
+
+extern	int	CGM_close(
+#ifdef	NeedFuncProto
+	Cgm_fd	cgm_fd
+#endif
+);
+
+extern	CGM_read(
+#ifdef	NeedFuncProto
+	Cgm_fd		cgm_fd,
+	unsigned char	*buf
+#endif
+);
+
+extern	CGM_write(
+#ifdef	NeedFuncProto
+	Cgm_fd		cgm_fd,
+	const unsigned char	*buf
+#endif
+);
+
+extern	CGM_lseek(
+#ifdef	NeedFuncProto
+	Cgm_fd		cgm_fd,
+	int	offset,
+	int	whence
+#endif
+);
+
+extern	CGM_flush(
+#ifdef	NeedFuncProto
+	Cgm_fd	cgm_fd
+#endif
+);
+
+extern	Directory	*CGM_directory(
+#ifdef	NeedFuncProto
+	Cgm_fd	cgm_fd,
+	FILE	*fp
+#endif
+);
+
+extern	void	CGM_printDirectory(
+#ifdef	NeedFuncProto
+	Directory	*dir
+#endif
+);
+
+
+extern	int	CGM_getInstr(
+#ifdef	NeedFuncProto
+	Cgm_fd	cgm_fd,
+	Instr	*instr
+#endif
+);
+
+
+extern	void	CGM_flushGetInstr(
+#ifdef	NeedFuncProto
+	Cgm_fd	cgm_fd
+#endif
+);
+
+
+extern	int	CGM_putInstr(
+#ifdef	NeedFuncProto
+	Cgm_fd	cgm_fd,
+	Instr	*instr
+#endif
+);
+
+extern	int	CGM_flushOutputInstr(
+#ifdef	NeedFuncProto
+	Cgm_fd	cgm_fd
+#endif
+);
+
+
+extern	void	CGM_freeDirectory(
+#ifdef	NeedFuncProto
+	Directory	*dir
+#endif
+);
+
+Directory	*CGM_copyCreateDir(
+#ifdef	NeedFuncProto
+	Directory	*d1
+#endif
+);
+
+
+extern	Directory	*ReallocDir(
+#ifdef	NeedFuncProto
+		Directory	*dir,
+		unsigned	num_frames
+#endif
+);
+
+
+
+extern	Directory	*CGM_copyFrames(
+#ifdef	NeedFuncProto
+	unsigned int	start_frame,
+	int		num_frames,
+	unsigned int	target
+#endif
+);
+
+extern	Directory	*CGM_deleteFrames(
+#ifdef	NeedFuncProto
+	unsigned int	start_frame,
+	unsigned int	num_frames
+#endif
+);
+
+extern	Directory	*CGM_readFrames(
+#ifdef	NeedFuncProto
+	char		*ncar_cgm,
+	unsigned int	start_frame,
+	int		num_frames,
+	unsigned int	target,
+	unsigned int	record_size
+#endif
+);
+
+extern	Directory	*CGM_moveFrames (
+#ifdef	NeedFuncProto
+	unsigned int	start_frame,
+	unsigned int	num_frames,
+	unsigned int	target
+#endif
+);
+
+extern	Directory	*CGM_initMetaEdit (
+#ifdef	NeedFuncProto
+	char		*ncar_cgm,
+	int	record_size,
+	char	*local_tmp,
+	FILE	*verbose_fp
+#endif
+);
+
+extern	int	CGM_termMetaEdit(
+#ifdef	NeedFuncProto
+#endif
+);
+
+extern	int	CGM_writeFile(
+#ifdef	NeedFuncProto
+	char	*ncar_cgm
+#endif
+);
+
+extern	int	CGM_writeFrames(
+#ifdef	NeedFuncProto
+	char		*ncar_cgm,
+	unsigned	start_frame,
+	unsigned	num_frames
+#endif
+);
+extern	int	CGM_appendFrames(
+#ifdef	NeedFuncProto
+	char		*ncar_cgm,
+	unsigned	start_frame,
+	unsigned	num_frames
+#endif
+);
+
+extern	Directory	*CGM_mergeFrames(
+#ifdef	NeedFuncProto
+	unsigned	bottom, 
+	unsigned 	top
+#endif
+);
+		
+extern	Directory	*CGM_editFrame(
+#ifdef	NeedFuncProto
+	unsigned	frame,
+	Instr		*edit_instr,
+	int		num_occur
+#endif
+);
+
+
+#endif	/* _cgm_tools_	*/

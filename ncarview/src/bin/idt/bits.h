@@ -15,7 +15,7 @@ char playback_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 #else
 extern	char playback_bits[];
-#endif;
+#endif
 
 #define jogback_width 32
 #define jogback_height 32
@@ -35,7 +35,7 @@ char jogback_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 #else
 extern	char jogback_bits[];
-#endif;
+#endif
 
 #define stop_width 32
 #define stop_height 32
@@ -55,7 +55,7 @@ char stop_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 #else
 extern	char stop_bits[];
-#endif;
+#endif
 
 #define jog_width 32
 #define jog_height 32
@@ -75,7 +75,7 @@ char jog_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 #else
 extern	char jog_bits[];
-#endif;
+#endif
 
 #define play_width 32
 #define play_height 32
@@ -95,4 +95,4 @@ char play_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 #else
 extern	char play_bits[];
-#endif;
+#endif

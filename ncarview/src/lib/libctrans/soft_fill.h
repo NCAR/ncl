@@ -30,5 +30,26 @@ typedef	struct	{
 	int	*x_count;	/* num x coords in each *x_coord	*/
 	int	x_coord_size;	/* mem allocated to each *x_coord	*/
 	} FillTable;
+
+
+
+
+extern	int	initSoftSim(
+#ifdef	NeedFuncProto
+	DCtype	minx,
+	DCtype	maxx,
+	DCtype	miny,
+	DCtype	maxy
+#endif
+);
+
+
+extern	FillTable	*buildFillTable(
+#ifdef	NeedFuncProto
+	Ptype		*point_list,
+	unsigned	count
+#endif
+);
+
 #endif
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans_wks.c.sed,v 1.5 1992-06-24 21:06:47 clyne Exp $
+ *	$Id: ictrans_wks.c.sed,v 1.6 1992-09-01 23:44:06 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -68,7 +68,7 @@ main()
 	wrtwks_(&unit, (int *)string);
 	clswks_(&unit);
 }
-#endif STANDALONE
+#endif /* STANDALONE	*/
 
 static	int	DoMem = 0;	/* if true open a memory file	*/
 
@@ -224,11 +224,11 @@ opnwks_(unit, fname, status)
 		if ( fork() == 0 )
 #else
 		if ( vfork() == 0 )
-#endif SYSV
+#endif /* SYSV	*/
 		{
 			(void) close(pipes[1]);
 			(void) close(0); (void) dup(pipes[0]);
-			execlp(gks_translator, gks_translator, "-", (char *) 0);
+			(void) execlp(gks_translator, gks_translator, "-", (char *) 0);
 			*status = 304;
 			return;
 		}

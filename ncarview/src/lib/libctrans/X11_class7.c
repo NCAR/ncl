@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class7.c,v 1.4 1992-07-16 18:06:57 clyne Exp $
+ *	$Id: X11_class7.c,v 1.5 1992-09-01 23:41:27 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -26,7 +26,7 @@
 #include <errno.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <ncarv.h>
+#include <ncarg/c.h>
 #include "cgmc.h"
 
 /* Class 7 */

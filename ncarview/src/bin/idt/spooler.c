@@ -1,5 +1,5 @@
 /*
- *	$Id: spooler.c,v 1.4 1992-08-12 21:41:59 clyne Exp $
+ *	$Id: spooler.c,v 1.5 1992-09-01 23:38:58 clyne Exp $
  */
 /*
  *	spooler.c
@@ -12,9 +12,10 @@
  *	the "print" menu
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#include <ncarv.h>
+#include <ncarg/c.h>
 
 /*
  * 	SpoolerList
@@ -43,9 +44,9 @@ char	**SpoolerList(alias_list)
 	 */
 	if (spooler_list) {
 		for (ptr = spooler_list; *ptr; ptr++) {
-			cfree((char *) *ptr);
+			free((Voidptr) *ptr);
 		}
-		cfree((char *) spooler_list);
+		free((Voidptr) spooler_list);
 	}
 
 	/*
@@ -58,7 +59,12 @@ char	**SpoolerList(alias_list)
 	*s = '\n';	/* terminate last item with a newline	*/
 
 	spooler_list = (char **) 
-		icMalloc((unsigned) (sizeof (char *) * (count + 1)));
+		malloc((unsigned) (sizeof (char *) * (count + 1)));
+
+	if (! spooler_list) {
+		perror("malloc()");
+		return(NULL);
+	}
 
 	/*
 	 * parse the list of spooler names. The list is a newline seperated
@@ -78,7 +84,10 @@ char	**SpoolerList(alias_list)
 			return(NULL);
 		}
 		*s = '\0';
-		*ptr = icMalloc((unsigned) (strlen(t) + 1));
+		if ( !(*ptr = malloc((unsigned) (strlen(t) + 1)))) {
+			perror("malloc()");
+			return(NULL);
+		}
 		(void) strcpy (*ptr, t);
 
 		while(*s != '\n')

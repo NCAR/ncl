@@ -1,5 +1,5 @@
 /*
- *	$Id: format.c,v 1.5 1992-07-16 18:07:47 clyne Exp $
+ *	$Id: format.c,v 1.6 1992-09-01 23:42:28 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -33,10 +33,11 @@
  */
 
 #include 	<stdio.h>
-#include	<ncarv.h>
+#include	<ncarg/c.h>
 #include	"cgmc.h"
 #include	"defines.h"
 #include	"graphcap.h"
+#include	"bitops.h"
 
 /*
  *	There is not a absolute value function for longs in in this C
@@ -340,7 +341,7 @@ int	number;			/* the number of values to be sent */
 			src = y;
 			srcbitstart = COORD_FORMAT[DATA_VALUE][i];
 		} else {
-			ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+			ESPRINTF(E_UNKNOWN, ("Invalid graphcap entry",NULL));
 			return (-1);
 		}
 
@@ -376,7 +377,7 @@ int	number;			/* the number of values to be sent */
 				buffer(temp, ftoa(temp,value));
 				break;
 			default:
-				ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+				ESPRINTF(E_UNKNOWN, ("Invalid graphcap entry",NULL));
 				return (-1);
 			}
 	}
@@ -427,7 +428,7 @@ long	count;			/* the vector count pair */
 			src = count;
 			srcbitstart = VECTOR_COUNT_FORMAT[DATA_VALUE][i];
 		} else {
-			ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+			ESPRINTF(E_UNKNOWN, ("Invalid graphcap entry",NULL));
 			return (-1);
 		}
 
@@ -463,7 +464,7 @@ long	count;			/* the vector count pair */
 				buffer(temp, ftoa(temp,value));
 				break;
 			default:
-				ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+				ESPRINTF(E_UNKNOWN, ("Invalid graphcap entry",NULL));
 				return (-1);
 			}
 	}
@@ -524,7 +525,7 @@ boolean	fillflag;		/* TRUE if the index is a fill colour */
 			src = index;
 			srcbitstart = COLOUR_INDEX_FORMAT[DATA_VALUE][i];
 		} else {
-			ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+			ESPRINTF(E_UNKNOWN, ("Invalid graphcap entry",NULL));
 			return (-1);
 		}
 
@@ -566,7 +567,7 @@ boolean	fillflag;		/* TRUE if the index is a fill colour */
 				buffer(temp, ftoa(temp,value));
 				break;
 			default:
-				ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+				ESPRINTF(E_UNKNOWN, ("Invalid graphcap entry",NULL));
 				return (-1);
 			}
 	}
@@ -593,7 +594,6 @@ int	width;
 	register	int	bitstart, bitcount, srcbitstart, datatype;
 
 	int	i;		/* loop variable */
-	int	status = 0;
 
 	if (LINE_WIDTH_ENCODING == BINARY)
 		bzero(temp,widthoutsize);
@@ -616,7 +616,7 @@ int	width;
 			src = width;
 			srcbitstart = LINE_WIDTH_FORMAT[DATA_VALUE][i];
 		} else {
-			ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+			ESPRINTF(E_UNKNOWN, ("Invalid graphcap entry",NULL));
 			return (-1);
 		}
 
@@ -658,7 +658,7 @@ int	width;
 				buffer(temp, ftoa(temp,value));
 				break;
 			default:
-				ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+				ESPRINTF(E_UNKNOWN, ("Invalid graphcap entry",NULL));
 				return (-1);
 			}
 	}
@@ -720,7 +720,7 @@ int	count;			/* range of data		*/
 			src = data[index++];
 			srcbitstart = MAP_INTENSITY_FORMAT[DATA_VALUE][i];
 		} else {
-			ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+			ESPRINTF(E_UNKNOWN, ("Invalid graphcap entry",NULL));
 			return (-1);
 		}
 
@@ -762,7 +762,7 @@ int	count;			/* range of data		*/
 				buffer(temp, ftoa(temp,value));
 				break;
 			default:
-				ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+				ESPRINTF(E_UNKNOWN, ("Invalid graphcap entry",NULL));
 				return (-1);
 			}
 	}

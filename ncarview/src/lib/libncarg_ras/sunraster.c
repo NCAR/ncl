@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.9 1992-03-23 21:46:08 clyne Exp $
+ *	$Id: sunraster.c,v 1.10 1992-09-01 23:44:37 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -34,7 +34,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include "ncarg_ras.h"
 #include "sunraster.h"
 
@@ -46,7 +46,6 @@ SunOpen(name)
 	char	*name;
 {
 	Raster	*ras;
-	char	*calloc();
 
 	ras = (Raster *) calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
@@ -259,7 +258,6 @@ SunRead(ras)
 	int			length;
 	int			status;
 	int			x, y;
-	char			*malloc(), *calloc(), *realloc();
 	unsigned long		swaptest = 1;
 	static unsigned char	*datap, *rlep;
 	static unsigned char	*ptmp  = (unsigned char *) NULL;

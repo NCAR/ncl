@@ -1,5 +1,5 @@
 /*
- *	$Id: in.c,v 1.6 1992-07-16 18:08:08 clyne Exp $
+ *	$Id: in.c,v 1.7 1992-09-01 23:42:52 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -16,10 +16,11 @@
 #include	<sys/types.h>
 #include	<sys/file.h>
 #include	<errno.h>
-#include	<cgm_tools.h>
-#include	<ncarv.h>
+#include	<ncarg/cgm_tools.h>
+#include	<ncarg/c.h>
 #include	"in.h"
 #include	"cgmc.h"
+#include	"bitops.h"
 
 
 /*	in.c:
@@ -33,8 +34,6 @@
  */
 
 
-extern	long	GetInt();
-extern	double	GetReal();
 
 
 /* following is a matrix indexed by CGM Command class and Id that
@@ -200,9 +199,6 @@ boolean Moreparm = FALSE;	/* true if CGM is partitioned	*/
 int	SetRecord(recnum)
 	int recnum;
 {
-	extern	void	CGM_flushGetInstr();
-	int	status;
-
 	CGM_flushGetInstr(cgmFd);
 	if (CGM_lseek(cgmFd, recnum, L_SET) < 0) {
 		ESprintf(errno, "CGM_lseek(%d, %d, %d)", cgmFd, recnum, L_SET);

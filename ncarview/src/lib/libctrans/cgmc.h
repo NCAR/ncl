@@ -7,7 +7,7 @@
 *                      NCAR View V3.00 - UNIX Release                  *
 *                                                                      *
 ***********************************************************************/
-#include <ncarv.h>
+#include <ncarg/c.h>
 
 #ifndef _cgmc_
 #define _cgmc_

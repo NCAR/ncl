@@ -1,5 +1,5 @@
 /*
- *	$Id: readfont.c,v 1.6 1992-07-16 18:08:18 clyne Exp $
+ *	$Id: readfont.c,v 1.7 1992-09-01 23:43:04 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -11,8 +11,9 @@
 *                                                                      *
 ***********************************************************************/
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
-#include <ncarv.h>
+#include <ncarg/c.h>
 #define		READFONT
 #include "readfont.h"
 
@@ -43,77 +44,6 @@
  *	fontcap is now represented as a single struct an may be read
  *	in with one read
  */ 
-
-
-/*	Init_Readfont:
- *	[exported]
- *		Initialize the readfont_module
- *	on entry
- *		fontcap : is the name of a binary version of a fontcap
- *	on exit
- *		file fontcap has been opened and processing can begin.
- */
-int	Init_Readfont(fontcap)
-	char 	*fontcap;		/*fontcap name	*/
-{
-	int	fd;		/* fontcap file descriptor	*/
-	int	status;		/* return status		*/
-
-	extern	int decodefont();
-
-	/*
-	 *	malloc memory for fontcap 
-	 */
-	fontcap_raw = (Fontcap_raw *) icMalloc (sizeof (Fontcap_raw));
-
-	/*
-	 *	open and read the fontcap
-	 */
-	if ((fd = open(fontcap,0))  == -1) {
-		if (fontcap_raw) cfree ((char *) fontcap_raw);
-		ESprintf(errno, "open(%s,0)", fontcap);
-		return (-1);
-	}
-
-#ifdef	VMS
-	if ((VMSfcread(fd,(char *) fontcap_raw, sizeof(Fontcap_raw))) 
-				!= sizeof(Fontcap_raw)) {
-
-		if (fontcap_raw) cfree ((char *) fontcap_raw);
-		(void) close (fd);
-		ESprintf(errno, "VMSfcread(%d,,%d)", fd, sizeof(Fontcap_raw));
-		return (-1);
-	}
-#else
-	if ((read(fd,(char *) fontcap_raw, sizeof(Fontcap_raw))) 
-				!= sizeof(Fontcap_raw)) {
-
-		if (fontcap_raw) cfree ((char *) fontcap_raw);
-		(void) close (fd);
-		ESprintf(errno, "read(%d,,%d)", fd, sizeof(Fontcap_raw));
-		return (-1);
-	}
-
-#endif
-	/*
-	 *	translate the fontcap into a more meaningful form
-	 */
-	status = decodefont();
-
-#ifdef	DEBUG_FCAP
-	print_fontcap();
-	print_strokes(&fcap_template);
-#endif
-
-	/*
-	 *	de alloc raw fontcap
-	 */
-	if (fontcap_raw != (Fontcap_raw *) NULL) cfree((char *) fontcap_raw);
-	(void) close (fd);
-
-	return (status);
-}
-
 
 /*	decodefont:
  *	[internal]
@@ -183,21 +113,31 @@ int decodefont()
 		 * a previous call.
 		 */
 		if (fcap_template.char_des[i].p_c) {
-			cfree((char *) fcap_template.char_des[i].p_c);
+			free((Voidptr) fcap_template.char_des[i].p_c);
 			fcap_template.char_des[i].p_c = NULL;
 		}
 
-		fcap_template.char_des[i].p_c = (Pen_coord *) 
-			icMalloc (size * sizeof(Pen_coord));
+		fcap_template.char_des[i].p_c = (Pen_coord *) malloc (
+			size * sizeof(Pen_coord)
+		);
+		if (! fcap_template.char_des[i].p_c) {
+			ESprintf(errno, "malloc(%d)", size * sizeof(Pen_coord));
+			return(-1);
+		}
 
 
 		if (fcap_current.char_des[i].p_c) {
-			cfree((char *) fcap_current.char_des[i].p_c);
+			free((Voidptr) fcap_current.char_des[i].p_c);
 			fcap_current.char_des[i].p_c = NULL;
 		}
 
-		fcap_current.char_des[i].p_c = (Pen_coord *) 
-			icMalloc (size * sizeof(Pen_coord));
+		fcap_current.char_des[i].p_c = (Pen_coord *) malloc (
+			size * sizeof(Pen_coord)
+		);
+		if (! fcap_current.char_des[i].p_c) {
+			ESprintf(errno, "malloc(%d)", size * sizeof(Pen_coord));
+			return(-1);
+		}
 
 		F_NUMSTROKE(fcap_template, i) = 
 		F_NUMSTROKE(fcap_current, i) = size;
@@ -261,7 +201,7 @@ int decodefont()
  *
  *	print out contents of the fontcap for debuging
  */
-print_fontcap() 
+static	print_fontcap() 
 {
 
 	(void) fprintf(stderr,"char_start	%d\n", fontcap_raw->char_start);  
@@ -311,4 +251,76 @@ print_strokes(fcap)
 }
 
 
-#endif	DEBUG_FCAP
+#endif	/* DEBUG_FCAP	*/
+
+/*	Init_Readfont:
+ *	[exported]
+ *		Initialize the readfont_module
+ *	on entry
+ *		fontcap : is the name of a binary version of a fontcap
+ *	on exit
+ *		file fontcap has been opened and processing can begin.
+ */
+int	Init_Readfont(fontcap)
+	char 	*fontcap;		/*fontcap name	*/
+{
+	int	fd;		/* fontcap file descriptor	*/
+	int	status;		/* return status		*/
+
+	/*
+	 *	malloc memory for fontcap 
+	 */
+	if (! (fontcap_raw = (Fontcap_raw *) malloc (sizeof (Fontcap_raw)))) {
+		ESprintf(errno, "malloc(%d)", sizeof(Fontcap_raw));
+		return(-1);
+	}
+
+	/*
+	 *	open and read the fontcap
+	 */
+	if ((fd = open(fontcap,0))  == -1) {
+		if (fontcap_raw) free ((Voidptr) fontcap_raw);
+		ESprintf(errno, "open(%s,0)", fontcap);
+		return (-1);
+	}
+
+#ifdef	VMS
+	if ((VMSfcread(fd,(char *) fontcap_raw, sizeof(Fontcap_raw))) 
+				!= sizeof(Fontcap_raw)) {
+
+		if (fontcap_raw) free ((Voidptr) fontcap_raw);
+		(void) close (fd);
+		ESprintf(errno, "VMSfcread(%d,,%d)", fd, sizeof(Fontcap_raw));
+		return (-1);
+	}
+#else
+	if ((read(fd,(char *) fontcap_raw, sizeof(Fontcap_raw))) 
+				!= sizeof(Fontcap_raw)) {
+
+		if (fontcap_raw) free ((Voidptr) fontcap_raw);
+		(void) close (fd);
+		ESprintf(errno, "read(%d,,%d)", fd, sizeof(Fontcap_raw));
+		return (-1);
+	}
+
+#endif
+	/*
+	 *	translate the fontcap into a more meaningful form
+	 */
+	status = decodefont();
+
+#ifdef	DEBUG_FCAP
+	print_fontcap();
+	print_strokes(&fcap_template);
+#endif
+
+	/*
+	 *	de alloc raw fontcap
+	 */
+	if (fontcap_raw != (Fontcap_raw *) NULL) free((Voidptr) fontcap_raw);
+	(void) close (fd);
+
+	return (status);
+}
+
+

@@ -1,5 +1,5 @@
 /*
- *	$Id: clear_text.c,v 1.8 1992-07-16 18:07:08 clyne Exp $
+ *	$Id: clear_text.c,v 1.9 1992-09-01 23:41:44 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -30,8 +30,8 @@
 
 #include <stdio.h>
 #include	<sys/types.h>
-#include <ncarv.h>
-#include <cgm_tools.h>
+#include <ncarg/c.h>
+#include <ncarg/cgm_tools.h>
 #include "cgmc.h"
 #include "text.h"
 

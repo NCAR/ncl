@@ -1,5 +1,5 @@
 /*
- *	$Id: default.h,v 1.10 1992-07-16 23:12:56 clyne Exp $
+ *	$Id: default.h,v 1.11 1992-09-01 23:42:08 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -20,8 +20,8 @@
  */
 
 
-#include 	<ncarv.h> 
-#include	<cgmdef.h>
+#include 	<ncarg/c.h> 
+#include	<ncarg/cgmdef.h>
 #include 	"cgmc.h"
 #include 	"text.h"
 

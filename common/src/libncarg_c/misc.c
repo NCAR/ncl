@@ -1,5 +1,5 @@
 /*
- *	$Id: misc.c,v 1.3 1992-03-26 18:22:47 clyne Exp $
+ *	$Id: misc.c,v 1.4 1992-09-01 23:47:16 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -13,27 +13,28 @@
 /*LINTLIBRARY*/
 
 #include	<ctype.h>
+#include	"c.h"
 
 
 /*
  * isint
  *
- *	is a string an integer?
+ *	is a ascii string an integer?
  * on entry 
  *	*s	: a string
  * on exit
  *	return	: 1 => yes, 0 => no
  */
-isint( s )
-	char	*s;
+boolean	IsAsciiInt( s )
+	const char	*s;
 {
 
 	if (*s == '-' || *s == '+') s++;
 
 	while (*s && isdigit(*s)) s++;
 
-	if (*s == '\0') return (1);
+	if (*s == '\0') return (TRUE);
 
-	return (0);
+	return (FALSE);
 }
 

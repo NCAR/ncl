@@ -1,5 +1,5 @@
 /*
- *	$Id: cmd_tab.c,v 1.4 1992-06-24 21:06:14 clyne Exp $
+ *	$Id: cmd_tab.c,v 1.5 1992-09-01 23:43:41 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -50,6 +50,7 @@ char	spoolerhelp[] =	"Set or get current spooler name";
 char	Printhelp[] =	"Send frames to a print spooler";
 char	shellhelp[] =	"Escape to the shell";
 char	savehelp[] =	"Save frames to a file";
+char	Savehelp[] =	"Force a save to a file";
 char	zoomhelp[] =	"Change window coordinates to facilitate zooming";
 char	mergehelp[] =	"Overlay one frame on top of another frame";
 
@@ -74,6 +75,7 @@ char	spoolerusage[]	= "spooler [ alias ]";
 char	Printusage[]	= "[ frame list ] Print";
 char	shellusage[]	= "! shell_command";
 char	saveusage[]	= "[ frame list ] save [ filename ]";
+char	Saveusage[]	= "[ frame list ] Save [ filename ]";
 char	zoomusage[]	= "zoom [ llx [ lly [ urx [ ury ]]] ]";
 char	mergeusage[]	= "< frame1 > < frame2 > merge";
 
@@ -96,6 +98,7 @@ CmdOp	cmdOptab[] = {
 	{"Print",	Printhelp,	Printusage,	1,0,	iCPrint },
 	{"quit",	quithelp,	quitusage,	0,0,	iCQuit },
 	{"save",	savehelp,	saveusage,	1,1,	iCSave },
+	{"Save",	Savehelp,	Saveusage,	1,1,	iCSave },
 	{"skip",	skiphelp,	skipusage,	0,1,	iCSkip },
 	{"spooler",	spoolerhelp,	spoolerusage,	0,1,	iCSpooler },
 	{"start",	starthelp,	startusage,	1,0,	iCStartSegment},

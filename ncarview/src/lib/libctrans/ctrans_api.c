@@ -1,5 +1,5 @@
 /*
- *      $Id: ctrans_api.c,v 1.13 1992-07-30 00:47:33 clyne Exp $
+ *      $Id: ctrans_api.c,v 1.14 1992-09-01 23:42:02 clyne Exp $
  */
 /*
  *	File:		ctrans_api.c
@@ -32,9 +32,9 @@
 #include <fcntl.h> 
 #include <errno.h> 
 #include <string.h>
-#include <ncarv.h>
-#include <cgm_tools.h>
-#include <ctrans.h>
+#include <ncarg/c.h>
+#include <ncarg/cgm_tools.h>
+#include "ctrans.h"
 #include "cgmc.h"
 #include "error.h"
 #include "defines.h"
@@ -92,7 +92,6 @@ extern	int	optionDesc;
 extern	int	currdev;
 extern	struct	device	devices[];
 
-
 static	CGMC	cgmc;			/* shuttle for cgm elements	*/
 static	Cgm_fd	cgm_fd = -1;		/* file descriptor for metafile	*/
 static	boolean	initialized = FALSE;	/* initialization state		*/
@@ -132,7 +131,7 @@ static	char	*argv_[10];
  *	the value in GRAPHCAP and FONTCAP variables respectively. 
  */
 CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
-	char	*device_name,
+	const char	*device_name,
 		*font_name,
 		*metafile;
 	int	*dev_argc;
@@ -148,9 +147,6 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	static	boolean softFillOption = FALSE;
 	static	boolean deBugOption = FALSE;
 	static	boolean doBellOption = FALSE;
-	int	i;
-
-	char	*getGcapname(), *getFcapname();
 
 	if (initialized) CtransCloseBatch();
 
@@ -176,15 +172,15 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	 * gcap device
 	 */
 	if (! (gcap = getGcapname(device_name))) {
-		CtransSetError_(ERR_NO_DEVICE);
+		(void) CtransSetError_(ERR_NO_DEVICE);
 		return(FATAL);
 	}  
 
         /*
          * inform ctrans of which output device to use
          */
-        if (SetDevice(gcap) < 0) {
-		CtransSetError_(ERR_INIT_DEVICE);
+        if ((int) SetDevice(gcap) < 0) {
+		(void) CtransSetError_(ERR_INIT_DEVICE);
 		return(FATAL);
         }
 
@@ -194,7 +190,7 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	 * is destructive to dev_argc/dev_argv so pass a copy of the arg list
 	 */
 	if (! (dev_argv_ = (char **) malloc ((dev_argc+1) * sizeof (char *)))){
-		CtransSetError_(errno);
+		(void) CtransSetError_(errno);
 		return(FATAL);
 	}
 	for (i=0; i<dev_argc; i++) {
@@ -207,7 +203,7 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	if (ParseOptionTable(
 		optionDesc, dev_argc, dev_argv, devices[currdev].opt) < 0) 
 	{
-		CtransSetError_(ERR_INV_ARG);
+		(void) CtransSetError_(ERR_INV_ARG);
 		return(FATAL);
 	}
 
@@ -215,7 +211,7 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	 * load the options into opt
 	 */
 	if (GetOptions(optionDesc, get_options) < 0) {
-		CtransSetError_(ERR_INV_ARG);
+		(void) CtransSetError_(ERR_INV_ARG);
 		return(FATAL);
 	}
 
@@ -239,7 +235,7 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 		 * no font, try and use default font
 		 */
 		if ((fcap = getFcapname(DEFAULTFONT)) == NULL) {
-			CtransSetError_(ERR_NO_FONT);
+			(void) CtransSetError_(ERR_NO_FONT);
 			return(FATAL);
 		}
 	}
@@ -247,12 +243,14 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	/*
 	 * inform ctrans of which font to use
 	 */
-	if (SetFont(fcap) < 0) {
-		CtransSetError_(ERR_INIT_FONT);
+	if ((int) SetFont(fcap) < 0) {
+		(void) CtransSetError_(ERR_INIT_FONT);
 		return(FATAL);
 	}
 
-	init_cgmc(&cgmc);
+	if (init_cgmc(&cgmc) < 0) {
+		return(FATAL);
+	}
 
 
 	/*
@@ -280,7 +278,7 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
  *	return		: [FATAL, WARN, EOM, OK]
  */
 CtransRC	CtransSetMetafile(metafile)
-	char	*metafile;
+	const char	*metafile;
 {
 	int	status;
 	CtransRC	rc = OK;
@@ -292,7 +290,7 @@ CtransRC	CtransSetMetafile(metafile)
 	 * make sure we've been initialized
 	 */
 	if (! initialized) {
-		CtransSetError_(ERR_INV_STATE);
+		(void) CtransSetError_(ERR_INV_STATE);
 		return(FATAL);
 	}
 
@@ -308,7 +306,7 @@ CtransRC	CtransSetMetafile(metafile)
 	 *      open the metafile
 	 */
 	if ((cgm_fd = CGM_open(metafile, 1440, "r")) < 0) {
-		CtransSetError_(ERR_OPEN_META);
+		(void) CtransSetError_(ERR_OPEN_META);
 		return(FATAL);
 	}
 
@@ -326,7 +324,7 @@ CtransRC	CtransSetMetafile(metafile)
 	 * get the first cgm element
 	 */
 	if (Instr_Dec(&cgmc) < 1) {
-		CtransSetError_(ERR_PAR_META);
+		(void) CtransSetError_(ERR_PAR_META);
 		(void) CGM_close(cgm_fd);
 		cgm_fd = -1;
 		return(FATAL);
@@ -342,7 +340,7 @@ CtransRC	CtransSetMetafile(metafile)
 
 	}
 	else {
-		CtransSetError_(ERR_INV_META);
+		(void) CtransSetError_(ERR_INV_META);
 		(void) CGM_close(cgm_fd);
 		cgm_fd = -1;
 		return(FATAL);
@@ -368,7 +366,7 @@ CtransRC	CtransSetMetafile(metafile)
 	}
 
 	if (status < 1) {
-		CtransSetError_(ERR_INV_META);
+		(void) CtransSetError_(ERR_INV_META);
 		(void) CGM_close(cgm_fd);
 		cgm_fd = -1;
 		return(FATAL);
@@ -401,7 +399,7 @@ CtransRC	CtransPlotFrame()
 	 * make sure we've been initialized
 	 */
 	if (! initialized || cgm_fd == -1) {
-		CtransSetError_(ERR_INV_STATE);
+		(void) CtransSetError_(ERR_INV_STATE);
 		return(FATAL);
 	}
 
@@ -410,7 +408,7 @@ CtransRC	CtransPlotFrame()
 	 * See if we've reached the end of the file
 	 */
 	if (cgmc.class == DEL_ELEMENT && cgmc.command == END_MF_ID) {
-		return(EOM);
+		return((CtransRC) EOM);
 	}
 
 	/*
@@ -418,7 +416,7 @@ CtransRC	CtransPlotFrame()
 	 */
 	if (! (cgmc.class == DEL_ELEMENT && cgmc.command == BEG_PIC_ID)) {
 
-		CtransSetError_(ERR_INV_STATE);
+		(void) CtransSetError_(ERR_INV_STATE);
 		return(FATAL);
 	}
 	/* process the begin picture element	*/
@@ -444,7 +442,7 @@ CtransRC	CtransPlotFrame()
 	}
 
 	if (status < 1) {
-		CtransSetError_(ERR_INV_META);
+		(void) CtransSetError_(ERR_INV_META);
 		return(FATAL);
 	}
 
@@ -454,7 +452,7 @@ CtransRC	CtransPlotFrame()
 	 * an End MF
 	 */
 	if (Instr_Dec(&cgmc) < 1) {
-		CtransSetError_(ERR_PAR_META);
+		(void) CtransSetError_(ERR_PAR_META);
 		return(FATAL);
 	}
 
@@ -475,13 +473,13 @@ CtransRC	CtransClearDisplay()
 	CGMC	temp_cgmc;
 
 	if (! initialized || cgm_fd == -1) {
-		CtransSetError_(ERR_INV_STATE);
+		(void) CtransSetError_(ERR_INV_STATE);
 		return(FATAL);
 	}
 
 	temp_cgmc.class = DEL_ELEMENT;
 	temp_cgmc.command = CLEAR_DEVICE;
-	Process(&temp_cgmc);
+	(void) Process(&temp_cgmc);
 	return(OK);
 }
 
@@ -494,6 +492,8 @@ CtransRC	CtransClearDisplay()
  */
 void	CtransCloseBatch()
 {
+	extern	void	free_cgmc();
+
 	if (! initialized) return;
 
 	if (cgm_fd != -1) {
@@ -569,7 +569,7 @@ CtransRC	CtransLSeekBatch(offset, whence)
 		frame_count += offset;
 	}
 	else {
-		CtransSetError_(ERR_INV_ARG);
+		(void) CtransSetError_(ERR_INV_ARG);
 		return(FATAL);
 	}
 
@@ -582,12 +582,12 @@ CtransRC	CtransLSeekBatch(offset, whence)
 			skip--;
 		}
 		if (cgmc.class == DEL_ELEMENT && cgmc.command == END_MF_ID) {
-			return(EOM);	/* seek past end of file	*/
+			return((CtransRC) EOM);	/* seek past end of file */
 		}
 	}
 
 	if (status < 1) {
-		CtransSetError_(ERR_INV_META);
+		(void) CtransSetError_(ERR_INV_META);
 		return(FATAL);
 	}
 
@@ -618,7 +618,7 @@ void	CtransGraphicsMode(on)
  *	A negative return value means the unix global variable 'errno' is 
  *	the absolute of the return value.
  */
-CtransGetErrorNumber()
+int	CtransGetErrorNumber()
 {
 	return(CtransGetErrorNumber_());
 }

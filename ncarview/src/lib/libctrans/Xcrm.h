@@ -7,12 +7,15 @@
 *                      NCAR View V3.00 - UNIX Release                  *
 *                                                                      *
 ***********************************************************************/
+
+#ifndef	_xcrm_
+#define	_xcrm_
+
 #define	RGB_SEARCH	0
 #define	PIXEL_SEARCH	1
 
-#ifdef	DEAD
-#ifndef	XCRM
-	extern	Ct_err	dec_dir_col();
-	extern	void	store_dir_col();
-#endif
+extern	void	free_colors();
+extern	int	X11_UpdateColorTable_();
+
+
 #endif

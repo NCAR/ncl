@@ -1,5 +1,5 @@
 /*
- *	$Id: med.c,v 1.3 1992-04-20 22:02:06 clyne Exp $
+ *	$Id: med.c,v 1.4 1992-09-01 23:39:32 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -29,6 +29,7 @@
  *	that in ed (almost).
  */
 #include	<stdio.h>
+#include	<stdlib.h>
 #include	<ctype.h>
 #include	<string.h>
 #include	"med.h"
@@ -37,7 +38,7 @@
  *	A global data structure for med
  */
 static	MedData	medData = {
-	stdin,			/* optional command file	*/
+	NULL,			/* optional command file	*/
 	{NULL,-1,-1,-1, NULL},	/* a parsed command		*/
 	1,			/* the current line (frame)	*/
 	0,			/* the last line in the buffer	*/
@@ -54,13 +55,358 @@ char	*localTmp = NULL;		/* tmp directory to use if	*/
 
 extern	Cmd	cmdtab[];
 
-extern	char	*strchr();
-extern	char	*realloc();
 
-#ifndef	SYSV
-extern	char	*sprintf();
+/*
+ *	get_line
+ *	[internal]
+ *
+ *	get a line of text from either a file if there is a valid file pointer
+ *	or from the commands buffer.
+ */
+static char	*get_line(med_data)
+	MedData	*med_data;
+{
+	char	*line;
+	char	*cptr;
+
+	/*
+	 * if commands are in a file then read them from file	
+	 */
+	if (med_data->fp) {
+		line = fgets(line_buf, MAX_LINE_LEN, med_data->fp);
+	}
+	else {	/* read next command from command line	*/
+		line = med_data->command_string;
+		if (!line) return NULL;
+
+		/*
+		 * advance command pointer to next line
+		 */
+		cptr = strchr(med_data->command_string, '\n');
+		if (cptr) {	/* more commands follow	*/
+			*cptr = '\0';
+			med_data->command_string = cptr+1;
+		}
+		else {		/* no more commands	*/
+			med_data->command_string = NULL;
+		}
+	}
+
+	return(line);
+}
+
+/*
+ *	getcmd
+ *	
+ *	get a command object from the command table using its name for a
+ *	lookup. Command names may be abreviated.
+ * on entry
+ *	*name		: name to lookup
+ * on exit
+ *	return		: if found return command obj ptr. If name is ambiguous
+ *			  return -1. If not found return NULL.
+ */
+Cmd	*getcmd (name)
+	char	*name;
+{
+	char *p, *q;
+	Cmd *c, *found;
+	int nmatches, longest;
+
+	longest = 0;
+	nmatches = 0;
+	found = NULL;
+
+	for (c = cmdtab; p = c->c_name; c++) {
+		for (q = name; *q == *p++; q++) {
+			if (*q == 0)            /* exact match? */
+				return (c);
+		}
+		if (!*q) {                      /* the name was a prefix */
+			if (q - name > longest) {
+				longest = q - name;
+				nmatches = 1;
+				found = c;
+			} else if (q - name == longest)
+				nmatches++;
+		}
+	}
+	if (nmatches > 1)	/* ambiguous	*/
+		return ((Cmd *)-1);
+	return (found);
+}
+
+/*
+ * parse_command_name
+ * [internal]
+ *
+ *	load the first string of alphabetic characters found in line into
+ *	the command data structure in med_data.
+ * on entry
+ *	*line		: '\n' terminated string
+ * on exit
+ *	return		: NULL => failure
+ */
+static	char	*parse_command_name(line, med_data)
+	char	*line;
+	MedData	*med_data;
+{
+	
+	static	char	name_buf[80];	/* static storage for the name	*/
+	char	*cptr = name_buf;
+
+	if (!line) return(line);	/* error			*/
+
+	name_buf[0] = '\0';		/* clear the name buf		*/
+
+	while(isspace(*line))
+		line++;			/* skip white space		*/
+
+	med_data->command_data.name = name_buf;
+
+	/*
+	 * a hack for a shell escape '!'
+	 */
+	if (*line == '!') 
+		*cptr++ = *line++;
+	else {
+		while(isalpha(*line)) {
+			*cptr++ = *line++;
+		}
+	}
+
+	*cptr = '\0';
+		
+	return(line);
+}	
+	
+
+/*
+ *	parse_address:
+ *	[internal]
+ *
+ *	parse a string looking for an address of the form :
+ *	[ [0-9]* | '.' | '$'] [ <'+' | '-'> <0-9>* ]
+ *
+ * 	If a relative address is specified without the absloute part then
+ *	the address is assumed relative to the current_frame.
+ *
+ * on exit
+ *	return_address	: the address if found else -1; 
+ *	return		: NULL if error, else pointer to next item in line 
+ *	
+ */
+
+static	char	*parse_address(line, med_data, return_address)
+	char	*line;
+	MedData	*med_data;
+	int	*return_address;
+{
+	int	tmp;
+	char	plus;	/* boolean	*/
+
+	*return_address = -1;
+
+
+	if (!line) return(line);
+
+
+	while(isspace(*line))
+		line++;			/* skip white space		*/
+
+	/*
+	 * look for an absolute address specification
+	 */
+	if (isdigit(*line)) {
+		(void) sscanf(line, "%d", return_address);
+		while (isdigit(*++line))
+		;
+
+	} else if (*line == '.') {
+		*return_address = med_data->current_frame;
+		line++;
+	} else if (*line == '$') {
+		*return_address = med_data->last_frame;
+		line++;
+	}
+
+	while(isspace(*line))
+		line++;			/* skip white space		*/
+
+	/*
+	 * look for relative address specification to combine with absolute
+	 * address. if no absolute address was given assume current frame
+	 */
+	if (*line == '+' || *line == '-') {
+		plus = *line;		/* tmp record			*/
+		while(isspace(*++line))	/* skip '+' and white space	*/
+		;
+		if (isdigit(*line)) {
+			(void) sscanf(line, "%d", &tmp);
+			while (isdigit(*++line))
+			;
+		}
+		else {
+			return(NULL);	/* error	*/
+		}
+
+		if (plus == '-') tmp *= -1;
+		/*
+		 * see if a absolute address was already specified. if not
+		 * use current frame
+		 */
+		if (*return_address == -1) {
+			*return_address = tmp + med_data->current_frame;
+		}
+		else {
+			*return_address += tmp;
+		}
+	}
+
+	return (line);
+}
+
+
+/*
+ *	parse_command
+ *	[internal]
+ *
+ *	parse a command string into a standard format and return it.
+ *	A command may be of the form :
+ *
+ *	Command ::= [address [',' address]] [command] [address] [ file ]
+ *
+ *	address ::= < ['+' | '-'] int | '.' | '$' >
+ *
+ *	command ::= < 'a' - 'z' >*
+ *
+ *	file	::= < keyboard_character >*
+ *	
+ * on entry:
+ *	*line			: contains user input terminated by a '\n'
+ * on exit:
+ *	med_data.command_data	: contains the command and data
+ *
+ */
+static	char	*parse_command(med_data, line)
+	MedData	*med_data;
+	char	*line;
+{
+
+	int	*add_ptr = &(med_data->command_data.add1);
+
+	char	*cptr;
+	static	char	file_buf[80];
+
+
+	/*
+	 * clear the command_data
+	 */
+	med_data->command_data.name = NULL;
+	*add_ptr = -1;
+	*(add_ptr+1) = -1;
+	*(add_ptr+2) = -1;
+	med_data->command_data.file = NULL;
+
+
+	/*
+	 * scan the line
+	 */
+
+	/*
+	 * get first address
+ 	 */
+	if ((line = parse_address(line, med_data, add_ptr)) == NULL) {
+		return(NULL);
+	}
+
+	/*
+	 * see if there is a second address. if so grab it
+	 */
+	if (*line == ',') {
+		line++;
+
+		if ((line = parse_address(line, med_data, add_ptr+1)) == NULL){
+			return(NULL);
+		}
+	}
+
+	/*
+	 * get command name
+	 */
+	if ((line = parse_command_name( line, med_data )) == NULL) {
+
+		return (NULL);
+	}
+
+	while(isspace(*line))	/* skip white space	*/
+		line++;
+	/*
+	 * see if there is a third address. If so grab it
+	 */
+	if (isdigit(*line) || *line == '.' || *line == '+' || *line == '-'
+				|| *line == '$') {
+
+		if ((line = parse_address(line, med_data, add_ptr+2)) == NULL) {
+			return(NULL);
+		}
+	}
+	if (*line) {
+		cptr = file_buf;
+		while (*line != '\n' && *line != '\0') {
+			*cptr++ = *line++;
+		}
+		*cptr = '\0';
+
+		/* 
+		 * remove trailing blanks 
+		 */
+		cptr--;
+		while (isspace(*cptr)) {
+			*cptr = '\0';
+			cptr--;
+		}
+	
+		med_data->command_data.file = file_buf;
+	}
+#ifdef	DEAD
+	else {	/* see if there is a final arg string	*/
+		if (*line) {
+			cptr = file_buf;
+			while (*line != '\n' && *line != '\0') {
+				*cptr++ = *line++;
+			}
+			*cptr = '\0';
+
+			/* 
+			 * remove trailing blanks 
+			 */
+			cptr--;
+			while (isspace(*cptr)) {
+				*cptr = '\0';
+				cptr--;
+			}
+		
+			med_data->command_data.file = file_buf;
+		}
+	}
 #endif
 
+	return (line);
+}
+
+		
+static	usage(message) 
+	char	*message;
+{
+
+	if (message) {
+		(void) fprintf(stderr, "med: %s\n", message);
+	}
+	(void) fprintf (
+		stderr, "med: usage: [-e script] [-f sfilename] [-l directory] [filename]\n"); 
+	exit(1);
+}
 main (argc, argv)
 	int	argc;
 	char	**argv;
@@ -69,12 +415,6 @@ main (argc, argv)
 	char	*comm_file = NULL;	/* file of med commands		*/
 	char	*cptr;
 
-	Cmd	*getcmd();
-	char	*get_line();
-	char	*parse_command();
-
-	extern	char	*malloc();
-
 	char	*file = NULL;	/* file to edit				*/
 	char	*prog_name = argv[0];
 
@@ -82,12 +422,10 @@ main (argc, argv)
 
 	argc--; argv++;	/* skip argv[0]	*/
 
+	medData.fp = stdin;
 	medData.command_string = (char *) malloc (1);
 	medData.command_string[0] = '\0';
 
-#ifdef	DEBUG
-	malloc_debug(2);
-#endif
 	/*
 	 * parse the command line
 	 */
@@ -242,357 +580,3 @@ main (argc, argv)
 	}
 }
 
-/*
- *	getcmd
- *	[internal]
- *	
- *	get a command object from the command table using its name for a
- *	lookup. Command names may be abreviated.
- * on entry
- *	*name		: name to lookup
- * on exit
- *	return		: if found return command obj ptr. If name is ambiguous
- *			  return -1. If not found return NULL.
- */
-Cmd	*getcmd (name)
-	char	*name;
-{
-	char *p, *q;
-	Cmd *c, *found;
-	int nmatches, longest;
-
-	longest = 0;
-	nmatches = 0;
-	found = NULL;
-
-	for (c = cmdtab; p = c->c_name; c++) {
-		for (q = name; *q == *p++; q++) {
-			if (*q == 0)            /* exact match? */
-				return (c);
-		}
-		if (!*q) {                      /* the name was a prefix */
-			if (q - name > longest) {
-				longest = q - name;
-				nmatches = 1;
-				found = c;
-			} else if (q - name == longest)
-				nmatches++;
-		}
-	}
-	if (nmatches > 1)	/* ambiguous	*/
-		return ((Cmd *)-1);
-	return (found);
-}
-
-
-
-/*
- *	parse_command
- *	[internal]
- *
- *	parse a command string into a standard format and return it.
- *	A command may be of the form :
- *
- *	Command ::= [address [',' address]] [command] [address] [ file ]
- *
- *	address ::= < ['+' | '-'] int | '.' | '$' >
- *
- *	command ::= < 'a' - 'z' >*
- *
- *	file	::= < keyboard_character >*
- *	
- * on entry:
- *	*line			: contains user input terminated by a '\n'
- * on exit:
- *	med_data.command_data	: contains the command and data
- *
- */
-static	char	*parse_command(med_data, line)
-	MedData	*med_data;
-	char	*line;
-{
-
-	int	*add_ptr = &(med_data->command_data.add1);
-
-	char	*cptr;
-	static	char	file_buf[80];
-
-	char	*parse_command_name();
-	char	*parse_address();
-
-	/*
-	 * clear the command_data
-	 */
-	med_data->command_data.name = NULL;
-	*add_ptr = -1;
-	*(add_ptr+1) = -1;
-	*(add_ptr+2) = -1;
-	med_data->command_data.file = NULL;
-
-
-	/*
-	 * scan the line
-	 */
-
-	/*
-	 * get first address
- 	 */
-	if ((line = parse_address(line, med_data, add_ptr)) == NULL) {
-		return(NULL);
-	}
-
-	/*
-	 * see if there is a second address. if so grab it
-	 */
-	if (*line == ',') {
-		line++;
-
-		if ((line = parse_address(line, med_data, add_ptr+1)) == NULL){
-			return(NULL);
-		}
-	}
-
-	/*
-	 * get command name
-	 */
-	if ((line = parse_command_name( line, med_data )) == NULL) {
-
-		return (NULL);
-	}
-
-	while(isspace(*line))	/* skip white space	*/
-		line++;
-	/*
-	 * see if there is a third address. If so grab it
-	 */
-	if (isdigit(*line) || *line == '.' || *line == '+' || *line == '-'
-				|| *line == '$') {
-
-		if ((line = parse_address(line, med_data, add_ptr+2)) == NULL) {
-			return(NULL);
-		}
-	}
-	if (*line) {
-		cptr = file_buf;
-		while (*line != '\n' && *line != '\0') {
-			*cptr++ = *line++;
-		}
-		*cptr = '\0';
-
-		/* 
-		 * remove trailing blanks 
-		 */
-		cptr--;
-		while (isspace(*cptr)) {
-			*cptr = '\0';
-			cptr--;
-		}
-	
-		med_data->command_data.file = file_buf;
-	}
-#ifdef	DEAD
-	else {	/* see if there is a final arg string	*/
-		if (*line) {
-			cptr = file_buf;
-			while (*line != '\n' && *line != '\0') {
-				*cptr++ = *line++;
-			}
-			*cptr = '\0';
-
-			/* 
-			 * remove trailing blanks 
-			 */
-			cptr--;
-			while (isspace(*cptr)) {
-				*cptr = '\0';
-				cptr--;
-			}
-		
-			med_data->command_data.file = file_buf;
-		}
-	}
-#endif
-
-	return (line);
-}
-
-/*
- * parse_command_name
- * [internal]
- *
- *	load the first string of alphabetic characters found in line into
- *	the command data structure in med_data.
- * on entry
- *	*line		: '\n' terminated string
- * on exit
- *	return		: NULL => failure
- */
-static	char	*parse_command_name(line, med_data)
-	char	*line;
-	MedData	*med_data;
-{
-	
-	static	char	name_buf[80];	/* static storage for the name	*/
-	char	*cptr = name_buf;
-
-	if (!line) return(line);	/* error			*/
-
-	name_buf[0] = '\0';		/* clear the name buf		*/
-
-	while(isspace(*line))
-		line++;			/* skip white space		*/
-
-	med_data->command_data.name = name_buf;
-
-	/*
-	 * a hack for a shell escape '!'
-	 */
-	if (*line == '!') 
-		*cptr++ = *line++;
-	else {
-		while(isalpha(*line)) {
-			*cptr++ = *line++;
-		}
-	}
-
-	*cptr = '\0';
-		
-	return(line);
-}	
-	
-
-/*
- *	parse_address:
- *	[internal]
- *
- *	parse a string looking for an address of the form :
- *	[ [0-9]* | '.' | '$'] [ <'+' | '-'> <0-9>* ]
- *
- * 	If a relative address is specified without the absloute part then
- *	the address is assumed relative to the current_frame.
- *
- * on exit
- *	return_address	: the address if found else -1; 
- *	return		: NULL if error, else pointer to next item in line 
- *	
- */
-
-static	char	*parse_address(line, med_data, return_address)
-	char	*line;
-	MedData	*med_data;
-	int	*return_address;
-{
-	int	tmp;
-	char	plus;	/* boolean	*/
-
-	*return_address = -1;
-
-
-	if (!line) return(line);
-
-
-	while(isspace(*line))
-		line++;			/* skip white space		*/
-
-	/*
-	 * look for an absolute address specification
-	 */
-	if (isdigit(*line)) {
-		(void) sscanf(line, "%d", return_address);
-		while (isdigit(*++line))
-		;
-
-	} else if (*line == '.') {
-		*return_address = med_data->current_frame;
-		line++;
-	} else if (*line == '$') {
-		*return_address = med_data->last_frame;
-		line++;
-	}
-
-	while(isspace(*line))
-		line++;			/* skip white space		*/
-
-	/*
-	 * look for relative address specification to combine with absolute
-	 * address. if no absolute address was given assume current frame
-	 */
-	if (*line == '+' || *line == '-') {
-		plus = *line;		/* tmp record			*/
-		while(isspace(*++line))	/* skip '+' and white space	*/
-		;
-		if (isdigit(*line)) {
-			(void) sscanf(line, "%d", &tmp);
-			while (isdigit(*++line))
-			;
-		}
-		else {
-			return(NULL);	/* error	*/
-		}
-
-		if (plus == '-') tmp *= -1;
-		/*
-		 * see if a absolute address was already specified. if not
-		 * use current frame
-		 */
-		if (*return_address == -1) {
-			*return_address = tmp + med_data->current_frame;
-		}
-		else {
-			*return_address += tmp;
-		}
-	}
-
-	return (line);
-}
-		
-/*
- *	get_line
- *	[internal]
- *
- *	get a line of text from either a file if there is a valid file pointer
- *	or from the commands buffer.
- */
-static char	*get_line(med_data)
-	MedData	*med_data;
-{
-	char	*line;
-	char	*cptr;
-
-	/*
-	 * if commands are in a file then read them from file	
-	 */
-	if (med_data->fp) {
-		line = fgets(line_buf, MAX_LINE_LEN, med_data->fp);
-	}
-	else {	/* read next command from command line	*/
-		line = med_data->command_string;
-		if (!line) return NULL;
-
-		/*
-		 * advance command pointer to next line
-		 */
-		cptr = strchr(med_data->command_string, '\n');
-		if (cptr) {	/* more commands follow	*/
-			*cptr = '\0';
-			med_data->command_string = cptr+1;
-		}
-		else {		/* no more commands	*/
-			med_data->command_string = NULL;
-		}
-	}
-
-	return(line);
-}
-
-static	usage(message) 
-	char	*message;
-{
-
-	if (message) {
-		(void) fprintf(stderr, "med: %s\n", message);
-	}
-	(void) fprintf (
-		stderr, "med: usage: [-e script] [-f sfilename] [-l directory] [filename]\n"); 
-	exit(1);
-}

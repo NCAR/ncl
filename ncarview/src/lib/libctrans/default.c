@@ -1,5 +1,5 @@
 /*
- *	$Id: default.c,v 1.10 1992-07-16 23:12:51 clyne Exp $
+ *	$Id: default.c,v 1.11 1992-09-01 23:42:05 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -19,8 +19,9 @@
  */
 #define	INDEXED	0
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
-#include <ncarv.h>
+#include <ncarg/c.h>
 #include "cgmc.h"
 #define	 DEFAULT
 #include "default.h"
@@ -85,12 +86,12 @@ InitDefault()
 	 */
 	if (! isInit) {;
 
-		colorDefaultTable = (ColorElement *) icMalloc (
-				sizeof(ColorElement) * (MAX_C_I + 1)
-				);
-		picColorDefaultTable = (ColorElement *) icMalloc (
-				sizeof(ColorElement) * (MAX_C_I + 1)
-				);
+		colorDefaultTable = (ColorElement *) malloc (
+			(unsigned) (sizeof(ColorElement) * (MAX_C_I + 1))
+		);
+		picColorDefaultTable = (ColorElement *) malloc (
+			(unsigned) (sizeof(ColorElement) * (MAX_C_I + 1))
+		);
 
 		colorLUTable.size = MAX_C_I + 1;
 	}

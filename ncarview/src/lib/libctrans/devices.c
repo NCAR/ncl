@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.c,v 1.11 1992-07-16 18:07:34 clyne Exp $
+ *	$Id: devices.c,v 1.12 1992-09-01 23:42:11 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -23,7 +23,7 @@
  */
 
 #include	<stdio.h>
-#include	<cgm_tools.h>
+#include	<ncarg/cgm_tools.h>
 #include	"cgmc.h"
 #define		DEVICES
 #include	"devices.h"
@@ -154,7 +154,7 @@ int X11_Escape();
 int X11_Message(), X11_ApplData();
 
 
-#endif X11
+#endif /* X11	*/
 
 
 
@@ -220,7 +220,7 @@ int	CTXT_Escape();
 
 int	CTXT_Message(), CTXT_ApplData();
 
-#endif	CTXT
+#endif	/* CTXT	*/
 
 #ifdef	SunV
 /*
@@ -595,7 +595,7 @@ int  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 
 	},
 
-#endif X11
+#endif /* X11	*/
 
 
 #ifdef CTXT 
@@ -680,7 +680,7 @@ int  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	}
 
 	},
-#endif CTXT
+#endif /* CTXT	*/
 
 #ifdef	SunV
 

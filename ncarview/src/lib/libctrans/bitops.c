@@ -1,5 +1,5 @@
 /*
- *	$Id: bitops.c,v 1.5 1992-07-16 18:07:03 clyne Exp $
+ *	$Id: bitops.c,v 1.6 1992-09-01 23:41:37 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -11,7 +11,7 @@
 *                                                                      *
 ***********************************************************************/
 #include	<stdio.h>
-#include	<ncarv.h>
+#include	<ncarg/c.h>
 #include	"default.h"
 
 /*
@@ -136,13 +136,17 @@ double GetReal(bufptr,r_mode,expon_prec,man_prec)
 			 */
 			if (MFVERSION >= 1)  {
 				whole_part = GetInt(bufptr, 16, TRUE);
-				return (whole_part + 
-					(fraction_part / POWER16));
+				return (
+					(double) (whole_part + 
+					(fraction_part / POWER16))
+				);
 			} else {
 			
 				whole_part = Get_SI_int(bufptr, 16);
-				return (whole_part + (SIGNOF(bufptr[0])
-					* (fraction_part / (POWER15 - 1))));
+				return (
+					(double)(whole_part + (SIGNOF(bufptr[0])
+					* (fraction_part / (POWER15 - 1))))
+				);
 			}
 		}
 
@@ -150,13 +154,17 @@ double GetReal(bufptr,r_mode,expon_prec,man_prec)
 			fraction_part = GetInt(bufptr+4,32,FALSE);
 			if (MFVERSION >= 1)  {
 				whole_part = GetInt(bufptr, 32, TRUE);
-				return (whole_part + 
-					(fraction_part / POWER32));
+				return (
+					(double) (whole_part + 
+					(fraction_part / POWER32))
+				);
 			}
 			else {
 				whole_part = Get_SI_int(bufptr,32);
-				return(whole_part + (SIGNOF(bufptr[0]) 
-				* (fraction_part / (POWER31 - 1))));
+				return(
+					(double)(whole_part + (SIGNOF(bufptr[0])
+					* (fraction_part / (POWER31 - 1))))
+				);
 			}
 		}
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.h,v 1.12 1992-08-26 18:28:36 clyne Exp $
+ *	$Id: devices.h,v 1.13 1992-09-01 23:42:15 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -22,7 +22,7 @@
  *	devices is to be added this file and devices.c must be modified
  */
 
-#include <ncarv.h>
+#include <ncarg/c.h>
 #define	GCAP	/* GCAP must always be defined	*/
 
 /*

@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.12 1992-07-16 18:08:32 clyne Exp $
+ *	$Id: text.c,v 1.13 1992-09-01 23:43:24 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -11,8 +11,11 @@
 *                                                                      *
 ***********************************************************************/
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <math.h>
-#include <ncarv.h>
+#include <ncarg/c.h>
+#include "ctrans.h"
 #include "cgmc.h"
 #include "text.h"
 #include "readfont.h"
@@ -42,10 +45,6 @@
  *	Alignment.
  */	
 
-
-extern	char	*strcpy();
-extern	int	Init_Readfont();
-extern	float	X_scale();
 
 /* coordinate transformation matrix necessary for scaling and rotating of
  * characters within each characters space. The matrix is global in order
@@ -109,6 +108,18 @@ static	float	cosBase,
 				 * "up vector" with  respect to the y 
 				 * coordinate  of the screen.
 			 	 */
+static	float	X_scale(height)
+	int	height;
+{
+	float	mag1;
+	float	mag2;
+	
+	mag1 = MAG(CHAR_X_BASE, CHAR_Y_BASE); 
+	mag2 = MAG(CHAR_X_UP, CHAR_Y_UP);
+
+	return (((float) CHAR_HEIGHT / (float) height) 
+		* CHAR_EXPAN * (mag1 / mag2));
+}
 
 /* 	make_matrix:
  *		This routine calculates the transformation matrix necessary
@@ -216,7 +227,6 @@ int	Init_Font(fontcap)
 {
 	static	char	*fontCap = NULL;
 	char	*f = fontcap;
-	char	buf[80];
 	int	status = 0;
 
 
@@ -238,9 +248,18 @@ int	Init_Font(fontcap)
 	}
 
 	/* create space for temp cmgc	*/
-	tempcgmc.r = (Rtype *) icMalloc (sizeof(Rtype));
-	tempcgmc.ix = (IXtype *) icMalloc (sizeof(IXtype));
-	tempcgmc.ci = (CItype *) icMalloc (sizeof(CItype));
+	if ( !(tempcgmc.r = (Rtype *) malloc (sizeof(Rtype)))) {
+		ESprintf(errno, "malloc(%d)", sizeof(Rtype));
+		return(-1);
+	}
+	if ( !(tempcgmc.ix = (IXtype *) malloc (sizeof(IXtype)))) {
+		ESprintf(errno, "malloc(%d)", sizeof(IXtype));
+		return(-1);
+	}
+	if ( !(tempcgmc.ci = (CItype *) malloc (sizeof(CItype)))) {
+		ESprintf(errno, "malloc(%d)", sizeof(CItype));
+		return(-1);
+	}
 
 	/*
 	 * this is a hack to make sure translation tables get updated
@@ -254,8 +273,11 @@ int	Init_Font(fontcap)
 	/*
 	 * record name of the fontcap
 	 */
-	if (fontCap) cfree(fontCap);
-	fontCap = icMalloc((unsigned) strlen(f) + 1);
+	if (fontCap) free((Voidptr) fontCap);
+	if (! (fontCap = malloc((unsigned) strlen(f) + 1))) {
+		ESprintf(errno, "malloc(%d)", strlen(f) + 1);
+		return(-1);
+	}
 	(void) strcpy(fontCap, f);
 
 	return (status);
@@ -675,8 +697,6 @@ int	Text(cgmc)
 	IXtype 	line_type = LINE_TYPE;
 	CItype	line_colour = LINE_COLOUR.index;
 
-	extern	int	setFont();
-
 	/*
 	 * make sure font has not changed
 	 */
@@ -721,8 +741,12 @@ int	Text(cgmc)
 
 	/* make sure their is sufficient space in s.string	*/
 	if (( i = cgmc->s->string_space[str_ind]) > str_space) {
-		if (string != (char *) NULL) cfree (string);
-		string = (char *) icMalloc ((unsigned) i * sizeof(char));
+		if (string != (char *) NULL) free ((Voidptr) string);
+		string = (char *) malloc ((unsigned) i * sizeof(char));
+		if (! string) {
+			ESprintf(errno, "malloc(%d)", i * sizeof(char));
+			return(-1);
+		}
 		str_space = i;
 	}
 
@@ -780,11 +804,15 @@ int	Text(cgmc)
 			/* make sure there is room in cgmc for strokes	*/
 			if (cgmc->Pspace <= numstroke) {
 				if (cgmc->p != (Ptype *) NULL) 
-					cfree((char *) cgmc->p);
+					free((Voidptr) cgmc->p);
 
-				cgmc->p = (Ptype * ) 
-					icMalloc (((unsigned) numstroke + 1) *
-					sizeof(Ptype));
+				cgmc->p = (Ptype * ) malloc (
+					((unsigned) numstroke + 1)*sizeof(Ptype)
+				);
+				if (! cgmc->p) {
+					ESprintf(errno, "malloc()");
+					return(-1);
+				}
 
 				cgmc->Pspace = numstroke + 1;
 			}
@@ -900,18 +928,6 @@ int	Text(cgmc)
  
 
 
-float	X_scale(height)
-	int	height;
-{
-	float	mag1;
-	float	mag2;
-	
-	mag1 = MAG(CHAR_X_BASE, CHAR_Y_BASE); 
-	mag2 = MAG(CHAR_X_UP, CHAR_Y_UP);
-
-	return (((float) CHAR_HEIGHT / (float) height) 
-		* CHAR_EXPAN * (mag1 / mag2));
-}
 
 #ifdef	DEBUG_TEXT
 /* 	draw:

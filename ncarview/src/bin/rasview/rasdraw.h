@@ -1,5 +1,5 @@
 /*
- *	$Id: rasdraw.h,v 1.3 1992-03-20 22:36:27 clyne Exp $
+ *	$Id: rasdraw.h,v 1.4 1992-09-01 23:40:10 clyne Exp $
  */
 #ifndef	_rasdraw_
 #define	_rasdraw_
@@ -54,5 +54,47 @@ typedef	struct	{
 
 #ifndef	MIN
 #define	MIN(X,Y)	((X) < (Y) ? (X) : (Y))
-#endif	MIN
-#endif	_rasdraw_
+#endif	
+
+
+extern	Context	*RasDrawOpen(
+#ifdef	NeedFuncProto
+	int	*argc,
+	char	**argv,
+	Boolean	batch
+#endif
+);
+
+
+extern	int	RasDraw(
+#ifdef	NeedFuncProto
+	Raster	*ras,
+	Context	*context
+#endif
+);
+
+extern	int	RasDrawSetPalette(
+#ifdef	NeedFuncProto
+	Context	*context,
+	unsigned char	*red,
+	unsigned char	*green,
+	unsigned char	*blue,
+	unsigned int	ncolor
+#endif
+);
+
+
+extern	void	RasDrawUnSetPalette(
+#ifdef	NeedFuncProto
+	Context	*context
+#endif
+);
+
+extern	void	RasDrawClose(
+#ifdef	NeedFuncProto
+	Context	*context
+#endif
+);
+
+
+#endif	/* _rasdraw_	*/

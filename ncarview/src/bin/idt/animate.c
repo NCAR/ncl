@@ -1,5 +1,5 @@
 /*
- *      $Id: animate.c,v 1.1 1992-08-24 23:00:53 clyne Exp $
+ *      $Id: animate.c,v 1.2 1992-09-01 23:38:36 clyne Exp $
  */
 /************************************************************************
 *									*
@@ -23,9 +23,10 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <X11/Xlib.h>
-#include "ncarv.h"
+#include <ncarg/c.h>
 #include "animate.h"
 
 /*
@@ -444,7 +445,7 @@ void	AnimateDispContForward(a, update_func, data)
 				update_func(data, a->ap.current_image(&a->ap));
 			}
 			if (a->delay) {	/*	delay in 1/100 sec*/
-				usleep((a->delay)*10000); 
+				USleep((a->delay)*10000); 
 			}
 
 		}
@@ -460,7 +461,7 @@ void	AnimateDispContForward(a, update_func, data)
 				update_func(data, a->ap.current_image(&a->ap));
 			}
 			if (a->delay) {	/*	delay in 1/100 sec*/
-				usleep((a->delay)*10000); 
+				USleep((a->delay)*10000); 
 			}
 		}
 	}
@@ -525,7 +526,7 @@ void	AnimateDispContReverse(a, update_func, data)
 				update_func(data, a->ap.current_image(&a->ap));
 			}
 			if (a->delay) {	/*	delay in 1/100 sec*/
-				usleep((a->delay)*10000); 
+				USleep((a->delay)*10000); 
 			}
 		}
 	}
@@ -540,7 +541,7 @@ void	AnimateDispContReverse(a, update_func, data)
 				update_func(data, a->ap.current_image(&a->ap));
 			}
 			if (a->delay) {	/*	delay in 1/100 sec*/
-				usleep((a->delay)*10000); 
+				USleep((a->delay)*10000); 
 			}
 		}
 	}

@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.2 1992-06-25 21:47:54 clyne Exp $
+#	$Id: yMakefile,v 1.3 1992-09-01 23:39:42 clyne Exp $
 #
 #	Makefile for ncgmstat
 #
@@ -13,7 +13,7 @@ MYNAME	= ncgmstat
 
 LOCLIBDIR	= ../../../lib
 
-LIBS		= $(LIBDIR)/libcgm.a $(LIBDIR)/libncarv.a
+LIBS		= $(LIBDIR)/libcgm.a $(LIBDIR)/libncarg_c.a
 
 CDEFINES	=
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: gcaprast.c,v 1.11 1992-07-16 18:07:59 clyne Exp $
+ *	$Id: gcaprast.c,v 1.12 1992-09-01 23:42:38 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -24,15 +24,16 @@
  */
 
 #include	<stdio.h>
-#include	<ncarv.h>
+#include	<stdlib.h>
+#include	<errno.h>
+#include	<ncarg/c.h>
 #include	"cgmc.h"
 #include	"defines.h"
 #include	"graphcap.h"
 #include	"ctrandef.h"
 #include	"translate.h"
+#include	"bitops.h"
 
-extern 	long	GetInt();
-extern 	int	formatcoord();
 
 
 
@@ -75,6 +76,59 @@ static	boolean	Runlength;	/* true if device wants run length encoded
 static	int	veccntoutsize = 0;  /*bytes in a formated raster vector count */
 static	int	dataoutsize = 0;   /*number bytes in a formated raster data */
 
+/*
+ *	set_up_addressing
+ *	[internal]
+ *
+ * on entry
+ *	P,Q		: corners of cell array
+ * on exit
+ *	*step_y		: rasterize from top to bottom or vise versa
+ *	*start_x	: starting X coordinate for raster instructions
+ *	*start_y	: starting X coordinate for raster instructions
+ */
+static	void	set_up_addressing(P, Q,  step_y, start_x, start_y, swap)
+	Ptype	P,Q;
+	int	*step_y;
+	long	*start_x,
+		*start_y;
+	boolean	*swap;	
+{
+
+	if (P.x < Q.x) {
+		*start_x = P.x;
+		*swap = FALSE;
+	}
+	else {
+		*start_x = Q.x;
+		*swap = TRUE;
+	}
+
+	*start_y = P.y;
+	if (P.y < Q.y) {
+		*step_y = 1;
+	}
+	else {
+		*step_y = -1;
+	}
+}
+
+static	void	swap_array(array, n)
+	Ctype	*array;
+	int	n;
+{
+	Ctype	*left, *right;
+	Ctype	temp;
+
+	left = &array[0];
+	right = &array[n-1];
+
+	while (left < right) {
+		temp = *left;
+		*left++ = *right;
+		*right-- = temp;
+	}
+}
 
 /*
  *	One time setup to calculate the values declared above.
@@ -153,7 +207,7 @@ long	count;			/* the vector count */
 			src = count;
 			srcbitstart = RASTER_VECTOR_COUNT_FORMAT[DATA_VALUE][i];
 		} else {
-			ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+			ESPRINTF(E_UNKNOWN, ("Invalid graphcap entry",NULL));
 			return (-1);
 
 		}
@@ -190,7 +244,7 @@ long	count;			/* the vector count */
 				buffer(temp, ftoa(temp,value));
 				break;
 			default:
-				ESPRINTF(E_UNKNOWN,"Invalid graphcap entry",(NULL));
+				ESPRINTF(E_UNKNOWN,("Invalid graphcap entry",NULL));
 				return (-1);
 			}
 	}
@@ -242,7 +296,7 @@ int	count;
 			src = data;
 			srcbitstart = RASTER_DATA_FORMAT[DATA_VALUE][i];
 		} else {
-			ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+			ESPRINTF(E_UNKNOWN, ("Invalid graphcap entry",NULL));
 			return (-1);
 		}
 
@@ -289,7 +343,7 @@ int	count;
 				buffer(temp, ftoa(temp,value));
 				break;
 			default:
-				ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+				ESPRINTF(E_UNKNOWN, ("Invalid graphcap entry",NULL));
 				return(-1);
 			}
 	}
@@ -340,7 +394,11 @@ CGMC	*c;
 	nx = c->i[0];		/* number of cells in x direction	*/
 	ny = c->i[1];		/* number of cells in y direction	*/
 
-	index_array = (Ctype *) icMalloc ((unsigned) nx * sizeof (Ctype) + 1);  
+	index_array = (Ctype *) malloc ((unsigned) nx * sizeof (Ctype) + 1);  
+	if (! index_array) {
+		ESprintf(errno, "malloc(%d)", nx * sizeof(Ctype) + 1);
+		return(-1);
+	}
 
 	/*
 	 * get boundry coordinates
@@ -459,7 +517,7 @@ CGMC	*c;
 		}
 	}
 
-	cfree((char *) index_array);
+	free((Voidptr) index_array);
 	return(0);
 }
 
@@ -508,8 +566,6 @@ int	CellArray_(c, P, Q, R, nx, ny)
 
 	register int	i,j,k;
 
-	void	SetUpCellArrayIndexing(), set_up_addressing(), swap_array();
-
 	image_width = ABS(P.x - Q.x) + 1;
 	image_height = ABS(P.y - Q.y) + 1;
 
@@ -518,9 +574,21 @@ int	CellArray_(c, P, Q, R, nx, ny)
 	 */
 	if (nx == 0 || ny == 0) return (0);
 
-	rows = (int *) icMalloc ((unsigned) ny * sizeof (int));
-	cols = (int *) icMalloc ((unsigned) nx * sizeof (int));
-	index_array = (unsigned char *) icMalloc ((unsigned) nx * sizeof (int));
+	rows = (int *) malloc ((unsigned) ny * sizeof (int));
+	if (! rows) {
+		ESprintf(errno, "malloc(%d)", ny * sizeof(int));
+		return(-1);
+	}
+	cols = (int *) malloc ((unsigned) nx * sizeof (int));
+	if (! cols) {
+		ESprintf(errno, "malloc(%d)", nx * sizeof(int));
+		return(-1);
+	}
+	index_array = (unsigned char *) malloc ((unsigned) nx * sizeof (int));
+	if (! index_array) {
+		ESprintf(errno, "malloc(%d)", nx * sizeof(Etype));
+		return(-1);
+	}
 
 	/*
 	 * determine starting addresses for raster instructions based on 
@@ -621,63 +689,10 @@ int	CellArray_(c, P, Q, R, nx, ny)
 		}
 	}
 
-	free((char *) rows);
-	free((char *) cols);
-	free((char *) index_array);
+	free((Voidptr) rows);
+	free((Voidptr) cols);
+	free((Voidptr) index_array);
 
 	return(0);
 }
 
-/*
- *	set_up_addressing
- *	[internal]
- *
- * on entry
- *	P,Q		: corners of cell array
- * on exit
- *	*step_y		: rasterize from top to bottom or vise versa
- *	*start_x	: starting X coordinate for raster instructions
- *	*start_y	: starting X coordinate for raster instructions
- */
-static	void	set_up_addressing(P, Q,  step_y, start_x, start_y, swap)
-	Ptype	P,Q;
-	int	*step_y;
-	long	*start_x,
-		*start_y;
-	boolean	*swap;	
-{
-
-	if (P.x < Q.x) {
-		*start_x = P.x;
-		*swap = FALSE;
-	}
-	else {
-		*start_x = Q.x;
-		*swap = TRUE;
-	}
-
-	*start_y = P.y;
-	if (P.y < Q.y) {
-		*step_y = 1;
-	}
-	else {
-		*step_y = -1;
-	}
-}
-
-static	void	swap_array(array, n)
-	Ctype	*array;
-	int	n;
-{
-	Ctype	*left, *right;
-	Ctype	temp;
-
-	left = &array[0];
-	right = &array[n-1];
-
-	while (left < right) {
-		temp = *left;
-		*left++ = *right;
-		*right-- = temp;
-	}
-}

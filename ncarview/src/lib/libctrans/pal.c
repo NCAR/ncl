@@ -13,8 +13,10 @@
  *		ELEMENT whose palette is obtained from a palette file.
  */
 		
-#include <ncarg_ras.h>
-#include <ncarv.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <ncarg/c.h>
+#include <ncarg/ncarg_ras.h>
 #include "cgmc.h"
 #include "default.h"
 
@@ -52,14 +54,21 @@ LoadPalette(cgmc, palette)
 	 */
 	max_color = (1 << DCP) - 1;
 
-	colors = (unsigned char *) icMalloc (768);
+	if (! (colors = (unsigned char *) malloc (768))) {
+		ESprintf(errno, "malloc(%d)", 768);
+		return(-1);
+	}
 
 	/*
 	 * make sure enough room in cgmc for data
 	 */
 	if (cgmc->CDspace < 256) {
-		if (cgmc->CDspace) cfree((char *) cgmc->cd);
-		cgmc->cd = (CDtype *) icMalloc(256 * sizeof (CDtype));
+		if (cgmc->CDspace) free((Voidptr) cgmc->cd);
+		cgmc->cd = (CDtype *) malloc(256 * sizeof (CDtype));
+		if (! cgmc->cd) {
+			ESprintf(errno, "malloc(%d)", 256 * sizeof(CDtype));
+			return(-1);
+		}
 		cgmc->CDspace = 256;
 	}
 
@@ -92,7 +101,7 @@ LoadPalette(cgmc, palette)
 
 	cgmc->CDnum = 256;	/* number of values defined	*/
 
-	free((char *) colors);
+	free((Voidptr) colors);
 
 	return(1);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: fontlist.c,v 1.7 1992-07-16 18:07:45 clyne Exp $
+ *	$Id: fontlist.c,v 1.8 1992-09-01 23:42:26 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -13,7 +13,7 @@
 #include	<stdio.h>
 #include	<string.h>
 #include	<errno.h>
-#include	<ncarv.h>
+#include	<ncarg/c.h>
 #include	"default.h"
 #include	"defines.h"
 /*	fontlist.c:
@@ -32,9 +32,10 @@
 
 
 #define	MAXFONT		25	/* maximum number of fonts in the fontlist */	
+#define	MAX_F_NAME_LEN	40	/* max length of a font name		*/
 
 
-char	*Fontlist[MAXFONT];
+static	char	Fontlist[MAXFONT][MAX_F_NAME_LEN];
 
 extern	char	*getFcapname();
 extern	int	Init_Font();
@@ -52,95 +53,69 @@ InitFontList()
 
 	static	boolean	initialized = FALSE;
 
+	
+
+
 
 	if (initialized) return; 
 	
+	(void) strncpy(Fontlist[0], "DEFAULT", MAX_F_NAME_LEN - 1);
+	(void) strncpy(
+		Fontlist[1], "HERSHEY:CARTOGRAPHIC_ROMAN", MAX_F_NAME_LEN - 1
+	);
+	(void) strncpy(
+		Fontlist[2], "HERSHEY:CARTOGRAPHIC_GREEK", MAX_F_NAME_LEN - 1
+	);
+	(void) strncpy(
+		Fontlist[3], "HERSHEY:SIMPLEX_ROMAN", MAX_F_NAME_LEN - 1
+	);
+	(void) strncpy(
+		Fontlist[4], "HERSHEY:SIMPLEX_GREEK", MAX_F_NAME_LEN - 1
+	);
+	(void) strncpy(
+		Fontlist[5], "HERSHEY:SIMPLEX_SCRIPT", MAX_F_NAME_LEN - 1
+	);
+	(void) strncpy(
+		Fontlist[6], "HERSHEY:COMPLEX_ROMAN", MAX_F_NAME_LEN - 1
+	);
+	(void) strncpy(
+		Fontlist[7], "HERSHEY:COMPLEX_GREEK", MAX_F_NAME_LEN - 1
+	);
+	(void) strncpy(
+		Fontlist[8], "HERSHEY:COMPLEX_SCRIPT", MAX_F_NAME_LEN - 1
+	);
+	(void) strncpy(
+		Fontlist[9], "HERSHEY:COMPLEX_ITALIC", MAX_F_NAME_LEN - 1
+	);
+	(void) strncpy(
+		Fontlist[10], "HERSHEY:COMPLEX_CYRILLIC", MAX_F_NAME_LEN - 1
+	);
+	(void) strncpy(
+		Fontlist[11], "HERSHEY:DUPLEX_ROMAN", MAX_F_NAME_LEN - 1
+	);
+	(void) strncpy(
+		Fontlist[12], "HERSHEY:TRIPLEX_ROMAN", MAX_F_NAME_LEN - 1
+	);
+	(void) strncpy(
+		Fontlist[13], "HERSHEY:TRIPLEX_ITALIC", MAX_F_NAME_LEN - 1
+	);
+	(void) strncpy(
+		Fontlist[14], "HERSHEY:GOTHIC_GERMAN", MAX_F_NAME_LEN - 1
+	);
+	(void) strncpy(
+		Fontlist[15], "HERSHEY:GOTHIC_ENGLISH", MAX_F_NAME_LEN - 1
+	);
+	(void) strncpy(
+		Fontlist[16], "HERSHEY:GOTHIC_ITALIAN", MAX_F_NAME_LEN - 1
+	);
+	(void) strncpy(
+		Fontlist[17], "HERSHEY:MATH_SYMBOLS", MAX_F_NAME_LEN - 1
+	);
+	(void) strncpy(Fontlist[18], "HERSHEY:SYMBOL_SET1", MAX_F_NAME_LEN - 1);
+	(void) strncpy(Fontlist[19], "HERSHEY:SYMBOL_SET2", MAX_F_NAME_LEN - 1);
 
-	/* build default font list.
-	 * This table is built dynamically so it can accomodate different
-	 * sized font lists
- 	 */
-	Fontlist[0] = (char *) icMalloc ((unsigned) strlen("DEFAULT")+1);
-	(void) strcpy(Fontlist[0], "DEFAULT");
-
-	Fontlist[1] = (char *) icMalloc
-			((unsigned) strlen("HERSHEY:CARTOGRAPHIC_ROMAN")+1);
-	(void) strcpy(Fontlist[1], "HERSHEY:CARTOGRAPHIC_ROMAN");
-
-	Fontlist[2] = (char *) icMalloc
-			((unsigned) strlen("HERSHEY:CARTOGRAPHIC_GREEK")+1);
-	(void) strcpy(Fontlist[2], "HERSHEY:CARTOGRAPHIC_GREEK");
-
-	Fontlist[3] = (char *) icMalloc 
-			((unsigned) strlen("HERSHEY:SIMPLEX_ROMAN") + 1);
-	(void) strcpy(Fontlist[3], "HERSHEY:SIMPLEX_ROMAN");
-
-	Fontlist[4] = (char *) icMalloc 
-			((unsigned) strlen("HERSHEY:SIMPLEX_GREEK") + 1);
-	(void) strcpy(Fontlist[4], "HERSHEY:SIMPLEX_GREEK");
-
-	Fontlist[5] = (char *) icMalloc 
-			((unsigned) strlen("HERSHEY:SIMPLEX_SCRIPT") + 1);
-	(void) strcpy(Fontlist[5], "HERSHEY:SIMPLEX_SCRIPT");
-
-	Fontlist[6] = (char *) icMalloc 
-			((unsigned) strlen("HERSHEY:COMPLEX_ROMAN") + 1);
-	(void) strcpy(Fontlist[6], "HERSHEY:COMPLEX_ROMAN");
-
-	Fontlist[7] = (char *) icMalloc 
-			((unsigned) strlen("HERSHEY:COMPLEX_GREEK") + 1);
-	(void) strcpy(Fontlist[7], "HERSHEY:COMPLEX_GREEK");
-
-	Fontlist[8] = (char *) icMalloc 
-			((unsigned) strlen("HERSHEY:COMPLEX_SCRIPT") + 1);
-	(void) strcpy(Fontlist[8], "HERSHEY:COMPLEX_SCRIPT");
-
-	Fontlist[9] = (char *) icMalloc 
-			((unsigned) strlen("HERSHEY:COMPLEX_ITALIC") + 1);
-	(void) strcpy(Fontlist[9], "HERSHEY:COMPLEX_ITALIC");
-
-	Fontlist[10] = (char *) icMalloc 
-			((unsigned) strlen("HERSHEY:COMPLEX_CYRILLIC")+1);
-	(void) strcpy(Fontlist[10], "HERSHEY:COMPLEX_CYRILLIC");
-
-	Fontlist[11] = (char *) icMalloc 
-			((unsigned) strlen("HERSHEY:DUPLEX_ROMAN") + 1);
-	(void) strcpy(Fontlist[11], "HERSHEY:DUPLEX_ROMAN");
-
-	Fontlist[12] = (char *) icMalloc 
-			((unsigned) strlen("HERSHEY:TRIPLEX_ROMAN") + 1);
-	(void) strcpy(Fontlist[12], "HERSHEY:TRIPLEX_ROMAN");
-
-	Fontlist[13] = (char *) icMalloc 
-			((unsigned) strlen("HERSHEY:TRIPLEX_ITALIC") + 1);
-	(void) strcpy(Fontlist[13], "HERSHEY:TRIPLEX_ITALIC");
-
-	Fontlist[14] = (char *) icMalloc 
-			((unsigned) strlen("HERSHEY:GOTHIC_GERMAN") + 1);
-	(void) strcpy(Fontlist[14], "HERSHEY:GOTHIC_GERMAN");
-
-	Fontlist[15] = (char *) icMalloc 
-			((unsigned) strlen("HERSHEY:GOTHIC_ENGLISH") + 1);
-	(void) strcpy(Fontlist[15], "HERSHEY:GOTHIC_ENGLISH");
-
-	Fontlist[16] = (char *) icMalloc 
-			((unsigned) strlen("HERSHEY:GOTHIC_ITALIAN") + 1);
-	(void) strcpy(Fontlist[16], "HERSHEY:GOTHIC_ITALIAN");
-
-	Fontlist[17] = (char *) icMalloc 
-			((unsigned) strlen("HERSHEY:MATH_SYMBOLS") + 1);
-	(void) strcpy(Fontlist[17], "HERSHEY:MATH_SYMBOLS");
-
-	Fontlist[18] = (char *) icMalloc 
-			((unsigned) strlen("HERSHEY:SYMBOL_SET1") + 1);
-	(void) strcpy(Fontlist[18], "HERSHEY:SYMBOL_SET1");
-
-	Fontlist[19] = (char *) icMalloc 
-			((unsigned) strlen("HERSHEY:SYMBOL_SET2") + 1);
-	(void) strcpy(Fontlist[19], "HERSHEY:SYMBOL_SET2");
-
-	for (i=20; i<MAXFONT; i++) {
-		Fontlist[i] = NULL;
+	for(i=20; i<MAXFONT; i++) {
+		Fontlist[i][0] = '\0';
 	}
 
 	initialized = TRUE;
@@ -174,12 +149,7 @@ CGMC *c;
 
 	/* copy fontlist to the table	*/
 	for (i=0;i<c->Snum;i++) {
-		if (Fontlist[i] != NULL) free ((char *) Fontlist[i]);
-
-		Fontlist[i] = (char *) icMalloc ((unsigned) 
-			((strlen(c->s->string[i]) + 1) * sizeof(char)));
-
-		(void) strcpy(Fontlist[i],c->s->string[i]);
+		(void) strncpy(Fontlist[i],c->s->string[i], MAX_F_NAME_LEN - 1);
 	}
 	return(status);
 }
@@ -200,7 +170,7 @@ int	setFont(font_index)
 
 	font = Fontlist[font_index - 1];
 
-	if (! font) {
+	if (! *font) {
 		status = -1;
 		font = "DEFAULT";
 	}

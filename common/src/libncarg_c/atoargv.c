@@ -1,6 +1,6 @@
 
 /*
- *      $Id: atoargv.c,v 1.2 1992-05-14 16:46:48 clyne Exp $
+ *      $Id: atoargv.c,v 1.3 1992-09-01 23:47:09 clyne Exp $
  */
 /*
  *	File:		atoargv.c
@@ -17,7 +17,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
-#include "ncarv.h"
+#include "c.h"
 
 static	char	*buf = NULL;	/* internal storage for string 	*/
 static	int	bufSize = 0;
@@ -28,7 +28,7 @@ static	char	*tokenTail;
  *	compile a string for parsing with next_token()
  */
 static	int	compile_string(s)
-	char	*s;
+	const char	*s;
 {
 	if (bufSize < (strlen(s) + 1)) {
 		if (buf) cfree(buf);
@@ -80,7 +80,7 @@ static	char	*next_token()
  *	return the number of tokens (args) in s
  */
 static	int	num_tokens(s)
-	char	*s;
+	const char	*s;
 {
 	int	count = 0;
 
@@ -118,8 +118,8 @@ static	int	num_tokens(s)
  *			  invoke ESprintf()
  */ 
 char	**AToArgv(str, prog_name, argc)
-	char	*str;
-	char	*prog_name;
+	const char	*str;
+	const char	*prog_name;
 	int	*argc;
 {
 	char	**argv;
@@ -185,6 +185,6 @@ void	FreeArgv(argv)
 		free(*argv);
 		argv_++;
 	}
-	free(argv);
+	free((Voidptr) argv);
 }
 

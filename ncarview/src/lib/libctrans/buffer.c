@@ -1,5 +1,5 @@
 /*
- *	$Id: buffer.c,v 1.5 1992-08-26 18:28:33 clyne Exp $
+ *	$Id: buffer.c,v 1.6 1992-09-01 23:41:39 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <ncarg/c.h>
 #include "ctrandef.h"
 
 static	int	outFD = -1;		/* fd for output init to stdout */

@@ -1,5 +1,5 @@
 /*
- *	$Id: clip.c,v 1.4 1992-04-03 20:56:25 clyne Exp $
+ *	$Id: clip.c,v 1.5 1992-09-01 23:41:47 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -19,7 +19,7 @@
  *				  and on 
  */
 #include <stdio.h>
-#include <ncarv.h>
+#include <ncarg/c.h>
 #include "default.h"
 #include "translate.h"
 #include "ctrandef.h"

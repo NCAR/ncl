@@ -16,6 +16,96 @@
 #include "translate.h"
 #include "ctrandef.h"
 
+/*
+ *	C = A x B, where A,B,C are of type Matrix2d
+ */
+static	void	matrix_matrix_multiply(A, B, C)
+	Matrix2d	A, B, C;
+{
+	int	i,j, k;
+
+	for (i=0; i<3; i++)
+	for (j=0; j<3; j++) {
+		C[i][j] = 0;
+		for (k=0; k<3; k++) {
+			C[i][j] += A[i][k] * B[k][j];
+		}
+	}
+		
+}
+
+
+/*
+ *	A = I, where A is of type Matrix2d
+ */
+static	void	identity_matrix(A)
+	Matrix2d	A;
+{
+	int	i,j;
+
+	for (i=0; i<3; i++)
+	for (j=0; j<3; j++)
+	{
+		if (i == j)
+			A[i][j] = 1.0;
+		else
+			A[i][j] = 0.0;
+	}
+}
+
+/*
+ * set up a composite matrix for performing the desired translation,
+ * rotation and scaling
+ */
+static	set_up_matrix(xo, yo, cos_theta, sin_theta, scale, xprime, yprime, M)
+	int	xo, yo;			/* translation to origin	*/
+	double	cos_theta, 
+		sin_theta;		/* angle of rotation	*/
+	double	scale;
+	int	xprime, yprime;		/* final translation destinatin	*/
+	Matrix2d	M;
+{
+	Matrix2d	To,		/* translation to origin matrix	*/
+			R,		/* rotation about origin	*/
+			S,
+			Tprime;		/* translation to pprime matrix	*/
+	Matrix2d	Tmp;
+	Matrix2d	Tmp1;
+
+	identity_matrix(To);
+	identity_matrix(R);
+	identity_matrix(S);
+	identity_matrix(Tprime);
+
+	/*
+	 * translate to origin
+	 */
+	To[0][2] = xo;
+	To[1][2] = yo;
+
+
+	/*
+	 * rotate theta degrees about origin
+	 */
+	R[0][0] = cos_theta; R[0][1] = -sin_theta;
+	R[1][0] = sin_theta; R[1][1] = cos_theta;
+
+	/*
+	 * scale
+	 */
+	S[0][0] = scale;
+	S[1][1] = scale;
+
+	/*
+	 * translate to a point p'
+	 */
+	Tprime[0][2] = xprime;
+	Tprime[1][2] = yprime;
+
+	matrix_matrix_multiply(S, To, Tmp);
+	matrix_matrix_multiply(R, Tmp, Tmp1);
+	matrix_matrix_multiply(Tprime, Tmp1, M);
+}
 
 /*
  *	ComSimHatch
@@ -65,7 +155,6 @@ ComSimHatch(p_list, n, hatch_index, hatch_spacing, dev)
 		y_scr_cen;
 	double	scale = 2.0;
 
-	extern  FillTable       *buildFillTable();
 
 	if (n < 2)
 		return;
@@ -239,93 +328,3 @@ ComSimHatch(p_list, n, hatch_index, hatch_spacing, dev)
 }
 
 
-/*
- *	C = A x B, where A,B,C are of type Matrix2d
- */
-static	void	matrix_matrix_multiply(A, B, C)
-	Matrix2d	A, B, C;
-{
-	int	i,j, k;
-
-	for (i=0; i<3; i++)
-	for (j=0; j<3; j++) {
-		C[i][j] = 0;
-		for (k=0; k<3; k++) {
-			C[i][j] += A[i][k] * B[k][j];
-		}
-	}
-		
-}
-
-
-/*
- *	A = I, where A is of type Matrix2d
- */
-static	void	identity_matrix(A)
-	Matrix2d	A;
-{
-	int	i,j;
-
-	for (i=0; i<3; i++)
-	for (j=0; j<3; j++)
-	{
-		if (i == j)
-			A[i][j] = 1.0;
-		else
-			A[i][j] = 0.0;
-	}
-}
-
-/*
- * set up a composite matrix for performing the desired translation,
- * rotation and scaling
- */
-static	set_up_matrix(xo, yo, cos_theta, sin_theta, scale, xprime, yprime, M)
-	int	xo, yo;			/* translation to origin	*/
-	double	cos_theta, 
-		sin_theta;		/* angle of rotation	*/
-	double	scale;
-	int	xprime, yprime;		/* final translation destinatin	*/
-	Matrix2d	M;
-{
-	Matrix2d	To,		/* translation to origin matrix	*/
-			R,		/* rotation about origin	*/
-			S,
-			Tprime;		/* translation to pprime matrix	*/
-	Matrix2d	Tmp;
-	Matrix2d	Tmp1;
-
-	identity_matrix(To);
-	identity_matrix(R);
-	identity_matrix(S);
-	identity_matrix(Tprime);
-
-	/*
-	 * translate to origin
-	 */
-	To[0][2] = xo;
-	To[1][2] = yo;
-
-
-	/*
-	 * rotate theta degrees about origin
-	 */
-	R[0][0] = cos_theta; R[0][1] = -sin_theta;
-	R[1][0] = sin_theta; R[1][1] = cos_theta;
-
-	/*
-	 * scale
-	 */
-	S[0][0] = scale;
-	S[1][1] = scale;
-
-	/*
-	 * translate to a point p'
-	 */
-	Tprime[0][2] = xprime;
-	Tprime[1][2] = yprime;
-
-	matrix_matrix_multiply(S, To, Tmp);
-	matrix_matrix_multiply(R, Tmp, Tmp1);
-	matrix_matrix_multiply(Tprime, Tmp1, M);
-}

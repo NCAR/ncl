@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.11 1992-06-24 20:41:54 clyne Exp $
+ *	$Id: c.h,v 1.12 1992-09-01 23:47:11 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -11,17 +11,145 @@
 *                                                                      *
 ***********************************************************************/
 
-#ifndef	_ncarv_
-#define	_ncarv_
+#ifndef	_ncarg_c_
+#define	_ncarg_c_
+
+#include <stdio.h>
+#include <sys/types.h>
 
 #ifdef	__STDC__
-typedef	void *	Voidptr;
+#include <stdarg.h>
 #else
-#include <sys/types.h>
+#include <varargs.h>
+#endif	/*	__STDC__	*/
+
+
+#ifdef	__STDC__
+
+typedef	void *	Voidptr;
+
+#else
+
+/*
+ *	K&R C
+ */
 typedef	caddr_t	Voidptr;
+#define	const		/* K&R C has no 'const'	*/
+
+#endif	/*	__STDC__	*/
+
+typedef	unsigned int	boolean;
+
+#ifndef	TRUE
+#define FALSE	0
+#define TRUE	!FALSE
+#endif	/* TRUE */
+
+/*
+**
+**	A R G U M E N T   V E C T O R S
+**
+*/
+
+extern	char	**AToArgv(
+#ifdef	NeedFuncProto
+	const char      *str,
+	const char      *prog_name,
+	int     *argc
 #endif
+);
+
+extern	void	FreeArgv(
+#ifdef	NeedFuncProto
+	char	**argv
+#endif
+);
+
+/*
+**
+**	E R R O R   R E P O R T I N G
+**
+*/
+#define	E_UNKNOWN	1000
+
+#define	ESPRINTF(A,B)	ESprintfFirstPart(A, __FILE__, __LINE__), \
+				ESprintfSecondPart B
+
+/*
+ * maintain backwords compatibility
+ */
+#define	ErrorGetMessage	ErrGetMsg
+#define	ErrorGetNumber	ErrGetNum
+
+/*ARGSUSED2*/
+extern	const char	*ESprintf(
+#ifdef	NeedFuncProto
+	unsigned        err_code,
+	const   char    *format,
+	...
+#endif
+);
+
+extern	const char	*LFESprintf(
+#ifdef	NeedFuncProto
+	unsigned	err_code,
+	const char	*file,
+	int		line,
+	const char	*format,
+	...
+#endif
+);
+
+extern	void	ESprintfFirstPart(
+#ifdef	NeedFuncProto
+	int		err_code,
+	const char	*file,
+	int		line
+#endif
+);
+
+extern const char    *ESprintfSecondPart(
+#ifdef	NeedFuncProto
+	const char	*format,
+	...
+#endif
+);
+
+extern	int	ErrorList(
+#ifdef	NeedFuncProto
+	unsigned start,
+	unsigned num,
+	const char **err_list
+#endif
+);
+
+extern	const char	*ErrGetMsg();
+extern	int	ErrGetNum();
 
 
+
+/*
+**
+**	M I S C E L L A N Y
+**
+*/
+extern	boolean	IsAsciiInt(
+#ifdef	NeedFuncProto
+	const char *s
+#endif
+);
+
+extern	USleep(
+#ifdef	NeedFuncProto
+	unsigned usec
+#endif
+);
+
+/*
+**
+**	O P T I O N   P A R S I N G
+**
+*/
 
 /*
  *	structure for describing a valid option to buildOptionTable
@@ -48,30 +176,123 @@ typedef	struct	_EnvOpt {
 	char	*env_var;		/* coresponding enviroment var	*/
 	} EnvOpt;
 
-extern	int	NCARGCvtToInt();
-extern	int	NCARGCvtToFloat();
-extern	int	NCARGCvtToChar();
-extern	int	NCARGCvtToBoolean();
-extern	int	NCARGCvtToString();
-extern	int	NCARGCvtToDimension2D();
-extern	int	GetOption();
-extern	int	LoadOptionTable();
-extern	void	RemoveOptions();
-extern	int	ParseOptionTable();
-extern	void	PrintOptionHelp();
-extern	char	**AToArgv();
-extern	void	FreeArgv();
-
-typedef	unsigned int	boolean;
-
 typedef	struct	Dimension2D_ {
 	int	nx, ny;
 	} Dimension2D;
 
-#ifndef	TRUE
-#define FALSE	0
-#define TRUE	!FALSE
-#endif	/* TRUE */
+extern	int	NCARGCvtToInt(
+#ifdef	NeedFuncProto
+	const char	*from,
+	Voidptr		to
+#endif
+);
+
+extern	int	NCARGCvtToFloat(
+#ifdef	NeedFuncProto
+	const char	*from,
+	Voidptr		to
+#endif
+);
+
+extern	int	NCARGCvtToChar(
+#ifdef	NeedFuncProto
+	const char	*from,
+	Voidptr		to
+#endif
+);
+
+extern	int	NCARGCvtToBoolean(
+#ifdef	NeedFuncProto
+	const char	*from,
+	Voidptr		to
+#endif
+);
+
+extern	int	NCARGCvtToString(
+#ifdef	NeedFuncProto
+	const char	*from,
+	Voidptr		to
+#endif
+);
+
+extern	int	NCARGCvtToDimension2D(
+#ifdef	NeedFuncProto
+	const char	*from,
+	Voidptr		to
+#endif
+);
+
+extern	int	OpenOptionTable();
+
+extern	int	CloseOptionTable(
+#ifdef	NeedFuncProto
+	int	od
+#endif
+);
+
+extern	int	GetOptions(
+#ifdef	NeedFuncProto
+	int	od,
+	const Option	*options
+#endif
+);
+
+extern	int	LoadOptionTable(
+#ifdef	NeedFuncProto
+	int	od,
+	OptDescRec	*optd
+#endif
+);
+
+extern	void	RemoveOptions(
+#ifdef	NeedFuncProto
+	int	od,
+	const OptDescRec	*optd
+#endif
+);
+
+extern	int	ParseOptionTable(
+#ifdef	NeedFuncProto
+	int		od,
+	int		*argc,
+	char		**argv,
+	OptDescRec	*optds
+#endif
+);
+
+extern	int	ParseEnvOptions(
+#ifdef	NeedFuncProto
+	int		od,
+	const EnvOpt	*envv,
+	OptDescRec	*optds
+#endif
+);
+
+extern	void	PrintOptionHelp(
+#ifdef	NeedFuncProto
+	int	od,
+	FILE	*fp
+#endif
+);
+
+
+/*
+**
+**	V E R S I O N
+**
+*/
+extern	void	PrintVersion(
+#ifdef	NeedFuncProto
+	const char	*header
+#endif
+);
+
+
+/*
+**
+**	B I T   M A N I P U L A T I O N
+**
+*/
 
 
 #ifndef	BITSPERBYTE
@@ -115,42 +336,18 @@ typedef	struct	Dimension2D_ {
 #define ZERO_INDEX(X)   (X < 0 ? 0 : X)	
 
 
-
-
 /*
- * error module defines
- */
-#define	E_UNKNOWN	1000
-extern	char	*ESprintf(/* int	errno, char *format, va_alist */);
-extern	char	*ErrGetMsg();
-extern	int	ErrGetNum();
-extern	char	*LFESprintf(
-	/* int errno, char * file, int *line, char *format, va_alist */
-		);
-extern	void	ESprintfFirstPart(
-	/* int errno, char * file, int *line, char *format, */
-		);
-extern	char	*ESprintfSecondPart(/* va_alist */);
+**
+**	N C A R   G   E N V I R O N M E N T
+**
+*/
 
-#define	ESPRINTF(A,B,C)	ESprintfFirstPart(A, __FILE__, __LINE__, B), \
-				ESprintfSecondPart C
-
-/*
- * maintain backwords compatibility
- */
-#define	ErrorGetMessage	ErrGetMsg
-#define	ErrorGetNumber	ErrGetNum
-
-extern	int	ErrorList(/* unsigned start, unsigned num, char **err_list */);
-
-
-/*
- *	icmalloc defines
- */
-#define	SMALL_MALLOC_BLOCK	10
-extern	char	*icMalloc();
-extern	char	*icRealloc();
-extern	char	*GetNCARGPath();
-extern	void	PrintVersion();
-
+extern	char	*GetNCARGPath(
+#ifdef	NeedFuncProto
+	const char	*paname
 #endif
+);
+
+
+
+#endif	/* _ncarg_c_	*/

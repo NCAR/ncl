@@ -11,7 +11,7 @@
 #ifndef	_internals_
 #define	_internals_
 
-#include	<ncarv.h>
+#include	<ncarg/c.h>
 
 #define	DIR_2_ALLOC	100	/* initial directory size	*/
 #define	NAME	"CGM_tools"	/* name of this library		*/
@@ -129,6 +129,6 @@ typedef	struct {
 
 #ifndef	MIN
 #define	MIN(A,B)	((A) < (B) ? (A) : (B))
-#endif	MIN
+#endif	/* MIN	*/
 
-#endif _internals
+#endif /* _internals	*/

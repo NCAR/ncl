@@ -1,5 +1,5 @@
 /*
- *	$Id: fill.c,v 1.8 1992-07-16 18:07:40 clyne Exp $
+ *	$Id: fill.c,v 1.9 1992-09-01 23:42:23 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -11,13 +11,16 @@
 *                                                                      *
 ***********************************************************************/
 #include	<stdio.h>
-#include	<cgm_tools.h>
-#include	<ncarv.h>
+#include	<stdlib.h>
+#include	<errno.h>
+#include	<ncarg/cgm_tools.h>
+#include	<ncarg/c.h>
 #include	"fill.h"
 #include	"cgmc.h"
 #include	"in.h"
 #include	"default.h"
 #include	"ctrandef.h"
+#include	"bitops.h"
 
 
 /*
@@ -48,9 +51,6 @@
  *	return = number of bytes of data in instr->data left un-processed.
  */
 		
-extern	char	*realloc();
-extern	long	GetInt();
-extern	double	GetReal();
 extern	boolean Moreparm;
 
 /* 
@@ -78,9 +78,13 @@ fill_E(cgmc,instr,p_len)
   
 	if (cgmc->Espace < numparm) {
 		if (cgmc->e != (Etype *) NULL)
-			cfree((char *) cgmc->e); 
+			free((Voidptr) cgmc->e); 
 		cgmc->Espace = numparm;
-		cgmc->e= (Etype *) icMalloc (numparm * sizeof(Etype));
+		cgmc->e= (Etype *) malloc (numparm * sizeof(Etype));
+		if (! cgmc->e) {
+			ESprintf(errno, "malloc(%d)", numparm * sizeof(Etype));
+			return(-1);
+		}
 	}
 
 	cgmc->Enum = numparm;	
@@ -125,9 +129,13 @@ fill_CD(cgmc,instr,p_len)
   
 	if (cgmc->CDspace < numparm) {
 		if (cgmc->cd != (CDtype *) NULL)
-			cfree((char *) cgmc->cd); 
+			free((Voidptr) cgmc->cd); 
 		cgmc->CDspace = numparm; 
-		cgmc->cd= (CDtype *) icMalloc (numparm * sizeof(CDtype)); 
+		cgmc->cd= (CDtype *) malloc (numparm * sizeof(CDtype)); 
+		if (! cgmc->cd) {
+			ESprintf(errno, "malloc(%d)", numparm * sizeof(CDtype));
+			return(-1);
+		}
 	}
 
 	cgmc->CDnum = numparm;	
@@ -175,9 +183,13 @@ fill_CI(cgmc,instr,p_len)
 
 	if (cgmc->CIspace < numparm) {
 		if (cgmc->ci != (CItype *) NULL)
-			cfree((char *) cgmc->ci); 
+			free((Voidptr) cgmc->ci); 
 		cgmc->CIspace = numparm;
-		cgmc->ci = (CItype *) icMalloc (numparm * sizeof(CItype));
+		cgmc->ci = (CItype *) malloc (numparm * sizeof(CItype));
+		if (! cgmc->ci) {
+			ESprintf(errno, "malloc(%d)", numparm * sizeof(CItype));
+			return(-1);
+		}
 	}
 
 	cgmc->CInum = numparm;	
@@ -235,19 +247,33 @@ fill_CO(cgmc,instr,p_len)
 	if (direct) {
 		if (cgmc->CDspace < numparm) {
 			if (cgmc->cd != (CDtype *) NULL)
-				cfree((char *) cgmc->cd); 
+				free((Voidptr) cgmc->cd); 
 
 			cgmc->CDspace = numparm;
-			cgmc->cd = (CDtype *) icMalloc (numparm * sizeof(CDtype));
+			cgmc->cd = (CDtype *) malloc (numparm * sizeof(CDtype));
+			if (! cgmc->cd) {
+				ESprintf(
+					errno, "malloc(%d)", 
+					numparm * sizeof(CDtype)
+				);
+				return(-1);
+			}
 		}
 	}
 	else { 
 		if (cgmc->CIspace < numparm) {
 			if (cgmc->ci != (CItype *) NULL)
-				cfree((char *) cgmc->ci); 
+				free((Voidptr) cgmc->ci); 
 
 			cgmc->CIspace = numparm;
-			cgmc->ci = (CItype *) icMalloc (numparm * sizeof(CItype));
+			cgmc->ci = (CItype *) malloc (numparm * sizeof(CItype));
+			if (! cgmc->ci) {
+				ESprintf(
+					errno, "malloc(%d)", 
+					numparm * sizeof(CItype)
+				);
+				return(-1);
+			}
 		}
 	}
   
@@ -312,10 +338,14 @@ fill_D(cgmc,instr,p_len)
   
 	if (cgmc->Dspace < numparm) {
 		if (cgmc->d != (Dtype *) NULL)
-			cfree((char *) cgmc->d); 
+			free((Voidptr) cgmc->d); 
 
 		cgmc->Dspace = numparm;
-		cgmc->d = (Dtype *) icMalloc (numparm * sizeof(Dtype));
+		cgmc->d = (Dtype *) malloc (numparm * sizeof(Dtype));
+		if (! cgmc->d) {
+			ESprintf(errno, "malloc(%d)", numparm * sizeof(Dtype));
+			return(-1);
+		}
 	}
 
 	cgmc->Dnum = numparm;	
@@ -355,10 +385,14 @@ fill_I(cgmc,instr,p_len)
   
 	if (cgmc->Ispace < numparm) {
 		if (cgmc->i != (Itype *) NULL)
-			cfree((char *) cgmc->i); 
+			free((Voidptr) cgmc->i); 
 
 		cgmc->Ispace = numparm;
-		cgmc->i = (Itype *) icMalloc (numparm * sizeof(Itype));
+		cgmc->i = (Itype *) malloc (numparm * sizeof(Itype));
+		if (! cgmc->i) {
+			ESprintf(errno, "malloc(%d)", numparm * sizeof(Itype));
+			return(-1);
+		}
 	}
 
 	cgmc->Inum = numparm;	
@@ -403,10 +437,14 @@ fill_IX(cgmc,instr,p_len)
   
 	if (cgmc->IXspace < numparm) {
 		if (cgmc->ix != (IXtype *) NULL)
-			cfree((char *) cgmc->ix); 
+			free((Voidptr) cgmc->ix); 
 
 		cgmc->IXspace = numparm;
-		cgmc->ix = (IXtype *) icMalloc (numparm * sizeof(IXtype));
+		cgmc->ix = (IXtype *) malloc (numparm * sizeof(IXtype));
+		if (! cgmc->ix) {
+			ESprintf(errno, "malloc(%d)", numparm * sizeof(IXtype));
+			return(-1);
+		}
 	}
 
 	cgmc->IXnum = numparm;	
@@ -467,10 +505,14 @@ fill_P(cgmc,instr,p_len)
 
 	if (cgmc->Pspace < numparm) {
 		if (cgmc->p != (Ptype *) NULL)
-			cfree((char *) cgmc->p); 
+			free((Voidptr) cgmc->p); 
 
 		cgmc->Pspace = numparm;
-		cgmc->p = (Ptype *) icMalloc (numparm * sizeof(Ptype));
+		cgmc->p = (Ptype *) malloc (numparm * sizeof(Ptype));
+		if (! cgmc->p) {
+			ESprintf(errno, "malloc(%d)", numparm * sizeof(Ptype));
+			return(-1);
+		}
 	}
 
 	cgmc->Pnum = numparm;	
@@ -533,10 +575,14 @@ fill_R(cgmc,instr,p_len)
 
 	if (cgmc->Rspace < numparm) {
 		if (cgmc->r != (Rtype *) NULL)
-			cfree((char *) cgmc->r); 
+			free((Voidptr) cgmc->r); 
 
 		cgmc->Rspace = numparm;
-		cgmc->r = (Rtype *) icMalloc (numparm * sizeof(Rtype));
+		cgmc->r = (Rtype *) malloc (numparm * sizeof(Rtype));
+		if (! cgmc->r) {
+			ESprintf(errno, "malloc(%d)", numparm * sizeof(Rtype));
+			return(-1);
+		}
 	}
 
 	cgmc->Rnum = numparm;	
@@ -627,10 +673,18 @@ fill_S(cgmc,instr)
 		 */
 		if (cgmc->s->string_space[cgmc->Snum] < (charcount + 1)) {
 			if (cgmc->s->string[cgmc->Snum] != (char *) NULL)
-				cfree((char *) cgmc->s->string[cgmc->Snum]);
+				free((Voidptr) cgmc->s->string[cgmc->Snum]);
 
-			cgmc->s->string[cgmc->Snum] = (char *) icMalloc 
-				(charcount+1 * sizeof(char));
+			cgmc->s->string[cgmc->Snum] = (char *) malloc (
+				(charcount+1) * sizeof(char)
+			);
+			if (! cgmc->s->string[cgmc->Snum]) {
+				ESprintf(
+					errno, "malloc(%d)", 
+					(charcount+1) * sizeof(char)
+				);
+				return(-1);
+			}
 			cgmc->s->string_space[cgmc->Snum] = charcount + 1;
 		}
 
@@ -692,10 +746,14 @@ fill_VDC(cgmc,instr,p_len)
 
 	if (cgmc->VDCspace < numparm) {
 		if (cgmc->vdc != (VDCtype *) NULL)
-			cfree((char *) cgmc->vdc); 
+			free((Voidptr) cgmc->vdc); 
 
 		cgmc->VDCspace = numparm;
-		cgmc->vdc = (VDCtype *) icMalloc (numparm * sizeof(VDCtype));
+		cgmc->vdc = (VDCtype *) malloc (numparm * sizeof(VDCtype));
+		if (! cgmc->vdc) {
+			ESprintf(errno,"malloc(%d)", numparm * sizeof(VDCtype));
+			return(-1);
+		}
 	}
 
 	cgmc->VDCnum = numparm;	
@@ -891,8 +949,15 @@ static	int	count;		/* number of cells processed in a row of data*/
 		/*	see if enough room for data	*/
 		if (numparm > cgmc->Cnum) {
 			if (cgmc->c != (Ctype *) NULL)
-				cfree((char *) cgmc->c);
-			cgmc->c = (Ctype *) icMalloc (numparm * sizeof(Ctype));
+				free((Voidptr) cgmc->c);
+			cgmc->c = (Ctype *) malloc (numparm * sizeof(Ctype));
+			if (! cgmc->c) {
+				ESprintf(
+					errno, "malloc(%d)", 
+					numparm * sizeof(Ctype)
+				);
+				return(-1);
+			}
 			cgmc->Cspace = numparm;
 		}
 
@@ -960,21 +1025,31 @@ static	int	count;		/* number of cells processed in a row of data*/
 		if (direct) {	/* if direct colour	*/
 			if (cgmc->CDspace < numparm) {
 				if (cgmc->cd != (CDtype *) NULL)
-					cfree((char *) cgmc->cd); 
+					free((Voidptr) cgmc->cd); 
 				cgmc->CDspace = numparm;
-				cgmc->cd = (CDtype *) icMalloc 
-					(numparm * sizeof(CDtype));
+				cgmc->cd = (CDtype *) malloc (
+					numparm * sizeof(CDtype)
+				);
+				if (! cgmc->cd) {
+					ESprintf(errno, "malloc()");
+					return(-1);
+				}
 				cgmc->CDnum = numparm;	
 			}
 		}
 		else { 		/*indexed colour	*/
 			if (cgmc->CIspace < numparm) {
 				if (cgmc->ci != (CItype *) NULL)
-					cfree((char *) cgmc->ci); 
+					free((Voidptr) cgmc->ci); 
 				cgmc->CIspace = numparm;
 	
-				cgmc->ci = (CItype *) icMalloc 
-					(numparm * sizeof(CItype));
+				cgmc->ci = (CItype *) malloc (
+					numparm * sizeof(CItype)
+				);
+				if (! cgmc->ci) {
+					ESprintf(errno, "malloc()");
+					return(-1);
+				}
 				cgmc->CInum = numparm;	
 			}
 		}
@@ -982,9 +1057,13 @@ static	int	count;		/* number of cells processed in a row of data*/
 		/*check space for Itype parameters	*/
 		if (cgmc->Ispace < numparm) {
 			if (cgmc->ci != (CItype *) NULL)
-				cfree((char *) cgmc->ci); 
+				free((Voidptr) cgmc->ci); 
 			cgmc->Ispace = numparm;
-			cgmc->i = (Itype *) icMalloc (numparm * sizeof(Itype));
+			cgmc->i = (Itype *) malloc (numparm * sizeof(Itype));
+			if (! cgmc->i) {
+				ESprintf(errno, "malloc()");
+				return(-1);
+			}
 			cgmc->Inum = numparm;	
 		}
   

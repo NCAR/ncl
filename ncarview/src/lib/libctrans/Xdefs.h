@@ -56,5 +56,5 @@ extern	Point_buf	Points;
 
 extern	XGCValues	gcv;
 
-#endif	X11_class0
+#endif	/*	X11_class0	*/
 

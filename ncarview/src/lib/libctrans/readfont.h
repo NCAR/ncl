@@ -8,10 +8,6 @@
 *                                                                      *
 ***********************************************************************/
 /*
- * *RCSid = "$Header"
- */
-		
-/*
  *	readfont.h
  *
  *	author		John Clyne
@@ -22,6 +18,9 @@
  *	as well as one to represent the processed (cooked) one.
  *	Also contains macros for accessing data in cooked fontcap
  */
+
+#ifndef	_readfont_
+#define	_readfont_
 
 #define CHRSM1  	128	/* max number of chars in the font	*/
 #define CHRSM2  	5121	/* max size of array describing fonts	*/
@@ -177,3 +176,10 @@ typedef struct	{
 #endif
 
 
+extern	int     Init_Readfont(
+#ifdef	NeedFuncProto
+	char    *fontcap
+#endif
+);
+
+#endif	/* _readfont_	*/

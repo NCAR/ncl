@@ -1,5 +1,5 @@
 /*
- *	$Id: rasview.c,v 1.9 1992-08-17 22:53:20 clyne Exp $
+ *	$Id: rasview.c,v 1.10 1992-09-01 23:40:13 clyne Exp $
  */
 /*
  *	rasview.c
@@ -14,8 +14,8 @@
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>     /* Get standard string definations. */
 #include <X11/Shell.h>
-#include <ncarv.h>
-#include <ncarg_ras.h>
+#include <ncarg/c.h>
+#include <ncarg/ncarg_ras.h>
 #include "rasdraw.h"
 
 
@@ -57,12 +57,89 @@ static	Option	get_options[] = {
 static	int	oD;
 static	char	*progName;
 
+/*
+ *	display_image
+ *
+ *	display an image. If the image is Direct colour format dither it
+ *	to an 8-bit image.
+ *
+ * on entry
+ *	*ras		: contains image to display
+ *	*context	: context returned by RasDrawOpen()
+ *	verbose		: verbose or quiet mode?
+ */
+static	int	display_image(ras, context, verbose)
+	Raster	*ras;
+	Context	*context;
+	int	verbose;
+{
+	static	Raster	*indexed_ras = (Raster *) NULL;
+	int	status;
+
+	if (ras->type == RAS_INDEXED && (context->encoding & RASDRAW_8BIT)) {
+		(void) RasDraw(ras, context);
+	}
+	else if(ras->type == RAS_DIRECT && (context->encoding & RASDRAW_24BIT)){
+		(void) RasDraw(ras, context);
+	}
+	/*
+	 * if true color dither to indexed 8-bit image
+	 */
+	else if (ras->type == RAS_DIRECT && context->encoding & RASDRAW_8BIT) {
+		if (! indexed_ras) {	/* alloc memory for indexed image */
+			indexed_ras = RasterCreate(ras->nx,ras->ny,RAS_INDEXED);
+			if (indexed_ras == (Raster *) NULL) {
+				(void) fprintf(
+					stderr, "%s: Allocating memory, [ %s ]\n",
+					progName, ErrGetMsg()
+				);
+				return(-1);
+			}
+		}
+		(void) fprintf(stderr, 
+			"Warning: dithering 24-bit to 8-bit image\n");
+
+		status = RasterDither(ras, indexed_ras, verbose);
+
+		if (status == RAS_ERROR) {
+			(void) fprintf(
+				stderr, "%s: Quantizing imagery, [ %s ]\n",
+				progName, ErrGetMsg()
+			);
+			return(-1);
+		}
+
+		(void) RasDraw(indexed_ras, context);
+	} 
+	else {
+		(void) fprintf(stderr, "%s : Unknown image format\n", progName);
+		return(-1);
+	}
+	return(0);
+}
+
+static	void	usage(progName, message) 
+	char	*progName;
+	char	*message;
+{
+
+	if (message) {
+		(void) fprintf(stderr, "%s: %s", progName, message);
+	}
+
+	(void) fprintf(stderr, 
+		"%s: Usage: %s [-Version] [-pal palette_file] [-quiet] [raster_file...]\n",
+		progName, progName);
+	PrintOptionHelp(oD, stderr);
+
+	exit(1);
+}
 main(argc, argv)
 	int	argc;
 	char	**argv;
 {
-	Raster	*ras, *RasterOpen();
-	Context	*context, *RasDrawOpen();
+	Raster	*ras;
+	Context	*context;
 	int	status;
 	unsigned char	default_colors[768];
 	char	*pal_name;	/* name of a default color palette	*/
@@ -71,8 +148,6 @@ main(argc, argv)
 	int	i;
 
 	int	exit_status = 0;
-
-	void	usage();
 
 	progName = argv[0];
 
@@ -198,82 +273,3 @@ main(argc, argv)
 	exit(exit_status);
 }
 
-/*
- *	display_image
- *
- *	display an image. If the image is Direct colour format dither it
- *	to an 8-bit image.
- *
- * on entry
- *	*ras		: contains image to display
- *	*context	: context returned by RasDrawOpen()
- *	verbose		: verbose or quiet mode?
- */
-static	display_image(ras, context, verbose)
-	Raster	*ras;
-	Context	*context;
-	int	verbose;
-{
-	static	Raster	*indexed_ras = (Raster *) NULL;
-	int	status;
-
-	Raster	*RasterCreate();
-
-	if (ras->type == RAS_INDEXED && (context->encoding & RASDRAW_8BIT)) {
-		(void) RasDraw(ras, context);
-	}
-	else if(ras->type == RAS_DIRECT && (context->encoding & RASDRAW_24BIT)){
-		(void) RasDraw(ras, context);
-	}
-	/*
-	 * if true color dither to indexed 8-bit image
-	 */
-	else if (ras->type == RAS_DIRECT && context->encoding & RASDRAW_8BIT) {
-		if (! indexed_ras) {	/* alloc memory for indexed image */
-			indexed_ras = RasterCreate(ras->nx,ras->ny,RAS_INDEXED);
-			if (indexed_ras == (Raster *) NULL) {
-				(void) fprintf(
-					stderr, "%s: Allocating memory, [ %s ]\n",
-					progName, ErrGetMsg()
-				);
-				return(-1);
-			}
-		}
-		(void) fprintf(stderr, 
-			"Warning: dithering 24-bit to 8-bit image\n");
-
-		status = RasterDither(ras, indexed_ras, verbose);
-
-		if (status == RAS_ERROR) {
-			(void) fprintf(
-				stderr, "%s: Quantizing imagery, [ %s ]\n",
-				progName, ErrGetMsg()
-			);
-			return(-1);
-		}
-
-		(void) RasDraw(indexed_ras, context);
-	} 
-	else {
-		(void) fprintf(stderr, "%s : Unknown image format\n", progName);
-		return(-1);
-	}
-	return(0);
-}
-
-void	usage(progName, message) 
-	char	*progName;
-	char	*message;
-{
-
-	if (message) {
-		(void) fprintf(stderr, "%s: %s", progName, message);
-	}
-
-	(void) fprintf(stderr, 
-		"%s: Usage: %s [-Version] [-pal palette_file] [-quiet] [raster_file...]\n",
-		progName, progName);
-	PrintOptionHelp(oD, stderr);
-
-	exit(1);
-}

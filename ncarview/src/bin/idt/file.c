@@ -1,5 +1,5 @@
 /*
- *	$Id: file.c,v 1.8 1992-08-12 21:41:55 clyne Exp $
+ *	$Id: file.c,v 1.9 1992-09-01 23:38:49 clyne Exp $
  */
 /*
  *	file.c
@@ -13,8 +13,10 @@
  *	code is in 'w_file.c'
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <ncarv.h>
+#include <ncarg/c.h>
+#include "idt.h"
 
 static	char	*currentFileSelection = NULL;	/* user's current selection */
 static	char	*currentPath = NULL;		/* path to the current file */
@@ -48,10 +50,9 @@ char	*GetFiles(file_filter, longest)
 	static	char	*buf = NULL;	/* storage for list of files	*/
 	static	char	*pathBuf = NULL;/* storage for path to files	*/
 	
-	extern	char	*strrchr();
 
-	if (buf) cfree(buf);
-	if (pathBuf) cfree(pathBuf);
+	if (buf) free((Voidptr) buf);
+	if (pathBuf) free((Voidptr) pathBuf);
 	*longest = 10;
 
 	/* 
@@ -67,12 +68,18 @@ char	*GetFiles(file_filter, longest)
 	s = strrchr(files[0], '/');
 	if (s) {
 		s++;
-		pathBuf = icMalloc((unsigned) (s - files[0] + 1));
+		if ( !(pathBuf = malloc((unsigned) (s - files[0] + 1)))) {
+			perror("malloc()");
+			return(NULL);
+		}
 		(void) strncpy(pathBuf, files[0], s - files[0]);
 		pathBuf[s - files[0]] = '\0';
 	}
 	else {	/* default path is "./"	*/
-		pathBuf = icMalloc((unsigned) (strlen("./") + 1));
+		if ( !(pathBuf = malloc((unsigned) (strlen("./") + 1)))) {
+			perror("malloc()");
+			return(NULL);
+		}
 		(void) strcpy(pathBuf, "./");
 	}
 	currentPath = pathBuf;
@@ -90,7 +97,10 @@ char	*GetFiles(file_filter, longest)
 		total_len += len;
 	}
 
-	buf = icMalloc( (unsigned) (total_len + file_count + 1 ));
+	if ( !(buf = malloc( (unsigned) (total_len + file_count + 1 )))) {
+		perror("malloc()");
+		return(NULL);
+	}
 	buf[0] = '\0';
 
 	/*
@@ -115,10 +125,10 @@ char	*GetFiles(file_filter, longest)
 void
 SetFileSelection(file, select_action)
 	char	*file;
-	void	(*select_action)();
+	FuncPtrPasser	select_action;
 {
 
-	if (currentFileSelection) cfree (currentFileSelection);
+	if (currentFileSelection) free ((Voidptr) currentFileSelection);
 
 	if (! *file) {
 		currentFileSelection = NULL;
@@ -132,10 +142,14 @@ SetFileSelection(file, select_action)
 	if ((*file == '.' && (*(file+1) == '.' || *(file+1) == '/')) 
 			|| *file == '/' || *file == '~' || (! currentPath)) {
 
-		currentFileSelection = icMalloc((unsigned) (strlen (file) +1));
+		currentFileSelection = malloc((unsigned) (strlen (file) +1));
+		if (! currentFileSelection) {
+			perror("malloc()");
+			return;
+		}
 		(void) strcpy(currentFileSelection, file);
-		if (select_action) {
-			select_action();
+		if (select_action.func) {
+			select_action.func();
 		}
 		return;
 	}
@@ -143,14 +157,18 @@ SetFileSelection(file, select_action)
 	/*
 	 * build the path to the file and store it
 	 */
-	currentFileSelection = icMalloc((unsigned) 
+	currentFileSelection = malloc((unsigned) 
 				(strlen(currentPath) + strlen (file) +1));
+	if (! currentFileSelection) {
+		perror("malloc()");
+		return;
+	}
 
 	(void) strcpy(currentFileSelection, currentPath);
 	(void) strcat(currentFileSelection, file);
 
-	if (select_action) {
-		select_action();
+	if (select_action.func) {
+		select_action.func();
 	}
 }
 	

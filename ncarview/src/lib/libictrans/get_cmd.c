@@ -1,5 +1,5 @@
 /*
- *	$Id: get_cmd.c,v 1.6 1992-07-14 23:09:32 clyne Exp $
+ *	$Id: get_cmd.c,v 1.7 1992-09-01 23:43:49 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -21,9 +21,10 @@
  *	Fetch the next command to process.
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <ncarv.h>
+#include <ncarg/c.h>
 #include "lex.h"
 #include "ictrans.h"
 #include "get_cmd.h"
@@ -31,6 +32,226 @@
 extern	int	my_yylex();
 extern	char	yytext[];
 
+/*
+ *	sym_to_literal
+ *	[internal]
+ *
+ *	This funtion does the parsing for conv_frame and conv_frame_list
+ */
+static	int sym_to_literal(s, current_frame, last_frame)
+	char	*s;
+	int	current_frame,
+		last_frame;
+{
+
+	int	literal;
+
+	/*
+	 * look for {[ D | . | $ ]( + | - ) D} | D | . | $ 
+	 * where D is an unsigned int
+	 */
+	literal = current_frame;	/* the default	*/
+
+	if (isdigit(*s)) {
+		literal = atoi(s);
+		while(isdigit(*s))
+			s++;
+	}
+	else if (*s == '.') {
+		literal = current_frame;
+		s++;
+	}
+	else if (*s == '$') {
+		literal = last_frame;
+		s++;
+	}
+
+	switch ((int) *s) {	/* relative address	*/	
+	
+	case	'+':
+		s++;
+		literal += atoi(s);
+		break;
+	case	'-':
+		s++;
+		literal -= atoi(s);
+		break;
+	default:	/* no relative address	*/
+		break;
+	}
+
+	return(literal);
+}
+
+/*
+ *	conv_frame
+ *	[internal]
+ *
+ *	convert a string containing a single frame address specification 
+ *	into its integer value. The string contains now spaces and is
+ *	of the form: 
+ *
+ *		[ D|.|$ ][ (+|-)D ] 	
+ *		D ::= (0-9)+
+ * on entry
+ *	*s		: contains the address string
+ *	last_frame	: is the last valid frame number
+ *	current_frame	: is the current frame number
+ * on exit
+ *	*frames		: contains the converted frame
+ *	return		: 0 => success, else failure
+ */
+static	int	conv_frame(s, frames, last_frame, current_frame)
+	char	*s;
+	FrameList	*frames;
+	int	last_frame,
+		current_frame;
+{
+
+	int	start_frame;
+	
+	/*
+	 * make sure have enough memory
+	 */
+	if (frames->num == frames->num_alloced) {
+		frames->fc = (FrameCount *) realloc (
+			(char *) frames->fc, 
+			(unsigned) ((frames->num_alloced + SMALL_MALLOC_BLOCK) 
+			* sizeof (FrameCount))
+		);
+		if (! frames->fc) {
+			return(-1);
+		}
+
+		frames->num_alloced += SMALL_MALLOC_BLOCK;
+	}
+
+	/* 
+	 *	convert symbolic frame address string to an integer
+	 */
+	start_frame = sym_to_literal(s, current_frame, last_frame);
+
+	if (start_frame < 1 || start_frame > last_frame)
+		return(-1);
+
+	frames->fc[frames->num].start_frame =  start_frame;
+	frames->fc[frames->num].num_frames = 1;
+	frames->num++;
+
+	return(0);
+}
+
+
+/*
+ *	conv_frame_list
+ *	[internal]
+ *
+ *	convert a string containing a pair of comma seperated  frame address 
+ *	specifications into a pair of integer values. The string contains no 
+ *	spaces and is *	of the form: 
+ *
+ *		[ D|.|$ ][ (+|-)D ] , [ D|.|$ ][ (+|-)D ] 
+ *		D ::= (0-9)+
+ * on entry
+ *	*s		: contains the address string
+ *	last_frame	: is the last valid frame number
+ *	current_frame	: is the current frame number
+ * on exit
+ *	*frames		: contains the converted frame
+ *	return		: 0 => success, else failure
+ */
+static	int	conv_frame_list(s, frames, last_frame, current_frame)
+	char	*s;
+	FrameList	*frames;
+	int	last_frame,
+		current_frame;
+{
+
+
+	int	start_frame,
+		stop_frame;
+	/*
+	 * make sure have enough memory
+	 */
+	if (frames->num == frames->num_alloced) {
+		frames->fc = (FrameCount *) realloc (
+			(Voidptr) frames->fc, 
+			(unsigned) ((frames->num_alloced + SMALL_MALLOC_BLOCK) 
+			* sizeof (FrameCount))
+		);
+		if (! frames->fc) {
+			return(-1);
+		}
+
+		frames->num_alloced += SMALL_MALLOC_BLOCK;
+	}
+
+	start_frame = sym_to_literal(s, current_frame, last_frame);
+
+	s = strchr(s, ',');	/* skip past the ','	*/
+	s++;
+
+	stop_frame = sym_to_literal(s, current_frame, last_frame);
+
+	if (start_frame < 1 || stop_frame > last_frame)
+		return(-1);
+
+	frames->fc[frames->num].start_frame = start_frame;
+	frames->fc[frames->num].num_frames = stop_frame - start_frame;
+
+	if (frames->fc[frames->num].num_frames < 0)
+		frames->fc[frames->num].num_frames -= 1;
+	else
+		frames->fc[frames->num].num_frames += 1;
+
+	frames->num++;
+
+	return(0);
+	
+}
+
+
+
+
+
+
+static	void	conv_name(s, name)
+	char	*s;
+	char	**name;
+{
+	static	char buf[MAX_LINE_LEN];
+
+	if (strlen(s) >= MAX_LINE_LEN) {
+		(void) fprintf(stderr, "Command name too long: %s\n", s);
+		(void) strcpy(buf, "noop");
+	}
+	else 
+		(void) strcpy(buf, s);
+
+	*name = buf;	
+}
+static	void	conv_data(s, data)
+	char	*s;
+	char	**data;
+{
+	static	char buf[MAX_LINE_LEN];
+	char	*t;
+
+	if (strlen(s) >= MAX_LINE_LEN) {
+		(void) fprintf(stderr, "Command data too long: %s\n", s);
+		(void) strcpy(buf, "");
+	}
+	else  {
+		/* remove trailing white space	*/
+		t = s + strlen(s) - 1;
+		while (isspace(*t) && t != s) t--;
+		*(++t) = '\0';
+
+		(void) strcpy(buf, s);
+	}
+
+	*data = buf;	
+}
 
 /*
  *	init_icommand
@@ -47,14 +268,26 @@ init_icommand(icommand)
 	icommand->cmd.data = NULL;
 
 	icommand->cmd.dst_frames.num = 0;
-	icommand->cmd.dst_frames.fc = (FrameCount *) 
-		icMalloc(SMALL_MALLOC_BLOCK * sizeof (FrameCount));
+	icommand->cmd.dst_frames.fc = (FrameCount *) malloc(
+		SMALL_MALLOC_BLOCK * sizeof (FrameCount)
+	);
+	if (! icommand->cmd.dst_frames.fc) {
+		perror("malloc()");
+		return(-1);
+	}
 	icommand->cmd.dst_frames.num_alloced = SMALL_MALLOC_BLOCK;
 
 	icommand->cmd.src_frames.num = 0;
-	icommand->cmd.src_frames.fc = (FrameCount *) 
-		icMalloc(SMALL_MALLOC_BLOCK * sizeof (FrameCount));
+	icommand->cmd.src_frames.fc = (FrameCount *) malloc(
+		SMALL_MALLOC_BLOCK * sizeof (FrameCount)
+	);
+	if (! icommand->cmd.src_frames.fc) {
+		perror("malloc()");
+		return(-1);
+	}
 	icommand->cmd.src_frames.num_alloced = SMALL_MALLOC_BLOCK;
+
+	return(1);
 }
 
 
@@ -215,213 +448,3 @@ get_command(ic)
 	
 }
 
-
-/*
- *	conv_frame
- *	[internal]
- *
- *	convert a string containing a single frame address specification 
- *	into its integer value. The string contains now spaces and is
- *	of the form: 
- *
- *		[ D|.|$ ][ (+|-)D ] 	
- *		D ::= (0-9)+
- * on entry
- *	*s		: contains the address string
- *	last_frame	: is the last valid frame number
- *	current_frame	: is the current frame number
- * on exit
- *	*frames		: contains the converted frame
- *	return		: 0 => success, else failure
- */
-static	conv_frame(s, frames, last_frame, current_frame)
-	char	*s;
-	FrameList	*frames;
-	int	last_frame,
-		current_frame;
-{
-
-	int	start_frame;
-	
-	/*
-	 * make sure have enough memory
-	 */
-	if (frames->num == frames->num_alloced) {
-		frames->fc = (FrameCount *) icRealloc ((char *) frames->fc, 
-			(frames->num_alloced + SMALL_MALLOC_BLOCK) 
-			* sizeof (FrameCount));
-
-		frames->num_alloced += SMALL_MALLOC_BLOCK;
-	}
-
-	/* 
-	 *	convert symbolic frame address string to an integer
-	 */
-	start_frame = sym_to_literal(s, current_frame, last_frame);
-
-	if (start_frame < 1 || start_frame > last_frame)
-		return(-1);
-
-	frames->fc[frames->num].start_frame =  start_frame;
-	frames->fc[frames->num].num_frames = 1;
-	frames->num++;
-
-	return(0);
-}
-
-
-/*
- *	conv_frame_list
- *	[internal]
- *
- *	convert a string containing a pair of comma seperated  frame address 
- *	specifications into a pair of integer values. The string contains no 
- *	spaces and is *	of the form: 
- *
- *		[ D|.|$ ][ (+|-)D ] , [ D|.|$ ][ (+|-)D ] 
- *		D ::= (0-9)+
- * on entry
- *	*s		: contains the address string
- *	last_frame	: is the last valid frame number
- *	current_frame	: is the current frame number
- * on exit
- *	*frames		: contains the converted frame
- *	return		: 0 => success, else failure
- */
-static	conv_frame_list(s, frames, last_frame, current_frame)
-	char	*s;
-	FrameList	*frames;
-	int	last_frame,
-		current_frame;
-{
-
-
-	int	start_frame,
-		stop_frame;
-	/*
-	 * make sure have enough memory
-	 */
-	if (frames->num == frames->num_alloced) {
-		frames->fc = (FrameCount *) icRealloc ((char *) frames->fc, 
-			(frames->num_alloced + SMALL_MALLOC_BLOCK) 
-			* sizeof (FrameCount));
-
-		frames->num_alloced += SMALL_MALLOC_BLOCK;
-	}
-
-	start_frame = sym_to_literal(s, current_frame, last_frame);
-
-	s = strchr(s, ',');	/* skip past the ','	*/
-	s++;
-
-	stop_frame = sym_to_literal(s, current_frame, last_frame);
-
-	if (start_frame < 1 || stop_frame > last_frame)
-		return(-1);
-
-	frames->fc[frames->num].start_frame = start_frame;
-	frames->fc[frames->num].num_frames = stop_frame - start_frame;
-
-	if (frames->fc[frames->num].num_frames < 0)
-		frames->fc[frames->num].num_frames -= 1;
-	else
-		frames->fc[frames->num].num_frames += 1;
-
-	frames->num++;
-
-	return(0);
-	
-}
-
-
-
-/*
- *	sym_to_literal
- *	[internal]
- *
- *	This funtion does the parsing for conv_frame and conv_frame_list
- */
-sym_to_literal(s, current_frame, last_frame)
-	char	*s;
-	int	current_frame,
-		last_frame;
-{
-
-	int	literal;
-
-	/*
-	 * look for {[ D | . | $ ]( + | - ) D} | D | . | $ 
-	 * where D is an unsigned int
-	 */
-	literal = current_frame;	/* the default	*/
-
-	if (isdigit(*s)) {
-		literal = atoi(s);
-		while(isdigit(*s))
-			s++;
-	}
-	else if (*s == '.') {
-		literal = current_frame;
-		s++;
-	}
-	else if (*s == '$') {
-		literal = last_frame;
-		s++;
-	}
-
-	switch ((int) *s) {	/* relative address	*/	
-	
-	case	'+':
-		s++;
-		literal += atoi(s);
-		break;
-	case	'-':
-		s++;
-		literal -= atoi(s);
-		break;
-	default:	/* no relative address	*/
-		break;
-	}
-
-	return(literal);
-}
-
-
-
-conv_name(s, name)
-	char	*s;
-	char	**name;
-{
-	static	char buf[MAX_LINE_LEN];
-
-	if (strlen(s) >= MAX_LINE_LEN) {
-		(void) fprintf(stderr, "Command name too long: %s\n", s);
-		(void) strcpy(buf, "noop");
-	}
-	else 
-		(void) strcpy(buf, s);
-
-	*name = buf;	
-}
-conv_data(s, data)
-	char	*s;
-	char	**data;
-{
-	static	char buf[MAX_LINE_LEN];
-	char	*t;
-
-	if (strlen(s) >= MAX_LINE_LEN) {
-		(void) fprintf(stderr, "Command data too long: %s\n", s);
-		(void) strcpy(buf, "");
-	}
-	else  {
-		/* remove trailing white space	*/
-		t = s + strlen(s) - 1;
-		while (isspace(*t) && t != s) t--;
-		*(++t) = '\0';
-
-		(void) strcpy(buf, s);
-	}
-
-	*data = buf;	
-}

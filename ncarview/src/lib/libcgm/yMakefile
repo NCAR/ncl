@@ -16,7 +16,7 @@ OBJECTS		= cgm_tools.o meta_edit.o misc.o mem_file.o
 
 EQUALHACK	= =
 
-InstallAllTarget($(INCLUDES), $(INSTALL_INC), $(INCDIR))
+InstallAllTarget($(INCLUDES), $(INSTALL_INC), $(INCDIR)/ncarg)
 
 Library($(MYNAME),$(OBJECTS))
 

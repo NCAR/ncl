@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class6.c,v 1.4 1992-07-16 18:06:55 clyne Exp $
+ *	$Id: X11_class6.c,v 1.5 1992-09-01 23:41:25 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include	<X11/Xlib.h>
 #include	<X11/Xutil.h>
-#include	<ncarv.h>
+#include	<ncarg/c.h>
 #include	"cgmc.h"
 
 

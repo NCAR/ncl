@@ -1,5 +1,5 @@
 /*
- *	$Id: misc.c,v 1.7 1992-04-08 19:29:03 clyne Exp $
+ *	$Id: misc.c,v 1.8 1992-09-01 23:40:55 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -13,7 +13,8 @@
 
 #include <fcntl.h>
 #include <stdio.h>
-#include <ncarv.h>
+#include <stdlib.h>
+#include <ncarg/c.h>
 #ifdef	cray
 #include <sys/unistd.h>
 #endif
@@ -55,13 +56,15 @@ CGM_validCGM(ncar_cgm)
 		return (-1);
 	} 
 
-	buf = (unsigned char *) icMalloc (BUFSIZE);
+	if (! (buf = (unsigned char *) malloc (BUFSIZE))) {
+		return(-1);
+	}
 
 	/*
 	 * read in first record of the file
 	 */
 	if (CGM_read (fd, buf) < 0) {
-		if (buf) cfree ((char *) buf);
+		if (buf) free ((Voidptr) buf);
 		(void) CGM_close(fd);
 		return (-1);
 	}
@@ -72,7 +75,7 @@ CGM_validCGM(ncar_cgm)
 	 */
 	data_len = buf[0] << 8 | buf[1];
 	if (data_len > BUFSIZE - HEADERSIZE ) {
-		if (buf) cfree ((char *) buf);
+		if (buf) free ((Voidptr) buf);
 		(void) CGM_close(fd);
 		return (0);
 	}
@@ -81,7 +84,7 @@ CGM_validCGM(ncar_cgm)
 	 * make sure valid NCAR CGM. Only record type supported now
 	 */
 	if (GETBITS(buf[2],TYPE_POS,TYPE_LEN) != NCAR_CGM) {
-		if (buf) cfree ((char *) buf);
+		if (buf) free ((Voidptr) buf);
 		(void) CGM_close(fd);
 		return(0);
 	}
@@ -89,7 +92,7 @@ CGM_validCGM(ncar_cgm)
 	/*
 	 * file is a NCAR binary encoded CGM
 	 */
-	if (buf) cfree ((char *) buf);
+	if (buf) free ((Voidptr) buf);
 	(void) CGM_close(fd);
 	return (1);
 }

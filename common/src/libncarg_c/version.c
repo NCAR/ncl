@@ -1,6 +1,6 @@
 
 /*
- *      $Id: version.c,v 1.4 1992-03-26 18:23:01 clyne Exp $
+ *      $Id: version.c,v 1.5 1992-09-01 23:47:32 clyne Exp $
  */
 /*
  *	File:		version.c
@@ -15,13 +15,14 @@
  */
 
 #include <stdio.h>
+#include "c.h"
 
 #ifndef	VERSION
 #define	VERSION	"unknown version"
 #endif
 
 void	PrintVersion(header)
-	char	*header;
+	const char	*header;
 {
 	FILE	*fp;
 	if ((fp = fopen("/dev/tty", "w")) == NULL) {

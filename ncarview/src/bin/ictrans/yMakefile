@@ -30,7 +30,7 @@ SUNLIBS		= $(DSUNLIBS)
 #	local libraries
 #
 LOCLIB		= $(LIBDIR)/libictrans_.o $(LIBDIR)/libctrans.o \
-		$(LIBDIR)/libcgm.a $(LIBDIR)/libncarv.a \
+		$(LIBDIR)/libcgm.a $(LIBDIR)/libncarg_c.a \
 		$(LIBDIR)/libncarg_ras.a $(LIBDIR)/libhdf.a
 
 SRCS		=  main.c 

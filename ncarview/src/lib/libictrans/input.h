@@ -9,4 +9,4 @@
 extern	char	*inBufPtr;
 extern	int	stringIO;
 
-#endif	_input_
+#endif	/* _input_	*/

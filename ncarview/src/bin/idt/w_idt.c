@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.22 1992-08-25 20:24:06 clyne Exp $
+ *	$Id: w_idt.c,v 1.23 1992-09-01 23:39:16 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -12,6 +12,7 @@
  *	module contains widget-dependent code only.
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 
@@ -28,11 +29,10 @@
 #include <X11/Xaw/Cardinals.h>
 
 #define	IDT
-#include <ncarv.h>
+#include <ncarg/c.h>
 #include "idt.h"
 #include "bits.h"
 
-extern	char	*malloc();
 
 AppData	App_Data;	/* global data settable by user resources	*/
 
@@ -161,107 +161,298 @@ static	XrmOptionDescRec 	options[] = {
 };
 
 
-static	void create_main_panel(), Syntax();
-static	void Select_file(), Display_(), Quit();
 static	Widget	displayButton;
 
-extern	void	CreateFileSelectPopup(), CreateDisplayPopoup();
-extern	void	InitDisplayModule(), CloseDisplayModule();
-
-void 
-main(argc, argv)
-	int argc;
-	char **argv;
+static void 
+Syntax(call)
+	char *call;
 {
+	(void) fprintf(stderr, 
+		"%s: Usage: idt [-d device] [-f font] [-h] [-soft] [-lmin width] [-lmax width] [-lscale width] [-pal pal_fname] [ filename ]\n", call);
+	exit(1);
+}
 
-	Widget 		toplevel;
-	XtAppContext 	app_con;
-	char		**targv;	/* translator args	*/
-	int		targc;
 
-	char	**get_trans_commandline();
-	void 	SetFileSelection();
-	void	(*select_action)() = NULL;
-	void	action_display();
-	char	*meta_fname = NULL;
-	void	XAppDirPath();
+/*
+ *	get_trans_commandline
+ *
+ *	build the command line for the translator complete with any options
+ *	specifed by the user. Leave room for metafile name to be appended
+ *	to end of command line.
+ * on entry
+ *	app_data	: translator options
+ * on exit
+ *	targc		: length of command line including metafile name
+ *	return		: the command line
+ */
+static	char	**get_trans_commandline(targc, app_data)
+	int	*targc;
+	AppData	*app_data;
+{
+	char	**targv;
+	int	i;
+	char	*binpath;
 
 	/*
-	 * hack to ensure idt app resource file is found
+	 * alloc enough memory for translator name, each option specifier and 
+	 * possilbly its  argument, and the name of the metafile.
 	 */
-	XAppDirPath();
+	targv = (char **) malloc((sizeof (char *) * TRANS_ARG_COUNT * 2) + 3);
+	if (! targv) {
+		perror("malloc()");
+		return((char **) NULL);
+	}
+	i = 0;
 
 	/*
-	 * hack to ensure ncarg parameter file is found
+	 * get the path to the translator
 	 */
-	if (kludge() < 0) {
-		(void) fprintf(stderr, 
-			"%s: Warning couldn't locate ncarg parameter file. ", 
-			argv[0]);
-		(void) fprintf(stderr,"Is \'ncargpar\' on your search path?\n");
+	binpath = GetNCARGPath("BINDIR");
+	binpath = binpath ? binpath : BINDIR_DEFAULT;
+
+	/*
+	 * the translator is the first arg
+	 */
+	targv[0] = malloc((unsigned) 
+		(strlen(binpath) + strlen("/") + (strlen(TRANSLATOR) + 1)));
+	if (! targv[0]) {
+		perror("malloc()");
+		return((char **) NULL);
 	}
 
-	toplevel = XtAppInitialize(&app_con, "Idt", options, XtNumber(options),
-			       &argc, argv, fallback_resources, NULL, ZERO);
+	(void) strcpy(targv[0], binpath);
+	(void) strcat(targv[0], "/");
+	(void) strcat(targv[0], TRANSLATOR);
 
-	SetIconResource(toplevel);
+	targv[1] = "-wid";	/* window id option specifier		*/
+	targv[2] = NULL;	/* hold targv[2] for the window id	*/
+	i=3;
 
 	/*
-	 * get some resource values
+	 * now stuff the command line options in
 	 */
-	XtGetApplicationResources(toplevel, &App_Data, resources, 
-		XtNumber(resources), NULL, 0);
-
-	if (App_Data.version) {
-		PrintVersion(argv[0]);
-		exit(0);
-	}
-
-	if (App_Data.select_action) {
-		if (! strcmp("display", App_Data.select_action)) {
-			select_action = action_display;
+	if (app_data->font) {	/* which fontcap	*/
+		targv[i] = malloc ((unsigned) (strlen (TR_FONT) + 1));
+		if (! targv[i]) {
+			perror("malloc()");
+			return((char **) NULL);
 		}
-		else {
-			(void) fprintf(stderr, 
-				"Warning - unknown select action:%s\n",
-				App_Data.select_action);
+		(void) strcpy(targv[i], TR_FONT);
+		i++;
+		targv[i] = malloc ((unsigned) (strlen(app_data->font) + 1));
+		if (! targv[i]) {
+			perror("malloc()");
+			return((char **) NULL);
 		}
+		(void) strcpy(targv[i], app_data->font);
+		i++;
 	}
-	/*
-	 * build the command line for the translator including any
-	 * translator options that may have been passed on the idt command
-	 * line
-	 */
-	targv = get_trans_commandline(&targc, &App_Data);
-
-	if (argc == 2 && *argv[1] != '-') {
-		meta_fname = argv[1];
-		argc--;
+	if (app_data->device) {	/* which graphcap	*/
+		targv[i] = malloc ((unsigned) (strlen (TR_DEVICE) + 1));
+		if (! targv[i]) {
+			perror("malloc()");
+			return((char **) NULL);
+		}
+		(void) strcpy(targv[i], TR_DEVICE);
+		i++;
+		targv[i] = malloc((unsigned ) (strlen(app_data->device) + 1));
+		if (! targv[i]) {
+			perror("malloc()");
+			return((char **) NULL);
+		}
+		(void) strcpy(targv[i], app_data->device);
+		i++;
+	}
+	if (app_data->soft) {	/* soft filling of polygons	*/
+		targv[i] = malloc ((unsigned) (strlen (TR_SOFT) + 1));
+		if (! targv[i]) {
+			perror("malloc()");
+			return((char **) NULL);
+		}
+		(void) strcpy(targv[i], TR_SOFT);
+		i++;
+	}
+	if (app_data->lmin) {	/* mininum line width		*/
+		targv[i] = malloc ((unsigned) strlen (TR_LMIN) + 1);
+		if (! targv[i]) {
+			perror("malloc()");
+			return((char **) NULL);
+		}
+		(void) strcpy(targv[i], TR_LMIN);
+		i++;
+		targv[i] = malloc ((unsigned) strlen(app_data->lmin) + 1);
+		if (! targv[i]) {
+			perror("malloc()");
+			return((char **) NULL);
+		}
+		(void) strcpy(targv[i], app_data->lmin);
+		i++;
+	}
+	if (app_data->lmax) {	/* maximum line width		*/
+		targv[i] = malloc ((unsigned) strlen (TR_LMAX) + 1);
+		if (! targv[i]) {
+			perror("malloc()");
+			return((char **) NULL);
+		}
+		(void) strcpy(targv[i], TR_LMAX);
+		i++;
+		targv[i] = malloc ((unsigned) strlen(app_data->lmax) + 1);
+		if (! targv[i]) {
+			perror("malloc()");
+			return((char **) NULL);
+		}
+		(void) strcpy(targv[i], app_data->lmax);
+		i++;
+	}
+	if (app_data->lscale) {	/* line scaling			*/
+		targv[i] = malloc ((unsigned) strlen (TR_LSCALE) + 1);
+		if (! targv[i]) {
+			perror("malloc()");
+			return((char **) NULL);
+		}
+		(void) strcpy(targv[i], TR_LSCALE);
+		i++;
+		targv[i] = malloc ((unsigned) strlen(app_data->lscale) + 1);
+		if (! targv[i]) {
+			perror("malloc()");
+			return((char **) NULL);
+		}
+		(void) strcpy(targv[i], app_data->lscale);
+		i++;
+	}
+	if (app_data->foreground) {	/* default foreground color	*/
+		targv[i] = malloc ((unsigned) strlen (TR_FOREGROUND) + 1);
+		if (! targv[i]) {
+			perror("malloc()");
+			return((char **) NULL);
+		}
+		(void) strcpy(targv[i], TR_FOREGROUND);
+		i++;
+		targv[i] = malloc((unsigned)strlen(app_data->foreground) + 1);
+		if (! targv[i]) {
+			perror("malloc()");
+			return((char **) NULL);
+		}
+		(void) strcpy(targv[i], app_data->foreground);
+		i++;
+	}
+	if (app_data->background) {	/* default background color	*/
+		targv[i] = malloc ((unsigned) strlen (TR_BACKGROUND) + 1);
+		if (! targv[i]) {
+			perror("malloc()");
+			return((char **) NULL);
+		}
+		(void) strcpy(targv[i], TR_BACKGROUND);
+		i++;
+		targv[i] = malloc ((unsigned) strlen(app_data->background)+1);
+		if (! targv[i]) {
+			perror("malloc()");
+			return((char **) NULL);
+		}
+		(void) strcpy(targv[i], app_data->background);
+		i++;
+	}
+	if (app_data->reverse) {	/* reverse video		*/
+		targv[i] = malloc ((unsigned) strlen (TR_REVERSE) + 1);
+		if (! targv[i]) {
+			perror("malloc()");
+			return((char **) NULL);
+		}
+		(void) strcpy(targv[i], TR_REVERSE);
+		i++;
+	}
+	if (app_data->pal) {	/* optional color palette 	*/
+		targv[i] = malloc ((unsigned) strlen (TR_PAL) + 1);
+		if (! targv[i]) {
+			perror("malloc()");
+			return((char **) NULL);
+		}
+		(void) strcpy(targv[i], TR_PAL);
+		i++;
+		targv[i] = malloc ((unsigned) strlen(app_data->pal) + 1);
+		if (! targv[i]) {
+			perror("malloc()");
+			return((char **) NULL);
+		}
+		(void) strcpy(targv[i], app_data->pal);
+		i++;
 	}
 
-	if (argc != 1) 
-		Syntax(argv[0]);
-
-	InitDisplayModule(argv[0], targv, targc, (short) App_Data.history);
+	/*
+	 * hold a spot for the metafile. We don't know its name yet
+	 */
+	targv[i] = NULL;
+	i++;
 
 	/*
-	 * load application actions into the translation manager
+	 * terminate with a NULL
 	 */
-	XtAppAddActions(app_con, actionTable, XtNumber(actionTable));
+	*targc = i;
+	targv[i] = NULL;
+	return(targv);
+}
 
-	
+static	void	action_display()
+{
+	XtCallCallbacks(displayButton, XtNcallback, (XtPointer) NULL);
+}
 
-	/*
-	 * the main control panel
-	 */
-	create_main_panel(toplevel, select_action);
+/*
+ *	The Callbacks
+ */
 
-	XtRealizeWidget(toplevel);
-	if (meta_fname) {
-		SetFileSelection(meta_fname, select_action);
+
+/*
+ *	Select_file
+ *
+ *	creates a file selection box popup
+ */
+/*ARGSUSED*/
+static	void Select_file(widget, client_data, call_data)
+	Widget	widget;
+	XtPointer	client_data;	/* select action	*/
+	XtPointer	call_data;	/* unused		*/
+{
+	FuncPtrPasser *select_action = (FuncPtrPasser *) client_data;
+
+	CreateFileSelectPopup(widget, select_action);
+}
+
+/*
+ *	Display_
+ *
+ *	Creates a display popup menu to display the most recently selected
+ *	file.
+ */
+/*ARGSUSED*/
+static	void Display_(widget, closure, call_data)
+	Widget	widget;
+	XtPointer	closure;	/* unused	*/
+	XtPointer	call_data;	/* unused	*/
+{
+	char	*file;
+	void	AppendText();
+	void	CreateDisplayPopup();
+
+	extern	char	*GetFileSelection();
+
+	file = GetFileSelection();
+
+	if (! file) {
+		AppendText("No file selected. Use \"Select file\"\n");
 	}
+	else
+		CreateDisplayPopup(widget, file);
+}
 
-	XtAppMainLoop(app_con);
+/*ARGSUSED*/
+static	void Quit(widget, closure, call_data)
+	Widget	widget;
+	XtPointer	closure;	/* unused	*/
+	XtPointer	call_data;	/* unused	*/
+{
+	(void) CloseDisplayModule();
+	exit(0);
 }
 
 /*
@@ -278,7 +469,7 @@ main(argc, argv)
 static void
 create_main_panel(parent, select_action)
 	Widget parent;
-	void	(*select_action)();
+	FuncPtrPasser	select_action;
 {
 	Widget paned, form, text, select_file, quit;
 	Cardinal n;
@@ -344,7 +535,7 @@ create_main_panel(parent, select_action)
 		commandWidgetClass, form ,args,n);
 
 	XtAddCallback(select_file, XtNcallback, Select_file, 
-					(XtPointer) select_action);
+					(XtPointer) &select_action);
 
 	n = 0;
 	XtSetArg(args[n], XtNfromHoriz, select_file); n++;
@@ -361,215 +552,99 @@ create_main_panel(parent, select_action)
 }
 
 
-static void 
-Syntax(call)
-	char *call;
-{
-	(void) fprintf(stderr, 
-		"%s: Usage: idt [-d device] [-f font] [-h] [-soft] [-lmin width] [-lmax width] [-lscale width] [-pal pal_fname] [ filename ]\n", call);
-	exit(1);
-}
 
-
-/*
- *	get_trans_commandline
- *
- *	build the command line for the translator complete with any options
- *	specifed by the user. Leave room for metafile name to be appended
- *	to end of command line.
- * on entry
- *	app_data	: translator options
- * on exit
- *	targc		: length of command line including metafile name
- *	return		: the command line
- */
-static	char	**get_trans_commandline(targc, app_data)
-	int	*targc;
-	AppData	*app_data;
+void 
+main(argc, argv)
+	int argc;
+	char **argv;
 {
-	char	**targv;
-	int	i;
-	char	*binpath;
+
+	Widget 		toplevel;
+	XtAppContext 	app_con;
+	char		**targv;	/* translator args	*/
+	int		targc;
+	FuncPtrPasser select_action;
+	char	*meta_fname = NULL;
+
+	select_action.func = (void (*)()) NULL;
 
 	/*
-	 * alloc enough memory for translator name, each option specifier and 
-	 * possilbly its  argument, and the name of the metafile.
+	 * hack to ensure idt app resource file is found
 	 */
-	targv = (char **) icMalloc((sizeof (char *) * TRANS_ARG_COUNT * 2) + 3);
-	i = 0;
+	XAppDirPath();
 
 	/*
-	 * get the path to the translator
+	 * hack to ensure ncarg parameter file is found
 	 */
-	binpath = GetNCARGPath("BINDIR");
-	binpath = binpath ? binpath : BINDIR_DEFAULT;
+	if (kludge() < 0) {
+		(void) fprintf(stderr, 
+			"%s: Warning couldn't locate ncarg parameter file. ", 
+			argv[0]);
+		(void) fprintf(stderr,"Is \'ncargpar\' on your search path?\n");
+	}
+
+	toplevel = XtAppInitialize(&app_con, "Idt", options, XtNumber(options),
+			       &argc, argv, fallback_resources, NULL, ZERO);
+
+	SetIconResource(toplevel);
 
 	/*
-	 * the translator is the first arg
+	 * get some resource values
 	 */
-	targv[0] = icMalloc((unsigned) 
-		(strlen(binpath) + strlen("/") + (strlen(TRANSLATOR) + 1)));
+	XtGetApplicationResources(toplevel, &App_Data, resources, 
+		XtNumber(resources), NULL, 0);
 
-	(void) strcpy(targv[0], binpath);
-	(void) strcat(targv[0], "/");
-	(void) strcat(targv[0], TRANSLATOR);
+	if (App_Data.version) {
+		PrintVersion(argv[0]);
+		exit(0);
+	}
 
-	targv[1] = "-wid";	/* window id option specifier		*/
-	targv[2] = NULL;	/* hold targv[2] for the window id	*/
-	i=3;
+	if (App_Data.select_action) {
+		if (! strcmp("display", App_Data.select_action)) {
+			select_action.func = action_display;
+		}
+		else {
+			(void) fprintf(stderr, 
+				"Warning - unknown select action:%s\n",
+				App_Data.select_action);
+		}
+	}
+	/*
+	 * build the command line for the translator including any
+	 * translator options that may have been passed on the idt command
+	 * line
+	 */
+	if ( !(targv = get_trans_commandline(&targc, &App_Data))) {
+		exit(1);
+	}
+
+	if (argc == 2 && *argv[1] != '-') {
+		meta_fname = argv[1];
+		argc--;
+	}
+
+	if (argc != 1) 
+		Syntax(argv[0]);
+
+	InitDisplayModule(argv[0], targv, targc, (short) App_Data.history);
 
 	/*
-	 * now stuff the command line options in
+	 * load application actions into the translation manager
 	 */
-	if (app_data->font) {	/* which fontcap	*/
-		targv[i] = icMalloc ((unsigned) (strlen (TR_FONT) + 1));
-		(void) strcpy(targv[i], TR_FONT);
-		i++;
-		targv[i] = icMalloc ((unsigned) (strlen(app_data->font) + 1));
-		(void) strcpy(targv[i], app_data->font);
-		i++;
-	}
-	if (app_data->device) {	/* which graphcap	*/
-		targv[i] = icMalloc ((unsigned) (strlen (TR_DEVICE) + 1));
-		(void) strcpy(targv[i], TR_DEVICE);
-		i++;
-		targv[i] = icMalloc((unsigned ) (strlen(app_data->device) + 1));
-		(void) strcpy(targv[i], app_data->device);
-		i++;
-	}
-	if (app_data->soft) {	/* soft filling of polygons	*/
-		targv[i] = icMalloc ((unsigned) (strlen (TR_SOFT) + 1));
-		(void) strcpy(targv[i], TR_SOFT);
-		i++;
-	}
-	if (app_data->lmin) {	/* mininum line width		*/
-		targv[i] = icMalloc ((unsigned) strlen (TR_LMIN) + 1);
-		(void) strcpy(targv[i], TR_LMIN);
-		i++;
-		targv[i] = icMalloc ((unsigned) strlen(app_data->lmin) + 1);
-		(void) strcpy(targv[i], app_data->lmin);
-		i++;
-	}
-	if (app_data->lmax) {	/* maximum line width		*/
-		targv[i] = icMalloc ((unsigned) strlen (TR_LMAX) + 1);
-		(void) strcpy(targv[i], TR_LMAX);
-		i++;
-		targv[i] = icMalloc ((unsigned) strlen(app_data->lmax) + 1);
-		(void) strcpy(targv[i], app_data->lmax);
-		i++;
-	}
-	if (app_data->lscale) {	/* line scaling			*/
-		targv[i] = icMalloc ((unsigned) strlen (TR_LSCALE) + 1);
-		(void) strcpy(targv[i], TR_LSCALE);
-		i++;
-		targv[i] = icMalloc ((unsigned) strlen(app_data->lscale) + 1);
-		(void) strcpy(targv[i], app_data->lscale);
-		i++;
-	}
-	if (app_data->foreground) {	/* default foreground color	*/
-		targv[i] = icMalloc ((unsigned) strlen (TR_FOREGROUND) + 1);
-		(void) strcpy(targv[i], TR_FOREGROUND);
-		i++;
-		targv[i] = icMalloc((unsigned)strlen(app_data->foreground) + 1);
-		(void) strcpy(targv[i], app_data->foreground);
-		i++;
-	}
-	if (app_data->background) {	/* default background color	*/
-		targv[i] = icMalloc ((unsigned) strlen (TR_BACKGROUND) + 1);
-		(void) strcpy(targv[i], TR_BACKGROUND);
-		i++;
-		targv[i] = icMalloc ((unsigned) strlen(app_data->background)+1);
-		(void) strcpy(targv[i], app_data->background);
-		i++;
-	}
-	if (app_data->reverse) {	/* reverse video		*/
-		targv[i] = icMalloc ((unsigned) strlen (TR_REVERSE) + 1);
-		(void) strcpy(targv[i], TR_REVERSE);
-		i++;
-	}
-	if (app_data->pal) {	/* optional color palette 	*/
-		targv[i] = icMalloc ((unsigned) strlen (TR_PAL) + 1);
-		(void) strcpy(targv[i], TR_PAL);
-		i++;
-		targv[i] = icMalloc ((unsigned) strlen(app_data->pal) + 1);
-		(void) strcpy(targv[i], app_data->pal);
-		i++;
-	}
+	XtAppAddActions(app_con, actionTable, XtNumber(actionTable));
+
+	
 
 	/*
-	 * hold a spot for the metafile. We don't know its name yet
+	 * the main control panel
 	 */
-	targv[i] = NULL;
-	i++;
+	create_main_panel(toplevel, select_action);
 
-	/*
-	 * terminate with a NULL
-	 */
-	*targc = i;
-	targv[i] = NULL;
-	return(targv);
-}
-
-void	action_display()
-{
-	XtCallCallbacks(displayButton, XtNcallback, (XtPointer) NULL);
-}
-
-/*
- *	The Callbacks
- */
-
-
-/*
- *	Select_file
- *
- *	creates a file selection box popup
- */
-/*ARGSUSED*/
-static	void Select_file(widget, client_data, call_data)
-	Widget	widget;
-	XtPointer	client_data;	/* select action	*/
-	XtPointer	call_data;	/* unused		*/
-{
-	void	(*select_action)() = (void (*)()) client_data;
-
-	CreateFileSelectPopup(widget, select_action);
-}
-
-/*
- *	Display_
- *
- *	Creates a display popup menu to display the most recently selected
- *	file.
- */
-/*ARGSUSED*/
-static	void Display_(widget, closure, call_data)
-	Widget	widget;
-	XtPointer	closure;	/* unused	*/
-	XtPointer	call_data;	/* unused	*/
-{
-	char	*file;
-	void	AppendText();
-	void	CreateDisplayPopup();
-
-	extern	char	*GetFileSelection();
-
-	file = GetFileSelection();
-
-	if (! file) {
-		AppendText("No file selected. Use \"Select file\"\n");
+	XtRealizeWidget(toplevel);
+	if (meta_fname) {
+		SetFileSelection(meta_fname, select_action);
 	}
-	else
-		CreateDisplayPopup(widget, file);
-}
 
-/*ARGSUSED*/
-static	void Quit(widget, closure, call_data)
-	Widget	widget;
-	XtPointer	closure;	/* unused	*/
-	XtPointer	call_data;	/* unused	*/
-{
-	(void) CloseDisplayModule();
-	exit(0);
+	XtAppMainLoop(app_con);
 }
 

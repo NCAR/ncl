@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.24 1992-08-26 19:34:33 clyne Exp $
+ *	$Id: ctrans.c,v 1.25 1992-09-01 23:41:56 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -37,13 +37,14 @@
  */
 
 #include <stdio.h> 
+#include <stdlib.h> 
 #include <string.h>
 
 
 #include <ctype.h>
 #include <errno.h>
-#include <ncarv.h>
-#include <cgm_tools.h>
+#include <ncarg/c.h>
+#include <ncarg/cgm_tools.h>
 #include "ctrans.h"
 #include "cgmc.h"
 #include "defines.h"
@@ -55,7 +56,6 @@
 
 
 
-extern char *getenv();
 extern int GP_Init();
 extern int Init_Font();
 extern int InitInput();
@@ -63,8 +63,6 @@ extern int SetRecord();
 
 extern	int	(*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1]) ();
 extern	struct	device	devices[];
-
-extern  char    *strrchr();
 
 char	**Argv;
 int	Argc;
@@ -77,7 +75,7 @@ boolean	Batch;		/* if true don't prompt for user interaction	*/
 static	boolean softfill = 0;
 static	boolean debug = 0;
 static	boolean bell_off = 0;
-static	char	*palFname = NULL;
+static	const char	*palFname = NULL;
 
 boolean *softFill = &softfill;
 boolean *deBug = &debug;
@@ -120,7 +118,7 @@ static	void	elog(msg)
 	char	*msg;
 {
 	if (eIndex < MAX_MSG) {
-		strncpy(eLog[eIndex],msg, sizeof(eLog[eIndex])-1);
+		(void) strncpy(eLog[eIndex],msg, sizeof(eLog[eIndex])-1);
 		eIndex++;
 	}
 }
@@ -141,70 +139,131 @@ static	void	elog(msg)
  *	This is not done staticly at compile time because
  *	there is the need to dynamicaly change it.
  */
-init_cgmc (cgmc)
+int	init_cgmc (cgmc)
 CGMC *cgmc;
 {
 	int	i;
 
-	cgmc->ci = (CItype *) icMalloc((unsigned)(NUMTOALLOC * sizeof(CItype)));
+	unsigned ci_size = NUMTOALLOC * sizeof(CItype);
+	unsigned cd_size = NUMTOALLOC * sizeof(CDtype);
+	unsigned ix_size = NUMTOALLOC * sizeof(IXtype);
+	unsigned e_size = NUMTOALLOC * sizeof(Etype);
+	unsigned i_size = NUMTOALLOC * sizeof(Itype);
+	unsigned r_size = NUMTOALLOC * sizeof(Rtype);
+	unsigned s_size = sizeof(Stype);
+	unsigned vdc_size = NUMTOALLOC * sizeof(VDCtype);
+	unsigned p_size = NUMTOALLOC * sizeof(Ptype);
+	unsigned c_size = NUMTOALLOC * sizeof(Ctype);
+	unsigned d_size = NUMTOALLOC * sizeof(Dtype);
+
+	if (! (cgmc->ci = (CItype *) malloc(ci_size))) {
+		ESprintf(errno, "malloc(%d)", ci_size);
+		return(-1);
+	}
 	cgmc->CIspace = NUMTOALLOC;
 	cgmc->CInum = 0;
 
-	cgmc->cd = (CDtype *) icMalloc((unsigned)(NUMTOALLOC * sizeof(CDtype)));
+	if (! (cgmc->cd = (CDtype *) malloc(cd_size))) {
+		ESprintf(errno, "malloc(%d)", cd_size);
+		return(-1);
+	}
 	cgmc->CDspace = NUMTOALLOC;
 	cgmc->CDnum = 0;
 
-	cgmc->ix = (IXtype *) icMalloc((unsigned)(NUMTOALLOC * sizeof(IXtype)));
+	if (! (cgmc->ix = (IXtype *) malloc(ix_size))) {
+		ESprintf(errno, "malloc(%d)", ix_size);
+		return(-1);
+	}
 	cgmc->IXnum = 0;
 	cgmc->IXspace = NUMTOALLOC;
 
-	cgmc->e  = (Etype *) icMalloc((unsigned)(NUMTOALLOC * sizeof(Etype)));
+	if (! (cgmc->e  = (Etype *) malloc(e_size))) {
+		ESprintf(errno, "malloc(%d)", e_size);
+		return(-1);
+	}
 	cgmc->Espace = NUMTOALLOC;
 	cgmc->Enum = 0;
 
-	cgmc->i  = (Itype *) icMalloc ((unsigned) (NUMTOALLOC * sizeof(Itype)));
+	if (! (cgmc->i  = (Itype *) malloc (i_size))) {
+		ESprintf(errno, "malloc(%d)", i_size);
+		return(-1);
+	}
 	cgmc->Ispace = NUMTOALLOC;
 	cgmc->Inum = 0;
 
-	cgmc->r  = (Rtype *) icMalloc ((unsigned) (NUMTOALLOC * sizeof(Rtype)));
+	if (! (cgmc->r  = (Rtype *) malloc (r_size))) {
+		ESprintf(errno, "malloc(%d)", r_size);
+		return(-1);
+	}
 	cgmc->Rspace = NUMTOALLOC;
 	cgmc->Rnum = 0;
 
-	cgmc->s  = (Stype *) icMalloc (sizeof(Stype));
-	cgmc->Sspace = NUMTOALLOC;
+	if (! (cgmc->s  = (Stype *) malloc (s_size))) {
+		ESprintf(errno, "malloc(%d)", s_size);
+		return(-1);
+	}
+	cgmc->Sspace = 1;
 	cgmc->Snum = 0;
-		cgmc->s->string = (char **)
-			icMalloc((unsigned) (cgmc->Sspace * sizeof(char *)));
+		cgmc->s->string = (char **) malloc(
+			(unsigned) (cgmc->Sspace * sizeof(char *))
+		);
+		if (! cgmc->s->string) {
+			ESprintf(errno, "malloc()");
+			return(-1);
+		}
 
-		cgmc->s->string_space = (int *)
-			icMalloc((unsigned) (cgmc->Sspace * sizeof(int)));
+		cgmc->s->string_space = (int *) malloc(
+			(unsigned) (cgmc->Sspace * sizeof(int))
+		);
+		if (! cgmc->s->string_space) {
+			ESprintf(errno, "malloc()");
+			return(-1);
+		}
 
 		cgmc->s->string_space[0] = 256;
-		cgmc->s->string[0] = (char *) icMalloc 
-			((unsigned) (cgmc->s->string_space[0] * sizeof(char)));
+		cgmc->s->string[0] = (char *) malloc (
+			(unsigned) (cgmc->s->string_space[0] * sizeof(char))
+		);
+		if (! cgmc->s->string_space[0]) {
+			ESprintf(errno, "malloc()");
+			return(-1);
+		}
 
 		for (i = 1; i < cgmc->Sspace; i++) {
 			cgmc->s->string_space[i] = 0;
 			cgmc->s->string[i] = NULL;
 		}
 
-	cgmc->vdc=(VDCtype *)icMalloc((unsigned)(NUMTOALLOC * sizeof(VDCtype)));
+	if (! (cgmc->vdc=(VDCtype *)malloc(vdc_size))) {
+		ESprintf(errno, "malloc(%d)", vdc_size);
+		return(-1);
+	}
 	cgmc->VDCspace = NUMTOALLOC;
 	cgmc->VDCnum = 0;
 
-	cgmc->p  = (Ptype *) icMalloc ((unsigned) (NUMTOALLOC * sizeof(Ptype)));
+	if (! (cgmc->p  = (Ptype *) malloc (p_size))) {
+		ESprintf(errno, "malloc(%d)", p_size);
+		return(-1);
+	}
 	cgmc->Pspace = NUMTOALLOC;
 	cgmc->Pnum = 0;
 
-	cgmc->c  = (Ctype *) icMalloc ((unsigned) (NUMTOALLOC * sizeof(Ctype)));
+	if (! (cgmc->c  = (Ctype *) malloc (c_size))) {
+		ESprintf(errno, "malloc(%d)", c_size);
+		return(-1);
+	}
 	cgmc->Cspace = NUMTOALLOC;
 	cgmc->Cnum = 0;
 
-	cgmc->d  = (Ctype *) icMalloc ((unsigned) (NUMTOALLOC * sizeof(Dtype)));
+	if (! (cgmc->d  = (Ctype *) malloc (d_size))) {
+		ESprintf(errno, "malloc(%d)", d_size);
+		return(-1);
+	}
 	cgmc->Dspace = NUMTOALLOC;
 	cgmc->Dnum = 0;
 
 	cgmc->more = FALSE;
+	return(1);
 }
 
 void	free_cgmc(cgmc)
@@ -213,19 +272,19 @@ void	free_cgmc(cgmc)
 	/*
 	 * free the cgmc
 	 */
-	cfree((char *) cgmc->c);
-	cfree((char *) cgmc->ci);
-	cfree((char *) cgmc->cd);
-	cfree((char *) cgmc->e);
-	cfree((char *) cgmc->i);
-	cfree((char *) cgmc->ix);
-	cfree((char *) cgmc->p);
-	cfree((char *) cgmc->r);
-	cfree((char *) cgmc->s->string[0]);
-	cfree((char *) cgmc->s->string);
-	cfree((char *) cgmc->s->string_space);
-	cfree((char *) cgmc->s);
-	cfree((char *) cgmc->vdc);
+	free((Voidptr) cgmc->c);
+	free((Voidptr) cgmc->ci);
+	free((Voidptr) cgmc->cd);
+	free((Voidptr) cgmc->e);
+	free((Voidptr) cgmc->i);
+	free((Voidptr) cgmc->ix);
+	free((Voidptr) cgmc->p);
+	free((Voidptr) cgmc->r);
+	free((Voidptr) cgmc->s->string[0]);
+	free((Voidptr) cgmc->s->string);
+	free((Voidptr) cgmc->s->string_space);
+	free((Voidptr) cgmc->s);
+	free((Voidptr) cgmc->vdc);
 }
 
 
@@ -363,8 +422,8 @@ CtransRC	init_ctrans(argc, argv, gcap, fcap, stand_alone, batch)
 	int	*argc;
 	char	**argv;
 
-	char	*gcap,
-		*fcap;
+	const char	*gcap,
+			*fcap;
 	boolean	stand_alone;
 	boolean	batch;
 
@@ -395,7 +454,7 @@ CtransRC	init_ctrans(argc, argv, gcap, fcap, stand_alone, batch)
 	/*
 	 * set the output device
 	 */
-	if (SetDevice(gcap) < 0) {
+	if ((int) SetDevice(gcap) < 0) {
 		ESprintf(
 			E_UNKNOWN, "Can't initialize device(%s) [ %s ]",
 			gcap, ErrGetMsg()
@@ -422,7 +481,9 @@ CtransRC	init_ctrans(argc, argv, gcap, fcap, stand_alone, batch)
 	Argc = *argc;
 
 
-	init_cgmc(&command);
+	if (init_cgmc(&command) < 0) {
+		return(FATAL);
+	}
 
 	/*
 	 * the following is a kludge to ensure a minimum linewidth
@@ -629,7 +690,7 @@ CtransRC	ctrans(record)
 		 */
 		if ((rc = Process(&command)) == FATAL) return(FATAL);
 		if (rc == WARN) rcx = WARN;
-		return(EOM);
+		return((CtransRC) EOM);
 	}
 
 	/*
@@ -798,7 +859,7 @@ CtransRC	ctrans_merge(record1, record2)
 	if (command.command == END_MF_ID)
 
 		/* end of metafile		*/
-		return(EOM);
+		return((CtransRC) EOM);
 	else {
 		/* 
 		 * end of a single frame. Get BEG_PIC command for next 
@@ -981,9 +1042,9 @@ char	*ReadCtransMsg()
  *	return		== [FATAL=-2, WARN=-1, OK=1]
  */
 CtransRC	SetDevice(gcap)
-	char	*gcap;
+	const char	*gcap;
 {
-	char	*device;
+	const char	*device;
 	int	i;
 
 	/*
@@ -1001,7 +1062,7 @@ CtransRC	SetDevice(gcap)
 	device = (device = strrchr(gcap, '/')) ? ++device : gcap;
 
 	if (! strcmp(device, "xbfr")) {
-		fprintf(stderr, "ctrans : Warning - 'xbfr' device won't be available in next release. Use 'xwd' instead\n");
+		(void) fprintf(stderr, "ctrans : Warning - 'xbfr' device won't be available in next release. Use 'xwd' instead\n");
 		device = "xwd";
 	}
 
@@ -1055,7 +1116,7 @@ CtransRC	SetDevice(gcap)
  *	return		== [FATAL=-2, WARN=-1, OK=1]
  */
 CtransRC	SetFont(fcap)
-	char	*fcap;
+	const char	*fcap;
 {
 	/*
 	 *	Init the font cap if on is used.
@@ -1088,7 +1149,7 @@ CtransRC	SetFont(fcap)
  *	*pal_fname	: name of file containing palette
  */
 void	SetDefaultPalette(pal_fname) 
-	char	*pal_fname;
+	const char	*pal_fname;
 {
 	palFname = pal_fname;
 }

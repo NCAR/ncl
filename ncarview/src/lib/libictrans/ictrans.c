@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.c,v 1.14 1992-08-10 22:07:25 clyne Exp $
+ *	$Id: ictrans.c,v 1.15 1992-09-01 23:43:56 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -24,17 +24,17 @@
  *
  *	This is the program driver for ictrans
  */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #ifndef	CRAY
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 #endif
-#include <cgm_tools.h>
-#include <ncarv.h>
-#include <stdio.h>
-#include <ncarv.h>
-#include <ctrans.h>
+#include <ncarg/cgm_tools.h>
+#include <ncarg/c.h>
 #include "ictrans.h"
 #include "lex.h"
 #include "get_cmd.h"
@@ -42,7 +42,6 @@
 extern	char	yytext[];
 extern	char	*getFcapname();
 extern	char	*getGcapname();
-extern	char	*strrchr();
 
 extern	IcState	icState;
 extern	int	spoolerJobs;
@@ -159,15 +158,22 @@ ICTrans(argc, argv, mem_cgm)
 	/*
 	 * list of metafiles to process
 	 */
-	char	**meta_files = (char **) icMalloc ((argc * sizeof(char *)) + 1);
+	char	**meta_files = (char **) malloc ((argc * sizeof(char *)) + 1);
 	int	i,j;
 
+
 	extern	char	*GetCurrentAlias();
-	char	buf[80];
 
 
 	progName = (progName = strrchr(argv[0], '/')) ?
 						++progName : *argv;
+	if (! meta_files) {
+		(void) fprintf(
+			stderr,"%s : malloc(%d)", progName,
+			argc * sizeof(char *)
+		);
+		return(-1);
+	}
 
 	/*
 	 *	parse command line argument. Separate ctrans specific
@@ -305,7 +311,7 @@ ICTrans(argc, argv, mem_cgm)
 	InitSpool();
 	icState.spool_alias = GetCurrentAlias();
 
-	init_icommand(&icommand);
+	if (init_icommand(&icommand) < 0) return(-1);
 
 	/*
 	 * establish communication path (one way) with invokee
@@ -315,7 +321,7 @@ ICTrans(argc, argv, mem_cgm)
 			fprintf(stderr, "fdopen(%d, w)\n", opt.fd);
 			return(-1);
 		}
-		setbuf(fp, NULL);	/* make unbuffered	*/
+		setbuf(fp, (char *) NULL);	/* make unbuffered	*/
 	}
 	else if (! isatty(fileno(stdout))) {
 
@@ -337,7 +343,7 @@ ICTrans(argc, argv, mem_cgm)
 	 * prime the system by executing a file() command
 	 */
 	if (mem_cgm) {	/* CGM in memory?	*/
-		processMemoryCGM(&icommand, mem_cgm);
+		(void) processMemoryCGM(&icommand, mem_cgm);
 	} 
 	else {		/* CGM on disk		*/
 		icommand.cmd.name = "file";
@@ -430,9 +436,11 @@ int	ex_command(ic)
 
 	if (c == (CmdOp *) -1) {
 		(void) fprintf(stderr, "%s: Ambiguous command?\n",progName);
+		return(-1);
 	}
 	else if (c == (CmdOp *) NULL) {
 		(void) fprintf(stderr, "%s: Invalid command?\n",progName);
+		return(-1);
 	}
 	else {
 

@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.4 1992-08-12 22:55:13 clyne Exp $
+#	$Id: yMakefile,v 1.5 1992-09-01 23:38:23 clyne Exp $
 #
 #
 #	Makefile for cgm filters -- filter between NCAR CGM and vanilla CGM
@@ -11,7 +11,7 @@ NCARG = ../../../..
 
 MYNAME	= filter
 
-LIBS		= $(LIBDIR)/libcgm.a $(LIBDIR)/libncarv.a
+LIBS		= $(LIBDIR)/libcgm.a $(LIBDIR)/libncarg_c.a
 
 CDEFINES	= -I../../include
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: xt_env.c,v 1.4 1992-08-12 21:42:10 clyne Exp $
+ *      $Id: xt_env.c,v 1.5 1992-09-01 23:39:21 clyne Exp $
  */
 /*
  *	File:		xt_env.c
@@ -15,10 +15,9 @@
  */
 
 #include <stdio.h>
-#include <ncarv.h>
+#include <stdlib.h>
+#include <ncarg/c.h>
 #include <string.h>
-
-extern	char	*getenv();
 
 /*
  *	XAppDirPath
@@ -53,10 +52,15 @@ void	XAppDirPath()
 	 */
 	xapp_path = xapp_path ? xapp_path : XAPPDIR_DEFAULT;
 
-	if (bufptr) free (bufptr);
+	if (bufptr) free ((Voidptr) bufptr);
 	
-	bufptr = icMalloc ((unsigned) 
+	bufptr = malloc ((unsigned) 
 		(strlen(xapp_env) + strlen("=") + strlen(xapp_path) + 1));
+
+	if ( !bufptr) {
+		perror("malloc()");
+		return;
+	}
 
 	(void) strcpy(bufptr, xapp_env);
 	(void) strcat(bufptr, "=");

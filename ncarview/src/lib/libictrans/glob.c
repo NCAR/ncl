@@ -1,5 +1,5 @@
 /*
- *	$Id: glob.c,v 1.5 1992-06-24 21:06:29 clyne Exp $
+ *	$Id: glob.c,v 1.6 1992-09-01 23:43:52 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -21,19 +21,79 @@
  *	perform filname expansion on a string using the shell
  */
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
-#include <ncarv.h>
-
-extern	char	*strcpy();
-extern	char	*strcat();
+#include <ncarg/c.h>
+#include "ictrans.h"
 
 static int	to_child[2],
 		to_parent[2];	/* pipes for talking to spawned process	*/
 
-#define	MAX_LINE_LEN	80
-
 #define	ACK	"/bin/echo ''\n"
 
+/*
+ *	talkto
+ *	[internal]
+ *	
+ *	set up communictions between invoking process and the desired
+ *	command; stderr of command is sent to /dev/null
+ * on entry
+ *	**argv		: name of command to talk to
+ * on exit
+ *	to_child[1]	: fd for writing to spawned process
+ *	to_parent[0]	: fd for reading from spawned process
+ */
+static	talkto(argv) 
+	char	**argv;
+{
+	int	pid;
+	FILE	*fp;
+
+	if (pipe(to_child) < 0) {
+		perror((char *) NULL);
+		exit(1);
+	}
+	if (pipe(to_parent) < 0) {
+		perror((char *) NULL);
+		exit(1);
+	}
+
+
+	if ((pid = fork()) == 0) {	/* the child process		*/
+		fp = fopen("/dev/null", "a");
+		(void) close(fileno(stdin));	/* close child's stdin	*/
+		(void) dup(to_child[0]);	/* redirect stdin from pipe*/
+		(void) close(fileno(stdout));	/* close child's stdout	*/
+		(void) dup(to_parent[1]);	/* redirect stdout to pipe*/
+		(void) close(fileno(stderr));	/* close child's stderr	*/
+		(void) dup(fileno(fp));	/* redirect stderr to bit-buck*/
+
+
+		(void) close(to_child[0]);	/* close the pipes	*/
+		(void) close(to_child[1]);
+		(void) close(to_parent[0]);
+		(void) close(to_parent[1]);
+		(void) fclose(fp);
+
+		/* 
+		 * exec the command to talk to	
+		 */
+		(void) execvp(argv[0], argv);
+
+		perror((char *) NULL);	/* shouldn't get here	*/
+		exit(1);
+
+	}
+	else if (pid > 0) {		/* we're the parent		*/
+
+	}
+
+	else {	/* error	*/
+		perror((char *) NULL);
+		(void) exit(1);
+	}
+}
 /*
  *	glob
  *	[exported]
@@ -66,7 +126,6 @@ glob(s, r_argv, r_argc)
 	int	nbytes;
 	char	*shell_argv[3];
 	char	*t;
-	extern	char	*getenv(), *strrchr();
 
 	*r_argv = NULL;
 	*r_argc = argc = 0;
@@ -99,7 +158,11 @@ glob(s, r_argv, r_argc)
 		is_init = 1;
 
 
-		argv = (char **) icMalloc(SMALL_MALLOC_BLOCK * sizeof(char **));
+		argv = (char **) malloc(SMALL_MALLOC_BLOCK * sizeof(char **));
+		if (! argv) {
+			perror("malloc()");
+			return;
+		}
 		args = SMALL_MALLOC_BLOCK;
 	}
 
@@ -155,8 +218,8 @@ glob(s, r_argv, r_argc)
 			*cptr = '\0';
 			if (argc >= args) {	/* enough memory ?	*/
 				args += SMALL_MALLOC_BLOCK;
-				argv = (char **) icRealloc ((char *) argv,
-					args * sizeof (char **));
+				argv = (char **) realloc ((char *) argv,
+					(unsigned) (args * sizeof (char **)));
 			}
 			argv[argc++] = cptr+1;
 		}
@@ -169,65 +232,3 @@ glob(s, r_argv, r_argc)
 
 
 
-/*
- *	talkto
- *	[internal]
- *	
- *	set up communictions between invoking process and the desired
- *	command; stderr of command is sent to /dev/null
- * on entry
- *	**argv		: name of command to talk to
- * on exit
- *	to_child[1]	: fd for writing to spawned process
- *	to_parent[0]	: fd for reading from spawned process
- */
-static	talkto(argv) 
-	char	**argv;
-{
-	int	pid;
-	FILE	*fp;
-
-	if (pipe(to_child) < 0) {
-		perror((char *) NULL);
-		exit(1);
-	}
-	if (pipe(to_parent) < 0) {
-		perror((char *) NULL);
-		exit(1);
-	}
-
-
-	if ((pid = fork()) == 0) {	/* the child process		*/
-		fp = fopen("/dev/null", "a");
-		(void) close(fileno(stdin));	/* close child's stdin	*/
-		(void) dup(to_child[0]);	/* redirect stdin from pipe*/
-		(void) close(fileno(stdout));	/* close child's stdout	*/
-		(void) dup(to_parent[1]);	/* redirect stdout to pipe*/
-		(void) close(fileno(stderr));	/* close child's stderr	*/
-		(void) dup(fileno(fp));	/* redirect stderr to bit-buck*/
-
-
-		(void) close(to_child[0]);	/* close the pipes	*/
-		(void) close(to_child[1]);
-		(void) close(to_parent[0]);
-		(void) close(to_parent[1]);
-		(void) fclose(fp);
-
-		/* 
-		 * exec the command to talk to	
-		 */
-		execvp(argv[0], argv);
-
-		perror((char *) NULL);	/* shouldn't get here	*/
-		exit(1);
-
-	}
-	else if (pid > 0) {		/* we're the parent		*/
-
-	}
-
-	else {	/* error	*/
-		perror((char *) NULL);
-		exit(1);
-	}
-}

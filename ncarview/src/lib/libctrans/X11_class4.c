@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.17 1992-07-16 18:06:48 clyne Exp $
+ *	$Id: X11_class4.c,v 1.18 1992-09-01 23:41:18 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -28,12 +28,13 @@
 
 
 #include	<stdio.h>
+#include	<stdlib.h>
 #include	<math.h>
 #include	<errno.h>
 #include	<X11/Xlib.h>
 #include	<X11/Xutil.h>
-#include	<ncarv.h>
-#include	<cgm_tools.h>
+#include	<ncarg/c.h>
+#include	<ncarg/cgm_tools.h>
 #include	"cgmc.h"
 #include	"default.h"
 #include	"Xdefs.h"
@@ -69,24 +70,24 @@ static	struct	{	/* a pixmap for tileing a filled polygon*/
 #define	DOTSIZE			1
 #define	GAPSIZE			4
 
-static	unsigned	char	
+static	const	char	
 	dashlist[DASH_LIST_LEN] = {DASHSIZE,GAPSIZE};
 
-static	unsigned	char	
+static	const	char	
 	dotlist[DOT_LIST_LEN] = {DOTSIZE,GAPSIZE};
 
-static	unsigned	char	
+static	const	char	
 	dashdotlist[DASHDOT_LIST_LEN] = {DASHSIZE, GAPSIZE,DOTSIZE,GAPSIZE};
 
-static	unsigned	char	
+static	const	char	
 	dashddlist[DASHDD_LIST_LEN] = {DASHSIZE,GAPSIZE,DOTSIZE,
 					GAPSIZE,DOTSIZE,GAPSIZE};
 
 static	struct	{	/* list of line styles. See section 5.4.2	*/
-	unsigned char	*dash;
-	unsigned char	*dot;
-	unsigned char	*dash_dot;
-	unsigned char	*dash_dot_dot;
+	const char	*dash;
+	const char	*dot;
+	const char	*dash_dot;
+	const char	*dash_dot_dot;
 	} dashes = {
 		dashlist,
 		dotlist,
@@ -104,6 +105,495 @@ boolean startedDrawing = FALSE;
  *	The class 4 CGM elements functions
  */
 
+/*	GCsetcolor:
+ *
+ *		set the color of a particular GC
+ *
+ *	on entry
+ *		color	: the desired color
+ *	on exit
+ *		gc	: has foreround attribute set to color	
+ */
+static	int	GCsetcolor(color, gc)
+	COtype	color;
+	GC	gc;
+{
+
+
+	/* check COLOUR SELECTION MODE	*/
+	if (CSM == MODE_INDEXED) {
+
+		/* see if the color has been defined	*/
+		if (Colordef[color.index]) { 
+			XSetForeground(dpy, gc, Colortab[color.index]);
+		}
+		else {
+			/* set to default color if invalid index	*/
+			XSetForeground(dpy, gc, Colortab[1]);
+
+			ESprintf(EINVAL, "Invalid color index(%d)",color.index);
+			return(-1);
+		}
+	}
+
+	return (0);
+}
+
+
+/*	GCsetlinetype
+ *
+ *		set the GC line attribute
+ *	on entry
+ *		linetype: is the desired line attribute
+ *	on exit
+ *		lineGC	: has line attribute linetype
+ */
+static	int	GCsetlinetype(linetype)
+	IXtype	linetype;
+{
+
+	if (linetype == L_SOLID)
+		gcv.line_style = LineSolid;
+
+	else {
+		switch(linetype) {
+		case L_DASH	:
+			XSetDashes(dpy, lineGC, 0, dashes.dash, DASH_LIST_LEN);
+			break;
+
+		case L_DOT	:
+			XSetDashes(dpy, lineGC, 0, dashes.dot, DOT_LIST_LEN);
+			break;
+
+		case L_DASH_DOT	:
+			XSetDashes(
+				dpy, lineGC, 0, 
+				dashes.dash_dot, DASHDOT_LIST_LEN
+			);
+
+			break;
+
+		case L_DASH_DOT_DOT:
+			XSetDashes(dpy, lineGC, 0, 
+				dashes.dash_dot_dot, DASHDD_LIST_LEN);
+
+			break;
+
+		default :
+			ESprintf(
+				EINVAL, "Illegal or unsupported line type(%d)", 
+				linetype
+			);
+			return(-1);
+			break;
+		}
+
+		gcv.line_style = LineOnOffDash;
+	}
+
+	/* change line GC to reflect changes	*/
+	XChangeGC(dpy, lineGC, GCLineStyle, &gcv);
+
+	return(0);
+}
+
+
+/*	GCsetlinewidth
+ *
+ *		set the GC line attribute. LINE_WIDTH_MODE must be
+ *	scaled else no action is taken
+ *
+ *	on entry
+ *		linewidth	: is the desired line attribute
+ *	on exit
+ *		lineGC	: has line attribute linewidth
+ */
+		
+int	lineWidthScale = 1;	/* line width scaling factor	*/
+static	int	GCsetlinewidth(linewidth)
+	Rtype	linewidth;
+{
+	unsigned long	mask;
+
+	if (LINE_WIDTH_MODE != MODE_SCALED) {
+		ESprintf(ENOSYS,"Unsupported scaling mode(%d)",LINE_WIDTH_MODE);
+		return(-1);
+	}
+
+	/*
+	 * scale the line. A hack for super high resolution pixmaps
+	 */
+	linewidth *= lineWidthScale;
+	/* 
+	 * if line width is 1.0 then set it to the X11 line with of 
+	 * 0. A line width of 0 in X is actually a line width of one
+	 * pixel but is drawn with a faster algorithm. 
+	 * If linewidth is 0 than no line is to be drawn. The simplest 
+	 * way to implement this is to set the src/dest pixel function to
+	 * `noop'
+	 */
+	if (linewidth == 0) {	/* draw nothing	*/
+		gcv.function = GXnoop;
+		mask = GCFunction;
+
+	} else if (linewidth <= 1.5) {
+		gcv.line_width = 0;
+		gcv.join_style = JoinMiter;
+		gcv.function = GXcopy;
+		mask = GCLineWidth | GCJoinStyle | GCFunction;
+	} 
+	else {
+		gcv.join_style = JoinRound;
+
+		/*
+		 * for fat lines change the join style to round instead of
+	 	 * miter
+		 */
+		gcv.line_width = (int) ROUND(linewidth);
+		gcv.function = GXcopy;
+		mask = GCLineWidth | GCJoinStyle | GCFunction;
+	}
+
+
+	/* change line GC to reflect changes	*/
+	XChangeGC(dpy, lineGC, mask, &gcv);
+
+	return (0);
+}
+/*
+ *	encode_pixels
+ *	[internal]
+ *
+ *	encode the color palette into a form that is easier to access
+ *	with PUT_PIX()
+ *
+ * on entry
+ *	*src		: list of pixels
+ *	n		: len of src
+ *	pixel_size	: size of a single pixel
+ *	byte_order	: byte order to encode for (LSBFirst | MSBFirst)
+ * on exit
+ *	*dst		: the encoded pixels
+ */
+static	void	encode_pixels(src, dst, n, pixel_size, byte_order)
+	Pixeltype	*src, *dst;
+	unsigned	n, 
+			pixel_size;
+	int		byte_order;
+{
+
+	unsigned long	swaptest = 1;
+	unsigned short	swap = FALSE;
+	unsigned char	*left, *right, c;
+
+	int		i, j;
+
+
+	/*
+	 * find out if we're on a byte swapped (LSBFirst) machine
+	 */
+	if (((*(char *) &swaptest) && (byte_order != LSBFirst))
+		|| (!(*(char *) &swaptest) && (byte_order == LSBFirst))) {
+
+		swap = TRUE;
+	}
+
+
+	/*
+	 * encode the pixel table
+	 */
+	for (i=0; i<n; i++) {
+
+		dst[i] = src[i];
+
+		/*
+		 * swap byte if needed
+		 */
+		if (swap) {
+			left = (unsigned char *) &dst[i];
+			right = left + sizeof (dst[i]) - 1;
+			while (left < right) {
+				c = *left;
+				*left++ = *right;
+				*right-- = c;
+			}
+		}
+
+		/*
+		 * left shift data so first significant byte is the 
+		 * first byte (only need to do this if byte order is 
+		 * MSBFirst, else its already done)
+		 */
+		if (byte_order == MSBFirst) {
+			left = (unsigned char *) &dst[i];
+			right = left + sizeof (dst[i]) - pixel_size;
+			for (j=0; j<pixel_size; j++) {
+				*left++ = *right++;
+			}
+		}
+	}
+}
+static	int	sim_polygon(xp_list,n)
+	XPoint	*xp_list;
+	unsigned	n;
+
+{
+	int	i,j;
+
+	FillTable	*fill_table;
+
+
+	Ptype *p_list = (Ptype *) malloc (n * sizeof(Ptype));
+
+	if (! p_list) {
+		ESprintf(errno, "malloc(%d)", n * sizeof(Ptype));
+		return(-1);
+	}
+
+	for (i = 0; i < n; i++) {
+		p_list[i].x = xp_list[i].x;
+		p_list[i].y = xp_list[i].y;
+	}
+
+	fill_table = buildFillTable(p_list, (unsigned) n);
+
+	for (i = fill_table->y_first; i < (fill_table->y_last + 1); i++)
+	{
+		for ( j = 0; j < (fill_table->x_count[XC_INDEX(i)] - 1); j+=2) {
+
+			XDrawLine(dpy, drawable, polygonGC,
+				(short) fill_table->x_coord[XC_INDEX(i)][j],
+				(short) i,
+				(short) fill_table->x_coord[XC_INDEX(i)][j+1],
+				(short) i);
+		}
+	}
+
+	free ((Voidptr) p_list);
+	return(1);
+}
+
+
+/*ARGSUSED*/
+static	int	x11_non_rect_cell_array(c, color_pal, P, Q, R, nx, ny)
+	CGMC		*c;
+        Pixeltype       *color_pal;
+        Ptype		P, Q, R;
+        int		nx, ny;
+{
+        return(0);      /* non rectangular cell arrays are not supported */
+}
+
+
+
+/*
+ * macro for copying a pixel from a pixel table into a character array
+ */
+#define	PUT_PIX(pal, pal_ind, dst, size)	\
+	{					\
+	int	i;				\
+	char	*s, *d;				\
+	s = (char *) &(pal)[(pal_ind)];		\
+	d = (char *) dst;			\
+	for (i=0; i<size; i++) {		\
+		*d++ = *s++;			\
+	}					\
+	}
+		
+/*
+ *	x11_cell_array
+ *	[internal]
+ *
+ *	render a rectangular cell array
+ *
+ * on entry
+ *	*color_pal	: array of X pixels
+ *	P,Q,R		: corners of the cell array (See CGM standard)
+ *	nx		: number of cells in x direction
+ *	ny		: number of cells in y direction
+ * on exit
+ *	return		: 0 => Ok, else error
+ */
+static	int	x11_cell_array(c, color_pal, P, Q, R, nx, ny)
+	CGMC		*c;
+	Pixeltype	*color_pal;
+	Ptype	P, Q, R;
+	int	nx, ny;
+{
+	Visual	*visual = DefaultVisual(dpy, DefaultScreen(dpy));
+	unsigned int depth = DisplayPlanes(dpy, DefaultScreen(dpy));
+
+	unsigned int	image_height,	/* image height in pixels	*/
+			image_width,	/* image width in pixels	*/
+			image_size,	/* size of image data in bytes	*/
+			pad;		/* number of bytes padding	*/
+	unsigned	pixel_size;	/* size of a single pixel	*/
+	char		*data,		/* image data			*/
+			*cptr;
+
+	int		step_x,		/* step size for incrementing in
+					 * x direction within the image
+					 */
+			step_y;		/* step size for incrementing in
+					 * y direction within the image
+					 */
+
+	int		start_x, 
+			start_y;	/* destination of image in drawable */
+
+	int		*rows, 
+			*cols;		/* information about the number of
+					 * pixels making up a row (col) in
+					 * a the cell at row (col)[i]
+					 */
+	int		*index_array,	/* color indeces for a cell row	*/
+			index;		/* color index for current cell */
+	int		cgmc_index;	/* index into the cgmc		*/
+
+	Pixeltype	pixels[MAX_COLOR_SIZE];
+	XImage		*ximage;	/* the X image			*/
+
+	register int	i,j,k,l;
+
+	image_width = ABS(P.x - Q.x) + 1;
+	image_height = ABS(P.y - Q.y) + 1;
+
+	/*
+	 * don't know how to handle a cell array with zero dimension
+	 */
+	if (nx == 0 || ny == 0) return (0);
+
+	rows = (int *) malloc ((unsigned) ny * sizeof (int));
+	if (! rows) {
+		ESprintf(errno, "malloc(%d)", ny* sizeof(int));
+		return(-1);
+	}
+
+	cols = (int *) malloc ((unsigned) nx * sizeof (int));
+	if (! cols) {
+		ESprintf(errno, "malloc(%d)", nx * sizeof(int));
+		return(-1);
+	}
+
+	index_array = (int *) malloc ((unsigned) nx * sizeof (int));
+	if (! index_array) {
+		ESprintf(errno, "malloc(%d)", nx * sizeof(int));
+		return(-1);
+	}
+
+	ximage = XCreateImage(dpy, visual, depth, ZPixmap, 0, NULL,
+		image_width, image_height, 32, 0);
+
+
+	image_size = ximage->bytes_per_line * image_height;
+	ximage->data = (char *) malloc(image_size);
+	if (! ximage->data) {
+		ESprintf(errno, "malloc(%d)", image_size);
+		return(-1);
+	}
+
+	data = ximage->data;
+
+	pad = ximage->bytes_per_line - image_width;
+
+	if (ximage->bits_per_pixel % 8) {
+		ESprintf(E_UNKNOWN, "Unsupported cell array encoding");
+		return(-1);	/* pixel size must be byte multible	*/
+	}
+
+	pixel_size = ximage->bits_per_pixel / 8;
+
+ 
+	/*
+	 * encode the color palette into a form that is easier to access
+	 * with PUT_PIX()
+	 */
+	encode_pixels(color_pal, pixels, MAX_COLOR_SIZE, pixel_size, 
+			ximage->byte_order);
+
+	/*
+	 * calculate x & y steping size, position of image in the window,
+	 * and starting address for data destination
+	 */
+	SetUpCellArrayAddressing(P, Q, R, image_size, pad, pixel_size, 
+			(unsigned) ximage->bytes_per_line, 0,0, &step_x,&step_y,
+			&start_x, &start_y, &data);
+
+	/*
+	 * set up rows and cols arrays with info about number of pixels
+	 * making up each cell. We do this to avoid floating point arithmatic
+	 * later on
+	 */
+	SetUpCellArrayIndexing(image_width, image_height, rows, cols, 
+						(unsigned) nx, (unsigned) ny);
+
+
+	/*
+	 * process the rows
+	 */
+	cgmc_index = 0;
+	for (i=0; i<ny; i++) {
+
+		/* 
+		 * load array of color indecies for row[i] of cells
+		 */
+                for (k=0; k<nx; k++) {
+
+			/* make sure data available in cgmc     */
+			if (cgmc_index >= c->Cnum && c->more) {
+				if (Instr_Dec(c) < 1) {
+					return (-1);
+				}
+				cgmc_index = 0;
+			}
+                        index_array[k] = c->c[cgmc_index];
+			cgmc_index++;
+                }
+
+                /*      
+		 * the rows of pixels per cell[i]
+		 */
+                for (j=0; j < rows[i]; j++) {
+
+			cptr = data;
+			/*
+			 * the coloumns
+			 */
+			for (k=0; k<nx; k++) {
+
+
+				/*
+				 * the coloums of pixels per cell
+				 */
+				index = index_array[k];
+				for (l=0; l<cols[k]; l++) {
+					PUT_PIX(pixels,index, cptr,pixel_size);
+					cptr += step_x;
+				}
+			
+			}
+			data += step_y;	/* skip to next row	*/
+		}
+	}
+
+	/*
+	 * copy image to the window
+	 */
+	XPutImage(dpy, drawable, cellGC, ximage, 0, 0, start_x, start_y,
+					image_width, image_height);
+
+
+	XDestroyImage(ximage);	/* frees ximage->data too	*/
+	free((Voidptr) rows);
+	free((Voidptr) cols);
+	free((Voidptr) index_array);
+
+	return(0);
+}
+
+
+
+
 
 /*ARGSUSED*/
 int	X11_PolyLine(c)
@@ -115,9 +605,6 @@ CGMC *c;
  * points.  
  */
 
-	int	GCsetlinewidth();
-	int	GCsetcolor();
-	int	GCsetlinetype();
 	int	status = 0;
 
 	register int	n;	/* count of processed polyline coordinates */
@@ -231,9 +718,6 @@ int	X11_DisjtLine(c)
 	 * maximum of points.  
 	 */
 
-	int	GCsetlinewidth();
-	int	GCsetcolor();
-	int	GCsetlinetype();
 	int	status = 0;
 
 	register int	i;	/* count of processed disj line coordinates */
@@ -308,8 +792,6 @@ int	X11_DisjtLine(c)
 int	X11_PolyMarker(c)
 	CGMC *c;
 {
-
-	int	GCsetcolor();
 
 	int	offset;
 	int	i;
@@ -462,7 +944,6 @@ int	X11_Polygon(c)
 #define	PHEIGHT		8
 
 
-	int	GCsetcolor();
 
 	register int	i; 	/* count of processed polygon coordinates */
 	long	num_points = 0;	/* number of points to process		*/
@@ -509,9 +990,17 @@ int	X11_Polygon(c)
 		 */
 		if (Points.size < num_points) {
 
-			Points.P = (XPoint *) icRealloc ((char *) Points.P, 
-				(unsigned) num_points 
-				* sizeof(XPoint));
+			Points.P = (XPoint *) realloc (
+				(char *) Points.P, (unsigned) num_points 
+				* sizeof(XPoint)
+			);
+			if (! Points.P) {
+				ESprintf(
+					errno, "realloc(%d)",
+					num_points * sizeof(XPoint)
+				);
+				return(-1);
+			}
 
 
 			Points.size = num_points;
@@ -569,7 +1058,11 @@ int	X11_Polygon(c)
 			 * if user wants software filling of polygons do it
 			 */
 			else {
-				sim_polygon(Points.P, (unsigned) num_points);
+				if (sim_polygon(
+					Points.P,(unsigned)num_points)<0) {
+
+					status = -1;
+				}
 			}
 
 			break;
@@ -942,162 +1435,6 @@ int	X11_EllipArcClose(c)
 }
 
 
-/*	GCsetcolor:
- *
- *		set the color of a particular GC
- *
- *	on entry
- *		color	: the desired color
- *	on exit
- *		gc	: has foreround attribute set to color	
- */
-int	GCsetcolor(color, gc)
-	COtype	color;
-	GC	gc;
-{
-
-	char	buf[10];	/* error message buffer	*/
-
-	/* check COLOUR SELECTION MODE	*/
-	if (CSM == MODE_INDEXED) {
-
-		/* see if the color has been defined	*/
-		if (Colordef[color.index]) { 
-			XSetForeground(dpy, gc, Colortab[color.index]);
-		}
-		else {
-			/* set to default color if invalid index	*/
-			XSetForeground(dpy, gc, Colortab[1]);
-
-			ESprintf(EINVAL, "Invalid color index(%d)",color.index);
-			return(-1);
-		}
-	}
-
-	return (0);
-}
-
-
-/*	GCsetlinetype
- *
- *		set the GC line attribute
- *	on entry
- *		linetype: is the desired line attribute
- *	on exit
- *		lineGC	: has line attribute linetype
- */
-static	int	GCsetlinetype(linetype)
-	IXtype	linetype;
-{
-
-	if (linetype == L_SOLID)
-		gcv.line_style = LineSolid;
-
-	else {
-		switch(linetype) {
-		case L_DASH	:
-			XSetDashes(dpy, lineGC, 0, dashes.dash, DASH_LIST_LEN);
-			break;
-
-		case L_DOT	:
-			XSetDashes(dpy, lineGC, 0, dashes.dot, DOT_LIST_LEN);
-			break;
-
-		case L_DASH_DOT	:
-			XSetDashes(
-				dpy, lineGC, 0, 
-				dashes.dash_dot, DASHDOT_LIST_LEN
-			);
-
-			break;
-
-		case L_DASH_DOT_DOT:
-			XSetDashes(dpy, lineGC, 0, 
-				dashes.dash_dot_dot, DASHDD_LIST_LEN);
-
-			break;
-
-		default :
-			ESprintf(
-				EINVAL, "Illegal or unsupported line type(%d)", 
-				linetype
-			);
-			return(-1);
-			break;
-		}
-
-		gcv.line_style = LineOnOffDash;
-	}
-
-	/* change line GC to reflect changes	*/
-	XChangeGC(dpy, lineGC, GCLineStyle, &gcv);
-
-	return(0);
-}
-
-
-/*	GCsetlinewidth
- *
- *		set the GC line attribute. LINE_WIDTH_MODE must be
- *	scaled else no action is taken
- *
- *	on entry
- *		linewidth	: is the desired line attribute
- *	on exit
- *		lineGC	: has line attribute linewidth
- */
-		
-int	lineWidthScale = 1;	/* line width scaling factor	*/
-static	int	GCsetlinewidth(linewidth)
-	Rtype	linewidth;
-{
-	unsigned long	mask;
-
-	if (LINE_WIDTH_MODE != MODE_SCALED) {
-		ESprintf(ENOSYS,"Unsupported scaling mode(%d)",LINE_WIDTH_MODE);
-		return(-1);
-	}
-
-	/*
-	 * scale the line. A hack for super high resolution pixmaps
-	 */
-	linewidth *= lineWidthScale;
-	/* 
-	 * if line width is 1.0 then set it to the X11 line with of 
-	 * 0. A line width of 0 in X is actually a line width of one
-	 * pixel but is drawn with a faster algorithm. 
-	 * If linewidth is 0 than no line is to be drawn. The simplest 
-	 * way to implement this is to set the src/dest pixel function to
-	 * `noop'
-	 */
-	if (linewidth == 0) {	/* draw nothing	*/
-		gcv.function = GXnoop;
-		mask = GCFunction;
-
-	} else if (linewidth <= 1.5) {
-		gcv.line_width = 0;
-		gcv.join_style = JoinMiter;
-		gcv.function = GXcopy;
-		mask = GCLineWidth | GCJoinStyle | GCFunction;
-	} 
-	else {
-		gcv.join_style = JoinRound;
-
-		/*
-		 * for fat lines change the join style to round instead of
-	 	 * miter
-		 */
-		gcv.line_width = (int) ROUND(linewidth);
-		gcv.function = GXcopy;
-		mask = GCLineWidth | GCJoinStyle | GCFunction;
-	}
-
-
-	/* change line GC to reflect changes	*/
-	XChangeGC(dpy, lineGC, mask, &gcv);
-
-	return (0);
-}
 
 /*	init_polygon:
  *
@@ -1121,8 +1458,13 @@ int	init_polygon()
 	/*	allocate memory for the point buffer	*/
 
 	if (!Points.size) { 
-		Points.P = (XPoint *) 
-			icMalloc ((unsigned) (POINTS_ALLOCED * sizeof(XPoint)));
+		Points.P = (XPoint *) malloc (
+			(unsigned) (POINTS_ALLOCED * sizeof(XPoint))
+		);
+		if (! Points.P) {
+			ESprintf(errno, "malloc()");
+			return(-1);
+		}
 
 	}
 
@@ -1191,9 +1533,6 @@ static	quick_circle(xc,yc,radius)
 	int	xc, yc;
 	int	radius;
 {
-	extern	double	cos();
-	extern	double	sin();
-
 	int		x1,y1;
 	register int	x2, y2;
 
@@ -1216,315 +1555,3 @@ static	quick_circle(xc,yc,radius)
 
 
 
-static	sim_polygon(xp_list,n)
-	XPoint	*xp_list;
-	unsigned	n;
-
-{
-	int	i,j;
-
-	FillTable	*fill_table;
-
-	extern	FillTable	*buildFillTable();
-
-	Ptype *p_list = (Ptype *) icMalloc (n * sizeof(Ptype));
-
-	for (i = 0; i < n; i++) {
-		p_list[i].x = xp_list[i].x;
-		p_list[i].y = xp_list[i].y;
-	}
-
-	fill_table = buildFillTable(p_list, (unsigned) n);
-
-	for (i = fill_table->y_first; i < (fill_table->y_last + 1); i++)
-	{
-		for ( j = 0; j < (fill_table->x_count[XC_INDEX(i)] - 1); j+=2) {
-
-			XDrawLine(dpy, drawable, polygonGC,
-				(short) fill_table->x_coord[XC_INDEX(i)][j],
-				(short) i,
-				(short) fill_table->x_coord[XC_INDEX(i)][j+1],
-				(short) i);
-		}
-	}
-
-	cfree ((char *) p_list);
-}
-
-
-/*ARGSUSED*/
-static	int	x11_non_rect_cell_array(c, color_pal, P, Q, R, nx, ny)
-	CGMC		*c;
-        Pixeltype       *color_pal;
-        Ptype		P, Q, R;
-        int		nx, ny;
-{
-        return(0);      /* non rectangular cell arrays are not supported */
-}
-
-
-
-/*
- * macro for copying a pixel from a pixel table into a character array
- */
-#define	PUT_PIX(pal, pal_ind, dst, size)	\
-	{					\
-	int	i;				\
-	char	*s, *d;				\
-	s = (char *) &(pal)[(pal_ind)];		\
-	d = (char *) dst;			\
-	for (i=0; i<size; i++) {		\
-		*d++ = *s++;			\
-	}					\
-	}
-		
-/*
- *	x11_cell_array
- *	[internal]
- *
- *	render a rectangular cell array
- *
- * on entry
- *	*color_pal	: array of X pixels
- *	P,Q,R		: corners of the cell array (See CGM standard)
- *	nx		: number of cells in x direction
- *	ny		: number of cells in y direction
- * on exit
- *	return		: 0 => Ok, else error
- */
-static	int	x11_cell_array(c, color_pal, P, Q, R, nx, ny)
-	CGMC		*c;
-	Pixeltype	*color_pal;
-	Ptype	P, Q, R;
-	int	nx, ny;
-{
-	Visual	*visual = DefaultVisual(dpy, DefaultScreen(dpy));
-	unsigned int depth = DisplayPlanes(dpy, DefaultScreen(dpy));
-
-	unsigned int	image_height,	/* image height in pixels	*/
-			image_width,	/* image width in pixels	*/
-			image_size,	/* size of image data in bytes	*/
-			pad;		/* number of bytes padding	*/
-	unsigned	pixel_size;	/* size of a single pixel	*/
-	char		*data,		/* image data			*/
-			*cptr;
-
-	int		step_x,		/* step size for incrementing in
-					 * x direction within the image
-					 */
-			step_y;		/* step size for incrementing in
-					 * y direction within the image
-					 */
-
-	int		start_x, 
-			start_y;	/* destination of image in drawable */
-
-	int		*rows, 
-			*cols;		/* information about the number of
-					 * pixels making up a row (col) in
-					 * a the cell at row (col)[i]
-					 */
-	int		*index_array,	/* color indeces for a cell row	*/
-			index;		/* color index for current cell */
-	int		cgmc_index;	/* index into the cgmc		*/
-
-	Pixeltype	pixels[MAX_COLOR_SIZE];
-	XImage		*ximage;	/* the X image			*/
-
-	register int	i,j,k,l;
-
-	void	encode_pixels(), SetUpCellArrayIndexing(), 
-		SetUpCellArrayAddressing();
-
-	image_width = ABS(P.x - Q.x) + 1;
-	image_height = ABS(P.y - Q.y) + 1;
-
-	/*
-	 * don't know how to handle a cell array with zero dimension
-	 */
-	if (nx == 0 || ny == 0) return (0);
-
-	rows = (int *) icMalloc ((unsigned) ny * sizeof (int));
-	cols = (int *) icMalloc ((unsigned) nx * sizeof (int));
-	index_array = (int *) icMalloc ((unsigned) nx * sizeof (int));
-	ximage = XCreateImage(dpy, visual, depth, ZPixmap, 0, NULL,
-		image_width, image_height, 32, 0);
-
-
-	image_size = ximage->bytes_per_line * image_height;
-	ximage->data = icMalloc(image_size);
-	data = ximage->data;
-
-	pad = ximage->bytes_per_line - image_width;
-
-	if (ximage->bits_per_pixel % 8) {
-		ESprintf(E_UNKNOWN, "Unsupported cell array encoding");
-		return(-1);	/* pixel size must be byte multible	*/
-	}
-
-	pixel_size = ximage->bits_per_pixel / 8;
-
- 
-	/*
-	 * encode the color palette into a form that is easier to access
-	 * with PUT_PIX()
-	 */
-	encode_pixels(color_pal, pixels, MAX_COLOR_SIZE, pixel_size, 
-			ximage->byte_order);
-
-	/*
-	 * calculate x & y steping size, position of image in the window,
-	 * and starting address for data destination
-	 */
-	SetUpCellArrayAddressing(P, Q, R, image_size, pad, pixel_size, 
-			(unsigned) ximage->bytes_per_line, 0,0, &step_x,&step_y,
-			&start_x, &start_y, &data);
-
-	/*
-	 * set up rows and cols arrays with info about number of pixels
-	 * making up each cell. We do this to avoid floating point arithmatic
-	 * later on
-	 */
-	SetUpCellArrayIndexing(image_width, image_height, rows, cols, 
-						(unsigned) nx, (unsigned) ny);
-
-
-	/*
-	 * process the rows
-	 */
-	cgmc_index = 0;
-	for (i=0; i<ny; i++) {
-
-		/* 
-		 * load array of color indecies for row[i] of cells
-		 */
-                for (k=0; k<nx; k++) {
-
-			/* make sure data available in cgmc     */
-			if (cgmc_index >= c->Cnum && c->more) {
-				if (Instr_Dec(c) < 1) {
-					return (-1);
-				}
-				cgmc_index = 0;
-			}
-                        index_array[k] = c->c[cgmc_index];
-			cgmc_index++;
-                }
-
-                /*      
-		 * the rows of pixels per cell[i]
-		 */
-                for (j=0; j < rows[i]; j++) {
-
-			cptr = data;
-			/*
-			 * the coloumns
-			 */
-			for (k=0; k<nx; k++) {
-
-
-				/*
-				 * the coloums of pixels per cell
-				 */
-				index = index_array[k];
-				for (l=0; l<cols[k]; l++) {
-					PUT_PIX(pixels,index, cptr,pixel_size);
-					cptr += step_x;
-				}
-			
-			}
-			data += step_y;	/* skip to next row	*/
-		}
-	}
-
-	/*
-	 * copy image to the window
-	 */
-	XPutImage(dpy, drawable, cellGC, ximage, 0, 0, start_x, start_y,
-					image_width, image_height);
-
-
-	XDestroyImage(ximage);	/* frees ximage->data too	*/
-	free((char *) rows);
-	free((char *) cols);
-	free((char *) index_array);
-
-	return(0);
-}
-
-
-
-
-/*
- *	encode_pixels
- *	[internal]
- *
- *	encode the color palette into a form that is easier to access
- *	with PUT_PIX()
- *
- * on entry
- *	*src		: list of pixels
- *	n		: len of src
- *	pixel_size	: size of a single pixel
- *	byte_order	: byte order to encode for (LSBFirst | MSBFirst)
- * on exit
- *	*dst		: the encoded pixels
- */
-static	void	encode_pixels(src, dst, n, pixel_size, byte_order)
-	Pixeltype	*src, *dst;
-	unsigned	n, 
-			pixel_size;
-	int		byte_order;
-{
-
-	unsigned long	swaptest = 1;
-	unsigned short	swap = FALSE;
-	unsigned char	*left, *right, c;
-
-	int		i, j;
-
-
-	/*
-	 * find out if we're on a byte swapped (LSBFirst) machine
-	 */
-	if (((*(char *) &swaptest) && (byte_order != LSBFirst))
-		|| (!(*(char *) &swaptest) && (byte_order == LSBFirst))) {
-
-		swap = TRUE;
-	}
-
-
-	/*
-	 * encode the pixel table
-	 */
-	for (i=0; i<n; i++) {
-
-		dst[i] = src[i];
-
-		/*
-		 * swap byte if needed
-		 */
-		if (swap) {
-			left = (unsigned char *) &dst[i];
-			right = left + sizeof (dst[i]) - 1;
-			while (left < right) {
-				c = *left;
-				*left++ = *right;
-				*right-- = c;
-			}
-		}
-
-		/*
-		 * left shift data so first significant byte is the 
-		 * first byte (only need to do this if byte order is 
-		 * MSBFirst, else its already done)
-		 */
-		if (byte_order == MSBFirst) {
-			left = (unsigned char *) &dst[i];
-			right = left + sizeof (dst[i]) - pixel_size;
-			for (j=0; j<pixel_size; j++) {
-				*left++ = *right++;
-			}
-		}
-	}
-}

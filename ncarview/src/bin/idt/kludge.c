@@ -1,5 +1,5 @@
 /*
- *      $Id: kludge.c,v 1.3 1992-04-03 23:20:59 clyne Exp $
+ *      $Id: kludge.c,v 1.4 1992-09-01 23:38:56 clyne Exp $
  */
 /*
  *	File:		kludge
@@ -15,11 +15,9 @@
  *			file.
  */
 #include <stdio.h>
+#include <stdlib.h>
 
 #define	PARM_FILE	"NCARG_PARAMETER_FILE"
-
-extern	char	*getenv();
-extern	char	*malloc();
 
 
 #ifdef	TEST
@@ -43,7 +41,7 @@ main()
 	exit (0);
 }
 
-#endif	TEST
+#endif	/* TEST	*/
 
 	
 

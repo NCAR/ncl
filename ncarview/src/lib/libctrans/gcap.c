@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.25 1992-08-26 18:28:40 clyne Exp $
+ *	$Id: gcap.c,v 1.26 1992-09-01 23:42:32 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -50,7 +50,7 @@
 #define	L_SET	0
 #endif
 
-#include <ncarv.h>
+#include <ncarg/c.h>
 #include "cgmc.h"
 #include "graphcap.h"
 #include "default.h"
@@ -59,13 +59,6 @@
 #include "translate.h"
 
 extern	FILE	*tty;
-extern	long	lseek();
-extern	int	formatintensity();
-extern	int	formatveccnt();
-extern	int	formatcoord();
-extern	int	formatindex();
-extern	int	formatwidth();
-extern	int	raster();
 extern	boolean	Batch;
 extern	boolean	deviceIsInit;
 extern	int	optionDesc;
@@ -247,12 +240,15 @@ CGMC *c;
 	commHatchScaleFactor = YScale(POLY_HATCH_SPACE) / 2;
 	commHatchScaleFactor = commHatchScaleFactor==0?1: commHatchScaleFactor;
 	
-	initSoftSim(
+	if (initSoftSim(
 		(DCtype) XConvert(XMIN),
 		(DCtype) XConvert(XMAX),
 		(DCtype) YConvert(YMIN),
 		(DCtype) YConvert(YMAX)
-	);
+		) < 0) {
+
+		return(-1);
+	}
 
 
 	/*
@@ -559,9 +555,6 @@ int	PolyMarker(c)
 int	CellArray(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"CellArray\n");
-#endif DEBUG
 
 #define	PACKED_MODE	1
 

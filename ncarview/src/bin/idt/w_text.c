@@ -1,5 +1,5 @@
 /*
- *	$Id: w_text.c,v 1.6 1992-08-25 20:24:09 clyne Exp $
+ *	$Id: w_text.c,v 1.7 1992-09-01 23:39:19 clyne Exp $
  */
 /*
  *	w_text.c
@@ -11,11 +11,13 @@
  *	This file manages the text widget in the main idt display
  */
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Xaw/AsciiText.h>
-#include "ncarv.h"
-#include "idt.h";
+#include <ncarg/c.h>
+#include "idt.h"
 
 static	Widget	textWidget;
 
@@ -143,11 +145,11 @@ void	AppendText(t)
 	Cardinal	n;
 	XawTextPosition	position = 0;	/* char displayed in upper left */
 
-	extern	char	*strrchr();
-	extern	char	*strchr();
 
-
-	buf = icMalloc((unsigned) (strlen(t) + 1));
+	if (! (buf = malloc((unsigned) (strlen(t) + 1)))) {
+		perror("malloc()");
+		return;
+	}
 	
 	/*
 	 * break up the text string into lines and append the lines one at
@@ -162,5 +164,5 @@ void	AppendText(t)
 		t++;
 	}
 
-	cfree(buf);
+	free((Voidptr) buf);
 }

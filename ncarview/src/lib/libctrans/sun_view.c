@@ -1,5 +1,5 @@
 /*
- *	$Id: sun_view.c,v 1.15 1992-07-16 18:08:23 clyne Exp $
+ *	$Id: sun_view.c,v 1.16 1992-09-01 23:43:17 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -24,7 +24,7 @@
 #include <pixrect/pixrect_hs.h>
 
 #include	<math.h>
-#include	<ncarv.h>
+#include	<ncarg/c.h>
 #include	"cgmc.h"
 #include	"default.h"
 #include	"ctrandef.h"
@@ -32,10 +32,6 @@
 #include	"soft_fill.h"
 #include	"translate.h"
 
-extern	char	*strcpy();
-extern	char	*strcat();
-extern	char	*strncpy();
-extern	char	*getenv();
 extern	boolean	stand_Alone;
 extern	char	**Argv;
 extern	boolean	deviceIsInit;
@@ -85,6 +81,32 @@ static	boolean	doInterrupt = FALSE;	/* abort translation		*/
 static	Frame	frame;
 
 static	void	set_clipping();
+
+#define	SEGMENTS	64
+static	quick_circle(xc, yc, radius, op)
+	int     xc, yc;
+	int     radius;
+	unsigned	op;
+{
+	int             x1,y1;
+	register int    x2, y2;
+
+	int             i;
+	double          inc = (2.0 * (double) M_PI) / (double) SEGMENTS;
+	register double theta = 0.0;
+
+	x2 = ((int) ((float) radius * cos(theta))) + xc;
+	y2 = ((int) ((float) radius * sin(theta))) + yc;
+
+		for (i = 0; i < SEGMENTS; i++) {
+		theta += inc;
+		x1 = x2;
+		y1 = y2;
+		x2 = ((int) ((float) radius * cos(theta))) + xc;
+		y2 = ((int) ((float) radius * sin(theta))) + yc;;
+		pw_vector(pixReg, x1, y1, x2, y2, op, 0);
+	}
+}
 
 /*
  *	The class 0 CGM element functions
@@ -282,7 +304,7 @@ CGMC *c;
 		 * (re)initialize the software fill module. This needs to 
 		 * be initialized every time the window changes sizes
 		 */
-		initSoftSim(0, dev.width-1, 0, dev.height-1);
+		if (initSoftSim(0, dev.width-1, 0, dev.height-1)<0) return(-1);
 
 
 		/*
@@ -630,9 +652,6 @@ CGMC *c;
 
 	unsigned	op = PIX_SRC;
 
-	extern	char	*realloc();
-	extern	char	*realloc();
-
 	op |= PIX_COLOR(color_tab.index[FILL_COLOUR.index]);
 
 	/*
@@ -664,7 +683,7 @@ CGMC *c;
 				(unsigned) num_points 
 				* sizeof(struct pr_pos))) == NULL ) {
 
-				ESprintf(errno, "malloc()");
+				ESprintf(errno, "realloc()");
 				return (-1);
 			}
 
@@ -866,8 +885,17 @@ CGMC *c;
 	if (P.y == R.y && R.x == Q.x) {
 		int	*rows, *cols;
 
-		cols = (int *) icMalloc((unsigned) nx * sizeof (int));
-		rows = (int *) icMalloc((unsigned) ny * sizeof (int));
+		cols = (int *) malloc((unsigned) nx * sizeof (int));
+		if (! cols) {
+			ESprintf(errno, "malloc(%d)", nx * sizeof(int));
+			return(-1);
+		}
+
+		rows = (int *) malloc((unsigned) ny * sizeof (int));
+		if (! rows) {
+			ESprintf(errno, "malloc(%d)", ny * sizeof(int));
+			return(-1);
+		}
 
 		SetUpCellArrayIndexing(
 			(unsigned) ABS(P.x - Q.x) + 1, 
@@ -891,8 +919,8 @@ CGMC *c;
 			"ctrans: run length encoded cell arrays not supported\n"
 			);
 		}
-		if (rows) cfree((char *) rows);
-		if (cols) cfree((char *) cols);
+		if (rows) free((Voidptr) rows);
+		if (cols) free((Voidptr) cols);
 	}
 
 	/* 
@@ -928,9 +956,12 @@ static	sim_polygon(sun_pt_list, n, op)
 
 	FillTable	*fill_table;
 
-	extern	FillTable	*buildFillTable();
 
-	Ptype *p_list = (Ptype *) icMalloc ((unsigned) (n * sizeof(Ptype)));
+	Ptype *p_list = (Ptype *) malloc ((unsigned) (n * sizeof(Ptype)));
+	if (! p_list) {
+		ESprintf(errno, "malloc(%d)", n * sizeof(Ptype));
+		return(-1);
+	}
 
 	for (i = 0; i < n; i++) {
 		p_list[i].x = sun_pt_list[i].x;
@@ -951,7 +982,7 @@ static	sim_polygon(sun_pt_list, n, op)
 		}
 	}
 
-	cfree ((char *) p_list);
+	free ((Voidptr) p_list);
 }
 
 /*
@@ -1011,34 +1042,6 @@ CGMC *c;
 	return (0);
 }
 
-#define	SEGMENTS	64
-static	quick_circle(xc, yc, radius, op)
-	int     xc, yc;
-	int     radius;
-	unsigned	op;
-{
-	extern  double  cos();
-	extern  double  sin();
-
-	int             x1,y1;
-	register int    x2, y2;
-
-	int             i;
-	double          inc = (2.0 * (double) M_PI) / (double) SEGMENTS;
-	register double theta = 0.0;
-
-	x2 = ((int) ((float) radius * cos(theta))) + xc;
-	y2 = ((int) ((float) radius * sin(theta))) + yc;
-
-		for (i = 0; i < SEGMENTS; i++) {
-		theta += inc;
-		x1 = x2;
-		y1 = y2;
-		x2 = ((int) ((float) radius * cos(theta))) + xc;
-		y2 = ((int) ((float) radius * sin(theta))) + yc;;
-		pw_vector(pixReg, x1, y1, x2, y2, op, 0);
-	}
-}
 
 
 /*	raster_
@@ -1093,7 +1096,11 @@ static	int	raster_(c, P, rows, cols, nx, ny, width, height)
 		ESprintf(errno, "mem_create(%d,%d,%d)",width,height,dev.depth);
 		return (-1);
 	}
-	index_array = (unsigned *) icMalloc ((unsigned) nx * sizeof(unsigned));
+	index_array = (unsigned *) malloc ((unsigned) nx * sizeof(unsigned));
+	if (! index_array) {
+		ESprintf(errno, "malloc(%d)", nx * sizeof(unsigned));
+		return(-1);
+	}
 
 	/*
 	 * find out how many bytes are in a row of pixels. Rows are
@@ -1176,7 +1183,7 @@ static	int	raster_(c, P, rows, cols, nx, ny, width, height)
 	pw_rop(pixReg, (int) P.x, (int) P.y, width, height, PIX_SRC, pw, 0, 0);
 
 	if (index_array != (unsigned *) NULL) 
-		cfree((char *) index_array);
+		free((Voidptr) index_array);
 
 	pr_destroy(pw);
 
@@ -1308,8 +1315,16 @@ static	init_sunv(color_ava)
 			green[MAX_COLOR],
 			blue[MAX_COLOR];
 
-	pointBuf.p = (struct pr_pos *) icMalloc 
-		(POINT_BUF_ALLOCED * sizeof (struct pr_pos));
+	pointBuf.p = (struct pr_pos *) malloc (
+		POINT_BUF_ALLOCED * sizeof (struct pr_pos)
+	);
+	if (! pointBuf.p) {
+		ESprintf(
+			errno, "malloc(%d)", 
+			POINT_BUF_ALLOCED * sizeof(struct pr_pos)
+		);
+		return(-1);
+	}
 
 	pointBuf.size = POINT_BUF_ALLOCED;
 

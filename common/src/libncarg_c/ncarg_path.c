@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ncarg_path.c,v 1.2 1992-03-26 18:22:50 clyne Exp $
+ *      $Id: ncarg_path.c,v 1.3 1992-09-01 23:47:23 clyne Exp $
  */
 /*
  *	File:		ncarg_path.c
@@ -17,6 +17,46 @@
  */
 
 #include <stdio.h>
+#include "c.h"
+
+/* The function "gtngto" returns a pointer to a "token" retrieved from the
+   input stream defined by "ptfile".  In this case, "token" refers to the
+   concatenation of non-blank characters (up to 128 of them) from the input
+   stream - up to, but not including the next equals sign, newline, or EOF.
+   The character pointed to by "ptlchr" receives a copy of the equals sign,
+   newline, or EOF that terminated the "token".  If a pound sign occurs on
+   a line, it and all characters following it on the line are treated as
+   blanks.  */
+
+static char *gtngto(ptfile,ptlchr)
+FILE *ptfile;
+char *ptlchr;
+{
+  static char token[128];
+  char flchar;
+  int i=0;
+  int psignf=0;
+
+  for (;;) {
+    flchar=getc(ptfile);
+    switch (flchar) {
+    case ' ': case '\t':
+      break;
+    case '#':
+      psignf=1;
+      break;
+    case '=':
+      if (psignf!=0) break;
+    case '\n': case EOF:
+      *ptlchr=flchar;
+      token[i]='\0';
+      return (token);
+    default:
+      if (psignf==0 && i<127) token[i++]=flchar;
+      break;
+    }
+  }
+}
 
 /*LINTLIBRARY*/
 
@@ -35,9 +75,8 @@
    which users will not set NCARG_PARAMETER_FILE). */
 
 char *GetNCARGPath(paname)
-char *paname;
+const char *paname;
 {
-  char *gtngto();
   char *ptflnm =  PARFIL_MACRO;
   char *ptemp;
   char *token;
@@ -82,41 +121,3 @@ char *paname;
 }
 
 
-/* The function "gtngto" returns a pointer to a "token" retrieved from the
-   input stream defined by "ptfile".  In this case, "token" refers to the
-   concatenation of non-blank characters (up to 128 of them) from the input
-   stream - up to, but not including the next equals sign, newline, or EOF.
-   The character pointed to by "ptlchr" receives a copy of the equals sign,
-   newline, or EOF that terminated the "token".  If a pound sign occurs on
-   a line, it and all characters following it on the line are treated as
-   blanks.  */
-
-static char *gtngto(ptfile,ptlchr)
-FILE *ptfile;
-char *ptlchr;
-{
-  static char token[128];
-  char flchar;
-  int i=0;
-  int psignf=0;
-
-  for (;;) {
-    flchar=getc(ptfile);
-    switch (flchar) {
-    case ' ': case '\t':
-      break;
-    case '#':
-      psignf=1;
-      break;
-    case '=':
-      if (psignf!=0) break;
-    case '\n': case EOF:
-      *ptlchr=flchar;
-      token[i]='\0';
-      return (token);
-    default:
-      if (psignf==0 && i<127) token[i++]=flchar;
-      break;
-    }
-  }
-}

@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.6 1992-08-12 22:58:52 clyne Exp $
+ *	$Id: commands.c,v 1.7 1992-09-01 23:39:27 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -28,9 +28,10 @@
  *	11/14/90	Added 'split' function
  */
 #include	<stdio.h>
+#include	<stdlib.h>
 #include	<errno.h>
 #include	<ctype.h>
-#include	<cgm_tools.h>
+#include	<ncarg/cgm_tools.h>
 #include	"med.h"
 
 #ifndef	DEBUG
@@ -45,8 +46,6 @@ static	char	editFile[80];	/* name of file being edited	*/
 
 static	Instr	e_instr;	/* used by medLabel		*/
 
-extern	int	errno;		/* global unix error number	*/
-extern	char	*strcpy();
 extern	char	*localTmp;	/* a local tmp directory	*/
 
 /*
@@ -337,7 +336,6 @@ medHelp(med_data)
 
 	extern	int	NUM_CMDS;
 	extern	Cmd	cmdtab[];
-	extern	Cmd	*getcmd();
 
 	Cmd	*c;
 
@@ -888,8 +886,6 @@ medSplit(med_data)
 	int	file_size;	/* number of frames contained in files	*/
 	int	r;		/* excess frames			*/
 	int	i;
-
-	extern	char	*malloc();
 
 	c_data = &med_data->command_data;
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.16 1992-08-11 14:57:18 clyne Exp $
+ *	$Id: commands.c,v 1.17 1992-09-01 23:43:45 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -12,6 +12,7 @@
 ***********************************************************************/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <signal.h>
 #include <fcntl.h>
@@ -24,9 +25,9 @@
 #endif
 
 #include <errno.h>
-#include <cgm_tools.h>
-#include <ctrans.h>
-#include <ncarv.h>
+#include <ncarg/c.h>
+#include <ncarg/cgm_tools.h>
+#include <ncarg/ctrans.h>
 #include "ictrans.h"
 
 #ifdef	sun
@@ -38,7 +39,7 @@
 
 #ifndef	TMPDIR
 #define	TMPDIR	"/tmp"
-#endif	TMPDIR
+#endif	/* TMPDIR	*/
 
 IcState	icState = {
 		FALSE, 1, 1, 1, 0, 0, FALSE, 0, NULL, NULL, NULL, NULL, NULL,
@@ -58,7 +59,7 @@ static	CtransRC	plotit(frame)
 	CtransRC	ctrc;
 
 	if (frame < icState.start_segment || frame > icState.stop_segment) {
-		return(FATAL);
+		return(OK);
 	}
 
 	record = CGM_RECORD(Toc, frame - 1);
@@ -67,25 +68,22 @@ static	CtransRC	plotit(frame)
 	 * call ctrans to plot the frame begining at record
 	 */
 	for (i = 0; i < icState.dup; i++) {
-#ifndef	DEBUG
 		ctrc = ctrans(record);
-#else
-		(void) fprintf(stderr, "plotted frame %d\n", frame);
-		sleep(1);
-#endif
-	}
 
-	if (icState.movie) {
-		sleep((unsigned) icState.movietime);
+		if (icState.movie) {
+			if (icState.movietime) {
+				 sleep((unsigned) icState.movietime);
+			}
+		}
+		else {	
+			/* 
+			 * if get newline continue 
+			 */
+			while (getchar() != '\n')
+			; 
+		}
+		CtransClear();
 	}
-	else {	
-		/* 
-		 * if get newline continue 
-		 */
-		while (getchar() != '\n')
-		; 
-	}
-	CtransClear();
 	return(ctrc);
 }
 
@@ -219,8 +217,11 @@ int	iCFile(ic)
 	/*
 	 * record the file name
 	 */
-	if (fileName) cfree(fileName);
-	fileName = icMalloc(strlen(argv[0]) + 1);
+	if (fileName) free((Voidptr) fileName);
+	if ( !(fileName = malloc((unsigned) (strlen(argv[0]) + 1)))) {
+		perror("malloc");
+		return(-1);
+	}
 	(void) strcpy(fileName, argv[0]);
 	*icState.file = fileName;
 
@@ -243,11 +244,13 @@ int	iCSave(ic)
 	int	type;	/* type of write, 1 => write, 0 => append	*/
 	int	i;
 	int	c;
-
-	extern	int	errno;
+	boolean	force = FALSE;			/* force the save?	*/
 
 	int	argc;
 	char	**argv;
+
+	if (ic->cmd.name[0] == 'S') force = TRUE;
+		
 	
 
 	/*
@@ -292,29 +295,43 @@ int	iCSave(ic)
 		}
 	}
 	else if (status == 0) {	/* file exists but is not a NCAR CGM	*/
-		(void) fprintf(fp,"Non valid CGM, overwrite file? [y,n](y)");
-
-		while (c = getchar()) if (isalpha(c)) break; 
-
-		if (c == 'n' || c == 'N') {
-			return(1);
+		if (force) { 
+			type = 1;
 		}
 		else {
-			type = 1;	/* write to file	*/
+			(void) fprintf(
+				fp,"Non valid CGM, overwrite file? [y,n](y)"
+			);
+
+			while (c = getchar()) if (isalpha(c)) break; 
+
+			if (c == 'n' || c == 'N') {
+				return(1);
+			}
+			else {
+				type = 1;	/* write to file	*/
+			}
+			while ((c = getchar()) != '\n');
 		}
-		while ((c = getchar()) != '\n');
 	} else  {		/* file exists and is a valid CGM	*/
-		(void)fprintf(fp,"File exists, overwrite or append? [o,a](a)");
-
-		while (c = getchar()) if (isalpha(c)) break; 
-
-		if (c == 'o' || c == 'O') {
-			type = 1;		/* write to file	*/
+		if (force) {
+			type = 0;
 		}
 		else {
-			type = 0;		/* append to file	*/
+			(void)fprintf(
+				fp,"File exists, overwrite or append? [o,a](a)"
+			);
+
+			while (c = getchar()) if (isalpha(c)) break; 
+
+			if (c == 'o' || c == 'O') {
+				type = 1;	/* write to file	*/
+			}
+			else {
+				type = 0;	/* append to file	*/
+			}
+			while ((c = getchar()) != '\n');
 		}
-		while ((c = getchar()) != '\n');
 	}
 
 	/*
@@ -369,8 +386,11 @@ int	iCSave(ic)
 	/*
 	 * record the file name
 	 */
-	if (saveFile) cfree(saveFile);
-	saveFile = icMalloc(strlen(argv[0]) + 1);
+	if (saveFile) free((Voidptr) saveFile);
+	if ( !(saveFile = malloc((unsigned) (strlen(argv[0]) + 1)))) {
+		perror("malloc()");
+		return(-1);
+	}
 	(void) strcpy(saveFile, argv[0]);
 	icState.save_file = saveFile;
 
@@ -399,8 +419,8 @@ int	iCNextfile(ic)
 	 * build a bogus ICommand and call iCFile() with it
 	 */
 	ic->cmd.data = *icState.file;
-	iCFile(ic);
-	return(1);
+
+	return (iCFile(ic));
 }
 
 /* 
@@ -572,7 +592,7 @@ int	iCPlot(ic)
 	/* 
 	 * report errors *after* turning off graphics mode
 	 */
-	if (status = WARN) {	
+	if (status == WARN) {	
 		log_ct(WARN);
 	}
 
@@ -633,6 +653,93 @@ int	iCMerge(ic)
 	return(1);
 }
 
+static	print_file(ic, translator, dev_win_string)
+	ICommand	*ic;
+	char		*translator;
+	char		*dev_win_string;
+{
+	int	i,j;
+	int	frame;
+	int	count;
+	char	*record;
+	int	len = (sizeof (int) * 3) + 1;
+
+	int	argc;
+	char	**argv = NULL;
+	FILE	*fp = ic->fp;
+	static char	*record_opt = "-record";
+	static char	*window_opt = "-window";
+
+
+
+	/*
+	 * count how many frames we have so we can malloc enough memory
+	 * correctly and easily
+	 */
+	for (i = 0, count = 0; i < ic->cmd.src_frames.num; i++) {
+		count += ic->cmd.src_frames.fc[i].num_frames; 
+	}
+
+	if ( !(argv = (char **) malloc ((count + 7) * sizeof (char *)))) {
+		perror("malloc()");
+		return(-1);
+	}
+
+
+	argc = 0;
+	argv[argc++] = translator;
+	argv[argc++] = window_opt;
+	argv[argc++] = dev_win_string;
+	argv[argc++] = record_opt;
+
+	/*
+	 * build the arg list from the list of frames
+	 */
+	for (i = 0; i < ic->cmd.src_frames.num; i++) {
+		for (j = 0, frame = ic->cmd.src_frames.fc[i].start_frame; 
+			j < ic->cmd.src_frames.fc[i].num_frames; j++, frame++){
+
+			if (! (record = malloc ((unsigned) len))) {
+				perror("malloc()");
+				return(-1);
+			}
+			(void) sprintf(record, "%d", 
+					(int) CGM_RECORD(Toc, frame - 1));
+			argv[argc++] = record;
+		}
+	} 
+
+
+
+	/*
+	 * if no frame specified assume current 
+	 */
+	if (ic->cmd.src_frames.num == 0) { 
+		frame = ic->current_frame;
+		if (! (record = malloc ((unsigned) len))) {
+			perror("malloc()");
+			return(-1);
+		}
+		(void) sprintf(record, "%d", (int) CGM_RECORD(Toc, frame - 1));
+		argv[argc++] = record;
+	}
+
+	argv[argc++] = *icState.file;	/* terminate arg list	*/
+	argv[argc] = NULL;	/* terminate arg list	*/
+
+	/*
+	 * spawn the translator and filter chain	
+	 */
+	(void) PipeLine(argc, argv, fp);
+
+	/*
+	 * free all memory except for translator, record_opt and file
+	 */
+	for (i = 2; i < (argc - 1); i++)
+		free((Voidptr) argv[i]);
+	free((Voidptr) argv);
+	return(1);
+}
 
 int	iCPrint(ic)
 	ICommand	*ic;
@@ -651,8 +758,13 @@ int	iCPrint(ic)
 	 * one time creation of spooler translator name
 	 */
 	if (! translator) {
-		translator = icMalloc(strlen(binpath) +
-				      strlen(SPOOL_TRANS) + 2);
+		translator = malloc(
+			(unsigned) (strlen(binpath) + strlen(SPOOL_TRANS) + 2)
+		);
+		if (! translator) {
+			perror("malloc()");
+			return(-1);
+		}
 
 		(void) strcpy(translator, binpath);
 		(void) strcat(translator, "/");
@@ -660,16 +772,16 @@ int	iCPrint(ic)
 
 	}
 
-	sprintf(
+	(void) sprintf(
 		dev_win_string, "%f:%f:%f:%f", 
 		dev_win->llx, dev_win->lly, dev_win->urx, dev_win->ury
 	);
 
 	if (! doMemFile) {
-		print_file(ic, translator, dev_win_string);
+		(void) print_file(ic, translator, dev_win_string);
 	}
 	else {
-		print_mem_file(ic, translator, dev_win_string);
+		(void) print_mem_file(ic, translator, dev_win_string);
 	}
 
 	return(1);
@@ -697,7 +809,7 @@ print_mem_file(ic, translator, dev_win_string)
 	/*
 	 * save the frames to be printed out to disk
 	 */
-	iCSave(ic);
+	(void) iCSave(ic);
 
 	if (stat(tmpfile, &stat_buf) < 0) {
 		perror("ictrans");
@@ -738,86 +850,10 @@ print_mem_file(ic, translator, dev_win_string)
 	}
 		
 	(void) unlink(tmpfile);
-	free((char*) tmpfile);
-}
-
-static	print_file(ic, translator, dev_win_string)
-	ICommand	*ic;
-	char		*translator;
-	char		*dev_win_string;
-{
-	int	i,j;
-	int	frame;
-	int	count;
-	char	*record;
-	int	len = (sizeof (int) * 3) + 1;
-
-	int	argc;
-	char	**argv = NULL;
-	FILE	*fp = ic->fp;
-	static char	*record_opt = "-record";
-	static char	*window_opt = "-window";
-
-
-
-	/*
-	 * count how many frames we have so we can malloc enough memory
-	 * correctly and easily
-	 */
-	for (i = 0, count = 0; i < ic->cmd.src_frames.num; i++) {
-		count += ic->cmd.src_frames.fc[i].num_frames; 
-	}
-
-	argv = (char **) icMalloc ((count + 7) * sizeof (char *));
-
-	argc = 0;
-	argv[argc++] = translator;
-	argv[argc++] = window_opt;
-	argv[argc++] = dev_win_string;
-	argv[argc++] = record_opt;
-
-	/*
-	 * build the arg list from the list of frames
-	 */
-	for (i = 0; i < ic->cmd.src_frames.num; i++) {
-		for (j = 0, frame = ic->cmd.src_frames.fc[i].start_frame; 
-			j < ic->cmd.src_frames.fc[i].num_frames; j++, frame++){
-
-			record = icMalloc (len);
-			(void) sprintf(record, "%d", 
-					(int) CGM_RECORD(Toc, frame - 1));
-			argv[argc++] = record;
-		}
-	} 
-
-
-
-	/*
-	 * if no frame specified assume current 
-	 */
-	if (ic->cmd.src_frames.num == 0) { 
-		frame = ic->current_frame;
-		record = icMalloc (len);
-		(void) sprintf(record, "%d", (int) CGM_RECORD(Toc, frame - 1));
-		argv[argc++] = record;
-	}
-
-	argv[argc++] = *icState.file;	/* terminate arg list	*/
-	argv[argc] = NULL;	/* terminate arg list	*/
-
-	/*
-	 * spawn the translator and filter chain	
-	 */
-	(void) PipeLine(argc, argv, fp);
-
-	/*
-	 * free all memory except for translator, record_opt and file
-	 */
-	for (i = 2; i < (argc - 1); i++)
-		cfree(argv[i]);
-	cfree((char *) argv);
+	free((Voidptr) tmpfile);
 	return(1);
 }
+
 
 
 int	iCMovie(ic)
@@ -1007,7 +1043,7 @@ int	iCDevice(ic)
 	/*
 	 * store device name and set it.
 	 */
-	if (SetDevice(dev) < 0) {
+	if ((int) SetDevice(dev) < 0) {
 		(void) fprintf(stderr, "Invalid device %s\n", dev);
 		return(-1);
 	}
@@ -1024,8 +1060,11 @@ int	iCDevice(ic)
 	}
 
 
-	if (deviceName) cfree (deviceName);
-	deviceName = icMalloc(strlen ( s ) + 1);
+	if (deviceName) free ((Voidptr) deviceName);
+	if ( !(deviceName = malloc((unsigned) (strlen ( s ) + 1)))) {
+		perror("malloc()");
+		return(-1);
+	}
 	(void) strcpy(deviceName, s);
 	icState.device = deviceName;
 #endif
@@ -1065,12 +1104,15 @@ int	iCFont(ic)
 	 * store font name and set it.
 	 */
 
-	if (SetFont(font) < 0) {
+	if ((int) SetFont(font) < 0) {
 		(void) fprintf(stderr, "Invalid device %s\n", font);
 	}
 
-	if (fontName) cfree (fontName);
-	fontName = icMalloc (strlen ( s ) + 1);
+	if (fontName) free ((Voidptr) fontName);
+	if ( !(fontName = malloc ((unsigned) (strlen ( s ) + 1)))) {
+		perror("malloc()");
+		return(-1);
+	}
 	(void) strcpy(fontName, s);
 	icState.font = fontName;
 #endif
@@ -1364,7 +1406,7 @@ processMemoryCGM(ic, mem_file)
 
 	(void) fprintf(fp, "%d frames\n", CGM_NUM_FRAMES(toc));
 	doMemFile = TRUE;
-	
+	return(1);	
 }
 
 char	*create_tmp_fname()
@@ -1372,10 +1414,12 @@ char	*create_tmp_fname()
 	char	*fname;
 	char	pidbuf[20];
 
-	sprintf(pidbuf, "ictrans.%d", getpid());
+	(void) sprintf(pidbuf, "ictrans.%d", getpid());
 
-	fname = icMalloc(strlen(TMPDIR) + strlen("/") + strlen(pidbuf) + 1);
-	strcpy(fname, TMPDIR);
+	fname = malloc(
+		(unsigned) (strlen(TMPDIR) + strlen("/") + strlen(pidbuf) + 1)
+	);
+	(void) strcpy(fname, TMPDIR);
 	fname = strcat(fname, "/");
 	fname = strcat(fname, pidbuf);
 

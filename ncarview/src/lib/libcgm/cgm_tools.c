@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.18 1992-07-30 19:21:51 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.19 1992-09-01 23:40:30 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -30,20 +30,19 @@
  * rev 1.02 clyne 4/24/90	: CGM_putInstr produced extra begin meta bits
  * rev 1.03 clyne 6/1/90	: Added memory file capability
  */
-#define		CGM_TOOLS
 #include	<stdio.h>
+#include	<stdlib.h>
+#include	<string.h>
 #include	<errno.h>
 #include	<fcntl.h>
 #include	<sys/types.h>
 #include	<sys/file.h>
-#include	<cgm_tools.h>
-#include	<cgmdef.h>
-#include	<ncarv.h>
+#include	<ncarg/c.h>
+#include	"cgm_tools.h"
+#include	"cgmdef.h"
 #include	"cgmP.h"
 #include	"internals.h"
 	
-extern	char	*strcpy();
-
 #ifndef	L_SET
 #define	L_SET	0
 #endif
@@ -121,9 +120,9 @@ char	*headerType[] = {
  */
 /*VARARGS3*/
 Cgm_fd	CGM_open(metafile, record_size, type)
-	char		*metafile;
+	const char	*metafile;
 	int		record_size;
-	char		*type;
+	const char	*type;
 {
 
 	int	fildes[2];	/* file descriptor for a pipe	*/
@@ -294,13 +293,20 @@ Cgm_fd	CGM_open(metafile, record_size, type)
 	}
 
 	/*
-	 * icMalloc space for use by CGM_getInstr() and/or CGM_putInstr()
+	 * malloc space for use by CGM_getInstr() and/or CGM_putInstr()
 	 * and intialize flags in the Pg_struct;
 	 */
-	cgmTab[index].pg_struct = (Pg_struct *) icMalloc (sizeof(Pg_struct));
+	cgmTab[index].pg_struct = (Pg_struct *) malloc(sizeof(Pg_struct));
+	if (! cgmTab[index].pg_struct) {
+		return(-1);
+	}
 
-	cgmTab[index].pg_struct->buf = (unsigned char *) icMalloc 
-		((cgmTab[index].record_size * sizeof(unsigned char)));
+	cgmTab[index].pg_struct->buf = (unsigned char *) malloc (
+		(cgmTab[index].record_size * sizeof(unsigned char))
+	);
+	if (! cgmTab[index].pg_struct->buf) {
+		return(-1);
+	}
 
 
 	/*
@@ -359,8 +365,8 @@ int	CGM_close(cgm_fd)
 	/*
 	 * free structures for get/put instr
 	 */
-	cfree((char *) cgmTab[cgm_fd].pg_struct->buf);
-	cfree((char *) cgmTab[cgm_fd].pg_struct);
+	free((Voidptr) cgmTab[cgm_fd].pg_struct->buf);
+	free((Voidptr) cgmTab[cgm_fd].pg_struct);
 
 	return(error);
 }
@@ -400,7 +406,7 @@ CGM_read(cgm_fd, buf)
  */
 CGM_write(cgm_fd, buf)
 	Cgm_fd		cgm_fd;
-	unsigned char	*buf;
+	const unsigned char	*buf;
 {
 	return(cgmTab[cgm_fd].write(cgm_fd, buf));
 }
@@ -500,10 +506,13 @@ Directory	*CGM_directory(cgm_fd, fp)
 	}
 
 	/* 
-	 *	icMalloc memory for buffer and directory
+	 *	malloc memory for buffer and directory
 	 */
-	buf = (unsigned char *) icMalloc (cgmTab[cgm_fd].record_size * 
+	buf = (unsigned char *) malloc (cgmTab[cgm_fd].record_size * 
 			sizeof( unsigned char));
+	if (! buf) {
+		return((Directory *) NULL);
+	}
 
 
 	if ((dir = init_dir()) == NULL )
@@ -534,9 +543,12 @@ Directory	*CGM_directory(cgm_fd, fp)
 			if (dir->num_meta >= dir->meta_size)  {
 
 				dir->meta_size += DIR_2_ALLOC;
-				dir->meta = (int *) icRealloc 
+				dir->meta = (int *) realloc 
 					((char *) dir->meta, 
 					(unsigned)dir->meta_size * sizeof(int));
+				if (! dir->meta) {
+					return((Directory *) NULL);
+				}
 			}
 				
 
@@ -602,7 +614,10 @@ Directory	*CGM_directory(cgm_fd, fp)
 
 				cptr++;	/* skip past char count	*/
 				dir->d[dir->num_frames].text = (char *) 
-					icMalloc(data_len);
+					malloc(data_len);
+				if (! dir->d[dir->num_frames].text) {
+					return((Directory *) NULL);
+				}
 
 				bcopy((char *) cptr, 
 					dir->d[dir->num_frames].text,
@@ -667,7 +682,7 @@ Directory	*CGM_directory(cgm_fd, fp)
 	if (error == 0 && state == END)
 		dir->status = CGM_OK;
 		
-	cfree ((char *) buf);
+	free ((Voidptr) buf);
 	return(dir);
 
 }
@@ -683,7 +698,7 @@ Directory	*CGM_directory(cgm_fd, fp)
  *	dir		: a pointer to a directory created with MFDirectory
  */
 void	CGM_printDirectory(dir)
-	Directory	*dir;
+	const Directory	*dir;
 {
 	int	i, j, k;
 
@@ -1286,21 +1301,21 @@ void	CGM_freeDirectory(dir)
 		return;
 
 	if (dir->meta != (int *) NULL)
-		cfree ((char *) dir->meta);
+		free ((Voidptr) dir->meta);
 
 	for (i = 0; i < dir->dir_size; i++) {
 		if (dir->d[i].text != NULL)
-			cfree((char *) dir->d[i].text);
+			free((Voidptr) dir->d[i].text);
 	}
 
 	for (i = 0; i < dir->MFDes_size; i++) {
 		if (dir->MFDescription[i] != NULL)
-			cfree((char *) dir->MFDescription[i]);
+			free((Voidptr) dir->MFDescription[i]);
 	}
 
-	cfree((char *) dir->d);
-	cfree((char *) dir->MFDescription);
-	cfree((char *) dir);
+	free((Voidptr) dir->d);
+	free((Voidptr) dir->MFDescription);
+	free((Voidptr) dir);
 	dir = NULL;
 }
 
@@ -1319,8 +1334,11 @@ Directory	*ReallocDir(dir, num_frames)
 	 */
 	if (dir_size > num_frames) return ((Directory *) NULL);
 
-	dir->d = (Directory_entry *) icRealloc ((char *) dir->d, (unsigned)
+	dir->d = (Directory_entry *) realloc ((char *) dir->d, (unsigned)
 		(sizeof (Directory_entry) * num_frames));
+	if (! dir->d) {
+		return((Directory *) NULL);
+	}
 
 	/*
 	 * record new directory size
@@ -1364,8 +1382,11 @@ Directory	*CGM_copyCreateDir(d1)
 	 */
 	d2->num_meta = d1->num_meta;
 	if (d2->meta_size < meta_size) {
-		d2->meta = (int *) icRealloc((char *) d2->meta,
+		d2->meta = (int *) realloc((char *) d2->meta,
 					(unsigned) meta_size * sizeof (int)); 
+		if (! d2->meta) {
+			return((Directory *) NULL);
+		}
 	}
 	for (i = 0; i < d1->num_meta; i++) {
 		d2->meta[i] = d1->meta[i];
@@ -1384,7 +1405,10 @@ Directory	*CGM_copyCreateDir(d1)
 		d2->d[i].num_record = d1->d[i].num_record;
 		d2->d[i].type = d1->d[i].type;
 		if (d1->d[i].text) {
-			d2->d[i].text = icMalloc(strlen(d1->d[i].text) + 1);
+			d2->d[i].text = (char *)malloc(strlen(d1->d[i].text)+1);
+			if (! d2->d[i].text) {
+				return((Directory *) NULL);
+			}
 			(void) strcpy(d2->d[i].text, d1->d[i].text);
 		}
 		else {
@@ -1397,8 +1421,11 @@ Directory	*CGM_copyCreateDir(d1)
 	 * metafile description information
 	 */
 	if (d2->MFDes_size < des_size) {
-		d2->MFDescription = (char **) icRealloc((char *) d2->meta,
+		d2->MFDescription = (char **) realloc((char *) d2->meta,
 				(unsigned) meta_size * sizeof (char *));
+		if (! d2->MFDescription) {
+			return((Directory *) NULL);
+		}
 	}
 	for (i = 0; i < des_size; i++ ) {
 		d2->MFDescription[i] = NULL;	/* no used	*/
@@ -1422,19 +1449,31 @@ Directory	*init_dir()
 	Directory	*dir;
 	int	i;
 
-	dir = (Directory *) icMalloc (sizeof( Directory));
+	dir = (Directory *) malloc (sizeof( Directory));
+	if (! dir) {
+		return((Directory *) NULL);
+	}
 
-	dir->meta = (int *) icMalloc (DIR_2_ALLOC * sizeof(int));
+	dir->meta = (int *) malloc (DIR_2_ALLOC * sizeof(int));
+	if (! dir->meta) {
+		return((Directory *) NULL);
+	}
 	dir->meta_size = DIR_2_ALLOC;
 
-	dir->MFDescription = (char **) 
-		icMalloc (DIR_2_ALLOC * sizeof(char *));
+	dir->MFDescription = (char **) malloc (DIR_2_ALLOC * sizeof(char *));
+	if (! dir->MFDescription) {
+		return((Directory *) NULL);
+	}
 
 	dir->MFDes_size = DIR_2_ALLOC;
 
 
-	dir->d = (Directory_entry *) icMalloc
-		(DIR_2_ALLOC * sizeof(Directory_entry));
+	dir->d = (Directory_entry *) malloc (
+		DIR_2_ALLOC * sizeof(Directory_entry)
+	);
+	if (! dir->d) {
+		return((Directory *) NULL);
+	}
 
 	dir->dir_size = DIR_2_ALLOC;
 
@@ -1548,7 +1587,7 @@ static	int	raw_seek(cgm_fd, offset, whence)
 {
 	int	fd = cgmTab[cgm_fd].fd;
 
-	return(lseek(fd, (off_t) offset, whence));
+	return((int) lseek(fd, (off_t) offset, whence));
 }
 static	int	memory_seek(cgm_fd, offset, whence)
 	Cgm_fd		cgm_fd;
@@ -1586,7 +1625,7 @@ static	int	raw_close(cgm_fd)
 	error = close(fd);
 	if (cgmTab[cgm_fd].mtype == Pipe ) {
 		int	fdw = cgmTab[cgm_fd].fdw;
-		error -= close(fd);
+		error -= close(fdw);
 	}
 	return(error);
 }

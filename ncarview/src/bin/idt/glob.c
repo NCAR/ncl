@@ -1,5 +1,5 @@
 /*
- *	$Id: glob.c,v 1.7 1992-04-03 23:20:51 clyne Exp $
+ *	$Id: glob.c,v 1.8 1992-09-01 23:38:51 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -21,153 +21,19 @@
  *	perform filname expansion on a string using the shell
  */
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
-#include <ncarv.h>
+#include <ncarg/c.h>
 
-extern	char	*strcpy();
-extern	char	*strcat();
 
 static int	to_child[2],
 		to_parent[2];	/* pipes for talking to spawned process	*/
 
 #define	MAX_LINE_LEN	80
+#define	SMALL_MALLOC_BLOCK	10
 
 #define	ACK	"/bin/echo ''\n"
-
-/*
- *	glob
- *	[exported]
- *
- *	perform filename expansion on a string. glob allocates memory as
- *	necessary and returns a pointer to that memory. glob uses the command
- *	specified by the enviroment variable "SHELL" to do expansion. If 
- *	SHELL is not set glob uses /bin/sh by default.
- * on entry
- *	*s		: the string
- * on exit
- *	***r_argv	: a list of files expanded by the shell
- *	*r_argc		: size of r_argv
- */
-glob(s, r_argv, r_argc)
-	char	*s;
-	char	***r_argv;
-	int	*r_argc;
-{
-
-	static	short	is_init = 0;
-	static	char	**argv;
-	static	int	argc;
-	static	int	args;	/* memory alloced to argv	*/
-	static	char	inBuf[4*BUFSIZ];
-
-	int	i;
-	char	outbuf[MAX_LINE_LEN];
-	char	*cptr;
-	int	nbytes;
-	char	*shell_argv[3];
-	char	*t;
-	extern	char	*getenv(), *strrchr();
-
-	*r_argv = NULL;
-	*r_argc = argc = 0;
-
-	/*
-	 * perform one time initialization
-	 */
-	if (!is_init) {
-
-		/*
-		 * try and find out what shell the user like so we can spawn
-		 * it to parse it to do globbing.
-		 */
-		if ((shell_argv[0] = getenv ("SHELL")) == NULL) {
-			shell_argv[0] = "/bin/sh";	/* default	*/
-		}
-		shell_argv[1] = NULL;
-
-		/*
-		 * if using csh then use csh with the fast option, '-f'
-		 */
-        	t = (t = strrchr(shell_argv[0], '/')) ? ++t : shell_argv[0];
-		if (!(strcmp(t, "csh"))) {
-			shell_argv[1] = "-f";
-			shell_argv[2] = NULL;
-		}
-
-
-		talkto(shell_argv);	/* spawn shell to talk to	*/
-		is_init = 1;
-
-
-		argv = (char **) icMalloc(SMALL_MALLOC_BLOCK * sizeof(char **));
-		args = SMALL_MALLOC_BLOCK;
-	}
-
-	if ((strlen(outbuf) + strlen(s) + 1) >= MAX_LINE_LEN) {
-		(void) fprintf(stderr, "Line too long: %s\n", s);
-		return;
-	}
-
-	/*
-	 * build command to send to the shell. 
-	 */
-	(void) strcpy(outbuf, "/bin/echo ");
-	(void) strcat(outbuf, s);
-	(void) strcat(outbuf, "\n");
-
-	/*
-	 * send "echo whatever" to shell. Also send a  so we get an
-	 * ack back. We need that ack in case the string send doen't 
-	 * generate a responce to stdout. i.e. a shell error
-	 */
-	(void) write(to_child[1], outbuf, strlen(outbuf));
-	(void) write(to_child[1], ACK, strlen(ACK));
-
-	/*
-	 * read in output from shell
-	 */
-	nbytes = 0;
-	while (1) {	/* read until receive ack or buffer is full	*/
-		cptr = inBuf + nbytes;
-		nbytes += read(to_parent[0], cptr, 4*BUFSIZ - nbytes);
-		if ((inBuf[nbytes - 2] == '') || nbytes == 4*BUFSIZ) break; 
-	}
-
-
-	if (inBuf[0] == '') return;	/* shell syntax error probably	*/
-
-	/*
-	 * replace terminating newline with a null terminator
-	 */
-	for(i = 0; i<nbytes; i++) {
-		if (inBuf[i] == '\n')
-			inBuf[i] = '\0';
-	}
-	inBuf[nbytes] = '\0';
-
-	/*
-	 * null terminate and assigne a poiner to each arg in inBuf 
-	 */
-	cptr = inBuf;
-	argv[argc++] = cptr;	/* point to first arg	*/
-	while(*cptr) {
-		if (isspace(*cptr)) {
-			*cptr = '\0';
-			if (argc >= args) {	/* enough memory ?	*/
-				args += SMALL_MALLOC_BLOCK;
-				argv = (char **) icRealloc ((char *) argv,
-					args * sizeof (char **));
-			}
-			argv[argc++] = cptr+1;
-		}
-		cptr++;
-	}
-
-	*r_argv = argv;
-	*r_argc = argc;
-}
-
-
 
 /*
  *	talkto
@@ -231,3 +97,142 @@ static	talkto(argv)
 		exit(1);
 	}
 }
+
+/*
+ *	glob
+ *	[exported]
+ *
+ *	perform filename expansion on a string. glob allocates memory as
+ *	necessary and returns a pointer to that memory. glob uses the command
+ *	specified by the enviroment variable "SHELL" to do expansion. If 
+ *	SHELL is not set glob uses /bin/sh by default.
+ * on entry
+ *	*s		: the string
+ * on exit
+ *	***r_argv	: a list of files expanded by the shell
+ *	*r_argc		: size of r_argv
+ */
+glob(s, r_argv, r_argc)
+	char	*s;
+	char	***r_argv;
+	int	*r_argc;
+{
+
+	static	short	is_init = 0;
+	static	char	**argv;
+	static	int	argc;
+	static	int	args;	/* memory alloced to argv	*/
+	static	char	inBuf[4*BUFSIZ];
+
+	int	i;
+	char	outbuf[MAX_LINE_LEN];
+	char	*cptr;
+	int	nbytes;
+	char	*shell_argv[3];
+	char	*t;
+
+	*r_argv = NULL;
+	*r_argc = argc = 0;
+
+	/*
+	 * perform one time initialization
+	 */
+	if (!is_init) {
+
+		/*
+		 * try and find out what shell the user like so we can spawn
+		 * it to parse it to do globbing.
+		 */
+		if ((shell_argv[0] = getenv ("SHELL")) == NULL) {
+			shell_argv[0] = "/bin/sh";	/* default	*/
+		}
+		shell_argv[1] = NULL;
+
+		/*
+		 * if using csh then use csh with the fast option, '-f'
+		 */
+        	t = (t = strrchr(shell_argv[0], '/')) ? ++t : shell_argv[0];
+		if (!(strcmp(t, "csh"))) {
+			shell_argv[1] = "-f";
+			shell_argv[2] = NULL;
+		}
+
+
+		talkto(shell_argv);	/* spawn shell to talk to	*/
+		is_init = 1;
+
+
+		argv = (char **) malloc(SMALL_MALLOC_BLOCK * sizeof(char **));
+		if (! argv) {
+			perror("malloc()");
+			return;
+		}
+		args = SMALL_MALLOC_BLOCK;
+	}
+
+	if ((strlen(outbuf) + strlen(s) + 1) >= MAX_LINE_LEN) {
+		(void) fprintf(stderr, "Line too long: %s\n", s);
+		return;
+	}
+
+	/*
+	 * build command to send to the shell. 
+	 */
+	(void) strcpy(outbuf, "/bin/echo ");
+	(void) strcat(outbuf, s);
+	(void) strcat(outbuf, "\n");
+
+	/*
+	 * send "echo whatever" to shell. Also send a  so we get an
+	 * ack back. We need that ack in case the string send doen't 
+	 * generate a responce to stdout. i.e. a shell error
+	 */
+	(void) write(to_child[1], outbuf, strlen(outbuf));
+	(void) write(to_child[1], ACK, strlen(ACK));
+
+	/*
+	 * read in output from shell
+	 */
+	nbytes = 0;
+	while (1) {	/* read until receive ack or buffer is full	*/
+		cptr = inBuf + nbytes;
+		nbytes += read(to_parent[0], cptr, 4*BUFSIZ - nbytes);
+		if ((inBuf[nbytes - 2] == '') || nbytes == 4*BUFSIZ) break; 
+	}
+
+
+	if (inBuf[0] == '') return;	/* shell syntax error probably	*/
+
+	/*
+	 * replace terminating newline with a null terminator
+	 */
+	for(i = 0; i<nbytes; i++) {
+		if (inBuf[i] == '\n')
+			inBuf[i] = '\0';
+	}
+	inBuf[nbytes] = '\0';
+
+	/*
+	 * null terminate and assigne a poiner to each arg in inBuf 
+	 */
+	cptr = inBuf;
+	argv[argc++] = cptr;	/* point to first arg	*/
+	while(*cptr) {
+		if (isspace(*cptr)) {
+			*cptr = '\0';
+			if (argc >= args) {	/* enough memory ?	*/
+				args += SMALL_MALLOC_BLOCK;
+				argv = (char **) realloc ((char *) argv,
+					args * sizeof (char **));
+			}
+			argv[argc++] = cptr+1;
+		}
+		cptr++;
+	}
+
+	*r_argv = argv;
+	*r_argc = argc;
+}
+
+
+

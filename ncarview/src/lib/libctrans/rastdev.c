@@ -1,8 +1,8 @@
 /*
- *	$Id: rastdev.c,v 1.11 1992-07-16 18:08:16 clyne Exp $
+ *	$Id: rastdev.c,v 1.12 1992-09-01 23:43:02 clyne Exp $
  */
 #include <stdio.h>
-#include <ncarg_ras.h>
+#include <ncarg/ncarg_ras.h>
 #include "rast.h"
 #include "cgmc.h"
 #include "default.h"
@@ -16,6 +16,51 @@ static	int	rasColorIndex;
 
 static	float	rasLineWidth; 
 
+/*
+ * line_:	scan convert a line from (x1, y1) to (x2, y2), using
+ *		the macro PUTPIX to put each pixel. Does no clipping. Uses
+ *		Breseham's algorithm. Taken from "Graphics Gems"
+ */
+static	void	line_(x1, y1, x2, y2)
+	int	x1, y1, x2, y2;
+{
+	int	d, x, y, ax, ay, sx, sy, dx, dy;
+	int	index = rasColorIndex;
+
+	extern	RasColrTab      colorTab;
+
+	dx = x2-x1; ax = ABS(dx)<<1; sx = SIGN(dx);
+	dy = y2-y1; ay = ABS(dy)<<1; sy = SIGN(dy);
+
+	x = x1;
+	y = y1;
+	if (ax > ay) {	/*	x dominant	*/
+		d = ay - (ax>>1);
+		for (;;) {
+			RAS_PUT_PIX(rastGrid,x,y,index,colorTab,rasIsDirect);
+			if (x == x2) return;
+			if (d >= 0) {
+				y += sy;
+				d -= ax;
+			}
+			x += sx;
+			d += ay;
+		}
+	}
+	else {	/*	y dominant	*/
+		d = ax-(ay>>1);
+		for (;;) {
+			RAS_PUT_PIX(rastGrid,x,y,index,colorTab,rasIsDirect);
+			if (y == y2) return;
+			if (d >= 0) {
+				x += sx;
+				d -= ay;
+			}
+			y += sy;
+			d += ax;
+		}
+	}
+}
 void	rast_open(max_poly_points)
 	unsigned long	*max_poly_points;
 {
@@ -33,7 +78,6 @@ void	rast_pointflush(coord_buf, coord_buf_num)
 	long	*coord_buf_num;
 {
 	int	i;
-	void	line_();
 	int	ComLineSim();
 
 	if (LINE_TYPE != 1) {
@@ -75,7 +119,6 @@ void	rast_line(x1_,y1_,x2_,y2_)
 {
 
 	long	x1, y1, x2, y2;
-	void	line_();
 
 	if (!(Clipper(x1_, y1_, x2_, y2_, &x1, &y1, &x2, &y2))) {
 		return;
@@ -91,7 +134,6 @@ void	rast_line(x1_,y1_,x2_,y2_)
 void	rast_devline(x1_,y1_,x2_,y2_)
 	long	x1_,y1_,x2_,y2_;
 {
-	void	line_();
 
 	line_((int) x1_, (int) y1_, (int) x2_, (int) y2_);
 }
@@ -347,51 +389,6 @@ static	void	line_(a1, b1, a2, b2)
 		
 
 
-/*
- * line_:	scan convert a line from (x1, y1) to (x2, y2), using
- *		the macro PUTPIX to put each pixel. Does no clipping. Uses
- *		Breseham's algorithm. Taken from "Graphics Gems"
- */
-static	void	line_(x1, y1, x2, y2)
-	int	x1, y1, x2, y2;
-{
-	int	d, x, y, ax, ay, sx, sy, dx, dy;
-	int	index = rasColorIndex;
-
-	extern	RasColrTab      colorTab;
-
-	dx = x2-x1; ax = ABS(dx)<<1; sx = SIGN(dx);
-	dy = y2-y1; ay = ABS(dy)<<1; sy = SIGN(dy);
-
-	x = x1;
-	y = y1;
-	if (ax > ay) {	/*	x dominant	*/
-		d = ay - (ax>>1);
-		for (;;) {
-			RAS_PUT_PIX(rastGrid,x,y,index,colorTab,rasIsDirect);
-			if (x == x2) return;
-			if (d >= 0) {
-				y += sy;
-				d -= ax;
-			}
-			x += sx;
-			d += ay;
-		}
-	}
-	else {	/*	y dominant	*/
-		d = ax-(ay>>1);
-		for (;;) {
-			RAS_PUT_PIX(rastGrid,x,y,index,colorTab,rasIsDirect);
-			if (y == y2) return;
-			if (d >= 0) {
-				x += sx;
-				d -= ay;
-			}
-			y += sy;
-			d += ax;
-		}
-	}
-}
 
 
 void	rast_update_color_table()

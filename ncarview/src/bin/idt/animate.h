@@ -1,6 +1,6 @@
 
 /*
- *      $Id: animate.h,v 1.1 1992-08-24 23:00:58 clyne Exp $
+ *      $Id: animate.h,v 1.2 1992-09-01 23:38:39 clyne Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 
 #include <X11/Xlib.h>
 #include <X11/Intrinsic.h>
+#include <ncarg/c.h>
 
 typedef	struct	AnimatePixmapStruct_	{
 	Pixmap				pixmap;
@@ -69,7 +70,7 @@ typedef	struct	AnimateStruct	{
 
 extern	AnimateType	*AnimateOpen(
 #ifdef	NeedFuncProto
-	Display		dpy,
+	Display		*dpy,
 	Widget		canvas,
 	XImage		*ximage,
 	char		**images,
@@ -105,15 +106,17 @@ extern	void	AnimateDisplayPrev(
 
 extern	void	AnimateDispContForward(
 #ifdef	NeedFuncProto
-	AnimateType	*a,
-	int		(*update_func)()
+	AnimateType     *a,
+	void            (*update_func)(),
+	Voidptr         data
 #endif
 );
 
 extern	void	AnimateDispContReverse(
 #ifdef	NeedFuncProto
-	AnimateType	*a,
-	int		(*update_func)()
+	AnimateType     *a,
+	void            (*update_func)(),
+	Voidptr         data
 #endif
 );
 
@@ -131,7 +134,7 @@ extern	void	AnimateLoop(
 
 extern	int	AnimateGetImageNum(
 #ifdef	NeedFuncProto
-	AnimateType	*a;
+	AnimateType	*a
 #endif
 );
 

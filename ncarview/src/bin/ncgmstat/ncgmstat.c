@@ -1,5 +1,5 @@
 /*
- *      $Id: ncgmstat.c,v 1.2 1992-07-31 21:07:45 clyne Exp $
+ *      $Id: ncgmstat.c,v 1.3 1992-09-01 23:39:40 clyne Exp $
  */
 /*
  *	File:		ncgmstat.c
@@ -15,8 +15,8 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-#include <cgm_tools.h>
-#include <ncarv.h>
+#include <ncarg/cgm_tools.h>
+#include <ncarg/c.h>
 
 
 

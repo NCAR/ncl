@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.21 1992-07-31 21:06:46 clyne Exp $
+ *	$Id: main.c,v 1.22 1992-09-01 23:38:12 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -32,7 +32,7 @@
 #include	<fcntl.h>
 #include	<signal.h>
 #include        <string.h>
-#include        <ctrans.h>
+#include        <ncarg/ctrans.h>
 #include	"main.h"
 
 #define	NCAR_REC_SIZE	1440
@@ -118,7 +118,7 @@ static	Option	get_options[] = {
  *	module globals for error reporting
  */
 static  char    logFile[80];		/* temp log file name		*/
-static	FILE	*logFP = stderr;	/* log file pointer		*/
+static	FILE	*logFP;			/* log file pointer		*/
 static	boolean	doLogToFile = FALSE;	/* log messags to a temp file?	*/
 
 static	int	eStatus;		/* exit status			*/
@@ -242,6 +242,7 @@ int	process(record, batch, sleep_time, verbose, do_all)
 
 		if (batch) {
 			if (sleep_time>0) sleep(sleep_time);
+			CtransClear();
 		}
 	
 	} while (do_all);
@@ -279,7 +280,7 @@ char	**argv;
 					 * with the user. Else main module
 					 * is responsible for interaction
 					 */
-	unsigned sleep_time = 0;	/* time to wait between displaying
+	int sleep_time = 0;	/* time to wait between displaying
 					 * frames if batch is TRUE
 					 */
 	int	*record = NULL;		/* list of records to process	*/
@@ -294,6 +295,7 @@ char	**argv;
 	int	od;
 	CtransRC	ctrc;
 
+	logFP = stderr;			/* log to stderr by default	*/
 	progName = (progName = strrchr(argv[0], '/')) ? ++progName : *argv;
 
 	/*
@@ -411,8 +413,8 @@ char	**argv;
 	if (i < argc && strcmp (argv[i], "-record") == 0) {
 		i++;
 		j = 0;
-		record = (int *) icMalloc ((argc + 1) * sizeof (int));
-		while (isint(argv[i])) {
+		record = (int *) malloc ((argc + 1) * sizeof (int));
+		while (IsAsciiInt(argv[i])) {
 
 			record[j++] = atoi(argv[i++]);
 		}
@@ -476,7 +478,7 @@ char	**argv;
 			 *	process frames until the end of the file or an 
 			 *	unrecoverable error occurs
 			 */
-			if (process(NEXT, batch, 
+			if (process(NEXT, batch, (unsigned) 
 					sleep_time, opt.verbose,TRUE) < 0) {
 				eStatus = 1;
 			}
@@ -487,7 +489,7 @@ char	**argv;
 			 */
 			i = 0;
 			while (record[i] != -1) {
-				if (process(record[i++], batch, 
+				if (process(record[i++], batch, (unsigned) 
 					sleep_time, opt.verbose,FALSE) < 0) {
 
 					eStatus = 1;

@@ -1,5 +1,5 @@
 /*
- *	$Id: rasdraw.c,v 1.7 1992-04-02 22:57:06 clyne Exp $
+ *	$Id: rasdraw.c,v 1.8 1992-09-01 23:40:06 clyne Exp $
  */
 /*
  *	rasdraw.c
@@ -14,25 +14,573 @@
  *	are supported.
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <errno.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>     /* Get standard string definations. */
 #include <X11/Shell.h>
-#include <ncarg_ras.h>
-#include <ncarv.h>
-
-#ifdef	SYSV
-#include <string.h>
-#else
-#include <strings.h>
-#endif
-
+#include <ncarg/c.h>
+#include <ncarg/ncarg_ras.h>
 #include "rasdraw.h"
 
-extern	char	*malloc();
-
 /*LINTLIBRARY*/
+
+static	void	load_static_24bit_image_(ras, context)
+	Raster	*ras;
+	Context	*context;
+{
+	unsigned char	*s, *t;
+	int	i,j;
+
+	s = ras->data;
+	t = (unsigned char *) context->ximage->data;
+	if (! context->image_info.lsbFirst) t++;
+
+	for(i=0; i<ras->ny; i++)
+	for(j=0; j<ras->nx; j++, s+=3, t+=4) {
+		bcopy((char *) s, (char *) t, 3);
+	}
+
+	XPutImage(context->dpy, XtWindow(context->canvas), context->gc,
+			context->ximage, 0,0,0,0, ras->nx, ras->ny);
+}
+
+static	void	load_24bit_image_(ras, context)
+	Raster	*ras;
+	Context	*context;
+{
+	fprintf(stderr, "Unsupported visual\n");
+}
+
+/*ARGSUSED*/
+static	void	load_24bit_image(ras, context)
+	Raster	*ras;
+	Context	*context;
+{
+	if (context->cmap_info.writeable) {
+		load_24bit_image_(ras, context);
+	}
+	else {
+		load_static_24bit_image_(ras, context);
+	}
+}
+
+static	void	load_8bit_image_(ras, context)
+	Raster	*ras;
+	Context	*context;
+{
+	if (context->dsp_depth == 8) {
+		context->ximage->data = (char *) ras->data;
+
+		XPutImage(context->dpy, XtWindow(context->canvas), context->gc,
+			context->ximage, 0,0,0,0, ras->nx, ras->ny);
+	}
+	else {
+		(void) fprintf(stderr, "Unsupported display depth\n");
+	}
+}
+
+/*ARGSUSED*/
+static	void	load_static_8bit_image_(ras, context)
+	Raster	*ras;
+	Context	*context;
+{
+
+#ifdef	DEAD
+	int	i;
+	long	*static_pal = context->cmap_info.static_pal;
+	int	bytes_per_pixel = context->image_info.bytes_per_pixel;
+	unsigned char	*rdata	= ras->data;
+	char		*xidata = context->ximage->data;
+
+	if (! context->image_info.lsbFirst) {
+		for (i = 0; i < ras->nx * ras->ny; i++) {
+			bcopy(((char *) (&static_pal[*rdata]) + 
+				sizeof(long) - bytes_per_pixel),
+				xidata, bytes_per_pixel);
+
+			rdata++;
+			xidata += bytes_per_pixel;
+		}
+	}
+	else {
+		for (i = 0; i < ras->nx * ras->ny; i++) {
+			bcopy((char *) &static_pal[*rdata],
+				xidata, bytes_per_pixel);
+
+			rdata++;
+			xidata += bytes_per_pixel;
+		}
+
+	}
+
+	XPutImage(context->dpy, XtWindow(context->canvas), context->gc,
+		context->ximage, 0,0,0,0, ras->nx, ras->ny);
+#endif
+
+	(void) fprintf(stderr, "Unsupported color model\n");
+}
+/*
+ *	load an image from ras into an XImage structure
+ */
+static	void	load_8bit_image(ras, context)
+	Raster	*ras;
+	Context	*context;
+{
+
+	if (context->cmap_info.writeable) {
+		load_8bit_image_(ras, context);
+	}
+	else {
+		load_static_8bit_image_(ras, context);
+	}
+}
+
+static	int	load_static_pal_(red, green, blue, ncolor, context)
+	unsigned char	*red, *green, *blue;
+	unsigned int	ncolor;
+	Context	*context;
+{
+	Display		*dpy = context->dpy;
+	Colormap 	cmap = context->cmap;
+	long		*static_pal = context->cmap_info.static_pal;
+	XColor		xcolor;
+	char		flags = (DoRed | DoGreen | DoBlue);
+	int		i;
+	/*
+	 * one time allocation of memory for static palette
+	 */
+	if (! static_pal) {
+		static_pal = (long *) malloc(256 * sizeof(long));
+
+		if (! static_pal) {
+			ESprintf(errno,"malloc(%d)", 256 * sizeof(long));
+			return(-1);
+		}
+	}
+	context->cmap_info.static_pal = static_pal;
+
+	for (i=0; i < ncolor; i++) {
+		xcolor.red = (unsigned short)
+			((float) red[i] / 255.0 * 65535);
+		xcolor.green = (unsigned short)
+			((float) green[i] / 255.0 * 65535);
+		xcolor.blue = (unsigned short)
+			((float) blue[i] / 255.0 * 65535);
+
+		xcolor.flags = flags;
+		xcolor.pad = '\0';
+
+		if (! XAllocColor(dpy, cmap, &xcolor)) {
+			ESprintf(E_UNKNOWN,"XAllocColor(,,)");
+			return(-1);
+		}
+		static_pal[i] = xcolor.pixel;
+	}
+
+	context->cmap_info.static_pal = static_pal;
+	return(1);
+}
+
+static	int	load_palette_(red, green, blue, ncolor, context)
+	unsigned char	*red, *green, *blue;
+	unsigned int	ncolor;
+	Context	*context;
+{
+	int	i;
+	int	num_cols;
+	Display	*dpy = context->dpy;
+	char	flags = (DoRed | DoGreen | DoBlue);
+
+	num_cols = MIN(context->cmap_info.max_colors, ncolor);
+
+	if (num_cols < ncolor) {
+		(void) fprintf(stderr, 
+			"Warning: only %d of %d colors can be displayed\n",
+			num_cols, ncolor);
+	}
+
+	/*
+	 * alloc more memory for color list if necessary
+	 */
+	if (context->xcolor_size < num_cols) {
+		if (context->xcolors) cfree((char *) context->xcolors);
+
+		context->xcolors = (XColor *) 
+				malloc((unsigned) num_cols * sizeof(XColor));
+
+		if (! context->xcolors) {
+			ESprintf(errno,"malloc(%d)", num_cols * sizeof(XColor));
+			return(-1);
+		}
+		context->xcolor_size = num_cols;
+	}
+
+	for (i=0; i<num_cols; i++) {
+		context->xcolors[i].pixel = (unsigned long) i;
+
+		context->xcolors[i].red = (unsigned short)
+			((float) red[i] / 255.0 * 65535);
+		context->xcolors[i].green = (unsigned short)
+			((float) green[i] / 255.0 * 65535);
+		context->xcolors[i].blue = (unsigned short)
+			((float) blue[i] / 255.0 * 65535);
+
+		context->xcolors[i].flags = flags;
+		context->xcolors[i].pad = '\0';
+	}
+
+	XStoreColors(dpy, context->cmap, context->xcolors, num_cols);
+
+	return(1);
+}
+
+
+
+/*
+ *	load our colormap with the appropriate palette. this only works
+ *	with pseudo-color displays.
+ */
+static	int	load_palette(ras, context)
+	Raster	*ras;
+	Context	*context;
+{
+	static	Boolean	first = True;
+	Display		*dpy = context->dpy;
+	Colormap 	cmap = context->cmap;
+
+	/*
+	 * is colormap writeable
+	 */
+	if (context->cmap_info.writeable) {
+
+		/*
+		 * we wait to last possible moment to load new colormap
+		 * so user doesn't get a black screen while trying to
+		 * place the image window
+		 */
+		if (first) {
+			/*
+			 * change default colormap. Window Manager is 
+			 * responsible  for swapping it in when sprite 
+			 * is in our window
+			 */
+			XSetWindowColormap(dpy, XtWindow(context->toplevel), 
+								cmap);
+			first = False;
+		}
+		/*
+		 * if load_pal is true load palette from ras else try and 
+		 * load default palette.
+		 */
+		if (context->load_pal) {
+			(void) load_palette_(ras->red, ras->green, ras->blue, 
+						(unsigned) ras->ncolor,context);
+		}
+		else {
+			(void) load_palette_(context->default_pal.red, 
+				context->default_pal.green, 
+				context->default_pal.blue,
+				context->default_pal.ncolor, context);
+		}
+	}
+	else {
+		if (context->load_pal) {
+			(void)load_static_pal_(ras->red, ras->green, ras->blue, 
+						(unsigned) ras->ncolor,context);
+		}
+		else {
+			(void) load_static_pal_(context->default_pal.red, 
+				context->default_pal.green, 
+				context->default_pal.blue,
+				context->default_pal.ncolor, context);
+		}
+
+	}
+}
+
+
+
+/*
+ *	create a colormap 
+ */
+static	Colormap	create_colormap(context)
+	Context	*context;
+{
+	Display	*dpy = context->dpy;
+	Visual	*visual = context->visual;
+	int	screen = DefaultScreen(dpy);
+	int	dsp_depth;
+	Colormap	cmap;
+	long	max_colors;
+	Boolean	writeable;
+
+#ifdef	NOT_ICCCM
+	void	InstallCMap(), UnInstallCMap();
+#endif
+
+	dsp_depth =  context->dsp_depth;
+	max_colors = 1 << dsp_depth;
+
+	if ((visual->class == DirectColor)
+		|| (visual->class == PseudoColor)
+		|| (visual->class == GrayScale)) {
+
+		cmap = XCreateColormap(dpy, RootWindow(dpy, screen),
+					visual, AllocAll);
+
+#ifdef	DEAD
+		/*
+		 * change default colormap. Window Manager is responsible
+		 * for swapping it in when sprite is in our window
+		 */
+		XSetWindowColormap(dpy, XtWindow(context->toplevel), cmap);
+#endif
+
+		writeable = True;
+
+	}
+	else {
+		cmap = XCreateColormap(
+			dpy, RootWindow(dpy, screen), visual, AllocNone
+		);
+		writeable = False;
+		
+	}
+
+	context->cmap_info.max_colors = max_colors;
+	context->cmap_info.writeable = writeable;
+	context->cmap_info.static_pal = (long *) NULL;
+
+	return(cmap);
+}
+
+
+/*
+ * create and setup the ximage structure
+ */
+static	XImage	*create_ximage(dpy, depth, visual, nx, ny, context)
+	Display	*dpy;
+	int	depth;
+	Visual	*visual;
+	int	nx, ny;
+	Context	*context;
+{
+	long	image_size;
+	int	bytes_per_pixel;
+	XImage	*ximage;
+	Boolean	use_xputpixel;
+	static	char	*image_buf = NULL;
+	unsigned long   swaptest = 1;   /* used to test if client byte swaped*/
+	int	bytes_per_line;
+
+	bytes_per_line = 0;	/* let X figure it out	*/
+
+	if ((ximage = XCreateImage(dpy, visual,
+		depth, ZPixmap, 0, NULL, nx, ny, 8, bytes_per_line)) == NULL) {
+
+		ESprintf(E_UNKNOWN,"XCreateImage(,,,,,,,,,)");
+		return(NULL);
+	}
+
+	switch (ximage->bits_per_pixel)
+	{
+	case 8:
+	    use_xputpixel = False;
+	    bytes_per_pixel = 1;
+	    break;
+	case 16:
+	    use_xputpixel = True;
+	    bytes_per_pixel = 2;
+	    break;
+	case 24:
+	    use_xputpixel = False;
+	    bytes_per_pixel = 3;
+	    break;
+	case 32:
+	    use_xputpixel = True;
+	    bytes_per_pixel = 4;
+	    break;
+	case 64:
+	    use_xputpixel = True;
+	    bytes_per_pixel = 8;
+	    break;
+	default:
+	    use_xputpixel = True;
+	    break;
+	}
+
+	image_size = ximage->width * ximage->height * bytes_per_pixel;
+
+
+	if (depth == 8) {
+		if ((*(char *) &swaptest)) ximage->byte_order = LSBFirst;
+		else ximage->byte_order = MSBFirst;
+	}
+	else {
+		/*
+		 * raw data format is fixed for direct color: red, green, blue
+		 */
+		if (ImageByteOrder(dpy) == MSBFirst) {
+			ximage->byte_order = LSBFirst;
+		}
+		else {
+			ximage->byte_order = MSBFirst;
+		}
+	}
+
+	/*
+	 * if bytes_per_pixel is eight we cheet and use memory allocated to 
+	 * the Raster* structure, else we have to allocate our own memory
+	 */
+	if (bytes_per_pixel != 1) {
+		image_buf = (char *) malloc ((unsigned) image_size);
+		if (! image_buf) {
+			ESprintf(errno,"malloc(%d)", image_size);
+			return(NULL);
+		}
+	}
+
+	context->image_info.use_xputpixel = use_xputpixel;
+	context->image_info.lsbFirst = ximage->byte_order == LSBFirst;
+	context->image_info.bytes_per_pixel = bytes_per_pixel;
+	context->image_info.image_size = image_size;
+
+	ximage->data = image_buf;
+
+	return(ximage);
+}
+
+static	void	destroy_ximage(context)
+	Context	*context;
+{
+	if (! context->ximage) {
+		return;
+	}
+
+	if (context->image_info.bytes_per_pixel != 1) {
+		if (context->ximage->data) free((char *) context->ximage->data);
+	}
+	/*
+	 * XDestroyImage frees  context->image_info.data
+	 */
+	context->ximage->data = NULL;
+	XDestroyImage(context->ximage);
+}
+
+
+/*
+ * create a drawing canvas 
+ */
+/*ARGSUSED*/
+static	Widget	create_graphics_canvas(parent, nx, ny)
+	Widget	parent;
+	int	nx, ny;
+{
+	Widget		canvas;
+	Cardinal	n;
+	Arg		args[10];
+
+	extern	WidgetClass	widgetClass;
+
+
+	/*
+	 *      create drawing canvas
+	 */
+	n = 0;
+	XtSetArg(args[n], XtNwidth, nx);	n++;
+	XtSetArg(args[n], XtNheight, ny);	n++;
+	canvas = XtCreateManagedWidget("canvas", widgetClass, parent, args, n);
+
+	return(canvas);
+}
+
+static	Visual	*get_best_visual(depth, encoding_hint, dpy)
+	int	*depth;
+	int	encoding_hint;
+	Display	*dpy;
+{
+	XVisualInfo	vinfo;
+	int	screen = DefaultScreen(dpy);
+
+	/*
+	 * if want direct color (24-bit encoded) look for a DirectColor
+	 * followed by TrueColor visual with depth of 24 bits
+	 */
+	if (encoding_hint == RAS_DIRECT) {
+#ifdef	DEAD
+		if (XMatchVisualInfo(dpy, screen, 24, DirectColor, &vinfo)) {
+			*depth = vinfo.depth;
+			return(vinfo.visual);
+		}
+		else 
+#endif
+		if (XMatchVisualInfo(dpy, screen, 24, TrueColor, &vinfo)) {
+			*depth = vinfo.depth;
+			return(vinfo.visual);
+		}
+	}
+
+	/*
+	 * find best 8-bit depth visual
+	 */
+	if (XMatchVisualInfo(dpy, screen, 8, PseudoColor, &vinfo)) {
+		*depth = vinfo.depth;
+		return(vinfo.visual);
+	}
+	else if (XMatchVisualInfo(dpy, screen, 8, StaticColor, &vinfo)) {
+		*depth = vinfo.depth;
+		return(vinfo.visual);
+	}
+	else if (XMatchVisualInfo(dpy, screen, 8, GrayScale, &vinfo)) {
+		*depth = vinfo.depth;
+		return(vinfo.visual);
+	}
+	else if (XMatchVisualInfo(dpy, screen, 8, StaticGray, &vinfo)) {
+		*depth = vinfo.depth;
+		return(vinfo.visual);
+	}
+
+	/*
+	 * yuck, can't find anything. return the default
+	 */
+	return (DefaultVisual(dpy, screen));
+}
+
+#ifdef	NOT_ICCCM
+void	InstallCMap(w,client_data,call_data)
+	Widget w;
+	caddr_t client_data;
+	caddr_t call_data;
+{
+	Colormap cmap	= (Colormap) client_data;
+	
+	XInstallColormap(XtDisplay(w),cmap);
+	XSetWindowColormap(XtDisplay(w), XtWindow(w), cmap);
+}
+
+void	UnInstallCMap(w,client_data,call_data)
+	Widget w;
+	caddr_t client_data;
+	caddr_t call_data;
+{
+	Colormap cmap	= (Colormap) client_data;
+	
+	XUninstallColormap(XtDisplay(w),cmap);
+}
+#endif
+
+/*ARGSUSED*/
+void PassGo(w,client_data,call_data)
+	Widget w;
+	caddr_t client_data;
+	caddr_t call_data;
+{
+	int	*pass_go = (int *) client_data;
+
+	*pass_go = 1;
+}
 
 /*
  *	RasDrawOpen
@@ -70,18 +618,19 @@ extern	char	*malloc();
  *	return		: A context pointer to be used with DrawRas and Close
  *			  else NULL if an error occured.
  */
+#ifdef	NeedFuncProto
+Context	*RasDrawOpen(int *argc, char **argv, Boolean batch)
+#else
 Context	*RasDrawOpen(argc, argv, batch)
 	int	*argc;
 	char	**argv;
 	Boolean	batch;
+#endif
 {
 	Context		*context;
 	String		app_class;
 
-	Visual		*visual, *get_best_visual();
-	Colormap	create_colormap();
-	XImage		*create_ximage();
-	Widget		create_graphics_canvas();
+	Visual		*visual;
 	char		*prog_name;
 	Arg		args[5];
 	Cardinal	n;
@@ -89,8 +638,6 @@ Context	*RasDrawOpen(argc, argv, batch)
 	XVisualInfo	vinfo;
 	int		screen;
 	
-	char		*strrchr();
-
 	/*
 	 * remove path to argv[0]
 	 */
@@ -261,12 +808,11 @@ ras_draw_init(context, nx, ny, encoding_hint)
  * on exit
  *	return		: -1 => error, else OK
  */
-RasDraw(ras, context)
+int	RasDraw(ras, context)
 	Raster	*ras;
 	Context	*context;
 {
 	XEvent	event;
-	void	PassGo();
 	int	class;
 
 	static	Boolean	first	= True;
@@ -375,7 +921,7 @@ RasDraw(ras, context)
  *	ncolor		: num elements in each of red, green, blue
  *	
  */
-RasDrawSetPalette(context, red, green, blue, ncolor)
+int	RasDrawSetPalette(context, red, green, blue, ncolor)
 	Context	*context;
 	unsigned char	*red, *green, *blue;
 	unsigned int	ncolor;
@@ -431,7 +977,7 @@ RasDrawSetPalette(context, red, green, blue, ncolor)
  * on entry
  *	*context	: context returned by RasDrawOpen()
  */
-RasDrawUnSetPalette(context)
+void	RasDrawUnSetPalette(context)
 	Context	*context;
 {
 	context->load_pal = True;
@@ -443,7 +989,7 @@ RasDrawUnSetPalette(context)
  *
  *	clean up context created with RasDrawOpen()
  */
-RasDrawClose(context)
+void	RasDrawClose(context)
 	Context	*context;
 {
 	if (! context) return;
@@ -463,562 +1009,5 @@ RasDrawClose(context)
 	destroy_ximage(context);
 
 	cfree((char *) context);
-}
-
-/*ARGSUSED*/
-static	load_24bit_image(ras, context)
-	Raster	*ras;
-	Context	*context;
-{
-	if (context->cmap_info.writeable) {
-		load_24bit_image_(ras, context);
-	}
-	else {
-		load_static_24bit_image_(ras, context);
-	}
-}
-
-/*
- *	load an image from ras into an XImage structure
- */
-static	load_8bit_image(ras, context)
-	Raster	*ras;
-	Context	*context;
-{
-	XImage	*create_ximage();
-
-
-	if (context->cmap_info.writeable) {
-		load_8bit_image_(ras, context);
-	}
-	else {
-		load_static_8bit_image_(ras, context);
-	}
-}
-
-load_8bit_image_(ras, context)
-	Raster	*ras;
-	Context	*context;
-{
-	if (context->dsp_depth == 8) {
-		context->ximage->data = (char *) ras->data;
-
-		XPutImage(context->dpy, XtWindow(context->canvas), context->gc,
-			context->ximage, 0,0,0,0, ras->nx, ras->ny);
-	}
-	else {
-		(void) fprintf(stderr, "Unsupported display depth\n");
-	}
-}
-
-/*ARGSUSED*/
-load_static_8bit_image_(ras, context)
-	Raster	*ras;
-	Context	*context;
-{
-
-#ifdef	DEAD
-	int	i;
-	long	*static_pal = context->cmap_info.static_pal;
-	int	bytes_per_pixel = context->image_info.bytes_per_pixel;
-	unsigned char	*rdata	= ras->data;
-	char		*xidata = context->ximage->data;
-
-	if (! context->image_info.lsbFirst) {
-		for (i = 0; i < ras->nx * ras->ny; i++) {
-			bcopy(((char *) (&static_pal[*rdata]) + 
-				sizeof(long) - bytes_per_pixel),
-				xidata, bytes_per_pixel);
-
-			rdata++;
-			xidata += bytes_per_pixel;
-		}
-	}
-	else {
-		for (i = 0; i < ras->nx * ras->ny; i++) {
-			bcopy((char *) &static_pal[*rdata],
-				xidata, bytes_per_pixel);
-
-			rdata++;
-			xidata += bytes_per_pixel;
-		}
-
-	}
-
-	XPutImage(context->dpy, XtWindow(context->canvas), context->gc,
-		context->ximage, 0,0,0,0, ras->nx, ras->ny);
-#endif
-
-	(void) fprintf(stderr, "Unsupported color model\n");
-}
-
-load_static_24bit_image_(ras, context)
-	Raster	*ras;
-	Context	*context;
-{
-	unsigned char	*s, *t;
-	int	i,j;
-
-	s = ras->data;
-	t = (unsigned char *) context->ximage->data;
-	if (! context->image_info.lsbFirst) t++;
-
-	for(i=0; i<ras->ny; i++)
-	for(j=0; j<ras->nx; j++, s+=3, t+=4) {
-		bcopy((char *) s, (char *) t, 3);
-	}
-
-	XPutImage(context->dpy, XtWindow(context->canvas), context->gc,
-			context->ximage, 0,0,0,0, ras->nx, ras->ny);
-}
-
-load_24bit_image_(ras, context)
-	Raster	*ras;
-	Context	*context;
-{
-	fprintf(stderr, "Unsupported visual\n");
-}
-
-
-/*
- *	load our colormap with the appropriate palette. this only works
- *	with pseudo-color displays.
- */
-static	load_palette(ras, context)
-	Raster	*ras;
-	Context	*context;
-{
-	static	Boolean	first = True;
-	Display		*dpy = context->dpy;
-	Colormap 	cmap = context->cmap;
-
-	/*
-	 * is colormap writeable
-	 */
-	if (context->cmap_info.writeable) {
-
-		/*
-		 * we wait to last possible moment to load new colormap
-		 * so user doesn't get a black screen while trying to
-		 * place the image window
-		 */
-		if (first) {
-			/*
-			 * change default colormap. Window Manager is 
-			 * responsible  for swapping it in when sprite 
-			 * is in our window
-			 */
-			XSetWindowColormap(dpy, XtWindow(context->toplevel), 
-								cmap);
-			first = False;
-		}
-		/*
-		 * if load_pal is true load palette from ras else try and 
-		 * load default palette.
-		 */
-		if (context->load_pal) {
-			(void) load_palette_(ras->red, ras->green, ras->blue, 
-						(unsigned) ras->ncolor,context);
-		}
-		else {
-			(void) load_palette_(context->default_pal.red, 
-				context->default_pal.green, 
-				context->default_pal.blue,
-				context->default_pal.ncolor, context);
-		}
-	}
-	else {
-		if (context->load_pal) {
-			(void)load_static_pal_(ras->red, ras->green, ras->blue, 
-						(unsigned) ras->ncolor,context);
-		}
-		else {
-			(void) load_static_pal_(context->default_pal.red, 
-				context->default_pal.green, 
-				context->default_pal.blue,
-				context->default_pal.ncolor, context);
-		}
-
-	}
-}
-
-
-static	load_static_pal_(red, green, blue, ncolor, context)
-	unsigned char	*red, *green, *blue;
-	unsigned int	ncolor;
-	Context	*context;
-{
-	Display		*dpy = context->dpy;
-	Colormap 	cmap = context->cmap;
-	long		*static_pal = context->cmap_info.static_pal;
-	XColor		xcolor;
-	char		flags = (DoRed | DoGreen | DoBlue);
-	int		i;
-	/*
-	 * one time allocation of memory for static palette
-	 */
-	if (! static_pal) {
-		static_pal = (long *) malloc(256 * sizeof(long));
-
-		if (! static_pal) {
-			ESprintf(errno,"malloc(%d)", 256 * sizeof(long));
-			return(-1);
-		}
-	}
-	context->cmap_info.static_pal = static_pal;
-
-	for (i=0; i < ncolor; i++) {
-		xcolor.red = (unsigned short)
-			((float) red[i] / 255.0 * 65535);
-		xcolor.green = (unsigned short)
-			((float) green[i] / 255.0 * 65535);
-		xcolor.blue = (unsigned short)
-			((float) blue[i] / 255.0 * 65535);
-
-		xcolor.flags = flags;
-		xcolor.pad = '\0';
-
-		if (! XAllocColor(dpy, cmap, &xcolor)) {
-			ESprintf(E_UNKNOWN,"XAllocColor(,,)");
-			return(-1);
-		}
-		static_pal[i] = xcolor.pixel;
-	}
-
-	context->cmap_info.static_pal = static_pal;
-	return(1);
-}
-
-static	load_palette_(red, green, blue, ncolor, context)
-	unsigned char	*red, *green, *blue;
-	unsigned int	ncolor;
-	Context	*context;
-{
-	int	i;
-	int	num_cols;
-	Display	*dpy = context->dpy;
-	char	flags = (DoRed | DoGreen | DoBlue);
-
-	num_cols = MIN(context->cmap_info.max_colors, ncolor);
-
-	if (num_cols < ncolor) {
-		(void) fprintf(stderr, 
-			"Warning: only %d of %d colors can be displayed\n",
-			num_cols, ncolor);
-	}
-
-	/*
-	 * alloc more memory for color list if necessary
-	 */
-	if (context->xcolor_size < num_cols) {
-		if (context->xcolors) cfree((char *) context->xcolors);
-
-		context->xcolors = (XColor *) 
-				malloc((unsigned) num_cols * sizeof(XColor));
-
-		if (! context->xcolors) {
-			ESprintf(errno,"malloc(%d)", num_cols * sizeof(XColor));
-			return(-1);
-		}
-		context->xcolor_size = num_cols;
-	}
-
-	for (i=0; i<num_cols; i++) {
-		context->xcolors[i].pixel = (unsigned long) i;
-
-		context->xcolors[i].red = (unsigned short)
-			((float) red[i] / 255.0 * 65535);
-		context->xcolors[i].green = (unsigned short)
-			((float) green[i] / 255.0 * 65535);
-		context->xcolors[i].blue = (unsigned short)
-			((float) blue[i] / 255.0 * 65535);
-
-		context->xcolors[i].flags = flags;
-		context->xcolors[i].pad = '\0';
-	}
-
-	XStoreColors(dpy, context->cmap, context->xcolors, num_cols);
-
-	return(1);
-}
-
-/*
- *	create a colormap 
- */
-static	Colormap	create_colormap(context)
-	Context	*context;
-{
-	Display	*dpy = context->dpy;
-	Visual	*visual = context->visual;
-	int	screen = DefaultScreen(dpy);
-	int	dsp_depth;
-	Colormap	cmap;
-	long	max_colors;
-	Boolean	writeable;
-
-#ifdef	NOT_ICCCM
-	void	InstallCMap(), UnInstallCMap();
-#endif
-
-	dsp_depth =  context->dsp_depth;
-	max_colors = 1 << dsp_depth;
-
-	if ((visual->class == DirectColor)
-		|| (visual->class == PseudoColor)
-		|| (visual->class == GrayScale)) {
-
-		cmap = XCreateColormap(dpy, RootWindow(dpy, screen),
-					visual, AllocAll);
-
-#ifdef	DEAD
-		/*
-		 * change default colormap. Window Manager is responsible
-		 * for swapping it in when sprite is in our window
-		 */
-		XSetWindowColormap(dpy, XtWindow(context->toplevel), cmap);
-#endif
-
-		writeable = True;
-
-	}
-	else {
-		cmap = XCreateColormap(
-			dpy, RootWindow(dpy, screen), visual, AllocNone
-		);
-		writeable = False;
-		
-	}
-
-	context->cmap_info.max_colors = max_colors;
-	context->cmap_info.writeable = writeable;
-	context->cmap_info.static_pal = (long *) NULL;
-
-	return(cmap);
-}
-
-
-/*
- * create and setup the ximage structure
- */
-static	XImage	*create_ximage(dpy, depth, visual, nx, ny, context)
-	Display	*dpy;
-	int	depth;
-	Visual	*visual;
-	int	nx, ny;
-	Context	*context;
-{
-	long	image_size;
-	int	bytes_per_pixel;
-	XImage	*ximage;
-	Boolean	use_xputpixel;
-	static	char	*image_buf = NULL;
-	unsigned long   swaptest = 1;   /* used to test if client byte swaped*/
-	int	bytes_per_line;
-
-	bytes_per_line = 0;	/* let X figure it out	*/
-
-	if ((ximage = XCreateImage(dpy, visual,
-		depth, ZPixmap, 0, NULL, nx, ny, 8, bytes_per_line)) == NULL) {
-
-		ESprintf(E_UNKNOWN,"XCreateImage(,,,,,,,,,)");
-		return(NULL);
-	}
-
-	switch (ximage->bits_per_pixel)
-	{
-	case 8:
-	    use_xputpixel = False;
-	    bytes_per_pixel = 1;
-	    break;
-	case 16:
-	    use_xputpixel = True;
-	    bytes_per_pixel = 2;
-	    break;
-	case 24:
-	    use_xputpixel = False;
-	    bytes_per_pixel = 3;
-	    break;
-	case 32:
-	    use_xputpixel = True;
-	    bytes_per_pixel = 4;
-	    break;
-	case 64:
-	    use_xputpixel = True;
-	    bytes_per_pixel = 8;
-	    break;
-	default:
-	    use_xputpixel = True;
-	    break;
-	}
-
-	image_size = ximage->width * ximage->height * bytes_per_pixel;
-
-
-	if (depth == 8) {
-		if ((*(char *) &swaptest)) ximage->byte_order = LSBFirst;
-		else ximage->byte_order = MSBFirst;
-	}
-	else {
-		/*
-		 * raw data format is fixed for direct color: red, green, blue
-		 */
-		if (ImageByteOrder(dpy) == MSBFirst) {
-			ximage->byte_order = LSBFirst;
-		}
-		else {
-			ximage->byte_order = MSBFirst;
-		}
-	}
-
-	/*
-	 * if bytes_per_pixel is eight we cheet and use memory allocated to 
-	 * the Raster* structure, else we have to allocate our own memory
-	 */
-	if (bytes_per_pixel != 1) {
-		image_buf = (char *) malloc ((unsigned) image_size);
-		if (! image_buf) {
-			ESprintf(errno,"malloc(%d)", image_size);
-			return(NULL);
-		}
-	}
-
-	context->image_info.use_xputpixel = use_xputpixel;
-	context->image_info.lsbFirst = ximage->byte_order == LSBFirst;
-	context->image_info.bytes_per_pixel = bytes_per_pixel;
-	context->image_info.image_size = image_size;
-
-	ximage->data = image_buf;
-
-	return(ximage);
-}
-
-destroy_ximage(context)
-	Context	*context;
-{
-	if (! context->ximage) {
-		return;
-	}
-
-	if (context->image_info.bytes_per_pixel != 1) {
-		if (context->ximage->data) free((char *) context->ximage->data);
-	}
-	/*
-	 * XDestroyImage frees  context->image_info.data
-	 */
-	context->ximage->data = NULL;
-	XDestroyImage(context->ximage);
-}
-
-
-/*
- * create a drawing canvas 
- */
-/*ARGSUSED*/
-static	Widget	create_graphics_canvas(parent, nx, ny)
-	Widget	parent;
-	int	nx, ny;
-{
-	Widget		canvas;
-	Cardinal	n;
-	Arg		args[10];
-
-	extern	WidgetClass	widgetClass;
-
-
-	/*
-	 *      create drawing canvas
-	 */
-	n = 0;
-	XtSetArg(args[n], XtNwidth, nx);	n++;
-	XtSetArg(args[n], XtNheight, ny);	n++;
-	canvas = XtCreateManagedWidget("canvas", widgetClass, parent, args, n);
-
-	return(canvas);
-}
-
-Visual	*get_best_visual(depth, encoding_hint, dpy)
-	int	*depth;
-	int	encoding_hint;
-	Display	*dpy;
-{
-	XVisualInfo	vinfo;
-	int	screen = DefaultScreen(dpy);
-
-	/*
-	 * if want direct color (24-bit encoded) look for a DirectColor
-	 * followed by TrueColor visual with depth of 24 bits
-	 */
-	if (encoding_hint == RAS_DIRECT) {
-#ifdef	DEAD
-		if (XMatchVisualInfo(dpy, screen, 24, DirectColor, &vinfo)) {
-			*depth = vinfo.depth;
-			return(vinfo.visual);
-		}
-		else 
-#endif
-		if (XMatchVisualInfo(dpy, screen, 24, TrueColor, &vinfo)) {
-			*depth = vinfo.depth;
-			return(vinfo.visual);
-		}
-	}
-
-	/*
-	 * find best 8-bit depth visual
-	 */
-	if (XMatchVisualInfo(dpy, screen, 8, PseudoColor, &vinfo)) {
-		*depth = vinfo.depth;
-		return(vinfo.visual);
-	}
-	else if (XMatchVisualInfo(dpy, screen, 8, StaticColor, &vinfo)) {
-		*depth = vinfo.depth;
-		return(vinfo.visual);
-	}
-	else if (XMatchVisualInfo(dpy, screen, 8, GrayScale, &vinfo)) {
-		*depth = vinfo.depth;
-		return(vinfo.visual);
-	}
-	else if (XMatchVisualInfo(dpy, screen, 8, StaticGray, &vinfo)) {
-		*depth = vinfo.depth;
-		return(vinfo.visual);
-	}
-
-	/*
-	 * yuck, can't find anything. return the default
-	 */
-	return (DefaultVisual(dpy, screen));
-}
-
-#ifdef	NOT_ICCCM
-void	InstallCMap(w,client_data,call_data)
-	Widget w;
-	caddr_t client_data;
-	caddr_t call_data;
-{
-	Colormap cmap	= (Colormap) client_data;
-	
-	XInstallColormap(XtDisplay(w),cmap);
-	XSetWindowColormap(XtDisplay(w), XtWindow(w), cmap);
-}
-
-void	UnInstallCMap(w,client_data,call_data)
-	Widget w;
-	caddr_t client_data;
-	caddr_t call_data;
-{
-	Colormap cmap	= (Colormap) client_data;
-	
-	XUninstallColormap(XtDisplay(w),cmap);
-}
-#endif
-
-/*ARGSUSED*/
-void PassGo(w,client_data,call_data)
-	Widget w;
-	caddr_t client_data;
-	caddr_t call_data;
-{
-	int	*pass_go = (int *) client_data;
-
-	*pass_go = 1;
 }
 

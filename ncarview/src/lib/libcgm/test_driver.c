@@ -1,5 +1,5 @@
 /*
- *	$Id: test_driver.c,v 1.3 1992-03-12 22:15:16 clyne Exp $
+ *	$Id: test_driver.c,v 1.4 1992-09-01 23:40:58 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -13,8 +13,8 @@
 
 #include	<stdio.h>
 #include	<fcntl.h>
-#include	<cgm_tools.h>
-#include	<cgmdef.h>
+#include	<ncarg/cgm_tools.h>
+#include	<ncarg/cgmdef.h>
 
 /*
  *		THE TEST DRIVER

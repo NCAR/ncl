@@ -11,12 +11,12 @@
  *			a character buffer instead of a stream.
  */
 
+#include <string.h>
 /*
  *	maximum number of characters in the buffer
  */
 #define	BUFSIZE	1024
 
-extern	char	*strcpy(), *strcat(), *strncat();
 
 
 /*

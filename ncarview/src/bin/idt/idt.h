@@ -1,8 +1,11 @@
 /*
- *	$Id: idt.h,v 1.8 1992-08-10 22:04:39 clyne Exp $
+ *	$Id: idt.h,v 1.9 1992-09-01 23:38:54 clyne Exp $
  */
 #ifndef	_idt_
 #define	_idt_
+
+#include <X11/Xlib.h>
+#include <X11/Intrinsic.h>
 
 typedef	struct	{
 	XFontStruct	*x_font;
@@ -28,6 +31,10 @@ typedef	struct	{
 
 extern	AppData	App_Data;
 
+typedef	struct FuncPtrPasser_ {
+	void	(*func)();
+	} FuncPtrPasser;
+
 #define	TRANS_ARG_COUNT	11	/* number of translator args	*/
 
 /*
@@ -49,7 +56,7 @@ extern	AppData	App_Data;
 
 #ifndef	MAX
 #define	MAX(A,B)	((A) > (B) ? (A) : (B))
-#endif	MAX
+#endif
 
 
 #endif

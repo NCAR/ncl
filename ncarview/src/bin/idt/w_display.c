@@ -1,5 +1,5 @@
 /*
- *	$Id: w_display.c,v 1.12 1992-08-24 23:01:24 clyne Exp $
+ *	$Id: w_display.c,v 1.13 1992-09-01 23:39:10 clyne Exp $
  */
 /*
  *	w_display.c
@@ -14,6 +14,7 @@
  */
  
 #include <stdio.h>
+#include <stdlib.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
@@ -31,422 +32,20 @@
 #include <X11/Xaw/Sme.h>
 #include <X11/Xaw/SmeBSB.h>
 
-#include <ncarv.h>
+#include <ncarg/c.h>
 #include "idt.h"
 #include "display.h"
 #include "talkto.h"
 #include "bits.h"
 #include "commands.h"
 
-/*
- * callbacks
- */
-static	void	Scroll();
-static	void	Done(), CurrentFrame(), NoPrint(), PrintSelect(), 
-		Save(), Zoom(), UnZoom(), Animate();
-static	void	Loop(), Dup(), Goto_(), Skip(), Delay(),
-		Start_Segment(), Stop_Segment(), Set_Window();
-static	void	Playback(), Jogback(), Stop(), Jog(), Play();
-
-
-/*
- *	CreateDisplayPopup
- *	[exported]
- *
- *	Dynamically create a popup 'display'. This popup is located with its
- *	top left corner in the center of the calling widget.
- *
- * on entry
- *	button		: widget used to position the display
- *	*metafile	: name of the metafile to translate
- */
-void	CreateDisplayPopup(button, metafile)
-	Widget	button;
-	char	*metafile;
-{
-
-	Arg		args[10];
-	Widget	paned;		/* constraint widget		*/
-	Widget	canvas;		/* the drawing canvas		*/
-	Widget	popup;		/* top-level popup		*/
-	Widget	print;		/* "print" button widget	*/
-	Cardinal	n;
-	Window	win;		/* drawing canvas window id	*/
-	WidgetData	*wd;
-	char		*s;
-
-	void	create_tip_top_panel(), create_top_panel(), 
-		create_middle_panel(), create_print_menu();
-	Widget	create_bottom_panel();
-
-	if (!(wd = (WidgetData *) malloc(sizeof(WidgetData)))) {
-		(void) fprintf(stderr, "Malloc failed\n");
-		return;
-	}
-
-	popup = XtCreatePopupShell(metafile, topLevelShellWidgetClass, 
-				button, (ArgList) NULL, 0);
-	wd->dpy = XtDisplay(popup);	
-
-	paned = XtCreateManagedWidget("paned",
-				panedWidgetClass,popup, (ArgList) NULL,0);
-
-	if (! App_Data.oldidt) {
-		canvas = XtCreateManagedWidget("canvas",
-				widgetClass,paned, (ArgList) NULL,0);
-		wd->canvas = canvas;
-	}
-
-	/*
-	 * open a connection to a translator
-	 */
-	if ((wd->id = OpenDisplay())< 0) {
-		(void) fprintf(stderr, "Translator aborted\n");
-		return;
-	}
-	wd->popup = popup;
-	wd->app_context = XtWidgetToApplicationContext(popup);
-
-	/*
-	 * The main display is made up of four sub-panels
-	 */
-	create_tip_top_panel(paned, wd);
-
-	create_top_panel(paned, wd);
-
-	create_middle_panel(paned, wd);
-
-	print = create_bottom_panel(paned, wd);
-
-
-	XtPopup(wd->popup, XtGrabNone);
-
-	if (! App_Data.oldidt) {
-		/*
-		 * enable button click events in the drawing canvas so the 
-		 * rubber-banding code in ZoomCoords() can get events from
-		 * the drawing window, not the top-level window
-		 */
-		win = (Window) XtWindow(canvas);
-		XSelectInput(XtDisplay(canvas), win, ButtonPressMask);
-	}
-	else {
-		win = (Window) -1;
-	}
-	wd->win = win;
-
-
-	/*
-	 * now that our drawing window has been mapped we can spawn
-	 * the translator and request it to drawn in the idt canvas
-	 */
-	if (StartTranslator(wd->id, metafile, win)< 0) {
-		(void) fprintf(stderr, "Translator aborted\n");
-		return;
-	}
-
-	/*
-	 * now that the translator is up and running we can poll it to
-	 * find out what printing devices are available so we can create
-	 * our print menu dynamically
-	 */
-	create_print_menu(print, wd);
-
-	/*
-	 * find out how many frames are in the metafile now that the
-	 * translator is up
-	 */
-	s = TalkTo(wd->id, "stop\n", SYNC);
-	wd->pcv.stop_segment = atoi(s);
-}
-
-
-void	create_tip_top_panel(paned, wd)
-	Widget		paned;
-	WidgetData	*wd;
-{
-	Widget	form;
-
-	Cardinal	n;
-	Arg		args[10];
-
-        n = 0;
-	XtSetArg(args[n], XtNskipAdjust, True);	n++;
-	form = XtCreateManagedWidget("form", formWidgetClass,paned, args,n);
-
-        n = 0;
-        wd->scrollbar = XtCreateManagedWidget("scrollbar",
-			scrollbarWidgetClass,form, (ArgList) args,n);
-
-	XtAddCallback(wd->scrollbar, XtNjumpProc, Scroll, (XtPointer) wd);
-
-        n = 0;
-	XtSetArg(args[n], XtNfromHoriz, wd->scrollbar);	n++;
-	XtSetArg(args[n], XtNborderColor, XtDefaultBackground);	n++;
-        wd->frame_label = XtCreateManagedWidget(FRAME_LABEL_DISPLAY,
-			labelWidgetClass,form,args,n);
-}
-
-/*
- * 	The top panel consists of the scrollbar; "playback", "jogback", "stop",
- *	"jog", and "play" buttons.
- */
-void	create_top_panel(paned, wd)
-	Widget		paned;
-	WidgetData	*wd;
-{
-	Widget	form;
-
-	Pixmap	pixmap;
-
-	Cardinal	n;
-	Arg		args[10];
-
-        n = 0;
-	XtSetArg(args[n], XtNskipAdjust, True);	n++;
-	form = XtCreateManagedWidget("form", formWidgetClass,paned, args,n);
-
-	/*
-	 * create a pixmap for the playback button
-	 */
-	pixmap = XCreateBitmapFromData(XtDisplay(paned),
-                                 RootWindowOfScreen(XtScreen(paned)),
-                                 playback_bits,playback_width,playback_height);
-
-        n = 0;
-	XtSetArg(args[n], XtNbitmap, pixmap);	n++;
-        wd->playback = XtCreateManagedWidget("playback",
-			commandWidgetClass,form,args,n);
-
-	XtAddCallback(wd->playback, XtNcallback, Playback, (XtPointer) wd);
-
-	/*
-	 * the jogback button
-	 */
-	pixmap = XCreateBitmapFromData(XtDisplay(paned),
-                                 RootWindowOfScreen(XtScreen(paned)),
-                                 jogback_bits,jogback_width,jogback_height);
-
-        n = 0;
-	XtSetArg(args[n], XtNbitmap, pixmap);	n++;
-	XtSetArg(args[n], XtNfromHoriz, wd->playback);	n++;
-        wd->jogback = XtCreateManagedWidget("jogback",
-			commandWidgetClass,form,args,n);
-
-	XtAddCallback(wd->jogback, XtNcallback, Jogback, (XtPointer) wd);
-
-	/*
-	 * the stop button
-	 */
-	pixmap = XCreateBitmapFromData(XtDisplay(paned),
-                                 RootWindowOfScreen(XtScreen(paned)),
-                                 stop_bits,stop_width,stop_height);
-
-        n = 0;
-	XtSetArg(args[n], XtNbitmap, pixmap);	n++;
-	XtSetArg(args[n], XtNfromHoriz, wd->jogback);	n++;
-        wd->stop = XtCreateManagedWidget("stop",commandWidgetClass,form,args,n);
-	XtAddCallback(wd->stop, XtNcallback, Stop, (XtPointer) wd);
-
-	/*
-	 * the jog button
-	 */
-	pixmap = XCreateBitmapFromData(XtDisplay(paned),
-                                 RootWindowOfScreen(XtScreen(paned)),
-                                 jog_bits,jog_width,jog_height);
-
-        n = 0;
-	XtSetArg(args[n], XtNbitmap, pixmap);	n++;
-	XtSetArg(args[n], XtNfromHoriz, wd->stop);	n++;
-        wd->jog = XtCreateManagedWidget("jog",commandWidgetClass,form,args,n);
-	XtAddCallback(wd->jog, XtNcallback, Jog, (XtPointer) wd);
-
-	/*
-	 * the play button
-	 */
-	pixmap = XCreateBitmapFromData(XtDisplay(paned),
-                                 RootWindowOfScreen(XtScreen(paned)),
-                                 play_bits,play_width,play_height);
-
-        n = 0;
-	XtSetArg(args[n], XtNbitmap, pixmap);	n++;
-	XtSetArg(args[n], XtNfromHoriz, wd->jog);	n++;
-        wd->play = XtCreateManagedWidget(
-		"play", commandWidgetClass,form,args,n
-	);
-	XtAddCallback(wd->play, XtNcallback, Play, (XtPointer) wd);
-
-}
-
-/*
- * The middle panel consists of the "loop", "goto", "dup", "skip",
- * "start segment" and the "stop segment" buttons.
- */
-static	void	create_middle_panel(paned, wd)
-	Widget		paned;
-	WidgetData	*wd;
-{
-	Widget	form;
-
-	Cardinal	n;
-	Arg		args[10];
-
-        n = 0;
-	XtSetArg(args[n], XtNskipAdjust, True);	n++;
-	form = XtCreateManagedWidget("form", formWidgetClass,paned, args,n);
-
-        n = 0;
-        wd->loop = XtCreateManagedWidget("loop", toggleWidgetClass,form,args,n);
-	XtAddCallback(wd->loop, XtNcallback, Loop, (XtPointer) wd);
-
-        n = 0;
-	XtSetArg(args[n], XtNfromHoriz, wd->loop);	n++;
-        wd->dup = XtCreateManagedWidget("dup",commandWidgetClass,form,args,n);
-	XtAddCallback(wd->dup, XtNcallback, Dup, (XtPointer) wd);
-	wd->pcv.dup = DEFAULT_DUP;
-
-        n = 0;
-	XtSetArg(args[n], XtNfromHoriz, wd->dup);	n++;
-        wd->goto_ = XtCreateManagedWidget(
-		"goto",commandWidgetClass,form,args,n
-	);
-	XtAddCallback(wd->goto_, XtNcallback, Goto_, (XtPointer) wd);
-	wd->pcv.goto_ = DEFAULT_GOTO;
-
-        n = 0;
-	XtSetArg(args[n], XtNfromHoriz, wd->goto_);	n++;
-        wd->skip = XtCreateManagedWidget("skip",commandWidgetClass,form,args,n);
-	XtAddCallback(wd->skip, XtNcallback, Skip, (XtPointer) wd);
-	wd->pcv.skip = DEFAULT_SKIP;
-
-        n = 0;
-	XtSetArg(args[n], XtNfromHoriz, wd->skip);	n++;
-	XtSetArg(args[n], XtNsensitive, False);		n++;
-        wd->delay = XtCreateManagedWidget(
-		"delay",commandWidgetClass,form,args,n
-	);
-	XtAddCallback(wd->delay, XtNcallback, Delay, (XtPointer) wd);
-	wd->pcv.delay = DEFAULT_DELAY;
-
-        n = 0;
-	XtSetArg(args[n], XtNfromHoriz, wd->delay);	n++;
-        wd->start_segment = XtCreateManagedWidget("start segment",
-		commandWidgetClass,form,args,n);
-	XtAddCallback(
-		wd->start_segment, XtNcallback, Start_Segment,(XtPointer) wd
-	);
-	wd->pcv.start_segment = DEFAULT_START;
-
-        n = 0;
-	XtSetArg(args[n], XtNfromHoriz, wd->start_segment);	n++;
-        wd->stop_segment = XtCreateManagedWidget("stop segment",
-		commandWidgetClass,form,args,n);
-	XtAddCallback(wd->stop_segment,XtNcallback,Stop_Segment,(XtPointer) wd);
-	wd->pcv.stop_segment = DEFAULT_STOP;
-
-        n = 0;
-	XtSetArg(args[n], XtNfromHoriz, wd->stop_segment);	n++;
-        wd->set_window = XtCreateManagedWidget("set window",
-		commandWidgetClass,form,args,n);
-	XtAddCallback(wd->set_window,XtNcallback,Set_Window,(XtPointer) wd);
-	strcpy(wd->pcv.set_window, DEFAULT_SET_WINDOW);
-}
-
-static	Widget	create_bottom_panel(paned, wd) 
-	Widget		paned;
-	WidgetData	*wd;
-{
-	Arg		args[10];
-	Widget	form;
-	Cardinal	n;
-
-        n = 0;
-	XtSetArg(args[n], XtNskipAdjust, True);	n++;
-	form = XtCreateManagedWidget("form", formWidgetClass,paned, args,n);
-
-        n = 0;
-        wd->done = XtCreateManagedWidget("done",commandWidgetClass,form,args,n);
-	XtAddCallback(wd->done, XtNcallback, Done, (XtPointer) wd);
-
-        n = 0;
-	XtSetArg(args[n], XtNfromHoriz, wd->done);	n++;
-        wd->current_frame = XtCreateManagedWidget("current frame",
-				commandWidgetClass,form,args,n);
-	XtAddCallback(wd->current_frame,XtNcallback,CurrentFrame,(XtPointer)wd);
-	wd->pcv.current_frame = DEFAULT_CURRENT;
-
-	n = 0;
-	XtSetArg(args[n], XtNfromHoriz, wd->current_frame);	n++;
-	wd->print = XtCreateManagedWidget("print",menuButtonWidgetClass,
-								form,args,n);
-
-        n = 0;
-	XtSetArg(args[n], XtNfromHoriz, wd->print);	n++;
-        wd->save = XtCreateManagedWidget("save",commandWidgetClass,form,args,n);
-	XtAddCallback(wd->save, XtNcallback, Save, (XtPointer) wd);
-	strcpy(wd->pcv.save, DEFAULT_SAVE);
-
-        n = 0;
-	XtSetArg(args[n], XtNfromHoriz, wd->save);	n++;
-        wd->zoom = XtCreateManagedWidget("zoom",commandWidgetClass,form,args,n);
-	XtAddCallback(wd->zoom, XtNcallback, Zoom, (XtPointer) wd);
-
-        n = 0;
-	XtSetArg(args[n], XtNfromHoriz, wd->zoom);	n++;
-        wd->unzoom = XtCreateManagedWidget(
-		"unzoom",commandWidgetClass,form,args,n
-	);
-	XtAddCallback(wd->unzoom, XtNcallback, UnZoom, (XtPointer) wd);
-
-        n = 0;
-	XtSetArg(args[n], XtNfromHoriz, wd->unzoom);	n++;
-        wd->animate = XtCreateManagedWidget(
-		"animate",toggleWidgetClass,form,args,n
-	);
-	XtAddCallback(wd->animate, XtNcallback, Animate, (XtPointer) wd);
-	wd->do_animate = False;
-
-	return(wd->print);
-}
-
-/*
- *	dyanmically create a print menu by polling the translator to see
- *	what printing devices are available
- */
-void	create_print_menu(print, wd)
-	Widget		print;
-	WidgetData	*wd;
-{
-
-	Widget		menu, entry;
-	Arg		args[10];
-	char		*alias_list,
-			**spooler_list,
-			**ptr;
-
-	extern	char	**SpoolerList();
-
-	alias_list = TalkTo(wd->id, "alias\n", SYNC);
-	spooler_list = SpoolerList(alias_list);
-	if (*spooler_list) {
-
-		menu = XtCreatePopupShell("menu", 
-				simpleMenuWidgetClass, print, (ArgList) NULL,0);
-
-		for (ptr = spooler_list; *ptr; ptr++) {
-			entry = XtCreateManagedWidget(*ptr, smeBSBObjectClass,
-					menu, (ArgList) NULL, 0);
-
-			XtAddCallback(entry, XtNcallback, 
-					PrintSelect, (XtPointer) wd);
-		}
-	}
-	else {
-		Message(wd->id, "Can't find  any spooled devices for printing");
-		XtSetArg(args[0], XtNsensitive, False);
-		XtSetValues(print, args, 1);
-	}
-}
+extern	void	Animate(
+#ifdef	NeedFuncProto
+	Widget		widget,
+	XtPointer	client_data, 
+	XtPointer	call_data
+#endif
+);
 
 /*
  *	simple_command
@@ -996,4 +595,397 @@ UpdateFrameLabel(wd, frame_string)
 	
 	XtSetArg(args[0], XtNlabel, buf);
 	XtSetValues(wd->frame_label, args, 1);
+}
+
+void	create_tip_top_panel(paned, wd)
+	Widget		paned;
+	WidgetData	*wd;
+{
+	Widget	form;
+
+	Cardinal	n;
+	Arg		args[10];
+
+        n = 0;
+	XtSetArg(args[n], XtNskipAdjust, True);	n++;
+	form = XtCreateManagedWidget("form", formWidgetClass,paned, args,n);
+
+        n = 0;
+        wd->scrollbar = XtCreateManagedWidget("scrollbar",
+			scrollbarWidgetClass,form, (ArgList) args,n);
+
+	XtAddCallback(wd->scrollbar, XtNjumpProc, Scroll, (XtPointer) wd);
+
+        n = 0;
+	XtSetArg(args[n], XtNfromHoriz, wd->scrollbar);	n++;
+	XtSetArg(args[n], XtNborderColor, XtDefaultBackground);	n++;
+        wd->frame_label = XtCreateManagedWidget(FRAME_LABEL_DISPLAY,
+			labelWidgetClass,form,args,n);
+}
+
+/*
+ * 	The top panel consists of the scrollbar; "playback", "jogback", "stop",
+ *	"jog", and "play" buttons.
+ */
+void	create_top_panel(paned, wd)
+	Widget		paned;
+	WidgetData	*wd;
+{
+	Widget	form;
+
+	Pixmap	pixmap;
+
+	Cardinal	n;
+	Arg		args[10];
+
+        n = 0;
+	XtSetArg(args[n], XtNskipAdjust, True);	n++;
+	form = XtCreateManagedWidget("form", formWidgetClass,paned, args,n);
+
+	/*
+	 * create a pixmap for the playback button
+	 */
+	pixmap = XCreateBitmapFromData(XtDisplay(paned),
+                                 RootWindowOfScreen(XtScreen(paned)),
+                                 playback_bits,playback_width,playback_height);
+
+        n = 0;
+	XtSetArg(args[n], XtNbitmap, pixmap);	n++;
+        wd->playback = XtCreateManagedWidget("playback",
+			commandWidgetClass,form,args,n);
+
+	XtAddCallback(wd->playback, XtNcallback, Playback, (XtPointer) wd);
+
+	/*
+	 * the jogback button
+	 */
+	pixmap = XCreateBitmapFromData(XtDisplay(paned),
+                                 RootWindowOfScreen(XtScreen(paned)),
+                                 jogback_bits,jogback_width,jogback_height);
+
+        n = 0;
+	XtSetArg(args[n], XtNbitmap, pixmap);	n++;
+	XtSetArg(args[n], XtNfromHoriz, wd->playback);	n++;
+        wd->jogback = XtCreateManagedWidget("jogback",
+			commandWidgetClass,form,args,n);
+
+	XtAddCallback(wd->jogback, XtNcallback, Jogback, (XtPointer) wd);
+
+	/*
+	 * the stop button
+	 */
+	pixmap = XCreateBitmapFromData(XtDisplay(paned),
+                                 RootWindowOfScreen(XtScreen(paned)),
+                                 stop_bits,stop_width,stop_height);
+
+        n = 0;
+	XtSetArg(args[n], XtNbitmap, pixmap);	n++;
+	XtSetArg(args[n], XtNfromHoriz, wd->jogback);	n++;
+        wd->stop = XtCreateManagedWidget("stop",commandWidgetClass,form,args,n);
+	XtAddCallback(wd->stop, XtNcallback, Stop, (XtPointer) wd);
+
+	/*
+	 * the jog button
+	 */
+	pixmap = XCreateBitmapFromData(XtDisplay(paned),
+                                 RootWindowOfScreen(XtScreen(paned)),
+                                 jog_bits,jog_width,jog_height);
+
+        n = 0;
+	XtSetArg(args[n], XtNbitmap, pixmap);	n++;
+	XtSetArg(args[n], XtNfromHoriz, wd->stop);	n++;
+        wd->jog = XtCreateManagedWidget("jog",commandWidgetClass,form,args,n);
+	XtAddCallback(wd->jog, XtNcallback, Jog, (XtPointer) wd);
+
+	/*
+	 * the play button
+	 */
+	pixmap = XCreateBitmapFromData(XtDisplay(paned),
+                                 RootWindowOfScreen(XtScreen(paned)),
+                                 play_bits,play_width,play_height);
+
+        n = 0;
+	XtSetArg(args[n], XtNbitmap, pixmap);	n++;
+	XtSetArg(args[n], XtNfromHoriz, wd->jog);	n++;
+        wd->play = XtCreateManagedWidget(
+		"play", commandWidgetClass,form,args,n
+	);
+	XtAddCallback(wd->play, XtNcallback, Play, (XtPointer) wd);
+
+}
+
+/*
+ * The middle panel consists of the "loop", "goto", "dup", "skip",
+ * "start segment" and the "stop segment" buttons.
+ */
+static	void	create_middle_panel(paned, wd)
+	Widget		paned;
+	WidgetData	*wd;
+{
+	Widget	form;
+
+	Cardinal	n;
+	Arg		args[10];
+
+        n = 0;
+	XtSetArg(args[n], XtNskipAdjust, True);	n++;
+	form = XtCreateManagedWidget("form", formWidgetClass,paned, args,n);
+
+        n = 0;
+        wd->loop = XtCreateManagedWidget("loop", toggleWidgetClass,form,args,n);
+	XtAddCallback(wd->loop, XtNcallback, Loop, (XtPointer) wd);
+
+        n = 0;
+	XtSetArg(args[n], XtNfromHoriz, wd->loop);	n++;
+        wd->dup = XtCreateManagedWidget("dup",commandWidgetClass,form,args,n);
+	XtAddCallback(wd->dup, XtNcallback, Dup, (XtPointer) wd);
+	wd->pcv.dup = DEFAULT_DUP;
+
+        n = 0;
+	XtSetArg(args[n], XtNfromHoriz, wd->dup);	n++;
+        wd->goto_ = XtCreateManagedWidget(
+		"goto",commandWidgetClass,form,args,n
+	);
+	XtAddCallback(wd->goto_, XtNcallback, Goto_, (XtPointer) wd);
+	wd->pcv.goto_ = DEFAULT_GOTO;
+
+        n = 0;
+	XtSetArg(args[n], XtNfromHoriz, wd->goto_);	n++;
+        wd->skip = XtCreateManagedWidget("skip",commandWidgetClass,form,args,n);
+	XtAddCallback(wd->skip, XtNcallback, Skip, (XtPointer) wd);
+	wd->pcv.skip = DEFAULT_SKIP;
+
+        n = 0;
+	XtSetArg(args[n], XtNfromHoriz, wd->skip);	n++;
+	XtSetArg(args[n], XtNsensitive, False);		n++;
+        wd->delay = XtCreateManagedWidget(
+		"delay",commandWidgetClass,form,args,n
+	);
+	XtAddCallback(wd->delay, XtNcallback, Delay, (XtPointer) wd);
+	wd->pcv.delay = DEFAULT_DELAY;
+
+        n = 0;
+	XtSetArg(args[n], XtNfromHoriz, wd->delay);	n++;
+        wd->start_segment = XtCreateManagedWidget("start segment",
+		commandWidgetClass,form,args,n);
+	XtAddCallback(
+		wd->start_segment, XtNcallback, Start_Segment,(XtPointer) wd
+	);
+	wd->pcv.start_segment = DEFAULT_START;
+
+        n = 0;
+	XtSetArg(args[n], XtNfromHoriz, wd->start_segment);	n++;
+        wd->stop_segment = XtCreateManagedWidget("stop segment",
+		commandWidgetClass,form,args,n);
+	XtAddCallback(wd->stop_segment,XtNcallback,Stop_Segment,(XtPointer) wd);
+	wd->pcv.stop_segment = DEFAULT_STOP;
+
+        n = 0;
+	XtSetArg(args[n], XtNfromHoriz, wd->stop_segment);	n++;
+        wd->set_window = XtCreateManagedWidget("set window",
+		commandWidgetClass,form,args,n);
+	XtAddCallback(wd->set_window,XtNcallback,Set_Window,(XtPointer) wd);
+	strcpy(wd->pcv.set_window, DEFAULT_SET_WINDOW);
+}
+
+static	Widget	create_bottom_panel(paned, wd) 
+	Widget		paned;
+	WidgetData	*wd;
+{
+	Arg		args[10];
+	Widget	form;
+	Cardinal	n;
+
+        n = 0;
+	XtSetArg(args[n], XtNskipAdjust, True);	n++;
+	form = XtCreateManagedWidget("form", formWidgetClass,paned, args,n);
+
+        n = 0;
+        wd->done = XtCreateManagedWidget("done",commandWidgetClass,form,args,n);
+	XtAddCallback(wd->done, XtNcallback, Done, (XtPointer) wd);
+
+        n = 0;
+	XtSetArg(args[n], XtNfromHoriz, wd->done);	n++;
+        wd->current_frame = XtCreateManagedWidget("current frame",
+				commandWidgetClass,form,args,n);
+	XtAddCallback(wd->current_frame,XtNcallback,CurrentFrame,(XtPointer)wd);
+	wd->pcv.current_frame = DEFAULT_CURRENT;
+
+	n = 0;
+	XtSetArg(args[n], XtNfromHoriz, wd->current_frame);	n++;
+	wd->print = XtCreateManagedWidget("print",menuButtonWidgetClass,
+								form,args,n);
+
+        n = 0;
+	XtSetArg(args[n], XtNfromHoriz, wd->print);	n++;
+        wd->save = XtCreateManagedWidget("save",commandWidgetClass,form,args,n);
+	XtAddCallback(wd->save, XtNcallback, Save, (XtPointer) wd);
+	strcpy(wd->pcv.save, DEFAULT_SAVE);
+
+        n = 0;
+	XtSetArg(args[n], XtNfromHoriz, wd->save);	n++;
+        wd->zoom = XtCreateManagedWidget("zoom",commandWidgetClass,form,args,n);
+	XtAddCallback(wd->zoom, XtNcallback, Zoom, (XtPointer) wd);
+
+        n = 0;
+	XtSetArg(args[n], XtNfromHoriz, wd->zoom);	n++;
+        wd->unzoom = XtCreateManagedWidget(
+		"unzoom",commandWidgetClass,form,args,n
+	);
+	XtAddCallback(wd->unzoom, XtNcallback, UnZoom, (XtPointer) wd);
+
+        n = 0;
+	XtSetArg(args[n], XtNfromHoriz, wd->unzoom);	n++;
+        wd->animate = XtCreateManagedWidget(
+		"animate",toggleWidgetClass,form,args,n
+	);
+	XtAddCallback(wd->animate, XtNcallback, Animate, (XtPointer) wd);
+	wd->do_animate = False;
+
+	return(wd->print);
+}
+
+/*
+ *	dyanmically create a print menu by polling the translator to see
+ *	what printing devices are available
+ */
+void	create_print_menu(print, wd)
+	Widget		print;
+	WidgetData	*wd;
+{
+
+	Widget		menu, entry;
+	Arg		args[10];
+	char		*alias_list,
+			**spooler_list,
+			**ptr;
+
+	extern	char	**SpoolerList();
+
+	alias_list = TalkTo(wd->id, "alias\n", SYNC);
+	spooler_list = SpoolerList(alias_list);
+	if (*spooler_list) {
+
+		menu = XtCreatePopupShell("menu", 
+				simpleMenuWidgetClass, print, (ArgList) NULL,0);
+
+		for (ptr = spooler_list; *ptr; ptr++) {
+			entry = XtCreateManagedWidget(*ptr, smeBSBObjectClass,
+					menu, (ArgList) NULL, 0);
+
+			XtAddCallback(entry, XtNcallback, 
+					PrintSelect, (XtPointer) wd);
+		}
+	}
+	else {
+		Message(wd->id, "Can't find  any spooled devices for printing");
+		XtSetArg(args[0], XtNsensitive, False);
+		XtSetValues(print, args, 1);
+	}
+}
+/*
+ *	CreateDisplayPopup
+ *	[exported]
+ *
+ *	Dynamically create a popup 'display'. This popup is located with its
+ *	top left corner in the center of the calling widget.
+ *
+ * on entry
+ *	button		: widget used to position the display
+ *	*metafile	: name of the metafile to translate
+ */
+void	CreateDisplayPopup(button, metafile)
+	Widget	button;
+	char	*metafile;
+{
+
+	Arg		args[10];
+	Widget	paned;		/* constraint widget		*/
+	Widget	canvas;		/* the drawing canvas		*/
+	Widget	popup;		/* top-level popup		*/
+	Widget	print;		/* "print" button widget	*/
+	Cardinal	n;
+	Window	win;		/* drawing canvas window id	*/
+	WidgetData	*wd;
+	char		*s;
+
+	if (!(wd = (WidgetData *) malloc(sizeof(WidgetData)))) {
+		(void) fprintf(stderr, "Malloc failed\n");
+		return;
+	}
+
+	popup = XtCreatePopupShell(metafile, topLevelShellWidgetClass, 
+				button, (ArgList) NULL, 0);
+	wd->dpy = XtDisplay(popup);	
+
+	paned = XtCreateManagedWidget("paned",
+				panedWidgetClass,popup, (ArgList) NULL,0);
+
+	if (! App_Data.oldidt) {
+		canvas = XtCreateManagedWidget("canvas",
+				widgetClass,paned, (ArgList) NULL,0);
+		wd->canvas = canvas;
+	}
+
+	/*
+	 * open a connection to a translator
+	 */
+	if ((wd->id = OpenDisplay())< 0) {
+		(void) fprintf(stderr, "Translator aborted\n");
+		return;
+	}
+	wd->popup = popup;
+	wd->app_context = XtWidgetToApplicationContext(popup);
+
+	/*
+	 * The main display is made up of four sub-panels
+	 */
+	create_tip_top_panel(paned, wd);
+
+	create_top_panel(paned, wd);
+
+	create_middle_panel(paned, wd);
+
+	print = create_bottom_panel(paned, wd);
+
+
+	XtPopup(wd->popup, XtGrabNone);
+
+	if (! App_Data.oldidt) {
+		/*
+		 * enable button click events in the drawing canvas so the 
+		 * rubber-banding code in ZoomCoords() can get events from
+		 * the drawing window, not the top-level window
+		 */
+		win = (Window) XtWindow(canvas);
+		XSelectInput(XtDisplay(canvas), win, ButtonPressMask);
+	}
+	else {
+		win = (Window) -1;
+	}
+	wd->win = win;
+
+
+	/*
+	 * now that our drawing window has been mapped we can spawn
+	 * the translator and request it to drawn in the idt canvas
+	 */
+	if (StartTranslator(wd->id, metafile, win)< 0) {
+		(void) fprintf(stderr, "Translator aborted\n");
+		return;
+	}
+
+	/*
+	 * now that the translator is up and running we can poll it to
+	 * find out what printing devices are available so we can create
+	 * our print menu dynamically
+	 */
+	create_print_menu(print, wd);
+
+	/*
+	 * find out how many frames are in the metafile now that the
+	 * translator is up
+	 */
+	s = TalkTo(wd->id, "stop\n", SYNC);
+	wd->pcv.stop_segment = atoi(s);
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: rasstat.c,v 1.2 1992-06-24 21:03:40 clyne Exp $
+ *      $Id: rasstat.c,v 1.3 1992-09-01 23:39:57 clyne Exp $
  */
 /*
  *	File:		rasstat
@@ -15,8 +15,8 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-#include <ncarg_ras.h>
-#include <ncarv.h>
+#include <ncarg/ncarg_ras.h>
+#include <ncarg/c.h>
 
 
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.h,v 1.4 1992-05-11 23:23:40 clyne Exp $
+ *	$Id: rast.h,v 1.5 1992-09-01 23:42:59 clyne Exp $
  */
 #ifndef	_color_
 #define	_color_
@@ -31,5 +31,5 @@ typedef	struct	{
 	else { \
 		INDEXED_PIXEL((ras),(x),(y)) = (index); \
 	} 
-#endif;
+#endif
 

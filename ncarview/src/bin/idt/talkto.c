@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.15 1992-08-25 20:24:04 clyne Exp $
+ *	$Id: talkto.c,v 1.16 1992-09-01 23:39:01 clyne Exp $
  */
 /*
  *	talkto.c
@@ -31,7 +31,7 @@
 #define	FORK	vfork
 #endif
 
-#include <ncarv.h>
+#include <ncarg/c.h>
 
 #include "display.h"
 #include "talkto.h"
@@ -69,6 +69,25 @@ static	void	reaper()
 }
 #endif
 
+/*
+ *	close_trans_pid
+ *	[internal]
+ *
+ *	given the pid of a translator close communications with that translator
+ *	This is simple an interface to CloseTranslator that excepts a pid 
+ *	rather then a connection id.
+ */
+static	close_trans_pid(pid)
+	int	pid;
+{
+	int	i;
+
+	for (i = 0; i < MAX_DISPLAYS; i++) {
+		if (Translators[i].pid == pid) {
+			CloseTranslator(i);
+		}
+	}
+}
 /*
  *	Get a message from the translator. All translator messages must
  *	be terminated with an ack defined by the manifest constant PROMPT.
@@ -160,9 +179,9 @@ static	int	get_trans_err(fp, buf, size)
 
 	FD_ZERO(&readfs);
 	FD_SET(fd, &readfs);
-	tv.tv_sec = tv.tv_usec = 0;	/* poll descriptor	*/
+	tv.tv_sec = tv.tv_usec = 1;	/* poll descriptor	*/
 
-	rc = select( width, &readfs, (fd_set *) NULL, (fd_set *) NULL, tv);
+	rc = select( width, &readfs, (fd_set *) NULL, (fd_set *) NULL, &tv);
 	if (rc < 0) {
 		return(-1);
 	}
@@ -537,23 +556,4 @@ void	ErrorMessage(id, s)
 
 	AppendText(buf);
 
-}
-/*
- *	close_trans_pid
- *	[internal]
- *
- *	given the pid of a translator close communications with that translator
- *	This is simple an interface to CloseTranslator that excepts a pid 
- *	rather then a connection id.
- */
-static	close_trans_pid(pid)
-	int	pid;
-{
-	int	i;
-
-	for (i = 0; i < MAX_DISPLAYS; i++) {
-		if (Translators[i].pid == pid) {
-			CloseTranslator(i);
-		}
-	}
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.16 1992-08-10 22:06:23 clyne Exp $
+ *	$Id: X11_class0.c,v 1.17 1992-09-01 23:41:10 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -28,26 +28,24 @@
 
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
-#include <ncarv.h>
+#include <ncarg/c.h>
 #include "cgmc.h"
 #include "default.h"
 #include "Xdefs.h"
 #include "ctrandef.h"
 #include "translate.h"
+#include "Xcrm.h"
 #define BORDER		1
 #define BORDERWIDTH	0
 #define	LOGO	"NCAR Graphics"
 
 #define	FONT	"8x13bold"
 
-extern	char	*strcpy();
-extern	char	*strcat();
-extern	char	*strncpy();
-extern	char	*getenv();
 extern	boolean	stand_Alone;
 extern	boolean	deviceIsInit;
 extern	boolean	Batch;
@@ -560,7 +558,9 @@ CGMC *c;
 		 * initialize soft sim module with new height and width
 		 */
 		if (*softFill) {
-			initSoftSim(0, dev.width-1, 0, dev.height-1);
+			if (initSoftSim(0, dev.width-1, 0, dev.height-1) < 0) {
+				return(-1);
+			}
 		}
 
 		if (fontstruct != NULL && !Batch) {
@@ -755,7 +755,7 @@ do_geometry(Geometry, xsh)
 	 *	create full path name to application default file for 
 	 *	ctrans
 	 */
-	name = (char *) icMalloc ((unsigned) 
+	name = (char *) malloc ((unsigned) 
 		(strlen(APP_DEF) + strlen("ctrans") + 1));
 
 	(void) strcpy(name, APP_DEF);

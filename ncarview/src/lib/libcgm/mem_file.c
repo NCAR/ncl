@@ -1,5 +1,5 @@
 /*
- *	$Id: mem_file.c,v 1.5 1992-03-12 22:14:56 clyne Exp $
+ *	$Id: mem_file.c,v 1.6 1992-09-01 23:40:40 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -12,16 +12,15 @@
 ***********************************************************************/
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <ncarv.h>
-#include <cgm_tools.h>
+#include <ncarg/c.h>
+#include "cgm_tools.h"
 #include "mem_file.h"
 
 /*LINTLIBRARY*/
-
-extern	char	*realloc();
-extern	char	*strcpy();
 
 static	CGM_iobuf	cgm_iobuf[MAX_MEM_FILE];
 
@@ -114,13 +113,29 @@ CGM_openMemFile(metafile, record_size, type)
 
 	}
 	else {	/* a new file	*/
-		cgm_iobuf[index].name = icMalloc(strlen (metafile) + 1);
-		cgm_iobuf[index]._base = (unsigned char *) 
-					icMalloc(record_size * F_INIT_SIZE);
+		cgm_iobuf[index].name = (char *) malloc(strlen (metafile) + 1);
+		if (! cgm_iobuf[index].name) {
+			return(-1);
+		}
 
-		cgm_iobuf[index].size = (long *) icMalloc(sizeof (long));
-		cgm_iobuf[index].len = (long *) icMalloc(sizeof (long));
-		cgm_iobuf[index].r_size = (int *) icMalloc(sizeof (int));
+		cgm_iobuf[index]._base = (unsigned char *) 
+					malloc(record_size * F_INIT_SIZE);
+		if (! cgm_iobuf[index]._base) {
+			return(-1);
+		}
+
+		cgm_iobuf[index].size = (long *) malloc(sizeof (long));
+		if (! cgm_iobuf[index].size) {
+			return(-1);
+		}
+		cgm_iobuf[index].len = (long *) malloc(sizeof (long));
+		if (! cgm_iobuf[index].len) {
+			return(-1);
+		}
+		cgm_iobuf[index].r_size = (int *) malloc(sizeof (int));
+		if (! cgm_iobuf[index].r_size) {
+			return(-1);
+		}
 
 		cgm_iobuf[index]._ptr = cgm_iobuf[index]._base;
 		*cgm_iobuf[index].size = record_size * F_INIT_SIZE;
@@ -186,7 +201,7 @@ CGM_writeMemFile(fd, buf)
 	if (*cgm_iobuf[fd].size ==  (long) (offset)) {
 
 		ptr = (char *) cgm_iobuf[fd]._base;
-		ptr = realloc(ptr,
+		ptr = (char *) realloc(ptr,
 			(unsigned) (*cgm_iobuf[fd].size + (r * F_INIT_SIZE)));
 
 		if (ptr == NULL) {
@@ -257,7 +272,9 @@ CGM_lseekMemFile(fd, offset, whence)
 	 */
 	if (off > *cgm_iobuf[fd].size) {
 		ptr = (char *) cgm_iobuf[fd]._base;
-		ptr = realloc(ptr, (unsigned) (off * sizeof (unsigned char *)));
+		ptr = (char *) realloc(
+			ptr, (unsigned) (off * sizeof (unsigned char *))
+		);
 
 		if (ptr == NULL) {
 			errno = ENOSPC;
@@ -364,12 +381,12 @@ CGM_unlinkMemFile(metafile)
 		return (-1);
 	}
 
-	cfree( (char *) cgm_iobuf[index].name);
-	cfree( (char *) cgm_iobuf[index]._base);
-	cfree( (char *) cgm_iobuf[index]._ptr);
-	cfree( (char *) cgm_iobuf[index].size);
-	cfree( (char *) cgm_iobuf[index].len);
-	cfree( (char *) cgm_iobuf[index].r_size);
+	free( (Voidptr) cgm_iobuf[index].name);
+	free( (Voidptr) cgm_iobuf[index]._base);
+	free( (Voidptr) cgm_iobuf[index]._ptr);
+	free( (Voidptr) cgm_iobuf[index].size);
+	free( (Voidptr) cgm_iobuf[index].len);
+	free( (Voidptr) cgm_iobuf[index].r_size);
 
 
 	cgm_iobuf[index].name	= NULL;

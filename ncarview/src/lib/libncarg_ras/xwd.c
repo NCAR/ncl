@@ -1,5 +1,5 @@
 /*
- *	$Id: xwd.c,v 1.8 1992-03-23 21:46:11 clyne Exp $
+ *	$Id: xwd.c,v 1.9 1992-09-01 23:44:41 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -40,7 +40,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/XWDFile.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include "ncarg_ras.h"
 
 static char	*FormatName = "xwd";
@@ -52,14 +52,6 @@ XWDOpen(name)
 	char	*name;
 {
 	Raster		*ras;
-
-#ifdef	hpux
-	void		*calloc();
-#else
-#ifndef CRAY
-	char		*calloc();
-#endif /* CRAY */
-#endif /* hpux */
 
 	XWDFileHeader	*dep;
 

@@ -37,4 +37,4 @@ typedef	struct {
 	int	offset;		/* current write file ptr pos. of tmp file*/
 	} Working_list;
 
-#endif	_meta_edit_
+#endif	/* _meta_edit_	*/

@@ -1,5 +1,5 @@
 /*
- *      $Id: error.c,v 1.2 1992-04-10 18:23:41 clyne Exp $
+ *      $Id: error.c,v 1.3 1992-09-01 23:47:14 clyne Exp $
  */
 /*
  *	File:		error.c
@@ -13,9 +13,10 @@
  *	Description:	error.c is a generic error reporting module.
  *
  */
-#include <varargs.h>
+
 #include <stdio.h>
 #include <errno.h>
+#include "c.h"
 
 #define	TABLE_SIZE	10
 
@@ -25,7 +26,7 @@
 typedef	struct	ErrTable_ {
 	unsigned	start,		/* starting index for err_list	*/ 
 			num;		/* num elements in err_list	*/
-	char		**err_list;	/* error messags		*/
+	const char	**err_list;	/* error messags		*/
 	} ErrTable;
 
 static	ErrTable	errTable[TABLE_SIZE];	/* all the error tables	*/
@@ -41,11 +42,26 @@ static	int		isInitialized = 0;	/* are we initialized?	*/
  */
 static	struct	kludge_ {
 	int	err_code;
-	char	*file;
+	const char	*file;
 	int	line;
-	char	*format;
 	} kludge;
 	
+static	char	*get_error(error)
+	int	error;
+{
+	int	i;
+	int	index;
+
+	for (i=0; i<errTableNum; i++) {
+		index = error - errTable[i].start;
+		if (error >= errTable[i].start && index < errTable[i].num) {
+			return(errTable[i].err_list[index]);
+		}
+	}
+
+	return(NULL);
+}
+
 
 /*
  *	ESprintf()
@@ -65,16 +81,19 @@ static	struct	kludge_ {
  * on exit
  *	return		: address of formated error message;
  */ 
-char	*ESprintf(err_code, format, va_alist)
+#ifdef	__STDC__
+const char	*ESprintf(unsigned err_code, const char *format, ...)
+#else
+const char	*ESprintf(err_code, format, va_alist)
 	unsigned	err_code;
-	char	*format;
+	const	char	*format;
 	va_dcl
+#endif
 {
 	va_list	ap;
 	extern	int	sys_nerr;
 	extern	char	*sys_errlist[];
 	char		*message;
-	char		*get_error();
 
 	if (! isInitialized) {
 		/*
@@ -93,7 +112,11 @@ char	*ESprintf(err_code, format, va_alist)
 	/*
 	 * deal with variable args
 	 */
+#ifdef	__STDC__
+        va_start(ap, format);
+#else
         va_start(ap);
+#endif
         (void) vsprintf(ErrorBuf, format, ap);
         va_end(ap);
 
@@ -127,18 +150,22 @@ char	*ESprintf(err_code, format, va_alist)
  * on exit
  *	return		: address of formated error message;
  */ 
-char	*LFESprintf(err_code, file, line, format, va_alist)
+#ifdef	__STDC__
+const char	*LFESprintf(unsigned err_code, const char *file, 
+					int line, const char *format, ...)
+#else
+const char	*LFESprintf(err_code, file, line, format, va_alist)
 	unsigned	err_code;
-	char		*file;
+	const	char		*file;
 	int		line;
-	char	*format;
+	const	char	*format;
 	va_dcl
+#endif
 {
 	va_list	ap;
 	extern	int	sys_nerr;
 	extern	char	*sys_errlist[];
 	char		*message;
-	char		*get_error();
 	char		buf[1024];
 
 	if (! isInitialized) {
@@ -158,7 +185,11 @@ char	*LFESprintf(err_code, file, line, format, va_alist)
 	/*
 	 * deal with variable args
 	 */
+#ifdef	__STDC__
+        va_start(ap, format);
+#else
         va_start(ap);
+#endif
         (void) vsprintf(buf, format, ap);
         va_end(ap);
 
@@ -210,11 +241,10 @@ char	*LFESprintf(err_code, file, line, format, va_alist)
  *
  *
  */
-void	ESprintfFirstPart(err_code, file, line, format)
+void	ESprintfFirstPart(err_code, file, line)
 	int	err_code;
-	char	*file;
+	const	char	*file;
 	int	line;
-	char	*format;
 {
 
 	/*
@@ -224,7 +254,6 @@ void	ESprintfFirstPart(err_code, file, line, format)
 	kludge.err_code = err_code;
 	kludge.file = file;
 	kludge.line = line;
-	kludge.format = format;
 }
 
 /*
@@ -233,8 +262,13 @@ void	ESprintfFirstPart(err_code, file, line, format)
  *	This function is the part of a kludge that allows the 
  *	macro ESPRINTF() to take variable arguments. 
  */
-char	*ESprintfSecondPart(va_alist)
+#ifdef	__STDC__
+const char	*ESprintfSecondPart(const char *format, ...)
+#else
+char	*ESprintfSecondPart(format, va_alist)
+	const char	*format;
 	va_dcl
+#endif
 {
 	va_list	ap;
 	char	buf[1024];
@@ -242,8 +276,12 @@ char	*ESprintfSecondPart(va_alist)
 	/*
 	 * deal with variable args
 	 */
+#ifdef	__STDC__
+        va_start(ap, format);
+#else
         va_start(ap);
-        (void) vsprintf(buf, kludge.format, ap);
+#endif
+        (void) vsprintf(buf, format, ap);
         va_end(ap);
 
 	return(LFESprintf(kludge.err_code, kludge.file, kludge.line, "%s",buf));
@@ -253,7 +291,7 @@ char	*ESprintfSecondPart(va_alist)
  *
  *	returns the current message
  */
-char	*ErrGetMsg()
+const char	*ErrGetMsg()
 {
 	(void) strcpy(ErrorBufRet, ErrorBuf);
 	return(ErrorBufRet);
@@ -287,10 +325,10 @@ int	ErrGetNum()
  * on exit
  *	return		: -1 => table full, else OK.
  */
-ErrorList(start, num, err_list)
+int	ErrorList(start, num, err_list)
 	unsigned	start,
 			num;
-	char		**err_list;
+	const	char		**err_list;
 {
 
 	if (errTableNum >= TABLE_SIZE -1) {
@@ -304,21 +342,5 @@ ErrorList(start, num, err_list)
 
 	return(1);
 	
-}
-
-static	char	*get_error(error)
-	int	error;
-{
-	int	i;
-	int	index;
-
-	for (i=0; i<errTableNum; i++) {
-		index = error - errTable[i].start;
-		if (error >= errTable[i].start && index < errTable[i].num) {
-			return(errTable[i].err_list[index]);
-		}
-	}
-
-	return(NULL);
 }
 

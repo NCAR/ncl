@@ -1,6 +1,6 @@
 NCARG		= ../../../..
 #
-#	$Id: yMakefile,v 1.10 1992-06-25 21:49:05 clyne Exp $
+#	$Id: yMakefile,v 1.11 1992-09-01 23:44:25 clyne Exp $
 #
 
 LOCLIBDIR	= ../../../lib
@@ -58,6 +58,15 @@ commands.o:	Makefile
 	$(CC) $(CFLAGS) -DSPOOL_TRANS$(EQUALHACK)'"$(SPOOL_TRANS)"' \
 	-DTMPDIR$(EQUALHACK)'"$(TMPDIR)"' -c $*.c
 
+#
+# Brain-damaged SGI C compiler won't compile its own lex output in
+# ANSI mode.
+#
+#ifdef	sgi
+lex.yy.o:	lex.yy.c
+	$(CC) -c $(CDEBUG) $(COPT) $*.c
+#endif
+
 lex.yy.c: lex.l sedscript
 	lex lex.l
 	@$(MV) lex.yy.c lex.yy.c.sed
@@ -75,7 +84,7 @@ clean::
 	@-$(RM) lex.yy.c.sed sedscript ictrans_wks.c
 
 lint: $(SRCS)
-	lint $(CDEFINES) $(LINTLIBS) $(SRCS) \ 
+	lint $(CDEFINES) $(LINTLIBS) $(CINC) $(SRCS) \ 
 		-DSPOOL_TRANS$(EQUALHACK)'"$(SPOOL_TRANS)"' 1> lint.out 2>&1
 
 

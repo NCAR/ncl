@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrandef.h,v 1.10 1992-04-16 17:29:58 clyne Exp $
+ *	$Id: ctrandef.h,v 1.11 1992-09-01 23:41:52 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -81,4 +81,4 @@ typedef	double	Matrix2d[3][3];
  */
 #define	CLEAR_DEVICE	6
 
-#endif	_ctrandef_
+#endif	/* _ctrandef_	*/

@@ -70,3 +70,8 @@ typedef	struct {
 	Cmd	*c;			/* the command object		*/
 	} MedData, MedDataPtr;
 
+extern	Cmd	*getcmd (
+#ifdef	NeedFuncProto
+	char	*name
+#endif
+);

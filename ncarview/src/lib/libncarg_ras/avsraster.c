@@ -1,4 +1,4 @@
-/* $Id: avsraster.c,v 1.4 1992-03-23 21:44:38 clyne Exp $ */
+/* $Id: avsraster.c,v 1.5 1992-09-01 23:44:33 clyne Exp $ */
 
 /***********************************************************************
 *                                                                      *
@@ -32,6 +32,7 @@
  *		
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <fcntl.h>
 #include <string.h>
 #include <malloc.h>
@@ -46,7 +47,6 @@ AVSOpen(name)
 	char	*name;
 {
 	Raster	*ras;
-	char	*calloc();
 
 	ras = (Raster *) calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
@@ -93,7 +93,6 @@ AVSRead(ras)
 	unsigned int		image_size;
 	int			status;
 	int			x, y;
-	char			*malloc(), *calloc(), *realloc();
 	unsigned long		swaptest = 1;
 	unsigned char		*ptmp;
 	static unsigned char	*tmpbuf = (unsigned char *) NULL;

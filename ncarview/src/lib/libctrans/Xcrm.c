@@ -1,5 +1,5 @@
 /*
- *	$Id: Xcrm.c,v 1.12 1992-07-16 18:07:01 clyne Exp $
+ *	$Id: Xcrm.c,v 1.13 1992-09-01 23:41:30 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -25,13 +25,13 @@
 
 
 #include 	<stdio.h>
+#include 	<stdlib.h>
 #include	<X11/Xlib.h>
 #include	<X11/Xutil.h>
-#include	<ncarv.h>
+#include	<ncarg/c.h>
 #include	"cgmc.h"
 #include	"devices.h"
 #include	"Xdefs.h"
-#define		XCRM
 #include	"Xcrm.h"
 #include	"default.h"
 
@@ -42,6 +42,91 @@ extern	boolean		Colordef[];
 extern	Pixeltype	Colortab[];
 extern	boolean		Color_ava;
 
+static	int	back_color(color)
+	XColor	color;
+	
+{
+	Pixeltype	pixel;
+	Pixeltype	planedummy[1];
+	Pixeltype	pixel_return[1];
+	extern	boolean	startedDrawing;
+
+	extern	struct	device	devices[];
+	extern	int	currdev;
+
+	if (! Color_ava) return(0);
+
+	if (startedDrawing) {
+		ESprintf(E_UNKNOWN, "Background color changes ignored after drawing has begun");
+		return(-1);
+	}
+
+
+	/*
+	 * see if color model is writeable
+	 */
+	if (visual->class == DirectColor || visual->class == PseudoColor 
+		|| visual->class == GrayScale) {
+
+		/*
+		 * if the background color has not been set yet we need
+		 * to allocate a cell for it.
+		 */
+		if (! Colordef[0]) {
+			/*
+			 * try and alloc a new cell in the color map
+			 */
+			if (XAllocColorCells(dpy,Cmap,FALSE, planedummy,
+					0, pixel_return, 1) == 0) {
+
+				/* error allocating color cell	*/
+				ESprintf(E_UNKNOWN,"XAllocColorCells(,,,,) failed");
+				return(-1);
+			}
+
+			/* 
+			 *	record pixel in the colortable
+			 */
+			Colortab[0] = pixel_return[0];
+			Colordef[0] = TRUE;
+		}
+
+		/* 
+		 *	set cell index in the colour map
+		 */
+		color.pixel = Colortab[0];
+
+		/*
+		 *	store the new background color in the cell
+		 */
+		XStoreColor(dpy, Cmap, &color);
+	}
+	else {	/* color model is read only	*/
+
+		if (!XAllocColor(dpy, Cmap, &color)) {
+
+			/* error allocating color cell  */
+			ESprintf(E_UNKNOWN,"XAllocColor(,,) failed");
+			return(-1);
+		}
+		Colortab[0] = color.pixel;
+		Colordef[0] = TRUE;
+	}
+
+	/*
+	 * background color needs to be handled differently for
+	 * windows and pixmaps
+	 */
+	pixel = Colortab[0];
+	if (strcmp("X11", devices[currdev].name) == 0) {
+		XSetWindowBackground(dpy, win, pixel);
+#ifdef	DEAD
+		XClearWindow(dpy, win);
+#endif
+	}
+
+	return(0);
+}
 void	free_colors()
 {
 	
@@ -51,8 +136,10 @@ void	free_colors()
 
 	if (! Color_ava) return;
 
-	free_list = (Pixeltype *) icMalloc 
+	free_list = (Pixeltype *) malloc 
 			((unsigned) (MAX_COLOR_SIZE * sizeof(Pixeltype)));
+
+	if (! free_list) return;	/* malloc failed	*/
 
 
 	for (i = 0; i < MAX_COLOR_SIZE; i++) {
@@ -66,7 +153,7 @@ void	free_colors()
 
 	XFreeColors(dpy, Cmap, free_list, count, (unsigned long) 0);
 
-	if (free_list) cfree((char *) free_list);
+	if (free_list) free((Voidptr) free_list);
 }
 
 /*	rgb_2_Xrgb
@@ -92,7 +179,7 @@ static	rgb_2_Xrgb(red, green, blue, Xcolor)
 }
 
 
-X11_UpdateColorTable_()
+int	X11_UpdateColorTable_()
 {
 
 	Pixeltype	planedummy[1];		/* not used	*/
@@ -103,8 +190,6 @@ X11_UpdateColorTable_()
 	static	XColor	color = {
 		0,0,0,0,(DoRed | DoGreen | DoBlue), '\0'
 		};
-
-	int	back_color();
 
 	/* see if device supports colour	*/
 	if (!Color_ava)
@@ -236,88 +321,3 @@ X11_UpdateColorTable_()
 }
 
 
-static	int	back_color(color)
-	XColor	color;
-	
-{
-	Pixeltype	pixel;
-	Pixeltype	planedummy[1];
-	Pixeltype	pixel_return[1];
-	extern	boolean	startedDrawing;
-
-	extern	struct	device	devices[];
-	extern	int	currdev;
-
-	if (! Color_ava) return(0);
-
-	if (startedDrawing) {
-		ESprintf(E_UNKNOWN, "Background color changes ignored after drawing has begun");
-		return(-1);
-	}
-
-
-	/*
-	 * see if color model is writeable
-	 */
-	if (visual->class == DirectColor || visual->class == PseudoColor 
-		|| visual->class == GrayScale) {
-
-		/*
-		 * if the background color has not been set yet we need
-		 * to allocate a cell for it.
-		 */
-		if (! Colordef[0]) {
-			/*
-			 * try and alloc a new cell in the color map
-			 */
-			if (XAllocColorCells(dpy,Cmap,FALSE, planedummy,
-					0, pixel_return, 1) == 0) {
-
-				/* error allocating color cell	*/
-				ESprintf(E_UNKNOWN,"XAllocColorCells(,,,,) failed");
-				return(-1);
-			}
-
-			/* 
-			 *	record pixel in the colortable
-			 */
-			Colortab[0] = pixel_return[0];
-			Colordef[0] = TRUE;
-		}
-
-		/* 
-		 *	set cell index in the colour map
-		 */
-		color.pixel = Colortab[0];
-
-		/*
-		 *	store the new background color in the cell
-		 */
-		XStoreColor(dpy, Cmap, &color);
-	}
-	else {	/* color model is read only	*/
-
-		if (!XAllocColor(dpy, Cmap, &color)) {
-
-			/* error allocating color cell  */
-			ESprintf(E_UNKNOWN,"XAllocColor(,,) failed");
-			return(-1);
-		}
-		Colortab[0] = color.pixel;
-		Colordef[0] = TRUE;
-	}
-
-	/*
-	 * background color needs to be handled differently for
-	 * windows and pixmaps
-	 */
-	pixel = Colortab[0];
-	if (strcmp("X11", devices[currdev].name) == 0) {
-		XSetWindowBackground(dpy, win, pixel);
-#ifdef	DEAD
-		XClearWindow(dpy, win);
-#endif
-	}
-
-	return(0);
-}

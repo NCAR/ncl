@@ -1,5 +1,5 @@
 /*
- *	$Id: translate.c,v 1.5 1992-02-29 00:14:01 clyne Exp $
+ *	$Id: translate.c,v 1.6 1992-09-01 23:43:26 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -178,10 +178,10 @@ static	void	aspect_correct(from, to, new)
  *	Y_Off		: translation required 
  *
  */
-transinit(dev_extent, dev_coord_modifier, device)
+void	transinit(dev_extent, dev_coord_modifier, device)
 	CoordRect	*dev_extent;
 	CoordModifier	dev_coord_modifier;
-	short		device;
+	int		device;
 {
 	CoordModifier	map;
 	CoordRect	vdc_extent;
@@ -329,7 +329,7 @@ void	SetDevWin(llx, lly, urx, ury)
  *
  *	Return the current settings for the "Device Window" specification
  */
-GetDevWin(dev_win_coord)
+void	GetDevWin(dev_win_coord)
 	CoordRect	*dev_win_coord;
 {
 	*dev_win_coord = deviceWinCoord;

@@ -1,5 +1,5 @@
 /*
- *	$Id: options.c,v 1.16 1992-07-22 18:42:06 clyne Exp $
+ *	$Id: options.c,v 1.17 1992-09-01 23:47:27 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -34,7 +34,7 @@
 #include <errno.h>
 #include <string.h>
 #include <ctype.h>
-#include <ncarv.h>
+#include "c.h"
 #include "options.h"
 
 
@@ -42,6 +42,102 @@ static	BitMask	usedOD = 0;	/* bitmap of used option descriptors	*/
 static	int	numUsed = 0;	/* number of used option descriptors	*/
 
 static	OptTable	optTbls[MAX_TBLS];
+
+/*
+ *	get_option
+ *	[internal]
+ *	
+ * on entry
+ *	*name		: name to lookup
+ * on exit
+ *	return		: if found return command obj ptr. If name is ambiguous
+ *			  return -1. If not found return NULL.
+ */
+static	OptDescRec	*get_option (odr, name)
+	OptDescRec	*odr;
+	char	*name;
+{
+	char *p, *q;
+	OptDescRec *o, *found;
+	int nmatches, longest;
+
+	longest = 0;
+	nmatches = 0;
+	found = NULL;
+
+	for (o = odr; o && (p = o->option); o++) {
+		for (q = name; *q == *p++; q++) {
+			if (*q == 0)            /* exact match? */
+				return (o);
+		}
+		if (*name) {
+			if (!*q) {	/* the name was a prefix */
+				if (q - name > longest) {
+					longest = q - name;
+					nmatches = 1;
+					found = o;
+				} else if (q - name == longest)
+					nmatches++;
+			}
+		}
+	}
+	if (nmatches > 1)	/* ambiguous	*/
+		return ((OptDescRec *)-1);
+	return (found);
+}
+
+/*
+ * convert an array of strings into a singe contiguous array of strings
+ */
+static	char	*copy_create_arg_string(argv, argc)
+	char	**argv;
+	int	argc;
+{
+	char	*s,*t;
+	int	i,
+		len;	/* lenght of new arg string	*/
+
+	for(len=0,i=0; i<argc; i++) {
+		len += strlen(argv[i]);
+		len++;	/* one for the space	*/
+	}
+
+	if ((s = (char *) malloc(len +1)) == NULL) {
+		ESprintf(errno, "malloc(%d)", len+1);
+		return(NULL);
+	}
+	s = strcpy(s, argv[0]);
+	for(i=1, t=s; i<argc; i++) {
+		t += strlen(t);
+		*t++ = '\0';
+		(void) strcpy(t, argv[i]);
+	}
+	return(s);
+}
+
+/*
+ * convert a space seprated string to an array of contiguous strings
+ */
+static	char	*fmt_opt_string(arg, n)
+	char	*arg;
+	int	n;
+{
+	int	i;
+	char	*s;
+
+	for (i=1, s = arg; i<n; i++) {
+		while(*s && ! isspace(*s)) s++;
+
+		if (! *s) {
+			ESprintf(EINVAL, "Arg string invalid: %s", arg);
+			return(NULL);
+		}
+		*s++ = '\0';
+
+		while(*s && isspace(*s)) s++;
+	}
+	return(arg);
+}
 
 /*
 **
@@ -57,7 +153,7 @@ static	OptTable	optTbls[MAX_TBLS];
  *	convert a ascii string to its integer value
  */
 int	NCARGCvtToInt(from, to)
-	char	*from;	/* the string	*/
+	const char	*from;	/* the string	*/
 	Voidptr	to;
 {
 	int	*iptr	= (int *) to;
@@ -78,7 +174,7 @@ int	NCARGCvtToInt(from, to)
  *	convert a ascii string to its floating point value
  */
 int	NCARGCvtToFloat(from, to)
-	char	*from;	/* the string	*/
+	const char	*from;	/* the string	*/
 	Voidptr	to;
 {
 	float	*fptr	= (float *) to;
@@ -98,7 +194,7 @@ int	NCARGCvtToFloat(from, to)
  *	convert a ascii string to a char.
  */
 int	NCARGCvtToChar(from, to)
-	char	*from;	/* the string	*/
+	const char	*from;	/* the string	*/
 	Voidptr	to;
 {
 	char	*cptr	= (char *) to;
@@ -121,7 +217,7 @@ int	NCARGCvtToChar(from, to)
  *	to TRUE or FALSE
  */
 int	NCARGCvtToBoolean(from, to)
-	char	*from;	/* the string	*/
+	const char	*from;	/* the string	*/
 	Voidptr	to;
 {
 	boolean	*bptr	= (boolean *) to;
@@ -147,10 +243,10 @@ int	NCARGCvtToBoolean(from, to)
  *
  */
 int	NCARGCvtToString(from, to)
-	char	*from;	/* the string	*/
+	const char	*from;	/* the string	*/
 	Voidptr	to;
 {
-	char	**sptr	= (char **) to;
+	const char	**sptr	= (char **) to;
 	*sptr = from;
 }
 
@@ -160,7 +256,7 @@ int	NCARGCvtToString(from, to)
  *	convert a ascii string to a dimension.
  */
 int	NCARGCvtToDimension2D(from, to)
-	char	*from;	/* the string	*/
+	const char	*from;	/* the string	*/
 	Voidptr	to;
 {
 	Dimension2D	*dptr	= (Dimension2D *) to;
@@ -191,7 +287,7 @@ int	NCARGCvtToDimension2D(from, to)
  * on exit
  *	return		: -1 => failure, else an option descriptor is returned
  */
-OpenOptionTbl()
+int	OpenOptionTbl()
 {
 	int		od;		/* option descriptor	*/
 	OptDescRec	*odr;
@@ -288,7 +384,8 @@ CloseOptionTbl(od)
  *	return		: -1 => failure, else OK
  */
 GetOptions(od, options)
-	Option		*options;
+	int		od;
+	const Option	*options;
 {
 
 	int		i, j;
@@ -296,7 +393,7 @@ GetOptions(od, options)
 	int		arg_count;
 	OptDescRec	*odr;
 
-	OptDescRec	*optd, *get_option();
+	OptDescRec	*optd;
 	Voidptr		offset;
 
 	if (!(usedOD & (1 << od))) {
@@ -372,9 +469,6 @@ LoadOptionTable(od, optd)
 	int	num;
 	OptDescRec	*odr;
 	unsigned	tmp;
-
-	extern	char	*strcpy();
-	char	*fmt_opt_string();
 
 	if (! optd[0].option) return (0);
 
@@ -465,7 +559,7 @@ LoadOptionTable(od, optd)
  */
 void	RemoveOptions(od, optd)
 	int		od;
-	OptDescRec	*optd;
+	const OptDescRec	*optd;
 {
 	int	i,j;
 	OptDescRec	*odr;
@@ -521,7 +615,7 @@ void	RemoveOptions(od, optd)
  *	*argc		: num elements in argv
  *	return		: -1 => failure, else OK
  */
-ParseOptionTable(od, argc, argv, optds)
+int	ParseOptionTable(od, argc, argv, optds)
 	int	od;
 	int	*argc;
 	char	**argv;
@@ -532,9 +626,6 @@ ParseOptionTable(od, argc, argv, optds)
 	OptDescRec	*optd;
 	OptDescRec	*odr;
 	int		new_argc = 1;
-
-	extern	OptDescRec	*get_option();
-	char	*copy_create_arg_string();
 
 	if (!(usedOD & (1 << od))) {
 		ESprintf(EBADF, "");
@@ -642,13 +733,13 @@ ParseOptionTable(od, argc, argv, optds)
  * on exit
  *	return		: -1 => error, else OK
  */
-ParseEnvOptions(od, envv, optds)
+int	ParseEnvOptions(od, envv, optds)
 	int		od;
-	EnvOpt		*envv;
+	const EnvOpt	*envv;
 	OptDescRec	*optds;
 {
 	int	envc;		/* size of envv list		*/
-	EnvOpt	*envptr;	/* pointer to envv		*/
+	const EnvOpt	*envptr;	/* pointer to envv		*/
 	char	**argv;		/* arg vector created from envv	*/
 	int	argc;		/* size of argv list		*/
 	char	*arg_string;	/* env variable value		*/
@@ -749,98 +840,3 @@ void	PrintOptionHelp(od, fp)
 	}
 }
 
-/*
- *	get_option
- *	[internal]
- *	
- * on entry
- *	*name		: name to lookup
- * on exit
- *	return		: if found return command obj ptr. If name is ambiguous
- *			  return -1. If not found return NULL.
- */
-static	OptDescRec	*get_option (odr, name)
-	OptDescRec	*odr;
-	char	*name;
-{
-	char *p, *q;
-	OptDescRec *o, *found;
-	int nmatches, longest;
-
-	longest = 0;
-	nmatches = 0;
-	found = NULL;
-
-	for (o = odr; o && (p = o->option); o++) {
-		for (q = name; *q == *p++; q++) {
-			if (*q == 0)            /* exact match? */
-				return (o);
-		}
-		if (*name) {
-			if (!*q) {	/* the name was a prefix */
-				if (q - name > longest) {
-					longest = q - name;
-					nmatches = 1;
-					found = o;
-				} else if (q - name == longest)
-					nmatches++;
-			}
-		}
-	}
-	if (nmatches > 1)	/* ambiguous	*/
-		return ((OptDescRec *)-1);
-	return (found);
-}
-
-/*
- * convert an array of strings into a singe contiguous array of strings
- */
-static	char	*copy_create_arg_string(argv, argc)
-	char	**argv;
-	int	argc;
-{
-	char	*s,*t;
-	int	i,
-		len;	/* lenght of new arg string	*/
-
-	for(len=0,i=0; i<argc; i++) {
-		len += strlen(argv[i]);
-		len++;	/* one for the space	*/
-	}
-
-	if ((s = (char *) malloc(len +1)) == NULL) {
-		ESprintf(errno, "malloc(%d)", len+1);
-		return(NULL);
-	}
-	s = strcpy(s, argv[0]);
-	for(i=1, t=s; i<argc; i++) {
-		t += strlen(t);
-		*t++ = '\0';
-		(void) strcpy(t, argv[i]);
-	}
-	return(s);
-}
-
-/*
- * convert a space seprated string to an array of contiguous strings
- */
-char	*fmt_opt_string(arg, n)
-	char	*arg;
-	int	n;
-{
-	int	i;
-	char	*s;
-
-	for (i=1, s = arg; i<n; i++) {
-		while(*s && ! isspace(*s)) s++;
-
-		if (! *s) {
-			ESprintf(EINVAL, "Arg string invalid: %s", arg);
-			return(NULL);
-		}
-		*s++ = '\0';
-
-		while(*s && isspace(*s)) s++;
-	}
-	return(arg);
-}

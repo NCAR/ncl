@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.5 1992-06-25 21:48:13 clyne Exp $
+#	$Id: yMakefile,v 1.6 1992-09-01 23:40:15 clyne Exp $
 #
 #	Makefile for rasview
 #
@@ -11,7 +11,7 @@ BINDIR_LOCAL	= ../../../bin
 
 MYNAME		= rasview
 
-LOCLIB		= $(LIBDIR)/libncarv.a  $(LIBDIR)/libncarg_ras.a \
+LOCLIB		= $(LIBDIR)/libncarg_c.a  $(LIBDIR)/libncarg_ras.a \
 		$(LIBDIR)/libhdf.a
 
 SRCS		= rasdraw.c rasview.c

@@ -440,7 +440,7 @@ typedef	struct {
 	int	text_term_size;		/* size of ^, (TXTSIZ)		*/
 
 } Dev_text;
-#endif	USE_DEV_TEXT
+#endif	/*	USE_DEV_TEXT	*/
 
 
 #define	USE_DEV_MARKER
@@ -478,7 +478,7 @@ typedef	struct {
 	int	marker_dot_size;	/* polymarker dot size (MDOTSZ)	*/
 
 } Dev_marker;
-#endif	USE_DEV_MARKER
+#endif	/* USE_DEV_MARKER	*/
 
 typedef	struct {
 
@@ -606,7 +606,7 @@ typedef	struct {
 					 * bundle table entries. (FACBTB)
 					 */ 
 } Dev_bundle;
-#endif	USE_DEV_BUNDLE
+#endif	/* USE_DEV_BUNDLE	*/
  
 typedef	struct {
 	/*
@@ -696,7 +696,7 @@ typedef	struct {
 	int	free_space[DUMSIZ];	/* Dummy for future use */
 	int	end_space;		/* end of graphcap ?	*/
 } Free_space;
-#endif	USE_FREE_SPACE	
+#endif	/* USE_FREE_SPACE	*/
 
 /********************************************************************
  *				The Graphcap

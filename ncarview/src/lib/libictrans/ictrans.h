@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.h,v 1.4 1992-07-14 23:09:36 clyne Exp $
+ *	$Id: ictrans.h,v 1.5 1992-09-01 23:43:58 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -18,6 +18,12 @@
  *
  *	type declarations for ictrans
  */
+
+#ifndef	_ictrans_
+#define	_ictrans_
+
+#include <ncarg/ctrans.h>
+
 #ifndef	FALSE
 #define	FALSE	0
 #define	TRUE	~FALSE
@@ -109,3 +115,13 @@ typedef	struct	_icState {
 	DevWindow	dev_window;
 	} IcState; 
 
+
+#define	SMALL_MALLOC_BLOCK	10
+
+extern	void	log_ct(
+#ifdef	NeedFuncProto
+	CtransRC	err
+#endif
+);
+
+#endif	/* _ictrans_	*/

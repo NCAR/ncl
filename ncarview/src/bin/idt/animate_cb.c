@@ -1,6 +1,6 @@
 
 /*
- *      $Id: animate_cb.c,v 1.2 1992-08-25 20:24:01 clyne Exp $
+ *      $Id: animate_cb.c,v 1.3 1992-09-01 23:38:42 clyne Exp $
  */
 /************************************************************************
 *									*
@@ -22,8 +22,10 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
+#include <ncarg/c.h>
 #include "animate.h"
 #include "talkto.h"
 #include "display.h"
@@ -170,9 +172,9 @@ static	int	animate_on(wd)
 	 * free all the image junk 
 	 */
 	for (i=0; i<num; i++) {
-		free((char *) images[i]);
+		free((Voidptr) images[i]);
 	}
-	free((char *) images);
+	free((Voidptr) images);
 	ximage->data = NULL;
 	XDestroyImage(ximage);
 

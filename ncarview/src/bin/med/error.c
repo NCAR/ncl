@@ -1,5 +1,5 @@
 /*
- *	$Id: error.c,v 1.3 1992-04-20 22:02:01 clyne Exp $
+ *	$Id: error.c,v 1.4 1992-09-01 23:39:29 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -22,10 +22,8 @@
  *	a terminal then any error results in med terminating
  */
 #include	<stdio.h>
+#include	<string.h>
 #include	"med.h"
-
-extern	char	*strcpy();
-extern	char	*strcat();
 
 static	char	buf[80];
 

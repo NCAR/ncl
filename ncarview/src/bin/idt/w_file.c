@@ -1,5 +1,5 @@
 /*
- *	$Id: w_file.c,v 1.7 1992-08-10 22:04:53 clyne Exp $
+ *	$Id: w_file.c,v 1.8 1992-09-01 23:39:14 clyne Exp $
  */
 /*
  *	w_file.c
@@ -13,6 +13,7 @@
  *	code is in 'file.c'
  */
 #include <stdio.h>                      /* For the Syntax message */
+#include <stdlib.h>                      /* For the Syntax message */
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
@@ -23,7 +24,7 @@
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/Command.h>
 
-#include <ncarv.h>
+#include <ncarg/c.h>
 #include "idt.h"
 
 /*
@@ -38,7 +39,7 @@ Widget	dialogFinder;		/* this should be made static	*/
 
 static	char	*fileFinder = NULL;	/* current file finder	*/
 
-static	void	(*selectAction)();
+static	FuncPtrPasser	selectAction;
 
 extern	char	*GetFiles();
 
@@ -58,7 +59,7 @@ extern	char	*GetFiles();
  */
 void	CreateFileSelectPopup(button, select_action)
 	Widget	button;
-	void	(*select_action)();
+	FuncPtrPasser	select_action;
 {
 
 	Arg		args[10];
@@ -127,7 +128,11 @@ void	CreateFileSelectPopup(button, select_action)
 
 		file_finder = XawDialogGetValueString(dialogFinder);
 		if (! file_finder) file_finder = "*";
-		fileFinder = icMalloc((unsigned) (strlen(file_finder) + 1));
+		fileFinder = malloc((unsigned) (strlen(file_finder) + 1));
+		if (! fileFinder) {
+			perror("malloc()");
+			exit(1);
+		}
 		(void) strcpy(fileFinder, file_finder);
 
 	}
@@ -244,14 +249,18 @@ static	void	Finder(widget, client_data, call_data)
 	int	longest;
 	Cardinal	n;
 
-	if (fileFinder)	cfree(fileFinder);
+	if (fileFinder)	free((Voidptr) fileFinder);
 	/*
 	 * Get the new file finder input by the user. Use it to get a new
 	 * set of files. Display the new set of files in the text widget
 	 */
 	file_finder = XawDialogGetValueString(dialog);
 	if (! file_finder) file_finder = "*";
-	fileFinder = icMalloc((unsigned) (strlen(file_finder) + 1));
+	fileFinder = malloc((unsigned) (strlen(file_finder) + 1));
+	if ( !fileFinder) {
+		perror("malloc()");
+		exit(1);
+	}
 	(void) strcpy(fileFinder, file_finder);
 
 
@@ -365,7 +374,10 @@ SelectFileTranslation(widget, event, params, num_params)
 		s = NULL;
 	}
 
-	t = icMalloc((unsigned) ((stop - start) +1));
+	if ( !(t = malloc((unsigned) ((stop - start) +1)))) {
+		perror("malloc()");
+		return;
+	}
 	(void) strncpy(t, s, (int) (stop - start));
 	t[stop - start] = '\0';
 
@@ -377,5 +389,5 @@ SelectFileTranslation(widget, event, params, num_params)
 	XtSetArg(args[n], XtNvalue, t);	n++;
 	XtSetValues(dialogSelection, args, n);
 
-	cfree(t);
+	free((Voidptr) t);
 }

@@ -1,9 +1,11 @@
 /*
- *	$Id: gcapdev.c,v 1.16 1992-07-30 00:47:42 clyne Exp $
+ *	$Id: gcapdev.c,v 1.17 1992-09-01 23:42:36 clyne Exp $
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
-#include <ncarv.h>
+#include <ncarg/c.h>
+#include "ctrans.h"
 #include "graphcap.h"
 #include "cgmc.h"
 #include "soft_fill.h"
@@ -11,8 +13,6 @@
 #include "ctrandef.h"
 #include "default.h"
 
-extern	int	formatveccnt(), formatcoord(), formatindex(), formatwidth(),
-		formatintensity();
 extern	boolean	doSimulateBG;
 
 /*
@@ -33,6 +33,7 @@ static	int	simulate_bg_color()
 {
 	static	boolean first = TRUE;
 	static	CGMC	cgmc;
+
 
 	Etype	fill_style = INT_STYLE;
 	CItype	fill_color = FILL_COLOUR.index;
@@ -172,7 +173,7 @@ boolean polysim;	/* True if to simulate polygons with lines */
 			(void) ComFatLine(
 				coord_buf[i-1].x,coord_buf[i-1].y,
 				coord_buf[i].x,coord_buf[i].y,
-				line_width, XScale(POLY_SIM_SPACING)
+				line_width, (int) XScale(POLY_SIM_SPACING)
 			);
 			return;
 	}
@@ -687,7 +688,7 @@ void	gcap_update_color_table()
 			s_char_ = (SignedChar) MAP_START[k];
 			switch ((int) s_char_) {
 			case MAD:
-				(void)formatindex(i,FALSE);
+				(void)formatindex((long) i,FALSE);
 				break;
 			default: 
 				buffer(&s_char_,1);
@@ -718,12 +719,14 @@ void	gcap_update_color_table()
 			(void)formatintensity(data, 3);
 			break;
 		case  3: /* HLS */
-			RGBtoHLS ( COLOUR_INDEX_RED(i), 
-			   COLOUR_INDEX_GREEN(i), 
-			   COLOUR_INDEX_BLUE(i),
-			   &data[0],
-			   &data[1],
-			   &data[2]);
+			RGBtoHLS (
+				(long) COLOUR_INDEX_RED(i), 
+				(long) COLOUR_INDEX_GREEN(i), 
+				(long) COLOUR_INDEX_BLUE(i),
+				&data[0],
+				&data[1],
+				&data[2]
+			);
 
 			(void)formatintensity(data, 3);
 			break;
@@ -767,7 +770,7 @@ void	gcap_update_color_table()
 					s_char_ = (SignedChar) MAP_START[k];
 					switch ((int) s_char_) {
 					case MAD:
-						(void)formatindex(i,FALSE);
+						(void)formatindex((long)i,FALSE);
 						break;
 					default: 
 						buffer(&s_char_,1);
@@ -801,12 +804,14 @@ void	gcap_update_color_table()
 				(void)formatintensity(data, 3);
 				break;
 			case  3: /* HLS */
-				RGBtoHLS ( COLOUR_INDEX_RED(i), 
-					   COLOUR_INDEX_GREEN(i), 
-					   COLOUR_INDEX_BLUE(i),
-					   &data[0],
-					   &data[1],
-					   &data[2]);
+				RGBtoHLS (
+					(long) COLOUR_INDEX_RED(i), 
+					(long) COLOUR_INDEX_GREEN(i), 
+					(long) COLOUR_INDEX_BLUE(i),
+					&data[0],
+					&data[1],
+					&data[2]
+				);
 
 				(void)formatintensity(data, 3);
 				break;

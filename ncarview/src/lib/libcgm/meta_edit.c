@@ -1,5 +1,5 @@
 /*
- *	$Id: meta_edit.c,v 1.13 1992-07-30 19:22:01 clyne Exp $
+ *	$Id: meta_edit.c,v 1.14 1992-09-01 23:40:47 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -12,11 +12,12 @@
 ***********************************************************************/
 
 
-#define	META_EDIT
-
 #include	<stdio.h>
 #include	<fcntl.h>
 #include	<sys/types.h>
+#include	<errno.h>
+#include	<string.h>
+#include	<stdlib.h>
 
 #ifdef	SYSV
 #include	<sys/stat.h>
@@ -25,9 +26,8 @@
 #include	<sys/file.h>
 #endif
 
-#include	<cgm_tools.h>
-#include	<ncarv.h>
-
+#include	<ncarg/c.h>
+#include	"cgm_tools.h"
 #include	"meta_edit.h"
 #include	"internals.h"
 
@@ -56,14 +56,7 @@
  */
 
 /*LINTLIBRARY*/
-extern	char	*strcpy();
-extern	char	*strcat();
-extern	char	*mktemp();
-extern	void	CGM_freeDirectory();
-extern	Directory	*ReallocDir();
-extern	Directory	*CGM_copyCreateDir();
 
-extern	int	errno;	/* global C library error number	*/
 /*
  * a list that is a representation of the contents of a  metafile in the
  * process of being edited. The metafile is not actually edited itself
@@ -99,6 +92,320 @@ static	unsigned char	*tmpBuf;	/* tmp storage for r/w metafile	*/
 
 #define	ERR	((Directory *) NULL)
 
+/*
+ *	shift_frames
+ *	PRIVATE
+ *		shift a group of frames to the "right" or the left 
+ *	depending on the value of src and dest
+ *	of frames. If more memory is needed in the directory then more
+ *	is allocated. 
+ *
+ * on entry
+ *	src		: first frame to be moved
+ *	dest		: destination of frames to be moved
+ *	num_frames		: number of frames to be moved
+ *	gap		: if (dest > src) => right shift and gap is size of hole *			  in records to be left. Else left shift and gap is size
+ *			  in records of space being filled by shifted frames. 
+ * on exit
+ *	dir		: has been updated to reflect move
+ *	list		: has been updated to reflect move
+ */
+static	shift_frames (src, dest, num_frames, gap, dir, list)
+	unsigned int	src,
+			dest,
+			num_frames,
+			gap;
+	Directory	*dir;
+	Working_list	*list;
+{
+	int	i;
+
+	/*
+	 * see if need more memory
+	 */
+	if ((dest + num_frames) > dir->dir_size) {
+
+		(void) ReallocDir(dir, dest + num_frames);
+	}
+
+	/*
+	 * shift frames over taking into account overlapping frames
+	 */
+	if (src < dest) {	/* right shift	*/
+		for (i = 0, dest += (num_frames-1), src += (num_frames-1); 
+						i < num_frames; 
+						i++, dest--, src--) {
+
+			list->list[dest] = list->list[src];
+
+			/*
+			 *	update the dir
+			 */
+			dir->d[dest].num_record  = dir->d[src].num_record;
+			dir->d[dest].type  = dir->d[src].type;
+
+			dir->d[dest].record = dir->d[src].record + gap;
+
+			if (dir->d[src].text) {
+				if (dir->d[dest].text) {
+					free((Voidptr) dir->d[dest].text);
+				}
+				dir->d[dest].text = malloc (
+					(unsigned) strlen(dir->d[src].text)+1);
+				if (! dir->d[dest].text) {
+					return(-1);
+				}
+
+				(void) strcpy(dir->d[dest].text, 
+							dir->d[src].text);
+			}
+
+		}
+	}
+	else	{	/* left shift		*/
+		for (i = 0; i < num_frames; i++, dest++, src++) {
+
+			list->list[dest] = list->list[src];
+
+			/*
+			 *	update the dir
+			 */
+			dir->d[dest].num_record  = dir->d[src].num_record;
+			dir->d[dest].type  = dir->d[src].type;
+
+			dir->d[dest].record = dir->d[src].record - gap;
+
+			if (dir->d[src].text) {
+				if (dir->d[dest].text) {
+					free((Voidptr) dir->d[dest].text);
+				}
+				dir->d[dest].text = malloc (
+					(unsigned) strlen(dir->d[src].text)+1);
+				if (! dir->d[dest].text) {
+					return(-1);
+				}
+
+				(void) strcpy(dir->d[dest].text, 
+							dir->d[src].text);
+			}
+
+		}
+	}
+	return(1);
+}
+/*	copy_dir
+ *	PRIVATE
+ *		copy a portion of a directory to another directory. The
+ *	frames effected in the destination directory are overwritten
+ *	If need be, more memory is allocated for the destination dir.
+ * on entry
+ *	d1		: the destination directory
+ *	d2		: the source directory
+ *	src		: starting frame in d2
+ *	dest		: target frame in d1
+ *	num_frames	: num frames to overwrite/copy
+ * on exit
+ *	d1		: has been updated
+ */
+static	copy_dir(d1, d2, src, dest, num_frames)
+	Directory	*d1, *d2;
+	unsigned int	src,
+			dest,
+			num_frames;
+{
+	int	i;
+	int	offset;	/* new offset of first frame copied	*/
+
+	/*
+	 *	calculate offset
+	 */
+	offset = (dest == 0 ? d1->d[0].record :
+		d1->d[dest - 1].record + d1->d[dest -1].num_record);
+	/*
+	 * see if need more memory
+	 */
+	if ((dest + num_frames) > d1->dir_size) {
+
+		(void) ReallocDir(d1, dest + num_frames);
+	}
+
+	/*
+	 * copy over dir contents
+	 */
+	for (i = 0; i < num_frames; i++, src++, dest++) {
+		d1->d[dest].num_record  = 
+			d2->d[src].num_record;
+		d1->d[dest].type  = 
+			d2->d[src].type;
+
+		if (i) {	/* don't change first new frame offset	*/
+			d1->d[dest].record =  
+				d1->d[dest-1].record + d1->d[dest-1].num_record;
+		}
+		else
+			d1->d[dest].record = offset;
+
+		if (d2->d[src].text) {
+			if (d1->d[dest].text) free((Voidptr) d1->d[dest].text);
+			d1->d[dest].text = malloc (
+					(unsigned) strlen(d2->d[src].text)+1);
+			if (! d1->d[dest].text) {
+				return(-1);
+			}
+
+			(void) strcpy(d1->d[dest].text, d2->d[src].text);
+		}
+	}
+
+	/*
+	 * update offsets of frames following new frames copied in
+	 */
+	for (i = dest + num_frames; i < d1->num_frames; i++) {
+		d1->d[i].record = d1->d[i-1].record + d1->d[i-1].num_record;
+	}
+
+
+	return(1);
+}
+/*
+ *	write_header
+ *	PRIVATE
+ *
+ *		install the header of metafile in another metafile
+ * on entry:
+ *	src_fd		: Cgm file descriptor for source file
+ *	dest_fd		: Cgm file descriptor for destination file
+ *	dir		: directory for src file
+ * on exit
+ *	return		: < 0 then error
+ */
+static
+write_header(src_fd, dest_fd, dir)
+	Cgm_fd		src_fd,
+			dest_fd;
+	Directory	*dir;
+{
+	int	i;
+
+	if ((CGM_lseek(src_fd, 0, L_SET)) < 0) {
+		return(-1);
+	}
+
+
+	for (i = 0; i < dir->d[0].record; i++) {
+		if((CGM_read(src_fd, tmpBuf)) < 0) {
+			return(-1);
+		}
+		if((CGM_write(dest_fd, tmpBuf)) < 0) {
+			return(-1);
+		}
+	}
+	return(1);
+}
+		
+/*
+ *	write_trailer
+ *	PRIVATE
+ *
+ *		install the trailer of metafile in another metafile
+ * on entry:
+ *	src_fd		: Cgm file descriptor for source file
+ *	dest_fd		: Cgm file descriptor for destination file
+ *	dir		: original directory for src file  (save dir) 
+ */
+static
+write_trailer(src_fd, dest_fd, dir)
+	Cgm_fd		src_fd,
+			dest_fd;
+	Directory	*dir;
+{
+	int	offset;	/* location of header in src file	*/
+
+	/*
+	 * get address of trailer in records
+	 */
+	offset = dir->d[dir->num_frames - 1].record +
+		 dir->d[dir->num_frames - 1].num_record;
+
+
+	if ((CGM_lseek(src_fd, offset, L_SET)) < 0) {
+		return(-1);
+	}	/* go to end of last frame	*/
+
+	while ((CGM_read(src_fd, tmpBuf)) > 0) { /* while not EOF	*/
+
+		if((CGM_write(dest_fd, tmpBuf)) < 0) {
+			return(-1);
+		}
+	}
+	return(1);
+}
+/*
+ *	write_frame
+ *	PRIVATE
+ *
+ *		append a frame from one file to another at the current
+ *	file ptrs position
+ * on entry:
+ *	src_fd		: Cgm file descriptor for source file
+ *	dest_fd		: Cgm file descriptor for destination file
+ *	tmp_fd		: Cgm file descriptor for the temp file 
+ *	list		: working list for src file
+ *	dir		: directory for src file
+ *	index		: which frame from src to append
+ */
+static
+write_frame(src_fd, dest_fd, tmp_fd,  list, dir, index)
+	Cgm_fd		src_fd,
+			dest_fd,
+			tmp_fd;
+	Working_list	list;
+	Directory	*dir;
+	unsigned	index;
+{
+
+	int	j;
+	int	offset,
+		frame;
+
+	/*
+	 * see if frame is in old file or read in from another file
+	 */
+	if (list.list[index].utype == ACTUAL) {
+		frame = list.list[index].uval.frame;
+		offset = dir->d[frame].record;
+		if ((CGM_lseek(src_fd, offset, L_SET)) < 0) {
+			return(-1);
+		}
+
+		for (j = 0; j < dir->d[frame].num_record; j++){
+			if((CGM_read(src_fd, tmpBuf)) < 0) {
+				return(-1);
+			}
+			if((CGM_write(dest_fd, tmpBuf)) < 0) {
+				return(-1);
+			}
+		}
+	} 
+	else {
+		offset= list.list[index].uval.frame_entry.start_rec;
+		if ((CGM_lseek(tmp_fd, offset, L_SET)) < 0) {
+			return(-1);
+		}
+
+		for (j = 0;
+		j < list.list[index].uval.frame_entry.num_rec;j++) {
+
+			if((CGM_read(tmp_fd,tmpBuf))< 0) {
+				return(-1);
+			}
+			if((CGM_write(dest_fd, tmpBuf)) < 0) {
+				return(-1);
+			}
+		}
+	}
+	return(1);
+}
 
 /*	CGM_copyFrames
  *	PUBLIC
@@ -142,19 +449,22 @@ Directory	*CGM_copyFrames(start_frame, num_frames, target )
 	}
 
 	/*
-	 * make sure there is room in the working list, if not icMalloc more mem
+	 * make sure there is room in the working list, if not malloc more mem
 	 */
 	if (workingList.number + num_frames > workingList.size) {
-		workingList.list = (List *) icRealloc 
+		workingList.list = (List *) realloc 
 			((char *) workingList.list, (unsigned) (sizeof(List ) * 
 			(workingList.number + num_frames)));
+		if (! workingList.list) {
+			return(ERR);
+		}
 
 		workingList.size += num_frames;
 	}
 
 
 	/*
-	 * make sure there is room in the directory, if not icMalloc more mem
+	 * make sure there is room in the directory, if not malloc more mem
 	 */
 	if (workingDir->num_frames + num_frames > workingDir->dir_size) {
 
@@ -336,19 +646,22 @@ Directory	*CGM_readFrames(ncar_cgm, start_frame, num_frames, target,
 	}
 
 	/*
-	 * make sure there is room in the working list, if not icMalloc more mem
+	 * make sure there is room in the working list, if not malloc more mem
 	 */
 	if (workingList.number + num_frames > workingList.size) {
-		workingList.list = (List *) icRealloc 
+		workingList.list = (List *) realloc 
 			((char *) workingList.list, (unsigned) (sizeof(List ) * 
 			(workingList.number + num_frames)));
+		if (! workingList.list) {
+			return(ERR);
+		}
 
 		workingList.size += num_frames;
 	}
 
 
 	/*
-	 * make sure there is room in the directory, if not icMalloc more mem
+	 * make sure there is room in the directory, if not malloc more mem
 	 */
 	if (workingDir->num_frames + num_frames > workingDir->dir_size) {
 
@@ -498,9 +811,12 @@ Directory	*CGM_moveFrames (start_frame, num_frames, target)
 		return(ERR); 
 
 	/*
-	 * icMalloc memory for list and dir to hold frames to be swaped
+	 * malloc memory for list and dir to hold frames to be swaped
 	 */
-	list.list = (List *) icMalloc ((unsigned) (sizeof(List ) * num_frames));
+	list.list = (List *) malloc ((unsigned) (sizeof(List ) * num_frames));
+	if (! list.list) {
+		return(ERR);
+	}
 
 	list.size = num_frames;
 
@@ -566,7 +882,7 @@ Directory	*CGM_moveFrames (start_frame, num_frames, target)
 		workingList.list[dest] = list.list[i];
 	}
 		
-	cfree((char *) list.list);
+	free((Voidptr) list.list);
 	CGM_freeDirectory(dir);
 	return(workingDir);
 }
@@ -619,13 +935,19 @@ Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp, verbose_fp)
 	/*
 	 *	store the name of the file
 	 */
-	ncarCgm = (char *) icMalloc ((unsigned) strlen(ncar_cgm) + 1);
+	ncarCgm = (char *) malloc ((unsigned) strlen(ncar_cgm) + 1);
+	if (! ncarCgm) {
+		return(ERR);
+	}
 	(void) strcpy(ncarCgm, ncar_cgm);
 
 	/*
 	 * create buffer for r/w of metafiles
 	 */
-	tmpBuf = (unsigned char *) icMalloc(r * sizeof(unsigned char));
+	tmpBuf = (unsigned char *) malloc(r * sizeof(unsigned char));
+	if (! tmpBuf) {
+		return(ERR);
+	}
 
 	/*
 	 * open the file and create a directory for it
@@ -642,8 +964,11 @@ Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp, verbose_fp)
 	/*
 	 * initialize working list with contents of ncar_file
 	 */
-	workingList.list = (List *) icMalloc 
+	workingList.list = (List *) malloc 
 		((unsigned) (workingDir->num_frames * sizeof (List)));
+	if (! workingList.list) {
+		return(ERR);
+	}
 
 	workingList.number = workingDir->num_frames;
 	workingList.size = workingDir->num_frames;
@@ -661,14 +986,14 @@ Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp, verbose_fp)
 	if ((saveDir = CGM_directory(workingFd,verboseFP)) == NULL) {
 		(void) CGM_close(workingFd);
 		CGM_freeDirectory(workingDir);
-		cfree((char *) workingList.list);
+		free((Voidptr) workingList.list);
 		return(ERR);
 	}
 #else
 	if ((saveDir = CGM_copyCreateDir(workingDir)) == NULL) {
 		(void) CGM_close(workingFd);
 		CGM_freeDirectory(workingDir);
-		cfree((char *) workingList.list);
+		free((Voidptr) workingList.list);
 		return(ERR);
 	}
 #endif
@@ -681,13 +1006,19 @@ Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp, verbose_fp)
 	 *	Use a default tmp directory if user has not specified 
 	 *	differently.
 	 */
-	if (tempFile) cfree (tempFile);
+	if (tempFile) free (tempFile);
 	if (local_tmp) {
-		tempFile = icMalloc(strlen(local_tmp) + strlen(TMPFILE) + 1);
+		tempFile = malloc(strlen(local_tmp) + strlen(TMPFILE) + 1);
+		if (! tempFile) {
+			return(ERR);
+		}
 		(void) strcpy(tempFile, local_tmp);
 	}
 	else  {
-		tempFile = icMalloc(strlen(TMPDIR) + strlen(TMPFILE) + 1);
+		tempFile = malloc(strlen(TMPDIR) + strlen(TMPFILE) + 1);
+		if (! tempFile) {
+			return(ERR);
+		}
 		(void) strcpy(tempFile, TMPDIR);
 	}
 
@@ -699,7 +1030,7 @@ Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp, verbose_fp)
 		(void) CGM_close(workingFd);
 		CGM_freeDirectory(workingDir);
 		CGM_freeDirectory(saveDir);
-		cfree((char *) workingList.list);
+		free((Voidptr) workingList.list);
 
 		return(ERR);
 	}
@@ -734,9 +1065,9 @@ int	CGM_termMetaEdit()
 	(void) unlink(tempFile);	/* remove the temp file		*/
 	(void) CGM_freeDirectory(workingDir);	/* free the working directory*/
 	(void) CGM_freeDirectory(saveDir);	/* free the backup directory*/
-	cfree((char *) workingList.list);
-	cfree((char *) tmpBuf);
-	if (recordSize > 0) cfree((char *) ncarCgm);
+	free((Voidptr) workingList.list);
+	free((Voidptr) tmpBuf);
+	if (recordSize > 0) free((Voidptr) ncarCgm);
 
 	Initialized = 0;		/* no longer are we initialized	*/
 	return(1);			/* success			*/
@@ -790,8 +1121,6 @@ int	CGM_writeFrames(ncar_cgm, start_frame, num_frames)
 	char	*s;
 	int	i;
 
-	extern	char	*strrchr();
-
 	int	r = ABS(recordSize);
 
 	errno = 0;
@@ -807,7 +1136,10 @@ int	CGM_writeFrames(ncar_cgm, start_frame, num_frames)
 	/*
 	 *	create && open a a scratch file to write edited metafile to
 	 */
-	newfile = icMalloc ((unsigned) (strlen(ncar_cgm) +strlen(writeFile)+1));
+	newfile = malloc ((unsigned) (strlen(ncar_cgm) +strlen(writeFile)+1));
+	if (! newfile) {
+		return(-1);
+	}
 	newfile = strcpy(newfile, ncar_cgm);
 
 	/*
@@ -880,7 +1212,7 @@ int	CGM_writeFrames(ncar_cgm, start_frame, num_frames)
 	 */
 	(void) CGM_close(tmp_fd);
 	(void) CGM_close(fd);		/* close the new file		*/
-	cfree(newfile);
+	free((Voidptr) newfile);
 	return(1);			/* success			*/
 }
 /*
@@ -957,11 +1289,14 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 	/* 
 	 * read in the last record
 	 */
-	buf = (unsigned char *) icMalloc (r);
+	buf = (unsigned char *) malloc (r);
+	if (! buf) {
+		return(-1);
+	}
 	if (CGM_read(fd, buf) < 0 ) {
 		(void) CGM_close(tmp_fd);
 		(void) CGM_close(fd);
-		if (buf) cfree((char *) buf);
+		if (buf) free((Voidptr) buf);
 		return(-1);
 	}
 	(void) CGM_close(fd);
@@ -975,7 +1310,7 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 		GETBITS(tmp, ID_POSS, ID_BITS ) != END_MF_ID) {
 
 		(void) CGM_close(tmp_fd);
-		if (buf) cfree((char *) buf);
+		if (buf) free((Voidptr) buf);
 		return(-1);
 	}
 
@@ -984,7 +1319,7 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 	 */
 	if ((fd = CGM_open(ncar_cgm, r, "a" )) < 0) {
 		(void) CGM_close(tmp_fd);
-		if (buf) cfree((char *) buf);
+		if (buf) free((Voidptr) buf);
 		return(-1);
 	}
 
@@ -998,7 +1333,7 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 						saveDir,start_frame) < 0){
 			(void) CGM_close(tmp_fd);
 			(void) CGM_close(fd);
-			if (buf) cfree((char *) buf);
+			if (buf) free((Voidptr) buf);
 			return(-1);
 		}
 	}
@@ -1014,7 +1349,7 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 	 */
 	(void) CGM_close(tmp_fd);
 	(void) CGM_close(fd);		/* close the new file		*/
-	if (buf) cfree((char *) buf);
+	if (buf) free((Voidptr) buf);
 	return(1);			/* success			*/
 }
 
@@ -1195,307 +1530,6 @@ Directory	*CGM_mergeFrames(bottom, top)
 	return(workingDir);
 }
 /*
- *	shift_frames
- *	PRIVATE
- *		shift a group of frames to the "right" or the left 
- *	depending on the value of src and dest
- *	of frames. If more memory is needed in the directory then more
- *	is allocated. 
- *
- * on entry
- *	src		: first frame to be moved
- *	dest		: destination of frames to be moved
- *	num_frames		: number of frames to be moved
- *	gap		: if (dest > src) => right shift and gap is size of hole *			  in records to be left. Else left shift and gap is size
- *			  in records of space being filled by shifted frames. 
- * on exit
- *	dir		: has been updated to reflect move
- *	list		: has been updated to reflect move
- */
-static	shift_frames (src, dest, num_frames, gap, dir, list)
-	unsigned int	src,
-			dest,
-			num_frames,
-			gap;
-	Directory	*dir;
-	Working_list	*list;
-{
-	int	i;
-
-	/*
-	 * see if need more memory
-	 */
-	if ((dest + num_frames) > dir->dir_size) {
-
-		(void) ReallocDir(dir, dest + num_frames);
-	}
-
-	/*
-	 * shift frames over taking into account overlapping frames
-	 */
-	if (src < dest) {	/* right shift	*/
-		for (i = 0, dest += (num_frames-1), src += (num_frames-1); 
-						i < num_frames; 
-						i++, dest--, src--) {
-
-			list->list[dest] = list->list[src];
-
-			/*
-			 *	update the dir
-			 */
-			dir->d[dest].num_record  = dir->d[src].num_record;
-			dir->d[dest].type  = dir->d[src].type;
-
-			dir->d[dest].record = dir->d[src].record + gap;
-
-			if (dir->d[src].text) {
-				if (dir->d[dest].text) cfree(dir->d[dest].text);
-				dir->d[dest].text = icMalloc (
-					(unsigned) strlen(dir->d[src].text)+1);
-
-				(void) strcpy(dir->d[dest].text, 
-							dir->d[src].text);
-			}
-
-		}
-	}
-	else	{	/* left shift		*/
-		for (i = 0; i < num_frames; i++, dest++, src++) {
-
-			list->list[dest] = list->list[src];
-
-			/*
-			 *	update the dir
-			 */
-			dir->d[dest].num_record  = dir->d[src].num_record;
-			dir->d[dest].type  = dir->d[src].type;
-
-			dir->d[dest].record = dir->d[src].record - gap;
-
-			if (dir->d[src].text) {
-				if (dir->d[dest].text) cfree(dir->d[dest].text);
-				dir->d[dest].text = icMalloc (
-					(unsigned) strlen(dir->d[src].text)+1);
-
-				(void) strcpy(dir->d[dest].text, 
-							dir->d[src].text);
-			}
-
-		}
-	}
-	return(1);
-}
-/*	copy_dir
- *	PRIVATE
- *		copy a portion of a directory to another directory. The
- *	frames effected in the destination directory are overwritten
- *	If need be, more memory is allocated for the destination dir.
- * on entry
- *	d1		: the destination directory
- *	d2		: the source directory
- *	src		: starting frame in d2
- *	dest		: target frame in d1
- *	num_frames	: num frames to overwrite/copy
- * on exit
- *	d1		: has been updated
- */
-static	copy_dir(d1, d2, src, dest, num_frames)
-	Directory	*d1, *d2;
-	unsigned int	src,
-			dest,
-			num_frames;
-{
-	int	i;
-	int	offset;	/* new offset of first frame copied	*/
-
-	/*
-	 *	calculate offset
-	 */
-	offset = (dest == 0 ? d1->d[0].record :
-		d1->d[dest - 1].record + d1->d[dest -1].num_record);
-	/*
-	 * see if need more memory
-	 */
-	if ((dest + num_frames) > d1->dir_size) {
-
-		(void) ReallocDir(d1, dest + num_frames);
-	}
-
-	/*
-	 * copy over dir contents
-	 */
-	for (i = 0; i < num_frames; i++, src++, dest++) {
-		d1->d[dest].num_record  = 
-			d2->d[src].num_record;
-		d1->d[dest].type  = 
-			d2->d[src].type;
-
-		if (i) {	/* don't change first new frame offset	*/
-			d1->d[dest].record =  
-				d1->d[dest-1].record + d1->d[dest-1].num_record;
-		}
-		else
-			d1->d[dest].record = offset;
-
-		if (d2->d[src].text) {
-			if (d1->d[dest].text) cfree(d1->d[dest].text);
-			d1->d[dest].text = icMalloc (
-					(unsigned) strlen(d2->d[src].text)+1);
-
-			(void) strcpy(d1->d[dest].text, d2->d[src].text);
-		}
-	}
-
-	/*
-	 * update offsets of frames following new frames copied in
-	 */
-	for (i = dest + num_frames; i < d1->num_frames; i++) {
-		d1->d[i].record = d1->d[i-1].record + d1->d[i-1].num_record;
-	}
-
-
-	return(1);
-}
-/*
- *	write_header
- *	PRIVATE
- *
- *		install the header of metafile in another metafile
- * on entry:
- *	src_fd		: Cgm file descriptor for source file
- *	dest_fd		: Cgm file descriptor for destination file
- *	dir		: directory for src file
- * on exit
- *	return		: < 0 then error
- */
-static
-write_header(src_fd, dest_fd, dir)
-	Cgm_fd		src_fd,
-			dest_fd;
-	Directory	*dir;
-{
-	int	i;
-
-	if ((CGM_lseek(src_fd, 0, L_SET)) < 0) {
-		return(-1);
-	}
-
-
-	for (i = 0; i < dir->d[0].record; i++) {
-		if((CGM_read(src_fd, tmpBuf)) < 0) {
-			return(-1);
-		}
-		if((CGM_write(dest_fd, tmpBuf)) < 0) {
-			return(-1);
-		}
-	}
-	return(1);
-}
-		
-/*
- *	write_trailer
- *	PRIVATE
- *
- *		install the trailer of metafile in another metafile
- * on entry:
- *	src_fd		: Cgm file descriptor for source file
- *	dest_fd		: Cgm file descriptor for destination file
- *	dir		: original directory for src file  (save dir) 
- */
-static
-write_trailer(src_fd, dest_fd, dir)
-	Cgm_fd		src_fd,
-			dest_fd;
-	Directory	*dir;
-{
-	int	offset;	/* location of header in src file	*/
-
-	/*
-	 * get address of trailer in records
-	 */
-	offset = dir->d[dir->num_frames - 1].record +
-		 dir->d[dir->num_frames - 1].num_record;
-
-
-	if ((CGM_lseek(src_fd, offset, L_SET)) < 0) {
-		return(-1);
-	}	/* go to end of last frame	*/
-
-	while ((CGM_read(src_fd, tmpBuf)) > 0) { /* while not EOF	*/
-
-		if((CGM_write(dest_fd, tmpBuf)) < 0) {
-			return(-1);
-		}
-	}
-	return(1);
-}
-/*
- *	write_frame
- *	PRIVATE
- *
- *		append a frame from one file to another at the current
- *	file ptrs position
- * on entry:
- *	src_fd		: Cgm file descriptor for source file
- *	dest_fd		: Cgm file descriptor for destination file
- *	tmp_fd		: Cgm file descriptor for the temp file 
- *	list		: working list for src file
- *	dir		: directory for src file
- *	index		: which frame from src to append
- */
-static
-write_frame(src_fd, dest_fd, tmp_fd,  list, dir, index)
-	Cgm_fd		src_fd,
-			dest_fd,
-			tmp_fd;
-	Working_list	list;
-	Directory	*dir;
-	unsigned	index;
-{
-
-	int	j;
-	int	offset,
-		frame;
-
-	/*
-	 * see if frame is in old file or read in from another file
-	 */
-	if (list.list[index].utype == ACTUAL) {
-		frame = list.list[index].uval.frame;
-		offset = dir->d[frame].record;
-		if ((CGM_lseek(src_fd, offset, L_SET)) < 0) {
-			return(-1);
-		}
-
-		for (j = 0; j < dir->d[frame].num_record; j++){
-			if((CGM_read(src_fd, tmpBuf)) < 0) {
-				return(-1);
-			}
-			if((CGM_write(dest_fd, tmpBuf)) < 0) {
-				return(-1);
-			}
-		}
-	} 
-	else {
-		offset= list.list[index].uval.frame_entry.start_rec;
-		if ((CGM_lseek(tmp_fd, offset, L_SET)) < 0) {
-			return(-1);
-		}
-
-		for (j = 0;
-		j < list.list[index].uval.frame_entry.num_rec;j++) {
-
-			if((CGM_read(tmp_fd,tmpBuf))< 0) {
-				return(-1);
-			}
-			if((CGM_write(dest_fd, tmpBuf)) < 0) {
-				return(-1);
-			}
-		}
-	}
-	return(1);
-}
-/*
  *	CGM_editFrame
  *	PUBLIC
  *
@@ -1631,10 +1665,13 @@ Directory	*CGM_editFrame(frame, edit_instr, num_occur)
 	 */
 	if (edit_instr->class == DEL_ELEMENT && edit_instr->id == BEG_PIC_ID) {
 		if (workingDir->d[frame].text != NULL) {
-			cfree ((char *) workingDir->d[frame].text);
+			free ((Voidptr) workingDir->d[frame].text);
 		}
 
-		workingDir->d[frame].text = icMalloc (edit_instr->data_length);
+		workingDir->d[frame].text = malloc (edit_instr->data_length);
+		if (! workingDir->d[frame].text) {
+			return((Directory *) NULL);
+		}
 		bcopy((char *) &edit_instr->buf[1], workingDir->d[frame].text, 
 			(int) edit_instr->data_length-1);
 
