@@ -1,5 +1,5 @@
 /*
- * $Id: basic03c.c,v 1.10 1995-06-28 23:37:15 scheitln Exp $
+ * $Id: basic03c.c,v 1.11 1996-01-04 16:45:14 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -33,15 +33,15 @@
 
 main()
 {
-        int appid1,appid2,wks,wks2,con1,con2,con3,field1,rlist;
+    int appid1,appid2,wks,wks2,con1,con2,con3,field1,rlist;
 
-	int data1[5][5] = { {3,4,4,5,5}, 
-			    {2,3,5,5,4},
-	                    {2,4,5,4,4},
-	                    {3,4,4,4,3},
-	                    {3,3,3,3,3} };
+    int data1[5][5] = { {3,4,4,5,5}, 
+                        {2,3,5,5,4},
+                        {2,4,5,4,4},
+                        {3,4,4,4,3},
+                        {3,3,3,3,3} };
 
-	int dims[2] = { 5, 5 };
+    int dims[2] = { 5, 5 };
 
 /*
  * Initialize the graphics libraries and create a resource list that
@@ -49,12 +49,11 @@ main()
  * clear (empty) this list, and create an application object.  This
  * object manages multiple resource databases used by separate objects.
  */
-        NhlInitialize();
-        rlist = NhlRLCreate(NhlSETRL);
+    NhlInitialize();
+    rlist = NhlRLCreate(NhlSETRL);
 
-        NhlRLClear(rlist);
-        NhlCreate(&appid1,"appid1",NhlappClass,NhlDEFAULT_APP,rlist);
-
+    NhlRLClear(rlist);
+    NhlCreate(&appid1,"appid1",NhlappClass,NhlDEFAULT_APP,rlist);
 /*
  * ###########
  * # FRAME 1 #
@@ -63,36 +62,33 @@ main()
  *
  * Create an X workstation.
  */
-	NhlRLClear(rlist);
-	NhlRLSetInteger(rlist,NhlNwkPause,True);
-	NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
-
+    NhlRLClear(rlist);
+    NhlRLSetInteger(rlist,NhlNwkPause,True);
+    NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
 /*
  * Create a scalar field object that will be used as a data set for a 
  * contour object.  The sfDataArray resource is used to assign a data
  * array to a scalar field data object.
  */
-        NhlRLClear(rlist);
-        NhlRLSetMDIntegerArray(rlist,"sfDataArray",&data1[0][0],2,dims);
-        NhlCreate(&field1,"field1",NhlscalarFieldClass,
-                  NhlDEFAULT_APP,rlist);
-
+    NhlRLClear(rlist);
+    NhlRLSetMDIntegerArray(rlist,"sfDataArray",&data1[0][0],2,dims);
+    NhlCreate(&field1,"field1",NhlscalarFieldClass,
+              NhlDEFAULT_APP,rlist);
 /*
  * Create a contour plot object and assign the data using the
  * cnScalarFieldData resource.
  */
-        NhlRLClear(rlist);
-        NhlRLSetInteger(rlist,"cnScalarFieldData",field1);
-        NhlCreate(&con1,"con1",NhlcontourPlotClass,wks,rlist);
+    NhlRLClear(rlist);
+    NhlRLSetInteger(rlist,"cnScalarFieldData",field1);
+    NhlCreate(&con1,"con1",NhlcontourPlotClass,wks,rlist);
 /*
  * Draw the plot. 
  */
-	NhlDraw(con1);
+    NhlDraw(con1);
 /*
  * Update and clear the workstation.
  */
-	NhlFrame(wks);
-
+    NhlFrame(wks);
 /*
  * ###########
  * # FRAME 2 #
@@ -105,8 +101,8 @@ main()
  * The resource file contains resource assignments that control the
  * characteristics of a plot.
  */
-        NhlRLClear(rlist);
-        NhlCreate(&appid2,"basic03",NhlappClass,NhlDEFAULT_APP,rlist);
+    NhlRLClear(rlist);
+    NhlCreate(&appid2,"basic03",NhlappClass,NhlDEFAULT_APP,rlist);
 /*
  * Create another workstation window and make it a child of the
  * new application object by using the appid2 variable as the argument
@@ -114,26 +110,25 @@ main()
  * object, the resources that are set in the basic03.res resource
  * file will apply to this object and its children.
  */
-        NhlRLClear(rlist);
-        NhlCreate(&wks2,"wks2",NhlxWorkstationClass,appid2,rlist);
+    NhlRLClear(rlist);
+    NhlCreate(&wks2,"wks2",NhlxWorkstationClass,appid2,rlist);
 /*
  * Create another contour plot object and assign the data.
  * Notice that the parent id is wks2, making the contour object
  * a child of the new workstation.
  */
-        NhlRLClear(rlist);
-        NhlRLSetInteger(rlist,"cnScalarFieldData",field1);
-        NhlCreate(&con2,"con2",NhlcontourPlotClass,wks2,rlist);
+    NhlRLClear(rlist);
+    NhlRLSetInteger(rlist,"cnScalarFieldData",field1);
+    NhlCreate(&con2,"con2",NhlcontourPlotClass,wks2,rlist);
 /*
  * The contour object is drawn with filled contours because there is
  * a resource in basic03.res that specifies that contour fill is on.
  */
-	NhlDraw(con2);
+    NhlDraw(con2);
 /*
  * Updates and clear the workstation.
  */
-	NhlFrame(wks2);
-
+    NhlFrame(wks2);
 /*
  * ###########
  * # FRAME 3 #
@@ -145,19 +140,18 @@ main()
  * a resource and its value.  In this example contour line labels are turned
  * off by setting the "cnLineLabelsOn" resource to "False".
  */
-        NhlRLClear(rlist);
-        NhlRLSetInteger(rlist,"cnScalarFieldData",field1);
-        NhlRLSetString(rlist,"cnLineLabelsOn","False");
-        NhlCreate(&con3,"con3",NhlcontourPlotClass,wks2,rlist);
+    NhlRLClear(rlist);
+    NhlRLSetInteger(rlist,"cnScalarFieldData",field1);
+    NhlRLSetString(rlist,"cnLineLabelsOn","False");
+    NhlCreate(&con3,"con3",NhlcontourPlotClass,wks2,rlist);
 /*
  * Draw the contour object.
  */
-	NhlDraw (con3);
+    NhlDraw (con3);
 /*
  * Update and clear the workstation.
  */
-	NhlFrame(wks2);
-
+    NhlFrame(wks2);
 /*
  * ###########
  * # FRAME 4 #
@@ -175,25 +169,25 @@ main()
  * is set to "True" in the resource file, we can override that value by
  * using the setvalues expression.  
  */
-        NhlRLClear(rlist);
-        NhlRLSetString(rlist,"cnFillOn","False");
-	NhlSetValues(con3,rlist);
+    NhlRLClear(rlist);
+    NhlRLSetString(rlist,"cnFillOn","False");
+    NhlSetValues(con3,rlist);
 /*
  * Draw the contour object.
  */
-	NhlDraw (con3);
+    NhlDraw (con3);
 /*
  * Update and clear the workstation
  */
-	NhlFrame(wks2);
+    NhlFrame(wks2);
 /*
  * Clean up (deleting the parent object recursively deletes all of its 
  * children).
  */
-	NhlDestroy(wks);
-	NhlDestroy(appid1);
-	NhlDestroy(appid2);
+    NhlDestroy(wks);
+    NhlDestroy(appid1);
+    NhlDestroy(appid2);
 
-	NhlClose();
-	exit (0);
+    NhlClose();
+    exit (0);
 }

@@ -1,5 +1,5 @@
 C
-C $Id: basic02f.f,v 1.11 1995-06-28 23:35:11 scheitln Exp $
+C $Id: basic02f.f,v 1.12 1996-01-04 16:45:14 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -36,7 +36,7 @@ C
       external NhlFContourPlotClass
 
       integer appid,wks,con1,rlist,ierr
-      integer NCGM, X11, PS	
+      integer NCGM, X11, PS
 C
 C Initialize the graphics libraries and create a resource list that
 C is normally used to assign name/value pairs within objects.  Then

@@ -1,5 +1,5 @@
 /*
- * $Id: basic01c.c,v 1.9 1995-06-28 23:31:19 scheitln Exp $
+ * $Id: basic01c.c,v 1.10 1996-01-04 16:45:13 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -43,9 +43,9 @@
 
 main()
 {
-	int appid,wks,con1,rlist;
+    int appid,wks,con1,rlist;
 
-	int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0;
 
 /*
  * ##########
@@ -68,13 +68,11 @@ main()
  * default values.
  *
  */
+    NhlInitialize();
+    rlist = NhlRLCreate(NhlSETRL);
 
-        NhlInitialize();
-        rlist = NhlRLCreate(NhlSETRL);
-
-        NhlRLClear(rlist);
-        NhlCreate(&appid,"basic01",NhlappClass,NhlDEFAULT_APP,rlist);
-
+    NhlRLClear(rlist);
+    NhlCreate(&appid,"basic01",NhlappClass,NhlDEFAULT_APP,rlist);
 /*
  * ##########
  * # STEP 2 #
@@ -96,32 +94,32 @@ main()
  * when creating the object.  In this example, no modifications are made to
  * default values.
  */
-        if (NCGM) {
-	/*
-	 * Create a meta file workstation.
-	 */
-		NhlRLClear(rlist);
-		NhlRLSetString(rlist,NhlNwkMetaName,"./basic01c.ncgm");
-		NhlCreate(&wks,"wks",NhlncgmWorkstationClass,NhlDEFAULT_APP,
-			  rlist);
-        }
-        else if (X11) {
-	/*
-	 * Create an X workstation.
-	 */
-		NhlRLClear(rlist);
-		NhlRLSetInteger(rlist,NhlNwkPause,True);
-		NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
-        }
-        else if (PS) {
-	/*
-	 * Create a PS file workstation.
-	 */
-		NhlRLClear(rlist);
-		NhlRLSetString(rlist,NhlNwkPSFileName,"./basic01c.ps");
-		NhlCreate(&wks,"wks",NhlpsWorkstationClass,NhlDEFAULT_APP,
-			  rlist);
-        }
+    if (NCGM) {
+/*
+ * Create a meta file workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkMetaName,"./basic01c.ncgm");
+        NhlCreate(&wks,"wks",NhlncgmWorkstationClass,NhlDEFAULT_APP,
+                  rlist);
+    }
+    else if (X11) {
+/*
+ * Create an X workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
+    }
+    else if (PS) {
+/*
+ * Create a PS file workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./basic01c.ps");
+        NhlCreate(&wks,"wks",NhlpsWorkstationClass,NhlDEFAULT_APP,
+                  rlist);
+    }
 /*
  * ##########
  * # STEP 3 #
@@ -144,9 +142,8 @@ main()
  * default values.
  */
 
-        NhlRLClear(rlist);
-        NhlCreate(&con1,"con1",NhlcontourPlotClass,wks,rlist);
-
+    NhlRLClear(rlist);
+    NhlCreate(&con1,"con1",NhlcontourPlotClass,wks,rlist);
 /*
  * ##########
  * # STEP 4 #
@@ -155,16 +152,14 @@ main()
  * the draw function is the variable name of the object that you want to
  * draw.
  */
-	NhlDraw(con1);
-
+    NhlDraw(con1);
 /*
  * ##########
  * # STEP 5 #
  * ##########
  * The frame call updates and then clears the workstation.
  */
-	NhlFrame(wks);
-
+    NhlFrame(wks);
 /*
  * ##########
  * # STEP 6 #
@@ -176,7 +171,7 @@ main()
  * is used to tell the HLU library that the programmer is done 
  * using it, and to free up any memory that it can. 
  */
-	NhlDestroy(con1);
-        NhlClose();
-	exit(0);
+    NhlDestroy(con1);
+    NhlClose();
+    exit(0);
 }

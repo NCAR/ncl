@@ -1,5 +1,5 @@
 /*
- * $Id: basic04c.c,v 1.7 1995-06-29 00:06:52 scheitln Exp $
+ * $Id: basic04c.c,v 1.8 1996-01-04 16:45:15 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -43,15 +43,14 @@
 
 main ()
 {
-        int appid,nwks,xwks,xcon,field1,rlist;
+    int appid,nwks,xwks,xcon,field1,rlist;
 
-        int data1[5][5] = { {3,4,4,5,5},
-                            {2,3,5,5,4},
-                            {2,4,5,4,4},
-                            {3,4,4,4,3},
-                            {3,3,3,3,3} };
-        int dims[2] = { 5, 5 };
-
+    int data1[5][5] = { {3,4,4,5,5},
+                        {2,3,5,5,4},
+                        {2,4,5,4,4},
+                        {3,4,4,4,3},
+                        {3,3,3,3,3} };
+    int dims[2] = { 5, 5 };
 /*
  * ##########
  * # STEP 1 #
@@ -61,12 +60,11 @@ main ()
  * clear (empty) this list, and create an application object.  This
  * object manages multiple resource databases used by separate objects.
  */
-        NhlInitialize();
-        rlist = NhlRLCreate(NhlSETRL);
-
-        NhlRLClear(rlist);
-        NhlCreate(&appid,"appid",NhlappClass,NhlDEFAULT_APP,rlist);
-
+    NhlInitialize();
+    rlist = NhlRLCreate(NhlSETRL);
+    
+    NhlRLClear(rlist);
+    NhlCreate(&appid,"appid",NhlappClass,NhlDEFAULT_APP,rlist);
 /*
  * ##########
  * # STEP 2 #
@@ -83,27 +81,26 @@ main ()
  * "NhlDEFAULT_APP" is used.  The fifth argument, "rlist", is the resource 
  * list modifiers to be used when creating the object.
  */
-        NhlRLClear(rlist);
-        NhlCreate(&xwks,"xwks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
+    NhlRLClear(rlist);
+    NhlCreate(&xwks,"xwks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
 /*
  * The resource, wkMetaName, lets you specify the name of the output NCGM
  * file.  In this example, it is called basic04c.ncgm.  If omitted, the 
  * default name, gmeta,  will be used.
  */
-        NhlRLClear(rlist);
-        NhlRLSetString(rlist,"wkMetaName","basic04c.ncgm");
-        NhlCreate(&nwks,"nwks",NhlncgmWorkstationClass,NhlDEFAULT_APP,
-                  rlist);
+    NhlRLClear(rlist);
+    NhlRLSetString(rlist,"wkMetaName","basic04c.ncgm");
+    NhlCreate(&nwks,"nwks",NhlncgmWorkstationClass,NhlDEFAULT_APP,
+              rlist);
 /*
  * Create a scalar field object that will be used as a data set for a
  * contour object.  The sfDataArray resource is used to assign a data
  * array to a scalar field data object.
  */
-        NhlRLClear(rlist);
-        NhlRLSetMDIntegerArray(rlist,"sfDataArray",&data1[0][0],2,dims);
-        NhlCreate(&field1,"field1",NhlscalarFieldClass,
-                  NhlDEFAULT_APP,rlist);
-
+    NhlRLClear(rlist);
+    NhlRLSetMDIntegerArray(rlist,"sfDataArray",&data1[0][0],2,dims);
+    NhlCreate(&field1,"field1",NhlscalarFieldClass,
+              NhlDEFAULT_APP,rlist);
 /*
  * ##########
  * # STEP 3 #
@@ -113,60 +110,53 @@ main ()
  * Create a contour object and
  * assign data using the cnScalarFieldData resource.
  */
-        NhlRLClear(rlist);
-        NhlRLSetInteger(rlist,"cnScalarFieldData",field1);
-        NhlCreate(&xcon,"xcon",NhlcontourPlotClass,xwks,rlist);
-
+    NhlRLClear(rlist);
+    NhlRLSetInteger(rlist,"cnScalarFieldData",field1);
+    NhlCreate(&xcon,"xcon",NhlcontourPlotClass,xwks,rlist);
 /*
  * ##########
  * # STEP 4 #
  * ##########
  * Draw the object
  */
-	NhlDraw(xwks);
-
+    NhlDraw(xwks);
 /*
  * ##########
  * # STEP 5 #
  * ##########
  * Call frame to update and clear the workstations
  */
-	NhlFrame(xwks);
-
+    NhlFrame(xwks);
 /*
  * ##########
  * # STEP 6 #
  * ##########
  * Change workstations
  */
-
-	NhlChangeWorkstation(xcon,nwks);
-
+    NhlChangeWorkstation(xcon,nwks);
 /*
  * ##########
  * # STEP 7 #
  * ##########
  * Draw the object
  */
-	NhlDraw(nwks);
-
+    NhlDraw(nwks);
 /*
  * ##########
  * # STEP 8 #
  * ##########
  * Call frame to update and clear the workstations
  */
-	NhlFrame(nwks);
-
+    NhlFrame(nwks);
 /*
  * ##########
  * # STEP 6 #
  * ##########
  * Clean up memory.
  */
-	NhlDestroy(xwks);
-	NhlDestroy(nwks);
+    NhlDestroy(xwks);
+    NhlDestroy(nwks);
 
-	NhlClose();
-	exit (0);
+    NhlClose();
+    exit (0);
 }

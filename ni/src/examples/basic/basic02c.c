@@ -1,5 +1,5 @@
 /*
- * $Id: basic02c.c,v 1.9 1995-06-28 23:35:10 scheitln Exp $
+ * $Id: basic02c.c,v 1.10 1996-01-04 16:45:13 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -37,9 +37,9 @@
 
 main()
 {
-        int appid,wks,con1,rlist;
+    int appid,wks,con1,rlist;
 
-	int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0;
 
 /*
  * Initialize the graphics libraries and create a resource list that
@@ -47,12 +47,11 @@ main()
  * clear (empty) this list, and create an application object.  This
  * object manages multiple resource databases used by separate objects.
  */
-        NhlInitialize();
-        rlist = NhlRLCreate(NhlSETRL);
+    NhlInitialize();
+    rlist = NhlRLCreate(NhlSETRL);
 
-        NhlRLClear(rlist);
-        NhlCreate(&appid,"basic01",NhlappClass,NhlDEFAULT_APP,rlist);
-
+    NhlRLClear(rlist);
+    NhlCreate(&appid,"basic01",NhlappClass,NhlDEFAULT_APP,rlist);
 /*
  * ###########
  * # FRAME 1 #
@@ -60,33 +59,32 @@ main()
  * Choose the type of output you want to create.  You may write your
  * output to an NCGM file, X workstation window, or a PostScript file. 
  */
-        if (NCGM) {
-        /*
-         * Create a meta file workstation.
-         */
-                NhlRLClear(rlist);
-                NhlRLSetString(rlist,NhlNwkMetaName,"./basic02c.ncgm");
-                NhlCreate(&wks,"wks",NhlncgmWorkstationClass,NhlDEFAULT_APP,
-                          rlist);
-        }
-        else if (X11) {
-        /*
-         * Create an X workstation.
-         */
-                NhlRLClear(rlist);
-                NhlRLSetInteger(rlist,NhlNwkPause,True);
-		NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
-        }
-        else if (PS) {
-        /*
-         * Create a PS workstation.
-         */
-                NhlRLClear(rlist);
-                NhlRLSetString(rlist,NhlNwkPSFileName,"./basic02c.ps");
-                NhlCreate(&wks,"wks",NhlpsWorkstationClass,NhlDEFAULT_APP,
-                          rlist);
-       }
-
+    if (NCGM) {
+/*
+ * Create a meta file workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkMetaName,"./basic02c.ncgm");
+        NhlCreate(&wks,"wks",NhlncgmWorkstationClass,NhlDEFAULT_APP,
+                  rlist);
+    }
+    else if (X11) {
+/*
+ * Create an X workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
+    }
+    else if (PS) {
+/*
+ * Create a PS workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./basic02c.ps");
+        NhlCreate(&wks,"wks",NhlpsWorkstationClass,NhlDEFAULT_APP,
+                  rlist);
+    }
 /*
  * Create a plot object.  In this example, we will create a contour plot.
  *
@@ -98,25 +96,22 @@ main()
  * system (0,0) specifies the lower-left corner and (1,1) specifies the 
  * upper-right corner of a plot.
  */
-        NhlRLClear(rlist);
-	NhlRLSetFloat(rlist,"vpXF",0.05); 
-	NhlRLSetFloat(rlist,"vpYF",0.95); 
-	NhlRLSetFloat(rlist,"vpWidthF",0.4); 
-	NhlRLSetFloat(rlist,"vpHeightF",0.4); 
-        NhlCreate(&con1,"con1",NhlcontourPlotClass,wks,rlist);
-
+    NhlRLClear(rlist);
+    NhlRLSetFloat(rlist,"vpXF",0.05); 
+    NhlRLSetFloat(rlist,"vpYF",0.95); 
+    NhlRLSetFloat(rlist,"vpWidthF",0.4); 
+    NhlRLSetFloat(rlist,"vpHeightF",0.4); 
+    NhlCreate(&con1,"con1",NhlcontourPlotClass,wks,rlist);
 /*
  * Draw the plot. 
  */
-	NhlDraw(con1);
-
+    NhlDraw(con1);
 /*
  * The frame call updates and then clears the workstation.
  * Anything written to the workstation after a frame call is made will be
  * drawn in a subsequent frame. 
  */
-	NhlFrame(wks);
-
+    NhlFrame(wks);
 /*
  * ###########
  * # FRAME 2 #
@@ -127,8 +122,7 @@ main()
  * Calling draw again will produce the identical plot that was drawn in the
  * first frame.
  */
-	NhlDraw(con1);
-
+    NhlDraw(con1);
 /*
  * To add another plot to the same frame, we first need to reset the 
  * viewport resources so that the next plot does not overwrite the first
@@ -138,29 +132,26 @@ main()
  * with the create call.  This is then followed by a list of resource value
  * pairs that apply to the object.
  */
-        NhlRLClear(rlist);
-	NhlRLSetFloat(rlist,"vpXF",0.55); 
-	NhlRLSetFloat(rlist,"vpYF",0.45); 
-	NhlRLSetFloat(rlist,"vpWidthF",0.2); 
-	NhlRLSetFloat(rlist,"vpHeightF",0.2); 
+    NhlRLClear(rlist);
+    NhlRLSetFloat(rlist,"vpXF",0.55); 
+    NhlRLSetFloat(rlist,"vpYF",0.45); 
+    NhlRLSetFloat(rlist,"vpWidthF",0.2); 
+    NhlRLSetFloat(rlist,"vpHeightF",0.2); 
         NhlSetValues(con1,rlist);
-
 /*
  * Because of the new viewport resource settings, calling draw produces 
  * a plot in the lower-right quadrant of the frame.
  */
-	NhlDraw(con1);
-
+    NhlDraw(con1);
 /*
  * Updates and clear the workstation.
  */
-	NhlFrame(wks);
-
+    NhlFrame(wks);
 /*
  * Clean up (destroying the parent object recursively destroys all of its 
  * children).
  */
-	NhlDestroy(con1);
-	NhlClose();
-	exit (0);
+    NhlDestroy(con1);
+    NhlClose();
+    exit (0);
 }

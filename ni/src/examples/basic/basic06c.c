@@ -47,34 +47,34 @@ void draw_text();
 main()
 {
 
-	int appid,rlist;
-	int xwork_id,text_id,box_id,data_id;
-	int dataspec;
-	int i;
+    int appid,rlist;
+    int xwork_id,text_id,box_id,data_id;
+    int dataspec;
+    int i;
 
-	char text[6];
+    char text[6];
 
-	float xdra[] = {0.0, 0.1, 0.5, 0.9, 1.0, 0.9, 0.5, 0.1, 0.0};
-	float ydra[] = {0.5, 0.9, 1.0, 0.9, 0.5, 0.1, 0.0, 0.1, 0.5};
-	float xpos,ypos;
+    float xdra[] = {0.0, 0.1, 0.5, 0.9, 1.0, 0.9, 0.5, 0.1, 0.0};
+    float ydra[] = {0.5, 0.9, 1.0, 0.9, 0.5, 0.1, 0.0, 0.1, 0.5};
+    float xpos,ypos;
 
 /*
  * Define a simple color map (index 0 defines the background color).
  */
-	float cmap[4][3] = { { 1.0, 1.0, 1.0 },
-			     { 0.0, 0.0, 1.0 },
-			     { 0.0, 1.0, 0.0 },
-			     { 1.0, 0.0, 0.0 } };
-	int dims[] = {4,3};
+    float cmap[4][3] = { { 1.0, 1.0, 1.0 },
+                 { 0.0, 0.0, 1.0 },
+                 { 0.0, 1.0, 0.0 },
+                 { 1.0, 0.0, 0.0 } };
+    int dims[] = {4,3};
 /*
  * Set the display. Default is to display output to an X workstation.
  */
-	int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0;
 
 /*
  * Initialize the high level utility library and create application.
  */
-	NhlInitialize();
+    NhlInitialize();
 
         rlist = NhlRLCreate(NhlSETRL);
         NhlRLClear(rlist);
@@ -82,47 +82,47 @@ main()
         NhlCreate(&appid,"basic06",NhlappClass,NhlDEFAULT_APP,rlist);
 
 
-	if (NCGM)
-	{
-	/*
-	 * Create a meta file workstation.
-	 */
-		NhlRLClear(rlist);
-		NhlRLSetString(rlist,NhlNwkMetaName,"./basic06c.ncgm");
-		NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,dims);
-		NhlCreate(&xwork_id,"simple",NhlncgmWorkstationClass,
-			  NhlDEFAULT_APP,rlist);
-	}
-	else if (X11)
-	{
-	/*
-	 * Create an X workstation.
-	 */
-		NhlRLClear(rlist);
-		NhlRLSetInteger(rlist,NhlNwkPause,True);
-		NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,dims);
-		NhlCreate(&xwork_id,"simple",NhlxWorkstationClass,
+    if (NCGM)
+    {
+    /*
+     * Create a meta file workstation.
+     */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkMetaName,"./basic06c.ncgm");
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,dims);
+        NhlCreate(&xwork_id,"simple",NhlncgmWorkstationClass,
+              NhlDEFAULT_APP,rlist);
+    }
+    else if (X11)
+    {
+    /*
+     * Create an X workstation.
+     */
+        NhlRLClear(rlist);
+        NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,dims);
+        NhlCreate(&xwork_id,"simple",NhlxWorkstationClass,
                           NhlDEFAULT_APP,rlist);
-	}
-	else if (PS)
-	{
-	/*
-	 * Create a PS file workstation.
-	 */
-		NhlRLClear(rlist);
-		NhlRLSetString(rlist,NhlNwkPSFileName,"./basic06c.ps");
-		NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,dims);
-		NhlCreate(&xwork_id,"simple",NhlpsWorkstationClass,
-			  NhlDEFAULT_APP,rlist);
-	}
+    }
+    else if (PS)
+    {
+    /*
+     * Create a PS file workstation.
+     */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./basic06c.ps");
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,dims);
+        NhlCreate(&xwork_id,"simple",NhlpsWorkstationClass,
+              NhlDEFAULT_APP,rlist);
+    }
 
 /*
  * Create data object for an XyPlot
  */
-	NhlRLClear(rlist);
-	NhlRLSetFloatArray(rlist,NhlNcaXArray,xdra,NhlNumber(xdra));
-	NhlRLSetFloatArray(rlist,NhlNcaYArray,ydra,NhlNumber(ydra));
-	NhlCreate(&data_id,"xyData",NhlcoordArraysClass,NhlDEFAULT_APP,rlist);
+    NhlRLClear(rlist);
+    NhlRLSetFloatArray(rlist,NhlNcaXArray,xdra,NhlNumber(xdra));
+    NhlRLSetFloatArray(rlist,NhlNcaYArray,ydra,NhlNumber(ydra));
+    NhlCreate(&data_id,"xyData",NhlcoordArraysClass,NhlDEFAULT_APP,rlist);
 
 /*
  * Create a simple XyPlot object with no labels or borders.  The
@@ -130,73 +130,73 @@ main()
  * the workstation identified by xwork_id when the draw procedure
  * is invoked on it.
  */
-	NhlRLClear(rlist);
-	NhlRLSetString(rlist,NhlNtmXBBorderOn,"False");
-	NhlRLSetString(rlist,NhlNtmXTBorderOn,"False");
-	NhlRLSetString(rlist,NhlNtmYLBorderOn,"False");
-	NhlRLSetString(rlist,NhlNtmYRBorderOn,"False");
-	NhlRLSetString(rlist,NhlNtmXBOn,"False");
-	NhlRLSetString(rlist,NhlNtmXTOn,"False");
-	NhlRLSetString(rlist,NhlNtmYLOn,"False");
-	NhlRLSetString(rlist,NhlNtmYROn,"False");
-	NhlRLSetFloat(rlist,NhlNvpXF,0.0);
-	NhlRLSetFloat(rlist,NhlNvpYF,1.0);
-	NhlRLSetFloat(rlist,NhlNvpWidthF,1.0);
-	NhlRLSetFloat(rlist,NhlNvpHeightF,1.0);
-	NhlCreate(&box_id,"Box",NhlxyPlotClass,xwork_id,rlist);
+    NhlRLClear(rlist);
+    NhlRLSetString(rlist,NhlNtmXBBorderOn,"False");
+    NhlRLSetString(rlist,NhlNtmXTBorderOn,"False");
+    NhlRLSetString(rlist,NhlNtmYLBorderOn,"False");
+    NhlRLSetString(rlist,NhlNtmYRBorderOn,"False");
+    NhlRLSetString(rlist,NhlNtmXBOn,"False");
+    NhlRLSetString(rlist,NhlNtmXTOn,"False");
+    NhlRLSetString(rlist,NhlNtmYLOn,"False");
+    NhlRLSetString(rlist,NhlNtmYROn,"False");
+    NhlRLSetFloat(rlist,NhlNvpXF,0.0);
+    NhlRLSetFloat(rlist,NhlNvpYF,1.0);
+    NhlRLSetFloat(rlist,NhlNvpWidthF,1.0);
+    NhlRLSetFloat(rlist,NhlNvpHeightF,1.0);
+    NhlCreate(&box_id,"Box",NhlxyPlotClass,xwork_id,rlist);
 
 /*
  * Create a TextItem object.
  */
-	NhlRLClear(rlist);
-	NhlRLSetFloat(rlist,NhlNtxPosXF,0.5);
-	NhlRLSetFloat(rlist,NhlNtxPosYF,0.5);
-	NhlRLSetInteger(rlist,NhlNtxFont,26);
+    NhlRLClear(rlist);
+    NhlRLSetFloat(rlist,NhlNtxPosXF,0.5);
+    NhlRLSetFloat(rlist,NhlNtxPosYF,0.5);
+    NhlRLSetInteger(rlist,NhlNtxFont,26);
         NhlCreate(&text_id,"Text",NhltextItemClass,xwork_id,rlist);
 
 /*
  * Add the data identified by data_id to the XyPlot.
  */
-	dataspec = NhlAddData(box_id,"xyCoordData",data_id);
+    dataspec = NhlAddData(box_id,"xyCoordData",data_id);
 
 /*
  * Draw three labeled boxes at different sizes and in different positions
  * and with different colors.
  */
-	for(i=1;i<=3;++i)
-	{
-		xpos = -0.05*i*i + 0.5*i - 0.20;
-		ypos = 1.0-xpos;
-		sprintf(text,"%s %d","Box",i);	
+    for(i=1;i<=3;++i)
+    {
+        xpos = -0.05*i*i + 0.5*i - 0.20;
+        ypos = 1.0-xpos;
+        sprintf(text,"%s %d","Box",i);  
 
-	/*
-	 * Specify a text string and its color.
-	 */
-		NhlRLClear(rlist);
-		NhlRLSetString(rlist,NhlNtxString,text);
-		NhlRLSetInteger(rlist,NhlNtxFontColor,4-i);
-		NhlSetValues(text_id,rlist);
+    /*
+     * Specify a text string and its color.
+     */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNtxString,text);
+        NhlRLSetInteger(rlist,NhlNtxFontColor,4-i);
+        NhlSetValues(text_id,rlist);
 
-	/*
-	 * Set the XyPlot curve color.
-	 */
-		NhlRLClear(rlist);
-		NhlRLSetString(rlist,NhlNxyMonoLineColor,"True");
-		NhlRLSetInteger(rlist,NhlNxyLineColor,i);
-		NhlSetValues(dataspec,rlist);
+    /*
+     * Set the XyPlot curve color.
+     */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNxyMonoLineColor,"True");
+        NhlRLSetInteger(rlist,NhlNxyLineColor,i);
+        NhlSetValues(dataspec,rlist);
 
-	/*
-	 * Draw box and text.
-	 */
-		draw_plot(box_id, xpos, ypos, 0.36-0.09*(i-1));
-		draw_text(text_id, xpos, ypos, 0.08-0.02*(i-1));
-	}
+    /*
+     * Draw box and text.
+     */
+        draw_plot(box_id, xpos, ypos, 0.36-0.09*(i-1));
+        draw_text(text_id, xpos, ypos, 0.08-0.02*(i-1));
+    }
 
-	NhlFrame(xwork_id);
+    NhlFrame(xwork_id);
 
-	NhlDestroy(xwork_id);
+    NhlDestroy(xwork_id);
         NhlClose();
-	exit (0);
+    exit (0);
 }
 
 
@@ -209,32 +209,32 @@ float x,y,scale;
  * draws it centered at coordinate (x,y) and scaled by "scale".  
  * The original plot object is returned unchanged.
  */
-	int rlist = NhlRLCreate(NhlSETRL);
-	int grlist = NhlRLCreate(NhlGETRL);
+    int rlist = NhlRLCreate(NhlSETRL);
+    int grlist = NhlRLCreate(NhlGETRL);
 
-	float x_ref,y_ref,width_ref,height_ref;
+    float x_ref,y_ref,width_ref,height_ref;
 
-	NhlRLClear(grlist);
-	NhlRLGetFloat(grlist,NhlNvpXF,&x_ref);
-	NhlRLGetFloat(grlist,NhlNvpYF,&y_ref);
-	NhlRLGetFloat(grlist,NhlNvpWidthF,&width_ref);
-	NhlRLGetFloat(grlist,NhlNvpHeightF,&height_ref);
+    NhlRLClear(grlist);
+    NhlRLGetFloat(grlist,NhlNvpXF,&x_ref);
+    NhlRLGetFloat(grlist,NhlNvpYF,&y_ref);
+    NhlRLGetFloat(grlist,NhlNvpWidthF,&width_ref);
+    NhlRLGetFloat(grlist,NhlNvpHeightF,&height_ref);
         NhlGetValues(id,grlist);
 
-	NhlRLClear(rlist);
-	NhlRLSetFloat(rlist,NhlNvpXF,x - 0.5*width_ref*scale);
-	NhlRLSetFloat(rlist,NhlNvpYF,y + 0.5*height_ref*scale);
-	NhlRLSetFloat(rlist,NhlNvpWidthF,width_ref*scale);
-	NhlRLSetFloat(rlist,NhlNvpHeightF,height_ref*scale);
+    NhlRLClear(rlist);
+    NhlRLSetFloat(rlist,NhlNvpXF,x - 0.5*width_ref*scale);
+    NhlRLSetFloat(rlist,NhlNvpYF,y + 0.5*height_ref*scale);
+    NhlRLSetFloat(rlist,NhlNvpWidthF,width_ref*scale);
+    NhlRLSetFloat(rlist,NhlNvpHeightF,height_ref*scale);
         NhlSetValues(id,rlist);
 
         NhlDraw(id);
 
-	NhlRLClear(rlist);
-	NhlRLSetFloat(rlist,NhlNvpXF,x_ref);
-	NhlRLSetFloat(rlist,NhlNvpYF,y_ref);
-	NhlRLSetFloat(rlist,NhlNvpWidthF,width_ref);
-	NhlRLSetFloat(rlist,NhlNvpHeightF,height_ref);
+    NhlRLClear(rlist);
+    NhlRLSetFloat(rlist,NhlNvpXF,x_ref);
+    NhlRLSetFloat(rlist,NhlNvpYF,y_ref);
+    NhlRLSetFloat(rlist,NhlNvpWidthF,width_ref);
+    NhlRLSetFloat(rlist,NhlNvpHeightF,height_ref);
         NhlSetValues(id,rlist);
 }
 
@@ -246,28 +246,28 @@ float x,y,height;
  * This procedure takes the text string in the object identified by "id"
  * and draws it centered at coordinate (x,y) with a height of "height".
  */
-	int rlist = NhlRLCreate(NhlSETRL);
-	int grlist = NhlRLCreate(NhlGETRL);
+    int rlist = NhlRLCreate(NhlSETRL);
+    int grlist = NhlRLCreate(NhlGETRL);
 
-	float xpos,ypos,fheight;
+    float xpos,ypos,fheight;
 
-	NhlRLClear(grlist);
-	NhlRLGetFloat(grlist,NhlNtxPosXF,&xpos);
-	NhlRLGetFloat(grlist,NhlNtxPosYF,&ypos);
-	NhlRLGetFloat(grlist,NhlNtxFontHeightF,&fheight);
+    NhlRLClear(grlist);
+    NhlRLGetFloat(grlist,NhlNtxPosXF,&xpos);
+    NhlRLGetFloat(grlist,NhlNtxPosYF,&ypos);
+    NhlRLGetFloat(grlist,NhlNtxFontHeightF,&fheight);
         NhlGetValues(id,grlist);
 
-	NhlRLClear(rlist);
-	NhlRLSetFloat(rlist,NhlNtxPosXF,x);
-	NhlRLSetFloat(rlist,NhlNtxPosYF,y);
-	NhlRLSetFloat(rlist,NhlNtxFontHeightF,height);
+    NhlRLClear(rlist);
+    NhlRLSetFloat(rlist,NhlNtxPosXF,x);
+    NhlRLSetFloat(rlist,NhlNtxPosYF,y);
+    NhlRLSetFloat(rlist,NhlNtxFontHeightF,height);
         NhlSetValues(id,rlist);
 
         NhlDraw(id);
 
-	NhlRLClear(rlist);
-	NhlRLSetFloat(rlist,NhlNtxPosXF,xpos);
-	NhlRLSetFloat(rlist,NhlNtxPosYF,ypos);
-	NhlRLSetFloat(rlist,NhlNtxFontHeightF,fheight);
+    NhlRLClear(rlist);
+    NhlRLSetFloat(rlist,NhlNtxPosXF,xpos);
+    NhlRLSetFloat(rlist,NhlNtxPosYF,ypos);
+    NhlRLSetFloat(rlist,NhlNtxFontHeightF,fheight);
         NhlSetValues(id,rlist);
 }
