@@ -1,5 +1,5 @@
 C
-C	$Id: gtx.f,v 1.7 2004-12-16 19:10:11 fred Exp $
+C	$Id: gtx.f,v 1.8 2004-12-16 19:23:13 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -49,7 +49,7 @@ C
       CALL GZW2NY(1,PY,PYN)
       RY(1) = PYN
 C
-C  Set function code and put out the character arrays across the
+C  Set the function code and put out the character arrays across the
 C  workstation interface.  The continuation flag signals
 C  continuation of the character array, the position coordinates
 C  are picked up on the first invocation of the workstation
