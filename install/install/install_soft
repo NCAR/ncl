@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: install_soft,v 1.7 1995-06-07 17:17:38 haley Exp $
+#      $Id: install_soft,v 1.8 1995-08-22 21:17:36 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -106,12 +106,10 @@ while (1)
 cat <<EOF
 
 
-				NCAR Graphics
-			        Version $VERSION
-			     Copyright (C)  1995
-		University Corporation for Atmospheric Research
-			     All Rights Reserved
-
+                 NCAR Graphics Unix Version $VERSION
+                     Copyright (C) 1987-1995
+          University Corporation for Atmospheric Research
+     The use of this Software is governed by a License Agreement.
 
 
 
