@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.75 1999-04-02 23:51:07 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.76 2001-04-03 23:33:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1299,8 +1299,6 @@ static NhlErrorTypes MapPlotSetValues
         if ( _NhlArgIsSet(args,num_args,NhlNmpGridSpacingF))
                 mpp->grid_lat_spacing = mpp->grid_lon_spacing =
                         mpp->grid_spacing;
-        else 
-                mpp->grid_spacing = 15.0;
         if (mpp->grid_lat_spacing <= 0.0) mpp->grid_lat_spacing = 15.0;
         if (mpp->grid_lon_spacing <= 0.0) mpp->grid_lon_spacing = 15.0;
         
