@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.47 1996-12-12 23:08:01 ethan Exp $
+#      $Id: yMakefile,v 1.48 1996-12-17 18:43:10 ethan Exp $
 #
 #########################################################################
 #									#
@@ -213,7 +213,7 @@ NclMultiDValData.c: NclMultiDValData.c.sed MultiDValOp.c.sed NclMultiDValData.h 
 MathFuncs.c: MathFuncs.c.sed MathFuncs.h.sed MathTemplate.c.sed MathTemplate.h.sed math_funcs.sh
 	@$(SHELL) math_funcs.sh
 
-MathFuncs.h: MathFuncs.c.sed MathFuncs.h.sed MathTemplate.c.sed MathTemplate.h.sed math_funcs.sh
+MathFuncs.h: MathFuncs.c.sed MathFuncs.h.sed MathTemplate2.c.sed MathTemplate.c.sed MathTemplate.h.sed math_funcs.sh
 	@$(SHELL) math_funcs.sh
 
 #
