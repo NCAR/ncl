@@ -1,5 +1,5 @@
 /*
- *	$Id: hdf.c,v 1.13 1993-01-17 06:51:41 don Exp $
+ *	$Id: hdf.c,v 1.14 1994-03-07 18:41:31 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -40,14 +40,11 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <string.h>
+#include <ncarg/c.h>
 #include <hdf/dfgr.h>
 #include "ncarg_ras.h"
 #include "hdf.h"
 #include "options.h"
-
-#ifndef	TMPDIR
-#define	TMPDIR	"/tmp"
-#endif	/* TMPDIR */
 
 #define	TMPFILE	"/hdf.XXXXXX"
 
@@ -214,13 +211,20 @@ HDFOpenWrite(name, nx, ny, comment, encoding)
 	if (ras == (Raster *) NULL) return(ras);
 
 	if (!strcmp(name, "stdout")) {
+		const char	*s;
+
 		ras->fd = fileno(stdout);
 
 		/*
 		 * hdf routines will only write to a disk file
 		 */
-		name = ras_malloc (strlen(TMPDIR) + strlen(TMPFILE) + 1);
-		(void) strcpy(name, TMPDIR);
+		s = GetNCARGPath(NGTMPDIR);
+		if (! s) {
+			(void) ESprintf(E_UNKNOWN,"GetNCARGPath(%s)", NGTMPDIR);
+			return( (Raster *) NULL );
+		}
+		name = ras_malloc (strlen(s) + strlen(TMPFILE) + 1);
+		(void) strcpy(name, s);
 		(void) strcat(name, TMPFILE);
 		(void) mktemp(name);
 	}
