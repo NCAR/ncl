@@ -73,8 +73,9 @@ C Define a parameter saying how many pieces each edge of an icosahedron
 C is to be broken into in forming the geodesic mesh.
 C
 C       PARAMETER (NDIV=75)
-        PARAMETER (NDIV=36)
+C       PARAMETER (NDIV=36)
 C       PARAMETER (NDIV=24)
+        PARAMETER (NDIV=16)
 C
 C To represent the triangular mesh, we use three singly-dimensioned
 C arrays: RPNT holds points, IEDG holds edges, and ITRI holds triangles.
