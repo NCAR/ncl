@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.36 1998-01-30 23:52:43 ethan Exp $
+ *      $Id: DataSupport.c,v 1.37 1998-06-08 22:27:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -428,7 +428,7 @@ NclTypeClass _NclNameToTypeClass
 		classes[4] = (NclTypeClass)nclTypeshortClass;
 		quarks[5] = NrmStringToQuark("string");
 		classes[5] = (NclTypeClass)nclTypestringClass;
-		quarks[6] = NrmStringToQuark("char");
+		quarks[6] = NrmStringToQuark("character");
 		classes[6] = (NclTypeClass)nclTypecharClass;
 		quarks[7] = NrmStringToQuark("byte");
 		classes[7] = (NclTypeClass)nclTypebyteClass;
