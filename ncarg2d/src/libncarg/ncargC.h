@@ -1,5 +1,5 @@
 /*
- *  $Id: ncargC.h,v 1.9 2001-09-19 22:29:09 kennison Exp $
+ *  $Id: ncargC.h,v 1.10 2001-09-20 03:35:18 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1764,12 +1764,12 @@ extern void c_mdrset(
 #endif
 );
 
-extern void c_mdscal(
+extern double c_mdscal(
 #ifdef NeedFuncProto
-    real xcop,
-    real ycop,
-    real xcoq,
-    real ycoq
+    float xcop,
+    float ycop,
+    float xcoq,
+    float ycoq
 #endif
 );
 
