@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.78 1998-03-13 22:19:24 dbrown Exp $
+ *      $Id: Workstation.c,v 1.79 1998-03-26 03:37:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2579,8 +2579,11 @@ WorkstationClear
 	char	func[] = "WorkstationClear";
 	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
 
+#if 0
         if (wl->work.cleared)
                 return NhlNOERROR;
+#endif
+
 #if DEBUG_NCGM
 	fprintf(stderr,"calling gclrwk\n");
 #endif
@@ -5287,11 +5290,13 @@ void _NHLCALLF(gdawk,GDAWK)
 void _NHLCALLF(gclrwk,GCLRWK)
 #if	NhlNeedProto
 (
-	int	*wkid
+	int	*wkid,
+	int     *cofl
 )
 #else
-(wkid)
+(wkid,cofl)
 	int	*wkid;
+	int     *cofl;
 #endif
 {
         char func[] = "GDCLRWK";
@@ -5310,7 +5315,7 @@ void _NHLCALLF(gclrwk,GCLRWK)
                         return;
         }
         
-	_NHLCALLF(gzclrwk,GZCLRWK)(wkid);
+	_NHLCALLF(gzclrwk,GZCLRWK)(wkid,cofl);
 	_NhlLLErrCheckPrnt(NhlFATAL,func);
         
         Hlu_Wks_Flag = False;
