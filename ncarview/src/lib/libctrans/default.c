@@ -1,5 +1,5 @@
 /*
- *	$Id: default.c,v 1.4 1991-02-04 10:06:52 clyne Exp $
+ *	$Id: default.c,v 1.5 1991-07-19 12:24:50 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -138,8 +138,8 @@ CGMC *c;
 	(void)fprintf(stderr,"RealPrec\n");
 #endif
 	dt->real_mode = c->i[0];
-	dt->real_exp = c->i[0];
-	dt->real_man = c->i[0];
+	dt->real_exp = c->i[1];
+	dt->real_man = c->i[2];
 	return (OK);
 }
 
