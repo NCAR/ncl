@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.14 2001-11-28 02:47:50 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.15 2001-12-05 00:19:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -600,26 +600,27 @@ static NhlErrorTypes SetUpEntityRecs
 		int type = NGCALLF(mpiaty,MPIATY)(&i);
 		if (type == 0)
 			break;
-		if (!strcmp(c_mpname(i),"United States")) {
+		if (!strcmp(c_mdname(i),"United States")) {
 #if 0
 			printf("us id %d\n",i);
 #endif
 			Mv41p->basic_ids.us_ids[us_ix] = UsIds[us_ix] = i;
 			us_ix++;
 		}
-		if (!strcmp(c_mpname(i),"Land")) {
+		if (!strcmp(c_mdname(i),"Land") && c_mdipar(i) == 0) {
 #if 0
 			printf("land id %d\n",i);
 #endif
 			Mv41p->basic_ids.land_id = LandId = i;
 		}
-		if (!strcmp(c_mpname(i),"Water")) {
+		if (!strcmp(c_mdname(i),"Water")&& c_mdipar(i) == 0) {
 #if 0
 			printf("water id %d\n",i);
 #endif
 			Mv41p->basic_ids.water_id = WaterId = i;
 		}
-		if (!strcmp(c_mpname(i),"Ocean")) {
+		if (!strcmp(c_mdname(i),"Ocean") &&
+			!strcmp(c_mdname(c_mdipar(i)),"Water")) {
 #if 0
 			printf("ocean id %d\n",i);
 #endif
@@ -758,7 +759,7 @@ static NhlErrorTypes    mdhManageDynamicArrays
                 for (i = 0; i < mdhp->area_names->num_elements; i++) {
                         NhlString spfull,spout;
                         if (sp[i] == NULL || strlen(sp[i]) == 0) {
-                                char *buf = c_mpname(i+1);
+                                char *buf = c_mdname(i+1);
                                 e_text = 
                   "%s: Null or zero length %s string for index %d: defaulting";
                                 NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
@@ -1220,7 +1221,7 @@ static NhlGenArray mdhGetNewGenArray
                 for (i = 0; i < len; i++) {
                         int eid = long_alpha_recs[i]->eid;
                         if (long_alpha_recs[i]->unique) {
-                                char *buf = c_mpname(eid);
+                                char *buf = c_mdname(eid);
 
                                 if ((sp[i] = NhlMalloc
                                      (strlen(buf) + 1)) == NULL) {
@@ -1235,12 +1236,12 @@ static NhlGenArray mdhGetNewGenArray
                                 int ptype = c_mpiaty(pix);
                                 int etype = c_mpiaty(eid);
                         
-                                strcpy(lbuf,c_mpname(pix));
+                                strcpy(lbuf,c_mdname(pix));
                                 if (ptype == etype)
                                         strcat(lbuf," . ");
                                 else 
                                         strcat(lbuf," : ");
-                                strcat(lbuf,c_mpname(eid));
+                                strcat(lbuf,c_mdname(eid));
 
                                 if ((sp[i] = NhlMalloc
                                      (strlen(lbuf) + 1)) == NULL) {
@@ -2862,12 +2863,12 @@ static NhlErrorTypes mpOutline
                 int spec_level = c_mpiaty(eid);
                 int j;
 
-		strcpy(eidname,c_mpname(eid));
+		strcpy(eidname,c_mdname(eid));
                 for (j = 1; j <= mv41p->entity_rec_count; j++) {
 #if 0
                         if (c_mpiosa(j,spec_level) == eid) {
 			        printf("%s contains %s at level %d\n",
-				       eidname,c_mpname(j),spec_level);
+				       eidname,c_mdname(j),spec_level);
                                 DrawIds[j-1].spec_rec =   
                                         (void *) &mv41p->outline_recs[i];
 			}

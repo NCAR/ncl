@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.23 2001-11-28 02:47:50 dbrown Exp $
+ *      $Id: MultiText.c,v 1.24 2001-12-05 00:19:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -50,9 +50,12 @@ static NhlResource resources[] = {
 	{NhlNMtextMaxLenF, NhlCMtextMaxLenF, NhlTFloat,
 		sizeof(float),Oset(max_len),NhlTString,"0.0",
 		 _NhlRES_GONLY,NULL},
-	{NhlNMtextCullOverlaps, NhlCMtextCullOverlaps, NhlTBoolean,
-	 sizeof(NhlBoolean),Oset(cull_overlaps),NhlTImmediate,
+	{NhlNMtextAutoStride, NhlCMtextAutoStride, NhlTBoolean,
+	 sizeof(NhlBoolean),Oset(auto_stride),NhlTImmediate,
 	 _NhlUSET((NhlPointer)True),0,NULL},
+	{NhlNMtextKeepEndItems, NhlCMtextKeepEndItems, NhlTBoolean,
+	 sizeof(NhlBoolean),Oset(keep_end_items),NhlTImmediate,
+	 _NhlUSET((NhlPointer)False),0,NULL},
 
 	/*
 	 * These resources are actually resources in the TextItem object
@@ -304,7 +307,7 @@ CalculateGeometry
 
 	for(i=0;i < l->multitext.num_strings;i++){
 
-		if (l->multitext.cull_overlaps && ! l->multitext.do_draw[i])
+		if (l->multitext.auto_stride && ! l->multitext.do_draw[i])
 			continue;
 
 		if(l->multitext.orientation == NhlMTEXT_X_CONST){
@@ -420,7 +423,7 @@ GetMaxTextLength
 				*maxlen = twidth;
 		}
 
-		if (l->multitext.cull_overlaps) {
+		if (l->multitext.auto_stride) {
 			if(l->multitext.orientation == NhlMTEXT_X_CONST)
 				l->multitext.extents[i] = theight;
 			else
@@ -478,10 +481,76 @@ char	fcode;
 	return count;
 
 }
+
+
+/*
+ * Function:	GetZeroFraction
+ *
+ * Description:	returns the fraction of a number's digits that are 0
+ *              starting from the left.
+ *              
+ *
+ * In Args:	
+ *		NhlMultiTextLayer	l,		The NhlLayer
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	char count
+ * Side Effect:	none
+ */
+static float
+GetZeroFraction
+#if	NhlNeedProto
+(
+	NhlString text,
+	char	fcode
+)
+#else
+(text, fcode)
+NhlString text;
+char	fcode;
+#endif
+{
+	char *cp,*lcp;
+	int count = 0,zcount = 0;
+	NhlBoolean in = False;
+	NhlBoolean first = True;
+
+	for (cp = text; *cp != '\0'; cp++) {
+		if (*cp == fcode) {
+			in = in ? False : True;
+			continue;
+		}
+		if (in)
+			continue;
+		if (isdigit(*cp)) {
+			if (first)
+				first = False;
+			count++;
+			if (*cp != '0')
+				zcount = 0;
+			else
+				zcount++;
+		}
+		else if (*cp == '.')
+			continue;
+		else if (! first) {
+			lcp = cp - 1;
+			break;
+		}
+	}
+	if (count == 0) {
+		return 0;
+	}
+	return zcount / (float)count;
+
+}
+
 /*
  * Function:	SetDrawFlags
  *
- * Description:	If cull_overlaps is set on, this routine figures out
+ * Description:	If auto_stride is set on, this routine figures out
  *               which text items to eliminate to avoid overlap
  *
  * In Args:	
@@ -509,48 +578,149 @@ SetDrawFlags
 	float sep = mtp->max_extent / 12.0;
 	int min_length = 10000;
 	int pivot,last;
-	int i;
+	int i,stride,minlen_count = 0, maxz_count = 0;
+	float zfrac,max_zfrac = 0;
+	int minlen_ix = -1, maxzfrac_ix = -1;
+	NhlBoolean done;
 	NhlErrorTypes ret = NhlNOERROR;
+	int istart, iend;
 
 	if (mtp->num_strings < 1)
 		return ret;
 
 	sep = MAX(mtp->max_extent / 12.0, l->multitext.font_height / 2.0); 
+	if (mtp->keep_end_items) {
+		istart = 1;
+		iend = mtp->num_strings - 1;
+	}
+	else {
+		istart = 0;
+		iend = mtp->num_strings;
+	}
 
-	for (i = 0; i < mtp->num_strings; i++) {
+	for (i = istart; i < iend; i++) {
 		int len;
 		if (strchr(mtp->text_strings[i],mtp->func_code))
 			len = GetActualCharCount
 				(mtp->text_strings[i],mtp->func_code);
-		else	
+		else
 			len = strlen(mtp->text_strings[i]);
-
+			
 		if (len < min_length) {
 			min_length = len;
-			pivot = i;
+			minlen_ix = i;
+			minlen_count = 1;
 		}
+		else if (len == min_length)
+			minlen_count++;
+
+		zfrac = GetZeroFraction(mtp->text_strings[i],mtp->func_code);
+		if (zfrac > 0.0) {
+			if (zfrac > max_zfrac) {
+				max_zfrac = zfrac;
+				maxzfrac_ix = i;
+				maxz_count = 1;
+			}
+			else if (zfrac == max_zfrac) {
+				maxz_count++;
+			}
+		}
+		mtp->do_draw[i] = False;
+	}
+	pivot = istart;
+	if (minlen_count && maxz_count) {
+		if (maxzfrac_ix > -1 && maxz_count <= minlen_count)
+			pivot = maxzfrac_ix;
+		else if (minlen_ix > -1)
+ 			pivot = minlen_ix;
+	}
+	else if (maxz_count && maxzfrac_ix > -1)
+		pivot = maxzfrac_ix;
+	else if (minlen_count && minlen_ix > -1)
+		pivot = minlen_ix;
+
+
+	stride = 1;
+	done = False;
+	while (! done) {
+		NhlBoolean redo = False;
+		last = pivot;
+		for (i = pivot - stride ; i >= istart; i-= stride) {
+			if ((0.5 * 
+			     (mtp->extents[last] + mtp->extents[i]) + sep) >
+			    fabs(mtp->pos_array[last] - mtp->pos_array[i])) {
+				stride += 1;
+				redo = True;
+				break;
+			}
+			else {
+				last = i;
+			}
+		}
+		if (! redo)
+			done = True;
+	}
+	done = False;
+	while (! done) {
+		NhlBoolean redo = False;
+		last = pivot;
+		for (i = pivot + stride; i < iend; i+= stride) {
+			if ((0.5 * 
+			     (mtp->extents[last] + mtp->extents[i]) + sep) >
+			    fabs(mtp->pos_array[i] - mtp->pos_array[last])) {
+				stride += 1;
+				redo = True;
+				break;
+			}
+			else {
+				last = i;
+			}
+		}
+		if (! redo)
+			done = True;
 	}
 	mtp->do_draw[pivot] = True;
-	last = pivot;
-	for (i = pivot - 1; i >= 0; i--) {
-		if ((0.5 * (mtp->extents[last] + mtp->extents[i]) + sep) >
-		    fabs(mtp->pos_array[last] - mtp->pos_array[i]))
-			mtp->do_draw[i] = False;
-		else {
-			mtp->do_draw[i] = True;
-			last = i;
+	for (i = pivot - stride ; i >= istart; i-= stride) {
+		mtp->do_draw[i] = True;
+	}
+	for (i = pivot + stride; i < iend; i+= stride) {
+		mtp->do_draw[i] = True;
+	}
+
+	if (mtp->keep_end_items) {
+		float end_extent = MAX(mtp->extents[0],
+				       mtp->extents[mtp->num_strings-1]);
+
+		mtp->do_draw[0] = True;
+		for (i = 1; i < mtp->num_strings; i++) {
+			if (!mtp->do_draw[i])
+				continue;
+			if ((0.5 * 
+			     (end_extent + mtp->extents[i]) + 2 * sep) >
+			    fabs(mtp->pos_array[i] - mtp->pos_array[0])) {
+				mtp->do_draw[i] = False;
+				continue;
+			}
+			break;
+		}
+		last = mtp->num_strings-1;
+		mtp->do_draw[last] = True;
+		for (i = last - 1; i >= 0; i--) {
+			if (!mtp->do_draw[i])
+				continue;
+			if ((0.5 * 
+			     (end_extent + mtp->extents[i]) +2 * sep) >
+			    fabs(mtp->pos_array[last] - mtp->pos_array[i])) {
+				mtp->do_draw[i] = False;
+				continue;
+			}
+			break;
 		}
 	}
-	last = pivot;
-	for (i = pivot + 1; i < mtp->num_strings; i++) {
-		if ((0.5 * (mtp->extents[last] + mtp->extents[i]) + sep) >
-		    fabs(mtp->pos_array[i] - mtp->pos_array[last]))
-			mtp->do_draw[i] = False;
-		else {
-			mtp->do_draw[i] = True;
-			last = i;
-		}
-	}
+			
+
+			
+
 	return ret;
 }
 	
@@ -629,7 +799,7 @@ MultiTextInitialize
 			mtnew->multitext.pos_array[i] =
 						mtreq->multitext.pos_array[i];
 
-		if (mtnew->multitext.cull_overlaps) {
+		if (mtnew->multitext.auto_stride) {
 			mtnew->multitext.extents = 
 				(float*)NhlMalloc(num_strings*sizeof(float));
 			mtnew->multitext.do_draw = 
@@ -673,7 +843,7 @@ MultiTextInitialize
 		 * if cull overlaps is on set up the draw flag array
 		 */
 
-		if (mtnew->multitext.cull_overlaps) {
+		if (mtnew->multitext.auto_stride) {
 			subret = SetDrawFlags(mtnew);
 			ret = MIN(ret,subret);
 		}
@@ -748,7 +918,7 @@ MultiTextSetValues
 				"Multitext SetValues:Changing number of strings w/o changing strings or positions");
 			return NhlFATAL;
 		}
-		if (mtnew->multitext.cull_overlaps) {
+		if (mtnew->multitext.auto_stride) {
 			int num_strings = mtreq->multitext.num_strings;
 			NhlFree(mtnew->multitext.extents);
 			mtnew->multitext.extents = 
@@ -878,8 +1048,11 @@ MultiTextSetValues
 	}
 
 
-	if (text_changed || attrs_changed ||
-	    mtnew->multitext.cull_overlaps != mtold->multitext.cull_overlaps) {
+	if (text_changed || attrs_changed
+	    || mtnew->multitext.auto_stride
+	    != mtold->multitext.auto_stride
+	    || mtnew->multitext.keep_end_items
+	    != mtold->multitext.keep_end_items) {
 
 		/*
 		 * Get the maximum text len
@@ -888,7 +1061,7 @@ MultiTextSetValues
 		lret = GetMaxTextLength(mtnew,&mtnew->multitext.max_len);
 		ret = MIN(ret,lret);
 
-		if (mtnew->multitext.cull_overlaps) {
+		if (mtnew->multitext.auto_stride) {
 			lret = SetDrawFlags(mtnew);
 			ret = MIN(ret,lret);
 		}
@@ -999,7 +1172,7 @@ MultiTextDraw
 
 	for(i=0;i < mtl->multitext.num_strings;i++){
 
-		if (mtl->multitext.cull_overlaps 
+		if (mtl->multitext.auto_stride 
 		    && ! mtl->multitext.do_draw[i])
 			continue;
 		if(mtl->multitext.orientation == NhlMTEXT_X_CONST){
@@ -1056,7 +1229,7 @@ MultiTextSegDraw
 
 	for(i=0;i < mtl->multitext.num_strings;i++){
 
-		if (mtl->multitext.cull_overlaps 
+		if (mtl->multitext.auto_stride 
 		    && ! mtl->multitext.do_draw[i])
 			continue;
 

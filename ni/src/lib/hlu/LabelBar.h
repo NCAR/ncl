@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.h,v 1.14 2001-11-28 02:47:49 dbrown Exp $
+ *      $Id: LabelBar.h,v 1.15 2001-12-05 00:19:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -74,7 +74,7 @@ typedef enum _NhllbBoxSizingMode {
 
 /*end of arrays */
 
-#define NhlNlbCullLabelOverlaps		"lbCullLabelOverlaps"
+#define NhlNlbLabelAutoStride		"lbLabelAutoStride"
 #define NhlNlbLabelsOn			"lbLabelsOn"
 #define NhlNlbLabelPosition		"lbLabelPosition"
 #define NhlNlbLabelAngleF		"lbLabelAngleF"

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.73 2001-08-29 18:35:48 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.74 2001-12-05 00:19:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5363,6 +5363,7 @@ static NhlErrorTypes ManageLabelBar
 			float fval;
 			NhlFormatRec *frec;
 			NhlvcScaleInfo	*sip;
+			float *levels = (float *) vcp->levels->data;
 
 			sip=(vcp->use_scalar_array && vcp->scalar_data_init) ?
 				   &vcp->svalue_scale : &vcp->mag_scale;
@@ -5377,7 +5378,7 @@ static NhlErrorTypes ManageLabelBar
 				return NhlFATAL;
 			}
 
-			fval = sip->min_val / sip->scale_factor;
+			fval = MIN(sip->min_val,levels[0]) / sip->scale_factor;
 			s = _NhlFormatFloat(frec,fval,NULL,
 					    &sip->sig_digits,
 					    &sip->left_sig_digit,
@@ -5404,7 +5405,8 @@ static NhlErrorTypes ManageLabelBar
 				}
 				strcpy(to_sp[i],from_sp[i-1]);
 			}
-			fval = sip->max_val / sip->scale_factor;
+			fval = MAX(sip->max_val,levels[vcp->level_count-1]) 
+				/ sip->scale_factor;
 			s = _NhlFormatFloat(frec,fval,NULL,
 					    &sip->sig_digits,
 					    &sip->left_sig_digit,

@@ -1,5 +1,5 @@
 /*
- *      $Id: LegendP.h,v 1.19 2001-11-28 02:47:49 dbrown Exp $
+ *      $Id: LegendP.h,v 1.20 2001-12-05 00:19:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -116,7 +116,7 @@ typedef struct _NhlLegendLayerPart {
 	float		ll_const_spacing;
 	char		ll_func_code;
 
-	NhlBoolean	cull_label_overlaps;
+	NhlBoolean	label_auto_stride;
 	int		labels_on;
 	NhlPosition	label_pos;
 	NhlJustification label_just;

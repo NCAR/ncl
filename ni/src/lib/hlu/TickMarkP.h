@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMarkP.h,v 1.18 2001-11-28 02:47:51 dbrown Exp $
+ *      $Id: TickMarkP.h,v 1.19 2001-12-05 00:19:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -37,7 +37,7 @@ typedef struct _NhlTickMarkLayerPart {
 	/* Publically setable resources */
 	int		sci_note_cutoff;
 	NhlBoolean	equalize_xy_sizes;
-	NhlBoolean	cull_label_overlaps;
+	NhlBoolean	label_auto_stride;
 	NhlBoolean	x_use_bottom;
 	NhlBoolean	x_b_on;
 	NhlBoolean	x_t_on;

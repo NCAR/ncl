@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.h,v 1.20 2001-11-28 02:47:49 dbrown Exp $
+ *      $Id: MapPlot.h,v 1.21 2001-12-05 00:19:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -67,6 +67,16 @@ typedef enum _NhlMapDataBaseVersion {
 	NhlRANGS_GSHHS
 } NhlMapDataBaseVersion;
 
+#define NhlTMapDataResolution "MapDataResolution"
+typedef enum _NhlMapDataResolution {
+	NhlUNSPECIFIEDRESOLUTION = -1,
+	NhlFINESTRESOLUTION,
+	NhlFINERESOLUTION,
+	NhlMEDIUMRESOLUTION,
+	NhlCOARSERESOLUTION,
+	NhlCOARSESTRESOLUTION
+} NhlMapDataResolution;
+
 #define NhlmpNULLAREA		"nullarea"
 #define NhlmpALLNATIONAL	"allnational"
 #define NhlmpALLGEOPHYSICAL	"allgeophysical"
@@ -102,6 +112,7 @@ typedef enum _NhlMapDataBaseVersion {
 #define NhlNmpDynamicAreaGroups		"mpDynamicAreaGroups"
 #define NhlNmpDataBaseVersion		"mpDataBaseVersion"
 #define NhlNmpDataSetName		"mpDataSetName"
+#define NhlNmpDataResolution		"mpDataResolution"
 
 #define NhlNmpOutlineOn			"mpOutlineOn"
 #define NhlNmpOutlineDrawOrder		"mpOutlineDrawOrder"
@@ -201,6 +212,7 @@ typedef enum _NhlMapDataBaseVersion {
 #define NhlCmpDynamicAreaGroups		"MpDynamicAreaGroups"
 #define NhlCmpDataBaseVersion		"MpDataBaseVersion"
 #define NhlCmpDataSetName		"MpDataSetName"
+#define NhlCmpDataResolution		"MpDataResolution"
 
 #define NhlCmpOutlineOn			"MpOutlineOn"
 #define NhlCmpOutlineDrawOrder		"MpOutlineDrawOrder"

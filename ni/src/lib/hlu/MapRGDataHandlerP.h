@@ -1,5 +1,5 @@
 /*
- *      $Id: MapRGDataHandlerP.h,v 1.1 2001-11-28 02:47:50 dbrown Exp $
+ *      $Id: MapRGDataHandlerP.h,v 1.2 2001-12-05 00:19:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,10 +31,13 @@
 #define mpRG_AREAMAP_REQ_SIZE	665000 * 4
 
 typedef struct _NhlMapRGDataHandlerLayerPart {
+
+	NhlMapDataResolution data_resolution;
         
 	int		aws_id;
 	int		fws_id;
         NhlBoolean	new_amap_req;
+	NhlMapDataResolution real_data_resolution;
 }NhlMapRGDataHandlerLayerPart;
 
 typedef struct _NhlMapRGDataHandlerLayerRec {

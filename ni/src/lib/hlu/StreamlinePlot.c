@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.60 2001-08-29 18:35:48 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.61 2001-12-05 00:19:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3955,6 +3955,7 @@ static NhlErrorTypes ManageLabelBar
 			float fval;
 			NhlFormatRec *frec;
 			NhlstScaleInfo	*sip;
+			float *levels = (float *) stp->levels->data;
 
 			sip= &stp->scale;
 
@@ -3969,7 +3970,8 @@ static NhlErrorTypes ManageLabelBar
 				return NhlFATAL;
 			}
 
-			fval = sip->min_val / sip->scale_factor;
+			fval = MIN(sip->min_val,levels[0]) / sip->scale_factor;
+
 			s = _NhlFormatFloat(frec,fval,NULL,
 					    &sip->sig_digits,
 					    &sip->left_sig_digit,
@@ -3996,7 +3998,9 @@ static NhlErrorTypes ManageLabelBar
 				}
 				strcpy(to_sp[i],from_sp[i-1]);
 			}
-			fval = sip->max_val / sip->scale_factor;
+
+			fval = MAX(sip->max_val,levels[stp->level_count-1]) 
+				/ sip->scale_factor;
 			s = _NhlFormatFloat(frec,fval,NULL,
 					    &sip->sig_digits,
 					    &sip->left_sig_digit,

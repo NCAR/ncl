@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.79 2001-11-29 20:27:57 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.80 2001-12-05 00:19:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -76,6 +76,10 @@ static NhlResource resources[] = {
 	{NhlNmpDataSetName,NhlCmpDataSetName,NhlTString,
 		 sizeof(NhlString),Oset(data_set_name),NhlTImmediate,
 		 _NhlUSET((NhlPointer) NULL),0,NULL},
+	{NhlNmpDataResolution,NhlCmpDataResolution,
+		NhlTMapDataResolution,sizeof(NhlMapDataResolution),
+	 	Oset(data_resolution),NhlTImmediate, 
+	 	_NhlUSET((NhlPointer)NhlUNSPECIFIEDRESOLUTION),0,NULL},
 
 /* Outline resources */
 
@@ -861,6 +865,7 @@ static NrmQuark Qarea_types = NrmNULLQUARK;
 static NrmQuark Qdynamic_groups = NrmNULLQUARK;
 static NrmQuark Qfixed_groups = NrmNULLQUARK;
 static NrmQuark Qdata_set_name = NrmNULLQUARK;
+static NrmQuark Qdata_resolution = NrmNULLQUARK;
 static NrmQuark Qspec_fill_colors = NrmNULLQUARK;
 static NrmQuark Qspec_fill_patterns = NrmNULLQUARK;
 static NrmQuark Qspec_fill_scales = NrmNULLQUARK;
@@ -957,7 +962,23 @@ MapPlotClassInitialize
 	{NhlNCARG4_1,		"MediumRes"},
 	{NhlNCARG4_1,		"Ncarg4_1"},
 	{NhlRANGS_GSHHS,        "HighRes"},
+	{NhlRANGS_GSHHS,        "RANGS"},
 	{NhlRANGS_GSHHS,        "RANGS_GSHHS"}
+	};
+
+	_NhlEnumVals mapdataresolutionlist[] =  {
+		{NhlUNSPECIFIEDRESOLUTION, 	"Unspecified"},
+		{NhlUNSPECIFIEDRESOLUTION, 	"UnspecifiedResolution"},
+		{NhlFINESTRESOLUTION,		"Finest"},
+		{NhlFINESTRESOLUTION,		"FinestResolution"},
+		{NhlFINERESOLUTION,		"Fine"},
+		{NhlFINERESOLUTION,		"FineResolution"},
+		{NhlMEDIUMRESOLUTION,		"Medium"},
+		{NhlMEDIUMRESOLUTION,		"MediumResolution"},
+		{NhlCOARSERESOLUTION,		"Coarse"},
+		{NhlCOARSERESOLUTION,		"CoarseResolution"},
+		{NhlCOARSESTRESOLUTION,		"Coarsest"},
+		{NhlCOARSESTRESOLUTION,		"CoarsestResolution"}
 	};
 
 	load_hlumap_routines(False);
@@ -978,6 +999,9 @@ MapPlotClassInitialize
         _NhlRegisterEnumType(NhlmapPlotClass,NhlTMapDataBaseVersion,
 			     mapdatabaseversionlist,
 			     NhlNumber(mapdatabaseversionlist));
+        _NhlRegisterEnumType(NhlmapPlotClass,NhlTMapDataResolution,
+			     mapdataresolutionlist,
+			     NhlNumber(mapdataresolutionlist));
 
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);
@@ -991,6 +1015,7 @@ MapPlotClassInitialize
 	Qdynamic_groups = NrmStringToQuark(NhlNmpDynamicAreaGroups);
 	Qfixed_groups = NrmStringToQuark(NhlNmpFixedAreaGroups);
 	Qdata_set_name = NrmStringToQuark(NhlNmpDataSetName);
+	Qdata_resolution = NrmStringToQuark(NhlNmpDataResolution);
 	Qspec_fill_colors = NrmStringToQuark(NhlNmpSpecifiedFillColors);
 	Qspec_fill_patterns = NrmStringToQuark(NhlNmpSpecifiedFillPatterns);
 	Qspec_fill_scales = NrmStringToQuark(NhlNmpSpecifiedFillScales);
@@ -1620,7 +1645,7 @@ static NhlErrorTypes    MapPlotGetValues
         NhlGenArray ga;
         char *e_text;
         int i, count = 0;
-        int data_handler_args[5];
+        int data_handler_args[6];
         int data_handler_arg_count = 0;
 
         for (i = 0; i < num_args; i++ ) {
@@ -1690,10 +1715,10 @@ static NhlErrorTypes    MapPlotGetValues
         }
 
         if (data_handler_arg_count) {
-                NhlGArg		gargs[5];
+                NhlGArg		gargs[6];
                 int             nargs = 0;
-                NhlGenArray 	dhga[5];
-                NhlString	dhstr[5];
+                NhlGenArray 	dhga[6];
+                NhlString	dhstr[6];
                 
                 for (i = 0; i < data_handler_arg_count; i++) {
                         dhstr[i] = NrmQuarkToString
@@ -3435,6 +3460,8 @@ static NhlErrorTypes mpSetUpDataHandler
                 }		
 		else if (mpp->database_version == NhlRANGS_GSHHS) {
 			mapdh_class = NhlmapRGDataHandlerClass;
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNmpDataResolution,mpp->data_resolution);
                 }		
                 
                 sprintf(buffer,"%s",mpnew->base.name);
@@ -3452,9 +3479,12 @@ static NhlErrorTypes mpSetUpDataHandler
                 }
 	}
         else {
+		if (mpp->database_version == NhlRANGS_GSHHS) {
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNmpDataResolution,mpp->data_resolution);
+		}
 		subret = NhlALSetValues(mpp->map_data_handler->base.id,
                                         sargs,nargs);
-
 	}
         
 	return MIN(ret,subret);

@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.h,v 1.20 2001-11-28 02:47:51 dbrown Exp $
+ *      $Id: TickMark.h,v 1.21 2001-12-05 00:19:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,7 +34,7 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlNtmEqualizeXYSizes 	"tmEqualizeXYSizes"
 #define NhlCtmEqualizeXYSizes 	"TmEqualizeXYSizes"
 
-#define NhlNtmCullLabelOverlaps	"tmCullLabelOverlaps"
+#define NhlNtmLabelAutoStride	"tmLabelAutoStride"
 
 #define NhlNtmSciNoteCutoff	"tmSciNoteCutoff"
 #define NhlCtmSciNoteCutoff	"TmSciNoteCutoff"

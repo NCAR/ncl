@@ -1,5 +1,5 @@
 /*
- *      $Id: View.h,v 1.15 2001-11-28 02:47:51 dbrown Exp $
+ *      $Id: View.h,v 1.16 2001-12-05 00:19:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -124,7 +124,7 @@ extern NhlBoolean NhlIsView(
 #define NhlCNumberFormat		"NumberFormat"
 #define NhlCPlotLabelsOn		"PlotLabelsOn"
 #define NhlCAnnotationLabelsOn		"AnnotationLabelsOn"
-#define NhlCCullLabelOverlaps		"CullLabelOverlaps"
+#define NhlCLabelAutoStride		"LabelAutoStride"
 
 extern NhlClass NhlviewClass;
 

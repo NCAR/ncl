@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.106 2001-08-29 18:35:47 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.107 2001-12-05 00:19:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -7070,8 +7070,9 @@ static NhlErrorTypes ManageLabelBar
 			NhlString *to_sp, *from_sp;
 			NhlString s;
 			int i, count;
+			float *levels = (float *) cnp->levels->data;
 			from_sp = (NhlString *) cnp->llabel_strings->data;
-			count = cnp->llabel_strings->num_elements + 2;
+			count = cnp->level_count + 2;
 			to_sp = NhlMalloc(sizeof(NhlString) * count);
 			if (to_sp == NULL) {
 				e_text = "%s: dynamic memory allocation error";
@@ -7079,10 +7080,23 @@ static NhlErrorTypes ManageLabelBar
 					  NhlEUNKNOWN,e_text,entry_name);
 				return NhlFATAL;
 			}
-			s = ContourPlotFormat(cnp,cnDATAMINVAL,
-					      &cnp->line_lbls.format,
-					      cnp->lbar_func_code,
-					      entry_name);
+			if (_NhlCmpFAny2
+			    (cnp->zmin,levels[0],6,_NhlMIN_NONZERO) < 0.0) {
+				s = ContourPlotFormat(cnp,cnDATAMINVAL,
+						      &cnp->line_lbls.format,
+						      cnp->lbar_func_code,
+						      entry_name);
+			}
+			else {
+				s = _NhlFormatFloat
+					(&cnp->line_lbls.format,
+					 levels[0] / cnp->label_scale_factor,
+					 NULL,
+					 &cnp->max_data_format.sig_digits,
+					 &cnp->max_data_format.left_sig_digit,
+					 NULL,NULL,NULL,cnp->lbar_func_code,
+					 entry_name);
+			}
 			if (s == NULL) return NhlFATAL;
 			to_sp[0] = NhlMalloc(strlen(s) + 1);
 			if (to_sp[0] == NULL) {
@@ -7103,10 +7117,24 @@ static NhlErrorTypes ManageLabelBar
 				}
 				strcpy(to_sp[i],from_sp[i-1]);
 			}
-			s = ContourPlotFormat(cnp,cnDATAMAXVAL,
-					      &cnp->line_lbls.format,
-					      cnp->lbar_func_code,
-					      entry_name);
+			if (_NhlCmpFAny2
+			    (cnp->zmax,levels[cnp->level_count-1],
+			     6,_NhlMIN_NONZERO) > 0.0) {
+				s = ContourPlotFormat(cnp,cnDATAMAXVAL,
+						      &cnp->line_lbls.format,
+						      cnp->lbar_func_code,
+						      entry_name);
+			}
+			else {
+				s = _NhlFormatFloat
+					(&cnp->line_lbls.format,
+					 levels[cnp->level_count-1] / 
+					 cnp->label_scale_factor, NULL,
+					 &cnp->max_data_format.sig_digits,
+					 &cnp->max_data_format.left_sig_digit,
+					 NULL,NULL,NULL,cnp->lbar_func_code,
+					 entry_name);
+			}
 			if (s == NULL) return NhlFATAL;
 			to_sp[count - 1] = NhlMalloc(strlen(s) + 1);
 			if (to_sp[count - 1] == NULL) {
@@ -10024,6 +10052,7 @@ static NhlErrorTypes    SetupLevelsManual
 		ret = MIN(NhlWARNING,ret);
 		e_text = 
  "%s: cnLevelSpacingF value causes level count to exceed maximum: using AUTOMATICLEVELS mode";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		do_automatic = True;
 	}
 	else {

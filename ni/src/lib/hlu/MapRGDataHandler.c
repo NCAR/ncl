@@ -1,5 +1,5 @@
 /*
- *      $Id: MapRGDataHandler.c,v 1.1 2001-11-28 02:47:49 dbrown Exp $
+ *      $Id: MapRGDataHandler.c,v 1.2 2001-12-05 00:19:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -21,6 +21,15 @@
  */
 
 #include <ncarg/hlu/MapRGDataHandlerP.h>
+
+#define Oset(field)	NhlOffset(NhlMapRGDataHandlerLayerRec,maprgdh.field)
+
+static NhlResource resources[] = {
+	{NhlNmpDataResolution,NhlCmpDataResolution,
+		NhlTMapDataResolution,sizeof(NhlMapDataResolution),
+	 	Oset(data_resolution),NhlTImmediate, 
+	 	_NhlUSET((NhlPointer)NhlUNSPECIFIEDRESOLUTION),0,NULL}
+};
 
 static NhlErrorTypes MapRGDHClassPartInit(
 #if	NhlNeedProto
@@ -110,8 +119,8 @@ NhlMapRGDataHandlerClassRec NhlmapRGDataHandlerClassRec = {
 /* superclass		*/      (NhlClass)&NhlmapDataHandlerClassRec,
 /* cvt_table		*/	NULL,
 
-/* layer_resources 	*/   	NULL,
-/* num_resources 	*/     	0,
+/* layer_resources 	*/   	resources,
+/* num_resources 	*/     	NhlNumber(resources),
 /* all_resources 	*/	NULL,
 /* callbacks		*/	NULL,
 /* num_callbacks	*/	0,
@@ -139,12 +148,7 @@ static int Level;
 static int Color,Dash_Pattern;
 static float Dash_SegLen,Thickness;
 
-static NrmQuark Qstring = NrmNULLQUARK;
-static NrmQuark Qarea_names = NrmNULLQUARK;
-static NrmQuark Qarea_types = NrmNULLQUARK;
-static NrmQuark Qdynamic_groups = NrmNULLQUARK;
-static NrmQuark Qfixed_groups = NrmNULLQUARK;
-static NrmQuark Qdata_set_name = NrmNULLQUARK;
+static NrmQuark Qdata_resolution = NrmNULLQUARK;
 
 static NhlMapPlotLayer Mpl;
 static NhlMapPlotLayerPart *Mpp;
@@ -168,12 +172,7 @@ MapRGDHClassPartInit
 	NhlErrorTypes		ret = NhlNOERROR;
         NhlString		entry_name = "MapRGDHClassPartInit";
         
-	Qstring = NrmStringToQuark(NhlTString);
-	Qarea_names = NrmStringToQuark(NhlNmpAreaNames);
-	Qarea_types = NrmStringToQuark(NhlNmpAreaTypes);
-	Qdynamic_groups = NrmStringToQuark(NhlNmpDynamicAreaGroups);
-	Qfixed_groups = NrmStringToQuark(NhlNmpFixedAreaGroups);
-	Qdata_set_name = NrmStringToQuark(NhlNmpDataSetName);
+	Qdata_resolution = NrmStringToQuark(NhlNmpDataResolution);
         
         Mrgcp = &mdhc->maprgdh_class;
 
@@ -277,6 +276,8 @@ MapRGDHInitialize
         
 	mrgp->aws_id = -1;
 	mrgp->fws_id = -1;
+
+	mrgp->real_data_resolution = mrgp->data_resolution;
         
 /* Manage the dynamic arrays */
 
@@ -389,12 +390,9 @@ static NhlErrorTypes    MapRGDHGetValues
         NhlMapRGDataHandlerLayer mrgl = (NhlMapRGDataHandlerLayer) l;
         NhlMapDataHandlerLayerPart *mdhp = &mrgl->mapdh;
         NhlMapRGDataHandlerLayerPart *mrgp = &mrgl->maprgdh;
-        NhlGenArray ga;
-	NhlString ts;
         NhlString e_text,entry_name = "MapRGDHGetValues";
         int i, count = 0;
-	NhlBoolean create_it;
-
+	
         return(NhlNOERROR);
 
 }
@@ -551,7 +549,13 @@ static NhlErrorTypes mpFill
 		goto error_ret;
 	}
 
-	c_mdrgdl(&irgl);
+	if (mrgp->data_resolution == NhlUNSPECIFIEDRESOLUTION) 
+		c_mdrgdl(&irgl);
+	else
+		irgl = (int)mrgp->data_resolution;
+
+	mrgp->real_data_resolution = (NhlMapDataResolution) irgl;
+
 	subret = _NhlMdrgsf(irgl,fws,aws,entry_name);
         ret = MIN(subret,ret);
 
@@ -683,7 +687,13 @@ static NhlErrorTypes mpOutline
 		return(NhlFATAL);
 	}
 
-	c_mdrgdl(&irgl);
+	if (mrgp->data_resolution == NhlUNSPECIFIEDRESOLUTION) 
+		c_mdrgdl(&irgl);
+	else
+		irgl = (int)mrgp->data_resolution;
+
+	mrgp->real_data_resolution = (NhlMapDataResolution) irgl;
+
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 
 	subret = _NhlMdrgol(irgl,fws,entry_name);

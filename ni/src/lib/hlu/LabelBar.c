@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.68 2001-11-28 02:47:48 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.69 2001-12-05 00:19:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -140,9 +140,9 @@ static NhlResource resources[] = {
 	 NhlTImmediate,
 	 _NhlUSET((NhlPointer) NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
 	
-	{ NhlNlbCullLabelOverlaps, NhlCCullLabelOverlaps, 
+	{ NhlNlbLabelAutoStride, NhlCLabelAutoStride, 
 	  NhlTBoolean, sizeof(NhlBoolean),
-	  NhlOffset(NhlLabelBarLayerRec,labelbar.cull_label_overlaps),
+	  NhlOffset(NhlLabelBarLayerRec,labelbar.label_auto_stride),
 	  NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 {NhlNlbLabelsOn, NhlClbLabelsOn, NhlTBoolean, 
 	 sizeof(NhlBoolean), NhlOffset(NhlLabelBarLayerRec,labelbar.labels_on),
@@ -2719,6 +2719,7 @@ static NhlErrorTypes    SetLabels
 	float angle,label_loc;
 	float x,y,width,height;
 	NhlBoolean label_locs_changed = False;
+	NhlBoolean keep_end_items;
 	NhlSArg	sargs[24];
 	int	nargs = 0;
 		
@@ -3069,6 +3070,9 @@ static NhlErrorTypes    SetLabels
 	lb_p->label_height = label_height;
 	angle = (lb_p->label_angle < 0.0) ? 
 		lb_p->label_angle + 360.0 : lb_p->label_angle;
+	keep_end_items = lb_p->label_alignment == NhlEXTERNALEDGES ?
+		True : False;
+
 	if (lb_p->labels_id < 0) {
 		strcpy(buffer,tnew->base.name);
 		strcat(buffer,".Labels");
@@ -3079,8 +3083,9 @@ static NhlErrorTypes    SetLabels
 				 NhlNMtextOrientation,mtext_orient,
 				 NhlNMtextConstPosF,lb_p->const_pos,
 				 NhlNMtextPosArray,lb_p->label_locs,
-				 NhlNMtextCullOverlaps,
-				     lb_p->cull_label_overlaps,
+				 NhlNMtextAutoStride,
+				     lb_p->label_auto_stride,
+				 NhlNMtextKeepEndItems,keep_end_items,
 				 NhlNtxAngleF,angle,
 				 NhlNtxFont,lb_p->label_font,
 				 NhlNtxJust,lb_p->label_just,
@@ -3101,7 +3106,8 @@ static NhlErrorTypes    SetLabels
 		olb_p->label_height = lb_p->label_height;
 		olb_p->label_just = lb_p->label_just;
 		olb_p->const_pos = lb_p->const_pos;
-		olb_p->cull_label_overlaps = lb_p->cull_label_overlaps;
+		olb_p->label_auto_stride = lb_p->label_auto_stride;
+		olb_p->label_alignment = lb_p->label_alignment;
 	}
 	else {
 		/* 
@@ -3147,6 +3153,16 @@ static NhlErrorTypes    SetLabels
 		if (lb_p->label_func_code != olb_p->label_func_code)
 			NhlSetSArg(&sargs[nargs++],NhlNtxFuncCode,
 				   lb_p->label_func_code);
+		if (lb_p->label_auto_stride != olb_p->label_auto_stride)
+			NhlSetSArg(&sargs[nargs++],NhlNMtextAutoStride,
+				   lb_p->label_auto_stride);
+		if (lb_p->label_alignment != olb_p->label_alignment) {
+			keep_end_items = 
+				lb_p->label_alignment == NhlEXTERNALEDGES ?
+				True : False;
+			NhlSetSArg(&sargs[nargs++],NhlNMtextKeepEndItems,
+				   keep_end_items);
+		}
 		subret = NhlALSetValues(lb_p->labels_id,sargs,nargs);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: Error setting MultiText object values";
@@ -3179,9 +3195,6 @@ static NhlErrorTypes    SetLabels
 	if (lb_p->label_color != olb_p->label_color)
 		NhlSetSArg(&sargs[nargs++],
 			   NhlNtxFontColor,lb_p->label_color);
-	if (lb_p->cull_label_overlaps != olb_p->cull_label_overlaps)
-		NhlSetSArg(&sargs[nargs++],NhlNMtextCullOverlaps,
-			   lb_p->cull_label_overlaps);
 
 	subret = NhlALSetValues(lb_p->labels_id,sargs,nargs);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
