@@ -1,5 +1,5 @@
 C
-C $Id: gzgte1.f,v 1.4 2000-08-22 15:08:30 haley Exp $
+C $Id: gzgte1.f,v 1.5 2004-07-23 18:22:38 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -25,7 +25,7 @@ C
 C  Given an index INDEX into the error table, this subroutine
 C  returns the NCAR GKS error number in NUM and the error
 C  message string in ERMSG (the length of ERMSG will be a
-C  maximum of 90 characters).
+C  maximum of 210 characters).
 C
       CHARACTER*(*) ERMSG
 C

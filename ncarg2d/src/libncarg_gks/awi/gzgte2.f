@@ -1,5 +1,5 @@
 C
-C $Id: gzgte2.f,v 1.3 2000-08-22 15:08:30 haley Exp $
+C $Id: gzgte2.f,v 1.4 2004-07-23 18:22:38 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -24,7 +24,7 @@ C
 C
 C  Given an NCAR GKS error number in NUM, this subroutine
 C  returns the NCAR GKS error message string in ERMSG (the 
-C  length of ERMSG will be a maximum of 90 characters). If
+C  length of ERMSG will be a maximum of 210 characters). If
 C  no error message is found for the given error number, the
 C  string ' --UNKNOWN ERROR CODE' is returned in ERMSG.
 C
