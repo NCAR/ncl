@@ -1,5 +1,5 @@
 C
-C      $Id: pr03f.f,v 1.1 1996-05-13 20:24:58 haley Exp $
+C      $Id: pr03f.f,v 1.2 1997-05-22 17:08:44 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -105,7 +105,7 @@ C
 C Create a LogLinPlot that covers the entire NDC space 
 C to use as a drawing canvas
 C
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetFloat(rlist,'vpXF',0.0,ierr)
       call NhlFRLSetFloat(rlist,'vpYF',1.0,ierr)
       call NhlFRLSetFloat(rlist,'vpWidthF',1.0,ierr)
@@ -115,13 +115,13 @@ C
 C
 C Explicitly create a GraphicStyle
 C
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFCreate(gsid,'style',NhlFgraphicStyleClass,wid,rlist,
      1     ierr)
 C
 C Set workstation line attributes and draw a triangle
 C
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetInteger(rlist,'gsLineDashPattern',2,ierr)
       call NhlFRLSetFloat(rlist,'gsLineThicknessF',3.0,ierr)
       call NhlFSetValues(gsid,rlist,ierr)
@@ -136,7 +136,7 @@ C
       call NhlFNDCPolymarker(canvas,gsid,pmx,pmy,4,ierr)
       call NhlFFrame(wid,ierr)
 
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetFloat(rlist,'vpXF',0.2,ierr)
       call NhlFRLSetFloat(rlist,'vpYF',0.8,ierr)
       call NhlFRLSetFloat(rlist,'vpWidthF',0.6,ierr)
