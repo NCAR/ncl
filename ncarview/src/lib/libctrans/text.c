@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.16 1992-11-06 20:00:38 clyne Exp $
+ *	$Id: text.c,v 1.17 1992-11-06 23:35:57 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -771,6 +771,15 @@ int	Text(cgmc)
 
 		/* number of strokes making up a character.	*/
 		numstroke = F_NUMSTROKE(fcap_current, index);
+
+		/*
+		 * if its a non-charcter convert it to a space.
+		 */
+		if (numstroke <= 1) {
+			index = (int) ' ' - F_CHAR_START(fcap_template);
+			numstroke = F_NUMSTROKE(fcap_current, index);
+		}
+
 
 #ifdef	DEAD
 		if (index >=0 && index < F_NUMCHAR(fcap_template) && numstroke){
