@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.9 1994-09-23 23:36:55 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.10 1994-10-13 19:30:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -269,6 +269,31 @@ typedef enum _sfCoord { sfXCOORD, sfYCOORD} sfCoord;
 *	ClassInitialize							*
 ************************************************************************/
 
+/*
+ * Function:	nhlfscalarfieldclass
+ *
+ * Description:	fortran ref to scalarfield class
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global Fortran
+ * Returns:	NhlLayerClass
+ * Side Effect:	
+ */
+NhlLayerClass
+_NHLCALLF(nhlfscalarfieldclass,NHLFSCALARFIELDCLASS)
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	return NhlscalarFieldLayerClass;
+}
 
 
 /*

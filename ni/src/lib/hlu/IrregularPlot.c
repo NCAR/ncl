@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.6 1994-05-12 23:51:26 boote Exp $
+ *      $Id: IrregularPlot.c,v 1.7 1994-10-13 19:30:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -142,6 +142,32 @@ NhlIrregularPlotLayerClassRec NhlirregularPlotLayerClassRec = {
 	
 NhlLayerClass NhlirregularPlotLayerClass = (NhlLayerClass)
 					&NhlirregularPlotLayerClassRec;
+
+/*
+ * Function:	nhlfirregularplotclass
+ *
+ * Description:	fortran ref to irregular plot class
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global Fortran
+ * Returns:	NhlLayerClass
+ * Side Effect:	
+ */
+NhlLayerClass
+_NHLCALLF(nhlfirregularplotclass,NHLFIRREGULARPLOTCLASS)
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	return NhlirregularPlotLayerClass;
+}
 
 /*
  * Function:	IrregularPlotClassInitialize

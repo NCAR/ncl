@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.c,v 1.7 1994-10-07 18:47:59 dbrown Exp $
+ *      $Id: LogLinPlot.c,v 1.8 1994-10-13 19:30:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -141,6 +141,31 @@ NhlLogLinPlotLayerClassRec NhllogLinPlotLayerClassRec = {
 NhlLayerClass NhllogLinPlotLayerClass = (NhlLayerClass)
 						&NhllogLinPlotLayerClassRec;
 
+/*
+ * Function:	nhlfloglinplotclass
+ *
+ * Description:	fortran ref to loglin plot class
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global Fortran
+ * Returns:	NhlLayerClass
+ * Side Effect:	
+ */
+NhlLayerClass
+_NHLCALLF(nhlfloglinplotclass,NHLFLOGLINPLOTCLASS)
+#if	__STDC__
+(
+	void
+)
+#else
+()
+#endif
+{
+	return NhllogLinPlotLayerClass;
+}
 
 /*
  * Function:	LogLinPlotClassInitialize

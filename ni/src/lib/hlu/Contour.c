@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.32 1994-10-12 23:03:14 dbrown Exp $
+ *      $Id: Contour.c,v 1.33 1994-10-13 19:30:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3880,8 +3880,14 @@ static NhlErrorTypes SetUpLLTransObj
 	if (cnp->y_max != ocnp->y_max)
 		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,cnp->y_max);
 
-	oxrev = ocnp->sfp->x_start > ocnp->sfp->x_end;
-	oyrev = ocnp->sfp->y_start > ocnp->sfp->y_end;
+	if (ocnp->sfp == NULL) {
+		oxrev = False;
+		oyrev = False;
+	}
+	else {
+		oxrev = ocnp->sfp->x_start > ocnp->sfp->x_end;
+		oyrev = ocnp->sfp->y_start > ocnp->sfp->y_end;
+	}
 	if (cnp->x_reverse != ocnp->x_reverse || oxrev != xrev) {
 		if (cnp->x_min_set && cnp->x_max_set)
 			NhlSetSArg(&sargs[nargs++],
@@ -4090,6 +4096,7 @@ static NhlErrorTypes SetUpIrrTransObj
 	}
 
 	if (init || tfp->trans_obj == NULL ||
+	    ocnp->sfp == NULL ||
 	    cnp->sfp->x_arr != ocnp->sfp->x_arr ||
 	    cnp->sfp->x_start != ocnp->sfp->x_start ||
 	    cnp->sfp->x_end != ocnp->sfp->x_end ||
@@ -4126,6 +4133,7 @@ static NhlErrorTypes SetUpIrrTransObj
 	}
 
 	if (init || tfp->trans_obj == NULL ||
+	    ocnp->sfp == NULL ||
 	    cnp->sfp->y_arr != ocnp->sfp->y_arr ||
 	    cnp->sfp->y_start != ocnp->sfp->y_start ||
 	    cnp->sfp->y_end != ocnp->sfp->y_end ||
@@ -4201,8 +4209,14 @@ static NhlErrorTypes SetUpIrrTransObj
 		return ret;
 	}
 
-	oxrev = ocnp->sfp->x_start > ocnp->sfp->x_end;
-	oyrev = ocnp->sfp->y_start > ocnp->sfp->y_end;
+	if (ocnp->sfp == NULL) {
+		oxrev = False;
+		oyrev = False;
+	}
+	else {
+		oxrev = ocnp->sfp->x_start > ocnp->sfp->x_end;
+		oyrev = ocnp->sfp->y_start > ocnp->sfp->y_end;
+	}
 	if (cnp->x_reverse != ocnp->x_reverse || xrev != oxrev) {
 		if (cnp->x_min_set && cnp->x_max_set)
 			NhlSetSArg(&sargs[nargs++],
