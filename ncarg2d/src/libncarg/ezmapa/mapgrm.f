@@ -1,11 +1,8 @@
 C
-C	$Id: mapgrm.f,v 1.1.1.1 1992-04-17 22:32:15 ncargd Exp $
-C
-C
-C The subroutine MAPGRM.
-C --- ---------- ------
+C $Id: mapgrm.f,v 1.2 1993-12-21 00:44:47 kennison Exp $
 C
       SUBROUTINE MAPGRM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+C
       DIMENSION IAM(*),XCS(*),YCS(*),IAI(*),IAG(*)
 C
 C Declare required common blocks.  See MAPBD for descriptions of these
@@ -145,10 +142,13 @@ C
       DLAT=(XLAT-RLAT)/CLING((XLAT-RLAT)/GRDR)
 10015 CONTINUE
       CALL MAPITM (RLAT,RLON,0,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+      IF (ICFELL('MAPGRM',1).NE.0) RETURN
   102 RLAT=RLAT+DLAT
       CALL MAPITM (RLAT,RLON,1,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+      IF (ICFELL('MAPGRM',2).NE.0) RETURN
       IF (RLAT.LT.XLAT-.9999) GO TO 102
       CALL MAPIQM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+      IF (ICFELL('MAPGRM',3).NE.0) RETURN
       IF (RLON.LT.XLON-.9999) GO TO 101
 C
 C Round the latitude limits to appropriate multiples of GRID.
@@ -164,9 +164,11 @@ C for the parallels at -90 and/or +90 to be drawn.
 C
       IF (.NOT.(IPRJ.EQ.10)) GO TO 10016
       CALL MAPTRN (-90.,PHIO,U,V)
+      IF (ICFELL('MAPGRM',4).NE.0) RETURN
       IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
      +                                                  SLAT=SLAT-GRID
       CALL MAPTRN (90.,PHIO,U,V)
+      IF (ICFELL('MAPGRM',5).NE.0) RETURN
       IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
      +                                                  BLAT=BLAT+GRID
 10016 CONTINUE
@@ -185,10 +187,13 @@ C
       DLON=(XLON-RLON)/CLING((XLON-RLON)/GRDR)
 10018 CONTINUE
       CALL MAPITM (RLAT,RLON,0,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+      IF (ICFELL('MAPGRM',6).NE.0) RETURN
   104 RLON=RLON+DLON
       CALL MAPITM (RLAT,RLON,1,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+      IF (ICFELL('MAPGRM',7).NE.0) RETURN
       IF (RLON.LT.XLON-.9999) GO TO 104
       CALL MAPIQM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+      IF (ICFELL('MAPGRM',8).NE.0) RETURN
       IF (XLAT.LT.BLAT-.9999) GO TO 103
 C
 C Done.

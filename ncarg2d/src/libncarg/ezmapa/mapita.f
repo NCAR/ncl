@@ -1,11 +1,8 @@
 C
-C	$Id: mapita.f,v 1.2 1992-09-30 14:07:13 ncargd Exp $
-C
-C
-C The subroutine MAPITA.
-C --- ---------- ------
+C $Id: mapita.f,v 1.3 1993-12-21 00:44:53 kennison Exp $
 C
       SUBROUTINE MAPITA (XLAT,XLON,IFST,IAMP,IGRP,IDLT,IDRT)
+C
       DIMENSION IAMP(*)
 C
 C Declare required common blocks.  See MAPBD for descriptions of these
@@ -25,6 +22,8 @@ C
       SAVE /MAPCM8/
       COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
       SAVE /MAPCMA/
+      COMMON /MAPCMB/ IIER
+      SAVE /MAPCMB/
       COMMON /MAPCMC/ IGI1,IGI2,NOVS,XCRA(100),YCRA(100),NCRA
       SAVE /MAPCMC/
 C
@@ -129,6 +128,7 @@ C
 C Project the point (RLAT,RLON) to (U,V).
 C
       CALL MAPTRN (RLAT,RLON,U,V)
+      IF (ICFELL('MAPITA',1).NE.0) RETURN
 C
 C For the sake of efficiency, execute one of two parallel algorithms,
 C depending on whether an elliptical or a rectangular perimeter is in
@@ -168,12 +168,12 @@ C
       RLNI=RLON
       UINT=UOLD
       VINT=VOLD
-      ASSIGN 10021 TO L10022
+      L10022=    1
       GO TO 10022
 10021 CONTINUE
       XCRD=UINT
       YCRD=VINT
-      ASSIGN 10023 TO L10024
+      L10024=    1
       GO TO 10024
 10023 CONTINUE
       GO TO 108
@@ -209,7 +209,7 @@ C
       CALL MAPTRE (UOLD,VOLD,U,V,UINT,VINT)
       XCRD=UINT
       YCRD=VINT
-      ASSIGN 10029 TO L10024
+      L10024=    2
       GO TO 10024
 10029 CONTINUE
       GO TO 108
@@ -232,17 +232,17 @@ C
       RLNI=RLNO
       UINT=U
       VINT=V
-      ASSIGN 10031 TO L10022
+      L10022=    2
       GO TO 10022
 10031 CONTINUE
       XCRD=UINT
       YCRD=VINT
-      ASSIGN 10032 TO L10033
+      L10033=    1
       GO TO 10033
 10032 CONTINUE
       XCRD=U
       YCRD=V
-      ASSIGN 10034 TO L10024
+      L10024=    3
       GO TO 10024
 10034 CONTINUE
       GO TO 108
@@ -289,7 +289,7 @@ C
 C
       XCRD=UTMP
       YCRD=VTMP
-      ASSIGN 10037 TO L10024
+      L10024=    4
       GO TO 10024
 10037 CONTINUE
 C
@@ -331,12 +331,12 @@ C
       RLNI=RLON
       UINT=UOLD
       VINT=VOLD
-      ASSIGN 10041 TO L10022
+      L10022=    3
       GO TO 10022
 10041 CONTINUE
       XCRD=UINT
       YCRD=VINT
-      ASSIGN 10042 TO L10024
+      L10024=    5
       GO TO 10024
 10042 CONTINUE
       GO TO 108
@@ -363,7 +363,7 @@ C
       CALL MAPTRP (UOLD,VOLD,U,V,UINT,VINT)
       XCRD=UINT
       YCRD=VINT
-      ASSIGN 10047 TO L10024
+      L10024=    6
       GO TO 10024
 10047 CONTINUE
       GO TO 108
@@ -379,17 +379,17 @@ C
       RLNI=RLNO
       UINT=U
       VINT=V
-      ASSIGN 10049 TO L10022
+      L10022=    4
       GO TO 10022
 10049 CONTINUE
       XCRD=UINT
       YCRD=VINT
-      ASSIGN 10050 TO L10033
+      L10033=    2
       GO TO 10033
 10050 CONTINUE
       XCRD=U
       YCRD=V
-      ASSIGN 10051 TO L10024
+      L10024=    7
       GO TO 10024
 10051 CONTINUE
       GO TO 108
@@ -416,7 +416,7 @@ C
 C
       XCRD=UTMP
       YCRD=VTMP
-      ASSIGN 10054 TO L10024
+      L10024=    8
       GO TO 10024
 10054 CONTINUE
 10052 CONTINUE
@@ -435,13 +435,13 @@ C Draw the visible portion of the line joining the old point to the new.
 C
   105 XCRD=UOLD
       YCRD=VOLD
-      ASSIGN 10055 TO L10033
+      L10033=    3
       GO TO 10033
 10055 CONTINUE
 C
       XCRD=U
       YCRD=V
-      ASSIGN 10056 TO L10024
+      L10024=    9
       GO TO 10024
 10056 CONTINUE
 C
@@ -451,7 +451,7 @@ C Start a new line.
 C
   106 XCRD=U
       YCRD=V
-      ASSIGN 10057 TO L10033
+      L10033=    4
       GO TO 10033
 10057 CONTINUE
 C
@@ -468,7 +468,7 @@ C
 C
       XCRD=U
       YCRD=V
-      ASSIGN 10059 TO L10024
+      L10024=   10
       GO TO 10024
 10059 CONTINUE
 C
@@ -501,6 +501,7 @@ C
       RLTH=RLATI(1)
       RLNH=RLONI(1)
       CALL MAPTRN (RLTH,RLNH,UINH,VINH)
+      IF (ICFELL('MAPITA',2).NE.0) RETURN
       IF (.NOT.(UINH.LT.1.E12)) GO TO 10061
       IF (.NOT.(RLTH.NE.RLTV.OR.RLNH.NE.RLNV)) GO TO 10062
       RLTV=RLTH
@@ -527,32 +528,40 @@ C
 10067 CONTINUE
       P=PSAV
       Q=QSAV
-      GO TO L10022 , (10049,10041,10031,10021)
+      GO TO (10021,10031,10041,10049) , L10022
 C
 C The following internal procedure is invoked to start a line.
 C
 10033 CONTINUE
       IF (.NOT.(NCRA.GT.1)) GO TO 10068
       CALL AREDAM (IAMP,XCRA,YCRA,NCRA,IGRP,IDLT,IDRT)
+      IF (.NOT.(ICFELL('MAPITA',3).NE.0)) GO TO 10069
+      IIER=-1
+      RETURN
+10069 CONTINUE
 10068 CONTINUE
       XCRA(1)=XCRD
       YCRA(1)=YCRD
       NCRA=1
-      GO TO L10033 , (10057,10055,10050,10032)
+      GO TO (10032,10050,10055,10057) , L10033
 C
 C The following internal procedure is invoked to continue a line.
 C
 10024 CONTINUE
-      IF (.NOT.(NCRA.EQ.100)) GO TO 10069
+      IF (.NOT.(NCRA.EQ.100)) GO TO 10070
       CALL AREDAM (IAMP,XCRA,YCRA,NCRA,IGRP,IDLT,IDRT)
+      IF (.NOT.(ICFELL('MAPITA',4).NE.0)) GO TO 10071
+      IIER=-1
+      RETURN
+10071 CONTINUE
       XCRA(1)=XCRA(100)
       YCRA(1)=YCRA(100)
       NCRA=1
-10069 CONTINUE
+10070 CONTINUE
       NCRA=NCRA+1
       XCRA(NCRA)=XCRD
       YCRA(NCRA)=YCRD
-      GO TO L10024 , (10059,10056,10054,10051,10047,10042,10037,10034,10
-     +029,10023)
+      GO TO (10023,10029,10034,10037,10042,10047,10051,10054,10056,10059
+     +) , L10024
 C
       END

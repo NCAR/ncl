@@ -1,38 +1,5 @@
 C
-C	$Id: mapaci.f,v 1.3 1992-09-04 20:40:01 ncargd Exp $
-C
-C **********************************************************************
-C P A C K A G E   E Z M A P A   -   I N T R O D U C T I O N
-C **********************************************************************
-C
-C This file contains implementation instructions and the code for a
-C set of routines allowing one to direct EZMAP output (lines of
-C latitude and longitude and boundary outlines) to routines in the
-C package AREAS.  Among other things, this gives one the capability
-C to create solid-color global maps.  Routines included are MAPBLA,
-C MAPGRM, MAPITA, MAPIQA, MAPITM, MAPIQM, and MAPACI.
-C
-C **********************************************************************
-C P A C K A G E   E Z M A P A   -   I M P L E M E N T A T I O N
-C **********************************************************************
-C
-C If this file begins with the two lines
-C
-C    .OP LS=10000 LI=1 CB RT ES=< ET=> OC UC=0
-C    .EL I
-C
-C then it is the IFTRAN version, which must be run through the IFTRAN
-C preprocessor to generate a FORTRAN version; otherwise, it is the
-C FORTRAN version.  Nothing special need be done to run the FORTRAN
-C version; however, both of the packages EZMAP and AREAS must be
-C available and the former must be the latest version (July, 1987).
-C
-C **********************************************************************
-C P A C K A G E   E Z M A P A   -   C O D E
-C **********************************************************************
-C
-C The function MAPACI.
-C --- -------- ------
+C $Id: mapaci.f,v 1.4 1993-12-21 00:44:41 kennison Exp $
 C
       FUNCTION MAPACI (IAI)
 C
