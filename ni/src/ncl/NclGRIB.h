@@ -227,6 +227,8 @@ GribParamList	*var_list;
 int 		n_internal_vars;
 GribInternalVarList	*internal_var_list;
 int		total_dims;
+int		n_scalar_dims;
+GribDimInqRecList *scalar_dims;
 int		n_it_dims;
 GribDimInqRecList *it_dims;
 int		n_ft_dims;

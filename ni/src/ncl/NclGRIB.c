@@ -1337,8 +1337,8 @@ int GdsCompare(unsigned char *gds1,int gds_size1,unsigned char *gds2,int gds_siz
 		top1 = gds1[4] + gds1[3] * 4;
 		top2 = gds2[4] + gds2[3] * 4;
 		if (top1 < gds_size1) {
-			char *t1 = &gds1[top1-1];
-			char *t2 = &gds2[top2-1];
+			unsigned char *t1 = &gds1[top1-1];
+			unsigned char *t2 = &gds2[top2-1];
 			for (i = top1 - 1; i < gds_size1; i++)
 				if(*(t1++) != *(t2++)) {	
 					return(0);
@@ -1356,8 +1356,8 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 	NclGribFVarRec *test;
 	int ok = 0;
 	NclMultiDValData tmp_md;
-	float *af;
-	float *bf;
+	float *af, *afi;
+	float *bf, *bfi;
 	float *tmpf;
 	int nv;
 	int pl;
@@ -1365,6 +1365,18 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 	int sign;
 	float tmpb;
 	float tmpa;
+	int count;
+	int interface = 0;
+	GribAttInqRecList *att_list_ptr= NULL;	
+        GribAttInqRec   *att_ptr= NULL;
+	int attcount;
+	GribDimInqRec *tdim;
+	GribDimInqRecList *dimptr;
+	int new_dim_number;
+	NrmQuark *qstr = NULL;
+	NrmQuark qldim;
+	int ix;
+	GribInternalVarList *ivar;
 
 	for(i = 0; i < step->var_info.num_dimensions; i++) {
 		sprintf(buffer,"lv_HYBL%d",step->var_info.file_dim_num[i]);
@@ -1372,17 +1384,38 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 			dimsizes_level = step->var_info.dim_sizes[i];
 			tmp_file_dim_number = step->var_info.file_dim_num[i];
 			ok = 1;
+			qldim = NrmStringToQuark(buffer);
 			break;
 		}
 	}
-	sprintf(buffer,"lv_HYBL%d_a",tmp_file_dim_number);
+	if (! ok)
+		return;
 
-	if((_GribGetInternalVar(therec,NrmStringToQuark(buffer),&test) ==NULL)&&(ok)) {
-		nv = (int)step->thelist->rec_inq->gds[3];
+	nv = (int)step->thelist->rec_inq->gds[3];
+	if(nv == 0) {
+		return;
+	}
+	ix = step->thelist->rec_inq->center_ix;
+	if ((centers[ix].index == 98) && (nv / 2 > dimsizes_level)) {
+		/* 
+		 * ECMWF data - we know that ERA 40 and ERA 15 use level interfaces for A and B 
+		 * coefficients in the GRIB file data. And from looking at the ECMWF web site, 
+		 * it looks as if hybrid coordinates are always specified using the interface levels.
+		 * Time will tell...
+		 */
+
+		interface = 1;
+
+		/*
+		 * Since a and b are defined on the interfaces generate the complete set of 
+		 * interface parameters, plus generate "full" model level a and b values 
+		 * by averaging the interface values above and below.
+		 */
+	}
+
+	sprintf(buffer,"lv_HYBL%d_a",tmp_file_dim_number);
+	if((_GribGetInternalVar(therec,NrmStringToQuark(buffer),&test) ==NULL)) {
 		pl = (int)step->thelist->rec_inq->gds[4];
-		if(nv == 0) {
-			return;
-		}
 		tmpf = (float*)NclMalloc(nv*sizeof(float));
 		the_start_off = 4*nv+(pl-1);
 		for(i = pl-1;i< the_start_off; i+=4) {
@@ -1396,12 +1429,68 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 				tmpf[(i-(pl-1))/4] = -tmpf[(i-(pl-1))/4];
 			}
 		}
-		af = (float*)NclMalloc(sizeof(float)*dimsizes_level);
-		bf = (float*)NclMalloc(sizeof(float)*dimsizes_level);
-		for(i =0; i < dimsizes_level; i++) {
-			af[i] = tmpf[((int*)tmp_md->multidval.val)[i] ]/100000.0;
-			bf[i] = tmpf[nv/2+((int*)tmp_md->multidval.val)[i]];
+		if (interface) {
+			/* 
+			 * interface levels are specified -- we need a new dimension,
+			 * this depends on _Do109 being called after the regular level dimension 
+			 * has been created, but before any others are created. It assumes that the
+			 * next dimension number is available.
+			 */
+			new_dim_number = tmp_file_dim_number + 1;
+			count = nv / 2;
+			tdim = (GribDimInqRec*)NclMalloc((unsigned)sizeof(GribDimInqRec));
+			tdim->dim_number = new_dim_number;
+			tdim->is_gds = -1;
+			tdim->size = count;
+			sprintf(buffer,"lv_HYBL_i%d",new_dim_number);
+			tdim->dim_name = NrmStringToQuark(buffer);
+			therec->total_dims++;
+			dimptr = (GribDimInqRecList*)NclMalloc((unsigned)sizeof(GribDimInqRecList));
+			dimptr->dim_inq = tdim;
+			dimptr->next = therec->lv_dims;
+			therec->lv_dims = dimptr;
+			therec->n_lv_dims++;
+
+			af = (float*)NclMalloc(sizeof(float)*dimsizes_level);
+			bf = (float*)NclMalloc(sizeof(float)*dimsizes_level);
+			afi = (float*)NclMalloc(sizeof(float)*count);
+			bfi = (float*)NclMalloc(sizeof(float)*count);
+			for(i = 0; i < count; i++) {
+				afi[i] = tmpf[i]/100000.0;
+				bfi[i] = tmpf[nv/2+ i];
+			}
+			for(i =0; i < dimsizes_level; i++) {
+				int ix = ((int*)tmp_md->multidval.val)[i];
+				if (ix < 1)
+					ix = 1;
+				if (ix > count - 1)
+					ix = count - 1;
+				af[i] = 0.5 * (afi[ix - 1] + afi[ix]);
+				bf[i] = 0.5 * (bfi[ix - 1] + bfi[ix]);
+			}
 		}
+		else {
+			/* level centers are specified */
+			af = (float*)NclMalloc(sizeof(float)*dimsizes_level);
+			bf = (float*)NclMalloc(sizeof(float)*dimsizes_level);
+			for(i =0; i < dimsizes_level; i++) {
+				af[i] = tmpf[((int*)tmp_md->multidval.val)[i] ]/100000.0;
+				bf[i] = tmpf[nv/2+((int*)tmp_md->multidval.val)[i]];
+			}
+		}
+		NclFree(tmpf);
+
+		qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*qstr = NrmStringToQuark("hybrid A coefficient at layer midpoints");
+		GribPushAtt(&att_list_ptr,"long_name",qstr,1,nclTypestringClass); 
+		attcount = 1;
+		if (interface) {
+			qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			*qstr = NrmStringToQuark("derived as average of layer interfaces above and below midpoints");
+			GribPushAtt(&att_list_ptr,"note",qstr,1,nclTypestringClass); 
+			attcount++;
+		}
+
 		sprintf(buffer,"lv_HYBL%d_a",tmp_file_dim_number);
 		_GribAddInternalVar(therec,NrmStringToQuark(buffer),&tmp_file_dim_number,(NclMultiDValData)_NclCreateVal(
 			NULL,
@@ -1414,7 +1503,19 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 			&dimsizes_level,
 			TEMPORARY,
 			NULL,
-			nclTypefloatClass),NULL,0);
+			nclTypefloatClass),att_list_ptr,attcount);
+
+		att_list_ptr = NULL;
+		qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*qstr = NrmStringToQuark("hybrid B coefficient at layer midpoints");
+		GribPushAtt(&att_list_ptr,"long_name",qstr,1,nclTypestringClass); 
+		attcount = 1;
+		if (interface) {
+			qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			*qstr = NrmStringToQuark("derived as average of layer interfaces above and below midpoints");
+			GribPushAtt(&att_list_ptr,"note",qstr,1,nclTypestringClass); 
+			attcount++;
+		}
 		sprintf(buffer,"lv_HYBL%d_b",tmp_file_dim_number);
 		_GribAddInternalVar(therec,NrmStringToQuark(buffer),&tmp_file_dim_number,(NclMultiDValData)_NclCreateVal(
 			NULL,
@@ -1427,8 +1528,105 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 			&dimsizes_level,
 			TEMPORARY,
 			NULL,
-			nclTypefloatClass),NULL,0);
+			nclTypefloatClass),att_list_ptr,attcount);
 		
+		if (interface) {
+			att_list_ptr = NULL;
+			qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			*qstr = NrmStringToQuark("hybrid A coefficient at layer interfaces");
+			GribPushAtt(&att_list_ptr,"long_name",qstr,1,nclTypestringClass); 
+			sprintf(buffer,"lv_HYBL_i%d_a",new_dim_number);
+			_GribAddInternalVar(therec,NrmStringToQuark(buffer),&new_dim_number,(NclMultiDValData)_NclCreateVal(
+						    NULL,
+						    NULL,
+						    Ncl_MultiDValData,
+						    0,
+						    (void*)afi,
+						    NULL,
+						    1,
+						    &count,
+						    TEMPORARY,
+						    NULL,
+						    nclTypefloatClass),att_list_ptr,1);
+
+			att_list_ptr = NULL;
+			qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			*qstr = NrmStringToQuark("hybrid B coefficient at layer interfaces");
+			GribPushAtt(&att_list_ptr,"long_name",qstr,1,nclTypestringClass); 
+			sprintf(buffer,"lv_HYBL_i%d_b",new_dim_number);
+			_GribAddInternalVar(therec,NrmStringToQuark(buffer),&new_dim_number,(NclMultiDValData)_NclCreateVal(
+						    NULL,
+						    NULL,
+						    Ncl_MultiDValData,
+						    0,
+						    (void*)bfi,
+						    NULL,
+						    1,
+						    &count,
+						    TEMPORARY,
+						    NULL,
+						    nclTypefloatClass),att_list_ptr,1);
+		}
+		/* 
+		 * Now we need the scalar reference pressure, requires a scalar dim 
+		 */
+		if (therec->n_scalar_dims == 0) {
+			tdim = (GribDimInqRec*)NclMalloc((unsigned)sizeof(GribDimInqRec));
+			tdim->dim_number = therec->total_dims;
+			tdim->is_gds = -1;
+			tdim->size = 1;
+			sprintf(buffer,"ncl_scalar");
+			tdim->dim_name = NrmStringToQuark(buffer);
+			therec->total_dims++;
+			dimptr = (GribDimInqRecList*)NclMalloc((unsigned)sizeof(GribDimInqRecList));
+			dimptr->dim_inq = tdim;
+			dimptr->next = therec->scalar_dims;
+			therec->scalar_dims = dimptr;
+			therec->n_scalar_dims++;
+		}
+		att_list_ptr = NULL;
+		qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*qstr = NrmStringToQuark("reference pressure");
+		GribPushAtt(&att_list_ptr,"long_name",qstr,1,nclTypestringClass); 
+		qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*qstr = NrmStringToQuark("Pa");
+		GribPushAtt(&att_list_ptr,"units",qstr,1,nclTypestringClass); 
+		sprintf(buffer,"P0");
+		tmpf = (float*)NclMalloc(1*sizeof(float));
+		*tmpf = 100000.0;
+		count = tdim->size;
+		_GribAddInternalVar(therec,NrmStringToQuark(buffer),&tdim->dim_number,(NclMultiDValData)_NclCreateVal(
+					    NULL,
+					    NULL,
+					    Ncl_MultiDValData,
+					    0,
+					    (void*)tmpf,
+					    NULL,
+					    1,
+					    &count,
+					    TEMPORARY,
+					    NULL,
+					    nclTypefloatClass),att_list_ptr,2);
+
+		/*
+		 * Now add attributes to the attribute list of the level coordinate variable
+		 */
+	
+		att_list_ptr = NULL;
+		qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*qstr = NrmStringToQuark("atmosphere hybrid sigma pressure coordinate");
+		GribPushAtt(&att_list_ptr,"standard_name",qstr,1,nclTypestringClass); 
+		qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		sprintf(buffer,"a: lv_HYBL%d_a b: lv_HYBL%d_b ps: unknown p0: P0",tmp_file_dim_number,tmp_file_dim_number);
+		*qstr = NrmStringToQuark(buffer);
+		GribPushAtt(&att_list_ptr,"formula_terms",qstr,1,nclTypestringClass); 
+		for (ivar = therec->internal_var_list; ivar != NULL; ivar = ivar->next) {
+			if (ivar->int_var->var_info.var_name_quark != qldim) 
+				continue;
+			att_list_ptr->next->next = ivar->int_var->theatts;
+			ivar->int_var->theatts = att_list_ptr;
+			ivar->int_var->n_atts += 2;
+		}		
 	} 
 }
 
@@ -1627,6 +1825,8 @@ GribFileRecord *therec;
 
 	
 	therec->total_dims = 0;
+	therec->n_scalar_dims = 0;
+	therec->scalar_dims = NULL;
 	therec->n_it_dims = 0;
 	therec->it_dims = NULL;
 	therec->n_ft_dims = 0;
@@ -1971,6 +2171,15 @@ GribFileRecord *therec;
 			}
 			current_dim++;
 		}
+		if(step->level_indicator == 109) {
+			/* 
+			 * This is for hybrid levels: if interface levels then an extra dimension is
+			 * required. It should follow directly after the corresponding level center 
+			 * dimension.
+			 */
+			_Do109(therec,step);
+		}
+
 /*
 * Now its time to get the grid coordinates  and define grid variables
 * First switch on whether record has GDS or not
@@ -2366,9 +2575,6 @@ GribFileRecord *therec;
 			}
 		}
 		if(is_err == NhlNOERROR) {
-			if(step->level_indicator == 109) {
-				_Do109(therec,step);
-			}
 
 			last = step;	
 			step = step->next;
@@ -5209,6 +5415,11 @@ int i,j;
 dims = (NclQuark*)NclMalloc((unsigned)sizeof(NclQuark)*thefile->total_dims);
 i = 0;
 *num_dims = thefile->total_dims;
+dstep = thefile->scalar_dims;
+for(j=0; j < thefile->n_scalar_dims; j++) {
+	dims[dstep->dim_inq->dim_number] = dstep->dim_inq->dim_name;	
+	dstep = dstep->next;
+}
 dstep = thefile->it_dims;
 for(j=0; j < thefile->n_it_dims; j++) {
 	dims[dstep->dim_inq->dim_number] = dstep->dim_inq->dim_name;	
@@ -5251,6 +5462,17 @@ tmp = NrmQuarkToString(dim_name_q);
 /*
 * first character is either i,f, g or l
 */
+	dstep = thefile->scalar_dims;
+	while(dstep != NULL) {
+		if(dstep->dim_inq->dim_name == dim_name_q) {
+			tmpd = (NclFDimRec*)NclMalloc(sizeof(NclFDimRec));
+			tmpd->dim_name_quark = dim_name_q;
+			tmpd->dim_size = dstep->dim_inq->size;
+			tmpd->is_unlimited = 0;
+			return(tmpd);
+		}
+		dstep = dstep->next;
+	}		
 	dstep = thefile->it_dims;
 	while(dstep != NULL) {
 		if(dstep->dim_inq->dim_name == dim_name_q) {
