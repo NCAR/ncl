@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.46 1993-04-30 22:48:17 haley Exp $
+#   $Id: ncargex.csh,v 1.47 1993-05-02 03:50:00 haley Exp $
 #
 
 #********************#
@@ -310,7 +310,7 @@ set threed_list = ($tst_threed $fnd_threed)
 #**********************#
 set ex_vectors   = (vvex01 vvex02)
 set tst_vectors  = (tvelvc)
-set fnd_vectors  = (ffex00 ffex01 ffex02 ffex05)
+set fnd_vectors  = (ffex00 ffex01 ffex02 ffex05 fcover)
 set vectors_list = ($ex_vectors $tst_vectors $fnd_vectors)
 
 #****************************************#
@@ -321,7 +321,7 @@ set vectors_list = ($ex_vectors $tst_vectors $fnd_vectors)
 #****************************************#
 set ex_field   = (stex01 stex02 stex03 vvex01 vvex02)
 set tst_field  = (tstrml tvelvc)
-set fnd_field  = (fstream ffex00 ffex01 ffex02 ffex03 ffex04 ffex05)
+set fnd_field  = (fstream ffex00 ffex01 ffex02 ffex03 ffex04 ffex05 fcover)
 set field_list = ($ex_field $tst_field $fnd_field)
 
 #******************#
@@ -818,6 +818,10 @@ switch ($name)
         set copy_files = ($copy_files ffex05.dat)
     breaksw
 
+    case fcover:
+        set copy_files = ($copy_files fcover.dat)
+    breaksw
+
     case ccpmpxy:
         set copy_files = ($copy_files cpmpxy1.dat cpmpxy2.dat)
     breaksw
@@ -939,6 +943,9 @@ if (! $?NoRunOption) then
         breaksw
         case ffex05:
             ncargrun -o $name.ncgm $name < ffex05.dat
+        breaksw
+        case fcover:
+            ncargrun -o $name.ncgm $name < fcover.dat
         breaksw
         case fgke03:
             $name
