@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.9 1995-04-27 16:58:26 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.10 1995-04-27 21:21:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1362,7 +1362,7 @@ extern int (_NHLCALLF(cpdrpl,CPDRPL))(
 #endif
 );
 
-extern int (_NHLCALLF(nhlfll,NHLFLL))(
+extern int (_NHLCALLF(hlucpfill,HLUCPFILL))(
 #if	NhlNeedProto
 	float *xcs, 
 	float *ycs, 
@@ -1373,31 +1373,37 @@ extern int (_NHLCALLF(nhlfll,NHLFLL))(
 #endif
 );
 
-extern void   (_NHLCALLF(cpchcl,CPCHCL))(
+extern void   (_NHLCALLF(hlucpchcl,HLUCPCHCL))(
 #if	NhlNeedProto
 	int	*iflg
 #endif
 );
 
-extern void   (_NHLCALLF(cpchhl,CPCHHL))(
+extern void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))(
 #if	NhlNeedProto
 	int	*iflg
 #endif
 );
 
-extern void   (_NHLCALLF(cpchll,CPCHLL))(
+extern void   (_NHLCALLF(hlucpchll,HLUCPCHLL))(
 #if	NhlNeedProto
 	int	*iflg
 #endif
 );
 
-extern void   (_NHLCALLF(cpmpxy,CPMPXY))(
+extern void   (_NHLCALLF(hlucpmpxy,HLUCPMPXY))(
 #if	NhlNeedProto
 	int	*imap,
 	float	*xinp,
 	float	*yinp,
 	float	*xotp,
 	float	*yotp
+#endif
+);
+
+static void   load_hlucp_routines(
+#if	NhlNeedProto
+	NhlBoolean	flag
 #endif
 );
 
@@ -1735,6 +1741,8 @@ ContourPlotClassInitialize
 	{NhlADJUSTVPOMITOVERHL,		"adjustvpomitoverhl"},
 	{NhlADJUSTVPOMITOVERHLANDINFO,	"adjustvpomitoverhlandinfo"}
         };
+
+	load_hlucp_routines(False);
 
 	_NhlRegisterEnumType(NhlTcnLevelSelectionMode,levelselectionlist,
 			     NhlNumber(levelselectionlist));
@@ -3385,7 +3393,7 @@ static NhlErrorTypes cnDraw
 			subret = cnInitAreamap(cnl,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 		}
-		subret = _NhlArscam(cnp->aws,(_NHLCALLF(nhlfll,NHLFLL)),
+		subret = _NhlArscam(cnp->aws,(_NHLCALLF(hlucpfill,HLUCPFILL)),
 				    entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 	}
@@ -8640,7 +8648,7 @@ static NhlErrorTypes ChooseSpacingLin
 }
 
 /*
- * Function:  nhfill_
+ * Function:  hlucpfill
  *
  * Description: C version of APR user routine called from within ARSCAM 
  *		to fill areas based on the area ID.
@@ -8655,7 +8663,7 @@ static NhlErrorTypes ChooseSpacingLin
  */
 
 /*ARGSUSED*/
-int (_NHLCALLF(nhlfll,NHLFLL))
+int (_NHLCALLF(hlucpfill,HLUCPFILL))
 #if	NhlNeedProto
 (
 	float *xcs, 
@@ -8735,7 +8743,7 @@ int (_NHLCALLF(nhlfll,NHLFLL))
 }
 
 /*
- * Function:  cpchcl_
+ * Function:  hlucpchcl
  *
  * Description: C version of the CPCHCL function that is called from
  *              the Conpack CPCLDR and CPCLDM functions. 
@@ -8750,7 +8758,7 @@ int (_NHLCALLF(nhlfll,NHLFLL))
  */
 
 /*ARGSUSED*/
-void   (_NHLCALLF(cpchcl,CPCHCL))
+void   (_NHLCALLF(hlucpchcl,HLUCPCHCL))
 #if	NhlNeedProto
 (
 	int	*iflg
@@ -8762,7 +8770,7 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 
 {
 
-	char func[] = "hlu_CPCHCL";
+	char func[] = "HLUCPCHCL";
 	int i, pai, dpix;
 	char buffer[NhlDASHBUFSIZE];
 	int lcol;
@@ -8770,7 +8778,10 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 	float *thp;
 	int   *dpp;
 
-	if (Cnp == NULL) return;
+	if (Cnp == NULL) {
+		_NHLCALLF(cpchcl,CPCHCL)(iflg);
+		return;
+	}
 
 	dpp = (int *) Cnp->line_dash_patterns->data;
 	thp = (float *) Cnp->line_thicknesses->data;
@@ -8912,7 +8923,7 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 }
 
 /*
- * Function:  cpchhl_
+ * Function:  hlucpchhl
  *
  * Description: 
  *
@@ -8926,7 +8937,7 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
  */
 
 /*ARGSUSED*/
-void   (_NHLCALLF(cpchhl,CPCHHL))
+void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 #if	NhlNeedProto
 (
 	int	*iflg
@@ -8941,7 +8952,10 @@ void   (_NHLCALLF(cpchhl,CPCHHL))
 	char *fstr,*sub;
 	float zdv;
 
-	if (Cnp == NULL) return;
+	if (Cnp == NULL) {
+		_NHLCALLF(cpchhl,CPCHHL)(iflg);
+		return;
+	}
 
 	switch (*iflg) {
 	case 1:
@@ -9096,7 +9110,7 @@ void   (_NHLCALLF(cpchhl,CPCHHL))
 }
 
 /*
- * Function:  cpchll_
+ * Function:  hlucpchll
  *
  * Description: 
  *
@@ -9110,7 +9124,7 @@ void   (_NHLCALLF(cpchhl,CPCHHL))
  */
 
 /*ARGSUSED*/
-void   (_NHLCALLF(cpchll,CPCHLL))
+void   (_NHLCALLF(hlucpchll,HLUCPCHLL))
 #if	NhlNeedProto
 (
 	int	*iflg
@@ -9125,7 +9139,10 @@ void   (_NHLCALLF(cpchll,CPCHLL))
 	int pai;
 	static int llcol;
 
-	if (Cnp == NULL) return;
+	if (Cnp == NULL) {
+		_NHLCALLF(cpchll,CPCHLL)(iflg);
+		return;
+	}
 
 	if (*iflg == 2) {
 		if (Cnp->line_lbls.gks_bcolor > NhlTRANSPARENT)
@@ -9165,7 +9182,7 @@ void   (_NHLCALLF(cpchll,CPCHLL))
 
 
 /*
- * Function:  cpmpxy_
+ * Function:  hlucpmpxy
  *
  * Description: 
  *
@@ -9179,7 +9196,7 @@ void   (_NHLCALLF(cpchll,CPCHLL))
  */
 
 /*ARGSUSED*/
-void   (_NHLCALLF(cpmpxy,CPMPXY))
+void   (_NHLCALLF(hlucpmpxy,HLUCPMPXY))
 #if	NhlNeedProto
 (
 	int	*imap,
@@ -9201,27 +9218,7 @@ void   (_NHLCALLF(cpmpxy,CPMPXY))
 	int status;
 
 	if (Cnp == NULL) {
-		if (*imap == 0) {
-			*yinp = (*xinp >= 1.0 && *xinp <= 3) ? 3.0 : 0.0;
-		}
-		else if (*imap == 1) {
-			c_maptra(*yinp,*xinp,xotp,yotp);
-		}
-		else if (*imap == -1) {
-			c_maptri(*xinp,*yinp,yotp,xotp);
-		}
-		else if (*imap == 2) {
-			*xotp = *xinp * cos(.017453292519943 * *yinp);
-			*yotp = *xinp * sin(.017453292519943 * *yinp);
-		}
-		else if (*imap == -2) {
-			*xotp = sqrt(*xinp * *xinp + *yinp * *yinp);
-			*yotp = 57.2957795130823 * atan2(*yinp,*xinp);
-		}
-		else {
-			*xotp = *xinp;
-			*yotp = *yinp;
-		}
+		_NHLCALLF(cpmpxy,CPMPXY)(imap,xinp,yinp,xotp,yotp);
 		return;
 	}
 
@@ -9254,4 +9251,43 @@ void   (_NHLCALLF(cpmpxy,CPMPXY))
 	return;
 }
 
+
+/*
+ * Function:  load_hlucp_routines
+ *
+ * Description: Forces the hlucp... routines to load from the HLU library
+ *
+ * In Args:   NhlBoolean flag - should always be False - dont actually
+ *			        want to call the routines.
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+/*ARGSUSED*/
+static void   load_hlucp_routines
+#if	NhlNeedProto
+(
+	NhlBoolean	flag
+)
+#else
+(flag)
+	NhlBoolean	flag;
+#endif
+{
+	int idum;
+	float fdum;
+
+
+	if (flag) {
+		_NHLCALLF(hlucpmpxy,HLUCPMPXY)(&idum,&fdum,&fdum,&fdum,&fdum);
+		_NHLCALLF(hlucpchll,HLUCPCHLL)(&idum);
+		_NHLCALLF(hlucpchhl,HLUCPCHHL)(&idum);
+		_NHLCALLF(hlucpchcl,HLUCPCHCL)(&idum);
+	}
+	return;
+}
 

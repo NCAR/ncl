@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.34 1995-04-22 01:01:52 boote Exp $
+ *      $Id: MapPlot.c,v 1.35 1995-04-27 21:21:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -761,13 +761,20 @@ static NhlErrorTypes mpSetUpTransObj(
 #endif
 );
 
-extern void   (_NHLCALLF(mapusr,MAPUSR))(
+
+static void   load_hlumap_routines(
+#if	NhlNeedProto
+	NhlBoolean	flag
+#endif
+);
+
+extern void   (_NHLCALLF(hlumapusr,HLUMAPUSR))(
 #if	NhlNeedProto
 	int	*iprt
 #endif
 );
 
-void   (_NHLCALLF(mapeod,MAPEOD))(
+void   (_NHLCALLF(hlumapeod,HLUMAPEOD))(
 #if	NhlNeedProto
 	int *nout,
 	int *nseg,
@@ -778,7 +785,7 @@ void   (_NHLCALLF(mapeod,MAPEOD))(
 #endif
 );
 
-extern int (_NHLCALLF(nhlezmapfill,NHLEZMAPFILL))(
+extern int (_NHLCALLF(hlumapfill,HLUMAPFILL))(
 #if	NhlNeedProto
 	float *xcs, 
 	float *ycs, 
@@ -789,7 +796,7 @@ extern int (_NHLCALLF(nhlezmapfill,NHLEZMAPFILL))(
 #endif
 );
 
-extern int (_NHLCALLF(nhlmaskgrid,NHLMASKGRID))(
+extern int (_NHLCALLF(hlumaskgrid,HLUMASKGRID))(
 #if	NhlNeedProto
 	float *xcra, 
 	float *ycra, 
@@ -872,7 +879,11 @@ static NhlMapPlotLayer Mpl, Ompl;
 static NhlBoolean Global_Amap_Inited;
 static NhlBoolean US_Amap_Inited;
 
+#if 0
 static int Init_Colors[] ={106,104,57,104,19,23,41,53,60,88,90,100,110};
+#endif
+static int Init_Colors[] ={84,56,74,56,89,65,81,70,39,68,72,56,95};
+
 
 static mpOutlineRec *OutRecs = NULL;
 static int OutRec_Count = 0;
@@ -1118,6 +1129,8 @@ MapPlotClassInitialize
 	{NhlFIXEDASPECTFITBB,		"fixedaspectfitbb"},
 	{NhlFIXEDASPECTNOFITBB,	"fixedaspectnofitbb"}
 	};
+
+	load_hlumap_routines(False);
 
         _NhlRegisterEnumType(NhlTMapBoundarySets,mapboundarysetslist,
                              NhlNumber(mapboundarysetslist));
@@ -2507,7 +2520,7 @@ static NhlErrorTypes mpFill
 		subret = _NhlArpram(aws,0,0,0,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
-		subret = _NhlArscam(aws,(_NHLCALLF(nhlezmapfill,NHLEZMAPFILL)),
+		subret = _NhlArscam(aws,(_NHLCALLF(hlumapfill,HLUMAPFILL)),
 				    entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
@@ -2524,7 +2537,7 @@ static NhlErrorTypes mpFill
 		subret = _NhlArpram(aws,0,0,0,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
-		subret = _NhlArscam(aws,(_NHLCALLF(nhlezmapfill,NHLEZMAPFILL)),
+		subret = _NhlArscam(aws,(_NHLCALLF(hlumapfill,HLUMAPFILL)),
 				    entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
@@ -2613,7 +2626,7 @@ static NhlErrorTypes mpGrid
 		}
 #endif
 		subret = _NhlMapgrm(aws,
-				    (_NHLCALLF(nhlmaskgrid,NHLMASKGRID)),
+				    (_NHLCALLF(hlumaskgrid,HLUMASKGRID)),
 				    entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
@@ -2628,7 +2641,7 @@ static NhlErrorTypes mpGrid
 		printf("using US for grid\n");
 #endif
 		subret = _NhlMapgrm(aws,
-				    (_NHLCALLF(nhlmaskgrid,NHLMASKGRID)),
+				    (_NHLCALLF(hlumaskgrid,HLUMASKGRID)),
 				    entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
@@ -3977,7 +3990,6 @@ static NhlErrorTypes    mpManageDynamicArrays
 	ga = init ? NULL : ompp->spec_fill_colors;
 
 	if (ga != mpp->spec_fill_colors) {
-		int max_val;
 		if (mpp->spec_fill_colors == NULL) {
 			NhlFreeGenArray(ga);
 			mpp->spec_fill_color_count = 0;
@@ -5202,7 +5214,7 @@ static NhlErrorTypes mpSetUpTransObj
 }
 
 /*
- * Function:  mapusr_
+ * Function:  hlumapusr
  *
  * Description: C version of the MAPUSR function that EZMAP invokes 
  *		before drawing each class of map objects.
@@ -5217,7 +5229,7 @@ static NhlErrorTypes mpSetUpTransObj
  */
 
 /*ARGSUSED*/
-void   (_NHLCALLF(mapusr,MAPUSR))
+void   (_NHLCALLF(hlumapusr,HLUMAPUSR))
 #if	NhlNeedProto
 (
 	int	*iprt
@@ -5236,7 +5248,10 @@ void   (_NHLCALLF(mapusr,MAPUSR))
 	int	slen;
 	char	buffer[128];
 
-	if (Mpp == NULL) return;
+	if (Mpp == NULL) {
+		_NHLCALLF(mapusr,MAPUSR)(iprt);
+		return;
+	}
 
 	switch (*iprt) {
 	case 1:		/* perimeter */
@@ -5294,7 +5309,7 @@ void   (_NHLCALLF(mapusr,MAPUSR))
 }
 
 /*
- * Function:  mapeod_
+ * Function:  hlumapeod
  *
  * Description: 
  *
@@ -5308,7 +5323,7 @@ void   (_NHLCALLF(mapusr,MAPUSR))
  */
 
 /*ARGSUSED*/
-void   (_NHLCALLF(mapeod,MAPEOD))
+void   (_NHLCALLF(hlumapeod,HLUMAPEOD))
 #if	NhlNeedProto
 (
 	int *nout,
@@ -5331,7 +5346,10 @@ void   (_NHLCALLF(mapeod,MAPEOD))
 	int ir,il;
 	NhlBoolean keep = False;
 
-	if (Mpp == NULL) return;
+	if (Mpp == NULL) {
+		_NHLCALLF(hlumapeod,HLUMAPEOD)(nout,nseg,idls,idrs,npts,pnts);
+		return;
+	}
 
 	switch (Draw_Op) {
 	case mpDRAWOUTLINE:
@@ -5396,7 +5414,7 @@ void   (_NHLCALLF(mapeod,MAPEOD))
 }
 
 /*
- * Function:  nhlmaskgrid_
+ * Function:  hlumaskgrid
  *
  * Description: C version of ULPR user routine called from within MAPGRM 
  *		to mask a grid based on an areamap.
@@ -5412,7 +5430,7 @@ void   (_NHLCALLF(mapeod,MAPEOD))
 
 /*ARGSUSED*/
 
-int (_NHLCALLF(nhlmaskgrid,NHLMASKGRID))
+int (_NHLCALLF(hlumaskgrid,HLUMASKGRID))
 #if	NhlNeedProto
 (
 	float *xcra, 
@@ -5566,7 +5584,7 @@ int (_NHLCALLF(nhlmaskgrid,NHLMASKGRID))
 
 
 /*
- * Function:  nhlezmapfill_
+ * Function:  hlumapfill
  *
  * Description: C version of APR user routine called from within ARSCAM 
  *		to fill areas based on the area ID.
@@ -5581,7 +5599,7 @@ int (_NHLCALLF(nhlmaskgrid,NHLMASKGRID))
  */
 
 /*ARGSUSED*/
-int (_NHLCALLF(nhlezmapfill,NHLEZMAPFILL))
+int (_NHLCALLF(hlumapfill,HLUMAPFILL))
 #if	NhlNeedProto
 (
 	float *xcs, 
@@ -5687,3 +5705,42 @@ int (_NHLCALLF(nhlezmapfill,NHLEZMAPFILL))
 
 	return 0;
 }
+
+/*
+ * Function:  load_hlumap_routines
+ *
+ * Description: Forces the hlumap... routines to load from the HLU library
+ *
+ * In Args:   NhlBoolean flag - should always be False - dont actually
+ *			        want to call the routines.
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+/*ARGSUSED*/
+static void   load_hlumap_routines
+#if	NhlNeedProto
+(
+	NhlBoolean	flag
+)
+#else
+(flag)
+	NhlBoolean	flag;
+#endif
+{
+	int idum;
+	float fdum;
+
+
+	if (flag) {
+		_NHLCALLF(hlumapeod,HLUMAPEOD)
+			(&idum,&idum,&idum,&idum,&idum,&fdum);
+		_NHLCALLF(hlumapusr,HLUMAPUSR)(&idum);
+	}
+	return;
+}
+
