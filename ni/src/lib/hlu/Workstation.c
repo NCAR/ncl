@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.49 1996-04-05 21:15:37 boote Exp $
+ *      $Id: Workstation.c,v 1.50 1996-04-26 23:38:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -257,12 +257,6 @@ static NhlResource resources[] = {
 	{NhlNwkMarkerSizeF,NhlCwkMarkerSizeF,NhlTFloat,sizeof(float),
 		POset(marker_size),NhlTString,
 		 _NhlUSET("0.007"),_NhlRES_DEFAULT,NULL},
-	{NhlNwkMarkerXOffsetF,NhlCwkMarkerXOffsetF,NhlTFloat,sizeof(float),
-		POset(marker_x_off),NhlTString,_NhlUSET("0.0"),_NhlRES_DEFAULT,
-		NULL},
-	{NhlNwkMarkerYOffsetF,NhlCwkMarkerYOffsetF,NhlTFloat,sizeof(float),
-		POset(marker_y_off),NhlTString,_NhlUSET("0.0"),_NhlRES_DEFAULT,
-		NULL},
 	{NhlNwkMarkerThicknessF,NhlCwkMarkerThicknessF,NhlTFloat,sizeof(float),
 		POset(marker_thickness),NhlTString,_NhlUSET("1.0"),
 		_NhlRES_DEFAULT,NULL},
@@ -334,12 +328,6 @@ static NhlResource resources[] = {
 		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_SGONLY,NULL},
 	{_NhlNwkMarkerSizeF,_NhlCwkMarkerSizeF,NhlTFloat,sizeof(float),
 		POset(marker_size),NhlTString,_NhlUSET("0.007"),_NhlRES_SGONLY,
-		NULL},
-	{_NhlNwkMarkerXOffsetF,_NhlCwkMarkerXOffsetF,NhlTFloat,sizeof(float),
-		POset(marker_x_off),NhlTString,_NhlUSET("0.0"),_NhlRES_SGONLY,
-		NULL},
-	{_NhlNwkMarkerYOffsetF,_NhlCwkMarkerYOffsetF,NhlTFloat,sizeof(float),
-		POset(marker_y_off),NhlTString,_NhlUSET("0.0"),_NhlRES_SGONLY,
 		NULL},
 	{_NhlNwkMarkerThicknessF,_NhlCwkMarkerThicknessF,NhlTFloat,
 		sizeof(float),POset(marker_thickness),NhlTString,
@@ -4223,11 +4211,9 @@ _NhlSetMarkerInfo
 		minfo.size = marker_table[NhlWK_DEF_MARKER]->size_adj *
 					mkp->marker_size;
 		minfo.xoff = minfo.size *
-			(marker_table[NhlWK_DEF_MARKER]->x_off +
-			mkp->marker_x_off);
+			marker_table[NhlWK_DEF_MARKER]->x_off;
 		minfo.yoff = minfo.size *
-			(marker_table[NhlWK_DEF_MARKER]->y_off +
-			mkp->marker_y_off);
+			marker_table[NhlWK_DEF_MARKER]->y_off;
 		minfo.string = marker_table[NhlWK_DEF_MARKER]->marker;
 	}
 	else if (index > 0) {
@@ -4241,10 +4227,8 @@ _NhlSetMarkerInfo
 		}
 
 		minfo.size = marker_table[index]->size_adj * mkp->marker_size;
-		minfo.xoff = minfo.size *
-			(marker_table[index]->x_off + mkp->marker_x_off);
-		minfo.yoff = minfo.size *
-			(marker_table[index]->y_off + mkp->marker_y_off);
+		minfo.xoff = minfo.size * marker_table[index]->x_off;
+		minfo.yoff = minfo.size * marker_table[index]->y_off;
 		minfo.string = marker_table[index]->marker;
 
 	}

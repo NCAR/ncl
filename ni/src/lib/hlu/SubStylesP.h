@@ -1,5 +1,5 @@
 /*
- *      $Id: SubStylesP.h,v 1.1 1996-02-26 21:46:09 dbrown Exp $
+ *      $Id: SubStylesP.h,v 1.2 1996-04-26 23:38:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -132,8 +132,6 @@ typedef struct __NhlMarkerStyleInfo{
 	NhlMarkerIndex	marker_index;
 	NhlColorIndex	marker_color;
 	float		marker_size;
-	float		marker_x_off;
-	float		marker_y_off;
 	float		marker_thickness;
 } _NhlMarkerStyleInfo;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.20 1996-04-05 21:15:38 boote Exp $
+ *      $Id: Workstation.h,v 1.21 1996-04-26 23:38:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -81,10 +81,6 @@
 #define NhlCwkMarkerColor       "WkMarkerColor"
 #define NhlNwkMarkerSizeF	"wkMarkerSizeF"
 #define NhlCwkMarkerSizeF	"WkMarkerSizeF"
-#define NhlNwkMarkerXOffsetF    "wkMarkerXOffset"
-#define NhlCwkMarkerXOffsetF    "WkMarkerXOffset"
-#define NhlNwkMarkerYOffsetF    "wkMarkerYOffset"
-#define NhlCwkMarkerYOffsetF    "WkMarkerYOffset"
 #define NhlNwkMarkerThicknessF  "wkMarkerThicknessF"
 #define NhlCwkMarkerThicknessF  "WkMarkerThicknessF"
 
