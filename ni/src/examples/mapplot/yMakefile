@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.20 2002-03-04 21:57:13 haley Exp $
+#   $Id: yMakefile,v 1.21 2004-10-21 22:12:13 haley Exp $
 #
 #   Makefile for HLU MapPlot examples
 #
@@ -18,7 +18,6 @@ COBJS    = mp01c.o mp02c.o mp03c.o mp04c.o mp05c.o mp06c.o mp07c.o
 FOBJS    = mp01f.o mp02f.o mp03f.o mp04f.o mp05f.o mp06f.o mp07f.o
 SRCS     = $(CSRCS) $(FSRCS)
 OBJS     = $(COBJS) $(FOBJS)
-ASCDATA  = mp03n.asc
 RESFILES = mp01.res mp02.res mp03.res mp04.res mp05.res mp06.res
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
@@ -26,7 +25,6 @@ InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
 #endif
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
-InstallTarget($(ASCDATA),$(INSTALL_LIB),$(DATAROOT)/asc)
 
 CExampleTarget(mp01c,mp01c.o)
 CExampleTarget(mp02c,mp02c.o)
