@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.32 1996-11-24 22:11:55 boote Exp $
+ *      $Id: Template,v 1.33 1997-01-21 21:34:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -235,6 +235,20 @@ NGCOMM########################################################################
 #define	ManPath	ManRoot
 #endif
 #endif
+
+#ifndef	BuildShared
+
+#if	defined(SGI) && ((MAJOR >= 6) || ((MAJOR == 5) && (MINOR >= 3)))
+#define	BuildShared
+#endif
+
+#else
+
+#if	!BuildShared
+#undef	BuildShared
+#endif	/* !BuildShared */
+
+#endif	/* BuildShared */
 
 #ifndef	XLibrary
 #define	XLibrary -lX11
