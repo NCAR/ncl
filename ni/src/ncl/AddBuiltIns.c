@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.63 2003-03-19 23:16:01 haley Exp $
+ *      $Id: AddBuiltIns.c,v 1.64 2003-05-01 20:48:08 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -45,6 +45,12 @@ extern NhlErrorTypes _NclIAddFiles(
 #if NhlNeedProto
 void
 #endif
+);
+
+extern NhlErrorTypes    _NclIGetFileDimsizes(
+# if    NhlNeedProto
+void
+# endif /*NhlNeedProto */
 );
 
 extern NhlErrorTypes    _NclIGetFileVarTypes(
@@ -456,6 +462,12 @@ extern NhlErrorTypes _NclIIsDimNamed(
 #if     NhlNeedProto
 void
 #endif
+);
+
+extern NhlErrorTypes    _NclIVarIsUnlimited(
+# if    NhlNeedProto
+void
+# endif /* NhlNeedProto */
 );
 
 extern NhlErrorTypes _NclIIsFileVarDim(
@@ -1202,11 +1214,19 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
 	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsCoord,args,"iscoord",nargs);
+
 	nargs = 0;
 	args = NewArgs(2);
 	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
 	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsAtt,args,"isatt",nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "file", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);  nargs++;
+    NclRegisterFunc( _NclIVarIsUnlimited, args, "isunlimited", nargs);
 
 	nargs = 0;
 	args = NewArgs(3);
@@ -1521,6 +1541,12 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,0,"file",NclANY,NclANY);nargs++;
 	SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
 	NclRegisterFunc(_NclIGetFileVarAtts,args,"getfilevaratts",nargs);
+
+    nargs = 0;
+    args = NewArgs(1);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "file", NclANY, NclANY);  nargs++;
+    NclRegisterFunc(_NclIGetFileDimsizes, args, "getfiledimsizes", nargs);
 
 	nargs = 0;
 	args = NewArgs(2);

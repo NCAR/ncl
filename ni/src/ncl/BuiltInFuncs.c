@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.156 2003-04-29 18:39:47 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.157 2003-05-01 20:48:08 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -12346,7 +12346,7 @@ NhlErrorTypes   _NclIGetFileVarTypes
         sz *= dimsz[i];
 
     /* the type string(s) to return */
-    vartypes = (NclQuark*) NclMalloc((unsigned int) sizeof(NclQuark) * sz);
+    vartypes = (NclQuark *) NclMalloc((unsigned int) sizeof(NclQuark) * sz);
     if (vartypes == (NclQuark *) NULL) {
         NhlPError(NhlFATAL, errno, "getfilevartypes: memory allocation error");
         return NhlFATAL;
@@ -12418,6 +12418,138 @@ NhlErrorTypes   _NclIGetFileVarTypes
     else
         return NclReturnValue((void *) vartypes, ndims, dimsz, NULL, NCL_string, 0);
 
+}
+
+
+NhlErrorTypes   _NclIGetFileDimsizes
+# if	NhlNeedProto
+(void)
+# else
+()
+# endif /* NhlNeedProto */
+{
+    /* file variables */
+    NclFile f;
+    int *fid;
+
+    /* dimensions */
+    int dimsizes = 1;
+    int *dim_sizes;
+
+    NhlErrorTypes   ret;
+
+    int i = 0;
+    
+
+    /* get file information */
+    fid = (int *) NclGetArgValue(
+                    0,
+                    1,
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    0);
+    f = (NclFile) _NclGetObj((int) *fid);
+
+    if (f != NULL) {
+        dim_sizes = (int *) NclMalloc((unsigned int) sizeof(int) * f->file.n_file_dims);
+        if (f->file.n_file_dims != 0) {
+            for (i = 0; i < f->file.n_file_dims; i++)
+                dim_sizes[i] = f->file.file_dim_info[i]->dim_size;
+
+            ret = NclReturnValue((void *) dim_sizes, 1, &(f->file.n_file_dims), NULL, NCL_int, 1);
+            free(dim_sizes);
+        	return ret;
+        }
+    }
+    else {
+        NhlPError(NhlWARNING, NhlEUNKNOWN, " getfiledimsizes(): undefined file variable");
+
+        dimsizes = 1;
+        NclReturnValue(
+            (void*) &((NclTypeClass) nclTypeintClass)->type_class.default_mis, 1,
+            &dimsizes, &((NclTypeClass) nclTypeintClass)->type_class.default_mis,
+            ((NclTypeClass) nclTypeintClass)->type_class.data_type, 1);
+	
+        return NhlWARNING;
+    }
+}
+
+
+NhlErrorTypes   _NclIVarIsUnlimited
+# if    NhlNeedProto
+(void)
+# else
+()
+# endif /* NhlNeedProto */
+{
+    /* file variables */
+    NclFile f;
+    int *fid;
+
+    /* dimension names, types */
+    string  *dname;
+    NclApiDataList  *ddata;
+
+    /* dimensions, sizes */
+    int dimsizes = 1;
+    int ndims,
+        dimsz[NCL_MAX_DIMENSIONS];
+
+    logical isunlimited = 0;
+
+    int i = 0,
+        j = 0;
+
+
+    /* get file information (1st arg.) */
+    fid = (int *) NclGetArgValue(
+                    0,
+                    2,
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    0);
+    f = (NclFile) _NclGetObj((int) *fid);
+
+    /* get dimension information (2nd arg.) */
+    dname = (string *) NclGetArgValue(
+                    1,
+                    2,
+                    &ndims,
+                    dimsz,
+                    NULL,
+                    NULL,
+                    NULL,
+                    0);
+
+    /* get dimension info and check for unlimited */
+    if (f != NULL) {
+        ddata = _NclGetFileVarInfo2(f, *dname);
+        if (ddata != NULL) {
+            for (i = 0; i < ddata->u.var->n_dims; i++) {
+                for (j = 0; j < f->file.n_file_dims; j++) {
+                    if (f->file.file_dim_info[j]->dim_name_quark
+                            == ddata->u.var->dim_info[i].dim_quark) {
+                        isunlimited = f->file.file_dim_info[j]->is_unlimited;
+                        break;
+                    }
+                }
+            }
+
+            if (ddata != NULL)
+                _NclFreeApiDataList((void *) ddata);
+        }
+    }
+    else {
+        NhlPError(NhlWARNING, NhlEUNKNOWN, " isunlimited(): undefined file variable");
+    }
+
+    return NclReturnValue((void *) &isunlimited, 1, &dimsizes, NULL, NCL_logical, 1);
 }
 
 #ifdef __cplusplus
