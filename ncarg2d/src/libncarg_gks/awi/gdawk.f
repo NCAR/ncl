@@ -1,7 +1,14 @@
 C
-C	$Id: gdawk.f,v 1.2 1993-01-09 01:58:11 fred Exp $
+C	$Id: gdawk.f,v 1.3 1998-03-11 18:46:58 dbrown Exp $
 C
       SUBROUTINE GDAWK(WKID)
+C
+      CALL GZDAWK(WKID)
+C
+      RETURN
+      END
+C
+      SUBROUTINE GZDAWK(WKID)
 C
 C  DEACTIVATE WORKSTATION
 C

@@ -1,7 +1,14 @@
 C
-C	$Id: gacwk.f,v 1.3 1994-05-07 00:51:04 fred Exp $
+C	$Id: gacwk.f,v 1.4 1998-03-11 18:46:56 dbrown Exp $
 C
       SUBROUTINE GACWK(WKID)
+C
+      CALL GZACWK(WKID)
+C
+      RETURN
+      END
+C
+      SUBROUTINE GZACWK(WKID)
 C
 C  ACTIVATE WORKSTATION
 C
