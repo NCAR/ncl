@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.37 1996-06-17 22:15:07 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.38 1996-07-03 22:45:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -3062,6 +3062,7 @@ NhlErrorTypes _NclIgetenv
 	NclStackEntry args;
 	NclMultiDValData tmp_md= NULL;
 	char *str;
+	char *tmp;
 	string outval;
 	int dimsize = 1;
 
@@ -3079,7 +3080,12 @@ NhlErrorTypes _NclIgetenv
 	}
 	str = NrmQuarkToString(*(string*)tmp_md->multidval.val);
 	if(str != NULL) {
-		outval = NrmStringToQuark(getenv(str));
+		tmp = getenv(str);
+		if(tmp == NULL) {
+			outval = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+		} else {
+			outval = NrmStringToQuark(getenv(str));
+		}
 	} else {
 		outval = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
 	}

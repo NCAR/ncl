@@ -619,9 +619,9 @@ if(groot != NULL) {
 							nsubs++;
 							step = step->next;
 						}
-						_NclPutInstr(VAR_READ_COORD_OP,coord->line,coord->file);
+						_NclPutInstr(VAR_COORD_OP,coord->line,coord->file);
 					} else {
-						off1 = _NclPutInstr(VAR_READ_COORD_OP,coord->line,coord->file);
+						off1 = _NclPutInstr(VAR_COORD_OP,coord->line,coord->file);
 					}
 					_NclPutInstr((NclValue)coord->sym,coord->line,coord->file);
 					_NclPutInstr((NclValue)coord->coord_name_q,coord->line,coord->file);
@@ -1567,6 +1567,78 @@ Unneeded translations
 			}
 			break;
 		}
+		case Ncl_FILEVARCOORDATT:
+		{
+			NclFileCoordAtt *filecoordatt = (NclFileCoordAtt*)root;
+			int nsubs = 0;
+			switch(filecoordatt->ref_type) {
+			case Ncl_READIT:
+				if(filecoordatt->subscript_list != NULL) {
+					step = filecoordatt->subscript_list; off1 = _NclTranslate(step->node,fp);
+					step = step->next;
+					nsubs = 1;
+					while(step != NULL) {
+						(void)_NclTranslate(step->node,fp);
+						nsubs++;
+						step = step->next;
+					}
+					_NclTranslate(filecoordatt->filevarnode,fp);
+					_NclPutInstr(FILEVAR_COORD_ATT_OP,filecoordatt->line,filecoordatt->file);
+				} else {
+					off1 = _NclTranslate(filecoordatt->filevarnode,fp);
+					_NclPutInstr(FILEVAR_COORD_ATT_OP,filecoordatt->line,filecoordatt->file);
+			
+				}
+				_NclPutInstr((NclValue)filecoordatt->filesym,filecoordatt->line,filecoordatt->file);
+				_NclPutInstr((NclValue)filecoordatt->coord_name_q,filecoordatt->line,filecoordatt->file);
+				_NclPutInstr((NclValue)filecoordatt->attname_q,filecoordatt->line,filecoordatt->file);
+				_NclPutInstr((NclValue)nsubs,filecoordatt->line,filecoordatt->file);
+				break;
+			case Ncl_WRITEIT:
+				if(filecoordatt->subscript_list != NULL) {
+					step = filecoordatt->subscript_list; off1 = _NclTranslate(step->node,fp);
+					step = step->next;
+					nsubs = 1;
+					while(step != NULL) {
+						(void)_NclTranslate(step->node,fp);
+						nsubs++;
+						step = step->next;
+					}
+					_NclTranslate(filecoordatt->filevarnode,fp);
+					_NclPutInstr(ASSIGN_FILEVAR_COORD_ATT_OP,filecoordatt->line,filecoordatt->file);
+				} else {
+					off1 = _NclTranslate(filecoordatt->filevarnode,fp);
+					_NclPutInstr(ASSIGN_FILEVAR_COORD_ATT_OP,filecoordatt->line,filecoordatt->file);
+				}
+				_NclPutInstr((NclValue)filecoordatt->filesym,filecoordatt->line,filecoordatt->file);
+				_NclPutInstr((NclValue)filecoordatt->coord_name_q,filecoordatt->line,filecoordatt->file);
+				_NclPutInstr((NclValue)filecoordatt->attname_q,filecoordatt->line,filecoordatt->file);
+				_NclPutInstr((NclValue)nsubs,filecoordatt->line,filecoordatt->file);
+				break;
+			case Ncl_PARAMIT:
+				if(filecoordatt->subscript_list != NULL) {
+					step = filecoordatt->subscript_list; off1 = _NclTranslate(step->node,fp);
+					step = step->next;
+					nsubs = 1;
+					while(step != NULL) {
+						(void)_NclTranslate(step->node,fp);
+						nsubs++;
+						step = step->next;
+					}
+					_NclTranslate(filecoordatt->filevarnode,fp);
+					_NclPutInstr(PARAM_FILEVAR_COORD_ATT_OP,filecoordatt->line,filecoordatt->file);
+				} else {
+					off1 = _NclTranslate(filecoordatt->filevarnode,fp);
+					_NclPutInstr(PARAM_FILEVAR_COORD_ATT_OP,filecoordatt->line,filecoordatt->file);
+				}
+				_NclPutInstr((NclValue)filecoordatt->filesym,filecoordatt->line,filecoordatt->file);
+				_NclPutInstr((NclValue)filecoordatt->coord_name_q,filecoordatt->line,filecoordatt->file);
+				_NclPutInstr((NclValue)filecoordatt->attname_q,filecoordatt->line,filecoordatt->file);
+				_NclPutInstr((NclValue)nsubs,filecoordatt->line,filecoordatt->file);
+				break;
+			}
+			break;
+		}
 		case Ncl_FILEVARCOORD:
 		{
 			NclFileCoord *filecoord = (NclFileCoord*)root;
@@ -1641,6 +1713,71 @@ Unneeded translations
 */
 				_NclPutInstr((NclValue)filecoord->coord_name_q,filecoord->line,filecoord->file);
 				_NclPutInstr((NclValue)nsubs,filecoord->line,filecoord->file);
+				break;
+			}
+			break;
+		}
+		case Ncl_VARCOORDATT:
+		{
+			NclCoordAtt *coordatt = (NclCoordAtt*)root;
+			int nsubs = 0;
+			switch(coordatt->ref_type) {
+			case Ncl_READIT:
+				if(coordatt->subscript_list != NULL) {
+					step = coordatt->subscript_list; off1 = _NclTranslate(step->node,fp);
+					step = step->next;
+					nsubs = 1;
+					while(step != NULL) {
+						(void)_NclTranslate(step->node,fp);
+						nsubs++;
+						step = step->next;
+					}
+					_NclPutInstr(VAR_COORD_ATT_OP,coordatt->line,coordatt->file);
+				} else {
+					off1 = _NclPutInstr(VAR_COORD_ATT_OP,coordatt->line,coordatt->file);
+				}
+				_NclPutInstr((NclValue)coordatt->sym,coordatt->line,coordatt->file);
+				_NclPutInstr((NclValue)coordatt->coord_name_q,coordatt->line,coordatt->file);
+				_NclPutInstr((NclValue)coordatt->attname_q,coordatt->line,coordatt->file);
+				_NclPutInstr((NclValue)nsubs,coordatt->line,coordatt->file);
+				break;
+			case Ncl_WRITEIT:
+				if(coordatt->subscript_list != NULL) {
+					step = coordatt->subscript_list; off1 = _NclTranslate(step->node,fp);
+					step = step->next;
+					nsubs = 1;
+					while(step != NULL) {
+						(void)_NclTranslate(step->node,fp);
+						nsubs++;
+						step = step->next;
+					}
+					_NclPutInstr(ASSIGN_VAR_COORD_ATT_OP,coordatt->line,coordatt->file);
+				} else {
+					off1 = _NclPutInstr(ASSIGN_VAR_COORD_ATT_OP,coordatt->line,coordatt->file);
+				}
+				_NclPutInstr((NclValue)coordatt->sym,coordatt->line,coordatt->file);
+				_NclPutInstr((NclValue)coordatt->coord_name_q,coordatt->line,coordatt->file);
+				_NclPutInstr((NclValue)coordatt->attname_q,coordatt->line,coordatt->file);
+				_NclPutInstr((NclValue)nsubs,coordatt->line,coordatt->file);
+				break;
+			case Ncl_PARAMIT:
+				if(coordatt->subscript_list != NULL) {
+					step = coordatt->subscript_list; off1 = _NclTranslate(step->node,fp);
+					step = step->next;
+					nsubs = 1;
+					while(step != NULL) {
+						(void)_NclTranslate(step->node,fp);
+						nsubs++;
+						step = step->next;
+					}
+					_NclPutInstr(PARAM_VAR_COORD_ATT_OP,coordatt->line,coordatt->file);
+				} else {
+					off1 = _NclPutInstr(PARAM_VAR_COORD_ATT_OP,coordatt->line,coordatt->file);
+				}
+				_NclPutInstr((NclValue)coordatt->sym,coordatt->line,coordatt->file);
+				_NclPutInstr((NclValue)coordatt->coord_name_q,coordatt->line,coordatt->file);
+				_NclPutInstr((NclValue)coordatt->attname_q,coordatt->line,coordatt->file);
+				_NclPutInstr((NclValue)nsubs,coordatt->line,coordatt->file);
 				break;
 			}
 			break;

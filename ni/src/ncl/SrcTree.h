@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.17 1996-05-17 23:34:36 ethan Exp $
+ *      $Id: SrcTree.h,v 1.18 1996-07-03 22:45:44 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -50,7 +50,7 @@ typedef enum {Ncl_BLOCK, Ncl_RETURN, Ncl_IFTHEN, Ncl_IFTHENELSE,
 			Ncl_RESOURCE, Ncl_GETRESOURCE, Ncl_OBJ,
 			Ncl_BREAK, Ncl_CONTINUE, Ncl_FILEVARATT,
 			Ncl_FILEVARDIM,  Ncl_FILEVARCOORD, Ncl_NEW,
-			Ncl_LOGICAL
+			Ncl_LOGICAL, Ncl_VARCOORDATT,Ncl_FILEVARCOORDATT
                         } NclSrcTreeTypes;
 
 typedef enum { Ncl_READIT, Ncl_WRITEIT, Ncl_PARAMIT } NclReferenceTypes;
@@ -254,6 +254,19 @@ typedef struct ncl_var{
 	NclSrcListNode *subscript_list;
 }NclVar;
 
+typedef struct ncl_filecoord_att {
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+	NclSymbol *filesym;
+	void *filevarnode;
+	int coord_name_q;
+	int attname_q;
+	NclSrcListNode *subscript_list;
+}NclFileCoordAtt;
 typedef struct ncl_filecoord {
 	NclSrcTreeTypes kind;
 	char *name;
@@ -262,11 +275,6 @@ typedef struct ncl_filecoord {
 	NclSrcTreeDestroyProc destroy_it;
 	NclReferenceTypes ref_type;
 	NclSymbol *filesym;
-/*
-	char *filevar;
-	int filevar_q;
-	char *coord_name;
-*/
 	void *filevarnode;
 	int coord_name_q;
 	NclSrcListNode *subscript_list;
@@ -280,13 +288,22 @@ typedef struct ncl_coord {
 	NclSrcTreeDestroyProc destroy_it;
 	NclReferenceTypes ref_type;
 	NclSymbol *sym;
-/*
-	char *coord_name;
-*/
 	int coord_name_q;
 	NclSrcListNode *subscript_list;
 }NclCoord;
 
+typedef struct ncl_coord_att {
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+	NclSymbol *sym;
+	int coord_name_q;
+	int attname_q;
+	NclSrcListNode *subscript_list;
+}NclCoordAtt;
 /* End of structures that are of type ncl_genericrefnode */
 
 typedef struct ncl_block{
@@ -903,6 +920,15 @@ extern void *_NclMakeVarAttRef(
 #endif
 );
 
+extern void *_NclMakeFileVarCoordAttRef(
+#if	NhlNeedProto
+	NclSymbol * /* var */,
+	void * /* filevar*/,
+	char * /* coord */,
+	char * /* attname*/,
+	NclSrcListNode * /*subscript_list*/
+#endif
+);
 extern void *_NclMakeFileVarCoordRef(
 #if	NhlNeedProto
 	NclSymbol * /* var */,
@@ -916,6 +942,14 @@ extern void *_NclMakeVarCoordRef(
 	NclSymbol * /* var */,
 	char * /* coord */,
 	NclSrcListNode * /* subscript_list */
+#endif
+);
+extern void *_NclMakeVarCoordAttRef(
+#if	NhlNeedProto
+	NclSymbol * /* var */,
+	char * /* coord */,
+	char * /* attname*/,
+	NclSrcListNode * /*subscript_list*/
 #endif
 );
 

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.27 1996-05-17 23:34:34 ethan Exp $
+ *      $Id: SrcTree.c,v 1.28 1996-07-03 22:45:41 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -67,7 +67,7 @@ char *src_tree_names[] = {"Ncl_BLOCK", "Ncl_RETURN", "Ncl_IFTHEN",
 			"Ncl_RESOURCE","Ncl_GETRESOURCE", "Ncl_OBJ",
 			"Ncl_BREAK", "Ncl_CONTINUE","Ncl_FILEVARATT",
 			"Ncl_FILEVARDIM",
-			"Ncl_FILECOORD","Ncl_NEW","Ncl_LOGICAL"
+			"Ncl_FILECOORD","Ncl_NEW","Ncl_LOGICAL","Ncl_VARCOORDATT","Ncl_FILECOORDATT"
 			};
 /*
 * These are the string equivalents of the attribute tags assigned to 
@@ -2881,6 +2881,24 @@ if(groot != NULL) {
 			i--;
 		}
 			break;
+		case Ncl_FILEVARCOORDATT:
+		{
+			NclFileCoordAtt *filecoordatt = (NclFileCoordAtt*)root;
+			putspace(i,fp);
+			fprintf(fp,"%s\n",filecoordatt->name);
+			i++;
+			putspace(i,fp);
+			fprintf(fp,"%s\t",ref_node_names[filecoordatt->ref_type]);
+			_NclPrintSymbol(filecoordatt->filesym,fp);
+			putspace(i,fp);
+			_NclPrintTree(filecoordatt->filevarnode,fp);
+			putspace(i,fp);
+			fprintf(fp,"coordname: %s\n",NrmQuarkToString(filecoordatt->coord_name_q));
+			putspace(i,fp);
+			fprintf(fp,"attname: %s\n",NrmQuarkToString(filecoordatt->attname_q));
+			i--;
+		}
+			break;
 		case Ncl_FILEVARCOORD:
 		{
 			NclFileCoord *filecoord = (NclFileCoord*)root;
@@ -2899,6 +2917,22 @@ if(groot != NULL) {
 				_NclPrintTree(step->node,fp);
 				step = step->next;
 			}
+			i--;
+		}
+			break;
+		case Ncl_VARCOORDATT:
+		{
+			NclCoordAtt *coordatt = (NclCoordAtt*)root;
+			putspace(i,fp);
+			fprintf(fp,"%s\n",coordatt->name);
+			i++;
+			putspace(i,fp);
+			fprintf(fp,"%s\t",ref_node_names[coordatt->ref_type]);
+			_NclPrintSymbol(coordatt->sym,fp);
+			putspace(i,fp);
+			fprintf(fp,"coordname: %s\n",NrmQuarkToString(coordatt->coord_name_q));
+			putspace(i,fp);
+			fprintf(fp,"attname: %s\n",NrmQuarkToString(coordatt->attname_q));
 			i--;
 		}
 			break;
@@ -3283,6 +3317,58 @@ NclSrcListNode *subscript_list;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
 }
+void _NclFileVarCoordAttRefDestroy
+#if	NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else
+(thenode)
+	struct ncl_genericnode *thenode;
+#endif
+{
+	NclFileCoordAtt *tmp= (NclFileCoordAtt*)thenode;
+	NclSrcListNode *step,*temp;
+        step = tmp->subscript_list;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
+
+	NclFree((void*)tmp);
+}
+void *_NclMakeFileVarCoordAttRef
+#if	NhlNeedProto
+(NclSymbol *var,void* filevar, char *coord,char *attname,NclSrcListNode *subscript_list)
+#else
+(var,coord,filevar,attname,subscript_list)
+NclSymbol *var;
+char *filevar;
+char *coord;
+char *attname;
+NclSrcListNode *subscript_list
+#endif
+{
+	NclFileCoordAtt *tmp= (NclFileCoordAtt*)NclMalloc((unsigned)sizeof(NclFileCoordAtt));
+
+	if(tmp == NULL) {
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
+		return(NULL);
+	}
+	tmp->kind = Ncl_FILEVARCOORDATT;
+	tmp->name = src_tree_names[Ncl_FILEVARCOORDATT];
+	tmp->line = cur_line_number;
+	tmp->file = cur_load_file;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclFileVarCoordAttRefDestroy;
+	tmp->filesym = var;
+	tmp->filevarnode = filevar;
+	tmp->coord_name_q = NrmStringToQuark(coord);
+	tmp->attname_q = NrmStringToQuark(attname);
+	tmp->subscript_list = subscript_list;
+	tmp->ref_type = Ncl_READIT;
+	_NclRegisterNode((NclGenericNode*)tmp);
+	return((void*)tmp);
+}
+
 void _NclVarCoordRefDestroy
 #if	NhlNeedProto
 (struct ncl_genericnode *thenode)
@@ -3325,12 +3411,61 @@ NclSrcListNode *subscript_list;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclVarCoordRefDestroy;
 	tmp->sym = var;
 	tmp->coord_name_q = NrmStringToQuark(coord);
-	tmp->subscript_list = subscript_list;
+	tmp->subscript_list= subscript_list;
 	tmp->ref_type = Ncl_READIT;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
 }
 
+void _NclVarCoordAttRefDestroy
+#if	NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else
+(thenode)
+	struct ncl_genericnode *thenode;
+#endif
+{
+	NclCoordAtt *tmp= (NclCoordAtt*)thenode;
+	NclSrcListNode *step,*temp;
+        step = tmp->subscript_list;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
+
+	NclFree((void*)tmp);
+}
+void *_NclMakeVarCoordAttRef
+#if	NhlNeedProto
+(NclSymbol *var,char *coord,char *attname,NclSrcListNode *subscript_list)
+#else
+(var,coord,attname,subscript_list)
+NclSymbol *var;
+char *coord;
+char *attname;
+NclSrcListNode *subscript_list;
+#endif
+{
+	NclCoordAtt *tmp= (NclCoordAtt*)NclMalloc((unsigned)sizeof(NclCoordAtt));
+
+	if(tmp == NULL) {
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
+		return(NULL);
+	}
+	tmp->kind = Ncl_VARCOORDATT;
+	tmp->name = src_tree_names[Ncl_VARCOORDATT];
+	tmp->line = cur_line_number;
+	tmp->file = cur_load_file;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclVarCoordAttRefDestroy;
+	tmp->sym = var;
+	tmp->coord_name_q = NrmStringToQuark(coord);
+	tmp->attname_q = NrmStringToQuark(attname);
+	tmp->subscript_list= subscript_list; 
+	tmp->ref_type = Ncl_READIT;
+	_NclRegisterNode((NclGenericNode*)tmp);
+	return((void*)tmp);
+}
 
 
 void *_NclMakeNewOp

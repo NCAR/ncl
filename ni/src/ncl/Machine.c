@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.51 1996-06-24 23:33:02 ethan Exp $
+ *      $Id: Machine.c,v 1.52 1996-07-03 22:45:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -158,7 +158,6 @@ static void SetUpOpsStrings() {
 	ops_strings[ASSIGN_VARATT_OP] = "ASSIGN_VARATT_OP";
 	ops_strings[PARAM_VARATT_OP] = "PARAM_VARATT_OP";
 	ops_strings[VAR_COORD_OP] = "VAR_COORD_OP";
-	ops_strings[VAR_READ_COORD_OP] = "VAR_READ_COORD_OP";
 	ops_strings[ASSIGN_VAR_COORD_OP] = "ASSIGN_VAR_COORD_OP";
 	ops_strings[PARAM_VAR_COORD_OP] = "PARAM_VAR_COORD_OP";
 	ops_strings[VAR_DIM_OP]= "VAR_DIM_OP";
@@ -169,10 +168,15 @@ static void SetUpOpsStrings() {
 	ops_strings[NEW_OP]= "NEW_OP";
 	ops_strings[NEW_WM_OP]= "NEW_WM_OP";
 	ops_strings[DUP_TOFS]= "DUP_TOFS";
-	ops_strings[PUSH_LOG_LIT_OP]= "PUSH_LOG_LIT_OP";
 	ops_strings[JMP_SCALAR_TRUE_OP] = "JMP_SCALAR_TRUE_OP";
 	ops_strings[JMP_SCALAR_FALSE_OP] = "JMP_SCALAR_FALSE_OP";
 	ops_strings[ISDEFINED_OP] = "ISDEFINED_OP";
+	ops_strings[VAR_COORD_ATT_OP] = "VAR_COORD_ATT_OP";
+	ops_strings[ASSIGN_VAR_COORD_ATT_OP] = "ASSIGN_VAR_COORD_ATT_OP";
+	ops_strings[PARAM_VAR_COORD_ATT_OP] = "PARAM_VAR_COORD_ATT_OP";
+	ops_strings[FILEVAR_COORD_ATT_OP] = "FILEVAR_COORD_ATT_OP";
+	ops_strings[ASSIGN_FILEVAR_COORD_ATT_OP] = "ASSIGN_FILEVAR_COORD_ATT_OP";
+	ops_strings[PARAM_FILEVAR_COORD_ATT_OP] = "PARAM_FILEVAR_COORD_ATT_OP";
 
 }
 
@@ -1135,7 +1139,6 @@ void _NclPrintMachine
 			case SET_OBJ_OP :
 			case PUSH_INT_LIT_OP :
 			case PUSH_LOGICAL_LIT_OP :
-			case PUSH_LOG_LIT_OP :
 			case ARRAY_LIT_OP :
 			case JMP_SCALAR_TRUE_OP:
 			case JMP_SCALAR_FALSE_OP:
@@ -1199,6 +1202,23 @@ void _NclPrintMachine
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%d\n",(int)*ptr);
 				break;
+			case VAR_COORD_ATT_OP:
+			case ASSIGN_VAR_COORD_ATT_OP:
+			case PARAM_VAR_COORD_ATT_OP:
+			case FILEVAR_COORD_ATT_OP:
+			case ASSIGN_FILEVAR_COORD_ATT_OP:
+			case PARAM_FILEVAR_COORD_ATT_OP:
+				fprintf(fp,"%s\n",ops_strings[*ptr]);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t%d\n",*ptr);
+				break;
 			case FILEVAR_COORD_OP:
 			case ASSIGN_FILEVAR_COORD_OP:
 			case PARAM_FILEVAR_COORD_OP:
@@ -1216,7 +1236,6 @@ void _NclPrintMachine
 				fprintf(fp,"\t%d\n",(int)*ptr);
 				break;
 			case VAR_COORD_OP:
-			case VAR_READ_COORD_OP:
 			case ASSIGN_VAR_COORD_OP:
 			case PARAM_VAR_COORD_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);

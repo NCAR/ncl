@@ -1426,7 +1426,10 @@ identifier : vname {
 						$$ = _NclMakeFileVarCoordRef($1,$2,&(($3)[1]),NULL);
 					}
 	| vname filevarselector COORDV ATTNAME {
-						$$ = _NclMakeFileVarCoordRef($1,$2,&(($3)[1]),NULL);
+						$$ = _NclMakeFileVarCoordAttRef($1,$2,&(($3)[1]),$4,NULL);
+					}
+	| vname filevarselector COORDV ATTNAME LP subscript_list RP {
+						$$ = _NclMakeFileVarCoordAttRef($1,$2,&(($3)[1]),$4,$6);
 					}
 	| vname filevarselector COORDV LP subscript_list RP{
 						$$ = _NclMakeFileVarCoordRef($1,$2,&(($3)[1]),$5);
@@ -1456,7 +1459,10 @@ identifier : vname {
 						$$ = _NclMakeVarCoordRef($1,&(($2)[1]),$4);
 					}
 	| vname COORDV ATTNAME		{
-						$$ = _NclMakeVarCoordRef($1,&(($2)[1]),NULL);
+						$$ = _NclMakeVarCoordAttRef($1,&(($2)[1]),$3,NULL);
+					}
+	| vname COORDV ATTNAME LP subscript_list RP {
+						$$ = _NclMakeVarCoordAttRef($1,&(($2)[1]),$3,$5);
 					}
 ;
 

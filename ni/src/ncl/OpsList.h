@@ -13,10 +13,8 @@
 #define LOOP_VALIDATE_OP			13
 #define LOOP_INC_OP			14
 #define DO_WHILE_OP			15
-/*
-#define BREAK_OP			16
-#define CONTINUE_OP			17
-*/
+#define ASSIGN_VAR_COORD_ATT_OP		16
+#define PARAM_VAR_COORD_ATT_OP		17
 #define CREATE_OBJ_OP			18
 #define SET_OBJ_OP			19
 #define GET_OBJ_OP			20
@@ -78,15 +76,20 @@
 #define ASSIGN_VAR_COORD_OP			76
 #define PARAM_VAR_COORD_OP			77
 #define VAR_READ_OP				78
+/*
 #define VAR_READ_COORD_OP			79
+*/
 #define INTRINSIC_FUNC_CALL			80
 #define INTRINSIC_PROC_CALL			81
 #define ASSIGN_VAR_VAR_OP			82
 #define NEW_OP 					83
 #define NEW_WM_OP				84
-#define PUSH_LOG_LIT_OP				85
+#define VAR_COORD_ATT_OP			85
 #define JMP_SCALAR_TRUE_OP			86
 #define JMP_SCALAR_FALSE_OP			87
 #define ISDEFINED_OP				88
 #define PUSH_LOGICAL_LIT_OP 			89
-#define NUM_OPERATORS				90
+#define FILEVAR_COORD_ATT_OP			90
+#define PARAM_FILEVAR_COORD_ATT_OP		91
+#define ASSIGN_FILEVAR_COORD_ATT_OP		92
+#define NUM_OPERATORS				93

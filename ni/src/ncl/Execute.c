@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.67 1996-06-25 22:48:01 ethan Exp $
+ *      $Id: Execute.c,v 1.68 1996-07-03 22:45:29 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2648,6 +2648,105 @@ NclExecuteReturnStatus _NclExecute
 					estatus = _NclPush(data);
 			}
 			break;
+			case PARAM_VAR_COORD_ATT_OP:
+			case VAR_COORD_ATT_OP: {
+				NclStackEntry *var = NULL;
+				NclVar coord_var;
+				NclStackEntry data;
+				NclSymbol* thesym = NULL;
+				char *coord_name = NULL;
+				char *attname = NULL;
+				NhlErrorTypes ret = NhlNOERROR;
+				NclSelectionRecord *sel_ptr = NULL;
+				NclMultiDValData tmpmis = NULL;
+
+				int i,nsubs = 0;
+
+
+				ptr++;lptr++;fptr++;
+				thesym = (NclSymbol*)*ptr;
+				ptr++;lptr++;fptr++;
+				coord_name = NrmQuarkToString(*ptr);
+				ptr++;lptr++;fptr++;
+				attname = NrmQuarkToString(*ptr);
+				ptr++;lptr++;fptr++;
+				nsubs = (int)*ptr;
+
+				var = _NclRetrieveRec(thesym,WRITE_IT);
+				if(var->u.data_var != NULL) {
+					if(_NclIsDim(var->u.data_var,coord_name) == -1) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a named dimension in variable (%s).",coord_name, thesym->name);
+						estatus = NhlFATAL;
+					} else {
+						coord_var = _NclReadCoordVar(var->u.data_var,coord_name,NULL);
+						if(coord_var != NULL) {
+							if(_NclVarIsAtt(coord_var,attname)) {
+								if(nsubs == 1) {
+									sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
+									sel_ptr->n_entries = 1;
+									data =_NclPop();
+									if(data.u.sub_rec->name != NULL) {
+										NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with variable attributes");
+										estatus = NhlWARNING;
+									}
+									switch(data.u.sub_rec->sub_type) {
+									case INT_VECT:
+										ret = _NclBuildVSelection(NULL,data.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+										break;
+									case INT_RANGE:
+										ret = _NclBuildRSelection(NULL,data.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+										break;
+									case COORD_VECT:
+									case COORD_RANGE:
+										NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with variable attributes");
+										estatus = NhlFATAL;
+										break;
+									}
+									_NclFreeSubRec(data.u.sub_rec);
+									if(ret < NhlWARNING) {
+										estatus = ret;
+										break;
+									}
+								} else if(nsubs != 0) {
+									NhlPError(NhlFATAL,NhlEUNKNOWN,"Attributes only have one dimension, %d subscripts used",nsubs);
+									estatus = NhlFATAL;
+								}
+								if(estatus != NhlFATAL) {
+									data.u.data_obj = _NclReadAtt(coord_var,attname,sel_ptr);
+									if(sel_ptr != NULL) {
+										if(sel_ptr->selection[0].sel_type == Ncl_VECSUBSCR) {
+											NclFree(sel_ptr->selection[0].u.vec.ind);
+										}
+										NclFree(sel_ptr);
+									}
+									if(data.u.data_obj == NULL) {
+										data.kind = NclStk_NOVAL;
+										estatus = NhlFATAL;
+									} else {
+										data.kind = NclStk_VAL;
+									}
+								}
+							} else {
+								estatus = NhlWARNING;
+								NhlPError(NhlWARNING,NhlEUNKNOWN,"Attempt to reference attribute (%s) which is undefined",attname);
+								data.kind = NclStk_VAL;
+								tmpmis = _NclCreateMissing();
+								data.u.data_obj = tmpmis;
+                                        		}
+
+						} else {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not coordinate variable in variable (%s).",coord_name, thesym->name);
+							estatus = NhlFATAL;
+						}
+						if(estatus != NhlFATAL) 
+							estatus = _NclPush(data);
+
+					}
+				} else {
+					estatus = NhlFATAL;
+				}
+			}
+			break;
 			case ASSIGN_VAR_COORD_OP: {
 				NclStackEntry *var = NULL;
 				NclStackEntry data;
@@ -2763,17 +2862,130 @@ NclExecuteReturnStatus _NclExecute
 				}
 			}
 			break;
-			case PARAM_VAR_COORD_OP:
-			case VAR_READ_COORD_OP:
-			case VAR_COORD_OP: {
+			case ASSIGN_VAR_COORD_ATT_OP: {
 				NclStackEntry *var = NULL;
-				NclStackEntry data;
+				NclVar coord_var;
+				NclStackEntry data1;
 				NclSymbol* thesym = NULL;
 				char *coord_name = NULL;
-				int nsubs = 0;
-				NclSelectionRecord *sel_ptr = NULL;
+				char *attname = NULL;
 				NhlErrorTypes ret = NhlNOERROR;
-				int i;
+				int i,nsubs;
+				NclSelectionRecord *sel_ptr = NULL;
+				NclStackEntry value;
+				NclMultiDValData value_md = NULL;
+
+
+	
+				ptr++;lptr++;fptr++;
+				thesym = (NclSymbol*)*ptr;
+				ptr++;lptr++;fptr++;
+				coord_name = NrmQuarkToString(*ptr);
+				ptr++;lptr++;fptr++;
+				attname = NrmQuarkToString(*ptr);
+				ptr++;lptr++;fptr++;
+				nsubs = (int)*ptr;
+
+				var = _NclRetrieveRec(thesym,WRITE_IT);
+				if((var == NULL)||(var->u.data_var == NULL)) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable (%s) is undefined, can not assign attribute (%s)",thesym->name,attname);
+					estatus = NhlFATAL;
+				} else if(_NclIsDim(var->u.data_var,coord_name) == -1) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a named dimension in variable (%s).",coord_name,thesym->name);
+					estatus = NhlFATAL;
+				} else {
+					coord_var = _NclReadCoordVar(var->u.data_var,coord_name,NULL);
+					if(coord_var != NULL) {
+						if((!_NclVarIsAtt(coord_var,attname))&&(nsubs >0)) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to subscript undefined coordinate variable attribute");
+							estatus = NhlFATAL;
+						} else if(nsubs == 1) {
+							sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
+							sel_ptr->n_entries = 1;
+							data1 =_NclPop();
+							if(data1.u.sub_rec->name != NULL) {
+								NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with variable attributes");
+								estatus = NhlWARNING;
+							}
+							switch(data1.u.sub_rec->sub_type) {
+							case INT_VECT:
+	/*
+	* Need to free some stuff here
+	*/						
+								ret =_NclBuildVSelection(NULL,data1.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+								break;
+							case INT_RANGE:
+	/*
+	* Need to free some stuff here
+	*/								
+								ret =_NclBuildRSelection(NULL,data1.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+								break;
+							case COORD_VECT:
+							case COORD_RANGE:
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with variable attributes");
+								estatus = NhlFATAL;
+								break;
+							}
+							_NclFreeSubRec(data1.u.sub_rec);
+							if(ret < NhlWARNING) 
+								estatus = NhlFATAL;
+						} else if(nsubs != 0){
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to subscript attribute with more than one dimension");
+							estatus = NhlFATAL;
+						}
+						if(!(estatus < NhlINFO)) {
+							value = _NclPop();
+							if(value.kind == NclStk_VAR) {
+								value_md = _NclVarValueRead(value.u.data_var,NULL,NULL);
+								if(value_md == NULL) {
+									estatus = NhlFATAL;
+								}
+							} else if(value.kind == NclStk_VAL){
+								value_md = value.u.data_obj;
+							} else {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to assign illegal type or value to variable attribute");
+								estatus = NhlFATAL;
+							}
+							ret = _NclWriteAtt(coord_var,attname,value_md,sel_ptr);
+							if((value.kind == NclStk_VAR)&&(value.u.data_var->obj.status != PERMANENT)) {
+								 _NclDestroyObj((NclObj)value.u.data_var);
+							} else if((value.kind == NclStk_VAL)&&(value.u.data_obj->obj.status != PERMANENT)){
+								 _NclDestroyObj((NclObj)value.u.data_obj);
+							} 
+							if( ret < NhlINFO) {
+								estatus = ret;
+							}
+							if(sel_ptr != NULL) {
+								if(sel_ptr->selection[0].sel_type == Ncl_VECSUBSCR) {
+									NclFree(sel_ptr->selection[0].u.vec.ind);
+								}
+								NclFree(sel_ptr);
+							}
+						} else {
+							if(sel_ptr !=  NULL) {
+								NclFree(sel_ptr);
+							}
+							_NclCleanUpStack(1);
+						}
+					} else {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not coordinate variable in variable(%s).",coord_name, thesym->name);
+                                                estatus = NhlFATAL;
+
+					}
+				}
+			}
+			break;
+			case PARAM_VAR_COORD_OP:
+			case VAR_COORD_OP: {
+				NclStackEntry *var = NULL;
+                                NclStackEntry data;
+                                NclSymbol* thesym = NULL;
+                                char *coord_name = NULL;
+                                int nsubs = 0;
+                                NclSelectionRecord *sel_ptr = NULL;
+                                NhlErrorTypes ret = NhlNOERROR;
+                                int i;
+
 				
 
 				ptr++;lptr++;fptr++;
@@ -3324,6 +3536,140 @@ NclExecuteReturnStatus _NclExecute
 /*****************************
 * Four Operand Instructions  *
 *****************************/
+			case ASSIGN_FILEVAR_COORD_ATT_OP: {
+				NclFile file;
+				NclStackEntry *file_ptr,value,data1,fvar,out_data;
+				NclMultiDValData file_md;
+				NclSymbol *file_sym;
+				NclQuark coord_name;
+				NclQuark var_name;
+				NclQuark att_name;
+				int nsubs = 0;
+				NclSelectionRecord *sel_ptr = NULL;
+				NclMultiDValData value_md,thevalue;
+				NhlErrorTypes ret = NhlNOERROR;
+				
+
+				fvar = _NclPop();
+				switch(fvar.kind) {
+				case NclStk_VAL:
+					thevalue = fvar.u.data_obj;
+					break;
+				case NclStk_VAR:
+					thevalue = _NclVarValueRead(fvar.u.data_var,NULL,NULL);
+					break;
+				default:
+					thevalue = NULL;
+					estatus = NhlFATAL;
+					break;
+				}
+				if((thevalue == NULL)||(thevalue->multidval.kind != SCALAR)&&(thevalue->multidval.type != (NclTypeClass)nclTypestringClass)) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"File Variable names must be scalar string values can't continue");
+					estatus = NhlFATAL;
+				} else {
+					var_name = *(NclQuark*)thevalue->multidval.val;
+					if(fvar.u.data_obj->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)fvar.u.data_obj);
+					}
+				}
+				ptr++;lptr++;fptr++;
+				file_sym = (NclSymbol*)(*ptr);
+				ptr++;lptr++;fptr++;
+				coord_name = (NclQuark)*ptr;
+				ptr++;lptr++;fptr++;
+				att_name = (NclQuark)*ptr;
+				ptr++;lptr++;fptr++;
+				nsubs = (int)*ptr;
+				file_ptr = _NclRetrieveRec(file_sym,READ_IT);
+				if((estatus != NhlFATAL)&&(file_ptr != NULL) &&(file_ptr->u.data_var != NULL)) {
+					file_md = _NclVarValueRead(file_ptr->u.data_var,NULL,NULL);
+					if(file_md->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
+						file = (NclFile)_NclGetObj((int)*(obj*)file_md->multidval.val);
+						if(file == NULL) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Undefined file reference");
+							estatus = NhlFATAL;
+						} else if(_NclFileVarIsCoord(file,coord_name) == -1) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a coordiante variable, can not assign attribute",NrmQuarkToString(coord_name));
+							estatus = NhlFATAL;
+						} else if((_NclFileVarIsAtt(file,coord_name,att_name != -1))||(nsubs == 0)) {
+							if(nsubs == 1) {
+								sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
+								sel_ptr->n_entries = 1;
+								data1 =_NclPop();
+								if(data1.u.sub_rec->name != NULL) {
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with variable attributes");
+									estatus = NhlWARNING;
+								}
+								switch(data1.u.sub_rec->sub_type) {
+								case INT_VECT:
+									ret =_NclBuildVSelection(NULL,data1.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+								break;
+								case INT_RANGE:
+									ret =_NclBuildRSelection(NULL,data1.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+									break;
+								case COORD_VECT:
+								case COORD_RANGE:
+									NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with variable attributes");
+									estatus = NhlFATAL;
+									break;
+								}
+								 _NclFreeSubRec(data1.u.sub_rec);
+								if(ret < NhlWARNING)
+									estatus = NhlFATAL;
+							} else if(nsubs != 0){
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to subscript attribute with more than one dimension");
+								estatus = NhlFATAL;
+							}
+							if(!(estatus < NhlINFO)) {	
+								value = _NclPop();
+                                                                if(value.kind == NclStk_VAR) {
+                                                                        value_md = _NclVarValueRead(value.u.data_var,NULL,NULL);
+                                                                        if(value_md == NULL) {
+                                                                                estatus = NhlFATAL;
+                                                                        }
+                                                                } else if(value.kind == NclStk_VAL){
+                                                                        value_md = value.u.data_obj;
+                                                                } else {
+                                                                        NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to assign illegal type or value to variable attribute");
+                                                                        estatus = NhlFATAL;
+                                                                }
+                                                                ret = _NclFileWriteVarAtt(file,coord_name,att_name,value_md,sel_ptr);
+                                                                if((value.kind == NclStk_VAR)&&(value.u.data_var->obj.status != PERMANENT)) {
+                                                                        _NclDestroyObj((NclObj)value.u.data_var);
+                                                                } else if((value.kind == NclStk_VAL)&&(value.u.data_obj->obj.status != PERMANENT)){
+                                                                        _NclDestroyObj((NclObj)value.u.data_obj);
+                                                                }
+                                                                if( ret < NhlINFO) {
+                                                                        estatus = ret;
+                                                                }
+                                                                if(sel_ptr != NULL) {
+                                                                        if(sel_ptr->selection[0].sel_type == Ncl_VECSUBSCR) {
+                                                                                NclFree(sel_ptr->selection[0].u.vec.ind);
+                                                                        }
+                                                                        NclFree(sel_ptr);
+                                                                }
+
+							} else {
+								if(sel_ptr !=  NULL) {
+									NclFree(sel_ptr);
+								}
+								_NclCleanUpStack(1);
+							 }
+						} else {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to subscript undefined coordinate variable attribute");
+                                                        estatus = NhlFATAL;
+
+						} 
+					} else {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to reference a file coordinate variable attribute from a non-file");
+						estatus = NhlFATAL;
+					}
+				} else {
+					_NclCleanUpStack(nsubs +1);
+					estatus = NhlFATAL;
+				}
+			}
+			break;
 			case ASSIGN_FILEVARATT_OP: {
 				NclSymbol *file_sym;
 				NclStackEntry *file_ptr,data1,rhs,fvar;
@@ -3576,11 +3922,128 @@ NclExecuteReturnStatus _NclExecute
 							}
 						} else {
 							estatus = NhlFATAL;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%s) does not exist in file (%s), can not assign coordinate variable",coord_name,NrmQuarkToString(file->file.fname));
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%s) does not exist in file (%s), can not assign coordinate variable",NrmQuarkToString(coord_name),NrmQuarkToString(file->file.fname));
 						}
 					}
 				} else {
 					_NclCleanUpStack(nsubs +1);
+				}
+				break;
+			}
+			case FILEVAR_COORD_ATT_OP: 
+			case PARAM_FILEVAR_COORD_ATT_OP: {
+				NclSymbol *file_sym;
+				NclStackEntry *file_ptr,fvar;
+				NclMultiDValData file_md,thevalue;
+				NclFile	file;
+				NclQuark coord_name,att_name,var_name;
+				int nsubs = 0;
+				NclSelectionRecord* sel_ptr = NULL;
+				NclStackEntry out_data;
+				NclStackEntry data;
+				NhlErrorTypes ret = NhlNOERROR;
+			
+				fvar = _NclPop();
+				switch(fvar.kind) {
+				case NclStk_VAL: 
+					thevalue = fvar.u.data_obj;
+					break;
+				case NclStk_VAR:
+					thevalue = _NclVarValueRead(fvar.u.data_var,NULL,NULL);
+					break;
+				default:
+					thevalue = NULL;
+					estatus = NhlFATAL;
+					break;
+				}
+				if((thevalue == NULL)||(thevalue->multidval.kind != SCALAR)&&(thevalue->multidval.type != (NclTypeClass)nclTypestringClass)) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"File Variable names must be scalar string values can't continue");
+					estatus = NhlFATAL;
+				} else {
+					var_name = *(NclQuark*)thevalue->multidval.val;
+					if(fvar.u.data_obj->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)fvar.u.data_obj);
+					}
+				}
+				ptr++;lptr++;fptr++;
+				file_sym = (NclSymbol*)*ptr;
+				ptr++;lptr++;fptr++;
+				coord_name = (NclQuark)(*ptr);
+				ptr++;lptr++;fptr++;
+				att_name = (NclQuark)(*ptr);
+				ptr++;lptr++;fptr++;
+				nsubs = *ptr;
+	
+				file_ptr = _NclRetrieveRec(file_sym,READ_IT);
+				if((estatus != NhlFATAL)&&(file_ptr != NULL)&&(file_ptr->u.data_var != NULL))  {
+					file_md = _NclVarValueRead(file_ptr->u.data_var,NULL,NULL);
+					if(file_md->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
+						file = (NclFile)_NclGetObj(*((int*)file_md->multidval.val));
+						if(file == NULL) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Undefined file reference");
+							estatus = NhlFATAL;
+						} else if(_NclFileVarIsCoord(file,coord_name) == -1) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is not a coordiante variable, can not read attribute",NrmQuarkToString(coord_name));
+
+							estatus = NhlFATAL;
+						} else if(_NclFileVarIsAtt(file,coord_name,att_name) == -1) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to reference undefined coordinate variable attribute");
+							estatus = NhlFATAL;
+						} else {
+							if(nsubs == 1) {
+								sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
+								sel_ptr->n_entries = 1;
+								data =_NclPop();
+								if(data.u.sub_rec->name != NULL) {
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"Named dimensions can not be used with variable attributes");
+									estatus = NhlWARNING;
+								}
+								switch(data.u.sub_rec->sub_type) {
+								case INT_VECT:
+	/*
+	* Need to free some stuff here
+	*/						
+									ret = _NclBuildVSelection(NULL,data.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+									break;
+								case INT_RANGE:
+	/*
+	* Need to free some stuff here
+	*/								
+									ret = _NclBuildRSelection(NULL,data.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+									break;
+								case COORD_VECT:
+								case COORD_RANGE:
+									NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate indexing can not be used with variable attributes");
+									estatus = NhlFATAL;
+									break;
+								}
+								_NclFreeSubRec(data.u.sub_rec);
+								if(ret < NhlWARNING)
+									estatus = ret;
+							} else if(nsubs != 0) {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Attributes only have one dimension, %d subscripts used",nsubs);		
+								estatus = NhlFATAL;
+							}
+							out_data.u.data_obj = _NclFileReadVarAtt(file,coord_name,att_name,sel_ptr);
+							if(sel_ptr != NULL) {
+								if(sel_ptr->selection[0].sel_type == Ncl_VECSUBSCR) {
+									NclFree(sel_ptr->selection[0].u.vec.ind);
+								}
+								NclFree(sel_ptr);
+							}
+							if(out_data.u.data_obj != NULL) {
+								out_data.kind = NclStk_VAL;
+								estatus = _NclPush(out_data);
+							} else {
+								estatus = NhlFATAL;
+							}
+						}	
+					} else {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempt to reference a file variable attribute from a non-file");
+						estatus = NhlFATAL;
+					}
+				} else {
+					_NclCleanUpStack(nsubs);
 				}
 				break;
 			}

@@ -2971,6 +2971,7 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 {
 	NhlErrorTypes ret = NhlNOERROR;
 	struct _NclVarRec* tmp_var;
+	struct _NclVarRec* tmp_coord_var;
 	int i;
 	NclQuark dim_names[NCL_MAX_DIMENSIONS];
 	NclAtt theatt;
@@ -2998,9 +2999,9 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 			}
 		}
 		for(i = 0; i < rhs_var->var.n_dims; i++) {
-			if(rhs_var->var.coord_vars[i] != -1) {
-				tmp_var = (NclVar)_NclGetObj(rhs_var->var.coord_vars[i]);
-				ret = FileWriteCoord(thefile,rhs_var->var.dim_info[i].dim_quark,_NclVarValueRead(tmp_var,NULL,NULL),NULL);
+			if(tmp_var->var.coord_vars[i] != -1) {
+				tmp_coord_var = (NclVar)_NclGetObj(tmp_var->var.coord_vars[i]);
+				ret = FileWriteCoord(thefile,rhs_var->var.dim_info[i].dim_quark,_NclVarValueRead(tmp_coord_var,NULL,NULL),NULL);
 				if(ret < NhlWARNING) {
 					NhlPError(NhlWARNING,NhlEUNKNOWN,"FileWriteVarVar: Could not write coordinate variable (%s) to file (%s), continuing anyway",NrmQuarkToString(rhs_var->var.dim_info[i].dim_quark),NrmQuarkToString(thefile->file.fname));
 					ret = NhlWARNING;
