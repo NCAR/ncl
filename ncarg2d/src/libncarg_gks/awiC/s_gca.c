@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gca.c,v 1.5 2000-08-22 15:08:41 haley Exp $
+ *	$Id: s_gca.c,v 1.6 2004-06-22 23:07:55 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -47,31 +47,17 @@ void gcell_array
     Gpat_rep *colr_array;
 #endif
 {
-    int i, j, k, l, idx, idy, *colia_trans;
+    int i, j, k, l, idx, idy;
 
     if( colr_array->colr_array != NULL ) {
         idx = colr_array->dims.size_x;
         idy = colr_array->dims.size_y;
-        colia_trans = (int *)malloc(idx*idy*sizeof(int));
-        if( colia_trans ) {
-            l = 0;
-            for( j = 0; j < idy; j++ ) {
-                for( i = 0; i < idx; i++ ) {
-                    k = i * idy + j;
-                    colia_trans[l++] = colr_array->colr_array[k];
-                }
-            }
-            i = j = 1;
-            NGCALLF(gca,GCA)(&rect->p.x,&rect->p.y,
-                             &rect->q.x,&rect->q.y,
-                             &colr_array->dims.size_x,
-                             &colr_array->dims.size_y,&i,&j,
-                             &idx,&idy,colia_trans);
-        }
-        else {
-            fprintf( stderr, "gcell_array: not enough memory to create transposed array\n" );
-            return;
-        }
+        i = j = 1;
+        NGCALLF(gca,GCA)(&rect->p.x,&rect->p.y,
+                         &rect->q.x,&rect->q.y,
+                         &colr_array->dims.size_x,
+                         &colr_array->dims.size_y,&i,&j,
+                         &idx,&idy,colr_array->colr_array);
     }
     else {
         fprintf( stderr, "gcell_array:  colr_array is a NULL structure\n" );
