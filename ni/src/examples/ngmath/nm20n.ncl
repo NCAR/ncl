@@ -105,6 +105,7 @@ begin
   numv = new(1,integer)
   nv = new(fsize,integer)
   csvoro(x,y,z,0,1,xc,yc,zc,rc,nca,numv,nv)
+  print (nca)
 
 ;
 ;  Draw a plot of the triangulation, the circumcircles, and the
