@@ -1,10 +1,21 @@
 #!/bin/csh -f
-set version = 040405    # YYMMDD
+set version = 040503    # YYMMDD
 echo " " 
 echo "WRAPIT Version: "$version 
-if ($argv[1]:q == "-h") then
+if ($#argv == 0) then
+  echo ERROR: NO ARGUMENTS
+  echo For help: "WRAPIT -h | less"
+  exit
+endif
+if ($argv[1]:q == "-h" || $argv[1]:q == "-help") then
 echo written by Mark Stevens, NCAR/CGD/Climate Modeling Section
 echo e-mail: stevens@ucar.edu
+echo "----------------------------------------------------------------------"
+echo "Get the latest version of WRAPIT from our 'anonymous' ftp site."
+echo ">ftp  ftp.cgd.ucar.edu"
+echo "> login using '"anonymous"' and your email address"
+echo ">cd pub/stevens"
+echo ">get WRAPIT"
 echo "----------------------------------------------------------------------"
 echo "WRAPIT works on SunOS, IRIX64, IRIX (Sgi), AIX (IBM), OSF1 (alpha),"
 echo MacOSX, HP-UX, Linux and FreeBSD operating systems. WRAPIT can handle 
@@ -101,28 +112,23 @@ echo " "
 exit
 endif
 #---------------------------------------------------------------------- 
-if ($#argv == 0) then
-  echo ERROR: NO ARGUMENTS
+set OS = `uname`
+if ($OS != "SunOS" && $OS != "IRIX64" && $OS != "IRIX" && $OS != "AIX" \
+ && $OS != "Linux" && $OS != "OSF1" && $OS != "Darwin" && $OS != "HP-UX" \
+ && $OS != "FreeBSD") then
+  echo WRAPIT IS NOT SUPPORTED ON THE $OS OPERATING SYSTEM 
+  echo EXITING WRAPIT
+  echo " "
   exit
-else
-  set OS = `uname`
-  if ($OS != "SunOS" && $OS != "IRIX64" && $OS != "IRIX" && $OS != "AIX" \
-   && $OS != "Linux" && $OS != "OSF1" && $OS != "Darwin" && $OS != "HP-UX" \
-   && $OS != "FreeBSD") then
-    echo WRAPIT IS NOT SUPPORTED ON THE $OS OPERATING SYSTEM 
-    echo EXITING WRAPIT
-    echo " "
-    exit
-  endif
-  if (-e WRAPIT.c) then
-    'rm' -f WRAPIT.c
-  endif
-  if (-e WRAPIT.o) then
-    'rm' -f WRAPIT.o
-  endif
-  if (-e WRAPIT.stub) then
-    'rm' -f WRAPIT.stub
-  endif
+endif
+if (-e WRAPIT.c) then
+  'rm' -f WRAPIT.c
+endif
+if (-e WRAPIT.o) then
+  'rm' -f WRAPIT.o
+endif
+if (-e WRAPIT.stub) then
+  'rm' -f WRAPIT.stub
 endif
 #echo ARGUMENTS: $argv 
 
@@ -342,16 +348,16 @@ switch ($OS)
    breaksw
  case Darwin:                        # MacOSX (g77)
    if ($debug == 1) then
-     set fopts = "-v -c -fno-common -ffortran-bounds-check"
+     set fopts = "-v -c -fno-common -ffortran-bounds-check -fno-second-underscore"
    else
-     set fopts = "-c -O -fno-common"
+     set fopts = "-c -O -fno-common -fno-second-underscore"
    endif
    breaksw
  case FreeBSD:                       # FreeBSD (g77)
    if ($debug == 1) then
-     set fopts = "-v -c -ffortran-bounds-check"
+     set fopts = "-v -c -ffortran-bounds-check -fno-second-underscore"
    else
-     set fopts = "-c -O"
+     set fopts = "-c -O -fno-second-underscore"
    endif
    breaksw
  case HP-UX:                         # HP-UX
@@ -499,9 +505,9 @@ foreach arg ($args)
         endif
       else if ($OS == SunOS) then          # SunOS
         if ($arg:e == "f90") then           
-          f90 $fopts $arg
+          /opt/SUNWspro/bin/f90 $fopts $arg
         else
-          f77 $fopts $arg
+          /opt/SUNWspro/bin/f77 $fopts $arg
         endif
       else                               # IRIX,IRIX64,OSF1,HP-UX
         f90 $fopts $arg
@@ -531,7 +537,7 @@ else
 endif
 if ($debug) then
   echo "SHARED OBJECT NAME (SharedObj): "$SharedObj
-  echo "LINKER SUFFIX (ld_suffux): "$ld_suffix
+  echo "LINKER SUFFIX (ld_suffix): "$ld_suffix
   echo " "
 endif
 
@@ -609,6 +615,11 @@ switch ($OS)
    ld -b $ld_suffix
    breaksw
  default:                          # SunOS
+   if (-e /opt/SUNWspro/lib/libsunperf.so) then   # extra SUN libraries
+     set ld_suffix = "-L/opt/SUNWspro/lib -lF77 -lsunmath -lfsu -lfui -lsunperf $ld_suffix"
+   else
+     set ld_suffix = "-L/opt/SUNWspro/lib -lF77 $ld_suffix"
+   endif
    if ($debug == 1) then
      ld -V -G $ld_suffix
    else
