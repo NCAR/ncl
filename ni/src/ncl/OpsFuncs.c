@@ -347,7 +347,7 @@ NhlErrorTypes _NclBuildArray
 	NclScalar *mis_ptr = NULL,themissing;
 	int still_no_missing = 1;
 
-	
+#if 0	
 	if( n_items == 1) {
 		data = _NclPop();
 		switch(data.kind) {
@@ -366,6 +366,7 @@ NhlErrorTypes _NclBuildArray
 			return(NhlNOERROR);
 		}
 	}
+#endif
 /*
 * First element determines whether the type of the result array is numerci
 * or textual
@@ -589,7 +590,7 @@ NhlErrorTypes _NclBuildArray
 		dim_sizes[i+1] = theobj->multidval.dim_sizes[i];
 	}
 	dim_sizes[0] = n_items;
-	if(theobj->multidval.kind == MULTID) {
+	if(theobj->multidval.kind == MULTID || theobj->multidval.is_array) {
 		ndims = theobj->multidval.n_dims +1;
 	} else {
 		ndims = 1;
@@ -778,6 +779,7 @@ NhlErrorTypes _NclBuildArray
 	} else {
 		result->u.data_obj = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,value,mis_ptr,ndims,dim_sizes,TEMPORARY,NULL,_NclTypeEnumToTypeClass(result_type));
 	}
+	((NclMultiDValData)result->u.data_obj)->multidval.is_array = 1;
 	for(i = 0; i< n_items; i++) {
 		data = _NclPop();
 		if(data.u.data_obj->obj.status != PERMANENT) {

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.33 2003-02-01 01:55:26 dbrown Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.34 2003-07-16 00:28:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1836,6 +1836,7 @@ NclScalar *new_missing;
 			output_md->multidval.missing_value.has_missing = 1;
 			output_md->multidval.missing_value.value = *new_missing;
 		} 	
+		output_md->multidval.is_array = self_md->multidval.is_array;
 	}
 	return((NclData)output_md);
 }
@@ -2486,7 +2487,7 @@ NclTypeClass type;
 */
 	_NclDataCreate((NclObj)thevalobj,class_ptr,obj_type,(obj_type_mask | Ncl_MultiDValData),status);
 
-
+	thevalobj->multidval.is_array = 0;
 	thevalobj->multidval.data_type = type->type_class.data_type;
 	thevalobj->multidval.val = val;
 	thevalobj->multidval.type= type;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.h,v 1.4 1995-01-28 01:51:41 ethan Exp $
+ *      $Id: NclMultiDValData.h,v 1.5 2003-07-16 00:28:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,7 @@ typedef struct _NclMissingRec {
 typedef struct _NclMultiDValDataPart {
 	NclBasicDataTypes data_type;
 	NclScalarOrMd kind;
+	int is_array;
 	void *val;
 	NclMissingRec missing_value;
 	int n_dims;
