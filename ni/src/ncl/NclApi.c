@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.37 1996-10-24 00:09:03 ethan Exp $
+ *      $Id: NclApi.c,v 1.38 1996-10-24 17:37:45 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -790,7 +790,7 @@ int data_type;
 		sprintf(buffer,nclTypebyteClassRec.type_class.format,*(byte*)val);
 		break;
 	case NCLAPI_string:
-		out = (char*)NclMalloc(strlen(NrmQuarkToString(*(NclQuark*)val)+1));
+		out = (char*)NclMalloc(strlen(NrmQuarkToString(*(NclQuark*)val))+1);
 		strcpy(out,NrmQuarkToString(*(NclQuark*)val));
 		return(out);
 		break;
