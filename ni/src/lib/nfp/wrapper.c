@@ -380,6 +380,12 @@ extern NhlErrorTypes wavelet_W(void);
 extern NhlErrorTypes wavelet_default_W(void);
 extern NhlErrorTypes grid2triple_W(void);
 
+extern NhlErrorTypes random_setallseed_W(void);
+extern NhlErrorTypes random_chi_W(void);
+extern NhlErrorTypes random_gamma_W(void);
+extern NhlErrorTypes random_normal_W(void);
+extern NhlErrorTypes random_uniform_W(void);
+
 void NclAddUserFuncs(void)
 {
     void *args;
@@ -4795,6 +4801,69 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "numeric", 2, NclANY);  nargs++;
     SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);  nargs++;
     NclRegisterFunc(solve_linsys_W, args, "solve_linsys", nargs);
+
+/*
+ *  Register random_setallseed.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+
+    NclRegisterProc(random_setallseed_W, args, "random_setallseed", nargs);
+
+/*
+ *  Register random_chi.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+
+    NclRegisterFunc(random_chi_W, args, "random_chi", nargs);
+
+/*
+ *  Register random_gamma.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+
+    NclRegisterFunc(random_gamma_W, args, "random_gamma", nargs);
+
+/*
+ *  Register random_normal.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+
+    NclRegisterFunc(random_normal_W, args, "random_normal", nargs);
+
+/*
+ *  Register random_uniform.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+
+    NclRegisterFunc(random_uniform_W, args, "random_uniform", nargs);
 
     return;
 }
