@@ -151,7 +151,11 @@ c PTMP in the last loop is to conform to a CSM convention.
           KNT = 0
           DO KL = 1,2*KLEV - 1,2
               KNT = KNT + 1
-              ZMPSI(NL,KNT) = -PTMP(KL)
+              IF(PTMP(KL).NE.VMSG) THEN
+                 ZMPSI(NL,KNT) = -PTMP(KL)
+              ELSE
+                 ZMPSI(NL,KNT) = PTMP(KL)
+              END IF
           END DO
       END DO
 
