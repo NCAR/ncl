@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.3 1993-11-01 17:44:46 boote Exp $
+#      $Id: yMakefile,v 1.4 1994-10-19 19:00:04 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -22,7 +22,11 @@
 #define IHaveSubdirs
 
 SUBDIRS		= $(EXAMPLES)
-EXAMPLES	= nhl01 nhl02 nhl03 nhl04 nhl05 nhl06
+# examples 3 and 4 do not work right now
+#EXAMPLES	= nhl01 nhl02 nhl03 nhl04 nhl05 nhl06 nhl07 nhl08 nhl09 \
+#		nhl10 nhl11 nhl12 nhl13
+EXAMPLES	= nhl01 nhl02 nhl05 nhl06 nhl07 nhl08 nhl09 \
+		nhl10 nhl11 nhl12 nhl13
 SCRIPTS		= nhlex
 MANS		= nhlex.man
 
