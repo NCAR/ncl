@@ -1,5 +1,5 @@
 C
-C	$Id: gopks.f,v 1.6 2000-08-22 15:08:02 haley Exp $
+C	$Id: gopks.f,v 1.7 2003-05-19 21:53:06 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -27,6 +27,7 @@ C
 C  Force load of all BLOCKDATAs.
 C
       EXTERNAL GKSBD,G01BKD,GWIBKD,GSEGDT
+      COMMON /SECOMI/ IERRU,IERRF,IRECF,LOMSG
       INTEGER EOPKS
       PARAMETER (EOPKS=0)
       INTEGER ERRFIL,BUFA
@@ -45,6 +46,11 @@ C
 C  Specify the error file in the GKS error state list.
 C
       ERF = ERRFIL
+C
+C  Also change the error unit for SETER calls if ERRFIL is
+C  non-zero.
+C
+      IF (ERRFIL .NE. 0) IERRU = ERRFIL
 C
 C  Initialize the GKS state list.
 C
