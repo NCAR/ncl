@@ -1,5 +1,5 @@
 /*
- *	$Id: rasview.c,v 1.15 1994-04-12 17:46:27 clyne Exp $
+ *	$Id: rasview.c,v 1.16 1994-04-14 18:45:24 clyne Exp $
  */
 /*
  *	rasview.c
@@ -267,7 +267,8 @@ main(argc, argv)
 		if ((ras = RasterOpen(*files, opt.ifmt)) == (Raster *) NULL){
 			(void) fprintf (
 				stderr, "%s: RasterOpen(%s,%s) [ %s ]\n",
-				progName, *files, opt.ifmt, ErrGetMsg()
+				progName, *files, 
+				opt.ifmt ? opt.ifmt : "NULL", ErrGetMsg()
 			);
 			exit_status++;
 			files++;
