@@ -1,5 +1,5 @@
 /*
- *      $Id: Trans.c,v 1.2 1993-10-19 17:52:49 boote Exp $
+ *      $Id: Trans.c,v 1.3 1993-12-13 23:34:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -59,14 +59,12 @@ NhlErrorTypes 	_NhlWinToNDC
 
 
 	if((_NhlIsTransObj(instance))&&(_NhlIsView(parent))) {	
-		*istrans = 0;
 		while(i_class != (TransObjLayerClass)transObjLayerClass) {
 			if( i_class->trobj_class.win_to_ndc != NULL ) {	
 				if(n>0)
 				ret = (*i_class->trobj_class.win_to_ndc)(
 					instance, parent, x,y,n,xout,yout,
-					xmissing,ymissing);
-				*istrans = 1;
+					xmissing,ymissing,istrans);
 				return(ret);
 			} else {
 				i_class = (TransObjLayerClass)
@@ -106,14 +104,12 @@ NhlErrorTypes 	_NhlNDCToWin
 
 
 	if((_NhlIsTransObj(instance))&&(_NhlIsView(parent))) {	
-		*istrans = 0;
 		while(i_class != (TransObjLayerClass)transObjLayerClass) {
 			if( i_class->trobj_class.ndc_to_win != NULL ) {	
 				if(n>0)
 				ret = (*i_class->trobj_class.ndc_to_win)(
 					instance, parent, x,y,n,xout,yout,
-					xmissing,ymissing);
-				*istrans = 1;
+					xmissing,ymissing,istrans);
 				return(ret);
 			} else {
 				i_class = (TransObjLayerClass)
@@ -152,14 +148,12 @@ NhlErrorTypes 	_NhlDataToCompc
 
 
 	if((_NhlIsTransObj(instance))&&(_NhlIsView(parent))) {	
-		*istrans = 0;
 		while(i_class != (TransObjLayerClass)transObjLayerClass) {
 			if( i_class->trobj_class.data_to_compc != NULL ) {	
 				if(n>0)
 				ret = (*i_class->trobj_class.data_to_compc)(
 					instance, parent, x,y,n,xout,yout,
-					xmissing,ymissing);
-				*istrans = 1;
+					xmissing,ymissing,istrans);
 				return(ret);
 			} else {
 				i_class = (TransObjLayerClass)
@@ -200,15 +194,13 @@ NhlErrorTypes 	_NhlCompcToData
 
 
 	if((_NhlIsTransObj(instance))&&(_NhlIsView(parent))) {	
-		*istrans = 0;
 		while(i_class != (TransObjLayerClass)transObjLayerClass) {
 			if( i_class->trobj_class.compc_to_data != NULL ) {	
 				if(n>0)
 				ret = (*i_class->trobj_class.compc_to_data)(
 					instance, parent, x,y,n,xout,yout,
-					xmissing,ymissing);
+					xmissing,ymissing,istrans);
 				*istrans = 1;
-				return(ret);
 			} else {
 				i_class = (TransObjLayerClass)
 						i_class->base_class.superclass;
@@ -248,14 +240,12 @@ NhlErrorTypes 	_NhlDataToWin
 
 
 	if((_NhlIsTransObj(instance))&&(_NhlIsView(parent))) {	
-		*istrans = 0;
 		while(i_class != (TransObjLayerClass)transObjLayerClass) {
 			if( i_class->trobj_class.data_to_win != NULL ) {	
 				if(n>0)
 				ret = (*i_class->trobj_class.data_to_win)(
 					instance, parent, x,y,n,xout,yout,
-					xmissing,ymissing);
-				*istrans = 1;
+					xmissing,ymissing,istrans);
 				return(ret);
 			} else {
 				i_class = (TransObjLayerClass)
@@ -297,14 +287,12 @@ NhlErrorTypes 	_NhlWinToData
 
 
 	if((_NhlIsTransObj(instance))&&(_NhlIsView(parent))) {	
-		*istrans = 0;
 		while(i_class != (TransObjLayerClass)transObjLayerClass) {
 			if( i_class->trobj_class.win_to_data!= NULL ) {	
 				if(n>0)
 				ret = (*i_class->trobj_class.win_to_data)(
 					instance, parent, x,y,n,xout,yout,
-					xmissing,ymissing);
-				*istrans = 1;
+					xmissing,ymissing,istrans);
 				return(ret);
 			} else {
 				i_class = (TransObjLayerClass)
@@ -346,14 +334,12 @@ NhlErrorTypes 	_NhlWinToCompc
 
 
 	if((_NhlIsTransObj(instance))&&(_NhlIsView(parent))) {	
-		*istrans = 0;
 		while(i_class != (TransObjLayerClass)transObjLayerClass) {
 			if( i_class->trobj_class.win_to_compc!= NULL ) {	
 				if(n>0)
 				ret = (*i_class->trobj_class.win_to_compc)(
 					instance, parent, x,y,n,xout,yout,
-					xmissing,ymissing);
-				*istrans = 1;
+					xmissing,ymissing,istrans);
 				return(ret);
 			} else {
 				i_class = (TransObjLayerClass)
@@ -394,14 +380,12 @@ NhlErrorTypes 	_NhlCompcToWin
 
 
 	if((_NhlIsTransObj(instance))&&(_NhlIsView(parent))) {	
-		*istrans = 0;
 		while(i_class != (TransObjLayerClass)transObjLayerClass) {
 			if( i_class->trobj_class.compc_to_win!= NULL ) {	
 				if(n>0)
 				ret = (*i_class->trobj_class.compc_to_win)(
 					instance, parent, x,y,n,xout,yout,
-					xmissing,ymissing);
-				*istrans = 1;
+					xmissing,ymissing,istrans);
 				return(ret);
 			} else {
 				i_class = (TransObjLayerClass)
@@ -445,9 +429,9 @@ NhlErrorTypes 	_NhlSetTrans
 }
 static NhlErrorTypes CallDataToNDC
 #if __STDC__
-(Layer layer, LayerClass class,float *x,float *y,int n, float *xout,float *yout,float *xmissing,float *ymissing)
+(Layer layer, LayerClass class,float *x,float *y,int n, float *xout,float *yout,float *xmissing,float *ymissing,int *status,float* out_of_range)
 #else 
-(layer,class,x,y,n,xout,yout,xmissing,ymissing)
+(layer,class,x,y,n,xout,yout,xmissing,ymissing,status,out_of_range)
 	Layer layer;
 	LayerClass class;
 	float	*x;
@@ -457,6 +441,8 @@ static NhlErrorTypes CallDataToNDC
 	float 	*yout;
 	float   *xmissing;
 	float 	*ymissing;
+	int	*status;
+	float	*out_of_range;
 #endif
 {
 	TransformLayerClass tclass = (TransformLayerClass) class;
@@ -465,10 +451,10 @@ static NhlErrorTypes CallDataToNDC
 */
 	if(class != transformLayerClass) {
 		if(tclass->trans_class.data_to_ndc != NULL) 
-			return((*tclass->trans_class.data_to_ndc)(layer,x,y,n,xout,yout,xmissing,ymissing));
+			return((*tclass->trans_class.data_to_ndc)(layer,x,y,n,xout,yout,xmissing,ymissing,status,out_of_range));
 		else 
 			return(CallDataToNDC(layer,tclass->base_class.superclass,
-				x,y,n,xout,yout,xmissing,ymissing));
+				x,y,n,xout,yout,xmissing,ymissing,status,out_of_range));
 	} else {
 		NhlPError(FATAL,E_UNKNOWN,"No Transformation function registered for plot class");
 		
@@ -478,9 +464,9 @@ static NhlErrorTypes CallDataToNDC
 
 NhlErrorTypes NhlDataToNDC
 #if __STDC__
-(int pid, float *x,float *y, int n, float *xout, float *yout,float *xmissing,float *ymissing)
+(int pid, float *x,float *y, int n, float *xout, float *yout,float *xmissing,float *ymissing,int* status,float* out_of_range)
 #else 
-(pid,x,y,n,xout,yout,xmissing,ymissing)
+(pid,x,y,n,xout,yout,xmissing,ymissing,status,out_of_range)
 	int pid;
 	float *x;
 	float *y;
@@ -489,6 +475,8 @@ NhlErrorTypes NhlDataToNDC
 	float *yout;
 	float *xmissing;
 	float *ymissing;
+	int * status;
+	float* out_of_range;
 #endif
 {
 	TransformLayer tlayer = (TransformLayer)_NhlGetLayer(pid);
@@ -496,7 +484,7 @@ NhlErrorTypes NhlDataToNDC
 
 	if(_NhlIsTransform(tlayer)) {
 		ret = CallDataToNDC((Layer)tlayer,tlayer->base.layer_class,
-				x,y,n,xout,yout,xmissing,ymissing);
+				x,y,n,xout,yout,xmissing,ymissing,status,out_of_range);
 		
 	} else {
 /*
@@ -510,9 +498,9 @@ NhlErrorTypes NhlDataToNDC
 
 static NhlErrorTypes CallNDCToData
 #if __STDC__
-(Layer layer, LayerClass class,float *x,float *y,int n, float *xout,float *yout,float *xmissing,float *ymissing)
+(Layer layer, LayerClass class,float *x,float *y,int n, float *xout,float *yout,float *xmissing,float *ymissing,int *status,float *out_of_range)
 #else 
-(layer,class,x,y,n,xout,yout,xmissing,ymissing)
+(layer,class,x,y,n,xout,yout,xmissing,ymissing,status,out_of_range)
 	Layer layer;
 	LayerClass class;
 	float	*x;
@@ -522,6 +510,8 @@ static NhlErrorTypes CallNDCToData
 	float 	*yout;
 	float 	*xmissing;
 	float 	*ymissing;
+	int 	*status;
+	float	*out_of_range;
 #endif
 {
 	TransformLayerClass tclass = (TransformLayerClass) class;
@@ -530,10 +520,10 @@ static NhlErrorTypes CallNDCToData
 */
 	if(class != transformLayerClass) {
 		if(tclass->trans_class.ndc_to_data != NULL) 
-			return((*tclass->trans_class.ndc_to_data)(layer,x,y,n,xout,yout,xmissing,ymissing));
+			return((*tclass->trans_class.ndc_to_data)(layer,x,y,n,xout,yout,xmissing,ymissing,status,out_of_range));
 		else 
 			return(CallDataToNDC(layer,tclass->base_class.superclass,
-				x,y,n,xout,yout,xmissing,ymissing));
+				x,y,n,xout,yout,xmissing,ymissing,status,out_of_range));
 	} else {
 		NhlPError(FATAL,E_UNKNOWN,"No Transformation function registered for plot class");
 		
@@ -543,9 +533,9 @@ static NhlErrorTypes CallNDCToData
 
 NhlErrorTypes NhlNDCToData
 #if __STDC__
-(int pid, float *x,float *y, int n, float *xout, float *yout,float *xmissing,float *ymissing)
+(int pid, float *x,float *y, int n, float *xout, float *yout,float *xmissing,float *ymissing,int* status,float* out_of_range)
 #else 
-(pid,x,y,n,xout,yout,xmissing,ymissing)
+(pid,x,y,n,xout,yout,xmissing,ymissing,status,out_of_range)
 	int pid;
 	float *x;
 	float *y;
@@ -554,6 +544,8 @@ NhlErrorTypes NhlNDCToData
 	float *yout;
 	float *xmissing;
 	float *ymissing;
+	int *status;
+	float *out_of_range;
 #endif
 {
 	TransformLayer tlayer = (TransformLayer)_NhlGetLayer(pid);
@@ -562,7 +554,7 @@ NhlErrorTypes NhlNDCToData
 	if(_NhlIsTransform(tlayer)) {
 
 		ret = CallNDCToData((Layer)tlayer,tlayer->base.layer_class,
-				x,y,n,xout,yout,xmissing,ymissing);
+				x,y,n,xout,yout,xmissing,ymissing,status,out_of_range);
 		
 	} else {
 		NhlPError(FATAL,E_UNKNOWN,"NhlNDCToData has been passed an object that can't perform the requested transformation");

@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.h,v 1.3 1993-11-10 01:19:33 ethan Exp $
+ *      $Id: TickMark.h,v 1.4 1993-12-13 23:34:55 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -491,5 +491,6 @@ typedef struct _TickMarkLayerClassRec *TickMarkLayerClass;
 typedef struct _TickMarkLayerRec	*TickMarkLayer;
 
 #define MAXTICKS 256
+#define MAXMINORTICKS 1024
 
 #endif /*_NTickMark_h */

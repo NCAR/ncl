@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.8 1993-11-20 01:06:32 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.9 1993-12-13 23:35:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -475,7 +475,9 @@ static NhlErrorTypes XyPlotDataToNDC(
 	float*		/* xout */,
 	float*		/* yout */,
 	float*		/*xmissing*/,
-	float*		/*ymissing*/
+	float*		/*ymissing*/,
+	int*		/*status*/,
+	float*		/*out_of_range*/
 #endif
 );
 
@@ -488,7 +490,9 @@ static NhlErrorTypes XyPlotNDCToData(
 	float*		/* xout */,
 	float*		/* yout */,
 	float*		/*xmissing*/,
-	float*		/*ymissing*/
+	float*		/*ymissing*/,
+	int*		/*status*/,
+	float*		/*out_of_range*/
 #endif
 );
 
@@ -624,7 +628,9 @@ XyPlotLayerClassRec xyPlotLayerClassRec = {
 	{
 /* handles_overlays 		*/	False,
 /* data_to_ndc			*/	XyPlotDataToNDC,
-/* ndc_to_data			*/	XyPlotNDCToData
+/* ndc_to_data			*/	XyPlotNDCToData,
+/* data_polyline		*/	NULL,
+/* ndc_polyline			*/	NULL
 	},
 	/* datacomm_class */
 	{
@@ -1571,9 +1577,9 @@ static NhlErrorTypes XyPlotDraw
  */
 static NhlErrorTypes XyPlotDataToNDC
 #if __STDC__
-(Layer plot,float* x,float* y,int n,float* xout,float* yout,float* xmissing,float* ymissing)
+(Layer plot,float* x,float* y,int n,float* xout,float* yout,float* xmissing,float* ymissing,int* status,float* out_of_range)
 #else
-(plot,x,y,n,xout,yout,xmissing,ymissing)
+(plot,x,y,n,xout,yout,xmissing,ymissing, status, out_of_range)
 	Layer		plot;
 	float*		x;
 	float*		y;
@@ -1582,12 +1588,14 @@ static NhlErrorTypes XyPlotDataToNDC
 	float*		yout;
 	float*		xmissing;
 	float*		ymissing;
+	int*		status;
+	float*		out_of_range;
 #endif
 {
 	XyPlotLayer xplot = (XyPlotLayer)plot;
-	int istrans = 0;
 	NhlErrorTypes ret = NOERROR;
 	NhlErrorTypes ret1 = NOERROR;
+	int mystatus =0;
 
 	 ret = _NhlSetTrans(xplot->xyplot.thetrans,plot);
 	if(ret < WARNING) {
@@ -1595,31 +1603,35 @@ static NhlErrorTypes XyPlotDataToNDC
 		return(ret);
 	} else if( ret < ret1 )
 		ret1 = ret; 
-		
+
+	NhlGetValues(xplot->xyplot.thetrans->base.id,
+		NhlNtrOutOfRangeF,out_of_range,NULL);
+	
 
 	ret = _NhlDataToWin(xplot->xyplot.thetrans,plot,x,y,n,xout,yout,
-		&istrans,xmissing,ymissing);
+		&mystatus,xmissing,ymissing);
 	if(ret < WARNING){
 		NhlPError(FATAL,E_UNKNOWN,"XyPlotNDCToData: A FATAL error occured while transforming input to window, XyPlot object: %s , cannot continue",plot->base.name);
 		return(ret);
 	} else if( ret < ret1)
 		ret1 = ret;
-
-	if(!istrans) {
-		if(x != xout)
-		memcpy((char*)xout,(char*)x,sizeof(float)*n);
-		if(y != yout)
-		memcpy((char*)yout,(char*)y,sizeof(float)*n);
-	}
-
-	istrans = 0;
+	if(mystatus)
+		*status = 1;
+/*
+* out of range is now missing value since by definition all missing values are
+* replace with the out_of_range value
+*/
 	ret = _NhlWinToNDC(xplot->xyplot.thetrans,plot,xout,yout,n,xout,yout,
-		&istrans,xmissing,ymissing);
+		&mystatus,out_of_range,out_of_range);
+
 	if(ret < WARNING) {
 		NhlPError(FATAL,E_UNKNOWN,"XyPlotNDCToData: A FATAL error occured while transforming from window to NDC, XyPlot object: %s , cannot continue",plot->base.name);
 		return(ret);
 	} else if( ret < ret1)
 		ret1 = ret;
+
+	if(mystatus)
+		*status = 1;
 
 	return(ret1);
 
@@ -1649,9 +1661,9 @@ static NhlErrorTypes XyPlotDataToNDC
  */
 static NhlErrorTypes XyPlotNDCToData
 #if __STDC__
-(Layer plot,float* x,float* y,int n,float* xout,float* yout,float *xmissing,float *ymissing)
+(Layer plot,float* x,float* y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status, float* out_of_range)
 #else
-(plot,x,y,n,xout,yout,xmissing,ymissing)
+(plot,x,y,n,xout,yout,xmissing,ymissing,status,out_of_range)
 	Layer		plot;
 	float*		x;
 	float*		y;
@@ -1660,10 +1672,12 @@ static NhlErrorTypes XyPlotNDCToData
 	float*		yout;
 	float*		xmissing;
 	float*		ymissing;
+	int*		status;
+	float*		out_of_range;
 #endif
 {
 	XyPlotLayer xplot = (XyPlotLayer)plot;
-	int istrans = 0;
+	int mystatus = 0;
 	NhlErrorTypes ret = NOERROR;
 	NhlErrorTypes ret1 = NOERROR;
 
@@ -1675,8 +1689,11 @@ static NhlErrorTypes XyPlotNDCToData
 		ret1 = ret;
 
 
+	NhlGetValues(xplot->xyplot.thetrans->base.id,
+		NhlNtrOutOfRangeF,out_of_range,NULL);
+
 	ret = _NhlNDCToWin(xplot->xyplot.thetrans,plot,x,y,n,xout,yout,
-		&istrans,xmissing,ymissing);
+		&mystatus,xmissing,ymissing);
 	if(ret < WARNING){
 		NhlPError(FATAL,E_UNKNOWN,"XyPlotNDCToData: A FATAL error occured while transforming input to window, XyPlot object: %s , cannot continue",plot->base.name);
 		return(ret);
@@ -1684,23 +1701,21 @@ static NhlErrorTypes XyPlotNDCToData
 		ret1 = ret;
 
 
-	if(!istrans) {
-		if(x != xout)
-		memcpy((char*)xout,(char*)x,sizeof(float)*n);
-		if(y != yout)
-		memcpy((char*)yout,(char*)y,sizeof(float)*n);
-	}
+	if(mystatus)	
+		*status = 1; 
 
 
-	istrans = 0;
+	mystatus = 0;
 	ret = _NhlWinToData(xplot->xyplot.thetrans,plot,xout,yout,n,xout,yout,
-		&istrans,xmissing,ymissing);
+		&mystatus,out_of_range,out_of_range);
 	if(ret < WARNING) {
 		NhlPError(FATAL,E_UNKNOWN,"XyPlotNDCToData: A FATAL error occured while transforming from window to data, XyPlot object: %s , cannot continue",plot->base.name);
 		return(ret);
 	} else if(ret < ret1)
 		ret1 = ret;
 
+	if(mystatus)	
+		*status = 1; 
 
 	return(ret1);
 

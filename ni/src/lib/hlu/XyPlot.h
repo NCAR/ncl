@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.h,v 1.3 1993-11-10 01:19:46 ethan Exp $
+ *      $Id: XyPlot.h,v 1.4 1993-12-13 23:35:26 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -148,6 +148,7 @@ typedef enum { NONE, LEFTAXIS, RIGHTAXIS, TOPAXIS, BOTTOMAXIS } AlternatePlace;
 typedef enum { NOLABELS, LETTERED, CUSTOM } LineLabelModes;
 
 extern LayerClass xyPlotLayerClass;
+extern LayerClass xyDataDepLayerClass;
 
 typedef struct _XyPlotLayerClassRec *XyPlotLayerClass;
 typedef struct _XyPlotLayerRec *XyPlotLayer;

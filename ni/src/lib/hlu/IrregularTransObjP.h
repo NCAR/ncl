@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObjP.h,v 1.3 1993-11-10 01:19:12 ethan Exp $
+ *      $Id: IrregularTransObjP.h,v 1.4 1993-12-13 23:34:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -60,6 +60,10 @@ typedef struct _IrregularTransObjLayerPart {
 	float 	ul;
 	float	ut;
 	float	ub;
+	float   compc_x_min;
+	float   compc_x_max;
+	float   compc_y_min;
+	float	compc_y_max;
 	int log_lin_value;
 } IrregularTransObjLayerPart;
 

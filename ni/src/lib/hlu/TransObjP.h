@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjP.h,v 1.3 1993-10-19 17:52:56 boote Exp $
+ *      $Id: TransObjP.h,v 1.4 1993-12-13 23:35:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -36,8 +36,31 @@ float   /* y */,
 int     /* upordown */
 #endif
 );
+
+typedef NhlErrorTypes (*NhlTransformPoint)(
+#if 	NhlNeedProto
+Layer	/* instance */,
+Layer	/* parent */,
+float*  /* x */,
+float*  /* y */,
+int 	/* n */,
+float*  /* xout */,
+float*  /* yout */,
+float*  /* xmissing */,
+float*  /* ymissing */,
+int*	/* status */		/* True if out of range value exists in input */
+#endif
+);
+
+typedef NhlErrorTypes (*NhlSetTransFunc)(
+#if	NhlNeedProto
+Layer	/* instance */,
+Layer 	/* parent */
+#endif
+);
+
 typedef struct _TransObjLayerPart {
-	void *foo;
+	float out_of_range;
 }TransObjLayerPart;
 
 
@@ -46,26 +69,27 @@ typedef struct _TransObjLayerRec {
 	TransObjLayerPart	trobj;
 }TransObjLayerRec;
 
+
 typedef struct _TransObjLayerClassPart {
-	NhlErrorTypes	(*set_trans)();
+	NhlSetTransFunc set_trans;
 	NhlErrorTypes	(*trans_type)();
 /*
 * linear portion
 */
-	NhlErrorTypes	(*win_to_ndc)();
-	NhlErrorTypes	(*ndc_to_win)();
+	NhlTransformPoint win_to_ndc;
+	NhlTransformPoint ndc_to_win;
 /*
 * possibly not linear transformation
 */
-	NhlErrorTypes	(*data_to_win)();
-	NhlErrorTypes	(*win_to_data)();
+	NhlTransformPoint data_to_win;
+	NhlTransformPoint win_to_data;
 /*
 * intermediate transformations
 */
-	NhlErrorTypes	(*data_to_compc)();
-	NhlErrorTypes	(*compc_to_data)();
-	NhlErrorTypes	(*win_to_compc)();
-	NhlErrorTypes	(*compc_to_win)();
+	NhlTransformPoint data_to_compc;
+	NhlTransformPoint compc_to_data;
+	NhlTransformPoint win_to_compc;
+	NhlTransformPoint compc_to_win;
 /*
 * Drawing primatives
 */

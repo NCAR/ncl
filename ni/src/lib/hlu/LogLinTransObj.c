@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.3 1993-10-19 17:51:39 boote Exp $
+ *      $Id: LogLinTransObj.c,v 1.4 1993-12-13 23:34:34 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -114,6 +114,20 @@ Layer  /*parent*/
 #endif
 );
 
+static NhlErrorTypes LlDataToWin(
+#ifdef NhlNeedProto
+Layer	/*instance*/,
+Layer	/* parent */,
+float*	/*x*/,
+float*   /*y*/,
+int	/* n*/,
+float*	/*xout*/,
+float*	/*yout*/,
+float*	/*xmissing*/,
+float*  /*ymissing*/,
+int* 	/*status*/
+#endif
+);
 static NhlErrorTypes LlWinToNDC(
 #ifdef NhlNeedProto
 Layer	/*instance*/,
@@ -124,7 +138,8 @@ int	/* n*/,
 float*	/*xout*/,
 float*	/*yout*/,
 float*	/*xmissing*/,
-float*  /*ymissing*/
+float*  /*ymissing*/,
+int* 	/*status*/
 #endif
 );
 
@@ -139,7 +154,8 @@ int	/* n*/,
 float*	/*xout*/,
 float*	/*yout*/,
 float*	/*xmissing*/,
-float*  /*ymissing*/
+float*  /*ymissing*/,
+int* 	/*status*/
 #endif
 );
 
@@ -170,12 +186,12 @@ LogLinTransObjLayerClassRec logLinTransObjLayerClassRec = {
 /* trans_type		*/	NULL,
 /* win_to_ndc		*/	LlWinToNDC,
 /* ndc_to_win		*/	LlNDCToWin,
-/* data_to_win		*/	NULL, /* One To One for this Transformation */
-/* win_to_data		*/	NULL, /* One To One for this Transformation */
-/* data_to_compc	*/	NULL,
-/* compc_to_data	*/	NULL,
-/* win_to_compc		*/	NULL,
-/* compc_to_win		*/	NULL,
+/* data_to_win		*/	LlDataToWin, /* One To One for this Transformation */
+/* win_to_data		*/	LlDataToWin, /* One To One for this Transformation */
+/* data_to_compc	*/	LlDataToWin,
+/* compc_to_data	*/	LlDataToWin,
+/* win_to_compc		*/	LlDataToWin,
+/* compc_to_win		*/	LlDataToWin,
 /* data_lineto 		*/      LlDataLineTo,
 /* compc_lineto 	*/      LlDataLineTo,
 /* win_lineto 		*/      LlDataLineTo,
@@ -388,6 +404,47 @@ Layer   parent;
 	
 }
 
+static NhlErrorTypes LlDataToWin
+#if  __STDC__
+(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
+#else
+(instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
+	Layer   instance;
+	Layer   parent;
+	float   *x;
+	float   *y;
+	int	n;
+	float*  xout;
+	float*  yout;
+	float*	xmissing;
+	float*	ymissing;
+	int *	status;
+#endif
+{
+	LogLinTransObjLayer linst = (LogLinTransObjLayer)instance;
+	int i; 
+
+	*status = 0;
+
+	for(i = 0; i< n; i++) {
+		if(((xmissing != NULL)&&(*xmissing == x[i]))
+			||((ymissing != NULL)&&(*ymissing == y[i]))
+			||(x[i] < linst->lltrans.x_min)
+			||(x[i] > linst->lltrans.x_max)
+			||(y[i] < linst->lltrans.y_min)
+			||(y[i] > linst->lltrans.y_max)) {
+		
+			*status = 1;
+			xout[i]=yout[i]=linst->trobj.out_of_range;
+			
+		} else {
+			xout[i] = x[i];
+			yout[i] = y[i];
+
+		}
+	}
+	return(NOERROR);
+}
 
 /*
  * Function:	LlWinToNDC
@@ -410,9 +467,9 @@ Layer   parent;
 
 static NhlErrorTypes LlWinToNDC
 #if  __STDC__
-(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing)
+(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
 #else
-(instance, parent,x,y,n,xout,yout,xmissing,ymissing)
+(instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
 	Layer   instance;
 	Layer   parent;
 	float   *x;
@@ -422,6 +479,7 @@ static NhlErrorTypes LlWinToNDC
 	float*  yout;
 	float*	xmissing;
 	float*	ymissing;
+	int *	status;
 #endif
 {
 	float x0;
@@ -432,7 +490,8 @@ static NhlErrorTypes LlWinToNDC
 	LogLinTransObjLayer linstance = (LogLinTransObjLayer)instance;
 	NhlErrorTypes ret;
 	float urtmp,ultmp,uttmp,ubtmp;
-	int xmis = 0;int ymis = 0;
+	float xmin,ymin,xmax,ymax;
+	float tmpx,tmpy;
 	
 	
 	ret = NhlGetValues(parent->base.id,
@@ -442,6 +501,7 @@ static NhlErrorTypes LlWinToNDC
 		NhlNvpHeightF,&height,NULL);
 	if( ret < WARNING)
 		return(ret);
+	*status = 0;
 	switch(linstance->lltrans.log_lin_value) {
 		case 4:
 /*
@@ -452,35 +512,35 @@ static NhlErrorTypes LlWinToNDC
 			uttmp = (float)log10(linstance->lltrans.ut);
 			ubtmp = (float)log10(linstance->lltrans.ub);
 	
-			if((xmissing == NULL)&&(ymissing==NULL)) {	
-				for(i = 0; i< n; i++) {
-					strans( ultmp, urtmp, ubtmp, uttmp, 
-						x0,x0+width,y0-height,y0,
-						(float)log10(x[i]),
-						(float)log10(y[i]), 
-						&(xout[i]),&(yout[i]));
-				}
-			} else {
-				for(i = 0; i< n; i++) {
-					if((xmissing != NULL)
-							&&(*xmissing == x[i]))
-						xmis = 1;
-					if((ymissing != NULL)
-							&&(*ymissing == y[i]))
-						ymis = 1;
-					strans( ultmp, urtmp, ubtmp, uttmp, 
-						x0,x0+width,y0-height,y0,
-						(float)log10(x[i]),
-						(float)log10(y[i]), 
-						&(xout[i]),&(yout[i]));
-					if(xmis) {
-						xmis = 0;
-						xout[i] = *xmissing;
+			xmin = MIN(urtmp,ultmp);
+			xmax = MAX(urtmp,ultmp);
+			ymin = MIN(uttmp,ubtmp);
+			ymax = MAX(uttmp,ubtmp);
+	
+			for(i = 0; i< n; i++) {
+				if((x[i] > 0.0)||(y[i] > 0.0)) {
+					tmpx = log10(x[i]);
+					tmpy = log10(y[i]);
+					if(((xmissing != NULL) &&(*xmissing == x[i]))
+						||((ymissing != NULL) &&(*ymissing == y[i]))
+						||(tmpx < xmin)
+						||(tmpx > xmax)
+						||(tmpy < ymin)
+						||(tmpy > ymax)) {
+
+						*status = 1;
+						xout[i]=yout[i]=linstance->trobj.out_of_range;
+
+					} else {
+
+						strans( ultmp, urtmp, ubtmp, uttmp, 
+							x0,x0+width,y0-height,y0,
+							tmpx, tmpy, 
+							&(xout[i]),&(yout[i]));
 					}
-					if(ymis) {
-						ymis = 0;
-						yout[i] = *ymissing;
-					}
+				} else {
+					*status = 1;	
+					xout[i]=yout[i]=linstance->trobj.out_of_range;
 				}
 			}
 			break;
@@ -490,34 +550,30 @@ static NhlErrorTypes LlWinToNDC
 */
 			urtmp = (float)log10(linstance->lltrans.ur);
 			ultmp = (float)log10(linstance->lltrans.ul);
+			xmin = MIN(urtmp,ultmp);
+			xmax = MAX(urtmp,ultmp);
 		
-			if((xmissing == NULL)&&(ymissing==NULL)) {	
-				for(i = 0; i< n; i++) {
-				strans( ultmp, urtmp, linstance->lltrans.ub, 
-					linstance->lltrans.ut, x0,x0+width,
-					y0-height,y0,(float)log10(x[i]),y[i], 
-					&(xout[i]),&(yout[i]));
-				}
-			} else {
-				for(i = 0; i< n; i++) {
-					if((xmissing != NULL)
-							&&(*xmissing == x[i]))
-						xmis = 1;
-					if((ymissing != NULL)
-							&&(*ymissing == y[i]))
-						ymis = 1;
-				strans( ultmp, urtmp, linstance->lltrans.ub, 
-					linstance->lltrans.ut, x0,x0+width,
-					y0-height,y0,(float)log10(x[i]),y[i], 
-					&(xout[i]),&(yout[i]));
-					if(xmis) {
-						xmis = 0;
-						xout[i] = *xmissing;
+			for(i = 0; i< n; i++) {
+				if(x[i] > 0) {
+					tmpx = log10(x[i]);
+					if(((xmissing != NULL) &&(*xmissing == x[i]))
+						||((ymissing != NULL) &&(*ymissing == y[i]))
+						||(tmpx < xmin)
+						||(tmpx > xmax)
+						||(y[i] < linstance->lltrans.y_min)
+						||(y[i] > linstance->lltrans.y_max)) {
+						
+						*status = 1;
+						xout[i]=yout[i]=linstance->trobj.out_of_range;
+					} else {
+						strans( ultmp, urtmp, linstance->lltrans.ub, 
+							linstance->lltrans.ut, x0,x0+width,
+							y0-height,y0,tmpx,y[i], 
+						&(xout[i]),&(yout[i]));
 					}
-					if(ymis) {
-						ymis = 0;
-						yout[i] = *ymissing;
-					}
+				} else {
+					*status = 1;
+					xout[i]=yout[i]=linstance->trobj.out_of_range;
 				}
 			}
 			break;
@@ -527,35 +583,31 @@ static NhlErrorTypes LlWinToNDC
 */
 			uttmp = (float)log10(linstance->lltrans.ut);
 			ubtmp = (float)log10(linstance->lltrans.ub);
-			if((xmissing == NULL)&&(ymissing==NULL)) {	
-				for(i = 0; i< n; i++) {
-				strans( linstance->lltrans.ul, 
-					linstance->lltrans.ur, ubtmp,uttmp, 
-					x0,x0+width,y0-height,y0,
-					x[i],(float)log10(y[i]),
-					&(xout[i]),&(yout[i]));
-				}
-			} else {
-				for(i = 0; i< n; i++) {
-					if((xmissing != NULL)
-							&&(*xmissing == x[i]))
-						xmis = 1;
-					if((ymissing != NULL)
-							&&(*ymissing == y[i]))
-						ymis = 1;
-				strans( linstance->lltrans.ul, 
-					linstance->lltrans.ur, ubtmp,uttmp, 
-					x0,x0+width,y0-height,y0,
-					x[i],(float)log10(y[i]),
-					&(xout[i]),&(yout[i]));
-					if(xmis) {
-						xmis = 0;
-						xout[i] = *xmissing;
+			ymin = MIN(uttmp,ubtmp);
+			ymax = MAX(uttmp,ubtmp);
+			for(i = 0; i< n; i++) {
+				if(y[i] > 0) {
+					tmpy = log10(y[i]);
+					if(((xmissing != NULL) &&(*xmissing == x[i]))
+						||((ymissing != NULL)&&(*ymissing == y[i]))
+						||(x[i] < linstance->lltrans.x_min)
+						||(x[i] > linstance->lltrans.x_max)
+						||(tmpy < ymin)
+						||(tmpy > ymax)) {
+
+						*status = 1;
+						xout[i]=yout[i]=linstance->trobj.out_of_range;
+
+					} else {
+						strans( linstance->lltrans.ul, 
+							linstance->lltrans.ur, ubtmp,uttmp, 
+							x0,x0+width,y0-height,y0,
+							x[i],tmpy,
+							&(xout[i]),&(yout[i]));
 					}
-					if(ymis) {
-						ymis = 0;
-						yout[i] = *ymissing;
-					}
+				} else {	
+					*status = 1;
+					xout[i]=yout[i]=linstance->trobj.out_of_range;
 				}
 			}
 			break;
@@ -563,37 +615,24 @@ static NhlErrorTypes LlWinToNDC
 /*
 *XLinYLin
 */
-			if((xmissing == NULL)&&(ymissing==NULL)) {	
-				for(i = 0; i< n; i++) {
-				strans( linstance->lltrans.ul, 
-					linstance->lltrans.ur, 
-					linstance->lltrans.ub, 
-					linstance->lltrans.ut, 
-					x0,x0+width,y0-height,y0,
-					x[i],y[i], &(xout[i]),&(yout[i]));
-				}
-			} else {
-				for(i = 0; i< n; i++) {
-					if((xmissing != NULL)
-							&&(*xmissing == x[i]))
-						xmis = 1;
-					if((ymissing != NULL)
-							&&(*ymissing == y[i]))
-						ymis = 1;
-				strans( linstance->lltrans.ul, 
-					linstance->lltrans.ur, 
-					linstance->lltrans.ub, 
-					linstance->lltrans.ut, 
-					x0,x0+width,y0-height,y0,
-					x[i],y[i], &(xout[i]),&(yout[i]));
-					if(xmis) {
-						xmis = 0;
-						xout[i] = *xmissing;
-					}
-					if(ymis) {
-						ymis = 0;
-						yout[i] = *ymissing;
-					}
+			for(i = 0; i< n; i++) {
+				if(((xmissing != NULL) &&(*xmissing == x[i]))
+					||((ymissing != NULL) &&(*ymissing == y[i])) 
+					||(x[i] < linstance->lltrans.x_min)
+					||(x[i] > linstance->lltrans.x_max)
+					||(y[i] < linstance->lltrans.y_min)
+					||(y[i] > linstance->lltrans.y_max)) {
+
+					*status = 1;
+					xout[i]=yout[i]=linstance->trobj.out_of_range;
+	
+				} else {
+					strans( linstance->lltrans.ul, 
+						linstance->lltrans.ur, 
+						linstance->lltrans.ub, 
+						linstance->lltrans.ut, 
+						x0,x0+width,y0-height,y0,
+						x[i],y[i], &(xout[i]),&(yout[i]));
 				}
 			}
 			break;
@@ -619,9 +658,9 @@ static NhlErrorTypes LlWinToNDC
  */
 static NhlErrorTypes LlNDCToWin
 #if  __STDC__
-(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing, float *ymissing)
+(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing, float *ymissing,int *status)
 #else
-(instance, parent,x,y,n,xout,yout,xmissing,ymissing)
+(instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
 	Layer   instance;
 	Layer   parent;
 	float   *x;
@@ -631,6 +670,7 @@ static NhlErrorTypes LlNDCToWin
 	float*  yout;
 	float*	xmissing;
 	float*	ymissing;
+	int *status;
 #endif
 {
 	float x0;
@@ -641,7 +681,7 @@ static NhlErrorTypes LlNDCToWin
 	LogLinTransObjLayer linstance = (LogLinTransObjLayer)instance;
 	NhlErrorTypes ret;
 	float urtmp,ultmp,uttmp,ubtmp;
-	int xmis = 0; int ymis = 0;
+	float xmin,ymin,xmax,ymax;
 	
 	
 	ret = NhlGetValues(parent->base.id,
@@ -651,6 +691,7 @@ static NhlErrorTypes LlNDCToWin
 		NhlNvpHeightF,&height,NULL);
 	if( ret < WARNING)
 		return(ret);
+	*status = 0;
 	switch(linstance->lltrans.log_lin_value) {
 		case 4:
 /*
@@ -660,23 +701,23 @@ static NhlErrorTypes LlNDCToWin
 			ultmp = (float)log10(linstance->lltrans.ul);
 			uttmp = (float)log10(linstance->lltrans.ut);
 			ubtmp = (float)log10(linstance->lltrans.ub);
+	
+			xmin = MIN(urtmp,ultmp);
+			xmax = MAX(ultmp,urtmp);
+			ymin = MIN(uttmp,ubtmp);
+			ymax = MAX(uttmp,ubtmp);
 
-			if((xmissing == NULL)&&(ymissing == NULL)) {	
-				for(i = 0; i< n; i++) {
-					strans(x0,x0+width,y0-height,y0,ultmp, 
-						urtmp, ubtmp, uttmp, x[i],y[i], 
-						&(xout[i]),&(yout[i]));
-					xout[i]=(float)pow((double)10.0,
-						(double)xout[i]);
-					yout[i]=(float) pow((double)10.0,
-						(double)yout[i]);
-				}
-			} else {
-				for(i = 0; i< n; i++) {
-					if((xmissing != NULL)&&(*xmissing == x[i]))
-						xmis = 1;
-					if((ymissing != NULL)&&(*ymissing == y[i]))
-						ymis = 1;
+			for(i = 0; i< n; i++) {
+				if(((xmissing != NULL)&&(*xmissing == x[i]))
+					||((ymissing != NULL)&&(*ymissing == y[i]))
+					||(x[i] < xmin)
+					||(x[i] > xmax)
+					||(y[i] < ymin)
+					||(y[i] > ymax)) {
+			
+					*status = 1;
+					xout[i]=yout[i]=linstance->trobj.out_of_range;
+				} else {
 		
 					strans(x0,x0+width,y0-height,y0,ultmp, urtmp, 
 						ubtmp, uttmp, x[i],y[i], 
@@ -685,14 +726,6 @@ static NhlErrorTypes LlNDCToWin
 							(double)xout[i]);
 					yout[i]=(float) pow((double)10.0,
 							(double)yout[i]);
-					if(xmis) {
-						xmis = 0;
-						xout[i] = *xmissing;
-					}
-					if(ymis) {
-						ymis = 0;
-						yout[i] = *ymissing;
-					}
 				}
 			}
 		
@@ -703,36 +736,26 @@ static NhlErrorTypes LlNDCToWin
 */
 			urtmp = (float)log10(linstance->lltrans.ur);
 			ultmp = (float)log10(linstance->lltrans.ul);
+			xmin = MIN(urtmp,ultmp);
+			xmax = MAX(ultmp,urtmp);
 		
-			if((xmissing == NULL)&&(ymissing == NULL)) {	
-				for(i = 0; i< n; i++) {
+			for(i = 0; i< n; i++) {
+				if(((xmissing != NULL)&&(*xmissing == x[i]))
+					||((ymissing != NULL)&&(*ymissing == y[i]))
+					||(x[i] < xmin)
+					||(x[i] > xmax)
+					||(y[i] < linstance->lltrans.y_min)
+					||(y[i] > linstance->lltrans.y_max)) {
+		
+					*status = 1;
+					xout[i]=yout[i]=linstance->trobj.out_of_range;
+				} else {
 					strans(x0,x0+width,y0-height,y0,ultmp,
 						urtmp, linstance->lltrans.ub,
 						linstance->lltrans.ut, x[i],y[i],
 						&(xout[i]),&(yout[i]));
-					xout[i] = (float) pow((double)10.0,
-						(double) xout[i]);
-				}
-			} else {
-				for(i = 0; i< n; i++) {
-					if((xmissing != NULL)&&(*xmissing == x[i]))
-						xmis = 1;
-					if((ymissing != NULL)&&(*ymissing == y[i]))
-						ymis = 1;
-					strans(x0,x0+width,y0-height,y0,ultmp,
-						urtmp, linstance->lltrans.ub,
-						linstance->lltrans.ut, x[i],y[i],
-						&(xout[i]),&(yout[i]));
-					xout[i] = (float) pow((double)10.0,
-							(double) xout[i]);
-					if(xmis) {
-						xmis = 0;
-						xout[i] = *xmissing;
-					}
-					if(ymis) {
-						ymis = 0;
-						yout[i] = *ymissing;
-					}
+						xout[i] = (float) pow((double)10.0,
+								(double) xout[i]);
 				}
 			}
 			break;
@@ -742,22 +765,19 @@ static NhlErrorTypes LlNDCToWin
 */
 			uttmp = (float)log10(linstance->lltrans.ut);
 			ubtmp = (float)log10(linstance->lltrans.ub);
-			if((xmissing == NULL)&&(ymissing == NULL)) {	
-				for(i = 0; i< n; i++) {
-					strans(x0,x0+width,y0-height,y0,
-						linstance->lltrans.ul,
-						linstance->lltrans.ur, ubtmp,uttmp, 
-						x[i],y[i],
-						&(xout[i]),&(yout[i]));
-					yout[i]=(float) pow((double)10.0,
-							(double)yout[i]);
-				}
-			} else {
-				for(i = 0; i< n; i++) {
-					if((xmissing != NULL)&&(*xmissing == x[i]))
-						xmis = 1;
-					if((ymissing != NULL)&&(*ymissing == y[i]))
-						ymis = 1;
+			ymin = MIN(uttmp,ubtmp);
+			ymax = MAX(uttmp,ubtmp);
+			for(i = 0; i< n; i++) {
+				if(((xmissing != NULL)&&(*xmissing == x[i]))
+					||((ymissing != NULL)&&(*ymissing == y[i]))
+					||(x[i] < linstance->lltrans.x_min)
+					||(x[i] > linstance->lltrans.x_max)
+					||(y[i] < ymin)
+					||(y[i] > ymax)) {
+
+					*status = 1;
+					xout[i]=yout[i]=linstance->trobj.out_of_range;
+				} else {
 					strans(x0,x0+width,y0-height,y0,
 						linstance->lltrans.ul,
 						linstance->lltrans.ur, 
@@ -766,14 +786,6 @@ static NhlErrorTypes LlNDCToWin
 						&(xout[i]),&(yout[i]));
 					yout[i]=(float) pow((double)10.0,
 							(double)yout[i]);
-					if(xmis) {
-						xmis = 0;
-						xout[i] = *xmissing;
-					}
-					if(ymis) {
-						ymis = 0;
-						yout[i] = *ymissing;
-					}
 				}
 			}
 			break;
@@ -781,8 +793,17 @@ static NhlErrorTypes LlNDCToWin
 /*
 *XLinYLin
 */
-			if((xmissing == NULL)&&(ymissing == NULL)) {	
-				for(i = 0; i< n; i++) {
+			for(i = 0; i< n; i++) {
+				if(((xmissing != NULL)&&(*xmissing == x[i]))
+					||((ymissing != NULL)&&(*ymissing == y[i]))
+					||(x[i] < linstance->lltrans.x_min)
+					||(x[i] > linstance->lltrans.x_max)
+					||(y[i] < linstance->lltrans.y_min)
+					||(y[i] > linstance->lltrans.y_max)) {
+
+					*status = 1;
+					xout[i]=yout[i]=linstance->trobj.out_of_range;
+				} else {
 					strans(x0,x0+width,y0-height,y0,
 						linstance->lltrans.ul,
 						linstance->lltrans.ur, 
@@ -790,28 +811,6 @@ static NhlErrorTypes LlNDCToWin
 						linstance->lltrans.ut, 
 						x[i],y[i],
 						&(xout[i]),&(yout[i]));
-				}
-			} else {
-				for(i = 0; i< n; i++) {
-					if((xmissing != NULL)&&(*xmissing == x[i]))
-						xmis = 1;
-					if((ymissing != NULL)&&(*ymissing == y[i]))
-						ymis = 1;
-					strans(x0,x0+width,y0-height,y0,
-						linstance->lltrans.ul,
-						linstance->lltrans.ur, 
-						linstance->lltrans.ub,
-						linstance->lltrans.ut, 
-						x[i],y[i],
-						&(xout[i]),&(yout[i]));
-					if(xmis) {
-						xmis = 0;
-						xout[i] = *xmissing;
-					}
-					if(ymis) {
-						ymis = 0;
-						yout[i] = *ymissing;
-					}
 				}
 			}
 			break;
@@ -862,8 +861,11 @@ int upordown;
 			&lasty,
 			&currentx,
 			&currenty,
-			-9999.0);
-		if((lastx == -9999.0)||(lasty == -9999.0)||(currentx == -9999.0)||(currenty == -9999.0)){
+			llinst->trobj.out_of_range);
+		if((lastx == llinst->trobj.out_of_range)
+			||(lasty == llinst->trobj.out_of_range)
+			||(currentx == llinst->trobj.out_of_range)
+			||(currenty == llinst->trobj.out_of_range)){
 /*
 * Line has gone completely out of window
 */
@@ -903,6 +905,7 @@ float y;
 int upordown;
 #endif
 {
+	LogLinTransObjLayer llinst = (LogLinTransObjLayer)instance;
 	static float lastx,lasty;
 	static call_frstd = 1;
 	float currentx,currenty;
@@ -930,8 +933,11 @@ int upordown;
 			NhlNvpHeightF,&heightvp,NULL);
 		_NhlTransClipLine( xvp, xvp+widthvp, yvp-heightvp, yvp,
 			&lastx, &lasty, &currentx, &currenty,
-			-9999.0);
-		if((lastx == -9999.0)||(lasty == -9999)||(currentx == -9999.0)||(currenty == -9999.0)){
+			llinst->trobj.out_of_range);
+		if((lastx == llinst->trobj.out_of_range)
+			||(lasty == llinst->trobj.out_of_range)
+			||(currentx == llinst->trobj.out_of_range)
+			||(currenty == llinst->trobj.out_of_range)){
 /*
 * Line has gone completely out of window
 */

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapTransObj.c,v 1.3 1993-10-19 17:51:48 boote Exp $
+ *      $Id: MapTransObj.c,v 1.4 1993-12-13 23:34:38 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -149,7 +149,8 @@ int     /* n*/,
 float*  /*xout*/,
 float*  /*yout*/,
 float*  /*xmissing*/,
-float*  /*ymissing*/
+float*  /*ymissing*/,
+int* 	/*status*/
 #endif
 );
 static NhlErrorTypes MapNDCToWin(
@@ -162,7 +163,8 @@ int     /* n*/,
 float*  /*xout*/,
 float*  /*yout*/,
 float*  /*xmissing*/,
-float*  /*ymissing*/
+float*  /*ymissing*/,
+int*	/*status*/
 #endif
 );
 
@@ -177,7 +179,8 @@ int     /* n*/,
 float*  /*xout*/, 
 float*  /*yout*/ ,
 float*  /*xmissing*/,
-float*  /*ymissing*/
+float*  /*ymissing*/,
+int*	/*status*/
 #endif 
 ); 
 
@@ -191,9 +194,55 @@ int     /* n*/,
 float*  /*xout*/, 
 float*  /*yout*/ ,
 float*  /*xmissing*/,
-float*  /*ymissing*/
+float*  /*ymissing*/,
+int*	/*status*/
 #endif 
 ); 
+
+static NhlErrorTypes MapDataToCompc(
+#ifdef NhlNeedProto
+Layer   /*instance */, 
+Layer   /*parent */, 
+float*  /*x*/, 
+float*   /*y*/, 
+int     /* n*/, 
+float*  /*xout*/, 
+float*  /*yout*/ ,
+float*  /*xmissing*/,
+float*  /*ymissing*/,
+int*	/*status*/
+#endif
+);
+
+static NhlErrorTypes MapNDCLineTo(
+#if     NhlNeedProto
+Layer   /* instance */,
+Layer   /* parent */,
+float   /* x */,
+float   /* y */,
+int     /* upordown */
+#endif
+);
+
+static NhlErrorTypes MapDataLineTo(
+#if     NhlNeedProto
+Layer   /* instance */,
+Layer   /* parent */,
+float   /* x */,
+float   /* y */,
+int     /* upordown */
+#endif
+);
+
+static NhlErrorTypes MapWinLineTo(
+#if     NhlNeedProto
+Layer   /* instance */,
+Layer   /* parent */,
+float   /* x */,
+float   /* y */,
+int     /* upordown */
+#endif
+);
 
 
 MapTransObjLayerClassRec mapTransObjLayerClassRec = {
@@ -219,7 +268,7 @@ MapTransObjLayerClassRec mapTransObjLayerClassRec = {
         },
         {
 /*
-* For Maps Compc and Data are the same hence the following definitions.
+* For Maps Data and Compc are the same hence the following definitions.
 */
 /* set_trans		*/	MapSetTrans,
 /* trans_type		*/	NULL,
@@ -227,14 +276,14 @@ MapTransObjLayerClassRec mapTransObjLayerClassRec = {
 /* ndc_to_win		*/	MapNDCToWin,
 /* data_to_win		*/	MapDataToWin, 
 /* win_to_data		*/	MapWinToData,
-/* data_to_compc	*/	NULL,
-/* compc_to_data	*/	NULL,
-/* win_to_compc		*/	MapWinToData,
-/* compc_to_win		*/	MapDataToWin,
-/* data_lineto */       NULL,
-/* compc_lineto */      NULL,
-/* win_lineto */        NULL,
-/* NDC_lineto */        NULL
+/* data_to_compc	*/	MapDataToCompc, /* compc and data are ident */
+/* compc_to_data	*/	MapDataToCompc, /* compc and data are ident */
+/* win_to_compc		*/	MapWinToData, /* compc and data are ident */
+/* compc_to_win		*/	MapDataToWin, /* compc and data are ident */
+/* data_lineto */       MapDataLineTo,
+/* compc_lineto */      MapDataLineTo,
+/* win_lineto */        MapWinLineTo,
+/* NDC_lineto */        MapNDCLineTo
         }
 };
 
@@ -371,9 +420,9 @@ static NhlErrorTypes MapSetTrans
 /*ARGSUSED*/
 static NhlErrorTypes MapWinToNDC
 #if __STDC__
-( Layer instance,Layer parent, float* x,float* y,int n,float* xout,float* yout,float *xmissing, float *ymissing)
+( Layer instance,Layer parent, float* x,float* y,int n,float* xout,float* yout,float *xmissing, float *ymissing,int* status)
 #else
-(instance,parent,x,y,n,xout,yout,xmissing,ymissing)
+(instance,parent,x,y,n,xout,yout,xmissing,ymissing,status)
 	Layer instance;
 	Layer parent;
 	float *x;
@@ -383,54 +432,44 @@ static NhlErrorTypes MapWinToNDC
 	float *yout;
 	float *xmissing;
 	float *ymissing;
+	int* status;
 #endif
 {
         MapTransObjLayer minstance = (MapTransObjLayer)instance;
         int i;
 	NhlErrorTypes ret = NOERROR;
-	int xmis=0; int ymis=0;
+	float xmin,ymin,xmax,ymax;
 
-/*
-	ret = MapSetTrans(instance,parent);
-	if(ret < WARNING)
-		return(ret);
-*/
 
-	if((xmissing ==NULL)&&(ymissing == NULL)) {
-        	for(i = 0; i< n ; i++) {
-                	strans(minstance->mptrans.ul,minstance->mptrans.ur,
-                        	minstance->mptrans.ub,minstance->mptrans.ut,
-                        	minstance->mptrans.map_pos_l,
+
+	*status = 0;
+
+	xmin = MIN(minstance->mptrans.ul,minstance->mptrans.ur);
+	xmax = MAX(minstance->mptrans.ul,minstance->mptrans.ur);
+	ymin = MIN(minstance->mptrans.ut,minstance->mptrans.ub);
+	ymax = MAX(minstance->mptrans.ut,minstance->mptrans.ub);
+
+	
+        for(i = 0; i< n ; i++) {
+		if(((xmissing != NULL)&&(*xmissing == x[i]))
+			||((ymissing != NULL)&&(*ymissing == y[i]))
+			||(x[i] < xmin)
+			||(x[i] > xmax)
+			||(y[i] < ymin)
+			||(y[i] > ymax)) {
+			
+			xout[i] = yout[i] = minstance->trobj.out_of_range;
+			*status = 1;
+		} else {
+               		strans(minstance->mptrans.ul,minstance->mptrans.ur,
+                       		minstance->mptrans.ub,minstance->mptrans.ut,
+                       		minstance->mptrans.map_pos_l,
 				minstance->mptrans.map_pos_r,
 				minstance->mptrans.map_pos_b,
 				minstance->mptrans.map_pos_t,
 				x[i],y[i],
-                        	&(xout[i]),&(yout[i]));
-	        }
-	} else {
-        	for(i = 0; i< n ; i++) {
-			if((xmissing != NULL)&&(*xmissing == x[i]))
-				xmis = 1;
-			if((ymissing != NULL)&&(*ymissing == y[i]))
-				ymis = 1;
-                	strans(minstance->mptrans.ul,minstance->mptrans.ur,
-                        	minstance->mptrans.ub,minstance->mptrans.ut,
-                        	minstance->mptrans.map_pos_l,
-				minstance->mptrans.map_pos_r,
-				minstance->mptrans.map_pos_b,
-				minstance->mptrans.map_pos_t,
-				x[i],y[i],
-                        	&(xout[i]),&(yout[i]));
-			if(xmis) {
-				xmis = 0;
-				xout[i] = *xmissing;
-			}
-			if(ymis) {
-				ymis = 0;
-				yout[i] = *ymissing;
-			}
-
-	        }
+                       		&(xout[i]),&(yout[i]));
+		}
 	}
 
         return(ret);
@@ -453,9 +492,9 @@ static NhlErrorTypes MapWinToNDC
 /*ARGSUSED*/
 static NhlErrorTypes MapNDCToWin
 #if __STDC__
-( Layer instance,Layer parent, float* x,float* y,int n,float* xout,float* yout,float *xmissing,float *ymissing)
+( Layer instance,Layer parent, float* x,float* y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
 #else
-(instance,parent,x,y,n,xout,yout,xmissing,ymissing)
+(instance,parent,x,y,n,xout,yout,xmissing,ymissing,status)
 	Layer instance;
 	Layer parent;
 	float *x;
@@ -465,61 +504,85 @@ static NhlErrorTypes MapNDCToWin
 	float *yout;
 	float *xmissing;
 	float *ymissing;
+	int *status;
 #endif
 {
         int i;
         MapTransObjLayer minstance = (MapTransObjLayer)instance;
 	NhlErrorTypes ret = NOERROR;
-	int xmis=0;int ymis= 0;
 
 
-/*
-	ret = MapSetTrans(instance,parent);
-	if(ret < WARNING)
-		return(ret);
-*/
+	*status = 0;
+        for(i = 0; i< n ; i++) {
+		if(((xmissing != NULL)&&(*xmissing == x[i])) 
+			||((ymissing != NULL)&&(*ymissing == y[i])) 
+			||(x[i] < minstance->mptrans.map_pos_l)
+			||(x[i] > minstance->mptrans.map_pos_r)
+			||(y[i] < minstance->mptrans.map_pos_b)
+			||(y[i] < minstance->mptrans.map_pos_t)) {
+	
+			*status = 1;
+			xout[i]=yout[i]=minstance->trobj.out_of_range;
 
-	if((xmissing == NULL)&&(ymissing == NULL)) {
-        	for(i = 0; i< n ; i++) {
-                	strans( minstance->mptrans.map_pos_l,
-				minstance->mptrans.map_pos_r,
-				minstance->mptrans.map_pos_b,
-				minstance->mptrans.map_pos_t,
-				minstance->mptrans.ul,minstance->mptrans.ur,
-                        	minstance->mptrans.ub,minstance->mptrans.ut,
-				x[i],y[i],
-                        	&(xout[i]),&(yout[i]));
-        	}
-	} else {
-        	for(i = 0; i< n ; i++) {
-			if((xmissing != NULL)&&(*xmissing == x[i])) 
-				xmis = 1;
-			if((ymissing != NULL)&&(*ymissing == y[i])) 
-				ymis = 1;
-                	strans( minstance->mptrans.map_pos_l,
-				minstance->mptrans.map_pos_r,
-				minstance->mptrans.map_pos_b,
-				minstance->mptrans.map_pos_t,
-				minstance->mptrans.ul,minstance->mptrans.ur,
-                        	minstance->mptrans.ub,minstance->mptrans.ut,
-				x[i],y[i],
-                        	&(xout[i]),&(yout[i]));
-			if(xmis) {
-				xmis = 0;
-				xout[i] = *xmissing;
-			}
-			if(ymis) {
-				ymis = 0;
-				yout[i] = *ymissing;
-			}
-        	}
-		
+		} else {
+               	strans( minstance->mptrans.map_pos_l,
+			minstance->mptrans.map_pos_r,
+			minstance->mptrans.map_pos_b,
+			minstance->mptrans.map_pos_t,
+			minstance->mptrans.ul,minstance->mptrans.ur,
+                       	minstance->mptrans.ub,minstance->mptrans.ut,
+			x[i],y[i],
+                       	&(xout[i]),&(yout[i]));
+		}
 	}
 
         return(ret);
 }
 
+/*ARGSUSED*/
+static NhlErrorTypes MapDataToCompc
+#if __STDC__
+( Layer instance,Layer parent, float* x,float* y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
+#else
+(instance,parent,x,y,n,xout,yout,xmissing,ymissing,status)
+	Layer instance;
+	Layer parent;
+	float *x;
+	float *y;
+	int n;
+	float *xout;
+	float *yout;
+	float *xmissing;
+	float *ymissing;
+	int* status;
+#endif
+{
+	int i;
+        MapTransObjLayer minstance = (MapTransObjLayer)instance;
+	NhlErrorTypes ret = NOERROR;
+	float tmpx,tmpy;
 
+	*status = 0;
+	for( i = 0; i< n; i++) {
+		if(((xmissing != NULL) &&(*xmissing == x[i]))
+			||((ymissing != NULL) &&(*ymissing == y[i]))) {	
+			*status = 1;
+			xout[i] = yout[i] = minstance->trobj.out_of_range;
+		} else {
+
+			c_maptra(y[i],x[i],&tmpx,&tmpy);
+/*
+* A problem could develop here if 1e12 is not represented identically in
+* FORTRAN and C because of arithmentic error
+*/
+			if((tmpx == 1e12) ||(tmpy == 1e12)) {
+				*status = 1;
+				xout[i]=yout[i]=minstance->trobj.out_of_range;
+			}
+		}
+	}
+	return(ret);
+}
 /*
  * Function:	MapDataToWin
  *
@@ -536,9 +599,9 @@ static NhlErrorTypes MapNDCToWin
 /*ARGSUSED*/
 static NhlErrorTypes MapDataToWin
 #if __STDC__
-( Layer instance,Layer parent, float* x,float* y,int n,float* xout,float* yout,float *xmissing,float *ymissing)
+( Layer instance,Layer parent, float* x,float* y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
 #else
-(instance,parent,x,y,n,xout,yout,xmissing,ymissing)
+(instance,parent,x,y,n,xout,yout,xmissing,ymissing,status)
 	Layer instance;
 	Layer parent;
 	float *x;
@@ -548,39 +611,30 @@ static NhlErrorTypes MapDataToWin
 	float *yout;
 	float *xmissing;
 	float *ymissing;
+	int* status;
 #endif
 {
 	int i;
+        MapTransObjLayer minstance = (MapTransObjLayer)instance;
 	NhlErrorTypes ret = NOERROR;
-	int xmis=0; int ymis = 0;
-/*
-	ret = MapSetTrans(instance,parent);
-	if(ret < WARNING)
-		return(ret);
-*/
-	
 
-	if((xmissing == NULL)&&(ymissing == NULL)) {
-		for( i = 0; i< n; i++) {
+	*status = 0;
+	for( i = 0; i< n; i++) {
+		if(((xmissing != NULL) &&(*xmissing == x[i]))
+			||((ymissing != NULL) &&(*ymissing == y[i]))) {	
+			*status = 1;
+			xout[i] = yout[i] = minstance->trobj.out_of_range;
+		} else {
+
+			c_maptra(y[i],x[i],&(xout[i]),&(yout[i]));
 /*
-* Lat is y and Lon is X
+* A problem could develop here if 1e12 is not represented identically in
+* FORTRAN and C because of arithmentic error
 */
-			c_maptra(y[i],x[i],&(xout[i]),&(yout[i]));
-		}
-	}else {
-		for( i = 0; i< n; i++) {
-			if((xmissing != NULL) &&(*xmissing == x[i]))
-				xmis = 1;
-			if((ymissing != NULL) &&(*ymissing == y[i]))
-				ymis = 1;
-			c_maptra(y[i],x[i],&(xout[i]),&(yout[i]));
-			if(xmis) {
-				xmis = 0;
-				xout[i] = *xmissing;
-			}
-			if(ymis) {
-				ymis = 0;
-				yout[i] = *ymissing;
+			if((xout[i] == 1e12)
+				||(yout[i] == 1e12)) {
+				*status = 1;
+				xout[i]=yout[i]=minstance->trobj.out_of_range;
 			}
 		}
 	}
@@ -603,9 +657,9 @@ static NhlErrorTypes MapDataToWin
 /*ARGSUSED*/
 static NhlErrorTypes MapWinToData
 #if __STDC__
-( Layer instance,Layer parent, float* x,float* y,int n,float* xout,float* yout,float *xmissing, float *ymissing)
+( Layer instance,Layer parent, float* x,float* y,int n,float* xout,float* yout,float *xmissing, float *ymissing, int* status)
 #else
-(instance,parent,x,y,n,xout,yout,xmissing,ymissing)
+(instance,parent,x,y,n,xout,yout,xmissing,ymissing,status)
 	Layer instance;
 	Layer parent;
 	float *x;
@@ -615,34 +669,41 @@ static NhlErrorTypes MapWinToData
 	float *yout;
 	float *xmissing;
 	float *ymissing;
+	int *status;
 #endif
 {
+        MapTransObjLayer minstance = (MapTransObjLayer)instance;
 	int i;
 	NhlErrorTypes ret = NOERROR;
-	int xmis = 0; int ymis=0;
-/*
-	ret = MapSetTrans(instance,parent);
-	if(ret < WARNING)
-		return(ret);
-*/
-	if((xmissing == NULL)&&(ymissing == NULL)) {	
-		for(i=0; i< n; i++) {
+	float xmin,ymin,xmax,ymax;
+
+
+        xmin = MIN(minstance->mptrans.ul,minstance->mptrans.ur);
+        xmax = MAX(minstance->mptrans.ul,minstance->mptrans.ur);
+        ymin = MIN(minstance->mptrans.ut,minstance->mptrans.ub);
+        ymax = MAX(minstance->mptrans.ut,minstance->mptrans.ub);
+
+
+	*status = 0;
+	for(i=0; i< n; i++) {
+		if(((xmissing != NULL)&&(*xmissing == x[i]))
+			||((ymissing != NULL)&&(*ymissing == y[i]))
+			||(x[i] < xmin)
+			||(x[i] > xmax)
+			||(y[i] < ymin)
+			||(y[i] > ymax)) {
+
+			*status = 1;
+			xout[i]=yout[i]=minstance->trobj.out_of_range;
+	
+
+		} else {
 			c_maptri(x[i],y[i],&(yout[i]),&(xout[i]));
-		}
-	} else {
-		for(i=0; i< n; i++) {
-			if((xmissing != NULL)&&(*xmissing == x[i]))
-				xmis = 1; 
-			if((ymissing != NULL)&&(*ymissing == y[i]))
-				ymis = 1; 
-			c_maptri(x[i],y[i],&(yout[i]),&(xout[i]));
-			if(xmis){
-				xmis =0;
-				xout[i] = *xmissing;
-			}
-			if(ymis){
-				ymis =0;
-				yout[i] = *ymissing;
+			if((xout[i] == 1e12)||
+				(yout[i] == 1e12)) {
+
+				*status = 1;
+				xout[i]=yout[i]=minstance->trobj.out_of_range;
 			}
 		}
 	}
@@ -679,6 +740,13 @@ static NhlErrorTypes  MapTransSetValues
 	MapTransObjLayer mold = (MapTransObjLayer) old;
 	NhlErrorTypes ret = NOERROR;
 	char *tmp;
+
+	if(_NhlArgIsSet(args,num_args,NhlNtrOutOfRangeF)) {
+		NhlPError(INFO,E_UNKNOWN,"MapTransObj: NhlOutOfRangeF should not be set, must always remain 1e12");
+		mnew->trobj.out_of_range = 1e12;
+	} else {	
+		mnew->trobj.out_of_range = 1e12;
+	}
 
 	if(mnew->mptrans.projection != mold->mptrans.projection) {
 		NhlFree(mold->mptrans.projection);
@@ -768,6 +836,13 @@ static NhlErrorTypes MapTransInitialize
 	NhlErrorTypes ret = NOERROR;
 	float *tmp;
 
+	if(_NhlArgIsSet(args,num_args,NhlNtrOutOfRangeF)){
+		NhlPError(WARNING,E_UNKNOWN,"MapTransObj: NhlOutOfRangeF should not be set, must always remain 1e12");
+		mnew->trobj.out_of_range = 1e12;
+	} else {	
+		mnew->trobj.out_of_range = 1e12;
+	}
+
 	mnew->mptrans.projection = (char*)NhlMalloc((unsigned)
 					strlen(mreq->mptrans.projection)+1);
 	strcpy(mnew->mptrans.projection,mreq->mptrans.projection);
@@ -829,5 +904,167 @@ static NhlErrorTypes MapTransInitialize
 		tmp[0] = mnew->mptrans.rect_limit_4[0];
 		mnew->mptrans.rect_limit_4 = tmp;
 	}
+
 	return(ret);
 }
+
+static NhlErrorTypes MapDataLineTo
+#if __STDC__
+(Layer instance, Layer parent, float x, float y, int upordown)
+#else
+(instance, parent, x, y, upordown)
+Layer instance;
+Layer parent;
+float x;
+float y;
+int upordown;
+#endif
+{
+	if(upordown) {
+		c_mapiq();
+		c_mapit(y,x,0);
+	} else {
+		c_mapit(y,x,2);
+	}
+	return(NOERROR);
+}
+static NhlErrorTypes MapWinLineTo
+#if __STDC__
+(Layer instance, Layer parent, float x, float y, int upordown)
+#else
+(instance, parent, x, y, upordown)
+Layer instance;
+Layer parent;
+float x;
+float y;
+int upordown;
+#endif
+{
+	MapTransObjLayer minst = (MapTransObjLayer)instance;
+        static float lastx,lasty;
+        static call_frstd = 1;
+        float currentx,currenty;
+        float holdx,holdy;
+	float xmin,ymin,xmax,ymax;
+
+
+	xmin = MIN(minst->mptrans.ul,minst->mptrans.ur);
+	xmax = MAX(minst->mptrans.ul,minst->mptrans.ur);
+	ymin = MIN(minst->mptrans.ut,minst->mptrans.ub);
+	ymax = MAX(minst->mptrans.ut,minst->mptrans.ub);
+
+/*
+* if true the moveto is being performed
+*/
+        if(upordown) {
+                lastx = x;
+                lasty = y;
+                call_frstd =1;
+                return(NOERROR);
+        } else {
+                currentx = x;
+                currenty = y;
+                holdx = lastx;
+                holdy = lasty;
+		_NhlTransClipLine(xmin,xmax,ymin,ymax,
+			&lastx,
+			&lasty,
+			&currentx,
+			&currenty,
+			minst->trobj.out_of_range);
+		if((lastx == minst->trobj.out_of_range)
+                        ||(lasty == minst->trobj.out_of_range)
+                        ||(currentx == minst->trobj.out_of_range)
+                        ||(currenty == minst->trobj.out_of_range)){
+/*
+* Line has gone completely out of window
+*/
+                        lastx = x;
+                        lasty = y;
+                        call_frstd = 1;
+                        return(_NhlWorkstationLineTo(parent->base.wkptr,c_cufx(x),c_cufy(y),1));
+                } else {
+                        if((lastx != holdx)||(lasty!= holdy)) {
+                                call_frstd = 1;
+                        }
+                        if(call_frstd == 1) {
+                                _NhlWorkstationLineTo(parent->base.wkptr,c_cufx(lastx),c_cufy(lasty),1);
+                                call_frstd = 2;
+                        }
+                        _NhlWorkstationLineTo(parent->base.wkptr,c_cufx(currentx),c_cufy(currenty),0);
+                        lastx = x;
+                        return(NOERROR);
+                }
+        }
+}
+static NhlErrorTypes MapNDCLineTo
+#if __STDC__
+(Layer instance, Layer parent, float x, float y, int upordown)
+#else
+(instance, parent, x, y, upordown)
+Layer instance;
+Layer parent;
+float x;
+float y;
+int upordown;
+#endif
+{
+        MapTransObjLayer mpinst = (MapTransObjLayer)instance;
+        static float lastx,lasty;
+        static call_frstd = 1;
+        float currentx,currenty;
+        float xvp,yvp,widthvp,heightvp;
+        NhlErrorTypes ret = NOERROR,ret1 = NOERROR;
+        float holdx,holdy;
+
+/*
+* if true the moveto is being performed
+*/
+        if(upordown) {
+                lastx = x;
+                lasty = y;
+                call_frstd = 1;
+                return(NOERROR);
+        } else {
+                currentx = x;
+                currenty = y;
+                holdx = lastx;
+                holdy = lasty;
+                NhlGetValues(parent->base.id,
+                        NhlNvpXF,&xvp,
+                        NhlNvpYF,&yvp,
+                        NhlNvpWidthF,&widthvp,
+                        NhlNvpHeightF,&heightvp,NULL);
+                _NhlTransClipLine( xvp, xvp+widthvp, yvp-heightvp, yvp,
+                        &lastx, &lasty, &currentx, &currenty,
+                        mpinst->trobj.out_of_range);
+                if((lastx == mpinst->trobj.out_of_range)
+                        ||(lasty == mpinst->trobj.out_of_range)
+                        ||(currentx == mpinst->trobj.out_of_range)
+                        ||(currenty == mpinst->trobj.out_of_range)){
+/*
+* Line has gone completely out of window
+*/
+                        lastx  = x;
+                        lasty  = y;
+                        call_frstd = 1;
+                        return(_NhlWorkstationLineTo(parent->base.wkptr,x,y,1));
+                } else {
+                        if((lastx != holdx)||(lasty!= holdy)) {
+                                call_frstd = 1;
+                        }
+                        if(call_frstd == 1) {
+                                ret1 = _NhlWorkstationLineTo(parent->base.wkptr,lastx,lasty,1);
+                                call_frstd = 2;
+			}
+                        ret = _NhlWorkstationLineTo(parent->base.wkptr,currentx,currenty,0);
+                        lastx = x;
+                        lasty = y;
+                        return(MIN(ret1,ret));
+                }
+
+
+        }
+
+}
+

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularType2TransObjP.h,v 1.2 1993-10-19 17:51:03 boote Exp $
+ *      $Id: IrregularType2TransObjP.h,v 1.3 1993-12-13 23:34:32 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -57,6 +57,10 @@ typedef struct _IrregularType2TransObjLayerPart {
 	float 	ul;
 	float	ut;
 	float	ub;
+	float 	compc_x_min;
+	float	compc_x_max;
+	float	compc_y_min;
+	float 	compc_y_max;
 	int log_lin_value;
 } IrregularType2TransObjLayerPart;
 

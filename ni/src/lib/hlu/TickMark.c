@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.4 1993-11-10 01:19:25 ethan Exp $
+ *      $Id: TickMark.c,v 1.5 1993-12-13 23:34:46 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1365,9 +1365,9 @@ static NhlErrorTypes	TickMarkInitialize
 	tnew->tick.x_b_major_labels = (char**)NhlMalloc((unsigned)
 						sizeof(char*)*MAXTICKS);
 	tnew->tick.x_b_minor_data_locs  = (float*)NhlMalloc((unsigned)
-						sizeof(float)*MAXTICKS);
+						sizeof(float)*MAXMINORTICKS);
 	tnew->tick.x_b_minor_ndc_locs  = (float*)NhlMalloc((unsigned)
-						sizeof(float)*MAXTICKS);
+						sizeof(float)*MAXMINORTICKS);
 	
 	tnew->tick.x_t_major_ndc_locs = (float*)NhlMalloc((unsigned)
 						sizeof(float)*MAXTICKS);
@@ -1376,9 +1376,9 @@ static NhlErrorTypes	TickMarkInitialize
 	tnew->tick.x_t_major_labels = (char**)NhlMalloc((unsigned)
 						sizeof(char*)*MAXTICKS);
 	tnew->tick.x_t_minor_data_locs  = (float*)NhlMalloc((unsigned)
-						sizeof(float)*MAXTICKS);
+						sizeof(float)*MAXMINORTICKS);
 	tnew->tick.x_t_minor_ndc_locs  = (float*)NhlMalloc((unsigned)
-						sizeof(float)*MAXTICKS);
+						sizeof(float)*MAXMINORTICKS);
 	
 	tnew->tick.y_l_major_ndc_locs = (float*)NhlMalloc((unsigned)
 						sizeof(float)*MAXTICKS);
@@ -1387,9 +1387,9 @@ static NhlErrorTypes	TickMarkInitialize
 	tnew->tick.y_l_major_labels = (char**)NhlMalloc((unsigned)
 						sizeof(char*)*MAXTICKS);
 	tnew->tick.y_l_minor_data_locs  = (float*)NhlMalloc((unsigned)
-						sizeof(float)*MAXTICKS);
+						sizeof(float)*MAXMINORTICKS);
 	tnew->tick.y_l_minor_ndc_locs  = (float*)NhlMalloc((unsigned)
-						sizeof(float)*MAXTICKS);
+						sizeof(float)*MAXMINORTICKS);
 	
 	tnew->tick.y_r_major_ndc_locs = (float*)NhlMalloc((unsigned)
 						sizeof(float)*MAXTICKS);
@@ -1398,9 +1398,9 @@ static NhlErrorTypes	TickMarkInitialize
 	tnew->tick.y_r_major_labels = (char**)NhlMalloc((unsigned)
 						sizeof(char*)*MAXTICKS);
 	tnew->tick.y_r_minor_data_locs  = (float*)NhlMalloc((unsigned)
-						sizeof(float)*MAXTICKS);
+						sizeof(float)*MAXMINORTICKS);
 	tnew->tick.y_r_minor_ndc_locs  = (float*)NhlMalloc((unsigned)
-						sizeof(float)*MAXTICKS);
+						sizeof(float)*MAXMINORTICKS);
 	for(i = 0; i< MAXTICKS; i++ ) {
 		tnew->tick.x_b_major_labels[i] = NULL;
 		tnew->tick.x_t_major_labels[i] = NULL;
@@ -3348,6 +3348,11 @@ static NhlErrorTypes ComputeMinorTickMarks
 						tmp = m_locs[i] - j 
 						      *pow(10.0,minor_spacing);
 					}
+					if(k == MAXMINORTICKS) {
+						*nminor = k-1;
+						NhlPError(WARNING,E_UNKNOWN,"ComputeMinorTickMarks: Maximimum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
+						return(WARNING);
+					}
 				}
 				if(compare(pow(10.0,max),m_locs[nmajor-1],
 					compare_precision) > 0.0) {
@@ -3370,6 +3375,11 @@ static NhlErrorTypes ComputeMinorTickMarks
 							log10(m_locs[nmajor-1]))
 							+ 1.0) - j * 
 							pow(10.0,minor_spacing);
+						if(k == MAXMINORTICKS) {
+							*nminor = k-1;
+							NhlPError(WARNING,E_UNKNOWN,"ComputeMinorTickMarks: Maximimum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
+							return(WARNING);
+						}
 
 					}
 				}
@@ -3389,6 +3399,11 @@ static NhlErrorTypes ComputeMinorTickMarks
 					j++;
 					tmp = pow(10.0,ceil(max)) - j 
 					      *pow(10.0,minor_spacing);
+					if(k == MAXMINORTICKS) {
+						*nminor = k-1;
+						NhlPError(WARNING,E_UNKNOWN,"ComputeMinorTickMarks: Maximimum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
+						return(WARNING);
+					}
 				}
 				
 			}
@@ -3404,6 +3419,11 @@ static NhlErrorTypes ComputeMinorTickMarks
                                         k++;
                                         j++;
                                         tmp = m_locs[0] - j * pow(10.0,minor_spacing);
+					if(k == MAXMINORTICKS) {
+						*nminor = k-1;
+						NhlPError(WARNING,E_UNKNOWN,"ComputeMinorTickMarks: Maximimum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
+						return(WARNING);
+					}
                                 }
 
 			}
@@ -3425,6 +3445,11 @@ static NhlErrorTypes ComputeMinorTickMarks
 					}
 					j++;
 					tmp = pow(10.0,ceil(max)) - j *pow(10.0,minor_spacing);
+					if(k == MAXMINORTICKS) {
+						*nminor = k-1;
+						NhlPError(WARNING,E_UNKNOWN,"ComputeMinorTickMarks: Maximimum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
+						return(WARNING);
+					}
 				}
 				*nminor = k;
 
@@ -3485,6 +3510,11 @@ static NhlErrorTypes ComputeMinorTickMarks
 					k++;
 					j++;
 					tmp = m_locs[0] - j *minor_spacing;
+					if(k == MAXMINORTICKS) {
+						*nminor = k-1;
+						NhlPError(WARNING,E_UNKNOWN,"ComputeMinorTickMarks: Maximimum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
+						return(WARNING);
+					}
 				}
 			}
 			for( i = 0 ; i < nmajor - 1; i++){
@@ -3492,6 +3522,11 @@ static NhlErrorTypes ComputeMinorTickMarks
 					minor_locs[k] = m_locs[i] + j 
 							* minor_spacing;
 					k++;
+					if(k == MAXMINORTICKS) {
+						*nminor = k-1;
+						NhlPError(WARNING,E_UNKNOWN,"ComputeMinorTickMarks: Maximimum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
+						return(WARNING);
+					}
 				}
 			}
 			if(compare(max,m_locs[nmajor-1],7/*compare_precision*/) > 0.0) {
@@ -3502,6 +3537,11 @@ static NhlErrorTypes ComputeMinorTickMarks
 					k++;
 					j++;
 					tmp = m_locs[nmajor-1] + j * minor_spacing;
+					if(k == MAXMINORTICKS) {
+						*nminor = k-1;
+						NhlPError(WARNING,E_UNKNOWN,"ComputeMinorTickMarks: Maximimum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
+						return(WARNING);
+					}
 				}
 			}
 			*nminor = k;
@@ -3521,6 +3561,11 @@ static NhlErrorTypes ComputeMinorTickMarks
 					}
 					j++;
 					tmp = min2 + j * minor_spacing;
+					if(k == MAXMINORTICKS) {
+						*nminor = k-1;
+						NhlPError(WARNING,E_UNKNOWN,"ComputeMinorTickMarks: Maximimum minor tick mark limit of %d ticks reached, no more minor ticks allowed",MAXMINORTICKS);
+						return(WARNING);
+					}
 				}
 				*nminor = k;
 			}
@@ -5466,10 +5511,12 @@ static NhlErrorTypes TransformLocations
 	int		c_or_s;
 #endif
 {
-	int i,tmpi=0,istrans;
+	int i,tmpi=0,status;
 	NhlErrorTypes ret = NOERROR;
 	NhlErrorTypes subret = NOERROR;
 	char *error_lead;
+	int j;
+	float orv;
 
 	if(c_or_s == SET) {
 		error_lead = "TickMarkSetValues";
@@ -5515,32 +5562,88 @@ static NhlErrorTypes TransformLocations
                 tnew->tick.x_b_major_data_locs,tnew->tick.y_l_major_data_locs,
                 tmpi,
                 tnew->tick.x_b_major_ndc_locs,tnew->tick.y_l_major_ndc_locs,
-                &istrans,NULL,NULL);
+                &status,NULL,NULL);
 	if(subret < WARNING) {
 		NhlPError(FATAL,E_UNKNOWN,"%s: An Error occured while mapping the bottom and left tick marks to the window, cannot continue",error_lead);
 		return(FATAL);
 	} else if(subret < ret) {
 		ret = subret;
 	}
-        if(!istrans){
-                memcpy((char*)tnew->tick.x_b_major_ndc_locs,
-					(char*)tnew->tick.x_b_major_data_locs,
-							tmpi*sizeof(float));
-		memcpy((char*)tnew->tick.y_l_major_ndc_locs,
-					(char*)tnew->tick.y_l_major_data_locs,
-							tmpi*sizeof(float));
+        if(status){
+/*
+*
+*----------> There is a MAJOR possibility of problems occuring here <----------------
+*
+* Essentially some of the dummy values that are filled in (see comment that starts with
+* "Unfortunately" above) could be out_of_range. If a dummy is out of range the transformation
+* function will replace the possibly valid non-dummy value with the orv value causing that
+* tick mark to drop out!! Not sure what I can do about it!!
+*/
+
+/*
+* Contains an out of range value
+*/
+		NhlGetValues(tnew->tick.xb_yl_trans_obj->base.id,
+			NhlNtrOutOfRangeF,&orv,
+			NULL);
+		j = 0;
+		for(i = 0; i< tmpi; i++) {
+/*
+* both arrays contain orv values at same index
+*/
+			if(tnew->tick.x_b_major_ndc_locs[i] != orv) {
+				tnew->tick.x_b_major_ndc_locs[j] = tnew->tick.x_b_major_ndc_locs[i];
+				tnew->tick.y_l_major_ndc_locs[j] = tnew->tick.y_l_major_ndc_locs[i];
+				j++;
+			} else {
+				if(i < tnew->tick.x_b_nmajor) {
+					tnew->tick.x_b_nmajor--;
+				}
+				if(i < tnew->tick.y_l_nmajor) {
+					tnew->tick.y_l_nmajor--;
+				}
+				tmpi--;	
+			}
+		}
 	}
-        istrans = 0;
+        status = 0;
         subret = _NhlWinToNDC((Layer)tnew->tick.xb_yl_trans_obj,(Layer)tnew,
                 tnew->tick.x_b_major_ndc_locs,tnew->tick.y_l_major_ndc_locs,
                 tmpi,
                 tnew->tick.x_b_major_ndc_locs,tnew->tick.y_l_major_ndc_locs,
-                &istrans,NULL,NULL);
+                &status,NULL,NULL);
 	if(subret < WARNING) {
 		NhlPError(FATAL,E_UNKNOWN,"%s: An Error occured while mapping the bottom and left tick marks from the window to NDC, cannot continue",error_lead);
 		return(FATAL);
 	} else if(subret < ret) {
 		ret = subret;
+	}
+        if(status){
+/*
+* Contains an out of range value
+*/
+		NhlGetValues(tnew->tick.xb_yl_trans_obj->base.id,
+			NhlNtrOutOfRangeF,&orv,
+			NULL);
+		j = 0;
+		for(i = 0; i< tmpi; i++) {
+/*
+* both arrays contain orv values at same index
+*/
+			if(tnew->tick.x_b_major_ndc_locs[i] != orv) {
+				tnew->tick.x_b_major_ndc_locs[j] = tnew->tick.x_b_major_ndc_locs[i];
+				tnew->tick.y_l_major_ndc_locs[j] = tnew->tick.y_l_major_ndc_locs[i];
+				j++;
+			} else {
+				if(i < tnew->tick.x_b_nmajor) {
+					tnew->tick.x_b_nmajor--;
+				}
+				if(i < tnew->tick.y_l_nmajor) {
+					tnew->tick.y_l_nmajor--;
+				}
+				tmpi--;	
+			}
+		}
 	}
 	
 
@@ -5573,33 +5676,79 @@ static NhlErrorTypes TransformLocations
                 tnew->tick.x_b_minor_data_locs,tnew->tick.y_l_minor_data_locs,
                 tmpi,
                 tnew->tick.x_b_minor_ndc_locs,tnew->tick.y_l_minor_ndc_locs,
-                &istrans,NULL,NULL);
+                &status,NULL,NULL);
 	if(subret < WARNING) {
 		NhlPError(FATAL,E_UNKNOWN,"%s: A FATAL error occured while mapping minor tickmarks to the window, cannot continue",error_lead);
 		return(FATAL);
 	} else if(subret < ret) {
 		ret = subret;
 	}
-        if(!istrans){
-                memcpy((char*)tnew->tick.x_b_minor_ndc_locs,
-					(char*)tnew->tick.x_b_minor_data_locs,
-							tmpi*sizeof(float));
-		memcpy((char*)tnew->tick.y_l_minor_ndc_locs,
-					(char*)tnew->tick.y_l_minor_data_locs,
-							tmpi*sizeof(float));
+        if(status){
+/*
+* Contains and out of range value
+*/
+		NhlGetValues(tnew->tick.xb_yl_trans_obj->base.id,
+			NhlNtrOutOfRangeF,&orv,
+			NULL);
+		j = 0;
+		for(i = 0; i< tmpi; i++) {
+/*
+* both arrays contain orv values at same index
+*/
+			if(tnew->tick.x_b_minor_ndc_locs[i] != orv) {
+				tnew->tick.x_b_minor_ndc_locs[j] = tnew->tick.x_b_minor_ndc_locs[i];
+				tnew->tick.y_l_minor_ndc_locs[j] = tnew->tick.y_l_minor_ndc_locs[i];
+				j++;
+			} else {
+				if(i < tnew->tick.x_b_nminor) {
+					tnew->tick.x_b_nminor--;
+				}
+				if(i < tnew->tick.y_l_nminor) {
+					tnew->tick.y_l_nminor--;
+				}
+				tmpi--;	
+			}
+		}
 	}
-        istrans = 0;
+        status= 0;
         subret = _NhlWinToNDC((Layer)tnew->tick.xb_yl_trans_obj,(Layer)tnew,
                 tnew->tick.x_b_minor_ndc_locs,tnew->tick.y_l_minor_ndc_locs,
                 tmpi,
                 tnew->tick.x_b_minor_ndc_locs,tnew->tick.y_l_minor_ndc_locs,
-                &istrans,NULL,NULL);
+                &status,NULL,NULL);
 	if(subret < WARNING) {
 		NhlPError(FATAL,E_UNKNOWN,"%s: A FATAL error occured while mapping minor tickmarks from the window to NDC, cannot continue",error_lead);
 		return(FATAL);
 	} else if(subret < ret) {
 		ret = subret;
 	}
+	}
+        if(status){
+/*
+* Contains and out of range value
+*/
+		NhlGetValues(tnew->tick.xb_yl_trans_obj->base.id,
+			NhlNtrOutOfRangeF,&orv,
+			NULL);
+		j = 0;
+		for(i = 0; i< tmpi; i++) {
+/*
+* both arrays contain orv values at same index
+*/
+			if(tnew->tick.x_b_minor_ndc_locs[i] != orv) {
+				tnew->tick.x_b_minor_ndc_locs[j] = tnew->tick.x_b_minor_ndc_locs[i];
+				tnew->tick.y_l_minor_ndc_locs[j] = tnew->tick.y_l_minor_ndc_locs[i];
+				j++;
+			} else {
+				if(i < tnew->tick.x_b_nminor) {
+					tnew->tick.x_b_nminor--;
+				}
+				if(i < tnew->tick.y_l_nminor) {
+					tnew->tick.y_l_nminor--;
+				}
+				tmpi--;	
+			}
+		}
 	}
 
 
@@ -5643,32 +5792,78 @@ static NhlErrorTypes TransformLocations
                 tnew->tick.x_t_major_data_locs,tnew->tick.y_r_major_data_locs,
                 tmpi,
                 tnew->tick.x_t_major_ndc_locs,tnew->tick.y_r_major_ndc_locs,
-                &istrans,NULL,NULL);
+                &status,NULL,NULL);
 	if(subret < WARNING) {
 		NhlPError(FATAL,E_UNKNOWN,"%s: An Error occured while mapping the top and right tick marks to the window, cannot continue",error_lead);
 		return(FATAL);
 	} else if(subret < ret) {
 		ret = subret;
 	}
-        if(!istrans){
-		memcpy((char*)tnew->tick.x_t_major_ndc_locs,
-					(char*)tnew->tick.x_t_major_data_locs,
-							tmpi*sizeof(float));
-		memcpy((char*)tnew->tick.y_r_major_ndc_locs,
-					(char*)tnew->tick.y_r_major_data_locs,
-							tmpi*sizeof(float));
+        if(status){
+/*
+* Contains and out of range value
+*/
+		NhlGetValues(tnew->tick.xt_yr_trans_obj->base.id,
+			NhlNtrOutOfRangeF,&orv,
+			NULL);
+		j = 0;
+		for(i = 0; i< tmpi; i++) {
+/*
+* both arrays contain orv values at same index
+*/
+			if(tnew->tick.x_t_major_ndc_locs[i] != orv) {
+				tnew->tick.x_t_major_ndc_locs[j] = tnew->tick.x_t_major_ndc_locs[i];
+				tnew->tick.y_r_major_ndc_locs[j] = tnew->tick.y_r_major_ndc_locs[i];
+				j++;
+			} else {
+				if(i < tnew->tick.x_t_nmajor) {
+					tnew->tick.x_t_nmajor--;
+				}
+				if(i < tnew->tick.y_r_nmajor) {
+					tnew->tick.y_r_nmajor--;
+				}
+				tmpi--;	
+			}
+		}
 	}
-        istrans = 0;
+        status= 0;
         subret = _NhlWinToNDC((Layer)tnew->tick.xt_yr_trans_obj,(Layer)tnew,
                 tnew->tick.x_t_major_ndc_locs,tnew->tick.y_r_major_ndc_locs,
                 tmpi,
                 tnew->tick.x_t_major_ndc_locs,tnew->tick.y_r_major_ndc_locs,
-                &istrans,NULL,NULL);
+                &status,NULL,NULL);
 	if(subret < WARNING) {
 		NhlPError(FATAL,E_UNKNOWN,"%s: An Error occured while mapping the top and right tick marks from the window to NDC, cannot continue",error_lead);
 		return(FATAL);
 	} else if(subret < ret) {
 		ret = subret;
+	}
+        if(status){
+/*
+* Contains and out of range value
+*/
+		NhlGetValues(tnew->tick.xt_yr_trans_obj->base.id,
+			NhlNtrOutOfRangeF,&orv,
+			NULL);
+		j = 0;
+		for(i = 0; i< tmpi; i++) {
+/*
+* both arrays contain orv values at same index
+*/
+			if(tnew->tick.x_t_major_ndc_locs[i] != orv) {
+				tnew->tick.x_t_major_ndc_locs[j] = tnew->tick.x_t_major_ndc_locs[i];
+				tnew->tick.y_r_major_ndc_locs[j] = tnew->tick.y_r_major_ndc_locs[i];
+				j++;
+			} else {
+				if(i < tnew->tick.x_t_nmajor) {
+					tnew->tick.x_t_nmajor--;
+				}
+				if(i < tnew->tick.y_r_nmajor) {
+					tnew->tick.y_r_nmajor--;
+				}
+				tmpi--;	
+			}
+		}
 	}
 
 	if(/*(tnew->tick.x_t_nmajor != 0)&&(tnew->tick.y_r_nmajor != 0)&&*/(tnew->tick.x_t_nminor !=0) &&(tnew->tick.y_r_nminor !=0)) {
@@ -5698,33 +5893,79 @@ static NhlErrorTypes TransformLocations
                 tnew->tick.x_t_minor_data_locs,tnew->tick.y_r_minor_data_locs,
                 tmpi,
                 tnew->tick.x_t_minor_ndc_locs,tnew->tick.y_r_minor_ndc_locs,
-                &istrans,NULL,NULL);
+                &status,NULL,NULL);
 	if(subret < WARNING) {
 		NhlPError(FATAL,E_UNKNOWN,"%s: An Error occured while mapping the top and right minor tick marks to the window, cannot continue",error_lead);
 		return(FATAL);
 	} else if(subret < ret) {
 		ret = subret;
 	}
-        if(!istrans){
-                memcpy((char*)tnew->tick.x_t_minor_ndc_locs,
-					(char*)tnew->tick.x_t_minor_data_locs,
-							tmpi*sizeof(float));
-		memcpy((char*)tnew->tick.y_r_minor_ndc_locs,
-					(char*)tnew->tick.y_r_minor_data_locs,
-							tmpi*sizeof(float));
-	} 
-        istrans = 0;
+        if(status){
+/*
+* Contains and out of range value
+*/
+		NhlGetValues(tnew->tick.xt_yr_trans_obj->base.id,
+			NhlNtrOutOfRangeF,&orv,
+			NULL);
+		j = 0;
+		for(i = 0; i< tmpi; i++) {
+/*
+* both arrays contain orv values at same index
+*/
+			if(tnew->tick.x_t_minor_ndc_locs[i] != orv) {
+				tnew->tick.x_t_minor_ndc_locs[j] = tnew->tick.x_t_minor_ndc_locs[i];
+				tnew->tick.y_r_minor_ndc_locs[j] = tnew->tick.y_r_minor_ndc_locs[i];
+				j++;
+			} else {
+				if(i < tnew->tick.x_t_nminor) {
+					tnew->tick.x_t_nminor--;
+				}
+				if(i < tnew->tick.y_r_nminor) {
+					tnew->tick.y_r_nminor--;
+				}
+				tmpi--;	
+			}
+		}
+	}
+        status= 0;
         subret = _NhlWinToNDC((Layer)tnew->tick.xt_yr_trans_obj,(Layer)tnew,
                 tnew->tick.x_t_minor_ndc_locs,tnew->tick.y_r_minor_ndc_locs,
                 tmpi,
                 tnew->tick.x_t_minor_ndc_locs,tnew->tick.y_r_minor_ndc_locs,
-                &istrans,NULL,NULL);
+                &status,NULL,NULL);
 	if(subret < WARNING) {
 		NhlPError(FATAL,E_UNKNOWN,"%s: An Error occured while mapping the top and right minor tick marks from the window to NDC, cannot continue",error_lead);
 		return(FATAL);
 	} else if(subret < ret) {
 		ret = subret;
 	}
+	}
+        if(status){
+/*
+* Contains and out of range value
+*/
+		NhlGetValues(tnew->tick.xt_yr_trans_obj->base.id,
+			NhlNtrOutOfRangeF,&orv,
+			NULL);
+		j = 0;
+		for(i = 0; i< tmpi; i++) {
+/*
+* both arrays contain orv values at same index
+*/
+			if(tnew->tick.x_t_minor_ndc_locs[i] != orv) {
+				tnew->tick.x_t_minor_ndc_locs[j] = tnew->tick.x_t_minor_ndc_locs[i];
+				tnew->tick.y_r_minor_ndc_locs[j] = tnew->tick.y_r_minor_ndc_locs[i];
+				j++;
+			} else {
+				if(i < tnew->tick.x_t_nminor) {
+					tnew->tick.x_t_nminor--;
+				}
+				if(i < tnew->tick.y_r_nminor) {
+					tnew->tick.y_r_nminor--;
+				}
+				tmpi--;	
+			}
+		}
 	}
 	return(ret);
 
@@ -6093,7 +6334,7 @@ int		c_or_s;
                         delta = tmpx+tmpwidth - tnew->view.x + (DEFAULTOFFSET + tnew->tick.y_l_label_delta)*tnew->tick.y_l_label_font_height;
                         tnew->tick.y_l_ndc_label_x -= delta;
                         subret = NhlSetValues(tmpid,NhlNMtextConstPosF,
-                                        tnew->tick.y_l_ndc_label_x);
+                                        tnew->tick.y_l_ndc_label_x,NULL);
 			if(subret < WARNING) {
 				NhlPError(FATAL,E_UNKNOWN,"%s: Could not set key value in internal object, cannot continue",error_lead);
 				return(FATAL);

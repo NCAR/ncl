@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.4 1993-11-04 19:51:10 dbrown Exp $
+ *      $Id: Workstation.c,v 1.5 1993-12-13 23:35:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -3133,7 +3133,7 @@ NhlErrorTypes NhlSetMarker
 			      "_NhlEditMarker: marker alloc failed");
 			return(FATAL);
 		}
-		memcpy((void *) m_p, (const void *) marker_table[index],
+		memcpy((char *) m_p, (char *) marker_table[index],
 			sizeof(NhlMarkerSpec));
 		marker_table[index] = m_p;
 	}

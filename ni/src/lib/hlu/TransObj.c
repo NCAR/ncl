@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.3 1993-10-19 17:52:52 boote Exp $
+ *      $Id: TransObj.c,v 1.4 1993-12-13 23:35:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,12 @@
 
 #include <ncarg/hlu/TransObjP.h>
 
+static NhlResource resources[] =  {
+	{ NhlNtrOutOfRangeF, NhlCtrOutOfRangeF, NhlTFloat, sizeof(float),
+		NhlOffset(TransObjLayerRec, trobj.out_of_range),
+		NhlTString, "-9999.0" }
+};
+
 TransObjLayerClassRec transObjLayerClassRec = {
 	{
 /* class_name */        "TransObj",
@@ -34,8 +40,8 @@ TransObjLayerClassRec transObjLayerClassRec = {
 /* class_inited */      False,
 /* superclass*/         (LayerClass)&objLayerClassRec,
 
-/* layer_resources */   NULL,
-/* num_resources */     0,
+/* layer_resources */   resources,
+/* num_resources */     NhlNumber(resources),
 /* all_resources		*/	NULL,
 
 /* class_part_initialize */     NULL,

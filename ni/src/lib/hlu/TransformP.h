@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformP.h,v 1.3 1993-11-20 01:06:27 dbrown Exp $
+ *      $Id: TransformP.h,v 1.4 1993-12-13 23:35:08 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -47,12 +47,27 @@ typedef struct _TransformLayerRec {
 	TransformLayerPart trans;
 } TransformLayerRec;
 
+typedef NhlErrorTypes (*NhlTransFunction)(
+#ifdef	NhlNeedFuncProto
+        Layer           /* plot */,
+        float*          /* x */,
+        float*          /* y */,
+        int             /* n */,
+        float*          /* xout */,
+        float*          /* yout */,
+        float*          /*xmissing*/,
+        float*          /*ymissing*/,
+	int *		/*status*/,
+	float *		/*out_of_range*/
+#endif
+);
+
 typedef struct TransformLayerClassPart{
 	NhlBoolean	handles_overlays;
-	NhlErrorTypes	(*data_to_ndc)();
-	NhlErrorTypes	(*ndc_to_data)();
-	NhlErrorTypes	(*data_polyline)();
-	NhlErrorTypes	(*ndc_polyline)();
+	NhlTransFunction data_to_ndc;
+	NhlTransFunction ndc_to_data;
+	NhlErrorTypes  (*data_polyline)();
+	NhlErrorTypes  (*ndc_polyline)();
 } TransformLayerClassPart;
 
 typedef struct _TransformLayerClassRec{

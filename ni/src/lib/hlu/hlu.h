@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.4 1993-10-23 00:35:12 dbrown Exp $
+ *      $Id: hlu.h,v 1.5 1993-12-13 23:35:29 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -462,7 +462,9 @@ extern NhlErrorTypes NhlNDCToData(
 	float* /*xout*/,
 	float* /*yout*/,
 	float * /* xmissing */,
-	float * /* ymissing */
+	float * /* ymissing */,
+	int*	/* status */,
+	float*  /* out_of_range */
 #endif
 );
 
@@ -475,7 +477,9 @@ extern NhlErrorTypes NhlDataToNDC(
 	float* /*xout*/,
 	float* /*yout*/,
 	float * /* xmissing */,
-	float * /* ymissing */
+	float * /* ymissing */,
+	int*	/* status */,
+	float*  /* out_of_range */
 #endif
 );
 

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TransObj.h,v 1.3 1993-10-19 17:52:54 boote Exp $
+ *      $Id: TransObj.h,v 1.4 1993-12-13 23:35:03 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,8 @@
 #include <ncarg/hlu/Base.h>
 
 
+#define NhlNtrOutOfRangeF	"trOutOfRangeF"
+#define NhlCtrOutOfRangeF	"TrOutOfRangeF"
 
 typedef struct _TransObjLayerClassRec *TransObjLayerClass;
 typedef struct _TransObjLayerRec *TransObjLayer;

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.4 1993-11-10 01:19:07 ethan Exp $
+ *      $Id: IrregularTransObj.c,v 1.5 1993-12-13 23:34:20 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -155,7 +155,8 @@ int	/* n*/,
 float*	/*xout*/,
 float*	/*yout*/,
 float* /*xmissing*/,
-float* /*ymissing*/
+float* /*ymissing*/,
+int*	/* status */
 #endif
 );
 
@@ -170,7 +171,8 @@ int	/* n*/,
 float*	/*xout*/,
 float*	/*yout*/,
 float* /*xmissing*/,
-float* /*ymissing*/
+float* /*ymissing*/,
+int*  /* status */
 #endif
 );
 
@@ -185,7 +187,8 @@ int     /* n*/,
 float*  /*xout*/,
 float*  /*yout*/,
 float* /*xmissing*/,
-float* /*ymissing*/
+float* /*ymissing*/,
+int*  /* status */
 #endif
 );
 
@@ -199,11 +202,12 @@ int     /* n*/,
 float*  /*xout*/,
 float*  /*yout*/,
 float* /*xmissing*/,
-float* /*ymissing*/
+float* /*ymissing*/,
+int*  /* status */
 #endif
 );
 
-static NhlErrorTypes IrWinToCompc(
+static NhlErrorTypes IrDataToWin(
 #ifdef NhlNeedProto
 Layer   /*instance */,
 Layer   /*parent */,
@@ -213,27 +217,43 @@ int     /* n*/,
 float*  /*xout*/,
 float*  /*yout*/,
 float* /*xmissing*/,
-float* /*ymissing*/
+float* /*ymissing*/,
+int*  /* status */
 #endif
 );
 
-static NhlErrorTypes IrCompcToWin(
-#ifdef NhlNeedProto
-Layer   /*instance */,
-Layer   /*parent */,
-float*  /*x*/,
-float*   /*y*/,
-int     /* n*/,
-float*  /*xout*/,
-float*  /*yout*/,
-float* /*xmissing*/,
-float* /*ymissing*/
+static NhlErrorTypes IrNDCLineTo(
+#if 	NhlNeedProto
+Layer	/* instance */,
+Layer   /* parent */,
+float   /* x */,
+float   /* y */,
+int     /* upordown */
+#endif
+);
+
+static NhlErrorTypes IrDataLineTo(
+#if 	NhlNeedProto
+Layer	/* instance */,
+Layer   /* parent */,
+float   /* x */,
+float   /* y */,
+int     /* upordown */
+#endif
+);
+
+static NhlErrorTypes IrCompcLineTo(
+#if 	NhlNeedProto
+Layer	/* instance */,
+Layer   /* parent */,
+float   /* x */,
+float   /* y */,
+int     /* upordown */
 #endif
 );
 
 #define CREATE  1
 #define SET 0
-
 
 IrregularTransObjLayerClassRec irregularTransObjLayerClassRec = {
         {
@@ -261,16 +281,16 @@ IrregularTransObjLayerClassRec irregularTransObjLayerClassRec = {
 /* trans_type		*/	NULL,
 /* win_to_ndc		*/	IrWinToNDC,
 /* ndc_to_win		*/	IrNDCToWin,
-/* data_to_win		*/	NULL, /* One To One for this Transformation */
-/* win_to_data		*/	NULL, /* One To One for this Transformation */
+/* data_to_win		*/	IrDataToWin, 
+/* win_to_data		*/	IrDataToWin,  /* data and window are ident */
 /* data_to_compc	*/	IrDataToCompc,
 /* compc_to_data	*/	IrCompcToData,
-/* win_to_compc		*/	IrWinToCompc,
-/* compc_to_win		*/	IrCompcToWin,
-/* data_lineto */       NULL,
-/* compc_lineto */      NULL,
-/* win_lineto */        NULL,
-/* NDC_lineto */        NULL
+/* win_to_compc		*/	IrDataToCompc,/* data and window are ident*/
+/* compc_to_win		*/	IrCompcToData, /* data and windo are ident */
+/* data_lineto */       IrDataLineTo,
+/* compc_lineto */      IrCompcLineTo,
+/* win_lineto */        IrDataLineTo,
+/* NDC_lineto */        IrNDCLineTo
         }
 };
 
@@ -299,6 +319,7 @@ static SetUpTrans
 	char buffer[80];
 	char *error_lead;
 	int call_spline_create;
+	NhlErrorTypes ret1 = NOERROR;
 
 	if(c_or_s == SET) {
 		error_lead = "IrTransSetValues";
@@ -465,7 +486,27 @@ static SetUpTrans
 			inew->irtrans.x_samples,inew->irtrans.y_samples,
 			&xstatus,&ystatus);
 	}
-	return(ret);
+	ret1 = _NhlEvalSplineCoordForward(&(inew->irtrans.thecoord),
+                        inew->irtrans.x_min,inew->irtrans.y_min,
+			&inew->irtrans.compc_x_min,
+			&inew->irtrans.compc_y_min,NULL,NULL);
+	(void) _NhlEvalSplineCoordForward(&(inew->irtrans.thecoord),
+                        inew->irtrans.x_max,inew->irtrans.y_max,
+			&inew->irtrans.compc_x_max,
+			&inew->irtrans.compc_y_max,NULL,NULL);
+
+	if(inew->irtrans.compc_x_max < inew->irtrans.compc_x_min) {
+		tmp = inew->irtrans.compc_x_max;
+		inew->irtrans.compc_x_max = inew->irtrans.compc_x_min;
+		inew->irtrans.compc_x_min = tmp;
+	}
+	if(inew->irtrans.compc_y_max < inew->irtrans.compc_y_min) {
+		tmp = inew->irtrans.compc_y_max;
+		inew->irtrans.compc_y_max = inew->irtrans.compc_y_min;
+		inew->irtrans.compc_y_min = tmp;
+	}
+
+	return(MIN(ret,ret1));
 }
 
 /*
@@ -594,6 +635,8 @@ Layer   parent;
  *		y to NDC based on the current viewport of the parent. It is
  *		important that this routine not depend on a static screen 
  *		orientation because the parents view may have been transformed.
+ *		Also replaces any input values that are out of the window with
+ *		the value of its out_of_range fields and sets status to true.
  *
  * In Args:	instance is the IrregularTransObj and parent is the plot.
  *		(x,y) are the coordinates in data space.
@@ -608,9 +651,9 @@ Layer   parent;
 
 static NhlErrorTypes IrWinToNDC
 #if  __STDC__
-(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing)
+(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int * status)
 #else
-(instance, parent,x,y,n,xout,yout,xmissing,ymissing)
+(instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
 	Layer   instance;
 	Layer   parent;
 	float   *x;
@@ -620,6 +663,7 @@ static NhlErrorTypes IrWinToNDC
 	float*  yout;
 	float*  xmissing;	
 	float*  ymissing;
+	int*	status;
 #endif
 {
 	float x0;
@@ -629,8 +673,8 @@ static NhlErrorTypes IrWinToNDC
 	IrregularTransObjLayer iinstance = (IrregularTransObjLayer)instance;
 	int i;
 	NhlErrorTypes ret;
-	int xmis = 0; int ymis = 0;
-	
+
+	*status = 0;	
 	
 	ret= NhlGetValues(parent->base.id,
 		NhlNvpXF,&x0,
@@ -642,28 +686,45 @@ static NhlErrorTypes IrWinToNDC
 	}
 	if((xmissing == NULL)&&(ymissing == NULL)) {
 		for(i = 0; i< n ; i++) {
-			strans(iinstance->irtrans.ul,iinstance->irtrans.ur,
-				iinstance->irtrans.ub,iinstance->irtrans.ut,
-				 x0,x0+width,y0-height,y0,x[i],y[i],
-				&(xout[i]),&(yout[i]));
+/*
+* Ok to use min/max fields since Window and Data are the same
+*/
+			if((x[i] > iinstance->irtrans.x_max)
+				||(x[i] < iinstance->irtrans.x_min)
+				||(y[i] > iinstance->irtrans.y_max)
+				||(y[i] < iinstance->irtrans.y_min)) {
+
+				*status = 1;
+				xout[i]=yout[i]=iinstance->trobj.out_of_range;
+			} else {
+				strans(iinstance->irtrans.ul,
+					iinstance->irtrans.ur,
+					iinstance->irtrans.ub,
+					iinstance->irtrans.ut,
+					 x0,x0+width,y0-height,y0,x[i],y[i],
+					&(xout[i]),&(yout[i]));
+
+			}
 		}
 	} else {	
 		for(i = 0; i< n ; i++) {
-			if((xmissing != NULL) &&(*xmissing == x[i])) 
-				xmis = 1;
-			if((ymissing != NULL) &&(*ymissing == y[i])) 
-				ymis = 1;
-			strans(iinstance->irtrans.ul,iinstance->irtrans.ur,
-				iinstance->irtrans.ub,iinstance->irtrans.ut,
-				 x0,x0+width,y0-height,y0,x[i],y[i],
-				&(xout[i]),&(yout[i]));
-			if(xmis) {
-				xmis = 0;
-				xout[i] = *xmissing;
-			}
-			if(ymis) {
-				ymis = 0;
-				yout[i] = *ymissing;
+			if(((xmissing != NULL)&&(*xmissing == x[i]))
+				||((ymissing != NULL)&&(*ymissing == y[i]))
+				||(x[i] > iinstance->irtrans.x_max)
+				||(x[i] < iinstance->irtrans.x_min)
+				||(y[i] > iinstance->irtrans.y_max)
+				||(y[i] < iinstance->irtrans.y_min)) {
+
+				*status = 1;
+                                xout[i]=yout[i]=iinstance->trobj.out_of_range;
+			} else {
+
+				strans(iinstance->irtrans.ul,
+					iinstance->irtrans.ur,
+					iinstance->irtrans.ub,
+					iinstance->irtrans.ut,
+					 x0,x0+width,y0-height,y0,x[i],y[i],
+					&(xout[i]),&(yout[i]));
 			}
 		}
 	}
@@ -687,9 +748,9 @@ static NhlErrorTypes IrWinToNDC
  */
 static NhlErrorTypes IrNDCToWin
 #if  __STDC__
-(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing)
+(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
 #else
-(instance, parent,x,y,n,xout,yout,xmissing,ymissing)
+(instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
 	Layer   instance;
 	Layer   parent;
 	float   *x;
@@ -699,6 +760,7 @@ static NhlErrorTypes IrNDCToWin
 	float*  yout;
 	float*  xmissing;
 	float*  ymissing;
+	int * status;
 #endif
 {
 	float x0;
@@ -708,9 +770,9 @@ static NhlErrorTypes IrNDCToWin
 	float height;
 	IrregularTransObjLayer iinstance = (IrregularTransObjLayer)instance;
 	NhlErrorTypes ret;
-	int xmis = 1; int ymis = 1;
 	
-	
+
+	*status = 0;	
 	ret = NhlGetValues(parent->base.id,
 		NhlNvpXF,&x0,
 		NhlNvpYF,&y0,
@@ -721,28 +783,38 @@ static NhlErrorTypes IrNDCToWin
 
 	if((xmissing == NULL) &&(ymissing == NULL)) {	
 		for(i = 0; i< n; i++) {
+			if((x[i] < x0)
+				||(x[i] > x0 + width)
+				||(y[i] < y0 - height)
+				||(y[i] > y0)) {
+			
+				*status = 1;	
+				xout[i]=yout[i]=iinstance->trobj.out_of_range;
+			} else {
+	
 			strans(x0,x0+width,y0-height,y0,iinstance->irtrans.ul,
 				iinstance->irtrans.ur, iinstance->irtrans.ub,
 				iinstance->irtrans.ut, x[i],y[i],
 				&(xout[i]),&(yout[i]));
+
+			}
 		}
 	} else {
 		for(i = 0; i< n; i++) {
-			if((xmissing != NULL)&&(*xmissing == x[i]))	
-				xmis = 1;
-			if((ymissing != NULL)&&(*ymissing == y[i]))	
-				ymis = 1;
+			if(((xmissing != NULL)&&(*xmissing == x[i]))
+				|| ((ymissing != NULL)&&(*ymissing == y[i]))
+				||(x[i] < x0)
+                                ||(x[i] > x0 + width)
+                                ||(y[i] < y0 - height)
+                                ||(y[i] > y0)) {
+
+				*status = 1;	
+				xout[i]=yout[i]=iinstance->trobj.out_of_range;
+			} else {
 			strans(x0,x0+width,y0-height,y0,iinstance->irtrans.ul,
 				iinstance->irtrans.ur, iinstance->irtrans.ub,
 				iinstance->irtrans.ut, x[i],y[i],
 				&(xout[i]),&(yout[i]));
-			if(xmis) {
-				xmis = 0;
-				xout[i] = *xmissing;
-			}
-			if(ymis) {
-				ymis = 0;
-				yout[i] = *ymissing;
 			}
 		}
 	}
@@ -767,9 +839,9 @@ static NhlErrorTypes IrNDCToWin
 /*ARGSUSED*/
 static NhlErrorTypes IrDataToCompc
 #if  __STDC__
-(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing)
+(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int *status)
 #else
-(instance, parent,x,y,n,xout,yout,xmissing,ymissing)
+(instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
         Layer   instance;
         Layer   parent;
         float   *x;
@@ -779,17 +851,29 @@ static NhlErrorTypes IrDataToCompc
         float*  yout;
 	float*	xmissing;
 	float*	ymissing;
+	int * status;
 #endif
 {
 	NhlErrorTypes ret = NOERROR;
 	IrregularTransObjLayer iinstance = (IrregularTransObjLayer)instance;
+	int i;
 
-	if(n == 1) {
+	*status = 0;
+
+	for(i = 0; i< n; i++) {	
+		if(((xmissing != NULL)&&(*xmissing == x[i]))
+			|| ((ymissing != NULL)&&(*ymissing == y[i]))
+			||(x[i] < iinstance->irtrans.x_min)
+                        ||(x[i] > iinstance->irtrans.x_max)
+                        ||(y[i] < iinstance->irtrans.y_min)
+                        ||(y[i] > iinstance->irtrans.y_max)) {
+
+			xout[i] = yout[i] = iinstance->trobj.out_of_range;
+			*status = 1;
+		} else {
 		ret = _NhlEvalSplineCoordForward(&(iinstance->irtrans.thecoord),
-			*x,*y,xout,yout,xmissing,ymissing);
-	} else {
-		ret = _NhlMultiEvalSplineCoordForward(	
-		      &(iinstance->irtrans.thecoord),x,y,xout,yout,n,n,xmissing,ymissing);
+			x[i],y[i],&(xout[i]),&(yout[i]),NULL,NULL);
+		}
 	}
 	return(ret);
 }
@@ -811,9 +895,9 @@ static NhlErrorTypes IrDataToCompc
 /*ARGSUSED*/
 static NhlErrorTypes IrCompcToData
 #if  __STDC__
-(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing, float *ymissing)
+(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing, float *ymissing,int *status)
 #else
-(instance, parent,x,y,n,xout,yout,xmissing,ymissing)
+(instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
         Layer   instance;
         Layer   parent;
         float   *x;
@@ -823,41 +907,54 @@ static NhlErrorTypes IrCompcToData
         float*  yout;
 	float*	xmissing;
 	float*	ymissing;
+	int *status;
 #endif
 {
 	NhlErrorTypes ret = NOERROR;
 	IrregularTransObjLayer iinstance = (IrregularTransObjLayer)instance;
+	int i;
+	
 
-	if(n == 1) {
+	*status = 0;
+	for(i = 0; i< n; i++ ) {
+		if(((xmissing != NULL)&&(*xmissing == x[i]))
+			|| ((ymissing != NULL)&&(*ymissing == y[i]))
+			||(x[i] < iinstance->irtrans.compc_x_min)
+                        ||(x[i] > iinstance->irtrans.compc_x_max)
+                        ||(y[i] < iinstance->irtrans.compc_y_min)
+                        ||(y[i] > iinstance->irtrans.compc_y_max)) {
+
+			yout[i]=xout[i]=iinstance->trobj.out_of_range;
+			*status = 1;
+
+		} else {
+
 		ret = _NhlEvalSplineCoordInverse(&(iinstance->irtrans.thecoord),
-			*x,*y,xout,yout,xmissing,ymissing);
-	} else {
-		ret = _NhlMultiEvalSplineCoordInverse(	
-		      &(iinstance->irtrans.thecoord),x,y,xout,yout,n,n,xmissing,ymissing);
+			x[i],y[i],&(xout[i]),&(yout[i]),NULL,NULL);
+
+		}
 	}
 	return(ret);
 }
 
-
 /*
- * Function:	IrCompcToWin
+ * Function:	IrDataToWin
  *
- * Description:
+ * Description:	
  *
- * In Args:
+ * In Args:	
  *
- * Out Args:
+ * Out Args:	
  *
- * Return Values:
- *
- * Side Effects:
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
  */
-/*ARGSUSED*/
-static NhlErrorTypes IrCompcToWin
+static NhlErrorTypes IrDataToWin
 #if  __STDC__
-(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float* ymissing)
+(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing, float *ymissing,int *status)
 #else
-(instance, parent,x,y,n,xout,yout,xmissing,ymissing)
+(instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
         Layer   instance;
         Layer   parent;
         float   *x;
@@ -867,61 +964,242 @@ static NhlErrorTypes IrCompcToWin
         float*  yout;
 	float*	xmissing;
 	float*	ymissing;
+	int *status;
 #endif
 {
 	NhlErrorTypes ret = NOERROR;
 	IrregularTransObjLayer iinstance = (IrregularTransObjLayer)instance;
+	int i;
 
-	if(n == 1) {
-		ret = _NhlEvalSplineCoordInverse(&(iinstance->irtrans.thecoord),
-			*x,*y,xout,yout,xmissing,ymissing);
-	} else {
-		ret = _NhlMultiEvalSplineCoordInverse(	
-		      &(iinstance->irtrans.thecoord),x,y,xout,yout,n,n,xmissing,ymissing);
+	*status = 0;
+	for(i = 0 ; i< n; i++) {
+		if(((xmissing != NULL)&&(*xmissing == x[i]))
+			|| ((ymissing != NULL)&&(*ymissing == y[i]))
+			||(x[i] < iinstance->irtrans.compc_x_min)
+                        ||(x[i] > iinstance->irtrans.compc_x_max)
+                        ||(y[i] < iinstance->irtrans.compc_y_min)
+                        ||(y[i] > iinstance->irtrans.compc_y_max)) {
+
+			yout[i]=xout[i]=iinstance->trobj.out_of_range;
+
+			*status = 1;
+		} else {
+			yout[i] = y[i];	
+			xout[i] = x[i];
+		}
 	}
 	return(ret);
 }
 
-
-/*
- * Function:	
- *
- * Description:
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
- */
-/*ARGSUSED*/
-static NhlErrorTypes IrWinToCompc
-#if  __STDC__
-(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing, float *ymissing)
+static NhlErrorTypes IrCompcLineTo
+#if __STDC__
+(Layer instance, Layer parent,float x, float y, int upordown )
 #else
-(instance, parent,x,y,n,xout,yout,xmissing,ymissing)
-        Layer   instance;
-        Layer   parent;
-        float   *x;
-        float   *y;
-        int     n;
-        float*  xout;
-        float*  yout;
-	float*  xmissing;
-	float*  ymissing;
+(instance, parent,x, y, upordown )
+Layer instance;
+Layer parent;
+float x;
+float y;
+int upordown;
 #endif
 {
-	NhlErrorTypes ret = NOERROR;
-	IrregularTransObjLayer iinstance = (IrregularTransObjLayer)instance;
+        IrregularTransObjLayer iinst = (IrregularTransObjLayer)instance;
+        static float lastx,lasty;
+        static call_frstd = 1;
+        float currentx,currenty;
+        float holdx,holdy;
+	float tmpx, tmpy;
+	int status;
 
-	if(n == 1) {
-		ret = _NhlEvalSplineCoordForward(&(iinstance->irtrans.thecoord),
-			*x,*y,xout,yout,xmissing,ymissing);
-	} else {
-		ret = _NhlMultiEvalSplineCoordForward(	
-		      &(iinstance->irtrans.thecoord),x,y,xout,yout,n,n,xmissing,ymissing);
-	}
-	return(ret);
+/*
+* if true the moveto is being performed
+*/
+        if(upordown) {
+                lastx = x;
+                lasty = y;
+                call_frstd =1;
+                return(NOERROR);
+        } else {
+                currentx = x;
+                currenty = y;
+                holdx = lastx;
+                holdy = lasty;
+                _NhlTransClipLine(iinst->irtrans.compc_x_min,
+                        iinst->irtrans.compc_x_max,
+                        iinst->irtrans.compc_y_min,
+                        iinst->irtrans.compc_y_max,
+                        &lastx,
+                        &lasty,
+                        &currentx,
+                        &currenty,
+                        iinst->trobj.out_of_range);
+                if((lastx == iinst->trobj.out_of_range)
+			||(lasty == iinst->trobj.out_of_range)
+			||(currentx == iinst->trobj.out_of_range)
+			||(currenty == iinst->trobj.out_of_range)){
+/*
+* Line has gone completely out of window
+*/
+                        lastx = x;
+                        lasty = y;
+                        call_frstd = 1;
+                        return(NOERROR);
+                } else {
+                        if((lastx != holdx)||(lasty!= holdy)) {
+                                call_frstd = 1;
+                        }
+                        if(call_frstd == 1) {
+				IrCompcToData(instance,parent,&lastx,&lasty,1,&tmpx,&tmpy,NULL,NULL,&status);
+                                _NhlWorkstationLineTo(parent->base.wkptr,c_cufx(tmpx),c_cufy(tmpy),1);
+                                call_frstd = 2;
+                        }
+			IrCompcToData(instance,parent,&currentx,&currenty,1,&tmpx,&tmpy,NULL,NULL,&status);
+                        _NhlWorkstationLineTo(parent->base.wkptr,c_cufx(currentx),c_cufy(currenty),0);
+                        lastx = x;
+                        lasty = y;
+                        return(NOERROR);
+                }
+        }
+}
+
+
+
+/*ARGSUSED*/
+static NhlErrorTypes IrDataLineTo
+#if __STDC__
+(Layer instance, Layer parent,float x, float y, int upordown )
+#else
+(instance, parent,x, y, upordown )
+Layer instance;
+Layer parent;
+float x;
+float y;
+int upordown;
+#endif
+{
+        IrregularTransObjLayer iinst = (IrregularTransObjLayer)instance;
+        static float lastx,lasty;
+        static call_frstd = 1;
+        float currentx,currenty;
+        float holdx,holdy;
+
+/*
+* if true the moveto is being performed
+*/
+        if(upordown) {
+                lastx = x;
+                lasty = y;
+                call_frstd =1;
+                return(NOERROR);
+        } else {
+                currentx = x;
+                currenty = y;
+                holdx = lastx;
+                holdy = lasty;
+                _NhlTransClipLine(iinst->irtrans.x_min,
+                        iinst->irtrans.x_max,
+                        iinst->irtrans.y_min,
+                        iinst->irtrans.y_max,
+                        &lastx,
+                        &lasty,
+                        &currentx,
+                        &currenty,
+                        iinst->trobj.out_of_range);
+                if((lastx == iinst->trobj.out_of_range)
+			||(lasty == iinst->trobj.out_of_range)
+			||(currentx == iinst->trobj.out_of_range)
+			||(currenty == iinst->trobj.out_of_range)){
+/*
+* Line has gone completely out of window
+*/
+                        lastx = x;
+                        lasty = y;
+                        call_frstd = 1;
+                        return(_NhlWorkstationLineTo(parent->base.wkptr,c_cufx(x),c_cufy(y),1));
+                } else {
+                        if((lastx != holdx)||(lasty!= holdy)) {
+                                call_frstd = 1;
+                        }
+                        if(call_frstd == 1) {
+                                _NhlWorkstationLineTo(parent->base.wkptr,c_cufx(lastx),c_cufy(lasty),1);
+                                call_frstd = 2;
+                        }
+                        _NhlWorkstationLineTo(parent->base.wkptr,c_cufx(currentx),c_cufy(currenty),0);
+                        lastx = x;
+                        lasty = y;
+                        return(NOERROR);
+                }
+        }
+}
+
+
+static NhlErrorTypes IrNDCLineTo
+#if __STDC__
+(Layer instance, Layer parent, float x, float y, int upordown)
+#else
+(instance, parent, x, y, upordown)
+Layer instance;
+Layer parent;
+float x;
+float y;
+int upordown;
+#endif
+{
+        static float lastx,lasty;
+        static call_frstd = 1;
+        float currentx,currenty;
+        float xvp,yvp,widthvp,heightvp;
+        NhlErrorTypes ret = NOERROR,ret1 = NOERROR;
+        float holdx,holdy;
+	TransObjLayer trinst = (TransObjLayer)instance;
+
+/*
+* if true the moveto is being performed
+*/
+        if(upordown) {
+                lastx = x;
+                lasty = y;
+                call_frstd = 1;
+                return(NOERROR);
+        } else {
+                currentx = x;
+                currenty = y;
+                holdx = lastx;
+                holdy = lasty;
+                NhlGetValues(parent->base.id,
+                        NhlNvpXF,&xvp,
+                        NhlNvpYF,&yvp,
+                        NhlNvpWidthF,&widthvp,
+                        NhlNvpHeightF,&heightvp,NULL);
+                _NhlTransClipLine( xvp, xvp+widthvp, yvp-heightvp, yvp,
+                        &lastx, &lasty, &currentx, &currenty,
+                        trinst->trobj.out_of_range);
+                if((lastx == trinst->trobj.out_of_range)
+			||(lasty == trinst->trobj.out_of_range)
+			||(currentx == trinst->trobj.out_of_range)
+			||(currenty == trinst->trobj.out_of_range)){
+/*
+* Line has gone completely out of window
+*/
+                        lastx  = x;
+                        lasty  = y;
+                        call_frstd = 1;
+                        return(_NhlWorkstationLineTo(parent->base.wkptr,x,y,1));
+                } else {
+                        if((lastx != holdx)||(lasty!= holdy)) {
+                                call_frstd = 1;
+                        }
+                        if(call_frstd == 1) {
+                                ret1 = _NhlWorkstationLineTo(parent->base.wkptr, lastx,lasty,1);
+                                call_frstd = 2;
+                        }
+                        ret = _NhlWorkstationLineTo(parent->base.wkptr,currentx, currenty,0);
+                        lastx = x;
+                        lasty = y;
+                        return(MIN(ret1,ret));
+                }
+
+
+        }
+
 }

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.4 1993-11-20 01:06:37 dbrown Exp $
+#      $Id: yMakefile,v 1.5 1993-12-13 23:35:32 ethan Exp $
 #
 #########################################################################
 #									#
@@ -48,7 +48,8 @@ SRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		TransObj.c Transform.c VarArg.c View.c Workstation.c \
 		XWorkstation.c hlu.c DataComm.c DataItem.c DataMgr.c \
 		Legend.c LabelBar.c CoordArrTable.c CoordArrays.c \
-		Contour.c Overlay.c LogLinPlot.c IrregularPlot.c MapPlot.c 
+		Contour.c Overlay.c LogLinPlot.c IrregularPlot.c MapPlot.c  \
+		XyPlot.c
 
 OBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Create.o Destroy.o Draw.o Error.o GetValues.o \
@@ -59,7 +60,8 @@ OBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		TransObj.o Transform.o VarArg.o View.o Workstation.o \
 		XWorkstation.o hlu.o DataComm.o DataItem.o DataMgr.o \
 		Legend.o LabelBar.o CoordArrTable.o CoordArrays.o \
-		Contour.o Overlay.o LogLinPlot.o IrregularPlot.o MapPlot.o
+		Contour.o Overlay.o LogLinPlot.o IrregularPlot.o MapPlot.o \
+		XyPlot.o
 
 LibraryTarget($(MYNAME),$(OBJS))
 BuildIncludes($(HDRS),ncarg/hlu,../..)
