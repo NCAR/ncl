@@ -1,5 +1,5 @@
 /*
- *	$Id: glob.c,v 1.10 1993-04-27 16:55:25 clyne Exp $
+ *	$Id: glob.c,v 1.11 1994-03-08 16:49:31 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -150,9 +150,13 @@ glob(s, r_argv, r_argc)
 		/*
 		 * if using csh then use csh with the fast option, '-f'
 		 */
-        	t = (t = strrchr(shell_argv[0], '/')) ? ++t : shell_argv[0];
-		if (!(strcmp(t, "csh"))) {
+		t = (t = strrchr(shell_argv[0], '/')) ? ++t : shell_argv[0];
+		if ((strcmp(t, "csh") == 0) || (strcmp(t, "tcsh") == 0)) {
 			shell_argv[1] = "-f";
+			shell_argv[2] = NULL;
+		}
+		else if (strcmp(t, "ksh") == 0) {
+			shell_argv[1] = "-p";
 			shell_argv[2] = NULL;
 		}
 
