@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.16 1993-10-19 17:45:21 boote Exp $
+#	$Id: yMakefile,v 1.17 1993-11-02 21:01:07 clyne Exp $
 #
 
 MYNAME1		= libictrans.o
@@ -48,6 +48,15 @@ lex.yy.c: lex.l Makefile
 	@$(MV) lex.yy.c lex.yy.c.sed
 	@sed -f sedscript < lex.yy.c.sed > lex.yy.c
 	@$(RM) lex.yy.c.sed sedscript
+
+#
+# Pre 5.x versions of "IRIX" can't compile lex-generated files with the
+# "-ansiposix" option
+#
+#if defined(IRIX) && (MAJOR < 5)
+lex.yy.o:	lex.yy.c
+	$(CC) -c $(COPT) lex.yy.c
+#endif
 
 lint: $(SRCS)
 	lint $(CFLAGS) 1> lint.out 2>&1
