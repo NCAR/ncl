@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.30 1995-06-26 19:12:16 boote Exp $
+ *	$Id: Rules,v 1.31 1995-07-09 03:52:47 haley Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -355,7 +355,7 @@ program: program.nonshr.o]\
 	$(CC_LD) $(CC_LDOPTIONS) $(CDYNAMIC) -o program program.nonshr.o $(EXTRA_LDLIBS)]\
 ]\
 program.nonshr.o: objects deplib]\
-	$(LD) -r $(CSTATIC) -bhalt\:4 -o program.nonshr.o objects $(PROG_LIBS) $(LDLIBS)]\
+	$(LD) -r $(EXTRA_LDFLAGS) $(CSTATIC) -bhalt\:4 -o program.nonshr.o objects $(PROG_LIBS) $(LDLIBS)]\
 ]\
 CleanFilesTarget(program program.nonshr.o objects)
 #endif	/* AIX	*/
