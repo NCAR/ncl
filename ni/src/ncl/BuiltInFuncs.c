@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.169 2004-06-25 21:53:15 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.170 2004-10-06 17:59:49 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2342,9 +2342,12 @@ NhlErrorTypes _NclIfbindirread(void)
 	}
 	if(tmp_md != NULL) {
 		thetype = _NclNameToTypeClass(*(NclQuark*)tmp_md->multidval.val);
-		if(thetype == NULL) 
+		if(thetype == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirread: invalid type specified, can't continue");
 			return(NhlFATAL);	
+		}
 	}
+
 	tmp_md = NULL;
 	switch(fpath.kind) {
 	case NclStk_VAL:
@@ -2521,8 +2524,10 @@ NhlErrorTypes _NclIcbinread
 	}
 	if(tmp_md != NULL) {
 		thetype = _NclNameToTypeClass(*(NclQuark*)tmp_md->multidval.val);
-		if(thetype == NULL) 
+		if(thetype == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"cbinread: invalid type specified, can't continue");
 			return(NhlFATAL);	
+		}
 	}
 	tmp_md = NULL;
 	switch(dimensions.kind){
@@ -2900,10 +2905,14 @@ NhlErrorTypes _NclIfbinrecread
 		NULL,
 		0);
 	if(has_missing &&(missing.stringval == *type)) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: path is a missing value, can't continue");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: type is a missing value, can't continue");
 		return(NhlFATAL);
 	}
 	thetype = _NclNameToTypeClass(*type);
+	if(thetype == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: invalid type specified, can't continue");
+		return(NhlFATAL);	
+	}
 	fd = open(_NGResolvePath(NrmQuarkToString(*fpath)),O_RDONLY);
 
 	if(fd == -1) {
@@ -3069,8 +3078,10 @@ NhlErrorTypes _NclIfbinread
 	}
 	if(tmp_md != NULL) {
 		thetype = _NclNameToTypeClass(*(NclQuark*)tmp_md->multidval.val);
-		if(thetype == NULL) 
+		if(thetype == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: invalid type specified, can't continue");
 			return(NhlFATAL);	
+		}
 	}
 	tmp_md = NULL;
 	switch(fpath.kind) {
@@ -3551,8 +3562,10 @@ NhlErrorTypes _NclIasciiread
 	}
 	if(tmp_md != NULL) {
 		thetype = _NclNameToTypeClass(*(NclQuark*)tmp_md->multidval.val);
-		if(thetype == NULL) 
+		if(thetype == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"asciinread: invalid type specified, can't continue");
 			return(NhlFATAL);	
+		}
 	}
 
 	if((size != -1)&&(!has_unlimited)) {
