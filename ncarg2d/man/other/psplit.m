@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: psplit.m,v 1.5 2001-07-30 20:18:43 fred Exp $
+.\"     $Id: psplit.m,v 1.6 2004-03-18 22:18:33 fred Exp $
 .\"
 .TH psplit 1NCARG "August 2001" UNIX "NCAR GRAPHICS"
 .na
@@ -27,7 +27,7 @@ NCAR Graphics by running "ctrans" with a PostScript graphcap.  However,
 Document Structuring Conventions (DSC).
 .sp
 By default the output files are named in sequence as "pict0001.ps",
-"pict0001.ps", and so forth.  If you want to specify a different
+"pict0002.ps", and so forth.  If you want to specify a different
 root name for the output files (i.e. a name different from "pict"),
 you can specify that by entering the optional second argument.
 .SH COPYRIGHT
