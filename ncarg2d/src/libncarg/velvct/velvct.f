@@ -1,5 +1,5 @@
 C
-C	$Id: velvct.f,v 1.4 1993-01-20 22:02:46 dbrown Exp $
+C	$Id: velvct.f,v 1.5 1993-01-25 17:31:50 dbrown Exp $
 C
       SUBROUTINE VELVCT (U,LU,V,LV,M,N,FLO,HI,NSET,LENGTH,ISPV,SPV)
 C
@@ -32,6 +32,10 @@ C
       COMMON /VEC2/   BIG        ,INCX       ,INCY
 C     
       SAVE /VEC1/, /VEC2/
+C
+C Force the block data routine, which sets default variables, to load.
+C
+      EXTERNAL        VELDAT
 C
 C Internal parameters of VELVCT are as follows.
 C
@@ -197,32 +201,6 @@ C
 C
 C --------------------------------------------------------------------
 C
-C ---------------------------------------------------------------------
-C Initialization section
-C
-C VEC1
-
-      DATA     EXT /    0.25 /
-      DATA  ICTRFG /    1    /
-      DATA    ILAB /    0    /
-      DATA   IOFFD /    0    /
-      DATA   IOFFM /    0    /
-      DATA     RMN /  160.00 /
-      DATA     RMX / 6400.00 /
-      DATA    SIDE /    0.90 /
-      DATA    SIZE /  256.00 /
-      DATA     XLT /    0.05 /
-      DATA     YBT /    0.05 /
-C
-C End of VEC1 Initialization
-C -----------------------------------------------------------------------
-C Initialization of VEC2
-C
-      DATA   INCX / 1 /
-      DATA   INCY / 1 /
-C
-C End of VEC2 Initialization
-C
 C Local variables:
 C
 C IPM             - parameter use flag
@@ -241,6 +219,8 @@ C This is an empirically derived factor for converting from the
 C WTSTR text size to PLCHHQ text
 C
       PARAMETER (PHQCVT = 0.8)
+C
+C -------------------------------------------------------------------
 C
 C The following call is for gathering statistics on library use at ncar.
 C
