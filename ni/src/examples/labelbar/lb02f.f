@@ -18,8 +18,6 @@ C      Description:    Demonstrates the LabelBar Object
 C                      Creates color bars with every 5th index of the
 C                      114 different colors in the default colormap.
 C
-      external nhlfhlulayerclass
-      external nhlfreslistlayerclass
       external nhlflabelbarlayerclass
       external nhlfapplayerclass
       external nhlfxworkstationlayerclass

@@ -16,8 +16,6 @@ C      Date:           Fri Jan 13 18:31:18 mdt 1995
 C
 C      Description:    Demonstrates the LabelBar object defaults.
 C
-      external nhlfhlulayerclass
-      external nhlfreslistlayerclass
       external nhlflabelbarlayerclass
       external nhlfapplayerclass
       external nhlfxworkstationlayerclass
