@@ -2,7 +2,7 @@
 #define ctrans_height 64
 #define ctrans_x_hot -1
 #define ctrans_y_hot -1
-static unsigned char ctrans_bits[] = {
+static const unsigned char ctrans_bits[] = {
 0x00,0x00,
 0x00,0x00,
 0x00,0x00,
