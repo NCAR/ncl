@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.58 1999-11-12 18:36:42 ethan Exp $
+ *      $Id: NclVar.c,v 1.59 2000-01-08 00:00:20 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1835,54 +1835,6 @@ struct _NclVarRec *storage;
 	return(tmp_var);
 }
 
-static NhlErrorTypes AttCopyWrite
-#if	NhlNeedProto
-(struct _NclVarRec *to,struct _NclVarRec* from)
-#else
-(to,from)
-struct _NclVarRec *to;
-struct _NclVarRec* from;
-#endif
-{
-	NclAtt tmp_att;
-	NclAttList *att_list;
-	int i;
-	NhlErrorTypes ret = NhlNOERROR;
-
-	if((to->var.att_id != -1)&&(from->var.att_id != -1)&&(to->var.att_id != from->var.att_id)) {
-/*
-* Need to merge lists
-*/
-		tmp_att = (NclAtt)_NclGetObj(from->var.att_id);
-		att_list = tmp_att->att.att_list;
-		for(i = 0; i < tmp_att->att.n_atts; i++) {
-			if(_NclIsAtt(to->var.att_id,att_list->attname)) {
-				if(NrmStringToQuark(att_list->attname) != NrmStringToQuark(NCL_MISSING_VALUE_ATT))
-					_NclDeleteAtt(to->var.att_id,att_list->attname);
-				_NclAddAtt(to->var.att_id,att_list->attname,att_list->attvalue,NULL);
-				att_list = att_list->next;
-			} else {
-				_NclAddAtt(to->var.att_id,att_list->attname,att_list->attvalue,NULL);
-				att_list = att_list->next;
-			}
-		}
-	}else if((from->var.att_id != -1)&&(to->var.att_id == -1)) {
-/*
-* Simple case just copy atts
-*/
-		to->var.att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)to);
-		to->var.att_cb = _NclAddCallback((NclObj)_NclGetObj(to->var.att_id),(NclObj)to,_NclVarMissingNotify,MISSINGNOTIFY,NULL);
-		
-		tmp_att = (NclAtt)_NclGetObj(from->var.att_id);
-		att_list = tmp_att->att.att_list;		
-		for(i = 0; i < tmp_att->att.n_atts; i++) {
-			_NclAddAtt(to->var.att_id,att_list->attname,att_list->attvalue,NULL);
-			att_list = att_list->next;
-		}
-		
-	}
-	return(ret);
-}
 
 static NhlErrorTypes VarVarWrite
 #if	NhlNeedProto
@@ -2000,7 +1952,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 				tmp_sel.selection[0].dim_num = 0;
 				if(tmp_coord_array[i] != NULL) {
                                 	_NclWriteCoordVar(lhs,tmp_coord_array[i],NrmQuarkToString(tmp_name_array[i]),&tmp_sel);
-					AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(tmp_name_array[i]),NULL),tmp_coord_vars[i]);
+					_NclAttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(tmp_name_array[i]),NULL),tmp_coord_vars[i]);
 				}
 			}
 				
@@ -2038,7 +1990,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 			for(i = 0; i < lhs->var.n_dims; i++) {
 				if(tmp_coord_array[i] != NULL) {
                                 	_NclWriteCoordVar(lhs,tmp_coord_array[i],NrmQuarkToString(tmp_name_array[i]),NULL);
-					AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(tmp_name_array[i]),NULL),tmp_coord_vars[i]);
+					_NclAttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(tmp_name_array[i]),NULL),tmp_coord_vars[i]);
 				}
 			}
 			NclFree(tmp_name_array);
@@ -2075,7 +2027,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
                                         tmp_sel.selection[0].dim_num = 0;
 
                         		_NclWriteCoordVar(lhs,tmp_coord_array[i],NrmQuarkToString(tmp_name_array[i]),&tmp_sel);
-					AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(tmp_name_array[i]),NULL),tmp_coord_vars[i]);
+					_NclAttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(tmp_name_array[i]),NULL),tmp_coord_vars[i]);
 				}
 			}
 			NclFree(tmp_name_array);
@@ -2211,7 +2163,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 								fprintf(stdout,"case 4\n");
 #endif
 								_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel);
-								AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
+								_NclAttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
 							} else if(val_md != NULL) {
 #ifdef NCLVARDEBUG
 								fprintf(stdout,"case 5\n");
@@ -2234,7 +2186,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 									val_md,
 									NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),
 									&tmp_sel);
-								AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
+								_NclAttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
 								
 							}
 
@@ -2254,7 +2206,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 						tmp_sel.selection[0].dim_num = 0;
 						if(val_md != NULL) {
 							_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel);
-							AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
+							_NclAttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
 						}
 /*
 * dimension names match and only rhs has coord var
@@ -2275,7 +2227,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 							fprintf(stdout,"case 8\n");
 #endif
 							_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel);
-							AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
+							_NclAttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
 						} else if(val_md != NULL){
 #ifdef NCLVARDEBUG
 							fprintf(stdout,"case 9\n");
@@ -2307,7 +2259,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 								NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),
 								NULL);
 							_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),&tmp_sel);
-							AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
+							_NclAttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
 						}
 					} else  if((lhs->var.coord_vars[lhs_sel_ptr->selection[i].dim_num] != -1) &&(rhs->var.coord_vars[rhs_sel_ptr->selection[j].dim_num] == -1)) {
 #ifdef NCLVARDEBUG
@@ -2403,7 +2355,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 							val_md = _NclVarValueRead(cvar,NULL,NULL);
 							if(val_md != NULL) {
 								_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL);
-								AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL),cvar);
+								_NclAttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL),cvar);
 							}
 						} 	 
 					} else {
@@ -2435,7 +2387,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 							val_md = _NclVarValueRead(cvar,NULL,NULL);
 							if(val_md != NULL) {
 								_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL);
-								AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL),cvar);
+								_NclAttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL),cvar);
 							}
 						} 	 
 					} 
@@ -2448,7 +2400,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 						val_md = _NclVarValueRead(cvar,NULL,NULL);
 						if(val_md != NULL) {
 							_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL);
-							AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL),cvar);
+							_NclAttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[i].dim_quark),NULL),cvar);
 						}
 					} else if(lhs->var.coord_vars[i] != -1) {
 #ifdef NCLVARDEBUG
@@ -2580,7 +2532,7 @@ if(rhs_md->multidval.totalelements !=1) {
 								fprintf(stdout,"case 31\n");
 #endif
 								_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),&tmp_sel);
-								AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL),cvar);
+								_NclAttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL),cvar);
 							} else if(val_md != NULL)  {
 #ifdef NCLVARDEBUG
 								fprintf(stdout,"case 32\n");
@@ -2608,7 +2560,7 @@ if(rhs_md->multidval.totalelements !=1) {
 									NrmQuarkToString(rhs->var.dim_info[j].dim_quark),
 									NULL);
 								_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),&tmp_sel);
-								AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL),cvar);
+								_NclAttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL),cvar);
 							}
 						} 
 					} else if((lhs->var.coord_vars[lhs_sel_ptr->selection[i].dim_num] != -1)&&(rhs->var.coord_vars[j] != -1)) {
@@ -2621,7 +2573,7 @@ if(rhs_md->multidval.totalelements !=1) {
 						tmp_sel.selection[0].dim_num = 0;
 						if(val_md != NULL) {
 							_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),&tmp_sel);
-							AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL),cvar);
+							_NclAttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL),cvar);
 						}
 					} else if((lhs->var.coord_vars[lhs_sel_ptr->selection[i].dim_num] == -1)&&(rhs->var.coord_vars[j] != -1)) {
 #ifdef NCLVARDEBUG
@@ -2636,7 +2588,7 @@ if(rhs_md->multidval.totalelements !=1) {
 							fprintf(stdout,"case 35\n");
 #endif
 							_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),&tmp_sel);
-							AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL),cvar);
+							_NclAttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL),cvar);
 						} else if(val_md != NULL)  {
 #ifdef NCLVARDEBUG
 							fprintf(stdout,"case 36\n");
@@ -2668,7 +2620,7 @@ if(rhs_md->multidval.totalelements !=1) {
 								NrmQuarkToString(rhs->var.dim_info[j].dim_quark),
 								NULL);
 							_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),&tmp_sel);
-							AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL),cvar);
+							_NclAttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[j].dim_quark),NULL),cvar);
 						}
 					} else if((lhs->var.coord_vars[lhs_sel_ptr->selection[i].dim_num]!= -1)&&(rhs->var.coord_vars[j] == -1)) {
 #ifdef NCLVARDEBUG
@@ -2811,7 +2763,7 @@ if(rhs_md->multidval.totalelements !=1) {
 							val_md = _NclVarValueRead(cvar,NULL,NULL);
 							if(val_md != NULL) {
 								_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL);
-								AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
+								_NclAttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
 							}
 
 						}  
@@ -2826,7 +2778,7 @@ if(rhs_md->multidval.totalelements !=1) {
 						val_md = _NclVarValueRead(cvar,NULL,NULL);
 						if(val_md != NULL ) {
 							_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL);
-							AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
+							_NclAttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
 						}
 					} else if((lhs->var.coord_vars[i] == -1)&&(rhs->var.coord_vars[rhs_sel_ptr->selection[j].dim_num] != -1)) {
 #ifdef NCLVARDEBUG
@@ -2838,7 +2790,7 @@ if(rhs_md->multidval.totalelements !=1) {
 						val_md = _NclVarValueRead(cvar,NULL,NULL);
 						if(val_md != NULL ) {
 							_NclWriteCoordVar(lhs,val_md,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL);
-							AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
+							_NclAttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(rhs->var.dim_info[rhs_sel_ptr->selection[j].dim_num].dim_quark),NULL),cvar);
 						}
 					} else if((lhs->var.coord_vars[i] != -1)&&(rhs->var.coord_vars[rhs_sel_ptr->selection[j].dim_num] == -1)) {
 #ifdef NCLVARDEBUG

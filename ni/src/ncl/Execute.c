@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.109 2000-01-06 21:01:51 ethan Exp $
+ *      $Id: Execute.c,v 1.110 2000-01-08 00:00:19 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -3330,6 +3330,9 @@ void CallASSIGN_VAR_COORD_OP(void) {
 */
 							id = thevalue->obj.id;
 							ret = _NclWriteCoordVar(var->u.data_var,thevalue,coord_name,sel_ptr);
+							if(data.kind == NclStk_VAR) {
+								_NclAttCopyWrite(_NclReadCoordVar(var->u.data_var,coord_name,NULL),data.u.data_var);
+							}
 							if(ret<estatus){
 								estatus = ret;
 							}

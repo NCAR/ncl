@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.h,v 1.7 1996-12-20 00:42:11 ethan Exp $
+ *      $Id: NclVar.h,v 1.8 2000-01-08 00:00:20 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -237,5 +237,12 @@ typedef NclVarClassRec *NclVarClass;
 extern NclObjClass nclVarClass;
 
 extern NclVarClassRec nclVarClassRec;
+
+void _NclVarMissingNotify(
+#if     NhlNeedProto
+NhlArgVal /*cbdata*/,
+NhlArgVal /*udata*/
+#endif
+);
 
 #endif /* NclVar_h */

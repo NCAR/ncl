@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.18 1997-10-01 18:18:58 ethan Exp $
+ *      $Id: VarSupport.c,v 1.19 2000-01-08 00:00:20 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,7 @@
 #include "NclFileVar.h"
 #include "VarSupport.h"
 #include "DataSupport.h"
+#include "NclAtt.h"
 
 NclSelectionRecord* _NclGetVarSelRec
 #if	NhlNeedProto
@@ -1190,3 +1191,51 @@ struct _NclVarRec* _NclCopyVar
 }
 
 
+NhlErrorTypes _NclAttCopyWrite
+#if	NhlNeedProto
+(struct _NclVarRec *to,struct _NclVarRec* from)
+#else
+(to,from)
+struct _NclVarRec *to;
+struct _NclVarRec* from;
+#endif
+{
+	NclAtt tmp_att;
+	NclAttList *att_list;
+	int i;
+	NhlErrorTypes ret = NhlNOERROR;
+
+	if((to->var.att_id != -1)&&(from->var.att_id != -1)&&(to->var.att_id != from->var.att_id)) {
+/*
+* Need to merge lists
+*/
+		tmp_att = (NclAtt)_NclGetObj(from->var.att_id);
+		att_list = tmp_att->att.att_list;
+		for(i = 0; i < tmp_att->att.n_atts; i++) {
+			if(_NclIsAtt(to->var.att_id,att_list->attname)) {
+				if(NrmStringToQuark(att_list->attname) != NrmStringToQuark(NCL_MISSING_VALUE_ATT))
+					_NclDeleteAtt(to->var.att_id,att_list->attname);
+				_NclAddAtt(to->var.att_id,att_list->attname,att_list->attvalue,NULL);
+				att_list = att_list->next;
+			} else {
+				_NclAddAtt(to->var.att_id,att_list->attname,att_list->attvalue,NULL);
+				att_list = att_list->next;
+			}
+		}
+	}else if((from->var.att_id != -1)&&(to->var.att_id == -1)) {
+/*
+* Simple case just copy atts
+*/
+		to->var.att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)to);
+		to->var.att_cb = _NclAddCallback((NclObj)_NclGetObj(to->var.att_id),(NclObj)to,_NclVarMissingNotify,MISSINGNOTIFY,NULL);
+		
+		tmp_att = (NclAtt)_NclGetObj(from->var.att_id);
+		att_list = tmp_att->att.att_list;		
+		for(i = 0; i < tmp_att->att.n_atts; i++) {
+			_NclAddAtt(to->var.att_id,att_list->attname,att_list->attvalue,NULL);
+			att_list = att_list->next;
+		}
+		
+	}
+	return(ret);
+}
