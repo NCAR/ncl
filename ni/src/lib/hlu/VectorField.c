@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.c,v 1.3 1995-12-19 20:39:34 boote Exp $
+ *      $Id: VectorField.c,v 1.4 1996-03-18 09:32:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3077,6 +3077,8 @@ VectorFieldSetValues
 		status = True;
 	if (vfp->exchange_dimensions != ovfp->exchange_dimensions)
 		status = True;
+	if (vfp->exchange_uv_data != ovfp->exchange_uv_data)
+		status = True;
 
         _NhlDataChanged((NhlDataItemLayer)new,status);
 
@@ -3396,7 +3398,17 @@ static NhlErrorTypes    VectorFieldGetValues
                 else if (resQ == Qmissing_u_value) {
 			do_genarray = True;
 			ndim = 1;
-			if (vfp->missing_u_value == NULL) {
+			if (vfp->missing_u_value == NULL &&
+			    vfp->single_missing) {
+				dlen[0] = 
+				       vfp->missing_v_value->len_dimensions[0];
+				if ((data = 
+				   CopyData(vfp->missing_v_value,resQ))== NULL)
+					return NhlFATAL;
+				typeQ = vfp->missing_v_value->typeQ;
+				size = vfp->missing_v_value->size;
+			}
+			else if (vfp->missing_u_value == NULL) {
 				dlen[0] = 0;
 				data = NULL;
 				typeQ = Qfloat;
@@ -3415,7 +3427,17 @@ static NhlErrorTypes    VectorFieldGetValues
                 else if (resQ == Qmissing_v_value) {
 			do_genarray = True;
 			ndim = 1;
-			if (vfp->missing_v_value == NULL) {
+			if (vfp->missing_v_value == NULL &&
+			    vfp->single_missing) {
+				dlen[0] = 
+				       vfp->missing_u_value->len_dimensions[0];
+				if ((data = 
+				   CopyData(vfp->missing_u_value,resQ))== NULL)
+					return NhlFATAL;
+				typeQ = vfp->missing_u_value->typeQ;
+				size = vfp->missing_u_value->size;
+			}
+			else if (vfp->missing_v_value == NULL) {
 				dlen[0] = 0;
 				data = NULL;
 				typeQ = Qfloat;

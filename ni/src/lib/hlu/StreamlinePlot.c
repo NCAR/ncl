@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.5 1996-03-15 23:03:10 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.6 1996-03-18 09:32:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2809,12 +2809,13 @@ static NhlErrorTypes stDraw
 	else
 		c_stseti("TRT",0);
 
+	c_stseti("GBS",0);
 	c_stsetr("LWD",stp->line_thickness);
 	c_stsetr("ARL",stp->arrow_length / stl->view.width);
 	c_stsetr("DFM",stp->step_size / stl->view.width);
 	c_stsetr("SSP",stp->min_line_spacing / stl->view.width);
-/*
 	c_stsetr("AMD",stp->min_arrow_spacing / stl->view.width);
+/*
 	c_stsetr("SMD",stp->min_line_length / stl->view.width);
 */
 	c_stsetr("CDS",stp->min_step_factor);
@@ -5144,37 +5145,50 @@ static NhlErrorTypes    ManageViewDepResources
 	NhlStreamlinePlotLayer		stnew = (NhlStreamlinePlotLayer) new;
 	NhlStreamlinePlotLayerPart	*stp = &(stnew->streamlineplot);
 	NhlStreamlinePlotLayer		stold = (NhlStreamlinePlotLayer) old;
+	NhlStreamlinePlotLayerPart	*ostp = &(stold->streamlineplot);
 
 	entry_name = (init) ? InitName : SetValuesName;
 
-	if (! stp->arrow_length_set) {
-		if (init) {
-			stp->arrow_length *= 
-				stnew->view.width / Nhl_stSTD_VIEW_WIDTH;
+/* adjust the reference length if it is not set */
+
+	if (! stp->data_init) {
+		stp->grid_cell_size = stnew->view.width * 0.05;
+	}
+	else if (init || stp->data_changed) {
+		int nx,ny;
+		float sx,sy;
+		nx = stp->vfp->fast_len;
+		ny = stp->vfp->slow_len;
+		sx = stnew->view.width / nx;
+		sy = stnew->view.height / ny;
+		stp->grid_cell_size = sqrt((sx*sx + sy*sy) / 2.0);
+	}
+
+	if (! stp->arrow_length_set || stp->arrow_length <= 0.0) {
+		if (init || stp->arrow_length <= 0.0) {
+			stp->arrow_length = 0.33 * stp->grid_cell_size; 
 		}
-		else if (stnew->view.width != stold->view.width) {
+		else if (stp->grid_cell_size != ostp->grid_cell_size) {
 			stp->arrow_length *= 
-				stnew->view.width / stold->view.width;
+				stp->grid_cell_size / ostp->grid_cell_size;
 		}
 	}
-	if (! stp->step_size_set) {
-		if (init) {
-			stp->step_size *= 
-				stnew->view.width / Nhl_stSTD_VIEW_WIDTH;
+	if (! stp->step_size_set || stp->step_size <= 0.0) {
+		if (init || stp->step_size <= 0.0) {
+			stp->step_size = 0.33 * stp->grid_cell_size;
 		}
-		else if (stnew->view.width != stold->view.width) {
+		else if (stp->grid_cell_size != ostp->grid_cell_size) {
 			stp->step_size *= 
-				stnew->view.width / stold->view.width;
+				stp->grid_cell_size / ostp->grid_cell_size;
 		}
 	}
-	if (! stp->min_line_spacing_set) {
-		if (init) {
-			stp->min_line_spacing *= 
-				stnew->view.width / Nhl_stSTD_VIEW_WIDTH;
+	if (! stp->min_line_spacing_set || stp->min_line_spacing <= 0.0) {
+		if (init || stp->min_line_spacing <= 0.0) {
+			stp->min_line_spacing = 0.5 * stp->grid_cell_size;
 		}
-		else if (stnew->view.width != stold->view.width) {
+		else if (stp->grid_cell_size != ostp->grid_cell_size) {
 			stp->min_line_spacing *= 
-				stnew->view.width / stold->view.width;
+				stp->grid_cell_size / ostp->grid_cell_size;
 		}
 	}
 	if (! stp->min_arrow_spacing_set) {

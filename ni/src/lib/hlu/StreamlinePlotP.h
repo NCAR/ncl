@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlotP.h,v 1.2 1996-02-26 21:46:05 dbrown Exp $
+ *      $Id: StreamlinePlotP.h,v 1.3 1996-03-18 09:32:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -247,6 +247,8 @@ typedef struct _NhlStreamlinePlotLayerPart {
 
 	int		fws_id;
 	NhlWorkspace	*fws;
+
+	float		grid_cell_size;
 
 } NhlStreamlinePlotLayerPart;
 
