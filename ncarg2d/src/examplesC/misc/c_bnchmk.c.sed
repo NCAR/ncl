@@ -459,7 +459,7 @@ FILE* Openr ()
 	FILE* unit;		/* data file */
 
     	char *filenm2 = "database";	/* strings to create full path name */
-    	char *filenm = "                                                                                                                                ";
+    	char *filenm;
       	static int open;	/* file open flag */
 
 	/*
@@ -475,6 +475,8 @@ FILE* Openr ()
 
       	if (open == 0)
 	{
+        	filenm = (char*)malloc(128*sizeof(char));
+    		strcpy(filenm,"                                                                                                                                ");
 		/*
 		** Take care of Cray machine dependencies
 		*/

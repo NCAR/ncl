@@ -1,5 +1,5 @@
 /*
- *  $Id: c_vvex01.c.sed,v 1.2 1994-08-17 21:24:39 haley Exp $
+ *  $Id: c_vvex01.c.sed,v 1.3 1994-08-18 18:07:57 stautler Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -489,7 +489,7 @@ FILE *fp;
 
 void openr()
 {
-    char *filenm = "                                                                                                                                            ";
+    char *filenm;
     char *filenm2 = "database";
     static int iopen = 0;
     int i, istat;
@@ -504,6 +504,8 @@ void openr()
 #endif
 
     if (!iopen) {
+       	filenm = (char*)malloc(128*sizeof(char));
+    	strcpy(filenm,"                                                                                                                                            ");
 #if !defined (cray)
         gngpat_(filenm,filenm2,&istat,119,9);
 #else
