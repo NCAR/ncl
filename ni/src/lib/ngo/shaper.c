@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.18 1999-10-13 17:15:54 dbrown Exp $
+ *      $Id: shaper.c,v 1.19 1999-12-07 19:08:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1151,6 +1151,8 @@ static NgShaperRec *NewShaper
 
 	XtAddCallback(shaper->datagrid_tgl,
 		      XmNvalueChangedCallback,ToggleCoordGridCB,si);
+
+	_NgGOWidgetTranslations(shaper->go,si->frame);
 
 	return shaper;
 }

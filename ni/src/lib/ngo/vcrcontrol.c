@@ -1,5 +1,5 @@
 /*
- *      $Id: vcrcontrol.c,v 1.6 1999-09-11 01:07:08 dbrown Exp $
+ *      $Id: vcrcontrol.c,v 1.7 1999-12-07 19:08:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -82,10 +82,13 @@ static Widget CreateDrawnButton
                                       next_pos,npos,
                                       XmNheight,vcrp->size,
                                       XmNwidth,vcrp->size,
+				      XmNpushButtonEnabled,True,
                                       NULL);
+
         if (ret) {
                 XmLDrawnButtonSetType(ret,type,dir);
         }
+	_NgGOWidgetTranslations(vcrp->go,ret);
 
         return ret;
 }
@@ -182,6 +185,8 @@ NgVcrControl NgCreateVcrControl
                                           pos,XmDRAWNB_ARROWLINE,True);
         }
         
+	_NgGOWidgetTranslations(vcrp->go,vcrp->form);
+
         return (NgVcrControl) vcrp;
 }
 

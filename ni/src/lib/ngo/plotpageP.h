@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpageP.h,v 1.2 1999-10-05 23:16:25 dbrown Exp $
+ *      $Id: plotpageP.h,v 1.3 1999-12-07 19:08:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,7 @@
 
 #include <ncarg/ngo/browseP.h>
 #include <ncarg/ngo/plotpage.h>
-#include <ncarg/ngo/datasourcegrid.h>
+#include <ncarg/ngo/funcgrid.h>
 #include <ncarg/ngo/datavargrid.h>
 #include <ncarg/ngo/plottree.h>
 
@@ -63,7 +63,7 @@ typedef struct _brPlotPageRec
         NhlBoolean	activated;
 	NrmQuark	qclass;
         NgDataVarGrid	*data_var_grid;
-        NgDataSourceGrid	*data_source_grid;
+        NgFuncGrid	*func_grid;
 	NhlBoolean	has_input_data;
         NhlBoolean	new_data;
         Widget		create_update;

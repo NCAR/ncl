@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.c,v 1.10 1999-11-19 02:10:08 dbrown Exp $
+ *      $Id: plotpage.c,v 1.11 1999-12-07 19:08:47 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -252,6 +252,7 @@ static void SetInputDataFlag
 					rec->has_input_data = False;
 				break;
 			case _NgBOGUS_EXPRESSION:
+			case _NgUSER_DISABLED:
 				if (ditem->required)
 					rec->has_input_data = False;
 				break;
@@ -321,11 +322,13 @@ static NhlErrorTypes GetDataProfileMessage
 
 	SetInputDataFlag(rec);
 
+#if 0
 	if (rec->new_data && page->qvar && rec->data_profile && 
-	    rec->data_source_grid) {
-		NgUpdateDataSourceGrid
-			(rec->data_source_grid,page->qvar,rec->data_profile);
+	    rec->func_grid) {
+		NgUpdateFuncGrid
+			(rec->func_grid,page->qvar,rec->data_profile);
 	}
+#endif
 	TalkToDataLinks(page,_NgDATAPROFILE,message->from_id);
 	
 	return NhlNOERROR;
@@ -405,9 +408,9 @@ static NhlErrorTypes GetVarDataMessage
 	SetInputDataFlag(rec);
 
 	if (rec->new_data && page->qvar && rec->data_profile && 
-	    rec->data_source_grid) {
-		NgUpdateDataSourceGrid
-			(rec->data_source_grid,
+	    rec->func_grid) {
+		NgUpdateFuncGrid
+			(rec->func_grid,
 			 page->qvar,rec->data_profile);
 	}
 	
@@ -498,7 +501,8 @@ static NhlErrorTypes GetPageMessages
 
 static NhlBoolean GetDataVal
 (
-	NgVarData 	vdata,
+        brPlotPageRec   *rec,
+	NgDataItem	ditem,
 	NhlPointer 	*value,
 	NrmQuark 	*type,
 	NhlBoolean 	preview
@@ -507,13 +511,15 @@ static NhlBoolean GetDataVal
 	int i;
 	NclExtValueRec *val = NULL;
 	NhlString type_str;
+	NgVarData vdata = ditem->vdata;
 
 
 	*value = NULL;
 	*type = NrmNULLQUARK;
 
 	if (! vdata || vdata->set_state == _NgUNKNOWN_DATA ||
-	    vdata->set_state == _NgBOGUS_EXPRESSION)
+	    vdata->set_state == _NgBOGUS_EXPRESSION ||
+		vdata->set_state == _NgUSER_DISABLED)
 		return False;
 
 
@@ -543,6 +549,8 @@ static NhlBoolean GetDataVal
 		else {
 
 			if (! vdata->qvar) {
+				if (ditem->required)
+					return False;
 				sprintf(buf,"null");
 				*value = NhlMalloc(strlen(buf) + 1);
 				strcpy((char *)*value,buf);
@@ -638,6 +646,48 @@ static NhlBoolean GetDataVal
 	return True;
 }
 
+static NhlBoolean DataChanged
+(
+	NgVarData 	vdata
+)
+{
+	NclExtValueRec *oldval = NULL;
+	NclExtValueRec *newval = NULL;
+	NhlBoolean ret = False;
+	NhlBoolean user = vdata->set_state == _NgEXPRESSION ? False : True;
+
+	oldval = NclReadVar(vdata->qexpr_var,NULL,NULL,NULL);
+
+	ret = NgSetExpressionVarData(vdata->go->base.id,vdata,
+				     vdata->expr_val,_NgFORCED_EVAL,user);
+	if (! ret)
+		return False;
+	ret = False;
+
+	newval = NclReadVar(vdata->qexpr_var,NULL,NULL,NULL);
+
+	if (! (newval && oldval)) {
+		; /* can't do any further testing */
+	}
+	else if (oldval->totalelements != newval->totalelements ||
+	    oldval->elem_size != newval->elem_size) {
+		ret = True;
+	}
+	else if (memcmp(oldval->value,newval->value,
+			oldval->totalelements * oldval->elem_size)) {
+		ret = True;
+	}
+	else {
+		vdata->cflags = 0;
+	}
+	if (oldval)
+		NclFreeExtValue(oldval);
+	if (newval)
+		NclFreeExtValue(newval);
+
+	return ret;
+}
+
 static NhlBoolean GetDataObjValue
 (
         brPlotPageRec   *rec,
@@ -670,6 +720,10 @@ static NhlBoolean GetDataObjValue
 			     _NgCONDITIONAL_EVAL,user))
                                 return False;
                 }
+		else if (ditem->save_to_compare) {
+			if (! (DataChanged(vdata)))
+				return False;
+		}
                 sprintf(buf,"%s",
                         NrmQuarkToString(vdata->qexpr_var));
 		id = NgNclGetHluObjId(rec->nclstate,buf,&count,&id_array);
@@ -700,46 +754,6 @@ static NhlBoolean GetDataObjValue
         return True;
 }
 
-static NhlBoolean DataChanged
-(
-	NgVarData 	vdata
-)
-{
-	NclExtValueRec *oldval = NULL;
-	NclExtValueRec *newval = NULL;
-	NhlBoolean ret = False;
-	NhlBoolean user = vdata->set_state == _NgEXPRESSION ? False : True;
-
-	oldval = NclReadVar(vdata->qexpr_var,NULL,NULL,NULL);
-
-	ret = NgSetExpressionVarData(vdata->go->base.id,vdata,
-				     vdata->expr_val,_NgFORCED_EVAL,user);
-	if (! ret)
-		return False;
-	ret = False;
-
-	newval = NclReadVar(vdata->qexpr_var,NULL,NULL,NULL);
-
-	if (! (newval && oldval)) {
-
-		; /* can't do any further testing */
-	}
-	else if (oldval->totalelements != newval->totalelements ||
-	    oldval->elem_size != newval->elem_size) {
-		ret = True;
-	}
-	else if (memcmp(oldval->value,newval->value,
-			oldval->totalelements * oldval->elem_size)) {
-		ret = True;
-	}
-	if (oldval)
-		NclFreeExtValue(oldval);
-	if (newval)
-		NclFreeExtValue(newval);
-
-	return ret;
-}
-
 static NhlBoolean GetConfigValue
 (
 	brPlotPageRec	*rec,
@@ -756,7 +770,8 @@ static NhlBoolean GetConfigValue
 	vdata = ditem->vdata;
 
 	if (! vdata || vdata->set_state == _NgUNKNOWN_DATA ||
-	    vdata->set_state == _NgBOGUS_EXPRESSION)
+	    vdata->set_state == _NgBOGUS_EXPRESSION ||
+		vdata->set_state == _NgUSER_DISABLED)
 		return False;
 
 	if (vdata->set_state == _NgEXPRESSION ||
@@ -774,7 +789,7 @@ static NhlBoolean GetConfigValue
 				return False;
 		}
 		else if (ditem->save_to_compare) {
-			if (! (vdata->cflags || DataChanged(vdata)))
+			if (! DataChanged(vdata))
 				return False;
 		}
 		sprintf(buf,"%s",
@@ -1052,9 +1067,9 @@ DProfSetValCB
 		NgSetDependentVarData(dprof,-1,False);
 	}
 	page = _NgGetPageRef(info->goid,info->pid);
-	if (rec->data_source_grid)
-		NgUpdateDataSourceGrid
-			(rec->data_source_grid,page->qvar,rec->data_profile);
+	if (rec->func_grid)
+		NgUpdateFuncGrid
+			(rec->func_grid,page->qvar,rec->data_profile);
 	
         return;
 }
@@ -1080,6 +1095,7 @@ static NhlBoolean CreateGraphic
 	char		ncl_name[128];
 	NhlString	parent = NULL;
 	int		hlu_id;
+	NhlBoolean	required_resource_missing = False;
 
 	count = 0;
 	for (i = 0; i < dprof->n_dataitems; i++) {
@@ -1091,8 +1107,34 @@ static NhlBoolean CreateGraphic
 		if (ditem->set_only)
 			continue;
 		vdata = ditem->vdata;
-		if (rec->state == _plotCREATED && ! vdata->cflags)
+		switch (vdata->set_state) {
+		case _NgDEFAULT_VAR:
+		case _NgDEFAULT_SHAPE:
+		case _NgSHAPED_VAR:
+			if (! vdata->qvar) {
+				if (ditem->required)
+					required_resource_missing = True;
+				continue;
+			}
+			break;
+		case _NgEXPRESSION:
+		case _NgUSER_EXPRESSION:
+		case _NgUNKNOWN_DATA:
+			if (! vdata->expr_val) {
+				if (ditem->required)
+					required_resource_missing = True;
+				continue;
+			}
+			break;
+		case _NgBOGUS_EXPRESSION:
+		case _NgUSER_DISABLED:
+		case _NgVAR_UNSET:
+			if (ditem->item_type == _NgMISSINGVAL)
+				break;
+			if (ditem->required)
+				required_resource_missing = True;
 			continue;
+		}
 		
 		if (count >= resdata->res_alloced) {
 			resdata = NgReallocResData(resdata,count);
@@ -1109,22 +1151,30 @@ static NhlBoolean CreateGraphic
 		case _NgCONFIG:
 			if (! GetConfigValue
 			    (rec,ditem,&resdata->values[count],
-			     &resdata->types[count],preview))
+			     &resdata->types[count],preview)) {
+				if (ditem->required)
+					required_resource_missing = True;
 				continue;
+			}
 			break;
 		case _NgDATAOBJ:
 			if (!GetDataObjValue(rec,ditem,&resdata->values[count],
-					     &resdata->types[count],preview))
+					     &resdata->types[count],preview)) {
+				if (ditem->required)
+					required_resource_missing = True;
 				continue;
-
+			}
 			break;
 		case _NgDATAVAR:
                 case _NgCOORDVAR:
 			if (preview && ! vdata->qvar)
 				continue;
-			if (! GetDataVal(vdata,&resdata->values[count],
-					 &resdata->types[count],preview))
+			if (! GetDataVal(rec,ditem,&resdata->values[count],
+					 &resdata->types[count],preview)) {
+				if (ditem->required)
+					required_resource_missing = True;
 				continue;
+			}
 			break;
 		case _NgSYNTHETIC:
 		default:
@@ -1135,6 +1185,8 @@ static NhlBoolean CreateGraphic
 		count++;
 	}
 	resdata->res_count = count;
+	if (required_resource_missing)
+		return False;
 
         setresproc[0] = NgAddResList;
 	setresdata[0] = (NhlPointer)resdata;
@@ -1258,8 +1310,35 @@ static NhlBoolean UpdateGraphic
 	char		ncl_name[128];
 	int		setresproc_count,rix;
 
-	if (! _NhlGetLayer(rec->hlu_ids[obj_ix]))
-		return True; /* it's ok */
+/*
+ * if the graphic doesn't exist, see if the conditions have changed that
+ * caused it not to be created originally. For instance, a scalar field
+ * might be added to a vector plot after it already exists.
+ */
+	if (! _NhlGetLayer(rec->hlu_ids[obj_ix])) {
+		if (! CreateGraphic(page,wk_id,obj_ix,resdata))
+			return False;
+		/*
+		 * Mark a change in any data profile item whose value is
+		 * the object created.
+		 */
+		sprintf(ncl_name,"%s_%s",
+			NrmQuarkToString(page->qvar),
+			NrmQuarkToString(qobj_name));
+		for (i = 0; i < dprof->n_dataitems; i++) {
+			NgDataItem ditem = dprof->ditems[i];
+			NgVarData vdata = ditem->vdata;
+
+			if (! (ditem->item_type == _NgDATAOBJ && 
+			       vdata->expr_val))
+				continue;
+			if (strcmp(vdata->expr_val,ncl_name))
+				continue;
+			vdata->cflags = _NgALL_CHANGE;
+			break;
+		}
+		return True;
+	}
 
 	count = 0;
 	for (i = 0; i < dprof->n_dataitems; i++) {
@@ -1269,8 +1348,13 @@ static NhlBoolean UpdateGraphic
 		if (ditem->qhlu_name != qobj_name)
 			continue;
 		vdata = ditem->vdata;
-		if (! vdata->cflags  && ! ditem->save_to_compare)
-			continue;
+		if (! vdata->cflags  && ! ditem->save_to_compare) {
+			if ( !(ditem->item_type == _NgCOORDVAR &&
+			       ditem->ref_ditem &&
+			       ditem->ref_ditem->vdata->cflags)) {
+				continue;
+			}
+		}
 		
 		if (count >= resdata->res_alloced) {
 			resdata = NgReallocResData(resdata,count);
@@ -1297,7 +1381,7 @@ static NhlBoolean UpdateGraphic
 			break;
 		case _NgDATAVAR:
                 case _NgCOORDVAR:
-			GetDataVal(vdata,&resdata->values[count],
+			GetDataVal(rec,ditem,&resdata->values[count],
 				   &resdata->types[count],False);
 			break;
 		case _NgSYNTHETIC:
@@ -1939,8 +2023,6 @@ CreateUpdate
 	 * grid.
 	 */
 
-	if (rec->data_source_grid)
-		XmLGridEditComplete(rec->data_source_grid->grid);
 	XmLGridEditComplete(rec->data_var_grid->grid);
 	/*
 	 * If all required data has not been defined, do not proceed
@@ -1952,17 +2034,16 @@ CreateUpdate
 		return;
 	}
 
-	if (VDataChanged(rec)) {
+	if (VDataChanged(rec) || rec->new_data) {
 		UpdateVData(rec);
 		NgSetPlotAppDataVars(rec->go->base.id,
 				     NrmStringToQuark(rec->public.plot_style),
 				     NrmQuarkToString(page->qvar),
 				     rec->data_profile,NULL,NULL,
 				     rec->vdata_count,rec->vdata,page->qvar);
-		if (rec->data_source_grid)
-			NgUpdateDataSourceGrid
-				(rec->data_source_grid,
-				 page->qvar,rec->data_profile);
+		if (rec->func_grid)
+			NgSynchronizeFuncGridState
+				(rec->func_grid);
 	}
 
 	SetInputDataFlag(rec);
@@ -2303,9 +2384,9 @@ AdjustPlotPageGeometry
 	}
 	twidth = MAX(twidth,w);
 
-        if (rec->data_source_grid && 
-	    XtIsManaged(rec->data_source_grid->grid)) {
-                XtVaGetValues(rec->data_source_grid->grid,
+        if (rec->func_grid && 
+	    XtIsManaged(rec->func_grid->grid)) {
+                XtVaGetValues(rec->func_grid->grid,
                               XmNwidth,&w,
                               XmNy,&y,
                               XmNheight,&h,
@@ -2347,33 +2428,33 @@ static void LinkToggleCB
         fprintf(stderr,"LinkToggleCB(IN)\n");
 #endif
 	if (! xmcb->set) {
-		if (! rec->data_source_grid)
+		if (! rec->func_grid)
 			return;
 		else {
 			/*the data source grid is not unmapped automatically */
-			XtUnmanageChild(rec->data_source_grid->grid);
-			XtUnmapWidget(rec->data_source_grid->grid);
+			XtUnmanageChild(rec->func_grid->grid);
+			XtUnmapWidget(rec->func_grid->grid);
 			AdjustPlotPageGeometry((NhlPointer)page);
 		}
 		return;
 	}
-	if (! rec->data_source_grid) {
-		rec->data_source_grid = NgCreateDataSourceGrid
+	if (! rec->func_grid) {
+		rec->func_grid = NgCreateFuncGrid
 			(rec->go,pdp->form,page->qvar,rec->data_profile);
-		XtVaSetValues(rec->data_source_grid->grid,
+		XtVaSetValues(rec->func_grid->grid,
 			      XmNtopAttachment,XmATTACH_WIDGET,
 			      XmNtopWidget,rec->link_tgl,
 			      XmNbottomAttachment,XmATTACH_NONE,
 			      XmNrightAttachment,XmATTACH_NONE,
 			      NULL);
 	}
-	NgUpdateDataSourceGrid
-		(rec->data_source_grid,page->qvar,rec->data_profile);
-	XtManageChild(rec->data_source_grid->grid);
-	XtMapWidget(rec->data_source_grid->grid);
+	NgUpdateFuncGrid
+		(rec->func_grid,page->qvar,rec->data_profile);
+	XtManageChild(rec->func_grid->grid);
+	XtMapWidget(rec->func_grid->grid);
 	(*pdp->adjust_page_geo)(page);
 
-	XtVaGetValues(rec->data_source_grid->grid,
+	XtVaGetValues(rec->func_grid->grid,
 		      XmNwidth,&width,
 		      XmNheight,&height,
 		      XmNx,&x,
@@ -2456,6 +2537,16 @@ DeactivatePlotPage
 	rec->data_profile = NULL;
         rec->activated = False;
 	rec->max_seq_num = -1;
+	NgDeactivateDataVarGrid(rec->data_var_grid);
+
+	XtVaSetValues(rec->link_tgl,
+		      XmNset,False,
+		      NULL);
+	if (rec->func_grid) {
+		XtUnmanageChild(rec->func_grid->grid);
+		XtUnmapWidget(rec->func_grid->grid);
+	}
+	
 }
 
 static void DestroyPlotPage
@@ -2465,9 +2556,11 @@ static void DestroyPlotPage
 {
 	brPlotPageRec	*rec = (brPlotPageRec *)data;
 	
-	if (rec->data_source_grid)
-		NgDestroyDataSourceGrid(rec->data_source_grid);
         NgDestroyDataVarGrid(rec->data_var_grid);
+	if (rec->func_grid)
+		NgDestroyFuncGrid(rec->func_grid);
+
+	NgDestroyPlotTree(rec->plot_tree);
         
         NhlFree(data);
 	return;
@@ -2485,7 +2578,8 @@ static NhlErrorTypes UpdatePlotPage
 #if DEBUG_PLOTPAGE
         fprintf(stderr,"in UpdatePlotPage\n");
 #endif
-	XtUnmapWidget(pdp->form);
+	if (page == pdp->pane->active_page)
+		XtUnmapWidget(pdp->form);
 
         wk_id = GetWorkstation(page,&work_created);
 #if 0
@@ -2493,7 +2587,8 @@ static NhlErrorTypes UpdatePlotPage
 #endif
 
 	CreateUpdate(page,wk_id,False);
-	XtMapWidget(pdp->form);
+	if (page == pdp->pane->active_page)
+		XtMapWidget(pdp->form);
         return NhlNOERROR;
 
 }
@@ -2535,12 +2630,12 @@ static NhlErrorTypes ResetPlotPage
 	UpdateVData(rec);
 
 	if (rec->data_profile && rec->data_profile->n_dataitems) {
-		if (rec->data_source_grid) {
-			NgUpdateDataSourceGrid
-				(rec->data_source_grid,
+		if (rec->func_grid) {
+			NgUpdateFuncGrid
+				(rec->func_grid,
 				 page->qvar,rec->data_profile);
-			if (! XtIsManaged(rec->data_source_grid->grid))
-				XtManageChild(rec->data_source_grid->grid);
+			if (! XtIsManaged(rec->func_grid->grid))
+				XtManageChild(rec->func_grid->grid);
 		}
 
 		SetInputDataFlag(rec);
@@ -2615,7 +2710,7 @@ NewPlotPage
         pdp->type_rec = (NhlPointer) rec;
         rec->go = go;
         
-        rec->data_source_grid = NULL;
+        rec->func_grid = NULL;
         rec->create_update = NULL;
         rec->auto_update = NULL;
 	rec->link_tgl = NULL;
@@ -3075,10 +3170,10 @@ _NgGetPlotPage
 	UpdateVData(rec);
 #if 0		
 	if (rec->data_profile->n_dataitems) {
-		NgUpdateDataSourceGrid(rec->data_source_grid,
+		NgUpdateFuncGrid(rec->func_grid,
 				       page->qvar,rec->data_profile);
-		if (! XtIsManaged(rec->data_source_grid->grid))
-			XtManageChild(rec->data_source_grid->grid);
+		if (! XtIsManaged(rec->func_grid->grid))
+			XtManageChild(rec->func_grid->grid);
 	}
 #endif
 	ResetPlotPage(page);

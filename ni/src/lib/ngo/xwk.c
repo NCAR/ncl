@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.26 1999-11-04 17:36:54 dbrown Exp $
+ *      $Id: xwk.c,v 1.27 1999-12-07 19:08:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -770,6 +770,9 @@ XWkDestroy
 	_NhlCBDelete(xp->broker_destroyCB);
 	if(xp->my_broker)
 		XcbDestroy(xp->xcb);
+
+	if (xp->last_colormap)
+		NhlFreeGenArray(xp->last_colormap);
 
 	return NhlNOERROR;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: plotstylemenu.c,v 1.6 1999-11-19 02:10:08 dbrown Exp $
+ *      $Id: plotstylemenu.c,v 1.7 1999-12-07 19:08:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -528,6 +528,7 @@ static NgPath ProcessPath
 
 	if (S_ISREG(statbuf.st_mode)) {
 		path = (*path->process)(path);
+		NhlFree(fullpath);
 		return path;
 	}
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: datasourcegrid.c,v 1.11 1999-12-07 19:08:39 dbrown Exp $
+ *      $Id: funcgrid.c,v 1.1 1999-12-07 19:08:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9,26 +9,39 @@
 *									*
 ************************************************************************/
 /*
- *	File:		datasourcegrid.c
+ *	File:		funcgrid.c
  *
  *	Author:		David I. Brown
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	Date:		Sun Jun 22 14:31:22 MDT 1997
+ *	Date:		Mon Dec  6 14:01:33 MST 1999
  *
  *	Description:	
  */
 
-#include <ncarg/ngo/datasourcegridP.h>
+#include <ncarg/ngo/funcgridP.h>
+#include <ncarg/ngo/browseP.h>
 #include <ncarg/ngo/xutil.h>
 #include <ncarg/ngo/stringutil.h>
+#include <ncarg/ngo/shell.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
 #include <Xm/Text.h>
+#include <Xm/PushBG.h>
+#include <Xm/ToggleBG.h>
+#include <Xm/Form.h>
 #include  <ncarg/ngo/Grid.h>
 #include <float.h>
+
+static NhlBoolean 
+QualifyAndInsertVariable
+(
+	NgFuncGridRec *fgp,
+	int                 index,
+	char                *var_string
+);
 
 #define SYSTEM_ERROR "System error"
 #define INVALID_INPUT "Invalid input"
@@ -40,6 +53,17 @@ static char *Buffer;
 static int  BufSize;
 static int  Max_Width;
 static int  CWidth;
+
+static Pixmap Check_Pixmap,No_Check_Pixmap,Mask_Pixmap,
+	Button_Out_Pixmap,Button_In_Pixmap;
+
+#define COL_COUNT	4
+
+#define NAME_COL	0
+#define EDIT_COL	1
+#define ENABLED_COL	2
+#define MODIFIED_COL	3
+
 static NhlBoolean UpdateBufSize
 (
 	int req_size
@@ -64,14 +88,14 @@ static NhlBoolean UpdateBufSize
 }
 
 static int DataIndex(
-	NgDataSourceGridRec *dsp,
+	NgFuncGridRec *fgp,
 	int row
 )
 {
 	int i,vis_count = 0;
 
-	for (i = 0; i < dsp->data_profile->n_dataitems; i++) {
-		if (! dsp->data_profile->ditems[i]->vis)
+	for (i = 0; i < fgp->data_profile->n_dataitems; i++) {
+		if (! fgp->data_profile->ditems[i]->vis)
 			continue;
 		if (vis_count == row)
 			return i;
@@ -79,10 +103,436 @@ static int DataIndex(
 	}
 	return -1;
 }
+
+static int RowIndex(
+	NgFuncGridRec *fgp,
+	int data_ix
+)
+{
+	int i,row_ix = -1;
+
+	if (data_ix >= fgp->data_profile->n_dataitems)
+		return -1;
+		
+	for (i = 0; i <= data_ix; i++) {
+		if (! fgp->data_profile->ditems[i]->vis)
+			continue;
+		row_ix++;
+	}
+	return row_ix;
+}
+
+/*
+ *******************************************************************
+ * func popup tool functions
+ */	
+
+static void PopupFuncToolAction
+(
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+);
+
+static XtActionsRec funcgridactions[] = {
+	{ "PopupFuncToolAction", PopupFuncToolAction }
+};
+
+static void AdjustFuncToolGeometry
+(
+	NhlPointer pdata
+)
+{
+        NgFuncGridRec	*fgp = (NgFuncGridRec *)pdata;
+	Position		x;
+	Dimension		w,twidth;
+
+	return;
+}
+
+static void CompleteFuncToolEdit
+(
+	NgFuncGridRec *fgp
+)
+{
+	NgFuncGrid *pub = &fgp->public;
+	NhlBoolean is_new;
+	int row_ix,data_ix,page_id;
+	Boolean restore,enable_change_state,enabled,modified = True;
+	NgDataItem ditem;
+	NhlBoolean undo_edits = False;
+
+	NhlString new_value = NgGetFuncTreeValue
+		(fgp->func_tree,&data_ix,&is_new);
+	row_ix = RowIndex(fgp,fgp->data_ix);
+	ditem = fgp->data_profile->ditems[fgp->data_ix];
+
+
+	XtVaGetValues(fgp->enable_tgl,
+		      XmNset,&enable_change_state,
+		      NULL);
+	/* 
+	 * first get current enable state
+	 * then toggle enabled state depending on whether enable tgl set
+	 */
+
+	enabled = ditem->vdata->set_state != _NgUSER_DISABLED ?
+		True : False; 
+	if (enable_change_state)
+		enabled = ! enabled;
+
+	XtVaGetValues(fgp->restore_tgl,
+		      XmNset,&restore,
+		      NULL);
+	/*
+	 * if restoring, all edit changes are ignored.
+	 * disabling is applied after the edit changes (if any)
+	 */
+
+	if (restore) {
+		ditem->vdata->set_state = fgp->orig_states[row_ix];
+		ditem->vdata->cflags = _NgSYMBOL_CHANGE;
+		modified = False;
+	}
+	else if (! is_new) {
+		;	
+	}
+	else if (! new_value) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			   "internal error retrieving func tool value"));
+		return;
+	}
+	else {
+		if (enabled)
+			QualifyAndInsertVariable(fgp,fgp->data_ix,new_value);
+		else if (enable_change_state)
+			undo_edits = True;
+	}
+	if (new_value)
+		NhlFree(new_value);
+	
+	if (! enabled) {
+		if (ditem->vdata->set_state != _NgUSER_DISABLED) {
+			if (! restore)
+				fgp->last_states[row_ix] = 
+					ditem->vdata->set_state;
+			ditem->vdata->set_state = _NgUSER_DISABLED;
+		}
+		XtVaSetValues(fgp->public.grid,
+			      XmNcolumn,ENABLED_COL,
+			      XmNrow,row_ix,
+			      XmNcellPixmap,No_Check_Pixmap,
+			      NULL);
+		if (fgp->last_states[row_ix] == fgp->orig_states[row_ix])
+			modified = False;
+	}
+	else {
+		if (ditem->vdata->set_state == _NgUSER_DISABLED) {
+			ditem->vdata->set_state = fgp->last_states[row_ix];
+			ditem->vdata->cflags = _NgALL_CHANGE;
+		}
+		XtVaSetValues(fgp->public.grid,
+			      XmNcolumn,ENABLED_COL,
+			      XmNrow,row_ix,
+			      XmNcellPixmap,Check_Pixmap,
+			      NULL);
+		if (ditem->vdata->set_state == fgp->orig_states[row_ix])
+			modified = False;
+		if (! restore)
+			fgp->last_states[row_ix] = ditem->vdata->set_state;
+	}
+	XtVaSetValues(fgp->public.grid,
+		      XmNcolumn,MODIFIED_COL,
+		      XmNrow,row_ix,
+		      XmNcellPixmap,modified ? Check_Pixmap : No_Check_Pixmap,
+		      NULL);
+
+	if (enabled && ditem->vdata->cflags) {
+		page_id = NgGetPageId
+			(fgp->go->base.id,fgp->qname,NrmNULLQUARK);
+
+		NgPostPageMessage(fgp->go->base.id,page_id,_NgNOMESSAGE,
+				  _brHLUVAR,NrmNULLQUARK,fgp->qname,
+				  _NgDATAPROFILE,fgp->data_profile,
+				  True,NULL,True);
+	}
+	else if (enable_change_state) {
+		NgUpdateFuncTree(fgp->func_tree,fgp->qname,
+				 fgp->data_ix,fgp->data_profile,enabled);
+	}
+
+	return;
+}
+static void FuncToolCancelCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+        NgFuncGridRec *fgp = (NgFuncGridRec *)udata;
+	int row_ix = RowIndex(fgp,fgp->data_ix);
+
+	XtVaSetValues(fgp->public.grid,
+		      XmNcolumn,EDIT_COL,
+		      XmNrow,row_ix,
+		      XmNcellPixmap,Button_Out_Pixmap,
+		      NULL);
+
+	NgGOPopdown(fgp->func_tool_id);
+
+	return;
+}
+
+
+static void FuncToolOKCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+        NgFuncGridRec *fgp = (NgFuncGridRec *)udata;
+	int row_ix = RowIndex(fgp,fgp->data_ix);
+
+	XtVaSetValues(fgp->public.grid,
+		      XmNcolumn,EDIT_COL,
+		      XmNrow,row_ix,
+		      XmNcellPixmap,Button_Out_Pixmap,
+		      NULL);
+
+	NgGOPopdown(fgp->func_tool_id);
+
+	CompleteFuncToolEdit(fgp);
+
+	return;
+}
+
+static void SetFuncToolState
+(
+	NgFuncGridRec *fgp,
+	NgDataItem	    ditem
+)
+{
+	NhlString	enable_str;
+	XmString	xm_enable_str;
+	NhlBoolean	enabled;
+	NhlBoolean	modified;
+	int		row_ix;
+
+	row_ix = RowIndex(fgp,fgp->data_ix);
+
+	enabled = ditem->vdata->set_state != _NgUSER_DISABLED;
+	if (enabled)
+		modified = ditem->vdata->set_state != fgp->orig_states[row_ix];
+	else
+		modified = 
+			fgp->last_states[row_ix] != fgp->orig_states[row_ix];
+		
+
+	XtVaSetValues(fgp->restore_tgl,
+		      XmNset,False,
+		      XmNsensitive,modified && enabled,
+		      NULL);
+	enable_str = enabled ? "Disable" : "Enable";
+	xm_enable_str = NgXAppCreateXmString
+		(fgp->go->go.appmgr,enable_str);
+
+	XtVaSetValues(fgp->enable_tgl,
+		      XmNset,False,
+		      XmNlabelString,xm_enable_str,
+		      NULL);
+	NgXAppFreeXmString(fgp->go->go.appmgr,xm_enable_str);
+
+}
+static void FuncToolApplyCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+        NgFuncGridRec *fgp = (NgFuncGridRec *)udata;
+
+	CompleteFuncToolEdit(fgp);
+	
+	SetFuncToolState(fgp,fgp->data_profile->ditems[fgp->data_ix]);
+
+	return;
+}
+
+static void CreateFuncTool
+(
+	NgGO		go,
+	NhlPointer	data
+)
+{
+        NgFuncGridRec *fgp = (NgFuncGridRec *)data;
+	Widget apply,restore,form;
+	char 		buf[256];
+	NgDataItem	ditem;
+	NhlBoolean	edit_enabled;
+
+#if DEBUG_DATA_VAR_GRID      
+	fprintf(stderr,"in create func tool\n");
+#endif        
+
+	ditem = fgp->data_profile->ditems[fgp->data_ix];
+	if (! ditem)
+		return;
+
+	XtAddCallback(go->go.manager,
+                      XmNokCallback,FuncToolOKCB,fgp);
+	XtAddCallback(go->go.manager,
+                      XmNcancelCallback,FuncToolCancelCB,fgp);
+
+	apply = XtVaCreateManagedWidget
+		("Apply",xmPushButtonGadgetClass,go->go.manager,NULL);
+	XtAddCallback(apply,XmNactivateCallback,FuncToolApplyCB,fgp);
+
+	sprintf(buf,"Edit %s",ditem->name);
+
+	edit_enabled = ditem->vdata->set_state != _NgUSER_DISABLED;
+
+	XtVaSetValues(go->go.shell,
+		      XmNtitle,buf,
+		      NULL);
+
+	form = XtVaCreateManagedWidget
+		("form",xmFormWidgetClass,go->go.manager,NULL);
+
+	fgp->func_tree = NgCreateFuncTree(go,form,fgp->qname,
+					  fgp->data_ix,
+					  fgp->data_profile,edit_enabled);
+
+	XtVaSetValues(fgp->func_tree->tree,
+		      XmNbottomAttachment,XmATTACH_NONE,
+		      XmNrightAttachment,XmATTACH_FORM,
+		      NULL);
+
+	fgp->restore_tgl  = XtVaCreateManagedWidget
+		("Restore Defaults",
+		 xmToggleButtonGadgetClass,form,
+		 XmNtopOffset,8,
+		 XmNtopAttachment,XmATTACH_WIDGET,
+		 XmNtopWidget,fgp->func_tree->tree,
+		 XmNrightAttachment,XmATTACH_NONE,
+		 XmNset,False,
+		 NULL);
+
+	fgp->enable_tgl  = XtVaCreateManagedWidget
+		("Disable",
+		 xmToggleButtonGadgetClass,form,
+		 XmNtopOffset,8,
+		 XmNtopAttachment,XmATTACH_WIDGET,
+		 XmNtopWidget,fgp->func_tree->tree,
+		 XmNleftAttachment,XmATTACH_WIDGET,
+		 XmNleftWidget,fgp->restore_tgl,
+		 XmNrightAttachment,XmATTACH_NONE,
+		 XmNset,False,
+		 NULL);
+
+
+	_NgGOWidgetTranslations(go,fgp->func_tree->tree);
+
+	SetFuncToolState(fgp,fgp->data_profile->ditems[fgp->data_ix]);
+
+}
+
+static void PopupFuncTool
+(
+	NgFuncGridRec *fgp,
+	int		    row
+)
+{
+	char 		buf[256];
+	NgResInfo	res_info;
+	NgGO		func_go;
+	XtPointer	rowptr;
+	NgDataItem	ditem;
+	rowptr =  XmLGridGetRow(fgp->public.grid,XmCONTENT,row);
+
+	XtVaGetValues(fgp->public.grid,
+		      XmNrowPtr,rowptr,
+                      XmNrowUserData,&fgp->data_ix,
+                      NULL);
+	ditem = fgp->data_profile->ditems[fgp->data_ix];
+	if (! ditem)
+		return;
+	res_info = ditem->res_info;
+	if (! (res_info))
+		return;
+
+	if (fgp->func_tool_id <= NhlNULLOBJID) {
+		NhlVACreate(&fgp->func_tool_id,"FuncTool",
+			    NgshellClass,fgp->go->base.id,
+			    NgNshContentFunc,CreateFuncTool,
+			    NgNshContentFuncData,fgp,
+			    NULL);
+	}
+	else {
+		NhlBoolean edit_enabled;
+		func_go = (NgGO)_NhlGetLayer(fgp->func_tool_id);
+		if (! func_go) {
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				   "error creating shapetool dialog"));
+			return;
+		}
+		sprintf(buf,"Edit %s",ditem->name);
+		XtVaSetValues(func_go->go.shell,
+			      XmNtitle,buf,
+			      NULL);
+
+		SetFuncToolState(fgp,ditem);
+
+		edit_enabled = ditem->vdata->set_state != _NgUSER_DISABLED;
+		NgUpdateFuncTree(fgp->func_tree,fgp->qname,
+				 fgp->data_ix,fgp->data_profile,edit_enabled);
+	}
+	
+	NgGOPopup(fgp->func_tool_id);
+
+}
+static void PopupFuncToolAction
+(
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+)
+{
+        NgFuncGridRec *fgp;
+	XButtonEvent	*xb = (XButtonEvent *) xev;
+	unsigned char	row_type,col_type;
+	int		row,col;
+
+#if DEBUG_DATA_VAR_GRID      
+	fprintf(stderr,"in popup shaper action\n");
+#endif
+	XmLGridXYToRowColumn(w,xb->x,xb->y,&row_type,&row,&col_type,&col);
+
+	if (row_type != XmCONTENT)
+		return;
+
+	XtVaGetValues(w,
+                      XmNuserData,(void*)&fgp,
+                      NULL);
+
+	PopupFuncTool(fgp,row);
+
+	return;
+}
+
+/*
+ *************************************************************************
+ * end of func popup tool functions
+ */
+
 static char *
 ColumnWidths
 (
-	NgDataSourceGridRec *dsp
+	NgFuncGridRec *fgp
 )
 {
 	int	i;
@@ -90,23 +540,25 @@ ColumnWidths
         int	twidth = 0;
 	Dimension	fwidth;
 
-	XtVaGetValues(XtParent(dsp->parent),
+	XtVaGetValues(XtParent(fgp->parent),
 		      XmNwidth,&fwidth,
 		      NULL);
         
         Buffer[0] = '\0';
-	for (i=0; i < 2; i++) {
-                int width = dsp->cwidths[i];
+	for (i=0; i < 4; i++) {
+                int width = fgp->cwidths[i];
+#if 0
                 if (width + twidth > Max_Width)
                         width = Max_Width - twidth;
 		if (i == 1) 
 			width = MAX(width,fwidth/CWidth - twidth - CWidth);
+#endif
                 twidth += width;
                 sprintf(sizestr,"%dc ",width);
 		strcat(Buffer,sizestr);
 	}
         Buffer[strlen(Buffer)-1] = '\0';
-#if DEBUG_DATA_SOURCE_GRID      
+#if DEBUG_FUNC_GRID      
         fprintf(stderr,"%s\n",Buffer);
 #endif        
         return Buffer;
@@ -115,21 +567,37 @@ ColumnWidths
 static char *
 TitleText
 (
-	NgDataSourceGridRec	*dsp
+	NgFuncGridRec	*fgp
 )
 {
-        int len;
+        int i,len = 0;
         
-#if 0
-        sprintf(Buffer,"%s|",NrmQuarkToString(dsp->qname));
-#endif
-        sprintf(Buffer,"%s|","Data Resources");
-        len = dsp->cwidths[0] = strlen(Buffer);
+	for (i = 0; i < COL_COUNT; i++) {
+		switch (i) {
+		case NAME_COL:
+			sprintf(&Buffer[len],"%s|","Resource Link Functions");
+			fgp->cwidths[0] = strlen(Buffer) - len;
+			len = strlen(Buffer);
+			break;
+		case EDIT_COL:
+			sprintf(&Buffer[len],"%s|","Edit");
+			fgp->cwidths[1] = strlen(Buffer) - len;
+			len = strlen(Buffer);
+			break;
+		case ENABLED_COL:
+			sprintf(&Buffer[len],"%s|","Enabled");
+			fgp->cwidths[2] = strlen(Buffer) - len;
+			len = strlen(Buffer);
+			break;
+		case MODIFIED_COL:
+			sprintf(&Buffer[len],"%s","Modified");
+			fgp->cwidths[3] = strlen(Buffer) - len;
+			len = strlen(Buffer);
+			break;
+		}
+	}
         
-        sprintf(&Buffer[len],"%s","Values");
-        dsp->cwidths[1] = strlen(Buffer) - len;
-        
-#if DEBUG_DATA_SOURCE_GRID      
+#if DEBUG_FUNC_GRID      
         fprintf(stderr,"%s\n",Buffer);
 #endif        
 
@@ -139,7 +607,7 @@ TitleText
 static XmString
 Column0String
 (
-	NgDataSourceGridRec	*dsp,
+	NgFuncGridRec	*fgp,
         int			dataix
 )
 {
@@ -147,18 +615,18 @@ Column0String
 	
 
 
-	if (! (dsp->data_profile && dsp->data_profile->ditems[dataix]))
+	if (! (fgp->data_profile && fgp->data_profile->ditems[dataix]))
 		sprintf(Buffer,"<null>");
 	else if (! UpdateBufSize
-		 (strlen(dsp->data_profile->ditems[dataix]->name)))
+		 (strlen(fgp->data_profile->ditems[dataix]->name)))
 		sprintf(Buffer,"<null>");
 	else {
-		sprintf(Buffer,"%s",dsp->data_profile->ditems[dataix]->name);
+		sprintf(Buffer,"%s",fgp->data_profile->ditems[dataix]->name);
 	}
 
-	dsp->cwidths[0] = MAX(dsp->cwidths[0],strlen(Buffer)+2);
+	fgp->cwidths[0] = MAX(fgp->cwidths[0],strlen(Buffer)+2);
 
-	xmstring = NgXAppCreateXmString(dsp->go->go.appmgr,Buffer);
+	xmstring = NgXAppCreateXmString(fgp->go->go.appmgr,Buffer);
 
 	return xmstring;
 }
@@ -166,7 +634,7 @@ Column0String
 static XmString
 Column1String
 (
-	NgDataSourceGridRec	*dsp,
+	NgFuncGridRec	*fgp,
         int			dataix
 )
 {
@@ -174,7 +642,7 @@ Column1String
 	XmString xmstring;
 	int i;
 
-	vdata = dsp->data_profile->ditems[dataix]->vdata;
+	vdata = fgp->data_profile->ditems[dataix]->vdata;
 
 	if (!vdata) {
 		sprintf(Buffer,"<null>");
@@ -237,9 +705,9 @@ Column1String
 		/* back up 1 to remove final comma */
 		Buffer[strlen(Buffer)-1] = ')';
 	}
-	dsp->cwidths[1] = MAX(dsp->cwidths[1],strlen(Buffer)+10);
+	fgp->cwidths[1] = MAX(fgp->cwidths[1],strlen(Buffer)+10);
 
-	xmstring = NgXAppCreateXmString(dsp->go->go.appmgr,Buffer);
+	xmstring = NgXAppCreateXmString(fgp->go->go.appmgr,Buffer);
 
 	return xmstring;
 }
@@ -286,11 +754,11 @@ static NhlBoolean ConformingVar
 
 static void
 ErrorMessage(
-	NgDataSourceGridRec *dsp,
+	NgFuncGridRec *fgp,
 	NhlString	    message
 )
 {
-	XmLMessageBox(dsp->public.grid,message,True);
+	XmLMessageBox(fgp->public.grid,message,True);
 
 	return;
 }
@@ -466,7 +934,7 @@ UnshapedCoordVar
 static void
 GetUnshapedRegularVar
 (
-	NgDataSourceGridRec *dsp,
+	NgFuncGridRec *fgp,
 	char                *var,
 	NrmQuark	    *qvar
 )
@@ -478,7 +946,7 @@ GetUnshapedRegularVar
 
 	dl = NclGetVarList();
 	if (! dl) {
-		ErrorMessage(dsp,SYSTEM_ERROR);
+		ErrorMessage(fgp,SYSTEM_ERROR);
 		return;
 	}
 
@@ -497,7 +965,7 @@ GetUnshapedRegularVar
 static void
 GetUnshapedFileVar
 (
-	NgDataSourceGridRec *dsp,
+	NgFuncGridRec *fgp,
 	char                *file,
 	char		    *var,
 	NrmQuark	    *qfile,
@@ -512,7 +980,7 @@ GetUnshapedFileVar
 
 	dl = NclGetFileList();
 	if (! dl) {
-		ErrorMessage(dsp,SYSTEM_ERROR);
+		ErrorMessage(fgp,SYSTEM_ERROR);
 		return;
 	}
 	for (finfo = dl; finfo; finfo = finfo->next) {
@@ -541,7 +1009,7 @@ GetUnshapedFileVar
 static void
 GetUnshapedFileCoordVar
 (
-	NgDataSourceGridRec *dsp,
+	NgFuncGridRec *fgp,
 	char                *file,
 	char		    *var,
 	char		    *coord,
@@ -558,7 +1026,7 @@ GetUnshapedFileCoordVar
 
 	dl = NclGetFileList();
 	if (! dl) {
-		ErrorMessage(dsp,SYSTEM_ERROR);
+		ErrorMessage(fgp,SYSTEM_ERROR);
 		return;
 	}
 	for (finfo = dl; finfo; finfo = finfo->next) {
@@ -604,7 +1072,7 @@ GetUnshapedFileCoordVar
 static void
 GetUnshapedCoordVar
 (
-	NgDataSourceGridRec *dsp,
+	NgFuncGridRec *fgp,
 	char                *var,
 	char		    *coord,
 	NrmQuark	    *qvar,
@@ -619,7 +1087,7 @@ GetUnshapedCoordVar
 
 	dl = NclGetVarList();
 	if (! dl) {
-		ErrorMessage(dsp,SYSTEM_ERROR);
+		ErrorMessage(fgp,SYSTEM_ERROR);
 		return;
 	}
 	for (vinfo = dl; vinfo; vinfo = vinfo->next) {
@@ -781,27 +1249,31 @@ PossibleNclExpression
 
 static NhlBoolean
 SaveExpressionString(
-	NgDataSourceGridRec *dsp,
+	NgFuncGridRec *fgp,
 	int                 index,
 	char                *var_string
 )
 {
-	NgDataProfile prof =  dsp->data_profile;
+	NgDataProfile prof =  fgp->data_profile;
 	NgVarData vdata = prof->ditems[index]->vdata;
+	NhlBoolean	eval;
+
+	eval = prof->ditems[index]->save_to_compare ? 
+		_NgNOEVAL : _NgCONDITIONAL_EVAL;
 
 	return NgSetExpressionVarData
-		(dsp->go->base.id,vdata,var_string,_NgCONDITIONAL_EVAL,True);
+		(fgp->go->base.id,vdata,var_string,eval,True);
 }
 
 static NhlBoolean 
 QualifyAndInsertVariable
 (
-	NgDataSourceGridRec *dsp,
+	NgFuncGridRec *fgp,
 	int                 index,
 	char                *var_string
 )
 {
-	NgDataProfile prof =  dsp->data_profile;
+	NgDataProfile prof =  fgp->data_profile;
 	NrmQuark qfile = NrmNULLQUARK,
 		qvar = NrmNULLQUARK,qcoord = NrmNULLQUARK;
 	char *vsp,*vep,*fsp,*fep,*csp,*cep;
@@ -854,7 +1326,7 @@ QualifyAndInsertVariable
 		char buf[512];
 		strncpy(buf,vsp,vep-vsp);
 		buf[vep-vsp] = '\0';
-		GetUnshapedRegularVar(dsp,buf,&qvar);
+		GetUnshapedRegularVar(fgp,buf,&qvar);
 		if (! qvar) {
 			message = INVALID_INPUT;
 			goto error_ret;
@@ -867,7 +1339,7 @@ QualifyAndInsertVariable
 		strncpy(vbuf,vsp,vep-vsp);
 		vbuf[vep-vsp] = '\0';
 
-		GetUnshapedFileVar(dsp,fbuf,vbuf,&qfile,&qvar);
+		GetUnshapedFileVar(fgp,fbuf,vbuf,&qfile,&qvar);
 		if (! (qvar && qfile)) {
 			message = INVALID_INPUT;
 			goto error_ret;
@@ -884,7 +1356,7 @@ QualifyAndInsertVariable
 		cbuf[cep-csp] = '\0';
 
 		GetUnshapedFileCoordVar
-			(dsp,fbuf,vbuf,cbuf,&qfile,&qvar,&qcoord);
+			(fgp,fbuf,vbuf,cbuf,&qfile,&qvar,&qcoord);
 		if (! (qvar && qfile && qcoord)) {
 			message = INVALID_INPUT;
 			goto error_ret;
@@ -897,14 +1369,14 @@ QualifyAndInsertVariable
 		strncpy(cbuf,csp,cep-csp);
 		cbuf[cep-csp] = '\0';
 
-		GetUnshapedCoordVar(dsp,vbuf,cbuf,&qvar,&qcoord);
+		GetUnshapedCoordVar(fgp,vbuf,cbuf,&qvar,&qcoord);
 		if (! (qvar && qcoord)) {
 			message = INVALID_INPUT;
 			goto error_ret;
 		}
 	}
 	else if (PossibleNclExpression(var_string,&vsp)) {
-		if (! SaveExpressionString(dsp,index,vsp)) {
+		if (! SaveExpressionString(fgp,index,vsp)) {
 			message = INVALID_INPUT;
 			goto error_ret;
 		}
@@ -929,7 +1401,7 @@ QualifyAndInsertVariable
 			case _NgBOGUS_EXPRESSION:
 				if (last_vdata->expr_val) {
 					NgSetExpressionVarData
-						(dsp->go->base.id,vdata,
+						(fgp->go->base.id,vdata,
 						 last_vdata->expr_val,
 						 _NgCONDITIONAL_EVAL,user);
 					break;
@@ -1003,7 +1475,7 @@ QualifyAndInsertVariable
 	return True;
 
  error_ret:
-	ErrorMessage(dsp,message);
+	ErrorMessage(fgp,message);
 
         if (dl)
                 NclFreeDataList(dl);
@@ -1020,16 +1492,16 @@ EditCB
 	XtPointer	cb_data
 )
 {
-        NgDataSourceGridRec *dsp = (NgDataSourceGridRec *)data;
-	NgDataSourceGrid *pub = &dsp->public;
+        NgFuncGridRec *fgp = (NgFuncGridRec *)data;
+	NgFuncGrid *pub = &fgp->public;
         XmLGridCallbackStruct *cb = (XmLGridCallbackStruct *) cb_data;
         XmLGridColumn colptr;
         XmLGridRow rowptr;
 	char *new_string,*save_text = NULL;
 	int data_ix;
 
-#if DEBUG_DATA_SOURCE_GRID
-	printf("entered DataSourceGrid EditCB\n");
+#if DEBUG_FUNC_GRID
+	printf("entered FuncGrid EditCB\n");
 #endif
 
 
@@ -1038,122 +1510,122 @@ EditCB
 
         switch (cb->reason) {
             case XmCR_EDIT_INSERT:
-#if DEBUG_DATA_SOURCE_GRID      
+#if DEBUG_FUNC_GRID      
                     fprintf(stderr,"edit insert\n");
 #endif
-                    XtVaSetValues(dsp->text,
+                    XtVaSetValues(fgp->text,
                                   XmNcursorPosition,0,
                                   XmNborderWidth,2,
                                   XmNcursorPositionVisible,True,
-				  XmNbackground,dsp->go->go.select_pixel,
+				  XmNbackground,fgp->go->go.select_pixel,
                                   NULL);
-		    if (! dsp->text_dropped) {
-			    XmTextSetInsertionPosition(dsp->text,0);
+		    if (! fgp->text_dropped) {
+			    XmTextSetInsertionPosition(fgp->text,0);
 		    }
 		    else {
 			    char *cur_string;
-			    dsp->text_dropped = False;
-			    XmStringGetLtoR(dsp->edit_save_string,
+			    fgp->text_dropped = False;
+			    XmStringGetLtoR(fgp->edit_save_string,
 					    XmFONTLIST_DEFAULT_TAG,
 					    &cur_string);
-			    XmTextInsert(dsp->text,0,cur_string);
-			    XmTextSetInsertionPosition(dsp->text,
+			    XmTextInsert(fgp->text,0,cur_string);
+			    XmTextSetInsertionPosition(fgp->text,
 						       strlen(cur_string));
 			    XtFree(cur_string);
 		    }
-		    dsp->in_edit = True;
+		    fgp->in_edit = True;
                     return;
             case XmCR_EDIT_BEGIN:
-#if DEBUG_DATA_SOURCE_GRID
+#if DEBUG_FUNC_GRID
                     fprintf(stderr,"edit begin\n");
 #endif
 
-		    if (dsp->edit_save_string)
-			    XmStringFree(dsp->edit_save_string);
+		    if (fgp->edit_save_string)
+			    XmStringFree(fgp->edit_save_string);
                     XtVaGetValues
                             (pub->grid,
                              XmNcolumnPtr,colptr,
                              XmNrowPtr,rowptr,
-                             XmNcellString,&dsp->edit_save_string,
+                             XmNcellString,&fgp->edit_save_string,
                              NULL);
         
-                    XtVaSetValues(dsp->text,
-				  XmNbackground,dsp->go->go.select_pixel,
+                    XtVaSetValues(fgp->text,
+				  XmNbackground,fgp->go->go.select_pixel,
                                   NULL);
-		    dsp->in_edit = True;
+		    fgp->in_edit = True;
                     return;
             case XmCR_EDIT_CANCEL:
-#if DEBUG_DATA_SOURCE_GRID      
+#if DEBUG_FUNC_GRID      
                     fprintf(stderr,"edit cancel\n");
 #endif
-                    XtVaSetValues(dsp->text,
-				  XmNbackground,dsp->go->go.edit_field_pixel,
+                    XtVaSetValues(fgp->text,
+				  XmNbackground,fgp->go->go.edit_field_pixel,
                                   NULL);
-		    dsp->in_edit = False;
+		    fgp->in_edit = False;
                     return;
             case XmCR_EDIT_COMPLETE:
-#if DEBUG_DATA_SOURCE_GRID      
+#if DEBUG_FUNC_GRID      
                     fprintf(stderr,"edit complete\n");
 #endif
-		    if (! dsp->in_edit) 
+		    if (! fgp->in_edit) 
 			    return;
 
-                    XtVaSetValues(dsp->text,
-				  XmNbackground,dsp->go->go.edit_field_pixel,
+                    XtVaSetValues(fgp->text,
+				  XmNbackground,fgp->go->go.edit_field_pixel,
                                   NULL);
 
-		    dsp->in_edit = False;
+		    fgp->in_edit = False;
                     break;
         }
 /*
  * Only get here on edit complete
  */
 
-	new_string = XmTextGetString(dsp->text);
+	new_string = XmTextGetString(fgp->text);
 
-	data_ix = DataIndex(dsp,cb->row);
-	if (dsp->edit_save_string) {
-		XmStringGetLtoR(dsp->edit_save_string,
+	data_ix = DataIndex(fgp,cb->row);
+	if (fgp->edit_save_string) {
+		XmStringGetLtoR(fgp->edit_save_string,
 				XmFONTLIST_DEFAULT_TAG,&save_text);
 	}
 	if (! new_string ||
 	    (save_text && ! strcmp(new_string,save_text)) ||
-	    ! QualifyAndInsertVariable(dsp,data_ix,new_string)) {
-		if (dsp->edit_save_string)
+	    ! QualifyAndInsertVariable(fgp,data_ix,new_string)) {
+		if (fgp->edit_save_string)
 			XtVaSetValues(pub->grid,
 				      XmNcolumn,1,
 				      XmNrow,cb->row,
-				      XmNcellString,dsp->edit_save_string,
+				      XmNcellString,fgp->edit_save_string,
 				      NULL);
 	}
 	else {
-		NgDataProfile dprof = dsp->data_profile;
+		NgDataProfile dprof = fgp->data_profile;
 		int page_id;
 		XmString xmstr;
 
-		xmstr = Column0String(dsp,data_ix);
+		xmstr = Column0String(fgp,data_ix);
 
 		XtVaSetValues(pub->grid,
 			      XmNrow,cb->row,
 			      XmNcolumn,0,
 			      XmNcellString,xmstr,
 			      NULL);
-		NgXAppFreeXmString(dsp->go->go.appmgr,xmstr);
-
-		xmstr = Column1String(dsp,data_ix);
+		NgXAppFreeXmString(fgp->go->go.appmgr,xmstr);
+#if 0
+		xmstr = Column1String(fgp,data_ix);
 
 		XtVaSetValues(pub->grid,
 			      XmNrow,cb->row,
 			      XmNcolumn,1,
 			      XmNcellString,xmstr,
 			      NULL);
-		NgXAppFreeXmString(dsp->go->go.appmgr,xmstr);
-
+		NgXAppFreeXmString(fgp->go->go.appmgr,xmstr);
+#endif
 		page_id = NgGetPageId
-			(dsp->go->base.id,dsp->qname,NrmNULLQUARK);
+			(fgp->go->base.id,fgp->qname,NrmNULLQUARK);
 
-		NgPostPageMessage(dsp->go->base.id,page_id,_NgNOMESSAGE,
-				  _brHLUVAR,NrmNULLQUARK,dsp->qname,
+		NgPostPageMessage(fgp->go->base.id,page_id,_NgNOMESSAGE,
+				  _brHLUVAR,NrmNULLQUARK,fgp->qname,
 				  _NgDATAPROFILE,dprof,True,NULL,True);
 
 	}
@@ -1164,6 +1636,38 @@ EditCB
 }
 
 static void
+ToggleEnabled
+(
+	NgFuncGridRec *fgp,
+	int		    row
+)
+{
+	NgDataProfile dprof = fgp->data_profile;
+	int data_ix = DataIndex(fgp,row);
+	NgDataItem ditem = dprof->ditems[data_ix];
+
+	if (ditem->vdata->set_state != _NgUSER_DISABLED) {
+		fgp->last_states[row] = ditem->vdata->set_state;
+		ditem->vdata->set_state = _NgUSER_DISABLED;
+		XtVaSetValues(fgp->public.grid,
+			      XmNcolumn,ENABLED_COL,
+			      XmNrow,row,
+			      XmNcellPixmap,No_Check_Pixmap,
+			      NULL);
+	}
+	else {
+		ditem->vdata->set_state = fgp->last_states[row];
+		XtVaSetValues(fgp->public.grid,
+			      XmNcolumn,ENABLED_COL,
+			      XmNrow,row,
+			      XmNcellPixmap,Check_Pixmap,
+			      NULL);
+	}
+	return;
+}
+
+	
+static void
 SelectCB
 (
 	Widget		w,
@@ -1171,15 +1675,15 @@ SelectCB
 	XtPointer	cb_data
 )
 {
-        NgDataSourceGridRec *dsp = (NgDataSourceGridRec *)data;
-	NgDataSourceGrid *pub = &dsp->public;
+        NgFuncGridRec *fgp = (NgFuncGridRec *)data;
+	NgFuncGrid *pub = &fgp->public;
         XmLGridCallbackStruct *cb = (XmLGridCallbackStruct *) cb_data;
         Boolean	editable;
 	XmLGridColumn colptr;
 	XmLGridRow rowptr;
 
-#if DEBUG_DATA_SOURCE_GRID      
-	fprintf(stderr,"entered DataSourceGrid SelectCB\n");
+#if DEBUG_FUNC_GRID      
+	fprintf(stderr,"entered FuncGrid SelectCB\n");
 #endif
 
         if (! Colors_Set) {
@@ -1197,114 +1701,206 @@ SelectCB
         }
 
 
-	if (dsp->selected_row > -1) {
+	if (fgp->selected_row > -1) {
 
                     /* restore last selected */
 		XtVaSetValues(pub->grid,
-			      XmNcolumn,0,
-			      XmNrow,dsp->selected_row,
+			      XmNcolumn,NAME_COL,
+			      XmNrow,fgp->selected_row,
 			      XmNcellForeground,Foreground,
 			      XmNcellBackground,Background,
 			      NULL);
-		if (dsp->in_edit) {
+		XtVaSetValues(pub->grid,
+			      XmNcolumn,EDIT_COL,
+			      XmNrow,fgp->selected_row,
+			      XmNcellPixmap,Button_Out_Pixmap,
+			      NULL);
+
+		if (fgp->in_edit) {
 			XmLGridEditComplete(pub->grid);
 		}
 	}
-	colptr = XmLGridGetColumn(pub->grid,XmCONTENT,1);
+	colptr = XmLGridGetColumn(pub->grid,XmCONTENT,cb->column);
 	rowptr = XmLGridGetRow(pub->grid,XmCONTENT,cb->row);
+
+        XtVaSetValues(pub->grid,
+                      XmNcolumn,NAME_COL,
+                      XmNrow,cb->row,
+                      XmNcellForeground,Background,
+                      XmNcellBackground,Foreground,
+                      NULL);
+	fgp->selected_row = cb->row;
+
+	switch (cb->column) {
+	case NAME_COL:
+	case MODIFIED_COL:
+	case ENABLED_COL:
+		return;
+	case EDIT_COL:
+		XtVaSetValues(pub->grid,
+			      XmNcolumn,EDIT_COL,
+			      XmNrow,cb->row,
+			      XmNcellPixmap,Button_In_Pixmap,
+			      NULL);
+		PopupFuncTool(fgp,cb->row);
+		break;
+#if 0
+	case ENABLED_COL:
+		ToggleEnabled(fgp,cb->row);
+#endif
+	}
+#if 0
 
 	XtVaGetValues(pub->grid,
 		      XmNcolumnPtr,colptr,
 		      XmNrowPtr,rowptr,
 		      XmNcellEditable,&editable,
 		      NULL);
-        XtVaSetValues(pub->grid,
-                      XmNcolumn,0,
-                      XmNrow,cb->row,
-                      XmNcellForeground,Background,
-                      XmNcellBackground,Foreground,
-                      NULL);
 	if (editable) {
 
-		if (! dsp->text_dropped) {
-			if (dsp->edit_save_string)
-				XmStringFree(dsp->edit_save_string);
+		if (! fgp->text_dropped) {
+			if (fgp->edit_save_string)
+				XmStringFree(fgp->edit_save_string);
 			XtVaGetValues
 				(pub->grid,
 				 XmNcolumnPtr,colptr,
 				 XmNrowPtr,rowptr,
-				 XmNcellString,&dsp->edit_save_string,
+				 XmNcellString,&fgp->edit_save_string,
 				 NULL);
 		}
 		XmLGridEditBegin(pub->grid,True,cb->row,True);
 	}
+#endif
 
-	dsp->selected_row = cb->row;
 
 	return;
 }
 
 
-NhlErrorTypes NgUpdateDataSourceGrid
+NhlErrorTypes NgSynchronizeFuncGridState
 (
-        NgDataSourceGrid	*data_source_grid,
+        NgFuncGrid	*func_grid
+)
+{
+        NgFuncGridRec *fgp;
+	NgDataItem ditem;
+        NhlBoolean edit_enabled;
+
+        fgp = (NgFuncGridRec *) func_grid;
+        if (!fgp) return NhlFATAL;
+
+	if (fgp->func_tool_id == NhlNULLOBJID)
+		return NhlNOERROR;
+
+	XmLGridEditComplete(fgp->func_tree->tree);
+
+	ditem = fgp->data_profile->ditems[fgp->data_ix];
+	if (! ditem)
+		return NhlFATAL;
+	
+	edit_enabled = ditem->vdata->set_state != _NgUSER_DISABLED;
+	NgUpdateFuncTree(fgp->func_tree,fgp->qname,
+			 fgp->data_ix,fgp->data_profile,edit_enabled);
+
+	return NhlNOERROR;
+}
+
+
+NhlErrorTypes NgUpdateFuncGrid
+(
+        NgFuncGrid	*func_grid,
         NrmQuark		qname,
         NgDataProfile		data_profile
        )
 {
-        NgDataSourceGridRec *dsp;
+        NgFuncGridRec *fgp;
         int	i;
         static NhlBoolean	first = True;
 	int	row;
         
-        dsp = (NgDataSourceGridRec *) data_source_grid;
-        if (!dsp) return NhlFATAL;
+        fgp = (NgFuncGridRec *) func_grid;
+        if (!fgp) return NhlFATAL;
         if (first) {
                 int		root_w;
                 short		cw,ch;
                 XmFontList      fontlist;
                 
-                XtVaGetValues(data_source_grid->grid,
+                XtVaGetValues(func_grid->grid,
                               XmNfontList,&fontlist,
                               NULL);
                 XmLFontListGetDimensions(fontlist,&cw,&ch,True);
-                root_w = WidthOfScreen(XtScreen(data_source_grid->grid));
+                root_w = WidthOfScreen(XtScreen(func_grid->grid));
                 Max_Width = root_w / cw - cw;
 		CWidth = cw;
                 first = False;
         }
-        dsp->data_profile = data_profile;
-        dsp->qname = qname;
-	dsp->vis_row_count = 0;
+        fgp->data_profile = data_profile;
+        fgp->qname = qname;
+	fgp->vis_row_count = 0;
         for (i = 0; i < data_profile->n_dataitems; i++) {
 		if (data_profile->ditems[i]->vis)
-			dsp->vis_row_count++;
+			fgp->vis_row_count++;
         }
-        XtVaSetValues(data_source_grid->grid,
+	
+        XtVaSetValues(func_grid->grid,
 		      XmNselectionPolicy,XmSELECT_NONE,
-                      XmNrows,dsp->vis_row_count,
+                      XmNrows,fgp->vis_row_count,
+                      NULL);
+        XtVaSetValues(func_grid->grid,
+		      XmNcolumn,EDIT_COL,
+                      XmNrowRangeStart,0,
+		      XmNrowRangeEnd,fgp->vis_row_count-1,
+		      XmNcellType,XmPIXMAP_CELL,
+		      XmNcellPixmap,Button_Out_Pixmap,
+		      XmNcellBackground,fgp->go->go.edit_field_pixel,
+                      NULL);
+        XtVaSetValues(func_grid->grid,
+		      XmNcolumn,ENABLED_COL,
+                      XmNrowRangeStart,0,
+		      XmNrowRangeEnd,fgp->vis_row_count-1,
+		      XmNcellType,XmPIXMAP_CELL,
+		      XmNcellPixmap,Check_Pixmap,
+                      NULL);
+        XtVaSetValues(func_grid->grid,
+		      XmNcolumn,MODIFIED_COL,
+                      XmNrowRangeStart,0,
+		      XmNrowRangeEnd,fgp->vis_row_count-1,
+		      XmNcellType,XmPIXMAP_CELL,
+		      XmNcellPixmap,No_Check_Pixmap,
                       NULL);
 
-        for (i = 0; i < 2; i++)
-                dsp->cwidths[i] = 0;
+
+        for (i = 0; i < 3; i++)
+                fgp->cwidths[i] = 0;
         
-        XmLGridSetStringsPos(data_source_grid->grid,XmHEADING,0,XmCONTENT,0,
-                             TitleText(dsp));
-	XtVaSetValues(data_source_grid->grid,
+        XmLGridSetStringsPos(func_grid->grid,XmHEADING,0,XmCONTENT,0,
+                             TitleText(fgp));
+	XtVaSetValues(func_grid->grid,
 		      XmNrowType,XmHEADING,
 		      XmNrow,0,
-		      XmNcolumn,0,
+		      XmNcolumn,NAME_COL,
 		      XmNcellAlignment, XmALIGNMENT_RIGHT,
 		      XmNcellMarginRight,CWidth,
 		      NULL);
-	XtVaSetValues(data_source_grid->grid,
+	XtVaSetValues(func_grid->grid,
 		      XmNrowType,XmHEADING,
 		      XmNrow,0,
-		      XmNcolumn,1,
+		      XmNcolumn,ENABLED_COL,
 		      XmNcellAlignment, XmALIGNMENT_LEFT,
 		      XmNcellMarginLeft,CWidth,
 		      NULL);
-	
+
+	fgp->orig_states = NhlRealloc
+		(fgp->orig_states,
+		 fgp->vis_row_count * sizeof(NgVarDataSetState));
+	fgp->last_states = NhlRealloc
+		(fgp->last_states,
+		 fgp->vis_row_count * sizeof(NgVarDataSetState));
+	if (! (fgp->orig_states && fgp->last_states)) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NhlFATAL;
+	}
+		
 	row = 0;
         for (i = 0; i < data_profile->n_dataitems; i++) {
 		XmString xmstr;
@@ -1312,39 +1908,29 @@ NhlErrorTypes NgUpdateDataSourceGrid
 		if (! data_profile->ditems[i]->vis)
 			continue;
 
-		xmstr = Column0String(dsp,i);
+		xmstr = Column0String(fgp,i);
 
-		XtVaSetValues(data_source_grid->grid,
+		XtVaSetValues(func_grid->grid,
 			      XmNrow,row,
-			      XmNcolumn,0,
+			      XmNcolumn,NAME_COL,
 			      XmNcellString,xmstr,
 			      XmNcellAlignment, XmALIGNMENT_RIGHT,
 			      XmNcellMarginRight,CWidth,
+			      XmNrowUserData,i,
 			      NULL);
-		NgXAppFreeXmString(dsp->go->go.appmgr,xmstr);
-
-		xmstr = Column1String(dsp,i);
-
-		XtVaSetValues(data_source_grid->grid,
-			      XmNrow,row,
-			      XmNcolumn,1,
-			      XmNcellMarginLeft,CWidth,
-			      XmNcellString,xmstr,
-			      XmNcellAlignment, XmALIGNMENT_LEFT,
-			      XmNcellEditable,True,
-			      XmNcellBackground,dsp->go->go.edit_field_pixel,
-			      NULL);
-		NgXAppFreeXmString(dsp->go->go.appmgr,xmstr);
+		NgXAppFreeXmString(fgp->go->go.appmgr,xmstr);
+		fgp->orig_states[row] = fgp->last_states[row] = 
+			data_profile->ditems[i]->vdata->set_state;
 		row++;
         }
-        XtVaSetValues(data_source_grid->grid,
-                      XmNsimpleWidths,ColumnWidths(dsp),
+        XtVaSetValues(func_grid->grid,
+                      XmNsimpleWidths,ColumnWidths(fgp),
                       NULL);
 
-	if (! dsp->created) {
-		dsp->created = True;
-		XtMapWidget(data_source_grid->grid);
-		XtVaSetValues(data_source_grid->grid,
+	if (! fgp->created) {
+		fgp->created = True;
+		XtMapWidget(func_grid->grid);
+		XtVaSetValues(func_grid->grid,
 			      XmNimmediateDraw,False,
 			      NULL);
 	} 
@@ -1363,17 +1949,17 @@ FocusEH
 
 	switch (event->type) {
 	case FocusOut:
-#if DEBUG_DATA_SOURCE_GRID      
+#if DEBUG_FUNC_GRID      
                     fprintf(stderr,"focus out\n");
 #endif
 #if 0
-		if (dsp->in_edit) {
-			XmLGridEditComplete(dsp->public.grid);
+		if (fgp->in_edit) {
+			XmLGridEditComplete(fgp->public.grid);
 		}
 #endif
 		return;
 	case FocusIn:
-#if DEBUG_DATA_SOURCE_GRID      
+#if DEBUG_FUNC_GRID      
                     fprintf(stderr,"focus in\n");
 #endif
 		break;
@@ -1389,29 +1975,29 @@ static void StartCellDropCB
 	XtPointer	cb_data
 )
 {
-        NgDataSourceGridRec *dsp = (NgDataSourceGridRec *)udata;
-	NgDataSourceGrid *pub = &dsp->public;
+        NgFuncGridRec *fgp = (NgFuncGridRec *)udata;
+	NgFuncGrid *pub = &fgp->public;
         XmLGridCallbackStruct *cb = (XmLGridCallbackStruct *)cb_data;
         XmLGridRow	rowptr;
         XmLGridColumn	colptr;
 
-#if DEBUG_DATA_SOURCE_GRID      
-	fprintf(stderr,"in datasourcegrid start cell drop cb\n");
+#if DEBUG_FUNC_GRID      
+	fprintf(stderr,"in funcgrid start cell drop cb\n");
 #endif        
 	rowptr = XmLGridGetRow(pub->grid,XmCONTENT,cb->row);
         colptr = XmLGridGetColumn(pub->grid,XmCONTENT,cb->column);
 
-	if (cb->column != 1)
+	if (cb->column != EDIT_COL)
 		return;
 
-	if (dsp->edit_save_string)
-		XmStringFree(dsp->edit_save_string);
+	if (fgp->edit_save_string)
+		XmStringFree(fgp->edit_save_string);
 		
 	XtVaGetValues
 		(pub->grid,
 		 XmNcolumnPtr,colptr,
 		 XmNrowPtr,rowptr,
-		 XmNcellString,&dsp->edit_save_string,
+		 XmNcellString,&fgp->edit_save_string,
 		 NULL);
 	return;
 }
@@ -1423,25 +2009,25 @@ static void CellDropCB
 	XtPointer	cb_data
 )
 {
-        NgDataSourceGridRec *dsp = (NgDataSourceGridRec *)udata;
-	NgDataSourceGrid *pub = &dsp->public;
+        NgFuncGridRec *fgp = (NgFuncGridRec *)udata;
+	NgFuncGrid *pub = &fgp->public;
         XmLGridCallbackStruct *cb = (XmLGridCallbackStruct *)cb_data;
         Boolean	editable;
 	XmLGridColumn colptr;
 	XmLGridRow rowptr;
 
-#if DEBUG_DATA_SOURCE_GRID      
-	fprintf(stderr,"in datasourcegrid cell drop cb\n");
+#if DEBUG_FUNC_GRID      
+	fprintf(stderr,"in funcgrid cell drop cb\n");
 #endif        
 
-	if (cb->column != 1)
+	if (cb->column != EDIT_COL)
 		return;
 
         if (! Colors_Set) {
 
                 Colors_Set = True;
         
-                colptr = XmLGridGetColumn(pub->grid,XmCONTENT,0);
+                colptr = XmLGridGetColumn(pub->grid,XmCONTENT,NAME_COL);
                 rowptr = XmLGridGetRow(pub->grid,XmHEADING,0);
                 XtVaGetValues(pub->grid,
                               XmNcolumnPtr,colptr,
@@ -1451,21 +2037,21 @@ static void CellDropCB
                               NULL);
         }
 
-	if (dsp->selected_row > -1) {
+	if (fgp->selected_row > -1) {
 
                     /* restore last selected */
 		XtVaSetValues(pub->grid,
-			      XmNcolumn,0,
-			      XmNrow,dsp->selected_row,
+			      XmNcolumn,NAME_COL,
+			      XmNrow,fgp->selected_row,
 			      XmNcellForeground,Foreground,
 			      XmNcellBackground,Background,
 			      NULL);
-		if (dsp->in_edit) {
+		if (fgp->in_edit) {
 			XmLGridEditComplete(pub->grid);
 		}
 	}
 
-	colptr = XmLGridGetColumn(pub->grid,XmCONTENT,1);
+	colptr = XmLGridGetColumn(pub->grid,XmCONTENT,EDIT_COL);
 	rowptr = XmLGridGetRow(pub->grid,XmCONTENT,cb->row);
 
 	XtVaGetValues(pub->grid,
@@ -1480,11 +2066,11 @@ static void CellDropCB
                       XmNcellBackground,Foreground,
                       NULL);
 	if (editable) {
-		dsp->text_dropped = True;
+		fgp->text_dropped = True;
 		XmLGridEditBegin(pub->grid,True,cb->row,True);
 	}
 
-	dsp->selected_row = cb->row;
+	fgp->selected_row = cb->row;
 	
 	return;
 }
@@ -1495,10 +2081,10 @@ static void TimeoutCB
         XtIntervalId	*timer
         )
 {
-	NgDataSourceGridRec *dsp = (NgDataSourceGridRec *)data;
+	NgFuncGridRec *fgp = (NgFuncGridRec *)data;
 
-	XSync(dsp->go->go.x->dpy,False);
-	XtVaSetValues(dsp->public.grid,
+	XSync(fgp->go->go.x->dpy,False);
+	XtVaSetValues(fgp->public.grid,
 		      XmNimmediateDraw,False,
 		      NULL);
 }
@@ -1512,20 +2098,20 @@ MapEH
 	Boolean		*cont
 )
 {
-        NgDataSourceGridRec *dsp = (NgDataSourceGridRec *)udata;
+        NgFuncGridRec *fgp = (NgFuncGridRec *)udata;
 	Dimension	height;
 
 	if(event->type != MapNotify)
 		return;
 
-	XtAppAddTimeOut(dsp->go->go.x->app,500,TimeoutCB,dsp);
+	XtAppAddTimeOut(fgp->go->go.x->app,500,TimeoutCB,fgp);
 
 	XtRemoveEventHandler(w,StructureNotifyMask,False,MapEH,NULL);
 
 	return;
 }
 #endif
-NgDataSourceGrid *NgCreateDataSourceGrid
+NgFuncGrid *NgCreateFuncGrid
 (
 	NgGO			go,
         Widget			parent,
@@ -1533,81 +2119,101 @@ NgDataSourceGrid *NgCreateDataSourceGrid
         NgDataProfile		data_profile
         )
 {
-        NgDataSourceGridRec *dsp;
-        NgDataSourceGrid *data_source_grid;
+        NgFuncGridRec *fgp;
+        NgFuncGrid *func_grid;
         static NhlBoolean first = True;
 
         if (first) {
+ 		NgBrowse browse = (NgBrowse) go;
+
                 Buffer = NhlMalloc(BUFINC);
 		BufSize = BUFINC;
+		Check_Pixmap = browse->browse.pixmaps.check;
+		No_Check_Pixmap = browse->browse.pixmaps.no_check;
+		Mask_Pixmap = browse->browse.pixmaps.mask_check;
+		Button_Out_Pixmap = browse->browse.pixmaps.button_out;
+		Button_In_Pixmap = browse->browse.pixmaps.button_in;
                 first = False;
         }
+	XtAppAddActions(go->go.x->app,
+                        funcgridactions,
+			NhlNumber(funcgridactions));
         
-        dsp = NhlMalloc(sizeof(NgDataSourceGridRec));
-        if (!dsp) return NULL;
-        data_source_grid = &dsp->public;
-	dsp->go = go;
-        dsp->data_profile = data_profile;
-        dsp->qname = qname;
-	dsp->created = False;
-	dsp->selected_row = -1;
-	dsp->parent = parent;
-	dsp->in_edit = False;
-	dsp->edit_save_string = NULL;
-	dsp->text_dropped = False;
+        fgp = NhlMalloc(sizeof(NgFuncGridRec));
+        if (!fgp) return NULL;
+        func_grid = &fgp->public;
+	fgp->go = go;
+        fgp->data_profile = data_profile;
+        fgp->qname = qname;
+	fgp->created = False;
+	fgp->selected_row = -1;
+	fgp->parent = parent;
+	fgp->in_edit = False;
+	fgp->edit_save_string = NULL;
+	fgp->text_dropped = False;
+	fgp->func_tool_id  = NhlNULLOBJID;
+	fgp->func_tree = NULL;
+	fgp->data_ix = -1;
+	fgp->restore_tgl = NULL;
+	fgp->orig_states = NULL;
+	fgp->last_states = NULL;
         
-        data_source_grid->grid = XtVaCreateManagedWidget
-                ("DataSourceGrid",
+        func_grid->grid = XtVaCreateManagedWidget
+                ("FuncGrid",
                  xmlGridWidgetClass,parent,
                  XmNverticalSizePolicy,XmVARIABLE,
                  XmNhorizontalSizePolicy,XmVARIABLE,
                  XmNselectionPolicy,XmSELECT_NONE,
 		 XmNautoSelect,False,
-                 XmNcolumns,2,
+                 XmNcolumns,4,
                  XmNrows,0,
 		 XmNimmediateDraw,True,
 		 XmNmappedWhenManaged,False,
                  NULL);
-        XmLGridAddRows(data_source_grid->grid,XmHEADING,0,1);
-
-        XtAddCallback
-		(data_source_grid->grid,XmNeditCallback,EditCB,dsp);
-        XtAddCallback
-		(data_source_grid->grid,XmNselectCallback,SelectCB,dsp);
-        XtAddCallback(data_source_grid->grid,
-		      XmNcellDropCallback,CellDropCB,dsp);
-        XtAddCallback(data_source_grid->grid,
-		      XmNcellStartDropCallback,StartCellDropCB,dsp);
-	XtVaGetValues(data_source_grid->grid,
-		      XmNtextWidget,&dsp->text,
+        XmLGridAddRows(func_grid->grid,XmHEADING,0,1);
+	XtVaSetValues(func_grid->grid,
+		      XmNuserData,func_grid,
 		      NULL);
-        XtAddEventHandler(dsp->text,FocusChangeMask,
-                          False,FocusEH,dsp);
 #if 0
-        XtAddEventHandler(dsp->text,StructureNotifyMask,
-                          False,MapEH,dsp);
+        XtAddCallback
+		(func_grid->grid,XmNeditCallback,EditCB,fgp);
+#endif
+        XtAddCallback
+		(func_grid->grid,XmNselectCallback,SelectCB,fgp);
+        XtAddCallback(func_grid->grid,
+		      XmNcellDropCallback,CellDropCB,fgp);
+        XtAddCallback(func_grid->grid,
+		      XmNcellStartDropCallback,StartCellDropCB,fgp);
+	XtVaGetValues(func_grid->grid,
+		      XmNtextWidget,&fgp->text,
+		      NULL);
+        XtAddEventHandler(fgp->text,FocusChangeMask,
+                          False,FocusEH,fgp);
+#if 0
+        XtAddEventHandler(fgp->text,StructureNotifyMask,
+                          False,MapEH,fgp);
 #endif        
-        return data_source_grid;
+        return func_grid;
 }
 
-void NgDeactivateDataSourceGrid
+void NgDeactivateFuncGrid
 (
-        NgDataSourceGrid		*data_source_grid
+        NgFuncGrid		*func_grid
         )
 {
-	NgDataSourceGrid	*pub = data_source_grid;
-        NgDataSourceGridRec *dsp;
+	NgFuncGrid	*pub = func_grid;
+        NgFuncGridRec *fgp;
         Boolean	editable;
 	XmLGridColumn colptr;
 	XmLGridRow rowptr;
         
-        dsp = (NgDataSourceGridRec *) pub;
+        fgp = (NgFuncGridRec *) pub;
 
-	if (dsp->selected_row <= -1) 
+	if (fgp->selected_row <= -1) 
 		return;
 
-	colptr = XmLGridGetColumn(pub->grid,XmCONTENT,1);
-	rowptr = XmLGridGetRow(pub->grid,XmCONTENT,dsp->selected_row);
+	colptr = XmLGridGetColumn(pub->grid,XmCONTENT,EDIT_COL);
+	rowptr = XmLGridGetRow(pub->grid,XmCONTENT,fgp->selected_row);
 
 	XtVaGetValues(pub->grid,
 		      XmNcolumnPtr,colptr,
@@ -1617,41 +2223,45 @@ void NgDeactivateDataSourceGrid
 
 	XtVaSetValues(pub->grid,
 		      XmNcolumn,0,
-		      XmNrow,dsp->selected_row,
+		      XmNrow,fgp->selected_row,
 		      XmNcellForeground,Foreground,
 		      XmNcellBackground,Background,
 		      NULL);
 	if (editable) {
 		XtVaSetValues(pub->grid,
-			      XmNcolumn,1,
-			      XmNrow,dsp->selected_row,
-			      XmNcellBackground,dsp->go->go.edit_field_pixel,
+			      XmNcolumn,EDIT_COL,
+			      XmNrow,fgp->selected_row,
+			      XmNcellBackground,fgp->go->go.edit_field_pixel,
 			      NULL);
 		XmLGridEditCancel(pub->grid);
 	}
-	dsp->in_edit = False;
+	fgp->in_edit = False;
 	XmLGridDeselectAllRows(pub->grid,False);
 
-	dsp->selected_row = -1;
+	fgp->selected_row = -1;
 
 	return;
 
 }
 		
         
-void NgDestroyDataSourceGrid
+void NgDestroyFuncGrid
 (
-        NgDataSourceGrid		*data_source_grid
+        NgFuncGrid		*func_grid
         )
 {
-        NgDataSourceGridRec *dsp;
+        NgFuncGridRec *fgp;
         
-        dsp = (NgDataSourceGridRec *) data_source_grid;
-        if (!dsp) return;
+        fgp = (NgFuncGridRec *) func_grid;
+        if (!fgp) return;
 
-	if (dsp->edit_save_string)
-		XmStringFree(dsp->edit_save_string);
-        NhlFree(dsp);
+	if (fgp->edit_save_string)
+		XmStringFree(fgp->edit_save_string);
+	if (fgp->orig_states)
+		NhlFree(fgp->orig_states);
+	if (fgp->last_states)
+		NhlFree(fgp->last_states);
+        NhlFree(fgp);
         
         return;
 }

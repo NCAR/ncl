@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.h,v 1.7 1999-10-18 22:12:30 dbrown Exp $
+ *      $Id: dataprofile.h,v 1.8 1999-12-07 19:08:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -66,7 +66,8 @@ typedef enum _NgVarDataSetState {
 	_NgEXPRESSION,		/* specified expression */
 	_NgUSER_EXPRESSION,	/* expression set by the user */
 	_NgUNKNOWN_DATA,	/* data source has not been determined */
-	_NgBOGUS_EXPRESSION 	/* an expression found to cause errors */
+	_NgBOGUS_EXPRESSION, 	/* an expression found to cause errors */
+	_NgUSER_DISABLED 	/* disabled by the user */
 } NgVarDataSetState;
 
 typedef struct _NgVarDataRec
@@ -133,7 +134,43 @@ typedef NhlBoolean (*ValueDefined)
 	struct _NgDataProfileRec	*dprof,
 	int				dix
 );
-	
+
+typedef char NgValType;     /* types of resource values and res func args */ 
+
+#define _NgEXPR		0   /* anything with more than one term */
+#define _NgGRAPHIC	1
+#define _NgVAR		2
+#define _NgVAR_SUBSET	3
+#define _NgARRAY	4
+#define _NgFUNC		5
+
+typedef struct _NgArgInfoRec {
+	NhlString		sval;
+	NrmQuark		qargdatatype;
+	NrmQuark		qargname;
+	NgValType		valtype;
+	NrmQuark		qvalsym;
+	int			argcount;
+	struct _NgArgInfoRec  	*args;
+} NgArgInfoRec, *NgArgInfo;
+
+typedef struct _NgResInfoRec {
+	NhlPointer 	rdata;		/* resource data-allocated elsewhere */
+	NgValType	valtype;
+	NrmQuark	qsym;		/* single-term func */
+	int		argcount;
+	NgArgInfo	args;		/* func arg values */
+} NgResInfoRec, *NgResInfo;
+
+extern void NgFreeResInfo(
+	NgResInfo res_info
+);
+
+extern void NgFreeArgInfo(
+	NgArgInfo arg_info,
+	int	  count
+);
+
 typedef struct _NgDataItemRec
 {
 	NhlString	name;
@@ -148,13 +185,6 @@ typedef struct _NgDataItemRec
 				     it's the coord ix (1 == fastest) for
 				     _NgCOORDVAR items. It's the sequence 
 				     number for _NgUPDATEFUNC items. */
-#if 0
-int		coord_num; 	/* applies to NgDataItemType 
-					   _NgCOORDVAR only -- Fortan
-					   conventions used here for processing
-					   convenience: 1 is fastest moving
-					   dimension */
-#endif
 	NhlBoolean	required;
 	NhlBoolean	vis;
 	NgVarData	vdata;
@@ -164,7 +194,7 @@ int		coord_num; 	/* applies to NgDataItemType
 	int		hlu_id;
 	NgCBWP		svcb;
 	NhlString	raw_val;
-	NhlPointer	appres_info;
+	NgResInfo	res_info;
 	NhlBoolean	set_only;
 	NhlBoolean	save_to_compare;
 	NhlBoolean	init_only;
@@ -172,7 +202,7 @@ int		coord_num; 	/* applies to NgDataItemType
 
 typedef struct _NgPlotDataRec {
 	NrmQuark 	qname;
-	NrmQuark	qconform_varname;
+	int		conform_group;
 	NhlString	description;
 	NhlBoolean	required;
 	int		ndims;

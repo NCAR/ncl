@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.c,v 1.10 1999-11-19 02:10:04 dbrown Exp $
+ *      $Id: dataprofile.c,v 1.11 1999-12-07 19:08:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -681,7 +681,46 @@ static void InitializeDataProfile(
 	}
 	return;
 }
-			
+
+void NgFreeArgInfo(
+	NgArgInfo	arg_info,
+	int		count
+)
+{
+	int i;
+
+	if (! arg_info)
+		return;
+
+	for (i = 0; i < count; i++) {
+		NgArgInfo arg = &arg_info[i];
+		if (arg->sval)
+			NhlFree(arg->sval);
+		if (arg->argcount)
+			NgFreeArgInfo(arg->args,arg->argcount);
+	}
+	NhlFree(arg_info);
+
+	return;
+}
+
+void NgFreeResInfo(
+	NgResInfo res_info
+)
+{
+	int i;
+
+	if (! res_info)
+		return;
+
+	if (res_info->argcount)
+		NgFreeArgInfo(res_info->args,res_info->argcount);
+
+	NhlFree(res_info);
+
+	return;
+}
+
 NgVarData NgNewVarData
 (
 	void
@@ -1393,8 +1432,7 @@ NgDataItem NgNewDataItem
 	ditem->hlu_id = NhlNULLOBJID;
 	ditem->svcb = NULL;
 	ditem->raw_val = NULL;
-	ditem->appres_info = NULL;
-
+	ditem->res_info = NULL;
 
 	return ditem;
 	
@@ -1784,6 +1822,7 @@ void NgFreeDataProfile(
 		NgFreeVarData(data_profile->ditems[i]->vdata);
 		if (data_profile->ditems[i]->svcb)
 			NgCBWPDestroy(data_profile->ditems[i]->svcb);
+		NgFreeResInfo(data_profile->ditems[i]->res_info);
 		NhlFree(data_profile->ditems[i]);
 	}
 	NhlFree(data_profile->ditems);

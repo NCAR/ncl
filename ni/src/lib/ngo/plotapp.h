@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.h,v 1.2 1999-10-05 23:16:22 dbrown Exp $
+ *      $Id: plotapp.h,v 1.3 1999-12-07 19:08:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,8 @@
 #include <ncarg/ngo/ngo.h>
 #include <ncarg/ngo/dataprofile.h>
 #include <ncarg/ngo/graphic.h>
+
+#define DEBUG_PLOTAPP 0
 
 #define NhlNndvFuncDirs		"ndvFuncDirs"
 #define NhlNndvFuncFiles	"ndvFuncFiles"
