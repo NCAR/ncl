@@ -6,20 +6,21 @@
 */
 #include "wrapper.h"
 
+extern void NGCALLF(dexptaper,DEXPTAPER)(double*,int*,double*,int*,int*);
+
 extern void NGCALLF(dexptapersh,DEXPTAPERSH)(int*,int*,double*,double*,
-                                             int*,int*,int*);
+                                             double*,int*,int*);
 
 NhlErrorTypes exp_tapershC_W( void )
 {
 /*
  * Input array variables
  */
-  void *ab;
-  double *tmp_a, *tmp_b;
-  void *new_ab;
+  void *ab, *new_ab, *n0;
+  double *tmp_a, *tmp_b, *tmp_n0;
   int ndims_ab, dsizes_ab[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_ab, type_new_ab;
-  int *iwave, *noption;
+  NclBasicDataTypes type_ab, type_new_ab, type_n0;
+  int *rate;
 /*
  * various
  */
@@ -53,19 +54,19 @@ NhlErrorTypes exp_tapershC_W( void )
   }
 
 /*
- * Get iwave and noption.
+ * Get n0 and rate.
  */
-  iwave = (int*)NclGetArgValue(
+  n0 = (void*)NclGetArgValue(
        1,
        3,
        NULL,
        NULL,
        NULL,
        NULL,
-       NULL,
+       &type_n0,
        2);
 
-  noption = (int*)NclGetArgValue(
+  rate = (int*)NclGetArgValue(
        2,
        3,
        NULL,
@@ -75,11 +76,6 @@ NhlErrorTypes exp_tapershC_W( void )
        NULL,
        2);
   
-/*
- * Hard-code noption to 10 for now.
- */
-  *noption = 10;
-
 /*
  * Compute the total number of elements in our array.
  */
@@ -117,6 +113,11 @@ NhlErrorTypes exp_tapershC_W( void )
     return(NhlFATAL);
   }
 /*
+ * Coerce n0 to double.
+ */
+  tmp_n0 = coerce_input_double(n0,type_n0,1,0,NULL,NULL);
+
+/*
  * Loop through total_leftmost and call Fortran function
  */
   index_ab = 0;
@@ -130,7 +131,7 @@ NhlErrorTypes exp_tapershC_W( void )
     coerce_subset_input_double(ab,tmp_b,start+index_ab,type_ab,nm,0,
                                NULL,NULL);
 
-    NGCALLF(dexptapersh,DEXPTAPERSH)(&mb,&nb,tmp_a,tmp_b,iwave,noption,&ier);
+    NGCALLF(dexptapersh,DEXPTAPERSH)(&mb,&nb,tmp_a,tmp_b,tmp_n0,rate,&ier);
 /*
  * Copy a and b arrays back into new_ab array.
  */
@@ -148,5 +149,272 @@ NhlErrorTypes exp_tapershC_W( void )
  * Return values. 
  */
   return(NclReturnValue(new_ab,ndims_ab,dsizes_ab,NULL,type_new_ab,0));
+}
+
+
+NhlErrorTypes exp_tapersh_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *a, *b, *n0;
+  double *tmp_a, *tmp_b, *tmp_n0;
+  int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
+  int ndims_b, dsizes_b[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_a, type_b, type_n0;
+  int *rate;
+/*
+ * various
+ */
+  int i, total_leftmost, total_size_ab;
+  int index_ab, nm, nb, mb, ier;
+/*
+ * Retrieve parameters
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+  a = (void*)NclGetArgValue(
+          0,
+          4,
+          &ndims_a, 
+          dsizes_a,
+          NULL,
+          NULL,
+          &type_a,
+          2);
+
+  b = (void*)NclGetArgValue(
+          1,
+          4,
+          &ndims_b, 
+          dsizes_b,
+          NULL,
+          NULL,
+          &type_b,
+          2);
+/*
+ * The grids coming in must be at least 2-dimensional.
+ */
+  if(ndims_a != ndims_b || ndims_a < 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"exp_tapersh: The input arrays must have the same number of dimensions and be at least 2-dimensional");
+    return(NhlFATAL);
+  }
+  for( i = 0; i < ndims_a; i++ ) {
+    if(dsizes_a[i] != dsizes_b[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"exp_tapersh: The input arrays must have the same dimension sizes");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Get n0 and rate.
+ */
+  n0 = (void*)NclGetArgValue(
+       1,
+       3,
+       NULL,
+       NULL,
+       NULL,
+       NULL,
+       &type_n0,
+       2);
+
+  rate = (int*)NclGetArgValue(
+       2,
+       3,
+       NULL,
+       NULL,
+       NULL,
+       NULL,
+       NULL,
+       2);
+  
+/*
+ * Compute the total number of elements in our array.
+ */
+  nb  = dsizes_a[ndims_a-2];
+  mb  = dsizes_a[ndims_a-1];
+  nm = nb * mb;
+
+  total_leftmost = 1;
+  for(i = 0; i < ndims_a-2; total_leftmost*=dsizes_a[i],i++);
+
+  total_size_ab  = total_leftmost*nm;
+
+/*
+ * a and b must be float or double.
+ */
+  if((type_a != NCL_float && type_a != NCL_double) ||
+     (type_b != NCL_float && type_b != NCL_double)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"exp_tapersh: a and b must be of type float or double");
+    return(NhlFATAL);
+  }
+/*
+ * Create space for temporary a and b arrays.
+ */
+  if(type_a != NCL_double) {
+    tmp_a = (double*)calloc(nm,sizeof(double));
+    if( tmp_a == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"exp_tapersh: Unable to allocate memory for coercing a array to double precision");
+      return(NhlFATAL);
+    }
+  }
+  if(type_b != NCL_double) {
+    tmp_b = (double*)calloc(nm,sizeof(double));
+    if( tmp_b == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"exp_tapersh: Unable to allocate memory for coercing b array to double precision");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Coerce n0 to double.
+ */
+  tmp_n0 = coerce_input_double(n0,type_n0,1,0,NULL,NULL);
+
+/*
+ * Loop through total_leftmost and call Fortran function
+ */
+  index_ab = 0;
+
+  for(i = 0; i < total_leftmost; i++) {
+/*
+ * Coerce subsection of a and b to temporary a and b.
+ */
+    if(type_a != NCL_double) {
+      coerce_subset_input_double(a,tmp_a,index_ab,type_a,nm,0,NULL,NULL);
+    }
+    else {
+      tmp_a  = &((double*)a)[index_ab];
+    }
+    if(type_b != NCL_double) {
+      coerce_subset_input_double(b,tmp_b,index_ab,type_b,nm,0,NULL,NULL);
+    }
+    else {
+      tmp_b  = &((double*)b)[index_ab];
+    }
+
+    NGCALLF(dexptapersh,DEXPTAPERSH)(&mb,&nb,tmp_a,tmp_b,tmp_n0,rate,&ier);
+
+    index_ab += nm;
+  }
+
+/*
+ * Free work arrays.
+ */ 
+  if(type_a != NCL_double) NclFree(tmp_a);
+  if(type_b != NCL_double) NclFree(tmp_b);
+
+/*
+ * Return values. 
+ */
+  return(NhlNOERROR);
+}
+
+
+NhlErrorTypes exp_tapersh_wgts_W( void )
+{
+/*
+ * Input array variables
+ */
+  int *nwgt, *rate;
+  void *n0;
+  double *tmp_n0;
+  NclBasicDataTypes type_n0;
+/*
+ * Error return.
+ */
+  int ier;
+/*
+ * Return variables. 
+ */
+  void *s;
+  double *tmp_s;
+  int dsizes_s[1];
+  NclBasicDataTypes type_s;
+/*
+ * Retrieve parameters
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care sout its value.
+ */
+  nwgt = (int*)NclGetArgValue(
+          0,
+          3,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          2);
+/*
+ * Get n0 and rate.
+ */
+  n0 = (void*)NclGetArgValue(
+       1,
+       3,
+       NULL,
+       NULL,
+       NULL,
+       NULL,
+       &type_n0,
+       2);
+
+  rate = (int*)NclGetArgValue(
+       2,
+       3,
+       NULL,
+       NULL,
+       NULL,
+       NULL,
+       NULL,
+       2);
+
+/*
+ * Allocate space for output array.
+ */
+  if(type_n0 != NCL_double) {
+    type_s = NCL_float;
+    s      = (void*)calloc(*nwgt,sizeof(float));
+    tmp_s  = (double*)calloc(*nwgt,sizeof(double));
+
+    if(s == NULL || tmp_s == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"exp_tapersh_wgts: Unable to allocate memory for return array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_s = NCL_double;
+    s      = (void*)calloc(*nwgt,sizeof(double));
+    tmp_s  = &((double*)s)[0];
+
+    if( s == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"exp_tapersh_wgts: Unable to allocate memory for return array");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Coerce n0 to double.
+ */
+  tmp_n0 = coerce_input_double(n0,type_n0,1,0,NULL,NULL);
+
+/*
+ * Call Fortran routine.
+ */
+  NGCALLF(dexptaper,DEXPTAPER)(tmp_n0,rate,tmp_s,nwgt,&ier);
+
+/*
+ * Coerce back to float if necessary and free array.
+ */
+  if(type_s != NCL_double) {
+    coerce_output_float_only(s,tmp_s,*nwgt,0);
+    NclFree(tmp_s);
+  }
+
+/*
+ * Return values. 
+ */
+  dsizes_s[0] = *nwgt;
+  return(NclReturnValue(s,1,dsizes_s,NULL,type_s,0));
 }
 

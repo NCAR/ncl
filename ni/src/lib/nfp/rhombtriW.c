@@ -8,7 +8,7 @@
 
 extern void NGCALLF(drhombtrunc,DRHOMBTRUNC)(int*,int*,double*,double*,
                                              int*);
-extern void NGCALLF(dtritrunc,DTRITRUNC)(int*,int*,double*,double*,int*);
+extern void NGCALLF(dtritrunc,DTRITRUNC)(int*,int*,int*,double*,double*);
 
 NhlErrorTypes rhomb_trunC_W( void )
 {

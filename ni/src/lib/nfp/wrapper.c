@@ -147,6 +147,8 @@ extern NhlErrorTypes rhomb_trunC_W(void);
 extern NhlErrorTypes tri_trunc_W(void);
 extern NhlErrorTypes tri_trunC_W(void);
 extern NhlErrorTypes exp_tapershC_W(void);
+extern NhlErrorTypes exp_tapersh_W(void);
+extern NhlErrorTypes exp_tapersh_wgts_W(void);
 extern NhlErrorTypes pop_remap_W(void);
 extern NhlErrorTypes smth9_W(void);
 
@@ -1762,10 +1764,39 @@ void NclAddUserFuncs(void)
     args = NewArgs(3);
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(exp_tapershC_W,args,"exp_tapershC",nargs);
+
+/*
+ * Register "exp_tapersh".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterProc(exp_tapersh_W,args,"exp_tapersh",nargs);
+
+/*
+ * Register "exp_tapersh_wgts".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(exp_tapersh_wgts_W,args,"exp_tapersh_wgts",nargs);
 
 /*
  * Register "pop_remap"
