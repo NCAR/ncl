@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.18 1999-06-30 20:53:11 haley Exp $
+;      $Id: gsn_code.ncl,v 1.19 1999-07-07 14:22:44 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -38,6 +38,8 @@
 ; procedures with the same name.                                        ;
 ;***********************************************************************;
 
+undef("get_res_eq")
+undef("get_res_ne")
 undef("gsnp_turn_off_tickmarks")
 undef("gsn_open_ps")
 undef("gsn_open_x11")
@@ -68,6 +70,79 @@ undef("gsn_vector_scalar")
 undef("gsn_vector_scalar_map")
 undef("gsn_xy")
 
+
+;
+; Get list of resources that start with res_prefix.
+;
+function get_res_eq(res,res_prefix:string)
+local i, j, ret_res, res2, attnames, res_index
+begin
+  ret_res = False
+
+  if((res).and..not.any(ismissing(getvaratts(res))))
+    attnames = getvaratts(res)
+    res2 = stringtochar(attnames(ind(attnames.ne."_FillValue")))
+;
+; Only one resource set.
+;
+    if(dimsizes(dimsizes(res2)).eq.1)
+      if(any(chartostring(res2(0:1)).eq.res_prefix))
+        ret_res = True
+        ret_res@$attnames$ = res@$attnames$
+      end if
+    else
+;
+; Multiple resources set. They have to be checked differently than if
+; just one resource is set. 
+;
+      do j=0,dimsizes(res_prefix)-1
+        res_index = ind(chartostring(res2(:,0:1)).eq.res_prefix(j))
+        if(.not.all(ismissing(res_index)))
+          ret_res = True
+          do i = 0,dimsizes(res_index)-1
+            ret_res@$attnames(res_index(i))$ = res@$attnames(res_index(i))$
+          end do
+        end if
+        delete(res_index)
+      end do
+    end if
+    delete(res2)
+    delete(attnames)
+  end if
+  return(ret_res)
+end
+
+;
+; Get list of resources that don't start with res_prefix.
+;
+function get_res_ne(res,res_prefix:string)
+local i, ret_res, res2, attnames, res_index
+begin
+  ret_res = False
+
+  if((res).and..not.any(ismissing(getvaratts(res))))
+    attnames = getvaratts(res)
+    res2 = stringtochar(attnames(ind(attnames.ne."_FillValue")))
+
+    if(dimsizes(dimsizes(res2)).eq.1)
+      if(all(chartostring(res2(0:1)).ne.res_prefix))
+        ret_res = True
+        ret_res@$attnames$ = res@$attnames$
+      end if
+    else
+      nres = dimsizes(res2(:,0))
+      do i = 0,nres-1
+        if(all(chartostring(res2(i,0:1)).ne.res_prefix))
+          ret_res = True
+          ret_res@$attnames(i)$ = res@$attnames(i)$
+        end if
+      end do
+    end if
+    delete(res2)
+    delete(attnames)
+  end if
+  return(ret_res)
+end
 
 
   new_vpx = new_ux + dx
@@ -714,65 +789,17 @@ begin
 
     end if
     end create
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-; Get list of resources.
-        attnames = getvaratts(res2)
-        res = stringtochar(attnames(ind(attnames.ne."_FillValue")))
+    sfres = get_res_eq(res2,"sf")
 
-;***********************************************************************;
-; Check to see if any data resources were set (these are resources that ;
-; start with the two-letter index "sf") or if any contour resources were;
-; set.  We assume that anything that doesn't start with an "sf" is a    ;
-; contour or contour-related resource.                                  ;
-;***********************************************************************;
-
-        if(dimsizes(dimsizes(res)).eq.1)
-            if(chartostring(res(0:1)).eq."sf")
-                setvalues data_object
-                    attnames : res2@$attnames$
-                end setvalues
-            else
-                setvalues plot_object
-                    attnames : res2@$attnames$
-                end setvalues
-            end if
-            if(force_xaxis_linear.or.force_xaxis_log.or. \
-               force_yaxis_linear.or.force_yaxis_log)
-              if(chartostring(res(0:1)).eq."tr".or. \
-                 chartostring(res(0:1)).eq."vp")
-                llres = True
-                llres@$attnames$ = res2@$attnames$
-              end if
-            end if
-      else
-            cn_res_index = ind(chartostring(res(:,0:1)).ne."sf")
-            sf_res_index = ind(chartostring(res(:,0:1)).eq."sf")
-            if(.not.all(ismissing(sf_res_index)))
-                datares = True
-                do i = 0,dimsizes(sf_res_index)-1
-                    datares@$attnames(sf_res_index(i))$ = res2@$attnames(sf_res_index(i))$
-                end do
-                attsetvalues(data_object,datares)
-            end if
-            if(.not.all(ismissing(cn_res_index)))
-                cnres = True
-                do i = 0,dimsizes(cn_res_index)-1
-                    cnres@$attnames(cn_res_index(i))$ = res2@$attnames(cn_res_index(i))$
-                end do
-                attsetvalues(plot_object,cnres)
-            end if
-            if(force_xaxis_linear.or.force_xaxis_log.or. \
-               force_yaxis_linear.or.force_yaxis_log)
-              ll_res_index = ind(chartostring(res(:,0:1)).eq."tr".or. \
-                                 chartostring(res(:,0:1)).eq."vp")
-              if(.not.all(ismissing(ll_res_index)))
-                  llres = True
-                  do i = 0,dimsizes(ll_res_index)-1
-                    llres@$attnames(ll_res_index(i))$ = res2@$attnames(ll_res_index(i))$
-                  end do
-              end if
-            end if
-        end if
+    if(sfres.and..not.any(ismissing(getvaratts(sfres))))
+      attsetvalues(data_object,sfres)
+    end if
+    if(cnres.and..not.any(ismissing(getvaratts(cnres))))
+      attsetvalues(plot_object,cnres)
+    end if
+    if(force_xaxis_linear.or.force_xaxis_log.or. \
+       force_yaxis_linear.or.force_yaxis_log)
+    shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
 
     sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
@@ -866,7 +893,7 @@ begin
     end if
 
 ; Check if we need to force the X or Y axis to be linear or log.
-      if(llres)
+      if(llres.and..not.any(ismissing(getvaratts(llres))))
         attsetvalues(plot_object,llres)
       end if
 
@@ -977,65 +1004,18 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
 
     end if
 
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-; Get list of resources.
+    sfres = get_res_eq(res2,"sf")
+; Check for existence of data@long_name and use it in a title it
+; it exists.
 
-        attnames = getvaratts(res2)
-        res = stringtochar(attnames(ind(attnames.ne."_FillValue")))
-        if(dimsizes(dimsizes(res)).eq.1)
-
-;***********************************************************************;
-; Check to see if any resources were set. For the data object, resources;
-; begin with "sf". For the map object, resources begin with "mp". For   ;
-; the contour object, any resource that doesn't start with "mp" or "sf" ;
-; is assumed to be a contour or contour-related resource.               ;
-;***********************************************************************;
-
-            if(chartostring(res(0:1)).eq."sf")
-                setvalues data_object
-                    attnames : res2@$attnames$
-                end setvalues
-            else
-                if(chartostring(res(0:1)).eq."mp".or.\
-                   chartostring(res(0:1)).eq."vp")
-                    setvalues map_object
-                        attnames : res2@$attnames$
-                    end setvalues
-                else 
-                    setvalues contour_object
-                        attnames : res2@$attnames$
-                    end setvalues
-                end if
-            end if
-        else
-            sf_res_index = ind(chartostring(res(:,0:1)).eq."sf")
-            mp_res_index = ind(chartostring(res(:,0:1)).eq."mp".or.\
-                               chartostring(res(:,0:1)).eq."vp")
-            cn_res_index = ind(chartostring(res(:,0:1)).ne."mp".and.\
-                               chartostring(res(:,0:1)).ne."sf".and.\
-                               chartostring(res(:,0:1)).ne."vp")
-            if(.not.all(ismissing(sf_res_index)))
-                datares = True
-                do i = 0,dimsizes(sf_res_index)-1
-                    datares@$attnames(sf_res_index(i))$ = res2@$attnames(sf_res_index(i))$
-                end do
-                attsetvalues(data_object,datares)
-            end if
-            if(.not.all(ismissing(mp_res_index)))
-                mpres = True
-                do i = 0,dimsizes(mp_res_index)-1
-                    mpres@$attnames(mp_res_index(i))$ = res2@$attnames(mp_res_index(i))$
-                end do
-                attsetvalues(map_object,mpres)
-            end if
-            if(.not.all(ismissing(cn_res_index)))
-                cnres = True
-                do i = 0,dimsizes(cn_res_index)-1
-                    cnres@$attnames(cn_res_index(i))$ = res2@$attnames(cn_res_index(i))$
-                end do
-                attsetvalues(contour_object,cnres)
-            end if
-        end if
+    if(sfres.and..not.any(ismissing(getvaratts(sfres))))
+      attsetvalues(data_object,sfres)
+    end if
+    if(mpres.and..not.any(ismissing(getvaratts(mpres))))
+      attsetvalues(map_object,mpres)
+    end if
+    if(cnres.and..not.any(ismissing(getvaratts(cnres))))
+      attsetvalues(contour_object,cnres)
     end if
 
     overlay(map_object,contour_object)
@@ -1115,32 +1095,9 @@ begin
       "lbLabelStrings" : labels
     end create
 
-    if((resources).and..not.any(ismissing(getvaratts(resources))))
-
-; Get list of resources.
-
-        attnames = getvaratts(resources)
-        res = stringtochar(attnames(ind(attnames.ne."_FillValue")))
-
-; Check to see if any labelbar resources were set (these are resources
-; that start with the two-letter index "lb").
-
-        if(dimsizes(dimsizes(res)).eq.1)
-            if(chartostring(res(0:1)).eq."lb" .or. chartostring(res(0:1)).eq."vp")
-                setvalues lbid
-                    attnames : resources@$attnames$
-                end setvalues
-            end if
-        else
-            lb_res_index = ind(chartostring(res(:,0:1)).eq."lb".or.chartostring(res(:,0:1)).eq."vp")
-            if(.not.all(ismissing(lb_res_index)))
-                lbres = True
-                do i = 0,dimsizes(lb_res_index)-1
-                    lbres@$attnames(lb_res_index(i))$ = resources@$attnames(lb_res_index(i))$
-                end do
-                attsetvalues(lbid,lbres)
-            end if
-        end if
+    lbres = get_res_eq(resources,(/"lb","vp"/))
+    if(lbres.and..not.any(ismissing(getvaratts(lbres))))
+      attsetvalues(lbid,lbres)
     end if
 
 ; Draw labelbar.
@@ -1203,15 +1160,15 @@ begin
     end if
 
     if((res2).and..not.any(ismissing(getvaratts(res2))))
-        attsetvalues(plot_object,res2)
+      attsetvalues(plot_object,res2)
     end if
 
     if(calldraw)
-        draw(plot_object)
+      draw(plot_object)
     end if
 
     if(callframe)
-        frame(wks)
+      frame(wks)
     end if
 
 ; Return plot object.
@@ -1247,31 +1204,9 @@ begin
         "wkDefGraphicStyleId":  gsid
     end getvalues
 
-    if((resources).and..not.any(ismissing(getvaratts(resources))))
-; Get list of resources.
-
-        attnames = getvaratts(resources)
-        res = stringtochar(attnames(ind(attnames.ne."_FillValue")))
-
-; Check to see if any data resources were set (these are resources that
-; start with the two-letter index "gs").
-
-        if(dimsizes(dimsizes(res)).eq.1)
-            if(chartostring(res(0:1)).eq."gs")
-                setvalues gsid
-                    attnames : resources@$attnames$
-                end setvalues
-            end if
-        else
-            gs_res_index = ind(chartostring(res(:,0:1)).eq."gs")
-            if(.not.all(ismissing(gs_res_index)))
-                gsres = True
-                do i = 0,dimsizes(gs_res_index)-1
-                    gsres@$attnames(gs_res_index(i))$ = resources@$attnames(gs_res_index(i))$
-                end do
-                attsetvalues(gsid,gsres)
-            end if
-        end if
+    gsres = get_res_eq(resources,"gs")
+    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
+      attsetvalues(gsid,gsres)
     end if
 
 ; Draw a polygon.
@@ -1321,31 +1256,9 @@ begin
       "vpHeightF" : 1.0
     end create
 
-    if((resources).and..not.any(ismissing(getvaratts(resources))))
-; Get list of resources.
-
-        attnames = getvaratts(resources)
-        res = stringtochar(attnames(ind(attnames.ne."_FillValue")))
-
-; Check to see if any data resources were set (these are resources that
-; start with the two-letter index "gs").
-
-        if(dimsizes(dimsizes(res)).eq.1)
-            if(chartostring(res(0:1)).eq."gs")
-                setvalues gsid
-                    attnames : resources@$attnames$
-                end setvalues
-            end if
-        else
-            gs_res_index = ind(chartostring(res(:,0:1)).eq."gs")
-            if(.not.all(ismissing(gs_res_index)))
-                gsres = True
-                do i = 0,dimsizes(gs_res_index)-1
-                    gsres@$attnames(gs_res_index(i))$ = resources@$attnames(gs_res_index(i))$
-                end do
-                attsetvalues(gsid,gsres)
-            end if
-        end if
+    gsres = get_res_eq(resources,"gs")
+    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
+      attsetvalues(gsid,gsres)
     end if
 
 ; Draw a polygon.
@@ -1386,31 +1299,9 @@ begin
         "wkDefGraphicStyleId":  gsid
     end getvalues
     mpres = get_res_eq(res2,(/"mp","vp"/))
-    if((resources).and..not.any(ismissing(getvaratts(resources))))
-; Get list of resources.
-
-        attnames = getvaratts(resources)
-        res = stringtochar(attnames(ind(attnames.ne."_FillValue")))
-
-; Check to see if any data resources were set (these are resources that
-; start with the two-letter index "gs").
-
-        if(dimsizes(dimsizes(res)).eq.1)
-            if(chartostring(res(0:1)).eq."gs")
-                setvalues gsid
-                    attnames : resources@$attnames$
-                end setvalues
-            end if
-        else
-            gs_res_index = ind(chartostring(res(:,0:1)).eq."gs")
-            if(.not.all(ismissing(gs_res_index)))
-                gsres = True
-                do i = 0,dimsizes(gs_res_index)-1
-                    gsres@$attnames(gs_res_index(i))$ = resources@$attnames(gs_res_index(i))$
-                end do
-                attsetvalues(gsid,gsres)
-            end if
-        end if
+    gsres = get_res_eq(resources,"gs")
+    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
+      attsetvalues(gsid,gsres)
     end if
 
 ; Draw a polyline.
@@ -1485,31 +1376,9 @@ begin
       "vpHeightF" : 1.0
     end create
 
-    if((resources).and..not.any(ismissing(getvaratts(resources))))
-; Get list of resources.
-
-        attnames = getvaratts(resources)
-        res = stringtochar(attnames(ind(attnames.ne."_FillValue")))
-
-; Check to see if any data resources were set (these are resources that
-; start with the two-letter index "gs").
-
-        if(dimsizes(dimsizes(res)).eq.1)
-            if(chartostring(res(0:1)).eq."gs")
-                setvalues gsid
-                    attnames : resources@$attnames$
-                end setvalues
-            end if
-        else
-            gs_res_index = ind(chartostring(res(:,0:1)).eq."gs")
-            if(.not.all(ismissing(gs_res_index)))
-                gsres = True
-                do i = 0,dimsizes(gs_res_index)-1
-                    gsres@$attnames(gs_res_index(i))$ = resources@$attnames(gs_res_index(i))$
-                end do
-                attsetvalues(gsid,gsres)
-            end if
-        end if
+    gsres = get_res_eq(resources,"gs")
+    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
+      attsetvalues(gsid,gsres)
     end if
 
 ; Draw a polyline.
@@ -1577,31 +1446,9 @@ local i, gsid, attnames, plot_object, res, gs_res_index
         "wkDefGraphicStyleId":  gsid
     end getvalues
 
-    if((resources).and..not.any(ismissing(getvaratts(resources))))
-; Get list of resources.
-
-        attnames = getvaratts(resources)
-        res = stringtochar(attnames(ind(attnames.ne."_FillValue")))
-
-; Check to see if any data resources were set (these are resources that
-; start with the two-letter index "gs").
-
-        if(dimsizes(dimsizes(res)).eq.1)
-            if(chartostring(res(0:1)).eq."gs")
-                setvalues gsid
-                    attnames : resources@$attnames$
-                end setvalues
-            end if
-        else
-            gs_res_index = ind(chartostring(res(:,0:1)).eq."gs")
-            if(.not.all(ismissing(gs_res_index)))
-                gsres = True
-                do i = 0,dimsizes(gs_res_index)-1
-                    gsres@$attnames(gs_res_index(i))$ = resources@$attnames(gs_res_index(i))$
-                end do
-                attsetvalues(gsid,gsres)
-            end if
-        end if
+    gsres = get_res_eq(resources,"gs")
+    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
+      attsetvalues(gsid,gsres)
     end if
 
 ; Draw some polymarkers.
@@ -1650,31 +1497,9 @@ begin
       "vpHeightF" : 1.0
     end create
 local i, plot_object, res2
-    if((resources).and..not.any(ismissing(getvaratts(resources))))
-; Get list of resources.
-
-        attnames = getvaratts(resources)
-        res = stringtochar(attnames(ind(attnames.ne."_FillValue")))
-
-; Check to see if any data resources were set (these are resources that
-; start with the two-letter index "gs").
-
-        if(dimsizes(dimsizes(res)).eq.1)
-            if(chartostring(res(0:1)).eq."gs")
-                setvalues gsid
-                    attnames : resources@$attnames$
-                end setvalues
-            end if
-        else
-            gs_res_index = ind(chartostring(res(:,0:1)).eq."gs")
-            if(.not.all(ismissing(gs_res_index)))
-                gsres = True
-                do i = 0,dimsizes(gs_res_index)-1
-                    gsres@$attnames(gs_res_index(i))$ = resources@$attnames(gs_res_index(i))$
-                end do
-                attsetvalues(gsid,gsres)
-            end if
-        end if
+    gsres = get_res_eq(resources,"gs")
+    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
+      attsetvalues(gsid,gsres)
     end if
     res2      = resources
 ; Draw some polymarkers.
@@ -1842,62 +1667,18 @@ begin
 
     end if
     if(isatt(v,"_FillValue")) then
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-; Get list of resources.
+        setvalues data_object
+            "vfMissingVValueV" :v@_FillValue
+    if(vfres.and..not.any(ismissing(getvaratts(vfres))))
+      attsetvalues(data_object,vfres)
+    end if
+    if(stres.and..not.any(ismissing(getvaratts(stres))))
+      attsetvalues(plot_object,stres)
+    end if
 
-        attnames = getvaratts(res2)
-        res = stringtochar(attnames(ind(attnames.ne."_FillValue")))
+    if(force_xaxis_linear.or.force_xaxis_log.or. \
+       force_yaxis_linear.or.force_yaxis_log)
 
-; Check to see if any data resources were set (these are resources that
-; start with the two-letter index "vf").
-
-        if(dimsizes(dimsizes(res)).eq.1)
-            if(chartostring(res(0:1)).eq."vf")
-                setvalues data_object
-                    attnames : res2@$attnames$
-                end setvalues
-            else
-                setvalues plot_object
-                    attnames : res2@$attnames$
-                end setvalues
-            end if
-            if(force_xaxis_linear.or.force_xaxis_log.or. \
-               force_yaxis_linear.or.force_yaxis_log)
-              if(chartostring(res(0:1)).eq."tr".or. \
-                 chartostring(res(0:1)).eq."vp")
-                llres = True
-                llres@$attnames$ = res2@$attnames$
-              end if
-            end if
-        else
-            vf_res_index = ind(chartostring(res(:,0:1)).eq."vf")
-            st_res_index = ind(chartostring(res(:,0:1)).ne."vf")
-            if(.not.all(ismissing(vf_res_index)))
-                vfres = True
-                do i = 0,dimsizes(vf_res_index)-1
-                    vfres@$attnames(vf_res_index(i))$ = res2@$attnames(vf_res_index(i))$
-                end do
-                attsetvalues(data_object,vfres)
-            end if
-            if(.not.all(ismissing(st_res_index)))
-                stres = True
-                do i = 0,dimsizes(st_res_index)-1
-                    stres@$attnames(st_res_index(i))$ = res2@$attnames(st_res_index(i))$
-                end do
-                attsetvalues(plot_object,stres)
-            end if
-            if(force_xaxis_linear.or.force_xaxis_log.or. \
-               force_yaxis_linear.or.force_yaxis_log)
-              ll_res_index = ind(chartostring(res(:,0:1)).eq."tr".or.\
-                                 chartostring(res(:,0:1)).eq."vp")
-              if(.not.all(ismissing(ll_res_index)))
-                  llres = True
-                  do i = 0,dimsizes(ll_res_index)-1
-                    llres@$attnames(ll_res_index(i))$ = res2@$attnames(ll_res_index(i))$
-                  end do
-              end if
-            end if
-        end if
     plot_object = create wksname + "_stream" streamlinePlotClass wks
         "stVectorFieldData" : data_object
     end create
@@ -1991,7 +1772,7 @@ begin
     end if
 
 ; Check if we need to force the X or Y axis to be linear or log.
-      if(llres)
+      if(llres.and..not.any(ismissing(getvaratts(llres))))
         attsetvalues(plot_object,llres)
       end if
 
@@ -2099,66 +1880,18 @@ begin
         end if
     end if
         setvalues data_object
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-; Get list of resources.
+            "vfMissingVValueV" :v@_FillValue
+    mpres = get_res_ne(res2,(/"mp","vp"/))
+    end if
 
-        attnames = getvaratts(res2)
-        res = stringtochar(attnames(ind(attnames.ne."_FillValue")))
-        if(dimsizes(dimsizes(res)).eq.1)
-
-;***********************************************************************;
-; Check to see if any resources were set. For the data object,          ;
-; resources begin with "vf". For the map object, resources begin with   ;
-; "mp". For the streamline object, any resource that doesn't start with ;
-; "mp" or "vf" is assumed to be a streamline or streamline-related      ;
-; resource.                                                             ;
-;***********************************************************************;
-
-            if(chartostring(res(0:1)).eq."vf")
-                setvalues data_object
-                    attnames : res2@$attnames$
-                end setvalues
-            else
-                if(chartostring(res(0:1)).eq."mp".or.\
-                   chartostring(res(0:1)).eq."vp")
-                    setvalues map_object
-                        attnames : res2@$attnames$
-                    end setvalues
-                else 
-                    setvalues stream_object
-                        attnames : res2@$attnames$
-                    end setvalues
-                end if
-            end if
-        else
-            vf_res_index = ind(chartostring(res(:,0:1)).eq."vf")
-            mp_res_index = ind(chartostring(res(:,0:1)).eq."mp".or.\
-                               chartostring(res(:,0:1)).eq."vp")
-            st_res_index = ind(chartostring(res(:,0:1)).ne."mp".and.\
-                               chartostring(res(:,0:1)).ne."vf".and.\
-                               chartostring(res(:,0:1)).ne."vp")
-            if(.not.all(ismissing(vf_res_index)))
-                vfres = True
-                do i = 0,dimsizes(vf_res_index)-1
-                    vfres@$attnames(vf_res_index(i))$ = res2@$attnames(vf_res_index(i))$
-                end do
-                attsetvalues(data_object,vfres)
-            end if
-            if(.not.all(ismissing(mp_res_index)))
-                mpres = True
-                do i = 0,dimsizes(mp_res_index)-1
-                    mpres@$attnames(mp_res_index(i))$ = res2@$attnames(mp_res_index(i))$
-                end do
-                attsetvalues(map_object,mpres)
-            end if
-            if(.not.all(ismissing(st_res_index)))
-                stres = True
-                do i = 0,dimsizes(st_res_index)-1
-                    stres@$attnames(st_res_index(i))$ = res2@$attnames(st_res_index(i))$
-                end do
-                attsetvalues(stream_object,stres)
-            end if
-        end if
+    if(vfres.and..not.any(ismissing(getvaratts(vfres))))
+      attsetvalues(data_object,vfres)
+    end if
+    if(stres.and..not.any(ismissing(getvaratts(stres))))
+      attsetvalues(stream_object,stres)
+    end if
+    if(mpres.and..not.any(ismissing(getvaratts(mpres))))
+      attsetvalues(map_object,mpres)
     end if
         "stVectorFieldData" : data_object
     end create
@@ -2253,37 +1986,11 @@ begin
         "txFuncCode" : funccode
     end create
 
-    if((resources).and..not.any(ismissing(getvaratts(resources))))
-
-; Get list of resources.
-
-        attnames = getvaratts(resources)
-        res = stringtochar(attnames(ind(attnames.ne."_FillValue")))
-
-; Check to see if any text item resources were set (these are resources
-; that start with the two-letter index "tx").
-
-        if(dimsizes(dimsizes(res)).eq.1)
-            if(chartostring(res(0:1)).eq."tx")
-                setvalues txid
-                    attnames : resources@$attnames$
-                end setvalues
-            end if
-        else
-            tx_res_index = ind(chartostring(res(:,0:1)).eq."tx")
-            if(.not.all(ismissing(tx_res_index)))
-                txres = True
-                do i = 0,dimsizes(tx_res_index)-1
-                    txres@$attnames(tx_res_index(i))$ = resources@$attnames(tx_res_index(i))$
-                end do
-                attsetvalues(txid,txres)
-            end if
-        end if
+    txres = get_res_eq(resources,"tx")  ; Get text resources.
+    if(txres.and..not.any(ismissing(getvaratts(txres))))
+      attsetvalues(txid,txres)            ; Set text resources.
     end if
-
-; Draw text string.
-
-    draw(txid)
+    draw(txid)                          ; Draw text string.
     delete(txid)
 end
 
@@ -2327,37 +2034,11 @@ begin
       end create
     end if
 
-    if((resources).and..not.any(ismissing(getvaratts(resources))))
-
-; Get list of resources.
-
-        attnames = getvaratts(resources)
-        res = stringtochar(attnames(ind(attnames.ne."_FillValue")))
-
-; Check to see if any text item resources were set (these are resources
-; that start with the two-letter index "tx").
-
-        if(dimsizes(dimsizes(res)).eq.1)
-            if(chartostring(res(0:1)).eq."tx")
-                setvalues txid
-                    attnames : resources@$attnames$
-                end setvalues
-            end if
-        else
-            tx_res_index = ind(chartostring(res(:,0:1)).eq."tx")
-            if(.not.all(ismissing(tx_res_index)))
-                txres = True
-                do i = 0,dimsizes(tx_res_index)-1
-                    txres@$attnames(tx_res_index(i))$ = resources@$attnames(tx_res_index(i))$
-                end do
-                attsetvalues(txid,txres)
-            end if
-        end if
+    txres = get_res_eq(resources,"tx")  ; Get text resources.
+    if(txres.and..not.any(ismissing(getvaratts(txres))))
+      attsetvalues(txid,txres)            ; Set text resources.
     end if
-
-; Draw text string.
-
-    draw(txid)
+    draw(txid)                          ; Draw text string.
     delete(txid)
 ; Outline box in black.
 ;
@@ -2430,10 +2111,10 @@ begin
 ; Check if frame and/or draw are not supposed to be called.
 
         if(isatt(res2,"gsnDraw"))
-            if(.not.res2@gsnDraw)
-                calldraw = False    
-        end if
-            delete(res2@gsnDraw)
+          if(.not.res2@gsnDraw)
+            calldraw = False    
+          end if
+          delete(res2@gsnDraw)
         end if
         if(isatt(res2,"gsnFrame"))
             if(.not.res2@gsnFrame)
@@ -2515,62 +2196,18 @@ begin
 
     end if
         end setvalues
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-; Get list of resources.
+    end if
+
+    if(force_xaxis_linear.or.force_xaxis_log.or. \
+       force_yaxis_linear.or.force_yaxis_log)
+
+    plot_object = create wksname + "_vector" vectorPlotClass wks
         "vcVectorFieldData" : data_object
-        attnames = getvaratts(res2)
-        res = stringtochar(attnames(ind(attnames.ne."_FillValue")))
-
-; Check to see if any data resources were set (these are resources that
-; start with the two-letter index "vf").
-
-        if(dimsizes(dimsizes(res)).eq.1)
-            if(chartostring(res(0:1)).eq."vf")
-                setvalues data_object
-                    attnames : res2@$attnames$
-                end setvalues
-            else
-                setvalues plot_object
-                    attnames : res2@$attnames$
-                end setvalues
-            end if
-            if(force_xaxis_linear.or.force_xaxis_log.or. \
-               force_yaxis_linear.or.force_yaxis_log)
-              if(chartostring(res(0:1)).eq."tr".or. \
-                 chartostring(res(0:1)).eq."vp")
-                llres = True
-                llres@$attnames$ = res2@$attnames$
-              end if
-            end if
-        else
-            vf_res_index = ind(chartostring(res(:,0:1)).eq."vf")
-            vc_res_index = ind(chartostring(res(:,0:1)).ne."vf")
-            if(.not.all(ismissing(vf_res_index)))
-                vfres = True
-                do i = 0,dimsizes(vf_res_index)-1
-                    vfres@$attnames(vf_res_index(i))$ = res2@$attnames(vf_res_index(i))$
-                end do
-                attsetvalues(data_object,vfres)
-            end if
-            if(.not.all(ismissing(vc_res_index)))
-                vcres = True
-                do i = 0,dimsizes(vc_res_index)-1
-                    vcres@$attnames(vc_res_index(i))$ = res2@$attnames(vc_res_index(i))$
-                end do
-                attsetvalues(plot_object,vcres)
-            end if
-            if(force_xaxis_linear.or.force_xaxis_log.or. \
-               force_yaxis_linear.or.force_yaxis_log)
-              ll_res_index = ind(chartostring(res(:,0:1)).eq."tr".or. \
-                                 chartostring(res(:,0:1)).eq."vp")
-              if(.not.all(ismissing(ll_res_index)))
-                  llres = True
-                  do i = 0,dimsizes(ll_res_index)-1
-                    llres@$attnames(ll_res_index(i))$ = res2@$attnames(ll_res_index(i))$
-                  end do
-              end if
-            end if
-        end if
+    if(vfres.and..not.any(ismissing(getvaratts(vfres))))
+      attsetvalues(data_object,vfres)
+    end if
+    if(vcres.and..not.any(ismissing(getvaratts(vcres))))
+      attsetvalues(plot_object,vcres)
     end if
 
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
@@ -2664,7 +2301,7 @@ begin
     end if
 
 ; Check if we need to force the X or Y axis to be linear or log.
-      if(llres)
+      if(llres.and..not.any(ismissing(getvaratts(llres))))
         attsetvalues(plot_object,llres)
       end if
 
@@ -2792,82 +2429,22 @@ begin
         end if
     end if
 
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-; Get list of resources.
+; Create vector plot object.
 
-        attnames = getvaratts(res2)
-        res = stringtochar(attnames(ind(attnames.ne."_FillValue")))
-        if(dimsizes(dimsizes(res)).eq.1)
-
-;***********************************************************************;
-; Check to see if any resources were set. For the vector field data     ;
-; object, resources begin with "vf" and for the scalar field data       ;
-; object, resources being with "sf". For the contour ojbect, resources  ;
-; begin with "cn" and for the vector object, any resource that doesn't  ;
-; start with "cn" or "vf" is assumed to be a vector or vector-related   ;
-; resource.                                                             ;
-;***********************************************************************;
-
-            if(chartostring(res(0:1)).eq."vf")
-                setvalues vfdata_object
-                    attnames : res2@$attnames$
-                end setvalues
-            else
-                if(chartostring(res(0:1)).eq."sf")
-                    setvalues sfdata_object
-                        attnames : res2@$attnames$
-                    end setvalues
-                else
-                  if(chartostring(res(0:1)).eq."cn".or.\
-                     chartostring(res(0:1)).eq."vp")
-                      setvalues contour_object
-                          attnames : res2@$attnames$
-                      end setvalues
-                  else
-                    setvalues vector_object
-                      attnames : res2@$attnames$
-                    end setvalues
-                  end if
-                end if
-            end if
-        else
-            vf_res_index = ind(chartostring(res(:,0:1)).eq."vf")
-            sf_res_index = ind(chartostring(res(:,0:1)).eq."sf")
-            cn_res_index = ind(chartostring(res(:,0:1)).eq."cn".or.\
-                               chartostring(res(:,0:1)).eq."vp")
-            vc_res_index = ind(chartostring(res(:,0:1)).ne."vf".and.\
-                               chartostring(res(:,0:1)).ne."cn".and.\
-                               chartostring(res(:,0:1)).ne."sf".and.\
-                               chartostring(res(:,0:1)).ne."vp")
-            if(.not.all(ismissing(vf_res_index)))
-                vfres = True
-                do i = 0,dimsizes(vf_res_index)-1
-                    vfres@$attnames(vf_res_index(i))$ = res2@$attnames(vf_res_index(i))$
-                end do
-                attsetvalues(vfdata_object,vfres)
-            end if
-            if(.not.all(ismissing(sf_res_index)))
-                sfres = True
-                do i = 0,dimsizes(sf_res_index)-1
-                    sfres@$attnames(sf_res_index(i))$ = res2@$attnames(sf_res_index(i))$
-                end do
-                attsetvalues(sfdata_object,sfres)
-            end if
-            if(.not.all(ismissing(cn_res_index)))
-                cnres = True
-                do i = 0,dimsizes(cn_res_index)-1
-                    cnres@$attnames(cn_res_index(i))$ = res2@$attnames(cn_res_index(i))$
-                end do
-                attsetvalues(contour_object,cnres)
-            end if
-            if(.not.all(ismissing(vc_res_index)))
-                vcres = True
-                do i = 0,dimsizes(vc_res_index)-1
-                    vcres@$attnames(vc_res_index(i))$ = res2@$attnames(vc_res_index(i))$
-                end do
-                attsetvalues(vector_object,vcres)
-            end if
-        end if
+    vector_object = create wksname + "_vector" vectorPlotClass wks
+        "vcVectorFieldData" : vfdata_object
+    end create
+    if(vfres.and..not.any(ismissing(getvaratts(vfres))))
+      attsetvalues(vfdata_object,vfres)
+    end if
+    if(sfres.and..not.any(ismissing(getvaratts(sfres))))
+      attsetvalues(sfdata_object,sfres)
+    end if
+    if(cnres.and..not.any(ismissing(getvaratts(cnres))))
+      attsetvalues(contour_object,cnres)
+    end if
+    if(vcres.and..not.any(ismissing(getvaratts(vcres))))
+      attsetvalues(vector_object,vcres)
     end if
         "cnScalarFieldData" : sfdata_object
     cnres = get_res_eq(res2,(/"cn","vp"/))
@@ -3026,97 +2603,26 @@ begin
         end if
     end if
         "vcVectorFieldData" : vfdata_object
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-; Get list of resources.
+    end create
 
-        attnames = getvaratts(res2)
-        res = stringtochar(attnames(ind(attnames.ne."_FillValue")))
-        if(dimsizes(dimsizes(res)).eq.1)
+; Create contour plot object.
 
-;***********************************************************************;
-; Check to see if any resources were set. For the vector field data     ;
-; object, resources begin with "vf" and for the scalar field data       ;
-; object, resources being with "sf". For the map object, resources begin;
-; with "mp". For the contour ojbect, resources begin with "cn" and for  ;
-; the vector object, any resource that doesn't start with "mp", "cn", or;
-; "vf" is assumed to be a vector or vector-related resource.            ;
-;***********************************************************************;
-
-            if(chartostring(res(0:1)).eq."vf")
-                setvalues vfdata_object
-                    attnames : res2@$attnames$
-                end setvalues
-            else
-                if(chartostring(res(0:1)).eq."sf")
-                    setvalues sfdata_object
-                        attnames : res2@$attnames$
-                    end setvalues
-                else
-                    if(chartostring(res(0:1)).eq."mp".or.\
-                       chartostring(res(0:1)).eq."vp")
-                        setvalues map_object
-                            attnames : res2@$attnames$
-                        end setvalues
-                    else 
-                      if(chartostring(res(0:1)).eq."cn")
-                          setvalues contour_object
-                              attnames : res2@$attnames$
-                          end setvalues
-                      else
-                        setvalues vector_object
-                        attnames : res2@$attnames$
-                        end setvalues
-                      end if
-                    end if
-                end if
-            end if
-        else
-            vf_res_index = ind(chartostring(res(:,0:1)).eq."vf")
-            sf_res_index = ind(chartostring(res(:,0:1)).eq."sf")
-            cn_res_index = ind(chartostring(res(:,0:1)).eq."cn")
-            mp_res_index = ind(chartostring(res(:,0:1)).eq."mp".or.\
-                               chartostring(res(:,0:1)).eq."vp")
-            vc_res_index = ind(chartostring(res(:,0:1)).ne."mp".and.\
-                               chartostring(res(:,0:1)).ne."vf".and.\
-                               chartostring(res(:,0:1)).ne."cn".and.\
-                               chartostring(res(:,0:1)).ne."sf".and.\
-                               chartostring(res(:,0:1)).ne."vp")
-            if(.not.all(ismissing(vf_res_index)))
-                vfres = True
-                do i = 0,dimsizes(vf_res_index)-1
-                    vfres@$attnames(vf_res_index(i))$ = res2@$attnames(vf_res_index(i))$
-                end do
-                attsetvalues(vfdata_object,vfres)
-            end if
-            if(.not.all(ismissing(sf_res_index)))
-                sfres = True
-                do i = 0,dimsizes(sf_res_index)-1
-                    sfres@$attnames(sf_res_index(i))$ = res2@$attnames(sf_res_index(i))$
-                end do
-                attsetvalues(sfdata_object,sfres)
-            end if
-            if(.not.all(ismissing(mp_res_index)))
-                mpres = True
-                do i = 0,dimsizes(mp_res_index)-1
-                    mpres@$attnames(mp_res_index(i))$ = res2@$attnames(mp_res_index(i))$
-                end do
-                attsetvalues(map_object,mpres)
-            end if
-            if(.not.all(ismissing(cn_res_index)))
-                cnres = True
-                do i = 0,dimsizes(cn_res_index)-1
-                    cnres@$attnames(cn_res_index(i))$ = res2@$attnames(cn_res_index(i))$
-                end do
-                attsetvalues(contour_object,cnres)
-            end if
-            if(.not.all(ismissing(vc_res_index)))
-                vcres = True
-                do i = 0,dimsizes(vc_res_index)-1
-                    vcres@$attnames(vc_res_index(i))$ = res2@$attnames(vc_res_index(i))$
-                end do
-                attsetvalues(vector_object,vcres)
-            end if
-        end if
+    contour_object = create wksname + "_contour" contourPlotClass wks
+        "cnScalarFieldData" : sfdata_object
+    if(vfres.and..not.any(ismissing(getvaratts(vfres))))
+      attsetvalues(vfdata_object,vfres)
+    end if
+    if(sfres.and..not.any(ismissing(getvaratts(sfres))))
+      attsetvalues(sfdata_object,sfres)
+    end if
+    if(mpres.and..not.any(ismissing(getvaratts(mpres))))
+      attsetvalues(map_object,mpres)
+    end if
+    if(cnres.and..not.any(ismissing(getvaratts(cnres))))
+      attsetvalues(contour_object,cnres)
+    end if
+    if(vcres.and..not.any(ismissing(getvaratts(vcres))))
+      attsetvalues(vector_object,vcres)
     end if
 
     vcres = get_res_ne(res2,(/"cn","mp","sf","vf","vp"/))
@@ -3253,65 +2759,18 @@ begin
         end if
     end if
     end if
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-; Get list of resources.
 
-        attnames = getvaratts(res2)
-        res = stringtochar(attnames(ind(attnames.ne."_FillValue")))
-        if(dimsizes(dimsizes(res)).eq.1)
+; Create plot object.
+
     vector_object = create wksname + "_vector" vectorPlotClass wks
-;***********************************************************************;
-; Check to see if any resources were set. For the data object, resources;
-; begin with "vf". For the map object, resources begin with "mp". For   ;
-; the vector object, any resource that doesn't start with "mp" or "vf"  ;
-; is assumed to be a vector or vector-related resource.                 ;
-;***********************************************************************;
-
-            if(chartostring(res(0:1)).eq."vf")
-                setvalues data_object
-                    attnames : res2@$attnames$
-                end setvalues
-            else
-                if(chartostring(res(0:1)).eq."mp".or.\
-                   chartostring(res(0:1)).eq."vp")
-                    setvalues map_object
-                        attnames : res2@$attnames$
-                    end setvalues
-                else 
-                    setvalues vector_object
-                        attnames : res2@$attnames$
-                    end setvalues
-                end if
-            end if
-        else
-            vf_res_index = ind(chartostring(res(:,0:1)).eq."vf")
-            mp_res_index = ind(chartostring(res(:,0:1)).eq."mp".or.\
-                               chartostring(res(:,0:1)).eq."vp")
-            vc_res_index = ind(chartostring(res(:,0:1)).ne."mp".and.\
-                               chartostring(res(:,0:1)).ne."vf".and.\
-                               chartostring(res(:,0:1)).ne."vp")
-            if(.not.all(ismissing(vf_res_index)))
-                vfres = True
-                do i = 0,dimsizes(vf_res_index)-1
-                    vfres@$attnames(vf_res_index(i))$ = res2@$attnames(vf_res_index(i))$
-                end do
-                attsetvalues(data_object,vfres)
-            end if
-            if(.not.all(ismissing(mp_res_index)))
-                mpres = True
-                do i = 0,dimsizes(mp_res_index)-1
-                    mpres@$attnames(mp_res_index(i))$ = res2@$attnames(mp_res_index(i))$
-                end do
-                attsetvalues(map_object,mpres)
-            end if
-            if(.not.all(ismissing(vc_res_index)))
-                vcres = True
-                do i = 0,dimsizes(vc_res_index)-1
-                    vcres@$attnames(vc_res_index(i))$ = res2@$attnames(vc_res_index(i))$
-                end do
-                attsetvalues(vector_object,vcres)
-            end if
-        end if
+    if(vfres.and..not.any(ismissing(getvaratts(vfres))))
+      attsetvalues(data_object,vfres)
+    end if
+    if(mpres.and..not.any(ismissing(getvaratts(mpres))))
+      attsetvalues(map_object,mpres)
+    end if
+    if(vcres.and..not.any(ismissing(getvaratts(vcres))))
+      attsetvalues(vector_object,vcres)
     end if
 ; Create map object.
     shape     = get_res_value(res2,"gsnShape",False)
@@ -3532,77 +2991,22 @@ begin
 
     end if
 ; Create plot object.
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-; Get list of resources.
 
-        attnames = getvaratts(res2)
-        res = stringtochar(attnames(ind(attnames.ne."_FillValue")))
+    plot_object = create wksname + "_vector" vectorPlotClass wks
+        "vcVectorFieldData"     : vfdata_object
+    if(force_xaxis_linear.or.force_xaxis_log.or. \
+       force_yaxis_linear.or.force_yaxis_log)
+        "vcMonoLineArrowColor"  : False
+    end create
 
-; Check to see if any data resources were set (these are resources that
-; start with the two-letter index "vf").
-
-        if(dimsizes(dimsizes(res)).eq.1)
-            if(chartostring(res(0:1)).eq."vf")
-                setvalues vfdata_object
-                    attnames : res2@$attnames$
-                end setvalues
-            else
-                if(chartostring(res(0:1)).eq."sf")
-                    setvalues sfdata_object
-                        attnames : res2@$attnames$
-                    end setvalues
-                else
-                    setvalues plot_object
-                        attnames : res2@$attnames$
-                    end setvalues
-                end if
-            end if
-            if(force_xaxis_linear.or.force_xaxis_log.or. \
-               force_yaxis_linear.or.force_yaxis_log)
-              if(chartostring(res(0:1)).eq."tr".or. \
-                 chartostring(res(0:1)).eq."vp")
-                llres = True
-                llres@$attnames$ = res2@$attnames$
-              end if
-            end if
-        else
-            vf_res_index = ind(chartostring(res(:,0:1)).eq."vf")
-            sf_res_index = ind(chartostring(res(:,0:1)).eq."sf")
-            vc_res_index = ind(chartostring(res(:,0:1)).ne."vf".and.\
-                               chartostring(res(:,0:1)).ne."sf")
-            if(.not.all(ismissing(vf_res_index)))
-                vfres = True
-                do i = 0,dimsizes(vf_res_index)-1
-                    vfres@$attnames(vf_res_index(i))$ = res2@$attnames(vf_res_index(i))$
-                end do
-                attsetvalues(vfdata_object,vfres)
-            end if
-            if(.not.all(ismissing(sf_res_index)))
-                sfres = True
-                do i = 0,dimsizes(sf_res_index)-1
-                    sfres@$attnames(sf_res_index(i))$ = res2@$attnames(sf_res_index(i))$
-                end do
-                attsetvalues(sfdata_object,sfres)
-            end if
-            if(.not.all(ismissing(vc_res_index)))
-                vcres = True
-                do i = 0,dimsizes(vc_res_index)-1
-                    vcres@$attnames(vc_res_index(i))$ = res2@$attnames(vc_res_index(i))$
-                end do
-                attsetvalues(plot_object,vcres)
-            end if
-            if(force_xaxis_linear.or.force_xaxis_log.or. \
-               force_yaxis_linear.or.force_yaxis_log)
-              ll_res_index = ind(chartostring(res(:,0:1)).eq."tr".or. \
-                                 chartostring(res(:,0:1)).eq."vp")
-              if(.not.all(ismissing(ll_res_index)))
-                  llres = True
-                  do i = 0,dimsizes(ll_res_index)-1
-                    llres@$attnames(ll_res_index(i))$ = res2@$attnames(ll_res_index(i))$
-                  end do
-              end if
-            end if
-        end if
+    if(vfres.and..not.any(ismissing(getvaratts(vfres))))
+      attsetvalues(vfdata_object,vfres)
+    end if
+    if(sfres.and..not.any(ismissing(getvaratts(sfres))))
+      attsetvalues(sfdata_object,sfres)
+    end if
+    if(vcres.and..not.any(ismissing(getvaratts(vcres))))
+      attsetvalues(plot_object,vcres)
     end if
 
     check_for_irreg2loglin(res2,force_x_linear,force_y_linear,\
@@ -3696,7 +3100,7 @@ begin
     end if
 
 ; Check if we need to force the X or Y axis to be linear or log.
-      if(llres)
+      if(llres.and..not.any(ismissing(getvaratts(llres))))
         attsetvalues(plot_object,llres)
       end if
 
@@ -3825,81 +3229,22 @@ begin
         end if
     end if
 ; Create plot object.
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-; Get list of resources.
 
-        attnames = getvaratts(res2)
-        res = stringtochar(attnames(ind(attnames.ne."_FillValue")))
-        if(dimsizes(dimsizes(res)).eq.1)
-
-;***********************************************************************;
-; Check to see if any resources were set. For the vector field data     ;
-; object, resources begin with "vf" and for the scalar field data       ;
-; object, resources being with "sf". For the map object, resources begin;
-; with "mp". For the vector object, any resource that doesn't start with;
-; "mp" or "vf" is assumed to be a vector or vector-related resource.    ;
-;***********************************************************************;
-
-            if(chartostring(res(0:1)).eq."vf")
-                setvalues vfdata_object
-                    attnames : res2@$attnames$
-                end setvalues
-            else
-                if(chartostring(res(0:1)).eq."sf")
-                    setvalues sfdata_object
-                        attnames : res2@$attnames$
-                    end setvalues
-                else
-                    if(chartostring(res(0:1)).eq."mp".or.\
-                       chartostring(res(0:1)).eq."vp")
-                        setvalues map_object
-                            attnames : res2@$attnames$
-                        end setvalues
-                    else 
-                        setvalues vector_object
-                        attnames : res2@$attnames$
-                        end setvalues
-                    end if
-                end if
-            end if
-        else
-            vf_res_index = ind(chartostring(res(:,0:1)).eq."vf")
-            sf_res_index = ind(chartostring(res(:,0:1)).eq."sf")
-            mp_res_index = ind(chartostring(res(:,0:1)).eq."mp".or.\
-                               chartostring(res(:,0:1)).eq."vp")
-            vc_res_index = ind(chartostring(res(:,0:1)).ne."mp".and.\
-                               chartostring(res(:,0:1)).ne."vf".and.\
-                               chartostring(res(:,0:1)).ne."sf".and.\
-                               chartostring(res(:,0:1)).ne."vp")
-            if(.not.all(ismissing(vf_res_index)))
-                vfres = True
-                do i = 0,dimsizes(vf_res_index)-1
-                    vfres@$attnames(vf_res_index(i))$ = res2@$attnames(vf_res_index(i))$
-                end do
-                attsetvalues(vfdata_object,vfres)
-            end if
-            if(.not.all(ismissing(sf_res_index)))
-                sfres = True
-                do i = 0,dimsizes(sf_res_index)-1
-                    sfres@$attnames(sf_res_index(i))$ = res2@$attnames(sf_res_index(i))$
-                end do
-                attsetvalues(sfdata_object,sfres)
-            end if
-            if(.not.all(ismissing(mp_res_index)))
-                mpres = True
-                do i = 0,dimsizes(mp_res_index)-1
-                    mpres@$attnames(mp_res_index(i))$ = res2@$attnames(mp_res_index(i))$
-                end do
-                attsetvalues(map_object,mpres)
-            end if
-            if(.not.all(ismissing(vc_res_index)))
-                vcres = True
-                do i = 0,dimsizes(vc_res_index)-1
-                    vcres@$attnames(vc_res_index(i))$ = res2@$attnames(vc_res_index(i))$
-                end do
-                attsetvalues(vector_object,vcres)
-            end if
-        end if
+    vector_object = create wksname + "_vector" vectorPlotClass wks
+        "vcVectorFieldData"     : vfdata_object
+        "vcScalarFieldData"     : sfdata_object
+        "vcUseScalarArray"      : True
+    if(vfres.and..not.any(ismissing(getvaratts(vfres))))
+      attsetvalues(vfdata_object,vfres)
+    end if
+    if(sfres.and..not.any(ismissing(getvaratts(sfres))))
+      attsetvalues(sfdata_object,sfres)
+    end if
+    if(mpres.and..not.any(ismissing(getvaratts(mpres))))
+      attsetvalues(map_object,mpres)
+    end if
+    if(vcres.and..not.any(ismissing(getvaratts(vcres))))
+      attsetvalues(vector_object,vcres)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
     sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
@@ -4077,31 +3422,16 @@ begin
 
     end if
     if(res2.and..not.any(ismissing(getvaratts(res2))))
+      if(isatt(res2,"xyDashPattern").or.isatt(res2,"xyDashPatterns"))
+    if(cares.and..not.any(ismissing(getvaratts(cares))))
+      attsetvalues(data_object,cares)
+    end if
+      end if
     if((res2).and..not.any(ismissing(getvaratts(res2))))
 
     if(set_dash)
       setvalues dspec
         "xyDashPatterns" : (/0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,\
-
-; Check to see if any data resources were set (these are resources that
-; start with the two-letter index "ca").
-
-        if(dimsizes(dimsizes(res)).eq.1)
-            if(chartostring(res(0:1)).eq."ca")
-                setvalues data_object
-                    attnames : res2@$attnames$
-                end setvalues
-            end if
-        else
-            ca_res_index = ind(chartostring(res(:,0:1)).eq."ca")
-            if(.not.all(ismissing(ca_res_index)))
-                cares = True
-                do i = 0,dimsizes(ca_res_index)-1
-                    cares@$attnames(ca_res_index(i))$ = res2@$attnames(ca_res_index(i))$
-                end do
-                attsetvalues(data_object,cares)
-            end if
-        end if
                              0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,\
                              0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16/)
       end setvalues

@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.13 1999-07-01 20:47:06 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.14 1999-07-07 14:22:45 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -39,8 +39,6 @@ undef("gsn_geop_hgt")
 undef("check_for_subtitles")
 undef("check_for_draw_and_frame")
 undef("draw_and_frame")
-undef("get_res_eq")
-undef("get_res_ne")
 undef("create_labelbar")
 undef("add_subtitles")
 undef("add_labelbar")
@@ -342,78 +340,6 @@ begin
     frame(wks)           ; advance the frame
   end if
   return
-end
-;
-; Get list of resources that start with res_prefix.
-;
-function get_res_eq(res,res_prefix:string)
-local i, j, ret_res, res2, attnames, res_index
-begin
-  ret_res = False
-
-  if((res).and..not.any(ismissing(getvaratts(res))))
-    attnames = getvaratts(res)
-    res2 = stringtochar(attnames(ind(attnames.ne."_FillValue")))
-;
-; Only one resource set.
-;
-    if(dimsizes(dimsizes(res2)).eq.1)
-      if(any(chartostring(res2(0:1)).eq.res_prefix))
-        ret_res = True
-        ret_res@$attnames$ = res@$attnames$
-      end if
-    else
-;
-; Multiple resources set. They have to be checked differently than if
-; just one resource is set. 
-;
-      do j=0,dimsizes(res_prefix)-1
-        res_index = ind(chartostring(res2(:,0:1)).eq.res_prefix(j))
-        if(.not.all(ismissing(res_index)))
-          ret_res = True
-          do i = 0,dimsizes(res_index)-1
-            ret_res@$attnames(res_index(i))$ = res@$attnames(res_index(i))$
-          end do
-        end if
-        delete(res_index)
-      end do
-    end if
-    delete(res2)
-    delete(attnames)
-  end if
-  return(ret_res)
-end
-
-;
-; Get list of resources that don't start with res_prefix.
-;
-function get_res_ne(res,res_prefix:string)
-local i, ret_res, res2, attnames, res_index
-begin
-  ret_res = False
-
-  if((res).and..not.any(ismissing(getvaratts(res))))
-    attnames = getvaratts(res)
-    res2 = stringtochar(attnames(ind(attnames.ne."_FillValue")))
-
-    if(dimsizes(dimsizes(res2)).eq.1)
-      if(all(chartostring(res2(0:1)).ne.res_prefix))
-        ret_res = True
-        ret_res@$attnames$ = res@$attnames$
-      end if
-    else
-      nres = dimsizes(res2(:,0))
-      do i = 0,nres-1
-        if(all(chartostring(res2(i,0:1)).ne.res_prefix))
-          ret_res = True
-          ret_res@$attnames(i)$ = res@$attnames(i)$
-        end if
-      end do
-    end if
-    delete(res2)
-    delete(attnames)
-  end if
-  return(ret_res)
 end
 
 ;
@@ -1511,7 +1437,7 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
 ; it is set back to True.
     main_zone     = 2         ; Zone for main title (may change later)
     if((isatt(res2,"mpFillOn").and..not.res2@mpFillOn))
-      set_attr(res2,mpOutlineOn,True)
+      set_attr(res2,"mpOutlineOn",True)
     end if
 
 ; This section tests for special resources: those that start with "gsn."
@@ -1871,11 +1797,11 @@ begin
 
 ;    1. By default, a cyclic point is added.  If gsnAddCyclic is set to ;
 ;       False, then the cyclic point is not added.                      ;
-    set_attr(res2,cnInfoLabelFont,"helvetica")
-    set_attr(res2,cnLineLabelBackgroundColor,-1)
-    set_attr(res2,cnLineLabelFont,"helvetica")
-    set_attr(res2,cnInfoLabelOrthogonalPosF,0.06)
-    set_attr(res2,cnInfoLabelZone,2)
+    set_attr(res2,"cnInfoLabelFont","helvetica")
+;    2. The longitude lines are labeled.                                ;
+    set_attr(res2,"cnLineLabelFont","helvetica")
+;    3. If any of the special GSUN resources "gsnLeftString,"           ;
+;       "gsnCenterString," and/or "gsnRightString" are set, then they   ;
 ;       are used to title the top of the plot.                          ;
 ;       (in addition, the regular resource "tiMainString" can be set to ;
 ;       create a regular title).                                        ;
@@ -1883,7 +1809,7 @@ begin
 ;       drawn and line labels are turned off.                           ;
     if((isatt(res2,"cnFillOn").and.res2@cnFillOn).or.\
        (isatt(res2,"mpFillOn").and..not.res2@mpFillOn))
-      set_attr(res2,mpOutlineOn,True)
+;       is used for the left string title.                              ;
 ;    6. If data has an attribute called "units," and "gsnRightString"   ;
 ;       hasn't explicitly been set, then the value of this attribute    ;
 ;       is used for the right string title.                             ;
@@ -2129,9 +2055,9 @@ end
 ;       hasn't explicitly been set, then the value of this attribute    ;
 ;       is used for the left string title.                              ;
 ;    6. If data has an attribute called "units," and "gsnRightString"   ;
-    set_attr(res2,cnInfoLabelFont, "helvetica")
-    set_attr(res2,cnLineLabelFont, "helvetica")
-    set_attr(res2,cnLineLabelBackgroundColor, "transparent")
+    set_attr(res2,"cnInfoLabelFont", "helvetica")
+    set_attr(res2,"cnLineLabelFont", "helvetica")
+;       hasn't explicitly been set, then the value of this attribute    ;
 ;       is used for the right string title.                             ;
 ;***********************************************************************;
 
@@ -2178,7 +2104,7 @@ function gsn_csm_contour_map_ce(wks:graphic,data[*][*]:numeric,\
       if(any(datanew!0.eq.get_allowed_latnames()).and.\
     if((isatt(res2,"cnFillOn").and.res2@cnFillOn).or.\
        (isatt(res2,"mpFillOn").and..not.res2@mpFillOn))
-      set_attr(res2,mpOutlineOn,True)
+          if(isatt(res2,"vpHeightF"))
             map_vphf = res2@vpHeightF
           else
             map_vphf  = 0.7 ; make sure zonalplot will fit in view port
@@ -2561,7 +2487,7 @@ end
 ; then it is set back to True.
 
     if(isatt(res2,"mpFillOn").and..not.res2@mpFillOn)
-      set_attr(res2,mpOutlineOn,True)
+      set_attr(res2,"mpOutlineOn",True)
     end if
                                 resources:logical)
 local i, vector_object, map_object, res, res2, calldraw, vcres, \
