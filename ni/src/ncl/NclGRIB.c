@@ -3226,10 +3226,8 @@ unsigned char *offset;
 		case 4: /* Accumulation from reference time + P1 to reference time + P2 */
 		case 5: /* Difference from reference time + P1 to reference time + P2 */
 			return((int)offset[1]);
-			break;
 		case 10:/* P1 occupies both bytes */
 			return(UnsignedCnvtToDecimal(2,offset));
-			break;
 		case 51:
 		case 113:
 		case 114:
@@ -3239,10 +3237,8 @@ unsigned char *offset;
 		case 123:
 		case 124:
 			return 0;
-			break;
 		case 117:
 			return((int)offset[0]);
-			break;
 		default:
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown or unsupported time range indicator detected, continuing");
 			return(-1);
@@ -3463,33 +3459,181 @@ int param_num;
 	return(0);
 }
 
-static int _FirstCheck
+static int GridCompare
 #if NhlNeedProto
-(GribFileRecord *therec, GribRecordInqRec *grib_rec)
+(GribParamList *step, GribRecordInqRec *grib_rec)
 #else
-(therec, grib_rec)
-GribFileRecord *therec;
+(step, grib_rec)
+GribbParamList *step;
 GribRecordInqRec *grib_rec;
 #endif
 {
-	GribParamList *step = therec->var_list;
+	GribRecordInqRec *compare_rec = step->thelist->rec_inq;
+	int r1;
 
-	if((step->param_number > grib_rec->param_number) 
-		||((step->param_number == grib_rec->param_number)&&(step->grid_number > grib_rec->grid_number))
-		||((step->param_number == grib_rec->param_number)&&(step->grid_number == grib_rec->grid_number)&&(step->time_range_indicator > (int)grib_rec->pds[20]))
-		||((step->param_number == grib_rec->param_number)&&(step->grid_number == grib_rec->grid_number)&&(step->time_range_indicator == (int)grib_rec->pds[20])&&(step->level_indicator > grib_rec->level_indicator))) {
+	if (step->grid_number != grib_rec->grid_number)
+		return step->grid_number - grib_rec->grid_number;
+	if (grib_rec->grid_number < 255)
+		return 0;
+	if (compare_rec->has_gds != grib_rec->has_gds) 
+		return compare_rec->has_gds - grib_rec->has_gds;
+	if (! grib_rec->has_gds)
+		return 0;
 
+	if (compare_rec->gds_type != grib_rec->gds_type)
+		return compare_rec->gds_type - grib_rec->gds_type;
+	if (compare_rec->gds_size != grib_rec->gds_size)
+		return compare_rec->gds_size - grib_rec->gds_size;
+	if (grib_rec->gds_type >= 50 && grib_rec->gds_type < 90)
+		return 0;
+	/* 
+	 * Compare La1 Lo1 La2 Lo2 - hopefully this will give us a definitive answer
+	 * Note that since Grib is always big endian a simple memcmp should sort by La1, Lo1, La2, Lo2 
+	 */
+	r1 = memcmp(&(compare_rec->gds[10]),&(grib_rec->gds[10]),6);
+	if (r1 != 0)
+		return r1;
+	return memcmp(&(compare_rec->gds[17]),&(grib_rec->gds[17]),6);
+}
+
+#if 0
+static int InsertGribRec
+#if NhlNeedProto
+(GribFileRecord *therec,GribParamList *step, GribParamList *prev,GribRecordInqRec *grib_rec)
+#else
+(therec, step, prev,grib_rec)
+GribFileRecord *therec;
+GribParamList *step;
+GribParamList *prev;
+GribRecordInqRec *grib_rec;
+#endif
+{
+	GribParamList *new;
+	int gridcomp;
+
+	if (step->param_number <  grib_rec->param_number)
+		return 0;
+	if(step->param_number > grib_rec->param_number) {
+		new = _NewListNode(grib_rec);
+		new->next = step;
+		if (prev)
+			prev->next = new;
+		else
+			therec->var_list = new;
+		therec->n_vars++;
+		return(1);
+	}
+	gridcomp = GridCompare(step,grib_rec);
+	if (gridcomp < 0)
+		return 0;
+	if (gridcomp > 0) {
+		new = _NewListNode(grib_rec);
+		new->next = step;
+		if (prev)
+			prev->next = new;
+		else
+			therec->var_list = new;
+		therec->n_vars++;
+		return(1);
+	}
+	if (step->time_range_indicator < (int)grib_rec->pds[20])
+		return 0;
+	if (step->time_range_indicator > (int)grib_rec->pds[20]) {
+		new = _NewListNode(grib_rec);
+		new->next = step;
+		if (prev)
+			prev->next = new;
+		else
+			therec->var_list = new;
+		therec->n_vars++;
+		return(1);
+	}
+	if (step->time_period < (int)grib_rec->time_period)
+		return 0;
+	if (step->time_period > (int)grib_rec->time_period) {
+		new = _NewListNode(grib_rec);
+		new->next = step;
+		if (prev)
+			prev->next = new;
+		else
+			therec->var_list = new;
+		therec->n_vars++;
+		return(1);
+	}
+	if (step->level_indicator < grib_rec->level_indicator)
+		return 0;
+	if (step->level_indicator > grib_rec->level_indicator) {
+		new = _NewListNode(grib_rec);
+		new->next = step;
+		if (prev)
+			prev->next = new;
+		else
+			therec->var_list = new;
+		therec->n_vars++;
+		return(1);
+	}
+	_AddRecordToNode(step,grib_rec);
+	return(1);
+}
+#endif
+
+static int _FirstCheck
+#if NhlNeedProto
+(GribFileRecord *therec,GribParamList *step, GribRecordInqRec *grib_rec)
+#else
+(therec, step, grib_rec)
+GribFileRecord *therec;
+GribParamList *step;
+GribRecordInqRec *grib_rec;
+#endif
+{
+	int gridcomp;
+
+	if (step->param_number <  grib_rec->param_number)
+		return 0;
+	if(step->param_number > grib_rec->param_number) {
 		therec->var_list = _NewListNode(grib_rec);
 		therec->var_list->next = step;
 		therec->n_vars++;
 		return(1);
-	} else if((step->param_number == grib_rec->param_number)&&(step->grid_number == grib_rec->grid_number)&&(step->time_range_indicator == (int)grib_rec->pds[20])&&(step->level_indicator == grib_rec->level_indicator)){
-		_AddRecordToNode(step,grib_rec);
-		return(1);
-	} else {
-		return(0);
 	}
+	gridcomp = GridCompare(step,grib_rec);
+	if (gridcomp < 0)
+		return 0;
+	if (gridcomp > 0) {
+		therec->var_list = _NewListNode(grib_rec);
+		therec->var_list->next = step;
+		therec->n_vars++;
+		return(1);
+	}
+	if (step->time_range_indicator < (int)grib_rec->pds[20])
+		return 0;
+	if (step->time_range_indicator > (int)grib_rec->pds[20]) {
+		therec->var_list = _NewListNode(grib_rec);
+		therec->var_list->next = step;
+		therec->n_vars++;
+		return(1);
+	}
+	if (step->time_period < (int)grib_rec->time_period)
+		return 0;
+	if (step->time_period > (int)grib_rec->time_period) {
+		therec->var_list = _NewListNode(grib_rec);
+		therec->var_list->next = step;
+		therec->n_vars++;
+		return(1);
+	}
+	if (step->level_indicator < grib_rec->level_indicator)
+		return 0;
+	if (step->level_indicator > grib_rec->level_indicator) {
+		therec->var_list = _NewListNode(grib_rec);
+		therec->var_list->next = step;
+		therec->n_vars++;
+		return(1);
+	}
+	_AddRecordToNode(step,grib_rec);
+	return(1);
 }
+
 
 static int AdjustedTimePeriod
 #if	NhlNeedProto
@@ -3576,6 +3720,8 @@ int unit_code;
 	}
 	return time_period;
 }
+
+
 
 static PtableInfo *InitParamTableInfo
 #if	NhlNeedProto
@@ -4354,8 +4500,20 @@ int wr_status;
 						therec->var_list = _NewListNode(grib_rec);
 						therec->n_vars = 1;
 					} else {
-					   step = therec->var_list;
-					   if(!_FirstCheck(therec,grib_rec)) {
+ 					    step = therec->var_list;
+#if 0
+						tmpstep = NULL;
+						while (step != NULL) {
+							if (! InsertGribRec(therec,step,tmpstep,grib_rec)) {
+								tmpstep = step;
+								step = step->next;
+								continue;
+							}
+							break;
+						}
+#endif
+
+					     if(!_FirstCheck(therec,step,grib_rec)) {
 /*
 * Keep in inorder list
 */
@@ -4366,68 +4524,69 @@ int wr_status;
 						}
 			
 						if((step->next == NULL) 
-							||(step->next->param_number > grib_rec->param_number)) {
-/*
-* No current instance of grib_rec->param_number insert immediately
-*/
+						   ||(step->next->param_number > grib_rec->param_number)) {
+							/*
+							 * No current instance of grib_rec->param_number insert immediately
+							 */
 
 							step2 = _NewListNode(grib_rec);
 							_InsertNodeAfter(step,step2);
 							therec->n_vars++;
-						} else if(step->next->grid_number <= grib_rec->grid_number) {
-/*
-* At this point param_number found and step->next points to first occurance of param_number
-*/
+						} else if(GridCompare(step->next,grib_rec) <= 0) {
+							/*
+							 * At this point param_number found and step->next points to first occurance of param_number
+							 */
 							while((step->next != NULL)
-								&&(step->next->param_number==grib_rec->param_number)
-								&&(step->next->grid_number < grib_rec->grid_number)) {
+							      &&(step->next->param_number==grib_rec->param_number)
+							      &&(GridCompare(step->next,grib_rec) < 0)) {
 								step = step->next;
 							}
 							if((step->next == NULL)
-								||(step->next->param_number != grib_rec->param_number)
-								||(step->next->grid_number > grib_rec->grid_number)) {
-
+							   ||(step->next->param_number != grib_rec->param_number)
+							   ||(GridCompare(step->next,grib_rec) > 0)) {
 								step2 = _NewListNode(grib_rec);
 								_InsertNodeAfter(step,step2);
 								therec->n_vars++;
-							} else if(step->next->time_range_indicator <= (int)grib_rec->pds[20]) {
-/*
-* At this point param_number and grib_number found and step->next points to first occurance of
-* grid_number
-*/
+							}
+							else if(step->next->time_range_indicator <= (int)grib_rec->pds[20]) {
+								/*
+								 * At this point param_number and grid found and step->next points to first occurance of
+								 * the grid
+								 */
 								while((step->next != NULL)
-									&&(step->next->param_number == grib_rec->param_number)
-									&&(step->next->grid_number == grib_rec->grid_number)
-									&&(step->next->time_range_indicator < (int)grib_rec->pds[20])){
+								      &&(step->next->param_number == grib_rec->param_number)
+								      &&(GridCompare(step->next, grib_rec) == 0)
+								      &&(step->next->time_range_indicator < (int)grib_rec->pds[20])){
 									step = step->next;
 								}
 								if((step->next == NULL)
-									||(step->next->param_number != grib_rec->param_number)
-									||(step->next->grid_number != grib_rec->grid_number)
-									||(step->next->time_range_indicator > (int)grib_rec->pds[20])) {
+								   ||(step->next->param_number != grib_rec->param_number)
+								   ||(step->next->grid_number != grib_rec->grid_number)
+								   ||(GridCompare(step->next, grib_rec) != 0)
+								   ||(step->next->time_range_indicator > (int)grib_rec->pds[20])) {
 									step2 = _NewListNode(grib_rec);
 									_InsertNodeAfter(step,step2);
 									therec->n_vars++;
 								} else if(step->next->time_period <= grib_rec->time_period) {
 									while((step->next != NULL) 
-										&&(step->next->param_number == grib_rec->param_number)
-										&&(step->next->grid_number == grib_rec->grid_number)
-										&&(step->next->time_range_indicator == (int)grib_rec->pds[20])
-										&&(step->next->time_period < grib_rec->time_period)){
+									      &&(step->next->param_number == grib_rec->param_number)
+									      &&(GridCompare(step->next, grib_rec) == 0)
+									      &&(step->next->time_range_indicator == (int)grib_rec->pds[20])
+									      &&(step->next->time_period < grib_rec->time_period)){
 										step = step->next;
 									}
 									if((step->next == NULL)
-										||(step->next->param_number != grib_rec->param_number)
-										||(step->next->grid_number != grib_rec->grid_number)
-										||(step->next->time_range_indicator != (int)grib_rec->pds[20])
-										||(step->next->time_period > grib_rec->time_period)) {
+									   ||(step->next->param_number != grib_rec->param_number)
+									   ||(GridCompare(step->next, grib_rec) != 0)
+									   ||(step->next->time_range_indicator != (int)grib_rec->pds[20])
+									   ||(step->next->time_period > grib_rec->time_period)) {
 										step2 = _NewListNode(grib_rec);	
 										_InsertNodeAfter(step,step2);
 										therec->n_vars++;
 									} else if(step->next->level_indicator <= grib_rec->level_indicator) {
 										while((step->next != NULL) 
 										      &&(step->next->param_number == grib_rec->param_number)
-										      &&(step->next->grid_number == grib_rec->grid_number)
+										      &&(GridCompare(step->next, grib_rec) == 0)
 										      &&(step->next->time_range_indicator == (int)grib_rec->pds[20])
 										      &&(step->next->time_period == grib_rec->time_period)
 										      &&(step->next->level_indicator < grib_rec->level_indicator)){
@@ -4435,20 +4594,20 @@ int wr_status;
 										}
 										if((step->next == NULL)
 										   ||(step->next->param_number != grib_rec->param_number)
-										   ||(step->next->grid_number != grib_rec->grid_number)
+										   ||(GridCompare(step->next, grib_rec) != 0)
 										   ||(step->next->time_range_indicator != (int)grib_rec->pds[20])
 										   ||(step->next->time_period != grib_rec->time_period)
 										   ||(step->next->level_indicator > grib_rec->level_indicator)) {
 											step2 = _NewListNode(grib_rec);	
 											_InsertNodeAfter(step,step2);
 											therec->n_vars++;
-
+											
 										} else {
-/*
-* Att this point it falls through because 
-* param_number, grid_number, time_range_indicator, time_period and level_indicator are equal
-* so its time ot add the record
-*/
+											/*
+											 * Att this point it falls through because 
+											 * param_number, grid_number, time_range_indicator, time_period and level_indicator 
+											 * are equal so its time to add the record
+											 */
 											_AddRecordToNode(step->next,grib_rec);
 										}
 									} else {
@@ -5375,49 +5534,47 @@ NclQuark thevar;
 NclQuark theatt;
 #endif
 {
-GribFileRecord *thefile = (GribFileRecord*)therec;
-GribParamList *step;
-GribInternalVarList *vstep;
-GribAttInqRecList *theatts;
-int i;
-NclFAttRec *tmp;
+	GribFileRecord *thefile = (GribFileRecord*)therec;
+	GribParamList *step;
+	GribInternalVarList *vstep;
+	GribAttInqRecList *theatts;
+	int i;
+	NclFAttRec *tmp;
 
 
-vstep = thefile->internal_var_list;
-while(vstep != NULL) {
-	if(vstep->int_var->var_info.var_name_quark == thevar) {
-		theatts = vstep->int_var->theatts;
-		break;
-	} else {
-		vstep = vstep->next;
-	}
-}	
-
-if(vstep == NULL ) {
-	step = thefile->var_list;	
-	while(step != NULL) {
-		if(step->var_info.var_name_quark == thevar) {
-			theatts = step->theatts;
+	vstep = thefile->internal_var_list;
+	while(vstep != NULL) {
+		if(vstep->int_var->var_info.var_name_quark == thevar) {
+			theatts = vstep->int_var->theatts;
 			break;
 		} else {
-			step = step->next;
+			vstep = vstep->next;
+		}
+	}	
+	if(vstep == NULL ) {
+		step = thefile->var_list;	
+		while(step != NULL) {
+			if(step->var_info.var_name_quark == thevar) {
+				theatts = step->theatts;
+				break;
+			} else {
+				step = step->next;
+			}
 		}
 	}
-}
-if(theatts!= NULL)  {
-	while(theatts != NULL) {
-		if(theatts->att_inq->name == theatt) {
-			tmp = (NclFAttRec*)NclMalloc(sizeof(NclFAttRec));
-			tmp->att_name_quark = theatt;
-			tmp->data_type = theatts->att_inq->thevalue->multidval.data_type;
-			tmp->num_elements = theatts->att_inq->thevalue->multidval.totalelements;
-			return(tmp);
+	if(theatts!= NULL)  {
+		while(theatts != NULL) {
+			if(theatts->att_inq->name == theatt) {
+				tmp = (NclFAttRec*)NclMalloc(sizeof(NclFAttRec));
+				tmp->att_name_quark = theatt;
+				tmp->data_type = theatts->att_inq->thevalue->multidval.data_type;
+				tmp->num_elements = theatts->att_inq->thevalue->multidval.totalelements;
+				return(tmp);
+			}
+			theatts = theatts->next;
 		}
-		theatts = theatts->next;
-	}
-} else {
+	} 
 	return(NULL);
-}
 }
 
 
@@ -5432,52 +5589,50 @@ NclQuark theatt;
 void* storage;
 #endif
 {
-GribFileRecord *thefile = (GribFileRecord*)therec;
-GribParamList *step;
-GribInternalVarList *vstep;
-GribAttInqRecList *theatts;
-int i;
-void *out_dat;
+	GribFileRecord *thefile = (GribFileRecord*)therec;
+	GribParamList *step;
+	GribInternalVarList *vstep;
+	GribAttInqRecList *theatts;
+	int i;
+	void *out_dat;
 
-
-vstep = thefile->internal_var_list;
-while(vstep != NULL) {
-	if(vstep->int_var->var_info.var_name_quark == thevar) {
-		theatts = vstep->int_var->theatts;
-		break;
-	} else {
-		vstep = vstep->next;
-	}
-}	
-
-if(vstep == NULL ) {
-	step = thefile->var_list;	
-	while(step != NULL) {
-		if(step->var_info.var_name_quark == thevar) {
-			theatts = step->theatts;	
+	vstep = thefile->internal_var_list;
+	while(vstep != NULL) {
+		if(vstep->int_var->var_info.var_name_quark == thevar) {
+			theatts = vstep->int_var->theatts;
 			break;
 		} else {
-			step = step->next;
+			vstep = vstep->next;
 		}
-	}
-}
-if(theatts!= NULL)  {
-	while(theatts != NULL) {
-		if(theatts->att_inq->name == theatt) {
-			if(storage != NULL) {
-				memcpy(storage,theatts->att_inq->thevalue->multidval.val,theatts->att_inq->thevalue->multidval.totalsize);
-				return(storage);
+	}	
+
+	if(vstep == NULL ) {
+		step = thefile->var_list;	
+		while(step != NULL) {
+			if(step->var_info.var_name_quark == thevar) {
+				theatts = step->theatts;	
+				break;
 			} else {
-				out_dat = (void*)NclMalloc(theatts->att_inq->thevalue->multidval.totalsize);
-				memcpy(out_dat,theatts->att_inq->thevalue->multidval.val,theatts->att_inq->thevalue->multidval.totalsize);
-				return(out_dat);
+				step = step->next;
 			}
 		}
-		theatts = theatts->next;
 	}
-} else {
+	if(theatts!= NULL)  {
+		while(theatts != NULL) {
+			if(theatts->att_inq->name == theatt) {
+				if(storage != NULL) {
+					memcpy(storage,theatts->att_inq->thevalue->multidval.val,theatts->att_inq->thevalue->multidval.totalsize);
+					return(storage);
+				} else {
+					out_dat = (void*)NclMalloc(theatts->att_inq->thevalue->multidval.totalsize);
+					memcpy(out_dat,theatts->att_inq->thevalue->multidval.val,theatts->att_inq->thevalue->multidval.totalsize);
+					return(out_dat);
+				}
+			}
+			theatts = theatts->next;
+		}
+	}
 	return(NULL);
-}
 }
 
 static void *GribReadAtt
