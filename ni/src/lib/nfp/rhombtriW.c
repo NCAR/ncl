@@ -546,6 +546,7 @@ NhlErrorTypes tri_trunc_W( void )
 /*
  * Call Fortran function.
  */
+  index_nm = 0;
   for(i = 0; i < nt; i++) {
 /*
  * Coerce subsection of a and b to temporary a and b.
@@ -588,4 +589,5 @@ NhlErrorTypes tri_trunc_W( void )
  */
   return(NhlNOERROR);
 }
+
 
