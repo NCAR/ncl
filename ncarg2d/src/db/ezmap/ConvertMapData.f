@@ -71,7 +71,7 @@ C another data record.  Otherwise, close the output file, and, if it
 C wasn't the fourth, go back to open the next.
 C
         IF (LOSR.GT.1) THEN
-          READ (1,'(10F8.3)',END=903) (FLTS(I),I=5,4+LOSR)
+          READ (1,'(10F8.3)',END=903) (FLTS(4+I),I=1,LOSR)
           CALL NGWRFL (IFDE,FLTS,4+LOSR,ISTA)
           IF (ISTA.NE.4+LOSR) GO TO 905
           GO TO 102
