@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.22 1993-02-26 21:32:26 haley Exp $
+#	$Id: ncargcc.csh,v 1.23 1993-03-08 22:02:37 haley Exp $
 #
 
 set system = "SED_SYSTEM_INCLUDE"
@@ -57,7 +57,7 @@ set libX11      = "-lX11"
 if ($system == "Cray2" || $system == "Cray") then
   set f77libs     =       "-L/lib -lf -lio -lm -lp -lsci -lu -lc"
 else if ($system == "Sun4") then
-  set f77libs     =       "-Bstatic -L/usr/lang/SC1.0 -lF77 -lV77 -lm -lc"
+  set f77libs     =       "-L/usr/lang/SC1.0 -Bstatic -lF77 -Bdynamic -lV77 -lm -lc"
 else if ($system == "Sun4Solaris") then
   set f77libs     =       "-L/opt/SUNWspro/SC2.0.1 -lF77 -lV77 -lM77 -lm"
 else if ($system == "Sun3") then
