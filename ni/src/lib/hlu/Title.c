@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.17 1995-01-11 00:46:53 boote Exp $
+ *      $Id: Title.c,v 1.18 1995-02-19 08:18:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #include <ncarg/hlu/TitleP.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
+#include <ncarg/hlu/Workstation.h>
 #include <math.h>
 
 static char	Main[] = "Main";

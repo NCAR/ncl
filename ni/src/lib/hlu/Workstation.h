@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.12 1995-02-17 10:23:43 boote Exp $
+ *      $Id: Workstation.h,v 1.13 1995-02-19 08:19:19 boote Exp $
  */
 /************************************************************************
 *									*
@@ -29,94 +29,65 @@
 
 #include <ncarg/hlu/Base.h>
 
+/*
+ * Public Workstation Resources are defined here.
+ */
 
 #define NhlNwkColorMap		"wkColorMap"
 #define NhlCwkColorMap		"WkColorMap"
-#define NhlNwkColorMapLen	".wkColorMapLen"
-#define NhlCwkColorMapLen	".WkColorMapLen"
+#define NhlNwkColorMapLen	"wkColorMapLen"
+#define NhlCwkColorMapLen	"WkColorMapLen"
 #define NhlNwkBackgroundColor	"wkBackgroundColor"
 #define NhlCwkBackgroundColor	"WkBackgroundColor"
 #define NhlNwkForegroundColor	"wkForegroundColor"
 #define NhlCwkForegroundColor	"WkForegroundColor"
-#define NhlNwkDashPattern       "wkDashPattern"
-#define NhlNwkLineLabel         "wkLineLabel"
-#define NhlNwkLineLabelColor	"wLineLabelColor"
-#define NhlNwkLineThicknessF    "wkLineThicknessF"
-#define NhlNwkLineLabelFontHeightF      "wkLineLabelFontHeightF"
-#define NhlNwkLineDashSegLenF   "wkLineDashSegLenF"
-#define NhlNwkLineColor         "wkLineColor"
-#define NhlNwkDashTableLength	".wkDashTableLength" /* read-only */
-#define NhlNwkDashTable 	".wkDashTable" 		/* now read-only */
 
-#define NhlCwkDashPattern       "WkDashPattern"
-#define NhlCwkLineLabel         "WkLineLabel"
+/*
+ * Public resources for setting Line and Marker attributes for
+ * Public Polyline interface.
+ */
+#define NhlNwkDashPattern	"wkDashPattern"
+#define NhlCwkDashPattern	"WkDashPattern"
+#define NhlNwkLineDashSegLenF	"wkLineDashSegLenF"
+#define NhlCwkLineDashSegLenF	"WkLineDashSegLenF"
+#define NhlNwkLineColor		"wkLineColor"
+#define NhlCwkLineColor		"WkLineColor"
+#define NhlNwkLineThicknessF	"wkLineThicknessF"
+#define NhlCwkLineThicknessF	"WkLineThicknessF"
+
+#define NhlNwkLineLabel		"wkLineLabel"
+#define NhlCwkLineLabel		"WkLineLabel"
+#define NhlNwkLineLabelFont	"wkLineLabelFont"
+#define NhlCwkLineLabelFont	"WkLineLabelFont"
+#define NhlNwkLineLabelColor	"wkLineLabelColor"
 #define NhlCwkLineLabelColor	"WkLineLabelColor"
-#define NhlCwkLineThicknessF    "WkLineThicknessF"
-#define NhlCwkLineLabelFontHeightF      "WkLineLabelFontHeightF"
-#define NhlCwkLineDashSegLenF   "WkLineDashSegLenF"
-#define NhlCwkLineColor         "WkLineColor"
-#define NhlCwkDashTableLength	".WkDashTableLength" /* read-only */
-#define NhlCwkDashTable 	".WkDashTable" 		/* now read-only */
+#define NhlNwkLineLabelFontHeightF	"wkLineLabelFontHeightF"
+#define NhlCwkLineLabelFontHeightF	"WkLineLabelFontHeightF"
 
-#define NhlNwkFillIndex		"wkFillIndex"
-#define NhlNwkFillColor         "wkFillColor"
-#define NhlNwkFillBackground    "wkFillBackground"
-#define NhlNwkFillScaleFactorF	"wkFillScaleFactorF"
-#define NhlNwkFillLineThicknessF "wkFillLineThicknessF"
-#define NhlNwkFillTableLength	".wkFillTableLength" /* read-only */
-
-#define NhlNwkDrawEdges		"wkDrawEdges"
-#define NhlNwkEdgeDashPattern   "wkEdgeDashPattern"
-#define NhlNwkEdgeThicknessF    "wkEdgeThicknessF"
-#define NhlNwkEdgeDashSegLenF   "wkEdgeDashSegLenF"
-#define NhlNwkEdgeColor         "wkEdgeColor"
-
-#define NhlCwkFillIndex		"WkFillIndex"
-#define NhlCwkFillColor         "WkFillColor"
-#define NhlCwkFillBackground    "WkFillBackground"
-#define NhlCwkFillScaleFactorF	"WkFillScaleFactorF"
-#define NhlCwkFillLineThicknessF "WkFillLineThicknessF"
-#define NhlCwkFillTableLength	".WkFillTableLength" /* read-only */
-
-#define NhlCwkDrawEdges		"WkDrawEdges"
-#define NhlCwkEdgeDashPattern   "WkEdgeDashPattern"
-#define NhlCwkEdgeThicknessF    "WkEdgeThicknessF"
-#define NhlCwkEdgeDashSegLenF   "WkEdgeDashSegLenF"
-#define NhlCwkEdgeColor         "WkEdgeColor"
-
-#define NhlNwkMarkerTableLength	".wkMarkerTableLength" /* read-only */
-#define NhlNwkMarkerTableStrings "wkMarkerTableStrings" /* read-only */
-#define NhlNwkMarkerTableParams  "wkMarkerTableParams"  /* read-only */
 #define NhlNwkMarkerIndex	"wkMarkerIndex"
-#define NhlNwkMarkerString	"wkMarkerString"
-#define NhlNwkMarkerColor       "wkMarkerColor"
-#define NhlNwkMarkerSizeF	"wkMarkerSizeF"
-#define NhlNwkMarkerXOffsetF    "wkMarkerXOffset"
-#define NhlNwkMarkerYOffsetF    "wkMarkerYOffset"
-#define NhlNwkMarkerThicknessF  "wkMarkerThicknessF"
-
-#define NhlNwkDrawMarkerLines		"wkDrawMarkerLines"
-#define NhlNwkMarkerLineDashPattern	"wkMarkerLineDashPattern"
-#define NhlNwkMarkerLineThicknessF	"wkMarkerLineThicknessF"
-#define NhlNwkMarkerLineDashSegLenF	"wkMarkerLineDashSegLenF"
-#define NhlNwkMarkerLineColor     	"wkMarkerLineColor"
-
-#define NhlCwkMarkerTableLength	".WkMarkerTableLength" /* read-only */
-#define NhlCwkMarkerTableStrings "WkMarkerTableStrings" /* read-only */
-#define NhlCwkMarkerTableParams  "WkMarkerTableParams"  /* read-only */
 #define NhlCwkMarkerIndex	"WkMarkerIndex"
-#define NhlCwkMarkerString	"WkMarkerString"
+#define NhlNwkMarkerColor       "wkMarkerColor"
 #define NhlCwkMarkerColor       "WkMarkerColor"
+#define NhlNwkMarkerSizeF	"wkMarkerSizeF"
 #define NhlCwkMarkerSizeF	"WkMarkerSizeF"
+#define NhlNwkMarkerXOffsetF    "wkMarkerXOffset"
 #define NhlCwkMarkerXOffsetF    "WkMarkerXOffset"
+#define NhlNwkMarkerYOffsetF    "wkMarkerYOffset"
 #define NhlCwkMarkerYOffsetF    "WkMarkerYOffset"
+#define NhlNwkMarkerThicknessF  "wkMarkerThicknessF"
 #define NhlCwkMarkerThicknessF  "WkMarkerThicknessF"
 
-#define NhlCwkDrawMarkerLines		"WkDrawMarkerLines"
-#define NhlCwkMarkerLineDashPattern	"WkMarkerLineDashPattern"
-#define NhlCwkMarkerLineThicknessF	"WkMarkerLineThicknessF"
-#define NhlCwkMarkerLineDashSegLenF	"WkMarkerLineDashSegLenF"
-#define NhlCwkMarkerLineColor     	"WkMarkerLineColor"
+/*
+ * GetValues ONLY resources
+ */
+#define NhlNwkDashTableLength	"wkDashTableLength"
+#define NhlCwkDashTableLength	"WkDashTableLength"
+#define NhlNwkFillTableLength	"wkFillTableLength"
+#define NhlCwkFillTableLength	"WkFillTableLength"
+#define NhlNwkMarkerTableLength	"wkMarkerTableLength"
+#define NhlCwkMarkerTableLength	"WkMarkerTableLength"
+#define NhlNwkGksWorkId		"wkGksWorkId"
+#define NhlCwkGksWorkId		"WkGksWorkId"
 
 /* Define for dash pattern index 0 */
 
@@ -244,12 +215,6 @@ extern int NhlIsAllocatedColor(
 #if	NhlNeedProto
         int     /* pid */,
         int     /* ci   */
-#endif
-);
-
-extern int NhlGetGksWorkId(
-#if	NhlNeedProto
-int /* workid */
 #endif
 );
 

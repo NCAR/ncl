@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.23 1995-02-11 02:42:03 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.24 1995-02-19 08:18:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -799,10 +799,10 @@ NhlMapPlotLayerClassRec NhlmapPlotLayerClassRec = {
 	},
 	{
 /* overlay_capability 		*/	_tfOverlayBaseOnly,
-/* data_to_ndc			*/	NULL,
-/* ndc_to_data			*/	NULL,
-/* data_polyline		*/	NULL,
-/* ndc_polyline			*/	NULL
+/* data_to_ndc			*/	NhlInheritTransFunc,
+/* ndc_to_data			*/	NhlInheritTransFunc,
+/* data_polyline		*/	NhlInheritPolyTransFunc,
+/* ndc_polyline			*/	NhlInheritPolyTransFunc
 	},
 	{
 /* foo				*/	NULL
@@ -2345,6 +2345,10 @@ static NhlErrorTypes mpDraw
 		return NhlFATAL;
 	}
 
+	NhlVASetValues(mp->base.wkptr->base.id,
+		_NhlNwkReset,	True,
+		NULL);
+
 	subret = _NhlSetTrans((NhlLayer)tfp->trans_obj,(NhlLayer)mp);
 
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -3523,7 +3527,7 @@ static NhlErrorTypes    mpManageDynamicArrays
  */	
 	if (init) {
 		subret = NhlVAGetValues(mpnew->base.wkptr->base.id,
-					NhlNwkDashTable, &ga, NULL);
+					_NhlNwkDashTable, &ga, NULL);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: NhlFATAL error retrieving dash table";
 			NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
@@ -5479,11 +5483,11 @@ int (_NHLCALLF(nhlmaskgrid,NHLMASKGRID))
 		return 0;
 		
 	NhlVASetValues(Mpl->base.wkptr->base.id,
-		       NhlNwkLineLabel,"",
-		       NhlNwkDashPattern,Mpp->grid.dash_pat,
-		       NhlNwkLineDashSegLenF,Mpp->grid.dash_seglen,
-		       NhlNwkLineThicknessF,Mpp->grid.thickness,
-		       NhlNwkLineColor,Mpp->grid.gks_color, 
+		       _NhlNwkLineLabel,"",
+		       _NhlNwkDashPattern,Mpp->grid.dash_pat,
+		       _NhlNwkLineDashSegLenF,Mpp->grid.dash_seglen,
+		       _NhlNwkLineThicknessF,Mpp->grid.thickness,
+		       _NhlNwkLineColor,Mpp->grid.gks_color, 
 		       NULL);
 
 	_NhlSetLineInfo(Mpl->base.wkptr,(NhlLayer) Mpl);
@@ -5603,11 +5607,11 @@ int (_NHLCALLF(nhlezmapfill,NHLEZMAPFILL))
 	}
 
 	NhlVASetValues(Mpl->base.wkptr->base.id,
-		       NhlNwkFillBackground, Mpp->fill_pattern_background,
-		       NhlNwkFillIndex, pat_ix,
-		       NhlNwkFillColor, col_ix,
-		       NhlNwkFillScaleFactorF,fscale,
-		       NhlNwkDrawEdges,0,
+		       _NhlNwkFillBackground, Mpp->fill_pattern_background,
+		       _NhlNwkFillIndex, pat_ix,
+		       _NhlNwkFillColor, col_ix,
+		       _NhlNwkFillScaleFactorF,fscale,
+		       _NhlNwkDrawEdges,0,
 		       NULL);
 	
 	_NhlSetFillInfo(Mpl->base.wkptr, (NhlLayer) Mpl);

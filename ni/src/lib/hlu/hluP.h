@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.22 1995-01-24 01:25:19 boote Exp $
+ *      $Id: hluP.h,v 1.23 1995-02-19 08:19:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,31 @@
 #else
 #define _NhlUSET(uset) {(uset)}
 #endif
+
+#define	_NhlRES_DEFAULT		(0)
+#define	_NhlRES_NORACCESS	(0x01)
+#define	_NhlRES_NOCACCESS	(0x02)
+#define	_NhlRES_NOSACCESS	(0x04)
+#define	_NhlRES_NOGACCESS	(0x08)
+
+#define	_NhlRES_GONLY	(_NhlRES_NORACCESS|_NhlRES_NOCACCESS|_NhlRES_NOSACCESS)
+#define	_NhlRES_SONLY	(_NhlRES_NORACCESS|_NhlRES_NOCACCESS|_NhlRES_NOGACCESS)
+#define	_NhlRES_GSONLY	(_NhlRES_NORACCESS|_NhlRES_NOCACCESS)
+#define _NhlRES_NOACCESS	(_NhlRES_NORACCESS|_NhlRES_NOCACCESS| \
+				_NhlRES_NOSACCESS|_NhlRES_NOGACCESS)
+
+typedef struct _NhlResource {
+	NhlString	resource_name;
+	NhlString	resource_class;
+	NhlString	resource_type;
+	unsigned int	resource_size;
+	unsigned int	resource_offset;
+	/* stuff for dealling with defaults */
+	NhlString	default_type;
+	NhlArgVal	default_val;
+	unsigned int	res_info;
+	NhlFreeFunc	free_func;
+} NhlResource, *NhlResourceList;
 
 typedef struct _NhlLayerRec *NhlLayer;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.17 1995-02-17 10:23:26 boote Exp $
+ *      $Id: Resources.c,v 1.18 1995-02-19 08:18:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -311,6 +311,7 @@ GetResources
 	NrmQuarkList		*child;	/* look at parent's DB level too*/
 #endif
 {
+	char		func[] = "GetResources";
 	register int	i,j;
 	NhlBoolean	resfound[_NhlMAXRESLIST];
 	NhlBoolean	argfound[_NhlMAXARGLIST];
@@ -331,7 +332,13 @@ GetResources
 	for (i=0; i < num_args; i++){
 		for(j=0; j < num_res; j++) {
 			if(args[i].quark == resources[j].nrm_name) {
-				if((args[i].type == NrmNULLQUARK) ||
+				if(resources[j].res_info & _NhlRES_NOCACCESS){
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+					"%s:%s does not have \"C\" access",
+					func,NrmQuarkToString(args[i].quark));
+					args[i].quark = NrmNULLQUARK;
+				}
+				else if((args[i].type == NrmNULLQUARK) ||
 					(args[i].type==resources[j].nrm_type)){
 					_NhlCopyFromArg(args[i].value,
 					(char*)(base + resources[j].nrm_offset),
@@ -394,13 +401,15 @@ GetResources
 	}
 
 	for (i=0; i < num_res; i++){
+		NhlBoolean	raccess;
 
 		if(resfound[i])		/* resource set via arg or datares*/
 			goto found;
 
-		/* Set resources via Nrm databases */
+		raccess = !(resources[i].res_info&_NhlRES_NORACCESS);
 
-		{
+		/* Set resources via Nrm databases */
+		if(raccess){
 			NrmValue	from, to;
 			NrmQuark	rdbtype;
 
@@ -458,7 +467,7 @@ GetResources
 		 * Set resources via Nrm database at parents level
 		 * As long as the resource should be forwarded.
 		 */
-		if(child != NULL){
+		if(raccess && child != NULL){
 			NrmQuark	lname[_NhlMAXTREEDEPTH];
 			NrmQuark	lclass[_NhlMAXTREEDEPTH];
 			int		tint;

@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.13 1995-01-11 00:46:46 boote Exp $
+ *      $Id: SetValues.c,v 1.14 1995-02-19 08:18:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -179,6 +179,7 @@ SetValues
 	int			nargs;	/* number of args		*/
 #endif
 {
+	char		func[] = "SetValues";
 	register int	i,j;
 	NhlBoolean	argfound[_NhlMAXARGLIST];
 	NhlErrorTypes	ret = NhlNOERROR;
@@ -195,14 +196,16 @@ SetValues
 	for(i=0; i < nargs; i++){
 		for(j=0; j < num_res; j++){
 			if(args[i].quark == resources[j].nrm_name) {
-				if(args[i].type == NrmNULLQUARK){
-					_NhlCopyFromArg(args[i].value,
-				(char*)((char*)base + resources[j].nrm_offset),
-					resources[j].nrm_size);
+				if(resources[j].res_info & _NhlRES_NOSACCESS){
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+					"%s:%s does not have \"S\" access",
+					func,NrmQuarkToString(args[i].quark));
+					args[i].quark = NrmNULLQUARK;
 				}
-				else if(args[i].type==resources[j].nrm_type){
-					_NhlCopyFromArgVal(args[i].value,
-				(char*)((char*)base + resources[j].nrm_offset),
+				else if((args[i].type == NrmNULLQUARK) ||
+					(args[i].type==resources[j].nrm_type)){
+					_NhlCopyFromArg(args[i].value,
+					(char*)(base + resources[j].nrm_offset),
 					resources[j].nrm_size);
 				}
 				else{
@@ -299,7 +302,7 @@ _NhlSetValues
 		return NhlNOERROR;
 
 	/*
-	 * Obj's don't support children.
+	 * Obj's don't support resource forwarding.
 	 */
 	if(_NhlIsObj(l)){
 		largs = args;

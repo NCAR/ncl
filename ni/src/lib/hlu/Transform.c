@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.14 1995-02-17 10:23:34 boote Exp $
+ *      $Id: Transform.c,v 1.15 1995-02-19 08:19:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -57,6 +57,11 @@ static NhlResource resources[] = {
 		  NhlTImmediate,(NhlPointer)_tfNotInOverlay,0,NULL}
 };
 
+static NhlErrorTypes TransformClassPartInit(
+#if	NhlNeedProto
+	NhlLayerClass	lc
+#endif
+);
 
 /*
 * Transform Methods
@@ -122,7 +127,7 @@ NhlTransformLayerClassRec NhltransformLayerClassRec = {
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
 
-/* class_part_initialize	*/	NULL,
+/* class_part_initialize	*/	TransformClassPartInit,
 /* class_initialize		*/	NULL,
 /* layer_initialize		*/	NULL,
 /* layer_set_values		*/	NULL,
@@ -155,6 +160,45 @@ NhlTransformLayerClassRec NhltransformLayerClassRec = {
 };
 	
 NhlLayerClass NhltransformLayerClass = (NhlLayerClass)&NhltransformLayerClassRec;
+
+/*
+ * Function:	TransformClassPartInit
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static NhlErrorTypes
+TransformClassPartInit
+#if	NhlNeedProto
+(
+	NhlLayerClass	lc
+)
+#else
+(lc)
+	NhlLayerClass	lc;
+#endif
+{
+	NhlTransformLayerClass	tlc = (NhlTransformLayerClass)lc;
+	NhlTransformLayerClass	sc = (NhlTransformLayerClass)
+						lc->base_class.superclass;
+
+	if(tlc->trans_class.data_to_ndc == NhlInheritTransFunc)
+		tlc->trans_class.data_to_ndc = sc->trans_class.data_to_ndc;
+	if(tlc->trans_class.ndc_to_data == NhlInheritTransFunc)
+		tlc->trans_class.ndc_to_data = sc->trans_class.ndc_to_data;
+
+	if(tlc->trans_class.data_polyline == NhlInheritPolyTransFunc)
+		tlc->trans_class.data_polyline = sc->trans_class.data_polyline;
+	if(tlc->trans_class.ndc_polyline == NhlInheritPolyTransFunc)
+		tlc->trans_class.ndc_polyline = sc->trans_class.ndc_polyline;
+}
 
 /*
  * Function:	TransformDataToNDC

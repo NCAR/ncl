@@ -1,5 +1,5 @@
 /*
- *      $Id: OverlayI.h,v 1.7 1994-12-16 20:04:36 boote Exp $
+ *      $Id: OverlayI.h,v 1.8 1995-02-19 08:18:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -60,15 +60,22 @@ typedef struct	_NhlAnnotationRec {
 /* 
  * Convenience function that performs the basic management of an
  * overlay for a plot object. Designed to be called from ...Initialize
- * or ...SetValues.
+ * ...SetValues, or ...UpdateData.
  */
+
+typedef enum _NhlCalledFrom_{
+	_NhlSETVALUES = 0,
+	_NhlCREATE = 1,
+	_NhlUPDATEDATA = 2
+} _NhlCalledFrom;
+
 
 extern NhlErrorTypes _NhlManageOverlay(
 #if	NhlNeedProto
 	NhlLayer	*overlay_object,
 	NhlLayer	lnew,
 	NhlLayer	lold,
-	NhlBoolean	init,
+	_NhlCalledFrom	method,
 	NhlSArgList	sargs,
 	int		nargs,
 	char		*entry_name				   

@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.31 1995-02-17 10:23:44 boote Exp $
+ *      $Id: XyPlot.c,v 1.32 1995-02-19 08:19:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -29,12 +29,6 @@
 #include <ncarg/hlu/TransObjI.h>
 #include <ncarg/hlu/Workstation.h>
 #include <ncarg/hlu/CoordArrTableFloatP.h>
-
-typedef enum _CallType{
-	DATACHANGE,
-	CREATE,
-	SET
-} _NhlCallType;
 
 #define	XMISS_SET	0x01
 #define	YMISS_SET	0x02
@@ -417,7 +411,7 @@ static NhlErrorTypes CheckValues(
 #if	NhlNeedProto
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
-	_NhlCallType	calledfrom
+	_NhlCalledFrom	calledfrom
 #endif
 );
 
@@ -425,7 +419,7 @@ static NhlErrorTypes InternalizePointers(
 #if	NhlNeedProto
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
-	_NhlCallType	calledfrom
+	_NhlCalledFrom	calledfrom
 #endif
 );
 
@@ -433,7 +427,7 @@ static NhlErrorTypes ComputeDataExtents(
 #if	NhlNeedProto
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
-	_NhlCallType	calledfrom
+	_NhlCalledFrom	calledfrom
 #endif
 );
 
@@ -441,7 +435,7 @@ static NhlErrorTypes SetUpTransObjs(
 #if	NhlNeedProto
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
-	_NhlCallType	calledfrom
+	_NhlCalledFrom	calledfrom
 #endif
 );
 
@@ -449,7 +443,7 @@ static NhlErrorTypes SetUpDataSpec(
 #if	NhlNeedProto
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
-	_NhlCallType	calledfrom
+	_NhlCalledFrom	calledfrom
 #endif
 );
 
@@ -457,7 +451,7 @@ static NhlErrorTypes SetUpTicks(
 #if	NhlNeedProto
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
-	_NhlCallType	calledfrom,
+	_NhlCalledFrom	calledfrom,
 	NhlSArg		*sargs,
 	int		*nargs
 #endif
@@ -466,7 +460,7 @@ static NhlErrorTypes SetUpTitles(
 #if	NhlNeedProto
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
-	_NhlCallType	calledfrom,
+	_NhlCalledFrom	calledfrom,
 	NhlSArg		*sargs,
 	int		*nargs
 #endif
@@ -475,7 +469,7 @@ static NhlErrorTypes SetUpLegend(
 #if	NhlNeedProto
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
-	_NhlCallType	calledfrom,
+	_NhlCalledFrom	calledfrom,
 	NhlSArg		*sargs,
 	int		*nargs
 #endif
@@ -560,10 +554,10 @@ NhlXyPlotLayerClassRec NhlxyPlotLayerClassRec = {
 	/* trans_class */
 	{
 /* overlay_capability 		*/	_tfOverlayBaseOrMember,
-/* data_to_ndc			*/	NULL,
-/* ndc_to_data			*/	NULL,
-/* data_polyline		*/	NULL,
-/* ndc_polyline			*/	NULL
+/* data_to_ndc			*/	NhlInheritTransFunc,
+/* ndc_to_data			*/	NhlInheritTransFunc,
+/* data_polyline		*/	NhlInheritPolyTransFunc,
+/* ndc_polyline			*/	NhlInheritPolyTransFunc
 	},
 	/* datacomm_class */
 	{
@@ -820,13 +814,13 @@ XyPlotChanges
 (
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
-	_NhlCallType	calledfrom
+	_NhlCalledFrom	calledfrom
 )
 #else
 (xnew,xold,calledfrom)
 	NhlXyPlotLayer	xnew;
 	NhlXyPlotLayer	xold;
-	_NhlCallType	calledfrom;
+	_NhlCalledFrom	calledfrom;
 #endif
 {
 	NhlErrorTypes	ret1 = NhlNOERROR;
@@ -834,7 +828,7 @@ XyPlotChanges
 	NhlSArg		sargs[128];
 	int		nsargs=0;
 
-	if((calledfrom == SET) && xnew->xyplot.dspec_changed){
+	if((calledfrom == _NhlSETVALUES) && xnew->xyplot.dspec_changed){
 
 		xnew->xyplot.dspec_changed = False;
 
@@ -849,7 +843,7 @@ XyPlotChanges
 		ret1 = MIN(ret1,ret2);
 
 		ret2 = _NhlManageOverlay(&xnew->xyplot.overlay,(NhlLayer)xnew,
-			(NhlLayer)xold,(calledfrom == CREATE),sargs,nsargs,
+			(NhlLayer)xold,(calledfrom == _NhlCREATE),sargs,nsargs,
 			"XyPlotChanges");
 		ret1 = MIN(ret1,ret2);
 
@@ -903,7 +897,7 @@ XyPlotChanges
 	ret1 = MIN(ret1,ret2);
 
 	ret2 = _NhlManageOverlay(&xnew->xyplot.overlay,(NhlLayer)xnew,
-			(NhlLayer)xold,(calledfrom == CREATE),sargs,nsargs,
+			(NhlLayer)xold,(calledfrom == _NhlCREATE),sargs,nsargs,
 			"XyPlotChanges");
 	ret1 = MIN(ret1,ret2);
 
@@ -1117,7 +1111,7 @@ XyPlotInitialize
 		return NhlFATAL;
 	}
 
-	return XyPlotChanges((NhlXyPlotLayer)new,NULL,CREATE);
+	return XyPlotChanges((NhlXyPlotLayer)new,NULL,_NhlCREATE);
 }
 
 /*
@@ -1284,7 +1278,7 @@ XyPlotSetValues
 				deltax * xnew->xyplot.dash_segment_length;
 	}
 
-	return XyPlotChanges(xnew,xold,SET);
+	return XyPlotChanges(xnew,xold,_NhlSETVALUES);
 }
 
 /*
@@ -1534,13 +1528,13 @@ SetUpDataSpec
 (
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
-	_NhlCallType	calledfrom
+	_NhlCalledFrom	calledfrom
 )
 #else 
 (xnew,xold,calledfrom)
 	NhlXyPlotLayer	xnew;
 	NhlXyPlotLayer	xold;
-	_NhlCallType	calledfrom;
+	_NhlCalledFrom	calledfrom;
 #endif
 {
 	NhlErrorTypes			ret = NhlNOERROR;
@@ -2072,8 +2066,12 @@ DrawCurves
 	}
 
 	NhlVASetValues(xlayer->base.wkptr->base.id,
-		NhlNwkLineLabelFontHeightF, xlp->line_label_font_height,
-		NhlNwkLineDashSegLenF, xlp->dash_segment_length,
+		_NhlNwkReset,	True,
+		NULL);
+
+	NhlVASetValues(xlayer->base.wkptr->base.id,
+		_NhlNwkLineLabelFontHeightF, xlp->line_label_font_height,
+		_NhlNwkLineDashSegLenF, xlp->dash_segment_length,
 		NULL);
 
 
@@ -2085,15 +2083,15 @@ DrawCurves
 		float		*yvect = yvectors[i];
 
 		NhlVASetValues(xlayer->base.wkptr->base.id,
-			NhlNwkDashPattern,	dash_indexes[i],
-			NhlNwkLineColor,	line_colors[i],
-			NhlNwkLineLabelColor,	llabel_colors[i],
-			NhlNwkLineLabel,	llabel_strings[i],
-			NhlNwkLineThicknessF,	line_thicknesses[i],
-			NhlNwkMarkerColor,	marker_colors[i],
-			NhlNwkMarkerIndex,	marker_indexes[i],
-			NhlNwkMarkerSizeF,	marker_sizes[i],
-			NhlNwkMarkerThicknessF,	marker_thicknesses[i],
+			_NhlNwkDashPattern,	dash_indexes[i],
+			_NhlNwkLineColor,	line_colors[i],
+			_NhlNwkLineLabelColor,	llabel_colors[i],
+			_NhlNwkLineLabel,	llabel_strings[i],
+			_NhlNwkLineThicknessF,	line_thicknesses[i],
+			_NhlNwkMarkerColor,	marker_colors[i],
+			_NhlNwkMarkerIndex,	marker_indexes[i],
+			_NhlNwkMarkerSizeF,	marker_sizes[i],
+			_NhlNwkMarkerThicknessF,	marker_thicknesses[i],
 			NULL);
 
 		if(item_types[i] != NhlMARKERS)
@@ -2641,17 +2639,17 @@ XyPlotUpdateData
 	NhlSArg			sargs[1];
 	int			nsargs=0;
 
-	ret2 = ComputeDataExtents(xl,xlold,DATACHANGE);
+	ret2 = ComputeDataExtents(xl,xlold,_NhlUPDATEDATA);
 	if(ret2 < NhlWARNING)
 		return ret2;
 	ret1 = MIN(ret1,ret2);
 
-	ret2 = SetUpTransObjs(xl,xlold,DATACHANGE);
+	ret2 = SetUpTransObjs(xl,xlold,_NhlUPDATEDATA);
 	if(ret2 < NhlWARNING)
 		return(ret2);
 	ret1 = MIN(ret1,ret2);
 
-	ret2 = SetUpDataSpec(xl,xlold,DATACHANGE);
+	ret2 = SetUpDataSpec(xl,xlold,_NhlUPDATEDATA);
 	if(ret2 < NhlWARNING)
 		return(ret2);
 	ret1 = MIN(ret1,ret2);
@@ -2663,7 +2661,7 @@ XyPlotUpdateData
 
 
 	ret2 = _NhlManageOverlay(&xl->xyplot.overlay,(NhlLayer)xl,
-			(NhlLayer)xlold,False,sargs,nsargs,"XyPlotUpdateData");
+		(NhlLayer)xlold,_NhlUPDATEDATA,sargs,nsargs,"XyPlotUpdateData");
 	if(ret2 < NhlWARNING)
 		return ret2;
 	ret1 = MIN(ret1,ret2);
@@ -2734,7 +2732,7 @@ CheckExtent
  * In Args:
  *		NhlXyPlotLayer	xnew,
  *		NhlXyPlotLayer	xold,
- *		_NhlCallType	calledfrom
+ *		_NhlCalledFrom	calledfrom
  *
  * Out Args:	NhlNONE
  *
@@ -2748,19 +2746,19 @@ CheckValues
 (
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
-	_NhlCallType	calledfrom
+	_NhlCalledFrom	calledfrom
 )
 #else
 (xnew,xold,calledfrom)
 	NhlXyPlotLayer	xnew;
 	NhlXyPlotLayer	xold;
-	_NhlCallType	calledfrom;
+	_NhlCalledFrom	calledfrom;
 #endif
 {
 	char*		error_lead;
 	NhlErrorTypes	ret = NhlNOERROR, lret = NhlNOERROR;
 
-	if(calledfrom == CREATE)
+	if(calledfrom == _NhlCREATE)
 		error_lead = "XyPlotInitialize";
 	else
 		error_lead = "XyPlotSetValues";
@@ -2812,7 +2810,7 @@ CheckValues
 	 * Check Extents - left right top bottom
 	 */
 
-	if(calledfrom == CREATE){
+	if(calledfrom == _NhlCREATE){
 		lret = CheckExtent(xnew->xyplot.x_min_set,
 			xnew->xyplot.comp_x_min_set,&xnew->xyplot.compute_x_min,
 			NhlNxyComputeXMin,NhlNtrXMinF,error_lead);
@@ -2920,7 +2918,7 @@ CheckValues
 		xnew->xyplot.y_min = tfloat;
 	}
 
-	if((calledfrom == SET) &&
+	if((calledfrom == _NhlSETVALUES) &&
 		((xold->xyplot.x_style != xnew->xyplot.x_style) ||
 		(xold->xyplot.y_style != xnew->xyplot.y_style))){
 
@@ -2941,7 +2939,7 @@ CheckValues
  * In Args:
  *		NhlXyPlotLayer	xnew,
  *		NhlXyPlotLayer	xold,
- *		_NhlCallType	calledfrom
+ *		_NhlCalledFrom	calledfrom
  *
  * Out Args:	NhlNONE
  *
@@ -2955,13 +2953,13 @@ InternalizePointers
 (
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
-	_NhlCallType	calledfrom
+	_NhlCalledFrom	calledfrom
 )
 #else
 (xnew,xold,calledfrom)
 	NhlXyPlotLayer	xnew;
 	NhlXyPlotLayer	xold;
-	_NhlCallType	calledfrom;
+	_NhlCalledFrom	calledfrom;
 #endif
 {
 	char		*error_lead;
@@ -2974,7 +2972,7 @@ InternalizePointers
 	NhlBoolean	free_x_orig_coord = False, free_y_orig_coord = False;
 	NhlErrorTypes	ret = NhlNOERROR;
 
-	if(calledfrom == SET) {
+	if(calledfrom == _NhlSETVALUES) {
 		error_lead = "XyPlotSetValues";
 	} else {
 		error_lead = "XyPlotInitialize";
@@ -2983,7 +2981,7 @@ InternalizePointers
 	/*
 	 * take care of irregular_points
 	 */
-	if(calledfrom == SET){
+	if(calledfrom == _NhlSETVALUES){
 		if(xold->xyplot.x_irregular_points !=
 						xnew->xyplot.x_irregular_points)
 			free_x_irreg = True;
@@ -3004,7 +3002,7 @@ InternalizePointers
 	"%s:%s must be a 1 dim float array with a min of 3 elements: resetting",
 					error_lead,NhlNxyXIrregularPoints);
 
-			if(calledfrom == SET)
+			if(calledfrom == _NhlSETVALUES)
 				xnew->xyplot.x_irregular_points =
 						xold->xyplot.x_irregular_points;
 			else
@@ -3041,7 +3039,7 @@ InternalizePointers
 	"%s:%s must be a 1 dim float array with a min of 3 elements: ignoring",
 					error_lead,NhlNxyYIrregularPoints);
 
-			if(calledfrom == SET)
+			if(calledfrom == _NhlSETVALUES)
 				xnew->xyplot.y_irregular_points =
 						xold->xyplot.y_irregular_points;
 			else
@@ -3073,7 +3071,7 @@ InternalizePointers
 	/*
 	 * take care of alt coords and orig coords
 	 */
-	if(calledfrom == SET){
+	if(calledfrom == _NhlSETVALUES){
 		if(xold->xyplot.x_alternate_coords !=
 						xnew->xyplot.x_alternate_coords)
 			free_x_alt_coord = True;
@@ -3107,7 +3105,7 @@ InternalizePointers
 			"%s:%s must be set with a 1-dim float array: ignoring",
 					error_lead,NhlNxyXAlternateCoords);
 
-			if(calledfrom == SET)
+			if(calledfrom == _NhlSETVALUES)
 				xnew->xyplot.x_alternate_coords =
 						xold->xyplot.x_alternate_coords;
 			else
@@ -3144,7 +3142,7 @@ InternalizePointers
 			"%s:%s must be set with a 1-dim float array: ignoring",
 					error_lead,NhlNxyYAlternateCoords);
 
-			if(calledfrom == SET)
+			if(calledfrom == _NhlSETVALUES)
 				xnew->xyplot.y_alternate_coords =
 						xold->xyplot.y_alternate_coords;
 			else
@@ -3173,7 +3171,7 @@ InternalizePointers
 		"%s:%s must be set with a generic 1-dim float array: ignoring",
 					error_lead,NhlNxyXOriginalCoords);
 
-			if(calledfrom == SET)
+			if(calledfrom == _NhlSETVALUES)
 				xnew->xyplot.x_original_coords =
 						xold->xyplot.x_original_coords;
 			else
@@ -3202,7 +3200,7 @@ InternalizePointers
 		"%s:%s must be set with a generic float array: ignoring",
 					error_lead,NhlNxyYOriginalCoords);
 
-			if(calledfrom == SET)
+			if(calledfrom == _NhlSETVALUES)
 				xnew->xyplot.y_original_coords =
 						xold->xyplot.y_original_coords;
 			else
@@ -3237,13 +3235,13 @@ ComputeDataExtents
 (
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
-	_NhlCallType	calledfrom
+	_NhlCalledFrom	calledfrom
 )
 #else 
 (xnew,xold,calledfrom)
 	NhlXyPlotLayer	xnew;
 	NhlXyPlotLayer	xold;
-	_NhlCallType	calledfrom;
+	_NhlCalledFrom	calledfrom;
 #endif
 {
 	_NhlDataNodePtr		*datalist = NULL;
@@ -3254,17 +3252,17 @@ ComputeDataExtents
 	char			*error_lead;
 	NhlErrorTypes		ret = NhlNOERROR;
 
-	if(calledfrom == CREATE){
+	if(calledfrom == _NhlCREATE){
 		error_lead = "XyPlotInitialize";
 		if(xnew->xyplot.curve_data == NULL){
 			xnew->xyplot.data_ranges_set = False;
 			return NhlNOERROR;
 		}
 	}
-	else if(calledfrom == SET){
+	else if(calledfrom == _NhlSETVALUES){
 		error_lead = "XyPlotSetValues";
 	}
-	else if(calledfrom == DATACHANGE){
+	else if(calledfrom == _NhlUPDATEDATA){
 		error_lead = "XyPlotUpdateData";
 	}
 	else{
@@ -3272,7 +3270,7 @@ ComputeDataExtents
 		return NhlFATAL;
 	}
 
-	if((calledfrom == CREATE) || (calledfrom == DATACHANGE) ||
+	if((calledfrom == _NhlCREATE) || (calledfrom == _NhlUPDATEDATA) ||
 			(xnew->xyplot.curve_data != xold->xyplot.curve_data)){
 
 		xnew->xyplot.data_ranges_set = True;
@@ -3488,8 +3486,8 @@ ComputeDataExtents
  *		the logs of the data values.
  *
  * In Args:	xnew	new instance record
- *		xold	old instance record if calledfrom == SET
- *		calledfrom  set to CREATE or SET
+ *		xold	old instance record if calledfrom == _NhlSETVALUES
+ *		calledfrom  set to _NhlCREATE or _NhlSETVALUES
  *
  * Out Args:	NhlNONE
  *
@@ -3503,13 +3501,13 @@ SetUpTransObjs
 (
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
-	_NhlCallType	calledfrom
+	_NhlCalledFrom	calledfrom
 )
 #else 
 (xnew,xold,calledfrom)
 	NhlXyPlotLayer	xnew;
 	NhlXyPlotLayer	xold;
-	_NhlCallType	calledfrom;
+	_NhlCalledFrom	calledfrom;
 #endif
 {
 	NhlSArg		sargs[30];
@@ -3527,16 +3525,16 @@ SetUpTransObjs
 /*
  * Now create main transformation object
  */	
-	if(calledfrom == CREATE){
+	if(calledfrom == _NhlCREATE){
 		error_lead = "XyPlotInitialize";
 	}
 	else{
 		oldxy = &xold->xyplot;
 
-		if(calledfrom == SET){
+		if(calledfrom == _NhlSETVALUES){
 			error_lead = "XyPlotSetValues";
 		}
-		else if (calledfrom == DATACHANGE){
+		else if (calledfrom == _NhlUPDATEDATA){
 		/*
 		 * If we are coming from UpdateData - The only resources that
 		 * could have changed are min and max - if they haven't changed
@@ -3557,7 +3555,7 @@ SetUpTransObjs
 	 */
 	if(	(newxy->thetrans == NULL)
 		||
-		(calledfrom == CREATE)
+		(calledfrom == _NhlCREATE)
 		||
 		(	(	(newxy->x_style == NhlIRREGULAR) ||
 				(newxy->y_style == NhlIRREGULAR)
@@ -3872,7 +3870,7 @@ SetUpTicks
 (
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
-	_NhlCallType	calledfrom,
+	_NhlCalledFrom	calledfrom,
 	NhlSArg		*sargs,
 	int		*nargs
 )
@@ -3880,7 +3878,7 @@ SetUpTicks
 (xnew,xold,calledfrom)
 	NhlXyPlotLayer	xnew;
 	NhlXyPlotLayer	xold;
-	_NhlCallType	calledfrom;
+	_NhlCalledFrom	calledfrom;
 	NhlSArg		*sargs;
 	int		*nargs;
 #endif
@@ -3889,17 +3887,17 @@ SetUpTicks
 	NhlXyPlotLayerPart	*nxp = &xnew->xyplot;
 	NhlTransformLayerPart	*tfp = &xnew->trans;
 
-	if(calledfrom == DATACHANGE)
+	if(calledfrom == _NhlUPDATEDATA)
 		return NhlNOERROR;
 
-	if(calledfrom == SET)
+	if(calledfrom == _NhlSETVALUES)
 		oxp = &xold->xyplot;
 
 	if(!tfp->overlay_on ||
 		nxp->display_tickmarks == NhlNOCREATE)
 		return NhlNOERROR;
 
-	if((calledfrom == CREATE) ||
+	if((calledfrom == _NhlCREATE) ||
 		(nxp->display_tickmarks != oxp->display_tickmarks)){
 		NhlSetSArg(&sargs[(*nargs)++],NhlNovTickMarkDisplayMode,
 			nxp->display_tickmarks);
@@ -3928,7 +3926,7 @@ static NhlErrorTypes SetUpTitles
 (
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
-	_NhlCallType	calledfrom,
+	_NhlCalledFrom	calledfrom,
 	NhlSArg		*sargs,
 	int		*nargs
 ) 
@@ -3936,7 +3934,7 @@ static NhlErrorTypes SetUpTitles
 (xnew,xold,calledfrom,sargs,nargs)
 	NhlXyPlotLayer	xnew;
 	NhlXyPlotLayer	xold;
-	_NhlCallType	calledfrom;
+	_NhlCalledFrom	calledfrom;
 	NhlSArg		*sargs;
 	int		*nargs;
 #endif
@@ -3945,17 +3943,17 @@ static NhlErrorTypes SetUpTitles
 	NhlXyPlotLayerPart	*nxp = &xnew->xyplot;
 	NhlTransformLayerPart	*tfp = &xnew->trans;
 
-	if(calledfrom == DATACHANGE)
+	if(calledfrom == _NhlUPDATEDATA)
 		return NhlNOERROR;
 
-	if(calledfrom == SET)
+	if(calledfrom == _NhlSETVALUES)
 		oxp = &xold->xyplot;
 
 	if(!tfp->overlay_on ||
 		nxp->display_titles == NhlNOCREATE)
 		return NhlNOERROR;
 
-	if((calledfrom == CREATE) ||
+	if((calledfrom == _NhlCREATE) ||
 		(nxp->display_titles != oxp->display_titles)){
 		NhlSetSArg(&sargs[(*nargs)++],NhlNovTitleDisplayMode,
 			nxp->display_titles);
@@ -3984,7 +3982,7 @@ static NhlErrorTypes SetUpLegend
 (
 	NhlXyPlotLayer	xnew,
 	NhlXyPlotLayer	xold,
-	_NhlCallType	calledfrom,
+	_NhlCalledFrom	calledfrom,
 	NhlSArg		*sargs,
 	int		*nargs
 ) 
@@ -3992,7 +3990,7 @@ static NhlErrorTypes SetUpLegend
 (xnew,xold,calledfrom,sargs,nargs)
 	NhlXyPlotLayer	xnew;
 	NhlXyPlotLayer	xold;
-	_NhlCallType	calledfrom;
+	_NhlCalledFrom	calledfrom;
 	NhlSArg		*sargs;
 	int		*nargs;
 #endif
@@ -4001,23 +3999,23 @@ static NhlErrorTypes SetUpLegend
 	NhlXyPlotLayerPart	*nxp = &xnew->xyplot;
 	NhlTransformLayerPart	*tfp = &xnew->trans;
 
-	if(calledfrom == DATACHANGE)
+	if(calledfrom == _NhlUPDATEDATA)
 		return NhlNOERROR;
 
-	if(calledfrom == SET)
+	if(calledfrom == _NhlSETVALUES)
 		oxp = &xold->xyplot;
 
 	if(!tfp->overlay_on ||
 		nxp->display_legend == NhlNOCREATE)
 		return NhlNOERROR;
 
-	if((calledfrom == CREATE) ||
+	if((calledfrom == _NhlCREATE) ||
 		(nxp->display_legend != oxp->display_legend)){
 		NhlSetSArg(&sargs[(*nargs)++],NhlNovLegendDisplayMode,
 			nxp->display_legend);
 	}
 
-	if(calledfrom == CREATE){
+	if(calledfrom == _NhlCREATE){
 		NhlSetSArg(&sargs[(*nargs)++],NhlNlgMonoDashIndex,False);
 		NhlSetSArg(&sargs[(*nargs)++],NhlNlgMonoItemType,False);
 		NhlSetSArg(&sargs[(*nargs)++],NhlNlgMonoLineColor,False);

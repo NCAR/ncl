@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.12 1995-01-19 22:04:56 boote Exp $
+ *      $Id: NcgmWorkstation.c,v 1.13 1995-02-19 08:18:20 boote Exp $
  */
 /************************************************************************
 *									*
@@ -134,12 +134,12 @@ NhlNcgmWorkstationLayerClassRec NhlncgmWorkstationLayerClassRec = {
         },
         {
 /* open_work		*/	NcgmWorkstationOpen,
-/* close_work		*/	NULL,
-/* activate_work	*/	NULL,
-/* deactivate_work	*/	NULL,
+/* close_work		*/	NhlInheritClose,
+/* activate_work	*/	NhlInheritActivate,
+/* deactivate_work	*/	NhlInheritDeactivate,
 /* update_work		*/	NhlInheritUpdate,
 /* clear_work		*/	NhlInheritClear,
-/* lineto_work		*/	NULL,
+/* lineto_work		*/	NhlInheritLineTo,
 /* fill_work		*/	NhlInheritFill,
 /* marker_work		*/	NhlInheritMarker
 	},
@@ -355,7 +355,7 @@ static NhlErrorTypes NcgmWorkstationOpen
 	
 	gescape(-1391,&indat,NULL,&outdat);
 
-	return(NhlNOERROR);
+	return (*NhlworkstationLayerClassRec.work_class.open_work)(instance);
 }
 static NhlErrorTypes NcgmWorkstationGetValues
 #if	NhlNeedProto

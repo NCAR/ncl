@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjP.h,v 1.6 1994-12-16 20:04:53 boote Exp $
+ *      $Id: TransObjP.h,v 1.7 1995-02-19 08:18:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -69,6 +69,8 @@ typedef struct _NhlTransObjLayerRec {
 	NhlTransObjLayerPart	trobj;
 }NhlTransObjLayerRec;
 
+#define NhlInheritTransPoint	((NhlTransformPoint)_NhlInherit)
+#define NhlInheritLineTo	((NhlLineToProc)_NhlInherit)
 
 typedef struct _NhlTransObjLayerClassPart {
 	NhlSetTransFunc set_trans;

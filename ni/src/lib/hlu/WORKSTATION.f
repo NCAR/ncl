@@ -1,5 +1,5 @@
 C
-C $Id: WORKSTATION.f,v 1.3 1995-02-17 10:23:40 boote Exp $
+C $Id: WORKSTATION.f,v 1.4 1995-02-19 08:19:11 boote Exp $
 C
 C****************************************************************
 C								*
@@ -42,9 +42,6 @@ C
       end
       subroutine nhlfisallocatedcolor(id_work,indx,iret)
 	call nhl_fisallocatedcolor(id_work,indx,iret)
-      end
-      subroutine nhlfgetgksworkid(id_work,id_gks_ret)
-	call nhl_fgetgksworkid(id_work,id_gks_ret)
       end
       subroutine nhlfnewmarker(id_work,marker,xoff,yoff,aspadj,sizeadj,
      %	indx_ret)

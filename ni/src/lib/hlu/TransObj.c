@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.9 1994-12-16 20:04:51 boote Exp $
+ *      $Id: TransObj.c,v 1.10 1995-02-19 08:18:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,37 @@ static NhlResource resources[] =  {
 
 };
 
+static NhlErrorTypes TransCopyPoints(
+#if	NhlNeedProto
+	NhlLayer	tl,
+	NhlLayer	tlp,
+	float		*x,
+	float		*y,
+	int		n,
+	float		*xout,
+	float		*yout,
+	float		*xmissing,
+	float		*ymissing,
+	int		*status
+#endif
+);
+
+static NhlErrorTypes TransLineTo(
+#if	NhlNeedProto
+	NhlLayer	tl,
+	NhlLayer	tlp,
+	float		x,
+	float		y,
+	int		upordown
+#endif
+);
+
+static NhlErrorTypes TransObjClassPartInit(
+#if	NhlNeedProto
+	NhlLayerClass	lc
+#endif
+);
+
 NhlTransObjLayerClassRec NhltransObjLayerClassRec = {
 	{
 /* class_name */        "transObjLayerClass",
@@ -48,7 +79,7 @@ NhlTransObjLayerClassRec NhltransObjLayerClassRec = {
 /* num_resources */     NhlNumber(resources),
 /* all_resources		*/	NULL,
 
-/* class_part_initialize */     NULL,
+/* class_part_initialize */     TransObjClassPartInit,
 /* class_initialize */  NULL,
 /* layer_initialize */  NULL,
 /* layer_set_values */  NULL,
@@ -60,23 +91,191 @@ NhlTransObjLayerClassRec NhltransObjLayerClassRec = {
 	{
 /* set_trans */		NULL,
 /* trans_type */	NULL,
-/* win_to_ndc */	NULL,
-/* ndc_to_win */	NULL,
-/* data_to_win */	NULL,
-/* win_to_data */	NULL,
-/* data_to_compc */	NULL,
-/* compc_to_data */	NULL,
-/* win_to_compc */	NULL,
-/* compc_to_win */	NULL,
-/* data_lineto */	NULL,
-/* compc_lineto */	NULL,
-/* win_lineto */	NULL,
-/* NDC_lineto */	NULL
+/* win_to_ndc */	TransCopyPoints,
+/* ndc_to_win */	TransCopyPoints,
+/* data_to_win */	TransCopyPoints,
+/* win_to_data */	TransCopyPoints,
+/* data_to_compc */	TransCopyPoints,
+/* compc_to_data */	TransCopyPoints,
+/* win_to_compc */	TransCopyPoints,
+/* compc_to_win */	TransCopyPoints,
+/* data_lineto */	TransLineTo,
+/* compc_lineto */	TransLineTo,
+/* win_lineto */	TransLineTo,
+/* NDC_lineto */	TransLineTo
 	}
 };
 
 NhlLayerClass NhltransObjLayerClass = (NhlLayerClass)&NhltransObjLayerClassRec;
 
+static NhlErrorTypes
+TransObjClassPartInit
+#if	NhlNeedProto
+(
+	NhlLayerClass	lc
+)
+#else
+(lc)
+	NhlLayerClass	lc;
+#endif
+{
+	NhlTransObjLayerClass	tlc = (NhlTransObjLayerClass)lc;
+	NhlTransObjLayerClass	sc = (NhlTransObjLayerClass)
+						lc->base_class.superclass;
+
+	if(tlc->trobj_class.win_to_ndc == NhlInheritTransPoint)
+		tlc->trobj_class.win_to_ndc = sc->trobj_class.win_to_ndc;
+	if(tlc->trobj_class.ndc_to_win == NhlInheritTransPoint)
+		tlc->trobj_class.ndc_to_win = sc->trobj_class.ndc_to_win;
+
+	if(tlc->trobj_class.data_to_win == NhlInheritTransPoint)
+		tlc->trobj_class.data_to_win = sc->trobj_class.data_to_win;
+	if(tlc->trobj_class.win_to_data == NhlInheritTransPoint)
+		tlc->trobj_class.win_to_data = sc->trobj_class.win_to_data;
+
+	if(tlc->trobj_class.data_to_compc == NhlInheritTransPoint)
+		tlc->trobj_class.data_to_compc = sc->trobj_class.data_to_compc;
+	if(tlc->trobj_class.compc_to_data == NhlInheritTransPoint)
+		tlc->trobj_class.compc_to_data = sc->trobj_class.compc_to_data;
+	if(tlc->trobj_class.win_to_compc == NhlInheritTransPoint)
+		tlc->trobj_class.win_to_compc = sc->trobj_class.win_to_compc;
+	if(tlc->trobj_class.compc_to_win == NhlInheritTransPoint)
+		tlc->trobj_class.compc_to_win = sc->trobj_class.compc_to_win;
+}
+
+static NhlErrorTypes
+TransCopyPoints
+#if	NhlNeedProto
+(
+	NhlLayer	tl,
+	NhlLayer	tlp,
+	float		*x,
+	float		*y,
+	int		n,
+	float		*xout,
+	float		*yout,
+	float		*xmissing,
+	float		*ymissing,
+	int		*status
+)
+#else
+(tl,tlp,x,y,n,xout,yout,xmissing,ymissing,status)
+	NhlLayer	tl;
+	NhlLayer	tlp;
+	float		*x;
+	float		*y;
+	int		n;
+	float		*xout;
+	float		*yout;
+	float		*xmissing;
+	float		*ymissing;
+	int		*status;
+#endif
+{
+	if(x != xout)
+		memcpy(xout,x,n*sizeof(float));
+	if(y != yout)
+		memcpy(yout,y,n*sizeof(float));
+
+	return NhlNOERROR;
+}
+
+static NhlErrorTypes
+TransLineTo
+#if	NhlNeedProto
+(
+	NhlLayer	tl,
+	NhlLayer	tlp,
+	float		x,
+	float		y,
+	int		upordown
+)
+#else
+(tl,tlp,x,y,upordown)
+	NhlLayer	tl;
+	NhlLayer	tlp;
+	float		x;
+	float		y;
+	int		upordown;
+#endif
+{
+	NhlPError(NhlFATAL,NhlEUNKNOWN,
+		"LineTo Function not defined for (%s) class",
+		tl->base.layer_class->base_class.class_name);
+	return NhlFATAL;
+}
+
+NhlErrorTypes _NhlDataLineTo 
+#if	NhlNeedProto
+(NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
+#else
+(instance,parent,x,y,upordown)
+NhlLayer instance;
+NhlLayer parent;
+float	x;
+float y;
+int upordown;
+#endif
+{
+	NhlTransObjLayerClass tlc = (NhlTransObjLayerClass)
+						instance->base.layer_class;
+
+	return((*tlc->trobj_class.data_lineto)(instance,parent,x,y,upordown));
+}
+
+NhlErrorTypes _NhlWinLineTo 
+#if	NhlNeedProto
+(NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
+#else
+(instance,parent,x,y,upordown)
+NhlLayer instance;
+NhlLayer parent;
+float	x;
+float y;
+int upordown;
+#endif
+{
+	NhlTransObjLayerClass tlc = (NhlTransObjLayerClass)
+						instance->base.layer_class;
+
+	return((*tlc->trobj_class.win_lineto)(instance,parent,x,y,upordown));
+}
+
+NhlErrorTypes _NhlCompcLineTo 
+#if	NhlNeedProto
+(NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
+#else
+(instance,parent,x,y,upordown)
+NhlLayer instance;
+NhlLayer parent;
+float	x;
+float y;
+int upordown;
+#endif
+{
+	NhlTransObjLayerClass tlc = (NhlTransObjLayerClass)
+						instance->base.layer_class;
+
+	return((*tlc->trobj_class.compc_lineto)(instance,parent,x,y,upordown));
+}
+
+NhlErrorTypes _NhlNDCLineTo 
+#if	NhlNeedProto
+(NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
+#else
+(instance,parent,x,y,upordown)
+NhlLayer instance;
+NhlLayer parent;
+float	x;
+float y;
+int upordown;
+#endif
+{
+	NhlTransObjLayerClass tlc = (NhlTransObjLayerClass)
+						instance->base.layer_class;
+
+	return((*tlc->trobj_class.NDC_lineto)(instance,parent,x,y,upordown));
+}
 
 #define CTOP 010
 #define CBOTTOM 04
@@ -208,177 +407,5 @@ float missing;
                 outcodea = outcodeb = 0;
         }
 
-}
-
-static NhlErrorTypes CallDataLineTo 
-#if	NhlNeedProto
-(NhlLayerClass lc, NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
-#else
-(lc, instance, parent, x, y, upordown)
-NhlLayerClass lc;
-NhlLayer instance;
-NhlLayer parent;
-float x;
-float y;
-int upordown;
-#endif
-{
-	NhlTransObjLayerClass tlc = (NhlTransObjLayerClass)lc;
-
-	if(tlc->trobj_class.data_lineto == NULL){
-		if(tlc->base_class.superclass != NULL) {
-			return(CallDataLineTo(lc->base_class.superclass,instance,parent,x,y,upordown));
-		} else {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlDataLineTo: Transformation object of type (%s) does not have data_lineto function",tlc->base_class.class_name);
-			return(NhlWARNING);
-		}
-	} else {
-		return((*tlc->trobj_class.data_lineto)(instance,parent,x,y,upordown));
-	}
-}
-
-
-NhlErrorTypes _NhlDataLineTo 
-#if	NhlNeedProto
-(NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
-#else
-(instance,parent,x,y,upordown)
-NhlLayer instance;
-NhlLayer parent;
-float	x;
-float y;
-int upordown;
-#endif
-{
-	return(CallDataLineTo(instance->base.layer_class,instance,parent,x,y,upordown));
-}
-
-static NhlErrorTypes CallWinLineTo 
-#if	NhlNeedProto
-(NhlLayerClass lc, NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
-#else
-(lc, instance, parent, x, y, upordown)
-NhlLayerClass lc;
-NhlLayer instance;
-NhlLayer parent;
-float x;
-float y;
-int upordown;
-#endif
-{
-	NhlTransObjLayerClass tlc = (NhlTransObjLayerClass)lc;
-
-	if(tlc->trobj_class.win_lineto == NULL){
-		if(tlc->base_class.superclass != NULL) {
-			return(CallWinLineTo(lc->base_class.superclass,instance,parent,x,y,upordown));
-		} else {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlWinLineTo: Transformation object of type (%s) does not have win_lineto function",tlc->base_class.class_name);
-			return(NhlWARNING);
-		}
-	} else {
-		return((*tlc->trobj_class.win_lineto)(instance,parent,x,y,upordown));
-	}
-}
-
-
-NhlErrorTypes _NhlWinLineTo 
-#if	NhlNeedProto
-(NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
-#else
-(instance,parent,x,y,upordown)
-NhlLayer instance;
-NhlLayer parent;
-float	x;
-float y;
-int upordown;
-#endif
-{
-	return(CallWinLineTo(instance->base.layer_class,instance,parent,x,y,upordown));
-}
-
-static NhlErrorTypes CallCompcLineTo 
-#if	NhlNeedProto
-(NhlLayerClass lc, NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
-#else
-(lc, instance, parent, x, y, upordown)
-NhlLayerClass lc;
-NhlLayer instance;
-NhlLayer parent;
-float x;
-float y;
-int upordown;
-#endif
-{
-	NhlTransObjLayerClass tlc = (NhlTransObjLayerClass)lc;
-
-	if(tlc->trobj_class.compc_lineto == NULL){
-		if(tlc->base_class.superclass != NULL) {
-			return(CallCompcLineTo(lc->base_class.superclass,instance,parent,x,y,upordown));
-		} else {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlCompcLineTo: Transformation object of type (%s) does not have compc_lineto function",tlc->base_class.class_name);
-			return(NhlWARNING);
-		}
-	} else {
-		return((*tlc->trobj_class.compc_lineto)(instance,parent,x,y,upordown));
-	}
-}
-
-
-NhlErrorTypes _NhlCompcLineTo 
-#if	NhlNeedProto
-(NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
-#else
-(instance,parent,x,y,upordown)
-NhlLayer instance;
-NhlLayer parent;
-float	x;
-float y;
-int upordown;
-#endif
-{
-	return(CallCompcLineTo(instance->base.layer_class,instance,parent,x,y,upordown));
-}
-
-static NhlErrorTypes CallNDCLineTo 
-#if	NhlNeedProto
-(NhlLayerClass lc, NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
-#else
-(lc, instance, parent, x, y, upordown)
-NhlLayerClass lc;
-NhlLayer instance;
-NhlLayer parent;
-float x;
-float y;
-int upordown;
-#endif
-{
-	NhlTransObjLayerClass tlc = (NhlTransObjLayerClass)lc;
-
-	if(tlc->trobj_class.NDC_lineto == NULL){
-		if(tlc->base_class.superclass != NULL) {
-			return(CallNDCLineTo(lc->base_class.superclass,instance,parent,x,y,upordown));
-		} else {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlNDCLineTo: Transformation object of type (%s) does not have NDC_lineto function",tlc->base_class.class_name);
-			return(NhlWARNING);
-		}
-	} else {
-		return((*tlc->trobj_class.NDC_lineto)(instance,parent,x,y,upordown));
-	}
-}
-
-
-NhlErrorTypes _NhlNDCLineTo 
-#if	NhlNeedProto
-(NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
-#else
-(instance,parent,x,y,upordown)
-NhlLayer instance;
-NhlLayer parent;
-float	x;
-float y;
-int upordown;
-#endif
-{
-	return(CallNDCLineTo(instance->base.layer_class,instance,parent,x,y,upordown));
 }
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.32 1995-02-17 10:23:23 boote Exp $
+ *      $Id: Overlay.c,v 1.33 1995-02-19 08:18:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -581,10 +581,10 @@ NhlOverlayLayerClassRec NhloverlayLayerClassRec = {
 	},
 	{
 /* overlay_capability 		*/	_tfNotOverlayCapable,
-/* data_to_ndc			*/	NULL,
-/* ndc_to_data			*/	NULL,
-/* data_polyline		*/	NULL,
-/* ndc_polyline			*/	NULL
+/* data_to_ndc			*/	NhlInheritTransFunc,
+/* ndc_to_data			*/	NhlInheritTransFunc,
+/* data_polyline		*/	NhlInheritPolyTransFunc,
+/* ndc_polyline			*/	NhlInheritPolyTransFunc
 	},
 	{
 /* wkspace_list			*/	NULL
@@ -5350,17 +5350,17 @@ extern NhlErrorTypes _NhlManageOverlay
 	NhlLayer	*overlay_object,
 	NhlLayer	lnew,
 	NhlLayer	lold,
-	NhlBoolean	init,
+	_NhlCalledFrom	method,
 	NhlSArgList	sargs,
 	int		nargs,
 	char		*entry_name
 )
 #else 
-(overlay_object,lnew,lold,init,sargs,nargs,entry_name)
+(overlay_object,lnew,lold,method,sargs,nargs,entry_name)
 	NhlLayer	*overlay_object;
 	NhlLayer	lnew;
 	NhlLayer	lold;
-	NhlBoolean	init;
+	_NhlCalledFrom	method;
 	NhlSArgList	sargs;
 	int		nargs;
 	char		*entry_name;
@@ -5379,7 +5379,7 @@ extern NhlErrorTypes _NhlManageOverlay
 	if (*overlay_object == NULL) {
 		if (! tfp->overlay_on)
 			return ret;
-		else if (! init) {
+		else if (method != _NhlCREATE) {
 			e_text = "%s: resetting create-only resource: %s";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 				  entry_name,NhlNtfOverlayOn);
@@ -5388,10 +5388,14 @@ extern NhlErrorTypes _NhlManageOverlay
 		}
 	}
 
-	if (! init && ! _NhlIsTransform(*overlay_object)) {
+	if ((method != _NhlCREATE) && ! _NhlIsTransform(*overlay_object)) {
 		e_text = "%s: invalid overlay object passed in";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
+	}
+
+	if(method == _NhlUPDATEDATA){
+		return NhlALSetValues((*overlay_object)->base.id,sargs,nargs);
 	}
 		
 	lsargs = (NhlSArg *) NhlMalloc((nargs+lsarg_count) * sizeof(NhlSArg));
@@ -5404,7 +5408,7 @@ extern NhlErrorTypes _NhlManageOverlay
 		memcpy((void*)lsargs,(void*)sargs,nargs*sizeof(NhlSArg));
 	}
 
-	if (init) {
+	if(method == _NhlCREATE){
 
 		strcpy(buffer,lnew->base.name);
 		strcat(buffer,".Overlay");
@@ -5456,6 +5460,7 @@ extern NhlErrorTypes _NhlManageOverlay
 		}
 	}
 	
+
 /*
  * If this plot is an overlay member (not the base plot), its view should
  * be the same as that of the overlay. If it is not, the user must have
@@ -5518,7 +5523,7 @@ extern NhlErrorTypes _NhlManageOverlay
 				   NhlNtfOverlayTrans,tfp->overlay_trans_obj);
 		
 		subret = _NhlALSetValuesChild((*overlay_object)->base.id,
-					      lnew,lsargs,nargs);
+						      lnew,lsargs,nargs);
 
 		if ((ret = MIN(subret, ret)) < NhlWARNING) {
 			e_text = "%s: error setting overlay object view";

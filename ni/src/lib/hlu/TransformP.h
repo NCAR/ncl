@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformP.h,v 1.9 1995-01-26 02:53:51 boote Exp $
+ *      $Id: TransformP.h,v 1.10 1995-02-19 08:19:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -93,12 +93,24 @@ typedef enum _NhltfOverlayCapability {
 	_tfOverlayBaseOrMember
 } NhltfOverlayCapability;
 
+typedef NhlErrorTypes (*NhlTransPolyFunc)(
+#ifdef	NhlNeedFuncProto
+        NhlLayer           /* plot */,
+        float*          /* x */,
+        float*          /* y */,
+        int             /* n */,
+#endif
+);
+
+#define	NhlInheritTransFunc	((NhlTransFunction)_NhlInherit)
+#define	NhlInheritPolyTransFunc	((NhlTransPolyFunc)_NhlInherit)
+
 typedef struct NhlTransformLayerClassPart{
 	NhltfOverlayCapability	overlay_capability;
 	NhlTransFunction	data_to_ndc;
 	NhlTransFunction	ndc_to_data;
-	NhlErrorTypes		(*data_polyline)();
-	NhlErrorTypes		(*ndc_polyline)();
+	NhlTransPolyFunc	data_polyline;
+	NhlTransPolyFunc	ndc_polyline;
 } NhlTransformLayerClassPart;
 
 typedef struct _NhlTransformLayerClassRec{

@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.27 1995-02-11 02:41:58 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.28 1995-02-19 08:17:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -3970,13 +3970,13 @@ static NhlErrorTypes    LabelBarDraw
 		ypoints[4] = lb_p->real_perim.b;
 
 		NhlVASetValues(lbl->base.wkptr->base.id,
-			     NhlNwkDrawEdges, 1,
-			     NhlNwkEdgeDashPattern, lb_p->perim_dash_pattern,
-			     NhlNwkEdgeThicknessF, lb_p->perim_thickness,
-			     NhlNwkEdgeDashSegLenF, lb_p->perim_dash_seglen,
-			     NhlNwkEdgeColor, lb_p->perim_color,
-			     NhlNwkFillColor, lb_p->perim_fill_color,
-			     NhlNwkFillIndex, lb_p->perim_fill,
+			     _NhlNwkDrawEdges, 1,
+			     _NhlNwkEdgeDashPattern, lb_p->perim_dash_pattern,
+			     _NhlNwkEdgeThicknessF, lb_p->perim_thickness,
+			     _NhlNwkEdgeDashSegLenF, lb_p->perim_dash_seglen,
+			     _NhlNwkEdgeColor, lb_p->perim_color,
+			     _NhlNwkFillColor, lb_p->perim_fill_color,
+			     _NhlNwkFillIndex, lb_p->perim_fill,
 			     NULL);
 			
 		_NhlSetFillInfo(lbl->base.wkptr, layer);
@@ -3990,13 +3990,13 @@ static NhlErrorTypes    LabelBarDraw
  */
 
 	NhlVASetValues(lbl->base.wkptr->base.id,
-		     NhlNwkDrawEdges, lb_p->box_line_on,
-		     NhlNwkEdgeDashPattern, lb_p->box_line_dash_pattern,
-		     NhlNwkEdgeThicknessF, lb_p->box_line_thickness,
-		     NhlNwkEdgeDashSegLenF, lb_p->box_line_dash_seglen,
-		     NhlNwkEdgeColor, lb_p->box_line_color,
-		     NhlNwkFillLineThicknessF, lb_p->fill_line_thickness,
-		     NhlNwkFillBackground, lb_p->fill_background,
+		     _NhlNwkDrawEdges, lb_p->box_line_on,
+		     _NhlNwkEdgeDashPattern, lb_p->box_line_dash_pattern,
+		     _NhlNwkEdgeThicknessF, lb_p->box_line_thickness,
+		     _NhlNwkEdgeDashSegLenF, lb_p->box_line_dash_seglen,
+		     _NhlNwkEdgeColor, lb_p->box_line_color,
+		     _NhlNwkFillLineThicknessF, lb_p->fill_line_thickness,
+		     _NhlNwkFillBackground, lb_p->fill_background,
 		     NULL);
 				     
 /* 
@@ -4038,9 +4038,9 @@ static NhlErrorTypes    LabelBarDraw
 				fill_scale = fill_scales[i];
 
 			NhlVASetValues(lbl->base.wkptr->base.id,
-				     NhlNwkFillIndex, fill_pattern,
-				     NhlNwkFillColor, fill_color,
-				     NhlNwkFillScaleFactorF, fill_scale,
+				     _NhlNwkFillIndex, fill_pattern,
+				     _NhlNwkFillColor, fill_color,
+				     _NhlNwkFillScaleFactorF, fill_scale,
 				     NULL);
 			
 			_NhlSetFillInfo(lbl->base.wkptr, layer);
@@ -4080,9 +4080,9 @@ static NhlErrorTypes    LabelBarDraw
 				fill_scale = fill_scales[i];
 
 			NhlVASetValues(lbl->base.wkptr->base.id,
-				     NhlNwkFillIndex, fill_pattern,
-				     NhlNwkFillColor, fill_color,
-				     NhlNwkFillScaleFactorF, fill_scale,
+				     _NhlNwkFillIndex, fill_pattern,
+				     _NhlNwkFillColor, fill_color,
+				     _NhlNwkFillScaleFactorF, fill_scale,
 				     NULL);
 			
 			_NhlSetFillInfo(lbl->base.wkptr, layer);

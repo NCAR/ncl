@@ -1,6 +1,6 @@
 
 /*
- *      $Id: simpletrans.c,v 1.3 1995-02-17 10:23:52 boote Exp $
+ *      $Id: simpletrans.c,v 1.4 1995-02-19 08:19:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -57,12 +57,32 @@ void strans
 #endif
 {
 	*xout = (x - froml)/(fromr - froml)*(tor - tol) + tol;
-	if((tol < tor) && (*xout > tor))
-		*xout = tor;
+	if(tol < tor){
+		if(*xout > tor)
+			*xout = tor;
+		else if(*xout < tol)
+			*xout = tol;
+	}
+	else{
+		if(*xout > tol)
+			*xout = tol;
+		else if(*xout < tor)
+			*xout = tor;
+	}
 
 	*yout = (y - fromb)/(fromt - fromb)*(tot - tob) + tob;
-	if((tob < tot) && (*yout > tot))
-		*yout = tot;
+	if(tob < tot){
+		if(*yout > tot)
+			*yout = tot;
+		else if(*yout < tob)
+			*yout = tob;
+	}
+	else{
+		if(*yout > tob)
+			*yout = tob;
+		else if(*yout < tot)
+			*yout = tot;
+	}
 
 	return;
 }

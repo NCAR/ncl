@@ -1,5 +1,5 @@
 /*
- *      $Id: LegendP.h,v 1.9 1995-02-17 10:23:20 boote Exp $
+ *      $Id: LegendP.h,v 1.10 1995-02-19 08:18:15 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #define _NLegendP_h
 
 #include <ncarg/hlu/ViewP.h>
+#include <ncarg/hlu/Workstation.h>
 #include <ncarg/hlu/Legend.h>
 
 /* defines */

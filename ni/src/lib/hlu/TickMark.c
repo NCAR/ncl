@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.27 1995-02-17 10:23:30 boote Exp $
+ *      $Id: TickMark.c,v 1.28 1995-02-19 08:18:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -29,7 +29,7 @@
 #include <ncarg/hlu/MultiText.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
-#include <ncarg/hlu/Workstation.h>
+#include <ncarg/hlu/WorkstationI.h>
 
 
 /* resource list definition */
@@ -1885,12 +1885,16 @@ NhlTickMarkLayer tlayer;
 
 	c_set(0.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1);
 
+	NhlVASetValues(tlayer->base.wkptr->base.id,
+		_NhlNwkReset,	True,
+		NULL);
+
 	if(tlayer->tick.x_major_grid){
 		if(tlayer->tick.x_b_on) {
 			NhlVASetValues(tlayer->base.wkptr->base.id,
-				NhlNwkLineColor,tlayer->tick.x_major_grid_line_color,
-				NhlNwkDashPattern,tlayer->tick.x_major_grid_line_dash_pattern,
-				NhlNwkLineThicknessF,tlayer->tick.x_major_grid_thickness,
+				_NhlNwkLineColor,tlayer->tick.x_major_grid_line_color,
+				_NhlNwkDashPattern,tlayer->tick.x_major_grid_line_dash_pattern,
+				_NhlNwkLineThicknessF,tlayer->tick.x_major_grid_thickness,
 				NULL);
 			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 			for(i = 0; i < tlayer->tick.x_b_nmajor; i++) {
@@ -1899,9 +1903,9 @@ NhlTickMarkLayer tlayer;
 			}
 		} else if(tlayer->tick.x_t_on) {
 			NhlVASetValues(tlayer->base.wkptr->base.id,
-				NhlNwkLineColor,tlayer->tick.x_major_grid_line_color,
-				NhlNwkDashPattern,tlayer->tick.x_major_grid_line_dash_pattern,
-				NhlNwkLineThicknessF,tlayer->tick.x_major_grid_thickness,
+				_NhlNwkLineColor,tlayer->tick.x_major_grid_line_color,
+				_NhlNwkDashPattern,tlayer->tick.x_major_grid_line_dash_pattern,
+				_NhlNwkLineThicknessF,tlayer->tick.x_major_grid_thickness,
 				NULL);
 			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 			for(i = 0; i < tlayer->tick.x_t_nmajor; i++) {
@@ -1916,9 +1920,9 @@ NhlTickMarkLayer tlayer;
 	if(tlayer->tick.x_minor_grid) {
 		if((tlayer->tick.x_b_on)&&(tlayer->tick.x_b_minor_on)) {
 			NhlVASetValues(tlayer->base.wkptr->base.id,
-				NhlNwkLineColor,tlayer->tick.x_minor_grid_line_color,
-				NhlNwkDashPattern,tlayer->tick.x_minor_grid_line_dash_pattern,
-				NhlNwkLineThicknessF,tlayer->tick.x_minor_grid_thickness,
+				_NhlNwkLineColor,tlayer->tick.x_minor_grid_line_color,
+				_NhlNwkDashPattern,tlayer->tick.x_minor_grid_line_dash_pattern,
+				_NhlNwkLineThicknessF,tlayer->tick.x_minor_grid_thickness,
 				NULL);
 			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 			for(i = 0; i < tlayer->tick.x_b_nminor; i++) {
@@ -1927,9 +1931,9 @@ NhlTickMarkLayer tlayer;
 			}
 		} else if((tlayer->tick.x_t_on)&&(tlayer->tick.x_t_minor_on)){
 			NhlVASetValues(tlayer->base.wkptr->base.id,
-				NhlNwkLineColor,tlayer->tick.x_minor_grid_line_color,
-				NhlNwkDashPattern,tlayer->tick.x_minor_grid_line_dash_pattern,
-				NhlNwkLineThicknessF,tlayer->tick.x_minor_grid_thickness,
+				_NhlNwkLineColor,tlayer->tick.x_minor_grid_line_color,
+				_NhlNwkDashPattern,tlayer->tick.x_minor_grid_line_dash_pattern,
+				_NhlNwkLineThicknessF,tlayer->tick.x_minor_grid_thickness,
 				NULL);
 			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 			for(i = 0; i < tlayer->tick.x_t_nminor; i++) {
@@ -1944,9 +1948,9 @@ NhlTickMarkLayer tlayer;
 	if(tlayer->tick.y_major_grid){
 		if(tlayer->tick.y_l_on) {
 			NhlVASetValues(tlayer->base.wkptr->base.id,
-				NhlNwkLineColor,tlayer->tick.y_major_grid_line_color,
-				NhlNwkDashPattern,tlayer->tick.y_major_grid_line_dash_pattern,
-				NhlNwkLineThicknessF,tlayer->tick.y_major_grid_thickness,
+				_NhlNwkLineColor,tlayer->tick.y_major_grid_line_color,
+				_NhlNwkDashPattern,tlayer->tick.y_major_grid_line_dash_pattern,
+				_NhlNwkLineThicknessF,tlayer->tick.y_major_grid_thickness,
 				NULL);
 			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 			for(i = 0; i < tlayer->tick.y_l_nmajor; i++) {
@@ -1955,9 +1959,9 @@ NhlTickMarkLayer tlayer;
 			}
 		} else if(tlayer->tick.y_r_on) {
 			NhlVASetValues(tlayer->base.wkptr->base.id,
-				NhlNwkLineColor,tlayer->tick.y_major_grid_line_color,
-				NhlNwkDashPattern,tlayer->tick.y_major_grid_line_dash_pattern,
-				NhlNwkLineThicknessF,tlayer->tick.y_major_grid_thickness,
+				_NhlNwkLineColor,tlayer->tick.y_major_grid_line_color,
+				_NhlNwkDashPattern,tlayer->tick.y_major_grid_line_dash_pattern,
+				_NhlNwkLineThicknessF,tlayer->tick.y_major_grid_thickness,
 				NULL);
 			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 			for(i = 0; i < tlayer->tick.y_r_nmajor; i++) {
@@ -1972,9 +1976,9 @@ NhlTickMarkLayer tlayer;
 	if(tlayer->tick.y_minor_grid) {
 		if((tlayer->tick.y_l_on)&&(tlayer->tick.y_l_minor_on)) {
 			NhlVASetValues(tlayer->base.wkptr->base.id,
-				NhlNwkLineColor,tlayer->tick.y_minor_grid_line_color,
-				NhlNwkDashPattern,tlayer->tick.y_minor_grid_line_dash_pattern,
-				NhlNwkLineThicknessF,tlayer->tick.y_minor_grid_thickness,
+				_NhlNwkLineColor,tlayer->tick.y_minor_grid_line_color,
+				_NhlNwkDashPattern,tlayer->tick.y_minor_grid_line_dash_pattern,
+				_NhlNwkLineThicknessF,tlayer->tick.y_minor_grid_thickness,
 				NULL);
 			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 			for(i = 0; i < tlayer->tick.y_l_nminor; i++) {
@@ -1983,9 +1987,9 @@ NhlTickMarkLayer tlayer;
 			}
 		} else if((tlayer->tick.y_r_on)&&(tlayer->tick.y_r_minor_on)){
 			NhlVASetValues(tlayer->base.wkptr->base.id,
-				NhlNwkLineColor,tlayer->tick.y_minor_grid_line_color,
-				NhlNwkDashPattern,tlayer->tick.y_minor_grid_line_dash_pattern,
-				NhlNwkLineThicknessF,tlayer->tick.y_minor_grid_thickness,
+				_NhlNwkLineColor,tlayer->tick.y_minor_grid_line_color,
+				_NhlNwkDashPattern,tlayer->tick.y_minor_grid_line_dash_pattern,
+				_NhlNwkLineThicknessF,tlayer->tick.y_minor_grid_thickness,
 				NULL);
 			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 			for(i = 0; i < tlayer->tick.y_r_nminor; i++) {
@@ -2030,7 +2034,6 @@ NhlTickMarkLayer tlayer;
 	int i;
 	NhlErrorTypes ret = NhlNOERROR;
 
-
 /*
 * NEED SOME WAY TO KNOW WHEN A GKS ERROR HAS OCCURED
 */		
@@ -2041,11 +2044,15 @@ NhlTickMarkLayer tlayer;
 
 	c_set(0.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1);
 	
+	NhlVASetValues(tlayer->base.wkptr->base.id,
+		_NhlNwkReset,	True,
+		NULL);
+
 	if(tlayer->tick.x_b_on) {
 		NhlVASetValues(tlayer->base.wkptr->base.id,
-			NhlNwkLineColor,tlayer->tick.x_b_major_line_color,
-			NhlNwkDashPattern,0,
-			NhlNwkLineThicknessF,tlayer->tick.x_b_major_thickness,
+			_NhlNwkLineColor,tlayer->tick.x_b_major_line_color,
+			_NhlNwkDashPattern,0,
+			_NhlNwkLineThicknessF,tlayer->tick.x_b_major_thickness,
 			NULL);
 		_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 		for(i = 0; i< tlayer->tick.x_b_nmajor; i++) {
@@ -2057,9 +2064,9 @@ NhlTickMarkLayer tlayer;
 		}
 		if(tlayer->tick.x_b_minor_on) {
 			NhlVASetValues(tlayer->base.wkptr->base.id,
-				NhlNwkLineColor,tlayer->tick.x_b_minor_line_color,
-				NhlNwkDashPattern,0,
-				NhlNwkLineThicknessF,tlayer->tick.x_b_minor_thickness,
+				_NhlNwkLineColor,tlayer->tick.x_b_minor_line_color,
+				_NhlNwkDashPattern,0,
+				_NhlNwkLineThicknessF,tlayer->tick.x_b_minor_thickness,
 				NULL);
 			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 			for(i = 0; i < tlayer->tick.x_b_nminor; i++){
@@ -2072,9 +2079,9 @@ NhlTickMarkLayer tlayer;
 	}
 	if(tlayer->tick.x_t_on) {
 		NhlVASetValues(tlayer->base.wkptr->base.id,
-			NhlNwkLineColor,tlayer->tick.x_t_major_line_color,
-			NhlNwkDashPattern,0,
-			NhlNwkLineThicknessF,tlayer->tick.x_t_major_thickness,
+			_NhlNwkLineColor,tlayer->tick.x_t_major_line_color,
+			_NhlNwkDashPattern,0,
+			_NhlNwkLineThicknessF,tlayer->tick.x_t_major_thickness,
 			NULL);
 		_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 		for(i = 0; i< tlayer->tick.x_t_nmajor; i++) {
@@ -2085,9 +2092,9 @@ NhlTickMarkLayer tlayer;
 		}
 		if(tlayer->tick.x_t_minor_on) {
 			NhlVASetValues(tlayer->base.wkptr->base.id,
-				NhlNwkLineColor,tlayer->tick.x_t_minor_line_color,
-				NhlNwkDashPattern,0,
-				NhlNwkLineThicknessF,tlayer->tick.x_t_minor_thickness,
+				_NhlNwkLineColor,tlayer->tick.x_t_minor_line_color,
+				_NhlNwkDashPattern,0,
+				_NhlNwkLineThicknessF,tlayer->tick.x_t_minor_thickness,
 				NULL);
 			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 			for(i = 0; i < tlayer->tick.x_t_nminor; i++){
@@ -2100,9 +2107,9 @@ NhlTickMarkLayer tlayer;
 	}
 	if(tlayer->tick.y_l_on) {
 		NhlVASetValues(tlayer->base.wkptr->base.id,
-			NhlNwkLineColor,tlayer->tick.y_l_major_line_color,
-			NhlNwkDashPattern,0,
-			NhlNwkLineThicknessF,tlayer->tick.y_l_major_thickness,
+			_NhlNwkLineColor,tlayer->tick.y_l_major_line_color,
+			_NhlNwkDashPattern,0,
+			_NhlNwkLineThicknessF,tlayer->tick.y_l_major_thickness,
 			NULL);
 		_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 		for(i = 0; i< tlayer->tick.y_l_nmajor; i++) {
@@ -2114,9 +2121,9 @@ NhlTickMarkLayer tlayer;
 		}
 		if(tlayer->tick.y_l_minor_on) {
 			NhlVASetValues(tlayer->base.wkptr->base.id,
-				NhlNwkLineColor,tlayer->tick.y_l_minor_line_color,
-				NhlNwkDashPattern,0,
-				NhlNwkLineThicknessF,tlayer->tick.y_l_minor_thickness,
+				_NhlNwkLineColor,tlayer->tick.y_l_minor_line_color,
+				_NhlNwkDashPattern,0,
+				_NhlNwkLineThicknessF,tlayer->tick.y_l_minor_thickness,
 				NULL);
 			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 			for(i = 0; i < tlayer->tick.y_l_nminor; i++){
@@ -2132,9 +2139,9 @@ NhlTickMarkLayer tlayer;
 	}
 	if(tlayer->tick.y_r_on) {
 		NhlVASetValues(tlayer->base.wkptr->base.id,
-			NhlNwkLineColor,tlayer->tick.y_r_major_line_color,
-			NhlNwkDashPattern,0,
-			NhlNwkLineThicknessF,tlayer->tick.y_r_major_thickness,
+			_NhlNwkLineColor,tlayer->tick.y_r_major_line_color,
+			_NhlNwkDashPattern,0,
+			_NhlNwkLineThicknessF,tlayer->tick.y_r_major_thickness,
 			NULL);
 		_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 		for(i = 0; i< tlayer->tick.y_r_nmajor; i++) {
@@ -2146,9 +2153,9 @@ NhlTickMarkLayer tlayer;
 		}
 		if(tlayer->tick.y_r_minor_on) {
 			NhlVASetValues(tlayer->base.wkptr->base.id,
-				NhlNwkLineColor,tlayer->tick.y_r_minor_line_color,
-				NhlNwkDashPattern,0,
-				NhlNwkLineThicknessF,tlayer->tick.y_r_minor_thickness,
+				_NhlNwkLineColor,tlayer->tick.y_r_minor_line_color,
+				_NhlNwkDashPattern,0,
+				_NhlNwkLineThicknessF,tlayer->tick.y_r_minor_thickness,
 				NULL);
 			_NhlSetLineInfo(tlayer->base.wkptr,(NhlLayer)tlayer);
 			for(i = 0; i < tlayer->tick.y_r_nminor; i++){

@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.25 1995-02-17 10:23:18 boote Exp $
+ *      $Id: Legend.c,v 1.26 1995-02-19 08:18:13 boote Exp $
  */
 /************************************************************************
 *									*
@@ -4857,6 +4857,10 @@ static NhlErrorTypes    LegendDraw
 		_NhlStartSegment(lg_p->trans_dat);
 	}
 
+	NhlVASetValues(lgl->base.wkptr->base.id,
+		_NhlNwkReset,	True,
+		NULL);
+
 /* first draw the perimeter: it may have a solid background */
 
 	if (lg_p->perim_on) {
@@ -4873,13 +4877,13 @@ static NhlErrorTypes    LegendDraw
 		ypoints[4] = lg_p->real_perim.b;
 
 		NhlVASetValues(lgl->base.wkptr->base.id,
-			     NhlNwkDrawEdges, 1,
-			     NhlNwkEdgeDashPattern, lg_p->perim_dash_pattern,
-			     NhlNwkEdgeThicknessF, lg_p->perim_thickness,
-			     NhlNwkEdgeDashSegLenF, lg_p->perim_dash_seglen,
-			     NhlNwkEdgeColor, lg_p->perim_color,
-			     NhlNwkFillColor, lg_p->perim_fill_color,
-			     NhlNwkFillIndex, lg_p->perim_fill,
+			     _NhlNwkDrawEdges, 1,
+			     _NhlNwkEdgeDashPattern, lg_p->perim_dash_pattern,
+			     _NhlNwkEdgeThicknessF, lg_p->perim_thickness,
+			     _NhlNwkEdgeDashSegLenF, lg_p->perim_dash_seglen,
+			     _NhlNwkEdgeColor, lg_p->perim_color,
+			     _NhlNwkFillColor, lg_p->perim_fill_color,
+			     _NhlNwkFillIndex, lg_p->perim_fill,
 			     NULL);
 			
 		_NhlSetFillInfo(lgl->base.wkptr, layer);
@@ -4893,14 +4897,14 @@ static NhlErrorTypes    LegendDraw
  */
 
 	NhlVASetValues(lgl->base.wkptr->base.id,
-		     NhlNwkDrawEdges, lg_p->box_line_on,
-		     NhlNwkEdgeDashPattern, lg_p->box_line_dash_pattern,
-		     NhlNwkEdgeThicknessF, lg_p->box_line_thickness,
-		     NhlNwkEdgeDashSegLenF, lg_p->box_line_dash_seglen,
-		     NhlNwkEdgeColor, lg_p->box_line_color,
-		     NhlNwkFillColor, lg_p->box_background,
-		     NhlNwkFillIndex, NhlSOLIDFILL,
-		     NhlNwkLineDashSegLenF, lg_p->line_dash_seglen,  
+		     _NhlNwkDrawEdges, lg_p->box_line_on,
+		     _NhlNwkEdgeDashPattern, lg_p->box_line_dash_pattern,
+		     _NhlNwkEdgeThicknessF, lg_p->box_line_thickness,
+		     _NhlNwkEdgeDashSegLenF, lg_p->box_line_dash_seglen,
+		     _NhlNwkEdgeColor, lg_p->box_line_color,
+		     _NhlNwkFillColor, lg_p->box_background,
+		     _NhlNwkFillIndex, NhlSOLIDFILL,
+		     _NhlNwkLineDashSegLenF, lg_p->line_dash_seglen,  
 		     NULL);
 				     
 /* 
@@ -5016,13 +5020,13 @@ static NhlErrorTypes    LegendDraw
 
 			if (item_type != NhlMARKERS){
 				NhlVASetValues(lgl->base.wkptr->base.id,
-				  NhlNwkLineLabel,string,
-				  NhlNwkDashPattern,dash_index,
-				  NhlNwkLineThicknessF,line_thickness,
-				  NhlNwkLineLabelFontHeightF,
+				  _NhlNwkLineLabel,string,
+				  _NhlNwkDashPattern,dash_index,
+				  _NhlNwkLineThicknessF,line_thickness,
+				  _NhlNwkLineLabelFontHeightF,
 						line_label_font_height,
-				  NhlNwkLineColor,line_color, 
-				  NhlNwkLineLabelColor,line_label_color, 
+				  _NhlNwkLineColor,line_color, 
+				  _NhlNwkLineLabelColor,line_label_color, 
 					       NULL);
 				_NhlSetLineInfo(lgl->base.wkptr,layer);
 				xpoints[0] = xpoints[0] + 
@@ -5034,11 +5038,11 @@ static NhlErrorTypes    LegendDraw
 		        }
 			if (item_type != NhlLINES){
 				NhlVASetValues(lgl->base.wkptr->base.id,
-					     NhlNwkMarkerIndex,marker_index,
-					     NhlNwkMarkerThicknessF, 
+					     _NhlNwkMarkerIndex,marker_index,
+					     _NhlNwkMarkerThicknessF, 
 							marker_thickness,
-					     NhlNwkMarkerSizeF,marker_size,
-					     NhlNwkMarkerColor, marker_color, 
+					     _NhlNwkMarkerSizeF,marker_size,
+					     _NhlNwkMarkerColor, marker_color, 
 					     NULL);
 				_NhlSetMarkerInfo(lgl->base.wkptr,layer);
 				xpoints[0] = xpoints[0] + 
@@ -5131,14 +5135,14 @@ static NhlErrorTypes    LegendDraw
 
 			if (item_type != NhlMARKERS){
 				NhlVASetValues(lgl->base.wkptr->base.id,
-					     NhlNwkLineLabel, string,
-					     NhlNwkDashPattern,dash_index,
-					     NhlNwkLineThicknessF, 
+					     _NhlNwkLineLabel, string,
+					     _NhlNwkDashPattern,dash_index,
+					     _NhlNwkLineThicknessF, 
 					        line_thickness,
-					     NhlNwkLineLabelFontHeightF,
+					     _NhlNwkLineLabelFontHeightF,
 					        line_label_font_height,
-					     NhlNwkLineColor, line_color, 
-					     NhlNwkLineLabelColor, 
+					     _NhlNwkLineColor, line_color, 
+					     _NhlNwkLineLabelColor, 
 					        line_label_color, 
 					     NULL);
 			   _NhlSetLineInfo(lgl->base.wkptr,layer);
@@ -5153,11 +5157,11 @@ static NhlErrorTypes    LegendDraw
 		        }
 			if (item_type != NhlLINES){
 				NhlVASetValues(lgl->base.wkptr->base.id,
-					     NhlNwkMarkerIndex, marker_index,
-					     NhlNwkMarkerThicknessF, 
+					     _NhlNwkMarkerIndex, marker_index,
+					     _NhlNwkMarkerThicknessF, 
 					        marker_thickness,
-					     NhlNwkMarkerSizeF, marker_size,
-					     NhlNwkMarkerColor, marker_color, 
+					     _NhlNwkMarkerSizeF, marker_size,
+					     _NhlNwkMarkerColor, marker_color, 
 					     NULL);
 				_NhlSetMarkerInfo(lgl->base.wkptr,layer);
 				ypoints[0] = ypoints[0] + 

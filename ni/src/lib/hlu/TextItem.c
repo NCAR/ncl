@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.18 1995-01-11 00:46:49 boote Exp $
+ *      $Id: TextItem.c,v 1.19 1995-02-19 08:18:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,10 +24,10 @@
  */
 
 #include <math.h>
-#include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/TextItemP.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
-#include <ncarg/hlu/TextItemP.h>
+#include <ncarg/hlu/WorkstationI.h>
 
 #define DEFSTRING "NOTHING"
 #define DEGTORAD 0.017453293
@@ -927,6 +927,9 @@ static NhlErrorTypes    TextItemDraw
 	c_pcsetc("FC",buf);
 
 	_NhlActivateWorkstation(tlayer->base.wkptr);
+	NhlVASetValues(tlayer->base.wkptr->base.id,
+		_NhlNwkReset,	True,
+		NULL);
 
 	c_set(0.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1);
 
@@ -936,16 +939,16 @@ static NhlErrorTypes    TextItemDraw
 	    tlayer->text.bg_fill_color > NhlTRANSPARENT) {
 
 		NhlVASetValues(tlayer->base.wkptr->base.id,
-			       NhlNwkDrawEdges,tlayer->text.perim_on,
-			       NhlNwkEdgeDashPattern,
+			       _NhlNwkDrawEdges,tlayer->text.perim_on,
+			       _NhlNwkEdgeDashPattern,
 			       tlayer->text.perim_dash_pattern,
-			       NhlNwkEdgeThicknessF,
+			       _NhlNwkEdgeThicknessF,
 			       tlayer->text.perim_thickness,
-			       NhlNwkEdgeDashSegLenF,
+			       _NhlNwkEdgeDashSegLenF,
 			       tlayer->text.perim_dash_length,
-			       NhlNwkEdgeColor,tlayer->text.perim_color,
-			       NhlNwkFillColor,tlayer->text.bg_fill_color,
-			       NhlNwkFillIndex,NhlSOLIDFILL,
+			       _NhlNwkEdgeColor,tlayer->text.perim_color,
+			       _NhlNwkFillColor,tlayer->text.bg_fill_color,
+			       _NhlNwkFillIndex,NhlSOLIDFILL,
 			       NULL);
 			
 		_NhlSetFillInfo(tlayer->base.wkptr,layer);

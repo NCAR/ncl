@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.13 1994-12-16 20:04:14 boote Exp $
+ *      $Id: GetValues.c,v 1.14 1995-02-19 08:17:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -70,6 +70,7 @@ GetValues
 	int		nargs;		/* number of args		*/
 #endif
 {
+	char		func[] = "GetValues";
 	register int	i,j;
 	NhlBoolean	argfound[_NhlMAXARGLIST];
 	NhlErrorTypes	ret = NhlNOERROR;
@@ -86,16 +87,24 @@ GetValues
 	for(i=0; i < nargs; i++){
 		for(j=0; j < num_res; j++){
 			if(args[i].quark == resources[j].nrm_name){
-				if(args[i].type != NrmNULLQUARK){
+				if(resources[j].res_info & _NhlRES_NOGACCESS){
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+					"%s:%s does not have \"G\" access",
+					func,NrmQuarkToString(args[i].quark));
+					args[i].quark = NrmNULLQUARK;
+				}
+				else{
+					if(args[i].type != NrmNULLQUARK){
 					*args[i].type_ret=resources[j].nrm_type;
 					*args[i].size_ret=resources[j].nrm_size;
 					*args[i].free_func =
 							resources[j].free_func;
-				}
-				_NhlCopyToArg((NhlPointer)
+					}
+					_NhlCopyToArg((NhlPointer)
 					(base + resources[j].nrm_offset),
 					&args[i].value,
 					resources[j].nrm_size);
+				}
 				argfound[i] = True;
 				break;
 			}
@@ -333,7 +342,8 @@ CopyArgToArgptr
 #endif
 {
 
-    if      (size == sizeof(long))	*(long *)dst = src.lngval;
+    if (size == 0)			return;
+    else if (size == sizeof(long))	*(long *)dst = src.lngval;
     else if (size == sizeof(short))	*(short *)dst = src.shrtval;
     else if (size == sizeof(NhlPointer))
 					*(NhlPointer *)dst = src.ptrval;

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.27 1995-02-17 10:23:51 boote Exp $
+ *      $Id: hlu.h,v 1.28 1995-02-19 08:19:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -172,20 +172,6 @@ typedef void (*NhlFreeFunc)(
         NhlPointer      ptr
 #endif
 );
-
-NhlDOCTAG(NhlResource)
-typedef struct _NhlResource {
-	NhlString	resource_name;
-	NhlString	resource_class;
-	NhlString	resource_type;
-	unsigned int	resource_size;
-	unsigned int	resource_offset;
-	/* stuff for dealling with defaults */
-	NhlString	default_type;
-	NhlArgVal	default_val;
-	unsigned int	resource_info;
-	NhlFreeFunc	free_func;
-} NhlResource, *NhlResourceList;
 
 typedef struct _NhlLayerClassRec *NhlLayerClass;
 

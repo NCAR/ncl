@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.9 1994-12-16 20:05:08 boote Exp $
+ *      $Id: XWorkstation.c,v 1.10 1995-02-19 08:19:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -203,13 +203,13 @@ NhlXWorkstationLayerClassRec NhlxWorkstationLayerClassRec = {
 /* layer_clear			*/	NULL
         },
         {
-/* open_work		*/	NULL,
-/* close_work		*/	NULL,
-/* activate_work	*/	NULL,
-/* deactivate_work	*/	NULL,
+/* open_work		*/	NhlInheritOpen,
+/* close_work		*/	NhlInheritClose,
+/* activate_work	*/	NhlInheritActivate,
+/* deactivate_work	*/	NhlInheritDeactivate,
 /* update_work		*/	NhlInheritUpdate,
 /* clear_work		*/	XWorkstationClear,
-/* lineto_work 		*/	NULL,
+/* lineto_work 		*/	NhlInheritLineTo,
 /* fill_work		*/	NhlInheritFill,
 /* marker_work		*/	NhlInheritMarker
 	},

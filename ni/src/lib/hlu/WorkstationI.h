@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationI.h,v 1.3 1994-12-16 20:05:07 boote Exp $
+ *      $Id: WorkstationI.h,v 1.4 1995-02-19 08:19:21 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,112 @@
 
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/Workstation.h>
+
+/*
+ * Private Workstation Resources are defined here.
+ * These resources are only to be used by other objects
+ * in the HLU library, they are not part of the API.
+ */
+
+/*
+ * This resource must be set by itself!!!
+ */
+#define	_NhlNwkReset		".wkReset"
+#define	_NhlCwkReset		".WkReset"
+/*
+ * This resource must be set by itself!!!
+ */
+#define	_NhlNwkSetPublic		".wkSetPublic"
+#define	_NhlCwkSetPublic		".WkSetPublic"
+
+#define _NhlNwkDashPattern	".wkDashPattern"
+#define _NhlCwkDashPattern	".WkDashPattern"
+#define _NhlNwkLineDashSegLenF	".wkLineDashSegLenF"
+#define _NhlCwkLineDashSegLenF	".WkLineDashSegLenF"
+#define _NhlNwkLineColor	".wkLineColor"
+#define _NhlCwkLineColor	".WkLineColor"
+#define _NhlNwkLineThicknessF	".wkLineThicknessF"
+#define _NhlCwkLineThicknessF	".WkLineThicknessF"
+
+#define _NhlNwkLineLabel	".wkLineLabel"
+#define _NhlCwkLineLabel	".WkLineLabel"
+#define _NhlNwkLineLabelFont	".wkLineLabelFont"
+#define _NhlCwkLineLabelFont	".WkLineLabelFont"
+#define _NhlNwkLineLabelColor	".wkLineLabelColor"
+#define _NhlCwkLineLabelColor	".WkLineLabelColor"
+#define _NhlNwkLineLabelFontHeightF	".wkLineLabelFontHeightF"
+#define _NhlCwkLineLabelFontHeightF	".WkLineLabelFontHeightF"
+
+#define _NhlNwkMarkerIndex	".wkMarkerIndex"
+#define _NhlCwkMarkerIndex	".WkMarkerIndex"
+#define _NhlNwkMarkerColor      ".wkMarkerColor"
+#define _NhlCwkMarkerColor      ".WkMarkerColor"
+#define _NhlNwkMarkerSizeF	".wkMarkerSizeF"
+#define _NhlCwkMarkerSizeF	".WkMarkerSizeF"
+#define _NhlNwkMarkerXOffsetF   ".wkMarkerXOffset"
+#define _NhlCwkMarkerXOffsetF   ".WkMarkerXOffset"
+#define _NhlNwkMarkerYOffsetF   ".wkMarkerYOffset"
+#define _NhlCwkMarkerYOffsetF   ".WkMarkerYOffset"
+#define _NhlNwkMarkerThicknessF ".wkMarkerThicknessF"
+#define _NhlCwkMarkerThicknessF ".WkMarkerThicknessF"
+
+#define _NhlNwkDashTable 	".wkDashTable"
+#define _NhlCwkDashTable 	".WkDashTable"
+
+#define _NhlNwkFillIndex		".wkFillIndex"
+#define _NhlCwkFillIndex		".WkFillIndex"
+
+#define _NhlNwkFillColor         ".wkFillColor"
+#define _NhlCwkFillColor         ".WkFillColor"
+
+#define _NhlNwkFillBackground    ".wkFillBackground"
+#define _NhlCwkFillBackground    ".WkFillBackground"
+
+#define _NhlNwkFillScaleFactorF	".wkFillScaleFactorF"
+#define _NhlCwkFillScaleFactorF	".WkFillScaleFactorF"
+
+#define _NhlNwkFillLineThicknessF ".wkFillLineThicknessF"
+#define _NhlCwkFillLineThicknessF ".WkFillLineThicknessF"
+
+#define _NhlNwkDrawEdges		".wkDrawEdges"
+#define _NhlCwkDrawEdges		".WkDrawEdges"
+
+#define _NhlNwkEdgeDashPattern   ".wkEdgeDashPattern"
+#define _NhlCwkEdgeDashPattern   ".WkEdgeDashPattern"
+
+#define _NhlNwkEdgeThicknessF    ".wkEdgeThicknessF"
+#define _NhlCwkEdgeThicknessF    ".WkEdgeThicknessF"
+
+#define _NhlNwkEdgeDashSegLenF   ".wkEdgeDashSegLenF"
+#define _NhlCwkEdgeDashSegLenF   ".WkEdgeDashSegLenF"
+
+#define _NhlNwkEdgeColor         ".wkEdgeColor"
+#define _NhlCwkEdgeColor         ".WkEdgeColor"
+
+#define _NhlNwkMarkerTableStrings ".wkMarkerTableStrings" /* read-only */
+#define _NhlCwkMarkerTableStrings ".WkMarkerTableStrings" /* read-only */
+
+#define _NhlNwkMarkerTableParams  ".wkMarkerTableParams"  /* read-only */
+#define _NhlCwkMarkerTableParams  ".WkMarkerTableParams"  /* read-only */
+
+/*
+ * Resources Disabled for 4.0
+ */
+#define _NhlNwkDrawMarkerLines		".wkDrawMarkerLines"
+#define _NhlCwkDrawMarkerLines		".WkDrawMarkerLines"
+
+#define _NhlNwkMarkerLineDashPattern	".wkMarkerLineDashPattern"
+#define _NhlCwkMarkerLineDashPattern	".WkMarkerLineDashPattern"
+
+#define _NhlNwkMarkerLineThicknessF	".wkMarkerLineThicknessF"
+#define _NhlCwkMarkerLineThicknessF	".WkMarkerLineThicknessF"
+
+#define _NhlNwkMarkerLineDashSegLenF	".wkMarkerLineDashSegLenF"
+#define _NhlCwkMarkerLineDashSegLenF	".WkMarkerLineDashSegLenF"
+
+#define _NhlNwkMarkerLineColor     	".wkMarkerLineColor"
+#define _NhlCwkMarkerLineColor     	".WkMarkerLineColor"
+
 
 /*
  * Private Functions to support Workstation Class Objects

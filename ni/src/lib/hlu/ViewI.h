@@ -1,5 +1,5 @@
 /*
- *      $Id: ViewI.h,v 1.2 1994-12-16 20:04:59 boote Exp $
+ *      $Id: ViewI.h,v 1.3 1995-02-19 08:19:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,6 @@
 #define	_NVIEWI_H
 
 #include <ncarg/hlu/hluP.h>
-#include <ncarg/hlu/WorkstationI.h>
 #include <ncarg/hlu/View.h>
 
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: ViewP.h,v 1.8 1995-02-17 10:23:39 boote Exp $
+ *      $Id: ViewP.h,v 1.9 1995-02-19 08:19:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,7 @@
 
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/ViewI.h>
+#include <ncarg/hlu/Workstation.h>
 
 #include <ncarg/hlu/Segments.h>
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.c,v 1.12 1994-12-16 20:04:23 boote Exp $
+ *      $Id: LogLinPlot.c,v 1.13 1995-02-19 08:18:16 boote Exp $
  */
 /************************************************************************
 *									*
@@ -136,10 +136,10 @@ NhlLogLinPlotLayerClassRec NhllogLinPlotLayerClassRec = {
 	},
 	{
 /* overlay_capability 		*/	_tfOverlayBaseOrMember,
-/* data_to_ndc			*/	NULL,
-/* ndc_to_data			*/	NULL,
-/* data_polyline		*/	NULL,
-/* ndc_polyline			*/	NULL
+/* data_to_ndc			*/	NhlInheritTransFunc,
+/* ndc_to_data			*/	NhlInheritTransFunc,
+/* data_polyline		*/	NhlInheritPolyTransFunc,
+/* ndc_polyline			*/	NhlInheritPolyTransFunc
 	},
 	{
 /* foo				*/	NULL

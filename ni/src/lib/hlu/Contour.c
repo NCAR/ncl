@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.50 1995-02-17 10:22:58 boote Exp $
+ *      $Id: Contour.c,v 1.51 1995-02-19 08:17:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1468,10 +1468,10 @@ NhlContourLayerClassRec NhlcontourLayerClassRec = {
 	/* trans_class */
 	{
 /* overlay_capability 		*/	_tfOverlayBaseOrMember,
-/* data_to_ndc			*/	NULL,
-/* ndc_to_data			*/	NULL,
-/* data_polyline		*/	NULL,
-/* ndc_polyline			*/	NULL,
+/* data_to_ndc			*/	NhlInheritTransFunc,
+/* ndc_to_data			*/	NhlInheritTransFunc,
+/* data_polyline		*/	NhlInheritPolyTransFunc,
+/* ndc_polyline			*/	NhlInheritPolyTransFunc,
 	},
 	/* datacomm_class */
 	{
@@ -7298,7 +7298,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		
 	if (init) {
 		subret = NhlVAGetValues(cnew->base.wkptr->base.id,
-					NhlNwkDashTable,&ga,
+					_NhlNwkDashTable,&ga,
 					NhlNwkDashTableLength,&cnp->dtable_len,
 					NULL);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -8620,12 +8620,12 @@ int (_NHLCALLF(nhlfll,NHLFLL))
 				fscale = reg_attrs->fill_scale;
 			}
 			NhlVASetValues(Cnl->base.wkptr->base.id,
-				       NhlNwkFillIndex, pat_ix,
-				       NhlNwkFillColor, col_ix,
-				       NhlNwkFillScaleFactorF,fscale,
-				       NhlNwkFillBackground,
+				       _NhlNwkFillIndex, pat_ix,
+				       _NhlNwkFillColor, col_ix,
+				       _NhlNwkFillScaleFactorF,fscale,
+				       _NhlNwkFillBackground,
 				       Cnp->fill_background_color,
-				       NhlNwkDrawEdges,0,
+				       _NhlNwkDrawEdges,0,
 				       NULL);
 			
 			_NhlSetFillInfo(Cnl->base.wkptr,(NhlLayer) Cnl);

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.24 1995-02-17 10:23:42 boote Exp $
+ *      $Id: Workstation.c,v 1.25 1995-02-19 08:19:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -298,116 +298,191 @@ static NhlResource resources[] = {
 	{NhlNwkColorMap,NhlCwkColorMap,NhlTFloatGenArray,sizeof(NhlGenArray),
 		Oset(color_map),NhlTImmediate,_NhlUSET(NULL),0,
 		(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNwkColorMapLen, NhlCwkColorMapLen, NhlTInteger, sizeof(int),
+	{NhlNwkColorMapLen, NhlCwkColorMapLen, NhlTInteger, sizeof(int),
 		Oset(color_map_len),NhlTImmediate, 
-		_NhlUSET((NhlPointer)NhlNumber(def_color)),0,NULL},
-	{ NhlNwkBackgroundColor, NhlCwkBackgroundColor, NhlTFloatGenArray, 
+		_NhlUSET((NhlPointer)NhlNumber(def_color)),_NhlRES_GONLY,NULL},
+	{NhlNwkBackgroundColor, NhlCwkBackgroundColor, NhlTFloatGenArray, 
 		sizeof(NhlPointer),
 		Oset(bkgnd_color), NhlTImmediate,_NhlUSET( NULL),0,
 		(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNwkForegroundColor, NhlCwkForegroundColor, NhlTFloatGenArray, 
+	{NhlNwkForegroundColor, NhlCwkForegroundColor, NhlTFloatGenArray, 
 		sizeof(NhlPointer),
-		Oset(foregnd_color), NhlTImmediate,_NhlUSET( NULL),0,NULL},
-	{ NhlNwkDashTableLength, NhlCwkDashTableLength, NhlTInteger, 
+		Oset(foregnd_color), NhlTImmediate,_NhlUSET( NULL),0,
+						(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNwkGksWorkId,NhlCwkGksWorkId,NhlTInteger,sizeof(int),
+		Oset(gkswksid),NhlTImmediate,_NhlUSET((NhlPointer)0),
+							_NhlRES_GONLY,NULL},
+	{NhlNwkDashTableLength, NhlCwkDashTableLength, NhlTInteger, 
 		sizeof(int),Oset(dash_table_len),NhlTImmediate,
-		_NhlUSET((NhlPointer)0),0,NULL},
-	{ NhlNwkFillTableLength, NhlCwkFillTableLength, NhlTInteger, 
+		_NhlUSET((NhlPointer)0),_NhlRES_GONLY,NULL},
+	{NhlNwkFillTableLength, NhlCwkFillTableLength, NhlTInteger, 
 		sizeof(int),Oset(fill_table_len),NhlTImmediate,
-		_NhlUSET((NhlPointer)0),0,NULL},
+		_NhlUSET((NhlPointer)0),_NhlRES_GONLY,NULL},
 	{ NhlNwkMarkerTableLength, NhlCwkMarkerTableLength, NhlTInteger, 
 		sizeof(int),Oset(marker_table_len),NhlTImmediate,
+		_NhlUSET((NhlPointer)0),_NhlRES_GONLY,NULL},
+
+#define POset(field) Oset(public_lineinfo.field)
+	{NhlNwkDashPattern,NhlCwkDashPattern,NhlTDashIndex,
+		sizeof(NhlDashIndex),POset(dash_pattern),NhlTImmediate,
 		_NhlUSET((NhlPointer)0),0,NULL},
+        {NhlNwkLineDashSegLenF, NhlCwkLineDashSegLenF,NhlTFloat,sizeof(float),
+		POset(line_dash_seglen),NhlTString,_NhlUSET(".15"),0,NULL},
+        {NhlNwkLineColor,NhlCwkLineColor,NhlTColorIndex,sizeof(NhlColorIndex),
+                POset(line_color),NhlTImmediate,
+		_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
+        {NhlNwkLineThicknessF, NhlCwkLineThicknessF, NhlTFloat, sizeof(float),
+                POset(line_thickness), NhlTString,_NhlUSET("1.0"),0,NULL},
+        {NhlNwkLineLabel,NhlCwkLineLabel,NhlTString,sizeof(NhlString),
+                POset(line_label),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,
+		(NhlFreeFunc)NhlFree},
+        {NhlNwkLineLabelFont,NhlCwkLineLabelFont,NhlTFont,sizeof(NhlFont),
+                POset(line_label_font),NhlTImmediate,
+		_NhlUSET((NhlPointer)NULL),0,(NhlFreeFunc)NhlFree},
+	{NhlNwkLineLabelColor,NhlCwkLineLabelColor,NhlTColorIndex,
+		sizeof(NhlColorIndex),POset(line_label_color),NhlTImmediate,
+		_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
+        {NhlNwkLineLabelFontHeightF,NhlCwkLineLabelFontHeightF,NhlTFloat,
+                sizeof(float),POset(line_label_font_height),NhlTString,
+		_NhlUSET("0.0125"),0,NULL},
+#undef POset
+#define POset(field) Oset(public_markinfo.field)
+	{NhlNwkMarkerIndex,NhlCwkMarkerIndex,NhlTMarkerIndex,
+		sizeof(NhlMarkerIndex),POset(marker_index),NhlTImmediate,
+		_NhlUSET((NhlPointer)3),0,NULL},
+	{NhlNwkMarkerColor,NhlCwkMarkerColor,NhlTColorIndex,
+		sizeof(NhlColorIndex),POset(marker_color),NhlTImmediate,
+		_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
+	{NhlNwkMarkerSizeF,NhlCwkMarkerSizeF,NhlTFloat,sizeof(float),
+		  POset(marker_size),NhlTString,_NhlUSET("0.007"),0,NULL},
+	{NhlNwkMarkerXOffsetF,NhlCwkMarkerXOffsetF,NhlTFloat,sizeof(float),
+		  POset(marker_x_off),NhlTString,_NhlUSET("0.0"),0,NULL},
+	{NhlNwkMarkerYOffsetF,NhlCwkMarkerYOffsetF,NhlTFloat,sizeof(float),
+		  POset(marker_y_off),NhlTString,_NhlUSET("0.0"),0,NULL},
+	{NhlNwkMarkerThicknessF, NhlCwkMarkerThicknessF, NhlTFloat,
+		  sizeof(float),POset(marker_thickness),NhlTString,
+		  _NhlUSET("1.0"),0,NULL},
+#undef POset
 
 /* End-documented-resources */
 
-	{NhlNwkDashPattern,NhlCwkDashPattern,NhlTDashIndex,sizeof(NhlDashIndex),
-		Oset(dash_pattern),NhlTImmediate,_NhlUSET((NhlPointer)0),0,
-		NULL},
-        {NhlNwkLineLabel, NhlCwkLineLabel, NhlTString, sizeof(char*),
-                Oset(line_label), NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,
-		(NhlFreeFunc)NhlFree},
-	{NhlNwkLineLabelColor,NhlCwkLineLabelColor,NhlTColorIndex,
-		sizeof(NhlColorIndex),Oset(line_label_color),NhlTImmediate,
-		_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
-        {NhlNwkLineThicknessF, NhlCwkLineThicknessF, NhlTFloat, sizeof(float),
-                Oset(line_thickness), NhlTString,_NhlUSET("1.0"),0,NULL},
-        {NhlNwkLineLabelFontHeightF,NhlCwkLineLabelFontHeightF,NhlTFloat,
-                sizeof(float),Oset(line_label_font_height),NhlTString,
-		_NhlUSET("0.0125"),0,NULL},
-        {NhlNwkLineDashSegLenF, NhlCwkLineDashSegLenF,NhlTFloat,sizeof(float),
-		Oset(line_dash_seglen),NhlTString,_NhlUSET(".15"),0,NULL},
-        {NhlNwkLineColor,NhlCwkLineColor,NhlTColorIndex,sizeof(NhlColorIndex),
-                Oset(line_color),NhlTImmediate,
-		_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
-	{NhlNwkDashTable,NhlCwkDashTable,NhlTStringGenArray,sizeof(NhlGenArray),
-		Oset(dash_table),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,
-		(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNwkFillIndex, NhlCwkFillIndex, NhlTFillIndex, sizeof(NhlFillIndex),
-		Oset(fill_index), NhlTImmediate,_NhlUSET((NhlPointer)0),0,NULL},
-	{NhlNwkFillColor,NhlCwkFillColor,NhlTColorIndex,sizeof(NhlColorIndex),
-		Oset(fill_color),NhlTImmediate,
-		_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
-	{NhlNwkFillBackground,NhlCwkFillBackground,NhlTColorIndex,
-		sizeof(NhlColorIndex),Oset(fill_background),NhlTImmediate,
-		_NhlUSET((NhlPointer)NhlTRANSPARENT),0,NULL},
-	{NhlNwkFillScaleFactorF,NhlCwkFillScaleFactorF,NhlTFloat,sizeof(float),
-		Oset(fill_scale_factor),NhlTString,_NhlUSET("1.0"),0,NULL},
-	{NhlNwkFillLineThicknessF, NhlCwkFillLineThicknessF, NhlTFloat,
-		sizeof(float),Oset(fill_line_thickness),NhlTString,
-		_NhlUSET("1.0"),0,NULL},
-	{NhlNwkDrawEdges,NhlCwkDrawEdges,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(edges_on),NhlTImmediate,_NhlUSET(False),0,NULL},
-        {NhlNwkEdgeDashPattern,NhlCwkEdgeDashPattern,NhlTDashIndex,
-		sizeof(NhlDashIndex),Oset(edge_dash_pattern),NhlTImmediate,
-		_NhlUSET(0),0,NULL},
-	{NhlNwkEdgeThicknessF,NhlCwkEdgeThicknessF,NhlTFloat,sizeof(float),
-		Oset(edge_thickness),NhlTString,_NhlUSET("1.0"),0,NULL},
-	{NhlNwkEdgeDashSegLenF,NhlCwkEdgeDashSegLenF,NhlTFloat,sizeof(float),
-		Oset(edge_dash_seglen),NhlTString,_NhlUSET(".15"),0,NULL},
-	{NhlNwkEdgeColor,NhlCwkEdgeColor,NhlTColorIndex,sizeof(NhlColorIndex),
-		Oset(edge_color),NhlTImmediate,
-		_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
+	{_NhlNwkReset,_NhlCwkReset,NhlTBoolean,sizeof(NhlBoolean),Oset(reset),
+		NhlTImmediate,_NhlUSET((NhlPointer)0),_NhlRES_SONLY,NULL},
+	{_NhlNwkSetPublic,_NhlCwkSetPublic,NhlTBoolean,sizeof(NhlBoolean),
+		Oset(set_public),NhlTImmediate,_NhlUSET((NhlPointer)0),
+		_NhlRES_SONLY,NULL},
 
-	{NhlNwkMarkerTableStrings,NhlCwkMarkerTableStrings,NhlTStringGenArray,
+#define POset(field) Oset(private_lineinfo.field)
+	{_NhlNwkDashPattern,_NhlCwkDashPattern,NhlTDashIndex,
+		sizeof(NhlDashIndex),POset(dash_pattern),NhlTImmediate,
+		_NhlUSET((NhlPointer)0),_NhlRES_GSONLY,NULL},
+        {_NhlNwkLineDashSegLenF, _NhlCwkLineDashSegLenF,NhlTFloat,sizeof(float),
+		POset(line_dash_seglen),NhlTString,_NhlUSET(".15"),
+		_NhlRES_GSONLY,NULL},
+        {_NhlNwkLineColor,_NhlCwkLineColor,NhlTColorIndex,sizeof(NhlColorIndex),
+                POset(line_color),NhlTImmediate,
+		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_GSONLY,NULL},
+        {_NhlNwkLineThicknessF, _NhlCwkLineThicknessF, NhlTFloat, sizeof(float),
+                POset(line_thickness), NhlTString,_NhlUSET("1.0"),
+		_NhlRES_GSONLY,NULL},
+        {_NhlNwkLineLabel,_NhlCwkLineLabel,NhlTString,sizeof(NhlString),
+                POset(line_label), NhlTImmediate,_NhlUSET((NhlPointer)NULL),
+		_NhlRES_GSONLY,(NhlFreeFunc)NhlFree},
+        {_NhlNwkLineLabelFont, _NhlCwkLineLabelFont, NhlTFont, sizeof(NhlFont),
+                POset(line_label_font), NhlTImmediate,
+		_NhlUSET((NhlPointer)NULL),_NhlRES_GSONLY,(NhlFreeFunc)NhlFree},
+	{_NhlNwkLineLabelColor,_NhlCwkLineLabelColor,NhlTColorIndex,
+		sizeof(NhlColorIndex),POset(line_label_color),NhlTImmediate,
+		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_GSONLY,NULL},
+        {_NhlNwkLineLabelFontHeightF,_NhlCwkLineLabelFontHeightF,NhlTFloat,
+                sizeof(float),POset(line_label_font_height),NhlTString,
+		_NhlUSET("0.0125"),_NhlRES_GSONLY,NULL},
+#undef POset
+
+#define POset(field) Oset(private_markinfo.field)
+	{_NhlNwkMarkerIndex,_NhlCwkMarkerIndex,NhlTMarkerIndex,
+		sizeof(NhlMarkerIndex),POset(marker_index),NhlTImmediate,
+		_NhlUSET((NhlPointer)3),_NhlRES_GSONLY,NULL},
+	{_NhlNwkMarkerColor,_NhlCwkMarkerColor,NhlTColorIndex,
+		sizeof(NhlColorIndex),POset(marker_color),NhlTImmediate,
+		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_GSONLY,NULL},
+	{_NhlNwkMarkerSizeF,_NhlCwkMarkerSizeF,NhlTFloat,sizeof(float),
+		  POset(marker_size),NhlTString,_NhlUSET("0.007"),
+		  _NhlRES_GSONLY,NULL},
+	{_NhlNwkMarkerXOffsetF,_NhlCwkMarkerXOffsetF,NhlTFloat,sizeof(float),
+		  POset(marker_x_off),NhlTString,_NhlUSET("0.0"),_NhlRES_GSONLY,
+		  NULL},
+	{_NhlNwkMarkerYOffsetF,_NhlCwkMarkerYOffsetF,NhlTFloat,sizeof(float),
+		  POset(marker_y_off),NhlTString,_NhlUSET("0.0"),_NhlRES_GSONLY,
+		  NULL},
+	{_NhlNwkMarkerThicknessF, _NhlCwkMarkerThicknessF, NhlTFloat,
+		  sizeof(float),POset(marker_thickness),NhlTString,
+		  _NhlUSET("1.0"),_NhlRES_GSONLY,NULL},
+#undef POset
+
+	{_NhlNwkDashTable,_NhlCwkDashTable,NhlTStringGenArray,
+		sizeof(NhlGenArray),Oset(dash_table),NhlTImmediate,
+		_NhlUSET((NhlPointer)NULL),_NhlRES_GSONLY,
+		(NhlFreeFunc)NhlFreeGenArray},
+	{_NhlNwkFillIndex,_NhlCwkFillIndex,NhlTFillIndex,sizeof(NhlFillIndex),
+		Oset(fill_index),NhlTImmediate,_NhlUSET((NhlPointer)0),
+		_NhlRES_GSONLY,NULL},
+	{_NhlNwkFillColor,_NhlCwkFillColor,NhlTColorIndex,sizeof(NhlColorIndex),
+		Oset(fill_color),NhlTImmediate,
+		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_GSONLY,NULL},
+	{_NhlNwkFillBackground,_NhlCwkFillBackground,NhlTColorIndex,
+		sizeof(NhlColorIndex),Oset(fill_background),NhlTImmediate,
+		_NhlUSET((NhlPointer)NhlTRANSPARENT),_NhlRES_GSONLY,NULL},
+	{_NhlNwkFillScaleFactorF,_NhlCwkFillScaleFactorF,NhlTFloat,
+		sizeof(float),Oset(fill_scale_factor),NhlTString,
+		_NhlUSET("1.0"),_NhlRES_GSONLY,NULL},
+	{_NhlNwkFillLineThicknessF,_NhlCwkFillLineThicknessF,NhlTFloat,
+		sizeof(float),Oset(fill_line_thickness),NhlTString,
+		_NhlUSET("1.0"),_NhlRES_GSONLY,NULL},
+	{_NhlNwkDrawEdges,_NhlCwkDrawEdges,NhlTBoolean,sizeof(NhlBoolean),
+		Oset(edges_on),NhlTImmediate,_NhlUSET(False),_NhlRES_GSONLY,
+		NULL},
+        {_NhlNwkEdgeDashPattern,_NhlCwkEdgeDashPattern,NhlTDashIndex,
+		sizeof(NhlDashIndex),Oset(edge_dash_pattern),NhlTImmediate,
+		_NhlUSET(0),_NhlRES_GSONLY,NULL},
+	{_NhlNwkEdgeThicknessF,_NhlCwkEdgeThicknessF,NhlTFloat,sizeof(float),
+		Oset(edge_thickness),NhlTString,_NhlUSET("1.0"),_NhlRES_GSONLY,
+		NULL},
+	{_NhlNwkEdgeDashSegLenF,_NhlCwkEdgeDashSegLenF,NhlTFloat,sizeof(float),
+		Oset(edge_dash_seglen),NhlTString,_NhlUSET(".15"),
+		_NhlRES_GSONLY,NULL},
+	{_NhlNwkEdgeColor,_NhlCwkEdgeColor,NhlTColorIndex,sizeof(NhlColorIndex),
+		Oset(edge_color),NhlTImmediate,
+		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_GSONLY,NULL},
+
+	{_NhlNwkMarkerTableStrings,_NhlCwkMarkerTableStrings,NhlTStringGenArray,
 		  sizeof(NhlGenArray),Oset(marker_table_strings),NhlTImmediate,
-		  _NhlUSET((NhlPointer)NULL),0,(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNwkMarkerTableParams,NhlCwkMarkerTableParams,NhlTGenArray,
+		  _NhlUSET((NhlPointer)NULL),_NhlRES_GSONLY,
+		  (NhlFreeFunc)NhlFreeGenArray},
+	{_NhlNwkMarkerTableParams,_NhlCwkMarkerTableParams,NhlTGenArray,
 		sizeof(NhlGenArray),Oset(marker_table_params),NhlTImmediate,
-		_NhlUSET((NhlPointer)NULL),0,NULL},
-	{NhlNwkMarkerIndex,NhlCwkMarkerIndex,NhlTMarkerIndex,
-		sizeof(NhlMarkerIndex),Oset(marker_index),NhlTImmediate,
-		_NhlUSET((NhlPointer)3),0,NULL},
-	{NhlNwkMarkerString,NhlCwkMarkerString,NhlTString,sizeof(NhlString),
-		Oset(marker_string),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,
-							(NhlFreeFunc)NhlFree},
-	{NhlNwkMarkerColor,NhlCwkMarkerColor,NhlTColorIndex,
-		sizeof(NhlColorIndex),Oset(marker_color),NhlTImmediate,
-		_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
-	{NhlNwkMarkerSizeF,NhlCwkMarkerSizeF,NhlTFloat,sizeof(float),
-		  Oset(marker_size),NhlTString,_NhlUSET("0.007"),0,NULL},
-	{NhlNwkMarkerXOffsetF,NhlCwkMarkerXOffsetF,NhlTFloat,sizeof(float),
-		  Oset(marker_x_off),NhlTString,_NhlUSET("0.0"),0,NULL},
-	{NhlNwkMarkerYOffsetF,NhlCwkMarkerYOffsetF,NhlTFloat,sizeof(float),
-		  Oset(marker_y_off),NhlTString,_NhlUSET("0.0"),0,NULL},
-	{NhlNwkMarkerThicknessF, NhlCwkMarkerThicknessF, NhlTFloat,
-		  sizeof(float),Oset(marker_thickness),NhlTString,
-		  _NhlUSET("1.0"),0,NULL},
-	{NhlNwkDrawMarkerLines,NhlCwkDrawMarkerLines,NhlTBoolean,
+		_NhlUSET((NhlPointer)NULL),_NhlRES_GSONLY,NULL},
+/*
+ * Marker Lines are being disabled for 4.0.
+ * "no.res" makes it impossible to change the marker_lines_on variable.
+ *
+ */
+ 	{_NhlNwkDrawMarkerLines,_NhlCwkDrawMarkerLines,NhlTBoolean,
 		sizeof(NhlBoolean),Oset(marker_lines_on),NhlTImmediate,
-		_NhlUSET(False),0,NULL},
-        {NhlNwkMarkerLineDashPattern,NhlCwkMarkerLineDashPattern, 
+		_NhlUSET(False),_NhlRES_NOACCESS,NULL},
+        {_NhlNwkMarkerLineDashPattern,_NhlCwkMarkerLineDashPattern, 
 		  NhlTDashIndex,sizeof(NhlDashIndex),
 		  Oset(marker_line_dash_pattern),NhlTImmediate,_NhlUSET(0),
-		  0,NULL},
-	{NhlNwkMarkerLineThicknessF,NhlCwkMarkerLineThicknessF,NhlTFloat,
+		  _NhlRES_NOACCESS,NULL},
+	{_NhlNwkMarkerLineThicknessF,_NhlCwkMarkerLineThicknessF,NhlTFloat,
 		sizeof(float),Oset(marker_line_thickness),NhlTString,
-		_NhlUSET("1.0"),0,NULL},
-	{NhlNwkMarkerLineDashSegLenF,NhlCwkMarkerLineDashSegLenF,NhlTFloat,
+		_NhlUSET("1.0"),_NhlRES_NOACCESS,NULL},
+	{_NhlNwkMarkerLineDashSegLenF,_NhlCwkMarkerLineDashSegLenF,NhlTFloat,
 		sizeof(float),Oset(marker_line_dash_seglen),NhlTString,
-		_NhlUSET(".15"),0,NULL},
-	{NhlNwkMarkerLineColor,NhlCwkMarkerLineColor,NhlTColorIndex,
+		_NhlUSET(".15"),_NhlRES_NOACCESS,NULL},
+	{_NhlNwkMarkerLineColor,_NhlCwkMarkerLineColor,NhlTColorIndex,
 		sizeof(NhlColorIndex),Oset(marker_line_color),NhlTImmediate,
-		_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
+		_NhlUSET((NhlPointer)NhlFOREGROUND),_NhlRES_NOACCESS,NULL},
 };
 
 /*
@@ -868,9 +943,9 @@ WorkstationClassInitialize
 	colormaplen_name = NrmStringToQuark(NhlNwkColorMapLen);
 	bkgnd_name = NrmStringToQuark(NhlNwkBackgroundColor);
 	foregnd_name = NrmStringToQuark(NhlNwkForegroundColor);
-	marker_tbl_strings_name = NrmStringToQuark(NhlNwkMarkerTableStrings);
-	marker_tbl_params_name = NrmStringToQuark(NhlNwkMarkerTableParams);
-	dash_table_name = NrmStringToQuark(NhlNwkDashTable);
+	marker_tbl_strings_name = NrmStringToQuark(_NhlNwkMarkerTableStrings);
+	marker_tbl_params_name = NrmStringToQuark(_NhlNwkMarkerTableParams);
+	dash_table_name = NrmStringToQuark(_NhlNwkDashTable);
 
 	ginq_op_st(&status);
 
@@ -949,25 +1024,37 @@ WorkstationClassPartInitialize
 	NhlLayerClass	layerclass;	/* layerclass to init	*/
 #endif
 {
-	NhlWorkstationLayerClass	lc = (NhlWorkstationLayerClass)layerclass;
+	NhlWorkstationLayerClass	lc =
+					(NhlWorkstationLayerClass)layerclass;
 	NhlWorkstationLayerClass	sc = (NhlWorkstationLayerClass)
 						lc->base_class.superclass;
 
-	if(lc->work_class.update_work == NhlInheritUpdate){
+	if(lc->work_class.open_work == NhlInheritOpen)
+		lc->work_class.open_work = sc->work_class.open_work;
+
+	if(lc->work_class.close_work == NhlInheritClose)
+		lc->work_class.close_work = sc->work_class.close_work;
+
+	if(lc->work_class.activate_work == NhlInheritActivate)
+		lc->work_class.activate_work = sc->work_class.activate_work;
+
+	if(lc->work_class.deactivate_work == NhlInheritDeactivate)
+		lc->work_class.deactivate_work = sc->work_class.deactivate_work;
+
+	if(lc->work_class.update_work == NhlInheritUpdate)
 		lc->work_class.update_work = sc->work_class.update_work;
-	}
 
-	if(lc->work_class.clear_work == NhlInheritClear){
+	if(lc->work_class.clear_work == NhlInheritClear)
 		lc->work_class.clear_work = sc->work_class.clear_work;
-	}
 
-	if(lc->work_class.fill_work == NhlInheritFill){
+	if(lc->work_class.lineto_work == NhlInheritLineTo)
+		lc->work_class.lineto_work = sc->work_class.lineto_work;
+
+	if(lc->work_class.fill_work == NhlInheritFill)
 		lc->work_class.fill_work = sc->work_class.fill_work;
-	}
 
-	if(lc->work_class.marker_work == NhlInheritMarker){
+	if(lc->work_class.marker_work == NhlInheritMarker)
 		lc->work_class.marker_work = sc->work_class.marker_work;
-	}
 
 	return NhlNOERROR;
 }
@@ -1055,7 +1142,7 @@ static NhlErrorTypes WorkstationInitialize
 				    sizeof(float),2,count)) == NULL) {
 		e_text = "%s: error creating %s GenArray";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  NhlNwkMarkerTableParams);
+			  _NhlNwkMarkerTableParams);
 		return NhlFATAL;
 	}
 	ga->my_data = False;
@@ -1065,7 +1152,7 @@ static NhlErrorTypes WorkstationInitialize
 		subret = _NhlValidatedGenArrayCopy(&ga,
 						newl->work.marker_table_params,
 						   4*8096,False,False,
-						   NhlNwkMarkerTableParams, 
+						   _NhlNwkMarkerTableParams, 
 						   entry_name);
 		
 		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
@@ -1085,7 +1172,7 @@ static NhlErrorTypes WorkstationInitialize
 				    sizeof(NhlString),1,count)) == NULL) {
 		e_text = "%s: error creating %s GenArray";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  NhlNwkMarkerTableParams);
+			  _NhlNwkMarkerTableParams);
 		return NhlFATAL;
 	}
 	ga->my_data = False;
@@ -1094,7 +1181,7 @@ static NhlErrorTypes WorkstationInitialize
 		subret = _NhlValidatedGenArrayCopy(&ga,
 					  newl->work.marker_table_strings,
 						   4*8096,False,False,
-						   NhlNwkMarkerTableStrings, 
+						   _NhlNwkMarkerTableStrings, 
 						   entry_name);
 		
 		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
@@ -1144,7 +1231,7 @@ static NhlErrorTypes WorkstationInitialize
 			  "Attempt to set read-only resource ignored");
 		retcode = MIN(NhlWARNING, retcode);
 	}
-	if (_NhlArgIsSet(args,num_args,NhlNwkDashTable)) {
+	if (_NhlArgIsSet(args,num_args,_NhlNwkDashTable)) {
 		newl->work.dash_table  = NULL;
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "Attempt to set read-only resource ignored");
@@ -1365,14 +1452,20 @@ static NhlErrorTypes WorkstationInitialize
 	}
 
 /*
+ * Initialize the "default" graphics primatives.
+ */
+	newl->work.default_lineinfo = newl->work.private_lineinfo;
+	newl->work.default_markinfo = newl->work.private_markinfo;
+
+/*
  * Set the line label resource
  */
-        if(newl->work.line_label != NULL) {
+        if(newl->work.public_lineinfo.line_label != NULL) {
 		char *tmp;
-                tmp = (char*)
-			NhlMalloc((unsigned)strlen(newl->work.line_label)+1);
-                strcpy(tmp,newl->work.line_label);
-                newl->work.line_label = tmp;
+                tmp = (char*)NhlMalloc(
+			strlen(newl->work.public_lineinfo.line_label)+1);
+                strcpy(tmp,newl->work.public_lineinfo.line_label);
+                newl->work.public_lineinfo.line_label = tmp;
         }
 
 	return(retcode);
@@ -1403,14 +1496,18 @@ static NhlErrorTypes WorkstationDestroy
 	NhlLayer inst;
 #endif
 {
-	NhlWorkstationLayer	winst = (NhlWorkstationLayer) inst;
+	NhlWorkstationLayerPart	*wp = &((NhlWorkstationLayer)inst)->work;
 	NhlErrorTypes	retcode = NhlNOERROR;
 
-	NhlFreeGenArray(winst->work.bkgnd_color);
-	NhlFreeGenArray(winst->work.foregnd_color);
-	NhlFreeGenArray(winst->work.color_map);
-	NhlFreeGenArray(winst->work.marker_table_strings);
-	NhlFreeGenArray(winst->work.marker_table_params);
+	NhlFreeGenArray(wp->bkgnd_color);
+	NhlFreeGenArray(wp->foregnd_color);
+	NhlFreeGenArray(wp->color_map);
+	NhlFreeGenArray(wp->marker_table_strings);
+	NhlFreeGenArray(wp->marker_table_params);
+
+	if(wp->public_lineinfo.line_label != wp->private_lineinfo.line_label)
+		NhlFree(wp->private_lineinfo.line_label);
+	NhlFree(wp->public_lineinfo.line_label);
 
 	return(retcode);
 }
@@ -1521,6 +1618,53 @@ static NhlErrorTypes    WorkstationSetValues
 	NhlString *mstrings;
 	char *e_text;
 
+	/*
+	 * Reset the Graphics Attributes...
+	 */
+	if(_NhlArgIsSet(args,num_args,_NhlNwkReset)){
+
+		/*
+		 * The _NhlNwkReset Private Resource MUST be set individually.
+		 */
+		if(num_args > 1){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"%s:%s must be set alone!",entry_name,
+					_NhlNwkReset);
+			return NhlFATAL;
+		}
+
+		if(newl->work.private_lineinfo.line_label !=
+					newl->work.public_lineinfo.line_label)
+			NhlFree(newl->work.private_lineinfo.line_label);
+
+		newl->work.private_lineinfo = newl->work.default_lineinfo;
+		newl->work.private_markinfo = newl->work.default_markinfo;
+
+		return NhlNOERROR;
+	}
+	if(_NhlArgIsSet(args,num_args,_NhlNwkSetPublic)){
+
+		/*
+		 * The _NhlNwkSetPublic Private Resource MUST be set
+		 * individually.
+		 */
+		if(num_args > 1){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"%s:%s must be set alone!",entry_name,
+					_NhlNwkSetPublic);
+			return NhlFATAL;
+		}
+
+		if(newl->work.private_lineinfo.line_label !=
+					newl->work.public_lineinfo.line_label)
+			NhlFree(newl->work.private_lineinfo.line_label);
+
+		newl->work.private_lineinfo = newl->work.public_lineinfo;
+		newl->work.private_markinfo = newl->work.public_markinfo;
+
+		return NhlNOERROR;
+	}
+
 /*
  * Check to ensure that no one has messed with the read only fill table
  * size.
@@ -1550,7 +1694,7 @@ static NhlErrorTypes    WorkstationSetValues
 					   &(oldl->work.marker_table_params),
 					   newl->work.marker_table_params,
 						   4*8096,False,False,
-						   NhlNwkMarkerTableParams, 
+						   _NhlNwkMarkerTableParams, 
 						   entry_name);
 		
 		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
@@ -1570,7 +1714,7 @@ static NhlErrorTypes    WorkstationSetValues
 					   &(oldl->work.marker_table_strings),
 					     newl->work.marker_table_strings,
 						 4*8096,False,False,
-						 NhlNwkMarkerTableStrings, 
+						 _NhlNwkMarkerTableStrings, 
 						 entry_name);
 		
 		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
@@ -1736,17 +1880,29 @@ static NhlErrorTypes    WorkstationSetValues
  * Set the line label
  */
 
-        if( (oldl->work.line_label != newl->work.line_label)) {
+        if((oldl->work.public_lineinfo.line_label !=
+				newl->work.public_lineinfo.line_label)) {
 
-                if(oldl->work.line_label != NULL){
-                        NhlFree(oldl->work.line_label);
-                        oldl->work.line_label = NULL;
-                }
-                if(newl->work.line_label != NULL) {
+		NhlFree(oldl->work.public_lineinfo.line_label);
+                if(newl->work.public_lineinfo.line_label != NULL) {
                         tmp = (char*)NhlMalloc((unsigned)
-					  strlen(newl->work.line_label)+1);
-                        strcpy(tmp,newl->work.line_label);
-                        newl->work.line_label = tmp;
+			  strlen(newl->work.public_lineinfo.line_label)+1);
+                        strcpy(tmp,newl->work.public_lineinfo.line_label);
+                        newl->work.public_lineinfo.line_label = tmp;
+                }
+        }
+
+        if((oldl->work.private_lineinfo.line_label !=
+				newl->work.private_lineinfo.line_label)) {
+
+		if(oldl->work.private_lineinfo.line_label !=
+					oldl->work.public_lineinfo.line_label)
+			NhlFree(oldl->work.private_lineinfo.line_label);
+                if(newl->work.private_lineinfo.line_label != NULL) {
+                        tmp = (char*)NhlMalloc((unsigned)
+			  strlen(newl->work.private_lineinfo.line_label)+1);
+                        strcpy(tmp,newl->work.private_lineinfo.line_label);
+                        newl->work.private_lineinfo.line_label = tmp;
                 }
         }
 
@@ -2435,9 +2591,9 @@ int _NhlNewColor
  *	Memory is allocated when the following resources are retrieved:
  *		NhlNwkColorMap
  *		NhlNwkBackgroundColor
- *		NhlNwkMarkerTableStrings
- *		NhlNwkMarkerTableParams
- *		NhlNwkDashTable
+ *		_NhlNwkMarkerTableStrings
+ *		_NhlNwkMarkerTableParams
+ *		_NhlNwkDashTable
  *	The user is responsible for freeing this memory.
  */
 
@@ -2534,7 +2690,7 @@ static NhlErrorTypes	WorkstationGetValues
 				       sizeof(NhlString))) == NULL) {
 				e_text = "%s: error allocating %s data";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-					  entry_name,NhlNwkMarkerTableStrings);
+					  entry_name,_NhlNwkMarkerTableStrings);
 				return NhlFATAL;
 			}
 			for (j=0; j<wl->work.marker_table_len; j++) {
@@ -2543,7 +2699,7 @@ static NhlErrorTypes	WorkstationGetValues
 				       e_text = "%s: error allocating %s data";
 				       NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
 						 entry_name,
-						 NhlNwkMarkerTableStrings);
+						 _NhlNwkMarkerTableStrings);
 				       return NhlFATAL;
 			        }
 				strcpy(s_p[j], marker_table[j+1]->marker);
@@ -2555,7 +2711,7 @@ static NhlErrorTypes	WorkstationGetValues
 						    1,count)) == NULL) {
 				e_text = "%s: error creating %s GenArray";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-					  entry_name,NhlNwkMarkerTableStrings);
+					  entry_name,_NhlNwkMarkerTableStrings);
 				return NhlFATAL;
 			}
 			ga->my_data = True;
@@ -2567,7 +2723,7 @@ static NhlErrorTypes	WorkstationGetValues
 				    sizeof(NhlMarkerTableParams))) == NULL) {
 				e_text = "%s: error allocating %s data";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-					  entry_name,NhlNwkMarkerTableParams);
+					  entry_name,_NhlNwkMarkerTableParams);
 				return NhlFATAL;
 			}
 			for (j=0; j<wl->work.marker_table_len; j++) {
@@ -2586,7 +2742,7 @@ static NhlErrorTypes	WorkstationGetValues
 						    2,count)) == NULL) {
 				e_text = "%s: error creating %s GenArray";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-					  entry_name,NhlNwkMarkerTableParams);
+					  entry_name,_NhlNwkMarkerTableParams);
 				return NhlFATAL;
 			}
 			ga->my_data = True;
@@ -2598,7 +2754,7 @@ static NhlErrorTypes	WorkstationGetValues
 				       sizeof(NhlString))) == NULL) {
 				e_text = "%s: error allocating %s data";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-					  entry_name,NhlNwkDashTable);
+					  entry_name,_NhlNwkDashTable);
 				return NhlFATAL;
 			}
 			for (j=0; j<dash_table_len; j++) {
@@ -2606,7 +2762,7 @@ static NhlErrorTypes	WorkstationGetValues
 				   dash_patterns[j])+1)) == NULL) {
 				       e_text = "%s: error allocating %s data";
 				       NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-						 entry_name,NhlNwkDashTable);
+						 entry_name,_NhlNwkDashTable);
 				       return NhlFATAL;
 			        }
 				strcpy(s_p[j], dash_patterns[j]);
@@ -2618,7 +2774,7 @@ static NhlErrorTypes	WorkstationGetValues
 						    1,count)) == NULL) {
 				e_text = "%s: error creating %s GenArray";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-					  entry_name,NhlNwkDashTable);
+					  entry_name,_NhlNwkDashTable);
 				return NhlFATAL;
 			}
 			ga->my_data = True;
@@ -2655,285 +2811,6 @@ int	_NhlWorkstationId
 }
 
 /*
- * Function:	_NhlActivateWorkstation and CallActivateWorkstation
- *
- * Description: _NhlActivateWorkstation checks to see if the layer wks is
- *		a workstation and then calls CallActivate which recursively
- *		calls the activate_work methods.
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
- */
-static NhlErrorTypes CallActivateWorkstation
-#if NhlNeedProto
-	(NhlLayer layer, NhlLayerClass lc)
-#else
-	(layer,lc)
-		NhlLayer layer;
-		NhlLayerClass lc;
-#endif
-{
-	NhlWorkstationLayerClass wc = (NhlWorkstationLayerClass) lc;
-	NhlErrorTypes ancestor = NhlNOERROR, thistime = NhlNOERROR;
-
-	if( wc->work_class.activate_work != NULL ) {
-		thistime = (*(wc->work_class.activate_work))(layer);
-		if( thistime < NhlWARNING)
-			return(thistime);
-	}
-
-	if( wc->base_class.superclass != NhlbaseLayerClass ) { 
-		ancestor = CallActivateWorkstation(layer, wc->base_class.superclass);
-	}
-	return(MIN(ancestor,thistime));
-}
-NhlErrorTypes _NhlActivateWorkstation
-#if NhlNeedProto
-(NhlLayer wks)
-#else
-(wks)
-	NhlLayer wks;
-#endif
-{
-
-	if(_NhlIsWorkstation(wks)) {
-		return(CallActivateWorkstation(wks,wks->base.layer_class));
-	} else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlActivateWorkstation: attempt to perform activate on nonworkstation");
-		return(NhlWARNING);
-	}
-}
-
-/*
- * Function:	_NhlDeactivateWorkstation and CallDeativateWorkstation(
- *
- * Description:	performs same task as _NhlWorkstationActivate except
- *		the deactivate_work method is called
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
- */
-static NhlErrorTypes CallDeactivateWorkstation
-#if NhlNeedProto
-	(NhlLayer layer, NhlLayerClass lc)
-#else
-	(layer,lc)
-		NhlLayer layer;
-		NhlLayerClass lc;
-#endif
-{
-	NhlWorkstationLayerClass wc = (NhlWorkstationLayerClass) lc;
-	NhlErrorTypes ancestor = NhlNOERROR, thistime = NhlNOERROR;
-
-	if( wc->work_class.deactivate_work != NULL ) {
-		thistime = (*(wc->work_class.deactivate_work))(layer);
-		if( thistime < NhlWARNING)
-			return(thistime);
-	}
-
-	if( wc->base_class.superclass != NhlbaseLayerClass ) { 
-		ancestor = CallDeactivateWorkstation(layer, wc->base_class.superclass);
-	}
-	return(MIN(ancestor,thistime));
-}
-NhlErrorTypes _NhlDeactivateWorkstation
-#if NhlNeedProto
-(NhlLayer wks)
-#else
-(wks)
-	NhlLayer wks;
-#endif
-{
-
-	if(_NhlIsWorkstation(wks)) {
-		return(CallDeactivateWorkstation(wks,wks->base.layer_class));
-	} else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlActivateWorkstation: attempt to perform deactivate on nonworkstation");
-		return(NhlWARNING);
-	}
-}
-
-
-/*
- * Function:	_NhlCloseWorkstation and CallCloseWorkstation
- *
- * Description:
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
- */
-static NhlErrorTypes CallCloseWorkstation
-#if NhlNeedProto
-(NhlLayer instance,NhlLayerClass lc)
-#else
-(instance,lc)
-        NhlLayer instance;
-        NhlLayerClass lc;
-#endif
-{
-        NhlWorkstationLayerClass   wc =(NhlWorkstationLayerClass)lc ;
-        NhlErrorTypes ancestorerr = NhlNOERROR, thisclass = NhlNOERROR;
-
-        if(wc->work_class.close_work != NULL) {
-                thisclass = (*wc->work_class.close_work)(instance);
-                if(thisclass < NhlWARNING)
-                        return(thisclass);
-        }
-
-        if(lc->base_class.superclass != NhlbaseLayerClass)
-                ancestorerr = CallCloseWorkstation(instance,lc->base_class.superclass);
-
-
-        return(MIN(ancestorerr,thisclass));
-}
-
-NhlErrorTypes _NhlCloseWorkstation
-#if NhlNeedProto
-(NhlLayer layer)
-#else
-(layer)
-	NhlLayer	layer;
-#endif
-{
-	if(_NhlIsWorkstation(layer)) {
-		return(CallCloseWorkstation(layer,layer->base.layer_class));
-	} else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlActivateWorkstation: attempt to perform close on nonworkstation");
-		return(NhlWARNING);
-	}
-}
-
-/*
- * Function:    _NhlOpenWorkstation and CallOpenWorkstatation
- *
- * Description: Recursively calls open_work methods from the lowest subclass
- *              up.
- *
- * In Args:     New instance: layer
- *
- * Out Args:    NONE
- *
- * Return Values:       NONE
- *
- * Side Effects:        Workstation opened up and a workstation id assigned
- *
- */
-static NhlErrorTypes CallOpenWorkstation
-#if NhlNeedProto
-(NhlLayer instance,NhlLayerClass lc)
-#else
-(instance,lc)
-        NhlLayer instance;
-        NhlLayerClass lc;
-#endif
-{
-        NhlWorkstationLayerClass   wc =(NhlWorkstationLayerClass)lc ;
-        NhlErrorTypes ancestorerr = NhlNOERROR, thisclass = NhlNOERROR;
-
-        if(wc->work_class.open_work != NULL) {
-                thisclass = (*wc->work_class.open_work)(instance);
-                if(thisclass < NhlWARNING)
-                        return(thisclass);
-        }
-
-        if(lc->base_class.superclass != NhlbaseLayerClass)
-                ancestorerr = CallOpenWorkstation(instance,lc->base_class.superclass);
-
-
-        return(MIN(ancestorerr,thisclass));
-}
-
-NhlErrorTypes _NhlOpenWorkstation
-#if NhlNeedProto
-(NhlLayer layer)
-#else
-(layer)
-	NhlLayer	layer;
-#endif
-{
-	if(_NhlIsWorkstation(layer)) {
-		return(CallOpenWorkstation(layer,layer->base.layer_class));
-	} else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlActivateWorkstation: attempt to perform open on nonworkstation");
-		return(NhlWARNING);
-	}
-}
-
-/*
- * Function:	NhlGetWorkId
- *
- * Description:	Returns the GKS workstation id used by the workstation object
- *
- * In Args:	HLU Workstation object id
- *
- * Out Args:	NONE
- *
- * Returns:	integer gks workstation id
- */
-int NhlGetGksWorkId
-#if  NhlNeedProto
-(int workid)
-#else
-(workid)
-int	workid;
-#endif
-{
-	NhlLayer l = _NhlGetLayer(workid);
-
-	if(_NhlIsWorkstation(l)) {
-		return(((NhlWorkstationLayer)l)->work.gkswksid);
-	} else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"NhlGetGksWorkId: An incorrect type of object was passed");
-		return(-1);
-	}
-}
-
-/*
- * Function:	nhl_fgetgksworkid
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-void _NHLCALLF(nhl_fgetgksworkid,NHL_FGETGKSWORKID)
-#if	NhlNeedProto
-(
-	int	*wid,
-	int	*gksid
-)
-#else
-(wid,gksid)
-	int	*wid;
-	int	*gksid;
-#endif
-{
-	*gksid = NhlGetGksWorkId(*wid);
-
-	return;
-}
-
-/*
  * Function:	NhlGetGksCi
  *
  * Description: Returns a color index for GKS given a workstation color index.
@@ -2955,7 +2832,6 @@ int NhlGetGksCi
 	int ci;
 #endif
 {
-
  	return(_NhlGetGksCi(_NhlGetLayer(pid),ci));	
 }
 
@@ -2993,16 +2869,19 @@ void _NHLCALLF(nhl_fgetgksci,NHL_FGETGKSCI)
 
 int _NhlGetGksCi
 #if NhlNeedProto
-( NhlLayer workstation, int  ci)
+(
+	NhlLayer	workstation,
+	int		ci
+)
 #else
 (workstation, ci)
 	NhlLayer	workstation;
-	int	ci;
+	int		ci;
 #endif
 {
-	
-	NhlWorkstationLayer  wk = (NhlWorkstationLayer) workstation;
-	if(_NhlIsWorkstation(workstation)){
+	char			func[] = "_NhlGetGksCi";
+	NhlWorkstationLayer	wk = (NhlWorkstationLayer)workstation;
+	if(wk && _NhlIsWorkstation(workstation)){
 		if((ci < 0) || (ci >= MAX_COLOR_MAP)){
 			return 1;
 		}
@@ -3012,7 +2891,8 @@ int _NhlGetGksCi
 			return(1);
 		}
 	} else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlGetGksCi: attempt to return color from non-workstation");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		"%s: attempt to return color from non-workstation",func);
 		return((int)1);
 	}
 }
@@ -3119,6 +2999,120 @@ int _NhlIsAllocatedColor
 	e_text = "%s: invalid workstation identifier";
 	NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 	return((int)NhlWARNING);
+}
+
+/*
+ * Workstation Methods
+ */
+NhlErrorTypes _NhlOpenWorkstation
+#if NhlNeedProto
+(NhlLayer wks)
+#else
+(wks)
+	NhlLayer wks;
+#endif
+{
+	char				func[] = "_NhlOpenWorkstation";
+	NhlWorkstationLayerClassPart	*wc =
+		&((NhlWorkstationLayerClass)wks->base.layer_class)->work_class;
+
+	if(_NhlIsWorkstation(wks)) {
+		return (*(wc->open_work))(wks);
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+		"%s: attempt to perform open on nonworkstation",func);
+		return NhlFATAL;
+	}
+}
+
+NhlErrorTypes _NhlCloseWorkstation
+#if NhlNeedProto
+(NhlLayer wks)
+#else
+(wks)
+	NhlLayer wks;
+#endif
+{
+	char				func[] = "_NhlCloseWorkstation";
+	NhlWorkstationLayerClassPart	*wc =
+		&((NhlWorkstationLayerClass)wks->base.layer_class)->work_class;
+
+	if(_NhlIsWorkstation(wks)) {
+		return (*(wc->close_work))(wks);
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+		"%s: attempt to perform close on nonworkstation",func);
+		return NhlFATAL;
+	}
+}
+
+/*
+ * Function:	_NhlActivateWorkstation
+ *
+ * Description: _NhlActivateWorkstation calls the activate_work method.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+NhlErrorTypes _NhlActivateWorkstation
+#if NhlNeedProto
+(NhlLayer wks)
+#else
+(wks)
+	NhlLayer wks;
+#endif
+{
+	char				func[] = "_NhlActivateWorkstation";
+	NhlWorkstationLayerClassPart	*wc =
+		&((NhlWorkstationLayerClass)wks->base.layer_class)->work_class;
+
+	if(_NhlIsWorkstation(wks)) {
+		return (*(wc->activate_work))(wks);
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+		"%s: attempt to perform activate on nonworkstation",func);
+		return NhlFATAL;
+	}
+}
+
+/*
+ * Function:	_NhlDeactivateWorkstation
+ *
+ * Description:	performs same task as _NhlWorkstationActivate except
+ *		the deactivate_work method is called
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+NhlErrorTypes _NhlDeactivateWorkstation
+#if NhlNeedProto
+(NhlLayer wks)
+#else
+(wks)
+	NhlLayer wks;
+#endif
+{
+	char				func[] = "_NhlDeactivateWorkstation";
+	NhlWorkstationLayerClassPart	*wc =
+		&((NhlWorkstationLayerClass)wks->base.layer_class)->work_class;
+
+	if(_NhlIsWorkstation(wks)) {
+		return (*(wc->deactivate_work))(wks);
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+		"%s: attempt to perform deactivate on nonworkstation",func);
+		return NhlFATAL;
+	}
 }
 
 
@@ -3347,57 +3341,51 @@ void _NhlSetLineInfo
 #endif
 {
 	char			func[] = "_NhlSetLineInfo";
-        NhlWorkstationLayer	tinst = (NhlWorkstationLayer)instance;
-        float			fl,fr,fb,ft,ul,ur,ub,ut;
-        float			y0,y1,x0,x1;
-        int			ll;
+        NhlWorkstationLayerPart	*wkp = &((NhlWorkstationLayer)instance)->work;
+	_NhlWorkLineInfo	*wklp = &wkp->private_lineinfo;
+	float			tf;
         char			buffer[80];
-	int			i,ix;
+	int			buff_size = sizeof(buffer) - 1;
+	int			i,j,ix;
 	char			*tchar;
 
-	memset((void *) buffer, (char) 0, 80 * sizeof(char));
+	memset((void *) buffer,'\0', sizeof(buffer)*sizeof(char));
 
-        c_sflush();
+	c_pcseti("FN",0);
+	c_pcseti("CL",1);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
-        c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
-	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
-		return;
+	/*
+	 * Reset DashPack so we know what state we are starting from.
+	 */
+	_NHLCALLF(dprset,DPRSET)();
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
-        y0 = fb;
-        y1 = fb + tinst->work.line_label_font_height;
-        y0 = (float)c_kfpy(y0);
-        y1 = (float)c_kfpy(y1);
+	c_dpsetc("CRG","'");
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
-        tinst->work.char_size = (int) (y1 - y0);
-        if(tinst->work.char_size < 4) {
-                tinst->work.char_size = 4;
-        }
-        x0 = fl;
-        x1 = fl + tinst->work.line_dash_seglen;
-        x0 = (float)c_kfpy(x0);
-        x1 = (float)c_kfpy(x1);
-
-	if ((ix = tinst->work.dash_pattern) < 0) {
+	if ((ix = wklp->dash_pattern) < 0) {
 		/* NhlWARNING - but it's a void function right now */
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "_NhlSetLineInfo: invalid dash pattern index");
-		ix = tinst->work.dash_pattern = NhlSOLIDLINE;
+		ix = wklp->dash_pattern = NhlSOLIDLINE;
 	}
-	else if (ix > tinst->work.dash_table_len) {
+	else if (ix > wkp->dash_table_len) {
 		/* NhlINFO - but it's a void function right now */
 		NhlPError(NhlINFO,NhlEUNKNOWN,
 	"_NhlSetLineInfo: using mod function on dash pattern index: %d", ix);
 
-		ix = 1 + (ix - 1) % tinst->work.dash_table_len; 
+		ix = 1 + (ix - 1) % wkp->dash_table_len; 
 	}
+        strncpy(buffer,dash_patterns[ix],buff_size);
 
-        tinst->work.dash_dollar_size = (int)((x1-x0)/
-                strlen(dash_patterns[ix])+.5);
-        if(tinst->work.dash_dollar_size < 1)
-                        tinst->work.dash_dollar_size = 1;
+	tf = wklp->line_dash_seglen / (strlen(buffer)+.5);
+	c_dpsetr("WOG",tf);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+	c_dpsetr("WOS",tf);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
-        strcpy(buffer,dash_patterns[ix]);
-	if(tinst->work.line_color == NhlTRANSPARENT){
+	if(wklp->line_color == NhlTRANSPARENT){
 		i=0;
 		while(buffer[i] != '\0'){
 			buffer[i] = '\'';
@@ -3406,36 +3394,60 @@ void _NhlSetLineInfo
 	}
 	else{
 	        gset_line_colr_ind((Gint)_NhlGetGksCi(
-			    plot->base.wkptr,tinst->work.line_color));
+			    plot->base.wkptr,wklp->line_color));
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	}
-        if(tinst->work.line_label != NULL){
-		tchar = &buffer[strlen(dash_patterns[ix])-
-						strlen(tinst->work.line_label)];
-		strcpy(tchar,tinst->work.line_label);
-		if(tinst->work.line_label_color == NhlTRANSPARENT){
+
+        if(wklp->line_label != NULL){
+		buff_size = sizeof(buffer) - strlen(buffer) - 1;
+		tchar = &buffer[strlen(buffer)];
+		if(wklp->line_label_color == NhlTRANSPARENT){
 			/*
-			 * All this seems to do is remove the linelabel.
-			 * I can't seem to get dashchar to put a "transparent"
-			 * linelabel in.
+			 * Put spaces in for label.
 			 */
-			i=0;
-			while(tchar[i] != '\0'){
-				tchar[i] = '\'';
-				i++;
+			j = MIN(strlen(wklp->line_label) * 2 + 1,buff_size);
+			for(i=0;i < j-1;i+=2){
+				tchar[i] = ' ';
+				tchar[i+1] = '|';
 			}
-			strcat(tchar,"$");
 		}
 		else{
-			gset_text_colr_ind((Gint)_NhlGetGksCi(
-				plot->base.wkptr,tinst->work.line_label_color));
+			/*
+			 * Add breaks in at each space of the label.
+			 */
+			i=0;
+			j=0;
+			while(i < buff_size && wklp->line_label[j] != '\0'){
+				if(wklp->line_label[j] == ' ')
+					tchar[i++] = '|';
+				tchar[i++] = wklp->line_label[j++];
+			}
+			
+			c_pcseti("CC",_NhlGetGksCi(plot->base.wkptr,
+							wklp->line_label_color));
 			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
         }
 
-        gset_linewidth(tinst->work.line_thickness);
+	c_dpsetc("DPT",buffer);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-        c_dashdc(buffer,tinst->work.dash_dollar_size,tinst->work.char_size);
+
+	/*
+	 * Use .7619 as multiplier to determine WOC from Font Height.
+	 * This comes from 16(PW)/21(PH) Principal Width and Height
+	 * in PlotChar.  Therefore, we need to make sure plotchar is
+	 * using these default values.  This means it is not possible
+	 * to change the font aspect in Line Labels - ya gotta draw
+	 * the line somewhere.
+	 */
+	c_pcseti("PW",16);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+	c_pcseti("PH",21);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+	c_dpsetr("WOC",wklp->line_label_font_height * 0.7619);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+
+        gset_linewidth(wklp->line_thickness);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
         return;
 }
@@ -3461,50 +3473,20 @@ static NhlErrorTypes WorkstationLineTo
 	if(upordown == 1) {
 		lastx = x;
 		lasty = y;
-/* FORTRAN*/    _NHLCALLF(lastd,LASTD)();
+		c_dpdraw(0.0,0.0,2);
 		first = 1;
 	} else {
-		if(first == 1) {
-			ix0 = c_kfmx(lastx);
-			iy0 = c_kfmy(lasty);
-/* FORTRAN */		_NHLCALLF(cfvld,CFVLD)(&first,&ix0,&iy0);
-			first = 2;
+		if(first) {
+			c_dpdraw(lastx,lasty,0);
+			first = 0;
 		}
-		ix1 = c_kfmx(x);
-		iy1 = c_kfmy(y);
-/* FORTRAN */   _NHLCALLF(cfvld,CFVLD)(&first,&ix1,&iy1);
+		c_dpdraw(x,y,1);
 		lastx = x;
 		lasty = y;
 	}
 	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
 		return NhlWARNING;
 	return NhlNOERROR;
-}
-
-NhlErrorTypes CallWorkLineTo
-#if  NhlNeedProto
-(NhlLayerClass lc, NhlLayer instance,  float x, float y, int upordown)
-#else
-(lc, instance,  x, y, upordown)
-NhlLayerClass lc;
-NhlLayer instance;
-float x;
-float y;
-int upordown;
-#endif
-{
-        NhlWorkstationLayerClass tlc = (NhlWorkstationLayerClass)lc;
-
-        if(tlc->work_class.lineto_work == NULL){
-                if(tlc->base_class.superclass != NULL) {
-                        return(CallWorkLineTo(lc->base_class.superclass,instance,x,y,upordown));
-                } else {
-                        NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlWorkstationLineTo: Transformation object of type (%s) does not have lineto_work function",tlc->base_class.class_name);
-                        return(NhlWARNING);
-                }
-        } else {
-                return((*tlc->work_class.lineto_work)(instance,x,y,upordown));
-        }
 }
 
 NhlErrorTypes _NhlWorkstationLineTo
@@ -3518,7 +3500,10 @@ float y;
 int upordown;
 #endif
 {
-        return(CallWorkLineTo(instance->base.layer_class,instance,x,y,upordown));
+	NhlWorkstationLayerClassPart *wcp =
+	&((NhlWorkstationLayerClass)instance->base.layer_class)->work_class;
+
+	return (*wcp->lineto_work)(instance,x,y,upordown);
 }
 
 
@@ -3839,15 +3824,15 @@ int num_points;
 int NhlNewMarker
 #if  NhlNeedProto
 (int instance, 
- char *marker_string, 
+ char *mark_string, 
  float x_off, 
  float y_off,
  float aspect_adj,
  float size_adj)
 #else
-(instance,marker_string,x_off,y_off,aspect_adj,size_adj)
+(instance,mark_string,x_off,y_off,aspect_adj,size_adj)
         int instance;
-	char *marker_string; 
+	char *mark_string; 
 	float x_off; 
 	float y_off;
 	float aspect_adj;
@@ -3898,15 +3883,15 @@ int NhlNewMarker
 	wk_p->marker_table_len = marker_table_len - 1;
 	m_p = marker_table[marker_table_len - 1];
 
-	if (marker_string == NULL) {
-		marker_string = marker_table[NhlWK_DEF_MARKER]->marker;
+	if (mark_string == NULL) {
+		mark_string = marker_table[NhlWK_DEF_MARKER]->marker;
         }
-	if ((m_p->marker = NhlMalloc(strlen(marker_string) + 1)) == NULL) {
+	if ((m_p->marker = NhlMalloc(strlen(mark_string) + 1)) == NULL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  "_NhlNewMarker: marker string alloc failed");
 		return((int)NhlFATAL);
 	}
-	strcpy(m_p->marker, marker_string);
+	strcpy(m_p->marker, mark_string);
 	
 	if (x_off < 1.0 && x_off > -1.0)  
 		m_p->x_off = x_off;
@@ -3995,16 +3980,16 @@ NhlErrorTypes NhlSetMarker
 #if  NhlNeedProto
 (int instance, 
  int	index,
- char	*marker_string, 
+ char	*mark_string, 
  float	x_off, 
  float	y_off,
  float	aspect_adj,
  float	size_adj)
 #else
-(instance,index,marker_string,x_off,y_off,aspect_adj,size_adj)
+(instance,index,mark_string,x_off,y_off,aspect_adj,size_adj)
         int instance;
 	int   index;
-	char *marker_string; 
+	char *mark_string; 
 	float x_off; 
 	float y_off;
 	float aspect_adj;
@@ -4040,14 +4025,14 @@ NhlErrorTypes NhlSetMarker
 		marker_table[index] = m_p;
 	}
 		
-	if (marker_string != NULL && 
-	    strcmp(marker_string, m_p->marker)) {
-		    if ((c_p = NhlMalloc(strlen(marker_string)+ 1 )) == NULL) {
+	if (mark_string != NULL && 
+	    strcmp(mark_string, m_p->marker)) {
+		    if ((c_p = NhlMalloc(strlen(mark_string)+ 1 )) == NULL) {
 			    NhlPError(NhlFATAL,NhlEUNKNOWN,
 				 "_NhlEditMarker: marker string alloc failed");
 			    return(NhlFATAL);
 		    }
-		    strcpy(c_p, marker_string);
+		    strcpy(c_p, mark_string);
 		    if (m_p->dynamic) 
 			    NhlFree(m_p->marker);
 		    m_p->marker = c_p;
@@ -4144,6 +4129,7 @@ void _NhlSetMarkerInfo
 	char			func[] = "_NhlSetMarkerInfo";
         NhlWorkstationLayer	tinst = (NhlWorkstationLayer)instance;
 	NhlWorkstationLayerPart	*wk_p = &tinst->work;
+	_NhlMarkerInfo		*mkp = &wk_p->private_markinfo;
         float			fl,fr,fb,ft,ul,ur,ub,ut;
         float			x0,x1;
         int			ll,ix;
@@ -4192,24 +4178,24 @@ void _NhlSetMarkerInfo
 /*
  * Make sure the marker size is okay
  */
-	if (wk_p->marker_size <= 0.0) {
+	if (mkp->marker_size <= 0.0) {
 		/* NhlWARNING - but it's a void function right now */
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 		"_NhlSetMarkerInfo: marker size must be greater than 0.0");
-		wk_p->marker_size = 0.007;
+		mkp->marker_size = 0.007;
 	}
 /*
  * An out-of-bounds marker index should have been caught at a higher
  * level. Error and set to default marker.
  */
 
-	if ((ix = wk_p->marker_index) < 0) {
+	if ((ix = mkp->marker_index) < 0) {
 		/* NhlWARNING - but it's a void function right now */
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			   "_NhlSetMarkerInfo: invalid marker index");
-		wk_p->marker_index = NhlWK_DEF_MARKER;
+		mkp->marker_index = NhlWK_DEF_MARKER;
 	}
-	else if (ix >wk_p->fill_table_len) {
+	else if (ix >wk_p->marker_table_len) {
 		/* NhlINFO - but it's a void function right now */
 		NhlPError(NhlINFO,NhlEUNKNOWN,
 	 "_NhlSetLineInfo: using mod function on marker index: %d", ix);
@@ -4233,6 +4219,7 @@ static NhlErrorTypes WorkstationMarker
 	char			func[] = "WorkstationMarker";
         NhlWorkstationLayer	inst = (NhlWorkstationLayer)l;
 	NhlWorkstationLayerPart	*wk_p = &inst->work;
+	_NhlMarkerInfo		*mkp = &wk_p->private_markinfo;
         float			fl,fr,fb,ft,ul,ur,ub,ut;
 	int			ll, i, index;
 	int			save_font;
@@ -4264,7 +4251,7 @@ static NhlErrorTypes WorkstationMarker
 	ginq_linetype(&err_ind, &save_linetype);
 	c_pcgeti("FN",&save_font);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-	marker_color = _NhlGetGksCi(inst->base.wkptr, wk_p->marker_color);
+	marker_color = _NhlGetGksCi(inst->base.wkptr, mkp->marker_color);
 
 /*
  * If marker lines are on, draw lines connecting the marker points
@@ -4292,35 +4279,23 @@ static NhlErrorTypes WorkstationMarker
  */
 	c_pcseti("FN", 1);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-	gset_linewidth(wk_p->marker_thickness);
+	gset_linewidth(mkp->marker_thickness);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	c_pcseti("OC",marker_color);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	c_pcseti("CC",marker_color);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-	if ((index = wk_p->marker_index) <= 0) {
+	if ((index = mkp->marker_index) <= 0) {
 		/* the marker string is used to define the marker */
-		x_off = wk_p->marker_size * wk_p->marker_x_off;
-		y_off = wk_p->marker_size * wk_p->marker_y_off;
-		marker_size = wk_p->marker_size;
-		if ((string = wk_p->marker_string) == NULL ||
-		    string[0] == '\0') {
-			/* NhlWARNING*/
-			NhlPError(NhlWARNING,NhlEUNKNOWN,
-			      "_NhlWorkstationMarker: invalid marker string");
-			ret = NhlWARNING;
-			marker_size = 
-				marker_table[NhlWK_DEF_MARKER]->size_adj *
-					wk_p->marker_size;
-			x_off = marker_size * 
-				(marker_table[NhlWK_DEF_MARKER]->x_off + 
-				 wk_p->marker_x_off);
-			y_off = marker_size * 
-				(marker_table[NhlWK_DEF_MARKER]->y_off +
-				 wk_p->marker_y_off);
-			string = 
-				marker_table[NhlWK_DEF_MARKER]->marker;
-		}
+		x_off = mkp->marker_size * mkp->marker_x_off;
+		y_off = mkp->marker_size * mkp->marker_y_off;
+		marker_size = marker_table[NhlWK_DEF_MARKER]->size_adj *
+					mkp->marker_size;
+		x_off = marker_size * (marker_table[NhlWK_DEF_MARKER]->x_off + 
+				 mkp->marker_x_off);
+		y_off = marker_size * (marker_table[NhlWK_DEF_MARKER]->y_off +
+				 mkp->marker_y_off);
+		string = marker_table[NhlWK_DEF_MARKER]->marker;
 			
 		for (i=0; i<num_points; i++) {
 			c_plchhq(x[i]+x_off,y[i]+y_off,string,marker_size,
@@ -4347,13 +4322,13 @@ static NhlErrorTypes WorkstationMarker
 			c_pcsetr("PW",p_width);
 			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 			marker_size = marker_table[index]->size_adj *
-				wk_p->marker_size;
+				mkp->marker_size;
 			x_off = marker_size * 
 				(marker_table[index]->x_off + 
-				 wk_p->marker_x_off);
+				 mkp->marker_x_off);
 			y_off = marker_size * 
 				(marker_table[index]->y_off + 
-				 wk_p->marker_y_off);
+				 mkp->marker_y_off);
 			c_plchhq(x[i]+x_off,y[i]+y_off,
 				 marker_table[index]->marker,
 				 marker_size,0.0,0.0);

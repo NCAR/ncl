@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.23 1995-02-17 18:26:22 boote Exp $
+ *      $Id: DataComm.c,v 1.24 1995-02-19 08:17:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -147,10 +147,10 @@ NhlDataCommLayerClassRec NhldataCommLayerClassRec = {
 	/* NhlTransformLayerClassPart */
 	{
 /* overlay_capability 		*/	_tfNotOverlayCapable,
-/* data_to_ndc			*/	NULL,
-/* ndc_to_data			*/	NULL,
-/* data_polyline		*/	NULL,
-/* ndc_polyline			*/	NULL
+/* data_to_ndc			*/	NhlInheritTransFunc,
+/* ndc_to_data			*/	NhlInheritTransFunc,
+/* data_polyline		*/	NhlInheritPolyTransFunc,
+/* ndc_polyline			*/	NhlInheritPolyTransFunc
 	},
 	/* NhlDataCommLayerClassPart */
 	{
