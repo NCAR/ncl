@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.58 2005-02-16 00:31:19 shea Exp $
+;      $Id: contributed.ncl,v 1.59 2005-03-03 18:52:02 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -1134,9 +1134,18 @@ undef("dble2flt")
 ; to convert any double attributes and CVs to float.
 
 undef("dble2flt")
-function dble2flt (xD:double)
+function dble2flt (xD)
 local dimx, ndimx, xF, xD_atts, i, j, cv, cvD, cvF, cvD_atts
 begin
+ if (typeof(xD).eq."float") then
+     if (isatt(xD,"long_name")) then
+         print("dble2flt: input variable is already type float: "+xD@long_name)
+     else
+         print("dble2flt: input variable is already type float")
+     end if
+     return(xD)
+ end if
+     
  dimx = dimsizes(xD)
 
  if (isatt(xD,"_FillValue")) then
@@ -1206,9 +1215,28 @@ end
 ; This follows these conventions.
 
 undef("short2flt")
-function short2flt (xS:short)
+function short2flt (xS)
 local xF, oNames, sNames, offset, scale, xAtts, nAtts, n
 begin
+ if (typeof(xS).eq."float") then
+     if (isatt(xS,"long_name")) then
+         print("short2flt: input variable is already type float: "+xS@long_name)
+     else
+         print("short2flt: input variable is already type float")
+     end if
+     print("short2flt: no conversion performed")
+     return(xS)
+ end if
+
+ if (typeof(xS).ne."short") then
+     if (isatt(xS,"long_name")) then
+         print("short2flt: input variable is not type short: "+xS@long_name)
+     else
+         print("short2flt: input variable is not type short")
+     end if
+     exit
+ end if
+
 ;xF = new ( dimsizes(xS), float)
  xF = new ( dimsizes(xS), float, 1.e20)  ; 20 Nov 2002
  
