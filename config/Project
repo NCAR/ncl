@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.20 1995-05-10 16:09:04 clyne Exp $
+ *      $Id: Project,v 1.21 1995-06-13 16:17:39 haley Exp $
  */
 /************************************************************************
 *									*
@@ -191,6 +191,7 @@ NCARGINCPATH		= $(INCPATH)/$(NCARGDIR)
 HLUINCPATH		= $(NCARGINCPATH)/$(HLUDIR)
 NCLINCPATH		= $(NCARGINCPATH)/$(NCLDIR)
 USRRESFILE		= "~/.hluresfile"
+NCARGWWW		= "www"
 
 ROOTPATHCHECK		= "/lib/ncarg/fontcaps/font1"
 
@@ -249,6 +250,7 @@ NGENV_DESCRIPT	= '{"tmp","TMPDIR",NULL,"$(TMPROOT)",NULL,	\
 		"tests",NULL,"ncarg",NULL,NULL,			\
 		"tutorial",NULL,"ncarg",NULL,NULL,		\
 		"xapp",NULL,"ncarg",NULL,NULL,			\
+		"www",NULL,"ncarg",NULL,NULL,			\
 		"sysresfile",NULL,"ncarg",NULL,NULL,		\
 		"sysappres",NULL,"ncarg",NULL,NULL,		\
 		NULL}'
