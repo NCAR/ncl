@@ -1,10 +1,7 @@
 #
-#	$Id: yMakefile,v 1.5 1994-10-31 15:00:55 haley Exp $
+#	$Id: yMakefile,v 1.6 1994-11-03 21:10:17 haley Exp $
 #
 
-EXAMPLES = c_fsrezsrf.c c_fsrsrfac.c c_srex01.c c_fsrpwrzs.c
-
-TESTS = c_tsrfac.c c_tpwrzs.c
+EXAMPLES = c_srex01.c
 
 InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
-InstallTarget($(TESTS),$(INSTALL_LIB),$(TESTSPATH))

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_fthex01.c,v 1.1 1994-07-29 14:24:27 haley Exp $
+ *	$Id: c_fthex01.c,v 1.2 1994-11-03 21:13:58 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -45,7 +45,7 @@ main()
  */
 	color();
 /*
- * Make the tick marks drawn by PERIM3 different from the default.
+ * Make the tick marks drawn by c_perim3 different from the default.
  */
 	c_tick43 (12,8,24,16,48,32);
 /*
@@ -65,7 +65,7 @@ main()
 	peye[1] = 4.;
 	peye[2] = 5.;
 /*
- * Initialize THREED.
+ * Initialize Threed.
  */
 	c_set3 (.1,.9,.1,.9,umin,umax,vmin,vmax,wmin,wmax,peye);
 /*
@@ -137,7 +137,7 @@ main()
 		c_pwrzt (1.05,0.,wpos,&chrs[ibeg],iend-ibeg+1,3,-1,3,1);
 	}
 /*
- * Using POINT3, draw grids inside the perimeters drawn by PERIM3.
+ * Using c_point3, draw grids inside the perimeters drawn by c_perim3.
  */
 	gset_line_colr_ind(RED);
 	for( i = 1; i <=11; i++ ) {
@@ -154,8 +154,8 @@ main()
 	}
 /*
  * Double the line width and draw a wire-frame representation of the
- * surface defined by the function WFUN, using the routines FRST3 and
- * VECT3.
+ * surface defined by the function WFUN, using the routines c_frst3 and
+ * c_vect3.
  */
 	gset_line_colr_ind(GREEN);
 	c_plotif (0.,0.,2);
@@ -190,7 +190,7 @@ main()
 }
 
 /*
- * Declare a function W(U,V) to be used in the example.
+ * Declare a function wfun(u,v) to be used in the example.
  */
 	
 float wfun(u,v)

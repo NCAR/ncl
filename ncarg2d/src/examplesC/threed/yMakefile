@@ -1,10 +1,7 @@
 #
-#	$Id: yMakefile,v 1.7 1994-10-31 04:15:19 haley Exp $
+#	$Id: yMakefile,v 1.8 1994-11-03 21:13:59 haley Exp $
 #
 
-EXAMPLES =  c_fthex01.c c_fthex02.c c_fthex03.c c_fthex04.c c_fthex05.c
-
-TESTS = c_tpwrzt.c c_tthre2.c c_tthree.c
+EXAMPLES =  c_fthex01.c
 
 InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
-InstallTarget($(TESTS),$(INSTALL_LIB),$(TESTSPATH))

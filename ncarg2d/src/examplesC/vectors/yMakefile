@@ -1,11 +1,7 @@
 #
-#	$Id: yMakefile,v 1.8 1994-10-31 04:17:02 haley Exp $
+#	$Id: yMakefile,v 1.9 1994-11-03 21:18:38 haley Exp $
 #
 
-EXAMPLES = c_fcover.c c_ffex02.c c_ffex05.c c_vvex01.c c_vvex02.c c_vvex03.c
-
-TESTS = c_tvelvc.c 
-
+EXAMPLES = c_vvex03.c
 
 InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
-InstallTarget($(TESTS),$(INSTALL_LIB),$(TESTSPATH))
