@@ -1,12 +1,12 @@
 /*
- *	$Id: c_tppack.c,v 1.1 1994-06-24 19:12:20 haley Exp $
+ *	$Id: c_tppack.c,v 1.2 1994-06-24 22:05:57 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
-#define WSTYPE 1
+#define WSTYPE SED_WSTYPE
 #define WKID   1
 
 main()

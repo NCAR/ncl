@@ -1,12 +1,12 @@
 /*
- *	$Id: c_ppex01.c,v 1.1 1994-06-24 19:12:19 haley Exp $
+ *	$Id: c_ppex01.c,v 1.2 1994-06-24 22:05:56 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
-#define WSTYPE 1
+#define WSTYPE SED_WSTYPE
 #define WKID   1
 #define NWRK 999
 #define NCCP  5
