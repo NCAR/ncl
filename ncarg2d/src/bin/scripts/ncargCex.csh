@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargCex.csh,v 1.5 1993-01-15 22:41:25 haley Exp $
+#	$Id: ncargCex.csh,v 1.6 1993-01-22 16:31:56 haley Exp $
 #
 
 set example_dir = `ncargpath SED_EXAMPLESDIR`
@@ -51,6 +51,11 @@ while ($#argv > 0)
             set OneByOneOption
             breaksw
 
+        case "-unique"
+            shift
+            set Unique
+            breaksw
+
         case "-*":
             echo "$0 : Unknown option <$1>"
             exit 1
@@ -83,6 +88,8 @@ end
 
 echo ""
 echo "NCAR Graphics C Example <$name>"
+
+if ($?Unique && -f $name.ncgm) goto theend
 
 set c_files = $name.c
 
@@ -129,5 +136,7 @@ if ($?OneByOneOption) then
     ctrans -d X11 -geometry 1142x865+10+0 $name.ncgm
     rm -f $name.ncgm $rmfiles
 endif
+
+theend:
 
 end

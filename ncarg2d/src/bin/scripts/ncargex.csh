@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.13 1993-01-20 23:17:33 haley Exp $
+#   $Id: ncargex.csh,v 1.14 1993-01-22 16:31:58 haley Exp $
 #
 
 set example_dir=`ncargpath SED_EXAMPLESDIR`
@@ -95,19 +95,19 @@ while ($#argv > 0)
             breaksw
 
         case "-allexamples":
-		case "-E":
+        case "-E":
             shift
             set names=($example_list)
             breaksw
 
         case "-alltests":
-		case "-T":
+        case "-T":
             shift
             set names=($test_list)
             breaksw
         
         case "-alltutorial":
-		case "-U":
+        case "-U":
             shift
             set names=($tutor_list "mpex03" "mpex05" "arex01" "sfex01" "tsoftf")
             breaksw
@@ -125,6 +125,11 @@ while ($#argv > 0)
         case "-onebyone":
             shift
             set OneByOneOption
+            breaksw
+
+        case "-unique"
+            shift
+            set Unique
             breaksw
 
         case "-*":
@@ -179,6 +184,8 @@ if ("$type" == "Example") then
 
 echo ""
 echo "NCAR Graphics Fortran Example <$name>"
+
+if ($?Unique && -f $name.ncgm) goto theend
 
 set f_files = $name.f
 
@@ -267,6 +274,8 @@ if ("$type" == "Tutorial") then
 
 echo ""
 echo "NCAR Graphics Tutorial Exercise <$name>"
+
+if ($?Unique && -f $name.ncgm) goto theend
 
 set f_files = $name.f
 
@@ -500,6 +509,8 @@ endif
 echo ""
 echo "NCAR Graphics Test Program <$name.f>"
 
+if ($?Unique && -f $name.ncgm) goto theend
+
 rm -f $alias_name.f
 
 if ($name != tcolcv) then
@@ -634,4 +645,7 @@ if ($?OneByOneOption) then
     rm -f $name.ncgm $rmfiles
 endif
 
+theend:
+
 end
+
