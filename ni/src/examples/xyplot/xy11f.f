@@ -1,5 +1,5 @@
 C
-C     $Id: xy11f.f,v 1.1 1995-01-24 23:31:23 haley Exp $
+C     $Id: xy11f.f,v 1.2 1995-02-02 22:58:25 haley Exp $
 C
 C****************************************************************
 C                                                               *
@@ -9,7 +9,7 @@ C           All Rights Reserved                                 *
 C                                                               *
 C****************************************************************
 C
-C      File:            xy01f.f
+C      File:            xy11f.f
 C
 C      Author:          Jeff Boote (converted to Fortran by Ed Stautler)
 C                       National Center for Atmospheric Research
@@ -65,7 +65,7 @@ C
 C	Initialize the HLU library
 C
       call nhlfinitialize
-      call nhlfcreate(appid,'xy01',nhlfapplayerclass,0,0,ierr)
+      call nhlfcreate(appid,'xy11',nhlfapplayerclass,0,0,ierr)
 
 C
 C	Create a ResList - This is filled with resource "Names" and
@@ -87,7 +87,7 @@ C	Fill the ResList with the resources for the NCGM Workstation
 C	object - then create the NCGM Workstation object.
 C
       call nhlfrlclear(list)
-      call nhlfrlsetstring(list,'wkMetaName','xy01f.ncgm',ierr)
+      call nhlfrlsetstring(list,'wkMetaName','xy11f.ncgm',ierr)
       call nhlfcreate(incgmwork,'myncgmwork',
      %	nhlfncgmworkstationlayerclass,0,list,ierr)
 

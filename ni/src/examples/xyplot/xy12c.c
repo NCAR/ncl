@@ -1,5 +1,5 @@
 /*
- *      $Id: xy12c.c,v 1.2 1995-01-30 16:31:14 haley Exp $
+ *      $Id: xy12c.c,v 1.3 1995-02-02 22:58:26 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -9,7 +9,7 @@
 *                                                                       *
 ************************************************************************/
 /*
- *  File:       xy02c.c
+ *  File:       xy12c.c
  *
  *  Author:     Jeff W. Boote
  *          National Center for Atmospheric Research
@@ -178,10 +178,10 @@ NextFrameCB
 	 */
 	if(FirstTime){
 		rlist = NhlRLCreate(NhlSETRL);
-		fp = fopen("xy02c.asc","r");
+		fp = fopen("xy12c.asc","r");
 		if(fp == (FILE*)NULL){
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				"Unable to open data file \"xy02c.asc\"");
+				"Unable to open data file \"xy12c.asc\"");
 			return;
 		}
 	}
@@ -743,7 +743,7 @@ main
 	 * Call this before X calls so I can use NhlPError stuff
 	 */
 	NhlInitialize();
-	NhlCreate(&appid,"xy02",NhlappLayerClass,NhlDEFAULT_APP,0);
+	NhlCreate(&appid,"xy12",NhlappLayerClass,NhlDEFAULT_APP,0);
 
 	/*
 	 * Create GUI interface and retrieve the window to display the graphics
@@ -754,14 +754,14 @@ main
 	/*
 	 * Create the Workstation Class objects
 	 */
-	NhlVACreate(&xworkid,"xy02xWork",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
+	NhlVACreate(&xworkid,"xy12xWork",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
 		NhlNwkWindowId,		graphicsWin,
 		NhlNwkPause,		False,
 		NULL);
 
-	NhlVACreate(&ncgmwid,"xy02ncgmWork",NhlncgmWorkstationLayerClass,
+	NhlVACreate(&ncgmwid,"xy12ncgmWork",NhlncgmWorkstationLayerClass,
 								NhlDEFAULT_APP,
-		NhlNwkMetaName,		"xy02c.ncgm",
+		NhlNwkMetaName,		"xy12c.ncgm",
 		NULL);
 
 	/*

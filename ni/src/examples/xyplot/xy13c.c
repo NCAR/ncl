@@ -1,5 +1,5 @@
 /*
- *      $Id: xy13c.c,v 1.2 1995-01-30 16:31:15 haley Exp $
+ *      $Id: xy13c.c,v 1.3 1995-02-02 22:58:27 haley Exp $
  */
 /************************************************************************
 *									*
@@ -9,7 +9,7 @@
 *									*
 ************************************************************************/
 /*
- *	File:		xy03c.c
+ *	File:		xy13c.c
  *
  *	Author:		Jeff W. Boote
  *			National Center for Atmospheric Research
@@ -44,7 +44,7 @@
 #include <Xm/Label.h>
 #include <Xm/List.h>
 
-#include "xy03c.h"
+#include "xy13c.h"
 /*
  * Size for the Graphics window in pixels
  */
@@ -726,7 +726,7 @@ main
 
 	srlist = NhlRLCreate(NhlSETRL);
 	grlist = NhlRLCreate(NhlGETRL);
-	NhlCreate(&appid,"xy03",NhlappLayerClass,NhlDEFAULT_APP,0);
+	NhlCreate(&appid,"xy13",NhlappLayerClass,NhlDEFAULT_APP,0);
 
 	/*
 	 * Create GUI interface and retrieve the window to display the graphics
@@ -741,7 +741,7 @@ main
 	 */
 	NhlRLClear(srlist);
 	NhlRLSetInteger(srlist,NhlNwkWindowId,graphicsWin);
-	NhlCreate(&xworkid,"xy03Work",NhlxWorkstationLayerClass,appid,srlist);
+	NhlCreate(&xworkid,"xy13Work",NhlxWorkstationLayerClass,appid,srlist);
 
 	NhlRLClear(srlist);
 

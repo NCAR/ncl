@@ -1,5 +1,5 @@
 /*
- *      $Id: xy11c.c,v 1.3 1995-02-01 15:45:22 haley Exp $
+ *      $Id: xy11c.c,v 1.4 1995-02-02 22:58:24 haley Exp $
  */
 /************************************************************************
 *									*
@@ -9,7 +9,7 @@
 *									*
 ************************************************************************/
 /*
- *	File:		xy01c.c
+ *	File:		xy11c.c
  *
  *	Author:		Jeff W. Boote
  *			National Center for Atmospheric Research
@@ -106,7 +106,7 @@ main()
 
 	rlist = NhlRLCreate(NhlSETRL);
 
-	NhlCreate(&appid,"xy01",NhlappLayerClass,NhlDEFAULT_APP,0);
+	NhlCreate(&appid,"xy11",NhlappLayerClass,NhlDEFAULT_APP,0);
 
 	/*
 	 * Create the Workstation objects.
@@ -114,12 +114,12 @@ main()
 	 */
 	NhlRLClear(rlist);
 	NhlRLSetInteger(rlist,NhlNwkPause,True);
-	NhlCreate(&xworkid,"xy01xWork",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
+	NhlCreate(&xworkid,"xy11xWork",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
 									rlist);
 
 	NhlRLClear(rlist);
-	NhlRLSetString(rlist,NhlNwkMetaName,"xy01c.ncgm");
-	NhlCreate(&ncgmwid,"xy01ncgmWork",NhlncgmWorkstationLayerClass,
+	NhlRLSetString(rlist,NhlNwkMetaName,"xy11c.ncgm");
+	NhlCreate(&ncgmwid,"xy11ncgmWork",NhlncgmWorkstationLayerClass,
 							NhlDEFAULT_APP,rlist);
 
 	NhlRLClear(rlist);

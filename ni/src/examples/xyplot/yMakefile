@@ -1,26 +1,26 @@
 #
-#   $Id: yMakefile,v 1.1 1995-01-24 23:31:28 haley Exp $
+#   $Id: yMakefile,v 1.2 1995-02-02 22:58:29 haley Exp $
 #
 #   Makefile for HLU XYPlot examples
 #
 
-NCGMS   =   xy01c.ncgm xy02c.ncgm xy03c.ncgm xy01f.ncgm
+NCGMS   =   xy11c.ncgm xy12c.ncgm xy13c.ncgm xy11f.ncgm
 
 PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
-SRCS        = xy01c.c xy02c.c xy03c.c xy01f.f
-INCLUDES    = xy03c.h 
-DATA        = xy02c.asc
+SRCS        = xy11c.c xy12c.c xy13c.c xy11f.f
+INCLUDES    = xy13c.h 
+DATA        = xy12c.asc
 EXFILES     = $(SRCS) $(INCLUDES) $(DATA)
 
 InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))
 
-HLUCExampleTarget(xy01c,xy01c.o)
-HLUCExampleTarget(xy02c,xy02c.o)
-HLUCExampleTarget(xy03c,xy03c.o)
-HLUFExampleTarget(xy01f,xy01f.o)
+HLUCExampleTarget(xy11c,xy11c.o)
+HLUCExampleTarget(xy12c,xy12c.o)
+HLUCExampleTarget(xy13c,xy13c.o)
+HLUFExampleTarget(xy11f,xy11f.o)
 
 CleanFilesTarget($(CPROGS) $(FPROGS) $(NCGMS) $(OBJS))
 DependTarget($(SRCS))
