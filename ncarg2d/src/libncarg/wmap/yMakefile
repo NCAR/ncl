@@ -1,0 +1,58 @@
+#
+#	$Id: yMakefile,v 1.1 1994-09-09 23:55:47 fred Exp $
+#
+
+MYNAME	= wmaps
+
+GENERIC_SRCS = \
+	wmbarb.f wmblda.f wmcext.f wmchbg.f wmdflt.f wmdrfl.f \
+	wmdrfs.f wmdrft.f wmdrrg.f wmdrsm.f wmfpts.f wmgetc.f \
+	wmgeti.f wmgetr.f wmgtln.f wmgtso.f wmintv.f wmlabc.f \
+	wmlabs.f wmlabt.f wmlabw.f wmlgfa.f wmlgnd.f wmlgpl.f \
+	wmrgwt.f wmsect.f wmsetc.f wmseti.f wmsetr.f wmstnm.f \
+	wmw2nx.f wmw2ny.f
+
+GENERIC_OBJS = \
+	wmbarb.o wmblda.o wmcext.o wmchbg.o wmdflt.o wmdrfl.o \
+	wmdrfs.o wmdrft.o wmdrrg.o wmdrsm.o wmfpts.o wmgetc.o \
+	wmgeti.o wmgetr.o wmgtln.o wmgtso.o wmintv.o wmlabc.o \
+	wmlabs.o wmlabt.o wmlabw.o wmlgfa.o wmlgnd.o wmlgpl.o \
+	wmrgwt.o wmsect.o wmsetc.o wmseti.o wmsetr.o wmstnm.o \
+	wmw2nx.o wmw2ny.o
+
+OTHER_SRCS =
+
+OTHER_OBJS =
+
+SOURCES = $(GENERIC_SRCS) $(OTHER_SRCS)
+
+OBJECTS = $(GENERIC_OBJS) $(OTHER_OBJS)
+
+FCPP_OBJS       =
+
+PartialLibraryTarget(libncarg.a,$(OBJECTS))
+PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
+
+wmbarb.o : wmcomn.h
+wmblda.o : wmcomn.h
+wmchbg.o : wmcomn.h
+wmdflt.o : wmcomn.h
+wmdrfl.o : wmcomn.h
+wmdrfs.o : wmcomn.h
+wmdrft.o : wmcomn.h
+wmdrrg.o : wmcomn.h
+wmdrsm.o : wmcomn.h
+wmgetc.o : wmcomn.h
+wmgeti.o : wmcomn.h
+wmgetr.o : wmcomn.h
+wmgtso.o : wmcomn.h
+wmlabc.o : wmcomn.h
+wmlabs.o : wmcomn.h
+wmlabt.o : wmcomn.h
+wmlabw.o : wmcomn.h
+wmlgnd.o : wmcomn.h
+wmlgpl.o : wmcomn.h
+wmrgwt.o : wmcomn.h
+wmsetc.o : wmcomn.h
+wmseti.o : wmcomn.h
+wmsetr.o : wmcomn.h

@@ -1,0 +1,90 @@
+C
+C	$Id: wmsetc.f,v 1.1 1994-09-09 23:55:33 fred Exp $
+C
+      SUBROUTINE WMSETC (CNP,CVP)
+C
+      SAVE
+C
+      CHARACTER*(*) CNP,CVP
+      CHARACTER*3   CC
+C
+C  This subroutine is called to give a character value to a specified
+C  parameter.
+C
+C  CNP is the name of the parameter whose value is to be set.
+C
+C  CVP is a character variable containing the desired value.
+C
+C  Declare a local character variable in which to form an error message.
+C
+      CHARACTER*80 CTM
+C
+      include 'wmcomn.h'
+C
+C Declare the block data routine external to force its loading.
+C
+      EXTERNAL WMBLDA
+C
+C  Check for an uncleared prior error.
+C
+      IF (ICFELL('WMSETC - Uncleared prior error',1) .NE. 0) RETURN
+C
+C  Check for a parameter name that is too short.
+C
+      IF (LEN(CNP) .LT. 3) THEN
+        CTM(1:36)='WMSETC - Parameter name too short - '
+        CTM(37:36+LEN(CNP)) = CNP
+        CALL SETER (CTM(1:36+LEN(CNP)), 1, 1)
+        GO TO 120
+      ENDIF
+C
+C  FRO - Front type (one of 'WARM', 'COLD', 'OCCLUDED' or 'STATIONARY').       
+C
+      IF (CNP(1:3).EQ.'FRO' .OR. CNP(1:3).EQ.'fro' .OR.
+     +    CNP(1:3).EQ.'Fro') THEN
+        CC = CVP(1:3)
+        IF (CC.EQ.'COL' .OR. CC.EQ.'col' .OR. CC.EQ.'Col') THEN
+          IFRONT = 1
+          DO 10 I=1,MAXSYM
+            ISTYPE(I) = IFRONT
+   10     CONTINUE
+        ELSE IF (CC.EQ.'WAR' .OR. CC.EQ.'war' .OR. CC.EQ.'War') THEN
+          IFRONT = 2
+          DO 40 I=1,MAXSYM
+            ISTYPE(I) = IFRONT
+   40     CONTINUE
+        ELSE IF (CC.EQ.'STA' .OR. CC.EQ.'sta' .OR. CC.EQ.'Sta') THEN
+          IFRONT = 3
+          DO 50 I=1,MAXSYM
+            IF (MOD(I,2) .EQ. 1) THEN
+              ISTYPE(I) = 2
+            ELSE
+              ISTYPE(I) = -1
+            ENDIF
+   50     CONTINUE
+        ELSE IF (CC.EQ.'OCC' .OR. CC.EQ.'occ' .OR. CC.EQ.'Occ') THEN
+          IFRONT = 4
+          DO 60 I=1,MAXSYM
+            IF (MOD(I,2) .EQ. 1) THEN
+              ISTYPE(I) = 2
+            ELSE
+              ISTYPE(I) = 1
+            ENDIF
+   60     CONTINUE
+        ELSE
+          CTM(1:42) = 'WMSETC - Parameter value out of range for '
+          CTM(43:45) = CNP(1:3)
+          CALL SETER (CTM(1:45), 2, 1)
+          GO TO 120
+        ENDIF
+        GO TO 120
+      ELSE
+        CTM(1:36) = 'WMSETC - Parameter name not known - '
+        CTM(37:39) = CNP(1:3)
+        CALL SETER (CTM(1:39), 3, 1)
+        GO TO 120
+      ENDIF
+C
+  120 CONTINUE
+      RETURN
+      END
