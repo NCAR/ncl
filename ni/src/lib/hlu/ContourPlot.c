@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.127 2004-10-05 22:50:33 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.128 2004-10-08 23:37:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -10316,7 +10316,7 @@ NhlErrorTypes DrawCell
 		}
 		if (lcol > NhlTRANSPARENT) {
 			gset_line_colr_ind(lcol);
-			NGCALLF(gpl,GPL)(&npoints);
+			NGCALLF(gpl,GPL)(&npoints,xo,yo);
 		}
 	}
 	return ret;
@@ -10456,7 +10456,7 @@ NhlErrorTypes DrawAdjustedCell
 			}
 			if (lcol > NhlTRANSPARENT) {
 				gset_line_colr_ind(lcol);
-				NGCALLF(gpl,GPL)(&lnpoints);
+				NGCALLF(gpl,GPL)(&lnpoints,xo,yo);
 			}
 		}
 

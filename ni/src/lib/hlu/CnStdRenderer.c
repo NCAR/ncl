@@ -1,5 +1,5 @@
 /*
- *      $Id: CnStdRenderer.c,v 1.3 2004-10-05 22:50:32 dbrown Exp $
+ *      $Id: CnStdRenderer.c,v 1.4 2004-10-08 23:37:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1453,11 +1453,8 @@ static NhlErrorTypes GetDataBound
 	    NhlcurvilinearTransObjClass->base_class.class_name ||
 	    cnp->trans_obj->base.layer_class->base_class.class_name ==
 	    NhlsphericalTransObjClass->base_class.class_name) {
-		if (_NhlIsOverlay(cl->base.id)) {
-			*xlinear = False;
-			*ylinear = False;
-		}
-
+		*xlinear = False;
+		*ylinear = False;
 
 		tx[0] = cnp->xc1;
 		tx[1] = cnp->xcm;
@@ -3159,9 +3156,6 @@ NhlErrorTypes _NhlRasterFill
 	float		cxstep,cystep,dxstep,dystep;
 	float           xsoff,xeoff,ysoff,yeoff;
 	NhlBoolean      x_isbound,y_isbound;
-#if 0
-	FILE *fp = fopen("tmp.out","w");
-#endif
 
         if (Cnp == NULL) {
 		e_text = "%s: invalid call to _NhlRasterFill";
@@ -3209,7 +3203,7 @@ NhlErrorTypes _NhlRasterFill
 	if (y_isbound) {
 		ysoff = Ysoff;
 		yeoff = Yeoff;
-		dystep = (ycn-yc1) / (float) izdn;
+		dystep = (ycn-yc1) / (float)izdn;
 	}
 	else {
 		ysoff = Ysoff + .5 * (1.0 - Ysoff);
@@ -3218,6 +3212,9 @@ NhlErrorTypes _NhlRasterFill
 	}
 
 	for (i = 0; i < icam; i++) {
+#if 0
+		int print = 1;
+#endif
 		int iplus = i+1;
 		if (i == 0)
 			xccf = xcpf + xsoff * cxstep;
@@ -3226,6 +3223,7 @@ NhlErrorTypes _NhlRasterFill
 		else
 			xccf = xcpf + (i+xsoff) * cxstep;
 		xccu = c_cfux(xccf);
+
 
 		for (j = 0; j < ican; j++) {
 			int jplus = j+1;
@@ -3272,18 +3270,20 @@ NhlErrorTypes _NhlRasterFill
                                                         Cnp->level_count;
                                         }
 				}
-			}
 #if 0
-			fprintf(fp,"[%f][%f] %f\n",xccu,yccu,zval);
+				if (print) {
+					print = 0;
+					printf("%f %f %f %f %f %d %d\n",
+					       xccu,yccu,xccd,yccd,
+					       zval,iplus,jplus);
+				}
 #endif
+			}
 			(_NHLCALLF(hlucpscae,HLUCPSCAE))
 			  (cell,&ica1,&icam,&ican,&xcpf,&ycpf,&xcqf,&ycqf,
 			   &iplus,&jplus,&icaf,&iaid);
 		}
 	}
 
-#if 0
-	fclose(fp);
-#endif
 	return ret;
 }
