@@ -1,5 +1,5 @@
 /*
- *      $Id: restreeP.h,v 1.2 1997-09-08 19:29:25 dbrown Exp $
+ *      $Id: restreeP.h,v 1.3 1997-09-11 01:01:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,7 +28,6 @@
 #include <ncarg/hlu/ResourcesP.h>
 
 #include <ncarg/ngo/restree.h>
-#include <ncarg/ngo/listgrid.h>
 
  
 #define DEBUG_ENTRY 1

@@ -1,4 +1,4 @@
-/* $Id: MegaB.c,v 1.1 1997-09-08 19:29:18 dbrown Exp $ */
+/* $Id: MegaB.c,v 1.2 1997-09-11 01:01:49 dbrown Exp $ */
 /*
  * Copyright 1994 John L. Cwikla
  *
@@ -1599,7 +1599,7 @@ static void rectDrawProc
                 STR_HEIGHT(_mbw)/2 - PRIM(_mbw).shadow_thickness;
         _x -= (STR_HEIGHT(_mbw) + LABEL(_mbw).margin_width);
         if (COLORS(_mbw)[_pos] >= 0) {
-                XSetFzoreground(XtDisplay(_mbw),COPY_GC(_mbw),
+                XSetForeground(XtDisplay(_mbw),COPY_GC(_mbw),
                                (unsigned long)COLORS(_mbw)[_pos]);
                 XFillRectangle(XtDisplay(_mbw),
                                XtWindow(_mbw),COPY_GC(_mbw),_x,_y,
