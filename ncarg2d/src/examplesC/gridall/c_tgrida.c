@@ -1,5 +1,5 @@
 /*
- *	$Id: c_tgrida.c,v 1.2 1994-06-21 15:01:01 haley Exp $
+ *	$Id: c_tgrida.c,v 1.3 1994-08-08 22:27:44 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -234,19 +234,25 @@ int *ier;
  */
     c_gaseti( "CAX", 10 );
     c_gageti( "CAX", &ival );
-    printf( "\nc_gaseti, c_gageti: ival should be 10, ival is really %d\n", ival );
+	if( ival != 10 ) {
+		printf( "\nc_gaseti, c_gageti: ival should be 10, ival is really %d\n", ival );
+	}
 /*    
  *  Test c_gagetr and c_gasetr
  */
     c_gasetr( "XLS", 15.0 );
     c_gagetr( "XLS", &rval );
-    printf( "c_gasetr, c_gagetr: rval should be 15.0, rval is really %g\n", rval );
+	if( rval != 15. ) {
+		printf( "c_gasetr, c_gagetr: rval should be 15.0, rval is really %g\n", rval );
+	}
 /*    
  *  Test c_gagetc and c_gasetc
  */
     c_gasetc( "XLF", "hello" );
     c_gagetc( "XLF", cval, 19 );
-    printf( "c_gasetc, c_gagetc: cval should be 'hello', cval is really '%s'\n", cval );
+	if( strcmp( cval, "hello" ) ) {
+		printf( "c_gasetc, c_gagetc: cval should be 'hello', cval is really '%s'\n", cval );
+	}
     *ier = 1;
     return(1);
 }

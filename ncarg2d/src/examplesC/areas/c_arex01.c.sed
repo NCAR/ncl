@@ -1,5 +1,5 @@
 /*
- *	$Id: c_arex01.c.sed,v 1.4 1994-08-08 17:20:12 haley Exp $
+ *	$Id: c_arex01.c.sed,v 1.5 1994-08-08 22:27:20 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -243,8 +243,8 @@ main()
 /* 
  * Test arsetr and argetr
  */
-    c_arsetr ("AL",0.005);
-    c_argetr ("AL",&rval);
+    c_arsetr ("IS",0.005);
+    c_argetr ("IS",&rval);
 	if( rval != 0.005 ) {
 	    printf( "argetr:  c_argetr test UNSUCCESSFUL.\n");
 		printf( "rval is supposed to be 0.005; rval is really %g\n", rval );

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_tisosr.c,v 1.2 1994-06-21 15:01:06 haley Exp $
+ *	$Id: c_tisosr.c,v 1.3 1994-08-08 22:27:50 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -174,12 +174,16 @@ int *ierror;
  */
     c_isseti("IU",3);
     c_isgeti("IU",&ival);
-    printf( "c_isgeti, c_isseti:  ival should be 3, ival is really %d\n", ival );
+	if( ival != 3) {
+		printf( "c_isgeti, c_isseti:  ival should be 3, ival is really %d\n", ival );
+	}
 /*
  * Test c_isgetr, c_isset
  */
     c_issetr("RS",0.5);
     c_isgetr("RS",&rval);
-    printf( "c_isgetr, c_issetr:  rval should be 0.5, rval is really %g\n", rval );
+	if( rval != 0.5 ) {
+		printf( "c_isgetr, c_issetr:  rval should be 0.5, rval is really %g\n", rval );
+	}
     return(1);
 }

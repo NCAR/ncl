@@ -1,5 +1,5 @@
 /*
- *	$Id: c_agex05.c,v 1.2 1994-06-21 14:58:38 haley Exp $
+ *	$Id: c_agex05.c,v 1.3 1994-08-08 22:27:31 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -113,35 +113,45 @@ main()
  */
     c_agsetc("LINE/TEXT.","THIS IS A TEST$");
     c_aggetc("LINE/TEXT.",stmp,19);
-    printf( "c_aggetc:  stmp should be 'THIS IS A TEST', stmp is really '%s'\n", stmp );
+	if( strcmp( stmp, "THIS IS A TEST" ) ) {
+		printf( "c_aggetc:  stmp should be 'THIS IS A TEST', stmp is really '%s'\n", stmp );
+	}
 /*
  * Test c_aggetf
  */
     c_agsetf("BACKGROUND.",3.);
     c_aggetf("BACKGROUND.",&rval);
-    printf( "c_aggetf: rval should be 3., rval is really %g\n", rval );
+	if( rval != 3. ) {
+		printf( "c_aggetf: rval should be 3., rval is really %g\n", rval );
+	}
 /*
  * Test c_aggetr
  */
     c_agsetr("BACKGROUND.",2.);
     c_aggetr("BACKGROUND.",&rval);
-    printf( "c_agsetr, c_aggetr: rval should be 2., rval is really %g\n", rval );
+	if( rval != 2. ) {
+		printf( "c_agsetr, c_aggetr: rval should be 2., rval is really %g\n", rval );
+	}
 /*
  * Test c_aggeti
  */
     c_agseti("LINE/NUMBER.",5);
     c_aggeti("LINE/NUMBER.",&ival);
-    printf( "c_aggeti: ival should be 5, ival is really %d\n", ival );
+	if( ival != 5 ) {
+		printf( "c_aggeti: ival should be 5, ival is really %d\n", ival );
+	}
 /*
  * Test c_aggetp
  */
-	c_agsetp("GRAPH WINDOW.",wind,4);
-    c_aggetp("GRAPH WINDOW.",wind,4);
     wind[0] = 0.;
     wind[1] = 1.;
     wind[2] = 0.;
     wind[3] = .5;
-    printf( "c_aggetp: wind should be 0.,1.,0.,.5, wind is really %g %g %g %g\n", wind[0], wind[1], wind[2], wind[3] );
+	c_agsetp("GRAPH WINDOW.",wind,4);
+    c_aggetp("GRAPH WINDOW.",wind,4);
+	if( wind[0] != 0. || wind[1] != 1. || wind[2] != 0. || wind[3] != .5 ) {
+		printf( "c_aggetp: wind should be 0.,1.,0.,.5, wind is really %g %g %g %g\n", wind[0], wind[1], wind[2], wind[3] );
+	}
 /*
  * Close GKS
  */

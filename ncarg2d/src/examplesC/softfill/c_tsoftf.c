@@ -1,5 +1,5 @@
 /*
- *	$Id: c_tsoftf.c,v 1.2 1994-06-21 15:01:29 haley Exp $
+ *	$Id: c_tsoftf.c,v 1.3 1994-08-08 22:27:55 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -42,7 +42,7 @@ int *ierr;
  */
     float xra[200],yra[200],dst[220],xsv[101],ysv[101], rval;
     int ind[240],id1[8][8],id2[8][8],id3[8][8],id4[8][8];
-    int i, j, k, l, ival, isetp;
+    int i, j, k, l, ival;
     char stmp[6];
     float ycn, xcn;
     Gasfs iasf;
@@ -521,35 +521,38 @@ int *ierr;
  */
     c_sfsetc("CHARACTER SPECIFIER","P");
     c_sfgetc("CHARACTER SPECIFIER",stmp,5);
-    printf( "\nc_sfgetc:  stmp should be 'P', stmp is really '%s'\n", stmp );
+	if( strncmp( stmp, "P", 1 ) ) {
+		printf( "\nc_sfgetc:  stmp should be 'P', stmp is really '%s'\n", stmp );
+	}
 /*
  * Test c_sfgeti
  */
-    c_sfseti("ANGLE OF FILL LINES",20);
-    c_sfgeti("ANGLE OF FILL LINES",&ival);
-    printf( "\nc_sfgeti:  ival should be 20, ival is really %d\n", ival );
+	c_sfseti("ANGLE OF FILL LINES",20);
+	c_sfgeti("ANGLE OF FILL LINES",&ival);
+	if( ival != 20 ) {
+		printf( "\nc_sfgeti:  ival should be 20, ival is really %d\n", ival );
+	}
 /*
  * Test c_sfgetr
  */
     c_sfsetr ("SPACING OF FILL LINES",.015);
     c_sfgetr ("SPACING OF FILL LINES",&rval );
-    printf( "\nc_sfgetr:  rval should be 0.015 rval is really %g\n", rval );
+	if( rval != 0.015 ) {
+		printf( "\nc_sfgetr:  rval should be 0.015 rval is really %g\n", rval );
+	}
 /*
  * Test c_sfgetp
  */
 	c_sfsetp (id4);
 	c_sfgetp (id3);
-    isetp = 1;
 	for( i = 0; i < 8; i++ ) {
 		for( j = 0; j < 8; j++ ) {
             if( id3[i][j] != id4[i][j] ) {
 				printf( "\nc_sfgetp test UNSUCCESSFUL\n" );
-				isetp = 0;
 				break;
 			}
         }
     }
-    if( isetp ) printf( "\nc_sfgetp test SUCCESSFUL\n" );
 }
 
 sfclrs()
