@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.83 1995-03-27 20:22:44 haley Exp $
+#   $Id: ncargex.csh,v 1.84 1995-04-20 19:42:04 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -1146,7 +1146,7 @@ endif
 # Find out what type of example it is #
 #                                     #
 #*************************************#
-set ex_type="Unknown"
+set ex_type = "Unknown"
 
 foreach known ($list_fex $list_cex $list_cx11)
   if ("$name" == "$known") then
@@ -1159,7 +1159,7 @@ end
 if ( "$ex_type" == "Unknown" ) then
   foreach known ($list_ftst $list_ctst)
     if ("$name" == "$known") then
-      set ex_type= "Test"
+      set ex_type = "Test"
       set temp_dir = "$test_dir"
       break
     endif
@@ -1169,7 +1169,7 @@ endif
 if ( "$ex_type" == "Unknown" ) then
   foreach known ($list_fttr $list_cttr)
     if ("$name" == "$known") then
-      set ex_type="Tutorial"
+      set ex_type = "Tutorial"
       set temp_dir = "$tutor_dir"
       break
     endif
@@ -1179,17 +1179,7 @@ endif
 if ( "$ex_type" == "Unknown" ) then
   foreach known ($list_ffnd $list_cfnd $list_fx11)
     if ("$name" == "$known") then
-      set ex_type="Fundamentals"
-      set temp_dir = "$fund_dir"
-      break
-    endif
-  end
-endif
-
-if ( "$ex_type" == "Unknown" ) then
-  foreach known ($list_ffnd $list_cfnd)
-    if ("$name" == "$known") then
-      set ex_type="Fundamentals"
+      set ex_type = "Fundamentals"
       set temp_dir = "$fund_dir"
       break
     endif
@@ -1199,7 +1189,7 @@ endif
 if ( "$ex_type" == "Unknown" ) then
   foreach known ($list_fpdc $list_cpdc)
     if ("$name" == "$known") then
-      set ex_type= "Programmer"
+      set ex_type = "Programmer"
       set temp_dir = "$pdoc_dir"
       break
     endif
