@@ -28,7 +28,7 @@ C      dataset are much faster than the first call.
 C    IWK (Input)
 C      Integer work space dimensioned for 27*NPTS.
 C    RWK (Input)
-C      Real work space dimensioned for NPTS.
+C      Real work space dimensioned for 4*NPTS.
 C    NC (Input)
 C      The maximum size of the output arrays XC, YC, ZC, and RC.  
 C      NC should be 2*NPTS.
@@ -73,7 +73,7 @@ C         IER =  6  internal error
 C         IER = -L  if coordinates L and M coincide for some
 C                   M > L >= 1 .
 C
-      DIMENSION X(NPTS),Y(NPTS),Z(NPTS),IWK(*),RWK(NPTS),
+      DIMENSION X(NPTS),Y(NPTS),Z(NPTS),IWK(*),RWK(*),
      +          XC(NC),YC(NC),ZC(NC),RC(NC),NV(NPTS)
 C
       SAVE
