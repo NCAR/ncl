@@ -990,7 +990,6 @@ int	wr_status;
 		if(therec->cos_blocking) {
 */
 			tmp_off = MySeek(therec,fd,1,coff);
-			
 			tmp_off = MyRead(therec,fd,buffer,1,tmp_off);
 			index = (int)FloatIt(buffer);
 			if((index < 1)||(index > initial_iheader.NOREC)) {
@@ -1010,6 +1009,7 @@ int	wr_status;
 			coff = MySeek(therec,fd,initial_iheader.MAXSIZ,coff);
 		}
 */
+		tmp_iheader = initial_iheader;
 
 		j = 1;
 		for(i = 0; i< initial_iheader.MFILTH;i++) {
@@ -1026,21 +1026,21 @@ int	wr_status;
 					tmp_off = MySeek(therec,fd,1,coff);
 					tmp_off = MyRead(therec,fd,buffer,1,tmp_off);
 					index = (int)FloatIt((buffer));
-					if((index < 1)||(index > initial_iheader.NOREC)) {
+					if((index < 1)||(index > tmp_iheader.NOREC)) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An error occurred while indexing latitude data records. This file is not a vaild CCM history file");
 						NclFree(therec);
 						close(fd);
 						return(NULL);
 					}
-					therec->lat_rec_offsets[i*initial_iheader.NOREC+(index-1)] = coff;
-					coff = MySeek(therec,fd,initial_iheader.MAXSIZ + 1,coff);
+					therec->lat_rec_offsets[i*tmp_iheader.NOREC+(index-1)] = coff;
+					coff = MySeek(therec,fd,tmp_iheader.MAXSIZ + 1,coff);
 /*
 				} else {
 					tmp_off = MySeek(therec,fd,0,coff);
 					tmp_off = MyRead(therec,fd,buffer,1,tmp_off);
 					index = (int)FloatIt((buffer));
-					therec->lat_rec_offsets[i*initial_iheader.NOREC+(index-1)] = coff;
-					coff = MySeek(therec,fd,initial_iheader.MAXSIZ,coff);
+					therec->lat_rec_offsets[i*tmp_iheader.NOREC+(index-1)] = coff;
+					coff = MySeek(therec,fd,tmp_iheader.MAXSIZ,coff);
 				}
 */
 			}
@@ -1048,6 +1048,9 @@ int	wr_status;
 				cb = coff / BLOCK_SIZE;
 				cb_off = (coff % BLOCK_SIZE) / WORD_SIZE;
 				tmp_off = UnPackIntHeader(therec,fd,&tmp_iheader,cb,cb_off);
+/*
+				fprintf(stdout,"reading timestep %d\n",tmp_iheader.MFILH);
+*/
 				if(tmp_off == -1) {
 					therec->dims[TIME_DIM_NUMBER].size = i+1;	
 					therec->header.iheader.MFILTH = i+1;       
