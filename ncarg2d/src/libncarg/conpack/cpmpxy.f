@@ -1,8 +1,5 @@
 C
-C	$Id: cpmpxy.f,v 1.1.1.1 1992-04-17 22:32:45 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpmpxy.f,v 1.2 1993-11-18 18:28:20 kennison Exp $
 C
       SUBROUTINE CPMPXY (IMAP,XINP,YINP,XOTP,YOTP)
 C
@@ -15,15 +12,15 @@ C coordinate transformations.  The user of CONPACK may replace this
 C subroutine as desired to transform the final coordinates and thus to
 C transform the objects drawn.
 C
-C NOTE:  As of 4/25/91, this routine calls a new EZMAP routine, called
-C MAPTRA, instead of MAPTRN.  The new routine returns 1.E12 for points
+C NOTE:  As of 4/25/91, the default CPMPXY calls the new EZMAP routine
+C MAPTRA instead of MAPTRN.  The new routine returns 1.E12 for points
 C which project outside the EZMAP perimeter.
 C
-C NOTE:  As of 1/14/92, this routine is being changed so that, when IMAP
-C is negated, the inverse mapping is requested:  (XINP,YINP) is a point
-C in the current user coordinate system; (XOTP,YOTP) is returned and is
-C the point which would be carried into (XINP,YINP) by the mapping
-C numbered ABS(IMAP).
+C NOTE:  As of 1/14/92, the default CPMPXY has been changed so that,
+C when IMAP is negated, the inverse mapping is requested:  (XINP,YINP)
+C is a point in the current user coordinate system; (XOTP,YOTP) is
+C returned and is the point which would be carried into (XINP,YINP) by
+C the mapping numbered ABS(IMAP).
 C
 C An additional convention has been adopted which will allow CONPACK to
 C find out whether a given inverse transformation is available.  A call
@@ -45,8 +42,15 @@ C Versions of CPMPXY that have not been updated to include these new
 C features should continue to work for a period of time, but ought to
 C be updated eventually.
 C
+C ---------------------------------------------------------------------
+C
+C Handle a request by the caller for information about the capabilities
+C of this version of CPMPXY.  Note that, if you modify CPMPXY to do
+C other mappings, you should update the following code to correctly
+C reflect the capabilities of the modified routine.
+C
       IF (IMAP.EQ.0) THEN
-        IF (INT(XINP).GE.1.AND.INT(XINP).LE.3) THEN
+        IF ((INT(XINP).GE.1.AND.INT(XINP).LE.2).OR.INT(XINP).GE.3) THEN
           YINP=3.
         ELSE
           YINP=0.
