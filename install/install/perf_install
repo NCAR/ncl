@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: perf_install,v 1.5 1993-06-23 00:23:42 clyne Exp $
+#      $Id: perf_install,v 1.6 1993-06-23 19:37:52 clyne Exp $
 #
 #########################################################################
 #									#
@@ -189,7 +189,7 @@ case	"cdrom":
 		set tars = ($ltars)
 		breaksw
 
-	case	"ULRTIX_RISC"
+	case	"ULTRIX_RISC"
 		set cd_system = "ULTRIX"
 		breaksw
 
