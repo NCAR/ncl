@@ -1,5 +1,5 @@
 /*
- *      $Id: xwkP.h,v 1.5 1998-10-19 20:25:55 boote Exp $
+ *      $Id: xwkP.h,v 1.6 1998-11-18 19:45:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,8 +24,10 @@
 
 #include <ncarg/ngo/goP.h>
 #include <ncarg/ngo/xwk.h>
-
 #include <ncarg/hlu/XWorkstationP.h>
+#include <ncarg/ngo/xinteract.h>
+
+#define DEBUG_XWK 0
 
 typedef struct _NgXWkClassRec *NgXWkClass;
 typedef struct _NgXWkRec *NgXWk;
@@ -33,6 +35,7 @@ typedef struct _NgXWkRec *NgXWk;
 typedef struct _NgXWkPart {
 /* required fields */
 	NhlXWorkstationLayer	xwork;
+	int			selected_view_id;
 
 /* private fields */
 	NhlBoolean		mapped;
@@ -55,8 +58,20 @@ typedef struct _NgXWkPart {
 	Dimension		grh;
 
 	Widget			size;
-
 	int			cmap_editor;
+
+	/* interaction stuff */
+	GC			xor_gc;
+	XPoint			lastp;
+	int			selected_view_ix;
+	int			*views;
+	int			view_count;
+	int			view_alloc_count;
+
+	NhlBoolean		auto_refresh;
+	NhlBoolean		draw_single_view;
+	NhlBoolean		select_rect_vis;
+	NhlBoolean		manipulate_eh_active;
 } NgXWkPart;
 
 typedef struct _NgXWkRec {

@@ -1,5 +1,5 @@
 /*
- *      $Id: appP.h,v 1.5 1998-08-21 01:14:17 dbrown Exp $
+ *      $Id: appP.h,v 1.6 1998-11-18 19:45:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -58,6 +58,7 @@ typedef struct _NgAppMgrPart {
 	NhlString		app_class;
 /* export fields */
 	int			nclstate;
+	NgWksState		wks_state;
 
 /* private fields */
 	_NhlCBList		gochangecb;
