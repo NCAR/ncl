@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.2 2003-01-06 23:42:07 fred Exp $
+ *      $Id: pdf.c,v 1.3 2003-01-23 21:03:28 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -90,7 +90,7 @@ char *PDFFontNames[] =
   };
 
 extern int      orig_wks_id;
-int             c_model,port_land;
+int             co_model,port_land;
 
 /*
  *  *********************** End Globals *******************************
@@ -315,7 +315,7 @@ void PDFOutputClipping (PDFddp *psa, int type)
   green = psa->color_map[3*current_color+1];
   blue  = psa->color_map[3*current_color+2];
 
-  if (c_model != 0) { 
+  if (co_model != 0) { 
     bump_page_lines();
     sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",
             red,green,blue);
@@ -453,7 +453,7 @@ void PDFpreamble (PDFddp *psa, preamble_type type)
     red   = psa->color_map[3*current_color  ];
     green = psa->color_map[3*current_color+1];
     blue  = psa->color_map[3*current_color+2];
-    if (c_model != 0) {
+    if (co_model != 0) {
       bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",
               red,green,blue);
@@ -661,9 +661,9 @@ static void PDFinit(PDFddp *psa, int *coords)
 
   /*
    *  Color model flag is in *(coords+5); set the global
-   *  variable c_model to its value.
+   *  variable co_model to its value.
    */
-  c_model = *(coords+5);
+  co_model = *(coords+5);
 
   /*
    *  Coordinate initializations (the scale factor is in *(coords+4)).
@@ -1830,7 +1830,7 @@ PDFPolyline(GKSC *gksc)
     red   = psa->color_map[3*requested_color  ];
     green = psa->color_map[3*requested_color+1];
     blue  = psa->color_map[3*requested_color+2];
-    if (c_model != 0) {
+    if (co_model != 0) {
       bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",
               red,green,blue);
@@ -1892,7 +1892,7 @@ PDFPolymarker(GKSC *gksc)
     green = psa->color_map[3*requested_color+1];
     blue  = psa->color_map[3*requested_color+2];
 
-    if (c_model != 0) {
+    if (co_model != 0) {
       bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",
               red,green,blue);
@@ -2008,7 +2008,7 @@ PDFText(GKSC *gksc)
     red   = psa->color_map[3*requested_color  ];
     green = psa->color_map[3*requested_color+1];
     blue  = psa->color_map[3*requested_color+2];
-    if (c_model != 0) {
+    if (co_model != 0) {
       bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",
               red,green,blue);
@@ -2463,7 +2463,7 @@ PDFFillArea(GKSC *gksc)
     green = psa->color_map[3*requested_color+1];
     blue  = psa->color_map[3*requested_color+2];
 
-    if (c_model != 0) {
+    if (co_model != 0) {
       bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",
               red,green,blue);
@@ -2658,7 +2658,7 @@ PDFCellarray(GKSC *gksc)
   sprintf(page_lines[num_page_lines],"/H %6d\n",ny);
   stream_size += 10;
   bump_page_lines();
-  if (c_model != 0) {
+  if (co_model != 0) {
     sprintf(page_lines[num_page_lines],"/CS /RGB\n");
     stream_size += 9;
   }
@@ -2690,7 +2690,7 @@ PDFCellarray(GKSC *gksc)
         line_offset = 0;
       }
       color_index = xptr[index];
-      if (c_model != 0) {
+      if (co_model != 0) {
         sprintf(page_lines[num_page_lines]+line_offset,"%02X%02X%02X",
           (int)(255. * (psa->color_map[3*color_index  ])),
           (int)(255. * (psa->color_map[3*color_index+1])),
@@ -2967,7 +2967,7 @@ PDFSetColorRepresentation(GKSC *gksc)
  *  color, reset the current color to the newly defined value.
  */
   if (psa->attributes.pdf_colr_ind == (int) index ) {
-    if (c_model != 0) {
+    if (co_model != 0) {
       bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",r,g,b);
       stream_size += 21;
@@ -3159,7 +3159,7 @@ PDFEsc(GKSC *gksc)
   case -1511:  /* Restore color setting after segment copy */
     psa->attributes.pdf_colr_ind = saved_color_index;
 
-    if (c_model != 0) {
+    if (co_model != 0) {
       bump_page_lines();
       sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",
               sred,sgreen,sblue);
@@ -3722,7 +3722,7 @@ void PDFPlotBackground(PDFddp *psa, int xll, int yll, int xur, int yur) {
   g = psa->color_map[1];
   b = psa->color_map[2];
 
-  if (c_model != 0) {
+  if (co_model != 0) {
     bump_page_lines();
     sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",r,g,b);
     stream_size += 21;
@@ -3756,7 +3756,7 @@ void PDFPlotBackground(PDFddp *psa, int xll, int yll, int xur, int yur) {
   g = psa->color_map[3*current_color+1];
   b = psa->color_map[3*current_color+2];
 
-  if (c_model != 0) {
+  if (co_model != 0) {
     bump_page_lines();
     sprintf(page_lines[num_page_lines],"%5.2f %5.2f %5.2f RG\n",r,g,b);
     stream_size += 21;
