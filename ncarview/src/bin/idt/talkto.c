@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.2 1991-01-09 10:53:29 clyne Exp $
+ *	$Id: talkto.c,v 1.3 1991-01-30 12:48:15 clyne Exp $
  */
 /*
  *	talkto.c
@@ -26,9 +26,10 @@
 #endif
 
 #ifndef	sun
-#define	vfork	fork
+#define	FORK	fork
 #else
 #include <vfork.h>
+#define	FORK	vfork
 #endif
 
 #include <ncarv.h>
@@ -46,6 +47,23 @@ static	struct	{
 	} Translators[MAX_DISPLAYS];	
 
 static	int	hFD;	/* history file file descriptor	*/
+
+#ifdef	CRAY
+static	void	reaper()
+{
+	int	pid;
+	sighold(SIGCLD);	/* hold signals	*/
+
+	if ((pid = wait(&status)) == -1) {
+		perror("wait");
+		exit(1);
+	}
+
+	close_trans_pid(pid);	/* close connection to dead kid	*/
+
+	sigrelse(SIGCLD);
+}
+#endif
 	
 
 /*
@@ -104,6 +122,15 @@ OpenTranslator(channel, device, font, metafile, hfd)
 		(void) strcpy(translator, TRANSLATOR);
 #endif
 
+#ifdef	CRAY
+		/*
+		 * no wait3() in unicos, use signals
+		 */
+		if (sigctl(SCTL_REG, SIGCLD, repear) < 0) {
+			perror("sigctl");
+			exit(1);
+		}
+#endif
 		first = 0;
 	}
 
@@ -134,7 +161,7 @@ OpenTranslator(channel, device, font, metafile, hfd)
 	}
 		
 
-	pid = vfork();
+	pid = FORK();
 	switch	(pid)	{
 	case	-1:
 		perror((char *) NULL);
