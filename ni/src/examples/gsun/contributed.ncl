@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.32 2004-01-31 22:50:51 shea Exp $
+;      $Id: contributed.ncl,v 1.33 2004-02-17 00:11:21 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -5745,12 +5745,12 @@ begin
 
   if (typeof(opt).eq."string") then
       nrow = dimsizes(xs)
-      noptc = dimsizes(stringtochar(opt))-1
+      noptc = dimsizes(stringtochar(opt))-2  ; account for added carriage return(CR)
     ;;print ("nrow="+nrow+"  noptc="+noptc)
       
       do nr=0,nrow-1
-         xc  = stringtochar(xs(nr))
-         nxc = dimsizes(xc)
+         xc  = stringtochar(xs(nr))          ; xc will have CR
+         nxc = dimsizes(xc)-2
          if (nxc.ge.noptc .and. opt.eq.chartostring(xc(0:noptc))) then
              return( xs(0:nr) )
              exit
@@ -5762,9 +5762,9 @@ begin
 
   if (typeof(opt).eq."float") then
       nrow = floattointeger(opt)    ; # of rows to be read as float
-      asciiwrite ("HeAdBoGuSfile", xs(0:nrow-1))
-      f_head = asciiread("HeAdBoGuSfile", -1, "float")
-      system("/bin/rm HeAdBoGuSfile")
+      asciiwrite ("./HeAdBoGuSfile", xs(0:nrow-1))
+      f_head = asciiread("./HeAdBoGuSfile", -1, "float")
+      system("/bin/rm ./HeAdBoGuSfile")
       return(f_head)
   end if
 
@@ -5788,17 +5788,17 @@ function readAsciiTable( fName:string, ncol:integer, datatype:string, opt)
 local head, nh, xs, nrow, table
 begin
   head = readAsciiHead( fName, opt)
-  nh   = dimsizes(head)
+  nh   = dimsizes(head)              ; # header records
 ; ********************************************************
 ; read each data row: trick
 ;      (1) write strings as a tempoarary file;
 ;      (2) read temporary file back in as 2D 
 ; ********************************************************
   xs   = asciiread(fName, -1, "string") ; all rows as strings
-  nrow = dimsizes(xs)-nh
-  asciiwrite ("tempBOGUSfile", xs(nh:))
-  table = asciiread("tempBOGUSfile", (/nrow,ncol/), datatype)
-  system("/bin/rm tempBOGUSfile")
+  nrow = dimsizes(xs)-nh                ; # rows containing data
+  asciiwrite ("./DaTaBoGuSfile", xs(nh:))
+  table = asciiread("./DaTaBoGuSfile", (/nrow,ncol/), datatype)
+  system("/bin/rm ./DaTaBoGuSfile")
   return(table)
 end
 
