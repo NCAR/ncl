@@ -1,11 +1,7 @@
 #
-#	$Id: yMakefile,v 1.5 1994-10-31 04:08:17 haley Exp $
+#	$Id: yMakefile,v 1.6 1994-11-03 21:05:01 haley Exp $
 #
 
-EXAMPLES = c_ffex00.c c_ffex01.c c_ffex04.c c_fstream.c c_stex02.c c_stex03.c \
-	c_stex01.c c_ffex03.c
-
-TESTS = c_tstrml.c c_tstrm2.c 
+EXAMPLES = c_ffex03.c
 
 InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
-InstallTarget($(TESTS),$(INSTALL_LIB),$(TESTSPATH))
