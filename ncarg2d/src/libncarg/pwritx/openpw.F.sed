@@ -1,36 +1,39 @@
 C
-C   $Id: openpw.F.sed,v 1.1 1992-09-25 19:35:56 ncargd Exp $
+C   $Id: openpw.F.sed,v 1.2 1992-10-20 22:41:54 haley Exp $
 C
       SUBROUTINE OPENPW (IUNIT)
       CHARACTER*128 FILENM
+	  DATA FILENM / ' ' /
       SAVE IOPEN
       DATA IOPEN / 0 /
       IF (IOPEN.EQ.0) THEN
-      CALL GNGPAT (FILENM,'SED_DBDIR',ISTATUS)
-      IF (ISTATUS .NE. -1) THEN
+      CALL GNGPAT (FILENM,'SED_DBDIR',ISTAT)
+      IF (ISTAT .NE. -1) THEN
           DO 101 I=1,119
               IF (FILENM(I:I).EQ.CHAR(0)) THEN
                   FILENM(I:I+9)='/pwritdata'
-                  GO TO 102
+                  GO TO 104
               END IF
  101      CONTINUE
-          GO TO 104
+          GO TO 105
       ELSE
-         GO TO 103
+          DO 102 I=2,128
+              LENEM=I
+              IF (FILENM(I:I).EQ.CHAR(0)) GO TO 103
+ 102     CONTINUE
+ 103     PRINT * , 'OPENPW - ',FILENM(1:LENEM-1)
+         STOP
       ENDIF
 #if defined(ultrix) && defined(mips)
- 102  OPEN (UNIT=IUNIT,FILE=FILENM,STATUS='OLD',FORM='UNFORMATTED',
-     +    READONLY,ERR=104)
+ 104  OPEN (UNIT=IUNIT,FILE=FILENM,STATUS='OLD',FORM='UNFORMATTED',
+     +    READONLY,ERR=105)
 #else
- 102  OPEN (UNIT=IUNIT,FILE=FILENM,STATUS='OLD',FORM='UNFORMATTED',
-     +    ERR=104)
+ 104  OPEN (UNIT=IUNIT,FILE=FILENM,STATUS='OLD',FORM='UNFORMATTED',
+     +    ERR=105)
 #endif
       IOPEN=1
       END IF
       RETURN
- 103  WRITE (6,*) FILENM
-      GO TO 105
- 104  WRITE (6,*) 'ERROR IN OPENING ',FILENM
- 105  CONTINUE
+ 105  WRITE (6,*) 'ERROR IN OPENING ',FILENM
       STOP
       END
