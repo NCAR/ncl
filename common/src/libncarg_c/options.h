@@ -31,6 +31,7 @@ typedef	enum	{
 #define	IntType_	int
 #define	StringType_	char *
 #define	BoolType_	boolean
+#define	FloatType_	float
 
 /*
  *	structure for describing a valid option to buildOptionTable

@@ -46,6 +46,22 @@ static	conv_to_int(s, value)
 	}
 }
 /*
+ *	conv_to_float:
+ *
+ *	convert a ascii string to its floating point value
+ */
+static	conv_to_float(s, value)
+	char	*s;	/* the string	*/
+	FloatType_	*value;	/* it value	*/
+{
+	if (sscanf(s, "%f", value) != 1) {
+
+		(void) fprintf(stderr, 
+			"Type conversion for %s to int failed\n", s);
+
+	}
+}
+/*
  *	conv_to_bool:
  *
  *	convert a ascii string containing either "true" or "false" to
@@ -91,6 +107,7 @@ getOptions(base, options)
 
 	StringType_	string_value;
 	IntType_	int_value;
+	FloatType_	float_value;
 	BoolType_	bool_value;
 	OptDescRec	*opt;
 	OptDescRec	*get_option();
@@ -132,6 +149,10 @@ getOptions(base, options)
 			break;
 
 		case	FloatType:
+			conv_to_float(opt->value, &float_value);
+			bcopy((char *) &float_value, (char *) address,
+				(int) options[i].option_size);
+			break;
 		default	:
 			(void) fprintf(stderr, "Unsupported option type\n");
 			break;
