@@ -27,6 +27,8 @@ C
       DIMENSION CIRCX(513),CIRCY(513),CIRCXX(513),CIRCYY(513)
       INTEGER   OLDASF(13),NEWASF(13)
 C
+      SAVE IFIRST
+C
 C  PI and number of points per unit of arc length.
 C
       DATA PI,NPU/3.1415927,1200/
@@ -46,8 +48,6 @@ C
       DATA SM/.001/
 C
       DATA IFIRST/0/
-C
-      SAVE IFIRST
 C
 C  If log scaling or mirror imaging has been requested, issue a
 C  warning that only GKS world coordinates are accepted.
