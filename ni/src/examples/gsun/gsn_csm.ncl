@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.164 2004-05-12 15:55:25 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.165 2004-06-01 22:55:43 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2235,6 +2235,15 @@ end
 function fill_xy2(wks,plot,xi:numeric,yi1:numeric,yi2:numeric,colora,colorb)
 local nx, ny1, ny2, y1_gt_y2, i, ab, bpt, ept, x, y1, y2, color, first, last
 begin
+;
+; If all the data are missing, don't continue.
+;
+  if(all(ismissing(xi)).or.all(ismissing(yi1)).or.all(ismissing(yi2))) then
+    dummy = new(1,graphic)
+    print("fill_xy2: one or more input datasets contain all missing values; no plot generated.")
+    return(dummy)
+  end if
+
   res = True
 ;
 ; Check length of arrays.
@@ -4482,12 +4491,20 @@ end
 ;***********************************************************************;
 
 function gsn_csm_contour_map_polar(wks:graphic,data[*][*]:numeric, \
-                                resources:logical)
+                                   resources:logical)
 local i, contour_object, map_object, res, lbar_pos, lbar_zone, \
 lbar_on, calldraw, callframe, main_offset, datanew, res2, cnres, mpres, \
 vpwf, vphf, font_height, levels, colors, zonal_zone, lbres, \
 infolabel_on, infolabel_zone, lbar_zone, lbar_height, lbar_width
 begin
+;
+; If all the data are missing, don't continue.
+;
+    if(all(ismissing(data))) then
+      dummy = new(1,graphic)
+      print("gsn_csm_contour_map_polar: all the data are missing, no plot generated.")
+      return(dummy)
+    end if
 
 ; Initialize.
     lbar_on       = False     ; Labelbar flag
@@ -4672,6 +4689,15 @@ res, res2, lbres, xy_res, mpres, cnres, levels, colors, \
 lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just, \
 map_vpwf, map_vphf, vphf, contour_plot
 begin
+;
+; If all the data are missing, don't continue.
+;
+    if(all(ismissing(data))) then
+      dummy = new(1,graphic)
+      print("gsn_csm_contour_map_ce: all the data are missing, no plot generated.")
+      return(dummy)
+    end if
+
 ; Initialize.
     lbar_on        = False    ; Default is no labelbar.
     mpres          = True
@@ -5054,6 +5080,15 @@ res, res2, lbres, xy_res, mpres, cnres, levels, colors, \
 lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just, \
 map_vpwf, map_vphf, vphf, contour_plot
 begin
+;
+; If all the data are missing, don't continue.
+;
+    if(all(ismissing(data))) then
+      dummy = new(1,graphic)
+      print("gsn_csm_contour_map_other: one or more input datasets contain all missing values; no plot generated.")
+      return(dummy)
+    end if
+
 ; Initialize.
     lbar_on        = False    ; Default is no labelbar.
     mpres          = True
@@ -5238,11 +5273,19 @@ end
 ;***********************************************************************;
 
 function gsn_csm_vector_map_ce(wks:graphic,u[*][*]:numeric,v[*][*]:numeric,\
-                                resources:logical)
+                               resources:logical)
 local i, vector_object, map_object, res, res2, calldraw, vcres, \
 lbres, map_vpwf, map_vphf, vpwf, vphf, callframe, min_lat, max_lat, \
 lbar_on, lbar_zone, unew, vnew
 begin
+;
+; If all the data are missing, don't continue.
+;
+    if(all(ismissing(u)).or.all(ismissing(v))) then
+      dummy = new(1,graphic)
+      print("gsn_csm_vector_map_ce: one or more input datasets contain all missing values; no plot generated.")
+      return(dummy)
+    end if
 
 ; Initialize.
     annolabel_zone = 2        ; Zone for vector anno label
@@ -5472,6 +5515,14 @@ local i, vector_object, map_object, res, res2, calldraw, vcres, \
 lbres, map_vpwf, map_vphf, vpwf, vphf, callframe, min_lat, max_lat, \
 lbar_on, lbar_zone, unew, vnew
 begin
+;
+; If all the data are missing, don't continue.
+;
+    if(all(ismissing(u)).or.all(ismissing(v))) then
+      dummy = new(1,graphic)
+      print("gsn_csm_vector_map_polar: one or more input datasets contain all missing values; no plot generated.")
+      return(dummy)
+    end if
 
 ; Initialize.
     lbar_on        = False
@@ -5646,6 +5697,15 @@ res, res2, lbres, xy_res, mpres, vcres, levels, colors, \
 lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just, \
 map_vpwf, map_vphf, vphf 
 begin
+;
+; If all the data are missing, don't continue.
+;
+    if(all(ismissing(u)).or.all(ismissing(v))) then
+      dummy = new(1,graphic)
+      print("gsn_csm_vector_map_other: one or more input datasets contain all missing values; no plot generated.")
+      return(dummy)
+    end if
+
 ; Initialize.
     lbar_on        = False    ; Default is no labelbar.
     mpres          = True
@@ -5803,6 +5863,14 @@ function gsn_csm_streamline_map_ce(wks:graphic,u[*][*]:numeric,\
 local i, stream_object, map_object, stres, calldraw, callframe, \
 min_lat, max_lat, unew, vnew, res, res2, map_vpwf, map_vphf, vpwf, vphf
 begin
+;
+; If all the data are missing, don't continue.
+;
+    if(all(ismissing(u)).or.all(ismissing(v))) then
+      dummy = new(1,graphic)
+      print("gsn_csm_streamline_map_ce: one or more input datasets contain all missing values; no plot generated.")
+      return(dummy)
+    end if
 
 ; Initialize.
     infolabel_zone = 2        ; Zone for info label (may change later)
@@ -5969,6 +6037,14 @@ function gsn_csm_streamline_map_polar(wks:graphic,u[*][*]:numeric, \
 local i, stream_object, map_object, res, res2, calldraw, stres, \
 map_vpwf, map_vphf, vpwf, vphf, callframe, unew, vnew
 begin
+;
+; If all the data are missing, don't continue.
+;
+    if(all(ismissing(u)).or.all(ismissing(v))) then
+      dummy = new(1,graphic)
+      print("gsn_csm_streamline_map_polar: one or more input datasets contain all missing values; no plot generated.")
+      return(dummy)
+    end if
 
 ; Initialize.
     mpres          = True
@@ -6097,6 +6173,15 @@ local i, stream_object, labelbar_object, xy_object, map_object, \
 calldraw, callframe, lbar_on, min_lat, max_lat, datanew, \
 res, res2, mpres, stres, map_vpwf, map_vphf, vphf 
 begin
+;
+; If all the data are missing, don't continue.
+;
+    if(all(ismissing(u)).or.all(ismissing(v))) then
+      dummy = new(1,graphic)
+      print("gsn_csm_streamline_map_other: one or more input datasets contain all missing values; no plot generated.")
+      return(dummy)
+    end if
+
 ; Initialize.
     mpres          = True
 
@@ -6209,6 +6294,14 @@ local i, stream_object, map_object, res, res2, \
 calldraw, callframe, min_lat, max_lat, unew, vnew, datanew, \
 map_vpwf, map_vphf, vpwf, vphf, lbar_on
 begin
+;
+; If all the data are missing, don't continue.
+;
+    if(all(ismissing(data)).or.all(ismissing(u)).or.all(ismissing(v))) then
+      dummy = new(1,graphic)
+      print("gsn_csm_streamline_contour_map_ce: one or more input datasets contain all missing values; no plot generated.")
+      return(dummy)
+    end if
 
 ; Initialize.
     infolabel_on   = False
@@ -6442,6 +6535,15 @@ local i, stream_object, map_object, res, res2, calldraw, vcres, \
 lbres, vpwf, vphf, callframe, lbar_on, lbar_zone, unew, vnew
 begin
 ;
+; If all the data are missing, don't continue.
+;
+    if(all(ismissing(data)).or.all(ismissing(u)).or.all(ismissing(v))) then
+      dummy = new(1,graphic)
+      print("gsn_csm_streamline_contour_map_polar: one or more input datasets contain all missing values; no plot generated.")
+      return(dummy)
+    end if
+
+;
 ; The default is to draw streamlines colored by a scalar field, so this
 ; means a labelbar should be drawn, and no contour information is 
 ; needed.
@@ -6629,6 +6731,15 @@ res, res2, lbres, mpres, vcres, levels, colors, \
 lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just, \
 map_vpwf, map_vphf, vphf 
 begin
+;
+; If all the data are missing, don't continue.
+;
+    if(all(ismissing(data)).or.all(ismissing(u)).or.all(ismissing(v))) then
+      dummy = new(1,graphic)
+      print("gsn_csm_streamline_contour_map_other: one or more input datasets contain all missing values; no plot generated.")
+      return(dummy)
+    end if
+
 ; Initialize.
     infolabel_on   = False
     lbar_on        = False    ; Default is no labelbar.
@@ -6801,11 +6912,19 @@ end
 ; according to the scalar field. This resource defaults to False.       ;
 ;***********************************************************************;
 
-function gsn_csm_vector_scalar(wks:graphic,u[*][*]:numeric,\
-                   v[*][*]:numeric,data[*][*]:numeric,resources:logical)
+function gsn_csm_vector_scalar(wks:graphic,u[*][*]:numeric,v[*][*]:numeric, \
+                               data[*][*]:numeric,resources:logical)
 local i, vector_object, res, res2, \
 calldraw, callframe, unew, vnew, datanew, vpwf, vphf, lbar_on
 begin
+;
+; If all the data are missing, don't continue.
+;
+    if(all(ismissing(data)).or.all(ismissing(u)).or.all(ismissing(v))) then
+      dummy = new(1,graphic)
+      print("gsn_csm_vector_scalar_map_other: one or more input datasets contain all missing values; no plot generated.")
+      return(dummy)
+    end if
 
 ; Initialize.
     main_zone      = 2         ; Zone for main title (may change later)
@@ -7074,6 +7193,14 @@ local i, vector_object, map_object, res, res2, \
 calldraw, callframe, min_lat, max_lat, unew, vnew, datanew, \
 map_vpwf, map_vphf, vpwf, vphf, lbar_on
 begin
+;
+; If all the data are missing, don't continue.
+;
+    if(all(ismissing(data)).or.all(ismissing(u)).or.all(ismissing(v))) then
+      dummy = new(1,graphic)
+      print("gsn_csm_vector_scalar_map_ce: one or more input datasets contain all missing values; no plot generated.")
+      return(dummy)
+    end if
 
 ; Initialize.
     infolabel_on   = False
@@ -7377,6 +7504,15 @@ local i, vector_object, map_object, res, res2, calldraw, vcres, \
 lbres, vpwf, vphf, callframe, lbar_on, lbar_zone, unew, vnew
 begin
 ;
+; If all the data are missing, don't continue.
+;
+    if(all(ismissing(data)).or.all(ismissing(u)).or.all(ismissing(v))) then
+      dummy = new(1,graphic)
+      print("gsn_csm_vector_scalar_map_polar: one or more input datasets contain all missing values; no plot generated.")
+      return(dummy)
+    end if
+
+;
 ; The default is to draw vectors colored by a scalar field, so this
 ; means a labelbar should be drawn, and no contour information is 
 ; needed.
@@ -7603,6 +7739,15 @@ res, res2, lbres, mpres, vcres, levels, colors, \
 lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just, \
 map_vpwf, map_vphf, vphf 
 begin
+;
+; If all the data are missing, don't continue.
+;
+    if(all(ismissing(data)).or.all(ismissing(u)).or.all(ismissing(v))) then
+      dummy = new(1,graphic)
+      print("gsn_csm_vector_scalar_map_other: one or more input datasets contain all missing values; no plot generated.")
+      return(dummy)
+    end if
+
 ; Initialize.
     infolabel_on   = False
     refanno_on     = True
@@ -7818,6 +7963,15 @@ function gsn_csm_contour_map(wks:graphic,data[*][*]:numeric,\
                              resources:logical)
 local res
 begin
+;
+; If all the data are missing, don't continue.
+;
+  if(all(ismissing(data))) then
+    dummy = new(1,graphic)
+    print("gsn_csm_contour_map: all the data are missing, no plot generated.")
+    return(dummy)
+  end if
+
   res = get_resources(resources)
   if(res.and.(isatt(res,"gsnPolarNH").or.isatt(res,"gsnPolarSH").or.\
               isatt(res,"gsnPolar")))
@@ -7850,6 +8004,15 @@ function gsn_csm_streamline_map(wks:graphic,u[*][*]:numeric,v[*][*]:numeric,\
                                 resources:logical)
 local res
 begin
+;
+; If all the data are missing, don't continue.
+;
+  if(all(ismissing(u)).or.all(ismissing(v))) then
+    dummy = new(1,graphic)
+    print("gsn_csm_streamline_map: one or more input datasets contain all missing values; no plot generated.")
+    return(dummy)
+  end if
+
   res = get_resources(resources)
 
   if(res.and.(isatt(res,"gsnPolarNH").or.isatt(res,"gsnPolarSH").or.\
@@ -7883,6 +8046,15 @@ function gsn_csm_vector_map(wks:graphic,u[*][*]:numeric,v[*][*]:numeric,\
                             resources:logical)
 local res
 begin
+;
+; If all the data are missing, don't continue.
+;
+  if(all(ismissing(u)).or.all(ismissing(v))) then
+    dummy = new(1,graphic)
+    print("gsn_csm_vector_map: one or more input datasets contain all missing values; no plot generated.")
+    return(dummy)
+  end if
+
   res  = get_resources(resources)
 
   if(res.and.(isatt(res,"gsnPolarNH").or.isatt(res,"gsnPolarSH").or.\
@@ -7918,6 +8090,15 @@ function gsn_csm_vector_scalar_map(wks:graphic,u[*][*]:numeric, \
                                    resources:logical)
 local res
 begin
+;
+; If all the data are missing, don't continue.
+;
+  if(all(ismissing(data)).or.all(ismissing(u)).or.all(ismissing(v))) then
+    dummy = new(1,graphic)
+    print("gsn_csm_vector_scalar_map: one or more input datasets contain all missing values; no plot generated.")
+    return(dummy)
+  end if
+
   res  = get_resources(resources)
 
   if(res.and.(isatt(res,"gsnPolarNH").or.isatt(res,"gsnPolarSH").or.\
@@ -7954,6 +8135,15 @@ function gsn_csm_streamline_contour_map(wks:graphic,u[*][*]:numeric, \
                                    resources:logical)
 local res
 begin
+;
+; If all the data are missing, don't continue.
+;
+  if(all(ismissing(data)).or.all(ismissing(u)).or.all(ismissing(v))) then
+    dummy = new(1,graphic)
+    print("gsn_csm_streamline_contour_map: one or more input datasets contain all missing values; no plot generated.")
+    return(dummy)
+  end if
+
   res  = get_resources(resources)
 
   if(res.and.(isatt(res,"gsnPolarNH").or.isatt(res,"gsnPolarSH").or.\
@@ -7988,6 +8178,15 @@ function gsn_csm_contour_map_overlay(wks:graphic,data1[*][*]:numeric,\
                                 data2[*][*]:numeric,res1:logical,res2:logical)
 local calldraw, callframe, res1_tmp, res2_tmp
 begin
+;
+; If all the data are missing, don't continue.
+;
+  if(all(ismissing(data1)).or.all(ismissing(data2))) then
+    dummy = new(1,graphic)
+    print("gsn_csm_contour_map_overlay: one or more input datasets contain all missing values; no plot generated.")
+    return(dummy)
+  end if
+
   res1_tmp  = get_resources(res1)   ; Transfer attributes
   res2_tmp  = get_resources(res2)   ; Transfer attributes
   res1_tmp  = True 
@@ -8124,6 +8323,14 @@ local res, xy_object, res2, xfontf, yfontf, font_height, calldraw, nlines, \
 callframe, left_string, center_string, right_string, main_zone, ncurves, \
 yabove, ybelow, ya_ind, yb_ind, xinterp, yinterp, bar_chart
 begin
+;
+; If all the data are missing, don't continue.
+;
+    if(all(ismissing(x)).or.all(ismissing(y))) then
+      dummy = new(1,graphic)
+      print("gsn_csm_xy: one or more input datasets contain all missing values; no plot generated.")
+      return(dummy)
+    end if
 
 ; Initialize.
     main_zone     = 2         ; Zone for main title (may change later)
@@ -8896,6 +9103,15 @@ end
 function gsn_csm_y(wks:graphic, y:numeric, resources:logical )
 local dsizes_y, npts, x, rank_y, xy
 begin
+;
+; If all the data are missing, don't continue.
+;
+    if(all(ismissing(y))) then
+      dummy = new(1,graphic)
+      print("gsn_csm_y: all the data are missing, no plot generated.")
+      return(dummy)
+    end if
+
   res2 = get_resources(resources)
 ;
 ; Get dimension sizes of Y array.
@@ -8941,7 +9157,7 @@ end
 ;                    axes used are top/right.                           ;
 ;              axis: which axis has the multiple curves ("x" means      ;
 ;                    the X axes has the multiple curves, "y" is for the ;
-;                    Y axies, and "xy" for both axes)                   ;
+;                    Y axes, and "xy" for both axes)                    ;
 ;         plot_type: whether we're doing generic gsn, or gsn_csm        ;
 ;                                                                       ;
 ; Originally created by Dennis Shea to allow two Y curves with two      ;
@@ -8958,6 +9174,17 @@ function plot_x2y2 (wks:graphic, x1:numeric, x2:numeric, \
                                  axis:string, plot_type:string)
 local locRes1, locRes2, Atts1, Atts2, xy1, xy2, calldraw, callframe, maxbb 
 begin
+;
+; If all the data are missing, don't continue.
+;
+    if( (all(ismissing(x1)).or.all(ismissing(y1))) .or. \
+        ((axis.eq."x".or.axis.eq."xy").and.all(ismissing(x2))) .or. \
+        ((axis.eq."y".or.axis.eq."xy").and.all(ismissing(y2)))) then
+      dummy = new(1,graphic)
+      print("plot_x2y2: one or more input datasets contain all missing values; no plot generated.")
+      return(dummy)
+    end if
+
 ;
 ; Make copy of local resources.
 ;
@@ -9318,6 +9545,14 @@ local res, contour_object, res2, xfontf, yfontf, font_height, lbar_on, \
 calldraw, callframe, left_string, center_string, right_string, \
 main_zone, datanew, popgrid, contour_plot
 begin
+;
+; If all the data are missing, don't continue.
+;
+  if(all(ismissing(data))) then
+    dummy = new(1,graphic)
+    print("gsn_csm_contour: all the data are missing, no plot generated.")
+    return(dummy)
+  end if
 
 ; Initialize.
     lbar_on       = False     ; Labelbar flag
@@ -9499,6 +9734,14 @@ function gsn_csm_hov(wks:graphic,data[*][*]:numeric,resources:logical)
 local res, contour_object, res2, font_height, calldraw, callframe, \
 datanew, lon_spacing, contour_plot
 begin
+;
+; If all the data are missing, don't continue.
+;
+  if(all(ismissing(data))) then
+    dummy = new(1,graphic)
+    print("gsn_csm_hov: all the data are missing, no plot generated.")
+    return(dummy)
+  end if
 
 ; Initialize.
     res2         = get_resources(resources)
@@ -9578,6 +9821,14 @@ function gsn_csm_lat_time(wks:graphic,data[*][*]:numeric,resources:logical)
 local res, contour_object, res2, font_height, calldraw, callframe, \
 datanew, lat_spacing
 begin
+;
+; If all the data are missing, don't continue.
+;
+  if(all(ismissing(data))) then
+    dummy = new(1,graphic)
+    print("gsn_csm_lat_time: all the data are missing, no plot generated.")
+    return(dummy)
+  end if
 
 ; Initialize.
     res2         = get_resources(resources)
@@ -9643,6 +9894,14 @@ function gsn_csm_time_lat(wks:graphic,data[*][*]:numeric,resources:logical)
 local res, contour_object, res2, font_height, calldraw, callframe, \
 datanew, lat_spacing
 begin
+;
+; If all the data are missing, don't continue.
+;
+  if(all(ismissing(data))) then
+    dummy = new(1,graphic)
+    print("gsn_csm_time_lat: all the data are missing, no plot generated.")
+    return(dummy)
+  end if
 
 ; Initialize.
     res2         = get_resources(resources)
@@ -9710,6 +9969,14 @@ function gsn_csm_pres_hgt(wks:graphic,data[*][*]:numeric,resources:logical)
 local res, contour_object, res2, xfontf, yfontf, font_height, \
 calldraw, callframe, add_hgt, contour_plot
 begin
+;
+; If all the data are missing, don't continue.
+;
+  if(all(ismissing(data))) then
+    dummy = new(1,graphic)
+    print("gsn_csm_pres_hgt: all the data are missing, no plot generated.")
+    return(dummy)
+  end if
 
 ; Initialize.
     add_hgt       = False
@@ -9916,6 +10183,14 @@ local res, vector_object, res2, xfontf, yfontf, font_height, lbar_on, \
 calldraw, callframe, left_string, center_string, right_string, \
 main_zone, unew, vnew
 begin
+;
+; If all the data are missing, don't continue.
+;
+  if(all(ismissing(u)).or.all(ismissing(v))) then
+    dummy = new(1,graphic)
+    print("gsn_csm_contour: one or more input datasets contain all missing values; no plot generated.")
+    return(dummy)
+  end if
 
 ; Initialize.
     lbar_on       = False     ; Labelbar flag
@@ -10080,6 +10355,15 @@ function gsn_csm_pres_hgt_vector(wks:graphic,data[*][*]:numeric, \
                                  resources:logical)
 local res2, cnres, vcres, calldraw, callframe, npres, lbar_zone, anno_zone
 begin
+;
+; If all the data are missing, don't continue.
+;
+  if(all(ismissing(u)).or.all(ismissing(v)).or.all(ismissing(data))) then
+    dummy = new(1,graphic)
+    print("gsn_csm_pres_hgt_vector: one or more input datasets contain all missing values; no plot generated.")
+    return(dummy)
+  end if
+
   res2      = get_resources(resources)
 
   calldraw  = get_res_value(res2,"gsnDraw", True)
@@ -10188,6 +10472,15 @@ local res, stream_object, res2, xfontf, yfontf, font_height, \
 calldraw, callframe, left_string, center_string, right_string, \
 main_zone, unew, vnew
 begin
+;
+; If all the data are missing, don't continue.
+;
+  if(all(ismissing(u)).or.all(ismissing(v))) then
+    dummy = new(1,graphic)
+    print("gsn_csm_streamline: one or more input datasets contain all missing values; no plot generated.")
+    return(dummy)
+  end if
+
 
 ; Initialize.
     main_zone     = 2         ; Zone for main title (may change later)
@@ -10333,6 +10626,15 @@ function gsn_csm_pres_hgt_streamline(wks:graphic,data[*][*]:numeric, \
                                      resources:logical)
 local res2, cnres, stres, calldraw, callframe, npres
 begin
+;
+; If all the data are missing, don't continue.
+;
+  if(all(ismissing(u)).or.all(ismissing(v)).or.all(ismissing(data))) then
+    dummy = new(1,graphic)
+    print("gsn_csm_pres_hgt_streamline: one or more input datasets contain all missing values; no plot generated.")
+    return(dummy)
+  end if
+
   res2      = get_resources(resources)
 
   calldraw  = get_res_value(res2,"gsnDraw", True)
