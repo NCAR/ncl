@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.1 1997-02-27 20:25:47 boote Exp $
+ *      $Id: xwk.c,v 1.2 1997-06-04 18:08:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -428,7 +428,7 @@ XWkCreateWin
 	Widget			vmenu,omenu,wmenu,hmenu;
 	Widget			file,edit,view,options,window,help;
 	Widget			addfile,load,close,quit;
-	Widget			ncledit;
+	Widget			ncledit,browse;
 
 	menubar =XtVaCreateManagedWidget("menubar",xmRowColumnWidgetClass,
 									manager,
@@ -524,6 +524,11 @@ XWkCreateWin
 					xmPushButtonGadgetClass,wmenu,
 		NULL);
 	XtAddCallback(ncledit,XmNactivateCallback,_NgGODefActionCB,NULL);
+        
+	browse = XtVaCreateManagedWidget("browseWindow",
+					xmPushButtonGadgetClass,wmenu,
+		NULL);
+	XtAddCallback(browse,XmNactivateCallback,_NgGODefActionCB,NULL);
 
 	XtManageChild(fmenu);
 	XtManageChild(emenu);

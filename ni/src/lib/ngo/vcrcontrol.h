@@ -1,5 +1,5 @@
 /*
- *      $Id: vcrcontrol.h,v 1.1 1997-03-04 00:04:43 dbrown Exp $
+ *      $Id: vcrcontrol.h,v 1.2 1997-06-04 18:08:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -72,5 +72,9 @@ NhlErrorTypes NgUpdateVcrControl
         NgVcrControl		vcr_control
         );
         
+void NgDestroyVcrControl
+(
+        NgVcrControl		vcr_control
+        );
 
 #endif	/* _NG_VCRCONTROL_H */

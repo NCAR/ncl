@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.3 1997-02-27 20:25:44 boote Exp $
+ *      $Id: mwin.c,v 1.4 1997-06-04 18:08:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -845,7 +845,7 @@ MWCreateWin
 	Widget		vmenu,omenu,wmenu,hmenu;
 	Widget		file,edit,view,options,window,help;
 	Widget		addfile,load,close,quit;
-	Widget		ncledit;
+	Widget		ncledit,browse;
 	Widget		pane;
 	Widget		pform,ptbform,dtbform,dform;
 	Widget		cwki,cvi;
@@ -946,6 +946,11 @@ MWCreateWin
 					xmPushButtonGadgetClass,wmenu,
 		NULL);
 	XtAddCallback(ncledit,XmNactivateCallback,_NgGODefActionCB,NULL);
+        
+	browse = XtVaCreateManagedWidget("browseWindow",
+					xmPushButtonGadgetClass,wmenu,
+		NULL);
+	XtAddCallback(browse,XmNactivateCallback,_NgGODefActionCB,NULL);
 
 	XtManageChild(fmenu);
 	XtManageChild(emenu);

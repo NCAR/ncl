@@ -1,5 +1,5 @@
 /*
- *      $Id: attrinfogrid.c,v 1.1 1997-03-04 00:04:40 dbrown Exp $
+ *      $Id: attrinfogrid.c,v 1.2 1997-06-04 18:08:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,7 @@
 
 #include <ncarg/ngo/attrinfogridP.h>
 #include <ncarg/ngo/xutil.h>
+#include <ncarg/ngo/stringutil.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
@@ -31,6 +32,7 @@
 static char *Buffer;
 static int  Buflen;
 static int  Max_Width;
+static Dimension  Row_Height;
 
 static char *
 ColumnWidths
@@ -57,7 +59,6 @@ ColumnWidths
 #endif        
         return Buffer;
 }
-
 
 static char *
 TitleText
@@ -111,27 +112,6 @@ TitleText
 
         return Buffer;
 }
-static void
-FixFloat
-(
-	char		*buf
-        )
-{
-        char *cp,tcp;
-                            
-        if (!strchr(buf,'.')) {
-                strcat(buf,".0");
-                if ((cp=strchr(buf,'e'))!= NULL) {
-                        char *tcp;
-                        for (tcp = &buf[strlen(buf)-1];
-                             tcp > cp+1;tcp--) {
-                                *tcp = *(tcp-2);
-                        }
-                        *cp = '.';
-                        *(cp+1) = '0';
-                }
-        }
-}
 
 static char *
 AttrText
@@ -175,32 +155,12 @@ AttrText
         aip->cwidths[0] = MAX(aip->cwidths[0],cwidth0-1);
 
         for (i = 0; i < val->totalelements; i++) {
-                char tbuf[256];
-                char *vstart = (char *) val->value + i * val->elem_size;
+                int len;
                 
-                attvalue = NULL;
-                switch (val->type) {
-                    case NCLAPI_float:
-                            sprintf(tbuf,"%.*g",FLT_DIG,*(float*)vstart);
-                            FixFloat(tbuf);
-                            break;
-                    case NCLAPI_double:
-                            sprintf(tbuf,"%.*g",DBL_DIG,*(double*)vstart);
-                            FixFloat(tbuf);
-                            break;
-                    case NCLAPI_byte:
-                            sprintf(tbuf,"0x%x",*(double*)vstart);
-                            break;
-                    default:
-                            attvalue = NclTypeToString(vstart,val->type);
-                            strncpy(tbuf,attvalue,sizeof(tbuf)-1);
-                            break;
-                }
-                strncat(Buffer,tbuf,Buflen-strlen(Buffer)-1);
+                attvalue = NgTypedValueToString(val,i,False,&len);
+                strncat(Buffer,attvalue,Buflen-strlen(Buffer)-1);
                 if (i < val->totalelements-1)
                         strncat(Buffer,", ",Buflen-strlen(Buffer)-1);
-                if (attvalue)
-                        NclFree(attvalue);
         }
         len = strlen(Buffer);
         if (strlen(Buffer) > MAX_LINE_LENGTH - 1) {
@@ -241,7 +201,7 @@ AttrText
 
 NhlErrorTypes NgUpdateAttrInfoGrid
 (
-        NgAttrInfoGrid		attr_info_grid,
+        NgAttrInfoGrid		*attr_info_grid,
         NrmQuark		qfileref,
         NclApiDataList		*dlist
         )
@@ -249,20 +209,26 @@ NhlErrorTypes NgUpdateAttrInfoGrid
         NhlErrorTypes ret;
         NgAttrInfoGridRec *aip;
         int	nattrs,i;
-        int	max_width,root_w;
-        short	cw,ch;
-        XmFontList      fontlist;
+        Dimension	height;
+        NhlBoolean	first = True;
+        
         
         aip = (NgAttrInfoGridRec *) attr_info_grid;
         if (!aip) return NhlFATAL;
-        
-        XtVaGetValues(aip->grid,
-                      XmNfontList,&fontlist,
-                      NULL);
-
-        XmLFontListGetDimensions(fontlist,&cw,&ch,True);
-        root_w = WidthOfScreen(XtScreen(aip->grid));
-        Max_Width = root_w / cw - cw;
+        if (first) {
+                int		root_w;
+                short		cw,ch;
+                XmFontList      fontlist;
+                
+                XtVaGetValues(aip->grid,
+                              XmNfontList,&fontlist,
+                              NULL);
+                XmLFontListGetDimensions(fontlist,&cw,&ch,True);
+                root_w = WidthOfScreen(XtScreen(aip->grid));
+                Max_Width = root_w / cw - cw;
+                Row_Height = ch + 2;
+                first = False;
+        }
 
         aip->qfileref = qfileref;
         aip->dlist = dlist;
@@ -277,6 +243,10 @@ NhlErrorTypes NgUpdateAttrInfoGrid
                 vinfo = dlist->u.var;
                 nattrs = vinfo->n_atts;
         }
+        XtVaSetValues(aip->grid,
+                      XmNrows,nattrs + 1,
+                      NULL);
+
         if (nattrs > aip->c_alloc) {
                 aip->too_long = NhlRealloc(aip->too_long,
                                            nattrs * sizeof(short));
@@ -288,10 +258,6 @@ NhlErrorTypes NgUpdateAttrInfoGrid
         }
         memset((char *)aip->too_long,0,nattrs * sizeof(short));
 
-        XtVaSetValues(aip->grid,
-                      XmNrows,nattrs + 1,
-                      XmNvisibleRows,nattrs + 1,
-                      NULL);
         XtVaSetValues(aip->grid,
                       XmNrow,0,
                       XmNcolumn,0,
@@ -316,19 +282,33 @@ NhlErrorTypes NgUpdateAttrInfoGrid
                                       NULL);
                 }
         }
-        
         XtVaSetValues(aip->grid,
                       XmNsimpleWidths,ColumnWidths(aip),
                       NULL);
+        
         XmLGridSelectRow(aip->grid,0,False);
 
         memcpy(aip->last_too_long,aip->too_long,nattrs*sizeof(short));
-        
+
+        aip->height = 6+Row_Height*(nattrs+1)+2*nattrs;
+#if 0        
+        XtVaGetValues(aip->grid,
+                      XmNheight,&height,
+                      NULL);
+        printf("height of attr grid %d\n",height);
+        XtVaSetValues(aip->grid,
+                      XmNheight,,
+                      NULL);
+        XtVaGetValues(aip->grid,
+                      XmNheight,&height,
+                      NULL);
+        printf("height of attr grid %d\n",height);
+#endif        
         return NhlNOERROR;
 }
 
 
-NgAttrInfoGrid NgCreateAttrInfoGrid
+NgAttrInfoGrid *NgCreateAttrInfoGrid
 (
         Widget			parent,
         NrmQuark 		qfileref,
@@ -337,6 +317,7 @@ NgAttrInfoGrid NgCreateAttrInfoGrid
 {
         NhlErrorTypes ret;
         NgAttrInfoGridRec *aip;
+        int nattrs;
         static NhlBoolean first = True;
 
         if (first) {
@@ -354,19 +335,54 @@ NgAttrInfoGrid NgCreateAttrInfoGrid
         memset(aip->last_too_long,0,16 * sizeof(short));
         aip->c_alloc = 16;
         
+        if (dlist->kind == FILE_LIST) {
+                NclApiFileInfoRec *finfo;
+                finfo = dlist->u.file;
+                nattrs = finfo->n_atts;
+        }
+        else {
+                NclApiVarInfoRec *vinfo;
+                vinfo = dlist->u.var;
+                nattrs = vinfo->n_atts;
+        }
         aip->grid = XtVaCreateManagedWidget("AttrInfoGrid",
                                             xmlGridWidgetClass,parent,
-                                            XmNcolumns,2,
+                                            XmNverticalSizePolicy,XmVARIABLE,
                                             XmNhorizontalSizePolicy,XmVARIABLE,
+                                            XmNcolumns,2,
+                                            XmNrows,nattrs + 1,
+#if 0
+                                            XmNdebugLevel,1,
+#endif
                                             NULL);
         
-        ret = NgUpdateAttrInfoGrid((NgAttrInfoGrid) aip,qfileref,dlist);
+        ret = NgUpdateAttrInfoGrid((NgAttrInfoGrid *) aip,qfileref,dlist);
 
         if (ret < NhlWARNING) {
                 NhlFree(aip);
                 return NULL;
         }
-        return (NgAttrInfoGrid) aip;
+        return (NgAttrInfoGrid*) aip;
+}
+
+        
+void NgDestroyAttrInfoGrid
+(
+        NgAttrInfoGrid		*attr_info_grid
+        )
+{
+        NgAttrInfoGridRec *aip;
+        
+        aip = (NgAttrInfoGridRec *) attr_info_grid;
+        if (!aip) return;
+
+        XtDestroyWidget(aip->grid);
+        NhlFree(aip->too_long);
+        NhlFree(aip->last_too_long);
+
+        NhlFree(aip);
+        
+        return;
 }
 
         

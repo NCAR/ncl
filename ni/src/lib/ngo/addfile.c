@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.5 1997-03-04 02:53:49 dbrown Exp $
+ *      $Id: addfile.c,v 1.6 1997-06-04 18:08:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -250,6 +250,9 @@ AddFileInitialize
         np->user_dir_width = 0;
         np->list_timer_set = False;
         np->popped_up = False;
+        np->adjust_event = False;
+        np->shell_height = 0;
+        np->vlist_empty = True;
 
 	return NhlNOERROR;
 }
@@ -260,7 +263,7 @@ static NhlBoolean RecognizedType
         NhlBoolean *writable
 )
 {
-	char *f_extens[] = { "cdf", "nc", "hdf", "hd", "grb" };
+	char *f_extens[] = { "cdf", "nc", "hdf", "hd", "grb", "ccm" };
 	char *dot_loc;
         int i;
 
@@ -357,14 +360,34 @@ static void AdjustSize
         XmFontList      fontlist;
         XmString xmlabel;
         Dimension w, cwidth,add,vwidth,fwidth,formwidth;
+        Dimension formheight,h;
+	int		vis_items, h_add = 0;
 
+	np->adjust_event = False;
         if (! np->mapped)
                 return;
+        
+        XtVaGetValues(go->go.manager,
+                      XmNheight,&h,
+                      XmNwidth,&w,
+                      NULL);
+#if	DEBUG_ADDFILE
+        fprintf(stderr,"shell height %d width %d\n",h,w);
+#endif
+        
+        if (np->shell_height <= 0)
+                np->shell_height = h;
+        else {
+                h_add = h - np->shell_height;
+                np->shell_height = h;
+        }
+        
 /*
  * Force the directory box to be at least as wide as the directory label
  */
 	XtVaSetValues(np->fselect_box,
 		      XmNleftAttachment,XmATTACH_NONE,
+		      XmNbottomAttachment,XmATTACH_NONE,
 		      NULL);
         dirlabel = XmFileSelectionBoxGetChild(np->fselect_box,
                                               XmDIALOG_DIR_LIST_LABEL);
@@ -380,12 +403,14 @@ static void AdjustSize
                       XmNwidth,&cwidth,
                       NULL);
         cwidth = MAX(MAX(cwidth,w+10),np->user_dir_width);
+#if 0
         XtVaSetValues(XtParent(np->dirlist),
                       XmNwidth,cwidth,
                       NULL);
         XtVaGetValues(XtParent(np->dirlist),
                       XmNwidth,&cwidth,
                       NULL);
+#endif
         XtVaGetValues(XtParent(np->vlist),
                       XmNwidth,&vwidth,
                       NULL);
@@ -395,16 +420,41 @@ static void AdjustSize
         cwidth = cwidth+vwidth+fwidth+40;
         XtVaGetValues(np->listform,
                       XmNwidth,&formwidth,
+                      XmNheight,&formheight,
                       NULL);
-        if (formwidth != cwidth) {
-                np->user_configure = False;
+        if (formwidth < cwidth - 1 || formwidth > cwidth + 1) {
+                np->adjust_event = True;
+#if	DEBUG_ADDFILE
+                fprintf(stderr,"width %d adjusted width %d\n",
+                        formwidth,cwidth);
+#endif
                 XtVaSetValues(np->listform,
                               XmNwidth,cwidth,
                               NULL);
         }
-                
+        if (h_add > 1 || h_add < -1) {
+#if	DEBUG_ADDFILE
+                fprintf(stderr,"height %d adjusted height %d\n",formheight,
+                       formheight + h_add);
+#endif
+                formheight += h_add;
+                XtVaSetValues(np->listform,
+                              XmNheight,formheight,
+                              NULL);
+        }
+
+	XtVaGetValues(np->vlist,
+		      XmNvisibleItemCount,&vis_items,
+		      NULL);
+	XtVaSetValues(np->dirlist,
+		      XmNvisibleItemCount,vis_items,
+		      NULL);
+	XtVaSetValues(np->filelist,
+		      XmNvisibleItemCount,vis_items,
+		      NULL);
 	XtVaSetValues(np->fselect_box,
 		      XmNleftAttachment,XmATTACH_FORM,
+		      XmNbottomAttachment,XmATTACH_FORM,
 		      NULL);
 
         XtVaGetValues(np->info_optmenu,
@@ -476,18 +526,7 @@ static void SetApplyForm
 		bname[0] = '\0';
 
         vname = NgNclGetSymName(bname);
-        XtVaGetValues(np->vname,
-		XmNwidth,&width1,
-		NULL);
 	XmTextFieldSetString(np->vname,vname);
-	XtVaGetValues(np->vname,
-		XmNwidth,&width2,
-		NULL);
-
-        if (width1 != width2) {
-                np->user_configure = False;
-                AdjustSize(go);
-        }
                 
 	return;
         
@@ -554,7 +593,8 @@ CreateDimInfoPopup
                                         xmFormWidgetClass,dip->frame,
                                         NULL);
 
-        dip->grid = NgCreateDimInfoGrid(form,QPreviewFile,dip->vinfo);
+        dip->grid = NgCreateDimInfoGrid
+                (form,QPreviewFile,dip->vinfo,True,True);
         
         return;
         
@@ -747,11 +787,9 @@ static NhlBoolean ClearVarList
 
         w = MAX(40,w+10);
         if (w != cwidth) {
-                np->user_configure = False;
                 XtVaSetValues(np->vlist,
                               XmNwidth,MAX(40,w+10),
                               NULL);
-                np->user_configure = False;
                 AdjustSize(go);
         }
         
@@ -1027,63 +1065,6 @@ CheckInfoPopup
         return;
 }
 
-typedef struct _VarOrderData
-{
-        char	*name;
-        int	n_dims;
-        int	tsize;
-} VarOrderData;
-        
-static int asciicomp
-(
- 	const void *p1,
-	const void *p2
-)
-{
-	const VarOrderData vo1 = *(VarOrderData *) p1;
-	const VarOrderData vo2 = *(VarOrderData *) p2;
-	int ret;
-
-	ret =  - strcmp(vo1.name,vo2.name);
-	return ret;
-}
-
-static int dimcomp
-(
- 	const void *p1,
-	const void *p2
-)
-{
-	const VarOrderData vo1 = *(VarOrderData *) p1;
-	const VarOrderData vo2 = *(VarOrderData *) p2;
-	int ret;
-
-        if (vo1.n_dims > vo2.n_dims)
-                return 1;
-        if (vo1.n_dims < vo2.n_dims)
-                return -1;
-	ret = -strcmp(vo1.name,vo2.name);
-	return ret;
-}
-
-static int sizecomp
-(
- 	const void *p1,
-	const void *p2
-)
-{
-	const VarOrderData vo1 = *(VarOrderData *) p1;
-	const VarOrderData vo2 = *(VarOrderData *) p2;
-	int ret;
-
-        if (vo1.tsize > vo2.tsize)
-                return 1;
-        if (vo1.tsize < vo2.tsize)
-                return -1;
-	ret = -strcmp(vo1.name,vo2.name);
-	return ret;
-}
-
 static NhlBoolean ShowVarList
 (
 	NgGO	go
@@ -1100,7 +1081,8 @@ static NhlBoolean ShowVarList
         char func[] = "ShowVarList";
         XmFontList      fontlist;
         Dimension maxw = 0, cwidth;
-        VarOrderData *vodata;
+        NgOrderData *vodata;
+        NhlBoolean reverse;
                 
 #if	DEBUG_ADDFILE
 	fprintf(stderr,"ShowVarList(IN)\n");
@@ -1112,7 +1094,7 @@ static NhlBoolean ShowVarList
         if (!np->finfo)
                 return False;
         
-	vodata = NhlMalloc(np->finfo->n_vars * sizeof(VarOrderData));
+	vodata = NhlMalloc(np->finfo->n_vars * sizeof(NgOrderData));
 	vlist = vl = NclGetFileVarsList(QPreviewFile);
 	for (i=0; vl != NULL; vl = vl->next,i++) {
 		int j;
@@ -1122,8 +1104,8 @@ static NhlBoolean ShowVarList
 		
 		vodata[i].name = NrmQuarkToString(vinfo->name);
                 vodata[i].n_dims = vinfo->n_dims;
-		for (j = 0,vodata[i].tsize = 1; j < vinfo->n_dims; j++) {
-                        vodata[i].tsize *= vinfo->dim_info[j].dim_size;
+		for (j = 0,vodata[i].size = 1; j < vinfo->n_dims; j++) {
+                        vodata[i].size *= vinfo->dim_info[j].dim_size;
                 }
                 
 	}
@@ -1132,26 +1114,12 @@ static NhlBoolean ShowVarList
                       XmNwidth, &cwidth,
                       NULL);
 
-        switch (np->var_sort_option) {
-            case ASCII_SORT:
-                    qsort(vodata,np->finfo->n_vars,
-                          sizeof(VarOrderData),asciicomp);
-                    break;
-            case DIM_SORT:
-                    qsort(vodata,np->finfo->n_vars,
-                          sizeof(VarOrderData),dimcomp);
-                    break;
-            case SIZE_SORT:
-                    qsort(vodata,np->finfo->n_vars,
-                          sizeof(VarOrderData),sizecomp);
-                    break;
-            case NO_SORT:
-            default:
-                    break;
-        }
-
+        reverse = np->var_sort_mode == NgNO_SORT ? True : False;
+        NgSortOrderDataList
+                (vodata,np->finfo->n_vars,np->var_sort_mode,reverse);
 	XmListDeleteAllItems(np->vlist);
-        for (i = np->finfo->n_vars-1; i >=0; i--) {
+        
+        for (i = 0; i < np->finfo->n_vars; i++) {
                 Dimension w;
                 
 		xmstring =  XmStringCreateLocalized(vodata[i].name);
@@ -1165,7 +1133,6 @@ static NhlBoolean ShowVarList
                 XtVaSetValues(np->vlist,
                               XmNwidth,MAX(40,maxw+10),
                               NULL);
-                np->user_configure = False;
                 AdjustSize(go);
         }
 	NclFreeDataList(vlist);
@@ -1186,7 +1153,7 @@ static void VarSortOptionsCB
 	NgGO go = (NgGO)data;
 	NgAddFile		l = (NgAddFile)go;
 	NgAddFilePart		*np = &l->addfile;
-        int			option;
+        XtPointer		option;
 
 #if	DEBUG_ADDFILE
 	fprintf(stderr,"VarSortOptionsCB(IN)\n");
@@ -1196,8 +1163,8 @@ static void VarSortOptionsCB
 		XmNuserData,&option,
 		NULL);
         
-        if (np->var_sort_option != option) {
-                np->var_sort_option = option;
+        if (np->var_sort_mode != (NgSortMode)option) {
+                np->var_sort_mode = (NgSortMode)option;
                 if (!np->vlist_empty)
                         ShowVarList(go);
         }
@@ -1409,7 +1376,6 @@ static void Filter
                     NULL);
         
 	XmFileSelectionDoSearch(np->fselect_box,np->dirmask);
-        np->user_configure = False;
         AdjustSize(go);
         
 
@@ -1812,32 +1778,35 @@ ChangeSizeEH
         NgAddFile	l = (NgAddFile)go;
         NgAddFilePart	*np = &l->addfile;
 
-	if(event->type == ConfigureNotify) {
-                if (np->user_configure) {
 #if	DEBUG_ADDFILE
-                        fprintf(stderr,"user-generated ConfigureNotify\n");
+        fprintf(stderr,"EH height %d width %d\n",
+                event->xconfigure.height,
+                event->xconfigure.width);
 #endif
-                        XtVaGetValues(XtParent(np->dirlist),
-                                      XmNwidth,&np->user_dir_width,
-                                      NULL);
-                        AdjustSize(go);
-                }
-                else {
+        
+        if (np->adjust_event) {
 #if	DEBUG_ADDFILE
-                        fprintf(stderr,"program-generated ConfigureNotify\n");
+                fprintf(stderr,"ConfigureNotify generated by AdjustSize\n");
 #endif
-                }
+                np->adjust_event = False;
+        }
+	else if(event->type == ConfigureNotify) {
+#if	DEBUG_ADDFILE
+                fprintf(stderr,"user-generated ConfigureNotify\n");
+#endif
+                XtVaGetValues(XtParent(np->dirlist),
+                              XmNwidth,&np->user_dir_width,
+                              NULL);
+                AdjustSize(go);
         }
         else if (event->type == MapNotify) {
                 np->mapped = True;
                 AdjustSize(go);
-                np->user_configure = False;
 #if	DEBUG_ADDFILE
                 fprintf(stderr,"MapNotify\n");
 #endif
                 return;
         }
-        np->user_configure = True;
 
 	return;
 }
@@ -1969,6 +1938,7 @@ AddFileCreateWin
                                         XmNleftAttachment,XmATTACH_WIDGET,
                                         XmNrightAttachment,XmATTACH_WIDGET,
                                         XmNrightWidget,np->rw_optmenu,
+                                        XmNresizeWidth,False,
                                         NULL);
         
 	sep = 
@@ -2074,9 +2044,9 @@ AddFileCreateWin
 
 
         pb = XtVaCreateManagedWidget("Ascii",
-				    xmPushButtonGadgetClass,menu,
+                                     xmPushButtonGadgetClass,menu,
 				     XmNalignment,	XmALIGNMENT_CENTER,
-				     XmNuserData,ASCII_SORT,
+				     XmNuserData,(XtPointer)NgASCII_SORT,
 				     XmNmarginHeight,0,
 				     NULL);
         XtAddCallback(pb,XmNactivateCallback,VarSortOptionsCB,go);
@@ -2084,7 +2054,7 @@ AddFileCreateWin
         pb = XtVaCreateManagedWidget("Dims",
 				     xmPushButtonGadgetClass,menu,
 				     XmNalignment,	XmALIGNMENT_CENTER,
-				     XmNuserData,DIM_SORT,
+				     XmNuserData,(XtPointer)NgDIM_SORT,
 				     XmNmarginHeight,0,
 				     NULL);
         XtAddCallback(pb,XmNactivateCallback,VarSortOptionsCB,go);
@@ -2092,7 +2062,7 @@ AddFileCreateWin
         pb = XtVaCreateManagedWidget("Size",
 				     xmPushButtonGadgetClass,menu,
 				     XmNalignment,	XmALIGNMENT_CENTER,
-				     XmNuserData,SIZE_SORT,
+				     XmNuserData,(XtPointer)NgSIZE_SORT,
 				     XmNmarginHeight,0,
 				     NULL);
         XtAddCallback(pb,XmNactivateCallback,VarSortOptionsCB,go);
@@ -2100,7 +2070,7 @@ AddFileCreateWin
         pb = XtVaCreateManagedWidget("No",
 				     xmPushButtonGadgetClass,menu,
 				     XmNalignment,	XmALIGNMENT_CENTER,
-				     XmNuserData,NO_SORT,
+				     XmNuserData,(XtPointer)NgNO_SORT,
 				     XmNmarginHeight,0,
 				     NULL);
         XtAddCallback(pb,XmNactivateCallback,VarSortOptionsCB,go);
@@ -2127,7 +2097,7 @@ AddFileCreateWin
                       XmNlabelString,xmtmp,
                       NULL);
 	XmStringFree(xmtmp);
-        np->var_sort_option = ASCII_SORT;
+        np->var_sort_mode = NgASCII_SORT;
         
 	np->info_frame = 
                 XtVaCreateManagedWidget("vcrframe",
@@ -2207,8 +2177,9 @@ AddFileCreateWin
 	XmStringFree(xmtmp);
         
         np->vcrp = vcrp = 
-		NgCreateVcrControl(go,form,20,True,
+ 		NgCreateVcrControl(go,form,20,True,
 				   True,False,True,True,True,False,True);
+        
         XtVaSetValues(vcrp->form,
                       XmNtopAttachment,XmATTACH_WIDGET,
                       XmNtopWidget,np->info_optmenu,

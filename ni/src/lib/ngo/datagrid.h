@@ -1,5 +1,5 @@
 /*
- *      $Id: diminfogrid.h,v 1.2 1997-06-04 18:08:25 dbrown Exp $
+ *      $Id: datagrid.h,v 1.1 1997-06-04 18:08:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9,18 +9,18 @@
 *									*
 ************************************************************************/
 /*
- *	File:		diminfogrid.h
+ *	File:		datagrid.h
  *
  *	Author:		David I. Brown
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	Date:		Mon Feb 10 13:59:32 MST 1997
+ *	Date:		Fri Apr 25 14:44:43 MDT 1997
  *
  *	Description:	
  */
-#ifndef	_NG_DIMINFOGRID_H
-#define	_NG_DIMINFOGRID_H
+#ifndef	_NG_DATAGRID_H
+#define	_NG_DATAGRID_H
 
 #include <ncarg/ngo/go.h>
 
@@ -36,34 +36,46 @@
  * Public api
  */
 
-typedef struct _NgDimInfoGrid 
+typedef struct _NgDataGrid 
 {
         Widget		grid;
-        NhlBoolean	headline_on;
-        NhlBoolean	highlight_on;
-        Dimension	height;
-} NgDimInfoGrid;
-                
-NgDimInfoGrid *NgCreateDimInfoGrid
+        long		*start;
+        long		*finish;
+        long		*stride;
+        Dimension	sub_width;
+} NgDataGrid;
+
+/*
+ * qsymbol: fileref if vinfo represents a filevar
+ *	    NULL    if vinfo represents a regvar
+ *          regvar  if vinfo represents a regvar coord var
+ */
+NgDataGrid *NgCreateDataGrid
 (
+        NgGO                    go,
         Widget			parent,
-        NrmQuark 		qfileref,
+        NrmQuark 		qsymbol,
         NclApiVarInfoRec	*vinfo,
         NhlBoolean		headline_on,
         NhlBoolean		highlight_on
         );
 
-NhlErrorTypes NgUpdateDimInfoGrid
+NhlErrorTypes NgUpdateDataGrid
 (
-        NgDimInfoGrid		*dim_info_grid,
-        NrmQuark		qfileref,
+        NgDataGrid		*data_grid,
+        NrmQuark		qsymbol,
         NclApiVarInfoRec	*vinfo
         );
 
-void NgDestroyDimInfoGrid
+void NgDeactivateDataGrid
 (
-        NgDimInfoGrid		*dim_info_grid
+        NgDataGrid		*data_grid
+        );
+
+void NgDestroyDataGrid
+(
+        NgDataGrid		*data_grid
         );
         
 
-#endif	/* _NG_DIMINFOGRID_H */
+#endif	/* _NG_DATAGRID_H */

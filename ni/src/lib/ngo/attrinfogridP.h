@@ -1,5 +1,5 @@
 /*
- *      $Id: attrinfogridP.h,v 1.1 1997-03-04 00:04:41 dbrown Exp $
+ *      $Id: attrinfogridP.h,v 1.2 1997-06-04 18:08:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,11 +31,23 @@
 #define BUFINC 256
 #define MAX_LINE_LENGTH 81
 
+
+/*
+ * Any field in the public structure NgAttrInfoGrid, defined in
+ * attrinfogrid.h, must appear in the same order at the beginning
+ * of the NgAttrInfoGridRec definition. 
+ */
+
 typedef struct _NgAttrInfoGridRec 
 {
+            /* public fields - exported as NgAttrInfoGrid */
+        Widget			grid;
+        NhlBoolean		headline_on;
+        Dimension		height;
+        
+            /* private fields */
         NrmQuark		qfileref;
  	NclApiDataList		*dlist;
-        Widget			grid;
         int			cwidths[2];
         short			*too_long;
         short			*last_too_long;

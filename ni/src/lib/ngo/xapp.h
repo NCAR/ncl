@@ -1,5 +1,5 @@
 /*
- *      $Id: xapp.h,v 1.3 1997-02-27 20:25:46 boote Exp $
+ *      $Id: xapp.h,v 1.4 1997-06-04 18:08:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -45,6 +45,9 @@
 
 #define	NgNxappLoadFile	"ngxappLoadFile"
 #define	NgCxappLoadFile	"ngXappLoadFile"
+
+#define	NgNxappBrowseWindow	"ngxappBrowseWindow"
+#define	NgCxappBrowseWindow	"ngXappBrowseWindow"
 
 extern NhlClass NgxappMgrClass;
 

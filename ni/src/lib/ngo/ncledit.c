@@ -1,5 +1,5 @@
 /*
- *      $Id: ncledit.c,v 1.6 1997-02-27 20:25:45 boote Exp $
+ *      $Id: ncledit.c,v 1.7 1997-06-04 18:08:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -950,7 +950,7 @@ NECreateWin
 	Widget		menubar,menush,fmenu,emenu;
 	Widget		vmenu,omenu,wmenu,hmenu;
 	Widget		file,edit,view,options,window,help;
-	Widget		addfile,load,close,quit;
+	Widget		addfile,load,close,quit,browse;
 	Widget		pane,sform,sform1;
 	Widget		slabel;
 	Widget		hoframe,holabel;
@@ -1057,6 +1057,11 @@ NECreateWin
 					xmPushButtonGadgetClass,fmenu,
 		NULL);
 	XtAddCallback(quit,XmNactivateCallback,_NgGODefActionCB,NULL);
+        
+	browse = XtVaCreateManagedWidget("browseWindow",
+					xmPushButtonGadgetClass,wmenu,
+		NULL);
+	XtAddCallback(browse,XmNactivateCallback,_NgGODefActionCB,NULL);
 
 	XtManageChild(fmenu);
 	XtManageChild(emenu);

@@ -1,5 +1,5 @@
 /*
- *      $Id: addfileP.h,v 1.3 1997-03-04 02:53:50 dbrown Exp $
+ *      $Id: addfileP.h,v 1.4 1997-06-04 18:08:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,7 @@
 #include <ncarg/ngo/diminfogrid.h>
 #include <ncarg/ngo/attrinfogrid.h>
 #include <ncarg/ngo/vcrcontrol.h>
+#include <ncarg/ngo/sort.h>
 
 
 typedef struct _NgAddFileClassRec *NgAddFileClass;
@@ -36,13 +37,6 @@ typedef struct _NgAddFileRec *NgAddFile;
 /* debug */
 
 #define DEBUG_ADDFILE 0
-
-/* sort options defines */
-
-#define ASCII_SORT 0
-#define DIM_SORT 1
-#define SIZE_SORT 2
-#define NO_SORT 3
 
 /* popup types */
 
@@ -58,7 +52,7 @@ typedef struct _NgafDimInfoRec
  	NclApiVarInfoRec	*vinfo;
         Widget 			popup;
         Widget			frame;
-        NgDimInfoGrid		grid;
+        NgDimInfoGrid		*grid;
         int			pos;
         NhlBoolean		up;
 } NgafDimInfoRec;
@@ -71,7 +65,7 @@ typedef struct _NgafAttrInfoRec
         Widget 			popup;
         Widget			frame;
 	Widget			list;
-        NgAttrInfoGrid		grid;
+        NgAttrInfoGrid		*grid;
         int			pos;
         NhlBoolean		up;
 } NgafAttrInfoRec;
@@ -112,10 +106,9 @@ typedef struct _NgAddFilePart {
         NgafDimInfoRec	*dim_rec;
         NgafAttrInfoRec	*attr_rec;
         NhlBoolean	vlist_empty;
-        int		var_sort_option;
+        NgSortMode	var_sort_mode;
         NhlBoolean	mapped;
         Dimension	user_dir_width;
-        NhlBoolean	user_configure;
         NhlBoolean	file_changed;
         NgVcrControl	vcrp;
         XtIntervalId	list_timer_id;
@@ -124,6 +117,8 @@ typedef struct _NgAddFilePart {
         Widget		cur_list;
         int		cur_popup_type;
         NhlBoolean	popped_up;
+        Dimension	shell_height;
+        NhlBoolean	adjust_event;
 } NgAddFilePart;
 
 typedef struct _NgAddFileRec {

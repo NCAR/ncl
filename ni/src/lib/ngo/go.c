@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.5 1997-02-27 20:25:43 boote Exp $
+ *      $Id: go.c,v 1.6 1997-06-04 18:08:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -439,6 +439,64 @@ nclWindow
 	return;
 }
 
+
+/*
+ * Function:	browseWindow
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static void
+browseWindow
+(
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+)
+{
+	char		func[] = "browseWindow";
+	int		goid = NhlDEFAULT_APP;
+	int		appmgr = NhlDEFAULT_APP;
+	int		browse = NhlDEFAULT_APP;
+
+	goid = NgGOWidgetToGoId(w);
+	if(goid == NhlDEFAULT_APP){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid Widget",func));
+		return;
+	}
+
+	NhlVAGetValues(goid,
+		_NhlNguiData,	&appmgr,
+		NULL);
+
+	if(*num_params > 0){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"%s:wrong number of params",func));
+		return;
+	}
+
+	/*
+	 * Popup browse window.
+	 */
+	NhlVAGetValues(appmgr,
+		NgNxappBrowseWindow,	&browse,
+		NULL);
+	/*
+	 *TODO: move load window to center of goid window.
+	 */
+	NgGOPopup(browse);
+
+	return;
+}
+
 /*
  * Global actions for all parts of the application
  */
@@ -448,6 +506,7 @@ static XtActionsRec go_act[] = {
 	{"addFile", addFile,},
 	{"loadScript", loadScript,},
 	{"nclWindow", nclWindow,},
+	{"browseWindow", browseWindow,},
 };
 
 /*
@@ -973,7 +1032,7 @@ _NgGOCreateMenubar
 	Widget	vmenu,omenu,wmenu,hmenu;
 	Widget	file,edit,view,options,window,help;
 	Widget	addfile,load,close,quit;
-	Widget	ncledit;
+	Widget	ncledit,browse;
 
 	if(manager)
 		m = manager;
@@ -1074,6 +1133,11 @@ _NgGOCreateMenubar
 		NULL);
 	XtAddCallback(ncledit,XmNactivateCallback,_NgGODefActionCB,NULL);
 
+	browse = XtVaCreateManagedWidget("browseWindow",
+					xmPushButtonGadgetClass,wmenu,
+		NULL);
+	XtAddCallback(browse,XmNactivateCallback,_NgGODefActionCB,NULL);
+        
 	XtManageChild(fmenu);
 	XtManageChild(emenu);
 	XtManageChild(vmenu);

@@ -1,5 +1,5 @@
 /*
- *      $Id: diminfogridP.h,v 1.1 1997-03-04 02:53:51 dbrown Exp $
+ *      $Id: diminfogridP.h,v 1.2 1997-06-04 18:08:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,12 +30,24 @@
 #define DEBUG_DIM_INFO_GRID 0
 #define BUFINC 256
 
+/*
+ * Any field in the public structure NgDimInfoGrid, defined in
+ * diminfogrid.h, must appear in the same order at the beginning
+ * of the NgDimInfoGridRec definition. 
+ */
 
 typedef struct _NgDimInfoGridRec 
 {
+            /* public fields - exported as NgDimInfoGrid */
+        
+        Widget			grid;
+        NhlBoolean		headline_on;
+        NhlBoolean		highlight_on;
+        Dimension		height;
+        
+            /* private fields */
         NrmQuark		qfileref;
  	NclApiVarInfoRec	*vinfo;
-        Widget			grid;
         int			cwidths[32];
 } NgDimInfoGridRec;
 

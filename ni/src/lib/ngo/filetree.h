@@ -1,5 +1,5 @@
 /*
- *      $Id: diminfogrid.h,v 1.2 1997-06-04 18:08:25 dbrown Exp $
+ *      $Id: filetree.h,v 1.1 1997-06-04 18:08:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9,7 +9,7 @@
 *									*
 ************************************************************************/
 /*
- *	File:		diminfogrid.h
+ *	File:		filetree.h
  *
  *	Author:		David I. Brown
  *			National Center for Atmospheric Research
@@ -19,8 +19,8 @@
  *
  *	Description:	
  */
-#ifndef	_NG_DIMINFOGRID_H
-#define	_NG_DIMINFOGRID_H
+#ifndef	_NG_FILETREE_H
+#define	_NG_FILETREE_H
 
 #include <ncarg/ngo/go.h>
 
@@ -36,34 +36,46 @@
  * Public api
  */
 
-typedef struct _NgDimInfoGrid 
+typedef void (*ftGeoNotifyFunc) (
+        NhlPointer data
+        );
+
+typedef struct _NgFileTree 
 {
-        Widget		grid;
-        NhlBoolean	headline_on;
-        NhlBoolean	highlight_on;
-        Dimension	height;
-} NgDimInfoGrid;
+        Widget		tree;
+        ftGeoNotifyFunc	geo_notify;
+        NhlPointer	geo_data;
+} NgFileTree;
                 
-NgDimInfoGrid *NgCreateDimInfoGrid
+NgFileTree *NgCreateFileTree
 (
+        NgGO			go,
         Widget			parent,
         NrmQuark 		qfileref,
-        NclApiVarInfoRec	*vinfo,
-        NhlBoolean		headline_on,
-        NhlBoolean		highlight_on
+        NclApiDataList		*dlist
         );
 
-NhlErrorTypes NgUpdateDimInfoGrid
+NhlErrorTypes NgUpdateFileTree
 (
-        NgDimInfoGrid		*dim_info_grid,
+        NgFileTree		*file_tree,
         NrmQuark		qfileref,
-        NclApiVarInfoRec	*vinfo
+        NclApiDataList		*dlist
         );
 
-void NgDestroyDimInfoGrid
+NgFileTree *NgDupFileTree
 (
-        NgDimInfoGrid		*dim_info_grid
+        NgGO			go,
+        Widget			parent,
+        NrmQuark 		qfileref,
+        NclApiDataList		*dlist,
+	NgFileTree		*to_file_tree,
+        NgFileTree		*from_file_tree
+        );
+
+void NgDestroyFileTree
+(
+        NgFileTree		*file_tree
         );
         
 
-#endif	/* _NG_DIMINFOGRID_H */
+#endif	/* _NG_FILETREE_H */

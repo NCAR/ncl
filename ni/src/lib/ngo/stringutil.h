@@ -1,5 +1,5 @@
 /*
- *      $Id: attrinfogrid.h,v 1.2 1997-06-04 18:08:21 dbrown Exp $
+ *      $Id: stringutil.h,v 1.1 1997-06-04 18:08:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9,20 +9,21 @@
 *									*
 ************************************************************************/
 /*
- *	File:		attrinfogrid.h
+ *	File:		stringutil.h
  *
  *	Author:		David I. Brown
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	Date:		Mon Feb 10 13:59:32 MST 1997
+ *	Date:		Thu Apr 24 11:15:34 MDT 1997
  *
  *	Description:	
  */
-#ifndef	_NG_ATTRINFOGRID_H
-#define	_NG_ATTRINFOGRID_H
+#ifndef	_NG_STRINGUTIL_H
+#define	_NG_STRINGUTIL_H
 
 #include <ncarg/ngo/go.h>
+#include <ncarg/hlu/NresDB.h>
 
 #ifndef _NCL_H_
 #include <ncarg/ncl/defs.h>
@@ -32,37 +33,33 @@
 #define _NCL_H_
 #endif
 
+
 /*
  * Public api
  */
 
-typedef struct _NgAttrInfoGrid
-{
-        Widget			grid;
-        NhlBoolean		headline_on;
-        Dimension		height;
-} NgAttrInfoGrid;
-
-
-
-NgAttrInfoGrid *NgCreateAttrInfoGrid
+extern void
+NgRemoveZeros
 (
-        Widget			parent,
-        NrmQuark 		qfileref,
-        NclApiDataList		*dlist
+	char		*fstr
         );
 
-NhlErrorTypes NgUpdateAttrInfoGrid
+extern void
+NgFixFloat
 (
-        NgAttrInfoGrid		*attr_info_grid,
-        NrmQuark		qfileref,
-        NclApiDataList		*dlist
+	char		*fstr
         );
 
-void NgDestroyAttrInfoGrid
-(
-        NgAttrInfoGrid		*attr_info_grid
+extern char *
+NgTypeString(
+	int type
         );
-        
 
-#endif	/* _NG_ATTRINFOGRID_H */
+extern char *NgTypedValueToString(
+        NclExtValueRec	*val,
+        int		index,
+        NhlBoolean	short_form,
+        int		*vlen
+        );
+
+#endif	/* _NG_SORT_H */
