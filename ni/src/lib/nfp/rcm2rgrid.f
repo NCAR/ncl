@@ -44,7 +44,7 @@ c .             =4/5; xo or yo are not monotonically increasing
 c
 c                              local
       INTEGER NX,NY,NEXACT,IX,IY,M,N,NW,NER,K
-      DOUBLE PRECISION FW(2,2),W(2,2),SUMF,SUMW,CHKLAT(NYO),CHKLON(NXO)
+      DOUBLE PRECISION FW(2,2),W(2,2),SUMF,SUMW,CHKLAT(NYI),CHKLON(NXI)
       DOUBLE PRECISION DGCDIST
 c                              error checking
       IER = 0
