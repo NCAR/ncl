@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.132 2004-02-04 04:18:23 haley Exp $
+;      $Id: gsn_code.ncl,v 1.133 2004-02-09 00:02:34 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -93,6 +93,7 @@ undef("gsn_polymarker")
 undef("gsn_add_polymarker")
 undef("gsn_polymarker_ndc")
 undef("gsn_labelbar_ndc")
+undef("gsn_legend_ndc_return")
 undef("gsn_legend_ndc")
 undef("gsn_text_ndc_return")
 undef("gsn_text_ndc")
@@ -2858,6 +2859,44 @@ begin
 end
 
 ;***********************************************************************;
+; Function : gsn_legend_ndc_return                                      ;
+;                   wks: workstation object                             ;
+;                  nitems: number of legend items                       ;
+;                labels: labels for items                               ;
+;                     x: X NDC position of legend                       ;
+;                     y: Y NDC position of legend                       ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This procedure draws a legend on the workstation "wks" (the           ;
+; variable returned from a previous call to "gsn_open_wks").            ;
+; "resources" is an optional list of resources.                         ;
+;***********************************************************************;
+function gsn_legend_ndc_return(wks:graphic, nitems:integer, labels:string, \
+                               x,y,resources:logical )
+local i, legend, res, lg_res_index, lgres
+begin
+    res2 = get_resources(resources)
+
+    wksname = get_res_value_keep(wks,"name","gsnapp")
+
+    legend = create wksname + "_legend" legendClass wks
+      "vpXF"           : x
+      "vpYF"           : y
+      "lgItemCount"    : nitems
+      "lgLabelStrings" : labels
+    end create
+
+    lgres = get_res_eq(res2,(/"lg","vp"/))
+    if(lgres.and..not.any(ismissing(getvaratts(lgres))))
+      attsetvalues_check(legend,lgres)
+    end if
+
+; Return legend.
+
+    return(legend)
+end
+
+;***********************************************************************;
 ; Procedure : gsn_legend_ndc                                            ;
 ;                   wks: workstation object                             ;
 ;                  nitems: number of legend items                       ;
@@ -2872,27 +2911,10 @@ end
 ;***********************************************************************;
 procedure gsn_legend_ndc(wks:graphic, nitems:integer, labels:string, \
                          x,y,resources:logical )
-local i, lgid, res, lg_res_index, lgres
+local legend
 begin
-    res2 = get_resources(resources)
-
-    wksname = get_res_value_keep(wks,"name","gsnapp")
-
-    lgid = create wksname + "_legend" legendClass wks
-      "vpXF"           : x
-      "vpYF"           : y
-      "lgItemCount"    : nitems
-      "lgLabelStrings" : labels
-    end create
-
-    lgres = get_res_eq(res2,(/"lg","vp"/))
-    if(lgres.and..not.any(ismissing(getvaratts(lgres))))
-      attsetvalues_check(lgid,lgres)
-    end if
-
-; Draw legend.
-
-    draw(lgid)
+    legend = gsn_legend_ndc_return(wks,nitems,labels,x,y,resources)
+    draw(legend)
 end
 
 ;***********************************************************************;
