@@ -1,0 +1,17 @@
+#
+#	$Id: yMakefile,v 1.1 1993-04-16 17:01:40 haley Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= ecolcv
+
+GENERIC_SRCS = coex01.f coex02.f coex03.f
+
+install::
+	@for file in $(GENERIC_SRCS); do\
+	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
+	done
+
+MakefileTarget
+CleanTarget
+UpdateTarget
