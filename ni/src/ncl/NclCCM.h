@@ -11,7 +11,7 @@ typedef struct ccmi {
 	int NLONW;
 	int NOREC;
 	int NLEV;
-	int TRM;
+	int NTRM;
 	int NTRN;
 	int NTRK;
 	int NFLDH;
@@ -85,8 +85,10 @@ typedef struct _CcmHeader CcmHeader;
 struct _CcmIntVarInqRecList {
 	NclQuark var_name_q;
 	NclFVarRec var_info;
+	NclMultiDValData thevalue;
 	int n_atts;
 	CcmAttInqRecList *theatts;
+	struct _CcmIntVarInqRecList *next;
 };
 
 struct _CcmVarInqRecList {
@@ -107,13 +109,6 @@ struct _CcmVarInqRecList {
 					 * sizeof(lon) == iheader.NLON
 					 * sizeof(lev) == iheader.NLEV
 					 * sizeof(time) == iheader.MFILTH
-					 */
-	int n_atts;
-	CcmAttInqRecList *theatts;  	/*
-					 * units taken from cheader.MCFLDS
-					 * long_name taken from CCM Doc's
-					 * other atts mimic observed
-					 * ccm netCdf files.
 					 */
 	int 	ccm_var_index;
 	int	offset;			/*
@@ -153,6 +148,7 @@ struct _CcmDimInqRecList {
 struct _CcmAttInqRecList {
 	NclQuark attname;
 	NclMultiDValData thevalue;
+	struct _CcmAttInqRecList *next;
 };
 
 typedef struct ccm_file_rec {
@@ -166,7 +162,6 @@ typedef struct ccm_file_rec {
 					 * number of time records in file iheader.MFILTH
 					 */
 	CcmHeader 	header;
-	NclMultiDValData *coords;
 	CcmVarInqRecList *vars;
 	int 	n_int_vars;
 	CcmIntVarInqRecList *int_vars;
@@ -194,11 +189,13 @@ typedef struct ncl_q_list {
 #define CEOR (char)0010
 #define CBCW (char)0000
 
-#define TIME_DIM_NUMBER 0
-#define LATITUDE_DIM_NUMBER 1
-#define ILEV_DIM_NUMBER 2
-#define MLEV_DIM_NUMBER 3
-#define LONGITUDE_DIM_NUMBER 4
+#define SCALAR_DIM_NUMBER 0
+#define CHAR_DIM_NUMBER 1
+#define TIME_DIM_NUMBER 2
+#define LATITUDE_DIM_NUMBER 3
+#define ILEV_DIM_NUMBER 4
+#define MLEV_DIM_NUMBER 5
+#define LONGITUDE_DIM_NUMBER 6
 
 typedef struct {
   unsigned int type  :  4;

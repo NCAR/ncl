@@ -16,6 +16,37 @@ long sz(int n)
 {
         return(WORD_SIZE * n);
 }
+NrmQuark CcmVarName2
+#if	NhlNeedProto
+(char *buffer)
+#else
+(buffer)
+char *buffer;
+#endif
+{
+	char tmpc[WORD_SIZE+1];
+	char *tc;
+	int i,k;
+	for(i = 0; i < WORD_SIZE;i++) {
+		tmpc[i] = buffer[i];
+	}
+
+
+	i = WORD_SIZE;
+	tmpc[i] = '\0';
+	i--;
+	while((i>=0)&&(buffer[i] == ' ')) {	
+		tmpc[i] = '\0';
+		i--;
+	}
+	tc = tmpc;
+	i = 0;
+	while((i < WORD_SIZE)&&(*tc == ' ')) {
+		tc++;
+		i++;
+	}
+	return(NrmStringToQuark(tc));
+}
 NrmQuark CcmVarName
 #if	NhlNeedProto
 (char *buffer)
@@ -25,14 +56,19 @@ char *buffer;
 #endif
 {
 	char tmpc[WORD_SIZE+1];
-	int i;
+	int i,k;
 
 	i = 0;	
-	while((i<WORD_SIZE)&&(buffer[i] != ' ')) {
-		tmpc[i] = buffer[i];
+	k = 0;
+	while((i<WORD_SIZE)&&(buffer[i] == ' ')) {	
 		i++;
 	}
-	tmpc[i] = '\0';
+	while((i<WORD_SIZE)&&(buffer[i] != ' ')) {
+		tmpc[k] = buffer[i];
+		i++;
+		k++;
+	}
+	tmpc[k] = '\0';
 	return(NrmStringToQuark(tmpc));
 }
 
@@ -252,6 +288,7 @@ int nwords;
 long start_off;
 #endif
 {
+	int n;
         lseek(fd,start_off,SEEK_SET);
         if(nwords == 0) {
                 return(start_off);
@@ -259,7 +296,8 @@ long start_off;
 		return(COSGetNWords(fd,nwords,start_off,buffer));
         } else {
 		lseek(fd,start_off,SEEK_SET);
-                return(read(fd,buffer,nwords*WORD_SIZE));
+                n = read(fd,buffer,nwords*WORD_SIZE);
+		return(start_off + n);
         }
 }
 int COSGetRecord(int fd, int block_number,int offset,char **buffer,int* finish_block,int* finish_offset)
@@ -370,23 +408,42 @@ long UnPackRealHeader(CCMFileRec *therec,int fd,CCMI *iheader, CCMR *header,int 
 		return(n);
 	}
 
+	if(iheader->LENHDR ==  (3*(2*iheader->NLEV + 1) + 2 * iheader->NOREC)) {
 
-	index = 0;
-	header->sigapb = DoubleEm(&(buffer[index]),iheader->NLEV*2 + 1);
-	index += sz(iheader->NLEV*2 + 1);
-	header->siga = DoubleEm(&(buffer[index]),iheader->NLEV*2 + 1);
-	index += sz(iheader->NLEV*2 + 1);
-	header->sigb = DoubleEm(&(buffer[index]),iheader->NLEV*2 + 1);
-	index += sz(iheader->NLEV*2 + 1);
+		index = 0;
+		header->sigapb = DoubleEm(&(buffer[index]),iheader->NLEV*2 + 1);
+		index += sz(iheader->NLEV*2 + 1);
+		header->siga = DoubleEm(&(buffer[index]),iheader->NLEV*2 + 1);
+		index += sz(iheader->NLEV*2 + 1);
+		header->sigb = DoubleEm(&(buffer[index]),iheader->NLEV*2 + 1);
+		index += sz(iheader->NLEV*2 + 1);
 
-	header->mplat = DoubleEm(&(buffer[index]),iheader->NOREC);
-	index += sz(iheader->NOREC);
+		header->mplat = DoubleEm(&(buffer[index]),iheader->NOREC);
+		index += sz(iheader->NOREC);
 	
-	header->mpwts = DoubleEm(&(buffer[index]),iheader->NOREC);
-	index += sz(iheader->NOREC);
+		header->mpwts = DoubleEm(&(buffer[index]),iheader->NOREC);
+		index += sz(iheader->NOREC);
 	
-	free(buffer);	
-	return((finish_block * BLOCK_SIZE) + sz(finish_offset));
+		free(buffer);	
+		return((finish_block * BLOCK_SIZE) + sz(finish_offset));
+	} else if(iheader->LENHDR == iheader->NLEV + 2 * iheader->NOREC){
+		index = 0;
+		header->sigapb = DoubleEm(&(buffer[index]),iheader->NLEV);
+		index += sz(iheader->NLEV);
+		header->siga = NULL;
+		header->sigb = NULL;
+		
+		header->mplat = DoubleEm(&(buffer[index]),iheader->NOREC);
+		index += sz(iheader->NOREC);
+	
+		header->mpwts = DoubleEm(&(buffer[index]),iheader->NOREC);
+		index += sz(iheader->NOREC);
+
+		free(buffer);	
+		return((finish_block * BLOCK_SIZE) + sz(finish_offset));
+	} else {
+		return(-1);
+	}
 
 }
 long UnPackCharHeader(CCMFileRec *therec,int fd,CCMI *iheader, CCMC *header,int start_block, int start_offset)
@@ -406,10 +463,17 @@ long UnPackCharHeader(CCMFileRec *therec,int fd,CCMI *iheader, CCMC *header,int 
 		return(n);
 	}
 
-	index = 0;
-	memcpy(header,buffer,sz(CHAR_HEADER_SIZE));
-	index += sz(CHAR_HEADER_SIZE);
+	if(iheader->LENHDC < CHAR_HEADER_SIZE) {
+		index = 0;
+		memcpy(header,buffer,sz(iheader->LENHDC-2*iheader->NFLDH));
+		index += sz(iheader->LENHDC-2*iheader->NFLDH);
+	} else {
+		index = 0;
+		memcpy(header,buffer,sz(CHAR_HEADER_SIZE));
+		index += sz(CHAR_HEADER_SIZE);
+	}
 
+	
 	header->MCFLDS = (char*)NclMalloc(sz(2 * iheader->NFLDH));
 
 	memcpy(header->MCFLDS,&(buffer[index]),sz(2 * iheader->NFLDH));
@@ -477,6 +541,91 @@ void* s2;
 	return((int)(ind1->var_quark - ind2->var_quark));
 }
 
+CcmIntVarInqRecList *CcmAddIntVar
+#if	NhlNeedProto
+(CCMFileRec *therec,NclQuark vname,int size,NclTypeClass type,void *value,int status,int dim_number)
+#else
+(therec,vname,size,type,value,status,dim_number)
+CCMFileRec  *therec;
+NclQuark vname;
+int size;
+NclTypeClass type;
+void *value;
+int status;
+int dim_number;
+#endif
+{
+	CcmIntVarInqRecList *tmp;
+
+	tmp = therec->int_vars;
+	
+	therec->int_vars = (CcmIntVarInqRecList*)NclMalloc(sizeof(CcmIntVarInqRecList));
+	therec->int_vars->next = tmp;
+	therec->int_vars->var_name_q = vname;
+	therec->int_vars->var_info.var_name_quark = vname;
+	therec->int_vars->var_info.num_dimensions = 1;
+	therec->int_vars->var_info.dim_sizes[0] = size;
+	therec->int_vars->var_info.file_dim_num[0] = dim_number;
+	therec->int_vars->var_info.data_type = type->type_class.data_type;
+	therec->int_vars->n_atts = 0;
+	therec->int_vars->theatts = NULL;
+	
+	therec->int_vars->thevalue = _NclCreateMultiDVal(
+                                                        NULL,
+                                                        NULL,
+                                                        Ncl_MultiDValData,
+                                                        0,
+                                                        value,
+                                                        NULL,
+                                                        1,
+                                                        therec->int_vars->var_info.dim_sizes,
+                                                        status,
+                                                        NULL,
+                                                        type);
+	therec->n_int_vars++;
+	return(therec->int_vars);;
+}
+
+void CcmAddStringVarAtt
+#if     NhlNeedProto
+(CcmIntVarInqRecList *tmp_var,NclQuark att_name, NclQuark att_val)
+#else
+(tmp_var,att_name,att_val)
+CcmIntVarInqRecList *tmp_var;
+NclQuark att_name;
+NclQuark att_val;
+#endif
+{
+	CcmAttInqRecList *tmp_att = tmp_var->theatts;
+	NclQuark *tmp_q;
+	int dimsizes = 1;
+
+	tmp_q = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_q = att_val;
+	
+	tmp_var->theatts =(CcmAttInqRecList*) NclMalloc(sizeof(CcmAttInqRecList));
+	tmp_var->theatts->attname = att_name;
+	tmp_var->theatts->next = tmp_att;
+	tmp_var->theatts->thevalue = _NclCreateMultiDVal(
+                                                        NULL,
+                                                        NULL,
+                                                        Ncl_MultiDValData,
+                                                        0,
+                                                        tmp_q,
+                                                        NULL,
+                                                        1,
+                                                        &dimsizes,
+                                                        PERMANENT,
+                                                        NULL,
+                                                        _NclNameToTypeClass(NrmStringToQuark("string")));
+
+	tmp_var->n_atts++;
+	return;
+}
+
+
+
+
 static void *CcmGetFileRec
 #if	NhlNeedProto
 (NclQuark path,int wr_status)
@@ -493,6 +642,7 @@ int	wr_status;
 	CCMI tmp_iheader;
 	CCMC tmp_cheader;
 	CCMR tmp_rheader;
+	CcmIntVarInqRecList *tmp_var = NULL;
 	int i,j,k,l;
 	int dim_num;
 	long coff = 0;  /* keeps track of current offset in bytes into the file */
@@ -507,7 +657,7 @@ int	wr_status;
 	static int n_quarks = 0;
 	int fd;
 	float spacing;
-	float *tmp_lon;
+	float *tmp_lon,*tmp_siga,*tmp_sigb;
 	int dimsize = 0;
 
 	if(first) {
@@ -543,6 +693,8 @@ int	wr_status;
 		therec->vars = NULL;
 		therec->n_file_atts = 0;
 		therec->file_atts= NULL;
+		therec->n_int_vars = 0;
+		therec->int_vars = NULL;
 /*
 * Obtain first integer header and set up info arrays
 */
@@ -559,17 +711,16 @@ int	wr_status;
 		therec->dims = (CcmDimInqRecList*)NclMalloc(therec->n_dims * sizeof(CcmDimInqRecList));
 
 		therec->dims[TIME_DIM_NUMBER].dim_name= NrmStringToQuark("time");
-		therec->dims[LATITUDE_DIM_NUMBER].dim_name= NrmStringToQuark("latitude");
-		therec->dims[ILEV_DIM_NUMBER].dim_name= NrmStringToQuark("ilev");
-		therec->dims[MLEV_DIM_NUMBER].dim_name= NrmStringToQuark("lev");
-		therec->dims[LONGITUDE_DIM_NUMBER].dim_name= NrmStringToQuark("longitude");
+		therec->dims[LATITUDE_DIM_NUMBER].dim_name= NrmStringToQuark("lat");
+		therec->dims[LONGITUDE_DIM_NUMBER].dim_name= NrmStringToQuark("lon");
 		therec->dims[TIME_DIM_NUMBER].size = initial_iheader.MFILTH;
 		therec->dims[LATITUDE_DIM_NUMBER].size = initial_iheader.NOREC;
-		therec->dims[ILEV_DIM_NUMBER].size = initial_iheader.NLEV + 1;
-		therec->dims[MLEV_DIM_NUMBER].size = initial_iheader.NLEV;
 		therec->dims[LONGITUDE_DIM_NUMBER].size = initial_iheader.NLON;
-
-
+		therec->dims[SCALAR_DIM_NUMBER].dim_name = NrmStringToQuark("ncl_scalar");
+		therec->dims[SCALAR_DIM_NUMBER].size = 1;
+		therec->dims[CHAR_DIM_NUMBER].dim_name= NrmStringToQuark("len_char");
+		therec->dims[CHAR_DIM_NUMBER].size = 80;
+	
 		cb = coff / BLOCK_SIZE;
 		cb_off = (coff % BLOCK_SIZE) / WORD_SIZE;
 		coff = UnPackCharHeader(therec,fd,&initial_iheader,&initial_cheader,cb,cb_off);
@@ -590,83 +741,172 @@ int	wr_status;
 					close(fd);
 			return(NULL);
 		}
-		therec->coords = NclMalloc(sizeof(NclMultiDValData)*5);
-		therec->coords[TIME_DIM_NUMBER] = NULL;
-		tmp_lon = (float*)NclMalloc(sizeof(float)*(initial_iheader.NLEV+1));
-		fprintf(stdout,"ilev:\n");
-		for(i = 0; i < initial_iheader.NLEV+1; i++) {
-			tmp_lon[i] = 1000.0 * ( *(initial_rheader.siga + 2*i) + *(initial_rheader.sigb + 2*i));
-			fprintf(stdout,"%f\n",tmp_lon[i]);
+		if((initial_iheader.MPLAT - initial_iheader.MPSIG)==(3*(2*initial_iheader.NLEV + 1))) {
+                        therec->dims[ILEV_DIM_NUMBER].dim_name= NrmStringToQuark("ilev");
+                        therec->dims[MLEV_DIM_NUMBER].dim_name= NrmStringToQuark("lev");
+                        therec->dims[ILEV_DIM_NUMBER].size = initial_iheader.NLEV + 1;
+                        therec->dims[MLEV_DIM_NUMBER].size = initial_iheader.NLEV;
+			tmp_lon = (float*)NclMalloc(sizeof(float)*(initial_iheader.NLEV+1));
+			tmp_siga = (float*)NclMalloc(sizeof(float)*initial_iheader.NLEV+1);
+			tmp_sigb = (float*)NclMalloc(sizeof(float)*initial_iheader.NLEV+1);
+			fprintf(stdout,"ilev:\n");
+			for(i = 0; i < initial_iheader.NLEV+1; i++) {
+				tmp_lon[i] = 1000.0 * ( *(initial_rheader.siga + 2*i) + *(initial_rheader.sigb + 2*i));
+				tmp_siga[i] = *(initial_rheader.siga + 2*i);
+				tmp_sigb[i] = *(initial_rheader.sigb + 2*i);
+				fprintf(stdout,"%f\n",tmp_lon[i]);
+			}
+			tmp_var = CcmAddIntVar(
+					therec,
+					therec->dims[ILEV_DIM_NUMBER].dim_name,
+					therec->dims[ILEV_DIM_NUMBER].size,
+					_NclNameToTypeClass(NrmStringToQuark("float")),
+					tmp_lon,
+					PERMANENT,
+					ILEV_DIM_NUMBER);
+			CcmAddStringVarAtt(tmp_var,NrmStringToQuark("hybrid_PS_var"),NrmStringToQuark("PS"));
+			CcmAddStringVarAtt(tmp_var,NrmStringToQuark("hybrid_P0_var"),NrmStringToQuark("P0"));
+			CcmAddStringVarAtt(tmp_var,NrmStringToQuark("hybrid_B_var"),NrmStringToQuark("hybi"));
+			CcmAddStringVarAtt(tmp_var,NrmStringToQuark("hybrid_A_var"),NrmStringToQuark("hyai"));
+			CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("hybrid level at layer interfaces (1000*(A+B))"));
+			tmp_var = CcmAddIntVar(therec,NrmStringToQuark("hyai"),therec->dims[ILEV_DIM_NUMBER].size,_NclNameToTypeClass(NrmStringToQuark("float")),tmp_siga,PERMANENT,ILEV_DIM_NUMBER);
+			CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("hybrid A coefficient at layer interfaces"));
+			tmp_var = CcmAddIntVar(therec,NrmStringToQuark("hybi"),therec->dims[ILEV_DIM_NUMBER].size,_NclNameToTypeClass(NrmStringToQuark("float")),tmp_sigb,PERMANENT,ILEV_DIM_NUMBER);
+			CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("hybrid B coefficient at layer interfaces"));
+	
+			tmp_lon = (float*)NclMalloc(sizeof(float)*initial_iheader.NLEV);
+			tmp_siga = (float*)NclMalloc(sizeof(float)*initial_iheader.NLEV);
+			tmp_sigb = (float*)NclMalloc(sizeof(float)*initial_iheader.NLEV);
+			fprintf(stdout,"lev:\n");
+			for(i = 0; i < initial_iheader.NLEV; i++) {
+				tmp_lon[i] = 1000.0 * ( *(initial_rheader.siga + 2*i+1) + *(initial_rheader.sigb + 2*i+1));
+				tmp_siga[i] = *(initial_rheader.siga + 2*i+1);
+				tmp_sigb[i] = *(initial_rheader.sigb + 2*i+1);
+				fprintf(stdout,"%f\n",tmp_lon[i]);
+			}
+			tmp_var = CcmAddIntVar(therec,therec->dims[MLEV_DIM_NUMBER].dim_name,therec->dims[MLEV_DIM_NUMBER].size,_NclNameToTypeClass(NrmStringToQuark("float")),tmp_lon,PERMANENT,MLEV_DIM_NUMBER);
+                        CcmAddStringVarAtt(tmp_var,NrmStringToQuark("hybrid_PS_var"),NrmStringToQuark("PS"));
+                        CcmAddStringVarAtt(tmp_var,NrmStringToQuark("hybrid_P0_var"),NrmStringToQuark("P0"));
+                        CcmAddStringVarAtt(tmp_var,NrmStringToQuark("hybrid_B_var"),NrmStringToQuark("hybm"));
+                        CcmAddStringVarAtt(tmp_var,NrmStringToQuark("hybrid_A_var"),NrmStringToQuark("hyam"));
+			CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("hybrid level at layer midpoints (1000*(A+B))"));
+			tmp_var = CcmAddIntVar(therec,NrmStringToQuark("hyam"),therec->dims[MLEV_DIM_NUMBER].size,_NclNameToTypeClass(NrmStringToQuark("float")),tmp_siga,PERMANENT,MLEV_DIM_NUMBER);
+			CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("hybrid A coefficient at layer midpoints"));
+			tmp_var = CcmAddIntVar(therec,NrmStringToQuark("hybm"),therec->dims[MLEV_DIM_NUMBER].size,_NclNameToTypeClass(NrmStringToQuark("float")),tmp_sigb,PERMANENT,MLEV_DIM_NUMBER);
+			CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("hybrid B coefficient at layer midpoints"));
+
+		} else {
+			therec->dims[ILEV_DIM_NUMBER].dim_name= NrmStringToQuark("ilev");
+                        therec->dims[MLEV_DIM_NUMBER].dim_name= NrmStringToQuark("lev");
+                        therec->dims[ILEV_DIM_NUMBER].size = initial_iheader.NLEV;
+                        therec->dims[MLEV_DIM_NUMBER].size = initial_iheader.NLEV;
+			tmp_lon = (float*)NclMalloc(sizeof(float)*initial_iheader.NLEV);
+			for(i = 0; i < initial_iheader.NLEV; i++) {
+				tmp_lon[i] = initial_rheader.sigapb[i];
+			}
+			tmp_var = CcmAddIntVar(therec,therec->dims[MLEV_DIM_NUMBER].dim_name,therec->dims[MLEV_DIM_NUMBER].size,_NclNameToTypeClass(NrmStringToQuark("float")),tmp_lon,PERMANENT,MLEV_DIM_NUMBER);
 		}
-		dimsize = therec->dims[ILEV_DIM_NUMBER].size;
-		therec->coords[ILEV_DIM_NUMBER] = _NclCreateMultiDVal(
-							NULL,	
-							NULL,	
-							Ncl_MultiDValData,
-							0,
-							tmp_lon,
-							NULL,
-							1,
-							&dimsize,
-							PERMANENT,
-							NULL,
-							_NclNameToTypeClass(NrmStringToQuark("float")));
-
-		tmp_lon = (float*)NclMalloc(sizeof(float)*initial_iheader.NLEV);
-		fprintf(stdout,"lev:\n");
-		for(i = 0; i < initial_iheader.NLEV; i++) {
-			tmp_lon[i] = 1000.0 * ( *(initial_rheader.siga + 2*i+1) + *(initial_rheader.sigb + 2*i+1));
-			fprintf(stdout,"%f\n",tmp_lon[i]);
-		}
-		dimsize = therec->dims[MLEV_DIM_NUMBER].size;
-		therec->coords[MLEV_DIM_NUMBER] = _NclCreateMultiDVal(
-							NULL,	
-							NULL,	
-							Ncl_MultiDValData,
-							0,
-							tmp_lon,
-							NULL,
-							1,
-							&dimsize,
-							PERMANENT,
-							NULL,
-							_NclNameToTypeClass(NrmStringToQuark("float")));
-
-
-
 		tmp_lon = (float*)NclMalloc(sizeof(float)*initial_iheader.NLON);
 		spacing = 360.0/(initial_iheader.NLON);
 		for(i = 0; i < initial_iheader.NLON; i++) {
 			tmp_lon[i] = i * spacing;
 		}
-		therec->coords[LONGITUDE_DIM_NUMBER] = _NclCreateMultiDVal(
-							NULL,
-							NULL,
-							Ncl_MultiDValData,
-							0,
-							tmp_lon,
-							NULL,
-							1,
-							&initial_iheader.NLON,
-							PERMANENT,
-							NULL,
-							_NclNameToTypeClass(NrmStringToQuark("float")));
+		tmp_var = CcmAddIntVar(therec,therec->dims[LONGITUDE_DIM_NUMBER].dim_name,therec->dims[LONGITUDE_DIM_NUMBER].size,_NclNameToTypeClass(NrmStringToQuark("float")),tmp_lon,PERMANENT,LONGITUDE_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("units"),NrmStringToQuark("degrees_east"));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("longitude"));
+
 		tmp_lon = (float*)NclMalloc(sizeof(float)*initial_iheader.NOREC);
+		tmp_siga = (float*)NclMalloc(sizeof(float)*initial_iheader.NOREC);
 		for(i = 0; i < initial_iheader.NOREC; i++) {
 			tmp_lon[i] = (float)initial_rheader.mplat[i];
+			tmp_siga[i] = (float)initial_rheader.mpwts[i];
 		}
-		therec->coords[LATITUDE_DIM_NUMBER] = _NclCreateMultiDVal(
-							NULL,
-							NULL,
-							Ncl_MultiDValData,
-							0,
-							tmp_lon,
-							NULL,
-							1,
-							&initial_iheader.NOREC,
-							PERMANENT,
-							NULL,
-							_NclNameToTypeClass(NrmStringToQuark("float")));
+		tmp_var = CcmAddIntVar(therec,therec->dims[LATITUDE_DIM_NUMBER].dim_name,therec->dims[LATITUDE_DIM_NUMBER].size,_NclNameToTypeClass(NrmStringToQuark("float")),tmp_lon,PERMANENT,LATITUDE_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("units"),NrmStringToQuark("degrees_north"));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("latitude"));
+
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("gw"),therec->dims[LATITUDE_DIM_NUMBER].size,_NclNameToTypeClass(NrmStringToQuark("float")),tmp_siga,PERMANENT,LATITUDE_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("gauss weights"));
+
+
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("ntrm"),1,_NclNameToTypeClass(NrmStringToQuark("integer")),&therec->header.iheader.NTRM,STATIC,SCALAR_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("spectral truncation parameter M"));
+
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("ntrn"),1,_NclNameToTypeClass(NrmStringToQuark("integer")),&therec->header.iheader.NTRN,STATIC,SCALAR_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("spectral truncation parameter N"));
+
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("ntrk"),1,_NclNameToTypeClass(NrmStringToQuark("integer")),&therec->header.iheader.NTRK,STATIC,SCALAR_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("spectral truncation parameter K"));
+
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("ndbase"),1,_NclNameToTypeClass(NrmStringToQuark("integer")),&therec->header.iheader.NDBASE,STATIC,SCALAR_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("base day for this case"));
+
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("nsbase"),1,_NclNameToTypeClass(NrmStringToQuark("integer")),&therec->header.iheader.NSBASE,STATIC,SCALAR_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("units"),NrmStringToQuark("s"));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("seconds to complete base day"));
+
+
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("nbdate"),1,_NclNameToTypeClass(NrmStringToQuark("integer")),&therec->header.iheader.NBDATE,STATIC,SCALAR_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("base date as 6 digit integer (YYMMDD)"));
+
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("nbsec"),1,_NclNameToTypeClass(NrmStringToQuark("integer")),&therec->header.iheader.NBSEC,STATIC,SCALAR_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("units"),NrmStringToQuark("s"));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("seconds to complete base date"));
+
+
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("date"),1,_NclNameToTypeClass(NrmStringToQuark("integer")),&therec->header.iheader.NCDATE,STATIC,SCALAR_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("current date as 6 digit integer (YYMMDD)"));
+
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("datesec"),1,_NclNameToTypeClass(NrmStringToQuark("integer")),&therec->header.iheader.NCSEC,STATIC,SCALAR_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("units"),NrmStringToQuark("s"));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("seconds to complete current date"));
+
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("mdt"),1,_NclNameToTypeClass(NrmStringToQuark("integer")),&therec->header.iheader.MDT,STATIC,SCALAR_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("units"),NrmStringToQuark("s"));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("model timestep"));
+		
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("mhisf"),1,_NclNameToTypeClass(NrmStringToQuark("integer")),&therec->header.iheader.MHISF,STATIC,SCALAR_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("frequency of model writes (timesteps)"));
+
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("mfstrt"),1,_NclNameToTypeClass(NrmStringToQuark("integer")),&therec->header.iheader.MFSTRT,STATIC,SCALAR_DIM_NUMBER);
+
+
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("ozone_mss"),80,_NclNameToTypeClass(NrmStringToQuark("char")),&therec->header.cheader.LNHSTVO,STATIC,CHAR_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("seq"),CcmVarName2(therec->header.cheader.LSHSTVO));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("time"),CcmVarName(therec->header.cheader.LTHSTVO));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("date"),CcmVarName(therec->header.cheader.LDHSTVO));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("MSS pathname of ozone boundary data"));
+
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("tibnd_mss"),80,_NclNameToTypeClass(NrmStringToQuark("char")),&therec->header.cheader.LNHSTT,STATIC,CHAR_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("seq"),CcmVarName2(therec->header.cheader.LSHSTT));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("time"),CcmVarName(therec->header.cheader.LTHSTT));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("date"),CcmVarName(therec->header.cheader.LDHSTT));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("MSS pathname of time-invariant boundary data"));
+
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("sst_mss"),80,_NclNameToTypeClass(NrmStringToQuark("char")),&therec->header.cheader.LNHSTVS,STATIC,CHAR_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("seq"),CcmVarName2(therec->header.cheader.LSHSTVS));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("time"),CcmVarName(therec->header.cheader.LTHSTVS));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("date"),CcmVarName(therec->header.cheader.LDHSTVS));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("MSS pathname of SST boundary data"));
+
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("init_mss"),80,_NclNameToTypeClass(NrmStringToQuark("char")),&therec->header.cheader.LNHSTI,STATIC,CHAR_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("seq"),CcmVarName2(therec->header.cheader.LSHSTI));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("time"),CcmVarName(therec->header.cheader.LTHSTI));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("date"),CcmVarName(therec->header.cheader.LDHSTI));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("MSS pathname of initial data"));
+
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("first_mss"),80,_NclNameToTypeClass(NrmStringToQuark("char")),&therec->header.cheader.LNHSTF,STATIC,CHAR_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("seq"),CcmVarName2(therec->header.cheader.LSHSTF));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("time"),CcmVarName(therec->header.cheader.LTHSTF));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("date"),CcmVarName(therec->header.cheader.LDHSTF));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("MSS pathname of first file for this case"));
+
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("current_mss"),80,_NclNameToTypeClass(NrmStringToQuark("char")),&therec->header.cheader.LNHSTC,STATIC,CHAR_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("seq"),CcmVarName2(therec->header.cheader.LSHSTC));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("time"),CcmVarName(therec->header.cheader.LTHSTC));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("date"),CcmVarName(therec->header.cheader.LDHSTC));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("MSS pathname of this file"));
+
 
 /*
 * coff is NOW POINTING!!! to the top of the first latitude record!!!!
@@ -685,8 +925,6 @@ int	wr_status;
 			therec->vars[i].packing = initial_iheader.MFLDS[i*3 + 2];
 			therec->vars[i].level_type = initial_iheader.MFLDS[i*3] % 10;
 			therec->vars[i].sample_type = initial_iheader.MFLDS[i*3] / 10;
-			therec->vars[i].n_atts = 0;	
-			therec->vars[i].theatts = NULL;
 
 			therec->vars[i].var_name_q = therec->vars[i].var_info.var_name_quark = CcmVarName(&(initial_cheader.MCFLDS[2*WORD_SIZE * i]));
 			therec->vars[i].ccm_var_index = -1;
@@ -747,6 +985,12 @@ int	wr_status;
 			
 			tmp_off = MyRead(therec,fd,buffer,1,tmp_off);
 			index = (int)FloatIt(buffer);
+			if((index < 1)||(index > initial_iheader.NOREC)) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An error occurred while indexing latitude data records. This file is not a vaild CCM history file");
+				NclFree(therec);
+				close(fd);
+				return(NULL);
+			}
 			therec->lat_rec_offsets[(index-1)] = coff;
 			coff = MySeek(therec,fd,initial_iheader.MAXSIZ + 1,coff);
 /*
@@ -774,6 +1018,12 @@ int	wr_status;
 					tmp_off = MySeek(therec,fd,1,coff);
 					tmp_off = MyRead(therec,fd,buffer,1,tmp_off);
 					index = (int)FloatIt((buffer));
+					if((index < 1)||(index > initial_iheader.NOREC)) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An error occurred while indexing latitude data records. This file is not a vaild CCM history file");
+						NclFree(therec);
+						close(fd);
+						return(NULL);
+					}
 					therec->lat_rec_offsets[i*initial_iheader.NOREC+(index-1)] = coff;
 					coff = MySeek(therec,fd,initial_iheader.MAXSIZ + 1,coff);
 /*
@@ -791,10 +1041,9 @@ int	wr_status;
 				cb_off = (coff % BLOCK_SIZE) / WORD_SIZE;
 				tmp_off = UnPackIntHeader(therec,fd,&tmp_iheader,cb,cb_off);
 				if(tmp_off == -1) {
-					NclFree(therec);
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM integer header for file (%s)",NrmQuarkToString(path));
-					close(fd);
-					return(NULL);
+					therec->dims[TIME_DIM_NUMBER].size = i+1;	
+					therec->header.iheader.MFILTH = i+1;       
+					break;
 				}
 				cb = tmp_off / BLOCK_SIZE;
 				cb_off = (tmp_off % BLOCK_SIZE) / WORD_SIZE;
@@ -862,19 +1111,20 @@ int *n_vars;
 {
 	CCMFileRec *thefile = (CCMFileRec*)therec;
 	NclQuark *arout;
+	CcmIntVarInqRecList *tmp;
 	int i;
-	*n_vars = thefile->n_vars + 5;
+	*n_vars = thefile->n_vars + thefile->n_int_vars;
 
 	i = 0;
 
 	arout = NclMalloc(sizeof(NclQuark)* *n_vars);
-	arout[i++] = thefile->dims[TIME_DIM_NUMBER].dim_name;
-	arout[i++] = thefile->dims[LATITUDE_DIM_NUMBER].dim_name;
-	arout[i++] = thefile->dims[ILEV_DIM_NUMBER].dim_name;
-	arout[i++] = thefile->dims[MLEV_DIM_NUMBER].dim_name;
-	arout[i++] = thefile->dims[LONGITUDE_DIM_NUMBER].dim_name;
+	tmp = thefile->int_vars;
+	for(i = 0; i < thefile->n_int_vars; i++) {
+		arout[i] = tmp->var_name_q;
+		tmp = tmp->next;
+	}
 	for( ; i < *n_vars; i++ ) {
-		arout[i] = thefile->vars[i-5].var_info.var_name_quark;
+		arout[i] = thefile->vars[i-thefile->n_int_vars].var_info.var_name_quark;
 	}	
 	return(arout);
 }
@@ -890,17 +1140,18 @@ NclQuark var_name;
 {
 	CCMFileRec *thefile = (CCMFileRec*)therec;
 	NclFVarRec *tmp = NULL;
+	CcmIntVarInqRecList *vtmp;
 	int i;
-	for(i = 0; i < 5; i++ ) {
-		if(var_name == thefile->dims[i].dim_name) {
+
+	vtmp = thefile->int_vars;
+	for(i = 0; i < thefile->n_int_vars; i++ ) {
+		
+		if(var_name == vtmp->var_name_q) {
 			tmp = (NclFVarRec*)NclMalloc(sizeof(NclFVarRec));
-			tmp->var_name_quark = var_name;
-			tmp->data_type = NCL_float;
-			tmp->num_dimensions = 1;
-			tmp->dim_sizes[0] = thefile->dims[i].size;
-			tmp->file_dim_num[0] = i;
+			*tmp = vtmp->var_info;
 			return(tmp);
 		}
+		vtmp = vtmp->next;
 	}
 	for(i = 0; i < thefile->n_vars; i++ ) {
 
@@ -965,8 +1216,11 @@ void *therec;
 int *n_atts;
 #endif
 {
-	*n_atts = 0;
-	return(NULL);
+	NclQuark* arout = NclMalloc(sizeof(NclQuark)*2);
+	*n_atts = 2;
+	arout[0] = NrmStringToQuark("case");
+	arout[1] = NrmStringToQuark("title");
+	return(arout);
 }
 
 static NclFAttRec * CcmGetAttInfo
@@ -978,9 +1232,13 @@ void *therec;
 NclQuark attname;
 #endif
 {
-	return(NULL);
-}
+	NclFAttRec *tmp = NclMalloc(sizeof(NclFAttRec));
 
+	tmp->att_name_quark = attname;
+	tmp->data_type = NCL_string;
+	tmp->num_elements = 1;
+	return(tmp);
+}
 static NclQuark *CcmGetVarAttNames
 #if NhlNeedProto
 (void * therec, NclQuark var_name, int *n_atts)
@@ -992,14 +1250,16 @@ int *n_atts;
 #endif
 {
 	CCMFileRec *thefile = (CCMFileRec*)therec;
-	int i;
+	CcmAttInqRecList *tmp_att = NULL;
+	CcmIntVarInqRecList *tmp_var= NULL;
+	int i,j;
 	NclQuark *arout;
 	*n_atts = 0;
 
-	arout = (NclQuark*)NclMalloc(sizeof(NclQuark)*3);
 	for(i = 0; i < thefile->n_vars; i++ ) {
 
 		if(var_name == thefile->vars[i].var_name_q) {
+			arout = (NclQuark*)NclMalloc(sizeof(NclQuark)*3);
 			if(thefile->vars[i].ccm_var_index != -1) {
 				*n_atts = 3;
 				arout[0] = NrmStringToQuark("long_name");
@@ -1013,6 +1273,23 @@ int *n_atts;
         			return(arout);
 			}
 			
+		}
+	}
+	tmp_var = thefile->int_vars;
+	for(i = 0; i < thefile->n_int_vars; i++) {
+		if(var_name == tmp_var->var_name_q) {
+			arout = (NclQuark*)NclMalloc(sizeof(NclQuark)*tmp_var->n_atts);
+			j = 0;
+			tmp_att = tmp_var->theatts;
+			while(tmp_att != NULL ){
+				arout[j] = tmp_att->attname;
+				tmp_att = tmp_att->next;
+				j++;
+			}
+			*n_atts = j;
+			return(arout);
+		} else {
+			tmp_var = tmp_var->next;
 		}
 	}
 	*n_atts = 0;	
@@ -1152,6 +1429,7 @@ void *storage
 	NclMultiDValData tmp_md;
 	NclMultiDValData tmp_md2;
 	int dimsizes[4];
+	CcmIntVarInqRecList *tmp;
 
 	for (i = 0; i < thefile->n_vars; i++) {
 		if(thefile->vars[i].var_info.var_name_quark == var_name) {
@@ -1160,31 +1438,24 @@ void *storage
 		}
 	}
 	if(i == thefile->n_vars) {
-		for(i = 0; i < thefile->n_dims; i++) {
-			if(var_name == thefile->dims[i].dim_name) {
+		tmp = thefile->int_vars;
+		for(i = 0; i < thefile->n_int_vars; i++) {
+			if(var_name == tmp->var_name_q) {
 				sel_ptr.n_entries = 1;
 				sel_ptr.selection[0].sel_type = Ncl_SUBSCR;
                         	sel_ptr.selection[0].dim_num = 0;
                         	sel_ptr.selection[0].u.sub.start = start[0];
                         	sel_ptr.selection[0].u.sub.finish = finish[0];
                         	sel_ptr.selection[0].u.sub.stride = stride[0];
-				switch(i) {
-					case TIME_DIM_NUMBER:
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"CCMReadVar: Coordinate Variable (%s) not available",NrmQuarkToString(var_name));
-						return(NULL);
-						break;
-					case LONGITUDE_DIM_NUMBER:
-					case LATITUDE_DIM_NUMBER:
-					case ILEV_DIM_NUMBER:
-					case MLEV_DIM_NUMBER:
-						if(thefile->coords[i] != NULL) {
-							tmp_md2 = (NclMultiDValData)_NclReadSubSection((NclData)thefile->coords[i],&sel_ptr,NULL);
-							memcpy(storage,tmp_md2->multidval.val,tmp_md2->multidval.totalsize);
-							_NclDestroyObj((NclObj)tmp_md2);
-						}
-						return(storage);
-						break;
+				if(tmp->thevalue != NULL) {
+					tmp_md2 = (NclMultiDValData)_NclReadSubSection((NclData)tmp->thevalue,&sel_ptr,NULL);
+					memcpy(storage,tmp_md2->multidval.val,tmp_md2->multidval.totalsize);
+					_NclDestroyObj((NclObj)tmp_md2);
 				}
+				return(storage);
+				break;
+			} else {	
+				tmp = tmp->next;
 			}
 		}
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"CCMReadVar: Variable (%s) undefined",NrmQuarkToString(var_name));
@@ -1292,6 +1563,17 @@ NclQuark att_name;
 void *storage;
 #endif
 {
+	CCMFileRec *thefile = (CCMFileRec*)therec;
+	char buffer[81];
+	if(att_name == NrmStringToQuark("case")) {
+		*(NclQuark*)storage = CcmVarName(thefile->header.cheader.MCASE);
+		return(storage);
+	} else if(att_name == NrmStringToQuark("title")) {
+		memcpy(buffer,thefile->header.cheader.MCSTIT,80);
+		buffer[80] = '\0';
+		*(NclQuark*)storage = NrmStringToQuark(buffer);
+		return(storage);
+	}
 	return(NULL);
 }
 
@@ -1309,6 +1591,8 @@ void *storage;
 	CCMFileRec *thefile = (CCMFileRec*)therec;
 	int i;
 	NclQuark *arout;
+	CcmAttInqRecList *tmp_att = NULL;
+	CcmIntVarInqRecList *tmp_var= NULL;
 
 	for(i = 0; i < thefile->n_vars; i++ ) {
 
@@ -1318,7 +1602,7 @@ void *storage;
 				arout[1] = NrmQuarkToString("units");
 */
 			if(NrmStringToQuark("units") == att_name) {
-				if(thefile->vars[i].ccm_var_index != -1) {
+				if((thefile->vars[i].ccm_var_index != -1)&&(ccm_name_tab[thefile->vars[i].ccm_var_index].udunit!=NULL)) {
 					*(NclQuark*)storage = NrmStringToQuark(ccm_name_tab[thefile->vars[i].ccm_var_index].udunit);
 				} else {
 					*(NclQuark*)storage = CcmVarName(&(thefile->header.cheader.MCFLDS[2*WORD_SIZE * i + WORD_SIZE]));
@@ -1342,6 +1626,23 @@ void *storage;
 				}
 			}
 			return(storage);
+		}
+	}
+	tmp_var = thefile->int_vars;
+	for(i = 0; i < thefile->n_int_vars; i++) {
+		if(var_name == tmp_var->var_name_q) {
+			arout = (NclQuark*)NclMalloc(sizeof(NclQuark)*tmp_var->n_atts);
+			tmp_att = tmp_var->theatts;
+			while(tmp_att != NULL ){
+				if(tmp_att->attname == att_name) {
+					memcpy(storage,tmp_att->thevalue->multidval.val,tmp_att->thevalue->multidval.totalsize);
+					return(storage);
+				}
+				tmp_att = tmp_att->next;
+			}
+			break;
+		} else {
+			tmp_var = tmp_var->next;
 		}
 	}
 	return(NULL);
