@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.100 1997-11-05 17:16:58 ethan Exp $
+ *      $Id: Execute.c,v 1.101 1997-12-29 19:52:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2444,6 +2444,7 @@ void CallASSIGN_FILEVAR_DIM_OP(void) {
 						}
 					}
 				} else {
+					estatus = NhlFATAL;
 					_NclCleanUpStack(2);
 				} 
 			}
@@ -2486,10 +2487,7 @@ void CallPARAM_FILEVAR_DIM_OP(void) {
 */
 				dim_expr = _NclPop();
 				file_ptr = _NclRetrieveRec(file,READ_IT);
-				if((estatus != NhlFATAL)&&((file_ptr == NULL) || (file_ptr->u.data_var == NULL))) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"File (%s) is undefined",file->name);
-					estatus = NhlFATAL;
-				} else if(estatus != NhlFATAL){
+				if((estatus != NhlFATAL)&&((file_ptr != NULL)&&(file_ptr->u.data_var != NULL))) {
 					file_md = _NclVarValueRead(file_ptr->u.data_var,NULL,NULL);
 					if(file_md->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
 						file_obj = (NclFile)_NclGetObj(*(int*)file_md->multidval.val);
@@ -2539,6 +2537,9 @@ void CallPARAM_FILEVAR_DIM_OP(void) {
 							}
 						}
 					}
+				} else {
+					estatus = NhlFATAL;
+					_NclCleanUpStack(2);
 				}
 			}
 
@@ -3594,10 +3595,7 @@ void CallASSIGN_FILE_VAR_OP(void) {
 						estatus = NhlFATAL;
 					}
 				} else {
-					if((file_ptr == NULL)||(file_ptr->kind != NclStk_VAR)) { 
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is undefined or does not reference a file",file_sym->name);
-						estatus = NhlFATAL;
-					}
+					estatus = NhlFATAL;
 					_NclCleanUpStack(nsubs +1);
 				}
 			}
@@ -3761,10 +3759,7 @@ void CallFILE_VARVAL_OP(void) {
 						estatus = NhlFATAL;
 					}
 				} else {
-					if((file_ptr == NULL)||(file_ptr->kind != NclStk_VAR)) { 
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is undefined or does not reference a file",dfile->name);
-						estatus = NhlFATAL;
-					}
+					estatus = NhlFATAL;
 					_NclCleanUpStack(nsubs);
 				}
 				
@@ -3929,13 +3924,9 @@ void CallFILE_VAR_OP(void) {
 						estatus = NhlFATAL;
 					}
 				} else {
-					if((file_ptr == NULL)||(file_ptr->kind != NclStk_VAR)) { 
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is undefined or does not reference a file",dfile->name);
-						estatus = NhlFATAL;
-					}
+					estatus = NhlFATAL;
 					_NclCleanUpStack(nsubs);
 				}
-				
 			}
 
 void CallASSIGN_VARATT_OP(void) {
@@ -4372,6 +4363,7 @@ void CallASSIGN_FILEVARATT_OP(void) {
 						}
 					}
 				} else {
+					estatus = NhlFATAL;
 					_NclCleanUpStack(nsubs);
 				}
 			}
@@ -4542,6 +4534,7 @@ void CallASSIGN_FILEVAR_COORD_OP(void) {
 						}
 					}
 				} else {
+					estatus = NhlFATAL;
 					_NclCleanUpStack(nsubs +1);
 				}
 			}
@@ -4708,6 +4701,7 @@ void CallPARAM_FILEVAR_COORD_ATT_OP(void) {
 						estatus = NhlFATAL;
 					}
 				} else {
+					estatus = NhlFATAL;
 					_NclCleanUpStack(nsubs);
 				}
 			}
@@ -4840,6 +4834,7 @@ void CallPARAM_FILEVARATT_OP(void) {
 						estatus = NhlFATAL;
 					}
 				} else {
+					estatus = NhlFATAL;
 					_NclCleanUpStack(nsubs);
 				}
 			}
@@ -4977,6 +4972,7 @@ void CallPARAM_FILEVAR_COORD_OP(void) {
 						estatus = NhlFATAL;
 					}
 				} else {
+					estatus = NhlFATAL;
 					_NclCleanUpStack(nsubs);
 				}
 			}
@@ -5207,6 +5203,7 @@ void CallASSIGN_VAR_VAR_OP(void) {
 						}
 					} 
 				} else {
+					estatus = NhlFATAL;
 					_NclCleanUpStack(rhs_nsubs);
 					_NclCleanUpStack(lhs_nsubs);
 				}

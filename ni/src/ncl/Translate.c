@@ -1385,6 +1385,8 @@ Unneeded translations
 
 			off1 = _NclTranslate(filevardim->dim_expr,fp);
 			_NclTranslate(filevardim->filevarnode,fp);
+			_NclPutInstr(ISDEFINED_OP,filevardim->line,filevardim->file);
+			_NclPutInstr((NclValue)filevardim->filesym,filevardim->line,filevardim->file);
 			switch(filevardim->ref_type) {
 			case Ncl_READIT:
 				_NclPutInstr(FILEVAR_DIM_OP,filevardim->line,filevardim->file);
@@ -1435,11 +1437,13 @@ Unneeded translations
 		{
 			NclFileVarAtt *filevaratt = (NclFileVarAtt*)root;
 			int nsubs = 0;
+			off1 = _NclPutInstr(ISDEFINED_OP,filevaratt->line,filevaratt->file);
+			_NclPutInstr((NclValue)filevaratt->filesym,filevaratt->line,filevaratt->file);
 			switch(filevaratt->ref_type) {
 			case Ncl_READIT:
 				if(filevaratt->subscript_list != NULL) {
 					step = filevaratt->subscript_list;
-					off1 = _NclTranslate(step->node,fp);
+					_NclTranslate(step->node,fp);
 					step = step->next;
 					nsubs = 1;		
 					while(step != NULL) {
@@ -1451,7 +1455,7 @@ Unneeded translations
 					_NclTranslate(filevaratt->attnamenode,fp);
 					_NclPutInstr(FILEVARATT_OP,filevaratt->line,filevaratt->file);
 				} else {
-					off1 = _NclTranslate(filevaratt->filevarnode,fp);
+					_NclTranslate(filevaratt->filevarnode,fp);
 					_NclTranslate(filevaratt->attnamenode,fp);
 					_NclPutInstr(FILEVARATT_OP,filevaratt->line,filevaratt->file);
 				}
@@ -1465,7 +1469,7 @@ Unneeded translations
 			case Ncl_WRITEIT:
 				if(filevaratt->subscript_list != NULL) {
 					step = filevaratt->subscript_list;
-					off1 = _NclTranslate(step->node,fp);
+					_NclTranslate(step->node,fp);
 					step = step->next;
 					nsubs = 1;		
 					while(step != NULL) {
@@ -1477,7 +1481,7 @@ Unneeded translations
 					_NclTranslate(filevaratt->attnamenode,fp);
 					_NclPutInstr(ASSIGN_FILEVARATT_OP,filevaratt->line,filevaratt->file);
 				} else {
-					off1 = _NclTranslate(filevaratt->filevarnode,fp);
+					_NclTranslate(filevaratt->filevarnode,fp);
 					_NclTranslate(filevaratt->attnamenode,fp);
 					_NclPutInstr(ASSIGN_FILEVARATT_OP,filevaratt->line,filevaratt->file);
 				}
@@ -1491,7 +1495,7 @@ Unneeded translations
 			case Ncl_PARAMIT:
 				if(filevaratt->subscript_list != NULL) {
 					step = filevaratt->subscript_list;
-					off1 = _NclTranslate(step->node,fp);
+					_NclTranslate(step->node,fp);
 					step = step->next;
 					nsubs = 1;		
 					while(step != NULL) {
@@ -1503,7 +1507,7 @@ Unneeded translations
 					_NclTranslate(filevaratt->attnamenode,fp);
 					_NclPutInstr(PARAM_FILEVARATT_OP,filevaratt->line,filevaratt->file);
 				} else {
-					off1 = _NclTranslate(filevaratt->filevarnode,fp);
+					_NclTranslate(filevaratt->filevarnode,fp);
 					_NclTranslate(filevaratt->attnamenode,fp);
 					_NclPutInstr(PARAM_FILEVARATT_OP,filevaratt->line,filevaratt->file);
 				}
@@ -1598,10 +1602,13 @@ Unneeded translations
 		{
 			NclFileCoordAtt *filecoordatt = (NclFileCoordAtt*)root;
 			int nsubs = 0;
+			off1 = _NclPutInstr(ISDEFINED_OP,filecoordatt->line,filecoordatt->file);
+			_NclPutInstr((NclValue)filecoordatt->filesym,filecoordatt->line,filecoordatt->file);
 			switch(filecoordatt->ref_type) {
 			case Ncl_READIT:
 				if(filecoordatt->subscript_list != NULL) {
-					step = filecoordatt->subscript_list; off1 = _NclTranslate(step->node,fp);
+					step = filecoordatt->subscript_list; 
+					_NclTranslate(step->node,fp);
 					step = step->next;
 					nsubs = 1;
 					while(step != NULL) {
@@ -1614,7 +1621,7 @@ Unneeded translations
 					_NclTranslate(filecoordatt->attnamenode,fp);
 					_NclPutInstr(FILEVAR_COORD_ATT_OP,filecoordatt->line,filecoordatt->file);
 				} else {
-					off1 = _NclTranslate(filecoordatt->filevarnode,fp);
+					_NclTranslate(filecoordatt->filevarnode,fp);
 					_NclTranslate(filecoordatt->coordnamenode,fp);
 					_NclTranslate(filecoordatt->attnamenode,fp);
 					_NclPutInstr(FILEVAR_COORD_ATT_OP,filecoordatt->line,filecoordatt->file);
@@ -1624,7 +1631,8 @@ Unneeded translations
 				break;
 			case Ncl_WRITEIT:
 				if(filecoordatt->subscript_list != NULL) {
-					step = filecoordatt->subscript_list; off1 = _NclTranslate(step->node,fp);
+					step = filecoordatt->subscript_list; 
+					_NclTranslate(step->node,fp);
 					step = step->next;
 					nsubs = 1;
 					while(step != NULL) {
@@ -1637,7 +1645,7 @@ Unneeded translations
 					_NclTranslate(filecoordatt->attnamenode,fp);
 					_NclPutInstr(ASSIGN_FILEVAR_COORD_ATT_OP,filecoordatt->line,filecoordatt->file);
 				} else {
-					off1 = _NclTranslate(filecoordatt->filevarnode,fp);
+					_NclTranslate(filecoordatt->filevarnode,fp);
 					_NclTranslate(filecoordatt->coordnamenode,fp);
 					_NclTranslate(filecoordatt->attnamenode,fp);
 					_NclPutInstr(ASSIGN_FILEVAR_COORD_ATT_OP,filecoordatt->line,filecoordatt->file);
@@ -1651,7 +1659,8 @@ Unneeded translations
 				break;
 			case Ncl_PARAMIT:
 				if(filecoordatt->subscript_list != NULL) {
-					step = filecoordatt->subscript_list; off1 = _NclTranslate(step->node,fp);
+					step = filecoordatt->subscript_list; 
+					_NclTranslate(step->node,fp);
 					step = step->next;
 					nsubs = 1;
 					while(step != NULL) {
@@ -1664,7 +1673,7 @@ Unneeded translations
 					_NclTranslate(filecoordatt->attnamenode,fp);
 					_NclPutInstr(PARAM_FILEVAR_COORD_ATT_OP,filecoordatt->line,filecoordatt->file);
 				} else {
-					off1 = _NclTranslate(filecoordatt->filevarnode,fp);
+					_NclTranslate(filecoordatt->filevarnode,fp);
 					_NclTranslate(filecoordatt->coordnamenode,fp);
 					_NclTranslate(filecoordatt->attnamenode,fp);
 					_NclPutInstr(PARAM_FILEVAR_COORD_ATT_OP,filecoordatt->line,filecoordatt->file);
@@ -1683,10 +1692,13 @@ Unneeded translations
 		{
 			NclFileCoord *filecoord = (NclFileCoord*)root;
 			int nsubs = 0;
+			off1 = _NclPutInstr(ISDEFINED_OP,filecoord->line,filecoord->file);
+			_NclPutInstr((NclValue)filecoord->filesym,filecoord->line,filecoord->file);
 			switch(filecoord->ref_type) {
 			case Ncl_VALONLY:
 				if(filecoord->subscript_list != NULL) {
-					step = filecoord->subscript_list; off1 = _NclTranslate(step->node,fp);
+					step = filecoord->subscript_list; 
+					_NclTranslate(step->node,fp);
 					step = step->next;
 					nsubs = 1;
 					while(step != NULL) {
@@ -1698,7 +1710,7 @@ Unneeded translations
 					_NclTranslate(filecoord->coordnamenode,fp);
 					_NclPutInstr(FILEVARVAL_COORD_OP,filecoord->line,filecoord->file);
 				} else {
-					off1 = _NclTranslate(filecoord->filevarnode,fp);
+					_NclTranslate(filecoord->filevarnode,fp);
 					_NclTranslate(filecoord->coordnamenode,fp);
 					_NclPutInstr(FILEVARVAL_COORD_OP,filecoord->line,filecoord->file);
 				}
@@ -1707,7 +1719,8 @@ Unneeded translations
 				break;
 			case Ncl_READIT:
 				if(filecoord->subscript_list != NULL) {
-					step = filecoord->subscript_list; off1 = _NclTranslate(step->node,fp);
+					step = filecoord->subscript_list; 
+					_NclTranslate(step->node,fp);
 					step = step->next;
 					nsubs = 1;
 					while(step != NULL) {
@@ -1719,7 +1732,7 @@ Unneeded translations
 					_NclTranslate(filecoord->coordnamenode,fp);
 					_NclPutInstr(FILEVAR_COORD_OP,filecoord->line,filecoord->file);
 				} else {
-					off1 = _NclTranslate(filecoord->filevarnode,fp);
+					_NclTranslate(filecoord->filevarnode,fp);
 					_NclTranslate(filecoord->coordnamenode,fp);
 					_NclPutInstr(FILEVAR_COORD_OP,filecoord->line,filecoord->file);
 				}
@@ -1728,7 +1741,8 @@ Unneeded translations
 				break;
 			case Ncl_WRITEIT:
 				if(filecoord->subscript_list != NULL) {
-					step = filecoord->subscript_list; off1 = _NclTranslate(step->node,fp);
+					step = filecoord->subscript_list; 
+					_NclTranslate(step->node,fp);
 					step = step->next;
 					nsubs = 1;
 					while(step != NULL) {
@@ -1740,7 +1754,7 @@ Unneeded translations
 					_NclTranslate(filecoord->coordnamenode,fp);
 					_NclPutInstr(ASSIGN_FILEVAR_COORD_OP,filecoord->line,filecoord->file);
 				} else {
-					off1 = _NclTranslate(filecoord->filevarnode,fp);
+					_NclTranslate(filecoord->filevarnode,fp);
 					_NclTranslate(filecoord->coordnamenode,fp);
 					_NclPutInstr(ASSIGN_FILEVAR_COORD_OP,filecoord->line,filecoord->file);
 				}
@@ -1753,7 +1767,8 @@ Unneeded translations
 				break;
 			case Ncl_PARAMIT:
 				if(filecoord->subscript_list != NULL) {
-					step = filecoord->subscript_list; off1 = _NclTranslate(step->node,fp);
+					step = filecoord->subscript_list; 
+					_NclTranslate(step->node,fp);
 					step = step->next;
 					nsubs = 1;
 					while(step != NULL) {
@@ -1765,7 +1780,7 @@ Unneeded translations
 					_NclTranslate(filecoord->coordnamenode,fp);
 					_NclPutInstr(PARAM_FILEVAR_COORD_OP,filecoord->line,filecoord->file);
 				} else {
-					off1 = _NclTranslate(filecoord->filevarnode,fp);
+					_NclTranslate(filecoord->filevarnode,fp);
 					_NclTranslate(filecoord->coordnamenode,fp);
 					_NclPutInstr(PARAM_FILEVAR_COORD_OP,filecoord->line,filecoord->file);
 				}
@@ -1955,11 +1970,13 @@ Unneeded translations
 			NclFileVar *filevar = (NclFileVar*)root;
 			int nsubs = 0;
 		
+			off1 = _NclPutInstr(ISDEFINED_OP,filevar->line,filevar->file);
+			_NclPutInstr((NclValue)filevar->dfile,filevar->line,filevar->file);
 			switch(filevar->ref_type) {
 			case Ncl_VALONLY:
 				if(filevar->subscript_list != NULL) {
 					step = filevar->subscript_list;
-					off1 = _NclTranslate(step->node,fp);
+					_NclTranslate(step->node,fp);
 					step = step->next;
 					nsubs = 1;
 					while(step != NULL) {
@@ -1970,7 +1987,7 @@ Unneeded translations
 					_NclTranslate(filevar->filevarnode,fp);
 					_NclPutInstr(FILE_VARVAL_OP,filevar->line,filevar->file);
 				} else {
-					off1 = _NclTranslate(filevar->filevarnode,fp);
+					_NclTranslate(filevar->filevarnode,fp);
 					_NclPutInstr(FILE_VARVAL_OP,filevar->line,filevar->file);
 				}
 				_NclPutInstr((NclValue)filevar->dfile,filevar->line,filevar->file);
@@ -1979,7 +1996,7 @@ Unneeded translations
 			case Ncl_READIT:	
 				if(filevar->subscript_list != NULL) {
 					step = filevar->subscript_list;
-					off1 = _NclTranslate(step->node,fp);
+					_NclTranslate(step->node,fp);
 					step = step->next;
 					nsubs = 1;
 					while(step != NULL) {
@@ -1990,7 +2007,7 @@ Unneeded translations
 					_NclTranslate(filevar->filevarnode,fp);
 					_NclPutInstr(FILE_VAR_OP,filevar->line,filevar->file);
 				} else {
-					off1 = _NclTranslate(filevar->filevarnode,fp);
+					_NclTranslate(filevar->filevarnode,fp);
 					_NclPutInstr(FILE_VAR_OP,filevar->line,filevar->file);
 				}
 				_NclPutInstr((NclValue)filevar->dfile,filevar->line,filevar->file);
@@ -1999,7 +2016,7 @@ Unneeded translations
 			case Ncl_WRITEIT:
 				if(filevar->subscript_list != NULL) {
 					step = filevar->subscript_list;
-					off1 = _NclTranslate(step->node,fp);
+					_NclTranslate(step->node,fp);
 					step = step->next;
 					nsubs = 1;
 					while(step != NULL) {
@@ -2010,7 +2027,7 @@ Unneeded translations
 					_NclTranslate(filevar->filevarnode,fp);
 					_NclPutInstr(ASSIGN_FILE_VAR_OP,filevar->line,filevar->file);
 				} else {
-					off1 = _NclTranslate(filevar->filevarnode,fp);
+					_NclTranslate(filevar->filevarnode,fp);
 					 _NclPutInstr(ASSIGN_FILE_VAR_OP,filevar->line,filevar->file);
 				}
 				_NclPutInstr((NclValue)filevar->dfile,filevar->line,filevar->file);
@@ -2022,7 +2039,7 @@ Unneeded translations
 			case Ncl_PARAMIT:
 				if(filevar->subscript_list != NULL) {
 					step = filevar->subscript_list;
-					off1 = _NclTranslate(step->node,fp);
+					_NclTranslate(step->node,fp);
 					step = step->next;
 					nsubs = 1;
 					while(step != NULL) {
@@ -2033,7 +2050,7 @@ Unneeded translations
 					_NclTranslate(filevar->filevarnode,fp);
 					_NclPutInstr(PARAM_FILE_VAR_OP,filevar->line,filevar->file);
 				} else {
-					off1 = _NclTranslate(filevar->filevarnode,fp);
+					_NclTranslate(filevar->filevarnode,fp);
 					_NclPutInstr(PARAM_FILE_VAR_OP,filevar->line,filevar->file);
 				}
 				_NclPutInstr((NclValue)filevar->dfile,filevar->line,filevar->file);
