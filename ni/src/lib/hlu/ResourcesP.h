@@ -1,5 +1,5 @@
 /*
- *      $Id: ResourcesP.h,v 1.5 1994-04-01 20:08:49 boote Exp $
+ *      $Id: ResourcesP.h,v 1.6 1994-05-06 18:22:46 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,8 @@ typedef struct _NrmResource {
 	unsigned int	nrm_offset;
 	NrmQuark	nrm_default_type;
 	_NhlArgVal	nrm_default_val;
+	unsigned int	resource_info;
+	NhlFreeFunc	free_func;
 } NrmResource, *NrmResourceList;
 
 typedef NhlErrorTypes (*NrmResourceDefaultProc)(
