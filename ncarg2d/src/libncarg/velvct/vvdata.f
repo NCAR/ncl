@@ -1,5 +1,5 @@
 C
-C	$Id: vvdata.f,v 1.1 1993-01-15 22:46:40 dbrown Exp $
+C	$Id: vvdata.f,v 1.2 1993-01-20 19:58:36 dbrown Exp $
 C
       BLOCK DATA VVDATA
 C
@@ -31,7 +31,7 @@ C
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
-     +                UXC1       ,UXCM       ,UYC1       ,UYCM       ,
+     +                UXC1       ,UXCM       ,UYC1       ,UYCN       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
      +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
@@ -52,7 +52,7 @@ C
      +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
      +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,
      +                FZFS    ,FZFX    ,FZFY    ,IZFP    ,IZFC  ,
-     +                FILS    ,FILX    ,FILY    ,IILP     IILC  ,
+     +                FILS    ,FILX    ,FILY    ,IILP    ,IILC  ,
      +                FLBS    ,ILBC
 
 C
@@ -114,7 +114,7 @@ C
 C   
 C IYDN -- 'YDN' -- Second dimension of data for U,V,P
 C
-      DATA     IYDM / -1 /
+      DATA     IYDN / -1 /
 C
 C VLOM -- 'VLM' -- Vector low magnitude -- minimum size vector to plot
 C                  Old FLO parameter
@@ -246,7 +246,7 @@ C UXC1 -- 'XC1' -- minimum X coord
 C
       DATA UXC1 / 0.0 /
 C
-C UYCM -- 'XCM' -- maximum Y coord
+C UXCM -- 'XCM' -- maximum Y coord
 C
       DATA UXCM / 0.0 /
 C
@@ -254,9 +254,9 @@ C UYC1 -- 'YC1' -- minimum Y coord
 C
       DATA UYC1 / 0.0 /
 C
-C UYCM -- 'YCM' -- maximum Y coord
+C UYCN -- 'YCN' -- maximum Y coord
 C
-      DATA UYCM / 0.0 /
+      DATA UYCN / 0.0 /
 C
 C NLVL -- 'NLV' -- number of distinct colors to use for the
 C                    independent variable mapping -- cannot exceed

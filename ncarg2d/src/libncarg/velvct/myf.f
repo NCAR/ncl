@@ -1,4 +1,6 @@
 C
+C       $Id: myf.f,v 1.2 1993-01-20 19:58:30 dbrown Exp $
+C
       FUNCTION MYF(X,Y,U,V,SFX,SFY,MX,MY)
 C
 C

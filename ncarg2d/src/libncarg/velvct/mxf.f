@@ -1,3 +1,6 @@
+C
+C       $Id: mxf.f,v 1.2 1993-01-20 19:58:28 dbrown Exp $
+C
       FUNCTION MXF(X,Y,U,V,SFX,SFY,MX,MY)
 C
 C

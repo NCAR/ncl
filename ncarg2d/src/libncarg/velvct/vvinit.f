@@ -1,5 +1,5 @@
 C
-C	$Id: vvinit.f,v 1.3 1993-01-15 22:46:55 dbrown Exp $
+C	$Id: vvinit.f,v 1.4 1993-01-20 19:58:48 dbrown Exp $
 C
 C-----------------------------------------------------------------------
 C
@@ -52,7 +52,7 @@ C
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
-     +                UXC1       ,UXCM       ,UYC1       ,UYCM       ,
+     +                UXC1       ,UXCM       ,UYC1       ,UYCN       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
      +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
@@ -73,7 +73,7 @@ C
      +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
      +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,
      +                FZFS    ,FZFX    ,FZFY    ,IZFP    ,IZFC  ,
-     +                FILS    ,FILX    ,FILY    ,IILP     IILC  ,
+     +                FILS    ,FILX    ,FILY    ,IILP    ,IILC  ,
      +                FLBS    ,ILBC
 
 C
@@ -146,12 +146,12 @@ C
         XHIV=UXCM
       END IF
 C
-      IF (UYC1.EQ.UYCM) THEN
+      IF (UYC1.EQ.UYCN) THEN
         YLOV=1.
         YHIV=REAL(IYDN)
       ELSE
         YLOV=UYC1
-        YHIV=UYCM
+        YHIV=UYCN
       END IF
 C
       IXIN = MAX(IXIN,1)
@@ -274,7 +274,7 @@ C
             DO 110 I=1,IXDM,IXIN
                TU=U(I,J)
                TV=V(I,J)
-               IF (IPLR) THEN
+               IF (IPLR.NE.0) THEN
                   UVMN = MIN(UVMN, TU)
                   UVMX = MAX(UVMX, TU)
                ELSE
@@ -305,7 +305,7 @@ C
                   END IF
                END IF
 C
-               IF (IPLR) THEN
+               IF (IPLR.NE.0) THEN
                   UVMN = MIN(UVMN, TU)
                   UVMX = MAX(UVMX, TU)
                ELSE

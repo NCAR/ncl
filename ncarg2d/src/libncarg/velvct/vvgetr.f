@@ -1,5 +1,5 @@
 C
-C	$Id: vvgetr.f,v 1.4 1993-01-15 22:46:52 dbrown Exp $
+C	$Id: vvgetr.f,v 1.5 1993-01-20 19:58:45 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -42,7 +42,7 @@ C
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
-     +                UXC1       ,UXCM       ,UYC1       ,UYCM       ,
+     +                UXC1       ,UXCM       ,UYC1       ,UYCN       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
      +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
@@ -63,7 +63,7 @@ C
      +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
      +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,
      +                FZFS    ,FZFX    ,FZFY    ,IZFP    ,IZFC  ,
-     +                FILS    ,FILX    ,FILY    ,IILP     IILC  ,
+     +                FILS    ,FILX    ,FILY    ,IILP    ,IILC  ,
      +                FLBS    ,ILBC
 
 C
@@ -187,8 +187,8 @@ C
          RVAL=UXCM
       ELSE IF (WHCH(1:3).EQ.'YC1'.OR.WHCH(1:3).EQ.'yc1') THEN
          RVAL=UYC1
-      ELSE IF (WHCH(1:3).EQ.'YCM'.OR.WHCH(1:3).EQ.'ycm') THEN
-         RVAL=UYCM
+      ELSE IF (WHCH(1:3).EQ.'YCN'.OR.WHCH(1:3).EQ.'ycn') THEN
+         RVAL=UYCN
       ELSE IF (WHCH(1:3).EQ.'NLV'.OR.WHCH(1:3).EQ.'nlv') THEN
         RVAL=REAL(NLVL)
       ELSE IF (WHCH(1:3).EQ.'PAI'.OR.WHCH(1:3).EQ.'pai') THEN

@@ -1,5 +1,5 @@
 C
-C	$Id: vvectr.f,v 1.3 1993-01-15 22:46:45 dbrown Exp $
+C	$Id: vvectr.f,v 1.4 1993-01-20 19:58:40 dbrown Exp $
 C
       SUBROUTINE VVECTR (U,V,P,IAM,VVUDMV,WRK)
 C
@@ -58,7 +58,7 @@ C
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
-     +                UXC1       ,UXCM       ,UYC1       ,UYCM       ,
+     +                UXC1       ,UXCM       ,UYC1       ,UYCN       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
      +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
@@ -79,7 +79,7 @@ C
      +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
      +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,
      +                FZFS    ,FZFX    ,FZFY    ,IZFP    ,IZFC  ,
-     +                FILS    ,FILX    ,FILY    ,IILP     IILC  ,
+     +                FILS    ,FILX    ,FILY    ,IILP    ,IILC  ,
      +                FLBS    ,ILBC
 
 C
@@ -390,7 +390,7 @@ C
 C Adjust the vector length in proportion to the difference between
 C the minimum and maximum display vector magnitudes
 C
-            IF (IAV) THEN
+            IF (IAV.NE.0) THEN
                VA = VFR+(DVMX - VFR)*(UVM - UVMN) /(UVMX - UVMN)
                RA = VA / VLN
                XE = XB + RA *(XE-XB)
@@ -478,6 +478,7 @@ C
             WRITE(*,*) '               Minimum scalar value:',PMIN
             WRITE(*,*) '               Maximum scalar value:',PMAX
          END IF
+         WRITE(*,*) ' '
       END IF
 C
 C Reset the polyline color and the linewidth
@@ -576,7 +577,7 @@ C
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
-     +                UXC1       ,UXCM       ,UYC1       ,UYCM       ,
+     +                UXC1       ,UXCM       ,UYC1       ,UYCN       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
      +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
@@ -597,7 +598,7 @@ C
      +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
      +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,
      +                FZFS    ,FZFX    ,FZFY    ,IZFP    ,IZFC  ,
-     +                FILS    ,FILX    ,FILY    ,IILP     IILC  ,
+     +                FILS    ,FILX    ,FILY    ,IILP    ,IILC  ,
      +                FLBS    ,ILBC
 
 C

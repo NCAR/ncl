@@ -1,5 +1,5 @@
 C
-C	$Id: vvrset.f,v 1.3 1993-01-15 22:47:01 dbrown Exp $
+C	$Id: vvrset.f,v 1.4 1993-01-20 19:58:50 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -35,7 +35,7 @@ C
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
-     +                UXC1       ,UXCM       ,UYC1       ,UYCM       ,
+     +                UXC1       ,UXCM       ,UYC1       ,UYCN       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
      +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
@@ -56,7 +56,7 @@ C
      +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
      +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,
      +                FZFS    ,FZFX    ,FZFY    ,IZFP    ,IZFC  ,
-     +                FILS    ,FILX    ,FILY    ,IILP     IILC  ,
+     +                FILS    ,FILX    ,FILY    ,IILP    ,IILC  ,
      +                FLBS    ,ILBC
 
 C
@@ -131,7 +131,7 @@ C
       UXC1 = 0.0
       UXCM = 0.0
       UYC1 = 0.0
-      UYCM = 0.0
+      UYCN = 0.0
       NLVL = 0
       IPAI = 1
       ICTV = 0

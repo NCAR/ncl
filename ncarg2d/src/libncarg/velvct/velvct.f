@@ -1,5 +1,5 @@
 C
-C	$Id: velvct.f,v 1.2 1993-01-15 23:33:19 dbrown Exp $
+C	$Id: velvct.f,v 1.3 1993-01-20 19:58:33 dbrown Exp $
 C
       SUBROUTINE VELVCT (U,LU,V,LV,M,N,FLO,HI,NSET,LENGTH,ISPV,SPV)
 C
@@ -135,7 +135,7 @@ C
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
-     +                UXC1       ,UXCM       ,UYC1       ,UYCM       ,
+     +                UXC1       ,UXCM       ,UYC1       ,UYCN       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
      +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
@@ -156,7 +156,7 @@ C
      +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
      +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,
      +                FZFS    ,FZFX    ,FZFY    ,IZFP    ,IZFC  ,
-     +                FILS    ,FILX    ,FILY    ,IILP     IILC  ,
+     +                FILS    ,FILX    ,FILY    ,IILP    ,IILC  ,
      +                FLBS    ,ILBC
 
 C
@@ -372,7 +372,7 @@ C In addition, although not part of the common block, when the
 C common block values are used the text is set the way it
 C always appeared with the old VELVCT
 C
-         CALL VVSETC('MNT - minimum vector text', '')
+         CALL VVSETC('MNT - minimum vector text', ' ')
          CALL VVSETI('MXP - maximum text position mode', 4)
          CALL VVSETR('MXX - maximum text X position', 1.0)
 C
