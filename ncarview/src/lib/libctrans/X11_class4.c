@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.6 1991-07-18 16:24:54 clyne Exp $
+ *	$Id: X11_class4.c,v 1.7 1991-08-05 17:44:56 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -1015,7 +1015,8 @@ static	Ct_err	GCsetlinewidth(linewidth)
 	} else if (linewidth == 1.0) {
 		gcv.line_width = 0;
 		gcv.join_style = JoinMiter;
-		mask = GCLineWidth | GCJoinStyle;
+		gcv.function = GXcopy;
+		mask = GCLineWidth | GCJoinStyle | GCFunction;
 	} 
 	else {
 		gcv.join_style = JoinRound;
@@ -1025,7 +1026,8 @@ static	Ct_err	GCsetlinewidth(linewidth)
 	 	 * miter
 		 */
 		gcv.line_width = (int) ROUND(linewidth);
-		mask = GCLineWidth | GCJoinStyle;
+		gcv.function = GXcopy;
+		mask = GCLineWidth | GCJoinStyle | GCFunction;
 	}
 
 
@@ -1055,7 +1057,7 @@ Ct_err	init_polygon()
 
 	if (!Points.size) { 
 		Points.P = (XPoint *) 
-			icMalloc ( POINTS_ALLOCED * (unsigned) sizeof(XPoint));
+			icMalloc ((unsigned) (POINTS_ALLOCED * sizeof(XPoint)));
 
 	}
 
@@ -1185,6 +1187,7 @@ static	sim_polygon(xp_list,n)
 }
 
 
+/*ARGSUSED*/
 static	Ct_err	x11_non_rect_cell_array(c, color_pal, P, Q, R, nx, ny)
 	CGMC		*c;
         Pixeltype       *color_pal;
@@ -1308,7 +1311,7 @@ static	Ct_err	x11_cell_array(c, color_pal, P, Q, R, nx, ny)
 	 * and starting address for data destination
 	 */
 	SetUpCellArrayAddressing(P, Q, R, image_size, pad, pixel_size, 
-			ximage->bytes_per_line, 0,0, &step_x, &step_y, 
+			(unsigned) ximage->bytes_per_line, 0,0, &step_x,&step_y,
 			&start_x, &start_y, &data);
 
 	/*
@@ -1316,7 +1319,8 @@ static	Ct_err	x11_cell_array(c, color_pal, P, Q, R, nx, ny)
 	 * making up each cell. We do this to avoid floating point arithmatic
 	 * later on
 	 */
-	SetUpCellArrayIndexing(image_width, image_height, rows, cols, nx, ny);
+	SetUpCellArrayIndexing(image_width, image_height, rows, cols, 
+						(unsigned) nx, (unsigned) ny);
 
 
 	/*
