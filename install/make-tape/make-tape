@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-tape,v 1.8 1995-08-03 17:09:34 haley Exp $
+#      $Id: make-tape,v 1.9 1995-10-06 14:34:32 haley Exp $
 #
 #########################################################################
 #									#
@@ -31,7 +31,7 @@
 #
 #	Files:		
 #		$build_root		: root of ncarg build directory 
-#					(currently /cyclone/ncargd/dist/binaries)
+#					(currently /cyclone/X/ncarg/binaries
 #		$build_root/TOC		: table of contents describing what
 #				  	should be put on the tape.
 #		$build_root/INSTALL/INSTALL.TAR	: install script
@@ -42,7 +42,7 @@
 #	Options:	-debug			: print tape writing commands 
 #						  and exit.
 #			-root <directory>	: root of ncarg build directory
-#						  default is /cyclone/ncargd/dist/binaries
+#						  default is /cyclone/X/ncarg/binaries
 #			-inter			: interactive mode - prompt 
 #						  for platforms
 #			-nrdevice <device>	: no rewind tape device
@@ -202,7 +202,7 @@ $rhost = "windom";		# remote tapedrive host
 $do_inter = 0;			# do interactive mode?
 $do_src = 0;			# do we record the distribution src to tape
 $do_doc = 0;			# do we record the documentation to tape
-$build_root = "/cyclone/ncargd/dist/binaries";	
+$build_root = "/cyclone/X/ncarg/binaries";	
 $install_dir = "INSTALL";
 $rsh;				# remote shell command (undefine if local)
 @archs;				# architectures to write binaries for
@@ -334,7 +334,7 @@ if ($do_src) {
 
 if ($do_doc) {
 	print "\n\nWriting distribution documentation to $rhost:$nrdevice...\n";
-	do write ($rsh, $nrdevice, "$build_root", "ngdoc4.0.tar");
+	do write ($rsh, $nrdevice, "$build_root", "DOC.TAR");
 }
 
 	
