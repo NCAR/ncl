@@ -1,5 +1,5 @@
 C
-C $Id: tdez3d.f,v 1.5 2000-08-22 15:07:08 haley Exp $
+C $Id: tdez3d.f,v 1.6 2000-09-13 17:12:57 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -114,6 +114,13 @@ C  Set the maximum number of triangles.
 C
       PARAMETER (MTRI=110000)
 C
+C  Specify the number of shades for each color, the starting
+C  color index for the color shades part of the color table,
+C  the color index of the first gray value, and the color index
+C  of the last gray value.
+C
+      PARAMETER (NSHD=30, ICST=8, IGS=ICST+NSHD, IGL=IGS+NSHD-1)
+C
 C  Dimension the input arrays.
 C
       DIMENSION X(NX),Y(NY),Z(NZ),U(NX,NY,NZ)
@@ -133,13 +140,6 @@ C  Values of SHDR near 0 give a narrow range of shades and values near
 C  1 give a wide range of shades.
 C
       DATA SHDE,SHDR / .0 , 0.8 /
-C
-C  Specify the number of shades for each color, the starting
-C  color index for the color shades part of the color table,
-C  the color index of the first gray value, and the color index
-C  of the last gray value.
-C
-      PARAMETER (NSHD=30, ICST=8, IGS=ICST+NSHD, IGL=IGS+NSHD-1)
 C
 C  Factor for converting from degrees to radians.
 C
