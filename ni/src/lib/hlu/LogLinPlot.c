@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.c,v 1.25 1998-04-16 03:08:42 dbrown Exp $
+ *      $Id: LogLinPlot.c,v 1.26 1998-05-29 22:52:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -664,6 +664,7 @@ static NhlErrorTypes SetUpTransObj
         
         tfp->x_reverse_set = tfp->y_reverse_set = False;
         tfp->x_log_set = tfp->y_log_set = False;
+        tfp->x_axis_type_set = tfp->y_axis_type_set = False;
         tfp->x_min_set = tfp->y_min_set = False;
         tfp->x_max_set = tfp->y_max_set = False;
 

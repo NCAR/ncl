@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV40DataHandler.c,v 1.2 1998-05-27 22:50:24 dbrown Exp $
+ *      $Id: MapV40DataHandler.c,v 1.3 1998-05-29 22:52:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -162,8 +162,6 @@ static int Point_Count = 0;
 static NhlMapPlotLayer Mpl;
 static NhlMapPlotLayerPart *Mpp;
 static NhlMapV40DataHandlerClassPart	*Mv4cp;
-static NhlBoolean Global_Amap_Inited;
-static NhlBoolean US_Amap_Inited;
 static NhlBoolean Grid_Setup;
 static mpDrawOp Draw_Op;
 static mpOutlineSet Outline_Set;
@@ -187,9 +185,6 @@ static short US_Index;
  * with the National set.
  */
 
-#if 0
-static short National_Excludes[] = { 1031,1058,1065,1071,1072,1081 };
-#endif
 static short USState_Excludes[] = { 223 };
 
 /*
@@ -750,22 +745,17 @@ MapV40DHInitialize
 	char			*entry_name = "MapV40DHInitialize";
 	char			*e_text;
 
-        
+        mv40p->new_co_amap_req = True;
 	mv40p->co_aws_id = -1;
-	mv40p->po_aws_id = -1;
+        mv40p->new_us_amap_req = True;
 	mv40p->us_aws_id = -1;
+        
 	mv40p->fill_rec_alloc = 0;
 	mv40p->fill_rec_count = 0;
 	mv40p->fill_recs = NULL;
 	mv40p->outline_rec_alloc = 0;
 	mv40p->outline_rec_count = 0;
 	mv40p->outline_recs = NULL;
-#if 0        
-	mv40p->global_fill_mode = mpGEO;
-        mv40p->usstates_fill_mode = mpNOSET;
-	mv40p->global_outline_mode = mpGEO;
-        mv40p->usstates_outline_mode = mpNOSET;
-#endif        
         
 
 /* Manage the dynamic arrays */
@@ -1156,6 +1146,10 @@ static NhlErrorTypes    MapV40DHDestroy
 		NhlFree(mv40p->fill_recs);
 	if (mv40p->outline_recs != NULL)
 		NhlFree(mv40p->outline_recs);
+	if (mv40p->co_aws_id >= 0)
+		_NhlFreeWorkspace(mv40p->co_aws_id);
+	if (mv40p->us_aws_id >= 0)
+		_NhlFreeWorkspace(mv40p->us_aws_id);
 
         return NhlNOERROR;
 }
@@ -1674,22 +1668,6 @@ static NhlErrorTypes    mdhBuildFillDrawList
 /*
  * don't go through all this if nothing has changed
  */
-	if (! init) {
-                ompp = &(mpold->mapplot);
-                if (mpp->database_version == ompp->database_version &&
-                    mpp->fill_boundaries == ompp->fill_boundaries &&
-                    mpp->fill_area_specs == ompp->fill_area_specs &&
-                    mpp->mask_area_specs == ompp->mask_area_specs &&
-                    mpp->spec_fill_colors == ompp->spec_fill_colors &&
-                    mpp->spec_fill_patterns == ompp->spec_fill_patterns &&
-                    mpp->spec_fill_scales == ompp->spec_fill_scales &&
-                    mpp->spec_fill_direct == ompp->spec_fill_direct &&
-                    mpp->area_names == ompp->area_names &&
-                    mpp->dynamic_groups == ompp->dynamic_groups &&
-                    mpp->area_masking_on == ompp->area_masking_on &&
-                    mpp->spec_fill_priority == ompp->spec_fill_priority)
-                        return ret;
-        }
 
 	clrs = (int *) mpp->fill_colors->data;
 	for (i = 0; i < NhlNumber(mv40p->fill_groups); i++) {
@@ -1861,13 +1839,6 @@ static NhlErrorTypes    mdhBuildOutlineDrawList
 /*
  * don't go through all this if nothing has changed
  */
-	if (! init) {
-                ompp = &(mpold->mapplot);
-                if (mpp->database_version == ompp->database_version &&
-                    mpp->outline_boundaries == ompp->outline_boundaries &&
-                    mpp->outline_specs == ompp->outline_specs)
-                        return ret;
-        }
         
 	for (i = 0; i < NhlNumber(mv40p->outline_groups); i++) {
 		mv40p->outline_groups[i].u.flags = 0;
@@ -1986,18 +1957,60 @@ static NhlErrorTypes MapV40DHUpdateDrawList
 #endif
 {
         NhlMapV40DataHandlerLayer mv40l = (NhlMapV40DataHandlerLayer) instance;
+        NhlMapV40DataHandlerLayerPart *mv40p = &mv40l->mapv40dh;
+	NhlMapPlotLayerPart	*mpp = &(newmp->mapplot);
 	NhlString e_text, entry_name = "MapV40DHUpdateDrawList";
         NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
+        NhlBoolean build_fill_list = False, build_outline_list = False;
 
-        subret = mdhBuildFillDrawList(mv40l,newmp,oldmp,init,
-                                      args,num_args,entry_name);
-        if ((ret = MIN(ret,subret)) < NhlWARNING)
-                return NhlFATAL;
+	if (init) {
+               mv40p->new_co_amap_req = True;
+               mv40p->new_us_amap_req = True;
+               build_fill_list = True;
+               build_outline_list = True;
+        }
+        else {
+                NhlMapPlotLayerPart	*ompp = &(oldmp->mapplot);
+                
+                if (mpp->database_version != ompp->database_version ||
+                    mpp->fill_boundaries != ompp->fill_boundaries ||
+                    mpp->fill_area_specs != ompp->fill_area_specs ||
+                    mpp->mask_area_specs != ompp->mask_area_specs ||
+                    mpp->spec_fill_colors != ompp->spec_fill_colors ||
+                    mpp->spec_fill_patterns != ompp->spec_fill_patterns ||
+                    mpp->spec_fill_scales != ompp->spec_fill_scales ||
+                    mpp->spec_fill_direct != ompp->spec_fill_direct ||
+                    mpp->area_names != ompp->area_names ||
+                    mpp->dynamic_groups != ompp->dynamic_groups ||
+                    mpp->area_masking_on != ompp->area_masking_on ||
+                    mpp->spec_fill_priority != ompp->spec_fill_priority)
+                        build_fill_list = True;
+                
+                if (mpp->database_version != ompp->database_version ||
+                    mpp->outline_boundaries != ompp->outline_boundaries ||
+                    mpp->outline_specs != ompp->outline_specs)
+                        build_outline_list = True;
+
+                if (build_fill_list || mpp->view_changed ||
+                    mpp->trans_change_count != ompp->trans_change_count) {
+                        mv40p->new_co_amap_req = True;
+                        mv40p->new_us_amap_req = True;
+                }
+        }
         
-        subret = mdhBuildOutlineDrawList(mv40l,newmp,oldmp,init,
-                                      args,num_args,entry_name);
-        if ((ret = MIN(ret,subret)) < NhlWARNING)
-                return NhlFATAL;
+        if (build_fill_list) {
+                subret = mdhBuildFillDrawList(mv40l,newmp,oldmp,init,
+                                              args,num_args,entry_name);
+                if ((ret = MIN(ret,subret)) < NhlWARNING)
+                        return NhlFATAL;
+        }
+        
+        if (build_outline_list) {
+                subret = mdhBuildOutlineDrawList(mv40l,newmp,oldmp,init,
+                                                 args,num_args,entry_name);
+                if ((ret = MIN(ret,subret)) < NhlWARNING)
+                        return NhlFATAL;
+        }
         
         return ret;
 }
@@ -2343,7 +2356,7 @@ static NhlErrorTypes mpSetUpDrawIds
 		cix_ix = 0;
 		break;
 	case mpNAT:
-		if (smode > mpNOSET) {
+		if (smode) {
 			c_mpsetc("OU","PS");
 			_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 			Outline_Set = mpPS;
@@ -2362,7 +2375,7 @@ static NhlErrorTypes mpSetUpDrawIds
 		}
 		break;
 	case mpIMPLIED_NAT:
-		if (smode > mpNOSET) {
+		if (smode) {
 			c_mpsetc("OU","PS");
 			_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 			Outline_Set = mpPS;
@@ -2530,18 +2543,18 @@ static NhlErrorTypes mpSetUpAreamap
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
-	int			aws_id = -1;
-	NhlBoolean		inited = False;
+	int			aws_id;
+	NhlBoolean		new_amap_req;
 
 	c_arseti("RC",1);
 	switch (amap_type) {
 	case mpGLOBAL_AMAP:
 		aws_id = mv40p->co_aws_id;
-		inited = Global_Amap_Inited;
+                new_amap_req = mv40p->new_co_amap_req;
 		break;
 	case mpUSSTATES_AMAP:
 		aws_id = mv40p->us_aws_id;
-		inited = US_Amap_Inited;
+                new_amap_req = mv40p->new_us_amap_req;
 		break;
 	}
 
@@ -2567,7 +2580,7 @@ static NhlErrorTypes mpSetUpAreamap
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 		break;
 	}
-	if (! inited) {
+	if (new_amap_req) {
 		c_mpseti("VS",0);
 		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 		subret = _NhlArinam(*aws,entry_name);
@@ -2582,11 +2595,11 @@ static NhlErrorTypes mpSetUpAreamap
 	switch (amap_type) {
 	case mpGLOBAL_AMAP:
 		mv40p->co_aws_id = aws_id;
-		Global_Amap_Inited = True;
+                mv40p->new_co_amap_req = False;
 		break;
 	case mpUSSTATES_AMAP:
 		mv40p->us_aws_id = aws_id;
-		US_Amap_Inited = True;
+                mv40p->new_us_amap_req = False;
 		break;
 	}
 	return ret;
@@ -3251,10 +3264,6 @@ static NhlErrorTypes MapV40DHDrawMapList
                         NHLPERROR((NhlFATAL,ENOMEM,NULL));
                         return NhlFATAL;
                 }
-        }
-        if (init_draw || instance != Last_Instance) {
-                Global_Amap_Inited = False;
-                US_Amap_Inited = False;
         }
         Last_Instance = instance;
         Point_Count = 0;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.80 1998-05-27 22:50:35 dbrown Exp $
+ *      $Id: Workstation.c,v 1.81 1998-05-29 22:52:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2791,8 +2791,17 @@ WorkstationFill
 	ginq_linewidth(&err_ind, &save_linewidth);
 	ginq_fill_int_style(&err_ind, &save_fillstyle);
 	ginq_linetype(&err_ind, &save_linetype);
-	fill_color = (wkfp->fill_color == NhlTRANSPARENT) ? NhlTRANSPARENT : 
-		_NhlGetGksCi(l,wkfp->fill_color);
+        switch (wkfp->fill_color) {
+            case NhlTRANSPARENT:
+                    fill_color = NhlTRANSPARENT;
+                    break;
+            case NhlUNSPECIFIEDCOLOR:
+                    fill_color = _NhlGetGksCi(l,NhlFOREGROUND);
+                    break;
+            default:
+                    fill_color = _NhlGetGksCi(l,wkfp->fill_color);
+                    break;
+        }
 	fill_background = (wkfp->fill_background < 0) ?
 		wkfp->fill_background : _NhlGetGksCi(l,wkfp->fill_background);
 
@@ -2803,7 +2812,8 @@ WorkstationFill
 	if (fill_color == NhlTRANSPARENT)
 	/*SUPPRESS570*/
 		;
-	else if ((ix = wkfp->fill_index) == NhlSOLIDFILL) {
+	else if ((ix = wkfp->fill_index) == NhlSOLIDFILL ||
+                 ix == NhlUNSPECIFIEDFILL) {
 		/* fill_specs[ix].type  must be 0 */
 		gset_fill_int_style(GSTYLE_SOLID);
 		gset_linewidth(wkfp->fill_line_thickness);

@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.42 1998-04-16 03:09:05 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.43 1998-05-29 22:52:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1712,6 +1712,9 @@ NhlLayer inst;
 		_NhlDeleteViewSegment(inst,stp->draw_dat);
 	if (stp->postdraw_dat != NULL)
 		_NhlDeleteViewSegment(inst,stp->postdraw_dat);
+        
+        if (stp->fws_id >= 0)
+                _NhlFreeWorkspace(stp->fws_id);
 
 	return(ret);
 }

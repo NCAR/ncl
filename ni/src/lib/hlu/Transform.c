@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.39 1998-05-14 21:41:10 dbrown Exp $
+ *      $Id: Transform.c,v 1.40 1998-05-29 22:52:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -566,8 +566,14 @@ static NhlErrorTypes TransformSetValues
                 tfp->x_log_set = True;
         }
 	else if (tfp->x_log_set) {
-                tfp->x_axis_type = tfp->x_log ? NhlLOGAXIS : NhlLINEARAXIS;
-                tfp->x_axis_type_set = True;
+                if (tfp->x_log) {
+                        tfp->x_axis_type = NhlLOGAXIS;
+                        tfp->x_axis_type_set = True;
+                }
+                else if (tfp->x_axis_type != NhlIRREGULARAXIS) {
+                        tfp->x_axis_type = NhlLINEARAXIS;
+                        tfp->x_axis_type_set = True;
+                }
         }
         
         if (tfp->y_axis_type_set) {
@@ -575,8 +581,14 @@ static NhlErrorTypes TransformSetValues
                 tfp->y_log_set = True;
         }
 	else if (tfp->y_log_set) {
-                tfp->y_axis_type = tfp->y_log ? NhlLOGAXIS : NhlLINEARAXIS;
-                tfp->y_axis_type_set = True;
+                if (tfp->y_log) {
+                        tfp->y_axis_type = NhlLOGAXIS;
+                        tfp->y_axis_type_set = True;
+                }
+                else if (tfp->y_axis_type != NhlIRREGULARAXIS) {
+                        tfp->y_axis_type = NhlLINEARAXIS;
+                        tfp->y_axis_type_set = True;
+                }
         }
 
         return NhlNOERROR;

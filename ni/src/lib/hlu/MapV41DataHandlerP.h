@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandlerP.h,v 1.2 1998-05-27 22:50:27 dbrown Exp $
+ *      $Id: MapV41DataHandlerP.h,v 1.3 1998-05-29 22:52:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -61,11 +61,12 @@ typedef enum _mpBGroups {
 typedef struct _v41EntityRec {
         short level;             /* 1: land-water, 2: continental, 3: national,
                                     4: state or province, 5: county, etc. */
-        short fixed_gid;	 /* 1: ocean, 2: land, 3: inland-water */
         short dynamic_gid;
-        char  *name;		 /* lower-case name for caseless comparisons */
+        short fixed_gid;	 /* 1: ocean, 2: land, 3: inland-water */
         short eid;
-        NhlBoolean unique;
+  	short canonical_ix;      /* index into the canonical order */
+        char  unique;
+        char  *name;		 /* lower-case name for caseless comparisons */
 } v41EntityRec;
 
 /* draw Modes */

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV40DataHandlerP.h,v 1.1 1998-05-22 01:59:11 dbrown Exp $
+ *      $Id: MapV40DataHandlerP.h,v 1.2 1998-05-29 22:52:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -141,9 +141,9 @@ typedef struct _NhlMapV40DataHandlerLayerPart {
 	mpStateSetMode	usstates_outline_mode;
         
 	int		co_aws_id;
-	int		po_aws_id;
+        NhlBoolean      new_co_amap_req;
         int		us_aws_id;
-        NhlBoolean	do_polyfill;
+        NhlBoolean      new_us_amap_req;
 }NhlMapV40DataHandlerLayerPart;
 
 typedef struct _NhlMapV40DataHandlerLayerRec {

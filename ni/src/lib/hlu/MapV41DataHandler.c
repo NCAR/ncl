@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.3 1998-05-27 22:50:26 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.4 1998-05-29 22:52:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -141,34 +141,15 @@ static int VStrip;
 static int Color,Dash_Pattern;
 static float Dash_SegLen,Thickness;
 
-static char *BGroup_Names[] = { 
-	NhlmpNULLAREA,
-	NhlmpALLNATIONAL,
-	NhlmpALLGEOPHYSICAL,
-	NhlmpLAND,
-	NhlmpWATER,
-	NhlmpINLANDWATER,
-	NhlmpOCEANS,
-	NhlmpCONTINENTS,
-	NhlmpISLANDS,
-	NhlmpLARGEISLANDS,
-	NhlmpSMALLISLANDS,
-	NhlmpALLUSSTATES,
-	NhlmpUSSTATESLAND,
-	NhlmpUSSTATESWATER };
-
 static NrmQuark Qstring = NrmNULLQUARK;
 static NrmQuark Qarea_names = NrmNULLQUARK;
 static NrmQuark Qarea_types = NrmNULLQUARK;
 static NrmQuark Qdynamic_groups = NrmNULLQUARK;
 static NrmQuark Qfixed_groups = NrmNULLQUARK;
 
-static NhlBoolean Part_Outside_Viewspace = False;
-static NhlLayer Last_Instance = NULL;
 static NhlMapPlotLayer Mpl;
 static NhlMapPlotLayerPart *Mpp;
 static NhlMapV41DataHandlerClassPart	*Mv41cp;
-static NhlBoolean Amap_Inited;
 static NhlBoolean Grid_Setup;
 static mpDrawOp Draw_Op;
 
@@ -177,20 +158,30 @@ static mpDrawIdRec *DrawIds = NULL;
 static int UsIds[3];
 static int UsIdCount;
 static int LandId,WaterId,OceanId;
+static char OutBuf[512];
 
-static void mpLowerCase(char *string)
+/*
+ * The following string manipulation routines help deal with Map entity
+ * names in various formats. The first three do not alter the input string
+ * but put the modified output into a single static buffer. Therefore you must
+ * save the output if you want to preserve it before calling any one of the
+ * routines again. They are designed to work if the static buffer itself
+ * is the input string.
+ */
+
+static char *mpLowerCase(char *string)
 {
-	char *cp = string;
+	register char *cp = string;
+	register char *bp = OutBuf;
 
 	while (*cp != '\0') {
-                *cp = tolower(*cp);
-		cp++;
+                *(bp++) = tolower(*(cp++));
 	}
+	*bp = '\0';
+	return OutBuf;
 }
 
 /*
- * The original string is not modified, but copied into a static output
- * buffer. Therefore you can only work on one string at a time.
  * Either ':' or '.' indicate parent-child boundaries in the spec string.
  * To simplify the search, change '.' to ':'. Also in order to allow
  * some compatibility with the 4.0 database, '-' used as a word separator is
@@ -198,36 +189,111 @@ static void mpLowerCase(char *string)
  * when it is part of the 4.1 name. In this case the '-' should always be
  * preceded and followed by a space (except possibly when a wild card is
  * involved, but this is not currently handled).
+ * NOTE: actually it is not the case that 4.1 names never have a '-'
+ * without spaces between them, so I am not going to do any processing
+ * for now.
  */
 
 static char *PrepareSpecString(char *string)
 {
-        static char outbuf[256];
 	char *cp = string;
+        char *bp = OutBuf;
         NhlBoolean last_space = False;
 
-        strcpy(outbuf,string);
-        cp = outbuf;
 	while (*cp != '\0') {
                 switch (*cp) {
                     case '.':
-                            *cp = ':';
+                            *bp = ':';
+                            last_space = False;
                             break;
+#if 0                            
                     case ' ':
+                            *bp = ' ';
                             last_space = True;
                             break;
                     case '-':
-                            if (! last_space)
-                                    *cp = ' ';
-                            break;
-                    default:
+                            *bp = last_space ? '-' : ' ';
                             last_space = False;
-                            *cp = tolower(*cp);
+                            break;
+#endif                            
+                    default:
+                            *bp = tolower(*cp);
+                            last_space = False;
                             break;
                 }
-		cp++;
+		cp++,bp++;
 	}
-        return outbuf;
+        *bp = '\0';
+        
+        return OutBuf;
+}
+
+/*
+ * The original string is not modified, but copied into a static output
+ * buffer. Therefore you can only work on one string at a time.
+ * This routine simply substitutes ':' whereever it sees a '.'. This is
+ * only for processing new mpAreaName arrays -- where only the simple
+ * entity name is preserved, but the string is otherwise unaltered -- in
+ * particular it is not lower-cased or have its '-'s removed.
+ */
+static char *SimplifyString(char *string)
+{
+	char *cp = string;
+        char *bp = OutBuf;
+        NhlBoolean last_space = False;
+
+	while (*cp != '\0') {
+                switch (*cp) {
+                    case '.':
+                            *bp = ':';
+                            break;
+                    default:
+                            *bp = *cp;
+                }
+                cp++,bp++;
+	}
+        *bp = '\0';
+        
+        return OutBuf;
+}
+
+/*
+ * This function assumes a that the input string does not need to be
+ * preserved. For each call it returns the next higher name in partially
+ * or fully qualified entity name. That is, it starts with the leaf node
+ * child, and each successive call returns the next immediate ancestor.
+ */
+
+static char *UpNameHierarchy
+#if	NhlNeedProto
+(
+        char	*string
+        )
+#else
+(string)
+	char	*string;
+#endif
+{
+        char *cp,*bcp;
+        int i;
+
+        cp = string;
+        
+        cp = strrchr(cp,':');
+        if (cp > string) {
+                *cp = '\0';
+                bcp = cp - 1;
+                while (isspace(*bcp))
+                        *(bcp--) = '\0';
+                cp++;
+        }
+        else
+                cp = string;
+        
+        while (isspace(*cp))
+                cp++;
+
+        return cp;
 }
 
 static NhlErrorTypes
@@ -285,44 +351,6 @@ static int alpha_sort
         }
         return ret;
 }
-
-#if 0
-static int long_alpha_sort
-(
-        const void *p1,
-        const void *p2
-)
-{
-        v41EntityRec *erec1 = *(v41EntityRec **) p1;
-        v41EntityRec *erec2 = *(v41EntityRec **) p2;
-        int pix1[16], pix2[16];
-        int pcount1,pcount2;
-        char name1[128];
-        char *name2;
-        int i,j,ret;
-
-        pix1[0] = erec1->eid;
-        for (i = 0; pix1[i] != 0; i++)
-                pix1[i+1] = c_mpipar(pix1[i]);
-        pcount1 = i;
-        pix2[0] = erec2->eid;
-        for (i = 0; pix2[i] != 0; i++)
-                pix2[i+1] = c_mpipar(pix2[i]);
-        pcount2 = i;
-
-        for (i = pcount1 - 1, j = pcount2 - 1; i >=0 && j >= 0; i--, j--) {
-                ret = c_mpiaty(pix1[i]) - c_mpiaty(pix2[j]);
-                if (ret)
-                        return ret;
-                strcpy(name1,c_mpname(pix1[i]));
-                name2 = c_mpname(pix2[j]);
-                ret = strcmp(name1,name2);
-                if (ret)
-                        return ret;
-        }
-        return (i - j);
-}
-#endif
 
 typedef struct _LongNameRec 
 {
@@ -434,8 +462,7 @@ static NhlErrorTypes Init_Entity_Recs
                         NhlPError(NhlFATAL,ENOMEM,e_text,entry_name);
                         return NhlFATAL;
                 }
-                strcpy(erec->name,buf);
-                mpLowerCase(erec->name);
+                strcpy(erec->name,mpLowerCase(buf));
 
                 if (ix == LandId) {
                         erec->dynamic_gid = erec->fixed_gid =
@@ -493,6 +520,7 @@ static NhlErrorTypes Init_Entity_Recs
                                 Mv41cp->alpha_recs[i]->unique = False;
                 }
                 Mv41cp->long_alpha_recs[i] = lname_recs[i].erec;
+		Mv41cp->long_alpha_recs[i]->canonical_ix = i;
                 NhlFree(lname_recs[i].lname);
 #if 0                
                 printf("%s\n",Mv41cp->long_alpha_recs[i]->name);
@@ -596,6 +624,7 @@ static NhlErrorTypes    mdhManageDynamicArrays
 	NhlBoolean use_default;
         int entity_rec_count;
         v41EntityRec *entity_recs;
+        NhlBoolean new_area_names = False;
 
 	entry_name =  init ?
                 "MapDataHandlerInitialize" : "MapDataHandlerSetValues";
@@ -632,32 +661,53 @@ static NhlErrorTypes    mdhManageDynamicArrays
 			}
 			omdhp->area_names = NULL;
 			mdhp->area_names = ga;
-			/* Check elements for null strings */
-			sp = (NhlString *) mdhp->area_names->data;
-			for (i = 0; i < mdhp->area_names->num_elements; i++) {
-				if (sp[i] == NULL || strlen(sp[i]) == 0) {
-                                        char *buf = c_mpname(i+1);
-					e_text = 
-		 "%s: Null or zero length %s string for index %d: defaulting";
-					NhlPError(NhlWARNING,NhlEUNKNOWN,
-						  e_text,entry_name,
-						  NhlNmpAreaNames,i);
-					ret = MIN(ret,NhlWARNING);
-					if (sp[i] != NULL) NhlFree(sp[i]);
-                                        
-					sp[i] = NhlMalloc(strlen(buf) + 1);
-					if (sp[i] == NULL) {
-						e_text = 
-				       "%s: dynamic memory allocation error";
-						NhlPError(NhlFATAL,ENOMEM,
-							  e_text,entry_name);
-						return NhlFATAL;
-					}
-					strcpy(sp[i],buf);
-				}
-			}
+                        new_area_names = True;
 		}
 	}
+        if (new_area_names) {
+                        
+/* Check elements for null strings and replace full specs with simple names */
+                
+                sp = (NhlString *) mdhp->area_names->data;
+                for (i = 0; i < mdhp->area_names->num_elements; i++) {
+                        NhlString spfull,spout;
+                        if (sp[i] == NULL || strlen(sp[i]) == 0) {
+                                char *buf = c_mpname(i+1);
+                                e_text = 
+                  "%s: Null or zero length %s string for index %d: defaulting";
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+                                          entry_name,NhlNmpAreaNames,i);
+                                ret = MIN(ret,NhlWARNING);
+                                if (sp[i] != NULL) NhlFree(sp[i]);
+                                        
+                                sp[i] = NhlMalloc(strlen(buf) + 1);
+                                if (! sp[i]) {
+                                        e_text = 
+                                        "%s: dynamic memory allocation error";
+                                        NhlPError(NhlFATAL,ENOMEM,
+                                                  e_text,entry_name);
+                                        return NhlFATAL;
+                                }
+                                strcpy(sp[i],buf);
+                        }
+                        spfull = SimplifyString(sp[i]);
+                        spout = UpNameHierarchy(spfull);
+                        if (strcmp(spout,sp[i])) {
+                                NhlFree(sp[i]);
+                                sp[i] = NhlMalloc(strlen(spout) + 1);
+                                if (! sp[i]) {
+                                        e_text = 
+                                        "%s: dynamic memory allocation error";
+                                        NhlPError(NhlFATAL,ENOMEM,
+                                                  e_text,entry_name);
+                                        return NhlFATAL;
+                                }
+                                strcpy(sp[i],spout);
+                        }
+                }
+        }
+        
+                
 
 /*
  * The dynamic area Groups
@@ -789,7 +839,6 @@ MapV41DHInitialize
 
         
 	mv41p->aws_id = -1;
-	mv41p->new_amap_req = True;
 	mv41p->fill_rec_alloc = 0;
 	mv41p->fill_rec_count = 0;
 	mv41p->fill_recs = NULL;
@@ -889,6 +938,96 @@ static NhlErrorTypes MapV41DHSetValues
  * Side Effects: NONE
  */	
 
+static NhlGenArray BuildAreaNamesGenArray
+#if	NhlNeedProto
+(
+ 	NhlMapV41DataHandlerLayer       mv41l,
+        NhlString			entry_name
+)
+#else
+(mv41l,entry_name)
+	NhlMapV41DataHandlerLayer       mv41l;
+        NhlString			entry_name;
+#endif
+{
+        NhlMapDataHandlerLayerPart 	*mdhp = &mv41l->mapdh;
+	char *e_text;
+	int i;
+	NhlGenArray ga;
+        int entity_rec_count;
+        v41EntityRec *entity_recs;
+        v41EntityRec **long_alpha_recs;
+        char lbuf[512];
+        NhlString	*sp, *anames = (NhlString *)mdhp->area_names->data;
+
+        entity_rec_count = Mv41cp->entity_rec_count;
+        entity_recs = Mv41cp->entity_recs;
+        long_alpha_recs = Mv41cp->long_alpha_recs;
+
+        e_text = "%s: dynamic memory allocation error";
+
+        if ((sp = NhlMalloc(sizeof(NhlString)*entity_rec_count)) == NULL) {
+			NhlPError(NhlFATAL,
+				  NhlEUNKNOWN,e_text,entry_name);
+			return NULL;
+        }
+        for (i = 0; i < entity_rec_count; i++) {
+                int eid = long_alpha_recs[i]->eid;
+                if (long_alpha_recs[i]->unique) {
+                        char *buf = anames[i];
+                        if ((sp[i] = NhlMalloc(strlen(buf) + 1)) == NULL) {
+                                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                          e_text,entry_name);
+                                return NULL;
+                        }
+                        strcpy(sp[i],buf);
+                }
+                else {
+                        int pix = c_mpipar(eid);
+                        int ptype = c_mpiaty(pix);
+                        int etype = c_mpiaty(eid);
+                        int pcix = Mv41cp->entity_recs[pix-1].canonical_ix;
+                        
+                        strcpy(lbuf,anames[pcix]);
+                        if (ptype == etype)
+                                strcat(lbuf," . ");
+                        else 
+                                strcat(lbuf," : ");
+                        strcat(lbuf,anames[i]);
+
+                        if ((sp[i] = NhlMalloc(strlen(lbuf) + 1)) == NULL) {
+                                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                          e_text,entry_name);
+                                return NULL;
+                        }
+                        strcpy(sp[i],lbuf);
+                }
+        }
+        if ((ga = NhlCreateGenArray(sp,NhlTString,sizeof(NhlString),
+                                    1,&entity_rec_count)) == NULL) {
+                e_text = "%s: error creating gen array";
+                NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+                return NULL;
+        }
+        ga->my_data = True;
+        return ga;
+}
+        
+        
+/*
+ * Function:	mdhGetNewGenArray
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
 static NhlGenArray mdhGetNewGenArray
 #if	NhlNeedProto
 (
@@ -903,13 +1042,14 @@ static NhlGenArray mdhGetNewGenArray
         NhlString			entry_name;
 #endif
 {
-	NhlMapDataHandlerLayerPart	*mdhp = &(mv41l->mapdh);
+        NhlMapDataHandlerLayerPart 	*mdhp = &mv41l->mapdh;
 	char *e_text;
 	int i, len;
 	NhlGenArray ga;
         int entity_rec_count;
         v41EntityRec *entity_recs;
         v41EntityRec **long_alpha_recs;
+        char lbuf[512];
 
         entity_rec_count = Mv41cp->entity_rec_count;
         entity_recs = Mv41cp->entity_recs;
@@ -917,25 +1057,52 @@ static NhlGenArray mdhGetNewGenArray
         
 	if (quark == Qarea_names) {
 		NhlString	*sp;
-		len = entity_rec_count;
                 
+                if (mdhp->area_names) {
+                        return BuildAreaNamesGenArray(mv41l,entry_name);
+                }
+                
+		len = entity_rec_count;
+                e_text = "%s: dynamic memory allocation error";
 		if ((sp = NhlMalloc(sizeof(NhlString)*len)) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
 			NhlPError(NhlFATAL,
 				  NhlEUNKNOWN,e_text,entry_name);
 			return NULL;
 		}
+                
                 for (i = 0; i < len; i++) {
                         int eid = long_alpha_recs[i]->eid;
-                        char *buf = c_mpname(eid);
+                        if (long_alpha_recs[i]->unique) {
+                                char *buf = c_mpname(eid);
 
-                        if ((sp[i] = NhlMalloc(strlen(buf) + 1)) == NULL) {
-                                e_text = "%s: dynamic memory allocation error";
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                          e_text,entry_name);
-                                return NULL;
+                                if ((sp[i] = NhlMalloc
+                                     (strlen(buf) + 1)) == NULL) {
+                                        NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                                  e_text,entry_name);
+                                        return NULL;
+                                }
+                                strcpy(sp[i],buf);
                         }
-                        strcpy(sp[i],buf);
+                        else {
+                                int pix = c_mpipar(eid);
+                                int ptype = c_mpiaty(pix);
+                                int etype = c_mpiaty(eid);
+                        
+                                strcpy(lbuf,c_mpname(pix));
+                                if (ptype == etype)
+                                        strcat(lbuf," . ");
+                                else 
+                                        strcat(lbuf," : ");
+                                strcat(lbuf,c_mpname(eid));
+
+                                if ((sp[i] = NhlMalloc
+                                     (strlen(lbuf) + 1)) == NULL) {
+                                        NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                                  e_text,entry_name);
+                                        return NULL;
+                                }
+                                strcpy(sp[i],lbuf);
+                        }
 		}
 		if ((ga = NhlCreateGenArray(sp,NhlTString,sizeof(NhlString),
 					    1,&len)) == NULL) {
@@ -1130,8 +1297,13 @@ static NhlErrorTypes    MapV41DHGetValues
                 ga = NULL;
                 
                 if (args[i].quark == Qarea_names) {
+/*
+ * Since the stored form of the mpAreaNames is not the same as what the
+ * user should see, it is always necessary to build a new array from
+ * scratch when this resource is retrieved.
+ */
 			create_it = True;
-                        ga = mdhp->area_names;
+                        ga = NULL;
                         count = ga ? ga->num_elements : 0;
                 }
                 else if (args[i].quark == Qarea_types) {
@@ -1220,6 +1392,8 @@ static NhlErrorTypes    MapV41DHDestroy
 		NhlFree(mv41p->fill_recs);
 	if (mv41p->outline_recs != NULL)
 		NhlFree(mv41p->outline_recs);
+	if (mv41p->aws_id >= 0)
+		_NhlFreeWorkspace(mv41p->aws_id);
 
         return NhlNOERROR;
 }
@@ -1282,38 +1456,6 @@ static int fill_sort
         return (frec1.eid - frec2.eid);
 }
 
-static char *UpNameHierarchy
-#if	NhlNeedProto
-(
-        char	*string
-        )
-#else
-(string)
-	char	*string;
-#endif
-{
-        char *cp,*bcp;
-        int i;
-
-        cp = string;
-        
-        cp = strrchr(cp,':');
-        if (cp > string) {
-                *cp = '\0';
-                bcp = cp - 1;
-                while (isspace(*bcp))
-                        *(bcp--) = '\0';
-                cp++;
-        }
-        else
-                cp = string;
-        
-        while (isspace(*cp))
-                cp++;
-
-        return cp;
-}
-
 
 /*
  * Function:  UpdateSpecFillRecords
@@ -1354,17 +1496,41 @@ static NhlErrorTypes    UpdateSpecFillRecords
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
         char *comp_string, *parent_string = NULL;
         char *e_text;
+	NhlString *area_names = NULL;
         int i;
-                
+
+        if (!strcmp(mpLowerCase(spec_string),NhlmpNULLAREA))
+                return ret;
+        
+	if (mdhp->area_names) {
+                area_names = (NhlString *) mdhp->area_names->data;
+	}
         comp_string = UpNameHierarchy(spec_string);
         for (i = 0; i < Mv41cp->entity_rec_count; i++) {
                 int count = mv41p->fill_rec_count;
+		v41EntityRec *erec;
                 NhlBoolean unique;
-                
-                if (strcmp(comp_string,Mv41cp->alpha_recs[i]->name))
-                        continue;
-                
-                unique = Mv41cp->alpha_recs[i]->unique;
+
+/*
+ * If mpAreaNames resource has been set then it is necessary to compare
+ * the spec list with these names rather than the default list. Since 
+ * mpAreaNames is required to be in the canonical order, as defined by the
+ * class variable "long_alpha_recs", the entity record is found by 
+ * indexing into it. Otherwise just look at the regular sorted alpha_recs list.
+ */
+		if (area_names) {
+			if (strcmp(comp_string,
+                                   PrepareSpecString(area_names[i])))
+				continue;
+			erec = Mv41cp->long_alpha_recs[i];
+		}
+		else {
+			  if (strcmp(comp_string,Mv41cp->alpha_recs[i]->name))
+			  	continue;
+			  erec = Mv41cp->alpha_recs[i];
+		}
+
+                unique = erec->unique;
                 if (! unique) {
                             /* see if a parent has been specified to
                              uniquely qualify the name */
@@ -1373,10 +1539,19 @@ static NhlErrorTypes    UpdateSpecFillRecords
                                 parent_string = UpNameHierarchy(spec_string);
                         if (parent_string != comp_string) {
                                 int peid;
-                                peid = c_mpipar(Mv41cp->alpha_recs[i]->eid);
-                                if (strcmp(parent_string,
-                                           Mv41cp->entity_recs[peid-1].name))
-                                        continue;
+                                peid = c_mpipar(erec->eid);
+				if (area_names) {
+					int ix = 
+			 	      Mv41cp->entity_recs[peid-1].canonical_ix;
+					if (strcmp(parent_string,
+					    PrepareSpecString(area_names[ix])))
+						continue;
+				}
+				else {
+					if (strcmp(parent_string,
+					     Mv41cp->entity_recs[peid-1].name))
+                                        	continue;
+				}
                                 unique = True;
                         }
                 }
@@ -1391,27 +1566,12 @@ static NhlErrorTypes    UpdateSpecFillRecords
                         }
                         mv41p->fill_rec_alloc += v41ALLOC_UNIT;
                 }
-                mv41p->fill_recs[count].eid = Mv41cp->alpha_recs[i]->eid;
+                mv41p->fill_recs[count].eid = erec->eid;
                 mv41p->fill_recs[count].spec_ix = spec_fill_index;
                 mv41p->fill_recs[count].draw_mode = draw_mode;
                 mv41p->fill_recs[count].spec_col = 0;
                 mv41p->fill_recs[count].spec_pat = 0;
                 mv41p->fill_recs[count].spec_fscale = 0;
-                if (mpp->spec_fill_color_count > spec_fill_index) {
-			int *ip = (int *) mpp->spec_fill_colors->data;
-			if (ip[spec_fill_index] != NhlUNSPECIFIEDCOLOR)
-				mv41p->fill_recs[count].spec_col =  1;
-		}
-		if (mpp->spec_fill_pattern_count > spec_fill_index) {
-			int *ip = (int *) mpp->spec_fill_patterns->data;
-			if (ip[spec_fill_index] != NhlUNSPECIFIEDFILL)
-				mv41p->fill_recs[count].spec_pat =  1;
-		}
-		if (mpp->spec_fill_scale_count > spec_fill_index) {
-			float *fp = (float *) mpp->spec_fill_scales->data;
-			if (fp[spec_fill_index] > NhlmpUNSETFILLSCALE)
-				mv41p->fill_recs[count].spec_fscale =  1;
-		}
                 mv41p->fill_rec_count++;
                 
                 if (unique)
@@ -1456,14 +1616,19 @@ static NhlErrorTypes    mv41BuildFillDrawList
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	int			i;
 	NhlString		*sp;
+        char			spec_string[512];
         
         mv41p->fill_rec_count = 0;
         mv41p->min_fill_level = 0;
-        
+/*
+ * Note that the spec_string must have its own space; not just the static
+ * string supplied by PrepareSpecString, since it will be called again
+ * for the comparisions.
+ */
 	if (mpp->fill_area_specs != NULL) {
 		sp = (NhlString *) mpp->fill_area_specs->data;
 		for (i = 0; i < mpp->fill_area_specs->num_elements; i++) {
-                        char *spec_string = PrepareSpecString(sp[i]);
+                        strcpy(spec_string,PrepareSpecString(sp[i]));
                         subret = UpdateSpecFillRecords
                                 (mv41l,mpp,mpDRAW,spec_string,i,entry_name);
 			if ((ret = MIN(ret,subret)) < NhlWARNING)
@@ -1474,7 +1639,7 @@ static NhlErrorTypes    mv41BuildFillDrawList
 	if (mpp->area_masking_on && mpp->mask_area_specs != NULL) {
 		sp = (NhlString *) mpp->mask_area_specs->data;
 		for (i = 0; i < mpp->mask_area_specs->num_elements; i++) {
-			char *spec_string = PrepareSpecString(sp[i]);
+			strcpy(spec_string,PrepareSpecString(sp[i]));
                         subret = UpdateSpecFillRecords
                                 (mv41l,mpp,mpMASK,spec_string,i,entry_name);
 			if ((ret = MIN(ret,subret)) < NhlWARNING)
@@ -1579,18 +1744,38 @@ static NhlErrorTypes    UpdateSpecLineRecords
         NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
         char *comp_string, *parent_string = NULL;
+	NhlString *area_names = NULL;
         char *e_text;
         int i;
 
+        if (!strcmp(mpLowerCase(spec_string),NhlmpNULLAREA))
+                return ret;
+        
         comp_string = UpNameHierarchy(spec_string);
         for (i = 0; i < Mv41cp->entity_rec_count; i++) {
                 int count = mv41p->outline_rec_count;
+		v41EntityRec *erec;
                 NhlBoolean unique;
                 
-                if (strcmp(comp_string,Mv41cp->alpha_recs[i]->name))
-                        continue;
-                
-                unique = Mv41cp->alpha_recs[i]->unique;
+/*
+ * If mpAreaNames resource has been set then it is necessary to compare
+ * the spec list with these names rather than the default list. Since 
+ * mpAreaNames is required to be in the canonical order, as defined by the
+ * class variable "long_alpha_recs", the entity record is found by 
+ * indexing into it. Otherwise just look at the regular sorted alpha_recs list.
+ */
+		if (area_names) {
+			if (strcmp(comp_string,
+                                   PrepareSpecString(area_names[i])))
+				continue;
+			erec = Mv41cp->long_alpha_recs[i];
+		}
+		else {
+			  if (strcmp(comp_string,Mv41cp->alpha_recs[i]->name))
+			  	continue;
+			  erec = Mv41cp->alpha_recs[i];
+		}
+                unique = erec->unique;
                 if (! unique) {
                             /* see if a parent has been specified to
                              uniquely qualify the name */
@@ -1599,10 +1784,19 @@ static NhlErrorTypes    UpdateSpecLineRecords
                                 parent_string = UpNameHierarchy(spec_string);
                         if (parent_string != comp_string) {
                                 int peid;
-                                peid = c_mpipar(Mv41cp->alpha_recs[i]->eid);
-                                if (strcmp(parent_string,
-                                           Mv41cp->entity_recs[peid-1].name))
-                                        continue;
+                                peid = c_mpipar(erec->eid);
+				if (area_names) {
+					int ix = 
+			 	      Mv41cp->entity_recs[peid-1].canonical_ix;
+					if (strcmp(parent_string,
+                                            PrepareSpecString(area_names[ix])))
+						continue;
+				}
+				else {
+					if (strcmp(parent_string,
+					     Mv41cp->entity_recs[peid-1].name))
+                                        	continue;
+				}
                                 unique = True;
                         }
                 }
@@ -1617,7 +1811,7 @@ static NhlErrorTypes    UpdateSpecLineRecords
                         }
                         mv41p->outline_rec_alloc += v41ALLOC_UNIT;
                 }
-                mv41p->outline_recs[count].eid = Mv41cp->alpha_recs[i]->eid;
+                mv41p->outline_recs[count].eid = erec->eid;
                 mv41p->outline_recs[count].spec_ix = spec_line_index;
                 mv41p->outline_recs[count].spec_col = 0;
                 mv41p->outline_recs[count].spec_dpat = 0;
@@ -1666,6 +1860,7 @@ static NhlErrorTypes    mv41BuildOutlineDrawList
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	int			i;
 	NhlString		*sp;
+        char spec_string[512];
         
         mv41p->outline_rec_count = 0;
         mv41p->min_outline_level = 0;
@@ -1673,7 +1868,7 @@ static NhlErrorTypes    mv41BuildOutlineDrawList
 	if (mpp->outline_specs != NULL) {
 		sp = (NhlString *) mpp->outline_specs->data;
 		for (i = 0; i < mpp->outline_specs->num_elements; i++) {
-			char *spec_string = PrepareSpecString(sp[i]);
+                        strcpy(spec_string,PrepareSpecString(sp[i]));
                         subret = UpdateSpecLineRecords
                                 (mv41l,mpp,mpDRAW,spec_string,i,entry_name);
 			if ((ret = MIN(ret,subret)) < NhlWARNING)
@@ -1735,14 +1930,8 @@ static NhlErrorTypes MapV41DHUpdateDrawList
                     mpp->fill_boundaries != ompp->fill_boundaries ||
                     mpp->fill_area_specs != ompp->fill_area_specs ||
                     mpp->mask_area_specs != ompp->mask_area_specs ||
-                    mpp->spec_fill_colors != ompp->spec_fill_colors ||
-                    mpp->spec_fill_patterns != ompp->spec_fill_patterns ||
-                    mpp->spec_fill_scales != ompp->spec_fill_scales ||
-                    mpp->spec_fill_direct != ompp->spec_fill_direct ||
                     mpp->area_names != ompp->area_names ||
-                    mpp->dynamic_groups != ompp->dynamic_groups ||
-                    mpp->area_masking_on != ompp->area_masking_on ||
-                    mpp->spec_fill_priority != ompp->spec_fill_priority)
+                    mpp->area_masking_on != ompp->area_masking_on)
                         build_fill_list = True;
                 
                 if (mpp->database_version != ompp->database_version ||
@@ -1750,14 +1939,9 @@ static NhlErrorTypes MapV41DHUpdateDrawList
                     mpp->outline_specs != ompp->outline_specs)
                         build_outline_list = True;
                 
-                if (mpp->fill_on ||
-                    (mpp->grid.on && mpp->grid_mask_mode != NhlMASKNONE)) {
-                        if (build_fill_list || mpp->view_changed ||
-                            mpp->trans_change_count !=
-                            ompp->trans_change_count ||
-                            mpp->fill_on != ompp->fill_on)
-                                mv41p->new_amap_req = True;
-                }
+                if (build_fill_list || mpp->view_changed ||
+                    mpp->trans_change_count != ompp->trans_change_count)
+                        mv41p->new_amap_req = True;
         }
         if (build_fill_list) {
                 subret = mv41BuildFillDrawList(mv41l,mpp,entry_name);
@@ -2005,14 +2189,29 @@ static NhlErrorTypes mpSetUpFillDrawList
 
         for (i = 0; i < mv41p->fill_rec_count; i++) {
                 int eid = mv41p->fill_recs[i].eid;
+                int spec_fill_index = mv41p->fill_recs[i].spec_ix;
                 int spec_level = c_mpiaty(eid);
                 int j;
-#if 0                
-                if (spec_level >= mv41p->min_fill_level) {
-                        DrawIds[eid-1].spec_rec = (void *)&mv41p->fill_recs[i];
-                        continue;
-                }
-#endif                        
+                
+                mv41p->fill_recs[i].spec_col = 0;
+                if (mpp->spec_fill_color_count > spec_fill_index) {
+			int *ip = (int *) mpp->spec_fill_colors->data;
+			if (ip[spec_fill_index] != NhlUNSPECIFIEDCOLOR)
+				mv41p->fill_recs[i].spec_col =  1;
+		}
+                mv41p->fill_recs[i].spec_pat = 0;
+		if (mpp->spec_fill_pattern_count > spec_fill_index) {
+			int *ip = (int *) mpp->spec_fill_patterns->data;
+			if (ip[spec_fill_index] != NhlUNSPECIFIEDFILL)
+				mv41p->fill_recs[i].spec_pat =  1;
+		}
+                mv41p->fill_recs[i].spec_fscale = 0;
+		if (mpp->spec_fill_scale_count > spec_fill_index) {
+			float *fp = (float *) mpp->spec_fill_scales->data;
+			if (fp[spec_fill_index] > NhlmpUNSETFILLSCALE)
+				mv41p->fill_recs[i].spec_fscale =  1;
+		}
+
                 for (j = 1; j <= Mv41cp->entity_rec_count; j++) {
 #if 0
                         if (c_mpiosa(j,spec_level) == eid) {
@@ -2065,15 +2264,11 @@ static NhlErrorTypes mpSetUpAreamap
 	char			*e_text;
 	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
 	int			aws_id = -1,i;
-	NhlBoolean		inited = False;
-        float			left_npc, right_npc,left,right;
-        float			left_map, right_map, lm,rm;
 
 	mpSetUpFillDrawList(mv41l,mpl,entry_name);
 
 	c_arseti("RC",1);
 	aws_id = mv41p->aws_id;
-	inited = Amap_Inited;
 
 	if (aws_id < 0) {
 		aws_id = _NhlNewWorkspace(NhlwsAREAMAP,NhlwsDISK,
@@ -2106,8 +2301,13 @@ static NhlErrorTypes mpSetUpAreamap
                         _NhlDumpAreaMap(*aws,entry_name);
         }
         
+	mv41p->aws_id = aws_id;
+        mv41p->new_amap_req = False;
+        
 #if 0                
         {
+                float		left_npc, right_npc,left,right;
+                float		left_map, right_map, lm,rm;
                 NhlVAGetValues(mpl->trans.trans_obj->base.id,
                                NhlNmpLeftNPCF,&left_npc,
                                NhlNmpRightNPCF,&right_npc,
@@ -2155,10 +2355,6 @@ static NhlErrorTypes mpSetUpAreamap
                        NhlNmpRightMapPosF,right_map,
                        NULL);
 #endif
-        
-	mv41p->aws_id = aws_id;
-	Amap_Inited = True;
-        mv41p->new_amap_req = False;
         
 	return ret;
 }
@@ -2474,13 +2670,6 @@ static NhlErrorTypes mpOutline
 		char eidname[128];
                 int spec_level = c_mpiaty(eid);
                 int j;
-#if 0                
-                if (spec_level >= mv41p->min_outline_level) {
-                        DrawIds[eid-1].spec_rec = 
-				(void *)&mv41p->outline_recs[i];
-                        continue;
-                }
-#endif
 
 		strcpy(eidname,c_mpname(eid));
                 for (j = 1; j <= Mv41cp->entity_rec_count; j++) {
@@ -2538,18 +2727,7 @@ static NhlErrorTypes MapV41DHDrawMapList
                 }
         }
 
-        if (init_draw || instance != Last_Instance) {
-                Amap_Inited = False;
-                Part_Outside_Viewspace = False;
-                if (Mpl->view.x < 0.0 || Mpl->view.y > 1.0 ||
-                    Mpl->view.x + Mpl->view.width > 1.0 ||
-                    Mpl->view.y - Mpl->view.height < 0.0)
-                        Part_Outside_Viewspace = True;
-        }
-        if (instance != Last_Instance)
-                mv41l->mapv41dh.new_amap_req = True;
         
-        Last_Instance = instance;
         Point_Count = 0;
 
         switch (draw_op) {
