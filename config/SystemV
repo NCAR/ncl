@@ -1,5 +1,5 @@
 /*
- *      $Id: SystemV,v 1.9 1993-10-19 17:13:51 boote Exp $
+ *      $Id: SystemV,v 1.10 1994-04-08 18:37:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -17,7 +17,7 @@
  *
  *	Date:		Mon May 3 14:57:35 MDT 1993
  *
- *	Description:	
+ *	Description:	This file shouldn't really be used anymore.
  */
 #define	OsDefineFlag	-DSYSV
 #define	RanLib	$(AR) m

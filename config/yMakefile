@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.10 1994-04-06 21:40:55 boote Exp $
+ *      $Id: yMakefile,v 1.11 1994-04-08 18:37:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@ CONFIG-PROGRAMS	= ymake-filter fcpp callconv mkdirhier ymake-install ldrel
 ARCHFILES	=	AIX_RS6000 AlphaOSF1 Cray DECRISC \
 			HPUX_snake SGI4D Sun3 Sun4 \
 			Sun4Solaris SystemV
-YMAKEFILES	=	Project Rules Site Template
+YMAKEFILES	=	Project Rules SiteFile Template
 CONFIGFILES	=	$(ARCHFILES) $(YMAKEFILES)
 
 #if	UseCatDirs

@@ -1,5 +1,5 @@
 /*
- *      $Id: AIX_RS6000,v 1.7 1994-03-31 01:05:41 boote Exp $
+ *      $Id: AIX_RS6000,v 1.8 1994-04-08 18:37:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -28,3 +28,6 @@
 #define Cstatic		-bnso
 #define Cdynamic	-bso
 #define	CtoFLibraries	-lm -lxlf
+
+#define	ArchRecLibSearch	-L/usr/local/lib
+#define	ArchRecIncSearch	-I/usr/local/include

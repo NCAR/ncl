@@ -1,5 +1,5 @@
 /*
- *      $Id: Sun3,v 1.18 1993-10-19 17:13:41 boote Exp $
+ *      $Id: Sun3,v 1.19 1994-04-08 18:37:16 boote Exp $
  */
 /************************************************************************
 *									*
@@ -17,7 +17,8 @@
  *
  *	Date:		Mon May 3 14:45:51 MDT 1993
  *
- *	Description:	
+ *	Description:	This is nolonger a supported architecture, so I
+ *			didn't test these things.
  */
 #define BuildSunViewctrans
 #define	HdfDefines	-DSUN

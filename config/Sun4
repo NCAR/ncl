@@ -1,5 +1,5 @@
 /*
- *      $Id: Sun4,v 1.23 1994-03-23 21:40:50 haley Exp $
+ *      $Id: Sun4,v 1.24 1994-04-08 18:37:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -38,3 +38,6 @@
 #define	HdfDefines	-DSUN
 #define CtoFLibraries	Cstatic -lF77 Cdynamic
 #define	LintCommand	alint
+
+#define	ArchRecLibSearch	-L/usr/local/lib
+#define	ArchRecIncSearch	-I/usr/local/include

@@ -1,5 +1,5 @@
 /*
- *      $Id: SGI4D,v 1.18 1994-03-31 01:05:47 boote Exp $
+ *      $Id: SGI4D,v 1.19 1994-04-08 18:37:14 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,3 +27,6 @@
 #define CcOptions	-ansiposix
 #define	RanLib		$(AR) m
 #define CtoFLibraries	-lF77 -lI77 -lU77 -lisam -lm -lc
+
+#define	ArchRecLibSearch	-L/usr/local/lib
+#define	ArchRecIncSearch	-I/usr/local/include
