@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.42 1996-11-27 15:50:51 boote Exp $
+#      $Id: yMakefile,v 1.43 1996-11-27 16:10:13 boote Exp $
 #
 #########################################################################
 #									#
@@ -108,7 +108,6 @@ DependTarget($(CSRCS))
 
 
 /* This is used to expand the huge macros in this file	*/
-
 #if	defined(DEBUG) && defined(SunOS)  && defined(ExpandMacros)
 
 CleanFilesTarget(Converters.tmp.o Converters.tmp.c Converters.sed.c)
