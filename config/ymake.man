@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\"	$Id: ymake.man,v 1.5 1993-11-01 17:29:49 boote Exp $
+.\"	$Id: ymake.man,v 1.6 1993-11-03 17:14:05 boote Exp $
 .\"
 .\"######################################################################
 .\"#									#
@@ -145,6 +145,10 @@ The \fIconfig\fP option to \fBymake\fP is used to tell \fBymake\fP that it
 is being invoked from within the NCAR Graphics full source tree.  It should
 only be used by the \fIMakefile.ini\fP and \fIMakefile\fP files in the NCAR
 Graphics full source tree.
+.PP
+There is a script in the config directory named \fBymkmf\fP that can be
+used to create a \fIMakefile\fP in the NCAR Graphics full source tree. It
+generates the above \fBymake\fP command.
 .SH "USE OUTSIDE OF NCAR GRAPHICS DISTRIBUTION"
 When building programs outside the full source tree \fBymake\fP can be
 called without any options from the systems NCARG bin directory (Usually
@@ -162,6 +166,26 @@ and to build the source tree.  This would be done by executing
 .B ``make depend''.
 Once you have done this, all the \fIMakefiles\fP in the source tree should
 be created and have dependencies built into them.
+.PP
+If you only want to create \fIMakefiles\fP in some sub-tree of your source
+then you can use the \fBymkmf\fP script to create your highest level
+\fIMakefile\fP.  You would call it with the name of your top-level directory.
+For example if you had checked our the \fIne\fP source tree you could create
+the \fIMakefile\fP in the \fIhlu\fP sub-directory like this:
+.sp
+.nf
+host:~/src/ni/src/lib/hlu > ymkmf ni
+.fi
+.sp
+The \fBymkmf\fP script will search up the directory hierachy until it finds
+the \fItopdir\fP that was passed to it.  In this case it would create a
+\fIMakefile\fP with:
+.ta 1.5i 2i 3i
+.sp
+\fITOP\fP	=	../../../.
+.br
+\fICURRENT_DIR\fP	=	./src/lib/hlu
+.ta
 .PP
 Additionally, when you are using \fBymake\fP from the system's bin directory,
 you can set the environment variable \fI$(YMAKE_DEV_FILE)\fP to an additional
@@ -361,6 +385,14 @@ the dependency list of a link command. (See the \fBFortranProgram\fP and
 .B ymake
 has some basic rules that are used to compile executables.
 .B ymake
+uses one \fBmake\fP symbol to define the dependent libraries of a compile:
+.IP \fIDEP_LIBS\fP 1.5i
+This symbol defines the libraries that the executable uses from within the
+distribution. It is analogous to the \fIPROG_LIBS\fP symbol described
+below, except that is is used as a dependency of the executable's build rule.
+This is where the \fIDEP*\fP library symbols should be used.
+.PP
+.B ymake
 uses three \fBmake\fP symbols to define the libraries to link with the object
 code in the current directory to create executables.  These three symbols
 are:
@@ -424,8 +456,121 @@ do that, you use the
 .B cpp
 directive and set the \fBmake\fP symbol \fISUBDIRS\fP to the list of
 subdirectories in the \fIyMakefile\fP.
+.SH "MAKE SYMBOLS"
+The following is a list of many of the \fBmake\fP symbols that are reserved
+for use in \fIyMakefiles\fP:
+.IP EXTRA_CDEFINES 1.8i
+Used as part of CFLAGS to compile C programs.  It should be used to put in
+additional -D flags for the compile line.
+.IP EXTRA_FDEFINES 1.8i
+Used as part of FFLAGS to compile Fortran programs.  It should be used to put
+in -D flags for the compile line.  Be carefull since the -D flag is not
+supported for all Fortran compilers.
+.IP EXTRA_DEFINES 1.8i
+Used to add -D flags to both fortran and C compiles.
+Same warning applies for Fortran compiles.
+.IP EXTRA_INCLUDES 1.8i
+Used to add -I flags to C compiles.
+.IP EXTRA_CLDFLAGS 1.8i
+Used to add additional LD flags for the linking of C
+programs.
+.IP EXTRA_FLDFLAGS 1.8i
+Used to add additional LD flags for the linking of
+Fortran programs.
+.IP EXTRA_LDFLAGS 1.8i
+Used to add additional LD flags for the linking of
+Fortran and C programs.
+.IP PROG_LIBS 1.8i
+Used to specify the libraries that need to be linked
+into a program that are part of the distribution.
+Only make symbols should be used to set this make
+symbol. ex. PROG_LIBS = $(NCARGLIB) $(NCARGLOCLIB)
+.IP EXTRA_LIBS 1.8i
+Used to specify the libraries that need to be linked
+into a program that are not part of the distribution,
+but that may not be installed on all systems - so they
+need to be linked into the executable statically for
+the architectures that support dynamic libs.
+.IP SYS_LIBS 1.8i
+Used to specify the system libraries that need to be
+linked into a program.  These libraries include the
+libc.a and all other libraries that are sure to be
+installed on the target system.  These should be linked
+dynamically so our programs work no matter which version
+of the OS is being used on the target system.
+.IP SUBDIRS 1.8i
+Used in conjunction with the IHaveSubdirs cpp symbol
+to manage sub-directories. It should be set to the list of sub-directories
+that should be built.
+.SH "SYSTEM SPECIFIC SYMBOLS"
+For each supported system, there will be a set of \fBcpp\fP symbols defined
+in \fBymake\fP that can be used in the \fIyMakefile\fP to conditionally
+set things in that \fIymakefile\fP. There are six possible symbols that can
+be set:
+.IP Os 2i
+Name of Operating system
+.br
+.IP MajorOs Version 2i
+Major Version Number/Designator
+.IP MinorOs Version 2i
+Minor Version Number/Designator
+.IP SubMinorOs Version 2i
+SubMinor Version Number/Designator
+.IP Vendor Name 2i
+Vendor Name
+.IP Architecture 2i
+Architecture Name, possibly including Model number.
+.PP
+This table shows the actual symbols that are defined, or the values the given
+symbols are defined to, for the currently supported systems:
+.sp
+.ta 1i 1.8i 2.5i 3.3i 4.1i 4.8i 5.6i 6.4i
+.nf
+VENDOR	HP	IBM	SUN	SUN	CRAY	SGI	DEC	DEC
+ARCH	HP9k7xx	RS6kxx	sun[34]	sun4	YMP	IPxx	RISC	alpha
+OS	HPUX	AIX	SunOs	Solaris	UNICOS	IRIX	ULTRIX	OSF1
+MAJOR=	A	3	4,5	5	6	4	4	1
+MINOR=	09	1	1,?	?	1	0	3	1
+SUBMINOR=	01	null	2,3,?	?	null	5[C-F]	null	null
+.fi
+.ta 
+.PP
+If you want to have any of these symbols defined in the source code you
+can set the \fIEXTRA_DEFINES\fP symbol described above to the following
+\fBmake\fP symbols that are defined by the \fITemplate\fP:
+.IP VENDOR_DEF
+This
+.B make
+symbol is set to -D\fIsym\fP where \fIsym\fP is the Vendor name listed above
+for the given system.
+.IP ARCH_DEF
+This
+.B make
+symbol is set to -D\fIsym\fP where \fIsym\fP is the Architecture name as listed
+above for the given system.
+.IP OS_DEF
+This
+.B make
+symbol is set to -D\fIsym\fP where \fIsym\fP is the Os name as listed above
+for the given system.
+.IP MAJOR_DEF
+This
+.B make
+symbol is set to -D\fIMAJOR=n\fP where \fIn\fP is the major revision
+designator for the given system.
+.IP MINOR_DEF
+This
+.B make
+symbol is set to -D\fIMINOR=n\fP where \fIn\fP is the minor revision
+designator for the given system.
+.IP SUBMINOR_DEF
+This
+.B make
+symbol is set to -D\fIMINOR=n\fP where \fIn\fP is the sub-minor revision
+designator for the given system.
+If it is null above, then \fISUBMINOR_DEF\fP will also be null.
 .SH "ENVIRONMENT VARIABLES"
-The following environment variables may be set.
+The following environment variables may be used by \fBymake\fP.
 .TP 5
 .B YMAKE_DEV_FILE
 If defined, this should be a valid file including \fBmake\fP symbol definitions

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.8 1993-11-01 17:29:45 boote Exp $
+#	$Id: ymake,v 1.9 1993-11-03 17:14:02 boote Exp $
 #
 ######################################################################
 #
@@ -287,7 +287,7 @@ case	HP-UX:
 	switch ("$mach")
 	case	9000/7*:
 		set model = `echo $mach | cut -c7-8`
-		set arch = HP9000_7$model
+		set arch = HP9k7$model
 		breaksw
 	default:
 		echo "$0 : Unknown machine type" > /dev/tty
@@ -342,22 +342,28 @@ switch ("$opsys")
 case	AIX:
 	set major = `uname -v`
 	set minor = `uname -r`
+	set subminor = ""
+	breaksw
+case	OSF1:
+	set major = `uname -r | cut -d. -f1 | cut -c2- `
+	set minor = `uname -r | cut -d. -f2`
+	set subminor = `uname -r | cut -d. -f3`
 	breaksw
 case	SunOS:
 case	IRIX:
 case	ULTRIX:
-case	OSF1:
 case	HP-UX:
 case	UNICOS:
 default:
 	set major = `uname -r | cut -d. -f1`
 	set minor = `uname -r | cut -d. -f2`
 	set subminor = `uname -r | cut -d. -f3`
-	if("$subminor" == "") then
-		unset subminor
-	endif
 	breaksw
 endsw
+
+if("$subminor" == "") then
+	unset subminor
+endif
 
 #
 #	add os and arch to our defines list
