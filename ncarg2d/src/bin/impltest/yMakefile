@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.4 1993-01-27 02:20:08 haley Exp $
+#	$Id: yMakefile,v 1.5 1993-02-12 15:05:40 haley Exp $
 #
 NCARG	= ../../../..
 
@@ -18,18 +18,12 @@ ROBJS = $(ROBJPATH)/ggkwdr_stub.o
 LIBS = $(ROBJS) $(OTHER_LIBS) $(COMMON_LIBS)
 
 GENERIC_SRCS = \
-	 box.f lcm.f mskout.f implbd.f tcurve.f tgbyte.f tgks0a.f tiand.f\
-	 tior.f tline.f tlocal.f tplot.f tploti.f tpnts.f tpoint.f tsbyte.f\
-	 tset.f tshift.f tspps.f tvecto.f twtstr.f
+	 lcm.f mskout.f implbd.f tgbyte.f tgks0a.f tiand.f\
+	 tior.f tlocal.f tsbyte.f tshift.f
 
 GENERIC_OBJS = \
-	 box.o lcm.o mskout.o implbd.o tcurve.o tgbyte.o tgks0a.o tiand.o\
-	 tior.o tline.o tlocal.o tplot.o tploti.o tpnts.o tpoint.o tsbyte.o\
-	 tset.o tshift.o tspps.o tvecto.o twtstr.o
-
-TSPPS_OBJS = \
-	tspps.o tpnts.o tset.o tvecto.o tcurve.o tline.o tpoint.o\
-	twtstr.o tploti.o box.o implbd.o
+	 lcm.o mskout.o implbd.o tgbyte.o tgks0a.o tiand.o\
+	 tior.o tlocal.o tsbyte.o tshift.o
 
 #ifdef cray
 
@@ -62,11 +56,9 @@ TLOCAL_OBJS = \
 #endif
 
 
-all:: tspps tlocal tplot tgks0a
+all:: tlocal tgks0a
 
-FortranTarget(tspps,$(TSPPS_OBJS),$(LIBS))
 FortranTarget(tlocal,$(TLOCAL_OBJS),$(LIBS))
-FortranTarget(tplot,tplot.o,$(LIBS))
 FortranTarget(tgks0a,tgks0a.o,$(LIBS))
 MakefileTarget
 CleanTarget
