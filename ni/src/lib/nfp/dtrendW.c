@@ -151,7 +151,7 @@ NhlErrorTypes dtrend_W( void )
     if(found_missing) {
       set_subset_output_missing(dtrend_y,index_y,type_y,npts,
                                 missing_dy.doubleval);
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"dtrend_msg: An input array contains missing values. No dtrending performed on this array.");
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"dtrend: An input array contains missing values. No dtrending performed on this array.");
     }
     else {
 

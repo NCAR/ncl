@@ -230,6 +230,7 @@ extern NhlErrorTypes esccv_W(void);
 extern NhlErrorTypes escorc_W(void);
 extern NhlErrorTypes ezfftf_W(void);
 extern NhlErrorTypes ezfftb_W(void);
+extern NhlErrorTypes fourier_info_W(void);
 
 extern NhlErrorTypes rdsstoi_W(void);
 extern NhlErrorTypes vibeta_W(void);
@@ -2835,6 +2836,18 @@ void NclAddUserFuncs(void)
 
     NclRegisterFunc(ezfftb_W,args,"ezfftb",nargs);
 /*
+ * Register "fourier_info".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(fourier_info_W,args,"fourier_info",nargs);
+/*
  * Register "rdsstoi".
  *
  * Create private argument array.
@@ -3430,11 +3443,12 @@ void NclAddUserFuncs(void)
  *  Register output_gif.
  */
     nargs = 0;
-    args = NewArgs(3);
+    args = NewArgs(4);
     SetArgTemplate(args, nargs, "graphic", NclANY, NclANY);  nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "string", 1, dimsizes);   nargs++;
-    dimsizes[0] = 2;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);   nargs++;
     SetArgTemplate(args, nargs, "integer", 1, dimsizes);   nargs++;
     NclRegisterProc(output_gif_W, args, "output_gif", nargs);
 

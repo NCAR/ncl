@@ -202,11 +202,26 @@ void output_ncgm(
   NhlErrorTypes   ret = NhlNOERROR;
   int old_wks, wks;
   char buf[512];
-  int rl, i, hlu_id;
+  int rl, gl, i, hlu_id, num_dims, *len_dims;
+  float *cmap;
+/*
+ * Need to get the workstation so we can retrieve  the color map.
+ * We are assuming here that all the objects are being drawn to the
+ * same workstation, so they all have the same color map.
+ */
+  hlu_id = hlu_ptr[0]->hlu.hlu_id;
+  old_wks = NhlGetParentWorkstation(hlu_id);
+
+  gl = NhlRLCreate(NhlGETRL);
+  NhlRLClear(gl);
+  NhlRLGetMDFloatArray(gl,"wkColorMap",&cmap,&num_dims,&len_dims);
+  NhlGetValues(old_wks,gl);
+
 /*
  * Open a resource list and write the NCGM file name to it.
  */
   rl = NhlRLCreate(NhlSETRL);
+  NhlRLSetMDFloatArray(rl,"wkColorMap",cmap,num_dims,len_dims);
   NhlRLSetString(rl,NhlNwkMetaName,outfile);
 
 /* 
@@ -216,6 +231,7 @@ void output_ncgm(
   if (ret < NhlWARNING) return;
 
   NhlRLDestroy(rl);   /* Destroy resource list. */
+  NhlRLDestroy(gl);   /* Destroy resource list. */
 
 /*
  * For each object to be drawn, first retrieve its original parent
