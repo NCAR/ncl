@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.28 1993-01-12 20:12:51 clyne Exp $
+ *	$Id: main.c,v 1.29 1993-02-24 18:01:52 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -64,7 +64,7 @@ static	struct	{
 
 static	OptDescRec	set_options[] = {
 	{"device", 1, NULL, "Specify output device type"},
-	{"font", 1, NULL, "Specify path to font"},
+	{"font", 1, "font1", "Specify path to font"},
 	{"movie", 1, "-1", "Operate in batch mode with 'arg0' second delay"},	
         {"softfill", 0, NULL, "Do perform polygon scan conversion in software"},
         {"Debug", 0, NULL, "Do operate in debug mode"},
