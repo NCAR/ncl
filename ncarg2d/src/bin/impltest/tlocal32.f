@@ -1,5 +1,5 @@
 C
-C	$Id: tlocal32.f,v 1.3 2000-08-22 04:34:19 haley Exp $
+C	$Id: tlocal32.f,v 1.4 2002-02-22 05:15:07 haley Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -138,40 +138,40 @@ C     correctly.
 C
 C
       DATA	
-     +  MASK0(1)	/	x'00000001'/,
-     +  MASK0(2)	/	x'00000002'/,
-     +  MASK0(3)	/	x'00000004'/,
-     +  MASK0(4)	/	x'00000008'/,
-     +  MASK0(5)	/	x'00000010'/,
-     +  MASK0(6)	/	x'00000020'/,
-     +  MASK0(7)	/	x'00000040'/,
-     +  MASK0(8)	/	x'00000080'/,
-     +  MASK0(9)	/	x'00000100'/,
-     +  MASK0(10)	/	x'00000200'/,
-     +  MASK0(11)	/	x'00000400'/,
-     +  MASK0(12)	/	x'00000800'/,
-     +  MASK0(13)	/	x'00001000'/,
-     +  MASK0(14)	/	x'00002000'/,
-     +  MASK0(15)	/	x'00004000'/,
-     +  MASK0(16)	/	x'00008000'/
+     +  MASK0(1)	/	z'00000001'/,
+     +  MASK0(2)	/	z'00000002'/,
+     +  MASK0(3)	/	z'00000004'/,
+     +  MASK0(4)	/	z'00000008'/,
+     +  MASK0(5)	/	z'00000010'/,
+     +  MASK0(6)	/	z'00000020'/,
+     +  MASK0(7)	/	z'00000040'/,
+     +  MASK0(8)	/	z'00000080'/,
+     +  MASK0(9)	/	z'00000100'/,
+     +  MASK0(10)	/	z'00000200'/,
+     +  MASK0(11)	/	z'00000400'/,
+     +  MASK0(12)	/	z'00000800'/,
+     +  MASK0(13)	/	z'00001000'/,
+     +  MASK0(14)	/	z'00002000'/,
+     +  MASK0(15)	/	z'00004000'/,
+     +  MASK0(16)	/	z'00008000'/
 
       DATA	
-     +  MASK0(17)	/	x'00010000'/,
-     +  MASK0(18)	/	x'00020000'/,
-     +  MASK0(19)	/	x'00040000'/,
-     +  MASK0(20)	/	x'00080000'/,
-     +  MASK0(21)	/	x'00100000'/,
-     +  MASK0(22)	/	x'00200000'/,
-     +  MASK0(23)	/	x'00400000'/,
-     +  MASK0(24)	/	x'00800000'/,
-     +  MASK0(25)	/	x'01000000'/,
-     +  MASK0(26)	/	x'02000000'/,
-     +  MASK0(27)	/	x'04000000'/,
-     +  MASK0(28)	/	x'08000000'/,
-     +  MASK0(29)	/	x'10000000'/,
-     +  MASK0(30)	/	x'20000000'/,
-     +  MASK0(31)	/	x'40000000'/,
-     +  MASK0(32)	/	x'80000000'/
+     +  MASK0(17)	/	z'00010000'/,
+     +  MASK0(18)	/	z'00020000'/,
+     +  MASK0(19)	/	z'00040000'/,
+     +  MASK0(20)	/	z'00080000'/,
+     +  MASK0(21)	/	z'00100000'/,
+     +  MASK0(22)	/	z'00200000'/,
+     +  MASK0(23)	/	z'00400000'/,
+     +  MASK0(24)	/	z'00800000'/,
+     +  MASK0(25)	/	z'01000000'/,
+     +  MASK0(26)	/	z'02000000'/,
+     +  MASK0(27)	/	z'04000000'/,
+     +  MASK0(28)	/	z'08000000'/,
+     +  MASK0(29)	/	z'10000000'/,
+     +  MASK0(30)	/	z'20000000'/,
+     +  MASK0(31)	/	z'40000000'/,
+     +  MASK0(32)	/	z'80000000'/
 	
 C
 C
@@ -205,41 +205,41 @@ C
 C
 C
       DATA	
-     +  MASK1(1)	/	x'00000000'/,
-     +  MASK1(2)	/	x'00000001'/,
-     +  MASK1(3)	/	x'00000003'/,
-     +  MASK1(4)	/	x'00000007'/,
-     +  MASK1(5)	/	x'0000000f'/,
-     +  MASK1(6)	/	x'0000001f'/,
-     +  MASK1(7)	/	x'0000003f'/,
-     +  MASK1(8)	/	x'0000007f'/,
-     +  MASK1(9)	/	x'000000ff'/,
-     +  MASK1(10)	/	x'000001ff'/,
-     +  MASK1(11)	/	x'000003ff'/,
-     +  MASK1(12)	/	x'000007ff'/,
-     +  MASK1(13)	/	x'00000fff'/,
-     +  MASK1(14)	/	x'00001fff'/,
-     +  MASK1(15)	/	x'00003fff'/,
-     +  MASK1(16)	/	x'00007fff'/
+     +  MASK1(1)	/	z'00000000'/,
+     +  MASK1(2)	/	z'00000001'/,
+     +  MASK1(3)	/	z'00000003'/,
+     +  MASK1(4)	/	z'00000007'/,
+     +  MASK1(5)	/	z'0000000f'/,
+     +  MASK1(6)	/	z'0000001f'/,
+     +  MASK1(7)	/	z'0000003f'/,
+     +  MASK1(8)	/	z'0000007f'/,
+     +  MASK1(9)	/	z'000000ff'/,
+     +  MASK1(10)	/	z'000001ff'/,
+     +  MASK1(11)	/	z'000003ff'/,
+     +  MASK1(12)	/	z'000007ff'/,
+     +  MASK1(13)	/	z'00000fff'/,
+     +  MASK1(14)	/	z'00001fff'/,
+     +  MASK1(15)	/	z'00003fff'/,
+     +  MASK1(16)	/	z'00007fff'/
 
       DATA
-     +  MASK1(17)	/	x'0000ffff'/,
-     +  MASK1(18)	/	x'0001ffff'/,
-     +  MASK1(19)	/	x'0003ffff'/,
-     +  MASK1(20)	/	x'0007ffff'/,
-     +  MASK1(21)	/	x'000fffff'/,
-     +  MASK1(22)	/	x'001fffff'/,
-     +  MASK1(23)	/	x'003fffff'/,
-     +  MASK1(24)	/	x'007fffff'/,
-     +  MASK1(25)	/	x'00ffffff'/,
-     +  MASK1(26)	/	x'01ffffff'/,
-     +  MASK1(27)	/	x'03ffffff'/,
-     +  MASK1(28)	/	x'07ffffff'/,
-     +  MASK1(29)	/	x'0fffffff'/,
-     +  MASK1(30)	/	x'1fffffff'/,
-     +  MASK1(31)	/	x'3fffffff'/,
-     +  MASK1(32)	/	x'7fffffff'/,
-     +  MASK1(33)	/	x'ffffffff'/
+     +  MASK1(17)	/	z'0000ffff'/,
+     +  MASK1(18)	/	z'0001ffff'/,
+     +  MASK1(19)	/	z'0003ffff'/,
+     +  MASK1(20)	/	z'0007ffff'/,
+     +  MASK1(21)	/	z'000fffff'/,
+     +  MASK1(22)	/	z'001fffff'/,
+     +  MASK1(23)	/	z'003fffff'/,
+     +  MASK1(24)	/	z'007fffff'/,
+     +  MASK1(25)	/	z'00ffffff'/,
+     +  MASK1(26)	/	z'01ffffff'/,
+     +  MASK1(27)	/	z'03ffffff'/,
+     +  MASK1(28)	/	z'07ffffff'/,
+     +  MASK1(29)	/	z'0fffffff'/,
+     +  MASK1(30)	/	z'1fffffff'/,
+     +  MASK1(31)	/	z'3fffffff'/,
+     +  MASK1(32)	/	z'7fffffff'/,
+     +  MASK1(33)	/	z'ffffffff'/
 
 C
 C 7.  MSK1DM.  MSK1DM is an integer variable containing the
