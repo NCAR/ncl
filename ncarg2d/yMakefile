@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.3 1993-10-19 17:14:19 boote Exp $
+#	$Id: yMakefile,v 1.4 1995-06-27 20:01:02 haley Exp $
 #
 #define IHaveSubdirs
-SUBDIRS = src man doc
+SUBDIRS = src man
