@@ -1,5 +1,5 @@
 /*
- *  $Id: lg03c.c,v 1.14 1995-06-22 21:08:10 haley Exp $
+ *  $Id: lg03c.c,v 1.15 2003-02-28 22:54:58 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -27,6 +27,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 
         
 
@@ -40,7 +41,7 @@ main()
     int types[5];
     int item_ind[5];
     float lnthik;
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 
 /*
  * Initialize data values
@@ -99,6 +100,15 @@ main()
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"./lg03c.ps");
         NhlCreate(&wid,"lg03Work",NhlpsWorkstationClass,NhlDEFAULT_APP,
+                  rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./lg03c.pdf");
+        NhlCreate(&wid,"lg03Work",NhlpdfWorkstationClass,NhlDEFAULT_APP,
                   rlist);
     }
 /*

@@ -21,18 +21,20 @@ C
       external NhlFLegendClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
         
       integer appid, wid, pid
       integer rlist, ierr
 
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Default is to display output to an X workstation
 C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize the high level utility library
 C
@@ -67,12 +69,21 @@ C
      1        rlist,ierr)
       else if (PS.eq.1) then
 C
-C Create an NCGM workstation.
+C Create an PS workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPSFileName','./lg01f.ps',ierr)
          call NhlFCreate(wid,'lg01Work',
      1        NhlFPSWorkstationClass,0,rlist,ierr) 
+      else if (PDF.eq.1) then
+C
+C Create an PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPDFFileName','./lg01f.pdf',
+     1        ierr)
+         call NhlFCreate(wid,'lg01Work',
+     1        NhlFPDFWorkstationClass,0,rlist,ierr) 
       endif
 C     
 C Specify the viewport extent of the object.

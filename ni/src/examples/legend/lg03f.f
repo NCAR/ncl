@@ -21,6 +21,7 @@ C
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
         
       integer appid, wid, pid
       integer rlist, ierr
@@ -41,13 +42,14 @@ C
       data lnthik / 4.0, 4.0, 4.0, 4.0, 4.0 /
 
       data item_ind / 2, 3, 4, 5, 6 /
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Default is to display output to an X workstation
 C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize the high level utility library
 C
@@ -88,6 +90,14 @@ C
          call NhlFRLSetstring(rlist,'wkPSFileName','./lg03f.ps',ierr)
          call NhlFCreate(wid,'lg03Work',
      1       NhlFPSWorkstationClass,0,rlist,ierr) 
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPDFFileName','./lg03f.pdf',ierr)
+         call NhlFCreate(wid,'lg03Work',
+     1       NhlFPDFWorkstationClass,0,rlist,ierr) 
       endif
 C
 C Specify the viewport extent of the object.

@@ -24,6 +24,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>        
 #include <ncarg/hlu/PSWorkstation.h>        
+#include <ncarg/hlu/PDFWorkstation.h>        
 
 main()
 {
@@ -33,7 +34,7 @@ main()
     NhlColorIndex colors[5];
     NhlMarkerIndex item_ind[5];
     float mkthik[5];
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 
 /*
  * Initialize data values
@@ -100,6 +101,15 @@ main()
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"./lg02c.ps");
         NhlCreate(&wid,"lg02Work",NhlpsWorkstationClass,NhlDEFAULT_APP,
+                  rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./lg02c.pdf");
+        NhlCreate(&wid,"lg02Work",NhlpdfWorkstationClass,NhlDEFAULT_APP,
                   rlist);
     }
 /*
