@@ -25,6 +25,8 @@
  
 /*
  *  Specify all of the function prototypes.
+ *
+ *  Single-precision C routines.
  */
 float *c_csa1s(int, float [], float [], int, int, float [], int *);
 float *c_csa1xs(int, float [], float [], float [], int,
@@ -49,6 +51,31 @@ float *c_csa3lxs(int, float [], float [], float [], float [],
                  int, float [], float [], float [], int *);
 
 /*
+ *  Double-precision C routines.
+ */
+double *c_csa1d(int, double [], double [], int, int, double [], int *);
+double *c_csa1xd(int, double [], double [], double [], int,
+                 double, int, int, double [], int *);
+double *c_csa2d(int, double [], double [], double [], int [],
+                int, int, double [], double [], int *);
+double *c_csa2xd(int, double [], double [], double [], double [], int [],
+                 double, int [], int, int, double [], double [], int *);
+double *c_csa2ld(int, double [], double [], double [], int [],
+                 int, double [], double [], int *);
+double *c_csa2lxd(int, double [], double [], double [], double [], int [], 
+                  double, int [], int, double [], double [], int *);
+double *c_csa3d(int, double [], double [], double [], double [], int [], 
+                int, int, int, double [], double [], double [], int *);
+double *c_csa3xd(int, double [], double [], double [], double [], double [], 
+                 int [], double, int [], int, int, int, double [], 
+                 double [], double [], int *);
+double *c_csa3ld(int, double [], double [], double [], double [],
+                 int [], int, double [], double [], double[], int *);
+double *c_csa3lxd(int, double [], double [], double [], double [],
+                  double [], int [], double, int [],
+                  int, double [], double [], double [], int *);
+
+/*
  *  Fortran function macro.  This macro is used to provide the appropriate
  *  system-specific C function name for it to be Fortran callable.
  */
@@ -71,7 +98,7 @@ float *c_csa3lxs(int, float [], float [], float [], float [],
 #endif  /* NGCALLF */
 
 /*
- *  Prototypes for Fortran function calls.
+ *  Prototypes for single-precision Fortran function calls.
  */
 void NGCALLF(csa1s,CSA1S)(int *, float *, float *, int *, int *, float *, 
              float *, int *, float *, int *);
@@ -88,3 +115,25 @@ void NGCALLF(csa3xs,CSA3XS)(int *, float *, float *, float *, int *, float *,
 void NGCALLF(csa3lxs,CSA3LXS)(int *, float *, float *, float *, int *, float *,
              int *, int *, float *, float *, float *, float *, int *, 
              float *, int *);
+
+/*
+ *  Prototypes for double-precision Fortran function calls.
+ */
+void NGCALLF(csa1d,CSA1D)(int *, double *, double *, int *, int *, double *, 
+             double *, int *, double *, int *);
+void NGCALLF(csa1xd,CSA1XD)(int *, double *, double *, double *, int *, 
+             double *, int *, int *, double *, double *, int *, double *,
+             int *);
+void NGCALLF(csa2xd,CSA2XD)(int *, double *, double *, double *, int *, 
+             double *,
+             int *, int *, int *, double *, double *, double *, int *, 
+             double *, int *);
+void NGCALLF(csa2lxd,CSA2LXD)(int *, double *, double *, double *, int *, 
+             double *, int *, int *, double *, double *, double *, int *, 
+             double *, int *);
+void NGCALLF(csa3xd,CSA3XD)(int *, double *, double *, double *, int *, 
+             double *, int *, int *, int *, int *, double *, double *, 
+             double *, double *, int *, double *, int *);
+void NGCALLF(csa3lxd,CSA3LXD)(int *, double *, double *, double *, int *, 
+             double *, int *, int *, double *, double *, double *, double *,
+             int *, double *, int *);

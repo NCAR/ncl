@@ -1,18 +1,24 @@
 #
-#       $Id: yMakefile,v 1.1 1998-10-30 22:49:06 fred Exp $
+#       $Id: yMakefile,v 1.2 2001-08-20 15:21:42 haley Exp $
 #
  
 MYNAME  = csagrid
  
-SOURCES = bascmp.f   csa1s.f    csa1xs.f   csa2s.f    csa2xs.f  \
-          csa2ls.f   csa2lxs.f  csa3s.f    csa3xs.f   csa3ls.f  \
-          csa3lxs.f  splcw.f    splfe.f    splcc.f    splde.f   \
-          suprls.f   cfaerr.f   c_csauser.c
+SOURCES = bascmp.f   bascmpd.f  csa1d.f    csa1s.f    csa1xd.f  \
+          csa1xs.f   csa2d.f    csa2s.f    csa2xd.f   csa2xs.f  \
+          csa2ld.f   csa2ls.f   csa2lxd.f  csa2lxs.f  csa3d.f   \
+          csa3s.f    csa3xd.f   csa3xs.f   csa3ld.f   csa3ls.f  \
+          csa3lxd.f  csa3lxs.f  splcwd.f   splcw.f    splfe.f   \
+          splfed.f   splcc.f    splccd.f   splde.f    splded.f  \
+          suprls.f   suprld.f   cfaerr.f   c_csauser.c
  
-OBJECTS = bascmp.o   csa1s.o    csa1xs.o   csa2s.o    csa2xs.o  \
-          csa2ls.o   csa2lxs.o  csa3s.o    csa3xs.o   csa3ls.o  \
-          csa3lxs.o  splcw.o    splfe.o    splcc.o    splde.o   \
-          suprls.o   cfaerr.o   c_csauser.o
+OBJECTS = bascmp.o   bascmpd.o  csa1d.o    csa1s.o    csa1xd.o  \
+          csa1xs.o   csa2d.o    csa2s.o    csa2xd.o   csa2xs.o  \
+          csa2ld.o   csa2ls.o   csa2lxd.o  csa2lxs.o  csa3d.o   \
+          csa3s.o    csa3xd.o   csa3xs.o   csa3ld.o   csa3ls.o  \
+          csa3lxd.o  csa3lxs.o  splcw.o    splcwd.o   splfe.o   \
+          splfed.o   splcc.o    splccd.o   splde.o    splded.o  \
+          suprls.o   suprld.o   cfaerr.o   c_csauser.o
  
 PartialLibraryTarget(../libngmath.a,$(OBJECTS))
 DependTarget($(SOURCES))

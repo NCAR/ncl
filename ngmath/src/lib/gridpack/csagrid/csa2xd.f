@@ -1,4 +1,4 @@
-C                                                                      
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -18,8 +18,20 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      SUBROUTINE CSA2XS (NI,XI,UI,WTS,KNOTS,SSMTH,NDERIV,
-     +                   NXO,NYO,XO,YO,UO,NWRK,WORK,IER)
+      SUBROUTINE CSA2XD(NI,XI,UI,WTS,KNOTS,SSMTH,NDERIV,NXO,NYO,XO,YO,
+     +                  UO,NWRK,WORK,IER)
+      DOUBLE PRECISION XI
+      DOUBLE PRECISION UI
+      DOUBLE PRECISION WTS
+      DOUBLE PRECISION SSMTH
+      DOUBLE PRECISION XO
+      DOUBLE PRECISION YO
+      DOUBLE PRECISION UO
+      DOUBLE PRECISION WORK
+      DOUBLE PRECISION XMN
+      DOUBLE PRECISION XMX
+      DOUBLE PRECISION XV
+      DOUBLE PRECISION SPLDED
 C
       DIMENSION XI(2,NI),UI(NI),WTS(*),KNOTS(2),XO(NXO),YO(NYO),
      +          UO(NXO,NYO),WORK(NWRK),NDERIV(2)
@@ -29,34 +41,35 @@ C  Check on the number of knots.
 C
       NTOT = KNOTS(1)*KNOTS(2)
 C
-      DO 20 I=1,2
-        IF (KNOTS(I) .LT. 4) THEN
-          CALL CFAERR (202,' CSA2XS - must have at least four knots in e
-     +very coordinate direction',68)       
-          IER = 202
-          RETURN
-        ENDIF
+      DO 20 I = 1,2
+          IF (KNOTS(I).LT.4) THEN
+              CALL CFAERR(202,
+     +' CSA2XD - must have at least four knots in every coordinate dire
+     +ction',68)
+              IER = 202
+              RETURN
+          END IF
    20 CONTINUE
 C
 C  Check on the size of the workspace.
 C
-      IF (NWRK .LT. NTOT*(NTOT+3)) THEN
-        CALL CFAERR (203,' CSA2XS - workspace too small',28)
-        IER = 203
-        RETURN
-      ENDIF
+      IF (NWRK.LT.NTOT* (NTOT+3)) THEN
+          CALL CFAERR(203,' CSA2XD - workspace too small',28)
+          IER = 203
+          RETURN
+      END IF
 C
 C  Calculate the min and max for the knots as the minimum value of
 C  the input data and output data and the maximum of the input and
 C  output data.
 C
-      DO 30 J=1,2
-        XMN(J) = XI(J,1)
-        XMX(J) = XI(J,1)
-        DO 10 I=2,NI
-          XMN(J) = MIN(XMN(J),XI(J,I))
-          XMX(J) = MAX(XMX(J),XI(J,I))
-   10   CONTINUE
+      DO 30 J = 1,2
+          XMN(J) = XI(J,1)
+          XMX(J) = XI(J,1)
+          DO 10 I = 2,NI
+              XMN(J) = MIN(XMN(J),XI(J,I))
+              XMX(J) = MAX(XMX(J),XI(J,I))
+   10     CONTINUE
    30 CONTINUE
       XMN(1) = MIN(XMN(1),XO(1))
       XMX(1) = MAX(XMX(1),XO(NXO))
@@ -65,20 +78,20 @@ C
 C
 C  Find the coefficients.
 C
-      CALL SPLCW(2,XI,2,UI,WTS,NI,XMN,XMX,KNOTS,SSMTH,WORK,NTOT,       
-     +           WORK(NTOT+1),NWRK-NTOT,IERR)
-      IF (IERR .NE. 0) RETURN
+      CALL SPLCWD(2,XI,2,UI,WTS,NI,XMN,XMX,KNOTS,SSMTH,WORK,NTOT,
+     +            WORK(NTOT+1),NWRK-NTOT,IERR)
+      IF (IERR.NE.0) RETURN
 C
 C  Calculate the approximated values (coefficients are stored at
 C  the beginnig of WORK).
 C
-      DO 60 I=1,NXO
-        XV(1) = XO(I)
-        DO 40 J=1,NYO
-          XV(2) = YO(J)
-          UO(I,J) = SPLDE(2,XV,NDERIV,WORK,XMN,XMX,KNOTS,IER)
-          IF (IERR .NE. 0) RETURN
-   40   CONTINUE
+      DO 60 I = 1,NXO
+          XV(1) = XO(I)
+          DO 40 J = 1,NYO
+              XV(2) = YO(J)
+              UO(I,J) = SPLDED(2,XV,NDERIV,WORK,XMN,XMX,KNOTS,IER)
+              IF (IERR.NE.0) RETURN
+   40     CONTINUE
    60 CONTINUE
 C
       RETURN
