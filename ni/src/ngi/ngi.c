@@ -1,5 +1,5 @@
 /*
- *      $Id: ngi.c,v 1.8 1998-02-26 15:21:55 boote Exp $
+ *      $Id: ngi.c,v 1.9 1998-08-26 22:48:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,7 @@
 #include <ncarg/ngo/mwin.h>
 #include <ncarg/ngo/ncledit.h>
 #include <ncarg/ngo/browse.h>
+#include <ncarg/ngo/xwk.h>
 
 static NhlString resdb[] = {
 #ifndef	RESDEBUG
@@ -45,6 +46,27 @@ static NrmOptionDescRec clineopts[] = {
 	{"-noopt","*noopt",NrmoptionSepArg,NULL},
 	NULL
 };
+
+void CreateFirstXWork(
+	int nxapp,
+	int ncl
+)
+{
+	char		*name;
+	char		line[512];
+
+	/*
+	 * Create the first X window -- not popped up though
+	 */
+
+	name = NgNclGetSymName(ncl,"Xwk",True);
+	sprintf(line,
+	"%s = create \"%s\" xWorkstationClass defaultapp\nend create\n",
+		name,name);
+	(void)NgNclSubmitBlock(ncl,line);
+
+	NgAppSetSelectedWork(nxapp,name);
+}
 
 void
 main
@@ -59,7 +81,7 @@ main
 	char	**argv;
 #endif
 {
-	int		appid,nxapp,ncl,ne,browse,mn;
+	int		appid,nxapp,ncl,ne,browse,mn,xwk;
 
 	NhlInitialize();
 
@@ -99,6 +121,8 @@ main
 
 	NhlVACreate(&browse,"browse",NgbrowseClass,appid,NULL);
 	NgGOCreateWindow(browse);
+
+	CreateFirstXWork(nxapp,ncl);
 
 	/*
 	 * Now create the main window object.

@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.17 1998-08-21 01:16:05 dbrown Exp $
+!      $Id: ngi.res,v 1.18 1998-08-26 22:48:29 dbrown Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -513,7 +513,7 @@ browse.title:				Data Browser
 *printPlot*printCommandLbl.labelString:		Print Command:
 *printPlot*fileNameLbl.labelString:		File:
 *printPlot*fileTypeLbl.labelString:		File Type:
-*printPlot*overwriteTgl.labelString:		Warn before overwrite
+*printPlot*overwriteTgl.labelString:		Confirm Overwrite
 *printPlot*orientationLbl.labelString:		Orientation:
 *printPlot*portraitPb.labelString:		Portrait
 *printPlot*landscapePb.labelString:		Landscape
@@ -523,7 +523,6 @@ browse.title:				Data Browser
 *printPlot*fullViewspaceTgl.labelString:	Full Viewspace
 *printPlot*paperSizeLbl.labelString:		Paper Size:
 *printPlot*resolutionLbl.labelString:		Resolution:
-*printPlot*selectAllViewsTgl.labelString:	Print All View Objects
 *printPlot*workstationLbl.labelString: 		Workstation:
 *printPlot*plotViewsLbl.labelString:		Plot Views:
 *printPlot*selectAllTgl.labelString:		All
@@ -537,12 +536,12 @@ browse.title:				Data Browser
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 ! for development
-addfile*directory:     /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
 addfile*directory: /fs/scd/home1/ncargd/dev/sun4_SunOS_5_5_1/lib/ncarg/data/cdf
-addfile*directory:     /traver/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
-addfile*directory:     /usr/local/ncarg/lib/ncarg/data/cdf/
 addfile*directory:     /traver/home/dbrown/src/data
 addfile*directory:     /fs/scd/home1/dbrown/src/data
+addfile*directory:     /usr/local/ncarg/lib/ncarg/data/cdf/
+addfile*directory:     /traver/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
+addfile*directory:     /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
 
 !htmlview: display is sgi,linux
 !*html*fontSizeList: 12,8,22,18,14,12,10,8
