@@ -1,5 +1,5 @@
 /*
- *      $Id: funcgridP.h,v 1.1 1999-12-07 19:08:42 dbrown Exp $
+ *      $Id: funcgridP.h,v 1.2 2000-01-20 03:38:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -63,8 +63,6 @@ typedef struct _NgFuncGridRec
 	NgFuncTree		*func_tree;
 	Widget			restore_tgl;
 	Widget			enable_tgl;
-	NgVarDataSetState	*orig_states;
-	NgVarDataSetState	*last_states;
 } NgFuncGridRec;
 
 

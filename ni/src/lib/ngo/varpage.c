@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.c,v 1.18 1999-11-03 20:29:32 dbrown Exp $
+ *      $Id: varpage.c,v 1.19 2000-01-20 03:38:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,26 @@
 #include <Xm/PushBG.h>
 #include <Xm/LabelG.h>
 
+static NclApiDataList *GetInfo
+(
+	NrmQuark	qfile,
+	NrmQuark	qvar,
+	NrmQuark	qcoord
+	)
+{
+	NclApiDataList *dl = NULL;
+
+	if (qfile && qvar && qcoord)
+		dl = NclGetFileVarCoordInfo(qfile,qvar,qcoord);
+	else if (qfile && qvar)
+		dl = NclGetFileVarInfo(qfile,qvar);
+	else if (qvar && qcoord)
+		dl = NclGetVarCoordInfo(qvar,qcoord);
+	else if (qvar)
+		dl = NclGetVarInfo(qvar);
+
+	return dl;
+}
 
 static void FreeDataLinks(
 	XmLArray datalinks
@@ -250,7 +270,7 @@ static void VarPageDataUpdate
 	brVarPageRec	*rec = (brVarPageRec *)pdp->type_rec;
         int ndims = pdp->dl->u.var->n_dims;
 
-	if (! NgSetVarData(pdp->dl,rec->vdata,page->qfile,
+	if (! NgSetVarData(NULL,rec->vdata,page->qfile,
 			   pdp->dl->u.var->name,NrmNULLQUARK,
 			   ndims,rec->start,rec->finish,rec->stride,
 			   _NgSHAPED_VAR))
@@ -412,11 +432,13 @@ UpdateShaper
 {
 	brPageData	*pdp = page->pdata;
 	brVarPageRec *rec = (brVarPageRec *) pdp->type_rec;
+	NclApiDataList *dl;
 
         if (! rec->shaper) {
+		dl = GetInfo(page->qfile,page->qvar,NrmNULLQUARK);
 		rec->shaper = NgCreateShaper
 			(page->go,pdp->form,page->qfile,
-			 rec->start,rec->finish,rec->stride,pdp->dl->u.var);
+			 rec->start,rec->finish,rec->stride,dl);
 
                 rec->shaper->geo_notify = AdjustVarPageGeometry;
                 rec->shaper->shape_notify = VarPageDataUpdate;
@@ -430,7 +452,7 @@ UpdateShaper
                               NULL);
                 
                 NgUpdateShaper(rec->shaper,page->qfile,
-			 rec->start,rec->finish,rec->stride,pdp->dl->u.var);
+			 rec->start,rec->finish,rec->stride,NULL);
 		rec->shaper->pdata = (NhlPointer) page;
                 rec->shaper_managed = True;
                 rec->new_shape = False;
@@ -440,9 +462,10 @@ UpdateShaper
 		_NgGOWidgetTranslations(page->go,rec->shaper->frame);
         }
         else if (rec->new_shape) {
+		dl = GetInfo(page->qfile,page->qvar,NrmNULLQUARK);
                 rec->shaper->pdata = NULL;/* prevent pointer function calls */
                 NgUpdateShaper(rec->shaper,page->qfile,
-			 rec->start,rec->finish,rec->stride,pdp->dl->u.var);
+			 rec->start,rec->finish,rec->stride,dl);
                 rec->shaper->pdata = (NhlPointer) page;
                 rec->new_shape = False;
                 if (! rec->shaper_managed) {
@@ -705,7 +728,7 @@ NhlBoolean InitializeDimInfo
 			vinfo->dim_info[vinfo->n_dims-2].dim_size - 1;
         }
 
-	return NgSetVarData(dl,rec->vdata,page->qfile,dl->u.var->name,
+	return NgSetVarData(NULL,rec->vdata,page->qfile,dl->u.var->name,
 			    NrmNULLQUARK,vinfo->n_dims,
 			    rec->start,rec->finish,rec->stride,
 			    _NgDEFAULT_SHAPE);
@@ -943,10 +966,11 @@ _NgGetVarPage
                          NULL);
         }
         if (copy_rec && copy_rec->shaper_managed) {
+		NclApiDataList *dl = GetInfo
+			(page->qfile,page->qvar,NrmNULLQUARK);
 		rec->shaper = NgDupShaper
 			(page->go,pdp->form,rec->shaper,copy_rec->shaper,
-			 page->qfile,rec->start,rec->finish,rec->stride,
-			 pdp->dl->u.var);
+			 page->qfile,rec->start,rec->finish,rec->stride,dl);
 		if (! rec->shaper)
 			return NULL;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: datavargrid.c,v 1.8 1999-12-07 19:08:39 dbrown Exp $
+ *      $Id: datavargrid.c,v 1.9 2000-01-20 03:38:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,7 @@
 #include <Xm/Protocols.h>
 #include <Xm/Text.h>
 #include <Xm/PushBG.h>
+#include <Xm/MessageB.h>
 #include  <ncarg/ngo/Grid.h>
 #include <float.h>
 
@@ -59,6 +60,28 @@ static int  CWidth;
 static XtActionsRec datavargridactions[] = {
 	{ "PopupShaperAction", PopupShaperAction }
 };
+
+	    
+static NclApiDataList *GetInfo
+(
+	NrmQuark	qfile,
+	NrmQuark	qvar,
+	NrmQuark	qcoord
+	)
+{
+	NclApiDataList *dl = NULL;
+
+	if (qfile && qvar && qcoord)
+		dl = NclGetFileVarCoordInfo(qfile,qvar,qcoord);
+	else if (qfile && qvar)
+		dl = NclGetFileVarInfo(qfile,qvar);
+	else if (qvar && qcoord)
+		dl = NclGetVarCoordInfo(qvar,qcoord);
+	else if (qvar)
+		dl = NclGetVarInfo(qvar);
+
+	return dl;
+}
 
 /*
 *************************************************************************
@@ -101,10 +124,16 @@ static void AdjustShapeToolGeometry
 	}
 }
 
+/*
+ * This should only be used when the NclApiVarInfoRec information is used
+ * immediately. It should not be saved away, because it may get freed at
+ * any time.
+ */
+
 NclApiVarInfoRec 
 *GetDataVarInfo
 (
-	NgVarData vdata
+	NgVarData	vdata
 )
 {
 	NclApiVarInfoRec *vinfo;
@@ -113,10 +142,16 @@ NclApiVarInfoRec
 		vinfo = vdata->dl->u.var;
 	}
 	else {
-		if (vdata->qfile > NrmNULLQUARK)
-			vdata->dl = 
-				NclGetFileVarInfo(vdata->qfile,vdata->qvar);
-		else 	
+		if (vdata->qfile && vdata->qvar && vdata->qcoord)
+			vdata->dl = NclGetFileVarCoordInfo
+				(vdata->qfile,vdata->qvar,vdata->qcoord);
+		else if (vdata->qfile && vdata->qvar)
+			vdata->dl = NclGetFileVarInfo
+				(vdata->qfile,vdata->qvar);
+		else if (vdata->qvar && vdata->qcoord)
+			vdata->dl = NclGetVarCoordInfo
+				(vdata->qvar,vdata->qcoord);
+		else if (vdata->qvar)
 			vdata->dl = NclGetVarInfo(vdata->qvar);
 		if (vdata->dl)
 			vinfo = vdata->dl->u.var;
@@ -126,6 +161,48 @@ NclApiVarInfoRec
 		return NULL;
 	}
 	return vinfo;
+}
+
+static NhlBoolean
+SetShape
+(
+	NclApiVarInfoRec *vinfo,
+	NgVarData	model_vdata,
+	long		*start_in,
+	long		*finish_in,
+	long		*stride_in,
+	int		ndims,
+	long		*start,
+	long		*finish,
+	long		*stride
+)
+{
+	NclApiVarInfoRec *mvinfo;
+	int i,j;
+
+	mvinfo = GetDataVarInfo(model_vdata);
+	if (! (vinfo && mvinfo))
+		return False;
+
+	for (i = 0; i < vinfo->n_dims; i++) {
+		NhlBoolean matched = False;
+		for (j = 0; j < mvinfo->n_dims; j++) {
+			if (vinfo->dim_info[i].dim_quark == 
+			    mvinfo->dim_info[j].dim_quark) {
+				start[i] = model_vdata->start[j];
+				finish[i] = model_vdata->finish[j];
+				stride[i] = model_vdata->stride[j];
+				matched = True;
+				break;
+			}
+		}
+		if (! matched) {
+			start[i] = start_in ? start_in[i] : 0;
+			finish[i] = finish_in ? finish_in[i] : 0;
+			stride[i] = stride_in ? stride_in[i] : 1;
+		}
+	}
+	return True;
 }
 
 static void UpdateDataVarShape
@@ -138,6 +215,7 @@ static void UpdateDataVarShape
 	NgVarData vdata = pd->vdata;
 	NclApiVarInfoRec *vinfo = NULL;
 	int		page_id;
+	long nstart[32], nfinish[32], nstride[32];
 
 
 	vinfo = GetDataVarInfo(vdata);
@@ -150,18 +228,21 @@ static void UpdateDataVarShape
 	if (pd->conform_group > -1) {
 		int i;
 		for (i = 0; i < dvp->public.plotdata_count; i++) {
+			NclApiVarInfoRec *vinfo;
 			NgPlotData opdata = &dvp->public.plotdata[i];
+			NgVarData ovdata = opdata->vdata;
 			if (opdata->conform_group != pd->conform_group)
 				continue;
-			if (! opdata->vdata->qvar)
+			if (! ovdata->qvar)
 				continue;
-			NgSetVarData(NULL,opdata->vdata,
-				     opdata->vdata->qfile,
-				     opdata->vdata->qvar,
-				     opdata->vdata->qcoord,
-				     opdata->vdata->ndims,
-				     vdata->start,vdata->finish,
-				     vdata->stride,vdata->set_state);
+			vinfo = GetDataVarInfo(ovdata);
+			SetShape(vinfo,vdata,ovdata->start,ovdata->finish,
+				 ovdata->stride,
+				 vinfo->n_dims,nstart,nfinish,nstride);
+			NgSetVarData(NULL,ovdata,
+				     ovdata->qfile,ovdata->qvar,ovdata->qcoord,
+				     vinfo->n_dims,nstart,nfinish,nstride,
+				     _NgSHAPED_VAR);
 		}
 	}
 
@@ -216,6 +297,7 @@ static void CreateShapeTool
         NgDataVarGridRec *dvp = (NgDataVarGridRec *)data;
 	NgPlotData pd = &dvp->public.plotdata[dvp->data_ix];
 	NgVarData vdata = pd->vdata;
+	NclApiDataList *dl;	
 	NclApiVarInfoRec *vinfo = NULL;
 	Widget apply;
 	char 		buf[256];
@@ -223,14 +305,15 @@ static void CreateShapeTool
 #if DEBUG_DATA_VAR_GRID      
 	fprintf(stderr,"in create shape tool\n");
 #endif        
-
-	vinfo = GetDataVarInfo(vdata);
+	
+	dl = GetInfo(vdata->qfile,vdata->qvar,vdata->qcoord);
+	vinfo = dl->u.var;
 	if (! vinfo)
 		return;
 
 	dvp->shaper = NgCreateShaper(go,go->go.manager,vdata->qfile,
 				     vdata->start,vdata->finish,vdata->stride,
-				     vinfo);
+				     dl);
 	dvp->shaper->shape_notify = UpdateDataVarShape;
 	dvp->shaper->geo_notify = AdjustShapeToolGeometry;
 	dvp->shaper->pdata = NULL;
@@ -258,8 +341,7 @@ static void CreateShapeTool
 		      NULL);
 
 	NgUpdateShaper(dvp->shaper,vdata->qfile,
-		       vdata->start,vdata->finish,vdata->stride,
-		       vdata->dl->u.var);
+		       vdata->start,vdata->finish,vdata->stride,NULL);
 	dvp->shaper->pdata = dvp;
 
 	_NgGOWidgetTranslations(go,dvp->shaper->frame);
@@ -315,7 +397,7 @@ static void PopupShaperAction
 			    NULL);
 	}
 	else {
-		NclApiVarInfoRec *vinfo = NULL;
+		NclApiDataList	*dl;
 
 		shape_go = (NgGO)_NhlGetLayer(dvp->shape_tool_id);
 		if (! shape_go) {
@@ -326,12 +408,9 @@ static void PopupShaperAction
 		XtVaSetValues(shape_go->go.shell,
 			      XmNtitle,buf,
 			      NULL);
-		vinfo = GetDataVarInfo(vdata);
-		if (! vinfo)
-			return;
+		dl = GetInfo(vdata->qfile,vdata->qvar,vdata->qcoord);
 		NgUpdateShaper(dvp->shaper,vdata->qfile,
-			       vdata->start,vdata->finish,vdata->stride,
-			       vinfo);
+			       vdata->start,vdata->finish,vdata->stride,dl);
 		dvp->shaper->pdata = dvp;
 	}
 	NgGOPopup(dvp->shape_tool_id);
@@ -496,6 +575,12 @@ Column1String
 	return xmstring;
 }
 
+/*
+ * Conformance requires that dimensions with more than one element required
+ * by the plot data have the same name and the same number of elements. The
+ * coordinate values (if used) should also match.
+ */
+
 static NhlBoolean ConformingVar
 (
 	NgDataVarGridRec	*dvp,
@@ -527,19 +612,27 @@ static NhlBoolean ConformingVar
 	if (! tvinfo)
 		return False;
 
-	if (tvinfo->n_dims != vinfo->n_dims) {
+	if (vinfo->n_dims < vdata->rank) {
 		return False;
 	}
-
-	for (i = 0; i < vinfo->n_dims; i++) {
-		if (tvinfo->dim_info[i].dim_quark != 
-		    vinfo->dim_info[i].dim_quark ||
-		    tvinfo->dim_info[i].dim_size != 
-		    vinfo->dim_info[i].dim_size) {
-			return False;
+	for (i = 0; i < vdata->ndims; i++) {
+		if ((vdata->finish[i]-vdata->start[i]) / vdata->stride[i] >0) {
+			int j;
+			NhlBoolean matched = False;
+			for (j = 0; j <vinfo->n_dims; j++) {
+				if (vinfo->dim_info[j].dim_quark == 
+				    tvinfo->dim_info[i].dim_quark) {
+					if (vinfo->dim_info[j].dim_size == 
+						tvinfo->dim_info[i].dim_size) {
+						matched = True;
+						break;
+					}
+				}
+			}
+			if (! matched)
+				return False;
 		}
 	}
-
 	return True;
 }
 
@@ -911,27 +1004,6 @@ GetFileSymbol
 	}
 	return qsym;
 }
-	    
-NclApiDataList *GetInfo
-(
-	NrmQuark	qfile,
-	NrmQuark	qvar,
-	NrmQuark	qcoord
-	)
-{
-	NclApiDataList *dl = NULL;
-
-	if (qfile && qvar && qcoord)
-		dl = NclGetFileVarCoordInfo(qfile,qvar,qcoord);
-	else if (qfile && qvar)
-		dl = NclGetFileVarInfo(qfile,qvar);
-	else if (qvar && qcoord)
-		dl = NclGetVarCoordInfo(qvar,qcoord);
-	else if (qvar)
-		dl = NclGetVarInfo(qvar);
-
-	return dl;
-}
 
 static NhlBoolean 
 GetVar
@@ -1005,6 +1077,116 @@ EffectiveDims(
 	}
 	return dim_count;
 }
+
+static void NonConformalOKCB
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+	int *status = (int *)udata;
+	*status = 1;
+	return;
+}
+
+static void NonConformalCancelCB
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+	int *status = (int *)udata;
+	*status = -1;
+	return;
+}
+
+static NhlBoolean
+AcceptNonConformalData(
+	NgDataVarGridRec	*dvp,
+	NrmQuark		qfile,
+	NrmQuark		qvar,
+	NrmQuark		qcoord
+)
+{
+	char    buf[512] = "";
+	Arg	args[50];
+	int	nargs;
+        XmString xmname,xmtext;
+        Widget  ok,help,cancel;
+	int status = 0;
+	XtAppContext context;
+	Widget non_conform,shell;
+	Atom WM_DELETE_WINDOW;
+
+	if (qfile && qvar && qcoord)
+		sprintf(buf,"%s->%s&%s is Non-Conforming",
+			NrmQuarkToString(qfile),
+			NrmQuarkToString(qvar),
+			NrmQuarkToString(qcoord));
+	else if (qfile && qvar)
+		sprintf(buf,"%s->%s is Non-Conforming",
+			NrmQuarkToString(qfile),
+			NrmQuarkToString(qvar));
+	else 
+		sprintf(buf,"%s is Non-Conforming",
+			NrmQuarkToString(qvar));
+
+        xmname = NgXAppCreateXmString(dvp->go->go.appmgr,buf);
+	xmtext = NgXAppCreateXmString
+		(dvp->go->go.appmgr,
+		 "Data does not conform in all required dimensions.\nRemaining data in the conformance group will be invalidated if you continue.");
+	shell = XmLShellOfWidget(dvp->parent);
+
+        nargs = 0;
+	XtSetArg(args[nargs],XmNdialogTitle,xmname);nargs++;
+	XtSetArg(args[nargs],XmNuserData,dvp);nargs++;
+	XtSetArg(args[nargs],XmNmessageString,xmtext);nargs++;
+	XtSetArg(args[nargs],
+		 XmNdialogStyle,XmDIALOG_APPLICATION_MODAL);nargs++;
+
+	non_conform = XmCreateMessageDialog
+		(XtParent(dvp->parent),"NonConform",args,nargs);
+
+	WM_DELETE_WINDOW = XmInternAtom(XtDisplay(dvp->parent),
+					"WM_DELETE_WINDOW",False);
+	XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, NonConformalCancelCB,
+		(caddr_t)&status);
+
+	NgXAppFreeXmString(dvp->go->go.appmgr,xmname);
+	NgXAppFreeXmString(dvp->go->go.appmgr,xmtext);
+
+	help = XmMessageBoxGetChild(non_conform,XmDIALOG_HELP_BUTTON);
+	XtUnmanageChild(help);
+
+	ok = XmMessageBoxGetChild(non_conform,XmDIALOG_OK_BUTTON);
+	sprintf(buf,"Continue");
+        xmname = NgXAppCreateXmString(dvp->go->go.appmgr,buf);
+	XtVaSetValues(ok,
+		      XmNlabelString,xmname,
+		      NULL);
+	NgXAppFreeXmString(dvp->go->go.appmgr,xmname);
+		    
+
+	XtAddCallback(non_conform,
+		      XmNokCallback,NonConformalOKCB,&status);
+	XtAddCallback(non_conform,
+		      XmNcancelCallback,NonConformalCancelCB,&status);
+
+        XtManageChild(non_conform);
+        
+	context = XtWidgetToApplicationContext(dvp->parent);
+	while (! status || XtAppPending(context))
+		XtAppProcessEvent(context, XtIMAll);
+	XtDestroyWidget(non_conform);
+
+	if (status > 0)
+		return True;
+
+	return False;
+}
+
 static NhlBoolean 
 QualifyAndInsertVariable
 (
@@ -1019,6 +1201,7 @@ QualifyAndInsertVariable
 		qvar = NrmNULLQUARK,qcoord = NrmNULLQUARK;
 	int ndims;
 	long *start, *finish, *stride;
+	long nstart[32], nfinish[32], nstride[32];
 	NclApiDataList *dl = NULL;
 	NgVarData vdata;
 	NhlBoolean explicit;
@@ -1070,9 +1253,21 @@ QualifyAndInsertVariable
 		_NgSHAPED_VAR : _NgDEFAULT_SHAPE;
 
 	if (! ConformingVar(dvp,pdata,dl->u.var)) {
-		sprintf(buf,NONCONFORMING_VAR);
-		message = buf;
-		goto error_ret;
+		if (! AcceptNonConformalData(dvp,qfile,qvar,qcoord))
+			goto cancel_ret;
+		else {
+			for (i = 0; i < dvp->public.plotdata_count; i++) {
+				opdata = &dvp->public.plotdata[i];
+				if (opdata->conform_group != 
+				    pdata->conform_group)
+					continue;
+				if (! opdata->vdata->qvar)
+					continue;
+				NgSetVarData(NULL,opdata->vdata,NrmNULLQUARK,
+					     NrmNULLQUARK,NrmNULLQUARK,
+					     0,NULL,NULL,NULL,_NgVAR_UNSET);
+			}
+		}
 	}
 	else if (pdata->ndims > dl->u.var->n_dims) {
 		sprintf(buf,INSUFFICIENT_DIMS,pdata->ndims);
@@ -1099,6 +1294,7 @@ QualifyAndInsertVariable
 		}
 		if (pdata->conform_group > -1) {
 			for (i = 0; i < dvp->public.plotdata_count; i++) {
+				NclApiVarInfoRec *vinfo;
 				opdata = &dvp->public.plotdata[i];
 				if (opdata->conform_group != 
 				    pdata->conform_group)
@@ -1106,11 +1302,15 @@ QualifyAndInsertVariable
 
 				if (! opdata->vdata->qvar)
 					continue;
+				vinfo = GetDataVarInfo(opdata->vdata);
+				SetShape(vinfo,vdata,start,finish,stride,
+					 vinfo->n_dims,nstart,nfinish,nstride);
 				NgSetVarData(NULL,opdata->vdata,
 					     opdata->vdata->qfile,
 					     opdata->vdata->qvar,
 					     opdata->vdata->qcoord,
-					     ndims,start,finish,stride,
+					     vinfo->n_dims,
+					     nstart,nfinish,nstride,
 					     var_state);
 			}
 		}
@@ -1139,10 +1339,11 @@ QualifyAndInsertVariable
 			break;
 		}
 		ndims = dl->u.var->n_dims;
+		if (! SetShape(dl->u.var,opdata->vdata,
+			       NULL,NULL,NULL,ndims,nstart,nfinish,nstride))
+			goto error_ret;
 		if (! NgSetVarData(dl,vdata,qfile,qvar,qcoord,ndims,
-				   opdata->vdata->start,
-				   opdata->vdata->finish,
-				   opdata->vdata->stride,var_state)) {
+				   nstart,nfinish,nstride,var_state)) {
 			goto error_ret;
 		}
 		break;
@@ -1155,12 +1356,12 @@ QualifyAndInsertVariable
 	if (stride)
 		NhlFree(stride);
 	NgFreeVarData(last_vdata);
-	NclFreeDataList(dl);
 	return True;
 
  error_ret:
 	ErrorMessage(dvp,message);
 
+ cancel_ret:
         if (dl)
                 NclFreeDataList(dl);
 	if (start)
@@ -1193,7 +1394,6 @@ EditCB
 #if DEBUG_DATA_VAR_GRID
 	printf("entered DataVarGrid EditCB\n");
 #endif
-
 
 	colptr = XmLGridGetColumn(pub->grid,XmCONTENT,cb->column);
 	rowptr = XmLGridGetRow(pub->grid,XmCONTENT,cb->row);
@@ -1308,24 +1508,25 @@ EditCB
 			NgXAppFreeXmString(dvp->go->go.appmgr,xmstr);
 		}
 		if (dvp->shaper && dvp->data_ix > -1) {
-			NclApiVarInfoRec *vinfo;
+			NclApiDataList *dl;
+
 			NgVarData vdata = 
 				dvp->public.plotdata[dvp->data_ix].vdata;
 			
 			if (! (vdata && vdata->qvar))
 				goto ret;
-			vinfo = GetDataVarInfo(vdata);
-			if (! vinfo)
-				goto ret;
+			dl = GetInfo(vdata->qfile,vdata->qvar,vdata->qcoord);
 			/*
 			 * this is a kludgy trick to force an update
 			 */
 			dvp->shaper->vinfo = NULL;
+			dvp->shaper->start = NULL;
+			dvp->shaper->finish = NULL;
+			dvp->shaper->stride = NULL;
 
 			NgUpdateShaper(dvp->shaper,vdata->qfile,
 				       vdata->start,
-				       vdata->finish,vdata->stride,
-				       vinfo);
+				       vdata->finish,vdata->stride,dl);
 		}
 	}
  ret:
@@ -1738,6 +1939,7 @@ NgDataVarGrid *NgCreateDataVarGrid
 	dvp->edit_save_string = NULL;
 	dvp->text_dropped = False;
 	dvp->shape_tool_id  = NhlNULLOBJID;
+	dvp->shaper = NULL;
 	dvp->data_ix = -1;
       
         data_var_grid->grid = XtVaCreateManagedWidget

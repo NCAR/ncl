@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.c,v 1.13 2000-01-10 21:08:12 dbrown Exp $
+ *      $Id: dataprofile.c,v 1.14 2000-01-20 03:38:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -846,6 +846,11 @@ NhlBoolean NgCopyVarData
 	to_var_data->rank = from_var_data->rank;
 	to_var_data->data_ix = from_var_data->data_ix;
 	to_var_data->set_state = from_var_data->set_state;
+	if (to_var_data->dl) {
+		NclFreeDataList(to_var_data->dl);
+		to_var_data->dl = NULL;
+		/* don't copy the dlist; it will be retrieved again */
+	}
 
 	if (to_var_data->qexpr_var != from_var_data->qexpr_var) {
 		if (to_var_data->qexpr_var != NrmNULLQUARK)
@@ -858,32 +863,25 @@ NhlBoolean NgCopyVarData
 		
 	}
 
-#if 0
-	if (from_var_data->set_state == _NgEXPRESSION ||
-	    from_var_data->set_state == _NgBOGUS_EXPRESSION) {
-#endif
-		if (from_var_data->expr_val) {
-			if (to_var_data->expr_val) {
-				if (strcmp(to_var_data->expr_val,
-					   from_var_data->expr_val)) {
-					NhlFree(to_var_data->expr_val);
-				}
+	if (from_var_data->expr_val) {
+		if (to_var_data->expr_val) {
+			if (strcmp(to_var_data->expr_val,
+				   from_var_data->expr_val)) {
+				NhlFree(to_var_data->expr_val);
 			}
-			to_var_data->expr_val = 
-				NhlMalloc(strlen(from_var_data->expr_val)+1);
-			if (! to_var_data->expr_val) {
-				NHLPERROR((NhlFATAL,ENOMEM,NULL));
-				return False;
-			}
-			strcpy(to_var_data->expr_val,from_var_data->expr_val);
 		}
-		else if (to_var_data->expr_val) {
-			NhlFree(to_var_data->expr_val);
-			to_var_data->expr_val = NULL;
+		to_var_data->expr_val = 
+			NhlMalloc(strlen(from_var_data->expr_val)+1);
+		if (! to_var_data->expr_val) {
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return False;
 		}
-#if 0
+		strcpy(to_var_data->expr_val,from_var_data->expr_val);
 	}
-#endif
+	else if (to_var_data->expr_val) {
+		NhlFree(to_var_data->expr_val);
+		to_var_data->expr_val = NULL;
+	}
 
 	if (from_var_data->ndims <= 0) {
 		return True;
@@ -954,6 +952,10 @@ extern NhlBoolean NgSetUnknownDataItem
 	NhlGetValues(ditem->hlu_id,grlist);
 
 	vdata->set_state = _NgUNKNOWN_DATA;
+	if (vdata->dl) {
+		NclFreeDataList(vdata->dl);
+		vdata->dl = NULL;
+	}
 	if (vdata->expr_val) {
 		NhlFree(vdata->expr_val);
 		vdata->expr_val = NULL;
@@ -1142,6 +1144,10 @@ NhlBoolean NgSetExpressionVarData
 		strcpy(vdata->expr_val,expr_val);
 	}
 	vdata->go = go;
+	if (vdata->dl) {
+                NclFreeDataList(vdata->dl);
+		vdata->dl = NULL;
+	}
 
 	switch (eval_action) {
 	case _NgNOEVAL:
@@ -1210,7 +1216,7 @@ NhlBoolean NgSetExpressionVarData
 		vdata->type = NORMAL;
 	}
         if (dl)
-                NclFreeDataList(dl);
+                vdata->dl = dl;
         
 	return True;
 }
@@ -1234,15 +1240,12 @@ NhlBoolean NgSetVarData
 	NgVarDataSetState	set_state
 )
 {
-	NclApiVarInfoRec	*vinfo;
-	NhlBoolean		allocated = False;
+	NclApiVarInfoRec	*vinfo = NULL;
 	int 			i,size,rank;
 /*
- * dl, the NclApiDataList may optionally be supplied if the caller has
- * access to it. That will save the allocation and freeing of an 
- * NclApiDataList in this routine. Of course, if supplied it needs to
- * match the symbols. This routine does not check for that condition.
- *
+ * dl, the NclApiDataList may optionally be supplied if the caller wants to.
+ * Note that the VarData appropriates it, so the the caller should not then
+ * free it or save it for later use.
  *
  * If start, finish, and stride are not supplied this routine defaults to
  * a MIN(set_dim_count,vinfo->n_dims) slice along the fastest varying 
@@ -1277,6 +1280,10 @@ NhlBoolean NgSetVarData
 	}
 		
 	var_data->set_state = set_state;
+	if (var_data->dl != dl && var_data->dl) {
+		NclFreeDataList(var_data->dl);
+		var_data->dl = NULL;
+	}
 	if (qvar == NrmNULLQUARK) {
 		if (var_data->qvar)
 			var_data->cflags = _NgALL_CHANGE;
@@ -1285,7 +1292,16 @@ NhlBoolean NgSetVarData
 		var_data->rank = var_data->ndims = 0;
 		return True;
 	}
-	if (! dl) {
+	if (dl) {
+		vinfo = dl->u.var;
+		if ((qcoord && vinfo->name != qcoord) ||
+		    vinfo->name != qvar) {
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+				   "Internal inconsistency - wrong datalist"));
+			vinfo = NULL;
+		}
+	}
+	if (! vinfo) {
 		if (qfile && qcoord)
 			dl = NclGetFileVarCoordInfo(qfile,qvar,qcoord);
 		else if (qfile)
@@ -1298,10 +1314,10 @@ NhlBoolean NgSetVarData
 			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			return False;
 		}
-		allocated = True;
+		vinfo = dl->u.var;
 	}
+	var_data->dl = dl;
 
-	vinfo = dl->u.var;
 	size = vinfo->n_dims * sizeof(long);
 	if (qfile != var_data->qfile || qvar != var_data->qvar ||
 		qcoord != var_data->qcoord)
@@ -1355,8 +1371,6 @@ NhlBoolean NgSetVarData
 				    MAX(start[ix],finish[ix]) - 1) {
 					NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 				        "%s: invalid input","NgSetVarData"));
-					if (allocated)
-						NclFreeDataList(dl);
 					return False;
 				}
 				var_data->start[i] = start[ix];
@@ -1383,8 +1397,6 @@ NhlBoolean NgSetVarData
 		}
 
 		if (! var_data->cflags) {
-			if (allocated)
-				NclFreeDataList(dl);
 			return True;
 		}
 	}
@@ -1409,9 +1421,6 @@ NhlBoolean NgSetVarData
 		var_data->rank = rank;
 		var_data->cflags |= _NgRANK_CHANGE;
 	}
-
-	if (allocated)
-		NclFreeDataList(dl);
 	return True;
 }
 

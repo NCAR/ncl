@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.17 2000-01-12 23:38:37 dbrown Exp $
+ *      $Id: plotapp.c,v 1.18 2000-01-20 03:38:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4248,6 +4248,7 @@ static void SubstituteVarSyms
 		ResFunc rfuncs = NULL;
 		ResFunc	rfunc;
 		int single_term = False;
+		NhlBoolean	init = False;
 
 /*
  * Eventually we will try to figure out whether user expressions contain
@@ -4263,6 +4264,8 @@ static void SubstituteVarSyms
 		    ditem->vdata->set_state == _NgUSER_DISABLED)
 			continue;
 
+		if (ditem->vdata->set_state == _NgVAR_UNSET)
+			init = True;
 		if (ditem->vdata->set_state == _NgUSER_EXPRESSION) {
 			int bogus, bogus_pos;
 			NhlString newval = NULL;
@@ -4293,6 +4296,11 @@ static void SubstituteVarSyms
 						(papp->go_id,ditem->vdata,
 						 newval,_NgNOEVAL,True);
 					NhlFree(newval);
+					if (init) {
+						rinfo->init_state = 
+							rinfo->last_state = 
+						      ditem->vdata->set_state;
+					}
 					continue;
 				}
 			}
@@ -4330,6 +4338,11 @@ static void SubstituteVarSyms
 						 ditem->vdata,newval,
 						 _NgNOEVAL,False);
 					NhlFree(newval);
+					if (init) {
+						rinfo->init_state = 
+							rinfo->last_state = 
+						     ditem->vdata->set_state;
+					}
 					continue;
 				}
 			}
@@ -4367,6 +4380,10 @@ static void SubstituteVarSyms
 		}
 		else {
 			rinfo->valtype = _NgEXPR;
+		}
+		if (init) {
+			rinfo->init_state = rinfo->last_state = 
+				ditem->vdata->set_state;
 		}
 	}
 	if (QFiles)
@@ -5099,6 +5116,22 @@ extern NhlErrorTypes NgPlotAppBackSubstituteValue
 
 	if (! (new_symref_count && new_value)) {
 		FreeSymRefInfo(&symref_info);
+		if (param_ix < 0) {
+			if (rinfo->edata) {
+				FreeEditInfo(rinfo->edata);
+				rinfo->edata = NULL;
+				rinfo->free_edata = NULL;
+			}
+		}
+		else {
+			NgArgInfo arg = &rinfo->args[param_ix];
+		
+			if (arg->edata) {
+				FreeEditInfo(arg->edata);
+				arg->edata = NULL;
+				arg->free_edata = NULL;
+			}
+		}
 		return NhlNOERROR;
 	}
 

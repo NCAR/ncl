@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.20 1999-12-24 01:29:26 dbrown Exp $
+ *      $Id: shaper.c,v 1.21 2000-01-20 03:38:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -886,7 +886,9 @@ void NgDestroyShaper
         if (shaper->coords_synchro_step_set) {
                 NhlFree(shaper->coords_synchro_step_set);
         }
-        
+	if (si->dl)
+		NclFreeDataList(si->dl);
+
         NhlFree(shaper);
 
         return;
@@ -1020,6 +1022,7 @@ static NgShaperRec *NewShaper
 	si = &shaper->si;
 
 	si->qfile = NrmNULLQUARK;
+ 	si->dl = NULL;
 	si->vinfo = NULL;
 	si->start = NULL;
 	si->finish = NULL;
@@ -1166,7 +1169,7 @@ NgShaper *NgCreateShaper
 	long		*start,
 	long		*finish,
 	long		*stride,
-	NclApiVarInfoRec  *vinfo
+	NclApiDataList	*dl         /* this belongs to the shaper */
 	)
 {
 	NgShaperRec *shaper = NewShaper(go,parent);
@@ -1178,7 +1181,8 @@ NgShaper *NgCreateShaper
 	si = &shaper->si;
 
 	si->qfile = qfile;
-	si->vinfo = vinfo;
+	si->dl = dl;
+	si->vinfo = dl->u.var;
 	si->start = start;
 	si->finish = finish;
 	si->stride = stride;
@@ -1192,30 +1196,72 @@ NhlErrorTypes NgUpdateShaper(
 	long		*start,
 	long		*finish,
 	long		*stride,
-	NclApiVarInfoRec  *vinfo
+	NclApiDataList	*dl        /* this belongs to the shaper */
 )
 {
 	NgShaperRec *shaper = (NgShaperRec *)si;
+	NclApiVarInfoRec *vinfo;
 	NhlBoolean new = False;
-	
+
+#if 0	
+	if (! si->dl) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"No data list supplied");
+		return NhlFATAL;
+	}
+	vinfo = si->dl->u.var;
+#endif
+	if (dl)
+		vinfo = dl->u.var;
+	else if (si->dl)
+		vinfo = si->dl->u.var;
+	else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"No data list supplied");
+		return NhlFATAL;
+	}
+		
 	if (qfile != si->qfile)
 		new = True;
-	if (! si->vinfo || memcmp(vinfo,si->vinfo,sizeof(NclApiVarInfoRec)))
-		new = True;
+	if (vinfo != si->vinfo) {
+		if (! si->vinfo) {
+			new = True;
+		}
+		else if (vinfo->name != si->vinfo->name) {
+			new = True;
+		}
+		else if (vinfo->type != si->vinfo->type ||
+			 vinfo->n_dims != si->vinfo->n_dims ||
+			 vinfo->n_atts != si->vinfo->n_atts) {
+			new = True;
+		}
+		else if (vinfo->type == FILEVAR) {
+			if (memcmp(vinfo->coordnames,si->vinfo->coordnames,
+				   vinfo->n_dims * sizeof(NclQuark)))
+				new = True;
+			else if (memcmp(vinfo->attnames,si->vinfo->attnames,
+				   vinfo->n_atts * sizeof(NclQuark)))
+				new = True;
+		}
+	}
 	if (! (si->start && si->finish && si->stride))
 		new = True;
-	if (memcmp(si->start,start,vinfo->n_dims * sizeof(long)))
-		new = True;
-	if (memcmp(si->finish,finish,vinfo->n_dims * sizeof(long)))
-		new = True;
-	if (memcmp(si->stride,stride,vinfo->n_dims * sizeof(long)))
-		new = True;
+	else {
+		if (memcmp(si->start,start,vinfo->n_dims * sizeof(long)))
+			new = True;
+		if (memcmp(si->finish,finish,vinfo->n_dims * sizeof(long)))
+			new = True;
+		if (memcmp(si->stride,stride,vinfo->n_dims * sizeof(long)))
+			new = True;
+	}
 	si->qfile = qfile;
 	si->start = start;
 	si->finish = finish;
 	si->stride = stride;
 	si->vinfo = vinfo;
-
+	if (dl) {
+		if (si->dl)
+			NclFreeDataList(si->dl);
+		si->dl = dl;
+	}
 	if (! si)
 		return NhlFATAL;
 
@@ -1236,7 +1282,7 @@ NgShaper *NgDupShaper
 	long		*start,
 	long		*finish,
 	long		*stride,
-	NclApiVarInfoRec  *vinfo
+	NclApiDataList	*dl          /* this belongs to the shaper */
 	)
 {
 	NgShaperRec	*shaper;
@@ -1260,8 +1306,18 @@ NgShaper *NgDupShaper
 	}
 	si = &shaper->si;
 
+	if (dl) {
+		if (si->dl)
+			NclFreeDataList(si->dl);
+		si->dl = dl;
+		si->vinfo = dl->u.var;
+	}
+	if (! si->dl) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"No data list supplied"));
+		return NULL;
+	}
+		
 	si->qfile = qfile;
-	si->vinfo = vinfo;
 	si->start = start;
 	si->finish = finish;
 	si->stride = stride;

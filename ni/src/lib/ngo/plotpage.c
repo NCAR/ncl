@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.c,v 1.11 1999-12-07 19:08:47 dbrown Exp $
+ *      $Id: plotpage.c,v 1.12 2000-01-20 03:38:24 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -321,14 +321,6 @@ static NhlErrorTypes GetDataProfileMessage
 	}
 
 	SetInputDataFlag(rec);
-
-#if 0
-	if (rec->new_data && page->qvar && rec->data_profile && 
-	    rec->func_grid) {
-		NgUpdateFuncGrid
-			(rec->func_grid,page->qvar,rec->data_profile);
-	}
-#endif
 	TalkToDataLinks(page,_NgDATAPROFILE,message->from_id);
 	
 	return NhlNOERROR;
@@ -1349,10 +1341,12 @@ static NhlBoolean UpdateGraphic
 			continue;
 		vdata = ditem->vdata;
 		if (! vdata->cflags  && ! ditem->save_to_compare) {
-			if ( !(ditem->item_type == _NgCOORDVAR &&
-			       ditem->ref_ditem &&
-			       ditem->ref_ditem->vdata->cflags)) {
+			if (! (ditem->item_type == _NgCOORDVAR ||
+			       ditem->item_type == _NgMISSINGVAL)) {
 				continue;
+				if (! (ditem->ref_ditem &&
+					ditem->ref_ditem->vdata->cflags))
+					continue;
 			}
 		}
 		
@@ -1767,6 +1761,17 @@ UpdateInstance
 	 * create time.
 	 */
 
+	if (rec->max_seq_num < 0) {
+		for (i = 0; i < dprof->n_dataitems; i++) {
+			NgDataItem ditem = dprof->ditems[i];
+			if (ditem->item_type == _NgUPDATEFUNC) {
+				long seq = (long) ditem->data;
+				if (seq > rec->max_seq_num)
+					rec->max_seq_num = seq;
+			}
+		}
+	}
+
 	for (i = 0; i <= rec->max_seq_num; i++) {
 		for (j = 0; j < dprof->obj_count; j++) {
 			int count;
@@ -2019,8 +2024,7 @@ CreateUpdate
 #endif
 
         /*
-	 * First complete any edits in progress, either in the data profile 
-	 * grid.
+	 * First complete any edits in progress in the datavargrid.
 	 */
 
 	XmLGridEditComplete(rec->data_var_grid->grid);
@@ -2983,7 +2987,6 @@ InitializePlot
 
 	if (! AllDataDefined(rec->data_profile->plotdata,
 			     rec->data_profile->plotdata_count)) {
-		PostDataCompletionDialog(page);
 		pub->config_required = True;
 	}
 	if (rec->hlu_ids) {
@@ -3168,14 +3171,6 @@ _NgGetPlotPage
 			XtManageChild(rec->data_var_grid->grid);
 	}
 	UpdateVData(rec);
-#if 0		
-	if (rec->data_profile->n_dataitems) {
-		NgUpdateFuncGrid(rec->func_grid,
-				       page->qvar,rec->data_profile);
-		if (! XtIsManaged(rec->func_grid->grid))
-			XtManageChild(rec->func_grid->grid);
-	}
-#endif
 	ResetPlotPage(page);
 	if (new)
 		_NgGOWidgetTranslations(go,pdp->form);
