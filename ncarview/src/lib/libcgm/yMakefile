@@ -26,3 +26,9 @@ lint:
 meta_edit.o:	Makefile
 	$(CC) $(CFLAGS) -DTMPDIR$(EQUALHACK)'"$(TMPDIR)"' -c $*.c
 
+cgm_tools.o:	cgmP.h
+
+cgmP.h: cgmP.h.sed Makefile
+	@sed \
+	-e 's+SED_GKS_BUFFER_SIZE+$(GKS_BUFFER_SIZE)+' \
+	< cgmP.h.sed > cgmP.h

@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.16 1992-07-16 19:32:38 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.17 1992-07-27 15:05:15 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -39,6 +39,7 @@
 #include	<cgm_tools.h>
 #include	<cgmdef.h>
 #include	<ncarv.h>
+#include	"cgmP.h"
 #include	"internals.h"
 	
 extern	char	*strcpy();
@@ -131,9 +132,19 @@ Cgm_fd	CGM_open(metafile, record_size, type)
 #ifdef	SYSV
 	int	fd;
 	FILE	*fp;
-	int	w_mask = O_WRONLY | O_CREAT;
-	int	rw_mask = O_RDWR | O_CREAT;
+	int	a_mask = O_WRONLY | O_CREAT;
+	int	arw_mask = O_RDWR | O_CREAT;
 #endif
+
+#ifdef	cray
+	int	r_mask = O_RDONLY | O_RAW;
+	int	rrw_mask = O_RDWR | O_RAW;
+	int	w_mask = O_TRUNC | O_CREAT | O_WRONLY | O_RAW;
+	int	wrw_mask = O_TRUNC | O_CREAT | O_RDWR | O_RAW;
+	a_mask = O_WRONLY | O_CREAT | O_RAW;
+	arw_mask = O_RDWR | O_CREAT | O_RAW;
+#endif
+
 
 	if (numOpen >= MAX_FILE) {
 		errno = ENOENT;
@@ -195,11 +206,8 @@ Cgm_fd	CGM_open(metafile, record_size, type)
 		cgmTab[index].close = stream_close;
 		cgmTab[index].flush = stream_flush;
 
-#ifdef	DEAD
-		if (record_size > BUFSIZ) {
-			void	setvbuf_();
-			setvbuf_(cgmTab[index].fp, record_size);
-		}
+#ifdef	cray
+		if (setvbuf_(cgmTab[index].fp, record_size) < 0) return(-1);
 #endif
 	}
 
@@ -231,20 +239,40 @@ Cgm_fd	CGM_open(metafile, record_size, type)
 	 */
 
 		cgmTab[index].mtype = File;
-#ifdef	SYSV
+
+#if defined(SYSV) || defined(cray)
 		if (! strcmp(type, "a")) {
-			if ((fd = open(metafile,w_mask, 0666)) < 0) return(-1);
-			if (! (fp = fdopen(fd, "a"))) return(-1);
+			if ((fd = open(metafile,a_mask, 0666)) < 0) return(-1);
+			if (! (fp = fdopen(fd, type))) return(-1);
 		}
 		else if (! strcmp(type, "a+")) {
-			if ((fd = open(metafile, rw_mask, 0666))< 0) return(-1);
-			if (!(fp = fdopen(fd, "a+"))) return(-1);
+			if ((fd = open(metafile, arw_mask,0666))< 0) return(-1);
+			if (!(fp = fdopen(fd, type))) return(-1);
 		}
+#ifdef	cray
+		else if (! strcmp(type, "r")) {
+			if ((fd = open(metafile, r_mask, 0666))< 0) return(-1);
+			if (!(fp = fdopen(fd, type))) return(-1);
+		}
+		else if (! strcmp(type, "r+")) {
+			if ((fd = open(metafile, rrw_mask, 0666))< 0)return(-1);
+			if (!(fp = fdopen(fd, type))) return(-1);
+		}
+		else if (! strcmp(type, "w")) {
+			if ((fd = open(metafile, w_mask, 0666))< 0) return(-1);
+			if (!(fp = fdopen(fd, type))) return(-1);
+		}
+		else if (! strcmp(type, "w+")) {
+			if ((fd = open(metafile, wrw_mask, 0666))< 0)return(-1);
+			if (!(fp = fdopen(fd, type))) return(-1);
+		}
+#else	/* cray	*/
 		else {
 			if (!(fp = fopen(metafile, type))) return(-1);
 			if ((fd = fileno(fp)) < 0)  return(-1);
 		}
 
+#endif	/* cray	*/
 		cgmTab[index].fp = fp;
 		cgmTab[index].fd = fd;
 #else
@@ -260,11 +288,8 @@ Cgm_fd	CGM_open(metafile, record_size, type)
 		cgmTab[index].close = stream_close;
 		cgmTab[index].flush = stream_flush;
 
-#ifdef	DEAD
-		if (record_size > BUFSIZ) {
-			void	setvbuf_();
-			setvbuf_(cgmTab[index].fp, record_size);
-		}
+#ifdef	cray
+		if (setvbuf_(cgmTab[index].fp, record_size) < 0) return(-1);
 #endif
 	}
 
@@ -1575,9 +1600,32 @@ static	int	noop()
 	return(0);
 }
 
-#ifdef	DEAD
+#ifdef	cray
 
-static	void	setvbuf_(fp, r)
+
+
+
+/*
+*	If output is to a standard file, buffered I/O is used. On
+*	some systems it is desirable to adjust this and several
+*	options for this are available.
+*	Buffer size is adjustable as follows:
+*
+*	1. If environment variable NCARG_GKS_BUFSIZE is set to N
+*
+*			Buffer Size = N * BUFSIZ / 32 bytes.
+*
+*	2. Otherwise, if the value of DEFAULT_GKS_BUFSIZE in wks.h
+*	   is edited by the Makefile to be non-zero.
+*
+*			Buffer Size = DEFAULT_GKS_BUFSIZE * BUFSIZ / 32 bytes.
+*
+*	3. Otherwise, (when DEFAULT_GKS_BUFSIZE is 0)
+*
+*			Buffer Size = BUFSIZ (from stdio.h)
+*
+*/
+static	int	setvbuf_(fp, r)
 	FILE	*fp;
 	int	r;
 {
@@ -1585,19 +1633,44 @@ static	void	setvbuf_(fp, r)
 	int	i;
 	int	size;
 	char	*b;
+	char	*bufsize_env;
+	int	bufsize;
+
+
+	/*
+	The environment variable NCARG_GKS_BUFSIZE, a macro
+	definition, or a constant from stdio.h can determine
+	buffer size used. See notes at the top of this file.
+	*/
+
+	bufsize_env = getenv("NCARG_GKS_BUFSIZE");
+	if (bufsize_env == (char *) NULL) {
+		if (DEFAULT_GKS_BUFSIZE == 0) {
+			bufsize = BUFSIZ;
+		}
+		else {
+			bufsize = BUFSIZ * DEFAULT_GKS_BUFSIZE / 32;
+		}
+	}
+	else {
+		bufsize = BUFSIZ * atoi(bufsize_env) / 32;
+		if (bufsize <= 0) {
+			bufsize = BUFSIZ;
+		}
+	}
 
 	/*
 	 * find the smallest buffer size that is bigger then r and 
-	 * is an integral of BUFSIZ
+	 * is an integral of bufsize
 	 */
-	i = r / BUFSIZ;
+	i = r / bufsize;
 	i++;
-	size = i * BUFSIZ;
+	size = i * bufsize;
 
 	if ((b = malloc(size)) == NULL) {
-		return;
+		return(-1);
 	}
 
-	setvbuf(fp, b, _IOFBF, size);
+	return(setvbuf(fp, b, _IOFBF, size));
 }
 #endif
