@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.16 2002-02-22 05:10:09 haley Exp $
+#      $Id: Configure,v 1.17 2002-06-20 22:15:03 haley Exp $
 #
 #########################################################################
 #									#
@@ -791,6 +791,7 @@ if ($?newbuildhdf) then
 		echo "#define BuildRasterHDF TRUE" >> Site.local
 	else
 		echo "#define BuildRasterHDF FALSE" >> Site.local
+		echo "#define HDFlib" >> Site.local
 	endif
 endif
 echo "" >> Site.local
