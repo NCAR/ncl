@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.42 2004-01-20 21:21:48 haley Exp $
+ *	$Id: Rules,v 1.43 2004-08-18 16:39:11 haley Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -81,9 +81,13 @@ all-local:: names]\
 ]\
 install-local:: names]\
 	MakeDir(dest)]\
-	@for name in names; do\ ]\
+	@for name in names; do \ ]\
+	if (test -f $$name.$(EXE_SUFFIX)) then \ ]\
+	(echo "Installing $$name.$(EXE_SUFFIX)";\ ]\
+	$(INSTALL) -m mode $$name.$(EXE_SUFFIX) dest);\ ]\
+    else \ ]\
 	(echo "Installing $$name";\ ]\
-	$(INSTALL) -m mode $$name dest);\ ]\
+	$(INSTALL) -m mode $$name dest); fi \ ]\
 	done]
 #endif	/* InstallTarget */
 
