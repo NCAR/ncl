@@ -7,7 +7,7 @@ char csamsg[61];
 NhlErrorTypes csa1xs_W(void)
 {
   int i, j, npts, nxo, scalar_wts, size_output, size_leftmost;
-  int ier = 0, index_xi = 0, index_yi, index_yo = 0;
+  int ier = 0, index_xi = 0, index_yi = 0, index_yo = 0;
   float *xi;
   int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
