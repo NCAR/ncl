@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.125 2000-09-21 20:34:55 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.126 2000-09-21 22:36:07 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -11057,7 +11057,7 @@ NhlErrorTypes sprinti_W( void )
 /*
  * Input array variables
  */
-  float *input_var;
+  int *input_var;
   string *format_string;
   int ndims_input_var, dsizes_input_var[NCL_MAX_DIMENSIONS], nlata, nlona, igrida[2];
   NclScalar missing_input_var;
