@@ -7,19 +7,19 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
-#define MREG 50
-#define NREG 50
-#define LRWK 5000
-#define LIWK 5000
-#define LMAP 200000
-#define NWRK 15000
-#define NOGRPS 5
+#define MREG  50
+#define NREG  50
+#define LRWK  5000
+#define LIWK  5000
+#define LMAP  200000
+#define NWRK  15000
+#define NOGRPS  5
 
 #define min(x,y)    ((x) < (y) ? (x) : (y))
 #define max(x,y)    ((x) > (y) ? (x) : (y))
 #define pow2(x)     ((x) * (x))
 
-float zreg[MREG][NREG];
+float zreg[NREG][MREG];
 
 #define WSTYPE SED_WSTYPE
 #define WKID   1
@@ -27,9 +27,7 @@ float zreg[MREG][NREG];
 main()
 {
     extern void colcon(), gendat();
-/*
- * get data array
- */
+
     gendat(15,13,13.,18.);
 /*
  * open gks, and turn clipping off
@@ -41,7 +39,7 @@ main()
 /*
  * call conpack color fill routine
  */
-    colcon(zreg,-15,"CE",-90.,90.,-180.,180.,0.,0.);
+    colcon(-15,"CE",-90.,90.,-180.,180.,0.,0.);
 /*
  * close frame and close gks
  */
@@ -51,20 +49,19 @@ main()
     gclose_gks();
 }
 
-void colcon(zreg,ncl,proj,rlatmn,rlatmx,rlonmn,rlonmx,plat,plon)
-float *zreg[NREG];
+void colcon(ncl,proj,rlatmn,rlatmx,rlonmn,rlonmx,plat,plon)
 int ncl;
 float rlatmn, rlatmx, rlonmn, rlonmx, plat, plon;
 char *proj;
 {
     int i, ncll, idum;
-    float rwrk[LRWK],xwrk[NWRK],ywrk[NWRK];
     float xmin, xmax, ymin, ymax, dum1, dum2, dum3, dum4;
-    float rltmn[2], rltmx[2], rlnmn[2], rlnmx[2];
     float ybot, ytop, zmn, clv;
-    int iwrk[LIWK], lfin[35];
-    int map[LMAP],iarea[NOGRPS],igrp[NOGRPS];
-    char *lbls[35];
+	int iwrk[LIWK], lfin[35];
+    float rltmn[2], rltmx[2], rlnmn[2], rlnmx[2];
+	float rwrk[LRWK], xwrk[NWRK], ywrk[NWRK];
+	int map[LMAP],iarea[NOGRPS],igrp[NOGRPS];
+	char *lbls[35];
     extern void color();
     extern int fill(), mask();
 
@@ -82,36 +79,36 @@ char *proj;
  */
     c_arinam(map, LMAP);
 /*
- * initialize ezmap and add to area map
+ * Initialize Ezmap and add to area map.
  */
-    c_mapstr ("gr",0.);
-    c_mapstc ("ou","CO");
-    c_maproj(proj,plat,plon,0.0);
-    if (!strncmp(proj,"sv",2)) c_mapstr ("sa",10.);
-    c_mapset("co",rltmn,rlnmn,rltmx,rlnmx);
-    c_mapint();
-    c_mapbla(map);
+	c_mapstr ("GR",0.);
+	c_mapstc ("OU","CO");
+	c_maproj(proj,plat,plon,0.0);
+	if (!strcmp(proj,"SV")) c_mapstr ("SA",10.);
+	c_mapset("CO",rltmn,rlnmn,rltmx,rlnmx);
+	c_mapint();
+	c_mapbla(map);
 /*
- * initialize conpack and add to area map
+ * Initialize Conpack and add to area map.
  */
-    c_cpseti("set - do-set-call flag",0);
-    c_cpseti("map - mapping flag",1);
-    c_cpsetr("orv - out of range flag",1.e12);
-    c_cpsetr("xc1 - x coordinate at index 1",rlonmn);
-    c_cpsetr("xcm - x coordinate at index m",rlonmx);
-    c_cpsetr("yc1 - y coordinate at index 1",rlatmn);
-    c_cpsetr("ycn - y coordinate at index n",rlatmx);
-    c_cpseti("llp - line label positioning flag",0);
-    c_cpseti("hlb - high/low label box flag",2);
-    c_cpseti("hlc - high/low label color index",1);
-    c_cprect((float *)zreg, NREG, NREG, MREG, rwrk, LRWK, iwrk, LIWK);
-    c_cpclam((float *)zreg, rwrk, iwrk, map);
-    c_cplbam((float *)zreg, rwrk, iwrk, map);
+	c_cpseti("SET - DO-SET-CALL FLAG",0);
+	c_cpseti("MAP - MAPPING FLAG",1);
+	c_cpsetr("ORV - OUT OF RANGE FLAG",1.e12);
+	c_cpsetr("XC1 - X COORDINATE AT INDEX 1",rlonmn);
+	c_cpsetr("XCM - X COORDINATE AT INDEX M",rlonmx);
+	c_cpsetr("YC1 - Y COORDINATE AT INDEX 1",rlatmn);
+	c_cpsetr("YCN - Y COORDINATE AT INDEX N",rlatmx);
+	c_cpseti("LLP - LINE LABEL POSITIONING FLAG",0);
+	c_cpseti("HLB - HIGH/LOW LABEL BOX FLAG",2);
+	c_cpseti("HLC - HIGH/LOW LABEL COLOR INDEX",1);
+	c_cprect((float *)zreg, MREG, MREG, NREG, rwrk, LRWK, iwrk, LIWK);
+	c_cpclam((float *)zreg, rwrk, iwrk, map);
+	c_cplbam((float *)zreg, rwrk, iwrk, map);
 /*
- * choose a color for every contour level
+ * choose a color for every contour level.
  */
-    c_cpgeti("ncl",&ncll);
-    color (ncll+1);
+	c_cpgeti("NCL",&ncll);
+	color (ncll+1);
 /*
  * fill contours and areas over land
  */
@@ -132,18 +129,20 @@ char *proj;
     lbls[0] = (char *)malloc(9*sizeof(char));
     sprintf( lbls[0], "%8.3f", zmn );
     for( i = 0; i < ncll; i++ ) {
-        lfin[i]=i+2;
+        lfin[i]=i+3;
         c_cpseti("pai - parameter array index",i+1);
         c_cpgetr("clv - contour level values",&clv);
         lbls[i+1] = (char *)malloc(9*sizeof(char));
         sprintf( lbls[i+1], "%8.3f", clv );
     }
-    lfin[ncll]=ncll+2;
+    lfin[ncll]=ncll+3;
     lbls[ncll+1] = (char *)malloc(5*sizeof(char));
     strcpy( lbls[ncll+1], "land" );
-    lfin[ncll+1]=ncll+3;
+    lfin[ncll+1]=2;
     c_lblbar(0,xmin,xmax,ybot,ytop,ncll+2,1.,.5,lfin,1,lbls,ncll+2,1);
+	return;
 }
+
 
 int fill (xwrk,ywrk,n,iarea,igrp,ngrps)
 float *xwrk, *ywrk;
@@ -247,8 +246,13 @@ float dlow, dhgh;
  * and less than or equal to 25.
  *
  * The function used is a sum of exponentials.
+ *
+ * This version has been modified to make the data more nearly simulate
+ * global data.  All values in the top row (which maps to the North Pole)
+ * are the same.  All values in the bottom row (which maps to the South
+ * Pole) are the same.  Each value in the last column of a row matches
+ * the value in the first column of the row.
  */
-    int mini, minj, maxi, maxj;
     int i, j, k, nlow, nhgh, ncnt, m, n;
     float fovm, fovn, dmin, dmax, temp, aatr, aabr;
     float q, p, datr, datl;
@@ -302,9 +306,9 @@ float dlow, dhgh;
             for( i = 1; i <= m/2; i++ ) {
                 q = 1.-max(0.,.5-.5*(float)(i-1)/(float)(m/5-1));
                 datl = zreg[j-1][i-1];
-                datr = zreg[j-1][m+1-i];
+                datr = zreg[j-1][m-i];
                 zreg[j-1][i-1]   = p*(q*datl+(1.-q)*datr)+(1.-p)*aabr;
-                zreg[j-1][m+1-i] = p*(q*datr+(1.-q)*datl)+(1.-p)*aabr;
+                zreg[j-1][m-i] = p*(q*datr+(1.-q)*datl)+(1.-p)*aabr;
             }
         }
         else if (j >= n+1-n/5) {
@@ -312,18 +316,18 @@ float dlow, dhgh;
             for( i = 1; i <= m/2; i++ ) {
                 q = 1.-max(0.,.5-.5*(float)(i-1)/(float)(m/5-1));
                 datl = zreg[j-1][i-1];
-                datr = zreg[j-1][m+1-i];
+                datr = zreg[j-1][m-i];
                 zreg[j-1][i-1]   = p*(q*datl+(1.-q)*datr)+(1.-p)*aatr;
-                zreg[j-1][m+1-i] = p*(q*datr+(1.-q)*datl)+(1.-p)*aabr;
+                zreg[j-1][m-i] = p*(q*datr+(1.-q)*datl)+(1.-p)*aabr;
             }
         }
         else {
             for( i = 1; i <= m/2; i++ ) {
                 q = 1.-max(0.,.5-.5*(float)(i-1)/(float)(m/5-1));
                 datl = zreg[j-1][i-1];
-                datr = zreg[j-1][m+1-i];
+                datr = zreg[j-1][m-i];
                 zreg[j-1][i-1]   = q*datl+(1.-q)*datr;
-                zreg[j-1][m+1-i] = q*datr+(1.-q)*datl;
+                zreg[j-1][m-i] = q*datr+(1.-q)*datl;
             }
         }
     }
@@ -333,16 +337,8 @@ float dlow, dhgh;
 
     for( j = 0; j < n; j++ ) {
         for( i = 0; i < m; i++ ) {
-            if( dmin > zreg[j][i]) {
-                mini = i;
-                minj = j;
-                dmin = zreg[j][i];
-            }
-            if( dmax < zreg[j][i]) {
-                maxi = i;
-                maxj = j;
-                dmax = zreg[j][i];
-            }
+            if( dmin > zreg[j][i]) dmin = zreg[j][i];
+            if( dmax < zreg[j][i]) dmax = zreg[j][i];
         }
     }
 
