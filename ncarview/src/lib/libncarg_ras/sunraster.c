@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.20 1993-05-11 18:49:29 haley Exp $
+ *	$Id: sunraster.c,v 1.21 1994-05-23 21:01:43 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -581,6 +581,8 @@ SunReadRGB(ras)
 {
 	int		status;
 	char		*errmsg = "SunReadRGB(\"%s\")";
+	unsigned char	c, *rptr, *bptr;
+	int		i;
 
 	status = fread( (char *) ras->data, 1,
 		(int) ras->length, ras->fp);
@@ -588,6 +590,17 @@ SunReadRGB(ras)
 		(void) ESprintf(RAS_E_PREMATURE_EOF,
 				errmsg, ras->name);
 		return(RAS_ERROR);
+	}
+
+	/*
+	 * order of sun RGB files is "GBR", not "RGB"
+	 */
+	rptr = ras->data;
+	bptr = ras->data + 2;
+	for(i=0; i<(ras->nx * ras->ny); i++,rptr+=3,bptr+=3) {
+		c = *rptr;
+		*rptr = *bptr;
+		*bptr = c;
 	}
 
 	return(RAS_OK);
