@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.22 1999-11-12 21:25:59 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.23 1999-11-17 14:53:44 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -37,6 +37,8 @@ undef("xy_interp")
 undef("ref_line_interp")
 undef("gsn_geop_hgt")
 undef("check_for_subtitles")
+undef("check_for_lat_coord")
+undef("check_for_lon_coord")
 undef("create_labelbar")
 undef("add_subtitles")
 undef("add_labelbar")
@@ -311,6 +313,81 @@ begin
 end
 
 ;***********************************************************************;
+; Procedure : check_for_lat_coord                                       ;
+ 
+  npres = dimsizes(ptmp)
+  gph = new(npres,float)
+
+  do i = 0,npres-1
+; dimension 0 that starts with "lat" or "Lat".  If so, then it sets     ;
+; sf/vfYArray (depending on if type equals "contour" or "vector" to     ;
+; this coordinate array.                                                ;
+     if ( ( ptmp(i) .le. psa(j) ) .and. ( ptmp(i) .ge. psa(j+1) ) ) then
+       gph(i) = zsa(j) + (zsa(j+1) - zsa(j)) * \
+procedure check_for_lat_coord(data[*][*]:numeric,res:logical,type:string)
+local latname, char_latname, array_name, start_name, end_name
+     end if
+  end do
+ 
+  delete(psa)
+  delete(zsa)
+  delete(ptmp)
+ 
+  return(gph)
+ 
+end
+ 
+  if(.not.ismissing(data!0).and.iscoord(data,data!0))
+    latname = data!0
+    char_latname = stringtochar(latname)
+    if(dimsizes(char_latname).ge.3)
+      if(char_latname(0:2).eq."lat".or.char_latname(0:2).eq."Lat")
+        if(.not.(isatt(res,start_name).and.isatt(res,end_name)))
+         set_attr(res,array_name,data&$latname$)
+        end if
+      end if
+    end if
+  end if
+    array_name = "vfYArray"
+    start_name = "vfYCStartV"
+    end_name   = "vfYCEndV"
+; "contour" or "vector" to this coordinate array.                       ;
+;                                                                       ;
+;***********************************************************************;
+local latname, char_latname, array_name, start_name, end_name
+begin 
+; dimension 1 that starts with "lon" or "Lon".   If so, then it sets    ;
+; sf/vfXArray (depending on if type equals "contour" or "vector" to     ;
+; this coordinate array.                                                ;
+    array_name = "vfXArray"
+    start_name = "vfXCStartV"
+    end_name   = "vfXCEndV"
+local lonname, char_lonname, array_name, start_name, end_name
+    array_name = "sfXArray"
+
+;
+; Make sure user is not already setting his own *Start* and *End*
+; resources, and that the second dimension of the data actually contains
+; coordinate information.
+;
+; Also check the name of the coordinate variable against the allowed
+; lat names. The coordinate variable must also be one-dimensional to
+; be valid.
+;
+  if(.not.ismissing(data!1).and.iscoord(data,data!1))
+    lonname = data!1
+    char_lonname = stringtochar(lonname)
+    if(dimsizes(char_lonname).ge.3)
+      if(char_lonname(0:2).eq."lon".or.char_lonname(0:2).eq."Lon")
+        if(.not.(isatt(res,start_name).and.isatt(res,end_name)))
+          set_attr(res,array_name,data&$lonname$)
+        end if
+      end if
+    end if
+      set_attr(res,array_name,data@lat2d)
+  return
+end
+
 ; Function : create_labelbar                                            ;
 ;                wks: graphic                                           ;
 ;               nbox: integer                                           ;
@@ -1625,13 +1702,6 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
     height = get_res_value(res2,"vpHeightF",0.62)
     width  = get_res_value(res2,"vpWidthF",0.62)
     xpos   = get_res_value(res2,"vpXF",0.2)
-; Set up three subtitles at top, if they exist.
-    subres                  = True
-    subres@txFontHeightF    = 1.2*font_height
-    subres@txFont           = "helvetica-bold"
-    subres@amOrthogonalPosF = 0.06 
-    add_subtitles(wks,map_object,left_string,center_string,right_string, \
-                  subres)
 
 ;
 ; Check for other resources that we need to set at the time the
@@ -1716,11 +1786,6 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
     just = new(ngrid,string)
     orth = new(ngrid,float)
     para = new(ngrid,float)
-
-    side(quad1) = "Top"      ; Position labels in quadrants I and II wrt
-    side(quad2) = "Top"      ; top of plot.
-    side(quad3) = "Bottom"   ; Position labels in quadrants III and IV wrt
-    side(quad4) = "Bottom"   ; bottom of plot.
 ; and at varying longitude values.
 ;
       ngrid = floattoint(360/label_spacing)
@@ -1732,17 +1797,28 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
       end if 
       plon = fspan(0.,360.-label_spacing,ngrid)
 
-    orth(quad1) = ((yndc(quad1) - ycen)/vphf) * 1.04
-    orth(quad2) = ((yndc(quad2) - ycen)/vphf) * 1.04
-    orth(quad3) = ((ycen - yndc(quad3))/vphf) * 1.04
-    orth(quad4) = ((ycen - yndc(quad4))/vphf) * 1.04
+    if(.not.all(ismissing(quad1)))
+      side(quad1) = "Top"      ; Position labels in quadrants I and II wrt
+      orth(quad1) = ((yndc(quad1) - ycen)/vphf) * 1.04
+      just(quad1) = "CenterLeft"
+    end if
+    if(.not.all(ismissing(quad2)))
+      side(quad2) = "Top"      ; top of plot.
+      orth(quad2) = ((yndc(quad2) - ycen)/vphf) * 1.04
+      just(quad2) = "CenterRight"
+    end if
+    if(.not.all(ismissing(quad3)))
+      side(quad3) = "Bottom"   ; Position labels in quadrants III and IV wrt
+      orth(quad3) = ((ycen - yndc(quad3))/vphf) * 1.04
+      just(quad3) = "CenterRight"
+    end if
+    if(.not.all(ismissing(quad4)))
+      side(quad4) = "Bottom"   ; bottom of plot.
+      orth(quad4) = ((ycen - yndc(quad4))/vphf) * 1.04
+      just(quad4) = "CenterLeft"
+    end if
 
     para = ((xndc - xcen)/vpwf) * 1.04
-
-    just(quad1) = "CenterLeft"
-    just(quad2) = "CenterRight"
-    just(quad3) = "CenterRight"
-    just(quad4) = "CenterLeft"
       labels(indexes) = floattoint(plon(indexes)) + "E"
       delete(indexes)
 
@@ -1785,6 +1861,14 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
       end setvalues
     end do
 ; for justification, side, orthogonal and parallel positions.
+;
+      quad2 = ind((ycen-yndc).le.0.and.(xcen-xndc).gt.0)
+    subres@txFontHeightF    = 1.2*font_height
+    subres@txFont           = "helvetica-bold"
+
+      side = new(ngrid,string)
+      just = new(ngrid,string)
+      orth = new(ngrid,float)
     draw_and_frame(wks,map_object,calldraw,callframe)
 ;
 ; The zone is being set to 0, so this means all labels will appear in the
@@ -1954,23 +2038,8 @@ begin
     return(gsn_csm_map_polar(wks,res2))
 ; list of resources. The id of the map plot is returned.                ;
 ;                                                                       ;
-    if(iscoord(datanew,"lat").and.iscoord(datanew,"lon"))
-      if(.not.(isatt(res2,"sfYCStartV").and.isatt(res2,"sfYCEndV")))
-        set_attr(res2,"sfYArray",datanew&lat)
-      end if
-      if(.not.(isatt(res2,"sfXCStartV").and.isatt(res2,"sfXCEndV")))
-        set_attr(res2,"sfXArray",datanew&lon)
-      end if
-    else
-      if(iscoord(datanew,"latitude").and.iscoord(datanew,"longitude"))
-        if(.not.(isatt(res2,"sfYCStartV").and.isatt(res2,"sfYCEndV")))
-          set_attr(res2,"sfYArray",datanew&latitude)
-        end if
-        if(.not.(isatt(res2,"sfXCStartV").and.isatt(res2,"sfXCEndV")))
-          set_attr(res2,"sfXArray",datanew&longitude)
-        end if
-      end if
-    end if
+    check_for_lat_coord(datanew,res2,"contour")
+; create a special kind of plot if certain attributes are set.          ;
 ;                                                                       ;
 ; Check for a missing value.
 
@@ -2188,27 +2257,17 @@ map_vpwf, map_vphf, vpwf, vphf
 ; Check if user setting own font heights.
 ;
     main_font_height = get_res_value_keep(res2,"tiMainFontHeightF", \
-    if(iscoord(datanew,"lat").and.iscoord(datanew,"lon")) then
-      if(.not.(isatt(res2,"sfYCStartV").and.isatt(res2,"sfYCEndV")))
-        set_attr(res2,"sfYArray",datanew&lat)
-      end if
-      if(.not.(isatt(res2,"sfXCStartV").and.isatt(res2,"sfXCEndV")))
-        set_attr(res2,"sfXArray",datanew&lon)
-      end if
-    else
-      if(iscoord(datanew,"latitude").and.iscoord(datanew,"longitude")) then
-        if(.not.(isatt(res2,"sfYCStartV").and.isatt(res2,"sfYCEndV")))
-          set_attr(res2,"sfYArray",datanew&latitude)
-        end if
-        if(.not.(isatt(res2,"sfXCStartV").and.isatt(res2,"sfXCEndV")))
-          set_attr(res2,"sfXArray",datanew&longitude)
-        end if
-      else
-        res2@sfYCStartV =  -90.
-        res2@sfYCEndV   =   90.
-        res2@sfXCStartV = -180.
-        res2@sfXCEndV   =  180.
-      end if
+    check_for_lat_coord(datanew,res2,"contour")
+    main_font = get_res_value_keep(res2,"tiMainFont","helvetica-bold")
+
+    setvalues map_object
+        "tiMainFont"           : main_font        ; main title font
+        "tiMainFontHeightF"    : main_font_height ; main title size
+    end setvalues
+
+; Create a labelbar.
+
+    if(lbar_on)
       add_labelbar(wks,contour_object,lbar_zone,font_height,"polar",lbres)
     end if
   
@@ -2651,19 +2710,17 @@ map_vpwf, map_vphf, vpwf, vphf
     if(.not.isatt(cnres,"cnLineLabelFontHeightF"))
       setvalues contour_plot
         "cnLineLabelFontHeightF"    : 0.6 * font_height
-    if(iscoord(unew,"lat").and.iscoord(unew,"lon")) then
-      res2@vfYArray  = unew&lat
-      res2@vfXArray  = unew&lon
-    else
-      if(iscoord(unew,"latitude").and.iscoord(unew,"longitude")) then
-        res2@vfYArray  = unew&latitude
-        res2@vfXArray  = unew&longitude
-      else
-        res2@vfYCStartV =  -90.
-        res2@vfYCEndV   =   90.
-        res2@vfXCStartV = -180.
-        res2@vfXCEndV   =  180.
-      end if
+    check_for_lat_coord(unew,res2,"vector")
+    end if
+
+    if(.not.isatt(cnres,"cnInfoLabelFontHeightF"))
+      setvalues contour_plot
+        "cnInfoLabelFontHeightF"  : 0.6 * font_height
+      end setvalues
+    end if
+
+; Create a labelbar.
+
     if(lbar_on)
       add_labelbar(wks,contour_object,lbar_zone,0.6 * font_height,"other",lbres)
 ; This section tests for more special resources: those that start
@@ -2824,19 +2881,17 @@ res, res2, map_vpwf, map_vphf, vpwf, vphf, lbar_on
 ; Check if user setting own font heights.
 ; overlay vector on map.
     main_font_height = get_res_value(res2,"tiMainFontHeightF", \
-    if(iscoord(unew,"lat").and.iscoord(unew,"lon")) then
-      res2@vfYArray  = unew&lat
-      res2@vfXArray  = unew&lon
-    else
-      if(iscoord(unew,"latitude").and.iscoord(unew,"longitude")) then
-        res2@vfYArray  = unew&latitude
-        res2@vfXArray  = unew&longitude
-      else
-        res2@vfYCStartV =  -90.
-        res2@vfYCEndV   =   90.
-        res2@vfXCStartV = -180.
-        res2@vfXCEndV   =  180.
-      end if
+    check_for_lat_coord(unew,res2,"vector")
+    setvalues map_object
+      "tiMainFontHeightF"    : main_font_height  ; main title size
+    end setvalues
+
+; Set font heights only if they haven't been set explicitly by user.
+
+    if(.not.isatt(vcres,"vcRefAnnoFontHeightF"))
+      setvalues vector_object
+        "vcRefAnnoFontHeightF"  : 0.6 * font_height
+      end setvalues
     end if
 
 ; This section tests for special resources: those that start
@@ -2890,27 +2945,17 @@ res, res2, map_vpwf, map_vphf, vpwf, vphf, lbar_on
     end if
 ; according to the scalar field. This resource defaults to False.       ;
 ;***********************************************************************;
-      if(iscoord(datanew,"lat").and.iscoord(datanew,"lon")) then
-        if(.not.(isatt(res2,"sfXCStartV").and.isatt(res2,"sfXCEndV")))
-          set_attr(res2,"sfXArray",datanew&lon)
-        end if
-        if(.not.(isatt(res2,"sfYCStartV").and.isatt(res2,"sfYCEndV")))
-          set_attr(res2,"sfYArray",datanew&lat)
-        end if
-      else
-        if(iscoord(datanew,"latitude").and.iscoord(datanew,"longitude")) then
-          if(.not.(isatt(res2,"sfXCStartV").and.isatt(res2,"sfXCEndV")))
-            set_attr(res2,"sfXArray",datanew&longitude)
-          end if
-          if(.not.(isatt(res2,"sfYCStartV").and.isatt(res2,"sfYCEndV")))
-            set_attr(res2,"sfYArray",datanew&latitude)
-          end if
-        else
-          res2@sfYCStartV =  -90.
-          res2@sfYCEndV   =   90.
-          res2@sfXCStartV = -180.
-          res2@sfXCEndV   =  180.
-        end if
+      check_for_lat_coord(datanew,res2,"contour")
+
+; Check for cyclic point (default is True).
+
+    if(get_res_value(res2,"gsnAddCyclic",True))
+      unew    = gsn_add_cyclic_point(u)
+      vnew    = gsn_add_cyclic_point(v)
+      datanew = gsn_add_cyclic_point(data)
+    else
+      unew    = u
+      vnew    = v
       datanew = data
     end if
 
@@ -3138,23 +3183,8 @@ end
     datanew = gsn_add_cyclic_point(data2)
 
 ;***********************************************************************;
-  if(iscoord(datanew,"lat").and.iscoord(datanew,"lon"))
-    if(.not.(isatt(res2_tmp,"sfYCStartV").and.isatt(res2_tmp,"sfYCEndV")))
-      set_attr(res2_tmp,"sfYArray",datanew&lat)
-    end if
-    if(.not.(isatt(res2_tmp,"sfXCStartV").and.isatt(res2_tmp,"sfXCEndV")))
-      set_attr(res2_tmp,"sfXArray",datanew&lon)
-    end if
-  else
-    if(iscoord(datanew,"latitude").and.iscoord(datanew,"longitude"))
-      if(.not.(isatt(res2_tmp,"sfYCStartV").and.isatt(res2_tmp,"sfYCEndV")))
-        set_attr(res2_tmp,"sfYArray",datanew&latitude)
-      end if
-      if(.not.(isatt(res2_tmp,"sfXCStartV").and.isatt(res2_tmp,"sfXCEndV")))
-        set_attr(res2_tmp,"sfXArray",datanew&longitude)
-      end if
-    end if
-  end if
+  check_for_lat_coord(datanew,res2_tmp,"contour")
+;                   wks: workstation object                             ;
 ;                     u: 2-dimensional data                             ;
 ;                     v: 2-dimensional data                             ;
 ;                  data: 2-dimensional data                             ;
@@ -4010,17 +4040,7 @@ left_string, center_string, right_string, datanew, lat_spacing
 
     maxbb        = get_bb_res(res2)
     lon_spacing  = get_res_value(res2,"gsnMajorLonSpacing",0)
-    if(iscoord(data,"lat"))
-      if(.not.(isatt(res2,"sfYCStartV").and.isatt(res2,"sfYCEndV")))
-        set_attr(res2,"sfYArray",data&lat)
-      end if
-    else
-      if(iscoord(data,"latitude"))
-        if(.not.(isatt(res2,"sfYCStartV").and.isatt(res2,"sfYCEndV")))
-          set_attr(res2,"sfYArray",data&latitude)
-        end if
-      end if
-    end if
+    check_for_lat_coord(data,res2,"contour")
 
     if(is_valid_lat_xcoord(data).or.is_valid_lon_xcoord(data))
       set_attr(res2,"tiXAxisString","")
