@@ -2676,7 +2676,7 @@ GribParamList* thevarrec;
 					data = *outdat;
 				}
 				for(i = 0; i < total; i++) {
-					((float*)data)[i]= reference_value;
+					((float*)data)[i]= reference_value/pow(10.0,(double)(decimal_scale_factor));
 				}
 			}
 			*outdat = data;
