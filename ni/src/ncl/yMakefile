@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.86 2003-04-19 00:11:57 haley Exp $
+#      $Id: yMakefile,v 1.87 2003-06-28 01:46:03 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -148,8 +148,8 @@ STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			complete.c editline.c sysunix.c ListSupport.c \
 			NclList.c NclMultiDVallistData.c NclTypelist.c
 
-FSRCS		=	fortranio.f gaus.f QU2REG.f
-FOBJS		=	fortranio.o gaus.o QU2REG.o
+FSRCS		=	fortranio.f gaus.f QU2REG.f GDSWIZCB.f
+FOBJS		=	fortranio.o gaus.o QU2REG.o GDSWIZCB.o
 
 GEN_OBJS	=	NclTypedouble.o NclTypefloat.o \
 			NclTypeint.o NclTypelogical.o \
