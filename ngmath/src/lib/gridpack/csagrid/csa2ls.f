@@ -42,7 +42,7 @@ C
         RETURN
       ENDIF
 C
-      SMTH =   0.
+      SSMTH =   0.
       WTS =   -1.
       CALL CSA2LXS (NI,XI,UI,WTS,KNOTS,SSMTH,NDERIV,NO,XO,YO,UO,
      +              NWRK,WORK,IER)
