@@ -1,3 +1,14 @@
-*ctYTableType:        Float
-*xyYStyle:            IRREGULAR
-*xyYMinF:             100.
+*xyDep1*xyColor:        40
+*xyDep2*xyColor:        0
+*xyDep3*xyColor:        100
+*xyDep4*xyColor:        50
+*xyDep2*xyMarker:       2
+*xyDep3*xyMarker:       3
+*xyDep2*xyMarkerColor:  75
+*xyDep3*xyMarkerColor:  15
+*xyDep2*xyMarkerMode:   MARKERSONLY
+*xyDep3*xyMarkerMode:   MARKLINES
+*xyDep2*xyMarkerSizeF:  0.008
+*xyDep3*xyMarkerSizeF:  0.024
+*xyYMinF:               100.
+*xyYStyle:              IRREGULAR

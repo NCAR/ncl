@@ -1,5 +1,5 @@
 /*
-**      $Id: xy05c.c,v 1.2 1995-02-09 23:07:24 haley Exp $
+**      $Id: xy05c.c,v 1.3 1995-02-10 15:18:47 haley Exp $
 */
 /************************************************************************
 *                                                                       *
@@ -18,8 +18,8 @@
 **  Date:       Fri Jan 27 08:24:42 MST 1995
 **
 **  Description:    This example shows how to create an XY plot object with
-**                  multiple lines in the plot using the CoordArrTable object.
-**                  Using the CoordArrTable object is one way of allowing you
+**                  multiple lines using the CoordArrays and multiple Data
+**                  objects.  Using multiple Data objects allows you 
 **                  to have a different number of points in each line.
 **
 **                  Some of the XY marker resources are tweaked in the
@@ -28,7 +28,7 @@
 **                  use the xyYIrregularPoints resource to define your own Y
 **                  axis values.
 **
-**                  The "CoordArrTable" object is used to set up the data,
+**                  The "CoordArrays" object is used to set up the data,
 **                  and the "DataDep" object is used to describe attributes
 **                  of the data being plotted, like the marker styles and
 **                  sizes.
@@ -41,41 +41,32 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
-#include <ncarg/hlu/CoordArrTable.h>
+#include <ncarg/hlu/CoordArrays.h>
 
 #define NCURVE  4
 #define PI100 .031415926535898
 float *ydra[NCURVE];
 
-int leny[NCURVE] = {500,200,400,300};
-
-/*
- * Set up arrays of labels, colors, dash patterns, markers, markers sizes,
- * and marker modes for each curve.
- */
-int linecolors[NCURVE] = {40, 0, 100, 50};
-int markcolors[NCURVE] = {0, 75, 15, 0};
-int markers[NCURVE] = {1, 2, 3, 4};
-int markmodes[NCURVE] = {NhlNOMARKERS,NhlMARKERSONLY,NhlMARKLINES,NhlNOMARKERS};
-float marksizes[NCURVE] = {.015,.008,.024,.015};
+int len[NCURVE] = {500,200,400,300};
 
 main()
 {
-    int     appid,xworkid,plotid,dataid,datadepid;
+    int     appid,xworkid,plotid,dataid[NCURVE],datadepid[NCURVE];
     int     rlist;
     int     i, j;
     float   theta;
-    float explicit_values[10];
+    float   explicit_values[10];
+    char    datastr[10];
 /*
  * Initialize XY data
  */
     for( j = 0; j < NCURVE; j++ ) {
-        ydra[j] = (float *)malloc(sizeof(float)*leny[j]);
+        ydra[j] = (float *)malloc(sizeof(float)*len[j]);
         if (ydra[j] == NULL) {
             NhlPError(NhlFATAL,NhlEUNKNOWN,"Unable to malloc space for ydra array");
             exit(3);
         }
-        for( i = 0; i < leny[j]; i++ ) {
+        for( i = 0; i < len[j]; i++ ) {
             theta = PI100*(float)(i);
             ydra[j][i] = (j+1)*100.+.9*(float)(i)*sin(theta);
         }
@@ -99,35 +90,35 @@ main()
     NhlCreate(&appid,"xy05",NhlappLayerClass,NhlDEFAULT_APP,0);
     NhlCreate(&xworkid,"xy05Work",NhlxWorkstationLayerClass,appid,0);
 /*
- * Define the data object.  Since only the Y values are specified here, each
- * Y value will be paired with its integer array index.  The id for this
- * object will then later be used as the value for the Data Dep resource,
- * "dsDataItem".
+ * Define the data objects.  Since only the Y values are specified here,
+ * each Y value will be paired with its integer array index.  The id for
+ * each object will then later be used as a value for a Data Dep
+ * resource, "dsDataItem".
  */
-    NhlRLClear(rlist);
-    NhlRLSetIntegerArray(rlist,NhlNctYTableLengths,leny,NCURVE);
-    NhlRLSetArray(rlist,NhlNctYTable,ydra,NhlTPointer,sizeof(NhlPointer),
-                  NCURVE);
-    NhlCreate(&dataid,"XYCoord",NhlcoordArrTableLayerClass,NhlDEFAULT_APP,
+    for( i = 0; i < NCURVE; i++ ) {
+        NhlRLClear(rlist);
+        NhlRLSetFloatArray(rlist,NhlNcaYArray,ydra[i],len[i]);
+        sprintf(datastr,"xyCoord%1d",i+1);
+        NhlCreate(&dataid[i],datastr,NhlcoordArraysLayerClass,NhlDEFAULT_APP,
               rlist);
+    }
 /*
- * Define Data Dependent resources.  Here's where you specify the arrays
- * for defining the marker colors, label, and dash pattern of each line, 
+ * Define Data Dependent resources and tweak some resources in the
+ * resource file.
+ */
+    for( i = 0; i < NCURVE; i++ ) {
+        NhlRLClear(rlist);
+        NhlRLSetInteger(rlist,NhlNdsDataItem,dataid[i]);
+        sprintf(datastr,"xyDep%1d",i+1);
+        NhlCreate(&datadepid[i],datastr,NhlxyDataDepLayerClass,NhlDEFAULT_APP,
+             rlist);
+    }
+/*
+ * This array of Data Dependent objects is now the resource value for
+ * xyCurveData.  Tweak some more XYPlot resources in the resource file.
  */
     NhlRLClear(rlist);
-    NhlRLSetInteger(rlist,NhlNdsDataItem,dataid);
-    NhlRLSetIntegerArray(rlist,NhlNxyMarkerModes,markmodes,NhlNumber(markmodes));
-    NhlRLSetFloatArray(rlist,NhlNxyMarkerSizes,marksizes,NhlNumber(marksizes));
-    NhlRLSetIntegerArray(rlist,NhlNxyMarkers,markers,NhlNumber(markers));
-    NhlRLSetIntegerArray(rlist,NhlNxyMarkerColors,markcolors,NhlNumber(markcolors));
-    NhlRLSetIntegerArray(rlist,NhlNxyColors,linecolors,NhlNumber(linecolors));
-    NhlCreate(&datadepid,"XYDep",NhlxyDataDepLayerClass,NhlDEFAULT_APP,rlist);
-/*
- * This new Data Dependent object is now the resource value for xyCurveData.
- * Tweak some more XYPlot resources as well (in the resource file).
- */
-    NhlRLClear(rlist);
-    NhlRLSetInteger(rlist,NhlNxyCurveData,datadepid);
+    NhlRLSetIntegerArray(rlist,NhlNxyCurveData,datadepid,NhlNumber(datadepid));
     NhlRLSetFloatArray(rlist,NhlNxyYIrregularPoints,explicit_values,
                     NhlNumber(explicit_values));
     NhlCreate(&plotid,"XYPlot",NhlxyPlotLayerClass,xworkid,rlist);

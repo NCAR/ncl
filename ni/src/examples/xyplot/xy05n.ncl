@@ -1,5 +1,5 @@
 ;
-;      $Id: xy05n.ncl,v 1.1 1995-02-09 23:07:25 haley Exp $
+;      $Id: xy05n.ncl,v 1.2 1995-02-10 15:18:49 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
@@ -18,9 +18,9 @@
 ;;  Date:       Thu Feb  9 10:33:47 MST 1995
 ;;
 ;;  Description:    This example shows how to create an XY plot object with
-;;                  multiple lines in the plot using the CoordArrays object.
-;;                  The CoordArrTable object is only available for the C
-;;                  programming language, so we must use CoordArrays here.
+;;                  multiple lines using the CoordArrays and multiple Data
+;;                  objects.  Using multiple Data objects allows you 
+;;                  to have a different number of points in each line.
 ;;
 ;;                  Some of the XY marker resources are tweaked in the
 ;;                  resource file to show how to change the appearance of
@@ -71,15 +71,6 @@ npts = 500
 len = new(ncurve,integer)
 len = (/500,200,400,300/)
 ydra = new((/ncurve,npts/),float)
-linecolors = new(ncurve, integer)
-markcolors = new(ncurve, integer)
-markmodes = new(ncurve, character)
-marksizes = new(ncurve, float)
-linecolors = (/40, 0, 100, 50/)
-markcolors = (/0, 75, 15, 0/)
-markers = (/1, 2, 3, 4/)
-markmodes = (/"NOMARKERS","MARKERSONLY","MARKLINES","NOMARKERS"/)
-marksizes = (/.015,.008,.024,.015/)
 
 ;
 ; Create array for explicit data values
@@ -105,38 +96,33 @@ appid = create "xy05" appLayerClass noparent end create
 xworkid = create "x" xWorkstationLayerClass noparent end create
 
 ;
-; Define data objects.  Notice that for each array, we want a different
-; number of points, so we use special array indexing that's available
-; in NCL.
+; Define the data objects.  Since only the Y values are specified here,
+; each Y value will be paired with its integer array index.  The id for
+; each object will then later be used as a value for a Data Dep
+; resource, "dsDataItem".
 ;
 dataid = new(ncurve,graphic)
-do i=0,ncurve-1
-  dataid(i) = create "xyData"+i coordArraysLayerClass noparent
-    "caYArray": ydra(i,0:(len(i)-1))
+do i=1,ncurve
+  dataid(i-1) = create "xyCoord"+i coordArraysLayerClass noparent
+    "caYArray": ydra(i-1,0:(len(i-1)-1))
   end create
 end do
 
 ;
-; Define Data Dependent resources.  Here's where you specify the resources
-; for defining the marker styles of each line.
+; Define Data Dependent resources and tweak some resources in the
+; resource file.
 ;
 datadepid = new(ncurve,graphic)
-do i=0,ncurve-1
-  datadepid(i) = create "XYDep"+i xyDataDepLayerClass noparent
-    "dsDataItem":      dataid(i)
-    "xyMarkerMode":    markmodes(i)
-    "xyMarkerSizeF":   marksizes(i)
-    "xyMarker":        markers(i)
-    "xyMarkerColor":   markcolors(i)
-    "xyColor":         linecolors(i)
+do i=1,ncurve
+  datadepid(i-1) = create "xyDep"+i xyDataDepLayerClass noparent
+    "dsDataItem":      dataid(i-1)
   end create
 end do
 
 ;
-; Create the Plot object which is created as a child of the X workstation
-; object.  The resources that are being changed are done in the "xy05.res"
-; file, and they affect this Plot object.
-; 
+; This array of Data Dependent objects is now the resource value for
+; xyCurveData.  Tweak some more XYPlot resources in the resource file.
+;
 plotid = create "xyPlot" xyPlotLayerClass xworkid
     "xyCurveData": datadepid
     "xyYIrregularPoints":  exp_vals
