@@ -1,5 +1,5 @@
 /*
- *	$Id: Xcrm.c,v 1.3 1991-03-12 17:34:44 clyne Exp $
+ *	$Id: Xcrm.c,v 1.4 1991-04-08 11:14:42 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -54,7 +54,7 @@ free_colors()
 
 	for (i = 0; i < MAX_COLOR_SIZE; i++) {
 		if (Colordef[i]) {
-			free_list[i] = Colortab[i];
+			free_list[count] = Colortab[i];
 			count++;
 		}
 	}	
