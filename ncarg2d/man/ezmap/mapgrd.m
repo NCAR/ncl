@@ -1,0 +1,110 @@
+.TH MAPGRD 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
+.SH NAME
+MAPGRD -
+Draws a lat/lon grid. 
+.SH SYNOPSIS
+CALL MAPGRD 
+.SH C-BINDING SYNOPSIS
+#include <ncarg/ncargC.h>
+.sp
+void c_mapgrd()
+.SH DESCRIPTION
+MAPGRD has no arguments.
+.SH USAGE@@@
+The statement:
+.RS 5
+.sp
+CALL MAPGRD
+.RE
+.sp
+draws a grid consisting of lines of constant latitude (parallels) and lines
+of constant longitude (meridians), spaced as specified by the value of the
+internal parameter 'GR'.  If EZMAP needs initialization or if the
+value of 'GR' is less than or equal to zero or if 'ER' is non-zero,
+MAPGRD does nothing.
+.sp
+The grid is drawn using calls to MAPIT and MAPIQ.  By default, MAPGRD
+temporarily forces the value of the internal parameter 'DL' to zero, so
+that the grid will be drawn using calls to the routines FRSTD and VECTD,
+in the dash package.  MAPGRD also temporarily forces the use of the dash
+pattern defined by the internal parameter 'DA'.  A user version of the
+routine MAPUSR may be supplied to change the way in which grid lines
+are drawn.  Before returning control to the user, MAPGRD restores the
+original value of 'DL' and resets the current dash pattern to be used
+by the dash package.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+examples: 
+cmpclr,
+cmpdd,
+cmpgrd,
+cmplbl,
+cmplot,
+cmptit,
+mpex09.
+.SH ACCESS
+To use MAPGRD, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_loc, preferably in that order.  To use c_mapgrd, load 
+the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
+and ncarg_loc, preferably in that order.
+.SH SEE ALSO
+Online:
+ezmap, 
+ezmap_params, 
+mapaci,
+mapbla,
+mapdrw,
+mapeod, 
+mapfst,
+mapgci,
+mapgrm,
+mapgtc,  
+mapgti,  
+mapgtl,  
+mapgtr,  
+mapint,
+mapiq,
+mapiqa,
+mapiqm,
+mapit,
+mapita,
+mapitm,
+maplbl,
+maplmb,
+maplot,
+mappos,   
+maproj,  
+maprs,
+maprst,  
+mapsav,  
+mapset,  
+mapstc,  
+mapsti,  
+mapstl,  
+mapstr,  
+maptra,
+maptri,
+maptrn,
+mapusr, 
+mapvec,
+mpgetc,
+mpgeti,  
+mpgetl,
+mpgetr,  
+mpsetc,  
+mpseti,  
+mpsetl,  
+mpsetr,  
+supmap,
+supcon,
+ncarg_cbind
+.sp
+Hardcopy:  
+Tutorial: A Step-by-Step Guide to Contouring and Mapping
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+for Atmospheric Research
+.br
+All Rights Reserved

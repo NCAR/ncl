@@ -1,0 +1,43 @@
+.\"
+.\"	$Id: gpm.m,v 1.1 1993-03-11 16:22:24 haley Exp $
+.\"
+.TH GPM 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.SH NAME
+GPM (Polymarker) - the polymarker output primitive draws selected
+symmetric symbols to mark user-specified coordinate positions.
+.SH SYNOPSIS
+CALL GPM (N, X, Y)
+.SH DESCRIPTION
+.IP N 12
+(Integer, Input) - The number of markers to be drawn.  N must be
+greater than zero.
+.IP "X (N)" 12
+(Real Array, Input) - The X coordinates of the N markers to be 
+drawn, in world coordinates.
+.IP "Y (N)" 12
+(Real Array, Input) - The Y coordinates of the N markers to be 
+drawn, in world coordinates.
+.SH USAGE
+By default, the polymarker type is an asterisk. To 
+select other polymarker types and attributes, see the man
+page for gsmk.
+.sp
+Note that the coordinate pairs must be in world coordinates and not
+user coordinates.  Among other things, this means that the log scaling
+and mirror-imaging features available via the SET call and the SPPS
+functions for drawing dots and markers are not applicable here.
+.SH ACCESS
+To use GKS routines, load the NCAR GKS-0A library 
+ncarg_gks.
+.SH SEE ALSO
+Online: 
+gsmk, gsmksc, gscr, gspmci, gqmk, gqmksc, gqpmci, 
+point, points, ngdots
+.sp
+Hardcopy: 
+"User's Guide for NCAR GKS-0A Graphics"
+.SH COPYRIGHT
+(c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+for Atmospheric Research
+.br
+All Rights Reserved

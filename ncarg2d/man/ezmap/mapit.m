@@ -1,0 +1,156 @@
+.TH MAPIT 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
+.SH NAME
+MAPIT - Draws lines on a map.
+.SH SYNOPSIS
+CALL MAPIT (RLAT,RLON,IFST)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/ncargC.h>
+.sp
+void c_mapit (float rlat, float rlon, int ifst)
+.SH DESCRIPTION 
+.IP "RLAT and RLON" 12 
+(input expressions, of type REAL) specify the latitude and
+longitude of a point to which the "pen" is to be moved. Both are given in
+degrees. RLAT must be between -90. and +90., inclusive; RLON must be
+between -540. and +540., inclusive.
+.IP IFST 12 
+(an input expression, of type INTEGER) is 0 to do a "pen-up" move, 1
+to do a "pen-down" move only if the distance from the last point to the
+new point is greater than 'MV' plotter units, and 2 or greater to do a
+"pen-down" move regardless of the distance from the last point to the new
+one.
+.SH C-BINDING DESCRIPTION 
+The C-binding argument descriptions are the same as the FORTRAN 
+argument descriptions.
+.SH USAGE@@@
+MAPIT is used to draw lines on the map; it is called by Ezmap itself
+and, if desired, by the user. MAPIT attempts to omit
+nonvisible portions of lines and to handle "crossover," a
+jump from one end of the map to the other caused by the
+projection of the globe onto a flat surface. Crossover can 
+occur on cylindrical and conical projections; MAPIT handles 
+it gracefully on the former and not so well on the latter. 
+.sp
+To draw the projection of a line defined by a series of lat/lon
+coordinates, start by calling MAPIT with the coordinates of the
+first point and with IFST = 0.  Then, call MAPIT repeatedly with
+the coordinates of the next point along the line and with IFST = 1
+or 2.
+(IFST = 2 is normally used only for the final point, to
+ensure closure with a line drawn by another series of calls.)
+Finally, if the next thing your program does is stop, call FRAME,
+or change attributes like color or line width, you should call MAPIQ
+to flush MAPIT's buffers.
+.sp
+The Ezmap parameter 'DL' determines whether MAPIT draws solid
+lines or dotted lines. Dotted lines are drawn using calls to
+POINTS. Solid lines are drawn using calls to DASHD, FRSTD, and
+VECTD. The parameters 'DD' and 'MV' also affect MAPIT's
+behavior. See the descriptions of these parameters in the
+ezmap_params man page.
+.sp
+Keep in mind the following:
+.IP \(bu 4
+The projection of the line segment joining two points on the
+globe is considered to be the straight-line segment joining the
+projections of the points; no attempt is made to project it as
+if it were a portion of a great circle.
+.IP \(bu 4
+If both endpoints of a line segment are visible, the segment
+is considered to be entirely visible.
+.IP \(bu 4
+If both endpoints are invisible, the segment is considered
+to be entirely invisible.
+.IP \(bu 4
+If one endpoint is visible and the other is not, a new point
+is interpolated at the boundary between the visible and
+invisible portions.
+Only visible portions of the line are drawn.
+.LP
+Because of these considerations, points defining a line should not be
+too far apart on the globe.
+.sp
+There are two types of boundaries between visible and invisible regions:
+.IP \(bu 4
+The limb is a boundary between a projectable region and an
+unprojectable one. The limb may be circular, elliptical, or
+some other shape, depending on the projection being used. For
+example, an orthographic projection has as its limb a circle,
+centered at (0,0), with a radius of 1.
+.IP \(bu 4
+The perimeter is a rectangular or elliptical boundary
+defined by Ezmap parameters set by you to specify the region
+you wish to view.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+examples: 
+cmpgci,
+cmpit,
+cmptra,
+mpexfi.
+.SH ACCESS
+To use MAPIT, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_loc, preferably in that order.  To use c_mapit, load the 
+NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
+ncarg_loc, preferably in that order.
+.SH SEE ALSO
+Online:
+ezmap,
+ezmap_params,
+mapaci,
+mapbla,
+mapdrw,
+mapeod,
+mapfst,
+mapgci,
+mapgrd,
+mapgrm,
+mapgtc,
+mapgti,
+mapgtl,
+mapgtr,
+mapint,
+mapiq,
+mapiqa,
+mapiqm,
+mapita,
+mapitm,
+maplbl,
+maplmb,
+maplot,
+mappos,
+maproj,
+maprs,
+maprst,
+mapsav,
+mapset,
+mapstc,
+mapsti,
+mapstl,
+mapstr,
+maptra,
+maptri,
+maptrn,
+mapusr,
+mapvec,
+mpgetc,
+mpgeti,
+mpgetl,
+mpgetr,
+mpsetc,
+mpseti,
+mpsetl,
+mpsetr,
+supmap,
+supcon,
+ncarg_cbind
+.sp
+Hardcopy: 
+Tutorial: A Step-by-Step Guide to Contouring and Mapping
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+for Atmospheric Research
+.br
+All Rights Reserved

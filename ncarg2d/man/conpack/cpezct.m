@@ -1,0 +1,67 @@
+.TH CPEZCT 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
+.SH NAME
+CPEZCT - Simulates the behavior of the old subroutine EZCNTR in
+Conrec_family; it has the same arguments and will produce similar
+output.  
+.SH SYNOPSIS
+CALL CPEZCT (ZDAT,MZDT,NZDT)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/ncargC.h>
+.sp
+void c_cpezct (zdat, mzdt, nzdt)
+.SH DESCRIPTION 
+.IP ZDAT 12
+(REAL array, dimensioned MZDT x NZDT, input) is the 
+array containing the data to be contoured.
+.IP MZDT 12
+(INTEGER, input) is the first dimension of the FORTRAN 
+array ZDAT and of the array of data stored in it.
+.IP NZDT 12
+(INTEGER, input) is the second dimension of the 
+FORTRAN array ZDAT and of the array of data stored in it.
+.SH C-BINDING DESCRIPTION
+The C-binding argument descriptions are the same as the FORTRAN 
+argument descriptions with the following exceptions:
+.IP "z(n,m)" 12
+An n by m data array holding values to be contoured.
+.IP "m" 12
+The second dimension of z.
+.IP "n" 12
+The first dimension of z.
+.SH USAGE@@@
+The effect of calling CPEZCT will be exactly the same as if
+you had executed the statements:
+.sp
+CALL CPCNRC (ZDAT,MZDT,MZDT,NZDT,0.,0.,0.,0,0,-682)
+.br
+CALL FRAME
+.sp
+See the man page for CPCNRC.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+examples: 
+cpex09,
+tconpa.
+.SH ACCESS
+To use CPEZCT, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_loc, preferably in that order.  To use c_cpezct, 
+load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
+and ncarg_loc, preferably in that order.
+.SH SEE ALSO
+Online:
+conpack,
+cpback, cpchcf, cpchcl, cpchhl, cpchil, cpchll, cpcica, cpclam, cpcldm,
+cpcldr, cpcltr, cpcnrc, cpdrpl, cpgetc, cpgeti, cpgetr, cplbam,
+cplbdr, cpmpxy, cppkcl, cppklb, cprect, cprset, cpscae, cpsetc, cpseti,
+cpsetr, cpsps1, cpsps2, ncarg_cbind
+.sp
+Hardcopy:
+Tutorial: A Step-by-Step Guide to Contouring and Mapping
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+for Atmospheric Research
+.br
+All Rights Reserved
+

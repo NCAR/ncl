@@ -1,0 +1,56 @@
+.TH CURVE 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
+.SH NAME
+CURVE - draws a curve defined by the series of points (PX(I),PY(I), I
+= 1,NP), in the user coordinate system.  The pen is left at the location
+of the last point in the curve.
+.SH SYNOPSIS
+CALL CURVE (PX,PY,NP)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/ncargC.h>
+.sp
+void c_curve (float *px, float *py, int np)
+.SH DESCRIPTION 
+.IP PX 12
+(an input coordinate of type REAL) defining the X user coordinate of
+a point in the curve.
+.IP PY 12
+(an input coordinate of type REAL) defining the Y user coordinate of
+a point in the curve.
+.IP NP 12
+(an input parameter of type INTEGER) the value of which is the number
+of points in the curve.
+.SH C-BINDING DESCRIPTION
+The C-binding argument descriptions are the same as the FORTRAN
+argument descriptions.
+.SH USAGE
+If the routine SET was not called, or if it was called with a linear
+mapping in both the X and Y coordinates, then the GKS routine GPL is
+called to output a polyline of length NP points.  If the mapping in
+either axis is non-linear, the input coordinates are transformed and
+drawn ten points at a time. (The last segment may be less than ten points.)
+.sp
+Polyline type, line width, and color can also be set by calling the
+GKS routines, GSLN, GSLWSC, GSCR, and GSPLCI, before calling CURVE.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant examples: 
+sfex01, sfex02, and tsoftf.
+.SH ACCESS
+To use CURVE, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_loc, preferably in that order.  To use c_curve, load the 
+NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
+and ncarg_loc, preferably in that order.
+.SH SEE ALSO
+Online:
+gpl, gsln, gslwsc, gscr, gsplci,
+frstpt, vector, plotif, line, spps, spps_params, ncarg_cbind
+.sp
+Hardcopy:  
+User's Guide for NCAR GKS-0A Graphics, Version 2.00;
+"The Use of X/Y Coordinates in NCAR Graphics" SCD User Document
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+for Atmospheric Research
+.br
+All Rights Reserved
