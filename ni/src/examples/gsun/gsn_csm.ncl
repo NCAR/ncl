@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.56 2001-01-13 19:20:25 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.57 2001-01-15 05:05:49 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -86,13 +86,18 @@ undef("gsn_csm_vector_map_polar")
 undef("gsn_csm_vector_map_other")
 undef("gsn_csm_streamline_map_ce")
 undef("gsn_csm_streamline_map_polar")
+undef("gsn_csm_streamline_map_other")
 undef("gsn_csm_streamline_scalar_map_ce")
+undef("gsn_csm_streamline_scalar_map_polar")
+undef("gsn_csm_streamline_scalar_map_other")
 undef("gsn_csm_vector_scalar_map_ce")
 undef("gsn_csm_vector_scalar_map_polar")
 undef("gsn_csm_vector_scalar_map_other")
 undef("gsn_csm_contour_map")
+undef("gsn_csm_streamline_map")
 undef("gsn_csm_vector_map")
 undef("gsn_csm_vector_scalar_map")
+undef("gsn_csm_streamline_scalar_map")
 undef("gsn_csm_contour_map_overlay")
 undef("gsn_csm_xy")
 undef("gsn_csm_contour")
@@ -4585,20 +4590,135 @@ begin
 
 ; Check for cyclic point (default is True).
 
-; Function : gsn_csm_streamline_scalar_map_ce                               ;
     if(get_res_value(res2,"gsnAddCyclic",True))
       unew = gsn_add_cyclic_point(u)
       vnew = gsn_add_cyclic_point(v)
     else
       unew = u
       vnew = v
-; This function is similar to gsn_csm_streamline_map_ce except it colors the;
-; vectors according to a scalar field.                                  ;
+    end if
+
+; Check for left/right titles at top. Use attributes "long_name" and
+; streamlineed, and "resources" is an optional list of resources. The   ;
+; Id of the map plot is returned.                                       ;
+    set_right_subtitle(unew,res2,mpres)
+    set_left_subtitle(unew,res2,mpres)
+
+; Check for draw and frame.
+
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",True)
+    maxbb     = get_bb_res(res2)
+
+;
+; Check for type of polar plot desired.
+;
+    mpres@gsnPolar = get_polar_type(res2)
+
+; Check for subtitles at top and add to mpres if exist.
+
+    set_subtitles_res(res2,mpres)
+;
+; Tickmarks.
+;
+    mpres@gsnTickMarksOn = get_res_value(res2,"gsnTickMarksOn",True)
+    res2 = resources
+; Create data object and use coordinate variables if they exist.
+
+    check_for_y_lat_coord(unew,res2,"vector")
+    check_for_lon_coord(unew,res2,"vector")
+
+; This section tests for regular resources.
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
+    stres = get_res_ne(res2,(/"mp","vp","tm","tx","am"/))
+
+; Before we create the objects, turn off draw and frame for them.
+    stres = True
+    mpres = True
+    stres@gsnDraw   = False
+    stres@gsnFrame  = False
+    mpres@gsnDraw  = False
+    mpres@gsnFrame = False
+
+    stream_object = gsn_streamline(wks,unew,vnew,stres) ; Create streamlines
+    map_object    = gsn_csm_map(wks,mpres)          ; Create map.
+    overlay(map_object,stream_object)               ; Overlay strmlns on map.
+;
+; Retrieve the view port location of the map plot so we know where
+; to put titles.
+;
+    getvalues map_object
+      "vpWidthF"  : vpwf
+      "vpHeightF" : vphf
+
+; Make sure axes labels are the same size.
+
+    font_height = 0.02 * vphf     ; Make various label sizes a function
+                                  ; of the height of the viewport.
+;
+; Check if user setting own font heights.
+;
+    main_font_height = get_res_value(res2,"tiMainFontHeightF", \
+                                     2.*font_height)
+    setvalues map_object
+        "tiMainFontHeightF"    : main_font_height  ; main title size
+    end setvalues
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
+; Draw all this stuff: map plot, subtitles, and tick marks.
+    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+
+; Return plot object and data object (as attribute of plot object).
+
+    map_object@data       = stream_object@data
+    map_object@streamline = stream_object
+    return(map_object)
+end
+
+;***********************************************************************;
+; Function : gsn_csm_streamline_map_other                               ;
+;                   wks: workstation object                             ;
+;                     u: 2-dimensional data                             ;
+;                     v: 2-dimensional data                             ;
+;               resources: optional resources                           ;
 ;                                                                       ;
-; There's a special resource associated with this function called       ;
-; "gsnScalarContour".  If it's set to True, then the scalar field will  ;
-; be drawn as a contour plot.  Otherwise, the vectors will be colored   ;
-; according to the scalar field. This resource defaults to False.       ;
+; This function creates and draws a streamline plot over a map plot to  ;
+; the workstation "wks" (the variable returned from a previous call to  ;
+; "gsn_open_wks").  "u"/"v" is the 2-dimensional data to be             ;
+; streamlined, and "resources" is an optional list of resources. The    ;
+; id of the map plot is returned.                                       ;
+;                                                                       ;
+; This function behaves differently from gsn_streamline in that it will ;
+; create a special kind of plot if certain attributes are set.          ;
+;                                                                       ;
+;    1. The lat/lon grid is labeled with tickmarks.                     ;
+;    2. If any of the special GSUN resources "gsnLeftString,"           ;
+;       "gsnCenterString," and/or "gsnRightString" are set, then they   ;
+;       are used to title the top left, center, and right of the plot   ;
+;       (in addition, the regular resource "tiMainString" can be set to ;
+;       create a regular title).                                        ;
+;***********************************************************************;
+
+function gsn_csm_streamline_map_other(wks:graphic,u[*][*]:numeric,\
+    draw_and_frame(wks,map_object,calldraw,callframe)
+local i, stream_object, labelbar_object, xy_object, map_object, \
+calldraw, callframe, lbar_on, min_lat, max_lat, datanew, \
+res, res2, mpres, stres, map_vpwf, map_vphf, vphf 
+begin
+; Initialize.
+    mpres          = True
+
+    res2 = get_resources(resources)
+
+; Check for cyclic point (default is True).
+; Function : gsn_csm_streamline_scalar_map_ce                           ;
+    if(get_res_value(res2,"gsnAddCyclic",True))
+      unew = gsn_add_cyclic_point(u)
+      vnew = gsn_add_cyclic_point(v)
+    else
+      unew = u
+      vnew = v
+    end if
+
 ; Check for coordinate variables. These values will determine where to 
 ; overlay streamlines on map.
 function gsn_csm_streamline_scalar_map_ce(wks:graphic,u[*][*]:numeric,\
@@ -4813,6 +4933,357 @@ begin
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
     stres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm"/))
 
+; Function : gsn_csm_streamline_scalar_map_polar                        ;
+    stres          = True
+    mpres          = True
+    stres@gsnDraw  = False
+    stres@gsnFrame = False
+    mpres@gsnDraw  = False
+    mpres@gsnFrame = False
+
+; overlays contour plot.                                                ;
+      set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
+      set_attr(mpres,"vpHeightF",0.75)   ; on the side.
+function gsn_csm_streamline_scalar_map_polar(wks:graphic,u[*][*]:numeric, \
+      set_attr(mpres,     "vpYF",0.90)
+    end if
+
+    set_attr(stres,"cnInfoLabelZone",2)
+    set_attr(stres,"cnInfoLabelOrthogonalPosF", 0.13)
+
+    stream_object = gsn_streamline_contour(wks,unew,vnew,datanew,stres)
+
+    map_object = gsn_csm_map(wks,mpres)       ; Create map.
+    overlay(map_object,stream_object)         ; Overlay streamlines on map.
+
+    res2           = resources
+    mpres          = True
+
+    getvalues map_object@tickmarks
+      "tmXBLabelFontHeightF" : xbfontf
+    end getvalues
+
+    getvalues map_object
+      "vpWidthF"           : vpwf
+      "vpHeightF"          : vphf
+      "tiXAxisFontHeightF" : xfontf
+      "tiYAxisFontHeightF" : yfontf
+    end getvalues
+
+    font_height = min((/xfontf,yfontf/))  ; Make label sizes a function of
+                                          ; the size of the X/Y axis labels.
+;
+; Check if user setting own font heights.
+;
+    main_font_height = get_res_value(res2,"tiMainFontHeightF", \
+                                     1.3*font_height)
+    setvalues map_object
+        "tiMainFontHeightF"    : main_font_height  ; main title size
+    end setvalues
+
+; Make sure line labels and info labels are same size.
+    if(.not.isatt(stres,"cnLineLabelFontHeightF"))
+      setvalues stream_object@contour
+        "cnInfoLabelFontHeightF" : xbfontf
+     end setvalues
+    end if
+        "cnLineLabelFontHeightF"    : xbfontf
+      end setvalues
+    end if
+
+; Create a labelbar.
+
+    if(lbar_on)
+      if(.not.infolabel_on)
+        lbar_zone = 2
+      else
+        lbar_zone = 3
+      end if
+
+      set_attr(res2,"mpFillOn",False)
+      add_labelbar(wks,stream_object@contour,lbar_zone,xbfontf, \
+                   "vector",lbres)
+    end if
+  
+; Draw all this stuff: map plot, subtitles, and tick marks.
+    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+
+; Return plot object and data object (as attribute of plot object).
+
+    map_object@vfdata      = stream_object@vfdata
+    map_object@sfdata      = stream_object@sfdata
+    map_object@streamline  = stream_object
+    map_object@contour     = stream_object@contour
+    return(map_object)
+end
+
+;***********************************************************************;
+; Function : gsn_csm_streamline_contour_map_polar                       ;
+;                   wks: workstation object                             ;
+;                     u: 2-dimensional data                             ;
+;                     v: 2-dimensional data                             ;
+;                  data: 2-dimensional scalar data                      ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function is similar to gsn_csm_streamline_map_polar except it    ;
+; overlays a contour plot.                                              ;
+;***********************************************************************;
+
+function gsn_csm_streamline_contour_map_polar(wks:graphic,u[*][*]:numeric, \
+                                         v[*][*]:numeric,data[*][*]:numeric,
+                                         resources:logical)
+local i, stream_object, map_object, res, res2, calldraw, vcres, \
+lbres, vpwf, vphf, callframe, lbar_on, lbar_zone, unew, vnew
+begin
+;
+; The default is to draw streamlines colored by a scalar field, so this
+; means a labelbar should be drawn, and no contour information is 
+; needed.
+;
+; Initialize.
+    res2  = get_resources(resources)
+    mpres = True
+
+; Check for cyclic point (default is True).
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
+    stres = get_res_ne(res2,(/"mp","vp","tm","tx","am","lb"/))
+      unew    = gsn_add_cyclic_point(u)
+      vnew    = gsn_add_cyclic_point(v)
+      datanew = gsn_add_cyclic_point(data)
+    else
+      unew    = u
+      vnew    = v
+      datanew = data
+    end if
+
+; Check for coordinate variables. These values will determine where to 
+; overlay streamlines on map.
+
+    check_for_y_lat_coord(unew,res2,"vector")
+    check_for_lon_coord(unew,res2,"vector")
+
+; Check for left/right titles at top. Use attributes "long_name" and
+; "units" if they exist.
+
+    set_right_subtitle(unew,res2,mpres)
+    set_left_subtitle(unew,res2,mpres)
+
+; Check for draw and frame.
+
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",True)
+    maxbb     = get_bb_res(res2)
+
+;
+; Check for type of polar plot.
+;
+    mpres@gsnPolar = get_polar_type(res2)
+
+; Check for subtitles at top and add to mpres if exist.
+
+    set_subtitles_res(res2,mpres)
+; 
+; Determine which annotations (labelbar, info label) should be turned on. 
+; By default, labelbar is on, and contour info label is off.
+;
+    if(check_attr(res2,"cnFillOn",True,False))
+      set_attr(res2,"cnFillDrawOrder","Predraw")
+      set_attr(res2,"cnLineLabelsOn",False)
+      set_attr(res2,"cnLinesOn",False)
+      set_attr(res2,"cnInfoLabelOn",False)
+    else    
+      set_attr(res2,"cnInfoLabelOn",True)
+      set_attr(res2,"lbLabelBarOn",False)
+    end if
+;
+; Check for coordinate variables for scalar field.
+    draw_and_frame(wks,map_object,calldraw,callframe)
+    check_for_y_lat_coord(datanew,res2,"contour")
+    check_for_lon_coord(datanew,res2,"contour")
+
+    lbar_on      = get_res_value_keep(res2,"lbLabelBarOn",True)
+    lbar_orient  = lower_case(get_res_value_keep(res2,"lbOrientation", \
+                              "horizontal"))
+    infolabel_on = get_res_value_keep(res2,"cnInfoLabelOn",False)
+;
+; Now that we know what's being drawn for annotations (labelbar, 
+; info label), we can determine where to put all this
+; stuff.
+;
+; Function : gsn_csm_streamline_scalar_map_other                        ;
+      set_attr(res2,"cnInfoLabelZone",2)
+      set_attr(res2,"cnInfoLabelOrthogonalPosF", 0.1)
+      set_attr(res2,"cnInfoLabelParallelPosF", 1.0)
+      set_attr(res2,"cnInfoLabelJust","TopRight")
+    end if
+
+    if(lbar_on)
+      if(lbar_orient.eq."vertical")
+;                                                                       ;
+        set_attr(res2,"vpXF",0.15)
+        set_attr(res2,"pmLabelBarOrthogonalPosF",0.1)
+function gsn_csm_streamline_scalar_map_other(wks:graphic,u[*][*]:numeric,\
+        set_attr(res2,"vpYF",0.82)
+      end if
+    end if
+;
+; Tickmarks.
+;
+    mpres@gsnTickMarksOn = get_res_value(res2,"gsnTickMarksOn",True)
+
+; This section tests for regular resources.
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
+    stres = get_res_ne(res2,(/"mp","vp","tm","tx","am","lb","pm"/))
+
+; Before we create the objects, turn off draw and frame for them.
+    res2 = resources
+    mpres = True
+    stres@gsnDraw   = False
+    stres@gsnFrame  = False
+    mpres@gsnDraw  = False
+    mpres@gsnFrame = False
+
+    stream_object = gsn_streamline_contour(wks,unew,vnew,datanew,stres)
+    map_object    = gsn_csm_map(wks,mpres)      ; Create map.
+    overlay(map_object,stream_object)           ; Overlay streamlines on map.
+
+; Retrieve plot height so we can compute font height.
+
+    getvalues map_object
+      "vpHeightF"          : vphf
+    end getvalues
+
+; Make sure axes labels are the same size.
+
+    font_height = 0.02 * vphf     ; Make various label sizes a function
+                                  ; of the height of the viewport.
+;
+; Check if user setting own font heights.
+;
+    main_font_height = get_res_value(res2,"tiMainFontHeightF", \
+                                     1.3*font_height)
+    setvalues map_object
+        "tiMainFontHeightF"    : main_font_height  ; main title size
+    end setvalues
+
+
+    if(lbar_on)
+      if(.not.infolabel_on)
+        lbar_zone = 2
+      else
+        lbar_zone = 3
+      end if
+;
+; Get labelbar resources, if any.
+;
+      set_attr(res2,"mpFillOn",False)
+      lbres = get_res_eq(res2,(/"lb","pm"/))
+
+      add_labelbar(wks,stream_object@contour,lbar_zone,font_height, \
+                   "vector",lbres)
+    end if
+  
+; Draw all this stuff: map plot, subtitles, and tick marks.
+    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+
+; Return plot object and data object (as attribute of plot object).
+
+    map_object@vfdata  = stream_object@vfdata
+    map_object@sfdata  = stream_object@sfdata
+    map_object@streamline  = stream_object
+    map_object@contour = stream_object@contour
+    return(map_object)
+end
+
+
+;***********************************************************************;
+; Function : gsn_csm_streamline_contour_map_other                       ;
+;                   wks: workstation object                             ;
+;                     u: 2-dimensional data                             ;
+;                     v: 2-dimensional data                             ;
+;                  data: 2-dimensional scalar data                      ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function is similar to gsn_csm_streamline_map_other except       ;
+; overlays a contour plot.                                              ;
+;***********************************************************************;
+
+function gsn_csm_streamline_contour_map_other(wks:graphic,u[*][*]:numeric,\
+                                        v[*][*]:numeric,data[*][*]:numeric, \
+                                        resources:logical)
+local i, stream_object, labelbar_object, map_object, \
+calldraw, callframe, lbar_on, min_lat, max_lat, datanew, \
+res, res2, lbres, mpres, vcres, levels, colors, \
+lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just, \
+map_vpwf, map_vphf, vphf 
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
+    stres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am"/))
+    infolabel_on   = False
+    lbar_on        = False    ; Default is no labelbar.
+    mpres          = True
+
+    res2 = get_resources(resources)
+
+; Check for cyclic point (default is True).
+
+    if(get_res_value(res2,"gsnAddCyclic",True))
+      unew = gsn_add_cyclic_point(u)
+      vnew = gsn_add_cyclic_point(v)
+      datanew = gsn_add_cyclic_point(data)
+    else
+      unew = u
+      vnew = v
+      datanew = data
+    end if
+
+; Check for coordinate variables. These values will determine where to 
+; overlay streamlines on map.
+
+    check_for_y_lat_coord(unew,res2,"vector")
+    check_for_lon_coord(unew,res2,"vector")
+
+; Check for left/right titles at top. Use attributes "long_name" and
+; "units" if they exist.
+
+    set_right_subtitle(unew,res2,mpres)
+    set_left_subtitle(unew,res2,mpres)
+
+; Check if frame and/or draw are not supposed to be called.
+
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",True)
+    maxbb     = get_bb_res(res2)
+
+; Check for subtitles at top and add to mpres if exist.
+
+    set_subtitles_res(res2,mpres)
+
+; 
+; Determine which annotations (labelbar, info label) should be turned on.
+; By default, labelbar is on, and contour info label is off.
+;
+    if(check_attr(res2,"cnFillOn",True,False))
+      set_attr(res2,"cnFillDrawOrder","Predraw")
+      set_attr(res2,"cnLineLabelsOn",False)
+      set_attr(res2,"cnLinesOn",False)
+      set_attr(res2,"cnInfoLabelOn",False)
+    else    
+      set_attr(res2,"cnInfoLabelOn",True)
+      set_attr(res2,"lbLabelBarOn",False)
+    draw_and_frame(wks,map_object,calldraw,callframe)
+;
+; Check for coordinate variables for scalar field.
+;
+    check_for_y_lat_coord(datanew,res2,"contour")
+    check_for_lon_coord(datanew,res2,"contour")
+
+    lbar_on      = get_res_value_keep(res2,"lbLabelBarOn",True)
+    lbar_orient  = lower_case(get_res_value_keep(res2,"lbOrientation", \
+                              "horizontal"))
+    infolabel_on = get_res_value_keep(res2,"cnInfoLabelOn",False)
+
+;
+; Now that we know what's being drawn for annotations (labelbar, 
     minor_length = min((/ymlength,xmlength/))  ; New length for minor ticks.
 
 ; If the plot is close to square in size, then make the 
@@ -5558,6 +6029,38 @@ begin
 ;
 ; Check if user setting own font heights.
 ;
+    main_font_height = get_res_value(res2,"tiMainFontHeightF", \
+                                     2.*font_height)
+    setvalues map_object
+      "tiMainFontHeightF"    : main_font_height  ; main title size
+    end setvalues
+
+; Set font heights only if they haven't been set explicitly by user.
+; gsn_csm_streamline_map_polar or gsn_csm_streamline_map_polar          ;
+    if(.not.isatt(vcres,"vcRefAnnoFontHeightF"))
+      setvalues vector_object
+        "vcRefAnnoFontHeightF"  : font_height
+      end setvalues
+    end if
+
+; Create a labelbar.
+  res  = resources
+    if(lbar_on)
+      if(.not.refanno_on.and..not.infolabel_on)
+        lbar_zone = 2
+      else
+        lbar_zone = 3
+      end if
+;
+; Get labelbar resources, if any.
+;
+      lbres = get_res_eq(res2,(/"lb","pm"/))
+
+      if(scalar_contour)
+        add_labelbar(wks,vector_object@contour,lbar_zone,font_height, \
+                     "vector",lbres)
+      else
+        add_labelbar(wks,vector_object,lbar_zone,font_height, \
                      "vector",lbres)
       end if
     end if
@@ -5598,7 +6101,7 @@ begin
   res = get_resources(resources)
 
   if(res.and.(isatt(res,"gsnPolarNH").or.isatt(res,"gsnPolarSH").or.\
-; gsn_csm_vector_scalar_map_polar or gsn_csm_vector_scalar_map_polar    ;
+              isatt(res,"gsnPolar")))
     return(gsn_csm_contour_map_polar(wks,data,res))
   else
     if(check_attr(res,"mpProjection","CylindricalEquidistant",True).or.\
@@ -5618,6 +6121,40 @@ end
 ;                     v: 2-dimensional data                             ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
+; This function calls either gsn_csm_streamline_map_ce,                 ;
+; gsn_csm_streamline_map_polar or gsn_csm_streamline_map_other          ;
+; depending on the map projection selected.                             ;
+;***********************************************************************;
+
+function gsn_csm_streamline_map(wks:graphic,u[*][*]:numeric,v[*][*]:numeric,\
+; Function : gsn_csm_streamline_scalar_map                              ;
+local res
+begin
+  res = get_resources(resources)
+
+  if(res.and.(isatt(res,"gsnPolarNH").or.isatt(res,"gsnPolarSH").or.\
+              isatt(res,"gsnPolar")))
+; This function calls either gsn_csm_streamline_scalar_map_ce,          ;
+; gsn_csm_vector_scalar_map_polar depending on the map projection       ;
+       .not.isatt(res,"mpProjection"))
+      return(gsn_csm_streamline_map_ce(wks,u,v,res))
+    else
+function gsn_csm_streamline_scalar_map(wks:graphic,u[*][*]:numeric, \
+    end if
+  end if
+end
+
+  res  = resources
+;***********************************************************************;
+; Function : gsn_csm_vector_map                                         ;
+;                   wks: workstation object                             ;
+    return(gsn_csm_streamline_scalar_map_polar(wks,u,v,data,res))
+;                     v: 2-dimensional data                             ;
+;               resources: optional resources                           ;
+;                                                                       ;
+      return(gsn_csm_streamline_scalar_map_ce(wks,u,v,data,res))
+; gsn_csm_vector_map_polar or gsn_csm_vector_map_polar depending on the ;
+      return(gsn_csm_streamline_scalar_map_other(wks,u,v,data,res))
 ;***********************************************************************;
 
 function gsn_csm_vector_map(wks:graphic,u[*][*]:numeric,v[*][*]:numeric,\
