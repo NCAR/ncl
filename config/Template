@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.45 2004-10-21 22:17:48 haley Exp $
+ *      $Id: Template,v 1.46 2005-03-06 22:07:11 haley Exp $
  */
 /************************************************************************
 *									*
@@ -831,7 +831,7 @@ NGCOMM After Including Rules file
 NGCOMM
 NGCOMM########################################################################
 
-.SUFFIXES: .f.sed
+.SUFFIXES: .f.sed .xml .shtml
 
 .f.sed.o:
 	@$(FCPP) $< $*.f
