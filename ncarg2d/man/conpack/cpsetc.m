@@ -19,7 +19,7 @@ character string be used to improve the readability of the
 code. For example, instead of 'ILT', use 'ILT - 
 INFORMATIONAL LABEL TEXT'.
 .IP CVAL 12
-(CHARACTER, input) is an expression, the value of 
+(CHARACTER, input) is a character constant or variable, the value of
 which is to be given to the parameter specified by PNAM.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
@@ -38,9 +38,9 @@ cpex06,
 cbex01.
 .SH ACCESS
 To use CPSETC, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_cpsetc, 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_cpsetc, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the conpack man page for a description of all Conpack error
 messages and/or informational messages.

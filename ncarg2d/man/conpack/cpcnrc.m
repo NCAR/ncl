@@ -138,8 +138,8 @@ solid lines are used.) If NDSH is greater than zero, the
 specified dash pattern is used for all contour lines; if 
 NDSH is less than zero, the dash pattern is used only for 
 negative-valued contour lines. Note: the 10-bit pattern is 
-actually made into a 16-bit pattern by prepending a copy of 
-the low-order six bits.
+actually made into a 16-bit pattern by appending a copy of
+the high-order six bits.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions with the following exceptions:
@@ -155,7 +155,7 @@ must be less than or equal to kzdt.
 The first dimension of the array of data in zdat. nzdt
 must be less than or equal to the declared first
 dimension of the array zdat.
-.SH USAGE@@@
+.SH USAGE
 The appearance of the plot produced by CPCNRC may vary,
 depending on the setting of internal parameters of Conpack.
 The following should be noted:
@@ -260,9 +260,9 @@ cpex09,
 tconpa.
 .SH ACCESS
 To use CPCNRC, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_cpcnrc, 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_cpcnrc, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 conpack,

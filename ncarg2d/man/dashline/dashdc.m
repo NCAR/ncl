@@ -35,20 +35,20 @@ the width of the plotted characters according to:
 .nf
 
   JSIZE    NDCs
-    0     .0078
-    1     .0117
-    2     .0156
-    3     .0234
+    0     \.0078
+    1     \.0117
+    2     \.0156
+    3     \.0234
 
 JSIZE > 3, gives the character width as JSIZE/1024. NDCs.
 .fi
 .SH C-BINDING DESCRIPTION
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples: 
-tdashc.f, tdashp.f, tdashs.f, fdldashc.f, fdldashd.f, spset1.f,
-spset2.f
+tdashc, tdashp, tdashs, fdldashc, fdldashd, spset1,
+spset2
 .SH ACCESS
 To use DASHDC, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.  To use c_dashdc, load 

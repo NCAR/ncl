@@ -17,10 +17,10 @@ before there was enough space for the characters, the space left
 will be filled in if LASTD is called.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples: 
-tdashp.f, tdashs.f
+tdashp, tdashs
 .SH ACCESS
-To use LASTD load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_lastd load 
+To use LASTD, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_loc, preferably in that order.  To use c_lastd, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.
 .SH SEE ALSO

@@ -16,12 +16,12 @@ a 16-bit dash pattern (1=solid, 0=blank); e.g., the binary
 number 1111000011110000, which is a decimal 61680,
 will give dashes of medium length.
 .SH C-BINDING DESCRIPTION
-The C-binding argument description is the same as the Fortran 
+The C-binding argument description is the same as the FORTRAN 
 argument description.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples: 
-tdashc.f, tdashl.f, tdashp.f, tdashs.f, fdldashd.f, carline.f,
-cmpfil.f, cmpgrp.f, cmpitm.f, cmplab.f, cmpmsk.f, cmptit.f, cmpusr.f
+tdashc, tdashl, tdashp, tdashs, fdldashd, carline,
+cmpfil, cmpgrp, cmpitm, cmplab, cmpmsk, cmptit, cmpusr
 .SH ACCESS
 To use DASHDB, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.  To use c_dashdb, load 

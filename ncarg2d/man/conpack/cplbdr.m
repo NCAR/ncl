@@ -29,7 +29,7 @@ integer workspace array.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
-.SH USAGE@@@ 
+.SH USAGE
 CPLBDR may be called at any time after the initialization 
 call to CPRECT, CPSPS1, or CPSPS2. If, during the last 
 call to CPRECT, CPSPS1, or CPSPS2, the data being 
@@ -39,22 +39,22 @@ information label, the high and low labels, and/or the
 contour line labels are drawn, as follows:
 .IP \(bu
 The information label is drawn only if the 
-parameter ILT, which specifies the text of that label, is 
+parameter 'ILT', which specifies the text of that label, is
 not blank.
 .IP \(bu
-High labels are drawn only if the parameter HIT, 
+High labels are drawn only if the parameter 'HIT',
 which specifies the text of those labels, is not blank.
 .IP \(bu
-Low labels are drawn only if the parameter LOT, 
+Low labels are drawn only if the parameter 'LOT',
 which specifies the text of those labels, is not blank.
 .IP \(bu
-Contour line labels are drawn only if the parameter 
-LLP, which specifies how those labels are to be 
+Contour line labels are drawn only if the parameter 'LLP',
+which specifies how those labels are to be
 positioned, has an absolute value of 2 or 3, and if, for 
-some I between 1 and NCL inclusive, the Ith element of 
-the parameter array CLU has a value implying that 
+some I between 1 and 'NCL' inclusive, the Ith element of
+the parameter array 'CLU' has a value implying that
 contour lines at the contour level specified by the Ith 
-element of CLV are to be labeled.
+element of 'CLV' are to be labeled.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
@@ -66,9 +66,9 @@ cpex06,
 cbex01.
 .SH ACCESS
 To use CPLBDR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_cplbdr, 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_cplbdr, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the conpack man page for a description of all Conpack error
 messages and/or informational messages.

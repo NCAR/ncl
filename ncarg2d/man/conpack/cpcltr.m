@@ -51,11 +51,39 @@ will be (RWRK(IRW1+I),RWRK(IRW2+I)) for I = 1, 2, ... NRWK.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
+.SH USAGE
+The routine CPCLTR may be called at any time after the initialization call
+to CPRECT, CPSPS1, or CPSPS2.  It is called using code like the following:
+.sp
+.nf
+      IJMP=0
+.br
+  101 CALL CPCLTR (ZDAT,RWRK,IWRK,CLEV,IJMP,IRW1,IRW2,NRWK)
+.br
+      IF (IJMP.NE.0) THEN
+.br
+       (PROCESS SEGMENT OF CONTOUR LINE FROM RWRK)
+.br
+       GO TO 101
+.br
+      END IF
+.sp
+.fi
+CPCLTR is called repeatedly.  Initially, IJMP is zeroed.  Upon each return
+from CPCLTR, if the value of IJMP is non-zero, X and Y coordinates have been
+placed in the real workspace array RWRK and the values of IRW1, IRW2, and
+NRWK have been set to indicate where the coordinates were put.  After the
+coordinates have been processed, CPCLTR is called again.  If, upon return
+from CPCLTR, the value of IJMP is zero, all contour lines at the specified
+level have been processed.
+.sp
+If the parameter 'T2D' has a non-zero value, the contour lines are smoothed,
+using cubic splines under tension.
 .SH ACCESS
 To use CPCLTR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_cpcltr, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_cpcltr, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the conpack man page for a description of all Conpack error
 messages and/or informational messages.

@@ -2,8 +2,8 @@
 .na
 .nh
 .SH NAME
-VECTD - draw a line segment between the pen position and the
-current point in user coordinates
+VECTD - Draws a line segment between the pen position and the
+current point in user coordinates.
 .SH SYNOPSIS
 CALL VECTD (X, Y)
 .SH C-BINDING SYNOPSIS
@@ -18,15 +18,15 @@ the current point in a line segment.
 (an input coordinate of type REAL) defining the Y user coordinate of
 the current point in a line segment.
 .SH C-BINDING DESCRIPTION
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples: 
-tdashc.f, tdashl.f, tdashp.f, tdashs.f,
-fdldashc.f, fdldashd.f
+tdashc, tdashl, tdashp, tdashs,
+fdldashc, fdldashd
 .SH ACCESS
 To use VECTD load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_vectd load 
+and ncarg_loc, preferably in that order.  To use c_vectd, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, 
 and ncarg_loc, preferably in that order.
 .SH SEE ALSO

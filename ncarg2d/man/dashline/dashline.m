@@ -64,7 +64,7 @@ line draws which vary considerably in appearance.  The four variations
 include quick, normal, smooth, and super lines.  These variations are
 specified through selected command line options of the ncargf77 command.
 .sp
-To use the normal version of line draws in the Dashline utility
+To use the normal version of line draws in the Dashline utility,
 load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.  Other optional libraries
 to create the quick, smooth, and super line draws will
@@ -102,24 +102,16 @@ When error conditions are detected, the support routine SETER
 is called in such a way that it writes a message to the standard
 error file (as defined by I1MACH(4)) and then terminates 
 execution. The possible error messages are as follows:
-.sp
-CFVLD  -- VECTD CALL OCCURS BEFORE A CALL TO FRSTD.
-.sp
-A FRSTD call must preceed the first VECTD call.
-.sp
-DASHDB -- BLOCKDATA DASHBD APPARRENTLY NOT LOADED CORRECTLY.
-.sp
+.IP "CFVLD  -- VECTD CALL OCCURS BEFORE A CALL TO FRSTD"
+A FRSTD call must proceed the first VECTD call.
+.IP "DASHDB -- BLOCKDATA DASHBD APPARRENTLY NOT LOADED CORRECTLY"
 If you have used the ncargf77 command options as discussed in
 the ACCESS Section, see your system administrator.
-.sp
-DASHDC -- BLOCKDATA DASHBD APPARRENTLY NOT LOADED CORRECTLY.
-.sp
+.IP "DASHDC -- BLOCKDATA DASHBD APPARRENTLY NOT LOADED CORRECTLY"
 If you have used the ncargf77 command options as discussed in
 the ACCESS Section, see your system administrator.
-.sp
-FDVDLD -- VECTD CALL OCCURS BEFORE A CALL TO FRSTD.
-.sp
-A FRSTD call must preceed the first VECTD call.
+.IP "FDVDLD -- VECTD CALL OCCURS BEFORE A CALL TO FRSTD"
+A FRSTD call must proceed the first VECTD call.
 .SH SEE ALSO
 Online:
 dashline_params, curved, dashdb, dashdc, frstd,

@@ -96,24 +96,23 @@ and then use CPDRPL for the last argument.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
-.SH USAGE@@@
+.SH USAGE
 The routine CPCLDM may be called at any time after the
 initialization call to CPRECT, CPSPS1, or CPSPS2 to draw
 contour lines masked by an existing area map.  Actually, CPCLDM
 does not draw the lines; it generates them, masks them against
 a user-specified area map, and generates calls, one for each
 polyline resulting from the masking process, to the user
-specified routine RTPL.  Each such polyline precisely lies in 
-one of the areas defined by the area map.  The routine RTPL may
+specified routine RTPL.  Each such polyline lies entirely within
+precisely one of the areas defined by the area map.  The routine RTPL may
 use the information provided by its arguments, describing the
 area the polyline is in, to decide whether or not to draw the
 polyline.
 .sp
 The contour lines generated are those specified by the first
 \&'NCL' elements of the parameter arrays 'CLV' and 'CLU'.  If
-\&'NCL' is zero, CPPKCL is called to generate these values; if
-\&'NCL' is still zero after the call to CPPKCL, a fatal error
-exit results.  Each element of 'CLV' specifies a contour level
+\&'NCL' is zero, CPPKCL is called to generate these values.
+Each element of 'CLV' specifies a contour level
 and the corresponding element of 'CLU' specifies whether or not
 contour lines are to be generated at that level.  If the
 parameter 'T2D' has a non-zero value, the contour lines are
@@ -126,7 +125,7 @@ is non-zero, the edges of special-value areas, if any, are
 generated.  If the element of 'CLU' corresponding to 'PAI' = -3
 is non-zero, the edges of out-of-range areas, if any, are
 generated.  The default values are such that none of these
-edges are generated.
+edges is generated.
 .sp
 Groups of lines are generated in the following order:
 .IP \(bu 3
@@ -156,11 +155,11 @@ dash-pattern-usage parameter ('DPU') to affect the pattern used
 to draw the lines.  Set the value of 'DPU' as follows:
 .IP Value  12 
 Description
-.IP =<0 12  
+.IP "< 0 or = 0" 12
 Lines are drawn by calling the SPPS routine CURVE.
 Lines are all solid and unlabeled; specified dash
 patterns are not used.
-.IP >0 12  
+.IP "> 0" 12
 Lines are drawn by calling the Dashline routine
 CURVED.  Lines are solid or dashed, depending on the
 dash pattern specified by the appropriate element of
@@ -189,9 +188,9 @@ cpex08,
 cbex01.
 .SH ACCESS
 To use CPCLDM, load the NCAR Graphics libraries ncarg,
-ncarg_gks, and ncarg_loc, preferably in that order.  To use 
+ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.  To use 
 c_cpcldm, load the NCAR Graphics libraries ncargC, ncarg_gksC, 
-ncarg, ncarg_gks, and ncarg_loc, preferably in that order.
+ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the conpack man page for a description of all Conpack error
 messages and/or informational messages.

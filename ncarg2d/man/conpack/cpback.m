@@ -27,9 +27,9 @@ integer workspace array.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
-.SH USAGE@@@
+.SH USAGE
 You can call CPBACK at any time after the initialization call
-to CPRECT, CPSPS1, or CPSPS2.  What CPBACK does, depends on the
+to CPRECT, CPSPS1, or CPSPS2.  What CPBACK does depends on the
 value of the internal parameter 'MAP':
 .IP \(bu 
 If 'MAP' is set to zero, CPBACK draws the perimeter of the
@@ -45,9 +45,9 @@ example:
 cpex01.
 .SH ACCESS
 To use CPBACK, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_cpback, 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_cpback, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the conpack man page for a description of all Conpack error
 messages and/or informational messages.

@@ -27,34 +27,36 @@ integer workspace array.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
-.SH USAGE@@@
+.SH USAGE
 Normally, CPPKLB is called by Conpack when labels for the
 contour levels are needed.  You can call CPPKLB directly (after
 the initialization call to CPRECT, CPSPS1 or CPSPS2) when you
 want to modify the resulting parameter arrays that specify the
 labels.
 .sp
-If the constant-field-flag 'CFF' is non-zero, indicating that
-on the last call to CPRECT, CPSPS1 or CPSPS2 the data were
+If the constant-field-flag 'CFF' is non-zero, indicating that,
+during the last call to CPRECT, CPSPS1, or CPSPS2, the data were
 found to be essentially constant, CPPKLB does nothing.
-Otherwise, CPPKLB examines the first  'NCL' elements of the
+Otherwise, CPPKLB examines the first 'NCL' elements of the
 parameter array 'CLV', which defines the contour levels, and
 the associated parameter arrays, looking for levels that are to
-be labeled ('CLU' = 2 or 3) for which no label is  specified
-('LLT' = ' ').  (The value of 'LLT' is a single blank.) If any
+be labeled ('CLU' = 2 or 3) for which no label is specified
+(the associated element of 'LLT' is ' ', a single blank.) If any
 such levels are found, labels are generated for them.
 .sp
 The scale factor 'SFU' may be set as a byproduct of choosing
 the labels.  See the description of the parameters 'SFU' (scale
 factor used) and 'SFS' (scale factor selector) in the 
-conpack_params man page. After calling CPPKLB, a user
+conpack_params man page.
+.sp
+After calling CPPKLB, a user
 program may examine the generated labels and change them in
 various ways.
 .SH ACCESS
 To use CPPKLB, load the NCAR Graphics libraries ncarg,
-ncarg_gks, and ncarg_loc, preferably in that order.  To use c_cppklb, 
+ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.  To use c_cppklb, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg,
-ncarg_gks, and ncarg_loc, preferably in that order.
+ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the conpack man page for a description of all Conpack error
 messages and/or informational messages.

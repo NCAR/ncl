@@ -3,7 +3,9 @@
 .nh
 .SH NAME
 CPSCAE -
-Updates a particular element of a user's cell array.
+Called repeatedly by the routine CPCICA as it executes. Updates a particular
+element of a user's cell array.  The default version of CPSCAE may be
+replaced by the user with a version that does something different.
 .SH SYNOPSIS
  CALL CPSCAE (ICRA, ICA1, ICAM, ICAN, XCPF, YCPF, XCQF, 
 .br
@@ -58,8 +60,7 @@ schemes for picking color indices.
 .IP IAID 12
 (INTEGER, input) is the value of the area identifier 
 associated with the midpoint of the cell (IND1,IND2). The 
-four possibilities are described above, in the description 
-of the routine CPCICA.
+four possibilities are as described for the routine CPCICA.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions, with the following exceptions:
@@ -87,9 +88,9 @@ the current value of the color index for the cell in
 determining the new value of the color index for the cell.
 .SH ACCESS
 To use CPSCAE, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_cpscae, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_cpscae, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 conpack,

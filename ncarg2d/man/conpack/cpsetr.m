@@ -3,8 +3,7 @@
 .nh
 .SH NAME
 CPSETR - 
-Sets the value of an internal parameter of
-type REAL.
+Sets the value of an internal parameter of type REAL or INTEGER.
 .SH SYNOPSIS
 CALL CPSETR (PNAM, RVAL)
 .SH C-BINDING SYNOPSIS
@@ -22,6 +21,9 @@ INTERVAL SPECIFIER'.
 .IP RVAL 12
 (REAL, input) is an expression, the value of which is 
 to be given to the parameter specified by PNAM.
+If the internal parameter is of type REAL, the value given to it is RVAL.
+If the internal parameter is of type INTEGER, the value given to it is
+INT(RVAL).
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
@@ -45,9 +47,9 @@ cbex01,
 tconpa.
 .SH ACCESS
 To use CPSETR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_cpsetr, 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_cpsetr, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the conpack man page for a description of all Conpack error
 messages and/or informational messages.

@@ -11,17 +11,17 @@ CALL CPRSET
 .sp
 void c_cprset()
 .SH DESCRIPTION
-None.
+CPRSET has no arguments.
 .SH USAGE
-This routine allows you to restore all  
+Calling this routine restores all
 Conpack parameters to their initial default values.  
 For a complete list of parameters available
 in this utility, see the conpack_params man page.
 .SH ACCESS
 To use CPRSET, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_cprset, 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_cprset, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 conpack,

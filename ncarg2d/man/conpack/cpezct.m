@@ -30,7 +30,7 @@ An n by m data array holding values to be contoured.
 The second dimension of z.
 .IP "nzdt" 12
 The first dimension of z.
-.SH USAGE@@@
+.SH USAGE
 The effect of calling CPEZCT will be exactly the same as if
 you had executed the statements:
 .sp
@@ -46,9 +46,9 @@ cpex09,
 tconpa.
 .SH ACCESS
 To use CPEZCT, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_cpezct, 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_cpezct, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 conpack,

@@ -20,14 +20,14 @@ the curve.  Array Y is of length N.
 (an input parameter of type INTEGER) the value of which is the number
 of points in the curve.
 .SH C-BINDING DESCRIPTION
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument description.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples: 
-tdashc.f, tdashl.f, tdashp.f, tdashs.f, carline.f,
-cmpfil.f, cmpgrp.f, cmpitm.f, cmplab.f, cmpmsk.f, cmptit.f,
-cpex01.f, cpex02.f, cpex03.f, cpex04.f, cpex06.f, vvex01.f,
-fdlcurvd.f, fdldashd.f, fdlsmth.f, fpcloqu.f
+tdashc, tdashl, tdashp, tdashs, carline,
+cmpfil, cmpgrp, cmpitm, cmplab, cmpmsk, cmptit,
+cpex01, cpex02, cpex03, cpex04, cpex06, vvex01,
+fdlcurvd, fdldashd, fdlsmth, fpcloqu
 .SH ACCESS
 To use CURVED, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.  To use c_curved, load 

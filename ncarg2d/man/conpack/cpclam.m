@@ -31,7 +31,7 @@ integer workspace array.
 (INTEGER array, dimensioned as specified in a call to 
 ARINAM, in the package Areas) is the array containing the 
 area map to which contour lines are to be added.
-.SH USAGE@@@
+.SH USAGE
 The routine CPCLAM, which adds contour lines generated from the
 data in the array ZDAT to the area map in the array IAMA, may
 be called at any time after the initialization call to CPRECT,
@@ -42,19 +42,23 @@ Areas.
 The contour lines added to the area map are as specified by the
 first 'NCL' elements of the parameter arrays 'CLV', 'AIA', and
 \&'AIB'. If 'NCL' is zero, CPPKCL is called to generate these
-values; if 'NCL' is still zero after the call to CPPKCL, a
-fatal error results.
+values.
 .sp
-If, for a given value of I between 1 and 'NCL', inclusive, the
-Ith element of either 'AIA' or 'AIB' is non-zero, then the
-contour lines specified by the Ith element of 'CLV' are added
-to the area map, with the Ith element of 'AIA' as the area
-identifier for the area "above" each line (where field values
-are greater than they are along the line) and with the Ith
-element of 'AIB' as the area identifier for the area "below"
-each line (where field values are less than they are along the
-line). 
-<<< confusing, very long sentence <<<
+The contour levels defined by the first 'NCL' elements of the
+parameter array 'CLV' are examined.  If a given contour level is
+associated with a non-zero value of 'AIA' and/or a non-zero value
+of 'AIB', then contour lines at that contour level are added
+to the area map.  If there is an associated non-zero value
+of 'AIA', it is used as the area identifier for the area "above"
+the line (where field values are greater than they are along the
+line); otherwise, a zero is used.  If there is an associated non-zero
+value of 'AIB', it is used as the area identifier for the area "below"
+the line (where field values are less than they are along the line);
+otherwise, a zero is used.  Note that a given contour level may occur
+more than once in the internal parameter array 'CLV', but there must
+be at most one non-zero value of 'AIA' and at most one non-zero
+value of 'AIB' associated with it; otherwise, an error exit occurs.
+.sp
 If the parameter 'T2D' has a non-zero value, the contour
 lines are smoothed, using cubic splines under tension.
 .sp
@@ -91,15 +95,14 @@ as part of the edge group with group identifier 'GIC', and
 .IP \(bu 3
 as part of the edge group with group identifier 'GIS'.
 .PP
-The object of number 1 above is to prevent problems that arise
-when mapping is turned on and the mapping function has a line
-of discontinuity (for example, when using Ezmap with a
-cylindrical equidistant projection). The object of number 2
-above is to break up the areas represented by the area map into
+Vertical lines, if any, are added with group identifier 'GIS'.
+.sp
+The object of the edge group with group identifier 'GIS'
+is to break up the areas represented by the area map into
 smaller pieces. Whether this is done or not is under your
 control, by means of the internal parameters 'NVS' and 'GIS'.
 For more information, see the descriptions of those internal
-parameters in the conpack_params.
+parameters in the conpack_params man page.
 .sp
 If, during the last call to CPRECT, CPSPS1 or CPSPS2, the data
 being contoured were found to be essentially constant, then no
@@ -118,9 +121,9 @@ cpex08,
 tconpa.
 .SH ACCESS
 To use CPCLAM, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_cpclam, 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_cpclam, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the conpack man page for a description of all Conpack error
 messages and/or informational messages.

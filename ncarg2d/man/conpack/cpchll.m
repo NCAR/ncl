@@ -2,8 +2,9 @@
 .na
 .nh
 .SH NAME
-CPCHLL - Provides user control as contour line labels are
-drawn.  
+CPCHLL - Called by Conpack routines as contour line labels are drawn.  The
+default version does nothing.  A user-written version may be supplied to
+provide control as the labels are drawn.
 .SH SYNOPSIS
 CALL CPCHLL (IFLG)
 .SH C-BINDING SYNOPSIS
@@ -51,9 +52,9 @@ parameters associated with that level may easily be
 retrieved by calls to CPGETx.
 .SH ACCESS
 To use CPCHLL, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use cpchll from a C
+ncarg_c, and ncarg_loc, preferably in that order.  To use cpchll from a C
 program, load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, 
-ncarg_gks, and ncarg_loc, preferably in that order.
+ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online: 
 conpack, 

@@ -24,15 +24,16 @@ the ending point of a line segment.
 (an input coordinate of type REAL) defining the Y user coordinate of
 the ending point of a line segment.
 .SH C-BINDING DESCRIPTION
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples: 
-tdashc.f, tdashl.f, tdashp.f, tdashs.f, spset1.f, spset2.f
-fdldashc.f, fdldashd.f, fgk.nclr.f, fgklnwth.f
+tdashc, tdashl, tdashp, tdashs, spset1, spset2
+fdldashc, fdldashd, fgk.nclr, fgklnwth
 dashdb, dashdc, frstd, lined, reset, vectd, ncarg_cbind
-To use LINED load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_lined load 
+.SH ACCESS
+To use LINED, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_loc, preferably in that order.  To use c_lined, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.
 .SH SEE ALSO

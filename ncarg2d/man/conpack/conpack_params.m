@@ -20,8 +20,10 @@ an area identifier for the area below that level. If, for a
 particular contour level, both 'AIA' and 'AIB' are zero, 
 that level is ignored by the routine CPCLAM; otherwise, 
 contour lines at that level are added to the area map and 
-the given values of 'AIA' and 'AIB' are used as left and 
-right area identifiers.
+the given values of 'AIA' and 'AIB' are used as right and
+left area identifiers, respectively.  (Note that contour
+lines are traced with greater values to the right and lesser
+values to the left.)
 .sp
 There are three special elements in the parameter array 
 \&'AIA', corresponding to 'PAI' values of -1, -2, and -3; the 
@@ -92,7 +94,7 @@ drawn around the label, it is made the same color as the
 label itself.
 .sp
 The default value of 'CFC' is -1.
-.IP "'CFF' - Constant-Field Found Flag - Integer"
+.IP "'CFF' - Constant-Field-Found Flag - Integer"
 The parameter 'CFF' may not be set by the user; its 
 retrieved value will be non-zero if and only if CPRECT, 
 CPSPS1, or CPSPS2 detected a constant field.
@@ -773,7 +775,7 @@ are defined from the viewpoint of someone reading the label
 right-side up.
 .sp
 The default value of 'ILP' is 4, so the upper right-hand 
-corner of the the box will be placed on the point 
+corner of the box will be placed on the point
 ('ILX','ILY').
 .sp
 .IP "'ILS' - Informational Label Size - Real"
@@ -1106,9 +1108,9 @@ another. Consider the following example, using three
 significant digits:
 .sp
 .RS 10
-USING 'NLS'=0: 0.500 1.00 1.50 ... 9.50 10.5 ...
+USING 'NLS'=0: .500 1.00 1.50 ... 9.50 10.5 ...
 .br
-USING 'NLS'=1: 0.5   1.0  1.5  ... 9.5  10.5 ...
+USING 'NLS'=1: .5   1.0  1.5  ... 9.5  10.5 ...
 .RE
 .IP ""
 The default value of 'NLS' is 1.
@@ -1410,7 +1412,7 @@ Implies that the scale factor should be selected in such
 a way as to reduce the ZDAT element having the largest 
 absolute value to the range from 1. to 9.999...
 .IP "-2"
-Implies that the scale factor should be selected in such a way
+Implies that the scale factor should be selected in such
 a way as to place the decimal point in the ZDAT element 
 having the largest absolute value after the rightmost 
 significant digit of that value (as defined by the values 
@@ -1585,7 +1587,7 @@ incomplete. The values of 'IWU' and 'RWU' may be retrieved
 to find out how much workspace would have been used if the 
 call on which the workspace overflow occurred had 
 succeeded; note that, if these amounts are provided on a 
-subsequent run, one is not assured that there workspace 
+subsequent run, one is not assured that the workspace
 overflow will be averted.
 .sp 
 The default value of 'WSO' is 1.

@@ -6,7 +6,7 @@ CPSPS2 -
 Interpolates from an array of data
 on a "sparse" rectangular grid which is irregularly spaced
 in X and Y to an array of data on a "dense" rectangular
-grid and to initialize contouring from the array on the
+grid and initializes contouring from the array on the
 dense grid. (By a "sparse" grid is meant one whose
 dimensions are smaller than one would like, so that contour
 lines constructed directly on it are composed of long
@@ -70,7 +70,7 @@ attempt to use an aspect ratio which is close to that
 implied by the value of the ratio
 .RS 17
 .sp
-(XSPS(MSPS)- XSPS(1))/(YSPS(NSPS)-YSPS(1))
+(XSPS(MSPS)-XSPS(1))/(YSPS(NSPS)-YSPS(1))
 .RE
 .IP LZDT 12
 (INTEGER, input) is the length of ZDAT.
@@ -87,18 +87,38 @@ The second dimension of the sparse array of data in zsps. msps \(<= ksps.
 .IP "nsps" 12
 The first dimension of the sparse array of data in zsps. 
 nsps \(<= l, the declared first dimension of the array zsps.
-.SH USAGE@@@
-CPSPS2 initializes the internal pointers that are used to
-manage workspace use and decides what the ranges of X and Y
-coordinates used to draw contour lines and position labels
-ought to be.  CPSPS1 also interpolates from an irregularly
-spaced rectangular grid of data to a dense array of data, and
-can be used as a smoother.
+.SH USAGE
+CPSPS2 performs the same functions as CPRECT, but, in addition,
+it interpolates from a sparse array of data to a dense array of
+data.  CPSPS2 does this by using the routines SURF1 and
+SURF2, from the package Fitpack, by Alan K. Cline, to fit
+bicubic splines under tension to the sparse array of data and
+to compute the dense grid of data that is returned to you.  The
+tension on the spline surfaces is specified by the parameter
+\&'T3D'.  By default, CPSPS2 selects the dimensions of the dense
+array of data; if desired, you can specify these dimensions by
+setting the parameter 'ZDS' non-zero and the parameters 'ZD1',
+\&'ZDM', and 'ZDN' to the desired values. In either case, once
+\&'ZD1', 'ZDM', and 'ZDN' are set, they should not be reset by
+you until the contour plot is complete and a different contour
+plot is to be drawn.
+.sp
+Because the routines SURF1 and SURF2 do not have a built-in
+special value feature, if the special value parameter 'SPV' is
+set non-zero and the sparse array contains occurrences of that
+value, special action must be taken.  The indices of the
+special values in the sparse array are saved in a part of the
+integer workspace array; the special values are then replaced
+by values interpolated from adjacent grid points and the
+resulting array is used to obtain the dense array; then, the
+special values in the sparse array are restored and the
+corresponding elements of the dense array are also given the
+special value.  
 .SH ACCESS
 To use CPSPS2, load the NCAR Graphics libraries ncarg,
-ncarg_gks, and ncarg_loc, preferably in that order.  To use 
+ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.  To use 
 c_cpsps2, load the NCAR Graphics libraries ncargC, ncarg_gksC, 
-ncarg, ncarg_gks, and ncarg_loc, preferably in that order.
+ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the conpack man page for a description of all Conpack error
 messages and/or informational messages.

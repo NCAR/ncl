@@ -27,14 +27,13 @@ integer workspace array.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
-.SH USAGE@@@
+.SH USAGE
 The routine CPCLDR, which draws contour lines, may be called at
 any time after the initialization call to CPRECT, CPSPS1, or
 CPSPS2.  The contour lines drawn are those specified by the
 first 'NCL' elements of the parameter arrays 'CLV' and 'CLU'.
-If 'NCL' is zero, CPPKCL is called to generate these values; if
-\&'NCL' is still zero after the call to CPPKCL, a fatal error
-exit results.  Each element of 'CLV' specifies a contour level,
+If 'NCL' is zero, CPPKCL is called to generate these values.
+Each element of 'CLV' specifies a contour level,
 and the corresponding element of 'CLU' specifies whether or not
 contour lines are to be drawn at that level and whether or not
 the lines are to be labeled.  If the parameter 'T2D' has a
@@ -76,11 +75,11 @@ The dash-pattern-usage parameter
 value of 'DPU' as follows:
 .IP Value 12
 Description
-.IP =<0 12 
+.IP "< 0 or = 0" 12
 Lines are drawn by calling the SPPS routine CURVE.
 Lines are all solid and unlabeled; specified dash
 patterns are not used.
-.IP >0 12
+.IP "> 0" 12
 Lines are drawn by calling the Dashline routine
 CURVED.  Lines are solid or dashed, depending on the
 dash pattern specified by the appropriate element of
@@ -113,9 +112,9 @@ cpex07,
 tconpa.
 .SH ACCESS
 To use CPCLDR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_cpcldr, 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_cpcldr, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the conpack man page for a description of all Conpack error
 messages and/or informational messages.

@@ -61,7 +61,7 @@ Multiplication factor for
 first solid line segment.
 This can be used to offset
 labels.  For example, if
-FPART = .5, the first solid
+FPART = \.5, the first solid
 line segment is only
 one-half as long as the other
 solid line segments.  This

@@ -2,8 +2,9 @@
 .na
 .nh
 .SH NAME
-CPCHIL - Provides user control as the informational label is
-drawn.
+CPCHIL - Called by Conpack routines as the informational label is drawn.
+The default version does nothing.  A user-written version may be supplied
+to provide control as the label is drawn.
 .SH SYNOPSIS
 CALL CPCHIL (IFLG)
 .SH C-BINDING SYNOPSIS
@@ -46,9 +47,9 @@ should only be done during a call with IFLG = 1 or IFLG =
 done for the other.
 .SH ACCESS
 To use CPCHIL, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use cpchil from a
+ncarg_c, and ncarg_loc, preferably in that order.  To use cpchil from a
 C program, load the NCAR Graphics libraries ncargC, ncarg_gksC, 
-ncarg, ncarg_gks, and ncarg_loc, preferably in that order.
+ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online: 
 conpack, 

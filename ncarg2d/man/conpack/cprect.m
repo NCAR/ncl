@@ -49,14 +49,34 @@ The second dimension of the array of data in zdat. mzdt \(<= kzdt.
 .IP "nzdt" 12
 The first dimension of the array of data in zdat. nzdt \(<= l, 
 where l is the declared first dimension of the array zdat. 
-.SH USAGE@@@
-CPRECT initializes the internal pointers that are used to manage
-workspace use and decides what the ranges of X and Y coordinates
-used to draw contour lines and position labels ought to be. 
-<<< confusing, long sentence: how about "CPRECT initializes the
-internal pointers that manage workspace use; also, it decides the
-appropriate ranges of X and Y coordinates for drawing contour
-lines and positioning labels. <<<
+.SH USAGE
+The routine CPRECT is called to initialize the process of drawing a contour
+plot from a rectangular array of data.  The arguments define the data array,
+a real workspace array, and an integer workspace array.  The dimensions of
+all the arrays are transferred to variables in COMMON, so that, in calls to
+other Conpack routines, those dimensions may be omitted.
+.sp
+CPRECT initializes the internal pointers that manage workspace use; also,
+it decides the appropriate ranges of X and Y coordinates for drawing contour
+lines and positioning labels.
+.sp
+If Conpack is to call SET, appropriate arguments are determined and SET is
+called; otherwise, GETSET is called to retrieve the arguments from the user's
+call to SET.
+.sp
+The list of label positions (if any) left over from previous calls to the
+package is discarded.
+.sp
+If contour levels are to be chosen by Conpack, 'NCL' is zeroed so that the
+levels will be chosen when they are needed.
+.sp
+The minimum and maximum values in the data array are located and it is
+decided whether the data are essentially constant.
+.sp
+Numeric-label parameters that depend on the range of values in the data
+array are initialized.
+.sp
+A scale factor may be chosen.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
@@ -72,9 +92,9 @@ cbex01,
 tconpa.
 .SH ACCESS
 To use CPRECT, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_cprect, 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_cprect, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 conpack,

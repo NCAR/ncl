@@ -6,7 +6,7 @@ CPSPS1 -
 Interpolates from an array of data
 on a "sparse" rectangular grid which is regularly spaced in
 X and Y to an array of data on a "dense" rectangular grid
-and to initialize contouring from the array on the dense
+and initializes contouring from the array on the dense
 grid. (By a "sparse" grid is meant one whose dimensions are
 smaller than one would like, so that contour lines
 constructed directly on it are composed of long straight
@@ -70,19 +70,17 @@ argument descriptions with the following exceptions:
 .IP "zsps(l,ksps)" 12
 Dimensioned l by ksps, where l \(>= nsps.
 .IP "ksps" 12
-(Integer, Input) - 
 The second dimension of the array zsps.
 .IP "msps" 12
 The second dimension of the sparse array of data in zsps. msps \(<= ksps.
 .IP "nsps" 12
-(Integer, Input) - 
 The first dimension of the sparse array of data in zsps. 
 nsps \(<= l, where l is the declared first dimension of the array zsps.
-.SH USAGE@@@
+.SH USAGE
 CPSPS1 performs the same functions as CPRECT, but, in addition,
 it interpolates from a sparse array of data to a dense array of
 data.  CPSPS1 does this by using the routines BSURF1 and
-BSURF2, from the utility Fitpack, by Alan K.  Cline, to fit
+BSURF2, from the package Fitpack, by Alan K. Cline, to fit
 bicubic splines under tension to the sparse array of data and
 to compute the dense grid of data that is returned to you.  The
 tension on the spline surfaces is specified by the parameter
@@ -107,9 +105,9 @@ corresponding elements of the dense array are also given the
 special value.  
 .SH ACCESS 
 To use CPSPS1, load the NCAR Graphics libraries ncarg,
-ncarg_gks, and ncarg_loc, preferably in that order.  To use c_cpsps1, 
+ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.  To use c_cpsps1, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg,
-ncarg_gks, and ncarg_loc, preferably in that order.
+ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the conpack man page for a description of all Conpack error
 messages and/or informational messages.

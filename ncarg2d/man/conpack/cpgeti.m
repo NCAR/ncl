@@ -2,8 +2,8 @@
 .na
 .nh
 .SH NAME
-CPGETI - Retrieves the current value of an internal
-parameter of type INTEGER.
+CPGETI - Retrieves the integral value of an internal parameter of type
+INTEGER or REAL.
 .SH SYNOPSIS
 CALL CPGETI (PNAM, IVAL)
 .SH C-BINDING SYNOPSIS
@@ -21,6 +21,10 @@ readability of the code. For example, instead of just
 .IP IVAL 12
 (INTEGER, output) is a variable in which the value of 
 the parameter specified by PNAM is to be returned.
+If the internal parameter is a value "i" of type INTEGER, the value returned
+is "i".
+If the internal parameter is a value "r" of type REAL, the value returned is
+"INT(r)".
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
@@ -38,9 +42,9 @@ cpex06,
 cpexcc.
 .SH ACCESS
 To use CPGETI, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_cpgeti, 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_cpgeti, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the conpack man page for a description of all Conpack error
 messages and/or informational messages.

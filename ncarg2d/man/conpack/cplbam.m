@@ -39,7 +39,7 @@ label boxes are to be added.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
-.SH USAGE@@@
+.SH USAGE
 The routine CPLBAM, which adds label boxes to an area map, may
 be called at any time after the initialization call to CPRECT,
 CPSPS1, or CPSPS2.  If, during the last call to CPRECT, CPSPS1,
@@ -56,12 +56,10 @@ is non-blank.
 Boxes for the high labels are added only if the parameter
 \&'HIT', which specifies the text of those labels, is
 non-blank.
-<<< confusing, what parameter? <<<
 .IP \(bu 3
 Boxes for the low labels are added only if the parameter
 \&'LOT', which specifies the text of those labels, is
 non-blank.
-<<< confusing, what parameter? <<<
 .IP \(bu 3
 Boxes for the contour line labels are added only if
 the parameter 'LLP', which specifies how those labels are to
@@ -70,7 +68,6 @@ some I between 1 and 'NCL', inclusive, the Ith element of the
 parameter array 'CLU' has a value implying that contour lines
 at the contour level specified by the Ith element of 'CLV'
 are to be labeled.
-<<< confusing, sentence is too long <<<
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
@@ -82,9 +79,9 @@ cpex06,
 cbex01.
 .SH ACCESS
 To use CPLBAM, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_cplbam, 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_cplbam, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the conpack man page for a description of all Conpack error
 messages and/or informational messages.

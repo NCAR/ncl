@@ -2,8 +2,8 @@
 .na
 .nh
 .SH NAME
-CPGETR - Retrieves the current value of an internal
-parameter of type REAL.
+CPGETR - Retrieves the real value of an internal parameter of type REAL or
+INTEGER.
 .SH SYNOPSIS
 CALL CPGETR (PNAM, RVAL)
 .SH C-BINDING SYNOPSIS
@@ -21,6 +21,10 @@ readability of the code. For example, instead of just
 .IP RVAL 12
 (REAL, output) is a variable in which the value of the 
 parameter specified by PNAM is to be returned.
+If the internal parameter is a value "r" of type REAL, the value returned
+is "r".
+If the internal parameter is a value "i" of type INTEGER, the value returned
+is "REAL(i)".
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
@@ -37,9 +41,9 @@ cpex07,
 cbex01.
 .SH ACCESS
 To use CPGETR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_cpgetr, 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_cpgetr, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the conpack man page for a description of all Conpack error
 messages and/or informational messages.

@@ -3,8 +3,9 @@
 .nh
 .SH NAME
 CPCHCF - 
-Provides user control as a constant-field
-message is drawn.
+Called by Conpack routines when a constant field is detected.  The default
+version does nothing.  A user-written version may be supplied to provide
+control as the constant-field message is drawn.
 .SH SYNOPSIS
 CALL CPCHCF (IFLG)
 .SH C-BINDING SYNOPSIS
@@ -49,9 +50,9 @@ been set to the value of the field; its value may be
 retrieved and used by CPCHCF.
 .SH ACCESS
 To use CPCHCF, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use cpchcf from a C
+ncarg_c, and ncarg_loc, preferably in that order.  To use cpchcf from a C
 program, load the NCAR Graphics libraries ncargC, ncarg_gksC, 
-ncarg, ncarg_gks, and ncarg_loc, preferably in that order.
+ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online: 
 conpack, 

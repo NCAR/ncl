@@ -2,7 +2,7 @@
 .na
 .nh
 .SH NAME
-FRSTD - put pen down at a point in user coordinates
+FRSTD - Put pen down at a point in user coordinates.
 .SH SYNOPSIS
 CALL FRSTD (X, Y)
 .SH C-BINDING SYNOPSIS
@@ -17,12 +17,12 @@ the starting point of a line segment.
 (an input coordinate of type REAL) defining the Y user coordinate of
 the starting point of a line segment.
 .SH C-BINDING DESCRIPTION
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples: 
-tdashc.f, tdashl.f, tdashp.f, tdashs.f,
-fdldashc.f, fdldashd.f
+tdashc, tdashl, tdashp, tdashs,
+fdldashc, fdldashd
 .SH ACCESS
 To use FRSTD load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.  To use c_frstd load 
