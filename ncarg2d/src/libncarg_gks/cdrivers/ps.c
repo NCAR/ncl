@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.6 1994-06-08 16:57:42 boote Exp $
+ *	$Id: ps.c,v 1.7 1994-08-05 16:31:20 fred Exp $
  */
 /*
  *
@@ -983,7 +983,8 @@ static void PSinit(PSddp *psa, int *coords)
 	clly = *(coords+1);
 	curx = *(coords+2);
 	cury = *(coords+3);
-  	if ((cllx > -1) && (clly > -1) && (curx > -1) && (cury > -1)) {
+  	if ((cllx != -9999) && (clly != -9999) && 
+		(curx != -9999) && (cury != -9999)) {
 		psa->dspace.llx = (int) (((float) cllx) * rscale);
 		psa->dspace.urx = (int) (((float) curx) * rscale);
 		psa->dspace.lly = (int) (((float) clly) * rscale);

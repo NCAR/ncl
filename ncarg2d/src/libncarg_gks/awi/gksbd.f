@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.10 1994-07-01 01:20:07 fred Exp $
+C	$Id: gksbd.f,v 1.11 1994-08-05 16:30:44 fred Exp $
 C
       BLOCKDATA GKSBD
 C
@@ -198,7 +198,7 @@ C-----------------------------------------------------------------------
       DATA NOPWK,NACWK,NUMSEG,CURSEG,SEGDEL,GKSCLP/0,0,0,-1,1,1/
       DATA NOPICT/-1/
       DATA GFNAME/'DEFAULT'/
-      DATA CLLX,CLLY,CURX,CURY,CPSCL/-1,-1,-1,-1,-1/
+      DATA CLLX,CLLY,CURX,CURY,CPSCL/-9999,-9999,-9999,-9999,-1/
 C
       DATA IERNMS/    1,    2,    3,    4,    5,    6,    7,    8,
      +               20,   21,   22,   23,   24,   25,   26,   27,
