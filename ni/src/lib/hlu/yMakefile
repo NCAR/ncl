@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.69 2004-10-18 04:35:55 haley Exp $
+#      $Id: yMakefile,v 1.70 2004-10-29 16:41:40 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -146,6 +146,8 @@ MeshScalarField.o: MeshScalarField.c
 #endif
 
 #if defined(AIX)
+MeshScalarField.o: MeshScalarField.c
+        $(CC) $(CCOPTIONS) $(ALLDEFINES) -c MeshScalarField.c
 SetValues.o: SetValues.c
         $(CC) $(CCOPTIONS) $(ALLDEFINES) -O2 -qstrict -g -c SetValues.c
 View.o: View.c
