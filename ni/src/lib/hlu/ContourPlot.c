@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.17 1995-06-05 19:08:49 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.18 1995-06-06 19:56:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2044,10 +2044,8 @@ ContourPlotInitialize
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
-	cnp->label_aws_id = -1;
-	cnp->fill_aws_id = -1;
+	cnp->aws_id = -1;
 	cnp->cws_id = -1;
-	cnp->ezmap_aws_id = -1;
 	cnp->info_anno_id = NhlNULLOBJID;
 	cnp->constf_anno_id = NhlNULLOBJID;
 	cnp->info_lbl_rec.id = NhlNULLOBJID;
@@ -2894,10 +2892,8 @@ NhlLayer inst;
 	_NhlFreeWorkspace(cnp->iws_id);
 	if (cnp->cws_id >= 0)
 		_NhlFreeWorkspace(cnp->cws_id);
-	if (cnp->label_aws_id >= 0)
-		_NhlFreeWorkspace(cnp->label_aws_id);
-	if (cnp->fill_aws_id >= 0)
-		_NhlFreeWorkspace(cnp->fill_aws_id);
+	if (cnp->aws_id >= 0)
+		_NhlFreeWorkspace(cnp->aws_id);
 
         if (cnp->max_data_format.fstring != NULL)
                 NhlFree(cnp->max_data_format.fstring);
@@ -3110,9 +3106,10 @@ static NhlErrorTypes cnInitDraw
 	NhlContourPlotLayerPart	*cnp = &(cnl->contourplot);
 	int m,n;
 
-	cnp->area_ws_inuse = False;
-	cnp->fws_inuse = False;
-	cnp->iws_inuse = False;
+	cnp->aws = NULL;
+	cnp->fws = NULL;
+	cnp->iws = NULL;
+	cnp->cws = NULL;
 	cnp->wk_active = False;
 	cnp->seg_open = False;
 	
@@ -3126,14 +3123,11 @@ static NhlErrorTypes cnInitDraw
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
-	cnp->fws_inuse = True;
 	if ((cnp->iws = _NhlUseWorkspace(cnp->iws_id)) == NULL) {
 		e_text = "%s: error reserving integer workspace";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
-	cnp->iws_inuse = True;
-
 	return ret;
 }
 
@@ -3168,23 +3162,24 @@ static NhlErrorTypes cnInitAreamap
 	char			*e_text;
 	NhlContourPlotLayerPart	*cnp = &(cnl->contourplot);
 
-	if (cnp->label_aws_id < 0) {
-		cnp->label_aws_id = 
+	if (cnp->aws_id < 0) {
+		cnp->aws_id = 
 			_NhlNewWorkspace(NhlwsAREAMAP,
 					 NhlwsDISK,25000*sizeof(int));
-		if (cnp->label_aws_id < 0) 
-			return MIN(ret,cnp->label_aws_id);
+		if (cnp->aws_id < 0) 
+			return MIN(ret,cnp->aws_id);
 	}
-	if ((cnp->aws = _NhlUseWorkspace(cnp->label_aws_id)) == NULL) {
+	if ((cnp->aws = _NhlUseWorkspace(cnp->aws_id)) == NULL) {
 		e_text = 
 			"%s: error reserving label area map workspace";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
-	cnp->area_ws_inuse = True;
 
+#if 0
 	c_arseti("lc",(int) (cnp->amap_crange * 
 		 MIN(cnl->view.width,cnl->view.height)));
+#endif
 	subret = _NhlArinam(cnp->aws,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
@@ -3344,8 +3339,6 @@ static NhlErrorTypes cnInitCellArray
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
-	cnp->cws_inuse = True;
-
 	return ret;
 }
 
@@ -3475,19 +3468,22 @@ static void ContourAbortDraw
 	Cnp = NULL;
 	Cnl = NULL;
 
-	if (cnp->area_ws_inuse) {
+	if (cnp->aws != NULL) {
 		_NhlIdleWorkspace(cnp->aws);
+		cnp->aws = NULL;
 	}
-	cnp->area_ws_inuse = False;
-	if (cnp->cws_inuse)
+	if (cnp->cws != NULL) {
 		_NhlIdleWorkspace(cnp->cws);
-	cnp->cws_inuse = False;
-	if (cnp->fws_inuse)
+		cnp->cws = NULL;
+	}
+	if (cnp->fws != NULL) {
 		_NhlIdleWorkspace(cnp->fws);
-	cnp->fws_inuse = False;
-	if (cnp->iws_inuse)
+		cnp->fws = NULL;
+	}
+	if (cnp->iws != NULL) {
 		_NhlIdleWorkspace(cnp->iws);
-	cnp->iws_inuse = False;
+		cnp->iws = NULL;
+	}
 
 	if (cnl->view.use_segments && cnp->seg_open)
 		_NhlEndSegment();
@@ -3606,24 +3602,24 @@ static NhlErrorTypes ContourPlotPostDraw
 			ret = MIN(subret,ret);
 		}
 	}
-	if (cnp->area_ws_inuse) {
+	if (cnp->aws != NULL) {
 		subret = _NhlIdleWorkspace(cnp->aws);
 		ret = MIN(subret,ret);
+		cnp->aws = NULL;
 	}
-	cnp->area_ws_inuse = False;
-	if (cnp->cws_inuse) {
+	if (cnp->cws != NULL) {
 		subret = _NhlIdleWorkspace(cnp->cws);
 		ret = MIN(subret,ret);
+		cnp->cws = NULL;
 	}
-	cnp->cws_inuse = False;
-	if (cnp->fws_inuse) {
+	if (cnp->fws != NULL) {
 		subret = _NhlIdleWorkspace(cnp->fws);
-		cnp->fws_inuse = False;
 		ret = MIN(subret,ret);
+		cnp->fws = NULL;
 	}
-	if (cnp->iws_inuse) {
+	if (cnp->iws != NULL) {
 		subret = _NhlIdleWorkspace(cnp->iws);
-		cnp->iws_inuse = False;
+		cnp->iws = NULL;
 		ret = MIN(subret,ret);
 	}
 
@@ -3849,7 +3845,7 @@ static NhlErrorTypes cnDraw
 	if (cnp->do_fill && cnp->fill_order == order) {
 
 		if (! cnp->raster_mode_on) {
-			if (! cnp->area_ws_inuse) {
+			if (cnp->aws == NULL) {
 				subret = cnInitAreamap(cnl,entry_name);
 				if ((ret = MIN(subret,ret)) < NhlWARNING) {
 					ContourAbortDraw(cnl);
@@ -3889,7 +3885,7 @@ static NhlErrorTypes cnDraw
 	if (cnp->do_labels && 
 	    cnp->label_masking && cnp->label_order == order) {
 
-		if (! cnp->area_ws_inuse) {
+		if (cnp->aws == NULL) {
 			subret = cnInitAreamap(cnl,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				ContourAbortDraw(cnl);
@@ -6202,7 +6198,7 @@ static NhlErrorTypes ManageLegend
 		NhlSetSArg(&sargs[(*nargs)++],
 		   NhlNlgLineLabelConstantSpacingF,cnp->line_lbls.cspacing);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgLineLabelFuncCode,cnp->line_lbls.fcode);
+			   NhlNlgLineLabelFuncCode,cnp->line_lbls.fcode[0]);
 		return ret;
 	}
 
@@ -6283,9 +6279,9 @@ static NhlErrorTypes ManageLegend
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlgLineLabelConstantSpacingF,
 			   cnp->line_lbls.cspacing);
-	if (cnp->line_lbls.fcode != ocnp->line_lbls.fcode)
+	if (cnp->line_lbls.fcode[0] != ocnp->line_lbls.fcode[0])
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgLineLabelFuncCode,cnp->line_lbls.fcode);
+			   NhlNlgLineLabelFuncCode,cnp->line_lbls.fcode[0]);
 
 	return ret;
 }

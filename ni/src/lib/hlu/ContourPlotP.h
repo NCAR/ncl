@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.4 1995-05-18 20:05:33 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.5 1995-06-06 19:56:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -265,9 +265,7 @@ typedef struct _NhlContourPlotLayerPart {
 	int		iws_id;
 	int		fws_id;
 	int		cws_id;
-	int		label_aws_id;
-	int		fill_aws_id;
-	int		ezmap_aws_id;
+	int		aws_id;
 	NhlBoolean	use_irr_trans;
 	float		xc1,xcm,yc1,ycn; /* data bounds for Conpack */
 	float		xlb,xub,ylb,yub; /* window boundaries */
@@ -282,11 +280,10 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlBoolean	do_lines;
 	NhlBoolean	do_fill;
 	NhlBoolean	do_labels;
-	NhlWorkspace	*fws,*iws,*aws,*cws;
-	NhlBoolean	area_ws_inuse;
-	NhlBoolean	fws_inuse;
-	NhlBoolean	iws_inuse;
-	NhlBoolean	cws_inuse;
+	NhlWorkspace	*fws;
+	NhlWorkspace	*iws;
+	NhlWorkspace	*aws;
+	NhlWorkspace	*cws;
 	NhlBoolean	wk_active;
 	NhlBoolean	seg_open;
 	float		*data;
