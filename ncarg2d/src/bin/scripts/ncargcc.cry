@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.cry,v 1.4 1992-10-05 17:42:09 ncargd Exp $
+#	$Id: ncargcc.cry,v 1.5 1992-10-28 23:23:06 haley Exp $
 #
 
 set system="SED_SYSTEM_INCLUDE"
@@ -23,7 +23,7 @@ set ctrans_libs = ""
 set libncarg    =       "-lncarg"
 set libgks      =       "-lncarg_gks"
 set liblocal    =       "-lncarg_loc"
-set libcbind    =       "-lncargC,-lncarg_gksC"
+set libcbind    =       "-lncargC -lncarg_gksC -lncarg_comC"
 
 set f77libs     =       "-L/lib -lf -lio -lm -lp -lsci -lu -lc"
 
