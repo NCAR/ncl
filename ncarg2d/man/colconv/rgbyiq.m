@@ -31,7 +31,7 @@ the blue intensity component of the input point in RGB
 color space.
 .IP Y 12
 (REAL, output, range [0.,1.]) 
-specifies the color
+This is the color
 component of a television signal that is shown on
 black-and-white televisions; Y minimizes the effect of
 two colors appearing different to the human eye but
@@ -52,7 +52,8 @@ argument descriptions.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 example:  
-tcolcv.
+tcolcv,
+fcce02.
 .SH ACCESS
 To use RGBYIQ, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_rgbyiq, load 
@@ -67,6 +68,9 @@ rgbhls,
 rgbhsv,
 yiqrgb,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

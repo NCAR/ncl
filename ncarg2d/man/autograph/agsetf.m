@@ -34,7 +34,10 @@ agex05,
 agex07,
 agex08,
 agex10,
-agex13.
+agex13,
+fagaxmax,
+fagcudsh,
+fagovrvw.
 .SH ACCESS 
 To use AGSETF, load the NCAR Graphics libraries ncarg, 
 ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.  To use c_agsetf, 

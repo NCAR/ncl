@@ -11,7 +11,7 @@ CALL MAPIQ
 void c_mapiq()
 .SH DESCRIPTION
 MAPIQ has no arguments.
-.SH USAGE@@@ 
+.SH USAGE 
 MAPIQ flushes MAPIT's buffers.  It is particularly important
 that this be done before a STOP or a CALL FRAME, and before
 changing the color index, dash pattern, etc.
@@ -82,7 +82,7 @@ supcon,
 ncarg_cbind
 .sp
 Hardcopy: 
-Tutorial: A Step-by-Step Guide to Contouring and Mapping
+NCAR Graphics Contouring and Mapping Tutorial
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

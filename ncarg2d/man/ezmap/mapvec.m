@@ -19,7 +19,7 @@ between -540. and +540., inclusive.
 .SH C-BINDING DESCRIPTION 
 The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
-.SH USAGE@@@
+.SH USAGE
 The statement:
 .sp
 .RS 5

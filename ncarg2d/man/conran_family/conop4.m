@@ -2,14 +2,14 @@
 .na
 .nh
 .SH NAME
-CONOP4 - specifys various CHARACTER variables to be used by
-the Conran_family utility.
+CONOP4 - sets option switches and specifys various CHARACTER parameters
+to be used by the Conran_family utility.
 .SH SYNOPSIS
 CONOP4 (IOPT,CHARS,NUMC,IFMT)
 .SH DESCRIPTION
 .IP IOPT 12
-Character, input -- Selects an internal parameter.  The
-possibilities are:
+Character, input -- Selects an internal parameter and sets an option
+switch.  The possibilities are:
 .sp
   'DAS=ON', 'DAS=OFF', 'DAS=GTR', 'DAS=EQU', 'DAS=LSS', and 'DAS=ALL'
 .br
@@ -112,8 +112,8 @@ CONOP4 is called to set parameters of type CHARACTER before
 entries CONRAN, CONRAS, or CONRAQ are called to generate the
 contour plots.
 .SH EXAMPLES
-Use the ncargex command to see pertinent examples tconaq.f, tconas.f
-and tconan.f.
+Use the ncargex command to see pertinent examples tconaq, tconas
+and tconan.
 .SH ACCESS
 To use CONOP4 load the NCAR Graphics libraries ncarg, ncarg_gks, and
 ncarg_loc, preferably in that order.

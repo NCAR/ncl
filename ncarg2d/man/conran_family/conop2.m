@@ -2,14 +2,14 @@
 .na
 .nh
 .SH NAME
-CONOP2 - specifys various INTEGER parameters to be used by
-the Conran_family utility.
+CONOP2 - sets option switches and specifys various INTEGER parameters
+to be used by the Conran_family utility.
 .SH SYNOPSIS
 CALL CONOP2 (IOPT, IVAL)
 .SH DESCRIPTION
 .IP IOPT 12
-Character, input -- Selects an internal parameter.  The
-possibilities are:
+Character, input -- Selects an internal parameter and sets an option
+switch.  The possibilities are:
 .sp
 .nf
 \& 'INT=OFF', 'INT=ALL', 'INT=MAJ', 'INT=MIN', 'INT=LAB', 'INT=DAT'
@@ -57,19 +57,17 @@ Note: 'INT=DAT' relates to the plotted data
 values and the plotted maximums and minimums.
 .sp
 Note: IVAL is the intensity desired.  IVAL
-values range from 0 to 255 or the character
-strings 'LO' and 'HI'.  The default is 'HI'
-except for INT=MIN which is set to 'LO'.
+values range from 0 to 255.
 .sp
 Example:   CALL CONOP2('INT=ALL',110)
 .IP LSZ 8
 This parameter determines the label size.
 (Does not apply to entry CONRAQ.)
 The value of LSZ is the desired
-length in NDCs multiplied by 1024.
+length in NDCs multiplied by 1023.
 If LSZ=ON, the label size is set to IVAL.
-If LSZ=OFF, the default label size is 9
-(NDCs*1024), or about .009 NDCs.
+If LSZ=OFF, the default label size is 9./1023.
+NDCs.
 .sp
 Example: CALL CONOP2('LSZ=ON',12)
 .IP NCP 8
@@ -91,17 +89,17 @@ The parameter to determine the size of minimum and
 maximum contour labels in integer scaled NDC units.
 (Does not apply to entry CONRAQ.)
 The value of SML is the desired
-length in NDCs multiplied by 1024.
-If SML=OFF, the default label size is 15
-(NDCs*1024), or about .015 NDCs.
+length in NDCs multiplied by 1023.
+If SML=OFF, the default label size is
+15./1023. NDCs.
 If SML=ON, the user must specify IVAL.
 .sp
 Example: CALL CONOP2('SML=ON',12)
 .IP SPD 8
 The parameter for the size of the plotted input data
 values in integer scaled NDC units.
-If SPD=OFF, the default label size is 8
-(NDCs*1024), or about .008 NDCs.
+If SPD=OFF, the default label size is
+8./1023. NDCs.
 If SPD=ON, the user must specify IVAL.
 .sp
 Example: CALL CONOP2('SPD=ON',12)
@@ -138,8 +136,8 @@ expanded to about 10 more than IVAL.
 .IP STL 8
 The parameter to determine the character size of
 the main title in integer scaled NDC units.
-If STL=OFF, the default label size is 16
-(NDCs*1024), or about .016 NDCs.
+If STL=OFF, the default label size is
+16./1023. NDCs.
 If STL=ON, the user must specify IVAL.
 .sp
 Example: CALL CONOP2('STL=ON',14)
@@ -152,8 +150,8 @@ a smaller title size is required.
 CONOP2 is called to set parameters of type INTEGER before
 CONRAN, CONRAQ, or CONRAS are called to generate the contour plot.
 .SH EXAMPLES
-Use the command ncargex to see the following examples: tconaq.f,
-tconan.f, and tconas.f.
+Use the command ncargex to see the following examples: tconaq,
+tconan, and tconas.
 .SH ACCESS
 To use CONOP2 load the NCAR Graphics libraries ncarg, ncarg_gks, and
 ncarg_loc, preferably in that order.

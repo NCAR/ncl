@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_win.m,v 1.3 1993-05-03 17:31:41 haley Exp $
+.\"	$Id: gset_win.m,v 1.4 1993-05-12 17:19:56 haley Exp $
 .\"
 .TH GSET_WIN 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -49,7 +49,8 @@ Online:
 .BR ncarg_gks_cbind(3NCARG)
 .sp
 Hardcopy: 
-"User's Guide for NCAR GKS-0A Graphics"
+User's Guide for NCAR GKS-0A Graphics;
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 (c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gesc.m,v 1.3 1993-05-03 17:26:03 haley Exp $
+.\"	$Id: gesc.m,v 1.4 1993-05-12 17:14:06 haley Exp $
 .\"
 .TH GESC 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -93,7 +93,8 @@ Online:
 SETUSV, FRAME, NGPICT, gescape
 .sp
 Hardcopy: 
-"User's Guide for NCAR GKS-0A Graphics"
+User's Guide for NCAR GKS-0A Graphics;
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 (c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

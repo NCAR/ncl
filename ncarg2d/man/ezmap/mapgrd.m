@@ -12,7 +12,7 @@ CALL MAPGRD
 void c_mapgrd()
 .SH DESCRIPTION
 MAPGRD has no arguments.
-.SH USAGE@@@
+.SH USAGE
 The statement:
 .RS 5
 .sp
@@ -46,6 +46,7 @@ cmplbl,
 cmplot,
 cmptit,
 epltch,
+ffex02,
 fpchiqu.
 .SH ACCESS
 To use MAPGRD, load the NCAR Graphics libraries ncarg, ncarg_gks,
@@ -105,7 +106,7 @@ supcon,
 ncarg_cbind
 .sp
 Hardcopy:  
-Tutorial: A Step-by-Step Guide to Contouring and Mapping
+NCAR Graphics Contouring and Mapping Tutorial
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

@@ -30,7 +30,7 @@ represents
 the blue intensity component of the input point in RGB
 color space.
 .IP H 12
-(REAL, output, range [0.,360.]) 
+(REAL, output, range [0.,360.) ) 
 represents
 the hue of the input point in HSV color space. A value
 of (R,0.,0.) in the input space will result in a hue of
@@ -56,8 +56,9 @@ The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
-example: 
-tcolcv.
+examples: 
+tcolcv,
+fcce02.
 .SH ACCESS
 To use RGBHSV, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_rgbhsv, load 
@@ -75,6 +76,9 @@ rgbhls,
 rgbyiq,
 yiqrgb,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

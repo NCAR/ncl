@@ -190,10 +190,8 @@ contents of the flash buffer are copied to the metafile being created, if
 it is desired to draw something on the Ezmap background, MAPRS may first
 have to be called to ensure that the correct SET call is in effect.
 .IP "\(bu" 4
-SUPMAP - This is the routine from which Ezmap grew. A version of SUPMAP
-is implemented within it and allows one to draw a complete map with a
-single, rather lengthy, call. The routine SUPCON, which is the old
-analogue of MAPTRN, is also implemented.
+Draws a map with a single call. An implementation of the routine
+from which Ezmap grew.
 .RE
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
@@ -396,7 +394,8 @@ supcon,
 ncarg_cbind
 .sp
 Hardcopy: 
-Tutorial: A Step-by-Step Guide to Contouring and Mapping 
+NCAR Graphics Contouring and Mapping Tutorial; 
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

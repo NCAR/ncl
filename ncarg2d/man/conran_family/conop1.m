@@ -2,13 +2,13 @@
 .na
 .nh
 .SH NAME
-CONOP1 - turns options off and on for the Conran_family utility.
+CONOP1 - sets option switches for the Conran_family utility.
 .SH SYNOPSIS
 CALL CONOP1 (IOPT)
 .SH DESCRIPTION
 .IP IOPT 12
-Character, input -- Selects an internal parameter.  The
-possibilities are:
+Character, input -- Selects an internal parameter and sets an option
+switch.  The possibilities are:
 .sp
 .nf
 \& 'DEF'
@@ -229,8 +229,8 @@ point of interpolation.
 CONOP1 is called to toggle Conran_family options before entries
 CONRAN, CONRAQ, or CONRAS are called to generate the contour plot.
 .SH EXAMPLES
-Use the command ncargex to see the following examples: tconaq.f,
-tconan.f, and tconas.f.
+Use the command ncargex to see the following examples: tconaq,
+tconan, and tconas.
 .SH ACCESS
 To use CONOP1 load the NCAR Graphics libraries ncarg, ncarg_gks, and
 ncarg_loc, preferably in that order.

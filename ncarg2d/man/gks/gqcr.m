@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gqcr.m,v 1.3 1993-05-03 17:26:51 haley Exp $
+.\"	$Id: gqcr.m,v 1.4 1993-05-12 17:14:42 haley Exp $
 .\"
 .TH GQCR 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -53,7 +53,8 @@ Online:
 gscr, gsplci, gsmkci, gstxci, gsfaci, ginq_colr_rep
 .sp
 Hardcopy: 
-"User's Guide for NCAR GKS-0A Graphics"
+User's Guide for NCAR GKS-0A Graphics;
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 (c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

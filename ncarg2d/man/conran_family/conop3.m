@@ -2,14 +2,14 @@
 .na
 .nh
 .SH NAME
-CONOP3 - specifys various REAL parameters to be used by
-the Conran_family utility.
+CONOP3 - sets option switches and specifys various REAL parameters
+to be used by the Conran_family utility.
 .SH SYNOPSIS
 CALL CONOP3 (IOPT, ARRAY, LENA)
 .SH DESCRIPTION
 .IP IOPT 12
-Character, input -- Selects an internal parameter.  The
-possibilities are:
+Character, input -- Selects an internal parameter and sets an option
+switch.  The possibilities are:
 .sp
 .nf
 \& 'CHL=ON' or 'CHL=OFF'
@@ -178,8 +178,8 @@ version of CONRAN.
 CONOP3 is called to set parameters of type REAL before
 CONRAN, CONRAQ, or CONRAS are called to generate the contour plot.
 .SH EXAMPLES
-Use the command ncargex to see the following examples: tconaq.f,
-tconan.f, and tconas.f.
+Use the command ncargex to see the following examples: tconaq,
+tconan, and tconas.
 .SH ACCESS
 To use CONOP3 load the NCAR Graphics libraries ncarg, ncarg_gks, and
 ncarg_loc, preferably in that order.

@@ -11,10 +11,18 @@ other does not.  CONRAQ is a quick version of the package which has
 a more limited set of options than the other entries.  CONRAS is
 the super version of the package.
 .sp
+Parameters are set using the CONOP1, CONOP2, CONOP3, and CONOP4
+entries.  CONOP1 sets option switches, CONOP2 sets option switches
+and option related integer arguments, CONOP3 sets option switches
+and option related real arguments, and
+CONOP4 sets option switches and option related character arguments.
+This man page provides a functional overview of the parameters.
+See the man pages for the CONOPx entries for precise information
+on how to make the option setting calls.
+.sp
 All of the following parameters apply to
 normal, smooth, or super versions of the package.
-.sp
-The inclusive set of Conran parameters and their defaults:
+The inclusive set of Conran parameters and their switch defaults:
 .nh
 
 CONOP1 parameters  (Switches)   [16]
@@ -26,19 +34,19 @@ CONOP1 parameters  (Switches)   [16]
    LAB=ON    PMM=OFF   TOP=OFF
    LOT=OFF   PSL=OFF   TRI=OFF
 
-CONOP2 parameters  (Integer)   [7]
+CONOP2 parameters  (Switches & Integer args)   [7]
 
    INT=OFF LSZ=OFF NCP=OFF SML=OFF
    SPD=OFF SSZ=OFF STL=OFF
 
-CONOP3 parameters  (Real)      [7]
+CONOP3 parameters  (Switches & Real args)      [7]
 
    CHL=OFF CIL=OFF CON=OFF DBP=OFF
    SDC=OFF SLD=OFF TEN=OFF
 
-CONOP4 parameters  (Character)
+CONOP4 parameters  (Switches & Character args)  [3]
 
-   DAS=OFF FMT=OFF TLE=OFF       [3]
+   DAS=OFF FMT=OFF TLE=OFF
 
 .fi
 Parameters which are not available in CONRAQ, the
@@ -65,9 +73,9 @@ under the map only if PER=ON.  (See parameter PER)
 .IP ITP 12
 Set the interpolation scheme.
 There are two schemes  --  C1 surfaces and linear.
-The C1 method takes longer but will give the
+The C1 method (ITP=C1) takes longer but will give the
 best results when the data is sparse (less
-than 100 points).  The linear method will
+than 100 points).  The linear method (ITP=LIN) will
 produce a better plot when there is a dense
 data set.  The default is a C1 surface.
 .IP LAB 12
@@ -125,33 +133,44 @@ Parameters of type INTEGER set in calls to entry CONOP2:
 .IP INT 12
 The parameter to determine line intensities for
 various parts of the plot.  Intensities vary
-from HI to LO.  The default is HI for all parts
-of the plot except minor contour lines.  They
-are set to LO.
+from a high of 255 to a low of 0.  The default
+is high for all parts
+of the plot except minor contour lines which
+are set to low.
 .IP LSZ 12
-This parameter determines the label size.
-The default value is 9 integer scaled NDC units (NDCs*1024).
+This parameter determines the character size of
+contour labels.
+The default value is 9, which results in
+label characters of
+a size of 9./1023. NDC units.
 (Does not apply to entry CONRAQ.)
 .IP NCP 12
-The parameter to indicate the number of data points
-used for the partial derivative
-estimation.  The default value is 4.
+The parameter NCP controls the
+number of data points to be used in the
+interpolation.  Increasing NCP causes more
+of the  surrounding data to influence the
+point of interpolation.  In the case of linear interpolation
+NCP is always 4.  In the case of C1 interpolation, NCP
+can vary from 2 to 25 with 4 as the default.
+.sp
+The interpolation option is selected using internal parameter ITP.
 .IP SML 12
-This parameter specifies the size of minimum and
-maximum contour labels in integer scaled NDC units (NDCs*1024).
-The default value is 15.
+This parameter specifies the character size of minimum and
+maximum contour labels.
+The default value is 15, which results in
+label character sizes of 15./1023. NDC units.
 (Does not apply to entry CONRAQ.)
 .IP SPD 12
-The parameter for the size of the plotted input data
-in integer scaled NDC units (NDCs*1024).
-The default value is 8.
+The parameter for the size of the plotted input data values.
+The default value is 8, which results in
+a data value character size of 8./1023. NDC units.
 .IP SSZ 12
 The parameter to determine the resolution (number of
 steps in each direction).  The default is 40.
 .IP STL 12
-The parameter to determine the size of the main title
-in integer scaled NDC units (NDCs*1024).
-The default value is 16.
+The parameter to determine the size of the main title characters.
+The default value is 16, which results in title character
+sizes of 16./1023. NDC units.
 .SH
 Parameters of type REAL set in calls to entry CONOP3:
 .IP CHL 12

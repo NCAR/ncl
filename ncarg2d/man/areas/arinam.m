@@ -77,6 +77,11 @@ vvex01,
 tareas,
 tconpa,
 tezmpa,
+fcover,
+ffex00,
+ffex03,
+ffex05,
+fcirc,
 fsfsgfa,
 fsppoint.
 .SH ACCESS

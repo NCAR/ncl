@@ -12,7 +12,7 @@ CALL MAPINT
 void c_mapint()
 .SH DESCRIPTION
 MAPINT has no arguments.
-.SH USAGE@@@ 
+.SH USAGE 
 MAPINT is required initially and again after a call to any of
 the routines MAPPOS, MAPROJ, or MAPSET. The flag 'IN', which
 may be retrieved by a call to MAPGTI or MAPGTL, indicates
@@ -48,6 +48,11 @@ mpex10,
 eezmpa,
 epltch,
 tezmpa,
+fcover,
+ffex00,
+ffex02,
+ffex03,
+ffex05,
 fpchiqu.
 .SH ACCESS
 To use MAPINT, load the NCAR Graphics libraries ncarg, ncarg_gks,
@@ -110,7 +115,7 @@ supcon,
 ncarg_cbind
 .sp
 Hardcopy: 
-Tutorial: A Step-by-Step Guide to Contouring and Mapping
+NCAR Graphics Contouring and Mapping Tutorial
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

@@ -2,33 +2,35 @@
 .na
 .nh
 .SH NAME
-LINED - Draws a line segment between two points in user
-coordinates
+LINED -
+Draws a line segment between two points whose user
+coordinates are given.
 .SH SYNOPSIS
-CALL LINED (XA, XB, YA, YB)
+CALL LINED (XA,XB,YA,YB)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
 void c_lined (float xa, float xb, float ya, float yb)
 .SH DESCRIPTION 
 .IP XA 12
-(an input coordinate of type REAL) defining the X user coordinate of
+(an input expression of type REAL) defines the X user coordinate of
 the starting point of a line segment.
 .IP YA 12
-(an input coordinate of type REAL) defining the Y user coordinate of
+(an input expression of type REAL) defines the Y user coordinate of
 the starting point of a line segment.
 .IP XB 12
-(an input coordinate of type REAL) defining the X user coordinate of
+(an input expression of type REAL) defines the X user coordinate of
 the ending point of a line segment.
 .IP YB 12
-(an input coordinate of type REAL) defining the Y user coordinate of
+(an input expression of type REAL) defines the Y user coordinate of
 the ending point of a line segment.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples: 
-tdashc, tdashl, tdashp, tdashs, spset1, spset2
+tdashc, tdashl, tdashp, tdashs, 
+fcoord1, fcoord2,
 fdldashc, fdldashd, fgk.nclr, fgklnwth
 dashdb, dashdc, frstd, lined, reset, vectd, ncarg_cbind
 .SH ACCESS

@@ -2,9 +2,9 @@
 .na
 .nh
 .SH NAME
-HLSRGB - Converts a color specification given as the Hue,
+HLSRGB - Converts a color specification given as Hue,
 Lightness, and Saturation (HLS) values to Red, Green, and Blue
-(RGB) intensity values in the RGB color space.
+(RGB) intensity values.
 .SH SYNOPSIS
 CALL HLSRGB ( H, L, S, R, G, B )
 .SH C-BINDING SYNOPSIS
@@ -15,7 +15,7 @@ void c_hlsrgb (float h, float l, float s, float *r,
 float *g, float *b)
 .SH DESCRIPTION 
 .IP H 12
-(REAL, input, range [0.,360.]) represents
+(REAL, input, range [0.,360.) ) represents
 the hue of the input color in HLS color space. H=0.
 corresponds to blue.
 .IP L 12
@@ -63,7 +63,8 @@ ccplbam,
 ccpllb,
 ccplll,
 ccpllw,
-colcon.
+colcon,
+fcce02.
 .SH ACCESS
 To use HLSRGB, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_hlsrgb, load 
@@ -82,6 +83,9 @@ rgbhsv,
 rgbyiq,
 yiqrgb,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

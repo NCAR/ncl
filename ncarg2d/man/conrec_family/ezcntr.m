@@ -28,8 +28,8 @@ the Z array.
 (an input parameter of type INTEGER)  which is the second dimension of
 the Z array.
 .SH EXAMPLES
-Use the ncargex command to see the relevant examples tconre.f,
-tcnqck.f, tcnsmt.f, and tcnsup.f.
+Use the ncargex command to see the relevant examples tconre,
+tcnqck, tcnsmt, and tcnsup.
 .SH ACCESS 
 EZCNTR can be invoked in four different ways to create
 contour plots which vary considerably in appearance.  The four variations
@@ -56,6 +56,10 @@ Command:  "ncargf77 -quick mycode.f"
 .sp
 The contours will be drawn as unsmoothed
 dashed or solid lines without characters along the lines.
+The QUICK drawing algorithm is faster and cruder than that used for
+NORMAL contour lines.  QUICK uses a cell-by-cell analysis rather than
+following each contour line to completion in sequence as is done in
+the NORMAL algorithm.
 .sp 2
 .IP SMOOTH 10
 Command:  "ncargf77 -smooth mycode.f"

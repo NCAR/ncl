@@ -4,7 +4,7 @@
 .SH NAME
 GFLAS2 - Terminates putting plotting
 instructions to disk and resumes putting plotting instructions
-to the metafile output. A call to GFLAS2 can only be made after
+to the the output stream. A call to GFLAS2 can only be made after
 a previous call to GFLAS1.
 .SH SYNOPSIS
 CALL GFLAS2 
@@ -32,6 +32,10 @@ gflas1,
 gflas3,
 gflas4,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Contouring and Mapping Tutorial;
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

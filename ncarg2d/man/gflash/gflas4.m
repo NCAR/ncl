@@ -2,9 +2,9 @@
 .na
 .nh
 .SH NAME
-GFLAS4 - Allows the user to access a disk file of
-plotting instructions generated with a GFLAS1 and GFLAS2
-sequence in a previous job for use in a GFLAS3 call.
+GFLAS4 - Allows you to access a disk file of
+plotting instructions, generated with a GFLAS1 and GFLAS2
+sequence in a previous job, for use in a GFLAS3 call.
 .SH SYNOPSIS
 CALL GFLAS4 (IB, FNAME)
 .SH C-BINDING SYNOPSIS
@@ -15,9 +15,8 @@ void c_gflas4 (int ib, char *fname)
 .IP IB 12
 (INTEGER, input)
 Specifies the identifier to be used
-for subsequent GFLAS3 calls, and needs to be between 0
-and 99 inclusive just as with the argument IB to
-GFLAS1.
+for subsequent GFLAS3 calls.  This needs to be between 0
+and 99 inclusive, just as with the argument IB to GFLAS1.
 .IP FNAME 12
 (CHARACTER, input)
 Specifies the name of the file in which the plotting instructions
@@ -38,6 +37,10 @@ gflas1,
 gflas2,
 gflas3,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Contouring and Mapping Tutorial;
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

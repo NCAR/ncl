@@ -3,4 +3,4 @@
 .nh
 .SH NAME
 Dashsupr - The dash utilities have all been incorporated into the
-Dashline utility.  To see its man page type: "man dashline".
+Dashline utility.  To see its man page, type "man dashline".

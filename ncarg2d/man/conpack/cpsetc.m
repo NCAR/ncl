@@ -44,7 +44,10 @@ cpex02,
 cpex04,
 cpex05,
 cpex06,
-cbex01.
+cbex01,
+fcover,
+ffex03,
+ffex05.
 .SH ACCESS
 To use CPSETC, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_cpsetc, 
@@ -63,7 +66,7 @@ cplbdr, cpmpxy, cppkcl, cppklb, cprect, cprset, cpscae, cpseti,
 cpsetr, cpsps1, cpsps2, ncarg_cbind
 .sp
 Hardcopy:
-Tutorial: A Step-by-Step Guide to Contouring and Mapping
+NCAR Graphics Contouring and Mapping Tutorial
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

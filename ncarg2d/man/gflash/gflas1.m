@@ -22,7 +22,7 @@ buffers in a single job step.
 .SH C-BINDING DESCRIPTION
 The C-binding argument description is the same as the FORTRAN 
 argument description.
-.SH USAGE@@@
+.SH USAGE
 GFLAS1 automatically assigns the name GNFBxx (GKS New Flash
 Buffer) to the file that will receive subsequent plotting
 instructions, where xx is the integer value of IB. For example,
@@ -31,7 +31,7 @@ plotting instructions will be stored in file GNFB09. You may
 need to know the name of the disk file where the plotting
 instructions are stored if and when you use GFLAS4. The GNFBxx
 files are all created using FORTRAN logical unit IC as
-specified in the GOPWK call.
+specified in the GOPWK call for WISS.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
@@ -50,6 +50,10 @@ gflas2,
 gflas3,
 gflas4,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Contouring and Mapping Tutorial;
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

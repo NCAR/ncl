@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_cur_norm_tran_num.m,v 1.2 1993-05-03 17:30:04 haley Exp $
+.\"	$Id: ginq_cur_norm_tran_num.m,v 1.3 1993-05-12 17:17:41 haley Exp $
 .\"
 .TH GINQ_CUR_NORM_TRAN_NUM 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -32,7 +32,8 @@ Online:
 .BR ncarg_gks_cbind(3NCARG)
 .sp
 Hardcopy: 
-"User's Guide for NCAR GKS-0A Graphics"
+User's Guide for NCAR GKS-0A Graphics;
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 (c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

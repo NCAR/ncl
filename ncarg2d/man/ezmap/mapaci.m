@@ -19,7 +19,7 @@ a call to MAPBLA.
 .SH C-BINDING DESCRIPTION
 The C-binding argument description is the same as the FORTRAN 
 argument description.
-.SH USAGE@@@
+.SH USAGE
 ICIR = MAPACI (IAID)
 .sp
 Gives ICI a value between 1 and 7, inclusive, that may be used to select
@@ -91,7 +91,7 @@ supcon,
 ncarg_cbind
 .sp
 Hardcopy: 
-Tutorial: A Step-by-Step Guide to Contouring and Mapping 
+NCAR Graphics Contouring and Mapping Tutorial 
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

@@ -2,7 +2,8 @@
 .na
 .nh
 .SH NAME
-An implementation of the routine from which Ezmap grew.
+Draws a map with a single call. An implementation of the routine
+from which Ezmap grew.
 .SH SYNOPSIS
  CALL SUPMAP (JPRJ, PLAT, PLON, ROTA, PLM1, PLM2, PLM3, 
 .br
@@ -218,7 +219,7 @@ supcon,
 ncarg_cbind
 .sp
 Hardcopy:  
-Tutorial: A Step-by-Step Guide to Contouring and Mapping 
+NCAR Graphics Contouring and Mapping Tutorial 
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

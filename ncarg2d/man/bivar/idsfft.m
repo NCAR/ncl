@@ -135,9 +135,15 @@ To use IDSFFT, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_idsfft, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, 
 ncarg_c, and ncarg_loc, preferably in that order.
+.SH MESSAGES
+See the bivar man page for a description of all Bivar error
+messages and/or informational messages.
 .SH SEE ALSO
 Online:
 bivar, idbvip, ncarg_cbind
+.sp
+Hardcopy:
+NCAR Graphics Contouring and Mapping Tutorial
 .SH ACKNOWLEDGEMENTS
 Bivar was written by Hiroshi Akima in august 1975 and rewritten
 by him in late 1976.  In 1989 a new version of Bivar,

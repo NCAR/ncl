@@ -3,8 +3,8 @@
 .nh
 .SH NAME
 YIQRGB - Converts a color specification given in the YIQ
-coordinate system to the equivalent color specification in the
-Red, Green, Blue (RGB) coordinate system.
+color space to the equivalent color specification in the
+Red, Green, Blue (RGB) color space.
 .SH SYNOPSIS
 CALL YIQRGB (Y, I, Q, R, G, B)
 .SH C-BINDING SYNOPSIS
@@ -45,8 +45,9 @@ The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
-example:  
-tcolcv.
+examples:  
+tcolcv,
+fcce02.
 .SH ACCESS
 To use YIQRGB, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_yiqrgb, load 
@@ -61,6 +62,9 @@ rgbhls,
 rgbhsv,
 rgbyiq,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

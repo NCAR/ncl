@@ -99,7 +99,15 @@ agex05,
 agex07,
 agex08,
 tagupw,
-tautog.
+tautog,
+fagaxclr,
+fagaxlbl,
+fagaxmax,
+fagcuclr,
+fagcudsh,
+fagezmxy,
+fagilclr,
+fagovrvw.
 .SH ACCESS 
 To use EZMXY, load the NCAR Graphics libraries ncarg, ncarg_gks, 
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_ezmxy, load the 
@@ -141,6 +149,9 @@ displa,
 ezmy,
 ezxy,
 ezy
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

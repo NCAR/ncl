@@ -73,7 +73,7 @@ particular, the description of the subroutine ARDRLN.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
-.SH USAGE@@@
+.SH USAGE
 The statement
 .RS 5
 .sp
@@ -103,7 +103,10 @@ cmpmsk,
 cmptit,
 cpex08,
 eezmpa,
-tezmpa.
+tezmpa,
+fcover,
+ffex03,
+ffex05.
 .SH ACCESS
 To use MAPGRM, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_mapgrm, load 
@@ -162,7 +165,7 @@ supcon,
 ncarg_cbind
 .sp
 Hardcopy: 
-Tutorial: A Step-by-Step Guide to Contouring and Mapping
+NCAR Graphics Contouring and Mapping Tutorial
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

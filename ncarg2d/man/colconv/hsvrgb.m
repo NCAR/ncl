@@ -15,7 +15,7 @@ void c_hsvrgb (float h, float s, float v, float *r,
 float *g, float *b)
 .SH DESCRIPTION 
 .IP H 12
-(REAL, input, range [0.,360.]) 
+(REAL, input, range [0.,360.) ) 
 represents
 the hue of the input color in HSV color space.
 .IP S 12
@@ -54,7 +54,8 @@ argument descriptions.
 Use the ncargex command to see the following relevant
 examples: 
 coex03,
-tcolcv.
+tcolcv,
+fcce02.
 .SH ACCESS
 To use HSVRGB, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_hsvrgb, load 
@@ -72,6 +73,9 @@ rgbhsv,
 rgbyiq,
 yiqrgb,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

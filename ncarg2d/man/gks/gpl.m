@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gpl.m,v 1.3 1993-05-03 17:26:23 haley Exp $
+.\"	$Id: gpl.m,v 1.4 1993-05-12 17:14:20 haley Exp $
 .\"
 .TH GPL 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -33,7 +33,8 @@ Online:
 gsln, gslwsc, gscr, gsplci, gqln, gqlwsc, gqplci, dashline, set, gpolyline
 .sp
 Hardcopy: 
-"User's Guide for NCAR GKS-0A Graphics";
+User's Guide for NCAR GKS-0A Graphics;
+NCAR Graphics Fundamentals, UNIX Version
 "The Use of X/Y Coordinates in NCAR Graphics" SCD User Document"
 .SH COPYRIGHT
 (c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation

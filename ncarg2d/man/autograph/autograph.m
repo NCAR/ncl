@@ -5,6 +5,9 @@
 Autograph - To draw graphs, each with a labeled background and
 each displaying one or more curves.
 .SH SYNOPSIS
+.sp
+Each of the following routines draws a complete graph with a single call:
+.sp
 EZY -
 Draws, in a manner determined by the current values of the
 control parameters, a complete graph of a single curve
@@ -38,7 +41,7 @@ each defined by a set of points (XDRA(I),YDRA(I,J)) (or
 1 to MANY. The argument GLAB may be used to specify a
 "graph label", to be placed at the top of the graph.
 .sp
-The following routines provide access to control parameters
+The following routines provide access to control parameters:
 .sp
 ANOTAT -
 Changes the values of certain primary control parameters,
@@ -88,7 +91,7 @@ AGGETR -
 Allows a user program to retrieve the real value of a
 single parameter.
 .sp
-The following are low-level callable routines
+The following are lower-level user-callable routines:
 .sp
 AGSTUP -
 Performs "set-up" tasks required before AGBACK and
@@ -111,7 +114,7 @@ of the control parameters - the primary parameters with
 default values or with values supplied by the user, and the
 secondary parameters with values computed by AGSTUP.
 .sp
-The following are other user called routines
+The following are other user-callable routines:
 .sp
 AGSAVE -
 Saves the current state of Autograph for later restoration
@@ -120,7 +123,7 @@ by AGRSTR.
 AGRSTR -
 Restores a saved state of Autograph.
 .sp
-The following are non user callable, CHARACTER*16 functions
+The following are non-user-callable, CHARACTER*16 functions:
 .sp
 AGBNCH -
 Provides an easy way to convert binary dash patterns into
@@ -210,7 +213,7 @@ To use the Autograph C-bindings, load the NCAR Graphics libraries
 ncargC, ncarg_gksC, ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably 
 in that order.
 .sp
-To get smoother curves, drawn  using  spline  interpolation,
+To get smoother curves, drawn using spline interpolation,
 also load libdashsmth.o     
 .sp
 Autograph contains a routine AGPWRT, which it calls to draw
@@ -439,6 +442,9 @@ ezmxy,
 ezmy,
 ezxy,
 ezy
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

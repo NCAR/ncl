@@ -45,7 +45,8 @@ agex01,
 bnchmk,
 example,
 tagupw,
-tautog.
+tautog,
+fagezy.
 .SH ACCESS 
 To use EZY, load the NCAR Graphics libraries ncarg, ncarg_gks, 
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_ezy, load the
@@ -86,6 +87,9 @@ displa,
 ezmxy,
 ezmy,
 ezxy
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

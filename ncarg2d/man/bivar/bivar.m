@@ -33,9 +33,48 @@ To use the Bivar routines, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use the Bivar C-bindings,
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, 
 ncarg_c, and ncarg_loc, preferably in that order.
+.SH MESSAGES
+When error conditions are detected, the support routine SETER
+is called in such a way that it writes a message to the standard
+error file (as defined by I1MACH(4)) and then terminates
+execution. The possible error messages are as follows:
+.sp
+IDBVIP (BIVAR) - INPUT PARAMETER MD OUT OF RANGE
+.sp
+IDBVIP (BIVAR) - INPUT PARAMETER NDP OUT OF RANGE
+.sp
+IDBVIP (BIVAR) - INPUT PARAMETER NIP OUT OF RANGE
+.sp
+IDBVIP (BIVAR) - MD=2 OR 3 BUT NDP WAS CHANGED SINCE LAST CALL
+.sp
+IDBVIP (BIVAR) - MD=3 BUT NIP WAS CHANGED SINCE LAST CALL
+.sp
+IDSFFT (BIVAR) - INPUT PARAMETER MD OUT OF RANGE
+.sp
+IDSFFT (BIVAR) - INPUT PARAMETER NDP OUT OF RANGE
+.sp
+IDSFFT (BIVAR) - INPUT PARAMETER NXI OR NYI OUT OF RANGE
+.sp
+IDSFFT (BIVAR) - INPUT PARAMETER NZI IS LESS THAN NXI
+.sp
+IDSFFT (BIVAR) - MD=2 OR 3 BUT NDP WAS CHANGED SINCE LAST CALL
+.sp
+IDSFFT (BIVAR) - MD=3 BUT NXI WAS CHANGED SINCE LAST CALL
+.sp
+IDSFFT (BIVAR) - MD=3 BUT NYI WAS CHANGED SINCE LAST CALL
+.sp
+IDTANG (BIVAR) - INPUT PARAMETER NDP OUT OF RANGE
+.sp
+IDTANG (BIVAR) - TWO OF THE INPUT DATA POINTS ARE IDENTICAL
+.sp
+IDTANG (BIVAR) - ALL COLLINEAR DATA POINTS
 .SH SEE ALSO
 Online:
 idbvip, idsfft, ncarg_cbind
+.sp
+Hardcopy:
+NCAR Graphics Contouring and Mapping Tutorial;
+NCAR Graphics Fundamentals, UNIX Version
 .SH ACKNOWLEDGMENTS
 Bivar was written by Hiroshi Akima in august 1975 and rewritten
 by him in late 1976.  In 1989 a new version of Bivar,

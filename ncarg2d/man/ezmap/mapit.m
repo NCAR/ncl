@@ -24,7 +24,7 @@ one.
 .SH C-BINDING DESCRIPTION 
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
-.SH USAGE@@@
+.SH USAGE
 MAPIT is used to draw lines on the map; it is called by Ezmap itself
 and, if desired, by the user. MAPIT attempts to omit
 nonvisible portions of lines and to handle "crossover," a
@@ -147,7 +147,7 @@ supcon,
 ncarg_cbind
 .sp
 Hardcopy: 
-Tutorial: A Step-by-Step Guide to Contouring and Mapping
+NCAR Graphics Contouring and Mapping Tutorial
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

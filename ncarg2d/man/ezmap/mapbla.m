@@ -19,7 +19,7 @@ which boundary lines are to be added.
 .SH C-BINDING DESCRIPTION
 The C-binding argument description is the same as the FORTRAN 
 argument description.
-.SH USAGE@@@
+.SH USAGE
 One or two groups of boundary lines are added to the area map
 by a call to MAPBLA. The first group has the group identifier
 \&'G1', which has a default value of 1. The group 'G1' consists of a
@@ -73,7 +73,9 @@ cmpmsk,
 cmptit,
 cpex08,
 eezmpa,
-tezmpa.
+tezmpa,
+fcover,
+ffex00.
 .SH ACCESS
 To use MAPBLA, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_mapbla, load 
@@ -132,7 +134,7 @@ supcon,
 ncarg_cbind
 .sp
 Hardcopy:  
-Tutorial: A Step-by-Step Guide to Contouring and Mapping 
+NCAR Graphics Contouring and Mapping Tutorial 
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

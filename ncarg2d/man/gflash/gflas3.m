@@ -4,9 +4,9 @@
 .SH NAME
 GFLAS3 - Inserts the instructions saved on
 disk with a previous GFLAS1 identifier IB into the output
-metafile.  GFLAS3 can be called only after a previous GFLAS1
-and GFLAS2 sequence or after a call to GFLAS4. GFLAS3 also uses
-FORTRAN logical unit IC for its reads.
+stream.  GFLAS3 can be called only after a previous GFLAS1
+and GFLAS2 sequence or after a call to GFLAS4. GFLAS3 uses
+FORTRAN logical unit IC as specified in the GOPWK call for WISS.
 .SH SYNOPSIS
 CALL GFLAS3 (IB)
 .SH C-BINDING SYNOPSIS
@@ -16,7 +16,7 @@ void c_gflas3 (int ib)
 .SH DESCRIPTION 
 .IP IB 12
 (INTEGER, input)
-The same identifying integer used for the (IB) argument
+The same identifying integer used for an (IB) argument
 in GFLAS1.
 .SH C-BINDING DESCRIPTION
 The C-binding argument description is the same as the FORTRAN 
@@ -39,6 +39,10 @@ gflas1,
 gflas2,
 gflas4,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Contouring and Mapping Tutorial;
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

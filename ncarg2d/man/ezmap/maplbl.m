@@ -11,7 +11,7 @@ CALL MAPLBL
 void c_maplbl()
 .SH DESCRIPTION
 MAPLBL has no arguments.
-.SH USAGE@@@ 
+.SH USAGE 
 If the parameter 'LA' is set appropriately, MAPLBL labels the
 international date line (ID), the equator (EQ), the Greenwich
 Meridian (GM), and the poles (NP and SP), and if the parameter
@@ -34,7 +34,8 @@ cmpmsk,
 cmpou,
 cmptit,
 eezmpa,
-tezmpa.
+tezmpa,
+ffex00.
 .SH ACCESS
 To use MAPLBL, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_maplbl, load 
@@ -93,7 +94,7 @@ supcon,
 ncarg_cbind
 .sp
 Hardcopy:  
-Tutorial: A Step-by-Step Guide to Contouring and Mapping
+NCAR Graphics Contouring and Mapping Tutorial
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

@@ -48,6 +48,10 @@ Command:  "ncargf77 -quick mycode.f"
 .sp
 The contours will be drawn as unsmoothed
 dashed or solid lines without characters along the lines.
+The QUICK drawing algorithm is faster and cruder than that used for
+NORMAL contour lines.  QUICK uses a cell-by-cell analysis rather than
+following each contour line to completion in sequence as is done in
+the NORMAL algorithm.
 .sp 2
 .IP SMOOTH 10
 Command:  "ncargf77 -smooth mycode.f"
@@ -73,6 +77,22 @@ CONREC  - DIMENSION ERROR - M*N .GT. (2**IARTH)
 The array to be contoured is dimensioned M by N.  This is larger
 than the address space on this computer (2**IARTH) where IARTH is
 the size of an address integer.  Check your dimension sizes.
+.sp
+STLINE  - WARNING FROM ROUTINE STLINE IN CONREC--WORK ARRAY OVERFLOW
+.br
+This warning message is printed to standard output
+if the number of contour lines for a contour level would
+exceed the dimension size of work array IR in routine STLINE.
+.sp
+Should this happen the following messages are also sent
+to the output plot file:
+.sp
+**WARNING--PICTURE INCOMPLETE**
+.br
+WORK ARRAY OVERFLOW IN STLINE
+.sp
+Processing stops before the actual array overflow occurs and control
+is returned to the calling program.
 .SH SEE ALSO
 Online:
 conrec, ezcntr, conrec_family_params,

@@ -3,10 +3,10 @@
 .nh
 .SH NAME
 Colconv - 
-Allows a user to convert among the color models HSV,
+Allows a user to convert among the color models RGB, HSV,
 HLS, and YIQ.
 .SH SYNOPSIS
-HLSRGB - Converts a color specification given as the Hue,
+HLSRGB - Converts a color specification given as Hue,
 Lightness, and Saturation (HLS) values to Red, Green, and Blue
 (RGB) intensity values in the RGB color space.
 .sp
@@ -28,8 +28,8 @@ Red, Green, Blue, (RGB) color space to a color specification in the
 YIQ color space.
 .sp
 YIQRGB - Converts a color specification given in the YIQ
-coordinate system to the equivalent color specification in the
-Red, Green, Blue (RGB) coordinate system.
+color space to the equivalent color specification in the
+Red, Green, Blue (RGB) color space.
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
@@ -45,7 +45,7 @@ c_rgbyiq
 .br
 c_yiqrgb
 .SH ACCESS 
-To use Colconv, routines load the NCAR Graphics libraries
+To use Colconv routines, load the NCAR Graphics libraries
 ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
 To use the Colconv C-bindings, load the NCAR Graphics libraries
 ncargC, ncarg_gksC, ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably 
@@ -84,6 +84,9 @@ rgbhsv,
 rgbyiq,
 yiqrgb,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gsmk.m,v 1.3 1993-05-03 17:28:26 haley Exp $
+.\"	$Id: gsmk.m,v 1.4 1993-05-12 17:15:55 haley Exp $
 .\"
 .TH GSMK 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -40,7 +40,8 @@ gpm, gsmksc, gscr, gspmci, gqmk, gqmksc, gqpmci,
 point, points, ngdots, gset_marker_type
 .sp
 Hardcopy: 
-"User's Guide for NCAR GKS-0A Graphics"
+User's Guide for NCAR GKS-0A Graphics;
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 (c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

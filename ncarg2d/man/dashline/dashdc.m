@@ -2,16 +2,18 @@
 .na
 .nh
 .SH NAME
-DASHDC - Chooses a dash pattern with labels.
+DASHDC -
+Defines a dash pattern with labels.  If DASHDC is called when
+the "quick" version of Dashline is used, an error exit results.
 .SH SYNOPSIS
-CALL DASHDC (IPAT, JCRT, JSIZE)
+CALL DASHDC (IPAT,JCRT,JSIZE)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
 void c_dashdc (char *ipat, int jcrt, int jsize)
 .SH DESCRIPTION 
 .IP IPAT 12
-(an input parameter of type CHARACTER) the value of which is
+(an input constant or variable of type CHARACTER) specifies
 the dash pattern to be used.  Although IPAT is of arbitrary
 length, 60 characters seems to be a practical limit.
 This pattern is repeated for successive
@@ -24,33 +26,43 @@ of a line label. Each line label can be at most 15
 characters in length. Sufficient white space is
 reserved in the dashed line for writing line labels.
 .IP JCRT 12
-(an input parameter of type INTEGER) the value of which is
-the length in Normalized Device Coordinates (NDCs) * 1024 to be
-assigned to each increment of the line pattern.  Increments are
-either a gap (dollar sign) or a line segment (apostrophe).
-JCRT must be greater than or equal to 1 to produce a line draw.
+(an input expression of type INTEGER) specifies that the length to be
+assigned to each increment of the line pattern is (JCRT/1023.) NDCs
+(Normalized Device Coordinates).  Each increment is either a gap
+(represented by a dollar sign in IPAT) or a line segment (represented
+by an apostrophe in IPAT).
+JCRT must be greater than or equal to 1.
 .IP JSIZE 12
-(an input parameter of type INTEGER) the value of which is
-the width of the plotted characters according to:
-.nf
-
-  JSIZE    NDCs
-    0     \.0078
-    1     \.0117
-    2     \.0156
-    3     \.0234
-
-JSIZE > 3, gives the character width as JSIZE/1024. NDCs.
-.fi
+(an input expression of type INTEGER) specifies the width of
+the plotted characters, as follows:
+.RS
+.IP " 0" 4
+\&.0078 NDCs
+.IP " 1" 4
+\&.0117 NDCs
+.IP " 2" 4
+\&.0156 NDCs
+.IP " 3" 4
+\&.0234 NDCs
+.IP ">3" 4
+JSIZE/1023. NDCs
+.RE
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples: 
-spset1,
-spset2,
 tdashc, tdashp, tdashs, 
+fcoord1,
+fcoord2,
 fdldashc, fdldashd. 
+.SH USAGE
+DASHDC may be called to define a dash pattern for any of the four
+versions of Dashline except the "quick" version; if you call it
+when the "quick" version is in use, an error exit will result.
+.sp
+A dash pattern defined by a call to DASHDC will supersede one defined
+by an earlier call to DASHDB or DASHDC.
 .SH ACCESS
 To use DASHDC, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.  To use c_dashdc, load 

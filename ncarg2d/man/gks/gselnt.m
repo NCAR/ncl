@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gselnt.m,v 1.3 1993-05-03 17:28:07 haley Exp $
+.\"	$Id: gselnt.m,v 1.4 1993-05-12 17:15:40 haley Exp $
 .\"
 .TH GSELNT 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -39,8 +39,9 @@ ncarg_gks.
 Online: 
 set, gsup, gswn, gqclip, gsel_norm_tran
 .sp
-Hardcopy: 
-"User's Guide for NCAR GKS-0A Graphics"
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version;
+User's Guide for NCAR GKS-0A Graphics
 .SH COPYRIGHT
 (c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

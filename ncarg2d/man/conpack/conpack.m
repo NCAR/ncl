@@ -30,11 +30,13 @@ CPCLTR -
 Traces the contour lines at a given level and
 retrieves them for some sort of user-defined processing.
 .sp
-CPCNRC - Simulates the behavior of the old routine CONREC; it
-has the same arguments and produces similar output.
+CPCNRC - Draws black and white contours with a single call. 
+Simulates the behavior of the old routine CONREC; it has the same
+arguments and produces similar output.
 .sp
-CPEZCT - Simulates the behavior of the old subroutine EZCNTR in
-Conrec; it has the same arguments and will produce similar
+CPEZCT - Draws black and white contours with a single call.
+Simulates the behavior of the old subroutine EZCNTR in
+Conrec_family; it has the same arguments and will produce similar
 output.
 .sp
 CPGETC - Retrieves the current value of an internal
@@ -440,7 +442,7 @@ cplbdr, cpmpxy, cppkcl, cppklb, cprect, cprset, cpscae, cpsetc, cpseti,
 cpsetr, cpsprs, cpsps1, cpsps2, ncarg_cbind
 .sp
 Hardcopy:
-Tutorial: A Step-by-Step Guide to Contouring and Mapping
+NCAR Graphics Contouring and Mapping Tutorial
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

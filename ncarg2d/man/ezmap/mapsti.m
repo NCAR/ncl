@@ -64,6 +64,10 @@ eezmpa,
 epltch,
 tezmap,
 tezmpa,
+fcover,
+ffex00,
+ffex03,
+ffex05,
 fgkgtx,
 fpchiqu.
 .SH ACCESS
@@ -127,7 +131,7 @@ supcon,
 ncarg_cbind
 .sp
 Hardcopy:  
-Tutorial: A Step-by-Step Guide to Contouring and Mapping 
+NCAR Graphics Contouring and Mapping Tutorial 
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

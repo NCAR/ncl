@@ -28,15 +28,22 @@ data values at the points.
 Input, integer -- is the number of data points
 to be contoured.  NDP must be 4 or larger.
 .IP WK 12
-Input, real array -- workspace of dimension at least
-13*NDP.
+Input, real array -- workspace of dimension
+15*NDP.
 .IP IWK 12
-Input, integer array -- workspace which when using C1 surfaces
-must be at least IWK((27+NCP)*NDP).
-When using linear interpolation the array
-must be at least IWK((27+4)*NDP).
+Input, integer array -- workspace which must be dimensioned at
+least IWK((27+NCP)*NDP).
 .sp
-The interpolation option is set using parameter ITP.  See the
+The parameter NCP controls the
+number of data points to be used in the
+interpolation.  Increasing NCP causes more
+of the surrounding data to influence the
+point of interpolation.  In the case of linear interpolation
+NCP is always 4.  In the case of C1 interpolation, NCP
+can vary from 2 to 25 with 4 as the default.
+.sp
+The interpolation option is selected using parameter ITP.
+See the
 conran_family_params man page for a description of all internal parameters.
 .IP SCRARR 12
 Real work array of dimension at least
@@ -55,7 +62,7 @@ See the conran_family_params man page.
 Quick and standard-and-smooth versions of the Conran_family are also available
 through entries CONRAQ and CONRAN, respectively.
 .SH EXAMPLES
-Use the ncargex command to see the relevant example tconas.f.
+Use the ncargex command to see the relevant example tconas.
 .SH ACCESS 
 To use CONRAS, load the NCAR Graphics libraries conras, dashsupr,
 ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.

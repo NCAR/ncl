@@ -11,7 +11,7 @@ CALL MAPLOT
 void c_maplot()
 .SH DESCRIPTION
 MAPLOT has no arguments.
-.SH USAGE@@@ 
+.SH USAGE 
 MAPLOT draws the continental and/or political outlines selected 
 by the Ezmap parameter 'OU'; the parameter
 \&'DO' determines whether solid lines or dotted lines are drawn.
@@ -40,6 +40,11 @@ mpex09,
 eezmpa,
 epltch,
 tezmpa,
+fcover,
+ffex00,
+ffex02,
+ffex03,
+ffex05,
 fpchiqu.
 .SH ACCESS
 To use MAPLOT, load the NCAR Graphics libraries ncarg, ncarg_gks,
@@ -99,7 +104,7 @@ supcon,
 ncarg_cbind
 .sp
 Hardcopy:  
-Tutorial: A Step-by-Step Guide to Contouring and Mapping
+NCAR Graphics Contouring and Mapping Tutorial
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

@@ -2,18 +2,18 @@
 .na
 .nh
 .SH NAME
-Gflash - Captures and inserts specified portions of graphics
-instructions in subsequent frames.
+Gflash - Allows for storing segments of a picture for insertion
+into any subsequent picture.
 .SH SYNOPSIS
-IP GFLAS1 - Starts storage of plotting instructions.
+GFLAS1 - Starts storage of plotting instructions.
 .sp
 GFLAS2 - Stops storage of plotting instructions.
 .sp
 GFLAS3 - Inserts saved plotting instructions into the output
 stream.
 .sp
-GFLAS4 - Associates plotting instructions stored in disk file
-with id for GFLAS3.
+GFLAS4 - Associates the filename of a previously generated picture segment
+with an id suitable for use with GFLAS3.
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
@@ -25,7 +25,7 @@ c_gflas3
 .br
 c_gflas4
 .SH ACCESS 
-To use Gflash, routines load the NCAR Graphics libraries ncarg,
+To use Gflash routines, load the NCAR Graphics libraries ncarg,
 ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.  To use the
 Gflash C-bindings load the NCAR Graphics libraries ncargC, ncarg_gksC, 
 ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
@@ -38,7 +38,8 @@ execution. The possible error messages are as follows:
 You must terminate the usage of one FLASH buffer before
 reusing it.
 .IP "THE NON-NCAR GKS PACKAGE IS NOT LEVEL 2"
-Gflash requires GKS level 2A or higher in order to function
+Gflash requires GKS level 2A or higher in order to function in a
+non-NCAR GKS environment.
 .IP "WISS MUST BE OPEN BEFORE CALL TO GFLAS1"
 Gflash entries must have access to the appropriate GKS segmentation
 functions in order to work.  This is accomplished by making a call to
@@ -89,6 +90,9 @@ gflas2,
 gflas3,
 gflas4,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

@@ -34,7 +34,7 @@ buffer are added to the area map in IAMA.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
-.SH USAGE@@@
+.SH USAGE
 You must call MAPITA once for each point along the line.  After
 your last call to MAPITA for a given line, you must call MAPIQA
 to signal the end of the line.
@@ -103,7 +103,7 @@ supcon,
 ncarg_cbind
 .sp
 Hardcopy: 
-Tutorial: A Step-by-Step Guide to Contouring and Mapping 
+NCAR Graphics Contouring and Mapping Tutorial 
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

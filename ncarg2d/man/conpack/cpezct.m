@@ -2,9 +2,10 @@
 .na
 .nh
 .SH NAME
-CPEZCT - Simulates the behavior of the old subroutine EZCNTR in
+CPEZCT - Draws black and white contours with a single call.
+Simulates the behavior of the old subroutine EZCNTR in
 Conrec_family; it has the same arguments and will produce similar
-output.  
+output.
 .SH SYNOPSIS
 CALL CPEZCT (ZDAT,MZDT,NZDT)
 .SH C-BINDING SYNOPSIS
@@ -59,7 +60,7 @@ cplbdr, cpmpxy, cppkcl, cppklb, cprect, cprset, cpscae, cpsetc, cpseti,
 cpsetr, cpsps1, cpsps2, ncarg_cbind
 .sp
 Hardcopy:
-Tutorial: A Step-by-Step Guide to Contouring and Mapping
+NCAR Graphics Contouring and Mapping Tutorial
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

@@ -42,7 +42,9 @@ agex13,
 bnchmk,
 cbex01,
 tagupw,
-tautog.
+tautog,
+fagaxlbl,
+fagovrvw,
 fspponts.
 .SH ACCESS 
 To use AGSETI, load the NCAR Graphics libraries ncarg, ncarg_gks, 
@@ -85,6 +87,9 @@ ezmxy,
 ezmy,
 ezxy,
 ezy
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

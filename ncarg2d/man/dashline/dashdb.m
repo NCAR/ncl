@@ -2,7 +2,7 @@
 .na
 .nh
 .SH NAME
-DASHDB - Chooses a dash pattern without labels.
+DASHDB - Defines a dash pattern without labels.
 .SH SYNOPSIS
 CALL DASHDB (IPAT)
 .SH C-BINDING SYNOPSIS
@@ -11,7 +11,7 @@ CALL DASHDB (IPAT)
 void c_dashdb (int *ipat)
 .SH DESCRIPTION 
 .IP IPAT 12
-(an input parameter of type INTEGER) the value of which is
+(an input expression of type INTEGER) is
 a 16-bit dash pattern (1=solid, 0=blank); e.g., the binary
 number 1111000011110000, which is a decimal 61680,
 will give dashes of medium length.
@@ -34,6 +34,12 @@ tdashl,
 tdashp,
 tdashs,
 fdldashd.
+.SH USAGE
+DASHDB may be called to define a dash pattern for any of the four
+versions of Dashline.
+.sp
+A dash pattern defined by a call to DASHDB will supersede one defined
+by an earlier call to DASHDB or DASHDC.
 .SH ACCESS
 To use DASHDB, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.  To use c_dashdb, load 
