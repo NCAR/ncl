@@ -44,7 +44,7 @@ C Set number of contour levels and initialize Conpack
         CALL CPRECT(ZREG, MREG, MREG, NREG, RWRK, LRWK, IWRK, LIWK)
 
 C Set up B&W fill options
-        CALL SFSETI('TY - TYPE OF FILL',-4.)
+        CALL SFSETI('TY - TYPE OF FILL',-4)
 C Draw Perimeter
         CALL CPBACK(ZREG, RWRK, IWRK)
 
@@ -67,7 +67,7 @@ C Second draw color plot to left
 
 C Set up color fill options
 	CALL GSFAIS(1)
-        CALL SFSETI('TY - TYPE OF FILL',0.)
+        CALL SFSETI('TY - TYPE OF FILL',0)
 
 C Draw Perimeter
         CALL CPBACK(ZREG, RWRK, IWRK)
