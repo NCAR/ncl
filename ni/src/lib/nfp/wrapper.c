@@ -222,6 +222,7 @@ extern NhlErrorTypes dim_median_W(void);
 extern NhlErrorTypes dim_rmvmean_W(void);
 extern NhlErrorTypes dim_rmvmed_W(void);
 extern NhlErrorTypes dim_standardize_W(void);
+extern NhlErrorTypes dim_pqsort_W(void);
 extern NhlErrorTypes esacr_W(void);
 extern NhlErrorTypes esacv_W(void);
 extern NhlErrorTypes esccr_W(void);
@@ -2742,6 +2743,18 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(dim_standardize_W,args,"dim_standardize",nargs);
+/*
+ * Register "dim_pqsort".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(dim_pqsort_W,args,"dim_pqsort",nargs);
 /*
  * Register "esacr".
  *
