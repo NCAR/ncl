@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.70 1994-08-25 16:09:42 haley Exp $
+#   $Id: ncargex.csh,v 1.71 1994-09-13 05:10:48 haley Exp $
 #
 
 #********************#
@@ -18,8 +18,8 @@ if ($#argv < 1) then
   echo "               [-isosurface] [-labelbar] [-ngmisc] [-plotchar]      "
   echo "               [-polypack] [-pwrite_family] [-scrolled_title]       "
   echo "               [-seter] [-softfill] [-spps] [-streamlines]          "
-  echo "               [-surface] [-threed] [-vectors][-gks] [-misc]        "
-  echo "               [-class] [-clean] [-n] [-onebyone] names             "
+  echo "               [-surface] [-threed] [-vectors] [-wmap] [-gks]       "
+  echo "               [-misc] [-class] [-clean] [-n] [-onebyone] names     "
   echo ""
   echo "See <man ncargex>                                                   "
   exit
@@ -355,6 +355,14 @@ set tst_vectors  = (tvelvc)
 set fnd_vectors  = (ffex00 ffex01 ffex02 ffex05 fcover)
 set vectors_list = ($ex_vectors $tst_vectors $fnd_vectors)
 
+#*******************#
+#                   #
+# set wmap examples #
+#                   #
+#*******************#
+set ex_wmap   = (wmex01 wmex02 wmex03 wmex04)
+set wmap_list = ($ex_wmap)
+
 #****************************************#
 #                                        #
 #  Set field flow examples - consists of #
@@ -410,7 +418,8 @@ set ttr_overlap = (mpex03 mpex05 arex01 sfex01 tsoftf)
 #*********************************************************************#
 set ex_list  = ($ex_areas $ex_autograph $ex_colconv $ex_conpack $ex_ezmap \
                 $ex_field $ex_labelbar $ex_plotchar $ex_polypack \
-                ${ex_scrlld_title} $ex_softfill $ex_spps $ex_surface $ex_misc)
+                ${ex_scrlld_title} $ex_softfill $ex_spps $ex_surface \
+                $ex_wmap $ex_misc)
 
 set tst_list = ($tst_areas $tst_autograph $tst_colconv $tst_conpack \
                 ${tst_cnrn_family} ${tst_cnrc_family} $tst_dashline \
@@ -639,6 +648,11 @@ while ($#argv > 0)
         case "-vectors":
             shift
             set names=($names $vectors_list)
+            breaksw
+
+        case "-wmap":
+            shift
+            set names=($names $wmap_list)
             breaksw
 
         case "-gks":
