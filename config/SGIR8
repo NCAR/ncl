@@ -1,5 +1,5 @@
 /*
- *      $Id: SGIR8,v 1.2 1997-01-17 05:47:50 boote Exp $
+ *      $Id: SGIR8,v 1.3 1997-01-21 22:26:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -43,3 +43,7 @@ SGIWARNSUPPRESS = SgiWarnSuppress
 
 #define	ArchRecLibSearch	-L/usr/local/lib
 #define	ArchRecIncSearch	-I/usr/local/include
+
+#ifdef	sgi
+#undef	sgi
+#endif
