@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.13 2003-05-20 16:17:43 shea Exp $
+;      $Id: contributed.ncl,v 1.14 2003-05-20 16:19:18 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -488,6 +488,7 @@ end
 ;
 ; If u want the initial lon to be, say, -177.5,, then upon return
 ;          lon = (/ lon - 180. /)  ; subtract 180 from all values 
+;          lon&lon = lon           ; make coord
 ;
 ; set mlon@double = True if double precision is desired
 
@@ -517,6 +518,7 @@ end
 ; Internal: made for regridding routines with _Wrap  
 ;           Will cause 0=>360 to return -180-to-180 via
 ;           lon = (/ lon - 180. /)  ; subtract 180 from all values 
+;           lon&lon = lon           ; make coord
 ; check the initial LON location: if lon(0) < 0 assume
 ; start is at Date Line
 ; note: x&lon is different from lonNew
