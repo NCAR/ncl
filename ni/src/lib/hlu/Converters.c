@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.29 1995-03-08 21:28:14 ethan Exp $
+ *      $Id: Converters.c,v 1.30 1995-03-08 23:59:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -469,6 +469,7 @@ NhlCvtStringToEnum
 	int		i, tmp=0;
 	NhlBoolean	set = False;
 	NhlString	s1 = from->data.strval;
+	NhlString	t2 = NULL;
 	NrmValue	val;
 	NhlGenArray	sgen;
 	NhlErrorTypes	ret = NhlNOERROR;
@@ -481,7 +482,13 @@ NhlCvtStringToEnum
 	}
 
 	if(isdigit((int)*s1) || (*s1 == '-')){
-		tmp = (int)strtol(s1,(char**)NULL,10);
+		tmp = (int)strtol(s1,&t2,10);
+		if(!tmp && (s1 == t2)){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				"%s:Can't Convert \"%s\"",func,s1);
+			to->size = 0;
+			return NhlFATAL;
+		}
 		val.size = sizeof(int);
 		val.data.intval = tmp;
 
@@ -714,8 +721,7 @@ NhlCvtStringGenArrayToEnumGenArray
 	}
 
 	if(!sgen){
-		to->data.ptrval = NULL;
-		return NhlNOERROR;
+		SetVal(NhlGenArray,sizeof(NhlGenArray),sgen);
 	}
 	sdata = sgen->data;
 
@@ -838,6 +844,10 @@ NhlCvtGenArrayToEnumGenArray
 	}
 
 	tgen = from->data.ptrval;
+	if(!tgen){
+		SetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
+	}
+
 	if(tgen->typeQ == stringQ){
 		return _NhlReConvertData(strgenQ,to->typeQ,from,to);
 	}
@@ -1300,6 +1310,7 @@ CvtArgs
 {
 	char		func[] = "NhlCvtStringToByte";
 	char		tmp;
+	NhlString	t2=NULL;
 	NrmValue	val;
 	NhlGenArray	sgen;
 	NhlErrorTypes	ret = NhlNOERROR;
@@ -1318,7 +1329,13 @@ CvtArgs
 		return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
 	}
 
-	tmp = (char)strtol(from->data.strval,(char**)NULL,10);
+	tmp = (char)strtol(from->data.strval,&t2,10);
+	if(!tmp && (from->data.strval == t2)){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"%s:Can't Convert \"%s\"",
+			func,from->data.strval);
+		to->size = 0;
+		return NhlFATAL;
+	}
 
 	SetVal(char,sizeof(char),tmp);
 }
@@ -1374,6 +1391,7 @@ CvtArgs
 {
 	char		func[] = "NhlCvtStringToDouble";
 	double		tmp;
+	char		*t2=NULL;
 	NrmValue	val;
 	NhlGenArray	sgen;
 	NhlErrorTypes	ret = NhlNOERROR;
@@ -1391,7 +1409,13 @@ CvtArgs
 		return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
 	}
 
-	tmp = (double)strtod(from->data.strval,(char**)NULL);
+	tmp = (double)strtod(from->data.strval,&t2);
+	if(!tmp && (from->data.strval == t2)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to Convert \"%s\"",
+			func,from->data.strval);
+		to->size = 0;
+		return NhlFATAL;
+	}
 
 	SetVal(double,sizeof(double),tmp);
 }
@@ -1403,6 +1427,7 @@ CvtArgs
 {
 	char		func[] = "NhlCvtStringToFloat";
 	float		tmp;
+	char		*t2 = NULL;
 	NrmValue	val;
 	NhlGenArray	sgen;
 	NhlErrorTypes	ret = NhlNOERROR;
@@ -1420,7 +1445,13 @@ CvtArgs
 		return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
 	}
 
-	tmp = (float)strtod(from->data.strval,(char**)NULL);
+	tmp = (float)strtod(from->data.strval,&t2);
+	if(!tmp && (from->data.strval == t2)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to Convert \"%s\"",
+			func,from->data.strval);
+		to->size = 0;
+		return NhlFATAL;
+	}
 
 	SetVal(float,sizeof(float),tmp);
 }
@@ -1432,6 +1463,7 @@ CvtArgs
 {
 	char		func[] = "NhlCvtStringToInteger";
 	int		tmp;
+	NhlString	t2=NULL;
 	NrmValue	val;
 	NhlGenArray	sgen;
 	NhlErrorTypes	ret = NhlNOERROR;
@@ -1450,7 +1482,13 @@ CvtArgs
 		return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
 	}
 
-	tmp = (int)strtol(from->data.strval,(char**)NULL,10);
+	tmp = (int)strtol(from->data.strval,&t2,10);
+	if(!tmp && (from->data.strval == t2)){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"%s:Can't Convert \"%s\"",
+			func,from->data.strval);
+		to->size = 0;
+		return NhlFATAL;
+	}
 
 	SetVal(int,sizeof(int),tmp);
 }
@@ -1462,6 +1500,7 @@ CvtArgs
 {
 	char		func[] = "NhlCvtStringToLong";
 	long		tmp;
+	NhlString	t2=NULL;
 	NrmValue	val;
 	NhlGenArray	sgen;
 	NhlErrorTypes	ret = NhlNOERROR;
@@ -1480,7 +1519,13 @@ CvtArgs
 		return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
 	}
 
-	tmp = strtol(from->data.strval,(char**)NULL,10);
+	tmp = strtol(from->data.strval,&t2,10);
+	if(!tmp && (from->data.strval == t2)){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"%s:Can't Convert \"%s\"",
+			func,from->data.strval);
+		to->size = 0;
+		return NhlFATAL;
+	}
 
 	SetVal(long,sizeof(long),tmp);
 }
@@ -1492,6 +1537,7 @@ CvtArgs
 {
 	char		func[] = "NhlCvtStringToShort";
 	short		tmp;
+	NhlString	t2=NULL;
 	NrmValue	val;
 	NhlGenArray	sgen;
 	NhlErrorTypes	ret = NhlNOERROR;
@@ -1510,7 +1556,13 @@ CvtArgs
 		return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
 	}
 
-	tmp = (short)strtol(from->data.strval,(char**)NULL,10);
+	tmp = (short)strtol(from->data.strval,&t2,10);
+	if(!tmp && (from->data.strval == t2)){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"%s:Can't Convert \"%s\"",
+			func,from->data.strval);
+		to->size = 0;
+		return NhlFATAL;
+	}
 
 	SetVal(short,sizeof(short),tmp);
 }
@@ -2332,7 +2384,16 @@ CvtArgs
 	}
 
 	for(i=0;i < fromgen->num_elements;i++){
-		toval[i] = (char)strtol(fromval[i],(char**)NULL,10);
+		char	*t2;
+
+		t2=NULL;
+		toval[i] = (char)strtol(fromval[i],&t2,10);
+		if(!toval[i] && (fromval[i] == t2)){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				"%s:Can't Convert \"%s\"",func,fromval[i]);
+			to->size = 0;
+			return NhlFATAL;
+		}
 	}
 
 	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);
@@ -2429,7 +2490,16 @@ CvtArgs
 	}
 
 	for(i=0;i < fromgen->num_elements;i++){
-		toval[i] = (double)strtod(fromval[i],(char**)NULL);
+		char	*t2;
+
+		t2=NULL;
+		toval[i] = (double)strtod(fromval[i],&t2);
+		if(!toval[i] && (fromval[i] == t2)){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Unable to Convert \"%s\"",func,fromval[i]);
+			to->size = 0;
+			return NhlFATAL;
+		}
 	}
 
 	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);
@@ -2474,7 +2544,16 @@ CvtArgs
 	}
 
 	for(i=0;i < fromgen->num_elements;i++){
-		toval[i] = (float)strtod(fromval[i],(char**)NULL);
+		char	*t2;
+
+		t2=NULL;
+		toval[i] = (float)strtod(fromval[i],&t2);
+		if(!toval[i] && (fromval[i] == t2)){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Unable to Convert \"%s\"",func,fromval[i]);
+			to->size = 0;
+			return NhlFATAL;
+		}
 	}
 
 	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);
@@ -2519,7 +2598,16 @@ CvtArgs
 	}
 
 	for(i=0;i < fromgen->num_elements;i++){
-		toval[i] = (int)strtol(fromval[i],(char**)NULL,10);
+		char	*t2;
+
+		t2=NULL;
+		toval[i] = (int)strtol(fromval[i],&t2,10);
+		if(!toval[i] && (fromval[i] == t2)){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				"%s:Can't Convert \"%s\"",func,fromval[i]);
+			to->size = 0;
+			return NhlFATAL;
+		}
 	}
 
 	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);
@@ -2564,7 +2652,17 @@ CvtArgs
 	}
 
 	for(i=0;i < fromgen->num_elements;i++){
-		toval[i] = (long)strtol(fromval[i],(char**)NULL,10);
+		char	*t2;
+
+		t2=NULL;
+
+		toval[i] = (long)strtol(fromval[i],&t2,10);
+		if(!toval[i] && (fromval[i] == t2)){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				"%s:Can't Convert \"%s\"",func,fromval[i]);
+			to->size = 0;
+			return NhlFATAL;
+		}
 	}
 
 	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);
@@ -2609,7 +2707,16 @@ CvtArgs
 	}
 
 	for(i=0;i < fromgen->num_elements;i++){
-		toval[i] = (short)strtol(fromval[i],(char**)NULL,10);
+		char	*t2;
+
+		t2=NULL;
+		toval[i] = (short)strtol(fromval[i],&t2,10);
+		if(!toval[i] && (fromval[i] == t2)){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				"%s:Can't Convert \"%s\"",func,fromval[i]);
+			to->size = 0;
+			return NhlFATAL;
+		}
 	}
 
 	SetVal(NhlGenArray,sizeof(NhlGenArray),togen);
