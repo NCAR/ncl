@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.34 1996-05-09 23:29:53 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.35 1996-05-17 01:09:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -894,6 +894,7 @@ NhlErrorTypes _NclIAddToOverlay
 		return(NhlFATAL);
 	}
 	NhlAddOverlay(base_hl->hlu.hlu_id,over_hl->hlu.hlu_id,-1);
+	_NclAddHLUToExpList(base_hl,over_hl->obj.id);
 	return(NhlNOERROR);
 }
 NhlErrorTypes _NclIAddFile

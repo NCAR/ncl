@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclOneDValCoordData.c,v 1.4 1996-04-19 23:05:29 ethan Exp $
+ *      $Id: NclOneDValCoordData.c,v 1.5 1996-05-17 01:09:28 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -183,14 +183,17 @@ long *finish;
 				_Nclcmpf(type_coord,(void*)((char*)coord_ptr + (i * type_coord->type_class.size)),finish_ptr,NULL,NULL,10,&cmp_val);
 				if(cmp_val >= 0 ){
 					*finish = i;
+					if((cmp_val > 0)&&(i==0)) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclOneDValGetRangeIndex: finish coordinate index out of range, can't continue");
+						return(NhlFATAL);
+					}
 					break;
 				} else {
 					i++;
 				}
 			}
 			if(i == the_coord->multidval.totalelements) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"NclOneDValGetRangeIndex: finish coordinate index out of range, can't continue");
-				return(NhlFATAL);
+				*finish = i - 1;
 			}
 			return(NhlNOERROR);
 		case NclDECREASING:
@@ -200,14 +203,17 @@ long *finish;
 				_Nclcmpf(type_coord,(void*)((char*)coord_ptr + (i * type_coord->type_class.size)),finish_ptr,NULL,NULL,10,&cmp_val);
 				if(cmp_val <= 0 ){
 					*finish= i;
+					if((cmp_val < 0)&&(i==0)) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclOneDValGetRangeIndex: finish coordinate index out of range, can't continue");
+						return(NhlFATAL);
+					}
 					break;
 				} else {
 					i++;
 				}
 			}
 			if(i == the_coord->multidval.totalelements) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"NclOneDValGetRangeIndex: finish coordinate index out of range, can't continue");
-				return(NhlFATAL);
+				*finish = i - 1;
 			}
 			return(NhlNOERROR);
 		default:
@@ -308,10 +314,7 @@ long *finish;
 							i++;
 						}
 					}
-					if((i == the_coord->multidval.totalelements)&&(cmp_val != 0.0)) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclOneDValGetRangeIndex: finish coordinate index out of range, can't continue");
-						return(NhlFATAL);
-					} else if(cmp_val == 0.0) {
+					if(i == the_coord->multidval.totalelements) {
 						*finish = i - 1;
 					}
 					return(NhlNOERROR);
@@ -341,10 +344,7 @@ long *finish;
 							i++;
 						}
 					}
-					if((i == the_coord->multidval.totalelements)&&(cmp_val !=0.0)) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclOneDValGetRangeIndex: finish coordinate index out of range, can't continue");
-						return(NhlFATAL);
-					} else if(cmp_val == 0.0) {
+					if(i == the_coord->multidval.totalelements) {
 						*start = i - 1;
 					}
 					return(NhlNOERROR);
@@ -376,10 +376,7 @@ long *finish;
 							i++;
 						}
 					}
-					if((i == the_coord->multidval.totalelements)&&(cmp_val != 0.0)) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclOneDValGetRangeIndex: start coordinate index out of range, can't continue");
-						return(NhlFATAL);
-					} else if(cmp_val == 0.0) {
+					if(i == the_coord->multidval.totalelements){
 						*start = i -1;
 					}
 					return(NhlNOERROR);
@@ -409,10 +406,7 @@ long *finish;
 							i++;
 						}
 					}
-					if((i == the_coord->multidval.totalelements)&&(cmp_val != 0.0)) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclOneDValGetRangeIndex: finish coordinate index out of range, can't continue");
-						return(NhlFATAL);
-					} else if(cmp_val == 0.0) {
+					if(i == the_coord->multidval.totalelements){
 						*finish = i - 1;
 					}
 					return(NhlNOERROR);

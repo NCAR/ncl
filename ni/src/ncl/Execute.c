@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.62 1996-05-16 00:21:16 ethan Exp $
+ *      $Id: Execute.c,v 1.63 1996-05-17 01:09:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -4063,6 +4063,7 @@ NclExecuteReturnStatus _NclExecute
 * need to clean up stack !!! for current level
 */
 				_NclAbortFrame();
+				_NclPopScope();
 /*
 * Probably still need more stack freeing for other types of errors 
 * this really only handles left overs from failed function and 
