@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: INSTALL,v 1.4 1993-05-19 22:04:50 clyne Exp $
+#      $Id: INSTALL,v 1.5 1994-05-09 15:59:06 haley Exp $
 #
 #########################################################################
 #									#
@@ -94,7 +94,7 @@ EOF
 
 		Telephone:	(303) 497-1201
 		Telex:		989764
-		FAX:		(303) 497-1137
+		FAX:		(303) 497-1814
 		email:		scdinfo@ncar.ucar.edu
 EOF
 		$LOCALDIR/pause
