@@ -1,6 +1,6 @@
 
 /*
- *      $Id: version.c,v 1.1 1992-02-13 14:02:57 clyne Exp $
+ *      $Id: version.c,v 1.2 1992-02-13 15:59:55 clyne Exp $
  */
 /*
  *	File:		version.c
@@ -29,6 +29,6 @@ void	PrintVersion(header)
 	}
 
 	if (header) (void) fprintf(fp, "%s - ", header);
-	(void) fprintf(fp, "%s\n", VERSION);
+	(void) fprintf(fp, "Version %s\n", VERSION);
 	(void) fflush(fp);
 }
