@@ -1,4 +1,7 @@
 #!/bin/csh -f
+#
+#	$Id: ncarvversion,v 1.4 1991-08-16 16:45:21 clyne Exp $
+#
 
 echo ""
 cat <<EOF

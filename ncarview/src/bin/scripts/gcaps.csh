@@ -1,7 +1,7 @@
-#
-#	$Id: gcaps.csh,v 1.2 1991-07-31 17:13:40 clyne Exp $
-#
 #!/bin/csh -f
+#
+#	$Id: gcaps.csh,v 1.3 1991-08-16 16:45:20 clyne Exp $
+#
 #
 #	Name		gcaps
 #

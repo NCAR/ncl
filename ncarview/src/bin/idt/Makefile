@@ -1,9 +1,5 @@
 #######################################################################
 #
-#               Copyright (C)  1990 - All Rights Reserved
-#		University Corporation for Atmospheric Research
-#               NCAR GRAPHICS  Unix Version 3.01
-#
 #	This Makefile was created by the "ymake" utility.
 #	If you wish to make changes in the "Makefile" or "makefile", 
 #	do so by making changes to "yMakefile" or "ymakefile" 
@@ -13,77 +9,80 @@
 
 SYSTEM_INCLUDE		= Sun3
 
-BINDIR		= /u2/ncargfx/test/bin
-LIBDIR		= /u2/ncargfx/test/lib
-MANDIR		= /u2/ncargfx/test/man
-MAN_SECTION	= l
-XAPPDIR		= /usr/lib/X11/app-defaults
-BITSDIR		= /usr/include/X11/bitmaps
+PARFIL_INIT     = /tmp/clyne/testlib/params3.1.2
+PARFIL_PERM     = /tmp/clyne/testlib/params3.1.2
 
-INCLUDEDIR	= $(NCARG)/include
-DBDIR		= $(LIBDIR)
-FONTCAPDIR	= $(LIBDIR)/fontcaps
-GRAPHCAPDIR	= $(LIBDIR)/graphcaps
-EXAMPLEDIR	= $(LIBDIR)/ncargexamples
-TESTDIR		= $(LIBDIR)/ncargtests
-EXAMPLEDIR	= $(LIBDIR)/ncargexamples
+BINDIR		= /tmp/clyne/testbin
+LIBDIR		= /tmp/clyne/testlib
+MANDIR		= /tmp/clyne/testman
+MAN_SECTION     = l
+TMPDIR          = /tmp
+XAPPDIR		= /tmp/clyne/testlib
+BITSDIR         = /usr/include/X11/bitmaps
 
-GENERICDIR	= $(NCARG)/generic
+INCLUDEDIR      = $(NCARG)/include
+DBDIR           = $(LIBDIR)
+FONTCAPDIR      = $(LIBDIR)/fontcaps
+GRAPHCAPDIR     = $(LIBDIR)/graphcaps
+EXAMPLEDIR      = $(LIBDIR)/ncargexamples
+TESTDIR         = $(LIBDIR)/ncargtests
 
-CONFIGDIR	= $(NCARG)/config
-YMAKE		= $(CONFIGDIR)/ymake -I$(CONFIGDIR)
+GENERICDIR      = $(NCARG)/generic
 
-MAKE		= make
-FLOAT_OPT	= -fswitch
-OS		=
-ARCH		=
-CC		= cc
-CC_LD		= $(CC)
-CDEBUG		=
-COPT		= -O
+CONFIGDIR       = $(NCARG)/config
+YMAKE           = $(CONFIGDIR)/ymake -I$(CONFIGDIR)
+
+MAKE            = make
+FLOAT_OPT       = -fswitch
+OS              =
+ARCH            =
+CC              = cc
+CC_LD           = $(CC)
+CDEBUG          =
+COPT            = -O
 CMISC           =
 CFLAGS          = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
 	$(FLOAT_OPT)
-LD_CFLAGS	= $(CFLAGS)
-CPP		= /lib/cpp
+LD_CFLAGS       = $(CFLAGS)
+CPP             = /lib/cpp
 FCPP            = /lib/cpp
-F77		= f77
-F77_LD		= $(F77)
-FDEBUG		=
-FOPT		= -O
+F77             = f77
+F77_LD          = $(F77)
+FDEBUG          =
+FOPT            = -O
 FMISC           = -Bstatic
 FFLAGS          = $(OS) $(ARCH) $(FDEFINES) $(FDEBUG) $(FOPT) $(FMISC)\
 	$(FLOAT_OPT)
 LD_FFLAGS       = $(FFLAGS)
-LD		= ld
-LD_REL		= $(LD)
-AR		= ar
-AR_QUICK	= $(AR) q
-AR_CHECK	= $(AR) vru
+LD              = ld
+LD_REL          = $(LD)
+AR              = ar
+AR_QUICK        = $(AR) q
+AR_CHECK        = $(AR) vru
 AR_SRC          = ar
 AR_SRC_QUICK    = $(AR_SRC) q
 AR_SRC_CHECK    = $(AR_SRC) vru
-RM		= rm -f
-CAT		= cat
-CP		= cp
-MV		= mv -f
-RANLIB		= ranlib
-NO_OP		= touch -c
-INSTALL		= install -c
-INSTALL_RM	= $(RM)
-INSTALL_BIN	= 0755
-INSTALL_MAN	= 0644
-INSTALL_APP	= 0644
-INSTALL_BIT	= 0644
-INSTALL_LIB	= 0644
-INSTALL_DB	= 0644
+RM              = rm -f
+CAT             = cat
+CP              = cp
+MV              = mv -f
+RANLIB          = ranlib
+NO_OP           = touch -c
+INSTALL         = install -c
+INSTALL_RM      = $(RM)
+INSTALL_BIN     = 0755
+INSTALL_MAN     = 0644
+INSTALL_APP     = 0644
+INSTALL_BIT     = 0644
+INSTALL_LIB     = 0644
+INSTALL_DB      = 0644
 
-GRAPHC		= $(BINDIR)/graphc
-FONTC		= $(BINDIR)/fontc
+GRAPHC          = $(BINDIR)/graphc
+FONTC           = $(BINDIR)/fontc
 
-FSPLIT		= fsplit
-CALLCONV	= $(NCARG)/utils/callconv
-SHELL		= /bin/sh
+FSPLIT          = fsplit
+CALLCONV        = $(NCARG)/utils/callconv
+SHELL           = /bin/sh
 
 #
 #
@@ -101,7 +100,17 @@ LOCINCDIR	= ../../include
 
 TRANSLATOR	= ictrans
 
-CDEFINES	= -I$(LOCINCDIR)
+#
+#	default path to x app defaults directory (only used if params file
+#	not found)
+#
+XAPPDIR_DEFAULT	= /usr/lib/X11/app-defaults
+#
+#	default path to ictrans (only used if params file not found)
+#
+BINDIR_DEFAULT	= /usr/local/bin
+
+CDEFINES	= -I$(LOCINCDIR) -Bstatic
 
 XLIBS	= \
 	-lXaw -lXmu -lXt -lXext -lX11
@@ -117,10 +126,13 @@ EQUALHACK = =
 
 OBJS	= \
 	w_idt.o w_file.o file.o glob.o w_display.o display.o w_dialog.o \
-	commands.o talkto.o xrubber.o scroll.o w_text.o spooler.o
+	commands.o talkto.o xrubber.o scroll.o w_text.o spooler.o w_icon.o \
+	xt_env.o
+
 SRCS	= \
 	w_idt.c w_file.c file.c glob.c w_display.c display.c w_dialog.c \
-	commands.c talkto.c xrubber.c scroll.c w_text.c spooler.c
+	commands.c talkto.c xrubber.c scroll.c w_text.c spooler.c w_icon.c \
+	xt_env.c
 
 all::	$(MYNAME)
 
@@ -146,16 +158,23 @@ clean::
 
 cleanbin:: clean
 
+#
+#	w_idt.c needs to know the name of the translator
+#
+w_idt.o:     Makefile
+	$(CC) $(CFLAGS) -DTRANSLATOR$(EQUALHACK)'"$(TRANSLATOR)"' \
+	-DBINDIR_DEFAULT$(EQUALHACK)'"$(BINDIR_DEFAULT)"' -c $*.c
+
+#
+#	xt_env.c needs to know the default location of the idt resoure file
+#
+xt_env.o:     Makefile
+	$(CC) $(CFLAGS) -DXAPPDIR_DEFAULT$(EQUALHACK)'"$(XAPPDIR_DEFAULT)"' \
+	-c $*.c
+
 lint:	$(HDR) $(SRCS)
-	lint $(CDEFINES) -DTRANSLATOR$(EQUALHACK)'"$(TRANSLATOR)"' \
-	-DBINDIR$(EQUALHACK)'"$(BINDIR)"' \
+	lint  -I$(LOCINCDIR) -DTRANSLATOR$(EQUALHACK)'"$(TRANSLATOR)"' \
+	-DBINDIR_DEFAULT$(EQUALHACK)'"$(BINDIR_DEFAULT)"' \
+	-DXAPPDIR_DEFAULT$(EQUALHACK)'"$(XAPPDIR_DEFAULT)"' \
 	$(LINTLIBS) $(SRCS)  1> lint.out 2>&1
-
-# Files that need to know installation directories
-#talkto.o:     Makefile
-#	$(CC) $(CFLAGS) -DTRANSLATOR$(EQUALHACK)'"$(TRANSLATOR)"' \
-#		-DBINDIR$(EQUALHACK)'"$(BINDIR)"'  -c $*.c
-
-talkto.o:     Makefile
-	$(CC) $(CFLAGS) -DTRANSLATOR$(EQUALHACK)'"$(TRANSLATOR)"' -c $*.c
 

@@ -1,9 +1,5 @@
 #######################################################################
 #
-#               Copyright (C)  1990 - All Rights Reserved
-#		University Corporation for Atmospheric Research
-#               NCAR GRAPHICS  Unix Version 3.01
-#
 #	This Makefile was created by the "ymake" utility.
 #	If you wish to make changes in the "Makefile" or "makefile", 
 #	do so by making changes to "yMakefile" or "ymakefile" 
@@ -13,77 +9,80 @@
 
 SYSTEM_INCLUDE		= Sun3
 
-BINDIR		= /usr/local/bin
-LIBDIR		= /usr/local/lib
-MANDIR		= /usr/local/man
-MAN_SECTION	= l
-XAPPDIR		= /usr/lib/X11/app-defaults
-BITSDIR		= /usr/include/X11/bitmaps
+PARFIL_INIT     = /tmp/clyne/testlib/params3.1.2
+PARFIL_PERM     = /tmp/clyne/testlib/params3.1.2
 
-INCLUDEDIR	= $(NCARG)/include
-DBDIR		= $(LIBDIR)
-FONTCAPDIR	= $(LIBDIR)/fontcaps
-GRAPHCAPDIR	= $(LIBDIR)/graphcaps
-EXAMPLEDIR	= $(LIBDIR)/ncargexamples
-TESTDIR		= $(LIBDIR)/ncargtests
-EXAMPLEDIR	= $(LIBDIR)/ncargexamples
+BINDIR		= /tmp/clyne/testbin
+LIBDIR		= /tmp/clyne/testlib
+MANDIR		= /tmp/clyne/testman
+MAN_SECTION     = l
+TMPDIR          = /tmp
+XAPPDIR		= /tmp/clyne/testlib
+BITSDIR         = /usr/include/X11/bitmaps
 
-GENERICDIR	= $(NCARG)/generic
+INCLUDEDIR      = $(NCARG)/include
+DBDIR           = $(LIBDIR)
+FONTCAPDIR      = $(LIBDIR)/fontcaps
+GRAPHCAPDIR     = $(LIBDIR)/graphcaps
+EXAMPLEDIR      = $(LIBDIR)/ncargexamples
+TESTDIR         = $(LIBDIR)/ncargtests
 
-CONFIGDIR	= $(NCARG)/config
-YMAKE		= $(CONFIGDIR)/ymake -I$(CONFIGDIR)
+GENERICDIR      = $(NCARG)/generic
 
-MAKE		= make
-FLOAT_OPT	= -fswitch
-OS		=
-ARCH		=
-CC		= cc
-CC_LD		= $(CC)
-CDEBUG		=
-COPT		= -g
+CONFIGDIR       = $(NCARG)/config
+YMAKE           = $(CONFIGDIR)/ymake -I$(CONFIGDIR)
+
+MAKE            = make
+FLOAT_OPT       = -fswitch
+OS              =
+ARCH            =
+CC              = cc
+CC_LD           = $(CC)
+CDEBUG          =
+COPT            = -O
 CMISC           =
 CFLAGS          = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
 	$(FLOAT_OPT)
-LD_CFLAGS	= $(CFLAGS)
-CPP		= /lib/cpp
+LD_CFLAGS       = $(CFLAGS)
+CPP             = /lib/cpp
 FCPP            = /lib/cpp
-F77		= f77
-F77_LD		= $(F77)
-FDEBUG		=
-FOPT		= -O
-FMISC           =
+F77             = f77
+F77_LD          = $(F77)
+FDEBUG          =
+FOPT            = -O
+FMISC           = -Bstatic
 FFLAGS          = $(OS) $(ARCH) $(FDEFINES) $(FDEBUG) $(FOPT) $(FMISC)\
 	$(FLOAT_OPT)
-LD_FFLAGS	= $(FFLAGS)
-LD		= ld
-LD_REL		= $(LD)
-AR		= ar
-AR_QUICK	= $(AR) q
-AR_CHECK	= $(AR) vru
+LD_FFLAGS       = $(FFLAGS)
+LD              = ld
+LD_REL          = $(LD)
+AR              = ar
+AR_QUICK        = $(AR) q
+AR_CHECK        = $(AR) vru
 AR_SRC          = ar
 AR_SRC_QUICK    = $(AR_SRC) q
 AR_SRC_CHECK    = $(AR_SRC) vru
-RM		= rm -f
-CAT		= cat
-CP		= cp
-MV		= mv -f
-RANLIB		= ranlib
-NO_OP		= touch -c
-INSTALL		= install -c
-INSTALL_RM	= $(RM)
-INSTALL_BIN	= 0755
-INSTALL_MAN	= 0644
-INSTALL_APP	= 0644
-INSTALL_BIT	= 0644
-INSTALL_LIB	= 0644
-INSTALL_DB	= 0644
+RM              = rm -f
+CAT             = cat
+CP              = cp
+MV              = mv -f
+RANLIB          = ranlib
+NO_OP           = touch -c
+INSTALL         = install -c
+INSTALL_RM      = $(RM)
+INSTALL_BIN     = 0755
+INSTALL_MAN     = 0644
+INSTALL_APP     = 0644
+INSTALL_BIT     = 0644
+INSTALL_LIB     = 0644
+INSTALL_DB      = 0644
 
-GRAPHC		= $(BINDIR)/graphc
-FONTC		= $(BINDIR)/fontc
+GRAPHC          = $(BINDIR)/graphc
+FONTC           = $(BINDIR)/fontc
 
-FSPLIT		= fsplit
-CALLCONV	= $(NCARG)/utils/callconv
-SHELL		= /bin/sh
+FSPLIT          = fsplit
+CALLCONV        = $(NCARG)/utils/callconv
+SHELL           = /bin/sh
 
 #
 #

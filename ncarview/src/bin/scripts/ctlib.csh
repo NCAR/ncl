@@ -1,7 +1,7 @@
-#
-#	$Id: ctlib.csh,v 1.2 1991-07-31 17:13:36 clyne Exp $
-#
 #!/bin/csh -f
+#
+#	$Id: ctlib.csh,v 1.3 1991-08-16 16:45:14 clyne Exp $
+#
 #
 #	This script simply reports the libraries required by ctrans.
 #	The library list will vary depending on machine configuration

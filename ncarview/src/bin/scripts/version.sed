@@ -1,4 +1,7 @@
 #!/bin/csh -f
+#
+#	$Id: version.sed,v 1.5 1991-08-16 16:45:24 clyne Exp $
+#
 
 echo ""
 cat <<EOF
