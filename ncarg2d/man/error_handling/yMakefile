@@ -1,0 +1,19 @@
+#
+# $Id: yMakefile,v 1.1 1994-03-31 01:35:20 kennison Exp $
+#
+
+MAN = entsr eprin errof error_handling fdum icfell icloem nerro retsr semess \
+	seter
+
+# Install preformatted troff documents on systems without troff
+#ifdef UseCatDirs
+FORMAT_EXT	= .p
+#else
+FORMAT_EXT	= .m
+#endif
+
+MPATH	= $(MAN3PATH)
+MSECT	= $(MAN3_SECTION)
+
+InstallManPages($(MAN),$(FORMAT_EXT),$(MPATH),$(MSECT))
+FormatManPages($(MAN),.m,.p)
