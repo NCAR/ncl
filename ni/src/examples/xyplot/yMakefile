@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.13 1995-04-04 21:56:20 haley Exp $
+#   $Id: yMakefile,v 1.14 1995-04-05 15:14:52 haley Exp $
 #
 #   Makefile for HLU XYPlot examples
 #
@@ -7,8 +7,8 @@
 MYNAME = xyplot
 
 PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
-EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
-SYS_LIBS    =   $(CTOFLIBS) -lm
+EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS) -lnetcdf
+SYS_LIBS    =   $(CTOFLIBS) -lm 
 
 CSRCS      = xy01c.c xy02c.c xy03c.c xy04c.c xy05c.c xy06c.c \
              xy11c.c xy12c.c xy13c.c 
@@ -35,7 +35,7 @@ HLUCExampleTarget(xy02c,xy02c.o)
 HLUCExampleTarget(xy03c,xy03c.o)
 HLUCExampleTarget(xy04c,xy04c.o)
 HLUCExampleTarget(xy05c,xy05c.o)
-HLUCExampleTarget(xy06c,xy06c.o $(NCARG_ROOT)/lib/libnetcdf.a)
+HLUCExampleTarget(xy06c,xy06c.o)
 HLUCExampleTarget(xy11c,xy11c.o)
 HLUCExampleTarget(xy12c,xy12c.o)
 HLUCExampleTarget(xy13c,xy13c.o)
@@ -45,7 +45,7 @@ HLUFExampleTarget(xy02f,xy02f.o)
 HLUFExampleTarget(xy03f,xy03f.o)
 HLUFExampleTarget(xy04f,xy04f.o)
 HLUFExampleTarget(xy05f,xy05f.o)
-HLUFExampleTarget(xy06f,xy06f.o $(NCARG_ROOT)/lib/libnetcdf.a)
+HLUFExampleTarget(xy06f,xy06f.o)
 HLUFExampleTarget(xy11f,xy11f.o)
 
 CleanFilesTarget($(OBJS))
