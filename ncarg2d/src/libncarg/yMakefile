@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.9 1996-11-01 15:40:05 boote Exp $
+#	$Id: yMakefile,v 1.10 1996-11-24 22:25:48 boote Exp $
 #
 #	Makefile for libncarg.a
 #	Includes utilities and their corresponding test programs,
@@ -18,11 +18,11 @@ SUBDIRS = \
 PartialLibraryRoot(libncarg.a,$(SUBDIRS))
 PartialSourceLibraryRoot(srcncarg.a,$(SUBDIRS))
 
-BuildSharedPartialLib(libNGmisc,NullArgument,libNGmisc.a,1,0,NullArgument)
-BuildSharedPartialLib(libNGmisc2,NullArgument,libNGmisc2.a,1,0,NullArgument)
-BuildSharedPartialLib(libNGmp,NullArgument,libNGmp.a,1,0,NullArgument)
-BuildSharedPartialLib(libNGff,NullArgument,libNGff.a,1,0,-lNGmp)
-BuildSharedPartialLib(libNGcn,NullArgument,libNGcn.a,1,0,-lNGmp)
+BuildSharedPartialFromArch(libNGmisc,libNGmisc.a,1,0,NullArgument)
+BuildSharedPartialFromArch(libNGmisc2,libNGmisc2.a,1,0,NullArgument)
+BuildSharedPartialFromArch(libNGmp,libNGmp.a,1,0,NullArgument)
+BuildSharedPartialFromArch(libNGff,libNGff.a,1,0,-lNGmp)
+BuildSharedPartialFromArch(libNGcn,libNGcn.a,1,0,-lNGmp)
 BuildSharedFromArch(libNGllu,libNGllu.a,1,0,-exports -lNGcn -exports -lNGff -exports -lNGmp -exports -lNGmisc -exports -lNGmisc2 $(NCARGGKSLIB) $(NCARGCLIB) $(CTOFLIBS) -lm -lc)
 CleanFilesTarget(libNGmisc.a libNGmisc2.a libNGmp.a libNGff.a libNGcn.a libNGllu.a)
 
