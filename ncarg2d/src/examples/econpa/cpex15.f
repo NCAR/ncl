@@ -1,5 +1,5 @@
 C
-C $Id: cpex15.f,v 1.1 1996-02-29 17:59:50 kennison Exp $
+C $Id: cpex15.f,v 1.2 1997-02-05 15:31:08 haley Exp $
 C
       PROGRAM CPEX15
 C
@@ -313,10 +313,6 @@ C to edge group 3, the area identifier is negative (CONPACK label
 C boxes).  The GKS routine GFA is used to do the fills.
 C
         DIMENSION XCS(*),YCS(*),IAI(*),IAG(*)
-C
-C Define workspaces for the shading routine.
-C
-        DIMENSION DST(2200),IND(2400)
 C
 C Find the area identifiers of the polygon relative to group 1 (EZMAP
 C background) and group 3 (CONPACK-supplied edges).
