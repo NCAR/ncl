@@ -112,13 +112,18 @@ C
 C Set up a map projection with desired options, but don't draw it.
 C
         CHARACTER*2 PTYPE
+	REAL P1(2),P2(2),P3(2),P4(2)
+	DATA P1 /0.0,0.0/
+	DATA P2 /0.0,0.0/
+	DATA P3 /0.0,0.0/
+	DATA P4 /0.0,0.0/
 
 C
 C Set up a map
 C
         CALL MAPPOS (.05,.90,.05,.90)
         CALL MAPROJ (PTYPE,PLAT,PLON,0.)
-        CALL MAPSET ('MA - MAXIMAL AREA',0.,0.,0.,0.)
+        CALL MAPSET ('MA - MAXIMAL AREA',P1,P2,P3,P4)
         CALL MAPINT
 C
 C Draw map and grid lines
@@ -209,3 +214,4 @@ C
         CALL GSCR (1,16,1.,0.,0.)
         RETURN
         END
+
