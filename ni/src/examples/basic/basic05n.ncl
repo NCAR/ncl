@@ -1,4 +1,4 @@
-; $Id: basic05n.ncl,v 1.1 1995-02-13 23:46:55 scheitln Exp $
+; $Id: basic05n.ncl,v 1.2 1995-02-14 16:00:12 scheitln Exp $
 ;
 ; This example demonstrates how to read and manipulate colormaps.
 
@@ -6,9 +6,9 @@
 ; The second frame shows how to alter an entry in the colormap.
 ; The third frame shows how to create a completely new colormap.
 
-; ##########
-; # Fame 1 #
-; ##########
+; ###########
+; # Frame 1 #
+; ###########
 ; Display the default colormap.
 
 ; Initialize labels for the color map entries
@@ -47,9 +47,9 @@ end create
 draw(lbar)
 frame(wks)
 
-; ##########
-; # Fame 2 #
-; ##########
+; ###########
+; # Frame 2 #
+; ###########
 ; Alter a single entry in the colormap.
 
 ; Get the current colormap for the workstation pointed to by wks.
@@ -87,9 +87,9 @@ end setvalues
 draw(lbar)
 frame(wks)
 
-; ##########
-; # Fame 3 #
-; ##########
+; ###########
+; # Frame 3 #
+; ###########
 ; Create and assign a new colormap.
 
 ; Create an array that will contain the new colormap.
