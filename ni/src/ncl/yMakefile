@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.88 2003-06-29 04:55:03 haley Exp $
+#      $Id: yMakefile,v 1.89 2003-10-30 20:16:48 haley Exp $
 #
 #########################################################################
 #									#
@@ -76,7 +76,7 @@ EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) -lsphere3_dp 
 EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) -lsphere3_dp -llapack -lblas -lxlf90 -lxlopt
 EXTRA_CLDFLAGS	= -bexpall -brtl
 #elif (defined(IRIX) || defined(IRIX64))
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) -lsphere3_dp -lcomplib.sgimath
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) -lsphere3_dp -llapack -lblas
 #else
 EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) -lsphere3_dp -llapack -lblas
 #endif
