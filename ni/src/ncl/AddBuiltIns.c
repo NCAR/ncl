@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.11 1995-04-01 00:54:13 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.12 1995-04-14 22:02:03 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,137 @@ extern "C" {
 #include "MathFuncs.h"
 #include "HLUFunctions.h"
 
+
+extern NhlErrorTypes _NclIinttobyte(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIinttochar(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIinttoshort(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIshorttobyte(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIshorttochar(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIlongtobyte(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIlongtochar(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIlongtoshort(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIlongtoint(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIfloattobyte(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIfloattochar(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIfloattoshort(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIfloattoint(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIfloattolong(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIdoubletobyte(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIdoubletochar(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIdoubletoshort(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIdoubletoint(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIdoubletolong(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIdoubletofloat(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIchartodouble(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIchartofloat(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIchartolong(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIchartoshort(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIchartoint(
+#if NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes _Nclsystem(
 #if NhlNeedProto
 void
@@ -253,6 +384,132 @@ void _NclAddBuiltIns
 
 
 	
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIinttobyte,args,"inttobyte",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIinttochar,args,"inttochar",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIinttoshort,args,"inttoshort",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"short",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIshorttobyte,args,"shorttobyte",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"short",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIshorttochar,args,"shorttochar",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"long",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIlongtobyte,args,"longtobyte",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"long",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIlongtochar,args,"longtochar",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"long",NclANY,NclANY);nargs++;
+	NclRegisterFunc(_NclIlongtoshort,args,"longtoshort",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"long",NclANY,NclANY);nargs++;
+	NclRegisterFunc(_NclIlongtoint,args,"longtoint",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIfloattobyte,args,"floattobyte",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIfloattochar,args,"floattochar",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIfloattoshort,args,"floattoshort",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIfloattoint,args,"floattoint",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIfloattolong,args,"floattolong",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIdoubletobyte,args,"doubletobyte",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIdoubletochar,args,"doubletochar",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIdoubletoshort,args,"doubletoshort",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIdoubletoint,args,"doubletoint",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIdoubletolong,args,"doubletolong",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIdoubletofloat,args,"doubletofloat",nargs);
+
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIchartodouble,args,"chartodouble",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIchartofloat,args,"chartofloat",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIchartolong,args,"chartolong",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIchartoshort,args,"chartoshort",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIchartoint,args,"chartoint",nargs);
 /*
 	nargs = 0;
 	args = NewArgs(1);

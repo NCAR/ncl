@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.14 1995-04-12 00:04:46 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.15 1995-04-14 22:02:05 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -539,7 +539,7 @@ void _NclAddIntrinsics
 	_NclRegisterFunc(_NclIgetenv,args,"getenv",1,IFUNC);
 
 	args = NclCalloc(1,sizeof(NclArgTemplate));
-	args[0].arg_data_type = _NclLookUp("numeric");
+	args[0].arg_data_type = _NclLookUp("integer");
 	args[0].is_dimsizes = 0;
 	_NclRegisterFunc(_NclIabs,args,"abs",1,IFUNC);
 	

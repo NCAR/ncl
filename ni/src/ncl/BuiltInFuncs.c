@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.10 1995-04-14 20:11:30 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.11 1995-04-14 22:02:07 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,7 @@ extern "C" {
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <math.h>
 #include "defs.h"
 #include <errno.h>
 #include "Symbol.h"
@@ -2324,3 +2325,1422 @@ NhlErrorTypes _NclIgetenv
 #ifdef __cplusplus
 }
 #endif
+
+NhlErrorTypes _NclIinttoshort
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	static int maxshort = -1;
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        short *out_val;
+	NclBasicDataTypes type;
+        int *value;
+        int total=1;
+        int i;
+
+	if(maxshort == -1) {
+/*
+* Assuming IEEE integer representation
+*/
+		maxshort  = (int)pow(2.0,(double)((sizeof(short)*8)-1)) - 1;
+	}
+
+        value = (int*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypeshortClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < -maxshort)||(value[i] > maxshort)||(value[i] == missing.intval)) {
+				out_val[i] = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+			} else {
+				out_val[i] = (short)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			if((value[i] < -maxshort )||(value[i] > maxshort)) {
+				out_val[i] = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+			} else {
+				out_val[i] = (short)value[i];
+			}
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_short,
+		0
+	));
+}
+
+NhlErrorTypes _NclIinttobyte
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        byte *out_val;
+	NclBasicDataTypes type;
+        int *value;
+        int total=1;
+        int i;
+
+        value = (int*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypebyteClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.intval)) {
+				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+			} else {
+				out_val[i] = (byte)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)) {
+				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+			} else {
+				out_val[i] = (byte)value[i];
+			}
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_byte,
+		0
+	));
+}
+
+
+NhlErrorTypes _NclIinttochar
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        char *out_val;
+	NclBasicDataTypes type;
+        int *value;
+        int total=1;
+        int i;
+
+        value = (int*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypecharClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.intval)) {
+				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+			} else {
+				out_val[i] = (char)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)) {
+				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+			} else {
+				out_val[i] = (char)value[i];
+			}
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_char,
+		0
+	));
+}
+
+NhlErrorTypes _NclIchartoint
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int *out_val;
+	NclBasicDataTypes type;
+        char *value;
+        int total=1;
+        int i;
+
+        value = (char*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.charval)) {
+				out_val[i] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+			} else {
+				out_val[i] = (int)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			out_val[i] = (int)value[i];
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_int,
+		0
+	));
+}
+
+
+NhlErrorTypes _NclIshorttobyte
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        byte *out_val;
+	NclBasicDataTypes type;
+        short *value;
+        int total=1;
+        int i;
+
+        value = (short*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypebyteClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.shortval)) {
+				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+			} else {
+				out_val[i] = (byte)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)) {
+				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+			} else {
+				out_val[i] = (byte)value[i];
+			}
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_byte,
+		0
+	));
+}
+
+
+NhlErrorTypes _NclIshorttochar
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        char *out_val;
+	NclBasicDataTypes type;
+        short *value;
+        int total=1;
+        int i;
+
+        value = (short*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypecharClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.shortval)) {
+				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+			} else {
+				out_val[i] = (char)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)) {
+				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+			} else {
+				out_val[i] = (char)value[i];
+			}
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_char,
+		0
+	));
+}
+
+NhlErrorTypes _NclIchartoshort
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        short *out_val;
+	NclBasicDataTypes type;
+        char *value;
+        int total=1;
+        int i;
+
+        value = (char*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypeshortClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.charval)) {
+				out_val[i] = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+			} else {
+				out_val[i] = (short)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			out_val[i] = (short)value[i];
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_short,
+		0
+	));
+}
+
+NhlErrorTypes _NclIlongtoint
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	static int maxint = -1;
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int *out_val;
+	NclBasicDataTypes type;
+        long *value;
+        int total=1;
+        int i;
+
+	if(maxint == -1) {
+/*
+* Assuming IEEE integer representation
+*/
+		maxint  = (int)pow(2.0,(double)((sizeof(int)*8)-1)) - 1;
+	}
+
+        value = (long*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < -maxint)||(value[i] > maxint)||(value[i] == missing.longval)) {
+				out_val[i] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+			} else {
+				out_val[i] = (int)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			if((value[i] < -maxint )||(value[i] > maxint)) {
+				out_val[i] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+			} else {
+				out_val[i] = (int)value[i];
+			}
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_int,
+		0
+	));
+}
+NhlErrorTypes _NclIlongtoshort
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	static int maxshort = -1;
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        short *out_val;
+	NclBasicDataTypes type;
+        long *value;
+        int total=1;
+        int i;
+
+	if(maxshort == -1) {
+/*
+* Assuming IEEE integer representation
+*/
+		maxshort  = (int)pow(2.0,(double)((sizeof(short)*8)-1)) - 1;
+	}
+
+        value = (long*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypeshortClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < -maxshort)||(value[i] > maxshort)||(value[i] == missing.longval)) {
+				out_val[i] = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+			} else {
+				out_val[i] = (short)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			if((value[i] < -maxshort )||(value[i] > maxshort)) {
+				out_val[i] = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+			} else {
+				out_val[i] = (short)value[i];
+			}
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_short,
+		0
+	));
+}
+NhlErrorTypes _NclIlongtobyte
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        byte *out_val;
+	NclBasicDataTypes type;
+        long *value;
+        int total=1;
+        int i;
+
+        value = (long*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypebyteClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.longval)) {
+				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+			} else {
+				out_val[i] = (byte)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)) {
+				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+			} else {
+				out_val[i] = (byte)value[i];
+			}
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_byte,
+		0
+	));
+}
+
+
+NhlErrorTypes _NclIlongtochar
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        char *out_val;
+	NclBasicDataTypes type;
+        long *value;
+        int total=1;
+        int i;
+
+        value = (long*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypecharClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.longval)) {
+				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+			} else {
+				out_val[i] = (char)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)) {
+				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+			} else {
+				out_val[i] = (char)value[i];
+			}
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_char,
+		0
+	));
+}
+
+NhlErrorTypes _NclIchartolong
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        long *out_val;
+	NclBasicDataTypes type;
+        char *value;
+        int total=1;
+        int i;
+
+        value = (char*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypelongClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.charval)) {
+				out_val[i] = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
+			} else {
+				out_val[i] = (long)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			out_val[i] = (long)value[i];
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_long,
+		0
+	));
+}
+
+NhlErrorTypes _NclIfloattoshort
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	static int maxshort = -1;
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        short *out_val;
+	NclBasicDataTypes type;
+        float *value;
+        int total=1;
+        int i;
+
+	if(maxshort == -1) {
+/*
+* Assuming IEEE integer representation
+*/
+		maxshort  = (int)pow(2.0,(float)((sizeof(short)*8)-1)) - 1;
+	}
+
+        value = (float*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypeshortClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < -maxshort)||(value[i] > maxshort)||(value[i] == missing.floatval)) {
+				out_val[i] = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+			} else {
+				out_val[i] = (short)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			if((value[i] < -maxshort )||(value[i] > maxshort)) {
+				out_val[i] = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+			} else {
+				out_val[i] = (short)value[i];
+			}
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_short,
+		0
+	));
+}
+NhlErrorTypes _NclIfloattoint
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	static int maxint = -1;
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int *out_val;
+	NclBasicDataTypes type;
+        float *value;
+        int total=1;
+        int i;
+
+	if(maxint == -1) {
+/*
+* Assuming IEEE integer representation
+*/
+		maxint  = (int)pow(2.0,(float)((sizeof(int)*8)-1)) - 1;
+	}
+
+        value = (float*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < -maxint)||(value[i] > maxint)||(value[i] == missing.floatval)) {
+				out_val[i] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+			} else {
+				out_val[i] = (int)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			if((value[i] < -maxint )||(value[i] > maxint)) {
+				out_val[i] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+			} else {
+				out_val[i] = (int)value[i];
+			}
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_int,
+		0
+	));
+}
+NhlErrorTypes _NclIfloattolong
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	static int maxlong = -1;
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        long *out_val;
+	NclBasicDataTypes type;
+        float *value;
+        int total=1;
+        int i;
+
+	if(maxlong == -1) {
+/*
+* Assuming IEEE integer representation
+*/
+		maxlong  = (long)pow(2.0,(float)((sizeof(long)*8)-1)) - 1;
+	}
+
+        value = (float*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypelongClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < -maxlong)||(value[i] > maxlong)||(value[i] == missing.floatval)) {
+				out_val[i] = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
+			} else {
+				out_val[i] = (long)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			if((value[i] < -maxlong )||(value[i] > maxlong)) {
+				out_val[i] = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
+			} else {
+				out_val[i] = (long)value[i];
+			}
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_long,
+		0
+	));
+}
+NhlErrorTypes _NclIfloattobyte
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        byte *out_val;
+	NclBasicDataTypes type;
+        float *value;
+        int total=1;
+        int i;
+
+        value = (float*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypebyteClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.floatval)) {
+				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+			} else {
+				out_val[i] = (byte)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)) {
+				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+			} else {
+				out_val[i] = (byte)value[i];
+			}
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_byte,
+		0
+	));
+}
+
+
+NhlErrorTypes _NclIfloattochar
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        char *out_val;
+	NclBasicDataTypes type;
+        float *value;
+        int total=1;
+        int i;
+
+        value = (float*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypecharClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.floatval)) {
+				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+			} else {
+				out_val[i] = (char)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)) {
+				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+			} else {
+				out_val[i] = (char)value[i];
+			}
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_char,
+		0
+	));
+}
+
+NhlErrorTypes _NclIchartofloat
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        float *out_val;
+	NclBasicDataTypes type;
+        char *value;
+        int total=1;
+        int i;
+
+        value = (char*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypefloatClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.charval)) {
+				out_val[i] = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+			} else {
+				out_val[i] = (float)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			out_val[i] = (float)value[i];
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_float,
+		0
+	));
+}
+NhlErrorTypes _NclIdoubletobyte
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        byte *out_val;
+	NclBasicDataTypes type;
+        double *value;
+        int total=1;
+        int i;
+
+        value = (double*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypebyteClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.doubleval)) {
+				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+			} else {
+				out_val[i] = (byte)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)) {
+				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+			} else {
+				out_val[i] = (byte)value[i];
+			}
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_byte,
+		0
+	));
+}
+
+
+NhlErrorTypes _NclIdoubletochar
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        char *out_val;
+	NclBasicDataTypes type;
+        double *value;
+        int total=1;
+        int i;
+
+        value = (double*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypecharClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.doubleval)) {
+				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+			} else {
+				out_val[i] = (char)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)) {
+				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+			} else {
+				out_val[i] = (char)value[i];
+			}
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_char,
+		0
+	));
+}
+
+NhlErrorTypes _NclIchartodouble
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        double *out_val;
+	NclBasicDataTypes type;
+        char *value;
+        int total=1;
+        int i;
+
+        value = (char*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypedoubleClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.charval)) {
+				out_val[i] = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+			} else {
+				out_val[i] = (double)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			out_val[i] = (double)value[i];
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_double,
+		0
+	));
+}
+NhlErrorTypes _NclIdoubletoshort
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	static int maxshort = -1;
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        short *out_val;
+	NclBasicDataTypes type;
+        double *value;
+        int total=1;
+        int i;
+
+	if(maxshort == -1) {
+/*
+* Assuming IEEE integer representation
+*/
+		maxshort  = (int)pow(2.0,(double)((sizeof(short)*8)-1)) - 1;
+	}
+
+        value = (double*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypeshortClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < -maxshort)||(value[i] > maxshort)||(value[i] == missing.doubleval)) {
+				out_val[i] = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+			} else {
+				out_val[i] = (short)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			if((value[i] < -maxshort )||(value[i] > maxshort)) {
+				out_val[i] = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+			} else {
+				out_val[i] = (short)value[i];
+			}
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_short,
+		0
+	));
+}
+NhlErrorTypes _NclIdoubletoint
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	static int maxint = -1;
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        int *out_val;
+	NclBasicDataTypes type;
+        double *value;
+        int total=1;
+        int i;
+
+	if(maxint == -1) {
+/*
+* Assuming IEEE integer representation
+*/
+		maxint  = (int)pow(2.0,(double)((sizeof(int)*8)-1)) - 1;
+	}
+
+        value = (double*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < -maxint)||(value[i] > maxint)||(value[i] == missing.doubleval)) {
+				out_val[i] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+			} else {
+				out_val[i] = (int)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			if((value[i] < -maxint )||(value[i] > maxint)) {
+				out_val[i] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+			} else {
+				out_val[i] = (int)value[i];
+			}
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_int,
+		0
+	));
+}
+NhlErrorTypes _NclIdoubletolong
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	static int maxlong = -1;
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        long *out_val;
+	NclBasicDataTypes type;
+        double *value;
+        int total=1;
+        int i;
+
+	if(maxlong == -1) {
+/*
+* Assuming IEEE integer representation
+*/
+		maxlong  = (long)pow(2.0,(double)((sizeof(long)*8)-1)) - 1;
+	}
+
+        value = (double*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypelongClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if((value[i] < -maxlong)||(value[i] > maxlong)||(value[i] == missing.doubleval)) {
+				out_val[i] = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
+			} else {
+				out_val[i] = (long)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			if((value[i] < -maxlong )||(value[i] > maxlong)) {
+				out_val[i] = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
+			} else {
+				out_val[i] = (long)value[i];
+			}
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_long,
+		0
+	));
+}
+NhlErrorTypes _NclIdoubletofloat
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclScalar missing,missing2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        float *out_val;
+	NclBasicDataTypes type;
+        double *value;
+        int total=1;
+        int i;
+
+        value = (double*)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+        for(i = 0; i < n_dims; i++) {
+                total *= dimsizes[i];
+        }
+	out_val = NclMalloc(((NclTypeClass)nclTypefloatClass)->type_class.size *total);
+	if(has_missing) {
+		for(i = 0; i < total; i++) {
+			if(value[i] == missing.doubleval) {
+				out_val[i] = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+			} else {
+				out_val[i] = (float)value[i];
+			}
+		}
+	} else {
+		for(i = 0; i < total; i++) {
+			out_val[i] = (float)value[i];
+		}
+	}
+	return(NclReturnValue(
+		(void*)out_val,
+		n_dims,
+		dimsizes,
+		(has_missing ? &missing : NULL),
+		NCL_float,
+		0
+	));
+}
