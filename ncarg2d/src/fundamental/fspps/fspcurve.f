@@ -6,8 +6,8 @@ C coordinates to draw, however, because of the SET call the x axis
 C is reversed.  GPL ignores this, and CURVE obeys it.
 
       REAL XCOORD(10), YCOORD(10)
-      REAL X2(2), X3(2), X4(2)
-      REAL Y2(2), Y3(2), Y4(2)
+      REAL X2(2), X3(2)
+      REAL Y2(2), Y3(2)
 
 C Coordinates for plot key
       DATA X2/.2, .3/
