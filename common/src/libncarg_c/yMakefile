@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.23 1995-06-30 23:00:20 kennison Exp $
+#	$Id: yMakefile,v 1.24 1995-07-03 06:25:37 haley Exp $
 #
 #
 #	Makefile for libncarg_c -- NCAR G common utilities
@@ -46,7 +46,8 @@ CSRCS		= $(EXCSRCS) options.c misc.c ncarg_path.c version.c \
 			rwchinfl.c
 FSRCS		= $(EXFSRCS) $(FCPP_FSRCS) lblank.f iargct.f
 OBJS		= $(EXOBJS) $(FCPP_OBJS) options.o misc.o ncarg_path.o version.o \
-		error.o atoargv.o usleep.o env.o trnspprt.o lblank.o iargct.o
+		error.o atoargv.o usleep.o env.o trnspprt.o lblank.o iargct.o \
+		rwchinfl.o
 
 #if defined(IRIX) && (MAJOR == 5)
 MY_DEFINES = -D_BSD_TYPES
