@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.44 1996-11-01 15:40:12 boote Exp $
+#      $Id: yMakefile,v 1.45 1996-11-05 20:07:06 boote Exp $
 #
 #########################################################################
 #									#
@@ -33,8 +33,8 @@
 SUBDIRS = yacc
 
 MYBIN		=	ncl
-MYLIB		=	libncl.a
-MYLIB_API	=	libnclapi.a
+MYLIB		=	libncl
+MYLIB_API	=	libnclapi
 YACC		=	./yacc/byacc
 YACCDIR		=	./yacc
 
