@@ -16,7 +16,6 @@
 #include <ncarg/hlu/Workstation.h>
 #include 	<ncarg/hlu/WorkstationP.h>
 #include <ncarg/hlu/ConvertersP.h>
-#include <ncarg/hlu/PalettesP.h>
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/ErrorI.h>
@@ -129,16 +128,17 @@ NhlDummyWorkstationClassRec NhldummyWorkstationClassRec = {
         },
 	{
 /* def_background	*/	{0.0,0.0,0.0},
+/* pal			*/	NhlInheritPalette,
 /* open_work		*/	DummyWorkstationOpen,
 /* close_work		*/	DummyWorkstationClose,
 /* activate_work	*/	DummyWorkstationActivate,
 /* deactivate_work	*/	DummyWorkstationDeactivate,
-/* alloc_colors		*/	NULL,
-/* update_work		*/	NULL,
-/* clear_work		*/	NULL,
-/* lineto_work 		*/	NULL,
-/* fill_work		*/	NULL,
-/* marker_work		*/	NULL
+/* alloc_colors		*/	DummyWorkstationOpen,
+/* update_work		*/	DummyWorkstationOpen,
+/* clear_work		*/	DummyWorkstationOpen,
+/* lineto_work 		*/	(NhlWorkstationLineTo)DummyWorkstationOpen,
+/* fill_work		*/	(NhlWorkstationFill)DummyWorkstationOpen,
+/* marker_work		*/	(NhlWorkstationMarker)DummyWorkstationOpen
 	},
 	{
 				NULL
