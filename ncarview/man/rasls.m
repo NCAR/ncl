@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: rasls.m,v 1.3 1993-02-16 17:33:03 don Exp $
+.\"	$Id: rasls.m,v 1.4 1993-02-20 00:00:20 don Exp $
 .\"
 .TH RASLS 1NCARG "January 1993" NCARG "NCAR VIEW"
 .SH NAME
@@ -42,5 +42,6 @@ Print the version number.
 .sp
 .SH "SEE ALSO"
 .LP
-ras_formats(5NCARG), rasview(1NCARG), rascat(1NCARG), rasgetpal(1NCARG),
-rassplit(1NCARG)
+\fBrasview\fP(1NCARG), \fBrascat\fP(1NCARG), \fBrasgetpal\fP(1NCARG),
+\fBrasls\fP(1NCARG), \fBrassplit\fP(1NCARG),
+\fBras_formats\fP(5NCARG), \fBras_palette\fP(5NCARG)
