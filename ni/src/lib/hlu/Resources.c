@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.32 1997-01-25 00:42:17 ethan Exp $
+ *      $Id: Resources.c,v 1.33 1997-07-02 15:24:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -847,11 +847,13 @@ void
 _NhlCompileResourceList
 #if	NhlNeedProto
 (
+	NhlClass	lc,
 	NhlResourceList	resources,	/* resources		*/
 	int		num_resources	/* number of resources	*/
 )
 #else
-(resources, num_resources)
+(lc,resources, num_resources)
+	NhlClass	lc;
 	NhlResourceList	resources;	/* resources            */ 
 	int		num_resources;	/* number of resources	*/
 #endif
@@ -873,11 +875,12 @@ _NhlCompileResourceList
 		nrmres->nrm_class	= PSToQ(resources->resource_class);
 		nrmres->nrm_type	= PSToQ(resources->resource_type);
 		nrmres->nrm_default_type= PSToQ(resources->default_type);
+		nrmres->nhlclass	= lc;
 	}
 #undef PSToQ
 
 	return;
-} /* _NhlCompileResourceList */
+}
 
 static int
 CompareRes
@@ -934,7 +937,6 @@ _NhlGroupResources
 	NrmResourceList	classlist;
 	NhlClass	sc = lc->base_class.superclass;
 	unsigned int	super_size;
-	NhlBoolean	override;
 
 	/*
 	 * If superclass has no resources then the classes resource list
@@ -957,8 +959,8 @@ _NhlGroupResources
 		return;
 	}
 
-	num_rlist = lc->base_class.num_resources + sc->base_class.num_resources;
 	super_size = sc->base_class.layer_size;
+	num_rlist = lc->base_class.num_resources + sc->base_class.num_resources;
 
 	rlist = (NrmResourceList)NhlMalloc(
 				(unsigned)(sizeof(NrmResource) * num_rlist));
@@ -974,8 +976,6 @@ _NhlGroupResources
 	next = sc->base_class.num_resources;
 
 	for(i=0;i < lc->base_class.num_resources;i++){
-
-		override = False;
 
 		if(classlist[i].nrm_offset < super_size){
 
@@ -997,16 +997,27 @@ _NhlGroupResources
 						classlist[i].nrm_size =
 							rlist[j].nrm_size;
 					}
-					rlist[j] = classlist[i];
+					/*
+					 * If resource name is the same,
+					 * preserve nhlclass - probably
+					 * just over-riding a default value.
+					 */
+					if(classlist[i].nrm_name ==
+							rlist[j].nrm_name){
+						NhlClass tc = rlist[j].nhlclass;
+						rlist[j] = classlist[i];
+						rlist[j].nhlclass = tc;
+					}
+					else
+						rlist[j] = classlist[i];
 					num_rlist--;
-					override = True;
-					break;
+					goto NEXTRES;
 				}
 			}
 		}
 
-		if(!override)
-			rlist[next++] = classlist[i];
+		rlist[next++] = classlist[i];
+NEXTRES:
 	}
 
 SORT:
@@ -1185,6 +1196,45 @@ _NhlResInClass
 			CompareRes);
 
 	return (nrmres != NULL);
+}
+
+NrmResource *
+_NhlGetResInfo
+#if	NhlNeedProto
+(
+	NhlClass	lc,
+	NrmQuark	res
+)
+#else
+(lc,res)
+	NhlClass	lc;
+	NrmQuark	res;
+#endif
+{
+	int			i;
+	NrmResourceList		nrmres = (NrmResourceList)
+						lc->base_class.resources;
+	NrmResource		key;
+	_NhlChildResList	chld;
+
+	key.nrm_name = res;
+	nrmres = bsearch(&key,(NrmResourceList)lc->base_class.resources,
+			lc->base_class.num_resources,sizeof(NrmResource),
+			CompareRes);
+
+	if(nrmres)
+		return nrmres;
+
+	chld = lc->base_class.child_resources;
+	while(chld){
+
+		if(NrmQinQList(chld->resources,res))
+			return _NhlGetResInfo(chld->class,res);
+
+		chld = chld->next;
+	}
+
+	return NULL;
 }
 
 /*

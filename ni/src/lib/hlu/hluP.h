@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.37 1997-02-27 20:13:08 boote Exp $
+ *      $Id: hluP.h,v 1.38 1997-07-02 15:24:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -69,6 +69,7 @@ typedef struct _NhlResource {
 	NhlArgVal	default_val;
 	unsigned int	res_info;
 	NhlFreeFunc	free_func;
+	NhlClass	nhlclass;
 } NhlResource, *NhlResourceList;
 
 typedef struct _NhlLayerRec *NhlLayer;

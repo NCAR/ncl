@@ -1,5 +1,5 @@
 /*
- *      $Id: ResourcesP.h,v 1.14 1997-01-17 18:57:44 boote Exp $
+ *      $Id: ResourcesP.h,v 1.15 1997-07-02 15:24:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -37,6 +37,7 @@ typedef struct _NrmResource {
 	_NhlArgVal	nrm_default_val;
 	unsigned int	res_info;
 	NhlFreeFunc	free_func;
+	NhlClass	nhlclass;
 } NrmResource, *NrmResourceList;
 
 typedef NhlErrorTypes (*NrmResourceDefaultProc)(
@@ -45,6 +46,17 @@ typedef NhlErrorTypes (*NrmResourceDefaultProc)(
 	NrmClass,	/* resource class	*/
 	NhlPointer,	/* base addr		*/
 	unsigned int	/* resource_offset	*/
+#endif
+);
+
+/*
+ * The class MUST be initialized before this is called!
+ */
+extern NrmResource *
+_NhlGetResInfo(
+#if	NhlNeedProto
+	NhlClass	lc,
+	NrmQuark	res
 #endif
 );
 
@@ -116,8 +128,9 @@ extern void _NhlGroupResources(
 
 extern void _NhlCompileResourceList(
 #if	NhlNeedProto
-	NhlResourceList,	/* resource list	*/
-	int			/* number of resources	*/
+	NhlClass		lc,
+	NhlResourceList		res,	/* resource list	*/
+	int			nres	/* number of resources	*/
 #endif
 );
 

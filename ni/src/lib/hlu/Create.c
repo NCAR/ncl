@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.34 1997-05-05 21:45:06 boote Exp $
+ *      $Id: Create.c,v 1.35 1997-07-02 15:24:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1160,7 +1160,7 @@ _NhlRegisterChildClass
 	}
 
 	/*
-	 * ObjNhlLayer's do not support resource forwarding so they can not
+	 * ObjLayer's do not support resource forwarding so they can not
 	 * have children or be children.
 	 */
 	if(parent->base_class.class_inited & _NhlObjClassFlag){

@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.23 1997-02-27 20:13:01 boote Exp $
+ *      $Id: Base.c,v 1.24 1997-07-02 15:24:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -445,7 +445,7 @@ BaseClassPartInitialize
 	lc->base_class.nrm_class = NrmStringToName(lc->base_class.class_name);
 
 	if(lc->base_class.resources)
-		_NhlCompileResourceList(lc->base_class.resources,
+		_NhlCompileResourceList(lc,lc->base_class.resources,
 					lc->base_class.num_resources);
 
 	_NhlGroupResources(lc);

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.66 1997-05-15 16:48:00 dbrown Exp $
+ *      $Id: Workstation.c,v 1.67 1997-07-02 15:24:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -3313,8 +3313,10 @@ _NhlOpenWorkstation
 								sel,cbdata);
 
 	ret = (*(wc->open_work))(wks);
-	if(ret != NhlFATAL)
+	if(ret != NhlFATAL){
 		((NhlWorkstationLayer)wks)->work.open = True;
+		(void)NhlUpdateWorkstation(wks->base.id);
+	}
 
 	return ret;
 }

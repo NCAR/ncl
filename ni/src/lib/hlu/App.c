@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.33 1997-05-05 21:44:58 boote Exp $
+ *      $Id: App.c,v 1.34 1997-07-02 15:24:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -353,8 +353,9 @@ AppClassInitialize
 	_NhlConvertersInitialize();
 	_NhlResourceListInitialize();
 
-	_NhlCompileResourceList(NhlappClassRec.app_class.resources,
-					NhlappClassRec.app_class.num_resources);
+	_NhlCompileResourceList(&NhlappClassRec,
+		NhlappClassRec.app_class.resources,
+		NhlappClassRec.app_class.num_resources);
 
 	usrdirQ = NrmStringToQuark(NhlNappUsrDir);
 	sysdirQ = NrmStringToQuark(NhlNappSysDir);
