@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.c,v 1.21 1999-04-01 20:27:24 ethan Exp $
+ *      $Id: NclMultiDValHLUObjData.c,v 1.22 2001-07-16 19:48:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -210,10 +210,10 @@ static struct _NclDataRec *MultiDVal_HluObj_ReadSection
                                         sel_ptr->u.sub.stride = 1;
                                 }
 
-				n_elem = (int)(((float)
+				n_elem = (int)(((double)
 					(sel_ptr->u.sub.start 
 					- sel_ptr->u.sub.finish))
-					/(float)fabs(((float)sel_ptr->u.sub.stride))) + 1;
+					/(double)fabs(((double)sel_ptr->u.sub.stride))) + 1;
 
 /*
 * Need to be able to determine which type of comparision < or > is needed to
@@ -617,10 +617,10 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
                                         sel_ptr->u.sub.stride = 1;
                                 }
 
-				n_elem = (int)(((float)
+				n_elem = (int)(((double)
 					(sel_ptr->u.sub.start 
 					- sel_ptr->u.sub.finish))
-					/(float)fabs(((float)sel_ptr->u.sub.stride))) + 1;
+					/(double)fabs(((double)sel_ptr->u.sub.stride))) + 1;
 
 /*
 * Need to be able to determine which type of comparision < or > is needed to
@@ -982,10 +982,10 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
                                         sel_ptr->u.sub.stride = 1;
                                 }
 
-				n_elem = (int)(((float)
+				n_elem = (int)(((double)
 					(sel_ptr->u.sub.start 
 					- sel_ptr->u.sub.finish))
-					/(float)fabs(((float)sel_ptr->u.sub.stride))) + 1;
+					/(double)fabs(((double)sel_ptr->u.sub.stride))) + 1;
 
 /*
 * Need to be able to determine which type of comparision < or > is needed to
@@ -1384,10 +1384,10 @@ NclSelectionRecord *from_selection;
                                         to_sel_ptr->u.sub.stride = 1;
                                 }
 
-				n_elem_target = (int)(((float)
+				n_elem_target = (int)(((double)
 					(to_sel_ptr->u.sub.start 
 					- to_sel_ptr->u.sub.finish))
-					/(float)fabs(((float)to_sel_ptr->u.sub.stride))) + 1;
+					/(double)fabs(((double)to_sel_ptr->u.sub.stride))) + 1;
 
 /*
 * Need to be able to determine which type of comparision < or > is needed to
@@ -1498,10 +1498,10 @@ NclSelectionRecord *from_selection;
                                         from_sel_ptr->u.sub.stride = 1;
                                 }
 
-				n_elem_value = (int)(((float)
+				n_elem_value = (int)(((double)
 					(from_sel_ptr->u.sub.start 
 					- from_sel_ptr->u.sub.finish))
-					/(float)fabs(((float)from_sel_ptr->u.sub.stride))) + 1;
+					/(double)fabs(((double)from_sel_ptr->u.sub.stride))) + 1;
 
 /*
 * Need from be able from determine which type of comparision < or > is needed from

@@ -1125,7 +1125,7 @@ int vtype;
 					stride[sel->dim_num] = 1;
 					tmpf = 1;
 				}
-				n_elem =(int)(fabs(((float)(finish[sel->dim_num] - start[sel->dim_num]))) /tmpf) + 1;
+				n_elem =(int)(fabs(((double)(finish[sel->dim_num] - start[sel->dim_num]))) /tmpf) + 1;
 				if((sel->u.sub.start > thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size-1)||(sel->u.sub.start < 0)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
 					return(NULL);
@@ -2839,7 +2839,7 @@ int type;
 							stride[sel->dim_num] = 1;
 							tmpf = 1;
 						}
-						n_elem = (int)(fabs(((float)(finish[sel->dim_num] -start[sel->dim_num])))/tmpf) + 1;
+						n_elem = (int)(fabs(((double)(finish[sel->dim_num] -start[sel->dim_num])))/tmpf) + 1;
 
 						if((sel->u.sub.start > thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size-1 )||(sel->u.sub.start < 0)) {
 							if(!( thefile->file.file_dim_info[ thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->is_unlimited)||(sel->u.sub.start < 0)) {
@@ -3693,9 +3693,9 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 						break;
 					default:
 						if(lhs_sel_ptr->selection[i].u.sub.finish < lhs_sel_ptr->selection[i].u.sub.start) {
-							lhs_n_elem = (int)(((float)(lhs_sel_ptr->selection[i].u.sub.start - lhs_sel_ptr->selection[i].u.sub.finish))/(float)fabs(((float)lhs_sel_ptr->selection[i].u.sub.stride))) + 1;
+							lhs_n_elem = (int)(((double)(lhs_sel_ptr->selection[i].u.sub.start - lhs_sel_ptr->selection[i].u.sub.finish))/(double)fabs(((double)lhs_sel_ptr->selection[i].u.sub.stride))) + 1;
 						} else {
-							lhs_n_elem = (int)(((float)(lhs_sel_ptr->selection[i].u.sub.finish - lhs_sel_ptr->selection[i].u.sub.start))/(float)fabs(((float)lhs_sel_ptr->selection[i].u.sub.stride))) + 1;
+							lhs_n_elem = (int)(((double)(lhs_sel_ptr->selection[i].u.sub.finish - lhs_sel_ptr->selection[i].u.sub.start))/(double)fabs(((double)lhs_sel_ptr->selection[i].u.sub.stride))) + 1;
 						}
 						break;
 					}

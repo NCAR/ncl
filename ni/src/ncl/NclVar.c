@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.62 2000-03-14 22:20:55 ethan Exp $
+ *      $Id: NclVar.c,v 1.63 2001-07-16 19:48:22 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2079,13 +2079,13 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 				break;
 			default:
 				if(rhs_sel_ptr->selection[j].u.sub.finish < rhs_sel_ptr->selection[j].u.sub.start){
-					rhs_n_elem = (int)(((float) (rhs_sel_ptr->selection[j].u.sub.start
+					rhs_n_elem = (int)(((double) (rhs_sel_ptr->selection[j].u.sub.start
                                         	- rhs_sel_ptr->selection[j].u.sub.finish))
-                                        	/(float)fabs(((float)rhs_sel_ptr->selection[j].u.sub.stride))) + 1;
+                                        	/(double)fabs(((double)rhs_sel_ptr->selection[j].u.sub.stride))) + 1;
 				} else {
-					rhs_n_elem = (int)(((float) (rhs_sel_ptr->selection[j].u.sub.finish
+					rhs_n_elem = (int)(((double) (rhs_sel_ptr->selection[j].u.sub.finish
                                         	- rhs_sel_ptr->selection[j].u.sub.start))
-                                        	/((float)rhs_sel_ptr->selection[j].u.sub.stride)) + 1;
+                                        	/((double)rhs_sel_ptr->selection[j].u.sub.stride)) + 1;
 				}
 				break;
 			}
@@ -2095,13 +2095,13 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 				break;
 			default:
 				if(lhs_sel_ptr->selection[i].u.sub.finish < lhs_sel_ptr->selection[i].u.sub.start){
-					lhs_n_elem = (int)(((float) (lhs_sel_ptr->selection[i].u.sub.start
+					lhs_n_elem = (int)(((double) (lhs_sel_ptr->selection[i].u.sub.start
                                         	- lhs_sel_ptr->selection[i].u.sub.finish))
-                                        	/(float)fabs(((float)lhs_sel_ptr->selection[i].u.sub.stride))) + 1;
+                                        	/(double)fabs(((double)lhs_sel_ptr->selection[i].u.sub.stride))) + 1;
 				} else {
-					lhs_n_elem = (int)(((float) (lhs_sel_ptr->selection[i].u.sub.finish
+					lhs_n_elem = (int)(((double) (lhs_sel_ptr->selection[i].u.sub.finish
                                         	- lhs_sel_ptr->selection[i].u.sub.start))
-                                        	/((float)lhs_sel_ptr->selection[i].u.sub.stride)) + 1;
+                                        	/((double)lhs_sel_ptr->selection[i].u.sub.stride)) + 1;
 				}
 				break;
 			}
@@ -2488,13 +2488,13 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 				break;
 			default:
 				if(lhs_sel_ptr->selection[i].u.sub.finish < lhs_sel_ptr->selection[i].u.sub.start){
-					lhs_n_elem = (int)(((float) (lhs_sel_ptr->selection[i].u.sub.start
+					lhs_n_elem = (int)(((double) (lhs_sel_ptr->selection[i].u.sub.start
 						- lhs_sel_ptr->selection[i].u.sub.finish))
-						/(float)fabs(((float)lhs_sel_ptr->selection[i].u.sub.stride))) + 1;
+						/(double)fabs(((double)lhs_sel_ptr->selection[i].u.sub.stride))) + 1;
 				} else {
-					lhs_n_elem = (int)(((float) (lhs_sel_ptr->selection[i].u.sub.finish
+					lhs_n_elem = (int)(((double) (lhs_sel_ptr->selection[i].u.sub.finish
 						- lhs_sel_ptr->selection[i].u.sub.start))
-						/((float)lhs_sel_ptr->selection[i].u.sub.stride)) + 1;
+						/((double)lhs_sel_ptr->selection[i].u.sub.stride)) + 1;
 				}
 				break;
 			}
@@ -2730,13 +2730,13 @@ if(rhs_md->multidval.totalelements !=1) {
 				break;
 			default:
 				if(rhs_sel_ptr->selection[j].u.sub.finish < rhs_sel_ptr->selection[j].u.sub.start){
-					rhs_n_elem = (int)(((float) (rhs_sel_ptr->selection[j].u.sub.start
+					rhs_n_elem = (int)(((double) (rhs_sel_ptr->selection[j].u.sub.start
 						- rhs_sel_ptr->selection[i].u.sub.finish))
-						/(float)fabs(((float)rhs_sel_ptr->selection[j].u.sub.stride))) + 1;
+						/(double)fabs(((double)rhs_sel_ptr->selection[j].u.sub.stride))) + 1;
 				} else {
-					rhs_n_elem = (int)(((float) (rhs_sel_ptr->selection[j].u.sub.finish
+					rhs_n_elem = (int)(((double) (rhs_sel_ptr->selection[j].u.sub.finish
 						- rhs_sel_ptr->selection[j].u.sub.start))
-						/((float)rhs_sel_ptr->selection[j].u.sub.stride)) + 1;
+						/((double)rhs_sel_ptr->selection[j].u.sub.stride)) + 1;
 				}
 				break;
 			}
