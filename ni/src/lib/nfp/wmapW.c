@@ -44,7 +44,7 @@ NhlErrorTypes wmsetp_W(void)
                       "rc4", "rc5", "rev", "rfc", "rls", "ros",
                       "sc1", "sc2", "sc3", "sc4", "slf", "sty",
                       "t1c", "t2c", "wbf", "wfc", "wty", "ezf",
-                      "loc",
+                      "loc", "wdf",
                       "ALO", "AOC", "ASC", "AWC", "CBC", "CC1", 
                       "CC2", "CC3", "CFC", "COL", "DBC", "DTC",
                       "HIB", "HIC", "HIF", "HIS", "LC1", "LC2",
@@ -53,7 +53,7 @@ NhlErrorTypes wmsetp_W(void)
                       "RC4", "RC5", "REV", "RFC", "RLS", "ROS",
                       "SC1", "SC2", "SC3", "SC4", "SLF", "STY",
                       "T1C", "T2C", "WBF", "WFC", "WTY", "EZF",
-                      "LOC"
+                      "LOC", "WDF"
                      };
 
   char *params_f[] = {"arc", "ard", "arl", "ars", "beg", "bet",
@@ -227,7 +227,7 @@ NhlErrorTypes wmgetp_W(void)
                       "rc4", "rc5", "rev", "rfc", "rls", "ros",
                       "sc1", "sc2", "sc3", "sc4", "slf", "sty",
                       "t1c", "t2c", "wbf", "wfc", "wty", "ezf",
-                      "loc",
+                      "loc", "wdf",
                       "ALO", "AOC", "ASC", "AWC", "CBC", "CC1", 
                       "CC2", "CC3", "CFC", "COL", "DBC", "DTC",
                       "HIB", "HIC", "HIF", "HIS", "LC1", "LC2",
@@ -236,7 +236,7 @@ NhlErrorTypes wmgetp_W(void)
                       "RC4", "RC5", "REV", "RFC", "RLS", "ROS",
                       "SC1", "SC2", "SC3", "SC4", "SLF", "STY",
                       "T1C", "T2C", "WBF", "WFC", "WTY", "EZF",
-                      "LOC"
+                      "LOC", "WDF"
                      };
 
   char *params_f[] = {"arc", "ard", "arl", "ars", "beg", "bet",
@@ -358,7 +358,11 @@ OK_NAME:  for (i = 0; i < numpi; i++) {
 NhlErrorTypes wmbarb_W( void )
 {
   int grlist,gkswid,i;
-  int *nwid,nid;
+  int *nwid,nid,ezf;
+  float xt,yt,xtn,ytn;
+ 
+  int itrn;
+  float x1,x2,y1,y2,xx1,xx2,yy1,yy2;
 
 /*
  *  Definte a variable to store the HLU object identifier.
@@ -425,8 +429,20 @@ NhlErrorTypes wmbarb_W( void )
  * The following section calls the c_wmbarb function.
  */
   gactivate_ws (gkswid);
-  for (i = 0; i < dsizes_x[0]; i++) {
-    c_wmbarb(*(x+i), *(y+i), *(u+i), *(v+i));
+  c_wmgeti("ezf",&ezf);
+  if (ezf != -1) {
+    for (i = 0; i < dsizes_x[0]; i++) {
+      c_getset(&x1,&x2,&y1,&y2,&xx1,&xx2,&yy1,&yy2,&itrn);
+      c_maptrn(x[i],y[i],&xt,&yt);
+      if (xt != 1.e12) {
+        c_wmbarb(xt, yt, *(u+i), *(v+i));
+      }
+    }
+  }
+  else {
+    for (i = 0; i < dsizes_x[0]; i++) {
+        c_wmbarb(*(x+i), *(y+i), *(u+i), *(v+i));
+    }
   }
   gdeactivate_ws (gkswid);
 
@@ -446,7 +462,7 @@ NhlErrorTypes wmdrft_W( void )
   float *xd,*yd,*ud,*vd,xt,yt,mval=1.e12;
 
 /*
- *  Definte a variable to store the HLU object identifier.
+ *  Define a variable to store the HLU object identifier.
  */
   NclHLUObj tmp_hlu_obj;
 

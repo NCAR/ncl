@@ -900,6 +900,7 @@ NhlErrorTypes csvoro_W(void)
 /*
  *  Make the call to c_csvorod.
  */
+  printf("Before call to c_csvoro, num_points = %i5\n",num_points);
   c_csvorod(num_points, platd, plond, indexv,
             *((int *) datav[3]), rlatd, rlond, rcd,
             (int *) datav[7], (int *) datav[8], (int *) datav[9], &cserr);
