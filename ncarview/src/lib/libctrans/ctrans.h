@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ctrans.h,v 1.5 1993-01-12 20:10:52 clyne Exp $
+ *      $Id: ctrans.h,v 1.6 1993-06-02 23:54:51 clyne Exp $
  */
 /*
  *	File:		ctrans.h
@@ -179,13 +179,15 @@ void	CtransGraphicsMode(
 #endif
 );
 
+#ifdef	DEAD
 extern	int	CtransGetErrorNumber(
 #ifdef	NeedFuncProto
 #endif
 );
+#endif
 
 
-extern	char	*CtransGetErrorMessage(
+extern	const	char	*CtransGetErrorMessage(
 #ifdef	NeedFuncProto
 #endif
 );

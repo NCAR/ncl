@@ -1,5 +1,5 @@
 /*
- *      $Id: ctrans_api.c,v 1.18 1993-02-02 22:23:07 clyne Exp $
+ *      $Id: ctrans_api.c,v 1.19 1993-06-02 23:54:54 clyne Exp $
  */
 /*
  *	File:		ctrans_api.c
@@ -19,8 +19,8 @@
  *			further processing possible, WARN - warning, 
  *			EOM - end of metafile, or OK. If an error (FATAL 
  *			or WARN) is
- *			indicated the routines CtransGetErrorNumber() and
- *			CtransGetErrorMessage() may be useful.
+ *			indicated the routine CtransGetErrorMessage() 
+ *			may be useful.
  *
  *			CtransOpenBatch() needs to be invoked prior to any
  *			other routine.
@@ -36,7 +36,6 @@
 #include <ncarg/cgm_tools.h>
 #include "ctrans.h"
 #include "cgmc.h"
-#include "error.h"
 #include "defines.h"
 #include "devices.h"
 #include "ctrandef.h"
@@ -171,7 +170,10 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	 * gcap device
 	 */
 	if (! (gcap = getGcapname(device_name))) {
-		(void) CtransSetError_(ERR_NO_DEVICE);
+		ESprintf(
+			E_UNKNOWN, "Device (%s) unknown [ %s ]", 
+			device_name, ErrGetMsg()
+		);
 		return(FATAL);
 	}  
 
@@ -179,7 +181,10 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
          * inform ctrans of which output device to use
          */
         if ((int) SetDevice(gcap) < 0) {
-		(void) CtransSetError_(ERR_INIT_DEVICE);
+		ESprintf(
+			E_UNKNOWN, "Can't initialize device(%s) [ %s ]",
+			gcap, ErrGetMsg()
+		);
 		return(FATAL);
         }
 
@@ -189,7 +194,7 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	 * is destructive to dev_argc/dev_argv so pass a copy of the arg list
 	 */
 	if (! (dev_argv_ = (char **) malloc ((dev_argc+1) * sizeof (char *)))){
-		(void) CtransSetError_(errno);
+		ESprintf(errno, "malloc(%d)", (devic_argc+1) * sizeof (char*));
 		return(FATAL);
 	}
 	for (i=0; i<dev_argc; i++) {
@@ -202,7 +207,10 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	if (ParseOptionTable(
 		optionDesc, dev_argc, dev_argv, devices[currdev].opt) < 0) 
 	{
-		(void) CtransSetError_(ERR_INV_ARG);
+		ESprintf(
+			E_UNKNOWN, "Can't process device options [ %s ]",
+			ErrGetMsg()
+		);
 		return(FATAL);
 	}
 
@@ -210,7 +218,10 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	 * load the options into opt
 	 */
 	if (GetOptions(optionDesc, get_options) < 0) {
-		(void) CtransSetError_(ERR_INV_ARG);
+		ESprintf(
+			E_UNKNOWN,"GetOptions(%d,) [ %s ]",
+			optionDesc, ErrGetMsg()
+		);
 		return(FATAL);
 	}
 
@@ -234,7 +245,10 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 		 * no font, try and use default font
 		 */
 		if ((fcap = getFcapname(DEFAULTFONT)) == NULL) {
-			(void) CtransSetError_(ERR_NO_FONT);
+			ESprintf(
+				E_UNKNOWN, "Device (%s) unknown [ %s ]", 
+				device_name, ErrGetMsg()
+			);
 			return(FATAL);
 		}
 	}
@@ -243,7 +257,10 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	 * inform ctrans of which font to use
 	 */
 	if ((int) SetFont(fcap) < 0) {
-		(void) CtransSetError_(ERR_INIT_FONT);
+		ESprintf(
+			E_UNKNOWN, "Can't initialize font(%s) [ %s ]",
+			fcap, ErrGetMsg()
+		);
 		return(FATAL);
 	}
 
@@ -289,7 +306,7 @@ CtransRC	CtransSetMetafile(metafile)
 	 * make sure we've been initialized
 	 */
 	if (! initialized) {
-		(void) CtransSetError_(ERR_INV_STATE);
+		ESprintf(E_UNKNOWN, "ctrans not in proper state");
 		return(FATAL);
 	}
 
@@ -305,7 +322,7 @@ CtransRC	CtransSetMetafile(metafile)
 	 *      open the metafile
 	 */
 	if ((cgm_fd = CGM_open(metafile, 1440, "r")) < 0) {
-		(void) CtransSetError_(ERR_OPEN_META);
+		ESprintf(errno, "CGM_open(%s, 1440, r)", metafile);
 		return(FATAL);
 	}
 
@@ -322,8 +339,15 @@ CtransRC	CtransSetMetafile(metafile)
 	/*
 	 * get the first cgm element
 	 */
-	if (Instr_Dec(&cgmc) < 1) {
-		(void) CtransSetError_(ERR_PAR_META);
+	if ((status = Instr_Dec(&cgmc)) < 1) {
+		if (status == 0) {
+			ESprintf(E_UNKNOWN,"Premature end of metafile");
+		}
+		else {
+			ESprintf(E_UNKNOWN,
+				"Fetching CGM element [ %s ]", ErrGetMsg()
+			);
+		}
 		(void) CGM_close(cgm_fd);
 		cgm_fd = -1;
 		return(FATAL);
@@ -339,7 +363,7 @@ CtransRC	CtransSetMetafile(metafile)
 
 	}
 	else {
-		(void) CtransSetError_(ERR_INV_META);
+		ESprintf(E_UNKNOWN,"Metafile missing BEGIN METAFILE element");
 		(void) CGM_close(cgm_fd);
 		cgm_fd = -1;
 		return(FATAL);
@@ -365,7 +389,14 @@ CtransRC	CtransSetMetafile(metafile)
 	}
 
 	if (status < 1) {
-		(void) CtransSetError_(ERR_INV_META);
+		if (status == 0) {
+			ESprintf(E_UNKNOWN,"Premature end of metafile");
+		}
+		else {
+			ESprintf(E_UNKNOWN,
+				"Fetching CGM element [ %s ]", ErrGetMsg()
+			);
+		}
 		(void) CGM_close(cgm_fd);
 		cgm_fd = -1;
 		return(FATAL);
@@ -398,7 +429,7 @@ CtransRC	CtransPlotFrame()
 	 * make sure we've been initialized
 	 */
 	if (! initialized || cgm_fd == -1) {
-		(void) CtransSetError_(ERR_INV_STATE);
+		ESprintf(E_UNKNOWN, "ctrans not in proper state");
 		return(FATAL);
 	}
 
@@ -414,8 +445,7 @@ CtransRC	CtransPlotFrame()
 	 * current element better be a begin picture
 	 */
 	if (! (cgmc.class == DEL_ELEMENT && cgmc.command == BEG_PIC_ID)) {
-
-		(void) CtransSetError_(ERR_INV_STATE);
+		ESprintf(E_UNKNOWN, "BEGIN PICTURE element expected");
 		return(FATAL);
 	}
 	/* process the begin picture element	*/
@@ -441,7 +471,14 @@ CtransRC	CtransPlotFrame()
 	}
 
 	if (status < 1) {
-		(void) CtransSetError_(ERR_INV_META);
+		if (status == 0) {
+			ESprintf(E_UNKNOWN,"Premature end of metafile");
+		}
+		else {
+			ESprintf(E_UNKNOWN,
+				"Fetching CGM element [ %s ]", ErrGetMsg()
+			);
+		}
 		return(FATAL);
 	}
 
@@ -451,7 +488,14 @@ CtransRC	CtransPlotFrame()
 	 * an End MF
 	 */
 	if (Instr_Dec(&cgmc) < 1) {
-		(void) CtransSetError_(ERR_PAR_META);
+		if (status == 0) {
+			ESprintf(E_UNKNOWN,"Premature end of metafile");
+		}
+		else {
+			ESprintf(E_UNKNOWN,
+				"Fetching CGM element [ %s ]", ErrGetMsg()
+			);
+		}
 		return(FATAL);
 	}
 
@@ -472,7 +516,7 @@ CtransRC	CtransClearDisplay()
 	CGMC	temp_cgmc;
 
 	if (! initialized || cgm_fd == -1) {
-		(void) CtransSetError_(ERR_INV_STATE);
+		ESprintf(E_UNKNOWN, "ctrans not in proper state");
 		return(FATAL);
 	}
 
@@ -568,7 +612,7 @@ CtransRC	CtransLSeekBatch(offset, whence)
 		frame_count += offset;
 	}
 	else {
-		(void) CtransSetError_(ERR_INV_ARG);
+		ESprintf(EINVAL, "");
 		return(FATAL);
 	}
 
@@ -586,7 +630,14 @@ CtransRC	CtransLSeekBatch(offset, whence)
 	}
 
 	if (status < 1) {
-		(void) CtransSetError_(ERR_INV_META);
+		if (status == 0) {
+			ESprintf(E_UNKNOWN,"Premature end of metafile");
+		}
+		else {
+			ESprintf(E_UNKNOWN,
+				"Fetching CGM element [ %s ]", ErrGetMsg()
+			);
+		}
 		return(FATAL);
 	}
 
@@ -617,10 +668,12 @@ void	CtransGraphicsMode(on)
  *	A negative return value means the unix global variable 'errno' is 
  *	the absolute of the return value.
  */
+#ifdef	DEAD
 int	CtransGetErrorNumber()
 {
 	return(CtransGetErrorNumber_());
 }
+#endif
 
 
 /*
@@ -630,7 +683,7 @@ int	CtransGetErrorNumber()
  *	an error has been indicated by the return value of one of the other
  *	ctrans routines.
  */
-char	*CtransGetErrorMessage()
+const	char	*CtransGetErrorMessage()
 {
-	return(CtransGetErrorMessage_());
+	return(ErrGetMsg());
 }
