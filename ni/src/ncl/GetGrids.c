@@ -2482,6 +2482,7 @@ GribParamList* thevarrec;
 	int integer = 0;
 	int spherical_harm = 0;
 	int second_order = 0;
+	int complex_packing = 0;
 	int additional_flags = 0;
 	int sign;
 	unsigned char tmp[4];
@@ -2509,6 +2510,7 @@ GribParamList* thevarrec;
 	int n_2o;
 	int offset_1o;
 	int offset_2o;
+	int sum = 0;
 	
 
 
@@ -2538,6 +2540,11 @@ GribParamList* thevarrec;
 	integer = (int)(bds[3] & (char)0040) ? 1 : 0;
 	additional_flags = (bds[3] & (char)0020) ? 1 : 0;
 
+	if((spherical_harm)&&(therec->has_gds)) {
+        	complex_packing = CnvtToDecimal(1,&(therec->gds[13])) == 2 ? 1:0;
+	} else {
+		complex_packing = 0;
+	}
 
 	if(therec->version != 0) {
 		tmp[0] = (therec->pds[26] & (char)0177);
@@ -2665,46 +2672,165 @@ GribParamList* thevarrec;
 			}
 			*outdat = data;
 		}
-	} else if((spherical_harm)&&(second_order)){
-		if(integer) {
-			*missing_value= (void*)NclMalloc((unsigned)sizeof(int));
-			*(int*)(*missing_value) = DEFAULT_MISSING_INT;
-		} else {
-			*missing_value= (void*)NclMalloc((unsigned)sizeof(float));
-			*(float*)(*missing_value) = DEFAULT_MISSING_FLOAT;
-		}
-		offset_1o = UnsignedCnvtToDecimal(2,&bds[11]);
-		offset_2o = UnsignedCnvtToDecimal(2,&bds[14]);
-		n_1o = UnsignedCnvtToDecimal(2,&bds[16]);
-		n_2o = UnsignedCnvtToDecimal(2,&bds[18]);
-		if(additional_flags) {
-			secondary_bm = (int)(bds[13]&(char)0040);
-			constant_widths = (int)(bds[13]&(char)0020);
-			printbinary(*(int*)&bds[13]);
-		} else {
-			secondary_bm = 0;
-			constant_widths = 0;
-		}
-		for(i = 0; i < n_1o; i++) {
-			fprintf(stdout,"%d)\t%d\n",i,UnsignedCnvtToDecimal(1,&bds[i+21]));
-		}
-		for(i=offset_1o;i <offset_2o ; i+=4) {
-			fprintf(stdout,"%d)\t",i);
-			printbinary(*(int*)&bds[i]);
-		}
-
-
-
-/*
-		if(spherical_harm)
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"GribUnPack : Spherical Harmonics Detected can't un pack\n");
-		if(second_order)
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"GribUnPack : Second Order Detected can't un pack\n");
-		*outdat = NULL;
-		*missing_value = NULL;
-*/
 	} else if(spherical_harm) {
+		if(complex_packing) {
+			int nvals;
+			int ip,ii;
+			int j,k,m,sindex,packed_start;
+			int M,N;
+			int jmain,kmain,mmain;
+			int counter;
+			int mcounter;
+			int diff;
+			float *vals;
+			float *imvals;
+			float *tmpf,*tmpi;
+			float *factor;
+
+
+			if(integer) {
+				*missing_value= (void*)NclMalloc((unsigned)sizeof(int));
+				*(int*)(*missing_value) = DEFAULT_MISSING_INT;
+			} else {
+				*missing_value= (void*)NclMalloc((unsigned)sizeof(float));
+				*(float*)(*missing_value) = DEFAULT_MISSING_FLOAT;
+			}
+			offset_1o = UnsignedCnvtToDecimal(2,&bds[11]) - therec->bds_off;
+			ip = UnsignedCnvtToDecimal(2,&bds[13]);
+			j = (int)bds[15];
+			k = (int)bds[16];
+			m = (int)bds[17];
+			nvals = (offset_1o - 18)/4;
+			jmain = UnsignedCnvtToDecimal(2,&(therec->gds[6]));
+			kmain = UnsignedCnvtToDecimal(2,&(therec->gds[8]));
+			mmain = UnsignedCnvtToDecimal(2,&(therec->gds[10]));
+			if((j==k)&&(k==m)&&(jmain==kmain)&&(kmain==mmain)) {
+				factor = malloc(sizeof(float)*(kmain+1));
+/*
+* compute number of values  in the unpcacked portion
+*/
+				counter =  (m+1)*(m+2)/2;
+				mcounter = (mmain +1)*(mmain+2)/2;
+				factor[0] = 1;
+				for(i = 1; i < mmain+1; i++) {
+					factor[i] = 1.0/pow((double)(i * (i+1)),(double)ip/1000.0);
+				}
+				if(*outdat == NULL) {
+					*outdat = vals = (float*)calloc(2*(jmain+1)*(jmain+1),sizeof(float));
+					imvals = &(vals[(jmain+1)*(jmain+1)]);
+                                } else {
+                                        vals = *outdat;
+/*
+					memset(vals,0,2*(jmain+1)*(jmain+1)*sizeof(float));
+*/
+					imvals = &(vals[(jmain+1)*(jmain+1)]);
+                                }
+	
+				
+				
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"GenericUnPack: NCL has encountered a truncation scheme it can't handle, please report this");
+				return(integer);
+			}
+
+			sindex = 18;
+			diff = (jmain+1) - (j+1);
+			N = 0;
+			M = 0;
+			for( i = counter;i>0; i--) {
+				sign  = (bds[sindex] & (char) 0200)? 1 : 0;
+/*
+* Compute exponent GRIB docs specify 7 bit exponent
+*/
+				tmpa = (float)(bds[sindex++] & (char)0177);
+/*
+* Compute mantisa GRIB docs specify 24 bit mantisa no hidden bit
+*/
+				tmpb = (float)CnvtToDecimal(3,&(bds[sindex]));
+				sindex+=3;
+
+				vals[N*(jmain+1)+M] = tmpb;
+				vals[N*(jmain+1)+M] *= (float)pow(2.0,-24.0);
+				vals[N*(jmain+1)+M] *= 2.0*(float)pow(16.0,(double)(tmpa - 64));
+				if(sign) {
+					vals[N*(jmain+1)+M] = -vals[N*(jmain+1)+M];
+				}
+			
+				sign  = (bds[sindex] & (char) 0200)? 1 : 0;
+/*
+* Compute exponent GRIB docs specify 7 bit exponent
+*/
+				tmpa = (float)(bds[sindex++] & (char)0177);
+/*
+* Compute mantisa GRIB docs specify 24 bit mantisa no hidden bit
+*/
+				tmpb = (float)CnvtToDecimal(3,&(bds[sindex]));
+				sindex+=3;
+
+				imvals[N*(jmain+1)+M] = tmpb;
+				imvals[N*(jmain+1)+M] *= (float)pow(2.0,-24.0);
+				imvals[N*(jmain+1)+M] *= 2.0*(float)pow(16.0,(double)(tmpa - 64));
+				if(sign) {
+					imvals[N*(jmain+1)+M] = -imvals[N*(jmain+1)+M];
+				}
+				if(N==(j)) {
+					vals[N*(jmain+1)+M] *= factor[N];
+					imvals[N*(jmain+1)+M] *= factor[N];
+					M++;
+					N = M;
+				} else {
+					N++;
+				}
+			}
+/*
+* sindex should be pointing to begining of packed data
+*/ 
+			packed_start = sindex;
+			M = 0;
+			N = m+1;
+			bboff = 0;	
+			index = 0;
+			tbits = 0;
+			total = (int)(((therec->bds_size - packed_start)*8 -unused_bits)/number_of_bits);
+			for(i=0;i<mcounter-counter;i++)  {
+				X = UnsignedCnvtToDecimal(4,&(bds[sindex]));
+				X = X << bboff;
+				X = X >> (isize - number_of_bits);
+				vals[N*(jmain+1)+M] = (float)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
+				vals[N*(jmain+1)+M] *= 2.0*factor[N];
+				tbits += number_of_bits;
+				sindex = (int)(tbits/8.0) + packed_start;
+				bboff = tbits % 8;
+
+				X = UnsignedCnvtToDecimal(4,&(bds[sindex]));
+				X = X << bboff;
+				X = X >> (isize - number_of_bits);
+				imvals[N*(jmain+1)+M] = (float)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
+				imvals[N*(jmain+1)+M] *= 2.0*factor[N];
+				tbits += number_of_bits;
+				sindex = (int)(tbits/8.0) + packed_start;
+				bboff = tbits % 8;
+				
+				if(N==(jmain)) {
+					M++;
+					if(M>m) {
+						  N = M;
+					} else {
+						N = m+1;
+					}
+				} else {
+					N++;
+				}
+
+			}
+/*
+* sindex now points to begining of packed data
+*/
+		} else{
+			*outdat = NULL;
+		}
 	} else {
+			*outdat = NULL;
 	}
 	NclFree(bds);
 	NclFree(bms);

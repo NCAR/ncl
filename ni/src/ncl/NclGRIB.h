@@ -70,7 +70,7 @@ struct _NclGribCacheList {
 	int has_gds;
 	int grid_gds_tbl_index;
 	int n_dims;
-	int dimsizes[2];
+	int dimsizes[3];
 	int n_entries;
 	struct _NclGribCacheList *next;
 	struct _NclGribCacheRec *thelist;
@@ -87,6 +87,7 @@ struct _NclGribCacheRec {
 struct _NclGribFVarRec {
         NclQuark var_name_quark;
         NclBasicDataTypes data_type;
+	int 	doff;
         int     num_dimensions;
         int     dim_sizes[NCL_MAX_DIMENSIONS];
         int     file_dim_num[NCL_MAX_DIMENSIONS];
