@@ -25,7 +25,7 @@ C
 
       integer appid, wid, pid
       integer srlist, grlist,ierr
-      integer m,i
+      integer i
       integer NCGM
 C
 C Default is to create a metafile.

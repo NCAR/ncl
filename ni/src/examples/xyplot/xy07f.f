@@ -1,5 +1,5 @@
 C
-C      $Id: xy07f.f,v 1.3 1995-05-16 15:50:25 haley Exp $
+C      $Id: xy07f.f,v 1.4 1995-05-24 18:00:24 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -35,8 +35,7 @@ C
       real xdra(NPTS), ydra(NPTS)
 
       integer appid,xworkid,plotid,dataid(2)
-      integer list, i, j, len(2)
-      real x
+      integer i, j, len(2)
       real cmap(3,4)
       character*10 datastr
       integer NCGM

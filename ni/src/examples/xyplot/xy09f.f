@@ -1,5 +1,5 @@
 C     
-C      $Id: xy09f.f,v 1.1 1995-05-03 21:39:49 haley Exp $
+C      $Id: xy09f.f,v 1.2 1995-05-24 18:00:25 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -34,7 +34,7 @@ C
       parameter(PI100=.031415926535898)
 
       integer appid,xworkid,plotid,dataid
-      integer rlist, i, j
+      integer rlist, i
       character*8 plot_name
 C
 C Create data arrays for XyPlot.

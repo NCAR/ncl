@@ -1,5 +1,5 @@
 C
-C $Id: basic05f.f,v 1.7 1995-05-15 17:16:33 scheitln Exp $
+C $Id: basic05f.f,v 1.8 1995-05-24 17:58:58 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -32,7 +32,7 @@ C
       external NhlFLabelBarClass
       external NhlFTextItemClass
 
-      integer i,j,ierr
+      integer i, ierr
       integer num_dims,len_dims(2)
       integer appid,wks,lbar,rlist,glist,text
       integer NCGM
