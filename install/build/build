@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: build,v 1.12 1994-04-20 19:24:51 haley Exp $
+#      $Id: build,v 1.13 1995-04-20 16:22:00 haley Exp $
 #
 #########################################################################
 #									#
@@ -172,14 +172,11 @@ sub	create_tars {
 
 	local($cmd, $dir, $tar, $DIR, $format);
 
-	if ($system eq "AIX_RS6000") {
-		$format = "/bin/tar -c -b 20 -f %s %s";
-	}
-	elsif ($system eq "UNICOS_YMP") {
+	if ($system eq "UNICOS_YMP") {
 		$format = "/bin/tar -cfb %s 20 %s";
 	}
 	else {
-		$format = "/bin/tar -cbf 20 %s %s";
+		$format = "/bin/tar cbf 20 %s %s";
 	}
 
 	foreach $dir (@dirs) {
@@ -236,16 +233,16 @@ $Version; 				# NCAR G version number
 $sizesFile; 				# path to size requirements file
 $do_quick = 0;				# make Everything?
 $do_nomake = 0;				# skip NCAR G compile
-$install_dir = "INSTALL";		# where the INSTALL script lives
-%configFiles = (			# map sys type to config file name
-	'HPUX_HP9000_7xx', 	'HPUX_snake',
-	'AIX_RS6000', 		'AIX_RS6000',
-	'SunOS_sun4', 		'Sun4',
-	'Solaris_sun4',		'Sun4Solaris',
-	'ULTRIX_RISC',		'DECRISC',
-	'IRIX_IP',		'SGI4D',
-	'OSF1_alpha',		'AlphaOSF1',
-	'UNICOS_YMP',		'Cray'
+$install_dir = "INSTALL";       # where the INSTALL script lives
+%configFiles = (            # map sys type to config file name
+    'HPUX_HP9000_7xx',  'HPUX_snake',
+    'AIX_RS6000',       'AIX_RS6000',
+    'SunOS_sun4',       'Sun4',
+    'Solaris_sun4',     'Sun4Solaris',
+    'ULTRIX_RISC',      'DECRISC',
+    'IRIX_IP',          'SGI4D',
+    'OSF1_alpha',       'AlphaOSF1',
+    'UNICOS_YMP',       'Cray'
 	);
 
 $SIG{'INT'} = 'sigint_handler';
