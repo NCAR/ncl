@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.c,v 1.14 1996-12-20 21:21:13 ethan Exp $
+ *      $Id: NclData.c,v 1.15 1998-09-16 23:14:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -647,6 +647,36 @@ NclStatus status;
 		return("Unknown status");
 	}
 }
+void _NclFreeConstants
+#if	NhlNeedProto
+(int num)
+#else
+(num)
+int num;
+#endif
+{
+	int i;
+	NclObjList *tmp;
+
+	if(current_id > 0) {	
+		for(i = 0; i < num; i++) {
+			if(objs[i % current_size].id == i) {
+				_NclDestroyObj((NclObj)objs[i%current_size].theobj);
+			} else {
+				tmp = objs[i%current_size].next;
+				while(tmp != NULL) {
+					if(tmp->id == i) {
+						_NclDestroyObj((NclObj)tmp->theobj);
+						break;
+					}
+					tmp = tmp->next;
+				}
+				
+			}
+		}
+	}
+}
+
 void _NclPrintUnfreedObjs
 #if	NhlNeedProto
 (FILE *fp)
