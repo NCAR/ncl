@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: idt.m,v 1.14 1993-05-04 22:03:50 haley Exp $
+.\"	$Id: idt.m,v 1.15 1994-03-08 00:49:30 clyne Exp $
 .\"
 .\" NCAR View: idt.man,v 1.0 89/09/10 clyne 
 .\" Revision 3.01 90/11/15 clyne
@@ -481,8 +481,15 @@ or
 command is severely limited by Xlibs use of 'short' integers
 for containing screen coordinate data.
 .PP
-SGI users should not set use the shared memory connection to their
+IRIX 4.x users should not set use the shared memory connection to their
 X server. i.e don't use the display shm:0.
+.PP
+Background color changes don't work when 
+.B idt
+is in animate mode. 
+.B idt
+will use whatever color was most recently set in the animation segment
+for the entire segment.
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
