@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.13 1993-09-24 21:09:48 kennison Exp $
+.\"	$Id: ncargex.m,v 1.14 1993-10-25 15:10:39 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "March 1993" NCAR "NCAR GRAPHICS"
@@ -276,8 +276,8 @@ listed according to which utility they belong with:
 .I "HALFTONE Example:"
     thafto
 .sp
-.I "HISTOGRAM Example:"
-    thstgr
+.I "HISTOGRAM Examples:"
+    thstgr thstmv
 .sp
 .I "ISOSRFHR Example:"
     tisohr
