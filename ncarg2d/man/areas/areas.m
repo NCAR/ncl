@@ -62,81 +62,101 @@ execution.  It is possible to put SETER into recovery mode and
 regain control after a recoverable error (which includes almost
 all of the possible errors).
 .sp
-The possible error messages are listed below.  Unless otherwise indicated,
-these errors are recoverable.
+The possible error messages are listed below.  All errors are recoverable
+in the sense that a user program which has called ENTSR to set recovery
+mode will get control back after one of these errors occurs.
+.sp
+ARDBDA/XXXXXX (where XXXXXX is an error message from PLCHLQ or PLOTIF)
+.sp
+ARDBPA - BAD POINTERS IN AREA MAP
+.sp
+ARDBPA - ERROR EXIT FROM GQPLCI
+.sp
+ARDBPA - ERROR EXIT FROM GQTXCI
 .sp
 ARDBPA - INITIALIZATION DONE IMPROPERLY
 .sp
-ARDBPA - BAD POINTERS IN AREA MAP (fatal)
-.sp
-ARDRLN - INITIALIZATION DONE IMPROPERLY
-.sp
-ARDRLN/XXXXXX, where XXXXXX is an ARPRAM error message.  This error message
-indicates an error during an ARPRAM call done by ARDRLN.
+ARDBPA/XXXXXX (where XXXXXX is an error message from ARDBDA, FRAME, GETSET,
+PLCHLQ, PLOTIF, or SET)
 .sp
 ARDRLN - ALGORITHM FAILURE
 .sp
+ARDRLN - INITIALIZATION DONE IMPROPERLY
+.sp
 ARDRLN - MAI TOO SMALL
 .sp
-AREDAM - INITIALIZATION DONE IMPROPERLY
+ARDRLN/XXXXXX (where XXXXXX is an error message from ARMPIA, ARPRAM, GETSET,
+LPR, or SET)
 .sp
 AREDAM - AREA-MAP ARRAY OVERFLOW
 .sp
-ARGETI - PARAMETER NAME TOO SHORT - x
+AREDAM - INITIALIZATION DONE IMPROPERLY
 .sp
-ARGETI - PARAMETER NAME NOT KNOWN - xx
+AREDAM/XXXXXX (where XXXXXX is an error message from GETSET)
 .sp
-ARGETR - PARAMETER NAME TOO SHORT - x
+ARGETI - PARAMETER NAME NOT KNOWN - X
 .sp
-ARGETR - PARAMETER NAME NOT KNOWN - xx
+ARGETI - PARAMETER NAME TOO SHORT - X
 .sp
-ARGTAI - INITIALIZATION DONE IMPROPERLY
+ARGETI/XXXXXX (where XXXXXX is an error message from ARINIT)
 .sp
-ARGTAI/XXXXXX, where XXXXXX is an ARPRAM error message.  This error message
-indicates an error during an ARPRAM call done by ARDRLN.
+ARGETR - PARAMETER NAME NOT KNOWN - X
 .sp
-ARGTAI - MAI TOO SMALL
+ARGETR - PARAMETER NAME TOO SHORT - X
+.sp
+ARGETR/XXXXXX (where XXXXXX is an error message from ARINIT)
 .sp
 ARGTAI - ALGORITHM FAILURE
 .sp
-ARINAM - AREA-MAP ARRAY IS TOO SMALL (fatal)
+ARGTAI - INITIALIZATION DONE IMPROPERLY
 .sp
-ARINIT - VALUE OF 'LC' IS TOO LARGE (fatal)
+ARGTAI - MAI TOO SMALL
 .sp
-ARMPIA - MULTIPLE-PRECISION QUANTITY TOO BIG (fatal)
+ARGTAI/XXXXXX (where XXXXXX is an error message from ARPRAM or GETSET)
+.sp
+ARINAM - AREA-MAP ARRAY IS TOO SMALL
+.sp
+ARINAM/XXXXXX (where XXXXXX is an error message from ARINIT)
+.sp
+ARINIT - VALUE OF 'LC' IS TOO LARGE
+.sp
+ARMPIA - MULTIPLE-PRECISION QUANTITY IS TOO BIG
 .sp
 ARMVAM - INITIALIZATION DONE IMPROPERLY
 .sp
 ARMVAM - NEW AREA-MAP ARRAY IS TOO SMALL
 .sp
+ARPRAM - ALGORITHM FAILURE
+.sp
+ARPRAM - AREA-MAP ARRAY OVERFLOW
+.sp
 ARPRAM - INITIALIZATION DONE IMPROPERLY
 .sp
 ARPRAM - NO EDGES IN AREA MAP
 .sp
-ARPRAM - AREA-MAP ARRAY OVERFLOW
-.sp
-ARPRAM - ALGORITHM FAILURE
-.sp
-ARSCAM - INITIALIZATION DONE IMPROPERLY
-.sp
-ARSCAM/XXXXXX, where XXXXXX is an ARPRAM error message.  This error message
-indicates an error during an ARPRAM call done by ARDRLN.
+ARPRAM/XXXXXX (where XXXXXX is an error message from ARDBPA or ARMPIA)
 .sp
 ARSCAM - ALGORITHM FAILURE
 .sp
-ARSCAM - MCS TOO SMALL
+ARSCAM - AREA-MAP ARRAY OVERFLOW
+.sp
+ARSCAM - INITIALIZATION DONE IMPROPERLY
 .sp
 ARSCAM - MAI TOO SMALL
 .sp
-ARSCAM - AREA-MAP ARRAY OVERFLOW
+ARSCAM - MCS TOO SMALL
 .sp
-ARSETI - PARAMETER NAME TOO SHORT - x
+ARSCAM/XXXXXX (where XXXXXX is an error message from APR, ARMPIA, ARPRAM,
+GETSET, or SET)
 .sp
-ARSETI - PARAMETER NAME NOT KNOWN - xx
+ARSETI - PARAMETER NAME NOT KNOWN - X
 .sp
-ARSETR - PARAMETER NAME TOO SHORT - x
+ARSETI - PARAMETER NAME TOO SHORT - X
 .sp
-ARSETR - PARAMETER NAME NOT KNOWN - xx
+ARSETR - PARAMETER NAME NOT KNOWN - X
+.sp
+ARSETR - PARAMETER NAME TOO SHORT - X
+.sp
 .SH SEE ALSO
 Online:
 areas_params, ardbpa, ardrln, aredam, argeti, argetr, argtai, arinam,
