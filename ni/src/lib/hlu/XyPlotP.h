@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlotP.h,v 1.3 1993-10-19 17:53:36 boote Exp $
+ *      $Id: XyPlotP.h,v 1.4 1993-11-10 01:19:48 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -86,6 +86,9 @@ typedef struct _XyPlotLayerPart {
 	TitlePositions 		ti_main_position;
 	TitlePositions		ti_x_axis_position;
 	TitlePositions		ti_y_axis_position;
+
+	float			x_tension;
+	float			y_tension;
 
 	/* Private fields */
 	Layer		ticks;

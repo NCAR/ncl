@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMarkP.h,v 1.2 1993-10-19 17:52:41 boote Exp $
+ *      $Id: TickMarkP.h,v 1.3 1993-11-10 01:19:36 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -43,6 +43,8 @@ typedef struct _TickMarkLayerPart {
 	TickMarkModes	x_t_mode;
 	TickMarkStyles	x_b_style;
 	TickMarkStyles	x_t_style;
+	float		x_t_tension;
+	float		x_b_tension;
 	int		x_b_precision;
 	int		x_t_precision;
 	float		border_thickness;
@@ -130,6 +132,8 @@ typedef struct _TickMarkLayerPart {
 	TickMarkModes	y_l_mode;
 	TickMarkStyles	y_l_style;
 	TickMarkStyles	y_r_style;
+	float		y_l_tension;
+	float		y_r_tension;
 	int		y_l_precision;
 	int		y_r_precision;
 	int		y_major_grid;

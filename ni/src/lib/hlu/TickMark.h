@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.h,v 1.2 1993-10-19 17:52:39 boote Exp $
+ *      $Id: TickMark.h,v 1.3 1993-11-10 01:19:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -54,6 +54,8 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 #define NhlNtmXTMode		"tmXTMode"
 #define NhlNtmXBStyle 		"tmXBStyle"
 #define NhlNtmXTStyle 		"tmXTStyle"
+#define NhlNtmXBIrrTensionF	"tmXBIrrTensionF"
+#define NhlNtmXTIrrTensionF	"tmXTIrrTensionF"
 #define NhlNtmXBPrecision	"tmXBPrecision"
 #define NhlNtmXTPrecision	"tmXTPrecision"
 
@@ -209,6 +211,8 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 #define NhlNtmYRMode		"tmYRMode"
 #define NhlNtmYLStyle 		"tmYLStyle"
 #define NhlNtmYRStyle 		"tmYRStyle"
+#define NhlNtmYLIrrTensionF	"tmYLIrrTensionF"
+#define NhlNtmYRIrrTensionF	"tmYRIrrTensionF"
 #define NhlNtmYLPrecision	"tmYLPrecision"
 #define NhlNtmYRPrecision	"tmYRPrecision"
 
@@ -410,6 +414,8 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 #define NhlCtmXTMode		"TmXTMode"
 #define NhlCtmXBStyle 		"TmXBStyle"
 #define NhlCtmXTStyle 		"TmXTStyle"
+#define NhlCtmXBIrrTensionF	"TmXBIrrTensionF"
+#define NhlCtmXTIrrTensionF	"TmXTIrrTensionF"
 #define NhlCtmXMajorGrid		"TmXMajorGrid"
 #define NhlCtmXMinorGrid		"TmXMinorGrid"
 #define NhlCtmXBNoMinor		"TmXBNoMinor"
@@ -449,6 +455,8 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 #define NhlCtmYRMode		"TmYRMode"
 #define NhlCtmYLStyle 		"TmYLStyle"
 #define NhlCtmYRStyle 		"TmYRStyle"
+#define NhlCtmYLIrrTensionF	"TmYLIrrTensionF"
+#define NhlCtmYRIrrTensionF	"TmYRIrrTensionF"
 #define NhlCtmYMajorGrid		"TmYMajorGrid"
 #define NhlCtmYMinorGrid		"TmYMinorGrid"
 #define NhlCtmYLNoMinor		"TmYLNoMinor"

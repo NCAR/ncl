@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.3 1993-10-19 17:50:55 boote Exp $
+ *      $Id: IrregularTransObj.c,v 1.4 1993-11-10 01:19:07 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -59,13 +59,19 @@ static NhlResource resources[] = {
 	{ NhlNtrXInterPoints,NhlCtrXInterPoints,NhlTFloatPtr,sizeof(float*),
 		NhlOffset(IrregularTransObjLayerRec,irtrans.x_inter_points),
 		NhlTFloatPtr,NULL },
+	{ NhlNtrXMaxF, NhlCtrXMaxF, NhlTFloat, sizeof(float),
+                NhlOffset(IrregularTransObjLayerRec,irtrans.x_max),
+                NhlTString, "0.0" },
+        { NhlNtrXMinF, NhlCtrXMinF, NhlTFloat, sizeof(float),
+                NhlOffset(IrregularTransObjLayerRec,irtrans.x_min),
+                NhlTString, "0.0" },
 	{ NhlNtrXNumPoints,NhlCtrXNumPoints,NhlTInteger,sizeof(int),
 		NhlOffset(IrregularTransObjLayerRec,irtrans.x_num_points),
 		NhlTString,"0" },
 	{ NhlNtrXReverse, NhlCtrXReverse, NhlTInteger,sizeof(int),
 		NhlOffset(IrregularTransObjLayerRec,irtrans.x_reverse),
 		NhlTString,"0" },
-	{ NhlNtrXTension, NhlCtrXTension, NhlTFloat, sizeof(float),
+	{ NhlNtrXTensionF, NhlCtrXTensionF, NhlTFloat, sizeof(float),
 		NhlOffset(IrregularTransObjLayerRec,irtrans.x_tension),
 		NhlTString,"2.0" },
 	{ NhlNtrXSamples, NhlCtrXSamples, NhlTInteger, sizeof(int),
@@ -80,13 +86,19 @@ static NhlResource resources[] = {
 	{ NhlNtrYInterPoints,NhlCtrYInterPoints,NhlTFloatPtr,sizeof(float*),
 		NhlOffset(IrregularTransObjLayerRec,irtrans.y_inter_points),
 		NhlTFloatPtr,NULL },
+	{ NhlNtrYMaxF, NhlCtrYMaxF, NhlTFloat, sizeof(float),
+                NhlOffset(IrregularTransObjLayerRec,irtrans.y_max),
+                NhlTString, "0.0" },
+        { NhlNtrYMinF, NhlCtrYMinF, NhlTFloat, sizeof(float),
+                NhlOffset(IrregularTransObjLayerRec,irtrans.y_min),
+                NhlTString, "0.0" },
 	{ NhlNtrYNumPoints,NhlCtrYNumPoints,NhlTInteger,sizeof(int),
 		NhlOffset(IrregularTransObjLayerRec,irtrans.y_num_points),
 		NhlTString,"0" },
 	{ NhlNtrYReverse, NhlCtrYReverse, NhlTInteger,sizeof(int),
 		NhlOffset(IrregularTransObjLayerRec,irtrans.y_reverse),
 		NhlTString,"0" },
-	{ NhlNtrYTension, NhlCtrYTension, NhlTFloat, sizeof(float),
+	{ NhlNtrYTensionF, NhlCtrYTensionF, NhlTFloat, sizeof(float),
 		NhlOffset(IrregularTransObjLayerRec,irtrans.y_tension),
 		NhlTString,"2.0" },
 	{ NhlNtrYSamples, NhlCtrYSamples, NhlTInteger, sizeof(int),
@@ -219,6 +231,8 @@ float* /*ymissing*/
 #endif
 );
 
+#define CREATE  1
+#define SET 0
 
 
 IrregularTransObjLayerClassRec irregularTransObjLayerClassRec = {
@@ -264,6 +278,195 @@ LayerClass irregularTransObjLayerClass = (LayerClass)&irregularTransObjLayerClas
 
 
 
+static SetUpTrans
+#if __STDC__
+(Layer new, Layer old, int c_or_s,_NhlArgList args, int nargs)
+#else
+(new,old,c_or_s,args, nargs)
+        Layer   new;
+        Layer   old;
+        int c_or_s;
+        _NhlArgList args;
+        int nargs;
+#endif
+{
+	IrregularTransObjLayer inew = (IrregularTransObjLayer)new;
+	IrregularTransObjLayer iold = (IrregularTransObjLayer)old;
+	NhlErrorTypes ret = NOERROR;
+	float tmp;
+	float *tmpptr;
+	Status xstatus,ystatus;
+	char buffer[80];
+	char *error_lead;
+	int call_spline_create;
+
+	if(c_or_s == SET) {
+		error_lead = "IrTransSetValues";
+		call_spline_create = 0;
+	} else {
+		error_lead = "IrTransInitialize";
+		call_spline_create = 1;
+	}
+
+
+	if((inew->irtrans.x_coord_points == NULL)||
+			(inew->irtrans.y_coord_points==NULL)||
+			(inew->irtrans.x_num_points < 2)||
+			(inew->irtrans.y_num_points < 2)) {
+		if(c_or_s == CREATE ) {
+		sprintf(buffer, "%s: Not enough information to set up transformations",error_lead);
+		NhlPError(FATAL,E_UNKNOWN,buffer);
+			
+		return(FATAL);
+		} else {
+			memcpy((char*)&inew->irtrans,(char*)&iold->irtrans,
+                                sizeof(IrregularTransObjLayerPart));
+                        NhlPError(WARNING,E_UNKNOWN,"%s: Not enough information to set up transformations, reseting to previous values",error_lead);
+                        return(WARNING);
+		}
+	} else {
+		if(c_or_s == SET) {
+			if(_NhlArgIsSet(args,nargs,NhlNtrXCoordPoints)) {
+				call_spline_create = 1;
+				if(iold->irtrans.x_coord_points != NULL) {
+					NhlFree(iold->irtrans.x_coord_points);
+				}
+				tmpptr = inew->irtrans.x_coord_points;
+				inew->irtrans.x_coord_points 
+					= (float*)NhlMalloc((unsigned)
+					sizeof(float) * (inew->irtrans.x_num_points));
+				memcpy((char*)inew->irtrans.x_coord_points,
+					(char*)tmpptr,sizeof(float)*inew->irtrans.x_num_points);
+			}
+			if(_NhlArgIsSet(args,nargs,NhlNtrYCoordPoints)) {
+				call_spline_create = 1;
+				if(iold->irtrans.y_coord_points != NULL) {
+					NhlFree(iold->irtrans.y_coord_points);
+				}
+				tmpptr = inew->irtrans.y_coord_points;
+				inew->irtrans.y_coord_points 
+					= (float*)NhlMalloc((unsigned)
+					sizeof(float) * (inew->irtrans.y_num_points));
+				memcpy((char*)inew->irtrans.y_coord_points,
+					(char*)tmpptr,sizeof(float)*inew->irtrans.y_num_points);
+			}
+		} else {
+			tmpptr = inew->irtrans.x_coord_points;
+			inew->irtrans.x_coord_points = (float*)NhlMalloc((unsigned)
+					sizeof(float) *(inew->irtrans.x_num_points));
+			memcpy((char*)inew->irtrans.x_coord_points,
+				(char*)tmpptr,
+				sizeof(float)*inew->irtrans.x_num_points);
+
+			tmpptr = inew->irtrans.y_coord_points;
+			inew->irtrans.y_coord_points = (float*)NhlMalloc((unsigned)
+					sizeof(float) *(inew->irtrans.y_num_points));
+			memcpy((char*)inew->irtrans.y_coord_points,
+				(char*)tmpptr,
+				sizeof(float)*inew->irtrans.y_num_points);
+
+		}
+		if((inew->irtrans.x_min == 0.0)&&
+                        (inew->irtrans.x_max == 0.0)) {
+                        inew->irtrans.x_min = MIN(inew->irtrans.x_coord_points[0],inew->irtrans.x_coord_points[inew->irtrans.x_num_points-1]);
+                        inew->irtrans.x_max = MAX(inew->irtrans.x_coord_points[0],inew->irtrans.x_coord_points[inew->irtrans.x_num_points-1]);
+                } else if(inew->irtrans.x_min > inew->irtrans.x_max) {
+                        tmp = inew->irtrans.x_min;
+                        inew->irtrans.x_min = inew->irtrans.x_max;
+                        inew->irtrans.x_max = tmp;
+                }
+                if(inew->irtrans.x_min < MIN(inew->irtrans.x_coord_points[0],inew->irtrans.x_coord_points[inew->irtrans.x_num_points-1])) {
+                        NhlPError(WARNING,E_UNKNOWN,"%s: Minimum value is less than minimum value of coordinate points array, resetting to minimum",error_lead);
+                        inew->irtrans.x_min = MIN(inew->irtrans.x_coord_points[0],inew->irtrans.x_coord_points[inew->irtrans.x_num_points-1]);
+                }
+                if(inew->irtrans.x_max > MAX(inew->irtrans.x_coord_points[0],inew->irtrans.x_coord_points[inew->irtrans.x_num_points-1])) {
+                        NhlPError(WARNING,E_UNKNOWN,"%s: Maximum value is greater than maximum value of coordinate points array, resetting to maximum",error_lead);
+                        inew->irtrans.x_max = MAX(inew->irtrans.x_coord_points[0],inew->irtrans.x_coord_points[inew->irtrans.x_num_points-1]);
+                }
+                if((inew->irtrans.y_min == 0.0)&&
+                        (inew->irtrans.y_max == 0.0)) {
+                        inew->irtrans.y_min = MIN(inew->irtrans.y_coord_points[0],inew->irtrans.y_coord_points[inew->irtrans.y_num_points-1]);
+                        inew->irtrans.y_max = MAX(inew->irtrans.y_coord_points[0],inew->irtrans.y_coord_points[inew->irtrans.y_num_points-1]);
+                } else if(inew->irtrans.y_min > inew->irtrans.y_max) {
+                        tmp = inew->irtrans.y_min;
+                        inew->irtrans.y_min = inew->irtrans.y_max;
+                        inew->irtrans.y_max = tmp;
+                }
+                if(inew->irtrans.y_min < MIN(inew->irtrans.y_coord_points[0],inew->irtrans.y_coord_points[inew->irtrans.y_num_points-1])) {
+                        NhlPError(WARNING,E_UNKNOWN,"%s: Minimum value is less than minimum value of coordinate points array, resetting to minimum",error_lead);
+                        inew->irtrans.y_min = MIN(inew->irtrans.y_coord_points[0],inew->irtrans.y_coord_points[inew->irtrans.y_num_points-1]);
+                }
+                if(inew->irtrans.y_max > MAX(inew->irtrans.y_coord_points[0],inew->irtrans.y_coord_points[inew->irtrans.y_num_points-1])) {
+                        NhlPError(WARNING,E_UNKNOWN,"%s: Maximum value is greater than maximum value of coordinate points array, resetting to maximum",error_lead);
+                        inew->irtrans.y_max = MAX(inew->irtrans.y_coord_points[0],inew->irtrans.y_coord_points[inew->irtrans.y_num_points-1]);
+		}
+	}
+	if(_NhlArgIsSet(args,nargs,NhlNtrXInterPoints)) {
+		if((c_or_s==SET) &&(iold->irtrans.x_inter_points != NULL)) {
+			NhlFree(iold->irtrans.x_inter_points);
+		}
+		tmpptr = inew->irtrans.x_inter_points;
+		inew->irtrans.x_inter_points = (float*)NhlMalloc((unsigned)
+				sizeof(float) * (inew->irtrans.x_num_points));
+		memcpy((char*)inew->irtrans.x_inter_points,
+			(char*)tmpptr,
+			sizeof(float)*inew->irtrans.x_num_points);
+		call_spline_create = 1;
+	} 
+	if((inew->irtrans.y_inter_points != NULL)) { 
+		if((c_or_s==SET) &&(iold->irtrans.x_inter_points != NULL)) {
+			NhlFree(iold->irtrans.x_inter_points);
+		}
+		tmpptr = inew->irtrans.y_inter_points;
+		inew->irtrans.y_inter_points = 
+			(float*)NhlMalloc((unsigned) sizeof(float) 
+			* (inew->irtrans.y_num_points)); 
+		memcpy((char*)inew->irtrans.y_inter_points, 
+			(char*)inew->irtrans.y_inter_points,
+			sizeof(float)*inew->irtrans.y_num_points);
+		call_spline_create = 1;
+	} 
+
+	inew->irtrans.ul = inew->irtrans.x_min;
+	inew->irtrans.ur = inew->irtrans.x_max;
+	inew->irtrans.ub = inew->irtrans.y_min;
+	inew->irtrans.ut = inew->irtrans.y_max;
+
+	if(inew->irtrans.x_reverse) {
+		tmp = inew->irtrans.ur;
+		inew->irtrans.ur = inew->irtrans.ul;
+		inew->irtrans.ul = tmp;
+	}
+	if(inew->irtrans.y_reverse) {
+		tmp = inew->irtrans.ut;
+		inew->irtrans.ut = inew->irtrans.ub;
+		inew->irtrans.ub = tmp;
+	}
+	if((c_or_s == SET)&&(inew->irtrans.y_tension !=
+                iold->irtrans.y_tension)) {
+                call_spline_create = 1;
+        }
+        if((c_or_s == SET)&&(inew->irtrans.x_tension !=
+                iold->irtrans.x_tension)) {
+                call_spline_create = 1;
+        }
+
+	if(call_spline_create ) {
+		ret = _NhlCreateSplineCoordApprox(&(inew->irtrans.thecoord),
+			inew->irtrans.x_use_log,
+			inew->irtrans.x_coord_points,
+			inew->irtrans.x_inter_points,
+			inew->irtrans.x_num_points,
+			inew->irtrans.y_use_log,
+			inew->irtrans.y_coord_points,
+			inew->irtrans.y_inter_points,
+			inew->irtrans.y_num_points,
+			inew->irtrans.x_tension,inew->irtrans.y_tension,
+			inew->irtrans.x_samples,inew->irtrans.y_samples,
+			&xstatus,&ystatus);
+	}
+	return(ret);
+}
 
 /*
  * Function:	IrTransSetValues
@@ -291,90 +494,9 @@ static NhlErrorTypes IrTransSetValues
 	int	num_args;
 #endif
 {
-	IrregularTransObjLayer inew = (IrregularTransObjLayer) new;
-	IrregularTransObjLayer iold = (IrregularTransObjLayer) old;
-	float tmp;
-	NhlErrorTypes ret = NOERROR;
-	char buffer[80];
-/*
-* Only type of change allowed by this object
-*/
-	if(inew->irtrans.x_reverse != iold->irtrans.x_reverse) {
-		tmp = inew->irtrans.ur;
-		inew->irtrans.ur = inew->irtrans.ul;
-		inew->irtrans.ul = tmp;
-	}
-	if(inew->irtrans.y_reverse != iold->irtrans.y_reverse) {
-		tmp = inew->irtrans.ut;
-		inew->irtrans.ut = inew->irtrans.ub;
-		inew->irtrans.ub = tmp;
-	}
-/*
-* All the rest of the fields can't be changed
-*/
-	
-	if(inew->irtrans.x_coord_points != iold->irtrans.x_coord_points) {
-		sprintf(buffer,"Coordinate transformation points can only be set on Create");
-		NhlPError(WARNING,E_UNKNOWN,buffer);
-		inew->irtrans.x_coord_points = iold->irtrans.x_coord_points;
-		ret = WARNING;
-	}
-	if(inew->irtrans.x_inter_points != iold->irtrans.x_inter_points) {
-		sprintf(buffer,"Coordinate transformation points can only be set on Create");
-		NhlPError(WARNING,E_UNKNOWN,buffer);
-		inew->irtrans.x_inter_points = iold->irtrans.x_inter_points;
-		ret = WARNING;
-	}
-	if(inew->irtrans.x_num_points != iold->irtrans.x_num_points) {
-		sprintf(buffer,"Coordinate transformation points can only be set on Create");
-		NhlPError(WARNING,E_UNKNOWN,buffer);
-		inew->irtrans.x_num_points = iold->irtrans.x_num_points;
-		ret = WARNING;
-	}
-	if(inew->irtrans.x_tension != iold->irtrans.x_tension) {
-		sprintf(buffer,"Coordinate transformation information can only be set on Create");
-		NhlPError(WARNING,E_UNKNOWN,buffer);
-		inew->irtrans.x_tension = iold->irtrans.x_tension;
-		ret = WARNING;
-	}
-	if(inew->irtrans.x_samples != iold->irtrans.x_samples) {
-		sprintf(buffer,"Coordinate transformation information can only be set on Create");
-		NhlPError(WARNING,E_UNKNOWN,buffer);
-		inew->irtrans.x_samples = iold->irtrans.x_samples;
-		ret = WARNING;
-	}
-	if(inew->irtrans.y_coord_points != iold->irtrans.y_coord_points) {
-		sprintf(buffer,"Coordinate transformation points can only be set on Create");
-		NhlPError(WARNING,E_UNKNOWN,buffer);
-		inew->irtrans.y_coord_points = iold->irtrans.y_coord_points;
-		ret = WARNING;
-	}
-	if(inew->irtrans.y_inter_points != iold->irtrans.y_inter_points) {
-		sprintf(buffer,"Coordinate transformation points can only be set on Create");
-		NhlPError(WARNING,E_UNKNOWN,buffer);
-		inew->irtrans.y_inter_points = iold->irtrans.y_inter_points;
-		ret = WARNING;
-	}
-	if(inew->irtrans.y_num_points != iold->irtrans.y_num_points) {
-		sprintf(buffer,"Coordinate transformation points can only be set on Create");
-		NhlPError(WARNING,E_UNKNOWN,buffer);
-		inew->irtrans.y_num_points = iold->irtrans.y_num_points;
-		ret = WARNING;
-	}
-	if(inew->irtrans.y_tension != iold->irtrans.y_tension) {
-		sprintf(buffer,"Coordinate transformation information can only be set on Create");
-		NhlPError(WARNING,E_UNKNOWN,buffer);
-		inew->irtrans.y_tension = iold->irtrans.y_tension;
-		ret = WARNING;
-	}
-	if(inew->irtrans.y_samples != iold->irtrans.y_samples) {
-		sprintf(buffer,"Coordinate transformation information can only be set on Create");
-		NhlPError(WARNING,E_UNKNOWN,buffer);
-		inew->irtrans.y_samples = iold->irtrans.y_samples;
-		ret = WARNING;
-	}
-	return(ret);
+	return(SetUpTrans(new,old,SET,args,num_args));
 }
+
 
 
 /*
@@ -404,76 +526,7 @@ static NhlErrorTypes IrTransInitialize
         int		num_args;
 #endif
 {
-	IrregularTransObjLayer inew = (IrregularTransObjLayer)new;
-	IrregularTransObjLayer ireq = (IrregularTransObjLayer)req;
-	NhlErrorTypes ret = NOERROR;
-	float tmp;
-	Status xstatus,ystatus;
-	char buffer[80];
-
-
-	if((ireq->irtrans.x_coord_points == NULL)||
-			(ireq->irtrans.y_coord_points==NULL)||
-			(ireq->irtrans.x_num_points < 2)||
-			(ireq->irtrans.y_num_points < 2)) {
-		sprintf(buffer, "IrTransInitialize: Not enough information to set up transformations");
-		NhlPError(FATAL,E_UNKNOWN,buffer);
-			
-		return(FATAL);
-	} else {
-		inew->irtrans.x_coord_points = (float*)NhlMalloc((unsigned)
-				sizeof(float) *(ireq->irtrans.x_num_points));
-		inew->irtrans.y_coord_points = (float*)NhlMalloc((unsigned)
-				sizeof(float) *(ireq->irtrans.y_num_points));
-		memcpy((char*)inew->irtrans.x_coord_points,
-			(char*)ireq->irtrans.x_coord_points,
-			sizeof(float)*ireq->irtrans.x_num_points);
-		memcpy((char*)inew->irtrans.y_coord_points,
-			(char*)ireq->irtrans.y_coord_points,
-			sizeof(float)*ireq->irtrans.y_num_points);
-		inew->irtrans.ul = inew->irtrans.x_coord_points[0];
-		inew->irtrans.ur = inew->irtrans.x_coord_points[ireq->irtrans.x_num_points-1];
-		inew->irtrans.ub = inew->irtrans.y_coord_points[0];
-		inew->irtrans.ut = inew->irtrans.y_coord_points[ireq->irtrans.y_num_points-1];
-	}
-	if((ireq->irtrans.x_inter_points != NULL)) {
-		inew->irtrans.x_inter_points = (float*)NhlMalloc((unsigned)
-				sizeof(float) * (ireq->irtrans.x_num_points));
-		memcpy((char*)inew->irtrans.x_inter_points,
-			(char*)ireq->irtrans.x_inter_points,
-			sizeof(float)*ireq->irtrans.x_num_points);
-	} 
-	if((ireq->irtrans.y_inter_points != NULL)) {
-		inew->irtrans.y_inter_points = (float*)NhlMalloc((unsigned)
-				sizeof(float) * (ireq->irtrans.y_num_points));
-		memcpy((char*)inew->irtrans.y_inter_points,
-			(char*)ireq->irtrans.y_inter_points,
-			sizeof(float)*ireq->irtrans.y_num_points);
-	} 
-
-	if(ireq->irtrans.x_reverse) {
-		tmp = inew->irtrans.ur;
-		inew->irtrans.ur = inew->irtrans.ul;
-		inew->irtrans.ul = tmp;
-	}
-	if(ireq->irtrans.y_reverse) {
-		tmp = inew->irtrans.ut;
-		inew->irtrans.ut = inew->irtrans.ub;
-		inew->irtrans.ub = tmp;
-	}
-	ret = _NhlCreateSplineCoordApprox(&(inew->irtrans.thecoord),
-		inew->irtrans.x_use_log,
-		inew->irtrans.x_coord_points,
-		inew->irtrans.x_inter_points,
-		inew->irtrans.x_num_points,
-		inew->irtrans.y_use_log,
-		inew->irtrans.y_coord_points,
-		inew->irtrans.y_inter_points,
-		inew->irtrans.y_num_points,
-		inew->irtrans.x_tension,inew->irtrans.y_tension,
-		inew->irtrans.x_samples,inew->irtrans.y_samples,
-		&xstatus,&ystatus);
-	return(ret);
+	return(SetUpTrans(new,NULL,CREATE,args,num_args));
 }
 
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.h,v 1.2 1993-10-19 17:53:33 boote Exp $
+ *      $Id: XyPlot.h,v 1.3 1993-11-10 01:19:46 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -130,6 +130,11 @@
 #define NhlNxyLineLabelFontHeightF	"xyLineLabelFontHeightF"
 #define NhlCxyLineLabelFontHeightF	"XyLineLabelFontHeightF"
 
+#define NhlNxyXIrrTensionF		"xyXIrrTensionF"
+#define NhlCxyXIrrTensionF		"XyXIrrTensionF"
+
+#define NhlNxyYIrrTensionF		"xyYIrrTensionF"
+#define NhlCxyYIrrTensionF		"XyYIrrTensionF"
 /*
  * Names for new types.
  */

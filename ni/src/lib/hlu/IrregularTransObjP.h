@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObjP.h,v 1.2 1993-10-19 17:50:57 boote Exp $
+ *      $Id: IrregularTransObjP.h,v 1.3 1993-11-10 01:19:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,8 @@ typedef struct _IrregularTransObjLayerPart {
 	/* Publically setable resources */
 	float 	*x_coord_points;
 	float	*x_inter_points;
+	float   x_min;
+	float   x_max;
 	int 	x_num_points;
 	int	x_reverse;
 	float	x_tension;
@@ -42,6 +44,8 @@ typedef struct _IrregularTransObjLayerPart {
 	int	x_use_log;
 	float 	*y_coord_points;
 	float	*y_inter_points;
+	float 	y_min;
+	float	y_max;
 	int 	y_num_points;
 	int	y_reverse;
 	float	y_tension;

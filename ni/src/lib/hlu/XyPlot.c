@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.6 1993-10-19 17:53:26 boote Exp $
+ *      $Id: XyPlot.c,v 1.7 1993-11-10 01:19:41 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -290,8 +290,12 @@ static NhlResource resources[] = {
 
 	{NhlNxyXStyle,NhlCxyXStyle,NhlTTickMarkStyles,sizeof(TickMarkStyles),
 		Oset(x_style),NhlTImmediate,(NhlPointer)LINEAR},
+	{NhlNxyXIrrTensionF,NhlCxyXIrrTensionF,NhlTFloat,sizeof(float),
+		Oset(x_tension),NhlTString,"2.0"},
 	{NhlNxyYStyle,NhlCxyYStyle,NhlTTickMarkStyles,sizeof(TickMarkStyles),
 		Oset(y_style),NhlTImmediate,(NhlPointer)LINEAR},
+	{NhlNxyYIrrTensionF,NhlCxyYIrrTensionF,NhlTFloat,sizeof(float),
+		Oset(y_tension),NhlTString,"2.0"},
 
 	{NhlNxyXIrregularPoints,NhlCxyXIrregularPoints,NhlTGenArray,
 		sizeof(NhlPointer),
@@ -784,6 +788,8 @@ XyPlotClassPartInitialize
 			NhlNtmXTIrregularPoints, NhlNtmXTNumIrregularPoints,
 			NhlNtmYLIrregularPoints, NhlNtmYLNumIrregularPoints,
 			NhlNtmYRIrregularPoints, NhlNtmYRNumIrregularPoints,
+			NhlNtmXBIrrTensionF,NhlNtmXTIrrTensionF,
+			NhlNtmYLIrrTensionF,NhlNtmYRIrrTensionF,
 			NULL);
 
 	ret = MIN(ret,lret);
@@ -2740,6 +2746,8 @@ SetUpTransObjs
 								gen->data);
 			NhlSetSArg(&sargs[nargs++],NhlNtrYNumPoints,
 							gen->len_dimensions[0]);
+			NhlSetSArg(&sargs[nargs++],NhlNtrYTensionF,
+							newxy->y_tension);
 
 			if(newxy->x_style == IRREGULAR){
 
@@ -2748,6 +2756,8 @@ SetUpTransObjs
 								gen->data);
 				NhlSetSArg(&sargs[nargs++],NhlNtrXNumPoints,
 							gen->len_dimensions[0]);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXTensionF,
+							newxy->x_tension);
 			}
 			else{
 
@@ -2787,6 +2797,8 @@ SetUpTransObjs
 								gen->data);
 				NhlSetSArg(&sargs[nargs++],NhlNtrXNumPoints,
 							gen->len_dimensions[0]);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXTensionF,
+							newxy->x_tension);
 
 				newxy->fake_y = True;
 				newxy->fake_y_min = tmpcoords[0] = newxy->y_min;
@@ -2863,6 +2875,8 @@ SetUpTransObjs
 					newxy->x_irregular_points->data);
 				NhlSetSArg(&sargs[nargs++],NhlNtrXNumPoints,
 				newxy->x_irregular_points->len_dimensions[0]);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXTensionF,
+							newxy->x_tension);
 			}
 			else if((newxy->x_style != oldxy->x_style) ||
 				(newxy->x_min < newxy->fake_x_min) ||
@@ -2911,6 +2925,8 @@ SetUpTransObjs
 					newxy->y_irregular_points->data);
 				NhlSetSArg(&sargs[nargs++],NhlNtrYNumPoints,
 				newxy->y_irregular_points->len_dimensions[0]);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYTensionF,
+							newxy->y_tension);
 			}
 			else if((newxy->y_style != oldxy->y_style) ||
 				(newxy->y_min < newxy->fake_y_min) ||
@@ -3111,6 +3127,14 @@ SetUpTicks
 		NhlSetSArg(&sargs[nargs++],NhlNtmXTStyle,newxy->x_style);
 		NhlSetSArg(&sargs[nargs++],NhlNtmYLStyle,newxy->y_style);
 		NhlSetSArg(&sargs[nargs++],NhlNtmYRStyle,newxy->y_style);
+		NhlSetSArg(&sargs[nargs++],NhlNtmXBIrrTensionF,
+							newxy->x_tension);
+		NhlSetSArg(&sargs[nargs++],NhlNtmXTIrrTensionF,
+							newxy->x_tension);
+		NhlSetSArg(&sargs[nargs++],NhlNtmYLIrrTensionF,
+							newxy->y_tension);
+		NhlSetSArg(&sargs[nargs++],NhlNtmYRIrrTensionF,
+							newxy->y_tension);
 
 		if(newxy->x_irregular_points != NULL){
 			NhlSetSArg(&sargs[nargs++],NhlNtmXBIrregularPoints,
@@ -3171,7 +3195,18 @@ SetUpTicks
 			NhlSetSArg(&sargs[nargs++],NhlNtmXTDataRightF,
 				(!newxy->x_reverse?newxy->x_max:newxy->x_min));
 		}
-
+		if(oldxy->x_tension != newxy->x_tension) {
+			NhlSetSArg(&sargs[nargs++],NhlNtmXBIrrTensionF,
+							newxy->x_tension);
+			NhlSetSArg(&sargs[nargs++],NhlNtmXTIrrTensionF,
+							newxy->x_tension);
+		}
+		if(oldxy->y_tension != newxy->y_tension) {
+			NhlSetSArg(&sargs[nargs++],NhlNtmYLIrrTensionF,
+							newxy->y_tension);
+			NhlSetSArg(&sargs[nargs++],NhlNtmYRIrrTensionF,
+							newxy->y_tension);
+		}
 		if((oldxy->y_reverse != newxy->y_reverse) ||
 			(oldxy->y_min != newxy->y_min) ||
 			(oldxy->y_max != newxy->y_max)){

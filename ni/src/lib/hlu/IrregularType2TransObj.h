@@ -1,6 +1,6 @@
 
 /*
- *      $Id: IrregularType2TransObj.h,v 1.1 1993-04-30 17:22:31 boote Exp $
+ *      $Id: IrregularType2TransObj.h,v 1.2 1993-11-10 01:19:18 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -37,8 +37,8 @@
 #define NhlCtrXNumPoints	"TrXNumPoints"
 #define NhlNtrXReverse		"trXReverse"
 #define NhlCtrXReverse		"TrXReverse"
-#define NhlNtrXTension		"trXTension"
-#define NhlCtrXTension		"TrXTension"
+#define NhlNtrXTensionF		"trXTensionF"
+#define NhlCtrXTensionF		"TrXTensionF"
 #define NhlNtrXSamples		"trXSamples"
 #define NhlCtrXSamples		"TrXSamples"
 #define NhlNtrXUseLog		"trXUseLog"
@@ -56,8 +56,8 @@
 #define NhlCtrYNumPoints	"TrYNumPoints"
 #define NhlNtrYReverse		"trYReverse"
 #define NhlCtrYReverse		"TrYReverse"
-#define NhlNtrYTension		"trYTension"
-#define NhlCtrYTension		"TrYTension"
+#define NhlNtrYTensionF		"trYTensionF"
+#define NhlCtrYTensionF		"TrYTensionF"
 #define NhlNtrYSamples		"trYSamples"
 #define NhlCtrYSamples		"TrYSamples"
 #define NhlNtrYUseLog		"trYUseLog"

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularType2TransObj.c,v 1.3 1993-10-19 17:51:00 boote Exp $
+ *      $Id: IrregularType2TransObj.c,v 1.4 1993-11-10 01:19:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -71,7 +71,7 @@ static NhlResource resources[] = {
 	{ NhlNtrXReverse, NhlCtrXReverse, NhlTInteger,sizeof(int),
 		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.x_reverse),
 		NhlTString,"0" },
-	{ NhlNtrXTension, NhlCtrXTension, NhlTFloat, sizeof(float),
+	{ NhlNtrXTensionF, NhlCtrXTensionF, NhlTFloat, sizeof(float),
 		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.x_tension),
 		NhlTString,"2.0" },
 	{ NhlNtrXSamples, NhlCtrXSamples, NhlTInteger, sizeof(int),
@@ -98,7 +98,7 @@ static NhlResource resources[] = {
 	{ NhlNtrYReverse, NhlCtrYReverse, NhlTInteger,sizeof(int),
 		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.y_reverse),
 		NhlTString,"0" },
-	{ NhlNtrYTension, NhlCtrYTension, NhlTFloat, sizeof(float),
+	{ NhlNtrYTensionF, NhlCtrYTensionF, NhlTFloat, sizeof(float),
 		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.y_tension),
 		NhlTString,"2.0" },
 	{ NhlNtrYSamples, NhlCtrYSamples, NhlTInteger, sizeof(int),
@@ -345,7 +345,7 @@ static NhlErrorTypes IrTransSetValues
 	int	num_args;
 #endif
 {
-	return(SetUpTrans(new,old,SET));	
+	return(SetUpTrans(new,old,SET,args,num_args));	
 }
 
 
@@ -376,16 +376,19 @@ static NhlErrorTypes IrTransInitialize
         int		num_args;
 #endif
 {
-	return(SetUpTrans(new,NULL,CREATE));
+	return(SetUpTrans(new,NULL,CREATE,args,num_args));
 }
 
 static SetUpTrans
 #if __STDC__
-(Layer new, Layer old, int c_or_s)
+(Layer new, Layer old, int c_or_s,_NhlArgList args, int nargs)
 #else
-(new,old,c_or_s)
+(new,old,c_or_s,args, nargs)
 	Layer 	new;
 	Layer	old;
+	int c_or_s;
+	_NhlArgList args;
+	int nargs;
 #endif
 {
 	IrregularType2TransObjLayer inew = (IrregularType2TransObjLayer)new;
@@ -424,9 +427,11 @@ static SetUpTrans
 		}
 	} else {
 		if(c_or_s == SET){
-			if(inew->ir2trans.x_coord_points != iold->ir2trans.x_coord_points) {
+			if(_NhlArgIsSet(args,nargs,NhlNtrXCoordPoints)) {
 				call_spline_create = 1;
-				NhlFree(iold->ir2trans.x_coord_points);
+				if(iold->ir2trans.x_coord_points != NULL) {
+					NhlFree(iold->ir2trans.x_coord_points);
+				}
 				tmp = inew->ir2trans.x_coord_points;
 				inew->ir2trans.x_coord_points 
 					= (float*)NhlMalloc((unsigned)
@@ -436,9 +441,11 @@ static SetUpTrans
 						inew->ir2trans.x_num_points);
 				
 			}
-			if(inew->ir2trans.y_coord_points != iold->ir2trans.y_coord_points) {
+			if(_NhlArgIsSet(args,nargs,NhlNtrYCoordPoints)) {
 				call_spline_create = 1;
-				NhlFree(iold->ir2trans.y_coord_points);
+				if(iold->ir2trans.y_coord_points != NULL) {
+					NhlFree(iold->ir2trans.y_coord_points);
+				}
 				tmp = inew->ir2trans.y_coord_points;
 				inew->ir2trans.y_coord_points 
 					= (float*)NhlMalloc((unsigned)
@@ -501,26 +508,36 @@ static SetUpTrans
 		}
 		
 	}
-	if((inew->ir2trans.x_inter_points != NULL)) {
-		if(c_or_s == SET) {
-			NhlFree(inew->ir2trans.x_inter_points);
+	if(_NhlArgIsSet(args,nargs,NhlNtrXInterPoints)) {
+		if((c_or_s == SET)&&(iold->ir2trans.x_inter_points != NULL)) {
+			NhlFree(iold->ir2trans.x_inter_points);
 		}
 		tmp = inew->ir2trans.x_inter_points;
 		inew->ir2trans.x_inter_points = (float*)NhlMalloc((unsigned)
 				sizeof(float) * (inew->ir2trans.x_num_points));
 		memcpy((char*)inew->ir2trans.x_inter_points,(char*)tmp,
 			sizeof(float)*inew->ir2trans.x_num_points);
+		call_spline_create = 1;
 	}
 	
-	if((inew->ir2trans.y_inter_points != NULL)) {
-		if(c_or_s == SET) {
-			NhlFree(inew->ir2trans.y_inter_points);
+	if(_NhlArgIsSet(args,nargs,NhlNtrYInterPoints)) {
+		if((c_or_s == SET)&&(iold->ir2trans.y_inter_points != NULL)) {
+			NhlFree(iold->ir2trans.y_inter_points);
 		}
 		tmp = inew->ir2trans.y_inter_points;
 		inew->ir2trans.y_inter_points = (float*)NhlMalloc((unsigned)
 				sizeof(float) * (inew->ir2trans.y_num_points));
 		memcpy((char*)inew->ir2trans.y_inter_points,(char*)tmp,
 			sizeof(float)*inew->ir2trans.y_num_points);
+		call_spline_create = 1;
+	}
+	if((c_or_s == SET)&&(inew->ir2trans.y_tension != 
+		iold->ir2trans.y_tension)) {
+		call_spline_create = 1;
+	}
+	if((c_or_s == SET)&&(inew->ir2trans.x_tension != 
+		iold->ir2trans.x_tension)) {
+		call_spline_create = 1;
 	}
 
 	if(call_spline_create) {

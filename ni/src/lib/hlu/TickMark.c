@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.3 1993-10-19 17:52:29 boote Exp $
+ *      $Id: TickMark.c,v 1.4 1993-11-10 01:19:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -66,10 +66,16 @@ static NhlResource resources[] = {
 	{ NhlNtmXBStyle,NhlCtmXBStyle,NhlTTickMarkStyles,sizeof(TickMarkStyles),
 		NhlOffset(TickMarkLayerRec, tick.x_b_style),
 		NhlTImmediate,(NhlPointer) LINEAR },
+	{ NhlNtmXBIrrTensionF,NhlCtmXBIrrTensionF,NhlTFloat,sizeof(float),
+		NhlOffset(TickMarkLayerRec, tick.x_b_tension),
+		NhlTString,"2.0"},
 
 	{ NhlNtmXTStyle,NhlCtmXTStyle,NhlTTickMarkStyles,sizeof(TickMarkStyles),
 		NhlOffset(TickMarkLayerRec, tick.x_t_style),
 		NhlTImmediate,(NhlPointer) LINEAR },
+	{ NhlNtmXTIrrTensionF,NhlCtmXTIrrTensionF,NhlTFloat,sizeof(float),
+		NhlOffset(TickMarkLayerRec, tick.x_t_tension),
+		NhlTString, "2.0"},
 
 	{ NhlNtmBorderThicknessF,NhlCtmBorderThicknessF,NhlTFloat,
 		sizeof(float),
@@ -358,9 +364,15 @@ static NhlResource resources[] = {
 	{ NhlNtmYLStyle,NhlCtmYLStyle,NhlTTickMarkStyles,sizeof(TickMarkStyles),
 		NhlOffset(TickMarkLayerRec, tick.y_l_style),
 		NhlTImmediate,(NhlPointer) LINEAR },
+	{ NhlNtmYLIrrTensionF,NhlCtmYLIrrTensionF,NhlTFloat,sizeof(float),
+		NhlOffset(TickMarkLayerRec, tick.y_l_tension),
+		NhlTString, "2.0"},
 	{ NhlNtmYRStyle,NhlCtmYRStyle,NhlTTickMarkStyles,sizeof(TickMarkStyles),
 		NhlOffset(TickMarkLayerRec, tick.y_r_style),
 		NhlTImmediate,(NhlPointer) LINEAR },
+	{ NhlNtmYRIrrTensionF,NhlCtmYRIrrTensionF,NhlTFloat,sizeof(float),
+		NhlOffset(TickMarkLayerRec, tick.y_r_tension),
+		NhlTString, "2.0"},
 
 
 	{ NhlNtmYLPrecision,NhlCtmPrecisions, NhlTInteger, sizeof(int),
@@ -3534,6 +3546,7 @@ static NhlErrorTypes ComputeMinorTickMarks
  *		tmXTLabelFontAspectF, tmXTLabelAngleF, tmXTLabelDirection, 
  *		tmXTLabelDelta, tmXTLabelPrecision, tmXTIrregularPoints, 
  *		tmXTLabelStride.tmXTPrescision, tmXTNumIrregularPoints
+ *		tmXTIrrTensionF
  *	        All other Top TickMark resources are unaffected.
  *
  * In Args: 	tnew	TickMark object instance pointer
@@ -3587,6 +3600,7 @@ static void SetTop
 	tnew->tick.x_t_irregular_points = tnew->tick.x_b_irregular_points;
 	tnew->tick.x_t_num_irregular_points = tnew->tick.x_b_num_irregular_points;
 	tnew->tick.x_t_label_stride = tnew->tick.x_b_label_stride;
+	tnew->tick.x_t_tension = tnew->tick.x_b_tension;
 
 }
 
@@ -3604,6 +3618,7 @@ static void SetTop
  *		tmYRLabelFontAspectF, tmYRLabelAngleF, tmYRLabelDirection, 
  *		tmYRLabelDelta, tmYRLabelPrecision, tmYRIrregularPoints, 
  *		tmYRLabelStride, tmYRNumIrregularPoints.
+ *		tmYRIrrTensionF
  *	        All other right TickMark resources are unaffected.
  *
  * In Args: 	tnew	TickMark object instance pointer
@@ -3656,6 +3671,7 @@ TickMarkLayer	tnew;
 	tnew->tick.y_r_irregular_points = tnew->tick.y_l_irregular_points;
 	tnew->tick.y_r_num_irregular_points = tnew->tick.y_l_num_irregular_points;
 	tnew->tick.y_r_label_stride = tnew->tick.y_l_label_stride;
+	tnew->tick.y_r_tension = tnew->tick.y_l_tension;
 }
 
 /*
@@ -6373,6 +6389,8 @@ int num_args;
 			NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_b_data_max);
 			NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_l_data_min);
 			NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_l_data_max);
+			NhlSetSArg(&sargs[nargs++],NhlNtrYTensionF,tnew->tick.y_l_tension);
+			NhlSetSArg(&sargs[nargs++],NhlNtrXTensionF,tnew->tick.x_b_tension);
 		} else {
 			switch(tnew->tick.y_l_style) {
 			case LOG:
@@ -6554,6 +6572,8 @@ int num_args;
 			NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_t_data_max);
 			NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tnew->tick.y_r_data_min);
 			NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tnew->tick.y_r_data_max);
+			NhlSetSArg(&sargs[nargs++],NhlNtrYTensionF,tnew->tick.y_r_tension);
+			NhlSetSArg(&sargs[nargs++],NhlNtrXTensionF,tnew->tick.x_t_tension);
 		} else {
 			switch(tnew->tick.y_r_style) {
 			case LOG:
@@ -6838,6 +6858,12 @@ int num_args;
 						NhlNtrYNumPoints,
                                         	tnew->tick.y_l_num_irregular_points);
 					}
+					if(told->tick.y_l_tension != 
+						tnew->tick.y_l_tension) {
+                                		NhlSetSArg(&sargs[nargs++],
+							NhlNtrYTensionF,
+                                        		tnew->tick.y_l_tension);
+					}
 					break;
 				case LOG:
 /*
@@ -6929,6 +6955,12 @@ int num_args;
                                 	NhlSetSArg(&sargs[nargs++],
 						NhlNtrXNumPoints,
                                         	tnew->tick.x_b_num_irregular_points);
+					}
+					if(told->tick.x_b_tension != 
+						tnew->tick.x_b_tension) {
+                                		NhlSetSArg(&sargs[nargs++],
+							NhlNtrXTensionF,
+                                        		tnew->tick.x_b_tension);
 					}
 					break;
 				case LOG:
@@ -7041,6 +7073,7 @@ int num_args;
                                 NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tnew->tick.x_b_data_left);
                                 NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tnew->tick.x_b_data_right);
                                 break;
+			case IRREGULAR:
                         case TIME:
                         case GEOGRAPHIC:
                                 break;
@@ -7076,6 +7109,12 @@ int num_args;
                                 	NhlSetSArg(&sargs[nargs++],
 						NhlNtrYNumPoints,
                                         	tnew->tick.y_r_num_irregular_points);
+					}
+					if(told->tick.y_r_tension != 
+						tnew->tick.y_r_tension) {
+                                		NhlSetSArg(&sargs[nargs++],
+							NhlNtrYTensionF,
+                                        		tnew->tick.y_r_tension);
 					}
 					break;
 				case LOG:
@@ -7155,6 +7194,12 @@ int num_args;
                                 	NhlSetSArg(&sargs[nargs++],
 						NhlNtrXNumPoints,
                                         	tnew->tick.x_t_num_irregular_points);
+					}
+					if(told->tick.x_t_tension != 
+						tnew->tick.x_t_tension) {
+                                		NhlSetSArg(&sargs[nargs++],
+							NhlNtrXTensionF,
+                                        		tnew->tick.x_t_tension);
 					}
 					break;
 				case LOG:
