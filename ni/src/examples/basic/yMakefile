@@ -1,13 +1,39 @@
 #
-#   $Id: yMakefile,v 1.4 1995-02-15 22:36:16 haley Exp $
+#   $Id: yMakefile,v 1.5 1995-02-21 17:14:45 stautler Exp $
 #
 #   Makefile for HLU Basic examples
 #
 
-MYNAME      = basic
+MYNAME   = basic
 
-NSRCS       = basic01n.ncl basic02n.ncl basic03n.ncl basic04n.ncl basic05n.ncl
-RESFILES    = basic03.res
+PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
+EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
+SYS_LIBS    =   $(CTOFLIBS) -lm
 
+CSRCS    = basic01c.c basic02c.c basic03c.c basic04c.c basic05c.c
+FSRCS    = basic01f.f basic02f.f basic03f.f basic04f.f basic05f.f
+NSRCS    = basic01n.ncl basic02n.ncl basic03n.ncl basic04n.ncl basic05n.ncl
+COBJS    = basic01c.o basic02c.o basic03c.o basic04c.o basic05c.o
+FOBJS    = basic01f.o basic02f.o basic03f.o basic04f.o basic05f.o
+SRCS     = $(CSRCS) $(FSRCS)
+OBJS     = $(COBJS) $(FOBJS)
+RESFILES = basic03.res
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
+
+HLUCExampleTarget(basic01c,basic01c.o)
+HLUCExampleTarget(basic02c,basic02c.o)
+HLUCExampleTarget(basic03c,basic03c.o)
+HLUCExampleTarget(basic04c,basic04c.o)
+HLUCExampleTarget(basic05c,basic05c.o)
+
+HLUFExampleTarget(basic01f,basic01f.o)
+HLUFExampleTarget(basic02f,basic02f.o)
+HLUFExampleTarget(basic03f,basic03f.o)
+HLUFExampleTarget(basic04f,basic04f.o)
+HLUFExampleTarget(basic05f,basic05f.o)
+
+CleanFilesTarget($(OBJS))
+DependTarget($(SRCS))
