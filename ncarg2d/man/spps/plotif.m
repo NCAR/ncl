@@ -26,7 +26,7 @@ also be used to flush the pen-move buffer.
 The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH USAGE
-"CALL PLOTIF (0,0,0)" will also flush the buffer.
+"CALL PLOTIF (0.,0.,2)" will flush the polyline buffer.
 .sp
 The size of the pen-move buffer can be changed by a call to
 the parameter setting routine SETUSV, with parameter PB.  The legal
