@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.39 2002-03-25 20:20:38 haley Exp $
+#	$Id: ymake,v 1.40 2002-03-25 21:18:19 haley Exp $
 #
 ######################################################################
 #
@@ -289,6 +289,7 @@ case HP-UX:
 case OSF1:
 case Linux:
 case Darwin:
+case CYGWIN:
         set opsys = $foo
         breaksw
 default:
@@ -413,6 +414,14 @@ case    Darwin:
             exit 1
         endsw
 
+        breaksw
+
+case	CYGWIN:
+        set os = $opsys
+        set model = $mach
+        set arch = $mach
+        set sysincs = CYGWIN
+        set vendor = Cygnus
         breaksw
 
 case    IRIX:
@@ -628,7 +637,7 @@ case    UNICOS:
         set cppopt = -N
         breaksw
 case    Linux:
-case    CYGWIN*:
+case    CYGWIN:
         set cppopt = -traditional
         breaksw
 default:

@@ -1,4 +1,4 @@
-#! /bin/csh -f
+#!/bin/csh -f
 #
 #	install: csh script version of the BSD install utility.
 #
@@ -26,6 +26,13 @@ while ($#argv > 0)
 
 		case "-m":
 			set chmod="/bin/chmod $2"
+#
+# If on Windows, and the file is an executable, then
+# the file will be called $2.exe.
+#
+			if (-f {$2}.exe) then
+				set chmod="/bin/chmod {$2}.exe"
+			endif
 			shift
 			breaksw
 
@@ -81,7 +88,11 @@ if ("$src" == "$dest" || "$dest" == ".") then
 else
 
 if (-d $dest) then
-	set newfile="$dest/$src"
+	if (-f {$src}.exe) then
+		set newfile="$dest/{$src}.exe"
+	else
+		set newfile="$dest/$src"
+	endif
 else
 	set newfile=$dest
 endif
