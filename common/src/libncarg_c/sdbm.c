@@ -47,13 +47,6 @@
 #define NULL	0
 #endif
 
-/*
- * externals
- */
-#ifndef sun
-extern int errno;
-#endif
-
 extern void free proto((void *));
 
 /*
