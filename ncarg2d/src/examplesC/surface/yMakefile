@@ -1,8 +1,8 @@
 #
-#	$Id: yMakefile,v 1.1 1994-05-13 14:29:18 haley Exp $
+#	$Id: yMakefile,v 1.2 1994-08-02 16:53:23 haley Exp $
 #
 
-CSRCS = c_tsrfac.c
+CSRCS = c_fsrezsrf.c c_fsrpwrzs.c c_fsrsrfac.c c_tsrfac.c
 
 SED_SRCS = c_srex01.c c_tpwrzs.c
 
