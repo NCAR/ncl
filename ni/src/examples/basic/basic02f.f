@@ -1,5 +1,5 @@
 C
-C $Id: basic02f.f,v 1.10 1995-06-22 21:07:25 haley Exp $
+C $Id: basic02f.f,v 1.11 1995-06-28 23:35:11 scheitln Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -54,7 +54,6 @@ C # FRAME 1 #
 C ###########
 C Choose the type of output you want to create.  You may write your
 C output to an NCGM, file, X workstation window, or a PostScript file. 
-C This example writes to a meta file or an X Workstation.
 C 
 
 C
@@ -153,7 +152,7 @@ C Updates and clear the workstation.
 C
       call NhlFFrame(wks,ierr)
 C
-C Clean up (deleting the parent object recursively deletes all of its 
+C Clean up (destroying the parent object recursively destroys all of its 
 C children).
 C
       call NhlFDestroy(con1,ierr)

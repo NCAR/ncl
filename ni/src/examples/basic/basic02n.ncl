@@ -1,4 +1,4 @@
-; $Id: basic02n.ncl,v 1.9 1995-06-22 21:07:26 haley Exp $
+; $Id: basic02n.ncl,v 1.10 1995-06-28 23:35:12 scheitln Exp $
 ;
 ; The first frame in this example demonstrates how to set the view port 
 ; for a contour plot.
@@ -17,7 +17,6 @@ begin
 ; ###########
 ; Choose the type of output you want to create.  You may write your
 ; output to an NCGM, file, X workstation window, or a PostScript file. 
-; This example writes to a meta file or an X Workstation.
 
 ;
 ; Default is to display output to an X workstation

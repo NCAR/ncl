@@ -1,5 +1,5 @@
 /*
- * $Id: basic02c.c,v 1.8 1995-06-22 21:07:25 haley Exp $
+ * $Id: basic02c.c,v 1.9 1995-06-28 23:35:10 scheitln Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -58,8 +58,7 @@ main()
  * # FRAME 1 #
  * ###########
  * Choose the type of output you want to create.  You may write your
- * output to an NCGM, file, X workstation window, or a PostScript file. 
- * This example writes to a meta file or an X Workstation.
+ * output to an NCGM file, X workstation window, or a PostScript file. 
  */
         if (NCGM) {
         /*
@@ -158,7 +157,7 @@ main()
 	NhlFrame(wks);
 
 /*
- * Clean up (deleting the parent object recursively deletes all of its 
+ * Clean up (destroying the parent object recursively destroys all of its 
  * children).
  */
 	NhlDestroy(con1);
