@@ -1068,7 +1068,7 @@ int	wr_status;
 			case 0:
 				break;
 			case 1:
-				therec->vars[i].var_info.dim_sizes[dim_num] = initial_iheader.NLEV;
+				therec->vars[i].var_info.dim_sizes[dim_num] = initial_iheader.NLEV + 1;
 				therec->vars[i].var_info.file_dim_num[dim_num] = ILEV_DIM_NUMBER;
 				dim_num++;
 				break;
@@ -1465,9 +1465,9 @@ NclQuark dim_name;
 
 static int MyUnPack
 #if	NhlNeedProto
-(CCMFileRec* therec,int fd,void *rbuffer, void* buffer, int poff, long coff, int packing,int *dimsizes )
+(CCMFileRec* therec,int fd,void *rbuffer, void* buffer, int poff, long coff, int packing,int *dimsizes,int level_type )
 #else
-(therec, fd, rbuffer, buffer,poff, coff, packing,dimsizes)
+(therec, fd, rbuffer, buffer,poff, coff, packing,dimsizes, level_type)
 CCMFileRec* therec;
 int fd;
 void *rbuffer;
@@ -1477,6 +1477,7 @@ long coff;
 int packing;
 int n_elem;
 int *dimsizes;
+int level_type;
 #endif
 {
 	long tmp_off;
@@ -1487,22 +1488,58 @@ int *dimsizes;
 	unsigned int uval;
 	unsigned short sval;
 	int k,i,j;
+	int mul_lev,index;
 
-	n_elem = dimsizes[0]*dimsizes[1];
+	switch(level_type) {
+	case 1:
+		n_elem = (dimsizes[0]-1)*dimsizes[1];
+		mul_lev = (dimsizes[0]-1);
+		break;
+	case 0:
+	case 2:
+		n_elem = dimsizes[0]*dimsizes[1];
+		mul_lev = (dimsizes[0]);
+		break;
+	}
+
 
 	
 	tmp_off = MySeek(therec,fd,poff,coff);
 	switch(packing) {
 	case 1:
+		if(level_type ==1) {
+			for(i = 0; i < dimsizes[1]; i++) {
+				((double*)rbuffer)[i] = DoubleIt(cray_missing_value);
+			}
+			index = dimsizes[1];
+		} else {
+			index = 0;
+		}
+		
 		tmp_off = MyRead(therec,fd,buffer,n_elem,tmp_off);
 		total = n_elem;
-		ctodpf(buffer,rbuffer,&total,&zero);
+		ctodpf(buffer,&((double*)rbuffer)[index],&total,&zero);
 		return(tmp_off);
 		break;
 	case 2:
-		tmp_off = MyRead(therec,fd,buffer,(n_elem/2) + 2*dimsizes[0],tmp_off);
+		tmp_off = MyRead(therec,fd,buffer,(n_elem/2) + 2*mul_lev,tmp_off);
 		k = 0;
-		for(j = 0; j < dimsizes[0]; j++) {
+		j = 0;
+		if(level_type == 1) {
+			for(i = 0; i < dimsizes[1]; i++) {
+				((float*)rbuffer)[j*dimsizes[1] + i] = FloatIt(cray_missing_value);
+			}
+		} else {
+			total = 2;
+			ctodpf(&(((char*)buffer)[k*4]),ll,&total,&zero);
+			k += 4;
+			for(i = 0; i < dimsizes[1]; i++) {
+				memcpy(&uval,&(((char*)buffer)[k*4]),4);
+				((float*)rbuffer)[j*dimsizes[1] + i] = (float)(ll[0] + ((double)uval)/ll[1]);
+				k++;
+			}
+		}
+		for(j = 1; j < dimsizes[0]; j++) {
 			total = 2;
 			ctodpf(&(((char*)buffer)[k*4]),ll,&total,&zero);
 			k += 4;
@@ -1515,9 +1552,24 @@ int *dimsizes;
 		return(tmp_off);
 		break;
 	case 4:
-		tmp_off = MyRead(therec,fd,buffer,(n_elem/4) + 2*dimsizes[0],tmp_off);
+		tmp_off = MyRead(therec,fd,buffer,(n_elem/4) + 2*mul_lev,tmp_off);
 		k = 0;
-		for(j = 0; j < dimsizes[0]; j++) {
+		j = 0;
+		if(level_type == 1) {
+			for(i = 0; i < dimsizes[1]; i++) {
+				((float*)rbuffer)[j*dimsizes[1] + i] = FloatIt(cray_missing_value);
+			}
+		} else {
+			total = 2;
+			ctodpf(&(((char*)buffer)[k*2]),ll,&total,&zero);
+			k += 8;
+			for(i = 0; i < dimsizes[1]; i++) {
+				memcpy(&sval,&(((char*)buffer)[k*2]),2);
+				((float*)rbuffer)[j*dimsizes[1] + i] = (float)(ll[0] + ((double)sval)/ll[1]);
+				k++;
+			}
+		}
+		for(j = 1; j < dimsizes[0]; j++) {
 			total = 2;
 			ctodpf(&(((char*)buffer)[k*2]),ll,&total,&zero);
 			k += 8;
@@ -1657,7 +1709,7 @@ void *storage
 					dimsizes[0] = tmp_md->multidval.dim_sizes[0];
 					dimsizes[1] = tmp_md->multidval.dim_sizes[1];
 				}
-				MyUnPack(thefile,fd,rbuffer,buffer,tmp_var->offset,coff,tmp_var->packing,dimsizes);
+				MyUnPack(thefile,fd,rbuffer,buffer,tmp_var->offset,coff,tmp_var->packing,dimsizes,tmp_var->level_type);
 				tmp_md2 = (NclMultiDValData)_NclReadSubSection((NclData)tmp_md,&sel_ptr,NULL);
 				memcpy(&((char*)storage)[to],tmp_md2->multidval.val,tmp_md2->multidval.totalsize);
 				to += tmp_md2->multidval.totalsize;

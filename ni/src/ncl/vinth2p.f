@@ -119,7 +119,6 @@ C****     IF THE DATA IS ON THOSE LEVELS START THE
 C
       DO K=1,NLEVI
          KPI = K
-         IF (ILEV.EQ.1) KPI = K+1
          PLEVI(K)  = (HBCOFA(KPI)*P0) +
      *               HBCOFB(KPI)*(PSFC(I,J)*.01) 
       ENDDO
