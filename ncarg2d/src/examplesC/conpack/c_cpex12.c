@@ -47,7 +47,7 @@ void main()
 ** Declare the routine which will draw contour lines but avoid drawing
 ** them through labels.
 */
-	extern int cpdrpl_(float*,float*,int*,int*,int*,int*);
+	extern int NGCALLF(cpdrpl,CPDRPL)(float*,float*,int*,int*,int*,int*);
 /*
 ** Declare an array to hold the data to be contoured.
 */
@@ -273,7 +273,7 @@ void main()
 /*
 ** Draw contour lines, omitting parts inside label boxes.
 */
-        c_cpcldm (&zdat[0][0],rwrk,iwrk,iama,cpdrpl_);
+        c_cpcldm (&zdat[0][0],rwrk,iwrk,iama,NGCALLF(cpdrpl,CPDRPL));
 /*
 ** Add high, low, and informational labels.
 */
