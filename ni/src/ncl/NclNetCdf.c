@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.3 1994-07-21 00:19:01 ethan Exp $
+ *      $Id: NclNetCdf.c,v 1.4 1994-07-27 18:14:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -479,8 +479,16 @@ NclQuark att_name_q;
 		if(stepal->att_inq->name == att_name_q) {
 			tmp=(NclFAttRec*)NclMalloc((unsigned)sizeof(NclFAttRec));
 			tmp->att_name_quark = att_name_q;
-			tmp->data_type = NetMapToNcl((void*)&(stepal->att_inq->data_type));
-			tmp->num_elements = stepal->att_inq->len;
+/*
+* For convenience I make all character attributes strings
+*/
+			if(stepal->att_inq->data_type == NC_CHAR) {
+				tmp->data_type = NCL_string;
+				tmp->num_elements = 1;
+			} else {
+				tmp->data_type = NetMapToNcl((void*)&(stepal->att_inq->data_type));
+				tmp->num_elements = stepal->att_inq->len;
+			}
 			return(tmp);
 		} else {
 			stepal = stepal->next;
@@ -548,10 +556,15 @@ NclQuark theatt;
 					tmp= (NclFAttRec*)NclMalloc((unsigned)
 						sizeof(NclFAttRec));
 					tmp->att_name_quark = theatt;
-					tmp->data_type = NetMapToNcl((void*)&stepal->att_inq->data_type);
-					tmp->num_elements = stepal->att_inq->len;
+					if(stepal->att_inq->data_type == NC_CHAR) {
+
+						tmp->data_type = NCL_string;
+						tmp->num_elements = 1;
+					} else {
+						tmp->data_type = NetMapToNcl((void*)&stepal->att_inq->data_type);
+						tmp->num_elements = stepal->att_inq->len;
+					}
 					return(tmp);
-						
 				} else {
 					stepal = stepal->next;
 				}
@@ -681,6 +694,7 @@ void* storage;
 	NetCdfFileRecord *rec = (NetCdfFileRecord*)therec;
 	NetCdfAttInqRecList *stepal;
 	int cdfid,ret ;
+	char *tmp;
 
 	stepal = rec->file_atts;
 	while(stepal != NULL) {
@@ -691,7 +705,15 @@ void* storage;
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for reading",NrmQuarkToString(rec->file_path_q));
 				return(NULL);
 			}
-			ret = ncattget(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),storage);
+			if(stepal->att_inq->data_type == NC_CHAR) {
+				tmp = (char*)NclMalloc(stepal->att_inq->len+1);
+				tmp[stepal->att_inq->len] = '\0';
+				ret = ncattget(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),tmp);
+				*(string*)storage = NrmStringToQuark(tmp);
+				NclFree(tmp);
+			} else {
+				ret = ncattget(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),storage);
+			}
 			ncclose(cdfid);
 			return(storage);
 		} else {
@@ -718,6 +740,7 @@ void* storage;
 	NetCdfVarInqRecList *stepvl;
 	int cdfid;
 	int ret;
+	char *tmp;
 
 	stepvl = rec->vars;
 	while(stepvl != NULL) {
@@ -731,7 +754,19 @@ void* storage;
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for reading",NrmQuarkToString(rec->file_path_q));
 						return(NULL);
 					}
-					ret = ncattget(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),storage);
+					if(stepal->att_inq->data_type == NC_CHAR) {
+	
+						tmp = (char*)NclMalloc(stepal->att_inq->len + 1);
+						tmp[stepal->att_inq->len] = '\0';
+						ret = ncattget(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),tmp);
+						*(string*)storage = NrmStringToQuark(tmp);
+						NclFree(tmp);
+					
+						
+						
+					} else {
+						ret = ncattget(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),storage);
+					}
 					ncclose(cdfid);
 					if(ret != -1)
 						return(storage);
@@ -1021,7 +1056,6 @@ long* dim_sizes;
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 			return(NhlFATAL);
 		}
-		ncredef(cdfid);
 		the_data_type = NetMapFromNcl(data_type);
 /*
 * All dimensions are correct dimensions for the file
@@ -1038,6 +1072,7 @@ long* dim_sizes;
 			}
 		} 
 		if(the_data_type != NULL) {
+			ncredef(cdfid);
 			ret = ncvardef(cdfid,NrmQuarkToString(thevar),*the_data_type, n_dims, dim_ids);
 			ncendef(cdfid);
 			ncclose(cdfid);
@@ -1084,7 +1119,6 @@ long* dim_sizes;
 			}
 			return(NhlNOERROR);
 		} else {
-			ncabort(cdfid);
 			ncclose(cdfid);
 		}
 	} else {	

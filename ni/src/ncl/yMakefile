@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.13 1994-07-21 23:16:40 boote Exp $
+#      $Id: yMakefile,v 1.14 1994-07-27 18:14:18 ethan Exp $
 #
 #########################################################################
 #									#
@@ -48,7 +48,7 @@ GEN_HDRS	=	NclMultiDValnclfileData.h NclMultiDVallogicalData.h \
 			NclMultiDValdoubleData.h NclMultiDValfloatData.h \
 			NclMultiDValintData.h NclMultiDVallongData.h \
 			NclMultiDValshortData.h NclMultiDValstringData.h \
-			parser.h
+			parser.h NclMultiDValbyteData.h NclMultiDValcharData.h
 
 STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			Machine.h NclApi.h NclAtt.h NclData.h NclDataDefs.h \
@@ -69,7 +69,8 @@ GEN_SRCS	=	NclMultiDValdoubleData.c NclMultiDValfloatData.c \
 			NclMultiDValintData.c NclMultiDVallogicalData.c \
 			NclMultiDVallongData.c NclMultiDValnclfileData.c \
 			NclMultiDValshortData.c NclMultiDValstringData.c \
-			scanner.c parser.c
+			scanner.c parser.c NclMultiDValbyteData.c \
+			NclMultiDValcharData.c
 
 STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			AddIntrinsics.c AttSupport.c DataSupport.c Execute.c \
@@ -91,7 +92,8 @@ GEN_OBJS	=	NclMultiDValdoubleData.o NclMultiDValfloatData.o \
 			NclMultiDValintData.o NclMultiDVallogicalData.o \
 			NclMultiDVallongData.o NclMultiDValnclfileData.o \
 			NclMultiDValshortData.o NclMultiDValstringData.o \
-			scanner.o parser.o
+			scanner.o parser.o NclMultiDValbyteData.o \
+			NclMultiDValcharData.o
 
 STATIC_OBJS	=	AddBuiltIns.o AddFileFormats.o AddHLUObjs.o \
 			AddIntrinsics.o AttSupport.o DataSupport.o Execute.o \
@@ -182,3 +184,5 @@ MultiDValDataRule(short,$(NUM_OP_TMPL))
 MultiDValDataRule(logical,$(NUM_OP_TMPL))
 MultiDValDataRule(string,$(STR_OP_TMPL))
 MultiDValDataRule(nclfile,$(FILE_OP_TMPL))
+MultiDValDataRule(char,$(NUM_OP_TMPL))
+MultiDValDataRule(byte,$(NUM_OP_TMPL))

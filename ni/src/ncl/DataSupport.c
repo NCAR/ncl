@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.2 1994-07-18 15:46:36 ethan Exp $
+ *      $Id: DataSupport.c,v 1.3 1994-07-27 18:14:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,93 @@
 #include "parser.h"
 #include "OpsList.h"
 
+NclMultiDValData _NclStringMdToCharMd
+#if __STDC__
+(NclMultiDValData str_md)
+#else
+(str_md)
+NclMultiDValData str_md;
+#endif
+{
+	char **buffer;
+	int i;
+	string *value;
+	int max_len = 0,tmp_len =0,to = 0;
+	char *val = NULL;
+	int dim_sizes[NCL_MAX_DIMENSIONS];
+
+	buffer = (char**)NclMalloc((unsigned)str_md->multidval.totalelements*sizeof(char*));
+	value = (string*)str_md->multidval.val;
+	for(i = 0; i < str_md->multidval.totalelements; i++) {
+		buffer[i] = NrmQuarkToString(value[i]);
+		tmp_len = strlen(buffer[i]) + 1;
+		if((buffer[i] != NULL) &&(tmp_len > max_len)) {
+			max_len = tmp_len;
+		}
+	}
+	for(i = 0; i < str_md->multidval.n_dims; i++) {
+		dim_sizes[i] = str_md->multidval.dim_sizes[i];
+	}
+	dim_sizes[str_md->multidval.n_dims] = max_len;
+	val = (char*)NclMalloc(max_len * str_md->multidval.totalelements);
+	for(i = 0; i < str_md->multidval.totalelements; i++) {
+		strcpy(&(val[to]),buffer[i]);
+		to += max_len;
+	}
+	return(_NclMultiDValcharCreate(
+		NULL,
+		NULL,
+		NCL_char,
+		0,
+		val,
+		NULL,
+		str_md->multidval.n_dims +1,
+		dim_sizes,
+		TEMPORARY,
+		NULL));
+}
+NclMultiDValData _NclCharMdToStringMd
+#if __STDC__
+(NclMultiDValData char_md)
+#else
+(char_md)
+NclMultiDValData char_md;
+#endif
+{
+	int i;
+	int n_strings = 1;
+	char *buffer = NULL;
+	int len =0;
+	int from = 0;
+	string *value = NULL;
+	char *val = NULL;
+	
+	len = char_md->multidval.dim_sizes[char_md->multidval.n_dims -1];
+
+	for( i = 0; i < char_md->multidval.n_dims - 1; i++) {
+		n_strings *= char_md->multidval.dim_sizes[i];
+	}
+	buffer = (char*)NclMalloc((unsigned)len + 1);
+	buffer[len+1] = '\0';
+	value = (string*) NclMalloc((unsigned)n_strings*sizeof(string));
+	val = (char*)char_md->multidval.val;
+	for(i = 0; i < n_strings ; i++) {
+		memcpy((void*)buffer,&(val[from]),len);
+		value[i] = NrmStringToQuark(buffer);
+	}
+	NclFree(buffer);
+	return(_NclMultiDValstringCreate(
+		NULL,
+		NULL,
+		NCL_string,
+		0,
+		(void*)value,
+		NULL,
+		char_md->multidval.n_dims -1,
+		char_md->multidval.dim_sizes,
+		TEMPORARY,
+		NULL));
+}
 
 /*
 * Probably should put stuff like this in the actual data object to avoid having to
@@ -765,6 +852,29 @@ NclSelectionRecord *sel_rec;
 			status,
 			sel_rec));
 	case Ncl_MultiDValcharData:
+       		return(_NclMultiDValcharCreate(
+			inst,
+			theclass,
+			obj_type,
+			obj_type_mask,
+			val,
+			missing_value,
+			n_dims,
+			dim_sizes,
+			status,
+			sel_rec));
+	case Ncl_MultiDValbyteData:
+       		return(_NclMultiDValbyteCreate(
+			inst,
+			theclass,
+			obj_type,
+			obj_type_mask,
+			val,
+			missing_value,
+			n_dims,
+			dim_sizes,
+			status,
+			sel_rec));
         default:
                 return(NULL);
         }
@@ -844,4 +954,76 @@ extern int _NclGetObjRefCount
 }
 
 
+extern char* _NclBasicDataTypeToName
+#if     __STDC__
+(NclBasicDataTypes dt)
+#else
+(dt)
+NclBasicDataTypes dt;
+#endif
+{
+	static int first = 1;
+	static NclQuark quarks[8];
+
+	if(first) {
+		first = 0;
+		quarks[0] = NrmStringToQuark("double");
+		quarks[1] = NrmStringToQuark("float");
+		quarks[2] = NrmStringToQuark("long");
+		quarks[3] = NrmStringToQuark("integer");
+		quarks[4] = NrmStringToQuark("short");
+		quarks[5] = NrmStringToQuark("string");
+		quarks[6] = NrmStringToQuark("char");
+		quarks[7] = NrmStringToQuark("byte");
+	}	
+
+	switch(dt) {
+	case NCL_double:
+		return(NrmQuarkToString(quarks[0]));
+	case NCL_float:
+		return(NrmQuarkToString(quarks[1]));
+	case NCL_long:
+		return(NrmQuarkToString(quarks[2]));
+	case NCL_int:
+		return(NrmQuarkToString(quarks[3]));
+	case NCL_short:
+		return(NrmQuarkToString(quarks[4]));
+	case NCL_string:
+		return(NrmQuarkToString(quarks[5]));
+	case NCL_char:
+		return(NrmQuarkToString(quarks[6]));
+	case NCL_byte:
+		return(NrmQuarkToString(quarks[7]));
+	}
+	return(NULL);
+}
+
+extern NclBasicDataTypes _NclPromoteType
+#if     __STDC__
+(NclBasicDataTypes dt)
+#else
+(dt)
+NclBasicDataTypes dt;
+#endif
+{
+	switch(dt) {
+	case NCL_double:
+		return(NCL_double);
+	case NCL_float:
+		return(NCL_double);
+	case NCL_long:
+		return(NCL_double);
+	case NCL_int:
+		return(NCL_long);
+	case NCL_short:
+		return(NCL_int);
+	case NCL_string:
+		return(NCL_string);
+	case NCL_char:
+		return(NCL_string);
+	case NCL_byte:
+		return(NCL_short);
+	}
+	return(NCL_none);
+}
 

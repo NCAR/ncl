@@ -79,7 +79,7 @@ NCL_nclfile,
 NCL_obj
 } NclBasicDataTypes;
 
-typedef int string; /* Makes this a quark type */
+typedef NclQuark string; /* Makes this a quark type */
 typedef char byte;
 typedef int logical;
 typedef int nclfile;

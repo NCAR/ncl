@@ -1,6 +1,6 @@
 
 /*
- *      $Id: DataSupport.h,v 1.1 1994-07-14 20:45:43 ethan Exp $
+ *      $Id: DataSupport.h,v 1.2 1994-07-27 18:14:03 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,28 @@
 #ifndef _DataSupport_h
 #define _DataSupport_h
 
+extern struct _NclMultiDValDataRec *_NclCharMdToStringMd(
+#if	NhlNeedProto
+struct _NclMultiDValDataRec * /*char_md*/
+#endif
+);
+extern struct _NclMultiDValDataRec *_NclStringMdToCharMd(
+#if	NhlNeedProto
+struct _NclMultiDValDataRec * /*string_md*/
+#endif
+);
+
+extern char* _NclBasicDataTypeToName(
+#if	NhlNeedProto
+NclBasicDataTypes /*dt*/
+#endif
+);
+
+extern NclBasicDataTypes _NclPromoteType(
+#if  	NhlNeedProto
+	NclBasicDataTypes /*dt*/
+#endif
+); 
 
 extern struct _NclMultiDValDataRec * _NclCoerceData(
 #if 	NhlNeedProto

@@ -7,4 +7,6 @@
 #include "NclMultiDValHLUObjData.h"
 #include "NclMultiDVallogicalData.h"
 #include "NclMultiDValnclfileData.h"
+#include "NclMultiDValbyteData.h"
+#include "NclMultiDValcharData.h"
 

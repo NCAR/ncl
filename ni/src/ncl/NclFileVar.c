@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclFileVar.c,v 1.1 1994-07-21 00:18:58 ethan Exp $
+ *      $Id: NclFileVar.c,v 1.2 1994-07-27 18:14:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -28,11 +28,36 @@
 #include "NclMdInc.h"
 #include "NclAtt.h"
 #include "NclFile.h"
+#include "NclFileInterfaces.h"
 #include "NclFileVar.h"
 #include "FileSupport.h"
 #include "DataSupport.h"
 #include "AttSupport.h"
 #include "VarSupport.h"
+
+static int FileVarIsACoord(
+#if NhlNeedProto
+struct _NclVarRec * /*self*/,
+char * /*coordname*/
+#endif
+);
+
+static struct _NclVarRec *FileVarReadCoord(
+#if	NhlNeedProto
+struct _NclVarRec * /*self*/,
+char *  /*coord_name*/,
+struct _NclSelectionRecord * /*sel_ptr*/
+#endif
+);
+
+static NhlErrorTypes FileVarWriteCoord(
+#if	NhlNeedProto
+struct _NclVarRec * /*self*/,
+struct _NclMultiDValDataRec * /*value*/,
+char * 	/*coord_name*/,
+struct _NclSelectionRecord * /*sel_ptr*/
+#endif
+);
 
 
 static void	FileVarDestroy(
@@ -62,6 +87,37 @@ static int FileVarIsAAtt (
 #if  	NhlNeedProto
 struct _NclVarRec * /*self*/,
 char* /*attname*/
+#endif
+);
+
+static int FileVarIsADim(
+#if     NhlNeedProto
+struct _NclVarRec * /*self*/,
+char * /*attname */
+#endif
+);
+
+static struct _NclMultiDValDataRec *FileVarReadDim(
+#if	NhlNeedProto
+struct _NclVarRec * /* self */,
+char * /*dim_name*/,
+long /*dim_num */
+#endif
+);
+
+static struct _NclDimRec *FileVarGetDimInfo(
+#if 	NhlNeedProto
+struct _NclVarRec * /*self*/,
+char * /*dim_name*/,
+long /* dim_num */
+#endif
+);
+
+static NhlErrorTypes FileVarWriteDim(
+#if	NhlNeedProto
+struct _NclVarRec *  /*self*/,
+long 		/*dim_num*/,
+char * 		/*dim_name */
 #endif
 );
 
@@ -117,14 +173,14 @@ NclFileVarClassRec nclFileVarClassRec = {
 /* NclIsA is_att_func*/			FileVarIsAAtt,
 /* NclWriteAttribute write_att_func*/	FileVarWriteAtt,
 
-/* NclIsAFunc is_dim_func */		NULL,
-/* NclReadDimension read_dim_func*/	NULL,
-/* NclGetDimInfo read_dim_func*/	NULL,
-/* NclWriteDimension write_dim_func*/	NULL,
+/* NclIsAFunc is_dim_func */		FileVarIsADim,
+/* NclReadDimension read_dim_func*/	FileVarReadDim,
+/* NclGetDimInfo read_dim_func*/	FileVarGetDimInfo,
+/* NclWriteDimension write_dim_func*/	FileVarWriteDim,
 
-/* NclIsAFunc is_coord_func */		NULL,
-/* NclReadCoordinate read_coordinate*/	NULL,
-/* NclWriteCoordinate write_coordinate*/ NULL 
+/* NclIsAFunc is_coord_func */		FileVarIsACoord,
+/* NclReadCoordinate read_coordinate*/	FileVarReadCoord,
+/* NclWriteCoordinate write_coordinate*/ FileVarWriteCoord
 	},
 	{
 		NULL
@@ -233,7 +289,7 @@ struct _NclSelectionRecord *sel_ptr;
 	theval = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
 	if(theval != NULL) 
 		thefile = (NclFile)_NclGetObj(*(int*)theval->multidval.val);
-	if(thefile != NULL) {
+	if((thefile != NULL)&&(attname != NULL)) {
 		return(_NclFileWriteAtt(thefile,NrmStringToQuark(attname),value,sel_ptr));
 	} else {
 		return(NhlFATAL);
@@ -259,7 +315,7 @@ struct _NclSelectionRecord *sel_ptr;
 	theval = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
 	if(theval != NULL) 
 		thefile = (NclFile)_NclGetObj(*(int*)theval->multidval.val);
-	if(thefile != NULL) {
+	if((thefile != NULL)&&(attname != NULL)) {
 		return(_NclFileReadAtt(thefile,NrmStringToQuark(attname),sel_ptr));
 	} else {
 		return(NULL);
@@ -281,7 +337,7 @@ char* attname;
 	theval = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
 	if(theval != NULL) 
 		thefile = (NclFile)_NclGetObj(*(int*)theval->multidval.val);
-	if(thefile != NULL) {
+	if((thefile != NULL)&&(attname != NULL)) {
 		if(_NclFileIsAtt(thefile,NrmStringToQuark(attname)) != -1) {
 			return(1);
 		} else {
@@ -292,12 +348,186 @@ char* attname;
 	}
 }
 
+static int FileVarIsADim
+#if  __STDC__
+(struct _NclVarRec * self, char * dimname)
+#else
+(self, dimname)
+struct _NclVarRec * self;
+char * dimname;
+#endif
+{
+	NclFile thefile = NULL;
+	NclMultiDValData theval = NULL;
+	int index;
 
+	theval = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
+	if(theval != NULL) 
+		thefile = (NclFile)_NclGetObj(*(int*)theval->multidval.val);
+	if((thefile != NULL)&&(dimname != NULL)) {
+		index = _NclFileIsDim(thefile,NrmStringToQuark(dimname));
+		if(index != -1) {
+			return(1);
+		}
+	}
+	return(0);
+}
 
+static struct _NclMultiDValDataRec *FileVarReadDim
+#if  __STDC__
+(struct _NclVarRec *self, char *dim_name, long dim_num)
+#else
+(self, dim_name, dim_num)
+struct _NclVarRec *self;
+char *dim_name;
+long dim_num;
+#endif
+{
+	NclFile thefile = NULL;
+	NclMultiDValData theval = NULL;
 
+	theval = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
+	if(theval != NULL) 
+		thefile = (NclFile)_NclGetObj(*(int*)theval->multidval.val);
+	if(thefile != NULL) {
+		return(_NclFileReadDim(thefile,(dim_name == NULL ? -1 : NrmStringToQuark(dim_name)),dim_num));
+	}
+	return(NULL);
+}
 
+static struct _NclDimRec *FileVarGetDimInfo
+#if 	NhlNeedProto
+(struct _NclVarRec *self, char *dim_name, long dim_num)
+#else
+(self, dim_name, dim_num)
+struct _NclVarRec *self;
+char *dim_name;
+long dim_num;
+#endif
+{
+	NclFile thefile = NULL;
+	NclMultiDValData theval = NULL;
+	struct _NclDimRec * thedim = NULL;
 
+	theval = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
+	if(theval != NULL) 
+		thefile = (NclFile)_NclGetObj(*(int*)theval->multidval.val);
+	if(thefile != NULL) {
+		thedim = (NclDimRec*)NclMalloc(sizeof(NclDimRec));
+		if(dim_name != NULL) {
+			thedim->dim_num = _NclFileIsDim(thefile,NrmStringToQuark(dim_name));
+			if(thedim->dim_num == -1) {	
+				NclFree(thedim);
+				return(NULL);
+			}
+			thedim->dim_size = thefile->file.file_dim_info[(int)thedim->dim_num]->dim_size;
+			thedim->dim_quark = NrmStringToQuark(dim_name);
+			return(thedim);
+		} else {
+			if((dim_num > 0)&&(dim_num < thefile->file.n_file_dims)) {
+				thedim->dim_num = dim_num;
+				thedim->dim_quark = thefile->file.file_dim_info[dim_num]->dim_name_quark;	
+				thedim->dim_size = thefile->file.file_dim_info[dim_num]->dim_size;
+				return(thedim);
+			} else {
+				NclFree(thedim);
+				return(NULL);
+			}
+		}
+	}
+}
 
+static NhlErrorTypes FileVarWriteDim
+#if	NhlNeedProto
+(struct _NclVarRec *self, long dim_num, char *dim_name)
+#else
+(self, dim_num, dim_name)
+struct _NclVarRec *self;
+long dim_num;
+char *dim_name;
+#endif
+{
+	NclFile thefile = NULL;
+	NclMultiDValData theval = NULL;
 
+	theval = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
+	if(theval != NULL) 
+		thefile = (NclFile)_NclGetObj(*(int*)theval->multidval.val);
+	if(thefile != NULL) {
+		return(_NclFileWriteDim(thefile,(dim_name == NULL ? -1 : NrmStringToQuark(dim_name)),dim_num));
+	}
+	return(NULL);
+}
 
+static int FileVarIsACoord
+#if  __STDC__
+(struct _NclVarRec *self, char *coordname)
+#else
+(self, coordname)
+struct _NclVarRec *self;
+char *coordname;
+#endif
+{
+	NclFile thefile = NULL;
+	NclMultiDValData theval = NULL;
+	int index ;
 
+	theval = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
+	if(theval != NULL) 
+		thefile = (NclFile)_NclGetObj(*(int*)theval->multidval.val);
+	if((thefile != NULL)&&(coordname != NULL)) {
+		index = _NclFileVarIsCoord(thefile,NrmStringToQuark(coordname));
+		if(index != -1) {
+			return(1);
+		} else {
+			return(0);
+		}
+	}
+	return(0);
+}
+
+static struct _NclVarRec *FileVarReadCoord
+#if	__STDC__
+(struct _NclVarRec *self, char *coord_name, struct _NclSelectionRecord *sel_ptr)
+#else
+(self, coord_name, sel_ptr)
+struct _NclVarRec *self;
+char *coord_name;
+struct _NclSelectionRecord *sel_ptr;
+#endif
+{
+	NclFile thefile = NULL;
+	NclMultiDValData theval = NULL;
+
+	theval = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
+	if(theval != NULL) 
+		thefile = (NclFile)_NclGetObj(*(int*)theval->multidval.val);
+	if((thefile != NULL)&&(coord_name != NULL)) {
+		return(_NclFileReadCoord(thefile,NrmStringToQuark(coord_name),sel_ptr));
+	}
+	return(NULL);
+		
+}
+
+static NhlErrorTypes FileVarWriteCoord
+#if	__STDC__
+(struct _NclVarRec *self, struct _NclMultiDValDataRec *value, char *coord_name, struct _NclSelectionRecord *sel_ptr)
+#else
+(self, value, coord_name, sel_ptr)
+struct _NclVarRec *self;
+struct _NclMultiDValDataRec *value;
+char *coord_name;
+struct _NclSelectionRecord *sel_ptr;
+#endif
+{
+	NclFile thefile = NULL;
+	NclMultiDValData theval = NULL;
+
+	theval = (NclMultiDValData)_NclGetObj(self->var.thevalue_id);
+	if(theval != NULL) 
+		thefile = (NclFile)_NclGetObj(*(int*)theval->multidval.val);
+	if((thefile != NULL)&&(coord_name != NULL)) {
+		return(_NclFileWriteCoord(thefile,NrmStringToQuark(coord_name),value,sel_ptr));
+	}
+	return(NhlFATAL);
+}

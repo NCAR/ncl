@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#      $Id: op_funcs.sh,v 1.1 1994-07-21 23:16:30 boote Exp $
+#      $Id: op_funcs.sh,v 1.2 1994-07-27 18:14:16 ethan Exp $
 #
 #########################################################################
 #									#
@@ -139,6 +139,87 @@ MultiDValSelectFuncsTemplate.c.sed
 
 exit 0
 
+fi
+
+if [ $1 = "char" ]
+then
+sed  \
+-e "s/OUTDATATYPE/$1/g" \
+-e "s/DATATYPE/$1/g" \
+-e 's/THEOP/+/' \
+-e 's/OPER/\+/' \
+-e 's/FUNCNAME/Plus/' \
+MultiDValSimpleOpTemplate.c.sed
+
+sed \
+-e "s/OUTDATATYPE/logical/g" \
+-e "s/DATATYPE/$1/g" \
+-e 's/THEOP/</' \
+-e 's/OPER/\.lt\./' \
+-e 's/FUNCNAME/Lt/' \
+MultiDValSimpleOpTemplate.c.sed
+
+sed \
+-e "s/OUTDATATYPE/logical/g" \
+-e "s/DATATYPE/$1/g" \
+-e 's/THEOP/>/' \
+-e 's/OPER/\.gt\./' \
+-e 's/FUNCNAME/Gt/' \
+MultiDValSimpleOpTemplate.c.sed
+
+sed \
+-e "s/OUTDATATYPE/logical/g" \
+-e "s/DATATYPE/$1/g" \
+-e 's/THEOP/<=/' \
+-e 's/OPER/\.le\./' \
+-e 's/FUNCNAME/Le/' \
+MultiDValSimpleOpTemplate.c.sed
+
+sed \
+-e "s/OUTDATATYPE/logical/g" \
+-e "s/DATATYPE/$1/g" \
+-e 's/THEOP/>=/' \
+-e 's/OPER/\.ge\./' \
+-e 's/FUNCNAME/Ge/' \
+MultiDValSimpleOpTemplate.c.sed
+
+sed \
+-e "s/OUTDATATYPE/logical/g" \
+-e "s/DATATYPE/$1/g" \
+-e 's/THEOP/==/' \
+-e 's/OPER/\.eq\./' \
+-e 's/FUNCNAME/Eq/' \
+MultiDValSimpleOpTemplate.c.sed
+
+sed \
+-e "s/OUTDATATYPE/logical/g" \
+-e "s/DATATYPE/$1/g" \
+-e 's/THEOP/!=/' \
+-e 's/OPER/\.ne\./' \
+-e 's/FUNCNAME/Ne/' \
+MultiDValSimpleOpTemplate.c.sed
+
+sed \
+-e "s/OUTDATATYPE/$1/g" \
+-e "s/DATATYPE/$1/g" \
+-e 's/THEOP/\</' \
+-e 's/OPER/\</' \
+-e 's/FUNCNAME/SelLt/' \
+MultiDValSelectOpTemplate.c.sed
+
+sed \
+-e "s/OUTDATATYPE/$1/g" \
+-e "s/DATATYPE/$1/g" \
+-e 's/THEOP/\>/' \
+-e 's/OPER/\>/' \
+-e 's/FUNCNAME/SelGt/' \
+MultiDValSelectOpTemplate.c.sed
+
+sed \
+-e "s/DATATYPE/$1/g" \
+MultiDValSelectFuncsTemplate.c.sed
+
+exit 0
 fi
 
 #

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclFileVar.h,v 1.1 1994-07-21 00:19:00 ethan Exp $
+ *      $Id: NclFileVar.h,v 1.2 1994-07-27 18:14:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -52,7 +52,7 @@ extern NclObjClass nclFileVarClass;
 
 extern NclFileVarClassRec nclFileVarClassRec;
 
-struct _NclVarRec *_NclFileVarCreate(
+extern struct _NclVarRec *_NclFileVarCreate(
 #if     NhlNeedProto
         struct _NclVarRec *     /* inst */,
         struct _NclObjClassRec *        /* theclass */,
