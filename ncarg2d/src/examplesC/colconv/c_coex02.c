@@ -1,5 +1,5 @@
 /*
- *  $Id: c_coex02.c,v 1.3 1994-11-03 18:29:10 haley Exp $
+ *  $Id: c_coex02.c,v 1.4 1994-11-04 16:24:09 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -33,7 +33,7 @@ main()
 /*
  *  Color value array.
  */
-      Gcolr_rep rgb[4][4];
+      Gcolr_rep rgb[4][4], rgb2;
       int i, j;
       float x, y;
 
@@ -84,6 +84,10 @@ main()
 /*
  *  Define color indices and RGB labels..
  */
+	  rgb2.rgb.red = rgb2.rgb.green = rgb2.rgb.blue = 0.;
+	  gset_colr_rep(WKID,0,&rgb2);
+	  rgb2.rgb.red = rgb2.rgb.green = rgb2.rgb.blue = 1.;
+	  gset_colr_rep(WKID,1,&rgb2);
       for( j = 0; j < NY; j++ ) {
           for( i = 0; i < NX; i++ ) {
               gset_colr_rep(WKID,NX*(j)+i+2,&rgb[i][j]);
