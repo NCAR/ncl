@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.c,v 1.13 1999-05-22 00:36:27 dbrown Exp $
+ *      $Id: varpage.c,v 1.14 1999-07-30 03:20:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -726,7 +726,8 @@ NhlBoolean InitializeDimInfo
 
 	return NgSetVarData(dl,rec->vdata,page->qfile,dl->u.var->name,
 			    NrmNULLQUARK,vinfo->n_dims,
-			    rec->start,rec->finish,rec->stride,_NgSHAPED_VAR);
+			    rec->start,rec->finish,rec->stride,
+			    _NgDEFAULT_SHAPE);
 
 }
 
@@ -823,13 +824,14 @@ RestoreVarState(
 }
 
 extern brPageData *
-NgGetVarPage
+_NgGetVarPage
 (
 	NgGO		go,
         brPane		*pane,
 	brPage		*page,
         brPage		*copy_page,
-	NgPageSaveState save_state
+	NgPageSaveState save_state,
+	NhlPointer	init_data
 )
 {
 	NgBrowse		browse = (NgBrowse)go;

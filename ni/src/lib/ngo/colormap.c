@@ -1,5 +1,5 @@
 /*
- *      $Id: colormap.c,v 1.4 1999-05-27 02:28:33 dbrown Exp $
+ *      $Id: colormap.c,v 1.5 1999-07-30 03:20:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 #include <ncarg/hlu/WorkstationI.h>
 #include <ncarg/ncl/defs.h>
 #include <ncarg/ngo/nclstate.h>
+#include <ncarg/ngo/browse.h>
 #include <ncarg/ngo/colormapP.h>
 #include <ncarg/ngo/MegaB.h>
 #include <Xcb/xcbP.h>
@@ -734,14 +735,32 @@ SetWorkstationCmap
 				chgs[i]);
 		NgNclSubmitLine(cm->go.nclstate,buffer,False);
 	}
-
 	if(num_chg){
+#if 0
 		sprintf(buffer,"clear(%s)\n",wkbuff);
 		NgNclSubmitLine(cm->go.nclstate,buffer,False);
 		sprintf(buffer,"draw(%s)\n",wkbuff);
 		NgNclSubmitLine(cm->go.nclstate,buffer,False);
+#endif
 		NgNclSubmitLine(cm->go.nclstate,"end\n",False);
 	}
+}
+
+static NhlBoolean
+GetBrowser
+(
+	int		goid,
+	NhlPointer	udata
+)
+{
+	int	*browse = (int*)udata;
+
+	if(NhlIsClass(goid,NgbrowseClass)){
+		*browse = goid;
+		return False;
+	}
+
+	return True;
 }
 
 static void
@@ -753,6 +772,7 @@ CmapApplyCB
 )
 {
 	NgColorMap	cm = (NgColorMap)udata;
+	int		browse = NhlDEFAULT_APP;
 
 	UnSelectCurrent(cm);
 	SelectIndx(cm,cm->colormap.sel_indx);
@@ -762,6 +782,11 @@ CmapApplyCB
 
 	cm->colormap.cur_pal_name_pos = cm->colormap.set_pal_name_pos;
 
+
+	NgAppEnumerateGO(cm->go.appmgr,GetBrowser,&browse);
+
+	if (browse != NhlDEFAULT_APP)
+		NgUpdatePages(browse,True);
 	return;
 }
 
@@ -774,6 +799,7 @@ CmapOkCB
 )
 {
 	NgColorMap	cm = (NgColorMap)udata;
+	int		browse = NhlDEFAULT_APP;
 
 	UnSelectCurrent(cm);
 	cm->colormap.sel_indx = -1;
@@ -781,6 +807,11 @@ CmapOkCB
 	SetWorkstationCmap(cm);
 
 	cm->colormap.cur_pal_name_pos = cm->colormap.set_pal_name_pos;
+
+	NgAppEnumerateGO(cm->go.appmgr,GetBrowser,&browse);
+
+	if (browse != NhlDEFAULT_APP)
+		NgUpdatePages(browse,True);
 
 	return;
 }

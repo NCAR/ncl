@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.20 1999-02-23 03:56:51 dbrown Exp $
+ *      $Id: nclstate.c,v 1.21 1999-07-30 03:20:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1656,11 +1656,17 @@ NgNclHluClassPtrFromName(
         return NULL;
 }
 
+/*
+ * hlu_name, ncl_parent, and classname may all be set to NULL unless the
+ * type is _NgCREATE.
+ */
+
 int
 NgNclVisBlockBegin
 (
         int		nclstate,
         NgNclBlockType	type,
+	NhlString	hlu_name,
         NhlString	ncl_graphic,
         NhlString	ncl_parent,
         NhlString	classname
@@ -1690,7 +1696,7 @@ NgNclVisBlockBegin
         switch (type) {
             case _NgCREATE:
                     sprintf(ns->buffer,"%s = create \"%s\" %s %s\n",
-                            ncl_graphic,ncl_graphic,classname,ncl_parent);
+                            ncl_graphic,hlu_name,classname,ncl_parent);
                     break;
             case _NgSETVAL:
                     sprintf(ns->buffer,"setvalues %s\n",

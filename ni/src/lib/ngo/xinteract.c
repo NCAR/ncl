@@ -1,5 +1,5 @@
 /*
- *      $Id: xinteract.c,v 1.5 1999-05-22 00:36:28 dbrown Exp $
+ *      $Id: xinteract.c,v 1.6 1999-07-30 03:21:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -299,8 +299,8 @@ static void SetViewPort
 		svalues[i] = &cfv[i][0];
 		sprintf(svalues[i],"%f",fv[i]);
 	}
-	block_id = NgNclVisBlockBegin(xwk->go.nclstate,_NgSETVAL,view_name,
-				      NULL,NULL);
+	block_id = NgNclVisBlockBegin(xwk->go.nclstate,_NgSETVAL,
+				      NULL,view_name,NULL,NULL);
 	NgNclVisBlockAddResList(xwk->go.nclstate,block_id,count,
 				res_names,svalues,NULL);
 	NgNclVisBlockEnd(xwk->go.nclstate,block_id);
@@ -1160,7 +1160,7 @@ extern void NgDrawXwkView
 		NhlDraw(view_id);
 		NgUpdateViewBB(wks_state,view_id); 
 #if 0
-		if (xwk->xwk.selected_view_id = view_id) {
+		if (xwk->xwk.selected_view_id == view_id) {
 			XorDrawViewPort(xwk,xwk->xwk.selected_view_id,False);
 		}
 #endif
@@ -1366,7 +1366,10 @@ extern void NgClearXwkView
 		sprintf(buf,"draw(%s)\n",view_name);
 		(void)NgNclSubmitBlock(xwk->go.nclstate,buf);
 #endif
-		NhlDraw(draw_table[i]);
+		if (! xwk->xwk.draw_single_view ||
+		    (xwk->xwk.draw_single_view && 
+		     xwk->xwk.selected_view_id == draw_table[i]))
+			NhlDraw(draw_table[i]);
 		vcount = GetIntersectingViews(xwk,draw_table[i],&iviews);
 		for (j = 0,k = 0; j < vcount; j++) {
 			/* 

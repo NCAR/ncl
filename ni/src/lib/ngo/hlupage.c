@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.24 1999-06-02 03:40:07 dbrown Exp $
+ *      $Id: hlupage.c,v 1.25 1999-07-30 03:20:54 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -25,6 +25,7 @@
 #include <ncarg/ngo/graphic.h>
 #include <ncarg/ngo/xinteract.h>
 #include <ncarg/ngo/stringutil.h>
+#include <ncarg/ngo/plotapp.h>
 #include <ncarg/ngo/Grid.h>
 
 #include <Xm/Xm.h>
@@ -39,28 +40,11 @@
 #include <ncarg/hlu/VectorField.h>
 
 
-static NrmQuark QFillValue = NrmNULLQUARK;
 static NrmQuark QString = NrmNULLQUARK;
 static NrmQuark QGenArray = NrmNULLQUARK;
 static NrmQuark QInteger = NrmNULLQUARK;
 
-typedef struct _ResData {
-	int  res_count;
-	char *res[16];
-	NhlPointer values[16];
-	NrmQuark types[16];
-	NgVarData vdata[16];
-} ResData;
 
-typedef struct _PlotStyleAppRec {
-	struct _PlotStyleAppRec *next;
-	NrmQuark  		qname;
-	int			app_id;
-	NhlBoolean		preview;
-	int			ref_count;
-} PlotStyleAppRec, *PlotStyleApp;
-
-PlotStyleApp PlotStyleAppList = NULL;
 
 static void FreeDataLinks(
 	XmLArray datalinks
@@ -284,6 +268,9 @@ static NhlErrorTypes GetHluObjCreateMessage
 	pub->plot_style_dir = obj_create->plot_style_dir;
 	rec->hlu_id = obj_create->obj_id;
 	rec->has_input_data = obj_create->has_input_data;
+	rec->app_id = obj_create->app_id;
+	if (! _NhlGetLayer(rec->app_id))
+		rec->app_id = NhlNULLOBJID;
 	rec->state = obj_create->state;
 	if (pub->data_profile) {
 		NgFreeDataProfile(pub->data_profile);
@@ -629,7 +616,7 @@ static NhlErrorTypes GetPageMessages
 	return ret;
 }
 
-static void GetDataVal
+static NhlBoolean GetDataVal
 (
 	NgVarData 	vdata,
 	NhlPointer 	*value,
@@ -647,7 +634,7 @@ static void GetDataVal
 	*type = NrmNULLQUARK;
 
 	if (! vdata || vdata->set_state == _NgUNKNOWN_DATA)
-		return;
+		return False;
 
 
 	if (! preview) {
@@ -655,11 +642,12 @@ static void GetDataVal
 
 		if (vdata->set_state == _NgEXPRESSION) {
 			if (! vdata->qexpr_var) {
-				if (! vdata->expr_val && vdata->go)
-					return;
+				if (! (vdata->expr_val && vdata->go))
+					return False;
 				if (! NgSetExpressionVarData
-				    (vdata->go->base.id,vdata,vdata->expr_val))
-					return;
+				    (vdata->go->base.id,vdata,
+				     vdata->expr_val,True))
+					return False;
 			}
 			sprintf(buf,"%s(",
 				NrmQuarkToString(vdata->qexpr_var));
@@ -671,7 +659,7 @@ static void GetDataVal
 				*value = NhlMalloc(strlen(buf) + 1);
 				strcpy((char *)*value,buf);
 				*type = QString;
-				return;
+				return True;
 			}
 
 			switch (vdata->type) {
@@ -699,7 +687,7 @@ static void GetDataVal
 				break;
 			default:
 				fprintf(stderr,"invalid var type\n");
-				return;
+				return False;
 			}
 		}
 		for (i = 0; i < vdata->ndims; i++) {
@@ -717,12 +705,12 @@ static void GetDataVal
 		*value = NhlMalloc(strlen(buf) + 1);
 		strcpy((char *)*value,buf);
 		*type = QString;
-		return;
+		return True;
 	}
 
 	if (vdata->set_state == _NgEXPRESSION) {
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"invalid var data set state"));
-		return;
+		return False;
 	}
 	switch (vdata->type) {
 	case FILEVAR:
@@ -747,10 +735,10 @@ static void GetDataVal
 		break;
 	default:
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"invalid var type"));
-		return;
+		return False;
 	}
 	if (! val)
-		return;
+		return False;
 
 	type_str = NgHLUTypeString(val->type);
 	*value = _NhlCreateGenArray(val->value,type_str,val->elem_size,
@@ -758,11 +746,11 @@ static void GetDataVal
 	NclFreeExtValue(val);
 	*type = QGenArray;
 
-	return;
+	return True;
 }
 
 
-static void GetDataObjValue
+static NhlBoolean GetDataObjValue
 (
 	brHluPageRec	*rec,
 	NgDataItem	ditem,
@@ -774,21 +762,25 @@ static void GetDataObjValue
 	NrmQuark qname = ditem->vdata->qvar;
 	int i;
 
+	if (qname == NrmNULLQUARK)
+		return False;
+
 	if (preview) {
 		for (i = 0; i < rec->data_object_count; i++) {
 			if (rec->data_objects[i]->qname == qname) {
 				*value = (NhlPointer)rec->data_objects[i]->id;
 				*type = QInteger;
-				return;
+				return True;
 			}
 		}
+		return False;
 	}
-	*value = (NhlPointer) NrmQuarkToString(qname);
+
 	*value = NhlMalloc(strlen(NrmQuarkToString(qname)) + 1);
 	strcpy((char *)*value,NrmQuarkToString(qname));
 	*type = QString;
 	
-	return;
+	return True;
 		
 }
 static NhlBoolean GetConfigValue
@@ -822,55 +814,6 @@ static NhlBoolean GetFillValue
 
 	return (*ditem->get_val)(ditem,value,type,preview);
 }
- 
-static void PreviewResList
-(
-        int		setrl_id,
-        NhlPointer	data
-        )
-{
-	ResData *res_data = (ResData *) data;
-	int i;
-
-	for (i = 0; i < res_data->res_count; i++) {
-		if (! res_data->values[i])
-			continue;
-		NhlRLSet(setrl_id,res_data->res[i],
-			 NrmQuarkToString(res_data->types[i]),
-			 res_data->values[i]);
-	}
-	return;
-}
-
-static int AddResList
-(
-        int		nclstate,
-        NhlPointer	data,
-        int		block_id
-        )
-{
-	ResData *res_data = (ResData *) data;
-	NhlBoolean quote[16];
-	int i,lcount = 0;
-	NhlString res[16],values[16];
-
-	if (! res_data->res_count)
-		return 0;
-
-	for (i = 0; i < res_data->res_count; i++) {
-		if (res_data->values[i]) {
-			res[lcount] = res_data->res[i];
-			values[lcount] = (NhlString) res_data->values[i];
-			quote[lcount] = False;
-			lcount++;
-		}
-	}
-
-        NgNclVisBlockAddResList(nclstate,block_id,lcount,res,values,quote);
-
-	return res_data->res_count;
-}
-
 
 extern void NgFreeHluObjCreateRec
 (
@@ -890,6 +833,7 @@ extern brHluObjCreate NgNewHluObjCreateRec
 	NhlString	plot_style,
 	NhlString	plot_style_dir,
 	int		obj_id,
+	int		app_id,
 	NhlBoolean	has_input_data,
 	_hluState	state
 )
@@ -907,6 +851,7 @@ extern brHluObjCreate NgNewHluObjCreateRec
 	obj_create->has_input_data = has_input_data;
 	obj_create->state = state;
 	obj_create->dprof = data_profile;
+	obj_create->app_id = app_id;
 
 	return obj_create;
 
@@ -931,7 +876,8 @@ static void PostHluObjCreateMessage
 
 	obj_create = NgNewHluObjCreateRec
 		(class_name,dprof,rec->public.plot_style,
-		 rec->public.plot_style_dir,hlu_id,rec->has_input_data,state);
+		 rec->public.plot_style_dir,hlu_id,
+		 rec->app_id,rec->has_input_data,state);
 
 	if (obj_create)
 		NgPostPageMessage(page->go->base.id,page->id,
@@ -941,215 +887,6 @@ static void PostHluObjCreateMessage
 				  (NhlFreeFunc)NgFreeHluObjCreateRec,False);
 	return;
 
-}
-
-static int CreatePlotStyleApp
-(
-        brPage		*page,
-	NhlBoolean	preview
-)
-{
-	NhlErrorTypes	ret = NhlNOERROR;
-	brPageData	*pdp = page->pdata;
-	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
-	char		plotstyledir[512];
-	ResData 	app_res_data;
-        NgSetResProc	setresproc[2];
-        NhlPointer	appresdata;
-	int		app_id;
-
-	if (! rec->public.plot_style) 
-		return NhlNULLOBJID;
-
-#if DEBUG_HLUPAGE
-	fprintf(stderr,"plot style %s\n",rec->public.plot_style);
-#endif
-
-	app_res_data.res_count = 1;
-	app_res_data.res[0] = "appUsrDir";
-	app_res_data.types[0] = QString;
-	if (rec->public.plot_style_dir) {
-		if (preview)
-			plotstyledir[0] = '\0';
-		else 
-			strcpy(plotstyledir,"\"");
-		strcat(plotstyledir,rec->public.plot_style_dir);
-		if (! preview)
-			strcat(plotstyledir,"\"");
-		app_res_data.values[0] = (NhlPointer) plotstyledir;
-	}
-	else if (preview) {
-		app_res_data.values[0] = (NhlPointer) "./plot_styles";
-	}
-	else {
-		app_res_data.values[0] = (NhlPointer) "\"./plot_styles\"";
-	}
-
-	if (preview) {
-		NgPreviewResProc	resproc;
-
-		resproc = PreviewResList;
-		appresdata = &app_res_data;
-		ret = NgCreatePreviewGraphic
-			(rec->go->base.id,&app_id,
-			 rec->public.plot_style,NULL,"appClass",
-			 1,&resproc,&appresdata);
-	}
-	else {
-		NgSetResProc	resproc;
-
-		resproc = AddResList;
-		appresdata = &app_res_data;
-		ret = NgCreateGraphic(rec->go->base.id,&app_id,
-				      rec->public.plot_style,NULL,"appClass",
-				      1,&resproc,&appresdata);
-	}
-	if (! app_id || ret < NhlWARNING)
-		return (int) ret;
-
-	return app_id;
-}
-
-static void DestroyPlotStyleApp
-(
-        brPage		*page,
-	NhlBoolean	preview
-)
-{
-	brPageData	*pdp = page->pdata;
-	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
-		
-	if (! rec->public.plot_style)
-		return;
-	if (! rec->app_id) 
-		return;
-
-	if (preview)
-		NgDestroyPreviewGraphic(rec->go->base.id,rec->app_id);
-	else
-		NgDestroyGraphic(rec->go->base.id,rec->public.plot_style);
-
-	rec->app_id = NhlNULLOBJID;
-
-	return;
-}
-
-static int GetPlotStyleAppId
-(
-	brPage		*page,
-	NhlBoolean	*is_preview
-)
-{
-	brPageData	*pdp = page->pdata;
-	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
-	PlotStyleApp	ps_app = PlotStyleAppList;
-	NrmQuark       	qname;
-	int		app_id;
-
-	*is_preview = False;
-
-	if (! rec->public.plot_style)
-		return NhlNULLOBJID;
-
-	qname  = NrmStringToQuark(rec->public.plot_style);
-
-	while (ps_app) {
-		if (ps_app->qname == qname) {
-			*is_preview = ps_app->preview;
-			return ps_app->app_id;
-		}
-		ps_app = ps_app->next;
-	}
-	return NhlNULLOBJID;
-}
-
-static void DeletePlotStyleAppRef
-(
-	int		go_id,
-	NrmQuark	qplotstyle
-)
-{
-	PlotStyleApp	*ps_app = &PlotStyleAppList;
-	PlotStyleApp	dps_app = NULL;
-	NrmQuark	qname;
-
-	while (*ps_app) {
-		if ((*ps_app)->qname == qplotstyle) {
-			(*ps_app)->ref_count--;
-			if ((*ps_app)->ref_count > 0)
-				return;
-			dps_app = *ps_app;
-			*ps_app = (*ps_app)->next;
-			break;
-		}
-		ps_app = &((*ps_app)->next);
-	}
-	if (dps_app) {
-		if (dps_app->preview)
-			NgDestroyPreviewGraphic(go_id,dps_app->app_id);
-		else
-			NgDestroyGraphic(go_id,NrmQuarkToString(qplotstyle));
-		NhlFree(dps_app);
-	}
-	return;
-}
-
-static int NewPlotStyleAppRef
-(
-	brPage		*page,
-	NhlBoolean	preview
-)
-{
-	brPageData	*pdp = page->pdata;
-	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
-	PlotStyleApp ps_app = PlotStyleAppList;
-	int app_id;
-	NrmQuark qname;
-	NhlBoolean found = False;
-
-	if (! rec->public.plot_style)
-		return NhlNULLOBJID;
-
-	qname  = NrmStringToQuark(rec->public.plot_style);
-
-	while (ps_app) {
-		if (ps_app->qname == qname) {
-			ps_app->ref_count++;
-
-			if (ps_app->preview && ! preview) {
-				DestroyPlotStyleApp(page,True);
-				found = True;
-				break;
-			}
-			else if (! _NhlGetLayer(ps_app->app_id)) {
-				found = True;
-				break;
-			}
-			return ps_app->app_id;
-		}
-		ps_app = ps_app->next;
-	}
-
-	app_id = CreatePlotStyleApp(page,preview);
-	if (app_id <= NhlNULLOBJID)
-		return NhlNULLOBJID;
-
-	if (! found) {
-		ps_app = NhlMalloc(sizeof(PlotStyleAppRec));
-		if (! ps_app) {
-			NHLPERROR((NhlFATAL,ENOMEM,NULL));
-			return (int) NhlFATAL;
-		}
-		ps_app->ref_count = 1;
-		ps_app->next = PlotStyleAppList;
-		PlotStyleAppList = ps_app;
-	}
-
-	ps_app->app_id = app_id;
-	ps_app->qname = qname;
-	ps_app->preview = preview;
-
-	return app_id;
 }
 
 static void
@@ -1166,7 +903,7 @@ DestroyCB
         fprintf(stderr,"in destroy cb\n");
 #endif
 	if (hdata->qplotstyle)
-		DeletePlotStyleAppRef(hdata->go_id,hdata->qplotstyle);
+		NgDeletePlotAppRef(hdata->qplotstyle);
 
 	NgCBWPDestroy(hdata->destroy_cb);
 
@@ -1223,7 +960,8 @@ static Boolean ManageDataObj
         brPage		*page,
 	NgClassType 	type,
 	NgDataItem	obj_ditem,
-	int		data_ix
+	int		data_ix,
+	NgResData	resdata
 )
 {
 	brPageData	*pdp = page->pdata;
@@ -1233,9 +971,7 @@ static Boolean ManageDataObj
 	int hlu_id;
 	char *class_name;
 	NhlErrorTypes ret = NhlNOERROR;
-	ResData res_data;
 	NgSetResProc	resproc; 
-	NhlPointer	resdata;
 	char *suffix;
 	char buf[256];
 	char *name;
@@ -1245,9 +981,6 @@ static Boolean ManageDataObj
 	if (obj_ditem->item_type != _NgDATAOBJ)
 		return False;
 
-	memset(res_data.res,0,16 * sizeof(char *));
-	memset(res_data.values,0,16 * sizeof(NhlPointer));
-	memset(res_data.types,0,16 * sizeof(NrmQuark));
 
 	switch (type) {
 	case _NgSCALARFIELD:
@@ -1273,36 +1006,43 @@ static Boolean ManageDataObj
 		vdata = ditem->vdata;
 		if (! vdata->cflags)
 			continue;
-		res_data.res[count] = ditem->resname;
+		if (count >= resdata->res_alloced) {
+			resdata = NgReallocResData(resdata,count);
+			if (! resdata)
+				return False;
+		}
+
+		resdata->res[count] = ditem->resname;
 		switch (ditem->item_type) {
 		case _NgMISSINGVAL:
 			if (! vdata->cflags & _NgSYMBOL_CHANGE)
 				continue;
-			if (!GetFillValue(rec,ditem,&res_data.values[count],
-				&res_data.types[count],preview))
+			if (!GetFillValue(rec,ditem,&resdata->values[count],
+				&resdata->types[count],preview))
 				continue;
 			break;
 		case _NgCONFIG:
 			if (! GetConfigValue
-			    (rec,ditem,&res_data.values[count],
-			     &res_data.types[count],preview))
+			    (rec,ditem,&resdata->values[count],
+			     &resdata->types[count],preview))
 				continue;
 			break;
 		case _NgDATAVAR:
                 case _NgCOORDVAR:
 			if (preview && ! vdata->qvar)
 				continue;
-			GetDataVal(vdata,&res_data.values[count],
-				   &res_data.types[count],preview);
+			if (! GetDataVal(vdata,&resdata->values[count],
+					 &resdata->types[count],preview))
+				continue;
 			break;
 		default:
 			continue;
 		}
 			
-		res_data.vdata[count] = vdata;
+		resdata->vdata[count] = vdata;
 		count++;
 	}
-	res_data.res_count = count;
+	resdata->res_count = count;
 
         if (rec->data_object_count < data_ix + 1) {
                 rec->data_object_count = data_ix + 1;
@@ -1318,14 +1058,26 @@ static Boolean ManageDataObj
 		NgVarData vdata = obj_ditem->vdata;
 		NgPreviewResProc	resproc;
 
-		rec->app_id = NewPlotStyleAppRef(page,True);
+		if (rec->public.plot_style) {
+			rec->app_id = NgNewPlotAppRef
+				(page->go->base.id,rec->public.plot_style,
+				 rec->public.plot_style_dir,
+				 rec->public.plot_style,
+				 rec->class->base_class.class_name,
+				 True);
+		}
 
 		if (rec->app_id) {
-			res_data.res[res_data.res_count] = "objAppObj";
-			res_data.values[res_data.res_count] =
+			if (resdata->res_count >= resdata->res_alloced) {
+				resdata = NgReallocResData(resdata,count);
+				if (! resdata)
+					return False;
+			}
+			resdata->res[resdata->res_count] = "objAppObj";
+			resdata->values[resdata->res_count] =
 				(NhlPointer)rec->app_id;
-			res_data.types[res_data.res_count] = QInteger;
-			res_data.res_count++;
+			resdata->types[resdata->res_count] = QInteger;
+			resdata->res_count++;
 		}
 
 		sprintf(buf,"%s_%s",NrmQuarkToString(page->qvar),suffix);
@@ -1341,14 +1093,14 @@ static Boolean ManageDataObj
                     /* the name quark gets set even if the create fails */
 		rec->data_objects[data_ix]->qname = NrmStringToQuark(name);
                 
-		resproc = PreviewResList;
-		resdata = (NhlPointer) &res_data;
+		resproc = NgPreviewResList;
 			
 		ret = NgCreatePreviewGraphic
-			(rec->go->base.id,&hlu_id,name,NULL,
-			 class_name,1,&resproc,&resdata);
-		if (! hlu_id || ret < NhlWARNING)
+			(rec->go->base.id,&hlu_id,name,name,NULL,
+			 class_name,1,&resproc,(NhlPointer*)&resdata);
+		if (! hlu_id || ret < NhlWARNING) {
 			return False;
+		}
 
                     /* hlu id gets set only if create succeeds */
 		rec->data_objects[data_ix]->id = hlu_id;
@@ -1359,12 +1111,12 @@ static Boolean ManageDataObj
 		vdata->ndims = 0;
 		vdata->cflags = _NgSYMBOL_CHANGE;
 		
-                for (i = 0; i< res_data.res_count; i++) {
-                        if (res_data.values[i]) {
-                                if (res_data.types[i] == QGenArray)
-                                        NhlFreeGenArray(res_data.values[i]);
-                                else if (res_data.types[i] == QString)
-                                        NhlFree(res_data.values[i]);
+                for (i = 0; i< resdata->res_count; i++) {
+                        if (resdata->values[i]) {
+                                if (resdata->types[i] == QGenArray)
+                                        NhlFreeGenArray(resdata->values[i]);
+                                else if (resdata->types[i] == QString)
+                                        NhlFree(resdata->values[i]);
                         }
                 }
 		PostHluObjCreateMessage
@@ -1375,20 +1127,34 @@ static Boolean ManageDataObj
 		return True;
 	}
 	
-	resproc = AddResList;
-	resdata = (NhlPointer) &res_data;
+	resproc = NgAddResList;
         if (rec->data_objects[data_ix]->id <= NhlNULLOBJID ) {
 		NgVarData vdata = obj_ditem->vdata;
 
-		rec->app_id = NewPlotStyleAppRef(page,False);
+		if (rec->public.plot_style) {
+			rec->app_id = NgNewPlotAppRef
+				(page->go->base.id,rec->public.plot_style,
+				 rec->public.plot_style_dir,
+				 rec->public.plot_style,
+				 rec->class->base_class.class_name,
+				 False);
+		}
 		if (rec->app_id) {
-			res_data.res[res_data.res_count] = "objAppObj";
-			res_data.values[res_data.res_count] =
-				NhlMalloc(strlen(rec->public.plot_style)+1);
-			strcpy((char *)res_data.values[res_data.res_count],
-			       rec->public.plot_style);
-			res_data.types[res_data.res_count] = QString;
-			res_data.res_count++;
+			NhlString pstyle_name;
+			if (resdata->res_count >= resdata->res_alloced) {
+				resdata = NgReallocResData(resdata,count);
+				if (! resdata)
+					return False;
+			}
+			resdata->res[resdata->res_count] = "objAppObj";
+			pstyle_name = NgNclGetHLURef
+				(rec->nclstate,rec->app_id);
+			resdata->values[resdata->res_count] =
+				NhlMalloc(strlen(pstyle_name)+1);
+			strcpy((char *)resdata->values[resdata->res_count],
+			       pstyle_name);
+			resdata->types[resdata->res_count] = QString;
+			resdata->res_count++;
 		}
 
 		if (rec->data_objects[data_ix]->qname) {
@@ -1404,8 +1170,8 @@ static Boolean ManageDataObj
 		}
 		rec->data_objects[data_ix]->qname = NrmStringToQuark(name);
 		ret = NgCreateGraphic
-			(rec->go->base.id,&hlu_id,name,NULL,
-			 class_name,1,&resproc,&resdata);
+			(rec->go->base.id,&hlu_id,name,name,NULL,
+			 class_name,1,&resproc,(NhlPointer*)&resdata);
 #if DEBUG_HLUPAGE
 		fprintf(stderr,"created hlu obj with id %d\n", hlu_id);
 #endif        
@@ -1436,20 +1202,21 @@ static Boolean ManageDataObj
 		UpdateDataLink(rec,True,_NgDATAPROFILE,
 			       NgNoPage,NrmNULLQUARK,vdata->qvar);
         }
-        else if (res_data.res_count) {
+        else if (resdata->res_count) {
 		ret = NgUpdateGraphic
 			(rec->go->base.id,
 			 NrmQuarkToString(rec->data_objects[data_ix]->qname),
-			 1,&resproc,&resdata);
-		if (ret < NhlWARNING)
+			 1,&resproc,(NhlPointer*)&resdata);
+		if (ret < NhlWARNING) {
 			return False;
+		}
 	}
-        for (i = 0; i< res_data.res_count; i++) {
-                if (res_data.values[i]) {
-                        if (res_data.types[i] == QGenArray)
-                                NhlFreeGenArray(res_data.values[i]);
-                        else if (res_data.types[i] == QString)
-                                NhlFree(res_data.values[i]);
+        for (i = 0; i< resdata->res_count; i++) {
+                if (resdata->values[i]) {
+                        if (resdata->types[i] == QGenArray)
+                                NhlFreeGenArray(resdata->values[i]);
+                        else if (resdata->types[i] == QString)
+                                NhlFree(resdata->values[i]);
                 }
         }
         
@@ -1458,21 +1225,22 @@ static Boolean ManageDataObj
 
 static NhlBoolean ManagePlotObj
 (
-        brPage	*page,
-        int	wk_id
+        brPage		*page,
+        int		wk_id,
+	NgResData	resdata
 )
 {
 	brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
-	ResData 	res_data,app_res_data;
 	NhlBoolean	preview = rec->state == _hluNOTCREATED;
 	NhlString	parent = NULL;
 	int		hlu_id,i;
         NgSetResProc	setresproc[2];
-        NhlPointer	setresdata[2],appresdata;
+        NhlPointer	res_data[2];
 	NhlErrorTypes	ret;
 	NgDataProfile	dprof = rec->data_profile;
 	int		count;
+	NhlString	name;
 
 	count = 0;
 	for (i=0; i < dprof->n_dataitems; i++) {
@@ -1484,100 +1252,115 @@ static NhlBoolean ManagePlotObj
 		vdata = ditem->vdata;
 		if (rec->state == _hluCREATED && ! vdata->cflags)
 			continue;
-		res_data.res[count] = ditem->resname;
+		if (count >= resdata->res_alloced) {
+			resdata = NgReallocResData(resdata,count);
+			if (! resdata)
+				return False;
+		}
+		resdata->res[count] = ditem->resname;
 		switch (ditem->item_type) {
 		case _NgMISSINGVAL:
-			if (!GetFillValue(rec,ditem,&res_data.values[count],
-				&res_data.types[count],preview))
+			if (!GetFillValue(rec,ditem,&resdata->values[count],
+				&resdata->types[count],preview))
 				continue;
 			break;
 		case _NgCONFIG:
 			if (! GetConfigValue
-			    (rec,ditem,&res_data.values[count],
-			     &res_data.types[count],preview))
+			    (rec,ditem,&resdata->values[count],
+			     &resdata->types[count],preview))
 				continue;
 			break;
 		case _NgDATAOBJ:
 			if (! vdata->qvar)
 				continue;
-			GetDataObjValue(rec,ditem,&res_data.values[count],
-					&res_data.types[count],preview);
+			if (!GetDataObjValue(rec,ditem,&resdata->values[count],
+					     &resdata->types[count],preview))
+				continue;
 
 			break;
 		case _NgDATAVAR:
                 case _NgCOORDVAR:
 			if (preview && ! vdata->qvar)
 				continue;
-			GetDataVal(vdata,&res_data.values[count],
-				   &res_data.types[count],preview);
+			if (! GetDataVal(vdata,&resdata->values[count],
+					 &resdata->types[count],preview))
+				continue;
 			break;
 		}
 			
-		res_data.vdata[count] = vdata;
+		resdata->vdata[count] = vdata;
 		count++;
 	}
-	res_data.res_count = count;
+	resdata->res_count = count;
+	res_data[0] = (NhlPointer)resdata;
+	res_data[1] = (NhlPointer)rec->res_tree;
 
+	name = NrmQuarkToString(page->qvar);
 	if (preview) { 
 		NgPreviewResProc	resproc[2];
-		NhlPointer		resdata[2];
 
 		if (rec->app_id) {
-			res_data.res[res_data.res_count] = "objAppObj";
-			res_data.values[res_data.res_count] =
+			if (resdata->res_count >= resdata->res_alloced) {
+				resdata = NgReallocResData(resdata,count);
+				if (! resdata)
+					return False;
+			}
+			resdata->res[resdata->res_count] = "objAppObj";
+			resdata->values[resdata->res_count] =
 				(NhlPointer)rec->app_id;
-			res_data.types[res_data.res_count] = QInteger;
-			res_data.res_count++;
+			resdata->types[resdata->res_count] = QInteger;
+			resdata->res_count++;
 		}
-		resproc[0] = PreviewResList;
-		resdata[0] = &res_data;
+		resproc[0] = NgPreviewResList;
 		resproc[1] = NgResTreePreviewResList;
-		resdata[1] = (NhlPointer)rec->res_tree;
 
 		if (wk_id != NhlNULLOBJID)
 			parent = NgNclGetHLURef(rec->go->go.nclstate,wk_id);
 		ret = NgCreatePreviewGraphic
-			(rec->go->base.id,&hlu_id,
-			 NrmQuarkToString(page->qvar),parent,
-			 rec->public.class_name,2,resproc,resdata);
+			(rec->go->base.id,&hlu_id,name,name,parent,
+			 rec->public.class_name,2,resproc,res_data);
 		if (! hlu_id || ret < NhlWARNING)
 			return False;
 		rec->hlu_id = hlu_id;
 		RegisterHluDataDestroyCB(page,hlu_id,True);
-                for (i = 0; i< res_data.res_count; i++) {
-                        if (res_data.values[i]) {
-				if (res_data.types[i] == QGenArray)
-					NhlFreeGenArray(res_data.values[i]);
-				else if (res_data.types[i] == QString)
-					NhlFree(res_data.values[i]);
+                for (i = 0; i< resdata->res_count; i++) {
+                        if (resdata->values[i]) {
+				if (resdata->types[i] == QGenArray)
+					NhlFreeGenArray(resdata->values[i]);
+				else if (resdata->types[i] == QString)
+					NhlFree(resdata->values[i]);
 			}
                 }
 		return True;
 	}
 
-        setresproc[0] = AddResList;
-	setresdata[0] = (NhlPointer)&res_data;
+        setresproc[0] = NgAddResList;
         setresproc[1] = NgResTreeAddResList;
-        setresdata[1] = (NhlPointer)rec->res_tree;
 	
         if (rec->state == _hluPREVIEW || rec->hlu_id <= NhlNULLOBJID) {
 		if (rec->app_id) {
-			res_data.res[res_data.res_count] = "objAppObj";
-			res_data.values[res_data.res_count] =
-				NhlMalloc(strlen(rec->public.plot_style)+1);
-			strcpy((char *)res_data.values[res_data.res_count],
-			       rec->public.plot_style);
-			res_data.types[res_data.res_count] = QString;
-			res_data.res_count++;
+			NhlString pstyle_name;
+
+			if (resdata->res_count >= resdata->res_alloced) {
+				resdata = NgReallocResData(resdata,count);
+				if (! resdata)
+					return False;
+			}
+			resdata->res[resdata->res_count] = "objAppObj";
+			pstyle_name = NgNclGetHLURef
+				(rec->nclstate,rec->app_id);
+			resdata->values[resdata->res_count] =
+				NhlMalloc(strlen(pstyle_name)+1);
+			strcpy((char *)resdata->values[resdata->res_count],
+			       pstyle_name);
+			resdata->types[resdata->res_count] = QString;
+			resdata->res_count++;
 		}
 		if (wk_id != NhlNULLOBJID)
 			parent = NgNclGetHLURef(rec->go->go.nclstate,wk_id);
-
 		ret = NgCreateGraphic
-			(rec->go->base.id,&hlu_id,
-			 NrmQuarkToString(page->qvar),parent,
-			 rec->public.class_name,2,setresproc,setresdata);
-		RegisterHluDataDestroyCB(page,hlu_id,False);
+			(rec->go->base.id,&hlu_id,name,name,parent,
+			 rec->public.class_name,2,setresproc,res_data);
 #if DEBUG_HLUPAGE
 		fprintf(stderr,"created hlu obj with id %d\n", hlu_id);
 #endif        
@@ -1589,6 +1372,7 @@ static NhlBoolean ManagePlotObj
 			(void)NgNclSubmitBlock(rec->nclstate,buf);
 			return ret;
 		}
+		RegisterHluDataDestroyCB(page,hlu_id,False);
 		rec->hlu_id = hlu_id;
 
 		for (i = 0; i < dprof->n_dataitems; i++) {
@@ -1599,21 +1383,21 @@ static NhlBoolean ManagePlotObj
         }
         else {
 		int rix;
-		int setresproc_count = res_data.res_count > 0 ? 2 : 1;
+		int setresproc_count = resdata->res_count > 0 ? 2 : 1;
 		rix = 2 - setresproc_count;
 		ret = NgUpdateGraphic
 			(rec->go->base.id,NrmQuarkToString(page->qvar),
-			 setresproc_count,&setresproc[rix],&setresdata[rix]);
+			 setresproc_count,&setresproc[rix],&res_data[rix]);
 		if (ret < NhlWARNING)
 			return False;
 	}
 
-        for (i = 0; i< res_data.res_count; i++) {
-                if (res_data.values[i]) {
-                        if (res_data.types[i] == QGenArray)
-                                NhlFreeGenArray(res_data.values[i]);
-                        else if (res_data.types[i] == QString)
-                                NhlFree(res_data.values[i]);
+        for (i = 0; i< resdata->res_count; i++) {
+                if (resdata->values[i]) {
+                        if (resdata->types[i] == QGenArray)
+                                NhlFreeGenArray(resdata->values[i]);
+                        else if (resdata->types[i] == QString)
+                                NhlFree(resdata->values[i]);
                 }
         }
 	return True;
@@ -1630,41 +1414,58 @@ CreatePreviewInstance
 	brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
         int		hlu_id;
-        NgPreviewResProc	resproc[2];
-        XtPointer	resdata[2];
         NhlString	parent = NULL;
 	NgDataProfile	dprof = rec->data_profile;
 	int		i,count = 0;
 
-	rec->app_id = NewPlotStyleAppRef(page,True);
-
+	if (! rec->app_id && rec->public.plot_style) {
+		rec->app_id =  NgNewPlotAppRef
+			(page->go->base.id,rec->public.plot_style,
+			 rec->public.plot_style_dir,
+			 rec->public.plot_style,
+			 rec->class->base_class.class_name,
+			 False);
+	}
         if (dprof && rec->has_input_data) {
+		NgResData resdata = NgReallocResData(NULL,0);
+
+		if (! resdata)
+			return NhlFATAL;
 		for (i = 0; i < dprof->n_dataitems; i++) {
 			NgDataItem ditem = dprof->ditems[i];
+			resdata->res_count = 0;
 			if (ditem->item_type == _NgDATAOBJ &&
 			    (ditem->val_defined)(dprof,i)) {
 				if (! ManageDataObj
 				    (page,ditem->ref_ditem->class_type,
-				     ditem,count))
+				     ditem,count,resdata))
 					return NhlFATAL;
 				count++;
 			}
 		}
-		if (! ManagePlotObj(page,wk_id))
+		resdata->res_count = 0;
+		if (! ManagePlotObj(page,wk_id,resdata))
 			return NhlFATAL;
+
+		NgFreeResData(resdata);
 	}
 	else {
+		NgPreviewResProc resproc[2];
+		NhlPointer	 res_data[2];
+		NhlString name = NrmQuarkToString(page->qvar);
+
 		resproc[0] = NgResTreePreviewResList;
-		resdata[0] = (NhlPointer)rec->res_tree;
+		res_data[0] = (NhlPointer)rec->res_tree;
 		if (wk_id != NhlNULLOBJID)
 			parent = NgNclGetHLURef(rec->go->go.nclstate,wk_id);
 		ret = NgCreatePreviewGraphic
-			(rec->go->base.id,&hlu_id,
-			 NrmQuarkToString(page->qvar),parent,
-			 rec->public.class_name,1,resproc,resdata);
+			(rec->go->base.id,&hlu_id,name,name,parent,
+			 rec->public.class_name,1,resproc,res_data);
 		if (ret < NhlWARNING || hlu_id <= NhlNULLOBJID)
 			return NhlFATAL;
 		rec->hlu_id = hlu_id;
+		RegisterHluDataDestroyCB(page,hlu_id,True);
+
 	}
 
 	return rec->hlu_id;
@@ -1788,8 +1589,6 @@ CreateInstance
 	brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
         int		i,hlu_id;
-        NgSetResProc	setresproc[2];
-        XtPointer	setresdata[2];
         NhlString	parent = NULL;
 	NgWksObj	wks = NULL;
 	NgDataProfile	dprof = rec->data_profile;
@@ -1797,26 +1596,42 @@ CreateInstance
         NhlArgVal       sel,udata;
 	NhlBoolean	is_preview;
 
-	rec->app_id = NewPlotStyleAppRef(page,False);
+	if (rec->public.plot_style) {
+		rec->app_id = NgNewPlotAppRef
+			(page->go->base.id,rec->public.plot_style,
+			 rec->public.plot_style_dir,
+			 rec->public.plot_style,
+			 rec->class->base_class.class_name,
+			 False);
+	}
 
         if (dprof && rec->has_input_data) {
+		NgResData resdata = NgReallocResData(NULL,0);
+
+		if (! resdata)
+			return NhlFATAL;
 		NhlINITVAR(sel);
 		NhlINITVAR(udata);
 
 		for (i = 0; i < dprof->n_dataitems; i++) {
 			NgDataItem ditem = dprof->ditems[i];
+
+			resdata->res_count = 0;
 			if (ditem->item_type == _NgDATAOBJ &&
 			    (ditem->val_defined)(dprof,i)) {
 				if (! ManageDataObj
 				    (page,ditem->ref_ditem->class_type,
-				     ditem,count))
+				     ditem,count,resdata))
 					return NhlFATAL;
 				count++;
 			}
 			
 		}
-		if (! ManagePlotObj(page,wk_id))
+		resdata->res_count = 0;
+		if (! ManagePlotObj(page,wk_id,resdata))
 			return NhlFATAL;
+
+		NgFreeResData(resdata);
 
 		udata.ptrval = &rec->setval_info;
 		for (i = 0; i < dprof->n_dataitems; i++) {
@@ -1834,6 +1649,9 @@ CreateInstance
 		return NhlFATAL;
 	}
 	else {
+		NgSetResProc	setresproc[2];
+		NhlPointer	setresdata[2];
+		NhlString name = NrmQuarkToString(page->qvar);
 
 		setresproc[0] = NgResTreeAddResList;
 		setresdata[0] = (NhlPointer)rec->res_tree;
@@ -1842,8 +1660,7 @@ CreateInstance
 			parent = NgNclGetHLURef(rec->go->go.nclstate,wk_id);
 
 		ret = NgCreateGraphic
-			(rec->go->base.id,&hlu_id,
-			 NrmQuarkToString(page->qvar),parent,
+			(rec->go->base.id,&hlu_id,name,name,parent,
 			 rec->public.class_name,1,setresproc,setresdata);
 #if DEBUG_HLUPAGE
 		fprintf(stderr,"created hlu obj with id %d\n", hlu_id);
@@ -1857,6 +1674,7 @@ CreateInstance
 			return ret;
 		}
 		rec->hlu_id = hlu_id;
+		RegisterHluDataDestroyCB(page,hlu_id,False);
 	}
 
 	return rec->hlu_id;
@@ -1878,8 +1696,6 @@ UpdateInstance
         NhlErrorTypes	ret = NhlNOERROR;
 	brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
-        NgSetResProc	setresproc[2];
-        XtPointer	setresdata[2];
 	NhlLayer	l = _NhlGetLayer(rec->hlu_id);
 	NhlLayer	wl = _NhlGetLayer(wk_id);
 	NgDataProfile	dprof = rec->data_profile;
@@ -1889,28 +1705,40 @@ UpdateInstance
 		return NhlFATAL;
 
         if (dprof && rec->has_input_data) {
+		NgResData resdata = NgReallocResData(NULL,0);
+
 		for (i = 0; i < dprof->n_dataitems; i++) {
 			NgDataItem ditem = dprof->ditems[i];
+			resdata->res_count = 0;
 			if (rec->new_data &&
 			    ditem->item_type == _NgDATAOBJ &&
 			    (ditem->val_defined)(dprof,i)) {
 				if (! ManageDataObj
 				    (page,ditem->ref_ditem->class_type,
-				     ditem,count))
+				     ditem,count,resdata))
 					return NhlFATAL;
 				count++;
 			}
 		}
-		
-		if (! ManagePlotObj(page,wk_id))
+		resdata->res_count = 0;		
+		if (! ManagePlotObj(page,wk_id,resdata))
 			return NhlFATAL;
+
+		NgFreeResData(resdata);
+
+#if 0
 		for (i = 0; i < rec->data_object_count; i++) {
+			NhlString class_name;
 			NhlLayer l = _NhlGetLayer(rec->data_objects[i]->id);
 			NhlString class_name = 
 				l->base.layer_class->base_class.class_name;
 		}
+#endif
 	}
         else {
+		NgSetResProc	setresproc[2];
+		NhlPointer	setresdata[2];
+
                 setresproc[0] = NgResTreeAddResList;
                 setresdata[0] = (XtPointer)rec->res_tree;
         
@@ -2035,7 +1863,7 @@ UpdateDataProfileFromResTree
 			if (setval) {
 				NgSetExpressionVarData
 					(rec->go->base.id,
-					 ditem->vdata,setval);
+					 ditem->vdata,setval,True);
 				new_data = True;
 			}
 		}
@@ -2217,7 +2045,7 @@ CreateUpdate
 	return;
 }
 
-int GetWorkstation
+static int GetWorkstation
 (
         brPage		*page,
         NhlBoolean	*work_created
@@ -2851,13 +2679,14 @@ static void RestoreHluState(
 }        
 
 extern brPageData *
-NgGetHluPage
+_NgGetHluPage
 (
 	NgGO		go,
         brPane		*pane,
 	brPage		*page,
         brPage		*copy_page,
-	NgPageSaveState save_state
+	NgPageSaveState save_state,
+	NhlPointer	init_data
 )
 {
 	NgBrowse		browse = (NgBrowse)go;
@@ -2875,8 +2704,7 @@ NgGetHluPage
 	NhlBoolean		update = False;
 	NhlBoolean		new = False;
 
-        if (QFillValue == NrmNULLQUARK) {
-                QFillValue = NrmStringToQuark("_FillValue"); 
+        if (QString == NrmNULLQUARK) {
 		QString = NrmStringToQuark(NhlTString);
 		QGenArray = NrmStringToQuark(NhlTGenArray);
 		QInteger = NrmStringToQuark(NhlTInteger);

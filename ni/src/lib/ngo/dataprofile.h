@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.h,v 1.3 1999-03-12 19:13:47 dbrown Exp $
+ *      $Id: dataprofile.h,v 1.4 1999-07-30 03:20:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,6 +38,11 @@
  * Public api
  */
 
+/*
+ * The generic Plot pseudo-class-name
+ */
+#define NGPLOTCLASS "ngPlotClass"
+
 typedef struct _brDataLinkReqRec {	/* message type _NgDATALINK_REQ */
 	NhlBoolean 	on;
 	int		link_ditem;
@@ -64,6 +69,7 @@ typedef enum _NgVarDataSetState {
 
 typedef struct _NgVarDataRec
 {
+	struct _NgVarDataRec	*next;
         NrmQuark 		qfile;
         NrmQuark 		qvar;
 	NrmQuark		qcoord;
@@ -93,7 +99,8 @@ typedef enum {
 	_NgXYPLOT,
 	_NgCOORDARRAY,
 	_NgSCALARFIELD,
-	_NgVECTORFIELD
+	_NgVECTORFIELD,
+	_NgPLOT
 } NgClassType;
 
 typedef enum {
@@ -101,7 +108,9 @@ typedef enum {
 	_NgCOORDVAR,
 	_NgMISSINGVAL,
 	_NgDATAOBJ,
-	_NgCONFIG
+	_NgCONFIG,
+	_NgSYNTHETIC,
+	_NgUPDATEFUNC
 } NgDataItemType;
 
 struct _NgDataItemRec;
@@ -126,15 +135,22 @@ typedef struct _NgDataItemRec
 	NhlString	name;
 	NhlString	resname;
 	NrmQuark	resq;
+	NrmQuark	qhlu_name;
 	NgClassType	class_type;
 	NgDataItemType  item_type;
 	int		maxdims;
 	int		mindims;
-	int		coord_num; 	/* applies to NgDataItemType 
+	NhlPointer	data;     /* used for DataItemType-specific data:
+				     it's the coord ix (1 == fastest) for
+				     _NgCOORDVAR items. It's the sequence 
+				     number for _NgUPDATEFUNC items. */
+#if 0
+int		coord_num; 	/* applies to NgDataItemType 
 					   _NgCOORDVAR only -- Fortan
 					   conventions used here for processing
 					   convenience: 1 is fastest moving
 					   dimension */
+#endif
 	NhlBoolean	required;
 	NhlBoolean	vis;
 	NgVarData	vdata;
@@ -143,7 +159,26 @@ typedef struct _NgDataItemRec
 	struct _NgDataItemRec *ref_ditem;
 	int		hlu_id;
 	NgCBWP		svcb;
+	NhlString	raw_val;
+	NhlPointer	appres_info;
+	NhlBoolean	set_only;
+	NhlBoolean	save_to_compare;
 } NgDataItemRec, *NgDataItem;
+
+typedef struct _NgPlotDataRec {
+	NrmQuark 	qname;
+	NrmQuark	qconform_varname;
+	NhlString	description;
+	NhlBoolean	required;
+	int		ndims;
+	NgVarData	vdata;
+} NgPlotDataRec, *NgPlotData;
+
+extern void NgFreePlotDataRecs
+(
+	NgPlotData	plotdata,
+	int		count
+);
 
 typedef struct _NgDataProfileRec
 {
@@ -154,6 +189,12 @@ typedef struct _NgDataProfileRec
 	int		master_data_ix;
 	NhlBoolean	linked;
 	NgDataItem	*ditems;
+	NrmQuark	qpstyle;
+	int		obj_count;
+	NrmQuark	*qobjects;   /* read-only */
+	NhlClass	*obj_classes; /* read-only */
+	int		plotdata_count;
+	NgPlotData	plotdata;
 	NhlFreeFunc	free;
 } NgDataProfileRec, *NgDataProfile;
 
@@ -185,6 +226,15 @@ NgDataProfile NgNewDataProfile
         );
 
 extern
+NgDataProfile NgMergeDataProfiles
+(
+	NgGO		go,
+	NgDataProfile	data_profile,
+	NhlString	hluname,
+	NhlString	class_name
+        );
+
+extern
 void NgFreeDataProfile
 (
 	NgDataProfile data_profile
@@ -200,13 +250,38 @@ NhlBoolean NgSetDataProfileVar
 	);	
 
 
+extern 
+NgDataItem NgNewDataItem
+(
+	NrmQuark	qname,
+	NrmQuark	qresname,
+	NrmQuark	qhlu_name,
+	NhlClass	class,
+	NgDataItemType	item_type,
+	int		min_dims,
+	int		max_dims,
+	NhlPointer	data,
+	NhlBoolean	required,
+	NhlBoolean	visible,
+	NhlBoolean	set_only,
+	NhlBoolean	save_to_compare
+);
+
+extern NhlErrorTypes
+NgAppendDataProfileItem
+(
+	NgDataProfile	data_profile,
+	NgDataItem	data_item,
+	NrmQuark	qref_res
+);
+
 NhlBoolean NgSetDependentVarData		
 (
 	NgDataProfile	dp,
 	int		index,
 	NhlBoolean	init
 );
-
+	
 extern
 NgVarData NgNewVarData
 (
@@ -245,11 +320,18 @@ extern NhlBoolean NgSetUnknownDataItem
 	NgDataItem ditem
 	);
 
+NhlBoolean NgCopyVarData
+(
+	NgVarData	to_var_data,
+	NgVarData	from_var_data
+	);
+
 NhlBoolean NgSetExpressionVarData
 (
 	int		go_id,
 	NgVarData	var_data,
-	NhlString	expr_val
+	NhlString	expr_val,
+	NhlBoolean	do_eval
 	);
 
 NhlBoolean NgDeleteExpressionVarData

@@ -1,5 +1,5 @@
 /*
- *      $Id: datasourcegrid.c,v 1.6 1999-06-02 03:40:07 dbrown Exp $
+ *      $Id: datasourcegrid.c,v 1.7 1999-07-30 03:20:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -101,11 +101,13 @@ TitleText
         NgDataSourceGrid data_source_grid = dsp->public;
         int len;
         
-        
-        sprintf(Buffer,"%s|",dsp->data_profile->class_name);
+#if 0
+        sprintf(Buffer,"%s|",NrmQuarkToString(dsp->qname));
+#endif
+        sprintf(Buffer,"%s|","Link Resources");
         len = dsp->cwidths[0] = strlen(Buffer);
         
-        sprintf(&Buffer[len],"%s","Data Variables");
+        sprintf(&Buffer[len],"%s","Link Values");
         dsp->cwidths[1] = strlen(Buffer) - len;
         
 #if DEBUG_DATA_SOURCE_GRID      
@@ -605,7 +607,7 @@ GetUnshapedCoordVar
 	for (i = 0; i < vinfo->u.var->n_dims; i++) {
 		NhlString tcoord = 
 			NrmQuarkToString(vinfo->u.var->coordnames[i]);
-		if (!strcmp(tcoord,coord)) {
+		if (tcoord && !strcmp(tcoord,coord)) {
 			*qcoord = vinfo->u.var->coordnames[i];
 			NclFreeDataList(dl);
 			return;
@@ -654,15 +656,20 @@ static NhlBoolean
 PossibleNclExpression
 (
 	char *var_string,
-	char **start		/* location of first character */
+	char **start		/* location of first non-space character */
 )
 {
 /*
  * Although this function does not determine that a string is actually an
- * expression, it is designed to eliminate wierd character combinations that
- * Ncl does not handle very well.
+ * expression, it does some basic sanity checks to eliminate some character 
+ * combinations that Ncl chokes on.
  */
 	char *cp = var_string;
+	int  paren_level = 0;
+	int  array_level = 0;
+	NhlBoolean in_quote = False;
+	NhlBoolean number = False;
+	NhlBoolean identifier = False;
 
 	*start = NULL;
 
@@ -673,20 +680,72 @@ PossibleNclExpression
 		cp++;
 /*
  * the first char must be a number, a letter, an underscore, a minus, or
- * an open paren. (I think that is all that qualify).
+ * an open paren. (I think that is all that qualify). No, it could be a
+ * quoted string.
  */
-	if (! (isalnum(*cp) || *cp == '_' || *cp == '-' || *cp == '('))
-		return False;
+
+	switch (*cp) {
+	case '-':
+	case '_':
+		break;
+	case '(':
+		paren_level++;
+		if (*(cp+1) && *(cp+1) == '/') 
+			array_level++;
+		break;
+	case ')':
+		paren_level--;
+		break;
+	case '"':
+		in_quote = True;
+		break;
+	default:
+		if (! isalnum(*cp))
+			return False;
+	}
+
 	*start = cp;
 	cp++;
 
-/*
- * subsequent characters must be printable
- */
-
-	while (isprint(*cp))
+	while (*cp) {
+		if (paren_level < 0 || array_level < 0)
+			return False;
+		if (in_quote) {
+			while (*cp &&  *cp != '"' && 
+			       (isspace(*cp) || isprint(*cp)))
+				cp++;
+			if (! *cp == '"')
+				return False;
+			in_quote = False;
+			cp++;
+			continue;
+		}
+		if (isspace(*cp)) {
+			cp++;
+			continue;
+		}
+		switch (*cp) {
+		case '(':
+			paren_level++;
+			if (*(cp+1) && *(cp+1) == '/') 
+				array_level++;
+			break;
+		case ')':
+			paren_level--;
+			if (*(cp-1) == '/') 
+				array_level--;
+			break;	
+		case '"':
+			in_quote = True;
+			break;
+		default:
+			if (! isprint(*cp))
+				return False;
+		}
 		cp++;
-
+	}
+	if (in_quote || paren_level != 0 || array_level != 0)
+		return False;
 /*
  * wierd chars at the end cause the function to fail
  */
@@ -704,7 +763,7 @@ SaveExpressionString(
 	NgDataProfile prof =  dsp->data_profile;
 	NgVarData vdata = prof->ditems[index]->vdata;
 
-	return NgSetExpressionVarData(dsp->go->base.id,vdata,var_string);
+	return NgSetExpressionVarData(dsp->go->base.id,vdata,var_string,True);
 }
 
 static NhlBoolean 
@@ -838,7 +897,7 @@ QualifyAndInsertVariable
 			if (last_vdata->expr_val)
 				NgSetExpressionVarData
 					(dsp->go->base.id,vdata,
-					 last_vdata->expr_val);
+					 last_vdata->expr_val,True);
 			else {
 				NgCopyVarData(vdata,last_vdata);
 			}
@@ -1251,10 +1310,11 @@ NhlErrorTypes NgUpdateDataSourceGrid
 
 	if (! dsp->created) {
 		dsp->created = True;
+		XtMapWidget(data_source_grid->grid);
 		XtVaSetValues(data_source_grid->grid,
 			      XmNimmediateDraw,False,
 			      NULL);
-	}
+	} 
 
         return NhlNOERROR;
 }
@@ -1396,7 +1456,43 @@ static void CellDropCB
 	
 	return;
 }
+#if 0
+static void TimeoutCB 
+(
+	XtPointer	data,
+        XtIntervalId	*timer
+        )
+{
+	NgDataSourceGridRec *dsp = (NgDataSourceGridRec *)data;
 
+	XSync(dsp->go->go.x->dpy,False);
+	XtVaSetValues(dsp->public.grid,
+		      XmNimmediateDraw,False,
+		      NULL);
+}
+
+static void
+MapEH
+(
+	Widget		w,
+	XtPointer	udata,
+	XEvent		*event,
+	Boolean		*cont
+)
+{
+        NgDataSourceGridRec *dsp = (NgDataSourceGridRec *)udata;
+	Dimension	height;
+
+	if(event->type != MapNotify)
+		return;
+
+	XtAppAddTimeOut(dsp->go->go.x->app,500,TimeoutCB,dsp);
+
+	XtRemoveEventHandler(w,StructureNotifyMask,False,MapEH,NULL);
+
+	return;
+}
+#endif
 NgDataSourceGrid *NgCreateDataSourceGrid
 (
 	NgGO			go,
@@ -1440,6 +1536,7 @@ NgDataSourceGrid *NgCreateDataSourceGrid
                  XmNcolumns,2,
                  XmNrows,0,
 		 XmNimmediateDraw,True,
+		 XmNmappedWhenManaged,False,
                  NULL);
         XmLGridAddRows(data_source_grid->grid,XmHEADING,0,1);
 
@@ -1456,7 +1553,10 @@ NgDataSourceGrid *NgCreateDataSourceGrid
 		      NULL);
         XtAddEventHandler(dsp->text,FocusChangeMask,
                           False,FocusEH,dsp);
-        
+#if 0
+        XtAddEventHandler(dsp->text,StructureNotifyMask,
+                          False,MapEH,dsp);
+#endif        
         return data_source_grid;
 }
 

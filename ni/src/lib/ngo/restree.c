@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.23 1999-06-02 03:40:08 dbrown Exp $
+ *      $Id: restree.c,v 1.24 1999-07-30 03:20:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2061,7 +2061,7 @@ static void RestoreSensitivity
         fprintf(stderr,"calling action proc\n");
 #endif
         XtCallActionProc
-                (pub_rtp->tree,"XmLGridSelect",(XEvent*)&xev,&param1,1);
+                (pub_rtp->tree,"XmLGridSelect",(XEvent*)xev,&param1,1);
 
         xev->type = ButtonRelease;
         xev->state = Button1Mask;

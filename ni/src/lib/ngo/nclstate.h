@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.h,v 1.11 1999-05-22 00:36:22 dbrown Exp $
+ *      $Id: nclstate.h,v 1.12 1999-07-30 03:20:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -309,6 +309,7 @@ NgNclVisBlockBegin
 (
         int		nclstate,
         NgNclBlockType	type,
+	NhlString	hlu_name,
         NhlString	ncl_graphic,
         NhlString	ncl_parent,
         NhlString	classname

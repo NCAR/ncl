@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.h,v 1.5 1999-05-22 00:36:18 dbrown Exp $
+ *      $Id: graphic.h,v 1.6 1999-07-30 03:20:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,38 @@
 
 #include <ncarg/ngo/app.h>
 #include <ncarg/hlu/NresDB.h>
+#include <ncarg/ngo/dataprofile.h>
+
+
+
+/*
+ * Attributes for multiple element plots
+ */
+#define ndvOBJECTLIST "ndvObjectList"
+#define ndvCLASS      "ndvClass"
+#define ndvWKS	      "ndvWks"
+
+#define NgRESDATA_ALLOC_UNIT 16
+
+typedef struct _NgResDataRec {
+	int  res_count;
+	int  res_alloced;
+	char **res;
+	NhlPointer *values;
+	NrmQuark *types;
+	NgVarData *vdata;
+} NgResDataRec, *NgResData;
+
+extern NgResData NgReallocResData
+(
+	NgResData resdata,
+	int	  rescount
+);
+
+extern void NgFreeResData
+(
+	NgResData resdata
+);
 
 typedef struct _NgHluDataRec {
 	int		page_id;
@@ -66,19 +98,7 @@ NhlErrorTypes NgCreatePreviewGraphic
 (
 	int		goid,
         int		*hlu_id,
-	NhlString	ncl_graphic,
-	NhlString	ncl_parent,
-	NhlString	classname,
-        int		pres_proc_count,
-        NgPreviewResProc *pres_procs,
-        NhlPointer	*pres_proc_data
-        );
-
-extern
-NhlErrorTypes NgCreatePreviewGraphic
-(
-	int		goid,
-        int		*hlu_id,
+	NhlString	hlu_name,
 	NhlString	ncl_graphic,
 	NhlString	ncl_parent,
 	NhlString	classname,
@@ -99,6 +119,7 @@ NhlErrorTypes NgCreateGraphic
 (
 	int		goid,
         int		*hlu_id,
+	NhlString	hlu_name,
 	NhlString	ncl_graphic,
 	NhlString	ncl_parent,
 	NhlString	classname,
@@ -144,6 +165,29 @@ NhlErrorTypes NgDrawView
         NhlBoolean	clear
         );
 
+NhlBoolean NgViewOn(
+	int view_id
+);
+
+extern int NgAddResList
+(
+        int		nclstate,
+        NhlPointer	data,
+        int		block_id
+        );
+
+extern void NgPreviewResList
+(
+        int		setrl_id,
+        NhlPointer	data
+        );
 
 #endif	/* _NG_GRAPHIC_H */
+
+
+
+
+
+
+
 

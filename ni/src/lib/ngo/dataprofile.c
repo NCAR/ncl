@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.c,v 1.3 1999-03-12 19:13:47 dbrown Exp $
+ *      $Id: dataprofile.c,v 1.4 1999-07-30 03:20:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -320,6 +320,7 @@ static NhlBoolean GetFillValue
 	NclApiVarInfoRec *vinfo;
 	NclApiDataList   *dl = NULL;
         static NrmQuark qfillvalue = NrmNULLQUARK;
+        static NrmQuark qmissingvalue = NrmNULLQUARK;
 	NclExtValueRec *val = NULL;
 	char *lvalue;
 	NgVarData vdata;
@@ -343,6 +344,7 @@ static NhlBoolean GetFillValue
 
         if (qfillvalue == NrmNULLQUARK) {
                 qfillvalue = NrmStringToQuark("_FillValue"); 
+                qmissingvalue = NrmStringToQuark("missing_value"); 
         }
 	if (vdata->dl) {
 		vinfo = vdata->dl->u.var;
@@ -360,15 +362,21 @@ static NhlBoolean GetFillValue
                         break;
         }
 	if (i == vinfo->n_atts) {
-                if (dl)
-                        NclFreeDataList(dl);
-		return False;
+		for (i = 0; i < vinfo->n_atts; i++) {
+			if (vinfo->attnames[i] == qmissingvalue)
+				break;
+		}
+		if (i == vinfo->n_atts) {
+			if (dl)
+				NclFreeDataList(dl);
+			return False;
+		}
         }
         
 	if (qfile >  NrmNULLQUARK)
-                val = NclReadFileVarAtt(qfile,qvar,qfillvalue);
+                val = NclReadFileVarAtt(qfile,qvar,vinfo->attnames[i]);
         else 
-                val = NclReadVarAtt(qvar,qfillvalue);
+                val = NclReadVarAtt(qvar,vinfo->attnames[i]);
 
         if (val) {
                 lvalue = (NhlPointer) NclTypeToString(val->value,val->type);
@@ -398,97 +406,113 @@ static NhlBoolean GetFillValue
 /* scalar field and contour plot data items */
 
 static NgDataItemRec sfdataarray = {
-	"scalar field", "sfDataArray", NrmNULLQUARK,  
-	_NgSCALARFIELD,_NgDATAVAR,2,2,0,
-	True,True,NULL,NULL,NULL,NULL,0,NULL };
+	"scalar field", "sfDataArray", NrmNULLQUARK,NrmNULLQUARK,  
+	_NgSCALARFIELD,_NgDATAVAR,2,2,NULL,
+	True,True,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,False,False };
 static NgDataItemRec sfxarray = {
-	"x coord", "sfXArray",NrmNULLQUARK,
-	_NgSCALARFIELD,_NgCOORDVAR,1,1,1,
-	False,True,NULL,NULL,NULL,&sfdataarray,0,NULL };
+	"x coord", "sfXArray",NrmNULLQUARK,NrmNULLQUARK,
+	_NgSCALARFIELD,_NgCOORDVAR,1,1,(NhlPointer)1,
+	False,True,NULL,NULL,NULL,&sfdataarray,0,NULL,NULL,NULL,False,False };
 static NgDataItemRec sfyarray = {
-	"y coord", "sfYArray", NrmNULLQUARK,
-	_NgSCALARFIELD,_NgCOORDVAR,1,1,2,
-	False,True,NULL,NULL,NULL,&sfdataarray,0,NULL };
+	"y coord", "sfYArray", NrmNULLQUARK,NrmNULLQUARK,
+	_NgSCALARFIELD,_NgCOORDVAR,1,1,(NhlPointer)2,
+	False,True,NULL,NULL,NULL,&sfdataarray,0,NULL,NULL,NULL,False,False };
 static NgDataItemRec sfmissingvaluev =	{
-	"missing value", "sfMissingValueV", NrmNULLQUARK,
-	_NgSCALARFIELD,_NgMISSINGVAL,0,0,0,
-	False,False,NULL,GetFillValue,NULL,&sfdataarray,0,NULL };
+	"missing value", "sfMissingValueV", NrmNULLQUARK,NrmNULLQUARK,
+	_NgSCALARFIELD,_NgMISSINGVAL,0,0,NULL,
+	False,False,NULL,GetFillValue,NULL,
+	&sfdataarray,0,NULL,NULL,NULL,False,False };
 
 
 static NgDataItemRec cnscalarfielddata = {
-	"scalar field object", "cnScalarFieldData", NrmNULLQUARK,
-	_NgCONTOURPLOT,_NgDATAOBJ,0,0,0,
-	False,False,NULL,NULL,ScalarDataDefined,&sfdataarray,0,NULL};
+	"scalar field object", "cnScalarFieldData", NrmNULLQUARK,NrmNULLQUARK,
+	_NgCONTOURPLOT,_NgDATAOBJ,0,0,NULL,
+	False,False,NULL,NULL,ScalarDataDefined,
+	&sfdataarray,0,NULL,NULL,NULL,False,False};
 
 static NgDataItem ScalarFieldItems[] = {
 	&sfdataarray,&sfxarray,&sfyarray,&sfmissingvaluev };
 
 static NgDataItem ContourPlotItems[] = {
 	&sfdataarray,&sfxarray,&sfyarray,&sfmissingvaluev,&cnscalarfielddata };
+static NgDataItem ContourPlot0Items[] = { &cnscalarfielddata };
 
 
 /* vector field, vector plot and streamline plot  data items */
 
 static NgDataItemRec vfudataarray = {
-	"u vector field", "vfUDataArray", NrmNULLQUARK,
-	_NgVECTORFIELD,_NgDATAVAR,2,2,0,
-	True,True,NULL,NULL,NULL,NULL,0,NULL };
+	"u vector field", "vfUDataArray", NrmNULLQUARK,NrmNULLQUARK,
+	_NgVECTORFIELD,_NgDATAVAR,2,2,NULL,
+	True,True,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,False,False };
 static NgDataItemRec vfvdataarray = {
-	"v vector field", "vfVDataArray", NrmNULLQUARK,
-	_NgVECTORFIELD,_NgDATAVAR,2,2,0,
-	True,True,NULL,NULL,NULL,&vfudataarray,0,NULL};
+	"v vector field", "vfVDataArray", NrmNULLQUARK,NrmNULLQUARK,
+	_NgVECTORFIELD,_NgDATAVAR,2,2,NULL,
+	True,True,NULL,NULL,NULL,&vfudataarray,0,NULL,NULL,NULL,False,False};
 static NgDataItemRec vfxarray = {
-	"x coord", "vfXArray", NrmNULLQUARK,
-	_NgVECTORFIELD,_NgCOORDVAR,1,1,1,
-	False,True,NULL,NULL,NULL,&vfudataarray,0,NULL };
+	"x coord", "vfXArray", NrmNULLQUARK,NrmNULLQUARK,
+	_NgVECTORFIELD,_NgCOORDVAR,1,1,(NhlPointer)1,
+	False,True,NULL,NULL,NULL,&vfudataarray,0,NULL,NULL,NULL,False,False };
 static NgDataItemRec vfyarray = {
-	"y coord", "vfYArray", NrmNULLQUARK,
-	_NgVECTORFIELD,_NgCOORDVAR,1,1,2,
-	False,True,NULL,NULL,NULL,&vfudataarray,0,NULL };
+	"y coord", "vfYArray", NrmNULLQUARK,NrmNULLQUARK,
+	_NgVECTORFIELD,_NgCOORDVAR,1,1,(NhlPointer)2,
+	False,True,NULL,NULL,NULL,&vfudataarray,0,NULL,NULL,NULL,False,False };
 static NgDataItemRec vfmissinguvaluev = {
-	"u missing value", "vfMissingUValueV", NrmNULLQUARK,
-	_NgVECTORFIELD,_NgMISSINGVAL,0,0,0,
-	False,False,NULL,GetFillValue,NULL,&vfudataarray,0,NULL };
+	"u missing value", "vfMissingUValueV", NrmNULLQUARK,NrmNULLQUARK,
+	_NgVECTORFIELD,_NgMISSINGVAL,0,0,NULL,
+	False,False,NULL,GetFillValue,NULL,
+	&vfudataarray,0,NULL,NULL,NULL,False,False };
 static NgDataItemRec vfmissingvvaluev = {
-	"v missing value", "vfMissingVValueV", NrmNULLQUARK,
-	_NgVECTORFIELD,_NgMISSINGVAL,0,0,0,
-	False,False,NULL,GetFillValue,NULL,&vfvdataarray,0,NULL };
+	"v missing value", "vfMissingVValueV", NrmNULLQUARK,NrmNULLQUARK,
+	_NgVECTORFIELD,_NgMISSINGVAL,0,0,NULL,
+	False,False,NULL,GetFillValue,NULL,
+	&vfvdataarray,0,NULL,NULL,NULL,False,False };
 static NgDataItemRec vf_sfdataarray = {
-	"scalar field", "sfDataArray", NrmNULLQUARK,  
-	_NgSCALARFIELD,_NgDATAVAR,2,2,0,
-	False,True,NULL,NULL,NULL,&vfudataarray,0,NULL };
+	"scalar field", "sfDataArray", NrmNULLQUARK,NrmNULLQUARK,  
+	_NgSCALARFIELD,_NgDATAVAR,2,2,NULL,
+	False,True,NULL,NULL,NULL,
+	&vfudataarray,0,NULL,NULL,NULL,False,False };
 static NgDataItemRec vf_sfmissingvaluev =	{
-	"missing value", "sfMissingValueV", NrmNULLQUARK,
-	_NgSCALARFIELD,_NgMISSINGVAL,0,0,0,
-	False,False,NULL,GetFillValue,NULL,&vf_sfdataarray,0,NULL };
+	"missing value", "sfMissingValueV", NrmNULLQUARK,NrmNULLQUARK,
+	_NgSCALARFIELD,_NgMISSINGVAL,0,0,NULL,
+	False,False,NULL,GetFillValue,NULL,
+	&vf_sfdataarray,0,NULL,NULL,NULL,False,False };
 static NgDataItemRec dcdelaycompute =	{
-	"delay compute", "dcDelayCompute", NrmNULLQUARK,
-	_NgVECTORPLOT,_NgCONFIG,0,0,0,
-	False,False,NULL,GetVectorPlotValue,NULL,&vf_sfdataarray,0,NULL };
+	"delay compute", "dcDelayCompute", NrmNULLQUARK,NrmNULLQUARK,
+	_NgVECTORPLOT,_NgCONFIG,0,0,NULL,
+	False,False,NULL,GetVectorPlotValue,NULL,
+	&vf_sfdataarray,0,NULL,NULL,NULL,False,False };
 static NgDataItemRec vcusescalararray =	{
-	"use scalar array", "vcUseScalarArray", NrmNULLQUARK,
-	_NgVECTORPLOT,_NgCONFIG,0,0,0,
-	False,False,NULL,GetVectorPlotValue,NULL,&vf_sfdataarray,0,NULL };
+	"use scalar array", "vcUseScalarArray", NrmNULLQUARK,NrmNULLQUARK,
+	_NgVECTORPLOT,_NgCONFIG,0,0,NULL,
+	False,False,NULL,GetVectorPlotValue,NULL,
+	&vf_sfdataarray,0,NULL,NULL,NULL,False,False };
 static NgDataItemRec vcmonofillarrowfillcolor =	{
-	"mono fill arrow color", "vcMonoFillArrowFillColor", NrmNULLQUARK,
-	_NgVECTORPLOT,_NgCONFIG,0,0,0,
-	False,False,NULL,GetVectorPlotValue,NULL,&vf_sfdataarray,0,NULL };
+	"mono fill arrow color", "vcMonoFillArrowFillColor", 
+	NrmNULLQUARK,NrmNULLQUARK,
+	_NgVECTORPLOT,_NgCONFIG,0,0,NULL,
+	False,False,NULL,GetVectorPlotValue,NULL,
+	&vf_sfdataarray,0,NULL,NULL,NULL,False,False };
 static NgDataItemRec vcmonolinearrowcolor =	{
-	"mono line arrow color", "vcMonoLineArrowColor", NrmNULLQUARK,
-	_NgVECTORPLOT,_NgCONFIG,0,0,0,
-	False,False,NULL,GetVectorPlotValue,NULL,&vf_sfdataarray,0,NULL };
+	"mono line arrow color", "vcMonoLineArrowColor", 
+	NrmNULLQUARK,NrmNULLQUARK,
+	_NgVECTORPLOT,_NgCONFIG,0,0,NULL,
+	False,False,NULL,GetVectorPlotValue,NULL,
+	&vf_sfdataarray,0,NULL,NULL,NULL,False,False };
 static NgDataItemRec vcvectorfielddata = {
-	"vector field object", "vcVectorFieldData", NrmNULLQUARK,
-	_NgVECTORPLOT,_NgDATAOBJ,0,0,0,
-	False,False,NULL,NULL,VectorDataDefined,&vfudataarray,0,NULL };
+	"vector field object", "vcVectorFieldData", NrmNULLQUARK,NrmNULLQUARK,
+	_NgVECTORPLOT,_NgDATAOBJ,0,0,NULL,
+	False,False,NULL,NULL,VectorDataDefined,
+	&vfudataarray,0,NULL,NULL,NULL,False,False };
 static NgDataItemRec vcscalarfielddata = {
-	"scalar field object", "vcScalarFieldData", NrmNULLQUARK,
-	_NgVECTORPLOT,_NgDATAOBJ,0,0,0,
-	False,False,NULL,NULL,ScalarDataDefined,&vf_sfdataarray,0,NULL };
+	"scalar field object", "vcScalarFieldData", NrmNULLQUARK,NrmNULLQUARK,
+	_NgVECTORPLOT,_NgDATAOBJ,0,0,NULL,
+	False,False,NULL,NULL,ScalarDataDefined,
+	&vf_sfdataarray,0,NULL,NULL,NULL,False,False };
 static NgDataItemRec stvectorfielddata = {
-	"vector field object", "stVectorFieldData", NrmNULLQUARK,
-	_NgSTREAMLINEPLOT,_NgDATAOBJ,0,0,0,
-	False,False,NULL,NULL,VectorDataDefined,&vfudataarray,0,NULL };
+	"vector field object", "stVectorFieldData", NrmNULLQUARK,NrmNULLQUARK,
+	_NgSTREAMLINEPLOT,_NgDATAOBJ,0,0,NULL,
+	False,False,NULL,NULL,VectorDataDefined,
+	&vfudataarray,0,NULL,NULL,NULL,False,False };
 
 static NgDataItem VectorFieldItems[] = {
 	&vfudataarray,&vfvdataarray,&vfxarray,&vfyarray,
@@ -503,41 +527,53 @@ static NgDataItem VectorPlotItems[] = {
 	&dcdelaycompute,&vcusescalararray,
 	&vcmonofillarrowfillcolor,&vcmonolinearrowcolor };
 
+static NgDataItem VectorPlot0Items[] = {
+	&vcvectorfielddata,&vcscalarfielddata,
+	&dcdelaycompute,&vcusescalararray,
+	&vcmonofillarrowfillcolor,&vcmonolinearrowcolor };
+
 static NgDataItem StreamlinePlotItems[] = {
 	&vfudataarray,&vfvdataarray,&vfxarray,&vfyarray,
 	&vfmissinguvaluev,&vfmissingvvaluev,&stvectorfielddata };
+
+static NgDataItem StreamlinePlot0Items[] = { &stvectorfielddata };
 
 
 /* coord array and xyplot data items */
 
 static NgDataItemRec cayarray = {
-	"y array", "caYArray", NrmNULLQUARK,
-	_NgCOORDARRAY,_NgDATAVAR,2,1,1,
-	False,True,NULL,NULL,NULL,NULL,0,NULL };
+	"y array", "caYArray", NrmNULLQUARK,NrmNULLQUARK,
+	_NgCOORDARRAY,_NgDATAVAR,2,1,(NhlPointer)1,
+	False,True,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,False,False };
 static NgDataItemRec caxarray = {
-	"x array", "caXArray", NrmNULLQUARK,
-	_NgCOORDARRAY,_NgDATAVAR,2,1,1,
-	False,True,NULL,NULL,NULL,&cayarray,0,NULL };
+	"x array", "caXArray", NrmNULLQUARK,NrmNULLQUARK,
+	_NgCOORDARRAY,_NgDATAVAR,2,1,(NhlPointer)1,
+	False,True,NULL,NULL,NULL,&cayarray,0,NULL,NULL,NULL,False,False };
 static NgDataItemRec caymissingv = {
-	"y missing value", "caYMissingV", NrmNULLQUARK,
-	_NgCOORDARRAY,_NgMISSINGVAL,0,0,0,
-	False,False,NULL,GetFillValue,NULL,&cayarray,0,NULL };
+	"y missing value", "caYMissingV", NrmNULLQUARK,NrmNULLQUARK,
+	_NgCOORDARRAY,_NgMISSINGVAL,0,0,NULL,
+	False,False,NULL,GetFillValue,NULL,&cayarray,
+	0,NULL,NULL,NULL,False,False };
 static NgDataItemRec caxmissingv = {
-	"x missing value", "caXMissingV", NrmNULLQUARK,
-	_NgCOORDARRAY,_NgMISSINGVAL,0,0,0,
-	False,False,NULL,GetFillValue,NULL,&caxarray,0,NULL };
+	"x missing value", "caXMissingV", NrmNULLQUARK,NrmNULLQUARK,
+	_NgCOORDARRAY,_NgMISSINGVAL,0,0,NULL,
+	False,False,NULL,GetFillValue,NULL,&caxarray,
+	0,NULL,NULL,NULL,False,False };
 static NgDataItemRec caycast = {
-	"x missing value", "caYCast", NrmNULLQUARK,
-	_NgCOORDARRAY,_NgCONFIG,0,0,0,
-	False,False,NULL,GetCoordArrayValue,NULL,&cayarray,0,NULL };
+	"x missing value", "caYCast", NrmNULLQUARK,NrmNULLQUARK,
+	_NgCOORDARRAY,_NgCONFIG,0,0,NULL,
+	False,False,NULL,GetCoordArrayValue,NULL,
+	&cayarray,0,NULL,NULL,NULL,False,False };
 static NgDataItemRec caxcast = {
-	"x missing value", "caXCast", NrmNULLQUARK,
-	_NgCOORDARRAY,_NgCONFIG,0,0,0,
-	False,False,NULL,GetCoordArrayValue,NULL,&caxarray ,0,NULL};
+	"x missing value", "caXCast", NrmNULLQUARK,NrmNULLQUARK,
+	_NgCOORDARRAY,_NgCONFIG,0,0,NULL,
+	False,False,NULL,GetCoordArrayValue,NULL,
+	&caxarray ,0,NULL,NULL,NULL,False,False };
 static NgDataItemRec xycoorddata = {
-	"coord arrays object", "xyCoordData", NrmNULLQUARK,
-	_NgXYPLOT,_NgDATAOBJ,0,0,0,
-	False,False,NULL,NULL,CoordArrayDataDefined,&cayarray,0,NULL };
+	"coord arrays object", "xyCoordData", NrmNULLQUARK,NrmNULLQUARK,
+	_NgXYPLOT,_NgDATAOBJ,0,0,NULL,
+	False,False,NULL,NULL,CoordArrayDataDefined,
+	&cayarray,0,NULL,NULL,NULL,False,False };
 
 static NgDataItem CoordArrayItems[] = {
 	&cayarray,&caxarray,&caymissingv,&caxmissingv,&caycast,&caxcast
@@ -548,41 +584,88 @@ static NgDataItem XyPlotItems[] = {
 	&cayarray,&caxarray,&caymissingv,&caxmissingv,
 	&caycast,&caxcast,&xycoorddata
 };
+static NgDataItem XyPlot0Items[] = {&xycoorddata};
 
 
 #define FreeFunc ((NhlFreeFunc) NgFreeDataProfile)
 
 static NgDataProfileRec DataProfs[] = {
-	{_NgDEFAULT,NULL,NULL,0,0,False,NULL,FreeFunc},
+	{_NgDEFAULT,NULL,NULL,0,0,False,NULL,
+	 NrmNULLQUARK,0,NULL,NULL,0,NULL,FreeFunc},
 	{_NgCONTOURPLOT,"contourPlotClass",NULL,
-         NhlNumber(ContourPlotItems),0,False,ContourPlotItems,FreeFunc },
+         NhlNumber(ContourPlotItems),0,False,ContourPlotItems,
+	 NrmNULLQUARK,0,NULL,NULL,0,NULL,FreeFunc },
 	{_NgSTREAMLINEPLOT,"streamlinePlotClass",NULL,
-	 NhlNumber(StreamlinePlotItems),0,False,StreamlinePlotItems,FreeFunc },
+	 NhlNumber(StreamlinePlotItems),0,False,StreamlinePlotItems,
+	 NrmNULLQUARK,0,NULL,NULL,0,NULL,FreeFunc },
 	{_NgVECTORPLOT,"vectorPlotClass",NULL,
-         NhlNumber(VectorPlotItems),0,False,VectorPlotItems,FreeFunc },
+         NhlNumber(VectorPlotItems),0,False,VectorPlotItems,
+	 NrmNULLQUARK,0,NULL,NULL,0,NULL,FreeFunc },
 	{_NgXYPLOT,"xyPlotClass",NULL,
-         NhlNumber(XyPlotItems),0,False,XyPlotItems,FreeFunc },
+         NhlNumber(XyPlotItems),0,False,XyPlotItems,
+	 NrmNULLQUARK,0,NULL,NULL,0,NULL,FreeFunc },
 	{_NgCOORDARRAY,"coordArraysClass",NULL,
-         NhlNumber(CoordArrayItems),0,False,CoordArrayItems,FreeFunc },
+         NhlNumber(CoordArrayItems),0,False,CoordArrayItems,
+	 NrmNULLQUARK,0,NULL,NULL,0,NULL,FreeFunc },
 	{_NgSCALARFIELD,"scalarFieldClass",NULL,
-         NhlNumber(ScalarFieldItems),0,False,ScalarFieldItems,FreeFunc },
+         NhlNumber(ScalarFieldItems),0,False,ScalarFieldItems,
+	 NrmNULLQUARK,0,NULL,NULL,0,NULL,FreeFunc },
 	{_NgVECTORFIELD,"vectorFieldClass",NULL,
-         NhlNumber(VectorFieldItems),0,False,VectorFieldItems,FreeFunc }
+         NhlNumber(VectorFieldItems),0,False,VectorFieldItems,
+	 NrmNULLQUARK,0,NULL,NULL,0,NULL,FreeFunc },
+	{_NgPLOT,NGPLOTCLASS,NULL,0,0,False,NULL,
+	 NrmNULLQUARK,0,NULL,NULL,0,NULL,FreeFunc }
+};
+
+/*
+ * This is an alternate version of the DataProfs, where each individual
+ * data prof only has items belonging to its own class. (the data object
+ * items are eliminated from the plot objects.) This is to allow
+ * more straightforward processing for plot styles where the data objects
+ * are explicitly defined and where there may be more than one object of
+ * a given type.
+ */
+
+static NgDataProfileRec PlotDataProfs[] = {
+	{_NgDEFAULT,NULL,NULL,0,0,False,NULL,
+	 NrmNULLQUARK,0,NULL,NULL,0,NULL,FreeFunc},
+	{_NgCONTOURPLOT,"contourPlotClass",NULL,
+         NhlNumber(ContourPlot0Items),0,False,ContourPlot0Items,
+	 NrmNULLQUARK,0,NULL,NULL,0,NULL,FreeFunc },
+	{_NgSTREAMLINEPLOT,"streamlinePlotClass",NULL,
+	 NhlNumber(StreamlinePlot0Items),0,False,StreamlinePlot0Items,
+	 NrmNULLQUARK,0,NULL,NULL,0,NULL,FreeFunc },
+	{_NgVECTORPLOT,"vectorPlotClass",NULL,
+         NhlNumber(VectorPlot0Items),0,False,VectorPlot0Items,
+	 NrmNULLQUARK,0,NULL,NULL,0,NULL,FreeFunc },
+	{_NgXYPLOT,"xyPlotClass",NULL,
+         NhlNumber(XyPlot0Items),0,False,XyPlot0Items,
+	 NrmNULLQUARK,0,NULL,NULL,0,NULL,FreeFunc },
+	{_NgCOORDARRAY,"coordArraysClass",NULL,
+         NhlNumber(CoordArrayItems),0,False,CoordArrayItems,
+	 NrmNULLQUARK,0,NULL,NULL,0,NULL,FreeFunc },
+	{_NgSCALARFIELD,"scalarFieldClass",NULL,
+         NhlNumber(ScalarFieldItems),0,False,ScalarFieldItems,
+	 NrmNULLQUARK,0,NULL,NULL,0,NULL,FreeFunc },
+	{_NgVECTORFIELD,"vectorFieldClass",NULL,
+         NhlNumber(VectorFieldItems),0,False,VectorFieldItems,
+	 NrmNULLQUARK,0,NULL,NULL,0,NULL,FreeFunc }
 };
 
 #undef FreeFunc
 
 static void InitializeDataProfile(
-	void
+	NgDataProfile dprof_list,
+	int	      dprof_count
 )
 {
 	int i,j;
 
 	QString = NrmStringToQuark(NhlTString);
 
-	for (i = 0; i < NhlNumber(DataProfs); i++) {
-		for (j = 0; j < DataProfs[i].n_dataitems; j++) {
-			NgDataItem ditem = DataProfs[i].ditems[j];
+	for (i = 0; i < dprof_count; i++) {
+		for (j = 0; j < dprof_list[i].n_dataitems; j++) {
+			NgDataItem ditem = dprof_list[i].ditems[j];
 			ditem->resq = NrmStringToQuark(ditem->resname);
 		}
 	}
@@ -600,6 +683,7 @@ NgVarData NgNewVarData
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return NULL;
 	}
+	vdata->next = NULL;
 	vdata->rank = vdata->ndims = vdata->dims_alloced = 0;
 	vdata->start = vdata->finish = vdata->stride = NULL;
 	vdata->dl = NULL;
@@ -644,7 +728,7 @@ NhlBoolean NgCopyVarData
 (
 	NgVarData	to_var_data,
 	NgVarData	from_var_data
-)
+	)
 {
 	int size = from_var_data->ndims * sizeof(long);
 
@@ -708,7 +792,7 @@ NhlBoolean NgCopyVarData
 		}
 	}
 
-	if (! from_var_data->ndims) {
+	if (from_var_data->ndims <= 0) {
 		return True;
 	}
 
@@ -848,6 +932,10 @@ NclApiDataList	*EvaluateExpression
 	qtmp_var = NrmStringToQuark(tmp_var);
 	
 	dl = NclGetVarInfo(qtmp_var);
+#if 0
+	val = NclReadVar(qtmp_var,NULL,NULL,NULL);
+#endif
+
 	if (! dl) {
 		if (NclSymbolDefined(tmp_var)) {
 			sprintf(buf,
@@ -875,6 +963,9 @@ NclApiDataList	*EvaluateExpression
 		}
 	}
         XUndefineCursor(go->go.x->dpy,XtWindow(go->go.manager));
+
+	if (val) 
+		NclFreeExtValue(val);
 
 	return dl;
 }
@@ -912,10 +1003,11 @@ NhlBoolean NgSetExpressionVarData
 (
 	int		go_id,
 	NgVarData	vdata,
-	NhlString	expr_val
+	NhlString	expr_val,
+	NhlBoolean	do_eval
 )
 {
-	NclApiDataList	*dl;
+	NclApiDataList	*dl = NULL;
 	NhlBoolean	copy_expr = False;
 	int 		i,size;
 	NgGO		go = (NgGO) _NhlGetLayer(go_id);
@@ -925,7 +1017,7 @@ NhlBoolean NgSetExpressionVarData
 		return False;
 	}
 
-	if (! (vdata && expr_val))
+	if (! (vdata && expr_val && strlen(expr_val)))
 		return False;
 
 	if (! vdata->expr_val) {
@@ -937,7 +1029,10 @@ NhlBoolean NgSetExpressionVarData
 		copy_expr = True;
 	}
 
-	if (copy_expr || ! vdata->qexpr_var) {
+	if (! do_eval) {
+		vdata->go = go;
+	}
+	else if (copy_expr || ! vdata->qexpr_var) {
 		dl = EvaluateExpression(go,expr_val,&vdata->qexpr_var);
 
                 if (! dl)
@@ -961,27 +1056,33 @@ NhlBoolean NgSetExpressionVarData
 
 		vdata->qfile = vdata->qvar = vdata->qcoord = NrmNULLQUARK;
 
-		if (dl->u.var->n_dims > vdata->ndims) {
-			size = dl->u.var->n_dims * sizeof(long);
-			vdata->start = NhlRealloc(vdata->start,size);
-			vdata->finish = NhlRealloc(vdata->finish,size);
-			vdata->stride = NhlRealloc(vdata->stride,size);
-			if (! (vdata->start && 
-			       vdata->finish && vdata->stride)) {
-				NHLPERROR((NhlFATAL,ENOMEM,NULL));
-				return False;
-			}
-			vdata->dims_alloced = dl->u.var->n_dims;
+		if (! dl) {
+			vdata->ndims = -1;
 		}
-		for (i = 0; i < dl->u.var->n_dims; i++) {
-			vdata->start[i] = 0;
-			vdata->finish[i] = dl->u.var->dim_info[i].dim_size - 1;
-			vdata->stride[i] = 1;
+		else {
+			if (dl->u.var->n_dims > vdata->ndims) {
+				size = dl->u.var->n_dims * sizeof(long);
+				vdata->start = NhlRealloc(vdata->start,size);
+				vdata->finish = NhlRealloc(vdata->finish,size);
+				vdata->stride = NhlRealloc(vdata->stride,size);
+				if (! (vdata->start && 
+				       vdata->finish && vdata->stride)) {
+					NHLPERROR((NhlFATAL,ENOMEM,NULL));
+					return False;
+				}
+				vdata->dims_alloced = dl->u.var->n_dims;
+			}
+			for (i = 0; i < dl->u.var->n_dims; i++) {
+				vdata->start[i] = 0;
+				vdata->finish[i] = 
+					dl->u.var->dim_info[i].dim_size - 1;
+				vdata->stride[i] = 1;
+				if (vdata->rank != dl->u.var->n_dims)
+					vdata->cflags |= _NgRANK_CHANGE;
+				vdata->ndims = vdata->rank = dl->u.var->n_dims;
+			}
 		}
 		vdata->size_only = True;
-		if (vdata->rank != dl->u.var->n_dims)
-			vdata->cflags |= _NgRANK_CHANGE;
-		vdata->ndims = vdata->rank = dl->u.var->n_dims;
 		vdata->set_state = _NgEXPRESSION;
 		vdata->type = NORMAL;
 	}
@@ -1175,28 +1276,147 @@ NhlBoolean NgSetVarData
 	return True;
 }
 
+/*
+ * still using this with PlotDataProfs because the type is the same
+ */
+static
+NgClassType ClassType
+(
+	NhlClass class
+)
+{
+	int i;
 
-NgDataProfile NgNewDataProfile(
+	for (i = 0; i < NhlNumber(DataProfs); i++) {
+		if (class == DataProfs[i].class) {
+			return DataProfs[i].type;
+		}
+	}
+	return _NgDEFAULT;
+}
+
+NgDataItem NgNewDataItem
+(
+	NrmQuark	qname,
+	NrmQuark	qresname,
+	NrmQuark	qhlu_name,
+	NhlClass	class,
+	NgDataItemType	item_type,
+	int		min_dims,
+	int		max_dims,
+	NhlPointer	data,
+	NhlBoolean	required,
+	NhlBoolean	visible,
+	NhlBoolean	set_only,
+	NhlBoolean	save_to_compare
+)
+{
+	NgDataItem ditem = NhlMalloc(sizeof(NgDataItemRec));
+	NgVarData vdata = NgNewVarData();
+
+	if (!(ditem && vdata)) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NULL;
+	}
+
+	ditem->name = NrmQuarkToString(qname);
+	ditem->resname = NrmQuarkToString(qresname);
+	ditem->resq = qresname;
+	ditem->qhlu_name = qhlu_name;
+	ditem->class_type = ClassType(class);
+	ditem->item_type = item_type;
+	ditem->mindims = min_dims;
+	ditem->maxdims = max_dims;
+	ditem->data = data;
+	ditem->required = required;
+	ditem->vis = visible;
+	ditem->vdata = vdata;
+	ditem->set_only = set_only;
+	ditem->save_to_compare = save_to_compare;
+	ditem->get_val = NULL;
+	ditem->val_defined = NULL;
+	ditem->ref_ditem = NULL;
+	ditem->hlu_id = NhlNULLOBJID;
+	ditem->svcb = NULL;
+	ditem->raw_val = NULL;
+	ditem->appres_info = NULL;
+
+
+	return ditem;
+	
+}
+	
+NhlErrorTypes
+NgAppendDataProfileItem
+(
+	NgDataProfile	data_profile,
+	NgDataItem	data_item,
+	NrmQuark	qref_res
+)
+{
+	int i;
+
+	data_profile->ditems = NhlRealloc
+		(data_profile->ditems,
+		 sizeof(NgDataItem) * (data_profile->n_dataitems + 1));
+	if (! data_profile->ditems) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NhlFATAL;
+	}
+	data_profile->ditems[data_profile->n_dataitems] = data_item;
+	
+	for (i = 0; i < data_profile->n_dataitems; i++) {
+		NgDataItem ref_ditem = data_profile->ditems[i];
+		if (ref_ditem->resq == qref_res) {
+			data_item->ref_ditem = ref_ditem;
+			break;
+		}
+	}
+
+	/*
+	 * still need to deal with the value
+	 */
+
+	data_profile->n_dataitems++;
+
+	return NhlNOERROR;
+}
+
+static NgDataProfile NewDataProfile(
 	NgGO		go,
+	NgDataProfile	dprof_list,
+	int		dprof_count,
 	NhlString	class_name
         )
 {
 	int i, j, ix = -1;
 	NgDataProfile	dprof,ref_prof = NULL;
 	NgDataItem	*ditems = NULL;
-	static NhlBoolean first = True;
+	static 	NgDataProfile  dlists[2] = { NULL, NULL };
+	NhlBoolean	do_init = True;
 
-	if (first) {
-		InitializeDataProfile();
-		first = False;
+	for (i = 0; i < 2; i++) {
+		if (dlists[i] == dprof_list) {
+			do_init = False;
+			break;
+		}
+	}
+	if (do_init) {
+		InitializeDataProfile(dprof_list,dprof_count);
+		for (i = 0; i < 2; i++) {
+			if (dlists[i] == NULL) {
+				dlists[i] = dprof_list;
+				break;
+			}
+		}
 	}
 
 	if (! class_name)
-		ref_prof = &DataProfs[0];
+		ref_prof = &dprof_list[0];
 	else {
-		for (i = 1; i < NhlNumber(DataProfs); i++) {
-			if (! strcmp(class_name,DataProfs[i].class_name)) {
-				ref_prof = &DataProfs[i];
+		for (i = 1; i < dprof_count; i++) {
+			if (! strcmp(class_name,dprof_list[i].class_name)) {
+				ref_prof = &dprof_list[i];
 				break;
 			}
 		}
@@ -1242,6 +1462,8 @@ NgDataProfile NgNewDataProfile(
 					break;
 				}
 			}
+			if (j == ref_prof->n_dataitems) /* not found */
+				ditems[i]->ref_ditem = NULL;
 		}
 	}
 	dprof->ditems = ditems;
@@ -1249,7 +1471,86 @@ NgDataProfile NgNewDataProfile(
 	return dprof;
 }
 
+NgDataProfile NgNewDataProfile(
+	NgGO		go,
+	NhlString	class_name
+        )
+{
+	return NewDataProfile(go,DataProfs,NhlNumber(DataProfs),class_name);
+}
 
+static char *GetHluSuffix(
+	NgClassType	class_type
+)
+{
+	switch (class_type) {
+	case _NgCONTOURPLOT:
+		return "cn";
+	case _NgSTREAMLINEPLOT:
+		return "sf";
+	case _NgVECTORPLOT:
+		return "vc";
+	case _NgXYPLOT:
+		return "xy";
+	case _NgCOORDARRAY:
+		return "ca";
+	case _NgSCALARFIELD:
+		return "sf";
+	case _NgVECTORFIELD:
+		return "vc";
+	default:
+		return "";
+	}
+}
+
+NgDataProfile NgMergeDataProfiles(
+	NgGO		go,
+	NgDataProfile	data_profile,
+	NhlString	hluname,
+	NhlString	class_name
+        )
+{
+	NgDataProfile	dprof;
+	NgDataItem	ditem;
+	int		i,j,n_dataitems;
+	
+
+	dprof = NewDataProfile
+		(go,PlotDataProfs,NhlNumber(PlotDataProfs),class_name);
+	if (! dprof)
+		return data_profile;
+
+	for (i = 0; i < dprof->n_dataitems; i++) {
+		NgDataItem ditem = dprof->ditems[i];
+
+		ditem->qhlu_name = NrmStringToQuark(hluname);
+	}
+	if (! data_profile) {
+		return dprof;
+	}
+
+	n_dataitems = data_profile->n_dataitems + dprof->n_dataitems;
+
+	data_profile->ditems = NhlRealloc
+		(data_profile->ditems,n_dataitems * sizeof(NgDataItem));
+
+	j = data_profile->n_dataitems;
+	for (i = 0; i < dprof->n_dataitems; i++,j++){
+		data_profile->ditems[j] = dprof->ditems[i];
+		data_profile->ditems[j]->vdata->data_ix = j;
+		dprof->ditems[i] = NULL;
+	}
+	NgFreeDataProfile(dprof);
+		 
+	data_profile->n_dataitems = n_dataitems;
+
+	return data_profile;
+}
+
+/*
+ * this still works with PlotDataProfs because the same classes are 
+ * supported.
+ */
 NhlBoolean NgHasDataProfile(
 	NgGO		go,
 	NhlString	class_name
@@ -1320,6 +1621,21 @@ NgDataProfile  NgCopyDataProfile(
 		}
 	}
 	dprof->ditems = ditems;
+
+	if (data_profile->plotdata_count) {
+		dprof->plotdata = NhlMalloc
+			(data_profile->plotdata_count * sizeof(NgPlotDataRec));
+		memcpy(dprof->plotdata,data_profile->plotdata,
+		       sizeof(data_profile->plotdata_count * 
+			      sizeof(NgPlotDataRec)));
+		for (i = 0; i < data_profile->plotdata_count; i++) {
+			NgVarData frvdata,tovdata;
+			frvdata = data_profile->plotdata[i].vdata;
+			tovdata = NgNewVarData();
+			NgCopyVarData(tovdata,frvdata);
+			dprof->plotdata[i].vdata = tovdata;
+		}
+	}
 
 	return dprof;
 }
@@ -1413,12 +1729,18 @@ void NgFreeDataProfile(
 		return;
 
 	for (i = 0; i < data_profile->n_dataitems; i++) {
+		if (! data_profile->ditems[i])
+			continue;
 		NgFreeVarData(data_profile->ditems[i]->vdata);
 		if (data_profile->ditems[i]->svcb)
 			NgCBWPDestroy(data_profile->ditems[i]->svcb);
 		NhlFree(data_profile->ditems[i]);
 	}
 	NhlFree(data_profile->ditems);
+	for (i = 0; i < data_profile->plotdata_count; i++) {
+		NgFreeVarData(data_profile->plotdata[i].vdata);
+	}
+	NhlFree(data_profile->plotdata);
 	NhlFree(data_profile);
 
 	return;
@@ -1891,7 +2213,7 @@ NhlBoolean NgSetDependentVarData
 			 * coordinate variable is defined for the dimension
 			 */
 			dim = rdim_prof_rec.last_dim;
-			coord_num = dp->ditems[i]->coord_num;
+			coord_num = (int) dp->ditems[i]->data;
 			while (--coord_num) {
 				dim--;
 				while (dim > -1 &&
@@ -1957,6 +2279,9 @@ NhlBoolean NgSetDataProfileVar
 	if (init_master_ix)
 		SetMasterIndex(dp,vdata);
 
+	if (vdata->data_ix < 0 || vdata->data_ix >= dp->n_dataitems)
+		return False;
+
 	SetDimProfile(vdata,&dim_prof_rec);
 
 	if (dp->ditems[vdata->data_ix]->required &&
@@ -2014,7 +2339,7 @@ NhlBoolean NgConformingDataItem
 
 	if (ditem->item_type == _NgCOORDVAR) {
 		int dim = ref_dim_prof.last_dim;
-		int coord_num = ditem->coord_num;
+		int coord_num = (int)ditem->data;
 		while (--coord_num) {
 			dim--;
 			while (dim > -1 && ! ref_dim_prof.dim_sizes[dim])
@@ -2025,6 +2350,9 @@ NhlBoolean NgConformingDataItem
 		return (ref_dim_prof.dim_sizes[dim] == dim_prof.dim_sizes[0]) ?
 			True : False;
 	}
+
+	if (! ref_dim_prof.eff_dim_count) /* nothing to compare */
+		return True;
 
 	for (i = dim_prof.last_dim,j = ref_dim_prof.last_dim;
 	     count < dim_prof.eff_dim_count; ) {

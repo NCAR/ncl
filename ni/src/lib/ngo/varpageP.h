@@ -1,5 +1,5 @@
 /*
- *      $Id: varpageP.h,v 1.9 1999-03-12 19:13:49 dbrown Exp $
+ *      $Id: varpageP.h,v 1.10 1999-07-30 03:21:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -65,12 +65,13 @@ typedef struct _brVarPageRec
 } brVarPageRec;
 
 extern brPageData *
-NgGetVarPage(
+_NgGetVarPage(
 	NgGO		go,
         brPane		*pane,
 	brPage		*page,
         brPage		*copy_page,
-	NgPageSaveState save_state
+	NgPageSaveState save_state,
+	NhlPointer	init_data
         );
 
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: filepage.c,v 1.7 1999-05-22 00:36:16 dbrown Exp $
+ *      $Id: filepage.c,v 1.8 1999-07-30 03:20:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -114,13 +114,14 @@ NewFileRefPage
 
         
 extern brPageData *
-NgGetFileRefPage
+_NgGetFileRefPage
 (
 	NgGO		go,
         brPane		*pane,
 	brPage		*page,
         brPage		*copy_page,
-	NgPageSaveState save_state
+	NgPageSaveState save_state,
+	NhlPointer	init_data
 )
 {
 	NgBrowse		browse = (NgBrowse)go;

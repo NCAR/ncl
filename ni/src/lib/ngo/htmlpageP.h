@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlpageP.h,v 1.1 1999-03-05 16:53:30 dbrown Exp $
+ *      $Id: htmlpageP.h,v 1.2 1999-07-30 03:20:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -39,12 +39,13 @@ typedef struct _brHtmlPageRec
 } brHtmlPageRec;
 
 extern brPageData *
-NgGetHtmlPage(
+_NgGetHtmlPage(
 	NgGO		go,
         brPane		*pane,
 	brPage		*page,
         brPage		*copy_page,
-	NgPageSaveState save_state
+	NgPageSaveState save_state,
+	NhlPointer	init_data
         );
 
 extern void 

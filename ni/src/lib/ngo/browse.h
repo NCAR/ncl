@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.h,v 1.11 1999-05-22 00:36:15 dbrown Exp $
+ *      $Id: browse.h,v 1.12 1999-07-30 03:20:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -41,7 +41,7 @@ extern NhlClass NgbrowseClass;
 
 typedef enum _brPageType 
 {
-        _brNULL, _brREGVAR, _brFILEREF, _brFILEVAR, _brHLUVAR, 
+        _brNULL, _brREGVAR, _brFILEREF, _brFILEVAR, _brHLUVAR, _brPLOTVAR,
 	_brFUNCTION, _brHTML
 } brPageType;
 
@@ -56,6 +56,7 @@ typedef enum _NgPageMessageType
 {
 	_NgNOMESSAGE,	   /* the null message */
 	_NgHLUOBJCREATE,   /* msg type: brHluObjCreate - hlupage.h */
+	_NgPLOTCREATE,   /* msg type: brPlotCreate - plotpage.h */
 	_NgDATAPROFILE,    /* msg type: NgDataProfile - dataprofile.h */
 	_NgDATAPROFILELINK_REQ,
 	_NgVARDATA,  	   /* msg type: NgVarData     - dataprofile.h */
@@ -111,7 +112,8 @@ extern NgPageId NgOpenPage(
         int		goid,
         brPageType	type,
         NrmQuark	*qname,
-        int		qcount
+        int		qcount,
+	NhlPointer	init_data
         );
 
 extern void NgPageOutputNotify(
@@ -129,6 +131,11 @@ extern NhlPointer NgPageData(
 extern NhlErrorTypes NgUpdatePage(
         int		goid,
         NgPageId	page_id
+        );
+
+extern NhlErrorTypes NgUpdatePages(
+        int		goid,
+	NhlBoolean	force_draw
         );
 
 extern NhlErrorTypes NgResetPage(

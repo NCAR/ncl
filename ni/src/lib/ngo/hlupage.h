@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.h,v 1.7 1999-02-23 03:56:49 dbrown Exp $
+ *      $Id: hlupage.h,v 1.8 1999-07-30 03:20:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -51,6 +51,7 @@ typedef enum __hluState
 typedef struct _brHluObjCreateRec    /* message type _NgHLUOBJCREATE */
 {
 	int		obj_id;
+	int		app_id;
 	NhlString	class_name;
 	NhlString	plot_style;
 	NhlString	plot_style_dir;
@@ -74,6 +75,7 @@ extern brHluObjCreate NgNewHluObjCreateRec
 	NhlString	plot_style,
 	NhlString	plot_style_dir,
 	int		obj_id,
+	int		app_id,
 	NhlBoolean	has_input_data,
 	_hluState	state
 );

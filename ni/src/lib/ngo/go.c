@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.23 1999-05-22 00:36:17 dbrown Exp $
+ *      $Id: go.c,v 1.24 1999-07-30 03:20:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1585,15 +1585,47 @@ DeleteHLUCB
         NgGO		go = (NgGO) udata;
 	NrmQuark	qvar;
 	XtPointer	userData;
-        
+        int 		i,hlu_id,count,*id_array;
+	NhlString	varname;
+
+        XUNGRABSERVER(XtDisplay(w));
+/*
+	XUngrabPointer(XtDisplay(w),CurrentTime);
+*/
 	XtVaGetValues(w,
 		      XmNuserData,&userData,
 		      NULL);
 	qvar = (NrmQuark)userData;
+	varname = NrmQuarkToString(qvar);
 #if 0
-        printf("deleting %s\n", NrmQuarkToString(qvar));
+        printf("deleting %s\n", varname);
 #endif
-        NgDestroyGraphic(go->base.id,NrmQuarkToString(qvar));
+#if 0
+	hlu_id = NgNclGetHluObjId
+		(go->go.nclstate,NrmQuarkToString(qvar),&count,&id_array);
+	printf("count = %d\n",count);
+	if (! id_array) {
+#endif
+		NgDestroyGraphic(go->base.id,varname);
+#if 0
+	}
+	else {
+		char buf[256];
+		NrmQuark *qhlus;
+		qhlus = NclGetHLUVarSymNames(&count);
+		for (i = 0; i < count; i++) {
+			NhlString obj_name = NrmQuarkToString(qhlus[i]); 
+			if (! strstr(obj_name,varname))
+				continue;
+			if (qhlus[i] == qvar)
+				continue;
+			NgDestroyGraphic(go->base.id,obj_name);
+		}
+		NgDestroyGraphic(go->base.id,varname);
+		NhlFree(id_array);
+	}
+#endif
+	return;
 }
 
 void

@@ -1,5 +1,5 @@
 /*
- *      $Id: browseP.h,v 1.8 1999-05-22 00:36:15 dbrown Exp $
+ *      $Id: browseP.h,v 1.9 1999-07-30 03:20:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -103,6 +103,7 @@ typedef struct _brPane
 	struct _brPageData	*var_pages;
         struct _brPageData	*hlu_pages;
 	struct _brPageData	*html_pages;
+	struct _brPageData	*plot_pages;
         NhlBoolean		changed;
         int			remove_pos;
         int			active_pos;
@@ -266,5 +267,26 @@ extern void _NgGetPaneVisibleArea(
 
 
 extern NgBrowseClassRec	NgbrowseClassRec;
+
+
+/*
+ * some data structures used by more than one page type
+ * this is subject to change
+ */
+
+typedef struct _brSetValCBInfo
+{
+	NgPageId pid;
+	int	 goid;
+} brSetValCBInfo;
+
+/*
+ * this struct keeps track of auxilliary data objects 
+ */
+
+typedef struct _brDataObjInfoRec {
+        NrmQuark	qname;
+	int		id;
+} brDataObjInfoRec, *brDataObjInfo;
 
 #endif	/* _NG_BROWSEP_H_ */

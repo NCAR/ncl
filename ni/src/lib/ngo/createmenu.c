@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenu.c,v 1.11 1999-06-02 03:40:07 dbrown Exp $
+ *      $Id: createmenu.c,v 1.12 1999-07-30 03:20:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -113,7 +113,7 @@ static void CreateCB
 
         qname = NrmStringToQuark(vartext);
 
-        page_id = NgOpenPage(browse_id,_brHLUVAR,&qname,1);
+        page_id = NgOpenPage(browse_id,_brHLUVAR,&qname,1,NULL);
         if (page_id <= NgNoPage) {
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"unable to open hlu page"));
                 return;
@@ -132,6 +132,7 @@ static void CreateCB
 		dprof->linked = False;
 	}
 	hlu_create_rec.obj_id = NhlNULLOBJID;
+	hlu_create_rec.app_id = NhlNULLOBJID;
 	hlu_create_rec.class_name =  priv->create_class->base_class.class_name;
 	hlu_create_rec.plot_style = NULL;
 	hlu_create_rec.plot_style_dir = NULL;

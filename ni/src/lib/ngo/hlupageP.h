@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupageP.h,v 1.11 1999-02-23 03:56:49 dbrown Exp $
+ *      $Id: hlupageP.h,v 1.12 1999-07-30 03:20:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,7 @@
 
 #define DEBUG_HLUPAGE 0
 
+#if 0
 /*
  * this struct keeps track of auxilliary data objects if the hlupage
  * references a plot object with data
@@ -37,7 +38,7 @@ typedef struct _brDataObjInfoRec {
         NrmQuark	qname;
 	int		id;
 } brDataObjInfoRec, *brDataObjInfo;
-
+#endif
 /*
  * This struct contains state information used to recreate an hlupage when
  * it is brought up again after being 'hidden' by the user.
@@ -60,12 +61,14 @@ typedef struct _brHluSaveStateRec {
 	NhlBoolean	has_input_data;
 	XmLArray	datalinks;
 } brHluSaveStateRec, *brHluSaveState;
-	
+
+#if 0	
 typedef struct _brSetValCBInfo
 {
 	NgPageId pid;
 	int	 goid;
 } brSetValCBInfo;
+#endif
 
 typedef struct _brHluPageRec 
 {
@@ -96,12 +99,13 @@ typedef struct _brHluPageRec
 } brHluPageRec;
 
 extern brPageData *
-NgGetHluPage(
+_NgGetHluPage(
 	NgGO		go,
         brPane		*pane,
 	brPage		*page,
         brPage		*copy_page,
-	NgPageSaveState save_state
+	NgPageSaveState save_state,
+	NhlPointer	init_data
         );
 
 

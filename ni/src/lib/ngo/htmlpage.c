@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlpage.c,v 1.3 1999-05-22 00:36:19 dbrown Exp $
+ *      $Id: htmlpage.c,v 1.4 1999-07-30 03:20:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -158,13 +158,14 @@ NewHtmlPage
 
         
 extern brPageData *
-NgGetHtmlPage
+_NgGetHtmlPage
 (
 	NgGO		go,
         brPane		*pane,
 	brPage		*page,
         brPage		*copy_page,
-	NgPageSaveState save_state
+	NgPageSaveState save_state,
+	NhlPointer	init_data
 )
 {
 	NgBrowse		browse = (NgBrowse)go;

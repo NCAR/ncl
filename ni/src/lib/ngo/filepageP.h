@@ -1,5 +1,5 @@
 /*
- *      $Id: filepageP.h,v 1.3 1999-02-23 03:56:47 dbrown Exp $
+ *      $Id: filepageP.h,v 1.4 1999-07-30 03:20:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,12 +33,13 @@ typedef struct _brFileRefPageRec
 } brFileRefPageRec;
 
 extern brPageData *
-NgGetFileRefPage(
+_NgGetFileRefPage(
 	NgGO		go,
         brPane		*pane,
 	brPage		*page,
         brPage		*copy_page,
-	NgPageSaveState save_state
+	NgPageSaveState save_state,
+	NhlPointer	init_data
         );
 
 

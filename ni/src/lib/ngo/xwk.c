@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.16 1999-05-27 02:28:35 dbrown Exp $
+ *      $Id: xwk.c,v 1.17 1999-07-30 03:21:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -319,10 +319,18 @@ NgXWorkPreOpenCB
 	 * Obj info rec and assigns it to the gui_data2 pointer. But the
 	 * draw routine may need to know the NgXwk object id before the
 	 * workstation gets put into the ViewTree. So the NgXwk creates it.
-	 * It will still be freed by the ViewTree.
+	 * It will still be freed by the ViewTree. If the xwk is a preview,
+	 * then it is set during the NgCreatePreviewGraphic routine (graphic.c)
 	 */
-	hdata = NgGetHluData();
-	wko = NhlMalloc(sizeof(NgWksObjRec));
+	if (wk->base.gui_data2)
+		hdata = (NgHluData) wk->base.gui_data2;
+	else
+		hdata = NgGetHluData();
+	if (hdata->gdata)
+		wko = (NgWksObj) hdata->gdata;
+	else 
+		wko = NhlMalloc(sizeof(NgWksObjRec));
+
 	if(! (wko && hdata)){
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return;
@@ -341,7 +349,7 @@ NgXWorkPreOpenCB
 	 * been created. The first one gets created unmapped.
 	 */
 
-	if (selected_work < 0 ||! strncmp(wk->base.name,"_NgPreview_",11)) {
+	if (selected_work < 0 || hdata->preview) {
 		NgGOCreateUnmapped(xwkid);
 		SetUpWorkColorCBs(xwkid);
 		return;

@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.24 1999-05-22 00:36:13 dbrown Exp $
+ *      $Id: addfile.c,v 1.25 1999-07-30 03:20:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2460,7 +2460,6 @@ AddFileCreateWin
                 XtVaCreateManagedWidget("varform",
                                         xmFormWidgetClass,np->listform,
                                         XmNleftAttachment,XmATTACH_NONE,
-                                        XmNleftWidget,np->fselect_box,
                                         NULL);
         varlabel =
                 XtVaCreateManagedWidget("varlabel",

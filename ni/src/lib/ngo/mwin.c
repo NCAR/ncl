@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.23 1999-05-22 00:36:20 dbrown Exp $
+ *      $Id: mwin.c,v 1.24 1999-07-30 03:20:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -283,6 +283,7 @@ FreeNode
 {
 	if (node->xmname)
 		NgXAppFreeXmString(node->tree->appmgr,node->xmname);
+
 	if (node->ndata)
 		NhlFree(node->ndata);
 	NhlFree(node);
@@ -348,7 +349,31 @@ FindRowNode
 
 	return FindRowNode(node->next,row);
 }
+#if 0
+static void
+DestroyHluCB
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+{
+	NhlLayer	l = (NhlLayer) cbdata.ptrval;
 
+	if (l->base.gui_data2) {
+		NgHluData   hdata = (NgHluData) l->base.gui_data2;
+		/* 
+		 * if the hdata has its own destroy callback, let it handle
+		 * the destroy
+		 */
+		if (hdata->destroy_cb)
+			return;
+		NgFreeHluData(hdata);
+		l->base.gui_data2 = NULL;
+	}
+
+	return;
+}
+#endif
 static void
 GetWkObjs
 (
@@ -1348,9 +1373,9 @@ RemoveOverlayNode
 	int 		i,orow, nrow;
 	int		*seq_ids,seq_id_count = 0;
 	int		*anno_views,anno_view_count = 0;
-	static		int getrl = -1;
 	NhlBoolean	is_base_plot;
 	NgViewObj	vobj;
+	NhlGenArray	annotations,overlays;
 
 	is_base_plot = id == _NhlBasePlot(id);
 
@@ -1427,16 +1452,16 @@ RemoveOverlayNode
 		      XmNrowExpands,True,
 		      NULL);
 	AddBasePlotFolderNodes(otree,ovnode);
+
+	NhlVAGetValues(id,
+		       "pmOverlaySequenceIds",&overlays,
+		       "pmAnnoViews",&annotations,
+		       NULL);
 	
-	if (getrl < 0)
-		getrl = NhlRLCreate(NhlGETRL);
-	else 
-		NhlRLClear(getrl);
-	NhlRLGetIntegerArray(getrl,"pmOverlaySequenceIds",
-			     &seq_ids,&seq_id_count);
-	NhlRLGetIntegerArray(getrl,"pmAnnoViews",
-			     &anno_views,&anno_view_count);
-	NhlGetValues(id,getrl);
+	seq_id_count = overlays ? overlays->num_elements : 0;
+	seq_ids = seq_id_count ? (int*) overlays->data : NULL;
+	anno_view_count = annotations ? annotations->num_elements : 0;
+	anno_views = anno_view_count ? (int*) annotations->data : NULL;
 
 	/* 
 	 * Although this is not terribly efficient, for now we indivually 
@@ -1501,6 +1526,10 @@ RemoveOverlayNode
 			      NULL);
 	}
 
+	if (overlays)
+		NhlFreeGenArray(overlays);
+	if (annotations)
+		NhlFreeGenArray(annotations);
 	return True;
 }
 
@@ -1525,174 +1554,6 @@ extern void SetViewBBOffscreen
 		vobj->xvp = vobj->xbbox;
 	}
 
-	return;
-}
-
-static void
-AnnoStatusCB
-(
-	NhlArgVal	cbdata,
-	NhlArgVal	udata
-)
-{
-	char		func[]="AnnoStatusCB";
-	_NhlAnnoStatusCBData anstat = (_NhlAnnoStatusCBData)cbdata.ptrval;
-	NgObjTree	otree = (NgObjTree)udata.ptrval;
-	NhlLayer	vl;
-	NgObjTreeNode   vwnode,basenode;
-	NgObjTreeNode	bnode,annode,*vp,wp = NULL;
-	NgViewObj	vwo;
-	int		base_id;
-	NgWksObj 	wks;
-	NhlBoolean	is_xwork;
-
-#if DEBUG_MWIN
-	fprintf(stderr,"in anno status cb\n");
-#endif
-	vl = _NhlGetLayer(anstat->id);
-	
-	if (vl) {
-		for (wp = otree->wklist; wp; wp = wp->next)
-			if (wp->id == vl->base.wkptr->base.id)
-				break;
-	}
-	if (! wp) {
-		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-			   "%s:Invalid annotation id!",func));
-		return;
-	}
-	is_xwork = _NhlIsXWorkstation(_NhlGetLayer(wp->id));
-
-	base_id = _NhlIsOverlay(anstat->base_id) ?
-		_NhlOverlayBase(anstat->base_id) : anstat->base_id;
-
-	wks = (NgWksObj)wp->ndata;
-	if (vl->base.wkptr->base.being_destroyed)
-		wks->auto_refresh = False;
-	if (anstat->isanno) {
-		int pos,sel_id;
-
-		/*
-		 * it's a new annotation; currently it's a top-level child.
-		 * if it has its own overlays or annotations, they remain
-		 * with it.
-		 */
-		for (vp = &wp->cnodes; *vp; vp = &(*vp)->next) {
-			if (anstat->id == (*vp)->id)
-				break;
-		}
-		if (! (*vp)) {
-			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-				   "%s:Internal error finding overlay node!",
-				   func));
-			return;
-		}
-		/* 
-		 * the base plot that it is being added to could be an
-		 * annotation or an overlay. If it's an overlay, we really
-		 * want to add the annotation to its base plot.
-		 */
-		bnode = GetBasePlotNode(wp->cnodes,base_id);
-		if (! bnode) {
-			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-				   "%s:Internal error finding base plot node!",
-				   func));
-			return;
-		}
-		annode = *vp;
-		*vp = annode->next;
-		annode->next = NULL;
-		pos = LastNodePos(annode);
-		XmLGridDeleteRows(otree->wtree,XmCONTENT,annode->pos,
-				  LastNodePos(annode) - annode->pos + 1);
-		pos = NumberNodes((*vp),annode->pos-1);
-		NumberNodes(annode->pnode->next,pos);
-
-		/* now everything should be in sync again, so add the
-		 * annotation node to the base plot.
-		 * Note that we do the removal here in the
-		 * callback so that AddAnnotationNode could work with a view
-		 * that becomes an annotation at create time (not possible
-		 * currently).
-		 * But if it's an XWorkstation, clear view first
-		 */
-
-		if (Do_Draw && is_xwork && wks->auto_refresh) {
-			int pbase_id;
-			NgClearXwkView(wks->wks_wrap_id,annode->id);
-			AddAnnotationNode(otree,bnode,annode);
-			/* 
-			 * Note that the annotation's base plot is not 
-			 * necessarily the primary base plot. 
-			 */
-			pbase_id = _NhlBasePlot(base_id);
-			/* 
-			 * Redraw the base plot so the overlay will show up
-			 */
-			NgDrawXwkView(wks->wks_wrap_id,pbase_id,False);
-			NhlVAGetValues(wks->wks_wrap_id,
-				       NgNxwkSelectedView,&sel_id,
-				       NULL);
-			if (sel_id == annode->id) {
-				NgSetSelectedXwkView
-					(wks->wks_wrap_id,pbase_id);
-			}
-		}
-		else {
-			AddAnnotationNode(otree,bnode,annode);
-		}
-	}
-	else {
-		/* find the former base plot */
-
-		bnode = GetBasePlotNode(wp->cnodes,base_id);
-		if (! bnode) {
-			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-				   "%s:Internal error finding base plot node!",
-				   func));
-			return;
-		}
-
-		/* 
-		 * If it's an XWorkstation, clear the base plot BB
-		 */
-		/*
-		 * the remove function both removes and replaces the 
-		 * tree rows.
-		 */
-		if (! (Do_Draw && is_xwork && wks->auto_refresh)) {
-			RemoveAnnotationNode(otree,bnode,anstat->id);
-		}
-		else {
-			NhlLayer bl = _NhlGetLayer(anstat->base_id);
-
-			/*
-			 * This draw must occur before removing the node so
-			 * that the removed annotation won't yet be seen as
-			 * an independent plot. If it's being destroyed it
-			 * can't be drawn.
-			 */
-
-			if (bl && ! bl->base.being_destroyed)
-				NgDrawXwkView(wks->wks_wrap_id,
-					      anstat->base_id,True);
-				
-
-			RemoveAnnotationNode(otree,bnode,anstat->id);
-			/* 
-			 * Redraw the now top-level view
-			 */
-			if (vl->base.being_destroyed) {
-				SetViewBBOffscreen(otree,anstat->id);
-			}	
-			else {
-				NgUpdateViewBB((NgWksState)otree,anstat->id);
-				NgDrawXwkView
-					(wks->wks_wrap_id,anstat->id,False);
-			}
-		}
-
-	}
 	return;
 }
 
@@ -1849,6 +1710,192 @@ OverlayStatusCB
 	return;
 }	
 
+	
+
+static void
+AnnoStatusCB
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+{
+	char		func[]="AnnoStatusCB";
+	_NhlAnnoStatusCBData anstat = (_NhlAnnoStatusCBData)cbdata.ptrval;
+	NgObjTree	otree = (NgObjTree)udata.ptrval;
+	NhlLayer	vl;
+	NgObjTreeNode   vwnode,basenode;
+	NgObjTreeNode	bnode,annode,*vp,wp = NULL;
+	NgViewObj	vwo;
+	int		base_id;
+	NgWksObj 	wks;
+	NhlBoolean	is_xwork;
+
+#if DEBUG_MWIN
+	fprintf(stderr,"in anno status cb\n");
+#endif
+	vl = _NhlGetLayer(anstat->id);
+	
+	if (vl) {
+		for (wp = otree->wklist; wp; wp = wp->next)
+			if (wp->id == vl->base.wkptr->base.id)
+				break;
+	}
+	if (! wp) {
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+			   "%s:Invalid annotation id!",func));
+		return;
+	}
+	is_xwork = _NhlIsXWorkstation(_NhlGetLayer(wp->id));
+
+	base_id = _NhlIsOverlay(anstat->base_id) ?
+		_NhlOverlayBase(anstat->base_id) : anstat->base_id;
+
+	wks = (NgWksObj)wp->ndata;
+	if (vl->base.wkptr->base.being_destroyed)
+		wks->auto_refresh = False;
+	if (anstat->isanno) {
+		int pos,sel_id;
+
+		/*
+		 * it's a new annotation; currently it's a top-level child.
+		 * if it has its own overlays or annotations, they remain
+		 * with it.
+		 */
+		for (vp = &wp->cnodes; *vp; vp = &(*vp)->next) {
+			if (anstat->id == (*vp)->id)
+				break;
+		}
+		if (! (*vp)) {
+
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+				  "%s:Internal error finding annotation node!",
+				   func));
+			return;
+		}
+		/* 
+		 * the base plot that it is being added to could be an
+		 * annotation or an overlay. If it's an overlay, we really
+		 * want to add the annotation to its base plot.
+		 */
+		bnode = GetBasePlotNode(wp->cnodes,base_id);
+		if (! bnode) {
+			/*
+			 * The overlay base may not have been added to the 
+			 * tree yet. In that case, the annotation base 
+			 * is still acting as a base plot. So try it.
+			 */
+			base_id = anstat->base_id;
+			bnode = GetBasePlotNode(wp->cnodes,base_id);
+			/* 
+			 * now it's really an error
+			 */
+			if (! bnode) {
+				NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+				   "%s:Internal error finding base plot node!",
+					   func));
+				return;
+			}
+		}
+		annode = *vp;
+		*vp = annode->next;
+		annode->next = NULL;
+		pos = LastNodePos(annode);
+		XmLGridDeleteRows(otree->wtree,XmCONTENT,annode->pos,
+				  LastNodePos(annode) - annode->pos + 1);
+		pos = NumberNodes((*vp),annode->pos-1);
+		NumberNodes(annode->pnode->next,pos);
+
+		/* now everything should be in sync again, so add the
+		 * annotation node to the base plot.
+		 * Note that we do the removal here in the
+		 * callback so that AddAnnotationNode could work with a view
+		 * that becomes an annotation at create time (not possible
+		 * currently).
+		 * But if it's an XWorkstation, clear view first
+		 */
+
+		if (Do_Draw && is_xwork && wks->auto_refresh) {
+			int pbase_id;
+			NgClearXwkView(wks->wks_wrap_id,annode->id);
+			AddAnnotationNode(otree,bnode,annode);
+			/* 
+			 * Note that the annotation's base plot is not 
+			 * necessarily the primary base plot. 
+			 */
+			pbase_id = _NhlBasePlot(base_id);
+			/* 
+			 * Redraw the base plot so the overlay will show up
+			 */
+			NgDrawXwkView(wks->wks_wrap_id,pbase_id,False);
+			NhlVAGetValues(wks->wks_wrap_id,
+				       NgNxwkSelectedView,&sel_id,
+				       NULL);
+			if (sel_id == annode->id) {
+				NgSetSelectedXwkView
+					(wks->wks_wrap_id,pbase_id);
+			}
+		}
+		else {
+			AddAnnotationNode(otree,bnode,annode);
+		}
+	}
+	else {
+		/* find the former base plot */
+
+		bnode = GetBasePlotNode(wp->cnodes,base_id);
+		if (! bnode) {
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+				   "%s:Internal error finding base plot node!",
+				   func));
+			return;
+		}
+
+		/* 
+		 * If it's an XWorkstation, clear the base plot BB
+		 */
+		/*
+		 * the remove function both removes and replaces the 
+		 * tree rows.
+		 */
+		if (! (Do_Draw && is_xwork && wks->auto_refresh)) {
+			RemoveAnnotationNode(otree,bnode,anstat->id);
+		}
+		else {
+			NhlLayer bl = _NhlGetLayer(anstat->base_id);
+
+			/*
+			 * This draw must occur before removing the node so
+			 * that the removed annotation won't yet be seen as
+			 * an independent plot. If it's being destroyed it
+			 * can't be drawn.
+			 */
+
+			if (bl && ! bl->base.being_destroyed)
+				NgDrawXwkView(wks->wks_wrap_id,
+					      anstat->base_id,True);
+				
+
+			RemoveAnnotationNode(otree,bnode,anstat->id);
+			/* 
+			 * Redraw the now top-level view
+			 */
+			if (vl->base.being_destroyed) {
+				/*
+				SetViewBBOffscreen(otree,anstat->id);
+				*/
+				;
+			}	
+			else {
+				NgUpdateViewBB((NgWksState)otree,anstat->id);
+				NgDrawXwkView
+					(wks->wks_wrap_id,anstat->id,False);
+			}
+		}
+
+	}
+	return;
+}
+
 static void
 CheckMissingBaseNodeList
 (
@@ -1949,7 +1996,6 @@ SetValuesCB
 
 	return;
 }
-	
 
 static NhlBoolean
 AddViewNode
@@ -2070,6 +2116,13 @@ AddViewNode
 
 		if (_NhlIsAnnotation(vwnode->id)) {
 			base_id = _NhlAnnotationBase(vwnode->id);
+			/*
+			 * It's possible that this base is itself an
+			 * overlay. In that case we need to find its base.
+			 */
+			if (_NhlIsOverlay(base_id)) {
+				base_id = _NhlOverlayBase(base_id);
+			}
 		}
 		bnode = GetBasePlotNode(wknode->cnodes,base_id);
 		if(!bnode) {
@@ -2159,6 +2212,7 @@ AddViewNode
 	return True;
 }
 
+
 static void
 CreateCB
 (
@@ -2173,9 +2227,6 @@ CreateCB
 	NgObjTreeNode	tmp;
 	NhlLayer	l;
 
-	if (! strncmp(hlu->name,"_NgPreview_",11))
-		return;
-
 	l = _NhlGetLayer(hlu->id);;
 
 	if (! l) {
@@ -2183,7 +2234,13 @@ CreateCB
 			   func,hlu->id));
 		return;
 	}
-	else if (_NhlIsClass(l,NhlworkstationClass)){
+	else if (l->base.gui_data2) {
+		NgHluData 	hdata = (NgHluData) l->base.gui_data2;
+		if (hdata->preview)
+			return;
+	}
+
+	if (_NhlIsClass(l,NhlworkstationClass)){
 		new = AllocNode(otree,NULL,_ngWksNode);
 		if(!new){
 			NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -2228,9 +2285,6 @@ DestroyCB
 	NgNclHluObj	hlu = (NgNclHluObj)cbdata.ptrval;
 	NgObjTree	otree = (NgObjTree)udata.ptrval;
 	NgObjTreeNode	*tptr,tmp,work;
-
-	if (! strncmp(hlu->name,"_NgPreview_",11))
-		return;
 
 	if (NhlClassIsSubclass(hlu->class_ptr,NhlworkstationClass)){
 		for(tptr=&otree->wklist;*tptr;tptr=&((*tptr)->next))
@@ -2893,7 +2947,8 @@ extern void NgUpdateTransformation(
 
 
 extern void NgDrawUpdatedViews(
-	NgWksState	wks_state
+	NgWksState	wks_state,
+	NhlBoolean	force_draw
 )
 {
 	char		func[]="NgDrawUpdatedViews";
@@ -2901,6 +2956,10 @@ extern void NgDrawUpdatedViews(
 	NgObjTreeNode	vwnode,wknode;
 	NhlBoolean	draw_single;
 	int		selected_id;
+	NgXBBox   	bbox;
+
+	bbox.p0.x = bbox.p0.y = 16000;
+	bbox.p1.x = bbox.p1.y = -16000;
 
 	for (wknode = otree->wklist; wknode; wknode = wknode->next) {
 		NgWksObj wkobj = (NgWksObj) wknode->ndata;
@@ -2911,8 +2970,10 @@ extern void NgDrawUpdatedViews(
 			       NgNxwkDrawSelectedViewOnly,&draw_single,
 			       NULL);
 		for (vwnode = wknode->cnodes; vwnode; vwnode = vwnode->next) {
+			NgViewObj vobj = (NgViewObj) vwnode->ndata;
 			NgHluData hdata;
 			NhlLayer l = _NhlGetLayer(vwnode->id);
+
 			if (! l)
 				continue;
 			if (draw_single && vwnode->id != selected_id)
@@ -2920,9 +2981,21 @@ extern void NgDrawUpdatedViews(
 			hdata = (NgHluData) l->base.gui_data2;
 			if (! hdata)
 				continue;
-			if (hdata->draw_req)
-				NgDrawView
-					(otree->go->base.id,vwnode->id,True);
+			if (hdata->draw_req || force_draw) {
+				if ((vobj->xbbox.p0.x < bbox.p1.x &&
+				     vobj->xbbox.p1.x > bbox.p0.x) &&
+				    (vobj->xbbox.p0.y < bbox.p1.y &&
+				     vobj->xbbox.p1.y > bbox.p0.y)) {
+					hdata->draw_req = False;
+					continue;
+				}
+				NgDrawView(otree->go->base.id,
+					   vwnode->id,True);
+				bbox.p0.x = MIN(vobj->xbbox.p0.x,bbox.p0.x);
+				bbox.p1.x = MAX(vobj->xbbox.p1.x,bbox.p1.x);
+				bbox.p0.y = MIN(vobj->xbbox.p0.y,bbox.p0.y);
+				bbox.p1.y = MAX(vobj->xbbox.p1.y,bbox.p1.y);
+			}
 		}
 	}
 }

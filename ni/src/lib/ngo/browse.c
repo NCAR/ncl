@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.28 1999-05-22 00:36:14 dbrown Exp $
+ *      $Id: browse.c,v 1.29 1999-07-30 03:20:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@
 #include <ncarg/ngo/varpageP.h>
 #include <ncarg/ngo/hlupageP.h>
 #include <ncarg/ngo/htmlpageP.h>
+#include <ncarg/ngo/plotpageP.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Form.h>
@@ -86,7 +87,8 @@ UpdatePanes(
         brPageType	type,
         NrmQuark	qvar,
         NrmQuark	qfile,
-	NhlBoolean	delete
+	NhlBoolean	delete,
+	NhlPointer	init_data
 );
 
 NgBrowseClassRec NgbrowseClassRec = {
@@ -711,6 +713,7 @@ DestroyFolder
 	DestroyPageDataList(go,pane->fileref_pages);
 	DestroyPageDataList(go,pane->hlu_pages);
 	DestroyPageDataList(go,pane->html_pages);
+	DestroyPageDataList(go,pane->plot_pages);
 	for (i = 0; i < pane->tabcount; i++) {
 		brTab *tab = XmLArrayGet(pane->tablist,i);
 		XtDestroyWidget(tab->tab);
@@ -733,6 +736,7 @@ DestroyFolder
 	pane->var_pages = NULL;
 	pane->hlu_pages = NULL;
 	pane->html_pages = NULL;
+	pane->plot_pages = NULL;
         pane->active_pos = 0;
 }
 
@@ -826,6 +830,7 @@ InitPane
 	pane->var_pages = NULL;
 	pane->hlu_pages = NULL;
 	pane->html_pages = NULL;
+	pane->plot_pages = NULL;
         pane->active_pos = 0;
         pane->active_page = NULL;
 	pane->htmlview_count = 0;
@@ -1323,7 +1328,7 @@ DeleteVarPage
 	NgGO		go;
 
 	go = (NgGO) page->go;
-	UpdatePanes(go,page->type,page->qvar,page->qfile,True);
+	UpdatePanes(go,page->type,page->qvar,page->qfile,True,NULL);
 }
 
 static void
@@ -1340,7 +1345,7 @@ VarDeleteCB
         fprintf(stderr,"deleting %s\n", node->name);
 #endif        
         UpdatePanes(go,_brREGVAR,
-                    NrmStringToQuark(node->name),NrmNULLQUARK,True);
+                    NrmStringToQuark(node->name),NrmNULLQUARK,True,NULL);
                 
 	return;
 }
@@ -1374,10 +1379,12 @@ FileRefDeleteCB
                         if (page->qfile == qfile) {
                                 if (page->type == _brFILEREF)
                                         UpdatePanes(go,_brFILEREF,
-                                                    NrmNULLQUARK,qfile,True);
+                                                    NrmNULLQUARK,
+						    qfile,True,NULL);
                                 else if (page->type == _brFILEVAR)
                                         UpdatePanes(go,_brFILEVAR,
-                                                    page->qvar,qfile,True);
+                                                    page->qvar,
+						    qfile,True,NULL);
                                 continue;
                         }
                         j++;
@@ -1402,7 +1409,27 @@ HluVarDeleteCB
 #endif        
         
         UpdatePanes(go,_brHLUVAR,
-                    NrmStringToQuark(node->name),NrmNULLQUARK,True);
+                    NrmStringToQuark(node->name),NrmNULLQUARK,True,NULL);
+        
+	return;
+}
+
+static void
+PlotDeleteCB
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+{
+	NgGO go = (NgGO) udata.ptrval;
+        NgNclAny node = (NgNclAny)cbdata.ptrval;
+
+#if	DEBUG_DATABROWSER
+        fprintf(stderr,"deleting %s\n", node->name);
+#endif        
+        
+        UpdatePanes(go,_brPLOTVAR,
+                    NrmStringToQuark(node->name),NrmNULLQUARK,True,NULL);
         
 	return;
 }
@@ -1441,7 +1468,8 @@ static brPage *AddPage
         brPageType	type,
         NrmQuark	qvar,
         NrmQuark	qfile,
-        brPage		*copy_page
+        brPage		*copy_page,
+	NhlPointer	init_data
         )
 {
 	NgBrowse	browse = (NgBrowse)go;
@@ -1491,23 +1519,36 @@ static brPage *AddPage
 #if DEBUG_DATABROWSER
         fprintf(stderr,"clip window w,h: %d,%d\n",w,h);
 #endif
+	/*
+	 * since the page types are only pseudo-classes, there's no way to
+	 * use function pointers before instance initialization, so we
+	 * need this clumsy mechanism (maybe that will change one day).
+	 */
 
         switch (type) {
         case _brREGVAR:
-		page->pdata = NgGetVarPage(go,pane,page,copy_page,ps_state);
+		page->pdata = _NgGetVarPage
+			(go,pane,page,copy_page,ps_state,init_data);
 		break;
         case _brFILEVAR:
-		page->pdata = NgGetVarPage(go,pane,page,copy_page,ps_state);
+		page->pdata = _NgGetVarPage
+			(go,pane,page,copy_page,ps_state,init_data);
                 break;
         case _brFILEREF:
-		page->pdata = NgGetFileRefPage
-			(go,pane,page,copy_page,ps_state);
+		page->pdata = _NgGetFileRefPage
+			(go,pane,page,copy_page,ps_state,init_data);
                 break;
         case _brHLUVAR:
-		page->pdata = NgGetHluPage(go,pane,page,copy_page,ps_state);
+		page->pdata = _NgGetHluPage
+			(go,pane,page,copy_page,ps_state,init_data);
                 break;
         case _brHTML:
-		page->pdata = NgGetHtmlPage(go,pane,page,copy_page,ps_state);
+		page->pdata = _NgGetHtmlPage
+			(go,pane,page,copy_page,ps_state,init_data);
+                break;
+        case _brPLOTVAR:
+		page->pdata = _NgGetPlotPage
+			(go,pane,page,copy_page,ps_state,init_data);
                 break;
         }
         if (!page->pdata) {
@@ -1630,7 +1671,8 @@ UpdatePanes
         brPageType	type,
         NrmQuark	qvar,
         NrmQuark	qfile,
-	NhlBoolean	delete
+	NhlBoolean	delete,
+	NhlPointer	init_data
 )
 {
 	NgBrowse	browse = (NgBrowse)go;
@@ -1675,8 +1717,11 @@ UpdatePanes
 	if (! delete) {
 		if (! page_found) {
                 	page = AddPage
-                                (go,CurrentPane(go),type,qvar,qfile,copy_page);
+                                (go,CurrentPane(go),
+				 type,qvar,qfile,copy_page,init_data);
+#if 0
 			XSync(go->go.x->dpy,False);
+#endif
         	}
                 if (delete_pane)
                         DeletePage(go,delete_pane,copy_page);
@@ -1710,20 +1755,23 @@ static void BrowseTimeoutCB
 
         switch (tdata->type) {
             case _brREGVAR:
-                    UpdatePanes(go,_brREGVAR,qvar,NrmNULLQUARK,False);
+                    UpdatePanes(go,_brREGVAR,qvar,NrmNULLQUARK,False,NULL);
                     break;
             case _brFILEREF:
-                    UpdatePanes(go,_brFILEREF,NrmNULLQUARK,qvar,False);
+                    UpdatePanes(go,_brFILEREF,NrmNULLQUARK,qvar,False,NULL);
                     break;
             case _brFILEVAR:
                     UpdatePanes(go,_brFILEVAR,
-                                qvar,np->vmenus->qfile,False);
+                                qvar,np->vmenus->qfile,False,NULL);
                     break;
             case _brHLUVAR:
-                    UpdatePanes(go,_brHLUVAR,qvar,NrmNULLQUARK,False);
+                    UpdatePanes(go,_brHLUVAR,qvar,NrmNULLQUARK,False,NULL);
                     break;
             case _brHTML:
-                    UpdatePanes(go,_brHTML,qvar,NrmNULLQUARK,False);
+                    UpdatePanes(go,_brHTML,qvar,NrmNULLQUARK,False,NULL);
+                    break;
+            case _brPLOTVAR:
+                    UpdatePanes(go,_brPLOTVAR,qvar,NrmNULLQUARK,False,NULL);
                     break;
         }
 	XSync(go->go.x->dpy,False);
@@ -1765,6 +1813,7 @@ static void BrowseHluCB
         
 	return;
 }
+
         
 static void BrowseVarCB 
 (
@@ -1902,6 +1951,42 @@ static void BrowseFunctionCB
         tdata.go = go;
         tdata.qvar = qvar;
         tdata.type = _brFUNCTION;
+        
+        XtAppAddTimeOut(go->go.x->app,50,BrowseTimeoutCB,&tdata);
+        
+	return;
+}
+
+        
+static void BrowsePlotCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+	NgGO		go = (NgGO) udata;
+	NgBrowse	browse = (NgBrowse)udata;
+	NgBrowsePart	*np = &browse->browse;
+	NrmQuark	qvar;
+        brPage		*page;
+        brPane		*pane;
+        static timer_data tdata;
+        
+#if	DEBUG_DATABROWSER & DEBUG_ENTRY
+	fprintf(stderr,"BrowseVarCB(IN)\n");
+#endif
+	XtVaGetValues(w,
+		      XmNuserData,&qvar,
+		      NULL);
+
+#if	DEBUG_DATABROWSER & DEBUG_FOLDER
+	fprintf(stderr,"browsing var %s\n", NrmQuarkToString(qvar));
+#endif
+
+        tdata.go = go;
+        tdata.qvar = qvar;
+        tdata.type = _brPLOTVAR;
         
         XtAppAddTimeOut(go->go.x->app,50,BrowseTimeoutCB,&tdata);
         
@@ -2082,7 +2167,7 @@ static void CycleSelectionCB
         }
         NextPane(go);
 
-	UpdatePanes(go,page->type,page->qvar,page->qfile,False);
+	UpdatePanes(go,page->type,page->qvar,page->qfile,False,NULL);
         
         return;
 	
@@ -2110,7 +2195,7 @@ static void UpdatePagesCB
 		       NULL);
 
 #if	DEBUG_DATABROWSER & DEBUG_ENTRY
-	fprintf(stderr,"CycleSelectionCB(IN)\n");
+	fprintf(stderr,"UpdatePagesCB(IN)\n");
 #endif
 
         for (i = 0; i < pcp->current_count; i++) {
@@ -2123,7 +2208,7 @@ static void UpdatePagesCB
                 }
         }
 
-	NgDrawUpdatedViews(wks_state);
+	NgDrawUpdatedViews(wks_state,False);
 	
         return;
 	
@@ -2142,7 +2227,7 @@ static void HelpCB
 	NrmQuark	qhtml;
 
 	qhtml = NrmStringToQuark("Start.html");
-	NgOpenPage(go->base.id,_brHTML,&qhtml,1);
+	NgOpenPage(go->base.id,_brHTML,&qhtml,1,NULL);
 	
 }
 static void
@@ -2501,7 +2586,8 @@ extern NgPageId NgOpenPage(
         int		goid,
         brPageType	type,
         NrmQuark	*qname,
-        int		qcount
+        int		qcount,
+	NhlPointer	init_data
         )
 {
         NgGO		go = (NgGO)_NhlGetLayer(goid);
@@ -2512,33 +2598,40 @@ extern NgPageId NgOpenPage(
                     if (qcount < 1 || qname[0] == NrmNULLQUARK)
                             return NgNoPage;
                     page = UpdatePanes(go,_brREGVAR,
-                                       qname[0],NrmNULLQUARK,False);
+                                       qname[0],NrmNULLQUARK,False,init_data);
                     break;
             case _brFILEREF:
                     if (qcount < 1 || qname[0] == NrmNULLQUARK)
                             return NgNoPage;
                     page = UpdatePanes(go,_brFILEREF,
-                                       NrmNULLQUARK,qname[0],False);
+                                       NrmNULLQUARK,qname[0],False,init_data);
                     break;
             case _brFILEVAR:
                     if (qcount < 2
                         || qname[0] == NrmNULLQUARK
                         || qname[1] == NrmNULLQUARK)
                             return NgNoPage;
-                    page = UpdatePanes(go,_brFILEVAR,qname[0],qname[1],False);
+                    page = UpdatePanes
+			    (go,_brFILEVAR,qname[0],qname[1],False,init_data);
                     break;
             case _brHLUVAR:
                     if (qcount < 1 || qname[0] == NrmNULLQUARK)
                             return NgNoPage;
                     page = UpdatePanes(go,_brHLUVAR,
-                                       qname[0],NrmNULLQUARK,False);
+                                       qname[0],NrmNULLQUARK,False,init_data);
                     break;
             case _brHTML:
                     page = UpdatePanes(go,_brHTML,
-                                       qname[0],NrmNULLQUARK,False);
+                                       qname[0],NrmNULLQUARK,False,init_data);
+                    break;
+            case _brPLOTVAR:
+                    if (qcount < 1 || qname[0] == NrmNULLQUARK)
+                            return NgNoPage;
+                    page = UpdatePanes(go,_brPLOTVAR,
+                                       qname[0],NrmNULLQUARK,False,init_data);
                     break;
         }
-        return page->id;
+        return page ? page->id : NgNoPage;
 
 }
 
@@ -2604,6 +2697,59 @@ extern NhlErrorTypes NgResetPage
         return ((*page->pdata->reset_page)(page));
 
 }
+
+/*
+ * the force_draw parameter forces all visible graphics to be redrawn.
+ * it does not override the 'draw single view' option.
+ */
+extern NhlErrorTypes NgUpdatePages
+(
+        int		goid,
+	NhlBoolean	force_draw
+        )        
+{
+	NgGO		go = (NgGO) _NhlGetLayer(goid);
+	NgBrowse	browse = (NgBrowse)go;
+	NgBrowsePart	*np;
+        brPaneControl	*pcp;
+        brPage		*page;
+        brPane		*pane;
+        NrmQuark	qvar,qfile;
+        int		i,j;
+	NgWksState 	wks_state;
+         
+	if (! browse) {
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s: invalid layer id",
+                           "NgUpdatePages"));
+                return NhlFATAL;
+	}
+	np = &browse->browse;
+	pcp = &np->pane_ctrl;
+		
+	NhlVAGetValues(go->go.appmgr,
+		       NgNappWksState,&wks_state,
+		       NULL);
+
+#if	DEBUG_DATABROWSER & DEBUG_ENTRY
+	fprintf(stderr,"UpdatePagesCB(IN)\n");
+#endif
+
+        for (i = 0; i < pcp->current_count; i++) {
+		pane = np->pane_ctrl.panes[i];
+                for (j = 0; j < pane->pagecount; j++) {
+                        brPage *page = (brPage *)XmLArrayGet(pane->pagelist,j);
+			if (! page->pdata->update_page)
+				continue;
+			(*page->pdata->update_page)(page);
+                }
+        }
+
+	NgDrawUpdatedViews(wks_state,force_draw);
+	
+        return NhlNOERROR;
+	
+}
+
 
 extern NhlErrorTypes NgUpdatePage
 (

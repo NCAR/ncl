@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.h,v 1.3 1999-05-22 00:36:21 dbrown Exp $
+ *      $Id: mwin.h,v 1.4 1999-07-30 03:20:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -61,7 +61,8 @@ extern NgViewObj NgGetView(
 );
 
 extern void NgDrawUpdatedViews(
-	NgWksState	wks_state
+	NgWksState	wks_state,
+	NhlBoolean	force_draw
 );
 
 extern void NgUpdateTransformation(
