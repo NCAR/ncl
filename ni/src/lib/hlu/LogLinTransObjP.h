@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObjP.h,v 1.4 1995-04-07 10:42:49 boote Exp $
+ *      $Id: LogLinTransObjP.h,v 1.5 1996-05-16 23:46:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 #define _NLogLinTransObjP_h
 
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/TransObjP.h>
 #include <ncarg/hlu/LogLinTransObj.h>
 
@@ -45,6 +46,18 @@ typedef struct _NhlLogLinTransObjLayerPart {
 	float	ut;
 	float	ub;
 	int	log_lin_value;
+	NhlCompareDat	*xmin_dat;
+	NhlCompareDat	*xmax_dat;
+	NhlCompareDat	*ymin_dat;
+	NhlCompareDat	*ymax_dat;
+	NhlCompareDat   *xmin_ndc_dat;
+	NhlCompareDat   *xmax_ndc_dat;
+	NhlCompareDat   *ymin_ndc_dat;
+	NhlCompareDat   *ymax_ndc_dat;
+	NhlCompareDat   *log_xmin_dat;
+	NhlCompareDat   *log_xmax_dat;
+	NhlCompareDat   *log_ymin_dat;
+	NhlCompareDat   *log_ymax_dat;
 } NhlLogLinTransObjLayerPart;
 
 typedef struct _NhlLogLinTransObjLayerRec {

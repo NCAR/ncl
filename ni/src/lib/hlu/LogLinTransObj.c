@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.24 1996-03-26 21:48:53 dbrown Exp $
+ *      $Id: LogLinTransObj.c,v 1.25 1996-05-16 23:46:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -20,7 +20,6 @@
  *	Description:	
  */
 #include <stdio.h>
-#include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/LogLinTransObjP.h>
 #include <ncarg/hlu/View.h>
@@ -84,6 +83,11 @@ static NhlErrorTypes LlTransInitialize(
 #endif
 );
 
+static NhlErrorTypes LlTransDestroy(
+#if	NhlNeedProto
+        NhlLayer        /* inst */
+#endif
+);
 
 /*
 * TransObjClass Methods defined
@@ -185,7 +189,7 @@ NhlLogLinTransObjClassRec NhllogLinTransObjClassRec = {
 /* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
 /* layer_reparent		*/	NULL,
-/* layer_destroy		*/	NULL
+/* layer_destroy		*/	LlTransDestroy
         },
         {
 /* set_trans		*/	LlSetTrans,
@@ -242,7 +246,10 @@ static NhlErrorTypes LlTransSetValues
 {
 	NhlLogLinTransObjLayer lnew = (NhlLogLinTransObjLayer) new;
 	NhlLogLinTransObjLayer lold = (NhlLogLinTransObjLayer) old;
+	NhlString e_text, entry_name = "LlSetValues";
 	float tmp;
+	NhlTransObjLayerPart	*tp = &lnew->trobj;
+	NhlTransObjLayerPart	*otp = &lold->trobj;
 
 	lnew->lltrans.ul = lnew->lltrans.x_min;
 	lnew->lltrans.ur = lnew->lltrans.x_max;
@@ -260,24 +267,36 @@ static NhlErrorTypes LlTransSetValues
 	}
 	if((lnew->lltrans.y_log)&&(lnew->lltrans.x_log)) {
 		lnew->lltrans.log_lin_value = 4;
-		if((lnew->lltrans.x_min <= 0.0)||(lnew->lltrans.x_max<=0.0)){	
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"LlSetValues: Either NhlNtrXMax or NhlNtrXMin has been set to <= 0 for a log transformation");
+		if((lnew->lltrans.x_min <= 0.0)||(lnew->lltrans.x_max<=0.0)){
+			e_text = 
+	   "%s: Either %s or %s has been set to <= 0 for a log transformation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNtrXMinF,NhlNtrXMaxF);
 			return(NhlFATAL);
 		}
-		if((lnew->lltrans.y_min <= 0.0)||(lnew->lltrans.y_max<=0.0)){	
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"LlSetValues: Either NhlNtrYMax or NhlNtrYMin has been set to <= 0 for a log transformation");
+		if((lnew->lltrans.y_min <= 0.0)||(lnew->lltrans.y_max<=0.0)){
+			e_text = 
+	   "%s: Either %s or %s has been set to <= 0 for a log transformation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNtrYMinF,NhlNtrYMaxF);
 			return(NhlFATAL);
 		}
 	} else if(lnew->lltrans.x_log) {
 		lnew->lltrans.log_lin_value = 3;
-		if((lnew->lltrans.x_min <= 0.0)||(lnew->lltrans.x_max<=0.0)){	
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"LlSetValues: Either NhlNtrXMax or NhlNtrXMin has been set to <= 0 for a log transformation");
+		if((lnew->lltrans.x_min <= 0.0)||(lnew->lltrans.x_max<=0.0)){
+			e_text = 
+	   "%s: Either %s or %s has been set to <= 0 for a log transformation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNtrXMinF,NhlNtrXMaxF);
 			return(NhlFATAL);
 		}
 	} else if(lnew->lltrans.y_log) {
 		lnew->lltrans.log_lin_value = 2;
-		if((lnew->lltrans.y_min <= 0.0)||(lnew->lltrans.y_max<=0.0)){	
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"LlSetValues: Either NhlNtrYMax or NhlNtrYMin has been set to <= 0 for a log transformation");
+		if((lnew->lltrans.y_min <= 0.0)||(lnew->lltrans.y_max<=0.0)){
+			e_text = 
+	   "%s: Either %s or %s has been set to <= 0 for a log transformation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNtrYMinF,NhlNtrYMaxF);
 			return(NhlFATAL);
 		}
 	} else {
@@ -291,6 +310,142 @@ static NhlErrorTypes LlTransSetValues
 	    lnew->lltrans.log_lin_value != lold->lltrans.log_lin_value)
 		lnew->trobj.change_count++;
 
+	if (lnew->lltrans.x_min != lold->lltrans.x_min) {
+		free(lnew->lltrans.xmin_dat);
+		if ((lnew->lltrans.xmin_dat = 
+		     _NhlCmpFSetup(lnew->lltrans.x_min,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  entry_name);
+			return(NhlFATAL);
+		}
+	}
+	if (lnew->lltrans.x_max != lold->lltrans.x_max) {
+		free(lnew->lltrans.xmax_dat);
+		if ((lnew->lltrans.xmax_dat = 
+		     _NhlCmpFSetup(lnew->lltrans.x_max,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  entry_name);
+			return(NhlFATAL);
+		}
+	}
+	if (lnew->lltrans.y_min != lold->lltrans.y_min) {
+		free(lnew->lltrans.ymin_dat);
+		if ((lnew->lltrans.ymin_dat =
+		     _NhlCmpFSetup(lnew->lltrans.y_min,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  entry_name);
+			return(NhlFATAL);
+		}
+	}
+	if (lnew->lltrans.y_max != lold->lltrans.y_max) {
+	        free(lnew->lltrans.ymax_dat);
+		if ((lnew->lltrans.ymax_dat = 
+		     _NhlCmpFSetup(lnew->lltrans.y_max,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  entry_name);
+			return(NhlFATAL);
+		}
+	}
+#if 0
+	if (tp->x != otp->x) {
+		free(lnew->lltrans.xmin_ndc_dat);
+		if ((lnew->lltrans.xmin_ndc_dat = 
+		     _NhlCmpFSetup(tp->x,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  entry_name);
+			return(NhlFATAL);
+		}
+	}
+	if (tp->x != otp->x || tp->width != otp->width) {
+		free(lnew->lltrans.xmax_ndc_dat);
+		if ((lnew->lltrans.xmax_ndc_dat = 
+		     _NhlCmpFSetup(tp->x + tp->width,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  entry_name);
+			return(NhlFATAL);
+		}
+	}
+	if (tp->y != otp->y || tp->height != otp->height) {
+		free(lnew->lltrans.ymin_ndc_dat);
+		if ((lnew->lltrans.ymin_ndc_dat =
+		     _NhlCmpFSetup(tp->y - tp->height,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  entry_name);
+			return(NhlFATAL);
+		}
+	}
+	if (tp->y != otp->y) {
+		free(lnew->lltrans.ymax_ndc_dat);
+		if ((lnew->lltrans.ymax_ndc_dat = 
+		     _NhlCmpFSetup(tp->y,5)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  entry_name);
+			return(NhlFATAL);
+		}
+	}
+#endif
+	if (lnew->lltrans.x_log) {
+		if (lnew->lltrans.x_min != lold->lltrans.x_min) {
+			if (lnew->lltrans.log_xmin_dat != NULL)
+				free(lnew->lltrans.log_xmin_dat);
+			if ((lnew->lltrans.log_xmin_dat = 
+			  _NhlCmpFSetup((float)log10(lnew->lltrans.x_min),5)) 
+			    == NULL) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+				    "%s: error setting up compare information",
+					  entry_name);
+				return(NhlFATAL);
+			}
+		}
+		if (lnew->lltrans.x_max != lold->lltrans.x_max) {
+			if (lnew->lltrans.log_xmax_dat != NULL)
+				free(lnew->lltrans.log_xmax_dat);
+			if ((lnew->lltrans.log_xmax_dat = 
+			  _NhlCmpFSetup((float)log10(lnew->lltrans.x_max),5)) 
+			    == NULL) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+				    "%s: error setting up compare information",
+					  entry_name);
+				return(NhlFATAL);
+			}
+		}
+	}
+
+	if (lnew->lltrans.y_log) {
+		if (lnew->lltrans.y_min != lold->lltrans.y_min) {
+			if (lnew->lltrans.log_ymin_dat != NULL)
+				free(lnew->lltrans.log_ymin_dat);
+			if ((lnew->lltrans.log_ymin_dat = 
+			  _NhlCmpFSetup((float)log10(lnew->lltrans.y_min),5)) 
+			    == NULL) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+				    "%s: error setting up compare information",
+					  entry_name);
+				return(NhlFATAL);
+			}
+		}
+		if (lnew->lltrans.y_max != lold->lltrans.y_max) {
+			if (lnew->lltrans.log_ymax_dat != NULL)
+				free(lnew->lltrans.log_ymax_dat);
+			if ((lnew->lltrans.log_ymax_dat = 
+			  _NhlCmpFSetup((float)log10(lnew->lltrans.y_max),5)) 
+			    == NULL) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+				    "%s: error setting up compare information",
+					  entry_name);
+				return(NhlFATAL);
+			}
+		}
+	}
+	
 	return(NhlNOERROR);
 
 }
@@ -323,6 +478,8 @@ static NhlErrorTypes LlTransInitialize
 #endif
 {
 	NhlLogLinTransObjLayer lnew = (NhlLogLinTransObjLayer) new;
+	NhlString e_text, entry_name = "LlSetValues";
+	NhlTransObjLayerPart	*tp = &lnew->trobj;
 	float tmp;
 
 	lnew->trobj.change_count++;
@@ -330,6 +487,13 @@ static NhlErrorTypes LlTransInitialize
 	lnew->lltrans.ur = lnew->lltrans.x_max;
 	lnew->lltrans.ut = lnew->lltrans.y_max;
 	lnew->lltrans.ub = lnew->lltrans.y_min;
+	lnew->lltrans.xmin_dat = lnew->lltrans.xmax_dat = 
+		lnew->lltrans.ymin_dat = lnew->lltrans.ymax_dat = NULL;
+	lnew->lltrans.xmin_ndc_dat = lnew->lltrans.xmax_ndc_dat = 
+		lnew->lltrans.ymin_ndc_dat = lnew->lltrans.ymax_ndc_dat = NULL;
+	lnew->lltrans.log_xmin_dat = lnew->lltrans.log_xmax_dat = 
+		lnew->lltrans.log_ymin_dat = lnew->lltrans.log_ymax_dat = NULL;
+				
 	if(lnew->lltrans.x_reverse) {
 		tmp = lnew->lltrans.ul;
 		lnew->lltrans.ul = lnew->lltrans.ur;
@@ -342,32 +506,188 @@ static NhlErrorTypes LlTransInitialize
 	}
 	if((lnew->lltrans.x_log)&&(lnew->lltrans.y_log)) {
 		lnew->lltrans.log_lin_value = 4;
-		if((lnew->lltrans.x_min <= 0.0)||(lnew->lltrans.x_max<=0.0)){	
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"LlSetValues: Either NhlNtrXMax or NhlNtrXMin has been set to <= 0 for a log transformation");
+		if((lnew->lltrans.x_min <= 0.0)||(lnew->lltrans.x_max<=0.0)){
+			e_text = 
+	   "%s: Either %s or %s has been set to <= 0 for a log transformation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNtrXMinF,NhlNtrXMaxF);
 			return(NhlFATAL);
 		}
-		if((lnew->lltrans.y_min <= 0.0)||(lnew->lltrans.y_max<=0.0)){	
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"LlSetValues: Either NhlNtrYMax or NhlNtrYMin has been set to <= 0 for a log transformation");
+		if((lnew->lltrans.y_min <= 0.0)||(lnew->lltrans.y_max<=0.0)){
+			e_text = 
+	   "%s: Either %s or %s has been set to <= 0 for a log transformation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNtrYMinF,NhlNtrYMaxF);
 			return(NhlFATAL);
 		}
 	} else if(lnew->lltrans.x_log) {
 		lnew->lltrans.log_lin_value = 3;
-		if((lnew->lltrans.x_min <= 0.0)||(lnew->lltrans.x_max<=0.0)){	
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"LlSetValues: Either NhlNtrXMax or NhlNtrXMin has been set to <= 0 for a log transformation");
+		if((lnew->lltrans.x_min <= 0.0)||(lnew->lltrans.x_max<=0.0)){
+			e_text = 
+	   "%s: Either %s or %s has been set to <= 0 for a log transformation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNtrXMinF,NhlNtrXMaxF);
 			return(NhlFATAL);
 		}
 	} else if(lnew->lltrans.y_log) {
 		lnew->lltrans.log_lin_value = 2;
-		if((lnew->lltrans.y_min <= 0.0)||(lnew->lltrans.y_max<=0.0)){	
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"LlSetValues: Either NhlNtrYMax or NhlNtrYMin has been set to <= 0 for a log transformation");
+		if((lnew->lltrans.y_min <= 0.0)||(lnew->lltrans.y_max<=0.0)){
+			e_text = 
+	   "%s: Either %s or %s has been set to <= 0 for a log transformation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNtrYMinF,NhlNtrYMaxF);
 			return(NhlFATAL);
 		}
 	} else {
 		lnew->lltrans.log_lin_value = 1;
 	}
+
+	if ((lnew->lltrans.xmin_dat = 
+	     _NhlCmpFSetup(lnew->lltrans.x_min,5)) == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "%s: error setting up compare information",
+			  entry_name);
+		return(NhlFATAL);
+	}
+	if ((lnew->lltrans.xmax_dat = 
+	     _NhlCmpFSetup(lnew->lltrans.x_max,5)) == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "%s: error setting up compare information",
+			  entry_name);
+		return(NhlFATAL);
+	}
+	if ((lnew->lltrans.ymin_dat =
+	     _NhlCmpFSetup(lnew->lltrans.y_min,5)) == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "%s: error setting up compare information",
+			  entry_name);
+		return(NhlFATAL);
+	}
+	if ((lnew->lltrans.ymax_dat = 
+	     _NhlCmpFSetup(lnew->lltrans.y_max,5)) == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "%s: error setting up compare information",
+			  entry_name);
+		return(NhlFATAL);
+	}
+
+#if 0
+
+	if ((lnew->lltrans.xmin_ndc_dat = 
+	     _NhlCmpFSetup(tp->x,5)) == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "%s: error setting up compare information",
+			  entry_name);
+		return(NhlFATAL);
+	}
+	if ((lnew->lltrans.xmax_ndc_dat = 
+	     _NhlCmpFSetup(tp->x + tp->width,5)) == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "%s: error setting up compare information",
+			  entry_name);
+		return(NhlFATAL);
+	}
+	if ((lnew->lltrans.ymin_ndc_dat =
+	     _NhlCmpFSetup(tp->y - tp->height,5)) == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "%s: error setting up compare information",
+			  entry_name);
+		return(NhlFATAL);
+	}
+	if ((lnew->lltrans.ymax_ndc_dat = 
+	     _NhlCmpFSetup(tp->y,5)) == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "%s: error setting up compare information",
+			  entry_name);
+		return(NhlFATAL);
+	}
+#endif
+	if (lnew->lltrans.x_log) {
+		if ((lnew->lltrans.log_xmin_dat = 
+		     _NhlCmpFSetup((float)log10(lnew->lltrans.x_min),5)) 
+		    == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  entry_name);
+			return(NhlFATAL);
+		}
+		if ((lnew->lltrans.log_xmax_dat = 
+		     _NhlCmpFSetup((float)log10(lnew->lltrans.x_max),5)) 
+		    == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  entry_name);
+			return(NhlFATAL);
+		}
+	}
+	if (lnew->lltrans.y_log) {
+		if ((lnew->lltrans.log_ymin_dat =
+		     _NhlCmpFSetup((float)log10(lnew->lltrans.y_min),5)) 
+		    == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  entry_name);
+			return(NhlFATAL);
+		}
+		if ((lnew->lltrans.log_ymax_dat = 
+		     _NhlCmpFSetup((float)log10(lnew->lltrans.y_max),5)) 
+		    == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error setting up compare information",
+				  entry_name);
+			return(NhlFATAL);
+		}
+	}
+
 	return(NhlNOERROR);
 
 }
+
+/*
+ * Function:	LlTransDestroy
+ *
+ * Description:
+ *
+ * In Args:	inst		instance record pointer
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	ErrorConditions
+ *
+ * Side Effects:	NONE
+ */
+static NhlErrorTypes LlTransDestroy
+#if	NhlNeedProto
+(NhlLayer inst)
+#else
+(inst)
+NhlLayer inst;
+#endif
+{
+	NhlLogLinTransObjLayer ll = 
+		(NhlLogLinTransObjLayer)inst;
+
+
+ 	free(ll->lltrans.xmin_dat);
+	free(ll->lltrans.xmax_dat);
+	free(ll->lltrans.ymin_dat);
+	free(ll->lltrans.ymax_dat);
+ 	free(ll->lltrans.xmin_ndc_dat);
+	free(ll->lltrans.xmax_ndc_dat);
+	free(ll->lltrans.ymin_ndc_dat);
+	free(ll->lltrans.ymax_ndc_dat);
+	if (ll->lltrans.log_xmin_dat != NULL)
+		free(ll->lltrans.log_xmin_dat);
+	if (ll->lltrans.log_xmax_dat != NULL)
+		free(ll->lltrans.log_xmax_dat);
+	if (ll->lltrans.log_ymin_dat != NULL)
+		free(ll->lltrans.log_ymin_dat);
+	if (ll->lltrans.log_ymax_dat != NULL)
+		free(ll->lltrans.log_ymax_dat);
+
+	return NhlNOERROR;
+}
+
 /*
  * Function:	LlSetTrans
  *
@@ -427,9 +747,118 @@ static NhlErrorTypes LlSetTrans
 	      linstance->lltrans.ul,linstance->lltrans.ur,
 	      linstance->lltrans.ub,linstance->lltrans.ut,
 	      linstance->lltrans.log_lin_value);
+
 	
 	return(NhlNOERROR);
 	
+}
+
+/*
+ * Function:	win_compare_check
+ *
+ * Description: 
+ *
+ * In Args:	
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+static NhlBoolean win_compare_check
+#if	NhlNeedProto
+(
+	NhlLogLinTransObjLayerPart *llp,
+	float	*x,
+ 	float	*y
+)
+#else
+(llp,x,y)
+	NhlLogLinTransObjLayerPart *llp;
+	float	*x;
+	float	*y;
+#endif
+{
+        int xmndif,xmxdif,ymndif,ymxdif;
+
+	if ((xmndif = _NhlCmpF(*x,llp->xmin_dat)) < 0 ||
+	    (xmxdif = _NhlCmpF(*x,llp->xmax_dat)) > 0 ||
+	    (ymndif = _NhlCmpF(*y,llp->ymin_dat)) < 0 ||
+	    (ymxdif = _NhlCmpF(*y,llp->ymax_dat)) > 0) {
+		return False;
+	}
+	return True;
+}
+
+
+/*
+ * Function:	log_compare_check
+ *
+ * Description: 
+ *
+ * In Args:	
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+static NhlBoolean log_compare_check
+#if	NhlNeedProto
+(
+	NhlLogLinTransObjLayerPart *llp,
+	float	*x,
+ 	float	*y,
+	int logmode
+)
+#else
+(llp,x,y,logmode)
+	NhlLogLinTransObjLayerPart *llp;
+	float	*x;
+	float	*y;
+	int     logmode;
+#endif
+{
+        int xmndif,xmxdif,ymndif,ymxdif;
+
+	switch (logmode) {
+	case 4:
+
+		if ((xmndif = _NhlCmpF(*x,llp->log_xmin_dat)) < 0 ||
+		    (xmxdif = _NhlCmpF(*x,llp->log_xmax_dat)) > 0 ||
+		    (ymndif = _NhlCmpF(*y,llp->log_ymin_dat)) < 0 ||
+		    (ymxdif = _NhlCmpF(*y,llp->log_ymax_dat)) > 0) {
+			return False;
+		}
+		break;
+	case 3:
+		if ((xmndif = _NhlCmpF(*x,llp->log_xmin_dat)) < 0 ||
+		    (xmxdif = _NhlCmpF(*x,llp->log_xmax_dat)) > 0 ||
+		    (ymndif = _NhlCmpF(*y,llp->ymin_dat)) < 0 ||
+		    (ymxdif = _NhlCmpF(*y,llp->ymax_dat)) > 0) {
+			return False;
+		}
+		break;
+	case 2:
+		if ((xmndif = _NhlCmpF(*x,llp->xmin_dat)) < 0 ||
+		    (xmxdif = _NhlCmpF(*x,llp->xmax_dat)) > 0 ||
+		    (ymndif = _NhlCmpF(*y,llp->log_ymin_dat)) < 0 ||
+		    (ymxdif = _NhlCmpF(*y,llp->log_ymax_dat)) > 0) {
+			return False;
+		}
+		break;
+	default:
+		if ((xmndif = _NhlCmpF(*x,llp->xmin_dat)) < 0 ||
+		    (xmxdif = _NhlCmpF(*x,llp->xmax_dat)) > 0 ||
+		    (ymndif = _NhlCmpF(*y,llp->ymin_dat)) < 0 ||
+		    (ymxdif = _NhlCmpF(*y,llp->ymax_dat)) > 0) {
+			return False;
+		}
+		break;
+	}
+	return True;
 }
 
 /*ARGSUSED*/
@@ -456,20 +885,20 @@ static NhlErrorTypes LlDataToWin
 
 	for(i = 0; i< n; i++) {
 		if(((xmissing != NULL)&&(*xmissing == x[i]))
-			||((ymissing != NULL)&&(*ymissing == y[i]))
-			||(x[i] < linst->lltrans.x_min)
-			||(x[i] > linst->lltrans.x_max)
-			||(y[i] < linst->lltrans.y_min)
-			||(y[i] > linst->lltrans.y_max)) {
-		
-			*status = 1;
-			xout[i]=yout[i]=linst->trobj.out_of_range;
-			
-		} else {
-			xout[i] = x[i];
-			yout[i] = y[i];
-
+		   ||((ymissing != NULL)&&(*ymissing == y[i]))
+		   ||(x[i] < linst->lltrans.x_min)
+		   ||(x[i] > linst->lltrans.x_max)
+		   ||(y[i] < linst->lltrans.y_min)
+		   ||(y[i] > linst->lltrans.y_max)) {
+			if (! win_compare_check(&linst->lltrans,&x[i],&y[i])) {
+				*status = 1;
+				xout[i]=yout[i]=linst->trobj.out_of_range;
+				continue;
+			}
 		}
+		xout[i] = x[i];
+		yout[i] = y[i];
+
 	}
 	return(NhlNOERROR);
 }
@@ -518,152 +947,157 @@ static NhlErrorTypes LlWinToNDC
 	
 	*status = 0;
 	switch(linstance->lltrans.log_lin_value) {
-		case 4:
+	case 4:
 /*
 *XLogYLog case
 */
-			urtmp = (float)log10(linstance->lltrans.ur);
-			ultmp = (float)log10(linstance->lltrans.ul);
-			uttmp = (float)log10(linstance->lltrans.ut);
-			ubtmp = (float)log10(linstance->lltrans.ub);
+		urtmp = (float)log10(linstance->lltrans.ur);
+		ultmp = (float)log10(linstance->lltrans.ul);
+		uttmp = (float)log10(linstance->lltrans.ut);
+		ubtmp = (float)log10(linstance->lltrans.ub);
 	
-			xmin = MIN(urtmp,ultmp);
-			xmax = MAX(urtmp,ultmp);
-			ymin = MIN(uttmp,ubtmp);
-			ymax = MAX(uttmp,ubtmp);
+		xmin = MIN(urtmp,ultmp);
+		xmax = MAX(urtmp,ultmp);
+		ymin = MIN(uttmp,ubtmp);
+		ymax = MAX(uttmp,ubtmp);
 	
-			for(i = 0; i< n; i++) {
-				if((x[i] > 0.0)||(y[i] > 0.0)) {
-					tmpx = log10(x[i]);
-					tmpy = log10(y[i]);
-					if(((xmissing != NULL) &&(*xmissing == x[i]))
-						||((ymissing != NULL) &&(*ymissing == y[i]))
-						||(tmpx < xmin)
-						||(tmpx > xmax)
-						||(tmpy < ymin)
-						||(tmpy > ymax)) {
+		for(i = 0; i< n; i++) {
+			if((x[i] > 0.0)||(y[i] > 0.0)) {
+				tmpx = log10(x[i]);
+				tmpy = log10(y[i]);
 
+				if(((xmissing != NULL) &&(*xmissing == x[i]))
+				   ||((ymissing != NULL) &&(*ymissing == y[i]))
+				   ||(tmpx < xmin)||(tmpx > xmax)
+				   ||(tmpy < ymin)||(tmpy > ymax)) {
+					if (! log_compare_check(
+					  &linstance->lltrans,&tmpx,&tmpy,4)) {
 						*status = 1;
-						xout[i]=yout[i]=linstance->trobj.out_of_range;
-
-					} else {
-
-						strans(ultmp,urtmp,ubtmp,uttmp, 
-							tp->x,tp->x+tp->width,
-							tp->y-tp->height,tp->y,
-							tmpx, tmpy, 
-							&(xout[i]),&(yout[i]));
+						xout[i]=yout[i]=
+					        linstance->trobj.out_of_range;
+						continue;
 					}
-				} else {
-					*status = 1;	
-					xout[i] = yout[i] =
-						linstance->trobj.out_of_range;
 				}
+				strans(ultmp,urtmp,ubtmp,uttmp, 
+				       tp->x,tp->x+tp->width,
+				       tp->y-tp->height,tp->y,
+				       tmpx, tmpy, 
+				       &(xout[i]),&(yout[i]));
+			} else {
+				*status = 1;	
+				xout[i] = yout[i] =
+					linstance->trobj.out_of_range;
 			}
-			break;
-		case 3:
+		}
+		break;
+	case 3:
 /*
 *XLogYLin case
 */
-			urtmp = (float)log10(linstance->lltrans.ur);
-			ultmp = (float)log10(linstance->lltrans.ul);
-			xmin = MIN(urtmp,ultmp);
-			xmax = MAX(urtmp,ultmp);
+		urtmp = (float)log10(linstance->lltrans.ur);
+		ultmp = (float)log10(linstance->lltrans.ul);
+		xmin = MIN(urtmp,ultmp);
+		xmax = MAX(urtmp,ultmp);
 		
-			for(i = 0; i< n; i++) {
-				if(x[i] > 0) {
-					tmpx = log10(x[i]);
-					if(((xmissing != NULL)
-							&&(*xmissing == x[i]))
-						||((ymissing != NULL)
-							&&(*ymissing == y[i]))
-						||(tmpx < xmin)
-						||(tmpx > xmax)
-						||(y[i]<linstance->lltrans.y_min)
-						||(y[i]>linstance->lltrans.y_max)) {
-						
+		for(i = 0; i< n; i++) {
+			if(x[i] > 0) {
+				tmpx = log10(x[i]);
+				if(((xmissing != NULL)&&(*xmissing == x[i]))
+				   ||((ymissing != NULL)&&(*ymissing == y[i]))
+				   ||(tmpx < xmin)||(tmpx > xmax)
+				   ||(y[i]<linstance->lltrans.y_min)
+				   ||(y[i]>linstance->lltrans.y_max)) {
+					if (! log_compare_check(
+					 &linstance->lltrans,&tmpx,&y[i],3)) {
 						*status = 1;
-						xout[i]=yout[i]=linstance->trobj.out_of_range;
-					} else {
-						strans(ultmp,urtmp,
-							linstance->lltrans.ub, 
-							linstance->lltrans.ut,
-							tp->x,tp->x+tp->width,
-							tp->y-tp->height,tp->y,
-							tmpx,y[i], 
-							&(xout[i]),&(yout[i]));
+						xout[i]=yout[i]=
+					        linstance->trobj.out_of_range;
+						continue;
 					}
-				} else {
-					*status = 1;
-					xout[i]=yout[i]=linstance->trobj.out_of_range;
 				}
+				strans(ultmp,urtmp,
+				       linstance->lltrans.ub, 
+				       linstance->lltrans.ut,
+				       tp->x,tp->x+tp->width,
+				       tp->y-tp->height,tp->y,
+				       tmpx,y[i], 
+				       &(xout[i]),&(yout[i]));
 			}
-			break;
-		case 2:
+			else {
+				*status = 1;
+				xout[i]=yout[i]=linstance->trobj.out_of_range;
+			}
+		}
+		break;
+	case 2:
 /*
 *XLinYLog case
 */
-			uttmp = (float)log10(linstance->lltrans.ut);
-			ubtmp = (float)log10(linstance->lltrans.ub);
-			ymin = MIN(uttmp,ubtmp);
-			ymax = MAX(uttmp,ubtmp);
-			for(i = 0; i< n; i++) {
-				if(y[i] > 0) {
-					tmpy = log10(y[i]);
-					if(((xmissing != NULL) &&(*xmissing == x[i]))
-						||((ymissing != NULL)&&(*ymissing == y[i]))
-						||(x[i] < linstance->lltrans.x_min)
-						||(x[i] > linstance->lltrans.x_max)
-						||(tmpy < ymin)
-						||(tmpy > ymax)) {
-
+		uttmp = (float)log10(linstance->lltrans.ut);
+		ubtmp = (float)log10(linstance->lltrans.ub);
+		ymin = MIN(uttmp,ubtmp);
+		ymax = MAX(uttmp,ubtmp);
+		for(i = 0; i< n; i++) {
+			if(y[i] > 0) {
+				tmpy = log10(y[i]);
+				if(((xmissing != NULL) &&(*xmissing == x[i]))
+				   ||((ymissing != NULL)&&(*ymissing == y[i]))
+				   ||(x[i] < linstance->lltrans.x_min)
+				   ||(x[i] > linstance->lltrans.x_max)
+				   ||(tmpy < ymin)
+				   ||(tmpy > ymax)) {
+					if (! log_compare_check(
+					 &linstance->lltrans,&x[i],&tmpy,2)) {
 						*status = 1;
-						xout[i]=yout[i]=linstance->trobj.out_of_range;
-
-					} else {
-						strans(linstance->lltrans.ul, 
-							linstance->lltrans.ur,
-							ubtmp,uttmp, 
-							tp->x,tp->x+tp->width,
-							tp->y-tp->height,tp->y,
-							x[i],tmpy,
-							&(xout[i]),&(yout[i]));
+						xout[i]=yout[i]=
+					        linstance->trobj.out_of_range;
+						continue;
 					}
-				} else {	
-					*status = 1;
-					xout[i]=yout[i]=linstance->trobj.out_of_range;
 				}
+				strans(linstance->lltrans.ul, 
+				       linstance->lltrans.ur,
+				       ubtmp,uttmp, 
+				       tp->x,tp->x+tp->width,
+				       tp->y-tp->height,tp->y,
+				       x[i],tmpy,
+				       &(xout[i]),&(yout[i]));
+			} else {	
+				*status = 1;
+				xout[i]=yout[i]=linstance->trobj.out_of_range;
 			}
-			break;
-		case 1:
+		}
+		break;
+	case 1:
 /*
 *XLinYLin
 */
-			for(i = 0; i< n; i++) {
-				if(((xmissing != NULL) &&(*xmissing == x[i]))
-					||((ymissing != NULL) &&(*ymissing == y[i])) 
-					||(x[i] < linstance->lltrans.x_min)
-					||(x[i] > linstance->lltrans.x_max)
-					||(y[i] < linstance->lltrans.y_min)
-					||(y[i] > linstance->lltrans.y_max)) {
-
+		for(i = 0; i< n; i++) {
+			if(((xmissing != NULL) &&(*xmissing == x[i]))
+			   ||((ymissing != NULL) &&(*ymissing == y[i])) 
+			   ||(x[i] < linstance->lltrans.x_min)
+			   ||(x[i] > linstance->lltrans.x_max)
+			   ||(y[i] < linstance->lltrans.y_min)
+			   ||(y[i] > linstance->lltrans.y_max)) {
+				if (! log_compare_check(
+					 &linstance->lltrans,&x[i],&y[i],1)) {
 					*status = 1;
-					xout[i]=yout[i]=linstance->trobj.out_of_range;
-	
-				} else {
-					strans( linstance->lltrans.ul, 
-						linstance->lltrans.ur, 
-						linstance->lltrans.ub, 
-						linstance->lltrans.ut, 
-						tp->x,tp->x+tp->width,
-						tp->y-tp->height,tp->y,
-						x[i],y[i],&(xout[i]),&(yout[i]));
+					xout[i]=yout[i]=
+					        linstance->trobj.out_of_range;
+					continue;
 				}
 			}
-			break;
-		default:
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Internal Error in LlNDCToWin");
-			return(NhlFATAL);
+			strans(linstance->lltrans.ul, 
+			       linstance->lltrans.ur, 
+			       linstance->lltrans.ub, 
+			       linstance->lltrans.ut, 
+			       tp->x,tp->x+tp->width,
+			       tp->y-tp->height,tp->y,
+			       x[i],y[i],&(xout[i]),&(yout[i]));
+		}
+		break;
+	default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Internal Error in LlNDCToWin");
+		return(NhlFATAL);
 	}
 
 	return NhlNOERROR;

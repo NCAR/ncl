@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.47 1996-05-11 03:32:26 dbrown Exp $
+ *      $Id: TickMark.c,v 1.48 1996-05-16 23:46:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2908,6 +2908,7 @@ char		func_code;
 	float min_compare,max_compare,min,max,absmax;
 	int divpwr,sig_digits;
 	int left_sig_digit = -10000;
+	NhlBoolean zero_min,zero_max;
 
 	switch(style) {
 	case NhlLINEAR:	
@@ -2929,18 +2930,28 @@ char		func_code;
 		ret = _NhlGetScaleInfo(absmax,&divpwr,&sig_digits,"TickMark");
 		left_sig_digit = divpwr - 1;
 				       
-		if(min != 0.0)
-			min_compare = ceil(fabs(log10((double)((*spacing)/fabs(min)))))+1.0;
-		else 
+		if(_NhlCmpFAny(min,0.0,7) != 0.0) {
+                        zero_min = False;
+			min_compare = ceil(fabs(log10((double)((*spacing)/
+							  fabs(min)))))+1.0;
+                }
+		else {
+			zero_min = True;
 			min_compare = 7.0;
+		}
 
-		if(max != 0.0)
-			max_compare = ceil(fabs(log10((double)((*spacing)/fabs(max)))))+1.0;
-		else
+		if(_NhlCmpFAny(max,0.0,7) != 0.0) {
+			zero_max = False;
+			max_compare = ceil(fabs(log10((double)((*spacing)/
+                                                            fabs(max)))))+1.0;
+		}
+		else {
+			zero_max = True;
 			max_compare = 7.0;
+		}
 
 		
-		if((min != 0.0)&&(max != 0.0)){
+		if(! zero_min && ! zero_max){
 			compare_precision = MAX(min_compare,max_compare);
 		} else {
 			compare_precision = MIN(min_compare,max_compare);
@@ -3120,6 +3131,7 @@ char		func_code;
 	float absmax;
 	int divpwr,sig_digits,tmpi;
 	int left_sig_digit = -10000;
+	NhlBoolean zero_min,zero_max;
 
 	min = dmin <= tstart ? tstart : dmin;
 
@@ -3183,17 +3195,27 @@ char		func_code;
 		sig_digits = MIN(sig_digits,convert_precision);
 		sig_digits = MAX(sig_digits,sig_digits + tmpi);
 
-		if(min!= 0.0)
-			min_compare = ceil(fabs(log10((double)(spacing/fabs(min)))))+1.0;
-		else 
+		if(_NhlCmpFAny(min,0.0,7) != 0.0) {
+                        zero_min = False;
+			min_compare = ceil(fabs(log10((double)(spacing/
+							   fabs(min)))))+1.0;
+		}
+		else {
+			zero_min = True;
 			min_compare = 7.0;
+		}
 
-		if(max!= 0.0)
-			max_compare = ceil(fabs(log10((double)(spacing/fabs(max)))))+1.0;
-		else 
+		if(_NhlCmpFAny(max,0.0,7) != 0.0) {
+			zero_max = False;
+			max_compare = ceil(fabs(log10((double)(spacing/
+							    fabs(max)))))+1.0;
+		}
+		else {
+			zero_max = False;
 			max_compare = 7.0;
+		}
 
-		if((max != 0.0)&&(min != 0.0)) {
+		if(! zero_min && ! zero_max){
 			compare_precision = MAX(min_compare,max_compare);
 		} else {
 			compare_precision = MIN(min_compare,max_compare);
@@ -3308,12 +3330,12 @@ int n_requested;
 		min = MAX(dmin,tstart);
 #ifdef	NOTUSED
 		spacing_estimate = (max - min)/n_requested;
-		if(min != 0.0)	
+		if(_NhlCmpFAny(min,0.0,7) != 0.0) {
 			min_compare = ceil(fabs(log10((double)(spacing_estimate/fabs(min)))))+1.0;
 		else 
 			min_compare = 7;
 
-		if(max != 0.0)	
+		if(_NhlCmpFAny(max,0.0,7) != 0.0) {
 			max_compare = ceil(fabs(log10((double)(spacing_estimate/fabs(max)))))+1.0;
 		else 
 			max_compare = 7;

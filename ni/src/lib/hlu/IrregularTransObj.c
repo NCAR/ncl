@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.22 1996-05-03 23:51:19 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.23 1996-05-16 23:46:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1647,6 +1647,74 @@ static NhlErrorTypes IrCompcToData
 	return(ret);
 }
 
+static NhlErrorTypes AdjustToEdge
+#if	NhlNeedProto
+(NhlIrregularTransObjLayer irinst, 
+float xclip, 
+float yclip, 
+float x,
+float y, 
+float *xd, 
+float *yd,
+float *xc, 
+float *yc
+)
+#else
+(irinst,xclip,yclip,x,y,xd, yd,xc,yc)
+NhlIrregularTransObjLayer irinst;
+float xclip;
+float yclip; 
+float x;
+float y; 
+float *xd; 
+float *yd;
+float *xc; 
+float *yc;
+#endif
+{
+	NhlIrregularTransObjLayerPart *irp = 
+		(NhlIrregularTransObjLayerPart *) &irinst->irtrans;
+	float xt,yt;
+	int i,status = 1;
+
+	xt = xclip;
+	yt = yclip;
+
+	for (i=0; i < 2; i++) {
+
+		if (x != xclip) {
+			if (_NhlCmpF(xt,irp->xmin_dat) < 0.0) {
+				*xd = irp->x_min;
+				*yd = yclip +(y-yclip) * (*xd-xclip)/(x-xclip);
+			}
+			else if (_NhlCmpF(xt,irp->xmax_dat) > 0.0) {
+				*xd = irp->x_max;
+				*yd = yclip +(y-yclip) * (*xd-xclip)/(x-xclip);
+			}
+		}
+		if (y != yclip) {
+			if (_NhlCmpF(yt,irp->ymin_dat) < 0.0) {
+				*yd = irp->y_min;
+				*xd = xclip +(x-xclip) * (*yd-yclip)/(y-yclip);
+			}
+			else if (_NhlCmpF(yt,irp->ymax_dat) > 0.0) {
+				*yd = irp->y_max;
+				*xd = xclip +(x-xclip) * (*yd-yclip)/(y-yclip);
+			}
+		}
+		IrDataToCompc((NhlLayer)irinst,xd,yd,1,
+				      xc,yc,NULL,NULL,&status);
+		if (status) {
+			xt = *xd;
+			yt = *yd;
+		}
+	}
+	if (status) 
+		return NhlWARNING;
+
+	return NhlNOERROR;
+}
+
 
 static NhlErrorTypes IrDataLineTo
 #if	NhlNeedProto
@@ -1667,6 +1735,8 @@ int upordown;
 	float ypoints[2];
 	float holdx,holdy;
 	int status;
+	int i,npoints = 256;
+	float xdist,ydist,xc,yc,xd,yd;
 
 /*
 * if true the moveto is being performed
@@ -1676,53 +1746,147 @@ int upordown;
 		lasty = y;
 		call_frstd = 1;
 		return(NhlNOERROR);
-	} else {
-		currentx = x;
-		currenty = y;
-		holdx = lastx;
-		holdy = lasty;
-		_NhlTransClipLine(irinst->irtrans.x_min,
-			irinst->irtrans.x_max,
-			irinst->irtrans.y_min,
-			irinst->irtrans.y_max,
-			&lastx,
-			&lasty,
-			&currentx,
-			&currenty,
-			irinst->trobj.out_of_range);
-		if((lastx == irinst->trobj.out_of_range)
-			||(lasty == irinst->trobj.out_of_range)
-			||(currentx == irinst->trobj.out_of_range)
-			||(currenty == irinst->trobj.out_of_range)){
+	} 
 /*
-* Line has gone completely out of window
-*/
-			lastx = x;	
-			lasty = y;
-			call_frstd = 1;
-			return(NhlNOERROR);
-		} else {
-			xpoints[0] = lastx;
-			xpoints[1] = currentx;
-			ypoints[0] = lasty;
-			ypoints[1] = currenty;
+ * first find out whether the line is clipped
+ */
+	currentx = x;
+	currenty = y;
+	holdx = lastx;
+	holdy = lasty;
+	_NhlTransClipLine(irinst->irtrans.x_min,
+			  irinst->irtrans.x_max,
+			  irinst->irtrans.y_min,
+			  irinst->irtrans.y_max,
+			  &lastx,
+			  &lasty,
+			  &currentx,
+			  &currenty,
+			  irinst->trobj.out_of_range);
+
+	if((lastx == irinst->trobj.out_of_range)
+	   ||(lasty == irinst->trobj.out_of_range)
+	   ||(currentx == irinst->trobj.out_of_range)
+	   ||(currenty == irinst->trobj.out_of_range)){
 /*
-* Compc and window are identical in this object
-*/
-			IrDataToCompc(instance,xpoints,ypoints,2,xpoints,ypoints,NULL,NULL,&status);
-			if((lastx != holdx)||(lasty!= holdy)) {
-				call_frstd = 1;
+ * Line has gone completely out of window
+ */
+		lastx = x;	
+		lasty = y;
+		call_frstd = 1;
+		return(NhlNOERROR);
+	}
+/*
+ * sample the line and draw
+ */ 
+	xpoints[0] = lastx;
+	xpoints[1] = currentx;
+	ypoints[0] = lasty;
+	ypoints[1] = currenty;
+/*
+ * Use the linear clipped length to determine the number of points to use
+ */
+	IrDataToCompc(instance,xpoints,ypoints,2,
+		      xpoints,ypoints,NULL,NULL,&status);
+
+	xdist = c_cufx(xpoints[1]) - c_cufx(xpoints[0]);
+	ydist = c_cufy(ypoints[1]) - c_cufy(ypoints[0]);
+	npoints = (int) ((float)npoints * (fabs(xdist)+fabs(ydist)));
+
+/*
+ * If not clipped things are simpler
+ */
+	if (lastx == holdx && currentx == x && 
+	    lasty == holdy && currenty == y) {
+		if (call_frstd == 1) {
+			_NhlWorkstationLineTo(irinst->trobj.wkptr,
+				      c_cufx(xpoints[0]),c_cufy(ypoints[0]),1);
+			call_frstd = 2;
+		}
+		xdist = currentx - lastx;
+		ydist = currenty - lasty;
+		for (i = 0; i<npoints; i++) {
+			xd = lastx + xdist *(i+1)/ (float)npoints;
+			yd = lasty + ydist *(i+1)/ (float)npoints;
+			IrDataToCompc(instance,&xd,&yd,1,
+				      &xc,&yc,NULL,NULL,&status);
+			if (! status)
+				_NhlWorkstationLineTo(irinst->trobj.wkptr,
+						      c_cufx(xc),c_cufy(yc),0);
+		}
+		lastx = x;
+		lasty = y;
+		return(NhlNOERROR);
+	}
+/*
+ * Use some extra points depending on the ratio of the clipped portion
+ * of the line to the visible portion (in data space)
+ */
+#if 0
+	npoints = (int) ((float)npoints * (fabs(x-holdx) + fabs(y-holdy)) / 
+		    (fabs(currentx - lastx) + fabs(currenty-lasty)));
+#endif
+	xdist = x - holdx;
+	ydist = y - holdy;
+/*
+ * If the beginning of the line is clipped find the first visible point
+ * and move there.
+ */
+	if((lastx != holdx)||(lasty!= holdy)) {
+		if (AdjustToEdge(irinst,holdx,holdy,x,y,&xd,&yd,&xc,&yc)
+			< NhlNOERROR)
+			return NhlFATAL;
+		lastx = xd;
+		lasty = yd;
+		xdist = x - lastx;
+		ydist = y - lasty;
+
+#if 0
+		for (i = 0; i < npoints; i++) {
+			xd = lastx + xdist *(i+1)/(float)npoints;
+			yd = lasty + ydist *(i+1)/(float)npoints;
+			IrDataToCompc(instance,&xd,&yd,1,
+				      &xc,&yc,NULL,NULL,&status);
+			if (! status) {
+				if (AdjustToEdge(irinst,holdx,holdy,
+					     &xd,&yd,&xc,&yc) < NhlNOERROR)
+					return NhlFATAL;
+				lastx = xd;
+				lasty = yd;
+				xdist = x - lastx;
+				ydist = y - lasty;
+				npoints -= i;
+				break;
 			}
-			if(call_frstd == 1) {
-				_NhlWorkstationLineTo(irinst->trobj.wkptr,c_cufx(xpoints[0]),c_cufy(ypoints[0]),1);
-				call_frstd = 2;
-			}
-			_NhlWorkstationLineTo(irinst->trobj.wkptr,c_cufx(xpoints[1]),c_cufy(ypoints[1]),0);
-			lastx = x;
-			lasty = y;
-			return(NhlNOERROR);
+		}
+#endif
+		_NhlWorkstationLineTo(irinst->trobj.wkptr,
+				      c_cufx(xc),c_cufy(yc),1);
+	}
+	else if (call_frstd == 1) {
+		_NhlWorkstationLineTo(irinst->trobj.wkptr,
+				      c_cufx(xpoints[0]),c_cufy(ypoints[0]),1);
+	}
+	call_frstd = 2;
+
+	for (i = 0; i< npoints; i++) {
+		xd = lastx + xdist *(i+1)/(float)npoints;
+		yd = lasty + ydist *(i+1)/(float)npoints;
+		IrDataToCompc(instance,&xd,&yd,1,&xc,&yc,NULL,NULL,&status);
+		if (status) {
+			if (AdjustToEdge(irinst,x,y,holdx,holdy,
+					 &xd,&yd,&xc,&yc) < NhlNOERROR)
+				return NhlFATAL;
+		}
+		_NhlWorkstationLineTo(irinst->trobj.wkptr,
+				      c_cufx(xc),c_cufy(yc),0);
+		if (status) {
+			break;
 		}
 	}
+	lastx = x;
+	lasty = y;
+	return(NhlNOERROR);
 }
 
 /*ARGSUSED*/
@@ -1887,21 +2051,24 @@ int n;
 	NhlString e_text;
 	NhlString entry_name = "IrDataPolygon";
 	float out_of_range = irinst->trobj.out_of_range;
-	int i,j;
-	float px,py,cx,cy;
-	float *xbuf,*ybuf;
+	int i,j,ixout;
+	float px,py,cx,cy,dx,dy,tx,ty;
+	float *xbuf,*ybuf,*dbuf,*xout,*yout;
 	int *ixbuf;
-	NhlBoolean open, done = False;
-	int count, status = 0;
+	NhlBoolean open, done = False, first, firstpoint;
+	int count, pcount, cix, pix, status = 0, npoints = 256;
+	float xdist,ydist,tdist;
+	float xrat,yrat,xdor,xwor,ydor,ywor;
 
 	open = (x[0] != x[n-1] || y[0] != y[n-1]) ?  True : False;
-	count = open ? n + 1 : n; 
+	count = pcount = open ? n + 1 : n; 
 
 	xbuf = NhlMalloc(2 * count * sizeof(float));
 	ybuf = NhlMalloc(2 * count * sizeof(float));
+	dbuf = NhlMalloc(2 * count * sizeof(float));
 	ixbuf = NhlMalloc(2 * count * sizeof(int));
 	
-	if (xbuf == NULL || ybuf == NULL || ixbuf == NULL) {
+	if (xbuf == NULL || ybuf == NULL || ixbuf == NULL || dbuf == NULL) {
 		e_text = "%s: dynamic memory allocation error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
@@ -1920,6 +2087,8 @@ int n;
 			i++;
 			cx = x[i];
 			cy = y[i];
+			cix = i;
+			pix = i-1;
 		}
 		else {
 			if (! open) 
@@ -1929,6 +2098,8 @@ int n;
 				py = y[i];
 				cx = x[0];
 				cy = y[0];
+				cix = 0;
+				pix = i;
 				done = True;
 			}
 		}
@@ -1937,13 +2108,13 @@ int n;
 				  &px,&py,&cx,&cy,out_of_range);
 
 		if (px == out_of_range) {
-			xbuf[j] = x[i];
-			ybuf[j] = y[i];
-			ixbuf[j] = i;
+			xbuf[j] = x[cix];
+			ybuf[j] = y[cix];
+			ixbuf[j] = cix;
 			j++;
 		}
 		else {
-			if (px != x[i-1] || py != y[i-1]) {
+			if (px != x[pix] || py != y[pix]) {
 				xbuf[j] = px;
 				ybuf[j] = py;
 				ixbuf[j] = -1;
@@ -1951,12 +2122,16 @@ int n;
 			}
 			xbuf[j] = cx;
 			ybuf[j] = cy;
-			ixbuf[j] = -1;
-			j++;
-			if (cx != x[i] || cy != y[i]) {
-				xbuf[j] = x[i];
-				ybuf[j] = y[i];
-				ixbuf[j] = i;
+			if (cx == x[cix] && cy == y[cix]) {
+				ixbuf[j] = cix;
+				j++;
+			}
+			else  {
+				ixbuf[j] = -1;
+				j++;
+				xbuf[j] = x[cix];
+				ybuf[j] = y[cix];
+				ixbuf[j] = cix;
 				j++;
 			}
 		}
@@ -1964,67 +2139,269 @@ int n;
 	count = j;
 	ret = IrDataToCompc(instance,xbuf,ybuf,count,
 			    xbuf,ybuf,NULL,NULL,&status);
+	tdist = 0.0;
+
 /*
- * Replace out of bounds point with extrapolated points in the window
- * space. Since they will be clipped, these points need only be 
- * topologically correct with respect to the data coordinate boundaries.
+ * First handle the simpler situation where no clipping is required.
  */
-	if (! status) { 
-		for (j = 0; j < count; j++) {
-			xbuf[j] = c_cufx(xbuf[j]);
-			ybuf[j] = c_cufy(ybuf[j]);
+	if (! status) {
+		xbuf[0] = c_cufx(xbuf[0]);
+		ybuf[0] = c_cufy(ybuf[0]);
+		for (i = 1; i < count; i++) {
+			xbuf[i] = c_cufx(xbuf[i]);
+			ybuf[i] = c_cufy(ybuf[i]);
+			dbuf[i-1] = fabs(xbuf[i]-xbuf[i-1]) 
+				+ fabs(ybuf[i]-ybuf[i-1]);
+			tdist += dbuf[i-1];
 		}
+		npoints *= (tdist);
+		/* include some extra space for safety */
+		xout = NhlMalloc((npoints+count)*sizeof(float));
+		yout = NhlMalloc((npoints+count)*sizeof(float));
+		if (xout == NULL || yout == NULL) {
+			e_text = "%s: dynamic memory allocation error";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+		xout[0] = xbuf[0];
+		yout[0] = ybuf[0];
+		ixout = 0;
+		for (i=1; i<pcount; i++) {
+			float ratio;
+			int lcount;
+			ratio = dbuf[i-1] / tdist;
+			lcount = (int) (ratio * (float)npoints);
+			xdist = x[i] - x[i-1];
+			ydist = y[i] - y[i-1];
+			for (j=0; j < lcount; j++) {
+				cx = x[i-1] + xdist * (j+1) / (float)lcount;
+				cy = y[i-1] + ydist * (j+1) / (float)lcount;
+				IrDataToCompc(instance,&cx,&cy,1,
+				      &cx,&cy,NULL,NULL,&status);
+				if (! status) {
+					ixout++;
+					xout[ixout] = c_cufx(cx);
+					yout[ixout] = c_cufy(cy);
+				}
+			}
+		}
+				
+		printf("count,pcount,npoints,ixout+1,%d,%d,%d,%d\n",
+		       count,pcount,npoints,ixout+1);
+		ret = _NhlWorkstationFill(irinst->trobj.wkptr,
+					  xout,yout,ixout+1);
+
+		NhlFree(xbuf);
+		NhlFree(ybuf);
+		NhlFree(dbuf);
+		NhlFree(xout);
+		NhlFree(yout);
+		return ret;
+	}
+/*
+ * The clipped array as it stands does not work because the points on the
+ * clipping boundary may not be correct. However, it hopefully gives a close
+ * enough measure of the length to compute the number of points required.
+ * Replace out of bounds points with points far enough outside the 
+ * NDC viewspace that lines extending from the viewport edge to these
+ * lines will be fully clipped.
+ */
+	
+	if (irtp->x_reverse) {
+		xrat = (irtp->ur - irtp->ul) /
+			(irtp->x_min - irtp->x_max);
+		xdor = irtp->x_max;
 	}
 	else {
-		float xrat,yrat,xdor,xwor,ydor,ywor;
+		xrat = (irtp->ur - irtp->ul) /
+			(irtp->x_max - irtp->x_min);
+		xdor = irtp->x_min;
+	}
+	xwor = irtp->ul;
+	if (irtp->y_reverse) {
+		yrat = (irtp->ut - irtp->ub) /
+			(irtp->y_min - irtp->y_max);
+		ydor = irtp->y_max;
+	}
+	else {
+		yrat = (irtp->ut - irtp->ub) /
+			(irtp->y_max - irtp->y_min);
+		ydor = irtp->y_min;
+	}
+	ywor = irtp->ub;
 
-		if (irtp->x_reverse) {
-			xrat = (irtp->ur - irtp->ul) /
-				(irtp->x_min - irtp->x_max);
-			xdor = irtp->x_max;
+	pix = -1;
+	for (i = 0; i < count; i++) {
+		if (ixbuf[i] < 0) {
+			if (i > 0) dbuf[i-1] = -1;
+			continue;
 		}
-		else {
-			xrat = (irtp->ur - irtp->ul) /
-				(irtp->x_max - irtp->x_min);
-			xdor = irtp->x_min;
-		}
-		xwor = irtp->ul;
-		if (irtp->y_reverse) {
-			yrat = (irtp->ut - irtp->ub) /
-				(irtp->y_min - irtp->y_max);
-			ydor = irtp->y_max;
-		}
-		else {
-			yrat = (irtp->ut - irtp->ub) /
-				(irtp->y_max - irtp->y_min);
-			ydor = irtp->y_min;
-		}
-		ywor = irtp->ub;
-
-		for (j = 0; j < count; j++) {
-			if (xbuf[j] == out_of_range ||
-			    ybuf[j] == out_of_range) {
-				if (ixbuf[j] == -1) {
-					e_text = "%s: internal error";
-					NhlPError(NhlFATAL,NhlEUNKNOWN,
-						  e_text,entry_name);
-					return NhlFATAL;
-				}
-				cx = x[ixbuf[j]];
-				cy = y[ixbuf[j]];
-				xbuf[j] = xwor + xrat * (cx - xdor);
-				ybuf[j] = ywor + yrat * (cy - ydor);
+		if (xbuf[i] == out_of_range ||
+		    ybuf[i] == out_of_range) {
+			NhlBoolean xorange, yorange;
+			if (ixbuf[i] == -1) {
+				e_text = "%s: internal error";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name);
+				return NhlFATAL;
 			}
-			xbuf[j] = c_cufx(xbuf[j]);
-			ybuf[j] = c_cufy(ybuf[j]);
+			cx = x[ixbuf[i]];
+			cy = y[ixbuf[i]];
+			xorange = cx < irtp->x_min || cx >irtp->x_max ? 
+				True : False;
+			yorange = cy < irtp->y_min || cy >irtp->y_max ? 
+				True : False;
+			status = 0;
+			if (xorange && ! yorange) {
+				if (cx < irtp->x_min) {
+					cx = irtp->x_min;
+					xbuf[i] = irtp->x_reverse ?
+						1.1 : -.1;
+				}
+				else {
+					cx = irtp->x_max;
+					xbuf[i] = irtp->x_reverse ?
+						-.1 : 1.1;
+				}
+				IrDataToCompc(instance,&cx,&cy,1,
+					      &cx,&cy,
+					      NULL,NULL,&status);
+				ybuf[i] = c_cufy(cy);
+			}
+			else if (yorange && ! xorange) {
+				if (cy < irtp->y_min) {
+					cy = irtp->y_min;
+					ybuf[i] = irtp->y_reverse ?
+						1.1 : -.1;
+				}
+				else {
+					cy = irtp->y_max;
+					ybuf[i] = irtp->y_reverse ?
+						-.1 : 1.1;
+				}
+				IrDataToCompc(instance,&cx,&cy,1,
+					      &cx,&cy,
+					      NULL,NULL,&status);
+				xbuf[i] = c_cufx(cx);
+			}
+			else {
+				if (irtp->x_reverse)
+					xbuf[i] = cx < irtp->x_min ? 
+						1.1 : -.1;
+				else
+					xbuf[i] = cx < irtp->x_min ? 
+						-.1 : 1.1;
+
+				if (irtp->y_reverse)
+					ybuf[i] = cy < irtp->y_min ? 
+						1.1 : -.1;
+				else
+					ybuf[i] = cy < irtp->y_min ? 
+						-.1 : 1.1;
+			}
+			if (status) {
+				printf("fatal\n");
+			}
+		}
+		else {
+			xbuf[i] = c_cufx(xbuf[i]);
+			ybuf[i] = c_cufy(ybuf[i]);
+		}
+		if (i > 1 && ixbuf[i-1] == -1) {
+			dbuf[i-1] = fabs(xbuf[i]-xbuf[i-2]) +
+				fabs(ybuf[i]-ybuf[i-2]);
+			tdist += dbuf[i-1];
+		}
+		else if (i > 0) {
+			dbuf[i-1] = fabs(xbuf[i]-xbuf[i-1]) +
+				fabs(ybuf[i]-ybuf[i-1]);
+			tdist += dbuf[i-1];
 		}
 	}
-		
-	ret = _NhlWorkstationFill(irinst->trobj.wkptr,xbuf,ybuf,count);
+	npoints *= tdist;
+	/* include some extra space for safety */
+	xout = NhlMalloc((npoints+count)*sizeof(float));
+	yout = NhlMalloc((npoints+count)*sizeof(float));
+	if (xout == NULL || yout == NULL) {
+		e_text = "%s: dynamic memory allocation error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	xout[0] = xbuf[0];
+	yout[0] = ybuf[0];
+	ixout = 0;
+	firstpoint = True;
+	first = True;
+	for (i=0; i< count; i++) {
+		float ratio;
+		int lcount;
+		NhlBoolean started;
+		if (ixbuf[i] < 0) {
+			continue;
+		}
+		else if (firstpoint == True) {
+			firstpoint = False;
+			px = x[ixbuf[i]];
+			py = y[ixbuf[i]];
+			continue;
+		}
+		cx = x[ixbuf[i]];
+		cy = y[ixbuf[i]];
+		ratio = dbuf[i-1] / tdist;
+		lcount = (int) (ratio * (float)npoints);
+		xdist = cx - px;
+		ydist = cy - py;
+		started = False;
+		for (j=0; j < lcount; j++) {
+			dx = px + xdist * (j+1) / (float)lcount;
+			dy = py + ydist * (j+1) / (float)lcount;
+			IrDataToCompc(instance,&dx,&dy,1,
+				      &tx,&ty,NULL,NULL,&status);
+			if (! status) {
+				if (! started) {
+					started = True;
+					if (AdjustToEdge(irinst,px,py,cx,cy,
+							 &dx,&dy,&tx,&ty) 
+					    < NhlNOERROR)
+						return NhlFATAL;
+				}
+				ixout++;
+				xout[ixout] = c_cufx(tx);
+				yout[ixout] = c_cufy(ty);
+			}
+			else if (started) break;
+		}
+		if (status) {
+			if (started) {
+				if (AdjustToEdge(irinst,cx,cy,px,py,
+						 &dx,&dy,&tx,&ty) < NhlNOERROR)
+					return NhlFATAL;
+				ixout++;
+				xout[ixout] = c_cufx(tx);
+				yout[ixout] = c_cufy(ty);
+			}
+			ixout++;
+			xout[ixout] = xbuf[i];
+			yout[ixout] = ybuf[i];
+		}
+		px = x[ixbuf[i]];
+		py = y[ixbuf[i]];
+	}
+	if (xout[ixout] != xout[0] || yout[ixout] != yout[0]) {
+		ixout++;
+		xout[ixout] = xout[0];
+		yout[ixout] = yout[0];
+	}
+
+	printf("count,pcount,npoints,ixout+1,%d,%d,%d,%d\n",
+	       count,pcount,npoints,ixout+1);
+	ret = _NhlWorkstationFill(irinst->trobj.wkptr,xout,yout,ixout+1);
 
 	NhlFree(xbuf);
 	NhlFree(ybuf);
-	
+	NhlFree(dbuf);
+	NhlFree(xout);
+	NhlFree(yout);
 	return ret;
 	
 }

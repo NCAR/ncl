@@ -1,5 +1,5 @@
 /*
- *      $Id: hluutil.h,v 1.4 1995-01-28 01:56:19 ethan Exp $
+ *      $Id: hluutil.h,v 1.5 1996-05-16 23:46:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -19,6 +19,9 @@
  *
  *	Description:	Header file for util library.
  */
+
+#ifndef _Nhluutil_h
+#define _Nhluutil_h
 
 #include <ncarg/c.h>
 #include <ncarg/gks.h>
@@ -140,3 +143,4 @@ int /*sig_digit*/
 #endif
 );
 
+#endif /* _Nhluutil_h */

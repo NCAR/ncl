@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.24 1996-05-11 03:32:23 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.25 1996-05-16 23:46:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -808,7 +808,7 @@ PlotManagerInitialize
  */
 
 	if (! ovp->lbar_width_set)
-		ovp->lbar_width = 0.15;
+		ovp->lbar_width = 0.18;
 	if (! ovp->lbar_height_set)
 		ovp->lbar_height = 0.6;
 	if (! ovp->lgnd_width_set)
