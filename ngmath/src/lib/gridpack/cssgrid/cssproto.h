@@ -7,7 +7,10 @@ int   *c_csstri(int, float [], float [], float [], int *, int *);
 float *c_cssgrid(int, float [], float [], float [], float [],
                  int, int, float [], float [], int *);
 void   c_cstrans(int, float *, float *, float *, float *, float *);
-
+void   c_csscoord(float, float, float, float *, float *, float *);
+void   c_csvoro(int, float [], float [], float [], int, int, 
+                float [], float [], float [], float [], int *, 
+                int *, int [], int *);
 
 /*
  *  Fortran function macro.  This macro is used to provide the appropriate

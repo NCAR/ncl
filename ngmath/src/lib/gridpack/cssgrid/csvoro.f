@@ -9,17 +9,17 @@ C
 C    NPTS  (Input)
 C      The number of input data points (NPTS > 3)
 C    X  (Input)
-C      An array containing the X Cartesian coordinates of the 
-C      input data points. 
+C      An array, dimensioned for NPTS, containing the X Cartesian 
+C      coordinates of the input data points. 
 C    Y  (Input)
-C      An array containing the Y Cartesian coordinates of the 
-C      input data points. 
+C      An array, dimensioned for NPTS, containing the Y Cartesian 
+C      coordinates of the input data points. 
 C    Z  (Input)
-C      An array containing the Z Cartesian coordinates of the 
-C      input data points. 
+C      An array, dimensioned for NPTS, containing the Z Cartesian 
+C      coordinates of the input data points. 
 C    NI (Input)
 C      The index of the input coordinate for which you want
-C      to determine the Voronoi polygon.
+C      to determine the Voronoi polygon (0 .LE. NI .LE. N).
 C    NF (Input)
 C      Flag indicating if this is the first call to CSVORO
 C      to retrieve Voronoi polygons for this dataset (1=yes,

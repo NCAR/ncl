@@ -147,3 +147,68 @@ float *c_cssgrid(int ni, float xi[], float yi[], float zi[], float f[],
 
   return(zor);
 }
+
+void  c_csscoord(float px, float py, float pz, 
+               float *plat, float *plon, float *pnrm){
+
+  NGCALLF(csscoord,CSSCOORD)(&px, &py, &pz, plat, plon, pnrm);
+
+}
+
+void c_csvoro(int npts, float x[], float y[], float z[],
+             int ni, int nf, float xc[], float yc[], float zc[],
+             float rc[], int *nca, int *numv, int nv[], int *ier)
+{
+  int i,nj,nit,nwrk,nc;
+
+  static int *iwork;
+  static float *rwork;
+  static int ifirst = 0;
+
+/*
+ *  Free the previously created work arrays if this in not the
+ *  first call to this function, but it is the first call to 
+ *  this function for a new dataset.
+ */
+  if ((ifirst != 0) && (nf != 0)) {
+    free(iwork);
+    free(rwork);
+  }
+  ifirst++;
+    
+  nc = 2*npts;
+  nj = ni+1;
+  nit = npts;
+  nwrk = 28*nit;
+/*
+ *  Allocate workspace if this is the first call to find
+ *  Voronoi polygons for the given input dataset.
+ */
+  if (nf != 0) {
+    iwork = (int *) calloc(nwrk, sizeof(int));
+    if (iwork == NULL) {
+      printf("Unable to allocate work space in c_csvoro\n");
+      *ier = 300;
+      return;
+    }
+    rwork = (float *) calloc(9*nit, sizeof(float));
+    if (rwork == NULL) {
+      printf("Unable to allocate work space in c_csvoro\n");
+      *ier = 300;
+      return;
+    }
+  }
+
+/*
+ *  Make the Fortran call.
+ */
+  NGCALLF(csvoro,CSVORO)(&nit, x, y, z, &nj, &nf, iwork, rwork, &nc,
+                         xc, yc, zc, rc, nca, numv, nv, ier);
+
+/*
+ *  Adjust the indices in nv to be compatible with C.
+ */
+  for (i = 0; i < *numv; i++) {
+    nv[i]--;
+  }
+}
