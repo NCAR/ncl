@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.41 2001-01-05 22:47:55 ethan Exp $
+ *      $Id: DataSupport.c,v 1.42 2002-11-13 21:43:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1265,27 +1265,24 @@ struct _NclMultiDValDataRec *_NclCreateMissing
 ()
 #endif
 {
-	static int first = 1;
-	static NclMultiDValData tval = NULL;
+	NclMultiDValData tval;
+	int *val = (int*)NclMalloc((unsigned)sizeof(int));
+	int dim_sizes = 1;
+	*val = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 
-	if(first) {
-		int *val = (int*)NclMalloc((unsigned)sizeof(int));
-		int dim_sizes = 1;
-		*val = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
-		tval = _NclCreateMultiDVal(
-			NULL,
-			nclMultiDValDataClass,
-			Ncl_MultiDValData,
-			Ncl_MultiDValData,
-			(void*)val,
-			&((NclTypeClass)nclTypeintClass)->type_class.default_mis,
-			1,
-			&dim_sizes,
-			PERMANENT,
-			NULL,
-			(NclTypeClass)nclTypeintClass);
-		first = 0;
-	} 
+	tval = _NclCreateMultiDVal(
+		NULL,
+		nclMultiDValDataClass,
+		Ncl_MultiDValData,
+		Ncl_MultiDValData,
+		(void*)val,
+		&((NclTypeClass)nclTypeintClass)->type_class.default_mis,
+		1,
+		&dim_sizes,
+		TEMPORARY,
+		NULL,
+		(NclTypeClass)nclTypeintClass);
+
 	return(tval);
 }
 struct _NclMultiDValDataRec * _NclCreateVal

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.84 2002-09-26 22:14:38 haley Exp $
+ *      $Id: Machine.c,v 1.85 2002-11-13 21:43:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -453,7 +453,7 @@ NhlErrorTypes _NclInitMachine
 	mstk->the_rec->thefiles = (char**)NclCalloc(NCL_MACHINE_SIZE,sizeof(char*));
 	mstk->the_rec->thelines = (int*)NclCalloc(NCL_MACHINE_SIZE,sizeof(int));
 	if(mstk->the_rec->themachine == NULL ){
-		NhlPError(NhlFATAL,errno,"_NhlInitMachine: Can't allocate space for machine");
+		NhlPError(NhlFATAL,errno,"_NclInitMachine: Can't allocate space for machine");
 		return(NhlFATAL);
 	}
 	mstk->the_rec->pc = mstk->the_rec->themachine;
@@ -471,7 +471,7 @@ NhlErrorTypes _NclInitMachine
 		sizeof(NclStackEntry));
 	current_level_1_size = NCL_LEVEL_1_SIZE;
 	if(level_1_vars == NULL) {
-		NhlPError(NhlFATAL,errno,"_NhlInitMachine: Can't allocate space for machine");
+		NhlPError(NhlFATAL,errno,"_NclInitMachine: Can't allocate space for machine");
 		return(NhlFATAL);
 	}
 	return(NhlNOERROR);
@@ -485,14 +485,24 @@ NhlErrorTypes _NclPutLevel1Var
 	int offset;
 	NclStackEntry *therec;
 #endif
-{ 	
-	if((offset >= current_level_1_size)||(offset < 0)){
-		return(NhlWARNING);
-	} else {
-		
-		level_1_vars[offset] = *therec;
-		return(NhlNOERROR);
+{
+ 	if (offset < 0) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclPutLevel1Var: invalid offset");
+		return(NhlFATAL);
 	}
+	if (offset >= current_level_1_size) {
+		NclStackEntry *tl1vars = level_1_vars;
+		tl1vars = NclRealloc(level_1_vars,2 * current_level_1_size * sizeof(NclStackEntry));
+		if(tl1vars == NULL) {
+			NhlPError(NhlFATAL,errno,"_NclPutLevel1Var: Can't allocate space");
+			return(NhlFATAL);
+		}
+		memset(&tl1vars[current_level_1_size],0,current_level_1_size* sizeof(NclStackEntry));
+		level_1_vars = tl1vars;
+		current_level_1_size *= 2;
+	}
+	level_1_vars[offset] = *therec;
+	return(NhlNOERROR);
 }
 NclStackEntry *_NclGetLevel1Var
 #if	NhlNeedProto
@@ -502,11 +512,22 @@ NclStackEntry *_NclGetLevel1Var
 	int offset;
 #endif
 { 	
-	if((offset >= current_level_1_size)||(offset < 0)){
+ 	if (offset < 0) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclGetLevel1Var: invalid offset");
 		return(NULL);
-	} else {
-		return(&(level_1_vars[offset]));
 	}
+	if (offset >= current_level_1_size) {
+		NclStackEntry *tl1vars = level_1_vars;
+		tl1vars = NclRealloc(level_1_vars,2 * current_level_1_size * sizeof(NclStackEntry));
+		if(tl1vars == NULL) {
+			NhlPError(NhlFATAL,errno,"_NclGetLevel1Var: Can't allocate space");
+			return(NULL);
+		}
+		memset(&tl1vars[current_level_1_size],0,current_level_1_size* sizeof(NclStackEntry));
+		level_1_vars = tl1vars;
+		current_level_1_size *= 2;
+	}
+	return(&(level_1_vars[offset]));
 }
 
 NhlErrorTypes _NclPutRec
