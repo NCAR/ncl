@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.37 1997-02-24 22:12:20 boote Exp $
+ *      $Id: CoordArrays.c,v 1.38 1997-03-31 16:16:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1343,7 +1343,8 @@ CoordArraysSetValues
 		}
 		else{
 			status = True;
-			NhlFreeGenArray(ocap->xarray);
+			if(!ocap->xctxt)
+				NhlFreeGenArray(ocap->xarray);
 		}
 	}
 	if((ncap->yarray != ocap->yarray) ||
@@ -1358,7 +1359,8 @@ CoordArraysSetValues
 		}
 		else{
 			status = True;
-			NhlFreeGenArray(ocap->yarray);
+			if(!ocap->yctxt)
+				NhlFreeGenArray(ocap->yarray);
 		}
 	}
 

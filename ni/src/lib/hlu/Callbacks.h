@@ -1,5 +1,5 @@
 /*
- *      $Id: Callbacks.h,v 1.3 1996-11-28 01:14:21 dbrown Exp $
+ *      $Id: Callbacks.h,v 1.4 1997-03-31 16:16:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -94,7 +94,7 @@ typedef struct _NhlCBListRec _NhlCBListRec, *_NhlCBList;
  * The valid values of hash_mult are >= 0 and <= 8.
  * If add_hash is NULL, then the arg "selector" to _NhlCBAdd is treated
  * as a "longval", and used as the hash value.  call_hash works the
- * same way, but from the _NhlCBCallCallbacks side.  Obviously, if hash_mult
+ * same way, but from the _NhlCBCallCallbacks side.  If hash_mult
  * is 0, then add_hash and call_hash are ignored.  Likewise, the "selector"
  * arg to _NhlCBAdd and _NhlCBCallCallbacks is ignored.
  *
