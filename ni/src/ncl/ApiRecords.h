@@ -55,7 +55,7 @@ struct _NclApiFuncInfoRec {
 
 struct _NclApiVarInfoRec {
 	NclQuark name;
-	NclQuark data_type_quark;
+	int data_type;
 	NclVarTypes 	type;	/* value, hlu, file */
 	int	n_dims;
 	NclDimRec *dim_info;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.h,v 1.10 1996-07-20 00:39:58 ethan Exp $
+ *      $Id: NclApi.h,v 1.11 1996-07-23 21:13:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -147,11 +147,25 @@ typedef union _NclApiScalar {
         obj     objval;
 }NclApiScalar;
 
+#define NCLAPI_none	0
+#define NCLAPI_short 	01
+#define NCLAPI_int 	02
+#define NCLAPI_long 	04
+#define NCLAPI_float 	010
+#define NCLAPI_double 	020
+#define NCLAPI_char 	040
+#define NCLAPI_byte 	0100
+#define NCLAPI_string 	0200
+#define NCLAPI_numeric 	0400,
+#define NCLAPI_logical 	01000
+#define NCLAPI_obj 	02000
+
 
 struct _NclExtValueRec {
 	int type;
 	int constant;
 	void *value;
+	int 	has_missing;
 	NclApiScalar missing;
 	int elem_size;
 	int totalelements;

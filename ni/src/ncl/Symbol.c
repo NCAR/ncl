@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.31 1996-07-20 00:40:01 ethan Exp $
+ *      $Id: Symbol.c,v 1.32 1996-07-23 21:13:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -948,7 +948,7 @@ NclApiDataList *_NclGetFileVarInfoList
 				tmp->kind = VARIABLE_LIST;
 				tmp->u.var = (NclApiVarInfoRec*)NclMalloc(sizeof(NclApiVarInfoRec));
 				tmp->u.var->name = thefile->file.var_info[i]->var_name_quark;
-				tmp->u.var->data_type_quark = NrmStringToQuark(_NclBasicDataTypeToName(thefile->file.var_info[i]->data_type));
+				tmp->u.var->data_type = thefile->file.var_info[i]->data_type;
 				tmp->u.var->type = FILEVAR;
 				tmp->u.var->n_dims = thefile->file.var_info[i]->num_dimensions;
 				tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp->u.var->n_dims);
@@ -1023,7 +1023,7 @@ NclQuark file_var_name;
 					tmp->kind = VARIABLE_LIST;
 					tmp->u.var = (NclApiVarInfoRec*)NclMalloc(sizeof(NclApiVarInfoRec));
 					tmp->u.var->name = thefile->file.var_info[i]->var_name_quark;
-					tmp->u.var->data_type_quark = NrmStringToQuark(_NclBasicDataTypeToName(thefile->file.var_info[i]->data_type));
+					tmp->u.var->data_type= thefile->file.var_info[i]->data_type;
 					tmp->u.var->type = FILEVAR;
 					tmp->u.var->n_dims = thefile->file.var_info[i]->num_dimensions;
 					tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp->u.var->n_dims);
@@ -1099,7 +1099,7 @@ NclQuark coordname;
 					tmp->kind = VARIABLE_LIST;
 					tmp->u.var = (NclApiVarInfoRec*)NclMalloc(sizeof(NclApiVarInfoRec));
 					tmp->u.var->name = thefile->file.coord_vars[i]->var_name_quark;
-					tmp->u.var->data_type_quark = NrmStringToQuark(_NclBasicDataTypeToName(thefile->file.coord_vars[i]->data_type));
+					tmp->u.var->data_type= thefile->file.coord_vars[i]->data_type;
 					tmp->u.var->type = COORD;
 					tmp->u.var->n_dims = 1;
 					tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec));
@@ -1344,6 +1344,8 @@ int copy_data;
 						for(i = 0; i < tmp_md->multidval.n_dims; i++) {
 							out_data->dim_sizes[i] = tmp_md->multidval.dim_sizes[i];
 						}
+						out_data->has_missing = tmp_md->multidval.missing_value.has_missing;
+						out_data->missing = *(NclApiScalar*)&(tmp_md->multidval.missing_value.value);
 						_NclDestroyObj((NclObj)tmp_md);
 						return(out_data);
 					}
@@ -1412,6 +1414,8 @@ int copy_data;
 						if(tmp_var->obj.status != PERMANENT) {
 							_NclDestroyObj((NclObj)tmp_var);
 						}
+						out_data->has_missing = tmp_md->multidval.missing_value.has_missing;
+						out_data->missing = *(NclApiScalar*)&(tmp_md->multidval.missing_value.value);
 						_NclDestroyObj((NclObj)tmp_md);
 						return(out_data);
 					}
@@ -1472,6 +1476,8 @@ int copy_data;
 						for(i = 0; i < tmp_md->multidval.n_dims; i++) {
 							out_data->dim_sizes[i] = tmp_md->multidval.dim_sizes[i];
 						}
+						out_data->has_missing = tmp_md->multidval.missing_value.has_missing;
+						out_data->missing = *(NclApiScalar*)&(tmp_md->multidval.missing_value.value);
 						_NclDestroyObj((NclObj)tmp_md);
 						return(out_data);
 					}
@@ -1530,6 +1536,8 @@ int copy_data;
 						for(i = 0; i < tmp_md->multidval.n_dims; i++) {
 							out_data->dim_sizes[i] = tmp_md->multidval.dim_sizes[i];
 						}
+						out_data->has_missing = tmp_md->multidval.missing_value.has_missing;
+						out_data->missing = *(NclApiScalar*)&(tmp_md->multidval.missing_value.value);
 						_NclDestroyObj((NclObj)tmp_md);
 						return(out_data);
 					}
@@ -1809,6 +1817,8 @@ NclExtValueRec *_NclGetHLUObjId
 					}
 					tmp->dim_sizes[0] = 1;
 					tmp->value = (void*)value;
+					tmp->has_missing = the_hlu->multidval.missing_value.has_missing;
+					tmp->missing = *(NclApiScalar*)&(the_hlu->multidval.missing_value.value);
 					
 					if(hlu != NULL) {
 						return(tmp);
@@ -1825,6 +1835,8 @@ NclExtValueRec *_NclGetHLUObjId
 						}
 					}
 					tmp->value = (void*)value;
+					tmp->has_missing = the_hlu->multidval.missing_value.has_missing;
+					tmp->missing = *(NclApiScalar*)&(the_hlu->multidval.missing_value.value);
 				}
 			}
 			if(tmp->value != NULL) {
@@ -2044,7 +2056,7 @@ NclQuark coordname;
 			tmp->u.var = (NclApiVarInfoRec*) NclMalloc(sizeof(NclApiVarInfoRec));
 			tmp->u.var->name = tmp_var->var.var_quark;
 			the_value = (NclMultiDValData)_NclGetObj(tmp_var->var.thevalue_id);
-			tmp->u.var->data_type_quark = NrmStringToQuark(_NclBasicDataTypeToName(the_value->multidval.data_type));
+			tmp->u.var->data_type= the_value->multidval.data_type;
 			tmp->u.var->type = tmp_var->var.var_type;
 			tmp->u.var->n_dims = tmp_var->var.n_dims;
 			tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp_var->var.n_dims);
@@ -2110,7 +2122,7 @@ NclQuark var_sym_name;
 			tmp->u.var = (NclApiVarInfoRec*) NclMalloc(sizeof(NclApiVarInfoRec));
 			tmp->u.var->name = the_var->u.data_var->var.var_quark;
 			the_value = (NclMultiDValData)_NclGetObj(the_var->u.data_var->var.thevalue_id);
-			tmp->u.var->data_type_quark = NrmStringToQuark(_NclBasicDataTypeToName(the_value->multidval.data_type));
+			tmp->u.var->data_type= the_value->multidval.data_type;
 			tmp->u.var->type = the_var->u.data_var->var.var_type;
 			tmp->u.var->n_dims = the_var->u.data_var->var.n_dims;
 			tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*the_var->u.data_var->var.n_dims);
@@ -2182,7 +2194,7 @@ NclApiDataList *_NclGetDefinedVarInfo
 								NclMalloc(sizeof(NclApiVarInfoRec));
 							tmp->u.var->name = the_var->u.data_var->var.var_quark;
 							the_value = (NclMultiDValData)_NclGetObj(the_var->u.data_var->var.thevalue_id);
-							tmp->u.var->data_type_quark = NrmStringToQuark(_NclBasicDataTypeToName(the_value->multidval.data_type));
+							tmp->u.var->data_type= the_value->multidval.data_type;
 							tmp->u.var->type = the_var->u.data_var->var.var_type;
 							tmp->u.var->n_dims = the_var->u.data_var->var.n_dims;
 							tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*the_var->u.data_var->var.n_dims);
@@ -2307,6 +2319,8 @@ int copy_data;
 		for(i = 0; i < the_val->multidval.n_dims; i++) {
 			tmp->dim_sizes[i] = the_val->multidval.dim_sizes[i];
 		}
+		tmp->has_missing = the_val->multidval.missing_value.has_missing;
+		tmp->missing = *(NclApiScalar*)&(the_val->multidval.missing_value.value);
 		return(tmp);
 	} 
 	return(NULL);
@@ -2359,6 +2373,8 @@ int copy_data;
 					for(i = 0; i < tmp_md->multidval.n_dims; i++) {
 						out_data->dim_sizes[i] = tmp_md->multidval.dim_sizes[i];
 					}
+					out_data->has_missing = tmp_md->multidval.missing_value.has_missing;
+					out_data->missing = *(NclApiScalar*)&(tmp_md->multidval.missing_value.value);
 					_NclDestroyObj((NclObj)tmp_md);
 					return(out_data);
 				}
@@ -2413,6 +2429,8 @@ int copy_data;
 					for(i = 0; i < tmp_md->multidval.n_dims; i++) {
 						out_data->dim_sizes[i] = tmp_md->multidval.dim_sizes[i];
 					}
+					out_data->has_missing = tmp_md->multidval.missing_value.has_missing;
+					out_data->missing = *(NclApiScalar*)&(tmp_md->multidval.missing_value.value);
 					_NclDestroyObj((NclObj)tmp_md);
 					return(out_data);
 				}
@@ -2457,7 +2475,7 @@ int copy_data;
 					out_data = (NclExtValueRec*)NclMalloc(sizeof(NclExtValueRec));
 					out_data->constant = 0;
 					if(copy_data) {
-					out_data->value = (void*)NclMalloc(tmp_md->multidval.totalsize);
+						out_data->value = (void*)NclMalloc(tmp_md->multidval.totalsize);
 						memcpy(out_data->value,tmp_md->multidval.val,tmp_md->multidval.totalsize);
 					} else {
 						out_data->value = tmp_md->multidval.val;
@@ -2468,6 +2486,8 @@ int copy_data;
 					for(i = 0; i < tmp_md->multidval.n_dims; i++) {
 						out_data->dim_sizes[i] = tmp_md->multidval.dim_sizes[i];
 					}
+					out_data->has_missing = tmp_md->multidval.missing_value.has_missing;
+					out_data->missing = *(NclApiScalar*)&(tmp_md->multidval.missing_value.value);
 					_NclDestroyObj((NclObj)tmp_md);
 					return(out_data);
 				}

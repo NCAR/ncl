@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.40 1996-07-20 00:39:53 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.41 1996-07-23 21:13:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -127,7 +127,7 @@ NhlErrorTypes _NclIListVariables
 	step = tmp;
 
 	while(step != NULL) {
-		ret = nclfprintf(fp,"\n%s\t%s ",NrmQuarkToString(step->u.var->data_type_quark),NrmQuarkToString(step->u.var->name));
+		ret = nclfprintf(fp,"\n%s\t%s ",_NclBasicDataTypeToName(step->u.var->data_type),NrmQuarkToString(step->u.var->name));
 		if(ret < 0) {
 			_NclFreeApiDataList((void*)tmp);
 			return(NhlWARNING);
@@ -493,7 +493,7 @@ NhlErrorTypes _NclIListFileVariables
 	tmp = _NclGetFileVarInfoList(file_q);
 	step = tmp;
 	while(step != NULL) {
-		ret = nclfprintf(fp,"\n%s\t%s ",NrmQuarkToString(step->u.var->data_type_quark),NrmQuarkToString(step->u.var->name));
+		ret = nclfprintf(fp,"\n%s\t%s ",_NclBasicDataTypeToName(step->u.var->data_type),NrmQuarkToString(step->u.var->name));
 		if(ret < 0) {
 			_NclFreeApiDataList((void*)tmp);
 			return(NhlWARNING);
