@@ -1,5 +1,5 @@
 C
-C	$Id: wmstnm.f,v 1.8 2004-02-10 21:55:54 fred Exp $
+C	$Id: wmstnm.f,v 1.9 2004-07-14 20:42:11 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -143,6 +143,9 @@ C
       READ(IMDAT(2)(1:1),'(I1)') N
       READ(IMDAT(2)(2:3),'(I2)') DD
       IBFLAG = 1
+C
+C  Do not plot a wind barb if the wind direction is specified as blanks.
+C
       IF (IMDAT(2)(2:3) .EQ. '  ') THEN
         IBFLAG = 0
       ENDIF
