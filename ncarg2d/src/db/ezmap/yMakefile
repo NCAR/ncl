@@ -1,10 +1,11 @@
 #
-#       $Id: yMakefile,v 1.11 1998-04-17 16:22:24 kennison Exp $
+#       $Id: yMakefile,v 1.12 1999-07-29 23:06:09 kennison Exp $
 #
 
 DBFILES = EzmapAreaInfo.CO EzmapAreaInfo.PO EzmapAreaInfo.PS EzmapAreaInfo.US \
 	  EzmapOutlines.CO EzmapOutlines.PO EzmapOutlines.PS EzmapOutlines.US \
-	  ezmapdata ezmap_area_ids Earth..1.areas Earth..1.lines Earth..1.names
+	  ezmapdata ezmap_area_ids Earth..1.areas Earth..1.lines Earth..1.names \
+	  Earth..2.areas Earth..2.lines Earth..2.names
 
 PROG_LIBS	=	$(NCARGCLIB)
 DEPLIBS		=	$(DEPNCARGCLIB)
@@ -13,8 +14,8 @@ InstallTarget($(DBFILES),$(INSTALL_DB),$(DBPATH))
 
 CleanFilesTarget(ConvertMapData EzmapOutlines.CO EzmapOutlines.PO \
 		 EzmapOutlines.PS EzmapOutlines.US ezmapdata \
-		 WriteLineFile Earth..1.lines \
-		 WriteNameFile Earth..1.names)
+		 WriteLineFile Earth..1.lines Earth..2.lines \
+		 WriteNameFile Earth..1.names Earth..2.names)
 
 FNotInstalledTarget(mapconvrt,mapconvrt.o)
 
@@ -57,3 +58,13 @@ Earth..1.names: Earth..1 WriteNameFile
 	-@$(RM) Earth..1.names
 	@echo "Building the new Ezmap name file"
 	@echo Earth..1 | ./WriteNameFile
+
+Earth..2.lines: Earth..2 WriteLineFile
+	-@$(RM) Earth..2.lines
+	@echo "Building the new Ezmap line file"
+	@echo Earth..2 | ./WriteLineFile
+
+Earth..2.names: Earth..2 WriteNameFile
+	-@$(RM) Earth..2.names
+	@echo "Building the new Ezmap name file"
+	@echo Earth..2 | ./WriteNameFile
