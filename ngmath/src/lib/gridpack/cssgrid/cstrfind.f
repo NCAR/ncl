@@ -196,7 +196,7 @@ C
 C P is left of or on arcs N0->NB for all neighbors NB
 C   of N0.  Test for P = +/-N0.
 C
-      IF (ABS(X(N0)*XP + Y(N0)*YP + Z(N0)*ZP) .LT. 1.) THEN
+      IF (STORE(ABS(X(N0)*XP + Y(N0)*YP + Z(N0)*ZP)) .LT. 1.) THEN
 C
 C   All points are collinear iff P Left NB->N0 for all
 C     neighbors NB of N0.  Search the neighbors of N0.
