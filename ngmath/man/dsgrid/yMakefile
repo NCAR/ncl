@@ -1,0 +1,22 @@
+#
+#       "$Id:"
+#
+
+MAN = dsgrid dsgrid_params dsgrid2s dsgrid3s dsseti dsgeti dssetr           \
+	dsgetr dssetc dsgetc dspnt2s dspnt3s dsgrid2d dsgrid3d dssetrd      \
+	dsgetrd dspnt2d dspnt3d c_dsgrid2s c_dsgrid3s c_dsseti  c_dsgeti    \
+	c_dssetr c_dsgetr c_dssetc c_dsgetc c_dspnt2s c_dspnt3s c_dsgrid2d  \
+	c_dsgrid3d c_dssetrd c_dsgetrd c_dspnt2d c_dspnt3d dsgrid_errors
+
+# Install preformatted troff documents on systems without troff
+#if UseCatDirs
+FORMAT_EXT      = .p
+#else
+FORMAT_EXT      = .m
+#endif
+
+MPATH   = $(MAN3PATH)
+MSECT   = $(MAN3_SECTION)
+
+InstallManPages($(MAN),$(FORMAT_EXT),$(MPATH),$(MSECT))
+FormatManPages($(MAN),.m,.p)

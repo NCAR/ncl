@@ -1,0 +1,47 @@
+.\"
+.\"     $Id: dsgetr.m,v 1.1 1997-09-29 22:12:01 fred Exp $
+.\"
+.TH DSGETR 3NCARG "September 1997" UNIX "NCAR GRAPHICS"
+.na
+.nh
+.SH NAME
+DSGETR - Retrieves the value of an internal parameter of type REAL.
+.SH SYNOPSIS
+CALL DSGETR (PNAM,RVAL)
+.SH DESCRIPTION 
+.IP PNAM 12
+A character string that specifies the name of the
+parameter to get. The name must appear as the first three
+characters of the string.
+.IP RVAL 12
+A REAL variable that is the name of the variable
+into which the value of the internal parameter specified by PNAM
+is to be retrieved.
+.SH USAGE
+This routine allows you to retrieve the current value of
+Dsgrid parameters.  For a complete list of parameters available
+in this utility, see the dsgrid_params man page.
+.SH ACCESS
+To use DSGETR, load the NCAR Graphics library ngmath.
+.SH SEE ALSO
+dsgrid,
+dsgrid_params,
+dsgrid2s,
+dsgrid3s,
+dsgrid2d,
+dsgrid3d,
+dspnt2s,
+dspnt2d,
+dspnt3s,
+dspnt3d
+dssetr.
+.sp
+Complete documentation for Dsgrid is available at URL
+.br
+http://ngwww.ucar.edu/ngdoc/ng/ngmath/dsgrid/dshome.html
+.SH COPYRIGHT
+Copyright (C) 1997
+.br
+University Corporation for Atmospheric Research
+.br
+The use of this Software is governed by a License Agreement.

@@ -1,0 +1,46 @@
+.\"
+.\"     $Id: c_dssetc.m,v 1.1 1997-09-29 22:11:55 fred Exp $
+.\"
+.TH c_dssetc 3NCARG "September 1997" UNIX "NCAR GRAPHICS"
+.SH NAME
+c_dssetc - Set char valued parameters
+.SH FUNCTION PROTOTYPE
+void c_dssetc(char *, char *);
+.SH SYNOPSIS
+void c_dssetc (pnam, cval);
+.SH DESCRIPTION
+.IP pnam 12
+A string that specifies the name of the parameter to be set.
+.IP cval 12
+A string that specifies the value to be assigned to the
+internal parameter specified by pnam.
+.SH USAGE
+This routine allows you to set the current value of
+Dsgrid parameters.  For a complete list of parameters available
+in this utility, see the dsgrid_params man page.
+.SH ACCESS
+To use c_dssetc, load the NCAR Graphics library ngmath.
+.SH SEE ALSO
+c_dsgrid,
+c_dsgrid_params,
+c_dsgrid2s,
+c_dsgrid3s,
+c_dsgrid2d,
+c_dsgrid3d,
+c_dspnt2s,
+c_dspnt2d,
+c_dspnt3s,
+c_dspnt3d,
+c_dsgetc.
+.sp
+Complete documentation for Dsgrid is available at URL
+.br
+http://ngwww.ucar.edu/ngdoc/ng/ngmath/dsgrid/dshome.html
+.SH COPYRIGHT
+Copyright (C) 1997
+.br
+University Corporation for Atmospheric Research
+.br
+The use of this Software is governed by a License Agreement.
+
+
