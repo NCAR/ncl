@@ -1,5 +1,5 @@
 /*
- *      $Id: nm03c.c,v 1.5 1997-12-17 19:25:39 haley Exp $
+ *      $Id: nm03c.c,v 1.6 1997-12-23 16:01:07 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -170,7 +170,7 @@ main(int argc, char *argv[])
 /*
  *  Do the interpolation.
  */
-  out = c_natgrids(NumIn, x, y, z, NumXOut, NumYOut, xo, yo, &ier);
+  out = c_natgrids(NumIn, y, x, z, NumYOut, NumXOut, yo, xo, &ier);
   if (ier != 0) {
      printf (" Error return from c_natgrids = %d\n",ier);
   }
@@ -186,7 +186,7 @@ main(int argc, char *argv[])
  * LLUs to get a surface plot.
  */
 	gactivate_ws (gkswid);
-	drwsrfc(NumXOut,NumYOut,xo,yo,out,10.,-25.,50.);
+	drwsrfc(NumYOut,NumXOut,yo,xo,out,10.,-25.,50.);
 	gdeactivate_ws (gkswid);
 /*
  *  Get the aspects.
@@ -194,8 +194,8 @@ main(int argc, char *argv[])
   for (i = 0 ; i < NumXOut ; i++) {
     for (j = 0 ; j < NumYOut ; j++) {
       c_nngetaspects(i, j, &uvtmp, &ier);
-      u[j][i] = sin(uvtmp);
-      v[j][i] = cos(uvtmp);
+      u[i][j] = sin(uvtmp);
+      v[i][j] = cos(uvtmp);
     }
   }
 /*
@@ -206,8 +206,8 @@ main(int argc, char *argv[])
   len_dims[1] = NumYOut;
 
   NhlRLClear(srlist);
-  NhlRLSetMDFloatArray(srlist,NhlNvfUDataArray,&u[0][0],2,len_dims);
-  NhlRLSetMDFloatArray(srlist,NhlNvfVDataArray,&v[0][0],2,len_dims);
+  NhlRLSetMDFloatArray(srlist,NhlNvfUDataArray,&v[0][0],2,len_dims);
+  NhlRLSetMDFloatArray(srlist,NhlNvfVDataArray,&u[0][0],2,len_dims);
   NhlCreate(&vfid,"vectorfield",NhlvectorFieldClass,appid,srlist);
 
   NhlRLClear(srlist);
@@ -222,7 +222,7 @@ main(int argc, char *argv[])
   for (i = 0 ; i < NumXOut ; i++) {
     for (j = 0 ; j < NumYOut ; j++) {
       c_nngetslopes(i, j, &uvtmp, &ier);
-      u[j][i] = RAD2DEG*uvtmp;
+      u[i][j] = RAD2DEG*uvtmp;
     }
   }
 
@@ -280,7 +280,7 @@ void drwsrfc (int nx, int ny, float *x, float *y, float *z,
               float s1, float s2, float s3)
 {
     Gcolr_rep colval;
-    float xmn, xmx, ymn, ymx, zmn, zmx, eye[6], *fz;
+    float xmn, xmx, ymn, ymx, zmn, zmx, eye[6];
     int i, j, *iwk;
 
 	iwk = (int *)malloc(2*nx*ny*sizeof(int));
@@ -307,21 +307,9 @@ void drwsrfc (int nx, int ny, float *x, float *y, float *z,
     eye[4] = 0.5 * (ymx-ymn);
     eye[5] = 0.5 * (zmx-zmn);
 /*
- *  Rearrange the array, since c_srface expects an array ordered as 
- *  per Fortran.
- */
-    fz = (float *) calloc(nx*ny,sizeof(float));
-
-    for (i = 0; i < nx; i++) {
-       for (j = 0; j < ny; j++) {
-           
-          fz[j*nx+i] = z[i*ny+j];
-       }
-    }
-/*
  *  Plot the surface.
  */
-    c_srface (x,y,fz,iwk,nx,nx,ny,eye,0.);
+    c_srface (x,y,z,iwk,nx,nx,ny,eye,0.);
     free(iwk);
 }
 

@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.4 1997-12-17 19:25:40 haley Exp $
+#   $Id: yMakefile,v 1.5 1997-12-23 16:01:10 haley Exp $
 #
 #   Makefile for HLU Ngmath examples
 #
@@ -7,6 +7,7 @@
 MYNAME      = ngmath
 
 CSRCS = nm01c.c nm02c.c nm03c.c nm04c.c nm05c.c nm06c.c
+FSRCS = nm01f.f nm02f.f nm03f.f nm04f.f nm05f.f nm06f.f
 NSRCS = nm01n.ncl nm02n.ncl nm03n.ncl nm04n.ncl nm05n.ncl nm06n.ncl
 SRCS  = $(CSRCS) $(FSRCS)
 RESFILES    = nm03.res
@@ -21,3 +22,9 @@ CExampleTarget(nm03c,nm03c.o)
 CExampleTarget(nm04c,nm04c.o)
 CExampleTarget(nm05c,nm05c.o)
 CExampleTarget(nm06c,nm06c.o)
+FExampleTarget(nm01f,nm01f.o)
+FExampleTarget(nm02f,nm02f.o)
+FExampleTarget(nm03f,nm03f.o)
+FExampleTarget(nm04f,nm04f.o)
+FExampleTarget(nm05f,nm05f.o)
+FExampleTarget(nm06f,nm06f.o)

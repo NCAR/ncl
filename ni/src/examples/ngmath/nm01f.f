@@ -1,0 +1,209 @@
+C
+C      $Id: nm01f.f,v 1.1 1997-12-23 16:01:06 haley Exp $
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                       C
+C                Copyright (C)  1997                                    C
+C        University Corporation for Atmospheric Research                C
+C                All Rights Reserved                                    C
+C                                                                       C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C  File:       nm01f.c
+C
+C  Author:     Mary Haley (taken from one of Fred Clare's examples)
+C          National Center for Atmospheric Research
+C          PO 3000, Boulder, Colorado
+C
+C  Date:       Mon Dec 22 11:46:59 MST 1997
+C
+C  Description: Simple example of natural neighbor linear interpolation.
+C
+      external NhlFAppClass
+      external NhlFNcgmWorkstationClass
+      external NhlFPSWorkstationClass
+      external NhlFXWorkstationClass
+      external NhlFscalarFieldClass
+      external NhlFcontourPlotClass
+
+      parameter(Npts=6,NumXOut=21,NumYOut=21)
+      parameter(IDIM=2*NumXOut*NumYOut)
+
+
+      real  xo(NumXOut), yo(NumYOut), zo(NumXOut,NumYOut)
+      real x(Npts),y(Npts),z(Npts)
+      data x/0.00, 1.00, 0.00, 1.00, 0.40, 0.75/
+      data y/0.00, 0.00, 1.00, 1.00, 0.20, 0.65/
+      data z/0.00, 0.00, 0.00, 0.00, 1.25, 0.80/
+      dimension iwork(IDIM)
+      real xc, yc
+      integer ier
+      integer appid,wid,gkswid
+      integer srlist, grlist
+      integer i
+      integer NCGM, X11, PS
+C
+C Default is to display output to an NCGM workstation.
+C
+      NCGM=1
+      X11=1
+      PS=0
+C
+C Initialize the high level utility library
+C
+      call NhlFInitialize
+C
+C Create an application context. Set the app dir to the current directory
+C so the application looks for a resource file in the working directory.
+C In this example the resource file supplies the plot title only.
+C
+      call NhlFRLCreate(srlist,'setrl')
+      call NhlFRLCreate(grlist,'getrl')
+
+      call NhlFRLClear(srlist)
+      call NhlFRLSetString(srlist,'appDefaultParent','True',ierr)
+      call NhlFRLSetString(srlist,'appUsrDir','./',ierr)
+      call NhlFCreate(appid,'nm01',NhlFAppClass,0,srlist,ierr)
+
+      if (NCGM.eq.1) then
+C
+C Create an NCGM workstation.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkMetaName','./nm01f.ncgm',ierr)
+         call NhlFCreate(wid,'nm01Work',
+     +        NhlFNcgmWorkstationClass,0,srlist,ierr)
+      else if (X11.eq.1) then
+C
+C Create an xworkstation object.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkPause','True',ierr)
+         call NhlFCreate(wid,'nm01Work',NhlFXWorkstationClass,
+     +        0,srlist,ierr)
+      else if (PS.eq.1) then
+C
+C Create a PostScript workstation.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkPSFileName','./nm01f.ps',ierr)
+         call NhlFCreate(wid,'nm01Work',
+     +        NhlFPSWorkstationClass,0,srlist,ierr)
+      endif
+
+C
+C  Define the output grid.
+C
+      xmin = 0.
+      xmax = 1.
+      xc = (xmax-xmin)/(NumXOut-1.) 
+      do 20 i=1,NumXOut
+        xo(i) = xmin+real(i-1) * xc
+ 20   continue
+
+      ymin = 0.
+      ymax = 1.
+      yc = (ymax-ymin)/(NumYOut-1.) 
+      do 30 i=1,NumYOut
+        yo(i) = ymin+real(i-1) * yc
+ 30   continue
+
+      call natgrids(Npts, x, y, z, NumXOut, NumYOut, xo, yo, zo, ier)
+C
+C Get Workstation ID.
+C
+      call NhlFRLClear(grlist)
+      call NhlFRLGetInteger(grlist,'wkGksWorkId',gkswid,ierr)
+      call NhlFGetValues(wid,grlist,ierr)
+C
+C There's no HLU object for surface plots yet, so we need to call the
+C LLUs to get a surface plot.
+C
+      call gacwk (gkswid)
+      call drwsrf (gkswid,NumXOut,NumYOut,xo,yo,zo,15.,-25.,90.,iwork)
+      call gdawk (gkswid)
+C
+C NhlDestroy destroys the given id and all of its children.
+C
+      call NhlFDestroy(wid,ierr)
+C
+C Restores state.
+C
+      call NhlFClose
+      stop
+      end
+
+      subroutine drwsrf(wkid,nx,ny,x,y,z,s1,s2,s3,iwk)
+C
+C  Procedure DRWSRF uses the NCAR Graphics function SRFACE to
+C  draw a surface plot of the data values in Z.
+C 
+C  The point of observation is calculated from the 3D coordinate
+C  (S1, S2, S3); the point looked at is the center of the surface.
+C 
+C   NX     -  Dimension of the X-axis variable X.
+C   NY     -  Dimension of the Y-axis variable Y.
+C   X      -  An array of X-axis values.
+C   Y      -  An array of Y-axis values.
+C   Z      -  An array dimensioned for NX x NY containing data
+C             values for each (X,Y) coordinate.
+C   S1     -  X value for the eye position.
+C   S2     -  Y value for the eye position.
+C   S3     -  Z value for the eye position.
+C   IWK    -  Work space dimensioned for at least 2*NX*NY.
+C 
+C  
+      dimension x(nx),y(ny),z(nx,ny),iwk(*)
+      integer wkid
+      dimension S(6)
+c
+c  Find the extreme values.
+c
+      xmx =  x(1)
+      ymn =  y(1)
+      ymx =  y(1)
+      zmn =  z(1,1)
+      zmx =  z(1,1)
+
+      do 10 i=2,nx
+        xmn = min(xmn,x(i))
+        xmx = max(xmx,x(i))
+   10 continue
+
+      do 11 i=1,ny
+        ymn = min(ymn,y(i))
+        ymx = max(ymx,y(i))
+   11 continue
+
+      do 12 i=1,nx
+        do 13 j=1,ny
+          zmn = min(zmn,z(i,j))
+          zmx = max(zmx,z(i,j))
+   13   continue
+   12 continue
+
+      if (s1.eq.0. .and. s2.eq.0. .and. s3.eq.0.) then
+        st1 = -3.
+        st2 = -1.5
+        st3 = 0.75
+      else
+        st1 = s1
+        st2 = s2
+        st3 = s3
+      endif
+      s(1) = 5.*st1*(xmx-xmn)
+      s(2) = 5.*st2*(ymx-ymn)
+      s(3) = 5.*st3*(zmx-zmn)
+      s(4) = 0.5*(xmx-xmn)
+      s(5) = 0.5*(ymx-ymn)
+      s(6) = 0.5*(zmx-zmn)
+C
+C Set foreground/background colors
+C
+      call gscr(wkid, 0, 1.00, 1.00, 1.00)
+      call gscr(wkid, 1, 0.00, 0.00, 0.00)
+
+      call srface (x,y,z,iwk,nx,nx,ny,s,0.)
+
+      return
+      end

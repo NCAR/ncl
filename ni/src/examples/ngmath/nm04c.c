@@ -1,5 +1,5 @@
 /*
- *      $Id: nm04c.c,v 1.3 1997-12-17 16:14:12 haley Exp $
+ *      $Id: nm04c.c,v 1.4 1997-12-23 16:01:08 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -73,7 +73,7 @@ main()
 /*
  *  Interpolate.
  */
-  output = c_dsgrid3s(NUM, xi, yi, zi, u, NX, NY, NZ, xo, yo, zo, &ier);
+  output = c_dsgrid3s(NUM, zi, yi, xi, u, NZ, NY, NX, zo, yo, xo, &ier);
   if (ier != 0) {
     printf(" Error %d returned from nm04c\n",ier);
     exit(1);
@@ -199,7 +199,7 @@ void drwtd3(int gkswid, int nx, int ny, int nz, float *x, float *y, float *z,
  *           
  */
     int   i, j, k;
-    float ang1=-35., ang2=25., rmul=2.9, shde=0.1, shdr=0.8, *fu;
+    float ang1=-35., ang2=25., rmul=2.9, shde=0.1, shdr=0.8;
     float xmin, xmax, ymin, ymax, zmin, zmax, xrng, yrng, zrng,
           xmid, ymid, zmid;
     float p, q, r, xsl, ysl, zsl, xeye, yeye, zeye;
@@ -318,20 +318,6 @@ void drwtd3(int gkswid, int nx, int ny, int nz, float *x, float *y, float *z,
       gset_colr_rep(gkswid,i+192,&colval);
     }
  
-/*
- *  Rearrange the array, since Tdpack expects an array ordered as 
- *  per Fortran.
- */
-    fu = (float *) calloc(nx*ny*nz, sizeof(float));
-  
-    for (i = 0 ; i < nx ; i++) {
-      for (j = 0 ; j < ny ; j++) {
-        for (k = 0 ; k < nz ; k++) {
-          fu[ny*nx*k + nx*j + i] = u[nz*ny*i + nz*j + k];
-        }
-      }
-    }
-
     xsl = 0.05*xrng;
     ysl = 0.05*yrng;
     zsl = 0.00*zrng;
@@ -348,14 +334,12 @@ void drwtd3(int gkswid, int nx, int ny, int nz, float *x, float *y, float *z,
  *  Create the triangle list representing an isosurface.
  */
     ntri = 0;
-    c_tditri(x, nx, y, ny, z, nz, fu, nx, ny, value, 
+    c_tditri(x, nx, y, ny, z, nz, u, nx, ny, value, 
              &rtri[0][0], MTRI, &ntri, style);
     if (ntri == MTRI) {
       printf("Triangle list overflow in c_tdstri\n");
       exit(1);
     }
-    free(fu);
-
 
 /*
  *  Determine a default eye position if none is specified.
