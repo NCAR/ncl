@@ -16,6 +16,181 @@
 
 extern float powf(float,float);
 
+extern void NGCALLF(chkerr,CHKERR)(char *,char *,int *,int *,int *,int
+*,int,int);
+
+extern void NGCALLF(divec,DIVEC)(int *,int *,int *,int *,float *,int
+*,int *,float *,float *, int *,int *,float *,int *,float *,int *,int
+*);
+
+extern void NGCALLF(divgc,DIVGC)(int *,int *,int *,int *,float *,int
+*,int *,float *,float *, int *,int *,float *,int *,float *,int *,int
+*);
+
+extern void NGCALLF(geomat,GEOMAT)(int *,int *,float *,float *);
+
+extern void NGCALLF(geomatv,GEOMATV)(int *,int *,float *,float *,float *);
+
+extern void NGCALLF(geoscl,GEOSCL)(int *,int *,int *,float *,float *,int *);
+
+extern void NGCALLF(gradec,GRADEC)(int *,int *,int *,int *,float
+*,float *, int *,int *,float *,float *,int *,int *,float *,int *,
+float *,int *,int *);
+
+extern void NGCALLF(gradgc,GRADGC)(int *,int *,int *,int *,float
+*,float *, int *,int *,float *,float *,int *,int *,float *,int *,
+float *,int *,int *);
+
+extern void NGCALLF(idivec,IDIVEC)(int *,int *,int *,int *,float
+*,float *, int *,int *,float *,float *,int *,int *,float *,int *,
+float *,int *,float *,int *);
+
+extern void NGCALLF(idivgc,IDIVGC)(int *,int *,int *,int *,float
+*,float *, int *,int *,float *,float *,int *,int *,float *,int *,
+float *,int *,float *,int *);
+
+extern void NGCALLF(idvtec,IDVTEC)(int *,int *,int *,int *,float
+*,float *,int *,int *, float *,float *,float *,float *,int *,int
+*,float *,int *, float *,int *,float *,float *,int *);
+
+extern void NGCALLF(idvtgc,IDVTGC)(int *,int *,int *,int *,float
+*,float *,int *,int *, float *,float *,float *,float *,int *,int
+*,float *,int *,float *,int *,float *,float *,int *);
+
+extern void NGCALLF(igradec,IGRADEC)(int *,int *,int *,int *,float
+*,int *,int *,float *,float *, int *,int *,float *,int *,float *,int
+*,int *);
+
+extern void NGCALLF(igradgc,IGRADGC)(int *,int *,int *,int *,float
+*,int *,int *,float *,float *, int *,int *,float *,int *,float *,int
+*,int *);
+
+extern void NGCALLF(islapec,ISLAPEC)(int *,int *,int *,int *,float
+*,float *, int *,int *,float *,float *,int *,int *,float *,int *,
+float *,int *,float *,int *);
+
+extern void NGCALLF(islapgc,ISLAPGC)(int *,int *,int *,int
+*,float *,float *, int *,int *,float *,float *,int *,int *,float
+*,int *, float *,int *,float *,int *);
+
+extern void NGCALLF(ivlapec,IVLAPEC)(int *,int *,int *,int *,float
+*,float *, int *,int *,float *,float *,float *,float *,int *,int *,
+float *,int *,float *,int *,int *);
+
+extern void NGCALLF(ivlapgc,IVLAPGC)(int *,int *,int *,int *,float
+*,float *, int *,int *,float *,float *,float *,float *,int *,int *,
+float *,int *,float *,int *,int *);
+
+extern void NGCALLF(ivrtec,IVRTEC)(int *,int *,int *,int *,float
+*,float *, int *,int *,float *,float *,int *,int *, float *,int
+*,float *,int *,float *,int *);
+
+extern void NGCALLF(ivrtgc,IVRTGC)(int *,int *,int *,int *,float
+*,float *, int *,int *,float *,float *,int *,int *, float *,int
+*,float *,int *,float *,int *);
+
+extern void NGCALLF(matgeo,MATGEO)(int *,int *,float *,float *);
+
+extern void NGCALLF(matgeov,MATGEOV)(int *,int *,float *,float *,float *);
+
+extern void NGCALLF(sfvpec,SFVPEC)(int *,int *,int *,int *,float
+*,float *, int *,int *,float *,float *,float *,float *,int *,int *,
+float *,int *,float *,int *,int *);
+
+extern void NGCALLF(sfvpgc,SFVPGC)(int *,int *,int *,int *,float
+*,float *, int *,int *,float *,float *,float *,float *,int *,int *,
+float *,int *,float *,int *,int *);
+
+extern void NGCALLF(shaec,SHAEC)(int *,int *,int *,int *,float *,int
+*,int *,float *,float *,int *,int *,float *,int *,float *,int *,int *);
+
+extern void NGCALLF(shaeci,SHAECI)(int *,int *,float *,int *,double
+*,int *,int *);
+
+extern void NGCALLF(shagc,SHAGC)(int *,int *,int *,int *,float *,int
+*,int *, float *,float *,int *,int *,float *,int *,float *,int *,int
+*);
+extern void NGCALLF(shagci,SHAGCI)(int *,int *,float *,int *,double
+*,int *,int *);
+
+extern void NGCALLF(shsec,SHSEC)(int *,int *,int *,int *,float *,int
+*,int *,float *,float *, int *,int *,float *,int *,float *,int *,int
+*);
+
+extern void NGCALLF(shseci,SHSECI)(int *,int *,float *,int *,double
+*,int *,int *);
+
+extern void NGCALLF(shsgci,SHSGCI)(int *,int *,float *,int *,double
+*,int *,int *);
+
+extern void NGCALLF(shsgc,SHSGC)(int *,int *,int *,int *,float *,int
+*,int *,float *,float *,int *,int *,float *,int *,float *,int *,int
+*);
+
+extern void NGCALLF(slapec,SLAPEC)(int *,int *,int *,int
+*,float *,int *,int *,float *,float *, int *,int *,float *,int
+*,float *,int *,int *);
+
+extern void NGCALLF(slapgc,SLAPGC)(int *,int *,int *,int
+*,float *,int *,int *,float *,float *, int *,int *,float *,int
+*,float *,int *,int *);
+
+extern void NGCALLF(vhaec,VHAEC)(int *,int *,int *,int *,float *,float
+*, int *,int *,float *,float *,float *,float *,int *,int *,float *,int
+*, float *,int *,int *);
+
+extern void NGCALLF(vhaeci,VHAECI)(int *,int *,float *,int *,double
+*,int *,int *);
+
+extern void NGCALLF(vhagc,VHAGC)(int *,int *,int *,int *,float *,float
+*, int *,int *,float *,float *,float *,float *,int *,int *,float *,int
+*, float *,int *,int *);
+
+extern void NGCALLF(vhagci,VHAGCI)(int *,int *,float *,int *,double
+*,int *,int *);
+
+extern void NGCALLF(vhsec,VHSEC)(int *,int *,int *,int *,float *,float
+*, int *,int *,float *,float *,float *,float *,int *,int *, float
+*,int *,float *,int *,int *);
+
+extern void NGCALLF(vhseci,VHSECI)(int *,int *,float *,int *,double
+*,int *,int *);
+
+extern void NGCALLF(vhsgc,VHSGC)(int *,int *,int *,int *,float *,float
+*, int *,int *,float *,float *,float *,float *,int *,int *, float
+*,int *,float *,int *,int *);
+
+extern void NGCALLF(vhsgci,VHSGCI)(int *,int *,float *,int *,double
+*,int *,int *);
+
+extern void NGCALLF(vlapec,VLAPEC)(int *,int *,int *,int *,float
+*,float *, int *,int *,float *,float *,float *,float *,int *,int
+*,float *,int *, float *,int *,int *);
+
+extern void NGCALLF(vlapgc,VLAPGC)(int *,int *,int *,int *,float
+*,float *, int *,int *,float *,float *,float *,float *,int *,int *,
+float *,int *,float *,int *,int *);
+
+extern void NGCALLF(vrtec,VRTEC)(int *,int *,int *,int *,float *,int
+*,int *,float *,float *, int *,int *,float *,int *,float *,int *,int *);
+
+extern void NGCALLF(vrtgc,VRTGC)(int *,int *,int *,int *,float *,int
+*,int *,float *,float *, int *,int *,float *,int *,float *,int *,int
+*);
+extern void NGCALLF(vtsec,VTSEC)(int *,int *,int *,int *,float *,float
+*,int *,int *,float *,float *,float *,float *,int *,int *,float *,int *,
+float *,int *,int *);
+
+extern void NGCALLF(vtseci,VTSECI)(int *,int *,float *,int *,double
+*,int *,int *);
+
+extern void NGCALLF(vtsgc,VTSGC)(int *,int *,int *,int *,float *,float
+*,int *,int *, float *,float *,float *,float *,int *,int *,float *,int
+*, float *,int *,int *);
+
+extern void NGCALLF(vtsgci,VTSGCI)(int *,int *,float *,int *,double
+*,int *,int *);
+
 NhlErrorTypes dv2uvf_W( void )
 {
 /*
@@ -8731,8 +8906,8 @@ NhlErrorTypes vrdv2uvf_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(matgeo,MATGEO)(&nlat,&nlon,&dv[j],work);	
-    NGCALLF(matgeo,MATGEO)(&nlat,&nlon,&vr[j],work);	
+    NGCALLF(matgeo,MATGEO)(&nlat,&nlon,&dv[j],work);
+    NGCALLF(matgeo,MATGEO)(&nlat,&nlon,&vr[j],work);
     NGCALLF(matgeov,MATGEOV)(&nlat,&nlon,&u[j],&v[j],work);
     j += nlat*nlon;
   }
@@ -8988,8 +9163,8 @@ NhlErrorTypes vrdv2uvg_W( void )
   }
   j = 0;
   for( i = 0; i < nt; i++ ) {
-    NGCALLF(matgeo,MATGEO)(&nlat,&nlon,&dv[j],work);	
-    NGCALLF(matgeo,MATGEO)(&nlat,&nlon,&vr[j],work);	
+    NGCALLF(matgeo,MATGEO)(&nlat,&nlon,&dv[j],work);
+    NGCALLF(matgeo,MATGEO)(&nlat,&nlon,&vr[j],work);
     NGCALLF(matgeov,MATGEOV)(&nlat,&nlon,&u[j],&v[j],work);
     j += nlat*nlon;
   }
@@ -11109,5 +11284,6 @@ NhlErrorTypes shagC_W( void )
   dsizes_ab[ndims_ab-1] = mdab;
   return(NclReturnValue((void*)ab,ndims_ab,dsizes_ab,NULL,NCL_float,0));
 }
+
 
 
