@@ -1,3 +1,6 @@
+/*
+ *	$Id: main.c,v 1.3 1991-01-08 12:22:33 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1990                         *
@@ -58,6 +61,7 @@ static	struct	{
 	IntType_	movie;		/* movie or batch mode		*/
 	BoolType_       soft_fill;	/* software fill of polygons	*/
 	BoolType_       debug;		/* software fill of polygons	*/
+	BoolType_       bell_off;	/* turn off the bell		*/
 	FloatType_ 	min_line_width;	/* minimum line width		*/
 	FloatType_ 	max_line_width;	/* maximun line width		*/
 	FloatType_ 	line_scale;	/* additional line scaling	*/
@@ -70,9 +74,10 @@ static	OptDescRec	set_options[] = {
 	{"movie", OptSepArg, "-1"},	
         {"softfill", OptIsArg, "false"},
         {"Debug", OptIsArg, "false"},
-	{"lmin", OptSepArg, "1"},	
-	{"lmax", OptSepArg, "1"},	
-	{"lscale", OptSepArg, "1"},	
+        {"bell", OptIsArg, "false"},
+	{"lmin", OptSepArg, "-1"},	
+	{"lmax", OptSepArg, "-1"},	
+	{"lscale", OptSepArg, "-1"},	
 	{NULL},	
 	};
 
@@ -87,6 +92,8 @@ static	Option	get_options[] = {
 							sizeof (BoolType_ )},
         {"Debug", BoolType, (unsigned long) &commLineOpt.debug, 
 							sizeof (BoolType_ )},
+        {"bell", BoolType, (unsigned long) &commLineOpt.bell_off, 
+							sizeof (BoolType_ )},
         {"lmin", FloatType, (unsigned long) &commLineOpt.min_line_width, 
 							sizeof (FloatType_ )},
         {"lmax", FloatType, (unsigned long) &commLineOpt.max_line_width, 
@@ -98,6 +105,7 @@ static	Option	get_options[] = {
 
 extern	boolean *softFill;
 extern	boolean *deBug;
+extern	boolean *bellOff;
 	
 main(argc,argv)
 int	argc;
@@ -120,7 +128,8 @@ char	**argv;
 					/*
 					 * list of metafiles to process
 					 */
-	char	**meta_files = (char **) malloc ((argc * sizeof(char *)) + 1);
+	char	**meta_files = (char **) 
+			malloc ((unsigned) ((argc * sizeof(char *)) + 1));
 	int	i,j;
 
 	/* put the program name in a global variable */
@@ -138,6 +147,7 @@ char	**argv;
 	 */
 	softFill = &commLineOpt.soft_fill;
 	deBug = &commLineOpt.debug;
+	bellOff = &commLineOpt.bell_off;
 	parseOptionTable(&argc, argv, set_options);
 
 	/*
@@ -151,9 +161,12 @@ char	**argv;
 	/*
 	 * set line scaling options
 	 */
-	SetMinLineWidthDefault(commLineOpt.min_line_width);
-	SetMaxLineWidthDefault(commLineOpt.max_line_width);
-	SetAdditionalLineScale(commLineOpt.line_scale);
+	if (commLineOpt.min_line_width > -1) 
+		SetMinLineWidthDefault(commLineOpt.min_line_width);
+	if (commLineOpt.max_line_width > -1) 
+		SetMaxLineWidthDefault(commLineOpt.max_line_width);
+	if (commLineOpt.line_scale > -1) 
+		SetAdditionalLineScale(commLineOpt.line_scale);
 
         /*
 	 *	If a device was given on command line build the full path

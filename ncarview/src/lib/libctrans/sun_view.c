@@ -1,3 +1,6 @@
+/*
+ *	$Id: sun_view.c,v 1.3 1991-01-08 12:23:25 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1990                         *
@@ -40,6 +43,7 @@ extern	boolean	deviceIsInit;
 extern	boolean	Batch;
 extern	char	*program_name;
 extern	boolean	*softFill;
+extern	boolean	*bellOff;
 
 /*
  *	command line options supported by sunview driver
@@ -133,7 +137,7 @@ CGMC *c;
 			return(DIE);
 		}
 
-		frame = window_create(NULL, FRAME, 
+		frame = window_create((Window) NULL, FRAME, 
 				FRAME_LABEL,	program_name,
 				FRAME_NO_CONFIRM,	TRUE,
 				WIN_WIDTH,	dev.width,
@@ -371,7 +375,8 @@ CGMC *c;
 	 *	Beep & wait for the user to press mouse button 1,
 	 *	space bar, return or quit.
 	 */
-	window_bell(frame);
+	if (! *bellOff) window_bell(frame);
+
 	while(!nextFrame) {
 		(void) notify_dispatch();
 	}

@@ -1,3 +1,6 @@
+/*
+ *	$Id: sunraster.c,v 1.3 1991-01-08 12:23:29 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1990                         *
@@ -40,6 +43,7 @@ extern	boolean	deviceIsInit;
 extern	boolean	Batch;
 extern	char	*program_name;
 extern	boolean	*softFill;
+extern	boolean	*bellOff;
 
 #define	DEFAULT_WIDTH	1152	/* default raster width		*/
 #define	DEFAULT_HEIGHT	900	/* default raster height	*/
@@ -254,7 +258,7 @@ CGMC *c;
 	/*
 	 * ring the bell
 	 */
-	(void) fprintf(stderr, "");
+	if (! *bellOff) (void) fprintf(stderr, "");
 
 	/*
 	 * copy color map into the colormap_t structure

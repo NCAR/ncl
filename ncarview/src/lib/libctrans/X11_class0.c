@@ -1,3 +1,6 @@
+/*
+ *	$Id: X11_class0.c,v 1.2 1991-01-08 12:23:20 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1990                         *
@@ -54,6 +57,7 @@ extern	char	**Argv;
 extern	int	Argc;
 extern	boolean	Color_ava;
 extern	boolean	*softFill;
+extern	boolean	*bellOff;
 
 extern	Ct_err	init_color();
 extern	Ct_err	init_polygon();
@@ -139,6 +143,7 @@ CGMC *c;
 	if (deviceIsInit) {
 		(void) X11_EndMF(c);
 	}
+
 
 	/*
 	 *	in stand_alone mode the X driver is responcible for
@@ -390,9 +395,9 @@ CGMC *c;
 		}
 
 	}	/* if stand_Alone	*/
+	
+
 	return(OK);
-
-
 }
 
 /*ARGSUSED*/
@@ -556,7 +561,8 @@ CGMC *c;
 	/*
 	 *	if not interactive don't perform any user interaction
 	 */
-	XBell(dpy, 0);
+	if (! *bellOff) XBell(dpy, 0);
+
 	if (Batch) {
 		XFlush(dpy);
 		return(OK);

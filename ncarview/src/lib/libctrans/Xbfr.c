@@ -1,3 +1,6 @@
+/*
+ *	$Id: Xbfr.c,v 1.2 1991-01-08 12:23:23 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1990                         *
@@ -48,6 +51,7 @@ extern	boolean	Batch;
 extern	char	*program_name;
 extern	Colormap	Cmap;
 extern	boolean	*softFill;
+extern	boolean	*bellOff;
 
 extern	Ct_err	init_color();
 extern	Ct_err	init_polygon();
@@ -322,7 +326,7 @@ CGMC *c;
 			(unsigned) xsh.width, (unsigned) xsh.height, 
 			Cmap, visual, ZPixmap, stdout);
 
-	XBell(dpy, 0);
+	if (! *bellOff) XBell(dpy, 0);
 	return(OK);
 
 }
