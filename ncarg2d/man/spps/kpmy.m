@@ -5,6 +5,8 @@ KPMY - Converts from plotter address unit coordinates to metacode coordinates
 .na
 .nh
 .SH NAME
+spps_converters - A set of functions which transform coordinates
+between the various NCAR Graphics coordinate systems.  The full list is:
 CFUX, CFUY, CMFX, CMFY, CMUX, CMUY, CPFX, CPFY, CPUX, CPUY, CUFX, CUFY,
 KFMX, KFMY, KFPX, KFPY, KMPX, KMPY, KPMX, KPMY, KUMX, KUMY, KUPX, KUPY
 .SH STATUS
