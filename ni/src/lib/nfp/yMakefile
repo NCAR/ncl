@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.54 2001-09-28 17:21:06 haley Exp $
+#      $Id: yMakefile,v 1.55 2001-09-28 20:32:25 haley Exp $
 #
 #########################################################################
 #									#
@@ -28,7 +28,7 @@ EXFOBJS = d1mach_sun.o
 
 HDRS = wrapper.h
 
-CSRCS = areavolW.c betaincW.c bytesW.o calcorcW.c chiinvW.c conformW.c \
+CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c chiinvW.c conformW.c \
 	csagridW.c cssgridW.c cz2ccmW.c datesW.c drwvctc.c dsgridW.c \
 	dtrendW.c eofW.c extaperW.c ezfftW.c finitediffW.c filterxW.c \
 	fitgridW.c fluxEddyW.c fourinfoW.c gausW.c gtripleW.c hydroW.c \
