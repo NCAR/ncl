@@ -210,9 +210,20 @@ int **
 #endif
 );	
 
+typedef void (*GribGetGridAtts)(
+#if NhlNeedProto
+GribParamList*,
+GribAttInqRecList ** /*lat_att_list*/,
+int * /*nlatatts*/,
+GribAttInqRecList ** /*lon_att_list*/,
+int * /*lonatts*/
+#endif
+);
+
 typedef struct gridinfo {
 	GribUnPackData un_pack;
 	GribGetGrid get_grid;
+	GribGetGridAtts get_grid_atts;
 	char *grid_name;
 }GridInfoRecord;
 

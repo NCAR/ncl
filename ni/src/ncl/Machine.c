@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.44 1996-01-31 23:53:32 ethan Exp $
+ *      $Id: Machine.c,v 1.45 1996-03-30 00:24:32 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1914,7 +1914,7 @@ void _NclRemapParameters
 	int coord_ids[NCL_MAX_DIMENSIONS];
 	NclAtt tmp_att = NULL;
 	NclVar tmp_coord_var = NULL;
-	NclMultiDValData tmp_md,tmp2_md;
+	NclMultiDValData tmp_md,tmp2_md,tmp3_md;
 	int tmp_elem = 0;
 	char *step = NULL;
 	NclSelectionRecord tmp_selection;
@@ -2335,7 +2335,11 @@ if(the_list != NULL) {
 							NULL,
 							TEMPORARY
 							);
+						if((the_list->the_elements[i].var_ptr != NULL)&&(tmp_var1->obj.id != the_list->the_elements[i].var_ptr->obj.id)) {
+							_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
+						}
 						_NclDestroyObj((NclObj)tmp_var1);
+					
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
 						check_ret_status = 0;
 						
@@ -2365,10 +2369,16 @@ if(the_list != NULL) {
 							NULL,
 							TEMPORARY
 							);
+						if((the_list->the_elements[i].var_ptr != NULL)&&(tmp_var1->obj.id != the_list->the_elements[i].var_ptr->obj.id)) {
+							_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
+						}
 						_NclDestroyObj((NclObj)tmp_var1);
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
 						check_ret_status = 0;
 				} else {
+					if((the_list->the_elements[i].var_ptr != NULL)&&(data.u.data_var->obj.id != the_list->the_elements[i].var_ptr->obj.id)) {
+						_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
+					}
 					_NclDestroyObj((NclObj)data.u.data_var);
 				}
 			}
@@ -2385,13 +2395,14 @@ if(the_list != NULL) {
 /* data better be a variable otherwise something is majorly hosed */
 /* Here the object is available to be forced into a temporary variable */
 						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
+						tmp3_md = (NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id);
 						tmp_var = _NclVarNclCreate(
 							NULL,
 							tmp_var1->obj.class_ptr,
 							tmp_var1->obj.obj_type,
 							tmp_var1->obj.obj_type_mask,
 							NULL,
-							(NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),
+							(NclMultiDValData)tmp3_md,
 							tmp_var1->var.dim_info,
 							tmp_var1->var.att_id,
 							tmp_var1->var.coord_vars,
@@ -2415,13 +2426,14 @@ if(the_list != NULL) {
 								coord_ids[j] = -1;
 							}
 						}
+						tmp3_md = (NclMultiDValData)_NclCopyVal((NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),NULL);
 						tmp_var = _NclVarNclCreate(
 							NULL,
 							tmp_var1->obj.class_ptr,
 							tmp_var1->obj.obj_type,
 							tmp_var1->obj.obj_type_mask,
 							NULL,
-							_NclCopyVal((NclMultiDValData)_NclGetObj(tmp_var1->var.thevalue_id),NULL),
+							tmp3_md,
 							tmp_var1->var.dim_info,
 							(tmp_att == NULL ? -1:tmp_att->obj.id),
 							coord_ids,

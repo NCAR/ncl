@@ -217,6 +217,8 @@ FILE    *fp;
 	int i,j;
 	NclFileAttInfoList* step;
 	int ret = 0;
+	NclMultiDValData tmp_md;
+	NhlErrorTypes ret1 = NhlNOERROR;
 
 	
 
@@ -228,36 +230,52 @@ FILE    *fp;
 	if(ret < 0) {	
 		return(NhlWARNING);
 	}
-	ret = nclfprintf(fp,"\tfile global attributes:\n");
+	ret = nclfprintf(fp,"   file global attributes:\n");
 	if(ret < 0) {	
 		return(NhlWARNING);
 	}
 	for(i = 0; i < thefile->file.n_file_atts; i++) {
 		if(thefile->file.file_atts[i] != NULL) {
-			ret = nclfprintf(fp,"\t\t%s\n",NrmQuarkToString(thefile->file.file_atts[i]->att_name_quark));
+			ret = nclfprintf(fp,"      %s : ",NrmQuarkToString(thefile->file.file_atts[i]->att_name_quark));
 			if(ret < 0) {	
 				return(NhlWARNING);
 			}
+			if(thefile->file.file_atts[i]->num_elements == 1) {
+				tmp_md = _NclFileReadAtt(thefile,thefile->file.file_atts[i]->att_name_quark,NULL);
+				ret1 = _Nclprint(tmp_md->multidval.type,fp,tmp_md->multidval.val);
+				if(ret < NhlINFO) {	
+					return(NhlWARNING);
+				}
+				ret = nclfprintf(fp,"\n");
+				if(ret < 0) {	
+					return(NhlWARNING);
+				}
+			} else {
+				ret1 = nclfprintf(fp,"<ARRAY>\n");
+				if(ret1 < NhlINFO) {	
+					return(NhlWARNING);
+				}
+			}
 		}
 	}
-	ret = nclfprintf(fp,"\tdimensions:\n");
+	ret = nclfprintf(fp,"   dimensions:\n");
 	if(ret < 0) {	
 		return(NhlWARNING);
 	}
 	for(i = 0; i< thefile->file.n_file_dims; i++) {
-		ret = nclfprintf(fp,"\t\t%s = %ld\n",NrmQuarkToString(thefile->file.file_dim_info[i]->dim_name_quark),	
+		ret = nclfprintf(fp,"      %s = %ld\n",NrmQuarkToString(thefile->file.file_dim_info[i]->dim_name_quark),	
 			thefile->file.file_dim_info[i]->dim_size);
 		if(ret < 0) {	
 			return(NhlWARNING);
 		}
 	}
-	ret = nclfprintf(fp,"\tvariables:\n");
+	ret = nclfprintf(fp,"   variables:\n");
 	if(ret < 0) {	
 		return(NhlWARNING);
 	}
 	for(i = 0; i < thefile->file.n_vars; i++) {
 		if(thefile->file.var_info[i] != NULL) {
-			ret = nclfprintf(fp,"\t\t%s %s ( ",_NclBasicDataTypeToName(thefile->file.var_info[i]->data_type),NrmQuarkToString(thefile->file.var_info[i]->var_name_quark));
+			ret = nclfprintf(fp,"      %s %s ( ",_NclBasicDataTypeToName(thefile->file.var_info[i]->data_type),NrmQuarkToString(thefile->file.var_info[i]->var_name_quark));
 			if(ret < 0) {	
 				return(NhlWARNING);
 			}
@@ -273,11 +291,31 @@ FILE    *fp;
 			}
 			step = thefile->file.var_att_info[i];
 			while(step != NULL) {
-				ret = nclfprintf(fp,"\t\t\t%s\n", NrmQuarkToString(step->the_att->att_name_quark));
+				ret = nclfprintf(fp,"         %s :\t", NrmQuarkToString(step->the_att->att_name_quark));
 				if(ret < 0) {	
 					return(NhlWARNING);
 				}
+				if(step->the_att->num_elements == 1) {
+					tmp_md = _NclFileReadVarAtt(thefile,thefile->file.var_info[i]->var_name_quark,step->the_att->att_name_quark,NULL);
+					ret1 = _Nclprint(tmp_md->multidval.type,fp,tmp_md->multidval.val);
+					if(ret1 < NhlINFO) {	
+						return(NhlWARNING);
+					}
+					ret = nclfprintf(fp,"\n");
+					if(ret < 0) {	
+						return(NhlWARNING);
+					}
+				} else {
+					ret = nclfprintf(fp,"<ARRAY>\n");
+					if(ret < 0) {	
+						return(NhlWARNING);
+					}
+				}
 				step = step->next;
+			}
+			ret = nclfprintf(fp,"\n");
+			if(ret < 0) {	
+				return(NhlWARNING);
 			}
 		}
 	}

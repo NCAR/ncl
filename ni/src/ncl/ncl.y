@@ -25,7 +25,7 @@ extern int cmd_line;
 extern int cur_line_length;
 extern int cur_line_number;
 extern int last_line_length;
-extern char cur_line_text[];
+extern char *cur_line_text;
 extern int ok_to_start_vsblk;
 #define ERROR(x)  NhlPError(NhlFATAL,NhlEUNKNOWN,"%s",(x))
 int is_error = 0;
@@ -1830,7 +1830,7 @@ yyerror
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near \\n \n%s\n",s,cur_line_number,error_buffer);
 			} 
 		} else {
-			sprintf(error_buffer,"%s\n",cur_line_text);
+			sprintf((char*)&(error_buffer[0]),"%s\n",cur_line_text);
 			len = strlen(error_buffer);
 			for(i=0; i<cur_line_length-1;i++) sprintf(&(error_buffer[len+i]),"-");
 			sprintf(&(error_buffer[len+cur_line_length-1]),"^\n");

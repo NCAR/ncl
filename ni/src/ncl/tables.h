@@ -384,32 +384,65 @@ TBLE2 params_ecmwf[] = {
 {"185","Cloud Cover","(0 - 1)","T_CDC"}
 };
 
-int level_index[] = { 100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,121,125,128,141,160,200,201};
+int level_index[] = { 100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,119,120,121,125,128,141,160,200,201};
 
 char *level_str[] = {
-        "lv_isobaric", 	/*100*/
-        "lv_between_iso", 	/*101*/
-        "lv_mean_sea", 	/*102*/
-        "lv_fixed_height",	/*103*/
-        "lv_between_fix_height",	/*104*/
-        "lv_fixed_height_agl_m",	/*105*/
-        "lv_between_fix_height_agl_m",/*106*/
-	"lv_sigma",		/*107*/
-	"lv_between_sigma",	/*108*/
-	"lv_hybrid",		/*109*/
-	"lv_between_hybrid",/*110*/
-	"lv_depth_below_land",	/*111*/
-	"lv_between_depth_below_land", /*112*/
-	"lv_isentropic",	/*113*/
-	"lv_between_isentropic", /*114*/
-	"lv_press_diff_from_gl",	/*115*/
-	"lv_between_press_diff_from_gl", /*116*/
-	"lv_between_iso", 	/*121*/
-	"lv_height_agl_cm",	/*125*/
-	"lv_between_sigma", /*128*/
-	"lv_between_iso_surfaces", /*141*/
-	"lv_depth_below_sea",	/*160*/
-	"lv_entire_atmosphere",	/*200*/
-	"lv_entire_ocean",		/*201*/
+        "lv_ISBL", 	/*100*/
+        "lv_ISBY", 	/*101*/
+        "lv_MSL", 	/*102*/
+        "lv_GPML",	/*103*/
+        "lv_GPMY",	/*104*/
+        "lv_HTGL",	/*105*/
+        "lv_HTGY",/*106*/
+	"lv_SIGL",		/*107*/
+	"lv_SIGY",	/*108*/
+	"lv_HYBL",		/*109*/
+	"lv_HYBY",/*110*/
+	"lv_DBLL",	/*111*/
+	"lv_DBLY", /*112*/
+	"lv_THEL",	/*113*/
+	"lv_THEY", /*114*/
+	"lv_SPDL",	/*115*/
+	"lv_SPDY", /*116*/
+	"lv_PVL", /*117*/
+	"lv_ETAL", /*119*/
+	"lv_ETAY", /*120*/
+	"lv_IBYH", 	/*121*/
+	"lv_HGLH",	/*125*/
+	"lv_SGYH", /*128*/
+	"lv_IBYM", /*141*/
+	"lv_DBSL",	/*160*/
+	"lv_EATM",	/*200*/
+	"lv_EOCN",		/*201*/
+};
+
+char *level_str_long_name[] = {
+	"isobaric level",	/*100*/
+	"layer between tow isobaric levels",	/*101*/
+	"mean sea level",	/*102*/
+	"fixed height level",	/*103*/
+	"layer between two height levels above msl",	/*104*/
+	"fixed height above ground",	/*105*/
+	"layer between two height levels above ground",	/*106*/
+	"sigma level",	/*107*/
+	"layer between two sigma levels",	/*108*/
+	"Hybrid level",	/*109*/
+	"layer between two hybrid levels",	/*110*/
+	"depth below land surface",	/*111*/
+	"layer between two depths below land surface",	/*112*/
+	"isentropic (theta) level",	/*113*/
+	"layer between two isentropic levels",	/*114*/
+	"level at specified pressure difference from ground to level",	/*115*/
+	"layer between two levels at specified pressure difference from ground to level",	/*116*/
+	"potential vorticity (pv) level",	/*117*/
+	"ETA level",	/*119*/
+	"layer between two ETA levels",	/*120*/
+	"layer between two isobaric surfaces (high precision)",	/*121*/
+	"height level above ground (high precision)",	/*125*/
+	"layer between two sigma levels (high precision)",	/*128*/
+	"layer between two isobaric surfaces (mixed precision)",	/*141*/
+	"depth below sea level",	/*160*/
+	"entire atmosphere considered as a single layer",	/*200*/
+	"entire ocean considered as a single layer"	/*201*/
 };
 	

@@ -46,12 +46,14 @@ NclQuark name_q;
 
 static void _GribAddInternalVar
 #if	NhlNeedProto
-(GribFileRecord *therec,NclQuark name_q,int *dim_numbers, NclMultiDValData tmp_md)
+(GribFileRecord *therec,NclQuark name_q,int *dim_numbers, NclMultiDValData tmp_md,GribAttInqRecList *attlist,int natts)
 #else
 (therec,dim_name_q,tmp_md)
 GribFileRecord *therec;
 NclQuark dim_name_q;
 NclMultiDValData *tmp_md;
+GribAttInqRecList *attlist;
+int natts;
 #endif
 {
 	GribInternalVarList *vstep; 
@@ -70,8 +72,8 @@ NclMultiDValData *tmp_md;
 	vstep = (GribInternalVarList*)NclMalloc(sizeof(GribInternalVarList));
 	vstep->next = therec->internal_var_list;
 	vstep->int_var = tmp;
-	vstep->int_var->n_atts = 0;
-	vstep->int_var->theatts = NULL;
+	vstep->int_var->n_atts = natts;
+	vstep->int_var->theatts = attlist;
 	therec->internal_var_list = vstep;
 	therec->n_internal_vars++;
 	return;
@@ -803,6 +805,17 @@ GribFileRecord *therec;
 	NhlErrorTypes is_err = NhlNOERROR;
 	int tmp_file_dim_numbers[2];
 	char name_buffer[80];
+	GribAttInqRecList *att_list_ptr= NULL;
+	GribAttInqRecList *tmp_att_list_ptr= NULL;
+        GribAttInqRec   *att_ptr= NULL;
+	int natts = 0;
+	NclQuark *tmp_string = NULL;
+	int tmp_dimsizes = 1;
+	int nlonatts = 0;
+	int nlatatts = 0;
+	GribAttInqRecList *lat_att_list_ptr;
+	GribAttInqRecList *lon_att_list_ptr;
+
 
 	
 	therec->total_dims = 0;
@@ -872,7 +885,7 @@ GribFileRecord *therec;
 				therec->it_dims = ptr;
 				therec->n_it_dims++;
 				step->var_info.file_dim_num[current_dim] = tmp->dim_number;
-				_GribAddInternalVar(therec,tmp->dim_name,&tmp->dim_number,(NclMultiDValData)step->yymmddhh);
+				_GribAddInternalVar(therec,tmp->dim_name,&tmp->dim_number,(NclMultiDValData)step->yymmddhh,NULL,0);
 				step->yymmddhh = NULL;
 			} else {
 				step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
@@ -926,7 +939,7 @@ GribFileRecord *therec;
 				therec->ft_dims = ptr;
 				therec->n_ft_dims++;
 				step->var_info.file_dim_num[current_dim] = tmp->dim_number;
-				_GribAddInternalVar(therec,tmp->dim_name,&tmp->dim_number,(NclMultiDValData)step->forecast_time);
+				_GribAddInternalVar(therec,tmp->dim_name,&tmp->dim_number,(NclMultiDValData)step->forecast_time,NULL,0);
 				step->forecast_time = NULL;
 			} else {
 				step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
@@ -990,7 +1003,9 @@ GribFileRecord *therec;
 				therec->lv_dims = ptr;
 				therec->n_lv_dims++;
 				step->var_info.file_dim_num[current_dim] = tmp->dim_number;
-				_GribAddInternalVar(therec,tmp->dim_name,&tmp->dim_number,(NclMultiDValData)step->levels);
+				
+
+				_GribAddInternalVar(therec,tmp->dim_name,&tmp->dim_number,(NclMultiDValData)step->levels,NULL,0);
 				step->levels = NULL;
 			} else {
 				step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
@@ -1060,9 +1075,9 @@ GribFileRecord *therec;
 				therec->n_lv_dims++;
 				step->var_info.file_dim_num[current_dim] = tmp->dim_number;
 				sprintf(name_buffer,"%s%s",buffer,"_l0");
-				_GribAddInternalVar(therec,NrmStringToQuark(name_buffer),&tmp->dim_number,(NclMultiDValData)step->levels0);
+				_GribAddInternalVar(therec,NrmStringToQuark(name_buffer),&tmp->dim_number,(NclMultiDValData)step->levels0,NULL,0);
 				sprintf(name_buffer,"%s%s",buffer,"_l1");
-				_GribAddInternalVar(therec,NrmStringToQuark(name_buffer),&tmp->dim_number,(NclMultiDValData)step->levels1);
+				_GribAddInternalVar(therec,NrmStringToQuark(name_buffer),&tmp->dim_number,(NclMultiDValData)step->levels1,NULL,0);
 				step->levels0 = NULL;
 				step->levels1 = NULL;
 			} else {
@@ -1215,6 +1230,13 @@ GribFileRecord *therec;
 */
 				if(!(step->has_gds)||(step->grid_number != 255)) {
 					(*grid[step->grid_tbl_index].get_grid)(step,&tmp_lat,&n_dims_lat,&dimsizes_lat,&tmp_lon,&n_dims_lon,&dimsizes_lon);
+					if((grid[step->grid_tbl_index].get_grid_atts) != NULL) {
+						nlonatts = 0;
+						nlatatts = 0;
+						lat_att_list_ptr = NULL;
+						lon_att_list_ptr = NULL;
+						(*grid[step->grid_tbl_index].get_grid_atts)(step,&lat_att_list_ptr,&nlatatts,&lon_att_list_ptr,&nlonatts);
+					}
 				}
 
 /*
@@ -1246,6 +1268,8 @@ GribFileRecord *therec;
 					ptr->next = therec->grid_dims;
 					therec->grid_dims = ptr;
 					therec->n_grid_dims++;
+		
+
 					_GribAddInternalVar(therec,tmp->dim_name,&tmp->dim_number,(NclMultiDValData)_NclCreateVal(
 								                                        NULL,
                                         								NULL,
@@ -1257,7 +1281,7 @@ GribFileRecord *therec;
                                         								dimsizes_lon,
                                         								TEMPORARY,
                                         								NULL,
-                                        								nclTypefloatClass));
+                                        								nclTypefloatClass),lon_att_list_ptr,nlonatts);
 					if((step->has_gds)&&(step->grid_number == 255)) {
 						sprintf(buffer,"g%d_lat_%d",step->gds_type,therec->total_dims);
 					} else {
@@ -1273,6 +1297,7 @@ GribFileRecord *therec;
 					ptr->next = therec->grid_dims;
 					therec->grid_dims = ptr;
 					therec->n_grid_dims++;
+
 					_GribAddInternalVar(therec,tmp->dim_name,&tmp->dim_number,(NclMultiDValData)_NclCreateVal(
 								                                        NULL,
                                         								NULL,
@@ -1284,7 +1309,7 @@ GribFileRecord *therec;
                                         								dimsizes_lat,
                                         								TEMPORARY,
                                         								NULL,
-                                        								nclTypefloatClass));
+                                        								nclTypefloatClass),lat_att_list_ptr,nlatatts);
 					therec->total_dims += 2;
 
 
@@ -1316,6 +1341,7 @@ GribFileRecord *therec;
 					}
 					tmp_file_dim_numbers[0] = therec->total_dims;
 					tmp_file_dim_numbers[1] = therec->total_dims+ 1;
+
 					_GribAddInternalVar(therec,NrmStringToQuark(buffer),tmp_file_dim_numbers,(NclMultiDValData)_NclCreateVal(
 								                                        NULL,
                                         								NULL,
@@ -1327,7 +1353,7 @@ GribFileRecord *therec;
                                         								dimsizes_lon,
                                         								TEMPORARY,
                                         								NULL,
-                                        								nclTypefloatClass));
+                                        								nclTypefloatClass),lon_att_list_ptr,nlonatts);
 					if((step->has_gds)&&(step->grid_number == 255)) {
 						sprintf(buffer,"g%d_x_%d",step->gds_type,therec->total_dims);
 					} else {
@@ -1347,6 +1373,7 @@ GribFileRecord *therec;
 					} else {
 						sprintf(buffer,"lat_%d",step->grid_number);
 					}
+
 					_GribAddInternalVar(therec,NrmStringToQuark(buffer),tmp_file_dim_numbers,(NclMultiDValData)_NclCreateVal(
 								                                        NULL,
                                         								NULL,
@@ -1358,7 +1385,7 @@ GribFileRecord *therec;
                                         								dimsizes_lat,
                                         								TEMPORARY,
                                         								NULL,
-                                        								nclTypefloatClass));
+                                        								nclTypefloatClass),lat_att_list_ptr,nlatatts);
 					therec->total_dims += 2;
 				} else {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Couldn't handle dimension information returned by grid decoding");
@@ -2034,8 +2061,8 @@ char *lv;
 		*l1 = (int)lv[1];
 		break;
 	case 102:
-		*l0 = 0;
-		*l1 = 0;
+		*l0 = -1;
+		*l1 = -1;
 		return(1);
 	case 103:
 		tmp.c[2] = lv[0];
@@ -2104,6 +2131,22 @@ char *lv;
 		*l1 = -1;
 		break;
 	case 116:
+		*l0 = (int)lv[0];
+		*l1 = (int)lv[1];
+		break;
+	case 117:
+		tmp.c[2] = lv[0];
+		tmp.c[3] = lv[1];
+		*l0 = tmp.ivalue;
+		*l1 = -1;
+		break;
+	case 119:
+		tmp.c[2] = lv[0];
+		tmp.c[3] = lv[1];
+		*l0 = tmp.ivalue;
+		*l1 = -1;
+		break;
+	case 120:
 		*l0 = (int)lv[0];
 		*l1 = (int)lv[1];
 		break;
@@ -2473,7 +2516,14 @@ int wr_status;
 				grib_rec->initial_time.year = (short)(((short)grib_rec->pds[24] - 1 )*100 + (short)(int)grib_rec->pds[12]);
 				grib_rec->initial_time.days_from_jan1 = JulianDayDiff(1,1,grib_rec->initial_time.year,(int)grib_rec->pds[14],(int)grib_rec->pds[13],grib_rec->initial_time.year);
         			grib_rec->initial_time.minute_of_day = (short)grib_rec->pds[15] * 60 + (short)grib_rec->pds[16];
+				if(((int)grib_rec->pds[24] < 1)|| ((int)grib_rec->pds[15] > 24)||((int)grib_rec->pds[16] > 60)||((int)grib_rec->pds[13] > 12)||((int)grib_rec->pds[12] > 100)){
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Corrupted record found. Time values out of appropriate ranges, skipping record");
+					NhlFree(grib_rec);
+					grib_rec = NULL;
 
+				}
+
+			if(grib_rec != NULL) {
 				grib_rec->time_offset = 0;
 				grib_rec->pds_size = CnvtToDecimal(3,&(grib_rec->pds[0]));
 				if(grib_rec->has_gds) {
@@ -2533,10 +2583,11 @@ int wr_status;
 				grib_rec->bds_size = CnvtToDecimal(3,tmpc);
 				read(fd,(void*)tmpc,1);
 				grib_rec->int_or_float = (int)(tmpc[0]  & (char)0040) ? 1 : 0;
+			}
 
 		
 				name_rec = NULL;	
-				if(grib_rec->param_number < 128) {	
+				if((grib_rec != NULL) &&(grib_rec->param_number < 128)) {	
 					for(i = 0; i < sizeof(params_index)/sizeof(int); i++) {
 						if(params_index[i] == grib_rec->param_number) {
 							name_rec = &(params[i]);
@@ -2548,7 +2599,7 @@ int wr_status;
 						NhlFree(grib_rec);
 						grib_rec= NULL;
 					} 
-				} else {
+				} else if(grib_rec != NULL) {
 					switch((int)grib_rec->pds[4]) {
 					case 98: 
 						for(i = 0; i < sizeof(params_ecmwf_index)/sizeof(int); i++) {
@@ -3022,16 +3073,17 @@ int *num_vars;
 	*num_vars = thefile->n_vars + thefile->n_internal_vars;
 	arout = (NclQuark*)NclMalloc((unsigned)sizeof(NclQuark)* *num_vars);
 
-	vstep = thefile->internal_var_list;
-	for(i = 0; i < thefile->n_internal_vars; i++) {
-		arout[i] = vstep->int_var->var_info.var_name_quark;
-		vstep = vstep->next;
-	}
 	
 	step = thefile->var_list;	
-	for(; i < thefile->n_vars + thefile->n_internal_vars; i++) {
+	for(i = 0; i < thefile->n_vars; i++) {
 		arout[i] = step->var_info.var_name_quark;
 		step = step->next;
+	}
+
+	vstep = thefile->internal_var_list;
+	for(; i < thefile->n_vars + thefile->n_internal_vars; i++) {
+		arout[i] = vstep->int_var->var_info.var_name_quark;
+		vstep = vstep->next;
 	}
 	return(arout);
 }

@@ -37,6 +37,13 @@ NclObj parent;
 	NclRefList * tmp = NULL;
 
 	tmp = theobj->obj.parents;
+	while(tmp != NULL) {
+		if(tmp->pptr->obj.id  == parent->obj.id) {
+			return(NhlNOERROR);
+		}
+		tmp = tmp->next;
+	}
+	tmp = theobj->obj.parents;
 	theobj->obj.parents = NclMalloc((unsigned)sizeof(NclRefList));
 	theobj->obj.parents->next = tmp;
 	theobj->obj.parents->pptr = parent;
