@@ -1,5 +1,5 @@
 /*
- *	$Id: c_epltch.c,v 1.2 1992-11-04 15:50:29 haley Exp $
+ *	$Id: c_epltch.c,v 1.3 1992-11-09 15:19:12 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -366,7 +366,7 @@ main()
         c_pcsetr ("HW",2.-1.5*(float)(i-1)/4.);
         c_plchmq (.5,ypos+.04,"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",.02,0.,0.);
         c_plchmq (.5,ypos    ,"abcdefghijklmnopqrstuvwxyz0123456789",.02,0.,0.);
-        c_plchmq (.5,ypos-.04,"!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~",.02,0.,0.);
+        c_plchmq (.5,ypos-.04,"!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~",.02,0.,0.);
     }
 /*
  * Advance the frame.
