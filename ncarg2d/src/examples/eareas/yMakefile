@@ -1,8 +1,8 @@
 #
-#	$Id: yMakefile,v 1.4 1993-11-01 17:32:32 boote Exp $
+#	$Id: yMakefile,v 1.5 1995-05-12 19:37:29 kennison Exp $
 #
 MYNAME	= eareas
 
-GENERIC_SRCS = arex01.f arex02.f
+GENERIC_SRCS = arex01.f arex02.f arex03.f
 
 InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
