@@ -1,5 +1,5 @@
 C
-C       $Id: vvectr.f,v 1.15 1998-08-25 00:26:51 dbrown Exp $
+C       $Id: vvectr.f,v 1.16 1998-08-26 19:13:56 dbrown Exp $
 C
       SUBROUTINE VVECTR (U,V,P,IAM,VVUDMV,WRK)
 C
@@ -251,6 +251,9 @@ C
          DVMN=0.0
          VMN=0.0
          VMX=0.0
+         VFR=0.0
+         DRL=0.0
+         IAV=0
          GOTO 9800
       END IF
 C
