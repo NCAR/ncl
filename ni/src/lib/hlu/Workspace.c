@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.10 1994-06-28 01:18:58 dbrown Exp $
+ *      $Id: Workspace.c,v 1.11 1994-06-28 01:23:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -852,7 +852,7 @@ void _NhlFreeWorkspace
 				e_text ="%s: error closing workspace tmpfile";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name);
-				return NhlFATAL;
+				return;
 			}
 			break;
 		default:
