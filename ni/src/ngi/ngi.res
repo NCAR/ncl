@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.8 1997-06-11 20:47:10 boote Exp $
+!      $Id: ngi.res,v 1.9 1997-06-20 18:23:20 dbrown Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -38,7 +38,7 @@ NgNGO*synchronous:	True
 
 NgNGO*loadfileMGR.pattern:	*.ncl
 NgNGO*loadfileMGR.directory:	.
-NgNGO*addfileMGR*pattern:	*.{cdf,nc,grb}
+NgNGO*addfileMGR*pattern:	*.{cdf,nc,grb,ccm}
 NgNGO*addfileMGR*directory:	.
 
 !*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
@@ -118,7 +118,9 @@ NgNGO*globalTranslations:	\
 		Meta ~Ctrl<Key>L:	loadScript()		\n\
 		 Alt ~Ctrl<Key>L:	loadScript()		\n\
 		Meta ~Ctrl<Key>N:	nclWindow()		\n\
-		 Alt ~Ctrl<Key>N:	nclWindow()
+		 Alt ~Ctrl<Key>N:	nclWindow()		\n\
+		Meta ~Ctrl<Key>D:	browseWindow()		\n\
+		 Alt ~Ctrl<Key>D:	browseWindow()
 !
 ! Menubar strings
 !
@@ -163,6 +165,9 @@ NgNGO*globalTranslations:	\
 *wmenu.nclWindow.labelString:		Ncl Editor
 *wmenu.nclWindow.mnemonic:		N
 *wmenu.nclWindow.acceleratorText:	Alt+N
+*wmenu.browseWindow.labelString:	Data Browser
+*wmenu.browseWindow.mnemonic:		D
+*wmenu.browseWindow.acceleratorText:	Alt+D
 
 !
 ! menubar geometry
@@ -414,7 +419,8 @@ addfile*Start_Stop.translations: #override \
         <Btn1Down>,<Btn1Up>: ArmAndActivate() VcrToggleAction(0)
 
 ! for development
-addfile*directory:     /traver/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf
+!addfile*directory:     /traver/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf
+!addfile*directory:     /fs/scd/home1/dbrown/src/data
 addfile*directory:     /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
 
 !*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
@@ -446,3 +452,54 @@ addfile*directory:     /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cd
 *xworkMGR.mgr.bottomOffset:		0
 *xworkMGR.mgr.leftOffset:		0
 *xworkMGR.mgr.rightOffset:		0
+
+!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!									!
+! DATA BROWSER								!
+!									!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!*browseMGR*Folder*tab.translations:  #override     \
+!	<FocusIn>:	XmLFolderPrimFocusIn() \
+!			TabFocusAction() \n\
+!	<FocusOut>:	XmLFolderPrimFocusOut()
+*browseMGR*FileTree*translations: #override \
+        <Btn3Up>:               Button3Action()
+
+*browseMGR*DataGrid*translations: #override \
+        <Key>osfDown:	XmLGridTraverse(DOWN) \
+			GridTraverseAction()
+
+! Geometry
+browse.title:				Data Browser
+*browseMGR*XmList.listSizePolicy:	CONSTANT
+*browseMGR*XmList.visibleItemCount:	4
+
+*browseMGR*XmFrame.marginWidth:	5
+*browseMGR*XmFrame.marginHeight:	5
+*browseMGR*XmFrame*childHorizontalAlignment:	ALIGNMENT_CENTER
+
+! default XmForm constraints for all widgets in the browse window
+*browseMGR*topOffset:		0
+*browseMGR*bottomOffset:	0
+*browseMGR*leftOffset:		0
+*browseMGR*rightOffset:		0
+*browseMGR*spacing: 0
+*browseMGR*vbutton*marginHeight: 0
+
+*browseMGR*pane.topOffset:		0
+*browseMGR*pane.leftOffset:		0
+*browseMGR*pane.rightOffset:		0
+*browseMGR*pane.bottomOffset:		0
+*browseMGR*pane.marginHeight:		0
+
+*browseMGR*Folder.topOffset:		5
+*browseMGR*Folder.leftOffset:		5
+*browseMGR*Folder.rightOffset:		5
+*browseMGR*Folder.bottomOffset:		5
+*browseMGR*Folder.width: 500
+*browseMGR*Folder.height: 500
+*browseMGR*topform.width: 500
+*browseMGR*topform.height: 500
