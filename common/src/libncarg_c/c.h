@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.5 1992-03-26 21:17:53 don Exp $
+ *	$Id: c.h,v 1.6 1992-03-26 22:32:58 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -48,12 +48,17 @@ extern	int	NCARGCvtToFloat();
 extern	int	NCARGCvtToChar();
 extern	int	NCARGCvtToBoolean();
 extern	int	NCARGCvtToString();
+extern	int	NCARGCvtToDimension();
 extern	int	GetOption();
 extern	int	LoadOptionTable();
 extern	int	ParseOptionTable();
 extern	void	PrintOptionHelp();
 
 typedef	unsigned int	boolean;
+
+typedef	struct	Dimension_ {
+	int	nx, ny;
+	} Dimension;
 
 #ifndef	TRUE
 #define FALSE	0

@@ -1,5 +1,5 @@
 /*
- *	$Id: options.c,v 1.6 1992-03-26 18:22:57 clyne Exp $
+ *	$Id: options.c,v 1.7 1992-03-26 22:33:02 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -142,6 +142,27 @@ int	NCARGCvtToString(from, to)
 {
 	char	**sptr	= (char **) to;
 	*sptr = from;
+}
+
+/*
+ *	NCARGCvtToDimension()
+ *
+ *	convert a ascii string to a dimension.
+ */
+int	NCARGCvtToDimension(from, to)
+	char	*from;	/* the string	*/
+	Voidptr	to;
+{
+	Dimension	*dptr	= (Dimension *) to;
+
+	if (! from) {
+		dptr->nx = dptr->ny = 0;
+	}
+	else if (sscanf(from, "%dx%d", dptr) != 2) {
+		ESprintf(EINVAL, "Convert(%s) to dimension failed", from);
+		return(-1);
+	}
+	return(1);
 }
 
 
