@@ -1,5 +1,5 @@
 ;
-;      $Id: xy02n.ncl,v 1.2 1995-02-09 23:07:17 haley Exp $
+;      $Id: xy04n.ncl,v 1.1 1995-02-09 23:07:23 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
@@ -9,7 +9,7 @@
 ;                                                                       ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-;;  File:       xy02n.ncl
+;;  File:       xy04n.ncl
 ;;
 ;;  Author:     Mary Haley
 ;;          National Center for Atmospheric Research
@@ -19,43 +19,53 @@
 ;;
 ;;  Description:    This script shows how to create an XY plot object with
 ;;                  some of the XY Plot axis resources tweaked.  A resource
-;;                  file is used to change the resources except in those
-;;                  cases where a resource has to be changed programmatically,
+;;                  file is used to changed the resources except in those
+;;                  cases where a resource has to be change programmatically,
 ;;                  like array resources.
 ;;
 ;;                  The "CoordArrays" object is used to set up the data.
 
 procedure assigndata(
-    y[*]:float,
+    y[*][*]:float,
+	ncurve:integer,
     npts:integer
 ) 
 local
     i,
     theta
 begin
-  do i = 0, npts-1
-    theta = 0.031415926535898*i
-    y(i) = 500.+.9*i*sin(theta)
+  do j = 0, ncurve-1
+    do i = 0, npts-1
+      theta = 0.031415926535898*i
+      y(j,i) = (j-1)*100.+.9*i*sin(theta)
+    end do
   end do
 end
 
 ;
-; Create variable to contain data
+; Create variables to contain data
 ;
 npts = 500
-ydra = new(npts, float)
+ncurve = 4
+ydra = new((/ncurve,npts/), float)
+colors = new(ncurve, integer)
+xydash = new(ncurve, integer)
+colors = (/50,75,100,40/)
+xydash = (/0,5,10,15/)
+explabs = new(ncurve, character)
+explabs = (/"Curve 1","Curve 2","Curve 3", "Curve 4"/)
 
 ;
 ; Initialize some data for the XY plot
 ; 
-assigndata(ydra,npts)
+assigndata(ydra,ncurve,npts)
 
 ;
 ; Create application and X workstation object.  The application name
 ; is used to determine the name of the resource file, which will be
-; "xy02.res" in this case.
+; "xy04.res" in this case.
 ; 
-appid = create "xy02" appLayerClass noparent end create
+appid = create "xy04" appLayerClass noparent end create
 
 ;
 ; Create an x workstation
@@ -70,12 +80,23 @@ dataid = create "xyData" coordArraysLayerClass noparent
 end create
 
 ;
+; Define Data Dependent resources.  Here's where you specify the arrays
+; for defining the color, label, and dash pattern of each line, 
+;
+datadepid = create "XYDep" xyDataDepLayerClass noparent
+	"dsDataItem":       dataid
+    "xyColors":         colors
+	"xyDashPatterns":   xydash
+	"xyExplicitLabels": explabs
+end create
+
+;
 ; Create the Plot object which is created as a child of the X workstation
-; object.  The resources that are being changed are done in the "xy02.res"
+; object.  The resources that are being changed are done in the "xy04.res"
 ; file, and they affect this Plot object.
 ; 
 plotid = create "xyPlot" xyPlotLayerClass xworkid
-    "xyCurveData": dataid
+    "xyCurveData": datadepid
 end create
 
 ;

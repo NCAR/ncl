@@ -1,12 +1,12 @@
 C
-C      $Id: xy01f.f,v 1.1 1995-02-09 14:57:48 haley Exp $
+C      $Id: xy01f.f,v 1.2 1995-02-09 23:07:14 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C                                                                       C
-C                Copyright (C)  1995                                    C
-C        University Corporation for Atmospheric Research                C
-C                All Rights Reserved                                    C
-C                                                                       C
+C                                                                      C
+C                Copyright (C)  1995                                   C
+C        University Corporation for Atmospheric Research               C
+C                All Rights Reserved                                   C
+C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  File:       xy01f.f
@@ -17,13 +17,13 @@ C          PO 3000, Boulder, Colorado
 C
 C  Date:       Wed Feb  8 11:44:39 MST 1995
 C
-C  Description:    This program shows how to create an XY plot object with
-C                  all the default resources being used, with the exception 
-C                  of the data resource.  There's no "default data", so we
-C                  need to create some.  A resource file is included with
-C                  this example, but only to show what all the XY
-C                  resources are and what their defaults are set to.
-C                  The whole resource file is commented out.
+C  Description:    This program shows how to create an XY plot object
+C                  with all the default resources being used, with the
+C                  exception of the data resource.  There's no "default
+C                  data", so we need to create some.  A resource file
+C                  is included with this example, but only to show what
+C                  all the XY resources are and what their defaults are
+C                  set to. The whole resource file is commented out.
 C
 C                  The "CoordArrays" object is used to set up the data.
 C
@@ -59,18 +59,18 @@ C
       call nhlfcreate(xworkid,'xy01Work',nhlfxworkstationlayerclass,
      +                0,0,ierr)
 C
-C Define the data object.  Since only the Y values are specified here, each
-C Y values will be paired with its integer array index.  The id for this
-C object will later be used as the value for the XYPlot data resource,
-C 'xyCurveData'.
+C Define the data object.  Since only the Y values are specified here,
+C each Y value will be paired with its integer array index.  The id for
+C this object will later be used as the value for the XYPlot data
+C resource, 'xyCurveData'.
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetfloatarray(rlist,'caYArray',ydra,NPTS,ierr)
       call nhlfcreate(dataid,'xyData',nhlfcoordarrayslayerclass,
      +                0,rlist,ierr)
 C
-C Create the Plot object which is created as a child of the X workstation
-C object.
+C Create the Plot object which is created as a child of the X
+C workstation object.
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetinteger(rlist,'xyCurveData',dataid,ierr)

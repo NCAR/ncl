@@ -1,5 +1,5 @@
 /*
-**      $Id: xy03c.c,v 1.4 1995-02-09 14:57:53 haley Exp $
+**      $Id: xy03c.c,v 1.5 1995-02-09 23:07:18 haley Exp $
 */
 /************************************************************************
 *                                                                       *
@@ -19,8 +19,8 @@
 **
 **  Description:    This program shows how to create an XY plot object with
 **                  some of the XY Plot line resources tweaked.  A resource
-**                  file is used to changed the resources except in those
-**                  cases where a resource has to be change programmatically,
+**                  file is used to change the resources except in those
+**                  cases where a resource has to be changed programmatically,
 **                  like array resources.  This program uses the same dataset
 **                  as the example "xy02c", but this time values for the X
 **                  axis are specified, changing the look of the plot.
@@ -43,14 +43,14 @@
 
 main()
 {
-	int		appid,xworkid,plotid,dataid;
-	int		rlist;
-	int		i, j;
-	float	xdra[NPTS],ydra[NPTS], theta;
+    int     appid,xworkid,plotid,dataid;
+    int     rlist;
+    int     i, j;
+    float   xdra[NPTS],ydra[NPTS], theta;
 /*
- * Initialize some data for the XY plot
+ * Initialize some data for the XY plot.
  */
-	for( i = 0; i < NPTS; i++ ) {
+    for( i = 0; i < NPTS; i++ ) {
         theta = PI100*(float)(i);
         xdra[i] = 500.+.9*(float)(i)*cos(theta);
         ydra[i] = 500.+.9*(float)(i)*sin(theta);
@@ -58,47 +58,47 @@ main()
 /*
  * Initialize the HLU library and set up resource template.
  */
-	NhlInitialize();
-	rlist = NhlRLCreate(NhlSETRL);
+    NhlInitialize();
+    rlist = NhlRLCreate(NhlSETRL);
 /*
  * Create application and X workstation object.  The application name
  * is used to determine the name of the resource file, which will be
  * "xy03.res" in this case.
  */
-	NhlCreate(&appid,"xy03",NhlappLayerClass,NhlDEFAULT_APP,0);
-	NhlCreate(&xworkid,"xy03Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,0);
+    NhlCreate(&appid,"xy03",NhlappLayerClass,NhlDEFAULT_APP,0);
+    NhlCreate(&xworkid,"xy03Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,0);
 /*
  * Define the data object.  The id for this object will then later be used
  * as the value for the XYPlot data resource, "xyCurveData".
  */
-	NhlRLClear(rlist);
-	NhlRLSetFloatArray(rlist,NhlNcaXArray,xdra,NhlNumber(xdra));
-	NhlRLSetFloatArray(rlist,NhlNcaYArray,ydra,NhlNumber(ydra));
-	NhlCreate(&dataid,"xyData",NhlcoordArraysLayerClass,NhlDEFAULT_APP,rlist);
+    NhlRLClear(rlist);
+    NhlRLSetFloatArray(rlist,NhlNcaXArray,xdra,NhlNumber(xdra));
+    NhlRLSetFloatArray(rlist,NhlNcaYArray,ydra,NhlNumber(ydra));
+    NhlCreate(&dataid,"xyData",NhlcoordArraysLayerClass,NhlDEFAULT_APP,rlist);
 /*
  * Create the Plot object which is created as a child of the X workstation
  * object.  The resources that are being changed are done in the "xy03.res"
  * file, and they affect this Plot object.
  */
-	NhlRLClear(rlist);
-	NhlRLSetInteger(rlist,NhlNxyCurveData,dataid);
-	NhlCreate(&plotid,"xyPlot",NhlxyPlotLayerClass,xworkid,rlist);
+    NhlRLClear(rlist);
+    NhlRLSetInteger(rlist,NhlNxyCurveData,dataid);
+    NhlCreate(&plotid,"xyPlot",NhlxyPlotLayerClass,xworkid,rlist);
 /*
- * Draw the plot (to its parent X Workstation)
+ * Draw the plot (to its parent X Workstation).
  */
-	NhlDraw(plotid);
-	NhlFrame(xworkid);
+    NhlDraw(plotid);
+    NhlFrame(xworkid);
 /*
  * NhlDestroy destroys the given id and all of its children
  * so destroying "xworkid" will also destroy plotid.
  */
-	NhlRLDestroy(rlist);
-	NhlDestroy(xworkid);
-	NhlDestroy(appid);
+    NhlRLDestroy(rlist);
+    NhlDestroy(xworkid);
+    NhlDestroy(appid);
 /*
  * Restores state.
  */
-	NhlClose();
+    NhlClose();
 
-	exit(0);
+    exit(0);
 }

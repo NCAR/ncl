@@ -1,5 +1,5 @@
 ;
-;      $Id: xy03n.ncl,v 1.1 1995-02-09 14:57:55 haley Exp $
+;      $Id: xy03n.ncl,v 1.2 1995-02-09 23:07:20 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
@@ -19,8 +19,8 @@
 ;;
 ;;  Description:    This script shows how to create an XY plot object with
 ;;                  some of the XY Plot axis resources tweaked.  A resource
-;;                  file is used to changed the resources except in those
-;;                  cases where a resource has to be change programmatically,
+;;                  file is used to change the resources except in those
+;;                  cases where a resource has to be changed programmatically,
 ;;                  like array resources.
 ;;
 ;;                  The "CoordArrays" object is used to set up the data.

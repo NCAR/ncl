@@ -1,5 +1,5 @@
 /*
-**      $Id: xy01c.c,v 1.5 1995-02-09 14:57:47 haley Exp $
+**      $Id: xy01c.c,v 1.6 1995-02-09 23:07:13 haley Exp $
 */
 /************************************************************************
 *                                                                       *
@@ -48,7 +48,7 @@ main()
     int     i, j;
     float   ydra[NPTS], theta;
 /*
- * Initialize some data for the XY plot
+ * Initialize some data for the XY plot.
  */
     for( i = 0; i < NPTS; i++ ) {
         theta = PI100*(float)(i);
@@ -68,7 +68,7 @@ main()
     NhlCreate(&xworkid,"xy01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,0);
 /*
  * Define the data object.  Since only the Y values are specified here, each
- * Y values will be paired with its integer array index.  The id for this
+ * Y value will be paired with its integer array index.  The id for this
  * object will later be used as the value for the XYPlot data resource,
  * "xyCurveData".
  */
@@ -83,7 +83,7 @@ main()
     NhlRLSetInteger(rlist,NhlNxyCurveData,dataid);
     NhlCreate(&plotid,"xyPlot",NhlxyPlotLayerClass,xworkid,rlist);
 /*
- * Draw the plot (to its parent X Workstation)
+ * Draw the plot (to its parent X Workstation).
  */
     NhlDraw(plotid);
     NhlFrame(xworkid);
