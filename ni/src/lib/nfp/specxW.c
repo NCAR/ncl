@@ -233,39 +233,17 @@ NhlErrorTypes specx_anal_W( void )
   if( ier > 700000 ) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"specx_anal: 'x' contains all constant values");
   }
-  if(type_dof == NCL_float) {
-/*
- * Copy double values to float values.
- */
-    ((float*)dof)[0]    = (float)sinfo[0];   /* deg. of freedom */
-    ((float*)xlag1)[0]  = (float)sinfo[1];   /* lag1 auto crltn after
-                                                dtrending */
-    ((float*)bw)[0]     = (float)sinfo[5];   /* band width */
-    ((float*)xavei)[0]  = (float)sinfo[10];  /* mean prior to dtrending */
-    ((float*)xvari)[0]  = (float)sinfo[11];  /* variance prior to dtrending*/
-    ((float*)xvaro)[0]  = (float)sinfo[12];  /* variance after dtrending */
-    ((float*)xslope)[0] = (float)sinfo[31];  /* slope of linear trend 
-                                                (if iopt=1) */
-    for(i = 0; i < nspcmx-1; i++ ) {
-      ((float*)frq)[i]  = (float)frq_tmp[i+1];
-      ((float*)spcx)[i] = (float)spcx_tmp[i+1];
-    }
-  }
-  else {
-    ((double*)dof)[0]    = sinfo[0];   /* deg. of freedom */
-    ((double*)xlag1)[0]  = sinfo[1];   /* lag1 auto crltn after
-                                          dtrending */
-    ((double*)bw)[0]     = sinfo[5];   /* band width */
-    ((double*)xavei)[0]  = sinfo[10];  /* mean prior to dtrending */
-    ((double*)xvari)[0]  = sinfo[11];  /* variance prior to dtrending*/
-    ((double*)xvaro)[0]  = sinfo[12];  /* variance after dtrending */
-    ((double*)xslope)[0] = sinfo[31];  /* slope of linear trend 
-                                          (if iopt=1) */
-    for(i = 0; i < nspcmx-1; i++ ) {
-      ((double*)frq)[i]  = frq_tmp[i+1];
-      ((double*)spcx)[i] = spcx_tmp[i+1];
-    }
-  }
+
+  coerce_output_float_or_double(   dof,    &sinfo[0],type_dof,1,0);
+  coerce_output_float_or_double( xlag1,    &sinfo[1],type_dof,1,0);
+  coerce_output_float_or_double(    bw,    &sinfo[5],type_dof,1,0);
+  coerce_output_float_or_double( xavei,   &sinfo[10],type_dof,1,0);
+  coerce_output_float_or_double( xvari,   &sinfo[11],type_dof,1,0);
+  coerce_output_float_or_double( xvaro,   &sinfo[12],type_dof,1,0);
+  coerce_output_float_or_double(xslope,   &sinfo[31],type_dof,1,0);
+  coerce_output_float_or_double(   frq,  &frq_tmp[1],type_dof,nspcmx-1,0);
+  coerce_output_float_or_double(  spcx, &spcx_tmp[1],type_dof,nspcmx-1,0);
+
 /*
  * Free up memory.
  */
@@ -747,73 +725,27 @@ NhlErrorTypes specxy_anal_W( void )
     NhlPError(NhlWARNING,NhlEUNKNOWN,"specxy_anal: 'x' and/or 'y' contains all constant values");
   }
 
-  if(type_dof == NCL_float) {
-/*
- * Copy double values to float values.
- */
-    ((float*)dof)[0]   = (float)sinfo[0];   /* Deg. of freedom  */
-    ((float*)xlag1)[0] = (float)sinfo[1];   /* lag1 auto crltn after
-                                               dtrending */
-    ((float*)ylag1)[0] = (float)sinfo[2];   /* lag1 auto crltn after
-                                               dtrending */
-    ((float*)bw)[0]    = (float)sinfo[5];   /* band width */
-    ((float*)xavei)[0] = (float)sinfo[10];  /* mean prior to detrending  */
-    ((float*)xvari)[0] = (float)sinfo[11];  /* variance prior to detrending */
-    ((float*)xvaro)[0] = (float)sinfo[12];  /* variance after detrending */
-    ((float*)xslope)[0]= (float)sinfo[31];  /* slope of linear trend 
-                                               (if iopt=1) */
+  coerce_output_float_or_double(   dof,    &sinfo[0],type_dof,1,0);
+  coerce_output_float_or_double( xlag1,    &sinfo[1],type_dof,1,0);
+  coerce_output_float_or_double( ylag1,    &sinfo[2],type_dof,1,0);
+  coerce_output_float_or_double(    bw,    &sinfo[5],type_dof,1,0);
+  coerce_output_float_or_double( xavei,   &sinfo[10],type_dof,1,0);
+  coerce_output_float_or_double( xvari,   &sinfo[11],type_dof,1,0);
+  coerce_output_float_or_double( xvaro,   &sinfo[12],type_dof,1,0);
+  coerce_output_float_or_double(xslope,   &sinfo[31],type_dof,1,0);
+  coerce_output_float_or_double( yavei,   &sinfo[20],type_dof,1,0);
+  coerce_output_float_or_double( yvari,   &sinfo[21],type_dof,1,0);
+  coerce_output_float_or_double( yvaro,   &sinfo[22],type_dof,1,0);
+  coerce_output_float_or_double(yslope,   &sinfo[34],type_dof,1,0);
 
-    ((float*)yavei)[0] = (float)sinfo[20];  /* mean prior to detrending */
-    ((float*)yvari)[0] = (float)sinfo[21];  /* variance prior to detrending */
-    ((float*)yvaro)[0] = (float)sinfo[22];  /* variance after detrending */
-    ((float*)yslope)[0]= (float)sinfo[34];  /* slope of linear trend
-                                               (if iopt=1) */
-    for(i = 0; i < nspcmx-1; i++ ) {
-      ((float*)frq)[i]   = (float)frq_tmp[i+1];
-      ((float*)spcx)[i]  = (float)spcx_tmp[i+1];
-      ((float*)spcy)[i]  = (float)spcy_tmp[i+1];
-      ((float*)cospc)[i] = (float)cospc_tmp[i+1];
-      ((float*)quspc)[i] = (float)quspc_tmp[i+1];
-      ((float*)coher)[i] = (float)coher_tmp[i+1];
-      ((float*)phase)[i] = (float)phase_tmp[i+1];
-    }
-  }
-  else {
-/*
- * Copy double values to float values.
- */
-    ((double*)dof)[0]    = sinfo[0];    /* Deg. of freedom [spcx@dof] */
-    ((double*)xlag1)[0]  = sinfo[1];    /* lag1 auto crltn after
-                                           detrending [@xlag1] */
-    ((double*)ylag1)[0]  = sinfo[2];    /* lag1 auto correlation after
-                                           detrending [@ylag1] */
-    ((double*)bw)[0]     = sinfo[5];    /* band width [spcx@band_width] */
-    ((double*)xavei)[0]  = sinfo[10];   /* mean prior to detrending
-                                           [@xavei]  */
-    ((double*)xvari)[0]  = sinfo[11];   /* variance prior to detrending 
-                                           [@xvari]  */
-    ((double*)xvaro)[0]  = sinfo[12];   /* variance after detrending
-                                           [@xvaro] */
-    ((double*)xslope)[0] = sinfo[31];   /* slope of linear trend (if iopt=1)
-                                           [@xslope] */
-    ((double*)yavei)[0]  = sinfo[20];   /* mean prior to detrending 
-                                           [@yavei]  */
-    ((double*)yvari)[0]  = sinfo[21];   /* variance prior to detrending 
-                                           [@yvari]  */
-    ((double*)yvaro)[0]  = sinfo[22];   /* variance after detrending
-                                           [@yvaro] */
-    ((double*)yslope)[0] = sinfo[34];   /* slope of linear trend 
-                                           (if iopt=1) [@yslope] */
-    for(i = 0; i < nspcmx-1; i++ ) {
-      ((double*)frq)[i]   = frq_tmp[i+1];
-      ((double*)spcx)[i]  = spcx_tmp[i+1];
-      ((double*)spcy)[i]  = spcy_tmp[i+1];
-      ((double*)cospc)[i] = cospc_tmp[i+1];
-      ((double*)quspc)[i] = quspc_tmp[i+1];
-      ((double*)coher)[i] = coher_tmp[i+1];
-      ((double*)phase)[i] = phase_tmp[i+1];
-    }
-  }
+  coerce_output_float_or_double(   frq,  &frq_tmp[1],type_dof,nspcmx-1,0);
+  coerce_output_float_or_double(  spcx, &spcx_tmp[1],type_dof,nspcmx-1,0);
+  coerce_output_float_or_double(  spcy, &spcy_tmp[1],type_dof,nspcmx-1,0);
+  coerce_output_float_or_double( cospc,&cospc_tmp[1],type_dof,nspcmx-1,0);
+  coerce_output_float_or_double( quspc,&quspc_tmp[1],type_dof,nspcmx-1,0);
+  coerce_output_float_or_double( coher,&coher_tmp[1],type_dof,nspcmx-1,0);
+  coerce_output_float_or_double( phase,&phase_tmp[1],type_dof,nspcmx-1,0);
+
 /*
  * Set up variable to return.
  */

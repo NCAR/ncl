@@ -242,12 +242,8 @@ NhlErrorTypes tri_trunC_W( void )
     coerce_subset_input_double(ab,tmp_a,index_nm,type_ab,nm,0,NULL,NULL);
     coerce_subset_input_double(ab,tmp_b,start+index_nm,type_ab,nm,0,
                                NULL,NULL);
-/*
- * This was the original call to the original tritrunc. 
- *
- *   NGCALLF(dtritrunc,DTRITRUNC)(&n,&m,tmp_a,tmp_b,T);
- */
-    NGCALLF(dtritruncnew,DTRITRUNCNEW)(&n, T, &m, tmp_a, tmp_b);
+
+    NGCALLF(dtritrunc,DTRITRUNC)(&n, T, &m, tmp_a, tmp_b);
 /*
  * Copy a and b arrays back into new_ab array.
  */
@@ -542,12 +538,7 @@ NhlErrorTypes tri_trunc_W( void )
       tmp_b  = &((double*)b)[index_nm];
     }
 
-/*
- * This was the original call to the original tritrunc. 
- *
- *    NGCALLF(dtritrunc,DTRITRUNC)(&n,&m,tmp_a,tmp_b,T);
- */
-    NGCALLF(dtritruncnew,DTRITRUNCNEW)(&n, T, &m, tmp_a, tmp_b);
+    NGCALLF(dtritrunc,DTRITRUNC)(&n, T, &m, tmp_a, tmp_b);
 
     if(type_a != NCL_double) coerce_output_float_only(a,tmp_a,nm,index_nm);
     if(type_b != NCL_double) coerce_output_float_only(b,tmp_b,nm,index_nm);
