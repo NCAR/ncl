@@ -1,5 +1,5 @@
 /*
- *	$Id: error.c,v 1.3 1991-10-07 18:08:29 clyne Exp $
+ *	$Id: error.c,v 1.4 1992-03-20 18:43:18 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -122,7 +122,7 @@ snooga()
 #else
 
 extern char	*ProgramName;
-#endif STANDALONE
+#endif /* STANDALONE */
 
 int
 RasterSetError(errno)

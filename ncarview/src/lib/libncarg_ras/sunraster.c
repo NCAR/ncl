@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.7 1992-02-27 22:48:31 don Exp $
+ *	$Id: sunraster.c,v 1.8 1992-03-20 18:43:58 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
+#include <malloc.h>
 #include "ncarg_ras.h"
 #include "sunraster.h"
 

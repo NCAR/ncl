@@ -1,5 +1,5 @@
 /*
- *	$Id: options.h,v 1.2 1991-08-16 11:11:43 clyne Exp $
+ *	$Id: options.h,v 1.3 1992-03-20 18:43:47 don Exp $
  */
 #ifndef __OPTIONS__
 #define __OPTIONS__
@@ -14,4 +14,4 @@ extern int	OptionOrientation;
 extern int	OptionCompression;
 extern int	OptionDotsPerInch;
 
-#endif __OPTIONS__
+#endif

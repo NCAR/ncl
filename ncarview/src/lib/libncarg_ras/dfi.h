@@ -1,5 +1,5 @@
 /*
- *	$Id: dfi.h,v 1.3 1992-02-21 12:49:30 clyne Exp $
+ *	$Id: dfi.h,v 1.4 1992-03-20 18:43:14 don Exp $
  */
 /*****************************************************************************
 * 
@@ -23,14 +23,19 @@
 *****************************************************************************/
 
 #ifdef RCSID
-static char RcsId[] = "@(#)$Revision: 1.3 $"
+static char RcsId[] = "@(#)$Revision: 1.4 $"
 #endif
 /*
-$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libncarg_ras/Attic/dfi.h,v 1.3 1992-02-21 12:49:30 clyne Exp $
+$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libncarg_ras/Attic/dfi.h,v 1.4 1992-03-20 18:43:14 don Exp $
 $Log: dfi.h,v $
-Revision 1.3  1992-02-21 12:49:30  clyne
-ported to HP
+Revision 1.4  1992-03-20 18:43:14  don
+Added changes so that SGI ANSI C Compiler wouldn't barf.
+Rewrote interface for resampling functions and added features.
+Added a man page.
 
+ * Revision 1.3  92/02/21  12:49:30  clyne
+ * ported to HP
+ * 
  * Revision 1.2  91/08/16  11:11:26  clyne
  * *** empty log message ***
  * 
@@ -635,7 +640,7 @@ extern	char *strncpy();
 extern	char *strcpy();
 #endif
 extern	char *malloc();
-#if	defined(MIPSEL) || defined(UNICOS) || defined(hpux) || defined(RS6000)
+#if	defined(sgi) || defined(MIPSEL) || defined(UNICOS) || defined(hpux) || defined(RS6000)
 extern	void *memcpy();
 #else
 extern	char *memcpy();

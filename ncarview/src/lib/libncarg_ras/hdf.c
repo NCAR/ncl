@@ -1,5 +1,5 @@
 /*
- *	$Id: hdf.c,v 1.5 1992-02-21 12:49:33 clyne Exp $
+ *	$Id: hdf.c,v 1.6 1992-03-20 18:43:22 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -43,7 +43,7 @@
 
 #ifndef	TMPDIR
 #define	TMPDIR	"/tmp"
-#endif	TMPDIR
+#endif	/* TMPDIR */
 
 #define	TMPFILE	"/hdf.XXXXXX"
 
@@ -276,7 +276,7 @@ HDFRead(ras)
 #ifdef DEAD
 		if (retry != 0)
 			(void) fprintf(stderr, "Retrying HDF Read\n");
-#endif DEAD
+#endif /* DEAD */
 
 		status = DFR8getimage(ras->name, ras->data, 
 				ras->nx, ras->ny, pal);

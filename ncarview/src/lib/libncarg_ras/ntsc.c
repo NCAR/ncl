@@ -1,5 +1,5 @@
 /*
- *	$Id: ntsc.c,v 1.2 1992-02-12 11:43:51 don Exp $
+ *	$Id: ntsc.c,v 1.3 1992-03-20 18:43:44 don Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -15,6 +15,9 @@ static double yiq_matrix[3][3] = {
 };
 
 static double tab[3][3][256];
+
+static int	YIQBuildTable();
+int		RasterYIQfilter();
 
 RasterYIQfilter(src, dst)
 	Raster		*src, *dst;
@@ -102,7 +105,7 @@ RasterYIQfilter(src, dst)
 	return(RAS_OK);
 }
 
-static
+static int
 YIQBuildTable()
 {
 	int		p;

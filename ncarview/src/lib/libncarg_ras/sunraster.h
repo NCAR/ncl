@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.h,v 1.2 1991-08-16 11:12:24 clyne Exp $
+ *	$Id: sunraster.h,v 1.3 1992-03-20 18:44:02 don Exp $
  */
 #ifndef _RASTER_SUN_
 #define _RASTER_SUN_
@@ -42,4 +42,4 @@ typedef struct SunInfoStruct {
 #define RMT_EQUAL_RGB	1	/* red[ras_maplength/3],green[],blue[] */
 #define RMT_RAW		2
 
-#endif _RASTER_SUN_
+#endif /* _RASTER_SUN_ */

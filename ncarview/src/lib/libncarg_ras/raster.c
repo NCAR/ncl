@@ -1,5 +1,5 @@
 /*
- *	$Id: raster.c,v 1.11 1992-02-27 22:57:42 don Exp $
+ *	$Id: raster.c,v 1.12 1992-03-20 18:43:50 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -40,6 +40,8 @@ int	OptionDitherColors = 256;
 int	OptionDitherBits = 5;
 
 char	*ProgramName;
+
+static int	argdel();
 
 /*LINTLIBRARY*/
 
@@ -169,7 +171,8 @@ RasterPrintOptions()
 			"Dither Map Size = %d\n", OptionDitherColors);
 }
 
-static	argdel(argc, argv, i)
+static int
+argdel(argc, argv, i)
 	int	*argc;
 	char	*argv[];
 	int	i;

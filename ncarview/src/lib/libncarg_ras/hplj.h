@@ -1,5 +1,5 @@
 /*
- *	$Id: hplj.h,v 1.2 1991-08-16 11:14:02 clyne Exp $
+ *	$Id: hplj.h,v 1.3 1992-03-20 18:43:26 don Exp $
  */
 #ifndef	_hplj_
 #define	_hplh_
@@ -36,4 +36,4 @@ typedef	struct	HPLJ_Info	{
 	int		dpi;
 	} HPLJ_Info;
 
-#endif	_hplj_
+#endif	/* _hplj_ */

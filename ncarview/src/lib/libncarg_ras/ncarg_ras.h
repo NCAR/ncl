@@ -1,5 +1,5 @@
 /*
- *	$Id: ncarg_ras.h,v 1.5 1992-02-12 11:24:49 don Exp $
+ *	$Id: ncarg_ras.h,v 1.6 1992-03-20 18:43:29 don Exp $
  */
 #ifndef _RASTER_
 #define _RASTER_
@@ -16,7 +16,7 @@
 #define B32	:32
 #else
 #define B32
-#endif
+#endif /* CRAY */
 
 /* Definitions of error codes for the library */
 
@@ -148,4 +148,4 @@ typedef struct RasterStruct Raster;
 	(ras)->data[(y) * 3 * (ras)->nx + (x) * 3 + 1]
 
 
-#endif _RASTER_
+#endif /* _RASTER_ */

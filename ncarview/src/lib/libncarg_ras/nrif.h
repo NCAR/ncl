@@ -1,13 +1,13 @@
 /*
- *	$Id: nrif.h,v 1.2 1991-08-16 11:11:10 clyne Exp $
+ *	$Id: nrif.h,v 1.3 1992-03-20 18:43:40 don Exp $
  */
 #ifndef FALSE
 #define FALSE	0
-#endif	FALSE
+#endif	/* FALSE */
 
 #ifndef TRUE
 #define TRUE	1
-#endif	TRUE
+#endif	/* TRUE */
 
 #define NRIF_MAGIC		"NRIF"
 

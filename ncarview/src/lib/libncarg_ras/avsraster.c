@@ -1,4 +1,4 @@
-/* $Id: avsraster.c,v 1.2 1992-02-12 11:24:32 don Exp $ */
+/* $Id: avsraster.c,v 1.3 1992-03-20 18:43:09 don Exp $ */
 
 /***********************************************************************
 *                                                                      *
@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
+#include <malloc.h>
 #include "ncarg_ras.h"
 #include "avsraster.h"
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: xwd.c,v 1.6 1992-02-12 16:11:39 clyne Exp $
+ *	$Id: xwd.c,v 1.7 1992-03-20 18:44:05 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -34,7 +34,7 @@
 #ifndef CRAY
 #include <fcntl.h>
 #include <sys/types.h>
-#endif
+#endif /* CRAY */
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -47,29 +47,6 @@ static char	*FormatName = "xwd";
 extern char	*ProgramName;
 static char	*Comment = "XWD file from NCAR raster utilities";
 
-/*ARGSUSED*/
-int
-XWDProbe(name)
-	char	*name;
-{
-#ifdef DEAD
-	int		status;
-	FILE		*fp;
-
-	if (name == (char *) NULL) return(False);
-
-	if (!strcmp(name, "stdin")) return(False);
-
-	fp = fopen(name, "r");
-	if (fp == (FILE *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
-		return(RAS_ERROR);
-	}
-	
-	(void) fclose(fp);
-#endif DEAD
-}
-
 Raster *
 XWDOpen(name)
 	char	*name;
@@ -81,8 +58,8 @@ XWDOpen(name)
 #else
 #ifndef CRAY
 	char		*calloc();
-#endif CRAY
-#endif
+#endif /* CRAY */
+#endif /* hpux */
 
 	XWDFileHeader	*dep;
 
@@ -347,7 +324,7 @@ XWDRead(ras)
 	return(RAS_OK);
 }
 
-static	unsigned
+unsigned
 image_size(header)
 	XWDFileHeader *header;
 {
@@ -461,19 +438,12 @@ XWDWrite(ras)
 	int		nb;
 	int		i;
 	unsigned long	swaptest = 1;
-	XWDFileHeader	*dep = (XWDFileHeader *) ras->dep;
-	XWDFileHeader	tmp;
 
 	if (*(char *) &swaptest) {
-		/*
-		 * need private copy of dep if swapping bytes
-		 */
-		bcopy((char *) dep, (char *) &tmp, sizeof(XWDFileHeader));
-		dep = (XWDFileHeader *) &tmp;
-		_swaplong((char *) dep, sizeof(XWDFileHeader));
+		_swaplong((char *) ras->dep, sizeof(XWDFileHeader));
 	}
 
-	nb = write(ras->fd, (char *) dep, sizeof(XWDFileHeader));
+	nb = write(ras->fd, (char *) ras->dep, sizeof(XWDFileHeader));
 	if (nb != sizeof(XWDFileHeader)) return(RAS_EOF);
 
 	nb = write(ras->fd, Comment, strlen(Comment));

@@ -1,5 +1,5 @@
 /*
- *	$Id: nrif.c,v 1.6 1992-02-12 14:23:51 clyne Exp $
+ *	$Id: nrif.c,v 1.7 1992-03-20 18:43:37 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -45,6 +45,10 @@ static char	*FormatName = "nrif";
 extern char	*ProgramName;
 
 char		*calloc(), *strcpy(), *strncpy();
+
+static int	char_encode();
+static int	char_decode();
+static int	read_decode();
 
 Raster *
 NrifOpen(name)
@@ -103,7 +107,6 @@ NrifRead(ras)
 	int			length;
 	int			x, y;
 	int			status;
-	int			char_decode(), read_decode(), char_encode();
 
 	dep = (NrifInfo *) ras->dep;
 
@@ -308,7 +311,6 @@ NrifRead(ras)
 		default:
 		  (void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
 		  return(RAS_ERROR);
-		  break;
 	}
 
 	return(RAS_OK);
@@ -443,7 +445,6 @@ NrifOpenWrite(name, nx, ny, comment, encoding)
 		default:
 			(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
 			return( (Raster *) NULL );
-			break;
 	}
 
 	NrifSetFunctions(ras);
@@ -571,7 +572,6 @@ NrifWrite(ras)
 		default:
 			(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
 			return(RAS_ERROR);
-			break;
 	}
 	return(RAS_OK);
 }
@@ -632,7 +632,6 @@ char_encode(value, buf, nbytes)
 		default:
 			(void) RasterSetError(RAS_E_INTERNAL_PROGRAMMING);
 			return(RAS_ERROR);
-			break;
 	}
 	return(RAS_OK);
 }
