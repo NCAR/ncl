@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.6 1994-05-12 23:52:51 boote Exp $
+ *      $Id: Workspace.c,v 1.7 1994-05-17 22:26:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2095,9 +2095,6 @@ NhlErrorTypes _NhlArdbpa
 	NhlBoolean	done = False;
 	char		*e_msg, *cmp_msg = "AREA-MAP ARRAY OVERFLOW";
 	int		err_num;
-	float		x[NhlwsMAX_GKS_POINTS], y[NhlwsMAX_GKS_POINTS];
-	int		group_ids[NhlwsMAX_AREA_GROUPS];
-	int		area_ids[NhlwsMAX_AREA_GROUPS];
 
 	c_entsr(&save_mode,1);
 
@@ -2126,6 +2123,65 @@ NhlErrorTypes _NhlArdbpa
 	} while (! done);
 	
 	c_retsr(save_mode);
+
+	return NhlNOERROR;
+}
+
+/*
+ * Function:	_NhlDumpAreaMap
+ *
+ * Description: Write the areamap to a file for debugging purposes
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlDumpAreaMap
+#if	__STDC__
+(
+ 	NhlWorkspace	*amap_ws,
+	char		*entry_name
+)
+#else
+(amap_ws,entry_name)
+ 	NhlWorkspace	*amap_ws;
+	char		*entry_name;
+#endif
+{
+	char		*e_text;
+	NhlWorkspaceRec	*awsrp = (NhlWorkspaceRec *) amap_ws;
+	char		*prefix = "NhlAreaMap";
+	char		suffix[10];
+	static		count = 0;
+	char		buffer[20];
+	FILE		*fp;
+	int		i;
+	int		*ip = (int *)awsrp->ws_ptr;
+
+	strcpy(buffer,prefix);
+	sprintf(suffix,"%c%-d",'.',count++);
+	strcat(buffer,suffix);
+
+	if ((fp = fopen(buffer,"w")) == NULL) {
+		e_text = "%s: error opening %s for areamap dump";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,buffer);
+		return NhlFATAL;
+	}
+	printf("Dumping areamap to file %s\n",buffer);
+/*
+ * areamap array element index is written using Fortran indexing, followed
+ * by the value of the areamap element, 1 element per line.
+ */
+	for (i=0;i<ip[4];i++) {
+		fprintf(fp,"%10d%10d\n",i+1,ip[i]);
+	}
+	for (i=ip[5]-1;i<ip[0];i++) {
+		fprintf(fp,"%10d%10d\n",i+1,ip[i]);
+	}
 
 	return NhlNOERROR;
 }
@@ -2269,12 +2325,9 @@ NhlErrorTypes _NhlCpclam
 	
 	c_retsr(save_mode);
 
-#ifdef	NOMORE
-	ardamn_(awsrp->ws_ptr,&err_num);
-#endif
-
 	return NhlNOERROR;
 }
+
 
 /*
  * Function:	_NhlCpcldm

@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.13 1994-05-12 23:50:31 boote Exp $
+ *      $Id: Contour.c,v 1.14 1994-05-17 22:26:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -471,6 +471,8 @@ static NhlResource resources[] = {
 };
 #undef Oset
 
+typedef enum _cnCoord { cnXCOORD, cnYCOORD} cnCoord;
+
 /* base methods */
 
 static NhlErrorTypes ContourClassInitialize(
@@ -558,10 +560,40 @@ static NhlErrorTypes ContourDataInitialize(
 
 /* internal static functions */
 
-static NhlErrorTypes SetUpTransObj(
+static NhlErrorTypes AddDataBoundToAreamap(
+#ifdef NhlNeedProto
+	NhlContourLayer	cl
+#endif
+);
+
+static NhlErrorTypes QualifyCoordBounds(
+#ifdef NhlNeedProto
+        NhlContourLayerPart	*cnp,
+	char			*entry_name
+#endif
+);
+
+static NhlErrorTypes SetUpLLTransObj(
 #ifdef NhlNeedProto
 	NhlContourLayer	cnew,
-				   NhlContourLayer	cold,
+	NhlContourLayer	cold,
+	NhlBoolean	init
+#endif
+);
+
+static NhlErrorTypes SetIrrCoordBounds(
+#ifdef NhlNeedProto
+	NhlContourLayerPart	*cnp,
+	cnCoord			ctype,
+	int			count,
+	NhlString		entry_name
+#endif
+);
+
+static NhlErrorTypes SetUpIrrTransObj(
+#ifdef NhlNeedProto
+	NhlContourLayer	cnew,
+	NhlContourLayer	cold,
 	NhlBoolean	init
 #endif
 );
@@ -707,6 +739,7 @@ static NhlErrorTypes    ManageGenArray(
 	int		*old_count,
 	int		*init_count,
 	NhlBoolean	*need_check,
+	NhlBoolean	*changed,				       
 	NhlString	resource_name,
 	NhlString	entry_name
 #endif
@@ -903,6 +936,8 @@ NhlLayerClass NhlcontourDataDepLayerClass =
 NhlLayerClass NhlcontourLayerClass = 
 		(NhlLayerClass) &NhlcontourLayerClassRec;
 
+
+
 static NrmQuark	Qfloat = NrmNULLQUARK;
 static NrmQuark Qint = NrmNULLQUARK;
 static NrmQuark Qstring = NrmNULLQUARK;
@@ -916,12 +951,6 @@ static NrmQuark	Qline_dash_patterns = NrmNULLQUARK;
 static NrmQuark	Qline_thicknesses = NrmNULLQUARK; 
 static NrmQuark	Qllabel_strings = NrmNULLQUARK;
 static NrmQuark	Qllabel_colors = NrmNULLQUARK; 
-#if 0
-static int Def_Colors[] = { 
-	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
-static int Def_Colors_Count = NhlNumber(Def_Colors); 
-#endif
-	
 
 static NhlLayer		Trans_Obj;
 static NhlBoolean	Do_Lines;
@@ -1092,7 +1121,7 @@ ContourUpdateData
 	_NhlArgList		args = NULL;
 
 /*
- * For now simply call ContourSetValues with a NULL argument list
+ * For now simply call SetValues setting the data changed resource true
  */
 	NhlVASetValues(new->base.id,NhlNcnDataChanged,True,
 		       NULL);
@@ -1207,63 +1236,6 @@ ContourClassPartInitialize
 		e_text = "%s: error registering %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  "NhloverlayLayerClass");
-		return(NhlFATAL);
-	}
-
-	subret = _NhlRegisterChildClass(lc,NhllogLinTransObjLayerClass,
-					False,False,
-					NhlNtrXMinF,
-					NhlNtrXMaxF,
-					NhlNtrXLog,
-					NhlNtrXReverse,
-					NhlNtrYMinF,
-					NhlNtrYMaxF,
-					NhlNtrYLog,
-					NhlNtrYLog,
-					NULL);
-
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error registering %s";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhllogLinTransObjLayerClass");
-		return(NhlFATAL);
-	}
-
-	subret = _NhlRegisterChildClass(lc,NhlirregularType2TransObjLayerClass,
-					False,False,
-					NhlNtrXMinF,
-					NhlNtrXMaxF,
-					NhlNtrXLog,
-					NhlNtrXReverse,
-					NhlNtrYMinF,
-					NhlNtrYMaxF,
-					NhlNtrYLog,
-					NhlNtrYLog,
-					NULL);
-
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error registering %s";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhlirregularType2TransObjLayerClass");
-		return(NhlFATAL);
-	}
-
-	subret = _NhlRegisterChildClass(lc,NhlirregularTransObjLayerClass,
-					False,False,
-					NhlNtrXMinF,
-					NhlNtrXMaxF,
-					NhlNtrXLog,
-					NhlNtrXReverse,
-					NhlNtrYMinF,
-					NhlNtrYMaxF,
-					NhlNtrYLog,
-					NhlNtrYLog,
-					NULL);
-
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error registering %s";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhlirregularTransObjLayerClass");
 		return(NhlFATAL);
 	}
 
@@ -1387,6 +1359,27 @@ ContourInitialize
 	cnp->data_changed = True;
 	cnp->ll_text_heights = NULL;
 	cnp->ll_strings = NULL;
+	cnp->use_irr_trans = False;
+
+	subret = QualifyCoordBounds(cnp,entry_name);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
+
+	if (! cnp->x_reverse) {
+		cnp->xc1 = cnp->x_min;
+		cnp->xcm = cnp->x_max;
+	}
+	else {
+		cnp->xc1 = cnp->x_max;
+		cnp->xcm = cnp->x_min;
+	}
+	if (! cnp->y_reverse) {
+		cnp->yc1 = cnp->y_min;
+		cnp->ycn = cnp->y_max;
+	}
+	else {
+		cnp->yc1 = cnp->y_max;
+		cnp->ycn = cnp->y_min;
+	}
 
 	subret = ManageData(cnew,(NhlContourLayer) req,True,args,num_args);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -1415,11 +1408,21 @@ ContourInitialize
 
 /* Set up the contour object transformation  */
 
-	subret = SetUpTransObj(cnew, (NhlContourLayer) req, True);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error setting up transformation";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
+	if (cnp->use_irr_trans) {
+		subret = SetUpIrrTransObj(cnew,(NhlContourLayer) req,True);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			e_text = "%s: error setting up transformation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return(ret);
+		}
+	}
+	else {
+		subret = SetUpLLTransObj(cnew,(NhlContourLayer) req,True);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			e_text = "%s: error setting up transformation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return(ret);
+		}
 	}
 
 /* Manage Legend object */
@@ -1512,7 +1515,7 @@ static NhlErrorTypes ContourSetValues
 	NhlContourLayerPart	*cnp = &(cnew->contour);
 	NhlContourLayer		cold = (NhlContourLayer) old;
 	/* Note that both ManageLegend and ManageLabelBar add to sargs */
-	NhlSArg			sargs[64];
+	NhlSArg			sargs[128];
 	int			nargs = 0;
 
 
@@ -1550,6 +1553,9 @@ static NhlErrorTypes ContourSetValues
 	if (_NhlArgIsSet(args,num_args,NhlNcnLowLabelPerimSpaceF))
 		cnp->low_lbls.perim_space_set = True;
 
+	subret = QualifyCoordBounds(cnp,entry_name);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
+
 /* Manage the data */
 
 	subret = ManageData(cnew,cold,False,args,num_args);
@@ -1577,12 +1583,25 @@ static NhlErrorTypes ContourSetValues
 		return(ret);
 	}
 
-/* Set up the contour object's transformation */
 
-	subret = SetUpTransObj(cnew, (NhlContourLayer) old, False);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) 
-		return ret;
+/* Set up the contour object transformation  */
 
+	if (cnp->use_irr_trans) {
+		subret = SetUpIrrTransObj(cnew,(NhlContourLayer) old,False);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			e_text = "%s: error setting up transformation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return(ret);
+		}
+	}
+	else {
+		subret = SetUpLLTransObj(cnew,(NhlContourLayer) old,False);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			e_text = "%s: error setting up transformation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return(ret);
+		}
+	}
 
 /* Manage Legend object */
 
@@ -1755,6 +1774,85 @@ static NhlErrorTypes    ContourGetValues
 
 }
 
+
+/*
+ * Function:	QualifyCoordBounds
+ *
+ * Description: 
+ *
+ * In Args:
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	ErrorConditions
+ *
+ * Side Effects:
+ */
+/*ARGSUSED*/
+static NhlErrorTypes QualifyCoordBounds
+#if  __STDC__
+(
+        NhlContourLayerPart	*cnp,
+	char			*entry_name
+)
+#else
+(cnp,entry_name)
+        NhlContourLayerPart	*cnp;
+	char			*entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	float		ftmp;
+
+	if (cnp->x_min == cnp->x_max) {
+		e_text = "%s: Zero X coordinate span: defaulting";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		cnp->x_min = 0.0; 
+		cnp->x_max = 1.0;
+	}
+	else if (cnp->x_min > cnp->x_max) {
+		e_text = "%s: Min X coordinate exceeds max: exchanging";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		ftmp = cnp->x_min;
+		cnp->x_min = cnp->x_max;
+		cnp->x_max = ftmp;
+	}
+	if (cnp->x_log && cnp->x_min <= 0.0) {
+		e_text = 
+		    "%s: Log style invalid for X coordinates: setting %s off";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrXLog);
+		cnp->x_log = False;
+	}
+
+	if (cnp->y_min == cnp->y_max) {
+		e_text = "%s: Zero Y coordinate span: defaulting";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		cnp->y_min = 0.0; 
+		cnp->y_max = 1.0;
+	}
+	else if (cnp->y_min > cnp->y_max) {
+		e_text = "%s: Min Y coordinate exceeds max: exchanging";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		ftmp = cnp->y_min;
+		cnp->y_min = cnp->y_max;
+		cnp->y_max = ftmp;
+	}
+	if (cnp->y_log && cnp->y_min <= 0.0) {
+		e_text = 
+		    "%s: Log style invalid for Y coordinates: setting %s off";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrYLog);
+		cnp->y_log = False;
+	}
+	return ret;
+}
+
 /*
  * Function:  GenArraySubsetCopy
  *
@@ -1840,10 +1938,6 @@ NhlLayer inst;
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-#if 0
-	char			*e_text;
-	char			*entry_name = "ContourDestroy";
-#endif
 	NhlContourLayerPart	*cnp = &(((NhlContourLayer) inst)->contour);
 	NhlTransformLayerPart	*cntp = &(((NhlTransformLayer) inst)->trans);
 
@@ -1860,7 +1954,7 @@ NhlLayer inst;
 		cnp->overlay_object = NULL;
 	}
 	if (cntp->trans_obj != NULL) {
-		(void) _NhlDestroyChild(cntp->trans_obj->base.id,inst);
+		(void) NhlDestroy(cntp->trans_obj->base.id);
 		cntp->trans_obj = NULL;
 	}
 
@@ -1926,6 +2020,7 @@ static NhlErrorTypes ContourDraw
 	NhlTransformLayerPart	*tfp = &(cl->trans);
 	float			out_of_range_val;
 	NhlBoolean		do_fill;
+		  float xa[5], ya[5],ya1[5];
 
 	if (! cnp->data_init) return NhlNOERROR;
 
@@ -1941,7 +2036,7 @@ static NhlErrorTypes ContourDraw
 	}
 	cnp->new_draw_req = False;
 	
-	subret = GetData(cl,&Data,&M,&N);
+	subret = GetData(cl,&Data,&N,&M);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
 	subret = _NhlActivateWorkstation(cl->base.wkptr);
@@ -1981,24 +2076,15 @@ static NhlErrorTypes ContourDraw
 		     NULL);
         c_cpsetr("ORV",out_of_range_val);
 
-	c_cpsetr("SPV",cnp->sfp->missing_value);
+	if (cnp->sfp->missing_value_set)
+		c_cpsetr("SPV",cnp->sfp->missing_value);
+	else
+		c_cpsetr("SPV",0.0);
 
-	if (! cnp->x_reverse) {
-		c_cpsetr("XC1",cnp->sfp->x_min);
-		c_cpsetr("XCM",cnp->sfp->x_max);
-	}
-	else {
-		c_cpsetr("XC1",cnp->sfp->x_max);
-		c_cpsetr("XCM",cnp->sfp->x_min);
-	}
-	if (! cnp->y_reverse) {
-		c_cpsetr("YC1",cnp->sfp->y_min);
-		c_cpsetr("YCN",cnp->sfp->y_max);
-	}
-	else {
-		c_cpsetr("YC1",cnp->sfp->y_max);
-		c_cpsetr("YCN",cnp->sfp->y_min);
-	}
+	c_cpsetr("XC1",cnp->xc1);
+	c_cpsetr("XCM",cnp->xcm);
+	c_cpsetr("YC1",cnp->yc1);
+	c_cpsetr("YCN",cnp->ycn);
 	c_cpseti("WSO", 3);
         c_cpseti("SET",0);
         c_cpseti("MAP",NhlcnMAPVAL);
@@ -2027,7 +2113,8 @@ static NhlErrorTypes ContourDraw
 
 /* Draw the contours */
 
-	subret = _NhlCprect(Data,M,M,N,Fws,Iws,entry_name);
+	subret = _NhlCprect(Data,cnp->sfp->fast_dim,cnp->sfp->fast_len,
+			    cnp->sfp->slow_len,Fws,Iws,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
 
@@ -2056,15 +2143,14 @@ static NhlErrorTypes ContourDraw
 
 		subret = _NhlArinam(Aws,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-#if 0
-		c_mapsti("PE",1);
-		c_mpsetc("OU","NO");
-		_NhlMapbla(Aws,entry_name);
-#endif
+
+		subret = AddDataBoundToAreamap(cl);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
 		if (Do_Lines) {
 			subret = _NhlCpclam(Data,Fws,Iws,Aws,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+			_NhlDumpAreaMap(Aws,entry_name);
 		}
 
 		if (Do_Labels && cnp->label_masking) {
@@ -2074,92 +2160,6 @@ static NhlErrorTypes ContourDraw
 		
 	}
 
-
-		{ float flx,frx,fby,fuy,wlx,wrx,wby,wuy; int ll;
-		  float xa[5], ya[5],ya1[5];
-		  int i,first = 0;
-		  c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
-		  printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
-			 flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
-		  ll = NhlcnMAPVAL;
-#if 0
-		  cpmpxy_(&ll,&cnp->x_min,&cnp->y_min,&wlx,&wby);
-		  cpmpxy_(&ll,&cnp->x_max,&cnp->y_max,&wrx,&wuy);
-		  printf("cpmpxy - %f,%f,%f,%f,%f,%f,%f,%f\n",
-			 flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
-
-		  xa[0] = xa[1] = xa[4] = wlx;
-		  xa[2] = xa[3] = wrx;
-		  ya[0] = ya[3] = ya[4] = wuy;
-		  ya[1] = ya[2] = wby;
-		  _NhlAredam(Aws,xa,ya,5,10,0,-1,entry_name);
-#endif
-
-		  xa[0] = xa[1] = xa[4] = MAX(cnp->x_min,cnp->sfp->x_min);
-		  xa[2] = xa[3] = MIN(cnp->x_max,cnp->sfp->x_max);
-		  ya[0] = ya[3] = ya[4] = MIN(cnp->y_max,cnp->sfp->y_max);
-		  ya[1] = ya[2] = MAX(cnp->y_min,cnp->sfp->y_min);
-		  ya1[0] = ya1[3] = ya1[4] = MAX(cnp->y_min,cnp->sfp->y_min);
-		  ya1[1] = ya1[2] = MIN(cnp->y_max,cnp->sfp->y_max);
-		  for (i=0;  i<4;i++) {
-			  float xinc,yinc; int j;
-			  gset_line_colr_ind(20);
-			  xinc = (xa[i+1]-xa[i])/20;
-			  yinc = (ya[i+1]-ya[i])/20;
-			  if (! first) {
-#if 0
-				  _NhlMapita(Aws,ya[i],xa[i],
-					     first,10,0,-1,entry_name);
-#endif
-				  _NhlMapita(Aws,ya[i],xa[i],
-					     first,3,0,-1,entry_name);
-				  c_mapit(ya[i],xa[i],first);
-				  first = 1;
-			  }
-			  for (j=0;j<21;j++) {
-#if 0
-				  _NhlMapita(Aws,ya[i]+j*yinc,xa[i]+j*xinc,
-					     first,10,0,-1,entry_name);
-#endif
-				  _NhlMapita(Aws,ya[i]+j*yinc,xa[i]+j*xinc,
-					     first,3,0,-1,entry_name);
-				  c_mapit(ya[i]+j*yinc,xa[i]+j*xinc,first);
-			  }
-		  }
-#if 0
-		  _NhlMapiqa(Aws,10,0,-1,entry_name);
-#endif
-		  _NhlMapiqa(Aws,3,0,-1,entry_name);
-		  c_mapiq();
-#if 0
-		  first = 0;
-		  for (i=0;  i<4;i++) {
-			  float xinc,yinc; int j;
-			  gset_line_colr_ind(20);
-			  xinc = (xa[i+1]-xa[i])/20;
-			  yinc = (ya[i+1]-ya[i])/20;
-			  if (! first) {
-				  _NhlMapita(Aws,ya1[i],xa[i],
-					     first,10,-1,0,entry_name);
-				  c_mapit(ya[i],xa[i],first);
-				  first = 1;
-			  }
-			  for (j=0;j<21;j++) {
-				  _NhlMapita(Aws,ya1[i]+j*yinc,xa[i]+j*xinc,
-					     first,10,-1,0,entry_name);
-				  c_mapit(ya[i]+j*yinc,xa[i]+j*xinc,first);
-			  }
-		  }
-		  _NhlMapiqa(Aws,10,-1,0,entry_name);
-		  c_mapiq();
-#endif
-
-	        }
-
-#if 0
-	c_arseti("dc",20);
-	_NhlArdbpa(Aws,3,"debug group 3",entry_name);
-#endif
 	if (do_fill) {
 		
 		subret = _NhlArscam(Aws,(_NHLCALLF(nhlfll,NHLFLL)),
@@ -2268,6 +2268,107 @@ static NhlErrorTypes ContourPostDraw
 
 
 /*
+ * Function:	AddDataBoundToAreamap
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: 
+ *		 
+ */	
+
+static NhlErrorTypes AddDataBoundToAreamap
+#if  __STDC__
+(
+	NhlContourLayer	cl
+)
+#else
+(cl)
+	NhlContourLayer	cl;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*entry_name = "ContourDraw";
+	NhlContourLayerPart	*cnp = (NhlContourLayerPart *) &cl->contour;
+	int			i;
+	int			status;
+	NhlBoolean		ezmap = False;
+	int			xrev,yrev;
+	float			xa[5],ya[5];
+
+#define _cnMAPBOUNDINC	20
+
+	if (! strcmp(Trans_Obj->base.layer_class->base_class.class_name,
+		   "MapTransObj")) {
+		ezmap = True;
+	}
+
+	gset_linewidth(4.0);
+	gset_line_colr_ind(30);
+
+	if (! ezmap) {
+		float wlx,wby,wrx,wuy;
+
+		_NhlDataToWin(Trans_Obj,(NhlLayer) cl,&cnp->xlb,&cnp->ylb,
+			      1,&wlx,&wby,&status,
+			      NULL,NULL);
+		if (status) {
+			printf("warning, can't draw data boundary\n");
+		}
+		_NhlDataToWin(Trans_Obj,(NhlLayer) cl,&cnp->xub,&cnp->yub,
+			      1,&wrx,&wuy,&status,
+			      NULL,NULL);
+		if (status) {
+			printf("warning, can't draw data boundary\n");
+		}
+		xa[0] = xa[1] = xa[4] = wlx;
+		xa[2] = xa[3] = wrx;
+		ya[0] = ya[3] = ya[4] = wuy;
+		ya[1] = ya[2] = wby;
+		xrev=wlx>wrx;
+		yrev=wby>wuy;
+		if (! (xrev || yrev) || (xrev && yrev)) 
+			_NhlAredam(Aws,xa,ya,5,3,0,-1,entry_name);
+		else
+			_NhlAredam(Aws,xa,ya,5,3,-1,0,entry_name);
+	}
+	else {
+		NhlBoolean	started = False;
+		float		xinc,yinc; 
+		int		j;
+
+		xa[0] = xa[1] = xa[4] = cnp->xlb;
+		xa[2] = xa[3] = cnp->xub;
+		ya[0] = ya[3] = ya[4] = cnp->ylb;
+		ya[1] = ya[2] = cnp->yub;
+
+		for (i=0;  i < 4; i++) {
+			xinc = (xa[i+1] - xa[i]) / _cnMAPBOUNDINC;
+			yinc = (ya[i+1] - ya[i]) / _cnMAPBOUNDINC;
+			if (! started) {
+				_NhlMapita(Aws,ya[i],xa[i],
+					   0,3,-1,0,entry_name);
+				c_mapit(ya[i],xa[i],0);
+				started = True;
+			}
+			for (j = 0; j < _cnMAPBOUNDINC + 1; j++) {
+				_NhlMapita(Aws,ya[i]+j*yinc,xa[i]+j*xinc,
+					   1,3,-1,0,entry_name);
+				c_mapit(ya[i]+j*yinc,xa[i]+j*xinc,1);
+			}
+		}
+		_NhlMapiqa(Aws,3,-1,0,entry_name);
+		c_mapiq();
+	}
+	return NhlNOERROR;
+}
+
+/*
  * Function:	GetData
  *
  * Description:	
@@ -2320,9 +2421,7 @@ static NhlErrorTypes GetData
 	}
 	sfp = (NhlScalarFieldFloatLayerPart *) &sfl->sfieldfloat;
 
-	*scalar_field = (float *) sfp->d_arr->data;
-	*first_dim = sfp->d_arr->len_dimensions[0];
-	*second_dim = sfp->d_arr->len_dimensions[1];
+	*scalar_field = &((float *) sfp->d_arr->data)[sfp->begin];
 
 	return NhlNOERROR;
 }
@@ -2428,20 +2527,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
 		c_cpseti("CLU",clup[i]);
 		c_cpseti("AIA",100+i+1);
 		c_cpseti("AIB",100+i);
-#if 0
-		c_cpseti("CLC", cnp->mono_line_color ? clcp[0] : clcp[i]);
-		c_cpsetr("CLL",cnp->mono_line_thickness ? cllp[0] : cllp[i]);
-		c_cpseti("LLC",cnp->line_lbls.mono_color ? llcp[0] : llcp[i]);
-#endif
-
 		c_cpsetc("LLT",LLabel_AttrsP->text[i]);
-#if 0
-		dpix = Mono_Dash_Pattern ? 
-			Dash_Patterns[0] : Dash_Patterns[i];
-		dpix %= Dash_Table_Len;
-		strcpy(buffer,Dash_Table[dpix]);
-		c_cpsetc("CLD",buffer);
-#endif
 	}
 	c_cpsetr("CIU",cnp->level_spacing);
  
@@ -2623,12 +2709,9 @@ static NhlErrorTypes UpdateFillInfo
 }
 
 /*
- * Function:	SetUpTransObjs
+ * Function:	SetUpLLTransObj
  *
- * Description: Sets up the LogLinear transformation object for the generic
- *		LogLinear plot object. Note that since this trans object
- *		does not require any dynamic memory, the same trans object
- *		persists for the life of the Contour object.
+ * Description: Sets up a LogLinear transformation object.
  *
  * In Args:	xnew	new instance record
  *		xold	old instance record if not initializing
@@ -2640,7 +2723,7 @@ static NhlErrorTypes UpdateFillInfo
  *
  * Side Effects:	Objects created and destroyed.
  */
-static NhlErrorTypes SetUpTransObj
+static NhlErrorTypes SetUpLLTransObj
 #if  __STDC__
 (
 	NhlContourLayer	cnnew,
@@ -2665,13 +2748,54 @@ static NhlErrorTypes SetUpTransObj
         NhlSArg			sargs[16];
         int			nargs = 0;
 
+
 	entry_name = (init) ? "ContourInitialize" : "ContourSetValues";
-/*
- * Since no dynamic memory is involved a LogLin transformation only
- * needs to be created once. It will not be freed until the object
- * is destroyed.
- */
-	if (init || tfp->trans_obj == NULL) {
+
+	if (init)
+		tfp->trans_obj = NULL;
+	else if (ocnp->use_irr_trans && tfp->trans_obj != NULL) {
+		subret = NhlDestroy(tfp->trans_obj->base.id);
+		if ((ret = MIN(ret,subret) < NhlWARNING)) {
+			e_text = "%s: Error destroying irregular trans object";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+		tfp->trans_obj = NULL;
+	}
+
+	if (cnp->data_init) {
+		NhlBoolean	rev;
+		float		tmin,tmax;
+
+		cnp->xc1 = cnp->sfp->x_start;
+		cnp->xcm = cnp->sfp->x_end;
+		rev = cnp->sfp->x_start > cnp->sfp->x_end;
+		if (! rev) {
+			tmin = MAX(cnp->sfp->x_start,cnp->x_min); 
+			tmax = MIN(cnp->sfp->x_end,cnp->x_max);
+		}
+		else {
+			tmin = MAX(cnp->sfp->x_end,cnp->x_min); 
+			tmax = MIN(cnp->sfp->x_start,cnp->x_max);
+		}
+		cnp->xlb = tmin;
+		cnp->xub = tmax;
+
+		cnp->yc1 = cnp->sfp->y_start;
+		cnp->ycn = cnp->sfp->y_end;
+		rev = cnp->sfp->y_start > cnp->sfp->y_end;
+		if (! rev) {
+			tmin = MAX(cnp->sfp->y_start,cnp->y_min); 
+			tmax = MIN(cnp->sfp->y_end,cnp->y_max);
+		}
+		else {
+			tmin = MAX(cnp->sfp->y_end,cnp->y_min); 
+			tmax = MIN(cnp->sfp->y_start,cnp->y_max);
+		}
+		cnp->ylb = tmin;
+		cnp->yub = tmax;
+	}
+	if (tfp->trans_obj == NULL) {
 
 		cnp->new_draw_req = True;
 		NhlSetSArg(&sargs[nargs++],NhlNtrXLog,cnp->x_log);
@@ -2690,9 +2814,9 @@ static NhlErrorTypes SetUpTransObj
 		sprintf(buffer,"%s",cnnew->base.name);
 		strcat(buffer,".Trans");
 
-		subret = _NhlALCreateChild(&tmpid,buffer,
-					   NhllogLinTransObjLayerClass,
-					   (NhlLayer)cnnew,sargs,nargs);
+		subret = NhlALCreate(&tmpid,buffer,
+				     NhllogLinTransObjLayerClass,
+				     cnnew->base.id,sargs,nargs);
 
 		ret = MIN(subret,ret);
 
@@ -2730,8 +2854,293 @@ static NhlErrorTypes SetUpTransObj
 		NhlSetSArg(&sargs[nargs++],NhlNtrOutOfRangeF,
 			   cnp->out_of_range_val);
 
-	subret = _NhlALSetValuesChild(tfp->trans_obj->base.id,
-				      (NhlLayer) cnnew,sargs,nargs);
+	subret = NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
+	if (nargs > 0)
+		cnp->new_draw_req = True;
+	return MIN(ret,subret);
+
+}
+
+
+/*
+ * Function:	SetIrrCoordBounds
+ *
+ * Description: Sets the max and min coord bounds for an Irregular trans
+ *
+ * In Args:	cnp	pointer to Contour layer part
+ *		ctype	which coordinate
+ *		count	length of irregular coord array
+ *		entry_name the high level entry point
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:   A number of fields in the ContourLayerPart are set
+ */
+
+static NhlErrorTypes SetIrrCoordBounds
+#if  __STDC__
+(
+	NhlContourLayerPart	*cnp,
+	cnCoord			ctype,
+	int			count,
+	NhlString		entry_name
+)
+#else 
+(cnp,ctype,count,entry_name)
+	NhlContourLayerPart	*cnp;
+	cnCoord			ctype;
+	int			count;
+	NhlString		entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlBoolean	rev;
+	float		tmin,tmax;
+
+	if (ctype == cnXCOORD) {
+
+		cnp->xc1 = 0;
+		cnp->xcm = count - 1;
+		rev = cnp->sfp->x_start > cnp->sfp->x_end;
+		if (! rev) {
+			tmin = MAX(cnp->sfp->x_start,cnp->x_min); 
+			tmax = MIN(cnp->sfp->x_end,cnp->x_max);
+		}
+		else {
+			tmin = MAX(cnp->sfp->x_end,cnp->x_min); 
+			tmax = MIN(cnp->sfp->x_start,cnp->x_max);
+		}
+		cnp->xlb = tmin;
+		cnp->xub = tmax;
+		if (tmin > cnp->x_min) {
+			e_text = 
+			 "%s: %s cannot be less than %s min value: resetting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+				  entry_name,NhlNtrXMinF,NhlNsfXArray);
+			ret = MIN(ret,NhlWARNING);
+			cnp->x_min = tmin;
+		}
+		if (tmax < cnp->x_max) {
+			e_text = 
+		      "%s: %s cannot be greater than %s max value: resetting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+				  entry_name,NhlNtrXMaxF,NhlNsfXArray);
+			ret = MIN(ret,NhlWARNING);
+			cnp->x_max = tmax;
+		}
+	}
+	else if (ctype == cnYCOORD) {
+		
+		cnp->yc1 = 0;
+		cnp->ycn = count - 1;
+
+		rev = cnp->sfp->y_start > cnp->sfp->y_end;
+		if (! rev) {
+			tmin = MAX(cnp->sfp->y_start,cnp->y_min); 
+			tmax = MIN(cnp->sfp->y_end,cnp->y_max);
+		}
+		else {
+			tmin = MAX(cnp->sfp->y_end,cnp->y_min); 
+			tmax = MIN(cnp->sfp->y_start,cnp->y_max);
+		}
+		cnp->ylb = tmin;
+		cnp->yub = tmax;
+		if (tmin > cnp->y_min) {
+			e_text = 
+			 "%s: %s cannot be less than %s min value: resetting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+				  entry_name,NhlNtrYMinF,NhlNsfYArray);
+			ret = MIN(ret,NhlWARNING);
+			cnp->y_min = tmin;
+		}
+		if (tmax < cnp->y_max) {
+			e_text = 
+		      "%s: %s cannot be greater than %s max value: resetting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+				  entry_name,NhlNtrYMaxF,NhlNsfYArray);
+			ret = MIN(ret,NhlWARNING);
+			cnp->y_max = tmax;
+		}
+	}
+	return ret;
+}
+/*
+ * Function:	SetUpIrrTransObj
+ *
+ * Description: Sets up an Irregular transformation object.
+ *
+ * In Args:	xnew	new instance record
+ *		xold	old instance record if not initializing
+ *		init	true if initialization
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:	Objects created and destroyed.
+ */
+static NhlErrorTypes SetUpIrrTransObj
+#if  __STDC__
+(
+	NhlContourLayer	cnnew,
+	NhlContourLayer	cnold,
+	NhlBoolean	init
+)
+#else 
+(cnnew,cnold,init)
+	NhlContourLayer	cnnew;
+	NhlContourLayer	cnold;
+	NhlBoolean	init;
+#endif
+{
+ 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	char			*entry_name;
+	NhlContourLayerPart	*cnp = &(cnnew->contour);
+	NhlContourLayerPart	*ocnp = &(cnold->contour);
+	NhlTransformLayerPart	*tfp = &(cnnew->trans);
+	char			buffer[_NhlMAXRESNAMLEN];
+	int			tmpid;
+        NhlSArg			sargs[16];
+        int			nargs = 0;
+	float			float_buf[3];
+	NhlBoolean		x_irr, y_irr;
+	float			*fp;
+	int			count;
+
+	entry_name = (init) ? "ContourInitialize" : "ContourSetValues";
+
+	if (! ocnp->use_irr_trans && tfp->trans_obj != NULL) {
+		subret = NhlDestroy(tfp->trans_obj->base.id);
+		if ((ret = MIN(ret,subret) < NhlWARNING)) {
+			e_text = "%s: Error destroying irregular trans object";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+		tfp->trans_obj = NULL;
+	}
+
+	x_irr = cnp->sfp->x_arr == NULL ? False : True;
+	y_irr = cnp->sfp->y_arr == NULL ? False : True;
+	if (! x_irr && ! y_irr) {
+		e_text = "%s: Internal inconsistency setting irregular trans";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	if (init || tfp->trans_obj == NULL ||
+	    cnp->sfp->x_arr != ocnp->sfp->x_arr ||
+	    cnp->sfp->x_start != ocnp->sfp->x_start ||
+	    cnp->sfp->x_end != ocnp->sfp->x_end ||
+	    cnp->x_min != ocnp->x_min ||
+	    cnp->x_max != ocnp->x_max) {
+
+		if (x_irr) {
+			fp = (float *) cnp->sfp->x_arr->data;
+			count = cnp->sfp->x_arr->len_dimensions[0];
+		}
+		else {
+			fp = float_buf;
+			fp[0] = cnp->sfp->x_start;
+			fp[2] = cnp->sfp->x_end;
+			if (! cnp->x_log) { 
+				fp[1] = (fp[0] + fp[2])/2.0;
+			}
+			else {
+				fp[1] = pow(10.0,
+					    (log10(fp[0])+log10(fp[2])) / 2.0);
+				NhlSetSArg(&sargs[nargs++],NhlNtrXUseLog,True);
+			}
+			count = 3;
+		}
+		subret = SetIrrCoordBounds(cnp,cnXCOORD,count,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING)
+			return ret;
+
+		NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,fp);
+		NhlSetSArg(&sargs[nargs++],NhlNtrXNumPoints,count);
+		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,cnp->x_min);
+		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,cnp->x_max);
+	}
+
+	if (init || tfp->trans_obj == NULL ||
+	    cnp->sfp->y_arr != ocnp->sfp->y_arr ||
+	    cnp->sfp->y_start != ocnp->sfp->y_start ||
+	    cnp->sfp->y_end != ocnp->sfp->y_end ||
+	    cnp->y_min != ocnp->y_min ||
+	    cnp->y_max != ocnp->y_max) {
+
+		if (y_irr) {
+			fp = (float *) cnp->sfp->y_arr->data;
+			count = cnp->sfp->y_arr->len_dimensions[0];
+		}
+		else {
+			fp = float_buf;
+			fp[0] = cnp->sfp->y_start;
+			fp[2] = cnp->sfp->y_end;
+			if (! cnp->y_log) { 
+				fp[1] = (fp[0] + fp[2])/2.0;
+			}
+			else {
+				fp[1] = pow(10.0,
+					    (log10(fp[0])+log10(fp[2])) / 2.0);
+				NhlSetSArg(&sargs[nargs++],NhlNtrYUseLog,True);
+			}
+			count = 3;
+		}
+		subret = SetIrrCoordBounds(cnp,cnYCOORD,count,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING)
+			return ret;
+
+		NhlSetSArg(&sargs[nargs++],NhlNtrYCoordPoints,fp);
+		NhlSetSArg(&sargs[nargs++],NhlNtrYNumPoints,count);
+		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,cnp->y_min);
+		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,cnp->y_max);
+	}
+
+	if (init || tfp->trans_obj == NULL) {
+
+		cnp->new_draw_req = True;
+
+		NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,cnp->x_reverse);
+		NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,cnp->y_reverse);
+		NhlSetSArg(&sargs[nargs++],NhlNtrOutOfRangeF,
+			   cnp->out_of_range_val);
+
+		sprintf(buffer,"%s",cnnew->base.name);
+		strcat(buffer,".Trans");
+
+		subret = NhlALCreate(&tmpid,buffer,
+				     NhlirregularType2TransObjLayerClass,
+				     cnnew->base.id,sargs,nargs);
+
+		ret = MIN(subret,ret);
+
+		tfp->trans_obj = _NhlGetLayer(tmpid);
+
+		if(tfp->trans_obj == NULL){
+			e_text = "%s: Error creating transformation object";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+
+		return ret;
+	}
+
+	if (cnp->x_reverse != ocnp->x_reverse)
+		NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,cnp->x_reverse);
+	if (cnp->y_reverse != ocnp->y_reverse)
+		NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,cnp->y_reverse);
+
+	if (cnp->out_of_range_val != ocnp->out_of_range_val)
+		NhlSetSArg(&sargs[nargs++],NhlNtrOutOfRangeF,
+			   cnp->out_of_range_val);
+
+	subret = NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
+
 	if (nargs > 0)
 		cnp->new_draw_req = True;
 	return MIN(ret,subret);
@@ -3118,14 +3527,16 @@ static NhlErrorTypes    ManageData
 	NhlScalarFieldFloatLayer	sfl;
 	_NhlDataNodePtr			*dlist = NULL;
 	NhlBoolean			new;
-	int				ndata;
+	int				ndata = 0;
 
-	if (! init && (cnp->scalar_field_data == ocnp->scalar_field_data)) 
+	if (! cnp->data_changed && 
+	    (cnp->scalar_field_data == ocnp->scalar_field_data)) 
 		return NhlNOERROR;
 
 	entry_name = (init) ? "ContourInitialize" : "ContourSetValues";
 
-	ndata = _NhlGetDataInfo(cnp->scalar_field_data,&dlist);
+	if (cnp->scalar_field_data != NULL)
+		ndata = _NhlGetDataInfo(cnp->scalar_field_data,&dlist);
 	if (ndata <= 0) {
 		cnp->zmin = 0.0;
 		cnp->zmax = 1.0;
@@ -3140,7 +3551,7 @@ static NhlErrorTypes    ManageData
 		return NhlFATAL;
 	}
 
-	sfl = (NhlScalarFieldFloatLayer) _NhlGetDataSet(dlist[0],&new);
+ 	sfl = (NhlScalarFieldFloatLayer) _NhlGetDataSet(dlist[0],&new);
 	if (sfl == NULL) {
 		cnp->data_init = False;
 		e_text = "%s: internal error retrieving data set";
@@ -3153,6 +3564,8 @@ static NhlErrorTypes    ManageData
 	cnp->zmax = cnp->sfp->data_max;
 	cnp->data_init = True;
 	cnp->data_changed = True;
+	cnp->use_irr_trans = (cnp->sfp->x_arr == NULL &&
+			      cnp->sfp->y_arr == NULL) ? False : True;
 
 	return NhlNOERROR;
 }
@@ -3386,7 +3799,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	float *fp;
 	float fval;
 	int	init_count;
-	NhlBoolean need_check;
+	NhlBoolean need_check,changed;
 	int old_count;
 	float *levels = NULL;
 	NhlBoolean levels_modified = False, flags_modified = False;
@@ -3410,13 +3823,13 @@ static NhlErrorTypes    ManageDynamicArrays
  */
 	ga = init ? NULL : ocnp->levels;
 	subret = ManageGenArray(&ga,count,cnp->levels,Qfloat,NULL,
-				&old_count,&init_count,&need_check,
+				&old_count,&init_count,&need_check,&changed,
 				NhlNcnLevels,entry_name);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
 		return ret;
 
-	ocnp->levels = cnp->levels;
+	ocnp->levels = changed ? NULL : cnp->levels;
 	cnp->levels = ga;
 	if (levels_modified) {
 		if (levels == NULL) {
@@ -3438,13 +3851,13 @@ static NhlErrorTypes    ManageDynamicArrays
 	flags_modified = 
 		(ga = init ? NULL : ocnp->level_flags) != cnp->level_flags;
 	subret = ManageGenArray(&ga,count,cnp->level_flags,Qint,NULL,
-				&old_count,&init_count,&need_check,
+				&old_count,&init_count,&need_check,&changed,
 				NhlNcnLevelFlags,entry_name);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
 		return ret;
 
-	ocnp->level_flags = cnp->level_flags;
+	ocnp->level_flags = changed ? NULL : cnp->level_flags;
 	cnp->level_flags = ga;
 
 	ip = (int *) cnp->level_flags->data;
@@ -3501,12 +3914,12 @@ static NhlErrorTypes    ManageDynamicArrays
 		count = cnp->mono_fill_color ? 1 : cnp->fill_count;
 	}
 	subret = ManageGenArray(&ga,count,cnp->fill_colors,Qint,NULL,
-				&old_count,&init_count,&need_check,
+				&old_count,&init_count,&need_check,&changed,
 				NhlNcnFillColors,entry_name);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
 		return ret;
-	ocnp->fill_colors = cnp->fill_colors;
+	ocnp->fill_colors = changed ? NULL : cnp->fill_colors;
 	cnp->fill_colors = ga;
 
 	if (need_check) {
@@ -3532,11 +3945,11 @@ static NhlErrorTypes    ManageDynamicArrays
 	}
 	if (ga != cnp->fill_patterns) cnp->new_draw_req = True;
 	subret = ManageGenArray(&ga,count,cnp->fill_patterns,Qint,NULL,
-				&old_count,&init_count,&need_check,
+				&old_count,&init_count,&need_check,&changed,
 				NhlNcnFillPatterns,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
 		return ret;
-	ocnp->fill_patterns = cnp->fill_patterns;
+	ocnp->fill_patterns = changed ? NULL : cnp->fill_patterns;
 	cnp->fill_patterns = ga;
 
 	if (need_check) {
@@ -3573,13 +3986,13 @@ static NhlErrorTypes    ManageDynamicArrays
 	}
 	fval = 1.0;
 	subret = ManageGenArray(&ga,count,cnp->fill_scales,Qfloat,&fval,
-				&old_count,&init_count,&need_check,
+				&old_count,&init_count,&need_check,&changed,
 				NhlNcnFillScales,entry_name);
 	
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
 		return ret;
 
-	ocnp->fill_scales = cnp->fill_scales;
+	ocnp->fill_scales = changed ? NULL : cnp->fill_scales;
 	cnp->fill_scales = ga;
 	
 	if (need_check) {
@@ -3611,11 +4024,11 @@ static NhlErrorTypes    ManageDynamicArrays
 		count = cnp->mono_line_color ? 1 : cnp->level_count;
 	}
 	subret = ManageGenArray(&ga,count,cnp->line_colors,Qint,NULL,
-				&old_count,&init_count,&need_check,
+				&old_count,&init_count,&need_check,&changed,
 				NhlNcnLineColors,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
 		return ret;
-	ocnp->line_colors = cnp->line_colors;
+	ocnp->line_colors = changed ? NULL : cnp->line_colors;
 	cnp->line_colors = ga;
 
 		
@@ -3654,12 +4067,12 @@ static NhlErrorTypes    ManageDynamicArrays
 		count = cnp->mono_line_dash_pattern ? 1 : cnp->level_count;
 	}
 	subret = ManageGenArray(&ga,count,cnp->line_dash_patterns,Qint,NULL,
-				&old_count,&init_count,&need_check,
+				&old_count,&init_count,&need_check,&changed,
 				NhlNcnLineDashPatterns,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
 		return ret;
 
-	ocnp->line_dash_patterns = cnp->line_dash_patterns;
+	ocnp->line_dash_patterns = changed ? NULL : cnp->line_dash_patterns;
 	cnp->line_dash_patterns = ga;
 
 	if (need_check) {
@@ -3696,13 +4109,13 @@ static NhlErrorTypes    ManageDynamicArrays
 	}
 	fval = 1.0;
 	subret = ManageGenArray(&ga,count,cnp->line_thicknesses,Qfloat,&fval,
-				&old_count,&init_count,&need_check,
+				&old_count,&init_count,&need_check,&changed,
 				NhlNcnLineThicknesses,entry_name);
 	
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
 		return ret;
 
-	ocnp->line_thicknesses = cnp->line_thicknesses;
+	ocnp->line_thicknesses = changed ? NULL : cnp->line_thicknesses;
 	cnp->line_thicknesses = ga;
 	
 	if (need_check) {
@@ -3732,13 +4145,13 @@ static NhlErrorTypes    ManageDynamicArrays
 	ga = init ? NULL : ocnp->llabel_strings;
 	subret = ManageGenArray(&ga,count,cnp->llabel_strings,
 				Qstring,NULL,
-				&old_count,&init_count,&need_check,
+				&old_count,&init_count,&need_check,&changed,
 				NhlNcnLineLabelStrings,entry_name);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
 		return ret;
 
-	ocnp->llabel_strings = cnp->llabel_strings;
+	ocnp->llabel_strings = changed ? NULL : cnp->llabel_strings;
 	cnp->llabel_strings = ga;
 
 	if (levels_modified || need_check) {
@@ -3796,6 +4209,8 @@ static NhlErrorTypes    ManageDynamicArrays
 					  e_text,entry_name);
 				return NhlFATAL;
 			}
+			cnp->ll_strings->data = (void *) sp;
+			cnp->ll_strings->num_elements = count;
 		}
 		ip = (int *) cnp->level_flags->data;
 		for (i = 0; i < count; i++) {
@@ -3824,11 +4239,11 @@ static NhlErrorTypes    ManageDynamicArrays
 		count = cnp->line_lbls.mono_color ? 1 : cnp->level_count;
 	}
 	subret = ManageGenArray(&ga,count,cnp->llabel_colors,Qint,NULL,
-				&old_count,&init_count,&need_check,
+				&old_count,&init_count,&need_check,&changed,
 				NhlNcnLineLabelColors,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
 		return ret;
-	ocnp->llabel_colors = cnp->llabel_colors;
+	ocnp->llabel_colors = changed ? NULL : cnp->llabel_colors;
 	cnp->llabel_colors = ga;
 
 
@@ -3906,14 +4321,13 @@ static NhlErrorTypes    ManageDynamicArrays
  *		*need_check     True if a GenArray copy occurs or the number
  *				of elements increases and no initialization
  *				value is supplied. False otherwise.
+ *		*changed	True if the data has been modified in any way.
  *
  *
  * Return Values:
  *
  * Side Effects: The internal copy of each GenArray is modified to reflect
  *	changes requested via ContourSetValues
- *	If the data changes in any way the new_draw_req flag is set True,
- *	so that the segment will be redrawn.
  */
 
 /*ARGSUSED*/
@@ -3927,10 +4341,12 @@ static NhlErrorTypes    ManageGenArray
 	 int		*old_count,
 	 int		*init_count,
 	 NhlBoolean	*need_check,
+	 NhlBoolean	*changed,
 	 NhlString	resource_name,
 	 NhlString	entry_name)
 #else
-(ga,count,copy_ga,type,init_val,old_count,init_count,need_check,resource_name,entry_name)
+(ga,count,copy_ga,type,init_val,old_count,init_count,
+ need_check,changed,resource_name,entry_name)
 	NhlGenArray	*ga;
 	int		count;
 	NhlGenArray	copy_ga;
@@ -3939,6 +4355,7 @@ static NhlErrorTypes    ManageGenArray
 	int		*old_count;
 	int		*init_count;
 	NhlBoolean	*need_check;
+	NhlBoolean	*changed;
 	NhlString	resource_name;
 	NhlString	entry_name;
 #endif
@@ -3951,6 +4368,7 @@ static NhlErrorTypes    ManageGenArray
 
 	*init_count = 0;
 	*need_check = False;
+	*changed = False;
 	*old_count = 0;
 
 	if (type == Qint) {
@@ -3986,6 +4404,7 @@ static NhlErrorTypes    ManageGenArray
 			}
 			(*ga)->data = datap;
 			(*ga)->num_elements = count;
+			*changed = True;
 		}
 		else if (*ga == copy_ga) {
 			*init_count = (*ga)->num_elements;
@@ -4008,6 +4427,7 @@ static NhlErrorTypes    ManageGenArray
 			return NhlFATAL;
 		}
 		(*ga)->my_data = True;
+		*changed = True;
 	}
 
 /* 
@@ -4028,6 +4448,7 @@ static NhlErrorTypes    ManageGenArray
 			return ret;
 		}
 		*init_count = copy_ga->num_elements;
+		*changed = True;
 	}
 
 	if (*init_count < count) {
@@ -4069,6 +4490,7 @@ static NhlErrorTypes    ManageGenArray
 			}
 		}
 		*init_count = count;
+		*changed = True;
 	}
 
 	return ret;
@@ -4338,8 +4760,8 @@ static NhlErrorTypes    SetupLevelsManual
 	float			zmin,zmax;
 	float			*fp;
 
-	zmax = MIN(cnp->max_level_val, cnp->zmax);
-	zmin = MAX(cnp->min_level_val, cnp->zmin);
+	zmax = cnp->max_level_val;
+	zmin = cnp->min_level_val;
 	count = (zmax - zmin) / cnp->level_spacing + 1.001;
 
 	if (count > cnp->max_level_count) {
@@ -4943,7 +5365,7 @@ int (_NHLCALLF(nhlfll,NHLFLL))
 
 	for (i = 0; i < *nai; i++) {
 		if (iag[i] == 10 && iai[i] == -1) {
-			return;
+			return 0;
 		}
 	}
 
@@ -4956,7 +5378,7 @@ int (_NHLCALLF(nhlfll,NHLFLL))
 				Fill_Patterns[0] : Fill_Patterns[ix];
 			fscale = Mono_Fill_Scale ?
 				Fill_Scales[0] : Fill_Scales[ix];
-
+#if 0
 			if (iai[i] == 102) {
 				int pai,aia,aib;
 				float f;
@@ -4971,6 +5393,7 @@ int (_NHLCALLF(nhlfll,NHLFLL))
 				      printf("\t\tx,y %f %f\n",xcs[i],ycs[i]);
 				}
 			}
+#endif
 			NhlVASetValues(Wkptr->base.id,
 				       NhlNwkFillIndex, pat_ix,
 				       NhlNwkFillColor, col_ix,
@@ -5070,9 +5493,6 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 		}
 			
                 c_dashdc(buffer,jcrt,jsize);
-#if 0
-		printf("seglen %f jcrt %d, jsize %d\n",Dash_Seglen,jcrt,jsize);
-#endif
 		
 	}
 	return;
@@ -5105,14 +5525,6 @@ void   (_NHLCALLF(cpchhl,CPCHHL))
 #endif
 
 {
-#if 0
-	float zdv;
-	char cval[80];
-
-	c_cpgetc("lot",cval,80);
-	c_cpgetr("zdv",&zdv);
-	printf("%s%f\n",cval,zdv);
-#endif
 
 	if (*iflg == 2) {
 		gset_fill_colr_ind(High_Label_AttrsP->gks_bcolor);

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourP.h,v 1.7 1994-04-29 21:31:10 dbrown Exp $
+ *      $Id: ContourP.h,v 1.8 1994-05-17 22:26:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -186,6 +186,9 @@ typedef struct _NhlContourLayerPart {
 	int		label_aws_id;
 	int		fill_aws_id;
 	int		ezmap_aws_id;
+	NhlBoolean	use_irr_trans;
+	float		xc1,xcm,yc1,ycn;
+	float		xlb,xub,ylb,yub;
 
 	NhlScalarFieldFloatLayerPart	*sfp;
 

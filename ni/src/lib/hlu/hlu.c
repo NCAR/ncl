@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.14 1994-05-12 23:53:10 boote Exp $
+ *      $Id: hlu.c,v 1.15 1994-05-17 22:26:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1647,7 +1647,8 @@ _NhlTmpFile
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NULL;
 	}
-	NhlFree(fname);
+
+	free(fname);
 	
 	return fp;
 }

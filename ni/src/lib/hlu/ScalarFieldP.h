@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarFieldP.h,v 1.1 1994-04-29 21:31:33 dbrown Exp $
+ *      $Id: ScalarFieldP.h,v 1.2 1994-05-17 22:26:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,18 +35,26 @@
 #define	NhlNsfMissingValueF	".sfMissingValueF"
 #define	NhlNsfDataMaxF		".sfDataMaxF"
 #define	NhlNsfDataMinF		".sfDataMinF"
-#define	NhlNsfXMaxF		".sfXMaxF"
-#define	NhlNsfYMaxF		".sfYMaxF"
-#define	NhlNsfXMinF		".sfXMinF"
-#define	NhlNsfYMinF		".sfYMinF"
+#define	NhlNsfXCStartF		".sfXCStartF"
+#define	NhlNsfXCEndF		".sfXCEndF"
+#define	NhlNsfYCStartF		".sfYCStartF"
+#define	NhlNsfYCEndF		".sfYCEndF"
+#define NhlNsfDataBegin		".sfDataBegin"
+#define NhlNsfDataFastDim	".sfDataFastDim"
+#define NhlNsfDataFastLen	".sfDataFastLen"
+#define NhlNsfDataSlowLen	".sfDataSlowLen"
 
 #define	NhlCsfMissingValueF	".SfMissingValueF"
 #define	NhlCsfDataMaxF		".SfDataMaxF"
 #define	NhlCsfDataMinF		".SfDataMinF"
-#define	NhlCsfXMaxF		".SfXMaxF"
-#define	NhlCsfYMaxF		".SfYMaxF"
-#define	NhlCsfXMinF		".SfXMinF"
-#define	NhlCsfYMinF		".SfYMinF"
+#define	NhlCsfXCStartF		".SfXCStartF"
+#define	NhlCsfXCEndF		".SfXCEndF"
+#define	NhlCsfYCStartF		".SfYCStartF"
+#define	NhlCsfYCEndF		".SfYCEndF"
+#define NhlCsfDataBegin		".SfDataBegin"
+#define NhlCsfDataFastDim	".SfDataFastDim"
+#define NhlCsfDataFastLen	".SfDataFastLen"
+#define NhlCsfDataSlowLen	".SfDataSlowLen"
 
 typedef struct _NhlScalarFieldLayerPart{
 
@@ -58,34 +66,31 @@ typedef struct _NhlScalarFieldLayerPart{
 	NhlGenArray	x_arr;
 	NhlGenArray	y_arr;
 
+	NhlBoolean	subset_by_index;
 	NhlBoolean	copy_arrays;
-	NhlBoolean	data_order_set;
-	int		data_order;
+	NhlBoolean	exchange_dimensions;
 
 	NhlGenArray	missing_value;
 	NhlGenArray	data_min;
 	NhlGenArray	data_max;
-	NhlGenArray	x_min;
-	NhlGenArray	x_max;
-	NhlGenArray	y_min;
-	NhlGenArray	y_max;
+	NhlGenArray	x_start;
+	NhlGenArray	x_end;
+	NhlGenArray	y_start;
+	NhlGenArray	y_end;
 
-	NhlGenArray	x_subset_min;
-	NhlGenArray	x_subset_max;
-	NhlGenArray	y_subset_min;
-	NhlGenArray	y_subset_max;
+	NhlGenArray	x_subset_start;
+	NhlGenArray	x_subset_end;
+	NhlGenArray	y_subset_start;
+	NhlGenArray	y_subset_end;
 
-	int		x_index_min;
-	int		x_index_max;
-	int		y_index_min;
-	int		y_index_max;
+	int		x_index_start;
+	int		x_index_end;
+	int		y_index_start;
+	int		y_index_end;
 	
 	int		x_stride;
 	int		y_stride;
 
-	/* Private Fields */
-	NrmQuark		type;
-	NhlLayer		child;
 
 } NhlScalarFieldLayerPart;
 

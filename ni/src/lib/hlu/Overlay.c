@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.12 1994-05-12 23:51:59 boote Exp $
+ *      $Id: Overlay.c,v 1.13 1994-05-17 22:26:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1802,7 +1802,8 @@ ManageTickMarks
 	"%s: MAP tick mark style not yet implemented; turning tick marks off";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		ovp->display_tickmarks = init ? Nhl_ovNoCreate : Nhl_ovNever;
-		return MIN(ret,NhlWARNING);
+		ret = MIN(ret,NhlWARNING);
+		if (init) return ret;
 	}
 	else if (! strcmp(trobj_name,"IrregularType2TransObj")) {
 		tm_style = NhlIRREGULAR;
@@ -1816,10 +1817,19 @@ ManageTickMarks
 			"%s: unknown transformation; turning tick marks off";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		ovp->display_tickmarks = init ? Nhl_ovNoCreate : Nhl_ovNever;
+		ret = MIN(ret,NhlWARNING);
+		if (init) return ret;
+	}
+	if (ovp->display_tickmarks == Nhl_ovNever) {
+		subret = _NhlALSetValuesChild(ovp->tickmarks->base.id,
+					      (NhlLayer)ovnew,
+					      sargs,nargs);
+		return MIN(subret,ret);
 	}
 		
 
 	if (tm_style == NhlLINEAR) {
+		count = 2;
 		x_irr[0] = ovnew->view.x;
 		y_irr[0] = ovnew->view.y - ovnew->view.height;
 		x_irr[1] = ovnew->view.x + ovnew->view.width;
@@ -1838,14 +1848,25 @@ ManageTickMarks
 	subret = NhlNDCToData(ovp->ov_recs[0]->plot->base.id,
 			      x_irr,y_irr,count,x_irr,y_irr,
 			      xmiss,ymiss,&status,&out_of_range);
-		
-	if (status  || (ret = MIN(ret,subret)) < NhlWARNING) {
+	ret = MIN(ret,subret);
+	if (status  || ret < NhlWARNING) {
 		e_text = 
 		   "%s: can't transform NDC to Data; turning tick marks off";
 		ret = MIN(ret,NhlWARNING);
 		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
-		return ret;
+		if (init) {
+			ovp->display_tickmarks = Nhl_ovNoCreate;
+			return ret;
+		}
+		else {
+			ovp->display_tickmarks =  Nhl_ovNever;
+			subret = _NhlALSetValuesChild(ovp->tickmarks->base.id,
+						      (NhlLayer)ovnew,
+						      sargs,nargs);
+			return MIN(subret,ret);
+		}
 	}
+
 	for (i=0; i < count; i++)
 		if (x_irr[i] != x_irrp[i] || y_irr[i] != y_irrp[i]) {
 			set = True;
@@ -1890,6 +1911,8 @@ ManageTickMarks
 		    (ovp->tickmarks = _NhlGetLayer(tmpid)) == NULL) {
 			e_text = "%s: Error creating TickMark object";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			ovp->display_tickmarks = init ? 
+				Nhl_ovNoCreate : Nhl_ovNever;
 			return(NhlFATAL);
 		}
 	} else {
@@ -1927,6 +1950,8 @@ ManageTickMarks
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: Error updating TickMark object";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			ovp->display_tickmarks = init ? 
+				Nhl_ovNoCreate : Nhl_ovNever;
 			return(NhlFATAL);
 		}
 	}
@@ -2087,6 +2112,12 @@ ManageTitles
 	if (ovp->titles == NULL) {	
 		strcpy(buffer,ovnew->base.name);
 		strcat(buffer,".Title");
+
+		NhlSetSArg(&sargs[nargs++],NhlNvpXF,ovp->ti_x);
+		NhlSetSArg(&sargs[nargs++],NhlNvpYF,ovp->ti_y);
+		NhlSetSArg(&sargs[nargs++],NhlNvpWidthF,ovp->ti_width);
+		NhlSetSArg(&sargs[nargs++],NhlNvpHeightF,ovp->ti_height);
+
 		NhlSetSArg(&sargs[nargs++],
 			   NhlNvpUseSegments,ovnew->view.use_segments);
 		NhlSetSArg(&sargs[nargs++],
@@ -3416,10 +3447,6 @@ DissolveOverlay
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-#if 0
-	char			*e_text;
-	char			*entry_name = "NhlRemoveFromOverlay";
-#endif
 	NhlOverlayLayerPart	*ovp = 
 				  &((NhlOverlayLayer)overlay_object)->overlay;
 	int			i;
@@ -3846,7 +3873,10 @@ extern NhlErrorTypes _NhlManageOverlay
  * overlay.
  */
 	
-	if (tfp->overlay_status == _tfCurrentOverlayMember) {
+	if (tfp->overlay_status == _tfCurrentOverlayBase) {
+		tfp->overlay_trans_obj = tfp->trans_obj;
+	}
+	else if (tfp->overlay_status == _tfCurrentOverlayMember) {
 
 		NhlViewLayer ovvl = (NhlViewLayer) tfp->overlay_object;
 
@@ -3873,6 +3903,7 @@ extern NhlErrorTypes _NhlManageOverlay
 			ret = MIN(ret,NhlWARNING);
 		}
 	}
+
 		
 	if (*overlay_object != NULL) {
 		NhlViewLayerPart	*ovwp = &(((NhlViewLayer)lold)->view);

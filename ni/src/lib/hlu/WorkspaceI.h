@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkspaceI.h,v 1.3 1994-04-29 21:31:38 dbrown Exp $
+ *      $Id: WorkspaceI.h,v 1.4 1994-05-17 22:26:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -129,6 +129,13 @@ extern NhlErrorTypes _NhlArdbpa(
 	NhlWorkspace	*amap_ws,
 	int		igi,
 	char		*label,
+	char		*entry_name
+#endif
+);
+
+extern NhlErrorTypes _NhlDumpAreaMap(
+#ifdef NhlNeedProto
+	NhlWorkspace	*amap_ws,
 	char		*entry_name
 #endif
 );

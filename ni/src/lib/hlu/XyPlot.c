@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.18 1994-05-12 23:53:05 boote Exp $
+ *      $Id: XyPlot.c,v 1.19 1994-05-17 22:26:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2905,8 +2905,8 @@ SetUpTransObjs
 				}
 				else if(newxy->x_style == NhlLOG){
 					tmpcoords[1] =
-					(float)pow(10.0,(log10(tmpcoords[0] +
-						log10(tmpcoords[2])) / 2.0));
+					(float)pow(10.0,(log10(tmpcoords[0]) +
+						log10(tmpcoords[2])) / 2.0);
 					NhlSetSArg(&sargs[nargs++],
 							NhlNtrXUseLog,True);
 				}
@@ -2944,8 +2944,8 @@ SetUpTransObjs
 				}
 				else if(newxy->y_style == NhlLOG){
 					tmpcoords[1] =
-					(float)pow(10.0,(log10(tmpcoords[0] +
-						log10(tmpcoords[2])) / 2.0));
+					(float)pow(10.0,(log10(tmpcoords[0]) +
+						log10(tmpcoords[2])) / 2.0);
 					NhlSetSArg(&sargs[nargs++],
 							NhlNtrYUseLog,True);
 				}
@@ -3024,8 +3024,8 @@ SetUpTransObjs
 				}
 				else if(newxy->x_style == NhlLOG){
 					tmpcoords[1] =
-					(float)pow(10.0,(log10(tmpcoords[0] +
-						log10(tmpcoords[2])) / 2.0));
+					(float)pow(10.0,(log10(tmpcoords[0]) +
+						log10(tmpcoords[2])) / 2.0);
 				}
 				NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,
 								tmpcoords);
@@ -3043,8 +3043,8 @@ SetUpTransObjs
 				}
 				else if(newxy->x_style == NhlLOG){
 					tmpcoords[1] =
-					(float)pow(10.0,(log10(tmpcoords[0] +
-						log10(tmpcoords[2])) / 2.0));
+					(float)pow(10.0,(log10(tmpcoords[0]) +
+						log10(tmpcoords[2])) / 2.0);
 				}
 				NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,
 								tmpcoords);
@@ -3074,8 +3074,8 @@ SetUpTransObjs
 				}
 				else if(newxy->y_style == NhlLOG){
 					tmpcoords[1] =
-					(float)pow(10.0,(log10(tmpcoords[0] +
-						log10(tmpcoords[2])) / 2.0));
+					(float)pow(10.0,(log10(tmpcoords[0]) +
+						log10(tmpcoords[2])) / 2.0);
 				}
 				NhlSetSArg(&sargs[nargs++],NhlNtrYCoordPoints,
 								tmpcoords);
@@ -3093,8 +3093,8 @@ SetUpTransObjs
 				}
 				else if(newxy->y_style == NhlLOG){
 					tmpcoords[1] =
-					(float)pow(10.0,(log10(tmpcoords[0] +
-						log10(tmpcoords[2])) / 2.0));
+					(float)pow(10.0,(log10(tmpcoords[0]) +
+						log10(tmpcoords[2])) / 2.0);
 				}
 				NhlSetSArg(&sargs[nargs++],NhlNtrYCoordPoints,
 								tmpcoords);

@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarFieldFloatP.h,v 1.1 1994-04-29 21:31:31 dbrown Exp $
+ *      $Id: ScalarFieldFloatP.h,v 1.2 1994-05-17 22:26:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,7 @@
 #ifndef _NScalarFieldFloatP_h
 #define _NScalarFieldFloatP_h
 #include <ncarg/hlu/BaseP.h>
+#include <ncarg/hlu/ScalarField.h>
 
 
 typedef struct _NhlScalarFieldFloatLayerClassRec 
@@ -42,24 +43,21 @@ typedef struct _NhlScalarFieldFloatLayerPart{
 	NhlGenArray	x_arr;
 	NhlGenArray	y_arr;
 
-	NhlBoolean	copy_arrays;
-	NhlBoolean	data_order_set;
-	int		data_order;
-
 	NhlBoolean	missing_value_set;
 	float		missing_value;
-	NhlBoolean	data_max_set;
-	float		data_max;
-	NhlBoolean	data_min_set;
 	float		data_min;
-	NhlBoolean	x_max_set;
-	float		x_max;
-	NhlBoolean	x_min_set;
-	float		x_min;
-	NhlBoolean	y_max_set;
-	float		y_max;
-	NhlBoolean	y_min_set;
-	float		y_min;
+	float		data_max;
+	float		x_start;
+	float		x_end;
+	float		y_start;
+	float		y_end;
+
+	/* private resources */
+
+	int		begin;
+	int		fast_dim;
+	int		fast_len;
+	int		slow_len;
 
 } NhlScalarFieldFloatLayerPart;
 
