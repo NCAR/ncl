@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.13 1992-03-20 23:23:59 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.14 1992-03-23 00:24:10 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -233,11 +233,11 @@ Cgm_fd	CGM_open(metafile, record_size, type)
 
 		cgmTab[index].mtype = File;
 #ifdef	SYSV
-		if (! strncmp(type, "a")) {
+		if (! strcmp(type, "a")) {
 			if ((fd = open(metafile,w_mask, 0666)) < 0) return(-1);
 			if (! (fp = fdopen(fd, "a"))) return(-1);
 		}
-		else if (! strncmp(type, "a+")) {
+		else if (! strcmp(type, "a+")) {
 			if ((fd = open(metafile, rw_mask, 0666))< 0) return(-1);
 			if (!(fp = fdopen(fd, "a+"))) return(-1);
 		}

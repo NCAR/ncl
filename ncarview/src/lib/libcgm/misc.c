@@ -1,5 +1,5 @@
 /*
- *	$Id: misc.c,v 1.5 1992-03-12 22:15:11 clyne Exp $
+ *	$Id: misc.c,v 1.6 1992-03-23 00:24:16 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -14,6 +14,9 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <ncarv.h>
+#ifdef	cray
+#include <sys/unistd.h>
+#endif
 #include <common.h>
 #include "cgm_tools.h"
 #include "internals.h"
@@ -41,6 +44,10 @@ CGM_validCGM(ncar_cgm)
 	unsigned long	data_len;
 
 	Cgm_fd	CGM_open();
+
+#ifdef	cray
+	if (access(ncar_cgm, R_OK) == -1) return(-1);
+#endif
 
 	/*
 	 * try and open the file. 
