@@ -1,5 +1,5 @@
 /*
- * $Id: c_cmpitm.c,v 1.3 1994-06-21 15:00:01 haley Exp $
+ * $Id: c_cmpitm.c,v 1.4 1994-08-02 13:24:28 haley Exp $
  */
 
 #include <stdio.h>
@@ -48,7 +48,7 @@ main()
 /*
  * Draw the map, and set up area map.
  */
-    cmpmsk("ME",0.,-75.,0.,"PO","CO",plim1,plim2,plim3,plim4,2.,map,LMAP);
+    cmpmsk("ME",0.,-75.,0.,"PS","CO",plim1,plim2,plim3,plim4,2.,map,LMAP);
 /*
  * Define a circle centered at rlat,rlon
  */
