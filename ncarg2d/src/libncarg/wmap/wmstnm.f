@@ -1,5 +1,5 @@
 C
-C	$Id: wmstnm.f,v 1.4 1996-05-31 19:56:42 fred Exp $
+C	$Id: wmstnm.f,v 1.5 2000-03-31 19:05:37 fred Exp $
 C
       SUBROUTINE WMSTNM(X,Y,IMDAT)
 C
@@ -123,6 +123,10 @@ C
       IPRSNT(5) = 1
       READ(IMDAT(2)(1:1),'(I1)') N
       READ(IMDAT(2)(2:3),'(I2)') DD
+      IBFLAG = 1
+      IF (IMDAT(2)(2:3) .EQ. '  ') THEN
+        IBFLAG = 0
+      ENDIF
       READ(IMDAT(2)(4:5),'(I2)') FF
       DO 200 I=3,NFIELD
         READ(IMDAT(I)(1:1),'(I1)') GPID
@@ -191,12 +195,14 @@ C
       UY = SIN(TANGR)
       CALL WMGETI('WBF',IBO)
       CALL WMSETI('WBF',1)
-      CALL WMBARB(XNDC,YNDC,REAL(FF)*UX,REAL(FF)*UY)
-      CALL WMSETI('WBF',IBO)
-      IF (FF.EQ.0 .AND. DD.EQ.0) THEN
-        CALL NGWSYM('N',N,XNDC,YNDC,WBCLMR*WBSHFT,ICOLOR,0)
-      ELSE
-        CALL NGWSYM('N',N,XNDC,YNDC,WBBASE*WBSHFT,ICOLOR,0)
+      IF (IBFLAG .EQ. 1) THEN
+        CALL WMBARB(XNDC,YNDC,REAL(FF)*UX,REAL(FF)*UY)
+        CALL WMSETI('WBF',IBO)
+        IF (FF.EQ.0 .AND. DD.EQ.0) THEN
+          CALL NGWSYM('N',N,XNDC,YNDC,WBCLMR*WBSHFT,ICOLOR,0)
+        ELSE
+          CALL NGWSYM('N',N,XNDC,YNDC,WBBASE*WBSHFT,ICOLOR,0)
+        ENDIF
       ENDIF
 C
 C  Set up initial coordinates for the symbol positions relative to 
