@@ -29,6 +29,7 @@
 
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
@@ -68,7 +69,7 @@ main()
 /*
  * Set the display. Default is to display output to an X workstation.
  */
-	int NCGM=0;
+	int NCGM=0, X11=0, PS=0;
 
 /*
  * Initialize the high level utility library and create application.
@@ -92,7 +93,7 @@ main()
 		NhlCreate(&xwork_id,"simple",NhlncgmWorkstationClass,
 			  NhlDEFAULT_APP,rlist);
 	}
-	else
+	else if (X11)
 	{
 	/*
 	 * Create an X workstation.
@@ -102,6 +103,17 @@ main()
 		NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,dims);
 		NhlCreate(&xwork_id,"simple",NhlxWorkstationClass,
                           NhlDEFAULT_APP,rlist);
+	}
+	else if (PS)
+	{
+	/*
+	 * Create a PS file workstation.
+	 */
+		NhlRLClear(rlist);
+		NhlRLSetString(rlist,NhlNwkPSFileName,"./basic06c.ps");
+		NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,dims);
+		NhlCreate(&xwork_id,"simple",NhlpsWorkstationClass,
+			  NhlDEFAULT_APP,rlist);
 	}
 
 /*

@@ -1,5 +1,5 @@
 C
-C      $Id: xy07f.f,v 1.4 1995-05-24 18:00:24 haley Exp $
+C      $Id: xy07f.f,v 1.5 1995-06-22 21:09:40 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -25,6 +25,7 @@ C
       external NhlFAppClass
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
+      external NhlFPSWorkstationClass
       external NhlFCoordArraysClass
       external NhlFXyPlotClass
 
@@ -38,11 +39,13 @@ C
       integer i, j, len(2)
       real cmap(3,4)
       character*10 datastr
-      integer NCGM
+      integer NCGM, X11, PS
 C
 C Default is to an X workstation.
 C
       NCGM=0
+      X11=1
+      PS=0
 C
 C Initialize the HLU library and set up resource template.
 C
@@ -86,7 +89,7 @@ C
          call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
          call NhlFCreate(xworkid,'xy07Work',
      +        NhlFNcgmWorkstationClass,0,rlist,ierr)
-      else
+      else if (X11.eq.1) then
 C
 C Create an XWorkstation object.
 C
@@ -95,6 +98,15 @@ C
          call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
          call NhlFCreate(xworkid,'xy07Work',NhlFXWorkstationClass,
      +        0,rlist,ierr)
+      else if (PS.eq.1) then
+C
+C Create a PSWorkstation object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkPSFileName','./xy07f.ps',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
+         call NhlFCreate(xworkid,'xy07Work',
+     +        NhlFPSWorkstationClass,0,rlist,ierr)
       endif
 C
 C Since we have two sets of points that we want to color differently,

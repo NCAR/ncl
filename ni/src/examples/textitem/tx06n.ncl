@@ -1,5 +1,5 @@
 ;
-;   $Id: tx06n.ncl,v 1.5 1995-04-27 19:42:46 haley Exp $
+;   $Id: tx06n.ncl,v 1.6 1995-06-22 21:08:46 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -37,6 +37,8 @@ cmap(3,:) = (/0.4, 0.0, 0.4/)
 ; Default is to display output to an X workstation
 ;
 NCGM=0
+X11=1
+PS=0
 
 if (NCGM .eq. 1) then
 ;
@@ -47,13 +49,25 @@ if (NCGM .eq. 1) then
       "wkColorMap"         : cmap
   end create
 else
+  if (X11 .eq. 1) then
 ;
 ; Create an XWorkstation object.
 ;
-  workstation_id = create "tx06Work"  xWorkstationClass defaultapp
-    "wkPause"            : True
-    "wkColorMap"         : cmap
-  end create
+    workstation_id = create "tx06Work"  xWorkstationClass defaultapp
+      "wkPause"            : True
+      "wkColorMap"         : cmap
+    end create
+  else
+    if (PS .eq. 1) then
+;
+; Create a PSWorkstation object.
+;
+      workstation_id = create "tx06Work" psWorkstationClass defaultapp
+        "wkPSFileName"       : "tx06n.ps"
+        "wkColorMap"         : cmap
+      end create
+    end if
+  end if
 end if
 
 ;

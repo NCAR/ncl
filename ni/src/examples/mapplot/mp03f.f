@@ -1,5 +1,5 @@
 C
-C     $Id: mp03f.f,v 1.6 1995-04-07 10:54:25 boote Exp $
+C     $Id: mp03f.f,v 1.7 1995-06-22 21:08:22 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -22,6 +22,7 @@ C           LLU example 'colcon'
 C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
+      external NhlFPSWorkstationClass
       external NhlFXWorkstationClass
       external NhlFMapPlotClass
       external NhlFScalarFieldClass
@@ -41,11 +42,13 @@ C
 
       character*6 mask_specs(1)
       data mask_specs/'oceans'/
-      integer NCGM
+      integer NCGM, X11, PS
 C
 C Default is to display output to an X workstation
 C
       NCGM=0
+      X11=1
+      PS=0
 C
 C Initialize the high level utility library
 C
@@ -68,13 +71,21 @@ C
          call NhlFRLSetstring(rlist,'wkMetaName','./mp03f.ncgm',ierr)
          call NhlFCreate(wid,'mp03Work',NhlFNcgmWorkstationClass,0,
      1        rlist,ierr)
-      else 
+      else  if (X11.eq.1) then
 C
 C Create an X Workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetinteger(rlist,'wkPause',1,ierr)
          call NhlFCreate(wid,'mp03Work',NhlFXWorkstationClass,0,
+     1        rlist,ierr)
+      else if (PS.eq.1) then
+C
+C Create a PS object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPSFileName','./mp03f.ps',ierr)
+         call NhlFCreate(wid,'mp03Work',NhlFPSWorkstationClass,0,
      1        rlist,ierr)
       endif
 C

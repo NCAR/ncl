@@ -1,5 +1,5 @@
 
-;      $Id: xy06n.ncl,v 1.5 1995-06-09 21:40:22 haley Exp $
+;      $Id: xy06n.ncl,v 1.6 1995-06-22 21:09:38 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -87,6 +87,8 @@ cmap(9,:) = (/1.00,1.00,0.00/)
 ; Default is to display output to an X workstation
 ;
 NCGM=0
+X11=1
+PS=0
 
 ;
 ; Create application object.  The application name is used to 
@@ -107,13 +109,25 @@ if (NCGM .eq. 1) then
       "wkColorMap" : cmap
   end create
 else
+  if (X11 .eq. 1) then
 ;
 ; Create an X workstation
 ;
-  xworkid = create "xy06Work" xWorkstationClass defaultapp
+    xworkid = create "xy06Work" xWorkstationClass defaultapp
       "wkPause" : "True"
       "wkColorMap" : cmap
-  end create
+    end create
+  else
+    if (PS .eq. 1) then
+;
+; Create a PSWorkstation object.
+;
+      xworkid = create "xy06Work" psWorkstationClass defaultapp
+        "wkPSFileName" : "xy06n.ps"
+        "wkColorMap"   : cmap
+     end create
+    end if
+  end if
 end if
 
 ;
@@ -121,7 +135,7 @@ end if
 ; created automatically and then we can use a NhlFGetValues call to
 ; get the names of the stations we want data values for.
 ;
-dataid = create "xyData" coordArraysClass noparent
+dataid = create "xyData" coordArraysClass defaultapp
     "caYArray" : temp
 end create
 
@@ -207,7 +221,7 @@ end do
 ; id from this object will become the value for the XyPlot resource
 ; "xyCoordData".
 ;
-dataid = create "xyData" coordArraysClass noparent
+dataid = create "xyData" coordArraysClass defaultapp
     "caYArray" : temp
     "caYMissingV" : spv
 end create

@@ -1,5 +1,5 @@
 ;
-;   $Id: tx02n.ncl,v 1.7 1995-04-07 10:54:34 boote Exp $
+;   $Id: tx02n.ncl,v 1.8 1995-06-22 21:08:35 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -41,6 +41,8 @@ end create
 ; Default is to display output to an X workstation
 ;
 NCGM=0
+X11=1
+PS=0
 
 if (NCGM .eq. 1) then
 ;
@@ -50,12 +52,23 @@ if (NCGM .eq. 1) then
       "wkMetaName"         : "tx02n.ncgm"
   end create
 else
+  if (X11 .eq. 1) then
 ;
 ; Create an XWorkstation object.
 ;
-  wid = create "tx02Work" xWorkstationClass defaultapp
+    wid = create "tx02Work" xWorkstationClass defaultapp
       "wkPause" : "True"
-  end create
+    end create
+  else
+    if (PS .eq. 1) then
+;
+; Create a PSWorkstation object.
+;
+      wid = create "tx02Work" psWorkstationClass defaultapp
+        "wkPSFileName"         : "tx02n.ps"
+      end create
+    end if
+  end if
 end if
 
 ;

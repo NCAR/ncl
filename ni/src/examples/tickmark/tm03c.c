@@ -24,6 +24,7 @@
 #include <ncarg/hlu/TickMark.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 
 #include "tm03c.h"
 
@@ -41,7 +42,7 @@ main()
 {
     int appid, wid, pid;
     int rlist;
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 /*
  * Initialize the high level utility library
  */
@@ -67,13 +68,22 @@ main()
         NhlCreate(&wid,"tm03Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else {
+    else if (X11) {
 /*
  * Create an XWorkstation object.
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&wid,"tm03Work",NhlxWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else if (PS) {
+/*
+ * Create a PS workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./tm03c.ps");
+        NhlCreate(&wid,"tm03Work",NhlpsWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
     NhlRLClear(rlist);

@@ -1,5 +1,5 @@
 /*
- * $Id: basic03c.c,v 1.8 1995-06-20 15:19:51 stautler Exp $
+ * $Id: basic03c.c,v 1.9 1995-06-22 21:07:27 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -27,7 +27,6 @@
 
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/ResList.h>
-#include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/ScalarField.h>

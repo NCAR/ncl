@@ -1,5 +1,5 @@
 /*
- *  $Id: tx07c.c,v 1.4 1995-04-07 10:54:44 boote Exp $
+ *  $Id: tx07c.c,v 1.5 1995-06-22 21:08:47 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -28,6 +28,7 @@
 #include <ncarg/hlu/TextItem.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 
 main()
 {
@@ -35,7 +36,7 @@ main()
     float ypos, aspect;
     float bkg_color[] = {1., 1., 1.}, spacings[] = {0.0, 1.5, 0.6};
     char  label[25];
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 
 /*
  *  Initialize.
@@ -54,7 +55,7 @@ main()
         NhlCreate(&wid,"tx07Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else {
+    else if (X11) {
 /*
  * Create an XWorkstation object.
  */
@@ -63,6 +64,16 @@ main()
         NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
         NhlCreate(&wid,"tx07Work",
                   NhlxWorkstationClass,NhlDEFAULT_APP, rlist);
+    }
+    else if (PS) {
+/*
+ * Create a PS workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./tx07c.ps");
+        NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
+        NhlCreate(&wid,"tx07Work",NhlpsWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
     }
 /*
  * Create two TextItem objects.

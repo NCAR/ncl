@@ -1,5 +1,5 @@
 ;
-;   $Id: tx07n.ncl,v 1.4 1995-04-27 19:42:47 haley Exp $
+;   $Id: tx07n.ncl,v 1.5 1995-06-22 21:08:48 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -39,22 +39,37 @@ cmap(3,:) = (/1.0, 0.0, 0.0/)
 ; Default is to display output to an X workstation
 ;
 NCGM=0
+X11=1
+PS=0
 
 if (NCGM .eq. 1) then
-    workstation_id = create "tx07Work"  ncgmWorkstationClass defaultapp
-      "wkMetaName"         : "tx07n.ncgm"
-      "wkColorMap"         : cmap
-      "wkBackgroundColor"  : (/ 1., 1., 1. /)
-    end create
-else
-;
-; Create an XWorkstation object.
-;
-  workstation_id = create "tx07Work"  xWorkstationClass defaultapp
-    "wkPause"            : True
+  workstation_id = create "tx07Work"  ncgmWorkstationClass defaultapp
+    "wkMetaName"         : "tx07n.ncgm"
     "wkColorMap"         : cmap
     "wkBackgroundColor"  : (/ 1., 1., 1. /)
   end create
+else
+  if (X11 .eq. 1) then
+;
+; Create an XWorkstation object.
+;
+    workstation_id = create "tx07Work"  xWorkstationClass defaultapp
+      "wkPause"            : True
+      "wkColorMap"         : cmap
+      "wkBackgroundColor"  : (/ 1., 1., 1. /)
+    end create
+  else
+    if (PS .eq. 1) then
+;
+; Create a PSWorkstation object.
+;
+      workstation_id = create "tx07Work"  psWorkstationClass defaultapp
+        "wkPSFileName"       : "tx07n.ps"
+        "wkColorMap"         : cmap
+        "wkBackgroundColor"  : (/ 1., 1., 1. /)
+      end create
+    end if
+  end if
 end if
 
 ;

@@ -21,16 +21,19 @@ C
       external NhlFAppClass
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
+      external NhlFPSWorkstationClass
       external NhlFTextItemClass
 
       integer appid, wid, pid
       integer srlist, grlist,ierr
       integer i
-      integer NCGM
+      integer NCGM, X11, PS
 C
 C Default is to create a metafile.
 C
       NCGM=1
+      X11=0
+      PS=0
 C
 C Initialize the high level utility library
 C
@@ -55,7 +58,7 @@ C
          call NhlFRLSetString(srlist,'wkMetaName','./tx03f.ncgm',ierr)
          call NhlFCreate(wid,'tx03Work',NhlFNcgmWorkstationClass,0,
      1        srlist,ierr)
-      else
+      else if (X11.eq.1) then
 C
 C Create an X Workstation.
 C
@@ -63,6 +66,14 @@ C
          call NhlFRLSetString(srlist,'wkPause','True',ierr)
          call NhlFCreate(wid,'tx03Work',NhlFXWorkstationClass,
      $        0,srlist,ierr)
+      else if (PS.eq.1) then
+C
+C Create a PS object.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkPSFileName','./tx03f.ps',ierr)
+         call NhlFCreate(wid,'tx03Work',NhlFPSWorkstationClass,0,
+     1        srlist,ierr)
       endif
 C
 C Get the number of colors in the default color table.

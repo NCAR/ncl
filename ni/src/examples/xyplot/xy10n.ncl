@@ -1,5 +1,5 @@
 ;
-;      $Id: xy10n.ncl,v 1.1 1995-05-05 20:56:22 haley Exp $
+;      $Id: xy10n.ncl,v 1.2 1995-06-22 21:09:51 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -82,6 +82,8 @@ end create
 ; Default is to display output to an X workstation
 ;
 NCGM=0
+X11=1
+PS=0
 
 if (NCGM .eq. 1) then
 ;
@@ -91,12 +93,23 @@ if (NCGM .eq. 1) then
       "wkMetaName" : "xy10n.ncgm"
   end create
 else
+  if (X11 .eq. 1) then
 ;
 ; Create an X workstation
 ;
-  xworkid = create "xy10Work" xWorkstationClass defaultapp
+    xworkid = create "xy10Work" xWorkstationClass defaultapp
       "wkPause" : "True"
-  end create
+    end create
+  else
+    if (PS .eq. 1) then
+;
+; Create a PSWorkstation object.
+;
+      xworkid = create "xy10Work" psWorkstationClass defaultapp
+        "wkPSFileName" : "xy10n.ps"
+      end create
+    end if
+  end if
 end if
 
 ;
@@ -111,7 +124,7 @@ LatLonValues(lat,lon,cdf_file,spvlt,spvln)
 ;
 ; Define the Data object.
 ;
-dataid = create "xyData" coordArraysClass noparent
+dataid = create "xyData" coordArraysClass defaultapp
     "caXArray" : lon
     "caYArray" : lat
     "caXMissingV" : spvln

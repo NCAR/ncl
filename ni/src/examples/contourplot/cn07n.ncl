@@ -29,28 +29,41 @@ filename = filedir + "/cdf/contour.cdf"
 a = addfile(filename,"r")
 
 NCGM=1
+X11=0
+PS=0
 
 if (NCGM.eq.1) then
 ;
-; Open NCGM workstation and name the metafile "contour00.ncgm"
+; Open NCGM workstation.
 ;
-        wks = create "cn07Work" ncgmWorkstationClass noparent
-                "wkMetaName" : "cn07n.ncgm"
-        end create
+    wks = create "cn07Work" ncgmWorkstationClass defaultapp
+      "wkMetaName" : "cn07n.ncgm"
+    end create
 else
+  if (X11.eq.1) then
 ;
 ; Create an X workstation.
 ;
-        wks = create "cn07Work" xWorkstationClass defaultapp
-                "wkPause" : "True"
-        end create
+    wks = create "cn07Work" xWorkstationClass defaultapp
+      "wkPause" : "True"
+    end create
+  else
+    if (PS .eq. 1) then
+;
+; Open PS workstation. 
+;
+      wks = create "cn07Work" psWorkstationClass defaultapp
+        "wkPSFileName" : "cn07n.ps"
+      end create
+    end if
+  end if
 end if
 
 ;
 ; Create a scalar field object and configure the missing values and
 ; the start and end information.
 ;
-field1 = create "field1" scalarFieldClass noparent
+field1 = create "field1" scalarFieldClass defaultapp
     "sfDataArray" : a->Z(0,3,:,:) 
     "sfMissingValueV": a->Z@_FillValue
     "sfXCStartV" : a->lon(0)

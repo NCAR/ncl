@@ -1,4 +1,4 @@
-; $Id: basic02n.ncl,v 1.8 1995-06-14 17:16:50 stautler Exp $
+; $Id: basic02n.ncl,v 1.9 1995-06-22 21:07:26 haley Exp $
 ;
 ; The first frame in this example demonstrates how to set the view port 
 ; for a contour plot.
@@ -23,21 +23,34 @@ begin
 ; Default is to display output to an X workstation
 ;
 NCGM=0
+X11=1
+PS=0
 
 if (NCGM.eq.1) then
 ;
 ; Create an NCGM workstation.
 ;
   wks = create "wks" ncgmWorkstationClass defaultapp
-        "wkMetaName" : "./basic02n.ncgm"
+      "wkMetaName" : "./basic02n.ncgm"
   end create
 else
+  if (X11.eq.1) then
 ;
 ; Create an X workstation.
 ;
-  wks = create "wks" xWorkstationClass defaultapp
-        "wkPause" : "True"
-  end create
+    wks = create "wks" xWorkstationClass defaultapp
+      "wkPause" : "True"
+    end create
+  else
+    if (PS .eq. 1) then
+;
+; Create a PS workstation.
+;
+      wks = create "wks" psWorkstationClass defaultapp
+        "wkPSFileName" : "./basic02n.ps"
+      end create
+    end if
+  end if
 end if
 
 ; Create a plot object.  In this example, we will create a contour plot.

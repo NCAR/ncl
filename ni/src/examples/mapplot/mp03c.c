@@ -1,5 +1,5 @@
 /*
- *      $Id: mp03c.c,v 1.7 1995-04-07 10:54:24 boote Exp $
+ *      $Id: mp03c.c,v 1.8 1995-06-22 21:08:21 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -28,6 +28,7 @@
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/MapPlot.h>
 #include <ncarg/hlu/ContourPlot.h>
@@ -44,7 +45,7 @@ main(int argc, char *argv[])
     int mlow = 13, mhigh = 18;
     float dlow = 13.0, dhigh = 18.0;
     int len_dims[2];
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 
     extern void gendat();
 
@@ -63,7 +64,7 @@ main(int argc, char *argv[])
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"mp03",NhlappClass,NhlDEFAULT_APP,rlist);
 
-    if(NCGM==1) {
+    if (NCGM) {
 /*
  * Create a meta file workstation.
  */
@@ -72,13 +73,22 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"mp03Work",
                   NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist);
     }
-    else {
+    else if (X11) {
 /*
  * Create an X workstation.
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&wid,"mp03Work",NhlxWorkstationClass,appid,rlist);
+    }
+
+    else if (PS) {
+/*
+ * Create a PS workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"mp03c.ps");
+        NhlCreate(&wid,"mp03Work",NhlpsWorkstationClass,appid,rlist);
     }
 
 /*

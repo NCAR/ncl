@@ -35,12 +35,6 @@ main()
       int X11=1;
 
 /*
- * Call a subroutine that generates an LLU
- *
- * Default is to create a metafile.
- */
-
-/*
  * Initialize the high level utility library
  */
       NhlInitialize();

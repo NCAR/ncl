@@ -1,5 +1,5 @@
 /*
-**      $Id: xy01c.c,v 1.13 1995-04-07 10:55:03 boote Exp $
+**      $Id: xy01c.c,v 1.14 1995-06-22 21:09:19 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -35,6 +35,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
 
@@ -50,7 +51,7 @@ main()
     int     rlist;
     int     i;
     float   ydra[NPTS], theta;
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 /*
  * Initialize some data for the XY plot.
  */
@@ -82,13 +83,22 @@ main()
         NhlCreate(&xworkid,"xy01Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else {
+    else if (X11) {
 /*
  * Create an XWorkstation object.
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&xworkid,"xy01Work",NhlxWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
+    }       
+    else if (PS) {
+/*
+ * Create a PSWorkstation object.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"xy01c.ps");
+        NhlCreate(&xworkid,"xy01Work",NhlpsWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }       
 /*

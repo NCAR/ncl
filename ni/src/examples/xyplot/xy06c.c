@@ -1,5 +1,5 @@
 /*
-**      $Id: xy06c.c,v 1.8 1995-04-27 17:34:44 haley Exp $
+**      $Id: xy06c.c,v 1.9 1995-06-22 21:09:36 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -44,6 +44,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
 #include <netcdf.h>
@@ -97,7 +98,7 @@ main()
     char    filename[256], station_name[20], recname[50];
     const char *dir = _NGGetNCARGEnv("data");
 
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 /*
  * Declare 2-d arrays to hold data values.
  */
@@ -143,7 +144,7 @@ main()
         NhlCreate(&xworkid,"xy06Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else {
+    else if (X11) {
 /*
  * Create an XWorkstation object.
  */
@@ -152,6 +153,16 @@ main()
         NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,length);
         NhlCreate(&xworkid,"xy06Work",NhlxWorkstationClass,
               NhlDEFAULT_APP,rlist);
+    }
+    else if (PS) {
+/*
+ * Create a PS workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./xy06c.ps");
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,length);
+        NhlCreate(&xworkid,"xy06Work",NhlpsWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
     }
 /*
  * We need to initialize a non-constant dummy array for our Data

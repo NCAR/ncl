@@ -1,5 +1,5 @@
 C
-C      $Id: xy01f.f,v 1.12 1995-04-07 10:55:04 boote Exp $
+C      $Id: xy01f.f,v 1.13 1995-06-22 21:09:20 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -30,6 +30,7 @@ C
       external NhlFAppClass
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
+      external NhlFPSWorkstationClass
       external NhlFXyPlotClass
       external NhlFCoordArraysClass
 C
@@ -41,11 +42,13 @@ C
       integer appid,xworkid,plotid,dataid
       integer rlist, i
       real   ydra(NPTS), theta
-      integer NCGM
+      integer NCGM, X11, PS
 C
 C Default is to an X workstation.
 C
       NCGM=0
+      X11=1
+      PS=0
 C
 C Initialize some data for the XY plot.
 C
@@ -76,7 +79,7 @@ C
          call NhlFRLSetString(rlist,'wkMetaName','./xy01f.ncgm',ierr)
          call NhlFCreate(xworkid,'xy01Work',
      +        NhlFNcgmWorkstationClass,0,rlist,ierr)
-      else
+      else if (X11.eq.1) then
 C
 C Create an xworkstation object.
 C
@@ -84,6 +87,14 @@ C
          call NhlFRLSetString(rlist,'wkPause','True',ierr)
          call NhlFCreate(xworkid,'xy01Work',NhlFXWorkstationClass,
      +        0,rlist,ierr)
+      else if (PS.eq.1) then
+C
+C Create a PS workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkPSFileName','./xy01f.ps',ierr)
+         call NhlFCreate(xworkid,'xy01Work',
+     +        NhlFPSWorkstationClass,0,rlist,ierr)
       endif
 C
 C Define the data object.  Since only the Y values are specified here,

@@ -113,21 +113,34 @@ mfile =  addfile (datafile,"r")
 ; Default is to create an NCGM file.
 ;
 NCGM=1
+X11=0
+PS=0
 
 if (NCGM.eq.1) then
 ;
 ; Create an ncgm workstation.
 ;
-  wks = create "cn05Work" ncgmWorkstationClass noparent
+  wks = create "cn05Work" ncgmWorkstationClass defaultapp
     "wkMetaName" : "./cn05n.ncgm"
   end create
 else
+  if (X11.eq.1) then
 ;
 ; Create an X workstation.
 ;
-  wks = create "cn05Work" xWorkstationClass noparent
-    "wkPause" : "True"
-  end create
+    wks = create "cn05Work" xWorkstationClass defaultapp
+      "wkPause" : "True"
+    end create
+  else
+    if (PS .eq. 1) then
+;
+; Create a PS workstation.
+;
+      wks = create "cn05Work" psWorkstationClass defaultapp
+        "wkPSFileName" : "./cn05n.ps"
+      end create
+    end if
+  end if
 end if
 
 
@@ -145,7 +158,7 @@ end setvalues
 
 ; Create a scalar field object that will be used as the
 ; dataset for the contour object.
-field1 = create "field1" scalarFieldClass noparent
+field1 = create "field1" scalarFieldClass defaultapp
 	; Read the first temperature field.
         "sfDataArray" : mfile->t(0,:,:)  
 	; Assign the X and Y start and end coordinates.

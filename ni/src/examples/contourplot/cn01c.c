@@ -1,5 +1,5 @@
 /*
- *      $Id: cn01c.c,v 1.4 1995-06-14 17:17:19 stautler Exp $
+ *      $Id: cn01c.c,v 1.5 1995-06-22 21:07:36 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,7 @@
 #include <ncarg/hlu/TickMark.h>
 #include <ncarg/hlu/Title.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/gks.h>
 #include <ncarg/ncargC.h>
@@ -48,7 +49,7 @@ main()
     int iwrk[1000];
     NhlBoundingBox thebox;
     int rlist, grlist;
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 /*
  * Initialize the high level utility library
  */
@@ -74,7 +75,7 @@ main()
         NhlCreate(&wid,"cn01Work",
                   NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist); 
     }
-    else {
+    else if (X11) {
 /*
  * Create an X workstation.
  */
@@ -82,6 +83,15 @@ main()
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&wid,"cn01Work",
                   NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
+    }
+    else if (PS) {
+/*
+ * Create a meta file workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./cn01c.ps");
+        NhlCreate(&wid,"cn01Work",
+                  NhlpsWorkstationClass,NhlDEFAULT_APP,rlist); 
     }
 /*
 * Retrieve GKS workstation id from the workstation object

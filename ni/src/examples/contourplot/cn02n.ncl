@@ -45,7 +45,7 @@ end do
 ; so the application looks for a resource file in the working directory.
 ; In this example the resource file supplies the plot title only.
 ;
-appid = create "cn02" appClass noparent
+appid = create "cn02" appClass defaultapp
     "appUsrDir" : "./"
         "appDefaultParent" : "True"
 end create
@@ -54,21 +54,34 @@ end create
 ; Default is to display output to an X workstation
 ;
 NCGM=0
+X11=1
+PS=0
 
 if (NCGM.eq.1) then
 ;
 ; Create an NCGM workstation.
 ;
-  wid = create "cn02Work" ncgmWorkstationClass appid
+  wid = create "cn02Work" ncgmWorkstationClass defaultapp
     "wkMetaName" : "./cn02n.ncgm"
   end create
 else
+  if (X11.eq.1) then
 ;
 ; Create an X workstation.
 ;
-  wid = create "cn02Work" xWorkstationClass noparent
-    "wkPause" : "True"
-  end create
+    wid = create "cn02Work" xWorkstationClass defaultapp
+      "wkPause" : "True"
+    end create
+  else
+    if (PS .eq. 1) then
+;
+; Create a PS workstation.
+;
+      wid = create "cn02Work" psWorkstationClass defaultapp
+        "wkPSFileName" : "./cn02n.ps"
+      end create
+    end if
+  end if
 end if
 
 ;

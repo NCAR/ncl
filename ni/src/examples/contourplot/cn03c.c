@@ -1,5 +1,5 @@
 /*
- *      $Id: cn03c.c,v 1.3 1995-04-07 10:53:57 boote Exp $
+ *      $Id: cn03c.c,v 1.4 1995-06-22 21:07:41 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -34,6 +34,7 @@
 
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/ScalarField.h>
 #include <ncarg/hlu/ContourPlot.h>
@@ -71,7 +72,7 @@ main()
     int rlist, grlist;
     int len_dims[2];
     float xvp,yvp,heightvp,widthvp;
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 /*
  * Initialize the high level utility library
  */
@@ -96,7 +97,7 @@ main()
         NhlCreate(&wid,"cn03Work",
                   NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist); 
     }
-    else {
+    else if (X11) {
 /*
  * Create an X workstation.
  */
@@ -104,6 +105,15 @@ main()
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&wid,"cn03Work",
                   NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
+    }
+    else if (PS) {
+/*
+ * Create a meta file workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./cn03c.ps");
+        NhlCreate(&wid,"cn03Work",
+                  NhlpsWorkstationClass,NhlDEFAULT_APP,rlist); 
     }
 /*
  * Create a scalar field data object with a linear X dimension representing

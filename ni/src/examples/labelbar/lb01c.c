@@ -22,13 +22,14 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/LabelBar.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
         
 main()
 {
     int appid, wid, pid;
     int rlist;
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 /*
  * Initialize the high level utility library
  */
@@ -53,13 +54,22 @@ main()
         NhlCreate(&wid,"lb01Work",NhlncgmWorkstationClass,NhlDEFAULT_APP,
                   rlist);
     }
-    else {
+    else if (X11) {
 /*
  * Create an X Workstation.
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&wid,"lb01Work",NhlxWorkstationClass,NhlDEFAULT_APP,
+                  rlist);
+    }
+    else if (PS) {
+/*
+ * Create a PS workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./lb01c.ps");
+        NhlCreate(&wid,"lb01Work",NhlpsWorkstationClass,NhlDEFAULT_APP,
                   rlist);
     }
 /*

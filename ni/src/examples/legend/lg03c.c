@@ -1,5 +1,5 @@
 /*
- *  $Id: lg03c.c,v 1.13 1995-05-01 16:23:48 haley Exp $
+ *  $Id: lg03c.c,v 1.14 1995-06-22 21:08:10 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -26,6 +26,7 @@
 #include <ncarg/hlu/Legend.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 
         
 
@@ -39,7 +40,7 @@ main()
     int types[5];
     int item_ind[5];
     float lnthik;
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 
 /*
  * Initialize data values
@@ -82,13 +83,22 @@ main()
         NhlCreate(&wid,"lg03Work",NhlncgmWorkstationClass,NhlDEFAULT_APP,
                   rlist);
     }
-    else {
+    else if (X11) {
 /*
  * Create an X Workstation.
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&wid,"lg03Work",NhlxWorkstationClass,NhlDEFAULT_APP,
+                  rlist);
+    }
+    else if (PS) {
+/*
+ * Create a PS workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./lg03c.ps");
+        NhlCreate(&wid,"lg03Work",NhlpsWorkstationClass,NhlDEFAULT_APP,
                   rlist);
     }
 /*

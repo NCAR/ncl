@@ -1,5 +1,5 @@
 ;
-;    $Id: tx03n.ncl,v 1.7 1995-05-01 16:41:49 haley Exp $
+;    $Id: tx03n.ncl,v 1.8 1995-06-22 21:08:38 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
@@ -41,6 +41,8 @@ end create
 ; Default is to create a metafile.
 ;
 NCGM=1
+X11=0
+PS=0
 
 if (NCGM .eq. 1) then
 ;
@@ -50,12 +52,23 @@ if (NCGM .eq. 1) then
       "wkMetaName"         : "tx03n.ncgm"
   end create
 else
+  if (X11 .eq. 1) then
 ;
 ; Create an XWorkstation object.
 ;
-  wid = create "tx03Work" xWorkstationClass defaultapp
+    wid = create "tx03Work" xWorkstationClass defaultapp
       "wkPause" : "True"
-  end create
+    end create
+  else
+    if (PS .eq. 1) then
+;
+; Create a PSWorkstation object.
+;
+      wid = create "tx03Work" psWorkstationClass defaultapp
+        "wkPSFileName"         : "tx03n.ps"
+      end create
+    end if
+  end if
 end if
 
 ;

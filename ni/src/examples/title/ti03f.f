@@ -21,6 +21,7 @@ C
       external NhlFTitleClass
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
+      external NhlFPSWorkstationClass
 
       integer appid, wid, pid
       integer rlist, ierr
@@ -36,11 +37,13 @@ C
      +          1.,.5,0.,
      +          1.,1.,0./
 
-      integer NCGM
+      integer NCGM, X11, PS
 C
 C Default is to create an X workstation.
 C
       NCGM=0
+      X11=1
+      PS=0
 C
 C Initialize the high level utility library
 C
@@ -67,7 +70,7 @@ C
          call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
          call NhlFCreate(wid,'ti03Work',NhlFNcgmWorkstationClass,0,
      $        rlist,ierr)
-      else
+      else if (X11.eq.1) then
 C
 C Create an xworkstation object.
 C
@@ -76,6 +79,15 @@ C
          call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
          call NhlFCreate(wid,'ti03Work',NhlFXWorkstationClass,
      $        0,rlist,ierr)
+      else if (PS.eq.1) then
+C
+C Create a PS object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPSFileName','./ti03f.ps',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
+         call NhlFCreate(wid,'ti03Work',NhlFPSWorkstationClass,0,
+     $        rlist,ierr)
       endif
 C
 C Specify the viewport extent of the object.

@@ -1,5 +1,5 @@
 C
-C     $Id: cn01f.f,v 1.5 1995-05-11 15:33:43 haley Exp $
+C     $Id: cn01f.f,v 1.6 1995-06-22 21:07:37 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -23,6 +23,7 @@ C                       HLU calls.
 C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
+      external NhlFPSWorkstationClass
       external NhlFXWorkstationClass
       external nhlftickmarkclass
       external NhlFTitleClass
@@ -52,7 +53,7 @@ C
       real t(M,N)
       data level / 1000.0, 850.0, 700.0, 500.0, 400.0, 300.0, 
      1      250.0, 200.0, 150.0, 100.0 /
-      integer NCGM
+      integer NCGM, X11, PS
 C
 C data file name
 C
@@ -62,6 +63,8 @@ C
 C Default is to display output to an X workstation
 C
       NCGM=0
+      X11=1
+      PS=0
 C
 C read data
 C     
@@ -94,7 +97,7 @@ C
          call NhlFRLSetstring(rlist,'wkMetaName','./cn01f.ncgm',ierr)
          call NhlFCreate(wid,'cn01Work',
      1        NhlFNcgmWorkstationClass,0,rlist,ierr) 
-      else 
+      else  if (X11.eq.1) then
 C
 C Create an X workstation.
 C
@@ -102,6 +105,14 @@ C
          call NhlFRLSetstring(rlist,'wkPause','True',ierr)
          call NhlFCreate(wid,'cn01Work',NhlFXWorkstationClass,
      1        0,rlist,ierr) 
+      else if (PS.eq.1) then
+C
+C Create a PS workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPSFileName','./cn01f.ps',ierr)
+         call NhlFCreate(wid,'cn01Work',
+     1        NhlFPSWorkstationClass,0,rlist,ierr) 
       endif
 C  
 C  retrieve gks workstation id from the workstation object

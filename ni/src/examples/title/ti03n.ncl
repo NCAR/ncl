@@ -1,5 +1,5 @@
 ;
-;   $Id: ti03n.ncl,v 1.7 1995-05-01 17:31:18 haley Exp $
+;   $Id: ti03n.ncl,v 1.8 1995-06-22 21:09:13 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -49,6 +49,8 @@ end create
 ; Default is to display output to an X workstation
 ;
 NCGM=0
+X11=1
+PS=0
 
 if (NCGM .eq. 1) then
 ;
@@ -59,13 +61,25 @@ if (NCGM .eq. 1) then
       "wkMetaName"         : "ti03n.ncgm"
   end create
 else
+  if (X11 .eq. 1) then
 ;
 ; Create an XWorkstation object.
 ;
-  wid = create "ti03Work" xWorkstationClass defaultapp
+    wid = create "ti03Work" xWorkstationClass defaultapp
       "wkColorMap" : cmap
       "wkPause" : "True"
-  end create
+    end create
+  else
+    if (PS .eq. 1) then
+;
+; Create a PSWorkstation object.
+;
+      wid = create "ti03Work" psWorkstationClass defaultapp
+        "wkColorMap"    : cmap
+        "wkPSFileName"  : "ti03n.ps"
+      end create
+    end if
+  end if
 end if
 
 ;

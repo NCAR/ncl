@@ -1,5 +1,5 @@
 C
-C     $Id: cn03f.f,v 1.4 1995-05-11 15:33:46 haley Exp $
+C     $Id: cn03f.f,v 1.5 1995-06-22 21:07:42 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -25,6 +25,7 @@ C External functions
 C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
+      external NhlFPSWorkstationClass
       external NhlFXWorkstationClass
       external nhlfscalarfieldclass
       external nhlfcontourplotclass
@@ -55,7 +56,7 @@ C
       integer rlist, grlist
       integer len_dims(2)
       real xvp,yvp,heightvp,widthvp
-      integer NCGM
+      integer NCGM, X11, PS
 C
 C Data file name
 C
@@ -65,6 +66,8 @@ C
 C Default is to display output to an X workstation
 C
       NCGM=0
+      X11=1
+      PS=0
 C
 C Read data
 C     
@@ -94,7 +97,7 @@ C
          call NhlFRLSetstring(rlist,'wkMetaName','./cn03f.ncgm',ierr)
          call NhlFCreate(wid,'cn03Work',NhlFNcgmWorkstationClass,
      1        0,rlist,ierr)
-      else
+      else if (X11.eq.1) then
 C
 C Create an X workstation.
 C
@@ -102,6 +105,14 @@ C
          call NhlFRLSetstring(rlist,'wkPause','True',ierr)
          call NhlFCreate(wid,'cn03Work',NhlFXWorkstationClass,
      1        0,rlist,ierr) 
+      else if (PS.eq.1) then
+C
+C Create a PS object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPSFileName','./cn03f.ps',ierr)
+         call NhlFCreate(wid,'cn03Work',NhlFPSWorkstationClass,
+     1        0,rlist,ierr)
       endif
 C
 C Create a scalar field data object with a linear X dimension

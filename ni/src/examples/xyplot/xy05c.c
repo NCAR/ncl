@@ -1,5 +1,5 @@
 /*
-**      $Id: xy05c.c,v 1.12 1995-04-27 17:34:40 haley Exp $
+**      $Id: xy05c.c,v 1.13 1995-06-22 21:09:33 haley Exp $
 */
 /**********************************************************************
 *                                                                     *
@@ -37,6 +37,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrTable.h>
 
@@ -56,7 +57,7 @@ main()
     int     appid,xworkid,plotid,dataid;
     int     rlist, i, j, len[2];
     float   cmap[NCOLORS][3];
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 /*
  * Initialize the HLU library and set up resource template
  */
@@ -100,7 +101,7 @@ main()
         NhlCreate(&xworkid,"xy05Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else {
+    else if (X11) {
 /*
  * Create an XWorkstation object.
  */
@@ -108,6 +109,16 @@ main()
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
         NhlCreate(&xworkid,"xy05Work",NhlxWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else if (PS) {
+/*
+ * Create a PS workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./xy05c.ps");
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
+        NhlCreate(&xworkid,"xy05Work",NhlpsWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
 /*

@@ -1,5 +1,5 @@
 C
-C $Id: basic05f.f,v 1.8 1995-05-24 17:58:58 haley Exp $
+C $Id: basic05f.f,v 1.9 1995-06-22 21:07:29 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -29,13 +29,14 @@ C
       external NhlFAppClass
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
+      external NhlFPSWorkstationClass
       external NhlFLabelBarClass
       external NhlFTextItemClass
 
       integer i, ierr
       integer num_dims,len_dims(2)
       integer appid,wks,lbar,rlist,glist,text
-      integer NCGM
+      integer NCGM, X11, PS
       character*3 colorindices(232)
 
       real cmap(3,8)
@@ -45,6 +46,8 @@ C
 C Default is to display output to an X workstation
 C
       NCGM=0
+      X11=1
+      PS=0
 
 C Initialize libraries and create a resource list.
 
@@ -67,7 +70,7 @@ C Set Colormap to default. Note, this assignment is redundant
 
         call NhlFCreate(wks,'wks',
      1        NhlFNcgmWorkstationClass,0,rlist,ierr)
-      else
+      else if (X11.eq.1) then
 C Create an XWorkstation object that uses the default colormap.
 
         call NhlFRLClear(rlist)
@@ -83,6 +86,19 @@ C Set Colormap to default. Note, this assignment is redundant
         call NhlFCreate(wks,'wks',NhlFXWorkstationClass,0,
      1     rlist,ierr)
 
+      else if (PS.eq.1) then
+C
+C Create a PS object.
+C
+        call NhlFRLClear(rlist)
+
+        call NhlFRLSetstring(rlist,'wkPSFileName','./basic05f.ps',ierr)
+
+C Set Colormap to default. Note, this assignment is redundant
+        call NhlFRLSetString(rlist,'wkColorMap','default',ierr)
+
+        call NhlFCreate(wks,'wks',
+     1        NhlFPSWorkstationClass,0,rlist,ierr)
       endif
 
 C Initialize labels for the colormap entries

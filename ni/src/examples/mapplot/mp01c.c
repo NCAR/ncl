@@ -1,5 +1,5 @@
 /*
- *      $Id: mp01c.c,v 1.7 1995-04-07 10:54:19 boote Exp $
+ *      $Id: mp01c.c,v 1.8 1995-06-22 21:08:15 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -26,6 +26,7 @@
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/MapPlot.h>
 
@@ -33,7 +34,7 @@ main(int argc, char *argv[])
 {
     int appid,wid,mapid;
     int rlist,grlist;
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 /*
  * Initialize the high level utility library
  */
@@ -50,7 +51,7 @@ main(int argc, char *argv[])
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"mp01",NhlappClass,NhlDEFAULT_APP,rlist);
 
-    if(NCGM==1) {
+    if (NCGM) {
 /*
  * Create a meta file workstation
  */
@@ -59,13 +60,22 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"mp01Work",
                   NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist);
     }
-    else {
+    else if (X11) {
 /*
  * Create an X workstation
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&wid,"mp01Work",NhlxWorkstationClass,appid,rlist);
+    }
+    else if (PS) {
+/*
+ * Create a PS workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./mp01c.ps");
+        NhlCreate(&wid,"mp01Work",
+                  NhlpsWorkstationClass,NhlDEFAULT_APP,rlist);
     }
 /*
  * Draw the default MapPlot object

@@ -1,5 +1,5 @@
 /*
- *  $Id: tx05c.c,v 1.4 1995-04-07 10:54:40 boote Exp $
+ *  $Id: tx05c.c,v 1.5 1995-06-22 21:08:43 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -28,6 +28,7 @@
 #include <ncarg/hlu/TextItem.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 
 #define MAX(A,B)       (((A) > (B)) ? (A) : (B))
 
@@ -37,7 +38,7 @@ main()
     float height, angle, dtr=0.017453292519943;
     float bkg_color[] = {1., 1., 1.};
     float x_coord, y_coord;
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 /*
  *  Initialize.
  */ 
@@ -55,7 +56,7 @@ main()
         NhlCreate(&wid,"tx05Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else {
+    else if (X11) {
 /*
  *  Create an XWorkstation object.
  */
@@ -64,6 +65,16 @@ main()
         NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
         NhlCreate(&wid,"tx05Work",
                   NhlxWorkstationClass,NhlDEFAULT_APP, rlist);
+    }
+    else if (PS) {
+/*
+ * Create a PS workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./tx05c.ps");
+        NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
+        NhlCreate(&wid,"tx05Work",NhlpsWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
     }
 /*
  *  Create a TextItem object.

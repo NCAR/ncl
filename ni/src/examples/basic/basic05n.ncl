@@ -1,4 +1,4 @@
-; $Id: basic05n.ncl,v 1.9 1995-05-15 17:16:34 scheitln Exp $
+; $Id: basic05n.ncl,v 1.10 1995-06-22 21:07:30 haley Exp $
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
 ;                Copyright (C)  1995                                    ;
@@ -37,6 +37,8 @@ end do
 ; Set the display. Default is to display output to an X workstation
 ;
 NCGM=0
+X11=1
+PS=0
 
 if (NCGM .eq. 1) then
 ;
@@ -48,16 +50,29 @@ if (NCGM .eq. 1) then
                                       ; this assignment is redundant.
   end create
 else
+  if (X11 .eq. 1) then
 ;
 ; Create an XWorkstation object with default colormap.
 ;
-  wks = create "wks" xWorkstationClass defaultapp
+    wks = create "wks" xWorkstationClass defaultapp
       "wkPause" : "True"
       "wkXColorMode" : "private"      ; Set color mode to private to avoid
                                       ; contention for colors from other apps.
       "wkColorMap" : "default"	      ; Set Colormap to default. Note,
                                       ; this assignment is redundant.
-  end create
+    end create
+  else
+    if (PS .eq. 1) then
+;
+; Create a PSWorkstation object.
+;
+      wks = create "wks" psWorkstationClass defaultapp
+        "wkPSFileName" : "basic05n.ps"
+        "wkColorMap" : "default"	   ; Set Colormap to default. Note,
+                                       ; this assignment is redundant.
+      end create
+    end if
+  end if
 end if
 
 ; Create a labelbar object. 

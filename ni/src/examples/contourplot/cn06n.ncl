@@ -30,28 +30,41 @@ filename = filedir + "/cdf/contour.cdf"
 a = addfile(filename,"r")
 
 NCGM=1
+X11=0
+PS=0
 
 if (NCGM.eq.1) then
 ;
-; Open NCGM workstation and name the metafile "contour00.ncgm"
+; Open NCGM workstation.
 ;
-    wks = create "cn06Work" ncgmWorkstationClass noparent 
+    wks = create "cn06Work" ncgmWorkstationClass defaultapp 
         "wkMetaName" : "cn06n.ncgm"
     end create
 else
+  if (X11.eq.1) then
 ;
 ; Create an X workstation.
 ;
     wks = create "cn06Work" xWorkstationClass defaultapp
-        "wkPause" : "True"
+      "wkPause" : "True"
     end create
+  else
+    if (PS .eq. 1) then
+;
+; Open PS workstation.
+;
+      wks = create "cn06Work" psWorkstationClass defaultapp 
+        "wkPSFileName" : "cn06n.ps"
+      end create
+    end if
+  end if
 end if
 
 ;
 ; Create a scalar field data object and configure its extents missing
 ; values and at the same time convert it from Degrees K to Degrees F
 ;
-field1 = create "field1" scalarFieldClass noparent
+field1 = create "field1" scalarFieldClass defaultapp
     "sfDataArray" : (a->T(0,0,:,:) - 273.15) * 9 / 5 + 32.0
     "sfMissingValueV":  a->T@_FillValue
     "sfXCStartV" : a->lon(0)

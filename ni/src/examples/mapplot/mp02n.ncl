@@ -38,7 +38,7 @@ begin
 ; The resource file sets most of the Contour resources that remain fixed
 ; throughout the life of the Contour object.
 ;
-    appid = create "mp02" appClass noparent
+    appid = create "mp02" appClass defaultapp
         "appUsrDir" : "./"
         "appDefaultParent" : "True"
     end create
@@ -46,21 +46,34 @@ begin
 ; Default is to display output to an X workstation
 ;
     NCGM=0
+    X11=1
+    PS=0
 
     if (NCGM .eq. 1) then
 ;
 ; Create an ncgmWorkstation object.
 ;
-        wid = create "mp02Work" ncgmWorkstationClass noparent
+        wid = create "mp02Work" ncgmWorkstationClass defaultapp
             "wkMetaName" : "./mp02n.ncgm"
         end create
     else
+      if (X11 .eq. 1) then
 ;
 ; Create an XWorkstation object.
 ;
         wid = create "mp02Work" xWorkstationClass defaultapp
             "wkPause" : "True"
         end create
+      else
+        if (PS .eq. 1) then
+;
+; Create a PSWorkstation object.
+;
+          wid = create "mp02Work" psWorkstationClass defaultapp
+            "wkPSFileName" : "./mp02n.ps"
+          end create
+        end if
+      end if
     end if
 
 ;

@@ -1,5 +1,5 @@
 /*
- *      $Id: mp02c.c,v 1.8 1995-04-07 10:54:22 boote Exp $
+ *      $Id: mp02c.c,v 1.9 1995-06-22 21:08:18 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,7 @@
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/MapPlot.h>
 
@@ -34,7 +35,7 @@ main(int argc, char *argv[])
 
     int appid,wid,mapid;
     int rlist;
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 /*
  * String arrays for specifying areas
  */
@@ -65,7 +66,7 @@ main(int argc, char *argv[])
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"mp02",NhlappClass,NhlDEFAULT_APP,rlist);
 
-    if(NCGM==1) {
+    if (NCGM) {
 /*
  * Create a meta file workstation
  */
@@ -75,13 +76,22 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"mp02Work",
                   NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist);
     }
-    else {
+    else if (X11) {
 /*
  * Create an X workstation
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&wid,"mp02Work",NhlxWorkstationClass,appid,rlist);
+    }
+    else if (PS) {
+/*
+ * Create a PS workstation
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./mp02c.ps");
+        NhlCreate(&wid,"mp02Work",
+                  NhlpsWorkstationClass,NhlDEFAULT_APP,rlist);
     }
 /*
  * Create a plot focusing on North and South America;

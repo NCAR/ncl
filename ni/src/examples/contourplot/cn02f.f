@@ -1,5 +1,5 @@
 C
-C     $Id: cn02f.f,v 1.3 1995-04-07 10:53:56 boote Exp $
+C     $Id: cn02f.f,v 1.4 1995-06-22 21:07:39 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -24,6 +24,7 @@ C Extern declarations for Types of objects that will be used
 C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
+      external NhlFPSWorkstationClass
       external NhlFXWorkstationClass
       external nhlfscalarfieldclass
       external nhlfcontourplotclass
@@ -40,11 +41,13 @@ C
       real fscales(1000)
       integer colors(256)
       integer count, itmp
-      integer NCGM
+      integer NCGM, X11, PS
 C
 C Default is to display output to an X workstation
 C
       NCGM=0
+      X11=1
+      PS=0
 C
 C Create a simple bull's eye pattern test data set
 C     
@@ -79,7 +82,7 @@ C
          call NhlFRLSetstring(srlist,'wkMetaName','./cn02f.ncgm',ierr)
          call NhlFCreate(wid,'cn02Work',NhlFNcgmWorkstationClass,
      1     0,srlist,ierr)
-      else
+      else if (X11.eq.1) then
 C
 C Create an X workstation.
 C
@@ -87,6 +90,14 @@ C
          call NhlFRLSetstring(srlist,'wkPause','True',ierr)
          call NhlFCreate(wid,'cn02Work',NhlFXWorkstationClass,
      1        0,srlist,ierr) 
+      else if (PS.eq.1) then
+C
+C Create a PS object.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetstring(srlist,'wkPSFileName','./cn02f.ps',ierr)
+         call NhlFCreate(wid,'cn02Work',NhlFPSWorkstationClass,
+     1     0,srlist,ierr)
       endif
 C
 C Create a ScalarField data object using the data set defined above.

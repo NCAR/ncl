@@ -75,6 +75,8 @@ cmap(25,:) = (/0.40, 0.00, 0.40/)
 ;
 
 NCGM=0
+X11=1
+PS=0
 
 if (NCGM .eq. 1) then
 ;
@@ -86,6 +88,7 @@ if (NCGM .eq. 1) then
       "wkBackgroundColor"  : (/ 1., 1., 1. /)
   end create
 else
+  if (X11 .eq. 1) then
 ;
 ; Create an XWorkstation object.
 ;
@@ -94,13 +97,25 @@ else
       "wkColorMap"         : cmap
       "wkBackgroundColor"  : (/ 1., 1., 1. /)
     end create
+  else
+    if (PS .eq. 1) then
+;
+; Create an PSWorkstation object.
+;
+      workstation_id = create "moundp" psWorkstationClass defaultapp
+        "wkPSFileName"       : "cn10n.ps"
+        "wkColorMap"         : cmap
+        "wkBackgroundColor"  : (/ 1., 1., 1. /)
+      end create
+    end if
+  end if
 end if
 
 ;
 ; Create a data field.
 ;
 
-field1 = create "field1" scalarFieldClass noparent
+field1 = create "field1" scalarFieldClass defaultapp
   "sfDataArray" : (file1->mound)
   "sfMissingValueV":  file1->mound@_FillValue
   "sfXCStartV" : file1->ydim(0)
@@ -314,7 +329,7 @@ mapid = create "Map0" mapPlotClass workstation_id
   "mpPerimLineThicknessF": 2.
 end create
 
-field2 = create "field2" scalarFieldClass noparent
+field2 = create "field2" scalarFieldClass defaultapp
         "sfDataArray" : (file1->mound)
         "sfXCStartV" : -109.05
         "sfXCEndV": -102.05

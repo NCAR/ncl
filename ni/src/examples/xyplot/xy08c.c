@@ -1,5 +1,5 @@
 /*
-**      $Id: xy08c.c,v 1.3 1995-05-09 21:45:49 haley Exp $
+**      $Id: xy08c.c,v 1.4 1995-06-22 21:09:42 haley Exp $
 */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrTable.h>
 #include <ncarg/hlu/TickMark.h>
@@ -55,7 +56,7 @@ main()
     float   cmap[NCOLORS][3];
     FILE    *fp;
 
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 /*
  * Fill the data arrays.
  */
@@ -115,7 +116,7 @@ main()
         NhlCreate(&xworkid,"xy08Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else {
+    else if (X11) {
 /*
  * Create an XWorkstation object.
  */
@@ -123,6 +124,16 @@ main()
         NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,clen);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&xworkid,"xy08Work",NhlxWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else if (PS) {
+/*
+ * Create a PS workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./xy08c.ps");
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,clen);
+        NhlCreate(&xworkid,"xy08Work",NhlpsWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
 /*

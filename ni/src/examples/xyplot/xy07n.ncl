@@ -1,5 +1,5 @@
 ;
-;      $Id: xy07n.ncl,v 1.1 1995-05-09 21:45:47 haley Exp $
+;      $Id: xy07n.ncl,v 1.2 1995-06-22 21:09:41 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -85,6 +85,8 @@ end create
 ; Default is to display output to an X workstation
 ;
 NCGM=0
+X11=1
+PS=0
 
 ;
 ; Modify the color map.  Color indices '0' and '1' are the background
@@ -105,13 +107,25 @@ if (NCGM .eq. 1) then
       "wkColorMap" : cmap
   end create
 else
+  if (X11 .eq. 1) then
 ;
 ; Create an XWorkstation object.
 ;
-  xworkid = create "xy07Work" xWorkstationClass defaultapp
+    xworkid = create "xy07Work" xWorkstationClass defaultapp
       "wkPause" : "True"
       "wkColorMap" : cmap
-  end create
+    end create
+  else
+    if (PS .eq. 1) then
+;
+; Create a PSWorkstation object.
+;
+      xworkid = create "xy07Work" psWorkstationClass defaultapp
+        "wkPSFileName" : "xy07n.ps"
+        "wkColorMap" : cmap
+      end create
+    end if
+  end if
 end if
 
 ;

@@ -25,13 +25,14 @@
 #include <ncarg/hlu/LabelBar.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
         
 main()
 {
     int appid, wid, pid, rlist;
     int i, colors[16];
     char *line_labels[16];
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 /*
  * Initialize data values
  */
@@ -77,13 +78,22 @@ main()
         NhlCreate(&wid,"lb02Work",NhlncgmWorkstationClass,NhlDEFAULT_APP,
                   rlist);
     }
-    else {
+    else if (X11) {
 /*
  * Create an X Workstation.
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&wid,"lb02Work",NhlxWorkstationClass,NhlDEFAULT_APP,
+                  rlist);
+    }
+    else if (PS) {
+/*
+ * Create a PS workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./lb02c.ps");
+        NhlCreate(&wid,"lb02Work",NhlpsWorkstationClass,NhlDEFAULT_APP,
                   rlist);
     }
 /*

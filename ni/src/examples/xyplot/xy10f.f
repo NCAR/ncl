@@ -1,5 +1,5 @@
 C
-C      $Id: xy10f.f,v 1.3 1995-05-09 21:45:50 haley Exp $
+C      $Id: xy10f.f,v 1.4 1995-06-22 21:09:50 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -22,6 +22,7 @@ C                     on a MapPlot.
 C
       external NhlFAppClass 
       external NhlFNcgmWorkstationClass
+      external NhlFPSWorkstationClass
       external NhlFXWorkstationClass
       external NhlFXyPlotClass
       external NhlFMapPlotClass
@@ -49,11 +50,13 @@ C
       integer ndims, nvars, ngatts, rec_len
       integer start(1), count(1)
 
-      integer NCGM
+      integer NCGM, X11, PS
 C
 C Default is to an X workstation.
 C
       NCGM=0
+      X11=1
+      PS=0
 C
 C Initialize the HLU library and set up resource template.
 C
@@ -77,7 +80,7 @@ C
          call NhlFRLSetString(rlist,'wkMetaName','./xy10f.ncgm',ierr)
          call NhlFCreate(xworkid,'xy10Work',
      +        NhlFNcgmWorkstationClass,0,rlist,ierr)
-      else
+      else if (X11.eq.1) then
 C
 C Create an xworkstation object.
 C
@@ -85,6 +88,14 @@ C
          call NhlFRLSetString(rlist,'wkPause','True',ierr)
          call NhlFCreate(xworkid,'xy10Work',NhlFXWorkstationClass,
      +        0,rlist,ierr)
+      else if (PS.eq.1) then
+C
+C Create a PS workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkPSFileName','./xy10f.ps',ierr)
+         call NhlFCreate(xworkid,'xy10Work',
+     +        NhlFPSWorkstationClass,0,rlist,ierr)
       endif
 C
 C Open the netCDF file.

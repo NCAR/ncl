@@ -1,5 +1,5 @@
 C
-C      $Id: xy06f.f,v 1.7 1995-06-14 15:09:17 stautler Exp $
+C      $Id: xy06f.f,v 1.8 1995-06-22 21:09:37 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -37,6 +37,7 @@ C                 anonymous ftp to unidata.ucar.edu.
 C
       external NhlFAppClass 
       external NhlFNcgmWorkstationClass
+      external NhlFPSWorkstationClass
       external NhlFXWorkstationClass
       external NhlFXyPlotClass
       external NhlFCoordArraysClass
@@ -100,11 +101,13 @@ C
      +          0.75,0.00,0.75,
      +          1.00,1.00,0.00/
 
-      integer NCGM
+      integer NCGM, X11, PS
 C
 C Default is to an X workstation.
 C
       NCGM=0
+      X11=1
+      PS=0
 C
 C Initialize the HLU library and set up resource template.
 C
@@ -133,7 +136,7 @@ C
      +        ierr)
          call NhlFCreate(xworkid,'xy06Work',
      +        NhlFNcgmWorkstationClass,0,rlist,ierr)
-      else
+      else if (X11.eq.1) then
 C
 C Create an xworkstation object.
 C
@@ -143,6 +146,16 @@ C
      +        ierr)
          call NhlFCreate(xworkid,'xy06Work',NhlFXWorkstationClass,
      +        0,rlist,ierr)
+      else if (PS.eq.1) then
+C
+C Create an NCGM workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkPSFileName','./xy06f.ps',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,length,
+     +        ierr)
+         call NhlFCreate(xworkid,'xy06Work',
+     +        NhlFPSWorkstationClass,0,rlist,ierr)
       endif
 C
 C We need to initialize a non-constant dummy array for our Data

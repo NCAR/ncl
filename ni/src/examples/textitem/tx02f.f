@@ -21,15 +21,18 @@ C
       external NhlFAppClass
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
+      external NhlFPSWorkstationClass
       external NhlFTextItemClass
         
       integer appid, wid, pid
       integer rlist, ierr
-      integer NCGM
+      integer NCGM, X11, PS
 C
 C Default is to create an X workstation.
 C
       NCGM=0
+      X11=1
+      PS=0
 C
 C Initialize the high level utility library
 C
@@ -54,7 +57,7 @@ C
          call NhlFRLSetstring(rlist,'wkMetaName','./tx02f.ncgm',ierr)
          call NhlFCreate(wid,'tx02Work',NhlFNcgmWorkstationClass,0,
      $        rlist,ierr)
-      else
+      else if (X11.eq.1) then
 C
 C Create an xworkstation object.
 C
@@ -62,6 +65,14 @@ C
          call NhlFRLSetstring(rlist,'wkPause','True',ierr)
          call NhlFCreate(wid,'tx02Work',NhlFXWorkstationClass,
      $        0,rlist,ierr)
+      else if (PS.eq.1) then
+C
+C Create a PS object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPSFileName','./tx02f.ps',ierr)
+         call NhlFCreate(wid,'tx02Work',NhlFPSWorkstationClass,0,
+     $        rlist,ierr)
       endif
 C
 C Create a TextItem object.

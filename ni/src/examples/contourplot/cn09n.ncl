@@ -31,21 +31,34 @@ filename = filedir + "/cdf/contour.cdf"
 a = addfile(filename,"r")
 
 NCGM=1
+X11=0
+PS=0
 
 if (NCGM.eq.1) then
 ;
-; Open NCGM workstation and name the metafile "contour00.ncgm"
+; Open NCGM workstation.
 ;
-    wks = create "cn09Work" ncgmWorkstationClass noparent
-        "wkMetaName" : "cn09n.ncgm"
+    wks = create "cn09Work" ncgmWorkstationClass defaultapp
+      "wkMetaName" : "cn09n.ncgm"
     end create
 else
+  if (X11.eq.1) then
 ;
 ; Create an X workstation.
 ;
     wks = create "cn09Work" xWorkstationClass defaultapp
         "wkPause" : "True"
     end create
+  else
+    if (PS.eq.1) then
+;
+; Open PS workstation.
+;
+      wks = create "cn09Work" psWorkstationClass defaultapp
+        "wkPSFileName" : "cn09n.ps"
+      end create
+    end if
+  end if
 end if
 
 ;
@@ -58,7 +71,7 @@ frtime = a->frtime
 ; Creates scalar field configured with first time step
 ; of pressure data
 ;
-field1 = create "field1" scalarFieldClass noparent
+field1 = create "field1" scalarFieldClass defaultapp
     "sfDataArray" : p(0,:,:) 
     "sfMissingValueV" : p@_FillValue
     "sfXCStartV" : a->lon(0)

@@ -18,6 +18,7 @@ C     Description:      Illustrates use of AnnoManager objects.
 C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
+      external NhlFPSWorkstationClass
       external NhlFMapPlotClass
       external NhlFtextitemClass
       external nhlfannomanagerclass
@@ -37,7 +38,7 @@ C
       data ret/-1/
       integer appid,wid,mapid,rlist,grlist
       integer i
-      integer NCGM
+      integer NCGM, X11, PS
       data name/'Los Angeles','Seattle','Toronto','New York','Miami',
      1 'Mexico City','London','Jakarta','Moscow','New Delhi',
      1 'Rio de Janeiro','Cairo','Buenos Aires','Beijing','Tokyo',
@@ -56,6 +57,8 @@ C
 C Default is to create a metafile.
 C
       NCGM=1
+      X11=0
+      PS=0
 C
 C Initialize the high level utility library
 C
@@ -80,7 +83,7 @@ C
          call NhlFRLSetstring(rlist,'wkMetaName','./mp04f.ncgm',ierr)
          call NhlFCreate(wid,'mp04Work',NhlFNcgmWorkstationClass,
      1        0,rlist,ierr)
-      else
+      else if (X11.eq.1) then
 C
 C Create an X workstation
 C
@@ -88,6 +91,14 @@ C
          call NhlFRLSetstring(rlist,'wkPause','True',ierr)
          call NhlFCreate(wid,'mp04Work',NhlFXWorkstationClass,0,
      1        rlist,ierr)
+      else if (PS.eq.1) then
+C
+C Create a PS object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPSFileName','./mp04f.ps',ierr)
+         call NhlFCreate(wid,'mp04Work',NhlFPSWorkstationClass,
+     1        0,rlist,ierr)
       endif
 C
 C AnnoManager objects allow the PlotManager to manipulate any View class

@@ -1,5 +1,5 @@
 /*
- *      $Id: cn04c.c,v 1.4 1995-04-07 10:53:59 boote Exp $
+ *      $Id: cn04c.c,v 1.5 1995-06-22 21:07:43 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -34,6 +34,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/ScalarField.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/TextItem.h>
@@ -59,7 +60,7 @@ main(int argc, char *argv[])
 
     extern void bndary();
     extern void gendat (float *,int,int,int,int,int,float,float);
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 /*
  * This program emulates the output of cpex02 with a few differences:
  * 1. Because the information label is implemented as an HLU Annotation
@@ -93,7 +94,7 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"cn04Work",
                   NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist); 
     }
-    else {
+    else if (X11) {
 /*
  * Create an X workstation.
  */
@@ -101,6 +102,15 @@ main(int argc, char *argv[])
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&wid,"cn04Work",
                   NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
+    }
+    else if (PS) {
+/*
+ * Create a meta file workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./cn04c.ps");
+        NhlCreate(&wid,"cn04Work",
+                  NhlpsWorkstationClass,NhlDEFAULT_APP,rlist); 
     }
 /*
  * Call the Fortran routine 'GENDAT' to create the first array of contour

@@ -1,5 +1,5 @@
 ;
-;      $Id: xy14n.ncl,v 1.4 1995-06-14 15:09:18 stautler Exp $
+;      $Id: xy14n.ncl,v 1.5 1995-06-22 21:09:52 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -56,6 +56,8 @@ tr_data = (/                                                     \
 ; Default is to display output to an X workstation
 ;
 NCGM=0
+X11=1
+PS=0
 
 if (NCGM .eq. 1) then
 ;
@@ -65,12 +67,23 @@ if (NCGM .eq. 1) then
       "wkMetaName" : "xy14n.ncgm"
   end create
 else
+  if (X11 .eq. 1) then
 ;
 ; Set up an X11 output workstation.
 ;
-  xworkid = create "simple" xWorkstationClass defaultapp
+    xworkid = create "simple" xWorkstationClass defaultapp
       "wkPause" : "True"
-  end create
+    end create
+  else
+    if (PS .eq. 1) then
+;
+; Create a PSWorkstation object.
+;
+      xworkid = create "simple" psWorkstationClass defaultapp
+        "wkPSFileName" : "xy14n.ps"
+      end create
+    end if
+  end if
 end if
 
 ;

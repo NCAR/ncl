@@ -21,13 +21,16 @@ C
       external NhlFAppClass
       external NhlFXWorkstationClass
       external NhlFNCGMWorkstationClass
+      external NhlFPSWorkstationClass
       external NhlFXyPlotClass
       external NhlFTextItemClass
-      integer NCGM
+      integer NCGM, X11, PS
 C
 C Default is output to an X11 window.
 C
       NCGM=0
+      X11=1
+      PS=0
 C
 C Create application.
 C
@@ -41,12 +44,19 @@ C
          call NhlFRLSetString(list,'wkMetaName','./tx08f.ncgm',ierr)
          call NhlFCreate(ixwk,'tx08Work',NhlFNcgmWorkstationClass,0,
      1        list,ierr)
-      else
+      else if (X11.eq.1) then
 C
 C Create an X workstation.
 C
          call NhlFCreate(ixwk,'tx08Work',NhlFXWorkstationClass,
      +        0,list,ier)
+      else if (PS.eq.1) then
+C
+C Create a PS workstation.
+C
+         call NhlFRLSetString(list,'wkPSFileName','./tx08f.ps',ierr)
+         call NhlFCreate(ixwk,'tx08Work',NhlFPSWorkstationClass,0,
+     1        list,ierr)
       endif
 C
 C Create Plot object - no data, just illustration annotations.

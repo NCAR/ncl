@@ -1,4 +1,4 @@
-; $Id: basic06n.ncl,v 1.2 1995-05-24 19:42:33 haley Exp $
+; $Id: basic06n.ncl,v 1.3 1995-06-22 21:07:31 haley Exp $
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
 ;                Copyright (C)  1995                                    ;
@@ -107,6 +107,8 @@ cmap(3,:) = (/1.0, 0.0, 0.0/)
 ; Set the display. Default is to display output to an X workstation.
 ;
 NCGM=0
+X11=1
+PS=0
 
 if (NCGM .eq. 1) then
 ;
@@ -117,6 +119,7 @@ if (NCGM .eq. 1) then
       "wkColorMap"         : cmap
   end create
 else
+  if (X11 .eq. 1) then
 ;
 ; Create an X11 output workstation and use the above color map.
 ;
@@ -124,6 +127,17 @@ else
       "wkPause" : "True"
       "wkColorMap"         : cmap
   end create
+  else
+    if (PS .eq. 1) then
+;
+; Create a PSWorkstation object.
+;
+      xwork_id = create "simple" psWorkstationClass defaultapp
+        "wkPSFileName"   : "basic06n.ps"
+        "wkColorMap"     : cmap
+      end create
+    end if
+  end if
 end if
 
 ;

@@ -1,5 +1,5 @@
 C
-C      $Id: xy08f.f,v 1.2 1995-05-11 16:16:09 haley Exp $
+C      $Id: xy08f.f,v 1.3 1995-06-22 21:09:43 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                     C
@@ -29,6 +29,7 @@ C
       external NhlFAppClass
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
+      external NhlFPSWorkstationClass
       external NhlFCoordArraysClass
       external NhlFXyPlotClass
 
@@ -63,11 +64,13 @@ C
      +          0.00,0.00,0.00,
      +          0.00,0.00,1.00/
 
-      integer NCGM
+      integer NCGM, X11, PS
 C
 C Default is to an X workstation.
 C
       NCGM=0
+      X11=1
+      PS=0
 C
 C Fill the data arrays.
 C
@@ -112,7 +115,7 @@ C
          call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,clen,ierr)
          call NhlFCreate(xworkid,'xy08Work',
      +        NhlFNcgmWorkstationClass,0,rlist,ierr)
-      else
+      else if (X11.eq.1) then
 C
 C Create an xworkstation object.
 C
@@ -121,6 +124,15 @@ C
          call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,clen,ierr)
          call NhlFCreate(xworkid,'xy08Work',NhlFXWorkstationClass,
      +                0,rlist,ierr)
+      else if (PS.eq.1) then
+C
+C Create a PS workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkPSFileName','./xy08f.ps',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,clen,ierr)
+         call NhlFCreate(xworkid,'xy08Work',
+     +        NhlFPSWorkstationClass,0,rlist,ierr)
       endif
 C
 C Create NCURVE CoordArray objects which define the data for the XyPlot

@@ -25,12 +25,13 @@
 #include <ncarg/hlu/TextItem.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 
 main()
 {
     int appid, wid, pid;
     int rlist;
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 /*
  * Initialize the high level utility library
  */
@@ -56,13 +57,22 @@ main()
         NhlCreate(&wid,"tx02Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else {
+    else if (X11) {
 /*
  * Create an XWorkstation object.
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&wid,"tx02Work",NhlxWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else if (PS) {
+/*
+ * Create a PS workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./tx02c.ps");
+        NhlCreate(&wid,"tx02Work",NhlpsWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
 /*

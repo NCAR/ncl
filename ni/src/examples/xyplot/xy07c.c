@@ -1,5 +1,5 @@
 /*
-**      $Id: xy07c.c,v 1.3 1995-05-09 21:45:46 haley Exp $
+**      $Id: xy07c.c,v 1.4 1995-06-22 21:09:39 haley Exp $
 */
 /************************************************************************
 *                                                                       *
@@ -31,6 +31,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
 
@@ -50,7 +51,7 @@ main()
 	float cmap[4][3];
     char datastr[10];
     extern float fran();
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 /*
  * Initialize the HLU library and set up resource template.
  */
@@ -89,7 +90,7 @@ main()
         NhlCreate(&xworkid,"xy07Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else {
+    else if (X11) {
 /*
  * Create an XWorkstation object.
  */
@@ -98,6 +99,16 @@ main()
 		NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
         NhlCreate(&xworkid,"xy07Work",NhlxWorkstationClass,
               NhlDEFAULT_APP,rlist);
+    }
+    else if (PS) {
+/*
+ * Create a PS workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./xy07c.ps");
+		NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
+        NhlCreate(&xworkid,"xy07Work",NhlpsWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
     }
 /*
  * Since we have two sets of points that we want to color differently,

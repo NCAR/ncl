@@ -1,5 +1,5 @@
 C
-C     $Id: cn04f.f,v 1.4 1995-04-07 10:54:00 boote Exp $
+C     $Id: cn04f.f,v 1.5 1995-06-22 21:07:44 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -24,6 +24,7 @@ C
       external NhlFAppClass
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
+      external NhlFPSWorkstationClass
       external nhlfscalarfieldclass
       external nhlfcontourplotclass
 
@@ -44,11 +45,13 @@ C
       real levels(25), thicknesses(25)
       integer lvlflag_count, pat_count, level_count,thick_count
       data lvlflag_count,pat_count,level_count,thick_count/25,25,25,25/
-      integer NCGM
+      integer NCGM, X11, PS
 C
 C Default is to display output to an X workstation
 C
       NCGM=0
+      X11=1
+      PS=0
 C
 C This program emulates the output of cpex02 with a few differences:
 C 1. Because the information label is implemented as an HLU Annotation
@@ -80,7 +83,7 @@ C
          call NhlFRLSetstring(rlist,'wkMetaName','./cn04f.ncgm',ierr)
          call NhlFCreate(wid,'cn04Work',NhlFNcgmWorkstationClass,
      1     0,rlist,ierr) 
-      else 
+      else  if (X11.eq.1) then
 C
 C Create an X workstation.
 C
@@ -88,6 +91,14 @@ C
          call NhlFRLSetstring(rlist,'wkPause','True',ierr)
          call NhlFCreate(wid,'cn04Work',NhlFXWorkstationClass,
      1        0,rlist,ierr) 
+      else if (PS.eq.1) then
+C
+C Create a PS object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPSFileName','./cn04f.ps',ierr)
+         call NhlFCreate(wid,'cn04Work',NhlFPSWorkstationClass,
+     1     0,rlist,ierr) 
       endif
 C
 C Call the routine 'GENDAT' to create the first array of contour

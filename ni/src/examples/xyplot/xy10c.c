@@ -1,5 +1,5 @@
 /*
-**      $Id: xy10c.c,v 1.2 1995-05-05 20:56:21 haley Exp $
+**      $Id: xy10c.c,v 1.3 1995-06-22 21:09:48 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -28,6 +28,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/MapPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
@@ -58,7 +59,7 @@ main()
     char    filename[256], recname[50];
     const   char *dir = _NGGetNCARGEnv("data");
 
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 /*
  * Initialize the HLU library and set up resource template.
  */
@@ -83,7 +84,7 @@ main()
         NhlCreate(&xworkid,"xy10Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else {
+    else if (X11) {
 /*
  * Create an XWorkstation object.
  */
@@ -91,6 +92,15 @@ main()
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&xworkid,"xy10Work",NhlxWorkstationClass,
               NhlDEFAULT_APP,rlist);
+    }
+    else if (PS) {
+/*
+ * Create a PS workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./xy10c.ps");
+        NhlCreate(&xworkid,"xy10Work",NhlpsWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
     }
 /*
  * Open the netCDF file.

@@ -1,5 +1,5 @@
 /*
- * $Id: basic01c.c,v 1.7 1995-06-19 16:20:11 stautler Exp $
+ * $Id: basic01c.c,v 1.8 1995-06-22 21:07:22 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -36,6 +36,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/ResList.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/hlu.h>
@@ -44,7 +45,7 @@ main()
 {
 	int appid,wks,con1,rlist;
 
-	int NCGM=0;
+	int NCGM=0, X11=1, PS=0;
 
 /*
  * ##########
@@ -106,7 +107,7 @@ main()
 		NhlCreate(&wks,"wks",NhlncgmWorkstationClass,NhlDEFAULT_APP,
 			  rlist);
         }
-        else {
+        else if (X11) {
 	/*
 	 * Create an X workstation.
 	 */
@@ -114,7 +115,15 @@ main()
 		NhlRLSetInteger(rlist,NhlNwkPause,True);
 		NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
         }
-
+        else if (PS) {
+	/*
+	 * Create a PS file workstation.
+	 */
+		NhlRLClear(rlist);
+		NhlRLSetString(rlist,NhlNwkPSFileName,"./basic01c.ps");
+		NhlCreate(&wks,"wks",NhlpsWorkstationClass,NhlDEFAULT_APP,
+			  rlist);
+        }
 /*
  * ##########
  * # STEP 3 #

@@ -24,6 +24,7 @@
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/MapPlot.h>
 
@@ -46,7 +47,7 @@ main(int argc, char *argv[])
     int rlist,grlist;
     int i, num_am_ids;
     int *am_ids;
-    int NCGM=1;
+    int NCGM=1, X11=0, PS=0;
 
     Anno_List anno_list[] = {
     {"Los Angeles",34.0,-118.28},
@@ -104,7 +105,7 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"mp04Work",
                   NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist);
     }
-    else {
+    else if (X11) {
 /*
  * Create an X workstation.
  */
@@ -113,7 +114,15 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"mp04Work",
                   NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
     }
-
+    else {
+/*
+ * Create a PS workstation.
+ */
+        NhlRLClear(rlist);
+		NhlRLSetString(rlist,NhlNwkPSFileName,"mp04c.ps");
+        NhlCreate(&wid,"mp04Work",
+                  NhlpsWorkstationClass,NhlDEFAULT_APP,rlist);
+    }
 /*
  * AnnoManager objects allow the PlotManager to manipulate any View class
  * object as an annotation a uniform fashion. They allow

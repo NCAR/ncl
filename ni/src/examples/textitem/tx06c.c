@@ -1,5 +1,5 @@
 /*
- *  $Id: tx06c.c,v 1.3 1995-04-07 10:54:42 boote Exp $
+ *  $Id: tx06c.c,v 1.4 1995-06-22 21:08:45 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -27,6 +27,7 @@
 #include <ncarg/hlu/TextItem.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 
 main()
 {
@@ -38,7 +39,7 @@ main()
     float bkg_color[] = {1., 1., 1.};
     int   just;
     NhlBoundingBox  t_box;
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 
 /*
  *  Initialize and set up application context.
@@ -58,7 +59,7 @@ main()
         NhlCreate(&wid,"tx06Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else {
+    else if (X11) {
 /*
  * Create an XWorkstation object.
  */
@@ -67,6 +68,16 @@ main()
         NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
         NhlCreate(&wid,"tx06Work",
                   NhlxWorkstationClass,NhlDEFAULT_APP, rlist);
+    }
+    else if (PS) {
+/*
+ * Create a PS workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./tx06c.ps");
+        NhlRLSetFloatArray(rlist,NhlNwkBackgroundColor,bkg_color,3);
+        NhlCreate(&wid,"tx06Work",NhlpsWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
     }
 /*
  * Create a TextItem object.

@@ -21,14 +21,17 @@ C
       external NhlFTickMarkClass
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
+      external NhlFPSWorkstationClass
         
       integer appid, wid, pid
       integer rlist, ierr
-      integer NCGM
+      integer NCGM, X11, PS
 C
 C Default is to create an X workstation.
 C
       NCGM=0
+      X11=1
+      PS=0
 C
 C Initialize the high level utility library
 C
@@ -53,7 +56,7 @@ C
          call NhlFRLSetstring(rlist,'wkMetaName','./tm02f.ncgm',ierr)
          call NhlFCreate(wid,'tm02Work',NhlFNcgmWorkstationClass,0,
      $        rlist,ierr)
-      else
+      else if (X11.eq.1) then
 C
 C Create an XWorkstation object.
 C
@@ -61,6 +64,14 @@ C
       call NhlFRLSetinteger(rlist,'wkPause','True',ierr)
       call NhlFCreate(wid,'tm02Work',NhlFXWorkstationClass,0,
      1      rlist,ierr)
+      else if (PS.eq.1) then
+C
+C Create a PS object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPSFileName','./tm02f.ps',ierr)
+         call NhlFCreate(wid,'tm02Work',NhlFPSWorkstationClass,0,
+     $        rlist,ierr)
       endif
 C
 C Specify the viewport extent of the object.

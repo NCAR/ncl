@@ -23,12 +23,13 @@
 #include <ncarg/hlu/Legend.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
         
 main()
 {
     int appid, wid, pid;
     int rlist;
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 
 /*
  * Initialize the high level utility library
@@ -56,13 +57,22 @@ main()
         NhlCreate(&wid,"lg01Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
-    else {
+    else if (X11) {
 /*
  * Create an X Workstation.
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&wid,"lg01Work",NhlxWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else if (PS) {
+/*
+ * Create a PS workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./lg01c.ps");
+        NhlCreate(&wid,"lg01Work",NhlpsWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
 /*

@@ -1,5 +1,5 @@
 ;
-;   $Id: ti02n.ncl,v 1.6 1995-04-07 10:54:59 boote Exp $
+;   $Id: ti02n.ncl,v 1.7 1995-06-22 21:09:10 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -40,6 +40,8 @@ end create
 ; Default is to display output to an X workstation
 ;
 NCGM=0
+X11=1
+PS=0
 
 if (NCGM .eq. 1) then
 ;
@@ -48,13 +50,24 @@ if (NCGM .eq. 1) then
   wid = create "ti02Work" ncgmWorkstationClass defaultapp
       "wkMetaName"         : "ti02n.ncgm"
   end create
-else
+else 
+  if (X11 .eq. 1) then
 ;
 ; Create an XWorkstation object.
 ;
-  wid = create "ti02Work" xWorkstationClass defaultapp
+    wid = create "ti02Work" xWorkstationClass defaultapp
       "wkPause" : "True"
-  end create
+    end create
+  else
+    if (PS .eq. 1) then
+;
+; Create a PSWorkstation object.
+;
+      wid = create "ti02Work" psWorkstationClass defaultapp
+        "wkPSFileName" : "ti02n.ps"
+      end create
+    end if
+  end if
 end if
 
 ;

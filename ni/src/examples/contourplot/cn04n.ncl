@@ -45,7 +45,7 @@ len_dims = new((/3/),integer)
 ; The resource file sets most of the ContourPlot resources that remain fixed
 ; throughout the life of the ContourPlot object.
 ;
-appid = create "cn04" appClass noparent
+appid = create "cn04" appClass defaultapp
     "appUsrDir" : "./"
     "appDefaultParent" : "True"
 end create
@@ -54,21 +54,34 @@ end create
 ; Default is to display output to an X workstation
 ;
 NCGM=0
+X11=1
+PS=0
 
 if (NCGM.eq.1) then
 ;
 ; Create an NCGM workstation.
 ;
-  wid = create "cn04Work" ncgmWorkstationClass noparent
+  wid = create "cn04Work" ncgmWorkstationClass defaultapp
     "wkMetaName" : "./cn04n.ncgm"
   end create
 else
+  if (X11.eq.1) then
 ;
 ; Create an X workstation.
 ;
-  wid = create "cn04Work" xWorkstationClass noparent
-    "wkPause" : "True"
-  end create
+    wid = create "cn04Work" xWorkstationClass defaultapp
+      "wkPause" : "True"
+    end create
+  else
+    if (PS .eq. 1) then
+;
+; Create a PS workstation.
+;
+      wid = create "cn04Work" psWorkstationClass defaultapp
+        "wkPSFileName" : "./cn04n.ps"
+      end create
+    end if
+  end if
 end if
 
 ;

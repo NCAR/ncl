@@ -36,6 +36,8 @@ end create
 ; Default is to display output to an X workstation
 ;
 NCGM=0
+X11=1
+PS=0
 
 if (NCGM .eq. 1) then
 ;
@@ -45,12 +47,23 @@ if (NCGM .eq. 1) then
       "wkMetaName" : "lg01n.ncgm"
   end create
 else
+  if (X11 .eq. 1) then
 ;
 ; Create an XWorkstation object.
 ;
-  wid = create "lg01Work" xWorkstationClass defaultapp
+    wid = create "lg01Work" xWorkstationClass defaultapp
       "wkPause" : "True"
-  end create
+    end create
+  else
+    if (PS .eq. 1) then
+;
+; Create a PSWorkstation object.
+;
+      wid = create "lg01Work" psWorkstationClass defaultapp
+        "wkPSFileName" : "lg01n.ps"
+      end create
+    end if
+  end if
 end if
 
 ;

@@ -1,5 +1,5 @@
 /*
- * $Id: basic05c.c,v 1.7 1995-05-15 17:16:32 scheitln Exp $
+ * $Id: basic05c.c,v 1.8 1995-06-22 21:07:28 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -32,6 +32,7 @@
 #include <ncarg/hlu/ResList.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/Workstation.h>
 #include <ncarg/hlu/LabelBar.h>
 #include <ncarg/hlu/hlu.h>
@@ -46,7 +47,7 @@ main()
 	int *len_dims;
 	float *cmap;
 	float newcmap[100*3];
-        int NCGM=0;
+        int NCGM=0, X11=1, PS=0;
 
 /*
  * Display the default colormap.
@@ -80,7 +81,7 @@ main()
         NhlRLSetString(rlist,NhlNwkMetaName,"./basic05c.ncgm");
         NhlCreate(&wks,"wks",NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist);
     }
-    else {
+    else if (X11) {
 
        /*
         * Create an X workstation.
@@ -93,6 +94,18 @@ main()
         /* Set the colormode to private so there is no color contention */
         NhlRLSetString(rlist,"wkXColorMode","private");
         NhlCreate(&wks,"wks",NhlxWorkstationClass,NhlDEFAULT_APP,rlist);
+    }
+    else if (PS) {
+
+       /*
+        * Create a PS workstation.
+        */
+
+        NhlRLClear(rlist);
+        /* Set Colormap to default. Note, this assignment is redundant */
+        NhlRLSetString(rlist,"wkColorMap","default");
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./basic05c.ps");
+        NhlCreate(&wks,"wks",NhlpsWorkstationClass,NhlDEFAULT_APP,rlist);
     }
 
 /*

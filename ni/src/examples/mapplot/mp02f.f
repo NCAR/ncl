@@ -1,5 +1,5 @@
 C
-C     $Id: mp02f.f,v 1.10 1995-04-07 10:54:22 boote Exp $
+C     $Id: mp02f.f,v 1.11 1995-06-22 21:08:19 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -21,6 +21,7 @@ C      Description:     Demonstrates individual control of MapPlot areas
 C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
+      external NhlFPSWorkstationClass
       external NhlFXWorkstationClass
       external NhlFMapPlotClass
       integer appid,wid,mapid
@@ -39,11 +40,13 @@ C
       character*11 mask_specs(7)
       data mask_specs/'us-colorado','us-texas','us-kentucky',
      1            'bolivia','paraguay','nicaragua','oceans'/
-      integer NCGM
+      integer NCGM, X11, PS
 C
 C Default is to display output to an X workstation
 C
       NCGM=0
+      X11=1
+      PS=0
 C
 C Initialize the high level utility library
 C
@@ -68,7 +71,7 @@ C
          call NhlFRLSetstring(rlist,'wkMetaName','./mp02f.ncgm',ierr)
          call NhlFCreate(wid,'mp02Work',NhlFNcgmWorkstationClass,0,
      1        rlist,ierr)
-      else 
+      else  if (X11.eq.1) then
 C
 C Create an X workstation
 C
@@ -76,6 +79,14 @@ C
          call NhlFRLSetinteger(rlist,'wkPause',1,ierr)
          call NhlFCreate(wid,'mp02Work',NhlFXWorkstationClass,0,
      1     rlist,ierr)
+      else if (PS.eq.1) then
+C
+C Create a PS object.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPSFileName','./mp02f.ps',ierr)
+         call NhlFCreate(wid,'mp02Work',NhlFPSWorkstationClass,0,
+     1        rlist,ierr)
       endif
 C
 C Create a plot focusing on North and South America

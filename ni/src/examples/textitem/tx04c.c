@@ -23,6 +23,7 @@
 #include <ncarg/hlu/TextItem.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
+#include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
@@ -32,7 +33,7 @@ main()
     int text_item_id;
     int workstation_id;
     int i,rlist;
-    int NCGM=0;
+    int NCGM=0, X11=1, PS=0;
 /*
  * Initialize the high level utility library
  */
@@ -58,7 +59,7 @@ main()
         NhlCreate(&workstation_id,"tx04Work",
                   NhlncgmWorkstationClass,NhlDEFAULT_APP,rlist); 
     }
-    else {
+    else if (X11) {
 /*
  *  Create an XWorkstation object.
  */
@@ -66,6 +67,15 @@ main()
         NhlRLSetInteger(rlist,NhlNwkPause,True);
         NhlCreate(&workstation_id,"tx04Work",
                   NhlxWorkstationClass,NhlDEFAULT_APP, rlist);
+    }
+    else if (PS) {
+/*
+ * Create a PS workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPSFileName,"./tx04c.ps");
+        NhlCreate(&workstation_id,"tx04Work",
+                  NhlpsWorkstationClass,NhlDEFAULT_APP,rlist); 
     }
 /*
  * This is the only creation of a text object for this entire program.
