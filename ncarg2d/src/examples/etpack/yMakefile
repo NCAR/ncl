@@ -1,10 +1,10 @@
 #
-#       $Id: yMakefile,v 1.1 1997-06-18 22:43:03 kennison Exp $
+#       $Id: yMakefile,v 1.2 1998-06-19 18:05:27 fred Exp $
 #
 MYNAME  = etpack
 
-SRCS = tdex01.f tdex02.f
-OBJS = tdex01.o tdex02.o
+SRCS = tdex01.f tdex02.f tdex03.f
+OBJS = tdex01.o tdex02.o tdex03.o
 
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
@@ -14,3 +14,4 @@ InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 
 FExampleTarget(tdex01,tdex01.o)
 FExampleTarget(tdex02,tdex02.o)
+FExampleTarget(tdex03,tdex03.o)
