@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.18 1993-02-15 00:08:13 haley Exp $
+#   $Id: ncargex.csh,v 1.19 1993-03-04 17:56:47 haley Exp $
 #
 
 if ($#argv < 1) then
@@ -71,7 +71,7 @@ cezmap1 cezmap2 cezmap3 cmpclr cmpdd cmpdrw cmpel cmpfil cmpgci \
 cmpgrd cmpgrp cmpita cmpitm cmplab cmplbl cmplot cmpmsk cmpou cmppos \
 cmpsat cmpsup cmptit cmptra cmpusr)
  
-set tutor_softfill=(csfwrld csfsgfa)
+set tutor_softfill=(fsfwrld fsfsgfa)
 
 set tutor_list=( $tutor_areas $tutor_ezmap $tutor_conpack $tutor_softfill )
 
