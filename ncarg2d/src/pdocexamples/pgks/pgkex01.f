@@ -1,37 +1,42 @@
       PROGRAM TYPGKS
 C
-C  Define a couple of triangles
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=22, IWKID=1)
+C
+C  Define two triangles.
 C
       DIMENSION XT1(3),YT1(3),XT2(3),YT2(3)
-      DATA XT1 /10., 90., 50./
-      DATA YT1 /0.2, 0.2, 0.3/
-      DATA XT2 /10., 90., 50./
-      DATA YT2 /0.5, 0.5, 0.4/
-      DATA IER, MUNIT, IDWK /6, 2, 1/
+      DATA XT1 /10.0, 90.0, 50.0/
+      DATA YT1 / 0.2,  0.2,  0.3/
+      DATA XT2 /10.0, 90.0, 50.0/
+      DATA YT2 / 0.5,  0.5,  0.4/
 C
-C  Open GKS, open and activate a GCM workstation.
+C  Open GKS, open and activate a workstation.
 C
-      CALL GOPKS (IER, ISZ)
-      CALL GOPWK (IDWK, MUNIT, 1)
-      CALL GACWK (IDWK)
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C  Define a normalization transformation and select it.
 C
-      CALL GSVP (1, .05, .95, .05, .95)
-      CALL GSWN (1, 1., 100., .1, .5)
+      CALL GSWN (1, 0.00, 100.00, 0.10, 0.50)
+      CALL GSVP (1, 0.05,   0.95, 0.05, 0.95)
       CALL GSELNT (1)
 C
-C  Set up a color table for the CGM workstation.
+C  Set up a color table.
 C
-      CALL GSCR (1, 1, 0., 1., 0.)
-      CALL GSCR (1, 2, 1., 1., 0.)
-      CALL GSCR (1, 3, 1., 0., 0.)
+      CALL GSCR (1, 0, 1., 1., 1.)
+      CALL GSCR (1, 1, 1., 0., 0.)
+      CALL GSCR (1, 2, 0., 0., 1.)
+      CALL GSCR (1, 3, 0., 0., 0.)
 C
 C  Set fill area interior style to solid.
 C
       CALL GSFAIS (1)
 C
-C  Fill triangle 1 with green, triangle 2 with yellow.
+C  Fill triangle 1 with red and triangle 2 with blue.
 C
       CALL GSFACI (1)
       CALL GFA (3, XT1, YT1)
@@ -48,9 +53,9 @@ C  Set text color to red; align the text as (center, half);
 C  specify the text size; and draw it.
 C
       CALL GSTXCI (3)
-      CALL GSTXAL(2,3)
-      CALL GSCHH(.023)
-      CALL GTX (.5,.125,'A Typical GKS Program')
+      CALL GSTXAL (2,3)
+      CALL GSCHH  (.025)
+      CALL GTX (.5,.125,'Output from a GKS program')
 C
 C  Advance the frame to ensure all output is plotted.
 C
@@ -58,8 +63,8 @@ C
 C
 C  Deactivate and close the workstation, close GKS.
 C
-      CALL GDAWK (IDWK)
-      CALL GCLWK (IDWK)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP

@@ -3,6 +3,11 @@ C
 C  Produce an NX x NY  CELL ARRAY based on the Mandelbrot set--color
 C  the cells depending upon the speed of convergence or divergence.
 C
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=22, IWKID=1)
       PARAMETER (NX=20, NY=20, NITER=101)
       INTEGER COLIA(NX,NY)
       COMPLEX Z
@@ -11,11 +16,11 @@ C  Region of interest.
 C
       DATA XL,XR,YB,YT/-2.,.5,-1.25,1.25/
 C
-C  Open GKS, open and activate the metafile workstation.
+C  Open GKS, open and activate a workstation.
 C
-      CALL GOPKS (6,IDUM)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1)
+      CALL GOPKS (IERRF,IDUM)
+      CALL GOPWK (IWKID,LUNIT,IWTYPE)
+      CALL GACWK (IWKID)
 C
 C  Set up normalizaton transformation.
 C
@@ -50,15 +55,15 @@ C
 C  Label the plot using Plotchar.
 C
       CALL GSCLIP(0)
-      CALL PCSETI('FN',26)
+      CALL PCSETI('FN',25)
       CALL PCSETI('CC',NITER+1)
       CALL PLCHHQ(XL+.5*(XR-XL),YB+(YT-YB)*1.07,'Cell array',.033,0.,0.)
       CALL FRAME
 C
 C  Deactivate and close the workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C	
       STOP

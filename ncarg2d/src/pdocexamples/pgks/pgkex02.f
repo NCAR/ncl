@@ -1,10 +1,16 @@
       PROGRAM PRIMTV
 C
-C  Simple demo of GKS output primitives.
+C  Simple demo of GKS output primitives puts out sample 
+C  POLYLINE, POLYMARKER, TEXT, FILL AREA and CELL ARRAY. 
 C 
-C  Puts out sample POLYLINE, POLYMARKER, TEXT, FILL AREA and CELL ARRAY. 
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=22, IWKID=1)
+C
 C 
-      REAL     ZZX(9), ZZYL(9),  ZZYM(9),  CIRX(9),  CIRY(9)
+      REAL     ZZX(9), ZZYL(9), ZZYM(9), CIRX(9), CIRY(9)
       INTEGER  ICELLS(24,12) 
 C 
       DATA  ZZX / -9.0, -8.0, -7.0, -6.0, -5.0, -4.0, -3.0, -2.0, -1.0/ 
@@ -13,46 +19,31 @@ C
       DATA CIRX / 6.15, 5.26, 4.25, 3.59, 3.59, 4.25, 5.26, 6.15, 6.50/
       DATA CIRY / 8.46, 8.98, 8.80, 8.01, 6.99, 6.20, 6.02, 6.54, 7.50/
 C
-C  Open GKS with logical unit 6 for error output.
+C  Open GKS, open and activate a workstation.
 C
-      CALL GOPKS (6,IDUM) 
-C
-C  Open a wkorkstation of type 1, assigning 1 for its id, and 2
-C  for the connection id.
-C
-      CALL GOPWK (1, 2, 1)
-C
-C  Activate the workstation.  
-C
-      CALL GACWK (1) 
+      CALL GOPKS (IERRF,IDUM) 
+      CALL GOPWK (IWKID,LUNIT,IWTYPE)
+      CALL GACWK (IWKID) 
 C 
-C  Define normalization transformation 1. 
+C  Define normalization transformation 1 and select it.
 C
       CALL GSWN   (1, -10.0, 10.0, -10.0, 10.0)
       CALL GSVP   (1, 0.1, 0.9, 0.1, 0.9) 
-C
-C  Select the just-defined transformation. 
-C
       CALL GSELNT (1) 
 C 
 C  Draw a zig-zag POLYLINE. 
 C
       CALL GPL (9, ZZX, ZZYL)
 C
-C  Set the marker type to 2 (plus sign).
+C  Set the marker type to 2 (plus sign) and draw markers.
 C
       CALL GSMK (2)
-C
-C  Draw a POLYMARKER. 
-C
       CALL GPM (9, ZZX, ZZYM)
 C  
-C  Set the fill area interior style to 1 (solid fill).
+C  Set the fill area interior style to 1 (solid fill) and draw a 
+C  solid filled nonagon.
 C
       CALL GSFAIS (1)
-C
-C  Draw a solid 9-gon with FILL AREA. 
-C
       CALL GFA (9, CIRX, CIRY)
 C 
 C  Define 24x12 foreground/background checkerboard pattern. 
@@ -96,14 +87,12 @@ C
       CALL GTX( 5.0,-2.5,'Cell array')
       CALL GTX( 0.0,-9.5,'Text')
 C
-C  Clear the screen.
-C
       CALL FRAME
 C
 C  Deactive and close the workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP

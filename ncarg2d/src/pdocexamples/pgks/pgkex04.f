@@ -2,25 +2,27 @@
 C
 C  Illustrate normalization transformations.
 C
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=22, IWKID=1)
       PARAMETER (ILD=121)
       DIMENSION PLX(ILD),PLY(ILD)
       DATA  RADC/.0174532/
 C
-C  Open GKS, open and activate the metafile workstation.
+C  Open GKS, open and activate a workstation.
 C
-      CALL GOPKS (6,IDUM)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1)
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
-C  Define necessary color indices, color index 0 defines the
-C  background color.
+C  Define color indices, color index 0 defines the background color.
 C
-      CALL GSCR(1,0,.0,.0,.6)
-      CALL GSCR(1,1,1.,1.,1.)
-      CALL GSCR(1,2,1.,1.,0.)
-      CALL GSCR(1,3,1.,1.,0.)
-      CALL GSCR(1,4,0.,1.,0.)
-      CALL GSCR(1,5,0.,1.,1.)
+      CALL GSCR(IWKID, 0, 1.0, 1.0, 1.0)
+      CALL GSCR(IWKID, 1, 0.0, 0.0, 1.0)
+      CALL GSCR(IWKID, 2, 1.0, 0.0, 0.2)
+      CALL GSCR(IWKID, 3, 0.4, 0.0, 0.4)
 C
 C  Create the data for a spiral in the world coordinate square
 C  bounded by (-10.,-10.) and (10.,10.) .
@@ -66,33 +68,33 @@ C
 C
 C  Label the plot using Plotchar.
 C
-      CALL PCSETI('FN',26)
+      CALL PCSETI('FN',25)
       CALL PCSETI('CC',3)
       CALL PLCHHQ(.5,.83,'Normalization transformation',.035,0.,0.)
 C
       CALL PCSETI('FN',21)
-      CALL PCSETI('CC',5)
-      CALL PLCHHQ(.07,.64,'Window',.022,0.,-1.)
-      CALL PLCHHQ(.57,.62,'Viewport',.022,0.,-1.)
+      CALL PCSETI('CC',3)
+      CALL PLCHHQ(.07,.650,'Window',.022,0.,-1.)
+      CALL PLCHHQ(.57,.625,'Viewport',.022,0.,-1.)
 C
-      CALL GSTXFP(-9,2)
-      CALL GSCHH (.035)
-      CALL GSTXCI(2)
-      CALL GSTXAL(2,3)
-      CALL GTX(.5,.22,'Normalization transformation defined by')
+      CALL PCSETI('FN',9)
+      CALL PCSETI('CC',2)
+      CALL PLCHHQ(.5,.22,'Normalization transformation defined by',
+     +            .0275,0.,0.)
 C
       CALL PCSETI('FN',29)
-      CALL PLCHHQ(.25,.15,'CALL GSWN(1,-10., 10.,-10., 10.)',
-     -            .015,0.,-1.)
-      CALL PLCHHQ(.25,.10,'CALL GSVP(1, .55, .95, .40, .65)',
-     -            .015,0.,-1.)
+      CALL PCSETI('CC',3)
+      CALL PLCHHQ(.50,.15,'CALL GSWN(1,-10., 10.,-10., 10.)',
+     -            .015,0.,0.)
+      CALL PLCHHQ(.50,.10,'CALL GSVP(1, .55, .95, .40, .65)',
+     -            .015,0.,0.)
 C
       CALL FRAME
 C
 C  Deactivate and close the workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP

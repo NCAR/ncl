@@ -1,18 +1,22 @@
       PROGRAM LOGSCL
 C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=22, IWKID=1)
       DIMENSION X(100),Y(100)
 C
-C  Open GKS, open and activate the metafile workstation.
+C  Open GKS, open and activate a workstation.
 C
-      CALL GOPKS (6,IDUM)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1)
+      CALL GOPKS (IERRF,IDUM)
+      CALL GOPWK (IWKID,LUNIT,IWTYPE)
+      CALL GACWK (IWKID)
 C
 C  Define a small color table for the CGM workstation.
 C
-      CALL GSCR(1,0,0.,0.,0.)
-      CALL GSCR(1,1,0.,1.,1.)
-      CALL GSCR(1,2,1.,1.,0.)
+      CALL GSCR(1, 0, 1.0, 1.0, 1.0)
+      CALL GSCR(1, 1, 0.4, 0.0, 0.4)
+      CALL GSCR(1, 2, 0.0, 0.0, 1.0)
 C
 C  Turn clipping off
 C
@@ -30,7 +34,7 @@ C  scaling in the X direction and log scaling in the Y direction.
 C
       CALL SET(.15,.85,.15,.85,1.,100.,10.,1000.,2)
 C
-C  Set line color to yellow.
+C  Set line color to blue.
 C
       CALL GSPLCI(2)
 C
@@ -57,8 +61,8 @@ C
 C
 C  Deactivate and close the workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP

@@ -2,6 +2,11 @@
 C
 C  Illustrate clipping.
 C
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=22, IWKID=1)
       PARAMETER (ILD=121)
       DIMENSION PLX(ILD),PLY(ILD)
       DIMENSION XC(2),YC(2),CX(2,2),CY(2,2),AX(5),AY(5)
@@ -17,20 +22,19 @@ C
       DATA CX / .20, .77, .20, .77 /
       DATA CY / .50, .76, .08, .34 /
 C
-C  Open GKS, open and activate the metafile workstation.
 C
-      CALL GOPKS (6,IDUM)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1)
+C  Open GKS, open and activate a workstation.
 C
-C  Define the necessary color indices, color index 0 defines the
-C  background color.
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
-      CALL GSCR(1,0,.0,.0,.7)
-      CALL GSCR(1,1,1.,1.,1.)
-      CALL GSCR(1,2,.6,1.,1.)
-      CALL GSCR(1,3,0.,1.,0.)
-      CALL GSCR(1,4,1.,1.,0.)
+C  Define indices, color index 0 defines the background color.
+C
+      CALL GSCR(IWKID,0, 1.0, 1.0, 1.0)
+      CALL GSCR(IWKID,1, 0.0, 0.0, 0.0)
+      CALL GSCR(IWKID,2, 0.4, 0.0, 0.4)
+      CALL GSCR(IWKID,3, 0.0, 0.0, 1.0)
 C
 C  Set the line width to 2 times the nominal width.  This setting
 C  may not be honored by all hardware devices.
@@ -93,8 +97,8 @@ C
 C
 C  Label the plot using Plotchar.
 C
-      CALL PCSETI('FN',26)
-      CALL PCSETI('CC',4)
+      CALL PCSETI('FN',25)
+      CALL PCSETI('CC',2)
       CALL PLCHHQ(.5,.9,'Clipping',.035,0.,0.)
       CALL PCSETI('FN',21)
       CALL PCSETI('CC',2)
@@ -104,8 +108,8 @@ C
 C
 C  Deactivate and close the workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP

@@ -2,21 +2,26 @@
 C
 C  Illustrate character spacings and expansion factors.
 C
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=22, IWKID=1)
       DIMENSION XP(2)
       CHARACTER*16 LABEL
       DATA XP(1),XP(2)/.5,2./
 C
-C  Open GKS, open and activate the metafile workstation.
+C  Open GKS, open and activate a workstation.
 C
-      CALL GOPKS (6,IDUM)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1)
+      CALL GOPKS (IERRF,IDUM)
+      CALL GOPWK (IWKID,LUNIT,IWTYPE)
+      CALL GACWK (IWKID)
 C
-C  Define necessary color indices.
+C  Define colors.
 C
-      CALL GSCR(1,0,0.,0.,.6)
-      CALL GSCR(1,1,1.,1.,1.)
-      CALL GSCR(1,2,1.,1.,0.)
+      CALL GSCR(1,0,1.,1.,1.)
+      CALL GSCR(1,1,0.,0.,1.)
+      CALL GSCR(1,2,.4,.0,.4)
 C
 C  Alignment = [center, center]
 C
@@ -80,8 +85,8 @@ C
 C
 C  Deactivate and close the workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP

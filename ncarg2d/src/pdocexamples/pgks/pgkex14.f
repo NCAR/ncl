@@ -2,24 +2,26 @@
 C
 C  Illustrate character height and up vector.
 C
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=22, IWKID=1)
       DATA DTR / .017453292519943 /
 C
+C  Open GKS, open and activate a workstation.
 C
-C  Open GKS, open and activate the metafile workstation.
+      CALL GOPKS (IERRF,IDUM)
+      CALL GOPWK (IWKID,LUNIT,IWTYPE)
+      CALL GACWK (IWKID)
 C
-      CALL GOPKS (6,IDUM)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1)
+C  Define colors.
 C
-C  Define necessary color indices.
+      CALL GSCR(1,0,1.,1.,1.)
+      CALL GSCR(1,1,0.,0.,1.)
+      CALL GSCR(1,2,.4,.0,.4)
 C
-      CALL GSCR(1,0,0.,0.,.6)
-      CALL GSCR(1,1,1.,1.,1.)
-      CALL GSCR(1,2,1.,1.,0.)
-      CALL GSCR(1,3,0.,1.,1.)
-      CALL GSCR(1,4,0.,1.,0.)
-C
-      CALL GSTXFP(-12,2)
+      CALL GSTXFP(-4,2)
 C
 C  Alignment = [center, center]
 C
@@ -64,7 +66,7 @@ C
       CALL GSCHH(.03)
       CALL GTX(.25,.34,'NCAR')
       CALL GSCHUP(0.,1.)
-      CALL GSTXCI(3)
+      CALL GSTXCI(2)
       CALL GSCHH(.025)
       CALL GTX(.25,.40,'Vect.=(0.,-1.)')
 C
@@ -75,13 +77,13 @@ C
       CALL GSTXCI(1)
       CALL GTX(.65,.65,'NCAR')
       CALL GSCHUP(0.,1.)
-      CALL GSTXCI(3)
+      CALL GSTXCI(2)
       CALL GSCHH(.025)
       CALL GTX(.8,.7,'Vect.=(1.6,2.)')
 C
 C  Label the plot using Plotchar.
 C
-      CALL PCSETI('FN',26)
+      CALL PCSETI('FN',25)
       CALL PCSETI('CC',2)
       CALL PLCHHQ(.1,.89,'Character heights &',.035,0.,-1.)
       CALL PLCHHQ(.1,.82,'Character up vectors',.035,0.,-1.)
@@ -90,8 +92,8 @@ C
 C
 C  Deactivate and close the workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP

@@ -3,24 +3,31 @@ C
 C  Illustrate text alignment attributes.
 C
 C
-C  Open GKS, open and activate the metafile workstation.
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
 C
-      CALL GOPKS (6,IDUM)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=22, IWKID=1)
 C
-C  Define the necessary color indices.
+C  Open GKS, open and activate a workstation.
 C
-      CALL GSCR(1,0,0.,0.,.6)
-      CALL GSCR(1,1,1.,1.,1.)
-      CALL GSCR(1,2,1.,1.,0.)
-      CALL GSCR(1,3,0.,1.,0.)
+      CALL GOPKS (IERRF,IDUM)
+      CALL GOPWK (IWKID,LUNIT,IWTYPE)
+      CALL GACWK (IWKID)
 C
-C  Specify the character height for all strings, select duplex
+C  Define colors.
+C
+      CALL GSCR(IWKID,0, 1.0, 1.0, 1.0)
+      CALL GSCR(IWKID,1, 0.0, 0.0, 0.0)
+      CALL GSCR(IWKID,2, 1.0, 0.0, 0.0)
+      CALL GSCR(IWKID,3, 0.0, 0.0, 1.0)
+      CALL GSCR(IWKID,4, 0.4, 0.0, 0.4)
+C
+C  Specify the character height for all strings, select simplex
 C  Roman font.
 C
       CALL GSCHH(.025)
-      CALL GSTXFP(-12,2)
+      CALL GSTXFP(-4,2)
+      CALL GSTXCI(3)
       X = .50
       Y = .90
 C
@@ -83,8 +90,8 @@ C
 C
 C  Label the plot.
 C
-      CALL PCSETI('FN',26)
-      CALL PCSETI('CC',2)
+      CALL PCSETI('FN',25)
+      CALL PCSETI('CC',4)
       CALL PLCHHQ(.5,.93,'Text Alignment Attributes',.025,0.,0.)
       CALL CROSS(.22,.876)
       CALL PLCHHQ(.5,.88,'- marks the GTX coordinate',.025,0.,0.)
@@ -93,8 +100,8 @@ C
 C
 C  Deactivate and close the workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP
@@ -122,7 +129,7 @@ C
         RCY(I) = Y-0.00025*(REAL(IMXH)-REAL(ICY(I)))
    10 CONTINUE
       CALL GSFAIS(1)
-      CALL GSFACI(3)
+      CALL GSFACI(2)
       CALL GFA(ID,RCX,RCY)
 C
       RETURN

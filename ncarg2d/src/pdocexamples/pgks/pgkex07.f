@@ -2,24 +2,29 @@
 C
 C  Illustrate polymarkers.
 C
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=22, IWKID=1)
       PARAMETER (ID=50)
       DIMENSION XM1(ID),YM1(ID),XM2(ID),YM2(ID),XM3(ID),YM3(ID)
 C
-C  Open GKS, open and activate the metafile workstation.
+C  Open GKS, open and activate a workstation.
 C
-      CALL GOPKS (6,IDUM)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1)
+      CALL GOPKS (IERRF,IDUM)
+      CALL GOPWK (IWKID,LUNIT,IWTYPE)
+      CALL GACWK (IWKID)
 C
-C  Define the necessary color indices.
+C  Define colors.
 C
-      CALL GSCR(1,0,.0,.0,.6)
-      CALL GSCR(1,1,1.,1.,1.)
-      CALL GSCR(1,2,1.,1.,0.)
-      CALL GSCR(1,3,0.,1.,0.)
-      CALL GSCR(1,4,1.,1.,0.)
-      CALL GSCR(1,5,0.,1.,1.)
-      CALL GSCR(1,6,1.,0.,1.)
+      CALL GSCR(IWKID,0, 1.0, 1.0, 1.0)
+      CALL GSCR(IWKID,1, 0.0, 0.0, 0.0)
+      CALL GSCR(IWKID,2, 1.0, 0.0, 0.0)
+      CALL GSCR(IWKID,3, 0.0, 0.0, 1.0)
+      CALL GSCR(IWKID,4, 0.0, 1.0, 0.0)
+      CALL GSCR(IWKID,5, 0.4, 0.0, 0.4)
+      CALL GSCR(IWKID,6, 1.0, 0.0, 0.0)
 C
 C  Marker 1, dot (fill a large circular dot with markers of type 1).
 C
@@ -53,7 +58,7 @@ C
 C   Label the dot.
 C
       CALL PCSETI('FN',21)
-      CALL PCSETI('CC',1)
+      CALL PCSETI('CC',5)
       CALL PLCHHQ(X0,Y0+R+.05,'Marker 1 (dot)',.022,0.,0.)
 C
 C  Marker 2, plus (make a plus from the plus markers.)
@@ -86,7 +91,7 @@ C
 C   Label the big plus.
 C
       CALL PCSETI('FN',21)
-      CALL PCSETI('CC',1)
+      CALL PCSETI('CC',5)
       CALL PLCHHQ(X0,Y0+R+.05,'Marker 2 (plus)',.022,0.,0.)
 C
 C  Marker 3, asterisk (make an asterisk from the asterisk markers.)
@@ -126,7 +131,7 @@ C
 C   Label the big asterisk.
 C
       CALL PCSETI('FN',21)
-      CALL PCSETI('CC',1)
+      CALL PCSETI('CC',5)
       CALL PLCHHQ(X0,Y0+R+.05,'Marker 3 (asterisk)',.022,0.,0.)
 C
 C  Marker 4, circle (make a big circle from the circle markers.)
@@ -143,13 +148,13 @@ C
       YM1(J) = Y
    50 CONTINUE
       CALL GSMK(4)
-      CALL GSPMCI(5)
+      CALL GSPMCI(1)
       CALL GPM(JL,XM1,YM1)
 C
 C   Label the big circle.
 C
       CALL PCSETI('FN',21)
-      CALL PCSETI('CC',1)
+      CALL PCSETI('CC',5)
       CALL PLCHHQ(X0,Y0+R+.05,'Marker 4 (circle)',.022,0.,0.)
 C
 C  Marker 5, cross (make a big cross from the cross markers.)
@@ -186,7 +191,7 @@ C
 C   Label the big cross.
 C
       CALL PCSETI('FN',21)
-      CALL PCSETI('CC',1)
+      CALL PCSETI('CC',5)
       CALL PLCHHQ(X0,Y0+R+.05,'Marker 5 (cross)',.022,0.,0.)
 C
 C  Draw a big circle in the center by applying a large marker size
@@ -195,28 +200,28 @@ C
       X0 = .5
       Y0 = .46
       CALL GSMK(4)
-      CALL GSPMCI(5)
+      CALL GSPMCI(1)
       CALL GSMKSC(15.)
       CALL GPM(1,X0,Y0)
 C
       CALL PCSETI('FN',21)
-      CALL PCSETI('CC',1)
+      CALL PCSETI('CC',5)
       CALL PLCHHQ(X0,Y0+.035,'Circle',.021,0.,0.)
       CALL PLCHHQ(X0,Y0     ,'Scaled',.021,0.,0.)
       CALL PLCHHQ(X0,Y0-.035,'by 15.',.021,0.,0.)
 C
 C  Label the plot using Plotchar.
 C
-      CALL PCSETI('FN',26)
-      CALL PCSETI('CC',2)
+      CALL PCSETI('FN',25)
+      CALL PCSETI('CC',5)
       CALL PLCHHQ(.5,.915,'Polymarkers',.035,0.,0.)
 C
       CALL FRAME
 C
 C  Deactivate and close the workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP

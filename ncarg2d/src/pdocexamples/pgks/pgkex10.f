@@ -3,66 +3,71 @@ C
 C  Illustrate GKS text path and color.
 C
 C
-C  Open GKS, open and activate the metafile workstation.
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
 C
-      CALL GOPKS (6,IDUM)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=22, IWKID=1)
 C
-C  Define the necessary color indices.
+C  Open GKS, open and activate a workstation.
 C
-      CALL GSCR(1,0,0.,0.,.6)
-      CALL GSCR(1,1,1.,1.,1.)
-      CALL GSCR(1,2,1.,0.,0.)
-      CALL GSCR(1,3,0.,1.,0.)
-      CALL GSCR(1,4,1.,1.,0.)
-      CALL GSCR(1,5,0.,1.,1.)
-      CALL GSCR(1,6,1.,0.,1.)
+      CALL GOPKS (IERRF,IDUM)
+      CALL GOPWK (IWKID,LUNIT,IWTYPE)
+      CALL GACWK (IWKID)
+C
+C  Define colors.
+C
+      CALL GSCR(IWKID,0, 1.0, 1.0, 1.0)
+      CALL GSCR(IWKID,1, 0.0, 0.0, 0.0)
+      CALL GSCR(IWKID,2, 1.0, 0.0, 0.0)
+      CALL GSCR(IWKID,3, 0.0, 0.0, 1.0)
+      CALL GSCR(IWKID,4, 0.0, 1.0, 0.0)
+      CALL GSCR(IWKID,5, 0.4, 0.0, 0.4)
+      CALL GSCR(IWKID,6, 1.0, 0.0, 0.0)
 C
 C  Select Triplex Roman font.
 C
       CALL GSTXFP(-13,2)
 C
-C  Text path = right, color = yellow
+C  Text path = right, color = black
 C
       X = .2
       Y = .7
       CALL GSCHH(.04)
       CALL GSTXP(0)
-      CALL GSTXCI(4)
+      CALL GSTXCI(1)
       CALL GSTXAL(1,3)
       CALL GTX(X,Y,'Text path=right')
       CALL CROSS(X,Y)
 C
-C  Text path = left, color = red
+C  Text path = left, color = blue
 C
       X = .80
       Y = .115
       CALL GSCHH(.04)
       CALL GSTXP(1)
-      CALL GSTXCI(2)
+      CALL GSTXCI(3)
       CALL GSTXAL(3,3)
       CALL GTX(X,Y,'Text path=left')
       CALL CROSS(X,Y)
 C
-C  Text path = down, color = cyan
+C  Text path = down, color = red
 C
       X = .22
       Y = .62
       CALL GSCHH(.025)
       CALL GSTXP(3)
-      CALL GSTXCI(5)
+      CALL GSTXCI(2)
       CALL GSTXAL(2,1)
       CALL GTX(X,Y,'Text path=down')
       CALL CROSS(X,Y)
 C
-C  Text path = up, color = magenta
+C  Text path = up, color = green
 C
       X = .79
       Y = .18
       CALL GSCHH(.03)
       CALL GSTXP(2)
-      CALL GSTXCI(6)
+      CALL GSTXCI(4)
       CALL GSTXAL(2,5)
       CALL GTX(X,Y,'Text path=up')
       CALL CROSS(X,Y)
@@ -73,19 +78,19 @@ C
       CALL GSLWSC(2.)
       CALL PCSETI('CD',1)
 C
-      CALL PCSETI('FN',26)
-      CALL PCSETI('CC',4)
-      CALL PLCHHQ(.5,.93,'Text colors and paths',.022,0.,0.)
-      CALL PLCHHQ(.5,.88,'Font = triplex Roman',.022,0.,0.)
-      CALL CROSS(.248,.826)
-      CALL PLCHHQ(.5,.83,'- marks the GTX coordinate',.022,0.,0.)
+      CALL PCSETI('FN',25)
+      CALL PCSETI('CC',5)
+      CALL PLCHHQ(.5,.93,'Text colors and paths',.028,0.,0.)
+      CALL PLCHHQ(.5,.88,'Font = triplex Roman',.028,0.,0.)
+      CALL CROSS(.193,.826)
+      CALL PLCHHQ(.5,.83,'- marks the GTX coordinate',.028,0.,0.)
 C
       CALL FRAME
 C
 C  Deactivate and close the workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP
@@ -113,7 +118,7 @@ C
         RCY(I) = Y-0.00025*(REAL(IMXH)-REAL(ICY(I)))
    10 CONTINUE
       CALL GSFAIS(1)
-      CALL GSFACI(3)
+      CALL GSFACI(5)
       CALL GFA(ID,RCX,RCY)
 C
       RETURN

@@ -5,16 +5,16 @@ C
       CHARACTER*13 STRING
       DATA STRING/'NCAR Graphics'/
 C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=22, IWKID=1)
+C
 C  Open GKS, open and activate a CGM workstation.
 C
-      CALL GOPKS (6,IDUM)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1)
-C
-C  Define the background and foreground colors.
-C
-      CALL GSCR(1,0,0.,0.,.6)
-      CALL GSCR(1,1,1.,1.,1.)
+      CALL GOPKS (IERRF,IDUM)
+      CALL GOPWK (IWKID,LUNIT,IWTYPE)
+      CALL GACWK (IWKID)
 C
 C  Specify the text font and color for Plotchar.
 C
@@ -53,8 +53,8 @@ C
 C
 C  Deactivate and close the workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP

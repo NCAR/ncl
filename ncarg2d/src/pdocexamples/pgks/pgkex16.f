@@ -3,6 +3,11 @@ C
 C  Illustrate the fill algorithm determining what is inside
 C  a polygon.
 C
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=22, IWKID=1)
       PARAMETER (ID=11, IDM1=ID-1)
       DIMENSION XS(ID),YS(ID),XD(ID),YD(ID),XP(IDM1),YP(IDM1)
 C
@@ -24,19 +29,18 @@ C
       DATA XP/ .243,.180,.025,.138,.098,.243,.385,.345,.457,.320 /
       DATA YP/ .690,.540,.513,.415,.285,.340,.285,.415,.513,.540 /
 C
-C  Open GKS, open and activate the metafile workstation.
+C  Open GKS, open and activate a workstation.
 C
-      CALL GOPKS (6,IDUM)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1)
+      CALL GOPKS (IERRF,IDUM)
+      CALL GOPWK (IWKID,LUNIT,IWTYPE)
+      CALL GACWK (IWKID)
 C
-C  Define the necessary color indices.
+C  Define colors.
 C
-      CALL GSCR(1,0,0.,0.,.6)
-      CALL GSCR(1,1,1.,0.,0.)
-      CALL GSCR(1,2,1.,1.,0.)
-      CALL GSCR(1,3,1.,1.,0.)
-      CALL GSCR(1,4,1.,1.,1.)
+      CALL GSCR(1, 0, 1.0, 1.0, 1.0)
+      CALL GSCR(1, 1, 0.0, 0.0, 1.0)
+      CALL GSCR(1, 2, 0.4, 0.0, 0.4)
+      CALL GSCR(1, 3, 1.0, 0.0, 0.0)
 C
 C  Draw the star with interior style solid;
 C  use ten points in the fill area call.
@@ -61,8 +65,8 @@ C
 C
 C  Draw lines connecting the coordinate points.
 C
-      CALL GSPLCI(2)
-      CALL GSLWSC(3.)
+      CALL GSPLCI(3)
+      CALL GSLWSC(4.)
       CALL GPL(ID,XD,YD)
 C
 C  Draw the star with interior style solid;
@@ -99,16 +103,16 @@ C
 C
 C  Label the plot using Plotchar.
 C
-      CALL PCSETI('FN',26)
-      CALL PCSETI('CC',3)
+      CALL PCSETI('FN',25)
+      CALL PCSETI('CC',2)
       CALL PLCHHQ(.5,.91,'Filled areas',.035,0.,0.)
       CALL PLCHHQ(.5,.84,'What''s inside, what''s outside?',.035,0.,0.)
 C
 C  Close picture, deactivate and close the workstation, close GKS.
 C
       CALL FRAME
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
       STOP
       END
@@ -122,7 +126,7 @@ C
   100 FORMAT(I2)
 C
       CALL PCSETI('FN',22)
-      CALL PCSETI('CC',4)
+      CALL PCSETI('CC',2)
       CALL PLCHHQ(X,Y,LABEL,.023,0.,0.)
 C
       RETURN

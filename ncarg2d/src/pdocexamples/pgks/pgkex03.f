@@ -5,19 +5,24 @@ C  that puts out text using Normalized Device Coordinates (NDC)
 C  for positioning.  Invoke Autograph to draw a linear/log plot
 C  and then call DRWTXT two times to label the Autograph plot.
 C
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=22, IWKID=1)
       DIMENSION X(100),Y(100)
 C
-C  Open GKS, open and activate a CGM workstation.
+C  Open GKS, open and activate a workstation.
 C
-      CALL GOPKS(6,ISZ)
-      CALL GOPWK(1,2,1)
-      CALL GACWK(1)
+      CALL GOPKS (IERRF, ISZDUM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
-C  Define a small color table for the CGM workstation.
+C  Define a small color table.
 C
-      CALL GSCR(1,0,0.,0.,0.)
-      CALL GSCR(1,1,0.,1.,1.)
-      CALL GSCR(1,2,1.,1.,0.)
+      CALL GSCR(IWKID,0,1.,1.,1.)
+      CALL GSCR(IWKID,1,0.,0.,1.)
+      CALL GSCR(IWKID,2,1.,0.,0.)
 C
 C  Generate a straight line with 100 points.
 C
@@ -31,7 +36,7 @@ C  scaling in the X direction and log scaling in the Y direction.
 C
       CALL SET(.15,.85,.15,.85,1.,100.,10.,1000.,2)
 C
-C  Set line color to yellow.
+C  Set line color to red.
 C
       CALL GSPLCI(2)
 C
@@ -54,8 +59,8 @@ C  Terminate the picture, deactivate and close the CGM workstation,
 C  and close GKS.
 C
       CALL FRAME
-      CALL GDAWK(1)
-      CALL GCLWK(1)
+      CALL GDAWK(IWKID)
+      CALL GCLWK(IWKID)
       CALL GCLKS
 C
       STOP
