@@ -163,6 +163,9 @@ stdin_fp = stdin;
 					so_handle = shl_load(buffer,BIND_IMMEDIATE,0L);
 #else
 					so_handle = dlopen(buffer,RTLD_NOW);
+					if(so_handle == NULL) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN," Could not open (%s): %s",buffer,dlerror());
+					}
 #endif
 					if(so_handle != NULL) {
 #if defined(HPUX)
@@ -181,9 +184,7 @@ stdin_fp = stdin;
 #endif
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not find Init() in external file %s, file not loaded",buffer);
 						}
-					} else {
-						NhlPError(NhlFATAL,NhlEUNKNOWN," Could not open (%s), possibly not a shared object\n%s",buffer,strerror(errno));
-					}
+					} 
 				}
 			}
 		} else {

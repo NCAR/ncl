@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.54 1999-02-09 23:55:34 ethan Exp $
+ *      $Id: NclApi.c,v 1.55 1999-10-13 20:28:18 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -209,6 +209,9 @@ int NclInitServer
 					so_handle = shl_load(buffer,BIND_IMMEDIATE,0L);
 #else
 					so_handle = dlopen(buffer,RTLD_NOW);
+					if(so_handle == NULL) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN," Could not open (%s): %s",buffer,dlerror());
+					}
 #endif
 					if(so_handle != NULL) {
 #if defined(HPUX)
@@ -227,9 +230,7 @@ int NclInitServer
 #endif
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not find Init() in external file %s, file not loaded",buffer);
 						}
-					} else {
-						NhlPError(NhlFATAL,NhlEUNKNOWN," Could not open (%s), possibly not a shared object\n%s",buffer,strerror(errno));
-					}
+					} 
 				}
 			}
 		} else {
