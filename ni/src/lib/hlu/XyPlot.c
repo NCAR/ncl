@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.37 1995-03-29 20:58:43 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.38 1995-03-30 01:12:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1443,6 +1443,7 @@ XyDataGetValues
 	NhlXyDataSpecLayerPart	*xyp = &((NhlXyDataSpecLayer)l)->xydata;
 	int			i;
 	NhlGenArray		ga;
+	NhlErrorTypes		ret = NhlNOERROR;
 
 	for(i=0;i<nargs;i++){
 		ga = NULL;
@@ -1488,9 +1489,12 @@ XyDataGetValues
 				NhlPError(NhlWARNING,ENOMEM,
 					"%s:Unable to retrieve %s",func,
 					NrmQuarkToString(args[i].quark));
+				ret = NhlWARNING;
 			}
 		}
 	}
+
+	return ret;
 }
 
 /*
@@ -1566,7 +1570,7 @@ XyPlotGetValues
 		}
 	}
 
-	return NhlWARNING;
+	return ret;
 }
 
 /*
