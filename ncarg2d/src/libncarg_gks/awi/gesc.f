@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.32 2001-02-06 21:16:39 fred Exp $
+C	$Id: gesc.f,v 1.33 2002-04-04 22:02:18 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -127,6 +127,10 @@ C                   1 = neither background or bounding box;
 C                   2 = no background;
 C                   3 = no bounding box
 C      -1525  --  Indicate portrait (=0) or landscape (=1) mode for PS.
+C      -1526  --  Positioning coordinates that can be set between pictures
+C                   or in the middle of a picture.
+C
+C      -1527  --  Produce an NCAR logo.
 C
       IF (FCTID .EQ. -1399) THEN
 C
@@ -745,6 +749,7 @@ C
      +        FCTID.NE.-1526) RETURN
         ENDIF
 C
+  167   CONTINUE
         FCODE = 6
         CALL GZROI(0)
         IL1 = 1
