@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.32 2000-09-25 22:05:40 haley Exp $
+#      $Id: yMakefile,v 1.33 2000-09-27 19:35:06 haley Exp $
 #
 #########################################################################
 #									#
@@ -36,7 +36,7 @@ CSRCS = areavolW.c betaincW.c calcorcW.c chiinvW.c csagridW.c \
 	probtestW.c regcoefW.c relhumW.c remapW.c rhombtriW.c shgridW.c \
 	sindexW.c slpW.c skewtW.c smth9W.c sortW.c specxW.c sph2W.c sphintW.c \
 	sstoiW.c statW.c svdW.c tdpackW.c trvsphW.c varimaxW.c vibetaW.c \
-	wgneW.o wmapW.c wrunaveW.c wrapper.c vinth2pW.c vinth2peW.c
+	wgneW.c wmapW.c wrunaveW.c wrapper.c vinth2pW.c vinth2peW.c
 
 COBJS = areavolW.o betaincW.o calcorcW.o chiinvW.o csagridW.o \
 	cssgridW.o cz2ccmW.o datesW.o drwvctc.o dsgridW.o dtrendW.o \
