@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.14 1995-12-19 20:38:54 boote Exp $
+ *      $Id: Base.c,v 1.15 1996-01-04 21:47:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -155,8 +155,34 @@ BaseClassInitialize
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)NhlNULLOBJID)}
 	};
 
+
+        _NhlEnumVals   positionlist[] = {
+        {NhlTOP,	"top"},
+        {NhlBOTTOM,	"bottom"},
+        {NhlRIGHT, 	"right"},
+        {NhlLEFT,	"left"},
+        {NhlCENTER,	"center"}
+        };
+
+	_NhlEnumVals justificationlist[] =  {
+	{NhlTOPLEFT,		"topleft"},
+	{NhlCENTERLEFT,		"centerleft"},
+	{NhlBOTTOMLEFT,		"bottomleft"},
+	{NhlTOPCENTER,		"topcenter"},
+	{NhlCENTERCENTER,	"centercenter"},
+	{NhlBOTTOMCENTER,	"bottomcenter"},
+	{NhlTOPRIGHT,		"topright"},
+	{NhlCENTERRIGHT,	"centerright"},
+	{NhlBOTTOMRIGHT,	"bottomright"}
+	};
+
 	(void)_NhlRegisterEnumType(NhlbaseClass,NhlTObjId,objidvals,
 							NhlNumber(objidvals));
+	_NhlRegisterEnumType(NhlobjClass,NhlTPosition,positionlist,
+			     NhlNumber(positionlist));
+	_NhlRegisterEnumType(NhlobjClass,NhlTJustification,justificationlist,
+			     NhlNumber(justificationlist));
+
 	(void)NhlRegisterConverter(NhlbaseClass,NhlTScalar,NhlTObjId,
 		_NhlCvtScalarToIndex,objidargs,NhlNumber(objidargs),False,NULL);
 	(void)NhlRegisterConverter(NhlbaseClass,NhlTGenArray,NhlTObjIdGenArray,

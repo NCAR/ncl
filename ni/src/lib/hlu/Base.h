@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.h,v 1.8 1995-04-07 10:40:51 boote Exp $
+ *      $Id: Base.h,v 1.9 1996-01-04 21:47:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,33 @@ extern NhlClass NhlbaseClass;
 
 #define NhlTObjId		"ObjId"
 #define NhlTObjIdGenArray	"ObjIdGenArray"
+
+
+/* position enumeration */
+
+#define NhlTPosition "Position"
+typedef enum _NhlPosition {
+	NhlTOP,
+	NhlBOTTOM,
+	NhlRIGHT,
+	NhlLEFT,
+	NhlCENTER
+} NhlPosition;
+
+/* justification enumeration */
+
+#define NhlTJustification "Justification"
+typedef enum _NhlJustification {
+	NhlTOPLEFT,
+	NhlCENTERLEFT,
+	NhlBOTTOMLEFT,
+	NhlTOPCENTER,
+	NhlCENTERCENTER,
+	NhlBOTTOMCENTER,
+	NhlTOPRIGHT,
+	NhlCENTERRIGHT,
+	NhlBOTTOMRIGHT
+} NhlJustification;
 
 extern int NhlGetParentWorkstation(
 #if	NhlNeedProto

@@ -1,5 +1,5 @@
 /*
- *      $Id: View.h,v 1.11 1995-04-07 10:44:15 boote Exp $
+ *      $Id: View.h,v 1.12 1996-01-04 21:47:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,32 +30,6 @@ typedef enum _NhlOrientation {
 	NhlHORIZONTAL = 0,
 	NhlVERTICAL = 1
 } NhlOrientation;
-
-/* position enumeration */
-
-#define NhlTPosition "Position"
-typedef enum _NhlPosition {
-	NhlTOP,
-	NhlBOTTOM,
-	NhlRIGHT,
-	NhlLEFT,
-	NhlCENTER
-} NhlPosition;
-
-/* justification enumeration */
-
-#define NhlTJustification "Justification"
-typedef enum _NhlJustification {
-	NhlTOPLEFT,
-	NhlCENTERLEFT,
-	NhlBOTTOMLEFT,
-	NhlTOPCENTER,
-	NhlCENTERCENTER,
-	NhlBOTTOMCENTER,
-	NhlTOPRIGHT,
-	NhlCENTERRIGHT,
-	NhlBOTTOMRIGHT
-} NhlJustification;
 
 #define NhlTDrawOrder "DrawOrder"
 typedef enum _NhlDrawOrder {

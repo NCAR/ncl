@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.20 1995-12-19 20:39:37 boote Exp $
+ *      $Id: View.c,v 1.21 1996-01-04 21:47:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -610,26 +610,6 @@ static NhlErrorTypes	ViewClassInitialize()
 	{NhlVERTICAL,	"vertical"}
 	};
 
-        _NhlEnumVals   positionlist[] = {
-        {NhlTOP,	"top"},
-        {NhlBOTTOM,	"bottom"},
-        {NhlRIGHT, 	"right"},
-        {NhlLEFT,	"left"},
-        {NhlCENTER,	"center"}
-        };
-
-	_NhlEnumVals justificationlist[] =  {
-	{NhlTOPLEFT,		"topleft"},
-	{NhlCENTERLEFT,		"centerleft"},
-	{NhlBOTTOMLEFT,		"bottomleft"},
-	{NhlTOPCENTER,		"topcenter"},
-	{NhlCENTERCENTER,	"centercenter"},
-	{NhlBOTTOMCENTER,	"bottomcenter"},
-	{NhlTOPRIGHT,		"topright"},
-	{NhlCENTERRIGHT,	"centerright"},
-	{NhlBOTTOMRIGHT,	"bottomright"}
-	};
-
 	_NhlEnumVals draworderlist[] = {
 	{NhlPREDRAW,	"predraw"},
 	{NhlDRAW,	"draw"},
@@ -638,10 +618,6 @@ static NhlErrorTypes	ViewClassInitialize()
 
 	_NhlRegisterEnumType(NhlviewClass,NhlTOrientation,orientationlist,
 			     NhlNumber(orientationlist));
-	_NhlRegisterEnumType(NhlviewClass,NhlTPosition,positionlist,
-			     NhlNumber(positionlist));
-	_NhlRegisterEnumType(NhlviewClass,NhlTJustification,justificationlist,
-			     NhlNumber(justificationlist));
 	_NhlRegisterEnumType(NhlviewClass,NhlTDrawOrder,draworderlist,
 			     NhlNumber(draworderlist));
 
