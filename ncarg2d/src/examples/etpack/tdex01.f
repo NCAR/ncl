@@ -153,8 +153,8 @@ C
 C
 C Define TDPACK rendering styles 1 through 7, using black-and-white
 C shading or colored shading, whichever is selected.  The indices
-C 1-7 can then be used as final arguments in calls to TDITRI, TDSTRI,
-C and TDMTRI.
+C 1-7 can then be used as arguments in calls to TDITRI, TDSTRI, and
+C TDMTRI.
 C
         IF (ICLR.EQ.0) THEN
           CALL TDSTRS (1,43,74, 43, 74,-1,-1,1,0.,0.,0.) ! gray/gray
