@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.7 1997-06-06 03:14:46 dbrown Exp $
+ *      $Id: addfile.c,v 1.8 1997-06-06 18:07:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -508,7 +508,7 @@ static void SetApplyForm
 
         if (np->mapped && first) {
                 first = False;
-                XtVaGetValues(np->vname,
+                XtVaGetValues(np->filelist,
                               XmNbackground,&Background,
                               NULL);
         }
@@ -528,9 +528,8 @@ static void SetApplyForm
         }
         if (added) {
                 XtVaSetValues(np->vname,
+                              XmNbackground,Background,
                               XmNeditable,False,
-                              XtVaTypedArg,XmNbackground,
-                              XmRString,"lightsalmon",12,
                               NULL);
                 XmTextFieldSetString(np->vname,NrmQuarkToString(symbol));
                 if (!np->vname_added) {
@@ -552,8 +551,9 @@ static void SetApplyForm
                               XmNlabelString,xmstring,
                               NULL);
                 XtVaSetValues(np->vname,
-                              XmNbackground,Background,
                               XmNeditable,True,
+                              XtVaTypedArg,XmNbackground,
+                              XmRString,"lightsalmon",12,
                               NULL);
                 XtSetSensitive(np->ok,True);
                 XtSetSensitive(np->apply,True);
@@ -2000,6 +2000,10 @@ AddFileCreateWin
                                         XmNrightWidget,np->rw_optmenu,
                                         XmNresizeWidth,False,
                                         NULL);
+	XtVaSetValues(np->vname,
+		      XtVaTypedArg,XmNbackground,
+		      XmRString,"lightsalmon",12,
+		      NULL);
         
 	sep = 
                 XtVaCreateManagedWidget("sep",
@@ -2380,6 +2384,10 @@ AddFileCreateWin
                                         XmNcursorPosition,strlen(dirmask_text),
                                         XmNuserData,go,
                                         NULL);
+	XtVaSetValues(np->filtertext,
+		      XtVaTypedArg,XmNbackground,
+		      XmRString,"lightsalmon",12,
+		      NULL);
 	XtAddCallback(np->filtertext,XmNactivateCallback,
 		      FilterTextCB,go);
 	XtFree(dirmask_text);
@@ -2536,7 +2544,7 @@ static void ListUpOrDownAction
         
 	if (w == np->filtertext)
 		list = np->dirlist;
-	else if (w == np->selecttext)
+	else if (w == np->vname)
 		list = np->filelist;
 	else {
 #if	DEBUG_ADDFILE
