@@ -3026,7 +3026,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
+    SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
     SetArgTemplate(args, nargs, "float", NclANY, NclANY); nargs++;
     SetArgTemplate(args, nargs, "float", 1, NclANY); nargs++;
     NclRegisterFunc(ftcurvd_W, args, "ftcurvd", nargs);

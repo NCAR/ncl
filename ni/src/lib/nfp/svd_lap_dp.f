@@ -219,7 +219,7 @@ c .   to "simulate" the transpose
 
 c lapack svd
 
-      LWORK = MAX(3*NSVMX+MAX(NCX,NCY),5*MIN(NCX,NCY)-4)
+      LWORK = MAX(3*NSVMX+MAX(NCX,NCY),5*MIN(NCX,NCY))
 
       CALL DGESVD('S','S',NCX,NCY,CRV,NCX,SV,U,NCX,VT,NSVMX,WORK,LWORK,
      +            MERR)
@@ -498,7 +498,7 @@ c .   to "simulate" the transpose
 
 c lapack svd
 
-      LWORK = MAX(3*NSVMX+MAX(NCX,NCY),5*MIN(NCX,NCY)-4)
+      LWORK = MAX(3*NSVMX+MAX(NCX,NCY),5*MIN(NCX,NCY))
 
       CALL DGESVD('S','S',NCX,NCY,CRV,NCX,SV,U,NCX,VT,NSVMX,WORK,LWORK,
      +            MERR)

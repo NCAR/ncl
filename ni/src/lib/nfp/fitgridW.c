@@ -152,7 +152,7 @@ NhlErrorTypes ftgetp_W(void)
 
   char  *arg1, *cval;
   int   numpi, numpf, numpc, i;
-  string *pvalue, *qvalue;
+  string *qvalue;
 
 /*
  *  List the integer and float parameter names.  To add new ones,
@@ -375,7 +375,7 @@ NhlErrorTypes ftcurvd_W(void)
  * Input array variables
  */
   float *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
   int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
   float *xo;
@@ -388,25 +388,25 @@ NhlErrorTypes ftcurvd_W(void)
 /*
  * Various
  */
-  int i, npts, nxo, size_leftmost, index_in = 0, index_out = 0;
+  int i, npts, nxo, size_leftmost, index_xi = 0, index_yi = 0, index_out = 0;
 
 /*
- * Retrieve argument #1
+ * Retrieve xi.
  */
   xi = (float *) NclGetArgValue(
           0,
           3,
-          NULL,
+          &ndims_xi,
           dsizes_xi,
           NULL,
           NULL,
           NULL,
           2);
 
-  npts = dsizes_xi[0];
+  npts = dsizes_xi[ndims_xi-1];
 
 /*
- * Retrieve argument #2
+ * Retrieve yi.
  */
   yi = (float *) NclGetArgValue(
           1,
@@ -419,16 +419,34 @@ NhlErrorTypes ftcurvd_W(void)
           2);
 
 /*
- * Check last dimension of argument #1.
+ * Check last dimension of yi.
  */
   if(dsizes_yi[ndims_yi-1] != npts) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "ftcurvd: The last dimension of argument #1 must be the same length as argument #0");
+              "ftcurvd: The last dimension of yi must be the same length as xi");
     return(NhlFATAL);
   }
 
 /*
- * Retrieve argument #3
+ * If xi is not 1-dimensional, then is must be the same size as yi.
+ */
+  if(ndims_xi > 1) {
+    if(ndims_xi != ndims_yi) {
+      NhlPError(NhlFATAL, NhlEUNKNOWN,
+                "ftcurvd: If xi is not 1-dimensional, then it must be the same size as yi");
+      return(NhlFATAL);
+    }
+    for(i = 0; i < ndims_xi; i++) {
+      if(dsizes_xi[i] != dsizes_yi[i]) {
+        NhlPError(NhlFATAL, NhlEUNKNOWN,
+                  "ftcurvd: If xi is not 1-dimensional, then it must have the same dimension sizes as yi");
+        return(NhlFATAL);
+      }
+    }
+  }
+
+/*
+ * Retrieve xo.
  */
   xo = (float *) NclGetArgValue(
           2,
@@ -468,13 +486,14 @@ NhlErrorTypes ftcurvd_W(void)
  */
 
   for( i = 0; i < size_leftmost; i++ ) {
-    fterr = c_ftcurvd(npts, xi, &yi[index_in], nxo, xo, &yo[index_out]);
+    fterr = c_ftcurvd(npts, &xi[index_xi], &yi[index_yi], nxo, xo, &yo[index_out]);
     if (fterr != 0) {
       sprintf(ftmsg, "ftcurvd: Error number %d.", fterr);
       NhlPError(NhlFATAL, NhlEUNKNOWN, ftmsg);
       return(NhlFATAL);
     }
-    index_in  += npts;
+    if(ndims_xi > 1) index_xi += npts;
+    index_yi  += npts;
     index_out += nxo;
   }
   return(NclReturnValue((void *)yo,ndims_yi,dsizes_yo,NULL,NCL_float,0 ));
@@ -620,7 +639,6 @@ NhlErrorTypes ftcurvp_W(void)
   float *yi;
   int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
   float *p;
-  int dsizes_p[NCL_MAX_DIMENSIONS];
   float *xo;
   int dsizes_xo[NCL_MAX_DIMENSIONS];
 /*

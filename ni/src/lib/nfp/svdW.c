@@ -1167,7 +1167,7 @@ NhlErrorTypes svdcov_sv_W( void )
 /*
  * Allocate memory for work and output arrays.
  */
-  lwork = max(3*nsvmx+max(ncolx,ncoly),5*min(ncolx,ncoly)-4);
+  lwork = max(3*nsvmx+max(ncolx,ncoly),5*nsvmx);
   w     = (double *)calloc(lwork,sizeof(double));
   u     = (double *)calloc(nsvmx*ncolx,sizeof(double));
   vt    = (double *)calloc(nsvmx*ncoly,sizeof(double));
@@ -1483,7 +1483,7 @@ NhlErrorTypes svdstd_sv_W( void )
 /*
  * Allocate memory for work and output arrays.
  */
-  lwork = max(3*nsvmx+max(ncolx,ncoly),5*min(ncolx,ncoly)-4);
+  lwork = max(3*nsvmx+max(ncolx,ncoly),5*nsvmx);
   w     = (double *)calloc(lwork,sizeof(double));
   u     = (double *)calloc(nsvmx*ncolx,sizeof(double));
   vt    = (double *)calloc(nsvmx*ncoly,sizeof(double));
