@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1993-10-19 17:36:45 boote Exp $
+#	$Id: yMakefile,v 1.6 1994-03-30 02:13:38 fred Exp $
 #
 #
 #	Makefile for the NCAR GKS library
@@ -7,7 +7,7 @@
 
 #define	IHaveSubdirs
 
-SUBDIRS = awi bwi wiss X11
+SUBDIRS = awi bwi wiss cdrivers
 
 PartialLibraryRoot(libncarg_gks.a,$(SUBDIRS))
 PartialSourceLibraryRoot(srcncarg_gks.a,$(SUBDIRS))
