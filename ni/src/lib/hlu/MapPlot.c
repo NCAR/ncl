@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.41 1995-07-28 22:51:43 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.42 1995-10-02 21:55:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2708,6 +2708,7 @@ static NhlErrorTypes mpSetUpAreamap
 	int			aws_id = -1;
 	NhlBoolean		inited = False;
 
+	c_arseti("RC",1);
 	switch (amap_type) {
 	case mpGLOBAL_AMAP:
 		aws_id = mpp->co_aws_id;
@@ -3433,13 +3434,19 @@ static NhlErrorTypes    mpManageViewDepResources
 static NhlErrorTypes    CheckColor
 #if	NhlNeedProto
 (
-	int	cix,
-	char	*entry_name
+	NhlMapPlotLayer mpnew,
+	int		cix,
+	NhlString	resname,
+	int		*gks_cix,
+	char		*entry_name
 )
 #else
-(cix,entry_name)
-	int	cix;
-	char	*entry_name;
+(mpnew,cix,resname,gks_cix,entry_name)
+	NhlMapPlotLayer mpnew;
+	int		cix;
+	NhlString	resname;
+	int		*gks_cix;
+	char		*entry_name;
 
 #endif
 
@@ -3447,11 +3454,13 @@ static NhlErrorTypes    CheckColor
 	char 		*e_text;
 	NhlErrorTypes	ret = NhlNOERROR;
 
-	if (cix <= 0) {
-		e_text = "%s: invalid color index";
+	if (cix < NhlBACKGROUND) {
+		e_text = "%s: invalid color index for %s; defaulting";
 		ret = NhlWARNING;
-		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
+		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name,resname);
+		cix = NhlFOREGROUND;
 	}
+	*gks_cix = _NhlGetGksCi(mpnew->base.wkptr,cix);
 	return ret;
 } 
 
@@ -3491,38 +3500,40 @@ static NhlErrorTypes    SetLineAttrs
 
 	entry_name = init ? "MapPlotInitialize" : "MapPlotSetValues";
 
-	subret = CheckColor(mpp->grid.color,entry_name);
+	subret = CheckColor(mpnew,mpp->grid.color,
+			    NhlNmpGridLineColor,
+			    &mpp->grid.gks_color,entry_name);
 	ret = MIN(subret,ret);
-	mpp->grid.gks_color = _NhlGetGksCi(mpnew->base.wkptr,mpp->grid.color);
 
-	subret = CheckColor(mpp->limb.color,entry_name);
+	subret = CheckColor(mpnew,mpp->limb.color,
+			    NhlNmpLimbLineColor,
+			    &mpp->limb.gks_color,entry_name);
 	ret = MIN(subret,ret);
-	mpp->limb.gks_color = _NhlGetGksCi(mpnew->base.wkptr,mpp->limb.color);
 
-	subret = CheckColor(mpp->geophysical.color,entry_name);
+	subret = CheckColor(mpnew,mpp->geophysical.color,
+			    NhlNmpGeophysicalLineColor,
+			    &mpp->geophysical.gks_color,entry_name);
 	ret = MIN(subret,ret);
-	mpp->geophysical.gks_color = 
-		_NhlGetGksCi(mpnew->base.wkptr,mpp->geophysical.color);
 
-	subret = CheckColor(mpp->national.color,entry_name);
+	subret = CheckColor(mpnew,mpp->national.color,
+			    NhlNmpNationalLineColor,
+			    &mpp->national.gks_color,entry_name);
 	ret = MIN(subret,ret);
-	mpp->national.gks_color = 
-		_NhlGetGksCi(mpnew->base.wkptr,mpp->national.color);
 
-	subret = CheckColor(mpp->us_state.color,entry_name);
+	subret = CheckColor(mpnew,mpp->us_state.color,
+			    NhlNmpUSStateLineColor,
+			    &mpp->us_state.gks_color,entry_name);
 	ret = MIN(subret,ret);
-	mpp->us_state.gks_color = 
-		_NhlGetGksCi(mpnew->base.wkptr,mpp->us_state.color);
 
-	subret = CheckColor(mpp->perim.color,entry_name);
+	subret = CheckColor(mpnew,mpp->perim.color,
+			    NhlNmpPerimLineColor,
+			    &mpp->perim.gks_color,entry_name);
 	ret = MIN(subret,ret);
-	mpp->perim.gks_color = 
-		_NhlGetGksCi(mpnew->base.wkptr,mpp->perim.color);
 
-	subret = CheckColor(mpp->labels.color,entry_name);
+	subret = CheckColor(mpnew,mpp->labels.color,
+			    NhlNmpLabelFontColor,
+			    &mpp->labels.gks_color,entry_name);
 	ret = MIN(subret,ret);
-	mpp->labels.gks_color = 
-		_NhlGetGksCi(mpnew->base.wkptr,mpp->labels.color);
 
 	return ret;
 }

@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.20 1995-05-03 03:11:20 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.21 1995-10-02 21:55:22 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -1057,12 +1057,14 @@ static NhlErrorTypes MapWinToData
 
 		} else {
 			c_maptri(x[i],y[i],&(yout[i]),&(xout[i]));
-			if((xout[i] == 1e12)||
-				(yout[i] == 1e12)) {
-
+			if((xout[i] == 1e12) || (yout[i] == 1e12)) {
 				*status = 1;
 				xout[i]=yout[i]=minstance->trobj.out_of_range;
 			}
+			else if (xout[i] < mtp->min_lon) 
+				xout[i] += 360.0;
+			else if (xout[i] > mtp->max_lon)
+				xout[i] -= 360.0;
 		}
 	}
 	return(ret);
@@ -1314,6 +1316,19 @@ static NhlErrorTypes CheckMapLimits
 	float v_angle_lim, h_angle_lim;
 	float ftmp;
 
+	if (mtp->min_lon < -540.0 || mtp->min_lon > 540.0) {
+		e_text ="%s: %s out of range: resetting";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name,NhlNmpMinLonF);
+		mtp->min_lon = -180.0;
+	}
+	if (mtp->max_lon < -540.0 || mtp->max_lon > 540.0) {
+		e_text ="%s: %s out of range: resetting";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name,NhlNmpMaxLonF);
+		mtp->max_lon = 180.0;
+	}
+ 
 	switch (mtp->projection) {
 	case NhlORTHOGRAPHIC:
 		h_angle_lim = v_angle_lim = 90;
