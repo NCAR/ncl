@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.8 1995-04-07 16:22:14 stautler Exp $
+#   $Id: yMakefile,v 1.9 1995-04-07 16:37:54 stautler Exp $
 #
 #   Makefile for HLU MapPlot examples
 #
@@ -17,7 +17,7 @@ COBJS    = mp01c.o mp02c.o mp03c.o mp04c.o
 FOBJS    = mp01f.o mp02f.o mp03f.o mp04f.o
 SRCS     = $(CSRCS) $(FSRCS)
 OBJS     = $(COBJS) $(FOBJS)
-CBINDATA = mp03c.bin
+CBINDATA = mp03n.bin
 RESFILES = mp01.res mp02.res mp03.res mp04.res mp05.res
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))

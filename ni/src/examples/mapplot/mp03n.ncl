@@ -21,6 +21,10 @@
 ;
 
 
+;
+; Read data from the input file.  This file was generated with
+; the C write command, so can only be accessed with 'cbinread'.
+;
 procedure getdat (
         data: float,
         m : integer,
@@ -31,7 +35,7 @@ begin
 	dims(0) = m
 	dims(1) = n
 
-	data = cbinread("mp03c.bin",dims,"float")
+	data = cbinread("mp03n.bin",dims,"float")
 end
 
 
