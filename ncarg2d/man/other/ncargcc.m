@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargcc.m,v 1.7 1996-01-29 17:35:42 haley Exp $
+.\"	$Id: ncargcc.m,v 1.8 1997-03-26 23:14:56 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGCC 1NCARG "February 1993" NCAR "NCAR GRAPHICS"
@@ -8,20 +8,11 @@ ncargcc \- Command for compiling C code that uses the NCAR Graphics low-level
 utilities
 .SH SYNOPSIS
 \fBncargcc\fP 
+[\fB\-ngmath\fR]
 [\fB\-smooth\fR]
 [\fB\-quick\fR]
 [\fB\-super\fR]
 [\fB\-agupwrtx\fR]
-[\fB\-dashchar\fR]
-[\fB\-dashline\fR]
-[\fB\-dashsmooth\fR]
-[\fB\-dashsuper\fR]
-[\fB\-conrecsmooth\fR]
-[\fB\-conrecsuper\fR]
-[\fB\-conrecquick\fR]
-[\fB\-conran\fR]
-[\fB\-conransmooth\fR]
-[\fB\-conranquick\fR]
 [\fB\-noX11\fR] ...
 .SH DESCRIPTION
 .sp
@@ -65,6 +56,35 @@ complains that it cannot find the library for X11, then try running
 path leading to your X11 library.  If you do not have the X11 library,
 or else you just don't want to link it in, you can use the
 \fB\-noX11\fR option.
+.sp
+.I OPTIONS
+.IP "\-ngmath"
+Links in the NCAR Graphics ngmath library.
+.sp
+.IP "\-smooth"
+Link in the "smooth" objects.
+.sp
+.IP "\-quick"
+Link in the "quick" objects.
+.sp
+.IP "\-super"
+Link in the "super" objects.
+.sp
+.IP "\-agupwrtx"
+Link in the "agupwrtx" library.
+.sp
+.IP "\-noX11"
+Do not link in the X library when linking the code.
+.sp
+By default, \fIncargf77\fR will load the X11 library when linking
+your Fortran program.  This is because the GKS library now has an
+X11 driver.  If you try running \fIncargf77\fR and the
+compiler complains that it cannot find the library for X11, then try
+running \fIncargf77 -L/xxx/yyy/zzz program.f\fP where \fI/xxx/yyy/zzz\fP 
+is the path leading to your X11 library.  If you do not have the X11 library,
+or else you just don't want it to be loaded, you can use the \fB\-noX11\fR
+option.
+.sp
 .SH SEE ALSO
 Online:
 .BR

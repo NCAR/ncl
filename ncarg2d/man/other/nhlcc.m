@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: nhlcc.m,v 1.4 1996-01-29 17:35:47 haley Exp $
+.\"	$Id: nhlcc.m,v 1.5 1997-03-26 23:14:57 haley Exp $
 .\"
 .TH NHLCC 1NCARG "April 1995" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,7 @@ nhlcc \- Command for compiling C code that uses the NCAR Graphics
 high-level utilities.
 .SH SYNOPSIS
 \fBnhlcc\fP 
+[\fB\-ngmath\fR]
 [\fB\-netcdf\fR]
 [\fB\-hdf\fR] ...
 .SH DESCRIPTION
@@ -38,6 +39,9 @@ addition to the ones automatically referenced by \fInhlcc\fR, all the
 libraries must have been created in a similar fashion.
 .sp
 .I OPTIONS
+.IP "\-ngmath"
+Links in the NCAR Graphics ngmath library.
+.sp
 .IP "\-netcdf"
 Links in the netCDF library.  This library is not part of NCAR Graphics,
 so check with your system administrator if you need it installed.  You

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.33 1996-10-05 04:37:40 haley Exp $
+.\"	$Id: ncargex.m,v 1.34 1997-03-26 23:14:56 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "March 1995" NCAR "NCAR GRAPHICS"
@@ -38,6 +38,7 @@ ncargex \- NCAR Graphics Fortran and C Low-Level Utility Examples
 [\f\B\-isosrfhr\fR]
 [\f\B\-isosurface\fR]
 [\f\B\-labelbar\fR]
+[\f\B\-ngmath\fR]
 [\f\B\-ngmisc\fR]
 [\f\B\-plotchar\fR]
 [\f\B\-polypack\fR]
@@ -254,6 +255,9 @@ Generate all isosurface C/Fortran examples.
 .IP \-labelbar " " ""
 Generate all labelbar C/Fortran examples.
 .sp
+.IP \-ngmath " " ""
+Generate all ngmath C/Fortran examples.
+.sp
 .IP \-ngmisc " " ""
 Generate all ngmisc C/Fortran examples.
 .sp
@@ -416,6 +420,11 @@ fisissrf fispwrzi tisosr tpwrzi c_tisosr
 .I "LABELBAR Examples:"
 .sp
 elblba tlblba clbfil clbbar clblbr c_elblba
+.sp
+.I "NGMATH Examples:"
+.sp
+nnex01 nnex02 nnex03 nnex04 nnex05 nnex06 nnex07 nnex08 nnex09
+nnex01d c_nnex01 c_nnex02 c_nnex03 c_nnex06 c_nnex01d
 .sp
 .I "NGMISC Examples:"
 .sp

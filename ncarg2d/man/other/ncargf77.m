@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargf77.m,v 1.6 1996-01-29 17:35:43 haley Exp $
+.\"	$Id: ncargf77.m,v 1.7 1997-03-26 23:14:57 haley Exp $
 .\"
 .TH NCARGF77 1NCARG "March 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -7,6 +7,7 @@ ncargf77 \- Command for compiling Fortran code that uses the NCAR Graphics
 low-level utilities
 .SH SYNOPSIS
 \fBncargf77\fP 
+[\fB\-ngmath\fR]
 [\fB\-smooth\fR]
 [\fB\-quick\fR]
 [\fB\-super\fR]
@@ -41,6 +42,9 @@ addition to the ones automatically referenced by \fIncargf77\fR, all the
 libraries must have been created in a similar fashion.
 .sp
 .I OPTIONS
+.IP "\-ngmath"
+Links in the NCAR Graphics ngmath library.
+.sp
 .IP "\-smooth"
 Link in the "smooth" objects.
 .sp
