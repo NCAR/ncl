@@ -116,6 +116,8 @@ CC_LD             = $(CC)
 CDEBUG            =
 COPT              = -O
 CMISC             = -ansiposix -DNeedFuncProto
+CSTATIC           =
+CDYNAMIC          =
 CINC              = $(INC_SEARCH) -I/usr/include/bsd
 CFLAGS            = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
                     $(FLOAT_OPT) $(CINC) $(VDEFINE)

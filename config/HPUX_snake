@@ -116,6 +116,8 @@ CC_LD             = $(CC)
 CDEBUG            = 
 COPT              = -O
 CMISC             = -DNeedFuncProto -D_HPUX_SOURCE
+CSTATIC           = -Wl,-a,archive
+CDYNAMIC          = -Wl,-a,shared
 CINC              = $(INC_SEARCH)
 CFLAGS            = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
                     $(FLOAT_OPT) $(CINC) $(VDEFINE)

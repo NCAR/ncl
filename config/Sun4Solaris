@@ -116,6 +116,8 @@ CC_LD             = $(CC)
 CDEBUG            = 
 COPT              = -O
 CMISC             = -Xc -DNeedFuncProto
+CSTATIC           = -Bstatic
+CDYNAMIC          = -Bdynamic -lnsl -lintl -lsocket -ldl /usr/ucblib/libucb.a
 CINC              = $(INC_SEARCH)
 CFLAGS            = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
                     $(FLOAT_OPT) $(CINC) $(VDEFINE)

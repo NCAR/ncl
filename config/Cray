@@ -117,6 +117,8 @@ CC_LD             = $(CC)
 CDEBUG            =
 COPT              = -h noopt
 CMISC             = -DUSG -DNeedFuncProto
+CSTATIC           =
+CDYNAMIC          =
 CINC              = $(INC_SEARCH) -I$(INCROOT)
 CFLAGS            = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
                     $(FLOAT_OPT) $(CINC) $(VDEFINE)
