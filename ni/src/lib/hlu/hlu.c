@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.29 1995-04-22 01:02:18 boote Exp $
+ *      $Id: hlu.c,v 1.30 1995-05-01 17:11:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -528,7 +528,11 @@ int pid;
 {
 	NhlLayer	l = _NhlGetLayer(pid);
 
-	return(_NhlClassName(_NhlClass(l)));
+	if(l != NULL) {
+		return(_NhlClassName(_NhlClass(l)));
+	} else {
+		return(NULL);
+	}
 }
 
 /*
@@ -592,7 +596,11 @@ _NhlClassName
 	NhlClass	lc;	/* pointer to class struct	*/
 #endif
 {
-	return lc->base_class.class_name;
+	if(lc != NULL) {
+		return lc->base_class.class_name;
+	} else {
+		return(NULL);
+	}
 }
 
 /*
@@ -619,7 +627,11 @@ _NhlClass
 	NhlLayer l;
 #endif
 {
-	return(l->base.layer_class);
+	if(l != NULL ) {
+		return(l->base.layer_class);
+	} else {
+		return(NULL);
+	}
 }
 
 /*
