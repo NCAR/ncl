@@ -1,5 +1,5 @@
 /*
- *	$Id: X_pixdump.c,v 1.2 1991-01-09 11:07:55 clyne Exp $
+ *	$Id: X_pixdump.c,v 1.3 1991-02-04 13:23:21 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -15,9 +15,10 @@
  */
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include "XWDFile.h"
+#include <X11/XWDFile.h>
 #include <stdio.h>
 
+typedef unsigned long Pixel;
 
 extern	char	*malloc();
 
@@ -95,31 +96,31 @@ pixmap_dump(dpy, pixmap ,x, y, width, height, cmap, visual, format, fp)
 	/*
 	 * Write out header information.
 	 */
-	header.header_size = (xwdval) header_size;
-	header.file_version = (xwdval) XWD_FILE_VERSION;
-	header.pixmap_format = (xwdval) format;
-	header.pixmap_depth = (xwdval) image->depth;
-	header.pixmap_width = (xwdval) image->width;
-	header.pixmap_height = (xwdval) image->height;
-	header.xoffset = (xwdval) image->xoffset;
-	header.byte_order = (xwdval) image->byte_order;
-	header.bitmap_unit = (xwdval) image->bitmap_unit;
-	header.bitmap_bit_order = (xwdval) image->bitmap_bit_order;
-	header.bitmap_pad = (xwdval) image->bitmap_pad;
-	header.bits_per_pixel = (xwdval) image->bits_per_pixel;
-	header.bytes_per_line = (xwdval) image->bytes_per_line;
-	header.visual_class = (xwdval) visual->class;
-	header.red_mask = (xwdval) visual->red_mask;
-	header.green_mask = (xwdval) visual->green_mask;
-	header.blue_mask = (xwdval) visual->blue_mask;
-	header.bits_per_rgb = (xwdval) visual->bits_per_rgb;
-	header.colormap_entries = (xwdval) visual->map_entries;
+	header.header_size = (CARD32) header_size;
+	header.file_version = (CARD32) XWD_FILE_VERSION;
+	header.pixmap_format = (CARD32) format;
+	header.pixmap_depth = (CARD32) image->depth;
+	header.pixmap_width = (CARD32) image->width;
+	header.pixmap_height = (CARD32) image->height;
+	header.xoffset = (CARD32) image->xoffset;
+	header.byte_order = (CARD32) image->byte_order;
+	header.bitmap_unit = (CARD32) image->bitmap_unit;
+	header.bitmap_bit_order = (CARD32) image->bitmap_bit_order;
+	header.bitmap_pad = (CARD32) image->bitmap_pad;
+	header.bits_per_pixel = (CARD32) image->bits_per_pixel;
+	header.bytes_per_line = (CARD32) image->bytes_per_line;
+	header.visual_class = (CARD32) visual->class;
+	header.red_mask = (CARD32) visual->red_mask;
+	header.green_mask = (CARD32) visual->green_mask;
+	header.blue_mask = (CARD32) visual->blue_mask;
+	header.bits_per_rgb = (CARD32) visual->bits_per_rgb;
+	header.colormap_entries = (CARD32) visual->map_entries;
 	header.ncolors = ncolors;
-	header.window_width = (xwdval) width;
-	header.window_height = (xwdval) height;
+	header.window_width = (CARD32) width;
+	header.window_height = (CARD32) height;
 	header.window_x = x;
 	header.window_y = y;
-	header.window_bdrwidth = (xwdval) 0;
+	header.window_bdrwidth = (CARD32) 0;
 
 
 	/*
@@ -207,6 +208,70 @@ static	int image_size(image, format)
  *	*colors		: contains a list of XColors.
  *	return		: number of elements in *colors
  */
+
+
+#define lowbit(x) ((x) & (~(x) + 1))
+
+/*
+ * Get the XColors of all pixels in image - returns # of colors
+ */
+static	int get_Xcolors(dpy, visual, colormap, colors)
+	Display	*dpy;
+	Visual	*visual;
+	Colormap	colormap;
+	XColor **colors;
+{
+    int i, ncolors;
+
+    if (!colormap)
+	return(0);
+
+    if (visual->class == TrueColor)
+	return(0);    /* colormap is not needed */
+
+    ncolors = visual->map_entries;
+    if (!(*colors = (XColor *) malloc (sizeof(XColor) * ncolors))) return (-1);
+
+    if (visual->class == DirectColor) {
+	Pixel red, green, blue, red1, green1, blue1;
+
+	red = green = blue = 0;
+	red1 = lowbit(visual->red_mask);
+	green1 = lowbit(visual->green_mask);
+	blue1 = lowbit(visual->blue_mask);
+	for (i=0; i<ncolors; i++) {
+	  (*colors)[i].pixel = red|green|blue;
+	  (*colors)[i].pad = 0;
+	  red += red1;
+	  if (red > visual->red_mask)
+	    red = 0;
+	  green += green1;
+	  if (green > visual->green_mask)
+	    green = 0;
+	  blue += blue1;
+	  if (blue > visual->blue_mask)
+	    blue = 0;
+	}
+    } else {
+	for (i=0; i<ncolors; i++) {
+	  (*colors)[i].pixel = i;
+	  (*colors)[i].pad = 0;
+	}
+    }
+
+    XQueryColors(dpy, colormap, *colors, ncolors);
+#define	DEBUG
+#ifdef	DEBUG
+	for (i=0; i < ncolors; i++) {
+		fprintf(stderr, "Index [%d] (%d %d %d)\n", i, (*colors)[i].red,
+			(*colors)[i].green, (*colors)[i].blue);
+	}
+#endif
+    
+    return(ncolors);
+}
+
+#ifdef	DEAD
 static	int get_Xcolors(dpy, visual, cmap, colors)
 	Display	*dpy;
 	Visual	*visual;
@@ -236,6 +301,7 @@ static	int get_Xcolors(dpy, visual, cmap, colors)
 
 	return(ncolors);
 }
+#endif
 
 static	_swapshort (bp, n)
 	register char *bp;
