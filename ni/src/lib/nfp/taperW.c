@@ -153,9 +153,7 @@ NhlErrorTypes taper_W( void )
       NGCALLF(dtaper,DTAPER)(tmp_x,&npts,tmp_p,tmp_taper,option);
 
       if(type_taper == NCL_float) {
-        for(j = 0; j < npts; j++) {
-          ((float*)taper)[index_x+j] = (float)(tmp_taper[j]);
-        }
+        coerce_output_float_only(taper,tmp_taper,npts,index_x);
       }
     }
     index_x += npts;

@@ -121,9 +121,7 @@ NhlErrorTypes dim_pqsort_W( void )
         }
       }
       else {
-        for(j = 0; j < ndim; j++) {
-          ((float*)x)[index_x+j] = (float)(tmp_x[j]);
-        }
+        coerce_output_float_only(x,tmp_x,ndim,index_x);
       }
     }
     index_x += ndim;

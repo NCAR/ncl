@@ -319,9 +319,7 @@ NhlErrorTypes int2p_W( void )
  * Copy output values from temporary tmp_xout to xout.
  */
       if(type_xout != NCL_double) {
-        for(j = 0; j < npout; j++) {
-          ((float*)xout)[index_out+j] = (float)(tmp_xout[j]);
-        }
+        coerce_output_float_only(xout,tmp_xout,npout,index_out);
       }
     }
     index_in  += npin;

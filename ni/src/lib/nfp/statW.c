@@ -1405,9 +1405,7 @@ NhlErrorTypes esacr_W( void )
     if (ier == -5) ier_count5++;
 
     if(type_x != NCL_double) {
-      for(j = 0; j < mxlag1; j++) {
-        ((float*)acr)[index_acr+j] = (float)(tmp_acr[j]);
-      }
+      coerce_output_float_only(acr,tmp_acr,mxlag1,index_acr);
     }
 
     index_x   += npts;
@@ -1581,9 +1579,7 @@ NhlErrorTypes esacv_W( void )
     if (ier == -5) ier_count5++;
 
     if(type_x != NCL_double) {
-      for(j = 0; j < mxlag1; j++) {
-        ((float*)acv)[index_acv+j] = (float)(tmp_acv[j]);
-      }
+      coerce_output_float_only(acv,tmp_acv,mxlag1,index_acv);
     }
 
     index_x   += npts;
@@ -1853,9 +1849,7 @@ NhlErrorTypes esccr_W( void )
                                &missing_dy.doubleval,&xmean,&ymean,&xsd,
                                &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
       if(type_ccr != NCL_double) {
-        for(j = 0; j < mxlag1; j++) {
-          ((float*)ccr)[index_ccr+j] = (float)(tmp_ccr[j]);
-        }
+        coerce_output_float_only(ccr,tmp_ccr,mxlag1,index_ccr);
       }
 
       index_ccr += mxlag1;
@@ -1900,9 +1894,7 @@ NhlErrorTypes esccr_W( void )
                                  &missing_dy.doubleval,&xmean,&ymean,&xsd,
                                  &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
         if(type_ccr != NCL_double) {
-          for(k = 0; k < mxlag1; k++) {
-            ((float*)ccr)[index_ccr+k] = (float)(tmp_ccr[k]);
-          }
+          coerce_output_float_only(ccr,tmp_ccr,mxlag1,index_ccr);
         }
         index_y   += npts;
         index_ccr += mxlag1;
@@ -2221,9 +2213,7 @@ NhlErrorTypes esccr_shields_W( void )
                                  &missing_dy.doubleval,&xmean,&ymean,&xsd,
                                  &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
         if(type_ccr != NCL_double) {
-          for(k = 0; k < mxlag1; k++) {
-            ((float*)ccr)[index_ccr+k] = (float)(tmp_ccr[k]);
-          }
+          coerce_output_float_only(ccr,tmp_ccr,mxlag1,index_ccr);
         }
         index_y   += npts;
         index_ccr += mxlag1;
@@ -2491,9 +2481,7 @@ NhlErrorTypes esccv_W( void )
                                &missing_dy.doubleval,&xmean,&ymean,&xsd,
                                &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
       if(type_ccv != NCL_double) {
-        for(j = 0; j < mxlag1; j++) {
-          ((float*)ccv)[index_ccv+j] = (float)(tmp_ccv[j]);
-        }
+        coerce_output_float_only(ccv,tmp_ccv,mxlag1,index_ccv);
       }
 
       index_ccv += mxlag1;
@@ -2539,9 +2527,7 @@ NhlErrorTypes esccv_W( void )
                                  &missing_dy.doubleval,&xmean,&ymean,&xsd,
                                  &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
         if(type_ccv != NCL_double) {
-          for(k = 0; k < mxlag1; k++) {
-            ((float*)ccv)[index_ccv+k] = (float)(tmp_ccv[k]);
-          }
+          coerce_output_float_only(ccv,tmp_ccv,mxlag1,index_ccv);
         }
         index_y   += npts;
         index_ccv += mxlag1;
@@ -2671,7 +2657,7 @@ NhlErrorTypes dim_stat4_W( void )
     }
     coerce_output_float_or_double(stat,&dxmean,type_x,1,i);
     coerce_output_float_or_double(stat,&dxvar,type_x,1,i+total_leftmost);
-    coerce_output_float_or_double(stat,&dxskew,type_x,1,i+total_leftmost*2);
+    coerce_output_float_or_double(stat,&dxskew,type_x,1,i+total_leftmost*2); 
     coerce_output_float_or_double(stat,&dxkurt,type_x,1,i+total_leftmost*3);
     index_x    += npts;
   }
@@ -2696,4 +2682,5 @@ NhlErrorTypes dim_stat4_W( void )
     return(NclReturnValue(stat,ndims_x,dsizes_out,&missing_dx,NCL_double,0));
   }
 }
+
 

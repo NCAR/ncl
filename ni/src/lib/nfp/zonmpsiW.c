@@ -268,9 +268,7 @@ NhlErrorTypes zonal_mpsi_W( void )
  * Copy output values from temporary tmp_zmpsi to zmpsi.
  */
     if(type_zmpsi != NCL_double) {
-      for( j = 0; j < nlatlev; j++ ) {
-        ((float*)zmpsi)[index_zmpsi+j] = (float)tmp_zmpsi[j];
-      }
+      coerce_output_float_only(zmpsi,tmp_zmpsi,nlatlev,index_zmpsi);
     }
     index_v     += nlatlonlev;
     index_ps    += nlatlon;

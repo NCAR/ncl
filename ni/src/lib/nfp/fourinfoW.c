@@ -189,11 +189,9 @@ NhlErrorTypes fourier_info_W( void )
                                    tmp_pha,tmp_pcv);
 
       if(type_finfo != NCL_double) {
-        for(j = 0; j < nht; j++) {
-          ((float*)finfo)[index_amp+j] = (float)(tmp_amp[j]);
-          ((float*)finfo)[index_pha+j] = (float)(tmp_pha[j]);
-          ((float*)finfo)[index_pcv+j] = (float)(tmp_pcv[j]);
-        }
+        coerce_output_float_only(finfo,tmp_amp,nht,index_amp);
+        coerce_output_float_only(finfo,tmp_pha,nht,index_pha);
+        coerce_output_float_only(finfo,tmp_pcv,nht,index_pcv);
       }
     }
     index_x   += npts;

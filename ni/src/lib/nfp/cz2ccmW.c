@@ -304,9 +304,7 @@ NhlErrorTypes cz2ccm_W( void )
  * Coerce output to float if necessary.
  */
     if(type_z2 != NCL_double) {
-      for(l = 0; l < klevnlatmlon; l++) {
-        ((float*)z2)[index_z2+l] = (float)tmp_z2[l];
-      }
+      coerce_output_float_only(z2,tmp_z2,klevnlatmlon,index_z2);
     }
     index_ps += nlatmlon;
     index_z2 += klevnlatmlon;

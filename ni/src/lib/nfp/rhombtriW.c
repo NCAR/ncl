@@ -388,14 +388,10 @@ NhlErrorTypes rhomb_trunc_W( void )
     NGCALLF(drhombtrunc,DRHOMBTRUNC)(&n,&m,tmp_a,tmp_b,T);
 
     if(type_a != NCL_double) {
-      for(j = 0; j < nm; j++ ) {
-        ((float*)a)[index_nm+j] = (float)(tmp_a[j]);
-      }
+      coerce_output_float_only(a,tmp_a,nm,index_nm);
     }
     if(type_b != NCL_double) {
-      for(j = 0; j < nm; j++ ) {
-        ((float*)b)[index_nm+j] = (float)(tmp_b[j]);
-      }
+      coerce_output_float_only(b,tmp_b,nm,index_nm);
     }
     index_nm += nm;
   }

@@ -261,9 +261,7 @@ NhlErrorTypes hydro_W( void )
  * Copy output values from temporary tmp_zh to zh.
  */
       if(type_zh != NCL_double) {
-        for(j = 0; j < nlvl; j++) {
-          ((float*)zh)[index_zh+j] = (float)(tmp_zh[j]);
-        }
+        coerce_output_float_only(zh,tmp_zh,nlvl,index_zh);
       }
     }
     index_zh += nlvl;
