@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.61 2005-03-10 18:12:27 shea Exp $
+;      $Id: contributed.ncl,v 1.62 2005-04-01 00:48:32 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6101,3 +6101,65 @@ begin
        print ("min="+min(x)+"   max="+max(x))
    end if 
 end
+
+;********************************************************************
+; D. Shea
+; wrapper for NCL function "hyi2hyo" that copies attributes and coordinate vars.
+; It adds the new level coordinates.
+
+
+function hyi2hyo_Wrap(p0,hyai,hybi,psfc,xi,hyao,hybo)
+begin
+   xo = hyi2hyo(p0,hyai,hybi,psfc,xi,hyao,hybo)
+
+   copy_VarAtts(xi,xo) 
+   xo@info = "NCL function hyi2hyo used to interpolate" 
+
+   dName = getvardims( xi )  ; get dim names of the input variable
+   if (any(dName.eq."missing")) then
+       return (xo)
+   end if
+   
+   nDim = dimsizes( dimsizes(xo) )
+
+   do n=0,nDim-1                     ; name the dimensions
+      xo!n = dName(n)
+   end do
+
+   if (isatt(p0,"units") .and. \
+      (p0@units.eq."Pa" .or. p0@units.eq."Pascals") .or. \
+      (p0.eq.100000.))  then
+       P0  = p0/100.
+       P0@units = "hPa"
+       lev      = (hyao+hybo)*P0
+       lev@long_name     = "level"
+       lev@units         = "hPa"
+       lev@formula_terms = "a: hyam b: hybm p0: P0 ps: PS" 
+       lev@positive      = "down" 
+       lev@standard_name = "atmosphere_hybrid_sigma_pressure_coordinate"
+   end if
+
+   if (nDim.eq.3) then
+       xo&$dName(0)$ = lev
+       do n=1,2
+          if (iscoord(xi, dName(n)) ) then
+              xo&$dName(n)$ = xi&$dName(n)$
+          end if
+       end do
+   end if
+
+   if (nDim.eq.4) then
+       do n=0,3
+          if (n.eq.1) then
+              xo&$dName(n)$ = lev
+          else
+              if (iscoord(xi, dName(n)) ) then
+                  xo&$dName(n)$ = xi&$dName(n)$
+              end if
+          end if
+       end do
+   end if
+
+   return (xo)
+end
+
