@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.22 1995-01-19 22:04:53 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.23 1995-01-26 02:53:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -972,6 +972,8 @@ CopyTables
 		else
 			*own = NULL;
 	}
+	else
+		*own = NULL;
 
 	return NhlNOERROR;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.20 1995-01-19 22:04:55 boote Exp $
+ *      $Id: CoordArrays.c,v 1.21 1995-01-26 02:53:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1071,6 +1071,11 @@ CopyArray
 {
 	NhlErrorTypes	ret;
 
+	if(!*arr){
+		*my_arr = NULL;
+		return NhlNOERROR;
+	}
+
 	if(((*arr)->typeQ != floatQ) && copy){
 		ret = MyArray(my_arr,*arr,ctxt);
 		if(ret < NhlWARNING)
@@ -1080,7 +1085,7 @@ CopyArray
 		return ret;
 	}
 
-	*arr = _NhlCopyGenArray(*arr,copy);
+	*my_arr = *arr = _NhlCopyGenArray(*arr,copy);
 
 	if(*arr == NULL)
 		return NhlFATAL;
@@ -1316,7 +1321,7 @@ CoordArraysSetValues
 	}
 
 	if((ncap->xarray != ocap->xarray) ||
-				(ncap->copy_arrays && !ncap->xarray->my_data)){
+		(ncap->xarray && ncap->copy_arrays && !ncap->xarray->my_data)){
 		lret = CopyArray(&ncap->xarray,&ncap->my_xarray,
 						ncap->copy_arrays,&ncap->xctxt);
 		if(lret < NhlWARNING){
@@ -1331,7 +1336,7 @@ CoordArraysSetValues
 		}
 	}
 	if((ncap->yarray != ocap->yarray) ||
-				(ncap->copy_arrays && !ncap->yarray->my_data)){
+		(ncap->yarray && ncap->copy_arrays && !ncap->yarray->my_data)){
 		lret = CopyArray(&ncap->yarray,&ncap->my_yarray,
 						ncap->copy_arrays,&ncap->yctxt);
 		if(lret < NhlWARNING){

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.23 1994-10-04 01:02:11 boote Exp $
+#      $Id: yMakefile,v 1.24 1995-01-26 02:53:54 boote Exp $
 #
 #########################################################################
 #									#
@@ -30,7 +30,8 @@ HDRS		= Base.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		NcgmWorkstation.h NcgmWorkstationP.h NresDB.h ResourcesP.h \
 		Segments.h TextItem.h TextItemP.h TickMark.h TickMarkP.h \
 		Title.h TitleP.h TransObj.h TransObjI.h TransObjP.h \
-		Transform.h TransformP.h VarArg.h View.h ViewI.h ViewP.h \
+		Transform.h TransformP.h TransformI.h VarArg.h \
+		View.h ViewI.h ViewP.h \
 		Workstation.h WorkstationI.h WorkstationP.h XWorkstation.h \
 		XWorkstationP.h XyPlot.h XyPlotP.h defs.h hluutil.h hlu.h \
 		hluP.h DataComm.h DataCommP.h DataCommF.h DataItem.h \

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.22 1995-01-24 01:25:15 boote Exp $
+ *      $Id: Workstation.c,v 1.23 1995-01-26 02:53:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -45,6 +45,7 @@
 #include <ncarg/hlu/WorkstationP.h>
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/ErrorI.h>
+#include <ncarg/hlu/TransformI.h>
 
 /*
 * ------------> NEED TO set up default colormap to place in default resource 
@@ -1436,7 +1437,8 @@ DrawChildren
 	if(!children)
 		return NhlNOERROR;
 
-	ret = NhlDraw(children->pid);
+	if(!_NhlIsOverlayMember(children->pid))
+		ret = NhlDraw(children->pid);
 
 	ret1 = DrawChildren(children->next);
 

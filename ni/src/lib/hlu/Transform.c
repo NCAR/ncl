@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.12 1994-12-16 20:04:54 boote Exp $
+ *      $Id: Transform.c,v 1.13 1995-01-26 02:53:50 boote Exp $
  */
 /************************************************************************
 *									*
@@ -599,4 +599,45 @@ static NhlErrorTypes TransformNDCPolyline
 	}
 
 	return MIN(ret,subret);
+}
+
+/*
+ * Function:	_NhlIsOverlayMember
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlBoolean
+_NhlIsOverlayMember
+#if	NhlNeedProto
+(
+	int	pid
+)
+#else
+(pid)
+	int	pid;
+#endif
+{
+	NhlLayer		l = _NhlGetLayer(pid);
+	NhlTransformLayer	tl = NULL;
+
+	if(!l)
+		return False;
+
+	if(!_NhlIsTransform(l))
+		return False;
+
+	tl = (NhlTransformLayer)l;
+
+	if(tl->trans.overlay_status == _tfCurrentOverlayMember)
+		return True;
+
+	return False;
 }

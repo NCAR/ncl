@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformP.h,v 1.8 1994-10-27 01:36:59 dbrown Exp $
+ *      $Id: TransformP.h,v 1.9 1995-01-26 02:53:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -29,7 +29,7 @@
 #include <ncarg/hlu/ViewP.h>
 #include <ncarg/hlu/OverlayI.h>
 #include <ncarg/hlu/TransObjI.h>
-#include <ncarg/hlu/Transform.h>
+#include <ncarg/hlu/TransformI.h>
 
 #define NhlNtfOverlayObject	".tfOverlayObject"
 #define NhlCtfOverlayObject	".TfOverlayObject"
