@@ -1,5 +1,5 @@
 /*
- *	$Id: sgiraster.c,v 1.5 1993-01-17 06:51:57 don Exp $
+ *	$Id: sgiraster.c,v 1.6 1993-05-11 18:49:26 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -665,18 +665,26 @@ SGIClose(ras)
 		}
 	}
 
-	if (ras->data  != (unsigned char *) NULL) ras_free( (char *) ras->data);
-	if (ras->red   != (unsigned char *) NULL) ras_free( (char *) ras->red);
-	if (ras->green != (unsigned char *) NULL) ras_free( (char *) ras->green);
+	if (ras->data  != (unsigned char *)NULL) ras_free( (char *) ras->data);
+	if (ras->red   != (unsigned char *)NULL) ras_free( (char *) ras->red);
+	if (ras->green != (unsigned char *)NULL) ras_free( (char *) ras->green);
 	if (ras->blue  != (unsigned char *) NULL) ras_free( (char *) ras->blue);
 
 	/* Free up file-dependent memory. */
 
 	dep = (SGIInfo *) ras->dep;
 
-	if (dep->rowstart != (unsigned long *)NULL) ras_free((void *)dep->rowstart);
-	if (dep->rowsize  != (long *) NULL)	  ras_free( (void *) dep->rowsize);
-	if (ras->dep      !=  (char *) NULL)      ras_free( (char *) ras->dep);
+	if (dep->rowstart != (unsigned long *)NULL)
+		ras_free((void *)dep->rowstart);
+
+	if(dep->rowsize  != (long *) NULL) {
+		ras_free( (void *) dep->rowsize);
+	}
+
+	if (ras->dep != (char *) NULL) {
+		ras_free( (char *) ras->dep);
+	}
+
 	return(RAS_OK);
 }
 

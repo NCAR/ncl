@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.19 1993-03-25 22:18:02 haley Exp $
+ *	$Id: sunraster.c,v 1.20 1993-05-11 18:49:29 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -186,20 +186,34 @@ SunWrite(ras)
 	Raster	*ras;
 {
 	SunInfo		*dep;
+	static SunInfo	*swapbuf = (SunInfo *) NULL;
 	int		nb;
 	int		y;
 	unsigned char	*p;
 	unsigned long	swaptest = 1;
 
-	dep = (SunInfo *) ras->dep;
-
 	/* Write the header, swapping bytes if necessary. */
 
-	if (*(char *) &swaptest)
-		_swaplong((char *) dep, SUN_HEADER_SIZE);
+	if (*(char *) &swaptest) {
+		if (swapbuf == (SunInfo *) NULL) {
+			swapbuf = (SunInfo *) ras_calloc(sizeof(SunInfo), 1);
+			if (swapbuf == (SunInfo *) NULL) {
+				(void) ESprintf(errno,
+					"SunWrite(\"%s\",...)\n",
+					ras->name);
+				return(RAS_ERROR);
+			}
+		}
+		(void)bcopy((Voidptr)ras->dep,(Voidptr)swapbuf,sizeof(SunInfo));
+		_swaplong((char *) swapbuf, sizeof(SunInfo));
+		dep = swapbuf;
+	}
+	else {
+		dep = (SunInfo *) ras->dep;
+	}
 
-	nb = write(ras->fd, (char *) ras->dep, SUN_HEADER_SIZE);
-	if (nb != SUN_HEADER_SIZE) return(RAS_EOF);
+	nb = write(ras->fd, (char *) dep, sizeof(SunInfo));
+	if (nb != sizeof(SunInfo)) return(RAS_EOF);
 
 	/* Write the color table. */
 

@@ -1,4 +1,4 @@
-/* $Id: avsraster.c,v 1.9 1993-01-17 06:51:35 don Exp $ */
+/* $Id: avsraster.c,v 1.10 1993-05-11 18:49:25 haley Exp $ */
 
 /***********************************************************************
 *                                                                      *
@@ -77,7 +77,7 @@ AVSOpen(name)
 	ras->name = (char *) ras_calloc((unsigned) (strlen(name)+1), 1);
 	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) ras_calloc((unsigned) (strlen(FormatName) + 1), 1);
+	ras->format = (char *)ras_calloc((unsigned)(strlen(FormatName)+1),1);
 	(void) strcpy(ras->format, FormatName);
 
 	(void) AVSSetFunctions(ras);
@@ -132,7 +132,7 @@ AVSRead(ras)
 	if (ras->data == (unsigned char *) NULL) {
 		image_size = ras->nx * ras->ny * 3;
 
-		ras->data = (unsigned char *) ras_calloc( (unsigned) image_size, 1);
+		ras->data = (unsigned char *)ras_calloc((unsigned)image_size,1);
 
 		if (ras->data == (unsigned char *) NULL) {
 			(void) ESprintf(errno, "");
@@ -140,7 +140,7 @@ AVSRead(ras)
 		}
 	}
 
-	/* We'll want to discard the alpha channel.  */
+	/* The ALPHA channel is discarded. */
 
 	if (tmpbuf == (unsigned char *) NULL) {
 		tmplen = ras->nx * ras->ny * 4;
@@ -216,11 +216,11 @@ AVSOpenWrite(name, nx, ny, comment, encoding)
 	ras->name = (char *) ras_calloc((unsigned) (strlen(name) + 1), 1);
 	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) ras_calloc((unsigned) (strlen(FormatName) + 1), 1);
+	ras->format = (char *) ras_calloc((unsigned)(strlen(FormatName)+1), 1);
 	(void) strcpy(ras->format, FormatName);
 
 	if (comment != (char *) NULL) {
-		ras->text = (char *) ras_calloc((unsigned) (strlen(comment) + 1),1);
+		ras->text = (char *)ras_calloc((unsigned)(strlen(comment)+1),1);
 		(void) strcpy(ras->text, comment);
 	}
 	else {
@@ -235,7 +235,7 @@ AVSOpenWrite(name, nx, ny, comment, encoding)
 	ras->red	= (unsigned char *) NULL;
 	ras->green	= (unsigned char *) NULL;
 	ras->blue	= (unsigned char *) NULL;
-	ras->data	= (unsigned char *) ras_calloc((unsigned) ras->length, 1);
+	ras->data	= (unsigned char *) ras_calloc((unsigned)ras->length,1);
 
 	dep->unused1	= 0;
 	dep->nx		= nx;
@@ -252,20 +252,35 @@ AVSWrite(ras)
 	Raster	*ras;
 {
 	AVSInfo			*dep;
+	static AVSInfo		*swapbuf = (AVSInfo *) NULL;
 	int			nb;
 	int			x, y;
 	unsigned long		swaptest = 1;
 	static unsigned char	*ptmp, *tmpbuf = (unsigned char *) NULL;
 	static unsigned int	tmplen = 0;
 
-	dep = (AVSInfo *) ras->dep;
-
 	/* Swap bytes if necessary. */
 
-	if (*(char *) &swaptest)
-		_swapshort((char *) dep, sizeof(AVSInfo));
+	if (*(char *) &swaptest) {
+		if (swapbuf == (AVSInfo *) NULL) {
+			swapbuf = (AVSInfo *) ras_calloc(sizeof(AVSInfo), 1);
+			if (swapbuf == (AVSInfo *) NULL) {
+				(void) ESprintf(errno,
+					"AVSWrite(\"%s\",...)\n",
+					ras->name);
+				return(RAS_ERROR);
+			}
+		}
+		(void) bcopy((Voidptr)ras->dep,(Voidptr) swapbuf,
+				sizeof(AVSInfo));
+		_swapshort((char *) swapbuf, sizeof(AVSInfo));
+		dep = swapbuf;
+	}
+	else {
+		dep = (AVSInfo *) ras->dep;
+	}
 
-	nb = write(ras->fd, (char *) ras->dep, sizeof(AVSInfo));
+	nb = write(ras->fd, (char *) dep, sizeof(AVSInfo));
 	if (nb != sizeof(AVSInfo)) return(RAS_EOF);
 
 	/* Massage the RGB structure into the AVS ARGB form */
