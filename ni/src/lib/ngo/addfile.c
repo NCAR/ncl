@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.3 1997-03-04 00:04:38 dbrown Exp $
+ *      $Id: addfile.c,v 1.4 1997-03-04 00:24:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1571,7 +1571,7 @@ static void ListTimeoutCB
                 ListUpOrDown(np->cur_list,1);
         }
 
-        np->list_timer_id = XtAppAddTimeOut(vcrp->go->go.x->app_con,
+        np->list_timer_id = XtAppAddTimeOut(go->go.x->app,
                                             100,ListTimeoutCB,go);
 }
 
@@ -1659,7 +1659,7 @@ static void VcrArmCB
         }
 
         np->list_timer_set = True;
-        np->list_timer_id = XtAppAddTimeOut(go->go.x->app_con,
+        np->list_timer_id = XtAppAddTimeOut(go->go.x->app,
                                             250,ListTimeoutCB,go);
                                             
 	return;
@@ -1859,7 +1859,7 @@ AddFileCreateWin
         Dimension	width1,width2;
         int		pos;
                 
-	XtAppAddActions(go->go.x->app_con,
+	XtAppAddActions(go->go.x->app,
                         addfileactions,NhlNumber(addfileactions));
 
 /*
