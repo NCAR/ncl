@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.6 2000-08-26 02:58:03 haley Exp $
+#	$Id: yMakefile,v 1.7 2000-08-26 03:01:05 haley Exp $
 #
 
 MYNAME	= enatgrid
