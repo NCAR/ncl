@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.12 1994-09-12 21:01:08 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.13 1994-09-14 00:32:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2428,7 +2428,7 @@ static NhlErrorTypes mpSetUpAreamap
 	NhlString	entry_name
 )
 #else
-(mp,amap_type,entry_name)
+(mp,aws,amap_type,entry_name)
         NhlMapPlotLayer mp;
 	NhlWorkspace	**aws;
 	int		amap_type;
