@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.15 1994-05-17 22:26:36 dbrown Exp $
+ *      $Id: hlu.c,v 1.16 1994-06-02 18:03:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -196,24 +196,8 @@ NhlFree
 		return(NhlNOERROR);
 
 	else{
-#if	defined(__sgi) || defined(_HPUX_SOURCE) || defined(__CLCC__) \
-	|| defined(GCC)
-
-		free(ptr);
+		(void)free(ptr);
 		return NhlNOERROR;
-#else
-		register int ret;
-
-		ret = free(ptr);
-
-		if(ret == 0){
-			NhlPError(NhlWARNING,errno,"Error in NhlFree");
-			return(NhlWARNING);
-		}
-		else{
-			return(NhlNOERROR);
-		}
-#endif
 	}
 }
 
