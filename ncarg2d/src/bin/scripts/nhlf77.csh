@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: nhlf77.csh,v 1.5 1995-05-17 17:13:46 haley Exp $
+#	$Id: nhlf77.csh,v 1.6 1997-01-30 15:23:45 haley Exp $
 #
 
 #*********************************************#
@@ -16,7 +16,7 @@ endif
 
 set xlibs = "SED_XLIB"
 set system   = "SED_SYSTEM_INCLUDE"
-set f77       = "SED_F77"
+set f77       = "SED_FC"
 set loadflags  = "SED_LDFFLAGS"
 set libdir   = `ncargpath SED_LIBDIR`
 set incdir   = `ncargpath SED_INCDIR`

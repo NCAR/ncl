@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargf77.csh,v 1.25 1995-09-18 19:34:02 haley Exp $
+#   $Id: ncargf77.csh,v 1.26 1997-01-30 15:23:44 haley Exp $
 #
 
 #*********************************************#
@@ -17,7 +17,7 @@ endif
 set syslibdir = "SED_LIBSEARCH"
 set xlib     = "SED_XLIB"
 set system   = "SED_SYSTEM_INCLUDE"
-set fortran  = "SED_F77"
+set fortran  = "SED_FC"
 set loadflags  = "SED_LDFLAGS"
 set libdir   = `ncargpath SED_LIBDIR`
 set ro       = "$libdir/SED_NCARGDIR/SED_ROBJDIR"
@@ -61,17 +61,17 @@ foreach arg ($argv)
         breaksw
 
     case "-smooth":
-        echo "Smooth f77 of NCAR Graphics"
+        echo "Smooth SED_FC of NCAR Graphics"
         set robjs = "$robjs $smooth"
         breaksw
 
     case "-super":
-        echo "Super f77 of NCAR Graphics"
+        echo "Super SED_FC of NCAR Graphics"
         set robjs = "$robjs $super"
         breaksw
 
     case "-quick":
-        echo "Quick f77 of NCAR Graphics"
+        echo "Quick SED_FC of NCAR Graphics"
         set robjs = "$robjs $quick"
         breaksw
 

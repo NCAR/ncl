@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.100 1996-12-12 15:06:18 haley Exp $
+#   $Id: ncargex.csh,v 1.101 1997-01-30 15:23:43 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -148,6 +148,7 @@ set cbivar_cex   = (c_cbex01)
 set cbivar_clist = ($cbivar_cex)
 
 set f_list = ($f_list $cbivar_flist)
+set c_list = ($c_list $cbivar_clist)
 
 #************************#
 #                        #
@@ -1138,7 +1139,7 @@ if ( `expr "$name" : "c_.*"`) then
 else
   set fprog
   set prog_type = "Fortran"
-  set comp_script = "ncargf77"
+  set comp_script = "SED_FCSCRIPT"
 endif
 
 #*************************************#
