@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.37 1995-03-27 21:10:55 ethan Exp $
+ *      $Id: Machine.c,v 1.38 1995-04-05 22:17:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1491,10 +1491,11 @@ if(the_list != NULL) {
 * size of target dimension and be partially filled in with missing values 
 * <-------
 */
-				
+/*	
 					if((the_list->the_elements[i].var_ptr != NULL)&&(anst_var->obj.id != the_list->the_elements[i].var_ptr->obj.id)) {
 						_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
 					}
+*/
 
 					value_ref_count = _NclGetObjRefCount(data.u.data_var->var.thevalue_id);
 

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclType.c.sed,v 1.3 1995-03-28 00:05:02 ethan Exp $
+ *      $Id: NclType.c.sed,v 1.4 1995-04-05 22:17:20 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,7 @@
 #include "NclTypeDATATYPE.h"
 #include <math.h>
 #include "NclMultiDValData.h"
+#include "DataSupport.h"
 DSPECIFIC
 REPLACE
 

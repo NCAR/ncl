@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.36 1995-03-25 00:58:46 ethan Exp $
+ *      $Id: Execute.c,v 1.37 1995-04-05 22:17:04 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2089,6 +2089,9 @@ NclExecuteReturnStatus _NclExecute
                                                         		estatus = _NclPush(data);
                                                 		}
 							} else if(estatus != NhlFATAL) {
+								argsym = pfinfo->theargs[arg_num].arg_sym;
+								_NclAddObjToParamList((NclObj)data.u.data_obj,arg_num);
+
                                                        		estatus = _NclPush(data);
 							}
 						}

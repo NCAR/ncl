@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.6 1995-04-01 00:54:35 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.7 1995-04-05 22:17:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,7 @@ extern "C" {
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/PlotManager.h>
+#include <ncarg/hlu/Workstation.h>
 #include <ncarg/ncargC.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -1493,8 +1494,8 @@ NhlErrorTypes _Nclidsfft
 		x_coord_md = _NclCreateMultiDVal(NULL,NULL,Ncl_OneDValCoordData,0,x_coord,NULL,1,&(dims[0]),TEMPORARY,NULL,(NclTypeClass)nclTypefloatClass);
 		y_coord_md = _NclCreateMultiDVal(NULL,NULL,Ncl_OneDValCoordData,0,y_coord,NULL,1,&(dims[1]),TEMPORARY,NULL,(NclTypeClass)nclTypefloatClass);
 
-		x_coord_var = (NclVar)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,x_coord_md,&(dim_info[0]),NULL,NULL,COORD,"x",TEMPORARY);
-		y_coord_var = (NclVar)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,y_coord_md,&(dim_info[1]),NULL,NULL,COORD,"y",TEMPORARY);
+		x_coord_var = (NclVar)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,x_coord_md,&(dim_info[0]),-1,NULL,COORD,"x",TEMPORARY);
+		y_coord_var = (NclVar)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,y_coord_md,&(dim_info[1]),-1,NULL,COORD,"y",TEMPORARY);
 		ids[0] = x_coord_var->obj.id;
 		ids[1] = y_coord_var->obj.id;
 		tmp_var = _NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,tmp_md,dim_info,-1,ids,RETURNVAR,NULL,TEMPORARY);
@@ -1658,7 +1659,7 @@ NhlErrorTypes _NclIcbinread
 	int i;
 	void *tmp_ptr;
 	struct stat buf;
-	int fd;
+	int fd = -1;
 	int totalsize = 0;
 	int n;
 	char *step = NULL;
@@ -1762,7 +1763,7 @@ NhlErrorTypes _NclIcbinread
 		step = step + totalsize % buf.st_blksize;
 
 		while((int)(step - (char*)tmp_ptr) < totalsize) {
-			memcpy(step,&(thetype->type_class.default_mis),thetype->type_class.size);
+			memcpy(step,(char*)&(thetype->type_class.default_mis),thetype->type_class.size);
 			step += thetype->type_class.size;
 		}
 		data_out.kind = NclStk_VAL;
@@ -1796,7 +1797,7 @@ NhlErrorTypes _NclIfbinread
 	int i;
 	void *tmp_ptr;
 	struct stat buf;
-	int fd;
+	int fd = -1;
 	int totalsize = 0;
 	int n;
 	char *step = NULL;
@@ -1962,7 +1963,7 @@ NhlErrorTypes _NclIcbinwrite
 	int i;
 	void *tmp_ptr;
 	struct stat buf;
-	int fd;
+	int fd = -1;
 	int totalsize = 0;
 	int n;
 	char *step = NULL;
@@ -2036,7 +2037,7 @@ NhlErrorTypes _NclIfbinwrite
 	int i;
 	void *tmp_ptr;
 	struct stat buf;
-	int fd;
+	int fd = -1;
 	int totalsize = 0;
 	int n;
 	char *step = NULL;

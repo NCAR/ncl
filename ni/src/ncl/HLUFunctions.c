@@ -3,6 +3,8 @@
 #include <ncarg/hlu/View.h>
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/Workstation.h>
+#include <ncarg/hlu/PlotManager.h>
+#include <ncarg/hlu/DataComm.h>
 #include "defs.h"
 #include "Symbol.h"
 
@@ -164,7 +166,7 @@ NhlErrorTypes _NclISetColor
 		&n_dims,
 		dimsizes,
 		&missing,
-		&has_missing,
+		&has_missing_c,
 		&type,
 		0);
 	for(i = 0; i < n_dims; i++) {
@@ -471,7 +473,7 @@ NhlErrorTypes _NclIFreeColor
 		&n_dims,
 		dimsizes,
 		&missing,
-		&has_missing,
+		&has_missing_c,
 		&type,
 		0);
 	for(i = 0; i < n_dims; i++) {
@@ -556,7 +558,7 @@ NhlErrorTypes _NclIIsAllocatedColor
 		&n_dims,
 		dimsizes,
 		&missing,
-		&has_missing,
+		&has_missing_c,
 		&type,
 		0);
 	for(i = 0; i < n_dims; i++) {
@@ -894,6 +896,7 @@ NhlErrorTypes _NclIRemoveData
 			}
 		}
 	}
+	return(NhlNOERROR);
 }
 NhlErrorTypes _NclIRemoveOverlay
 #if	NhlNeedProto
@@ -1293,7 +1296,7 @@ NhlErrorTypes _NclIDataPolyline
 	x = (float*)NclGetArgValue(
 			1,
 			nargs,
-			NULL,
+			&n_dims1,
 			dimsizes1,
 			&missing1,
 			&has_missing1,
@@ -1303,7 +1306,7 @@ NhlErrorTypes _NclIDataPolyline
 	y = (float*)NclGetArgValue(
 			2,
 			nargs,
-			NULL,
+			&n_dims2,
 			dimsizes2,
 			&missing2,
 			&has_missing2,
@@ -1334,14 +1337,14 @@ NhlErrorTypes _NclIDataPolyline
 	if(has_missing1){
 		for( i = 0; i < n_dims1; i++) {
 			if(x[i] == missing1.floatval) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: mising value detected,  x and y parameters must not contain any missing values");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: missing value detected,  x and y parameters must not contain any missing values");
 			}
 		}
 	}
 	if(has_missing2){
 		for( i = 0; i < n_dims2; i++) {
 			if(y[i] == missing2.floatval) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: mising value detected,  x and y parameters must not contain any missing values");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: missing value detected,  x and y parameters must not contain any missing values");
 			}
 		}
 	}
@@ -1387,7 +1390,7 @@ NhlErrorTypes _NclINDCPolyline
 	x = (float*)NclGetArgValue(
 			1,
 			nargs,
-			NULL,
+			&n_dims1,
 			dimsizes1,
 			&missing1,
 			&has_missing1,
@@ -1397,7 +1400,7 @@ NhlErrorTypes _NclINDCPolyline
 	y = (float*)NclGetArgValue(
 			2,
 			nargs,
-			NULL,
+			&n_dims2,
 			dimsizes2,
 			&missing2,
 			&has_missing2,
@@ -1428,14 +1431,14 @@ NhlErrorTypes _NclINDCPolyline
 	if(has_missing1){
 		for( i = 0; i < n_dims1; i++) {
 			if(x[i] == missing1.floatval) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: mising value detected,  x and y parameters must not contain any missing values");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: missing value detected,  x and y parameters must not contain any missing values");
 			}
 		}
 	}
 	if(has_missing2){
 		for( i = 0; i < n_dims2; i++) {
 			if(y[i] == missing2.floatval) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: mising value detected,  x and y parameters must not contain any missing values");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"DataPolyLine: missing value detected,  x and y parameters must not contain any missing values");
 			}
 		}
 	}

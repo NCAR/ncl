@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.9 1995-02-04 01:41:36 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.10 1995-04-05 22:17:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -633,7 +633,7 @@ static NhlErrorTypes MultiDVal_s_WriteSection
 * This selection record applys to the target record and it represents a 
 * mapping from the value object into target. 
 */
-	NclSelection *sel_ptr = sel->selection;
+	NclSelection *sel_ptr = NULL;
 	void *val;
 	int i,k,to;
 
@@ -676,6 +676,20 @@ static NhlErrorTypes MultiDVal_s_WriteSection
 		chckmiss = 0;
 	}
 	el_size = target_md->multidval.type->type_class.size;
+	if(sel != NULL) {
+		sel_ptr = sel->selection;
+	} else {
+		if(target_md->multidval.totalsize == value_md->multidval.totalsize) {
+			memcpy(target_md->multidval.val,value_md->multidval.val,value_md->multidval.totalsize);
+                        if(chckmiss) {
+                                _Nclreset_mis(target_md->multidval.type,target_md->multidval.val,&value_md->multidval.missing_value.value,&target_md->multidval.missing_value.value,target_md->multidval.totalelements);
+                        }
+                        return(NhlNOERROR);
+                } else {
+			return(NhlFATAL);
+                }
+        }
+
 
 	for(i = 0 ; i < n_dims_target; i++) {
 		switch(sel_ptr->sel_type) {
