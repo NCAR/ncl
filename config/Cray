@@ -41,7 +41,7 @@ COPT            = -h noopt
 CMISC           = -DUSG
 CFLAGS          = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
                   $(FLOAT_OPT) $(XPATH) $(VDEFINE)
-LD_CFLAGS       = -Wl,-D,force=off $(CDEBUG)
+LD_CFLAGS       = -d FORCE=OFF $(CDEBUG)
 CPP             = /lib/cpp
 FCPP            = $(NCARG)/utils/fcpp $(CPP)
 F77             = cf77
@@ -51,7 +51,7 @@ FOPT            =
 FMISC           =
 FFLAGS          = $(ARCH) $(FDEFINES) $(FDEBUG) $(FOPT) $(FMISC)\
                   $(FLOAT_OPT)
-LD_FFLAGS       = -Wl,-D,force=off $(FDEBUG)
+LD_FFLAGS       = -Wl"-D FORCE=OFF $(FDEBUG)"
 LD              = ld
 LD_REL          = $(NCARG)/utils/ldrel
 AR              = bld
