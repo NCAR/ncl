@@ -1,5 +1,5 @@
 /*
- *	$Id: raster.c,v 1.6 1992-02-12 11:31:42 clyne Exp $
+ *	$Id: raster.c,v 1.7 1992-02-12 11:34:32 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -217,7 +217,7 @@ RasterOpen(name, format)
 {
 	Raster	*ras = (Raster *) NULL;
 	int	i;
-	int	j;
+	int	j;	/* added to test cvs	*/
 
 	if (name == (char *) NULL) {
 		(void) RasterSetError(RAS_E_NULL_NAME);
