@@ -1,5 +1,5 @@
 /*
- *      $Id: app.h,v 1.1 1996-10-10 18:55:18 boote Exp $
+ *      $Id: app.h,v 1.2 1996-10-16 16:21:16 boote Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,8 @@
 #define NgCappClass			"ngAppClass"
 #define NgNappAppId			"ngappAppId"
 #define NgCappAppId			"ngAppAppId"
+#define	NgNappNclState			"ngappNclState"
+#define	NgCappNclState			"NgAppNclState"
 
 extern NhlClass NgappMgrClass;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: ncledit.c,v 1.1 1996-10-10 18:55:22 boote Exp $
+ *      $Id: ncledit.c,v 1.2 1996-10-16 16:21:21 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 #include <ncarg/ngo/ncleditP.h>
 #include <ncarg/ngo/nclstate.h>
 #include <ncarg/ngo/xutil.h>
+#include <ncarg/ngo/load.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Form.h>
@@ -46,9 +47,6 @@ static char ERRSTR[] = "Error!";
 
 #define	Oset(field)	NhlOffset(NgNclEditRec,ncledit.field)
 static NhlResource resources[] = {
-	{NgNNclState,NgCNclState,NhlTInteger,sizeof(int),
-		Oset(nsid),NhlTImmediate,_NhlUSET((NhlPointer)NhlDEFAULT_APP),
-		_NhlRES_CONLY,NULL},
 	{NgNneResetWarning,NgCneResetWarning,NhlTString,sizeof(NhlString),
 		Oset(rmsg),NhlTImmediate,_NhlUSET((NhlPointer)RSTSTR),
 		_NhlRES_RONLY,NULL},
@@ -115,6 +113,94 @@ NgNclEditClassRec NgnclEditClassRec = {
 
 NhlClass NgnclEditClass = (NhlClass)&NgnclEditClassRec;
 
+static void
+loadScript
+(
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+)
+{
+	char		func[] = "loadScript";
+	int		goid = NhlDEFAULT_APP;
+	NgNclEdit	ncl = NULL;
+
+	goid = NgGOWidgetToGoId(w);
+	if(goid == NhlDEFAULT_APP){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid Widget",func));
+		return;
+	}
+
+	if(*num_params > 1){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"%s:wrong number of params",func));
+		return;
+	}
+	else if(*num_params == 1){
+		int		appmgr = NhlDEFAULT_APP;
+		int		nclstate = NhlDEFAULT_APP;
+		struct stat	buf;
+		char		line[512];
+
+		if(strlen(params[0]) > (sizeof(line) - 9)){
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"%s:parameter too long:%s",func,params[0]));
+			return;
+		}
+		NhlVAGetValues(goid,
+			_NhlNguiData,	&appmgr,
+			NULL);
+		NhlVAGetValues(appmgr,
+			NgNappNclState,	&nclstate,
+			NULL);
+
+		if(!NhlIsClass(nclstate,NgnclStateClass)){
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"%s:invalid nclstate obj",func));
+			return;
+		}
+
+		/*
+		 * Check to see if file exists and is text...
+		 */
+
+		if(stat(params[0],&buf) != 0){
+			NHLPERROR((NhlFATAL,errno,"%s:unable to access file %s",
+							func,params[0]));
+			return;
+		}
+		/*
+		 * Submit it to nclstate.
+		 */
+		sprintf(line,"load \"%s\"\n",params[0]);
+		(void)NgNclSubmitBlock(nclstate,line);
+
+		return;
+	}
+
+	ncl = (NgNclEdit)_NhlGetLayer(goid);
+	if(!ncl || !_NhlIsClass((NhlLayer)ncl,NgnclEditClass)){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid window",func));
+		return;
+	}
+
+	/*
+	 * Popup load file selection box.
+	 */
+	if(ncl->ncledit.load == NhlDEFAULT_APP){
+		NhlVACreate(&ncl->ncledit.load,"load",NgloadClass,goid,
+			NULL);
+	}
+	NgGOPopup(ncl->ncledit.load);
+
+	return;
+}
+
+static XtActionsRec ncl_act[] = {
+	{"loadScript", loadScript,},
+};
+
 static NhlErrorTypes
 NEInitialize
 (
@@ -125,15 +211,25 @@ NEInitialize
 	int		nargs
 )
 {
-	char		func[] = "NEInitialize";
-	NgNclEdit	ncl = (NgNclEdit)new;
-	NgNclEditPart	*np = &((NgNclEdit)new)->ncledit;
-	NgNclEditPart	*rp = &((NgNclEdit)req)->ncledit;
+	static NhlBoolean	init = True;
+	char			func[] = "NEInitialize";
+	NgNclEdit		ncl = (NgNclEdit)new;
+	NgNclEditPart		*np = &((NgNclEdit)new)->ncledit;
+	NgNclEditPart		*rp = &((NgNclEdit)req)->ncledit;
 
+	np->nsid = NhlDEFAULT_APP;
+	NhlVAGetValues(ncl->go.appmgr,
+		NgNappNclState,	&np->nsid,
+		NULL);
 	if(!NhlIsClass(np->nsid,NgnclStateClass)){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Invalid nclstate resource",
 									func));
 		return NhlFATAL;
+	}
+
+	if(init){
+		init = False;
+		XtAppAddActions(ncl->go.x->app_con,ncl_act,NhlNumber(ncl_act));
 	}
 
 	np->rstr = NgXAppCreateXmString(ncl->go.appmgr,np->rmsg);
@@ -145,11 +241,13 @@ NEInitialize
 
 	np->edit = False;
 	np->my_cmd = False;
-	np->mem = NULL;
+	np->print = False;
 	np->more_cmds = NULL;
 	np->prompt_pos = np->submit_pos = np->reset_pos = 0;
 	np->line = 0;
 	np->my_focus = False;
+
+	np->load = NhlDEFAULT_APP;
 
 	return NhlNOERROR;
 }
@@ -174,10 +272,13 @@ NEDestroy
 	np->nstr = NULL;
 	np->cstr = NULL;
 
-	if(np->mem){
-		NhlFree(np->mem);
-		np->mem = NULL;
-		np->more_cmds = NULL;
+	if(np->more_cmds){
+		NhlFree(np->more_cmds);
+	}
+
+	if(np->load != NhlDEFAULT_APP){
+		NhlDestroy(np->load);
+		np->load = NhlDEFAULT_APP;
 	}
 
 	return NhlNOERROR;
@@ -205,7 +306,7 @@ CheckInput
 	NgNclEditPart	*np = &ncl->ncledit;
 	XmTextVerifyPtr	ver = (XmTextVerifyPtr)cbdata;
 	char		*nl,*ptr;
-	int		oset;
+	int		oset,len;
 
 	if(np->edit)
 		return;
@@ -255,28 +356,33 @@ CheckInput
 	if(!nl)
 		return;
 
-	np->mem = NhlMalloc(sizeof(char)*(ver->text->length + 2));
-	if(!np->mem){
-		NHLPERROR((NhlFATAL,ENOMEM,NULL));
-		ver->doit = False;
-		return;
-	}
 	/*
 	 * take first line of input and send it through
 	 */
 	oset = nl - ver->text->ptr + 1;
-	strncpy(np->mem,ver->text->ptr,oset);
-	np->mem[oset] = '\0';
-	ver->text->ptr = np->mem;
+	ptr = NhlMalloc(sizeof(char)*(oset + 1));
+	if(!ptr){
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		ver->doit = False;
+		return;
+	}
+	strncpy(ptr,ver->text->ptr,oset);
+	ptr[oset] = '\0';
+	ver->text->ptr = ptr;
+	len = ver->text->length - oset;
 	ver->text->length = oset;
 
 	/*
 	 * take remaining input and put it in ncledit structure for processing
 	 * during activate() action.
 	 */
-	nl++;oset++;
-	strcpy(&np->mem[oset],nl);
-	np->more_cmds = &np->mem[oset];
+	np->more_cmds = NhlMalloc(sizeof(char)*(len + 1));
+	if(!np->more_cmds){
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return;
+	}
+	nl++;
+	strcpy(np->more_cmds,nl);
 
 	return;
 }
@@ -300,9 +406,13 @@ ActivateCB
 
 	if(np->edit)
 		return;
+	np->edit = True;
 
 	len = XmTextGetLastPosition(w) - np->submit_pos;
-	if(len < 1) return;
+	if(len < 1){
+		np->edit = False;
+		return;
+	}
 
 	cmd_buff = _NgStackAlloc(len + 1,cmd_stack);
 	if(XmTextGetSubstring(w,np->submit_pos,len,len+1,cmd_buff)
@@ -320,7 +430,7 @@ ActivateCB
 		nl = strchr(++nl,'\n');
 
 	if(!nl){
-		if(np->mem){
+		if(np->more_cmds){
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 						"%s:NclEdit BAD STATE!",func));
 		}
@@ -332,7 +442,6 @@ ActivateCB
 		goto FREE_MEM;
 	}
 
-	np->edit = True;
 	np->my_cmd = True;
 
 	if(!NgNclSubmitLine(np->nsid,cmd_buff,False))
@@ -363,12 +472,10 @@ ActivateCB
 
 
 FREE_MEM:
+	_NgStackFree(cmd_buff,cmd_stack);
 	np->edit = False;
 	np->my_cmd = False;
-	_NgStackFree(cmd_buff,cmd_stack);
-	if(np->mem) NhlFree(np->mem);
-	np->mem = NULL;
-	np->more_cmds = NULL;
+	if(np->more_cmds) NhlFree(np->more_cmds);
 
 	return;
 }
@@ -410,6 +517,7 @@ OutputCB
 	edit = np->edit;
 	np->edit = True;
 
+	np->print = True;
 	XmTextInsert(np->text,XmTextGetLastPosition(np->text),cbdata.strval);
 	np->edit = edit;
 
@@ -463,10 +571,23 @@ PromptCB
 	edit = np->edit;
 	np->edit = True;
 
-	if(XmTextGetSubstring(np->text,pos-1,1,2,buff) != XmCOPY_SUCCEEDED){
+	if(XmTextGetSubstring(np->text,pos-2,2,3,buff) != XmCOPY_SUCCEEDED){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Can't get text.",func));
 	}
-	else if(*buff != '\n')
+	else if(np->print){
+		/*
+		 * If NclOutput was called put an extra blank line in before
+		 * prompt.
+		 */
+		np->print = False;
+		if(buff[1] != '\n'){
+			XmTextInsert(np->text,pos,"\n\n");
+			pos += 2;
+		}
+		else if(buff[0] != '\n')
+			XmTextInsert(np->text,pos++,"\n");
+	}
+	else if(buff[1] != '\n')
 		XmTextInsert(np->text,pos++,"\n");
 
 	np->prompt_pos = pos;
@@ -657,7 +778,6 @@ NECreateWin
 		XmNtopAttachment,	XmATTACH_WIDGET,
 		XmNtopWidget,		slabel,
 		XmNrightAttachment,	XmATTACH_POSITION,
-		XmNrightPosition,	25,
 		NULL);
 
 	holabel = XtVaCreateManagedWidget("holabel",xmLabelWidgetClass,hoframe,
@@ -674,9 +794,7 @@ NECreateWin
 		XmNtopWidget,		slabel,
 		XmNtopAttachment,	XmATTACH_WIDGET,
 		XmNleftAttachment,	XmATTACH_POSITION,
-		XmNleftPosition,	25,
 		XmNrightAttachment,	XmATTACH_POSITION,
-		XmNrightPosition,	50,
 		NULL);
 
 	vlabel = XtVaCreateManagedWidget("vlabel",xmLabelWidgetClass,vframe,
@@ -692,9 +810,7 @@ NECreateWin
 		XmNtopWidget,		slabel,
 		XmNtopAttachment,	XmATTACH_WIDGET,
 		XmNleftAttachment,	XmATTACH_POSITION,
-		XmNleftPosition,	50,
 		XmNrightAttachment,	XmATTACH_POSITION,
-		XmNrightPosition,	75,
 		NULL);
 
 	flabel = XtVaCreateManagedWidget("flabel",xmLabelWidgetClass,fframe,
@@ -710,7 +826,6 @@ NECreateWin
 		XmNtopWidget,		slabel,
 		XmNtopAttachment,	XmATTACH_WIDGET,
 		XmNleftAttachment,	XmATTACH_POSITION,
-		XmNleftPosition,	75,
 		NULL);
 
 	fulabel = XtVaCreateManagedWidget("fulabel",xmLabelWidgetClass,fuframe,

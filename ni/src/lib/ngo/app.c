@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.1 1996-10-10 18:55:17 boote Exp $
+ *      $Id: app.c,v 1.2 1996-10-16 16:21:15 boote Exp $
  */
 /************************************************************************
 *									*
@@ -30,7 +30,10 @@ static NhlResource resources[] = {
 		_NhlRES_CGONLY,(NhlFreeFunc)NhlFree},
 	{NgNappClass,NgCappClass,NhlTString,sizeof(NhlString),
 		Oset(app_class),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
-		_NhlRES_CGONLY,(NhlFreeFunc)NhlFree}
+		_NhlRES_CGONLY,(NhlFreeFunc)NhlFree},
+	{NgNappNclState,NgCappNclState,NhlTInteger,sizeof(int),Oset(nclstate),
+		NhlTImmediate,_NhlUSET((NhlPointer)NhlDEFAULT_APP),
+		_NhlRES_SGONLY,(NhlFreeFunc)NULL},
 
 };
 #undef	Oset
@@ -92,8 +95,6 @@ NgAppMgrClassRec NgappMgrClassRec = {
 };
 
 NhlClass NgappMgrClass = (NhlClass)&NgappMgrClassRec;
-
-NgAppMgr	appMgr = NULL;
 
 /*
  * Function:	AppMgrClassPartInitialize
@@ -191,7 +192,11 @@ AppMgrInitialize
 	app->active = NULL;
 
 	ac->app_class.num_mgrs++;
-	appMgr = (NgAppMgr)new;
+
+	_NhlAppSetDefGuiData((NhlPointer)new->base.id);
+	NhlVASetValues(new->base.appobj->base.id,
+		_NhlNguiData,	new->base.id,
+		NULL);
 
 	return NhlNOERROR;
 }
@@ -539,33 +544,6 @@ NgRemoveWorkProc
 	NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 			"%s:Unable to remove proc",func));
 	return;
-}
-
-/*
- * Function:	NgAppGetID
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-int
-NgAppGetID
-(
-	void
-)
-{
-	if(!appMgr){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can't find NgAppMgr???"));
-		return NhlFATAL;
-	}
-
-	return appMgr->base.id;
 }
 
 /*

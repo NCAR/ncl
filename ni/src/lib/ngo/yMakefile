@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.1 1996-10-10 18:55:33 boote Exp $
+#      $Id: yMakefile,v 1.2 1996-10-16 16:21:26 boote Exp $
 #
 #########################################################################
 #									#
@@ -27,9 +27,10 @@ HDRS		= ngoP.h ngo.h appP.h app.h nclstateP.h nclstate.h \
 SRCS		= ngo.c app.c nclstate.c $(XSRCS)
 OBJS		= ngo.o app.o nclstate.o $(XOBJS)
 
-XHDRS		= xappP.h xapp.h goP.h go.h ncleditP.h ncledit.h xutil.h
-XSRCS		= xapp.c go.c ncledit.c xutil.c
-XOBJS		= xapp.o go.o ncledit.o xutil.o
+XHDRS		= xappP.h xapp.h goP.h go.h ncleditP.h ncledit.h xutil.h \
+		loadP.h load.h
+XSRCS		= xapp.c go.c ncledit.c xutil.c load.c
+XOBJS		= xapp.o go.o ncledit.o xutil.o load.o
 
 
 BuildLibTarget($(MYNAME),$(OBJS))

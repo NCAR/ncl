@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstateP.h,v 1.1 1996-10-10 18:55:26 boote Exp $
+ *      $Id: nclstateP.h,v 1.2 1996-10-16 16:21:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,9 @@ typedef struct _NgNclStateRec *NgNclState;
 
 typedef struct _NgNclStatePart {
 /* required fields */
+	int		foo;
+
+/* internal data */
 	int		appmgr;
 
 /* submission state */

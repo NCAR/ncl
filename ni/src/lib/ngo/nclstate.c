@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.1 1996-10-10 18:55:24 boote Exp $
+ *      $Id: nclstate.c,v 1.2 1996-10-16 16:21:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,9 +32,9 @@
 
 #define	Oset(field)	NhlOffset(NgNclStateRec,nclstate.field)
 static NhlResource resources[] = {
-	{NgNAppMgr,NgCAppMgr,NhlTInteger,sizeof(int),
-		Oset(appmgr),NhlTImmediate,_NhlUSET((NhlPointer)NhlDEFAULT_APP),
-		_NhlRES_CGONLY,NULL}
+	{"no.res","no.res",NhlTInteger,sizeof(int),
+		Oset(foo),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
+		_NhlRES_NOACCESS,NULL},
 };
 
 static _NhlRawObjCB callbacks[] = {
@@ -692,6 +692,9 @@ NclOutput
 #if	defined(SunOS) && (MAJOR == 4)
 	len = strlen(buffer) + 1;
 #endif
+
+	if((len == 2) && !strcmp(buffer,"\n\n"))
+		buffer[1] = '\0';
 	cbdata.strval = buffer;
 	_NhlCallObjCallbacks((NhlLayer)ncl,NgCBnsOutput,dummy,cbdata);
 
@@ -754,11 +757,16 @@ NclStateInitialize
 	}
 	nsc->nclstate_class.num++;
 
-	if(!NhlIsClass(ns->appmgr,NgappMgrClass)){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Invalid appmgr resource",
-								func));
+	if(NhlIsClass((int)new->base.gui_data,NgappMgrClass))
+		ns->appmgr = (int)new->base.gui_data;
+	else{
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Invalid appmgr",func));
 		return NhlFATAL;
 	}
+
+	NhlVASetValues(ns->appmgr,
+		NgNappNclState,	new->base.id,
+		NULL);
 
 #ifdef	DEBUG
 	memset(&dummy,0,sizeof(NhlArgVal));

@@ -1,5 +1,5 @@
 /*
- *      $Id: goP.h,v 1.1 1996-10-10 18:55:22 boote Exp $
+ *      $Id: goP.h,v 1.2 1996-10-16 16:21:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,14 +33,13 @@ typedef struct _NgGOClassRec *NgGOClass;
 typedef struct _NgGORec *NgGO;
 
 typedef struct _NgGOPart {
-/* required fields */
-	int		appmgr;
-
 /* resources */
 	NhlString	title;
 	NhlBoolean	sensitive;
 
 /* private fields */
+	int		appmgr;
+
 	NhlBoolean	x_sensitive;
 	NhlBoolean	i_sensitive;
 	_NhlCB		appdestroy_cb;

@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.1 1996-10-10 18:55:20 boote Exp $
+ *      $Id: go.c,v 1.2 1996-10-16 16:21:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -35,9 +35,6 @@
 
 #define	Oset(field)	NhlOffset(NgGORec,go.field)
 static NhlResource resources[] = {
-	{NgNAppMgr,NgCAppMgr,NhlTInteger,sizeof(int),
-		Oset(appmgr),NhlTImmediate,_NhlUSET((NhlPointer)NhlDEFAULT_APP),
-		_NhlRES_CGONLY,NULL},
 	{NgNgoTitle,NgCgoTitle,NhlTString,sizeof(NhlString),
 		Oset(title),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
 		_NhlRES_RCONLY,NULL},
@@ -229,11 +226,16 @@ GOInitialize
 	NgGOClass		gc = (NgGOClass)lc;
 	NgGOPart		*go = &((NgGO)new)->go;
 	NgGOPart		*rgo = &((NgGO)req)->go;
+	NgGO			pgo;
 	NhlArgVal		dummy,udata;
 	NhlErrorTypes		ret = NhlNOERROR,lret;
 
-	if(!NhlIsClass(go->appmgr,NgappMgrClass)){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Invalid appmgr res",func));
+	go->subshell = _NhlIsClass(new->base.parent,NggOClass);
+
+	if(NhlIsClass((int)new->base.gui_data,NgappMgrClass))
+		go->appmgr = (int)new->base.gui_data;
+	else{
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Invalid appmgr",func));
 		return NhlFATAL;
 	}
 
@@ -272,7 +274,6 @@ GOInitialize
 
 	go->iowin = None;
 
-	go->subshell = _NhlIsClass(new->base.parent,NggOClass);
 	go->pup = True;
 	go->pshell = NULL;
 

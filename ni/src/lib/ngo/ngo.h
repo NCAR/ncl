@@ -1,5 +1,5 @@
 /*
- *      $Id: ngo.h,v 1.1 1996-10-10 18:55:27 boote Exp $
+ *      $Id: ngo.h,v 1.2 1996-10-16 16:21:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,14 +23,6 @@
 #define	_NG_NGO_H_
 
 #include <ncarg/hlu/hlu.h>
-
-/*
- * Global resources
- */
-#define	NgNAppMgr	"ngAppMgr"
-#define	NgCAppMgr	"NgAppMgr"
-#define	NgNNclState	"ngNclState"
-#define	NgCNclState	"NgNclState"
 
 #define	_NgStackAlloc(size,stack_array)	\
 		(((size) > sizeof(stack_array))	\

@@ -1,5 +1,5 @@
 /*
- *      $Id: xutil.c,v 1.1 1996-10-10 18:55:32 boote Exp $
+ *      $Id: xutil.c,v 1.2 1996-10-16 16:21:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -372,8 +372,14 @@ NgXListManage
 
 	list->nsid = nsid;
 	NhlVAGetValues(nsid,
-		NgNAppMgr,	&list->appmgr,
+		_NhlNguiData,	&list->appmgr,
 		NULL);
+
+	if(!NhlIsClass(list->appmgr,NgappMgrClass)){
+		NhlFree(list);
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Invalid appmgr",func));
+		return False;
+	}
 
 	list->xmlist = xmlist;
 	list->ltype = ltype;
