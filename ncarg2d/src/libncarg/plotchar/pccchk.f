@@ -1,5 +1,5 @@
 C
-C	$Id: pccchk.f,v 1.1.1.1 1992-04-17 22:32:20 ncargd Exp $
+C $Id: pccchk.f,v 1.2 1992-11-17 18:46:05 kennison Exp $
 C
 C
 C***********************************************************************
@@ -23,7 +23,7 @@ C   3 if neither of the two tests was successful.
 C
 C COMMON block declarations.
 C
-      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(300),IDPC(256),
+      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(8800),IDPC(256),
      +                IERU,INDA(789),INDL,INIT,IVCO,IVDU,NBPW,NPPW
       SAVE   /PCSVEM/
 C
@@ -38,13 +38,13 @@ C
 C
 C The correct digitization of the character '+'.
 C
-      DATA LCPC / -13,13,0,9,0,-9,-2048,0,-9,0,9,0,-2048,-2048 /
+      DATA LCPC / -13,13,0,9,0,-9,-2048,0,-9,0,9,0,-2048,0 /
 C
 C The correct digitization of the character defined by the octal number
 C 751.
 C
       DATA LCOC / -9,9,-5,39,-5,0,-5,-39,-2048,0,-4,39,-4,0,-4,-39,
-     +            -2048,0,-5,39,6,39,-2048,0,-5,-39,6,-39,-2048,-2048 /
+     +            -2048,0,-5,39,6,39,-2048,0,-5,-39,6,-39,-2048,0 /
 C
 C Initialize the error flags for the two tests.
 C
@@ -60,6 +60,8 @@ C
         IER1=1
       ELSE
         DO 101 I=1,14
+          IF (I.GE.4.AND.MOD(I,2).EQ.0.AND.RDGU(I-1).NE.-2048.)
+     +                                      RDGU(I)=RDGU(I)+1.5
           IF (RDGU(I).NE.REAL(LCPC(I))) THEN
             IER1=1
             GO TO 102
@@ -76,6 +78,8 @@ C
         IER2=2
       ELSE
         DO 103 I=1,30
+          IF (I.GE.4.AND.MOD(I,2).EQ.0.AND.RDGU(I-1).NE.-2048.)
+     +                                      RDGU(I)=RDGU(I)+1.5
           IF (RDGU(I).NE.REAL(LCOC(I))) THEN
             IER1=1
             GO TO 104

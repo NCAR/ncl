@@ -1,5 +1,5 @@
 C
-C	$Id: pcgetr.f,v 1.3 1992-09-04 20:46:14 ncargd Exp $
+C $Id: pcgetr.f,v 1.4 1992-11-17 18:46:37 kennison Exp $
 C
 C
 C ---------------------------------------------------------------------
@@ -13,22 +13,26 @@ C values of type REAL.
 C
 C COMMON block declarations.
 C
-      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),ICEN,IQUF,
-     +                ISCR,ITEF,JCOD,NFCC,SSIC,SSPR,SUBS,VPIC(3),
-     +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
-     +                YMUL(3)
+      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),ICEN,IOUC,
+     +                IOUF,
+     +                IQUF,ISHC,ISHF,ITEF,JCOD,NFCC,NFNT,SHDX,SHDY,
+     +                SIZA,SSIC,SSPR,SUBS,VPIC(3),WPIC(3),XBEG,XCEN,
+     +                XEND,XMUL(3),YBEG,YCEN,YEND,YMUL(3)
       SAVE   /PCPRMS/
 C
-      COMMON /PCPFMQ/ RHTW
+      COMMON /PCPFMQ/ IMAP,RHTW
       SAVE   /PCPFMQ/
 C
-      COMMON /PCPFFC/ NFNT
-      SAVE   /PCPFFC/
+C Declare the BLOCK DATA routine external to force it to load.
+C
+      EXTERNAL PCBLDA
 C
 C Get the selected parameter.
 C
       IF      (WHCH(1:2).EQ.'AS'.OR.WHCH(1:2).EQ.'as') THEN
         RVAL=ADDS
+      ELSE IF (WHCH(1:2).EQ.'BF'.OR.WHCH(1:2).EQ.'bf') THEN
+        CALL BZGETR ('FTL',RVAL)
       ELSE IF (WHCH(1:2).EQ.'CD'.OR.WHCH(1:2).EQ.'cd') THEN
         RVAL=REAL(JCOD)
       ELSE IF (WHCH(1:2).EQ.'CE'.OR.WHCH(1:2).EQ.'ce') THEN
@@ -61,6 +65,12 @@ C
         RVAL=VPIC(2)
       ELSE IF (WHCH(1:2).EQ.'IW'.OR.WHCH(1:2).EQ.'iw') THEN
         RVAL=WPIC(2)
+      ELSE IF (WHCH(1:2).EQ.'MA'.OR.WHCH(1:2).EQ.'ma') THEN
+        RVAL=REAL(IMAP)
+      ELSE IF (WHCH(1:2).EQ.'OC'.OR.WHCH(1:2).EQ.'oc') THEN
+        RVAL=REAL(IOUC)
+      ELSE IF (WHCH(1:2).EQ.'OF'.OR.WHCH(1:2).EQ.'of') THEN
+        RVAL=REAL(IOUF)
       ELSE IF (WHCH(1:2).EQ.'PH'.OR.WHCH(1:2).EQ.'ph') THEN
         RVAL=HPIC(1)
       ELSE IF (WHCH(1:2).EQ.'PS'.OR.WHCH(1:2).EQ.'ps') THEN
@@ -71,10 +81,18 @@ C
         RVAL=WPIC(1)
       ELSE IF (WHCH(1:2).EQ.'QU'.OR.WHCH(1:2).EQ.'qu') THEN
         RVAL=REAL(IQUF)
+      ELSE IF (WHCH(1:2).EQ.'SA'.OR.WHCH(1:2).EQ.'sa') THEN
+        RVAL=SIZA
       ELSE IF (WHCH(1:2).EQ.'SC'.OR.WHCH(1:2).EQ.'sc') THEN
-        RVAL=REAL(ISCR)
+        RVAL=REAL(ISHC)
+      ELSE IF (WHCH(1:2).EQ.'SF'.OR.WHCH(1:2).EQ.'sf') THEN
+        RVAL=REAL(ISHF)
       ELSE IF (WHCH(1:2).EQ.'SS'.OR.WHCH(1:2).EQ.'ss') THEN
         RVAL=SUBS
+      ELSE IF (WHCH(1:2).EQ.'SX'.OR.WHCH(1:2).EQ.'sx') THEN
+        RVAL=SHDX
+      ELSE IF (WHCH(1:2).EQ.'SY'.OR.WHCH(1:2).EQ.'sy') THEN
+        RVAL=SHDY
       ELSE IF (WHCH(1:2).EQ.'TE'.OR.WHCH(1:2).EQ.'te') THEN
         RVAL=REAL(ITEF)
       ELSE IF (WHCH(1:2).EQ.'XB'.OR.WHCH(1:2).EQ.'xb') THEN

@@ -1,5 +1,5 @@
 C
-C	$Id: pcmqlq.f,v 1.1.1.1 1992-04-17 22:32:21 ncargd Exp $
+C $Id: pcmqlq.f,v 1.2 1992-11-17 18:46:51 kennison Exp $
 C
 C
 C ---------------------------------------------------------------------
@@ -17,10 +17,11 @@ C
 C
 C COMMON block declarations.
 C
-      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),ICEN,IQUF,
-     +                ISCR,ITEF,JCOD,NFCC,SSIC,SSPR,SUBS,VPIC(3),
-     +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
-     +                YMUL(3)
+      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),ICEN,IOUC,
+     +                IOUF,
+     +                IQUF,ISHC,ISHF,ITEF,JCOD,NFCC,NFNT,SHDX,SHDY,
+     +                SIZA,SSIC,SSPR,SUBS,VPIC(3),WPIC(3),XBEG,XCEN,
+     +                XEND,XMUL(3),YBEG,YCEN,YEND,YMUL(3)
       SAVE   /PCPRMS/
 C
 C Call the appropriate routine.

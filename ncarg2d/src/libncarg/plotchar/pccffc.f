@@ -1,5 +1,5 @@
 C
-C       $Id: pccffc.f,v 1.3 1992-11-11 00:57:19 kennison Exp $
+C $Id: pccffc.f,v 1.4 1992-11-17 18:46:07 kennison Exp $
 C
 C
 C ---------------------------------------------------------------------
@@ -69,7 +69,7 @@ C The variable NFRL, if non-zero, defines the number of the font read
 C last.  Some other quantities need to be saved from call to call, as
 C well.
 C
-      SAVE NFRL,LSHX,LSHY,LSHP,MSKX,MSKY,MSKP,IFDG
+      SAVE NFRL,LSHX,LSHY,LSHP,MSKX,MSKY,MSKP,FDGE
 C
 C NFRL starts off zeroed.
 C
@@ -142,9 +142,9 @@ C Set a fudge factor which will make fonts 1-20 work better with the
 C PWRITX characters.
 C
         IF (NFNT.GE.1.AND.NFNT.LE.20) THEN
-          IFDG=1
+          FDGE=.5
         ELSE
-          IFDG=0
+          FDGE=0.
         END IF
 C
 C Set the variable NFRL to reflect the number of the font last read.
@@ -233,14 +233,20 @@ C
                 NDGU=NDGU+1
                 RDGU(NDGU)=-2048.
                 NDGU=NDGU+1
-                RDGU(NDGU)=-2048.
+                RDGU(NDGU)=0.
               END IF
               IF (NDGU.GE.LDGU) RETURN
               NDGU=NDGU+1
               RDGU(NDGU)=WMUL*(REAL(IXCD)-XCNT(INDX))
               NDGU=NDGU+1
-              RDGU(NDGU)=HMUL*REAL(IYCD-FNTHLF+IFDG)
+              RDGU(NDGU)=HMUL*(REAL(IYCD-FNTHLF)-FDGE)
   104       CONTINUE
+C
+            IF (NDGU.GE.LDGU) RETURN
+            NDGU=NDGU+1
+            RDGU(NDGU)=-2048.
+            NDGU=NDGU+1
+            RDGU(NDGU)=0.
 C
           END IF
 C

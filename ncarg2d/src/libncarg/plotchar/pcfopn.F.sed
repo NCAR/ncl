@@ -1,5 +1,5 @@
 C
-C   $Id: pcfopn.F.sed,v 1.4 1992-11-11 00:57:21 kennison Exp $
+C $Id: pcfopn.F.sed,v 1.5 1992-11-17 18:46:27 kennison Exp $
 C
       SUBROUTINE PCFOPN (IBNU,NFNT)
         CHARACTER*128 FILENM
@@ -11,7 +11,7 @@ C
                IF (FILENM(I:I).EQ.CHAR(0)) THEN
                  FILENM(I:I+9)='/pwritdata'
                  GO TO 104
-	       END IF
+               END IF
   101       CONTINUE
             GO TO 105
           ELSE
@@ -21,26 +21,24 @@ C
   102       CONTINUE
   103       PRINT * , 'PCFOPN - ',FILENM(1:LENEM-1)
             STOP
-	  END IF
+          END IF
 #if defined(ultrix) && defined(mips)
   104     OPEN (UNIT=IBNU,FILE=FILENM,STATUS='OLD',FORM='UNFORMATTED',
-     +                                               READONLY,ERR=105)
+     +                                   IOSTAT=IOST,READONLY,ERR=105)
 #else
   104     OPEN (UNIT=IBNU,FILE=FILENM,STATUS='OLD',FORM='UNFORMATTED',
-     +                                                        ERR=105)
+     +                                            IOSTAT=IOST,ERR=105)
 #endif
           REWIND IBNU
-        ELSE IF (NFNT.GE.1.AND.NFNT.LE.20) THEN
+        ELSE
           CALL BOFRED (IBNU,NFNT,IOST,ISTA)
           IF (ISTA.NE.0) THEN
              PRINT * , 'PCFOPN - ERROR OPENING FONT ',NFNT
              STOP
           END IF
-        ELSE
-          PRINT * , 'PCFOPN - REQUEST FOR UNAVAILBLE FONT ',NFNT
-          STOP
         END IF
         RETURN
   105   PRINT * , 'PCFOPN - ERROR OPENING PWRITX DATA FILE ',FILENM
+        PRINT * , 'PCFOPN - IOSTAT FROM OPEN STATEMENT IS ',IOST
         STOP
       END

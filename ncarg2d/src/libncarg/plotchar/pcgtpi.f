@@ -1,5 +1,5 @@
 C
-C       $Id: pcgtpi.f,v 1.2 1992-11-11 00:57:26 kennison Exp $
+C $Id: pcgtpi.f,v 1.3 1992-11-17 18:46:46 kennison Exp $
 C
 C
 C ---------------------------------------------------------------------
@@ -29,7 +29,7 @@ C   found.
 C
 C COMMON block declarations.
 C
-      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(300),IDPC(256),
+      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(8800),IDPC(256),
      +                IERU,INDA(789),INDL,INIT,IVCO,IVDU,NBPW,NPPW
       SAVE   /PCSVEM/
 C

@@ -1,15 +1,6 @@
 /*
- *	$Id: bofred.c.sed,v 1.3 1992-10-02 21:57:44 clyne Exp $
+ * $Id: bofred.c.sed,v 1.4 1992-11-17 18:45:55 kennison Exp $
  */
-/***********************************************************************
-*                                                                      *
-*                          Copyright (C)  1990                         *
-*            University Corporation for Atmospheric Research           *
-*                          All Rights Reserved                         *
-*                                                                      *
-*                          NCAR GRAPHICS V3.01                         *
-*                                                                      *
-***********************************************************************/
 
 #include <stdio.h>
 #include <ncarg/ncarg_loc.h>

@@ -1,5 +1,5 @@
 C
-C       $Id: plchlq.f,v 1.2 1992-11-11 00:57:31 kennison Exp $
+C $Id: plchlq.f,v 1.3 1992-11-17 18:47:06 kennison Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -52,8 +52,8 @@ C
       RSLN=2.**IRSX-1.
 C
 C Determine a character height which will make the characters have the
-C width requested by the user.  First, compute the multiplier we would
-C use in PLCHHQ ...
+C width requested by the user.  First, compute the same multiplier we
+C would use for PLCHHQ (except for the adjustment factor SIZA) ...
 C
       IF (SIZE.LE.0.) THEN
         SIZM=ABS(SIZE)/1023.

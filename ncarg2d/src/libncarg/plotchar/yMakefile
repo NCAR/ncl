@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.4 1992-11-11 00:57:36 kennison Exp $
+#	$Id: yMakefile,v 1.5 1992-11-17 18:47:32 kennison Exp $
 #
 NCARG	= ../../../..
 
@@ -8,16 +8,24 @@ MYNAME	= plotchar
 GENERIC_SRCS = \
 	plchhq.f plchmq.f plchlq.f pcgetc.f pcgeti.f pcgetr.f pcsetc.f \
 	pcseti.f pcsetr.f pccchk.f pccffc.f pcdchk.f pcexcd.f pcgptr.f \
-	pcgtdi.f pcgtpi.f pcmqlq.f pcsort.f pcbdmq.f pcblda.f
+	pcgtdi.f pcgtpi.f pcmqlq.f pcsort.f pcblda.f bzbkd.f  \
+	bzcurv.f bzdp2l.f bzfcrv.f bzftol.f bzgeti.f bzgetr.f bzseti.f \
+	bzsetr.f bzsubd.f pcbdff.f pccfff.f pcffgd.f pcffgp.f pcffhl.f \
+	pcffme.f pcgneg.f tdblda.f tdgeti.f tdgetr.f tdinit.f tdpara.f \
+	tdprpa.f tdprpi.f tdprpt.f tdseti.f tdsetr.f pcmpxy.f
 
 GENERIC_OBJS = \
 	plchhq.o plchmq.o plchlq.o pcgetc.o pcgeti.o pcgetr.o pcsetc.o \
 	pcseti.o pcsetr.o pccchk.o pccffc.o pcdchk.o pcexcd.o pcgptr.o \
-	pcgtdi.o pcgtpi.o pcmqlq.o pcsort.o pcbdmq.o pcblda.o
+	pcgtdi.o pcgtpi.o pcmqlq.o pcsort.o pcblda.o bzbkd.o  \
+	bzcurv.o bzdp2l.o bzfcrv.o bzftol.o bzgeti.o bzgetr.o bzseti.o \
+	bzsetr.o bzsubd.o pcbdff.o pccfff.o pcffgd.o pcffgp.o pcffhl.o \
+	pcffme.o pcgneg.o tdblda.o tdgeti.o tdgetr.o tdinit.o tdpara.o \
+	tdprpa.o tdprpi.o tdprpt.o tdseti.o tdsetr.o pcmpxy.o
 
-OTHER_SRCS = pcfcls.f pcfopn.f pcfred.f bofred.c
+OTHER_SRCS = pcfcls.f pcfopn.f pcfred.f bofred.c pcbnrd.c
 
-OTHER_OBJS = pcfcls.o pcfopn.o pcfred.o bofred.o
+OTHER_OBJS = pcfcls.o pcfopn.o pcfred.o bofred.o pcbnrd.o
 
 SOURCES = $(GENERIC_SRCS) $(OTHER_SRCS)
 

@@ -1,5 +1,5 @@
 C
-C	$Id: pcexcd.f,v 1.1.1.1 1992-04-17 22:32:21 ncargd Exp $
+C $Id: pcexcd.f,v 1.2 1992-11-17 18:46:14 kennison Exp $
 C
 C
 C ---------------------------------------------------------------------
@@ -43,7 +43,7 @@ C is replaced by the value -2048.
 C
 C COMMON block declarations.
 C
-      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(300),IDPC(256),
+      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(8800),IDPC(256),
      +                IERU,INDA(789),INDL,INIT,IVCO,IVDU,NBPW,NPPW
       SAVE   /PCSVEM/
 C
@@ -52,7 +52,7 @@ C given value of IPSS.
 C
       DIMENSION MXUN(2)
 C
-      DATA MXUN / 2,300 /
+      DATA MXUN / 2,8800 /
 C
 C Zero the count of digitization units returned.
 C
@@ -117,7 +117,7 @@ C
           RDGU(I)=REAL(IDGU-IOFF)
         END IF
         IF (I.NE.1) THEN
-          IF (RDGU(I).EQ.-2048..AND.RDGU(I-1).EQ.-2048.) RETURN
+          IF (RDGU(I).EQ.-2048..AND.RDGU(I-1).EQ.-2048.) GO TO 102
         END IF
         IFBT=IFBT+NBPU
         IF (IFBT.GE.NBPW) THEN
@@ -125,6 +125,17 @@ C
           IFBT=IFBT-NBPW
         END IF
   101 CONTINUE
+C
+C Compensate for the fact that the Y coordinates are off by a little.
+C (This error dates from the days of PWRITX.)
+C
+  102 DO 103 I=4,NDGU,2
+        IF (RDGU(I-1).NE.-2048.) THEN
+          RDGU(I)=RDGU(I)-1.5
+        ELSE
+          RDGU(I)=0.
+        END IF
+  103 CONTINUE
 C
 C Done.
 C

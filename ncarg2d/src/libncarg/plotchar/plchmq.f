@@ -1,5 +1,5 @@
 C
-C $Id: plchmq.f,v 1.2 1992-11-11 01:14:20 kennison Exp $
+C $Id: plchmq.f,v 1.3 1992-11-17 18:47:08 kennison Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -14,24 +14,15 @@ C
 C
       CHARACTER*(*) CHRS
 C
-C The COMMON block PCPRMS contains the variable ISCR, to which access
-C is required.
+C The COMMON block PCPFMQ contains internal parameters that affect the
+C behavior of both PLCHHQ and PLCHMQ.
 C
-      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),ICEN,IQUF,
-     +                ISCR,ITEF,JCOD,NFCC,SSIC,SSPR,SUBS,VPIC(3),
-     +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
-     +                YMUL(3)
-      SAVE   /PCPRMS/
-C
-C The COMMON block PCPFMQ contains just one variable - the internal
-C parameter 'HW'.
-C
-      COMMON /PCPFMQ/ RHTW
+      COMMON /PCPFMQ/ IMAP,RHTW
       SAVE   /PCPFMQ/
 C
 C Declare the BLOCK DATA routines external to force them to load.
 C
-      EXTERNAL PCBDMQ,PCBLDA
+      EXTERNAL PCBLDA
 C
 C Define an array in which to declare the 94 legal characters.
 C
@@ -313,8 +304,13 @@ C
 C
 C Get the fractional coordinates of the reference point.
 C
-      XFRA=CUFX(XPOS)
-      YFRA=CUFY(YPOS)
+      IF (IMAP.LE.0) THEN
+        XFRA=CUFX(XPOS)
+        YFRA=CUFY(YPOS)
+      ELSE
+        XFRA=XPOS
+        YFRA=YPOS
+      END IF
 C
 C Determine the resolution of the plotter, as declared by default or
 C by the user.
@@ -324,14 +320,19 @@ C
 C
 C Determine a multiplier for the digitized size which will make the
 C characters have the size requested by the user.  First, compute the
-C same multiplier we would use for PLCHHQ ...
+C same multiplier we would use for PLCHHQ (except for the adjustment
+C factor SIZA) ...
 C
-      IF (SIZE.LE.0.) THEN
-        SIZM=ABS(SIZE)/1023.
-      ELSE IF (SIZE.LT.1.) THEN
-        SIZM=SIZE/16.
+      IF (IMAP.LE.0) THEN
+        IF (SIZE.LE.0.) THEN
+          SIZM=ABS(SIZE)/1023.
+        ELSE IF (SIZE.LT.1.) THEN
+          SIZM=SIZE/16.
+        ELSE
+          SIZM=(SIZE/RSLN)/16.
+        END IF
       ELSE
-        SIZM=(SIZE/RSLN)/16.
+        SIZM=SIZE/16.
       END IF
 C
 C ... and then adjust for the fact that the digitization is different.
@@ -390,19 +391,18 @@ C
 C ... and test for dx and dy ...
 C
           IF (KXCO(IPNT).NE.77) THEN
-            IF (ISCR.EQ.0) THEN
-              CALL PLOTIF (XLLC+REAL(KXCO(IPNT))*XCOV-
-     +                     YMLT*REAL(KYCO(IPNT))*YCOV,
-     +                     YLLC+REAL(KXCO(IPNT))*YCOV+
-     +                     YMLT*REAL(KYCO(IPNT))*XCOV,
-     +                     IPEN)
-            ELSE
-              CALL SCPLTW (INT((XLLC+REAL(KXCO(IPNT))*XCOV-
-     +                          YMLT*REAL(KYCO(IPNT))*YCOV)*32767.),
-     +                     INT((YLLC+REAL(KXCO(IPNT))*YCOV+
-     +                          YMLT*REAL(KYCO(IPNT))*XCOV)*32767.),
-     +                     IPEN)
+            XTMP=XLLC+REAL(KXCO(IPNT))*XCOV-
+     +           YMLT*REAL(KYCO(IPNT))*YCOV
+            YTMP=YLLC+REAL(KXCO(IPNT))*YCOV+
+     +           YMLT*REAL(KYCO(IPNT))*XCOV
+            IF (IMAP.GT.0) THEN
+              XSAV=XTMP
+              YSAV=YTMP
+              CALL PCMPXY (IMAP,XSAV,YSAV,XTMP,YTMP)
+              XTMP=CUFX(XTMP)
+              YTMP=CUFY(YTMP)
             END IF
+            CALL PLOTIF (XTMP,YTMP,IPEN)
             IPEN=1
             GO TO 101
 C

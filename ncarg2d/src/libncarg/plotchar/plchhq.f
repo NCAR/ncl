@@ -1,5 +1,5 @@
 C
-C $Id: plchhq.f,v 1.3 1992-11-11 01:14:17 kennison Exp $
+C $Id: plchhq.f,v 1.4 1992-11-17 18:47:03 kennison Exp $
 C
 C***********************************************************************
 C P A C K A G E   P L O T C H A R   -   I N T R O D U C T I O N
@@ -54,14 +54,16 @@ C     number of the desired font: 0 selects the PWRITX database and
 C     a non-zero value selects one of the other fonts.  IBUF is an
 C     integer array, of length LBUF, into which the next record of
 C     data is to be read.  On a Unix system, the following versions
-C     may be used (BOFRED, BINRED, and BCLRED are support routines for
-C     the FORTRAN version of the metafile translator "cgmtrans"):
+C     may be used (BOFRED and BCLRED are support routines for the
+C     FORTRAN version of the metafile translator "cgmtrans" and
+C     BINRD is a modified version of the routine BINRED, which is
+C     another of those support routines):
 C
 C     SUBROUTINE PCFOPN (IBNU,NFNT)
 C       CHARACTER*128 FILENM
 C       DATA FILENM / ' ' /
 C       IF (NFNT.EQ.0) THEN
-C         CALL GNGPAT (FILENM,'SED_DBDIR',ISTAT)
+C         CALL GNGPAT (FILENM,'database',ISTAT)
 C         IF (ISTAT .NE. -1) THEN
 C           DO 101 I=1,119
 C              IF (FILENM(I:I).EQ.CHAR(0)) THEN
@@ -79,20 +81,18 @@ C 103       PRINT * , 'PCFOPN - ',FILENM(1:LENEM-1)
 C           STOP
 C         END IF
 C 104     OPEN (UNIT=IBNU,FILE=FILENM,STATUS='OLD',FORM='UNFORMATTED',
-C    +                                                        ERR=105)
+C    +                                            IOSTAT=IOST,ERR=105)
 C         REWIND IBNU
-C       ELSE IF (NFNT.GE.1.AND.NFNT.LE.20) THEN
+C       ELSE
 C         CALL BOFRED (IBNU,NFNT,IOST,ISTA)
 C         IF (ISTA.NE.0) THEN
 C            PRINT * , 'PCFOPN - ERROR OPENING FONT ',NFNT
 C            STOP
 C         END IF
-C       ELSE
-C         PRINT * , 'PCFOPN - REQUEST FOR UNAVAILBLE FONT ',NFNT
-C         STOP
 C       END IF
 C       RETURN
 C 105   PRINT * , 'PCFOPN - ERROR OPENING PWRITX DATA FILE ',FILENM
+C       PRINT * , 'PCFOPN - IOSTAT FROM OPEN STATEMENT IS ',IOST
 C       STOP
 C     END
 C
@@ -101,7 +101,7 @@ C       DIMENSION IBUF(LBUF)
 C       IF (NFNT.EQ.0) THEN
 C         READ (IBNU,ERR=101) (IBUF(I),I=1,LBUF)
 C       ELSE
-C         CALL BINRED (IBNU,LBUF,IBUF,IOST,ISTA)
+C         CALL BINRD (IBNU,LBUF,IBUF,IOST,ISTA)
 C         IF (ISTA.NE.0) THEN
 C           PRINT * , 'PCFRED - ERROR READING FONT ',NFNT
 C           STOP
@@ -149,38 +149,39 @@ C
       CHARACTER CHRS*(*)
 C
 C COMMON block declarations.  PCPRMS holds user-accessible internal
-C parameters.  PCSVEM holds other variables which are either used in
-C more than one routine or which need to be saved from one call to the
-C next.  PCPFMQ holds internal parameters for the medium-quality
-C character generator PLCHMQ.  PCPFFC holds internal parameters for the
-C new routine (PCCFFC) which access the fonts defined by font caps.
+C parameters that do not affect the routine PLCHMQ.  PCSVEM holds other
+C variables that are either used in more than one routine or that need
+C to be saved from one call to the next.  PCPFMQ holds parameters that
+C affect the routine PLCHMQ; some of these also affect PLCHHQ.
 C
 C Note that the sizes of IDDA and INDA may be reduced to match the
 C values of IDDL and INDL computed below.
 C
-      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),ICEN,IQUF,
-     +                ISCR,ITEF,JCOD,NFCC,SSIC,SSPR,SUBS,VPIC(3),
-     +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
-     +                YMUL(3)
+      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),ICEN,IOUC,
+     +                IOUF,
+     +                IQUF,ISHC,ISHF,ITEF,JCOD,NFCC,NFNT,SHDX,SHDY,
+     +                SIZA,SSIC,SSPR,SUBS,VPIC(3),WPIC(3),XBEG,XCEN,
+     +                XEND,XMUL(3),YBEG,YCEN,YEND,YMUL(3)
       SAVE   /PCPRMS/
 C
-      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(300),IDPC(256),
+      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(8800),IDPC(256),
      +                IERU,INDA(789),INDL,INIT,IVCO,IVDU,NBPW,NPPW
       SAVE   /PCSVEM/
 C
-      COMMON /PCPFMQ/ RHTW
+      COMMON /PCPFMQ/ IMAP,RHTW
       SAVE   /PCPFMQ/
 C
-      COMMON /PCPFFC/ NFNT
-      SAVE   /PCPFFC/
+C Declare some BLOCK DATA routines external to force them to load. ???
 C
-C Declare the BLOCK DATA routine external to force it to load.
-C
-      EXTERNAL PCBLDA
+      EXTERNAL PCBLDA,PCBDFF,BZBKD
 C
 C Define a dummy array for use in skipping records on IBNU.
 C
       DIMENSION IDUM(1)
+C
+C Define X and Y coordinate arrays to be used in calls to GPL and GFA.
+C
+      DIMENSION XCRA(3300),YCRA(3300)
 C
 C Define arrays in which to put multipliers representing the combined
 C effects of changing 'PH', 'PW', 'IH', 'IW', 'CH', 'CW', and the
@@ -199,11 +200,6 @@ C to provide a proper response.
 C
       DIMENSION ISPC(19)
 C
-C Define a character variable in which to collect characters to be
-C written by PLCHMQ or PLCHLQ if lower quality is selected.
-C
-      CHARACTER*100 CHBF
-C
 C Define a character array in which to define the characters to be
 C associated with values of NDPC from 1 to 95.
 C
@@ -213,6 +209,17 @@ C Define an array in which to define the ASCII decimal equivalents of
 C the characters in CDPC.
 C
       DIMENSION IASC(95)
+C
+C Define arrays in which to save the information required to draw the
+C characters resulting from a single string.  These arrays allow us to
+C easily do the separate passes needed for shadows and outlines and to
+C do each of the passes either from left to right or from right to left
+C in the character string.
+C
+      DIMENSION XCSV(128),YCSV(128),XMSV(128),YMSV(128),NFSV(128),
+     +          NDSV(128),INSV(128),NASV(128),IPSV(128)
+C
+      CHARACTER*128 CHSV
 C
 C Define the characters to be associated with values of NDPC from 1
 C to 95.
@@ -320,10 +327,17 @@ C
 C
       END IF
 C
-C Get the fractional-system coordinates of the string position.
+C Get the coordinates of the string position.  These are in the
+C fractional system if mapping is turned off; otherwise, they are
+C in an arbitrary X/Y system.
 C
-      XFRA=CUFX(XPOS)
-      YFRA=CUFY(YPOS)
+      IF (IMAP.LE.0) THEN
+        XFRA=CUFX(XPOS)
+        YFRA=CUFY(YPOS)
+      ELSE
+        XFRA=XPOS
+        YFRA=YPOS
+      END IF
 C
 C Determine the resolution of the plotter, as declared by default or
 C by the user.
@@ -334,12 +348,16 @@ C
 C Determine a multiplier for the digitized size which will make the
 C characters have the size requested by the user.
 C
-      IF (SIZE.LE.0.) THEN
-        SIZM=ABS(SIZE)/1023.
-      ELSE IF (SIZE.LT.1.) THEN
-        SIZM=SIZE/WPIC(1)
+      IF (IMAP.LE.0) THEN
+        IF (SIZE.LE.0.) THEN
+          SIZM=ABS(SIZA*SIZE)/1023.
+        ELSE IF (SIZE.LT.1.) THEN
+          SIZM=(SIZA*SIZE)/WPIC(1)
+        ELSE
+          SIZM=((SIZA*SIZE)/RSLN)/WPIC(1)
+        END IF
       ELSE
-        SIZM=(SIZE/RSLN)/WPIC(1)
+        SIZM=(SIZA*SIZE)/WPIC(1)
       END IF
 C
 C If high-quality characters are to be used, load the high-quality
@@ -392,8 +410,8 @@ C
       END IF
 C
 C Set the orientation angle, in radians, and determine the components
-C of various vectors in the direction  of the string and at right
-C angles to it.
+C of various vectors in the direction of the string and at right angles
+C to it.
 C
       ANGR=.017453292519943*ANGD
 C
@@ -406,14 +424,8 @@ C
       SINP=SIN(ANGR+1.57079632679489)
       COSP=COS(ANGR+1.57079632679489)
 C
-C Decide whether to do pass 1 and pass 2 or just pass 2.  (If the string
-C is positioned relative to its starting point, we need only do pass 2.)
-C
-      IPSS=1
-      IF (ICEN.EQ.0.AND.CNTR.EQ.-1.) IPSS=2
-C
-C For this pass, begin the string at the position of the image of the
-C user's (XPOS,YPOS) in the fractional system.
+C Using an arbitrary starting position, we run through the character
+C string without drawing anything and see what the final position is.
 C
       XBEG=XFRA
       YBEG=YFRA
@@ -422,12 +434,12 @@ C Save the current value of NFNT for later restoration.
 C
       NFNO=NFNT
 C
-C Start of pass.  Make three copies of the string position for various
-C purposes.  (XBOL,YBOL) is the point at the beginning of the current
-C line, (XCEN,YCEN) is the point at the center of the last character,
-C and (XRGT,YRGT) is the point at the right end of the last character.
+C Make three copies of the starting position for various purposes.
+C (XBOL,YBOL) is the point at the beginning of the current line.
+C (XCEN,YCEN) is the point at the center of the last character.
+C (XRGT,YRGT) is the point at the right end of the last character.
 C
-  103 XBOL=XBEG
+      XBOL=XBEG
       YBOL=YBEG
       XCEN=XBEG
       YCEN=YBEG
@@ -447,23 +459,9 @@ C
       ISZE=ISZP
       ICSE=ICSU
 C
-C Initialize the index which says what size the current character is.
+C Initialize the index that says what size the current character is.
 C
       IPIC=1
-C
-C If lower-quality characters are being used and we are starting pass
-C 2, initialize the substring position.  It is assumed that the whole
-C substring needs to be shifted by 1/6 character width to the right.
-C This is as required for PLCHMQ.  Also initialize the substring
-C character count and the character size.
-C
-      IF (IQUF.NE.0.AND.IPSS.EQ.2) THEN
-        XSUB=CFUX(XBEG+WPIC(1)*STCO/6.)
-        YSUB=CFUY(YBEG+WPIC(1)*STSO/6.)
-        NCBF=0
-        SIZS=SIZM*WPIC(1)
-        IF (RHTW.GE.0.) RHTW=1.5*HPIC(1)/WPIC(1)
-      END IF
 C
 C Zero the character counts for "writing down" and for case change.
 C
@@ -499,25 +497,28 @@ C
       YMZM(2)=YMUL(2)
       YMZM(3)=YMUL(3)
 C
-C If the distances to the edges of the string are to be computed,
-C initialize the needed quantities.
+C If text extent quantities are to be computed, initialize the needed
+C quantities.
 C
-      IF ((IPSS.EQ.1.AND.ICEN.NE.0).OR.
-     +    (IPSS.EQ.2.AND.ITEF.NE.0)) THEN
+      IF (ICEN.NE.0.OR.ITEF.NE.0) THEN
         DSTL=-1.E6
         DSTR=-1.E6
         DSTB=-1.E6
         DSTT=-1.E6
       END IF
 C
+C Zero the count of characters for which information has been saved.
 C
-C  P R O C E S S   T H E   N E X T   C H A R A C T E R
+      NCSV=0
+C
+C
+C P R O C E S S   T H E   N E X T   C H A R A C T E R
 C
 C
 C If there are no more characters in the string, jump to end-of-string
 C processor.
 C
-  104 IF (ICHR.GE.NCHR) GO TO 108
+  103 IF (ICHR.GE.NCHR) GO TO 106
 C
 C Get the next character from the string.  NCOL is the number of the
 C character in the character collating sequence on the machine on
@@ -531,7 +532,7 @@ C of the function-code processing flag and go get the next character.
 C
       IF (NCOL.EQ.NFCC) THEN
         IPFC=1-IPFC
-        GO TO 104
+        GO TO 103
       END IF
 C
 C NDPC is the number of the character in the DPC collating sequence.
@@ -559,7 +560,7 @@ C
         ELSE
           INDP=358
         END IF
-        GO TO 105
+        GO TO 104
       END IF
 C
 C Compute the index of the entry in INDA which points to the proper
@@ -567,35 +568,39 @@ C digitization in IDDA.
 C
       INDP=IFNT+ISZE+ICSE+NDPC
 C
-C
-C   D R A W   A   C H A R A C T E R
-C
-C
 C If high-quality characters are being used, get the digitization of
 C the character in the array RDGU; if no digitization is found, try a
 C star instead; if that can't be found, there's a more serious error.
 C In any case, define the distances from the center of the character to
 C its left and right ends.
 C
-  105 IF (IQUF.EQ.0) THEN
+  104 IF (IQUF.EQ.0) THEN
         IF (NFNT.EQ.0.OR.NDPC.LT.1.OR.NDPC.GT.95.OR.INDP.EQ.95) THEN
-          CALL PCEXCD (INDP,MIN(2,IPSS+ICEN),NDGU)
+          CALL PCEXCD (INDP,1+ICEN,NDGU)
         ELSE
           IF (ICSE.NE.ICSL.OR.NDPC.LT.1.OR.NDPC.GT.26) THEN
             NASC=IASC(NDPC)
           ELSE
             NASC=IASC(NDPC+47)
           END IF
-          CALL PCCFFC (MIN(2,IPSS+ICEN),IBNU,NFNT,NASC,IPIC,RDGU,300,
-     +                                                             NDGU)
+          IF (NFNT.GE.1.AND.NFNT.LE.20) THEN
+            CALL PCCFFC (1+ICEN,IBNU,NFNT,NASC,IPIC,RDGU,8800,NDGU)
+          ELSE
+            IF (IMAP.LE.0) THEN
+              CHFS=SIZM*HPIC(IPIC)
+            ELSE
+              CHFS=SIZM*.1  !  ???
+            END IF
+            CALL PCCFFF (1+ICEN,IBNU,NFNT,NASC,HPIC(IPIC),CHFS,
+     +                                          RDGU,8800,NDGU)
+          END IF
           IF (NDGU.EQ.0) THEN
-            CALL PCCFFC (MIN(2,IPSS+ICEN),IBNU,1,NASC,IPIC,RDGU,300,
-     +                                                             NDGU)
-            IF (NDGU.EQ.0) CALL PCEXCD (INDP,MIN(2,IPSS+ICEN),NDGU)
+            CALL PCCFFC (1+ICEN,IBNU,1,NASC,IPIC,RDGU,8800,NDGU)
+            IF (NDGU.EQ.0) CALL PCEXCD (INDP,1+ICEN,NDGU)
           END IF
         END IF
         IF (NDGU.EQ.0) THEN
-          CALL PCEXCD (358,MIN(2,IPSS+ICEN),NDGU)
+          CALL PCEXCD (358,1+ICEN,NDGU)
           IF (NDGU.EQ.0) CALL SETER
      +            ('PLCHHQ - INTERNAL LOGIC ERROR - SEE CONSULTANT',1,2)
         END IF
@@ -642,14 +647,6 @@ C
           END IF
         END IF
         NDWN=NDWN-1
-        IF (IQUF.NE.0.AND.IPSS.EQ.2) THEN
-          IF (NCBF.NE.0) THEN
-            CALL PCMQLQ (XSUB,YSUB,CHBF(1:NCBF),SIZS,ANGD,-1.)
-            NCBF=0
-          END IF
-          XSUB=CFUX(XCEN-(DTLE-WPIC(IPIC)/6.)*STCO)
-          YSUB=CFUY(YCEN-(DTLE-WPIC(IPIC)/6.)*STSO)
-        END IF
       ELSE
         LCWD=0
       END IF
@@ -678,94 +675,58 @@ C
             YCEN=YCEN-.5*(SUBP+SUBS*WPIC(IPIC))*STSO
           END IF
         END IF
-        IF (IQUF.NE.0.AND.IPSS.EQ.2.AND.(ADDP.NE.0..OR.SUBP.NE.0.)) THEN
-          IF (NCBF.NE.0) THEN
-            CALL PCMQLQ (XSUB,YSUB,CHBF(1:NCBF),SIZS,ANGD,-1.)
-            NCBF=0
-          END IF
-          XSUB=CFUX(XCEN-(DTLE-WPIC(IPIC)/6.)*STCO)
-          YSUB=CFUY(YCEN-(DTLE-WPIC(IPIC)/6.)*STSO)
-        END IF
       END IF
 C
       XRGT=XCEN+DTRE*STCO
       YRGT=YCEN+DTRE*STSO
 C
-C Draw the character and/or update the quantities from which the
-C magnitudes of the text-extent vectors will be computed.
+C Save all the information necessary to retrieve the digitization of
+C the current character and draw it later.
 C
-      IF (IQUF.EQ.0) THEN
+      NCSV=NCSV+1
 C
-        RDGU(1)=-2048.
-C
-        IF (IPSS.EQ.2.AND.(ITEF.EQ.0.OR.ANGD.NE.360.)) THEN
-C
-          DO 106 I=3,NDGU,2
-            IF (RDGU(I).NE.-2048.) THEN
-              XTMP=XCEN+XMZM(IPIC)*RDGU(I  )*STCO
-     +                 -YMZM(IPIC)*RDGU(I+1)*STSO
-              YTMP=YCEN+XMZM(IPIC)*RDGU(I  )*STSO
-     +                 +YMZM(IPIC)*RDGU(I+1)*STCO
-              IF (RDGU(I-2).EQ.-2048.) THEN
-                IF (ISCR.EQ.0) THEN
-                  CALL PLOTIF (XTMP,YTMP,0)
-                ELSE
-                  CALL SCPLTW (INT(XTMP*32767.),INT(YTMP*32767.),0)
-                END IF
-              ELSE
-                IF (ISCR.EQ.0) THEN
-                  CALL PLOTIF (XTMP,YTMP,1)
-                ELSE
-                  CALL SCPLTW (INT(XTMP*32767.),INT(YTMP*32767.),1)
-                END IF
-              END IF
-            END IF
-  106     CONTINUE
-C
+      IF (NCSV.LE.128) THEN
+        IPSV(NCSV)=IPIC
+        XCSV(NCSV)=XCEN
+        YCSV(NCSV)=YCEN
+        XMSV(NCSV)=XMZM(IPIC)
+        YMSV(NCSV)=YMZM(IPIC)
+        NFSV(NCSV)=NFNT
+        NDSV(NCSV)=NDPC
+        INSV(NCSV)=INDP
+        NASV(NCSV)=NASC
+        IF (INDP.EQ.95) THEN
+          CHSV(NCSV:NCSV)='x'
+        ELSE IF (INDP.EQ.358) THEN
+          CHSV(NCSV:NCSV)=' '
+        ELSE IF (ICSE.EQ.ICSL.AND.NDPC.GE.1.AND.NDPC.LE.26) THEN
+          CHSV(NCSV:NCSV)=CDPC(NDPC+47)
+        ELSE
+          CHSV(NCSV:NCSV)=CDPC(NDPC)
         END IF
+      END IF
 C
-        IF ((IPSS.EQ.1.AND.ICEN.NE.0).OR.
-     +      (IPSS.EQ.2.AND.ITEF.NE.0)) THEN
+C If appropriate, update the quantities from which the magnitudes of
+C the text-extent vectors will be computed.
 C
-          UCEN=+(XCEN-XFRA)*COSO+(YCEN-YFRA)*SINO
-          VCEN=-(XCEN-XFRA)*SINO+(YCEN-YFRA)*COSO
+      IF (ICEN.NE.0.OR.ITEF.NE.0) THEN
 C
-          DO 107 I=3,NDGU,2
-            IF (RDGU(I).NE.-2048.) THEN
+        UCEN=+(XCEN-XFRA)*COSO+(YCEN-YFRA)*SINO
+        VCEN=-(XCEN-XFRA)*SINO+(YCEN-YFRA)*COSO
+C
+        IF (IQUF.EQ.0) THEN
+C
+          DO 105 I=3,NDGU,2
+            IF (RDGU(I).GT.-2047.) THEN
               DSTL=MAX(DSTL,-UCEN-SIZM*XMZM(IPIC)*RDGU(I  ))
               DSTR=MAX(DSTR,+UCEN+SIZM*XMZM(IPIC)*RDGU(I  ))
               DSTB=MAX(DSTB,-VCEN-SIZM*YMZM(IPIC)*RDGU(I+1))
               DSTT=MAX(DSTT,+VCEN+SIZM*YMZM(IPIC)*RDGU(I+1))
             END IF
-  107     CONTINUE
+  105     CONTINUE
 C
-        END IF
+        ELSE
 C
-      ELSE
-C
-        IF (IPSS.EQ.2.AND.(ITEF.EQ.0.OR.ANGD.NE.360.)) THEN
-          IF (NCBF.EQ.100) THEN
-            CALL PCMQLQ (XSUB,YSUB,CHBF(1:NCBF),SIZS,ANGD,-1.)
-            XSUB=CFUX(CUFX(XSUB)+REAL(NCBF)*WPIC(IPIC)*STCO)
-            YSUB=CFUY(CUFY(YSUB)+REAL(NCBF)*WPIC(IPIC)*STSO)
-            NCBF=0
-          END IF
-          NCBF=NCBF+1
-          IF (INDP.EQ.95) THEN
-            CHBF(NCBF:NCBF)='x'
-          ELSE IF (INDP.EQ.358) THEN
-            CHBF(NCBF:NCBF)=' '
-          ELSE IF (ICSE.EQ.ICSL.AND.NDPC.GE.1.AND.NDPC.LE.26) THEN
-            CHBF(NCBF:NCBF)=CDPC(NDPC+47)
-          ELSE
-            CHBF(NCBF:NCBF)=CDPC(NDPC)
-          END IF
-        END IF
-C
-        IF ((IPSS.EQ.1.AND.ICEN.NE.0).OR.
-     +      (IPSS.EQ.2.AND.ITEF.NE.0)) THEN
-          UCEN=+(XCEN-XFRA)*COSO+(YCEN-YFRA)*SINO
-          VCEN=-(XCEN-XFRA)*SINO+(YCEN-YFRA)*COSO
           DSTL=MAX(DSTL,-UCEN-SIZM*WPIC(IPIC)/3.,
      +                  -UCEN+SIZM*WPIC(IPIC)/3.)
           DSTR=MAX(DSTR,+UCEN-SIZM*WPIC(IPIC)/3.,
@@ -774,6 +735,7 @@ C
      +                  -VCEN+SIZM*ABS(RHTW)*WPIC(IPIC)/3.)
           DSTT=MAX(DSTT,+VCEN-SIZM*ABS(RHTW)*WPIC(IPIC)/3.,
      +                  +VCEN+SIZM*ABS(RHTW)*WPIC(IPIC)/3.)
+C
         END IF
 C
       END IF
@@ -807,7 +769,7 @@ C
 C
 C If we are subscripting or superscripting for a specified number of
 C characters, see if all of them have been done and, if so, reset all
-C the required variables.
+C of the required variables.
 C
       IF (NSSL.NE.0) THEN
         IF (NLEV(NSSL).GT.0) THEN
@@ -821,38 +783,24 @@ C
             ISZE=ISZO(NSSL)
             IPIC=ISZE/128+1
             NSSL=NSSL-1
-            IF (IQUF.NE.0.AND.IPSS.EQ.2) THEN
-              IF (NCBF.NE.0) THEN
-                CALL PCMQLQ (XSUB,YSUB,CHBF(1:NCBF),SIZS,ANGD,-1.)
-                NCBF=0
-              END IF
-              XSUB=CFUX(XRGT+WPIC(IPIC)*STCO/6.)
-              YSUB=CFUY(YRGT+WPIC(IPIC)*STSO/6.)
-              SIZS=SIZM*WPIC(IPIC)
-              IF (RHTW.GE.0.) RHTW=1.5*HPIC(IPIC)/WPIC(IPIC)
-            END IF
           END IF
         END IF
       END IF
 C
 C Go get the next character.
 C
-      GO TO 104
+      GO TO 103
 C
 C
 C E N D   O F   S T R I N G   E N C O U N T E R E D
 C
-C
-C Restore the original value of NFNT.
-C
-  108 NFNT=NFNO
 C
 C Figure out where the end of the character string fell.  This depends
 C on whether the last character was "written down" or "written across".
 C In the former case, the bottom of the character box is used; in the
 C latter case, the center of the right edge of the character is used.
 C
-      IF (LCWD.NE.0) THEN
+  106 IF (LCWD.NE.0) THEN
         XEND=XCEN+.5*VEPC*STSO
         YEND=YCEN-.5*VEPC*STCO
       ELSE
@@ -860,60 +808,188 @@ C
         YEND=YRGT
       END IF
 C
-C If pass 2 was just completed, wrap it up and quit.
+C Compute the adjustment required to achieve the desired centering.
 C
-      IF (IPSS.EQ.2) THEN
+      IF (ICEN.EQ.0) THEN
+        XADJ=-.5*(CNTR+1.)*(XEND-XBEG)
+        YADJ=-.5*(CNTR+1.)*(YEND-YBEG)
+      ELSE
+        XADJ=-.5*(DSTR-DSTL)*COSO+.5*(DSTT-DSTB)*SINO
+        YADJ=-.5*(DSTR-DSTL)*SINO-.5*(DSTT-DSTB)*COSO
+      END IF
 C
-        IF (ITEF.EQ.0.OR.ANGD.NE.360.) THEN
-          IF (IQUF.EQ.0) THEN
-            CALL PLOTIF (0.,0.,2)
-          ELSE
-            IF (NCBF.NE.0) THEN
-              CALL PCMQLQ (XSUB,YSUB,CHBF(1:NCBF),SIZS,ANGD,-1.)
+C
+C D R A W   T H E   C H A R A C T E R S
+C
+C
+C Drawing is done in three passes.  During the first pass, we draw the
+C character shadow, if any.  During the second pass, we draw the lines
+C and fill the areas constituting the principal body of the character.
+C During the third pass, we draw the outline of the character, if any.
+C
+      DO 132 IDRW=1,3
+C
+        IF (IDRW.EQ.1) THEN
+          IF (ISHF.EQ.0) GO TO 132
+          IF (ISHC.GE.0) THEN
+            CALL GQPLCI (IERR,IPLC)
+            IF (IERR.NE.0) THEN
+              CALL SETER ('PLCHHQ - ERROR EXIT FROM GQPLCI',2,2)
+              STOP
             END IF
+            CALL GQFACI (IERR,IFAC)
+            IF (IERR.NE.0) THEN
+              CALL SETER ('PLCHHQ - ERROR EXIT FROM GQFACI',2,2)
+              STOP
+            END IF
+            CALL SFLUSH
+            CALL GSPLCI (ISHC)
+            CALL GSFACI (ISHC)
+          END IF
+        ELSE IF (IDRW.EQ.3) THEN
+          IF (IOUF.EQ.0) GO TO 132
+          IF (IOUC.GE.0) THEN
+            CALL GQPLCI (IERR,IPLC)
+            IF (IERR.NE.0) THEN
+              CALL SETER ('PLCHHQ - ERROR EXIT FROM GQPLCI',2,2)
+              STOP
+            END IF
+            CALL SFLUSH
+            CALL GSPLCI (IOUC)
           END IF
         END IF
+C
+        DO 108 ICSV=1,MIN(128,NCSV)
+C
+          IPIC=IPSV(ICSV)
+          XCEN=XCSV(ICSV)+XADJ
+          YCEN=YCSV(ICSV)+YADJ
+          XMZM(IPIC)=XMSV(ICSV)
+          YMZM(IPIC)=YMSV(ICSV)
+          NFNT=NFSV(ICSV)
+          NDPC=NDSV(ICSV)
+          INDP=INSV(ICSV)
+          NASC=NASV(ICSV)
+C
+          IF      (IDRW.EQ.1) THEN
+            XCEN=XCEN+XMZM(IPIC)*SHDX*HPIC(IPIC)*STCO
+     +               -YMZM(IPIC)*SHDY*HPIC(IPIC)*STSO
+            YCEN=YCEN+XMZM(IPIC)*SHDX*HPIC(IPIC)*STSO
+     +               +YMZM(IPIC)*SHDY*HPIC(IPIC)*STCO
+C         ELSE IF (IDRW.EQ.2) THEN
+C           ???
+          ELSE IF (IDRW.EQ.3) THEN
+            IF (NFNT.GE.21.AND.NFNT.LE.99) NFNT=NFNT+100
+          END IF
+C
+          IF (IQUF.EQ.0) THEN
+C
+            IF (NFNT.EQ.0.OR.NDPC.LT. 1.OR.
+     +            NDPC.GT.95.OR.INDP.EQ.95) THEN
+              CALL PCEXCD (INDP,2,NDGU)
+            ELSE
+              IF (NFNT.GE.1.AND.NFNT.LE.20) THEN
+                CALL PCCFFC (2,IBNU,NFNT,NASC,IPIC,RDGU,8800,NDGU)
+              ELSE
+                IF (IMAP.LE.0) THEN
+                  CHFS=SIZM*HPIC(IPIC)
+                ELSE
+                  CHFS=SIZM*.1  !  ???
+                END IF
+                CALL PCCFFF (2,IBNU,NFNT,NASC,HPIC(IPIC),
+     +                               CHFS,RDGU,8800,NDGU)
+              END IF
+              IF (NDGU.EQ.0) THEN
+                CALL PCCFFC (2,IBNU,1,NASC,IPIC,RDGU,8800,NDGU)
+                IF (NDGU.EQ.0) CALL PCEXCD (INDP,2,NDGU)
+              END IF
+            END IF
+            IF (NDGU.EQ.0) THEN
+              CALL PCEXCD (358,2,NDGU)
+              IF (NDGU.EQ.0) CALL SETER
+     +           ('PLCHHQ - INTERNAL LOGIC ERROR - SEE CONSULTANT',2,2)
+            END IF
+            NCRA=0
+            DO 107 I=3,NDGU,2
+              IF (RDGU(I).GT.-2047.) THEN
+                NCRA=NCRA+1
+                IF (IMAP.LE.0) THEN
+                  XCRA(NCRA)=XCEN+XMZM(IPIC)*RDGU(I  )*STCO
+     +                           -YMZM(IPIC)*RDGU(I+1)*STSO
+                  YCRA(NCRA)=YCEN+XMZM(IPIC)*RDGU(I  )*STSO
+     +                           +YMZM(IPIC)*RDGU(I+1)*STCO
+                ELSE
+                  CALL PCMPXY (IMAP,XCEN+XMZM(IPIC)*RDGU(I  )*STCO
+     +                                  -YMZM(IPIC)*RDGU(I+1)*STSO,
+     +                              YCEN+XMZM(IPIC)*RDGU(I  )*STSO
+     +                                  +YMZM(IPIC)*RDGU(I+1)*STCO,
+     +                                                   XTMP,YTMP)
+                  XCRA(NCRA)=CUFX(XTMP)
+                  YCRA(NCRA)=CUFY(YTMP)
+                END IF
+              ELSE IF (NCRA.GT.0) THEN
+                CALL GETSET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,
+     +                                                          LNLG)
+                CALL    SET (XVPL,XVPR,YVPB,YVPT,XVPL,XVPR,YVPB,YVPT,
+     +                                                          LNLG)
+                IF (RDGU(I).EQ.-2048.) THEN
+                  IF (NCRA.GT.1) CALL GPL (NCRA,XCRA,YCRA)
+                ELSE
+                  IF (NCRA.GT.2) CALL GFA (NCRA,XCRA,YCRA)
+                END IF
+                CALL    SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,
+     +                                                          LNLG)
+                NCRA=0
+              END IF
+  107       CONTINUE
+C
+          ELSE
+C
+            CALL PCMQLQ (XCEN,YCEN,CHSV(ICSV:ICSV),
+     +             SIZE*WPIC(IPIC)/WPIC(1),ANGD,0.)
+C
+          END IF
+C
+  108   CONTINUE
+C
+        IF (IDRW.EQ.1) THEN
+          IF (ISHC.GE.0) THEN
+            CALL SFLUSH
+            CALL GSPLCI (IPLC)
+            CALL GSFACI (IFAC)
+          END IF
+        ELSE IF (IDRW.EQ.3) THEN
+          IF (IOUC.GE.0) THEN
+            CALL SFLUSH
+            CALL GSPLCI (IPLC)
+          END IF
+        END IF
+C
+  132 CONTINUE
+C
+C Restore the original value of NFNT.
+C
+      NFNT=NFNO
 C
 C Restore the PLCHMQ parameter specifying the ratio of character height
 C to width.
 C
-        IF (IQUF.NE.0) RHTW=RHWO
+      IF (IQUF.NE.0) RHTW=RHWO
 C
 C Done.
 C
-        RETURN
-C
-      END IF
-C
-C Otherwise, prepare for pass 2.
-C
-      IPSS=2
-C
-C Adjust the beginning coordinates so as to achieve the desired
-C centering.
-C
-      IF (ICEN.EQ.0) THEN
-        XBEG=XBEG-.5*(CNTR+1.)*(XEND-XBEG)
-        YBEG=YBEG-.5*(CNTR+1.)*(YEND-YBEG)
-      ELSE
-        XBEG=XBEG-.5*(DSTR-DSTL)*COSO+.5*(DSTT-DSTB)*SINO
-        YBEG=YBEG-.5*(DSTR-DSTL)*SINO-.5*(DSTT-DSTB)*COSO
-      END IF
-C
-C Go back to do pass 2.
-C
-      GO TO 103
+      RETURN
 C
 C
-C   F U N C T I O N   C O D E   P R O C E S S I N G
+C F U N C T I O N   C O D E   P R O C E S S I N G
 C
 C
 C If the current character is invalid, issue an error message and go
 C back for the next one.
 C
   109 IF (NDPC.LE.0.OR.(NDPC.GE.35.AND.NDPC.NE.45.AND.NDPC.NE.46)) THEN
-        IF (IPSS.EQ.2) WRITE (IERU,1001) ICHR,CHRS(ICHR:ICHR)
-        GO TO 104
+        WRITE (IERU,1001) ICHR,CHRS(ICHR:ICHR)
+        GO TO 103
       END IF
 C
 C If the character is an octal digit, retrieve an octal number in INDP
@@ -924,12 +1000,12 @@ C
         CALL PCGTPI (CHRS,NCHR,ICHR,8,INDP)
         ICHR=ICHR-1
         NDPC=45
-        GO TO 105
+        GO TO 104
       END IF
 C
 C Blanks and commas are just separators; ignore them.
 C
-      IF (NDPC.EQ.45.OR.NDPC.EQ.46) GO TO 104
+      IF (NDPC.EQ.45.OR.NDPC.EQ.46) GO TO 103
 C
 C Jump to the appropriate section to process an alphabetic character.
 C
@@ -937,12 +1013,12 @@ C             A,  B,  C,  D,  E,  F,  G,  H,  I,  J,  K,  L,  M,
 C             N,  O,  P,  Q,  R,  S,  T,  U,  V,  W,  X,  Y,  Z
 C
       GO TO (124,118,125,123,121,128,112,126,114,110,115,117,110,
-     +       122,110,113,104,111,119,110,116,127,110,129,130,131) , NDPC
+     +       122,110,113,103,111,119,110,116,127,110,129,130,131) , NDPC
 C
 C Log an error if it's not one of the legal ones.
 C
-  110 IF (IPSS.EQ.2) WRITE (IERU,1001) ICHR,CHRS(ICHR:ICHR)
-      GO TO 104
+  110 WRITE (IERU,1001) ICHR,CHRS(ICHR:ICHR)
+      GO TO 103
 C
 C FONT DEFINITION
 C ---------------
@@ -952,12 +1028,12 @@ C
 C R is for Roman font.
 C
   111 IFNT=IFRO
-      GO TO 104
+      GO TO 103
 C
 C G is for Greek font.
 C
   112 IFNT=IFGR
-      GO TO 104
+      GO TO 103
 C
 C SIZE DEFINITION
 C ---------------
@@ -969,19 +1045,19 @@ C P is for Principal size.
 C
   113 ISZE=ISZP
       IPIC=1
-      GO TO 132
+      GO TO 103
 C
 C I is for Indexical size.
 C
   114 ISZE=ISZI
       IPIC=2
-      GO TO 132
+      GO TO 103
 C
 C K is for Cartographic size.
 C
   115 ISZE=ISZC
       IPIC=3
-      GO TO 132
+      GO TO 103
 C
 C CASE DEFINITION
 C ---------------
@@ -994,14 +1070,14 @@ C
   116 ICSP=ICSL
       ICSE=ICSU
       CALL PCGTDI (CHRS,NCHR,ICHR,NCSE)
-      GO TO 104
+      GO TO 103
 C
 C L is for Lower case.
 C
   117 ICSP=ICSU
       ICSE=ICSL
       CALL PCGTDI (CHRS,NCHR,ICHR,NCSE)
-      GO TO 104
+      GO TO 103
 C
 C LEVEL DEFINITION
 C ----------------
@@ -1063,7 +1139,7 @@ C
         ICSE=ICSU
       END IF
 C
-        GO TO 132
+        GO TO 103
 C
 C E is for End of subscripting or superscripting, which is illegal if
 C we're not in that mode.
@@ -1081,7 +1157,7 @@ C
       IPIC=ISZE/128+1
       NSSL=NSSL-1
 C
-      GO TO 132
+      GO TO 103
 C
 C N is for Normal, which is illegal if we're not subscripting or
 C superscripting.
@@ -1101,7 +1177,7 @@ C
       IPIC=ISZE/128+1
       NSSL=NSSL-1
 C
-      GO TO 132
+      GO TO 103
 C
 C DIRECTION DEFINITION
 C --------------------
@@ -1114,13 +1190,13 @@ C
   123 CALL PCGTDI (CHRS,NCHR,ICHR,NDWN)
       IF (NDWN.LE.0) NDWN=NCHR
       LCWD=1
-      GO TO 104
+      GO TO 103
 C
 C A is for Across.  Clear the "down" flags.
 C
   124 NDWN=0
       LCWD=0
-      GO TO 104
+      GO TO 103
 C
 C COORDINATE DEFINITION
 C ---------------------
@@ -1137,7 +1213,7 @@ C
       YRGT=YBOL
       ADDP=0.
       SUBP=0.
-      GO TO 132
+      GO TO 103
 C
 C H is for Horizontal.
 C
@@ -1157,7 +1233,7 @@ C
       YCEN=YCEN+DELX*STSO
       XRGT=XRGT+DELX*STCO
       YRGT=YRGT+DELX*STSO
-      GO TO 132
+      GO TO 103
 C
 C V is for Vertical.
 C
@@ -1177,7 +1253,7 @@ C
       YCEN=YCEN+DELY*STCO
       XRGT=XRGT-DELY*STSO
       YRGT=YRGT+DELY*STCO
-      GO TO 132
+      GO TO 103
 C
 C FONT CHANGE REQUEST
 C -------------------
@@ -1186,14 +1262,33 @@ C F is for Font.  The intent is to request use of one of the Hershey
 C fonts which are defined by fontcaps, stroking out the characters,
 C rather than leaving it to be done by the translator.
 C
-C Retrieve the integer which follows the F; it determines which font to
+C Retrieve the integer that follows the F; it determines which font to
 C use.  If there is no such integer, go back to the font that was in
 C use when PLCHHQ was called.
 C
   128 ICHS=ICHR
       CALL PCGTDI (CHRS,NCHR,ICHR,NFNT)
-      IF (ICHR.EQ.ICHS) NFNT=NFNO
-      GO TO 132
+      IF (ICHR.EQ.ICHS) THEN
+        NFNT=NFNO
+        GO TO 103
+      END IF
+C
+C If the font number was given, force it to be positive and check the
+C value given.  In place of illegal values, use a 1.  When a new font
+C is made available, the block IF must be updated and a copy of it must
+C be put in the routine PCSETR.
+C
+      IF (NFNT.LT.0) NFNT=-NFNT
+C
+      IF ((NFNT.GE. 23.AND.NFNT.LE. 24).OR.
+     +    (NFNT.GE. 27.AND.NFNT.LE. 28).OR.
+     +    (NFNT.GE. 31.AND.NFNT.LE. 32).OR.
+     +    (NFNT.GE. 38.AND.NFNT.LE.120).OR.
+     +    (NFNT.GE.123.AND.NFNT.LE.124).OR.
+     +    (NFNT.GE.127.AND.NFNT.LE.128).OR.
+     +    (NFNT.GE.131.AND.NFNT.LE.132).OR.NFNT.GE.138) NFNT=1
+C
+      GO TO 103
 C
 C ZOOM REQUEST
 C ------------
@@ -1219,7 +1314,7 @@ C
       IF (ICHR.LT.NCHR) THEN
         IF (CHRS(ICHR+1:ICHR+1).EQ.'Q') ICHR=ICHR+1
       END IF
-      GO TO 132
+      GO TO 103
 C
 C Process a "Y".
 C
@@ -1240,7 +1335,7 @@ C
           YRGT=YRGT+DELY*STCO
         END IF
       END IF
-      GO TO 132
+      GO TO 103
 C
 C Process a "Z".
 C
@@ -1264,25 +1359,7 @@ C
           YRGT=YRGT+DELY*STCO
         END IF
       END IF
-      GO TO 132
-C
-C A function code has just occurred which changes the size of the
-C characters being written or implies that the next character will
-C not simply be written after the previous one.  If lower-quality
-C characters are in use, this implies that characters collected
-C in the buffer should be dumped before going back for the next
-C character in the input string.
-C
-  132 IF (IQUF.NE.0.AND.IPSS.EQ.2) THEN
-        IF (NCBF.NE.0)CALL PCMQLQ (XSUB,YSUB,CHBF(1:NCBF),SIZS,ANGD,-1.)
-        XSUB=CFUX(XRGT+WPIC(IPIC)*STCO/6.)
-        YSUB=CFUY(YRGT+WPIC(IPIC)*STSO/6.)
-        NCBF=0
-        SIZS=SIZM*WPIC(IPIC)
-        IF (RHTW.GE.0.) RHTW=1.5*HPIC(IPIC)/WPIC(IPIC)
-      END IF
-C
-      GO TO 104
+      GO TO 103
 C
 C Formats.
 C

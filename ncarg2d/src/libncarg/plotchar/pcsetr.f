@@ -1,5 +1,5 @@
 C
-C	$Id: pcsetr.f,v 1.3 1992-09-04 20:46:18 ncargd Exp $
+C $Id: pcsetr.f,v 1.4 1992-11-17 18:46:58 kennison Exp $
 C
 C
 C ---------------------------------------------------------------------
@@ -13,22 +13,26 @@ C values of type REAL.
 C
 C COMMON block declarations.
 C
-      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),ICEN,IQUF,
-     +                ISCR,ITEF,JCOD,NFCC,SSIC,SSPR,SUBS,VPIC(3),
-     +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
-     +                YMUL(3)
+      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),ICEN,IOUC,
+     +                IOUF,
+     +                IQUF,ISHC,ISHF,ITEF,JCOD,NFCC,NFNT,SHDX,SHDY,
+     +                SIZA,SSIC,SSPR,SUBS,VPIC(3),WPIC(3),XBEG,XCEN,
+     +                XEND,XMUL(3),YBEG,YCEN,YEND,YMUL(3)
       SAVE   /PCPRMS/
 C
-      COMMON /PCPFMQ/ RHTW
+      COMMON /PCPFMQ/ IMAP,RHTW
       SAVE   /PCPFMQ/
 C
-      COMMON /PCPFFC/ NFNT
-      SAVE   /PCPFFC/
+C Declare the BLOCK DATA routine external to force it to load.
+C
+      EXTERNAL PCBLDA
 C
 C Set the selected parameter.
 C
       IF      (WHCH(1:2).EQ.'AS'.OR.WHCH(1:2).EQ.'as') THEN
         ADDS=RVAL
+      ELSE IF (WHCH(1:2).EQ.'BF'.OR.WHCH(1:2).EQ.'bf') THEN
+        CALL BZSETR ('FTL',RVAL)
       ELSE IF (WHCH(1:2).EQ.'CD'.OR.WHCH(1:2).EQ.'cd') THEN
         JCOD=MAX(0,MIN(1,INT(RVAL)))
       ELSE IF (WHCH(1:2).EQ.'CE'.OR.WHCH(1:2).EQ.'ce') THEN
@@ -44,7 +48,14 @@ C
         WPIC(3)=MAX(0.,RVAL)
         XMUL(3)=WPIC(3)/8.
       ELSE IF (WHCH(1:2).EQ.'FN'.OR.WHCH(1:2).EQ.'fn') THEN
-        NFNT=INT(RVAL)
+        NFNT=ABS(INT(RVAL))
+        IF ((NFNT.GE. 23.AND.NFNT.LE. 24).OR.
+     +      (NFNT.GE. 27.AND.NFNT.LE. 28).OR.
+     +      (NFNT.GE. 31.AND.NFNT.LE. 32).OR.
+     +      (NFNT.GE. 38.AND.NFNT.LE.120).OR.
+     +      (NFNT.GE.123.AND.NFNT.LE.124).OR.
+     +      (NFNT.GE.127.AND.NFNT.LE.128).OR.
+     +      (NFNT.GE.131.AND.NFNT.LE.132).OR.NFNT.GE.138) NFNT=1
       ELSE IF (WHCH(1:2).EQ.'HW'.OR.WHCH(1:2).EQ.'hw') THEN
         RHTW=RVAL
       ELSE IF (WHCH(1:2).EQ.'IH'.OR.WHCH(1:2).EQ.'ih') THEN
@@ -57,6 +68,12 @@ C
       ELSE IF (WHCH(1:2).EQ.'IW'.OR.WHCH(1:2).EQ.'iw') THEN
         WPIC(2)=MAX(0.,RVAL)
         XMUL(2)=WPIC(2)/12.
+      ELSE IF (WHCH(1:2).EQ.'MA'.OR.WHCH(1:2).EQ.'ma') THEN
+        IMAP=MAX(0,INT(RVAL))
+      ELSE IF (WHCH(1:2).EQ.'OC'.OR.WHCH(1:2).EQ.'oc') THEN
+        IOUC=INT(RVAL)
+      ELSE IF (WHCH(1:2).EQ.'OF'.OR.WHCH(1:2).EQ.'of') THEN
+        IOUF=MAX(0,MIN(1,INT(RVAL)))
       ELSE IF (WHCH(1:2).EQ.'PH'.OR.WHCH(1:2).EQ.'ph') THEN
         HPIC(1)=MAX(0.,RVAL)
         YMUL(1)=HPIC(1)/21.
@@ -69,10 +86,18 @@ C
         XMUL(1)=WPIC(1)/16.
       ELSE IF (WHCH(1:2).EQ.'QU'.OR.WHCH(1:2).EQ.'qu') THEN
         IQUF=MAX(0,MIN(2,INT(RVAL)))
+      ELSE IF (WHCH(1:2).EQ.'SA'.OR.WHCH(1:2).EQ.'sa') THEN
+        SIZA=MAX(0.,RVAL)
       ELSE IF (WHCH(1:2).EQ.'SC'.OR.WHCH(1:2).EQ.'sc') THEN
-        ISCR=MAX(0,MIN(1,INT(RVAL)))
+        ISHC=INT(RVAL)
+      ELSE IF (WHCH(1:2).EQ.'SF'.OR.WHCH(1:2).EQ.'sf') THEN
+        ISHF=MAX(0,MIN(1,INT(RVAL)))
       ELSE IF (WHCH(1:2).EQ.'SS'.OR.WHCH(1:2).EQ.'ss') THEN
         SUBS=RVAL
+      ELSE IF (WHCH(1:2).EQ.'SX'.OR.WHCH(1:2).EQ.'sx') THEN
+        SHDX=RVAL
+      ELSE IF (WHCH(1:2).EQ.'SY'.OR.WHCH(1:2).EQ.'sy') THEN
+        SHDY=RVAL
       ELSE IF (WHCH(1:2).EQ.'TE'.OR.WHCH(1:2).EQ.'te') THEN
         ITEF=MAX(0,MIN(1,INT(RVAL)))
       ELSE
