@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.17 1995-04-25 06:11:16 boote Exp $
+ *      $Id: App.c,v 1.18 1995-05-30 19:47:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -684,7 +684,7 @@ AppInitialize
 		anew->app.values = NULL;
 		anew->app.res = NULL;
 		anew->app.nres = 0;
-		if(anew->app.args){
+		if(anew->app.nargs){
 			for(i=0;i < anew->app.nargs;i++){
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"%s:%s is not a defined resource of App object \"%s\"",

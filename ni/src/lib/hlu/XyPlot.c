@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.47 1995-05-05 08:50:45 boote Exp $
+ *      $Id: XyPlot.c,v 1.48 1995-05-30 19:48:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -836,6 +836,85 @@ XyPlotClassPartInitialize
 }
 
 /*
+ * Function:	XyResetExtents
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static NhlErrorTypes
+XyResetExtents
+#if	NhlNeedProto
+(
+	NhlXyPlotLayer	xnew
+)
+#else
+(xnew)
+	NhlXyPlotLayer	xnew;
+#endif
+{
+	char			func[] = "XyResetExtents";
+	NhlSArg			sargs[30];
+	NhlGArg			gargs[30];
+	int			nargs;
+	float			xstart,xend,ystart,yend;
+	NhlXyPlotLayerPart	*newxy = &xnew->xyplot;
+	NhlErrorTypes		ret;
+
+	nargs = 0;
+	NhlSetGArg(&gargs[nargs++],NhlNtmXBTickStartF,&xstart);
+	NhlSetGArg(&gargs[nargs++],NhlNtmXBTickEndF,&xend);
+	NhlSetGArg(&gargs[nargs++],NhlNtmYLTickStartF,&ystart);
+	NhlSetGArg(&gargs[nargs++],NhlNtmYLTickEndF,&yend);
+	ret = NhlALGetValues(newxy->overlay->base.id,gargs,nargs);
+	if(ret < NhlNOERROR){
+		NhlPError(ret,NhlEUNKNOWN,
+			"%s:Nice data extents will not be determined",func);
+		return ret;
+	}
+
+	nargs = 0;
+	if(newxy->compute_x_min){
+		newxy->x_min = xstart;
+		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,newxy->x_min);
+	}
+	if(newxy->compute_x_max){
+		newxy->x_max = xend;
+		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,newxy->x_max);
+	}	
+	if(newxy->compute_y_min){
+		newxy->y_min = ystart;
+		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,newxy->y_min);
+	}
+	if(newxy->compute_y_max){
+		newxy->y_max = yend;
+		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,newxy->y_max);
+	}
+
+	if(!nargs)
+		return NhlNOERROR;
+
+	ret = NhlALSetValues(newxy->thetrans->base.id,sargs,nargs);
+	if(ret < NhlNOERROR){
+		NhlPError(ret,NhlEUNKNOWN,
+			"%s:Nice data extents will not be determined",func);
+		return ret;
+	}
+
+	nargs = 0;
+	NhlSetSArg(&sargs[nargs++],NhlNpmUpdateReq,True);
+	return _NhlManageOverlay(&newxy->overlay,(NhlLayer)xnew,
+			(NhlLayer)xnew,_NhlSETVALUES,
+			sargs,nargs,func);
+}
+
+/*
  * Function:	XyPlotChanges
  *
  * Description:	called by setvalues and initialize to do all the common things.
@@ -939,6 +1018,9 @@ XyPlotChanges
 	ret2 = _NhlManageOverlay(&xnew->xyplot.overlay,(NhlLayer)xnew,
 			(NhlLayer)xold,(calledfrom == _NhlCREATE),sargs,nsargs,
 			"XyPlotChanges");
+	ret1 = MIN(ret1,ret2);
+
+	ret2 = XyResetExtents(xnew);
 	ret1 = MIN(ret1,ret2);
 
 	return ret1;
@@ -2674,6 +2756,9 @@ XyPlotUpdateData
 		(NhlLayer)xlold,_NhlUPDATEDATA,sargs,nsargs,"XyPlotUpdateData");
 	if(ret2 < NhlWARNING)
 		return ret2;
+	ret1 = MIN(ret1,ret2);
+
+	ret2 = XyResetExtents(xl);
 	ret1 = MIN(ret1,ret2);
 
 	return ret1;
