@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: graphcap.m,v 1.6 1994-01-10 18:00:18 haley Exp $
+.\"	$Id: graphcap.m,v 1.7 1994-03-08 21:55:47 fred Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH GRAPHCAP 5NCARG "April 1993" NCAR "NCAR GRAPHICS"
@@ -51,10 +51,32 @@ HP7475a six pen plotter.
 HP7510a color film recorder.
 .TP 15
 .B hpgl
-Basic support for the HP-GL language in portrait mode.
+Basic support for the HP-GL language in its most elementary form.  This
+graphcap is provided for older printers/plotters that do not support
+the full HP-GL/2 language as standardized by HP.
 .TP 15
-.B hpgl.land
-Basic support for the HP-GL language in landscape mode.
+.B hpgl2
+Support for the HP-GL/2 language as standardized by HP.  Use this graphcap
+for devices that support HP-GL/2 but do not support either the dual context
+extensions (device accepts languages in addition to HP-GL/2) or the
+palette extensions (allows for user-defined colors).
+.TP 15
+.B hpgl2.dual
+Support for the HP-GL/2 language as standardized by HP running with the
+dual context extensions (device accepts languages in addition to HP-GL/2).
+If the device also supports the palette extensions, use the hpgl2pe.dual
+graphcap.
+.TP 15
+.B hpgl2pe
+Support for the HP-GL/2 language as standardized by HP running with the
+palette extensions (allows for user-defined colors).  If the device also
+supports the dual context extensions (device accepts languages in addition 
+to HP-GL/2), use the hpgl2pe.dual graphcap.
+.TP 15
+.B hpgl2pe.dual
+Support for the HP-GL/2 language as standardized by HP running with the
+palette extensions (allows for user-defined colors) and the dual context
+extensions (device accepts languages in addition to HP-GL/2).
 .TP 15
 .B hplj75l
 A graphcap for the HP LaserJet family of printers (LaserJet,
