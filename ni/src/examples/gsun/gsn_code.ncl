@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.56 2001-01-16 23:54:57 haley Exp $
+;      $Id: gsn_code.ncl,v 1.57 2001-01-31 22:43:32 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -53,6 +53,7 @@ undef("attsetvalues_check")
 undef("spread_colors")
 undef("check_for_irreg2loglin")
 undef("compute_ps_device_coords")
+undef("maximize_bb")
 undef("gsnp_turn_off_tickmarks")
 undef("gsnp_point_tickmarks_outward")
 undef("gsnp_uniform_tickmark_labels")
@@ -60,12 +61,15 @@ undef("gsnp_shape_plot")
 undef("gsnp_scale_plot")
 undef("check_for_tickmarks_off")
 undef("draw_and_frame")
+undef("get_bb_res")
+undef("gsn_open_ncgm")
+undef("gsn_open_x11")
 undef("create_labelbar")
 undef("gsn_open_ps")
-undef("gsn_open_x11")
-undef("gsn_open_ncgm")
 undef("gsn_open_wks")
+undef("output_ps_return")
 undef("output_ps")
+undef("append_output_ps")
 undef("gsn_define_colormap")
 undef("gsn_retrieve_colormap")
 undef("gsn_polygon")
@@ -78,6 +82,7 @@ undef("gsn_polyline_ndc")
 undef("gsn_polymarker")
 undef("gsn_add_polymarker")
 undef("gsn_polymarker_ndc")
+undef("draw_bb")
 undef("gsn_labelbar_ndc")
 undef("gsn_panel_return")
 undef("gsn_panel")
@@ -119,7 +124,6 @@ function smooth92d(var[*][*]:float,p[1]:float,q[1]:float)
 local dims,output,coef,m,n,p4,q4,i
 begin
   dims = dimsizes(var)
-	
   output = new((/dims(0),dims(1)/),float)
 
   coef = 1 - p - q
@@ -714,13 +718,13 @@ begin
 ;                                                                      ;
 ; res : list of optional resources. Ones accepted include:             ;
 ;                                                                      ;
-;       "paper_orient" - orientation of paper. Can be "landscape",      ;
-;                       "portrait", or "auto_orient". Default is       ;
-;                       "auto_orient".                                 ;
+; "gsnPaperOrientation" - orientation of paper. Can be "landscape",    ;
+;                         "portrait", or "auto_orient". Default is     ;
+;                         "auto_orient".                               ;
 ;                                                                      ;
-;       "paper_width"  - width of paper (in inches, default is 8.5)    ;
-;       "paper_height" - height of paper (in inches, default is 11.0)  ;
-;       "paper_margin" - margin to leave around plots (in inches,      ;
+;       "gsnPaperWidth"  - width of paper (in inches, default is 8.5)  ;
+;       "gsnPaperHeight" - height of paper (in inches, default is 11.0);
+;       "gsnPaperMargin" - margin to leave around plots (in inches,    ;
 ;                        default is 0.5)                               ;
 ;                                                                      ;
 ;**********************************************************************;
@@ -732,12 +736,20 @@ begin
 ;
 ; Get resources.
 ;
-  paper_height = get_res_value(res,"paper_height",11.0)
-  paper_width  = get_res_value(res,"paper_width",8.5)
-  paper_margin = get_res_value(res,"paper_margin",0.5)
-  paper_orient = get_res_value(res,"paper_orient","auto_orient")
+  paper_height = get_res_value_keep(res,"gsnPaperHeight",11.0)
+  paper_width  = get_res_value_keep(res,"gsnPaperWidth",8.5)
+  paper_margin = get_res_value_keep(res,"gsnPaperMargin",0.5)
+  paper_orient = get_res_value_keep(res,"gsnPaperOrientation","auto_orient")
   dimbb        = dimsizes(bb)
-
+  if(typeof(paper_orient).eq."integer")
+    if(paper_orient.eq.0)
+      lc_orient = "portrait"
+    else
+      lc_orient = "landscape"
+    end if
+  else
+    lc_orient = lower_case(paper_orient)
+  end if
 ;
 ;
 ; Error checking.
@@ -750,14 +762,13 @@ begin
   else
     top = max(bb(:,0))
     bot = min(bb(:,1))
-    lft = max(bb(:,2))
-    rgt = min(bb(:,3))
+    lft = min(bb(:,2))
+    rgt = max(bb(:,3))
   end if
 
   if(bot.lt.0.or.bot.gt.1.or.top.lt.0.or.top.gt.1.or. \
      lft.lt.0.or.lft.gt.1.or.rgt.lt.0.or.rgt.gt.1)
-    print("compute_ps_device_coords: bounding box values must be between 0 and 1 inclusive")
-    return((/0,0,0,0/))
+    print("compute_ps_device_coords: warning: bounding box values should be between 0 and 1 inclusive. Will continue anyway.")
   end if
 
   if(bot.ge.top.or.lft.ge.rgt)
@@ -791,9 +802,8 @@ begin
 ; Determine orientation, and then calculate device coordinates based
 ; on this.
 ; 
-  lc_orient = lower_case(paper_orient)
-  if(lc_orient.eq."portrait".or.lc_orient.eq."auto_orient".and. \
-      (ph / pw).ge.1.0)
+  if(lc_orient.eq."portrait".or. \
+     (lc_orient.eq."auto_orient".and.(ph / pw).ge.1.0))
 ;
 ; If plot is higher than it is wide, then default to portrait if
 ; orientation is not specified.
@@ -839,11 +849,90 @@ begin
 ; Return device coordinates and the orientation.
 ;
   coords = floattointeger((/lx,ly,ux,uy/))
-  coords@orientation = lc_orient
+  coords@gsnPaperOrientation = lc_orient
   return(coords)
 end
 
 
+;**********************************************************************;
+  xlinear = get_res_value(res,"gsnXAxisIrregular2Linear",xlinear)
+  ylinear = get_res_value(res,"gsnYAxisIrregular2Linear",ylinear)
+  xlog    = get_res_value(res,"gsnXAxisIrregular2Log",xlog)
+  ylog    = get_res_value(res,"gsnYAxisIrregular2Log",ylog)
+
+  if(ylog.and.ylinear)
+    print("Error: You cannot set both gsnYAxisIrregular2Log")
+    print("and gsnYAxisIrregular2Linear to True.")
+    exit
+  end if
+
+;       "gsnBBMargin" - margin to leave around plots (in NDC units,    ;
+;                        default is 0.02)                              ;
+     print("and gsnXAxisIrregular2Linear to True.")
+     exit
+
+  end if
+
+  return
+end
+
+;**********************************************************************;
+  margin = get_res_value_keep(res,"gsnBBMargin",0.02)
+;               plot : graphic                                         ;
+;                res : logical                                         ;
+;                                                                      ;
+; This function computes the viewport coordinates needed to optimize   ;
+; the size of a plot on a page.                                        ;
+;                                                                      ;
+; plot : plot to maximize on the page.                                 ;
+;                                                                      ;
+; res : list of optional resources. Ones accepted include:             ;
+;                                                                      ;
+;     "gsnBoxMargin" - margin to leave around plots (in NDC units,     ;
+;                     default is 0.02)                                 ;
+;                                                                      ;
+;**********************************************************************;
+function maximize_bb(plot[1]:graphic,res:logical)
+local coords, top, bot, lft, rgt, width, height, margin
+begin
+;
+; Get resources.
+;
+  margin = get_res_value_keep(res,"gsnBoxMargin",0.02)
+
+;
+; Get bounding box of plot.
+;
+  bb = NhlGetBB(plot)
+
+  top = bb(0)
+  bot = bb(1)
+  lft = bb(2)
+  rgt = bb(3)
+
+;
+; Get height/width of plot in NDC units.
+;
+  uw = rgt - lft
+  uh = top - bot
+
+;
+; Calculate scale factor needed to make plot larger.
+;
+  scale = (1 - 2*margin)/max((/uw,uh/))
+
+;
+; Get the viewport.
+;
+  getvalues plot
+    "vpXF"      : vpx
+    "vpYF"      : vpy
+    "vpWidthF"  : vpw
+    "vpHeightF" : vph
+  end getvalues
+
+  dx = scale * (vpx - lft) ; Calculate distance from plot's left position
+                           ; to its leftmost annotation
   dy = scale * (top - vpy) ; Calculate distance from plot's top position
                            ; to its topmost annotation.
 ;
@@ -1106,23 +1195,70 @@ begin
   end setvalues
 end
 
-
 ;
 ; Return device coordinates and the orientation.
 ;
   coords = tointeger((/lx,ly,ux,uy/))
   coords@gsnPaperOrientation = lc_orient
 ;
+; Debug prints.
 ;
   if(is_debug)
    print("-------Device coordinates for PostScript-------")
    print("    wkDeviceLowerX = " + coords(0))
    print("    wkDeviceLowerY = " + coords(1))
+   print("    wkDeviceUpperX = " + coords(2))
+   print("    wkDeviceUpperY = " + coords(3))
    print("    wkOrientation  = " + coords@gsnPaperOrientation)
 
   end if
-                         callframe:logical)
+
   return(coords)
+end
+
+
+;***********************************************************************;
+; Procedure : draw_and_frame                                            ;
+; Get orientation of plot.
+;
+      getvalues wks
+        "wkOrientation" : orientation
+      end getvalues
+      maxbb@gsnPaperOrientation = get_res_value(maxbb,"gsnPaperOrientation",\
+                                                orientation)
+;
+;                wks:graphic                                            ;
+;               plot:graphic                                            ;
+;           calldraw:logical                                            ;
+;          callframe:logical                                            ;
+; If gsnBBPrint is set to True, then print "coords".
+;
+      if(get_res_value(maxbb,"gsnBBPrint",False))
+        print(coords)
+      end if
+;
+;              maxbb:logical                                            ;
+;                                                                       ;
+; By default, all of the plotting routines will draw the plot and       ;
+; gsnFrame are set to False. This procedure checks if these resources   ;
+; had been set, and calls draw and/or frame accordingly.                ;
+; If maxbb is True, then the plot is maximized in the NCGM, X11, or PS  ;
+; window.                                                               ; 
+;***********************************************************************;
+procedure draw_and_frame(wks:graphic,plot:graphic,calldraw:logical, \
+                         callframe:logical,maxbb:logical)
+begin
+  if(maxbb) then
+    class = NhlClassName(wks)
+
+    if(class(0).eq."psWorkstationClass") then
+;
+; Compute device coordinates that will make plot fill the whole page.
+;
+      coords = compute_ps_device_coords(NhlGetBB(plot),maxbb)
+;
+; Set these device coordinates.
+;
       setvalues wks
         "wkOrientation"  : coords@gsnPaperOrientation
         "wkDeviceLowerX" : coords(0)
@@ -1134,6 +1270,32 @@ end
     else
 ;
 ; If the workstation is NCGM or X11, then maximize the bounding box.
+;
+      coords = maximize_bb(plot,maxbb)
+      setvalues plot
+        "vpXF"      : coords(0)
+        "vpYF"      : coords(1)
+        "vpWidthF"  : coords(2)
+        "vpHeightF" : coords(3)
+      end setvalues
+  maxbb = get_res_value(res,"gsnBBMaximize", False)
+  end if
+
+  if(calldraw)
+  maxbb@gsnBBMargin    = get_res_value(res,"gsnBBMargin",0.02)
+  maxbb@gsnBBPrint     = get_res_value(res,"gsnBBPrint",False)
+
+  if(callframe)
+    frame(wks)           ; advance the frame
+  end if
+end
+
+;***********************************************************************;
+; Don't assume a default on this one, because the default will be
+; determined by doing a getvalues on the PostScript workstation. 
+;
+  if(isatt(res,"gsnPaperOrientation"))
+    maxbb@gsnPaperOrientation = get_res_value(res,"gsnPaperOrientation","")
   end if
 ;
 ; Indicate here whether the panel resources have been set.
@@ -1261,7 +1423,6 @@ begin
   return(labelbar_object)
 end
 
-
 ;***********************************************************************;
 ; Function : gsn_open_ps                                                ;
 ;               name : name of PostScript file                          ;
@@ -1362,20 +1523,42 @@ begin
     end create
 
 ;**********************************************************************;
-; Procedure : output_ps                                                ;
+; Function : output_ps_return                                          ;
 ;            plots[*] : graphic                                        ;
 ;              psname : string                                         ;
-;              pstype : string                                         ;
-;              orient : string                                         ;
+;                 res : logical                                        ;
 ;                                                                      ;
 ; This procedure computes the smallest bounding box that can contain   ;
 ; all of the plots, and then it uses this information to send the      ;
 ; output to a PostScript file, using the full page.                    ;
 ;                                                                      ;
+;  plots : list of plots  to send to PostScript file                   ;
+;                                                                      ;
+; psname : name of PostScript (minus the suffix which will default to  ;
+;          "ps" unless otherwise specified)                            ;
+;                                                                      ;
+;    res : list of optional resources. Ones accepted include:          ;
+;                                                                      ;
+; "gsnPaperOrientation" - orientation of paper. Can be "landscape",    ;
+;                         "portrait", or "auto_orient". Default is     ;
+;                         "auto_orient".                               ;
+;       "gsnPaperWidth"  - width of paper (in inches, default is 8.5)  ;
+;       "gsnPaperHeight" - height of paper (in inches, default is 11.0);
+;       "gsnPaperMargin" - margin to leave around plots (in inches,    ;
+;                        default is 0.5)                               ;
+;                                                                      ;
+; This function returns the PostScript workstation created.            ;
 ;**********************************************************************;
 
-procedure output_ps(plots,psname,pstype,orient)
+function output_ps_return(wks,plots,psname,res)
+local pstype, orient
 begin
+  res2 = res
+;
+; Get resource values.
+;
+  pstype       = get_res_value(res2,"gsnPSFormat","ps")
+
 ;
 ; Get max and min of bounding box of all plots.
 ; 
@@ -1394,29 +1577,11 @@ begin
 ;
 ; Compute device coordinates.
 ;
-  res = True
-  res@paper_orient = orient
-  coords = compute_ps_device_coords(new_bb,res)
+  coords = compute_ps_device_coords(new_bb,res2)
 
 ;
-; Retrieve current workstation so that we can retrieve the colormap.
-; Assume all plots have same workstation parent, and thus the same
-; colormap.
+; Retrieve the colormap.
 ;
-  still_missing = True
-  i = 0
-  do while(still_missing.and.i.lt.nplots)
-    if(.not.ismissing(plots(i)))
-      wks = NhlGetParentId(plots(i))
-      still_missing = False
-    end if
-    i = i + 1
-  end do
-  if(still_missing) then
-    print("output_ps: all plots are empty, no PostScript file created") 
-    exit
-  end if 
-
   getvalues wks
     "wkColorMap" : cmap
   end getvalues
@@ -1429,14 +1594,19 @@ begin
   wks_type@wkDeviceLowerY = coords(1)
   wks_type@wkDeviceUpperX = coords(2)
   wks_type@wkDeviceUpperY = coords(3)
-  wks_type@wkOrientation  = coords@orientation
+  wks_type@wkOrientation  = coords@gsnPaperOrientation
   wks_type@wkColorMap     = cmap
 
-  wks2 = gsn_open_wks(wks_type,psname)   ; Open PostScript workstation.
+;
+; Don't use gsn_open_wks here, because that function creates an
+; application object, which screws everything up.
+;
+  ps_filename = psname + "." + wks_type
+  pswks = gsn_open_ps(wks_type,ps_filename) ; Open PostScript workstation.
 
   do i = 0,nplots-1
     if(.not.ismissing(plots(i))) then
-      NhlChangeWorkstation(plots(i),wks2)  ; Change workstation to new one.
+      NhlChangeWorkstation(plots(i),pswks)  ; Change workstation to new one.
   
       draw(plots(i))                       ; Draw plot to new workstation.
 
@@ -1444,7 +1614,97 @@ begin
     end if
   end do
 
-  frame(wks2)
+  frame(pswks)
+
+  pswks@wkDeviceLowerX = coords(0)
+  pswks@wkDeviceLowerY = coords(1)
+  pswks@wkDeviceUpperX = coords(2)
+  pswks@wkDeviceUpperY = coords(3)
+  pswks@wkOrientation  = coords@gsnPaperOrientation
+
+  return(pswks)
+end
+
+;**********************************************************************;
+; Procedure : output_ps                                                ;
+;                 wks : graphic                                        ;
+;            plots[*] : graphic                                        ;
+;              psname : string                                         ;
+;                 res : logical                                        ;
+;                                                                      ;
+; Procedure version of output_ps_return.                               ; 
+;**********************************************************************;
+procedure output_ps(wks,plots,psname,res)
+begin
+  pswks = output_ps_return(wks,plots,psname,res)
+end
+
+;**********************************************************************;
+; Procedure : append_output_ps                                         ;
+;                 wks : graphic                                        ;
+;               pswks : graphic                                        ;
+;            plots[*] : graphic                                        ;
+;                 res : logical                                        ;
+;                                                                      ;
+; Changes the workstation of the input plots to the PostScript         ;
+; workstation and redraws them. To be used in conjunction with         ;
+; output_ps.                                                           ;
+;                                                                      ;
+;**********************************************************************;
+procedure append_output_ps(wks,pswks,plots,res)
+begin
+  do i = 0,dimsizes(plots)-1
+    if(.not.ismissing(plots(i))) then
+      NhlChangeWorkstation(plots(i),pswks)  ; Change workstation to new one.
+  
+      draw(plots(i))                       ; Draw plot to new workstation.
+
+      NhlChangeWorkstation(plots(i),wks)  ; Change workstation back to orig.
+    end if
+  end do
+
+  frame(pswks)
+end
+
+;***********************************************************************;
+; Procedure : output_;lots_text_pstput_ps                               ;
+;                 wks : graphic                                         ;
+;               pswks : graphic                                         ;
+;            plots[*] : graphic                                         ;
+;             text[*] : graphic                                         ;
+;              psname : string                                          ;
+;                 res : logical                                         ;
+;                                                                       ;
+;***********************************************************************;
+procedure output_plots_text_ps (wks:graphic, pswks:graphic, \
+                                plots[*]:graphic, text[*]:graphic, \
+                                psname:string, res:logical)
+local res2, nplots, ntext, plots_and_text
+begin
+  res2 = res
+  nplots = dimsizes(plots)
+  ntext  = dimsizes(text)
+;
+; Create new variable to hold all graphical objects, then pass this
+; to output_ps to create a PostScript file.
+;
+  plots_and_text             = new(nplots+ntext,graphic)
+  plots_and_text(0:nplots-1) = plots
+  plots_and_text(nplots:)    = text
+
+  if(ismissing(pswks))
+    pswks = output_ps_return(wks,plots_and_text,psname,res2)
+  else
+    append_output_ps(wks,pswks,plots_and_text,res2)
+  end if
+
+  print("====> Suggested values for PS device coordinates:")
+  print("      wkDeviceLowerX = " + pswks@wkDeviceLowerX)
+  print("      wkDeviceLowerY = " + pswks@wkDeviceLowerY)
+  print("      wkDeviceUpperX = " + pswks@wkDeviceUpperX)
+  print("      wkDeviceUpperY = " + pswks@wkDeviceUpperY)
+  print("      wkOrientation  = " + pswks@wkOrientation)
+
 
 end
 
@@ -2009,6 +2269,23 @@ funccode, res2, calldraw, callframe
 end
     delete(yf)
 ;***********************************************************************;
+; Procedure : draw_bb                                                   ;
+;                wks:graphic                                            ;
+;               plot:graphic                                            ;
+; This procedure draws a box around the bounding box of the given plot  ;
+; objects.                                                              ; 
+;***********************************************************************;
+procedure draw_bb(wks:graphic,plot:graphic)
+begin
+  bb = NhlGetBB(plot)
+  top = max(bb)
+  bot = min(bb)
+  lft = min(bb)
+  rgt = max(bb)
+  gsn_polyline_ndc(wks,(/lft,rgt,rgt,lft,lft/),(/bot,bot,top,top,bot/),False)
+    wksname = get_res_value_keep(wks,"name","gsnapp")
+
+    if(res2.and.isatt(res2,"txFuncCode")) then
 ; Procedure : gsn_labelbar_ndc                                          ;
           "txString"   : text
 ;                  nbox: number of labelbar boxes                       ;
@@ -2157,7 +2434,21 @@ begin
   x_rgt          = get_res_value(res,"gsnPanelRight",1.)
   y_bot          = get_res_value(res,"gsnPanelBottom",0.)
   y_top          = get_res_value(res,"gsnPanelTop",1.)
+    print("Only " + npanels + " plots will be drawn.")
     if(y_top.eq.1.) then
+  if(maxbb) then
+      else
+        y_top = min((/1.,0.96-main_font_hgt/))
+      end if
+    end if
+  else
+  end if
+;
+; Calculate number of plot objects that will actually be drawn.
+; (Panel plots plus labelbar and main string, if any.)
+;
+  nnewplots = nplots
+    
   if(main_string_on) then
     nnewplots = nnewplots + 1
   end if
@@ -2429,21 +2720,23 @@ begin
       fig_index = 0
       just      = justs(fig_index)
 ;
-; If we want to save the plots, then create array to hold them.
-; We only do this because we might also need to return the resized
-; plots PLUS the labelbar object.
+; Create array to save the plots, plus a possible labelbar.
 ;
-  if(panel_save) then
-    if(panel_labelbar) then
-      newplots = new(nplots+1,graphic)
-    else 
-      newplots = new(nplots,graphic)
-    end if
-  else
-    newplots = plot
+  if(panel_labelbar) then
+    newplots = new(nplots+1,graphic)
+  else 
+    newplots = new(nplots,graphic)
   end if
+
+
+    len_pct = 0.025           ; Percentage of width/height of plot
+                                ; for white space around text box.
     if(vpw .lt. vph) then
-; Loop through each row and draw each plot in the new scaled-down size.
+      wsp_hpct = (len_pct * vpw) / vph
+      wsp_wpct = len_pct
+    else
+      wsp_hpct = len_pct
+      wsp_wpct = (len_pct * vph) / vpw
     end if
     para  = get_res_value(amres,"amParallelPosF",  paras(fig_index) * \
                                                    (0.5 - wsp_wpct))
@@ -2465,22 +2758,22 @@ begin
 ;
 ; Loop through each row and create each plot in the new scaled-down
 ; size. We will draw plots later, outside the loop.
-          "vpXF"      : old_vpx
-          "vpYF"      : old_vpy
-          "vpWidthF"  : old_vpwidth
-          "vpHeightF" : old_vpheight
+;
+  num_plots_left = nplots
+  nplot          = 0
+  nr             = 0
   do while(num_plots_left.gt.0)
     new_ncols = min((/num_plots_left,row_spec(nr)/))
 
           print("plot #" + nplot + " x,y=" + xpos(nc) + "," + ypos(nr) + \
-                " width,height=" + scale*old_vpwidth + "," + scale*old_vpheight)
+                " width,height=" + scale*old_vp(nplot,2) + "," + scale*old_vp(nplot,3))
     end if
 ;
 ; Calculate new x positions.
 ;
     xpos = x_lft + xwsp + dx +(xsp/2.+new_total_width*ispan(0,new_ncols-1,1))
-          "vpWidthF"  : scale*old_vpwidth 
-          "vpHeightF" : scale*old_vpheight
+
+    do nc = 0,new_ncols-1
       if(.not.ismissing(plot(nplot)))
         pplot = plot(nplot)
         getvalues pplot
@@ -2494,27 +2787,26 @@ begin
               "txBackgroundFillColor" : bkgrn
           print("    plot #" + nplot)
             attsetvalues_check(text,txres)
-            anno = NhlAddAnnotation(pplot,text)
+        setvalues pplot
           "vpXF"      : xpos(nc)
-            setvalues anno
+          "vpYF"      : ypos(nr)
           "vpWidthF"  : scale*old_vp(nplot,2)
           "vpHeightF" : scale*old_vp(nplot,3)
         end setvalues
 
         added_anno = False
         if(is_figure_strings) then
-            attsetvalues_check(anno,amres)
+          if(nplot .lt. dimsizes(panel_strings).and. \
             panel_strings(nplot).ne."")
             text = create "string" textItemClass wks
               "txString"              : panel_strings(nplot)
-
-        if(calldraw)
-          draw(pplot)  ; Draw the scaled down plot.
-        end if
-
-        if(added_anno.and..not.panel_save) then
-          NhlRemoveAnnotation(pplot,anno)
-        end if
+              "txFontHeightF"         : font_height
+              "txPerimOn"             : True
+              "txBackgroundFillColor" : 0
+            end create
+;
+; Info for possible labelbar.
+;
         if(panel_labelbar.or.draw_boxes) then
           bb = NhlGetBB(pplot) ; Get bounding box of plot
               "amZone"           : 0
@@ -2530,18 +2822,6 @@ begin
         end if
 ;
 ; Save this plot.
-
-        if(.not.panel_save)
-          setvalues pplot
-            "vpXF"      : old_vpx
-            "vpYF"      : old_vpy
-            "vpWidthF"  : old_vpwidth
-            "vpHeightF" : old_vpheight
-          end setvalues
-        else
-          newplots(nplot) = pplot
-        end if
-        delete(pplot)
 ;
         newplots(nplot) = pplot
 ;
@@ -2601,15 +2881,15 @@ begin
         mono_fill_col = False
         getvalues vector_plot
           "vcLevels"                 : levels
-        if(ncols.eq.1.and.lbres@vpWidthF.le.scale*old_vpwidth)
-          set_attr(lbres,"vpXF",xpos(0)+(scale*old_vpwidth - lbres@vpWidthF)/2.)
+          "vcLevelColors"            : colors
+          set_attr(lbres,"vpXF",xpos(0)+(scale*max(old_vp(:,2)) - lbres@vpWidthF)/2.)
       end if
           set_attr(lbres,"vpXF",(1. - lbres@vpWidthF)/2.)
 ;
       labelbar_height      = scale * labelbar_height
       labelbar_width       = scale * labelbar_width
-        if(nrows.eq.1.and.lbres@vpHeightF.le.scale*old_vpheight)
-          set_attr(lbres,"vpYF",ypos(0)-(scale*old_vpheight - lbres@vpHeightF)/2.)
+      labelbar_font_height = font_height
+;
 ; Set some labelbar resources.
           set_attr(lbres,"vpYF",1.-(1. - lbres@vpHeightF)/2.)
       set_attr(lbres,"vpWidthF", labelbar_width)
@@ -2629,23 +2909,40 @@ begin
       else
         set_attr(lbres,"vpXF",min ((/1.-(xwsp+labelbar_width),max_rgt+xwsp/)))
         if(nrows.eq.1.and.lbres@vpHeightF.le.scale*max(old_vp(:,3)))
-; Create and draw the labelbar.
+; Create the labelbar.
           set_attr(lbres,"vpYF",y_top-(tmp_range - lbres@vpHeightF)/2.)
-      labelbar = create_labelbar(wks,dimsizes(colors),colors,levels,lbres)
-      if(calldraw)
-        draw(labelbar)
-      end if
-      if(panel_save) then
-        newplots(nplots) = labelbar
-      end if
+      newplots(nplots) = create_labelbar(wks,dimsizes(colors),colors, \
+      set_attr(lbres,"lbLabelFontHeightF",labelbar_font_height)
 ; Check if we want different fill patterns or fill scales.  If so, we
        print("Warning: gsn_panel: unrecognized plot type, thus unable to extract information for creating a labelbar.")
 ;
       set_attr(lbres,"lbMonoFillColor",mono_fill_col)
        print("Warning: gsn_panel: unrecognized plot type for getting labelbar information. Ignoring labelbar request.")
-  if(callframe)
-    frame(wks)   ; Advance the frame.
+    main_xpos = get_res_value_keep(res,"txPosXF",0.5)
+; Draw plots plus labelbar (if it exists). This is also where the
+; plots will be maximized for PostScript output, if so indicated.
+      print("    title                = " + main_string)
+      print("    top of paneled plots = " + y_top)
+                      main_ypos, txres)
+;
+  draw_and_frame(wks,newplots,calldraw,callframe,maxbb)
+;
+; Draw bounding boxes around each plot object for debugging purposes.
+    do i=0,nplot-1
+  if(draw_boxes)
+    gsres = True
+    gsres@gsLineThicknessF = 3.0
+    do i=0,dimsizes(newplots)-1
+      if(.not.ismissing(newplots(i)))
+        bb  = NhlGetBB(newplots(i)) ; Get bounding box of plot
+        top = bb(0)
+        lft = bb(2)
+        bot = bb(1)
+        rgt = bb(3)
+
+        gsn_polyline_ndc(wks,(/lft,rgt,rgt,lft,lft/), \
                              (/bot,bot,top,top,bot/),gsres)
+      end if
     end do
   end if
 ;
@@ -3212,6 +3509,7 @@ function gsn_histogram(wks[1]:graphic,xdata:numeric,nbins[1]:integer, \
     res2      = res
     calldraw  = get_res_value(res2,"gsnDraw", True)
     callframe = get_res_value(res2,"gsnFrame",True)
+    maxbb     = get_bb_res(res2)
 ;
     buck   = compute_hist_vals(xdata,nbins)
     top    = max(buck) * 1.1
@@ -3288,7 +3586,7 @@ function gsn_histogram(wks[1]:graphic,xdata:numeric,nbins[1]:integer, \
     gsnp_uniform_tickmark_labels(xy,tmres,0.)
     axis_string = create "axis_string" textItemClass wks
     histogram = columns(wks,xy,locs,buck,wd,colors)
-    draw_and_frame(wks,histogram,calldraw,callframe)
+    draw_and_frame(wks,histogram,calldraw,callframe,maxbb)
     end create
 
     anno = NhlAddAnnotation(xy,axis_string)
@@ -3366,6 +3664,7 @@ begin
     end if
 ;
 ; Create plot object. Make sure you set the tension values (if
+; any) when you create the plot. This works better than setting
 ; them later.
 ;
     xtension  = get_res_value(res2,"trXTensionF", 2.0)
@@ -3434,7 +3733,7 @@ begin
       overlay_plot_object = plot_object
       delete(plot_object)
 
-    draw_and_frame(wks,plot_object,calldraw,callframe)
+      getvalues overlay_plot_object
         "trXMinF"    : trxmin
         "trXMaxF"    : trxmax
         "trYMinF"    : trymin
@@ -3509,6 +3808,7 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
 ;
     xtension  = get_res_value(res2,"trXTensionF", 2.0)
     ytension  = get_res_value(res2,"trYTensionF", 2.0)
+
     contour_object = create wksname + "_contour" contourPlotClass wks
         "cnScalarFieldData" : data_object
         "trYTensionF"       : ytension
@@ -3539,7 +3839,7 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
     mpres = get_res_eq(res2,(/"mp","vp"/))
-    draw_and_frame(wks,map_object,calldraw,callframe)
+    cnres = get_res_ne(res2,(/"mp","sf","vp"/))
 
     attsetvalues_check(map_object,mpres)
     attsetvalues_check(contour_object,cnres)
@@ -3584,10 +3884,11 @@ end
 ;                                                                       ;
 ; Special resources ("gsn" prefix) allowed:                             ;
 ;                                                                       ;
+;   gsnDraw                                                             ;
 ;   gsnFrame                                                            ;
 ;                                                                       ;
 ;***********************************************************************;
-    draw_and_frame(wks,plot_object,calldraw,callframe)
+function gsn_map(wks:graphic, projection:string, resources:logical )
 local i, plot_object, res2
 begin
     res2      = resources
@@ -3660,6 +3961,7 @@ begin
         "vfVDataArray" : v
     end create
 
+; Check for missing values.
 
     if(isatt(u,"_FillValue")) then
         setvalues data_object
@@ -3720,7 +4022,7 @@ begin
       overlay_plot_object = plot_object
       delete(plot_object)
 
-    draw_and_frame(wks,plot_object,calldraw,callframe)
+      getvalues overlay_plot_object
         "trXMinF"    : trxmin
         "trXMaxF"    : trxmax
         "trYMinF"    : trymin
@@ -3792,6 +4094,7 @@ begin
     if(isatt(u,"_FillValue")) then
         setvalues data_object
             "vfMissingUValueV" :u@_FillValue
+        end setvalues
     end if
     if(isatt(v,"_FillValue")) then
         setvalues data_object
@@ -3813,7 +4116,7 @@ begin
     calldraw  = get_res_value(res2,"gsnDraw", True)
     callframe = get_res_value(res2,"gsnFrame",True)
     maxbb     = get_bb_res(res2)
-    draw_and_frame(wks,map_object,calldraw,callframe)
+    shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
 
     vfres = get_res_eq(res2,"vf")
@@ -3930,6 +4233,7 @@ begin
 
     calldraw  = get_res_value(res2,"gsnDraw", True)
     callframe = get_res_value(res2,"gsnFrame",False)
+    maxbb     = get_bb_res(res2)
 ;
 ; datatondc can't accept doubles, so have to demote doubles if they
 ; come in.
@@ -3968,7 +4272,7 @@ begin
     txres = get_res_eq(res2,"tx")  ; Get text resources.
     attsetvalues_check(txid,txres)            ; Set text resources.
 
-    draw_and_frame(wks,txid,calldraw,callframe)
+    draw_and_frame(wks,txid,calldraw,callframe,maxbb)
 end
 
 ;***********************************************************************;
@@ -3998,6 +4302,7 @@ begin
 
     calldraw  = get_res_value(res2,"gsnDraw", True)
     callframe = get_res_value(res2,"gsnFrame",False)
+    maxbb     = get_bb_res(res2)
 
     if((res2).and.isatt(res2,"txFuncCode")) then
       txid = create wksname + "_text_ndc" textItemClass wks
@@ -4017,7 +4322,7 @@ begin
     txres = get_res_eq(res2,"tx")  ; Get text resources.
     attsetvalues_check(txid,txres)            ; Set text resources.
 
-    draw_and_frame(wks,txid,calldraw,callframe)
+    draw_and_frame(wks,txid,calldraw,callframe,maxbb)
     return(txid)
 end
 
@@ -4233,6 +4538,7 @@ begin
         "vfVDataArray" : v
     end create
 
+; Check for missing values.
 
     if(isatt(u,"_FillValue")) then
         setvalues data_object
@@ -4301,7 +4607,7 @@ begin
       overlay_plot_object = plot_object
       delete(plot_object)
 
-    draw_and_frame(wks,plot_object,calldraw,callframe)
+      getvalues overlay_plot_object
         "trXMinF"    : trxmin
         "trXMaxF"    : trxmax
         "trYMinF"    : trymin
@@ -4396,6 +4702,7 @@ begin
     end create
 
 ; Check for a missing value.
+
     if(isatt(data,"_FillValue")) then
         setvalues sfdata_object
             "sfMissingValueV" :data@_FillValue
@@ -4435,7 +4742,7 @@ begin
 
     if(sprdcols)
       cnres2 = True
-    draw_and_frame(wks,vector_object,calldraw,callframe)
+      vcres2 = True
 
       set_attr(cnres2,"cnFillColors",\
                spread_colors(wks,contour_object,min_index,max_index))
@@ -4532,6 +4839,7 @@ begin
     end create
 
 ; Check for a missing value.
+
     if(isatt(data,"_FillValue")) then
         setvalues sfdata_object
             "sfMissingValueV" :data@_FillValue
@@ -4567,7 +4875,7 @@ begin
     attsetvalues_check(vfdata_object,vfres)
     attsetvalues_check(sfdata_object,sfres)
     attsetvalues_check(contour_object,cnres)
-    draw_and_frame(wks,stream_object,calldraw,callframe)
+    attsetvalues_check(stream_object,stres)
 
     if(sprdcols)
       cnres2 = True
@@ -4668,6 +4976,7 @@ begin
     if(isatt(data,"_FillValue")) then
         setvalues sfdata_object
             "sfMissingValueV" :data@_FillValue
+        end setvalues
     end if
 
 ; Create vector plot object.
@@ -4710,7 +5019,7 @@ begin
     if(sprdcols)
       cnres2 = True
       vcres2 = True
-    draw_and_frame(wks,map_object,calldraw,callframe)
+
       set_attr(cnres2,"cnFillColors",\
                spread_colors(wks,contour_object,min_index,max_index))
       set_attr(vcres2,"vcLevelColors",\
@@ -4788,6 +5097,7 @@ begin
     if(isatt(u,"_FillValue")) then
         setvalues data_object
             "vfMissingUValueV" :u@_FillValue
+        end setvalues
     end if
     if(isatt(v,"_FillValue")) then
         setvalues data_object
@@ -4818,7 +5128,7 @@ begin
     vfres = get_res_eq(res2,"vf")
     mpres = get_res_eq(res2,(/"mp","vp"/))
     vcres = get_res_ne(res2,(/"mp","vf","vp"/))
-    draw_and_frame(wks,map_object,calldraw,callframe)
+
     attsetvalues_check(data_object,vfres)
     attsetvalues_check(map_object,mpres)
     attsetvalues_check(vector_object,vcres)
@@ -4915,6 +5225,7 @@ begin
 ; Check for missing values.
 
     if(isatt(u,"_FillValue")) then
+        setvalues vfdata_object
             "vfMissingUValueV" :u@_FillValue
         end setvalues
     end if
@@ -4986,7 +5297,7 @@ begin
       overlay_plot_object = plot_object
       delete(plot_object)
 
-    draw_and_frame(wks,plot_object,calldraw,callframe)
+      getvalues overlay_plot_object
         "trXMinF"    : trxmin
         "trXMaxF"    : trxmax
         "trYMinF"    : trymin
@@ -5083,6 +5394,7 @@ begin
 
 ; Check for a missing value.
 
+    if(isatt(data,"_FillValue")) then
         setvalues sfdata_object
             "sfMissingValueV" :data@_FillValue
         end setvalues
@@ -5116,7 +5428,7 @@ begin
     vcres = get_res_ne(res2,(/"mp","sf","vf","vp"/))
 
     attsetvalues_check(vfdata_object,vfres)
-    draw_and_frame(wks,map_object,calldraw,callframe)
+    attsetvalues_check(sfdata_object,sfres)
     attsetvalues_check(map_object,mpres)
     attsetvalues_check(vector_object,vcres)
 
@@ -5238,6 +5550,7 @@ begin
 
 ; By default, only solid lines get drawn if there are multiple lines, so
 ; set some dash patterns to use instead.  Also set different marker styles.
+
     getvalues plot_object
         "xyCoordDataSpec" : dspec
     end getvalues
@@ -5330,7 +5643,7 @@ begin
                 do i = 0,dimsizes(xydp_res_index)-1
                     xydpres@$attnames(xydp_res_index(i))$ = res2@$attnames(xydp_res_index(i))$
                 end do
-    draw_and_frame(wks,plot_object,calldraw,callframe)
+                attsetvalues_check(dspec,xydpres)
             end if
         end if
 
