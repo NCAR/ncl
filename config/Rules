@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.32 1996-10-25 21:08:47 boote Exp $
+ *	$Id: Rules,v 1.33 1996-10-29 20:09:40 boote Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -440,9 +440,9 @@ library.so.major:: objects arch]\
 ]\
 CleanFilesTarget(library.so library.so.major arch)
 #else
-#define	BuildSharedFromArch(library,objects,arch,major,minor,reqlibs) /**/
+#define	BuildSharedPartialLib(library,objects,arch,major,minor,reqlibs) /**/
 #endif	/* BuildShared */
-#endif	/* BuildSharedFromArch */
+#endif	/* BuildSharedPartialLib */
 
 /*
  * Macro:	BuildSharedFromArch
