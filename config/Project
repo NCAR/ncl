@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.51 2003-02-26 19:29:35 haley Exp $
+ *      $Id: Project,v 1.52 2003-02-26 19:40:05 haley Exp $
  */
 /************************************************************************
 *									*
@@ -255,7 +255,7 @@ NGENV_DESCRIPT	= \
 		"graphcaps",NULL,"ncarg",NULL,NULL,		\
 		"colormaps",NULL,"ncarg",NULL,NULL,		\
 		"rangs","NCARG_RANGS","database",NULL,NULL,		\
-		"udunits","UDUNITS_PATH","udunits",NULL,NULL,		\
+		"udunits","UDUNITS_PATH","ncarg",NULL,NULL,		\
 		"examples",NULL,"ncarg",NULL,NULL,		\
 		"hluex",NULL,"ncarg",NULL,NULL,			\
 		"nclex",NULL,"ncarg",NULL,NULL,			\
