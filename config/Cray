@@ -1,5 +1,5 @@
 /*
- *      $Id: Cray,v 1.22 1994-03-03 17:55:43 haley Exp $
+ *      $Id: Cray,v 1.23 1994-03-08 17:40:17 haley Exp $
  */
 /************************************************************************
 *									*
@@ -22,13 +22,10 @@
  */
 #define TmpRoot		/usr/tmp
 #define	InstallManToLocal
-#define	UseCatDirs
 #define	ExtraSysLibraries	-lnet
 #define	HdfDefines	-DUNICOS
 #define	StdDefines	-DSYSV -DUNICOS -DUSG
-#define	COptimizeFlag	/**/
 #define FCompiler	cf77
-#define FOptimizeFlag	/**/
 #define LdRelCommand	$(TOP)/utils/ldrel
 #define	ArCommand	bld
 #define ArRegOpt        vr

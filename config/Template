@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.15 1994-03-03 22:05:29 haley Exp $
+ *      $Id: Template,v 1.16 1994-03-08 17:40:19 haley Exp $
  */
 /************************************************************************
 *									*
@@ -490,7 +490,7 @@ NGTMPDIR		= tmp
 CONFIGDIR		= config
 
 #ifdef	InstallManToLocal
-#ifdef	UseCatDirs
+#if	UseCatDirs
 MANLPATH		= $(MANPATH)/catl
 #else
 MANLPATH		= $(MANPATH)/manl
@@ -511,7 +511,7 @@ MAN8_SECTION		= $(MANL_SECTION)
 
 #else	/* InstallManToLocal */
 
-#ifdef	UseCatDirs
+#if	UseCatDirs
 MANLPATH		= $(MANPATH)/catl
 MAN1PATH		= $(MANPATH)/cat1
 MAN3PATH		= $(MANPATH)/cat3
