@@ -1,5 +1,5 @@
 /*
- *  $Id: c_coex02.c,v 1.2 1994-06-21 14:58:59 haley Exp $
+ *  $Id: c_coex02.c,v 1.3 1994-11-03 18:29:10 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -10,8 +10,14 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
+/*
+ *  Number of squares in the X and Y directions.
+ */
 int NX= 4;
 int NY=4;
+/*
+ *  Size of each square; spacing between squares.
+ */
 float SZX= .235,SZY=.135,Y0=.10,Y1=.88;
 
 #define WSTYPE SED_WSTYPE
@@ -19,19 +25,11 @@ float SZX= .235,SZY=.135,Y0=.10,Y1=.88;
 
 main()
 {
-
-/*
- *  Number of squares in the X and Y directions.
- */
-/*
- *  Size of each square; spacing between squares.
- */
 /*
  *  Arrays to store labels.
  */
       char tlab[4][4][26],blab[4][4][21];
       float SPX, SPY;
-
 /*
  *  Color value array.
  */
@@ -161,6 +159,7 @@ int indx;
         gset_line_colr_ind(1);
         gpolyline(&fill_area);
     }
+    free(fill_area.points);
     ilen = strlen(tlab);
     for( k=ilen; k >= 1; k-- ) {
         if (tlab[k-1] != ' ') {
