@@ -28,7 +28,7 @@
 *vpWidthF:            0.7
 *vpXF:                0.2
 *vpYF:                0.9
-*xyLineColors:        (/2, 2, 2/)
+*xyLineColors:        (/blue, blue, blue/)
 *xyLineThicknesses:   (/2., 2., 2./)
 *xyXStyle:            Irregular
 *xyYStyle:            Irregular
