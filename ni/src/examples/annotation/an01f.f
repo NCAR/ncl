@@ -81,8 +81,10 @@ C
 C
 C Create an X workstation
 C
+         call nhlfrlclear(rlist)
+         call nhlfrlsetstring(rlist,'wkPause','True',ierr)
          call nhlfcreate(wid,'an01Work',nhlfxworkstationlayerclass,0,
-     1        0,ierr)
+     1        rlist,ierr)
       endif
 C
 C Create a Map Plot object

@@ -106,7 +106,6 @@ main(int argc, char *argv[])
 /*
  * Create a meta file workstation.
  */
-        rlist = NhlRLCreate(NhlSETRL);
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./an01c.ncgm");
         NhlCreate(&wid,"an01Work",
@@ -116,7 +115,10 @@ main(int argc, char *argv[])
 /*
  * Create an X workstation.
  */
-        NhlCreate(&wid,"an01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,0);
+        NhlRLClear(rlist);
+        NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlCreate(&wid,"an01Work",
+                  NhlxWorkstationLayerClass,NhlDEFAULT_APP,rlist);
     }
 /* 
  * Create a Map Plot object
