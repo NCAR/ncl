@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.41 1993-04-16 20:16:58 haley Exp $
+#   $Id: ncargex.csh,v 1.42 1993-04-16 21:24:49 haley Exp $
 #
 
 #********************#
@@ -270,7 +270,7 @@ set softfill_list = ($ex_softfill $tst_softfill $fnd_softfill)
 # set spps examples #
 #                   #
 #*******************#
-set ex_spps   = (splogy sprevx spset1 spset2)
+set ex_spps   = (splogy sprevx)
 set fnd_spps  = (fspcurve fspline fsppoint fspponts fcoord fcoord1 fcoord2)
 set spps_list = ($ex_spps $fnd_spps)
 
