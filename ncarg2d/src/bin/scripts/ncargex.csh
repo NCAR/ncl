@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.27 1993-04-07 21:43:46 haley Exp $
+#   $Id: ncargex.csh,v 1.28 1993-04-08 16:52:44 haley Exp $
 #
 
 #********************#
@@ -80,7 +80,9 @@ set ex_autograph   = (agex01 agex02 agex03 agex04 agex05 agex06 agex07 \
                       agex08 agex09 agex10 agex11 agex12 agex13)
 set tst_autograph  = (tautog tagupw)
 set ttr_autograph
-set fnd_autograph
+set fnd_autograph  = (fagaxclr fagaxlbl fagaxmax fagcuclr fagcudsh fagezmxy \
+                      fagezmy fagezxy fagezy fagilclr fagovrvw)
+
 set autograph_list = ($ex_autograph $tst_autograph $ttr_autograph \
                       $fnd_autograph)
 
@@ -103,7 +105,7 @@ set cbivar_list = ($ex_cbivar $tst_cbivar $ttr_cbivar $fnd_cbivar)
 set ex_colconv 
 set tst_colconv  = (tcolcv)
 set ttr_colconv
-set fnd_colconv
+set fnd_colconv  = (fcce01 fcce02)
 set colconv_list = ($ex_colconv $tst_colconv $ttr_colconv $fnd_colconv)
 
 #************************#
@@ -274,7 +276,7 @@ set ngmisc_list = ($ex_ngmisc $tst_ngmisc $ttr_ngmisc $fnd_ngmisc)
 set ex_plotchar   = (epltch)
 set tst_plotchar  = (tpltch)
 set ttr_plotchar
-set fnd_plotchar = (fpchiqu fpcloqu)
+set fnd_plotchar = (fpchiqu fpcloqu fpcfonts)
 set plotchar_list = ($ex_plotchar $tst_plotchar $ttr_plotchar $fnd_plotchar)
 
 #*********************#
@@ -331,7 +333,7 @@ set softfill_list = ($ex_softfill $tst_softfill $ttr_softfill \
 set ex_spps   = (splogy sprevx spset1 spset2)
 set tst_spps
 set ttr_spps
-set fnd_spps = (fspcurve fspline fsppoint fspponts)
+set fnd_spps = (fspcurve fspintro fspline fsppoint fspponts)
 set spps_list = ($ex_spps $tst_spps $ttr_spps $fnd_spps)
 
 #**************************#
@@ -387,7 +389,8 @@ set vectors_list = ($ex_vectors $tst_vectors $ttr_vectors $fnd_vectors)
 set ex_gks
 set tst_gks
 set ttr_gks
-set fnd_gks = (fgkgpl fgkgpm fgkgtx fgklnclr fgklnwth)
+set fnd_gks = (fgkgpl fgkgpm fgkgtx fgklnclr fgklnwth fgke01 fgke02 fgke03 \
+               fgke04)
 set gks_list
 
 #****************************#
@@ -863,6 +866,7 @@ switch ($name)
     breaksw
 
     case ccpila:
+    case ccpt2d:
         set copy_files = ($copy_files ccpila.dat)
     breaksw
 
