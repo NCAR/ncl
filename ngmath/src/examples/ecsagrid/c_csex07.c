@@ -1,5 +1,5 @@
 /*
- *  $Id: c_csex07.c,v 1.3 2002-05-03 20:48:08 fred Exp $
+ *  $Id: c_csex07.c,v 1.4 2003-05-22 17:24:18 haley Exp $
  */
 
 #include <math.h>
@@ -49,7 +49,7 @@
 /*
  *  The GKS workstation type (NCGM).
  */
-#define IWTYPE  1
+#define IWTYPE 1
 
 /*
  *  The GKS workstaton identifier.

@@ -1,5 +1,5 @@
 /*
- *  $Id: c_csex03.c,v 1.4 2000-07-24 22:09:53 haley Exp $
+ *  $Id: c_csex03.c,v 1.5 2003-05-22 17:24:18 haley Exp $
  */
 
 #include <stdio.h>
@@ -27,7 +27,7 @@ void c_drwft1(int, float [], float [], int, float [], float [],
 /*
  *  The GKS workstation type (NCGM).
  */
-#define IWTYPE  1
+#define IWTYPE 1
 
 /*
  *  The GKS workstaton identifier.
