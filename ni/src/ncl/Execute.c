@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.99 1997-10-01 18:19:13 ethan Exp $
+ *      $Id: Execute.c,v 1.100 1997-11-05 17:16:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1309,7 +1309,7 @@ void CallLOOP_INC_OP(void) {
 						if(dir) {
 							_Ncllt(tmp_md->multidval.type,&result,tmp_md->multidval.val,tmp2_md->multidval.val,NULL,NULL,1,1);
 						} else {
-							_Nclgt(inc_md->multidval.type,&result,tmp_md->multidval.val,tmp2_md->multidval.val,NULL,NULL,1,1);
+							_Nclgt(tmp_md->multidval.type,&result,tmp_md->multidval.val,tmp2_md->multidval.val,NULL,NULL,1,1);
 						}
 						if(tmp2_md->obj.status != PERMANENT) {
 							_NclDestroyObj((NclObj)tmp2_md);

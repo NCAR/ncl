@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.86 1997-10-01 18:19:17 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.87 1997-11-05 17:16:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -3331,9 +3331,8 @@ NhlErrorTypes _NclIasciiread
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: could not open file check permissions");
 		}
 	} else if(size == -1) {
-		tmp_ptr = NclMalloc(size*thetype->type_class.size);
 		fd = fopen(path_string,"r");
-		if((tmp_ptr != NULL)&&(fd != NULL)) {
+		if(fd != NULL) {
 			tmp_ptr = NclMalloc(thetype->type_class.size);
 
 			
