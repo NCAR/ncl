@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.52 1998-11-10 17:18:46 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.53 1998-11-13 01:42:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3384,11 +3384,39 @@ ManageExtAnnotation
         int			nargs = 0;
 	int			zone;
 	float			sign;
+	NhlAnnoManagerLayer 	aml; 
+	NhlAnnoManagerLayerPart *amp;
+	NhlBoolean		on;
 
 	entry_name = (init) ? "PlotManagerInitialize" : "PlotManagerSetValues";
 
+	aml = (NhlAnnoManagerLayer)_NhlGetLayer(anno_rec->anno_id);
+	if (! aml) {
+		e_text = "%s: Invalid AnnoManager layer";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return NhlFATAL;
+	}
+	amp = &aml->annomanager;
+/*
+ *	Update the annotation rec based on the AnnoManager values
+ */
+	on = amp->on;
+	anno_rec->plot_id = amp->view_id;
+	anno_rec->resize_notify = amp->resize_notify;
+	anno_rec->zone = amp->zone;
+	anno_rec->side = amp->side;
+	anno_rec->just = amp->just;
+	anno_rec->ortho_pos = amp->ortho_pos;
+	anno_rec->para_pos = amp->para_pos;
+	anno_rec->track_data = amp->track_data;
+	anno_rec->data_x = amp->data_x;
+	anno_rec->data_y = amp->data_y;
+	anno_rec->status = on ? NhlALWAYS : NhlNEVER;
+	anno_rec->viewable = on;
+
 	if (anno_rec->status < NhlALWAYS)
 		return ret;
+	
 /*
  * Get the viewport of the annotation's plot object
  */
@@ -3570,21 +3598,20 @@ UpdateAnnoData
                 if (! viewable)
                         continue;
 		if (anlp->type == ovEXTERNAL) {
-			subret = NhlVAGetValues(
-				anlp->anno_id,
-				NhlNamOn,&on,
-				NhlNamViewId,&anlp->plot_id,
-				NhlNamResizeNotify,&anlp->resize_notify,
-				NhlNamZone,&anlp->zone,
-				NhlNamSide,&anlp->side,
-				NhlNamJust,&anlp->just,
-				NhlNamOrthogonalPosF,&anlp->ortho_pos,
-				NhlNamParallelPosF,&anlp->para_pos,
-				NhlNamTrackData,&anlp->track_data,
-				NhlNamDataXF,&anlp->data_x,
-				NhlNamDataYF,&anlp->data_y,
-				NULL);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+			NhlAnnoManagerLayer aml = (NhlAnnoManagerLayer) 
+				_NhlGetLayer(anlp->anno_id);
+			NhlAnnoManagerLayerPart *amp = &aml->annomanager;
+			on = amp->on;
+			anlp->plot_id = amp->view_id;
+			anlp->resize_notify = amp->resize_notify;
+			anlp->zone = amp->zone;
+			anlp->side = amp->side;
+			anlp->just = amp->just;
+			anlp->ortho_pos = amp->ortho_pos;
+			anlp->para_pos = amp->para_pos;
+			anlp->track_data = amp->track_data;
+			anlp->data_x = amp->data_x;
+			anlp->data_y = amp->data_y;
 			anlp->status = on ? NhlALWAYS : NhlNEVER;
                         anlp->viewable = on;
 		}

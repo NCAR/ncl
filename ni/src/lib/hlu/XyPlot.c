@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.80 1998-11-06 22:16:20 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.81 1998-11-13 01:42:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2593,7 +2593,8 @@ DrawCurves
 
 			upflag = 1;
 
-			if(missing_set[i] & XMISS_SET & YMISS_SET){
+			if((missing_set[i] & XMISS_SET) &&
+			   (missing_set[i] & YMISS_SET)) {
 				int 	status;
 
 				for(j=0;j < len_vectors[i];j++){
