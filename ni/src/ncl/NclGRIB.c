@@ -877,6 +877,7 @@ GribFileRecord *therec;
 {
 	GribParamList *step = NULL;
 	NclQuark *tmp_string = NULL;
+	int *tmp_int = NULL;
 	TBLE2 *the_param = NULL;
 	int tmp_dimsizes = 1;
 	GribRecordInqRec *grib_rec = NULL;
@@ -1019,9 +1020,9 @@ GribFileRecord *therec;
 			att_list_ptr->next = step->theatts;
 			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
 			att_list_ptr->att_inq->name = NrmStringToQuark("parameter_number");
-			tmp_string = (int*)NclMalloc(sizeof(int));
-			*tmp_string = grib_rec->param_number;
-			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypeintClass);
+			tmp_int = (int*)NclMalloc(sizeof(int));
+			*tmp_int= grib_rec->param_number;
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_int, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypeintClass);
 			step->theatts = att_list_ptr;
 			step->n_atts++;
 
@@ -1029,9 +1030,9 @@ GribFileRecord *therec;
 			att_list_ptr->next = step->theatts;
 			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
 			att_list_ptr->att_inq->name = NrmStringToQuark("grid_number");
-			tmp_string = (int*)NclMalloc(sizeof(int));
-			*tmp_string = grib_rec->grid_number;
-			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypeintClass);
+			tmp_int = (int*)NclMalloc(sizeof(int));
+			*tmp_int = grib_rec->grid_number;
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_int, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypeintClass);
 			step->theatts = att_list_ptr;
 			step->n_atts++;
 
@@ -1039,9 +1040,9 @@ GribFileRecord *therec;
 			att_list_ptr->next = step->theatts;
 			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
 			att_list_ptr->att_inq->name = NrmStringToQuark("level_indicator");
-			tmp_string = (int*)NclMalloc(sizeof(int));
-			*tmp_string = grib_rec->level_indicator;
-			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypeintClass);
+			tmp_int= (int*)NclMalloc(sizeof(int));
+			*tmp_int= grib_rec->level_indicator;
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_int, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypeintClass);
 			step->theatts = att_list_ptr;
 			step->n_atts++;
 
