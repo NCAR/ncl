@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: pswhite.m,v 1.2 1993-04-05 17:45:01 haley Exp $
+.\"	$Id: pswhite.m,v 1.3 1993-05-08 17:00:40 haley Exp $
 .\"
 .TH PSWHITE 1NCARG "September 1990" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -24,3 +24,8 @@ CGM interpreters by default plot black lines
 on a white background.
 .SH SEE ALSO
 ctrans(1NCARG), psblack(1NCARG)
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation 
+for Atmospheric Research
+.br
+All Rights Reserved

@@ -1,14 +1,14 @@
 #
-#	$Id: yMakefile,v 1.5 1993-05-03 20:53:03 haley Exp $
+#	$Id: yMakefile,v 1.6 1993-05-08 17:00:43 haley Exp $
 #
 NCARG	= ../../..
 
 #ifdef BuildNCARGSourceLibrary
-MAN1 = cgmtrans findg ftrans ncargcc ncargcex ncargex ncargf77 ncargrun \
-	ncargsrc ncargversion pre2ncgm psblack pswhite
+MAN1 = cgmtrans findg ftrans ncargcc ncargcex ncargex ncargf77 ncargfile \
+	ncargrun ncargsrc ncargversion pre2ncgm psblack pswhite
 #else
-MAN1 = cgmtrans findg ftrans ncargcc ncargcex ncargex ncargf77 ncargrun \
-	ncargversion pre2ncgm psblack pswhite
+MAN1 = cgmtrans findg ftrans ncargcc ncargcex ncargex ncargf77 ncargfile \
+	ncargrun ncargversion pre2ncgm psblack pswhite
 #endif
 MAN3 = ncarg_cbind ncarg_gks ncarg_gks_cbind 
 MAN5 = ncargintro

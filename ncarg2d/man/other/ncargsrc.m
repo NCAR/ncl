@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargsrc.m,v 1.1 1993-03-11 15:23:09 haley Exp $
+.\"	$Id: ncargsrc.m,v 1.2 1993-05-08 17:00:30 haley Exp $
 .\"
 .TH NCARGSRC 1NCARG "OCTOBER 1990" NCAR "NCAR GRAPHICS"
 .de sf          \"start constant spacing
@@ -212,3 +212,8 @@ source libraries:
     srcdashsmth.a   -  dashsmth
     srcdashsupr.a   -  dashsupr
 .ef
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation 
+for Atmospheric Research
+.br
+All Rights Reserved

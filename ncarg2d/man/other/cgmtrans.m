@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: cgmtrans.m,v 1.3 1993-04-15 16:11:05 haley Exp $
+.\"	$Id: cgmtrans.m,v 1.4 1993-05-08 17:00:02 haley Exp $
 .\"
 .TH CGMTRANS 1NCARG "MARCH 1988" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -58,3 +58,8 @@ interfaces to provide random access to metafile frames.
 .BR ftrans(1NCARG),
 .BR graphcap(5NCARG),
 .BR ncargintro(5NCARG)
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation 
+for Atmospheric Research
+.br
+All Rights Reserved

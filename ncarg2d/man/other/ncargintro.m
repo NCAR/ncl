@@ -132,9 +132,18 @@ Utilities for generating NCAR Graphics Fortran and C examples:
 .BR ncargex(1NCARG),
 .BR ncargcex(1NCARG)
 .sp
+Utilities for giving you access to special NCAR Graphics files and/or tables.
+.sp
+.BR ncargfile(1NCARG)
+.sp
 Hardcopy:
 .sp
 NCAR Graphics Fundamentals;
 NCAR Graphics Contouring and Mapping Tutorial;
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Installer's Guide
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation 
+for Atmospheric Research
+.br
+All Rights Reserved

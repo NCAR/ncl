@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargcex.m,v 1.3 1993-04-15 16:11:23 haley Exp $
+.\"	$Id: ncargcex.m,v 1.4 1993-05-08 17:00:15 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGCEX 1NCARG "January 1993" NCAR "NCAR GRAPHICS"
@@ -111,14 +111,13 @@ Online:
 .BR ncargex(1NCARG),
 .BR ncargcc(1NCARG),
 .BR ncarg_cbind(3NCARG),
+.BR ncargfile(1NCARG),
 .BR ncargintro(5NCARG)
 .sp
 Hardcopy:
-Using NCAR Graphics in a UNIX Environment; NCAR Graphics 
-Fundamentals, UNIX Version
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved
-

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargrun.m,v 1.3 1993-05-03 22:25:56 haley Exp $
+.\"	$Id: ncargrun.m,v 1.4 1993-05-08 17:00:27 haley Exp $
 .\"
 .TH NCARGRUN 1NCARG "JUNE 1988" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -25,3 +25,8 @@ translator.
 .BI \-t " "
 specifies that metafile output should be piped to the default translator
 "ctrans".
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation 
+for Atmospheric Research
+.br
+All Rights Reserved
