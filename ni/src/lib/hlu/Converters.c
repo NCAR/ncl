@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.9 1994-04-19 00:04:33 boote Exp $
+ *      $Id: Converters.c,v 1.10 1994-04-19 00:39:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1602,6 +1602,103 @@ NhlCvtEnumToFStr
 }
 
 /*
+ * Function:	NhlCvtStringToQuark
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+NhlCvtStringToQuark
+#if	__STDC__
+(
+	NrmValue		*from,	/* ptr to from data	*/
+	NrmValue		*to,	/* ptr to to data	*/
+	NhlConvertArgList	args,	/* add'n args for conv	*/
+	int			nargs	/* number of args	*/
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;	/* ptr to from data	*/
+	NrmValue		*to;	/* ptr to to data	*/
+	NhlConvertArgList	args;	/* add'n args for conv	*/
+	int			nargs;	/* number of args	*/
+#endif
+{
+	NrmQuark	tmp;
+	char		*name = "NhlCvtStringToQuark";
+	NhlErrorTypes	ret = NhlNOERROR;
+
+	if(nargs != 0){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:called with wrong number of args",name);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	tmp = NrmStringToQuark(from->data.strval);
+
+	SetVal(NrmQuark,sizeof(NrmQuark),tmp);
+}
+
+/*
+ * Function:	NhlCvtQuarkToString
+ *
+ * Description:	This is a type converter
+ *
+ * In Args:	NrmValue		*from	ptr to from data
+ *		NhlConvertArgList	args	add'n args for conversion
+ *		int			nargs	number of args
+ *		
+ *
+ * Out Args:	NrmValue		*to	ptr to to data
+ *
+ * Scope:	Global public
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+NhlCvtQuarkToString
+#if	__STDC__
+(
+	NrmValue		*from,	/* ptr to from data	*/
+	NrmValue		*to,	/* ptr to to data	*/
+	NhlConvertArgList	args,	/* add'n args for conv	*/
+	int			nargs	/* number of args	*/
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;	/* ptr to from data	*/
+	NrmValue		*to;	/* ptr to to data	*/
+	NhlConvertArgList	args;	/* add'n args for conv	*/
+	int			nargs;	/* number of args	*/
+#endif
+{
+	NhlString	tstring;
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*name = "NhlCvtQuarkToString";
+
+	if(nargs != 0){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:called with wrong number of args",name);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	tstring = NrmQuarkToString(from->data.intval);
+
+	SetVal(NhlString,sizeof(NhlString),tstring);
+}
+
+/*
  * Function:	_NhlConvertersInitialize
  *
  * Description:	This function is used to initialize the Quark's that will be
@@ -1794,6 +1891,11 @@ _NhlConvertersInitialize
 	(void)NhlRegisterConverter(NhlTGenArray,NhlTFloat,NhlCvtGenToFloat,
 							NULL,0,False,NULL);
 	(void)NhlRegisterConverter(NhlTGenArray,NhlTString,NhlCvtGenToString,
+							NULL,0,False,NULL);
+
+	(void)NhlRegisterConverter(NhlTQuark,NhlTString,NhlCvtQuarkToString,
+							NULL,0,False,NULL);
+	(void)NhlRegisterConverter(NhlTString,NhlTQuark,NhlCvtStringToQuark,
 							NULL,0,False,NULL);
 
 	(void)NhlRegisterConverter(NhlTBoolean,_NhlTFExpString,NhlCvtEnumToFStr,
