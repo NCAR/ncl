@@ -1,5 +1,5 @@
 ;
-;      $Id: xy04n.ncl,v 1.14 1998-04-15 21:40:47 ethan Exp $
+;      $Id: xy04n.ncl,v 1.15 1998-10-27 17:36:36 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -58,12 +58,7 @@ ydra = jj(y | :,x | :)*200.+ii*.9*sin(0.031415926535898*ii)
 ; and foreground colors respectively.
 ;
 ncolors = 6
-cmap = (/ (/0.0,0.0,0.0/), \
-	 (/1.0,1.0,1.0/), \
-	 (/1.0,0.0,0.0/), \
-	 (/0.0,1.0,0.0/), \
-	 (/0.0,0.0,1.0/), \
-	 (/1.0,1.0,0.0/) /)
+cmap = (/"black","white","red","green","blue","yellow"/)
 
 ;
 ; Create Application object.  The Application object name is used to

@@ -136,14 +136,14 @@ xy1 = create "xy1" xyPlotClass xworkid
     "tmYLValues"  : (/-90.,-80.,-70.,-60.,-50./)
     "tmYLLabels"  : (/"-90.","-80.","-70.","-60.","-50."/)
     "tmYLLabelsOn"    : True
-    "tmYLLabelFontColor" : 2
+    "tmYLLabelFontColor" : "red"
     "tiXAxisString" : "Longitude (Degs)"
     "tiYAxisString" : "Temperature in Deg C"
     "tiXAxisFontHeightF" : 0.02
     "tiYAxisFontHeightF" : 0.02
     "tiXAxisFont" : "helvetica-bold"
     "tiYAxisFont" : "helvetica-bold"
-    "tiYAxisFontColor" : 2
+    "tiYAxisFontColor" : "red"
     "tmYRMinorOn" : False
     "tmYLMinorOn" : False
 end create
@@ -172,7 +172,7 @@ xy2 = create "xy2" xyPlotClass xworkid
     "tmYRMode"  : "Explicit"
     "tmYRValues"  : (/0.,10.,20.,30.,40.,50./)
     "tmYRLabels"  : (/"0.","10.","20.","30.","40.","50."/)
-    "tmYRLabelFontColor" : 6
+    "tmYRLabelFontColor" : "cyan"
     "tiYAxisString" : "U component of wind (m/s)"
     "tiYAxisSide"   : "Right"
     "tiXAxisFontHeightF" : 0.02
@@ -180,7 +180,7 @@ xy2 = create "xy2" xyPlotClass xworkid
     "tiMainFont" : "helvetica-bold"
     "tiXAxisFont" : "helvetica-bold"
     "tiYAxisFont" : "helvetica-bold"
-    "tiYAxisFontColor" : 6
+    "tiYAxisFontColor" : "cyan"
     "tmYRMinorOn" : False
     "tmYLMinorOn" : False
 end create
@@ -216,7 +216,7 @@ xy3 = create "xy3" xyPlotClass xworkid
     "tmYRMode"  : "Explicit"
     "tmYRValues"  : (/-20.,-10.,0.,10.,20./)
     "tmYRLabels"  : (/"-20.","-10.","0.","10.","20."/)
-    "tmYRLabelFontColor" : 3
+    "tmYRLabelFontColor" : "green"
     "tiYAxisString" : "V component of wind (m/s)"
     "tiYAxisSide"   : "Right"
     "tiXAxisFontHeightF" : 0.02
@@ -225,7 +225,7 @@ xy3 = create "xy3" xyPlotClass xworkid
     "tiMainFontHeightF" : 0.030
     "tiMainFont" : "helvetica-bold"
     "tiYAxisFont" : "helvetica-bold"
-    "tiYAxisFontColor" : 3
+    "tiYAxisFontColor" : "green"
     "tmYRMinorOn" : False
     "tmYLMinorOn" : False
     "tmXBMinorOn" : False
@@ -240,7 +240,7 @@ end getvalues
 
 setvalues spec1
    "xyMonoLineColor" : "true"
-   "xyLineColor" : 2
+   "xyLineColor" : "red"
 end setvalues
 
 getvalues xy2
@@ -249,7 +249,7 @@ end getvalues
 
 setvalues spec2
    "xyMonoLineColor" : "true"
-   "xyLineColor" : 6
+   "xyLineColor" : "cyan"
 end setvalues
 
 getvalues xy3
@@ -258,7 +258,7 @@ end getvalues
 
 setvalues spec3
    "xyMonoLineColor" : "true"
-   "xyLineColor" : 3
+   "xyLineColor" : "green"
 end setvalues
 
 
