@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.31 1997-01-17 18:57:23 boote Exp $
+ *      $Id: Create.c,v 1.32 1997-02-24 22:12:21 boote Exp $
  */
 /************************************************************************
 *									*
@@ -422,10 +422,9 @@ _NhlCreate
 			parent->base.app_destroy){
 			NhlArgVal	dummy,udata;
 	
-	#ifdef	DEBUG
-			memset(&dummy,0,sizeof(NhlArgVal));
-			memset(&udata,0,sizeof(NhlArgVal));
-	#endif
+			NhlINIT_ARGVAL(dummy);
+			NhlINIT_ARGVAL(udata);
+
 			/* INSTALL CB to handle destroy of appobj */
 			dummy.lngval = 0;
 			udata.ptrval = layer;
@@ -587,14 +586,14 @@ _NhlCreate
 	}
 
 	lret = CallInitialize(lc,request,layer,largs,nlargs); 
+	(void)NhlFree(request);
+	_NhlFreeConvertContext(context);
+	_NhlFreeChildArgs(chld_args);
 	if(lret < NhlWARNING){
 		NhlPError(lret,NhlEUNKNOWN,
 				"Unable to initialize layer-Can't Create");
 		_NhlRemoveLayer(layer);
-		_NhlFreeConvertContext(context);
-		_NhlFreeChildArgs(chld_args);
 		(void)NhlFree(layer);
-		(void)NhlFree(request);
 		*pid = lret;
 		return(lret);
 	}
@@ -607,7 +606,6 @@ _NhlCreate
 	if(!_NhlIsObj(layer)){
 		int i;
 		layer->base.in_init = False;
-		_NhlFreeChildArgs(chld_args);
 		layer->base.child_args = NULL;
 		for(i=0;i<nargs;i++){
 			if(!chld_args_used[i]){
@@ -620,7 +618,15 @@ _NhlCreate
 		}
 	}
 
-	_NhlFreeConvertContext(context);
+	/*
+	 * Add this layer to it's parents all_children list.
+	 */
+	if(!_NhlBaseAddChild(parent,*pid)){
+		_NhlRemoveLayer(layer);
+		(void)NhlFree(layer);
+		*pid = NhlFATAL;
+		ret = NhlFATAL;
+	}
 
 	if(_NhlIsWorkstation(layer)) {
 		lret = _NhlOpenWorkstation(layer);
@@ -628,26 +634,12 @@ _NhlCreate
 		if(ret < NhlWARNING) {
 			NhlPError(ret,NhlEUNKNOWN,
 				"Unable to open Workstation-Can't Create");
-			_NhlRemoveLayer(layer);
-			(void)NhlFree(layer); 
-			(void)NhlFree(request); 
+			NhlDestroy(layer->base.id);
 			*pid = ret; 
 			return(ret);
 		}
 	}
 
-	/*
-	 * Add this layer to it's parents all_children list.
-	 */
-	if(!_NhlBaseAddChild(parent,*pid)){
-		_NhlRemoveLayer(layer);
-		(void)NhlFree(layer);
-		(void)NhlFree(request);
-		*pid = NhlFATAL;
-		return NhlFATAL;
-	}
-
-	(void)NhlFree(request);
 
 	return(ret);
 }

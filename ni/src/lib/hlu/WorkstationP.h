@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.15 1997-01-17 22:35:51 dbrown Exp $
+ *      $Id: WorkstationP.h,v 1.16 1997-02-24 22:12:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -167,6 +167,7 @@ typedef struct _NhlWorkstationLayerPart{
 	int		gkswksid;
 
 	/* Import Values */
+	NhlBoolean	open;
 	int		gkswkstype;
 	int		gkswksconid;
 } NhlWorkstationLayerPart;

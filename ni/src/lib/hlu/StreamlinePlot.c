@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.22 1997-01-17 18:57:45 boote Exp $
+ *      $Id: StreamlinePlot.c,v 1.23 1997-02-24 22:12:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -983,6 +983,8 @@ NhlStreamlinePlotDataDepClassRec NhlstreamlinePlotDataDepClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,
@@ -1018,6 +1020,8 @@ NhlStreamlinePlotClassRec NhlstreamlinePlotClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	StreamlinePlotClassPartInitialize,
 /* class_initialize		*/	StreamlinePlotClassInitialize,

@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.25 1997-01-17 18:57:48 boote Exp $
+ *      $Id: View.c,v 1.26 1997-02-24 22:12:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -264,6 +264,8 @@ NhlViewClassRec NhlviewClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	callbacks,
 /* num_callbacks		*/	NhlNumber(callbacks),
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	ViewClassPartInitialize,
 /* class_initialize		*/	ViewClassInitialize,

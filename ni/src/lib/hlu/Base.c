@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.21 1997-01-17 18:57:16 boote Exp $
+ *      $Id: Base.c,v 1.22 1997-02-24 22:12:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -129,6 +129,8 @@ NhlObjClassRec NhlobjClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	ocallbacks,
 /* num_callbacks		*/	NhlNumber(ocallbacks),
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	BaseClassPartInitialize,
 /* class_initialize		*/	BaseClassInitialize,
@@ -155,6 +157,8 @@ NhlClassRec NhllayerClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	bcallbacks,
 /* num_callbacks		*/	NhlNumber(bcallbacks),
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	BaseClassPartInitialize,
 /* class_initialize		*/	BaseClassInitialize,
@@ -333,6 +337,79 @@ GroupObjCallbacks
 	return;
 }
 
+static void
+CompileClassCallbackList
+(
+	_NhlRawClassCBList	cbls,
+	int			num_cbls
+)
+{
+	register int	i;
+	register _NhlCookedClassCB	*cooked=(_NhlCookedClassCB *)&cbls[0];
+
+	for(i=0;i<num_cbls;cbls++,cooked++,i++){
+		cooked->cbquark = NrmPermStringToQuark(cbls->cbname);
+		cooked->cblist = NULL;
+	}
+
+	return;
+}
+
+static void
+GroupClassCallbacks
+(
+	NhlClass	lc
+)
+{
+	_NhlCookedClassCBList	local;
+	_NhlCookedClassCBList	clist;
+	int			num_clist,i,j,k;
+	NhlClass		sc = lc->base_class.superclass;
+
+	if(!sc || sc->base_class.num_class_callbacks < 1)
+		return;
+
+	num_clist = lc->base_class.num_class_callbacks +
+					sc->base_class.num_class_callbacks;
+	clist = (_NhlCookedClassCBList)NhlMalloc(
+					sizeof(_NhlCookedClassCB)*num_clist);
+
+	if(!clist){
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return;
+	}
+
+	memcpy((char*)clist,(char*)sc->base_class.class_callbacks,
+				sizeof(_NhlCookedClassCB) *
+					sc->base_class.num_class_callbacks);
+
+	local = (_NhlCookedClassCBList)lc->base_class.class_callbacks;
+	k = sc->base_class.num_class_callbacks;
+
+	for(i=0;i<lc->base_class.num_class_callbacks;i++){
+
+		for(j=0;j<sc->base_class.num_class_callbacks;j++){
+			if(local[i].cbquark == clist[j].cbquark){
+				/*
+				 * Over-ride cb definition.
+				 */
+				clist[j] = local[i];
+				num_clist--;
+				goto OVERRIDE;
+			}
+		}
+
+		clist[k++] = local[i];
+OVERRIDE:
+		;
+	}
+
+	lc->base_class.class_callbacks = (_NhlRawClassCBList)clist;
+	lc->base_class.num_class_callbacks = num_clist;
+
+	return;
+}
+
 /*
  * Function:	BaseClassPartInitialize
  *
@@ -375,6 +452,11 @@ BaseClassPartInitialize
 		CompileObjCallbackList(lc->base_class.callbacks,
 						lc->base_class.num_callbacks);
 	GroupObjCallbacks(lc);
+
+	if(lc->base_class.class_callbacks)
+		CompileClassCallbackList(lc->base_class.class_callbacks,
+					lc->base_class.num_class_callbacks);
+	GroupClassCallbacks(lc);
 
 	return(NhlNOERROR);
 }
@@ -545,10 +627,9 @@ BaseLayerReparent
 		l->base.appobj = p->base.appobj;
 		if(p->base.app_destroy){
 			NhlArgVal	dummy,udata;
-#ifdef	DEBUG
-			memset(&dummy,0,sizeof(NhlArgVal));
-			memset(&udata,0,sizeof(NhlArgVal));
-#endif
+
+			NhlINIT_ARGVAL(dummy);
+			NhlINIT_ARGVAL(udata);
 			dummy.lngval = 0;
 			udata.ptrval = l;
 			l->base.app_destroy = _NhlAddObjCallback(
@@ -694,10 +775,9 @@ _NhlBaseAppDestroyCB
 		l->base.appobj = p->base.appobj;
 		if(p->base.app_destroy){
 			NhlArgVal	dummy,udata;
-#ifdef	DEBUG
-			memset(&dummy,0,sizeof(NhlArgVal));
-			memset(&udata,0,sizeof(NhlArgVal));
-#endif
+
+			NhlINIT_ARGVAL(dummy);
+			NhlINIT_ARGVAL(udata);
 			dummy.lngval = 0;
 			udata.ptrval = l;
 			l->base.app_destroy = _NhlAddObjCallback(
@@ -745,10 +825,8 @@ _NhlBaseAddChild
 	list->next = parent->base.all_children;
 	parent->base.all_children = list;
 
-#if	DEBUG
-	memset(&cbdata,0,sizeof(NhlArgVal));
-	memset(&sel,0,sizeof(NhlArgVal));
-#endif
+	NhlINIT_ARGVAL(cbdata);
+	NhlINIT_ARGVAL(sel);
 	cc.reason = _NhlobjCCAdd;
 	cc.new = parent->base.id;
 	cc.child = child;
@@ -800,10 +878,8 @@ _NhlBaseRemoveChild
 		return;
 	}
 
-#if	DEBUG
-	memset(&cbdata,0,sizeof(NhlArgVal));
-	memset(&sel,0,sizeof(NhlArgVal));
-#endif
+	NhlINIT_ARGVAL(cbdata);
+	NhlINIT_ARGVAL(sel);
 	cc.reason = _NhlobjCCRemove;
 	cc.old = l->base.parent->base.id;
 	cc.child = l->base.id;
@@ -871,10 +947,8 @@ _NhlBaseMoveChild
 	 */
 	child->base.parent = parent;
 
-#if	DEBUG
-	memset(&cbdata,0,sizeof(NhlArgVal));
-	memset(&sel,0,sizeof(NhlArgVal));
-#endif
+	NhlINIT_ARGVAL(cbdata);
+	NhlINIT_ARGVAL(sel);
 	cc.reason = _NhlobjCCMove;
 	cc.new = parent->base.id;
 	cc.old = oldp->base.id;

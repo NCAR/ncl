@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.39 1997-01-17 18:57:53 boote Exp $
+ *      $Id: hlu.c,v 1.40 1997-02-24 22:12:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -456,7 +456,7 @@ NhlName
 
 	if(tmp == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-				"Unable to access plot with pid:%d",pid);
+				"Unable to access object with id:%d",pid);
 		return NULL;
 	}
 
@@ -1896,5 +1896,119 @@ _NhlIterateObjCallbacks
 )
 {
 	_NhlCBIterate(GetObjCBList(l,cbname,False),task,cbdata);
+	return;
+}
+
+static _NhlCBList
+GetClassCBList
+(
+	NhlClass	lc,
+	NhlString	cbname,
+	NhlBoolean	create
+)
+{
+	_NhlCookedClassCBList	cbl =
+			(_NhlCookedClassCBList)lc->base_class.class_callbacks;
+	int			ncbl = lc->base_class.num_class_callbacks;
+	int			i;
+	_NhlCBList		*cblptr;
+	NrmQuark		cbquark = NrmStringToQuark(cbname);
+
+	if(!ncbl || !cbl)
+		return NULL;
+
+	for(i=0;i<ncbl;i++){
+		if(cbl[i].cbquark == cbquark){
+			cblptr = (_NhlCBList *)&cbl[i].cblist;
+			if(create && !*cblptr){
+				*cblptr = _NhlCBCreate(cbl[i].hash_mult,
+						       cbl[i].add_hash,
+						       cbl[i].call_hash,
+						       cbl[i].task_proc,
+						       (NhlPointer)lc);
+			}
+			return *cblptr;
+		}
+	}
+
+	return NULL;
+}
+
+/*
+ * Function:	_NhlAddClassCallback
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+_NhlCB
+_NhlAddClassCallback
+(
+	NhlClass	lc,
+	NhlString	cbname,
+	NhlArgVal	sel,
+	_NhlCBFunc	func,
+	NhlArgVal	udata
+)
+{
+	return _NhlCBAdd(GetClassCBList(lc,cbname,True),sel,func,udata);
+}
+
+/*
+ * Function:	_NhlCallClassCallbacks
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void
+_NhlCallClassCallbacks
+(
+	NhlClass	lc,
+	NhlString	cbname,
+	NhlArgVal	sel,
+	NhlArgVal	cbdata
+)
+{
+	_NhlCBCallCallbacks(GetClassCBList(lc,cbname,False),sel,cbdata);
+	return;
+}
+
+
+/*
+ * Function:	_NhlIterateClassCallbacks
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void
+_NhlIterateClassCallbacks
+(
+	NhlClass	lc,
+	NhlString	cbname,
+ 	_NhlCBTask	task,
+	NhlArgVal	cbdata
+)
+{
+	_NhlCBIterate(GetClassCBList(lc,cbname,False),task,cbdata);
 	return;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.18 1997-01-17 18:57:39 boote Exp $
+ *      $Id: MultiText.c,v 1.19 1997-02-24 22:12:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -145,6 +145,8 @@ NhlMultiTextClassRec NhlmultiTextClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	MultiTextClassPartInitialize,
 /* class_initialize		*/	MultiTextClassInitialize,

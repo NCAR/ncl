@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.26 1997-01-17 22:35:48 dbrown Exp $
+ *      $Id: NcgmWorkstation.c,v 1.27 1997-02-24 22:12:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -148,6 +148,8 @@ NhlNcgmWorkstationClassRec NhlncgmWorkstationClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	NcgmWorkstationClassPartInitialize,
 /* class_initialize		*/	NULL,

@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.30 1997-01-17 18:57:16 boote Exp $
+ *      $Id: App.c,v 1.31 1997-02-24 22:12:16 boote Exp $
  */
 /************************************************************************
 *									*
@@ -190,6 +190,8 @@ NhlAppClassRec NhlappClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	AppClassPartInitialize,
 /* class_initialize		*/	AppClassInitialize,
@@ -423,10 +425,8 @@ DefaultParentChange
 	NhlArgVal cbdata;
 	NhlArgVal selector;
 
-#ifdef	DEBUG
-	memset((char*)&cbdata,0,sizeof(NhlArgVal));
-	memset((char*)&selector,0,sizeof(NhlArgVal));
-#endif
+	NhlINIT_ARGVAL(cbdata);
+	NhlINIT_ARGVAL(selector);
 
 	selector.lngval = 0;
 	cbdata.lngval = ac->app_class.current_app->base.id;
@@ -1479,10 +1479,7 @@ _NhlCB  _NhlAppAddDefaultChangeCB
 {
 	NhlArgVal	selector;
 
-#ifdef	DEBUG
-	memset((char*)&selector,0,sizeof(NhlArgVal));
-#endif
-
+	NhlINIT_ARGVAL(selector);
 	selector.lngval = 0;
 	return _NhlCBAdd(((NhlAppClass)NhlappClass)->app_class.cblist,selector,
 								cbfunc,udata);

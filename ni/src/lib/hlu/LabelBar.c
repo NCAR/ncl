@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.51 1997-01-17 18:57:32 boote Exp $
+ *      $Id: LabelBar.c,v 1.52 1997-02-24 22:12:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -559,6 +559,8 @@ NhlLabelBarClassRec NhllabelBarClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	LabelBarClassInitialize,

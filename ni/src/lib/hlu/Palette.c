@@ -1,5 +1,5 @@
 /*
- *      $Id: Palette.c,v 1.3 1997-01-17 18:57:40 boote Exp $
+ *      $Id: Palette.c,v 1.4 1997-02-24 22:12:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -819,6 +819,8 @@ NhlPaletteClassRec NhlpaletteClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	PaletteClassInitialize,

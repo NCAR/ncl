@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.61 1997-01-17 22:35:50 dbrown Exp $
+ *      $Id: Workstation.c,v 1.62 1997-02-24 22:12:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -533,6 +533,8 @@ NhlWorkstationClassRec NhlworkstationClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	WorkstationClassPartInitialize,
 /* class_initialize		*/	WorkstationClassInitialize,
@@ -1048,6 +1050,7 @@ static NhlErrorTypes WorkstationInitialize
         (*wcp->current_wks_count)++;
         
 	wp->gkswksid = (int)NhlFATAL;
+	wp->open = False;
 	wp->gkswkstype = (int)NhlFATAL;
 	wp->gkswksconid = (int)NhlFATAL;
 
@@ -2009,7 +2012,7 @@ WorkstationOpen
 #endif
 {	
 	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
-	char			func[] = "OpenWorkstation";
+	char			func[] = "WorkstationOpen";
 	int			i = 3; /* default segment wks is 2 */
 
 	if(wl->work.gkswkstype == NhlFATAL) {
@@ -3281,15 +3284,21 @@ _NhlOpenWorkstation
 #endif
 {
 	char				func[] = "_NhlOpenWorkstation";
+	NhlErrorTypes			ret = NhlNOERROR;
 	NhlWorkstationClassPart	*wc =
 		&((NhlWorkstationClass)wks->base.layer_class)->work_class;
 
-	if(_NhlIsWorkstation(wks))
-		return (*(wc->open_work))(wks);
-	
-	NhlPError(NhlFATAL,NhlEUNKNOWN,
-		"%s: attempt to perform open on nonworkstation",func);
-	return NhlFATAL;
+	if(!_NhlIsWorkstation(wks)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s: attempt to perform open on nonworkstation",func);
+		return NhlFATAL;
+	}
+
+	ret = (*(wc->open_work))(wks);
+	if(ret != NhlFATAL)
+		((NhlWorkstationLayer)wks)->work.open = True;
+
+	return ret;
 }
 
 NhlErrorTypes
@@ -3307,12 +3316,16 @@ _NhlCloseWorkstation
 	NhlWorkstationClassPart	*wc =
 		&((NhlWorkstationClass)wks->base.layer_class)->work_class;
 
-	if(_NhlIsWorkstation(wks))
-		return (*(wc->close_work))(wks);
+	if(!_NhlIsWorkstation(wks)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s: attempt to perform close on nonworkstation",func);
+		return NhlFATAL;
+	}
 
-	NhlPError(NhlFATAL,NhlEUNKNOWN,
-		"%s: attempt to perform close on nonworkstation",func);
-	return NhlFATAL;
+	if(!((NhlWorkstationLayer)wks)->work.open)
+		return NhlNOERROR;
+
+	return (*(wc->close_work))(wks);
 }
 
 /*

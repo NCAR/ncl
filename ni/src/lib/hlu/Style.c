@@ -1,5 +1,5 @@
 /*
- *      $Id: Style.c,v 1.2 1996-09-14 17:07:16 boote Exp $
+ *      $Id: Style.c,v 1.3 1997-02-24 22:12:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -52,6 +52,8 @@ NhlStyleClassRec NhlstyleClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,

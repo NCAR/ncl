@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.30 1997-01-25 00:42:12 ethan Exp $
+ *      $Id: CoordArrTable.c,v 1.31 1997-02-24 22:12:20 boote Exp $
  */
 /************************************************************************
 *									*
@@ -168,6 +168,8 @@ NhlCoordArrTableFloatClassRec NhlcoordArrTableFloatClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,
@@ -199,6 +201,8 @@ NhlCoordArrTableClassRec NhlcoordArrTableClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	CoordArrTableClassInitialize,

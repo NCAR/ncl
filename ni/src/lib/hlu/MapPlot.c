@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.56 1997-01-21 21:27:47 boote Exp $
+ *      $Id: MapPlot.c,v 1.57 1997-02-24 22:12:29 boote Exp $
  */
 /************************************************************************
 *									*
@@ -825,6 +825,8 @@ NhlMapPlotClassRec NhlmapPlotClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	MapPlotClassPartInitialize,
 /* class_initialize		*/	MapPlotClassInitialize,

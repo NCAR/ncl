@@ -1,5 +1,5 @@
 /*
- *      $Id: BaseP.h,v 1.15 1997-01-17 18:57:18 boote Exp $
+ *      $Id: BaseP.h,v 1.16 1997-02-24 22:12:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -148,6 +148,23 @@ typedef struct _NhlCookedObjCBRec{
 	_NhlCBTaskProc	task_proc;
 } _NhlCookedObjCB, *_NhlCookedObjCBList;
 
+typedef struct _NhlRawClassCBRec{
+	NhlString	cbname;
+	_NhlCBList	cblist;
+	int		hash_mult;
+	_NhlCBAddHash	add_hash;
+	_NhlCBCallHash	call_hash;
+	_NhlCBTaskProc	task_proc;
+} _NhlRawClassCB, *_NhlRawClassCBList;
+
+typedef struct _NhlCookedClassCBRec{
+	NrmQuark	cbquark;
+	_NhlCBList	cblist;
+	int		hash_mult;
+	_NhlCBAddHash	add_hash;
+	_NhlCBCallHash	call_hash;
+	_NhlCBTaskProc	task_proc;
+} _NhlCookedClassCB, *_NhlCookedClassCBList;
 
 typedef NhlErrorTypes (*NhlClassPartInitProc)(
 #if	NhlNeedProto
@@ -221,6 +238,8 @@ typedef struct _NhlObjClassPart {
 	NrmNameList		all_resources;
 	_NhlRawObjCBList	callbacks;
 	int			num_callbacks;
+	_NhlRawClassCBList	class_callbacks;
+	int			num_class_callbacks;
 
 	NhlClassPartInitProc	class_part_initialize;
 	NhlClassInitProc	class_initialize;
@@ -249,6 +268,8 @@ typedef struct _NhlBaseClassPart {
 	NrmNameList		all_resources;
 	_NhlRawObjCBList	callbacks;
 	int			num_callbacks;
+	_NhlRawClassCBList	class_callbacks;
+	int			num_class_callbacks;
 
 	NhlClassPartInitProc	class_part_initialize;
 	NhlClassInitProc	class_initialize;

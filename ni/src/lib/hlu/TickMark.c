@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.54 1997-02-21 19:30:37 dbrown Exp $
+ *      $Id: TickMark.c,v 1.55 1997-02-24 22:12:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1195,6 +1195,8 @@ NhlTickMarkClassRec NhltickMarkClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize*/      NULL,
 /* class_initialize	*/      TickMarkClassInitialize,
@@ -1519,7 +1521,7 @@ static NhlErrorTypes	TickMarkSetValues
 
 /*
 * ALL COMPUTATIONALLY INTENSIVE ROUTINES FOLLOW. CONVENTIONS FOR DETERMINING
-* WHETHER OR NOT THESE ROUTINES NEED TO BE CALLED EVERY NhlTIME ARE NEEDED
+* WHETHER OR NOT THESE ROUTINES NEED TO BE CALLED EVERY TIME ARE NEEDED
 */
 
 	ret = ChangeTransformInfo(tnew,told,args,num_args);

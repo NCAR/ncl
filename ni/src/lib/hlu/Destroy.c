@@ -1,5 +1,5 @@
 /*
- *      $Id: Destroy.c,v 1.12 1997-01-17 18:57:24 boote Exp $
+ *      $Id: Destroy.c,v 1.13 1997-02-24 22:12:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -117,10 +117,8 @@ NhlDestroy
 
 	l->base.being_destroyed = True;
 
-#ifdef	DEBUG
-	memset(&dummy,0,sizeof(NhlArgVal));
-	memset(&cbdata,0,sizeof(NhlArgVal));
-#endif
+	NhlINIT_ARGVAL(dummy);
+	NhlINIT_ARGVAL(cbdata);
 	cbdata.ptrval = l;
 	_NhlCallObjCallbacks(l,_NhlCBobjDestroy,dummy,cbdata);
 

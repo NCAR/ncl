@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.33 1996-10-09 15:46:07 ethan Exp $
+ *      $Id: hlu.h,v 1.34 1997-02-24 22:12:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -154,6 +154,12 @@ union _NhlType_ {
 };
 
 typedef	union _NhlType_	NhlArgVal;
+
+#if	DEBUG
+#define	NhlINIT_ARGVAL(var)	memset(&var,0,sizeof(NhlArgVal))
+#else
+#define	NhlINIT_ARGVAL(var)
+#endif
 
 NhlDOCTAG(NhlSArg)
 typedef struct NhlSArgRec{

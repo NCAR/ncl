@@ -1,5 +1,5 @@
 /*
- *      $Id: GraphicStyle.c,v 1.3 1996-09-14 17:06:13 boote Exp $
+ *      $Id: GraphicStyle.c,v 1.4 1997-02-24 22:12:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -80,6 +80,8 @@ NhlGraphicStyleClassRec NhlgraphicStyleClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	GraphicStyleClassPartInitialize,
 /* class_initialize		*/	NULL,

@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.21 1997-01-17 18:57:46 boote Exp $
+ *      $Id: TransObj.c,v 1.22 1997-02-24 22:12:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -114,6 +114,8 @@ NhlTransObjClassRec NhltransObjClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize */     TransObjClassPartInit,
 /* class_initialize */  NULL,

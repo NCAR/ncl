@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.39 1997-01-17 18:57:24 boote Exp $
+ *      $Id: DataComm.c,v 1.40 1997-02-24 22:12:21 boote Exp $
  */
 /************************************************************************
 *									*
@@ -124,6 +124,8 @@ NhlDataCommClassRec NhldataCommClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	DataCommClassPartInitialize,
 /* class_initialize		*/	DataCommClassInitialize,
@@ -203,6 +205,8 @@ NhlDataSpecClassRec NhldataSpecClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,

@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.21 1997-01-17 22:35:51 dbrown Exp $
+ *      $Id: XWorkstation.c,v 1.22 1997-02-24 22:12:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -110,6 +110,8 @@ NhlXWorkstationClassRec NhlxWorkstationClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	XWorkstationClassInitialize,

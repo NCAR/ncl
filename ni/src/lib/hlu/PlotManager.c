@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.34 1997-01-17 18:57:41 boote Exp $
+ *      $Id: PlotManager.c,v 1.35 1997-02-24 22:12:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -563,6 +563,8 @@ NhlPlotManagerClassRec NhlplotManagerClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	PlotManagerClassPartInitialize,
 /* class_initialize		*/	PlotManagerClassInitialize,
@@ -5052,10 +5054,8 @@ NhlErrorTypes NhlAddOverlay
 		ovp->pm_recs[i] = NULL;
 	}
 
-#ifdef  DEBUG
-        memset(&dummy,0,sizeof(NhlArgVal));
-        memset(&cbdata,0,sizeof(NhlArgVal));
-#endif
+	NhlINIT_ARGVAL(dummy);
+	NhlINIT_ARGVAL(cbdata);
         overlay_status.id = transform_id;
         overlay_status.base_id = base_id;
         overlay_status.status = _tfCurrentOverlayMember;
@@ -5250,10 +5250,8 @@ NhlErrorTypes NhlRemoveOverlay
 	if ((ret = MIN(subret,ret)) < NhlWARNING)
 		return ret;
 
-#ifdef  DEBUG
-        memset(&dummy,0,sizeof(NhlArgVal));
-        memset(&cbdata,0,sizeof(NhlArgVal));
-#endif
+	NhlINIT_ARGVAL(dummy);
+	NhlINIT_ARGVAL(cbdata);
         overlay_status.id = overlay_id;
         overlay_status.base_id = base_id;
         overlay_status.status = ostatus;
@@ -5599,10 +5597,8 @@ int _NhlAddAnnotation
 
 	ret =  MIN(subret,ret);
 
-#ifdef  DEBUG
-        memset(&dummy,0,sizeof(NhlArgVal));
-        memset(&cbdata,0,sizeof(NhlArgVal));
-#endif
+	NhlINIT_ARGVAL(dummy);
+	NhlINIT_ARGVAL(cbdata);
         anno_status.id = anno_view->base.id;
         anno_status.base_id = plotmanager->base.parent->base.id;
         anno_status.anno_manager_id = anno_manager_id;
@@ -5789,10 +5785,8 @@ NhlErrorTypes _NhlRemoveAnnotation
 
 	ret = MIN(subret,ret);
         
-#ifdef  DEBUG
-        memset(&dummy,0,sizeof(NhlArgVal));
-        memset(&cbdata,0,sizeof(NhlArgVal));
-#endif
+	NhlINIT_ARGVAL(dummy);
+	NhlINIT_ARGVAL(cbdata);
         anno_status.id = anno_view->base.id;
         anno_status.isanno = False;
         anno_status.base_id = plotmanager->base.parent->base.id;

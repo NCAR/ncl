@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.28 1997-01-17 18:57:30 boote Exp $
+ *      $Id: IrregularTransObj.c,v 1.29 1997-02-24 22:12:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -413,6 +413,8 @@ NhlIrregularTransObjClassRec NhlirregularTransObjClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	IrTransClassInitialize,

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.29 1997-01-17 18:57:46 boote Exp $
+ *      $Id: VectorPlot.c,v 1.30 1997-02-24 22:12:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1293,6 +1293,8 @@ NhlVectorPlotDataDepClassRec NhlvectorPlotDataDepClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,
@@ -1328,6 +1330,8 @@ NhlVectorPlotClassRec NhlvectorPlotClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	VectorPlotClassPartInitialize,
 /* class_initialize		*/	VectorPlotClassInitialize,

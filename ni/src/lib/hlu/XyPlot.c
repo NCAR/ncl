@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.66 1997-01-17 18:57:52 boote Exp $
+ *      $Id: XyPlot.c,v 1.67 1997-02-24 22:12:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -554,6 +554,8 @@ NhlXyDataSpecClassRec NhlxyDataSpecClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	XyDataClassInitialize,
@@ -590,6 +592,8 @@ NhlXyPlotClassRec NhlxyPlotClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize        */      XyPlotClassPartInitialize,
 /* class_initialize             */      XyPlotClassInitialize,
@@ -905,24 +909,29 @@ XyResetExtents
 	NhlSArg			sargs[30];
 	NhlGArg			gargs[30];
 	int			nargs;
-	float			xstart,xend,ystart,yend;
+	float			xb_start,xb_end,yl_start,yl_end;
+	float			xt_start,xt_end,yr_start,yr_end;
+	NhlTickMarkMode		xb_mode,xt_mode,yl_mode,yr_mode;
 	NhlXyPlotLayerPart	*newxy = &xnew->xyplot;
 	NhlErrorTypes		ret;
-	NhlBoolean		xb_on,xt_on,yl_on,yr_on;
 
 	if (! xnew->trans.plot_manager_on ||
 	    newxy->display_tickmarks < NhlCONDITIONAL)
 		return NhlNOERROR;
 	    
 	nargs = 0;
-	NhlSetGArg(&gargs[nargs++],NhlNtmXBTickStartF,&xstart);
-	NhlSetGArg(&gargs[nargs++],NhlNtmXBTickEndF,&xend);
-	NhlSetGArg(&gargs[nargs++],NhlNtmYLTickStartF,&ystart);
-	NhlSetGArg(&gargs[nargs++],NhlNtmYLTickEndF,&yend);
-	NhlSetGArg(&gargs[nargs++],NhlNtmXBOn,&xb_on);
-	NhlSetGArg(&gargs[nargs++],NhlNtmXTOn,&xt_on);
-	NhlSetGArg(&gargs[nargs++],NhlNtmYLOn,&yl_on);
-	NhlSetGArg(&gargs[nargs++],NhlNtmYROn,&yr_on);
+	NhlSetGArg(&gargs[nargs++],NhlNtmXBMode,&xb_mode);
+	NhlSetGArg(&gargs[nargs++],NhlNtmXBTickStartF,&xb_start);
+	NhlSetGArg(&gargs[nargs++],NhlNtmXBTickEndF,&xb_end);
+	NhlSetGArg(&gargs[nargs++],NhlNtmXTMode,&xt_mode);
+	NhlSetGArg(&gargs[nargs++],NhlNtmXTTickStartF,&xt_start);
+	NhlSetGArg(&gargs[nargs++],NhlNtmXTTickEndF,&xt_end);
+	NhlSetGArg(&gargs[nargs++],NhlNtmYLMode,&yl_mode);
+	NhlSetGArg(&gargs[nargs++],NhlNtmYLTickStartF,&yl_start);
+	NhlSetGArg(&gargs[nargs++],NhlNtmYLTickEndF,&yl_end);
+	NhlSetGArg(&gargs[nargs++],NhlNtmYRMode,&yr_mode);
+	NhlSetGArg(&gargs[nargs++],NhlNtmYRTickStartF,&yr_start);
+	NhlSetGArg(&gargs[nargs++],NhlNtmYRTickEndF,&yr_end);
 	ret = NhlALGetValues(newxy->overlay->base.id,gargs,nargs);
 	if(ret < NhlNOERROR){
 		NhlPError(ret,NhlEUNKNOWN,
@@ -931,23 +940,29 @@ XyResetExtents
 	}
 
 	nargs = 0;
-	if (xb_on || xt_on) {
+	/*
+	 * Only reset extent's if tickmark mode is automatic, otherwise
+	 * the already computed data min/max are the correct values.
+	 */
+	if((xb_mode == NhlAUTOMATIC) || (xt_mode == NhlAUTOMATIC)){
 		if(newxy->compute_x_min) {
-			newxy->x_min = xstart;
+			newxy->x_min = (xb_mode == NhlAUTOMATIC)?
+							xb_start:xt_start;
 			NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,newxy->x_min);
 		}
 		if(newxy->compute_x_max){
-			newxy->x_max = xend;
+			newxy->x_max = (xb_mode == NhlAUTOMATIC)?xb_end:xt_end;
 			NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,newxy->x_max);
 		}
 	}
-	if (yl_on || yr_on) {
+	if((yl_mode == NhlAUTOMATIC) || (yr_mode == NhlAUTOMATIC)){
 		if(newxy->compute_y_min){
-			newxy->y_min = ystart;
+			newxy->y_min = (yl_mode == NhlAUTOMATIC)?
+							yl_start:yr_start;
 			NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,newxy->y_min);
 		}
 		if(newxy->compute_y_max){
-			newxy->y_max = yend;
+			newxy->y_max = (yl_mode == NhlAUTOMATIC)?yl_end:yr_end;
 			NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,newxy->y_max);
 		}
 	}

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.c,v 1.13 1996-09-14 17:06:05 boote Exp $
+ *      $Id: DataItem.c,v 1.14 1997-02-24 22:12:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -102,6 +102,8 @@ NhlDataItemClassRec NhldataItemClassRec = {
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	DataItemClassPartInitialize,
 /* class_initialize		*/	NULL,
