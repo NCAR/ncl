@@ -1,5 +1,5 @@
 C
-C       $Id: vvdata.f,v 1.9 1996-04-11 17:22:25 dbrown Exp $
+C       $Id: vvdata.f,v 1.10 1998-01-16 20:43:47 dbrown Exp $
 C
       BLOCK DATA VVDATA
 C
@@ -53,7 +53,8 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +                IACM       ,IAFO
+     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                WBCF       ,WBDF       ,WBSC
 C
 C
 C Text related parameters
@@ -438,6 +439,27 @@ C
 C IAFO -- 'AFO' -- arrow fill over (arrow lines)
 C
       DATA IAFO / 1 /
+C
+C WBAD -- 'WBA' -- wind barb angle
+C
+      DATA WBAD / 62.0 /
+C
+C WBTF -- 'WBT' -- wind barb tic size (fraction of wb length)
+C
+      DATA WBTF / 0.33 /
+C
+C WBCF -- 'WBC' -- wind barb zero circle size (fraction of wb length)
+C
+      DATA WBCF / 0.25 /
+C
+C WBDF -- 'WBD' -- wind barb distance (spacing beteen ticks as
+C                                      fraction of wb length)
+C
+      DATA WBDF / 0.1 /
+C
+C WBSC -- 'WBS' -- wind barb scale factor
+C
+      DATA WBSC / 1.0 /
 C
 C
 C --------------------------------------------------------------------

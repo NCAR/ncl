@@ -1,5 +1,5 @@
 C
-C       $Id: velvct.f,v 1.15 1996-02-08 20:07:59 dbrown Exp $
+C       $Id: velvct.f,v 1.16 1998-01-16 20:43:46 dbrown Exp $
 C
       SUBROUTINE VELVCT (U,LU,V,LV,M,N,FLO,HI,NSET,LENGTH,ISPV,SPV)
 C
@@ -161,7 +161,8 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +                IACM       ,IAFO
+     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                WBCF       ,WBDF       ,WBSC
 C
 C
 C Text related parameters

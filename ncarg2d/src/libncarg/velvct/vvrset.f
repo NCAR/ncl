@@ -1,5 +1,5 @@
 C
-C       $Id: vvrset.f,v 1.9 1996-04-11 17:22:26 dbrown Exp $
+C       $Id: vvrset.f,v 1.10 1998-01-16 20:43:53 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -57,7 +57,8 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +                IACM       ,IAFO
+     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                WBCF       ,WBDF       ,WBSC
 C
 C
 C Text related parameters
@@ -192,6 +193,11 @@ C
       FAYF = 0.25
       IACM = 0
       IAFO = 1
+      WBAD = 62.0
+      WBTF = 0.33
+      WBCF = 0.25
+      WBDF = 0.1
+      WBSC = 1.0
 C
 C ---------------------------------------------------------------------
 C

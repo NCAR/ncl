@@ -1,5 +1,5 @@
 C
-C       $Id: vvgetc.f,v 1.10 1996-01-19 17:21:47 dbrown Exp $
+C       $Id: vvgetc.f,v 1.11 1998-01-16 20:43:51 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -64,7 +64,8 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +                IACM       ,IAFO
+     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                WBCF       ,WBDF       ,WBSC
 C
 C
 C Text related parameters

@@ -1,5 +1,5 @@
 C
-C       $Id: vvudmv.f,v 1.6 1996-01-25 16:19:07 dbrown Exp $
+C       $Id: vvudmv.f,v 1.7 1998-01-16 20:43:56 dbrown Exp $
 C
       SUBROUTINE VVUDMV(XCS,YCS,NCS,IAI,IAG,NAI)
 C
@@ -31,7 +31,7 @@ C
 C Depending on the arrow style, draw a polyline or a filled polygon
 C
       IF (IAS.EQ.0) THEN
-         CALL CURVE(XCS,YCS,NCS)
+         CALL GPL(NCS,XCS,YCS)
          RETURN
       END IF
 C
@@ -39,7 +39,7 @@ C If the 'filled' arrows are hollow, just draw the line as above
 C
       CALL VVGETI('ACM',ICM)
       IF (ICM.EQ.-1) THEN
-         CALL CURVE(XCS,YCS,NCS)
+         CALL GPL(NCS,XCS,YCS)
          RETURN
       END IF
 C
@@ -71,11 +71,11 @@ C
 C
                CALL VVGETI('AFO',IFO)
                IF (IFO.GT.0 .AND. ICM.GT.-2) THEN
-                  CALL CURVE(XC,YC,ICNT)
+                  CALL GPL(ICNT,XC,YC)
                END IF
                CALL GFA(ICNT,XC,YC)
                IF (IFO.LE.0 .AND. ICM.GT.-2) THEN
-                  CALL CURVE(XC,YC,ICNT)
+                  CALL GPL(ICNT,XC,YC)
                END IF
 C
                ICNT = 0
@@ -91,11 +91,11 @@ C
          CALL VVGETI('ACM',ICM)
          CALL VVGETI('AFO',IFO)
          IF (IFO.GT.0 .AND. ICM.GT.-2) THEN
-            CALL CURVE(XCS,YCS,NCS)
+            CALL GPL(NCS,XCS,YCS)
          END IF
          CALL GFA(NCS,XCS,YCS)
          IF (IFO.LE.0 .AND. ICM.GT.-2) THEN
-            CALL CURVE(XCS,YCS,NCS)
+            CALL GPL(NCS,XCS,YCS)
          END IF
 C     
       ELSE

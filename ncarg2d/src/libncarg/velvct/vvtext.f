@@ -1,5 +1,5 @@
 C
-C       $Id: vvtext.f,v 1.10 1996-02-08 20:08:00 dbrown Exp $
+C       $Id: vvtext.f,v 1.11 1998-01-16 20:43:55 dbrown Exp $
 C
 C This module contains four subroutines for text support of the
 C VELVCT utility. 
@@ -98,7 +98,8 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +                IACM       ,IAFO
+     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                WBCF       ,WBDF       ,WBSC
 C
 C
 C Text related parameters
@@ -190,7 +191,8 @@ C
       CALL VVTXIQ(LBL(LB:LE),TSZ*FW2W,WL,HL)
 C
 C We know the width of the arrow, compute its height
-C If less than or equal to 0.0 it will not be drawn
+C If less than or equal to 0.0 it will not be drawn unless using
+C wind barbs
 C
 C Determine the height of the arrow by calling the drawing routine
 C using a negative value of the vector len
@@ -200,14 +202,18 @@ C
       IF (WA .GT. 0.0) THEN
          IF (IAST .EQ. 0) THEN
             CALL VVDRAW(0.5,0.5,0.5+WA,0.5,-WA,LBL,0,IDM,VVDUMB,0)
-         ELSE
+         ELSE IF (IAST .EQ. 1) THEN
             CALL VVDRFL(0.5,0.5,0.5+WA,0.5,-WA,LBL,0,IDM,VVDUMB,0)
+         ELSE
+            CALL VVDRWB(0.5,0.5,0.5+WA,0.5,-WA,LBL,0,IDM,VVDUMB,0)
          END IF
       END IF
       IF (WA .LE. 0.0) THEN
          HA = 0.0
+         YAJ = 0.0
       ELSE
          HA = FYSZ
+         YAJ = ((AYMX - 0.5) - (0.5 - AYMN)) / 2.0
       END IF
 C
 C Now get the size of the vector text string
@@ -262,7 +268,7 @@ C
       CXT = XFA + 0.5*WTT
       CYT = YFA + 0.5*HT
       CXA = CXT
-      CYA = YFA + HT + HS + 0.5*HA
+      CYA = YFA + HT + HS + 0.5*HA - YAJ
       CXL = CXT
       CYL = YFA + HT + 2.0*HS + HA + 0.5*HL
 C
@@ -272,6 +278,9 @@ C
       CALL GQPLCI(IER,IOC)
       CALL GQFAIS(IER,IOF)
       CALL GQFACI(IER,IOK)
+      IF (IAST .EQ. 2) THEN
+         CALL GSFACI(IOC)
+      END IF
 C
 C If the vectors are colored by magnitude then find the correct color
 C Set the text color too if required.
@@ -281,13 +290,16 @@ C
             IF (VMG .LE. TVLU(K) .OR. K.EQ.NLVL) THEN
                IF (IAST .EQ. 0) THEN
                   CALL GSPLCI(ICLR(K))
-               ELSE 
+               ELSE IF (IAST .EQ. 1) THEN
                   IF (IACM .EQ. -1 .OR. IACM .GE. 1) THEN
                      CALL GSPLCI(ICLR(K))
                   END IF
                   IF (IACM .EQ. 0 .OR. ABS(IACM) .GE. 2) THEN
                      CALL GSFACI(ICLR(K))
                   END IF
+               ELSE
+                     CALL GSPLCI(ICLR(K))
+                     CALL GSFACI(ICLR(K))
                END IF
 C
                IF (ITC .EQ. -2) CALL GSTXCI(ICLR(K))
@@ -320,8 +332,10 @@ C
       IF (WA .GT. 0.0) THEN
          IF (IAST .EQ. 0) THEN
             CALL VVDRAW(CXA,CYA,CXA+WA,CYA,WA,LBL,0,IDM,VVDUMB,0)
-         ELSE
+         ELSE IF (IAST .EQ. 1) THEN
             CALL VVDRFL(CXA,CYA,CXA+WA,CYA,WA,LBL,0,IDM,VVDUMB,0)
+         ELSE
+            CALL VVDRWB(CXA,CYA,CXA+WA,CYA,WA,LBL,0,IDM,VVDUMB,0)
          END IF
       END IF
 C

@@ -1,5 +1,5 @@
 C
-C       $Id: vvgetr.f,v 1.12 1996-01-19 17:21:47 dbrown Exp $
+C       $Id: vvgetr.f,v 1.13 1998-01-16 20:43:51 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -64,7 +64,8 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +                IACM       ,IAFO
+     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                WBCF       ,WBDF       ,WBSC
 C
 C
 C Text related parameters
@@ -269,6 +270,19 @@ C
          RVL=REAL(IACM)
       ELSE IF (CNM(1:3).EQ.'AFO'.OR.CNM(1:3).EQ.'afo') THEN
          RVL=REAL(IAFO)
+C
+C wind barb parameters
+C
+      ELSE IF (CNM(1:3).EQ.'WBA'.OR.CNM(1:3).EQ.'wba') THEN
+         RVL=WBAD
+      ELSE IF (CNM(1:3).EQ.'WBT'.OR.CNM(1:3).EQ.'wbt') THEN
+         RVL=WBTF
+      ELSE IF (CNM(1:3).EQ.'WBC'.OR.CNM(1:3).EQ.'wbc') THEN
+         RVL=WBCF
+      ELSE IF (CNM(1:3).EQ.'WBD'.OR.CNM(1:3).EQ.'wbd') THEN
+         RVL=WBDF
+      ELSE IF (CNM(1:3).EQ.'WBS'.OR.CNM(1:3).EQ.'wbs') THEN
+         RVL=WBSC
 C
 C character multiplier
 C

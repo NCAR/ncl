@@ -1,16 +1,14 @@
 C
-C       $Id: vvdrfl.f,v 1.5 1998-01-16 20:43:49 dbrown Exp $
 C
-      SUBROUTINE VVDRFL (XB,YB,XE,YE,VLN,LBL,NC,IAM,VVUDMV,IDA)
+      SUBROUTINE VVDRWB (XB,YB,XE,YE,VLN,LBL,NC,IAM,VVUDMV,IDA)
 C
       DIMENSION IAM(*)
 C
       EXTERNAL VVUDMV
 C
-C This routine is called to draw a single filled arrow. Its 
+C This routine is called to draw a single wind barb. Its 
 C arguments are the same as the line-based arrow drawing routine 
-C VVDRAW. However it recognizes some parameters that the line arrow
-C routine does not. It has arguments as follows -
+C VVDRAW. However it uses other parameters from the VVARO common block
 C
 C XB,YB    -  Coordinate of arrow base, fractional coordinate
 C XE,YE    -  Coordinate of arrow head, fractional coordinate
@@ -125,20 +123,29 @@ C --------------------------------------------------------------------
 C
 C Local parameters
 C
-C Number of points in an arrow
+C Number of points in a triangle
 C
-      PARAMETER (IPAPCT=8)
+      PARAMETER (IPAPCT=4)
 C
 C Local arrays
 C
       DIMENSION IAI(IPAGMX),IAG(IPAGMX)
       DIMENSION XO(IPAPCT),YO(IPAPCT)
 C
-      PARAMETER (IADIM=8,D2RAD=.017453293)
-      DIMENSION ARROWX(IADIM),ARROWY(IADIM),AOUTX(IADIM),AOUTY(IADIM)
+C  PENINC - Increment for which triangles are drawn.
+C  BRBINC - Increment for which a full tic is drawn.
+C
+      PARAMETER (IADIM=6,PENINC=50.0,BRBINC=10.0)
+      DIMENSION XO(IADIM),YO(IADIM)
       DIMENSION WIN(4),VPT(4)
 C
       CHARACTER*10 LBL
+C
+      CALL GQCNTN(IER,NTR)
+      CALL GQNT(NTR,IER,WIN,VPT)
+      CALL GSWN(NTR,VPT(1),VPT(2),VPT(3),VPT(4))
+C
+C ABS(VLN) is constant and equal to DVMX for wind barbs.
 C
       IF (VLN.LT.0.0) THEN
          ISZ=1
@@ -148,175 +155,236 @@ C
          VLL=VLN
       END IF
 C
-C Transfer arguments to local variables and compute the vector length.
+      SPD = UVMG * WBSC
+C
+C If low speed just draw a circle
+C
+      ICR = 0
+      IF (SPD .LT. 0.5) THEN
+         CALL GQPLCI(IER,IC)
+         IF (ISZ .EQ. 0) THEN
+            CALL NGDOTS(XB,YB,1,WBCF*VLL,IC)
+         ELSE
+            AXMN = XB - 0.5 * WBCF*VLL
+            AXMX = XB + 0.5 * WBCF*VLL
+            AYMN = YB - 0.5 * WBCF*VLL
+            AYMX = YB + 0.5 * WBCF*VLL
+         END IF
+         ICR = 1
+         GO TO 999
+      END IF
+C
+C X and Y components of the vector.
+C Note that direction is XB to XE. The barbs go at the XB end.
 C
       DX=XE-XB
       DY=YE-YB
+C
+C Determinc sine and cosine of the shaft angle, and scaled speed
+C
+      CSA = DX / VLL
+      SNA = DY / VLL
+C
+C Figure out how many pennants are required.
+C If speed great enough to require a pennant then determine pennant 
+C extent along shaft and extend shaft length to accommodate top
+C pennant.
+C
+      NPN = INT((SPD + 2.5) / PENINC)
+      XPI=-AROX(1)*CSA
+      YPI=-AROX(1)*SNA
+      IF (NPN .EQ. 0) THEN
+         AXE = XE - XPI 
+         AYE = YE - YPI
+         DX=AXE-XB
+         DY=AYE-YB
+      END IF
 C
 C Adjust the coordinates of the vector endpoints as implied by the
 C vector positioning option.
 C
       IF (IVPO .LT. 0) THEN
-         AXE = XB
-         AYE = YB
          AXB = XB - DX
          AYB = YB - DY
+         AXE = XB
+         AYE = YB
       ELSE IF (IVPO .EQ. 0) THEN
          AXB = XB - 0.5*DX
          AYB = YB - 0.5*DY
-         AXE = XE - 0.5*DX
-         AYE = YE - 0.5*DY
+         AXE = XB + 0.5*DX
+         AYE = YB + 0.5*DY
       ELSE
          AXB = XB
          AYB = YB
-         AXE = XE
-         AYE = YE
+         AXE = XB + DX
+         AYE = YB + DY
       END IF
 C
-      IF (FAWF .LE. 0.0 .AND. FAYF .LE. 0.0 .AND. FAXF .LE. 0.0) THEN
-         DO 10 I=1,IADIM
-            ARROWX(I) = VLL * AROX(I)
-            ARROWY(I) = VLL * AROY(I)
- 10      CONTINUE
+C Initial position and distance between barbs 
+C
+      XPS = AXB
+      YPS = AYB
+      XIN = WBDF*DVMX*CSA
+      YIN = WBDF*DVMX*SNA
+C
+C Draw the shaft
+C
+      XO(1) = AXB
+      XO(2) = AXE
+      YO(1) = AYB
+      YO(2) = AYE
+C
+      IF (ISZ .EQ. 0) THEN
+         CALL GPL(2,XO,YO)
       ELSE
-         RFM = UVMX
-         IF (VRMG.GT.0.0) RFM = VRMG
-         VRL = DVMX
-         IF (VRLN.GT.0.0) VRL = VRLN*FW2W
-         FMG = UVMG/RFM
-         IF (FAWF.GT.0) THEN
-            WSZ = FWMN + MAX(0.0,FWRF-FWMN)*FMG
-         ELSE
-            WSZ = VLL*FAWR*0.5
-         END IF
-         IF (FAXF.GT.0) THEN
-            XSZ = FXMN + MAX(0.0,FXRF-FXMN)*FMG
-            ESZ = MIN(VLL,FIMN + MAX(0.0,FIRF-FIMN)*FMG)
-         ELSE
-            XSZ = VLL*FAXR
-            ESZ = VLL*FAIR
-         END IF
-         IF (FAYF.GT.0) THEN
-            YSZ = WSZ+FYMN+MAX(0.0,FYRF-FYMN)*FMG
-         ELSE
-            YSZ = WSZ+VLL*FAYR
-         END IF
-C
-         ARROWX(1) = VLL*AROX(1)
-         ARROWX(3) = -XSZ
-         ARROWX(4) = 0.0
-         ARROWX(5) = -XSZ
-         ARROWX(7) = VLL*AROX(7)
-         ARROWX(8) = VLL*AROX(8)
-         ARROWY(1) = -WSZ
-         ARROWY(2) = -WSZ
-         ARROWY(3) = -YSZ
-         ARROWY(4) = 0.0
-         ARROWY(5) = YSZ
-         ARROWY(6) = WSZ
-         ARROWY(7) = WSZ
-         ARROWY(8) = -WSZ
-C
-         IF (WSZ.GT.0.0) THEN
-C
-C Find point of intersection of line between rear arrowhead tip and 
-C the X interior point and the line forming the edge of the arrow body
-C using ratio of similar triangles
-C
-            ARROWX(2) = -(ESZ + ABS(XSZ-ESZ)*WSZ/(WSZ+YSZ))
-         ELSE
-            ARROWX(2) = -ESZ
-         END IF
-         ARROWX(6) = ARROWX(2)
-C
+         AXMN = MIN(XO(1),XO(2))
+         AXMX = MAX(XO(1),XO(2))
+         AYMN = MIN(YO(1),YO(2))
+         AYMX = MAX(YO(1),YO(2))
       END IF
-      IF (FAXR .LE. 0.4) THEN
-         RMG = ARROWY(6)
-      ELSE
-         RMG = MAX(ARROWY(5),ARROWY(6))
+C 
+C For speed between 0.5 and 2.5 the shaft is unadorned
+C
+      IF (SPD .LT. 2.5) THEN
+         GO TO 999
       END IF
 C
-C  Rotate and translate the arrow.
+C If speed is less than 7.5 then draw a half barb one increment down
 C
-      COSANG = DX / VLL
-      SINANG = DY / VLL
-      DO 20 I=1,IADIM
-         AOUTX(I) = AXE+ARROWX(I)*COSANG-ARROWY(I)*SINANG
-         AOUTY(I) = AYE+ARROWX(I)*SINANG+ARROWY(I)*COSANG
+      IF (SPD .LT. 7.5) THEN
+         XO(1) = XPS+XIN
+         YO(1) = YPS+YIN
+         XO(2) = XO(1) + AROX(5)*CSA-AROY(5)*SNA
+         YO(2) = YO(1) + AROX(5)*SNA+AROY(5)*CSA
+         IF (ISZ .EQ. 0) THEN
+            CALL GPL(2,XO,YO)
+         ELSE
+            AXMN = MIN(AXMN,XO(2))
+            AXMX = MAX(AXMX,XO(2))
+            AYMN = MIN(AYMN,YO(2))
+            AYMX = MAX(AYMX,YO(2))
+         END IF
+         GO TO 999
+      END IF
+C
+C Now draw the pennants if any
+C     
+      DO 10 I = 1,NPN
+         XO(1) = XPS + XPI
+         YO(1) = YPS + YPI
+         XO(2) = XO(1) + AROX(2)*CSA-AROY(2)*SNA
+         YO(2) = YO(1) + AROX(2)*SNA+AROY(2)*CSA
+         XO(3) = XPS
+         YO(3) = YPS
+         XO(4) = XO(1)
+         YO(4) = YO(1)
+         IF (ISZ .EQ. 0) THEN
+            CALL GFA(4,XO,YO)
+         ELSE
+            AXMN = MIN(AXMN,XO(2))
+            AXMX = MAX(AXMX,XO(2))
+            AYMN = MIN(AYMN,YO(2))
+            AYMX = MAX(AYMX,YO(2))
+         END IF
+         IF (I.EQ.NPN) THEN
+            XPS = XO(1) + XIN
+            YPS = YO(1) + YIN
+         ELSE
+            XPS = XO(1)+0.5*XIN
+            YPS = YO(1)+0.5*YIN
+         END IF
+ 10   CONTINUE
+C
+      SPD = SPD - NPN * PENINC
+      NBR = INT((SPD + 2.5) / BRBINC)
+C
+C Draw the barbs
+C
+      DO 20 I = 1, NBR
+         XO(1) = XPS
+         YO(1) = YPS
+         XO(2) = XO(1) + AROX(2)*CSA-AROY(2)*SNA
+         YO(2) = YO(1) + AROX(2)*SNA+AROY(2)*CSA
+         IF (ISZ .EQ. 0) THEN
+            CALL GPL(2,XO,YO)
+         ELSE
+            AXMN = MIN(AXMN,XO(2))
+            AXMX = MAX(AXMX,XO(2))
+            AYMN = MIN(AYMN,YO(2))
+            AYMX = MAX(AYMX,YO(2))
+         END IF
+         XPS = XPS + XIN
+         YPS = YPS + YIN
  20   CONTINUE
 C
-C Early return if just calculating the size
+C Draw a half barb if required
 C
-      IF (ISZ.EQ.1) THEN
-C
-         AYMN = 100.0
-         AYMX = -100.
-         AXMN = 100.0
-         AXMX = -100.0
-         DO 50 I=1,IADIM
-            IF (AOUTX(I) .LT. AXMN) AXMN = AOUTX(I)
-            IF (AOUTX(I) .GT. AXMX) AXMX = AOUTX(I)
-            IF (AOUTY(I) .LT. AYMN) AYMN = AOUTY(I)
-            IF (AOUTY(I) .GT. AYMX) AYMX = AOUTY(I)
- 50      CONTINUE
-         FXSZ = AXMX-AXMN
-         FYSZ = AYMX-AYMN
-C
-         RETURN
-      END IF
-C
-C Set the the normalization transformation to an identity. Can't use
-C the default transformation because we need to clip to the viewport
-C
-      CALL GQCNTN(IER,NTR)
-      CALL GQNT(NTR,IER,WIN,VPT)
-      CALL GSWN(NTR,VPT(1),VPT(2),VPT(3),VPT(4))
-C
-C Output the arrow, using the masking routines if specified.
-C
-      IF (IDA .GT. 1) THEN
-         CALL ARGTAI(IAM,XB,YB,IAI,IAG,IPAGMX,NAI,0)
-         CALL VVUDMV(AOUTX,AOUTY,IPAPCT,IAI,IAG,NAI)
-      ELSE IF (IDA .EQ. 1) THEN
-         CALL ARDRLN(IAM,AOUTX,AOUTY,IPAPCT, 
-     +        XO,YO,IPAPCT,IAI,IAG,IPAGMX,VVUDMV)
-      ELSE
-         IF (IAFO.GT.0 .AND. IACM.GT.-2) THEN
-            CALL GPL(IPAPCT,AOUTX,AOUTY)
-         END IF
-         IF (IACM.NE.-1) THEN
-            CALL GFA(IPAPCT,AOUTX,AOUTY)
-         END IF
-         IF (IAFO.LE.0 .AND. IACM.GT.-2) THEN
-            CALL GPL(IPAPCT,AOUTX,AOUTY)
+      IF (SPD - NBR * BRBINC .GT. 2.5) THEN
+         XO(1) = XPS
+         YO(1) = YPS
+         XO(2) = XO(1) + AROX(5)*CSA-AROY(5)*SNA
+         YO(2) = YO(1) + AROX(5)*SNA+AROY(5)*CSA
+         IF (ISZ .EQ. 0) THEN
+            CALL GPL(2,XO,YO)
+         ELSE
+            AXMN = MIN(AXMN,XO(2))
+            AXMX = MAX(AXMX,XO(2))
+            AYMN = MIN(AYMN,YO(2))
+            AYMX = MAX(AYMX,YO(2))
          END IF
       END IF
+      
+ 999  CONTINUE
+
+      FXSZ = AXMX-AXMN
+      FYSZ = AYMX-AYMN
 C
 C If requested, put the vector magnitude above the arrow.
 C
-      IF (NC .GT. 0) THEN
+      IF (NC .GT. 0 .AND. ISZ .EQ. 0) THEN
 C
-         PHI = ATAN2(DY,DX)
-         IF (AMOD(PHI+P5D2PI,P2XPI) .GT. P1XPI) PHI = PHI+P1XPI
-         XC = AXB+0.33*(AXE-AXB) +
-     +        (1.25*FLBS*FW2W+RMG)*COS(PHI+P1D2PI)
-         YC = AYB+0.33*(AYE-AYB) +
-     +        (1.25*FLBS*FW2W+RMG)*SIN(PHI+P1D2PI)
+C Figure circle location differently
+C
+         IF (ICR .EQ. 1) THEN
+            RMG = 0.5 * WBCF*VLL
+            PHI = 0.0
+            IF (NC .EQ. 1) THEN
+               XC = XB
+            ELSE
+               XC = XB - FLBS*FW2W
+            END IF
+            YC = YB - RMG - 1.25*FLBS*FW2W
+         ELSE
+            RMG = 0.001
+            PHI = ATAN2(DY,DX)
+            ISN = -1
+            IF (AMOD(PHI+P5D2PI,P2XPI) .GT. P1XPI) THEN
+               PHI = PHI+P1XPI
+               ISN = 1
+            END IF
+            IF (WBAD .LT. 0.0) THEN
+               ISN = -ISN
+            END IF
+            XC = AXB+0.33*(AXE-AXB) + ISN *
+     +           (1.25*FLBS*FW2W+RMG)*COS(PHI+P1D2PI)
+            YC = AYB+0.33*(AYE-AYB) + ISN *
+     +           (1.25*FLBS*FW2W+RMG)*SIN(PHI+P1D2PI)
+         END IF
 C
          CALL PLCHLQ(XC,YC,LBL(1:NC),FLBS*FW2W,PRTOD*PHI,0.0)
 C
       END IF
 C
-C Restore the original transformation
+C Restore original transformation
 C
       CALL GSWN(NTR,WIN(1),WIN(2),WIN(3),WIN(4))
 C
       RETURN
       END
 C
-      SUBROUTINE VVINFA ()
+      SUBROUTINE VVINWB ()
 C
-C Initializes filled arrow common block values
+C Initializes wind barb specific common block values.
 C
 C ---------------------------------------------------------------------
 C
@@ -417,50 +485,40 @@ C
      +           P5D2PI = 7.85398163397448) 
 C
 C --------------------------------------------------------------------
+      PARAMETER (D2RAD=.017453293)
 C
 C
 C Fill in the reference arrow data
 C
-      WID = 0.5 * FAWR
-      AROX(1) = -1.0
-      AROX(2) = -FAIR
-      AROX(3) = -FAXR
+c$$$C     parameter WBA wind barb angle
+c$$$      WBAD = 62.0
+c$$$C     parameter WBS wind barb tic size (fraction of barb length)
+c$$$      WBTF = 0.33 
+c$$$C     parameter WBR wind barb radius (fraction of bl)
+c$$$      WBCF = 0.25
+c$$$C     parameter WBD wind barb distance between ticks (fraction of bl)
+c$$$      WBDF = 0.1
+c$$$C     parameter WBC wind barb scale factor 
+c$$$      WBSC = 1.0
+C     
+      RAG = WBAD * D2RAD
+C
+C Use the first four elements of the fill arrow array to store the 
+C pennant triangle. Elements 2 and 3 work for the barb line.
+C Four and five are used for the half barb line.
+C
+      AROX(1) = -COS(RAG) * WBTF * DVMX
+      AROY(1) = 0.0
+      AROX(2) = AROX(1)
+      AROY(2) = SIN(RAG) * WBTF * DVMX
+      AROX(3) = 0.0
+      AROY(3) = 0.0
       AROX(4) = 0.0
-      AROX(5) = -FAXR
-      AROX(6) = -FAIR
-      AROX(7) = -1.0
-      AROX(8) = -1.0
-      AROY(1) = -WID
-      AROY(2) = -WID
-      AROY(3) = -WID-FAYR
-      AROY(4) = 0.0
-      AROY(5) = WID+FAYR
-      AROY(6) = WID
-      AROY(7) = WID
-      AROY(8) = -WID
-C
-      IF (WID.GT.0.0) THEN
-C
-C Find point of intersection of line between rear arrowhead tip and 
-C the X interior point and the line forming the edge of the arrow body
-C using ratio of similar triangles
-C
-         AROX(2) = - (FAIR + ABS(FAXR-FAIR)*WID/(WID+FAYR))
-      ELSE
-         AROX(2) = -FAIR
-      END IF
-      AROX(6) = AROX(2)
-C
-      VRL = DVMX
-      IF (VRLN.GT.0.0) VRL = VRLN*FW2W
-      FWRF = VRL*WID
-      FWMN = FWRF*FAWF
-      FXRF = VRL*FAXR
-      FXMN = FXRF*FAXF
-      FIRF = VRL*FAIR
-      FIMN = FIRF*FAXF
-      FYRF = VRL*FAYR
-      FYMN = FYRF*FAYF
+      AROY(4) = AROX(1)
+      AROX(5) = -0.5 * COS(RAG) * WBTF * DVMX
+      AROY(5) = 0.5 * SIN(RAG) * WBTF * DVMX
+      AROX(6) = 0.0
+      AROY(6) = 0.0
 C
       RETURN
       END

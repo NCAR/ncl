@@ -1,5 +1,5 @@
 C
-C       $Id: vvsetr.f,v 1.13 1996-04-11 17:22:26 dbrown Exp $
+C       $Id: vvsetr.f,v 1.14 1998-01-16 20:43:54 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -63,7 +63,8 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +                IACM       ,IAFO
+     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                WBCF       ,WBDF       ,WBSC
 C
 C
 C Text related parameters
@@ -259,6 +260,19 @@ C
          IACM=INT(RVL)
       ELSE IF (CNM(1:3).EQ.'AFO'.OR.CNM(1:3).EQ.'afo') THEN
          IAFO=INT(RVL)
+C
+C wind barb parameters
+C
+      ELSE IF (CNM(1:3).EQ.'WBA'.OR.CNM(1:3).EQ.'wba') THEN
+         WBAD=MIN(80.0,MAX(-80.0,RVL))
+      ELSE IF (CNM(1:3).EQ.'WBT'.OR.CNM(1:3).EQ.'wbt') THEN
+         WBTF=MIN(1.0,MAX(0.001,RVL))
+      ELSE IF (CNM(1:3).EQ.'WBC'.OR.CNM(1:3).EQ.'wbc') THEN
+         WBCF=MIN(1.0,MAX(0.001,RVL))
+      ELSE IF (CNM(1:3).EQ.'WBD'.OR.CNM(1:3).EQ.'wbd') THEN
+         WBDF=MIN(1.0,MAX(0.001,RVL))
+      ELSE IF (CNM(1:3).EQ.'WBS'.OR.CNM(1:3).EQ.'wbs') THEN
+         WBSC=MAX(0.0,RVL)
 C
 C character multiplier
 C

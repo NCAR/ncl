@@ -1,5 +1,5 @@
 C
-C       $Id: vvhluint.f,v 1.6 1996-04-04 19:22:59 dbrown Exp $
+C       $Id: vvhluint.f,v 1.7 1998-01-16 20:43:52 dbrown Exp $
 C
 C This module contains interface routines for VectorPlot and VecAnno
 C
@@ -10,7 +10,7 @@ C length, returns the bounding box as the minimum and maximum x and y
 C values. ARS is an array of values necessary to put Vectors into the
 C proper state to perform the calculations correctly.
 C 
-      REAL ARS(21)
+      REAL ARS(26)
 C
 C ---------------------------------------------------------------------
 C
@@ -60,7 +60,8 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +                IACM       ,IAFO
+     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                WBCF       ,WBDF       ,WBSC
 C
 C
 C Text related parameters
@@ -136,6 +137,11 @@ C
       FAYR = MIN(1.0,MAX(0.0,ARS(19)))
       FAYF = MIN(1.0,MAX(0.0,ARS(20)))
       IAFO = INT(ARS(21))
+      WBAD=MIN(80.0,MAX(-80.0,ARS(22)))
+      WBTF=MIN(1.0,MAX(0.001,ARS(23)))
+      WBCF=MIN(1.0,MAX(0.001,ARS(24)))
+      WBDF=MIN(1.0,MAX(0.001,ARS(25)))
+      WBSC=MAX(0.0,ARS(26))
 C
       CALL VVILNS(DRL,VFR,IAV)
       VL = -VLN
@@ -148,9 +154,12 @@ C
       IVPO = 1
       IF (IAST.EQ.0) THEN
          CALL VVDRAW(XB,YB,XE,YE,VL,CDM,0,IDM,VVDUMB,0)
-      ELSE
+      ELSE IF (IAST.EQ.1) THEN
          CALL VVINFA()
          CALL VVDRFL(XB,YB,XE,YE,VL,CDM,0,IDM,VVDUMB,0)
+      ELSE
+         CALL VVINWB
+         CALL VVDRWB(XB,YB,XE,YE,-DVMX,CDM,0,IDM,VVDUMB,0)
       END IF
       IVPO = ISP
 C
@@ -166,7 +175,7 @@ C ---------------------------------------------------------------------
 C
       SUBROUTINE VVARROWDRAW (DRS,ARS,XB,YB,XE,YE,VLN)
 C
-      REAL ARS(21),DRS(11)
+      REAL ARS(26),DRS(11)
 C
 C ---------------------------------------------------------------------
 C
@@ -216,7 +225,8 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +                IACM       ,IAFO
+     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                WBCF       ,WBDF       ,WBSC
 C
 C
 C Text related parameters
@@ -292,6 +302,11 @@ C
       FAYR = MIN(1.0,MAX(0.0,ARS(19)))
       FAYF = MIN(1.0,MAX(0.0,ARS(20)))
       IAFO = INT(ARS(21))
+      WBAD=MIN(80.0,MAX(-80.0,ARS(22)))
+      WBTF=MIN(1.0,MAX(0.001,ARS(23)))
+      WBCF=MIN(1.0,MAX(0.001,ARS(24)))
+      WBDF=MIN(1.0,MAX(0.001,ARS(25)))
+      WBSC=MAX(0.0,ARS(26))
 C
       XVPL = DRS(1)
       XVPR = DRS(2)
@@ -317,9 +332,12 @@ C
       IVPO = 1
       IF (IAST.EQ.0) THEN
          CALL VVDRAW(XB,YB,XE,YE,VL,CDM,0,IDM,VVDUMB,0)
-      ELSE
+      ELSE IF (IAST.EQ.1) THEN
          CALL VVINFA()
          CALL VVDRFL(XB,YB,XE,YE,VL,CDM,0,IDM,VVDUMB,0)
+      ELSE
+         CALL VVINWB
+         CALL VVDRWB(XB,YB,XE,YE,DVMX,CDM,0,IDM,VVDUMB,0)
       END IF
       IVPO = ISP
 C

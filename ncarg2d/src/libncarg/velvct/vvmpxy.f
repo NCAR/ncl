@@ -1,5 +1,5 @@
 C
-C       $Id: vvmpxy.f,v 1.8 1996-01-19 17:21:49 dbrown Exp $
+C       $Id: vvmpxy.f,v 1.9 1998-01-16 20:43:53 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -101,12 +101,21 @@ C XT,YT - temporary projected X,Y position values
 C XTF,YTF - temporary X,Y fractional coordinate values
 C DV1,DV2 - vector magnitudes
 C T     - temporary value
+C IZO   - zero magnitude flag
 C
 C Each end of the vector is calculated in the user coordinate space.
 C
 C Zero the status flag
 C
       IST=0
+C
+C Check for zero magnitude
+C
+      IF (IFIX(UVM*PRCFAC+0.5) .EQ. 0) THEN
+         IZO = 1
+      ELSE
+         IZO = 0
+      END IF
 C
       If (IMAP .EQ. 0) THEN
 C
@@ -119,6 +128,16 @@ C
          ENDIF
          XB=CUFX(X)
          YB=CUFY(Y)
+C
+C Return special status if zero magnitude
+C
+         IF (IZO .EQ. 1) THEN
+            XE = XB
+            YE = YB
+            IST = -999
+            RETURN
+         END IF
+C
          XE=XB+U*SXDC
          YE=YB+V*SYDC
 C
@@ -212,10 +231,12 @@ C
             RETURN
          END IF
 C
-C Check the vector magnitude
+C Return special status if zero magnitude
 C
-         IF (IFIX(UVM*PRCFAC+0.5) .EQ. 0) THEN
-            IST=-2
+         IF (IZO .EQ. 1) THEN
+            XE = XB
+            YE = YB
+            IST = -999
             RETURN
          END IF
 C
@@ -276,6 +297,16 @@ C
          TH=PDTOR*Y
          XB=CUFX(X*COS(TH))
          YB=CUFY(X*SIN(TH))
+C
+C Return special status if zero magnitude
+C
+         IF (IZO .EQ. 1) THEN
+            XE = XB
+            YE = YB
+            IST = -999
+            RETURN
+         END IF
+C
          XE=XB+U*SXDC
          YE=YB+V*SYDC
 C

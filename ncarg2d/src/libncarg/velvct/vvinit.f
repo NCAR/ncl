@@ -1,5 +1,5 @@
 C
-C       $Id: vvinit.f,v 1.10 1996-01-19 17:21:49 dbrown Exp $
+C       $Id: vvinit.f,v 1.11 1998-01-16 20:43:52 dbrown Exp $
 C
 C-----------------------------------------------------------------------
 C
@@ -18,7 +18,8 @@ C P     - A 2-d array containing a scalar data field. The contents
 C         of this array may be used to color the vectors.
 C LP    - The first dimension of the P array
 C M     - The first data dimension (must be less than or equal to
-C         MIN(LU,LV) (or MIN(LU,LV,LP) if the P array is used
+C         MIN(LU,LV) or, if the P array is used, MIN(LU,LV,LP))
+C N     - The second data dimension
 C WRK   - an internally used work array
 C LW    - dimension of the work array (must be at least 2*M*N) 
 C
@@ -74,7 +75,8 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +                IACM       ,IAFO
+     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                WBCF       ,WBDF       ,WBSC
 C
 C
 C Text related parameters

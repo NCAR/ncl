@@ -1,5 +1,5 @@
 C
-C       $Id: vvectr.f,v 1.13 1996-01-19 17:21:46 dbrown Exp $
+C       $Id: vvectr.f,v 1.14 1998-01-16 20:43:50 dbrown Exp $
 C
       SUBROUTINE VVECTR (U,V,P,IAM,VVUDMV,WRK)
 C
@@ -80,7 +80,8 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +                IACM       ,IAFO
+     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                WBCF       ,WBDF       ,WBSC
 C
 C
 C Text related parameters
@@ -255,7 +256,7 @@ C
 C
 C Initialize variables (both local and common block values) that 
 C control the mapping between vector magnitude and the realized 
-C vector length.
+C vector length. 
 C
       CALL VVILNS(DRL,VFR,IAV)
 C
@@ -266,9 +267,16 @@ C
       END IF
 C
 C If using filled arrows initialize the fill arrow data
+C For wind barbs initialize data, set up for calling NGDOTS, and
+C set the fill color the same as the line color
 C
-      IF (IAST.NE.0) THEN
+      IF (IAST.EQ.1) THEN
          CALL VVINFA
+      ELSE IF (IAST.GE.2) THEN
+         CALL NGGETI('CT',ICI)
+         CALL NGSETI('CT',1)
+         CALL GSFACI(IOC)
+         CALL VVINWB
       END IF
 C
 C Set the scaling for the optional vector labels
@@ -328,7 +336,7 @@ C
             IF (IPLR .LE. 0) THEN
                UVMG = SQRT(UI*UI+VI*VI)
             ELSE
-               UVMG = UI
+               UVMG = ABS(UI)
                IF (IPLR .EQ. 1) VI = PDTOR * VI
                UI = UVMG * COS(VI)
                VI = UVMG * SIN(VI)
@@ -340,7 +348,9 @@ C
 C
             IF (UVMG .GT. UVMX) GO TO 197
 C
-            IF (UVMG .LE. 0.0) GO TO 198
+C Eliminate zero vectors unless using wind barbs
+C
+            IF (UVMG .EQ. 0.0 .AND. IAST .LT. 2) GO TO 198
 C
 C If using a scalar array, check for special values in the array, 
 C then determine the color to use for the vector
@@ -352,13 +362,16 @@ C
                ELSE IF (ISPC .GT. 0 .AND. P(I,J) .EQ. UPSV) THEN
                   IF (IAST .EQ. 0) THEN
                      CALL GSPLCI(ISPC)
-                  ELSE 
+                  ELSE IF (IAST .EQ. 1) THEN
                      IF (IACM .EQ. -1 .OR. IACM .GE. 1) THEN
                         CALL GSPLCI(ISPC)
                      END IF
                      IF (IACM .EQ. 0 .OR. ABS(IACM) .GE. 2) THEN
                         CALL GSFACI(ISPC)
                      END IF
+                  ELSE
+                     CALL GSPLCI(ISPC)
+                     CALL GSFACI(ISPC)
                   END IF
                   GO TO 129
                END IF
@@ -367,13 +380,16 @@ C
                   IF (P(I,J).LE.TVLU(K) .OR. K.EQ.NLVL) THEN
                      IF (IAST .EQ. 0) THEN
                         CALL GSPLCI(ICLR(K))
-                     ELSE 
+                     ELSE IF (IAST .EQ. 1) THEN
                         IF (IACM .EQ. -1 .OR. IACM .GE. 1) THEN
                            CALL GSPLCI(ICLR(K))
                         END IF
                         IF (IACM .EQ. 0 .OR. ABS(IACM) .GE. 2) THEN
                            CALL GSFACI(ICLR(K))
                         END IF
+                     ELSE
+                        CALL GSPLCI(ICLR(K))
+                        CALL GSFACI(ICLR(K))
                      END IF
                      IF (ILBC .EQ. -1) THEN
                         CALL GSTXCI(ICLR(K))
@@ -392,13 +408,16 @@ C
                   IF (UVMG.LE.TVLU(K) .OR. K.EQ.NLVL) THEN
                      IF (IAST .EQ. 0) THEN
                         CALL GSPLCI(ICLR(K))
-                     ELSE 
+                     ELSE IF (IAST .EQ. 1) THEN
                         IF (IACM .EQ. -1 .OR. IACM .GE. 1) THEN
                            CALL GSPLCI(ICLR(K))
                         END IF
                         IF (IACM .EQ. 0 .OR. ABS(IACM) .GE. 2) THEN
                            CALL GSFACI(ICLR(K))
                         END IF
+                     ELSE
+                        CALL GSPLCI(ICLR(K))
+                        CALL GSFACI(ICLR(K))
                      END IF
                      IF (ILBC .EQ. -1) THEN
                         CALL GSTXCI(ICLR(K))
@@ -417,29 +436,33 @@ C
             IF (ICPM .GT. 0) THEN
 C
                CALL VVFCPM(I,J,UI,VI,UVMG,XB,YB,XE,YE,IST)
-               IF (IST .NE. 0) GO TO 195
+               IF (IST .NE. 0 .AND. IST .NE. -999) GO TO 195
 C
             ELSE
 C
                X=XLOV+REAL(I-1)*XGV
                Y=YLOV+REAL(J-1)*YGV
                CALL HLUVVMPXY(X,Y,UI,VI,UVMG,XB,YB,XE,YE,IST)
-               IF (IST .NE. 0) GO TO 195
+               IF (IST .NE. 0 .AND. IST .NE. -999) GO TO 195
 C
             END IF
 C
-            VLN = SQRT((XE-XB)*(XE-XB)+(YE-YB)*(YE-YB))
-            IF (VLN .EQ. 0.0) GO TO 198
+            IF (IAST .GE. 2 .AND. IST .EQ. -999) THEN
+               VLN = DVMX
+            ELSE
+               VLN = SQRT((XE-XB)*(XE-XB)+(YE-YB)*(YE-YB))
+               IF (VLN .EQ. 0.0) GO TO 198
 C
 C Adjust the vector length in proportion to the difference between
 C the minimum and maximum display vector magnitudes
 C
-            IF (IAV.NE.0) THEN
-               VA = VFR+(DVMX - VFR)*(UVMG - UVMN) /(UVMX - UVMN)
-               RA = VA / VLN
-               XE = XB + RA *(XE-XB)
-               YE = YB + RA *(YE-YB)
-               VLN = VA
+               IF (IAV.NE.0) THEN
+                  VA = VFR+(DVMX - VFR)*(UVMG - UVMN) /(UVMX - UVMN)
+                  RA = VA / VLN
+                  XE = XB + RA *(XE-XB)
+                  YE = YB + RA *(YE-YB)
+                  VLN = VA
+               END IF
             END IF
 C
 C Track the minimum/maximum displayed values
@@ -447,7 +470,7 @@ C
             IF (UVMG .LT. VMN) VMN=UVMG
             IF (UVMG .GT. VMX) VMX=UVMG
 C
-C Turn zero field flag off and encode the number if a label is to
+C Turn zero field flag off; encode the number if a label is to
 C be drawn
 C
             IZF = 0
@@ -457,8 +480,10 @@ C Draw the vector
 C
             IF (IAST .EQ. 0) THEN
                CALL VVDRAW (XB,YB,XE,YE,VLN,LBL,NC,IAM,VVUDMV,IDA)
-            ELSE
+            ELSE IF (IAST .EQ. 1) THEN
                CALL VVDRFL (XB,YB,XE,YE,VLN,LBL,NC,IAM,VVUDMV,IDA)
+            ELSE
+               CALL VVDRWB (XB,YB,XE,YE,VLN,LBL,NC,IAM,VVUDMV,IDA)
             END IF
 C
 C Statistical data:
@@ -614,6 +639,7 @@ C
 C
 C Restore clipping and the set transformation.
 C
+            CALL NGSETI('CT',ICI)
             CALL GSCLIP(ICL)
             CALL SET(VPL,VPR,VPB,VPT,WDL,WDR,WDB,WDT,ILG)
 C
@@ -697,7 +723,8 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +                IACM       ,IAFO
+     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                WBCF       ,WBDF       ,WBSC
 C
 C
 C Text related parameters
@@ -788,6 +815,15 @@ C
 C Clear the status flag and reset the scale factors
 C
       IST = 0
+C
+C Check for zero magnitude
+C
+      IF (IFIX(UVM*PRCFAC+0.5) .EQ. 0) THEN
+         IZO = 1
+      ELSE
+         IZO = 0
+      END IF
+C
       ILN = KFMX(DVMX)
       SFX = SCALEX(IXDM,IYDN,IXIN,IYIN,UVMX,XVPL,XVPR,YVPB,YVPT,
      +     WXMN,WXMX,WYMN,WYMX,ILN)
@@ -811,6 +847,17 @@ C
       END IF
       CALL FL2INT(TX,TY,MX,MY)
 C
+C Return special status if zero magnitude
+C
+         IF (IZO .EQ. 1) THEN
+            XB=CMFX(MX)
+            YB=CMFY(MY)
+            XE = XB
+            YE = YB
+            IST = -999
+            RETURN
+         END IF
+C
 C Use MYX,MYF to calculate the end of the vector in metacode
 C coordinates.
 C     
@@ -827,10 +874,6 @@ C
       YB=CMFY(MY)
       XE=CMFX(LX)
       YE=CMFY(LY)
-C
-C Check for zero length vector
-C
-      IF (PRCFAC*(XE-XB).EQ.0 .AND. PRCFAC*(YE-YB).EQ.0) IST = -1 
 C
 C Done
 C
@@ -899,7 +942,8 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +                IACM       ,IAFO
+     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                WBCF       ,WBDF       ,WBSC
 C
 C
 C Text related parameters
@@ -985,9 +1029,16 @@ C
 C There are a number of ways these lengths may be determined,
 C depending on whether the user has specified (1) a 
 C reference magnitude, (2) a reference length, or (3) a fractional
-C size for the minimum magnitude.
+C size for the minimum magnitude. 
 C
-      VFRC = MIN(1.0, VFRC)
+C Note that for wind barbs the fractional size is forced to 1.0,
+C which will cause all the glyphs to have the same basic length.
+C 
+      IF (IAST.GE.2) THEN
+         VFL = 1.0
+      ELSE
+         VFL = MIN(1.0, VFRC)
+      END IF
 C
 C If the field is uniform, special conditions apply
 C
@@ -1012,10 +1063,9 @@ C
             DVMX=VRLN*FW2W
          END IF
          DRL=DVMX
-         IF (VFRC .GT. 0.0) THEN
+         IF (VFL .GT. 0.0) THEN
             IAV=1
-            VFRC = MIN(1.0, VFRC)
-            VFR=VFRC*DVMX
+            VFR=VFL*DVMX
             DVMN=VFR
          ELSE
             DVMN=DVMX*(UVMN/UVMX)
@@ -1032,8 +1082,8 @@ C
          IF (VRLN .GT. 0.0) THEN
             DRL=VRLN*FW2W
             DVMX=DRL*UVMX/VRMG
-         ELSE IF (VFRC .GT. 0.0) THEN
-            DRL=DVMX*VFRC
+         ELSE IF (VFL .GT. 0.0) THEN
+            DRL=DVMX*VFL
          ELSE
             DRL=DVMX*VRMG/UVMX
          END IF
@@ -1048,17 +1098,17 @@ C magnitude is determined proportionally. If no reference length
 C is specified, the reference length is set proportionally to
 C the default size assigned to the maximum magnitude.
 C
-      ELSE IF (VFRC .GT. 0.0) THEN
+      ELSE IF (VFL .GT. 0.0) THEN
          IAV=1
          IF (VRLN .GT. 0.0) THEN
             DRL=VRLN*FW2W
-            VFR=VFRC*DRL
+            VFR=VFL*DRL
             DVMN=VFR
             DVMX=DVMN+(DRL-DVMN)*(UVMX-UVMN)/(VRMG-UVMN)
          ELSE
             RAT=(VRMG-UVMN)/(UVMX-UVMN)
-            DRL=DVMX*RAT/(1.0-VFRC+VFRC*RAT)
-            VFR=VFRC*DRL
+            DRL=DVMX*RAT/(1.0-VFL+VFL*RAT)
+            VFR=VFL*DRL
             DVMN=VFR
          END IF
 C

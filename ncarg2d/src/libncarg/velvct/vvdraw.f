@@ -1,5 +1,5 @@
 C
-C       $Id: vvdraw.f,v 1.7 1996-01-19 17:21:45 dbrown Exp $
+C       $Id: vvdraw.f,v 1.8 1998-01-16 20:43:48 dbrown Exp $
 C
       SUBROUTINE VVDRAW (XB,YB,XE,YE,VLN,LBL,NC,IAM,VVUDMV,IDA)
 C
@@ -69,7 +69,8 @@ C
      +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
      +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
      +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
-     +                IACM       ,IAFO
+     +     	      IACM       ,IAFO       ,WBAD       ,WBTF       ,
+     +                WBCF       ,WBDF       ,WBSC
 C
 C
 C Text related parameters
@@ -129,8 +130,9 @@ C
 C Local arrays
 C
       DIMENSION IAI(IPAGMX), IAG(IPAGMX)
-      DIMENSION XF(IPAPCT), YF(IPAPCT), XW(IPAPCT), YW(IPAPCT)
+      DIMENSION XF(IPAPCT), YF(IPAPCT)
       DIMENSION XO(IPAPCT), YO(IPAPCT)
+      DIMENSION WIN(4),VPT(4)
 C
       CHARACTER*10 LBL
 C
@@ -206,31 +208,23 @@ C
          RETURN
       END IF
 C
-C Convert to user coodinates
+C Set the the normalization transformation to an identity. Can't use
+C the default transformation because we need to clip to the viewport
 C
-      XW(1) = CFUX(XF(1))
-      YW(1) = CFUY(YF(1))
-      XW(2) = CFUX(XF(2))
-      YW(2) = CFUY(YF(2))
-      XW(3) = CFUX(XF(3))
-      YW(3) = CFUY(YF(3))
-      XW(4) = CFUX(XF(4))
-      YW(4) = CFUY(YF(4))
-      XW(5) = CFUX(XF(5))
-      YW(5) = CFUY(YF(5))
-      XW(6) = XW(2)
-      YW(6) = YW(2)
+      CALL GQCNTN(IER,NTR)
+      CALL GQNT(NTR,IER,WIN,VPT)
+      CALL GSWN(NTR,VPT(1),VPT(2),VPT(3),VPT(4))
 C
 C Plot the arrow using areas or not, as required.
 C
       IF (IDA .GT. 1) THEN
-        CALL ARGTAI(IAM,XW(1),YW(1),IAI,IAG,IPAGMX,NAI,0)
-        CALL VVUDMV(XW,YW,IPAPCT,IAI,IAG,NAI)
+        CALL ARGTAI(IAM,XB,YB,IAI,IAG,IPAGMX,NAI,0)
+        CALL VVUDMV(XF,YF,IPAPCT,IAI,IAG,NAI)
       ELSE IF (IDA .EQ. 1) THEN
-         CALL ARDRLN(IAM,XW,YW,IPAPCT, 
+         CALL ARDRLN(IAM,XF,YF,IPAPCT, 
      +        XO,YO,IPAPCT,IAI,IAG,IPAGMX,VVUDMV)
       ELSE
-         CALL CURVE(XW,YW,IPAPCT)
+         CALL GPL(IPAPCT,XF,YF)
       END IF
 C
 C If requested, put the vector magnitude above the arrow.
@@ -242,11 +236,14 @@ C
          XC = 0.5*(XF(1)+XF(4))+1.25*FLBS*FW2W*COS(PHI+P1D2PI)
          YC = 0.5*(YF(1)+YF(4))+1.25*FLBS*FW2W*SIN(PHI+P1D2PI)
 C
-         XC = CFUX(XC)
-         YC = CFUY(YC)
          CALL PLCHLQ(XC,YC,LBL(1:NC),FLBS*FW2W,PRTOD*PHI,0.0)
 C
       END IF
+C
+C Restore the original transformation
+C
+      CALL GSWN(NTR,WIN(1),WIN(2),WIN(3),WIN(4))
+C
 C
       RETURN
       END
