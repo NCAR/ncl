@@ -6,7 +6,7 @@
  */
 #include "wrapper.h"
 
-extern void NGCALLF(dlinmsg,DLINMSG)(double *,int *,double *,int *);
+extern void NGCALLF(dlinmsg,DLINMSG)(double *,int *,double *,int *, int *);
 
 NhlErrorTypes linmsg_W( void )
 {
@@ -17,8 +17,9 @@ NhlErrorTypes linmsg_W( void )
   double *tmp_x;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
-  int *mflag; 
+  int *opt, dsizes_opt[NCL_MAX_DIMENSIONS]; 
   NclBasicDataTypes type_x;
+  int mflag, nptcrt;
 /*
  * Output variables.
  */
@@ -43,16 +44,15 @@ NhlErrorTypes linmsg_W( void )
           &type_x,
           2);
 
-  mflag = (int*)NclGetArgValue(
+  opt = (int*)NclGetArgValue(
           1,
           2,
           NULL,
-          NULL,
+          dsizes_opt,
           NULL,
           NULL,
           NULL,
           2);
-
 /*
  * Compute the total number of elements in our x array.
  */
@@ -61,7 +61,18 @@ NhlErrorTypes linmsg_W( void )
   for( i = 0; i < ndims_x-1; i++ ) total_size_x1 *= dsizes_x[i];
 
   total_size_x = total_size_x1 * npts;
-
+/*
+ * Check "opt".  If it is a scalar, then set mflag equal to it. If it
+ * has two elements, then the first element is mflag, and the second
+ * element is nptcrt.
+ */
+  mflag = opt[0];
+  if(dsizes_opt[0] >= 2) {
+    nptcrt = opt[1];
+  }
+  else {
+    nptcrt = npts;
+  }
 /*
  * coerce missing values.
  */
@@ -99,7 +110,8 @@ NhlErrorTypes linmsg_W( void )
  */
     coerce_subset_input_double(x,tmp_x,index_x,type_x,npts,0,NULL,NULL);
 
-    NGCALLF(dlinmsg,DLINMSG)(tmp_x,&npts,&missing_dx.doubleval,mflag);
+    NGCALLF(dlinmsg,DLINMSG)(tmp_x,&npts,&missing_dx.doubleval,&mflag,
+                             &nptcrt);
     for(j = 0; j < npts; j++) {
       if(type_x != NCL_double) {
         ((float*)xlinmsg)[index_x+j] = (float)(tmp_x[j]);

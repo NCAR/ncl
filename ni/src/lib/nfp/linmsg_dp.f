@@ -1,5 +1,5 @@
 c -------------------------------------------------------------------
-      SUBROUTINE DLINMSG(X,NPTS,XMSG,MFLAG)
+      SUBROUTINE DLINMSG(X,NPTS,XMSG,MFLAG,MPTCRT)
 c     implicit none
 
 c NCL: xnew = linmsg(x,mflag)
@@ -14,10 +14,14 @@ c .   x         - input series which may or may not contain msg values
 c .   npts      - length of the series
 c .   xmsg      - missing code
 c .   mflag     - note: if mflag.lt.0 then the missing values at the
-C*PL*ERROR* Comment line too long
-c .               beginning and end of the series will be set to the value
-c .               of the nearest non-msg value. if mflag.ge.0 then
-c .               set these values to missing.
+c .               beginning and end of the series will be set to the
+c .               value of the nearest non-msg value. if mflag.ge.0
+c .               then set these values to missing.
+c .   mptcrt    - if more than "mptcrt" consecutive values are 
+c .               encountered, the routine will not interpolate across
+c .               that segment. If mptcrt=npts [most common option], 
+c .               then the routine will interpolate as many values as
+c .               it can.
 c .
 c OTHER variables
 c .   ncode     - code number
@@ -28,8 +32,8 @@ c .                             had no missing points or this routine
 c .                             has filled them with interpolated values
 c .               ncode = nn  : series still has missing values. this
 c .                             occurs when iabs(mptcrt) is exceeded.
-C*PL*ERROR* Comment line too long
-c .                             nn is the number of missing values still present.
+c .                             nn is the number of missing values
+c .                             still present.
 c .   nitp      - No. of InTerpolated Points : user shouldcheck
 c .               the ratio (nitp/npts)
 
@@ -38,7 +42,7 @@ c .               the ratio (nitp/npts)
       INTEGER NPTCRT,NN,NBASE
       DOUBLE PRECISION SLOPE
 
-      MPTCRT = NPTS
+c c c MPTCRT = NPTS   ! updated version
 
       NSTRT = 0
       NEND = 0
