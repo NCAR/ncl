@@ -1,5 +1,5 @@
 C
-C      $Id: cn15f.f,v 1.1 1997-03-12 16:10:54 haley Exp $
+C      $Id: cn15f.f,v 1.2 1997-03-21 17:24:22 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -432,12 +432,16 @@ C
       call NhlFChangeWorkstation (ice,ncgm,ierr)
       call NhlFChangeWorkstation (cn,ncgm,ierr)
       call NhlFChangeWorkstation (mp,ncgm,ierr)
+      call NhlFChangeWorkstation (xy_plot,ncgm,ierr)
+      call NhlFChangeWorkstation (tx,ncgm,ierr)
 C
-C Draw only the contour plot with map and ice to the ncgm.
+C Draw all objects to the NCGM.
 C
       call NhlFDraw(ice,ierr)
       call NhlFDraw(cn,ierr)
       call NhlFDraw(mp,ierr)
+      call NhlFDraw(xy_plot,ierr)
+      call NhlFDraw(tx,ierr)
       call NhlFFrame(ncgm,ierr)
 C
 C Reassign the workstation to save PS.

@@ -291,12 +291,16 @@ begin
   NhlChangeWorkstation (ice,ncgm)
   NhlChangeWorkstation (cn,ncgm)
   NhlChangeWorkstation (mp,ncgm)
+  NhlChangeWorkstation (xy_plot,ncgm)
+  NhlChangeWorkstation (tx,ncgm)
 ;
-; Draw only the contour plot with map and ice to the ncgm.
+; Draw all objects to the NCGM.
 ;
   draw(ice)
   draw(cn)
   draw(mp)
+  draw(xy_plot)
+  draw(tx)
   frame(ncgm)
 ;
 ; Reassign the workstation to save PS.

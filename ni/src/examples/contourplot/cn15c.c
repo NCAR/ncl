@@ -1,5 +1,5 @@
 /*
- *      $Id: cn15c.c,v 1.1 1997-03-12 16:10:53 haley Exp $
+ *      $Id: cn15c.c,v 1.2 1997-03-21 17:24:19 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -402,13 +402,17 @@ main()
  */
       NhlChangeWorkstation (ice,ncgm);
       NhlChangeWorkstation (cn,ncgm);
+      NhlChangeWorkstation (xy_plot,ncgm);
+      NhlChangeWorkstation (tx,ncgm);
       NhlChangeWorkstation (mp,ncgm);
 /*
- * Draw only the contour plot with map and ice to the ncgm.
+ * Draw all objects to the NCGM.
  */
       NhlDraw(ice);
       NhlDraw(cn);
       NhlDraw(mp);
+      NhlDraw(xy_plot);
+      NhlDraw(tx);
       NhlFrame(ncgm);
 /*
  * Reassign the workstation to save PS.
