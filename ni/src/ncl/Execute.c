@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.38 1995-04-08 00:07:29 ethan Exp $
+ *      $Id: Execute.c,v 1.39 1995-05-01 22:07:45 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2330,6 +2330,7 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry obj_name_expr;
 				NclMultiDValData obj_name_md;
 				NclMultiDValData tmp_md;
+				NclMultiDValData tmp1_md;
 				char * objname = NULL;
 				if(*ptr == CREATE_OBJ_WP_OP) {
 					parent = _NclPop();
@@ -2337,6 +2338,7 @@ NclExecuteReturnStatus _NclExecute
 						tmp_md = _NclVarValueRead(parent.u.data_var,NULL,NULL);
 					} else if(parent.kind == NclStk_VAL) {
 						tmp_md = parent.u.data_obj;
+						parent.u.data_obj = NULL;
 					} else {
 						estatus = NhlFATAL;
 					}
@@ -2346,6 +2348,7 @@ NclExecuteReturnStatus _NclExecute
 					}
 				} else {
 					tmp_md = NULL;
+					parent.u.data_var = NULL;
 				}
 				obj_name_expr = _NclPop();
 				if(obj_name_expr.kind == NclStk_VAL) {
@@ -2372,12 +2375,12 @@ NclExecuteReturnStatus _NclExecute
 					} else
 					if(!(obj_name_md->multidval.type->type_class.type & Ncl_Typestring)) {
 
-						tmp_md = _NclCoerceData(
+						tmp1_md = _NclCoerceData(
 						obj_name_md,
 						Ncl_Typestring,
 						NULL
 						);
-						if(tmp_md == NULL) {
+						if(tmp1_md == NULL) {
 						NhlPError(NhlFATAL,
 							NhlEUNKNOWN,
 							"create: The object name expression must result in a string value or a value that can be coerced to a string."	
@@ -2390,8 +2393,8 @@ NclExecuteReturnStatus _NclExecute
 							if(obj_name_md->obj.status != PERMANENT) {
 								_NclDestroyObj((NclObj)obj_name_md);
 							}
-							obj_name_md = tmp_md;
-							tmp_md = NULL;
+							obj_name_md = tmp1_md;
+							tmp1_md = NULL;
 						}
 					}
 				}
@@ -2415,6 +2418,12 @@ NclExecuteReturnStatus _NclExecute
 					}
 				} else {
 					_NclCleanUpStack(2*nres);
+				}
+		
+				if((tmp_md != NULL)&&(parent.u.data_var != NULL)&&(parent.u.data_var->obj.status != PERMANENT))  {
+					_NclDestroyObj((NclObj)parent.u.data_var);
+				} else if((tmp_md != NULL)&&(tmp_md->obj.status != NULL)) {
+					_NclDestroyObj((NclObj)tmp_md);
 				}
 			}
 			break;

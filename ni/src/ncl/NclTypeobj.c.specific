@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypeobj.c.specific,v 1.3 1995-02-17 20:52:43 ethan Exp $
+ *      $Id: NclTypeobj.c.specific,v 1.4 1995-05-01 22:07:49 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -41,7 +41,11 @@ void *val;
 
 	object = _NclGetObj(*(obj*)val);
 
-	_NclPrint(object,fp);
+	if(object == NULL) {
+		nclfprintf(fp,"%d",*(obj*)val);
+	} else {
+		_NclPrint(object,fp);
+	}
 }
 
 

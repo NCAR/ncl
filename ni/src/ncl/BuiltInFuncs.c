@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.14 1995-04-26 17:41:05 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.15 1995-05-01 22:07:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1116,8 +1116,10 @@ NhlErrorTypes _NclIDestroy
 	NclStackEntry *var;
 	int *obj_ids,i;
 	NclHLUObj hlu_ptr = NULL;
+	NclMultiDValData att_md;
+	void *att_val;
 
-	data = _NclGetArg(0,1,DONT_CARE);
+	data = _NclGetArg(0,1,WRITE_IT);
 
 	if(data.kind == NclStk_VAR) {
 		if(!(data.u.data_var->obj.obj_type_mask & Ncl_HLUVar)) {
@@ -1128,11 +1130,33 @@ NhlErrorTypes _NclIDestroy
 			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
 			if(tmp_md->obj.obj_type_mask & NCL_HLU_MASK) {
 				obj_ids = (obj*)tmp_md->multidval.val;
+				if(!tmp_md->multidval.missing_value.has_missing) {	
+					att_val = (void*)NclMalloc(sizeof(NclScalar));
+					*(NclScalar*)att_val = tmp_md->multidval.type->type_class.default_mis;
+					i = 1;
+					att_md = _NclCreateMultiDVal(
+						NULL,
+						NULL,
+						Ncl_MultiDValData,
+						0,
+						att_val,
+						NULL,
+						1,
+						&i,
+						TEMPORARY,
+						NULL,
+						tmp_md->multidval.type);
+	
+						
+					_NclWriteAtt(data.u.data_var,NCL_MISSING_VALUE_ATT,att_md,NULL);
+					tmp_md->multidval.missing_value.has_missing = 1;
+					tmp_md->multidval.missing_value.value = tmp_md->multidval.type->type_class.default_mis;
+				}
 				for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
-					hlu_ptr = (NclHLUObj)_NclGetObj(obj_ids[i]);
-					if((hlu_ptr != NULL)&&(hlu_ptr->obj.obj_type_mask & Ncl_HLUObj)) {
-						NhlDestroy(hlu_ptr->hlu.hlu_id);
+					if(obj_ids[i] != tmp_md->multidval.missing_value.value.objval){
+						_NclDestroyObj(_NclGetObj(obj_ids[i]));
 					}
+					obj_ids[i] = tmp_md->multidval.missing_value.value.objval;
 				}
 			}
 		}
@@ -1141,48 +1165,15 @@ NhlErrorTypes _NclIDestroy
 		if(data.u.data_obj->obj.obj_type_mask && NCL_HLU_MASK) {
 			obj_ids = (obj*)tmp_md->multidval.val;
 			for(i = 0; i < tmp_md->multidval.totalelements; i++ ) {
-				hlu_ptr = (NclHLUObj)_NclGetObj(obj_ids[i]);
-				if((hlu_ptr != NULL)&&(hlu_ptr->obj.obj_type_mask & Ncl_HLUObj)) {
-					NhlDestroy(hlu_ptr->hlu.hlu_id);
+				if(obj_ids[i] != tmp_md->multidval.missing_value.value.objval){
+					_NclDestroyObj(_NclGetObj(obj_ids[i]));
 				}
+				obj_ids[i] = tmp_md->multidval.missing_value.value.objval;
 			}
 		}
 	} else {
 		return(NhlFATAL);
 	}
-/*
-	switch(data.kind) {
-	case NclStk_VAL:
-		_NclDestroyObj((NclObj)data.u.data_obj);
-		break;
-	case NclStk_VAR:
-		if((data.u.data_var != NULL)&&(data.u.data_var->var.thesym != NULL)) {
-			var = _NclRetrieveRec(data.u.data_var->var.thesym,DONT_CARE);
-			thesym = data.u.data_var->var.thesym;
-			if(data.u.data_var->var.var_type == NORMAL) {
-*
-* Can't destroy symbol since it may be referenced from the instruction
-* sequence. Changing it to UNDEF should do the trick though
-*
-				_NclChangeSymbolType(thesym,UNDEF);
-			}
-		} else {
-			var = NULL;
-		}
-		_NclDestroyObj((NclObj)data.u.data_var);
-		if(var != NULL) {
-			var->u.data_var = NULL;
-			var->kind = NclStk_NOVAL;
-		}
-		break;
-	default:
-		break;
-	}
-	data.kind = NclStk_NOVAL;
-	data.u.data_obj = NULL;
-	return(_NclPutArg(data,0,1));
-*/
-	return(NhlFATAL);
 }
 NhlErrorTypes _NclIUpdate
 #if	NhlNeedProto
@@ -1971,6 +1962,7 @@ NhlErrorTypes _NclIasciiwrite
 		fprintf(fd,"\n");
 		step = step + tmp_md->multidval.type->type_class.size;
 	}
+	fclose(fd);
 	return(NhlNOERROR);
 }
 

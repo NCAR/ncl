@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.13 1995-03-25 00:59:04 ethan Exp $
+ *      $Id: NclVar.c,v 1.14 1995-05-01 22:07:51 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -698,27 +698,33 @@ struct _NclSelectionRecord *sel_ptr;
 * This function is convenient for providing a type independent way of
 * copying the value into the missing_value structure.
 */
-			if(_NclScalarCoerce((void*)(value->multidval.val),value->multidval.data_type,(void*)&tmp_mis,thevalue->multidval.data_type)) {
+			if(value->multidval.type != thevalue->multidval.type) {
+				if(_NclScalarCoerce((void*)(value->multidval.val),value->multidval.data_type,(void*)&tmp_mis,thevalue->multidval.data_type)) {
 
 /*
 * Need to do this cast in addition to above because value still needs to be
 * inserted into the att_list
 */
-				value_md =  _NclCoerceData(value,thevalue->multidval.type->type_class.type ,NULL);
-				if(value_md == NULL) {
+					value_md =  _NclCoerceData(value,thevalue->multidval.type->type_class.type ,NULL);
+						if(value_md == NULL) {
 
 /*
 * ALthough if _NclScalarCoerce succeds you shouldn't get this condition
 * but putting error message here anyways
 */
 
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Type Mismatch: The type of missing value could not be converted to type of variable (%s)",v_name);
+						return(NhlFATAL);
+					}
+				_NclResetMissingValue(thevalue,&tmp_mis);	
+				} else {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Type Mismatch: The type of missing value could not be converted to type of variable (%s)",v_name);
 					return(NhlFATAL);
 				}
-				_NclResetMissingValue(thevalue,&tmp_mis);	
 			} else {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"Type Mismatch: The type of missing value could not be converted to type of variable (%s)",v_name);
-				return(NhlFATAL);
+				value_md = value;
+				memcpy((void*)&tmp_mis,value->multidval.val,value->multidval.type->type_class.size);
+				_NclResetMissingValue(thevalue,&tmp_mis);	
 			}
 		} else {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Missing values must be scalar");
