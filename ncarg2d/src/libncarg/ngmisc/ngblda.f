@@ -1,5 +1,5 @@
 C
-C	$Id: ngblda.f,v 1.1 1994-04-26 18:22:31 fred Exp $
+C	$Id: ngblda.f,v 1.2 1994-05-07 00:54:29 fred Exp $
 C
       BLOCKDATA NGBLDA
 C
@@ -42,6 +42,15 @@ C
 C  Coordinate scale factor.
 C
       DATA ICOSCL/25/
+C
+C  Maximum number of GKS errors allowed before abort.
+C
+      DATA IERRMX/10/
+C
+C  Flag for whether segments will be erased at close WISS time,
+C  (0 = no; 1 = yes).
+C
+      DATA ISGSAV/1/
 C
 C  File name and picture name.
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: ngseti.f,v 1.1 1994-04-26 18:22:47 fred Exp $
+C	$Id: ngseti.f,v 1.2 1994-05-07 00:54:36 fred Exp $
 C
       SUBROUTINE NGSETI (CNP,IVP)
 C
@@ -72,6 +72,15 @@ C
         IWKID = IVP
         GO TO 120
 C
+C  ER - Error number limit for GKS errors issued before abort.
+C
+      ELSE IF (CNP(1:2).EQ.'ER' .OR. CNP(1:2).EQ.'er' .OR.
+     +         CNP(1:2).EQ.'Er') THEN
+        IERRMX = MAX(0, IVP)
+        WRITE(IDR(1:10), 510) IERRMX
+        CALL GESC(-1398,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
 C  FU - Full background.
 C
       ELSE IF (CNP(1:2).EQ.'FU' .OR. CNP(1:2).EQ.'fu' .OR.
@@ -92,6 +101,20 @@ C
           IDR(6:7) = ' 0'
         ENDIF
         CALL GESC(-1517,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  SE - Segment erase flag (0 = save; 1 = erase).
+C
+      ELSE IF (CNP(1:2).EQ.'SE' .OR. CNP(1:2).EQ.'se' .OR.
+     +         CNP(1:2).EQ.'Se') THEN
+        IF (IVP.NE.0 .AND. IVP.NE.1) THEN
+          CALL SETER ('NGSETI - value for SE must be zero or one',
+     +                 6, 1)
+          GO TO 120
+        ENDIF
+        ISGSAV = IVP
+        WRITE(IDR(1:5), 500) ISGSAV
+        CALL GESC(-1394,1,IDR,1,IDUM,CDUM)
         GO TO 120
 C
 C  ST - Stack size limit.

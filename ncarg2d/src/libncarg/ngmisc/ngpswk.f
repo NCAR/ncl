@@ -1,5 +1,5 @@
 C
-C	$Id: ngpswk.f,v 1.1 1994-04-26 18:22:43 fred Exp $
+C	$Id: ngpswk.f,v 1.2 1994-05-07 00:54:34 fred Exp $
 C
       INTEGER FUNCTION NGPSWK(PSTYPE, ORIENT, COLOR)
 C
@@ -38,7 +38,7 @@ C                              objects being plotted using the foreground
 C                              color.
 C               'COLOR'      - plot will be plotted using color, if
 C                              available, or intensities obtained from
-C                              the NTSC to black and white intensity
+C                              the NTSC color to black and white intensity
 C                              mapping if gray scale is available.
 C
 C             The value 'COLOR' is used and a warning is issued if the 
