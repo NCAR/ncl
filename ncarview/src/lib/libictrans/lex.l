@@ -118,7 +118,7 @@ nuke_quotes(s1, len)
 {
 
 	len -= 2;
-	bcopy(s1 + 1, s1, len);
+	memmove(s1, s1 + 1, len);
 	s1[len] = '\0';
 
 	return (len);

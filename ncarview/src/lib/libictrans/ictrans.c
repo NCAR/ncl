@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.c,v 1.23 1994-03-09 00:44:13 clyne Exp $
+ *	$Id: ictrans.c,v 1.24 1995-03-16 22:54:54 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -383,13 +383,7 @@ ICTrans(argc, argv, mem_cgm)
 		 * clean up any terminated process spawned by the 
 		 * spooler
 		 */
-#ifdef	CRAY
 		while ((status = waitpid(0, (int *) NULL, WNOHANG)) != 0) {
-#else
-		while ((status = wait3((union wait *) NULL, 
-			WNOHANG, (struct rusage *) NULL)) != 0) {
-#endif
-
 			if (status > 0) {
 				if (! icommand.quiet) {
 					(void) fprintf(
