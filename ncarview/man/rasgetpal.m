@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: rasgetpal.m,v 1.1 1993-01-16 03:54:38 don Exp $
+.\"	$Id: rasgetpal.m,v 1.2 1993-02-17 23:52:37 don Exp $
 .\"
 .TH RASGETPAL 1NCARG "January 1993" NCARG "NCAR VIEW"
 .SH NAME
@@ -9,15 +9,26 @@ to standard output
 \fBrasgetpal\fP 
 [\fB\-verbose\fR]
 [\fB\-Version\fR]
-\fIrasterfile\fP
+\fIsrcfile\fP
+[\fIdstfile\fP]
 .SH DESCRIPTION
 .sp
-The \fBrasgetpal\fP program will extract the color palette from
-\fIrasterfile\fP and print it in textual form to standard output.
-You can direct the output to a file, edit it in an editor, and then
-feed it back to \fIctrans\fP or \fIrasview\fP in order to get a
-modified color palette. It's also useful when you just want to know
-something about the color palette.
+Given \fIsrcfile\fP and no \fIdstfile\fP, \fBrasgetpal\fP will extract
+the color palette from \fIsrcfile\fP and print it in textual form to
+standard output. Given \fIsrcfile\fP and \fIdstfile\fP, \fBrasgetpal\fP
+will extract the color palette from \fIsrcfile\fP and save it
+in file \fIdstfile\fP. If the extension of \fIdstfile\fP is ".txt",
+the color palette is saved in textual form. If it is ".pal", the
+palette is saved in a binary HDF-compatible format.
+.sp
+Once you have a ".pal" color palette you can use it with NCSA's
+XImage or any other application that uses this format of color
+palette. A textual color palette can be edited using a standard
+text editor and then fed back to \fIctrans\fP, \fIrasview\fP,
+or \fIrascat\fP in order to get a modified color palette. It's
+also useful when you simply want to know what's in your color
+palette. See "man ras_palette" for more information on these
+different formats.
 .SH OPTIONS
 .TP
 .BI \-help
@@ -32,13 +43,32 @@ Print the version number.
 .SH "EXAMPLE"
 .LP
 Let's suppose you have an X Window Dump rasterfile called \fIwindow.xwd\fP
-and you'd like to get a copy of the color palette.
+and you'd like to get a textual copy of the color palette.
 .sp
 .in +3.0
 .nf
-rasgetpal window.xwd >window.txt
-vi window.txt /* edit the color table */
-rasview -pal window.txt window.xwd
+% rasgetpal window.xwd window.txt
+% vi window.txt /* edit the color table */
+% rasview -pal window.txt window.xwd
+.fi
+.in -3.0
+.sp
+.LP
+You could also use the command below to get the same palette file:
+.sp
+.in +3.0
+.nf
+% rasgetpal window.xwd >window.txt
+.fi
+.in -3.0
+.sp
+.LP
+Now suppose you'd like to get an HDF-compatible binary palette
+from "window.xwd":
+.sp
+.in +3.0
+.nf
+% rasgetpal window.xwd new.pal
 .fi
 .in -3.0
 .sp
@@ -48,5 +78,6 @@ from direct-color rasterfiles.
 .sp
 .SH "SEE ALSO"
 .LP
-ras_formats(5NCARG), rasview(1NCARG), rascat(1NCARG), rasls(1NCARG),
-rassplit(1NCARG)
+\fBrasview\fP(1NCARG), \fBrascat\fP(1NCARG), \fBrasls\fP(1NCARG),
+\fBrassplit\fP(1NCARG), \fBras_formats\fP(5NCARG),
+\fBras_palette\fP(5NCARG)
