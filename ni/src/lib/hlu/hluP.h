@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.12 1994-03-02 01:44:54 dbrown Exp $
+ *      $Id: hluP.h,v 1.13 1994-03-18 02:18:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,17 @@
 #include <ncarg/hlu/Segments.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
+
+/*
+ * For initializing the union ArgVal in the NhlResource struct
+ * (works around problem with loading CodeCenter source)
+ */
+
+#ifdef CODECENTER
+#define _NhlUSET(uset) uset
+#else
+#define _NhlUSET(uset) {(uset)}
+#endif
 
 typedef struct _NhlLayerRec *NhlLayer;
 
@@ -191,6 +202,12 @@ extern NhlErrorTypes _NhlValidatedGenArrayCopy(
 	 NhlBoolean	exact_count,    /* ensure dest counts match source */
 	 char		*res_name,	/* associated resource name */
 	 char		*caller		/* the user-level calling function */
+#endif
+);
+
+extern FILE *_NhlTmpFile(
+#if	NhlNeedProto
+	void
 #endif
 );
 

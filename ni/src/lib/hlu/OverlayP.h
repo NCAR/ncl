@@ -1,5 +1,5 @@
 /*
- *      $Id: OverlayP.h,v 1.6 1994-03-02 01:44:21 dbrown Exp $
+ *      $Id: OverlayP.h,v 1.7 1994-03-18 02:18:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -51,10 +51,20 @@
 
 #define NhlCovOverlayRecs	".OvOverlayRecs"
 
+
+typedef struct _NhlAnnotationRec {
+	struct _NhlAnnotationRec	*next;
+	NhlLayer			l;
+	NrmQuark			type;
+	int				zone;
+} NhlAnnotationRec;
+	
+
 typedef struct _NhlovRec {
-	NhlTransformLayer	plot;	/* overlay plot */
-	NhlLayer		ov_obj;	/* overlay object associated w/ plot */
-	int			zflag;
+	NhlTransformLayer	plot;	   /* overlay plot (member or base) */
+	NhlLayer		ov_obj;	   /* plot's overlay object */
+	NhlAnnotationRec	*ann_recs; /* list of annotation records */
+	int			zflag;     /* zones occupied by ann. recs */
 } NhlovRec;
 
 typedef struct _NhlOverlayLayerPart {
@@ -149,8 +159,8 @@ typedef struct _NhlOverlayLayerPart {
 	float			real_y_axis_offset_y;
 	float			real_x_axis_offset_x;
 
-	NhlTickMarkStyles		x_tm_style;
-	NhlTickMarkStyles		y_tm_style;
+	NhlTickMarkStyles	x_tm_style;
+	NhlTickMarkStyles	y_tm_style;
 	int			x_irr_count;
 	int			y_irr_count;
 	NhlGenArray		x_irr;
@@ -159,26 +169,26 @@ typedef struct _NhlOverlayLayerPart {
 } NhlOverlayLayerPart;
 
 typedef struct _NhlOverlayLayerRec {
-	NhlBaseLayerPart		base;
-	NhlViewLayerPart		view;
+	NhlBaseLayerPart	base;
+	NhlViewLayerPart	view;
 	NhlTransformLayerPart	trans;
 	NhlOverlayLayerPart	overlay;
 } NhlOverlayLayerRec;
 
 typedef struct NhlOverlayLayerClassPart{
-	void *foo;
+	NhlPointer		foo;
 } NhlOverlayLayerClassPart;
 
 typedef struct _NhlOverlayLayerClassRec{
-	NhlBaseLayerClassPart	base_class;
-	NhlViewLayerClassPart	view_class;
+	NhlBaseLayerClassPart		base_class;
+	NhlViewLayerClassPart		view_class;
 	NhlTransformLayerClassPart	trans_class;
 	NhlOverlayLayerClassPart	overlay_class;
 } NhlOverlayLayerClassRec;
 
 typedef struct _NhlOverlayLayerClassRec *NhlOverlayLayerClass;
-typedef struct _NhlOverlayLayerRec *NhlOverlayLayer;
+typedef struct _NhlOverlayLayerRec	*NhlOverlayLayer;
 
-extern NhlOverlayLayerClassRec NhloverlayLayerClassRec;
+extern NhlOverlayLayerClassRec		NhloverlayLayerClassRec;
 
 #endif  /* _NOverlayP_h */

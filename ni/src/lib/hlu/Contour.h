@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.h,v 1.5 1994-03-02 01:43:50 dbrown Exp $
+ *      $Id: Contour.h,v 1.6 1994-03-18 02:18:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #ifndef _NContour_h
 #define _NContour_h
 
+#include <ncarg/hlu/Workspace.h>
 #include <ncarg/hlu/Overlay.h>
 
 /* Level selection modes */
@@ -39,6 +40,19 @@
 #define Nhl_cnLABELONLY		2
 #define Nhl_cnLINEANDLABEL	3
 
+/* Line label position */
+
+#define Nhl_cnNOLABELS		0
+#define Nhl_cnCONSTANT		1
+#define Nhl_cnRANDOMIZED	2
+#define Nhl_cnSMART		3
+
+/* Line label mask modes */
+
+#define Nhl_cnNOMASK		0
+#define Nhl_cnSOLIDMASK		1
+#define Nhl_cnSOFTMASK		2
+
 /*
  * Contour instance resources
  */
@@ -50,6 +64,7 @@
 #define NhlNcnLevelSelectionMode	"cnLevelSelectionMode"
 #define NhlNcnMaxLevelCount		"cnMaxLevelCount"
 #define NhlNcnLevelSpacingF		"cnLevelSpacingF"
+#define NhlNcnLabelMasking		"cnLabelMasking"
 #define NhlNcnMinLevelValF		"cnMinLevelValF"
 #define NhlNcnMaxLevelValF		"cnMaxLevelValF"
 #define NhlNcnLineLabelInterval		"cnLineLabelInterval"
@@ -77,6 +92,11 @@
 
 #define NhlNcnLineDashSegLenF		"cnLineDashSegLenF"
 #define NhlNcnLineLabelTextHeightF	"cnLineLabelTextHeightF"
+#define NhlNcnLineLabelPosition		"cnLineLabelPosition"
+#define NhlNcnLineLabelAngleF		"cnLineLabelAngleF"
+#define NhlNcnLineLabelBackgroundColor	"cnLineLabelBackgroundColor"
+#define NhlNcnLineLabelPerim		"cnLineLabelPerim"
+#define NhlNcnLineLabelPerimColor	"cnLineLabelPerimColor"
 
 /*
  * Contour class resources
@@ -90,6 +110,7 @@
 #define NhlCcnLevelSelectionMode	"CnLevelSelectionMode"
 #define NhlCcnMaxLevelCount		"CnMaxLevelCount"
 #define NhlCcnLevelSpacingF		"CnLevelSpacingF"
+#define NhlCcnLabelMasking		"CnLabelMasking"
 #define NhlCcnMinLevelValF		"CnMinLevelValF"
 #define NhlCcnMaxLevelValF		"CnMaxLevelValF"
 #define NhlCcnLineLabelInterval		"CnLineLabelInterval"
@@ -117,6 +138,11 @@
 
 #define NhlCcnLineDashSegLenF		"CnLineDashSegLenF"
 #define NhlCcnLineLabelTextHeightF	"CnLineLabelTextHeightF"
+#define NhlCcnLineLabelPosition		"CnLineLabelPosition"
+#define NhlCcnLineLabelAngleF		"CnLineLabelAngleF"
+#define NhlCcnLineLabelBackgroundColor	"CnLineLabelBackgroundColor"
+#define NhlCcnLineLabelPerim		"CnLineLabelPerim"
+#define NhlCcnLineLabelPerimColor	"CnLineLabelPerimColor"
 
 extern NhlLayerClass			NhlcontourLayerClass;
 

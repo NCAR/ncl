@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourP.h,v 1.4 1994-03-02 01:43:52 dbrown Exp $
+ *      $Id: ContourP.h,v 1.5 1994-03-18 02:18:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@
 #include <ncarg/hlu/LogLinTransObjP.h>
 #include <ncarg/hlu/OverlayI.h>
 #include <ncarg/hlu/Contour.h>
+#include <ncarg/hlu/WorkspaceI.h>
 
 
 #define Nhl_cnDEF_ARRAY_SIZE	16
@@ -51,6 +52,7 @@ typedef struct _NhlContourLayerPart {
 	int		level_selection_mode;
 	int		max_level_count;
 	float		level_spacing;
+	NhlBoolean	label_masking;
 	NhlBoolean	min_level_set;
 	float		min_level_val;
 	NhlBoolean	max_level_set;
@@ -82,6 +84,11 @@ typedef struct _NhlContourLayerPart {
 	float		line_dash_seglen;
 	NhlBoolean	line_label_text_height_set;
 	float		line_label_text_height;
+	int		llabel_position;
+	float		llabel_angle;
+	int		llabel_background_color;
+	NhlBoolean	llabel_perim;
+	int		llabel_perim_color; /* not a Conpack option */
 
 /* these will be replaced by contour specific resources */
 
@@ -116,7 +123,12 @@ typedef struct _NhlContourLayerPart {
 	float		ll_text_height_2vpw;
 	NhlGenArray	ll_strings;
 	NhlGenArray	ll_text_heights;
-	
+	int		*label_amap;
+	int		iws_id;
+	int		fws_id;
+	int		label_aws_id;
+	int		fill_aws_id;
+	int		ezmap_aws_id;
 
 } NhlContourLayerPart;
 
@@ -128,10 +140,7 @@ typedef struct _NhlContourLayerRec {
 } NhlContourLayerRec;
 
 typedef struct NhlContourLayerClassPart{
-	int			iwrk_len;
-	int			*iwrk;
-	int			fwrk_len;
-	float			*fwrk;
+	NhlPointer		foo;
 } NhlContourLayerClassPart;
 
 typedef struct _NhlContourLayerClassRec{

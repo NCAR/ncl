@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.10 1994-02-18 02:55:08 boote Exp $
+ *      $Id: hlu.c,v 1.11 1994-03-18 02:18:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1467,4 +1467,60 @@ NhlErrorTypes _NhlValidatedGenArrayCopy
 
 	return NhlNOERROR;
 
+}
+
+/*
+ * Function:	_NhlTmpFile
+ *
+ * Description:	This function emulates the Standard C function 'tmpfile'
+ *		except that it allows the directory location of the file
+ *		to be controlled. If the environment variable "TMPDIR"
+ *		is set the file will be located in TMPDIR; else it will
+ *		located in the directory given by GetNCARGPath("tmp"). 
+ *		Since the file is immediately unlinked, its name is 
+ *		irrelevant.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Private
+ * Returns:	FILE * or NULL on failure
+ * Side Effect:	
+ */
+FILE *
+_NhlTmpFile
+#if	NhlNeedProto
+(
+	void
+)
+#else
+()
+#endif
+{
+	char *e_text;
+	char *entry_name = "_NhlTmpName";
+	char *fname;
+	FILE *fp;
+
+	if ((fname = tempnam(GetNCARGPath("tmp"),NULL)) == NULL) {
+		e_text = "%s, error getting temporary file name";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NULL;
+	}
+
+	if ((fp = fopen(fname,"w+")) == NULL) {
+		e_text = "%s, error opening temporary file";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NULL;
+	}
+
+	if (unlink(fname) < 0) {
+		e_text = "%s, error unlinking temporary file";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NULL;
+	}
+	NhlFree(fname);
+	
+	return fp;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.5 1994-03-02 01:44:39 dbrown Exp $
+ *      $Id: View.c,v 1.6 1994-03-18 02:18:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -39,23 +39,23 @@
 static NhlResource resources[] = {
 	{ NhlNvpXF, NhlCvpXF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlViewLayerRec,view.x),
-		NhlTString,{NHL_DEFAULT_VIEW_X_STR}},
+		NhlTString,_NhlUSET(NHL_DEFAULT_VIEW_X_STR)},
 	{ NhlNvpYF, NhlCvpYF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlViewLayerRec,view.y),
-		NhlTString,{NHL_DEFAULT_VIEW_Y_STR}},
+		NhlTString,_NhlUSET(NHL_DEFAULT_VIEW_Y_STR)},
 	{ NhlNvpWidthF, NhlCvpWidthF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlViewLayerRec,view.width),
-		NhlTString,{NHL_DEFAULT_VIEW_WIDTH_STR}},
+		NhlTString,_NhlUSET(NHL_DEFAULT_VIEW_WIDTH_STR)},
 	{ NhlNvpHeightF, NhlCvpHeightF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlViewLayerRec,view.height),
-		NhlTString,{NHL_DEFAULT_VIEW_HEIGHT_STR}},
+		NhlTString,_NhlUSET(NHL_DEFAULT_VIEW_HEIGHT_STR)},
 	{ NhlNvpKeepAspect, NhlCvpKeepAspect, NhlTBoolean, sizeof(NhlBoolean),
 		  NhlOffset(NhlViewLayerRec,view.keep_aspect),
-		  NhlTImmediate,{(NhlPointer) False}},
+		  NhlTImmediate,_NhlUSET((NhlPointer) False)},
 	{ NhlNvpUseSegments, NhlCvpUseSegments, NhlTBoolean, 
 		  sizeof(NhlBoolean),
 		  NhlOffset(NhlViewLayerRec,view.use_segments),
-		  NhlTImmediate,{(NhlPointer) False}}
+		  NhlTImmediate,_NhlUSET((NhlPointer) False)}
 };
 
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.8 1994-03-02 01:44:16 dbrown Exp $
+ *      $Id: Overlay.c,v 1.9 1994-03-18 02:18:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,23 +31,23 @@ static NhlResource resources[] = {
 
 	{ NhlNovOverlayIds,NhlCovOverlayIds,NhlTGenArray,sizeof(NhlPointer),
 		  NhlOffset(NhlOverlayLayerRec,overlay.overlay_ids),
-		  NhlTImmediate,{NULL}},
+		  NhlTImmediate,_NhlUSET(NULL)},
 	{ NhlNovPreDrawOrder,NhlCovPreDrawOrder,NhlTGenArray,
 		  sizeof(NhlPointer),
 		  NhlOffset(NhlOverlayLayerRec,overlay.pre_draw_order),
-		  NhlTImmediate,{NULL}},
+		  NhlTImmediate,_NhlUSET(NULL)},
 	{ NhlNovPostDrawOrder,NhlCovPostDrawOrder,NhlTGenArray,
 		  sizeof(NhlPointer),
 		  NhlOffset(NhlOverlayLayerRec,overlay.post_draw_order),
-		  NhlTImmediate,{NULL}},
+		  NhlTImmediate,_NhlUSET(NULL)},
 	{ NhlNovOverlayRecs,NhlCovOverlayRecs,NhlTGenArray,
 		  sizeof(NhlPointer),
 		  NhlOffset(NhlOverlayLayerRec,overlay.ov_rec_list),
-		  NhlTImmediate,{NULL}},
+		  NhlTImmediate,_NhlUSET(NULL)},
 	{ NhlNovUpdateReq,NhlCovUpdateReq,NhlTBoolean,
 		  sizeof(NhlBoolean),
 		  NhlOffset(NhlOverlayLayerRec,overlay.update_req),
-		  NhlTImmediate,{(NhlPointer) False}},
+		  NhlTImmediate,_NhlUSET((NhlPointer) False)},
 /*
  * Annotation resources
  */
@@ -55,66 +55,66 @@ static NhlResource resources[] = {
 	{ NhlNovDisplayTitles,NhlCovDisplayTitles,
 		  NhlTInteger,sizeof(int),
 		  NhlOffset(NhlOverlayLayerRec,overlay.display_titles),
-		  NhlTImmediate,{(NhlPointer) Nhl_ovNoCreate}},
+		  NhlTImmediate,_NhlUSET((NhlPointer) Nhl_ovNoCreate)},
 	{ NhlNovDisplayTickMarks,NhlCovDisplayTickMarks,
 		  NhlTInteger,sizeof(int),
 		  NhlOffset(NhlOverlayLayerRec,overlay.display_tickmarks),
-		  NhlTImmediate,{(NhlPointer) Nhl_ovNoCreate}},
+		  NhlTImmediate,_NhlUSET((NhlPointer) Nhl_ovNoCreate)},
 	{ NhlNovDisplayLabelBar,NhlCovDisplayLabelBar,NhlTInteger,sizeof(int),
 		  NhlOffset(NhlOverlayLayerRec,overlay.display_labelbar),
-		  NhlTImmediate,{(NhlPointer) Nhl_ovNoCreate}},
+		  NhlTImmediate,_NhlUSET((NhlPointer) Nhl_ovNoCreate)},
 	{ NhlNovDisplayLegend,NhlCovDisplayLegend,NhlTInteger,sizeof(int),
 		  NhlOffset(NhlOverlayLayerRec,overlay.display_legend),
-		  NhlTImmediate,{(NhlPointer) Nhl_ovNoCreate}},
+		  NhlTImmediate,_NhlUSET((NhlPointer) Nhl_ovNoCreate)},
 /*
  * Intercepted tick mark resources
  */
 	{ NhlNtmXBDataLeftF, NhlCtmXBDataLeftF,NhlTFloat, sizeof(float),
 		  NhlOffset(NhlOverlayLayerRec,overlay.x_b_data_left),
-		  NhlTString,{"0.0" }},
+		  NhlTString,_NhlUSET("0.0" )},
 	{ NhlNtmXBDataRightF, NhlCtmXBDataRightF,NhlTFloat, sizeof(float),
 		  NhlOffset(NhlOverlayLayerRec,overlay.x_b_data_right),
-		  NhlTString,{"1.0" }},
+		  NhlTString,_NhlUSET("1.0" )},
 	{ NhlNtmYLDataBottomF, NhlCtmYLDataBottomF,NhlTFloat, sizeof(float),
 		  NhlOffset(NhlOverlayLayerRec,overlay.y_l_data_bottom),
-		  NhlTString,{"0.0" }},
+		  NhlTString,_NhlUSET("0.0" )},
 	{ NhlNtmYLDataTopF, NhlCtmYLDataTopF,NhlTFloat, sizeof(float),
 		  NhlOffset(NhlOverlayLayerRec,overlay.y_l_data_top),
-		  NhlTString,{"1.0" }},
+		  NhlTString,_NhlUSET("1.0" )},
 
 /* 
  * Overlay only looks at the XLog and YLog directly
  */
 	{ NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlOverlayLayerRec,overlay.x_min),
-		NhlTString,{"0.0"}},
+		NhlTString,_NhlUSET("0.0")},
 	{ NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlOverlayLayerRec,overlay.x_max),
-		NhlTString,{"1.0"}},
+		NhlTString,_NhlUSET("1.0")},
 	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlOverlayLayerRec,overlay.y_min),
-		NhlTString,{"0.0"}},
+		NhlTString,_NhlUSET("0.0")},
 	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlOverlayLayerRec,overlay.y_max),
-		NhlTString,{"1.0"}},
+		NhlTString,_NhlUSET("1.0")},
 	{ NhlNtrXLog, NhlCtrXLog,NhlTInteger, sizeof(int),
 		  NhlOffset(NhlOverlayLayerRec,overlay.x_log),
-		  NhlTImmediate,{(NhlPointer) 0 }},
+		  NhlTImmediate,_NhlUSET((NhlPointer) 0 )},
 	{ NhlNtrYLog, NhlCtrYLog,NhlTInteger, sizeof(int),
 		  NhlOffset(NhlOverlayLayerRec,overlay.y_log),
-		  NhlTImmediate,{(NhlPointer) 0 }},
+		  NhlTImmediate,_NhlUSET((NhlPointer) 0 )},
 	{ NhlNtrXReverse, NhlCtrXReverse,NhlTInteger, sizeof(int),
 		  NhlOffset(NhlOverlayLayerRec,overlay.x_reverse),
-		  NhlTImmediate,{(NhlPointer) 0 }},
+		  NhlTImmediate,_NhlUSET((NhlPointer) 0 )},
 	{ NhlNtrYReverse, NhlCtrYReverse,NhlTInteger, sizeof(int),
 		  NhlOffset(NhlOverlayLayerRec,overlay.y_reverse),
-		  NhlTImmediate,{(NhlPointer) 0 }},
+		  NhlTImmediate,_NhlUSET((NhlPointer) 0 )},
 	{ NhlNtrYTensionF, NhlCtrYTensionF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlOverlayLayerRec,overlay.y_tension),
-		NhlTString,{"2.0" }},
+		NhlTString,_NhlUSET("2.0" )},
 	{ NhlNtrXTensionF, NhlCtrXTensionF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlOverlayLayerRec,overlay.x_tension),
-		NhlTString,{"2.0" }},
+		NhlTString,_NhlUSET("2.0" )},
 		
 /*
  * Intercepted title resources
@@ -122,107 +122,107 @@ static NhlResource resources[] = {
 
 	{NhlNtiMainOffsetXF,NhlCtiMainOffsetXF,NhlTFloat,sizeof(float),
 		 NhlOffset(NhlOverlayLayerRec,overlay.ti_main_offset_x),
-		 NhlTString,{"0.0"}},
+		 NhlTString,_NhlUSET("0.0")},
 	{NhlNtiXAxisOffsetXF,NhlCtiXAxisOffsetXF,NhlTFloat,sizeof(float),
 		 NhlOffset(NhlOverlayLayerRec,overlay.ti_x_axis_offset_x),
-		 NhlTString,{"0.0"}},
+		 NhlTString,_NhlUSET("0.0")},
 	{NhlNtiYAxisOffsetYF,NhlCtiYAxisOffsetYF,NhlTFloat,sizeof(float),
 		 NhlOffset(NhlOverlayLayerRec,overlay.ti_y_axis_offset_y),
-		 NhlTString,{"0.0"}},
+		 NhlTString,_NhlUSET("0.0")},
 	{NhlNtiXAxisPosition,NhlCtiXAxisPosition,NhlTTitlePositions,
 		 sizeof(NhlTitlePositions),
 		 NhlOffset(NhlOverlayLayerRec,overlay.ti_x_axis_position),
-		 NhlTImmediate,{(NhlPointer)NhlCENTER}},
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTER)},
 	{NhlNtiYAxisPosition,NhlCtiYAxisPosition,NhlTTitlePositions,
 		 sizeof(NhlTitlePositions),
 		 NhlOffset(NhlOverlayLayerRec,overlay.ti_y_axis_position),
-		 NhlTImmediate,{(NhlPointer)NhlCENTER}},
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTER)},
 	{NhlNtiMainPosition,NhlCtiMainPosition,NhlTTitlePositions,
 		 sizeof(NhlTitlePositions),
 		 NhlOffset(NhlOverlayLayerRec,overlay.ti_main_position),
-		 NhlTImmediate,{(NhlPointer)NhlCENTER}},
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTER)},
 
 /* LabelBar resources */
 
 	{ NhlNovLabelBarWidthF, NhlCovLabelBarWidthF,NhlTFloat, sizeof(float),
 		  NhlOffset(NhlOverlayLayerRec,overlay.lbar_width),
-		  NhlTString,{"0.2" }},
+		  NhlTString,_NhlUSET("0.2" )},
 	{ NhlNovLabelBarHeightF, NhlCovLabelBarHeightF,NhlTFloat, 
 		  sizeof(float),
 		  NhlOffset(NhlOverlayLayerRec,overlay.lbar_height),
-		  NhlTString,{"0.5" }},
+		  NhlTString,_NhlUSET("0.5" )},
 	{ NhlNovLabelBarXOffsetF, NhlCovLabelBarXOffsetF,NhlTFloat, 
 		  sizeof(float),
 		  NhlOffset(NhlOverlayLayerRec,overlay.lbar_x_off),
-		  NhlTString,{"0.02" }},
+		  NhlTString,_NhlUSET("0.02" )},
 	{ NhlNovLabelBarYOffsetF, NhlCovLabelBarYOffsetF,NhlTFloat, 
 		  sizeof(float),
 		  NhlOffset(NhlOverlayLayerRec,overlay.lbar_y_off),
-		  NhlTString,{"0.00" }},
+		  NhlTString,_NhlUSET("0.00" )},
 	{NhlNovLabelBarSide, NhlCovLabelBarSide, NhlTPosition, 
 		 sizeof(NhlJustification),
 		 NhlOffset(NhlOverlayLayerRec,overlay.lbar_side),
-		 NhlTImmediate,{(NhlPointer)NhlRIGHT}},
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlRIGHT)},
 	{NhlNovLabelBarPosition, NhlCovLabelBarPosition, NhlTPosition, 
 		 sizeof(NhlJustification),
 		 NhlOffset(NhlOverlayLayerRec,overlay.lbar_pos),
-		 NhlTImmediate,{(NhlPointer)NhlCENTER}},
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTER)},
 
 /* intercepted LabelBar resources */
 
 	{NhlNlbLabelBar, NhlClbLabelBar, NhlTBoolean, 
 		 sizeof(NhlBoolean),
 		 NhlOffset(NhlOverlayLayerRec,overlay.lbar_on),
-		 NhlTImmediate,{(NhlPointer)False}},
+		 NhlTImmediate,_NhlUSET((NhlPointer)False)},
 	{NhlNlbJustification, NhlClbJustification, NhlTJustification, 
 		 sizeof(NhlJustification),
 		 NhlOffset(NhlOverlayLayerRec,overlay.lbar_just),
-		 NhlTImmediate,{(NhlPointer)NhlCENTERLEFT}},
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTERLEFT)},
 	{NhlNlbOrientation, NhlClbOrientation, NhlTOrientation, 
 		 sizeof(NhlOrientation),
 		 NhlOffset(NhlOverlayLayerRec,overlay.lbar_orient),
-		 NhlTImmediate,{(NhlPointer)NhlVERTICAL}},
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlVERTICAL)},
 
 /* Legend resources */
 
 	{ NhlNovLegendWidthF, NhlCovLegendWidthF,NhlTFloat, sizeof(float),
 		  NhlOffset(NhlOverlayLayerRec,overlay.lgnd_width),
-		  NhlTString,{"0.45" }},
+		  NhlTString,_NhlUSET("0.45" )},
 	{ NhlNovLegendHeightF, NhlCovLegendHeightF,NhlTFloat, 
 		  sizeof(float),
 		  NhlOffset(NhlOverlayLayerRec,overlay.lgnd_height),
-		  NhlTString,{"0.175" }},
+		  NhlTString,_NhlUSET("0.175" )},
 	{ NhlNovLegendXOffsetF, NhlCovLegendXOffsetF,NhlTFloat, 
 		  sizeof(float),
 		  NhlOffset(NhlOverlayLayerRec,overlay.lgnd_x_off),
-		  NhlTString,{"0.00" }},
+		  NhlTString,_NhlUSET("0.00" )},
 	{ NhlNovLegendYOffsetF, NhlCovLegendYOffsetF,NhlTFloat, 
 		  sizeof(float),
 		  NhlOffset(NhlOverlayLayerRec,overlay.lgnd_y_off),
-		  NhlTString,{"0.02" }},
+		  NhlTString,_NhlUSET("0.02" )},
 	{NhlNovLegendSide, NhlCovLegendSide, NhlTPosition, 
 		 sizeof(NhlPosition),
 		 NhlOffset(NhlOverlayLayerRec,overlay.lgnd_side),
-		 NhlTImmediate,{(NhlPointer)NhlBOTTOM}},
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlBOTTOM)},
 	{NhlNovLegendPosition, NhlCovLegendPosition, NhlTPosition, 
 		 sizeof(NhlPosition),
 		 NhlOffset(NhlOverlayLayerRec,overlay.lgnd_pos),
-		 NhlTImmediate,{(NhlPointer)NhlCENTER}},
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTER)},
 
 /* intercepted Legend resources */
 
 	{NhlNlgLegend, NhlClgLegend, NhlTBoolean, 
 		 sizeof(NhlBoolean),
 		 NhlOffset(NhlOverlayLayerRec,overlay.lgnd_on),
-		 NhlTImmediate,{(NhlPointer)False}},
+		 NhlTImmediate,_NhlUSET((NhlPointer)False)},
 	{NhlNlgJustification, NhlClgJustification, NhlTJustification, 
 		 sizeof(NhlJustification),
 		 NhlOffset(NhlOverlayLayerRec,overlay.lgnd_just),
-		 NhlTImmediate,{(NhlPointer)NhlCENTERLEFT}},
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTERLEFT)},
 	{NhlNlgOrientation, NhlClgOrientation, NhlTOrientation, 
 		 sizeof(NhlOrientation),
 		 NhlOffset(NhlOverlayLayerRec,overlay.lgnd_orient),
-		 NhlTImmediate,{(NhlPointer)NhlVERTICAL}}
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlVERTICAL)}
 };
 
 /* base methods */
@@ -429,7 +429,7 @@ NhlOverlayLayerClassRec NhloverlayLayerClassRec = {
 /* ndc_polyline			*/	NULL
 	},
 	{
-/* foo				*/	NULL
+/* wkspace_list			*/	NULL
 	}
 };
 
@@ -902,12 +902,9 @@ static NhlErrorTypes OverlaySetValues
 			int *zflag = &ovp->ov_recs[j]->zflag;
 			NhlOverlayLayer ovl = (NhlOverlayLayer)
 				ovp->ov_recs[j]->ov_obj;
-			NhlOverlayLayerPart *opi;
 
 			if (update_req && ovl == NULL) 
 				num_args = nargs - 1;
-			else
-				opi = &ovl->overlay;
 
 			if ((i == 5) || (*zflag & (1 << i))) {
 				if (j == 0 && (*zflag & NhlovSETNEEDED)) {

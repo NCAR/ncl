@@ -1,5 +1,5 @@
 /*
- *      $Id: Open.c,v 1.4 1994-02-18 17:19:38 boote Exp $
+ *      $Id: Open.c,v 1.5 1994-03-18 02:18:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/ErrorP.h>
+#include <ncarg/hlu/WorkspaceP.h>
 
 void NhlOpen()
 {
@@ -38,4 +39,5 @@ void NhlOpen()
 	_NhlInitError();
 	_NhlInitRLList();
 	_NhlInitGetValues();
+	_NhlInitWorkspace();
 }

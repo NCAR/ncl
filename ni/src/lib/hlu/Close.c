@@ -1,5 +1,5 @@
 /*
- *      $Id: Close.c,v 1.4 1994-02-18 02:53:43 boote Exp $
+ *      $Id: Close.c,v 1.5 1994-03-18 02:17:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 #include <ncarg/hlu/ResListP.h>
 #include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/ErrorP.h>
+#include <ncarg/hlu/WorkspaceP.h>
 
 
 /*
@@ -49,6 +50,10 @@ void NhlClose
 ()
 #endif
 {
+	/* destroy the workspace manager */
+
+	_NhlCloseWorkspace();
+
 	/* free error handling	*/
 	_NhlCloseError();
 	_NhlDestroyResDatabase();
