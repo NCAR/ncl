@@ -1,5 +1,5 @@
 /*
- *	$Id: default.c,v 1.26 1995-03-16 22:11:28 haley Exp $
+ *	$Id: default.c,v 1.27 1995-12-06 20:22:41 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -195,6 +195,8 @@ boolean		value;
 			}
 
 		}
+		if(picColorLUTable.total_damage)
+			picColorLUTable.damage = TRUE;
 		clut = &picColorLUTable;
 
 
