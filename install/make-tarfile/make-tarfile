@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-tarfile,v 1.2 1993-03-05 20:21:07 clyne Exp $
+#      $Id: make-tarfile,v 1.3 1993-03-22 18:22:03 clyne Exp $
 #
 #########################################################################
 #									#
@@ -28,9 +28,9 @@
 #		$build_root		: root of ncarg build directory 
 #					(currently /ncargbin)
 #
-#		$build_root/INSTALL/install.tar	: install script
+#		$build_root/INSTALL/INSTALL.TAR	: install script
 #
-#		$build_root/$platform/{bin,inc,lib,man}.tar	: distribution tar files
+#		$build_root/$platform/{BIN,INC,LIB,MAN}.TAR	: distribution tar files
 #
 #
 #	Options:	
@@ -80,7 +80,7 @@ $tarfile;			# path to tarfile we'll create.
 # Tar files we write for each requested platform
 # N.B. order is important
 #
-@tars = ("bin.tar", "include.tar", "lib.tar", "man.tar");	
+@tars = ("BIN.TAR", "INCLUDE.TAR", "LIB.TAR", "MAN.TAR");	
 
 
 if (@ARGV != 2) {
@@ -107,7 +107,7 @@ print "platform=$platform, build_root=$build_root, tarfile=$tarfile\n";
 #
 #	generate the tar file with the install script
 #
-#$cmd = "cd $build_root/$install_dir; tar -cfb ../install.tar 20 .";
+#$cmd = "cd $build_root/$install_dir; tar -cfb ../INSTALL.TAR 20 .";
 #do my_system("$cmd");
 
 

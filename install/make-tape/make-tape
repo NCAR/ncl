@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-tape,v 1.2 1993-03-05 20:20:56 clyne Exp $
+#      $Id: make-tape,v 1.3 1993-03-22 18:21:52 clyne Exp $
 #
 #########################################################################
 #									#
@@ -34,9 +34,9 @@
 #					(currently /ncargbin)
 #		$build_root/TOC		: table of contents describing what
 #				  	should be put on the tape.
-#		$build_root/INSTALL/install.tar	: install script
+#		$build_root/INSTALL/INSTALL.TAR	: install script
 #
-#		$build_root/$arch/{bin,inc,lib,man}.tar	: distribution tar files
+#		$build_root/$arch/{BIN,INC,LIB,MAN}.TAR	: distribution tar files
 #
 #
 #	Options:	-debug			: print tape writing commands 
@@ -210,7 +210,7 @@ $usage = "[-debug] [-root <path>] [-inter] [-nrdevice <device>] [-rhost <rhost>]
 # Tar files we write for each requested architecture
 # N.B. order is important
 #
-@tars = ("bin.tar", "include.tar", "lib.tar", "man.tar");	
+@tars = ("BIN.TAR", "INCLUDE.TAR", "LIB.TAR", "MAN.TAR");	
 
 
 
@@ -287,7 +287,7 @@ sleep 10;	# be safe - wait for tape to mount
 #
 #	generate the tar file with the install script
 #
-$cmd = "cd $build_root/$install_dir; tar -cfb ../install.tar 20 .";
+$cmd = "cd $build_root/$install_dir; tar -cfb ../INSTALL.TAR 20 .";
 do my_system("$cmd");
 
 #
@@ -301,7 +301,7 @@ do rewind($rsh, $nrdevice);
 #	write the tar install script tar file
 #
 print "\n\nWriting install script to $rhost:$nrdevice...\n";
-do write ($rsh, $nrdevice, "$build_root", "install.tar");
+do write ($rsh, $nrdevice, "$build_root", "INSTALL.TAR");
 $index++;
 
 	
