@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.18 1999-09-30 20:03:04 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.19 1999-10-07 21:16:11 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4178,6 +4178,13 @@ end
       set_pres_hgt_axes(pres,res2,add_hgt)
     else
       print("gsn_csm_pres_hgt: Fatal: The first dimension of the input data must")
+/*
+ * Check for transformation resources and apply them to loglin plot.
+ */
+    res2           = True
+    if(trres.and..not.any(ismissing(getvaratts(trres))))
+      attsetvalues(loglin_object,trres)
+    end if
     contour_plot = check_class_name(contour_object,"contour")
 
     getvalues contour_plot
