@@ -1,5 +1,5 @@
 C
-C	$Id: gflas3.f,v 1.2 1993-01-10 23:54:43 fred Exp $
+C	$Id: gflas3.f,v 1.3 1994-09-23 18:34:18 fred Exp $
 C
       SUBROUTINE GFLAS3(INAME)
 C
@@ -30,9 +30,9 @@ C
 C_I/O
 C    GFLAS3 writes the plotting instructions saved in a previous
 C    GFLAS1/GFLAS2 sequence to all active worksations.  If one is
-C    using the NCAR GKS package, this results in opening the GNFBnn
-C    file, reading all records from that file and writing them to
-C    the output metafile, and closing the GNFBnn file.
+C    using the NCAR GKS package, this results in opening the file
+C    created by GFLAS1, reading all records from that file and 
+C    writing them to the output files, and closing the input file.
 C
 C_ROUTINES CALLED
 C    PLOTIT, SETER

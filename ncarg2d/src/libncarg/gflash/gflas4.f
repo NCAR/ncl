@@ -1,5 +1,5 @@
 C
-C	$Id: gflas4.f,v 1.2 1993-01-10 23:54:46 fred Exp $
+C	$Id: gflas4.f,v 1.3 1994-09-23 18:34:20 fred Exp $
 C
       SUBROUTINE GFLAS4(ID,FNAME)
 C
@@ -77,9 +77,9 @@ C    function idendifier -1392.
 C
 C_EXAMPLES
 C    Example 1 --  Establish a previously existing dataset of plotting
-C                  instructions -- GNFB09 -- for use with GFLAS3.
+C                  instructions -- MF09 -- for use with GFLAS3.
 C          SUBROUTINE INSDAT
-C          CALL GFLAS4(9,'GNFB09')
+C          CALL GFLAS4(9,'MF09')
 C          CALL GFLAS3(9)
 C          RETURN
 C          END

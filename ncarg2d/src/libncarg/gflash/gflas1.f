@@ -1,5 +1,5 @@
 C
-C	$Id: gflas1.f,v 1.2 1993-01-10 23:54:38 fred Exp $
+C	$Id: gflas1.f,v 1.3 1994-09-23 18:34:16 fred Exp $
 C
       SUBROUTINE GFLAS1(INAME)
 C
@@ -66,10 +66,20 @@ C    currently active workstations except WISS, and activates WISS.
 C    This results in all subsequent plotting instructions being sent
 C    only to WISS.  If one is using the NCAR GKS package, WISS is
 C    implemented on the disk of the host machine, and plotting
-C    instructions are saved on disk with file name GNFBnn where "nn"
-C    is the value of the argument to GFLAS1.  For example, if
-C    the argument to GFLAS1 is 9, then subsequent plotting instructions
-C    will be saved on disk file GNFB09.
+C    instructions are saved on disk.  By default, the flash buffers
+C    (or segments in GKS parlance) are named as "GSEGuuuupppp_nn" 
+C    where "uuuu" is the user id, and "pppp" is the process id, 
+C    and "nn" is the buffer ID provided in the argument INAME 
+C    (described above).  These are put in a temporary directory and
+C    automatically deleted when WISS is closed.  There is no way
+C    to save these files.  The only way to save flash buffers is
+C    to name them, using ESCAPE -1389 to supply a root name.  These
+C    files will be written to the local current directory.  All files 
+C    with names beginning with "GSEG" will be deleted when WISS is 
+C    closed; all other files will not be deleted.  To save just a 
+C    single flash buffer, set the root name to something different 
+C    than "GSEG" and then write that segment, then change the root 
+C    back to "GSEG".
 C
 C    It is not legal to call FRAME (or clear workstations) between a
 C    GFLAS1 call and a GFLAS2 call.
