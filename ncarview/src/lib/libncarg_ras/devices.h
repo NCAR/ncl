@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.h,v 1.8 1992-09-10 21:40:33 don Exp $
+ *	$Id: devices.h,v 1.9 1992-09-14 22:17:32 don Exp $
  */
 typedef struct RasterDeviceStruct {
 	char			*name;
@@ -119,6 +119,15 @@ extern int	NetcdfClose();
 extern int	NetcdfPrintInfo();
 #endif
 
+#ifdef BuildRasterBinary
+extern Raster	*BinaryOpen();
+extern Raster	*BinaryOpenWrite();
+extern int	BinaryRead();
+extern int	BinaryWrite();
+extern int	BinaryClose();
+extern int	BinaryPrintInfo();
+#endif
+
 static RasterDevice rasdevices[] = {
 {
 	"cleartext", "Clear Text (output only)",
@@ -128,7 +137,7 @@ static RasterDevice rasdevices[] = {
 },
 #ifdef BuildRasterNrif
 {
-	"nrif", "NCAR Raster Interchange Format",
+	"nrif", "NCAR NRIF",
 	NrifOpen, NrifOpenWrite, 
 	NrifRead, NrifWrite, NrifClose, NrifPrintInfo,
 	ImageCount_
@@ -136,7 +145,7 @@ static RasterDevice rasdevices[] = {
 #endif
 #ifdef BuildRasterXWD
 {
-	"xwd", "X Window System Dump",
+	"xwd", "X Window Dump",
 	XWDOpen, XWDOpenWrite, 
 	XWDRead, XWDWrite, XWDClose, XWDPrintInfo,
 	ImageCount_
@@ -144,7 +153,7 @@ static RasterDevice rasdevices[] = {
 #endif
 #ifdef BuildRasterHDF
 {
-	"hdf", "NCSA Hierarchical Data Format",
+	"hdf", "NCSA HDF",
 	HDFOpen, HDFOpenWrite, 
 	HDFRead, HDFWrite, HDFClose, HDFPrintInfo,
 	ImageCount_
@@ -152,7 +161,7 @@ static RasterDevice rasdevices[] = {
 #endif
 #ifdef BuildRasterSun
 {
-	"sun", "Sun Microsystems Rasterfile",
+	"sun", "Sun",
 	SunOpen, SunOpenWrite, 
 	SunRead, SunWrite, SunClose, SunPrintInfo,
 	ImageCount_
@@ -160,7 +169,7 @@ static RasterDevice rasdevices[] = {
 #endif
 #ifdef BuildRasterHPLaser
 {
-	"hplj", "Hewlett-Packard Laser Jet (output only)",
+	"hplj", "HP Laser Jet",
 	HPLJOpen, HPLJOpenWrite, 
 	HPLJRead, HPLJWrite, HPLJClose, HPLJPrintInfo,
 	ImageCount_
@@ -168,7 +177,7 @@ static RasterDevice rasdevices[] = {
 #endif
 #ifdef BuildRasterParallax
 {
-	"parallax", "Parallax VideoView VME video framebuffer",
+	"parallax", "Parallax VideoView",
 	ParallaxOpen, ParallaxOpenWrite, 
 	ParallaxRead, ParallaxWrite, ParallaxClose, ParallaxPrintInfo,
 	ImageCount_
@@ -176,7 +185,7 @@ static RasterDevice rasdevices[] = {
 #endif
 #ifdef BuildRasterAVS
 {
-	"avs", "Application Visualization System Rasterfile",
+	"avs", "AVS",
 	AVSOpen, AVSOpenWrite, 
 	AVSRead, AVSWrite, AVSClose, AVSPrintInfo,
 	ImageCount_
@@ -184,13 +193,13 @@ static RasterDevice rasdevices[] = {
 #endif
 #ifdef BuildRasterSGI
 {
-	"sgi", "Silicon Graphics Rasterfile",
+	"sgi", "SGI",
 	SGIOpen, SGIOpenWrite, 
 	SGIRead, SGIWrite, SGIClose, SGIPrintInfo,
 	ImageCount_
 },
 {
-	"rgb", "Silicon Graphics Rasterfile",
+	"rgb", "SGI",
 	SGIOpen, SGIOpenWrite, 
 	SGIRead, SGIWrite, SGIClose, SGIPrintInfo,
 	ImageCount_
@@ -198,13 +207,13 @@ static RasterDevice rasdevices[] = {
 #endif
 #ifdef BuildRasterAbekas
 {
-	"a60", "Abekas A60 Rasterfile",
+	"a60", "Abekas RGB",
 	AbekasOpen, AbekasOpenWrite, 
 	AbekasRead, AbekasWrite, AbekasClose, AbekasPrintInfo,
 	ImageCount_
 },
 {
-	"yuv", "Abekas A60 Rasterfile",
+	"yuv", "Abekas YUV",
 	AbekasOpen, AbekasOpenWrite, 
 	AbekasRead, AbekasWrite, AbekasClose, AbekasPrintInfo,
 	ImageCount_
@@ -212,9 +221,17 @@ static RasterDevice rasdevices[] = {
 #endif
 #ifdef BuildRasterNetcdf
 {
-	"cdf", "Netcdf GOES image file",
+	"cdf", "Netcdf GOES",
 	NetcdfOpen, NetcdfOpenWrite, 
 	NetcdfRead, NetcdfWrite, NetcdfClose, NetcdfPrintInfo,
+	ImageCount_
+},
+#endif
+#ifdef BuildRasterBinary
+{
+	"bin", "Generic Binary",
+	BinaryOpen, BinaryOpenWrite, 
+	BinaryRead, BinaryWrite, BinaryClose, BinaryPrintInfo,
 	ImageCount_
 }
 #endif
