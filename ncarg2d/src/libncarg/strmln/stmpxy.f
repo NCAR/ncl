@@ -1,5 +1,5 @@
 C
-C	$Id: stmpxy.f,v 1.3 1993-02-25 19:32:09 dbrown Exp $
+C	$Id: stmpxy.f,v 1.4 1993-03-11 21:41:59 dbrown Exp $
 C
 C ---------------------------------------------------------------------
 C
@@ -229,64 +229,72 @@ C
 C
          XE=XND+DU
          YE=YND+DV
-C     
-         DV1=SQRT((XE-XND)*(XE-XND)+(YE-YND)*(YE-YND))
+C
+C If space mapping then more code is required
+C
+         IF (ITRT.GE.1) THEN
+C
+            DV1=SQRT((XE-XND)*(XE-XND)+(YE-YND)*(YE-YND))
 C
 C Set up an initial increment factor
 C
-         DUV=PVFRAC/VNML
-         SGN=1.0
-         ICT=0
+            DUV=PVFRAC/VNML
+            SGN=1.0
+            ICT=0
 C     
- 10      CONTINUE
+ 10         CONTINUE
 C
 C Bail out if it's not working
 C     
-         IF (ICT .GT. IPMXCT) THEN
-            IST = -3
-            RETURN
-         END IF
+            IF (ICT .GT. IPMXCT) THEN
+               IST = -3
+               RETURN
+            END IF
 C
 C Calculate the incremental end points, then check to see if 
 C they take us out of the user coordinate boundaries. If they
 C do, try incrementing in the other direction
 C
-         XT=XUS+SGN*DU*DUV
-         YT=YUS+SGN*DV*DUV
-         IF (XT .LT. WXMN .OR. XT .GT. WXMX .OR.
-     +        YT .LT. WYMN .OR. YT .GT. WYMX) THEN
-            IF (SGN.EQ.1.0) THEN
-               SGN = -1.0
-               GO TO 10
-            ELSE
-               IST=-4
-               RETURN
-            ENDIF
-         END IF
+            XT=XUS+SGN*DU*DUV
+            YT=YUS+SGN*DV*DUV
+            IF (XT .LT. WXMN .OR. XT .GT. WXMX .OR.
+     +           YT .LT. WYMN .OR. YT .GT. WYMX) THEN
+               IF (SGN.EQ.1.0) THEN
+                  SGN = -1.0
+                  GO TO 10
+               ELSE
+                  IST=-4
+                  RETURN
+               ENDIF
+            END IF
 C
 C Convert to fractional coordinates and find the incremental
 C distance in the fractional system. To ensure that this distance
 C is meaningful, we require that it be between 1E3 and 1E4
 C times smaller than the maximum vector length.
 C 
-         XTF=CUFX(XT)
-         YTF=CUFY(YT)
-         DV2=SQRT((XTF-XND)*(XTF-XND)+(YTF-YND)*(YTF-YND))
-         IF (DV2*1E1 .GT. DFMG) THEN
-            ICT=ICT+1
-            DUV=DUV/PDUVML
-            GO TO 10
-         ELSE IF (DV2*1E2 .LT. DFMG) THEN
-            ICT=ICT+1
-            DUV=DUV*PDUVML
-            GO TO 10
-         END IF
+            XTF=CUFX(XT)
+            YTF=CUFY(YT)
+            DV2=SQRT((XTF-XND)*(XTF-XND)+(YTF-YND)*(YTF-YND))
+            IF (DV2*1E1 .GT. DFMG) THEN
+               ICT=ICT+1
+               DUV=DUV/PDUVML
+               GO TO 10
+            ELSE IF (DV2*1E2 .LT. DFMG) THEN
+               ICT=ICT+1
+               DUV=DUV*PDUVML
+               GO TO 10
+            END IF
 C
 C The actual endpoints are found using the ratio of the incremental
 C distance to the actual distance times the fractional component
 C length
-         XE=XND+SGN*(XTF-XND)*DV1/DV2
-         YE=YND+SGN*(YTF-YND)*DV1/DV2
+            XE=XND+SGN*(XTF-XND)*DV1/DV2
+            YE=YND+SGN*(YTF-YND)*DV1/DV2
+C
+         END IF
+C
+C Calculate the angle
 C
          TA=ATAN2((YE-YND),(XE-XND))
 C
