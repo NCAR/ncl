@@ -17,7 +17,7 @@ extern void NGCALLF(stat4,STAT4)(float*, int*, float*, float*, float*,
                                  float*, float*, float*, int*, int*); 
 
 extern void NGCALLF(dstat4,DSTAT4)(double*, int*, double*, double*, double*, 
-				   double*, double*, double*, int*, int*); 
+                                   double*, double*, double*, int*, int*); 
 
 extern void NGCALLF(stat2t,STAT2T)(float*, int*, float*, float*, float*, 
                                    float*, int*, float*, float*, int*); 
@@ -2137,7 +2137,7 @@ NhlErrorTypes dim_stat4_W( void )
  * Note any of the pointer parameters can be set to NULL, which
  * implies you don't care about its value.
  */
-  x = (float*)NclGetArgValue(
+  x = (void*)NclGetArgValue(
            0,
            1,
            &ndims_x, 
@@ -2195,9 +2195,9 @@ NhlErrorTypes dim_stat4_W( void )
       tmp_x   = &((double*)x)[index_x];
     }
     NGCALLF(dstat4,DSTAT4)(tmp_x,&npts,&missing_dx.doubleval,&dxmean,&dxvar,
-			   &xsd,&dxskew,&dxkurt,&nptused,&ier);
+                           &xsd,&dxskew,&dxkurt,&nptused,&ier);
     if (ier == 2) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_stat4: The first input array contains all missing values");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_stat4: The input array contains all missing values");
       return(NhlFATAL);
     }
     if(type_x != NCL_double) {
@@ -2227,13 +2227,13 @@ NhlErrorTypes dim_stat4_W( void )
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(stat,ndims_x,dsizes_out,&missing_rx,type_x,0));
+    return(NclReturnValue(stat,ndims_x,dsizes_out,&missing_rx,NCL_float,0));
   }
   else {
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(stat,ndims_x,dsizes_out,&missing_dx,type_x,0));
+    return(NclReturnValue(stat,ndims_x,dsizes_out,&missing_dx,NCL_double,0));
   }
 }
 
