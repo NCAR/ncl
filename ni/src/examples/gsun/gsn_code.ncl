@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.141 2004-05-19 15:24:00 haley Exp $
+;      $Id: gsn_code.ncl,v 1.142 2004-05-19 15:40:37 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2269,7 +2269,7 @@ end
 ; NCGM is given a default name "gmeta.type".                            ;
 ;***********************************************************************;
 function gsn_open_image(type:string,name[1]:string)
-local image, res_file
+local image, res_file, type2
 begin
     res_file = get_res_value_keep(name,"res_file","gsnapp")
     wkwidth  = get_res_value_keep(type,"wkWidth",512)
@@ -2398,11 +2398,12 @@ begin
   if(.not.any(ismissing(varatts))) then
     wks_res = True
     do i=0,dimsizes(varatts)-1
-      if(varatts(i).ne."wkColorMap") then
+      if(varatts(i).ne."wkColorMap".and.varatts(i).ne."wkWidth".and. \
+         varatts(i).ne."wkHeight") then
         wks_res@$varatts(i)$ = type@$varatts(i)$
       end if  
     end do
-    attsetvalues(wks,wks_res)
+    attsetvalues_check(wks,wks_res)
     delete(wks_res)
   end if
   delete(varatts)
