@@ -116,7 +116,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'wkMetaName','./pr01f.ncgm',ierr)
       call NhlFCreate(wid,'pr01Work',NhlFncgmWorkstationClass,
-     1    NhlFDEFAULT_APP,rlist,ierr)
+     1     appid,rlist,ierr)
     
       else if (X11.eq.1) then
 C

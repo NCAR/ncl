@@ -105,7 +105,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'appUsrDir','./',ierr)
       call NhlFCreate(appid,'pr02',NhlFappClass,
-     1    NhlFDEFAULT_APP,rlist,ierr)
+     1     0,rlist,ierr)
 
 C  Choose to display output to an X11 workstation.(set above)*/
 
@@ -116,7 +116,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'wkMetaName','./pr02f.ncgm',ierr)
       call NhlFCreate(wid,'pr02Work',NhlFncgmWorkstationClass,
-     1    NhlFDEFAULT_APP,rlist,ierr)
+     1    appid,rlist,ierr)
     
       else if (X11.eq.1) then
 C
