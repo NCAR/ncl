@@ -1,5 +1,5 @@
 C
-C $Id: agback.f,v 1.6 2001-06-08 21:21:59 kennison Exp $
+C $Id: agback.f,v 1.7 2004-07-06 21:06:46 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -65,7 +65,7 @@ C equivalent to "CALL SET (XLCW,XRCW,YBCW,YTCW,0.,1.,0.,1.,1)", but
 C makes the viewport cover the whole plotter frame, which avoids the
 C problems resulting from clipping by GKS.
 C
-      CALL SFLUSH
+      CALL PLOTIT (0,0,2)
       CALL SET (0.,1.,0.,1.,-XLCW/(XRCW-XLCW),(1.-XLCW)/(XRCW-XLCW),
      +                      -YBCW/(YTCW-YBCW),(1.-YBCW)/(YTCW-YBCW),1)
 C
@@ -149,7 +149,7 @@ C
 C
 C Do a "SET" call for the user and return.
 C
-  108 CALL SFLUSH
+  108 CALL PLOTIT (0,0,2)
       CALL SET (XLCW,XRCW,YBCW,YTCW,XLUW,XRUW,YBUW,YTUW,
      +                            1+IABS(IFIX(QLUX))*2+IABS(IFIX(QLUY)))
 C

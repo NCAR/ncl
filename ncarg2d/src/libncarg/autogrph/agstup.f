@@ -1,5 +1,5 @@
 C
-C $Id: agstup.f,v 1.7 2001-06-08 21:22:00 kennison Exp $
+C $Id: agstup.f,v 1.8 2004-07-06 21:06:47 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -513,7 +513,7 @@ C
 C
 C Do a "SET" call for the user and return.
 C
-  138 CALL SFLUSH
+  138 CALL PLOTIT (0,0,2)
       CALL SET (XLCW,XRCW,YBCW,YTCW,XLUW,XRUW,YBUW,YTUW,
      +                            1+IABS(IFIX(QLUX))*2+IABS(IFIX(QLUY)))
 C

@@ -1,5 +1,5 @@
 C
-C $Id: agcurv.f,v 1.5 2001-06-08 21:21:59 kennison Exp $
+C $Id: agcurv.f,v 1.6 2004-07-06 21:06:46 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -108,7 +108,7 @@ C
 C
 C Now that the dash pattern is determined, do the SET call.
 C
-      CALL SFLUSH
+      CALL PLOTIT (0,0,2)
       CALL SET (XLCW,XRCW,YBCW,YTCW,XLUW,XRUW,YBUW,YTUW,
      +                            1+IABS(IFIX(QLUX))*2+IABS(IFIX(QLUY)))
 C

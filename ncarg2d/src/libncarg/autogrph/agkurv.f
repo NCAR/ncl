@@ -1,5 +1,5 @@
 C
-C $Id: agkurv.f,v 1.6 2001-06-08 21:21:59 kennison Exp $
+C $Id: agkurv.f,v 1.7 2004-07-06 21:06:46 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -82,7 +82,7 @@ C
 C Initialization.  Call SET, if necessary, to define a linear mapping.
 C
       IF (LTYP.NE.1) THEN
-        CALL SFLUSH
+        CALL PLOTIT (0,0,2)
         CALL SET (XLCW,XRCW,YBCW,YTCW,XLLW,XRLW,YBLW,YTLW,1)
       END IF
 C
@@ -140,13 +140,9 @@ C
 C Restore logarithmic mapping, if appropriate.
 C
       IF (LTYP.NE.1) THEN
-        CALL SFLUSH
+        CALL PLOTIT (0,0,2)
         CALL SET (XLCW,XRCW,YBCW,YTCW,XLUW,XRUW,YBUW,YTUW,LTYP)
       END IF
-C
-C Make sure buffers are flushed.
-C
-      CALL SFLUSH
 C
 C Return to caller.
 C
