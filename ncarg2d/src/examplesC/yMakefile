@@ -1,30 +1,9 @@
 #
-#	$Id: yMakefile,v 1.10 1994-03-24 17:15:34 haley Exp $
+#	$Id: yMakefile,v 1.11 1994-05-12 19:30:51 haley Exp $
 #
 
-CSRCS = \
-	c_agex07.c c_cbex01.c c_colcon.c c_eezmpa.c c_elblba.c c_epltch.c \
-	c_mpex05.c c_sfex02.c c_slex01.c c_gtxpac.c c_xwndws.c
+#define IHaveSubdirs
 
-SED_SRCS = \
-	c_cbex01.c c_agex07.c c_mpex05.c
-
-GENERIC_SRCS = $(CSRCS)
-
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
-CleanFilesTarget($(SED_SRCS))
-
-# Files containing C functions that are called from FORTRAN or that have to
-# be modified to include a macro from the configuration file.
-
-c_cbex01.c: c_cbex01.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ cpchhl cpchll amapra idsfft cpdrpl
-
-c_agex07.c: c_agex07.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ agutol
-
-c_mpex05.c: c_mpex05.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ mapeod
+SUBDIRS = \
+	autograph bivar conpack ezmap gks labelbar plotchar scrolled_title \
+	softfill

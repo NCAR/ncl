@@ -1,0 +1,9 @@
+#
+#	$Id: yMakefile,v 1.1 1994-05-12 19:31:13 haley Exp $
+#
+
+CSRCS = c_gtxpac.c c_xwndws.c
+
+GENERIC_SRCS = $(CSRCS)
+
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
