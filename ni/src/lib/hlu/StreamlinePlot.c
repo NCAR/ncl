@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.11 1996-05-11 03:32:25 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.12 1996-05-17 07:54:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1593,6 +1593,65 @@ StreamlinePlotInitialize
 	return ret;
 }
 
+/*ARGSUSED*/
+static NhlBoolean NewDrawArgs
+#if	NhlNeedProto
+(
+	_NhlArgList	args,
+	int		num_args
+)
+#else
+(args,num_args)
+	_NhlArgList	args;
+	int		num_args;
+#endif
+{
+	NhlString pass_args[] = {
+		NhlNvpXF,
+		NhlNvpYF,
+		NhlNvpWidthF,
+		NhlNvpHeightF,
+		NhlNpmTickMarkDisplayMode,
+		NhlNpmTitleDisplayMode,
+		NhlNpmLegendDisplayMode,
+		NhlNpmLabelBarDisplayMode,
+		NhlNstNoDataLabelOn,
+		NhlNstNoDataLabelString,
+		NhlNstZeroFLabelOn,
+		NhlNstZeroFLabelString,
+		NhlNstZeroFLabelFormat,
+		NhlNstZeroFLabelFontHeightF,
+		NhlNstZeroFLabelTextDirection,
+		NhlNstZeroFLabelFont,
+		NhlNstZeroFLabelFontColor,
+		NhlNstZeroFLabelFontAspectF,
+		NhlNstZeroFLabelFontThicknessF,
+		NhlNstZeroFLabelFontQuality,
+		NhlNstZeroFLabelConstantSpacingF,
+		NhlNstZeroFLabelAngleF,
+		NhlNstZeroFLabelFuncCode,
+		NhlNstZeroFLabelBackgroundColor,
+		NhlNstZeroFLabelPerimOn,
+		NhlNstZeroFLabelPerimSpaceF,
+		NhlNstZeroFLabelPerimColor,
+		NhlNstZeroFLabelPerimThicknessF,
+		NhlNstZeroFLabelZone,
+		NhlNstZeroFLabelSide,
+		NhlNstZeroFLabelJust,
+		NhlNstZeroFLabelParallelPosF,
+		NhlNstZeroFLabelOrthogonalPosF
+			 
+	};
+	int i,pass_count = 0;
+
+	for (i = 0; i < NhlNumber(pass_args); i++)
+		if (_NhlArgIsSet(args,num_args,pass_args[i]))
+			pass_count++;
+	if (num_args > pass_count) 
+		return True;
+	return False;
+}
+
 /*
  * Function:	StreamlinePlotSetValues
  *
@@ -1642,6 +1701,10 @@ static NhlErrorTypes StreamlinePlotSetValues
 
 	if (stnew->view.use_segments != stold->view.use_segments) {
 		stp->new_draw_req = True;
+	}
+	if (stnew->view.use_segments) {
+		if (NewDrawArgs(args,num_args))
+			stp->new_draw_req = True;
 	}
 
 	if (_NhlArgIsSet(args,num_args,NhlNstArrowLengthF))
@@ -2831,8 +2894,9 @@ static NhlErrorTypes stDraw
 
 	/* Draw the streamlines */
 
-
+#if 0
 	gset_clip_ind(GIND_CLIP);
+#endif
 	Need_Info = True;
 
 	u_data = &((float *) stp->vfp->u_arr->data)[stp->vfp->begin]; 
@@ -2882,8 +2946,9 @@ static NhlErrorTypes stDraw
  		}
 	}
 
-
+#if 0
 	gset_clip_ind(GIND_NO_CLIP);
+#endif
 	if (stl->view.use_segments) {
 		_NhlEndSegment();
 	}
@@ -3111,6 +3176,7 @@ static NhlErrorTypes SetUpLLTransObj
 
 	if (tfp->trans_obj == NULL) {
 
+		stp->update_req = True;
 		stp->new_draw_req = True;
 		NhlSetSArg(&sargs[nargs++],NhlNtrXLog,stp->x_log);
 		NhlSetSArg(&sargs[nargs++],NhlNtrYLog,stp->y_log);
@@ -3362,6 +3428,7 @@ static NhlErrorTypes SetUpIrrTransObj
 	if (init || tfp->trans_obj == NULL) {
 
 		stp->new_draw_req = True;
+		stp->update_req = True;
 
 		if (stp->x_min_set && stp->x_max_set)
 			NhlSetSArg(&sargs[nargs++],
@@ -5527,22 +5594,6 @@ static NhlErrorTypes    ManageDynamicArrays
 	}
 				
 
-/*=======================================================================*/
-
-/*
- * Test for changes that require a new draw (when in segment mode)
- */
-	if (
-	    stp->streamline_colors != ostp->streamline_colors ||
-	    stp->mono_streamline_fill_color != ostp->mono_streamline_fill_color ||
-	    stp->streamline_fill_color != ostp->streamline_fill_color ||
-	    stp->mono_streamline_line_color != ostp->mono_streamline_line_color ||
-	    stp->streamline_line_color != ostp->streamline_line_color ||
-	    stp->levels != ostp->levels ||
-	    stp->level_strings != ostp->level_strings) {
-		stp->new_draw_req = True;
-	}
-
 	return ret;
 }
 
@@ -5908,7 +5959,6 @@ static NhlErrorTypes    SetupLevels
 	    (stp->use_scalar_array == ostp->use_scalar_array))
 		return ret;
 
-	stp->new_draw_req = True;
 	if (stp->level_spacing_set && stp->level_spacing <= 0.0) {
 		e_text = 
 			"%s: Invalid level spacing value set: defaulting";

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.18 1996-05-11 03:32:28 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.19 1996-05-17 07:54:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2011,6 +2011,144 @@ VectorPlotInitialize
 	return ret;
 }
 
+/*ARGSUSED*/
+static NhlBoolean NewDrawArgs
+#if	NhlNeedProto
+(
+	_NhlArgList	args,
+	int		num_args
+)
+#else
+(args,num_args)
+	_NhlArgList	args;
+	int		num_args;
+#endif
+{
+	NhlString pass_args[] = {
+		NhlNvpXF,
+		NhlNvpYF,
+		NhlNvpWidthF,
+		NhlNvpHeightF,
+		NhlNpmTickMarkDisplayMode,
+		NhlNpmTitleDisplayMode,
+		NhlNpmLegendDisplayMode,
+		NhlNpmLabelBarDisplayMode,
+		NhlNlbLabelStrings,
+		NhlNlbLabelFuncCode,
+		NhlNlbLabelAlignment,
+		NhlNvcExplicitLabelBarLabelsOn,
+		NhlNvcLabelBarEndLabelsOn,
+		NhlNvcScalarValueFormat,
+		NhlNvcScalarValueScaleFactorF,
+		NhlNvcScalarValueScaleValueF,
+		NhlNvcScalarValueScalingMode,
+		NhlNvcMagnitudeFormat,
+		NhlNvcMagnitudeScaleFactorF,
+		NhlNvcMagnitudeScaleValueF,
+		NhlNvcMagnitudeScalingMode,
+		NhlNvcRefAnnoOn,
+		NhlNvcRefAnnoOrientation,
+		NhlNvcRefAnnoExplicitMagnitudeF,
+		NhlNvcRefAnnoArrowLineColor,
+		NhlNvcRefAnnoArrowFillColor,
+		NhlNvcRefAnnoArrowEdgeColor,
+		NhlNvcRefAnnoArrowUseVecColor,
+		NhlNvcRefAnnoArrowAngleF,
+		NhlNvcRefAnnoArrowSpaceF,
+		NhlNvcRefAnnoArrowMinOffsetF,
+		NhlNvcRefAnnoString1On,
+		NhlNvcRefAnnoString1,
+		NhlNvcRefAnnoString2On,
+		NhlNvcRefAnnoFontHeightF,
+		NhlNvcRefAnnoTextDirection,
+		NhlNvcRefAnnoFont,
+		NhlNvcRefAnnoFontColor,
+		NhlNvcRefAnnoFontAspectF,
+		NhlNvcRefAnnoFontThicknessF,
+		NhlNvcRefAnnoFontQuality,
+		NhlNvcRefAnnoConstantSpacingF,
+		NhlNvcRefAnnoAngleF,
+		NhlNvcRefAnnoFuncCode,
+		NhlNvcRefAnnoBackgroundColor,
+		NhlNvcRefAnnoPerimOn,
+		NhlNvcRefAnnoPerimSpaceF,
+		NhlNvcRefAnnoPerimColor,
+		NhlNvcRefAnnoPerimThicknessF,
+		NhlNvcRefAnnoZone,
+		NhlNvcRefAnnoSide,
+		NhlNvcRefAnnoJust,
+		NhlNvcRefAnnoParallelPosF,
+		NhlNvcRefAnnoOrthogonalPosF,
+		NhlNvcMinAnnoOn,
+		NhlNvcMinAnnoOrientation,
+		NhlNvcMinAnnoExplicitMagnitudeF,
+		NhlNvcMinAnnoArrowLineColor,
+		NhlNvcMinAnnoArrowFillColor,
+		NhlNvcMinAnnoArrowEdgeColor,
+		NhlNvcMinAnnoArrowUseVecColor,
+		NhlNvcMinAnnoArrowAngleF,
+		NhlNvcMinAnnoArrowSpaceF,
+		NhlNvcMinAnnoArrowMinOffsetF,
+		NhlNvcMinAnnoString1On,
+		NhlNvcMinAnnoString1,
+		NhlNvcMinAnnoString2On,
+		NhlNvcMinAnnoFontHeightF,
+		NhlNvcMinAnnoTextDirection,
+		NhlNvcMinAnnoFont,
+		NhlNvcMinAnnoFontColor,
+		NhlNvcMinAnnoFontAspectF,
+		NhlNvcMinAnnoFontThicknessF,
+		NhlNvcMinAnnoFontQuality,
+		NhlNvcMinAnnoConstantSpacingF,
+		NhlNvcMinAnnoAngleF,
+		NhlNvcMinAnnoFuncCode,
+		NhlNvcMinAnnoBackgroundColor,
+		NhlNvcMinAnnoPerimOn,
+		NhlNvcMinAnnoPerimSpaceF,
+		NhlNvcMinAnnoPerimColor,
+		NhlNvcMinAnnoPerimThicknessF,
+		NhlNvcMinAnnoZone,
+		NhlNvcMinAnnoSide,
+		NhlNvcMinAnnoJust,
+		NhlNvcMinAnnoParallelPosF,
+		NhlNvcMinAnnoOrthogonalPosF,
+		NhlNvcNoDataLabelOn,
+		NhlNvcNoDataLabelString,
+		NhlNvcZeroFLabelOn,
+		NhlNvcZeroFLabelString,
+		NhlNvcZeroFLabelFormat,
+		NhlNvcZeroFLabelFontHeightF,
+		NhlNvcZeroFLabelTextDirection,
+		NhlNvcZeroFLabelFont,
+		NhlNvcZeroFLabelFontColor,
+		NhlNvcZeroFLabelFontAspectF,
+		NhlNvcZeroFLabelFontThicknessF,
+		NhlNvcZeroFLabelFontQuality,
+		NhlNvcZeroFLabelConstantSpacingF,
+		NhlNvcZeroFLabelAngleF,
+		NhlNvcZeroFLabelFuncCode,
+		NhlNvcZeroFLabelBackgroundColor,
+		NhlNvcZeroFLabelPerimOn,
+		NhlNvcZeroFLabelPerimSpaceF,
+		NhlNvcZeroFLabelPerimColor,
+		NhlNvcZeroFLabelPerimThicknessF,
+		NhlNvcZeroFLabelZone,
+		NhlNvcZeroFLabelSide,
+		NhlNvcZeroFLabelJust,
+		NhlNvcZeroFLabelParallelPosF,
+		NhlNvcZeroFLabelOrthogonalPosF
+			 
+	};
+	int i,pass_count = 0;
+
+	for (i = 0; i < NhlNumber(pass_args); i++)
+		if (_NhlArgIsSet(args,num_args,pass_args[i]))
+			pass_count++;
+	if (num_args > pass_count) 
+		return True;
+	return False;
+}
+
 /*
  * Function:	VectorPlotSetValues
  *
@@ -2060,6 +2198,10 @@ static NhlErrorTypes VectorPlotSetValues
 
 	if (vcnew->view.use_segments != vcold->view.use_segments)
 		vcp->new_draw_req = True;
+	if (vcnew->view.use_segments) {
+		if (NewDrawArgs(args,num_args))
+			vcp->new_draw_req = True;
+	}
 
 	if (_NhlArgIsSet(args,num_args,NhlNvcLevelSpacingF))
 		vcp->level_spacing_set = True;
@@ -3867,6 +4009,7 @@ static NhlErrorTypes SetUpLLTransObj
 
 	if (tfp->trans_obj == NULL) {
 
+		vcp->update_req = True;
 		vcp->new_draw_req = True;
 		NhlSetSArg(&sargs[nargs++],NhlNtrXLog,vcp->x_log);
 		NhlSetSArg(&sargs[nargs++],NhlNtrYLog,vcp->y_log);
@@ -4118,6 +4261,7 @@ static NhlErrorTypes SetUpIrrTransObj
 
 	if (init || tfp->trans_obj == NULL) {
 
+		vcp->update_req = True;
 		vcp->new_draw_req = True;
 
 		if (vcp->x_min_set && vcp->x_max_set)
@@ -7097,29 +7241,6 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 		vcp->level_strings = sp;
 		ovcp->level_strings = NULL;
-	}
-				
-
-/*=======================================================================*/
-
-/*
- * Test for changes that require a new draw (when in segment mode)
- */
-	if (
-	    vcp->level_colors != ovcp->level_colors ||
-	    vcp->mono_f_arrow_fill_color != ovcp->mono_f_arrow_fill_color ||
-	    vcp->f_arrow_fill_color != ovcp->f_arrow_fill_color ||
-	    vcp->mono_f_arrow_edge_color != ovcp->mono_f_arrow_edge_color ||
-	    vcp->f_arrow_edge_color != ovcp->f_arrow_edge_color ||
-	    vcp->mono_l_arrow_color != ovcp->mono_l_arrow_color ||
-	    vcp->l_arrow_color != ovcp->l_arrow_color ||
-	    vcp->l_arrow_thickness != ovcp->l_arrow_thickness ||
-	    vcp->f_arrow_edge_thickness != ovcp->f_arrow_edge_thickness ||
-	    vcp->fill_arrows_on != ovcp->fill_arrows_on ||
-	    vcp->fill_over_edge != ovcp->fill_over_edge ||
-	    vcp->levels != ovcp->levels ||
-	    vcp->level_strings != ovcp->level_strings) {
-		vcp->new_draw_req = True;
 	}
 
 	return ret;

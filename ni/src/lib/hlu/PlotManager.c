@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.25 1996-05-16 23:46:26 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.26 1996-05-17 07:54:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -212,11 +212,13 @@ static NhlResource resources[] = {
 	{ NhlNpmPreDrawOrder,NhlCpmPreDrawOrder,NhlTIntegerGenArray,
 		  sizeof(NhlPointer),
 		  Oset(pre_draw_order),
-		  NhlTImmediate,_NhlUSET(NULL),_NhlRES_NOACCESS,(NhlFreeFunc)NhlFreeGenArray},
+		  NhlTImmediate,_NhlUSET(NULL),_NhlRES_NOACCESS,
+		  (NhlFreeFunc)NhlFreeGenArray},
 	{ NhlNpmPostDrawOrder,NhlCpmPostDrawOrder,NhlTIntegerGenArray,
 		  sizeof(NhlPointer),
 		  Oset(post_draw_order),
-		  NhlTImmediate,_NhlUSET(NULL),_NhlRES_NOACCESS,(NhlFreeFunc)NhlFreeGenArray},
+		  NhlTImmediate,_NhlUSET(NULL),_NhlRES_NOACCESS,
+		  (NhlFreeFunc)NhlFreeGenArray},
 
 /* Private resources */
 
@@ -227,6 +229,10 @@ static NhlResource resources[] = {
 	{ NhlNpmUpdateReq,NhlCpmUpdateReq,NhlTBoolean,
 		  sizeof(NhlBoolean),
 		  Oset(update_req),
+		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+	{ NhlNpmUpdateAnnoReq,NhlCpmUpdateAnnoReq,NhlTBoolean,
+		  sizeof(NhlBoolean),
+		  Oset(update_anno_req),
 		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
 /*
  * Intercepted title resources
@@ -970,6 +976,7 @@ static NhlErrorTypes PlotManagerSetValues
         int			nargs = 0;
 	int			i;
 	NhlBoolean		update_req = False;
+	NhlBoolean		update_anno_req = False;
 	int			trans_change_count;
 
 	if (_NhlArgIsSet(args,num_args,NhlNpmLabelBarWidthF))
@@ -995,6 +1002,8 @@ static NhlErrorTypes PlotManagerSetValues
 	if (trans_change_count != ovp->trans_change_count ||
 	    ovnew->trans.trans_obj != ovnew->trans.overlay_trans_obj)
 		ovp->trans_changed = True;
+	else
+		ovp->trans_changed = False;
 	
 	ovnew->trans.trans_obj = ovnew->trans.overlay_trans_obj;
 	ovp->trans_change_count = trans_change_count;
@@ -1099,6 +1108,7 @@ static NhlErrorTypes PlotManagerSetValues
 	if (ovnew->trans.overlay_status == _tfCurrentOverlayMember ||
 	    ovp->overlay_count < 2) {
 		ovp->update_req = False;
+		ovp->update_anno_req = False;
 		return ret;
 	}
 
@@ -1127,6 +1137,10 @@ static NhlErrorTypes PlotManagerSetValues
 		NhlSetSArg(&sargs[nargs++],NhlNpmUpdateReq,True);
 		update_req = True;
 	}
+	if (ovp->update_anno_req) {
+		NhlSetSArg(&sargs[nargs++],NhlNpmUpdateAnnoReq,True);
+		update_anno_req = True;
+	}
 /*
  * Ensure that all the base plots are up to date; don't pass the
  * update req resource if the plot has no PlotManager of its own.
@@ -1136,7 +1150,16 @@ static NhlErrorTypes PlotManagerSetValues
 		NhlPlotManagerLayer ovl = 
 			(NhlPlotManagerLayer)ovp->pm_recs[i]->ov_obj;
 
-		int num_args = update_req && ovl == NULL ? nargs - 1 : nargs;
+		int num_args = nargs;
+
+		if (ovl == NULL) {
+			if (update_req && update_anno_req)
+				num_args = nargs - 2;
+			else if (update_req)
+				num_args = nargs - 1;
+			else if (update_anno_req)
+				num_args = nargs - 1;
+		}
 
 		subret = NhlALSetValues(ovp->pm_recs[i]->plot->base.id,
 					sargs,num_args);
@@ -1148,6 +1171,7 @@ static NhlErrorTypes PlotManagerSetValues
 	}
 
 	ovp->update_req = False;
+	ovp->update_anno_req = False;
 		
 	return ret;
 }
@@ -4866,7 +4890,7 @@ NhlErrorTypes NhlAddOverlay
  * Update the overlay in order that the annotation objects can adjust
  * to the possibility of some new annotations.
  */
-	subret = NhlVASetValues(base_id,NhlNpmUpdateReq,True,NULL);
+	subret = NhlVASetValues(base_id,NhlNpmUpdateAnnoReq,True,NULL);
 	if ((ret = MIN(subret,ret)) < NhlWARNING)
 		return ret;
 
@@ -5058,7 +5082,7 @@ NhlErrorTypes NhlRemoveOverlay
  * objects can adjust to the possibility that some annotations were 
  * removed.
  */
-	subret = NhlVASetValues(base_id,NhlNpmUpdateReq,True,NULL);
+	subret = NhlVASetValues(base_id,NhlNpmUpdateAnnoReq,True,NULL);
 	if ((ret = MIN(subret,ret)) < NhlWARNING)
 		return ret;
 

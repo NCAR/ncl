@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.50 1996-05-11 03:32:22 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.51 1996-05-17 07:54:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1466,6 +1466,7 @@ MapPlotInitialize
 	Mpp->spec_fill_color_count = 0;
 	Mpp->spec_fill_pattern_count = 0;
 	Mpp->spec_fill_scale_count = 0;
+	Mpp->trans_change_count = 0;
 		
 /*
  * If the Outline Records are not yet initialized, do it now.
@@ -1544,6 +1545,35 @@ MapPlotInitialize
 	return ret;
 }
 
+/*ARGSUSED*/
+static NhlBoolean NewDrawArgs
+#if	NhlNeedProto
+(
+	_NhlArgList	args,
+	int		num_args
+)
+#else
+(args,num_args)
+	_NhlArgList	args;
+	int		num_args;
+#endif
+{
+	NhlString pass_args[] = {
+		NhlNvpXF,
+		NhlNvpYF,
+		NhlNvpWidthF,
+		NhlNvpHeightF
+	};
+	int i,pass_count = 0;
+
+	for (i = 0; i < NhlNumber(pass_args); i++)
+		if (_NhlArgIsSet(args,num_args,pass_args[i]))
+			pass_count++;
+	if (num_args > pass_count) 
+		return True;
+	return False;
+}
+
 /*
  * Function:	MapPlotSetValues
  *
@@ -1592,14 +1622,13 @@ static NhlErrorTypes MapPlotSetValues
 	Ompl = (NhlMapPlotLayer) old;
 	Ompp = &(Ompl->mapplot);
 
-	if (_NhlArgIsSet(args,num_args,NhlNvpXF)) view_args++;
-	if (_NhlArgIsSet(args,num_args,NhlNvpYF)) view_args++;
-	if (_NhlArgIsSet(args,num_args,NhlNvpWidthF)) view_args++;
-	if (_NhlArgIsSet(args,num_args,NhlNvpHeightF)) view_args++;
-
-	if (num_args > view_args ||
-	    Mpl->view.use_segments != Ompl->view.use_segments)
+	if (Mpl->view.use_segments != Ompl->view.use_segments) {
 		Mpp->new_draw_req = True;
+	}
+	if (Mpl->view.use_segments) {
+		if (NewDrawArgs(args,num_args))
+			Mpp->new_draw_req = True;
+	}
 
 	Mpp->limb.on = Mpp->grid.on;
 	Mpp->limb.order = Mpp->grid.order;
@@ -5261,7 +5290,7 @@ static NhlErrorTypes mpSetUpTransObj
 	int			tmpid;
         NhlSArg			sargs[8];
         int			nargs = 0;
-	NhlBoolean		trans_changed;
+	NhlBoolean		trans_change_count;
 	float			map_left,map_right,map_bottom,map_top;
 	NhlBoolean		preserve_aspect = True;
 
@@ -5322,7 +5351,7 @@ static NhlErrorTypes mpSetUpTransObj
 		       NhlNmpRightMapPosF, &map_right,
 		       NhlNmpBottomMapPosF, &map_bottom,
 		       NhlNmpTopMapPosF, &map_top,
-		       NhlNmpTransChanged,&trans_changed,
+		       NhlNtrChangeCount,&trans_change_count,
 		       NULL);
 
 	if ((mpnew->mapplot.shape_mode == NhlFIXEDASPECTFITBB) && 
@@ -5335,11 +5364,11 @@ static NhlErrorTypes mpSetUpTransObj
 				    map_left,map_top,
 				    map_right - map_left,
 				    map_top - map_bottom, False);
-		mpnew->mapplot.update_req = True;
-		mpnew->mapplot.new_draw_req = True;
+
 	}
 		
-	if (trans_changed) {
+	if (trans_change_count > mpnew->mapplot.trans_change_count) {
+		mpnew->mapplot.trans_change_count = trans_change_count;
 		mpnew->mapplot.update_req = True;
 		mpnew->mapplot.new_draw_req = True;
 	}

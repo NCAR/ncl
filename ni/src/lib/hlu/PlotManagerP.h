@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManagerP.h,v 1.6 1996-05-11 03:32:24 dbrown Exp $
+ *      $Id: PlotManagerP.h,v 1.7 1996-05-17 07:54:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -170,6 +170,7 @@ typedef struct _NhlPlotManagerLayerPart {
 
 	NhlGenArray		pm_rec_list;
 	NhlBoolean		update_req;
+	NhlBoolean		update_anno_req;
 	int			trans_change_count;
 	NhlBoolean		trans_changed;
 

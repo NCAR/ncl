@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.14 1996-05-11 03:32:23 dbrown Exp $
+ *      $Id: MapPlotP.h,v 1.15 1996-05-17 07:54:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -304,6 +304,7 @@ typedef struct NhlMapPlotLayerPart {
 	int		spec_fill_color_count;
 	int		spec_fill_pattern_count;
 	int		spec_fill_scale_count;
+	int		trans_change_count;
 } NhlMapPlotLayerPart;
 
 typedef struct _NhlMapPlotLayerRec {

@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManagerI.h,v 1.1 1995-04-01 00:04:12 dbrown Exp $
+ *      $Id: PlotManagerI.h,v 1.2 1996-05-17 07:54:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -48,13 +48,14 @@ typedef struct	_NhlAnnotationRec {
 #define NhlNpmUpdateReq		".pmUpdateReq"
 #define NhlCpmUpdateReq		".PmUpdateReq"
 
+
 /* 
  * Resource used by member plots to alert the base overlay when an
  * external annotation is modified in a way that affects its view.
  */
    
-#define NhlNpmUpdateReq		".pmUpdateReq"
-#define NhlCpmUpdateReq		".PmUpdateReq"
+#define NhlNpmUpdateAnnoReq	".pmUpdateAnnoReq"
+#define NhlCpmUpdateAnnoReq	".PmUpdateAnnoReq"
 
 /* 
  * Convenience function that performs the basic management of an

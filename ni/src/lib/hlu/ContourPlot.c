@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.38 1996-05-11 03:32:18 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.39 1996-05-17 07:54:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2267,6 +2267,96 @@ ContourPlotInitialize
 	return ret;
 }
 
+/*ARGSUSED*/
+static NhlBoolean NewDrawArgs
+#if	NhlNeedProto
+(
+	_NhlArgList	args,
+	int		num_args
+)
+#else
+(args,num_args)
+	_NhlArgList	args;
+	int		num_args;
+#endif
+{
+	NhlString pass_args[] = {
+		NhlNvpXF,
+		NhlNvpYF,
+		NhlNvpWidthF,
+		NhlNvpHeightF,
+		NhlNcnExplicitLabelBarLabelsOn,
+		NhlNcnLabelBarEndLabelsOn,
+		NhlNcnExplicitLegendLabelsOn,
+		NhlNcnLegendLevelFlags,
+		NhlNcnInfoLabelOn,
+		NhlNcnInfoLabelString,
+		NhlNcnInfoLabelFormat,
+		NhlNcnInfoLabelFontHeightF,
+		NhlNcnInfoLabelTextDirection,
+		NhlNcnInfoLabelFont,
+		NhlNcnInfoLabelFontColor,
+		NhlNcnInfoLabelFontAspectF,
+		NhlNcnInfoLabelFontThicknessF,
+		NhlNcnInfoLabelFontQuality,
+		NhlNcnInfoLabelConstantSpacingF,
+		NhlNcnInfoLabelAngleF,
+		NhlNcnInfoLabelFuncCode,
+		NhlNcnInfoLabelBackgroundColor,
+		NhlNcnInfoLabelPerimOn,
+		NhlNcnInfoLabelPerimSpaceF,
+		NhlNcnInfoLabelPerimColor,
+		NhlNcnInfoLabelPerimThicknessF,
+		NhlNcnInfoLabelZone,
+		NhlNcnInfoLabelSide,
+		NhlNcnInfoLabelJust,
+		NhlNcnInfoLabelParallelPosF,
+		NhlNcnInfoLabelOrthogonalPosF,
+		NhlNcnNoDataLabelOn,
+		NhlNcnNoDataLabelString,
+		NhlNcnConstFLabelOn,
+		NhlNcnConstFLabelString,
+		NhlNcnConstFLabelFormat,
+		NhlNcnConstFLabelFontHeightF,
+		NhlNcnConstFLabelTextDirection,
+		NhlNcnConstFLabelFont,
+		NhlNcnConstFLabelFontColor,
+		NhlNcnConstFLabelFontAspectF,
+		NhlNcnConstFLabelFontThicknessF,
+		NhlNcnConstFLabelFontQuality,
+		NhlNcnConstFLabelConstantSpacingF,
+		NhlNcnConstFLabelAngleF,
+		NhlNcnConstFLabelFuncCode,
+		NhlNcnConstFLabelBackgroundColor,
+		NhlNcnConstFLabelPerimOn,
+		NhlNcnConstFLabelPerimSpaceF,
+		NhlNcnConstFLabelPerimColor,
+		NhlNcnConstFLabelPerimThicknessF,
+		NhlNcnConstFLabelZone,
+		NhlNcnConstFLabelSide,
+		NhlNcnConstFLabelJust,
+		NhlNcnConstFLabelParallelPosF,
+		NhlNcnConstFLabelOrthogonalPosF,
+		NhlNpmLabelBarDisplayMode,
+		NhlNlbLabelStrings,
+		NhlNlbLabelFuncCode,
+		NhlNlbLabelAlignment,
+		NhlNpmLegendDisplayMode,
+		NhlNlgLabelStrings,
+		NhlNlgLabelFuncCode,
+		NhlNlgLineLabelsOn,
+		NhlNpmTickMarkDisplayMode,
+		NhlNpmTitleDisplayMode
+	};
+	int i,pass_count = 0;
+
+	for (i = 0; i < NhlNumber(pass_args); i++)
+		if (_NhlArgIsSet(args,num_args,pass_args[i]))
+			pass_count++;
+	if (num_args > pass_count) 
+		return True;
+	return False;
+}
 /*
  * Function:	ContourPlotSetValues
  *
@@ -2312,9 +2402,15 @@ static NhlErrorTypes ContourPlotSetValues
 	/* Note that both ManageLegend and ManageLabelBar add to sargs */
 	NhlSArg			sargs[128];
 	int			nargs = 0;
+	int			view_args = 0;
 
+	
 	if (cnew->view.use_segments != cold->view.use_segments) {
 		cnp->new_draw_req = True;
+	}
+	if (cnew->view.use_segments) {
+		if (NewDrawArgs(args,num_args))
+			cnp->new_draw_req = True;
 	}
 
 	if (_NhlArgIsSet(args,num_args,NhlNcnLevelSpacingF))
@@ -5809,9 +5905,6 @@ static NhlErrorTypes ManageOverlay
 
 	/* 1 arg */
 	if (cnp->update_req) {
-#if 0
-		cnp->new_draw_req = True;
-#endif
 		NhlSetSArg(&sargs[(*nargs)++],NhlNpmUpdateReq,True);
 	}
 		
@@ -8477,7 +8570,6 @@ static NhlErrorTypes    ManageDynamicArrays
 
 	ga = init ? NULL : ocnp->fill_patterns;
 	count = cnp->fill_count;
-	if (ga != cnp->fill_patterns) cnp->new_draw_req = True;
 
 	subret = ManageGenArray(&ga,count,cnp->fill_patterns,Qfillindex,NULL,
 				&old_count,&init_count,&need_check,&changed,
@@ -8818,28 +8910,6 @@ static NhlErrorTypes    ManageDynamicArrays
 			ocnp->conpack_params = NULL;
 		}
 		cnp->conpack_params = ga;
-	}
-
-/*
- * Test for changes that require a new draw (when in segment mode)
- */
-	if (flags_modified ||
-	    cnp->fill_colors != ocnp->fill_colors ||
-	    cnp->mono_fill_color != ocnp->mono_fill_color ||
-	    cnp->fill_patterns != ocnp->fill_patterns ||
-	    cnp->mono_fill_pattern != ocnp->mono_fill_pattern ||
-	    cnp->fill_scales != ocnp->fill_scales ||
-	    cnp->mono_fill_scale != ocnp->mono_fill_scale ||
-	    cnp->line_colors != ocnp->line_colors ||
-	    cnp->mono_line_color != ocnp->mono_line_color ||
-	    cnp->line_dash_patterns != ocnp->line_dash_patterns ||
-	    cnp->mono_line_dash_pattern != ocnp->mono_line_dash_pattern ||
-	    cnp->line_thicknesses != ocnp->line_thicknesses ||
-	    cnp->mono_line_thickness != ocnp->mono_line_thickness ||
-	    cnp->llabel_strings != ocnp->llabel_strings ||
-	    cnp->llabel_colors != ocnp->llabel_colors ||
-	    cnp->line_lbls.mono_color != ocnp->line_lbls.mono_color) {
-		cnp->new_draw_req = True;
 	}
 
 	return ret;
@@ -9307,7 +9377,6 @@ static NhlErrorTypes    SetupLevels
 	    (cnp->max_data_format.fstring == ocnp->max_data_format.fstring))
 		return ret;
 
-	cnp->new_draw_req = True;
 	cnp->ref_level = 0;
 
 	if (cnp->level_spacing_set && cnp->level_spacing <= 0.0) {
