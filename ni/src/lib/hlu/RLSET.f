@@ -1,5 +1,5 @@
 C
-C $Id: RLSET.f,v 1.1 1994-05-12 23:52:08 boote Exp $
+C $Id: RLSET.f,v 1.2 1994-06-02 19:23:21 haley Exp $
 C
 C****************************************************************
 C								*
@@ -72,6 +72,6 @@ C
 	integer id,carr_len,ierr
 	character*(*) name
 	character*(*) carr(carr_len)
-	call nhl_frlsetstringarray(id,name,len(name),carr,len(carr),
+	call nhl_frlsetstringarray(id,name,len(name),carr,len(carr(1)),
      %	carr_len,ierr)
       end
