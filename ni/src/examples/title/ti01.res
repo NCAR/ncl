@@ -1,5 +1,5 @@
 !
-! Example:  This resource file shows all TextItem resources and
+! Example:  This resource file shows all Title resources and
 !           their default values.
 !
 !  ==============================================================
