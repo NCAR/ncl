@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.c,v 1.3 1994-03-23 15:27:28 boote Exp $
+ *      $Id: ResList.c,v 1.4 1994-04-08 21:47:44 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1923,14 +1923,14 @@ NhlRLGetTypeDimArray
 	int		**len_dimensions
 )
 #else
-(id,name,data,type,size,num_dim,len_dimensions)
-	int		id,
-	NhlString	name,
-	NhlString	type,
-	unsigned int	size,
-	NhlPointer	*data,
-	int		num_dim,		/* IN */
-	int		**len_dimensions
+(id,name,type,size,data,num_dim,len_dimensions)
+	int		id;
+	NhlString	name;
+	NhlString	type;
+	unsigned int	size;
+	NhlPointer	*data;
+	int		num_dim;		/* IN */
+	int		**len_dimensions;
 #endif
 {
 	_NhlExpArray	exp = NULL;

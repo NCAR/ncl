@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.2 1994-04-05 00:51:26 dbrown Exp $
+ *      $Id: Workspace.c,v 1.3 1994-04-08 21:47:48 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1422,7 +1422,7 @@ static NhlErrorTypes AddToIdleList
 	char		*entry_name
 )
 #else
-(wsrp,flp,entry_name)
+(wsrp,head,tail,entry_name)
 	NhlWorkspaceRec	*wsrp;
 	NhlwsIdleRec	**head;
 	NhlwsIdleRec	**tail;
@@ -1471,7 +1471,7 @@ static NhlErrorTypes RemoveFromIdleList
 	char		*entry_name
 )
 #else
-(wsrp,flp,entry_name)
+(wsrp,head,tail,entry_name)
 	NhlWorkspaceRec	*wsrp;
 	NhlwsIdleRec	**head;
 	NhlwsIdleRec	**tail;
