@@ -1,9 +1,18 @@
 #
-#	$Id: yMakefile,v 1.1 1993-10-26 23:12:28 haley Exp $
+#	$Id: yMakefile,v 1.2 1995-06-14 00:17:57 haley Exp $
 #
 MYNAME	= class
 
-GENERIC_SRCS = \
-	class1.f class2.f class3.f class1.dat
+SRCS = class1.f class2.f class3.f class1.dat
+OBJS = class1.o class2.o class3.o
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(TUTORIALPATH))
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(TUTORIALPATH))
+
+FExampleTarget(class1,class1.o)
+FExampleTarget(class2,class2.o)
+FExampleTarget(class3,class3.o)

@@ -1,9 +1,9 @@
 #
-#	$Id: yMakefile,v 1.6 1994-11-16 15:25:29 haley Exp $
+#	$Id: yMakefile,v 1.7 1995-06-14 00:18:06 haley Exp $
 #
 MYNAME	= tconpack
 
-GENERIC_SRCS = \
+SRCS = \
 	ccpback.f ccpcff.f ccpcfx.f ccpcica.f ccpcir.f ccpcis.f ccpcit.f \
 	ccpclc.f ccpcld.f ccpcldm.f ccpcldr.f ccpcll.f ccpclu.f ccpcnrc.f \
 	ccpdflt.f ccpezct.f ccpfil.f ccpga.f ccphand.f ccphcf.f ccphl.f \
@@ -15,4 +15,88 @@ GENERIC_SRCS = \
 	ccpsps1.f ccpsps2.f ccpspv.f ccpt2d.f ccptitle.f ccpvp.f ccpvs.f \
 	cidsfft.f colcon.f ggdini.f ccpex.dat ccpila.dat cpmpxy1.dat
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(TUTORIALPATH))
+OBJS = \
+	ccpback.o ccpcff.o ccpcfx.o ccpcica.o ccpcir.o ccpcis.o ccpcit.o \
+	ccpclc.o ccpcld.o ccpcldm.o ccpcldr.o ccpcll.o ccpclu.o ccpcnrc.o \
+	ccpdflt.o ccpezct.o ccpfil.o ccpga.o ccphand.o ccphcf.o ccphl.o \
+	ccphlt.o ccpila.o ccpils.o ccpilt.o ccpklb.o ccplbam.o ccplbdr.o \
+	ccpline.o ccpllb.o ccpllc.o ccplll.o ccpllo.o ccpllp.o ccpllt.o \
+	ccpllw.o ccpmap.o ccpmovi.o ccpmpxy.o ccpncls.o ccpnet.o ccpnof.o \
+	ccpnsd.o ccppc.o ccppc1.o ccppc2.o ccppc3.o ccppc4.o ccppkcl.o \
+	ccppole.o ccprc.o ccprect.o ccprwc.o ccprwu.o ccpscam.o ccpset.o \
+	ccpsps1.o ccpsps2.o ccpspv.o ccpt2d.o ccptitle.o ccpvp.o ccpvs.o \
+	cidsfft.o colcon.o ggdini.o
+
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(TUTORIALPATH))
+
+FExampleTarget(ccpback,ccpback.o)
+FExampleTarget(ccpcff,ccpcff.o)
+FExampleTarget(ccpcfx,ccpcfx.o)
+FExampleTarget(ccpcica,ccpcica.o ggdini.o)
+FExampleTarget(ccpcir,ccpcir.o ggdini.o)
+FExampleTarget(ccpcis,ccpcis.o)
+FExampleTarget(ccpcit,ccpcit.o)
+FExampleTarget(ccpclc,ccpclc.o)
+FExampleTarget(ccpcld,ccpcld.o)
+FExampleTarget(ccpcldm,ccpcldm.o)
+FExampleTarget(ccpcldr,ccpcldr.o)
+FExampleTarget(ccpcll,ccpcll.o)
+FExampleTarget(ccpclu,ccpclu.o)
+FExampleTarget(ccpcnrc,ccpcnrc.o)
+FExampleTarget(ccpdflt,ccpdflt.o)
+FExampleTarget(ccpezct,ccpezct.o ggdini.o)
+FExampleTarget(ccpfil,ccpfil.o)
+FExampleTarget(ccpga,ccpga.o)
+FExampleTarget(ccphand,ccphand.o)
+FExampleTarget(ccphcf,ccphcf.o)
+FExampleTarget(ccphl,ccphl.o ggdini.o)
+FExampleTarget(ccphlt,ccphlt.o)
+FExampleTarget(ccpila,ccpila.o)
+FExampleTarget(ccpils,ccpils.o)
+FExampleTarget(ccpilt,ccpilt.o)
+FExampleTarget(ccpklb,ccpklb.o)
+FExampleTarget(ccplbam,ccplbam.o)
+FExampleTarget(ccplbdr,ccplbdr.o)
+FExampleTarget(ccpline,ccpline.o)
+FExampleTarget(ccpllb,ccpllb.o)
+FExampleTarget(ccpllc,ccpllc.o)
+FExampleTarget(ccplll,ccplll.o)
+FExampleTarget(ccpllo,ccpllo.o)
+FExampleTarget(ccpllp,ccpllp.o)
+FExampleTarget(ccpllt,ccpllt.o)
+FExampleTarget(ccpllw,ccpllw.o)
+FExampleTarget(ccpmap,ccpmap.o ggdini.o)
+FExampleTarget(ccpmovi,ccpmovi.o ggdini.o)
+FExampleTarget(ccpmpxy,ccpmpxy.o)
+FExampleTarget(ccpncls,ccpncls.o)
+FExampleTarget(ccpnet,ccpnet.o)
+FExampleTarget(ccpnof,ccpnof.o)
+FExampleTarget(ccpnsd,ccpnsd.o)
+FExampleTarget(ccppc,ccppc.o)
+FExampleTarget(ccppc1,ccppc1.o)
+FExampleTarget(ccppc2,ccppc2.o)
+FExampleTarget(ccppc3,ccppc3.o)
+FExampleTarget(ccppc4,ccppc4.o)
+FExampleTarget(ccppkcl,ccppkcl.o)
+FExampleTarget(ccppole,ccppole.o)
+FExampleTarget(ccprc,ccprc.o)
+FExampleTarget(ccprect,ccprect.o)
+FExampleTarget(ccprwc,ccprwc.o)
+FExampleTarget(ccprwu,ccprwu.o)
+FExampleTarget(ccpscam,ccpscam.o)
+FExampleTarget(ccpset,ccpset.o)
+FExampleTarget(ccpsps1,ccpsps1.o)
+FExampleTarget(ccpsps2,ccpsps2.o)
+FExampleTarget(ccpspv,ccpspv.o)
+FExampleTarget(ccpt2d,ccpt2d.o)
+FExampleTarget(ccptitle,ccptitle.o)
+FExampleTarget(ccpvp,ccpvp.o ggdini.o)
+FExampleTarget(ccpvs,ccpvs.o)
+FExampleTarget(cidsfft,cidsfft.o)
+FExampleTarget(colcon,colcon.o)
+

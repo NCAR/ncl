@@ -1,12 +1,48 @@
 #
-#	$Id: yMakefile,v 1.3 1993-10-19 17:41:21 boote Exp $
+#	$Id: yMakefile,v 1.4 1995-06-14 00:18:08 haley Exp $
 #
 MYNAME	= tezmap
 
-GENERIC_SRCS = \
+SRCS = \
 	cezmap1.f cezmap2.f cezmap3.f cmpclr.f cmpdd.f cmpdrw.f cmpel.f \
 	cmpfil.f cmpgci.f cmpgrd.f cmpgrp.f cmpita.f cmpitm.f cmplab.f cmplbl.f \
 	cmplot.f cmpmsk.f cmpou.f cmppos.f cmpsat.f cmpsup.f cmptit.f cmptra.f \
 	cmpusr.f
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(TUTORIALPATH))
+OBJS = \
+	cezmap1.o cezmap2.o cezmap3.o cmpclr.o cmpdd.o cmpdrw.o cmpel.o \
+	cmpfil.o cmpgci.o cmpgrd.o cmpgrp.o cmpita.o cmpitm.o cmplab.o cmplbl.o \
+	cmplot.o cmpmsk.o cmpou.o cmppos.o cmpsat.o cmpsup.o cmptit.o cmptra.o \
+	cmpusr.o
+
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(TUTORIALPATH))
+
+FExampleTarget(cezmap1,cezmap1.o)
+FExampleTarget(cezmap2,cezmap2.o)
+FExampleTarget(cezmap3,cezmap3.o)
+FExampleTarget(cmpclr,cmpclr.o)
+FExampleTarget(cmpdd,cmpdd.o)
+FExampleTarget(cmpdrw,cmpdrw.o)
+FExampleTarget(cmpel,cmpel.o)
+FExampleTarget(cmpfil,cmpfil.o)
+FExampleTarget(cmpgci,cmpgci.o)
+FExampleTarget(cmpgrd,cmpgrd.o)
+FExampleTarget(cmpgrp,cmpgrp.o)
+FExampleTarget(cmpita,cmpita.o)
+FExampleTarget(cmpitm,cmpitm.o)
+FExampleTarget(cmplab,cmplab.o)
+FExampleTarget(cmplbl,cmplbl.o)
+FExampleTarget(cmplot,cmplot.o)
+FExampleTarget(cmpmsk,cmpmsk.o)
+FExampleTarget(cmpou,cmpou.o)
+FExampleTarget(cmppos,cmppos.o)
+FExampleTarget(cmpsat,cmpsat.o)
+FExampleTarget(cmpsup,cmpsup.o)
+FExampleTarget(cmptit,cmptit.o)
+FExampleTarget(cmptra,cmptra.o)
+FExampleTarget(cmpusr,cmpusr.o)
