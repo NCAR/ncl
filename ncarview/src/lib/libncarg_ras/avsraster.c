@@ -1,4 +1,4 @@
-/* $Id: avsraster.c,v 1.10 1993-05-11 18:49:25 haley Exp $ */
+/* $Id: avsraster.c,v 1.11 1995-03-16 22:56:53 haley Exp $ */
 
 /***********************************************************************
 *                                                                      *
@@ -271,7 +271,7 @@ AVSWrite(ras)
 				return(RAS_ERROR);
 			}
 		}
-		(void) bcopy((Voidptr)ras->dep,(Voidptr) swapbuf,
+		(void) memmove((Voidptr) swapbuf,(Voidptr)ras->dep,
 				sizeof(AVSInfo));
 		_swapshort((char *) swapbuf, sizeof(AVSInfo));
 		dep = swapbuf;

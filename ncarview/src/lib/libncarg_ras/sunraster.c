@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.21 1994-05-23 21:01:43 clyne Exp $
+ *	$Id: sunraster.c,v 1.22 1995-03-16 22:56:55 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -204,7 +204,7 @@ SunWrite(ras)
 				return(RAS_ERROR);
 			}
 		}
-		(void)bcopy((Voidptr)ras->dep,(Voidptr)swapbuf,sizeof(SunInfo));
+		(void)memmove((Voidptr)swapbuf,(Voidptr)ras->dep,sizeof(SunInfo));
 		_swaplong((char *) swapbuf, sizeof(SunInfo));
 		dep = swapbuf;
 	}

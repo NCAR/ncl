@@ -1,5 +1,5 @@
 /*
- *	$Id: ncgm2cgm.c,v 1.9 1993-03-15 22:10:48 clyne Exp $
+ *	$Id: ncgm2cgm.c,v 1.10 1995-03-16 23:00:56 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -50,7 +50,7 @@ static void	flush()
 	int	to_write = blockSize - spaceAva;
 	
 	if (to_write) {	/* if buffer not empty	*/
-		bzero((char *) (outBuf+to_write), (int) spaceAva);	
+		memset((char *) (outBuf+to_write), 0, (int) spaceAva);	
 
 		if (fwrite((char *) outBuf, 1, blockSize, stdout) < 0) {
 			perror("ncgm2cgm");

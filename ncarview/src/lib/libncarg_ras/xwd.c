@@ -1,5 +1,5 @@
 /*
- *	$Id: xwd.c,v 1.19 1994-04-20 22:39:58 haley Exp $
+ *	$Id: xwd.c,v 1.20 1995-03-16 22:56:56 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -181,7 +181,7 @@ XWDRead(ras)
 	/* Read in header, "dep" is format dependent data. */
 
 	dep = (XWDFileHeader *) ras->dep;
-	bcopy((char *) dep, (char *) &old_dep, sizeof(XWDFileHeader));
+	memmove((void *) &old_dep, (const void *) dep, sizeof(XWDFileHeader));
 
 	status = fread( (char *)dep, 1, sizeof(XWDFileHeader), ras->fp);
 	if (status == 0) {
@@ -328,7 +328,7 @@ XWDRead(ras)
 		cptr1 = ras->data + ras->nx;
 		cptr2 = ras->data + dep->bytes_per_line;
 		for (i = 1; i < dep->pixmap_height; i++) {
-			bcopy((char *) cptr2, (char *) cptr1, ras->nx);
+			memmove((void *) cptr1, (const void *) cptr2, ras->nx);
 			cptr1 += ras->nx; 
 			cptr2 += dep->bytes_per_line;
 		}
@@ -473,7 +473,7 @@ XWDWrite(ras)
 			}
 				
 		}
-		bcopy(ras->dep, swapbuf, sizeof(XWDFileHeader));
+		memmove((void *)swapbuf,(const void *)ras->dep, sizeof(XWDFileHeader));
 		_swaplong(swapbuf, sizeof(XWDFileHeader));
 		dep = swapbuf;
 	}

@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm2ncgm.c,v 1.8 1992-12-01 03:13:35 clyne Exp $
+ *	$Id: cgm2ncgm.c,v 1.9 1995-03-16 23:00:55 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -52,7 +52,7 @@ static	get_data(count)
 	int	status;
 
 	if (dataAva) {	/* move any existing data to begining of buffer	*/
-		bcopy((char *) bufPtr, (char *) inBuf, (int) dataAva);
+		memmove((void *) inBuf, (const void *) bufPtr, (size_t) dataAva);
 	}
 	bufPtr = inBuf;
 
@@ -124,7 +124,7 @@ static int	get_next_instr(instr)
 
 		/* get the CGM command	*/
 		tmp = bufPtr[0] << 8 | bufPtr[1];
-		instr->class = GETBITS(tmp, CLASS_POSS, CLASS_BITS);
+		instr->cgmclass = GETBITS(tmp, CLASS_POSS, CLASS_BITS);
 		instr->id = GETBITS(tmp, ID_POSS, ID_BITS);
 		len = GETBITS(tmp, PARM_POSS, PARM_BITS); /* data length */
 		dataAva -= 2;
@@ -243,17 +243,17 @@ main (argc,argv)
 	 */
 	while ((status = get_next_instr(&instr)) > 0) {
 
-		if (instr.class > MAXCLASS || instr.id > MAXFUNCPERCLASS) {
+		if (instr.cgmclass > MAXCLASS || instr.id > MAXFUNCPERCLASS) {
 			(void) fprintf(stderr, 
 				"cgm2ncgm: warning: invalid CGM element - ");
 			(void) fprintf(stderr,
-				"class = %d, id = %d\n", instr.class, instr.id);
+				"class = %d, id = %d\n", instr.cgmclass, instr.id);
 		}
 		if (CGM_putInstr(cgm_fd, &instr) < 0) {
 			(void)fprintf(stderr,"cgm2ncgm : error writing file\n");
 			exit(1);
 		}
-		if (instr.class == DEL_ELEMENT && instr.id == END_MF_ID) {
+		if (instr.cgmclass == DEL_ELEMENT && instr.id == END_MF_ID) {
 			break;
 		}
 

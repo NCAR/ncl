@@ -1,5 +1,5 @@
 /*
- *	$Id: hppcl.c,v 1.2 1993-02-10 19:19:04 don Exp $
+ *	$Id: hppcl.c,v 1.3 1995-03-16 22:56:54 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -202,7 +202,7 @@ static	int	write_compressed_port(ras)
  		 * N.B. we're guaranteed to have at least one set bit
 		 * in the scanline by the above conditional.
 		 */
-		bzero((char *) data, sizeof(data));
+		memset((char *) data, 0, sizeof(data));
 		for (mask=0x80,ptr=data,data_len=1; rx<ras->nx; rx++, hx+=step){
 
                         if (! mask) {
@@ -275,7 +275,7 @@ static	int	write_compressed_land(ras)
  		 * N.B. we're guaranteed to have at least one set bit
 		 * in the scanline by the above conditional.
 		 */
-		bzero((char *) data, sizeof(data));
+		memset((char *) data, 0, sizeof(data));
 		for (mask=0x80,ptr=data,data_len=1; ry<ras->ny; ry++, hy+=step){
 
                         if (! mask) {
