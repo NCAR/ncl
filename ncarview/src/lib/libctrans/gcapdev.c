@@ -1,5 +1,5 @@
 /*
- *	$Id: gcapdev.c,v 1.6 1991-10-04 15:19:22 clyne Exp $
+ *	$Id: gcapdev.c,v 1.7 1991-11-06 21:17:20 clyne Exp $
  */
 #include <stdio.h>
 #include <cterror.h>
@@ -47,7 +47,7 @@ long	*coord_buf_num;
 boolean	polyflag;	/* True if flushing a polygon not polylines */
 boolean polysim;	/* True if to simulate polygons with lines */
 {
-	int	currentpoint;
+	int	currentpoint = 0;
 	int	i;
 	boolean mass = FALSE;	/* true if can buffer all points at once */
 
@@ -131,16 +131,19 @@ boolean polysim;	/* True if to simulate polygons with lines */
 				(void)formatcoord(XConvert(coord_buf[0].x),
 					    (long)0,
 					    1);
+				currentpoint = 1;
 				break;
 			case (char)YC:
 				(void)formatcoord(YConvert(coord_buf[0].y),
 					    (long)0,
 					    1);
+				currentpoint = 1;
 				break;
 			case (char)XYC:
 				(void)formatcoord(XConvert(coord_buf[0].x),
 					    YConvert(coord_buf[0].y),
 					    2);
+				currentpoint = 1;
 				break;
 			default:
 				buffer(&LINE_DRAW_START[i],1);
@@ -154,7 +157,7 @@ boolean polysim;	/* True if to simulate polygons with lines */
 	 */
 	if (mass) {
 
-		for (currentpoint=0;currentpoint<*coord_buf_num;currentpoint++) {
+		for ( ;currentpoint<*coord_buf_num;currentpoint++) {
 
 			
 			/*
@@ -551,7 +554,6 @@ void	gcap_update_color_table()
 	long	data[3];
 	boolean	skipping,
 		defining;
-	int	total_damage;
 
 
 	if (!COLOUR_AVAIL)
@@ -568,11 +570,10 @@ void	gcap_update_color_table()
         LINE_COLOUR_DAMAGE = TRUE;
 
 
-	total_damage = COLOUR_TOTAL_DAMAGE;
 
 
 	if (MAP_INDIVIDUAL) {
-	for(i=0; i<total_damage; i++) {
+	for(i=0; COLOUR_TOTAL_DAMAGE > 0 && i < MAX_C_I; i++) {
 
 	if (COLOUR_INDEX_DAMAGE(i)) {
 
@@ -642,7 +643,7 @@ void	gcap_update_color_table()
 
 	skipping = TRUE;
 	defining = FALSE;
-	for(i=0; i<total_damage; i++) {
+	for(i=0; COLOUR_TOTAL_DAMAGE > 0 && i < MAX_C_I; i++) {
 
 		if (COLOUR_INDEX_DAMAGE(i)) {
 			COLOUR_TOTAL_DAMAGE--;
