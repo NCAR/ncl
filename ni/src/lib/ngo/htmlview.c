@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlview.c,v 1.10 1998-10-02 19:27:35 dbrown Exp $
+ *      $Id: htmlview.c,v 1.11 1999-03-05 01:02:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,7 @@
 
 #include <ncarg/ngo/htmlviewP.h>
 #include <ncarg/ngo/nclstate.h>
+#include <ncarg/ngo/htmlpage.h>
 
 #if 0
 #define DOCTOP "ngdoc/ng4.0/"
@@ -41,7 +42,8 @@
 #define DOCTOP "ngdoc/ng4.1/"
 #endif
 
-#define DOCHLURESDIR "ref/hlu/obj/"
+#define DOCNDVDIR      "/ndv/"
+#define DOCHLURESDIR "/ref/hlu/obj/"
 #define DOCRESEXT ".res.html"
 #define MAX_HTML_OBJECT_LIST_LEN 10
 #define NULL_HTMLVIEW_ID 0
@@ -64,6 +66,210 @@ swvsbCB(Widget w, XtPointer udata, XtPointer data)
 #endif
         XmScrollBarGetValues(hvp->swvsb,&val,&slide,&inc,&page_inc);
         _XmHTMLMoveToPos(hvp->vsb,(XmHTMLWidget)hvp->html,val);
+}
+
+
+static void
+AdjustSize
+(
+        NgHtmlViewRec *hvp
+)
+{
+        Dimension form_width,form_height,height,width;
+	brPane *pane;
+	XRectangle rect;
+        XmHTMLWidget		xmhtml = (XmHTMLWidget) hvp->html;
+	Dimension	html_width, html_height, h_diff,w_diff;
+	
+	pane = _NgGetPaneOfPage(hvp->go->base.id,hvp->public.user_page_id);
+
+	NgSetFolderSize(pane,0,0,&width,&height);
+
+        XtVaGetValues(hvp->public.htmlview,
+                      XmNwidth,&form_width,
+		      XmNheight,&form_height,
+                      NULL);
+
+	XtVaGetValues(hvp->html,
+		      XmNwidth,&html_width,
+		      XmNheight,&html_height,
+		      NULL);
+
+	w_diff = form_width - html_width;
+	h_diff = form_height - html_height;
+
+	width -= w_diff;
+	if (xmhtml->html.formatted_height  > height - h_diff) {
+		/* vertical scrollbar */
+		width -= 19;
+	}
+	height -= (h_diff);
+	XtVaSetValues(hvp->html,
+		      XmNwidth,width,
+		      NULL);
+	XtVaSetValues(hvp->html,
+		      XmNheight,MAX(xmhtml->html.formatted_height,height),
+		      NULL);
+
+	XtVaGetValues(hvp->html,
+		      XmNwidth,&html_width,
+		      XmNheight,&html_height,
+		      NULL);
+
+        XtVaGetValues(hvp->public.htmlview,
+                      XmNwidth,&form_width,
+		      XmNheight,&form_height,
+                      NULL);
+
+
+        hvp->public.height = form_height;
+        hvp->public.width = form_width;
+
+        return;
+}	
+
+#if 0
+static void
+AdjustSize
+(
+        NgHtmlViewRec *hvp
+)
+{
+        Dimension form_width,form_height,height,width;
+	brPane *pane;
+	XRectangle rect;
+        XmHTMLWidget		xmhtml = (XmHTMLWidget) hvp->html;
+	Dimension	avail_width, avail_height;
+	
+	pane = _NgGetPaneOfPage(hvp->go->base.id,hvp->public.user_page_id);
+
+        _NgGetPaneVisibleArea((NhlLayer)hvp->go,pane,&rect);
+
+	width = rect.width - 5;
+	height = rect.height - 30;
+	XtVaSetValues(hvp->html,
+		      XmNwidth,width,
+		      XmNheight,height,
+		      NULL);
+
+	if (xmhtml->html.formatted_height > height) {
+		/* vertical scrollbar */
+		width -= 20;
+		XtVaSetValues(hvp->html,
+			      XmNwidth,width,
+			      NULL);
+	}
+	height = MAX(xmhtml->html.formatted_height,height);
+	XtVaSetValues(hvp->html,
+		      XmNwidth,width,
+		      XmNheight,height,
+		      NULL);
+
+        XtVaGetValues(hvp->public.htmlview,
+                      XmNwidth,&form_width,
+		      XmNheight,&form_height,
+                      NULL);
+
+
+        hvp->public.height = form_height;
+        hvp->public.width = form_width;
+
+        return;
+}	
+#endif
+static void
+anchorCB(Widget w, XtPointer udata, XtPointer data)
+{
+	XmHTMLAnchorPtr anchor = (XmHTMLAnchorPtr) data;
+        NgHtmlViewRec	*hvp = (NgHtmlViewRec	*) udata;
+        Dimension width,height;
+	brPane *pane;
+	XRectangle rect;
+        XmHTMLWidget		xmhtml = (XmHTMLWidget) hvp->html;
+
+#if 1        
+	fprintf(stderr,"in anchor CB!\n");
+#endif
+	if (hvp->type != _hbGENERIC)
+		return;
+
+	if (anchor->reason != XmCR_ACTIVATE)
+		return;
+	if (! anchor->href)
+		return;
+	switch (anchor->url_type) {
+	case ANCHOR_JUMP:
+		fprintf(stderr,"jump in current file\n");
+		break;
+	case ANCHOR_FILE_REMOTE:
+	case ANCHOR_FILE_LOCAL:
+		fprintf(stderr,"jump to local file\n");
+		_NgSetHtmlContent((NgHtmlView*)hvp,
+				  NrmStringToQuark(anchor->href),
+				  NrmNULLQUARK);
+		break;
+	default:
+		return;
+	}
+
+	AdjustSize(hvp);
+
+	pane = _NgGetPaneOfPage(hvp->go->base.id,hvp->public.user_page_id);
+        NgSetFolderSize(pane,hvp->public.width,hvp->public.height,
+                        &width,&height);
+	
+
+	NgHtmlPageContentNotify(hvp->go->base.id,hvp->public.user_page_id,
+				NrmStringToQuark(anchor->href));
+	return;
+}
+
+static XmImageInfo*
+imageProc
+(
+	Widget w, 
+	String url, 
+	Dimension width, 
+	Dimension height,
+	XtPointer client_data)
+{
+        NgHtmlViewRec	*hvp = (NgHtmlViewRec	*) client_data;
+	XmImageInfo *image_info;
+	unsigned char image_type = IMAGE_UNKNOWN;
+	char urlbuf[512];
+
+/*
+ * images only supported for _hbGENERIC type htmlview objects
+ */
+	if (hvp->type != _hbGENERIC)
+		return(NULL);
+
+	strcpy(urlbuf,GetNCARGPath("root"));
+	if (! urlbuf)
+		return NULL;
+	strcat(urlbuf,"/lib/ncarg/ndv_help/");
+	strcat(urlbuf,url);
+
+	/* check if this is a local url */
+	if((XmHTMLGetURLType(urlbuf)) != ANCHOR_FILE_LOCAL)
+		return(NULL);
+
+	/* it is a local file. Check if it is of a supported type */
+	image_type = XmHTMLImageGetType(urlbuf, NULL, 0);
+
+
+	if(image_type == IMAGE_ERROR || image_type == IMAGE_UNKNOWN)
+	{
+	   /* an error occured or the type of this image is unsupported */
+		return(NULL);
+	}
+
+	/* Load it using the default function */
+	if((image_info = XmHTMLImageDefaultProc(w, urlbuf, NULL, 0)) != NULL)
+	{
+		return(image_info);
+	}
+	return(NULL);
 }
 
 static int HtmlObjectListSize
@@ -189,13 +395,73 @@ FindObjectInObjectList(
         return NULL;
 }
 
+/*
+ * Get GenericContent
+ * For now this really means just the NDV help files, stored under 
+ * $NCARG_ROOT/lib/ncarg/ndv_help
+ */
+static String GetGenericContent(
+        NgHtmlViewRec	*hvp,
+        NrmQuark	locator
+        )
+{
+ 	char buf[512];
+	struct stat statbuf;
+	FILE *fp;
+        char *content;
+        int count,html_len = -1;
+	const char *path = (char *) GetNCARGPath("root");
+
+ 	if (! path) {
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+	   "NCARG_ROOT environment variable not set: no path to help files"));
+		return NULL;
+	}
+	strcpy(buf,path);
+	strcat(buf,"/lib/ncarg/ndv_help/");
+	strcat(buf,NrmQuarkToString(locator));
+
+	if (stat(buf,&statbuf) || ! S_ISREG(statbuf.st_mode)) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			   "No path to documentation"));
+		return NULL;
+	}
+	fp = fopen(buf,"r");
+	if (! fp) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			   "Error opening %s doc\n",
+			   NrmQuarkToString(locator)));
+		return NULL;
+	}
+	html_len = statbuf.st_size;
+
+        content = NhlMalloc(html_len +1);
+	if (! content) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+                return NULL;
+        }
+	count = fread(content,1,html_len,fp);
+	fclose(fp);
+        content[html_len] = '\0';
+
+	if (count < html_len) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			   "Incomplete retrieval of %s doc\n",
+			   NrmQuarkToString(locator)));
+                NhlFree(content);
+                return NULL;
+        }
+	return content;
+	
+}
+
 static String GetContent(
         NgHtmlViewRec	*hvp,
         NrmQuark	locator
         )
 {
         String url;
-        char filename[64];
+        char filename[256];
         char sbuf[1024];
         char *content;
         char *cp;
@@ -207,6 +473,11 @@ static String GetContent(
                 strcpy(content,Error_Content);
                 return content;
         }
+	if (hvp->type == _hbGENERIC) {
+		content = GetGenericContent(hvp,locator);
+		return content;
+	}
+
 	if (! hvp->filebase) {
 		hvp->filebase = getenv("NCARG_DOC_ROOT");
 	}
@@ -225,16 +496,6 @@ static String GetContent(
         filename[0] = toupper(filename[0]);
         if (!strcmp(filename,"PsWorkstation"))
                 filename[1] = 'S';
-#if 0        
-        else if(!strcmp(filename,"Transformation"))
-                sprintf(filename,"TransObj");
-        else if(!strcmp(filename,"MapTransformation"))
-                sprintf(filename,"MapTransObj");
-        else if(!strcmp(filename,"IrregularTransformation"))
-                sprintf(filename,"IrregularTransObj");
-        else if(!strcmp(filename,"LogLinTransformation"))
-                sprintf(filename,"LogLinTransObj");
-#endif        
 
         if (! hvp->filebase) {
 		/* contruct a command to get the doc for this resource */
@@ -277,9 +538,10 @@ static String GetContent(
 	}
 	else {
 		struct stat statbuf;
-
+		
 		sprintf(sbuf,"%s%s%s%s",
 			hvp->filebase,DOCHLURESDIR,filename,DOCRESEXT);
+
 #if DEBUG_HTML        
 		fprintf(stderr,"%s\n",sbuf);
 #endif
@@ -447,6 +709,17 @@ static void SetErrorNotice
 }
 
 
+static NhlErrorTypes
+SetGeneric
+(
+        NgHtmlViewRec *hvp
+        )
+{
+	AdjustSize(hvp);
+	return True;
+}
+
+
 NhlErrorTypes
 _NgSetHtmlContent(
         NgHtmlView	*htmlview,
@@ -471,34 +744,43 @@ _NgSetHtmlContent(
                 XtManageChild(htmlview->htmlview);
                 htmlview->managed = True;
         }
+
+	if (locator == NrmNULLQUARK) {
+		locator = QerrorNotFound;
+	}
         if (locator != htmlview->locator) {
                 hobject = GetHtmlObject(hvp,locator);
                 if (!hobject)
                         return NhlFATAL;
         }
-        begin = NULL;
-        if (htmlview->locator != QerrorNotFound) {
-                sprintf(buf,"#%s",NrmQuarkToString(name));
-                begin = _XmHTMLGetAnchorByName(xmhtml,buf);
-        }
-        if (! begin) {
-                NHLPERROR((NhlINFO,NhlEUNKNOWN,
-                           "No description found in reference documentation"));
-                hobject = GetHtmlObject(hvp,QerrorNotFound);
-                if (!hobject)
-                        return NhlFATAL;
-        }
-        if (htmlview->locator == QerrorNotFound) {
-                SetErrorNotice(hvp);
-                return NhlINFO;
-        }
-        else {
-                end = FindEndOfResource(begin);
-                if (first) {
-                        end = FindEndOfResource(begin);
-                        first = False;
-                }
-        }
+	if (hvp->type == _hbGENERIC) {
+		htmlview->name = NrmNULLQUARK;
+		return SetGeneric(hvp);
+	}
+	begin = NULL;
+	if (htmlview->locator != QerrorNotFound) {
+		sprintf(buf,"#%s",NrmQuarkToString(name));
+		begin = _XmHTMLGetAnchorByName(xmhtml,buf);
+	}
+	if (! begin) {
+		NHLPERROR((NhlINFO,NhlEUNKNOWN,
+			 "No description found in reference documentation"));
+		hobject = GetHtmlObject(hvp,QerrorNotFound);
+		if (!hobject)
+			return NhlFATAL;
+	}
+	if (htmlview->locator == QerrorNotFound) {
+		SetErrorNotice(hvp);
+		return NhlINFO;
+	}
+	else {
+		end = FindEndOfResource(begin);
+		if (first) {
+			end = FindEndOfResource(begin);
+			first = False;
+		}
+	}
+
         htmlview->name = name;
 
         XtVaGetValues(hvp->public.htmlview,
@@ -587,7 +869,7 @@ _NgSetHtmlContent(
                       XmNmaximum,work_height + begin->y,
                       XmNminimum,begin->y,
                       XmNvalue,begin->y,
-                      XmNsliderSize,work_height,
+                      XmNsliderSize,MAX(1,work_height),
                       NULL);
         XtVaGetValues(hvp->swvsb,
                       XmNmaximum,&max,
@@ -664,6 +946,9 @@ _NgGetHtmlViewSize(
         Dimension	*width
         )
 {
+	if (resize_width)
+		AdjustSize((NgHtmlViewRec *)htmlview);
+
         *height = htmlview->height;
         *width = htmlview->width;
         
@@ -756,7 +1041,7 @@ _NgCreateHtmlView(
                  XmNmarginHeight, 0,
                  XmNwidth, 500,
                  XmNheight, 500,
-		 XmNimageEnable,False,
+		 XmNimageEnable,True,
                  NULL);
 #if DEBUG_HTML	      
 	      fprintf(stderr, "%s, %i\n",
@@ -836,8 +1121,12 @@ _NgCreateHtmlView(
                  XmNmarginHeight, 0,
                  XmNwidth, 500,
                  XmNheight, 500,
-		 XmNimageEnable,False,
+		 XmNimageEnable,True,
+		 XmNimageProc,imageProc,
+		 XmNclientData,hvp,
                  NULL);
+	XtAddCallback(hvp->html, XmNactivateCallback,
+		      (XtCallbackProc)anchorCB,hvp);
 
         XmScrolledWindowSetAreas(hvp->scrwin,NULL,hvp->swvsb,hvp->html);
         
@@ -898,7 +1187,6 @@ HtmlViewId NgGetHtmlView(
         if (! pane)
                 return (int) NhlFATAL;
 
-        _NgGetPaneVisibleArea(_NhlGetLayer(goid),pane,&rect);
 
 /*
  * Look for an unmapped existing Htmlview, especially the one that has
@@ -952,6 +1240,7 @@ HtmlViewId NgGetHtmlView(
                               XmNresizable,True,
                               NULL);
         }
+
         htmlview->user_page_id = page_id;
         SetHtmlLocation(htmlview,pane,requestor,requestor_x,requestor_y);
         _NgSetHtmlContent(htmlview,locator,name);
@@ -1045,7 +1334,8 @@ NhlErrorTypes NgGetHtmlViewSize(
         for (i =0; i < pane->htmlview_count; i++) {
                 hv = XmLArrayGet(pane->htmlview_list,i);
                 if (htmlview_id == hv->id) {
-                        _NgGetHtmlViewSize(hv,0,0,False,height,width);
+                        _NgGetHtmlViewSize(hv,max_height,avail_width,
+					   resize_width,height,width);
                         return NhlNOERROR;
                 }
         }
@@ -1153,4 +1443,30 @@ NhlErrorTypes NgReleasePageHtmlViews(
         return NhlNOERROR;
 }
 
+extern void NgRefreshHtmlView(
+        int		goid,
+        NgPageId	page_id,
+        HtmlViewId	htmlview_id
+        )
+{        
+        char func[] = "NgRefreshHtmlView";
+        brPane		*pane = _NgGetPaneOfPage(goid,page_id);
+	int		i;
+        NgHtmlViewRec	*hv;
         
+#if DEBUG_HTML        
+        fprintf(stderr,"in %s\n",func);
+#endif
+        if (! pane)
+                return;
+
+        for (i =0; i < pane->htmlview_count; i++) {
+                hv = XmLArrayGet(pane->htmlview_list,i);
+                if (htmlview_id == hv->public.id) {
+			_XmHTMLRefresh((XmHTMLWidget)hv->html, 
+				       0,0,hv->public.width,hv->public.height);
+			return;
+                }
+        }
+	return;
+}

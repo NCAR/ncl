@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.19 1998-11-20 04:11:01 dbrown Exp $
+ *      $Id: go.c,v 1.20 1999-03-05 01:02:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1678,7 +1678,7 @@ _NgGOCreateMenubar
                                            DeleteHLUCB,
                                            DeleteVarCB,
                                            DeleteVarCB,
-                                           NULL,go);
+                                           NULL,NULL,go);
                                                    
 	delete = XtVaCreateManagedWidget
                 ("Delete",xmCascadeButtonGadgetClass,

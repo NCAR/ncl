@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.24 1999-02-23 03:56:43 dbrown Exp $
+ *      $Id: browse.c,v 1.25 1999-03-05 01:02:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 #include <ncarg/ngo/filepageP.h>
 #include <ncarg/ngo/varpageP.h>
 #include <ncarg/ngo/hlupageP.h>
+#include <ncarg/ngo/htmlpageP.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Form.h>
@@ -419,26 +420,35 @@ NgSetFolderSize
 static char *PageString
 (
         brPane		*pane,
-        brPage		*page
+        brPage		*page,
+	NhlBoolean	abbrev
         )
 {
         static char string[512];
         
         switch (page->type) {
-            case _brREGVAR:
+	    default:
                     strcpy(string,NrmQuarkToString(page->qvar));
+                    break;
+	    case _brHTML:
+                    strcpy(string,"Help");
                     break;
             case _brFILEREF:
                     strcpy(string,NrmQuarkToString(page->qfile));
                     break;
             case _brFILEVAR:
-                    strcpy(string,NrmQuarkToString(page->qfile));
-                    strcat(string,"->");
+		    if (abbrev) {
+			    strcpy(string,"->");
+		    }
+		    else {
+			    strcpy(string,NrmQuarkToString(page->qfile));
+			    strcat(string,"->");
+		    }
                     strcat(string,NrmQuarkToString(page->qvar));
                     break;
-            case _brHLUVAR:
-                    strcpy(string,NrmQuarkToString(page->qvar));
-                    break;
+	    case _brNULL:
+		    strcpy(string,"<null>");
+		    break;
         }
 
         return string;
@@ -471,7 +481,7 @@ static void SetTabFocus
 	}
 
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
-        fprintf(stderr,"focus: %s tab #%d\n",PageString(pane,page),pos);
+        fprintf(stderr,"focus: %s tab #%d\n",PageString(pane,page,False),pos);
 #endif
         XtSetKeyboardFocus(go->go.manager,page->tab->tab);
         xev.type = FocusIn;
@@ -526,7 +536,7 @@ static void ActiveTabCB
                 NgReleasePageHtmlViews(go->base.id,pane->active_page->id);
 
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
-        string = PageString(pane,page);
+        string = PageString(pane,page,False);
         fprintf(stderr,"tab # %d activated for %s\n",cbs->pos,string);
 #endif
         pane->active_pos = cbs->pos;
@@ -534,7 +544,7 @@ static void ActiveTabCB
 
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
         fprintf(stderr,"setting keyboard focus to %s\n",
-                       PageString(pane,page));
+                       PageString(pane,page,False));
 #endif
 
         SetTabFocus(go,pane,page);
@@ -588,7 +598,7 @@ TabFocusEH
                 return;
 	}
 
-        string = PageString(pane,page);
+        string = PageString(pane,page,False);
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
         fprintf(stderr,"focus: %s tab #%d\n",string,pos);
 #endif
@@ -608,8 +618,31 @@ CreateFolder
 {
         WidgetList	children;
         int		i,num_children;
-        
+#if 0
+	int		value,size,inc,page_inc,min,max;
+	char *name;
+
+	XtVaGetValues(pane->vsb,
+		      XmNminimum,&min,
+		      XmNmaximum,&max,
+		      NULL);
+	XtVaSetValues(pane->vsb,
+		      XmNminimum,0,
+		      XmNmaximum,100,
+		      NULL);
+	XmScrollBarGetValues(pane->vsb,&value,&size,&inc,&page_inc);
+	XmScrollBarSetValues(pane->vsb,value,MAX(size,1),MAX(inc,1),
+			     MAX(page_inc,1));
+	name = XtName(pane->vsb);
+
+	XSync(go->go.x->dpy,False);
+	XSynchronize(go->go.x->dpy,True);
+#endif
 	XtManageChild(pane->form);
+#if 0
+	XSynchronize(go->go.x->dpy,False);
+	XtManageChild(pane->vsb);
+#endif
 
         pane->folder = XtVaCreateManagedWidget
                 ("Folder",xmlFolderWidgetClass,
@@ -638,6 +671,7 @@ CreateFolder
 				xmLabelGadgetClass,pane->folder,
 				NULL);
 	pane->has_folder = True;
+
 
 	return;
 }
@@ -674,6 +708,7 @@ DestroyFolder
 	DestroyPageDataList(go,pane->var_pages);
 	DestroyPageDataList(go,pane->fileref_pages);
 	DestroyPageDataList(go,pane->hlu_pages);
+	DestroyPageDataList(go,pane->html_pages);
 	for (i = 0; i < pane->tabcount; i++) {
 		brTab *tab = XmLArrayGet(pane->tablist,i);
 		XtDestroyWidget(tab->tab);
@@ -695,6 +730,7 @@ DestroyFolder
 	pane->fileref_pages = NULL;
 	pane->var_pages = NULL;
 	pane->hlu_pages = NULL;
+	pane->html_pages = NULL;
         pane->active_pos = 0;
 }
 
@@ -712,7 +748,30 @@ static Cardinal FolderFirstProc
                       NULL);
         return num_children;
 }
-        
+
+static void
+vsbCB
+(
+	Widget w, 
+	XtPointer udata, 
+	XtPointer data
+)
+{
+        brPane	 	*pane = (brPane *) udata;
+
+	printf("in vsb CB\n");
+
+	if (! pane)
+		return;
+	if (! pane->active_page)
+		return;
+
+	if (pane->active_page->type == _brHTML)
+		NgRefreshHtmlPage(pane->active_page);
+
+	return;
+}
+
 static void
 InitPane
 (
@@ -723,6 +782,8 @@ InitPane
 {
         XtActionList actions;
         Cardinal num_actions;
+	int n;
+	Arg args[2];
         
         pane->go = go;
         pane->managed = False;
@@ -730,18 +791,22 @@ InitPane
                 ("topform", xmFormWidgetClass,parent,
 		 XmNallowResize,	True,
                  NULL);
-        pane->scroller = XtVaCreateManagedWidget
-                ("scroller", xmScrolledWindowWidgetClass,pane->topform,
-                 XmNscrollBarDisplayPolicy,	XmAS_NEEDED,
-                 XmNscrollingPolicy,		XmAUTOMATIC,
-                 NULL);
+	n = 0;
+	XtSetArg(args[n],XmNscrollBarDisplayPolicy,XmAS_NEEDED);n++;
+	XtSetArg(args[n],XmNscrollingPolicy,XmAUTOMATIC);n++;
+	pane->scroller =
+		XmCreateScrolledWindow(pane->topform,"scroller",args,n);
 
         XtVaGetValues(pane->scroller,
                       XmNclipWindow,&pane->clip_window,
                       XmNhorizontalScrollBar,&pane->hsb,
                       XmNverticalScrollBar,&pane->vsb,
                       NULL);
+	XtAddCallback(pane->vsb, XmNvalueChangedCallback, 
+		(XtCallbackProc)vsbCB,pane);
 
+
+	XtManageChild(pane->scroller);
         pane->form = XtVaCreateWidget
                 ("form", xmFormWidgetClass,pane->scroller,
                  XmNinsertPosition,FolderFirstProc,
@@ -757,6 +822,7 @@ InitPane
 	pane->fileref_pages = NULL;
 	pane->var_pages = NULL;
 	pane->hlu_pages = NULL;
+	pane->html_pages = NULL;
         pane->active_pos = 0;
         pane->active_page = NULL;
 	pane->htmlview_count = 0;
@@ -1036,7 +1102,7 @@ UpdateTabs
 	NgBrowsePart		*np = &browse->browse;
         brPaneControl		*pcp = &np->pane_ctrl;
         NhlString		e_text;
-	char			name[512];
+	char			*name;
 	XmString		xmname;
         brPage			*page;
         NrmQuark		qfile = NrmNULLQUARK;
@@ -1083,32 +1149,25 @@ UpdateTabs
         }
         
         for (i = 0; i < pane->pagecount; i++) {
+		NhlBoolean abbrev;
                 tab = XmLArrayGet(pane->tablist,i);
                 page = XmLArrayGet(pane->pagelist,i);
                 
                 switch (page->type) {
-                    case _brREGVAR:
-                            strcpy(name,NrmQuarkToString(page->qvar));
-                            break;
-                    case _brFILEREF:
-                            qfile = page->qfile;
-                            strcpy(name,NrmQuarkToString(page->qfile));
-                            break;
-                    case _brHLUVAR:
-                            strcpy(name,NrmQuarkToString(page->qvar));
-                            break;
-                    case _brFILEVAR:
-                            if (page->qfile == qfile) {
-                                    strcpy(name,"->");
-                            }
-                            else {
-                                    qfile = page->qfile;
-                                    strcpy(name,NrmQuarkToString(page->qfile));
-                                    strcat(name,"->");
-                            }
-                            strcat(name,NrmQuarkToString(page->qvar));
-                            break;
-                }
+		default: 
+			name = PageString(pane,page,False);
+			break;
+		case _brFILEREF:
+			qfile = page->qfile;
+			name = PageString(pane,page,False);
+			break;
+		case _brFILEVAR:
+			if (page->qfile == qfile)
+				name = PageString(pane,page,True);
+			else	
+				name = PageString(pane,page,False);
+			break;
+		}
                 xmname = NgXAppCreateXmString(go->go.appmgr,name);
 		XtVaSetValues(tab->tab,
 			      XmNlabelString,xmname,
@@ -1195,12 +1254,7 @@ InsertPage
         }
 
         switch (page->type) {
-            case _brREGVAR:
-                    XmLArrayAdd(pane->pagelist,pos,1);
-		    pane->pagecount++;
-                    XmLArraySet(pane->pagelist,pos,page);
-                    break;
-            case _brHLUVAR:
+	    default:
                     XmLArrayAdd(pane->pagelist,pos,1);
 		    pane->pagecount++;
                     XmLArraySet(pane->pagelist,pos,page);
@@ -1264,23 +1318,7 @@ DeleteVarPage
 	NgGO		go;
 
 	go = (NgGO) page->go;
-        qvar = page->qvar;
-        qfile = page->qfile;
-
-        switch (page->type) {
-            case _brREGVAR:
-                    UpdatePanes(go,_brREGVAR,qvar,NrmNULLQUARK,True);
-                    break;
-            case _brFILEREF:
-                    UpdatePanes(go,_brFILEREF,NrmNULLQUARK,qfile,True);
-                    break;
-            case _brFILEVAR:
-                    UpdatePanes(go,_brFILEVAR,qvar,qfile,True);
-                    break;
-            case _brHLUVAR:
-                    UpdatePanes(go,_brHLUVAR,qvar,NrmNULLQUARK,True);
-                    break;
-        }
+	UpdatePanes(go,page->type,page->qvar,page->qfile,True);
 }
 
 static void
@@ -1435,7 +1473,7 @@ static brPage *AddPage
         
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
         fprintf(stderr,"AddPage: %x -- pane %d %s\n",
-               page,PaneNumber(go,pane),PageString(pane,page));
+               page,PaneNumber(go,pane),PageString(pane,page,False));
 #endif
         
         if (! pane->has_folder)
@@ -1462,6 +1500,9 @@ static brPage *AddPage
                 break;
         case _brHLUVAR:
 		page->pdata = NgGetHluPage(go,pane,page,copy_page,ps_state);
+                break;
+        case _brHTML:
+		page->pdata = NgGetHtmlPage(go,pane,page,copy_page,ps_state);
                 break;
         }
         if (!page->pdata) {
@@ -1520,7 +1561,7 @@ static void DeletePage(
 	if (pane->pagecount == 0) {
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
                 fprintf(stderr,"DeletePage: %x -- pane %d %s\n",
-                       page,PaneNumber(go,pane),PageString(pane,page));
+                       page,PaneNumber(go,pane),PageString(pane,page,False));
 #endif
 		if (page->pdata->deactivate_page)
 			(*page->pdata->deactivate_page)(page);
@@ -1536,7 +1577,7 @@ static void DeletePage(
 
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
         fprintf(stderr,"DeletePage: %x -- pane %d %s\n",
-               page,PaneNumber(go,pane),PageString(pane,page));
+               page,PaneNumber(go,pane),PageString(pane,page,False));
 #endif
         if (page->pdata->deactivate_page)
                 (*page->pdata->deactivate_page)(page);
@@ -1676,6 +1717,9 @@ static void BrowseTimeoutCB
             case _brHLUVAR:
                     UpdatePanes(go,_brHLUVAR,qvar,NrmNULLQUARK,False);
                     break;
+            case _brHTML:
+                    UpdatePanes(go,_brHTML,qvar,NrmNULLQUARK,False);
+                    break;
         }
 	XSync(go->go.x->dpy,False);
         return;
@@ -1752,6 +1796,7 @@ static void BrowseVarCB
 	return;
 }
 
+
 static void BrowseFileCB 
 (
 	Widget		w,
@@ -1822,6 +1867,41 @@ static void BrowseFileVarCB
         
 	return;
 }
+        
+static void BrowseFunctionCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+	NgGO		go = (NgGO) udata;
+	NgBrowse	browse = (NgBrowse)udata;
+	NgBrowsePart	*np = &browse->browse;
+	NrmQuark	qvar;
+        brPage		*page;
+        brPane		*pane;
+        static timer_data tdata;
+        
+#if	DEBUG_DATABROWSER & DEBUG_ENTRY
+	fprintf(stderr,"BrowseFunctionCB(IN)\n");
+#endif
+	XtVaGetValues(w,
+		      XmNuserData,&qvar,
+		      NULL);
+
+#if	DEBUG_DATABROWSER & DEBUG_FOLDER
+	fprintf(stderr,"browsing function %s\n", NrmQuarkToString(qvar));
+#endif
+
+        tdata.go = go;
+        tdata.qvar = qvar;
+        tdata.type = _brFUNCTION;
+        
+        XtAppAddTimeOut(go->go.x->app,50,BrowseTimeoutCB,&tdata);
+        
+	return;
+}
 
 static NgVarMenus
 CreateVarMenus
@@ -1854,6 +1934,10 @@ CreateVarMenus
                                 BrowseVarCB,
                                 BrowseFileCB,
                                 BrowseFileVarCB,
+#if 0
+				BrowseFunctionCB,
+#endif
+				NULL,
                                 browse);
 }
 static void
@@ -1993,26 +2077,28 @@ static void CycleSelectionCB
         }
         NextPane(go);
 
-        switch (page->type) {
-            case _brREGVAR:
-                    UpdatePanes(go,_brREGVAR,qvar,NrmNULLQUARK,False);
-                    break;
-            case _brFILEREF:
-                    UpdatePanes(go,_brFILEREF,NrmNULLQUARK,qfile,False);
-                    break;
-            case _brFILEVAR:
-                    UpdatePanes(go,_brFILEVAR,qvar,qfile,False);
-                    break;
-            case _brHLUVAR:
-                    UpdatePanes(go,_brHLUVAR,qvar,qfile,False);
-                    break;
-        }
+	UpdatePanes(go,page->type,page->qvar,page->qfile,False);
         
         return;
 	
 }
 
+static void HelpCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+	NgGO		go = (NgGO) udata;
+	NgBrowse	browse = (NgBrowse)go;
+	NgBrowsePart	*np = &browse->browse;
+	NrmQuark	qhtml;
 
+	qhtml = NrmStringToQuark("Start.html");
+	NgOpenPage(go->base.id,_brHTML,&qhtml,1);
+	
+}
 static void
 ChangeSizeEH
 (
@@ -2026,6 +2112,8 @@ ChangeSizeEH
 	NgBrowse	browse = (NgBrowse)go;
 	NgBrowsePart	*np = &browse->browse;
         brPaneControl	*pcp = &np->pane_ctrl;
+	NrmQuark	qhtml;
+        static timer_data tdata;
 
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
         fprintf(stderr,"EH height %d width %d\n",
@@ -2041,14 +2129,23 @@ ChangeSizeEH
 			return;
         }
         else if (event->type == MapNotify) {
-                np->mapped = True;
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
                 fprintf(stderr,"MapNotify\n");
 #endif
+		if (! np->mapped) {
+			np->mapped = True;
+
+			tdata.go = go;
+			tdata.qvar = qhtml = NrmStringToQuark("Start.html");
+			tdata.type = _brHTML;
+			XtAppAddTimeOut(go->go.x->app,50,
+					BrowseTimeoutCB,&tdata);
+		}
         }
 	else {
 		return;
 	}
+
 
 	AdjustPaneGeometry(go);
 
@@ -2162,7 +2259,7 @@ BrowseCreateWin
 	NgBrowse	browse = (NgBrowse)go;
 	NgBrowsePart	*np = &browse->browse;
         Widget		datamenubar;
-	Widget		form,sep;
+	Widget		w,form,sep;
         brPane		*pane;
         XmString	xmstring;
 	NhlArgVal	sel,user_data;
@@ -2179,8 +2276,18 @@ BrowseCreateWin
         XtAddEventHandler(go->go.manager,StructureNotifyMask,
                           False,ChangeSizeEH,(XtPointer)go);
 
-	_NgGOSetTitle(go,"Browse:",NULL);
+	_NgGOSetTitle(go,"NCAR DataVision",NULL);
 	_NgGOCreateMenubar(go);
+
+	XtVaSetValues(go->go.help,
+		XmNsensitive,	True,
+		NULL);
+
+	w = XtVaCreateManagedWidget("helpBtn",xmPushButtonGadgetClass,
+		go->go.hmenu,NULL);
+	XtAddCallback(w,XmNactivateCallback,HelpCB,go);
+	
+
         form = XtVaCreateManagedWidget
                 ("form",xmFormWidgetClass,
                  go->go.manager,
@@ -2239,6 +2346,7 @@ extern void _NgGetPaneVisibleArea(
 {
         Position form_x, form_y, clip_x, clip_y;
         Dimension clip_width, clip_height;
+	Dimension vsb_width = 0, hsb_height = 0;
         
         XtVaGetValues(pane->form,
                       XmNx,&form_x,
@@ -2255,6 +2363,20 @@ extern void _NgGetPaneVisibleArea(
         rect->y = clip_y - form_y;
         rect->width = clip_width;
         rect->height = clip_height;
+
+	if (XtIsManaged(pane->vsb)) {
+		XtVaGetValues(pane->vsb,
+			      XmNwidth,&vsb_width,
+			      NULL);
+	}
+	if (XtIsManaged(pane->hsb)) {
+		XtVaGetValues(pane->hsb,
+			      XmNheight,&hsb_height,
+			      NULL);
+		printf("vsb width %d hsb height %d\n",vsb_width,hsb_height);
+	}
+
+
         return;
 }
 
@@ -2358,6 +2480,10 @@ extern NgPageId NgOpenPage(
                     if (qcount < 1 || qname[0] == NrmNULLQUARK)
                             return NgNoPage;
                     page = UpdatePanes(go,_brHLUVAR,
+                                       qname[0],NrmNULLQUARK,False);
+                    break;
+            case _brHTML:
+                    page = UpdatePanes(go,_brHTML,
                                        qname[0],NrmNULLQUARK,False);
                     break;
         }
