@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.151 2004-08-13 22:18:52 haley Exp $
+;      $Id: gsn_code.ncl,v 1.152 2004-08-28 13:12:16 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -116,6 +116,8 @@ undef("gsn_define_colormap")
 undef("gsn_retrieve_colormap")
 undef("gsn_reverse_colormap")
 undef("gsn_merge_colormaps")
+undef("scalar_field")
+undef("vector_field")
 undef("hist_columns")
 undef("compute_hist_vals")
 undef("gsn_histogram")
@@ -5526,6 +5528,105 @@ begin
 end
 
 ;***********************************************************************;
+; Function : scalar_field                                               ;
+;            sfname : string                                            ;
+;              data : numeric                                           ;
+;               res : logical                                           ;
+;                                                                       ;
+; This function creates a scalarField or meshScalarField object.        ;
+;***********************************************************************;
+function scalar_field(sfname:string,data:numeric,res2:logical)
+local dims, rank
+begin
+;
+; Check input data. If it is 2D, then create a scalar field.
+; If it is 1D, then it must have coordinate arrays the same length.
+;
+  dims = dimsizes(data)
+  rank = dimsizes(dims)
+  if(rank.ne.1.and.rank.ne.2) then
+    print("Error: scalar_field: The input data must either be 1-dimensional or 2-dimensional")
+    dum = new(1,graphic)
+    return(dum)
+  end if
+
+;
+; Get sf resources.
+;
+  if(rank.eq.2) then
+
+; Create the data object.
+
+    data_object = create sfname scalarFieldClass noparent
+      "sfDataArray" : data
+    end create
+  else
+;
+; Rank is 1. This means we have to use the mesh scalar object.
+; Make sure sfXArray and sfYArray have been set.
+;
+    if(isatt(res2,"sfXArray").and.isatt(res2,"sfYArray")) then
+;
+; Create the data object.
+;
+      data_object = create sfname meshScalarFieldClass noparent
+        "sfDataArray" : data
+        "sfXArray"    : get_res_value(res2,"sfXArray",1)
+        "sfYArray"    : get_res_value(res2,"sfYArray",1)
+      end create
+    else
+      print("Error: scalar_field: If the input data is 1-dimensional, you must set sfXArray and sfYArray to 1-dimensional arrays of the same length.")
+      dum = new(1,graphic)
+      return(dum)
+    end if
+  end if
+
+; Check for a missing value.
+
+  if(isatt(data,"_FillValue")) then
+      setvalues data_object
+          "sfMissingValueV" : data@_FillValue
+      end setvalues
+  end if
+
+  return(data_object)
+end
+
+
+;***********************************************************************;
+; Function : vector_field                                               ;
+;              name : string                                            ;
+;                u  : numeric                                           ;
+;                v  : numeric                                           ;
+;               res : logical                                           ;
+;                                                                       ;
+; This function creates a vectorField object.                           ;
+;***********************************************************************;
+function vector_field(vfname:string,u:numeric,v:numeric,res2:logical)
+begin
+  data_object = create vfname vectorFieldClass noparent
+      "vfUDataArray" : u
+      "vfVDataArray" : v
+  end create
+
+; Check for missing values.
+
+  if(isatt(u,"_FillValue")) then
+      setvalues data_object
+          "vfMissingUValueV" :u@_FillValue
+      end setvalues
+  end if
+  if(isatt(v,"_FillValue")) then
+      setvalues data_object
+          "vfMissingVValueV" :v@_FillValue
+      end setvalues
+  end if
+
+  return(data_object)
+end
+
+
+;***********************************************************************;
 ; Function : hist_columns                                               ;
 ;                   wks: workstation object                             ;
 ;                    xy: graphic                                        ;
@@ -6554,7 +6655,7 @@ end
 ;***********************************************************************;
 ; Function : gsn_contour                                                ;
 ;                   wks: workstation object                             ;
-;                  data: 2-dimensional data                             ;
+;                  data: 1 or 2-dimensional data                        ;
 ;             resources: optional resources                             ;
 ;                                                                       ;
 ; This function creates and draws a contour plot to the workstation     ;
@@ -6573,7 +6674,7 @@ end
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
 ;***********************************************************************;
-function gsn_contour(wks:graphic, data[*][*]:numeric, resources:logical )
+function gsn_contour(wks:graphic, data:numeric, resources:logical )
 local i, data_object, plot_object, res, sf_res_index, \
 datares, cnres, llres, cn_res_index, ll_res_index, calldraw, callframe, \
 force_x_linear, force_y_linear, force_x_log, force_y_log, \
@@ -6588,25 +6689,13 @@ begin
     force_x_log    = False
     force_y_log    = False
 
-; Create the data object.
-
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
-; Create the data object.
-    data_object = create wksname + "_data" scalarFieldClass noparent
-        "sfDataArray" : data
-    end create
+    data_object = scalar_field(wksname+"_data",data,res2)
 
     sfres = get_res_eq(res2,"sf")
     attsetvalues_check(data_object,sfres)
 
-; Check for a missing value.
-
-    if(isatt(data,"_FillValue")) then
-        setvalues data_object
-            "sfMissingValueV" :data@_FillValue
-        end setvalues
-    end if
 ;
 ; Create plot object. Make sure you set the tension values (if
 ; any) when you create the plot. This works better than setting
@@ -6738,7 +6827,7 @@ end
 ;***********************************************************************;
 ; Function : gsn_contour_map                                            ;
 ;                   wks: workstation object                             ;
-;                  data: 2-dimensional data                             ;
+;                  data: 1 or 2-dimensional data                        ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; This function creates and draws a contour plot over a map plot to the ;
@@ -6758,54 +6847,24 @@ end
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
 ;***********************************************************************;
-function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
+function gsn_contour_map(wks:graphic,data:numeric,\
                          resources:logical)
 local i, data_object, contour_object, res, sf_res_index, \
 cn_res_index, mp_res_index, map_object, res2, scale, shape, sprdcols
 begin
     res2 = get_resources(resources)
 
-; Create the data object.
-
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
-    data_object = create wksname + "_data" scalarFieldClass noparent
-        "sfDataArray" : data
-    end create
+; Create contour plot.
 
-; Check for a missing value.
+    cnres          = get_res_eq(res2,(/"sf","tr"/))
+    cnres          = True
+    cnres@gsnDraw  = False
+    cnres@gsnFrame = False
+    contour_object = gsn_contour(wks,data,cnres)
+    delete(cnres)
 
-    if(isatt(data,"_FillValue")) then
-        setvalues data_object
-            "sfMissingValueV" :data@_FillValue
-        end setvalues
-    end if
-
-    sfres = get_res_eq(res2,"sf")
-    attsetvalues_check(data_object,sfres)
-;
-; Create plot object. Make sure you set the tension values (if
-; any) when you create the plot. This works better than setting
-; them later.
-;
-    xtension  = get_res_value(res2,"trXTensionF", 2.0)
-    ytension  = get_res_value(res2,"trYTensionF", 2.0)
-
-    if(res2.and.isatt(res2,"trGridType")) then
-      contour_object = create wksname + "_contour" contourPlotClass wks
-        "cnScalarFieldData" : data_object
-        "trGridType"        : res2@trGridType
-        "trYTensionF"       : ytension
-        "trXTensionF"       : xtension
-      end create
-      delete(res2@trGridType)
-    else
-      contour_object = create wksname + "_contour" contourPlotClass wks
-        "cnScalarFieldData" : data_object
-        "trYTensionF"       : ytension
-        "trXTensionF"       : xtension
-      end create
-    end if
 ; Check for existence of data@long_name and use it in a title it
 ; it exists.
 
@@ -6815,8 +6874,7 @@ begin
 
 ; Create map object.
 
-    map_object = create wksname + "_map" mapPlotClass wks
-    end create
+    map_object = create wksname + "_map" mapPlotClass wks end create
 
     calldraw  = get_res_value(res2,"gsnDraw", True)
     callframe = get_res_value(res2,"gsnFrame",True)
@@ -6853,7 +6911,7 @@ begin
 
 ; Return plot object and data object (as attribute of plot object).
 
-    map_object@data = data_object
+    map_object@data    = contour_object@data
     map_object@contour = contour_object
     return(map_object)
 end
@@ -6955,23 +7013,7 @@ begin
 
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
-    data_object = create wksname + "_data" vectorFieldClass noparent
-        "vfUDataArray" : u
-        "vfVDataArray" : v
-    end create
-
-; Check for missing values.
-
-    if(isatt(u,"_FillValue")) then
-        setvalues data_object
-            "vfMissingUValueV" :u@_FillValue
-        end setvalues
-    end if
-    if(isatt(v,"_FillValue")) then
-        setvalues data_object
-            "vfMissingVValueV" :v@_FillValue
-        end setvalues
-    end if
+    data_object = vector_field(wksname+"_data",u,v,res2)
 
 ; Create plot object.
 
@@ -7067,23 +7109,7 @@ begin
 
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
-    data_object = create wksname + "_data" vectorFieldClass noparent
-        "vfUDataArray" : u
-        "vfVDataArray" : v
-    end create
-
-; Check for missing values.
-
-    if(isatt(u,"_FillValue")) then
-        setvalues data_object
-            "vfMissingUValueV" :u@_FillValue
-        end setvalues
-    end if
-    if(isatt(v,"_FillValue")) then
-        setvalues data_object
-            "vfMissingVValueV" :v@_FillValue
-        end setvalues
-    end if
+    data_object = vector_field(wksname+"_data",u,v,res2)
 
 ; Create plot object.
 
@@ -7463,23 +7489,7 @@ begin
 
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
-    data_object = create wksname + "_data" vectorFieldClass noparent
-        "vfUDataArray" : u
-        "vfVDataArray" : v
-    end create
-
-; Check for missing values.
-
-    if(isatt(u,"_FillValue")) then
-        setvalues data_object
-            "vfMissingUValueV" :u@_FillValue
-        end setvalues
-    end if
-    if(isatt(v,"_FillValue")) then
-        setvalues data_object
-            "vfMissingVValueV" :v@_FillValue
-        end setvalues
-    end if
+    data_object = vector_field(wksname+"_data",u,v,res2)
 
 ; Create plot object.
 
@@ -7578,7 +7588,7 @@ end
 ;                                                                       ;
 ;***********************************************************************;
 function gsn_vector_contour(wks:graphic,u[*][*]:numeric,\
-                            v[*][*]:numeric,data[*][*]:numeric,\
+                            v[*][*]:numeric,data:numeric,\
                             resources:logical)
 local i, vfdata_object, sfdata_object, contour_object, res, \
 vf_res_index, vc_res_index, sf_res_index, res2
@@ -7586,42 +7596,12 @@ begin
     res2 = get_resources(resources)
 
 ;
-; Create the vector field object.
+; Create the scalar and vector field object.
 ;
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
-    vfdata_object = create wksname + "_vfdata" vectorFieldClass noparent
-        "vfUDataArray" : u
-        "vfVDataArray" : v
-    end create
-
-;
-; Check for missing values.
-;
-    if(isatt(u,"_FillValue")) then
-        setvalues vfdata_object
-            "vfMissingUValueV" :u@_FillValue
-        end setvalues
-    end if
-    if(isatt(v,"_FillValue")) then
-        setvalues vfdata_object
-            "vfMissingVValueV" :v@_FillValue
-        end setvalues
-    end if
-
-; Create the scalar field object.
-
-    sfdata_object = create wksname + "_sfdata" scalarFieldClass noparent
-        "sfDataArray" : data
-    end create
-
-; Check for a missing value.
-
-    if(isatt(data,"_FillValue")) then
-        setvalues sfdata_object
-            "sfMissingValueV" :data@_FillValue
-        end setvalues
-    end if
+    vfdata_object = vector_field(wksname+"_vfdata",u,v,res2)
+    sfdata_object = scalar_field(wksname+"_sfdata",data,res2);
 
 ; Create vector plot object.
 
@@ -7714,49 +7694,19 @@ end
 ;                                                                       ;
 ;***********************************************************************;
 function gsn_streamline_contour(wks:graphic,u[*][*]:numeric,\
-                                v[*][*]:numeric,data[*][*]:numeric,\
+                                v[*][*]:numeric,data:numeric,\
                                 resources:logical)
 local i, vfdata_object, sfdata_object, contour_object, res, \
 vf_res_index, st_res_index, sf_res_index, res2
 begin
     res2 = get_resources(resources)
 ;
-; Create the streamline field object.
+; Create the vector and scalar fields.
 ;
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
-    vfdata_object = create wksname + "_vfdata" vectorFieldClass noparent
-        "vfUDataArray" : u
-        "vfVDataArray" : v
-    end create
-
-;
-; Check for missing values.
-;
-    if(isatt(u,"_FillValue")) then
-        setvalues vfdata_object
-            "vfMissingUValueV" :u@_FillValue
-        end setvalues
-    end if
-    if(isatt(v,"_FillValue")) then
-        setvalues vfdata_object
-            "vfMissingVValueV" :v@_FillValue
-        end setvalues
-    end if
-
-; Create the scalar field object.
-
-    sfdata_object = create wksname + "_sfdata" scalarFieldClass noparent
-        "sfDataArray" : data
-    end create
-
-; Check for a missing value.
-
-    if(isatt(data,"_FillValue")) then
-        setvalues sfdata_object
-            "sfMissingValueV" :data@_FillValue
-        end setvalues
-    end if
+    vfdata_object = vector_field(wksname+"_vfdata",u,v,res2)
+    sfdata_object = scalar_field(wksname+"_sfdata",data,res2);
 
 ; Create streamline plot object.
 
@@ -7845,49 +7795,19 @@ end
 ;                                                                       ;
 ;***********************************************************************;
 function gsn_vector_contour_map(wks:graphic,u[*][*]:numeric,\
-                               v[*][*]:numeric,data[*][*]:numeric,\
+                               v[*][*]:numeric,data:numeric,\
                                resources:logical)
 local i, vfdata_object, sfdata_object, contour_object, res, \
 vf_res_index, vc_res_index, sf_res_index, mp_res_index, map_object, res2
 begin
     res2 = get_resources(resources)
 ;
-; Create the vector field object.
+; Create the vector and scalar field objects.
 ;
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
-    vfdata_object = create wksname + "_vfdata" vectorFieldClass noparent
-        "vfUDataArray" : u
-        "vfVDataArray" : v
-    end create
-
-;
-; Check for missing values.
-;
-    if(isatt(u,"_FillValue")) then
-        setvalues vfdata_object
-            "vfMissingUValueV" :u@_FillValue
-        end setvalues
-    end if
-    if(isatt(v,"_FillValue")) then
-        setvalues vfdata_object
-            "vfMissingVValueV" :v@_FillValue
-        end setvalues
-    end if
-
-; Create the scalar field object.
-
-    sfdata_object = create wksname + "_sfdata" scalarFieldClass noparent
-        "sfDataArray" : data
-    end create
-
-; Check for a missing value.
-
-    if(isatt(data,"_FillValue")) then
-        setvalues sfdata_object
-            "sfMissingValueV" :data@_FillValue
-        end setvalues
-    end if
+    vfdata_object = vector_field(wksname+"_vfdata",u,v,res2)
+    sfdata_object = scalar_field(wksname+"_sfdata",data,res2);
 
 ; Create vector plot object.
 
@@ -7996,23 +7916,7 @@ begin
 
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
-    data_object = create wksname + "_data" vectorFieldClass noparent
-        "vfUDataArray" : u
-        "vfVDataArray" : v
-    end create
-
-; Check for missing values.
-
-    if(isatt(u,"_FillValue")) then
-        setvalues data_object
-            "vfMissingUValueV" :u@_FillValue
-        end setvalues
-    end if
-    if(isatt(v,"_FillValue")) then
-        setvalues data_object
-            "vfMissingVValueV" :v@_FillValue
-        end setvalues
-    end if
+    data_object = vector_field(wksname+"_data",u,v,res2)
 
 ; Create plot object.
 
@@ -8093,7 +7997,7 @@ end
 ;                                                                       ;
 ;***********************************************************************;
 function gsn_vector_scalar(wks:graphic,u[*][*]:numeric,v[*][*]:numeric,\
-                           data[*][*]:numeric, resources:logical )
+                           data:numeric, resources:logical )
 local i, vfdata_object, sfdata_object, plot_object, res, \
 force_x_linear, force_y_linear, force_x_log, force_y_log, \
 trxmin, trxmax, trymin, trymax, ll_res_index, llres, vf_res_index, \
@@ -8107,41 +8011,12 @@ begin
     force_x_log    = False
     force_y_log    = False
 
-; Create the vector field data object.
+; Create the scalar and vector field data object.
 
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
-    vfdata_object = create wksname + "_vfdata" vectorFieldClass noparent
-        "vfUDataArray" : u
-        "vfVDataArray" : v
-    end create
-
-; Create the scalar field data object.
-
-    sfdata_object = create wksname + "_sfdata" scalarFieldClass noparent
-        "sfDataArray" : data
-    end create
-
-; Check for a missing value.
-
-    if(isatt(data,"_FillValue")) then
-        setvalues sfdata_object
-            "sfMissingValueV" :data@_FillValue
-        end setvalues
-    end if
-
-; Check for missing values.
-
-    if(isatt(u,"_FillValue")) then
-        setvalues vfdata_object
-            "vfMissingUValueV" :u@_FillValue
-        end setvalues
-    end if
-    if(isatt(v,"_FillValue")) then
-        setvalues vfdata_object
-            "vfMissingVValueV" :v@_FillValue
-        end setvalues
-    end if
+    vfdata_object = vector_field(wksname+"_vfdata",u,v,res2)
+    sfdata_object = scalar_field(wksname+"_sfdata",data,res2);
 
 ; Create plot object.
 
@@ -8247,7 +8122,7 @@ end
 ;                                                                       ;
 ;***********************************************************************;
 function gsn_vector_scalar_map(wks:graphic,u[*][*]:numeric,\
-                               v[*][*]:numeric,data[*][*]:numeric,\
+                               v[*][*]:numeric,data:numeric,\
                                resources:logical)
 local i, vfdata_object, sfdata_object, contour_object, res, \
 vf_res_index, vc_res_index, sf_res_index, mp_res_index, map_object, res2, \
@@ -8255,42 +8130,12 @@ sprdcols
 begin
     res2 = get_resources(resources)
 ;
-; Create the vector field object.
+; Create the vector and scalar field object.
 ;
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
-    vfdata_object = create wksname + "_vfdata" vectorFieldClass noparent
-        "vfUDataArray" : u
-        "vfVDataArray" : v
-    end create
-
-;
-; Check for missing values.
-;
-    if(isatt(u,"_FillValue")) then
-        setvalues vfdata_object
-            "vfMissingUValueV" :u@_FillValue
-        end setvalues
-    end if
-    if(isatt(v,"_FillValue")) then
-        setvalues vfdata_object
-            "vfMissingVValueV" :v@_FillValue
-        end setvalues
-    end if
-
-; Create the scalar field object.
-
-    sfdata_object = create wksname + "_sfdata" scalarFieldClass noparent
-        "sfDataArray" : data
-    end create
-
-; Check for a missing value.
-
-    if(isatt(data,"_FillValue")) then
-        setvalues sfdata_object
-            "sfMissingValueV" :data@_FillValue
-        end setvalues
-    end if
+    vfdata_object = vector_field(wksname+"_vfdata",u,v,res2)
+    sfdata_object = scalar_field(wksname+"_sfdata",data,res2);
 
 ; Create plot object.
 
