@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.22 1995-02-27 21:54:26 ethan Exp $
+ *      $Id: SrcTree.c,v 1.23 1995-06-17 01:21:52 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -224,6 +224,24 @@ void *_NclMakeReturn
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
 }
+void _NclIfThenDestroy
+#if     NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else
+(thenode)
+        struct ncl_genericnode *thenode;
+#endif
+{
+        NclIfThen*tmp = (NclIfThen*)thenode;
+        NclSrcListNode *step,*temp;
+        step = tmp->block_stmnt_list;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
+        NclFree((void*)tmp);
+}
 
 
 /*
@@ -258,13 +276,37 @@ NclSrcListNode * block_stmnt_list;
 	tmp->name = src_tree_names[Ncl_IFTHEN];
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
-	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclIfThenDestroy;
 	tmp->cond_expr = conditional_expr;
 	tmp->block_stmnt_list = block_stmnt_list;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
 }
 
+void _NclIfThenElseDestroy
+#if     NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else
+(thenode)
+        struct ncl_genericnode *thenode;
+#endif
+{
+        NclIfThenElse*tmp = (NclIfThenElse*)thenode;
+        NclSrcListNode *step,*temp;
+        step = tmp->block_stmnt_list1;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
+        step = tmp->block_stmnt_list2;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
+        NclFree((void*)tmp);
+}
 
 /*
  * Function:	_NclMakeIfThenElse
@@ -300,7 +342,7 @@ NclSrcListNode * block_stmnt_list2;
 	tmp->name = src_tree_names[Ncl_IFTHENELSE];
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
-	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclIfThenElseDestroy;
 	tmp->cond_expr = conditional_expr;
 	tmp->block_stmnt_list1 = block_stmnt_list1;
 	tmp->block_stmnt_list2 = block_stmnt_list2;
@@ -441,6 +483,25 @@ extern void *_NclMakeObjRef
 	return((void*)tmp); 
 }
 */
+void _NclVisblkDestroy
+#if     NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else
+(thenode)
+        struct ncl_genericnode *thenode;
+#endif
+{
+        NclVisblk*tmp = (NclVisblk*)thenode;
+        NclSrcListNode *step,*temp;
+        step = tmp->resource_list;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
+        NclFree((void*)tmp);
+}
+
 /*
  * Function:	_NclMakeVis
  *
@@ -472,7 +533,7 @@ NclSrcTreeTypes nodetype;
 	tmp->name = src_tree_names[nodetype];
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
-	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclVisblkDestroy;
 
 	tmp->obj_name_expr = obj_name_expr;
 	tmp->objparent = objparent;
@@ -481,6 +542,24 @@ NclSrcTreeTypes nodetype;
 	
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
+}
+void _NclSGVisblkDestroy
+#if     NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else
+(thenode)
+        struct ncl_genericnode *thenode;
+#endif
+{
+        NclSGVisblk*tmp = (NclSGVisblk*)thenode;
+        NclSrcListNode *step,*temp;
+        step = tmp->resource_list;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
+        NclFree((void*)tmp);
 }
 
 void *_NclMakeSGVis
@@ -499,7 +578,7 @@ NclSrcTreeTypes nodetype;
 	tmp->name = src_tree_names[nodetype];
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
-	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclSGVisblkDestroy;
 
 	tmp->objname = objname;
 	tmp->resource_list = resource_list;
@@ -539,6 +618,24 @@ NclSrcListNode *_NclMakeNewListNode
 
 }
 
+void _NclDoFromToDestroy
+#if     NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else
+(thenode)
+        struct ncl_genericnode *thenode;
+#endif
+{
+        NclDoFromTo *tmp = (NclDoFromTo*)thenode;
+	NclSrcListNode *step,*temp;
+	step = tmp->block_stmnt_list;
+	while(step != NULL) {
+		temp = step;
+		step = step->next;
+		NclFree(temp);
+	}
+        NclFree((void*)tmp);
+}
 
 /*
  * Function:	_NclMakeDoFromTo
@@ -573,7 +670,7 @@ NclSrcListNode * block_stmnt_list;
 	tmp->name = src_tree_names[Ncl_DOFROMTO];
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
-	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclDoFromToDestroy;
 	tmp->inc_var = var;
 	tmp->start_expr = start_expr;
 	tmp->end_expr = end_expr;
@@ -585,6 +682,24 @@ NclSrcListNode * block_stmnt_list;
 	return((void*)tmp);
 }
 
+void _NclDoFromToStrideDestroy
+#if     NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else
+(thenode)
+        struct ncl_genericnode *thenode;
+#endif
+{
+        NclDoFromToStride *tmp = (NclDoFromToStride*)thenode;
+	NclSrcListNode *step,*temp;
+	step = tmp->block_stmnt_list;
+	while(step != NULL) {
+		temp = step;
+		step = step->next;
+		NclFree(temp);
+	}
+        NclFree((void*)tmp);
+}
 
 /*
  * Function:	_NclMakeDoFromToStride
@@ -621,7 +736,7 @@ NclSrcListNode *block_stmnt_list;
 	tmp->name = src_tree_names[Ncl_DOFROMTOSTRIDE];
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
-	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclDoFromToStrideDestroy;
 	tmp->inc_var = var;
 	tmp->start_expr = start_expr;
 	tmp->end_expr = end_expr;
@@ -632,6 +747,26 @@ NclSrcListNode *block_stmnt_list;
 	tmp->end_sym = _NclAddUniqueSym("L_END_",VAR);
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
+}
+
+void _NclBuiltinProcCallDestroy
+#if     NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else
+(thenode)
+        struct ncl_genericnode *thenode;
+#endif
+{
+        NclProcCall *tmp = (NclProcCall*)thenode;
+	NclSrcListNode *step,*temp;
+
+	step = tmp->arg_list;
+	while(step != NULL) {
+		temp = step;
+		step = step->next;
+		NclFree(temp);
+	}
+        NclFree((void*)tmp);
 }
 
 
@@ -668,7 +803,7 @@ NclSrcTreeTypes type;
 	tmp->name = src_tree_names[type];
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
-	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclBuiltinProcCallDestroy;
 	tmp->proc = proc;
 	tmp->arg_list = arg_list;
 	_NclRegisterNode((NclGenericNode*)tmp);
@@ -740,6 +875,8 @@ NclSrcListNode *dec_list;
 	tmp1->thescope = NULL;
 	pf_sym->u.procfunc = tmp1;
 }
+
+
 /*
  * Function:	_NclMakeNFunctionDef
  *
@@ -855,6 +992,25 @@ NclSymTableListNode *thescope;
 }
 
 
+void _NclLocalVarDecDestroy
+#if     NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else
+(thenode)
+        struct ncl_genericnode *thenode;
+#endif
+{
+        NclLocalVarDec*tmp = (NclLocalVarDec*)thenode;
+        NclSrcListNode *step,*temp;
+        step = tmp->dim_size_list;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
+        NclFree((void*)tmp);
+}
+
 /*
  * Function:	_NclMakeLocalVarDec
  *
@@ -889,7 +1045,7 @@ NclSymbol* param_type;
 	tmp->name = src_tree_names[Ncl_LOCALVARDEC];
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
-	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclLocalVarDecDestroy;
 	tmp->var = var;
 	tmp->dim_size_list = dim_size_list;
 	tmp->data_type = param_type;
@@ -1137,6 +1293,24 @@ void *expr;
 	return((void*)tmp);
 }
 
+void _NclIdnRefDestroy
+#if     NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else
+(thenode)
+        struct ncl_genericnode *thenode;
+#endif
+{
+        NclIdnRef*tmp = (NclIdnRef*)thenode;
+        NclSrcListNode *step,*temp;
+        step = tmp->subscript_list;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
+        NclFree((void*)tmp);
+}
 
 /*
  * Function:	_NclMakeIdnRef
@@ -1169,7 +1343,7 @@ NclSrcListNode *subscript_list;
 	tmp->name = src_tree_names[Ncl_IDNREF];
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
-	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclIdnRefDestroy;
 	tmp->thename = name;
 	tmp->subscript_list = subscript_list;
 	_NclRegisterNode((NclGenericNode*)tmp);
@@ -1643,6 +1817,24 @@ char * str;
 	return((void*)tmp);
 }
 
+void _NclFuncCallDestroy
+#if     NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else
+(thenode)
+        struct ncl_genericnode *thenode;
+#endif
+{
+        NclFuncCall*tmp = (NclFuncCall*)thenode;
+        NclSrcListNode *step,*temp;
+        step = tmp->arg_list;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
+        NclFree((void*)tmp);
+}
 
 /*
  * Function:	_NclMakeFuncCall
@@ -1676,7 +1868,7 @@ NclSrcTreeTypes type;
 	tmp->name = src_tree_names[type];
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
-	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclFuncCallDestroy;
 	tmp->func = fname;
 	tmp->arg_list = argument_list;
 	tmp->ref_type = Ncl_READIT;
@@ -1685,6 +1877,25 @@ NclSrcTreeTypes type;
 }
 
 
+void _NclArrayNodeDestroy
+#if     NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else
+(thenode)
+        struct ncl_genericnode *thenode;
+#endif
+{	
+	NclArray *tmp = (NclArray*)thenode;
+	NclSrcListNode *step,*temp;
+        step = tmp->rcl->list;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
+	NclFree((void*)tmp->rcl);
+        NclFree((void*)tmp);
+}
 
 /*
  * Function:	
@@ -1717,7 +1928,7 @@ NclRclList* rc_list;
 	tmp->name = src_tree_names[Ncl_ARRAY];
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
-	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclArrayNodeDestroy;
 	tmp->rcl = rc_list;
 	tmp->ref_type = Ncl_READIT;
 	_NclRegisterNode((NclGenericNode*)tmp);
@@ -1754,6 +1965,24 @@ NclRclList *_NclMakeRowList
 	return(tmp);
 }
 
+void _NclDoWhileDestroy
+#if     NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else
+(thenode)
+        struct ncl_genericnode *thenode;
+#endif
+{
+        NclDoWhile*tmp = (NclDoWhile*)thenode;
+        NclSrcListNode *step,*temp;
+        step = tmp->stmnts;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
+        NclFree((void*)tmp);
+}
 
 /*
  * Function:	_NclMakeWhile
@@ -1786,13 +2015,31 @@ NclSrcListNode * statements;
 	tmp->name = src_tree_names[Ncl_DOWHILE];
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
-	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclDoWhileDestroy;
 	tmp->cond_expr = cond_expr;
 	tmp->stmnts = statements;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
 }
 
+void _NclBlockDestroy
+#if     NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else
+(thenode)
+        struct ncl_genericnode *thenode;
+#endif
+{
+        NclBlock*tmp = (NclBlock*)thenode;
+        NclSrcListNode *step,*temp;
+        step = tmp->stmnts;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
+        NclFree((void*)tmp);
+}
 
 /*
  * Function:	_NclMakeBlock
@@ -1824,7 +2071,7 @@ NclSrcListNode *statements;
 	tmp->name = src_tree_names[Ncl_BLOCK];
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
-	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclBlockDestroy;
 	tmp->stmnts = statements;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
@@ -2466,6 +2713,7 @@ if(groot != NULL) {
 			fprintf(fp,"%g\n",real->real);
 		}
 			break;
+		case Ncl_LOGICAL:
 		case Ncl_INT:
 		{
 			NclInt *integer = (NclInt*)root;
@@ -2694,6 +2942,21 @@ if(groot != NULL) {
 			i--;
 		}
 		break;
+		case Ncl_NEW:
+		{
+			NclNew *new = (NclNew*)root;
+			putspace(i,fp);
+			fprintf(fp,"%s\n",new->name);
+			i++;
+			putspace(i,fp);
+			_NclPrintSymbol(new->data_sym,fp);	
+			_NclPrintTree(new->size_expr,fp);
+			if(new->missing_expr != NULL) {
+				_NclPrintTree(new->missing_expr,fp);
+			}
+			i--;	
+		}
+		break;
 		
 		default:
 		
@@ -2716,6 +2979,14 @@ void _NclFileVarDestroy
 #endif
 {
 	NclFileVar* tmp = (NclFileVar*)thenode;
+	 NclSrcListNode *step,*temp;
+        step = tmp->subscript_list;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
+
 	NclFree((void*)tmp);
 }
 void *_NclMakeFileVarRef
@@ -2747,6 +3018,24 @@ int type;
         return((void*)tmp);
 }
 
+void _NclVarDestroy
+#if     NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else
+(thenode)
+        struct ncl_genericnode *thenode;
+#endif
+{
+        NclVar*tmp = (NclVar*)thenode;
+        NclSrcListNode *step,*temp;
+        step = tmp->subscript_list;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
+        NclFree((void*)tmp);
+}
 
 void *_NclMakeVarRef
 #if	NhlNeedProto
@@ -2767,7 +3056,7 @@ NclSrcListNode *subscript_list;
 	tmp->name = src_tree_names[Ncl_VAR];
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
-	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclVarDestroy;
 	tmp->sym = var;
 	tmp->subscript_list = subscript_list;
 	tmp->ref_type = Ncl_READIT;
@@ -2849,6 +3138,14 @@ void _NclFileVarAttRefDestroy
 #endif
 {
 	NclFileVarAtt *tmp =(NclFileVarAtt*)thenode;
+	NclSrcListNode *step,*temp;
+        step = tmp->subscript_list;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
+
 	NclFree((void*)tmp);
 }
 void *_NclMakeFileVarAttRef
@@ -2890,6 +3187,14 @@ void _NclVarAttRefDestroy
 #endif
 {
 	NclVarAtt *tmp =(NclVarAtt*)thenode;
+	NclSrcListNode *step,*temp;
+        step = tmp->subscript_list;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
+
 	NclFree((void*)tmp);
 }
 void *_NclMakeVarAttRef
@@ -2929,6 +3234,13 @@ void _NclFileVarCoordRefDestroy
 #endif
 {
 	NclFileCoord *tmp= (NclFileCoord*)thenode;
+	NclSrcListNode *step,*temp;
+        step = tmp->subscript_list;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
 
 	NclFree((void*)tmp);
 }
@@ -2971,6 +3283,13 @@ void _NclVarCoordRefDestroy
 #endif
 {
 	NclCoord *tmp= (NclCoord*)thenode;
+	NclSrcListNode *step,*temp;
+        step = tmp->subscript_list;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
 
 	NclFree((void*)tmp);
 }

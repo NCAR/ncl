@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.19 1995-01-31 22:26:11 ethan Exp $
+ *      $Id: defs.h,v 1.20 1995-06-17 01:21:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -53,7 +53,11 @@ typedef struct _NclDimRec {
 */
 #define NCL_SYM_TAB_SIZE 211
 
+#ifndef NclQuarkIsDef
 typedef NrmQuark NclQuark;
+#define NclQuarkIsDef
+#endif
+
 typedef long NclValue;
 
 typedef struct _NclGenericVal {

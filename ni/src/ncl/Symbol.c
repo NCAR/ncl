@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.22 1995-05-23 15:54:27 ethan Exp $
+ *      $Id: Symbol.c,v 1.23 1995-06-17 01:21:55 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -72,7 +72,11 @@ static int new_sym_i = 0;
  * Returns:	1 on succes, 0 on failer
  * Side Effect:	NONE
  */
-
+extern void NclAddUserFuncs(
+#if NhlNeedProto
+void
+#endif
+);
 int _NclInitSymbol
 #if	NhlNeedProto
 (void)
@@ -124,6 +128,7 @@ int _NclInitSymbol
 	}
 	_NclAddIntrinsics();
 	_NclAddBuiltIns();
+	NclAddUserFuncs();
 	_NclAddHLUObjs();
 	_NclAddFileFormats();
 /*

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.6 1995-03-25 00:58:50 ethan Exp $
+ *      $Id: FileSupport.c,v 1.7 1995-06-17 01:21:30 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -224,9 +224,6 @@ NhlErrorTypes _NclBuildFileCoordRSelection
 					if(cvar->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)cvar);
 					}
-					if(coord_md->obj.status != PERMANENT) {
-						_NclDestroyObj((NclObj)coord_md);
-					}
                                         return(NhlFATAL);
 
 				} else {
@@ -245,9 +242,6 @@ NhlErrorTypes _NclBuildFileCoordRSelection
 					if(cvar->obj.status != PERMANENT) {
 						_NclDestroyObj((NclObj)cvar);
 					}
-					if(coord_md->obj.status != PERMANENT) {
-						_NclDestroyObj((NclObj)coord_md);
-					}
                                         return(NhlFATAL);
 
 				} else {
@@ -261,9 +255,6 @@ NhlErrorTypes _NclBuildFileCoordRSelection
                                 NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not obtain coordinate indexes, unable to perform subscript");
 				if(cvar->obj.status != PERMANENT) {
 					_NclDestroyObj((NclObj)cvar);
-				}
-				if(coord_md->obj.status != PERMANENT) {
-					_NclDestroyObj((NclObj)coord_md);
 				}
                                 return(NhlFATAL);
                         }
@@ -288,9 +279,6 @@ NhlErrorTypes _NclBuildFileCoordRSelection
 	} 
 	if(cvar->obj.status != PERMANENT) {
 		_NclDestroyObj((NclObj)cvar);
-	}
-	if(coord_md->obj.status != PERMANENT) {
-		_NclDestroyObj((NclObj)coord_md);
 	}
 	return(NhlNOERROR);
 }

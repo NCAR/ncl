@@ -915,7 +915,7 @@ NclStackEntry _NclCreateHLUObjOp
 					sizeof(int),
 					1,
 					&tmp_md->multidval.totalelements,
-					0);
+					1);
 				NhlRLSet(rl_list,NrmQuarkToString(
 					*(string*)(((NclMultiDValData)resname->u.data_obj)->multidval.val)),
 					NhlTGenArray,
@@ -925,6 +925,7 @@ NclStackEntry _NclCreateHLUObjOp
 						NrmQuarkToString(*(string*)(((NclMultiDValData)resname->u.data_obj)->multidval.val)));
 				gen_array[i] = NULL;
 			}
+			NclFree(ids);
 		}
 /*
 *-----> Need to deal with NULL hlu_type_rep
@@ -1219,7 +1220,6 @@ NclStackEntry missing_expr;
 		}
 	} else {
 		if(the_obj_type & NCL_VAL_TYPE_MASK) {
-			tmp_val = (void*)NclMalloc((unsigned)_NclSizeOf(the_type));
 			dim_sizes[0] = 1;
 			missing_val = typec->type_class.default_mis;
 		} else if(the_obj_type & NCL_MD_MASK) {

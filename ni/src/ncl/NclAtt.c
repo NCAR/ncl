@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.8 1995-06-03 00:45:27 ethan Exp $
+ *      $Id: NclAtt.c,v 1.9 1995-06-17 01:21:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -48,12 +48,13 @@ NclObj att;
 			NclFree(tmp->attname);
 		}
 		if(tmp->attvalue != NULL) {
-			_NclDestroyObj((NclObj)tmp->attvalue);
+			_NclDelParent((NclObj)tmp->attvalue,(NclObj)att);
 		}
 		tmp1 = tmp;
 		tmp = tmp->next;
 		NclFree(tmp1);
 	}
+	NclFree(att);
 	return;
 }
 static int AttIsAttFunction 

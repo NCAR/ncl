@@ -14,6 +14,11 @@ extern NclFormatFunctionRecPtr NetCdfAddFileFormat(
 void
 #endif
 );
+extern NclFormatFunctionRecPtr HDFAddFileFormat(
+#if	NhlNeedProto
+void
+#endif
+);
 
 void _NclAddFileFormats
 #if	NhlNeedProto
@@ -24,6 +29,8 @@ void _NclAddFileFormats
 {
 	_NclRegisterFormat(NetCdfAddFileFormat,"cdf");
 	_NclRegisterFormat(NetCdfAddFileFormat,"nc");
+	_NclRegisterFormat(HDFAddFileFormat,"hdf");
+	_NclRegisterFormat(HDFAddFileFormat,"hd");
 	return;
 }
 

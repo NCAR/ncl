@@ -13,6 +13,10 @@ typedef struct _NclApiHLUInfoRec NclApiHLUInfoRec;
 #define FILEVAR_LIST 4
 #define HLU_LIST 5
 #define HLUOBJ_LIST 6
+#ifndef NclQuarkIsDef
+typedef long NclQuark;
+#define NclQuarkIsDef
+#endif
 
 struct  _NclApiDataList {
 	int kind;

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.43 1995-06-17 00:03:39 boote Exp $
+ *      $Id: Execute.c,v 1.44 1995-06-17 01:21:26 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1030,10 +1030,8 @@ NclExecuteReturnStatus _NclExecute
 					previous_fp = _NclLeaveFrame(caller_level);
 					_NclRemapIntrParameters(((NclSymbol*)*ptr)->u.bfunc->nargs,
 							previous_fp,INTRINSIC_FUNC_CALL);
+					 _NclPopFrame(INTRINSIC_FUNC_CALL);
 
-				        for(i = 0 ; i < (sizeof(NclFrame)/sizeof(NclStackEntry)) - 1; i++) {
-						(void)_NclPop();
-					}
 
 /*
 					for(i = 0;i<((NclSymbol*)*ptr)->u.bfunc->nargs; i++) {
@@ -1085,9 +1083,8 @@ NclExecuteReturnStatus _NclExecute
 					previous_fp = _NclLeaveFrame(caller_level);
 					_NclRemapIntrParameters(((NclSymbol*)*ptr)->u.bfunc->nargs,
 							previous_fp,INTRINSIC_PROC_CALL);
-				        for(i = 0 ; i < (sizeof(NclFrame)/sizeof(NclStackEntry)) ; i++) {
-						(void)_NclPop();
-					}
+					_NclPopFrame(INTRINSIC_PROC_CALL);
+
 /*
 					for(i = 0;i<((NclSymbol*)*ptr)->u.bproc->nargs; i++) {
 						data = _NclPop();
@@ -1554,6 +1551,9 @@ NclExecuteReturnStatus _NclExecute
 					if(estatus != NhlFATAL) {
 						data1.kind = NclStk_VAR;
 						data1.u.data_var = _NclVarRead(var->u.data_var,sel_ptr);
+						if(sel_ptr != NULL) {
+							NclFree(sel_ptr);
+						}
 						if(data1.u.data_var != NULL) {
 							estatus = _NclPush(data1);
 						} else {
@@ -1716,6 +1716,9 @@ NclExecuteReturnStatus _NclExecute
 							rhs_md = rhs.u.data_obj;
 							if(rhs_md != NULL) {
 								ret = _NclAssignToVar(lhs_var->u.data_var,rhs_md,sel_ptr);
+								if(sel_ptr != NULL) {
+									NclFree(sel_ptr);
+								}
 								if(rhs_md->obj.status != PERMANENT) {
 									_NclDestroyObj((NclObj)rhs_md);
 								}
@@ -1732,6 +1735,9 @@ NclExecuteReturnStatus _NclExecute
 * to visit each element anyways
 */
 							estatus = _NclAssignVarToVar(lhs_var->u.data_var,sel_ptr,rhs.u.data_var,NULL);
+							if(sel_ptr != NULL) {
+								NclFree(sel_ptr);
+							}
 							if(rhs.u.data_var->obj.status != PERMANENT) {
 								_NclDestroyObj((NclObj)rhs.u.data_var);
 							}
@@ -2751,6 +2757,7 @@ NclExecuteReturnStatus _NclExecute
 									break;
 								}
 							}
+							_NclFreeSubRec(data.u.sub_rec);
 /*
 * Coercion must wait until inside of File method
 */
@@ -2892,6 +2899,8 @@ NclExecuteReturnStatus _NclExecute
 	*/
 									out_var.kind = NclStk_VAR;
 									out_var.u.data_var = _NclFileReadVar(file,var,sel_ptr);
+									if(sel_ptr != NULL)
+										NclFree(sel_ptr);
 									if((estatus != NhlFATAL)&&(out_var.u.data_var != NULL)) {
 										estatus = _NclPush(out_var);
 									} else 	{
@@ -2901,6 +2910,8 @@ NclExecuteReturnStatus _NclExecute
 								} else {
 									out_var.kind = NclStk_VAL;
 									out_var.u.data_obj = _NclFileReadVarValue(file,var,sel_ptr);
+									if(sel_ptr != NULL) 
+										NclFree(sel_ptr);
 									if((estatus != NhlFATAL)&&(out_var.u.data_obj != NULL)) {
 										estatus = _NclPush(out_var);
 									} else {
@@ -3438,6 +3449,9 @@ NclExecuteReturnStatus _NclExecute
 					if(estatus != NhlFATAL) {
 						lhs_var->kind = NclStk_VAR;
 						lhs_var->u.data_var = _NclVarRead(rhs_var->u.data_var,rhs_sel_ptr);
+						if(rhs_sel_ptr != NULL) {
+							NclFree(rhs_sel_ptr);
+						}
 						if(!_NclSetStatus((NclObj)lhs_var->u.data_var,PERMANENT)) {	
 							tmp_var = lhs_var->u.data_var;
 							lhs_var->u.data_var = _NclCopyVar(lhs_var->u.data_var,NULL,NULL);
@@ -3544,6 +3558,12 @@ NclExecuteReturnStatus _NclExecute
 					}
 					if(estatus != NhlFATAL) {
 						ret = _NclAssignVarToVar(lhs_var->u.data_var,lhs_sel_ptr,rhs_var->u.data_var,rhs_sel_ptr);
+						if(lhs_sel_ptr != NULL) {
+							NclFree(lhs_sel_ptr);
+						}
+						if(rhs_sel_ptr != NULL) {
+							NclFree(rhs_sel_ptr);
+						}
 						if(ret < NhlINFO) {
 							estatus = ret;
 						}

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.41 1995-06-08 17:30:15 ethan Exp $
+ *      $Id: Machine.c,v 1.42 1995-06-17 01:21:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -710,7 +710,7 @@ void _NclPopFrame
 	int popping_from;
 #endif
 {
-	int i;
+	int i,j;
 	NclStackEntry data;
 
 	switch(popping_from) {
@@ -722,6 +722,11 @@ void _NclPopFrame
 			if(data.kind == NclStk_PARAMLIST) {
 				if(data.u.the_list != NULL) {
 					if(data.u.the_list->the_elements != NULL) {	
+						for( j = 0; j < data.u.the_list->n_elements; j++) {
+							if(data.u.the_list->the_elements[j].rec != NULL) {
+								NclFree(data.u.the_list->the_elements[j].rec );
+							}
+						}
 						NclFree(data.u.the_list->the_elements);
 					}
 					NclFree(data.u.the_list);
@@ -735,6 +740,11 @@ void _NclPopFrame
 			if(data.kind == NclStk_PARAMLIST) {
 				if(data.u.the_list != NULL) {
 					if(data.u.the_list->the_elements != NULL) {	
+						for( j = 0; j < data.u.the_list->n_elements; j++) {
+							if(data.u.the_list->the_elements[j].rec != NULL) {
+								NclFree(data.u.the_list->the_elements[j].rec );
+							}
+						}
 						NclFree(data.u.the_list->the_elements);
 					}
 					NclFree(data.u.the_list);
@@ -765,6 +775,7 @@ NhlErrorTypes _NclPushFrame
 		new_scope_level = the_sym->u.procfunc->thescope->level; 
 		new_scope_cur_off = the_sym->u.procfunc->thescope->cur_offset;
 	} else {
+		new_scope_level = current_scope_level + 1;
 		new_scope_cur_off = the_sym->u.procfunc->nargs;
 	}
 
@@ -804,8 +815,7 @@ NhlErrorTypes _NclPushFrame
 	tmp->return_pcoffset.kind = NclStk_RET_OFFSET;
 	if(nargs > 0) {
 		tmp->parameter_map.kind = NclStk_PARAMLIST;
-		tmp->parameter_map.u.the_list = (NclParamRecList*)NclMalloc(
-					(unsigned) sizeof(NclParamRecList) * nargs);
+		tmp->parameter_map.u.the_list = (NclParamRecList*)NclMalloc((unsigned) sizeof(NclParamRecList));
 		tmp->parameter_map.u.the_list->fpsym = the_sym;
 		tmp->parameter_map.u.the_list->n_elements = nargs;
 		tmp->parameter_map.u.the_list->the_elements = (NclParamRec*)

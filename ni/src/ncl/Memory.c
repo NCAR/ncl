@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Memory.c,v 1.11 1995-01-28 01:51:01 ethan Exp $
+ *      $Id: Memory.c,v 1.12 1995-06-17 01:21:36 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -208,6 +208,7 @@ struct _NclSubRec * sub_rec;
 		if((sub_rec->u.vec->vec != NULL)&&(sub_rec->u.vec->vec->obj.status != PERMANENT)) {
 			_NclDestroyObj((NclObj)sub_rec->u.vec->vec);
 		}
+		NclFree(sub_rec->u.vec);
 		break;
 	case COORD_RANGE:
 	case INT_RANGE:
@@ -226,6 +227,7 @@ struct _NclSubRec * sub_rec;
 		if((sub_rec->u.range->stride != NULL)&&(sub_rec->u.range->stride->obj.status != PERMANENT)) {
 			_NclDestroyObj((NclObj)sub_rec->u.range->stride);
 		}
+		NclFree(sub_rec->u.range);
 		break;
 	default:
 		break;

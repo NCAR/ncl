@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclFileVar.c,v 1.10 1995-06-17 00:03:41 boote Exp $
+ *      $Id: NclFileVar.c,v 1.11 1995-06-17 01:21:43 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -135,6 +135,17 @@ FILE *fp;
 	NclVar thevar = (NclVar) theobj;
 	NclFile thefile;
 	NclMultiDValData theval;
+	char *v_name;
+
+        if(thevar->var.thesym != NULL) {
+                v_name = thevar->var.thesym->name;
+        } else if(thevar->var.var_quark != -1) {
+                v_name = NrmQuarkToString(thevar->var.var_quark);
+        } else {
+                v_name = "unnamed";
+        }
+	nclfprintf(fp,"Variable: %s (file variable)\n",v_name);
+
 
 	theval = (NclMultiDValData)_NclGetObj(thevar->var.thevalue_id);
 	if(theval != NULL) {
@@ -298,7 +309,6 @@ char *var_name,NclStatus status)
 		fvar = (NclFileVar) NclMalloc(sizeof(NclFileVarRec));
 	}
 	_NclVarCreate((NclVar)fvar,cptr,obj_type,obj_type_mask | Ncl_FileVar,thesym,value,dim_info,att_id,coords,var_type,var_name,status);
-	_NclAddParent((NclObj)thefile,(NclObj)fvar);
 	if(cptr == nclFileVarClass) {
 		_NclCallCallBacks((NclObj)fvar,CREATED);
 	}

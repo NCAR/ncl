@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.36 1995-06-03 13:33:45 boote Exp $
+#      $Id: yMakefile,v 1.37 1995-06-17 01:21:59 ethan Exp $
 #
 #########################################################################
 #									#
@@ -53,7 +53,8 @@ DEPLIBS		=
 #else
 DEPLIBS		=	$(DEPHLULIBS) $(DEPCNCARGLIBS) $(DEPNCARGLIBS)
 #endif
-EXTRA_LIBS	=	-ll $(NCDFLIBS) $(XLIB) 
+EXTRA_LIBS	=	-ll $(NCDFLIBS) $(XLIB) $(HDFLIB)
+
 SYS_LIBS	=	$(CTOFLIBS) -lm $(ARCH_LIBS)
 
 HDRS		=	$(GEN_HDRS) $(STATIC_HDRS) $(INSTALL_HDRS)
@@ -82,8 +83,8 @@ INSTALL_HDRS	=	defs.h NclApi.h ApiRecords.h NclVar.h NclBuiltIns.h \
 API_SRCS	=	NclApi.c scanapi.c parseapi.c 
 EXE_SRCS	=	Ncl.c scanner.c parser.c io.c
 
-APISRCS		=	$(API_SRCS) $(SRCS)
-EXESRCS		=	$(EXE_SRCS) $(SRCS)
+APISRCS		=	$(API_SRCS) $(SRCS) NclUserFuncStub.c
+EXESRCS		=	$(EXE_SRCS) $(SRCS) NclUserFuncStub.c
 ALLSRCS		=	$(EXESRCS)
 SRCS		=	$(GEN_SRCS) $(STATIC_SRCS)
 
@@ -105,7 +106,7 @@ STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			NclHLUVar.c HLUSupport.c NclCoordVar.c yywrap.c \
 			NclMultiDValnclfileData.c NclMultiDValHLUObjData.c \
 			NclOneDValCoordData.c BuiltInSupport.c BuiltInFuncs.c \
-			HLUFunctions.c 
+			HLUFunctions.c NclHDF.c
 
 FSRCS		=	fortranio.f
 FOBJS		=	fortranio.o
@@ -113,13 +114,13 @@ FOBJS		=	fortranio.o
 API_OBJS	=	NclApi.o scanapi.o parseapi.o ioapi.o NclHLUObjapi.o 
 EXE_OBJS	=	Ncl.o scanner.o parser.o io.o NclHLUObj.o 
 
-APIOBJS		=	$(API_OBJS) $(OBJS)
+APIOBJS		=	$(API_OBJS) $(OBJS)  NclUserFuncStub.o
 #ifdef HPUX
-EXEOBJS		=	$(EXE_OBJS) $(OBJS)  hphack.o
+EXEOBJS		=	$(EXE_OBJS) $(OBJS)  hphack.o NclUserFuncStub.o
 #else
-EXEOBJS		=	$(EXE_OBJS) $(OBJS) 
+EXEOBJS		=	$(EXE_OBJS) $(OBJS) NclUserFuncStub.o
 #endif
-ALLOBJS		=	$(EXEOBJS)
+ALLOBJS		=	$(EXE_OBJS) $(OBJS)
 OBJS		=	$(GEN_OBJS) $(STATIC_OBJS) $(FOBJS)
 
 GEN_OBJS	=	NclTypedouble.o NclTypefloat.o \
@@ -138,7 +139,7 @@ STATIC_OBJS	=	AddBuiltIns.o AddFileFormats.o AddHLUObjs.o \
 			NclHLUVar.o HLUSupport.o NclCoordVar.o yywrap.o NclType.o \
 			NclMultiDValnclfileData.o NclMultiDValHLUObjData.o \
 			NclOneDValCoordData.o BuiltInSupport.o BuiltInFuncs.o \
-			HLUFunctions.o 
+			HLUFunctions.o NclHDF.o
 
 
 LibraryTarget($(MYLIB),$(ALLOBJS))
@@ -269,4 +270,12 @@ NclTypeRule(string,$(STR_OP_TMPL))
 NclTypeRule(obj,$(NUM_OP_TMPL))
 NclTypeRule(char,$(NUM_OP_TMPL))
 NclTypeRule(byte,$(NUM_OP_TMPL))
+
+#
+# Data Format Dependencies
+#
+ 
+NclHDF.o: NclHDF.c
+      $(CC) -c $(HDFDEFINES) $(CFLAGS) NclHDF.c -o NclHDF.o
+
 
