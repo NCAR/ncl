@@ -1,0 +1,17 @@
+#
+#	$Id: yMakefile,v 1.1 1993-04-16 17:01:22 haley Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= eareas
+
+GENERIC_SRCS = arex01.f
+
+install::
+	@for file in $(GENERIC_SRCS); do\
+	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
+	done
+
+MakefileTarget
+CleanTarget
+UpdateTarget
