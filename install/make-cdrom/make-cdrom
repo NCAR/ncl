@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-cdrom,v 1.5 1994-02-22 22:48:16 haley Exp $
+#      $Id: make-cdrom,v 1.6 1994-03-15 14:46:05 haley Exp $
 #
 #########################################################################
 #									#
@@ -71,7 +71,6 @@ $do_src = 0;		# do we record the distribution src to cd-rom
 	'HPUX_HP9000_7xx',	'HPUX_7XX',
 	'AIX_RS6000',		'AIX_R6K',
 	'SunOS_sun4',		'SUNOS_S4',
-	'SunOS_sun3',		'SUNOS_S3',
 	'Solaris_sun4',		'SOLARIS',
 	'ULTRIX_RISC',		'ULTRIX',
 	'IRIX_IP',		'IRIX_IP',
