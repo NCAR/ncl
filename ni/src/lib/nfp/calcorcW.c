@@ -85,14 +85,12 @@ NhlErrorTypes escorc_W( void )
     for(i = 0; i < ndims_x; i++) {
       if(dsizes_x[i] != dsizes_y[i]) {
         dimsizes_same = 0;
-        break;
       }
     }
   }
   else {
     dimsizes_same = 0;
   }
-      
 /*
  * Compute the total number of elements in our arrays.
  */
@@ -107,9 +105,6 @@ NhlErrorTypes escorc_W( void )
   total_size_y = total_size_leftmost_y * nxy;
 /*
  * Coerce missing values to double.
- *
- * First coerce the x missing value, if there is one.  If there isn't,
- * a default value is used.
  */
   coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
   coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,NULL);
@@ -125,7 +120,7 @@ NhlErrorTypes escorc_W( void )
     }
   }
 /*
- * Allocate space for temporary x array.
+ * Allocate space for temporary y array.
  */
   if(type_y != NCL_double) {
     tmp_y = (double*)calloc(nxy,sizeof(double));
@@ -147,7 +142,9 @@ NhlErrorTypes escorc_W( void )
       dsizes_corc[0] = 1;
     }
     else {
-      for( i = 0; i < ndims_x-1; i++ ) dsizes_corc[i] = dsizes_x[i];
+      for( i = 0; i < ndims_x-1; i++ ) {
+        dsizes_corc[i] = dsizes_x[i];
+      }
     }
   }
   else {
@@ -155,13 +152,19 @@ NhlErrorTypes escorc_W( void )
     ndims_corc = max(1,ndims_x + ndims_y - 2);
     dsizes_corc[0] = 1;
 
-    for( i = 0; i < ndims_x-1; i++ ) dsizes_corc[i] = dsizes_x[i];
-    for( i = 0; i < ndims_y-1; i++ ) dsizes_corc[ndims_x-1+i] = dsizes_y[i];
+    for( i = 0; i < ndims_x-1; i++ ) {
+      dsizes_corc[i] = dsizes_x[i];
+    }
+    for( i = 0; i < ndims_y-1; i++ ) {
+      dsizes_corc[ndims_x-1+i] = dsizes_y[i];
+    }
   }
   if(type_x != NCL_double && type_y != NCL_double) {
     type_corc = NCL_float;
+
     corc     = (void*)calloc(total_size_corc,sizeof(float));
     tmp_corc = (double *)calloc(1,sizeof(double));
+
     if (corc == NULL || tmp_corc == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"escorc: Unable to allocate space for output array");
       return(NhlFATAL);
@@ -169,6 +172,7 @@ NhlErrorTypes escorc_W( void )
   }
   else {
     type_corc = NCL_double;
+
     corc = (void*)calloc(total_size_corc,sizeof(double));
     if (corc == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"escorc: Unable to allocate space for output array");
@@ -178,7 +182,7 @@ NhlErrorTypes escorc_W( void )
 /*
  * Call the f77 version of 'descros' with the full argument list.
  */
-  ier = ier_count = index_x = index_corc = 0;
+  ier_count = index_x = index_corc = 0;
 
   if(dimsizes_same) {
     for(i = 1; i <= total_size_leftmost_x; i++) {
@@ -201,17 +205,18 @@ NhlErrorTypes escorc_W( void )
 /*
  * Coerce nxy subsection of y (tmp_y) to double.
  */
-        coerce_subset_input_double(y,tmp_y,index_y,type_y,nxy,0,
+        coerce_subset_input_double(y,tmp_y,index_x,type_y,nxy,0,
                                    &missing_y,&missing_dy);
       }
       else {
 /*
  * Point tmp_y to appropriate locations in y.
  */
-        tmp_y = &((double*)y)[index_y];
+        tmp_y = &((double*)y)[index_x];
       }
-      if(type_corc == NCL_double) tmp_corc = &((double*)corc)[index_corc];
-
+      if(type_corc == NCL_double) {
+        tmp_corc = &((double*)corc)[index_corc];
+      }
       NGCALLF(dstat2,DSTAT2)(tmp_x,&nxy,&missing_dx.doubleval,&xave,&xvar,
                              &xstd,&nptusx,&ier);
       NGCALLF(dcalcorc,DCALCORC)(tmp_x,&xave,&xstd,&missing_dx.doubleval,
@@ -226,7 +231,7 @@ NhlErrorTypes escorc_W( void )
 
       if(ier < 0) ier_count++;
       index_corc++;
-      index_x += nxy;
+      index_x   += nxy;
     }
   }
   else {
@@ -248,8 +253,8 @@ NhlErrorTypes escorc_W( void )
       }
       NGCALLF(dstat2,DSTAT2)(tmp_x,&nxy,&missing_dx.doubleval,&xave,&xvar,
                              &xstd,&nptusx,&ier);
-      for(j = 1; j <= total_size_leftmost_y; j++) {
 
+      for(j = 1; j <= total_size_leftmost_y; j++) {
         if(type_y != NCL_double) {
 /*
  * Coerce nxy subsection of y (tmp_y) to double.
@@ -263,7 +268,9 @@ NhlErrorTypes escorc_W( void )
  */
           tmp_y = &((double*)y)[index_y];
         }
-        if(type_corc == NCL_double) tmp_corc = &((double*)corc)[index_corc];
+        if(type_corc == NCL_double) {
+          tmp_corc = &((double*)corc)[index_corc];
+        }
 
         NGCALLF(dcalcorc,DCALCORC)(tmp_x,&xave,&xstd,&missing_dx.doubleval,
                                    &nxy,tmp_y,&missing_dy.doubleval,
@@ -279,7 +286,7 @@ NhlErrorTypes escorc_W( void )
         if(ier < 0) ier_count++;
         
         index_corc++;
-        index_y += nxy;
+        index_y   += nxy;
       }
       index_x += nxy;
     }

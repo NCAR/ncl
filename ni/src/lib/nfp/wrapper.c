@@ -2776,6 +2776,11 @@ void NclAddUserFuncs(void)
   return;
 }
 
+/*
+ * Coerce a missing value to double.  Also, set a default missing
+ * value and set a float missing value for the return (in case the 
+ * return type is a float).
+ */
 void coerce_missing(
 NclBasicDataTypes type_x,
 int               has_missing_x,
@@ -2826,6 +2831,10 @@ NclScalar         *missing_rx)
   }
 }
 
+/*
+ * Coerce data to double, or just return a pointer to it if
+ * it is already double.
+ */
 double *coerce_input_double(
 void              *x,
 NclBasicDataTypes type_x,
@@ -2869,6 +2878,9 @@ NclScalar         *missing_dx)
   return(dx);
 }
 
+/*
+ * Coerce a subset of the data to double.
+ */
 void coerce_subset_input_double(
 void              *x,
 double            *tmp_x,
@@ -2915,6 +2927,10 @@ NclScalar         *missing_dx
   }
 }
 
+/*
+ * Coerce double data back to float. This is mainly used for routines
+ * that need to return type float. 
+ */
 float *coerce_output_float(
 double *dx,
 void   *x,
@@ -2949,6 +2965,11 @@ int    has_allocated
   return(rx);
 }
 
+/*
+ * This routine doesn't really do any coercion.  It just checks if 
+ * the type is float, and if so, it allocates enough space to hold
+ * double values. Otherwise, it returns a pointer to the double values.
+ */
 double *coerce_output_double(
 void              *x,
 NclBasicDataTypes type_x,
@@ -2976,22 +2997,10 @@ int               size_x)
   return(dx);
 }
 
-float *set_output_float_missing(
-double   *dx,
-int      size_x,
-double   missing) 
-{
-  float *rx;
-
-  int i;
-  rx = (float*)calloc(size_x,sizeof(float));
-  if( rx != NULL ) {
-    for( i = 0; i < size_x; i++ ) rx[i]  = (float)missing;
-  }
-  NclFree(dx);    /* Free double precision array */
-  return(rx);     /* Return float array */
-}
-
+/*
+ * Checks if the input contains any missing values, and returns a
+ * 1 if it does, and a 0 if it doesn't.
+ */
 int contains_missing(
 double *x,
 int    size_x,
@@ -3012,6 +3021,9 @@ double missing
   return(found_missing);
 }
 
+/*
+ * Sets a subset of the output data to missing.
+ */
 void set_subset_output_missing(
 void              *x,
 int               index_x,
