@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.1 1995-01-26 18:15:37 haley Exp $
+#   $Id: yMakefile,v 1.2 1995-01-30 19:45:11 stautler Exp $
 #
 #   Makefile for HLU Title examples
 #
@@ -11,7 +11,7 @@ EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
 SRCS        = ti01c.c ti02c.c ti03c.c
-RES			= ti01.res ti02.res ti03.res
+RES	    = ti01.res ti02.res ti03.res
 EXFILES     = $(SRCS) $(RES) $(INCLUDES)
 
 InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))
@@ -23,3 +23,19 @@ HLUCExampleTarget(ti03c,ti03c.o)
 CleanFilesTarget($(NCGMS))
 DependTarget($(SRCS))
 
+#
+# Fortran Program Definitions
+#
+FNCGMS   =   ti01f.ncgm ti02f.ncgm ti03f.ncgm
+
+FSRCS        = ti01f.f ti02f.f ti03f.f
+FEXFILES     = $(FSRCS) $(RES) $(INCLUDES)
+
+InstallTarget($(FEXFILES),$(INSTALL_LIB),$(HLUEXROOT))
+
+HLUFExampleTarget(ti01f,ti01f.o)
+HLUFExampleTarget(ti02f,ti02f.o)
+HLUFExampleTarget(ti03f,ti03f.o)
+
+CleanFilesTarget($(FNCGMS))
+DependTarget($(FSRCS))
