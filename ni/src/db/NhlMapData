@@ -1,0 +1,583 @@
+0:   2:1:1005:1: 441	Oceans
+1:   3:2:1365:4:1007	Africa/Eurasia
+1:   1:2:1004:9: 440	Antarctica
+1: 163:2:1297:5: 939	Australia
+1:  11:2:1362:4:1004	North-and-South-America
+2: 160:2:1368:4:1010	Borneo
+2:  54:2:1062:8: 568	Canada-Baffin-Is.
+2:  53:2:1060:8: 562	Canada-Ellesmere-Is.
+2:  29:2:1034:8: 485	Canada-Victoria-Is.
+2:  57:2:1069:6: 602	Cuba
+2:  79:2:1099:4: 718	Greenland
+2: 167:2:1302:7: 944	Indonesia-Sulawesi-(Celebes)
+2: 151:2:1280:7: 922	Indonesia-Sumatra
+2: 104:2:1367:4:1009	Ireland
+2: 196:2:1333:5: 975	Japan-Hokkaido
+2: 188:2:1325:5: 967	Japan-Honshu
+2: 184:2:1321:5: 963	Japan-Kyushu
+2: 190:2:1327:5: 969	Japan-Shikoku
+2: 132:2:1244:5: 886	Madagascar
+2: 187:2:1369:4:1011	New-Guinea
+2: 219:2:1357:8: 999	New-Zealand-North-Is._1
+2: 220:2:1358:8:1000	New-Zealand-North-Is._2
+2: 214:2:1352:8: 994	New-Zealand-South-Is.
+2: 107:2:1366:4:1008	Scotland/England/Wales
+2:  74:2:1363:4:1005	Tierra-del-Fuego
+3:   5:2:1008:9: 444	Alaska-Atka-Is.
+3: 218:2:1356:9: 998	Alaska-Attu-Is.
+3:  20:2:1023:9: 459	Alaska-Kodiak-Is.
+3:  13:2:1016:9: 452	Alaska-Nunivak-Is.
+3:   9:2:1012:9: 448	Alaska-Saint-Lawrence-Is.
+3:  10:2:1013:9: 449	Alaska-Umnak-Is.
+3:  12:2:1015:9: 451	Alaska-Unalaska-Is.
+3:  72:2:1088:9: 666	Antarctica-Alexander-Is.
+3:  83:2:1106:9: 748	Antarctica-Anvers-Is.
+3:  36:2:1042:9: 503	Antarctica-Bear-Is.
+3:  85:2:1108:9: 750	Antarctica-Brabant-Is.
+3:  73:2:1089:9: 669	Antarctica-Charcot-Is.
+3:  95:2:1123:9: 765	Antarctica-Coronation-Is.
+3:  21:2:1024:9: 460	Antarctica-Guest-Is.
+3:  94:2:1121:9: 763	Antarctica-Joinvile-Is.
+3:  92:2:1117:9: 759	Antarctica-King-George-Is.
+3:  91:2:1116:9: 758	Antarctica-Livingston-Is.
+3:  14:2:1017:9: 453	Antarctica-Roosevelt-Is.
+3: 213:2:1351:9: 993	Antarctica-Ross-Is.
+3: 193:2:1330:5: 972	Australia-Kangaroo-Is.
+3: 185:2:1322:5: 964	Australia-Melville-and-Bathurst-Is.
+3: 200:2:1338:5: 980	Australia-Tasmania
+3:  67:2:1083:8:1012	Bahamas_1
+3:  68:2:1084:8:1013	Bahamas_2
+3:  70:2:1086:8:1014	Bahamas_3
+3: 203:2:1341:5: 983	Bismarck-Archipelago-New-Britain
+3: 205:2:1343:5: 985	Bismarck-Archipelago-New-Hanover
+3: 206:2:1344:5: 986	Bismarck-Archipelago-New-Ireland
+3:  62:2:1075:8: 624	Canada-Akimiski-Is.
+3:  82:2:1105:8: 747	Canada-Anticosti-Is.
+3:  50:2:1056:8: 535	Canada-Axel-Heiberg-Is.
+3:  25:2:1029:8: 465	Canada-Banks-Is.
+3:  39:2:1045:8: 509	Canada-Bathurst-Is.
+3:  65:2:1080:8: 643	Canada-Belcher-Is.
+3:  33:2:1039:8: 498	Canada-Borden-Is.
+3:  32:2:1038:8: 493	Canada-Brock-Is.
+3:  40:2:1046:8: 510	Canada-Byam-Martin-Is.
+3:  63:2:1078:8: 634	Canada-Bylot-Is.
+3:  58:2:1070:8: 610	Canada-Coats-Is.
+3:  47:2:1053:8: 525	Canada-Cornwall-Is.
+3:  48:2:1054:8: 528	Canada-Cornwallis-Is.
+3:  49:2:1055:8: 529	Canada-Devon-Is.
+3:  28:2:1033:8: 484	Canada-Eglinton-Is.
+3:  37:2:1043:8: 507	Canada-Ellef-Ringnes-and-Amund-Ringnes-Is.
+3:  38:2:1044:8: 508	Canada-Lougheed-Is.
+3:  34:2:1040:8: 499	Canada-Mackenzie-King-Is.
+3:  60:2:1072:8: 615	Canada-Manitoulin-Is.
+3:  64:2:1079:8: 642	Canada-Mansel-Is.
+3:  45:2:1051:8: 520	Canada-Meighen-Is.
+3:  30:2:1035:8: 488	Canada-Melville-Is.
+3:  93:2:1118:8: 760	Canada-Newfoundland-Is.
+3:  71:2:1087:8: 661	Canada-Prince-Charles-Is.
+3:  84:2:1107:8: 749	Canada-Prince-Edward-Is.
+3:  27:2:1032:8: 470	Canada-Prince-Patrick-Is.
+3:  42:2:1048:8: 516	Canada-Prince-of-Wales-Is.
+3:  23:2:1027:8: 463	Canada-Queen-Charlotte-Is.
+3:  56:2:1067:8: 590	Canada-Southampton-Is.
+3:  24:2:1028:8: 464	Canada-Vancouver-Is.
+3: 100:2:1130:4: 772	Canary-Is._1
+3: 101:2:1133:4: 775	Canary-Is._2
+3: 102:2:1135:4: 777	Canary-Is._3
+3: 103:2:1136:4: 778	Canary-Is._4
+3:  76:2:1093:4: 702	Chile-Isla-de-Chiloe
+3: 159:2:1292:7: 934	China-Hainan-Dao-Is.
+3: 111:2:1173:5: 815	Corsica
+3: 122:2:1212:4: 854	Crete
+3:  61:2:1073:6: 616	Cuba-Isla-de-Pinos
+3:  80:2:1102:5: 735	Curacao
+3: 128:2:1228:5: 870	Cyprus
+3: 112:2:1179:4: 821	Denmark-Fyn
+3: 113:2:1181:4: 823	Denmark-Lolland
+3: 115:2:1183:4: 825	Denmark-Sjaelland
+3: 105:2:1147:4: 789	Faeroe-Is.
+3:  89:2:1114:7: 756	Faulkland-Is.
+3: 222:2:1360:5:1002	Fiji-Vanua-Levu
+3: 221:2:1359:5:1001	Fiji-Viti-Levu
+3:  52:2:1059:5: 553	Galapagos-Is.
+3: 118:2:1199:4: 841	Gotland
+3: 119:2:1206:4: 844	Greece_1
+3:  98:2:1126:4: 768	Greenland-off-shore-island
+3:  88:2:1112:5: 754	Guadeloupe-east
+3:  87:2:1111:5: 753	Guadeloupe-west
+3:  75:2:1364:4:1006	Haiti-and-the-Dominican-Republic
+3:  19:2:1022:9: 458	Hawaiian-Is.-Hawaii
+3:  16:2:1019:9: 455	Hawaiian-Is.-Kauai
+3:  18:2:1021:9: 457	Hawaiian-Is.-Maui
+3:  15:2:1018:9: 454	Hawaiian-Is.-Niihau
+3:  17:2:1020:9: 456	Hawaiian-Is.-Oahu
+3:  97:2:1125:9: 767	Iceland
+3: 146:2:1268:5: 910	Ile-Kerguelen
+3: 177:2:1312:7: 954	Indonesia-Alor
+3: 164:2:1299:7: 941	Indonesia-Bali
+3: 156:2:1289:7: 931	Indonesia-Bangka
+3: 162:2:1296:7: 938	Indonesia-Bawean
+3: 158:2:1291:7: 933	Indonesia-Belitung
+3: 192:2:1329:7: 971	Indonesia-Biak-and-Kepulauan-Schouten
+3: 180:2:1316:7: 958	Indonesia-Buru
+3: 183:2:1320:7: 962	Indonesia-Ceram
+3: 169:2:1304:7: 946	Indonesia-Flores
+3: 182:2:1319:7: 961	Indonesia-Halmahera
+3: 157:2:1290:7: 932	Indonesia-Java
+3: 191:2:1328:7: 970	Indonesia-Kepulauan-Aru
+3: 189:2:1326:7: 968	Indonesia-Kepulauan-Tanimbar
+3: 152:2:1281:7: 923	Indonesia-Nias
+3: 181:2:1318:7: 960	Indonesia-Obi
+3: 153:2:1283:7: 925	Indonesia-Siberut
+3: 168:2:1303:7: 945	Indonesia-Sumba
+3: 165:2:1300:7: 945	Indonesia-Sumbawa-and-Lombok
+3: 176:2:1311:7: 953	Indonesia-Timor
+3: 186:2:1323:7: 965	Indonesia-Waigeo
+3: 179:2:1315:7: 957	Indonesia-Wetar
+3: 175:2:1310:7: 952	Indonesia-island
+3:  69:2:1085:7: 650	Jamaica
+3:  77:2:1095:5: 706	Long-Is.
+3: 110:2:1172:5: 814	Macias-Nguema-Biyogo-(African-island,-Fernando-Po)
+3: 108:2:1159:4: 801	Mallorca
+3:  90:2:1115:5: 757	Martinique
+3: 142:2:1261:5: 903	Mauritius
+3: 212:2:1350:5: 992	New-Caledonia-(island)
+3: 215:2:1353:5: 995	New-Hebrides-Espiritu-Santo
+3: 216:2:1354:5: 996	New-Hebrides-Malekula
+3:   6:2:1009:8: 445	New-Zealand-Chatham-Is.
+3: 217:2:1355:8: 997	New-Zealand-Stewart-Is.
+3: 106:2:1148:4: 790	Outer-Hebrides
+3: 170:2:1305:6: 947	Philippines-Luzon
+3: 174:2:1309:6: 951	Philippines-Mindanao
+3: 172:2:1307:6: 949	Philippines-Mindoro
+3: 166:2:1301:6: 943	Philippines-Palawan
+3: 173:2:1308:6: 950	Philippines-Panay,-Negros,-and-Bohol
+3: 178:2:1313:6: 955	Philippines-Samar
+3:  81:2:1104:5: 746	Puerto-Rico
+3: 140:2:1258:5: 900	Reunion-Is.
+3: 124:2:1218:4: 860	Rhodes
+3:   7:2:1010:5: 446	Samoa-Savaii
+3:   8:2:1011:5: 447	Samoa-Upolu
+3: 109:2:1170:8: 812	Sardinia
+3: 116:2:1191:8: 833	Sicily
+3: 207:2:1345:5: 987	Solomon-Is.-Bougainville
+3: 209:2:1347:5: 989	Solomon-Is.-Guadalcanal
+3: 210:2:1348:5: 990	Solomon-Is.-San-Cristobal
+3:  96:2:1124:7: 766	South-Georgia-Is.
+3: 149:2:1273:7: 915	Sri-Lanka-(Ceylon)
+3: 114:2:1182:6: 824	Svalbard
+3:  22:2:1025:5: 461	Tahiti
+3: 171:2:1306:4: 948	Taiwan
+3:  86:2:1110:8: 752	Trinidad-and-Tobago
+3:  78:2:1096:6: 708	Turks-and-Caicos-Is.
+3: 133:2:1247:4: 889	USSR-Franz-Josef-Land_1
+3: 137:2:1255:4: 897	USSR-Franz-Josef-Land_2
+3: 139:2:1257:4: 899	USSR-Franz-Josef-Land_3
+3: 141:2:1259:4: 901	USSR-Franz-Josef-Land_4
+3: 144:2:1263:4: 905	USSR-Franz-Josef-Land_5
+3: 145:2:1266:4: 908	USSR-Franz-Josef-Land_6
+3: 136:2:1253:4: 895	USSR-Novaya-Zemlya
+3: 154:2:1284:4: 926	USSR-Ostrov-Bol'shevik
+3: 161:2:1295:4: 937	USSR-Ostrov-Bol'shoy-Begichev
+3: 198:2:1335:4: 977	USSR-Ostrov-Bol'shoy-Lyakhovskiy
+3: 121:2:1210:4: 852	USSR-Ostrov-Hiiumaa
+3: 202:2:1340:4: 982	USSR-Ostrov-Iturup
+3: 211:2:1349:4: 991	USSR-Ostrov-Karaginskiy
+3: 135:2:1250:4: 892	USSR-Ostrov-Kolguyev
+3: 194:2:1331:4: 973	USSR-Ostrov-Kotel'nyy-and-Ostrov-Faddeyevskiy
+3: 197:2:1334:4: 976	USSR-Ostrov-Malyy-Lyakhovskiy
+3: 201:2:1339:4: 981	USSR-Ostrov-Novaya-Sibir'
+3: 150:2:1278:4: 920	USSR-Ostrov-Oktyabr'skoy-Revolyutsii,-Komsomolets,-Pioner
+3: 208:2:1346:4: 988	USSR-Ostrov-Paramushir
+3: 120:2:1207:4: 849	USSR-Ostrov-Saaremaa
+3: 199:2:1337:4: 979	USSR-Ostrov-Sakhalin
+3: 204:2:1342:4: 984	USSR-Ostrov-Urup
+3: 195:2:1332:4: 974	USSR-Shantarskiye-Ostrova
+3:   4:2:1007:4: 443	USSR-Wrangel-Is.
+3: 138:2:1256:8: 898	Yemen-(Aden)-Socotra-(island)
+4: 123:3:1217:3: 859	Black-Sea
+4:  26:3:1030:3: 466	Canada-Great-Bear-Lake
+4:  31:3:1036:3: 490	Canada-Great-Slave-Lake
+4:  35:3:1041:3: 501	Canada-Lake-Athabasca
+4:  44:3:1050:3: 519	Canada-Lake-Manitoba
+4:  46:3:1052:3: 521	Canada-Lake-Winnipeg
+4:  43:3:1049:3: 518	Canada-Lake-Winnipegosis
+4:  41:3:1047:3: 514	Canada-Reindeer-Lake
+4: 134:3:1249:3: 891	Caspian-Sea
+4: 117:3:1192:3: 834	Lake-Chad
+4:  59:3:1071:3: 613	Lake-Erie
+4: 129:3:1232:3: 874	Lake-Nyasa
+4:  66:3:1081:3: 645	Lake-Ontario
+4:  51:3:1058:3: 550	Lake-Superior
+4: 125:3:1220:3: 862	Lake-Tanganyika
+4: 127:3:1227:3: 869	Lake-Victoria
+4:  55:3:1065:3: 587	Lakes-Michigan-and-Huron
+4: 143:3:1262:3: 904	USSR-Aral-Sea
+4: 130:3:1234:3: 876	USSR-Azov-Sea
+4: 155:3:1288:3: 930	USSR-Lake-Baikal
+4: 148:3:1271:3: 913	USSR-Lake-Balkhash-(east)
+4: 147:3:1269:3: 911	USSR-Lake-Balkhash-(west)
+4: 131:3:1235:3: 877	USSR-Onazhskoye-Ozero
+4: 126:3:1224:3: 866	USSR-Ozero-Ladozhskoye-(Lake-Ladoga)
+5:-999:2:1264:6: 906	Afghanistan
+5:-999:2:1014:9: 450	Alaska
+5:-999:2:1200:6: 842	Albania
+5:-999:2:1144:5: 786	Algeria
+5:-999:2:1158:7: 800	Andorra
+5:-999:2:1188:7: 830	Angola
+5:-999:2:1187:7: 829	Angola-exclave-called-Cabinda
+5:-999:2:1098:6: 713	Argentina
+5:-999:2:1103:6: 739	Argentina-Tierra-del-Fuego
+5:-999:2:1178:6: 820	Austria
+5:-999:2:1276:7: 918	Bangladesh
+5:-999:2:1160:9: 802	Belgium
+5:-999:2:1064:5: 582	Belize
+5:-999:2:1157:6: 799	Benin
+5:-999:2:1277:6: 919	Bhutan
+5:-999:2:1101:7: 734	Bolivia
+5:-999:2:1298:6: 940	Borneo-Brunei
+5:-999:2:1203:9: 845	Botswana
+5:-999:2:1094:9: 705	Brazil
+5:-999:2:1211:8: 853	Bulgaria
+5:-999:2:1279:6: 921	Burma
+5:-999:2:1221:7: 863	Burundi
+5:-999:2:1286:5: 928	Cambodia
+5:-999:2:1171:6: 813	Cameroon
+5:-999:2:1026:8: 462	Canada
+5:-999:2:1196:8: 838	Central-African-Republic
+5:-999:2:1194:5: 836	Chad
+5:-999:2:1090:5: 693	Chile
+5:-999:2:1091:5: 699	Chile-Tierra-del-Fuego
+5:-999:2:1270:8: 912	China
+5:-999:2:1082:5: 647	Colombia
+5:-999:2:1185:5: 827	Congo
+5:-999:2:1068:5: 596	Costa-Rica
+5:-999:2:1189:5: 831	Czechoslovakia
+5:-999:2:1169:5: 811	Denmark-Jutland
+5:-999:2:1272:7: 914	Disputed-area-between-India-and-China
+5:-999:2:1242:6: 884	Djibouti
+5:-999:2:1100:6: 724	Dominican-Republic
+5:-999:2:1180:6: 822	East-Germany
+5:-999:2:1077:6: 632	Ecuador
+5:-999:2:1213:9: 855	Egypt
+5:-999:2:1061:7: 567	El-Salvador
+5:-999:2:1150:8: 792	England
+5:-999:2:1175:9: 817	Equatorial-Guinea
+5:-999:2:1230:7: 872	Ethiopia
+5:-999:2:1205:6: 847	Finland
+5:-999:2:1153:6: 795	France
+5:-999:2:1122:6: 764	French-Guiana
+5:-999:2:1174:8: 816	Gabon
+5:-999:2:1132:5: 774	Gambia
+5:-999:2:1154:8: 796	Ghana
+5:-999:2:1202:5: 848	Greece_2
+5:-999:2:1057:6: 549	Guatemala
+5:-999:2:1134:8: 776	Guinea
+5:-999:2:1131:7: 773	Guinea-Bissau
+5:-999:2:1113:7: 755	Guyana
+5:-999:2:1092:9: 700	Haiti
+5:-999:2:1063:8: 572	Honduras
+5:-999:2:1197:8: 839	Hungary
+5:-999:2:1267:5: 909	India
+5:-999:2:1293:8: 935	Indonesia-Borneo-Kalimantan
+5:-999:2:1324:8: 966	Indonesia-New-Guinea-Irian-Jaya
+5:-999:2:1246:8: 888	Iran
+5:-999:2:1240:9: 882	Iraq
+5:-999:2:1146:8: 788	Ireland-Northern
+5:-999:2:1141:7: 783	Ireland-Republic
+5:-999:2:1233:5: 875	Israel
+5:-999:2:1167:9: 809	Italy
+5:-999:2:1145:7: 787	Ivory-Coast
+5:-999:2:1237:8: 879	Jordan
+5:-999:2:1231:8: 873	Kenya
+5:-999:2:1361:5:1003	Kuwait
+5:-999:2:1285:9: 927	Laos
+5:-999:2:1238:6: 880	Lebanon
+5:-999:2:1216:9: 858	Lesotho
+5:-999:2:1140:6: 782	Liberia
+5:-999:2:1176:7: 818	Libya
+5:-999:2:1177:7: 819	Liechtenstein
+5:-999:2:1164:8: 806	Luxembourg
+5:-999:2:1229:5: 871	Malawi
+5:-999:2:1294:9: 936	Malaysia-Borneo-Malaysia-Timor
+5:-999:2:1201:9: 843	Malaysia-Malay-Peninsula
+5:-999:2:1139:9: 781	Mali
+5:-999:2:1129:7: 771	Mauritania
+5:-999:2:1037:8: 491	Mexico
+5:-999:2:1275:6: 917	Mongolia
+5:-999:2:1138:8: 780	Morocco
+5:-999:2:1225:7: 867	Mozambique
+5:-999:2:1186:5: 828	Namibia
+5:-999:2:1274:6: 916	Nepal
+5:-999:2:1162:6: 804	Netherlands
+5:-999:2:1336:6: 978	New-Guinea-Papua
+5:-999:2:1066:9: 588	Nicaragua
+5:-999:2:1156:8: 798	Niger
+5:-999:2:1161:7: 803	Nigeria
+5:-999:2:1314:5: 956	North-Korea
+5:-999:2:1163:7: 805	Norway
+5:-999:2:1254:7: 896	Oman-northern-section
+5:-999:2:1260:7: 902	Oman-southern-section
+5:-999:2:1265:7: 907	Pakistan
+5:-999:2:1074:8: 617	Panama
+5:-999:2:1109:8: 751	Paraguay
+5:-999:2:1076:8: 630	Peru
+5:-999:2:1195:8: 837	Poland
+5:-999:2:1142:7: 784	Portugal
+5:-999:2:1252:7: 894	Qatar
+5:-999:2:1204:6: 846	Romania
+5:-999:2:1219:8: 861	Rwanda
+5:-999:2:1236:6: 878	Saudi-Arabia
+5:-999:2:1149:5: 791	Scotland
+5:-999:2:1127:6: 769	Senegal
+5:-999:2:1137:9: 779	Sierra-Leone
+5:-999:2:1241:5: 883	Somalia
+5:-999:2:1198:8: 840	South-Africa
+5:-999:2:1317:7: 959	South-Korea
+5:-999:2:1143:5: 785	Spain
+5:-999:2:1208:6: 850	Sudan
+5:-999:2:1120:8: 762	Surinam
+5:-999:2:1226:9: 868	Swaziland
+5:-999:2:1184:8: 826	Sweden
+5:-999:2:1165:8: 807	Switzerland
+5:-999:2:1239:7: 881	Syria
+5:-999:2:1223:6: 865	Tanzania
+5:-999:2:1282:8: 924	Thailand
+5:-999:2:1155:9: 797	Togo
+5:-999:2:1168:8: 810	Tunisia
+5:-999:2:1215:6: 857	Turkey
+5:-999:2:1031:9:1015	US
+5:-999:2:1006:4: 442	USSR
+5:-999:2:1222:5: 864	Uganda
+5:-999:2:1251:5: 893	United-Arab-Emirates
+5:-999:2:1248:7: 890	Unnamed-neutral-zone-between-Iraq-and-Saudi-Arabia
+5:-999:2:1151:5: 793	Upper-Volta
+5:-999:2:1119:5: 761	Uruguay
+5:-999:2:1097:6: 710	Venezuela
+5:-999:2:1287:7: 929	Vietnam
+5:-999:2:1152:6: 794	Wales
+5:-999:2:1166:7: 808	West-Germany
+5:-999:2:1128:9: 770	Western-Sahara
+5:-999:2:1245:9: 887	Yemen-(Aden)
+5:-999:2:1243:8: 885	Yemen-(Sana)
+5:-999:2:1193:7: 835	Yugoslavia
+5:-999:2:1190:9: 832	Zaire
+5:-999:2:1209:8: 851	Zambia
+5:-999:2:1214:5: 856	Zimbabwe
+6:-999:2: 310:7: 585	US-Alabama
+6:-999:2: 245:4: 495	US-Arizona
+6:-999:2: 270:7: 538	US-Arkansas
+6:-999:2: 360:6: 649	US-Bahamas-Andros_1
+6:-999:2: 362:6: 652	US-Bahamas-Andros_2
+6:-999:2: 363:6: 653	US-Bahamas-Andros_3
+6:-999:2: 365:6: 655	US-Bahamas-Andros_4
+6:-999:2: 368:6: 658	US-Bahamas-Andros_5
+6:-999:2: 394:6: 687	US-Bahamas-Cat-Is.
+6:-999:2: 372:6: 663	US-Bahamas-Eleuthera-Is._1
+6:-999:2: 373:6: 664	US-Bahamas-Eleuthera-Is._2
+6:-999:2: 374:6: 665	US-Bahamas-Eleuthera-Is._3
+6:-999:2: 359:6: 648	US-Bahamas-Grand-Bahama_1
+6:-999:2: 366:6: 656	US-Bahamas-Grand-Bahama_2
+6:-999:2: 367:6: 657	US-Bahamas-Grand-Bahama_3
+6:-999:2: 364:6: 654	US-Bahamas-Great-Abaco-and-Little-Abaco
+6:-999:2: 369:6: 659	US-Bahamas-Mores-Is.
+6:-999:2: 370:6: 660	US-Bahamas-New-Providence-Is.
+6:-999:2: 223:2:1015	US-Border
+6:-999:2: 226:6: 469	US-California
+6:-999:2: 240:6: 486	US-California-San-Clemente-Is.
+6:-999:2: 234:6: 478	US-California-San-Miguel-Is.
+6:-999:2: 239:6: 483	US-California-San-Nicholas-Is.
+6:-999:2: 241:6: 487	US-California-Santa-Catalina-Is.
+6:-999:2: 238:6: 482	US-California-Santa-Cruz-Is.
+6:-999:2: 235:6: 479	US-California-Santa-Rosa-Is.
+6:-999:2: 251:8: 505	US-Colorado
+6:-999:2: 409:7: 707	US-Connecticut
+6:-999:2: 393:7: 686	US-Delaware
+6:-999:2: 313:6: 589	US-Florida
+6:-999:2: 343:6: 626	US-Florida-Keys_1
+6:-999:2: 344:6: 627	US-Florida-Keys_2
+6:-999:2: 345:6: 628	US-Florida-Keys_3
+6:-999:2: 346:6: 629	US-Florida-Keys_4
+6:-999:2: 341:6: 623	US-Florida-Pine-Is.
+6:-999:2: 340:6: 622	US-Florida-Sanibel-Is.
+6:-999:2: 322:6: 600	US-Florida-island_1
+6:-999:2: 348:6: 633	US-Florida-island_2
+6:-999:2: 349:6: 635	US-Florida-island_3
+6:-999:2: 350:6: 636	US-Florida-island_4
+6:-999:2: 351:6: 637	US-Florida-island_5
+6:-999:2: 353:6: 639	US-Florida-island_6
+6:-999:2: 320:8: 598	US-Georgia
+6:-999:2: 242:8: 489	US-Idaho
+6:-999:2: 284:6: 554	US-Illinois
+6:-999:2: 311:7: 586	US-Indiana
+6:-999:2: 262:8: 527	US-Iowa
+6:-999:2: 257:6: 517	US-Kansas
+6:-999:2: 299:8: 573	US-Kentucky
+6:-999:2: 413:4: 714	US-Lake-Champlain-Grand-Isle
+6:-999:2: 354:4: 640	US-Lake-Erie-Long-Point-(land)
+6:-999:2: 337:4: 619	US-Lake-Huron-Barrie-Is.
+6:-999:2: 325:4: 604	US-Lake-Huron-Bois-Blanc-Is.
+6:-999:2: 355:4: 641	US-Lake-Huron-Christian-Is.
+6:-999:2: 332:4: 612	US-Lake-Huron-Cockburn-Is.
+6:-999:2: 330:4: 609	US-Lake-Huron-Drummond-Is.
+6:-999:2: 342:4: 625	US-Lake-Huron-Fitzwilliam-Is.
+6:-999:2: 335:4: 615	US-Lake-Huron-Manitoulin-Is.
+6:-999:2: 321:4: 599	US-Lake-Michigan-Beaver-Is.
+6:-999:2: 317:4: 594	US-Lake-Michigan-Manitou-Is.
+6:-999:2: 314:4: 591	US-Lake-Michigan-Washington-Is.
+6:-999:2: 371:4: 662	US-Lake-Ontario-island_1
+6:-999:2: 375:4: 667	US-Lake-Ontario-island_2
+6:-999:2: 377:4: 670	US-Lake-Ontario-island_3
+6:-999:2: 316:4: 593	US-Lake-Superior-Grand-Is.
+6:-999:2: 307:4: 581	US-Lake-Superior-Isle-Royale
+6:-999:2: 286:4: 556	US-Lake-Superior-Madeline-Is.
+6:-999:2: 318:4: 595	US-Lake-Superior-Michipicoten-Is.
+6:-999:2: 288:4: 558	US-Lake-Superior-Oak-Is.
+6:-999:2: 292:4: 563	US-Lake-Superior-Outer-Is.
+6:-999:2: 308:4: 583	US-Lake-Superior-Pie-Is.
+6:-999:2: 289:4: 559	US-Lake-Superior-Stockton-Is.
+6:-999:2: 326:4: 605	US-Lake-Superior-island
+6:-999:2: 272:6: 540	US-Louisiana
+6:-999:2: 309:6: 584	US-Louisiana-Cat-Is.
+6:-999:2: 282:6: 551	US-Louisiana-Marsh-Is.
+6:-999:2: 291:6: 561	US-Louisiana-Timbalier-Is.
+6:-999:2: 285:6: 555	US-Louisiana-island_1
+6:-999:2: 304:6: 578	US-Louisiana-island_10
+6:-999:2: 305:6: 579	US-Louisiana-island_11
+6:-999:2: 306:6: 580	US-Louisiana-island_12
+6:-999:2: 287:6: 557	US-Louisiana-island_2
+6:-999:2: 296:6: 569	US-Louisiana-island_3
+6:-999:2: 297:6: 570	US-Louisiana-island_4
+6:-999:2: 298:6: 571	US-Louisiana-island_5
+6:-999:2: 300:6: 574	US-Louisiana-island_6
+6:-999:2: 301:6: 575	US-Louisiana-island_7
+6:-999:2: 302:6: 576	US-Louisiana-island_8
+6:-999:2: 303:6: 577	US-Louisiana-island_9
+6:-999:2: 427:7: 730	US-Maine
+6:-999:2: 431:7: 736	US-Maine-island_1
+6:-999:2: 432:7: 737	US-Maine-island_2
+6:-999:2: 433:7: 738	US-Maine-island_3
+6:-999:2: 434:7: 740	US-Maine-island_4
+6:-999:2: 435:7: 741	US-Maine-island_5
+6:-999:2: 436:7: 742	US-Maine-island_6
+6:-999:2: 437:7: 743	US-Maine-island_7
+6:-999:2: 438:7: 744	US-Maine-island_8
+6:-999:2: 439:7: 745	US-Maine-island_9
+6:-999:2: 376:6: 668	US-Maryland-island_1
+6:-999:2: 378:6: 671	US-Maryland-island_2
+6:-999:2: 380:6: 673	US-Maryland-island_3
+6:-999:2: 381:6: 674	US-Maryland-island_4
+6:-999:2: 358:6: 646	US-Maryland_1
+6:-999:2: 403:6: 697	US-Maryland_2
+6:-999:2: 404:6: 698	US-Maryland_3
+6:-999:2: 410:6: 709	US-Massachusetts
+6:-999:2: 428:6: 731	US-Massachusetts-Marthas-Vineyard
+6:-999:2: 429:6: 732	US-Massachusetts-Nantucket-Is.
+6:-999:2: 315:4: 592	US-Michigan-(lower)
+6:-999:2: 293:4: 564	US-Michigan-(upper)
+6:-999:2: 260:6: 524	US-Minnesota
+6:-999:2: 268:6: 536	US-Minnesota-Lake-of-the-Woods-island_1
+6:-999:2: 269:6: 537	US-Minnesota-Lake-of-the-Woods-island_2
+6:-999:2: 271:6: 539	US-Minnesota-Lake-of-the-Woods-island_3
+6:-999:2: 266:6: 533	US-Minnesota-Lake-of-the-Woods-land-west-of-lake
+6:-999:2: 279:6: 547	US-Minnesota-little-piece
+6:-999:2: 283:4: 552	US-Mississippi
+6:-999:2: 263:4: 530	US-Missouri
+6:-999:2: 243:7: 492	US-Montana
+6:-999:2: 253:7: 511	US-Nebraska
+6:-999:2: 237:7: 481	US-Nevada
+6:-999:2: 418:5: 720	US-New-Hampshire
+6:-999:2: 400:4: 694	US-New-Jersey
+6:-999:2: 405:4: 701	US-New-Jersey-island
+6:-999:2: 250:7: 504	US-New-Mexico
+6:-999:2: 356:5: 644	US-New-York
+6:-999:2: 420:5: 722	US-New-York-Fishers-Is.
+6:-999:2: 408:5: 706	US-New-York-Long-Is.
+6:-999:2: 419:5: 721	US-New-York-Shelter-Is.
+6:-999:2: 328:6: 607	US-North-Carolina
+6:-999:2: 361:6: 651	US-North-Carolina-Cape-Fear
+6:-999:2: 383:6: 676	US-North-Carolina-island_1
+6:-999:2: 399:6: 692	US-North-Carolina-island_10
+6:-999:2: 384:6: 677	US-North-Carolina-island_2
+6:-999:2: 388:6: 681	US-North-Carolina-island_3
+6:-999:2: 391:6: 684	US-North-Carolina-island_4
+6:-999:2: 392:6: 685	US-North-Carolina-island_5
+6:-999:2: 395:6: 688	US-North-Carolina-island_6
+6:-999:2: 396:6: 689	US-North-Carolina-island_7
+6:-999:2: 397:6: 690	US-North-Carolina-island_8
+6:-999:2: 398:6: 691	US-North-Carolina-island_9
+6:-999:2: 255:5: 513	US-North-Dakota
+6:-999:2: 324:6: 603	US-Ohio
+6:-999:2: 256:5: 515	US-Oklahoma
+6:-999:2: 225:5: 468	US-Oregon
+6:-999:2: 352:8: 638	US-Pennsylvania
+6:-999:2: 421:8: 723	US-Rhode-Is.
+6:-999:2: 422:8: 725	US-Rhode-Is.-Block-Is.
+6:-999:2: 423:8: 726	US-Rhode-Is.-island_1
+6:-999:2: 424:8: 727	US-Rhode-Is.-island_2
+6:-999:2: 425:8: 728	US-Rhode-Is.-island_3
+6:-999:2: 334:4: 614	US-South-Carolina
+6:-999:2: 254:4: 512	US-South-Dakota
+6:-999:2: 406:5: 703	US-Staten-Is.
+6:-999:2: 295:5: 566	US-Tennessee
+6:-999:2: 252:4: 506	US-Texas
+6:-999:2: 259:4: 523	US-Texas-Padre-Is.
+6:-999:2: 258:4: 522	US-Texas-island_1
+6:-999:2: 267:4: 534	US-Texas-island_2
+6:-999:2: 247:5: 497	US-Utah
+6:-999:2: 412:4: 712	US-Vermont
+6:-999:2: 379:4: 672	US-Virginia-island_1
+6:-999:2: 385:4: 678	US-Virginia-island_2
+6:-999:2: 387:4: 680	US-Virginia-island_3
+6:-999:2: 401:4: 695	US-Virginia-island_4
+6:-999:2: 331:4: 611	US-Virginia_1
+6:-999:2: 382:4: 675	US-Virginia_2
+6:-999:2: 389:4: 682	US-Virginia_3
+6:-999:2: 390:4: 683	US-Virginia_4
+6:-999:2: 224:4: 467	US-Washington
+6:-999:2: 227:4: 471	US-Washington-island_1
+6:-999:2: 228:4: 472	US-Washington-island_2
+6:-999:2: 229:4: 473	US-Washington-island_3
+6:-999:2: 230:4: 474	US-Washington-island_4
+6:-999:2: 231:4: 475	US-Washington-island_5
+6:-999:2: 232:4: 476	US-Washington-island_6
+6:-999:2: 233:4: 477	US-Washington-island_7
+6:-999:2: 338:5: 620	US-West-Virginia
+6:-999:2: 277:5: 545	US-Wisconsin
+6:-999:2: 249:6: 502	US-Wyoming
+7:-999:3: 415:3: 716	US-Canada-lake
+7:-999:3: 339:3: 621	US-Clark-Hill-Reservoir
+7:-999:3: 402:3: 696	US-Delaware-bay
+7:-999:3: 347:3: 631	US-Florida-Lake-Okeechobee
+7:-999:3: 319:3: 597	US-Florida-lake
+7:-999:3: 248:3: 500	US-Great-Salt-Lake
+7:-999:3: 411:3: 711	US-Lake-Champlain
+7:-999:3: 333:3: 613	US-Lake-Erie
+7:-999:3: 329:3: 608	US-Lake-George
+7:-999:3: 246:3: 496	US-Lake-Mead-(east)
+7:-999:3: 244:3: 494	US-Lake-Mead-(west)
+7:-999:3: 357:3: 645	US-Lake-Ontario
+7:-999:3: 323:3: 601	US-Lake-Seminole
+7:-999:3: 336:3: 618	US-Lake-St.-Clair
+7:-999:3: 281:3: 550	US-Lake-Superior
+7:-999:3: 236:3: 480	US-Lake-Tahoe
+7:-999:3: 261:3: 526	US-Lake-Texoma
+7:-999:3: 312:3: 587	US-Lakes-Michigan-and-Huron
+7:-999:3: 417:3: 719	US-Long-Is.-Great-South-Bay
+7:-999:3: 275:3: 543	US-Louisiana-Calcasieu-Lake
+7:-999:3: 278:3: 546	US-Louisiana-Grand-Lake
+7:-999:3: 290:3: 560	US-Louisiana-Lake-Maurepas
+7:-999:3: 294:3: 565	US-Louisiana-Lake-Pontchartrain
+7:-999:3: 273:3: 541	US-Louisiana-Sabine-Lake
+7:-999:3: 280:3: 548	US-Louisiana-White-Lake
+7:-999:3: 386:3: 679	US-Maryland-inlet
+7:-999:3: 426:3: 729	US-Massachusetts-bay
+7:-999:3: 430:3: 733	US-Massachusetts-inlet
+7:-999:3: 264:3: 531	US-Minnesota-Lake-of-the-Woods
+7:-999:3: 276:3: 544	US-Minnesota-Namakan-Lake
+7:-999:3: 274:3: 542	US-Minnesota-Rainy-Lake
+7:-999:3: 265:3: 532	US-Minnesota-Shoal-Lake
+7:-999:3: 414:3: 715	US-New-Hampshire-lake_1
+7:-999:3: 416:3: 717	US-New-Hampshire-lake_2
+7:-999:3: 407:3: 704	US-New-Jersey-Newark-Bay
+7:-999:3: 327:3: 606	US-Sault-Ste.-Marie

@@ -1,0 +1,7 @@
+#
+#	$Id: yMakefile,v 1.1 1994-09-07 18:02:06 dbrown Exp $
+#
+
+DBFILES = NhlMapData
+
+InstallTarget($(DBFILES),$(INSTALL_DB),$(DBPATH))
