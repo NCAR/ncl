@@ -1,4 +1,4 @@
-#	$Id: yMakefile,v 1.17 1992-03-20 18:44:09 don Exp $
+#	$Id: yMakefile,v 1.18 1992-03-23 19:59:11 clyne Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -125,7 +125,7 @@ saber_obj: $(OBJS)
 rasinfo: rasinfo.o
 	$(CC) $(CFLAGS) -o rasinfo rasinfo.o -lncarg_ras -ldf
 
-install::
+all::
 	@$(INSTALL) $(INCLUDES) $(LOCINCDIR)
 
 lint:
