@@ -1,5 +1,5 @@
 ;
-;      $Id: xy15n.ncl,v 1.2 1996-05-02 22:27:18 haley Exp $
+;      $Id: xy15n.ncl,v 1.3 1997-03-13 22:18:18 haley Exp $
 ;
 ;***********************************************************************
 ;                                                                      *
@@ -73,7 +73,7 @@ if (NCGM .eq. 1) then
 ;
 ; Create an ncgmWorkstation object.
 ;
- xworkid = create "simple" ncgmWorkstationClass defaultapp
+ xworkid = create "xy15Work" ncgmWorkstationClass defaultapp
       "wkMetaName" : "xy15n.ncgm"
   end create
 else
@@ -81,7 +81,7 @@ else
 ;
 ; Set up an X11 output workstation.
 ;
-    xworkid = create "simple" xWorkstationClass defaultapp
+    xworkid = create "xy15Work" xWorkstationClass defaultapp
       "wkPause" : "True"
     end create
   else
@@ -89,7 +89,7 @@ else
 ;
 ; Create a PSWorkstation object.
 ;
-      xworkid = create "simple" psWorkstationClass defaultapp
+      xworkid = create "xy15Work" psWorkstationClass defaultapp
         "wkPSFileName" : "xy15n.ps"
       end create
     end if
