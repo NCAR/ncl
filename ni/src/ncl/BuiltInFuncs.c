@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.137 2001-03-07 22:28:26 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.138 2001-05-16 16:51:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2397,7 +2397,7 @@ NhlErrorTypes _NclIfbindirread(void)
                 }
         }
 
-	if((*recnum)*size*thetype->type_class.size > buf.st_size) {
+	if((((*recnum + 1)*size*thetype->type_class.size)) > buf.st_size) {
 		ret = NhlFATAL;
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirread: The size implied by the dimension array and record number is greater that the size of the file, can't continue");
 		return(NhlFATAL);
@@ -2431,6 +2431,11 @@ NhlErrorTypes _NclIfbindirread(void)
 			step = step + buf.st_blksize;
 		}
 		n = read(fd,step,totalsize % buf.st_blksize);
+		if(n == 0) {
+			ret = NhlFATAL;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirread: An error occurred while reading the file (%s). Size or dimension information is wrong.",path_string);
+			return(NhlFATAL);
+		}
 		step = step + totalsize % buf.st_blksize;
 
 		while((int)(step - (char*)tmp_ptr) < totalsize) {
