@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.11 1995-05-09 20:57:39 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.12 1995-05-16 20:08:05 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -943,9 +943,11 @@ NclSelectionRecord *from_selection;
 	int from_output_dim_sizes[NCL_MAX_DIMENSIONS];
 
 	int n_dims_value = 0;
+	int n_dims_value_orig = 0;
 	int total_elements_value = 1;
 	int total_elements_target = 1;
 	int n_dims_target = 0;
+	int n_dims_target_orig=0;
 	int n_elem_target=0;
 	int n_elem_value=0;
 
@@ -959,8 +961,8 @@ NclSelectionRecord *from_selection;
 		return(NhlFATAL);
 	}
 
-	n_dims_value = value_md->multidval.n_dims;
-	n_dims_target = target_md->multidval.n_dims;
+	n_dims_value_orig = n_dims_value = value_md->multidval.n_dims;
+	n_dims_target_orig = n_dims_target = target_md->multidval.n_dims;
 	
 	
 
@@ -1221,24 +1223,24 @@ NclSelectionRecord *from_selection;
 	while(!done) {
 		to = 0;
 		from = 0;
-		for(i = 0; i < n_dims_target;i++) {
+		for(i = 0; i < n_dims_target_orig;i++) {
 			to = to + (to_current_index[i] * to_multiplier[i]);
 		}
-		for(i = 0; i < n_dims_value;i++) {
+		for(i = 0; i < n_dims_value_orig;i++) {
 			from = from + (from_current_index[i] * from_multiplier[i]);
 		}
 		memcpy((void*)((char*)to_val + (to*el_size)),(void*)((char*)from_val + (from * el_size)),el_size);
-		if(to_compare_sel[n_dims_target-1] <0) {
-			to_current_index[n_dims_target -1 ] += to_strider[n_dims_target-1];
+		if(to_compare_sel[n_dims_target_orig-1] <0) {
+			to_current_index[n_dims_target_orig -1 ] += to_strider[n_dims_target_orig-1];
 		} else {
-			to_compare_sel[n_dims_target-1]++;
+			to_compare_sel[n_dims_target_orig-1]++;
 		}
-		if(from_compare_sel[n_dims_value -1] <0) {
-			from_current_index[n_dims_value -1 ] += from_strider[n_dims_value-1];
+		if(from_compare_sel[n_dims_value_orig -1] <0) {
+			from_current_index[n_dims_value_orig -1 ] += from_strider[n_dims_value_orig-1];
 		} else {
-			from_compare_sel[n_dims_value-1]++;
+			from_compare_sel[n_dims_value_orig-1]++;
 		}
-		for(k = n_dims_target-1; k >0; k--) {
+		for(k = n_dims_target_orig-1; k >0; k--) {
 			switch(to_compare_sel[k]) {
 			case -2: 
 				if(to_current_index[k] > to_sel_ptr[k].u.sub.finish) {
@@ -1303,7 +1305,7 @@ NclSelectionRecord *from_selection;
 			}
 			break;
 		}
-		for(k = n_dims_value -1; k >0; k--) {
+		for(k = n_dims_value_orig -1; k >0; k--) {
 			switch(from_compare_sel[k]) {
 			case -2: 
 				if(from_current_index[k] > from_sel_ptr[k].u.sub.finish) {
