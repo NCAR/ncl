@@ -1,5 +1,5 @@
-load "gsn_code.ncl"  ; Load the NCL file that contains the gsn_* 
-                     ; functions used below.
+load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsn_code.ncl"  ; Load the NCL file that
+                     ; contains the gsn_* functions used below.
 begin
   x = new(9,float)  ; Define two 1D arrays of 9 elements each.
   y = new(9,float)

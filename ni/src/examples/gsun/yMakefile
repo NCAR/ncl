@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.2 1998-11-10 17:32:21 haley Exp $
+#   $Id: yMakefile,v 1.3 1998-11-11 21:45:14 haley Exp $
 #
 #   Makefile for GSUN examples
 #
@@ -10,7 +10,7 @@ NSRCS      = gsun01n.ncl gsun02n.ncl gsun03n.ncl gsun04n.ncl \
 			gsun05n.ncl gsun06n.ncl gsun07n.ncl gsun08n.ncl gsun09n.ncl \
 			gsun10n.ncl gsun11n.ncl gsn_code.ncl
 
-RESFILES   = gsun08.res gsun09.res
+RESFILES   = gsun08n.res gsun09n.res
 
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))

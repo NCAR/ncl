@@ -1,4 +1,4 @@
-load "gsn_code.ncl"
+load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsn_code.ncl"
 
 function addcyclic(data[*][*]:float)
 ;

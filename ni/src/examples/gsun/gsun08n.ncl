@@ -1,4 +1,4 @@
-load "gsn_code.ncl"
+load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsn_code.ncl"
 
 begin
 
@@ -76,16 +76,16 @@ begin
   resources@tiMainString        = ":F26:slices"   ; Define a title.
 
   resources@xyLineColors        = (/2,8,10,14/)   ; Define line colors.
-  resources@xyLineThicknessF    = 3.              ; Define line thickness.
+  resources@xyLineThicknessF    = 3.0             ; Define line thickness.
 
   resources@pmLegendDisplayMode    = "Always"     ; Turn on the drawing
                                                   ; of a legend.
   resources@pmLegendZone           = 0            ; Change the location
-  resources@pmLegendOrthogonalPosF = .31          ; of the legend
+  resources@pmLegendOrthogonalPosF = 0.31         ; of the legend
   resources@lgJustification        = "BottomRight"
 
-  resources@pmLegendWidthF         = .4           ; Change width and
-  resources@pmLegendHeightF        = .12          ; height of legend.
+  resources@pmLegendWidthF         = 0.4          ; Change width and
+  resources@pmLegendHeightF        = 0.12         ; height of legend.
 
   resources@pmLegendSide           = "Top"        ; Change location of 
   resources@lgPerimOn              = False        ; legend and turn off

@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.1 1998-11-10 17:32:18 haley Exp $
+;      $Id: gsn_code.ncl,v 1.2 1998-11-11 21:45:12 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -624,14 +624,22 @@ begin
               "tiXAxisFontHeightF"   : xfontf
               "tiYAxisFontHeightF"   : yfontf
               "tmXBLabelFontHeightF" : xbfontf
+              "tmXBMajorLengthF"     : xlengthf
+              "tmXBMinorLengthF"     : xmlengthf
               "tmYLLabelFontHeightF" : ylfontf
+              "tmYLMajorLengthF"     : ylengthf
+              "tmYLMinorLengthF"     : ymlengthf
             end getvalues
 
             setvalues plot_object
               "tiXAxisFontHeightF"   : (xfontf+yfontf)/2.
               "tiYAxisFontHeightF"   : (xfontf+yfontf)/2.
               "tmXBLabelFontHeightF" : (xbfontf+ylfontf)/2.
+              "tmXBMajorLengthF"     : (ylengthf+xlengthf)/2.
+              "tmXBMinorLengthF"     : (ymlengthf+xmlengthf)/2.
               "tmYLLabelFontHeightF" : (xbfontf+ylfontf)/2.
+              "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
+              "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
             end setvalues
         end if
       set_attr(cnres2,"cnFillColors",\
@@ -801,14 +809,22 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
           "tiXAxisFontHeightF"   : xfontf
           "tiYAxisFontHeightF"   : yfontf
           "tmXBLabelFontHeightF" : xbfontf
+          "tmXBMajorLengthF"     : xlengthf
+          "tmXBMinorLengthF"     : xmlengthf
           "tmYLLabelFontHeightF" : ylfontf
+          "tmYLMajorLengthF"     : ylengthf
+          "tmYLMinorLengthF"     : ymlengthf
         end getvalues
 
         setvalues contour_object
           "tiXAxisFontHeightF"   : (xfontf+yfontf)/2.
           "tiYAxisFontHeightF"   : (xfontf+yfontf)/2.
           "tmXBLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmXBMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmXBMinorLengthF"     : (ymlengthf+xmlengthf)/2.
           "tmYLLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
         end setvalues
     end if
 
@@ -1008,7 +1024,13 @@ begin
 
 ; Draw a polygon.
 
-    NhlDataPolygon(plotid,gsid,x,y)
+    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
+      NhlDataPolygon(plotid,gsid,x,y)
+    else
+      x2 = x(ind(.not.ismissing(x).and..not.ismissing(y)))
+      y2 = y(ind(.not.ismissing(x).and..not.ismissing(y)))
+      NhlDataPolygon(plotid,gsid,x2,y2)
+    end if
 end
 
 
@@ -1076,7 +1098,13 @@ begin
 
 ; Draw a polygon.
 
-    NhlNDCPolygon(canvas,gsid,x,y)
+    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
+      NhlNDCPolygon(canvas,gsid,x,y)
+    else
+      x2 = x(ind(.not.ismissing(x).and..not.ismissing(y)))
+      y2 = y(ind(.not.ismissing(x).and..not.ismissing(y)))
+      NhlNDCPolygon(canvas,gsid,x2,y2)
+    end if
 end
 
 ;***********************************************************************;
@@ -1135,7 +1163,40 @@ begin
 
 ; Draw a polyline.
     attsetvalues_check(contour_object,cnres)
-    NhlDataPolyline(plotid,gsid,x,y)
+    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
+      NhlDataPolyline(plotid,gsid,x,y)
+    else
+;
+; Since the data contains missing values, leave gaps where the missing
+; values are located.
+;
+      x2 = new(dimsizes(x),float)
+      y2 = new(dimsizes(x),float)
+      j = 0
+      do i = 0,dimsizes(x)-1
+        if(ismissing(x(i)).or.ismissing(y(i)))
+          if(j.eq.1)    ; only one value, so draw a marker
+            NhlDataPolymarker(plotid,gsid,x2(0),y2(0))
+          end if
+          if(j.gt.1)    ; multiple values, so draw a line
+            NhlDataPolyline(plotid,gsid,x2(0:j-1),y2(0:j-1))
+          end if
+          j = 0
+        else
+          x2(j) = x(i)   ; Neither point is missing, so store in
+          y2(j) = y(i)   ; separate arrays to draw later.
+          j = j + 1
+        end if
+      end do
+      if(j.eq.1)         
+        NhlDataPolymarker(plotid,gsid,x2(0),y2(0))
+        j = 0
+      end if
+      if(j.gt.1)         
+        NhlDataPolyline(plotid,gsid,x2(0:j-1),y2(0:j-1))
+        j = 0
+      end if
+    end if
 end
 
 ;***********************************************************************;
@@ -1201,7 +1262,40 @@ begin
 
 ; Draw a polyline.
 
-    NhlNDCPolyline(canvas,gsid,x,y)
+    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
+      NhlNDCPolyline(canvas,gsid,x,y)
+    else
+;
+; Since the data contains missing values, leave gaps where the missing
+; values are located.
+;
+      x2 = new(dimsizes(x),float)
+      y2 = new(dimsizes(x),float)
+      j = 0
+      do i = 0,dimsizes(x)-1
+        if(ismissing(x(i)).or.ismissing(y(i)))
+          if(j.eq.1)    ; only one value, so draw a marker
+            NhlNDCPolymarker(canvas,gsid,x2(0),y2(0))
+          end if
+          if(j.gt.1)    ; multiple values, so draw a line
+            NhlNDCPolyline(canvas,gsid,x2(0:j-1),y2(0:j-1))
+          end if
+          j = 0
+        else
+          x2(j) = x(i)   ; Neither point is missing, so store in
+          y2(j) = y(i)   ; separate arrays to draw later.
+          j = j + 1
+        end if
+      end do
+      if(j.eq.1)         
+        NhlNDCPolymarker(canvas,gsid,x2(0),y2(0))
+        j = 0
+      end if
+      if(j.gt.1)         
+        NhlNDCPolyline(canvas,gsid,x2(0:j-1),y2(0:j-1))
+        j = 0
+      end if
+    end if
                spread_colors(wks,contour_object,min_index,max_index))
       attsetvalues(contour_object,cnres2)
     end if
@@ -1260,7 +1354,13 @@ local i, gsid, attnames, plot_object, res, gs_res_index
 
 ; Draw some polymarkers.
 
-    NhlDataPolymarker(plotid,gsid,x,y)
+    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
+      NhlDataPolymarker(plotid,gsid,x,y)
+    else
+      x2 = x(ind(.not.ismissing(x).and..not.ismissing(y)))
+      y2 = y(ind(.not.ismissing(x).and..not.ismissing(y)))
+      NhlDataPolymarker(plotid,gsid,x2,y2)
+    end if
 end
 ;                                                                       ;
 ;***********************************************************************;
@@ -1327,7 +1427,13 @@ local i, plot_object, res2
     res2      = resources
 ; Draw some polymarkers.
 
-    NhlNDCPolymarker(canvas,gsid,x,y)
+    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
+      NhlNDCPolymarker(canvas,gsid,x,y)
+    else
+      x2 = x(ind(.not.ismissing(x).and..not.ismissing(y)))
+      y2 = y(ind(.not.ismissing(x).and..not.ismissing(y)))
+      NhlNDCPolymarker(canvas,gsid,x2,y2)
+    end if
 ; Create plot object.
 
     wksname = get_res_value_keep(wks,"name","gsnapp")
@@ -1447,14 +1553,22 @@ begin
               "tiXAxisFontHeightF"   : xfontf
               "tiYAxisFontHeightF"   : yfontf
               "tmXBLabelFontHeightF" : xbfontf
+              "tmXBMajorLengthF"     : xlengthf
+              "tmXBMinorLengthF"     : xmlengthf
               "tmYLLabelFontHeightF" : ylfontf
+              "tmYLMajorLengthF"     : ylengthf
+              "tmYLMinorLengthF"     : ymlengthf
             end getvalues
 
             setvalues plot_object
               "tiXAxisFontHeightF"   : (xfontf+yfontf)/2.
               "tiYAxisFontHeightF"   : (xfontf+yfontf)/2.
               "tmXBLabelFontHeightF" : (xbfontf+ylfontf)/2.
+              "tmXBMajorLengthF"     : (ylengthf+xlengthf)/2.
+              "tmXBMinorLengthF"     : (ymlengthf+xmlengthf)/2.
               "tmYLLabelFontHeightF" : (xbfontf+ylfontf)/2.
+              "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
+              "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
             end setvalues
         end if
     attsetvalues_check(data_object,vfres)
@@ -1623,14 +1737,22 @@ begin
           "tiXAxisFontHeightF"   : xfontf
           "tiYAxisFontHeightF"   : yfontf
           "tmXBLabelFontHeightF" : xbfontf
+          "tmXBMajorLengthF"     : xlengthf
+          "tmXBMinorLengthF"     : xmlengthf
           "tmYLLabelFontHeightF" : ylfontf
+          "tmYLMajorLengthF"     : ylengthf
+          "tmYLMinorLengthF"     : ymlengthf
         end getvalues
 
         setvalues stream_object
           "tiXAxisFontHeightF"   : (xfontf+yfontf)/2.
           "tiYAxisFontHeightF"   : (xfontf+yfontf)/2.
           "tmXBLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmXBMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmXBMinorLengthF"     : (ymlengthf+xmlengthf)/2.
           "tmYLLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
         end setvalues
     callframe = get_res_value(res2,"gsnFrame",True)
     maxbb     = get_bb_res(res2)
@@ -1909,14 +2031,22 @@ begin
               "tiXAxisFontHeightF"   : xfontf
               "tiYAxisFontHeightF"   : yfontf
               "tmXBLabelFontHeightF" : xbfontf
+              "tmXBMajorLengthF"     : xlengthf
+              "tmXBMinorLengthF"     : xmlengthf
               "tmYLLabelFontHeightF" : ylfontf
+              "tmYLMajorLengthF"     : ylengthf
+              "tmYLMinorLengthF"     : ymlengthf
             end getvalues
 
             setvalues plot_object
               "tiXAxisFontHeightF"   : (xfontf+yfontf)/2.
               "tiYAxisFontHeightF"   : (xfontf+yfontf)/2.
               "tmXBLabelFontHeightF" : (xbfontf+ylfontf)/2.
+              "tmXBMajorLengthF"     : (ylengthf+xlengthf)/2.
+              "tmXBMinorLengthF"     : (ymlengthf+xmlengthf)/2.
               "tmYLLabelFontHeightF" : (xbfontf+ylfontf)/2.
+              "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
+              "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
             end setvalues
         end if
     attsetvalues_check(plot_object,vcres)
@@ -2141,14 +2271,22 @@ begin
           "tiXAxisFontHeightF"   : xfontf
           "tiYAxisFontHeightF"   : yfontf
           "tmXBLabelFontHeightF" : xbfontf
+          "tmXBMajorLengthF"     : xlengthf
+          "tmXBMinorLengthF"     : xmlengthf
           "tmYLLabelFontHeightF" : ylfontf
+          "tmYLMajorLengthF"     : ylengthf
+          "tmYLMinorLengthF"     : ymlengthf
         end getvalues
 
         setvalues vector_object
           "tiXAxisFontHeightF"   : (xfontf+yfontf)/2.
           "tiYAxisFontHeightF"   : (xfontf+yfontf)/2.
           "tmXBLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmXBMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmXBMinorLengthF"     : (ymlengthf+xmlengthf)/2.
           "tmYLLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
         end setvalues
       cnres2 = True
       vcres2 = True
@@ -2318,14 +2456,22 @@ begin
           "tiXAxisFontHeightF"   : xfontf
           "tiYAxisFontHeightF"   : yfontf
           "tmXBLabelFontHeightF" : xbfontf
+          "tmXBMajorLengthF"     : xlengthf
+          "tmXBMinorLengthF"     : xmlengthf
           "tmYLLabelFontHeightF" : ylfontf
+          "tmYLMajorLengthF"     : ylengthf
+          "tmYLMinorLengthF"     : ymlengthf
         end getvalues
 
         setvalues vector_object
           "tiXAxisFontHeightF"   : (xfontf+yfontf)/2.
           "tiYAxisFontHeightF"   : (xfontf+yfontf)/2.
           "tmXBLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmXBMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmXBMinorLengthF"     : (ymlengthf+xmlengthf)/2.
           "tmYLLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
         end setvalues
     mpres = get_res_eq(res2,(/"mp","vp"/))
     vcres = get_res_ne(res2,(/"mp","vf","vp"/))
@@ -2495,14 +2641,22 @@ begin
               "tiXAxisFontHeightF"   : xfontf
               "tiYAxisFontHeightF"   : yfontf
               "tmXBLabelFontHeightF" : xbfontf
+              "tmXBMajorLengthF"     : xlengthf
+              "tmXBMinorLengthF"     : xmlengthf
               "tmYLLabelFontHeightF" : ylfontf
+              "tmYLMajorLengthF"     : ylengthf
+              "tmYLMinorLengthF"     : ymlengthf
             end getvalues
 
             setvalues plot_object
               "tiXAxisFontHeightF"   : (xfontf+yfontf)/2.
               "tiYAxisFontHeightF"   : (xfontf+yfontf)/2.
               "tmXBLabelFontHeightF" : (xbfontf+ylfontf)/2.
+              "tmXBMajorLengthF"     : (ylengthf+xlengthf)/2.
+              "tmXBMinorLengthF"     : (ymlengthf+xmlengthf)/2.
               "tmYLLabelFontHeightF" : (xbfontf+ylfontf)/2.
+              "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
+              "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
             end setvalues
         end if
       delete(plot_object)
@@ -2707,14 +2861,22 @@ begin
           "tiXAxisFontHeightF"   : xfontf
           "tiYAxisFontHeightF"   : yfontf
           "tmXBLabelFontHeightF" : xbfontf
+          "tmXBMajorLengthF"     : xlengthf
+          "tmXBMinorLengthF"     : xmlengthf
           "tmYLLabelFontHeightF" : ylfontf
+          "tmYLMajorLengthF"     : ylengthf
+          "tmYLMinorLengthF"     : ymlengthf
         end getvalues
 
         setvalues vector_object
           "tiXAxisFontHeightF"   : (xfontf+yfontf)/2.
           "tiYAxisFontHeightF"   : (xfontf+yfontf)/2.
           "tmXBLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmXBMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmXBMinorLengthF"     : (ymlengthf+xmlengthf)/2.
           "tmYLLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
         end setvalues
 
     attsetvalues_check(vfdata_object,vfres)
@@ -2929,14 +3091,22 @@ begin
               "tiXAxisFontHeightF"   : xfontf
               "tiYAxisFontHeightF"   : yfontf
               "tmXBLabelFontHeightF" : xbfontf
+              "tmXBMajorLengthF"     : xlengthf
+              "tmXBMinorLengthF"     : xmlengthf
               "tmYLLabelFontHeightF" : ylfontf
+              "tmYLMajorLengthF"     : ylengthf
+              "tmYLMinorLengthF"     : ymlengthf
             end getvalues
 
             setvalues plot_object
               "tiXAxisFontHeightF"   : (xfontf+yfontf)/2.
               "tiYAxisFontHeightF"   : (xfontf+yfontf)/2.
               "tmXBLabelFontHeightF" : (xbfontf+ylfontf)/2.
+              "tmXBMajorLengthF"     : (ylengthf+xlengthf)/2.
+              "tmXBMinorLengthF"     : (ymlengthf+xmlengthf)/2.
               "tmYLLabelFontHeightF" : (xbfontf+ylfontf)/2.
+              "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
+              "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
             end setvalues
         end if
                     xydpres@$attnames(xydp_res_index(i))$ = res2@$attnames(xydp_res_index(i))$

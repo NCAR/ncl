@@ -1,4 +1,4 @@
-load "gsn_code.ncl"
+load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsn_code.ncl"
 
 function addcyclic(data[*][*]:float)
 ;
@@ -26,7 +26,7 @@ begin
 end
  
 begin
-  wks = gsn_open_wks("ncgm","gsun11n")  ; Open an X11 workstation.
+  wks = gsn_open_wks("x11","gsun11n")  ; Open an X11 workstation.
 
   cmap = (/(/1.,1.,1./), (/0.,0.,0./)/)  ; Change background to white
   gsn_define_colormap(wks,cmap)          ; and foreground to black.

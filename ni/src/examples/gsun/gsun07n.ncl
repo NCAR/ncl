@@ -1,4 +1,4 @@
-load "gsn_code.ncl"
+load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsn_code.ncl"
 
 begin
                                      ; Initialize some data.
@@ -67,10 +67,10 @@ begin
   xyres@trYMaxF   =  3.0
   xyres@trYMinF   = -2.0
 
-  xyres@vpHeightF = .25 ; Define height, width, and location of plot.
-  xyres@vpWidthF  = .8
-  xyres@vpXF      = .13
-  xyres@vpYF      = .85
+  xyres@vpHeightF = 0.25 ; Define height, width, and location of plot.
+  xyres@vpWidthF  = 0.80
+  xyres@vpXF      = 0.13
+  xyres@vpYF      = 0.85
 
   xy = gsn_xy(wks,xo,yo,xyres) ; Plot the interpolated values.
 
@@ -84,8 +84,8 @@ begin
   txres@txFontHeightF = 0.03                ; Set the font height.
   gsn_text(wks,xy,"Function",1.5,2.5,txres) ; Label the plot.
 
-  xx = (/xl,xr/) ; Create data for a polyline for 
-  yy = (/0.,0./) ; marking the Y = 0.0 line in each graph.
+  xx = (/xl,xr/)   ; Create data for a polyline for marking
+  yy = (/0.0,0.0/) ; the Y = 0.0 line in each graph.
 
   gsres@gsLineColor = 2                ; Set polyline color to red.
   gsn_polyline(wks,xy,xx,yy,gsres)     ; Draw polyline at Y=0.
