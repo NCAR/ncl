@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.10 1996-05-09 22:37:57 kennison Exp $
+#	$Id: yMakefile,v 1.11 1996-07-08 21:45:01 kennison Exp $
 #
 
 MYNAME	= ezmap
@@ -12,8 +12,8 @@ GENERIC_SRCS = \
 	maplmb.f maplot.f mappos.f maproj.f maprs.f  maprst.f mapsav.f \
 	mapset.f mapstc.f mapsti.f mapstl.f mapstr.f maptra.f maptre.f \
 	maptri.f maptrn.f maptrp.f mapusr.f mapvec.f mapvp.f  mapvpd.f \
-	mpgetc.f mpgeti.f mpgetl.f mpgetr.f mpsetc.f mpseti.f mpsetl.f \
-	mpsetr.f supcon.f supmap.f
+	mpgetc.f mpgeti.f mpgetl.f mpgetr.f mprset.f mpsetc.f mpseti.f \
+	mpsetl.f mpsetr.f supcon.f supmap.f
 
 GENERIC_OBJS = \
 	hlumapeod.o hlumapusr.o \
@@ -23,8 +23,8 @@ GENERIC_OBJS = \
 	maplmb.o maplot.o mappos.o maproj.o maprs.o  maprst.o mapsav.o \
 	mapset.o mapstc.o mapsti.o mapstl.o mapstr.o maptra.o maptre.o \
 	maptri.o maptrn.o maptrp.o mapusr.o mapvec.o mapvp.o  mapvpd.o \
-	mpgetc.o mpgeti.o mpgetl.o mpgetr.o mpsetc.o mpseti.o mpsetl.o \
-	mpsetr.o supcon.o supmap.o
+	mpgetc.o mpgeti.o mpgetl.o mpgetr.o mprset.o mpsetc.o mpseti.o \
+	mpsetl.o mpsetr.o supcon.o supmap.o
 
 UNIX_SRCS = mpdbdi.f
 
