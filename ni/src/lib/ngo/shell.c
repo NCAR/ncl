@@ -1,5 +1,5 @@
 /*
- *      $Id: shell.c,v 1.2 1999-10-28 16:41:44 dbrown Exp $
+ *      $Id: shell.c,v 1.3 1999-12-07 19:08:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -123,6 +123,7 @@ ShellClassPartInitialize
 	 */
 
 	shell->go_class.dialog = topLevelShellWidgetClass;
+	shell->go_class.dialog = xcbApplicationShellWidgetClass;
 	shell->go_class.manager = xmMessageBoxWidgetClass;
 
 	return NhlNOERROR;

@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.27 1999-10-22 00:37:23 dbrown Exp $
+ *      $Id: go.c,v 1.28 1999-12-07 19:08:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -931,7 +931,7 @@ PPopup
 
 	if(event->type != MapNotify)
 		return;
-	if (event->xmap.window != XtWindow(go->go.shell))
+	if (event->xmap.window != XtWindow(go->go.pshell))
 		return;
 
 	go->go.pup = True;

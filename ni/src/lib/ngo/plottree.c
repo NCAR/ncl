@@ -1,5 +1,5 @@
 /*
- *      $Id: plottree.c,v 1.3 1999-11-19 02:10:09 dbrown Exp $
+ *      $Id: plottree.c,v 1.4 1999-12-07 19:08:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -88,6 +88,7 @@ static void MakeRowsVisible
 	NgPlotTree *pub = &ptp->public;
 	XRectangle	rect;
         
+	rect.x = rect.y = rect.width = 0;
 	XmLGridRowColumnToXY
                 (pub->tree,
                  XmCONTENT,top_row,XmCONTENT,0,False,&rect);
@@ -137,6 +138,14 @@ static void ExpandPlotInfo
         }
         
         XmLTreeAddRows(pub->tree,rowdefs,rowcount,pos);
+#if 0
+        XtVaSetValues(pub->tree,
+		      XmNcolumn,1,
+		      XmNrowRangeStart,pos,
+		      XmNrowRangeEnd,pos+rowcount-1,
+                      XmNcellColumnSpan,1,
+		      NULL);
+#endif
         ndata->expanded = True;
         ndata->subcount = rowcount;
         
@@ -193,7 +202,12 @@ static void ToggleObjectCB
         ptNodeData	*ndata;
 	Pixmap		pixmap;
 	ptCompData 	cdata;
-        
+	int	        i;
+	NgDataProfile	dprof = ptp->data_profile;
+
+	if (! dprof || ! dprof->obj_count)
+		return;
+
         cbs = (XmLGridCallbackStruct *)cb_data;
 	if (cbs->column != 2)
 		return;
@@ -213,10 +227,20 @@ static void ToggleObjectCB
 		      NULL);
 
 	if (! (ndata && ndata->info)) {
-		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return;
 	}
+	if (ndata->type != _ptPCompObj)
+		return;
 	cdata = (ptCompData) ndata->info;
+
+
+	for (i = 0; i < dprof->obj_count; i++) {
+		if (cdata->qname != dprof->qobjects[i])
+			continue;
+		if (! NhlClassIsSubclass(dprof->obj_classes[i],NhlviewClass))
+			return;
+		break;
+	}
 
 	if (pixmap == Check_Pixmap) {
 		XtVaSetValues(w,
@@ -340,10 +364,23 @@ static void ExpandComponentInfo
         ndata->subdata = NhlMalloc(rowcount * sizeof(ptNodeData));
 
         for (i = 0; i < rowcount; i++) {
+		NhlBoolean on;
 		ptCompData cdata = NhlMalloc(sizeof(ptCompDataRec));
 
 		cdata->qname = dprof->qobjects[i];
-		cdata->on = True;
+		if (! NhlClassIsSubclass(dprof->obj_classes[i],NhlviewClass))
+			cdata->on = False;
+		else {
+			if (pub->hlu_ids && pub->hlu_ids[i] > NhlNULLOBJID) {
+				NhlVAGetValues(ptp->public.hlu_ids[i],
+					       NhlNvpOn,&on,
+					       NULL);
+				cdata->on = on;
+			}
+			else {
+				cdata->on = True;
+			}
+		}
 		cdata->usr_on = -1;
 		cdata->modified = False;
 		cdata->pt_cb = False;
@@ -364,6 +401,14 @@ static void ExpandComponentInfo
         }
         
         XmLTreeAddRows(pub->tree,rowdefs,rowcount,pos);
+#if 0
+        XtVaSetValues(pub->tree,
+		      XmNcolumn,1,
+		      XmNrowRangeStart,pos,
+		      XmNrowRangeEnd,pos+rowcount-1,
+                      XmNcellColumnSpan,1,
+		      NULL);
+#endif
         ndata->expanded = True;
         ndata->subcount = rowcount;
         
@@ -391,10 +436,12 @@ static void ExpandComponentInfo
                               XmNrowUserData,&ndata->subdata[i],
                               NULL);
 		if (NhlClassIsSubclass(dprof->obj_classes[i],NhlviewClass)) {
+			ptCompData cdata = (ptCompData) ndata->subdata[i].info;
+			Pixmap px = cdata->on ? Check_Pixmap : No_Check_Pixmap;
 			XtVaSetValues(ptp->public.tree,
 				      XmNcolumn,2,
 				      XmNrow,pos+i,
-				      XmNcellPixmap,Check_Pixmap,
+				      XmNcellPixmap,px,
 				      XmNcellBackground,
 				      ptp->go->go.edit_field_pixel,
 				      NULL);
@@ -532,21 +579,32 @@ static void ExpandLinkResources
 		ic++;
         }
         XmLTreeAddRows(pub->tree,rowdefs,rowcount,pos);
+        XtVaSetValues(pub->tree,
+		      XmNcolumnRangeStart,1,
+		      XmNcolumnRangeEnd,2,
+		      XmNrowRangeStart,pos,
+		      XmNrowRangeEnd,pos+rowcount-1,
+		      XmNcellType,XmPIXMAP_CELL,
+		      XmNcellPixmap,Check_Pixmap,
+		      XmNcellBackground,ptp->go->go.edit_field_pixel,
+		      NULL);
         ndata->expanded = True;
         ndata->subcount = rowcount;
         
         for (i = 0,ic = 0; i < dprof->n_dataitems; i++) {
-                NhlBoolean do_string = True;
+                NhlBoolean do_string = False;
 		char *cp;
 		if (! dprof->ditems[i]->vis)
 			continue;
                 XmStringFree(rowdefs[ic].string);
+#if 0
 		cp = DataItemValue(dprof->ditems[i]);
                 if (do_string) {
                         XmLGridSetStringsPos(pub->tree,
                                              XmCONTENT,pos+ic,XmCONTENT,1,cp);
                         ptp->c2_width = MAX(ptp->c2_width,strlen(cp));
                 }
+#endif
 		ic++;
         }
         XtVaSetValues(pub->tree,
@@ -608,8 +666,6 @@ static void ExpandTree
 			      NULL);
 		XmLGridSetStringsPos(pub->tree,XmCONTENT,row,XmCONTENT,2,"On");
 		ExpandComponentInfo(ptp,ndata,row+1);
-		XtAddCallback(ptp->public.tree,XmNselectCallback,
-			      ToggleObjectCB,ptp);
 		break;
 	case _ptPLink:
 		ExpandLinkResources(ptp,ndata,row+1);
@@ -889,7 +945,7 @@ NhlErrorTypes NgUpdatePlotTree
                             expands = True;
                             break;
                     case 2:
-                            sprintf(buf,"Link Resources");
+                            sprintf(buf,"Functions");
                             expands = True;
                             break;
                 }
@@ -901,7 +957,14 @@ NhlErrorTypes NgUpdatePlotTree
                 rowdefs[i].string = XmStringCreateLocalized(buf);
         }
         XmLTreeAddRows(pub->tree,rowdefs,tcount,0);
-
+#if 0
+        XtVaSetValues(pub->tree,
+		      XmNcolumn,1,
+		      XmNrowRangeStart,0,
+		      XmNrowRangeEnd,tcount-1,
+                      XmNcellColumnSpan,1,
+		      NULL);
+#endif
 	dprof = ptp->data_profile;
         for (i = 0; i < tcount; i++) {
                 switch (i) {
@@ -987,6 +1050,7 @@ NgPlotTree *NgCreatePlotTree
         static NhlBoolean first = True;
  
 	XtAppAddActions(go->go.x->app,
+
                         plottreeactions,NhlNumber(plottreeactions));
          if (first) {
  		NgBrowse browse = (NgBrowse) go;
@@ -1021,6 +1085,7 @@ NgPlotTree *NgCreatePlotTree
 		 XmNselectionPolicy,XmSELECT_NONE,
 		 NULL);
 
+
         XtVaSetValues(pub->tree,
                       XmNcellDefaults,True,
                       XmNcellRightBorderType,XmBORDER_NONE,
@@ -1052,6 +1117,8 @@ NgPlotTree *NgCreatePlotTree
  * we get core dumps.
  */
         XtAddCallback(pub->tree,XmNcellFocusCallback,FocusCB,ptp);
+	XtAddCallback(pub->tree,XmNselectCallback,ToggleObjectCB,ptp);
+
         if (ret < NhlWARNING) {
                 NhlFree(ptp);
                 return NULL;

@@ -1,5 +1,5 @@
 /*
- *      $Id: browseP.h,v 1.10 1999-10-13 17:15:43 dbrown Exp $
+ *      $Id: browseP.h,v 1.11 1999-12-07 19:08:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -46,6 +46,8 @@ typedef struct _brPixmapsRec {
 	Pixmap	check;
 	Pixmap  no_check;
 	Pixmap	mask_check;
+	Pixmap	button_out;
+	Pixmap	button_in;
 } brPixmapsRec, *brPixmaps;
 
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: Grid.c,v 1.8 1999-09-11 01:05:37 dbrown Exp $
+ *      $Id: Grid.c,v 1.9 1999-12-07 19:08:34 dbrown Exp $
  */
 /*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
@@ -7357,6 +7357,7 @@ Cardinal *nparam;
 		qEXTEND = XrmStringToQuark("EXTEND");
 		qEND = XrmStringToQuark("END");
 		qTOGGLE = XrmStringToQuark("TOGGLE");
+		quarksValid = 1;
 		}
 	q = XrmStringToQuark(params[0]);
 	be = 0;
