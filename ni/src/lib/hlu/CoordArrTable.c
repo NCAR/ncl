@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.27 1995-12-19 20:39:01 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.28 1996-05-10 03:22:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1853,6 +1853,11 @@ CoordArrTableDestroy
 
 	NhlFreeGenArray(clp->xtable_lens);
 	NhlFreeGenArray(clp->ytable_lens);
+
+	if (clp->missing_x == clp->own_miss_x)
+		clp->own_miss_x = NULL;
+	if (clp->missing_y == clp->own_miss_y)
+		clp->own_miss_y = NULL;
 
 	NhlFreeGenArray(clp->missing_x);
 	NhlFreeGenArray(clp->missing_y);

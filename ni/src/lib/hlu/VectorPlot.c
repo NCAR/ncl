@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.16 1996-05-03 23:51:26 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.17 1996-05-10 03:22:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3260,7 +3260,7 @@ static NhlErrorTypes vcDraw
 	if (vcl->view.use_segments) {
 		switch (order) {
 		case NhlPREDRAW:
-			subret = vcInitSegment(vcl,&vcp->draw_dat,
+			subret = vcInitSegment(vcl,&vcp->predraw_dat,
 					       entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				VectorAbortDraw(vcl);
@@ -3597,10 +3597,7 @@ static NhlErrorTypes vcDraw
 	{ /* set draw params for the vector annotion */
 		float wlx,wrx,wby,wty; 
 		int lnlg,invx,invy;
-		_NhlvaDrawParams tdparams;
 		_NhlvaDrawParams *dp = &vcp->d_params;
-
-		memcpy(&tdparams,dp,sizeof(_NhlvaDrawParams));
 
 		c_getset(&dp->xvpl,&dp->xvpr,&dp->xvpb,&dp->xvpt,
 			 &wlx,&wrx,&wby,&wty,&lnlg);
@@ -3627,29 +3624,25 @@ static NhlErrorTypes vcDraw
 			dp->wymn = wby;
 			dp->wymx = wty;
 		}
-		if (memcmp(&tdparams,dp,sizeof(_NhlvaDrawParams))) {
-			if (vcp->refvec_anno_rec.id != NhlNULLOBJID) {
-				subret = NhlVASetValues(
+		if (vcp->refvec_anno_rec.id != NhlNULLOBJID) {
+			subret = NhlVASetValues(
 						vcp->refvec_anno_rec.id,
 						NhlNvaDrawParams,dp,NULL);
-				if ((ret = MIN(ret,subret)) < NhlWARNING) {
-					VectorAbortDraw(vcl);
-					return(ret);
-				}
-			}
-			if (vcp->minvec_anno_rec.id != NhlNULLOBJID) {
-				subret = NhlVASetValues(
-						vcp->minvec_anno_rec.id,
-						NhlNvaDrawParams,dp,NULL);
-				if ((ret = MIN(ret,subret)) < NhlWARNING) {
-					VectorAbortDraw(vcl);
-					return(ret);
-				}
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				VectorAbortDraw(vcl);
+				return(ret);
 			}
 		}
-  	}
-
-
+		if (vcp->minvec_anno_rec.id != NhlNULLOBJID) {
+			subret = NhlVASetValues(
+						vcp->minvec_anno_rec.id,
+						NhlNvaDrawParams,dp,NULL);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				VectorAbortDraw(vcl);
+				return(ret);
+			}
+		}
+	}
 
 	gset_clip_ind(GIND_NO_CLIP);
 	if (vcl->view.use_segments) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.48 1996-05-08 01:12:25 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.49 1996-05-10 03:22:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -886,6 +886,7 @@ static NhlMapPlotLayerPart *Mpp = NULL, *Ompp;
 static NhlMapPlotLayer Mpl, Ompl;
 static NhlBoolean Global_Amap_Inited;
 static NhlBoolean US_Amap_Inited;
+static NhlBoolean Grid_Setup;
 
 #if 0
 static int Init_Colors[] ={106,104,57,104,19,23,41,53,60,88,90,100,110};
@@ -2603,6 +2604,7 @@ static NhlErrorTypes mpGrid
 	float avlat,avlon;
 	int ll,status;
 
+	Grid_Setup = False;
 	c_mpseti("C2",mpp->grid.gks_color);
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	c_mpseti("C4", mpp->limb.gks_color);
@@ -5692,15 +5694,18 @@ int (_NHLCALLF(hlumaskgrid,HLUMASKGRID))
 	if (! draw_line)
 		return 0;
 		
-	NhlVASetValues(Mpl->base.wkptr->base.id,
-		       _NhlNwkLineLabel,"",
-		       _NhlNwkDashPattern,Mpp->grid.dash_pat,
-		       _NhlNwkLineDashSegLenF,Mpp->grid.dash_seglen,
-		       _NhlNwkLineThicknessF,Mpp->grid.thickness,
-		       _NhlNwkLineColor,Mpp->grid.color, 
-		       NULL);
+	if (! Grid_Setup) {
+		NhlVASetValues(Mpl->base.wkptr->base.id,
+			       _NhlNwkLineLabel,"",
+			       _NhlNwkDashPattern,Mpp->grid.dash_pat,
+			       _NhlNwkLineDashSegLenF,Mpp->grid.dash_seglen,
+			       _NhlNwkLineThicknessF,Mpp->grid.thickness,
+			       _NhlNwkLineColor,Mpp->grid.color, 
+			       NULL);
 
-	_NhlSetLineInfo(Mpl->base.wkptr,(NhlLayer) Mpl);
+		_NhlSetLineInfo(Mpl->base.wkptr,(NhlLayer) Mpl);
+		Grid_Setup = True;
+	}
 	_NhlWorkstationLineTo(Mpl->base.wkptr, 
 			      xcra[0],ycra[0],1);
 	for (i = 1; i < *ncra; i++)

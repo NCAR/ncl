@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.9 1996-05-03 23:51:25 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.10 1996-05-10 03:22:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2685,7 +2685,7 @@ static NhlErrorTypes stDraw
 	if (stl->view.use_segments) {
 		switch (order) {
 		case NhlPREDRAW:
-			subret = stInitSegment(stl,&stp->draw_dat,
+			subret = stInitSegment(stl,&stp->predraw_dat,
 					       entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				StreamlineAbortDraw(stl);

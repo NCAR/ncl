@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.36 1996-05-03 23:51:18 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.37 1996-05-10 03:22:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3814,7 +3814,7 @@ static NhlErrorTypes cnDraw
 	if (cnl->view.use_segments) {
 		switch (order) {
 		case NhlPREDRAW:
-			subret = cnInitSegment(cnl,&cnp->draw_dat,
+			subret = cnInitSegment(cnl,&cnp->predraw_dat,
 					       entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				ContourAbortDraw(cnl);

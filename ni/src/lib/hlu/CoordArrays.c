@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.31 1995-12-19 20:39:01 boote Exp $
+ *      $Id: CoordArrays.c,v 1.32 1996-05-10 03:22:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1689,6 +1689,11 @@ CoordArraysDestroy
 		_NhlFreeConvertContext(cap->yctxt);
 	else
 		NhlFreeGenArray(cap->my_yarray);
+
+	if (cap->my_missing_x == cap->missing_x) 
+		cap->my_missing_x = NULL;
+	if (cap->my_missing_y == cap->missing_y) 
+		cap->my_missing_y = NULL;
 
 	NhlFreeGenArray(cap->my_missing_x);
 	NhlFreeGenArray(cap->my_missing_y);

@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.57 1996-03-15 20:17:14 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.58 1996-05-10 03:22:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -371,6 +371,12 @@ static NhlErrorTypes XyDataInitialize(
 #endif
 );
 
+static NhlErrorTypes XyDataDestroy(
+#if	NhlNeedProto
+        NhlLayer           /* inst */
+#endif
+);
+
 static NhlErrorTypes XyPlotInitialize(
 #if	NhlNeedProto
         NhlClass,     /* cptr */
@@ -529,7 +535,7 @@ NhlXyDataSpecClassRec NhlxyDataSpecClassRec = {
 /* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	XyDataGetValues,
 /* layer_reparent		*/	NULL,
-/* layer_destroy		*/	NULL
+/* layer_destroy		*/	XyDataDestroy
 	},
 	/* dataspec_class */
 	{
@@ -2684,6 +2690,48 @@ NhlLayer inst;
 	NhlFreeGenArray(xp->missing_set);
 	NhlFreeGenArray(xp->xmissing);
 	NhlFreeGenArray(xp->ymissing);
+
+	return(ret1);
+}
+
+
+/*
+ * Function:	XyDataDestroy
+ *
+ * Description:	
+ *
+ * In Args:	inst		instance record pointer
+ *
+ * Out Args:	NhlNONE
+ *
+ * Return Values:	ErrorConditions
+ *
+ * Side Effects:	NhlNONE
+ */
+static NhlErrorTypes XyDataDestroy
+#if	NhlNeedProto
+(NhlLayer inst)
+#else
+(inst)
+NhlLayer inst;
+#endif
+{
+	NhlXyDataSpecLayer	xdinst = (NhlXyDataSpecLayer)inst;
+	NhlXyDataSpecLayerPart	*xdp = &xdinst->xydata;
+	NhlErrorTypes		ret = NhlNOERROR;
+	NhlErrorTypes		ret1 = NhlNOERROR;
+
+	NhlFreeGenArray(xdp->dashes);
+	NhlFreeGenArray(xdp->marker_modes);
+	NhlFreeGenArray(xdp->lg_label_strings);
+	NhlFreeGenArray(xdp->colors);
+	NhlFreeGenArray(xdp->label_colors);
+	NhlFreeGenArray(xdp->labels);
+	NhlFreeGenArray(xdp->line_thicknesses);
+	NhlFreeGenArray(xdp->marker_colors);
+	NhlFreeGenArray(xdp->markers);
+	NhlFreeGenArray(xdp->marker_sizes);
+	NhlFreeGenArray(xdp->marker_thicknesses);
 
 	return(ret1);
 }
