@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.51 1998-07-15 00:40:48 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.52 1998-10-07 22:14:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5562,19 +5562,19 @@ static NhlErrorTypes ManageVecAnno
 		
 		if (init || ilp->perim_on != oilp->perim_on)
 			NhlSetSArg(&targs[(targc)++],
-				   NhlNtxPerimOn,ilp->perim_on);
+				   NhlNvaPerimOn,ilp->perim_on);
 		if (init || ilp->perim_lcolor != oilp->perim_lcolor)
 			NhlSetSArg(&targs[(targc)++],
-				   NhlNtxPerimColor,ilp->perim_lcolor);
+				   NhlNvaPerimColor,ilp->perim_lcolor);
 		if (init || ilp->perim_lthick != oilp->perim_lthick)
 			NhlSetSArg(&targs[(targc)++],
-				   NhlNtxPerimThicknessF,ilp->perim_lthick);
+				   NhlNvaPerimThicknessF,ilp->perim_lthick);
 		if (init || ilp->perim_space != oilp->perim_space)
 			NhlSetSArg(&targs[(targc)++],
-				   NhlNtxPerimSpaceF,ilp->perim_space);
+				   NhlNvaPerimSpaceF,ilp->perim_space);
 		if (init || ilp->back_color != oilp->back_color)
 			NhlSetSArg(&targs[(targc)++],
-				   NhlNtxBackgroundFillColor,ilp->back_color);
+				   NhlNvaBackgroundFillColor,ilp->back_color);
 	}
 	subret = NhlALSetValues(anrp->id,targs,targc);
 
