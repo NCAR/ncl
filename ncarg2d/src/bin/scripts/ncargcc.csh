@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.18 1993-02-08 16:18:36 haley Exp $
+#	$Id: ncargcc.csh,v 1.19 1993-02-08 18:50:07 haley Exp $
 #
 
 set system = "SED_SYSTEM_INCLUDE"
@@ -8,7 +8,6 @@ set cc     = "SED_CC"
 set libdir = `ncargpath SED_LIBDIR`
 set incdir = `ncargpath SED_INCDIR`
 set ro     = "$libdir/SED_NCARGDIR/SED_ROBJDIR"
-
 if (! -d "$libdir") then
   echo "Library directory <$libdir> does not exist."
   exit 1
@@ -19,7 +18,19 @@ if (! -d "$incdir") then
   exit 1
 endif
 
-set newargv = "$cc -I$incdir"
+set loadopts = ""
+
+if ("$system" == "Sun4") then
+  set loadopts = "-Xa -DNeedFuncProto"
+else if ("$system" == "SGI4D") then
+  set loadopts = "-ansiposix -DNeedFuncProto"
+else if ("$system" == "HPUX") then
+  set loadopts = "-DNeedFuncProto -D_HPUX_SOURCE"
+else if ("$system" == "RS6000") then
+  set loadopts = "-DNeedFuncProto -D_POSIX_SOURCE"
+endif    
+
+set newargv = "$cc -I$incdir $loadopts"
 
 set ctrans_libs = ""
 set stub_file   = ""
