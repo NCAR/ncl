@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.37 2000-08-22 15:11:57 haley Exp $
+ *	$Id: commands.c,v 1.38 2002-04-18 20:49:38 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -33,10 +33,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 #include <signal.h>
 #include <fcntl.h>
 #include <ctype.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 

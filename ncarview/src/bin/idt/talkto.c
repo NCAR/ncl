@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.28 2000-08-22 15:11:09 haley Exp $
+ *	$Id: talkto.c,v 1.29 2002-04-18 20:50:07 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -36,11 +36,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/types.h>
 #include <signal.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
-#include <sys/types.h>
 #include <sys/time.h>
 #include "text.h"
 
