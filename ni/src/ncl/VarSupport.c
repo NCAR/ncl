@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.26 2003-05-31 00:49:44 dbrown Exp $
+ *      $Id: VarSupport.c,v 1.27 2004-06-15 00:20:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -590,10 +590,10 @@ NhlErrorTypes _NclBuildCoordRSelection
 
 		} 
 	} 
-	if(coord_md->obj.status != PERMANENT) {
+	if(coord_md && coord_md->obj.status != PERMANENT) {
 		_NclDestroyObj((NclObj)coord_md);
 	}
-	if(cvar->obj.status != PERMANENT) {
+	if(cvar && cvar->obj.status != PERMANENT) {
 		_NclDestroyObj((NclObj)cvar);
 	}
 	return(NhlNOERROR);
