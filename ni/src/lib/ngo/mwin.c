@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.12 1997-10-23 02:17:54 dbrown Exp $
+ *      $Id: mwin.c,v 1.13 1997-10-23 17:34:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -19,7 +19,6 @@
  *
  *	Description:	
  */
-#include "../libncarg_c/c.h"
 #include <ncarg/ngo/mwinP.h>
 
 #include <ncarg/ngo/nclstate.h>
@@ -122,10 +121,7 @@ MWInitialize
 	NgMWin			mwin = (NgMWin)new;
 	NgMWinPart		*np = &((NgMWin)new)->mwin;
 	NgMWinPart		*rp = &((NgMWin)req)->mwin;
-	const char		*version;
 
-	version = GetNCARGVersion();
-	version = NULL;
 	fprintf(stderr,"NCARG Version: %s\n",GetNCARGVersion());
 	return NhlNOERROR;
 }
