@@ -1,5 +1,5 @@
 C
-C	$Id: fcover.f,v 1.5 1995-06-14 14:01:20 haley Exp $
+C	$Id: fcover.f,v 1.6 1995-09-29 14:16:41 haley Exp $
 C
       PROGRAM FCOVER
 C
@@ -8,8 +8,8 @@ C  and workstation ID.
 C
       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
-C This program requires the input data file 'fun-cover.dat'
-C It reads the data from standard input, e.g.: fun-cover < fun-cover.dat
+C This program requires the input data file 'fcover.dat'
+C It reads the data from standard input, e.g.: fcover < fcover.dat
 C
       PARAMETER (MSIZE=73, NSIZE=73)
 C
