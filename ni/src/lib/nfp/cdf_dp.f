@@ -1,7 +1,7 @@
-c ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 c interfaces for various Cumalative Distribution Functions
 c based upon: www/stat.unipg.it/stat/dcdflib
-c ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c
 
 c ================================================================
 c NCLFORTSTART
