@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.79 1994-11-29 15:34:48 haley Exp $
+#   $Id: ncargex.csh,v 1.80 1994-12-16 18:24:06 haley Exp $
 #
 
 #*************************#
@@ -428,7 +428,8 @@ set vectors_list = ($ex_vectors $tst_vectors $fnd_vectors)
 # set wmap examples #
 #                   #
 #*******************#
-set ex_wmap   = (wmex01 wmex02 wmex03 wmex04)
+set ex_wmap   = (wmex01 wmex02 wmex03 wmex04 wmex05 wmex06 wmex07 wmex08\
+                 wmex09 wmex10 wmex11 wmex12 wmex13 wmex14)
 set wmap_list = ($ex_wmap)
 
 #****************************************#
@@ -1058,9 +1059,9 @@ switch($name)
       echo ""
     breaksw
 
-    case wmex01:
-    case wmex02:
-    case wmex04:
+    case wmex12:
+    case wmex13:
+    case wmex14:
       if ($ws_type >= 20 && $ws_type < 31) then
         set tmp_ws_type = "26"
         echo ""
