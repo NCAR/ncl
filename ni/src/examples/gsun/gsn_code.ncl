@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.123 2003-12-11 20:48:54 haley Exp $
+;      $Id: gsn_code.ncl,v 1.124 2003-12-21 19:07:23 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3803,7 +3803,7 @@ begin
     end do  ; end of columns
 ;
 ; Retain the smallest and largest x position, since xpos gets
-; deleted inside the loop
+; deleted inside the loop.
 ;
     if(nr.eq.0)
       min_xpos = min(xpos)
@@ -5523,6 +5523,7 @@ begin
   isnice     = get_res_value(res2,"gsnHistogramSelectNiceIntervals",True)
   compare    = get_res_value(res2,"gsnHistogramCompare",False)
   horizontal = get_res_value(res2,"gsnHistogramHorizontal",False)
+
   setdiscrete= False
   setinterval= False
 ;
@@ -5752,16 +5753,22 @@ begin
     bottom = 0.
     top    = max(num_in_bins) * 1.1
   end if
+
 ;
 ; Create plot class with limits.
 ;
+  res2@trXMinF = get_res_value(res2,"trXMinF",left)
+  res2@trXMaxF = get_res_value(res2,"trXMaxF",right)
+  res2@trYMinF = get_res_value(res2,"trYMinF",bottom)
+  res2@trYMaxF = get_res_value(res2,"trYMaxF",top)
+
   xy = create "xy" logLinPlotClass wks
     "pmTickMarkDisplayMode"  : "Always"
     "pmTitleDisplayMode"     : "Always"
-    "trXMinF"                : get_res_value(res2,"trXMinF",left)
-    "trXMaxF"                : get_res_value(res2,"trXMaxF",right)
-    "trYMinF"                : get_res_value(res2,"trYMinF",bottom)
-    "trYMaxF"                : get_res_value(res2,"trYMaxF",top)
+    "trXMinF"                : res2@trXMinF
+    "trXMaxF"                : res2@trXMaxF
+    "trYMinF"                : res2@trYMinF
+    "trYMaxF"                : res2@trYMaxF
   end create
 ;
 ; 7. Set some post-resources for labeling the percentage axis, if desired.
@@ -5807,11 +5814,13 @@ begin
 ; the percentages.
 ;
     if(horizontal) then
-      nicevals = nice_mnmxintvl(left,min((/100.,100.*(right/npts)/)),7,False)
+      nicevals = nice_mnmxintvl(res2@trXMinF,min((/100., \
+                                100.*(res2@trXMaxF/npts)/)),7,False)
     else
-      nicevals = nice_mnmxintvl(bottom,min((/100.,100.*(top/npts)/)),7,False)
+      nicevals = nice_mnmxintvl(res2@trYMinF,min((/100., \
+                                100.*(res2@trYMaxF/npts)/)),7,False)
     end if
-    nvals    = floattoint((nicevals(1) - nicevals(0))/nicevals(2) + 1)
+    nvals = floattoint((nicevals(1) - nicevals(0))/nicevals(2) + 1)
 ;
 ; Generate nice values for minor and major percent tick marks. For
 ; the minor tick marks, just add one tick between each major.
@@ -5986,13 +5995,14 @@ begin
         perc_string = perc_string + " (missing values counted)"
       end if
     end if
-    axis_string = create "axis_string" textItemClass wks
+
+    hist_axis_string = create "axis_string" textItemClass wks
       "txString"      : perc_string
       "txFontHeightF" : font_height
       "txAngleF"      : txangle
     end create
 
-    anno = NhlAddAnnotation(xy,axis_string)
+    anno = NhlAddAnnotation(xy,hist_axis_string)
 
     setvalues anno
       "amZone"          : 3      ; Just outside plot area
