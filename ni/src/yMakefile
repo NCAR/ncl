@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.2 1993-10-19 17:46:19 boote Exp $
+#      $Id: yMakefile,v 1.3 1993-10-19 21:12:31 haley Exp $
 #
 #########################################################################
 #									#
@@ -20,4 +20,6 @@
 #	Description:	yMakefile for ncarg/ni/src
 
 #define	IHaveSubdirs
-SUBDIRS = lib examples bin
+# remove examples until they are fixed
+# SUBDIRS = lib examples bin
+SUBDIRS = lib bin
