@@ -1,5 +1,5 @@
 C
-C $Id: mapitm.f,v 1.5 1994-03-18 23:18:57 kennison Exp $
+C $Id: mapitm.f,v 1.6 1994-05-03 21:24:40 kennison Exp $
 C
       SUBROUTINE MAPITM (XLAT,XLON,IFST,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
 C
@@ -60,8 +60,8 @@ C
      +GO TO 10001
       CPLT=COS(DTOR*PHIA)
       SPLT=SIN(DTOR*PHIA)
-      CPLN=COS(DTOR*PHIO)
-      SPLN=SIN(DTOR*PHIO)
+      CPLN=COS(DTOR*PHOC)
+      SPLN=SIN(DTOR*PHOC)
       CXLT=COS(DTOR*XLAT)
       SXLT=SIN(DTOR*XLAT)
       CXLN=COS(DTOR*XLON)

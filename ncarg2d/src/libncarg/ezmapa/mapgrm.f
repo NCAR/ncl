@@ -1,5 +1,5 @@
 C
-C $Id: mapgrm.f,v 1.5 1994-04-08 23:33:14 kennison Exp $
+C $Id: mapgrm.f,v 1.6 1994-05-03 21:24:37 kennison Exp $
 C
       SUBROUTINE MAPGRM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
 C
@@ -117,8 +117,8 @@ C
       XLON=GRID*CLING(BLON/GRID)
       IF (.NOT.(XLON-RLON.GT.359.9999)) GO TO 10009
       IF (.NOT.(IPRJ.EQ.1)) GO TO 10010
-      RLON=GRID*CLING((PHIO-179.9999)/GRID)
-      XLON=GRID*FLOOR((PHIO+179.9999)/GRID)
+      RLON=GRID*CLING((PHOC-179.9999)/GRID)
+      XLON=GRID*FLOOR((PHOC+179.9999)/GRID)
       GO TO 10011
 10010 CONTINUE
       IF (.NOT.(IPRJ.GE.2.AND.IPRJ.LE.9)) GO TO 10012
@@ -176,11 +176,11 @@ C or both of the poles is within the (rectangular) perimeter, arrange
 C for the parallels at -90 and/or +90 to be drawn.
 C
       IF (.NOT.(IPRJ.EQ.10)) GO TO 10017
-      CALL MAPTRN (-90.,PHIO,U,V)
+      CALL MAPTRN (-90.,PHOC,U,V)
       IF (ICFELL('MAPGRM',6).NE.0) RETURN
       IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
      +                                                  SLAT=SLAT-GRID
-      CALL MAPTRN (90.,PHIO,U,V)
+      CALL MAPTRN (90.,PHOC,U,V)
       IF (ICFELL('MAPGRM',7).NE.0) RETURN
       IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
      +                                                  BLAT=BLAT+GRID
