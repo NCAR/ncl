@@ -1,5 +1,5 @@
 C
-C	$Id: wmdrft.f,v 1.4 1994-12-16 17:51:42 fred Exp $
+C	$Id: wmdrft.f,v 1.5 2000-03-02 01:27:36 fred Exp $
 C
       SUBROUTINE WMDRFT(N,X,Y)
 C
@@ -35,6 +35,26 @@ C
           YO(I) = Y(I)
   100   CONTINUE
       ENDIF
+C
+C  Cull out any duplicate points.
+C
+      NTOT = NPO
+      I = 2
+  120 CONTINUE
+      CALL WMSQDP(XO,YO,NTOT,I,IFLG)
+      IF (IFLG .EQ. 1) THEN
+        NTOT = NTOT-1
+        IF(I .LE. NTOT) GO TO 120
+      ELSE
+        I = I+1
+        IF (I .GT. NTOT) THEN
+          GO TO 110
+        ELSE
+          GO TO 120
+        ENDIF
+      ENDIF
+  110 CONTINUE
+      NPO = NTOT 
 C
 C  Construct a spline curve having NPTS points in it that represents
 C  the curve in (X,Y).  We use Alan Cline's spline package for this.
@@ -221,5 +241,30 @@ C
       CALL GSFACI(IFCLRO)
       CALL GSPLCI(ILCLRO)
 C
+      RETURN
+      END
+      SUBROUTINE WMSQDP(X,Y,NTOT,I,IFLG)
+C
+C  If (X(I),Y(I)) equals some (X(J),Y(J)) for J .LT. I,
+C  then squeeze (X(I),Y(I)) out of X and Y and set IFLG = 1.
+C
+      DIMENSION X(NTOT),Y(NTOT)
+C
+      DO 10 J=1,I-1
+        IF (X(I).EQ.X(J) .AND. Y(I).EQ.Y(J)) THEN
+          IF (I .EQ. NTOT) THEN
+            IFLG = 1
+            RETURN
+          ENDIF
+          DO 20 K=I,NTOT-1
+            X(K) = X(K+1)
+            Y(K) = Y(K+1)
+            IFLG = 1
+   20     CONTINUE
+          RETURN
+        ENDIF
+   10 CONTINUE
+C
+      IFLG = 0
       RETURN
       END
