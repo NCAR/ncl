@@ -54,6 +54,13 @@ int reset;
 
 }
 
+void ResetCurLine(void) {
+	last_line_length = cur_line_length;
+	cur_line_length = 0;
+	cur_line_length = 0;
+	cur_line_text_pos = &(cur_line_text[0]);
+	*cur_line_text_pos = '\0';
+}
 
 
 int rec = 0;
@@ -211,7 +218,7 @@ digit	[0-9]
 		BEGIN incl;
 	}
 <incl>[ \t]*      {
-	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
+	/*CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);*/
 }
 <incl>["][^"\n]*[\n] {
 	NhlPError(NhlFATAL,NhlEUNKNOWN,"Syntax Error : \\n not allowed in strings");
@@ -225,7 +232,7 @@ digit	[0-9]
 	char *tmp;
 	FILE *tmpfile = NULL;
 
-	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
+	/*CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);*/
 	tmp = strrchr(yytext,'\"');
 	*tmp = '\0';
 	tmp = (char*)&(yytext[0]) + 1;
@@ -280,11 +287,7 @@ digit	[0-9]
 	if(rec == 1) {
 		fprintf(recfp,"%s",cur_line_text);
 	}
-	last_line_length = cur_line_length;
-	cur_line_length = 0;
-	cur_line_length = 0;
-	*cur_line_text_pos = '\0';
-	cur_line_text_pos = &(cur_line_text[0]);
+	ResetCurLine();
         if(cmd_line) {
                _NclCallPromptFunc(cur_line_number);
         } else {
@@ -297,11 +300,7 @@ digit	[0-9]
 	if(rec == 1) {
 		fprintf(recfp,"%s",cur_line_text);
 	}
-	last_line_length = cur_line_length;
-	cur_line_length = 0;
-	cur_line_length = 0;
-	*cur_line_text_pos = '\0';
-	cur_line_text_pos = &(cur_line_text[0]);
+	ResetCurLine();
         if(cmd_line) {
                _NclCallPromptFunc(cur_line_number);
         } else { 
@@ -316,10 +315,7 @@ digit	[0-9]
 	if(rec == 1) {
 		fprintf(recfp,"%s",cur_line_text);
 	}
-	last_line_length = cur_line_length;
-	cur_line_length = 0;
-	*cur_line_text_pos = '\0';
-	cur_line_text_pos = &(cur_line_text[0]);
+	ResetCurLine();
 	inc_line = 1;
 	return EOLN;
 }
@@ -337,10 +333,7 @@ digit	[0-9]
 	if(rec == 1) {
 		fprintf(recfp,"%s\n",cur_line_text);
 	}
-	last_line_length = cur_line_length;
-	cur_line_length = 0;
-	*cur_line_text_pos = '\0';
-	cur_line_text_pos = &(cur_line_text[0]);
+	ResetCurLine();
 	return EOLN;
 }
 [ \t] { 

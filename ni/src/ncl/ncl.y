@@ -31,6 +31,7 @@ extern int cur_line_number;
 extern int last_line_length;
 extern char *cur_line_text;
 extern int ok_to_start_vsblk;
+extern void ResetCurLine(void);
 #define ERROR(x)  NhlPError(NhlFATAL,NhlEUNKNOWN,"%s",(x))
 int is_error = 0;
 int block_syntax_error = 0;
@@ -191,6 +192,7 @@ statement_list :  statement eoln			{
 								recfp = fopen(_NGResolvePath($3),"w"); 
 								if(recfp != NULL){ 
 									rec =1;
+									ResetCurLine();
 								} else {
 									NhlPError(NhlWARNING,errno,"Could not open record file");
 									rec = 0;
@@ -200,6 +202,7 @@ statement_list :  statement eoln			{
 								recfp = fopen(_NGResolvePath($2),"w"); 
 								if(recfp != NULL){ 
 									rec =1;
+									ResetCurLine();
 								} else {
 									NhlPError(NhlWARNING,errno,"Could not open record file");
 									rec = 0;
@@ -392,6 +395,7 @@ block_statement_list : statement eoln {
 								recfp = fopen(_NGResolvePath($3),"w"); 
 								if(recfp != NULL){ 
 									rec =1;
+									ResetCurLine();
 								} else {
 									NhlPError(NhlWARNING,errno,"Could not open record file");
 									rec = 0;
@@ -402,6 +406,7 @@ block_statement_list : statement eoln {
 								recfp = fopen(_NGResolvePath($2),"w"); 
 								if(recfp != NULL){ 
 									rec =1;
+									ResetCurLine();
 								} else {
 									NhlPError(NhlWARNING,errno,"Could not open record file");
 									rec = 0;
