@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.14 1999-05-22 00:36:29 dbrown Exp $
+ *      $Id: xwk.c,v 1.15 1999-05-24 21:20:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -856,15 +856,8 @@ XWkSetMainSize
 		XmNwidth,	&w,
 		XmNheight,	&h,
 		NULL);
-	XtVaGetValues(xwk->go.shell,
-		XmNminWidth,	&mw,
-		XmNminHeight,	&mh,
-		NULL);
-#if DEBUG_XWK
-	fprintf(stderr,"min width %d min height %d\n",mw,mh);
-#endif
-	
-#if 0
+
+#if 0	
 	XtVaSetValues(xwk->go.shell,
 		XmNmaxWidth,	MIN(w,WidthOfScreen(XtScreen(xwk->go.shell))),
 		XmNmaxHeight,	MIN(h,HeightOfScreen(XtScreen(xwk->go.shell))),
