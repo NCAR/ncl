@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlotP.h,v 1.12 2001-06-13 23:53:55 dbrown Exp $
+ *      $Id: StreamlinePlotP.h,v 1.13 2002-07-03 01:09:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -92,6 +92,10 @@ typedef struct _NhlstScaleInfo {
 	int			left_sig_digit;
 	int			sig_digits;
 } NhlstScaleInfo;
+
+typedef enum _stTransType {
+	stLOGLIN, stIRREGULAR, stCURVILINEAR
+} stTransType;
 
 
 typedef struct _NhlStreamlinePlotDataDepLayerPart{
@@ -215,7 +219,7 @@ typedef struct _NhlStreamlinePlotLayerPart {
 	NhlBoolean	zero_field;
 	NhlBoolean	display_zerof_no_data;
 	NhlString	zerof_no_data_string;
-	NhlBoolean	use_irr_trans;
+	stTransType	trans_type;
 	float		xc1,xcm,yc1,ycn; /* data bounds for stinit/stream */
 	float		xlb,xub,ylb,yub; /* window boundaries */
 	int		zerof_anno_id;

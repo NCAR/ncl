@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.c,v 1.20 1999-08-14 01:25:54 dbrown Exp $
+ *      $Id: VectorField.c,v 1.21 2002-07-03 01:09:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -51,11 +51,12 @@ static NhlResource resources[] = {
 		 Oset(x_arr),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
 	{NhlNvfYArray,NhlCvfYArray,NhlTGenArray,sizeof(NhlGenArray),
 		 Oset(y_arr),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
+
+	{NhlNvfGridType,NhlCvfGridType,NhlTGridType,sizeof(NhlGridType),
+ 	 	Oset(grid_type),NhlTImmediate,
+ 	 	_NhlUSET((NhlPointer)NhlSPHERICALGRID),0,NULL},
 	{NhlNvfPolarData,NhlCvfPolarData,
 		 NhlTBoolean,sizeof(NhlBoolean),Oset(polar_data),
-		 NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
-	{NhlNvfSubsetByIndex,NhlCvfSubsetByIndex,
-		 NhlTBoolean,sizeof(NhlBoolean),Oset(subset_by_index),
 		 NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
 	{NhlNvfCopyData,NhlCdiCopyData,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(copy_arrays),NhlTImmediate,
@@ -1301,9 +1302,10 @@ Monotonic
  *
  * Description:	This function checks the coordinate arrays used to
  *		specify irregular vector field grids. 
- *		It checks to ensure the array is monotonic and that the
- *		number of elements is equal to the corresponding 
- *		dimension of the data array.
+ *              First it checks to ensure dimensionality is correct.
+ *		1-d arrays are checked to ensure monotonicity.
+ *              All arrays are checked to ensure that corresponding
+ *		dimensions have equal numbers of elements.
  *
  * In Args:	
  *
@@ -1343,6 +1345,38 @@ ValidCoordArray
 		len_dim = vfp->y_el_count;
 		name = NhlNvfYArray;
 	}
+
+        if (ga->num_dimensions > 2 || ga->num_dimensions < 1) {
+                e_text =
+          "%s: coordinate array %s has invalid dimensionality: defaulting %s";
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,name,name);
+                return False;
+        }
+        else if (ga->num_dimensions == 2) {
+                if (ga->len_dimensions[0] != vfp->y_el_count ||
+                    ga->len_dimensions[1] != vfp->x_el_count) {
+                        e_text =
+   "%s: 2d coordinate array %s has an incorrect dimension size: defaulting %s";
+                        NhlPError(NhlWARNING,
+                                  NhlEUNKNOWN,e_text,entry_name,name,name);
+                        return False;
+                }
+                if ((ctype == vfXCOORD &&
+                     !(vfp->y_arr && vfp->y_arr->num_dimensions == 2)) ||
+                    (ctype == vfYCOORD &&
+                     !(vfp->x_arr && vfp->x_arr->num_dimensions == 2))) {
+                        e_text =
+    "%s: 2d X and Y coordinate arrays must have matching shape: defaulting %s";
+                        NhlPError(NhlWARNING,
+                                  NhlEUNKNOWN,e_text,entry_name,name);
+                        return False;
+                }	
+
+                /* for now at this point assume that grid is okay */
+                return True;
+        }
+
+        /* 1d case */
 
 	if (ga->len_dimensions[0] != len_dim) {
 		e_text = 
@@ -1770,6 +1804,230 @@ GetSubsetBounds
 	return ret;
 }
 
+/*
+ * Function:    GetSubsetBounds2D
+ *
+ * Description: Depending on the value of the NhlNvfSubsetByIndex resource,
+ *              determines one coordinate of the data array subset,
+ *              based either on the
+ *              IndexStart/End resources or the SubsetStart/End resources.
+ *              Actually for now it only handles index subsetting.
+ *              In either case the true clipping rectangle is determined
+ *              based on the calculated or user assigned array index
+ *              start/end values. The clipping boundaries may not be exactly
+ *              what the user asked for due to the truncation involved in
+ *              converting from data points to integer array indexes, but
+ *              the specified data points are guaranteed to be included.
+ *
+ * In Args:     vfp
+ *              ctypef
+ *              cstart,cend
+ *              entry_name
+ * In/Out Args: icstart,icend
+ * Out Args:    sxstart,sxend
+ *
+ * Scope:       private
+ * Returns:     NhlGenArray or NULL on error
+ * Side Effect:
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+GetSubsetBounds2D
+#if     NhlNeedProto
+(
+        NhlVectorFieldLayerPart *vfp,
+        NhlGenArray             *c_array,
+        vfCoord                 ctype,
+        NhlBoolean              overwrite_ok,
+        int                     xistart,
+        int                     xiend,
+        int                     yistart,
+        int                     yiend,
+        float                   *cstart,
+        float                   *cend,
+        float                   *scstart,
+        float                   *scend,
+        NhlString               entry_name
+)
+#else
+(vfp,c_array,ctype,overwrite_ok,
+ xistart,xiend,yistart,yiend,overwrite_ok,cstart,cend,scstart,scend,entry_name)
+        NhlVectorFieldLayerPart *vfp;
+        NhlGenArray             *c_array;
+        vfCoord                 ctype;
+        NhlBoolean              overwrite_ok;
+        int                     xistart;
+        int                     xiend;
+        int                     yistart;
+        int                     yiend;
+        float                   *cstart;
+        float                   *cend;
+        float                   *scstart;
+        float                   *scend;
+        NhlString               entry_name;
+#endif
+{
+        char            *e_text;
+        NhlErrorTypes   ret = NhlNOERROR,subret = NhlNOERROR;
+        NhlBoolean      do_subset = False;
+        NhlBoolean      rev;
+        NhlGenArray     *subset_start,*subset_end;
+        NhlGenArray     out_ga;
+        NhlBoolean      nullstart = False,nullend = False;
+        NhlBoolean      start_byindex,end_byindex;
+        char            *c_name;
+        float           *fp, *nfp;
+        int             rem,stride;
+        float           min, max;
+        int             yi,xi;
+        int             yimin,yimax,ximin,ximax;
+        int             out_len[2];
+
+        fp = (float *) (*c_array)->data;
+
+        min = FLT_MAX;
+        max = -FLT_MAX;
+        yimin = yimax = ximin = ximax = 0;
+        for (yi = 0; yi < vfp->y_el_count; yi++) {
+                for (xi = 0; xi < vfp->x_el_count; xi++) {
+                        float val = *(fp + yi * vfp->x_el_count + xi);
+                        if (val < min) {
+                                min = val;
+                                yimin = yi;
+                                ximin = xi;
+                        }
+                        if (val > max) {
+                                max = val;
+                                yimax = yi;
+                                ximax = xi;
+                        }
+                }
+        }
+        if (ctype == vfXCOORD) {
+                if (ximin == ximax)
+                        rev = yimin > yimax;
+                else
+                        rev = ximin > ximax;
+                c_name = "X coordinate";
+                if (rev) {
+                        *cstart = max;
+                        *cend = min;
+                        vfp->xc_start_el = yimax * vfp->x_el_count + ximax;
+                        vfp->xc_end_el = yimin * vfp->x_el_count + ximin;
+                }
+                else {
+                        *cstart = min;
+                        *cend = max;
+                        vfp->xc_start_el = yimin * vfp->x_el_count + ximin;
+                        vfp->xc_end_el = yimax * vfp->x_el_count + ximax;
+                }
+        }
+        else {
+                if (yimin == yimax)
+                        rev = ximin > ximax;
+                else
+                        rev = yimin > yimax;
+                c_name = "Y coordinate";
+                if (rev) {
+                        *cstart = max;
+                        *cend = min;
+                        vfp->yc_start_el = yimax * vfp->x_el_count + ximax;
+                        vfp->yc_end_el = yimin * vfp->x_el_count + ximin;
+                }
+                else {
+                        *cstart = min;
+                       *cend = max;
+                        vfp->yc_start_el = yimin * vfp->x_el_count + ximin;
+                        vfp->yc_end_el = yimax * vfp->x_el_count + ximax;
+                }
+        }
+
+        if (xistart > 0 || yistart > 0 ||
+            xiend < vfp->x_el_count - 1 || yiend < vfp->y_el_count - 1 ||
+            vfp->x_stride > 1 || vfp->y_stride > 1)
+                do_subset = True;
+
+        if (! do_subset) {
+                *scstart = *cstart;
+                *scend = *cend;
+                return NhlNOERROR;
+        }
+        min = FLT_MAX;
+        max = -FLT_MAX;
+        yimin = yimax = ximin = ximax = 0;
+        for (yi = yistart; yi <= yiend; yi++) {
+                for (xi = xistart; xi <= xiend; xi++) {
+                        float val = *(fp + yi * vfp->x_el_count + xi);
+                        if (val < min) {
+                                min = val;
+                                yimin = yi;
+                                ximin = xi;
+                        }
+                        if (val > max) {
+                                max = val;
+                                yimax = yi;
+                                ximax = xi;
+                        }
+                }
+        }
+        if (rev) {
+                *scstart = max;
+                *scend = min;
+        }
+        else {
+                *scstart = min;
+                *scend = max;
+        }
+        out_len[0] =  yiend - yistart + 1;
+        out_len[1] =  xiend - xistart + 1;
+ if (overwrite_ok)
+                nfp = fp;
+        else {
+                if ((nfp = (float *)
+                     NhlConvertMalloc(out_len[1] * out_len[0] *
+                                      sizeof(float))) == NULL) {
+                        e_text = "%s: dynamic memory allocation error";
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                  e_text,entry_name);
+                        return NhlFATAL;
+                }
+        }
+        for (yi = 0; yi < out_len[0]; yi++) {
+                for (xi = 0; xi < out_len[1]; xi++) {
+                        *(nfp+(yi * out_len[1] + xi)) =
+                                *(fp + vfp->x_el_count * (yistart+yi) +
+                                  xistart+xi);
+                }
+        }
+
+        if ((out_ga = (NhlGenArray)
+             NhlConvertMalloc(sizeof(NhlGenArrayRec)))
+            == NULL) {
+                e_text = "%s: dynamic memory allocation error";
+                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                          e_text,entry_name);
+                return NhlFATAL;
+        }
+        out_ga->num_dimensions = 2;
+        if ((out_ga->len_dimensions = (int *)
+             NhlConvertMalloc(2 * sizeof(int))) == NULL) {
+                e_text = "%s: dynamic memory allocation error";
+                NhlPError(NhlFATAL,NhlEUNKNOWN,
+                          e_text,entry_name);
+                return NhlFATAL;
+        }
+        out_ga->len_dimensions[0] = out_len[0];
+        out_ga->len_dimensions[1] = out_len[1];
+        out_ga->num_elements = out_len[0] * out_len[1];
+        out_ga->typeQ = Qfloat;
+        out_ga->size = sizeof(float);
+        out_ga->data = (NhlPointer)nfp;
+        out_ga->my_data = True;
+        *c_array = out_ga;
+
+	return ret;
+}
+
 
 /*
  * Function:	GetSubsetBoundsIrregular
@@ -1840,6 +2098,11 @@ GetSubsetBoundsIrregular
 	float		*fp, *nfp;
 	int		rem,stride;
 
+	len = (*c_array)->len_dimensions[0];
+	fp = (float *) (*c_array)->data;
+	*cstart = fp[0];
+	*cend = fp[len-1];
+
 	if (ctype == vfXCOORD) {
 		subset_start = &vfp->x_subset_start;
 		subset_end = &vfp->x_subset_end;
@@ -1847,6 +2110,8 @@ GetSubsetBoundsIrregular
                 start_byindex = vfp->xstart_byindex;
                 end_byindex = vfp->xend_byindex;
 		c_name = "X coordinate";
+		vfp->xc_start_el = 0;
+                vfp->xc_end_el = len - 1;
 	}
 	else {
 		subset_start = &vfp->y_subset_start;
@@ -1855,12 +2120,10 @@ GetSubsetBoundsIrregular
                 start_byindex = vfp->ystart_byindex;
                 end_byindex = vfp->yend_byindex;
 		c_name = "Y coordinate";
-	}
+		vfp->yc_start_el = 1;
+                vfp->yc_end_el = len - 1;
 
-	len = (*c_array)->len_dimensions[0];
-	fp = (float *) (*c_array)->data;
-	*cstart = fp[0];
-	*cend = fp[len-1];
+	}
 
 	if (! vfp->subset_by_index) {
 		float fval;
@@ -2054,412 +2317,6 @@ GetSubsetBoundsIrregular
 	return ret;
 }
 
-#if 0
-/*
- * Function:	GetSubsetBounds
- *
- * Description:	Depending on the value of the NhlNvfSubsetByIndex resource,
- *		determines one coordinate of the data array subset, 
- *		based either on the 
- *		IndexStart/End resources or the SubsetStart/End resources.
- *		In either case the true clipping rectangle is determined
- *		based on the calculated or user assigned array index 
- *		start/end values. The clipping boundaries may not be exactly
- *		what the user asked for due to the truncation involved in
- *		converting from data points to integer array indexes, but
- *		the specified data points are guaranteed to be included.
- *
- * In Args:	vfp
- *		ctype
- *		cstart,cend
- *		entry_name
- * In/Out Args: icstart,icend
- * Out Args:	sxstart,sxend
- *
- * Scope:	private
- * Returns:	NhlGenArray or NULL on error
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-GetSubsetBounds
-#if	NhlNeedProto
-(
- 	NhlVectorFieldLayerPart *vfp,
-	vfCoord			ctype,
-	float			cstart,
-	float			cend,
-	int			*icstart,
-	int			*icend,
-	float			*scstart,
-	float			*scend,
-	NhlString		entry_name
-)
-#else
-(vfp,ctype,cstart,cend,icstart,icend,scstart,scend,entry_name)
- 	NhlVectorFieldLayerPart *vfp;
-	vfCoord			ctype;
-	float			cstart;
-	float			cend;
-	int			*icstart;
-	int			*icend;
-	float			*scstart;
-	float			*scend;
-	NhlString		entry_name;
-#endif
-{
-	char		*e_text;
-	NhlErrorTypes   ret = NhlNOERROR, subret = NhlNOERROR;
-	float		flt_inc;
-	NhlBoolean	rev;
-	float		drange;
-	int		range;
-	NhlGenArray	subset_start, subset_end;
-	NhlBoolean	nullstart = False, nullend = False;
-	char		*c_name;
-	int		stride,rem;
-	
-
-	if (ctype == vfXCOORD) {
-		range =  vfp->x_el_count - 1;
-		subset_start = vfp->x_subset_start;
-		subset_end = vfp->x_subset_end;
-		stride = vfp->x_stride;
-		c_name = "X coordinate";
-	}
-	else {
-		range = vfp->y_el_count - 1;
-		subset_start = vfp->y_subset_start;
-		subset_end = vfp->y_subset_end;
-		stride = vfp->y_stride;
-		c_name = "Y coordinate";
-	}
-
-	if (! vfp->subset_by_index) {
-		float fval;
-
-		rev = cstart > cend;
-		if (subset_start != NULL) {
-			subret = GetVTypeValue(subset_start,&fval);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				e_text = 
-				      "%s: error getting variable type value";
-				NhlPError(NhlFATAL,
-					  NhlEUNKNOWN,e_text,entry_name);
-				return ret;
-			}
-			*scstart = rev ? MIN(cstart,fval): MAX(cstart,fval);
-		}
-		else {
-			*scstart = cstart;
-			nullstart = True;
-		}
-		if (subset_end != NULL) {
-			subret = GetVTypeValue(subset_end,&fval);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				e_text = 
-				     "%s: error getting variable type value";
-				NhlPError(NhlFATAL,
-					  NhlEUNKNOWN,e_text,entry_name);
-				return ret;
-			}
-			*scend = rev ? MAX(cend,fval): MIN(cend,fval);
-		}
-		else {
-			*scend = cend;
-			nullend = True;
-		}
-
-		if (rev != (*scstart > *scend)) {
-			e_text = 
-     "%s: %s  start/end subset order opposed to %s start/end order: not using subset resources";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,
-				  e_text,entry_name,c_name,c_name);
-			ret = MIN(NhlWARNING,ret);
-			*scstart = cstart;
-			*scend = cend;
-		}
-
-/*
- * The index endpoints are chosen to include the subset data endpoints.
- */
-		drange = cend - cstart;
-		*icstart = MAX(0,floor(((*scstart - cstart) /drange) * range));
-		*icend = MIN(range,ceil(((*scend - cstart) / drange) * range));
-
-		if (*icend - *icstart < 2) {
-			e_text = 
-		         "%s: %s subset data range not large enough: ignoring";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-				  c_name,c_name);
-			ret = MIN(NhlWARNING,ret);
-			*scstart = cstart;
-			*scend = cend;
-			*icstart = 0;
-			*icend = range;
-		}
-	}
-/* 
- * if a stride is specified, the index must be a multiple of the stride 
- * value in order to assure that the complete data coordinate range is
- * included. Add to the specified end index if necessary, unless it 
- * would exceed the max index. In this case subtract -- it is not possible
- * to include the complete data range.
- */
-	rem = (*icend - *icstart) % stride;
-	if (rem  > 0) {
-		if (*icend + stride - rem <= range)
-			*icend += stride - rem;
-		else
-			*icend -= rem;
-	}
-
-	flt_inc = (cend - cstart) / range;
-
-	*scstart = cstart + flt_inc * *icstart;
-	*scend = cstart + flt_inc * *icend;
-
-	return ret;
-}
-
-
-/*
- * Function:	GetSubsetBoundsIrregular
- *
- * Description:	Depending on the value of the NhlNvfSubsetByIndex resource,
- *		determines one coordinate of the data array subset, 
- *		based either on the 
- *		IndexStart/End resources or the SubsetStart/End resources.
- *		In either case the true clipping rectangle is determined
- *		based on the calculated or user assigned array index 
- *		start/end values. The clipping boundaries may not be exactly
- *		what the user asked for due to the truncation involved in
- *		converting from data points to integer array indexes, but
- *		the specified data points are guaranteed to be included.
- *
- * In Args:	vfp
- *		ctype
- *		cstart,cend
- *		entry_name
- * In/Out Args: icstart,icend
- * Out Args:	sxstart,sxend
- *
- * Scope:	private
- * Returns:	NhlGenArray or NULL on error
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-GetSubsetBoundsIrregular
-#if	NhlNeedProto
-(
- 	NhlVectorFieldLayerPart *vfp,
-	NhlGenArray		*c_array,
-	vfCoord			ctype,
-	NhlBoolean		overwrite_ok,
-	float			*cstart,
-	float			*cend,
-	int			*icstart,
-	int			*icend,
-	float			*scstart,
-	float			*scend,
-	NhlString		entry_name
-)
-#else
-(vfp,c_array,ctype,overwrite_ok,
- cstart,cend,icstart,icend,scstart,scend,entry_name)
- 	NhlVectorFieldLayerPart *vfp;
-	NhlGenArray		*c_array;
-	vfCoord			ctype;
-	float			*cstart;
-	float			*cend;
-	int			*icstart;
-	int			*icend;
-	float			*scstart;
-	float			*scend;
-	NhlString		entry_name;
-#endif
-{
-	char		*e_text;
-	NhlErrorTypes   ret = NhlNOERROR,subret = NhlNOERROR;
-	NhlBoolean	rev;
-	int		i, len;
-	NhlGenArray	subset_start,subset_end,out_ga;
-	NhlBoolean	nullstart = False,nullend = False;
-	char		*c_name;
-	float		*fp, *nfp;
-	int		rem,stride;
-
-	if (ctype == vfXCOORD) {
-		subset_start = vfp->x_subset_start;
-		subset_end = vfp->x_subset_end;
-		stride = vfp->x_stride;
-		c_name = "X coordinate";
-	}
-	else {
-		subset_start = vfp->y_subset_start;
-		subset_end = vfp->y_subset_end;
-		stride = vfp->y_stride;
-		c_name = "Y coordinate";
-	}
-
-	len = (*c_array)->len_dimensions[0];
-	fp = (float *) (*c_array)->data;
-	*cstart = fp[0];
-	*cend = fp[len-1];
-
-	if (! vfp->subset_by_index) {
-		float fval;
-
-		rev = *cstart > *cend;
-		if (subset_start != NULL) {
-			subret = GetVTypeValue(subset_start,&fval);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				e_text = 
-				      "%s: error getting variable type value";
-				NhlPError(NhlFATAL,
-					  NhlEUNKNOWN,e_text,entry_name);
-				return ret;
-			}
-			*scstart = rev ? MIN(*cstart,fval): MAX(*cstart,fval);
-		}
-		else {
-			*scstart = *cstart;
-			nullstart = True;
-		}
-
-		if (subset_end != NULL) {
-			subret = GetVTypeValue(subset_end,&fval);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				e_text = 
-				      "%s: error getting variable type value";
-				NhlPError(NhlFATAL,
-					  NhlEUNKNOWN,e_text,entry_name);
-				return ret;
-			}
-			*scend = rev ? MAX(*cend,fval) : MIN(*cend,fval);
-		}
-		else {
-			*scend = *cend;
-			nullend = True;
-		}
-
-		if (rev != (*scstart > *scend)) {
-			e_text = 
-      "%s: %s start/end subset order opposed to %s start/end order: not using subset resources";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,
-				  e_text,entry_name,c_name,c_name);
-			ret = MIN(NhlWARNING,ret);
-			*scstart = *cstart;
-			*scend = *cend;
-		}
-
-		if (! rev) { 
-			for (i = 0; i < len; i++) {
-				if (*scstart < *(fp + i)) {
-					*icstart = MAX(i-1,0);
-					break;
-				}
-			}
-			for (i = len - 1; i >= 0; i--) {
-				if (*scend > *(fp + i)) {
-					*icend = MIN(i+1,len-1);
-					break;
-				}
-			}
-		}
-		else {
-			for (i = 0; i < len; i++) {
-				if (*scstart > *(fp + i)) {
-					*icstart = MAX(i-1,0);
-					break;
-				}
-			}
-			for (i = len - 1; i >= 0; i--) {
-				if (*scend < *(fp + i)) {
-					*icend = MIN(i+1,len-1);
-					break;
-				}
-			}
-		}
-
-		if (*icend - *icstart < 2) {
-			e_text = 
-		        "%s: %s subset data range not large enough: ignoring";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-				  c_name,c_name);
-			ret = MIN(NhlWARNING,ret);
-			*scstart = *cstart;
-			*scend = *cend;
-			*icstart = 0;
-			*icend = len - 1;
-		}
-	}
-
-/* 
- * if a stride is specified, the end index must be a multiple of the stride 
- * value. Increase the specified end index if necessary, unless it 
- * would exceed the max index. In this case subtract -- it is not possible
- * to include the complete data range.
- */
-	rem = (*icend - *icstart) % stride;
-	if (rem  > 0) {
-		if (*icend + stride - rem <= len -1)
-			*icend += stride - rem;
-		else
-			*icend -= rem;
-	}
-	*scstart = fp[*icstart];
-	*scend = fp[*icend];
-/*
- * If the data is a subset of the complete array, copy the relevant
- * part of the irregular coordinate array to a new array. The old data
- * space will eventually be freed (I think) by the Converter 
- * memory management routines.
- */
-	if (*icstart > 0 || *icend < len - 1 || stride > 1) {
-		int nlen;
-                nlen = (*icend - *icstart) / stride + 1;
-		if (overwrite_ok) {
-			for (i = 0; i < nlen; i++) {
-				fp[i] = fp[*icstart+i*stride];
-			}
-			(*c_array)->num_elements = nlen;
-		}
-		else {
-			if ((nfp = (float *)
-			     NhlConvertMalloc(nlen * 
-					      sizeof(float))) == NULL) { 
-				e_text = "%s: dynamic memory allocation error";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return NhlFATAL;
-			}
-			for (i = 0; i < nlen; i++) {
-				nfp[i] = fp[*icstart+i*stride];
-			}
-			if ((out_ga = (NhlGenArray) 
-			     NhlConvertMalloc(sizeof(NhlGenArrayRec)))
-			    == NULL) {
-				e_text = "%s: dynamic memory allocation error";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return NhlFATAL;
-			}
-			out_ga->num_dimensions = 1;
-			out_ga->len_dimensions = &out_ga->num_elements;
-			out_ga->num_elements = nlen;
-			out_ga->typeQ = Qfloat;
-			out_ga->size = sizeof(float);
-			out_ga->data = (NhlPointer)nfp;
-			out_ga->my_data = True;
-			*c_array = out_ga;
-		}
-	}
-
-	return ret;
-}
-#endif
 
 /*
  * Function:	GetCoordBounds
@@ -2523,6 +2380,100 @@ GetCoordBounds
 		return ret;
 
 	return ret;
+}
+
+/*
+ * Function:    GetCoordBounds2D
+ *
+ * Description: For 2D coordinate arrays, the max and min coord array elements
+ *              define the start and end of the data space; the x/y start/end
+ *              resources are ignored. However, it is still possible to create
+ *              subsets of the  data using either the index or the subset
+ *              start/end resources.
+ *              For now, only subsetting by index is allowed.
+ *              The resources are given someone different meanings from
+ *              the 1D case:
+ *              The XC{Start|End}Index, and XCStride resources apply to the
+ *              X axis of both coordinate arrays, while the
+ *              YC{Start|End}Index and YCStride resources apply to the
+ *              Y Axis of both coordinate arrays.
+ *              In contast, the XC{Start|End}V and XC{Start|End}SubsetV
+ *              arrays apply only to the XArray, while the
+ *              the YC{Start|End}V and YC{Start|End}SubsetV arrays apply
+ *              only to the YArray.
+ *
+ * In Args:     vfp
+ *              ctype
+ *              entry_name
+ *
+ * Out Args:    cstart,cend
+ *              icstart,icend
+ *              scstart,scend
+ *
+ * Scope:       private
+ * Returns:     NhlGenArray or NULL on error
+ * Side Effect:
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+GetCoordBounds2D
+#if     NhlNeedProto
+(
+        NhlVectorFieldLayerPart *vfp,
+        NhlGenArray             *c_array,
+        vfCoord                 ctype,
+        NhlBoolean              overwrite_ok,
+        float                   *cstart,
+        float                   *cend,
+        int                     *icstart,
+        int                     *icend,
+        float                   *scstart,
+        float                   *scend,
+        NhlString               entry_name
+)
+#else
+( vfp, c_array, ctype, overwrite_ok, cstart, cend, icstart, icend, scstart, scend, entry_name)
+        NhlVectorFieldLayerPart *vfp;
+        NhlGenArray             *c_array;
+        vfCoord                 ctype;
+        NhlBoolean              overwrite_ok;
+        float                   *cstart;
+        float                   *cend;
+        int                     *icstart;
+        int                     *icend;
+        float                   *scstart;
+        float                   *scend;
+        NhlString               entry_name;
+#endif
+{
+        NhlErrorTypes   ret = NhlNOERROR, subret = NhlNOERROR;
+        int xistart,xiend,yistart,yiend;
+
+        subret = GetIndexBounds(vfp,vfXCOORD,&xistart,&xiend,entry_name);
+        if ((ret = MIN(ret,subret))  < NhlWARNING)
+                return ret;
+        subret = GetIndexBounds(vfp,vfYCOORD,&yistart,&yiend,entry_name);
+        if ((ret = MIN(ret,subret))  < NhlWARNING)
+                return ret;
+
+        subret = GetSubsetBounds2D(vfp,c_array,ctype,overwrite_ok,
+                                   xistart,xiend,yistart,yiend,
+                                   cstart,cend,scstart,scend,entry_name);
+
+        if ((ret = MIN(ret,subret))  < NhlWARNING)
+                return ret;
+
+        switch (ctype) {
+        case vfXCOORD:
+                *icstart = xistart;
+                *icend = xiend;
+                break;
+        case vfYCOORD:
+               *icstart = yistart;
+                *icend = yiend;
+                break;
+        }
+        return ret;
 }
 
 
@@ -2740,15 +2691,25 @@ CvtGenVFObjToFloatVFObj
 	}
 	else {
 		overwrite_ok = x_arr != vfp->x_arr;
-		subret = GetCoordBoundsIrregular(vfp,&x_arr,vfXCOORD,
-						 overwrite_ok,
-						 &xstart,&xend,
-						 &ixstart,&ixend,
-						 &sxstart,&sxend,
-						 entry_name);
-		if ((ret = MIN(ret,subret))  < NhlWARNING) 
-			return ret;
-	}
+                if (x_arr->num_dimensions == 2) {
+                        subret = GetCoordBounds2D(vfp,&x_arr,vfXCOORD,
+                                                  overwrite_ok,
+                                                  &xstart,&xend,
+                                                  &ixstart,&ixend,
+                                                  &sxstart,&sxend,
+                                                  entry_name);
+                }
+                else {
+                        subret = GetCoordBoundsIrregular(vfp,&x_arr,vfXCOORD,
+                                                         overwrite_ok,
+                                                         &xstart,&xend,
+                                                         &ixstart,&ixend,
+                                                         &sxstart,&sxend,
+                                                         entry_name);
+                }
+                if ((ret = MIN(ret,subret))  < NhlWARNING)
+                        return ret;
+        }
 	vffp->ix_start = vfp->ix_start = ixstart;
 	vffp->ix_end = vfp->ix_end = ixend;
 	vfp->x_actual_start = sxstart;
@@ -2788,15 +2749,25 @@ CvtGenVFObjToFloatVFObj
 	}
 	else {
 		overwrite_ok = y_arr != vfp->y_arr;
-		subret = GetCoordBoundsIrregular(vfp,&y_arr,vfYCOORD,
-						 overwrite_ok,
-						 &ystart,&yend,
-						 &iystart,&iyend,
-						 &systart,&syend,
-						 entry_name);
-		if ((ret = MIN(ret,subret))  < NhlWARNING) 
-			return ret;
-	}
+                if (y_arr->num_dimensions == 2) {
+                        subret = GetCoordBounds2D(vfp,&y_arr,vfYCOORD,
+                                                  overwrite_ok,
+                                                  &ystart,&yend,
+                                                  &iystart,&iyend,
+                                                  &systart,&syend,
+                                                  entry_name);
+                }
+                else {
+                        subret = GetCoordBoundsIrregular(vfp,&y_arr,vfYCOORD,
+                                                         overwrite_ok,
+                                                         &ystart,&yend,
+                                                         &iystart,&iyend,
+                                                         &systart,&syend,
+                                                         entry_name);
+                }
+                if ((ret = MIN(ret,subret))  < NhlWARNING)
+                        return ret;
+        }
 	vffp->iy_start = vfp->iy_start = iystart;
 	vffp->iy_end = vfp->iy_end = iyend;
 	vfp->y_actual_start = systart;
@@ -2983,6 +2954,7 @@ CvtGenVFObjToFloatVFObj
 		vffp->v_min = tmin;
 		vffp->v_max = tmax;
 	}
+        vffp->grid_type = vfp->grid_type; /* only matters if 2D coords */
 	vffp->changed = vfp->changed;
         vfp->up_to_date = True;
        
@@ -3210,6 +3182,7 @@ VectorFieldInitialize
         vfp->xend_byindex = False;
         vfp->ystart_byindex = False;
         vfp->yend_byindex = False;
+
 
  	if (! vfp->d_arr && !(vfp->u_arr && vfp->v_arr)) {
 		e_text = 
@@ -3766,12 +3739,17 @@ VectorFieldSetValues
                         vfp->x_arr = ovfp->x_arr;
                 }
                 else {
-		        if ((! ovfp->x_arr) || x_dim_changed || 
-			    vfp->x_arr->size != ovfp->x_arr->size ||
-			    vfp->x_arr->typeQ != ovfp->x_arr->typeQ ||
-			    memcmp(vfp->x_arr->data,ovfp->x_arr->data,
-				   vfp->x_arr->size * vfp->x_el_count))
-				x_arr_changed = True;
+			 if ( (! ovfp->x_arr) || x_dim_changed ||
+                            vfp->x_arr->size != ovfp->x_arr->size ||
+                            vfp->x_arr->typeQ != ovfp->x_arr->typeQ ||
+                            vfp->x_arr->num_dimensions !=
+                            ovfp->x_arr->num_dimensions ||
+                            (vfp->x_arr->num_dimensions == 2 &&
+                             y_dim_changed) ||
+                            memcmp(vfp->x_arr->data,ovfp->x_arr->data,
+                                   vfp->x_arr->size
+                                   * vfp->x_arr->num_elements) )
+                                x_arr_changed = True;
 
                         if ((vfp->x_arr = _NhlCopyGenArray
                              (vfp->x_arr,vfp->copy_arrays)) == NULL) {
@@ -3806,12 +3784,18 @@ VectorFieldSetValues
                         vfp->y_arr = ovfp->y_arr;
                 }
                 else {
-		        if ((! ovfp->y_arr) || y_dim_changed || 
-			    vfp->y_arr->size != ovfp->y_arr->size ||
-			    vfp->y_arr->typeQ != ovfp->y_arr->typeQ ||
-			    memcmp(vfp->y_arr->data,ovfp->y_arr->data,
-				   vfp->y_arr->size * vfp->y_el_count))
-				y_arr_changed = True;
+			 if ((! ovfp->y_arr) || y_dim_changed ||
+                            vfp->y_arr->size != ovfp->y_arr->size ||
+                            vfp->y_arr->typeQ != ovfp->y_arr->typeQ ||
+                            vfp->y_arr->num_dimensions !=
+                            ovfp->y_arr->num_dimensions ||
+                           (vfp->y_arr->num_dimensions == 2 &&
+                             x_dim_changed) ||
+                            memcmp(vfp->y_arr->data,ovfp->y_arr->data,
+                                   vfp->y_arr->size *
+                                   vfp->y_arr->num_elements) )
+                                y_arr_changed = True;
+
                         if ((vfp->y_arr = _NhlCopyGenArray
                              (vfp->y_arr,vfp->copy_arrays)) == NULL) {
                                 e_text = "%s: dynamic memory allocation error";
@@ -4094,6 +4078,16 @@ VectorFieldSetValues
 		status = True;
 	if (vfp->exchange_uv_data != ovfp->exchange_uv_data)
 		status = True;
+       /*
+	* 2-D coordinates are interdependent so if one is changed the
+	* other changes as well
+	*/
+        if (vfp->x_arr && vfp->x_arr->num_dimensions == 2 &&
+            (vfp->changed & _NhlvfXARR_CHANGED ||
+             vfp->changed & _NhlvfYARR_CHANGED)) {
+                vfp->changed |= _NhlvfXARR_CHANGED;
+                vfp->changed |= _NhlvfYARR_CHANGED;
+        }
 
         _NhlDataChanged((NhlDataItemLayer)new,status);
         if (status)
@@ -4357,8 +4351,15 @@ static NhlErrorTypes    VectorFieldGetValues
                 }
                 else if (resQ == Qx_arr && vfp->x_arr) {
 			do_genarray = True;
-			ndim = 1;
-                        dlen[0] = vfp->x_arr->len_dimensions[0];
+			if (vfp->x_arr->num_dimensions == 2) {
+                                ndim = 2;
+                                dlen[0] = vfp->x_arr->len_dimensions[0];
+                                dlen[1] = vfp->x_arr->len_dimensions[1];
+                        }
+                        else {
+                                ndim = 1;
+                                dlen[0] = vfp->x_arr->len_dimensions[0];
+                        }
                         if (vfp->copy_arrays) {
                                 if ((data = CopyData(vfp->x_arr,resQ)) == NULL)
                                         return NhlFATAL;
@@ -4382,8 +4383,15 @@ static NhlErrorTypes    VectorFieldGetValues
                 }
                 else if (resQ == Qy_arr && vfp->y_arr) {
 			do_genarray = True;
-			ndim = 1;
-                        dlen[0] = vfp->y_arr->len_dimensions[0];
+                        if (vfp->y_arr->num_dimensions == 2) {
+                                ndim = 2;
+                                dlen[0] = vfp->y_arr->len_dimensions[0];
+                                dlen[1] = vfp->y_arr->len_dimensions[1];
+                        }
+                        else {
+                                ndim = 1;
+                                dlen[0] = vfp->y_arr->len_dimensions[0];
+                        }
                         if (vfp->copy_arrays) {
                                 if ((data = CopyData(vfp->y_arr,resQ)) == NULL)
                                         return NhlFATAL;
@@ -4579,9 +4587,10 @@ static NhlErrorTypes    VectorFieldGetValues
 			ndim = 1;
 			dlen[0] = 1;
 			if (vfp->x_arr) {
-				data = CreateVData
-					((NhlPointer)vfp->x_arr->data,
-					 vfp->x_arr->size,resQ);
+                                data = CreateVData
+				     ((NhlPointer)((char *)vfp->x_arr->data +
+				     (vfp->xc_start_el * vfp->x_arr->size)),
+                                      vfp->x_arr->size,resQ);
 				if (!data)
 					return NhlFATAL;
 				typeQ = vfp->x_arr->typeQ;
@@ -4609,9 +4618,9 @@ static NhlErrorTypes    VectorFieldGetValues
 			dlen[0] = 1;
 			if (vfp->x_arr) {
 				data = CreateVData
-				  ((NhlPointer)((char *)vfp->x_arr->data + 
-				   (vfp->x_el_count-1) * vfp->x_arr->size),
-				   vfp->x_arr->size,resQ);
+                                  ((NhlPointer)((char *)vfp->x_arr->data +
+                                   (vfp->xc_end_el * vfp->x_arr->size)),
+                                   vfp->x_arr->size,resQ);
 				if (!data)
 					return NhlFATAL;
 				typeQ = vfp->x_arr->typeQ;
@@ -4639,7 +4648,9 @@ static NhlErrorTypes    VectorFieldGetValues
 			dlen[0] = 1;
 			if (vfp->y_arr) {
 				data = CreateVData
-				  (vfp->y_arr->data,vfp->y_arr->size,resQ);
+                                  ((NhlPointer)((char *)vfp->y_arr->data +
+                                   (vfp->yc_start_el * vfp->y_arr->size)),
+                                   vfp->y_arr->size,resQ);
 				if (!data)
 					return NhlFATAL;
 				typeQ = vfp->y_arr->typeQ;
@@ -4666,10 +4677,10 @@ static NhlErrorTypes    VectorFieldGetValues
 			ndim = 1;
 			dlen[0] = 1;
 			if (vfp->y_arr) {
-				data = CreateVData
-				  ((NhlPointer)((char *)vfp->y_arr->data + 
-				   (vfp->y_el_count-1) * vfp->y_arr->size),
-				   vfp->y_arr->size,resQ);
+                                data = CreateVData
+                                  ((NhlPointer)((char *)vfp->y_arr->data +
+                                   (vfp->yc_end_el * vfp->y_arr->size)),
+                                   vfp->y_arr->size,resQ);
 				if (!data)
 					return NhlFATAL;
 				typeQ = vfp->y_arr->typeQ;

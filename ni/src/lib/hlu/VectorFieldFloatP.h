@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorFieldFloatP.h,v 1.3 1998-04-16 03:09:20 dbrown Exp $
+ *      $Id: VectorFieldFloatP.h,v 1.4 2002-07-03 01:09:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -58,6 +58,7 @@ typedef struct _NhlVectorFieldFloatLayerPart{
 	NhlGenArray	x_arr;
 	NhlGenArray	y_arr;
 
+	NhlGridType     grid_type;
 	NhlvfMissMode	miss_mode;
 	float		u_missing_value;
 	float		v_missing_value;

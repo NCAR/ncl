@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorFieldP.h,v 1.4 2002-03-18 21:20:07 dbrown Exp $
+ *      $Id: VectorFieldP.h,v 1.5 2002-07-03 01:09:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,7 @@ typedef struct _NhlVectorFieldLayerPart{
 	NhlGenArray	x_arr;
 	NhlGenArray	y_arr;
 
+	NhlGridType     grid_type;
 	NhlBoolean	polar_data;
 	NhlBoolean	subset_by_index;
 	NhlBoolean	copy_arrays;
@@ -87,6 +88,10 @@ typedef struct _NhlVectorFieldLayerPart{
 	int		ix_end;
 	int		iy_start;
 	int		iy_end;
+	int		xc_start_el;
+	int		xc_end_el;
+	int		yc_start_el;
+	int		yc_end_el;
 
         NhlBoolean	xstart_byindex;
         NhlBoolean	xend_byindex;

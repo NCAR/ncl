@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.h,v 1.2 1998-04-16 03:09:20 dbrown Exp $
+ *      $Id: VectorField.h,v 1.3 2002-07-03 01:09:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,7 @@
 #define NhlNvfVDataArray	"vfVDataArray"
 #define	NhlNvfXArray		"vfXArray"
 #define	NhlNvfYArray		"vfYArray"
+#define NhlNvfGridType          "vfGridType"
 #define NhlNvfPolarData		"vfPolarData"
 #define	NhlNvfSubsetByIndex	"vfSubsetByIndex"
 #define	NhlNvfCopyData		"vfCopyData"
@@ -77,6 +78,7 @@
 #define NhlCvfVDataArray	"VfVDataArray"
 #define	NhlCvfXArray		"VfXArray"
 #define	NhlCvfYArray		"VfYArray"
+#define NhlCvfGridType          "VfGridType"
 #define NhlCvfPolarData		"VfPolarData"
 #define	NhlCvfSubsetByIndex	"VfSubsetByIndex"
 #define	NhlCvfCopyData		"VfCopyData"

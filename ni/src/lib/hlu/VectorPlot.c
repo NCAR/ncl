@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.76 2002-01-14 22:43:47 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.77 2002-07-03 01:09:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,8 @@
 #include <ncarg/hlu/Workstation.h>
 #include <ncarg/hlu/IrregularTransObjP.h>
 #include <ncarg/hlu/MapTransObj.h>
+#include <ncarg/hlu/CurvilinearTransObjP.h>
+#include <ncarg/hlu/SphericalTransObjP.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
 
@@ -881,6 +883,14 @@ static NhlErrorTypes SetCoordBounds(
 );
 
 static NhlErrorTypes SetUpIrrTransObj(
+#if	NhlNeedProto
+	NhlVectorPlotLayer	vcnew,
+	NhlVectorPlotLayer	vcold,
+	NhlBoolean	init
+#endif
+);
+
+static NhlErrorTypes SetUpCrvTransObj(
 #if	NhlNeedProto
 	NhlVectorPlotLayer	vcnew,
 	NhlVectorPlotLayer	vcold,
@@ -1889,7 +1899,7 @@ VectorPlotInitialize
 	vcp->data_changed = True;
 	vcp->data_init = False;
 	vcp->scalar_data_init = False;
-	vcp->use_irr_trans = False;
+	vcp->trans_type = vcLOGLIN;
 	vcp->zero_field = False;
 	vcp->lbar_labels_set = False;
 	vcp->lbar_labels = NULL;
@@ -2000,21 +2010,32 @@ VectorPlotInitialize
 	subret = InitCoordBounds(vcnew,NULL,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
-	if (vcp->use_irr_trans) {
-		subret = SetUpIrrTransObj(vcnew,(NhlVectorPlotLayer) req,True);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) {
-			e_text = "%s: error setting up transformation";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return(ret);
-		}
-	}
-	else {
+	switch (vcp->trans_type) {
+	case vcLOGLIN:
+	default:
 		subret = SetUpLLTransObj(vcnew,(NhlVectorPlotLayer) req,True);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error setting up transformation";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return(ret);
 		}
+		break;
+	case vcIRREGULAR:
+		subret = SetUpIrrTransObj(vcnew,(NhlVectorPlotLayer) req,True);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			e_text = "%s: error setting up transformation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return(ret);
+		}
+		break;
+	case vcCURVILINEAR:
+		subret = SetUpCrvTransObj(vcnew,(NhlVectorPlotLayer) req,True);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			e_text = "%s: error setting up transformation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return(ret);
+		}
+		break;
 	}
 
 /* 
@@ -2573,23 +2594,34 @@ static NhlErrorTypes VectorPlotSetValues
 	subret = InitCoordBounds(vcnew,(NhlVectorPlotLayer)old,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
-	if (vcp->use_irr_trans) {
-		subret = SetUpIrrTransObj(vcnew,
-					  (NhlVectorPlotLayer) old,False);
+	switch (vcp->trans_type) {
+	case vcLOGLIN:
+	default:
+		subret = SetUpLLTransObj(vcnew,(NhlVectorPlotLayer)old,False);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error setting up transformation";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return(ret);
 		}
-	}
-	else {
-		subret = SetUpLLTransObj(vcnew,(NhlVectorPlotLayer) old,False);
+		break;
+	case vcIRREGULAR:
+		subret = SetUpIrrTransObj(vcnew,(NhlVectorPlotLayer)old,False);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error setting up transformation";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return(ret);
 		}
+		break;
+	case vcCURVILINEAR:
+		subret = SetUpCrvTransObj(vcnew,(NhlVectorPlotLayer)old,False);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			e_text = "%s: error setting up transformation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return(ret);
+		}
+		break;
 	}
+
 /* 
  * Manage the PlotManager (including the PlotManager annotations)
  */
@@ -3135,13 +3167,13 @@ static NhlErrorTypes vcInitDraw
         vcp->ylb = MAX(tfp->y_min,MIN(tfp->data_ystart,tfp->data_yend));
         vcp->yub = MIN(tfp->y_max,MAX(tfp->data_ystart,tfp->data_yend));
         
-	if (!vcp->use_irr_trans) {
+	if (vcp->trans_type == vcLOGLIN) {
                 vcp->xc1 = tfp->data_xstart;
                 vcp->xcm = tfp->data_xend;
                 vcp->yc1 = tfp->data_ystart;
                 vcp->ycn = tfp->data_yend;
         }
-        else {
+        else if (vcp->trans_type == vcIRREGULAR) {
                 int xcount,ycount;
                 
                 xcount = tfp->x_axis_type == NhlIRREGULARAXIS ?
@@ -3154,6 +3186,17 @@ static NhlErrorTypes vcInitDraw
                 vcp->yc1 = 0;
                 vcp->ycn = ycount - 1;
         }
+	else if (vcp->trans_type == vcCURVILINEAR) {
+                int xcount,ycount;
+
+		xcount = vcp->vfp->x_arr->len_dimensions[1];
+		ycount = vcp->vfp->x_arr->len_dimensions[0];
+                vcp->xc1 = 0;
+                vcp->xcm = xcount - 1;
+                vcp->yc1 = 0;
+                vcp->ycn = ycount - 1;
+	}
+
 
 	return ret;
 }
@@ -4138,7 +4181,7 @@ static NhlErrorTypes InitCoordBounds
 	char		*e_text;
 
 	vcp->do_low_level_log = False;
-        vcp->use_irr_trans = False;
+        vcp->trans_type = vcLOGLIN;
         
 	if (! vcp->data_init) {
                 tfp->data_xstart = tfp->data_xend = 0.0;
@@ -4167,14 +4210,18 @@ static NhlErrorTypes InitCoordBounds
         tfp->data_xend = vcp->vfp->x_end;
         tfp->data_ystart = vcp->vfp->y_start;
         tfp->data_yend = vcp->vfp->y_end;
+
+	if (vcp->vfp->x_arr && vcp->vfp->y_arr &&
+	    vcp->vfp->x_arr->num_dimensions == 2 &&
+	    vcp->vfp->y_arr->num_dimensions == 2)
+		vcp->trans_type = vcCURVILINEAR;
+        else if (vcp->vfp->x_arr || vcp->vfp->y_arr)
+                vcp->trans_type = vcIRREGULAR;
         
-        if (vcp->vfp->x_arr || vcp->vfp->y_arr)
-                vcp->use_irr_trans = True;
-        
-        if (vcp->use_irr_trans) {
+        if (vcp->trans_type == vcIRREGULAR) {
                 if (vcp->vfp->x_arr && ! tfp->x_axis_type_set) {
 			if (! vcp->ovfp || (vcp->data_changed  &&
-			    (vcp->vfp->changed & _NhlvfXARR_CHANGED)))
+			    (vcp->vfp->changed & _NhlsfXARR_CHANGED)))
 				tfp->x_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! vcp->vfp->x_arr && tfp->x_axis_type == NhlIRREGULARAXIS)
@@ -4185,7 +4232,7 @@ static NhlErrorTypes InitCoordBounds
                 }
                 if (vcp->vfp->y_arr && ! tfp->y_axis_type_set) {
 			if (! vcp->ovfp || (vcp->data_changed  &&
-			    (vcp->vfp->changed & _NhlvfYARR_CHANGED)))
+			    (vcp->vfp->changed & _NhlsfYARR_CHANGED)))
 				tfp->y_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! vcp->vfp->y_arr && tfp->y_axis_type == NhlIRREGULARAXIS)
@@ -4195,10 +4242,12 @@ static NhlErrorTypes InitCoordBounds
                         tfp->data_yend = vcp->vfp->iy_end;
                 }
         }
-        ret = _NhltfCheckCoordBounds
-                ((NhlTransformLayer)vcl,(NhlTransformLayer)ovcl,
-                 vcp->use_irr_trans,entry_name);
         
+	ret = _NhltfCheckCoordBounds
+                ((NhlTransformLayer)vcl,(NhlTransformLayer)ovcl,
+		 (int) vcp->trans_type,
+                 entry_name);
+
 	return ret;
 }
 
@@ -4519,6 +4568,187 @@ static NhlErrorTypes SetUpIrrTransObj
         vcp->do_low_level_log = tfp->x_axis_type == NhlLOGAXIS ||
                 tfp->y_axis_type == NhlLOGAXIS ? True : False;
         
+	return MIN(ret,subret);
+
+}
+
+
+/*
+ * Function:	SetUpCrvTransObj
+ *
+ * Description: Sets up a Curvilinear transformation object.
+ *
+ * In Args:	xnew	new instance record
+ *		xold	old instance record if not initializing
+ *		init	true if initialization
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:	Objects created and destroyed.
+ */
+static NhlErrorTypes SetUpCrvTransObj
+#if	NhlNeedProto
+(
+	NhlVectorPlotLayer	vcnew,
+	NhlVectorPlotLayer	vcold,
+	NhlBoolean	init
+)
+#else 
+(vcnew,vcold,init)
+	NhlVectorPlotLayer	vcnew;
+	NhlVectorPlotLayer	vcold;
+	NhlBoolean	init;
+#endif
+{
+ 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	char			*entry_name;
+	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
+	NhlVectorPlotLayerPart	*ovcp = &(vcold->vectorplot);
+	NhlTransformLayerPart	*tfp = &(vcnew->trans);
+	char			buffer[_NhlMAXRESNAMLEN];
+	int			tmpid;
+        NhlSArg			sargs[32];
+        int			nargs = 0;
+	NhlClass		trans_class;
+
+	switch (vcp->vfp->grid_type) {
+	case NhlBASICGRID:
+		trans_class =  NhlcurvilinearTransObjClass;
+		break;
+	case NhlSPHERICALGRID:
+		trans_class =  NhlsphericalTransObjClass;
+		break;
+	}
+
+	entry_name = (init) ? "VectorPlotInitialize" : "VectorPlotSetValues";
+	
+
+	if (init)
+		tfp->trans_obj = NULL;
+	if (tfp->trans_obj && 
+            tfp->trans_obj->base.layer_class->base_class.class_name !=
+	    trans_class->base_class.class_name) {
+		subret = NhlDestroy(tfp->trans_obj->base.id);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			e_text = "%s: Error destroying irregular trans object";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+		tfp->trans_obj = NULL;
+	}
+	if (! vcp->data_init) return ret;
+        
+        if (tfp->x_reverse_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,tfp->x_reverse);
+        if (tfp->y_reverse_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,tfp->y_reverse);
+
+	if (init || tfp->trans_obj == NULL) {
+
+		vcp->new_draw_req = True;
+                vcp->update_req = True;
+                
+		if (vcp->vfp->x_arr)
+			NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,
+				   vcp->vfp->x_arr);
+		if (vcp->vfp->y_arr)
+			NhlSetSArg(&sargs[nargs++],NhlNtrYCoordPoints,
+				   vcp->vfp->y_arr);
+                
+		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tfp->x_min);
+		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tfp->x_max);
+		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tfp->y_min);
+		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tfp->y_max);
+                NhlSetSArg(&sargs[nargs++],NhlNtrDataXStartF,tfp->data_xstart);
+                NhlSetSArg(&sargs[nargs++],NhlNtrDataXEndF,tfp->data_xend);
+                NhlSetSArg(&sargs[nargs++],NhlNtrDataYStartF,tfp->data_ystart);
+                NhlSetSArg(&sargs[nargs++],NhlNtrDataYEndF,tfp->data_yend);
+                NhlSetSArg(&sargs[nargs++],NhlNtrLineInterpolationOn,
+			   tfp->line_interpolation_on);
+                
+		sprintf(buffer,"%s",vcnew->base.name);
+		strcat(buffer,".Trans");
+
+		subret = NhlALCreate(&tmpid,buffer,
+				     trans_class,
+				     vcnew->base.id,sargs,nargs);
+
+		ret = MIN(subret,ret);
+
+		tfp->trans_obj = _NhlGetLayer(tmpid);
+		if(tfp->trans_obj == NULL){
+			e_text = "%s: Error creating transformation object";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+	}
+        else {
+                if (vcp->data_changed &&vcp->vfp->x_arr &&
+                    (vcp->vfp->changed & _NhlsfXARR_CHANGED))
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrXCoordPoints,vcp->vfp->x_arr);
+                if (vcp->data_changed && vcp->vfp->y_arr &&
+		    (vcp->vfp->changed & _NhlsfYARR_CHANGED))
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrYCoordPoints,vcp->vfp->y_arr);
+        
+                if (tfp->x_min != vcold->trans.x_min)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tfp->x_min);
+                if (tfp->x_max != vcold->trans.x_max)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tfp->x_max);
+                if (tfp->y_min != vcold->trans.y_min)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tfp->y_min);
+                if (tfp->y_max != vcold->trans.y_max)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tfp->y_max);
+        
+                if (tfp->data_xstart != vcold->trans.data_xstart)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrDataXStartF,tfp->data_xstart);
+                if (tfp->data_xend != vcold->trans.data_xend)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrDataXEndF,tfp->data_xend);
+                if (tfp->data_ystart != vcold->trans.data_ystart)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrDataYStartF,tfp->data_ystart);
+                if (tfp->data_yend != vcold->trans.data_yend)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrDataYEndF,tfp->data_yend);
+		if (tfp->line_interpolation_on != 
+		    vcold->trans.line_interpolation_on)
+			NhlSetSArg(&sargs[nargs++],NhlNtrLineInterpolationOn,
+				   tfp->line_interpolation_on);
+
+        
+                if (vcp->x_tension != ovcp->x_tension)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrXTensionF,vcp->x_tension);
+                if (vcp->y_tension != ovcp->y_tension)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrYTensionF,vcp->y_tension);
+                subret = NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
+
+                if (nargs > 0) {
+                        vcp->new_draw_req = True;
+                        vcp->update_req = True;
+                }
+        }
+        
+        NhlVAGetValues(tfp->trans_obj->base.id,
+                       NhlNtrXReverse,&tfp->x_reverse,
+                       NhlNtrYReverse,&tfp->y_reverse,
+                       NhlNtrDataXStartF,&tfp->data_xstart,
+                       NhlNtrDataXEndF,&tfp->data_xend,
+                       NhlNtrDataYStartF,&tfp->data_ystart,
+                       NhlNtrDataYEndF,&tfp->data_yend,
+                       NhlNtrXMinF,&tfp->x_min,
+                       NhlNtrXMaxF,&tfp->x_max,
+                       NhlNtrYMinF,&tfp->y_min,
+                       NhlNtrYMaxF,&tfp->y_max,
+                       NULL);
+
 	return MIN(ret,subret);
 
 }

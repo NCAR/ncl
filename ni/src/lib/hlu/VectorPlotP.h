@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlotP.h,v 1.13 2001-06-13 23:53:56 dbrown Exp $
+ *      $Id: VectorPlotP.h,v 1.14 2002-07-03 01:09:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -130,6 +130,9 @@ typedef struct _NhlvcScaleInfo {
 	int			sig_digits;
 } NhlvcScaleInfo;
 
+typedef enum _vcTransType {
+	vcLOGLIN, vcIRREGULAR, vcCURVILINEAR
+} vcTransType;
 
 typedef struct _NhlVectorPlotDataDepLayerPart{
 	/* Public resources	*/
@@ -277,7 +280,7 @@ typedef struct _NhlVectorPlotLayerPart {
 	NhlBoolean	zero_field;
 	NhlBoolean	display_zerof_no_data;
 	NhlString	zerof_no_data_string;
-	NhlBoolean	use_irr_trans;
+	vcTransType	trans_type;
 	float		xc1,xcm,yc1,ycn; /* data bounds for vvinit/vvectr */
 	float		xlb,xub,ylb,yub; /* window boundaries */
 	int		refvec_anno_id;
