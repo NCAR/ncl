@@ -390,6 +390,7 @@ C   the negative of the component in the direction Q->P.
 C
       FP = FQ - GQN*CSARCLEN(Q,P)
       IER = 0
+      RETURN
 C
 C  Invalid number of input points (must be greater than 3).
 C
