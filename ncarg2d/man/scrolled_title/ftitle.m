@@ -1,4 +1,4 @@
-.TH FTITLE 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH FTITLE 3NCARG "July 1995" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -8,13 +8,13 @@ reads, from standard input, the information necessary to
 define the desired title frames, and then calls STITLE to
 create those frames.
 .SH SYNOPSIS
-CALL FTITLE (MOVIE)
+CALL FTITLE (MTST)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_ftitle (int movie)
+void c_ftitle (int mtst)
 .SH DESCRIPTION 
-.IP MOVIE 12
+.IP MTST 12
 (an input expression of type INTEGER) is a switch
 indicating whether this is a "real" run or a "practice" run:
 .RS
@@ -26,12 +26,13 @@ means "practice run".
 .IP ""
 During real runs, each title frame is repeated as many
 times as necessary to display it for a user-specified time
-period (at 24 frames per second). Blank frames are placed
-before the first title frame, between consecutive title
-frames, and after the last title frame. (Blank frames are
-to allow for splicing; the internal parameters \'TM1\' and
-\'TM2\' specify how many blank frames are used in each
-position.) If the user has turned on fade-in (by setting
+period (at \'NFS\' frames per second). Blank frames are placed
+before the first title frame (\'TM1\' seconds worth of them), between
+consecutive title frames (\'TM2\' seconds worth of them), and after
+the last title frame (\'TM2\' + \'TM3\' seconds worth of them).
+Blank frames are to allow for splicing.
+.sp
+If the user has turned on fade-in (by setting
 the internal parameter \'FIN\' non-zero), and/or fade-out (by
 setting the internal parameter \'FOU\' non-zero), the
 required fade-in and fade-out frames will be generated, as
@@ -56,12 +57,13 @@ instead.
 .sp
 The input data are read in groups.  Each group represents one title frame.
 There can be any number of groups.  FTITLE keeps processing groups until
-a group with NCARD = 0 is read.  A group consists of the following:
+a group with NCDS = 0 is read or an end-of-file is encountered.  A group
+consists of the following:
 .IP \(bu 4
-A header line from which variables NCARD, TIME, and SIZE are read, using the
+A header line from which variables NCDS, TIME, and SIZE are read, using the
 FORTRAN format "(I5,2F5.1)".
 .IP " " 4
-NCARD is the number of text lines that follow.  If NCARD = 0, FTITLE quits
+NCDS is the number of text lines that follow.  If NCDS = 0, FTITLE quits
 (returns to the calling routine without doing anything else).
 .IP " " 4
 TIME is the time, in seconds, that the title frame should be displayed (not
@@ -76,25 +78,26 @@ Text lines, each containing one line of the title frame.  PLOTCHAR function
 codes may be used as specified in the documentation for that package.
 Characters should not appear beyond column 80.
 .PP
-The internal parameters 'ALN', 'BGB', 'BGG', 'BGR', 'FGB', FGG', 'FGR',
-\&'FIN', 'FOU', 'GSZ', 'ICO', 'ICU', 'LOG', 'LX1', 'LX2', 'LY1', 'LY2',
-\&'MAP', 'ORV', 'PSZ', SBK', SFG', TM1', 'TM2', and 'WID'
+The internal parameters 'ALN', 'BGB', 'BGC', 'BGF', 'BGG', 'BGR', 'FGB', 'FGC',
+\&'FGF', 'FGG', 'FGR', 'FIN', 'FOU', 'GSZ', 'ICO', 'ICU', 'LOG', 'LX1', 'LX2',
+\&'LY1', 'LY2', 'MAP', 'NFS', 'NXE', 'NXS', 'ORV', 'PSZ', 'SBK', 'SFG', 'TM1',
+\&'TM2', 'TM3', 'VPB', 'VPL', 'VPR', 'VPT', and 'WID'
 all affect the behavior of FTITLE in one way or another.  Some of these have
 been mentioned above; all are described in the "man" page for
 "scrolled_title_params".
 .sp
+Example: Suppose the input file contains the following three lines
+.sp
 .nf
-Example:
-
     3   3.  1.5
 A
 Frame
 of Titles
 .fi
 .sp
-The above example has three text lines.  This group frame is held for
-three seconds.  Characters have a size of 1.5 times the Plotchar default
-character size.
+The resulting title frame has three lines of text.  It is displayed for
+three seconds.  Characters have a size of 1.5 times the default character
+size.
 .sp
 FTITLE allows a maximum of 80 characters per line of text including
 Plotchar function codes.  No more than 120 lines of text can be
@@ -105,6 +108,10 @@ the internal parameter 'GSZ'.
 .sp
 For more detailed control of titles, use the routine STITLE, which can be
 used to generate either fixed or scrolled titles.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+example:
+slex02.
 .SH ACCESS
 To use FTITLE, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_c, preferably in that order.  To use c_ftitle, load 
@@ -117,8 +124,11 @@ messages and/or informational messages.
 Online:
 plotchar,
 scrolled_title,
+scrolled_title_params,
 slgeti,
 slgetr,
+slogap,
+slrset,
 slseti,
 slsetr,
 stitle,

@@ -1,4 +1,4 @@
-.TH SLGETR 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH SLGETR 3NCARG "July 1995" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -46,6 +46,8 @@ ftitle,
 scrolled_title,
 scrolled_title_params,
 slgeti,
+slogap,
+slrset,
 slseti,
 slsetr,
 stitle,

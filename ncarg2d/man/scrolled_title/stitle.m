@@ -1,4 +1,4 @@
-.TH STITLE 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH STITLE 3NCARG "July 1995" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -9,23 +9,21 @@ input through the argument list.
 This routine is part of the Scrolled_title utility in NCAR Graphics.  To
 see the overview man page for this utility, type "man scrolled_title".
 .SH SYNOPSIS
- CALL STITLE (CARDS, NCARDS, NYST, NYFIN, TST, TMV, TFIN, 
-.br
-+ MOVIE)
+ CALL STITLE (CRDS,NCDS,IYST,IYND,TMST,TMMV,TMND,MTST)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_stitle (char *cards[], int ncards, int nyst, 
+void c_stitle (char *crds[], int ncds, int iyst,
 .br
-int nyfin, float tst, float tmv, float tfin, int movie)
+int iynd, float tmst, float tmmv, float tmnd, int mtst)
 .SH DESCRIPTION
-.IP CARDS 12
-(an input array, dimensioned NCARDS, of type
+.IP CRDS 12
+(an input array, dimensioned NCDS, of type
 CHARACTER*n, where "n" is greater than or equal to 21) is
 the "card input buffer". This array must be filled, prior
 to calling STITLE, either by internal manipulations or by
 reading n-character "cards". Each element of the array
-CARDS represents one line on the scroll (or, sometimes, a
+CRDS represents one line on the scroll (or, sometimes, a
 continuation of a previous line) and contains the following:
 .RS
 .IP \(bu
@@ -33,7 +31,7 @@ Columns 1-5: MX, the X coordinate of the line of text on
 the scroll. This is normally a value between 1 and 1024,
 inclusive. Exactly how the line of text is positioned
 relative to the specified X coordinate depends on the value
-of ICNTR (in columns 11-15).
+of ICNT (in columns 14-15).
 .sp
 If the value -9999 is used for MX, it indicates a
 continuation line: characters from columns 21 through "n"
@@ -54,7 +52,11 @@ On a continuation card, columns 6-20 are ignored.
 Columns 6-10: MY, the Y coordinate of the line of text on
 the scroll. MY may range from -9999 to 99999.
 .IP \(bu
-Columns 11-15: ICNTR, the centering option:
+Columns 11-13: ICLR, the index of the color to be used for the line
+of text.  If this field is blank, the default foreground color specified
+by the value of the internal parameter \'FGC\' will be used.
+.IP \(bu
+Columns 14-15: ICNT, the centering option:
 .RS
 .IP 0 
 means "start the text at MX".
@@ -73,31 +75,31 @@ parameter \'PSZ\', the default value of which is 21 (out of
 Columns 21-n: Text for this line (or for continuation of a
 line when MX = -9999).
 .RE
-.IP NCARDS 12
+.IP NCDS 12
 (an input expression of type INTEGER) is the
-dimension of the array CARDS (i.e., the number of card
+dimension of the array CRDS (i.e., the number of card
 images in it).
-.IP NYST 12
+.IP IYST 12
 (an input expression of type INTEGER) is the Y
 coordinate that will be at the center of the screen when
 the text is first displayed.
-.IP NYFIN 12
+.IP IYND 12
 (an input expression of type INTEGER) is the Y
 coordinate that will be at the center of the screen when
 the text is last displayed.
-.IP TST 12
+.IP TMST 12
 (an input expression of type REAL) is the time in
-seconds that the scroll will be stationary at NYST. One
+seconds that the scroll will be stationary at IYST. One
 second is recommended.
-.IP TMV 12
+.IP TMMV 12
 (an input expression of type REAL) is the time to move
-the scroll from NYST to NYFIN. This should be the time
+the scroll from IYST to IYND. This should be the time
 required to read the text aloud at slow to normal speed.
-.IP TFIN 12
+.IP TMND 12
 (an input expression of type REAL) is the time that
-the scroll will be stationary at NYFIN. One second is
+the scroll will be stationary at IYND. One second is
 recommended.
-.IP MOVIE 12
+.IP MTST 12
 (an input expression of type INTEGER) is a switch to
 indicate whether this is a "real" run or a "practice" run.
 .RS
@@ -110,9 +112,9 @@ means "practice run".
 During real runs, frames are created for the fade-in
 sequence (if the user has turned on fade-in by setting the
 internal parameter \'FIN\' non-zero), the stationary sequence
-at the start (if TST is non-zero), the scrolling time (if
-TMV is non-zero), the stationary sequence at the end (if
-TFIN is non-zero), and the fade-out sequence (if the user
+at the start (if TMST is non-zero), the scrolling time (if
+TMMV is non-zero), the stationary sequence at the end (if
+TMND is non-zero), and the fade-out sequence (if the user
 has turned on fade-out by setting the internal parameter \'FOU\' non-zero).
 .sp
 During practice runs, only selected frames are created: a
@@ -127,10 +129,13 @@ seconds into the scroll time it occurs; during real runs,
 these legends are omitted, of course.
 .sp
 Fade-in and fade-out are also affected by the values of the
-internal parameters \'SBK\', which can be set in such a way
-as to allow or to suppress fade-in and fade-out of the
-background color, and \'SFG\', which serves the same function
-for the foreground color.
+internal parameters \'BGF\', which selects the type of fade-in/fade-out
+to be used for the background color, and \'FGF\', which serves the same
+function for the foreground color.  (The older parameters \'SBK\'
+and \'SFG\' may still be referenced, but their use is no longer
+recommended; setting \'SBK\' has the effect of giving \'BGF\' an
+appropriate value and setting \'SFG\' has the effect of giving \'FGF\'
+an apprpriate value.)
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
@@ -147,8 +152,9 @@ are partially outside the window.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
-slex01,
 fslfont,
+slex01,
+slex02,
 tstitl.
 .SH ACCESS
 To use STITLE, load the NCAR Graphics libraries ncarg, ncarg_gks,
@@ -162,8 +168,11 @@ messages and/or informational messages.
 Online:
 ftitle,
 scrolled_title,
+scrolled_title_params,
 slgeti,
 slgetr,
+slogap,
+slrset,
 slseti,
 slsetr,
 ncarg_cbind.
