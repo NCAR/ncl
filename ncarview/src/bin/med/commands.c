@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.9 1993-01-16 01:11:37 clyne Exp $
+ *	$Id: commands.c,v 1.10 1993-03-25 17:16:44 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -257,7 +257,8 @@ medEdit(med_data)
 	/*
 	 * execute the command
 	 */
-	if ((toc = CGM_initMetaEdit(c_data->file,1440,localTmp,stderr)) == NULL) {
+	if ((toc = CGM_initMetaEdit(c_data->file,1440,localTmp,
+		med_data->fromatty ? stderr : (FILE *) NULL)) == NULL) {
 		command_error_message (
 				med_data, errno, 0, (char *) NULL, MED_WARN);
 		return;
@@ -265,7 +266,6 @@ medEdit(med_data)
 
 	med_data->current_frame = med_data->last_frame = toc->num_frames;
 
-	(void) fprintf(stderr, "%d frames\n", CGM_NUM_FRAMES(toc));
 
 #endif
 
