@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.20 1996-11-19 20:39:42 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.21 1996-11-19 22:46:07 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,16 @@ extern "C" {
 #include "MathFuncs.h"
 #include "HLUFunctions.h"
 
+extern NhlErrorTypes _Nclind(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _Nclnum(
+#if NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes _Ncl1dtond(
 #if NhlNeedProto
 void
@@ -717,6 +727,16 @@ void _NclAddBuiltIns
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
 	NclRegisterFunc( _Nclndto1d,args,"ndtooned",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"logical",1,NclANY); nargs++;
+	NclRegisterFunc( _Nclnum,args,"num",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"logical",1,NclANY); nargs++;
+	NclRegisterFunc( _Nclind,args,"ind",nargs);
 
 	nargs = 0;
 	args = NewArgs(2);

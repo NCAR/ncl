@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.48 1996-11-19 20:39:40 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.49 1996-11-19 22:46:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -820,6 +820,7 @@ NhlErrorTypes _NclIIsMissing
 	NclMultiDValData tmp_md = NULL;
 	logical *lval;
 	int dimsize = 1;
+	int i;
 	
 	val = _NclGetArg(0,1,DONT_CARE);
 /*
@@ -837,14 +838,18 @@ NhlErrorTypes _NclIIsMissing
 	}
 
 	if(tmp_md != NULL) {
-		lval = (logical*)NclMalloc((unsigned)sizeof(logical));
+		lval = (logical*)NclMalloc((unsigned)sizeof(logical)*tmp_md->multidval.totalelements);
 		if(tmp_md->multidval.missing_value.has_missing) {
-			*lval = _NclIsMissing(tmp_md,tmp_md->multidval.val);
+
+			_Ncleq(tmp_md->multidval.type,lval,tmp_md->multidval.val,&(tmp_md->multidval.missing_value.value),NULL,NULL,tmp_md->multidval.totalelements,1);
+				
 			data.kind = NclStk_VAL;
-			data.u.data_obj = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void*)lval,NULL,1,&dimsize,TEMPORARY,NULL,(NclTypeClass)nclTypelogicalClass);
+			data.u.data_obj = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void*)lval,NULL,tmp_md->multidval.n_dims,tmp_md->multidval.dim_sizes,TEMPORARY,NULL,(NclTypeClass)nclTypelogicalClass);
 			_NclPlaceReturn(data);
 		} else {
-			*lval = 0;
+			for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+				lval[i] = 0;
+			}
 			data.kind = NclStk_VAL;
 			data.u.data_obj = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void*)lval,NULL,1,&dimsize,TEMPORARY,NULL,(NclTypeClass)nclTypelogicalClass);
 			_NclPlaceReturn(data);
@@ -6123,6 +6128,165 @@ NhlErrorTypes _Nclavg
 	));
 }
 
+NhlErrorTypes _Nclnum
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NclMultiDValData tmp_md = NULL;
+	void *out_val;
+	int dimsizes = 1;
+	logical *tmp;
+	int i,j,count;
+
+	data = _NclGetArg(0,1,DONT_CARE);
+	switch(data.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+
+
+	if(tmp_md->multidval.missing_value.has_missing) {
+		tmp = (logical*)tmp_md->multidval.val;
+		count = 0;
+		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+			if((tmp[i])&&(tmp[i] != tmp_md->multidval.missing_value.value.logicalval))
+				count++;
+		}
+		out_val = (void*)NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size);
+		memcpy(out_val,&count,((NclTypeClass)nclTypeintClass)->type_class.size);
+		return(NclReturnValue(
+			out_val,
+			1,
+			&dimsizes,
+			NULL,
+			NCL_int,
+			0
+		));
+	} else {
+		tmp = (logical*)tmp_md->multidval.val;
+		count = 0;
+		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+			if(tmp[i])
+				count++;
+		}
+		out_val = (void*)NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size);
+		memcpy(out_val,&count,((NclTypeClass)nclTypeintClass)->type_class.size);
+		return(NclReturnValue(
+			out_val,
+			1,
+			&dimsizes,
+			NULL,
+			NCL_int,
+			0
+		));
+	}
+
+}
+NhlErrorTypes _Nclind
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NclMultiDValData tmp_md = NULL;
+	void *out_val;
+	int dimsizes = 1;
+	logical *tmp;
+	int i,j,count;
+
+	data = _NclGetArg(0,1,DONT_CARE);
+	switch(data.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+
+
+	if(tmp_md->multidval.missing_value.has_missing) {
+		tmp = (logical*)tmp_md->multidval.val;
+		count = 0;
+		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+			if((tmp[i])&&(tmp[i] != tmp_md->multidval.missing_value.value.logicalval))
+				count++;
+		}
+		if(count > 0) {
+			out_val = (void*)NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size * count);
+			j = 0;
+			for(i = 1; i < tmp_md->multidval.totalelements; i++) {
+				if((tmp[i])&&(tmp[i] != tmp_md->multidval.missing_value.value.logicalval)) {
+					((int*)out_val)[j] = i;
+					j++;
+				}
+			}
+		} else {
+			out_val = (void*)NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size);
+			memcpy(out_val,&((NclTypeClass)nclTypeintClass)->type_class.default_mis,((NclTypeClass)nclTypeintClass)->type_class.size);
+			return(NclReturnValue(
+				out_val,
+				1,
+				&dimsizes,
+				&((NclTypeClass)nclTypeintClass)->type_class.default_mis,
+				((NclTypeClass)nclTypeintClass)->type_class.data_type,
+				0
+			));
+		}
+	} else {
+		tmp = (logical*)tmp_md->multidval.val;
+		count = 0;
+		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+			if(tmp[i])
+				count++;
+		}
+		if(count > 0) {
+			out_val = (void*)NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size * count);
+			j = 0;
+			for(i = 1; i < tmp_md->multidval.totalelements; i++) {
+				if(tmp[i]) {
+					((int*)out_val)[j] = i;
+					j++;
+				}
+			}
+		} else {
+			out_val = (void*)NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size);
+			memcpy(out_val,&((NclTypeClass)nclTypeintClass)->type_class.default_mis,((NclTypeClass)nclTypeintClass)->type_class.size);
+			return(NclReturnValue(
+				out_val,
+				1,
+				&dimsizes,
+				&((NclTypeClass)nclTypeintClass)->type_class.default_mis,
+				((NclTypeClass)nclTypeintClass)->type_class.data_type,
+				0
+			));
+		}
+
+	}
+
+	return(NclReturnValue(
+		out_val,
+		1,
+		&j,
+		NULL,
+		((NclTypeClass)nclTypeintClass)->type_class.data_type,
+		0
+	));
+}
 #ifdef __cplusplus
 }
 #endif

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.20 1996-10-25 15:42:12 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.21 1996-11-19 22:46:08 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -381,9 +381,7 @@ void _NclAddIntrinsics
 	_NclRegisterProc(_NclIAddToOverlayAfter,args,"NhlAddOverlay",3,IPROC);
 	args = NclCalloc(1,sizeof(NclArgTemplate));
 	args[0].arg_data_type = NULL;
-	args[0].is_dimsizes = 1;
-	args[0].dim_sizes[0] = 1;
-	args[0].n_dims = 1;
+	args[0].is_dimsizes = 0;
 	_NclRegisterFunc(_NclIIsMissing,args,"ismissing",1,IFUNC);
 	args = NclCalloc(5,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("graphic");
