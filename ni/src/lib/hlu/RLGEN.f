@@ -1,5 +1,5 @@
 C
-C $Id: RLGEN.f,v 1.1 1994-05-12 23:52:04 boote Exp $
+C $Id: RLGEN.f,v 1.2 1995-03-31 00:50:51 boote Exp $
 C
 C************************************************************************
 C                                                                       *
@@ -39,7 +39,7 @@ C
 	character*(*) name
       	call nhl_frlunset (id,name,len(name))
       end
-      subroutine nhlfrlisset (id,name)
+      subroutine nhlfrlisset (id,name,ival)
 	character*(*) name
-      	call nhl_frlisset (id,name,len(name))
+      	call nhl_frlisset (id,name,len(name),ival)
       end

@@ -1,5 +1,5 @@
 /*
- *      $Id: Fortran.c,v 1.8 1995-03-14 21:06:02 haley Exp $
+ *      $Id: Fortran.c,v 1.9 1995-03-31 00:50:50 boote Exp $
  */
 /************************************************************************
 *									*
@@ -227,13 +227,15 @@ _NHLCALLF(nhl_frlisset,NHL_FRLISSET)
 (
 	int		*id,
 	_NhlFString	fname,
-	int		*fname_len
+	int		*fname_len,
+	int		*ret_val
 )
 #else
-(id,fname,fname_len)
+(id,fname,fname_len,ret_val)
 	int		*id;
 	_NhlFString	fname;
 	int		*fname_len;
+	int		*ret_val;
 #endif
 {
 	char	resname[_NhlMAXRESNAMLEN];
@@ -244,7 +246,7 @@ _NHLCALLF(nhl_frlisset,NHL_FRLISSET)
 		return;
 	}
 
-	NhlRLIsSet(*id,resname);
+	*ret_val = NhlRLIsSet(*id,resname);
 
 	return;
 }
