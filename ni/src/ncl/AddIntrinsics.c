@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.29 1998-04-20 21:49:23 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.30 1998-11-11 23:35:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -579,10 +579,11 @@ void _NclAddIntrinsics
 	args[1].is_dimsizes = 1;
 	args[1].n_dims = 1;
 	args[2].arg_data_type = _NclLookUp("integer");
-	args[2].is_dimsizes = 0;
+	args[2].is_dimsizes = 1;
 	args[2].n_dims = 1;
+	args[3].dim_sizes[0] = -1;
 	args[3].arg_data_type = _NclLookUp("string");
-	args[3].is_dimsizes = 0;
+	args[3].is_dimsizes = 1;
 	args[3].dim_sizes[0] = 1;
 	args[3].n_dims = 1;
 	_NclRegisterFunc(_NclIfbindirread,args,"fbindirread",4,IFUNC);
@@ -596,10 +597,11 @@ void _NclAddIntrinsics
 	args[1].is_dimsizes = 1;
 	args[1].n_dims = 1;
 	args[2].arg_data_type = _NclLookUp("integer");
-	args[2].is_dimsizes = 0;
+	args[2].is_dimsizes = 1;
 	args[2].n_dims = 1;
+	args[2].dim_sizes[0] = -1;
 	args[3].arg_data_type = _NclLookUp("string");
-	args[3].is_dimsizes = 0;
+	args[3].is_dimsizes = 1;
 	args[3].dim_sizes[0] = 1;
 	args[3].n_dims = 1;
 	_NclRegisterFunc(_NclIfbinrecread,args,"fbinrecread",4,IFUNC);
