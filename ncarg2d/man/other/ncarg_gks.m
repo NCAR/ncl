@@ -9,7 +9,10 @@ aspects of NCAR Graphics' GKS behaviour.
 \fBNCARG_GKS_OUTPUT\fP allows you to specify what file or process
 CGM output is directed to.
 .sp
-\fBNCARG_GKS_GENCGM\fP allows you to request the the NCAR GKS
+\fBNCARG_GKS_PSOUTPUT\fP allows you to specify what file any PostScript
+output from NCAR GKS is directed to (stdout is allowed).
+.sp
+\fBNCARG_GKS_GENCGM\fP allows you to request that the NCAR GKS
 package generate binary encoded CGM rather than NCGM (the NCAR 
 private encoding of binary encoded CGM).
 Note that other NCAR Graphics utilities, such as the metafile 
@@ -52,6 +55,29 @@ it is assumed that the process is invoked as "translatorname -"
 where the "-" indicates that the translator is to read from standard
 input.
 .sp
+.SH \fBNCARG_GKS_PSOUTPUT\fP
+.sp
+By default, PostScript output is written to "gmetaNN.sfx"  where "NN" is
+the NCAR GKS workstation ID used in the call to GOPWK to open the
+workstation and "sfx" is "ps", "eps", or "epsi" as appropriate.  Setting
+NCARG_GKS_PSOUTPUT will override all defaults and
+write any PostScript output to the designated file.
+.sp
+\fIExamples\fP:
+.sp
+.in +1.0i
+setenv NCARG_GKS_PSOUTPUT myfile
+.in -1.0i
+.sp
+causes all PostScript output to be written to "myfile".
+.sp
+.in +1.0i
+setenv NCARG_GKS_PSOUTPUT stdout
+.in -1.0i
+.sp
+causes all PostScript output to be written to standard out.
+.sp
+.in +1.0i
 .SH \fBNCARG_GKS_GENCGM\fP
 .sp
 If the \fBNCARG_GKS_GENCGM\fP environment variable is set, GKS
@@ -79,7 +105,7 @@ use whatever the system default is, as specified in the file
 "stdio.h".
 .sp
 If the environment variable NCARG_GKS_BUFSIZE is set, it overrides
-the defaults. If NCARG_GKS_BUFSIZE is set to \fIN,\fP behaviour is
+the defaults. If NCARG_GKS_BUFSIZE is set to \fIN,\fP behavior is
 as follows:
 .sp
 If \fIN\fP is 0:
