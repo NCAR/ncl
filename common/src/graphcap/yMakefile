@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.3 1992-10-08 15:03:16 clyne Exp $
+#	$Id: yMakefile,v 1.4 1993-01-20 17:08:55 haley Exp $
 #
 NCARG	= ../../..
 
@@ -19,26 +19,27 @@ MYNAME	= graphcap
 #
 
 GENERIC_SRCS = \
-	 adm5.gc aed.a.gc aed.b.gc balsml.gc form.gc hp150.gc hp2648a.gc \
-	 hp7475a.gc hp7510a.gc hplj100l.gc hplj100p.gc hplj150l.gc \
-	 hplj150p.gc hplj300l.gc hplj300p.gc hplj75l.gc hplj75p.gc \
-	 hpljo75l.gc hpljo75p.gc imagen.gc imagen.port.gc pc.mono.gc \
-	 ps.color.gc ps.land.color.gc ps.land.mono.gc ps.mono.gc qms800.gc \
-	 r6211.gc s100.gc t4006.gc t4010.gc t4025.gc t4105.gc t4107.gc \
-	 t4107.seg.gc t4115.gc t4115.seg.gc tal1590.gc tekalike.gc \
-	 versaterm.gc vt100.gc vt125.gc vt220.gc vt240.gc vt330.gc vt340.gc \
-	 vt340w.gc ditroff.gc
+	adm5.gc aed.a.gc aed.b.gc balsml.gc hpgl.gc hpgl.land.gc \
+	hp150.gc hp2648a.gc hp7475a.gc hp7510a.gc hplj100l.gc hplj100p.gc \
+	hplj150l.gc hplj150p.gc hplj300l.gc hplj300p.gc hplj75l.gc hplj75p.gc \
+	hpljo75l.gc hpljo75p.gc imagen.gc imagen.port.gc pc.mono.gc \
+	ps.color.gc ps.land.color.gc ps.land.mono.gc ps.mono.gc qms800.gc \
+	r6211.gc s100.gc t4010.gc t4025.gc t4105.gc t4107.gc \
+	t4107.seg.gc t4115.gc t4115.seg.gc tal1590.gc tekalike.gc \
+	versaterm.gc vt100.gc vt125.gc vt220.gc vt240.gc vt330.gc vt340.gc \
+	vt340w.gc ditroff.gc
 
 GRAPHCAPS = \
-	 adm5 aed.a aed.b balsml hp150 hp2648a \
-	 hp7475a hp7510a hplj100l hplj100p hplj150l \
-	 hplj150p hplj300l hplj300p hplj75l hplj75p \
-	 hpljo75l hpljo75p imagen imagen.port pc.mono \
-	 ps.color ps.land.color ps.land.mono ps.mono qms800 \
-	 r6211 s100 t4010 t4025 t4105 t4107 \
-	 t4107.seg t4115 t4115.seg tal1590 tekalike \
-	 versaterm vt100 vt125 vt220 vt240 vt330 vt340 \
-	 vt340w ditroff
+	adm5 aed.a aed.b balsml hpgl hpgl.land \
+	hp150 hp2648a hp7475a hp7510a hplj100l hplj100p \
+	hplj150l hplj150p hplj300l hplj300p hplj75l hplj75p \
+	hpljo75l hpljo75p imagen imagen.port pc.mono \
+	ps.color ps.land.color ps.land.mono ps.mono qms800 \
+	r6211 s100 t4010 t4025 t4105 t4107 \
+	t4107.seg t4115 t4115.seg tal1590 tekalike \
+	versaterm vt100 vt125 vt220 vt240 vt330 vt340 \
+	vt340w ditroff
+
 
 all::
 
@@ -61,7 +62,11 @@ balsml:  balsml.gc
 	@echo "	Processing graphcap $@"
 	@$(GRAPHC) $? $@
 
-form:  form.gc
+hpgl:  hpgl.gc
+	@echo "	Processing graphcap $@"
+	@$(GRAPHC) $? $@
+
+hpgl.land:  hpgl.land.gc
 	@echo "	Processing graphcap $@"
 	@$(GRAPHC) $? $@
 
@@ -158,10 +163,6 @@ r6211:  r6211.gc
 	@$(GRAPHC) $? $@
 
 s100:  s100.gc
-	@echo "	Processing graphcap $@"
-	@$(GRAPHC) $? $@
-
-t4006:  t4006.gc
 	@echo "	Processing graphcap $@"
 	@$(GRAPHC) $? $@
 
