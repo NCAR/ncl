@@ -1,0 +1,48 @@
+#
+#      $Id: yMakefile,v 1.1 1993-04-30 17:01:34 boote Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1993				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		yMakefile
+#
+#	Author:		Jeff W. Boote
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Tue Apr 27 14:56:52 MDT 1993
+#
+#	Description:	yMakefile for ncarg/ni
+NCARG	= ..
+
+SUBDIRS = src doc
+
+#if defined(SunOS) && defined(sun4) /* Only do ni prototypes on sun4's	*/
+
+CreateDirTarget($(LIBHLUPATH))
+CreateDirTarget($(HLUDOCPATH))
+CreateDirTarget($(HLUINCPATH))
+CreateDirTarget($(HLUEXPATH))
+
+MakeSubdirs($(SUBDIRS))
+InstallSubdirs($(SUBDIRS))
+MakefilesSubdirs($(SUBDIRS))
+CleanSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+
+#else			/* provide null targets for other arch's	*/
+
+all:
+
+install:
+
+clean:
+
+depend:
+
+#endif
