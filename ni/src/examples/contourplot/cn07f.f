@@ -1,5 +1,5 @@
 C
-C      $Id: cn07f.f,v 1.3 1996-01-23 15:34:21 haley Exp $
+C      $Id: cn07f.f,v 1.4 1996-05-09 15:37:34 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -105,8 +105,11 @@ C
             goto 15
          endif
  10   continue
-      
- 15   ncid = ncopn(filename,NCNOWRIT,ierr)
+C      
+C The second argument to 'ncopn' should be NCNOWRIT, but since we
+C can't include 'netcdf.inc', we are using the value '0' instead.
+C
+ 15   ncid = ncopn(filename,0,ierr)
 C
 C Get the lat/lon dimensions.
 C

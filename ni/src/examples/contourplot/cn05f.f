@@ -1,5 +1,5 @@
 C
-C      $Id: cn05f.f,v 1.2 1996-01-10 21:25:44 haley Exp $
+C      $Id: cn05f.f,v 1.3 1996-05-09 15:37:31 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -106,8 +106,11 @@ C
             goto 15
          endif
  10   continue
-      
- 15   ncid = ncopn(filename,NCNOWRIT,ierr)
+C      
+C The second argument to 'ncopn' should be NCNOWRIT, but since we
+C can't include 'netcdf.inc', we are using the value '0' instead.
+C
+ 15   ncid = ncopn(filename,0,ierr)
 C
 C Initialize the HLU library and set up resource template.
 C

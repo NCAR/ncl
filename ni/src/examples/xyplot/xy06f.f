@@ -1,5 +1,5 @@
 C
-C      $Id: xy06f.f,v 1.8 1995-06-22 21:09:37 haley Exp $
+C      $Id: xy06f.f,v 1.9 1996-05-09 15:38:13 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -240,7 +240,11 @@ C
                goto 34
             endif
  32      continue
- 34      ncid = ncopn(filename,NCNOWRIT,ierr)
+C      
+C The second argument to 'ncopn' should be NCNOWRIT, but since we
+C can't include 'netcdf.inc', we are using the value '0' instead.
+C
+ 34      ncid = ncopn(filename,0,ierr)
 C
 C Get the station id dimension.
 C
