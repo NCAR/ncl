@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ncarg_path.c,v 1.3 1992-09-01 23:47:23 clyne Exp $
+ *      $Id: ncarg_path.c,v 1.4 1992-09-02 20:07:51 don Exp $
  */
 /*
  *	File:		ncarg_path.c
@@ -28,7 +28,7 @@
    a line, it and all characters following it on the line are treated as
    blanks.  */
 
-static char *gtngto(ptfile,ptlchr)
+char *gtngto(ptfile,ptlchr)
 FILE *ptfile;
 char *ptlchr;
 {
