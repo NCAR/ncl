@@ -1,0 +1,13 @@
+#
+#   $Id: yMakefile,v 1.1 1997-12-15 18:24:49 haley Exp $
+#
+#   Makefile for HLU Ngmath examples
+#
+
+MYNAME      = ngmath
+
+NSRCS = nm01n.ncl nm02n.ncl nm03n.ncl nm04n.ncl nm05n.ncl nm06n.ncl \
+		nm07n.ncl nm08n.ncl nm09n.ncl
+
+
+InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
