@@ -19,7 +19,7 @@ C
 C
 C Invoke demo driver
 C
-      CALL CMPLBL(IWKID)
+      CALL TCMPLBL(IWKID)
 C
 C Deactivate and close workstation, close GKS.
 C
@@ -30,7 +30,7 @@ C
       STOP
       END
 
-      SUBROUTINE CMPLBL(IWKID) 
+      SUBROUTINE TCMPLBL(IWKID) 
 
       REAL PLIM1(2), PLIM2(2), PLIM3(2), PLIM4(2)
 

@@ -20,7 +20,7 @@ C
 C
 C Call the routine which does all the work
 C
-      CALL CMPEL
+      CALL TCMPEL
 C
 C Close GKS, and end program
 C
@@ -31,7 +31,7 @@ C
       STOP
       END
 
-      SUBROUTINE CMPEL
+      SUBROUTINE TCMPEL
 C
 C Satellite-view.
 C

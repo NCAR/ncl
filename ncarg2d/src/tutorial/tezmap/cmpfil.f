@@ -26,7 +26,7 @@ C
 C
 C Invoke demo driver
 C
-      CALL CMPFIL('SV',40.,-50.,0.,'PO',
+      CALL TCMPFIL('SV',40.,-50.,0.,'PO',
      +     'MA',PLIM1,PLIM2,PLIM3,PLIM4,10.,IWKID)
 C
 C Advance the frame.
@@ -42,7 +42,7 @@ C
       STOP
       END
 
-      SUBROUTINE CMPFIL(PROJ, PLAT, PLON, ROTA, OUTLN,
+      SUBROUTINE TCMPFIL(PROJ, PLAT, PLON, ROTA, OUTLN,
      +     JLIM, PLIM1, PLIM2, PLIM3, PLIM4, GRD, IWKID)
 
       EXTERNAL MASK

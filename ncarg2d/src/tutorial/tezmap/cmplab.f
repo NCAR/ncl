@@ -26,7 +26,7 @@ C
 C
 C Invoke demo driver
 C
-      CALL CMPLAB('SV',40.,-50.,0.,'PO','MA',0., 0.,0.,0.,10.)
+      CALL TCMPLAB('SV',40.,-50.,0.,'PO','MA',0., 0.,0.,0.,10.)
 C
 C Advance the frame.
 C
@@ -41,7 +41,7 @@ C
       STOP
       END
 
-      SUBROUTINE CMPLAB(PROJ, PLAT, PLON, ROTA, OUTLN,
+      SUBROUTINE TCMPLAB(PROJ, PLAT, PLON, ROTA, OUTLN,
      +     JLIM, PLIM1, PLIM2, PLIM3, PLIM4, GRD)
       
       EXTERNAL MASK

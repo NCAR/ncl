@@ -20,7 +20,7 @@ C
 C
 C Call the mapping routine CMPDD
 C
-      CALL CMPDD(IWKID)
+      CALL TCMPDD(IWKID)
 C
 C Close GKS and quit.
 C
@@ -31,7 +31,7 @@ C
       STOP
       END
 
-      SUBROUTINE CMPDD(IWKID)
+      SUBROUTINE TCMPDD(IWKID)
 C
 C CMPDD demonstrates setting the dash pattern for grid lines in Maps.
 C

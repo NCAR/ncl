@@ -20,7 +20,7 @@ C
 C
 C Call the mapping routine CMPUSR
 C
-      CALL CMPUSR
+      CALL TCMPUSR
 C
 C Close GKS and quit.
 C
@@ -31,7 +31,7 @@ C
       STOP
       END
 
-      SUBROUTINE CMPUSR
+      SUBROUTINE TCMPUSR
 C
 C Set up Satellite-view.
 C

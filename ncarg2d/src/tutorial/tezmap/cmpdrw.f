@@ -19,7 +19,7 @@ C
 C
 C Invoke demo driver
 C
-      CALL CMPDRW(IWKID)
+      CALL TCMPDRW(IWKID)
 C
 C Deactivate and close workstation, close GKS.
 C
@@ -30,7 +30,7 @@ C
       STOP
       END
 
-      SUBROUTINE CMPDRW(IWKID) 
+      SUBROUTINE TCMPDRW(IWKID) 
 C
 C CMPDRW demonstrates using MAPDRW as a shortcut
 C

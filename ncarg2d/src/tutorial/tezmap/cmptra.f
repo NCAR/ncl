@@ -26,7 +26,7 @@ C
 C
 C Invoke demo driver
 C
-      CALL CMPTRA('OR',35.,-105.,0.,'PO','CO',22.,-120.,47.,-65.)
+      CALL TCMPTRA('OR',35.,-105.,0.,'PO','CO',22.,-120.,47.,-65.)
 C
 C Deactivate and close workstation, close GKS.
 C
@@ -37,7 +37,7 @@ C
       STOP
       END
 
-      SUBROUTINE CMPTRA(PROJ, PLAT, PLON, ROTA, OUTLN,
+      SUBROUTINE TCMPTRA(PROJ, PLAT, PLON, ROTA, OUTLN,
      +     JLIM, PLIM1, PLIM2, PLIM3, PLIM4)
 
       CHARACTER*2 PROJ, OUTLN, JLIM

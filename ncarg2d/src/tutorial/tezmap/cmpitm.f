@@ -37,7 +37,7 @@ C
 C
 C Draw the map, and set up area map.
 C
-      CALL CMPMSK('ME',0.,-75.,0.,'PS','CO',
+      CALL TCMPMSK('ME',0.,-75.,0.,'PS','CO',
      +     PLIM1,PLIM2,PLIM3,PLIM4,2.,MAP,LMAP)
 C
 C Define a circle centered at RLAT,RLON
@@ -131,7 +131,7 @@ C
       RETURN
 C
       END
-      SUBROUTINE CMPMSK(PROJ, PLAT, PLON, ROTA, OUTLN,
+      SUBROUTINE TCMPMSK(PROJ, PLAT, PLON, ROTA, OUTLN,
      +     JLIM, PLIM1, PLIM2, PLIM3, PLIM4, GRD, MAP, LMAP)
 
       EXTERNAL MASK2

@@ -26,7 +26,7 @@ C
 C
 C Invoke demo driver
 C
-      CALL CMPMSK('SV',40.,-50.,0.,'PO','MA',
+      CALL TCMPMSK('SV',40.,-50.,0.,'PO','MA',
      +     PLIM1,PLIM2,PLIM3,PLIM4,10.)
 C
 C Advance the frame.
@@ -42,7 +42,7 @@ C
       STOP
       END
 
-      SUBROUTINE CMPMSK(PROJ, PLAT, PLON, ROTA, OUTLN,
+      SUBROUTINE TCMPMSK(PROJ, PLAT, PLON, ROTA, OUTLN,
      +     JLIM, PLIM1, PLIM2, PLIM3, PLIM4, GRD)
 
       EXTERNAL MASK

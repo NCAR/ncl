@@ -19,7 +19,7 @@ C
 C
 C Invoke demo driver
 C
-      CALL CMPGRD(IWKID)
+      CALL TCMPGRD(IWKID)
 C
 C Deactivate and close workstation, close GKS.
 C
@@ -30,7 +30,7 @@ C
       STOP
       END
 
-      SUBROUTINE CMPGRD(IWKID) 
+      SUBROUTINE TCMPGRD(IWKID) 
 C
 C CMPGRD demonstrates drawing grid lines, and use of MAPINT
 C

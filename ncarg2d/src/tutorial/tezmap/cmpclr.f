@@ -19,7 +19,7 @@ C
 C
 C Invoke demo driver
 C
-      CALL CMPCLR(IWKID)
+      CALL TCMPCLR(IWKID)
 C
 C Deactivate and close workstation, close GKS.
 C
@@ -30,7 +30,7 @@ C
       STOP
       END
 
-      SUBROUTINE CMPCLR(IWKID) 
+      SUBROUTINE TCMPCLR(IWKID) 
 C
 C CMPCLR demonstrates using the color parameters in Maps
 C

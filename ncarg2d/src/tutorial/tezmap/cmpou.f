@@ -19,7 +19,7 @@ C
 C
 C Invoke demo driver
 C
-      CALL CMPOU
+      CALL TCMPOU
 C
 C Deactivate and close workstation, close GKS.
 C
@@ -30,7 +30,7 @@ C
       STOP
       END
 
-      SUBROUTINE CMPOU 
+      SUBROUTINE TCMPOU 
 
       REAL PLIM1(2), PLIM2(2), PLIM3(2), PLIM4(2)
 
