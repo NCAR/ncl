@@ -1,5 +1,5 @@
 /*
-**      $Id: xy04c.c,v 1.12 1995-06-22 21:09:29 haley Exp $
+**      $Id: xy04c.c,v 1.13 1998-10-27 19:05:22 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -51,13 +51,13 @@
 #define PI100 0.031415926535898
 
 float ydra[NCURVE][NPTS];
+char   *cmap[NCOLORS] = {"black","white","red","green","blue","yellow"};
 
 main()
 {
     int     appid,xworkid,plotid,dataid;
     int     rlist, i, j, len[2];
     float   theta;
-    float   cmap[NCOLORS][3];
     int NCGM=0, X11=1, PS=0;
 /*
  * Initialize data for the XyPlot object.
@@ -74,17 +74,6 @@ main()
     NhlInitialize();
     rlist = NhlRLCreate(NhlSETRL);
 /*
- * Modify the color map.  Color indices '0' and '1' are the background
- * and foreground colors respectively.
- */
-    cmap[0][0] = cmap[0][1] = cmap[0][2] = 0.;
-    cmap[1][0] = cmap[1][1] = cmap[1][2] = 1.;
-    cmap[2][0] = 1.0; cmap[2][1] = 0.0; cmap[2][2] = 0.0;
-    cmap[3][0] = 0.0; cmap[3][1] = 1.0; cmap[3][2] = 0.0;
-    cmap[4][0] = 0.0; cmap[4][1] = 0.0; cmap[4][2] = 1.0;
-    cmap[5][0] = 1.0; cmap[5][1] = 1.0; cmap[5][2] = 0.0;
-    len[0] = NCOLORS;  len[1] = 3;
-/*
  * Create Application object.  The Application object name is used to
  * determine the name of the resource file, which is "xy04.res" in
  * this case.
@@ -100,7 +89,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./xy04c.ncgm");
-        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
+        NhlRLSetStringArray(rlist,NhlNwkColorMap,cmap,NCOLORS);
         NhlCreate(&xworkid,"xy04Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
@@ -110,7 +99,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
-        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
+        NhlRLSetStringArray(rlist,NhlNwkColorMap,cmap,NCOLORS);
         NhlCreate(&xworkid,"xy04Work",NhlxWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
@@ -120,7 +109,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"./xy04c.ps");
-        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
+        NhlRLSetStringArray(rlist,NhlNwkColorMap,cmap,NCOLORS);
         NhlCreate(&xworkid,"xy04Work",NhlpsWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }

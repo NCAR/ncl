@@ -1,5 +1,5 @@
 /*
- *      $Id: xy16c.c,v 1.2 1997-03-20 18:25:58 haley Exp $
+ *      $Id: xy16c.c,v 1.3 1998-10-27 19:05:23 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -200,14 +200,14 @@ main()
       NhlRLSetFloatArray(srlist,NhlNtmYLValues,ylvals,5);
       NhlRLSetStringArray(srlist,NhlNtmYLLabels,yllabs,5);
       NhlRLSetString(srlist,NhlNtmYLLabelsOn,"True");
-      NhlRLSetInteger(srlist,NhlNtmYLLabelFontColor,2);
+      NhlRLSetString(srlist,NhlNtmYLLabelFontColor,"red");
       NhlRLSetString(srlist,NhlNtiXAxisString,"Longitude (Degs)");
       NhlRLSetString(srlist,NhlNtiYAxisString,"Temperature in Deg C");
       NhlRLSetFloat(srlist,NhlNtiXAxisFontHeightF,0.02);
       NhlRLSetFloat(srlist,NhlNtiYAxisFontHeightF,0.02);
       NhlRLSetString(srlist,NhlNtiXAxisFont,"helvetica-bold");
       NhlRLSetString(srlist,NhlNtiYAxisFont,"helvetica-bold");
-      NhlRLSetInteger(srlist,NhlNtiYAxisFontColor,2);
+      NhlRLSetString(srlist,NhlNtiYAxisFontColor,"red");
       NhlRLSetString(srlist,NhlNtmYRMinorOn,"False");
       NhlRLSetString(srlist,NhlNtmYLMinorOn,"False");
       NhlCreate(&xy1,"xy1",NhlxyPlotClass,xworkid,srlist);
@@ -235,7 +235,7 @@ main()
       NhlRLSetString(srlist,NhlNtmYRMode,"Explicit");
       NhlRLSetFloatArray(srlist,NhlNtmYRValues,yrvals1,6);
       NhlRLSetStringArray(srlist,NhlNtmYRLabels,yrlabs1,6);
-      NhlRLSetInteger(srlist,NhlNtmYRLabelFontColor,6);
+      NhlRLSetString(srlist,NhlNtmYRLabelFontColor,"cyan");
       NhlRLSetString(srlist,NhlNtiYAxisString,"U component of wind (m/s)");
       NhlRLSetString(srlist,NhlNtiYAxisSide,"Right");
       NhlRLSetFloat(srlist,NhlNtiXAxisFontHeightF,0.02);
@@ -243,7 +243,7 @@ main()
       NhlRLSetString(srlist,NhlNtiMainFont,"helvetica-bold");
       NhlRLSetString(srlist,NhlNtiXAxisFont,"helvetica-bold");
       NhlRLSetString(srlist,NhlNtiYAxisFont,"helvetica-bold");
-      NhlRLSetInteger(srlist,NhlNtiYAxisFontColor,6);
+      NhlRLSetString(srlist,NhlNtiYAxisFontColor,"cyan");
       NhlRLSetString(srlist,NhlNtmYRMinorOn,"False");
       NhlRLSetString(srlist,NhlNtmYLMinorOn,"False");
       NhlCreate(&xy2,"xy2",NhlxyPlotClass,xworkid,srlist);
@@ -278,7 +278,7 @@ main()
       NhlRLSetString(srlist,NhlNtmYRMode,"Explicit");
       NhlRLSetFloatArray(srlist,NhlNtmYRValues,yrvals2,5);
       NhlRLSetStringArray(srlist,NhlNtmYRLabels,yrlabs2,5);
-      NhlRLSetInteger(srlist,NhlNtmYRLabelFontColor,3);
+      NhlRLSetString(srlist,NhlNtmYRLabelFontColor,"green");
       NhlRLSetString(srlist,NhlNtiYAxisString,"V component of wind (m/s)");
       NhlRLSetString(srlist,NhlNtiYAxisSide,"Right");
       NhlRLSetFloat(srlist,NhlNtiXAxisFontHeightF,0.02);
@@ -287,7 +287,7 @@ main()
       NhlRLSetFloat(srlist,NhlNtiMainFontHeightF,0.030);
       NhlRLSetString(srlist,NhlNtiMainFont,"helvetica-bold");
       NhlRLSetString(srlist,NhlNtiYAxisFont,"helvetica-bold");
-      NhlRLSetInteger(srlist,NhlNtiYAxisFontColor,3);
+      NhlRLSetString(srlist,NhlNtiYAxisFontColor,"green");
       NhlRLSetString(srlist,NhlNtmYRMinorOn,"False");
       NhlRLSetString(srlist,NhlNtmYLMinorOn,"False");
       NhlRLSetString(srlist,NhlNtmXBMinorOn,"False");
@@ -305,7 +305,7 @@ main()
       
       NhlRLClear(srlist);
       NhlRLSetString(srlist,NhlNxyMonoLineColor,"true");
-      NhlRLSetInteger(srlist,NhlNxyLineColor,2);
+      NhlRLSetString(srlist,NhlNxyLineColor,"red");
       NhlSetValues(spec1,srlist);
 /*
  * Get the Data Spec id of the second plot so we can then change
@@ -317,7 +317,7 @@ main()
 
       NhlRLClear(srlist);
       NhlRLSetString(srlist,NhlNxyMonoLineColor,"true");
-      NhlRLSetInteger(srlist,NhlNxyLineColor,6);
+      NhlRLSetString(srlist,NhlNxyLineColor,"cyan");
       NhlSetValues(spec2,srlist);
 /*
  * Get the Data Spec id of the third plot so we can then change
@@ -329,7 +329,7 @@ main()
 
       NhlRLClear(srlist);
       NhlRLSetString(srlist,NhlNxyMonoLineColor,"true");
-      NhlRLSetInteger(srlist,NhlNxyLineColor,3);
+      NhlRLSetString(srlist,NhlNxyLineColor,"green");
       NhlSetValues(spec3,srlist);
 /*
  * Draw all three plots.

@@ -1,5 +1,5 @@
 C
-C      $Id: xy16f.f,v 1.3 1997-04-18 19:56:37 haley Exp $
+C      $Id: xy16f.f,v 1.4 1998-10-27 19:05:23 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                       C
@@ -191,7 +191,7 @@ C
       call NhlFRLSetFloatArray(srlist,'tmYLValues',ylvals,5,ierr)
       call NhlFRLSetStringArray(srlist,'tmYLLabels',yllabs,5,ierr)
       call NhlFRLSetString(srlist,'tmYLLabelsOn','True',ierr)
-      call NhlFRLSetInteger(srlist,'tmYLLabelFontColor',2,ierr)
+      call NhlFRLSetString(srlist,'tmYLLabelFontColor','red',ierr)
       call NhlFRLSetString(srlist,'tiXAxisString','Longitude (Degs)',
      +     ierr)
       call NhlFRLSetString(srlist,'tiYAxisString',
@@ -200,7 +200,7 @@ C
       call NhlFRLSetFloat(srlist,'tiYAxisFontHeightF',0.02,ierr)
       call NhlFRLSetString(srlist,'tiXAxisFont','helvetica-bold',ierr)
       call NhlFRLSetString(srlist,'tiYAxisFont','helvetica-bold',ierr)
-      call NhlFRLSetInteger(srlist,'tiYAxisFontColor',2,ierr)
+      call NhlFRLSetString(srlist,'tiYAxisFontColor','red',ierr)
       call NhlFRLSetString(srlist,'tmYRMinorOn','False',ierr)
       call NhlFRLSetString(srlist,'tmYLMinorOn','False',ierr)
       call NhlFCreate(xy1,'xy1',NhlFXyPlotClass,xworkid,
@@ -229,7 +229,7 @@ C
       call NhlFRLSetString(srlist,'tmYRMode','Explicit',ierr)
       call NhlFRLSetFloatArray(srlist,'tmYRValues',yrvals1,6,ierr)
       call NhlFRLSetStringArray(srlist,'tmYRLabels',yrlabs1,6,ierr)
-      call NhlFRLSetInteger(srlist,'tmYRLabelFontColor',6,ierr)
+      call NhlFRLSetString(srlist,'tmYRLabelFontColor','cyan',ierr)
       call NhlFRLSetString(srlist,'tiYAxisString',
      +     'U component of wind (m/s)',ierr)
       call NhlFRLSetString(srlist,'tiYAxisSide','Right',ierr)
@@ -238,7 +238,7 @@ C
       call NhlFRLSetString(srlist,'tiMainFont','helvetica-bold',ierr)
       call NhlFRLSetString(srlist,'tiXAxisFont','helvetica-bold',ierr)
       call NhlFRLSetString(srlist,'tiYAxisFont','helvetica-bold',ierr)
-      call NhlFRLSetInteger(srlist,'tiYAxisFontColor',6,ierr)
+      call NhlFRLSetString(srlist,'tiYAxisFontColor','cyan',ierr)
       call NhlFRLSetString(srlist,'tmYRMinorOn','False',ierr)
       call NhlFRLSetString(srlist,'tmYLMinorOn','False',ierr)
       call NhlFCreate(xy2,'xy2',NhlFXyPlotClass,xworkid,
@@ -274,7 +274,7 @@ C
       call NhlFRLSetString(srlist,'tmYRMode','Explicit',ierr)
       call NhlFRLSetFloatArray(srlist,'tmYRValues',yrvals2,5,ierr)
       call NhlFRLSetStringArray(srlist,'tmYRLabels',yrlabs2,5,ierr)
-      call NhlFRLSetInteger(srlist,'tmYRLabelFontColor',3,ierr)
+      call NhlFRLSetString(srlist,'tmYRLabelFontColor','green',ierr)
       call NhlFRLSetString(srlist,'tiYAxisString',
      +     'V component of wind (m/s)',ierr)
       call NhlFRLSetString(srlist,'tiYAxisSide','Right',ierr)
@@ -285,7 +285,7 @@ C
       call NhlFRLSetFloat(srlist,'tiMainFontHeightF',0.030,ierr)
       call NhlFRLSetString(srlist,'tiMainFont','helvetica-bold',ierr)
       call NhlFRLSetString(srlist,'tiYAxisFont','helvetica-bold',ierr)
-      call NhlFRLSetInteger(srlist,'tiYAxisFontColor',3,ierr)
+      call NhlFRLSetString(srlist,'tiYAxisFontColor','green',ierr)
       call NhlFRLSetString(srlist,'tmYRMinorOn','False',ierr)
       call NhlFRLSetString(srlist,'tmYLMinorOn','False',ierr)
       call NhlFRLSetString(srlist,'tmXBMinorOn','False',ierr)
@@ -304,7 +304,7 @@ C
       
       call NhlFRLClear(srlist)
       call NhlFRLSetString(srlist,'xyMonoLineColor','true',ierr)
-      call NhlFRLSetInteger(srlist,'xyLineColor',2,ierr)
+      call NhlFRLSetString(srlist,'xyLineColor','red',ierr)
       call NhlFSetValues(spec1,srlist,ierr)
 C
 C Get the Data Spec id of the second plot so we can then change
@@ -316,7 +316,7 @@ C
 
       call NhlFRLClear(srlist)
       call NhlFRLSetString(srlist,'xyMonoLineColor','true',ierr)
-      call NhlFRLSetInteger(srlist,'xyLineColor',6,ierr)
+      call NhlFRLSetString(srlist,'xyLineColor','cyan',ierr)
       call NhlFSetValues(spec2,srlist,ierr)
 C
 C Get the Data Spec id of the third plot so we can then change
@@ -328,7 +328,7 @@ C
 
       call NhlFRLClear(srlist)
       call NhlFRLSetString(srlist,'xyMonoLineColor','true',ierr)
-      call NhlFRLSetInteger(srlist,'xyLineColor',3,ierr)
+      call NhlFRLSetString(srlist,'xyLineColor','green',ierr)
       call NhlFSetValues(spec3,srlist,ierr)
 C
 C Draw all three plots.

@@ -1,5 +1,5 @@
 C     
-C      $Id: xy04f.f,v 1.13 1995-06-22 21:09:31 haley Exp $
+C      $Id: xy04f.f,v 1.14 1998-10-27 19:05:23 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -45,16 +45,11 @@ C
       integer rlist, i, j, len(2)
       real ydra(NPTS,NCURVE), theta
 C
-C Modify the color map.  Color indices '1' and '2' are the background
-C and foreground colors respectively.
+C Modify the color map using named colors.  Color indices '1' and '2'
+C are the background and foreground colors respectively.
 C
-      real cmap(3,NCOLORS)
-      data cmap/0.,0.,0.,
-     +          1.,1.,1.,
-     +          1.,0.,0.,
-     +          0.,1.,0.,
-     +          0.,0.,1.,
-     +          1.,1.,0/
+      character*6 cmap(NCOLORS)
+      data cmap/"black","white","red","green","blue","yellow"/
 
       integer NCGM, X11, PS
 C
@@ -87,15 +82,13 @@ C
       call NhlFRLSetString(rlist,'appUsrDir','./',ierr)
       call NhlFCreate(appid,'xy04',NhlFAppClass,0,rlist,ierr)
 
-      len(1) = 3
-      len(2) = NCOLORS
       if (NCGM.eq.1) then
 C
 C Create an NCGM workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkMetaName','./xy04f.ncgm',ierr)
-         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
+         call NhlFRLSetStringArray(rlist,'wkColorMap',NCOLORS,ierr)
          call NhlFCreate(xworkid,'xy04Work',
      +        NhlFNcgmWorkstationClass,0,rlist,ierr)
       else if (X11.eq.1) then
@@ -104,7 +97,7 @@ C Create an xworkstation object.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPause','True',ierr)
-         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
+         call NhlFRLSetStringArray(rlist,'wkColorMap',cmap,NCOLORS,ierr)
          call NhlFCreate(xworkid,'xy04Work',NhlFXWorkstationClass,
      +                0,rlist,ierr)
       else if (PS.eq.1) then
@@ -113,7 +106,7 @@ C Create a PS workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPSFileName','./xy04f.ps',ierr)
-         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
+         call NhlFRLSetStringArray(rlist,'wkColorMap',cmap,NCOLORS,ierr)
          call NhlFCreate(xworkid,'xy04Work',
      +        NhlFPSWorkstationClass,0,rlist,ierr)
       endif

@@ -1,5 +1,5 @@
 C
-C      $Id: xy17f.f,v 1.4 1997-04-16 16:40:34 haley Exp $
+C      $Id: xy17f.f,v 1.5 1998-10-27 19:05:24 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                     C
@@ -196,7 +196,7 @@ C
       call NhlFRLSetFloatArray  (rlist, 'tmYLValues', y1val, 5, ierr)
       call NhlFRLSetStringArray (rlist, 'tmYLLabels', y1lab, 5, ierr)
       call NhlFRLSetString  (rlist, 'tmYLLabelsOn', 'True', ierr)
-      call NhlFRLSetInteger (rlist, 'tmYLLabelFontColor', 2, ierr)
+      call NhlFRLSetString (rlist, 'tmYLLabelFontColor','red', ierr)
       call NhlFRLSetString  (rlist, 'tiMainString', 
      +                       'Temperature, U, V Stacked Plots', ierr)
       call NhlFRLSetString  (rlist, 'tiYAxisString', 
@@ -207,7 +207,7 @@ C
      +                       'helvetica-bold', ierr)
       call NhlFRLSetString  (rlist, 'tiYAxisFont', 
      +                       'helvetica-bold', ierr)
-      call NhlFRLSetInteger (rlist, 'tiYAxisFontColor', 2, ierr)
+      call NhlFRLSetString (rlist, 'tiYAxisFontColor','red', ierr)
       call NhlFRLSetString  (rlist, 'tmYRMinorOn', 'False', ierr)
       call NhlFRLSetString  (rlist, 'tmYLMinorOn', 'False', ierr)
       call NhlFCreate(xy1, 'xy1', NhlFxyPlotClass, wks, rlist, ierr)
@@ -237,7 +237,7 @@ C
       call NhlFRLSetFloatArray  (rlist, 'tmYRValues', y2val, 6, ierr)
       call NhlFRLSetStringArray (rlist, 'tmYRLabels', y2lab, 6, ierr)
       call NhlFRLSetString  (rlist, 'tmXBLabelsOn', 'False', ierr)
-      call NhlFRLSetInteger (rlist, 'tmYRLabelFontColor', 3, ierr)
+      call NhlFRLSetString (rlist, 'tmYRLabelFontColor','green', ierr)
       call NhlFRLSetString  (rlist, 'tiYAxisString', 'U (m/s)', ierr)
       call NhlFRLSetFloat   (rlist, 'tiXAxisFontHeightF', 0.02, ierr)
       call NhlFRLSetFloat   (rlist, 'tiYAxisFontHeightF', 0.02, ierr)
@@ -245,7 +245,7 @@ C
      +                       'helvetica-bold', ierr)
       call NhlFRLSetString  (rlist, 'tiYAxisFont',
      +                       'helvetica-bold', ierr)
-      call NhlFRLSetInteger (rlist, 'tiYAxisFontColor', 3, ierr)
+      call NhlFRLSetString (rlist, 'tiYAxisFontColor','green', ierr)
       call NhlFRLSetString  (rlist, 'tmYRMinorOn', 'False', ierr)
       call NhlFRLSetString  (rlist, 'tmYLMinorOn', 'False', ierr)
       call NhlFCreate(xy2, 'xy2', NhlFxyPlotClass, wks, rlist, ierr)
@@ -279,7 +279,7 @@ C
      +                       0.0, ierr)
       call NhlFRLSetString  (rlist,'tmYLMode', 'Explicit', ierr)
       call NhlFRLSetString  (rlist,'tmYLLabelsOn', 'True', ierr)
-      call NhlFRLSetInteger (rlist,'tmYLLabelFontColor', 4, ierr)
+      call NhlFRLSetString (rlist,'tmYLLabelFontColor','blue', ierr)
       call NhlFRLSetString  (rlist,'tiYAxisString','V (m/s)',ierr)
       call NhlFRLSetString  (rlist,'tiXAxisString', 
      +                      'Longitude (Degs)', ierr)
@@ -289,7 +289,7 @@ C
      +                       ierr)
       call NhlFRLSetString  (rlist,'tiYAxisFont','helvetica-bold',
      +                       ierr)
-      call NhlFRLSetInteger (rlist,'tiYAxisFontColor', 4, ierr)
+      call NhlFRLSetString (rlist,'tiYAxisFontColor','blue', ierr)
       call NhlFRLSetString  (rlist,'tmYRMinorOn', 'False', ierr)
       call NhlFRLSetString  (rlist,'tmYLMinorOn', 'False', ierr)
       call NhlFRLSetFloatArray  (rlist,'tmYLValues',y3val,5,ierr)
@@ -306,7 +306,7 @@ C
 
       call NhlFRLClear (rlist)
       call NhlFRLSetString (rlist, 'xyMonoLineColor', 'True', ierr)
-      call NhlFRLSetInteger (rlist, 'xyLineColor', 2, ierr)
+      call NhlFRLSetString (rlist, 'xyLineColor','red', ierr)
       call NhlFSetValues (dspec, rlist, ierr)
 
       call NhlFRLClear (grlist)
@@ -316,7 +316,7 @@ C
 
       call NhlFRLClear (rlist)
       call NhlFRLSetString (rlist, 'xyMonoLineColor', 'True', ierr)
-      call NhlFRLSetInteger (rlist, 'xyLineColor', 3, ierr)
+      call NhlFRLSetString (rlist, 'xyLineColor','green', ierr)
       call NhlFSetValues (dspec, rlist, ierr)
 
       call NhlFRLClear (grlist)
@@ -326,7 +326,7 @@ C
 
       call NhlFRLClear (rlist)
       call NhlFRLSetInteger (rlist, 'xyMonoLineColor', 'True', ierr)
-      call NhlFRLSetInteger (rlist, 'xyLineColor', 4, ierr)
+      call NhlFRLSetString (rlist, 'xyLineColor', 'blue', ierr)
       call NhlFSetValues (dspec, rlist, ierr)
 
       call NhlFDraw(xy1, ierr)

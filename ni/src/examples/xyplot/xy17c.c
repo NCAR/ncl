@@ -1,5 +1,5 @@
 /*
- *      $Id: xy17c.c,v 1.5 1997-04-11 15:56:52 haley Exp $
+ *      $Id: xy17c.c,v 1.6 1998-10-27 19:05:24 haley Exp $
  */
 /***********************************************************************
  *                                                                     *
@@ -195,14 +195,14 @@ void main ()
    NhlRLSetFloatArray  (rlist, NhlNtmYLValues, y1val, 5);
    NhlRLSetStringArray (rlist, NhlNtmYLLabels, y1lab, 5);
    NhlRLSetString  (rlist, NhlNtmYLLabelsOn, "True");
-   NhlRLSetInteger (rlist, NhlNtmYLLabelFontColor, 2);
+   NhlRLSetString (rlist, NhlNtmYLLabelFontColor,"red");
    NhlRLSetString  (rlist, NhlNtiMainString, "Temperature, U, V Stacked Plots");
    NhlRLSetString  (rlist, NhlNtiYAxisString, "Temp (Deg C)");
    NhlRLSetFloat   (rlist, NhlNtiXAxisFontHeightF, 0.02);
    NhlRLSetFloat   (rlist, NhlNtiYAxisFontHeightF, 0.02);
    NhlRLSetString  (rlist, NhlNtiXAxisFont, "helvetica-bold");
    NhlRLSetString  (rlist, NhlNtiYAxisFont, "helvetica-bold");
-   NhlRLSetInteger (rlist, NhlNtiYAxisFontColor, 2);
+   NhlRLSetString (rlist, NhlNtiYAxisFontColor,"red");
    NhlRLSetString  (rlist, NhlNtmYRMinorOn, "False");
    NhlRLSetString  (rlist, NhlNtmYLMinorOn, "False");
    NhlCreate(&xy1, "xy1", NhlxyPlotClass, wks, rlist);
@@ -232,13 +232,13 @@ void main ()
    NhlRLSetFloatArray  (rlist, NhlNtmYRValues, y2val, 6);
    NhlRLSetStringArray (rlist, NhlNtmYRLabels, y2lab, 6);
    NhlRLSetString  (rlist, NhlNtmXBLabelsOn, "False");
-   NhlRLSetInteger (rlist, NhlNtmYRLabelFontColor, 3);
+   NhlRLSetString (rlist, NhlNtmYRLabelFontColor,"green");
    NhlRLSetString  (rlist, NhlNtiYAxisString, "U (m/s)");
    NhlRLSetFloat   (rlist, NhlNtiXAxisFontHeightF, 0.02);
    NhlRLSetFloat   (rlist, NhlNtiYAxisFontHeightF, 0.02);
    NhlRLSetString  (rlist, NhlNtiXAxisFont, "helvetica-bold");
    NhlRLSetString  (rlist, NhlNtiYAxisFont, "helvetica-bold");
-   NhlRLSetInteger (rlist, NhlNtiYAxisFontColor, 3);
+   NhlRLSetString (rlist, NhlNtiYAxisFontColor,"green");
    NhlRLSetString  (rlist, NhlNtmYRMinorOn, "False");
    NhlRLSetString  (rlist, NhlNtmYLMinorOn, "False");
    NhlCreate(&xy2, "xy2", NhlxyPlotClass, wks, rlist);
@@ -271,14 +271,14 @@ void main ()
    NhlRLSetFloat   (rlist, NhlNtmYLMajorOutwardLengthF, 0.0);
    NhlRLSetString  (rlist, NhlNtmYLMode, "Explicit");
    NhlRLSetString  (rlist, NhlNtmYLLabelsOn, "True");
-   NhlRLSetInteger (rlist, NhlNtmYLLabelFontColor, 4);
+   NhlRLSetString (rlist, NhlNtmYLLabelFontColor,"blue");
    NhlRLSetString  (rlist, NhlNtiYAxisString, "V (m/s)");
    NhlRLSetString  (rlist, NhlNtiXAxisString, "Longitude (Degs)");
    NhlRLSetFloat   (rlist, NhlNtiXAxisFontHeightF, 0.02);
    NhlRLSetFloat   (rlist, NhlNtiYAxisFontHeightF, 0.02);
    NhlRLSetString  (rlist, NhlNtiXAxisFont, "helvetica-bold");
    NhlRLSetString  (rlist, NhlNtiYAxisFont, "helvetica-bold");
-   NhlRLSetInteger (rlist, NhlNtiYAxisFontColor, 4);
+   NhlRLSetString (rlist, NhlNtiYAxisFontColor,"blue");
    NhlRLSetString  (rlist, NhlNtmYRMinorOn, "False");
    NhlRLSetString  (rlist, NhlNtmYLMinorOn, "False");
    NhlRLSetFloatArray  (rlist, NhlNtmYLValues, y3val, 5);
@@ -292,7 +292,7 @@ void main ()
 
    NhlRLClear (rlist);
    NhlRLSetInteger (rlist, NhlNxyMonoLineColor, True);
-   NhlRLSetInteger (rlist, NhlNxyLineColor, 2);
+   NhlRLSetString (rlist, NhlNxyLineColor,"red");
    NhlSetValues (dspec[0], rlist);
 
    NhlRLClear (grlist);
@@ -301,7 +301,7 @@ void main ()
 
    NhlRLClear (rlist);
    NhlRLSetInteger (rlist, NhlNxyMonoLineColor, True);
-   NhlRLSetInteger (rlist, NhlNxyLineColor, 3);
+   NhlRLSetString (rlist, NhlNxyLineColor,"green");
    NhlSetValues (dspec[0], rlist);
 
    NhlRLClear (grlist);
@@ -310,7 +310,7 @@ void main ()
 
    NhlRLClear (rlist);
    NhlRLSetInteger (rlist, NhlNxyMonoLineColor, True);
-   NhlRLSetInteger (rlist, NhlNxyLineColor, 4);
+   NhlRLSetString (rlist, NhlNxyLineColor,"blue");
    NhlSetValues (dspec[0], rlist);
 
    NhlDraw(xy1);
