@@ -1,5 +1,5 @@
 ;
-;      $Id: popRemap.ncl,v 1.6 2004-06-27 22:01:04 shea Exp $
+;      $Id: popRemap.ncl,v 1.7 2004-09-23 22:32:28 shea Exp $
 ;
 ;===========================================================
 ; D. Shea
@@ -201,13 +201,15 @@ begin
   nadd = nlat%2
   dlat = 180./(nlat-nadd)
 
-  if (gDst.eq."T63" .or. gDst.eq."T62" .or. \
+  if (gDst.eq."T85" .or.                    \
+      gDst.eq."T63" .or. gDst.eq."T62" .or. \
       gDst.eq."T42" .or. gDst.eq."T21" .or. \
       gDst.eq."TwoD" .or.gDst.eq."OneD".or. \
       gDst.eq."HlfD" .or.gDst.eq."1x1d".or. \
       gDst.eq."T31") then
 
-      if (gDst.eq."T63" .or. gDst.eq."T62" .or. \
+      if (gDst.eq."T85" .or.                    \
+          gDst.eq."T63" .or. gDst.eq."T62" .or. \
          gDst.eq."T42"  .or. gDst.eq."T21" .or. \
 	 gDst.eq."T31") then
           if (typeof(x).eq."double") then
