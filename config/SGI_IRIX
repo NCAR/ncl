@@ -1,5 +1,5 @@
 /*
- *      $Id: SGI_IRIX,v 1.1 1998-01-09 16:29:46 haley Exp $
+ *      $Id: SGI_IRIX,v 1.2 1998-01-27 22:02:18 haley Exp $
  */
 /************************************************************************
 *									*
@@ -10,7 +10,7 @@
 ************************************************************************/
 /*
  *	File:		SGI_IRIX
-*
+ *
  *	Author:		Mary Haley
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
@@ -42,6 +42,7 @@ SGIWARNSUPPRESS = SgiWarnSuppress
 #define CtoFLibraries	-lftn -lm -lfortran
 #define COptimizeFlag    -O3
 #define FOptimizeFlag    -O3
+#define	SysSharedLibFlags	-Wl,-woff,84,-woff,85
 
 #define	ArchRecLibSearch	-L/usr/local/lib
 #define	ArchRecIncSearch	-I/usr/local/include
