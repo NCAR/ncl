@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.18 1994-05-19 20:14:41 kennison Exp $
+.\"	$Id: ncargex.m,v 1.19 1994-08-24 17:18:12 kennison Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "March 1993" NCAR "NCAR GRAPHICS"
@@ -21,6 +21,7 @@ ncargex \- NCAR Graphics Fortran Examples
 [\f\B\-conran_family\fR]
 [\f\B\-conrec_family\fR]
 [\f\B\-dashline\fR]
+[\f\B\-dashpack\fR]
 [\f\B\-ezmap\fR]
 [\f\B\-field_flow\fR]
 [\f\B\-gflash\fR]
@@ -121,6 +122,9 @@ Generate all conrec examples.
 .sp
 .IP "\-dashline\fR"
 Generate all dashline examples.
+.sp
+.IP "\-dashpack\fR"
+Generate all dashpack examples.
 .sp
 .IP "\-ezmap\fR"
 Generate all ezmap examples.
@@ -248,6 +252,9 @@ listed according to which utility they belong with:
 .I "DASHLINE Examples:"
 	fdlcurvd fdldashc fdldashd fdlsmth tdashc tdashl tdashp
 	tdashs
+.sp
+.I "DASHPACK Examples:"
+	tdshpk
 .sp
 .I "EZMAP Examples:"
 	cezmap1 cezmap2 cezmap3 cmpclr cmpdd cmpdrw cmpel cmpfil
