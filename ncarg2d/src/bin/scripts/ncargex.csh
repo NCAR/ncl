@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.151 2004-04-08 21:32:12 kennison Exp $
+#   $Id: ncargex.csh,v 1.152 2004-06-23 16:24:01 fred Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -328,7 +328,7 @@ set gks_fpdc    = (pgkex01 pgkex02 pgkex03 pgkex04 pgkex05 pgkex06 pgkex07 \
                   pgkex22 pgkex23 pgkex24 pgkex25 pgkex26 pgkex27)
 set gks_flist   = ($gks_ffnd $gks_fpdc)
 
-set gks_cex     = (c_gtxpac)
+set gks_cex     = (c_gtxpac c_gcell)
 set gks_cpdc    = (c_pgkex21)
 set gks_clist   = ($gks_cex $gks_cpdc)
 
