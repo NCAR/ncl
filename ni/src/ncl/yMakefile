@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.28 1995-01-31 22:26:15 ethan Exp $
+#      $Id: yMakefile,v 1.29 1995-02-17 01:01:37 ethan Exp $
 #
 #########################################################################
 #									#
@@ -72,7 +72,7 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			OpsFuncs.h OpsList.h SrcTree.h Symbol.h VarSupport.h \
 			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h NclType.h \
 			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
-			NclOneDValCoordData.h 
+			NclOneDValCoordData.h BuiltInFuncs.h HLUFunctions.h
 
 INSTALL_HDRS	=	defs.h NclApi.h ApiRecords.h NclVar.h NclBuiltIns.h \
 			NclBuiltInSupport.h
@@ -103,7 +103,8 @@ STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			Symbol.c Translate.c VarSupport.c NclFileVar.c \
 			NclHLUVar.c HLUSupport.c NclCoordVar.c yywrap.c \
 			NclMultiDValnclfileData.c NclMultiDValHLUObjData.c \
-			NclOneDValCoordData.c BuiltInSupport.c
+			NclOneDValCoordData.c BuiltInSupport.c BuiltInFuncs.c \
+			HLUFunctions.c
 
 API_OBJS	=	NclApi.o scanapi.o parseapi.o ioapi.o NclHLUObjapi.o 
 EXE_OBJS	=	Ncl.o scanner.o parser.o io.o NclHLUObj.o 
@@ -128,7 +129,8 @@ STATIC_OBJS	=	AddBuiltIns.o AddFileFormats.o AddHLUObjs.o \
 			Symbol.o Translate.o VarSupport.o NclFileVar.o \
 			NclHLUVar.o HLUSupport.o NclCoordVar.o yywrap.o NclType.o \
 			NclMultiDValnclfileData.o NclMultiDValHLUObjData.o \
-			NclOneDValCoordData.o BuiltInSupport.o
+			NclOneDValCoordData.o BuiltInSupport.o BuiltInFuncs.o \
+			HLUFunctions.o
 
 
 LibraryTarget($(MYLIB),$(ALLOBJS))

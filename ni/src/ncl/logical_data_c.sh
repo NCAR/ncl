@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sh op_funcs.sh logical NhlTBoolean NhlTBooleanGenArray > .tmp.$$
+sh op_funcs.sh logical NhlTBoolean NhlTBooleanGenArray -1 > .tmp.$$
 
 if [ ! $? ]
 then
@@ -13,6 +13,7 @@ sed \
 -e 's/DATATYPE/logical/g' \
 -e 's/HLUTYPEREP/NhlTBoolean/g' \
 -e 's/HLUGENTYPEREP/NhlTBooleanGenArray/g' \
+-e 's/DEFAULT_MISS/-1/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclTypelogical.c.specific' \

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypelong.c.specific,v 1.1 1995-01-28 01:52:23 ethan Exp $
+ *      $Id: NclTypelong.c.specific,v 1.2 1995-02-17 01:01:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -60,6 +60,7 @@ NclTypeClass fc;
 	long *res = (long*)result;
 	logical tmp;
 	NclTypeOp eq;
+	NclScalar tmp_mis;
 	
 
         if((fc == NULL)||(fc->type_class.eq == NULL)
@@ -69,10 +70,11 @@ NclTypeClass fc;
         else
                 eq = fc->type_class.eq;
 
-        if((to_m == NULL)&&(from_m != NULL)) {  
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"Coerce: From has missing value, but To missing value not set");
-                return(NhlFATAL);
-        }
+        if(to_m == NULL){  
+		tmp_mis.longval = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
+        } else {
+		tmp_mis.longval = to_m->longval;
+	}
 
 	switch(fc->type_class.type) {
 	case Ncl_Typeint: {
@@ -86,7 +88,7 @@ NclTypeClass fc;
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = to_m->longval;
+					*res = tmp_mis.longval;
 				} else {
 					*res = (long)*fl;
 				}
@@ -105,7 +107,7 @@ NclTypeClass fc;
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = to_m->longval;
+					*res = tmp_mis.longval;
 				} else {
 					*res = (long)*fl;
 				}
@@ -125,7 +127,7 @@ NclTypeClass fc;
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = to_m->byteval;
+					*res = tmp_mis.longval;
 				} else {
 					*res = (long)*fl;
 				}

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.9 1995-02-04 01:41:23 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.10 1995-02-17 01:00:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,7 @@ extern "C" {
 #include "defs.h"
 #include "NclBuiltIns.h"
 #include "MathFuncs.h"
+#include "HLUFunctions.h"
 
 extern NhlErrorTypes _Nclsystem(
 #if NhlNeedProto
@@ -141,6 +142,115 @@ void _NclAddBuiltIns
 	dimsizes[0] = 2;
 	SetArgTemplate(args,3,"integer",1,dimsizes);nargs++;
 	NclRegisterFunc(_Nclidsfft,args,"idsfft",nargs);
+
+	nargs = 0;
+	args = NewArgs(2);
+	SetArgTemplate(args,0,"graphic",NclANY,NclANY);nargs++;
+	dimsizes[0] = 1;
+	SetArgTemplate(args,1,"graphic",1,dimsizes);nargs++;
+	NclRegisterProc(_NclIChangeWorkstation,args,"NhlChangeWorkstation",nargs);
+	nargs = 0;
+	args = NewArgs(5);
+	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,1,"integer",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,4,"float",1,NclANY);nargs++;
+	NclRegisterProc(_NclISetColor,args,"NhlSetColor",nargs);
+	
+	nargs = 0;
+	args = NewArgs(4);
+	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,1,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,3,"float",1,NclANY);nargs++;
+	NclRegisterFunc(_NclINewColor,args,"NhlNewColor",nargs);
+
+	nargs = 0;
+	args = NewArgs(2);
+	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,1,"integer",1,NclANY);nargs++;
+	NclRegisterProc(_NclIFreeColor,args,"NhlFreeColor",nargs);
+
+	nargs = 0;
+	args = NewArgs(2);
+	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,1,"integer",1,NclANY);nargs++;
+	NclRegisterFunc(_NclIIsAllocatedColor,args,"NhlIsAllocatedColor",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
+	NclRegisterFunc(_NclIGetBB,args,"NhlGetBB",nargs);
+
+	nargs = 0;
+	args = NewArgs(3);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
+	SetArgTemplate(args,2,"graphic",1,NclANY);nargs++;
+	NclRegisterProc(_NclIAddData,args,"NhlAddData",nargs);
+
+	nargs = 0;
+	args = NewArgs(3);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
+	SetArgTemplate(args,2,"graphic",1,NclANY);nargs++;
+	NclRegisterProc(_NclIRemoveData,args,"NhlRemoveData",nargs);
+
+	nargs = 0;
+	args = NewArgs(3);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,0,"graphic",1,dimsizes);nargs++;
+	SetArgTemplate(args,1,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"logical",1,dimsizes);nargs++;
+	NclRegisterProc(_NclIRemoveFromOverlay,args,"NhlRemoveFromOverlay",nargs);
+
+	nargs = 0;
+	args = NewArgs(2);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,0,"graphic",1,dimsizes);nargs++;
+	SetArgTemplate(args,1,"graphic",1,NclANY);nargs++;
+	NclRegisterProc(_NclIRegisterAnnotation,args,"NhlRegisterAnnotation",nargs);
+
+	nargs = 0;
+	args = NewArgs(2);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,0,"graphic",1,dimsizes);nargs++;
+	SetArgTemplate(args,1,"graphic",1,NclANY);nargs++;
+	NclRegisterProc(_NclIUnregisterAnnotation,args,"NhlUnregisterAnnotation",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,0,"graphic",1,dimsizes);nargs++;
+	NclRegisterProc(_NclIUpdateData,args,"NhlUpdateData",nargs);
+
+	nargs = 0;
+	args = NewArgs(3);
+	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,1,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"float",1,NclANY);nargs++;
+	NclRegisterProc(_NclIDataPolyline,args,"NhlDataPolyline",nargs);
+
+	nargs = 0;
+	args = NewArgs(3);
+	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
+	SetArgTemplate(args,1,"float",1,NclANY);nargs++;
+	SetArgTemplate(args,2,"float",1,NclANY);nargs++;
+	NclRegisterProc(_NclINDCPolyline,args,"NhlNDCPolyline",nargs);
+	
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
+	NclRegisterFunc(_NclIClassName,args,"NhlClassName",nargs);
+	
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
+	NclRegisterFunc(_NclIName,args,"NhlName",nargs);
+
 
 	
 /*

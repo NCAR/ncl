@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypelogical.c.specific,v 1.1 1995-01-28 01:52:21 ethan Exp $
+ *      $Id: NclTypelogical.c.specific,v 1.2 1995-02-17 01:01:04 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -68,6 +68,7 @@ NclTypeClass fc;
 	logical *res = (logical*)result;
 	logical tmp;
 	NclTypeOp eq;
+	NclScalar tmp_mis;
 	
 
         if((fc == NULL)||(fc->type_class.eq == NULL)
@@ -77,10 +78,11 @@ NclTypeClass fc;
         else
                 eq = fc->type_class.eq;
 
-        if((to_m == NULL)&&(from_m != NULL)) {  
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"Coerce: From has missing value, but To missing value not set");
-                return(NhlFATAL);
-        }
+        if(to_m == NULL){  
+		tmp_mis.logicalval = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
+        } else {
+		tmp_mis = *to_m;
+	}
 
 	switch(fc->type_class.type) {
 	case Ncl_Typedouble: {
@@ -94,7 +96,7 @@ NclTypeClass fc;
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = to_m->logicalval;
+					*res = tmp_mis.logicalval;
 				} else {
 					*res = (logical)(*fl?1:0);
 				}
@@ -113,7 +115,7 @@ NclTypeClass fc;
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = to_m->logicalval;
+					*res = tmp_mis.logicalval;
 				} else {
 					*res = (logical)(*fl?1:0);
 				}
@@ -132,7 +134,7 @@ NclTypeClass fc;
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = to_m->logicalval;
+					*res = tmp_mis.logicalval;
 				} else {
 					*res = (logical)(*fl?1:0);
 				}
@@ -151,7 +153,7 @@ NclTypeClass fc;
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = to_m->logicalval;
+					*res = tmp_mis.logicalval;
 				} else {
 					*res = (logical)(*fl?1:0);
 				}
@@ -170,7 +172,7 @@ NclTypeClass fc;
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = to_m->logicalval;
+					*res = tmp_mis.logicalval;
 				} else {
 					*res = (logical)(*fl?1:0);
 				}
@@ -189,7 +191,7 @@ NclTypeClass fc;
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = to_m->logicalval;
+					*res = tmp_mis.logicalval;
 				} else {
 					*res = (logical)(*fl?1:0);
 				}

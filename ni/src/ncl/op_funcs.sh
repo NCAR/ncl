@@ -15,6 +15,7 @@ sed \
 -e "s/HLUGENTYPEREP/$3/g" \
 -e "s/HLUTYPEREP/$2/g" \
 -e "s/DATATYPE/logical/g" \
+-e "s/DEFAULT_MISS/$4/g" \
 TypeInitClassTemplate.c.sed
 
 
@@ -78,6 +79,7 @@ sed \
 -e "s/HLUGENTYPEREP/$3/g" \
 -e "s/HLUTYPEREP/$2/g" \
 -e "s/DATATYPE/string/g" \
+-e "s/DEFAULT_MISS/$4/g" \
 TypeInitClassTemplate.c.sed
 
 sed \
@@ -146,6 +148,7 @@ sed \
 -e "s/HLUGENTYPEREP/$3/g" \
 -e "s/HLUTYPEREP/$2/g" \
 -e "s/DATATYPE/char/g" \
+-e "s/DEFAULT_MISS/$4/g" \
 TypeInitClassTemplate.c.sed
 
 sed  \
@@ -236,7 +239,9 @@ sed \
 -e "s/HLUGENTYPEREP/$3/g" \
 -e "s/HLUTYPEREP/$2/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/DEFAULT_MISS/$4/g" \
 TypeInitClassTemplate.c.sed
+
 
 sed  \
 -e "s/OUTDATATYPE/$1/g" \

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.10 1995-01-28 01:51:56 ethan Exp $
+ *      $Id: NclNetCdf.c,v 1.11 1995-02-17 01:00:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -155,7 +155,6 @@ static void *NetMapFromNcl
 
 
 
-
 static void *NetGetFileRec
 #if	NhlNeedProto
 (NclQuark path,int wr_status)
@@ -188,7 +187,7 @@ int wr_status;
 	tmp->n_file_atts = 0;
 	tmp->file_atts= NULL;
 
-	if(wr_status) {
+	if(wr_status > 0) {
 		cdfid = ncopen(NrmQuarkToString(path),NC_NOWRITE);
 	} else {
 		cdfid = ncopen(NrmQuarkToString(path),NC_WRITE);
@@ -279,6 +278,26 @@ int wr_status;
 	}
 	ncclose(cdfid);
 	return((void*)tmp);
+}
+
+static void *NetCreateFileRec
+#if	NhlNeedProto
+(NclQuark path)
+#else
+(path)
+NclQuark path;
+#endif
+{
+	int id = 0;
+
+	id = nccreate(NrmQuarkToString(path),NC_NOCLOBBER);
+	if(id > -1) {
+		ncendef(id);
+		ncclose(id);
+		return(NetGetFileRec(path,-1));
+	} else {
+		return(NULL);
+	}
 }
 
 static void NetFreeFileRec
@@ -802,7 +821,7 @@ long *stride;
 	int i,n_elem = 1,no_stride = 1;
 	int ret;
 
-	if(!rec->wr_status) {
+	if(rec->wr_status <= 0) {
 		stepvl = rec->vars;
 		while(stepvl != NULL) {
 			if(stepvl->var_inq->name == thevar) {
@@ -891,7 +910,7 @@ void *data;
 	int ret = -1;
 	char *buffer=NULL;
 
-	if(!rec->wr_status) {
+	if(rec->wr_status <= 0) {
 		stepal = rec->file_atts;
 		while(stepal != NULL) {
 			if(stepal->att_inq->name == theatt) {
@@ -950,7 +969,7 @@ void* data;
 	
 	
 
-	if(!rec->wr_status) {
+	if(rec->wr_status <= 0) {
 		stepvl = rec->vars;
 		while(stepvl != NULL) {
 			if(stepvl->var_inq->name == thevar) {
@@ -1010,7 +1029,7 @@ int size;
 	NetCdfDimInqRecList *stepdl;
 	int ret = -1;
 
-	if(!rec->wr_status) {
+	if(rec->wr_status <=  0) {
 		
 		cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
 		if(cdfid == -1) {
@@ -1073,7 +1092,7 @@ long* dim_sizes;
 	int dim_ids[MAX_NC_DIMS];
 	NetCdfDimInqRecList* stepdl = NULL;
 
-	if(!rec->wr_status) {
+	if(rec->wr_status <= 0) {
 		cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
 		if(cdfid == -1) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
@@ -1168,7 +1187,7 @@ NclBasicDataTypes data_type;
 	nc_type *the_data_type;
 	
 
-	if(!rec->wr_status) {
+	if(rec->wr_status <= 0) {
 		cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
 		if(cdfid == -1) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
@@ -1288,7 +1307,7 @@ static NhlErrorTypes NetAddAtt
 	int cdfid;
 	
 
-	if(!rec->wr_status) {
+	if(rec->wr_status <= 0) {
 		the_data_type = (nc_type*)NetMapFromNcl(data_type);
 		if(the_data_type != NULL) {
 			cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
@@ -1355,7 +1374,7 @@ static NhlErrorTypes NetAddVarAtt
 	int i;
 	int cdfid,ret;
 	
-	if(!rec->wr_status ) {
+	if(rec->wr_status <= 0) {
 		the_data_type = (nc_type*)NetMapFromNcl(data_type);
 		if(the_data_type != NULL) {
 			cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
@@ -1413,6 +1432,7 @@ static NhlErrorTypes NetAddVarAtt
 
 
 NclFormatFunctionRec NetCdfRec = {
+/* NclCreateFileRecFunc	   create_file_rec; */		NetCreateFileRec,
 /* NclGetFileRecFunc       get_file_rec; */		NetGetFileRec,
 /* NclFreeFileRecFunc      free_file_rec; */		NetFreeFileRec,
 /* NclGetVarNamesFunc      get_var_names; */		NetGetVarNames,

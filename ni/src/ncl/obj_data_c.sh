@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-#      $Id: obj_data_c.sh,v 1.2 1995-01-31 22:26:14 ethan Exp $
+#      $Id: obj_data_c.sh,v 1.3 1995-02-17 01:01:31 ethan Exp $
 #
 #########################################################################
 #									#
@@ -29,7 +29,7 @@
 #
 #
 #	Options:
-sh op_funcs.sh obj NULL NULL> .tmp.$$
+sh op_funcs.sh obj NULL NULL -1 > .tmp.$$
 
 if [ ! $? ]
 then
@@ -42,6 +42,7 @@ sed \
 -e 's/DATATYPE/obj/g' \
 -e 's/HLUTYPEREP/NULL/g' \
 -e 's/HLUGENTYPEREP/NULL/g' \
+-e 's/DEFAULT_MISS/-1/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclTypeobj.c.specific' \

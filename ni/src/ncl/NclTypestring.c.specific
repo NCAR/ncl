@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypestring.c.specific,v 1.1 1995-01-28 01:52:31 ethan Exp $
+ *      $Id: NclTypestring.c.specific,v 1.2 1995-02-17 01:01:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -63,6 +63,7 @@ NclTypeClass fc;
 	int tmp;
 	NclTypeOp eq;
 	char buffer[NCL_MAX_STRING];
+	NclScalar tmp_mis;
 	
 
         if((fc == NULL)||(fc->type_class.eq == NULL)
@@ -72,10 +73,11 @@ NclTypeClass fc;
         else
                 eq = fc->type_class.eq;
 
-        if((to_m == NULL)&&(from_m != NULL)) {  
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"Coerce: From has missing value, but To missing value not set");
-                return(NhlFATAL);
-        }
+        if(to_m == NULL) {  
+		tmp_mis.stringval = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
+        } else {
+		tmp_mis.stringval = to_m->stringval;
+	}
 
 	switch(fc->type_class.type) {
 	case Ncl_Typelogical: {
@@ -91,7 +93,7 @@ NclTypeClass fc;
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = to_m->stringval;
+					*res = tmp_mis.stringval;
 				} else {
 					*res = (*fl?true:false) ;
 				}
@@ -111,7 +113,7 @@ NclTypeClass fc;
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = to_m->stringval;
+					*res = tmp_mis.stringval;
 				} else {
 					sprintf(buffer,"%g",*fl);
 					*res = (string)NrmStringToQuark(buffer);
@@ -132,7 +134,7 @@ NclTypeClass fc;
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = to_m->stringval;
+					*res = tmp_mis.stringval;
 				} else {
 					sprintf(buffer,"%g",*fl);
 					*res = (string)NrmStringToQuark(buffer);
@@ -153,7 +155,7 @@ NclTypeClass fc;
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = to_m->stringval;
+					*res = tmp_mis.stringval;
 				} else {
 					sprintf(buffer,"%ld",*fl);
 					*res = (string)NrmStringToQuark(buffer);
@@ -174,7 +176,7 @@ NclTypeClass fc;
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = to_m->stringval;
+					*res = tmp_mis.stringval;
 				} else {
 					sprintf(buffer,"%d",*fl);
 					*res = (string)NrmStringToQuark(buffer);
@@ -195,7 +197,7 @@ NclTypeClass fc;
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = to_m->stringval;
+					*res = tmp_mis.stringval;
 				} else {
 					sprintf(buffer,"%d",*fl);
 					*res = (string)NrmStringToQuark(buffer);
@@ -216,7 +218,7 @@ NclTypeClass fc;
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = to_m->stringval;
+					*res = tmp_mis.stringval;
 				} else {
 					sprintf(buffer,"%o",*fl);
 					*res = (string)NrmStringToQuark(buffer);
@@ -252,7 +254,7 @@ NclTypeClass fc;
 				} 
 			}
 			if(is_mis) {
-				*res = to_m->stringval;
+				*res = tmp_mis.stringval;
 			} else {
 				*res = NrmStringToQuark(buffer);
 			}

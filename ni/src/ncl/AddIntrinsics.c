@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.10 1994-12-23 01:17:15 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.11 1995-02-17 01:00:38 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -162,6 +162,78 @@ void
 #endif
 );
 
+NhlErrorTypes _NclIqsort(
+#if     NhlNeedProto
+void
+#endif
+);
+NhlErrorTypes _NclIbsearch(
+#if     NhlNeedProto
+void
+#endif
+);
+NhlErrorTypes _NclIcbinread(
+#if     NhlNeedProto
+void
+#endif
+);
+NhlErrorTypes _NclIfbinread(
+#if     NhlNeedProto
+void
+#endif
+);
+NhlErrorTypes _NclIasciread(
+#if     NhlNeedProto
+void
+#endif
+);
+NhlErrorTypes _NclIchngdir(
+#if     NhlNeedProto
+void
+#endif
+);
+NhlErrorTypes _NclIcbinwrite(
+#if     NhlNeedProto
+void
+#endif
+);
+NhlErrorTypes _NclIfbinwrite(
+#if     NhlNeedProto
+void
+#endif
+);
+NhlErrorTypes _NclIsleep(
+#if     NhlNeedProto
+void
+#endif
+);
+NhlErrorTypes _NclIprompt(
+#if     NhlNeedProto
+void
+#endif
+);
+NhlErrorTypes _NclIrand(
+#if     NhlNeedProto
+void
+#endif
+);
+NhlErrorTypes _NclIsrand(
+#if     NhlNeedProto
+void
+#endif
+);
+NhlErrorTypes _NclIabs(
+#if     NhlNeedProto
+void
+#endif
+);
+NhlErrorTypes _NclIgetenv(
+#if     NhlNeedProto
+void
+#endif
+);
+
+
 void _NclAddIntrinsics
 #if	NhlNeedProto
 (void)
@@ -293,6 +365,118 @@ void _NclAddIntrinsics
 	args[0].dim_sizes[0] = 1;
 	args[0].n_dims = 1;
 	_NclRegisterProc(_NclIListFileVariables,args,"list_filevars",1,IPROC);
+
+	args = NclCalloc(1,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("numeric");
+	args[0].is_dimsizes = 0;
+	args[0].n_dims = 1;
+	_NclRegisterProc(_NclIqsort,args,"qsort",1,IPROC);
+
+	args = NclCalloc(2,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("numeric");
+	args[0].is_dimsizes = 0;
+	args[0].n_dims = 1;
+	args[1].arg_data_type = _NclLookUp("numeric");
+	args[1].dim_sizes[0] = 1;
+	args[1].is_dimsizes = 1;
+	args[1].n_dims = 1;
+	_NclRegisterFunc(_NclIbsearch,args,"bsearch",1,IFUNC);
+
+	args = NclCalloc(2,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("string");
+	args[0].dim_sizes[0] = 1;
+	args[0].is_dimsizes = 1;
+	args[0].n_dims = 1;
+	args[1].arg_data_type = _NclLookUp("integer");
+	args[1].is_dimsizes = 0;
+	args[1].n_dims = 1;
+	_NclRegisterFunc(_NclIcbinread,args,"cbinread",1,IFUNC);
+
+	args = NclCalloc(2,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("string");
+	args[0].dim_sizes[0] = 1;
+	args[0].is_dimsizes = 1;
+	args[0].n_dims = 1;
+	args[1].arg_data_type = _NclLookUp("integer");
+	args[1].is_dimsizes = 0;
+	args[1].n_dims = 1;
+	_NclRegisterFunc(_NclIfbinread,args,"fbinread",1,IFUNC);
+
+	args = NclCalloc(2,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("string");
+	args[0].dim_sizes[0] = 1;
+	args[0].is_dimsizes = 1;
+	args[0].n_dims = 1;
+	args[1].arg_data_type = _NclLookUp("integer");
+	args[1].is_dimsizes = 0;
+	args[1].n_dims = 1;
+	_NclRegisterFunc(_NclIasciread,args,"asciread",1,IFUNC);
+
+	args = NclCalloc(1,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("string");
+	args[0].dim_sizes[0] = 1;
+	args[0].is_dimsizes = 1;
+	args[0].n_dims = 1;
+	_NclRegisterProc(_NclIchngdir,args,"chngdir",1,IPROC);
+
+	args = NclCalloc(2,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("string");
+	args[0].dim_sizes[0] = 1;
+	args[0].is_dimsizes = 1;
+	args[0].n_dims = 1;
+	args[1].arg_data_type = NULL;
+	args[1].is_dimsizes = 0;
+	_NclRegisterProc(_NclIcbinwrite,args,"cbinwrite",1,IPROC);
+
+	args = NclCalloc(2,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("string");
+	args[0].dim_sizes[0] = 1;
+	args[0].is_dimsizes = 1;
+	args[0].n_dims = 1;
+	args[1].arg_data_type = NULL;
+	args[1].is_dimsizes = 0;
+	_NclRegisterProc(_NclIfbinwrite,args,"fbinwrite",1,IPROC);
+
+	_NclRegisterFunc(_NclIrand,NULL,"rand",0,IFUNC);
+
+	args = NclCalloc(1,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("integer");
+	args[0].dim_sizes[0] = 1;
+	args[0].is_dimsizes = 1;
+	args[0].n_dims = 1;
+	_NclRegisterProc(_NclIsrand,args,"srand",1,IPROC);
+
+	args = NclCalloc(1,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("integer");
+	args[0].dim_sizes[0] = 1;
+	args[0].is_dimsizes = 1;
+	args[0].n_dims = 1;
+	_NclRegisterProc(_NclIsleep,args,"sleep",1,IPROC);
+	
+	args = NclCalloc(1,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("string");
+	args[0].dim_sizes[0] = 1;
+	args[0].is_dimsizes = 1;
+	args[0].n_dims = 1;
+	_NclRegisterFunc(_NclIprompt,args,"prompt",1,IFUNC);
+
+	args = NclCalloc(1,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("string");
+	args[0].dim_sizes[0] = 1;
+	args[0].is_dimsizes = 1;
+	args[0].n_dims = 1;
+	_NclRegisterFunc(_NclIgetenv,args,"getenv",1,IFUNC);
+
+	args = NclCalloc(1,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("numeric");
+	args[0].is_dimsizes = 0;
+	_NclRegisterFunc(_NclIabs,args,"abs",1,IFUNC);
+	
+
+
+	
+	
+
 	return;
 }
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.9 1995-02-04 01:41:47 ethan Exp $
+ *      $Id: VarSupport.c,v 1.10 1995-02-17 01:01:18 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1016,13 +1016,17 @@ NhlErrorTypes  _NclBuildVSelection
 */
 		if(!(vect_md->multidval.type->type_class.type & Ncl_Typelong)) {
 			tmp_md = _NclCoerceData(vect_md,Ncl_Typelong,NULL);
+			if(tmp_md == NULL) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce vector to long type can't perform subscripting");
+				return(NhlFATAL);
+			}
 			
 		}  else {
 			tmp_md = vect_md;
 		}
 		thevector = (long*)NclMalloc((unsigned)vect_md->multidval.totalelements * sizeof(long));
 	
-		memcpy((char*)thevector,(char*)tmp_md->multidval.val,vect_md->multidval.totalelements * sizeof(long));
+		memcpy((char*)thevector,(char*)tmp_md->multidval.val,tmp_md->multidval.totalelements * sizeof(long));
 		sel->sel_type = Ncl_VECSUBSCR;
 		sel->u.vec.n_ind = vect_md->multidval.totalelements;
 		sel->u.vec.min = thevector[0];

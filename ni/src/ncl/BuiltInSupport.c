@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInSupport.c,v 1.1 1995-01-31 22:25:44 ethan Exp $
+ *      $Id: BuiltInSupport.c,v 1.2 1995-02-17 01:00:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -92,7 +92,14 @@ NclBasicDataTypes *type;
 		if(tmp_md->multidval.missing_value.has_missing) {
 			*has_missing = 1;
 			*missing = tmp_md->multidval.missing_value.value;
+		} else {	
+			*has_missing = 0;
+			*missing = tmp_md->multidval.missing_value.value;
 		}
+	} else if(has_missing != NULL) {
+		*has_missing = tmp_md->multidval.missing_value.has_missing;
+	} else if(missing != NULL) {
+		*missing = tmp_md->multidval.missing_value.value;
 	}
 	if(type != NULL) {
 		*type = tmp_md->multidval.data_type;

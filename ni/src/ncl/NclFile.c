@@ -1417,14 +1417,25 @@ int rw_status;
 	}
 	file_out->file.format_funcs = _NclGetFormatFuncs(file_ext_q);
 	if(file_out->file.format_funcs != NULL) {
-		if(file_out->file.format_funcs->get_file_rec != NULL) {
-			file_out->file.wr_status = rw_status;
-			file_out->file.private_rec = (*file_out->file.format_funcs->get_file_rec)(path,rw_status);	
-			if(file_out->file.private_rec == NULL) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not open (%s)",NrmQuarkToString(path));
-				if(file_out_free) 
-					NclFree((void*)file_out);
-				return(NULL);
+		if((file_out->file.format_funcs->get_file_rec != NULL)&&((rw_status != -1)||(file_out->file.format_funcs->create_file_rec != NULL))) {
+			if(rw_status == -1) {
+				file_out->file.wr_status = rw_status;
+				file_out->file.private_rec = (*file_out->file.format_funcs->create_file_rec)(path);
+				if(file_out->file.private_rec == NULL) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not create (%s)",NrmQuarkToString(path));
+					if(file_out_free) 
+						NclFree((void*)file_out);
+					return(NULL);
+				}
+			} else {
+				file_out->file.wr_status = rw_status;
+				file_out->file.private_rec = (*file_out->file.format_funcs->get_file_rec)(path,rw_status);	
+				if(file_out->file.private_rec == NULL) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not open (%s)",NrmQuarkToString(path));
+					if(file_out_free) 
+						NclFree((void*)file_out);
+					return(NULL);
+				}
 			}
 		} else  {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"An internal error in the extension code for the requested file format has occured, could not open (%s)",NrmQuarkToString(path));
@@ -1551,7 +1562,7 @@ int type;
 	NclBasicDataTypes from_type,to_type;
 	NclObjTypes obj_type;
 
-	if(!thefile->file.wr_status) {
+	if(thefile->file.wr_status <= 0) {
 		index = FileIsVar(thefile,var);
 		if(index > -1) {
 			n_dims_target = thefile->file.var_info[index]->num_dimensions;
@@ -2078,7 +2089,7 @@ struct _NclSelectionRecord* sel_ptr;
 	int dindex;
 	int index;
 	
-	if(!thefile->file.wr_status) {
+	if(thefile->file.wr_status<=0) {
 		dindex = FileIsDim(thefile,coord_name);
 		if(dindex > -1) {
 			ret = MyFileWriteVar(thefile,coord_name,value,sel_ptr,NULL,FILE_COORD_VAR_ACCESS);
@@ -2118,7 +2129,7 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 	NclAtt theatt;
 	NclAttList *step;
 	
-	if(!thefile->file.wr_status) {
+	if(thefile->file.wr_status<=0) {
 		tmp_var = _NclVarRead(rhs_var,rhs_sel_ptr);
 		for ( i = 0; i < tmp_var->var.n_dims; i++) {
 			dim_names[i] = tmp_var->var.dim_info[i].dim_quark;
@@ -2189,7 +2200,7 @@ struct _NclSelectionRecord * sel_ptr;
 	NclBasicDataTypes from_type,to_type;
 	NclObjTypes obj_type;
 
-	if(!thefile->file.wr_status) {
+	if(thefile->file.wr_status<=0) {
 		index = FileIsVar(thefile,var);
 		if(index > -1) {
 			if(thefile->file.var_att_ids[index] == -1) {
@@ -2375,7 +2386,7 @@ struct _NclSelectionRecord *sel_ptr;
 	NclBasicDataTypes from_type,to_type;
 	NclObjTypes obj_type;
 
-	if(!thefile->file.wr_status) {
+	if(thefile->file.wr_status<=0) {
 		if(thefile->file.file_atts_id == -1) {
 			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)thefile);
 			for(i= 0; i < thefile->file.n_file_atts; i++) {
@@ -2572,7 +2583,7 @@ long dim_num;
 	int index;
 	NclQuark old_name;
 
-	if(!thefile->file.wr_status) {
+	if(thefile->file.wr_status <= 0) {
 		index = FileIsVar(thefile,var);
 		if(index > -1) {
 			if((dim_num > -1)&&(dim_num < thefile->file.var_info[index]->num_dimensions)) {
@@ -2674,7 +2685,7 @@ NclQuark dim_name;
 long dim_num;
 #endif
 {
-	if(!thefile->file.wr_status) {
+	if(thefile->file.wr_status <= 0) {
 		if((dim_num > -1)&&(dim_num < thefile->file.n_file_dims)) {
 			if(thefile->file.format_funcs->rename_dim != NULL) {
 				if((*thefile->file.format_funcs->rename_dim)(

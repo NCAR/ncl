@@ -1,5 +1,5 @@
 /*
- *      $Id: NclType.h,v 1.1 1995-01-28 01:52:07 ethan Exp $
+ *      $Id: NclType.h,v 1.2 1995-02-17 01:00:54 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -108,6 +108,7 @@ typedef struct _NclTypeClassPart {
 	NclBasicDataTypes	data_type;
 	int			size;
 	char*			hlu_type_rep[2];
+	NclScalar		default_mis;
 	NclTypePrint		print;
 	NclTypeResetMissing	reset_mis;
 	NclTypeCoerceFunction   coerce;

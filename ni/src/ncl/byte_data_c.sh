@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sh op_funcs.sh byte NhlTByte NhlTByteGenArray > .tmp.$$
+sh op_funcs.sh byte NhlTByte NhlTByteGenArray \(char\)255 > .tmp.$$
 
 if [ ! $? ]
 then
@@ -12,6 +12,7 @@ sed \
 -e 's/DATATYPE/byte/g' \
 -e 's/HLUTYPEREP/NhlTByte/g' \
 -e 's/HLUGENTYPEREP/NhlTByteGenArray/g' \
+-e "s/DEFAULT_MISS/0/g" \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclTypebyte.c.specific' \

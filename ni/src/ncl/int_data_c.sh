@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sh op_funcs.sh int NhlTInteger NhlTIntegerGenArray > .tmp.$$
+sh op_funcs.sh int NhlTInteger NhlTIntegerGenArray -999 > .tmp.$$
 
 if [ ! $? ]
 then
@@ -12,6 +12,7 @@ sed \
 -e 's/DATATYPE/int/g' \
 -e 's/HLUTYPEREP/NhlTInteger/g' \
 -e 's/HLUGENTYPEREP/NhlTIntegerGenArray/g' \
+-e 's/DEFAULT_MISS/-9999/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclTypeint.c.specific' \

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeInitClassTemplate.c.sed,v 1.1 1995-01-28 01:52:53 ethan Exp $
+ *      $Id: TypeInitClassTemplate.c.sed,v 1.2 1995-02-17 01:01:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -20,6 +20,7 @@
  *
  *	Description:	
  */
+#include <ncarg/hlu/ConvertP.h>
 /*ARGSUSED*/
 static NhlErrorTypes CvtHLUGENTYPEREPToNclData
 #if	NhlNeedProto
@@ -44,7 +45,7 @@ int nargs;
 		return(NhlFATAL);
 	}
 	gen = (NhlGenArray)from->data.ptrval;
-	if(from->typeQ != NrmStringToQuark(((NclTypeDATATYPEClass)nclTypeDATATYPEClass)->type_class.hlu_type_rep[1])) {
+	if(!_NhlIsSubtypeQ(NrmStringToQuark(((NclTypeDATATYPEClass)nclTypeDATATYPEClass)->type_class.hlu_type_rep[1]),from->typeQ)) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: called with wrong input type",func);
 		to->size =0;
 		return(NhlFATAL);
@@ -106,6 +107,7 @@ static NhlErrorTypes Ncl_Type_DATATYPE_InitClass
 {
         NhlRegisterConverter(HLUGENTYPEREP,NhlTNclData,CvtHLUGENTYPEREPToNclData,NULL,0,False,NULL);
         NhlRegisterConverter(HLUTYPEREP,NhlTNclData,CvtHLUTYPEREPToNclData,NULL,0,False,NULL);
+	nclTypeDATATYPEClassRec.type_class.default_mis.DATATYPEval = DEFAULT_MISS;
 	return(NhlNOERROR);
 }
 

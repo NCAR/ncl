@@ -40,6 +40,11 @@ void *
 * the file format to store private information about the
 * file.
 */
+typedef void * (*NclCreateFileRecFunc)(
+#if	NhlNeedProto
+NclQuark 	/* Path name of file to be opened */
+#endif
+);
 typedef void * (*NclGetFileRecFunc)(
 #if	NhlNeedProto
 NclQuark ,	/* Path name of file to be opened */
@@ -343,6 +348,7 @@ NclBasicDataTypes
 );
 
 struct _NclFormatFunctionRecord {
+NclCreateFileRecFunc	create_file_rec;
 NclGetFileRecFunc	get_file_rec;
 NclFreeFileRecFunc	free_file_rec;
 NclGetVarNamesFunc	get_var_names;

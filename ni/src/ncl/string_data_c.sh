@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sh op_funcs.sh string NhlTString NhlTStringGenArray > .tmp.$$
+sh op_funcs.sh string NhlTString NhlTStringGenArray -1 > .tmp.$$
 
 if [ ! $? ]
 then

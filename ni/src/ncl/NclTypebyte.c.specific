@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypebyte.c.specific,v 1.1 1995-01-28 01:52:11 ethan Exp $
+ *      $Id: NclTypebyte.c.specific,v 1.2 1995-02-17 01:00:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -32,9 +32,9 @@ FILE *fp;
 void *val;
 #endif
 {
-        byte *sp = (byte *)val;
+        byte sp = *(byte *)val;
 
-        nclfprintf(fp,"%o",*sp);
+        nclfprintf(fp,"%o",sp);
 }
 
 static NhlErrorTypes Ncl_Type_byte_cmpf
@@ -61,4 +61,5 @@ double * result;
 	}
 	
 }
+
 
