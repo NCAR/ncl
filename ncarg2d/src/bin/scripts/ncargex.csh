@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.33 1993-04-12 16:03:55 haley Exp $
+#   $Id: ncargex.csh,v 1.34 1993-04-12 17:26:01 haley Exp $
 #
 
 #********************#
@@ -9,18 +9,18 @@
 #                    #
 #********************#
 if ($#argv < 1) then
-  echo "usage: ncargex [-all,-A] [-allexamples,-E] [-alltests,-T]        "
-  echo "               [-allfundamental,-F] [-alltutorial,-U] [-areas]   "
-  echo "               [-autograph] [-bivar] [-colconv] [-conpack]       "
-  echo "               [-conran_family] [-conrec_family] [-dashline]     "
-  echo "               [-ezmap] [-field_flow] [-gflash] [-gridall]       "
-  echo "               [-halftone] [-histogram] [-isosrfhr] [-isosurface]"
-  echo "               [-labelbar] [-ngmisc] [-plotchar] [-pwrite_family]"
-  echo "               [-scrolled_title] [-softfill] [-spps]             "
-  echo "               [-streamlines] [-surface] [-threed] [-vectors]    "
-  echo "               [-gks] [-misc] [-clean] [-n] [-onebyone] names    "
-  echo "                                                                 "
-  echo "See <man ncargex>                                                "
+  echo "usage: ncargex [-all,-A] [-allexamples,-E] [-alltests,-T]           "
+  echo "               [-allfundamental,-F] [-alltutorial,-U] [-allpdocs,-P]"
+  echo "               [-areas] [-autograph] [-bivar] [-colconv] [-conpack] "
+  echo "               [-conran_family] [-conrec_family] [-dashline]        "
+  echo "               [-ezmap] [-field_flow] [-gflash] [-gridall]          "
+  echo "               [-halftone] [-histogram] [-isosrfhr] [-isosurface]   "
+  echo "               [-labelbar] [-ngmisc] [-plotchar] [-pwrite_family]   "
+  echo "               [-scrolled_title] [-softfill] [-spps]                "
+  echo "               [-streamlines] [-surface] [-threed] [-vectors]       "
+  echo "               [-gks] [-misc] [-clean] [-n] [-onebyone] names       "
+  echo ""
+  echo "See <man ncargex>                                                   "
   exit
 endif
 
@@ -398,182 +398,182 @@ while ($#argv > 0)
         case "-all":
         case "-A":
             shift
-            set names=($ex_list $tst_list $ttr_list $fnd_list $pdoc_list)
+            set names=($names $ex_list $tst_list $ttr_list $fnd_list $pdc_list)
             breaksw
 
         case "-allexamples":
         case "-E":
             shift
-            set names=($ex_list)
+            set names=($names $ex_list)
             breaksw
 
         case "-alltests":
         case "-T":
             shift
-            set names=($tst_list)
+            set names=($names $tst_list)
             breaksw
         
         case "-alltutorial":
         case "-U":
             shift
-            set names=($ttr_list $ttr_overlap)
+            set names=($names $ttr_list $ttr_overlap)
             breaksw
         
         case "-allfundamental":
         case "-F":
             shift
-            set names=($fnd_list)
+            set names=($names $fnd_list)
             breaksw
         
-        case "-allpdocexamples":
+        case "-allpdocs":
         case "-P":
             shift
-            set names=($pdc_list)
+            set names=($names $pdc_list)
             breaksw
         
         case "-areas":
             shift
-            set names=($areas_list)
+            set names=($names $areas_list)
             breaksw
         
         case "-autograph":
             shift
-            set names=($autograph_list)
+            set names=($names $autograph_list)
             breaksw
 
         case "-bivar":
             shift
-            set names=($cbivar_list)
+            set names=($names $cbivar_list)
             breaksw
 
         case "-colconv":
             shift
-            set names=($colconv_list)
+            set names=($names $colconv_list)
             breaksw
 
         case "-conpack":
             shift
-            set names=($conpack_list)
+            set names=($names $conpack_list)
             breaksw
 
         case "-conran_family":
             shift
-            set names=(${cnrn_family_list})
+            set names=($names ${cnrn_family_list})
             breaksw
 
         case "-conrec_family":
             shift
-            set names=(${cnrc_family_list})
+            set names=($names ${cnrc_family_list})
             breaksw
 
         case "-dashline":
             shift
-            set names=($dashline_list)
+            set names=($names $dashline_list)
             breaksw
 
         case "-ezmap":
             shift
-            set names=($ezmap_list)
+            set names=($names $ezmap_list)
             breaksw
 
         case "-field_flow":
             shift
-            set names=($field_list)
+            set names=($names $field_list)
             breaksw
 
         case "-gflash":
             shift
-            set names=($gflash_list)
+            set names=($names $gflash_list)
             breaksw
 
         case "-gridall":
             shift
-            set names=($gridall_list)
+            set names=($names $gridall_list)
             breaksw
 
         case "-halftone":
             shift
-            set names=($halftone_list)
+            set names=($names $halftone_list)
             breaksw
 
         case "-histogram":
             shift
-            set names=($histogram_list)
+            set names=($names $histogram_list)
             breaksw
 
         case "-isosrfhr":
             shift
-            set names=($isosrfhr_list)
+            set names=($names $isosrfhr_list)
             breaksw
 
         case "-isosurface":
             shift
-            set names=($isosurface_list)
+            set names=($names $isosurface_list)
             breaksw
 
         case "-labelbar":
             shift
-            set names=($labelbar_list)
+            set names=($names $labelbar_list)
             breaksw
 
         case "-ngmisc":
             shift
-            set names=($ngmisc_list)
+            set names=($names $ngmisc_list)
             breaksw
 
         case "-plotchar":
             shift
-            set names=($plotchar_list)
+            set names=($names $plotchar_list)
             breaksw
 
         case "-pwrite_family":
             shift
-            set names=($pwrite_list)
+            set names=($names $pwrite_list)
             breaksw
 
         case "-scrolled_title":
             shift
-            set names=(${scrlld_title_list})
+            set names=($names ${scrlld_title_list})
             breaksw
 
         case "-softfill":
             shift
-            set names=($softfill_list)
+            set names=($names $softfill_list)
             breaksw
 
         case "-spps":
             shift
-            set names=($spps_list)
+            set names=($names $spps_list)
             breaksw
 
         case "-streamlines":
             shift
-            set names=($streamlines_list)
+            set names=($names $streamlines_list)
             breaksw
 
         case "-surface":
             shift
-            set names=($surface_list)
+            set names=($names $surface_list)
             breaksw
 
         case "-threed":
             shift
-            set names=($threed_list)
+            set names=($names $threed_list)
             breaksw
 
         case "-vectors":
             shift
-            set names=($vectors_list)
+            set names=($names $vectors_list)
             breaksw
 
         case "-gks":
             shift
-            set names=($gks_list)
+            set names=($names $gks_list)
             breaksw
 
         case "-misc":
             shift
-            set names=($misc_list)
+            set names=($names $misc_list)
             breaksw
 
         case "-clean":
@@ -796,7 +796,6 @@ switch ($name)
 # Some examples need data files #
 #                               #
 #*******************************#
-
     case mpexfi:
         set copy_files = ($copy_files mpexfi.dat)
     breaksw
@@ -834,13 +833,11 @@ switch ($name)
         set copy_files = ($copy_files ccpex.dat)
     breaksw
 
-
 #**********************************************************#
 #                                                          #
 # Set special ncargf77 flags for some of the test examples #
 #                                                          #
 #**********************************************************#
-
 # quick routines
     case tdashl:
     case tcnqck:
@@ -866,6 +863,21 @@ switch ($name)
 # autograph with pwritx for character generation
     case tagupw:
         set ncargf77flags = "-agupwrtx"
+    breaksw
+
+#***************************************************#
+#                                                   #
+# Special instructions for executing these examples #
+#                                                   #
+#***************************************************#
+    case fgke01:
+    case fgke04:
+        echo "    This example is interactive and can only be executed if"
+        echo "    you have X running and have your DISPLAY environment"
+        echo "    variable set properly.  It will create an X11 window"
+        echo "    that you must click on with your mouse to advance the"
+        echo "    frame(s)."
+        echo ""
     breaksw
 endsw
 
@@ -932,10 +944,6 @@ if (! $?NoRunOption) then
             echo "Metafiles META01 and META02 produced"
         breaksw
         case ccpcff:
-            ncargrun -o $name.ncgm $name
-            /bin/rm -f $name.ncgm
-            echo "No metafile produced"
-        breaksw
         case tcolcv:
             $name
             echo "No metafile produced"
