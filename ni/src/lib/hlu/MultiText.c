@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.19 1997-02-24 22:12:31 boote Exp $
+ *      $Id: MultiText.c,v 1.20 1997-03-07 13:52:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -45,7 +45,7 @@ static NhlResource resources[] = {
 		sizeof(float*),Oset(pos_array),NhlTImmediate,NULL,0,
 		(NhlFreeFunc)NhlFree},
 	{NhlNMtextMaxLenF, NhlCMtextMaxLenF, NhlTFloat,
-		sizeof(float*),Oset(max_len),NhlTString,"0.0",
+		sizeof(float),Oset(max_len),NhlTString,"0.0",
 		 _NhlRES_GONLY,NULL},
 	/*
 	 * These resources are actually resources in the TextItem object
