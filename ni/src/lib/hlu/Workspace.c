@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.40 1998-11-10 17:18:48 dbrown Exp $
+ *      $Id: Workspace.c,v 1.41 1998-11-12 21:40:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1633,7 +1633,7 @@ static NhlErrorTypes	TrimWorkspace
 	float reduce_fac = 3.0;
 
 	if (wsrp->type == NhlwsAREAMAP) {
-		reduce_fac = 1.0;
+		reduce_fac = 1.2;
  		type_size = sizeof(int);
 		cur_size = wsrp->cur_size / type_size;
 		iws = (int *) wsrp->ws_ptr;
@@ -1730,6 +1730,10 @@ static NhlErrorTypes	ChangeWorkspaceSize
 		return NhlFATAL;
 	}
 
+#if 0
+	printf("changing workspace size from %d to %d\n",
+	       wsrp->cur_size, wsrp->cur_size + amount);
+#endif	
 	if ((wsrp->ws_ptr = (NhlPointer) 
 		     NhlRealloc(wsrp->ws_ptr,
 				wsrp->cur_size + amount)) == NULL) {
@@ -1739,17 +1743,19 @@ static NhlErrorTypes	ChangeWorkspaceSize
 	}
 	WSp->total_size += amount;
 	wsrp->cur_size += amount;
-	if (wsrp->type == NhlwsAREAMAP) {
-		nsize = wsrp->cur_size / sizeof(int);
-		c_armvam(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
-	}
-	else if (wsrp->type == NhlwsCNFLOAT) {
-		int nsize = wsrp->cur_size/sizeof(float);
-		c_cpmvrw(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
-	}
-	else if (wsrp->type == NhlwsCNINT) {
-		int nsize = wsrp->cur_size/sizeof(int);
-		c_cpmviw(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
+	if (wsrp->data_intact) {
+		if (wsrp->type == NhlwsAREAMAP) {
+			nsize = wsrp->cur_size / sizeof(int);
+			c_armvam(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
+		}
+		else if (wsrp->type == NhlwsCNFLOAT) {
+			int nsize = wsrp->cur_size/sizeof(float);
+			c_cpmvrw(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
+		}
+		else if (wsrp->type == NhlwsCNINT) {
+			int nsize = wsrp->cur_size/sizeof(int);
+			c_cpmviw(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
+		}
 	}
 
 #if DEBUG_WS
@@ -1820,6 +1826,9 @@ static NhlErrorTypes	EnlargeWorkspace
 		return NhlFATAL;
 	}
 	WSp->total_size += wsrp->cur_size;
+#if 0
+	printf("doubling current workspace size %d\n",wsrp->cur_size);
+#endif
 	wsrp->cur_size *= 2;
 	if (wsrp->type == NhlwsAREAMAP) {
 		nsize = wsrp->cur_size / sizeof(int);
@@ -1872,12 +1881,24 @@ NhlErrorTypes _NhlArinam
 	char		*entry_name;
 #endif
 {
+	NhlErrorTypes	ret = NhlNOERROR;
 	char		*e_text;
 	NhlWorkspaceRec	*wsrp = (NhlWorkspaceRec *) amap_ws;
 	int		save_mode;
 	char		*e_msg;
 	int		err_num;
 
+	if (! (wsrp && wsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
+	}
+	wsrp->data_intact = False;
+	if (wsrp->cur_size != wsrp->req_size) {
+		int amount = wsrp->req_size - wsrp->cur_size;
+		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
 	c_entsr(&save_mode,1);
 
 	c_arinam(wsrp->ws_ptr,(wsrp->cur_size/sizeof(int)));
@@ -1892,7 +1913,7 @@ NhlErrorTypes _NhlArinam
 	
 	c_retsr(save_mode);
 
-	return NhlNOERROR;
+	return ret;
 }
 
 /*
@@ -1934,13 +1955,12 @@ NhlErrorTypes _NhlArpram
 	char		*e_msg, *cmp_msg = "AREA-MAP ARRAY OVERFLOW";
 	int		err_num;
 
-#if 0
-	if (wsrp && wsrp->cur_size < wsrp->req_size) {
-		int amount = wsrp->req_size - wsrp->cur_size;
-		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
-		if (ret < NhlWARNING) return ret;
+	if (! (wsrp && wsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
 	}
-#endif
+
 	c_entsr(&save_mode,1);
 
 	do {
@@ -2022,13 +2042,13 @@ NhlErrorTypes _NhlAredam
 	NhlBoolean	done = False;
 	char		*e_msg, *cmp_msg = "AREA-MAP ARRAY OVERFLOW";
 	int		err_num;
-#if 0
-	if (wsrp && wsrp->cur_size < wsrp->req_size) {
-		int amount = wsrp->req_size - wsrp->cur_size;
-		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
-		if (ret < NhlWARNING) return ret;
+
+	if (! (wsrp && wsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
 	}
-#endif
+
 	c_entsr(&save_mode,1);
 
 	do {
@@ -2107,13 +2127,13 @@ NhlErrorTypes _NhlArscam
 	int		group_ids[NhlwsMAX_AREA_GROUPS];
 	int		area_ids[NhlwsMAX_AREA_GROUPS];
 	float		flx,frx,fby,fuy,wlx,wrx,wby,wuy; int ll;
-#if 0
-	if (wsrp && wsrp->cur_size < wsrp->req_size) {
-		int amount = wsrp->req_size - wsrp->cur_size;
-		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
-		if (ret < NhlWARNING) return ret;
+
+
+	if (! (wsrp && wsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
 	}
-#endif
 	c_entsr(&save_mode,1);
 
 	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
@@ -2197,13 +2217,12 @@ NhlErrorTypes _NhlArdbpa
 	NhlBoolean	done = False;
 	char		*e_msg, *cmp_msg = "AREA-MAP ARRAY OVERFLOW";
 	int		err_num;
-#if 0
-	if (wsrp && wsrp->cur_size < wsrp->req_size) {
-		int amount = wsrp->req_size - wsrp->cur_size;
-		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
-		if (ret < NhlWARNING) return ret;
+
+	if (! (wsrp && wsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
 	}
-#endif
 	c_entsr(&save_mode,1);
 
 	do {
@@ -2272,8 +2291,14 @@ NhlErrorTypes _NhlDumpAreaMap
 	char		buffer[20];
 	FILE		*fp;
 	int		i;
-	int		*ip = (int *)awsrp->ws_ptr;
+	int		*ip;
 
+	if (! (awsrp && awsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
+	}
+	ip = (int *)awsrp->ws_ptr;
 	strcpy(buffer,prefix);
 	sprintf(suffix,"%c%-d",'.',count++);
 	strcat(buffer,suffix);
@@ -2339,6 +2364,11 @@ NhlErrorTypes _NhlCpback
 	char		*e_msg;
 	int		err_num;
 
+	if (! (fwsrp && fwsrp->ws_ptr && iwsrp && iwsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
+	}
 	c_entsr(&save_mode,1);
 
 	c_cpback(zdat,fwsrp->ws_ptr,iwsrp->ws_ptr);
@@ -2399,13 +2429,13 @@ NhlErrorTypes _NhlCpclam
 	char		*cmp_msg2 = "REAL WORKSPACE OVERFLOW";
 	char		*cmp_msg3 = "INTEGER WORKSPACE OVERFLOW";
 	int		err_num;
-#if 0
-	if (awsrp && awsrp->cur_size < awsrp->req_size) {
-		int amount = awsrp->req_size - awsrp->cur_size;
-		ret = ChangeWorkspaceSize(awsrp,amount,entry_name);
-		if (ret < NhlWARNING) return ret;
+
+	if (! (fwsrp && fwsrp->ws_ptr && iwsrp && iwsrp->ws_ptr &&
+		awsrp && awsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
 	}
-#endif
 	c_entsr(&save_mode,1);
 
 	do {
@@ -2514,13 +2544,13 @@ NhlErrorTypes _NhlCpcldm
 	char		*cmp_msg2 = "REAL WORKSPACE OVERFLOW";
 	char		*cmp_msg3 = "INTEGER WORKSPACE OVERFLOW";
 	int		err_num;
-#if 0
-	if (awsrp && awsrp->cur_size < awsrp->req_size) {
-		int amount = awsrp->req_size - awsrp->cur_size;
-		ret = ChangeWorkspaceSize(awsrp,amount,entry_name);
-		if (ret < NhlWARNING) return ret;
+
+	if (! (fwsrp && fwsrp->ws_ptr && iwsrp && iwsrp->ws_ptr &&
+		awsrp && awsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
 	}
-#endif
 	c_entsr(&save_mode,1);
 
 	do {
@@ -2619,6 +2649,11 @@ NhlErrorTypes _NhlCpcldr
 	char		*cmp_msg2 = "INTEGER WORKSPACE OVERFLOW";
 	int		err_num;
 
+	if (! (fwsrp && fwsrp->ws_ptr && iwsrp && iwsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
+	}
 	c_entsr(&save_mode,1);
 
 	do {
@@ -2711,13 +2746,12 @@ NhlErrorTypes _NhlCplbam
 	char		*cmp_msg3 = "INTEGER WORKSPACE OVERFLOW";
 	int		err_num;
 
-#if 0
-	if (awsrp && awsrp->cur_size < awsrp->req_size) {
-		int amount = awsrp->req_size - awsrp->cur_size;
-		ret = ChangeWorkspaceSize(awsrp,amount,entry_name);
-		if (ret < NhlWARNING) return ret;
+	if (! (fwsrp && fwsrp->ws_ptr && iwsrp && iwsrp->ws_ptr &&
+		awsrp && awsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
 	}
-#endif
 	c_entsr(&save_mode,1);
 
 	do {
@@ -2816,6 +2850,11 @@ NhlErrorTypes _NhlCplbdr
 	char		*cmp_msg2 = "INTEGER WORKSPACE OVERFLOW";
 	int		err_num;
 
+	if (! (fwsrp && fwsrp->ws_ptr && iwsrp && iwsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
+	}
 	c_entsr(&save_mode,1);
 
 	do {
@@ -2930,6 +2969,12 @@ NhlErrorTypes _NhlCpcica
 	float 		lxcpf,lycpf,lxcqf,lycqf;
 	float		xhalf,yhalf;
 
+	if (! (fwsrp && fwsrp->ws_ptr && iwsrp && iwsrp->ws_ptr &&
+		cwsrp && cwsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
+	}
 	c_entsr(&save_mode,1);
 
 	if (cwsrp->cur_size != icam * ican * sizeof(int)) {
@@ -3066,6 +3111,11 @@ NhlErrorTypes _NhlCprect
 	char		*cmp_msg2 = "INTEGER WORKSPACE OVERFLOW";
 	int		err_num;
 
+	if (! (fwsrp && fwsrp->ws_ptr && iwsrp && iwsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
+	}
 	c_entsr(&save_mode,1);
 
 	do {
@@ -3149,13 +3199,12 @@ NhlErrorTypes _NhlMapbla
 	int		err_num;
 	float 		flx,frx,fby,fuy,wlx,wrx,wby,wuy; 
 	int 		ll;
-#if 0
-	if (wsrp && wsrp->cur_size < wsrp->req_size) {
-		int amount = wsrp->req_size - wsrp->cur_size;
-		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
-		if (ret < NhlWARNING) return ret;
+
+	if (! (wsrp && wsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
 	}
-#endif        
 	c_entsr(&save_mode,1);
 	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
 
@@ -3248,13 +3297,12 @@ NhlErrorTypes _NhlMapita
 	char		*e_msg, *cmp_msg = "AREA-MAP ARRAY OVERFLOW";
 	int		err_num;
 
-#if 0
-	if (wsrp && wsrp->cur_size < wsrp->req_size) {
-		int amount = wsrp->req_size - wsrp->cur_size;
-		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
-		if (ret < NhlWARNING) return ret;
+
+	if (! (wsrp && wsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
 	}
-#endif
 	c_entsr(&save_mode,1);
 
 	do {
@@ -3329,13 +3377,12 @@ NhlErrorTypes _NhlMapiqa
 	NhlBoolean	done = False;
 	char		*e_msg, *cmp_msg = "AREA-MAP ARRAY OVERFLOW";
 	int		err_num;
-#if 0
-	if (wsrp && wsrp->cur_size < wsrp->req_size) {
-		int amount = wsrp->req_size - wsrp->cur_size;
-		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
-		if (ret < NhlWARNING) return ret;
+
+	if (! (wsrp && wsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
 	}
-#endif
 	c_entsr(&save_mode,1);
 
 	do {
@@ -3414,13 +3461,12 @@ NhlErrorTypes _NhlMapblm
 	int		group_ids[NhlwsMAX_AREA_GROUPS];
 	int		area_ids[NhlwsMAX_AREA_GROUPS];
 
-#if 0
-	if (wsrp && wsrp->cur_size < wsrp->req_size) {
-		int amount = wsrp->req_size - wsrp->cur_size;
-		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
-		if (ret < NhlWARNING) return ret;
+
+	if (! (wsrp && wsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
 	}
-#endif
 	c_entsr(&save_mode,1);
 
 	do {
@@ -3499,13 +3545,12 @@ NhlErrorTypes _NhlMapgrm
 	float		x[NhlwsMAX_GKS_POINTS], y[NhlwsMAX_GKS_POINTS];
 	int		group_ids[NhlwsMAX_AREA_GROUPS];
 	int		area_ids[NhlwsMAX_AREA_GROUPS];
-#if 0
-	if (wsrp && wsrp->cur_size < wsrp->req_size) {
-		int amount = wsrp->req_size - wsrp->cur_size;
-		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
-		if (ret < NhlWARNING) return ret;
+
+	if (! (wsrp && wsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
 	}
-#endif
 	c_entsr(&save_mode,1);
 
 	do {
@@ -3584,13 +3629,11 @@ NhlErrorTypes _NhlMplnam
         int		len;
         NGstring 	map_data_filename_f;
 
-#if 0
-	if (wsrp && wsrp->cur_size != wsrp->req_size) {
-		int amount = wsrp->req_size - wsrp->cur_size;
-		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
-		if (ret < NhlWARNING) return ret;
+	if (! (wsrp && wsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
 	}
-#endif        
         len = NGSTRLEN(map_data_filename);
         map_data_filename_f = NGCstrToFstr(map_data_filename,len);
 
@@ -3690,21 +3733,11 @@ NhlErrorTypes _NhlMplndm
         int		len,npoints,ngroups;
         NGstring 	map_data_filename_f;
 
-            /* this req size is large enough for all boundaries in the
-               4.1 base database. if other points are going to be added,
-               there should be another parameter that specifies the size
-               of the additional database in points. My calculations
-               suggest that 1.25 * (10 * npoints) should always be a
-               sufficient size. For performance reasons it is definitely
-               a big win if memory sizing error recovery doesn't happen.
-               */
-#if 0        
-	if (wsrp && wsrp->cur_size < wsrp->req_size) {
-		int amount = wsrp->req_size - wsrp->cur_size;
-		ret = ChangeWorkspaceSize(wsrp,amount,entry_name);
-		if (ret < NhlWARNING) return ret;
+	if (! (wsrp && wsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
 	}
-#endif
         npoints = NhlwsMAX_GKS_POINTS;
         ngroups = NhlwsMAX_AREA_GROUPS;
         len = NGSTRLEN(map_data_filename);
@@ -3974,6 +4007,11 @@ NhlErrorTypes _NhlStinit
 	int		err_num;
 	int		req_size;
 
+	if (! (fwsrp && fwsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
+	}
 	req_size = 2 * m * n * sizeof(float);
 	if (fwsrp->cur_size != req_size) {
 		int amount = req_size - fwsrp->cur_size;
@@ -4069,6 +4107,11 @@ NhlErrorTypes _NhlStream
 	int		err_num;
 	void		*awp;
 
+	if (! (fwsrp && fwsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
+	}
 	awp = awsrp ? awsrp->ws_ptr : NULL;
 
 	c_entsr(&save_mode,1);

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.70 1998-11-06 22:16:09 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.71 1998-11-12 21:40:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -71,6 +71,9 @@ static NhlResource resources[] = {
 		NhlTMapDataBaseVersion,sizeof(NhlMapDataBaseVersion),
 	 	Oset(database_version),NhlTImmediate, 
 	 	_NhlUSET((NhlPointer)NhlNCARG4_0),0,NULL},
+	{NhlNmpDataSetName,NhlCmpDataSetName,NhlTString,
+		 sizeof(NhlString),Oset(data_set_name),NhlTImmediate,
+		 _NhlUSET((NhlPointer) NULL),0,NULL},
 
 /* Outline resources */
 
@@ -781,6 +784,7 @@ static NrmQuark Qarea_names = NrmNULLQUARK;
 static NrmQuark Qarea_types = NrmNULLQUARK;
 static NrmQuark Qdynamic_groups = NrmNULLQUARK;
 static NrmQuark Qfixed_groups = NrmNULLQUARK;
+static NrmQuark Qdata_set_name = NrmNULLQUARK;
 static NrmQuark Qspec_fill_colors = NrmNULLQUARK;
 static NrmQuark Qspec_fill_patterns = NrmNULLQUARK;
 static NrmQuark Qspec_fill_scales = NrmNULLQUARK;
@@ -909,6 +913,7 @@ MapPlotClassInitialize
 	Qarea_types = NrmStringToQuark(NhlNmpAreaTypes);
 	Qdynamic_groups = NrmStringToQuark(NhlNmpDynamicAreaGroups);
 	Qfixed_groups = NrmStringToQuark(NhlNmpFixedAreaGroups);
+	Qdata_set_name = NrmStringToQuark(NhlNmpDataSetName);
 	Qspec_fill_colors = NrmStringToQuark(NhlNmpSpecifiedFillColors);
 	Qspec_fill_patterns = NrmStringToQuark(NhlNmpSpecifiedFillPatterns);
 	Qspec_fill_scales = NrmStringToQuark(NhlNmpSpecifiedFillScales);
@@ -1125,6 +1130,7 @@ MapPlotInitialize
  */
         Mpp->area_names = NULL;
         Mpp->dynamic_groups = NULL;
+	Mpp->data_set_name = NULL;
         Mpp->area_masking_on_set = False;
         Mpp->grid_spacing_set = False;
         
@@ -1363,6 +1369,7 @@ static NhlErrorTypes MapPlotSetValues
  */
         Mpp->area_names = NULL;
         Mpp->dynamic_groups = NULL;
+        Mpp->data_set_name = NULL;
         
         Mpp->area_masking_on_set = False;
         Mpp->grid_spacing_set = False;
@@ -1421,7 +1428,7 @@ static NhlErrorTypes    MapPlotGetValues
         NhlGenArray ga;
         char *e_text;
         int i, count = 0;
-        int data_handler_args[4];
+        int data_handler_args[5];
         int data_handler_arg_count = 0;
 
         for (i = 0; i < num_args; i++ ) {
@@ -1449,6 +1456,9 @@ static NhlErrorTypes    MapPlotGetValues
                         data_handler_args[data_handler_arg_count++] = i;
                 }
                 else if (args[i].quark == Qfixed_groups) {
+                        data_handler_args[data_handler_arg_count++] = i;
+                }
+                else if (args[i].quark == Qdata_set_name) {
                         data_handler_args[data_handler_arg_count++] = i;
                 }
                 else if (args[i].quark == Qspec_fill_colors) {
@@ -1488,10 +1498,10 @@ static NhlErrorTypes    MapPlotGetValues
         }
 
         if (data_handler_arg_count) {
-                NhlGArg		gargs[4];
+                NhlGArg		gargs[5];
                 int             nargs = 0;
-                NhlGenArray 	dhga[4];
-                NhlString	dhstr[4];
+                NhlGenArray 	dhga[5];
+                NhlString	dhstr[5];
                 
                 for (i = 0; i < data_handler_arg_count; i++) {
                         dhstr[i] = NrmQuarkToString
@@ -1503,8 +1513,14 @@ static NhlErrorTypes    MapPlotGetValues
                 if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
                 
                 for (i = 0; i < data_handler_arg_count; i++) {
-                        *((NhlGenArray *)
-                          (args[data_handler_args[i]].value.ptrval)) = dhga[i];
+			if (args[data_handler_args[i]].quark == Qdata_set_name)
+				*((NhlString *)
+				  (args[data_handler_args[i]].value.ptrval)) 
+					= (NhlString) dhga[i];
+			else
+				*((NhlGenArray *)
+				  (args[data_handler_args[i]].value.ptrval)) 
+					= dhga[i];
                 }
         }
         return(ret);
@@ -3207,6 +3223,9 @@ static NhlErrorTypes mpSetUpDataHandler
         if (mpp->dynamic_groups)
                 NhlSetSArg(&sargs[nargs++],
                            NhlNmpDynamicAreaGroups,mpp->dynamic_groups);
+        if (mpp->data_set_name)
+                NhlSetSArg(&sargs[nargs++],
+                           NhlNmpDataSetName,mpp->data_set_name);
         
 	if (! init && Mpp->database_version != Ompp->database_version) {
                 NhlDestroy(Mpp->map_data_handler->base.id);

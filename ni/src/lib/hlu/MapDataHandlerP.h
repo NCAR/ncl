@@ -1,5 +1,5 @@
 /*
- *      $Id: MapDataHandlerP.h,v 1.1 1998-05-22 01:59:09 dbrown Exp $
+ *      $Id: MapDataHandlerP.h,v 1.2 1998-11-12 21:40:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,7 @@ typedef struct _NhlMapDataHandlerLayerPart {
         NhlGenArray	dynamic_groups;
         NhlGenArray	fixed_groups;
         int		area_group_count;
+	NhlString	data_set_name;
 }NhlMapDataHandlerLayerPart;
 
 typedef struct _NhlMapDataHandlerLayerRec {

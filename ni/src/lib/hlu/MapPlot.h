@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.h,v 1.16 1998-06-01 17:46:02 dbrown Exp $
+ *      $Id: MapPlot.h,v 1.17 1998-11-12 21:40:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -100,6 +100,7 @@ typedef enum _NhlMapDataBaseVersion {
 #define NhlNmpFixedAreaGroups		"mpFixedAreaGroups"
 #define NhlNmpDynamicAreaGroups		"mpDynamicAreaGroups"
 #define NhlNmpDataBaseVersion		"mpDataBaseVersion"
+#define NhlNmpDataSetName		"mpDataSetName"
 
 #define NhlNmpOutlineOn			"mpOutlineOn"
 #define NhlNmpOutlineDrawOrder		"mpOutlineDrawOrder"
@@ -215,6 +216,7 @@ typedef enum _NhlMapDataBaseVersion {
 #define NhlCmpFixedAreaGroups		"MpFixedAreaGroups"
 #define NhlCmpDynamicAreaGroups		"MpDynamicAreaGroups"
 #define NhlCmpDataBaseVersion		"MpDataBaseVersion"
+#define NhlCmpDataSetName		"MpDataSetName"
 
 #define NhlCmpOutlineOn			"MpOutlineOn"
 #define NhlCmpOutlineDrawOrder		"MpOutlineDrawOrder"

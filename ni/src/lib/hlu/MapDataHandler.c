@@ -1,5 +1,5 @@
 /*
- *      $Id: MapDataHandler.c,v 1.1 1998-05-22 01:59:08 dbrown Exp $
+ *      $Id: MapDataHandler.c,v 1.2 1998-11-12 21:40:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -42,7 +42,10 @@ static NhlResource resources[] = {
          	_NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNmpAreaGroupCount,NhlCmpAreaGroupCount,NhlTInteger,
 		 sizeof(int),Oset(area_group_count),NhlTImmediate,
-		 _NhlUSET((NhlPointer) Nhl_mpMIN_AREA_GROUPS),0,NULL}
+		 _NhlUSET((NhlPointer) Nhl_mpMIN_AREA_GROUPS),0,NULL},
+	{NhlNmpDataSetName,NhlCmpDataSetName,NhlTString,
+		 sizeof(NhlString),Oset(data_set_name),NhlTImmediate,
+		 _NhlUSET((NhlPointer) NULL),0,NULL}
 };
 #undef Oset
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.19 1998-06-01 17:46:02 dbrown Exp $
+ *      $Id: MapPlotP.h,v 1.20 1998-11-12 21:40:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -106,6 +106,7 @@ typedef struct NhlMapPlotLayerPart {
 	NhlGenArray	fixed_groups;
 	NhlGenArray	dynamic_groups;
 	NhlMapDataBaseVersion database_version;
+	NhlString	data_set_name;
 
 	NhlBoolean	outline_on;
 	NhlDrawOrder	outline_order;

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandlerP.h,v 1.3 1998-05-29 22:52:26 dbrown Exp $
+ *      $Id: MapV41DataHandlerP.h,v 1.4 1998-11-12 21:40:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -97,6 +97,14 @@ typedef struct _mpDrawIdRec {
         void	*spec_rec;
 } mpDrawIdRec;
 
+typedef struct _mpBasicIds {
+	int  us_ids[3];
+	int  us_id_count;
+	int  land_id;
+	int  water_id;
+	int  ocean_id;
+} mpBasicIds;
+
 typedef struct _NhlMapV41DataHandlerLayerPart {
 	v41SpecFillRec	*fill_recs;
 	int		fill_rec_alloc;
@@ -110,6 +118,18 @@ typedef struct _NhlMapV41DataHandlerLayerPart {
         
 	int		aws_id;
         NhlBoolean	new_amap_req;
+	mpBasicIds	basic_ids;
+	int		data_set_point_count;
+
+/* 
+ * these fields mirror the class fields of the same name; when using the 
+ * default data set they are set equal to the class fields; 
+ * otherwise they are particular to the instance.
+ */
+        int		entity_rec_count;
+        v41EntityRec 	*entity_recs;         /* eid order */
+        v41EntityRec 	**alpha_recs;         /* alphabetical by base name */
+        v41EntityRec    **long_alpha_recs;    /* alphabetical by long name */
 }NhlMapV41DataHandlerLayerPart;
 
 typedef struct _NhlMapV41DataHandlerLayerRec {
@@ -123,7 +143,6 @@ typedef struct _NhlMapV41DataHandlerClassPart {
         v41EntityRec 	*entity_recs;         /* eid order */
         v41EntityRec 	**alpha_recs;         /* alphabetical by base name */
         v41EntityRec    **long_alpha_recs;    /* alphabetical by long name */
-        int		alpha_start_ix[26];
 } NhlMapV41DataHandlerClassPart;
 
 typedef struct _NhlMapV41DataHandlerClassRec {
