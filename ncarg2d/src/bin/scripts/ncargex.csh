@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.101 1997-01-30 15:23:43 haley Exp $
+#   $Id: ncargex.csh,v 1.102 1997-03-24 13:55:45 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -378,6 +378,21 @@ set c_list = ($c_list $labelbar_clist)
 
 #*********************#
 #                     #
+# set ngmath examples #
+#                     #
+#*********************#
+set ngmath_fex  = (nnex01 nnex02 nnex03 nnex04 nnex05 nnex06 nnex07 nnex08 \
+                   nnex09 nnex01d)
+set ngmath_flist = ($ngmath_fex)
+
+set ngmath_cex  = (c_nnex01 c_nnex02 c_nnex03 c_nnex06 c_nnex01d)
+set ngmath_clist = ($ngmath_cex)
+
+set f_list = ($f_list $ngmath_flist)
+set c_list = ($c_list $ngmath_clist)
+
+#*********************#
+#                     #
 # set ngmisc examples #
 #                     #
 #*********************#
@@ -617,13 +632,13 @@ set overlap_fttr = (mpex03 mpex05 arex01 sfex01 tsoftf)
 set list_fx11 = (fgke01 fgke04)
 set list_cx11 = (c_xwndws)
 set list_fex = ($areas_fex $autograph_fex $colconv_fex $conpack_fex \
-                $ezmap_fex $field_fex $labelbar_fex $plotchar_fex \
+                $ezmap_fex $field_fex $labelbar_fex $ngmath_fex $plotchar_fex \
                 $polypack_fex ${scrlld_title_fex} $softfill_fex $spps_fex \
                 $surface_fex $wmap_fex $misc_fex)
 
 set list_cex  = ($autograph_cex $colconv_cex $conpack_cex $ezmap_cex \
-                $field_cex $gks_cex $labelbar_cex $plotchar_cex $polypack_cex \
-                ${scrlld_title_cex} $softfill_cex $surface_cex \
+                $field_cex $gks_cex $labelbar_cex $ngmath_cex $plotchar_cex \
+                $polypack_cex ${scrlld_title_cex} $softfill_cex $surface_cex \
                 $wmap_cex)
 
 set list_ftst = ($areas_ftst $autograph_ftst $colconv_ftst $conpack_ftst \
@@ -824,6 +839,11 @@ while ($#argv > 0)
     case "-labelbar":
       shift
       set names=($names $labelbar_flist $labelbar_clist)
+      breaksw
+
+    case "-ngmath":
+      shift
+      set names=($names $ngmath_flist $ngmath_clist)
       breaksw
 
     case "-ngmisc":
@@ -1458,6 +1478,28 @@ switch ($name)
         set data_files = (srex01.dat)
     breaksw
 
+
+    case nnex01:
+    case nnex02:
+    case nnex03:
+    case nnex04:
+    case nnex05:
+    case nnex06:
+    case nnex07:
+    case nnex08:
+    case nnex09:
+    case nnex01d:
+        set extra_src_files = (nnplotf.f)
+    breaksw
+
+    case c_nnex01:
+    case c_nnex02:
+    case c_nnex03:
+    case c_nnex06:
+    case c_nnex01d:
+        set extra_src_files = (nnplotc.c)
+    breaksw
+
 #************************************************#           
 #                                                #
 # autograph with pwritx for character generation #
@@ -1672,10 +1714,11 @@ echo "   [-areas] [-autograph] [-bivar] [-colconv] [-conpack]"
 echo "   [-conran_family] [-conrec_family] [-dashline]       "
 echo "   [-dashpack] [-ezmap] [-field_flow] [-gflash] [-gks] "
 echo "   [-gridall] [-halftone] [-histogram] [-isosrfhr]     "
-echo "   [-isosurface] [-labelbar] [-ngmisc] [-plotchar]     "
-echo "   [-polypack] [-pwrite_family] [-scrolled_title]      "
-echo "   [-seter] [-softfill] [-spps] [-streamlines]         "
-echo "   [-surface] [-threed] [-vectors] [-wmap] [-misc]     "
+echo "   [-isosurface] [-labelbar] [-ngmath] [-ngmisc]       "
+echo "   [-plotchar] [-polypack] [-pwrite_family]            "
+echo "   [-scrolled_title] [-seter] [-softfill] [-spps]      "
+echo "   [-streamlines] [-surface] [-threed] [-vectors]      "
+echo "   [-wmap] [-misc]                                     "
 echo ""
 echo " Other options:"
 echo "   [-W workstation_type] [-n] [-clean] [-onebyone] names"
