@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.174 2004-10-15 19:51:34 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.175 2004-10-20 18:37:14 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -9200,15 +9200,15 @@ end
 ;***********************************************************************;
 ; Function : plot_x2y2                                                  ;
 ;               wks: workstation object                                 ;
-;                x1: X values, represented by the bottom axis           ;
-;                x2: second set of X values (optl)                      ;
-;                    represented by the top axis                        ;
-;                y1: Y values, represented by the left axis             ;
-;                y2: second set of Y values (optl)                      ;
-;                    represented by the right axis                      ;
-;              res1: optl resources, to apply to first plot             ;
+;                x1: X values, representing the bottom axis             ;
+;                x2: second set of X values (opt'l)                     ;
+;                    representing the top axis                          ;
+;                y1: Y values, representing the left axis               ;
+;                y2: second set of Y values (opt'l)                     ;
+;                    representing the right axis                        ;
+;              res1: opt'l resources, to apply to first plot            ;
 ;                    axes used are bottom/left.                         ;
-;              res2: optl resources, to apply to second plot            ;
+;              res2: opt'l resources, to apply to second plot           ;
 ;                    axes used are top/right.                           ;
 ;              axis: which axis has the multiple curves ("x" means      ;
 ;                    the X axes has the multiple curves, "y" is for the ;
@@ -9284,12 +9284,43 @@ begin
 ;
 ; Get viewport coordinates of first plot, to use for second plot.
 ;
-    getvalues xy1             ; get assorted info from previous
-      "vpHeightF"  : vph      ; plot (left scale) 
-      "vpWidthF"   : vpw      ; for use on right scale
-      "vpXF"       : vpx
-      "vpYF"       : vpy
+    getvalues xy1
+      "vpHeightF"               : vph      ; Get assorted info from previous
+      "vpWidthF"                : vpw      ; plot for use on second plot.
+      "vpXF"                    : vpx
+      "vpYF"                    : vpy
+                                            ; Bottom X axis stuff
+      "tiXAxisFontHeightF"      : xfonth
+      "tmXBLabelFontHeightF"    : xbfonth
+      "tmXBMajorLengthF"        : xmjlength
+      "tmXBMinorLengthF"        : xmnlength
+      "tmXBMajorOutwardLengthF" : xmjolength
+      "tmXBMinorOutwardLengthF" : xmnolength
+                                            ; Left Y axis stuff
+      "tiYAxisFontHeightF"      : yfonth
+      "tmYLLabelFontHeightF"    : ylfonth
+      "tmYLMajorLengthF"        : ymjlength
+      "tmYLMinorLengthF"        : ymnlength
+      "tmYLMajorOutwardLengthF" : ymjolength
+      "tmYLMinorOutwardLengthF" : ymnolength
     end getvalues
+
+;
+; If the user is setting any of these, then use these settings and
+; not the ones we just retrieved.
+;
+    xfonth     = get_res_value(locRes2,"tiXAxisFontHeightF",      xfonth)
+    xbfonth    = get_res_value(locRes2,"tmXBLabelFontHeightF",    xbfonth)
+    xmjlength  = get_res_value(locRes2,"tmXBMajorLengthF",        xmjlength)
+    xmnlength  = get_res_value(locRes2,"tmXBMinorLengthF",        xmnlength)
+    xmjolength = get_res_value(locRes2,"tmXBMajorOutwardLengthF", xmjolength)
+    xmnolength = get_res_value(locRes2,"tmXBMinorOutwardLengthF", xmnolength)
+    yfonth     = get_res_value(locRes2,"tiYAxisFontHeightF",      yfonth)
+    ylfonth    = get_res_value(locRes2,"tmYLLabelFontHeightF",    ylfonth)
+    ymjlength  = get_res_value(locRes2,"tmYLMajorLengthF",        ymjlength)
+    ymnlength  = get_res_value(locRes2,"tmYLMinorLengthF",        ymnlength)
+    ymjolength = get_res_value(locRes2,"tmYLMajorOutwardLengthF", ymjolength)
+    ymnolength = get_res_value(locRes2,"tmYLMinorOutwardLengthF", ymnolength)
 
 ;
 ; Set resources that are common for second plot, regardless of what
@@ -9315,10 +9346,16 @@ begin
 ; Set some resources that will apply if you have two Y axes.
 ;
     if(axis.eq."y".or.axis.eq."xy") then
-      locRes2@tmYRLabelsOn  = True   ; Turn on right axis label
-      locRes2@tmYROn        = True   ; Turn on right tick marks
-      locRes2@tmYUseLeft    = False  
-      locRes2@tiYAxisSide   = "Right"; put title on right scale
+      locRes2@tmYRLabelsOn            = True   ; Turn on right axis label
+      locRes2@tmYROn                  = True   ; Turn on right tick marks
+      locRes2@tmYUseLeft              = False  
+      locRes2@tiYAxisSide             = "Right"; put title on right scale
+      locRes2@tiYAxisFontHeightF      = get_res_value(locRes2,"tiYAxisFontHeightF",yfonth)
+      locRes2@tmYRLabelFontHeightF    = get_res_value(locRes2,"tmYRLabelFontHeightF",ylfonth)
+      locRes2@tmYRMajorLengthF        = get_res_value(locRes2,"tmYRMajorLengthF",ymjlength)
+      locRes2@tmYRMinorLengthF        = get_res_value(locRes2,"tmYRMinorLengthF",ymnlength)
+      locRes2@tmYRMajorOutwardLengthF = get_res_value(locRes2,"tmYRMajorOutwardLengthF",ymjolength)
+      locRes2@tmYRMinorOutwardLengthF = ymnolength
     end if
 
 ;
@@ -9343,10 +9380,16 @@ begin
 ; Set some resources that will apply if you have two X axes.
 ;
     if(axis.eq."x".or.axis.eq."xy") then
-      locRes2@tmXTLabelsOn       = True   ; Turn on top axis label
-      locRes2@tmXTOn             = True   ; Turn on top tick marks
-      locRes2@tmXUseBottom       = False  
-      locRes2@tiXAxisSide        = "Top"; put title on Top scale
+      locRes2@tmXTLabelsOn            = True   ; Turn on top axis label
+      locRes2@tmXTOn                  = True   ; Turn on top tick marks
+      locRes2@tmXUseBottom            = False  
+      locRes2@tiXAxisSide             = "Top"; put title on Top scale
+      locRes2@tiXAxisFontHeightF      = get_res_value(locRes2,"tiXAxisFontHeightF",xfonth)
+      locRes2@tmXTLabelFontHeightF    = get_res_value(locRes2,"tmXTLabelFontHeightF",xbfonth)
+      locRes2@tmXTMajorLengthF        = get_res_value(locRes2,"tmXTMajorLengthF",xmjlength)
+      locRes2@tmXTMinorLengthF        = get_res_value(locRes2,"tmXTMinorLengthF",xmnlength)
+      locRes2@tmXTMajorOutwardLengthF = get_res_value(locRes2,"tmXTMajorOutwardLengthF",xmjolength)
+      locRes2@tmXTMinorOutwardLengthF = get_res_value(locRes2,"tmXTMinorOutwardLengthF",xmnolength)
     end if
 
 ;
@@ -9395,8 +9438,8 @@ begin
 ;                x1: X values                                           ;
 ;                y1: First set of Y values                              ;
 ;                y2: Second set of Y values                             ;
-;              res1: optl resources, to apply to first plot             ;
-;              res2: optl resources, to apply to second plot            ;
+;              res1: opt'l resources, to apply to first plot            ;
+;              res2: opt'l resources, to apply to second plot           ;;
 ;                                                                       ;
 ; This function calls plot_x2y2 with a single set of X values, and two  ;
 ; sets of Y values, each with their own Y axis, and puts them on the    ;
@@ -9434,8 +9477,8 @@ end
 ;                x1: First set of X values                              ;
 ;                x2: Second set of X values                             ;
 ;                y1: Y values                                           ;
-;              res1: optl resources, to apply to first plot             ;
-;              res2: optl resources, to apply to second plot            ;
+;              res1: opt'l resources, to apply to first plot            ;
+;              res2: opt'l resources, to apply to second plot           ;
 ;                                                                       ;
 ; This function calls plot_x2y2 with a single set of Y values, and two  ;
 ; sets of X values, each with their own X axis, and puts them on the    ;
@@ -9474,8 +9517,8 @@ end
 ;                x1: X values                                           ;
 ;                y1: First set of Y values                              ;
 ;                y2: Second set of Y values                             ;
-;              res1: optl resources, to apply to first plot             ;
-;              res2: optl resources, to apply to second plot            ;
+;              res1: opt'l resources, to apply to first plot            ;
+;              res2: opt'l resources, to apply to second plot           ;
 ;                                                                       ;
 ; This function calls plot_x2y2 with a single set of X values, and two  ;
 ; sets of Y values, each with their own Y axis, and puts them on the    ;
@@ -9506,8 +9549,8 @@ end
 ;                x1: First set of X values                              ;
 ;                x2: Second set of X values                             ;
 ;                y1: Y values                                           ;
-;              res1: optl resources, to apply to first plot             ;
-;              res2: optl resources, to apply to second plot            ;
+;              res1: opt'l resources, to apply to first plot            ;
+;              res2: opt'l resources, to apply to second plot           ;
 ;                                                                       ;
 ; This function calls plot_x2y2 with a single set of Y values, and two  ;
 ; sets of X values, each with their own X axis, and puts them on the    ;
