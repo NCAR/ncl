@@ -1,4 +1,7 @@
 C
+C	$Id: fort_ictrans.f,v 1.2 1991-01-09 11:13:00 clyne Exp $
+C
+C
 C	subroutine GOPNIC
 C
 C	Flag GKS I/O module (wks.c) to direct output to a memory file and to 

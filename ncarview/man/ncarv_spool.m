@@ -1,3 +1,6 @@
+.\"
+.\"	$Id: ncarv_spool.m,v 1.2 1991-01-09 10:48:54 clyne Exp $
+.\"
 .\" ncarv_spool 3.01 90/06/22 
 .TH ncarv_spool 1NCARV "26 June 1990" NCAR "NCAR View 3.01"
 .SH NAME

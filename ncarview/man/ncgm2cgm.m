@@ -1,3 +1,6 @@
+.\"
+.\"	$Id: ncgm2cgm.m,v 1.2 1991-01-09 10:49:00 clyne Exp $
+.\"
 .\"	ncgm2cgm.l 3.00 10/5/89 NCAR View
 .TH NCAR2CGM 1NCARV "JULY 1988" NCAR "NCAR View 3.01"
 .SH NAME

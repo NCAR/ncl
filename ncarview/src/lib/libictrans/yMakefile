@@ -63,6 +63,9 @@ lex.yy.c: lex.l
 	lex lex.l
 
 lint: $(SRCS)
-	lint $(CDEFINES) $(LINTLIBS) $(SRCS)  1> lint.out 2>&1
+	lint $(CDEFINES) $(LINTLIBS) $(SRCS) \ 
+		-DLIBPATH$(EQUALHACK)'"$(LIBDIR)"' \
+		-DSPOOL_TRANS$(EQUALHACK)'"$(SPOOL_TRANS)"' \
+		-DBINDIR$(EQUALHACK)'"$(BINDIR)"' 1> lint.out 2>&1
 
 

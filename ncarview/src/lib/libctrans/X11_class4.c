@@ -1,3 +1,6 @@
+/*
+ *	$Id: X11_class4.c,v 1.2 1991-01-09 11:07:19 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1990                         *
@@ -983,7 +986,6 @@ Ct_err	GCsetcolor(color, gc)
 	GC	gc;
 {
 
-	Pixeltype	pixel;
 	char	buf[10];	/* error message buffer	*/
 
 	/* check COLOUR SELECTION MODE	*/

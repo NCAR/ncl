@@ -1,3 +1,6 @@
+/*
+ *	$Id: ictrans.c,v 1.3 1991-01-09 11:13:19 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1990                         *
@@ -48,6 +51,7 @@ static	struct	{
 	StringType_	device;		/* the device name		*/
 	StringType_	font;		/* the font name		*/
 	BoolType_	soft_fill;	/* software fill of piolygons	*/
+	BoolType_	bell_off;	/* turn the bell off		*/
 	FloatType_ 	min_line_width;	/* minimum line width		*/
 	FloatType_ 	max_line_width;	/* maximun line width		*/
 	FloatType_ 	line_scale;	/* additional line scaling	*/
@@ -57,6 +61,7 @@ static	OptDescRec	set_options[] = {
 	{"device", OptSepArg, NULL},	
 	{"font", OptSepArg, NULL},	
 	{"softfill", OptIsArg, "false"},
+	{"bell", OptIsArg, "false"},
 	{"lmin", OptSepArg, "-1"},	
 	{"lmax", OptSepArg, "-1"},	
 	{"lscale", OptSepArg, "-1"},	
@@ -70,6 +75,8 @@ static	Option	get_options[] = {
 						sizeof(StringType_)},	
 	{"softfill", BoolType, (unsigned long) &commLineOpt.soft_fill, 
 						sizeof (BoolType_ )},
+	{"bell", BoolType, (unsigned long) &commLineOpt.bell_off, 
+						sizeof (BoolType_ )},
         {"lmin", FloatType, (unsigned long) &commLineOpt.min_line_width, 
 							sizeof (FloatType_ )},
         {"lmax", FloatType, (unsigned long) &commLineOpt.max_line_width, 
@@ -80,6 +87,7 @@ static	Option	get_options[] = {
 	};
 
 extern	boolean	*softFill;
+extern	boolean	*bellOff;
 
 char	*programName;
 
@@ -120,6 +128,7 @@ ICTrans(argc, argv, mem_cgm)
 	 *	args from device specific args
 	 */
 	softFill = &commLineOpt.soft_fill;
+	bellOff = &commLineOpt.bell_off;;
 	parseOptionTable(&argc, argv, set_options);
 
 	/*
@@ -172,7 +181,7 @@ ICTrans(argc, argv, mem_cgm)
 	 *	init ctrans
 	 */
 	if (init_ctrans(&argc,argv,programName,gcap,fcap,TRUE,TRUE) != OK) {
-		close_ctrans();
+		(void) close_ctrans();
 		exit(1);
 	}
 

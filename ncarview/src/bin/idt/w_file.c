@@ -1,4 +1,7 @@
 /*
+ *	$Id: w_file.c,v 1.2 1991-01-09 10:53:45 clyne Exp $
+ */
+/*
  *	w_file.c
  *
  *	Author		John Clyne
@@ -96,14 +99,15 @@ void	CreateFileSelectPopup(button)
 	/*
 	 * a pane widget will manage the popup children
 	 */
-	pane = XtCreateManagedWidget("pane",panedWidgetClass,popup,NULL,0);
+	pane = XtCreateManagedWidget("pane",
+				panedWidgetClass,popup,(ArgList) NULL,0);
 
 
 	/*
 	 * a dialog box for selecting the file finder
 	 */
-	dialogFinder = XtCreateManagedWidget("file finder",dialogWidgetClass,
-		pane,NULL,0);
+	dialogFinder = XtCreateManagedWidget("file finder",
+				dialogWidgetClass, pane, (ArgList) NULL,0);
 
 	XawDialogAddButton(dialogFinder, "finder", Finder, 
 		(XtPointer) dialogFinder);
@@ -118,7 +122,7 @@ void	CreateFileSelectPopup(button)
 
 		file_finder = XawDialogGetValueString(dialogFinder);
 		if (! file_finder) file_finder = "*";
-		fileFinder = icMalloc(strlen(file_finder) + 1);
+		fileFinder = icMalloc((unsigned) (strlen(file_finder) + 1));
 		(void) strcpy(fileFinder, file_finder);
 
 	}
@@ -234,7 +238,7 @@ static	void	Finder(widget, client_data, call_data)
 	char	*files;
 	char	*file_finder;
 	int	longest;
-	int	n;
+	Cardinal	n;
 
 	if (fileFinder)	cfree(fileFinder);
 	/*
@@ -243,7 +247,7 @@ static	void	Finder(widget, client_data, call_data)
 	 */
 	file_finder = XawDialogGetValueString(dialog);
 	if (! file_finder) file_finder = "*";
-	fileFinder = icMalloc(strlen(file_finder) + 1);
+	fileFinder = icMalloc((unsigned) (strlen(file_finder) + 1));
 	(void) strcpy(fileFinder, file_finder);
 
 
@@ -327,7 +331,7 @@ SelectFileTranslation(widget, event, params, num_params)
 	Cardinal *num_params;	/* not used	*/
 {
 	Arg 	args[2];
-	int	n;
+	Cardinal	n;
 	XawTextPosition	start, stop;
 	XawTextBlock	text_block;
 
@@ -357,8 +361,8 @@ SelectFileTranslation(widget, event, params, num_params)
 		s = NULL;
 	}
 
-	t = icMalloc((stop - start) +1);
-	(void) strncpy(t, s, stop - start);
+	t = icMalloc((unsigned) ((stop - start) +1));
+	(void) strncpy(t, s, (int) (stop - start));
 	t[stop - start] = '\0';
 
 	

@@ -1,3 +1,6 @@
+/*
+ *	$Id: main.c,v 1.2 1991-01-09 10:56:21 clyne Exp $
+ */
 #include <stdio.h>
 #include <signal.h>
 /*

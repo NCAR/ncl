@@ -1,3 +1,6 @@
+.\"
+.\"	$Id: fcaps.m,v 1.2 1991-01-09 10:47:26 clyne Exp $
+.\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH FCAPS 1NCARV "JUNE 1990" NCAR "NCAR View 3.01"
 .SH NAME

@@ -1,4 +1,7 @@
 /*
+ *	$Id: w_text.c,v 1.2 1991-01-09 10:53:52 clyne Exp $
+ */
+/*
  *	w_text.c
  *
  *	Author		John Clyne
@@ -91,7 +94,7 @@ static	void	append_line(line)
 	len_text = strlen((char * ) text);
 	len_line = strlen((char * ) line);
 
-	buf = icMalloc(len_text + len_line + 1);
+	buf = icMalloc((unsigned) (len_text + len_line + 1));
 	bufptr = buf;
 
 	bcopy((char *) text, (char *) bufptr, len_text);
@@ -126,7 +129,9 @@ void	InitText(text, maxlines)
 	int	maxlines;
 {
 	if (maxlines < 1) {
-		fprintf(stderr, "Text widget requires at least one line\n");
+		(void) fprintf(stderr, 
+			"Text widget requires at least one line\n");
+
 		exit(1);
 	}
 	textWidget = text;
@@ -142,7 +147,7 @@ void	InitText(text, maxlines)
  * on entry
  *	*t		: text to append
  */
-AppendText(t)
+void	AppendText(t)
 	char	*t;
 {
 	char	*buf;
@@ -157,14 +162,14 @@ AppendText(t)
 	extern	char	*strchr();
 
 
-	buf = icMalloc(strlen(t) + 1);
+	buf = icMalloc((unsigned) (strlen(t) + 1));
 	
 	/*
 	 * break up the text string into lines and append the lines one at
 	 * a time.
 	 */
 	while (*(strccpy(buf, t, '\n'))) {
-		strcat(buf, "\n");
+		(void) strcat(buf, "\n");
 
 		append_line(buf);
 

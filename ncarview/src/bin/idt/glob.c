@@ -1,3 +1,6 @@
+/*
+ *	$Id: glob.c,v 1.2 1991-01-09 10:52:36 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1990                         *
@@ -194,10 +197,10 @@ static	talkto(cmd)
 		/* 
 		 * exec the command to talk to	
 		 */
-		if (execlp(cmd, cmd, NULL) < 0)	 {
-			perror((char *) NULL);
-			exit(1);
-		}
+		execlp(cmd, cmd, NULL);
+
+		perror((char *) NULL);	/* shouldn't get here	*/
+		exit(1);
 
 	}
 	else if (pid > 0) {		/* we're the parent		*/

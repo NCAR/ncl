@@ -1,3 +1,6 @@
+/*
+ *	$Id: cterror.c,v 1.3 1991-01-09 11:09:10 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1990                         *
@@ -64,7 +67,7 @@ char	*message;
 
 	if (currdev >= 0) {	/* do we know what device	*/
 		(void) fprintf(errfile, 
-			"usage: %s -d %s [-r <record>] [-f <fcap>] [-s ] [-lmin <min>] [-lmax <max>]  [-lscale <scale>]", 
+			"usage: %s -d %s [-r <record>] [-f <fcap>] [-s ] [-bell] [-lmin <min>] [-lmax <max>]  [-lscale <scale>]", 
 			program_name, devices[currdev].name);
 
 		for (i = 0; 
@@ -89,7 +92,7 @@ char	*message;
 
 
 	(void) fprintf(errfile, 
-	"usage: %s [-d <device>] [-r <record>] [-f <fontcap>] [-s ] [-lmin <min>] [-lmax <max>] [-lscale <scale>] [device options] <metafile...> \n", program_name);
+	"usage: %s [-d <device>] [-r <record>] [-f <fontcap>] [-s ] [-bell] [-lmin <min>] [-lmax <max>] [-lscale <scale>] [device options] <metafile...> \n", program_name);
 
 	
 	(void) fprintf(errfile, "where device is one of:\n");

@@ -1,4 +1,7 @@
 /*
+ *	$Id: w_idt.c,v 1.4 1991-01-09 10:51:32 clyne Exp $
+ */
+/*
  *	w_idt.c
  *
  *	Author		John Clyne
@@ -52,23 +55,23 @@ static  XtResource      resources[] = {
  * resources that need to be set for proper execution of the GUI
  */
 static	String fallback_resources[] = {
-	"Idt*input:	True",
-	"Idt*file*file finder.value:	*",
-	"Idt*file*file finder.label:	file finder",
-	"Idt*file*file finder*value.translations: #override \\n\
+	"*input:	True",
+	"*file*file finder.value:	*",
+	"*file*file finder.label:	file finder",
+	"*file*file finder*value.translations: #override \\n\
 		 <Key>Return: finderTranslation()",
-	"Idt*file*selection.label:	selection",
-	"Idt*file*selection.value:	\ ",
-	"Idt*file*selection*value.translations: #override \\n\
+	"*file*selection.label:	selection",
+	"*file*selection.value:	\ ",
+	"*file*selection*value.translations: #override \\n\
 		 <Key>Return: okFileTranslation()",
-	"Idt*file*textDisplay*translations: #override \\n\
+	"*file*textDisplay*translations: #override \\n\
 		 <Key>Return: selectFileTranslation() \\n\
 		 <Btn1Down>: select-start() selectFileTranslation()",
-	"Idt*simpleDialog*dialog*value.translations: #override \\n\
+	"*simpleDialog*dialog*value.translations: #override \\n\
 		 <Key>Return: okSDTranslation()",
-	"Idt*scrollbar*orientation:	horizontal",
-	"Idt*scrollbar*length:		100",
-	"Idt*iconPixmap:	/usr/include/X11/bitmaps/ncarv_idt.bits",
+	"*scrollbar*orientation:	horizontal",
+	"*scrollbar*length:		100",
+	"*iconPixmap:	/usr/include/X11/bitmaps/ncarv_idt.bits",
 	NULL
 	};
 
@@ -106,6 +109,8 @@ main(argc, argv)
 
 	Widget toplevel;
 	XtAppContext app_con;
+
+	void SetFileSelection();
 
 	toplevel = XtAppInitialize(&app_con, "Idt", options, XtNumber(options),
 			       &argc, argv, fallback_resources, NULL, ZERO);
@@ -176,7 +181,9 @@ create_main_panel(parent)
 	 * create the initial header to be displayed in the main control
 	 * panel text widget
 	 */
-	header = icMalloc(strlen(line1) + strlen(line2) + strlen(line3) + 1);
+	header = icMalloc((unsigned) 
+			(strlen(line1) + strlen(line2) + strlen(line3) + 1));
+
 	(void) strcpy(header, line1);
 	(void) strcat(header, line2);
 	(void) strcat(header, line3);
@@ -234,20 +241,20 @@ create_main_panel(parent)
 	select_file = XtCreateManagedWidget("select file", 
 		commandWidgetClass, form ,args,n);
 
-	XtAddCallback(select_file, XtNcallback, Select_file, (XtPointer *)NULL);
+	XtAddCallback(select_file, XtNcallback, Select_file, (XtPointer) NULL);
 
 	n = 0;
 	XtSetArg(args[n], XtNfromHoriz, select_file); n++;
 	display = XtCreateManagedWidget("display", 
 		commandWidgetClass, form ,args,n);
 
-	XtAddCallback(display, XtNcallback, Display_, (XtPointer *)NULL);
+	XtAddCallback(display, XtNcallback, Display_, (XtPointer) NULL);
 	n = 0;
 	XtSetArg(args[n], XtNfromHoriz, display); n++;
 	quit = XtCreateManagedWidget("quit", 
 		commandWidgetClass, form ,args,n);
 
-	XtAddCallback(quit, XtNcallback, Quit, (XtPointer *)NULL);
+	XtAddCallback(quit, XtNcallback, Quit, (XtPointer) NULL);
 }
 
 
@@ -295,6 +302,8 @@ static	void Display_(widget, closure, call_data)
 	XtPointer	call_data;	/* unused	*/
 {
 	char	*file;
+	void	AppendText();
+	void	CreateDisplayPopup();
 
 	extern	char	*GetFileSelection();
 

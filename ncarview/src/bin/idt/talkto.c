@@ -1,4 +1,7 @@
 /*
+ *	$Id: talkto.c,v 1.2 1991-01-09 10:53:29 clyne Exp $
+ */
+/*
  *	talkto.c
  *
  *	Author		John Clyne
@@ -15,6 +18,12 @@
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+
+#ifdef	SYSV
+#include <string.h>
+#else
+#include <strings.h>
+#endif
 
 #ifndef	sun
 #define	vfork	fork
@@ -71,7 +80,7 @@ OpenTranslator(channel, device, font, metafile, hfd)
 
 	static	char	*translator;
 
-	char	*argv[8];
+	char	*argv[10];
 
 	static	short first	= 1;
 
@@ -84,7 +93,9 @@ OpenTranslator(channel, device, font, metafile, hfd)
 		 * hope its on the user's search path.
 		 */
 #ifdef	BINDIR
-		translator = icMalloc(strlen(BINDIR) + strlen(TRANSLATOR) + 2);
+		translator = icMalloc((unsigned) 
+				(strlen(BINDIR) + strlen(TRANSLATOR) + 2));
+
 		(void) strcpy(translator, BINDIR);
 		(void) strcat(translator, "/");
 		(void) strcat(translator, TRANSLATOR);
@@ -101,8 +112,9 @@ OpenTranslator(channel, device, font, metafile, hfd)
 	argv[2] = device;		/* device to translate to	*/
 	argv[3] = "-f";			/* font specifier arg	*/
 	argv[4] = font;			/* font for text in translation	*/
-	argv[5] = metafile;		/* metafile to translate	*/
-	argv[6] = NULL;
+	argv[5] = "-bell";		/* turn off the bloody bell	*/
+	argv[6] = metafile;		/* metafile to translate	*/
+	argv[7] = NULL;
 
 		
 	hFD = hfd;			/* the history file fd		*/
@@ -111,13 +123,13 @@ OpenTranslator(channel, device, font, metafile, hfd)
 	 * set up pipes to communicate with child process. 
 	 */
 	if (pipe(to_child) < 0) {
-		perror(NULL);
+		perror((char *) NULL);
 		return(-1);
 	}
 
 	if (pipe(stderr_to_parent) < 0) {
 		(void) close(to_child[0]); (void) close(to_child[1]);
-		perror(NULL);
+		perror((char *) NULL);
 		return(-1);
 	}
 		
@@ -125,16 +137,16 @@ OpenTranslator(channel, device, font, metafile, hfd)
 	pid = vfork();
 	switch	(pid)	{
 	case	-1:
-		perror(NULL);
+		perror((char *) NULL);
 		return(-1);
 
 	case	0:	/* the child	*/
-		close(0);	/* redirect stdin	*/
-		dup(to_child[0]);
-		close(2);	/* redirect stderr	*/
-		dup(stderr_to_parent[1]);
+		(void) close(0);	/* redirect stdin	*/
+		(void) dup(to_child[0]);
+		(void) close(2);	/* redirect stderr	*/
+		(void) dup(stderr_to_parent[1]);
 
-		setbuf(stderr, NULL);	/* no buffered output	*/
+		setbuf(stderr, (char *) NULL);	/* no buffered output	*/
 
 		(void) close(to_child[0]); 
 		(void) close(to_child[1]);
@@ -142,7 +154,7 @@ OpenTranslator(channel, device, font, metafile, hfd)
 		(void) close(stderr_to_parent[1]);
 
 		execvp(argv[0], argv);
-		perror(NULL);	/* should never get here	*/
+		perror((char *) NULL);	/* should never get here	*/
 		_exit(127);
 
 		break;
@@ -157,7 +169,7 @@ OpenTranslator(channel, device, font, metafile, hfd)
 		/*
 		 * do non blocking reads from the translator
 		 */
-		fcntl(Translators[channel].r_err_fd, F_SETFL, O_NDELAY);
+		(void) fcntl(Translators[channel].r_err_fd, F_SETFL, O_NDELAY);
 
 	}
 
@@ -242,7 +254,7 @@ char	*TalkTo(id, command_string, mode)
 			 */
 			if (errno != EWOULDBLOCK && errno != EAGAIN) {
 #endif
-				perror(NULL);
+				perror((char *) NULL);
 				return(NULL);
 			}
 			else break;
@@ -253,7 +265,7 @@ char	*TalkTo(id, command_string, mode)
 	}
 	buf[n] = '\0';
 	
-	strip_prompt(buf);	/* remove translator prompt from message */
+	(void) strip_prompt(buf);/* remove translator prompt from message */
 
 	if (s = strrchr(buf, '\n')) *s = '\0'; 
 
@@ -267,7 +279,7 @@ char	*TalkTo(id, command_string, mode)
 	 */
 	(void)write(Translators[id].wfd, command_string,strlen(command_string));
 	if (hFD != -1) {
-		write(hFD, command_string, strlen(command_string));
+		(void) write(hFD, command_string, strlen(command_string));
 	}
 
 	if (mode == ASYNC) {	/* don't wait for response	*/
@@ -302,7 +314,7 @@ char	*TalkTo(id, command_string, mode)
 					if (errno != EWOULDBLOCK && 
 							errno != EAGAIN) {
 #endif
-						perror(NULL);
+						perror((char *) NULL);
 						return(NULL);
 					}
 					else break;
@@ -374,7 +386,7 @@ SignalTo(id, signal)
 	int	id;
 	int	signal;
 {
-	kill (Translators[id].pid, signal);
+	(void) kill (Translators[id].pid, signal);
 }
 
 
@@ -393,12 +405,13 @@ Message(id, s)
 	char	*s;
 {
 	char	*cptr;
-
 	char	buf[20];
 
-	sprintf(buf, "Translator[%d]: ", id);
+	void	AppendText();
 
-	cptr = icMalloc(strlen(buf) + strlen(s) + strlen("\n") + 1);
+	(void) sprintf(buf, "Translator[%d]: ", id);
+
+	cptr = icMalloc((unsigned) (strlen(buf) + strlen(s) + strlen("\n")+ 1));
 	(void) strcpy(cptr, buf);
 	(void) strcat(cptr, s); 
 	(void) strcat(cptr, "\n"); 

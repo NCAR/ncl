@@ -1,3 +1,6 @@
+/*
+ *	$Id: lex.yy.c,v 1.2 1991-01-09 11:13:45 clyne Exp $
+ */
 # include "stdio.h"
 # define U(x) x
 # define NLSTATE yyprevious=YYNEWLINE

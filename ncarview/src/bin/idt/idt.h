@@ -1,8 +1,6 @@
 #ifndef	_idt_
 #define	_idt_
 
-#define	DEBUG
-
 typedef	struct	{
 	XFontStruct	*x_font;
 	char		*font;

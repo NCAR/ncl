@@ -1,3 +1,6 @@
+.\"
+.\"	$Id: ctrans.m,v 1.3 1991-01-09 10:47:08 clyne Exp $
+.\"
 .\" ctrans 3.01 90/06/22
 .TH CTRANS 1NCARV "22 June 1990" NCAR "NCAR View 3.01"
 .SH NAME
@@ -14,6 +17,8 @@ ctrans \- a Computer Graphics Metafile ( \fICGM\fR ) translator
 .BI \-r " record_num ..."
 ] [
 .B \-soft
+] [
+.B \-bell
 ] [
 .BI \-lmin " min" 
 ] [
@@ -175,6 +180,8 @@ Unconditionally perform software filling of all filled polygons. This
 option may be useful for devices which have limits on the number of
 vertices describing a polygon. On some devices this number is known and
 software filling is performed, as appropriate, without user specification.
+.B \-bell
+Turn off bell. The default is to bell between plotting of frames.
 .TP
 .BI \-lmin " min"
 On devices which support line width scaling all lines are guaranteed to be

@@ -1,3 +1,6 @@
+/*
+ *	$Id: gcap.c,v 1.3 1991-01-09 11:10:19 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1990                         *
@@ -59,7 +62,7 @@
 #include "translate.h"
 
 #ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/gcap.c,v 1.2 1990-12-11 14:03:56 clyne Exp $";
+static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/gcap.c,v 1.3 1991-01-09 11:10:19 clyne Exp $";
 #endif
 
 extern	FILE	*tty;
@@ -692,7 +695,8 @@ CGMC *c;
 	coord_mod.x_scale = XSCALE;
 	coord_mod.y_scale = YSCALE;
 
-	SetDevWin(DEV_WIN_LL_X, DEV_WIN_LL_Y, DEV_WIN_UR_X, DEV_WIN_UR_Y);
+	SetDevWin((long) DEV_WIN_LL_X, (long) DEV_WIN_LL_Y, 
+				(long) DEV_WIN_UR_X, (long) DEV_WIN_UR_Y);
 	transinit(&dev_extent, coord_mod, TRUE);
 
 	formatinit();

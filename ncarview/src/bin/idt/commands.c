@@ -1,4 +1,7 @@
 /*
+ *	$Id: commands.c,v 1.2 1991-01-09 10:52:13 clyne Exp $
+ */
+/*
  *	commands.c
  *
  *	Author		John Clyne
@@ -12,11 +15,18 @@
 #include <stdio.h>
 #include <signal.h>
 #include <sys/types.h>
+
+#ifdef	SYSV
+#include <string.h>
+#else
+#include <strings.h>
+#endif
+
 #include "display.h"
 #include "commands.h"
 #include "talkto.h"
 
-extern	void	TalkTo();
+extern	char	*TalkTo();
 extern	void	SetValues();
 
 /*
@@ -45,23 +55,23 @@ void	Command1(command)
 	switch	((int) comm_id->command) {
 
 	case LOOP: 
-		strcpy(buf, LOOP_STRING);
-		strcat(buf, "\n");
+		(void) strcpy(buf, LOOP_STRING);
+		(void) strcat(buf, "\n");
 		break;
 
 	case PLAYBACK: 
-		strcpy(buf, PLAYBACK_STRING);
-		strcat(buf, "\n");
+		(void) strcpy(buf, PLAYBACK_STRING);
+		(void) strcat(buf, "\n");
 		break;
 
 	case JOGBACK: 
-		strcpy(buf, JOGBACK_STRING);
-		strcat(buf, "\n");
+		(void) strcpy(buf, JOGBACK_STRING);
+		(void) strcat(buf, "\n");
 		break;
 
 	case REDRAW: 
-		strcpy(buf, REDRAW_STRING);
-		strcat(buf, "\n");
+		(void) strcpy(buf, REDRAW_STRING);
+		(void) strcat(buf, "\n");
 		break;
 
 	case STOP: 
@@ -70,18 +80,18 @@ void	Command1(command)
 		break;
 
 	case JOG: 
-		strcpy(buf, JOG_STRING);
-		strcat(buf, "\n");
+		(void) strcpy(buf, JOG_STRING);
+		(void) strcat(buf, "\n");
 		break;
 
 	case PLAY: 
-		strcpy(buf, PLAY_STRING);
-		strcat(buf, "\n");
+		(void) strcpy(buf, PLAY_STRING);
+		(void) strcat(buf, "\n");
 		break;
 
 	case DONE: 
-		strcpy(buf, DONE_STRING);
-		strcat(buf, "\n");
+		(void) strcpy(buf, DONE_STRING);
+		(void) strcat(buf, "\n");
 		break;
 
 	}
@@ -126,42 +136,42 @@ void	Command2(command, command_data)
 	switch	((int) comm_id->command) {
 
 	case DUP: 
-		strcpy(buf, DUP_STRING);
-		strcat(buf, " ");
-		strcat(buf, command_data);
-		strcat(buf, "\n");
+		(void) strcpy(buf, DUP_STRING);
+		(void) strcat(buf, " ");
+		(void) strcat(buf, command_data);
+		(void) strcat(buf, "\n");
 
 		break;
 
 	case GOTO: 
-		strcpy(buf, command_data);
-		strcat(buf, " ");
-		strcat(buf, GOTO_STRING);
-		strcat(buf, "\n");
+		(void) strcpy(buf, command_data);
+		(void) strcat(buf, " ");
+		(void) strcat(buf, GOTO_STRING);
+		(void) strcat(buf, "\n");
 
 		break;
 
 	case SKIP: 
-		strcpy(buf, SKIP_STRING);
-		strcat(buf, " ");
-		strcat(buf, command_data);
-		strcat(buf, "\n");
+		(void) strcpy(buf, SKIP_STRING);
+		(void) strcat(buf, " ");
+		(void) strcat(buf, command_data);
+		(void) strcat(buf, "\n");
 
 		break;
 
 	case START_SEGMENT: 
-		strcpy(buf, command_data);
-		strcat(buf, " ");
-		strcat(buf, START_SEGMENT_STRING);
-		strcat(buf, "\n");
+		(void) strcpy(buf, command_data);
+		(void) strcat(buf, " ");
+		(void) strcat(buf, START_SEGMENT_STRING);
+		(void) strcat(buf, "\n");
 
 		break;
 
 	case STOP_SEGMENT: 
-		strcpy(buf, command_data);
-		strcat(buf, " ");
-		strcat(buf, STOP_SEGMENT_STRING);
-		strcat(buf, "\n");
+		(void) strcpy(buf, command_data);
+		(void) strcat(buf, " ");
+		(void) strcat(buf, STOP_SEGMENT_STRING);
+		(void) strcat(buf, "\n");
 
 		break;
 
@@ -209,35 +219,35 @@ void	Command3(command, command_data)
 	switch	((int) comm_id->command) {
 
 	case ZOOM: 
-		strcpy(buf, ZOOM_STRING1);
-		strcat(buf, " ");
-		strcat(buf, command_data);
-		strcat(buf, ZOOM_STRING2);
-		strcat(buf, "\n");
+		(void) strcpy(buf, ZOOM_STRING1);
+		(void) strcat(buf, " ");
+		(void) strcat(buf, command_data);
+		(void) strcat(buf, ZOOM_STRING2);
+		(void) strcat(buf, "\n");
 
 		break;
 
 	case SAVE: 
-		strcpy(buf, SAVE_STRING);
-		strcat(buf, " ");
-		strcat(buf, command_data);
-		strcat(buf, "\n");
+		(void) strcpy(buf, SAVE_STRING);
+		(void) strcat(buf, " ");
+		(void) strcat(buf, command_data);
+		(void) strcat(buf, "\n");
 
 		break;
 	case LIST: 	/* not used	*/
-		strcpy(buf, command_data);
-		strcat(buf, " ");
-		strcat(buf, LIST_STRING);
-		strcat(buf, "\n");
+		(void) strcpy(buf, command_data);
+		(void) strcat(buf, " ");
+		(void) strcat(buf, LIST_STRING);
+		(void) strcat(buf, "\n");
 
 		break;
 
 	case PRINT: 
-		strcpy(buf, PRINT_STRING1);
-		strcat(buf, " ");
-		strcat(buf, command_data);
-		strcat(buf, PRINT_STRING2);
-		strcat(buf, "\n");
+		(void) strcpy(buf, PRINT_STRING1);
+		(void) strcat(buf, " ");
+		(void) strcat(buf, command_data);
+		(void) strcat(buf, PRINT_STRING2);
+		(void) strcat(buf, "\n");
 
 		break;
 	}

@@ -13,10 +13,12 @@
 
 SYSTEM_INCLUDE		= Sun3
 
-BINDIR		= /u2/ncargfx/test/bin
-LIBDIR		= /u2/ncargfx/test/lib
-MANDIR		= /u2/ncargfx/test/man
+BINDIR		= /u1/clyne/bin
+LIBDIR		= /u1/clyne/lib
+MANDIR		= /u1/clyne/man
 MAN_SECTION	= l
+XAPPDIR		= /usr/lib/X11/app-defaults
+BITSDIR		= /usr/include/X11/bitmaps
 
 INCLUDEDIR	= $(NCARG)/include
 DBDIR		= $(LIBDIR)
@@ -38,7 +40,7 @@ ARCH		=
 CC		= cc
 CC_LD		= $(CC)
 CDEBUG		=
-COPT		= -O
+COPT		= -g
 CMISC           =
 CFLAGS          = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
 	$(FLOAT_OPT)
@@ -71,6 +73,8 @@ INSTALL		= install -c
 INSTALL_RM	= $(RM)
 INSTALL_BIN	= 0755
 INSTALL_MAN	= 0644
+INSTALL_APP	= 0644
+INSTALL_BIT	= 0644
 INSTALL_LIB	= 0644
 INSTALL_DB	= 0644
 

@@ -11,7 +11,6 @@ MYNAME	= idt
 
 LOCLIBDIR	= ../../../lib
 LOCINCDIR	= ../../include
-XAPPDIR		= /usr/lib/X11/app-defaults
 
 TRANSLATOR	= ictrans
 
@@ -33,10 +32,6 @@ XLIBS	= \
 	-lXaw -lXmu -lXt -lXext -lX11
 #endif
 #endif
-
-
-BITSDIR	= \
-	/usr/include/X11/bitmaps
 
 
 LOCLIB	= \
@@ -63,12 +58,6 @@ all::	$(MYNAME)
 CBinTarget($(MYNAME),$(OBJS),$(LIBS))
 MakefileTarget
 CleanTarget
-
-install::
-	@-if (test -d $(BITSDIR) && test -w $(BITSDIR)) then \
-		$(INSTALL) -m $(INSTALL_LIB) ncarv_idt.bits $(BITSDIR); \
-	else \
-		echo "Couldn't install idt icon bitmap to $(BITSDIR)" ; fi
 
 lint:	$(HDR) $(SRCS)
 	lint $(CDEFINES) -DTRANSLATOR$(EQUALHACK)'"$(TRANSLATOR)"' \

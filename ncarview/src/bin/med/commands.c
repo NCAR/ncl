@@ -1,3 +1,6 @@
+/*
+ *	$Id: commands.c,v 1.2 1991-01-09 10:58:32 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1990                         *
@@ -29,6 +32,7 @@
 #include	<ctype.h>
 #include	<cgm_tools.h>
 #include	"med.h"
+#include	"bsd-sysv.h"
 
 #ifndef	DEBUG
 /* 
@@ -858,7 +862,6 @@ medSplit(med_data)
 	MedData	*med_data;
 {
 	CommandData	*c_data;
-	Directory	*tmp_toc;
 
 	unsigned	start_frame,
 			num_frames;

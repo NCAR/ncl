@@ -1,3 +1,6 @@
+.\"
+.\"	$Id: xwdtohdf.m,v 1.2 1991-01-09 10:46:28 clyne Exp $
+.\"
 .TH XTOHDF 1-local "February 1990" NCAR "NCAR Local Command"
 .SH NAME
 xtohdf \- Filter to convert from X11 raster file to hdf format.

@@ -1,3 +1,6 @@
+/*
+ *	$Id: clear_text.c,v 1.2 1991-01-09 11:08:58 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1990                         *
@@ -34,7 +37,7 @@
 #include "text.h"
 
 #ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/clear_text.c,v 1.1.1.1 1990-12-11 13:33:10 clyne Exp $";
+static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/clear_text.c,v 1.2 1991-01-09 11:08:58 clyne Exp $";
 #endif
 
 extern	Ct_err	Instr_Dec();

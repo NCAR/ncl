@@ -1,3 +1,6 @@
+.\"
+.\"	$Id: ictrans.m,v 1.3 1991-01-09 10:47:50 clyne Exp $
+.\"
 .\" ictrans 3.01 90/06/22 
 .TH ICTRANS 1NCARG "22 June 1990" NCAR "NCAR View 3.01"
 .SH NAME
@@ -11,6 +14,8 @@ ictrans \- user interface to the CGM translator
 .BI \-f " font"
 ] [
 .B \-soft
+] [
+.B \-bell
 ] [
 .BI \-lmin " min"
 ] [
@@ -109,6 +114,9 @@ software filling is performed, as appropriate, without user specification.
 .SH DEVICE SPECIFIC OPTIONS
 Some ictrans options are only available for a subset of the supported 
 devices. The following is a list of such options.
+.TP 
+.B \-bell
+Turn off bell. The default is to bell between plotting of frames.
 .TP
 .BI \-lmin " min"
 On devices which support line width scaling all lines are guaranteed to be

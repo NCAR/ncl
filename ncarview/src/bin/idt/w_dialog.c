@@ -1,4 +1,7 @@
 /*
+ *	$Id: w_dialog.c,v 1.2 1991-01-09 10:53:37 clyne Exp $
+ */
+/*
  *	w_dialog.c
  *
  *	Author		John Clyne

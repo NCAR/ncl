@@ -1,4 +1,7 @@
 /*
+ *	$Id: display.c,v 1.2 1991-01-09 10:52:21 clyne Exp $
+ */
+/*
  *	Display.c
  *
  *	Author		John Clyne
@@ -10,6 +13,13 @@
  */
 #include <stdio.h>
 #include <fcntl.h>
+
+#ifdef	SYSV
+#include <string.h>
+#else
+#include <strings.h>
+#endif
+
 #include <ncarv.h>
 #include "display.h"
 #include "talkto.h"
@@ -104,8 +114,9 @@ int	OpenDisplay(device, font, metafile)
 void	CloseDisplay(id)
 	int	id;
 {
+	void	CloseTranslator();
 
-	(void)	CloseTranslator(id);
+	CloseTranslator(id);
 
 	usedMask &= (~(1 << id));
 	numUsed--;
@@ -130,7 +141,7 @@ void	InitDisplayModule(program_name, history)
 	short	history;
 {
 
-	programName = icMalloc(strlen(program_name) + 1);
+	programName = icMalloc((unsigned) (strlen(program_name) + 1));
 	(void) strcpy(programName, program_name);
 
 	if (history) {
@@ -193,7 +204,7 @@ int	GetValue(id, command)
 		return (pcvs[id].stop_segment);
 
 	default:
-		fprintf(stderr, "Illegal command\n");
+		(void) fprintf(stderr, "Illegal command\n");
 		return (-1);
 
 	}
@@ -241,7 +252,7 @@ void	SetValues(id, command, value)
 		break;
 
 	default:
-		fprintf(stderr, "Illegal command\n");
+		(void) fprintf(stderr, "Illegal command\n");
 		break;
 
 	}

@@ -1,6 +1,10 @@
 NCARG	= ..
 
+#ifdef	BuildUnsupportedAthenaApplications
+SUBDIRS = src man bin app bits
+#else
 SUBDIRS = src man bin
+#endif
 
 MakeSubdirs($(SUBDIRS))
 InstallSubdirs($(SUBDIRS))

@@ -1,4 +1,7 @@
 /*
+ *	$Id: xrubber.c,v 1.2 1991-01-09 10:53:59 clyne Exp $
+ */
+/*
  *	xrubber.c
  *	
  *	Author		John Clyne
@@ -13,6 +16,7 @@
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
 #include <X11/Xmu/WinUtil.h>
+#include "bsd-sysv.h"
 
 typedef	unsigned long	Pixel;
 
@@ -244,7 +248,7 @@ static	rubber_band_window(dpy, root, fg, x, y,
 		GrabModeAsync, GrabModeAsync,
 		root, rubberStartCursor, CurrentTime) != GrabSuccess) {
 
-		fprintf(stderr, "Can't grab the mouse\n");
+		(void) fprintf(stderr, "Can't grab the mouse\n");
 		return(-1);
 	}
 
@@ -386,7 +390,7 @@ char	*ZoomCoords(dpy, root)
 	/*
 	 * User makes selection with a rubberband
 	 */
-	if (rubber_band_window(dpy, root, 1, &x1, &y1, 
+	if (rubber_band_window(dpy, root, (Pixel) 1, &x1, &y1, 
 			&band_width, &band_height, 
 			&win_width, &win_height) < 0) {
 
@@ -493,7 +497,7 @@ char	*ZoomCoords(dpy, root)
 	/*
 	 * create the data string
 	 */
-	sprintf(buf, "%f %f %f %f", norm_x1, norm_y1, norm_x2, norm_y2);
+	(void) sprintf(buf, "%f %f %f %f", norm_x1, norm_y1, norm_x2, norm_y2);
 
 	return(buf);
 }

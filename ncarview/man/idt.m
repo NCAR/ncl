@@ -1,3 +1,6 @@
+.\"
+.\"	$Id: idt.m,v 1.2 1991-01-09 10:48:12 clyne Exp $
+.\"
 .\" NCAR View: idt.man,v 1.0 89/09/10 clyne 
 .\" Revision 3.01 90/11/15 clyne
 .TH IDT 1NCARV "15 November 1990" NCAR "NCAR View 3.01"
@@ -362,3 +365,8 @@ You cannot send "zoomed" frames to a printer. More accurately, you can send
 them but the result will not be zoomed.
 .PP
 The "Scrolled to Frame" label is not continuously updated.
+.PP
+The current version of 
+.B ictrans
+must be on your search path.
+

@@ -1,4 +1,7 @@
 /*
+ *	$Id: cell.c,v 1.2 1991-01-09 11:08:35 clyne Exp $
+ */
+/*
  *	cell.c
  *
  *	Author		John Clyne

@@ -1,3 +1,6 @@
+/*
+ *	$Id: ctrans.c,v 1.4 1991-01-09 11:09:19 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1990                         *
@@ -33,7 +36,7 @@
  * rev 1.01 clyne 4/18/90	: expanded application programmer interace
  */
 #ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.3 1990-12-19 15:34:24 clyne Exp $";
+static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.4 1991-01-09 11:09:19 clyne Exp $";
 #endif
 
 
@@ -78,11 +81,16 @@ int	Argc;
 boolean	stand_Alone;	/* if false then the driver provides a window	*/
 boolean	Batch;		/* if true don't prompt for user interaction	*/ 
 
+/*
+ * storate for some global command line options. 
+ */
 static	boolean softfill = 0;
 static	boolean debug = 0;
+static	boolean bell_off = 0;
 
 boolean *softFill = &softfill;
 boolean *deBug = &debug;
+boolean *bellOff = &bell_off;
 
 CGMC	command;
 

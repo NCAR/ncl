@@ -1,3 +1,6 @@
+/*
+ *	$Id: commands.c,v 1.2 1991-01-09 11:12:45 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1990                         *
@@ -10,6 +13,7 @@
 
 #include <stdio.h>
 #include <signal.h>
+#include <sys/wait.h>
 #include <errno.h>
 #include <cgm_tools.h>
 #include <ncarv.h>
@@ -17,7 +21,9 @@
 
 #ifdef	sun
 #include <vfork.h>
-#define	fork	vfork
+#define	FORK	vfork
+#else
+#define	FORK	fork
 #endif
 
 #ifndef	DEBUG
@@ -327,13 +333,12 @@ int	iCNextfile(ic)
 int	iCPlot(ic)
 	ICommand	*ic;
 {
-	int	i,j,k;
+	int	i,j;
 	int	frame, 		/* frame to be plotted		*/
 		last_frame;	/* the last frame plotted	*/
 	int	inc,	/* increment size for stepping through a frame list*/
 		abs_inc;	/* absolute value of inc	*/
 	int	num_frames;	/* number of frames in a list	*/
-	int	record;
 	int	count = 0;	/* number of frames plotted	*/
 	register void (*istat)();
 
@@ -478,7 +483,7 @@ static	plotit(frame)
 #ifndef	DEBUG
 		(void) ctrans (record);
 #else
-		fprintf(stderr, "plotted frame %d\n", frame);
+		(void) fprintf(stderr, "plotted frame %d\n", frame);
 		sleep(1);
 #endif
 	}
@@ -613,11 +618,10 @@ int	iCMovie(ic)
 }
 
 
+/*ARGSUSED*/
 int	iCLoop(ic)
 	ICommand	*ic;
 {
-	int	time = 0;
-
 	/*
 	 * toggle looping on or off
 	 */
@@ -726,10 +730,10 @@ int	iCSkip(ic)
 	if (s) {
 		skip = atoi(s);
 		icState.skip = skip;
-		fprintf(stderr, "Skip %d frames\n", skip);
+		(void) fprintf(stderr, "Skip %d frames\n", skip);
 	}
 	else {
-		fprintf(stderr, "%d\n", icState.skip);
+		(void) fprintf(stderr, "%d\n", icState.skip);
 	}
 }
 
@@ -1023,17 +1027,18 @@ int	iCShell(ic)
 	(void) system(s);
 }
 
+/*ARGSUSED*/
 int	iCCount(ic)
 	ICommand	*ic;
 {
-	fprintf(stderr, "%d\n", icState.num_frames);
+	(void) fprintf(stderr, "%d\n", icState.num_frames);
 }
 
 /*ARGSUSED*/
 int	iCCurrent(ic)
 	ICommand	*ic;
 {
-	fprintf(stderr, "%d\n", ic->current_frame);
+	(void) fprintf(stderr, "%d\n", ic->current_frame);
 }
 
 /*ARGSUSED*/
@@ -1083,9 +1088,9 @@ char	*s;
 	int	pid, w;
 	register void (*istat)(), (*qstat)();
 
-	extern int fork(), execl(), wait();
+	extern int FORK(), execl(), wait();
 
-	if((pid = fork()) == 0) {
+	if((pid = FORK()) == 0) {
 		(void) execl("/bin/csh", "sh", "-c", s, (char *)0);
 		_exit(127);
 	}

@@ -1,3 +1,6 @@
+/*
+ *	$Id: X11_class3.c,v 1.2 1991-01-09 11:07:11 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1990                         *
@@ -33,7 +36,6 @@
 #include	"ctrandef.h"
 #include	"translate.h"
 
-static	XRectangle	rectangle = {0,0,0,0};
 static	XRectangle	devExtentRectangle = {0,0,0,0};
 
 /* Class 3 */
@@ -130,17 +132,6 @@ GCsetclipping()
 		rectangle.width = r_lrx - rectangle.x + 1;
 		rectangle.height = r_lry - rectangle.y + 1;
 	}
-
-#ifdef	DEAD
-	/*
-	 * the clipping boundry seems to be off by one pixel in each
-	 * direction
-	 */
-	rectangle.x -=1;
-	rectangle.y -=1;
-	rectangle.width +=2;
-	rectangle.height +=2;
-#endif
 
 	XSetClipRectangles(dpy, lineGC,0,0,&rectangle, 1, Unsorted);
 	XSetClipRectangles(dpy, markerGC,0,0,&rectangle, 1, Unsorted);

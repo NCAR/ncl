@@ -1,4 +1,7 @@
 /*
+ *	$Id: spooler.c,v 1.2 1991-01-09 10:53:23 clyne Exp $
+ */
+/*
  *	spooler.c
  *	
  *	Author		John Clyne
@@ -10,6 +13,13 @@
  */
 #include <stdio.h>
 #include <ctype.h>
+
+#ifdef	SYSV
+#include <string.h>
+#else
+#include <strings.h>
+#endif
+
 #include <ncarv.h>
 
 /*
@@ -53,7 +63,8 @@ char	**SpoolerList(alias_list)
 	if (s != alias_list) count++;
 	*s = '\n';	/* terminate last item with a newline	*/
 
-	spooler_list = (char **) icMalloc(sizeof (char *) * (count + 1));
+	spooler_list = (char **) 
+		icMalloc((unsigned) (sizeof (char *) * (count + 1)));
 
 	/*
 	 * parse the list of spooler names. The list is a newline seperated
@@ -69,11 +80,11 @@ char	**SpoolerList(alias_list)
 		while(isprint(*s) && *s != ':')
 			s++;
 		if (*s != ':') {
-			fprintf(stderr, "Error in spool config file\n");
+			(void) fprintf(stderr, "Error in spool config file\n");
 			return(NULL);
 		}
 		*s = '\0';
-		*ptr = icMalloc(strlen(t) + 1);
+		*ptr = icMalloc((unsigned) (strlen(t) + 1));
 		(void) strcpy (*ptr, t);
 
 		while(*s != '\n')

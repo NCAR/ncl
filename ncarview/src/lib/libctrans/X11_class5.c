@@ -1,3 +1,6 @@
+/*
+ *	$Id: X11_class5.c,v 1.2 1991-01-09 11:07:28 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1990                         *
@@ -81,8 +84,6 @@ CGMC *c;
 		index;
 	Pixeltype	planedummy[1];		/* not used	*/
 	Pixeltype	pixel_return[1];	/* device index	*/
-	Pixeltype	pixel;
-	long		dummy = 0;
 
 	Ct_err	BackColr();
 

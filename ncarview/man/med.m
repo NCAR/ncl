@@ -1,3 +1,6 @@
+.\"
+.\"	$Id: med.m,v 1.2 1991-01-09 10:48:44 clyne Exp $
+.\"
 .\" @(#)med.l 1.0 90/02/15 NCAR; from UCB 4.3 and S5R4
 .tr ##
 .TH MED 1NCARV  "February 1990" NCAR "NCAR View 3.01"

@@ -1,4 +1,7 @@
 /*
+ *	$Id: file.c,v 1.2 1991-01-09 10:52:30 clyne Exp $
+ */
+/*
  *	file.c
  *
  *	Author		John Clyne
@@ -10,6 +13,13 @@
  *	code is in 'w_file.c'
  */
 #include <stdio.h>
+
+#ifdef	SYSV	
+#include <string.h>
+#else
+#include <strings.h>
+#endif
+
 #include <ncarv.h>
 
 static	char	*currentFileSelection = NULL;	/* user's current selection */
@@ -62,12 +72,12 @@ char	*GetFiles(file_filter, longest)
 	s = strrchr(files[0], '/');
 	if (s) {
 		s++;
-		pathBuf = icMalloc(s - files[0] + 1);
+		pathBuf = icMalloc((unsigned) (s - files[0] + 1));
 		(void) strncpy(pathBuf, files[0], s - files[0]);
 		pathBuf[s - files[0]] = '\0';
 	}
 	else {	/* default path is "./"	*/
-		pathBuf = icMalloc(strlen("./") + 1);
+		pathBuf = icMalloc((unsigned) (strlen("./") + 1));
 		(void) strcpy(pathBuf, "./");
 	}
 	currentPath = pathBuf;
@@ -85,7 +95,7 @@ char	*GetFiles(file_filter, longest)
 		total_len += len;
 	}
 
-	buf = icMalloc( total_len + file_count + 1 );
+	buf = icMalloc( (unsigned) (total_len + file_count + 1 ));
 	buf[0] = '\0';
 
 	/*
@@ -126,7 +136,7 @@ SetFileSelection(file)
 	if ((*file == '.' && (*(file+1) == '.' || *(file+1) == '/')) 
 					|| *file == '/' || *file == '~') {
 
-		currentFileSelection = icMalloc(strlen (file) +1);
+		currentFileSelection = icMalloc((unsigned) (strlen (file) +1));
 		(void) strcat(currentFileSelection, file);
 		return;
 	}
@@ -134,7 +144,9 @@ SetFileSelection(file)
 	/*
 	 * build the path to the file and store it
 	 */
-	currentFileSelection = icMalloc(strlen(currentPath) + strlen (file) +1);
+	currentFileSelection = icMalloc((unsigned) 
+				(strlen(currentPath) + strlen (file) +1));
+
 	(void) strcpy(currentFileSelection, currentPath);
 	(void) strcat(currentFileSelection, file);
 }

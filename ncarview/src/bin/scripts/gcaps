@@ -10,7 +10,7 @@
 #			directory.
 # 
 
-set dir = "/u2/ncargfx/test/lib"
+set dir = "/u1/clyne/lib"
 
 set dir = "${dir}/graphcaps"
 

@@ -1,4 +1,7 @@
 /*
+ *	$Id: scroll.c,v 1.2 1991-01-09 10:53:18 clyne Exp $
+ */
+/*
  *	scroll.c
  *
  *	Author		John Clyne
@@ -8,8 +11,10 @@
  *	The module contains widget independent code used by the scroll
  *	widget. 
  */
+#include <sys/types.h>
 #include "commands.h"
 #include "display.h"
+#include "bsd-sysv.h"
 
 /*
  *	ScrollTo
@@ -30,6 +35,8 @@ void	ScrollTo(id, percent)
 	int	start, stop;
 	int	frame;
 	char	buf[10];
+
+	void Command2();
 
 	Command_Id	command_id;
 
@@ -63,8 +70,8 @@ void	ScrollTo(id, percent)
 	/*
 	 * send the plotting command
 	 */
-	sprintf(buf, "%d", frame);
-	Command2(&command_id, buf);
+	(void) sprintf(buf, "%d", frame);
+	Command2((caddr_t) &command_id, buf);
 
 	/*
 	 * update the displayed frame count
