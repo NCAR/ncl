@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.18 2003-08-05 22:50:21 shea Exp $
+;      $Id: contributed.ncl,v 1.19 2003-08-28 17:23:12 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -4459,15 +4459,15 @@ begin
   if(iscoord(xMon,dName)) then
       cv = xMon&$dName$(NMO:ntim-1:nmos) 
                                      ; possibly override
-      if (isatt(cv,"units") .and. \
-               (cv@units.eq."YYYYMM" .or. cv@units.eq."YYMM")) then
-          cv = cv/100
-          cv@units = "YYYY"
-      end if
-      if (isatt(cv,"units") .and. cv@units.eq."YYYYMMDD") then
-          cv = cv/10000
-          cv@units = "YYYY"
-      end if
+     ;if (isatt(cv,"units") .and. \
+     ;         (cv@units.eq."YYYYMM" .or. cv@units.eq."YYMM")) then
+     ;    cv = cv/100
+     ;    cv@units = "YYYY"
+     ;end if
+     ;if (isatt(cv,"units") .and. cv@units.eq."YYYYMMDD") then
+     ;    cv = cv/10000
+     ;    cv@units = "YYYY"
+     ;end if
 
       xSea&$dName$ = cv
   end if
