@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.35 1995-02-27 21:54:10 ethan Exp $
+ *      $Id: Execute.c,v 1.36 1995-03-25 00:58:46 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2855,7 +2855,10 @@ NclExecuteReturnStatus _NclExecute
 								if(ret < NhlWARNING) {
 									estatus = NhlFATAL;
 								}
+								if(estatus < NhlWARNING) 
+									break;
 							}
+							if(estatus != NhlFATAL) {
 /*
 							if(kind == PARAM_FILE_VAR_OP) {
 */
@@ -2877,6 +2880,7 @@ NclExecuteReturnStatus _NclExecute
 								}
 							}
 */
+							}
 						} else {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Either file (%s) isn't defined or variable (%s) is not a variable in the file",dfile->name,NrmQuarkToString(var));
 							_NclCleanUpStack(nsubs);

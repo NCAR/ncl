@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.4 1995-03-01 00:36:15 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.5 1995-03-25 00:58:40 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -234,7 +234,7 @@ NhlErrorTypes _NclIListFileVariables
 	int i;
 	
 
-	data = _NclGetArg(0,1);
+	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
 	case NclStk_VAR:
 		 file_q = data.u.data_var->var.var_quark;
@@ -287,7 +287,11 @@ NhlErrorTypes _NclINhlDataToNDC
 	NclScalar tmp_mis;
 
 	for(i = 0 ; i < 5; i++) {
-		args[i] = _NclGetArg(i,5);
+		if(i < 3) {
+			args[i] = _NclGetArg(i,5,DONT_CARE);
+		} else {
+			args[i] = _NclGetArg(i,5,WRITE_IT);
+		}
 		switch(args[i].kind) {
 		case NclStk_VAL:
 			tmp_mds[i] = args[i].u.data_obj;
@@ -369,7 +373,11 @@ NhlErrorTypes _NclINhlNDCToData
 	NclScalar tmp_mis;
 
 	for(i = 0 ; i < 5; i++) {
-		args[i] = _NclGetArg(i,5);
+		if(i < 3) {
+			args[i] = _NclGetArg(i,5,DONT_CARE);
+		} else {
+			args[i] = _NclGetArg(i,5,WRITE_IT);
+		}
 		switch(args[i].kind) {
 		case NclStk_VAL:
 			tmp_mds[i] = args[i].u.data_obj;
@@ -447,7 +455,7 @@ NhlErrorTypes _Nclsystem
         int dimsize = 1;
 	Const char* command;
 
-        val = _NclGetArg(0,1);
+        val = _NclGetArg(0,1,DONT_CARE);
 /*
 * Should be constrained to be a SCALAR md
 */
@@ -463,7 +471,7 @@ NhlErrorTypes _Nclsystem
         }
 	if((tmp_md != NULL)&&(tmp_md->multidval.type->type_class.type & Ncl_Typestring)) {
 		command = NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val);
-		if(system(command)) {
+		if(!system(command)) {
 			return(NhlNOERROR);
 		} else {
                 	return(NhlFATAL);
@@ -485,7 +493,7 @@ NhlErrorTypes _NclIIsMissing
 	logical *lval;
 	int dimsize = 1;
 	
-	val = _NclGetArg(0,1);
+	val = _NclGetArg(0,1,DONT_CARE);
 /*
 * Should be constrained to be a SCALAR md
 */	
@@ -536,8 +544,8 @@ NhlErrorTypes _NclIAddToOverlay
 	
 
 	
-	base =  _NclGetArg(0,2);
-	over =  _NclGetArg(1,2);
+	base =  _NclGetArg(0,2,DONT_CARE);
+	over =  _NclGetArg(1,2,DONT_CARE);
 
 	switch(base.kind) {
 	case NclStk_VAL:
@@ -590,8 +598,8 @@ NhlErrorTypes _NclIAddFile
 /*
 * Guarenteed to be scalar string
 */
-	path =  _NclGetArg(0,2);
-	rw_status = _NclGetArg(1,2);
+	path =  _NclGetArg(0,2,DONT_CARE);
+	rw_status = _NclGetArg(1,2,DONT_CARE);
 
 	if(path.kind == NclStk_VAR) {
 		if(path.u.data_var != NULL) {
@@ -674,7 +682,7 @@ NhlErrorTypes _NclIAny
 	NclMultiDValData tmp_md = NULL;
 	int i,dim_size = 1;
 	logical *tmp_val;
-	data = _NclGetArg(0,1);
+	data = _NclGetArg(0,1,DONT_CARE);
 	if(data.kind == NclStk_VAR) {
 		if(data.u.data_var != NULL) {	
 			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
@@ -756,7 +764,7 @@ NhlErrorTypes _NclIAll
 	NclMultiDValData tmp_md = NULL;
 	int i,dim_size = 1;
 	logical *tmp_val;
-	data = _NclGetArg(0,1);
+	data = _NclGetArg(0,1,DONT_CARE);
 	if(data.kind == NclStk_VAR) {
 		if(data.u.data_var != NULL) {	
 			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
@@ -838,7 +846,7 @@ NhlErrorTypes _NclISizeOf
 	int *size;
 	int dim_size = 1;
 
-	data = _NclGetArg(0,1);
+	data = _NclGetArg(0,1,DONT_CARE);
 	if(data.kind == NclStk_VAR) {
 		if(data.u.data_var != NULL) {	
 			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
@@ -890,7 +898,7 @@ NhlErrorTypes _NclIDimSizes
 	int *size;
 	int dim_size,i;
 
-	data = _NclGetArg(0,1);
+	data = _NclGetArg(0,1,DONT_CARE);
 	if(data.kind == NclStk_VAR) {
 		if(data.u.data_var != NULL) {	
 			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
@@ -944,7 +952,7 @@ NhlErrorTypes _NclIDumpStk
 	NclStackEntry data;
 	char *fname = NULL;
 	NhlErrorTypes ret = NhlNOERROR;
-	data = _NclGetArg(0,1);
+	data = _NclGetArg(0,1,DONT_CARE);
 	if(data.kind == NclStk_VAR) {
 		if(data.u.data_var != NULL) {
 			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
@@ -1009,7 +1017,7 @@ NhlErrorTypes _NclIFrame
 	NclHLUObj hlu_ptr;
 	int *obj_ids,i;
 
-	data = _NclGetArg(0,1);
+	data = _NclGetArg(0,1,DONT_CARE);
 
 	if(data.kind == NclStk_VAR) {
 		if(!(data.u.data_var->obj.obj_type_mask & Ncl_HLUVar) ) {
@@ -1053,7 +1061,7 @@ NhlErrorTypes _NclIClear
 	NclHLUObj hlu_ptr;
 	int *obj_ids,i;
 
-	data = _NclGetArg(0,1);
+	data = _NclGetArg(0,1,DONT_CARE);
 
 	if(data.kind == NclStk_VAR) {
 		if(!(data.u.data_var->obj.obj_type_mask & Ncl_HLUVar) ) {
@@ -1100,7 +1108,7 @@ NhlErrorTypes _NclIDestroy
 	int *obj_ids,i;
 	NclHLUObj hlu_ptr = NULL;
 
-	data = _NclGetArg(0,1);
+	data = _NclGetArg(0,1,DONT_CARE);
 
 	if(data.kind == NclStk_VAR) {
 		if(!(data.u.data_var->obj.obj_type_mask & Ncl_HLUVar)) {
@@ -1179,7 +1187,7 @@ NhlErrorTypes _NclIUpdate
 	NclHLUObj hlu_ptr;
 	int *obj_ids,i;
 
-	data = _NclGetArg(0,1);
+	data = _NclGetArg(0,1,DONT_CARE);
 
 	if(data.kind == NclStk_VAR) {
 		if(!(data.u.data_var->obj.obj_type_mask & Ncl_HLUVar)) {
@@ -1228,7 +1236,7 @@ NhlErrorTypes _NclIDraw
 	int *obj_ids,i;
 	NclHLUObj hlu_ptr;
 
-	data = _NclGetArg(0,1);
+	data = _NclGetArg(0,1,DONT_CARE);
 
 	if(data.kind == NclStk_VAR) {
 		if(!(data.u.data_var->obj.obj_type_mask & Ncl_HLUVar)) {
@@ -1274,7 +1282,7 @@ NhlErrorTypes _NclIPrint
 	FILE *fp;
 	
 
-	data = _NclGetArg(0,1);
+	data = _NclGetArg(0,1,DONT_CARE);
 	fp = _NclGetOutputStream();
 
 	switch(data.kind) {
@@ -1302,7 +1310,7 @@ NhlErrorTypes _NclIDelete
 	NclSymbol *thesym;
 	int sub_sel = 0;
 
-	data = _NclGetArg(0,1);
+	data = _NclGetArg(0,1,DONT_CARE);
 
 	switch(data.kind) {
 	case NclStk_VAL:
@@ -1400,10 +1408,10 @@ NhlErrorTypes _Nclidsfft
 	float spacing,xmax,xmin,ymax,ymin;
 
 
-	arg[0] = (float*)NclGetArgValue( 0, 4, NULL, &dimsizes, &missing, &has_missing, &type0);
-	arg[1] = (float*)NclGetArgValue( 1, 4, NULL, &dimsizes1, &missing1, &has_missing1, &type1);
-	arg[2] = (float*)NclGetArgValue( 2, 4, NULL, &dimsizes2, &missing2, &has_missing2, &type2);
-	dims = (int*)NclGetArgValue( 3, 4, NULL, NULL, NULL, &has_missing, NULL);
+	arg[0] = (float*)NclGetArgValue( 0, 4, NULL, &dimsizes, &missing, &has_missing, &type0,DONT_CARE);
+	arg[1] = (float*)NclGetArgValue( 1, 4, NULL, &dimsizes1, &missing1, &has_missing1, &type1,DONT_CARE);
+	arg[2] = (float*)NclGetArgValue( 2, 4, NULL, &dimsizes2, &missing2, &has_missing2, &type2,DONT_CARE);
+	dims = (int*)NclGetArgValue( 3, 4, NULL, NULL, NULL, &has_missing, NULL,DONT_CARE);
 
 	if((dimsizes == dimsizes1)&&(dimsizes = dimsizes2)){
 		xmax = (arg[0])[0];
@@ -1516,12 +1524,12 @@ void* s2;
 
 	if(qc_nc == NULL) return(0);
 	
-	_Nclgt(qc_nc,&res,(void*)((char*)qc_val + qc_nc->type_class.size*ind1),(void*)((char*)qc_val + qc_nc->type_class.size*ind2),qc_missing,qc_missing,1,1);
+	_Nclgt(qc_nc,&res,(void*)((char*)qc_val + qc_nc->type_class.size*ind1),(void*)((char*)qc_val + qc_nc->type_class.size*ind2),NULL,NULL,1,1);
 
 	if(res) return(1);
 
 	res = 0;
-	_Ncllt(qc_nc,&res,(void*)((char*)qc_val + qc_nc->type_class.size*ind1),(void*)((char*)qc_val + qc_nc->type_class.size*ind2),qc_missing,qc_missing,1,1);
+	_Ncllt(qc_nc,&res,(void*)((char*)qc_val + qc_nc->type_class.size*ind1),(void*)((char*)qc_val + qc_nc->type_class.size*ind2),NULL,NULL,1,1);
 
 	if(res) return(-1);
 
@@ -1545,15 +1553,15 @@ NhlErrorTypes _NclIqsort
 	NclSelectionRecord * sel_ptr = NULL;
 
 
-	args  = _NclGetArg(0,1);
+	args  = _NclGetArg(0,1,WRITE_IT);
 	switch(args.kind) {
-	case NclStk_VAL:
-		tmp_md = args.u.data_obj;
-		break;
 	case NclStk_VAR:
 		tmp_md = _NclVarValueRead(args.u.data_var,NULL,NULL);
 		break;
 	default:
+		return(NhlFATAL);
+	case NclStk_VAL:
+		NhlPError(NhlFATAL,NhlEUNKNOWN, "qsort: A value was passed in only variables can be sorted");
 		return(NhlFATAL);
 	}
 	qc_nc = tmp_md->multidval.type;
@@ -1610,7 +1618,7 @@ NhlErrorTypes _NclIbsearch
 	NclMultiDValData tmp_md= NULL;
 
 
-	args  = _NclGetArg(0,1);
+	args  = _NclGetArg(0,1,DONT_CARE);
 	switch(args.kind) {
 	case NclStk_VAL:
 		tmp_md = args.u.data_obj;
@@ -1635,7 +1643,7 @@ NhlErrorTypes _NclIcbinread
 	NclMultiDValData tmp_md= NULL;
 
 
-	args  = _NclGetArg(0,1);
+	args  = _NclGetArg(0,1,DONT_CARE);
 	switch(args.kind) {
 	case NclStk_VAL:
 		tmp_md = args.u.data_obj;
@@ -1660,7 +1668,7 @@ NhlErrorTypes _NclIfbinread
 	NclMultiDValData tmp_md= NULL;
 
 
-	args  = _NclGetArg(0,1);
+	args  = _NclGetArg(0,1,DONT_CARE);
 	switch(args.kind) {
 	case NclStk_VAL:
 		tmp_md = args.u.data_obj;
@@ -1685,7 +1693,7 @@ NhlErrorTypes _NclIasciread
 	NclMultiDValData tmp_md= NULL;
 
 
-	args  = _NclGetArg(0,1);
+	args  = _NclGetArg(0,1,DONT_CARE);
 	switch(args.kind) {
 	case NclStk_VAL:
 		tmp_md = args.u.data_obj;
@@ -1710,7 +1718,7 @@ NhlErrorTypes _NclIchngdir
 	NclMultiDValData tmp_md= NULL;
 
 
-	args  = _NclGetArg(0,1);
+	args  = _NclGetArg(0,1,DONT_CARE);
 	switch(args.kind) {
 	case NclStk_VAL:
 		tmp_md = args.u.data_obj;
@@ -1735,7 +1743,7 @@ NhlErrorTypes _NclIcbinwrite
 	NclMultiDValData tmp_md= NULL;
 
 
-	args  = _NclGetArg(0,1);
+	args  = _NclGetArg(0,1,DONT_CARE);
 	switch(args.kind) {
 	case NclStk_VAL:
 		tmp_md = args.u.data_obj;
@@ -1760,7 +1768,7 @@ NhlErrorTypes _NclIfbinwrite
 	NclMultiDValData tmp_md= NULL;
 
 
-	args  = _NclGetArg(0,1);
+	args  = _NclGetArg(0,1,DONT_CARE);
 	switch(args.kind) {
 	case NclStk_VAL:
 		tmp_md = args.u.data_obj;
@@ -1785,7 +1793,7 @@ NhlErrorTypes _NclIsleep
 	NclMultiDValData tmp_md= NULL;
 
 
-	args  = _NclGetArg(0,1);
+	args  = _NclGetArg(0,1,DONT_CARE);
 	switch(args.kind) {
 	case NclStk_VAL:
 		tmp_md = args.u.data_obj;
@@ -1810,7 +1818,7 @@ NhlErrorTypes _NclIprompt
 	NclMultiDValData tmp_md= NULL;
 
 
-	args  = _NclGetArg(0,1);
+	args  = _NclGetArg(0,1,DONT_CARE);
 	switch(args.kind) {
 	case NclStk_VAL:
 		tmp_md = args.u.data_obj;
@@ -1835,7 +1843,7 @@ NhlErrorTypes _NclIrand
 	NclMultiDValData tmp_md= NULL;
 
 
-	args  = _NclGetArg(0,1);
+	args  = _NclGetArg(0,1,DONT_CARE);
 	switch(args.kind) {
 	case NclStk_VAL:
 		tmp_md = args.u.data_obj;
@@ -1860,7 +1868,7 @@ NhlErrorTypes _NclIsrand
 	NclMultiDValData tmp_md= NULL;
 
 
-	args  = _NclGetArg(0,1);
+	args  = _NclGetArg(0,1,DONT_CARE);
 	switch(args.kind) {
 	case NclStk_VAL:
 		tmp_md = args.u.data_obj;
@@ -1885,7 +1893,7 @@ NhlErrorTypes _NclIabs
 	NclMultiDValData tmp_md= NULL;
 
 
-	args  = _NclGetArg(0,1);
+	args  = _NclGetArg(0,1,DONT_CARE);
 	switch(args.kind) {
 	case NclStk_VAL:
 		tmp_md = args.u.data_obj;
@@ -1913,7 +1921,7 @@ NhlErrorTypes _NclIgetenv
 	int dimsize = 1;
 
 
-	args  = _NclGetArg(0,1);
+	args  = _NclGetArg(0,1,DONT_CARE);
 	switch(args.kind) {
 	case NclStk_VAL:
 		tmp_md = args.u.data_obj;

@@ -10,7 +10,8 @@
 #ifdef DEBUGER
 extern void printtoken(
 #ifdef NhlNeedProto
-	int /* type */
+	int /* type */,
+	char* /* type */
 #endif
 );
 #else

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.12 1995-03-09 20:45:08 haley Exp $
+ *      $Id: NclVar.c,v 1.13 1995-03-25 00:59:04 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -940,7 +940,7 @@ char* coordname;
 	if(index < 0) {
 		return(0);
 	} else {
-		if(self->var.coord_vars[index] != -1) {
+		if((self->var.coord_vars[index] != -1)&&(_NclGetObj(self->var.coord_vars[index]) != NULL)) {
 			return(1);
 		} else {
 			return(0);

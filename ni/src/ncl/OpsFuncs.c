@@ -789,7 +789,7 @@ NhlErrorTypes _NclIPSetRL
 	NclStackEntry arg;
 	NclMultiDValData tmp_md;
 
-	arg = _NclGetArg(0,1);
+	arg = _NclGetArg(0,1,DONT_CARE);
 	switch(arg.kind) {
 	case NclStk_VAL:
 		tmp_md = arg.u.data_obj;

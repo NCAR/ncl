@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.5 1995-01-31 22:25:48 ethan Exp $
+ *      $Id: FileSupport.c,v 1.6 1995-03-25 00:58:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -167,6 +167,49 @@ NhlErrorTypes _NclBuildFileCoordRSelection
 				}
                                 return(NhlFATAL);
                         }
+		} else if(range->start == range->finish) {
+			sel->sel_type = Ncl_SUBSCR;
+                        cvar = (NclCoordVar)_NclFileReadCoord(file,cname,NULL);
+                        coord_md = _NclVarValueRead((NclVar)cvar,NULL,NULL);
+                        the_type = _NclGetVarRepValue((NclVar)cvar);
+
+                        if(!(the_type & range->start->multidval.type->type_class.type)) {
+                                tmp_md = _NclCoerceData(range->start,the_type,NULL);
+                                if(tmp_md == NULL) {
+                                        NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable, subscript (%d)",dim_num);
+                                        if(cvar->obj.status != PERMANENT) {
+                                                _NclDestroyObj((NclObj)cvar);
+                                        }
+                                        if(coord_md->obj.status != PERMANENT) {
+                                                _NclDestroyObj((NclObj)coord_md);
+                                        }
+                                        return(NhlFATAL);
+
+                                } else {
+                                        if(range->start->obj.status != PERMANENT) {
+                                                _NclDestroyObj((NclObj)range->start);
+                                        }
+                                        range->finish = range->start= tmp_md;
+                                }
+                        }
+			if(_NclGetCoordRange(coord_md,range->start->multidval.val,range->finish->multidval.val,&sel->u.sub.start,&sel->u.sub.finish) == NhlFATAL) {
+                                NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not obtain coordinate indexes, unable to perform subscript");
+                                if(cvar->obj.status != PERMANENT) {
+                                        _NclDestroyObj((NclObj)cvar);
+                                }
+                                if(coord_md->obj.status != PERMANENT) {
+                                        _NclDestroyObj((NclObj)coord_md);
+                                }
+                                return(NhlFATAL);
+                        }
+
+                        if(sel->u.sub.start <= sel->u.sub.finish) {
+                                sel->u.sub.stride = 1;
+                        } else {
+                                sel->u.sub.stride = -1;
+                        }
+
+
 		} else {
 
 			sel->sel_type = Ncl_SUBSCR;

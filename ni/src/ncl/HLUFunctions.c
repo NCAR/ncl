@@ -36,7 +36,8 @@ NhlErrorTypes _NclIChangeWorkstation
 			dimsizes,
 			&missing,
 			&has_missing,
-			&type);
+			&type,
+			0);
 
 	wk_obj_id = (obj*)NclGetArgValue(
                         1,
@@ -45,7 +46,8 @@ NhlErrorTypes _NclIChangeWorkstation
                         NULL,
                         &missing_wk,
                         &has_missing_wk,
-                        NULL);
+                        NULL,
+			0);
 
 	if((has_missing_wk)&&(*wk_obj_id == missing.objval)) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIChangeWorkstation: workstation parameter is missing values");
@@ -133,7 +135,8 @@ NhlErrorTypes _NclISetColor
 			dimsizes,
 			&missing,
 			&has_missing,
-			&type);
+			&type,
+			0);
 
 	for(i = 0; i < n_dims; i++) {
 		total *= dimsizes[i];
@@ -159,7 +162,8 @@ NhlErrorTypes _NclISetColor
 		dimsizes,
 		&missing,
 		&has_missing,
-		&type);
+		&type,
+		0);
 	for(i = 0; i < n_dims; i++) {
 		total_c *= dimsizes[i];
 	}
@@ -171,7 +175,8 @@ NhlErrorTypes _NclISetColor
 		dimsizes_c,
 		&missing_r,
 		&has_missing_r,
-		&type_c);
+		&type_c,
+		0);
 	if(n_dims_c != n_dims) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"SetColor: parameter dimension mismatch, number of dimensions 1-4 must match");
 		return(NhlFATAL);
@@ -190,7 +195,8 @@ NhlErrorTypes _NclISetColor
 		dimsizes_c,
 		&missing_g,
 		&has_missing_g,
-		&type_c);
+		&type_c,
+		0);
 	if(n_dims_c != n_dims) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"SetColor: parameter dimension mismatch, number of dimensions 1-4 must match");
 		return(NhlFATAL);
@@ -209,7 +215,8 @@ NhlErrorTypes _NclISetColor
 		dimsizes_c,
 		&missing_b,
 		&has_missing_b,
-		&type_c);
+		&type_c,
+		0);
 	if(n_dims_c != n_dims) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"SetColor: parameter dimension mismatch, number of dimensions 1-4 must match");
 		return(NhlFATAL);
@@ -286,7 +293,8 @@ NhlErrorTypes _NclINewColor
 			dimsizes,
 			&missing,
 			&has_missing,
-			&type);
+			&type,
+			0);
 
 	for(i = 0; i < n_dims; i++) {
 		total *= dimsizes[i];
@@ -313,7 +321,8 @@ NhlErrorTypes _NclINewColor
 		dimsizes,
 		&missing_r,
 		&has_missing_r,
-		&type_c);
+		&type_c,
+		0);
 	for(i = 0; i < n_dims; i++) {
 		total_c *= dimsizes[i];
 	}
@@ -324,7 +333,8 @@ NhlErrorTypes _NclINewColor
 		dimsizes_c,
 		&missing_g,
 		&has_missing_g,
-		&type_c);
+		&type_c,
+		0);
 	if(n_dims_c != n_dims) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"NewColor: parameter dimension mismatch, number of dimensions 1-4 must match");
 		return(NhlFATAL);
@@ -343,7 +353,8 @@ NhlErrorTypes _NclINewColor
 		dimsizes_c,
 		&missing_b,
 		&has_missing_b,
-		&type_c);
+		&type_c,
+		0);
 	if(n_dims_c != n_dims) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"SetColor: parameter dimension mismatch, number of dimensions 1-4 must match");
 		return(NhlFATAL);
@@ -431,7 +442,8 @@ NhlErrorTypes _NclIFreeColor
 			dimsizes,
 			&missing,
 			&has_missing,
-			&type);
+			&type,
+			0);
 
 	for(i = 0; i < n_dims; i++) {
 		total *= dimsizes[i];
@@ -457,7 +469,8 @@ NhlErrorTypes _NclIFreeColor
 		dimsizes,
 		&missing,
 		&has_missing,
-		&type);
+		&type,
+		0);
 	for(i = 0; i < n_dims; i++) {
 		total_c *= dimsizes[i];
 	}
@@ -514,7 +527,8 @@ NhlErrorTypes _NclIIsAllocatedColor
 			dimsizes,
 			&missing,
 			&has_missing,
-			&type);
+			&type,
+			0);
 
 	for(i = 0; i < n_dims; i++) {
 		total *= dimsizes[i];
@@ -540,7 +554,8 @@ NhlErrorTypes _NclIIsAllocatedColor
 		dimsizes,
 		&missing,
 		&has_missing,
-		&type);
+		&type,
+		0);
 	for(i = 0; i < n_dims; i++) {
 		total_c *= dimsizes[i];
 	}
@@ -602,7 +617,8 @@ NhlErrorTypes _NclIGetBB
 			dimsizes,
 			&missing,
 			&has_missing,
-			&type);
+			&type,
+			0);
 
 	for(i = 0; i < n_dims; i++) {
 		total *= dimsizes[i];
@@ -685,7 +701,8 @@ NhlErrorTypes _NclIAddData
 			dimsizes,
 			&missing,
 			&has_missing,
-			&type);
+			&type,
+			0);
 	resname = (string*)NclGetArgValue(
 			1,
 			nargs,
@@ -693,7 +710,8 @@ NhlErrorTypes _NclIAddData
 			NULL,
 			&missing1,
 			&has_missing1,
-			NULL);
+			NULL,
+			0);
 	ncl_data_obj_ids = (obj*)NclGetArgValue(
 			2,
 			nargs,
@@ -701,7 +719,8 @@ NhlErrorTypes _NclIAddData
 			dimsizes2,
 			&missing2,
 			&has_missing2,
-			&type2);
+			&type2,
+			0);
 
 	for(i = 0; i < n_dims; i++) {
 		total *= dimsizes[i];
@@ -779,7 +798,8 @@ NhlErrorTypes _NclIRemoveData
 			dimsizes,
 			&missing,
 			&has_missing,
-			&type);
+			&type,
+			0);
 	resname = (string*)NclGetArgValue(
 			1,
 			nargs,
@@ -787,7 +807,8 @@ NhlErrorTypes _NclIRemoveData
 			NULL,
 			&missing1,
 			&has_missing1,
-			NULL);
+			NULL,
+			0);
 	ncl_data_obj_ids = (obj*)NclGetArgValue(
 			2,
 			nargs,
@@ -795,7 +816,8 @@ NhlErrorTypes _NclIRemoveData
 			dimsizes2,
 			&missing2,
 			&has_missing2,
-			&type2);
+			&type2,
+			0);
 
 	for(i = 0; i < n_dims; i++) {
 		total *= dimsizes[i];
@@ -870,7 +892,8 @@ NhlErrorTypes _NclIRemoveFromOverlay
 			NULL,
 			NULL,
 			NULL,
-			NULL);
+			NULL,
+			0);
 	ncl_plot_obj_ids = (obj*)NclGetArgValue(
 			1,
 			nargs,
@@ -878,7 +901,8 @@ NhlErrorTypes _NclIRemoveFromOverlay
 			dimsizes1,
 			&missing1,
 			&has_missing1,
-			&type1);
+			&type1,
+			0);
 	restore = (obj*)NclGetArgValue(
 			2,
 			nargs,
@@ -886,7 +910,8 @@ NhlErrorTypes _NclIRemoveFromOverlay
 			NULL,
 			&missing2,
 			&has_missing2,
-			NULL);
+			NULL,
+			0);
 
 	for(i = 0; i < n_dims1; i++) {
 		total *= dimsizes1[i];
@@ -945,7 +970,8 @@ NhlErrorTypes _NclIAddToOverlay2
 			NULL,
 			&missing,
 			&has_missing,
-			NULL);
+			NULL,
+			0);
 	ncl_hlu_obj_ids = (obj*)NclGetArgValue(
 			1,
 			nargs,
@@ -953,7 +979,8 @@ NhlErrorTypes _NclIAddToOverlay2
 			dimsizes1,
 			&missing1,
 			&has_missing1,
-			&type1);
+			&type1,
+			0);
 	after_hlu_obj_id = (obj*)NclGetArgValue(
 			2,
 			nargs,
@@ -961,7 +988,8 @@ NhlErrorTypes _NclIAddToOverlay2
 			NULL,
 			&missing2,
 			&has_missing2,
-			NULL);
+			NULL,
+			0);
 
 	for(i = 0; i < n_dims1; i++) {
 		total *= dimsizes1[i];
@@ -1010,7 +1038,8 @@ NhlErrorTypes _NclIRegisterAnnotation
 			NULL,
 			&missing,
 			&has_missing,
-			NULL);
+			NULL,
+			0);
 
 	ncl_ano_obj_ids = (obj*)NclGetArgValue(
 			1,
@@ -1019,7 +1048,8 @@ NhlErrorTypes _NclIRegisterAnnotation
 			dimsizes1,
 			&missing1,
 			&has_missing1,
-			NULL);
+			NULL,
+			0);
 
 	for(i = 0; i < n_dims1; i++) {
 		total *= dimsizes1[i];
@@ -1077,7 +1107,8 @@ NhlErrorTypes _NclIUnregisterAnnotation
 			NULL,
 			&missing,
 			&has_missing,
-			NULL);
+			NULL,
+			0);
 
 	ncl_ano_obj_ids = (obj*)NclGetArgValue(
 			1,
@@ -1086,7 +1117,8 @@ NhlErrorTypes _NclIUnregisterAnnotation
 			dimsizes1,
 			&missing1,
 			&has_missing1,
-			NULL);
+			NULL,
+			0);
 
 	for(i = 0; i < n_dims1; i++) {
 		total *= dimsizes1[i];
@@ -1141,7 +1173,8 @@ NhlErrorTypes _NclIUpdateData
 			dimsizes,
 			&missing,
 			&has_missing,
-			&type);
+			&type,
+			0);
 
 	for(i = 0; i < n_dims; i++) {
 		total *= dimsizes[i];
@@ -1196,7 +1229,8 @@ NhlErrorTypes _NclIDataPolyline
 			dimsizes,
 			&missing,
 			&has_missing,
-			&type);
+			&type,
+			0);
 
 	x = (float*)NclGetArgValue(
 			1,
@@ -1205,7 +1239,8 @@ NhlErrorTypes _NclIDataPolyline
 			dimsizes1,
 			&missing1,
 			&has_missing1,
-			NULL);
+			NULL,
+			0);
 
 	y = (float*)NclGetArgValue(
 			2,
@@ -1214,7 +1249,8 @@ NhlErrorTypes _NclIDataPolyline
 			dimsizes2,
 			&missing2,
 			&has_missing2,
-			NULL);
+			NULL,
+			0);
 
 	for(i = 0; i < n_dims; i++) {
 		total *= dimsizes[i];
@@ -1287,7 +1323,8 @@ NhlErrorTypes _NclINDCPolyline
 			dimsizes,
 			&missing,
 			&has_missing,
-			&type);
+			&type,
+			0);
 
 	x = (float*)NclGetArgValue(
 			1,
@@ -1296,7 +1333,8 @@ NhlErrorTypes _NclINDCPolyline
 			dimsizes1,
 			&missing1,
 			&has_missing1,
-			NULL);
+			NULL,
+			0);
 
 	y = (float*)NclGetArgValue(
 			2,
@@ -1305,7 +1343,8 @@ NhlErrorTypes _NclINDCPolyline
 			dimsizes2,
 			&missing2,
 			&has_missing2,
-			NULL);
+			NULL,
+			0);
 
 	for(i = 0; i < n_dims; i++) {
 		total *= dimsizes[i];
@@ -1373,7 +1412,8 @@ NhlErrorTypes _NclIClassName
 			dimsizes,
 			&missing,
 			&has_missing,
-			&type);
+			&type,
+			0);
 
 	for(i = 0; i < n_dims; i++) {
 		total *= dimsizes[i];
@@ -1433,7 +1473,8 @@ NhlErrorTypes _NclIName
 			dimsizes,
 			&missing,
 			&has_missing,
-			&type);
+			&type,
+			0);
 
 	for(i = 0; i < n_dims; i++) {
 		total *= dimsizes[i];

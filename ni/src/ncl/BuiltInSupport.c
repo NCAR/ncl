@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInSupport.c,v 1.2 1995-02-17 01:00:39 ethan Exp $
+ *      $Id: BuiltInSupport.c,v 1.3 1995-03-25 00:58:43 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -54,9 +54,9 @@
 
 void *NclGetArgValue
 #if NhlNeedProto
-(int arg_num, int n_args,int* n_dims, int* dimsizes, NclScalar* missing, int * has_missing, NclBasicDataTypes *type)
+(int arg_num, int n_args,int* n_dims, int* dimsizes, NclScalar* missing, int * has_missing, NclBasicDataTypes *type,int access_type)
 #else
-(arg_num, n_args,n_dims, dimsizes, missing, has_missing, type)
+(arg_num, n_args,n_dims, dimsizes, missing, has_missing, type, access_type)
 int arg_num;
 int n_args;
 int* n_dims;
@@ -64,12 +64,13 @@ int* dimsizes;
 NclScalar* missing;
 int * has_missing;
 NclBasicDataTypes *type;
+int access_type;
 #endif
 {
 	NclStackEntry val;
 	NclMultiDValData tmp_md = NULL;
 
-	val = _NclGetArg(arg_num,n_args);
+	val = _NclGetArg(arg_num,n_args,access_type);
 	
 	switch(val.kind) {
 	case NclStk_VAL:

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MathTemplate.c.sed,v 1.1 1995-01-31 22:25:54 ethan Exp $
+ *      $Id: MathTemplate.c.sed,v 1.2 1995-03-25 00:59:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -44,7 +44,8 @@ NhlErrorTypes _NclFUNCNAME
 			dimsizes,
 			&missing,
 			&has_missing,
-			&type);
+			&type,
+			0);
 	for(i = 0; i < n_dims; i++) {
 		total *= dimsizes[i];
 	}

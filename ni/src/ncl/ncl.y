@@ -941,13 +941,17 @@ opt_arg_list : LP arg_list RP			{ $$ = $2;    }
 arg_list: expr					{ 
 						/* Code to check type of expression, iff its and identifier then stamp it with
 							the Ncl_PARAMIT tag so the translator can add extra code */
-							if(((NclGenericNode*)$1)->kind == Ncl_IDNEXPR) {
-								((NclGenericRefNode*)((NclIdnExpr*)$1)->idn_ref_node)->ref_type =
-									Ncl_PARAMIT;
+							if(!is_error) {
+								if(((NclGenericNode*)$1)->kind == Ncl_IDNEXPR) {
+									((NclGenericRefNode*)((NclIdnExpr*)$1)->idn_ref_node)->ref_type =
+										Ncl_PARAMIT;
+								}
+								$$ = _NclMakeNewListNode();
+								$$->next = NULL;
+								$$->node = $1;
+							} else {
+								$$ = NULL;
 							}
-							$$ = _NclMakeNewListNode();
-							$$->next = NULL;
-							$$->node = $1;
 						}
 	| arg_list ',' expr  			{
 							NclSrcListNode * step;
@@ -955,20 +959,23 @@ arg_list: expr					{
 						* ordering is important because arguments eventually must be pushed on stack in
 						* appropriate order 
 						*/
-							step = $1;
-							while(step->next != NULL) {
-								step = step->next;
-							}
-						/* Code to check type of expression, iff its and identifier then stamp it with
-							the Ncl_PARAMIT tag so the translator can add extra code */
-							if(((NclGenericNode*)$3)->kind == Ncl_IDNEXPR) {
-								((NclGenericRefNode*)((NclIdnExpr*)$3)->idn_ref_node)->ref_type =
-									Ncl_PARAMIT;
-							}
-							step->next = _NclMakeNewListNode();
-							step->next->next = NULL;
-							step->next->node = $3;
+							if(!is_error) {
+								step = $1;
+								while(step->next != NULL) {
+									step = step->next;
+								}
+							/* Code to check type of expression, iff its and identifier then stamp it with
+								the Ncl_PARAMIT tag so the translator can add extra code */
+								if(((NclGenericNode*)$3)->kind == Ncl_IDNEXPR) {
+									((NclGenericRefNode*)((NclIdnExpr*)$3)->idn_ref_node)->ref_type =
+										Ncl_PARAMIT;
+								}
+								step->next = _NclMakeNewListNode();
+								step->next->next = NULL;
+								step->next->node = $3;
+							} 
 							$$ = $1;
+							
 						}
 ;
 func_identifier: KEYFUNC UNDEF { _NclNewScope(); $$ = $2; }

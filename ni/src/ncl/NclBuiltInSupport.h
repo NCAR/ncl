@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclBuiltInSupport.h,v 1.1 1995-01-31 22:25:58 ethan Exp $
+ *      $Id: NclBuiltInSupport.h,v 1.2 1995-03-25 00:59:02 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,7 @@
 
 extern void *NclGetArgValue(
 #if NhlNeedProto
-int /*arg_num*/, int /*n_args*/,int* /*n_dims*/, int* /*dimsizes*/, NclScalar* /*missing*/, int * /*has_missing*/, NclBasicDataTypes * /*type*/
+int /*arg_num*/, int /*n_args*/,int* /*n_dims*/, int* /*dimsizes*/, NclScalar* /*missing*/, int * /*has_missing*/, NclBasicDataTypes * /*type*/, int /* access_type */
 #endif
 );
 
