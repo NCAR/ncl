@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.h,v 1.10 1995-06-06 01:27:32 dbrown Exp $
+ *      $Id: LabelBar.h,v 1.11 1997-08-14 16:30:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,13 +32,13 @@ typedef enum _NhllbLabelAlignmentMode {
 	NhlBOXCENTERS =0, NhlINTERIOREDGES, NhlEXTERNALEDGES
 } NhllbLabelAlignmentMode;
 
-#define NhlTlbLabelAlignmentMode "lblabelalignmentmode"
+#define NhlTlbLabelAlignmentMode "lbLabelAlignmentMode"
 
 typedef enum _NhllbBoxSizingMode {
 	NhlUNIFORMSIZING = 0, NhlEXPLICITSIZING
 } NhllbBoxSizingMode;
 
-#define NhlTlbBoxSizingMode "lbboxsizingmode"
+#define NhlTlbBoxSizingMode "lbBoxSizingMode"
 
 /* Instance resources */
 

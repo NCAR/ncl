@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.h,v 1.16 1996-06-13 02:06:02 dbrown Exp $
+ *      $Id: XyPlot.h,v 1.17 1997-08-14 16:31:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -157,7 +157,7 @@ typedef enum _NhlAlternatePlace{
 	NhlBOTTOMAXIS
 } NhlAlternatePlace;
 
-#define NhlTAlternatePlace	"alternatePlace"
+#define NhlTAlternatePlace	"AlternatePlace"
 
 #define NhlNxyXAlternate	"xyXAlternate"
 #define NhlCxyXAlternate	"XyXAlternate"

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.40 1997-07-25 21:11:53 dbrown Exp $
+ *      $Id: CoordArrays.c,v 1.41 1997-08-14 16:29:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -948,9 +948,9 @@ CoordArraysClassInitialize
 {
 	NhlErrorTypes	ret,lret;
 	_NhlEnumVals	cast_mode[] = {
-		{NhlSINGLEVECTOR,	"singlevector"},
-		{NhlMULTIPLEVECTORS,	"multiplevectors"},
-		{NhlSPLITVECTORS,	"splitvectors"}
+		{NhlSINGLEVECTOR,	"SingleVector"},
+		{NhlMULTIPLEVECTORS,	"MultipleVectors"},
+		{NhlSPLITVECTORS,	"SplitVectors"}
 	};
 
 

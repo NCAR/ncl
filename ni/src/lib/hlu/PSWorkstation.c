@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.c,v 1.10 1997-07-31 18:00:49 boote Exp $
+ *      $Id: PSWorkstation.c,v 1.11 1997-08-14 16:30:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -261,17 +261,17 @@ PSWorkstationClassInitialize
 #endif
 {
 	_NhlEnumVals	visvals[] = {
-		{NhlCOLOR,	"color"},
-		{NhlMONOCHROME,	"monochrome"}
+		{NhlCOLOR,	"Color"},
+		{NhlMONOCHROME,	"Monochrome"}
 	};
 	_NhlEnumVals	fmtvals[] = {
-		{NhlPS,		"ps"},
-		{NhlEPS,	"eps"},
-		{NhlEPSI,	"epsi"}
+		{NhlPS,		"PS"},
+		{NhlEPS,	"EPS"},
+		{NhlEPSI,	"EPSI"}
 	};
 	_NhlEnumVals	orientvals[] = {
-		{NhlPORTRAIT,	"portrait"},
-		{NhlLANDSCAPE,	"landscape"}
+		{NhlPORTRAIT,	"Portrait"},
+		{NhlLANDSCAPE,	"Landscape"}
 	};
 
 	(void)_NhlRegisterEnumType(NhlpsWorkstationClass,NhlTVisualType,

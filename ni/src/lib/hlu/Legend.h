@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.h,v 1.17 1995-06-05 19:08:57 dbrown Exp $
+ *      $Id: Legend.h,v 1.18 1997-08-14 16:30:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,7 @@ typedef enum _NhllgLabelAlignmentMode {
 	NhlITEMCENTERS = 0, NhlABOVEITEMS, NhlBELOWITEMS
 } NhllgLabelAlignmentMode;
 
-#define NhlTlgLabelAlignmentMode "lglabelalignmentmode"
+#define NhlTlgLabelAlignmentMode "lgLabelAlignmentMode"
 
 /* Box sizing */
 
@@ -39,7 +39,7 @@ typedef enum _NhllgItemPlacementMode {
 	NhlUNIFORMPLACEMENT = 0, NhlEXPLICITPLACEMENT
 } NhllgItemPlacementMode;
 
-#define NhlTlgItemPlacementMode "lgitemplacementmode"
+#define NhlTlgItemPlacementMode "lgItemPlacementMode"
 
 /* Instance resources */
 

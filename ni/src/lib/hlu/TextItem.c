@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.38 1997-07-25 21:12:38 dbrown Exp $
+ *      $Id: TextItem.c,v 1.39 1997-08-14 16:30:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -307,14 +307,14 @@ static NhlErrorTypes    TextItemClassInitialize
 #endif
 {
 	_NhlEnumVals	fontqlist[] = {
-		{NhlHIGH,	"high"},
-		{NhlMEDIUM,	"medium"},
-		{NhlLOW,	"low"}
+		{NhlHIGH,	"High"},
+		{NhlMEDIUM,	"Medium"},
+		{NhlLOW,	"Low"}
 	};
 
 	_NhlEnumVals	textdirlist[] = {
-		{NhlDOWN,	"down"},
-		{NhlACROSS,	"across"}
+		{NhlDOWN,	"Down"},
+		{NhlACROSS,	"Across"}
 	};
 
 	_NhlRegisterEnumType(NhlbaseClass,NhlTFontQuality,fontqlist,

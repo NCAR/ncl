@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.70 1997-07-29 15:56:04 ethan Exp $
+ *      $Id: Workstation.c,v 1.71 1997-08-14 16:30:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -625,7 +625,7 @@ WorkstationClassInitialize
 	int status1,dummy = 6;
 	int i;
 	_NhlEnumVals	dashvals[] = {
-		{NhlSOLIDLINE,	"solidline"}
+		{NhlSOLIDLINE,	"SolidLine"}
 	};
 	NhlConvertArg	dashargs[] = {
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMINMAX)},
@@ -633,19 +633,19 @@ WorkstationClassInitialize
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)16)}
 	};
 	_NhlEnumVals	colorvals[] = {
-		{NhlTRANSPARENT,	"transparent"},
-		{NhlNULLCOLOR,		"nullcolor"},
-		{NhlBACKGROUND,		"background"},
-		{NhlFOREGROUND,		"foreground"}
+		{NhlTRANSPARENT,	"Transparent"},
+		{NhlNULLCOLOR,		"NullColor"},
+		{NhlBACKGROUND,		"Background"},
+		{NhlFOREGROUND,		"Foreground"}
 	};
 	NhlConvertArg	colorargs[] = {
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMIN)},
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)-1)}
 	};
 	_NhlEnumVals	fillvals[] = {
-		{NhlSOLIDFILL,	"solidfill"},
-		{NhlHOLLOWFILL,	"hollowfill"},
-		{NhlNULLFILL,	"nullfill"}
+		{NhlSOLIDFILL,	"SolidFill"},
+		{NhlHOLLOWFILL,	"HollowFill"},
+		{NhlNULLFILL,	"NullFill"}
 	};
 	NhlConvertArg	fillargs[] = {
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMINMAX)},
@@ -677,9 +677,9 @@ WorkstationClassInitialize
 	};
 
 	_NhlEnumVals	mrkline[] = {
-		{NhlLINES,	"lines"},
-		{NhlMARKERS,	"markers"},
-		{NhlMARKLINES,	"marklines"}
+		{NhlLINES,	"Lines"},
+		{NhlMARKERS,	"Markers"},
+		{NhlMARKLINES,	"MarkLines"}
 	};
 
 	(void)_NhlRegisterEnumType(NhlobjClass,NhlTDashIndex,dashvals,

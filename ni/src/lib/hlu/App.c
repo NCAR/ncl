@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.35 1997-07-25 21:11:39 dbrown Exp $
+ *      $Id: App.c,v 1.36 1997-08-14 16:29:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -354,7 +354,7 @@ AppClassInitialize
 	_NhlConvertersInitialize();
 	_NhlResourceListInitialize();
 
-	_NhlCompileResourceList(&NhlappClassRec,
+	_NhlCompileResourceList((NhlClass)&NhlappClassRec,
 		NhlappClassRec.app_class.resources,
 		NhlappClassRec.app_class.num_resources);
 
@@ -1188,7 +1188,7 @@ _NhlGetCurrentApp
 }
 
 /*
- * Function:	_NhlGetBaseDB
+ * Function:	_NhlGetResDB
  *
  * Description:	
  *
@@ -1211,11 +1211,18 @@ _NhlGetResDB
 	NhlLayer	l;
 #endif
 {
-	NhlAppLayer		al = (NhlAppLayer)l->base.appobj;
-	NhlAppClass	alc = (NhlAppClass)al->base.layer_class;
+	NhlAppLayer	al;
 
-	if(((NhlLayer)al == l) || !al->app.appDB)
-		return alc->app_class.baseDB;
+        if (l) {
+                al = (NhlAppLayer)l->base.appobj;
+                if(((NhlLayer)al == l) || !al->app.appDB) {
+                        NhlAppClass alc = (NhlAppClass)al->base.layer_class;
+                        return alc->app_class.baseDB;
+                }
+        }
+        else {
+                al = (NhlAppLayer) _NhlGetCurrentApp();
+        }
 
 	return al->app.appDB;
 }

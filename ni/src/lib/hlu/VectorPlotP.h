@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlotP.h,v 1.6 1997-08-11 18:22:36 dbrown Exp $
+ *      $Id: VectorPlotP.h,v 1.7 1997-08-14 16:30:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,8 +38,6 @@
 #define Nhl_vcDEF_COLOR		NhlFOREGROUND
 #define Nhl_vcDEF_PATTERN	1
 #define Nhl_vcDEF_DASH_PATTERN  0
-#define Nhl_vcSTD_VIEW_WIDTH	0.6
-#define Nhl_vcSTD_VIEW_HEIGHT	0.6
 #define NhlvcMAPVAL		99
 #define NhlvcDEF_REFVEC_STRING1	"$VMG$"
 #define NhlvcDEF_REFVEC_STRING2	"Reference Vector"

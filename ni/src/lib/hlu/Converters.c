@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.46 1997-08-06 19:26:56 dbrown Exp $
+ *      $Id: Converters.c,v 1.47 1997-08-14 16:29:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -581,10 +581,23 @@ NhlCvtEnumToString
 	}
 
 	if(tstring == NULL){
+                char		buff[_NhlMAXLINELEN];
+                
+                sprintf(buff,"%d",from->data.intval);
+                tstring = NhlConvertMalloc(sizeof(char) * (strlen(buff)+1));
+                if(tstring == NULL){
+                        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+                        to->size = 0;
+                        return NhlFATAL;
+                }
+                strcpy(tstring,buff);
+                
+#if 0                
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"%s: Invalid Enum \"%d\"",func,from->data.intval);
 		to->size = 0;
 		return NhlFATAL;
+#endif                
 	}
 
 	_NhlSetVal(NhlString,sizeof(NhlString),tstring);
@@ -2993,8 +3006,8 @@ static NhlErrorTypes
 NhlCvtBooleanToString
 CvtArgs
 {
-	static char	true[] = "true";
-	static char	false[] = "false";
+	static char	true[] = "True";
+	static char	false[] = "False";
 	char		func[] = "NhlCvtBooleanToString";
 	NhlString	tstring;
 	NhlErrorTypes	ret = NhlNOERROR;
@@ -3074,8 +3087,8 @@ _NhlConvertersInitialize
 #endif
 {
 	_NhlEnumVals	BoolEnumList[] = {
-			{True,	"true"},
-			{False,	"false"},
+			{True,	"True"},
+			{False,	"False"},
 			{True,	"yes"},
 			{False,	"no"},
 			{True,	"on"},

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.39 1997-08-11 18:22:31 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.40 1997-08-14 16:30:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,63 +30,6 @@
 #include <ncarg/hlu/MapTransObj.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
-
-#define N 6
-#define M 6
-static float U[N*M],V[N*M];
-static	float Min_Mag = 1e12, Max_Mag = 0.0;
-
-/*
- * Function:	ResourceUnset
- *
- * Description:	This function can be used to determine if a resource has
- *		been set at initialize time either in the Create call or
- *		from a resource data base. In order to use it a Boolean
- *		variable (by convention '<var_name>_set')
- *		MUST directly proceed the declaration of the subject
- *		resource variable in the LayerPart struct. Also a .nores 
- *		NhlResource struct for the <var_name>_set variable
- *		must directly preceed the Resource of interest in the 
- *		Resource initialization list of this module.
- *
- * In Args:	
- *		NrmName		name,
- *		NrmClass	class,
- *		NhlPointer	base,
- *		unsigned int	offset
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-
-/*ARGSUSED*/
-static NhlErrorTypes
-ResourceUnset
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	char *cl = (char *) base;
-	NhlBoolean *set = (NhlBoolean *)(cl + offset - sizeof(NhlBoolean));
-
-	*set = False;
-
-	return NhlNOERROR;
-}
 
 #define	Oset(field)	NhlOffset(NhlVectorPlotDataDepLayerRec,vcdata.field)
 static NhlResource data_resources[] = {
@@ -142,7 +85,7 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNvcRefLengthF,NhlCvcRefLengthF,
 		  NhlTFloat,sizeof(float),Oset(ref_length),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{ NhlNvcMinFracLengthF,NhlCvcMinFracLengthF,
 		  NhlTFloat,sizeof(float),Oset(min_frac_len),NhlTString,
 		  _NhlUSET("0.0"),0,NULL},
@@ -169,19 +112,19 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNvcLevelSpacingF,NhlCvcLevelSpacingF,NhlTFloat,sizeof(float),
 		  Oset(level_spacing),NhlTProcedure,
-		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  _NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(min_level_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNvcMinLevelValF,NhlCvcMinLevelValF,NhlTFloat,sizeof(float),
 		  Oset(min_level_val),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(max_level_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNvcMaxLevelValF,NhlCvcMaxLevelValF,NhlTFloat,sizeof(float),
 		  Oset(max_level_val),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNvcLevelColors, NhlCvcLevelColors, NhlTColorIndexGenArray,
 		 sizeof(NhlGenArray),Oset(level_colors),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
@@ -210,13 +153,13 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNvcLineArrowHeadMinSizeF,NhlCvcLineArrowHeadMinSizeF,
 		  NhlTFloat,sizeof(float),Oset(l_arrowhead_min_size),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(l_arrowhead_max_size_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNvcLineArrowHeadMaxSizeF,NhlCvcLineArrowHeadMaxSizeF,
 		  NhlTFloat,sizeof(float),Oset(l_arrowhead_max_size),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 
 	{NhlNvcFillArrowsOn,NhlCvcFillArrowsOn,
 		  NhlTBoolean,sizeof(NhlBoolean),
@@ -333,7 +276,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
         {NhlNvcRefAnnoFontHeightF,NhlCvcRefAnnoFontHeightF,
 		 NhlTFloat,sizeof(float),Oset(refvec_anno.height),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
         {NhlNvcRefAnnoTextDirection,NhlCvcRefAnnoTextDirection,
 		 NhlTTextDirection,sizeof(NhlTextDirection),
 		 Oset(refvec_anno.direction),
@@ -463,7 +406,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
         {NhlNvcMinAnnoFontHeightF,NhlCvcMinAnnoFontHeightF,
 		 NhlTFloat,sizeof(float),Oset(minvec_anno.height),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
         {NhlNvcMinAnnoTextDirection,NhlCvcMinAnnoTextDirection,
 		 NhlTTextDirection,sizeof(NhlTextDirection),
 		 Oset(minvec_anno.direction),
@@ -556,7 +499,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
         {NhlNvcZeroFLabelFontHeightF,NhlCvcZeroFLabelFontHeightF,
 		 NhlTFloat,sizeof(float),Oset(zerof_lbl.height),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
         {NhlNvcZeroFLabelTextDirection,NhlCvcZeroFLabelTextDirection,
 		 NhlTTextDirection,sizeof(NhlTextDirection),
 		 Oset(zerof_lbl.direction),
@@ -679,7 +622,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
         {NhlNvcLabelFontHeightF,NhlCvcLabelFontHeightF,
 		 NhlTFloat,sizeof(float),Oset(lbls.height),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 
 /* End-documented-resources */
 
@@ -696,14 +639,14 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
 		 Oset(x_min),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),_NhlRES_INTERCEPTED,NULL},
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(x_max_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
 		 Oset(x_max),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),_NhlRES_INTERCEPTED,NULL},
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
 	{ NhlNtrXLog,NhlCtrXLog,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(x_log),NhlTImmediate,_NhlUSET((NhlPointer)False),
           	_NhlRES_INTERCEPTED,NULL},
@@ -719,14 +662,14 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
 		Oset(y_min),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),_NhlRES_INTERCEPTED,NULL},
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(y_max_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
          	 _NhlRES_PRIVATE,NULL},
 	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
 		Oset(y_max),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),_NhlRES_INTERCEPTED,NULL},
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
 	{ NhlNtrYLog,NhlCtrYLog,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(y_log),NhlTImmediate,_NhlUSET((NhlPointer)False),
           	_NhlRES_INTERCEPTED,NULL},
@@ -1588,9 +1531,9 @@ VectorPlotClassInitialize
 {
 
         _NhlEnumVals   positionmodelist[] = {
-        {NhlARROWHEAD,		"arrowhead"},
-        {NhlARROWTAIL, 		"arrowtail"},
-        {NhlARROWCENTER, 	"arrowcenter"}
+        {NhlARROWHEAD,		"ArrowHead"},
+        {NhlARROWTAIL, 		"ArrowTail"},
+        {NhlARROWCENTER, 	"ArrowCenter"}
         };
 
 	load_hlucp_routines(False);
@@ -1620,34 +1563,6 @@ VectorPlotClassInitialize
 	Qmax_magnitude = NrmStringToQuark(NhlNvcMaxMagnitudeF);
 	Qmin_frac_len = NrmStringToQuark(NhlNvcMinFracLengthF);
 	Qref_length = NrmStringToQuark(NhlNvcRefLengthF);
-
-	{
-		int i,j;
-		float igrid, jgrid;
-		float pi = 3.14159;
-		float tmag, u, v;
-		igrid = 2.0 * pi / (float) M;
-		jgrid = 2.0 * pi / (float) N;
-		for (j = 0; j < N; j++) {
-			for (i = 0; i < M; i++) {
-				u = *(U + j * M + i) = cos(igrid * (float) i);
-				v = *(V + j * M + i) = cos(jgrid * (float) j);
-				u = *(U + j * M + i) = (float)i + 0.5;
-				v = *(V + j * M + i) = 0;
-#if 0
-				u = *(U + j * M + i) = 0.0;
-				v = *(V + j * M + i) = 0.0;
-#endif
-				tmag = u * u + v * v;
-				if (tmag == 0.0)
-					continue;
-				if (tmag > Max_Mag) Max_Mag = tmag;
-				if (tmag < Min_Mag) Min_Mag = tmag;
-			}
-		}
-		Max_Mag = sqrt(Max_Mag);
-		Min_Mag = sqrt(Min_Mag);
-	}
 
 	return NhlNOERROR;
 }
@@ -6986,7 +6901,7 @@ static NhlErrorTypes    ManageViewDepResources
 	if (! vcp->l_arrowhead_min_size_set) {
 		if (init) {
 			vcp->l_arrowhead_min_size *= 
-				vcnew->view.width / Nhl_vcSTD_VIEW_WIDTH;
+				vcnew->view.width / NHL_DEFAULT_VIEW_WIDTH;
 		}
 		else if (vcnew->view.width != vcold->view.width) {
 			vcp->l_arrowhead_min_size *= 
@@ -6996,7 +6911,7 @@ static NhlErrorTypes    ManageViewDepResources
 	if (! vcp->l_arrowhead_max_size_set) {
 		if (init) {
 			vcp->l_arrowhead_max_size *= 
-				vcnew->view.width / Nhl_vcSTD_VIEW_WIDTH;
+				vcnew->view.width / NHL_DEFAULT_VIEW_WIDTH;
 		}
 		else if (vcnew->view.width != vcold->view.width) {
 			vcp->l_arrowhead_max_size *= 
@@ -7140,7 +7055,7 @@ static NhlErrorTypes    AdjustText
 	if (! lbl_attrp->height_set) {
 		if (init) {
 			lbl_attrp->height *= 
-				vcnew->view.width / Nhl_vcSTD_VIEW_WIDTH;
+				vcnew->view.width / NHL_DEFAULT_VIEW_WIDTH;
 		}
 		else if (vcnew->view.width != vcold->view.width) {
 			lbl_attrp->height *= 

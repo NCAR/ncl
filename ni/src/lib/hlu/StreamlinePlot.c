@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.32 1997-08-11 18:22:22 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.33 1997-08-14 16:30:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,58 +31,6 @@
 #include <ncarg/hlu/MapTransObj.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
-
-/*
- * Function:	ResourceUnset
- *
- * Description:	This function can be used to determine if a resource has
- *		been set at initialize time either in the Create call or
- *		from a resource data base. In order to use it a Boolean
- *		variable (by convention '<var_name>_set')
- *		MUST directly proceed the declaration of the subject
- *		resource variable in the LayerPart struct. Also a .nores 
- *		NhlResource struct for the <var_name>_set variable
- *		must directly preceed the Resource of interest in the 
- *		Resource initialization list of this module.
- *
- * In Args:	
- *		NrmName		name,
- *		NrmClass	class,
- *		NhlPointer	base,
- *		unsigned int	offset
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-
-/*ARGSUSED*/
-static NhlErrorTypes
-ResourceUnset
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	char *cl = (char *) base;
-	NhlBoolean *set = (NhlBoolean *)(cl + offset - sizeof(NhlBoolean));
-
-	*set = False;
-
-	return NhlNOERROR;
-}
 
 #define	Oset(field)	NhlOffset(NhlStreamlinePlotDataDepLayerRec,stdata.field)
 static NhlResource data_resources[] = {
@@ -117,13 +65,13 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNstStepSizeF,NhlCstStepSizeF,
 		  NhlTFloat,sizeof(float),Oset(step_size),NhlTProcedure,
-		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  _NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(min_line_spacing_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNstMinLineSpacingF,NhlCstMinLineSpacingF,
 		  NhlTFloat,sizeof(float),Oset(min_line_spacing),NhlTProcedure,
-		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  _NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNstMinStepFactorF,NhlCstMinStepFactorF,NhlTFloat,sizeof(float),
 		  Oset(min_step_factor),NhlTString,
 		  _NhlUSET("2.0"),0,NULL},
@@ -145,14 +93,14 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNstArrowLengthF,NhlCstArrowLengthF,
 		  NhlTFloat,sizeof(float),Oset(arrow_length),NhlTProcedure,
-		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  _NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(min_arrow_spacing_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNstMinArrowSpacingF,NhlCstMinArrowSpacingF,
 		  NhlTFloat,sizeof(float),
                  Oset(min_arrow_spacing),NhlTProcedure,
-		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  _NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNstLineThicknessF,NhlCstLineThicknessF,
 		  NhlTFloat,sizeof(float),Oset(line_thickness),NhlTString,
 		  _NhlUSET("1.0"),0,NULL},
@@ -182,7 +130,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
         {NhlNstZeroFLabelFontHeightF,NhlCstZeroFLabelFontHeightF,
 		 NhlTFloat,sizeof(float),Oset(zerof_lbl.height),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
         {NhlNstZeroFLabelTextDirection,NhlCstZeroFLabelTextDirection,
 		 NhlTTextDirection,sizeof(NhlTextDirection),
 		 Oset(zerof_lbl.direction),
@@ -262,14 +210,14 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
 		 Oset(x_min),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),_NhlRES_INTERCEPTED,NULL},
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(x_max_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
 		 Oset(x_max),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),_NhlRES_INTERCEPTED,NULL},
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
 	{ NhlNtrXLog,NhlCtrXLog,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(x_log),NhlTImmediate,_NhlUSET((NhlPointer)False),
           	_NhlRES_INTERCEPTED,NULL},
@@ -285,14 +233,14 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
 		Oset(y_min),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),_NhlRES_INTERCEPTED,NULL},
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(y_max_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
          	 _NhlRES_PRIVATE,NULL},
 	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
 		Oset(y_max),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),_NhlRES_INTERCEPTED,NULL},
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
 	{ NhlNtrYLog,NhlCtrYLog,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(y_log),NhlTImmediate,_NhlUSET((NhlPointer)False),
           	_NhlRES_INTERCEPTED,NULL},
@@ -361,19 +309,19 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{ NhlNstLevelSpacingF,NhlCstLevelSpacingF,NhlTFloat,sizeof(float),
 		  Oset(level_spacing),NhlTProcedure,
-		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  _NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(min_level_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNstMinLevelValF,NhlCstMinLevelValF,NhlTFloat,sizeof(float),
 		  Oset(min_level_val),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(max_level_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNstMaxLevelValF,NhlCstMaxLevelValF,NhlTFloat,sizeof(float),
 		  Oset(max_level_val),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 
 	{NhlNstUseScalarArray,NhlCstUseScalarArray,
 		  NhlTBoolean,sizeof(NhlBoolean),
@@ -406,7 +354,7 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNstMinLineLengthF,NhlCstMinLineLengthF,
 		  NhlTFloat,sizeof(float),Oset(min_line_length),NhlTProcedure,
-		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  _NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 
 /* General numerical string format option */
 
@@ -467,7 +415,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
         {NhlNstLabelFontHeightF,NhlCstLabelFontHeightF,
 		 NhlTFloat,sizeof(float),Oset(lbls.height),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 #endif        
 };
 #undef Oset
@@ -4314,7 +4262,7 @@ static NhlErrorTypes    ManageViewDepResources
 	if (! stp->min_arrow_spacing_set) {
 		if (init) {
 			stp->min_arrow_spacing *= 
-				stnew->view.width / Nhl_stSTD_VIEW_WIDTH;
+				stnew->view.width / NHL_DEFAULT_VIEW_WIDTH;
 		}
 		else if (stnew->view.width != stold->view.width) {
 			stp->min_arrow_spacing *= 
@@ -4324,7 +4272,7 @@ static NhlErrorTypes    ManageViewDepResources
 	if (! stp->min_line_length_set) {
 		if (init) {
 			stp->min_line_length *= 
-				stnew->view.width / Nhl_stSTD_VIEW_WIDTH;
+				stnew->view.width / NHL_DEFAULT_VIEW_WIDTH;
 		}
 		else if (stnew->view.width != stold->view.width) {
 			stp->min_line_length *= 
@@ -4387,7 +4335,7 @@ static NhlErrorTypes    AdjustText
 	if (! lbl_attrp->height_set) {
 		if (init) {
 			lbl_attrp->height *= 
-				stnew->view.width / Nhl_stSTD_VIEW_WIDTH;
+				stnew->view.width / NHL_DEFAULT_VIEW_WIDTH;
 		}
 		else if (stnew->view.width != stold->view.width) {
 			lbl_attrp->height *= 

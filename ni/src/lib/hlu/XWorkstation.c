@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.25 1997-07-31 18:00:51 boote Exp $
+ *      $Id: XWorkstation.c,v 1.26 1997-08-14 16:30:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -204,10 +204,10 @@ XWorkstationClassInitialize
 #endif
 {
 	_NhlEnumVals	cmvals[] = {
-		{NhlSHARE,	"share"},
-		{NhlSHARE,	"shared"},
-		{NhlPRIVATE,	"private"},
-		{NhlMIXED,	"mixed"}
+		{NhlSHARE,	"Share"},
+		{NhlSHARE,	"Shared"},
+		{NhlPRIVATE,	"Private"},
+		{NhlMIXED,	"Mixed"}
 	};
 
 	(void)_NhlRegisterEnumType(NhlxWorkstationClass,NhlTXColorMode,cmvals,

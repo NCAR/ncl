@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.24 1997-08-11 18:22:26 dbrown Exp $
+ *      $Id: TransObj.c,v 1.25 1997-08-14 16:30:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,57 +24,6 @@
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/TransObjP.h>
 
-/*
- * Function:	ResourceUnset
- *
- * Description:	This function can be used to determine if a resource has
- *		been set at initialize time either in the Create call or
- *		from a resource data base. In order to use it the Boolean
- *		'..resource_set' variable MUST directly proceed the name
- *		of the resource variable it refers to in the LayerPart
- *		struct. Also a .nores Resource for the resource_set variable
- *		must directly preceed the Resource of interest in the 
- *		Resource initialization list in this module.
- *
- * In Args:	
- *		NrmName		name,
- *		NrmClass	class,
- *		NhlPointer	base,
- *		unsigned int	offset
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-
-/*ARGSUSED*/
-static NhlErrorTypes
-ResourceUnset
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	char *cl = (char *) base;
-	NhlBoolean *set = (NhlBoolean *)(cl + offset - sizeof(NhlBoolean));
-
-	*set = False;
-
-	return NhlNOERROR;
-}
-
 static NhlResource resources[] =  {
 
 /* Begin-documented-resources */
@@ -85,14 +34,14 @@ static NhlResource resources[] =  {
          	 _NhlRES_PRIVATE,NULL},
 	{ NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlTransObjLayerRec,trobj.x_min),
-		NhlTString,_NhlUSET("0.0"),0,NULL},
+          	NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlTransObjLayerRec,trobj.x_max_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
          	 _NhlRES_PRIVATE,NULL},
 	{ NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlTransObjLayerRec,trobj.x_max),
-		NhlTString,_NhlUSET("1.0"),0,NULL},
+		NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{ NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlTransObjLayerRec,trobj.x_reverse),
 		NhlTImmediate,_NhlUSET(False),0,NULL},
@@ -105,14 +54,14 @@ static NhlResource resources[] =  {
          	 _NhlRES_PRIVATE,NULL},
 	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlTransObjLayerRec,trobj.y_min),
-		NhlTString,_NhlUSET("0.0"),0,NULL},
+		NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlTransObjLayerRec,trobj.y_max_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
          	 _NhlRES_PRIVATE,NULL},
 	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlTransObjLayerRec,trobj.y_max),
-		NhlTString,_NhlUSET("1.0"),0,NULL},
+		NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{ NhlNtrYReverse,NhlCtrYReverse,NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlTransObjLayerRec,trobj.y_reverse),
          	NhlTImmediate,_NhlUSET(False),0,NULL},
@@ -121,7 +70,7 @@ static NhlResource resources[] =  {
 		NhlTImmediate,_NhlUSET(False),0,NULL},
 	{ NhlNtrOutOfRangeF, NhlCtrOutOfRangeF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTransObjLayerRec,trobj.out_of_range),
-		NhlTString, _NhlUSET("1.0e12"),0,NULL },
+		NhlTString, _NhlUSET("1.0e12"),_NhlRES_PRIVATE,NULL },
 
 /* End-documented-resources */
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.36 1997-07-31 22:16:22 dbrown Exp $
+ *      $Id: Resources.c,v 1.37 1997-08-14 16:30:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -255,7 +255,7 @@ _NhlCopyToArg
 }
 
 /*
- * Function:	GetNamesAndClasses
+ * Function:	_NhlGetNamesAndClasses
  *
  * Description:	This function creates a quark list of names and classes that
  *		give a unique description of the NhlLayer instance. If there isn't
@@ -269,8 +269,8 @@ _NhlCopyToArg
  *		memory - returned the negative of what was needed.
  * Side Effect:	none
  */
-static int
-GetNamesAndClasses
+int
+_NhlGetNamesAndClasses
 #if	NhlNeedProto
 (
 	NhlLayer	layer,		/* layer instance		*/
@@ -823,7 +823,7 @@ _NhlGetLayerResources
 	 * Get quarks list of names and classes to use in querying the Nrm
 	 */
 
-	if(GetNamesAndClasses(l,nameQ,classQ,_NhlMAXTREEDEPTH) < 0){
+	if(_NhlGetNamesAndClasses(l,nameQ,classQ,_NhlMAXTREEDEPTH) < 0){
 		/* ERROR- DON'T DO ANY RESOURCES */
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"Instance Tree depth exceeds _NhlMAXTREEDEPTH of %d",

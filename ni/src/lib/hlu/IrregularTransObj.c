@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.34 1997-08-11 18:22:10 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.35 1997-08-14 16:29:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2469,9 +2469,9 @@ static NhlErrorTypes    IrTransClassInitialize
 #endif
 {
         _NhlEnumVals   axistypelist[] = {
-	{NhlIRREGULARAXIS,	"irregularaxis"},
-	{NhlLINEARAXIS,		"linearaxis"},
-	{NhlLOGAXIS,		"logaxis"}
+	{NhlIRREGULARAXIS,	"IrregularAxis"},
+	{NhlLINEARAXIS,		"LinearAxis"},
+	{NhlLOGAXIS,		"LogAxis"}
         };
 
 	_NhlRegisterEnumType(NhlirregularTransObjClass,

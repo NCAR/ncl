@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.h,v 1.3 1996-03-30 00:29:02 dbrown Exp $
+ *      $Id: VectorPlot.h,v 1.4 1997-08-14 16:30:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -36,7 +36,7 @@ typedef enum _NhlVectorPositionMode {
 	NhlARROWTAIL,
 	NhlARROWCENTER
 } NhlVectorPositionMode;
-#define NhlTVectorPositionMode	"vectorpositionmode"
+#define NhlTVectorPositionMode	"VectorPositionMode"
 
 /*
  * VectorPlot instance resources

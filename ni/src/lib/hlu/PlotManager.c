@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.41 1997-08-06 19:27:05 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.42 1997-08-14 16:30:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,58 +30,6 @@
 #include <ncarg/hlu/AnnoManagerP.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
-
-
-/*
- * Function:	ResourceUnset
- *
- * Description:	This function can be used to determine if a resource has
- *		been set at initialize time either in the Create call or
- *		from a resource data base. In order to use it the Boolean
- *		'..resource_set' variable MUST directly proceed the name
- *		of the resource variable it refers to in the LayerPart
- *		struct. Also a .nores Resource for the resource_set variable
- *		must directly preceed the Resource of interest in the 
- *		Resource initialization list in this module.
- *
- * In Args:	
- *		NrmName		name,
- *		NrmClass	class,
- *		NhlPointer	base,
- *		unsigned int	offset
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-
-/*ARGSUSED*/
-static NhlErrorTypes
-ResourceUnset
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	char *cl = (char *) base;
-	NhlBoolean *set = (NhlBoolean *)(cl + offset - sizeof(NhlBoolean));
-
-	*set = False;
-
-	return NhlNOERROR;
-}
 
 #define	Oset(field)	NhlOffset(NhlPlotManagerLayerRec,plotmanager.field)
 static NhlResource resources[] = {
@@ -132,14 +80,14 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNpmLabelBarWidthF, NhlCpmLabelBarWidthF,NhlTFloat, sizeof(float),
 		  Oset(lbar_width),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(lbar_height_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNpmLabelBarHeightF, NhlCpmLabelBarHeightF,NhlTFloat, 
 		  sizeof(float),
 		  Oset(lbar_height),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNpmLabelBarSide, NhlCpmLabelBarSide, NhlTPosition, 
 		 sizeof(NhlJustification),
 		 Oset(lbar_side),
@@ -167,14 +115,14 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNpmLegendWidthF, NhlCpmLegendWidthF,NhlTFloat, sizeof(float),
 		  Oset(lgnd_width),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(lgnd_height_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNpmLegendHeightF, NhlCpmLegendHeightF,NhlTFloat, 
 		  sizeof(float),
 		  Oset(lgnd_height),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNpmLegendSide, NhlCpmLegendSide, NhlTPosition, 
 		 sizeof(NhlPosition),
 		 Oset(lgnd_side),
@@ -268,21 +216,21 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNtiMainFontHeightF,NhlCtiTitleFontHeightsF,NhlTFloat,
 		 sizeof(float),Oset(ti_main_font_height),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),
          	 _NhlRES_INTERCEPTED,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(ti_x_axis_font_height_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNtiXAxisFontHeightF,NhlCtiTitleFontHeightsF,NhlTFloat,
 		 sizeof(float),Oset(ti_x_axis_font_height),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),
          	 _NhlRES_INTERCEPTED,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(ti_y_axis_font_height_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNtiYAxisFontHeightF,NhlCtiTitleFontHeightsF,
 		 NhlTFloat,sizeof(float),Oset(ti_y_axis_font_height),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),
          	 _NhlRES_INTERCEPTED,NULL},
 
 /* intercepted LabelBar resources */
@@ -647,10 +595,10 @@ PlotManagerClassInitialize
 #endif
 {
         _NhlEnumVals   annotationdisplaylist[] = {
-		{NhlNOCREATE,		"nocreate"},
-		{NhlNEVER,		"never"},
-		{NhlCONDITIONAL,	"conditional"},
-		{NhlALWAYS,		"always"}
+		{NhlNOCREATE,		"NoCreate"},
+		{NhlNEVER,		"Never"},
+		{NhlCONDITIONAL,	"Conditional"},
+		{NhlALWAYS,		"Always"}
         };
 
         _NhlRegisterEnumType(NhlviewClass,NhlTAnnotationDisplayMode,
@@ -3932,13 +3880,13 @@ ManageTitles
 	if (init) {
 		if (! ovp->ti_main_font_height_set) 
 			ovp->ti_main_font_height = NhlOV_DEF_TITLE_HEIGHT *
-				ovnew->view.width / NhlOV_STD_VIEW_WIDTH;
+				ovnew->view.width / NHL_DEFAULT_VIEW_WIDTH;
 		if (! ovp->ti_x_axis_font_height_set)
 			ovp->ti_x_axis_font_height = NhlOV_DEF_TITLE_HEIGHT *
-				ovnew->view.width / NhlOV_STD_VIEW_WIDTH;
+				ovnew->view.width / NHL_DEFAULT_VIEW_WIDTH;
 		if (! ovp->ti_y_axis_font_height_set)
 			ovp->ti_y_axis_font_height = NhlOV_DEF_TITLE_HEIGHT *
-				ovnew->view.height / NhlOV_STD_VIEW_HEIGHT;
+				ovnew->view.height / NHL_DEFAULT_VIEW_HEIGHT;
 	}
 	else {
 		if (! ovp->ti_main_font_height_set) 
@@ -4233,8 +4181,8 @@ ManageLabelBar
  * the current orientation.
  */
 
-	wold = init ? NhlOV_STD_VIEW_WIDTH : ovold->view.width;
-	hold = init ? NhlOV_STD_VIEW_HEIGHT : ovold->view.height;
+	wold = init ? NHL_DEFAULT_VIEW_WIDTH : ovold->view.width;
+	hold = init ? NHL_DEFAULT_VIEW_HEIGHT : ovold->view.height;
 	if (! ovp->lbar_width_set)
 		ovp->lbar_width *= ovnew->view.width / wold;
 	if (! ovp->lbar_height_set)
@@ -4510,8 +4458,8 @@ ManageLegend
  * If the view width or height has changed adjust the Legend width and
  * height if they have not been set explcitly by the user
  */
-	wold = init ? NhlOV_STD_VIEW_WIDTH : ovold->view.width;
-	hold = init ? NhlOV_STD_VIEW_HEIGHT : ovold->view.height;
+	wold = init ? NHL_DEFAULT_VIEW_WIDTH : ovold->view.width;
+	hold = init ? NHL_DEFAULT_VIEW_HEIGHT : ovold->view.height;
 	if (! ovp->lgnd_width_set)
 		ovp->lgnd_width *= ovnew->view.width / wold;
 	if (! ovp->lgnd_height_set)

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.h,v 1.13 1996-03-26 21:48:55 dbrown Exp $
+ *      $Id: MapPlot.h,v 1.14 1997-08-14 16:30:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +26,7 @@
 #include <ncarg/hlu/MapTransObj.h>
 #include <ncarg/hlu/PlotManager.h>
 
-#define NhlTMapBoundarySets	"mapboundarysets"
+#define NhlTMapBoundarySets	"MapBoundarySets"
 typedef enum _NhlMapBoundarySets {
 	NhlNOBOUNDARIES = 0,
         NhlGEOPHYSICAL,
@@ -36,13 +36,13 @@ typedef enum _NhlMapBoundarySets {
         NhlALLBOUNDARIES
 } NhlMapBoundarySets;
 
-#define NhlTSpecifiedFillPriority	"specifiedfillpriority"
+#define NhlTSpecifiedFillPriority	"SpecifiedFillPriority"
 typedef enum _NhlSpecifiedFillPriority {
 	NhlGEOPHYSICALPRIORITY = 0,
         NhlPOLITICALPRIORITY
 } NhlSpecifiedFillPriority;
 
-#define NhlTMapGridMaskMode	"mapgridmaskmode"
+#define NhlTMapGridMaskMode	"MapGridMaskMode"
 typedef enum _NhlMapGridMaskMode {
 	NhlMASKNONE = 0,
         NhlMASKOCEAN,
@@ -53,7 +53,7 @@ typedef enum _NhlMapGridMaskMode {
 	NhlMASKMASKAREA
 } NhlMapGridMaskMode;
 
-#define NhlTMapShapeMode	"mapshapemode"
+#define NhlTMapShapeMode	"MapShapeMode"
 typedef enum _NhlMapShapeMode {
 	NhlFREEASPECT = 0,
 	NhlFIXEDASPECTFITBB,

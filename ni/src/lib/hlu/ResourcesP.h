@@ -1,5 +1,5 @@
 /*
- *      $Id: ResourcesP.h,v 1.17 1997-07-31 22:16:24 dbrown Exp $
+ *      $Id: ResourcesP.h,v 1.18 1997-08-14 16:30:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -66,6 +66,15 @@ extern void _NhlGetNativeResInfo(
         NrmName  res,
         int	 *count,
         NrmResource **native_res
+#endif
+        );
+
+extern int _NhlGetNamesAndClasses(
+#if	NhlNeedProto
+	NhlLayer	layer,
+	NrmNameList	names,
+	NrmClassList	classes,
+	int		length
 #endif
         );
 

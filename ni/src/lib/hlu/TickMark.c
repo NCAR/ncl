@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.57 1997-08-06 19:27:12 dbrown Exp $
+ *      $Id: TickMark.c,v 1.58 1997-08-14 16:30:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,59 +31,6 @@
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/WorkstationI.h>
 
-
-
-/*
- * Function:	ResourceUnset
- *
- * Description:	This function can be used to determine if a resource has
- *		been set at initialize time either in the Create call or
- *		from a resource data base. In order to use it a Boolean
- *		variable (by convention '<var_name>_set')
- *		MUST directly proceed the declaration of the subject
- *		resource variable in the LayerPart struct. Also a .nores 
- *		NhlResource struct for the <var_name>_set variable
- *		must directly preceed the Resource of interest in the 
- *		Resource initialization list of this module.
- *
- * In Args:	
- *		NrmName		name,
- *		NrmClass	class,
- *		NhlPointer	base,
- *		unsigned int	offset
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-
-/*ARGSUSED*/
-static NhlErrorTypes
-ResourceUnset
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	char *cl = (char *) base;
-	NhlBoolean *set = (NhlBoolean *)(cl + offset - sizeof(NhlBoolean));
-
-	*set = False;
-
-	return NhlNOERROR;
-}
 
 /* resource list definition */
 
@@ -152,14 +99,14 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{ NhlNtmXBPrecision, NhlCtmPrecisions, NhlTInteger,sizeof(int),
 		  NhlOffset(NhlTickMarkLayerRec, tick.x_b_precision),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlTickMarkLayerRec, tick.x_t_precision_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
          	 _NhlRES_PRIVATE,NULL},
 	{ NhlNtmXTPrecision, NhlCtmPrecisions, NhlTInteger,sizeof(int),
 		NhlOffset(NhlTickMarkLayerRec, tick.x_t_precision),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{ NhlNtmXBFormat, NhlCtmFormat, NhlTString,sizeof(NhlString),
 		NhlOffset(NhlTickMarkLayerRec, tick.x_b_format.fstring),
 		NhlTString,_NhlUSET( NhltmDEF_FORMAT ),0,NULL},
@@ -267,7 +214,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNtmXBMajorLengthF, NhlCtmMajorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_major_length),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlTickMarkLayerRec, 
 			   tick.x_b_major_outward_length_set),
@@ -276,7 +223,7 @@ static NhlResource resources[] = {
 	{NhlNtmXBMajorOutwardLengthF, NhlCtmMajorOutwardLengthsF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.x_b_major_outward_length),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{ NhlNtmXBMinorThicknessF, NhlCtmMinorThicknessesF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_minor_thickness),
@@ -291,7 +238,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNtmXBMinorLengthF, NhlCtmMinorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_minor_length),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlTickMarkLayerRec, 
 			   tick.x_b_minor_outward_length_set),
@@ -300,7 +247,7 @@ static NhlResource resources[] = {
 	{NhlNtmXBMinorOutwardLengthF, NhlCtmMinorOutwardLengthsF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.x_b_minor_outward_length),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNtmXBLabelFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		NhlOffset(NhlTickMarkLayerRec, tick.x_b_label_font),
 		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),0,NULL},
@@ -311,7 +258,7 @@ static NhlResource resources[] = {
 	{NhlNtmXBLabelFontHeightF, NhlCtmLabelFontHeightsF, NhlTFloat, 
 		 sizeof(float),
 		 NhlOffset(NhlTickMarkLayerRec, tick.x_b_label_font_height),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNtmXBLabelFontColor,NhlCtmLabelFontColors,NhlTColorIndex,
 		sizeof(NhlColorIndex),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_label_font_color),
@@ -405,7 +352,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNtmXTMajorLengthF, NhlCtmMajorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_major_length),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlTickMarkLayerRec, 
 			   tick.x_t_major_outward_length_set),
@@ -414,7 +361,7 @@ static NhlResource resources[] = {
 	{NhlNtmXTMajorOutwardLengthF, NhlCtmMajorOutwardLengthsF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.x_t_major_outward_length),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{ NhlNtmXTMinorThicknessF, NhlCtmMinorThicknessesF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_minor_thickness),
@@ -429,7 +376,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNtmXTMinorLengthF, NhlCtmMinorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_minor_length),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlTickMarkLayerRec, 
 			   tick.x_t_minor_outward_length_set),
@@ -438,7 +385,7 @@ static NhlResource resources[] = {
 	{NhlNtmXTMinorOutwardLengthF, NhlCtmMinorOutwardLengthsF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.x_t_minor_outward_length),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNtmXTLabelFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		NhlOffset(NhlTickMarkLayerRec, tick.x_t_label_font),
 		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),0,NULL},
@@ -449,7 +396,7 @@ static NhlResource resources[] = {
 	{NhlNtmXTLabelFontHeightF, NhlCtmLabelFontHeightsF, NhlTFloat, 
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.x_t_label_font_height),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNtmXTLabelFontColor,NhlCtmLabelFontColors,NhlTColorIndex,
 		sizeof(NhlColorIndex),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_label_font_color),
@@ -543,14 +490,14 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{ NhlNtmYLPrecision, NhlCtmPrecisions, NhlTInteger,sizeof(int),
 		  NhlOffset(NhlTickMarkLayerRec, tick.y_l_precision),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlTickMarkLayerRec, tick.y_r_precision_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
          	 _NhlRES_PRIVATE,NULL},
 	{ NhlNtmYRPrecision, NhlCtmPrecisions, NhlTInteger,sizeof(int),
 		  NhlOffset(NhlTickMarkLayerRec, tick.y_r_precision),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{ NhlNtmYLFormat, NhlCtmFormat, NhlTString,sizeof(NhlString),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_l_format.fstring),
 		NhlTString,_NhlUSET( NhltmDEF_FORMAT ),0,NULL},
@@ -660,7 +607,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNtmYLMajorLengthF, NhlCtmMajorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_major_length),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlTickMarkLayerRec, 
 			   tick.y_l_major_outward_length_set),
@@ -669,7 +616,7 @@ static NhlResource resources[] = {
 	{NhlNtmYLMajorOutwardLengthF, NhlCtmMajorOutwardLengthsF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_l_major_outward_length),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{ NhlNtmYLMinorThicknessF, NhlCtmMinorThicknessesF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_minor_thickness),
@@ -684,7 +631,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNtmYLMinorLengthF, NhlCtmMinorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_minor_length),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlTickMarkLayerRec, 
 			   tick.y_l_minor_outward_length_set),
@@ -693,7 +640,7 @@ static NhlResource resources[] = {
 	{NhlNtmYLMinorOutwardLengthF, NhlCtmMinorOutwardLengthsF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_l_minor_outward_length),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNtmYLLabelFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_l_label_font),
 		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),0,NULL},
@@ -704,7 +651,7 @@ static NhlResource resources[] = {
 	{NhlNtmYLLabelFontHeightF, NhlCtmLabelFontHeightsF, NhlTFloat, 
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_l_label_font_height),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNtmYLLabelFontColor,NhlCtmLabelFontColors,NhlTColorIndex,
 		sizeof(NhlColorIndex),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_label_font_color),
@@ -798,7 +745,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNtmYRMajorLengthF, NhlCtmMajorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_major_length),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlTickMarkLayerRec, 
 			   tick.y_r_major_outward_length_set),
@@ -807,7 +754,7 @@ static NhlResource resources[] = {
 	{NhlNtmYRMajorOutwardLengthF, NhlCtmMajorOutwardLengthsF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_r_major_outward_length),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{ NhlNtmYRMinorThicknessF, NhlCtmMinorThicknessesF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_minor_thickness),
@@ -822,7 +769,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNtmYRMinorLengthF, NhlCtmMinorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_minor_length),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlTickMarkLayerRec, 
 			   tick.y_r_minor_outward_length_set),
@@ -831,7 +778,7 @@ static NhlResource resources[] = {
 	{NhlNtmYRMinorOutwardLengthF, NhlCtmMinorOutwardLengthsF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_r_minor_outward_length),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNtmYRLabelFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_r_label_font),
 		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),0,NULL},
@@ -842,7 +789,7 @@ static NhlResource resources[] = {
 	{NhlNtmYRLabelFontHeightF, NhlCtmLabelFontHeightsF, NhlTFloat, 
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_r_label_font_height),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNtmYRLabelFontColor,NhlCtmLabelFontColors,NhlTColorIndex,
 		sizeof(NhlColorIndex),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_label_font_color),
@@ -2131,17 +2078,17 @@ static NhlErrorTypes	TickMarkClassInitialize
 #endif
 {
 	_NhlEnumVals	tmarkmodes[] = {
-		{NhlAUTOMATIC,	"automatic"},
-		{NhlMANUAL,	"manual"},
-		{NhlEXPLICIT,	"explicit"}
+		{NhlAUTOMATIC,	"Automatic"},
+		{NhlMANUAL,	"Manual"},
+		{NhlEXPLICIT,	"Explicit"}
 	};
 
 	_NhlEnumVals	tmarkstyles[] = {
-		{NhlLOG,	"log"},
-		{NhlLINEAR,	"linear"},
-		{NhlIRREGULAR,	"irregular"},
-		{NhlTIME,	"time"},
-		{NhlGEOGRAPHIC,	"geographic"}
+		{NhlLOG,	"Log"},
+		{NhlLINEAR,	"Linear"},
+		{NhlIRREGULAR,	"Irregular"},
+		{NhlTIME,	"Time"},
+		{NhlGEOGRAPHIC,	"Geographic"}
 	};
 
 	_NhlInitializeClass(NhlmultiTextClass);

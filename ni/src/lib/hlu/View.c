@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.28 1997-07-25 21:12:57 dbrown Exp $
+ *      $Id: View.c,v 1.29 1997-08-14 16:30:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -621,14 +621,14 @@ static NhlErrorTypes	ViewClassInitialize()
 	NhlErrorTypes	ret = NhlNOERROR;
 
         _NhlEnumVals   orientationlist[] = {
-        {NhlHORIZONTAL,	"horizontal"},
-	{NhlVERTICAL,	"vertical"}
+        {NhlHORIZONTAL,	"Horizontal"},
+	{NhlVERTICAL,	"Vertical"}
 	};
 
 	_NhlEnumVals draworderlist[] = {
-	{NhlPREDRAW,	"predraw"},
-	{NhlDRAW,	"draw"},
-	{NhlPOSTDRAW,	"postdraw"}
+	{NhlPREDRAW,	"PreDraw"},
+	{NhlDRAW,	"Draw"},
+	{NhlPOSTDRAW,	"PostDraw"}
 	};
 
 	_NhlRegisterEnumType(NhlviewClass,NhlTOrientation,orientationlist,

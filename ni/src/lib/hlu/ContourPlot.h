@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.h,v 1.9 1997-07-25 21:11:49 dbrown Exp $
+ *      $Id: ContourPlot.h,v 1.10 1997-08-14 16:29:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -44,7 +44,7 @@ typedef enum _NhlcnLevelUseMode {
 	NhlLABELONLY, NhlLINEANDLABEL
 } NhlcnLevelUseMode;
 
-#define NhlTcnLevelUseMode	"cnlevelusemode"
+#define NhlTcnLevelUseMode	"cnLevelUseMode"
 #define NhlTcnLevelUseModeGenArray    NhlTcnLevelUseMode NhlTGenArray
 
 /* Line label spacing */
@@ -55,7 +55,7 @@ typedef enum _NhlcnLineLabelPlacementMode {
 	NhlCOMPUTED
 } NhlcnLineLabelPlacementMode;
 
-#define NhlTcnLineLabelPlacementMode	"cnLineLabelPlacementmode"
+#define NhlTcnLineLabelPlacementMode	"cnLineLabelPlacementMode"
 
 /* Label scaling mode */
 
@@ -81,7 +81,7 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 	NhlADJUSTVPOMITOVERHLANDINFO
 } NhlcnHighLowLabelOverlapMode;
 
-#define NhlTcnHighLowLabelOverlapMode	"cnhighlowlabeloverlapmode"
+#define NhlTcnHighLowLabelOverlapMode	"cnHighLowLabelOverlapMode"
 
 /*
  * ContourPlot instance resources

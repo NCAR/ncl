@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.55 1997-08-06 19:27:00 dbrown Exp $
+ *      $Id: Legend.c,v 1.56 1997-08-14 16:30:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -52,57 +52,6 @@ SetTitleOn
 	NhlLegendLayer	lgl = (NhlLegendLayer)base;
 
 	lgl->legend.title_on = !(lgl->legend.title_string == lgDefTitle);
-
-	return NhlNOERROR;
-}
-
-/*
- * Function:	ResourceUnset
- *
- * Description:	This function can be used to determine if a resource has
- *		been set at initialize time either in the Create call or
- *		from a resource data base. In order to use it the Boolean
- *		'..resource_set' variable MUST directly proceed the name
- *		of the resource variable it refers to in the LayerPart
- *		struct. Also a .nores Resource for the resource_set variable
- *		must directly preceed the Resource of interest in the 
- *		Resource initialization list in this module.
- *
- * In Args:	
- *		NrmName		name,
- *		NrmClass	class,
- *		NhlPointer	base,
- *		unsigned int	offset
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-
-/*ARGSUSED*/
-static NhlErrorTypes
-ResourceUnset
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	char *cl = (char *) base;
-	NhlBoolean *set = (NhlBoolean *)(cl + offset - sizeof(NhlBoolean));
-
-	*set = False;
 
 	return NhlNOERROR;
 }
@@ -387,7 +336,7 @@ static NhlResource resources[] = {
 {NhlNlgTitleDirection,NhlClgTitleDirection,NhlTTextDirection,
 	 sizeof(NhlTextDirection),
 	 NhlOffset(NhlLegendLayerRec,legend.title_direction),
-	 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 {NhlNlgTitleFont, NhlCFont, NhlTFont, 
 	 sizeof(NhlFont), NhlOffset(NhlLegendLayerRec,legend.title_font),
 	 NhlTImmediate, _NhlUSET((NhlPointer) 0),0,NULL},
@@ -5622,14 +5571,14 @@ static NhlErrorTypes    LegendClassInitialize
 #endif
 {
         _NhlEnumVals   labelalignmentlist[] = {
-        {NhlITEMCENTERS,	"itemcenters"},
-        {NhlABOVEITEMS,	"aboveitems"},
-        {NhlBELOWITEMS,	"belowitems"},
+        {NhlITEMCENTERS,	"ItemCenters"},
+        {NhlABOVEITEMS,	"AboveItems"},
+        {NhlBELOWITEMS,	"BelowItems"},
         };
 
         _NhlEnumVals   itemplacementlist[] = {
-        {NhlUNIFORMPLACEMENT,		"uniformplacement"},
-        {NhlEXPLICITPLACEMENT,	"explicitplacement"},
+        {NhlUNIFORMPLACEMENT,		"UniformPlacement"},
+        {NhlEXPLICITPLACEMENT,	"ExplicitPlacement"},
         };
 
 	_NhlRegisterEnumType(NhllegendClass,NhlTlgLabelAlignmentMode,

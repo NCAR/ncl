@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.54 1997-07-25 21:12:08 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.55 1997-08-14 16:30:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -55,57 +55,6 @@ SetTitleOn
 	return NhlNOERROR;
 }
 
-
-/*
- * Function:	ResourceUnset
- *
- * Description:	This function can be used to determine if a resource has
- *		been set at initialize time either in the Create call or
- *		from a resource data base. In order to use it the Boolean
- *		'..resource_set' variable MUST directly proceed the name
- *		of the resource variable it refers to in the LayerPart
- *		struct. Also a .nores Resource for the resource_set variable
- *		must directly preceed the Resource of interest in the 
- *		Resource initialization list in this module.
- *
- * In Args:	
- *		NrmName		name,
- *		NrmClass	class,
- *		NhlPointer	base,
- *		unsigned int	offset
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-
-/*ARGSUSED*/
-static NhlErrorTypes
-ResourceUnset
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	char *cl = (char *) base;
-	NhlBoolean *set = (NhlBoolean *)(cl + offset - sizeof(NhlBoolean));
-
-	*set = False;
-
-	return NhlNOERROR;
-}
 
 /* default pattern list */
 
@@ -291,7 +240,7 @@ static NhlResource resources[] = {
 {NhlNlbTitleDirection,NhlClbTitleDirection,NhlTTextDirection,
 	 sizeof(NhlTextDirection),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.title_direction),
-	 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 {NhlNlbTitleFont, NhlCFont, NhlTFont, 
 	 sizeof(NhlFont), NhlOffset(NhlLabelBarLayerRec,labelbar.title_font),
 	 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
@@ -4389,14 +4338,14 @@ static NhlErrorTypes    LabelBarClassInitialize
 #endif
 {
         _NhlEnumVals   labelalignmentlist[] = {
-	{NhlBOXCENTERS, "boxcenters"},
-	{NhlINTERIOREDGES, "interioredges"},
-	{NhlEXTERNALEDGES, "externaledges"}
+	{NhlBOXCENTERS, "BoxCenters"},
+	{NhlINTERIOREDGES, "InteriorEdges"},
+	{NhlEXTERNALEDGES, "ExternalEdges"}
         };
 
         _NhlEnumVals   boxsizinglist[] = {
-        {NhlUNIFORMSIZING,	"uniformsizing"},
-        {NhlEXPLICITSIZING,	"explicitsizing"},
+        {NhlUNIFORMSIZING,	"UniformSizing"},
+        {NhlEXPLICITSIZING,	"ExplicitSizing"},
         };
 
 	_NhlRegisterEnumType(NhlviewClass,NhlTlbLabelAlignmentMode,

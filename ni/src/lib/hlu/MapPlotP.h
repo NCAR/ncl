@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.15 1996-05-17 07:54:08 dbrown Exp $
+ *      $Id: MapPlotP.h,v 1.16 1997-08-14 16:30:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,8 +33,6 @@
 #define NhlNmpDumpAreaMap		"mpDumpAreaMap"
 #define NhlCmpDumpAreaMap		"MpDumpAreaMap"
 
-#define Nhl_mpSTD_VIEW_WIDTH	0.6
-#define Nhl_mpSTD_VIEW_HEIGHT	0.6
 #define Nhl_mpDEF_DASH_SEGLEN	0.15
 #define Nhl_mpDEF_LABEL_HEIGHT  0.008
 #define Nhl_mpMAX_AREA_GROUPS	256

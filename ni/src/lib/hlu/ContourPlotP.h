@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.17 1997-08-11 18:22:07 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.18 1997-08-14 16:29:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -39,8 +39,6 @@
 #define Nhl_cnDEF_LINE_LABEL_STRING	"LL_"
 #define Nhl_cnINT_WKSPACE	1000
 #define Nhl_cnFLOAT_WKSPACE	5000
-#define Nhl_cnSTD_VIEW_WIDTH	0.6
-#define Nhl_cnSTD_VIEW_HEIGHT	0.6
 #define NhlcnMAPVAL		99
 #define NhlcnAREAID_OFFSET	100
 #define NhlcnDEF_INFO_LABEL	"CONTOUR FROM $CMN$ TO $CMX$ BY $CIU$"
@@ -181,8 +179,6 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlBoolean	mono_line_thickness;
 	float		line_thickness;
 	NhlGenArray	line_thicknesses;
-	NhlBoolean	mono_llabel_color;
-	float		llabel_color;
 	NhlGenArray	llabel_colors;
 	NhlGenArray	llabel_strings;
 

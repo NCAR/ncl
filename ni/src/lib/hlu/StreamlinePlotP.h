@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlotP.h,v 1.6 1997-08-11 18:22:25 dbrown Exp $
+ *      $Id: StreamlinePlotP.h,v 1.7 1997-08-14 16:30:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,8 +38,6 @@
 #define Nhl_stDEF_COLOR		NhlFOREGROUND
 #define Nhl_stDEF_PATTERN	1
 #define Nhl_stDEF_DASH_PATTERN  0
-#define Nhl_stSTD_VIEW_WIDTH	0.6
-#define Nhl_stSTD_VIEW_HEIGHT	0.6
 #define NhlstMAPVAL		99
 #define NhlstDEF_NODATA_LABEL	"NO STREAMLINE DATA"
 #define NhlstDEF_ZEROF_LABEL	"ZERO FIELD"

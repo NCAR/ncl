@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.h,v 1.4 1995-05-18 20:05:44 dbrown Exp $
+ *      $Id: PlotManager.h,v 1.5 1997-08-14 16:30:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,7 +34,7 @@ typedef enum _NhlAnnotationDisplayMode {
 	NhlNOCREATE = -1,NhlNEVER = 0, NhlALWAYS = 1, NhlCONDITIONAL
 } NhlAnnotationDisplayMode;
 
-#define NhlTAnnotationDisplayMode        "annotationdisplaymode"
+#define NhlTAnnotationDisplayMode        "AnnotationDisplayMode"
 
 /*
  * PlotManager instance resources

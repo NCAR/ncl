@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.25 1997-07-25 21:11:41 dbrown Exp $
+ *      $Id: Base.c,v 1.26 1997-08-14 16:29:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -219,7 +219,7 @@ BaseClassInitialize
 
 
 	_NhlEnumVals	objidvals[] = {
-		{NhlNULLOBJID,	"nullobjid"}
+		{NhlNULLOBJID,	"NullObjId"}
 	};
 	NhlConvertArg	objidargs[] = {
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)_NhlRngMIN)},
@@ -228,23 +228,23 @@ BaseClassInitialize
 
 
         _NhlEnumVals   positionlist[] = {
-        {NhlTOP,	"top"},
-        {NhlBOTTOM,	"bottom"},
-        {NhlRIGHT, 	"right"},
-        {NhlLEFT,	"left"},
-        {NhlCENTER,	"center"}
+        {NhlTOP,	"Top"},
+        {NhlBOTTOM,	"Bottom"},
+        {NhlRIGHT, 	"Right"},
+        {NhlLEFT,	"Left"},
+        {NhlCENTER,	"Center"}
         };
 
 	_NhlEnumVals justificationlist[] =  {
-	{NhlTOPLEFT,		"topleft"},
-	{NhlCENTERLEFT,		"centerleft"},
-	{NhlBOTTOMLEFT,		"bottomleft"},
-	{NhlTOPCENTER,		"topcenter"},
-	{NhlCENTERCENTER,	"centercenter"},
-	{NhlBOTTOMCENTER,	"bottomcenter"},
-	{NhlTOPRIGHT,		"topright"},
-	{NhlCENTERRIGHT,	"centerright"},
-	{NhlBOTTOMRIGHT,	"bottomright"}
+	{NhlTOPLEFT,		"TopLeft"},
+	{NhlCENTERLEFT,		"CenterLeft"},
+	{NhlBOTTOMLEFT,		"BottomLeft"},
+	{NhlTOPCENTER,		"TopCenter"},
+	{NhlCENTERCENTER,	"CenterCenter"},
+	{NhlBOTTOMCENTER,	"BottomCenter"},
+	{NhlTOPRIGHT,		"TopRight"},
+	{NhlCENTERRIGHT,	"CenterRight"},
+	{NhlBOTTOMRIGHT,	"BottomRight"}
 	};
 
 	(void)_NhlRegisterEnumType(NhlbaseClass,NhlTObjId,objidvals,

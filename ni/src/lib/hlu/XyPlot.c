@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.71 1997-08-11 18:22:38 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.72 1997-08-14 16:30:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -744,9 +744,9 @@ XyDataClassInitialize
 #endif
 {
 	_NhlEnumVals	lblmode[] = {
-		{NhlNOLABELS,	"nolabels"},
-		{NhlLETTERED,	"lettered"},
-		{NhlCUSTOM,	"custom"}
+		{NhlNOLABELS,	"NoLabels"},
+		{NhlLETTERED,	"Lettered"},
+		{NhlCUSTOM,	"Custom"}
 	};
 
 	_NhlRegisterEnumType(NhlxyDataSpecClass,NhlTLineLabelMode,lblmode,

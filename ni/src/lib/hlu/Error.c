@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.29 1997-07-25 21:12:00 dbrown Exp $
+ *      $Id: Error.c,v 1.30 1997-08-14 16:29:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -334,10 +334,10 @@ ErrorClassInitialize
 #endif
 {
 	_NhlEnumVals	errtypes[] = {
-				{NhlFATAL,	"fatal"},
-				{NhlWARNING,	"warning"},
-				{NhlINFO,	"info"},
-				{NhlNOERROR,	"noerror"}
+				{NhlFATAL,	"Fatal"},
+				{NhlWARNING,	"Warning"},
+				{NhlINFO,	"Info"},
+				{NhlNOERROR,	"NoError"}
 				};
 
 	/*

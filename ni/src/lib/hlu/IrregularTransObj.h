@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.h,v 1.6 1997-08-11 18:22:12 dbrown Exp $
+ *      $Id: IrregularTransObj.h,v 1.7 1997-08-14 16:29:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,7 +30,7 @@ typedef enum {
 	NhlLOGAXIS 
 } NhlAxisType;
 
-#define NhlTAxisType "axistype"
+#define NhlTAxisType "AxisType"
 
 #define NhlNtrXAxisType		"trXAxisType"
 #define NhlCtrXAxisType		"TrXAxisType"

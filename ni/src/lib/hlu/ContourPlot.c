@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.61 1997-08-11 18:21:57 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.62 1997-08-14 16:29:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,58 +29,6 @@
 #include <ncarg/hlu/MapTransObj.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
-
-/*
- * Function:	ResourceUnset
- *
- * Description:	This function can be used to determine if a resource has
- *		been set at initialize time either in the Create call or
- *		from a resource data base. In order to use it a Boolean
- *		variable (by convention '<var_name>_set')
- *		MUST directly proceed the declaration of the subject
- *		resource variable in the LayerPart struct. Also a .nores 
- *		NhlResource struct for the <var_name>_set variable
- *		must directly preceed the Resource of interest in the 
- *		Resource initialization list of this module.
- *
- * In Args:	
- *		NrmName		name,
- *		NrmClass	class,
- *		NhlPointer	base,
- *		unsigned int	offset
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-
-/*ARGSUSED*/
-static NhlErrorTypes
-ResourceUnset
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	char *cl = (char *) base;
-	NhlBoolean *set = (NhlBoolean *)(cl + offset - sizeof(NhlBoolean));
-
-	*set = False;
-
-	return NhlNOERROR;
-}
 
 #define Oset(field)     NhlOffset(NhlContourPlotLayerRec,contourplot.field)
 static NhlResource resources[] = {
@@ -112,19 +60,19 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNcnLevelSpacingF,NhlCcnLevelSpacingF,NhlTFloat,sizeof(float),
 		  Oset(level_spacing),NhlTProcedure,
-		  _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  _NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(min_level_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNcnMinLevelValF,NhlCcnMinLevelValF,NhlTFloat,sizeof(float),
 		  Oset(min_level_val),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(max_level_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNcnMaxLevelValF,NhlCcnMaxLevelValF,NhlTFloat,sizeof(float),
 		  Oset(max_level_val),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNcnLevels, NhlCcnLevels,  NhlTFloatGenArray,
 		 sizeof(NhlPointer),Oset(levels),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
@@ -187,7 +135,7 @@ static NhlResource resources[] = {
 		_NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNcnRasterCellSizeF,NhlCcnRasterCellSizeF,NhlTFloat,sizeof(float),
 		 Oset(cell_size),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNcnRasterSmoothingOn,NhlCcnRasterSmoothingOn,
          	NhlTBoolean,sizeof(NhlBoolean),Oset(raster_smoothing_on),
          	NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
@@ -238,7 +186,7 @@ static NhlResource resources[] = {
 		_NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
         {NhlNcnLineDashSegLenF, NhlCcnLineDashSegLenF,NhlTFloat,sizeof(float),
 		  Oset(line_dash_seglen),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 
 /* Fill resources */
 
@@ -333,7 +281,7 @@ static NhlResource resources[] = {
 	{NhlNcnLineLabelInterval,NhlCcnLineLabelInterval,
 		 NhlTInteger,sizeof(int),
 		 Oset(llabel_interval),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNcnLineLabelPlacementMode,NhlCcnLineLabelPlacementMode,
 		 NhlTcnLineLabelPlacementMode,
 		 sizeof(NhlcnLineLabelPlacementMode),
@@ -363,7 +311,7 @@ static NhlResource resources[] = {
 		_NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
         {NhlNcnLineLabelFontHeightF,NhlCcnLineLabelFontHeightF,
 		  NhlTFloat,sizeof(float),Oset(line_lbls.height),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNcnLineLabelFont,NhlCcnLineLabelFont,NhlTFont, 
 		 sizeof(int),Oset(line_lbls.font),
 		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
@@ -422,7 +370,7 @@ static NhlResource resources[] = {
 		_NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
         {NhlNcnHighLabelFontHeightF,NhlCcnHighLabelFontHeightF,
 		 NhlTFloat,sizeof(float),Oset(high_lbls.height),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNcnHighLabelFont,NhlCcnHighLabelFont,NhlTFont, 
 		 sizeof(int),Oset(high_lbls.font),
 		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
@@ -483,7 +431,7 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
         {NhlNcnLowLabelFontHeightF,NhlCcnLowLabelFontHeightF,
 		 NhlTFloat,sizeof(float),Oset(low_lbls.height),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNcnLowLabelFont,NhlCcnLowLabelFont,NhlTFont, 
 		 sizeof(int),Oset(low_lbls.font),
 		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
@@ -543,7 +491,7 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
         {NhlNcnInfoLabelFontHeightF,NhlCcnInfoLabelFontHeightF,
 		 NhlTFloat,sizeof(float),Oset(info_lbl.height),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
         {NhlNcnInfoLabelTextDirection,NhlCcnInfoLabelTextDirection,
 		 NhlTTextDirection,sizeof(NhlTextDirection),
 		 Oset(info_lbl.direction),
@@ -631,7 +579,7 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
         {NhlNcnConstFLabelFontHeightF,NhlCcnConstFLabelFontHeightF,
 		 NhlTFloat,sizeof(float),Oset(constf_lbl.height),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
         {NhlNcnConstFLabelTextDirection,NhlCcnConstFLabelTextDirection,
 		 NhlTTextDirection,sizeof(NhlTextDirection),
 		 Oset(constf_lbl.direction),
@@ -797,13 +745,13 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
 		 Oset(x_min),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),_NhlRES_INTERCEPTED,NULL},
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(x_max_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
 		 Oset(x_max),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),_NhlRES_INTERCEPTED,NULL},
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
 	{ NhlNtrXLog,NhlCtrXLog,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(x_log),NhlTImmediate,_NhlUSET((NhlPointer)False),
           	_NhlRES_INTERCEPTED,NULL},
@@ -818,13 +766,13 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
 		Oset(y_min),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),_NhlRES_INTERCEPTED,NULL},
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(y_max_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
 		Oset(y_max),NhlTProcedure,
-		 _NhlUSET((NhlPointer)ResourceUnset),_NhlRES_INTERCEPTED,NULL},
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
 	{ NhlNtrYLog,NhlCtrYLog,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(y_log),NhlTImmediate,
           	_NhlUSET((NhlPointer)False),_NhlRES_INTERCEPTED,NULL},
@@ -1835,31 +1783,31 @@ ContourPlotClassInitialize
 {
 
         _NhlEnumVals   leveluselist[] = {
-        {NhlNOLINE,		"noline"},
-        {NhlLINEONLY, 		"lineonly"},
-        {NhlLABELONLY, 		"labelonly"},
-        {NhlLINEANDLABEL,      "lineandlabel"}
+        {NhlNOLINE,		"NoLine"},
+        {NhlLINEONLY, 		"LineOnly"},
+        {NhlLABELONLY, 		"LabelOnly"},
+        {NhlLINEANDLABEL,      "LineAndLabel"}
         };
 
         _NhlEnumVals   linelabelplacementlist[] = {
-        {NhlCONSTANT, 		"constant"},
-        {NhlRANDOMIZED, 	"randomized"},
-        {NhlCOMPUTED,      	"computed"}
+        {NhlCONSTANT, 		"Constant"},
+        {NhlRANDOMIZED, 	"Randomized"},
+        {NhlCOMPUTED,      	"Computed"}
         };
 
         _NhlEnumVals   highlowlabeloverlaplist[] = {
-	{NhlIGNOREOVERLAP,		"ignoreoverlap"},
-	{NhlOMITOVERINFO,		"omitoverinfo"},
-	{NhlOMITOVERHL,			"omitoverhl"},
-	{NhlOMITOVERHLANDINFO,		"omitoverhlandinfo"},
-	{NhlOMITOVERVP,			"omitovervp"},
-	{NhlOMITOVERVPANDINFO,		"omitovervpandinfo"},
-	{NhlOMITOVERVPANDHL,		"omitovervpandhl"},
-	{NhlOMITOVERVPANDHLANDINFO,	"omitovervpandhlandinfo"},
-	{NhlADJUSTVP,			"adjustvp"},
-	{NhlADJUSTVPOMITOVERINFO,	"adjustvpomitoverinfo"},
-	{NhlADJUSTVPOMITOVERHL,		"adjustvpomitoverhl"},
-	{NhlADJUSTVPOMITOVERHLANDINFO,	"adjustvpomitoverhlandinfo"}
+	{NhlIGNOREOVERLAP,		"IgnoreOverlap"},
+	{NhlOMITOVERINFO,		"OmitOverInfo"},
+	{NhlOMITOVERHL,			"OmitOverHL"},
+	{NhlOMITOVERHLANDINFO,		"OmitOverHLAndInfo"},
+	{NhlOMITOVERVP,			"OmitOverVP"},
+	{NhlOMITOVERVPANDINFO,		"OmitOverVPAndInfo"},
+	{NhlOMITOVERVPANDHL,		"OmitOverVPandHL"},
+	{NhlOMITOVERVPANDHLANDINFO,	"OmitOverVPAndHLAndInfo"},
+	{NhlADJUSTVP,			"AdjustVP"},
+	{NhlADJUSTVPOMITOVERINFO,	"AdjustVPOmitOverInfo"},
+	{NhlADJUSTVPOMITOVERHL,		"AdjustVPOmitOverHL"},
+	{NhlADJUSTVPOMITOVERHLANDINFO,	"AdjustVPOmitOverHLAndInfo"}
         };
 
 	load_hlucp_routines(False);
@@ -6356,7 +6304,7 @@ static NhlErrorTypes ManageLegend
 				copy_l_dash_pats = True;
 			if (cnp->line_thicknesses != ocnp->line_thicknesses)
 				copy_l_thicknesses = True;
-			if (cnp->llabel_color != ocnp->llabel_color)
+			if (cnp->llabel_colors != ocnp->llabel_colors)
 				copy_ll_font_colors = True;
 			if (cnp->llabel_strings != ocnp->llabel_strings)
 				copy_ll_strings = True;
@@ -8303,7 +8251,7 @@ static NhlErrorTypes    ManageViewDepResources
 	if (! cnp->line_dash_seglen_set) {
 		if (init) {
 			cnp->line_dash_seglen *= 
-				cnew->view.width / Nhl_cnSTD_VIEW_WIDTH;
+				cnew->view.width / NHL_DEFAULT_VIEW_WIDTH;
 		}
 		else if (cnew->view.width != cold->view.width) {
 			cnp->line_dash_seglen *= 
@@ -8313,7 +8261,7 @@ static NhlErrorTypes    ManageViewDepResources
 	if (! cnp->cell_size_set) {
 		if (init) {
 			cnp->cell_size *= 
-				cnew->view.width / Nhl_cnSTD_VIEW_WIDTH;
+				cnew->view.width / NHL_DEFAULT_VIEW_WIDTH;
 		}
 		else if (cnew->view.width != cold->view.width) {
 			cnp->cell_size *= 
@@ -8461,7 +8409,7 @@ static NhlErrorTypes    AdjustText
 	if (! lbl_attrp->height_set) {
 		if (init) {
 			lbl_attrp->height *= 
-				cnew->view.width / Nhl_cnSTD_VIEW_WIDTH;
+				cnew->view.width / NHL_DEFAULT_VIEW_WIDTH;
 		}
 		else if (cnew->view.width != cold->view.width) {
 			lbl_attrp->height *= 

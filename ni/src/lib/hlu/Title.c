@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.30 1997-02-24 22:12:39 boote Exp $
+ *      $Id: Title.c,v 1.31 1997-08-14 16:30:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -429,11 +429,11 @@ static NhlErrorTypes    TitleClassInitialize
 #endif
 {
 	_NhlEnumVals	titlepos[] = {
-		{NhlTOP,	"top"},
-		{NhlBOTTOM,	"bottom"},
-		{NhlLEFT,	"left"},
-		{NhlRIGHT,	"right"},
-		{NhlCENTER,	"center"}
+		{NhlTOP,	"Top"},
+		{NhlBOTTOM,	"Bottom"},
+		{NhlLEFT,	"Left"},
+		{NhlRIGHT,	"Right"},
+		{NhlCENTER,	"Center"}
 	};
 
 	_NhlRegisterEnumType(NhlbaseClass,NhlTTitlePositions,titlepos,

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.58 1997-07-25 21:12:19 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.59 1997-08-14 16:30:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,59 +33,6 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <ncarg/c.h>
-
-/*
- * Function:	ResourceUnset
- *
- * Description:	This function can be used to determine if a resource has
- *		been set at initialize time either in the Create call or
- *		from a resource data base. In order to use it a Boolean
- *		variable (by convention '<var_name>_resource_set')
- *		MUST directly proceed the declaration of the subject
- *		resource variable in the LayerPart struct. Also a .nores 
- *		NhlResource struct for the resource_set variable
- *		must directly preceed the Resource of interest in the 
- *		Resource initialization list of this module.
- *
- * In Args:	
- *		NrmName		name,
- *		NrmClass	class,
- *		NhlPointer	base,
- *		unsigned int	offset
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-
-/*ARGSUSED*/
-static NhlErrorTypes
-ResourceUnset
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	char *cl = (char *) base;
-	NhlBoolean *set = (NhlBoolean *)(cl + offset - sizeof(NhlBoolean));
-
-	*set = False;
-
-	return NhlNOERROR;
-}
-
 
 #define Oset(field)	NhlOffset(NhlMapPlotLayerRec,mapplot.field)
 static NhlResource resources[] = {
@@ -225,21 +172,21 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpDefaultFillColor,NhlCmpDefaultFillColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(fill_default.color),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(fill_default.pattern_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpDefaultFillPattern,NhlCmpDefaultFillPattern,NhlTFillIndex,
 		 sizeof(NhlFillIndex),Oset(fill_default.pattern),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(fill_default.scale_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpDefaultFillScaleF,NhlCmpDefaultFillScaleF,NhlTFloat,
 		 sizeof(float),Oset(fill_default.scale),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 
 /* ocean area resources */
 
@@ -250,21 +197,21 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpOceanFillColor,NhlCmpOceanFillColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(ocean.color),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(ocean.pattern_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpOceanFillPattern,NhlCmpOceanFillPattern,NhlTFillIndex,
 		 sizeof(NhlFillIndex),Oset(ocean.pattern),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(ocean.scale_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpOceanFillScaleF,NhlCmpOceanFillScaleF,NhlTFloat,
 		 sizeof(float),Oset(ocean.scale),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 
 /* land area resources */
 
@@ -275,21 +222,21 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpLandFillColor,NhlCmpLandFillColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(land.color),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(land.pattern_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpLandFillPattern,NhlCmpLandFillPattern,NhlTFillIndex,
 		 sizeof(NhlFillIndex),Oset(land.pattern),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(land.scale_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpLandFillScaleF,NhlCmpLandFillScaleF,NhlTFloat,
 		 sizeof(float),Oset(land.scale),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 
 /* inland water area resources */
 
@@ -299,7 +246,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpInlandWaterFillColor,NhlCmpInlandWaterFillColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(inland_water.color),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(inland_water.pattern_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
@@ -307,14 +254,14 @@ static NhlResource resources[] = {
 	{NhlNmpInlandWaterFillPattern,NhlCmpInlandWaterFillPattern,
 		 NhlTFillIndex,
 		 sizeof(NhlFillIndex),Oset(inland_water.pattern),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(inland_water.scale_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpInlandWaterFillScaleF,NhlCmpInlandWaterFillScaleF,NhlTFloat,
 		 sizeof(float),Oset(inland_water.scale),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 
 
 /* Geophysical line resources */
@@ -331,7 +278,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpGeophysicalLineDashSegLenF,NhlCmpGeophysicalLineDashSegLenF,
 		 NhlTFloat,sizeof(float),Oset(geophysical.dash_seglen),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNmpGeophysicalLineThicknessF,NhlCmpGeophysicalLineThicknessF,
 		 NhlTFloat,sizeof(float),Oset(geophysical.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
@@ -350,7 +297,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpUSStateLineDashSegLenF,NhlCmpUSStateLineDashSegLenF,
 		 NhlTFloat,sizeof(float),Oset(us_state.dash_seglen),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNmpUSStateLineThicknessF,NhlCmpUSStateLineThicknessF,
 		 NhlTFloat,sizeof(float),Oset(us_state.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
@@ -369,7 +316,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpNationalLineDashSegLenF,NhlCmpNationalLineDashSegLenF,
 		 NhlTFloat,sizeof(float),Oset(national.dash_seglen),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNmpNationalLineThicknessF,NhlCmpNationalLineThicknessF,
 		 NhlTFloat,sizeof(float),Oset(national.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
@@ -403,7 +350,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpGridLineDashSegLenF,NhlCmpGridLineDashSegLenF,
 		 NhlTFloat,sizeof(float),Oset(grid.dash_seglen),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNmpGridLineThicknessF,NhlCmpGridLineThicknessF,
 		 NhlTFloat,sizeof(float),Oset(grid.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
@@ -420,7 +367,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpLimbLineDashSegLenF,NhlCmpLimbLineDashSegLenF,
 		 NhlTFloat,sizeof(float),Oset(limb.dash_seglen),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNmpLimbLineThicknessF,NhlCmpLimbLineThicknessF,
 		 NhlTFloat,sizeof(float),Oset(limb.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
@@ -445,7 +392,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpPerimLineDashSegLenF,NhlCmpPerimLineDashSegLenF,
 		 NhlTFloat,sizeof(float),Oset(perim.dash_seglen),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNmpPerimLineThicknessF,NhlCmpPerimLineThicknessF,
 		 NhlTFloat,sizeof(float),Oset(perim.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
@@ -464,7 +411,7 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
         {NhlNmpLabelFontHeightF,NhlCmpLabelFontHeightF,
 		 NhlTFloat,sizeof(float),Oset(labels.height),
-		 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNmpLabelFontColor,NhlCmpLabelFontColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(labels.color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
@@ -1142,33 +1089,33 @@ MapPlotClassInitialize
 #endif
 {
         _NhlEnumVals   mapboundarysetslist[] = {
-        {NhlNOBOUNDARIES,		"noboundaries"},
-        {NhlGEOPHYSICAL, 		"geophysical"},
-        {NhlNATIONAL,			"national"},
-        {NhlUSSTATES,      		"usstates"},
-	{NhlGEOPHYSICALANDUSSTATES,	"geophysicalandusstates"},
-        {NhlALLBOUNDARIES,    	"allboundaries"},
+        {NhlNOBOUNDARIES,		"NoBoundaries"},
+        {NhlGEOPHYSICAL, 		"Geophysical"},
+        {NhlNATIONAL,			"National"},
+        {NhlUSSTATES,      		"USStates"},
+	{NhlGEOPHYSICALANDUSSTATES,	"GeophysicalAndUSStates"},
+        {NhlALLBOUNDARIES,    	"AllBoundaries"},
         };
 
 	_NhlEnumVals specifiedfillprioritylist[] =  {
-	{NhlGEOPHYSICALPRIORITY,		"geophysicalpriority"},
-	{NhlPOLITICALPRIORITY,		"politicalpriority"}
+	{NhlGEOPHYSICALPRIORITY,		"GeophysicalPriority"},
+	{NhlPOLITICALPRIORITY,		"PoliticalPriority"}
 	};
 
 	_NhlEnumVals mapgridmaskmodelist[] =  {
-	{NhlMASKNONE,		"masknone"},
-	{NhlMASKOCEAN,	"maskocean"},
-	{NhlMASKNOTOCEAN,	"masknotocean"},
-	{NhlMASKLAND,		"maskland"},
-	{NhlMASKNOTLAND,	"masknotland"},
-	{NhlMASKFILLAREA,	"maskfillarea"},
-	{NhlMASKMASKAREA,	"maskmaskarea"}
+	{NhlMASKNONE,		"MaskNone"},
+	{NhlMASKOCEAN,	"MaskOcean"},
+	{NhlMASKNOTOCEAN,	"MaskNotOcean"},
+	{NhlMASKLAND,		"MaskLand"},
+	{NhlMASKNOTLAND,	"MaskNotLand"},
+	{NhlMASKFILLAREA,	"MaskFillArea"},
+	{NhlMASKMASKAREA,	"MaskMaskArea"}
 	};
 
 	_NhlEnumVals mapshapemodelist[] =  {
-	{NhlFREEASPECT,		"freeaspect"},
-	{NhlFIXEDASPECTFITBB,		"fixedaspectfitbb"},
-	{NhlFIXEDASPECTNOFITBB,	"fixedaspectnofitbb"}
+	{NhlFREEASPECT,		"FreeAspect"},
+	{NhlFIXEDASPECTFITBB,		"FixedAspectFitBB"},
+	{NhlFIXEDASPECTNOFITBB,	"FixedAspectNoFitBB"}
 	};
 
 	load_hlumap_routines(False);
@@ -3432,7 +3379,7 @@ static NhlErrorTypes    mpAdjustText
 	if (! lbl_attrs->height_set) {
 		if (init) {
 			lbl_attrs->height = Nhl_mpDEF_LABEL_HEIGHT *
-				mpnew->view.width / Nhl_mpSTD_VIEW_WIDTH;
+				mpnew->view.width / NHL_DEFAULT_VIEW_WIDTH;
 		}
 		else if (mpnew->view.width != mpold->view.width) {
 			lbl_attrs->height *= 
@@ -3494,7 +3441,7 @@ static void mpAdjustDashSegLen
 	
 	if (init)
 		*seglen = Nhl_mpDEF_DASH_SEGLEN * 
-			new_vpwidth / Nhl_mpSTD_VIEW_WIDTH;
+			new_vpwidth / NHL_DEFAULT_VIEW_WIDTH;
 	else if (new_vpwidth != old_vpwidth)
 		*seglen *= new_vpwidth / old_vpwidth;
 	return;

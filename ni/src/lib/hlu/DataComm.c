@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.43 1997-07-25 21:11:57 dbrown Exp $
+ *      $Id: DataComm.c,v 1.44 1997-08-14 16:29:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -659,19 +659,19 @@ DataCommClassInitialize
 	NhlErrorTypes	ret = NhlNOERROR, lret = NhlNOERROR;
 
         _NhlEnumVals   levelselectionlist[] = {
-        {NhlAUTOMATICLEVELS,	"automaticlevels"},
-        {NhlMANUALLEVELS, 	"manuallevels"},
-        {NhlEXPLICITLEVELS, 	"explicitlevels"},
-        {NhlEQUALSPACEDLEVELS,  "equalspacedlevels"}
+        {NhlAUTOMATICLEVELS,	"AutomaticLevels"},
+        {NhlMANUALLEVELS, 	"ManualLevels"},
+        {NhlEXPLICITLEVELS, 	"ExplicitLevels"},
+        {NhlEQUALSPACEDLEVELS,  "EqualSpacedLevels"}
         };
 
         _NhlEnumVals   scalingmodelist[] = {
-        {NhlSCALEFACTOR,	"scalefactor"},
-        {NhlCONFINETORANGE, 	"confinetorange"},
-        {NhlTRIMZEROS, 		"trimzeros"},
-        {NhlMAXSIGDIGITSLEFT,	"maxsigdigitsleft"},
-	{NhlALLINTEGERS,	"allintegers"},
-	{NhlINTEGERLINELABELS,	"integerlinelabels"} /* obsolete synonym */
+        {NhlSCALEFACTOR,	"ScaleFactor"},
+        {NhlCONFINETORANGE, 	"ConfineToRange"},
+        {NhlTRIMZEROS, 		"TrimZeros"},
+        {NhlMAXSIGDIGITSLEFT,	"MaxSigDigitsLeft"},
+	{NhlALLINTEGERS,	"AllIntegers"},
+	{NhlINTEGERLINELABELS,	"IntegerLineLabels"} /* obsolete synonym */
         };
 
 	_NhlRegisterEnumType(NhldataCommClass,NhlTLevelSelectionMode,

@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.35 1997-08-11 18:22:16 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.36 1997-08-14 16:30:17 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -1663,27 +1663,27 @@ static NhlErrorTypes    MapTransClassInitialize
 #endif
 {
         _NhlEnumVals   limitmodelist[] = {
-        {NhlMAXIMALAREA,	"maximalarea"},
-        {NhlLATLON,		"latlon"},
-        {NhlANGLES,		"angles"},
-	{NhlNPC,		"npc"},
-	{NhlNDC,		"ndc"},
-        {NhlCORNERS,		"corners"},
-        {NhlPOINTS,		"points"},
-        {NhlWINDOW,		"window"},
+        {NhlMAXIMALAREA,	"MaximalArea"},
+        {NhlLATLON,		"LatLon"},
+        {NhlANGLES,		"Angles"},
+	{NhlNPC,		"NPC"},
+	{NhlNDC,		"NDC"},
+        {NhlCORNERS,		"Corners"},
+        {NhlPOINTS,		"Points"},
+        {NhlWINDOW,		"Window"},
         };
 
         _NhlEnumVals   projectionlist[] = {
-        {NhlORTHOGRAPHIC,		"orthographic"},
-        {NhlSTEREOGRAPHIC,		"stereographic"},
-        {NhlLAMBERTEQUALAREA,		"lambertequalarea"},
-        {NhlGNOMONIC,			"gnomonic"},
-        {NhlAZIMUTHALEQUIDISTANT,	"azimuthalequidistant"},
-        {NhlSATELLITE,      		"satellite"},
-        {NhlMOLLWEIDE,			"mollweide"},
-        {NhlMERCATOR,			"mercator"},
-        {NhlCYLINDRICALEQUIDISTANT,	"cylindricalequidistant"},
-        {NhlLAMBERTCONFORMAL,		"lambertconformal"}
+        {NhlORTHOGRAPHIC,		"Orthographic"},
+        {NhlSTEREOGRAPHIC,		"Stereographic"},
+        {NhlLAMBERTEQUALAREA,		"LambertEqualArea"},
+        {NhlGNOMONIC,			"Gnomonic"},
+        {NhlAZIMUTHALEQUIDISTANT,	"AzimuthalEquidistant"},
+        {NhlSATELLITE,      		"Satellite"},
+        {NhlMOLLWEIDE,			"Mollweide"},
+        {NhlMERCATOR,			"Mercator"},
+        {NhlCYLINDRICALEQUIDISTANT,	"CylindricalEquidistant"},
+        {NhlLAMBERTCONFORMAL,		"LambertConformal"}
         };
 
         _NhlRegisterEnumType(NhlmapTransObjClass,NhlTMapLimitMode,limitmodelist,
