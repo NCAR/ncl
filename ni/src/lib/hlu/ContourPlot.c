@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.89 1999-06-11 03:24:28 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.90 1999-06-23 16:18:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1049,6 +1049,7 @@ static NhlErrorTypes SetLabelString(
 	NhlString *dest_str,
 	NhlString source_str,
 	NhlString def_str,
+	char	  func_code,
 	NhlString entry_name
 #endif
 );
@@ -2031,7 +2032,7 @@ ContourPlotInitialize
 	if (! cnp->high_lbls.height_set) 
 		cnp->high_lbls.height = 0.012;
 	if (! cnp->low_lbls.height_set) 
-		cnp->low_lbls.height = 0.0012;
+		cnp->low_lbls.height = 0.012;
 	if (! cnp->info_lbl.height_set) 
 		cnp->info_lbl.height = 0.012;
 	if (! cnp->constf_lbl.height_set) 
@@ -4095,6 +4096,12 @@ static NhlErrorTypes cnDraw
 			return NhlFATAL;
 		}
 
+		c_pcsetr("PH",(float)cnp->line_lbls.pheight);
+		c_pcsetr("PW",(float)cnp->line_lbls.pwidth);
+		c_pcsetr("CS",(float)cnp->line_lbls.cspacing);
+		c_pcseti("FN",cnp->line_lbls.font);
+		c_pcseti("QU",cnp->line_lbls.quality);
+		c_pcsetc("FC",cnp->line_lbls.fcode);
 		subret = _NhlCplbam(cnp->data,
 				    cnp->fws,cnp->iws,cnp->aws,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -4159,6 +4166,12 @@ static NhlErrorTypes cnDraw
 	    (cnp->do_lines || cnp->missing_val.perim_on ||
 	     cnp->grid_bound.perim_on || cnp->out_of_range.perim_on)) {
 		if (cnp->do_labels && cnp->label_masking) {
+			c_pcsetr("PH",(float)cnp->line_lbls.pheight);
+			c_pcsetr("PW",(float)cnp->line_lbls.pwidth);
+			c_pcsetr("CS",(float)cnp->line_lbls.cspacing);
+			c_pcseti("FN",cnp->line_lbls.font);
+			c_pcseti("QU",cnp->line_lbls.quality);
+			c_pcsetc("FC",cnp->line_lbls.fcode);
 			subret = _NhlCpcldm(cnp->data,
 					    cnp->fws,cnp->iws,cnp->aws,
 					    (_NHLCALLF(cpdrpl,CPDRPL)),
@@ -4181,6 +4194,12 @@ static NhlErrorTypes cnDraw
 	if (cnp->do_labels && cnp->label_order == order) {	
 		gset_fill_int_style(GSTYLE_SOLID);
 
+		c_pcsetr("PH",(float)cnp->line_lbls.pheight);
+		c_pcsetr("PW",(float)cnp->line_lbls.pwidth);
+		c_pcsetr("CS",(float)cnp->line_lbls.cspacing);
+		c_pcseti("FN",cnp->line_lbls.font);
+		c_pcseti("QU",cnp->line_lbls.quality);
+		c_pcsetc("FC",cnp->line_lbls.fcode);
 		subret = _NhlCplbdr(cnp->data,cnp->fws,cnp->iws,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) {
 			ContourAbortDraw(cnl);
@@ -5521,31 +5540,6 @@ static NhlErrorTypes ManageLabels
 /*
  * Set up the label strings and the format records
  */
-	if (init) {
-		tcp = NULL;
-		subret = SetLabelString(&tcp,(NhlString)cnp->high_lbls.text,
-					NhlcnDEF_HIGH_LABEL,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		cnp->high_lbls.text = (NhlPointer) tcp;
-
-		tcp = NULL;
-		subret = SetLabelString(&tcp,(NhlString)cnp->low_lbls.text,
-					NhlcnDEF_LOW_LABEL,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-		cnp->low_lbls.text = (NhlPointer) tcp;
-	}
-	else {
-
-		subret = SetLabelString((NhlString *)&ocnp->high_lbls.text,
-					(NhlString)cnp->high_lbls.text,
-					NhlcnDEF_HIGH_LABEL,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-
-		subret = SetLabelString((NhlString *)&ocnp->low_lbls.text,
-					(NhlString)cnp->low_lbls.text,
-					NhlcnDEF_LOW_LABEL,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-	}
 
 	if (cnp->high_use_line_attrs && cnp->line_lbls.on) {
 		subret = CopyTextAttrs(&cnp->high_lbls,
@@ -5565,6 +5559,36 @@ static NhlErrorTypes ManageLabels
 				       &cnp->info_lbl,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 		cnp->constf_lbl.angle = cnp->info_lbl.angle;
+	}
+
+	if (init) {
+		tcp = NULL;
+		subret = SetLabelString(&tcp,(NhlString)cnp->high_lbls.text,
+					NhlcnDEF_HIGH_LABEL,
+					cnp->high_lbls.fcode[0],entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+		cnp->high_lbls.text = (NhlPointer) tcp;
+
+		tcp = NULL;
+		subret = SetLabelString(&tcp,(NhlString)cnp->low_lbls.text,
+					NhlcnDEF_LOW_LABEL,
+					cnp->low_lbls.fcode[0],entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+		cnp->low_lbls.text = (NhlPointer) tcp;
+	}
+	else {
+
+		subret = SetLabelString((NhlString *)&ocnp->high_lbls.text,
+					(NhlString)cnp->high_lbls.text,
+					NhlcnDEF_HIGH_LABEL,
+					cnp->high_lbls.fcode[0],entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+
+		subret = SetLabelString((NhlString *)&ocnp->low_lbls.text,
+					(NhlString)cnp->low_lbls.text,
+					NhlcnDEF_LOW_LABEL,
+					cnp->low_lbls.fcode[0],entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 	}
 
 /* Manage constant field label */
@@ -6792,13 +6816,15 @@ static NhlErrorTypes SetLabelString
 	NhlString *dest_str,
 	NhlString source_str,
 	NhlString def_str,
+	char	  func_code,
 	NhlString entry_name
 )
 #else 
-(dest_str,source_str,def_str,entry_name)
+(dest_str,source_str,def_str,func_code,entry_name)
 	NhlString *dest_str;
 	NhlString source_str;
 	NhlString def_str;
+	char	  func_code;
 	NhlString entry_name;
 #endif
 {
@@ -6815,8 +6841,17 @@ static NhlErrorTypes SetLabelString
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NhlFATAL;
 		}
-		if (source_str == NULL)
+		if (source_str == NULL) {
 			strcpy(lstring,def_str);
+			if (func_code != ':') {
+				char *cp;
+				for (cp = lstring; *cp; cp++) {
+					if (*cp == ':') {
+						*cp = func_code;
+					}
+				}
+			}
+		}
 		else
 			strcpy(lstring,source_str);
 		if (*dest_str != NULL) 
@@ -10589,7 +10624,16 @@ void   (_NHLCALLF(hlucpchll,HLUCPCHLL))
 	if (Cnp->llabel_placement == NhlCONSTANT)
 		return;
 
-	if (*iflg == 2) {
+	if (*iflg == 1) {
+		c_pcsetr("PH",(float)Cnp->line_lbls.pheight);
+		c_pcsetr("PW",(float)Cnp->line_lbls.pwidth);
+		c_pcsetr("CS",(float)Cnp->line_lbls.cspacing);
+		c_pcseti("FN",Cnp->line_lbls.font);
+		c_pcseti("QU",Cnp->line_lbls.quality);
+		c_pcsetc("FC",Cnp->line_lbls.fcode);
+		gset_linewidth((float)Cnp->line_lbls.thickness);
+	}
+	else if (*iflg == 2) {
 		if (Cnp->line_lbls.gks_bcolor > NhlTRANSPARENT)
 			gset_fill_colr_ind(Cnp->line_lbls.gks_bcolor);
 	}

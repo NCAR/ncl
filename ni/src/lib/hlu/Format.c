@@ -1,5 +1,5 @@
 /*
- *      $Id: Format.c,v 1.16 1997-07-29 20:45:19 dbrown Exp $
+ *      $Id: Format.c,v 1.17 1999-06-23 16:18:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -823,15 +823,15 @@ NhlString _NhlFormatFloat
 #endif
 {
         int ndgd,lmsd,iexp,lexp;
-        char *c1[] = { " "," ","x",":L1:4" };
+        char *c1[] = { " "," ","x",":F0L1:4:F:" };
         int  lex1[] = { 1,1,1,1 };
         char *c2[] = { "e","E","10**","10:S:" };
         int lex2[] = { 0,0,4,2 };
         char *c3[] = { " "," "," ",":N:" };
 	char cex1[10],cex2[6],cex3[4];
         int lex3[] = { 0,0,0,0 };
-        int len_diff[] = { 0,0,0,10 };
-	int exp_len[] = {1,1,5,10 };
+        int len_diff[] = { 0,0,0,15 };
+	int exp_len[] = {1,1,5,15 };
         int ioma,iodp,iotz;
         static char cbuf[256];
         int nbuf;
@@ -919,7 +919,7 @@ NhlString _NhlFormatFloat
 	strcpy(cex2,c2[ix]);
 	strcpy(cex3,c3[ix]);
 	if (format->exp_type == NhlffSUPERSCRIPT && func_code != ':') {
-		cex1[0] = cex1[4] = cex1[6] = cex1[8] = func_code;
+		cex1[0] = cex1[5] = cex1[7] = cex1[9] =func_code;
 		cex2[2] = cex2[4] = func_code;
 		cex3[0] = cex3[2] = func_code;
 	}
