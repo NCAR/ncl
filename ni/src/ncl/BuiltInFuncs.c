@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.168 2004-03-10 19:24:29 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.169 2004-06-25 21:53:15 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -12746,6 +12746,8 @@ NhlErrorTypes   _NclIFileIsPresent
     const char  *fpath = NULL;
     struct stat st;
 
+    int ncid = 0;
+
     int dimsizes = 1;
     int ndims,
         dimsz[NCL_MAX_DIMENSIONS];
@@ -12777,8 +12779,18 @@ NhlErrorTypes   _NclIFileIsPresent
     }
 
     for (i = 0; i < sz; i++) {
-        fpath = _NGResolvePath(NrmQuarkToString(files[i]));
-        file_exists[i] = stat(fpath, &st) == -1 ? 0 : 1;
+        fpath = (char *) NrmQuarkToString(files[i]);
+        if (!strncmp(fpath, "http", 4)) {
+            ncid = ncopen(fpath, NC_NOWRITE);
+            if (ncid == -1)
+                file_exists[i] = 0;     /* false */
+            else
+                file_exists[i] = 1;     /* true */
+        }
+        else {
+            fpath = _NGResolvePath(NrmQuarkToString(files[i]));
+            file_exists[i] = stat(fpath, &st) == -1 ? 0 : 1;
+        }
     }
 
     return NclReturnValue((void *) file_exists, ndims, dimsz, NULL, NCL_logical, 1);
