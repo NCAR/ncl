@@ -203,15 +203,15 @@ C
 	RETURN
 	END
         SUBROUTINE COLOR
-        CALL GSCR (1, 0,0.000,0.000,0.000)
-        CALL GSCR (1, 1,1.000,1.000,1.000)
-        CALL GSCR (1, 2,0.500,1.000,1.000)
+        CALL GSCR (IWKID, 0,0.000,0.000,0.000)
+        CALL GSCR (IWKID, 1,1.000,1.000,1.000)
+        CALL GSCR (IWKID, 2,0.500,1.000,1.000)
         DO 10 I=3,15
-          CALL GSCR (1,I,MAX(0.,MIN(1.,1.-REAL(ABS(I- 3)/10.))),
+          CALL GSCR (IWKID,I,MAX(0.,MIN(1.,1.-REAL(ABS(I- 3)/10.))),
      +                   MAX(0.,MIN(1.,1.-REAL(ABS(I- 9)/10.))),
      +                   MAX(0.,MIN(1.,1.-REAL(ABS(I-15)/10.))))
  10     CONTINUE
-        CALL GSCR (1,16,1.,0.,0.)
+        CALL GSCR (IWKID,16,1.,0.,0.)
         RETURN
         END
 

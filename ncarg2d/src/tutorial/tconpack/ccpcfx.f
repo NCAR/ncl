@@ -1,40 +1,60 @@
-	PROGRAM CCPCFX
-
-        PARAMETER (M=40,N=40,LRWK=3500,LIWK=4000)
-	REAL Z(M,N), RWRK(LRWK)
-	INTEGER IWRK(LIWK)
-
-	CALL GETDAT (Z, M, N)
-C Open GKS
-	CALL OPNGKS
-	CALL GSCLIP (0)
+      PROGRAM CCPCFX
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (M=40,N=40,LRWK=3500,LIWK=4000)
+      REAL Z(M,N), RWRK(LRWK)
+      INTEGER IWRK(LIWK)
+      
+      CALL GETDAT (Z, M, N)
+C
+C  Open GKS, open and activate a workstation.
+C
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
+      CALL GSCLIP (0)
+C
 C Initialize Conpack
-	CALL CPSETR('CFX - CONSTANT FIELD LABEL X',0.)
-	CALL CPSETR('CFY - CONSTANT FIELD LABEL Y',1.)
-	CALL CPSETI('CFP - CONSTANT FIELD POSITION FLAG',2)
-	CALL CPRECT(Z, M, M, N, RWRK, LRWK, IWRK, LIWK)
+C
+      CALL CPSETR('CFX - CONSTANT FIELD LABEL X',0.)
+      CALL CPSETR('CFY - CONSTANT FIELD LABEL Y',1.)
+      CALL CPSETI('CFP - CONSTANT FIELD POSITION FLAG',2)
+      CALL CPRECT(Z, M, M, N, RWRK, LRWK, IWRK, LIWK)
+C
 C Draw Perimeter
-	CALL CPBACK(Z, RWRK, IWRK)
+C
+      CALL CPBACK(Z, RWRK, IWRK)
+C
 C Draw Contours
-	CALL CPLBDR(Z,RWRK,IWRK)
-	CALL CPCLDR(Z,RWRK,IWRK)
-
-C Close frame and close GKS
-	CALL FRAME
-	CALL CLSGKS
-
-	STOP
-	END
-
-	SUBROUTINE GETDAT (Z, M, N)
-	INTEGER I,J,M,N
-	REAL Z(M,N)
-
-	DO 10, I=1,M
-	  DO 20, J=1,N
-	    Z(I,J)=13.0
-  20	  CONTINUE
-  10	CONTINUE
-
-	RETURN
-	END
+C
+      CALL CPLBDR(Z,RWRK,IWRK)
+      CALL CPCLDR(Z,RWRK,IWRK)
+C
+C Close frame
+C
+      CALL FRAME
+C
+C Deactivate and close workstation, close GKS.
+C
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
+      
+      STOP
+      END
+      
+      SUBROUTINE GETDAT (Z, M, N)
+      INTEGER I,J,M,N
+      REAL Z(M,N)
+      
+      DO 10, I=1,M
+         DO 20, J=1,N
+            Z(I,J)=13.0
+ 20      CONTINUE
+ 10   CONTINUE
+      
+      RETURN
+      END

@@ -1,43 +1,63 @@
-	PROGRAM CCPCFF
-
-        PARAMETER (M=40,N=40,LRWK=3500,LIWK=4000)
-	REAL Z(M,N), RWRK(LRWK)
-	INTEGER IWRK(LIWK)
-
-	CALL GETDAT (Z, M, N)
-C Open GKS
-	CALL OPNGKS
-	CALL GSCLIP (0)
+      PROGRAM CCPCFF
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (M=40,N=40,LRWK=3500,LIWK=4000)
+      REAL Z(M,N), RWRK(LRWK)
+      INTEGER IWRK(LIWK)
+      
+      CALL GETDAT (Z, M, N)
+C
+C  Open GKS, open and activate a workstation.
+C
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
+      CALL GSCLIP (0)
+C
 C Initialize Conpack
-	CALL CPRECT(Z, M, M, N, RWRK, LRWK, IWRK, LIWK)
-	CALL CPGETI('CFF - CONSTANT FIELD FOUND FLAG',ICFF)
-	IF (ICFF .NE. 0) GOTO 101
+C
+      CALL CPRECT(Z, M, M, N, RWRK, LRWK, IWRK, LIWK)
+      CALL CPGETI('CFF - CONSTANT FIELD FOUND FLAG',ICFF)
+      IF (ICFF .NE. 0) GOTO 101
+C
 C Draw Perimeter
-	CALL CPBACK(Z, RWRK, IWRK)
+C
+      CALL CPBACK(Z, RWRK, IWRK)
+C
 C Draw Contours
-	CALL CPLBDR(Z,RWRK,IWRK)
-	CALL CPCLDR(Z,RWRK,IWRK)
-
+C
+      CALL CPLBDR(Z,RWRK,IWRK)
+      CALL CPCLDR(Z,RWRK,IWRK)
+C     
 C Close frame and close GKS
-	CALL FRAME
-	CALL CLSGKS
-	STOP
-
- 101	WRITE (6,*) 'The field is constant.'
- 	WRITE (6,*) 'This program does not create a valid CGM file.'
- 
-	STOP
-	END
-
-	SUBROUTINE GETDAT (Z, M, N)
-	INTEGER I,J,M,N
-	REAL Z(M,N)
-
-	DO 10, I=1,M
-	  DO 20, J=1,N
-	    Z(I,J)=13.0
-  20	  CONTINUE
-  10	CONTINUE
-
-	RETURN
-	END
+C
+      CALL FRAME
+C
+C Deactivate and close workstation, close GKS.
+C
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
+      STOP
+      
+ 101  WRITE (6,*) 'The field is constant.'
+      WRITE (6,*) 'This program does not create a valid CGM file.'
+      
+      STOP
+      END
+      
+      SUBROUTINE GETDAT (Z, M, N)
+      INTEGER I,J,M,N
+      REAL Z(M,N)
+      
+      DO 10, I=1,M
+         DO 20, J=1,N
+            Z(I,J)=13.0
+ 20      CONTINUE
+ 10   CONTINUE
+      
+      RETURN
+      END

@@ -1,39 +1,63 @@
-	PROGRAM CCPILS
+      PROGRAM CCPILS
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 
-        PARAMETER (M=40,N=40,LRWK=3500,LIWK=4000)
-	REAL Z(M,N), RWRK(LRWK)
-	INTEGER IWRK(LIWK)
-
-	CALL GETDAT (Z, M, M, N)
-C Open GKS
-	CALL OPNGKS
-	CALL GSCLIP (0)
+      PARAMETER (M=40,N=40,LRWK=3500,LIWK=4000)
+      REAL Z(M,N), RWRK(LRWK)
+      INTEGER IWRK(LIWK)
+      
+      CALL GETDAT (Z, M, M, N)
+C 
+C Open GKS, open and activate a workstation.
+C 
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
+      CALL OPNGKS
+      CALL GSCLIP (0)
+C
 C Set label sizes 
-	CALL CPSETR('HLS - HIGH/LOW LABEL SIZE',.030)
-	CALL CPSETR('ILS - INFORMATION LABEL SIZE',.005)
+C
+      CALL CPSETR('HLS - HIGH/LOW LABEL SIZE',.030)
+      CALL CPSETR('ILS - INFORMATION LABEL SIZE',.005)
+C
 C Initialize Conpack
-	CALL CPRECT(Z, M, M, N, RWRK, LRWK, IWRK, LIWK)
+C
+      CALL CPRECT(Z, M, M, N, RWRK, LRWK, IWRK, LIWK)
+C
 C Draw Perimeter
-	CALL CPBACK(Z, RWRK, IWRK)
+C
+      CALL CPBACK(Z, RWRK, IWRK)
+C
 C Draw Labels
-	CALL CPLBDR(Z,RWRK,IWRK)
-
-C Close frame and close GKS
-	CALL FRAME
-	CALL CLSGKS
-
-	STOP
-	END
-
-	SUBROUTINE GETDAT (Z, K, M, N)
-	INTEGER I,J,K,M,N
-	REAL Z(K,N)
-
-	OPEN (10,FILE='ccpex.dat',STATUS='OLD')
-	L=K
-	DO 10, I=1,L
-	  READ (10,*) (Z(I,J),J=1,N)
-  10	CONTINUE
-
-	RETURN
-	END
+C
+      CALL CPLBDR(Z,RWRK,IWRK)
+C
+C Close frame
+C
+      CALL FRAME
+C 
+C Deactivate and close workstation, close GKS.
+C 
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
+      
+      STOP
+      END
+      
+      SUBROUTINE GETDAT (Z, K, M, N)
+      INTEGER I,J,K,M,N
+      REAL Z(K,N)
+      
+      OPEN (10,FILE='ccpex.dat',STATUS='OLD')
+      L=K
+      DO 10, I=1,L
+         READ (10,*) (Z(I,J),J=1,N)
+ 10   CONTINUE
+      
+      RETURN
+      END

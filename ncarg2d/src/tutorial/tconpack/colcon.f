@@ -316,15 +316,15 @@ C
 C
 C The background color is black.
 C
-        CALL GSCR(1,0,0.,0.,0.)
+        CALL GSCR(IWKID,0,0.,0.,0.)
 C
 C The first foreground color is white.
 C
-        CALL GSCR(1,1,1.,1.,1.)
+        CALL GSCR(IWKID,1,1.,1.,1.)
 C
 C The second foreground color is gray.
 C
-        CALL GSCR(1,2,.75,.75,.75)
+        CALL GSCR(IWKID,2,.75,.75,.75)
 C
 C Choose other foreground colors spaced equally around the spectrum.
 C
@@ -342,10 +342,10 @@ C
 C Sort colors so that the reddest is first, and the most violet is last.
 C
           IF (XHUE.LE.REDLN) THEN
-            CALL GSCR(1,(N+2)-(LAP-I),RED,GREEN,BLUE)
+            CALL GSCR(IWKID,(N+2)-(LAP-I),RED,GREEN,BLUE)
             ICNT=ICNT+1
           ELSE
-            CALL GSCR(1,I-ICNT+2,RED,GREEN,BLUE)
+            CALL GSCR(IWKID,I-ICNT+2,RED,GREEN,BLUE)
           ENDIF
  10     CONTINUE
 C
