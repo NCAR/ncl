@@ -36,7 +36,7 @@ C so the application looks for a resource file in the working directory.
 C In this example the resource file supplies the plot title only.
 C
       call nhlfrlcreate(rlist,'setrl')
-      call nhlfrlclear(rlist,ierr)
+      call nhlfrlclear(rlist)
       call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
       call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
       call nhlfcreate(appid,'lb01',nhlfapplayerclass,0,rlist,ierr)
