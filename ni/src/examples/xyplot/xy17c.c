@@ -1,5 +1,5 @@
 /*
- *      $Id: xy17c.c,v 1.1 1997-03-20 18:12:09 haley Exp $
+ *      $Id: xy17c.c,v 1.2 1997-04-02 16:47:53 haley Exp $
  */
 /***********************************************************************
  *                                                                     *
@@ -44,7 +44,7 @@
 void main ()
 {
    int NCGM=0, X11=1, PS=0;
-   int i, rlist, wks, appid, field1, field2, field3, xy1, xy2, xy3;
+   int i=0, rlist, wks, appid, field1, field2, field3, xy1, xy2, xy3;
    int grlist, datadepid[1];
    int *dspec = datadepid;
    int num_dspec;
@@ -63,13 +63,14 @@ void main ()
    char *y1lab [5] = {"-90.0", "-80.0", "-70.0", "-60.0", "-50.0"};
    char *y2lab [6] = {"10.0", "20.0", "30.0", "40.0", "50.0", "60.0"};
    char *y3lab [5] = {"-20.0", "-10.0", "0.0", "10.0", "20.0"};
-   char *filedir = (char *)GetNCARGPath("data");
-   char *file = (char *) malloc (sizeof(filedir)+sizeof("/asc/xy.asc"));
+   char *filedir = (char *)malloc (strlen(GetNCARGPath("data")));
+   char *file = (char *) malloc (strlen(filedir)+strlen("/asc/xy.asc"));
 
 /*
  *  Read ASCII file xy.asc
  */
 
+   filedir=(char *)GetNCARGPath("data");
    file = strcat (filedir,"/asc/xy.asc");
    x1_y3 = fopen (file,"r");
 
@@ -81,7 +82,6 @@ void main ()
  *     u and v are in m/s, and t is in deg K.
  */
 
-   i=0;
    while (!feof(x1_y3)) {
       fscanf (x1_y3, "%f %f %f %f", &lon[i], &u[i], &v[i], &t[i]);
       i++;
