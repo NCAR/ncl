@@ -5,13 +5,13 @@
 extern void NGCALLF(ddrveof,DDRVEOF)(double *,int *,int *,int *,int *,
                                      double *,int *,double *, double *,
                                      float*,double *,int *,int *,double*,
-                                     long *, double *,int *,double *,int *,
-                                     int *,int *,int *,int *);
+                                     long int*, double *,int *,double *,
+                                     int *,int *,int *,int *,int *);
 
 extern void NGCALLF(dncldrv,DNCLDRV)(double *,double *,int *,int *,int *,
                                      int *,double *,int *,double *,double *,
                                      float *,double *,int *,int *,double *,
-                                     double *,double *,long *,double *, 
+                                     double *,double *,long int*,double *, 
                                      int *,double *,int *,int *,int *,int *,
                                      int*);
 
@@ -46,7 +46,7 @@ NhlErrorTypes eofcov_W( void )
   double *cssm, *work, *weval;
   int   *iwork, *ifail;
   int lwork, liwork, lifail;
-  long lcssm;
+  long int lcssm;
 /*
  * Attribute variables
  */
@@ -470,7 +470,7 @@ NhlErrorTypes eofcor_W( void )
   double *cssm, *work, *weval;
   int   *iwork, *ifail;
   int lwork, liwork, lifail;
-  long lcssm;
+  long int lcssm;
 /*
  * Attribute variables
  */
@@ -894,7 +894,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
   double *tmp_x, *cssm, *work, *weval, *evecx;
   int   *iwork, *ifail;
   int lwork, liwork, lifail;
-  long lcssm, total_mem;
+  long int lcssm, total_mem;
 /*
  * Attribute variables
  */
@@ -1402,7 +1402,7 @@ NhlErrorTypes eofcor_pcmsg_W( void )
   double *tmp_x, *cssm, *work, *weval, *evecx;
   int    *iwork, *ifail;
   int lwork, liwork, lifail;
-  long lcssm, total_mem;
+  long int lcssm, total_mem;
 /*
  * Attribute variables
  */
