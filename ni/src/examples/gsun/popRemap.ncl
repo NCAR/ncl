@@ -1,5 +1,5 @@
 ;
-;      $Id: popRemap.ncl,v 1.9 2004-09-25 17:42:38 shea Exp $
+;      $Id: popRemap.ncl,v 1.10 2004-11-20 23:14:49 shea Exp $
 ;
 ;===========================================================
 ; D. Shea
@@ -16,8 +16,11 @@
 ; July 1, 2004
 ; We can no longer automatically access certain directories.
 ; I [Dennis Shea] have decided to have the code look in the
-; current directory or in a directory specified by the
-; environment variable NCL_POP_REMAP.
+; directories specified by the environment variables:
+;     NCL_POP_REMAP    
+; and
+;     NCL_POP_REMAPV    [ contains file with roation angles]
+; or th current directory 
 
 ; CCSM uses gx1v2
 
@@ -82,6 +85,8 @@ begin
                       +"_"+method+"_"+areaType+"_"+Date+".nc"   
   end if
 
+ ;dirENV  = "/fis/cgd/cseg/csm/mapping/maps"
+
   dirENV  = getenv("NCL_POP_REMAP")
   if (ismissing(dirENV)) then
       dirPOP  = (/ "./" /)             ; local only
@@ -89,17 +94,22 @@ begin
       dirPOP  = (/ dirENV, "." /) + "/"
   end if
 
+ ;print (dirPOP)
+
   do nd=0,dimsizes(dirPOP)-1
+    ;print ("nd="+nd+"  dirPOP="+dirPOP(nd))
      gridPOP = systemfunc("cd "+dirPOP(nd)+" ; ls map_*")
-;     print (gridPOP)
+    ;print (gridPOP)
      indP    = ind(gridPOP.eq.rmpPOP)
      if (.not.ismissing(indP)) then   ; ?supported transformation?
+         print ("create_rmpPopFileName: "+dirPOP(nd)+rmpPOP)
          return (dirPOP(nd)+rmpPOP)
      end if
      delete (gridPOP)
   end do
                                                                      
-  print ("create_rmpPopFileName: file not recognized: " +rmpPOP)
+  print ("create_rmpPopFileName: file not recognized/found: " +rmpPOP)
+  print ("create_rmpPopFileName: dir searched: " +dirPOP)
   exit
 
 end
@@ -109,17 +119,13 @@ function create_rotPopFileName (gridSrc:string, gridDst:string)
 
 ; invoked internally by PopLatLonV
 ; creates the name of the file containing the rotation angles
+; all files containing the appropriate rotation angles begin with "rot_"
 
-local dirENV, dirPOP, rotPOP, indRot
+local dirENV, dirPOPV, rotPOPV, indRot, gridROT
 begin
-  dirPOP  = "/fs/cgd/data0/shea/pop/"   ; dir with transform files
 
-  dirENV  = getenv("NCL_POP_REMAP")
-  if (ismissing(dirENV)) then
-      dirPOP  = (/ "./" /)             ; local only
-  else
-      dirPOP  = (/ dirENV, "." /) + "/"
-  end if
+ ;print ("create_rotPopFileName: gridSrc="+gridSrc+"  gridDst="+gridDst)
+
                                         ; names with rot angles
   rotPOP  = (/ "POPX3","POP23", "POP43", "gx1v3", "gx1v2" \
              , "gx3", "gx3p", "hx1", "crx3" /)
@@ -134,8 +140,31 @@ begin
       end if
   end if
 
-  return( dirPOP +"rot_"+rotPOP(indRot)+".nc" )
+ ;dirENV  = "/cgd/cas/shea/POP_REMAP"   ; dir with transform files
 
+  dirENV  = getenv("NCL_POP_REMAPV")
+  if (ismissing(dirENV)) then
+      dirPOPV  = (/ "./" /)             ; local only
+  else
+      dirPOPV  = (/ dirENV, "." /) + "/"
+  end if
+
+  rotPOPV = "rot_"+gridSrc+".nc"
+
+  do nd=0,dimsizes(dirPOPV)-1
+     gridROT = systemfunc("cd "+dirPOPV(nd)+" ; ls rot_*")
+    ;print (gridROT)
+     indP    = ind(gridROT.eq.rotPOPV)
+    ;print ("nd="+nd+"  indP="+indP)
+     if (.not.ismissing(indP)) then   ; ?supported transformation?
+         print ("create_rotPopFileName: "+dirPOPV(nd)+rotPOPV)
+         return (dirPOPV(nd)+rotPOPV)
+     end if
+     delete (gridROT)
+  end do
+
+  print ("create_rotPopFileName: file not recognized/found: " +rotPOPV)
+  print ("create_rotPopFileName: dir searched: " +dirPOPV)
   exit
 end
 ; -----------------------------------------------------
@@ -345,6 +374,7 @@ local rmpFile, fP, dim_x, dim_src, dst_add\
     , src_ad, map_wts, dim_wts, nlink, nwt, dim_dst, mlon, nlat \
     , latStart, lonStart, x_atts, i, xmsg, n, nDx, rmpType
 begin
+  print (" ")
 ;*****************************************************************
 ; take user input for original and destination grid and determine
 ; what weight file should be used.
@@ -364,6 +394,7 @@ begin
   if (dim_x(nDx-2).ne.dim_src(1) .or. dim_x(nDx-1).ne.dim_src(0)) then
       print ("PopLatLon: Input and Tranform do not match")
       print ("PopLatLon: -----Dimension mismatch-------")
+print (dim_src)
       print ("PopLatLon: dim_x(nDx-2)="+dim_x(nDx-2) )
       print ("PopLatLon: dim_x(nDx-1)="+dim_x(nDx-1) )
       print ("PopLatLon: dim_src(1)="+dim_src(1) )
@@ -542,6 +573,7 @@ begin
 ;*************************************************
 ; output result
 ;*************************************************
+  print (" ")
   return(xOut)  ; return as 2D array
 
 end
@@ -624,6 +656,7 @@ local rmpFile, rotFile, fP, gP, dim_u, dim_src, dst_add \
     , uWRK_1D, vWRK_1D, uNew_1D, vNew_1D, uvNew, u_atts, i
 
 begin
+  print (" ")
   rmpFile = create_rmpPopFileName (gridSrc, gridDst \
                                   ,method, areaType , Date )
   fP      = addfile(rmpFile,"r")
@@ -705,11 +738,12 @@ begin
   mlon    = dim_dst(0)                   ; eg: 192 for T63 
   nlat    = dim_dst(1)                   ; eg:  94 for T63
 
-
 ;********************************************************************
 ; read the correct rotation angles
 ;********************************************************************
   rotFile = create_rotPopFileName (gridSrc, gridDst )
+ ;print (rotFile)
+
   gP      = addfile(rotFile,"r")
   rotaName = (/"ANGLE", "angle", "UTAN", "utan" \
                ,"ROTA", "rota"  , "ROTANG", "rotang" /)
@@ -829,6 +863,7 @@ begin
 
   PopCoord (uvNew, gridDst, latStart, lonStart) ; add lat/lon [grid point] coord variables
 
+  print (" ")
   return( uvNew)  ; return as array with one additional dimension
 end
 ;-------------------------------------------------------
