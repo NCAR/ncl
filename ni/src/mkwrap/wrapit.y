@@ -7,7 +7,7 @@
 #include "WSymbol.h"
 #include "fstrings.h"
 extern char *yytext;
-void yyerror(char *);
+void yyerror(const char *);
 extern char* gettxt();
 typedef struct wrap_src_node_list {
 	void *node;
@@ -2006,7 +2006,7 @@ mod : MISSING '=' vspec
 %%
 void yyerror
 #if __STDC__
-(char *s)
+(const char *s)
 #else
 (s)
 	char *s;
