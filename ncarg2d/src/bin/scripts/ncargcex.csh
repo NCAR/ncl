@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.22 1994-11-04 17:11:06 haley Exp $
+#	$Id: ncargcex.csh,v 1.23 1994-11-08 23:07:04 haley Exp $
 #
 
 #**************************#
@@ -777,10 +777,6 @@ if ($X11_option == "-noX11" && "$ws_type" == "8") then
     set X11_option
 endif
 
-unset tmp_ws_type
-unset tmp_msg
-unset no_file
-
 #***************************#
 #                           #
 # Loop through each example #
@@ -1035,26 +1031,27 @@ if (! $?NoRunOption) then
 # Run the example #
 #                 #
 #*****************#
+    set rename_option = "-o $graphic_file"
+    if ($?no_file) set rename_option
     echo ""
     echo "Executing <$name>..."
     if ("$input" != "" ) then
       if ("$output" != "") then
-        ncargrun -o $graphic_file ./$name < $input > $output
+        ncargrun $rename_option ./$name < $input > $output
       else 
-        ncargrun -o $graphic_file ./$name < $input
+        ncargrun $rename_option ./$name < $input
       endif
     else
       if ("$output" != "") then
-        ncargrun -o $graphic_file ./$name > $output
+        ncargrun $rename_option ./$name > $output
       else 
-        ncargrun -o $graphic_file ./$name
+        ncargrun $rename_option ./$name
       endif
     endif
     if ($status != 0) then
         echo ""
         echo "The execution of ./$name failed"
         echo ""
-        /bin/rm ./$default_file >& /dev/null
         exit
     endif
     echo ""
