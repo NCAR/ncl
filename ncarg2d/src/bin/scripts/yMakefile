@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.17 1993-03-13 21:00:03 haley Exp $
+#	$Id: yMakefile,v 1.18 1993-03-21 21:24:17 haley Exp $
 #
 NCARG	= ../../../..
 
@@ -79,7 +79,7 @@ ncargcex: ncargcex.csh Makefile
 	-e 's+SED_TESTSDIR+$(TESTSDIR)+' \
 	<ncargcex.csh >ncargcex
 
-#if ! defined BuildNCARGSourceLibrary
+#if defined BuildNCARGSourceLibrary
 ncargsrc: ncargsrc.csh Makefile
 	@sed \
 	-e 's+SED_BINDIR+$(BINDIR)+' \
