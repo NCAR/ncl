@@ -1,5 +1,5 @@
 C
-C	$Id: mapint.f,v 1.1.1.1 1992-04-17 22:32:01 ncargd Exp $
+C	$Id: mapint.f,v 1.2 1992-09-09 17:20:22 ncargd Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -65,11 +65,13 @@ C
       DATA RTOD / 57.2957795130823 /
 C
 C Decide whether MAPTRN should use real or double-precision arithmetic.
+C The subroutine call is necessary to fool some compilers into storing
+C TST1, TST2, and TST3; otherwise, real precision may be used on
+C machines on which double precision is necessary.
 C
-      TST1=1.
-      TST2=TST1+1.E-10
+      CALL MAPIN2 (TST1,TST2,TST3)
 C
-      IF (TST1.NE.TST2) THEN
+      IF (TST1.NE.TST2.AND.TST2.NE.TST3) THEN
         IROD=0
       ELSE
         IROD=1

@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.2 1992-07-27 16:54:08 ncargd Exp $
+#	$Id: yMakefile,v 1.3 1992-09-09 17:20:24 ncargd Exp $
 #
 NCARG	= ../../../..
 
@@ -7,19 +7,21 @@ MYNAME	= ezmap
 
 GENERIC_SRCS = \
 	idictl.f mapbd.f mapcem.f mapchi.f mapdrw.f mapeod.f mapfst.f mapgci.f \
-	mapgrd.f mapgtc.f mapgti.f mapgtl.f mapgtr.f mapint.f mapio.f mapiq.f \
-	mapit.f maplbl.f maplmb.f maplot.f mappos.f maproj.f maprs.f maprst.f \
-	mapsav.f mapset.f mapstc.f mapsti.f mapstl.f mapstr.f maptra.f maptre.f \
-	maptri.f maptrn.f maptrp.f mapusr.f mapvec.f mapvp.f mpgetc.f mpgeti.f \
-	mpgetl.f mpgetr.f mpsetc.f mpseti.f mpsetl.f mpsetr.f supcon.f supmap.f
+	mapgrd.f mapgtc.f mapgti.f mapgtl.f mapgtr.f mapin2.f mapint.f mapio.f \
+	mapiq.f mapit.f maplbl.f maplmb.f maplot.f mappos.f maproj.f maprs.f \
+	maprst.f mapsav.f mapset.f mapstc.f mapsti.f mapstl.f mapstr.f maptra.f \
+	maptre.f maptri.f maptrn.f maptrp.f mapusr.f mapvec.f mapvp.f mpgetc.f \
+	mpgeti.f mpgetl.f mpgetr.f mpsetc.f mpseti.f mpsetl.f mpsetr.f supcon.f \
+	supmap.f
 
 GENERIC_OBJS = \
 	idictl.o mapbd.o mapcem.o mapchi.o mapdrw.o mapeod.o mapfst.o mapgci.o \
-	mapgrd.o mapgtc.o mapgti.o mapgtl.o mapgtr.o mapint.o mapio.o mapiq.o \
-	mapit.o maplbl.o maplmb.o maplot.o mappos.o maproj.o maprs.o maprst.o \
-	mapsav.o mapset.o mapstc.o mapsti.o mapstl.o mapstr.o maptra.o maptre.o \
-	maptri.o maptrn.o maptrp.o mapusr.o mapvec.o mapvp.o mpgetc.o mpgeti.o \
-	mpgetl.o mpgetr.o mpsetc.o mpseti.o mpsetl.o mpsetr.o supcon.o supmap.o
+	mapgrd.o mapgtc.o mapgti.o mapgtl.o mapgtr.o mapin2.o mapint.o mapio.o \
+	mapiq.o mapit.o maplbl.o maplmb.o maplot.o mappos.o maproj.o maprs.o \
+	maprst.o mapsav.o mapset.o mapstc.o mapsti.o mapstl.o mapstr.o maptra.o \
+	maptre.o maptri.o maptrn.o maptrp.o mapusr.o mapvec.o mapvp.o mpgetc.o \
+	mpgeti.o mpgetl.o mpgetr.o mpsetc.o mpseti.o mpsetl.o mpsetr.o supcon.o \
+	supmap.o
 
 UNIX_SRCS = openmp.f
 
