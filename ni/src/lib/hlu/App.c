@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.39 1999-03-15 21:40:39 dbrown Exp $
+ *      $Id: App.c,v 1.40 1999-12-07 23:36:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1099,6 +1099,7 @@ AppDestroy
 	NhlAppClassPart		*alcp = &alc->app_class;
 	NhlErrorTypes		lret = NhlNOERROR;
 	NhlErrorTypes		ret = NhlNOERROR;
+	int			i;
 
 	/*
 	 * If this is the "default_app", then destroy *ALL* app objects
@@ -1178,6 +1179,8 @@ AppDestroy
 	NrmDestroyDB(alp->appDB);
 	alp->appDB = NULL;
 	NhlFreeGenArray(alp->resources);
+	for(i=0; i < alp->nres; i++)
+		NhlFree(alp->values[i]);
 	NhlFree(alp->values);
 	NhlFree(alp->res);
 
