@@ -6,7 +6,7 @@ C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=22, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWKID=1)
 C
 C  Specify certain key points on the plot (indices 1-3 for vertices 
 C  of joins; 4-6 for vertices of caps; 7-8 for vertices of miter 
