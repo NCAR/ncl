@@ -1,5 +1,5 @@
 C
-C	$Id: g01clp.f,v 1.3 1994-04-28 23:35:41 fred Exp $
+C	$Id: g01clp.f,v 1.4 1995-10-18 22:53:10 fred Exp $
 C
       SUBROUTINE G01CLP(IFORCE)
 C
@@ -16,6 +16,7 @@ C
       include 'g01wsl.h'
       include 'g01ins.h'
       include 'g01opc.h'
+      include 'gksenu.h'
 C
       INTEGER  NBYTES, I, ICRLOC(4)
       LOGICAL  CHANGE
