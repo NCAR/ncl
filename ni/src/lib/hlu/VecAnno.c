@@ -1,5 +1,5 @@
 /*
- *      $Id: VecAnno.c,v 1.6 1996-04-10 23:14:53 dbrown Exp $
+ *      $Id: VecAnno.c,v 1.7 1996-04-17 00:24:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -366,36 +366,36 @@ CalculateGeometry
 	if (vap->string1_on) {
 		vap->ti1.width = s1width;
 		vap->ti1.height = s1height;
+		if (ol == NULL ||
+		    (vap->ti1.x != ovap->ti1.x) ||
+		    (vap->ti1.y != ovap->ti1.y) ||
+		    (vap->ti1.width != ovap->ti1.width) ||
+		    (vap->ti1.height != ovap->ti1.height)) {
+			NhlVASetValues(vap->textitem1,
+				       NhlNvpXF,	vap->ti1.x,
+				       NhlNvpYF,	vap->ti1.y,
+				       NhlNvpWidthF,	vap->ti1.width,
+				       NhlNvpHeightF,	vap->ti1.height,
+				       NULL);
+		}
 	}
 	if (vap->string2_on) {
 		vap->ti2.width = s2width;
 		vap->ti2.height = s2height;
+		if (ol == NULL ||
+		    (vap->ti2.x != ovap->ti2.x) ||
+		    (vap->ti2.y != ovap->ti2.y) ||
+		    (vap->ti2.width != ovap->ti2.width) ||
+		    (vap->ti2.height != ovap->ti2.height)) {
+			NhlVASetValues(vap->textitem2,
+				       NhlNvpXF,	vap->ti2.x,
+				       NhlNvpYF,	vap->ti2.y,
+				       NhlNvpWidthF,	vap->ti2.width,
+				       NhlNvpHeightF,	vap->ti2.height,
+				       NULL);
+		}
 	}
 
-	if (ol == NULL ||
-	    (vap->ti1.x != ovap->ti1.x) ||
-	    (vap->ti1.y != ovap->ti1.y) ||
-	    (vap->ti1.width != ovap->ti1.width) ||
-	    (vap->ti1.height != ovap->ti1.height)) {
-		NhlVASetValues(vap->textitem1,
-			       NhlNvpXF,	vap->ti1.x,
-			       NhlNvpYF,	vap->ti1.y,
-			       NhlNvpWidthF,	vap->ti1.width,
-			       NhlNvpHeightF,	vap->ti1.height,
-			       NULL);
-	}
-	if (ol == NULL ||
-	    (vap->ti2.x != ovap->ti2.x) ||
-	    (vap->ti2.y != ovap->ti2.y) ||
-	    (vap->ti2.width != ovap->ti2.width) ||
-	    (vap->ti2.height != ovap->ti2.height)) {
-		NhlVASetValues(vap->textitem2,
-			       NhlNvpXF,	vap->ti2.x,
-			       NhlNvpYF,	vap->ti2.y,
-			       NhlNvpWidthF,	vap->ti2.width,
-			       NhlNvpHeightF,	vap->ti2.height,
-			       NULL);
-	}
 	*x = tx;
 	*y = ty;
 	*width = twidth + 2.0 * margin;
