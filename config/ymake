@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.35 2000-09-19 13:37:28 haley Exp $
+#	$Id: ymake,v 1.36 2001-11-07 15:34:11 haley Exp $
 #
 ######################################################################
 #
@@ -388,8 +388,13 @@ case    Linux:
 
         set sysincs = LINUX
         set vendor = IBM
-
     breaksw
+    case    ppc:
+        set model = $mach
+        set arch = $mach
+        set sysincs = YDLINUX
+        set vendor = APPLE
+        breaksw
 
 case    IRIX:
 case    IRIX64:
@@ -602,6 +607,7 @@ case    UNICOS:
         set cppopt = -N
         breaksw
 case    Linux:
+case    CYGWIN*:
         set cppopt = -traditional
         breaksw
 default:
