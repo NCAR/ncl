@@ -1,5 +1,5 @@
 /*
- *	$Id: xwd.c,v 1.14 1992-12-10 18:57:04 don Exp $
+ *	$Id: xwd.c,v 1.15 1992-12-10 23:46:49 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -447,12 +447,31 @@ XWDWrite(ras)
 	int		nb;
 	int		i;
 	unsigned long	swaptest = 1;
+	char		*dep;
+	static char	*swapbuf = (char *) NULL;
+
+	/* Allocate a static swapping buffer, if necessary. */
 
 	if (*(char *) &swaptest) {
-		_swaplong((char *) ras->dep, sizeof(XWDFileHeader));
+		if (swapbuf == (char *) NULL) {
+			swapbuf = calloc(sizeof(XWDFileHeader),1);
+			if (swapbuf == (char *) NULL) {
+				(void) ESprintf(errno,
+					"XWDWrite(\"%s\")", ras->name);
+			}
+				
+		}
+		bcopy(ras->dep, swapbuf, sizeof(XWDFileHeader));
+		_swaplong(swapbuf, sizeof(XWDFileHeader));
+		dep = swapbuf;
+	}
+	else {
+		dep = ras->dep;
 	}
 
-	nb = write(ras->fd, (char *) ras->dep, sizeof(XWDFileHeader));
+	/* Write the header from the proper buffer */
+
+	nb = write(ras->fd, dep, sizeof(XWDFileHeader));
 	if (nb != sizeof(XWDFileHeader)) {
 		(void) ESprintf(errno, "XWDWrite(\"%s\")", ras->name);
 		return(RAS_ERROR);
