@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.15 1998-09-18 23:50:07 boote Exp $
+#      $Id: yMakefile,v 1.16 1998-09-25 19:50:55 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -36,11 +36,15 @@ EXTRA_DEFINES	=	-DNGDEMO $(OS1_DEF) $(MAJOR_DEF) $(DEBUGDEFS)
 EXTRA_LDFLAGS	=
 
 PROG_LIBS	=	$(NGOLIB) $(DBLIB) $(NCLAPILIB) \
-			$(HLULIBS) $(NCARGLIBS) $(XCBLIB)
+			$(HLULIBS) $(NCARGLIBS) -lXmHTML $(XCBLIB)
 DEPLIBS		=	$(DEPNGOLIB) $(DEPNCLAPILIB) $(DEPHLULIBS) \
 			$(DEPNCARGLIBS)
-EXTRA_LIBS	=	$(NCDFLIBS) -lXmHTML -lXpm $(HDFLIB)
+EXTRA_LIBS	=	$(NCDFLIBS) -lXpm $(HDFLIB)
+#ifdef Linux
+SYS_LIBS	=    $(XMOTIFCLIENTLIBS) -lXp $(DEBUGLIBS) $(CTOFLIBS) -lm -ldl
+#else
 SYS_LIBS	=	$(XMOTIFCLIENTLIBS) $(DEBUGLIBS) $(CTOFLIBS) -lm 
+#endif
 
 
 GENHDRS		= ngi.res.h
