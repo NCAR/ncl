@@ -1,5 +1,5 @@
 C
-C	$Id: gdsg.f,v 1.5 1994-05-07 00:51:09 fred Exp $
+C	$Id: gdsg.f,v 1.6 1995-11-30 20:23:28 fred Exp $
 C
       SUBROUTINE GDSG(SGNA)
 C
@@ -103,7 +103,7 @@ C
       CALL GZTOWK
       IF (RERR.NE.0) THEN
         ERS = 1
-        CALL GERHND(RERR,ECRSG,ERF)
+        CALL GERHND(RERR,EDSG,ERF)
         ERS = 0
       ENDIF
 C
