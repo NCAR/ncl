@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.42 2001-03-05 00:07:12 haley Exp $
+#      $Id: yMakefile,v 1.43 2001-03-28 16:31:00 haley Exp $
 #
 #########################################################################
 #									#
@@ -37,7 +37,7 @@ CSRCS = areavolW.c betaincW.c bytesW.o calcorcW.c chiinvW.c conformW.c csagridW.
 	rhombtriW.c shgridW.c sindexW.c slpW.c skewtW.c smth9W.c sortW.c \
 	specxW.c sph2W.c sphintW.c sstoiW.c statW.c svdW.c tdpackW.c \
 	trvsphW.c varimaxW.c vibetaW.c wgneW.c wmapW.c wrunaveW.c wrapper.c \
-	vinth2pW.c vinth2peW.c
+	vinth2pW.c vinth2peW.c zonmpsiW.c
 
 COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o chiinvW.o conformW.o csagridW.o \
 	cssgridW.o cz2ccmW.o datesW.o drwvctc.o dsgridW.o dtrendW.o eofW.o \
@@ -48,7 +48,7 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o chiinvW.o conformW.o csagridW.
 	rhombtriW.o shgridW.o sindexW.o slpW.o skewtW.o smth9W.o sortW.o \
 	specxW.o sph2W.o sphintW.o sstoiW.o statW.o svdW.o tdpackW.o \
 	trvsphW.o varimaxW.o vibetaW.o wgneW.o wmapW.o wrunaveW.o wrapper.o \
-	vinth2pW.o vinth2peW.o
+	vinth2pW.o vinth2peW.o zonmpsiW.o
 
 FSRCS = aam.f areaAve.f areaRmse.f dbetai.f calcorc_dp.f chiin_dp.f \
 	cntrFiniteDiff.f cz2ccm_dp.f dmapgci.f dpsort.f dtrend_dp.f \
@@ -60,7 +60,7 @@ FSRCS = aam.f areaAve.f areaRmse.f dbetai.f calcorc_dp.f chiin_dp.f \
 	sp2_util_dp.f specx_dp.f statx.f statx_dp.f svd_lap_dp.f \
 	svd_util_dp.f ttest.f trcwav_dp.f trvsph77_dp.f upsl_dp.f \
 	varimax_dp.f vibeta_dp.f volAve.f wrunave_dp.f vinth2p_dp.f \
-	vinth2p_ecmwf.f volRmse.f
+	vinth2p_ecmwf.f volRmse.f zon_mpsi.f
 
 FOBJS = aam.o areaAve.o areaRmse.o dbetai.o calcorc_dp.o chiin_dp.o \
 	cntrFiniteDiff.o cz2ccm_dp.o dmapgci.o dpsort.o dtrend_dp.o \
@@ -72,7 +72,7 @@ FOBJS = aam.o areaAve.o areaRmse.o dbetai.o calcorc_dp.o chiin_dp.o \
 	sp2_util_dp.o specx_dp.o statx.o statx_dp.o svd_lap_dp.o \
 	svd_util_dp.o ttest.o trcwav_dp.o trvsph77_dp.o upsl_dp.o \
 	varimax_dp.o vibeta_dp.o volAve.o wrunave_dp.o vinth2p_dp.o \
-	vinth2p_ecmwf.o volRmse.o
+	vinth2p_ecmwf.o volRmse.o zon_mpsi.o
 
 #if defined(alpha)
 EXFSRCS = d1mach_alpha.f
