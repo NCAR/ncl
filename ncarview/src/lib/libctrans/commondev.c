@@ -1,10 +1,10 @@
 /*
- *	$Id: commondev.c,v 1.14 1992-06-09 19:41:49 clyne Exp $
+ *	$Id: commondev.c,v 1.15 1992-07-16 18:07:13 clyne Exp $
  */
 #include <stdio.h>
 #include <math.h>
+#include <errno.h>
 #include <ncarv.h>
-#include "cterror.h"
 #include "commondev.h"
 #include "gcapdev.h"
 #include "rastdev.h"
@@ -158,7 +158,7 @@ ComSimPoly(p_list, n, skip)
 
 
 
-Ct_err	PolyLine(c)
+int	PolyLine(c)
 CGMC *c;
 {
 	long	x1,y1,x2,y2;	/* the clipped line coords */
@@ -237,8 +237,7 @@ CGMC *c;
 		*/
 		if (c->more) {
 			if (Instr_Dec(c) < 1) {
-				ct_error(T_FRE, "metafile");
-				return (DIE);
+				return (-1);
 			}
 
 			if (Clipper(x2,y2,c->p[0].x,c->p[0].y,
@@ -257,18 +256,18 @@ CGMC *c;
 	p++;
 
 	if (LINE_WIDTH == 0.0) 
-		return(OK);	/* do nothing if line is zero width	*/
+		return(0);	/* do nothing if line is zero width	*/
 
 	if (p > 1) {
 		coordBufNum = p;
 		dev->point_flush(coordBuf, &coordBufNum, FALSE, FALSE);
 	}
 
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err  DisjtLine(c)
+int  DisjtLine(c)
 CGMC *c;
 {
 	register long	i;
@@ -300,7 +299,7 @@ CGMC *c;
 
 
 	if (LINE_WIDTH == 0.0) 
-		return(OK);	/* do nothing if line is zero width	*/
+		return(0);	/* do nothing if line is zero width	*/
 
 	/*
 	 * draw line segments one at a time
@@ -312,7 +311,7 @@ CGMC *c;
 }
 
 
-Ct_err	_PolyMarker(c, fat_dot)
+int	_PolyMarker(c, fat_dot)
 	CGMC *c;
 int	fat_dot;
 {
@@ -420,21 +419,25 @@ int	fat_dot;
 				
 		break;
 	default:
-		ct_error(NT_UPMT,"");
-		return (SICK);
+		ESprintf(
+			EINVAL, "Illegal or unsupported marker type(%d)",
+			MARKER_TYPE
+		);
+		return (-1);
+
 	}
 
 	dev->setlinecolour(line_colour);
 	dev->setlinewidth(line_width);
 	dev->setlinestyle(line_type);
 
-	return (OK);
+	return (0);
 }
 
 
 
 /*ARGSUSED*/
-Ct_err	Polygon(c)
+int	Polygon(c)
 CGMC *c;
 {
 	int	i;		/* loop variable */
@@ -478,8 +481,7 @@ CGMC *c;
 				icRealloc ((char *) coordBuf, (unsigned) 
 				(num_points*sizeof(Ptype)*2))) == NULL ) {
 
-				ct_error(NT_MALLOC, "for poly points");
-				return (SICK);
+				return (-1);
 			}
 
 			coordBufSize = num_points * 2;
@@ -561,15 +563,14 @@ CGMC *c;
 		
 		}	/* for	*/
 
-		if (coordBufNum < 3 || !draw) return(OK);
+		if (coordBufNum < 3 || !draw) return(0);
 
 		/*
 		 * see if more flag is set. If so get more data
 		 */
 		if (c->more) {
 			if (Instr_Dec(c) < 1) {
-				ct_error(T_FRE, "metafile");
-				return (DIE);
+				return (-1);
 			}
 		}
 		else break;	/* leave loop	*/
@@ -625,8 +626,6 @@ CGMC *c;
 		/*
 		 *      code to invoke a pattern routine
 		 */
-		/* fill patterns not supported   */
-		ct_error(NT_UPFS, "pattern");
 		break;
 
 	case	HATCH_S:
@@ -644,11 +643,14 @@ CGMC *c;
 		break;
 
 	default:
-		ct_error(NT_UPFS,"");
-		return(SICK);
+		ESprintf(
+			EINVAL, "Illegal or unsupported fill style(%d)",
+			INT_STYLE
+		);
+		return(-1);
 	}
 
-	return (OK);
+	return (0);
 }
 
 
@@ -696,7 +698,7 @@ static	quick_circle(xc,yc,radius)
  *		NOT be invoked.
  */
 
-Ct_err	ComLineSim (x1,y1,x2,y2)
+int	ComLineSim (x1,y1,x2,y2)
 	VDCtype	x1,y1,x2,y2;
 {
 
@@ -737,82 +739,83 @@ Ct_err	ComLineSim (x1,y1,x2,y2)
 	inc = len/seglen;
 
 	switch (LINE_TYPE) {
-		case 2:	/*line type is dash	*/
-			for(i=0;i<inc/2;i++) {
+	case 2:	/*line type is dash	*/
+		for(i=0;i<inc/2;i++) {
+			xtemp = (VDCtype)x_space;
+			ytemp = (VDCtype)y_space;
+			x_space += delta_x; y_space += delta_y;
+
+			/*output the dash	*/
+			dev->line(xtemp,ytemp,(VDCtype)x_space,(VDCtype)y_space);
+			x_space += delta_x; y_space += delta_y;
+		}
+		break;
+	case 3:	/*line type is dot	*/
+		dash = FALSE;
+		for(i=0;i<inc;i++) {
+			/*output the dot	*/
+			dev->line((VDCtype)x_space,(VDCtype)y_space,
+				(VDCtype)x_space,(VDCtype)y_space);
+			x_space += delta_x; y_space += delta_y;
+		}
+		break;
+	case 4:	/*line type is dash dot	*/
+		i=0;
+		while(i < inc) {
+			if (dash) {
 				xtemp = (VDCtype)x_space;
 				ytemp = (VDCtype)y_space;
 				x_space += delta_x; y_space += delta_y;
 
 				/*output the dash	*/
-				dev->line(xtemp,ytemp,(VDCtype)x_space,(VDCtype)y_space);
+				dev->line(xtemp,ytemp,
+					(VDCtype)x_space,(VDCtype)y_space);
 				x_space += delta_x; y_space += delta_y;
+				dash = FALSE;
+				i+=2;
 			}
-			break;
-		case 3:	/*line type is dot	*/
-			dash = FALSE;
-			for(i=0;i<inc;i++) {
+			else {
 				/*output the dot	*/
 				dev->line((VDCtype)x_space,(VDCtype)y_space,
 					(VDCtype)x_space,(VDCtype)y_space);
 				x_space += delta_x; y_space += delta_y;
+				dash = TRUE;
+				i++;
 			}
-			break;
-		case 4:	/*line type is dash dot	*/
-			i=0;
-			while(i < inc) {
-				if (dash) {
-					xtemp = (VDCtype)x_space;
-					ytemp = (VDCtype)y_space;
-					x_space += delta_x; y_space += delta_y;
+		}
+		break;
+				
+	case 5: /*line type is dash dot	dot	*/
+		for(i=0;i<inc/2;i++) {
+			if (dash) {
+				xtemp = (VDCtype)x_space;
+				ytemp = (VDCtype)y_space;
+				x_space += delta_x; y_space += delta_y;
 
-					/*output the dash	*/
-					dev->line(xtemp,ytemp,
-						(VDCtype)x_space,(VDCtype)y_space);
-					x_space += delta_x; y_space += delta_y;
-					dash = FALSE;
-					i+=2;
-				}
-				else {
-					/*output the dot	*/
-					dev->line((VDCtype)x_space,(VDCtype)y_space,
-						(VDCtype)x_space,(VDCtype)y_space);
-					x_space += delta_x; y_space += delta_y;
-					dash = TRUE;
-					i++;
-				}
+				/*output the dash	*/
+				dev->line(xtemp,ytemp,
+					(VDCtype)x_space,(VDCtype)y_space);
+				x_space += delta_x; y_space += delta_y;
+				dash = FALSE;
 			}
-			break;
-					
-		case 5: /*line type is dash dot	dot	*/
-			for(i=0;i<inc/2;i++) {
-				if (dash) {
-					xtemp = (VDCtype)x_space;
-					ytemp = (VDCtype)y_space;
-					x_space += delta_x; y_space += delta_y;
+			else {
+				/*output the first dot	*/
+				dev->line((VDCtype)x_space,(VDCtype)y_space,
+					(VDCtype)x_space,(VDCtype)y_space);
+				x_space += delta_x; y_space += delta_y;
 
-					/*output the dash	*/
-					dev->line(xtemp,ytemp,
-						(VDCtype)x_space,(VDCtype)y_space);
-					x_space += delta_x; y_space += delta_y;
-					dash = FALSE;
-				}
-				else {
-					/*output the first dot	*/
-					dev->line((VDCtype)x_space,(VDCtype)y_space,
-						(VDCtype)x_space,(VDCtype)y_space);
-					x_space += delta_x; y_space += delta_y;
-
-					/*output the second dot	*/
-					dev->line((VDCtype)x_space,(VDCtype)y_space,
-						(VDCtype)x_space,(VDCtype)y_space);
-					x_space += delta_x; y_space += delta_y;
-					dash = TRUE;
-				}
+				/*output the second dot	*/
+				dev->line((VDCtype)x_space,(VDCtype)y_space,
+					(VDCtype)x_space,(VDCtype)y_space);
+				x_space += delta_x; y_space += delta_y;
+				dash = TRUE;
 			}
-			break;
-		default:
-			ct_error(NT_UPLS,"");
-			return (SICK);
+		}
+		break;
+	default:
+		ESprintf(EINVAL, "Illegal line type(%d)", LINE_TYPE);
+		return(-1);
+
 	}
 	/* see if room for one more dash or dot as case may be	*/
 	if (dash) {	/*we're printing dashed	*/
@@ -834,7 +837,7 @@ Ct_err	ComLineSim (x1,y1,x2,y2)
 			dev->line(x2,y2, x2, y2);
 	}
 
-	return (OK);
+	return (0);
 }
 
 /*

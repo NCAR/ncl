@@ -1,5 +1,5 @@
 /*
- *	$Id: readfont.c,v 1.5 1992-04-03 20:58:15 clyne Exp $
+ *	$Id: readfont.c,v 1.6 1992-07-16 18:08:18 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -10,9 +10,9 @@
 *                      NCAR View V3.01 - UNIX Release                  *
 *                                                                      *
 ***********************************************************************/
-#include <ncarv.h>
-#include	<cterror.h>
 #include <stdio.h>
+#include <errno.h>
+#include <ncarv.h>
 #define		READFONT
 #include "readfont.h"
 
@@ -53,13 +53,13 @@
  *	on exit
  *		file fontcap has been opened and processing can begin.
  */
-Ct_err	Init_Readfont(fontcap)
+int	Init_Readfont(fontcap)
 	char 	*fontcap;		/*fontcap name	*/
 {
 	int	fd;		/* fontcap file descriptor	*/
-	Ct_err	status;		/* return status		*/
+	int	status;		/* return status		*/
 
-	extern	Ct_err decodefont();
+	extern	int decodefont();
 
 	/*
 	 *	malloc memory for fontcap 
@@ -71,7 +71,8 @@ Ct_err	Init_Readfont(fontcap)
 	 */
 	if ((fd = open(fontcap,0))  == -1) {
 		if (fontcap_raw) cfree ((char *) fontcap_raw);
-		return (SICK);
+		ESprintf(errno, "open(%s,0)", fontcap);
+		return (-1);
 	}
 
 #ifdef	VMS
@@ -80,7 +81,8 @@ Ct_err	Init_Readfont(fontcap)
 
 		if (fontcap_raw) cfree ((char *) fontcap_raw);
 		(void) close (fd);
-		return (SICK);
+		ESprintf(errno, "VMSfcread(%d,,%d)", fd, sizeof(Fontcap_raw));
+		return (-1);
 	}
 #else
 	if ((read(fd,(char *) fontcap_raw, sizeof(Fontcap_raw))) 
@@ -88,7 +90,8 @@ Ct_err	Init_Readfont(fontcap)
 
 		if (fontcap_raw) cfree ((char *) fontcap_raw);
 		(void) close (fd);
-		return (SICK);
+		ESprintf(errno, "read(%d,,%d)", fd, sizeof(Fontcap_raw));
+		return (-1);
 	}
 
 #endif
@@ -127,7 +130,7 @@ Ct_err	Init_Readfont(fontcap)
  *	var_space	: true if font type is VAR_SPACE or VAR_FILL, else 0 
  */
 static
-Ct_err decodefont()
+int decodefont()
 {
 	int k,i;
 	unsigned 	size;		/*number of strokes in a sequence*/
@@ -245,7 +248,7 @@ Ct_err decodefont()
 		}
 	}
 
-	return(OK);
+	return(0);
 
 }
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: format.c,v 1.4 1992-04-03 20:57:28 clyne Exp $
+ *	$Id: format.c,v 1.5 1992-07-16 18:07:47 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -34,7 +34,6 @@
 
 #include 	<stdio.h>
 #include	<ncarv.h>
-#include	<cterror.h>
 #include	"cgmc.h"
 #include	"defines.h"
 #include	"graphcap.h"
@@ -300,7 +299,7 @@ long value;
  *		1 - only the x value is formated and sent.
  *		2 - both the x and the y value are formated and sent.
  */
-Ct_err	formatcoord(x,y,number)
+int	formatcoord(x,y,number)
 long	x,y;			/* the x, y pair */
 int	number;			/* the number of values to be sent */
 {
@@ -341,8 +340,8 @@ int	number;			/* the number of values to be sent */
 			src = y;
 			srcbitstart = COORD_FORMAT[DATA_VALUE][i];
 		} else {
-			ct_error(NT_GFEE, "(data type out of range)");
-			return (SICK);
+			ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+			return (-1);
 		}
 
 		if (datatype > -1)
@@ -377,8 +376,8 @@ int	number;			/* the number of values to be sent */
 				buffer(temp, ftoa(temp,value));
 				break;
 			default:
-				ct_error(NT_GFEE, "(unsupported encoding)");
-				break;
+				ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+				return (-1);
 			}
 	}
 
@@ -388,13 +387,13 @@ int	number;			/* the number of values to be sent */
 		else
 			buffer(temp,coordoutsize);
 
-	return (OK);
+	return (0);
 }
 
 /*
  * 	Format and encode A vector count.
  */
-Ct_err	formatveccnt(count)
+int	formatveccnt(count)
 long	count;			/* the vector count pair */
 {
 	char	temp[TEMPSIZE];	/* temp buffer to work in */
@@ -428,8 +427,8 @@ long	count;			/* the vector count pair */
 			src = count;
 			srcbitstart = VECTOR_COUNT_FORMAT[DATA_VALUE][i];
 		} else {
-			ct_error(NT_GFEE, "(veccnt: data type out of range)");
-			return (SICK);
+			ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+			return (-1);
 		}
 
 		if (datatype > -1)
@@ -464,17 +463,15 @@ long	count;			/* the vector count pair */
 				buffer(temp, ftoa(temp,value));
 				break;
 			default:
-				ct_error(NT_GFEE, 
-					"(veccnt: unsupported encoding)");
-
-				break;
+				ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+				return (-1);
 			}
 	}
 
 	if (VECTOR_COUNT_ENCODING == BINARY)
 		buffer(temp,veccntoutsize);
 
-	return (OK);
+	return (0);
 }
 
 /*
@@ -486,7 +483,7 @@ long	count;			/* the vector count pair */
  *	As for the interface the fillflag should be TRUE when the colour
  *	index being encoded is Fill colour index, and FALSE otherwise.
  */
-Ct_err	formatindex(index,fillflag)
+int	formatindex(index,fillflag)
 long	index;			/* the colour index */
 boolean	fillflag;		/* TRUE if the index is a fill colour */
 {
@@ -527,10 +524,8 @@ boolean	fillflag;		/* TRUE if the index is a fill colour */
 			src = index;
 			srcbitstart = COLOUR_INDEX_FORMAT[DATA_VALUE][i];
 		} else {
-			ct_error(NT_GFEE,
-				"(formatindex: data type out of range)");
-
-			return (SICK);
+			ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+			return (-1);
 		}
 
 		if (datatype > -1)
@@ -571,23 +566,21 @@ boolean	fillflag;		/* TRUE if the index is a fill colour */
 				buffer(temp, ftoa(temp,value));
 				break;
 			default:
-				ct_error(NT_GFEE,
-					"(formatindex: unsupported encoding )");
-
-				break;
+				ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+				return (-1);
 			}
 	}
 
 	if (COLOUR_INDEX_ENCODING == BINARY)
 		buffer(temp,indexoutsize);
 
-	return (OK);
+	return (0);
 }
 
 /*
  * 	Format and encode the line width 
  */
-Ct_err	formatwidth(width)
+int	formatwidth(width)
 int	width;
 {
 	char	temp[TEMPSIZE];	/* temp buffer to work in */
@@ -600,6 +593,7 @@ int	width;
 	register	int	bitstart, bitcount, srcbitstart, datatype;
 
 	int	i;		/* loop variable */
+	int	status = 0;
 
 	if (LINE_WIDTH_ENCODING == BINARY)
 		bzero(temp,widthoutsize);
@@ -622,10 +616,8 @@ int	width;
 			src = width;
 			srcbitstart = LINE_WIDTH_FORMAT[DATA_VALUE][i];
 		} else {
-			ct_error(NT_GFEE, 
-				"(formatwidth: data type out of range )");
-
-			return (SICK);
+			ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+			return (-1);
 		}
 
 		if (datatype > -1)
@@ -666,17 +658,15 @@ int	width;
 				buffer(temp, ftoa(temp,value));
 				break;
 			default:
-				ct_error(NT_GFEE, 
-					"(formatwidth: unsupported encoding)");
-
-				break;
+				ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+				return (-1);
 			}
 	}
 
 	if (LINE_WIDTH_ENCODING == BINARY)
 		buffer(temp,widthoutsize);
 
-	return (OK);
+	return (0);
 }
 
 /*
@@ -688,7 +678,7 @@ int	width;
  *	already translated in to the appropriate colour model for the
  *	device being used.
  */
-Ct_err	formatintensity(data, count)
+int	formatintensity(data, count)
 long	data[3];		/* the three values to be sent	*/
 int	count;			/* range of data		*/
 {
@@ -730,10 +720,8 @@ int	count;			/* range of data		*/
 			src = data[index++];
 			srcbitstart = MAP_INTENSITY_FORMAT[DATA_VALUE][i];
 		} else {
-			ct_error(NT_GFEE, 
-				"(formatintensity: data type out of range)");
-
-			return (SICK);
+			ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+			return (-1);
 		}
 
 		if (datatype > -1)
@@ -774,9 +762,8 @@ int	count;			/* range of data		*/
 				buffer(temp, ftoa(temp,value));
 				break;
 			default:
-				ct_error(NT_GFEE, 
-					"(formatintensity: unsupported encoding )");
-				break;
+				ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+				return (-1);
 			}
 	}
 
@@ -785,5 +772,5 @@ int	count;			/* range of data		*/
 
 	}
 
-	return (OK);
+	return (0);
 }

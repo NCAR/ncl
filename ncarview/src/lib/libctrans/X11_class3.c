@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class3.c,v 1.4 1992-04-03 20:40:03 clyne Exp $
+ *	$Id: X11_class3.c,v 1.5 1992-07-16 18:06:44 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -26,15 +26,15 @@
 
 
 #include <stdio.h>
-#include	<X11/Xlib.h>
-#include	<X11/Xutil.h>
-#include	<cterror.h>
-#include	"default.h"
-#include	<ncarv.h>
-#include	"cgmc.h"
-#include	"Xdefs.h"
-#include	"ctrandef.h"
-#include	"translate.h"
+#include <errno.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <ncarv.h>
+#include "default.h"
+#include "cgmc.h"
+#include "Xdefs.h"
+#include "ctrandef.h"
+#include "translate.h"
 
 static	XRectangle	devExtentRectangle = {0,0,0,0};
 
@@ -45,14 +45,12 @@ static	XRectangle	devExtentRectangle = {0,0,0,0};
 
 /*ARGSUSED*/
 /* Currently unsupported by NCAR Graphics */
-Ct_err	X11_AuxColr(c)
+int	X11_AuxColr(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_AuxColr\n");
-#endif DEBUG
 
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*

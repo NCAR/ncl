@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class7.c,v 1.3 1992-04-03 20:40:27 clyne Exp $
+ *	$Id: X11_class7.c,v 1.4 1992-07-16 18:06:57 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -23,36 +23,32 @@
 
 
 #include <stdio.h>
-#include	<X11/Xlib.h>
-#include	<X11/Xutil.h>
-#include	<ncarv.h>
-#include	<cterror.h>
-#include	"cgmc.h"
+#include <errno.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <ncarv.h>
+#include "cgmc.h"
 
 /* Class 7 */
 
 /*ARGSUSED*/
 /* Currently unsupported by NCAR Graphics */
-Ct_err	X11_Message(c)
-CGMC *c;
+int	X11_Message(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_Message\n");
-#endif DEBUG
 
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
 /* Currently unsupported by NCAR Graphics */
-Ct_err	X11_ApplData(c)
-CGMC *c;
+int	X11_ApplData(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_ApplData\n");
-#endif DEBUG
 
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.12 1992-06-24 21:05:20 clyne Exp $
+ *	$Id: rast.c,v 1.13 1992-07-16 18:08:13 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -14,9 +14,9 @@
 #include <stdio.h>
 #include <math.h>
 #include <sys/types.h>
+#include <errno.h>
 #include <ncarv.h>
 #include <ncarg_ras.h>
-#include <cterror.h>
 #include "cgmc.h"
 #include "rast.h"
 #include "translate.h"
@@ -76,7 +76,7 @@ boolean	rasIsDirect;		/* direct encoded image?		*/
  * 	Class 0 Function
  */
 /*ARGSUSED*/
-Ct_err	Ras_BegMF(c)
+int	Ras_BegMF(c)
 CGMC *c;
 {
 
@@ -89,14 +89,19 @@ CGMC *c;
 	char	*ras_argv[10];
 
 	Raster	*RasterOpenWrite();
+	int	status = 0;
 
 	/*
 	 *      parse raster specific command line args
 	 *      (currently only resolution accepted       )
 	 */
 	if (GetOptions(optionDesc, raster_opts) < 0) {
-		ct_error(T_NULL, ErrGetMsg());
-		return(DIE);
+		ESprintf(
+			E_UNKNOWN,"GetOptions(%d,) [ %s ]",
+			optionDesc, ErrGetMsg()
+		);
+		return(-1);
+
 	}
 	rasIsDirect = rast_opts.direct;
 
@@ -107,8 +112,8 @@ CGMC *c;
 	 */
 	build_ras_arg(&ras_argc, ras_argv, rast_opts);
 	if (RasterInit(&ras_argc, ras_argv) != RAS_OK) {
-		ct_error(T_NULL, RasterGetError());
-		return(DIE);
+		ESprintf(E_UNKNOWN, "RasterInit(,)");
+		return(-1);
 	}
 
 	/*
@@ -134,8 +139,12 @@ CGMC *c;
 		int	llx, lly, urx, ury;
 
 		if (CoordStringToInt(rast_opts.viewport,&llx,&lly,&urx,&ury)<0){
-			ct_error(NT_NULL, rast_opts.window);
-		}
+			ESprintf(
+				E_UNKNOWN,
+				"Invalid viewport format [ %s ]", ErrGetMsg()
+			);
+			status = -1;
+                }
 		else {
 			SetDevViewport(
 				(long) llx, (long) lly,(long) urx,(long) ury
@@ -150,7 +159,11 @@ CGMC *c;
 		int	llx, lly, urx, ury;
 
 		if (CoordStringToInt(rast_opts.window,&llx,&lly,&urx,&ury)<0){
-			ct_error(NT_NULL, rast_opts.window);
+			ESprintf(
+				E_UNKNOWN,
+				"Invalid window format [ %s ]", ErrGetMsg()
+			);
+			status = -1;
 		}
 		else {
 			SetDevWin((long) llx, (long) lly,(long) urx,(long) ury);
@@ -180,8 +193,8 @@ CGMC *c;
 	if ((rastGrid = (RasterOpenWrite("stdout", width, height,
 		VERSION,encoding,devices[currdev].name))) == NULL) {
 
-		ct_error(T_NULL, RasterGetError());
-		return (DIE);
+		ESprintf(E_UNKNOWN, "RasterOpenWrite(,,,,,)");
+		return(-1);
 	}
 
 	/*
@@ -190,27 +203,27 @@ CGMC *c;
 	clear_grid(rastGrid);
 
 	deviceIsInit = TRUE;
-	return (OK);
+	return (status);
 }
 
 /*ARGSUSED*/
-Ct_err	Ras_EndMF(c)
+int	Ras_EndMF(c)
 CGMC *c;
 {
 
 	if (!deviceIsInit) {
-		return(OK);
+		return(0);
 	}
 
 	RasterClose(rastGrid);
 
 	deviceIsInit = FALSE;
-	return (OK);
+	return (0);
 }
 
 
 /*ARGSUSED*/
-Ct_err	Ras_BegPic(c)
+int	Ras_BegPic(c)
 CGMC *c;
 {
 	int	i;
@@ -244,11 +257,11 @@ CGMC *c;
 	FILL_COLOUR_DAMAGE = TRUE;
 	LINE_COLOUR_DAMAGE = TRUE;
 	LINE_WIDTH_DAMAGE = TRUE;
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	Ras_BegPicBody(c)
+int	Ras_BegPicBody(c)
 CGMC *c;
 {
 	if (BACKCOLR_DAMAGE) {
@@ -256,11 +269,11 @@ CGMC *c;
 		BACKCOLR_DAMAGE = FALSE;
 	}
 
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	Ras_EndPic(c)
+int	Ras_EndPic(c)
 CGMC *c;
 {
 
@@ -281,8 +294,8 @@ CGMC *c;
 	 *	 write the file
 	 */
 	 if( RasterWrite(rastGrid) != RAS_OK) {
-		ct_error(NT_NULL, RasterGetError());
-		return (DIE);
+		ESprintf(E_UNKNOWN, "RasterWrite()");
+		return (-1);
 	}
 
 	
@@ -291,28 +304,28 @@ CGMC *c;
 	 * reset to default attributes
 	 */
 	(void)SetInPic((boolean)FALSE);
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	Ras_ClearDevice(c)
+int	Ras_ClearDevice(c)
 CGMC *c;
 {
 	clear_grid(rastGrid);
-	return(OK);
+	return(0);
 }
 
-Ct_err	Ras_PolyMarker(c)
+int	Ras_PolyMarker(c)
 CGMC *c;
 {
-	Ct_err	_PolyMarker();
+	int	_PolyMarker();
 
 	return(_PolyMarker(c, FALSE));
 }
 
 
 /*ARGSUSED*/
-Ct_err	Ras_CellArray(c)
+int	Ras_CellArray(c)
 CGMC *c;
 {
 #ifdef DEBUG
@@ -337,7 +350,7 @@ CGMC *c;
 	int	nx, ny;		/* dimensions of cell array by number of cells*/
 	Etype	mode;		/* cell representation mode		*/
 
-	Ct_err	ras_cell_array(), ras_non_rect_cell_array();
+	int	ras_cell_array(), ras_non_rect_cell_array();
 
 	if (COLOUR_TABLE_DAMAGE) {
 		rast_update_color_table();
@@ -360,15 +373,14 @@ CGMC *c;
 		/*	cell representation mode	*/
 	mode = c->e[0];
 
-	if (CSM != INDEXED) {
-		ct_error(NT_CAFE, "direct color not supported");
-		return (SICK);
+	if (CSM != MODE_INDEXED) {
+		ESprintf(EINVAL, "direct color not supported");
+		return (-1);
 	}
 
 	if (mode != PACKED_MODE) {
-		(void) fprintf(stderr, 
-		"ctrans: run length encoded cell arrays not supported\n");
-		return(OK);
+		ESprintf(EINVAL, "run length encoding not supported");
+		return(-1);
 	}
 
         /*
@@ -456,8 +468,9 @@ get_resolution(dev_extent, opts, name)
 		char	*cptr = opts.resolution;
 
 		if (sscanf(cptr, "%dx%d", &width, &height) != 2){
-			ct_error(NT_NULL, 
-			"Error parsing resolution, using defaults");
+			/*
+			 * error
+			 */
 		}
 	}
 
@@ -473,12 +486,12 @@ get_resolution(dev_extent, opts, name)
 
 
 /*ARGSUSED*/
-static	Ct_err	ras_non_rect_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
+static	int	ras_non_rect_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
 	CGMC		*c;
         Ptype  Pcoord, Qcoord, Rcoord;
         int     nx, ny;
 {
-        return(OK);      /* non rectangular cell arrays are not supported */
+        return(0);      /* non rectangular cell arrays are not supported */
 }
 
 
@@ -496,7 +509,7 @@ static	Ct_err	ras_non_rect_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
  * on exit
  *	return		: 0 => Ok, else error
  */
-static	Ct_err	ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
+static	int	ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
 	CGMC		*c;
 	Ptype	Pcoord, Qcoord, Rcoord;
 	int	nx, ny;
@@ -541,7 +554,7 @@ static	Ct_err	ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
 	/*
 	 * don't know how to handle a cell array with zero dimension
 	 */
-	if (nx == 0 || ny == 0) return (OK);
+	if (nx == 0 || ny == 0) return (0);
 
 	rows = (int *) icMalloc ((unsigned) ny * sizeof (int));
 	cols = (int *) icMalloc ((unsigned) nx * sizeof (int));
@@ -590,8 +603,7 @@ static	Ct_err	ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
 			/* make sure data available in cgmc     */
 			if (cgmc_index >= c->Cnum && c->more) {
 				if (Instr_Dec(c) < 1) {
-					ct_error(T_FRE, "metafile");
-					return (DIE);
+					return (-1);
 				}
 				cgmc_index = 0;
 			}
@@ -636,7 +648,7 @@ static	Ct_err	ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
 	free((char *) cols);
 	free((char *) index_array);
 
-	return(OK);
+	return(0);
 }
 
 

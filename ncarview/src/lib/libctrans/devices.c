@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.c,v 1.10 1992-04-03 20:57:02 clyne Exp $
+ *	$Id: devices.c,v 1.11 1992-07-16 18:07:34 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -23,7 +23,6 @@
  */
 
 #include	<stdio.h>
-#include	<cterror.h>
 #include	<cgm_tools.h>
 #include	"cgmc.h"
 #define		DEVICES
@@ -42,36 +41,36 @@ int	devicenum = (sizeof(devices)/sizeof(struct device));
 
 /*	Class 0	*/
 
-Ct_err BegMF(), EndMF(), BegPic(), BegPicBody(), EndPic(), ClearDevice();
+int BegMF(), EndMF(), BegPic(), BegPicBody(), EndPic(), ClearDevice();
 
 /*	Class 1	*/
 
-Ct_err MFVersion(), MFDesc(), VDCType(), IntergerPrec(), RealPrec(), 
+int MFVersion(), MFDesc(), VDCType(), IntergerPrec(), RealPrec(), 
 	IndexPrec(),
     ColrPrec(), ColrIndexPrec(), MaxColrIndex(), ColrValueExt(), MFElemList(),
     MFDefaults(), FontList(), CharSetList(), CharCoding();
 
 /*	Class 2	*/
 
-Ct_err ScaleMode(), ColrMode(), LineWidthMode(), MarkerSizeMode(), EdgeWidthMode(),
+int ScaleMode(), ColrMode(), LineWidthMode(), MarkerSizeMode(), EdgeWidthMode(),
     VDCExt(), BackColr();
 
 
 /*	Class 3	*/
 
-Ct_err VDCIntergerPrec(), VDCRealPrec(), AuxColr(), Transparency(), ClipRect(),
+int VDCIntergerPrec(), VDCRealPrec(), AuxColr(), Transparency(), ClipRect(),
     Clip();
 
 /*	Class 4	*/
 
-Ct_err PolyLine(), DisjtLine(), PolyMarker(), Text(), RestrText(), ApndText(),
+int PolyLine(), DisjtLine(), PolyMarker(), Text(), RestrText(), ApndText(),
     Polygon(), PolygonSet(), CellArray(), GDP(), Rect(), Circle(), Arc3Pt(),
     Arc3PtClose(), ArcCtr(), ArcCtrClose(), Ellipse(), EllipArc(),
     EllipArcClose();
 
 /*	Class 5	*/
 
-Ct_err LineIndex(), LineType(), LineWidth(), LineColr(), MarkerIndex(),
+int LineIndex(), LineType(), LineWidth(), LineColr(), MarkerIndex(),
     MarkerType(), MarkerSize(), MarkerColr(), TextIndex(), TextFontIndex(),
     TextPrec(), CharExpan(), CharSpace(), TextColr(), CharHeight(), CharOri(),
     TextPath(), TextAlign(), CharSetIndex(), AltCharSetIndex(), FillIndex(),
@@ -81,11 +80,11 @@ Ct_err LineIndex(), LineType(), LineWidth(), LineColr(), MarkerIndex(),
 
 /*	Class 6	*/
 
-Ct_err Escape();
+int Escape();
 
 /*	Class 7	*/
 
-Ct_err Message(), ApplData();
+int Message(), ApplData();
 
 
 /*
@@ -95,12 +94,12 @@ Ct_err Message(), ApplData();
 
 /*	Class 0	*/
 
-Ct_err	Ras_BegMF(), Ras_EndMF(), Ras_BegPic(), Ras_BegPicBody(), 
+int	Ras_BegMF(), Ras_EndMF(), Ras_BegPic(), Ras_BegPicBody(), 
 	Ras_EndPic(), Ras_ClearDevice();
 
 /*	Class 4	*/
 
-Ct_err	Ras_PolyMarker(), Ras_CellArray();
+int	Ras_PolyMarker(), Ras_CellArray();
 
 /*	Class 5	*/
 
@@ -120,12 +119,12 @@ Ct_err	Ras_PolyMarker(), Ras_CellArray();
 
 /* 	Class 0	*/	
 
-Ct_err	X11_BegMF(), X11_EndMF(), X11_BegPic(), X11_BegPicBody(), X11_EndPic(),
+int	X11_BegMF(), X11_EndMF(), X11_BegPic(), X11_BegPicBody(), X11_EndPic(),
 	X11_ClearDevice();
 
 /*	Class 1	*/
 
-Ct_err X11_MFVersion(), X11_MFDesc(), X11_MFElemList(), X11_MFDefaults(), 
+int X11_MFVersion(), X11_MFDesc(), X11_MFElemList(), X11_MFDefaults(), 
     X11_CharSetList(); 
 
 /*	Class 2	*/
@@ -133,26 +132,26 @@ Ct_err X11_MFVersion(), X11_MFDesc(), X11_MFElemList(), X11_MFDefaults(),
 
 /*	Class 3	*/
 
-Ct_err X11_AuxColr();
+int X11_AuxColr();
 
 /*	Class 4	*/	
 
-Ct_err X11_PolyLine(), X11_DisjtLine(), X11_PolyMarker(), X11_RestrText(), 
+int X11_PolyLine(), X11_DisjtLine(), X11_PolyMarker(), X11_RestrText(), 
     X11_ApndText(), X11_Polygon(), X11_PolygonSet(), X11_CellArray(), X11_GDP(),
     X11_Rect(), X11_Circle(), X11_Arc3Pt(), X11_Arc3PtClose(), X11_ArcCtr(), 
     X11_ArcCtrClose(), X11_Ellipse(), X11_EllipArc(), X11_EllipArcClose();
 
 /*	Class 5	*/
 
-Ct_err X11_PatTable(), X11_ASF();
+int X11_PatTable(), X11_ASF();
 
 /*	Class 6	*/
 
-Ct_err X11_Escape();
+int X11_Escape();
 
 /*	Class 7	*/
 
-Ct_err X11_Message(), X11_ApplData();
+int X11_Message(), X11_ApplData();
 
 
 #endif X11
@@ -168,12 +167,12 @@ Ct_err X11_Message(), X11_ApplData();
 
 /*	Class 0	*/
 
-Ct_err	CTXT_NoOp(), CTXT_BegMF(), CTXT_EndMF(), CTXT_BegPic(), 
+int	CTXT_NoOp(), CTXT_BegMF(), CTXT_EndMF(), CTXT_BegPic(), 
 	CTXT_BegPicBody(), CTXT_EndPic(), CTXT_ClearDevice();
 
 /*	Class 1	*/
 
-Ct_err	CTXT_MFVersion(), CTXT_MFDesc(), CTXT_VDCType(),CTXT_IntergerPrec(),
+int	CTXT_MFVersion(), CTXT_MFDesc(), CTXT_VDCType(),CTXT_IntergerPrec(),
 	CTXT_RealPrec(), CTXT_IndexPrec(), CTXT_ColrPrec(), 
 	CTXT_ColrIndexPrec(), CTXT_MaxColrIndex(), CTXT_ColrValueExt(), 
 	CTXT_MFElemList(), CTXT_MFDefaults(), CTXT_FontList(), 
@@ -181,19 +180,19 @@ Ct_err	CTXT_MFVersion(), CTXT_MFDesc(), CTXT_VDCType(),CTXT_IntergerPrec(),
 
 /*	Class 2	*/
 
-Ct_err	CTXT_ScaleMode(), CTXT_ColrMode(), CTXT_LineWidthMode(), 
+int	CTXT_ScaleMode(), CTXT_ColrMode(), CTXT_LineWidthMode(), 
 	CTXT_MarkerSizeMode(), CTXT_EdgeWidthMode(), CTXT_VDCExt(), 
 	CTXT_BackColr();
 
 
 /*	Class 3	*/
 
-Ct_err	CTXT_VDCIntergerPrec(), CTXT_VDCRealPrec(), CTXT_AuxColr(), 
+int	CTXT_VDCIntergerPrec(), CTXT_VDCRealPrec(), CTXT_AuxColr(), 
 	CTXT_Transparency(), CTXT_ClipRect(), CTXT_Clip();
 
 /*	Class 4	*/
 
-Ct_err	CTXT_PolyLine(), CTXT_DisjtLine(), CTXT_PolyMarker(), CTXT_Text(), 
+int	CTXT_PolyLine(), CTXT_DisjtLine(), CTXT_PolyMarker(), CTXT_Text(), 
 	CTXT_RestrText(), CTXT_ApndText(), CTXT_Polygon(), 
 	CTXT_PolygonSet(), CTXT_CellArray(), CTXT_GDP(), CTXT_Rect(), 
 	CTXT_Circle(), CTXT_Arc3Pt(), CTXT_Arc3PtClose(), CTXT_ArcCtr(), 
@@ -202,7 +201,7 @@ Ct_err	CTXT_PolyLine(), CTXT_DisjtLine(), CTXT_PolyMarker(), CTXT_Text(),
 
 /*	Class 5	*/
 
-Ct_err	CTXT_LineIndex(), CTXT_LineType(), CTXT_LineWidth(),CTXT_LineColr(),
+int	CTXT_LineIndex(), CTXT_LineType(), CTXT_LineWidth(),CTXT_LineColr(),
 	CTXT_MarkerIndex(), CTXT_MarkerType(), CTXT_MarkerSize(), 
 	CTXT_MarkerColr(), CTXT_TextIndex(), CTXT_TextFontIndex(),
 	CTXT_TextPrec(), CTXT_CharExpan(), CTXT_CharSpace(),CTXT_TextColr(),
@@ -215,11 +214,11 @@ Ct_err	CTXT_LineIndex(), CTXT_LineType(), CTXT_LineWidth(),CTXT_LineColr(),
 
 /*	Class 6	*/
 
-Ct_err	CTXT_Escape();
+int	CTXT_Escape();
 
 /*	Class 7	*/
 
-Ct_err	CTXT_Message(), CTXT_ApplData();
+int	CTXT_Message(), CTXT_ApplData();
 
 #endif	CTXT
 
@@ -230,19 +229,19 @@ Ct_err	CTXT_Message(), CTXT_ApplData();
  * 
  */
 /*	class 1	*/
-Ct_err	SunV_BegMF(), SunV_EndMF(), SunV_BegPic(), SunV_BegPicBody(), 
+int	SunV_BegMF(), SunV_EndMF(), SunV_BegPic(), SunV_BegPicBody(), 
 	SunV_EndPic(), SunV_ClearDevice();
 
 /*	Class 4	*/
 
 
-Ct_err	SunV_PolyLine(), SunV_PolyMarker(), SunV_Polygon(), SunV_CellArray();
+int	SunV_PolyLine(), SunV_PolyMarker(), SunV_Polygon(), SunV_CellArray();
     
    
 
 /*	Class 5	*/
 
-Ct_err	SunV_ColrTable(); 
+int	SunV_ColrTable(); 
 
 #endif
 #ifdef	SunR
@@ -252,26 +251,26 @@ Ct_err	SunV_ColrTable();
  * 
  */
 /*	class 1	*/
-Ct_err	SunR_BegMF(), SunR_EndMF(), SunR_BegPic(), SunR_BegPicBody(), 
+int	SunR_BegMF(), SunR_EndMF(), SunR_BegPic(), SunR_BegPicBody(), 
 	SunR_EndPic(), SunR_ClearDevice();
 
 /*	Class 4	*/
 
 
-Ct_err	SunR_PolyLine(), SunR_PolyMarker(), SunR_Polygon(), SunR_CellArray();
+int	SunR_PolyLine(), SunR_PolyMarker(), SunR_Polygon(), SunR_CellArray();
     
    
 
 /*	Class 5	*/
 
-Ct_err	SunR_ColrTable(); 
+int	SunR_ColrTable(); 
 
 #endif
 /*ARGSUSED*/
-Ct_err	noop(c)
+int	noop(c)
 CGMC *c;
 {
-	return(OK);
+	return(0);
 }
 
 
@@ -279,7 +278,7 @@ CGMC *c;
 /*
  * The Jumptable 
  */
-Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
+int  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	{
 	/* Class 0 */
 	{

@@ -1,5 +1,5 @@
 /*
- *      $Id: ctrans_api.c,v 1.10 1992-06-26 17:59:53 clyne Exp $
+ *      $Id: ctrans_api.c,v 1.11 1992-07-16 18:07:24 clyne Exp $
  */
 /*
  *	File:		ctrans_api.c
@@ -15,7 +15,10 @@
  *			found in the file ctrans.c. These routines should
  *			not be mixed with those found in ctrans.c. 
  *
- *			All routines return an error status. If an error is
+ *			All routines return an error status of FATAL - No
+ *			further processing possible, WARN - warning, 
+ *			EOM - end of metafile, or OK. If an error (FATAL 
+ *			or WARN) is
  *			indicated the routines CtransGetErrorNumber() and
  *			CtransGetErrorMessage() may be useful.
  *
@@ -28,17 +31,10 @@
 #include <stdio.h> 
 #include <fcntl.h> 
 #include <errno.h> 
-
-#ifdef	SYSV
 #include <string.h>
-#else
-#include <strings.h>
-#endif
-
-
 #include <ncarv.h>
 #include <cgm_tools.h>
-#include <cterror.h>
+#include <ctrans.h>
 #include "cgmc.h"
 #include "error.h"
 #include "defines.h"
@@ -121,14 +117,14 @@ static	int	frameCount = 0;		/* current frame offset		*/
  *	dev_argv	: device specific arguments
  *
  * on exit
- *	return		: < 0 => error, 0 => EOF, else ok.
+ *	return		: [FATAL, WARN, EOM, OK]
  * 
  * Notes
  *	if metafile is null then SetMetafile must be called before plotting
  *	can begin. If device_name or font_name is null ctrans will use
  *	the value in GRAPHCAP and FONTCAP variables respectively. 
  */
-CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
+CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	char	*device_name,
 		*font_name,
 		*metafile;
@@ -146,13 +142,8 @@ CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	int	i;
 
 	char	*getGcapname(), *getFcapname();
-	extern	char	*malloc();
 
 	if (initialized) CtransCloseBatch();
-        /*
-         *      init ctrans' error module. 
-         */
-        init_ct_error("ctrans", TRUE);
 
 	/*
 	 * set all these hideous global variables to something resonable
@@ -175,7 +166,7 @@ CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	 */
 	if (! (gcap = getGcapname(device_name))) {
 		CtransSetError_(ERR_NO_DEVICE);
-		return(-1);
+		return(FATAL);
 	}  
 
         /*
@@ -183,7 +174,7 @@ CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
          */
         if (SetDevice(gcap) < 0) {
 		CtransSetError_(ERR_INIT_DEVICE);
-		return(-1);
+		return(FATAL);
         }
 
 	/*
@@ -192,7 +183,7 @@ CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	 */
 	if (! (dev_argv_ = (char **) malloc ((dev_argc+1) * sizeof (char *)))){
 		CtransSetError_(errno);
-		return(-1);
+		return(FATAL);
 	}
 	for (i=0; i<dev_argc; i++) {
 		dev_argv_[i] = (char *) malloc (strlen(dev_argv[i] + 1));
@@ -204,7 +195,7 @@ CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 		optionDesc, &dev_argc, dev_argv_, devices[currdev].opt) < 0) 
 	{
 		CtransSetError_(ERR_INV_ARG);
-		return(-1);
+		return(FATAL);
 	}
 
 	/*
@@ -212,7 +203,7 @@ CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	 */
 	if (GetOptions(optionDesc, get_options) < 0) {
 		CtransSetError_(ERR_INV_ARG);
-		return(-1);
+		return(FATAL);
 	}
 
 	/*
@@ -235,7 +226,7 @@ CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 		 */
 		if ((fcap = getFcapname(DEFAULTFONT)) == NULL) {
 			CtransSetError_(ERR_NO_FONT);
-			return(-1);
+			return(FATAL);
 		}
 	}
 
@@ -244,15 +235,11 @@ CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	 */
 	if (SetFont(fcap) < 0) {
 		CtransSetError_(ERR_INIT_FONT);
-		return(-1);
+		return(FATAL);
 	}
 
 	init_cgmc(&cgmc);
 
-	/*
-	 * intialize the default table
-	 */
-	InitDefault();
 
 	/*
 	 * after we init the cgmc we want to set the initialize flag to
@@ -264,7 +251,7 @@ CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 		return(CtransSetMetafile(metafile));
 	}
 
-	return(1);
+	return(OK);
 }
 
 /*
@@ -276,21 +263,23 @@ CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
  *	metafile	: name of metafile
  *
  * on exit 
- *	return		: -1 => error, 0 => EOF, else ok
+ *	return		: [FATAL, WARN, EOM, OK]
  */
-CtransSetMetafile(metafile)
+CtransRC	CtransSetMetafile(metafile)
 	char	*metafile;
 {
 	int	status;
+	CtransRC	rc = OK;
+	CtransRC	rcx = OK;
 
-	Ct_err	InitInput();
+	int	InitInput();
 
 	/*
 	 * make sure we've been initialized
 	 */
 	if (! initialized) {
 		CtransSetError_(ERR_INV_STATE);
-		return(-1);
+		return(FATAL);
 	}
 
 	/*
@@ -306,7 +295,7 @@ CtransSetMetafile(metafile)
 	 */
 	if ((cgm_fd = CGM_open(metafile, 1440, "r")) < 0) {
 		CtransSetError_(ERR_OPEN_META);
-		return(-1);
+		return(FATAL);
 	}
 
 	/*
@@ -314,17 +303,19 @@ CtransSetMetafile(metafile)
 	 */
 	(void) InitInput(cgm_fd);
 
+	/*
+	 * intialize the CGM default table
+	 */
+	InitDefault();	
 
 	/*
 	 * get the first cgm element
 	 */
-	if ((status = Instr_Dec(&cgmc)) < 1) {
-		if (status < 1) {	/* else eof	*/
-			CtransSetError_(ERR_PAR_META);
-			(void) CGM_close(cgm_fd);
-			cgm_fd = -1;
-		}
-		return(status);
+	if (Instr_Dec(&cgmc) < 1) {
+		CtransSetError_(ERR_PAR_META);
+		(void) CGM_close(cgm_fd);
+		cgm_fd = -1;
+		return(FATAL);
 	}
 
 	DoEscapes(&cgmc);
@@ -332,13 +323,15 @@ CtransSetMetafile(metafile)
 	 * make sure the first element is a Begin Metafile element
 	 */
 	if (cgmc.class == DEL_ELEMENT && cgmc.command == BEG_MF) {
-		Process(&cgmc);
+		if ((rc = Process(&cgmc)) == FATAL) return(FATAL);
+		if (rc == WARN) rcx = WARN;
+
 	}
 	else {
 		CtransSetError_(ERR_INV_META);
 		(void) CGM_close(cgm_fd);
 		cgm_fd = -1;
-		return(-1);
+		return(FATAL);
 	}
 
 
@@ -356,14 +349,15 @@ CtransSetMetafile(metafile)
 		/*
 		 * execute the cgmc
 		 */
-		Process(&cgmc);
+		if ((rc = Process(&cgmc)) == FATAL) return(FATAL);
+		if (rc == WARN) rcx = WARN;
 	}
 
 	if (status < 1) {
 		CtransSetError_(ERR_INV_META);
 		(void) CGM_close(cgm_fd);
 		cgm_fd = -1;
-		return(-1);
+		return(FATAL);
 	}
 
 	frameCount = 0;
@@ -371,7 +365,7 @@ CtransSetMetafile(metafile)
 	/*
 	 * 'cgmc' now contains a BEG_PIC or an END_METAFILE element
 	 */
-	return (1);
+	return (rcx);
 }
 
 /*
@@ -381,18 +375,20 @@ CtransSetMetafile(metafile)
  *	the next frame. 
  *	
  * on exit
- *	return		: -1 => error, 0 => no more frames (EOF) , 1 => OK
+ *	return		: [FATAL, WARN, EOM, OK]
  */
-CtransPlotFrame()
+CtransRC	CtransPlotFrame()
 {
-	int	status;
+	int		status;
+	CtransRC	rc = OK;
+	CtransRC	rcx = OK;
 
 	/*
 	 * make sure we've been initialized
 	 */
 	if (! initialized || cgm_fd == -1) {
 		CtransSetError_(ERR_INV_STATE);
-		return(-1);
+		return(FATAL);
 	}
 
 	DoEscapes(&cgmc);
@@ -400,7 +396,7 @@ CtransPlotFrame()
 	 * See if we've reached the end of the file
 	 */
 	if (cgmc.class == DEL_ELEMENT && cgmc.command == END_MF) {
-		return(0);
+		return(EOM);
 	}
 
 	/*
@@ -409,9 +405,11 @@ CtransPlotFrame()
 	if (! (cgmc.class == DEL_ELEMENT && cgmc.command == BEG_PIC)) {
 
 		CtransSetError_(ERR_INV_STATE);
-		return(-1);
+		return(FATAL);
 	}
-	Process(&cgmc);	/* process the begin picture element	*/
+	/* process the begin picture element	*/
+	if ((rc = Process(&cgmc)) == FATAL) return(FATAL);
+	if (rc == WARN) rcx = WARN;
 
 
 	/*
@@ -422,7 +420,8 @@ CtransPlotFrame()
 		/*
 		 * execute the cgmc
 		 */
-		Process(&cgmc);
+		if ((rc = Process(&cgmc)) == FATAL) return(FATAL);
+		if (rc == WARN) rcx = WARN;
 
 		if (cgmc.class == DEL_ELEMENT && cgmc.command == END_PIC) {
 
@@ -432,7 +431,7 @@ CtransPlotFrame()
 
 	if (status < 1) {
 		CtransSetError_(ERR_INV_META);
-		return(-1);
+		return(FATAL);
 	}
 
 
@@ -442,11 +441,11 @@ CtransPlotFrame()
 	 */
 	if (Instr_Dec(&cgmc) < 1) {
 		CtransSetError_(ERR_PAR_META);
-		return(-1);
+		return(FATAL);
 	}
 
 	frameCount++;
-	return(1);
+	return(rcx);
 }
 
 /*
@@ -455,21 +454,21 @@ CtransPlotFrame()
  *	Generate the appropriate 'clear display' command for the device
  *
  * on exit
- *	return		: -1 => error, 0 => no more frames (EOF) , 1 => OK
+ *	return		: [FATAL, WARN, EOM, OK]
  */
-CtransClearDisplay()
+CtransRC	CtransClearDisplay()
 {
 	CGMC	temp_cgmc;
 
 	if (! initialized || cgm_fd == -1) {
 		CtransSetError_(ERR_INV_STATE);
-		return(-1);
+		return(FATAL);
 	}
 
 	temp_cgmc.class = DEL_ELEMENT;
 	temp_cgmc.command = CLEAR_DEVICE;
 	Process(&temp_cgmc);
-	return(1);
+	return(OK);
 }
 
 /*
@@ -478,9 +477,8 @@ CtransClearDisplay()
  *	Close the translator. 
  *
  * on exit
- *	return		: -1 => error, 0 => no more frames (EOF) , 1 => OK
  */
-CtransCloseBatch()
+void	CtransCloseBatch()
 {
 	if (! initialized) return;
 
@@ -500,7 +498,7 @@ CtransCloseBatch()
 	if (deviceIsInit && ! (*deBug)) {
 		cgmc.class = DEL_ELEMENT;
 		cgmc.command = END_MF;
-		Process(&cgmc);
+		(void) Process(&cgmc);
 	}
 	/*
 	 *      flush the output buffer
@@ -508,12 +506,6 @@ CtransCloseBatch()
 	if (devices[currdev].usegcap) {
 		flush();
 	}
-
-	/*
-	 *      close the error module
-	 */
-	close_ct_error();
-
 
         /*
          * free the cgmc
@@ -542,9 +534,9 @@ CtransCloseBatch()
  *	frame zero.	You cannot seek past the end of the file. 
  *
  * on exit
- *	return		: -1 => error, 0 = > eof, 1 => ok
+ *	return		: [FATAL, WARN, EOM, OK]
  */
-CtransLSeekBatch(offset, whence)
+CtransRC	CtransLSeekBatch(offset, whence)
 	unsigned	offset,
 			whence;
 {
@@ -564,7 +556,7 @@ CtransLSeekBatch(offset, whence)
 	}
 	else {
 		CtransSetError_(ERR_INV_ARG);
-		return(-1);
+		return(FATAL);
 	}
 
 	/*
@@ -576,17 +568,17 @@ CtransLSeekBatch(offset, whence)
 			skip--;
 		}
 		if (cgmc.class == DEL_ELEMENT && cgmc.command == END_MF) {
-			return(0);	/* seek past end of file	*/
+			return(EOM);	/* seek past end of file	*/
 		}
 	}
 
 	if (status < 1) {
 		CtransSetError_(ERR_INV_META);
-		return(-1);
+		return(FATAL);
 	}
 
 	frameCount = frame_count;	/* update current frame offset	*/
-	return(1);
+	return(OK);
 }
 
 /*

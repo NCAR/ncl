@@ -1,5 +1,5 @@
 /*
- *	$Id: fill.c,v 1.7 1992-04-03 20:57:17 clyne Exp $
+ *	$Id: fill.c,v 1.8 1992-07-16 18:07:40 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -13,7 +13,6 @@
 #include	<stdio.h>
 #include	<cgm_tools.h>
 #include	<ncarv.h>
-#include	<cterror.h>
 #include	"fill.h"
 #include	"cgmc.h"
 #include	"in.h"
@@ -485,9 +484,11 @@ fill_P(cgmc,instr,p_len)
 
 			cgmc->p[i].y = GetInt(instr->data, prec,TRUE);
 		}
-		else {		/* else vdc type is real		*/
-			ct_error(NT_UCGMDF, "(VDC real)");
+		else {		
 
+			/*
+			 * Real VDC not supported
+			 */
 			instr->data += (stepsize);
 
 		}
@@ -617,7 +618,7 @@ fill_S(cgmc,instr)
 		}
 
 		if (charcount > numparm) {
-			ct_error(T_EE, "invalid CGM");
+			ESprintf(E_UNKNOWN, "Metafile corrupt");
 			return(-1);
 		}
 
@@ -706,7 +707,9 @@ fill_VDC(cgmc,instr,p_len)
 			cgmc->vdc[i] = GetInt(instr->data, prec,TRUE);
 		else {		/* if vdc type is real		*/
 			
-			ct_error(NT_UCGMDF, "(VDC real)");
+			/*
+			 * Real VDC not supported
+			 */
 
 		/* NCAR CGM presently does not support real VDC 
 		 * values. Should VDC reals be added in the future, all 
@@ -744,8 +747,8 @@ fill_special(cgmc,instr,class,id)
 			return(fill_IX(cgmc,instr,N));
 			
 		default :
-			ct_error(NT_IOUE,"");
-			return (0);
+			ESprintf(E_UNKNOWN, "Can't parse CGM element");
+			return (-1);
 		}
 	case 4 :
 		switch(id) {
@@ -783,8 +786,8 @@ fill_special(cgmc,instr,class,id)
 			return(fill_S(cgmc,instr));
 
 		default : 
-			ct_error(NT_IOUE,"");
-			return (0);
+			ESprintf(E_UNKNOWN, "Can't parse CGM element");
+			return (-1);
 		}
 
 	case 5 :
@@ -806,8 +809,8 @@ fill_special(cgmc,instr,class,id)
 			return(fill_CD(cgmc,instr,N));
 
 		default :
-			ct_error(NT_IOUE,"");
-			return (0);
+			ESprintf(E_UNKNOWN, "Can't parse CGM element");
+			return (-1);
 		}
 	case 6 :
 		switch(id) {
@@ -816,12 +819,12 @@ fill_special(cgmc,instr,class,id)
 			return(fill_S(cgmc,instr));
 
 		default:
-			ct_error(NT_IOUE,"");
-			return (0);
+			ESprintf(E_UNKNOWN, "Can't parse CGM element");
+			return (-1);
 		}
 	default : 
-		ct_error(NT_IOUE,"");
-		return (0);
+		ESprintf(E_UNKNOWN, "Can't parse CGM element");
+		return (-1);
 	}
 }
 
@@ -872,8 +875,11 @@ static	int	count;		/* number of cells processed in a row of data*/
 
 	/* only support one colour precision currently		*/
 	if ((cgmc->i[2] != 8) && (cgmc->i[2] != 0 || c_prec != 8)) {
-		ct_error(NT_CAFE,"(cell array must have 8 bit precison)");
-		return(0);
+		ESprintf(
+			E_UNKNOWN, "Unsupported cell array color precision(%d)",
+			cgmc->i[2]
+		);
+		return(-1);
 	}
 
 

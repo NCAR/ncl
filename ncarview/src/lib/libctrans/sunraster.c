@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.13 1992-06-24 21:05:29 clyne Exp $
+ *	$Id: sunraster.c,v 1.14 1992-07-16 18:08:27 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -23,7 +23,6 @@
 /*LINTLIBRARY*/
 #include <stdio.h>
 
-#include	<cterror.h>
 #include	<ncarv.h>
 #include	<math.h>
 #include	"cgmc.h"
@@ -40,7 +39,6 @@ extern	char	*getenv();
 extern	boolean	stand_Alone;
 extern	boolean	deviceIsInit;
 extern	boolean	Batch;
-extern	char	*program_name;
 extern	boolean	*softFill;
 extern	boolean	*doBell;
 extern	int	optionDesc;
@@ -90,7 +88,7 @@ static	void	set_clipping();
  *	The class 0 CGM element functions
  */
 /*ARGSUSED*/
-Ct_err	SunR_BegMF(c)
+int	SunR_BegMF(c)
 CGMC *c;
 {
 	CoordRect	dev_extent;
@@ -108,8 +106,11 @@ CGMC *c;
                  *      (currently only geometry accepted       )
                  */
 		if (GetOptions(optionDesc, options) < 0) {
-			ct_error(T_NULL, ErrGetMsg());
-			return(DIE);
+			ESprintf(
+				E_UNKNOWN,"GetOptions(%d,) [ %s ]",
+				optionDesc, ErrGetMsg()
+			);
+			return(-1);
 		}
 
 		/*
@@ -117,8 +118,8 @@ CGMC *c;
 		 * width and heigth
 		 */
 		if (sscanf(opt.Ws,"%d %d",&dev.width,&dev.height) !=2){
-			ct_error(T_NULL, "dimensions must be quoted");
-			return(DIE);
+			ESprintf(EINVAL, "Invalid dimension(%s)", opt.Ws);
+			return(-1);
 		}
 
 		if (dev.width == -1) dev.width = DEFAULT_WIDTH;
@@ -130,8 +131,11 @@ CGMC *c;
 		if ((pixRect = mem_create(dev.width, dev.height, dev.depth)) ==
 			NULL)  {
 
-			ct_error(NT_MALLOC, "cell array too big");
-			return (SICK);
+			ESprintf(
+				errno, "mem_create(%d,%d,%d)",
+				dev.width,dev.height,dev.depth
+			);
+			return (-1);
 		}
 
 		/*
@@ -161,24 +165,24 @@ CGMC *c;
 	}
 
 	deviceIsInit = TRUE;	/* we are initialized	*/
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	SunR_EndMF(c)
+int	SunR_EndMF(c)
 CGMC *c;
 {
 
 	if (!deviceIsInit)
-		return(OK);
+		return(0);
 
 	firstFrame = TRUE;
 
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	SunR_BegPic(c)
+int	SunR_BegPic(c)
 CGMC *c;
 {
 
@@ -215,19 +219,19 @@ CGMC *c;
 				&(color_tab.current_rgb[i].blue));
 	}
 		
-	return(OK);
+	return(0);
 }
 
 /*ARGSUSED*/
-Ct_err	SunR_BegPicBody(c)
+int	SunR_BegPicBody(c)
 CGMC *c;
 {
 
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	SunR_EndPic(c)
+int	SunR_EndPic(c)
 CGMC *c;
 {
 	int	i;
@@ -265,7 +269,7 @@ CGMC *c;
 }
 
 /*ARGSUSED*/
-Ct_err	SunR_ClearDevice(c)
+int	SunR_ClearDevice(c)
 CGMC *c;
 {
 	unsigned op = 0;
@@ -289,7 +293,7 @@ CGMC *c;
 	pr_polygon_2(pixRect, 0, 0, 1, &num_points, rectangle, op,
 		(Pixrect *) NULL, 0, 0);
 
-	return(OK);
+	return(0);
 }
 
 
@@ -304,7 +308,7 @@ CGMC *c;
  * points.  
  */
 /*ARGSUSED*/
-Ct_err	SunR_PolyLine(c)
+int	SunR_PolyLine(c)
 CGMC *c;
 {
 
@@ -379,11 +383,11 @@ CGMC *c;
 					&lineWidth, tex, op);
 
 
-	return (OK);
+	return (0);
 
 }
 
-Ct_err	SunR_PolyMarker(c)
+int	SunR_PolyMarker(c)
 CGMC *c;
 {
 
@@ -492,13 +496,11 @@ CGMC *c;
 				op, 0);
 		break;
 	default:
-		/* unsupported polymarker type	*/
-		ct_error(NT_UPMT,"");
-		return (SICK);
+		return (-1);
 	}
 
 
-	return (OK);
+	return (0);
 }
 
 
@@ -506,7 +508,7 @@ CGMC *c;
 /* 
  *	Polygon routine.  
  */
-Ct_err	SunR_Polygon(c)
+int	SunR_Polygon(c)
 CGMC *c;
 {
 
@@ -549,8 +551,8 @@ CGMC *c;
 				(unsigned) num_points 
 				* sizeof(struct pr_pos))) == NULL ) {
 
-				ct_error(NT_MALLOC, "for poly points");
-				return (SICK);
+				ESprintf(errno, "malloc()");
+				return (-1);
 			}
 
 			pointBuf.size = num_points;
@@ -569,8 +571,7 @@ CGMC *c;
 		 */
 		if (c->more) {
 			if (Instr_Dec(c) < 1) {
-				ct_error(T_FRE, "metafile");
-				 return (DIE);
+				 return (-1);
 			}
 		}
 		else break;	/* leave loop	*/
@@ -581,7 +582,7 @@ CGMC *c;
 	 */
 	if (num_points > MAX_POLYGON_POINTS || *softFill) {
 		sim_polygon(pointBuf.p, (int) num_points, op);
-		return(OK);
+		return(0);
 	}
 
 
@@ -620,7 +621,6 @@ CGMC *c;
 		 *	code to invoke a pattern routine
 		 */
 			/*fill patterns not supported	*/
-		ct_error(NT_UPFS, "pattern");
 		break;
 
 	case	HATCH_S:
@@ -686,16 +686,15 @@ CGMC *c;
 		break;
 
 	default:
-		ct_error(NT_UPFS,"");
-		return(SICK);
+		return(-1);
 	}
 
-	return (OK);
+	return (0);
 }
 
 
 /*ARGSUSED*/
-Ct_err	SunR_CellArray(c)
+int	SunR_CellArray(c)
 CGMC *c;
 {
 
@@ -710,7 +709,7 @@ CGMC *c;
 	Itype	nx, ny;		/* dimensions of cell array by number of cells	*/
 	Etype	mode;		/* cell representation mode		*/
 
-	Ct_err	raster_();
+	int	raster_();
 	void	SetUpCellArrayIndexing();
 
 	/*
@@ -738,9 +737,10 @@ CGMC *c;
 	mode = c->e[0];
 
 	if (CSM != INDEXED) {
-			ct_error(NT_CAFE, "direct color not supported");
-			return (SICK);
+		ESprintf(EINVAL, "direct color not supported");
+		return (-1);
 	}
+
 
 
 	/*
@@ -783,11 +783,10 @@ CGMC *c;
 	 * cell array is NOT rectangular
 	 */
 	else {
-		ct_error(NT_CAFE, "cell array must be a rectangle");
-		return (SICK);
+		return (-1);
 	}
 
-	return (OK);
+	return (0);
 }
 
 
@@ -842,7 +841,7 @@ static	sim_polygon(sun_pt_list, n, op)
  *	Class 5 elements
  */
 /*ARGSUSED*/
-Ct_err	SunR_ColrTable(c)
+int	SunR_ColrTable(c)
 CGMC *c;
 {
 
@@ -854,7 +853,7 @@ CGMC *c;
 
 	/* see if device supports colour	*/
 	if (!colorAva)
-		return (OK);		/* punt!	*/
+		return (0);		/* punt!	*/
 
 
 	for (index=c->ci[0], i = 0 ;index< (c->ci[0] + c->CDnum); index++,i++) {
@@ -877,10 +876,8 @@ CGMC *c;
 				(*color_tab.next_new_index)++;
 			}
 			else {
-				(void)sprintf(msg, ": only %d colors available",
-					MAX_COLOR);
-				ct_error(NT_CAE, msg);
-				return(SICK);
+				ESprintf(E_UNKNOWN, "Too many colors");
+				return(-1);
 			}
 		}
 		/*
@@ -894,7 +891,7 @@ CGMC *c;
 		pr_putcolormap(pixRect, color_tab.index[index], 
 			1, &rgb.red, &rgb.green, &rgb.blue);
 	}
-	return (OK);
+	return (0);
 }
 
 #define	SEGMENTS	64
@@ -944,7 +941,7 @@ static	quick_circle(xc, yc, radius, op)
  *	width		: width of the cell array in pixels.
  *	height		: height of the cell array in pixels.
  */
-static	Ct_err	raster_(c, P, rows, cols, nx, ny, width, height)
+static	int	raster_(c, P, rows, cols, nx, ny, width, height)
 
 	CGMC    *c;
 	Ptype  P;
@@ -977,8 +974,9 @@ static	Ct_err	raster_(c, P, rows, cols, nx, ny, width, height)
 	 */
 	if ((pw = mem_create(width, height, dev.depth)) ==
 		NULL)  {
-		ct_error(NT_MALLOC, "cell array too big");
-		return (SICK);
+
+		ESprintf(errno, "mem_create(%d,%d,%d)", width,height,dev.depth);
+		return (-1);
 	}
 	index_array = (unsigned *) icMalloc ((unsigned) nx * sizeof(unsigned));
 
@@ -1011,8 +1009,7 @@ static	Ct_err	raster_(c, P, rows, cols, nx, ny, width, height)
 			/* make sure data available in cgmc     */
 			if (index >= c->Cnum && c->more) {
 				if (Instr_Dec(c) < 1) {
-					ct_error(T_FRE, "metafile");
-					return (DIE);
+					return (-1);
 				}
 
 				index = 0;
@@ -1068,7 +1065,7 @@ static	Ct_err	raster_(c, P, rows, cols, nx, ny, width, height)
 
 	pr_destroy(pw);
 
-	return (OK);
+	return (0);
 }
 
 static	void	set_clipping()
@@ -1109,7 +1106,7 @@ static	Pr_texture	*set_line_type()
 			break;
 
 		default :
-			ct_error(NT_UPLS,"");
+			return(-1);
 			break;
 		}
 	}

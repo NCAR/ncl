@@ -1,5 +1,5 @@
 /*
- *	$Id: clear_text.c,v 1.7 1992-06-24 21:05:01 clyne Exp $
+ *	$Id: clear_text.c,v 1.8 1992-07-16 18:07:08 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -32,7 +32,6 @@
 #include	<sys/types.h>
 #include <ncarv.h>
 #include <cgm_tools.h>
-#include <cterror.h>
 #include "cgmc.h"
 #include "text.h"
 
@@ -52,9 +51,9 @@ extern	int	optionDesc;
 /*
  *	some things ctrans needs to know to interpret the metafile
  */
-static	int	color_sel_mode = INDEXED; 	/* colour selection mode     */
-static	int	line_wid_mode = SCALED;		/* line width selection mode */
-static	int	marker_siz_mode = SCALED;	/* marker size selection mode*/
+static	int	color_sel_mode = MODE_INDEXED; 	/* colour selection mode     */
+static	int	line_wid_mode = MODE_SCALED;	/* line width selection mode */
+static	int	marker_siz_mode = MODE_SCALED;	/* marker size selection mode*/
 
 
 /*
@@ -63,14 +62,14 @@ static	int	marker_siz_mode = SCALED;	/* marker size selection mode*/
  * 	Class 0 Function
  */
 /*ARGSUSED*/
-Ct_err	CTXT_NoOp(c)
+int	CTXT_NoOp(c)
 CGMC *c;
 {
 	(void) printf("\nNo-Op\n");
-	return(OK);
+	return(0);
 }
 /*ARGSUSED*/
-Ct_err	CTXT_BegMF(c)
+int	CTXT_BegMF(c)
 CGMC *c;
 {
 	/*
@@ -78,28 +77,31 @@ CGMC *c;
 	 */
 
 	if (GetOptions(optionDesc, options) < 0) {
-		ct_error(T_NULL, ErrGetMsg());
-		return(DIE);
+		ESprintf(
+			E_UNKNOWN,"GetOptions(%d,) [ %s ]",
+			optionDesc, ErrGetMsg()
+		);
+		return(-1);
 	}
 
 	(void) printf("\nBEGIN METAFILE\n");
 	if (! opt.no_para) 
 		(void) printf("	metafile name	-> \"%s\"\n", c->s->string[0]);
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_EndMF(c)
+int	CTXT_EndMF(c)
 CGMC *c;
 {
 
 	(void) printf("\nEND METAFILE\n");
-	return (OK);
+	return (0);
 }
 
 
 /*ARGSUSED*/
-Ct_err	CTXT_BegPic(c)
+int	CTXT_BegPic(c)
 CGMC *c;
 {
 
@@ -107,33 +109,33 @@ CGMC *c;
 
 	if (! opt.no_para) 
 		(void) printf("	picture name	-> \"%s\"\n", c->s->string[0]);
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_BegPicBody(c)
+int	CTXT_BegPicBody(c)
 CGMC *c;
 {
 
 	(void) printf("\nBEGIN PICTURE BODY\n");
 
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_EndPic(c)
+int	CTXT_EndPic(c)
 CGMC *c;
 {
 
 	(void) printf("\nEND PICTURE\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_ClearDevice(c)
+int	CTXT_ClearDevice(c)
 CGMC *c;
 {
-	return(OK);
+	return(0);
 }
 
 /*
@@ -141,7 +143,7 @@ CGMC *c;
  */
 
 /*ARGSUSED*/
-Ct_err	CTXT_MFVersion(c)
+int	CTXT_MFVersion(c)
 CGMC *c;
 {
 
@@ -149,11 +151,11 @@ CGMC *c;
 
 	if (! opt.no_para) 
 		(void) printf("	version number	-> %i\n", c->i[0]);
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_MFDesc(c)
+int	CTXT_MFDesc(c)
 CGMC *c;
 {
 
@@ -161,11 +163,11 @@ CGMC *c;
 
 	if (! opt.no_para) 
 		(void) printf("	description	-> \"%s\"\n", c->s->string[0]);
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_VDCType(c)
+int	CTXT_VDCType(c)
 CGMC *c;
 {
 
@@ -184,11 +186,11 @@ CGMC *c;
 			(void) printf("	undefined type	-> %6d\n",c->e[0]);
 		}
 	}
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_IntergerPrec(c)
+int	CTXT_IntergerPrec(c)
 CGMC *c;
 {
 
@@ -196,11 +198,11 @@ CGMC *c;
 
 	if (! opt.no_para) 
 		(void) printf("	precision	-> %6d\n", c->i[0]);
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_RealPrec(c)
+int	CTXT_RealPrec(c)
 CGMC *c;
 {
 
@@ -223,11 +225,11 @@ CGMC *c;
 		(void) printf("	mantisa width	-> %6d\n", c->i[2]);
 
 	}
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_IndexPrec(c)
+int	CTXT_IndexPrec(c)
 CGMC *c;
 {
 
@@ -235,11 +237,11 @@ CGMC *c;
 	
 	if (! opt.no_para) 
 		(void) printf("	precision	-> %6d\n", c->i[0]);
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_ColrPrec(c)
+int	CTXT_ColrPrec(c)
 CGMC *c;
 {
 
@@ -247,11 +249,11 @@ CGMC *c;
 	
 	if (! opt.no_para) 
 		(void) printf("	precision	-> %6d\n", c->i[0]);
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_ColrIndexPrec(c)
+int	CTXT_ColrIndexPrec(c)
 CGMC *c;
 {
 
@@ -259,11 +261,11 @@ CGMC *c;
 	
 	if (! opt.no_para) 
 		(void) printf("	precision	-> %6d\n", c->i[0]);
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_MaxColrIndex(c)
+int	CTXT_MaxColrIndex(c)
 CGMC *c;
 {
 
@@ -271,11 +273,11 @@ CGMC *c;
 	
 	if (! opt.no_para) 
 		(void) printf("	index		-> %6d\n", c->ci[0]);
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_ColrValueExt(c)
+int	CTXT_ColrValueExt(c)
 CGMC *c;
 {
 
@@ -288,11 +290,11 @@ CGMC *c;
 		(void) printf("	maximum rgb	-> %6d, %6d, %6d\n", 
 			c->cd[1].red, c->cd[1].green, c->cd[1].blue);
 	}
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_MFElemList(c)
+int	CTXT_MFElemList(c)
 CGMC *c;
 {
 
@@ -323,20 +325,20 @@ CGMC *c;
 			}
 		}
 	}
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_MFDefaults(c)
+int	CTXT_MFDefaults(c)
 CGMC *c;
 {
 
 	(void) printf("\nMetafile Defaults Replacement\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_FontList(c)
+int	CTXT_FontList(c)
 CGMC *c;
 {
 	int	i;
@@ -348,26 +350,26 @@ CGMC *c;
 			(void) printf("\n font		-> \"%s\"\n", 
 				c->s->string[i]);
 	}
-	return (OK);
+	return (0);
 }
 
 
 /*ARGSUSED*/
-Ct_err	CTXT_CharSetList(c)
+int	CTXT_CharSetList(c)
 CGMC *c;
 {
 
 	(void) printf("\nCHARACTER SET LIST (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_CharCoding(c)
+int	CTXT_CharCoding(c)
 CGMC *c;
 {
 
 	(void) printf("\nCHARACTER CODING ANNOUNCER (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 
@@ -375,7 +377,7 @@ CGMC *c;
  *	Class 2 elements
  */
 /*ARGSUSED*/
-Ct_err	CTXT_ScaleMode(c)
+int	CTXT_ScaleMode(c)
 CGMC *c;
 {
 
@@ -398,11 +400,11 @@ CGMC *c;
 		}
 	}
 
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_ColrMode(c)
+int	CTXT_ColrMode(c)
 CGMC *c;
 {
 
@@ -414,22 +416,22 @@ CGMC *c;
 		
 		case 0:
 			(void) printf("	mode	 	-> indexed\n");
-			color_sel_mode = INDEXED;
+			color_sel_mode = MODE_INDEXED;
 			break;
 		case 1:
 			(void) printf("	mode	 	-> direct\n");
-			color_sel_mode = DIRECT;
+			color_sel_mode = MODE_DIRECT;
 			break;
 		default:
 			(void) printf("\n invalid mode	-> %6d\n", c->e[0]);
 		}
 	}
 
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_LineWidthMode(c)
+int	CTXT_LineWidthMode(c)
 CGMC *c;
 {
 
@@ -439,24 +441,24 @@ CGMC *c;
 
 		switch (c->e[0]) {
 		
-		case ABSOLUTE:
+		case MODE_ABSOLUTE:
 			(void) printf("	mode	 	-> absolute\n");
-			line_wid_mode = ABSOLUTE;
+			line_wid_mode = MODE_ABSOLUTE;
 			break;
-		case SCALED:
+		case MODE_SCALED:
 			(void) printf("	mode	 	-> scaled\n");
-			line_wid_mode = SCALED;
+			line_wid_mode = MODE_SCALED;
 			break;
 		default:
 			(void) printf("\n invalid mode	-> %6d\n", c->e[0]);
 		}
 	}
 
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_MarkerSizeMode(c)
+int	CTXT_MarkerSizeMode(c)
 CGMC *c;
 {
 
@@ -466,23 +468,23 @@ CGMC *c;
 
 		switch (c->e[0]) {
 		
-		case ABSOLUTE:
+		case MODE_ABSOLUTE:
 			(void) printf("	mode	 	-> absolute\n");
-			marker_siz_mode = ABSOLUTE;
+			marker_siz_mode = MODE_ABSOLUTE;
 			break;
-		case SCALED:
+		case MODE_SCALED:
 			(void) printf("	mode	 	-> scaled\n");
-			marker_siz_mode = SCALED;
+			marker_siz_mode = MODE_SCALED;
 			break;
 		default:
 			(void) printf("\n invalid mode	-> %6d\n", c->e[0]);
 		}
 	}
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_EdgeWidthMode(c)
+int	CTXT_EdgeWidthMode(c)
 CGMC *c;
 {
 
@@ -492,20 +494,20 @@ CGMC *c;
 
 		switch (c->e[0]) {
 		
-		case ABSOLUTE:
+		case MODE_ABSOLUTE:
 			(void) printf("	mode	 	-> absolute\n");
 			break;
-		case SCALED:
+		case MODE_SCALED:
 			(void) printf("	mode	 	-> scaled\n");
 			break;
 		default:
 			(void) printf("\n invalid mode	-> %6d\n", c->e[0]);
 		}
 	}
-	return (OK);
+	return (0);
 }
 
-Ct_err	CTXT_VDCExt(c)
+int	CTXT_VDCExt(c)
 CGMC *c;
 {
 
@@ -519,11 +521,11 @@ CGMC *c;
 			c->p[1].x, c->p[1].y);
 	}
 
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_BackColr(c)
+int	CTXT_BackColr(c)
 CGMC *c;
 {
 
@@ -535,7 +537,7 @@ CGMC *c;
 
 	}
 
-	return (OK);
+	return (0);
 }
 
 /* 
@@ -543,7 +545,7 @@ CGMC *c;
  */
 
 /*ARGSUSED*/
-Ct_err	CTXT_VDCIntergerPrec(c)
+int	CTXT_VDCIntergerPrec(c)
 CGMC *c;
 {
 
@@ -551,11 +553,11 @@ CGMC *c;
 
 	if (! opt.no_para) 
 		(void) printf("	precision	-> %6d\n", c->i[0]);
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_VDCRealPrec(c)
+int	CTXT_VDCRealPrec(c)
 CGMC *c;
 {
 
@@ -577,27 +579,27 @@ CGMC *c;
 		(void) printf("	exponent width	-> %6d\n", c->i[1]);
 		(void) printf("	mantisa width	-> %6d\n", c->i[2]);
 	}
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_AuxColr(c)
+int	CTXT_AuxColr(c)
 CGMC *c;
 {
 
 	(void) printf("\nAUXILIARY COLOUR (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_Transparency(c)
+int	CTXT_Transparency(c)
 CGMC *c;
 {
 
 	(void) printf("\nTRANSPARENCY (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
-Ct_err	CTXT_ClipRect(c)
+int	CTXT_ClipRect(c)
 CGMC *c;
 {
 
@@ -611,9 +613,9 @@ CGMC *c;
 			c->p[1].x, c->p[1].y);
 	}
 
-	return (OK);
+	return (0);
 }
-Ct_err	CTXT_Clip(c)
+int	CTXT_Clip(c)
 CGMC *c;
 {
 
@@ -625,7 +627,7 @@ CGMC *c;
 		else
 			(void) printf("	flag		->     on\n");
 	}
-	return (OK);
+	return (0);
 }
 
 
@@ -635,7 +637,7 @@ CGMC *c;
 
 
 /*ARGSUSED*/
-Ct_err	CTXT_PolyLine(c)
+int	CTXT_PolyLine(c)
 CGMC *c;
 {
 	int	i;
@@ -652,11 +654,11 @@ CGMC *c;
 		}
 	}
 
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_DisjtLine(c)
+int	CTXT_DisjtLine(c)
 CGMC *c;
 {
 	int	i;
@@ -672,11 +674,11 @@ CGMC *c;
 				i, c->p[i].x, c->p[i].y);
 		}
 	}
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_PolyMarker(c)
+int	CTXT_PolyMarker(c)
 CGMC *c;
 {
 	int	i;
@@ -694,11 +696,11 @@ CGMC *c;
 
 	}
 
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_Text(c)
+int	CTXT_Text(c)
 CGMC *c;
 {
 
@@ -715,30 +717,30 @@ CGMC *c;
 
 		(void) printf("	string		-> \"%s\"\n", c->s->string[0]);
 	}
-	return (OK);
+	return (0);
 }
 
 
 /*ARGSUSED*/
-Ct_err	CTXT_RestrText(c)
+int	CTXT_RestrText(c)
 CGMC *c;
 {
 
 	(void) printf("\nRESTRICTED TEXT (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_ApndText(c)
+int	CTXT_ApndText(c)
 CGMC *c;
 {
 
 	(void) printf("\nAPPEND TEXT (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_Polygon(c)
+int	CTXT_Polygon(c)
 CGMC *c;
 {
 	int	i;
@@ -754,23 +756,23 @@ CGMC *c;
 				i, c->p[i].x, c->p[i].y);
 		}
 	}
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_PolygonSet(c)
+int	CTXT_PolygonSet(c)
 CGMC *c;
 {
 
 	(void) printf("\nPOLYGON SET (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 
 /*ARGSUSED*/
 #define	RUN	0	/* run length encoding of cell arrays	*/
 #define	PACKED	1	/* packed encoding			*/
-Ct_err	CTXT_CellArray(c)
+int	CTXT_CellArray(c)
 CGMC *c;
 {
 
@@ -822,7 +824,7 @@ CGMC *c;
 
 			/* while not end of row	*/
 			while (counter < c->i[0]) {
-				if (color_sel_mode == INDEXED) {
+				if (color_sel_mode == MODE_INDEXED) {
 					(void) printf ("			%d	%d\n", c->i[countindex], c->ci[colorindex]);
 
 				}
@@ -856,8 +858,7 @@ CGMC *c;
 				 */
 				if (colorindex == c->Cnum && c->more) {
 					if (Instr_Dec(c) < 1) {
-						ct_error(T_FRE, "metafile");
-						return(DIE);
+						return(-1);
 					}
 
 					colorindex = 0;
@@ -867,7 +868,7 @@ CGMC *c;
 				if (!(nx % 10))
 					(void)printf("\n			");
 
-				if (color_sel_mode == INDEXED) {
+				if (color_sel_mode == MODE_INDEXED) {
 					(void) printf("%4d",
 						c->c[colorindex]);
 
@@ -883,11 +884,11 @@ CGMC *c;
 		}
 	(void) printf("\n");
 	}
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_GDP(c)
+int	CTXT_GDP(c)
 CGMC *c;
 {
 
@@ -910,87 +911,87 @@ CGMC *c;
 
 		(void)printf("\n	data record	-> \"%s\"\n", c->s->string[0]);
 	}
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_Rect(c)
+int	CTXT_Rect(c)
 CGMC *c;
 {
 
 	(void) printf("\nRECTANGLE (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_Circle(c)
+int	CTXT_Circle(c)
 CGMC *c;
 {
 
 	(void) printf("\nCIRCLE (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_Arc3Pt(c)
+int	CTXT_Arc3Pt(c)
 CGMC *c;
 {
 
 	(void) printf("\nCIRCULAR ARC 3 POINT (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_Arc3PtClose(c)
+int	CTXT_Arc3PtClose(c)
 CGMC *c;
 {
 
 	(void) printf("\nCIRCULAR ARC 3 POINT CLOSE (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_ArcCtr(c)
+int	CTXT_ArcCtr(c)
 CGMC *c;
 {
 	(void) printf("\nCIRCULAR ARC CENTRE (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_ArcCtrClose(c)
+int	CTXT_ArcCtrClose(c)
 CGMC *c;
 {
 
 	(void) printf("\nCIRCULAR ARC CENTRE CLOSE (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_Ellipse(c)
+int	CTXT_Ellipse(c)
 CGMC *c;
 {
 
 	(void) printf("\nELLIPSE (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_EllipArc(c)
+int	CTXT_EllipArc(c)
 CGMC *c;
 {
 
 	(void) printf("\nELLIPTICAL ARC (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_EllipArcClose(c)
+int	CTXT_EllipArcClose(c)
 CGMC *c;
 {
 
 	(void) printf("\nELLIPTICAL ARC CLOSE (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 
@@ -999,17 +1000,17 @@ CGMC *c;
  */
 
 /*ARGSUSED*/
-Ct_err	CTXT_LineIndex(c)
+int	CTXT_LineIndex(c)
 CGMC *c;
 {
 
 	(void) printf("\nLINE BUNDLE INDEX (*unsupported*)\n");
 
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_LineType(c)
+int	CTXT_LineType(c)
 CGMC *c;
 {
 
@@ -1038,50 +1039,50 @@ CGMC *c;
 			break;
 		}
 	}
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_LineWidth(c)
+int	CTXT_LineWidth(c)
 CGMC *c;
 {
 
 	(void) printf ("\nLINE WIDTH\n");
 
 	if (! opt.no_para) {
-		if (line_wid_mode == ABSOLUTE)
+		if (line_wid_mode == MODE_ABSOLUTE)
 			(void) printf("	absolute width	-> %6d\n", c->vdc[0]);
 		else
 			(void) printf("	scaled width	-> %8.2f\n", c->r[0]);
 	}
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_LineColr(c)
+int	CTXT_LineColr(c)
 CGMC *c;
 {
 
 	(void) printf("\nLINE COLOUR\n");
 
 	if (! opt.no_para) {
-		if (color_sel_mode == INDEXED)
+		if (color_sel_mode == MODE_INDEXED)
 			(void) printf("	color index	-> %6d\n", c->ci[0]);
 		else
 			(void) printf("	direct color -> (%6d, %6d, %6d)\n", 
 				c->cd[0].red, c->cd[0].green, c->cd[0].blue);
 	}
 
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_MarkerIndex(c)
+int	CTXT_MarkerIndex(c)
 CGMC *c;
 { 
 
 	(void) printf("\nMARKER BUNDLE INDEX (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*
@@ -1093,7 +1094,7 @@ CGMC *c;
 #define	CIRCLE_M	4
 #define	CROSS_M		5
 
-Ct_err	CTXT_MarkerType(c)
+int	CTXT_MarkerType(c)
 CGMC *c;
 {
 	(void) printf("\nMARKER TYPE\n");
@@ -1122,53 +1123,53 @@ CGMC *c;
 		}
 	}
 
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_MarkerSize(c)
+int	CTXT_MarkerSize(c)
 CGMC *c;
 {
 
 	(void) printf("\nMARKER SIZE\n");
 
 	if (! opt.no_para) {
-		if (marker_siz_mode == ABSOLUTE)
+		if (marker_siz_mode == MODE_ABSOLUTE)
 			(void) printf("	absolute size	-> %6d\n", c->vdc[0]);
 		else
 			(void) printf("	scaled size	-> %8.2f\n", c->r[0]);
 	}
 
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_MarkerColr(c)
+int	CTXT_MarkerColr(c)
 CGMC *c;
 {
 
 	(void) printf ("\nMARKER COLOUR\n");
 
 	if (! opt.no_para) {
-		if (color_sel_mode == INDEXED)
+		if (color_sel_mode == MODE_INDEXED)
 			(void) printf("	color index	-> %6d\n", c->ci[0]);
 		else
 			(void) printf("	direct color -> (%6d, %6d, %6d)\n", 
 				c->cd[0].red, c->cd[0].green, c->cd[0].blue);
 	}
-	return (OK);
+	return (0);
 } 
 
 /*ARGSUSED*/
-Ct_err	CTXT_TextIndex(c)
+int	CTXT_TextIndex(c)
 CGMC *c;
 {
 	(void) printf ("\nTEXT BUNDLE INDEX (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_TextFontIndex(c)
+int	CTXT_TextFontIndex(c)
 CGMC *c;
 {
 	(void) printf ("\nTEXT FONT INDEX \n");
@@ -1176,12 +1177,12 @@ CGMC *c;
 	if (! opt.no_para) {
 		(void) printf("	font index	-> %6d\n", c->ix[0]);
 	}
-	return (OK);
+	return (0);
 }
 
 
 /*ARGSUSED*/
-Ct_err	CTXT_TextPrec(c)
+int	CTXT_TextPrec(c)
 CGMC *c;
 {
 	(void) printf ("\nTEXT PRECISION \n");
@@ -1189,13 +1190,13 @@ CGMC *c;
 	if (! opt.no_para) {
 		switch (c->e[0]) {
 		
-		case STRING_P:
+		case PREC_STRING:
 			(void) printf("	text prec.	-> string\n");
 			break;
-		case CHAR_P:
+		case PREC_CHAR:
 			(void) printf("	text prec.	-> character\n");
 			break;
-		case STROKE_P:
+		case PREC_STROKE:
 			(void) printf("	text prec	-> stroke\n");
 			break;
 		default:
@@ -1203,12 +1204,12 @@ CGMC *c;
 			break;
 		}
 	}
-	return (OK);
+	return (0);
 }
 
 
 /*ARGSUSED*/
-Ct_err	CTXT_CharExpan(c)
+int	CTXT_CharExpan(c)
 CGMC *c;
 {
 	(void) printf("\nCHARACTER EXPANSION FACTOR\n");
@@ -1216,10 +1217,10 @@ CGMC *c;
 	if (! opt.no_para) {
 		(void) printf("	expansion	-> %8.2f\n", c->r[0]);
 	}
-	return (OK);
+	return (0);
 }
 
-Ct_err	CTXT_CharSpace(c)
+int	CTXT_CharSpace(c)
 CGMC *c;
 {
 	(void) printf("\nCHARACTER SPACING\n");
@@ -1227,25 +1228,25 @@ CGMC *c;
 	if (! opt.no_para) {
 		(void) printf("	spacing		-> %8.2f\n", c->r[0]);
 	}
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_TextColr(c)
+int	CTXT_TextColr(c)
 CGMC *c;
 {
 	(void) printf("\nTEXT COLOUR\n");
 
 	if (! opt.no_para) {
-		if (color_sel_mode == INDEXED)
+		if (color_sel_mode == MODE_INDEXED)
 			(void) printf("	color index	-> %6d\n", c->ci[0]);
 		else
 			(void) printf("	direct color	-> (%6d, %6d, %6d)\n", 
 				c->cd[0].red, c->cd[0].green, c->cd[0].blue);
 	}
-	return (OK);
+	return (0);
 }
-Ct_err	CTXT_CharHeight(c)
+int	CTXT_CharHeight(c)
 CGMC *c;
 {
 	(void) printf("\nCHARACTER HEIGHT\n");
@@ -1253,9 +1254,9 @@ CGMC *c;
 	if (! opt.no_para) {
 		(void) printf("	height		-> %6d\n", c->vdc[0]);
 	}
-	return (OK);
+	return (0);
 }
-Ct_err	CTXT_CharOri(c)
+int	CTXT_CharOri(c)
 CGMC *c;
 {
 	(void) printf("\nCHARACTER ORIENTATION\n");
@@ -1266,10 +1267,10 @@ CGMC *c;
 		(void) printf("	x character down-> %6d\n", c->vdc[2]);
 		(void) printf("	y character down-> %6d\n", c->vdc[3]);
 	}
-	return (OK);
+	return (0);
 }
 
-Ct_err	CTXT_TextPath(c)
+int	CTXT_TextPath(c)
 CGMC *c;
 {
 	(void) printf ("\nTEXT PATH\n");
@@ -1294,11 +1295,11 @@ CGMC *c;
 			break;
 		}
 	}
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_TextAlign(c)
+int	CTXT_TextAlign(c)
 CGMC *c;
 {
 	(void)printf ("\nTEXT ALIGNMENT\n");
@@ -1361,35 +1362,35 @@ CGMC *c;
 		}
 
 	}
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_CharSetIndex(c)
+int	CTXT_CharSetIndex(c)
 CGMC *c;
 {
 	(void) printf("\nCHARACTER SET INDEX (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_AltCharSetIndex(c)
+int	CTXT_AltCharSetIndex(c)
 CGMC *c;
 {
 	(void) printf("\nALTERNATE CHARACTER SET INDEX (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_FillIndex(c)
+int	CTXT_FillIndex(c)
 CGMC *c;
 {
 	(void) printf("\nFILL BUNDLE INDEX (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_IntStyle(c)
+int	CTXT_IntStyle(c)
 CGMC *c;
 {
 	(void) printf("\nINTERIOR STYLE\n");
@@ -1417,27 +1418,27 @@ CGMC *c;
 			break;
 		}
 	}
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_FillColr(c)
+int	CTXT_FillColr(c)
 CGMC *c;
 {
 	(void) printf("\nFILL COLOUR\n");
 
 	if (! opt.no_para) {
-		if (color_sel_mode == INDEXED)
+		if (color_sel_mode == MODE_INDEXED)
 			(void) printf("	fill index	-> %6d\n", c->ci[0]);	
 		else
 			(void) printf("	direct colour	-> (%6d, %6d, %6d)\n", 
 				c->cd[0].red, c->cd[0].green, c->cd[0].blue);	
 	}
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_HatchIndex(c)
+int	CTXT_HatchIndex(c)
 CGMC *c;
 {
 	(void) printf("\nHATCH INDEX\n");
@@ -1451,7 +1452,7 @@ CGMC *c;
 		case VERTICAL:
 			(void) printf("	hatch pattern	-> vertical\n");
 			break;
-		case POSSITIVE:
+		case POSITIVE:
 			(void) printf("	hatch pattern	-> possitive\n");
 			break;
 		case NEGATIVE:
@@ -1460,7 +1461,7 @@ CGMC *c;
 		case HORIZ_VERT:
 			(void) printf("	hatch pattern	-> horizontal & vertical\n");
 			break;
-		case POSS_NEG:
+		case POS_NEG:
 			(void) printf("	hatch pattern	-> possitive & negative\n");
 			break;
 		default:
@@ -1468,11 +1469,11 @@ CGMC *c;
 			break;
 		}
 	}
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_PatIndex(c)
+int	CTXT_PatIndex(c)
 CGMC *c;
 {
 	(void) printf("\nPATTERN INDEX\n");
@@ -1480,52 +1481,52 @@ CGMC *c;
 	if (! opt.no_para) {
 		(void) printf("	index		-> %6d\n", c->ix[0]);
 	}
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_EdgeIndex(c)
+int	CTXT_EdgeIndex(c)
 CGMC *c;
 {
 	(void) printf("\nEDGE BUNDLE INDEX (*unsupported*)\n");
 
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_EdgeType(c)
+int	CTXT_EdgeType(c)
 CGMC *c;
 {
 	(void) printf("\nEDGE TYPE (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_EdgeWidth(c)
+int	CTXT_EdgeWidth(c)
 CGMC *c;
 {
 	(void) printf("\nEDGE WIDTH (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_EdgeColr(c)
+int	CTXT_EdgeColr(c)
 CGMC *c;
 {
 	(void) printf("\nEDGE COLOUR (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_EdgeVis(c)
+int	CTXT_EdgeVis(c)
 CGMC *c;
 {
 	(void) printf("\nEDGE VISIBILITY (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_FillRefPt(c)
+int	CTXT_FillRefPt(c)
 CGMC *c;
 {
 	(void) printf("\nFILL REFERENCE POINT\n");
@@ -1534,27 +1535,27 @@ CGMC *c;
 		(void) printf("	fill point	-> %6d, %6d\n", 
 			c->p[0].x, c->p[0].y);
 	}
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_PatTable(c)
+int	CTXT_PatTable(c)
 CGMC *c;
 {
 	(void) printf("\nPATTERN TABLE (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_PatSize(c)
+int	CTXT_PatSize(c)
 CGMC *c;
 {
 	(void) printf("\nPATTERN SIZE (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	CTXT_ColrTable(c)
+int	CTXT_ColrTable(c)
 CGMC	*c;
 {
 	int	i;
@@ -1568,21 +1569,21 @@ CGMC	*c;
 			c->cd[i].red, c->cd[i].green, c->cd[i].blue);
 		}
 	}
-	return (OK);
+	return (0);
 }
 /*ARGSUSED*/
-Ct_err	CTXT_ASF(c)
+int	CTXT_ASF(c)
 CGMC *c;
 {
 	(void) printf("\nASPECT SOURCE FLAGS (*unsupported*)\n");
-	return (OK);
+	return (0);
 }
 /*
  * Class 6 Functions
  */
 
 /*ARGSUSED*/
-Ct_err	CTXT_Escape(c)
+int	CTXT_Escape(c)
 CGMC *c;
 {
 
@@ -1602,26 +1603,26 @@ CGMC *c;
 			(void) printf("			 \"%s\"\n", 
 				c->s->string[i]);
 	}
-	return (OK);
+	return (0);
 }
 
 /*
  * Class 7 Functions
  */
 /*ARGSUSED*/
-Ct_err	CTXT_Message(c)
+int	CTXT_Message(c)
 CGMC *c;
 {
 
 	(void) printf("\nMESSAGE (*unsupported*)\n");
 
-	return (OK);
+	return (0);
 }
 /*ARGSUSED*/
-Ct_err	CTXT_ApplData(c)
+int	CTXT_ApplData(c)
 CGMC *c;
 {
 
 	(void) printf("\nAPPLICATION DATA (*unsupported*)\n");
-	return (OK);
+	return (0);
 }

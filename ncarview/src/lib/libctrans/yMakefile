@@ -1,12 +1,12 @@
 NCARG	= ../../../..
 #
-#	$Id: yMakefile,v 1.10 1992-06-25 21:48:47 clyne Exp $
+#	$Id: yMakefile,v 1.11 1992-07-16 18:08:41 clyne Exp $
 #
 
 
 MYNAME		= $(LIBDIR)/libctrans.o
 
-INCLUDES	= cterror.h
+INCLUDES	= ctrans.h
 
 #ifdef	VMS
 VMSOBJS = vms.o
@@ -58,7 +58,7 @@ GENSRCS =  \
 	bitops.c buffer.c clip.c ctrans.c default.c \
 	fill.c fontlist.c format.c gcap.c gcread.c in.c rast.c \
 	readfont.c rgbtohls.c text.c translate.c env.c \
-	soft_fill.c cell.c bsd-sysv.c commondev.c gcapdev.c gcaprast.c \
+	soft_fill.c cell.c commondev.c gcapdev.c gcaprast.c \
 	rastdev.c hatch.c pal.c ctrans_api.c error.c cgmmisc.c misc.c
 
 
@@ -66,11 +66,11 @@ GENOBJS	= \
 	bitops.o buffer.o clip.o ctrans.o default.o \
 	fill.o fontlist.o format.o gcap.o gcread.o in.o rast.o \
 	readfont.o rgbtohls.o text.o translate.o env.o \
-	soft_fill.o cell.o bsd-sysv.o commondev.o gcapdev.o gcaprast.o \
+	soft_fill.o cell.o commondev.o gcapdev.o gcaprast.o \
 	rastdev.o hatch.o pal.o ctrans_api.o error.o cgmmisc.o misc.o
 
-DEVSRCS	= cterror.c devices.c
-DEVOBJS	= cterror.o devices.o
+DEVSRCS	= devices.c
+DEVOBJS	= devices.o
 
 # Declare code and Libraries for SunCGI.
 
@@ -139,5 +139,3 @@ lint: $(HDR) $(SRCS)
 	lint $(CDEFINES) $(LINTLIBS) $(SRCS)  1> lint.out 2>&1
 #	lint $(SRCS) $(LIBS) > lint.out
 
-cterror.o:	Makefile
-	$(CC) $(CFLAGS) $(DDEFINES) -DTMPDIR$(EQUALHACK)'"$(TMPDIR)"' -c $*.c

@@ -1,5 +1,5 @@
 /*
- *	$Id: fontlist.c,v 1.6 1992-04-03 20:57:21 clyne Exp $
+ *	$Id: fontlist.c,v 1.7 1992-07-16 18:07:45 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -11,14 +11,8 @@
 *                                                                      *
 ***********************************************************************/
 #include	<stdio.h>
-
-#ifdef	SYSV
 #include	<string.h>
-#else
-#include	<strings.h>
-#endif SYSV
-
-#include	<cterror.h>
+#include	<errno.h>
 #include	<ncarv.h>
 #include	"default.h"
 #include	"defines.h"
@@ -43,7 +37,7 @@
 char	*Fontlist[MAXFONT];
 
 extern	char	*getFcapname();
-extern	Ct_err	Init_Font();
+extern	int	Init_Font();
 extern	char	msg[];
 
 static	int	fontindex = -1;	
@@ -162,20 +156,19 @@ InitFontList()
  *	on exit:
  *		Fontlist contains the list of fonts
  */
-Ct_err	FontList(c)
+int	FontList(c)
 CGMC *c;
 {
 	int	i;
-#ifdef DEBUG
-	(void)fprintf(stderr,"FontList\n");
-#endif
+	int	status = 0;
 
 	/* reset fontindex to null	*/
 	fontindex = -1;
 
 
 	if (c->Snum > MAXFONT) {
-		ct_error(NT_FLTB,"");
+		ESprintf(E_UNKNOWN, "Font list too large(%d)", c->Snum);
+		status = -1;
 		c->Snum = MAXFONT;
 	}
 
@@ -188,25 +181,27 @@ CGMC *c;
 
 		(void) strcpy(Fontlist[i],c->s->string[i]);
 	}
-	return(OK);
+	return(status);
 }
 
-Ct_err	setFont(font_index)
+int	setFont(font_index)
 	IXtype	font_index;
 {
 	char	*fcap;
 	char	*font;
+	int	status = 0;
 
 
 	if (font_index < 0 || font_index >= MAXFONT) {
-		ct_error(NT_UFONT, "using default font");
+		ESprintf(EINVAL, "Invalid font index(%d)", font_index);;
+		status = -1;
 		font_index = 1;
 	}
 
 	font = Fontlist[font_index - 1];
 
 	if (! font) {
-		ct_error(NT_UFONT, "using default font");
+		status = -1;
 		font = "DEFAULT";
 	}
 
@@ -217,7 +212,7 @@ Ct_err	setFont(font_index)
 	 * a text commamnd
 	 */
 	if (fontindex == font_index)
-		return(OK);
+		return(status);
 	else
 		fontindex = font_index;
 
@@ -274,9 +269,9 @@ Ct_err	setFont(font_index)
 
 	/* initialize the font processor with the selected font	*/
 
-	if(Init_Font(fcap) != OK) {
-		return (pre_err);
+	if(Init_Font(fcap) != 0) {
+		return (-1);
 	}
 
-	return (OK);
+	return (status);
 }

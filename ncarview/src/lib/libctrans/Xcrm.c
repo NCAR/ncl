@@ -1,5 +1,5 @@
 /*
- *	$Id: Xcrm.c,v 1.11 1992-04-03 20:40:41 clyne Exp $
+ *	$Id: Xcrm.c,v 1.12 1992-07-16 18:07:01 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -27,7 +27,6 @@
 #include 	<stdio.h>
 #include	<X11/Xlib.h>
 #include	<X11/Xutil.h>
-#include	<cterror.h>
 #include	<ncarv.h>
 #include	"cgmc.h"
 #include	"devices.h"
@@ -43,7 +42,7 @@ extern	boolean		Colordef[];
 extern	Pixeltype	Colortab[];
 extern	boolean		Color_ava;
 
-free_colors()
+void	free_colors()
 {
 	
 	Pixeltype	*free_list = NULL;
@@ -99,16 +98,17 @@ X11_UpdateColorTable_()
 	Pixeltype	planedummy[1];		/* not used	*/
 	Pixeltype	pixel_return[1];	/* device index	*/
 	int		i;
+	int		status = 0;
 
 	static	XColor	color = {
 		0,0,0,0,(DoRed | DoGreen | DoBlue), '\0'
 		};
 
-	void	back_color();
+	int	back_color();
 
 	/* see if device supports colour	*/
 	if (!Color_ava)
-		return (OK);		/* punt!	*/
+		return (status);		/* punt!	*/
 
 
 	/*
@@ -131,7 +131,7 @@ X11_UpdateColorTable_()
 			COLOUR_INDEX_BLUE(0),
 			&color
 			);
-		(void) back_color(color);
+		status = back_color(color);
 		
 		COLOUR_INDEX_DAMAGE(0) = FALSE;
 		COLOUR_TOTAL_DAMAGE--;
@@ -165,10 +165,8 @@ X11_UpdateColorTable_()
 				);
 		
 			if (!XAllocColor(dpy, Cmap, &color)) {
-
-				/* error allocating color cell	*/
-				ct_error(NT_CAE,"Too many colors allocated");
-				return (pre_err);
+				ESprintf(E_UNKNOWN,"XAllocColor(,,) failed");
+				return(-1);
 			}
 
 			Colortab[i] = color.pixel;
@@ -180,7 +178,7 @@ X11_UpdateColorTable_()
 		}	/* if	*/
 		}	/* for	*/
 
-		return (OK);
+		return (status);
 	}
  
 	/*	
@@ -200,12 +198,8 @@ X11_UpdateColorTable_()
 				if (XAllocColorCells(dpy,Cmap,FALSE, planedummy,
 					0, pixel_return, 1) == 0) {
 
-					/* error allocating color cell	*/
-					ct_error(
-						NT_CAE,
-						"Too many colors allocated"
-						);
-					return (SICK);
+					ESprintf(E_UNKNOWN,"XAllocColor(,,) failed");
+					return (-1);
 				}
 
 				/* 
@@ -238,11 +232,11 @@ X11_UpdateColorTable_()
 			COLOUR_INDEX_DAMAGE(i) = FALSE;
 		}
 	}	/* for	*/
-	return (OK);
+	return (status);
 }
 
 
-static	void	back_color(color)
+static	int	back_color(color)
 	XColor	color;
 	
 {
@@ -254,11 +248,11 @@ static	void	back_color(color)
 	extern	struct	device	devices[];
 	extern	int	currdev;
 
-	if (! Color_ava) return;
+	if (! Color_ava) return(0);
 
 	if (startedDrawing) {
-		ct_error(NT_NULL,"Background color changes ignored after drawing has begun");
-		return;
+		ESprintf(E_UNKNOWN, "Background color changes ignored after drawing has begun");
+		return(-1);
 	}
 
 
@@ -280,8 +274,8 @@ static	void	back_color(color)
 					0, pixel_return, 1) == 0) {
 
 				/* error allocating color cell	*/
-				ct_error(NT_CAE,"");
-				return;
+				ESprintf(E_UNKNOWN,"XAllocColorCells(,,,,) failed");
+				return(-1);
 			}
 
 			/* 
@@ -306,8 +300,8 @@ static	void	back_color(color)
 		if (!XAllocColor(dpy, Cmap, &color)) {
 
 			/* error allocating color cell  */
-			ct_error(NT_CAE,"");
-			return;
+			ESprintf(E_UNKNOWN,"XAllocColor(,,) failed");
+			return(-1);
 		}
 		Colortab[0] = color.pixel;
 		Colordef[0] = TRUE;
@@ -324,4 +318,6 @@ static	void	back_color(color)
 		XClearWindow(dpy, win);
 #endif
 	}
+
+	return(0);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: in.c,v 1.5 1992-04-03 20:57:52 clyne Exp $
+ *	$Id: in.c,v 1.6 1992-07-16 18:08:08 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -15,9 +15,9 @@
 #include	<stdio.h>
 #include	<sys/types.h>
 #include	<sys/file.h>
+#include	<errno.h>
 #include	<cgm_tools.h>
 #include	<ncarv.h>
-#include	<cterror.h>
 #include	"in.h"
 #include	"cgmc.h"
 
@@ -197,13 +197,18 @@ boolean Moreparm = FALSE;	/* true if CGM is partitioned	*/
  *	return 		: status 
  */
 
-Ct_err	SetRecord(recnum)
+int	SetRecord(recnum)
 	int recnum;
 {
 	extern	void	CGM_flushGetInstr();
+	int	status;
 
 	CGM_flushGetInstr(cgmFd);
-	return(((CGM_lseek(cgmFd, recnum, L_SET)) < 0) ? DIE : OK);
+	if (CGM_lseek(cgmFd, recnum, L_SET) < 0) {
+		ESprintf(errno, "CGM_lseek(%d, %d, %d)", cgmFd, recnum, L_SET);
+		return(-1);
+	}
+	return(0);
 }
 
 /* 
@@ -229,7 +234,8 @@ int	Instr_Dec(cgmc)
 	 */
 	if ((retnum = CGM_getInstr(cgmFd, &instr)) < 1) {
 		if (retnum < 0) {	/* else eof	*/
-			ct_error(T_FRE, "metafile");
+			ESprintf(errno,"Error fetching CGM element");
+		
 		}
 		return(retnum);
 	}
@@ -289,13 +295,16 @@ int	Instr_Dec(cgmc)
 	case (int) na  : 
 		break;
 	default  : 
-		ct_error(NT_IOUE,"");
-		break;
+		ESprintf(E_UNKNOWN,"Error decoding CGM element");
+		return(-1);
 
 	}	/* end switch*/
 
 	if (retnum < 0) {
-		ct_error(T_FRE, "metafile");
+		ESprintf(
+			E_UNKNOWN,"Error decoding CGM element [ %s ]",
+			ErrGetMsg()
+		);
 		return(-1);
 	}
 
@@ -313,10 +322,10 @@ int	Instr_Dec(cgmc)
  *	cgmFd  		: cgm_fd = cgmFd
  */
 
-Ct_err	InitInput(fd)
+int	InitInput(fd)
 	Cgm_fd	fd;
 {
 	cgmFd = fd;
 
-	return (OK);
+	return (0);
 }

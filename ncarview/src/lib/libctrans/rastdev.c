@@ -1,9 +1,8 @@
 /*
- *	$Id: rastdev.c,v 1.10 1992-06-09 19:42:00 clyne Exp $
+ *	$Id: rastdev.c,v 1.11 1992-07-16 18:08:16 clyne Exp $
  */
 #include <stdio.h>
 #include <ncarg_ras.h>
-#include <cterror.h>
 #include "rast.h"
 #include "cgmc.h"
 #include "default.h"
@@ -35,7 +34,7 @@ void	rast_pointflush(coord_buf, coord_buf_num)
 {
 	int	i;
 	void	line_();
-	Ct_err	ComLineSim();
+	int	ComLineSim();
 
 	if (LINE_TYPE != 1) {
 		for(i=1;i<*coord_buf_num;i++)

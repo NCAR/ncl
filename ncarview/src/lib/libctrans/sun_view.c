@@ -1,5 +1,5 @@
 /*
- *	$Id: sun_view.c,v 1.14 1992-06-24 21:05:24 clyne Exp $
+ *	$Id: sun_view.c,v 1.15 1992-07-16 18:08:23 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -23,7 +23,6 @@
 #include <stdio.h>
 #include <pixrect/pixrect_hs.h>
 
-#include	<cterror.h>
 #include	<math.h>
 #include	<ncarv.h>
 #include	"cgmc.h"
@@ -38,9 +37,9 @@ extern	char	*strcat();
 extern	char	*strncpy();
 extern	char	*getenv();
 extern	boolean	stand_Alone;
+extern	char	**Argv;
 extern	boolean	deviceIsInit;
 extern	boolean	Batch;
-extern	char	*program_name;
 extern	boolean	*softFill;
 extern	boolean	*doBell;
 extern	int	optionDesc;
@@ -79,6 +78,7 @@ static	boolean	nextFrame = FALSE;
 static	boolean	exposeEvent = FALSE;
 static	boolean	colorAva = FALSE;	/* true if device has color	*/
 static	boolean	firstFrame = TRUE; 	/* true if processing first frame*/
+static	boolean	doInterrupt = FALSE;	/* abort translation		*/
 
 
 
@@ -90,7 +90,7 @@ static	void	set_clipping();
  *	The class 0 CGM element functions
  */
 /*ARGSUSED*/
-Ct_err	SunV_BegMF(c)
+int	SunV_BegMF(c)
 CGMC *c;
 {
 
@@ -112,8 +112,12 @@ CGMC *c;
                  *      (currently only geometry accepted       )
                  */
 		if (GetOptions(optionDesc, options) < 0) {
-			ct_error(T_NULL, ErrGetMsg());
-			return(DIE);
+			ESprintf(
+				E_UNKNOWN,"GetOptions(%d,) [ %s ]",
+				optionDesc, ErrGetMsg()
+			);
+			return(-1);
+
 		}
 
 		/*
@@ -121,8 +125,8 @@ CGMC *c;
 		 * width and heigth
 		 */
 		if (sscanf(opt.Ws,"%d %d",&dev.width,&dev.height) !=2){
-			ct_error(T_NULL, "dimensions must be quoted");
-			return(DIE);
+			ESprintf(EINVAL, "Invalid dimension(%s)", opt.Ws);
+			return(-1);
 		}
 
 		if (dev.width == -1) dev.width = DEFAULT_WIDTH;
@@ -133,13 +137,12 @@ CGMC *c;
 		 * position
 		 */
 		if (sscanf(opt.Wp, "%d %d", &x, &y) != 2) {
-
-			ct_error(T_NSO, "position must be quoted");
-			return(DIE);
+			ESprintf(EINVAL, "Invalid position(%s)", opt.Wp);
+			return(-1);
 		}
 
 		frame = window_create((Window) NULL, FRAME, 
-				FRAME_LABEL,	program_name,
+				FRAME_LABEL,	Argv[0],
 				FRAME_NO_CONFIRM,	TRUE,
 				WIN_WIDTH,	dev.width,
 				WIN_WIDTH,	dev.height,
@@ -201,22 +204,22 @@ CGMC *c;
 				0);
 
 	deviceIsInit = TRUE;	/* we are initialized	*/
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	SunV_EndMF(c)
+int	SunV_EndMF(c)
 CGMC *c;
 {
 
 	if (!deviceIsInit)
-		return(OK);
+		return(0);
 
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	SunV_BegPic(c)
+int	SunV_BegPic(c)
 CGMC *c;
 {
 
@@ -225,6 +228,8 @@ CGMC *c;
 		height;	/* width and height of window	*/
 
 	CoordRect	dev_extent;
+
+	if (doInterrupt) return(-1);
 
 	/*
 	 *	copy default table to working default table	
@@ -309,11 +314,11 @@ CGMC *c;
 	}
 
 
-	return(OK);
+	return(0);
 }
 
 /*ARGSUSED*/
-Ct_err	SunV_BegPicBody(c)
+int	SunV_BegPicBody(c)
 CGMC *c;
 {
 
@@ -329,14 +334,17 @@ CGMC *c;
 	 */
 	pw_batch_on(pixReg);
 #endif
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	SunV_EndPic(c)
+int	SunV_EndPic(c)
 CGMC *c;
 {
 	unsigned op = 0;
+
+
+	if (doInterrupt) return(-1);
 
 #ifdef	BATCH
 	/*
@@ -357,14 +365,14 @@ CGMC *c;
 	 *	if not interactive don't perform any user interaction
 	 */
 	if (Batch) {
-		return(OK);
+		return(0);
 	}
 
 	/*
 	 * if not stand alone do not interact with user. Let interface do it
 	 */
 	if (!stand_Alone) {
-		return(OK);
+		return(0);
 	}
 
 	/* 
@@ -378,11 +386,11 @@ CGMC *c;
 	}
 	nextFrame = FALSE;	/* inform notifier to go on	*/
 
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	SunV_ClearDevice(c)
+int	SunV_ClearDevice(c)
 CGMC *c;
 {
 	unsigned op = 0;
@@ -393,7 +401,7 @@ CGMC *c;
 	op = PIX_SRC | PIX_COLOR(0);
 	pw_writebackground(pixReg, 0,0, dev.width, dev.height, op);
 
-	return(OK);
+	return(0);
 
 	
 }
@@ -411,7 +419,7 @@ CGMC *c;
  * points.  
  */
 /*ARGSUSED*/
-Ct_err	SunV_PolyLine(c)
+int	SunV_PolyLine(c)
 CGMC *c;
 {
 
@@ -487,11 +495,11 @@ CGMC *c;
 					&lineWidth, tex, op);
 
 
-	return (OK);
+	return (0);
 
 }
 
-Ct_err	SunV_PolyMarker(c)
+int	SunV_PolyMarker(c)
 CGMC *c;
 {
 
@@ -600,13 +608,11 @@ CGMC *c;
 				op, 0);
 		break;
 	default:
-		/* unsupported polymarker type	*/
-		ct_error(NT_UPMT,"");
-		return (SICK);
+		return (-1);
 	}
 
 
-	return (OK);
+	return (0);
 }
 
 
@@ -614,7 +620,7 @@ CGMC *c;
 /* 
  *	Polygon routine.  
  */
-Ct_err	SunV_Polygon(c)
+int	SunV_Polygon(c)
 CGMC *c;
 {
 
@@ -658,8 +664,8 @@ CGMC *c;
 				(unsigned) num_points 
 				* sizeof(struct pr_pos))) == NULL ) {
 
-				ct_error(NT_MALLOC, "for poly points");
-				return (SICK);
+				ESprintf(errno, "malloc()");
+				return (-1);
 			}
 
 			pointBuf.size = num_points;
@@ -678,8 +684,7 @@ CGMC *c;
 		 */
 		if (c->more) {
 			if (Instr_Dec(c) < 1) {
-				ct_error(T_FRE, "metafile");
-				return (DIE);
+				return (-1);
 			}
 		}
 		else break;	/* leave loop	*/
@@ -690,7 +695,7 @@ CGMC *c;
 	 */
 	if (num_points > MAX_POLYGON_POINTS || *softFill) {
 		sim_polygon(pointBuf.p, (int) num_points, op);
-		return(OK);
+		return(0);
 	}
 
 
@@ -729,7 +734,6 @@ CGMC *c;
 		 *	code to invoke a pattern routine
 		 */
 			/*fill patterns not supported	*/
-		ct_error(NT_UPFS, "pattern");
 		break;
 
 	case	HATCH_S:
@@ -795,16 +799,15 @@ CGMC *c;
 		break;
 
 	default:
-		ct_error(NT_UPFS,"");
-		return(SICK);
+		return(-1);
 	}
 
-	return (OK);
+	return (0);
 }
 
 
 /*ARGSUSED*/
-Ct_err	SunV_CellArray(c)
+int	SunV_CellArray(c)
 CGMC *c;
 {
 #ifdef DEBUG
@@ -822,7 +825,7 @@ CGMC *c;
 	Itype	nx, ny;		/* dimensions of cell array by number of cells	*/
 	Etype	mode;		/* cell representation mode		*/
 
-	Ct_err	raster_();
+	int	raster_();
 	void	SetUpCellArrayIndexing();
 
 	/*
@@ -850,9 +853,10 @@ CGMC *c;
 	mode = c->e[0];
 
 	if (CSM != INDEXED) {
-			ct_error(NT_CAFE, "direct color not supported");
-			return (SICK);
+		ESprintf(EINVAL, "direct color not supported");
+		return (-1);
 	}
+
 
 
 	/*
@@ -895,11 +899,10 @@ CGMC *c;
 	 * cell array is NOT rectangular
 	 */
 	else {
-		ct_error(NT_CAFE, "cell array must be a rectangle");
-		return (SICK);
+		return (-1);
 	}
 
-	return (OK);
+	return (0);
 }
 
 
@@ -955,7 +958,7 @@ static	sim_polygon(sun_pt_list, n, op)
  *	Class 5 elements
  */
 /*ARGSUSED*/
-Ct_err	SunV_ColrTable(c)
+int	SunV_ColrTable(c)
 CGMC *c;
 {
 
@@ -967,7 +970,7 @@ CGMC *c;
 
 	/* see if device supports colour	*/
 	if (!colorAva)
-		return (OK);		/* punt!	*/
+		return (0);		/* punt!	*/
 
 
 	for (index=c->ci[0], i = 0 ;index< (c->ci[0] + c->CDnum); index++,i++) {
@@ -990,10 +993,8 @@ CGMC *c;
 				(*color_tab.next_new_index)++;
 			}
 			else {
-				(void)sprintf(msg, ": only %d colors available",
-					MAX_COLOR);
-				ct_error(NT_CAE, msg);
-				return(SICK);
+				ESprintf(E_UNKNOWN, "Too many colors");
+				return(-1);
 			}
 		}
 		/*
@@ -1007,7 +1008,7 @@ CGMC *c;
 		pw_putcolormap(pixReg, color_tab.index[index], 
 			1, &rgb.red, &rgb.green, &rgb.blue);
 	}
-	return (OK);
+	return (0);
 }
 
 #define	SEGMENTS	64
@@ -1056,7 +1057,7 @@ static	quick_circle(xc, yc, radius, op)
  *	width		: width of the cell array in pixels.
  *	height		: height of the cell array in pixels.
  */
-static	Ct_err	raster_(c, P, rows, cols, nx, ny, width, height)
+static	int	raster_(c, P, rows, cols, nx, ny, width, height)
 
 	CGMC    *c;
 	Ptype  P;
@@ -1089,8 +1090,8 @@ static	Ct_err	raster_(c, P, rows, cols, nx, ny, width, height)
 	 */
 	if ((pw = mem_create(width, height, dev.depth)) ==
 		NULL)  {
-		ct_error(NT_MALLOC, "cell array too big");
-		return (SICK);
+		ESprintf(errno, "mem_create(%d,%d,%d)",width,height,dev.depth);
+		return (-1);
 	}
 	index_array = (unsigned *) icMalloc ((unsigned) nx * sizeof(unsigned));
 
@@ -1123,8 +1124,7 @@ static	Ct_err	raster_(c, P, rows, cols, nx, ny, width, height)
 			/* make sure data available in cgmc     */
 			if (index >= c->Cnum && c->more) {
 				if (Instr_Dec(c) < 1) {
-					ct_error(T_FRE, "metafile");
-					return (DIE);
+					return (-1);
 				}
 
 				index = 0;
@@ -1180,7 +1180,7 @@ static	Ct_err	raster_(c, P, rows, cols, nx, ny, width, height)
 
 	pr_destroy(pw);
 
-	return (OK);
+	return (0);
 }
 
 static	void	set_clipping()
@@ -1269,7 +1269,6 @@ static	Pr_texture	*set_line_type()
 			break;
 
 		default :
-			ct_error(NT_UPLS,"");
 			break;
 		}
 	}
@@ -1287,12 +1286,10 @@ static	Notify_value destroy_proc_(frame, status)
 		return(NOTIFY_DONE);
 	}
 
-	close_ctrans();
-#ifdef	lint
+	ESprintf(E_UNKNOWN, "Interrup");
+	doInterrupt = TRUE;
+
 	return(NOTIFY_DONE);
-#else
-	exit(0);
-#endif
 }
 
 /*
@@ -1395,8 +1392,7 @@ void	input_event(window, event, arg)
 		break;
 
 	case	'q'	:
-		close_ctrans();
-		exit(0);
+		doInterrupt = TRUE;
 	}
 
 }

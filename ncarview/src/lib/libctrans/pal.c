@@ -15,7 +15,6 @@
 		
 #include <ncarg_ras.h>
 #include <ncarv.h>
-#include <cterror.h>
 #include "cgmc.h"
 #include "default.h"
 
@@ -69,7 +68,6 @@ LoadPalette(cgmc, palette)
 	 * read in the color palette
 	 */
 	if (PaletteRead(palette, NULL, colors) != RAS_OK) {
-		ct_error(NT_NULL, RasterGetError());
 		return(-1);
 	}
 

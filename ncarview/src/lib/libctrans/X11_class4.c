@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.16 1992-04-03 20:40:10 clyne Exp $
+ *	$Id: X11_class4.c,v 1.17 1992-07-16 18:06:48 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -29,11 +29,11 @@
 
 #include	<stdio.h>
 #include	<math.h>
+#include	<errno.h>
 #include	<X11/Xlib.h>
 #include	<X11/Xutil.h>
 #include	<ncarv.h>
 #include	<cgm_tools.h>
-#include	<cterror.h>
 #include	"cgmc.h"
 #include	"default.h"
 #include	"Xdefs.h"
@@ -106,21 +106,19 @@ boolean startedDrawing = FALSE;
 
 
 /*ARGSUSED*/
-Ct_err	X11_PolyLine(c)
+int	X11_PolyLine(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_PolyLine\n");
-#endif
 
 /* Polyline routine.  Assume lineGC attributes
  * have been appropriately set.  Draw polylines in batches of a maximum of
  * points.  
  */
 
-	Ct_err	GCsetlinewidth();
-	Ct_err	GCsetcolor();
-	Ct_err	GCsetlinetype();
+	int	GCsetlinewidth();
+	int	GCsetcolor();
+	int	GCsetlinetype();
+	int	status = 0;
 
 	register int	n;	/* count of processed polyline coordinates */
 	register int	p;	/* count processed unsent line coordinates */
@@ -134,7 +132,7 @@ CGMC *c;
 	 *	make sure line attributes are set
 	 */
 	if (Color_ava && COLOUR_TABLE_DAMAGE) {
-		X11_UpdateColorTable_();
+		if (X11_UpdateColorTable_() < 0) status = -1;
 		COLOUR_TABLE_DAMAGE = FALSE;
 	}
 
@@ -219,14 +217,13 @@ CGMC *c;
 		MoreData = TRUE;
 	}
 
-	return (OK);
+	return (status);
 
 }
 
 /*ARGSUSED*/
-/* Currently unsupported by NCAR Graphics */
-Ct_err	X11_DisjtLine(c)
-CGMC *c;
+int	X11_DisjtLine(c)
+	CGMC *c;
 {
 	/* 
 	 * Disjoint Polyline routine.  Assume lineGC attributes
@@ -234,9 +231,10 @@ CGMC *c;
 	 * maximum of points.  
 	 */
 
-	Ct_err	GCsetlinewidth();
-	Ct_err	GCsetcolor();
-	Ct_err	GCsetlinetype();
+	int	GCsetlinewidth();
+	int	GCsetcolor();
+	int	GCsetlinetype();
+	int	status = 0;
 
 	register int	i;	/* count of processed disj line coordinates */
 	register int	p;	/* count processed unsent line coordinates */
@@ -248,7 +246,7 @@ CGMC *c;
 	 *	make sure line attributes are set
 	 */
 	if (Color_ava && COLOUR_TABLE_DAMAGE) {
-		X11_UpdateColorTable_();
+		if (X11_UpdateColorTable_() < 0) status = -1;
 		COLOUR_TABLE_DAMAGE = FALSE;
 	}
 
@@ -303,27 +301,25 @@ CGMC *c;
 	}
 	if (p > 0) XDrawSegments(dpy, drawable, lineGC, xsegments, p);
 
-	return (OK);
+	return (status);
 
 }
 
-Ct_err	X11_PolyMarker(c)
-CGMC *c;
+int	X11_PolyMarker(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_PolyMarker\n");
-#endif DEBUG
 
-	Ct_err	GCsetcolor();
+	int	GCsetcolor();
 
 	int	offset;
 	int	i;
+	int	status = 0;
 
 	/*
 	 *	make sure marker attributes are set
 	 */
 	if (Color_ava && COLOUR_TABLE_DAMAGE) {
-		X11_UpdateColorTable_();
+		if (X11_UpdateColorTable_() < 0) status = -1;
 		COLOUR_TABLE_DAMAGE = FALSE;
 	}
 
@@ -419,50 +415,43 @@ CGMC *c;
 		break;
 	default:
 		/* unsupported polymarker type	*/
-		ct_error(NT_UPMT,"");
-		return (SICK);
+		ESprintf(
+			EINVAL, "Illegal or unsupported marker type(%d)", 
+			MARKER_TYPE
+		);
+		return (-1);
 	}
 
-
-
-	return (OK);
+	return (status);
 }
 
 
 /*ARGSUSED*/
 /* Currently unsupported by NCAR Graphics */
-Ct_err	X11_RestrText(c)
+int	X11_RestrText(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_RestrText\n");
-#endif DEBUG
 	startedDrawing = TRUE;
 
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
 /* Currently unsupported by NCAR Graphics */
-Ct_err	X11_ApndText(c)
-CGMC *c;
+int	X11_ApndText(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_ApndText\n");
-#endif DEBUG
 	startedDrawing = TRUE;
 
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err	X11_Polygon(c)
-CGMC *c;
+int	X11_Polygon(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_Polygon\n");
-#endif DEBUG
-
 
 /* Polygon routine.  Assume polygonGC attributes
  * have been appropriately set.  
@@ -473,11 +462,12 @@ CGMC *c;
 #define	PHEIGHT		8
 
 
-	Ct_err	GCsetcolor();
+	int	GCsetcolor();
 
 	register int	i; 	/* count of processed polygon coordinates */
 	long	num_points = 0;	/* number of points to process		*/
 	long	xindex = 0;	/* index into the point list		*/
+	int	status = 0;
 
 
 	/*
@@ -488,7 +478,7 @@ CGMC *c;
 	 *	make sure polygon attributes are set
 	 */
 	if (Color_ava && COLOUR_TABLE_DAMAGE) {
-		X11_UpdateColorTable_();
+		if (X11_UpdateColorTable_() < 0) status = -1;
 		COLOUR_TABLE_DAMAGE = FALSE;
 	}
 
@@ -540,8 +530,7 @@ CGMC *c;
 		 */
 		if (c->more) {
 			if (Instr_Dec(c) < 1) {
-				ct_error(T_FRE, "metafile");
-				return (DIE);
+				return (-1);
 			}
 		}
 		else break;	/* leave loop	*/
@@ -591,7 +580,11 @@ CGMC *c;
 			 *	code to invoke a pattern routine
 			 */
 				/*fill patterns not supported	*/
-			ct_error(NT_UPFS, "pattern");
+			ESprintf(
+				EINVAL,"Illegal or unsupported fill style(%d)", 
+				INT_STYLE
+			);
+			status = -1;
 			break;
 
 		case	HATCH_S:
@@ -652,7 +645,7 @@ CGMC *c;
 
 					break;
 
-					case POSSITIVE :
+					case POSITIVE :
 
 						XDrawLine(dpy, tile.tileid, 
 							polygonGC, 
@@ -685,7 +678,7 @@ CGMC *c;
 
 					break;
 
-					case POSS_NEG  :
+					case POS_NEG  :
 
 
 						XDrawLine(dpy, tile.tileid, 
@@ -736,34 +729,33 @@ CGMC *c;
 			break;
 
 		default:
-			ct_error(NT_UPFS,"");
-			return(SICK);
+			ESprintf(
+				EINVAL, "Illegal or unsupported fill style(%d)",
+				INT_STYLE
+			);
+			status = -1;
+			break;
 	}
 
 
-	return (OK);
+	return (status);
 }
 
 /*ARGSUSED*/
 /* Currently unsupported by NCAR Graphics */
-Ct_err	X11_PolygonSet(c)
-CGMC *c;
+int	X11_PolygonSet(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_PolygonSet\n");
-#endif DEBUG
 	startedDrawing = TRUE;
 
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err	X11_CellArray(c)
+int	X11_CellArray(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_CellArray\n");
-#endif DEBUG
 
 #define	PACKED_MODE	1
 
@@ -779,14 +771,15 @@ CGMC *c;
 	Ptype	P, Q, R;	/* cell array corner boundries		*/
 	int	nx, ny;		/* dimensions of cell array by number of cells*/
 	Etype	mode;		/* cell representation mode		*/
+	int	status = 0;
 
-	Ct_err	x11_cell_array(), x11_non_rect_cell_array();
+	int	x11_cell_array(), x11_non_rect_cell_array();
 
 	/*
 	 *	check any control elements
 	 */
 	if (Color_ava && COLOUR_TABLE_DAMAGE) {
-		X11_UpdateColorTable_();
+		if (X11_UpdateColorTable_() < 0) status = -1;
 		COLOUR_TABLE_DAMAGE = FALSE;
 	}
 
@@ -813,15 +806,14 @@ CGMC *c;
 		/*	cell representation mode	*/
 	mode = c->e[0];
 
-	if (CSM != INDEXED) {
-		ct_error(NT_CAFE, "direct color not supported");
-		return (SICK);
+	if (CSM != MODE_INDEXED) {
+		ESprintf(EINVAL, "direct color not supported");
+		return (-1);
 	}
 
 	if (mode != PACKED_MODE) {
-		(void) fprintf(stderr, 
-		"ctrans: run length encoded cell arrays not supported\n");
-		return(OK);
+		ESprintf(EINVAL, "run length encoding not supported");
+		return(-1);
 	}
 
         /*
@@ -834,138 +826,119 @@ CGMC *c;
         /*
          * cell array is a rectangluar
          */
-        return(x11_cell_array(c, Colortab, P, Q, R, nx, ny));
+        if (x11_cell_array(c, Colortab, P, Q, R, nx, ny) < 0) status = -1;
 
+	return(status);
 }
 
 
 /*ARGSUSED*/
-Ct_err	X11_GDP(c)
-CGMC *c;
+int	X11_GDP(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_GDP\n");
-#endif DEBUG
 	startedDrawing = TRUE;
 
-	return (OK);
-}
-
-/*ARGSUSED*/
-/* Currently unsupported by NCAR Graphics */
-Ct_err	X11_Rect(c)
-CGMC *c;
-{
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_Rect\n");
-#endif DEBUG
-	startedDrawing = TRUE;
-
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
 /* Currently unsupported by NCAR Graphics */
-Ct_err	X11_Circle(c)
-CGMC *c;
+int	X11_Rect(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_Circle\n");
-#endif DEBUG
 	startedDrawing = TRUE;
 
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
 /* Currently unsupported by NCAR Graphics */
-Ct_err	X11_Arc3Pt(c)
-CGMC *c;
+int	X11_Circle(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_Arc3Pt\n");
-#endif DEBUG
 	startedDrawing = TRUE;
 
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
 /* Currently unsupported by NCAR Graphics */
-Ct_err	X11_Arc3PtClose(c)
-CGMC *c;
+int	X11_Arc3Pt(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_Arc3PtClose\n");
-#endif DEBUG
 	startedDrawing = TRUE;
 
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
 /* Currently unsupported by NCAR Graphics */
-Ct_err	X11_ArcCtr(c)
-CGMC *c;
+int	X11_Arc3PtClose(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_ArcCtr\n");
-#endif DEBUG
 	startedDrawing = TRUE;
 
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
+}
+
+/*ARGSUSED*/
+/* Currently unsupported by NCAR Graphics */
+int	X11_ArcCtr(c)
+	CGMC *c;
+{
+	startedDrawing = TRUE;
+
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
 /* Currently unsupported by NCAR Graphics */ 
-Ct_err	X11_ArcCtrClose(c)
-CGMC *c;
+int	X11_ArcCtrClose(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_ArcCtrClose\n");
-#endif DEBUG
 	startedDrawing = TRUE;
 
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
 /* Currently unsupported by NCAR Graphics */
-Ct_err	X11_Ellipse(c)
-CGMC *c;
+int	X11_Ellipse(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_Ellipse\n");
-#endif DEBUG
 	startedDrawing = TRUE;
 
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
 /* Currently unsupported by NCAR Graphics */
-Ct_err	X11_EllipArc(c)
-CGMC *c;
+int	X11_EllipArc(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_EllipArc\n");
-#endif DEBUG
 	startedDrawing = TRUE;
 
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
 /* Currently unsupported by NCAR Graphics */
-Ct_err	X11_EllipArcClose(c)
-CGMC *c;
+int	X11_EllipArcClose(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_EllipArcClose\n");
-#endif DEBUG
 	startedDrawing = TRUE;
 
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 
@@ -978,7 +951,7 @@ CGMC *c;
  *	on exit
  *		gc	: has foreround attribute set to color	
  */
-Ct_err	GCsetcolor(color, gc)
+int	GCsetcolor(color, gc)
 	COtype	color;
 	GC	gc;
 {
@@ -986,7 +959,7 @@ Ct_err	GCsetcolor(color, gc)
 	char	buf[10];	/* error message buffer	*/
 
 	/* check COLOUR SELECTION MODE	*/
-	if (CSM == INDEXED) {
+	if (CSM == MODE_INDEXED) {
 
 		/* see if the color has been defined	*/
 		if (Colordef[color.index]) { 
@@ -996,12 +969,12 @@ Ct_err	GCsetcolor(color, gc)
 			/* set to default color if invalid index	*/
 			XSetForeground(dpy, gc, Colortab[1]);
 
-			(void) sprintf(buf, "%d", color.index);
-			ct_error(NT_ICTI, buf);
+			ESprintf(EINVAL, "Invalid color index(%d)",color.index);
+			return(-1);
 		}
 	}
 
-	return (OK);
+	return (0);
 }
 
 
@@ -1013,41 +986,44 @@ Ct_err	GCsetcolor(color, gc)
  *	on exit
  *		lineGC	: has line attribute linetype
  */
-static	Ct_err	GCsetlinetype(linetype)
+static	int	GCsetlinetype(linetype)
 	IXtype	linetype;
 {
+
 	if (linetype == L_SOLID)
 		gcv.line_style = LineSolid;
 
 	else {
 		switch(linetype) {
-			case L_DASH	:
-				XSetDashes(dpy, lineGC, 0, 
-					dashes.dash, DASH_LIST_LEN);
+		case L_DASH	:
+			XSetDashes(dpy, lineGC, 0, dashes.dash, DASH_LIST_LEN);
+			break;
 
-				break;
+		case L_DOT	:
+			XSetDashes(dpy, lineGC, 0, dashes.dot, DOT_LIST_LEN);
+			break;
 
-			case L_DOT	:
-				XSetDashes(dpy, lineGC, 0, 
-					dashes.dot, DOT_LIST_LEN);
+		case L_DASH_DOT	:
+			XSetDashes(
+				dpy, lineGC, 0, 
+				dashes.dash_dot, DASHDOT_LIST_LEN
+			);
 
-				break;
+			break;
 
-			case L_DASH_DOT	:
-				XSetDashes(dpy, lineGC, 0, 
-					dashes.dash_dot, DASHDOT_LIST_LEN);
+		case L_DASH_DOT_DOT:
+			XSetDashes(dpy, lineGC, 0, 
+				dashes.dash_dot_dot, DASHDD_LIST_LEN);
 
-				break;
+			break;
 
-			case L_DASH_DOT_DOT:
-				XSetDashes(dpy, lineGC, 0, 
-					dashes.dash_dot_dot, DASHDD_LIST_LEN);
-
-				break;
-
-			default :
-				ct_error(NT_UPLS,"");
-				break;
+		default :
+			ESprintf(
+				EINVAL, "Illegal or unsupported line type(%d)", 
+				linetype
+			);
+			return(-1);
+			break;
 		}
 
 		gcv.line_style = LineOnOffDash;
@@ -1056,7 +1032,7 @@ static	Ct_err	GCsetlinetype(linetype)
 	/* change line GC to reflect changes	*/
 	XChangeGC(dpy, lineGC, GCLineStyle, &gcv);
 
-	return(OK);
+	return(0);
 }
 
 
@@ -1072,14 +1048,14 @@ static	Ct_err	GCsetlinetype(linetype)
  */
 		
 int	lineWidthScale = 1;	/* line width scaling factor	*/
-static	Ct_err	GCsetlinewidth(linewidth)
+static	int	GCsetlinewidth(linewidth)
 	Rtype	linewidth;
 {
 	unsigned long	mask;
 
-	if (LINE_WIDTH_MODE != SCALED) {
-		ct_error(NT_ILSM, "absolute");
-		return(SICK);
+	if (LINE_WIDTH_MODE != MODE_SCALED) {
+		ESprintf(ENOSYS,"Unsupported scaling mode(%d)",LINE_WIDTH_MODE);
+		return(-1);
 	}
 
 	/*
@@ -1120,7 +1096,7 @@ static	Ct_err	GCsetlinewidth(linewidth)
 	/* change line GC to reflect changes	*/
 	XChangeGC(dpy, lineGC, mask, &gcv);
 
-	return (OK);
+	return (0);
 }
 
 /*	init_polygon:
@@ -1131,13 +1107,16 @@ static	Ct_err	GCsetlinewidth(linewidth)
  *		Points.P : has POINTS_ALLOCED mem alloced
  */
 					
-Ct_err	init_polygon()
+int	init_polygon()
 {
+	int	status	= 0;
 	/*	query best size of tile. See section 5.4.4 */	
 	if (!(XQueryBestTile(dpy, drawable, PWIDTH, PHEIGHT,
-		(unsigned int *) &tile.width, (unsigned int *) &tile.height)))
+		(unsigned int *) &tile.width, (unsigned int *) &tile.height))) {
 
-		ct_error(NT_MALLOC,"");
+		ESprintf(errno, "XQueryBestTile(,,,,,)");
+		status = -1;
+	}
 
 	/*	allocate memory for the point buffer	*/
 
@@ -1149,7 +1128,7 @@ Ct_err	init_polygon()
 
 	Points.size = POINTS_ALLOCED;
 
-	return (OK);
+	return (status);
 }
 #ifdef	DEAD
 
@@ -1274,13 +1253,13 @@ static	sim_polygon(xp_list,n)
 
 
 /*ARGSUSED*/
-static	Ct_err	x11_non_rect_cell_array(c, color_pal, P, Q, R, nx, ny)
+static	int	x11_non_rect_cell_array(c, color_pal, P, Q, R, nx, ny)
 	CGMC		*c;
         Pixeltype       *color_pal;
         Ptype		P, Q, R;
         int		nx, ny;
 {
-        return(OK);      /* non rectangular cell arrays are not supported */
+        return(0);      /* non rectangular cell arrays are not supported */
 }
 
 
@@ -1313,7 +1292,7 @@ static	Ct_err	x11_non_rect_cell_array(c, color_pal, P, Q, R, nx, ny)
  * on exit
  *	return		: 0 => Ok, else error
  */
-static	Ct_err	x11_cell_array(c, color_pal, P, Q, R, nx, ny)
+static	int	x11_cell_array(c, color_pal, P, Q, R, nx, ny)
 	CGMC		*c;
 	Pixeltype	*color_pal;
 	Ptype	P, Q, R;
@@ -1363,7 +1342,7 @@ static	Ct_err	x11_cell_array(c, color_pal, P, Q, R, nx, ny)
 	/*
 	 * don't know how to handle a cell array with zero dimension
 	 */
-	if (nx == 0 || ny == 0) return (OK);
+	if (nx == 0 || ny == 0) return (0);
 
 	rows = (int *) icMalloc ((unsigned) ny * sizeof (int));
 	cols = (int *) icMalloc ((unsigned) nx * sizeof (int));
@@ -1379,7 +1358,8 @@ static	Ct_err	x11_cell_array(c, color_pal, P, Q, R, nx, ny)
 	pad = ximage->bytes_per_line - image_width;
 
 	if (ximage->bits_per_pixel % 8) {
-		return(SICK);	/* pixel size must be byte multible	*/
+		ESprintf(E_UNKNOWN, "Unsupported cell array encoding");
+		return(-1);	/* pixel size must be byte multible	*/
 	}
 
 	pixel_size = ximage->bits_per_pixel / 8;
@@ -1423,8 +1403,7 @@ static	Ct_err	x11_cell_array(c, color_pal, P, Q, R, nx, ny)
 			/* make sure data available in cgmc     */
 			if (cgmc_index >= c->Cnum && c->more) {
 				if (Instr_Dec(c) < 1) {
-					ct_error(T_FRE, "metafile");
-					return (DIE);
+					return (-1);
 				}
 				cgmc_index = 0;
 			}
@@ -1470,7 +1449,7 @@ static	Ct_err	x11_cell_array(c, color_pal, P, Q, R, nx, ny)
 	free((char *) cols);
 	free((char *) index_array);
 
-	return(OK);
+	return(0);
 }
 
 

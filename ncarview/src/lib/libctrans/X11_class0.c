@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.13 1992-06-24 21:04:58 clyne Exp $
+ *	$Id: X11_class0.c,v 1.14 1992-07-16 18:06:38 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -28,16 +28,16 @@
 
 
 #include <stdio.h>
-#include	<X11/Xlib.h>
-#include	<X11/Xutil.h>
-#include        <X11/Xresource.h>
-#include	<ncarv.h>
-#include	<cterror.h>
-#include	"cgmc.h"
-#include	"default.h"
-#include	"Xdefs.h"
-#include	"ctrandef.h"
-#include	"translate.h"
+#include <string.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xresource.h>
+#include <ncarv.h>
+#include "cgmc.h"
+#include "default.h"
+#include "Xdefs.h"
+#include "ctrandef.h"
+#include "translate.h"
 #define BORDER		1
 #define BORDERWIDTH	0
 #define	LOGO	"NCAR Graphics"
@@ -51,16 +51,16 @@ extern	char	*getenv();
 extern	boolean	stand_Alone;
 extern	boolean	deviceIsInit;
 extern	boolean	Batch;
-extern	char	*program_name;
 extern	char	**Argv;
 extern	int	Argc;
 extern	int	optionDesc;
 extern	boolean	Color_ava;
 extern	boolean	*softFill;
 extern	boolean	*doBell;
+extern	boolean	startedDrawing;
 
-extern	Ct_err	init_color();
-extern	Ct_err	init_polygon();
+extern	int	init_color();
+extern	int	init_polygon();
 
 static	struct	{
 	char	*Geometry;
@@ -154,12 +154,9 @@ static	CoordModifier	dev_coord_mod = {0,0,1.0,1.0};
 
 
 /*ARGSUSED*/
-Ct_err	X11_BegMF(c)
+int	X11_BegMF(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_BegMF\n");
-#endif DEBUG
 
 	char	*dpy_name;
 
@@ -167,7 +164,9 @@ CGMC *c;
 	XKeyEvent		*key_event;
 	int			len;
 	char			keybuffer[8];
-	Ct_err	X11_EndMF();
+	char			*dpy_env = "DISPLAY";
+	int			status = 0;
+	char			*prog_name;
 
 	if (deviceIsInit) {
 		(void) X11_EndMF(c);
@@ -187,22 +186,25 @@ CGMC *c;
 		 *      (currently only geometry accepted       )
 		 */
 		if (GetOptions(optionDesc, options) < 0) {
-			ct_error(T_NULL, ErrGetMsg());
-			return(DIE);
+			ESprintf(
+				E_UNKNOWN,"GetOptions(%d,) [ %s ]",
+				optionDesc, ErrGetMsg()
+			);
+			return(-1);
 		}
 
 		/*
 		 *	establish connection to sever
 		 */
-		if ((dpy_name = getenv("DISPLAY")) == NULL) {
-			ct_error(T_X11DEVNS,"");
-			return(DIE);
+		if ((dpy_name = getenv(dpy_env)) == NULL) {
+			ESprintf(E_UNKNOWN,"% env variable not set", dpy_env);
+			return(-1);
 		}
 
 
 		if ((dpy = XOpenDisplay(dpy_name)) == NULL) {
-			ct_error(T_CNOD, dpy_name);
-			return (DIE);
+			ESprintf(E_UNKNOWN,"XOpenDisplay(%s)", dpy_name);
+			return (-1);
 		}
 	}
 
@@ -220,7 +222,11 @@ CGMC *c;
 		int	llx, lly, urx, ury;
 
 		if (CoordStringToInt(x11_opts.viewport,&llx,&lly,&urx,&ury)<0){
-			ct_error(NT_NULL, x11_opts.window);
+			ESprintf(
+				E_UNKNOWN,
+				"Invalid viewport format [ %s ]", ErrGetMsg()
+			);
+			status = -1;
 		}
 		else {
 			SetDevViewport(
@@ -236,7 +242,11 @@ CGMC *c;
 		int	llx, lly, urx, ury;
 
 		if (CoordStringToInt(x11_opts.window,&llx,&lly,&urx,&ury)<0){
-			ct_error(NT_NULL, x11_opts.window);
+			ESprintf(
+				E_UNKNOWN,
+				"Invalid window format [ %s ]", ErrGetMsg()
+			);
+			status = -1;
 		}
 		else {
 			SetDevWin((long) llx, (long) lly,(long) urx,(long) ury);
@@ -280,8 +290,11 @@ CGMC *c;
 		 * Set the standard properties for the window managers. 
 		 * See Section  9.1.
 		 */
-		XSetStandardProperties(dpy, win, program_name, 
-				program_name, icon.pmap, Argv, Argc, &xsh);
+		prog_name = (
+			(prog_name = strrchr(*Argv,'/')) ? ++prog_name : *Argv
+		);
+		XSetStandardProperties(dpy, win, prog_name,
+				prog_name, icon.pmap, Argv, Argc, &xsh);
 
 		xwmh.icon_pixmap = icon.pmap;
 		xwmh.flags |= IconPixmapHint;
@@ -299,6 +312,7 @@ CGMC *c;
 	 *	of window. These colours will be used if the user doesn't 
 	 *	supply his own colour table through the CGM.
 	 */
+	startedDrawing = FALSE;
 	(void) init_color(x11_opts.foreground, x11_opts.background, 
 			(boolean) x11_opts.reverse, &fg, &bg, &bd);
 
@@ -359,8 +373,8 @@ CGMC *c;
 	/*
 	 *	intitialize polygon fill stuff
 	 */
-	if (init_polygon() != OK) {
-		return(pre_err);
+	if (init_polygon() != 0) {
+		return(-1);
 	}
 
 	deviceIsInit = TRUE;
@@ -426,7 +440,7 @@ CGMC *c;
 
 			/*	go on to next frame	*/
 				if (button_event->button == Button1)
-					return (OK);
+					return (status);
 
 				/* leave event loop	*/
 				break;
@@ -442,8 +456,8 @@ CGMC *c;
 					|| keybuffer[0] == 'Q'
 					|| keybuffer[0] == '\003')) {
 
-						close_ctrans();
-						exit(0);
+					ESprintf(E_UNKNOWN,"Interruped");
+					return(-1);
 
 				}
 
@@ -451,7 +465,7 @@ CGMC *c;
 				if (len == 1 && (keybuffer[0] == ' '
 					|| keybuffer[0] == ''))
 				
-					return (OK);
+					return (status);
 				break;
 
 			default:
@@ -464,19 +478,16 @@ CGMC *c;
 	}	/* if stand_Alone	*/
 	
 
-	return(OK);
+	return(status);
 }
 
 /*ARGSUSED*/
-Ct_err	X11_EndMF(c)
+int	X11_EndMF(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_EndMF\n");
-#endif DEBUG
 
 	if (!deviceIsInit)
-		return(OK);
+		return(0);
 
 	/*
 	 * free any color resources allocated (only try freeing if 
@@ -494,34 +505,24 @@ CGMC *c;
 		XCloseDisplay(dpy);
 
 	deviceIsInit = FALSE;
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	X11_BegPic(c)
+int	X11_BegPic(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_BegPicBody\n");
-#endif DEBUG
-
-
-
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	X11_BegPicBody(c)
+int	X11_BegPicBody(c)
 CGMC *c;
 {
 	XWindowAttributes	xwa;
 
-	extern	boolean	startedDrawing;
 	extern	short	devWinChange;
 
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_BegPic\n");
-#endif DEBUG
 
 
 	CoordRect	dev_extent;
@@ -541,8 +542,8 @@ CGMC *c;
 	 *	coordinate translation macros
 	 */
 	if (XGetWindowAttributes(dpy, win, &xwa) == 0) {
-		ct_error(T_NULL, "");
-		return(DIE);
+		ESprintf(E_UNKNOWN, "XGetWindowAttributes(,,)");
+		return(-1);
 	}
 
 	if (dev.height != xwa.height || dev.width != dev.width 
@@ -592,12 +593,12 @@ CGMC *c;
 		GCSetClipExtent((short) dev_extent.llx, (short) dev_extent.ury,
 				(short) dev_extent.urx, (short) dev_extent.lly);
 	}
-	return(OK);
+	return(0);
 }
 
 
 /*ARGSUSED*/
-Ct_err	X11_EndPic(c)
+int	X11_EndPic(c)
 CGMC *c;
 {
 	XButtonPressedEvent	*button_event;
@@ -606,9 +607,6 @@ CGMC *c;
 	char			keybuffer[8];
 	boolean			loop;
 
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_EndPic\n");
-#endif DEBUG
 
 	if (fontstruct != NULL) 
 		/*
@@ -632,7 +630,7 @@ CGMC *c;
 	if (Batch) {
 		XFlush(dpy);
 		free_colors();
-		return(OK);
+		return(0);
 	}
 
 	/*
@@ -641,7 +639,7 @@ CGMC *c;
 	if (!stand_Alone) {
 		XFlush(dpy);
 		free_colors();
-		return(OK);
+		return(0);
 	}
 
 	/*
@@ -688,8 +686,8 @@ CGMC *c;
 				|| keybuffer[0] == 'Q'
 				|| keybuffer[0] == '\003')) {
 
-					close_ctrans();
-						exit(0);
+				ESprintf(E_UNKNOWN, "Interruped");
+				return(-1);
 
 			}
 
@@ -710,18 +708,18 @@ CGMC *c;
 	} /* end while */
 
 	free_colors();
-	return(OK);
+	return(0);
 }
 
 /*ARGSUSED*/
-Ct_err	X11_ClearDevice(c)
+int	X11_ClearDevice(c)
 CGMC *c;
 {
 	/* 
 	 * clear the screen
 	 */
 	XClearWindow(dpy,win);
-	return(OK);
+	return(0);
 }
 
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class5.c,v 1.9 1992-04-03 20:40:18 clyne Exp $
+ *	$Id: X11_class5.c,v 1.10 1992-07-16 18:06:53 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -32,11 +32,11 @@
 
 
 #include 	<stdio.h>
+#include 	<errno.h>
 #include	<X11/Xlib.h>
 #include	<X11/Xutil.h>
 #include	<ncarv.h>
 #include	"Xdefs.h"
-#include	<cterror.h>
 #include	"default.h"
 #include	"cgmc.h"
 #include	"Xcrm.h"
@@ -58,27 +58,23 @@ Pixeltype	max_colour;			/* maximum r or g or b value
 
 /*ARGSUSED*/
 /* Currently unsupported by NCAR Graphics */
-Ct_err	X11_PatTable(c)
-CGMC *c;
+int	X11_PatTable(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_PatTable\n");
-#endif DEBUG
 
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 
 
 /*ARGSUSED*/
-Ct_err	X11_ASF(c)
-CGMC *c;
+int	X11_ASF(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_ASF\n");
-#endif DEBUG
 
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 
@@ -93,7 +89,7 @@ CGMC *c;
  */
 
 
-Ct_err	init_color(foreground, background, reverse, fg, bg, bd)
+int	init_color(foreground, background, reverse, fg, bg, bd)
 	char		*foreground,
 			*background;
 	boolean		reverse;
@@ -103,12 +99,13 @@ Ct_err	init_color(foreground, background, reverse, fg, bg, bd)
 	int	i;
 	char	*name[2];
 	int	col_2_alloc;
+	int	status = 0;
 
 	static	XColor	color = {
 		0,0,0,0,(DoRed | DoGreen | DoBlue), '\0'
 		};
 
-	Ct_err	ColrTable();
+	int	ColrTable();
 
 	col_2_alloc = 0;
 
@@ -140,7 +137,7 @@ Ct_err	init_color(foreground, background, reverse, fg, bg, bd)
 			*bg = WhitePixel(dpy, DefaultScreen(dpy));
 		}
 
-		return (OK);
+		return (0);
 	}
 
 
@@ -189,7 +186,8 @@ Ct_err	init_color(foreground, background, reverse, fg, bg, bd)
 
 			if (!XParseColor(dpy, Cmap, name[i], &color))  {
 				/* color name s not in database	*/
-				ct_error(NT_CAE,name[i]);
+				ESprintf(E_UNKNOWN,"XParseColor(,,%s,)",name[i]);
+				status = -1;
 			}
 			cgmc.cd[i].red = color.red / X_MAX_RGB * max_colour;
 			cgmc.cd[i].green = color.green / X_MAX_RGB* max_colour;
@@ -213,7 +211,7 @@ Ct_err	init_color(foreground, background, reverse, fg, bg, bd)
 	/*
 	 * load the default colors
 	 */
-	X11_UpdateColorTable_();
+	if (X11_UpdateColorTable_() < 0) status = -1;
 	COLOUR_TABLE_DAMAGE = FALSE;
 
 	/*
@@ -222,5 +220,5 @@ Ct_err	init_color(foreground, background, reverse, fg, bg, bd)
 	*bg = Colortab[0];
 	*fg = *bd =  Colortab[1];
 
-	return (OK);
+	return (status);
 }

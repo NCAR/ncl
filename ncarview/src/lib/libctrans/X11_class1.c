@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class1.c,v 1.3 1992-04-03 20:39:55 clyne Exp $
+ *	$Id: X11_class1.c,v 1.4 1992-07-16 18:06:41 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -26,71 +26,53 @@
 
 
 #include 	<stdio.h>
+#include 	<errno.h>
 #include	<X11/Xlib.h>
 #include	<X11/Xutil.h>
 #include	<ncarv.h>
-#include	<cterror.h>
 #include	"cgmc.h"
 
 /* Class 1 */
 /*ARGSUSED*/
-Ct_err	X11_MFVersion(c)
+int	X11_MFVersion(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_MFVersion\n");
-#endif DEBUG
-
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	X11_MFDesc(c)
+int	X11_MFDesc(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_MFDesc\n");
-#endif DEBUG
-
-	return (OK);
+	return (0);
 }
 
 
 /*ARGSUSED*/
-Ct_err	X11_MFElemList(c)
+int	X11_MFElemList(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_MFElemList\n");
-#endif DEBUG
-
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	X11_MFDefaults(c)
+int	X11_MFDefaults(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_MFDefaults\n");
-#endif DEBUG
 
 	/*
 	 *	this function is implemented by the code in X11_BegMF
 	 *	and the default table in "default.c"
 	 */
 
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
 /* Currently unsupported by NCAR Graphics */
-Ct_err	X11_CharSetList(c)
+int	X11_CharSetList(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_CharSetList\n");
-#endif DEBUG
-
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.22 1992-06-24 21:05:16 clyne Exp $
+ *	$Id: gcap.c,v 1.23 1992-07-16 18:07:51 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -43,13 +43,13 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <errno.h>
 #include <sys/types.h>
 
 #ifndef	L_SET
 #define	L_SET	0
 #endif
 
-#include <cterror.h>
 #include <ncarv.h>
 #include "cgmc.h"
 #include "graphcap.h"
@@ -60,12 +60,12 @@
 
 extern	FILE	*tty;
 extern	long	lseek();
-extern	Ct_err	formatintensity();
-extern	Ct_err	formatveccnt();
-extern	Ct_err	formatcoord();
-extern	Ct_err	formatindex();
-extern	Ct_err	formatwidth();
-extern	Ct_err	raster();
+extern	int	formatintensity();
+extern	int	formatveccnt();
+extern	int	formatcoord();
+extern	int	formatindex();
+extern	int	formatwidth();
+extern	int	raster();
 extern	boolean	Batch;
 extern	boolean	deviceIsInit;
 extern	int	optionDesc;
@@ -102,7 +102,7 @@ extern	boolean	*softFill;
  * 	Class 0 Function
  */
 /*ARGSUSED*/
-Ct_err	BegMF(c)
+int	BegMF(c)
 CGMC *c;
 {
 
@@ -111,6 +111,7 @@ CGMC *c;
 
 	extern	int	commFillScaleFactor;
 	extern	int	commHatchScaleFactor;
+	int	status = 0;
 
 	void	SetDevWin();
 
@@ -118,8 +119,11 @@ CGMC *c;
 	 * parse gcap specific options
 	 */
 	if (GetOptions(optionDesc, options) < 0) {
-		ct_error(T_NULL, ErrGetMsg());
-		return(DIE);
+		ESprintf(
+			E_UNKNOWN,"GetOptions(%d,) [ %s ]",
+			optionDesc, ErrGetMsg()
+		);
+		return(-1);
 	}
 	
 	/*
@@ -148,7 +152,11 @@ CGMC *c;
 		int	llx, lly, urx, ury;
 
 		if (CoordStringToInt(gcap_opts.viewport,&llx,&lly,&urx,&ury)<0){
-			ct_error(NT_NULL, gcap_opts.window);
+			ESprintf(
+				E_UNKNOWN, 
+				"Invalid viewport format [ %s ]", ErrGetMsg()
+			);
+			status = -1;
 		}
 		else {
 			SetDevViewport(
@@ -165,7 +173,11 @@ CGMC *c;
 		int     llx, lly, urx, ury;
 
 		if (CoordStringToInt(gcap_opts.window,&llx,&lly,&urx,&ury)<0){
-			ct_error(NT_NULL, gcap_opts.window);
+			ESprintf(
+				E_UNKNOWN, 
+				"Invalid window format [ %s ]", ErrGetMsg()
+			);
+			status = -1;
 		}
 		else {
 			SetDevWin((long) llx, (long) lly,(long) urx,(long) ury);
@@ -252,16 +264,16 @@ CGMC *c;
 	}
 
 	deviceIsInit = TRUE;
-	return (OK);
+	return (status);
 }
 
 /*ARGSUSED*/
-Ct_err	EndMF(c)
+int	EndMF(c)
 CGMC *c;
 {
 
 	if (!deviceIsInit) {
-		return(OK);
+		return(0);
 	}
 
 	/*
@@ -272,17 +284,18 @@ CGMC *c;
 	flush();
 
 	deviceIsInit = FALSE;
-	return (OK);
+	return (0);
 }
 
 
 /*ARGSUSED*/
-Ct_err	BegPic(c)
+int	BegPic(c)
 CGMC *c;
 {
 	int	i,j,k;		/* loop var */
 	long	data[3];
 	SignedChar	s_char_;
+	int		status = 0;
 
 
 	/*
@@ -335,7 +348,10 @@ CGMC *c;
 				i += 3;
 				break;
 			default:
-				ct_error(NT_NULL,"bad graphcap color model");
+				ESprintf(
+					E_UNKNOWN,"Invalid graphca color model"
+				);
+				status = -1;
 				break;
 			}
 
@@ -354,18 +370,18 @@ CGMC *c;
 	FILL_COLOUR_DAMAGE = TRUE;
 	LINE_COLOUR_DAMAGE = TRUE;
 	LINE_WIDTH_DAMAGE = TRUE;
-	return (OK);
+	return (status);
 }
 
 /*ARGSUSED*/
-Ct_err	BegPicBody(c)
+int	BegPicBody(c)
 CGMC *c;
 {
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	EndPic(c)
+int	EndPic(c)
 CGMC *c;
 {
 
@@ -397,50 +413,50 @@ CGMC *c;
 	 * reset to default attributes
 	 */
 	(void)SetInPic((boolean)FALSE);
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	ClearDevice(c)
+int	ClearDevice(c)
 CGMC *c;
 {
-	/*
-	 * Clear the display
-	 */
 	(void)buffer(ERASE, ERASE_SIZE);
-	return (OK);
+	return (0);
 }
 
 
 /* Text function now in text.c */
 
 /*ARGSUSED*/
-Ct_err	RestrText(c)
+int	RestrText(c)
 CGMC *c;
 {
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err	ApndText(c)
+int	ApndText(c)
 CGMC *c;
 {
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 
 /*ARGSUSED*/
-Ct_err	PolygonSet(c)
+int	PolygonSet(c)
 CGMC *c;
 {
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*
  *	Software simulation of the cell array stuff
  *	Cell arrays are simulated by drawing filled polygons
  */
-Ct_err	cellsim(c)
+int	cellsim(c)
 CGMC *c;
 {
 	float	deltax,deltay;
@@ -480,7 +496,7 @@ CGMC *c;
                                         starty = i;
                                         offset = c->Cnum + 1;
 				}
-				return(OK);
+				return(0);
 			} else {
 
 				gcap_fillcolour((CItype)c->c[index]);
@@ -507,13 +523,13 @@ CGMC *c;
 	starty = 0;
 	offset = 0;
 
-	return (OK);
+	return (0);
 }
 
-Ct_err	PolyMarker(c)
+int	PolyMarker(c)
 	CGMC *c;
 {
-	Ct_err	_PolyMarker();
+	int	_PolyMarker();
 
 	return(_PolyMarker(c, MARKER_DOT_SIZE));
 }
@@ -521,7 +537,7 @@ Ct_err	PolyMarker(c)
 
 
 /*ARGSUSED*/
-Ct_err	CellArray(c)
+int	CellArray(c)
 CGMC *c;
 {
 #ifdef DEBUG
@@ -544,7 +560,7 @@ CGMC *c;
 	Etype	mode;		/* cell representation mode		*/
 	boolean	clip = FALSE;
 
-	Ct_err	cell_array(), non_rect_cell_array(), CellArray_();
+	int	cell_array(), non_rect_cell_array(), CellArray_();
 	void	gcap_line(), gcap_update_color_table();
 	extern	long	clipxmax, clipxmin, clipymax, clipymin;
 
@@ -575,17 +591,16 @@ CGMC *c;
 		/*	cell representation mode	*/
 	mode = c->e[0];
 
-	if (CSM != INDEXED) {
-		ct_error(NT_CAFE, "direct color not supported");
+	if (CSM != MODE_INDEXED) {
+		ESprintf(EINVAL, "Direct color not supported");
 		(void) MunchCGM(c);
-		return (SICK);
+		return (-1);
 	}
 
 	if (mode != PACKED_MODE) {
-		(void) fprintf(stderr, 
-		"ctrans: run length encoded cell arrays not supported\n");
+		ESprintf(EINVAL, "Run length encoding not supported");
 		(void) MunchCGM(c);
-		return(OK);
+		return(-1);
 	}
 
 	if (c->p[0].x < clipxmin || c->p[0].y < clipymin
@@ -600,9 +615,9 @@ CGMC *c;
          * see if cell array is rectangular or not
          */
         if (c->p[2].x != c->p[1].x || c->p[0].y != c->p[2].y) {
-		ct_error(NT_NULL, "non rectangular cell array");
+		ESprintf(EINVAL, "Cell array is non-rectangular");
 		(void) MunchCGM(c);
-		return(OK);
+		return(-1);
         }
 
 	/*
@@ -629,77 +644,87 @@ CGMC *c;
 	}
 
 	(void) MunchCGM(c);
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err	GDP(c)
+int	GDP(c)
 CGMC *c;
 {
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err	Rect(c)
+int	Rect(c)
 CGMC *c;
 {
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err	Circle(c)
+int	Circle(c)
 CGMC *c;
 {
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err	Arc3Pt(c)
+int	Arc3Pt(c)
 CGMC *c;
 {
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err	Arc3PtClose(c)
+int	Arc3PtClose(c)
 CGMC *c;
 {
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err	ArcCtr(c)
+int	ArcCtr(c)
 CGMC *c;
 {
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err	ArcCtrClose(c)
+int	ArcCtrClose(c)
 CGMC *c;
 {
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err	Ellipse(c)
+int	Ellipse(c)
 CGMC *c;
 {
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err	EllipArc(c)
+int	EllipArc(c)
 CGMC *c;
 {
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err	EllipArcClose(c)
+int	EllipArcClose(c)
 CGMC *c;
 {
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*
@@ -707,26 +732,28 @@ CGMC *c;
  */
 
 /*ARGSUSED*/
-Ct_err	Escape(c)
+int	Escape(c)
 CGMC *c;
 {
-	return (OK);
+	return (0);
 }
 
 /*
  * Class 7 Functions
  */
 /*ARGSUSED*/
-Ct_err	Message(c)
+int	Message(c)
 CGMC *c;
 {
 
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 /*ARGSUSED*/
-Ct_err	ApplData(c)
+int	ApplData(c)
 CGMC *c;
 {
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 

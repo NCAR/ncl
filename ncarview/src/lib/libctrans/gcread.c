@@ -1,5 +1,5 @@
 /*
- *	$Id: gcread.c,v 1.6 1992-05-11 23:23:33 clyne Exp $
+ *	$Id: gcread.c,v 1.7 1992-07-16 18:08:03 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -30,8 +30,8 @@
 
 #include <stdio.h>
 #include <fcntl.h>
+#include <errno.h>
 
-#include	<cterror.h>
 #define GCREAD
 #include "graphcap.h"
 #include "ctrandef.h"
@@ -47,15 +47,15 @@ extern	char	*strcpy();
  * on entry
  *	gcfile		: path to the binary file	
  */
-Ct_err	GP_Init(gcfile)
+int	GP_Init(gcfile)
 	char gcfile[];
 {
 	int	fd;
 
 
 	if ((fd = open(gcfile,O_RDONLY)) < 0) {
-		ct_error(T_FOE, gcfile);
-		return (DIE);
+		ESprintf(errno, "open(%s,O_RDONLY)", gcfile);
+		return (-1);
 	}
 
 	/*
@@ -63,13 +63,13 @@ Ct_err	GP_Init(gcfile)
 	 */
 #ifdef	VMS
 	if (VMSgcread(fd, (char *) &graphcap, GCAP_SIZE) != GCAP_SIZE) {
-		ct_error(T_FRE, gcfile);
-		return(DIE);
+		ESprintf(errno, "VMSgcread(%d, ,%d)", fd, GCAP_SIZE);
+		return (-1);
 	}
 #else
 	if (read(fd, (char *) &graphcap, GCAP_SIZE) != GCAP_SIZE) {
-		ct_error(T_FRE, gcfile);
-		return(DIE);
+		ESprintf(errno, "read(%d, ,%d)", fd, GCAP_SIZE);
+		return(-1);
 	}
 #endif
 
@@ -189,7 +189,7 @@ Ct_err	GP_Init(gcfile)
 
 	/* successful */
 
-	return (OK);
+	return (0);
 
 } /* end of GP_Init  */
 

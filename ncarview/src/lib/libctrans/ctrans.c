@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.20 1992-06-24 21:05:06 clyne Exp $
+ *	$Id: ctrans.c,v 1.21 1992-07-16 18:07:18 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -37,36 +37,31 @@
  */
 
 #include <stdio.h> 
-
-#ifdef	SYSV
-#include 	<string.h>
-#else
-#include	<strings.h>
-#endif
+#include <string.h>
 
 
-#include 	<ctype.h>
-#include 	<signal.h>
-#include 	<ncarv.h>
-#include	<cterror.h>
-#include	<cgm_tools.h>
-#include 	"cgmc.h"
-#include 	"defines.h"
-#include 	"translate.h"
-#include 	"devices.h"
-#include 	"ctrandef.h"
-#include 	"graphcap.h"
+#include <ctype.h>
+#include <errno.h>
+#include <ncarv.h>
+#include <cgm_tools.h>
+#include "ctrans.h"
+#include "cgmc.h"
+#include "defines.h"
+#include "translate.h"
+#include "devices.h"
+#include "ctrandef.h"
+#include "graphcap.h"
 
 
 
 
 extern char *getenv();
-extern Ct_err GP_Init();
-extern Ct_err Init_Font();
-extern Ct_err InitInput();
-extern Ct_err SetRecord();
+extern int GP_Init();
+extern int Init_Font();
+extern int InitInput();
+extern int SetRecord();
 
-extern	Ct_err	(*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1]) ();
+extern	int	(*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1]) ();
 extern	struct	device	devices[];
 
 extern  char    *strrchr();
@@ -113,636 +108,25 @@ static	CGMC	command;
  */
 int	currdev = -1;
 
-
-
 /*
- *	init_ctrans:
- * 	PUBLIC
- *
- *		initialize the ctrans translator
- *
- * on entry
- *	*argc		: the argument count to the main program
- *	**argv		: the arguments to the main program
- *	*prog_name	: name of main progrm (for error messages)
- *	*gcap		: path to the graphcap
- *	*fcap		: path to the fontcap
- *	stand_alone	: False => ctrans under control of interactive interface
- *	batch		: True => don't prompt for user interaction
- *
- * on exit
- *	*argc		: contains argc
- *	**argv		: points to argv
- *	stand_Alone	: stand_alone
- *	Batch		: batch
- *	
- *	return		== -1 => error else ok
- *	
- * Note:
- *	gcap may be specify a software library. Currently Sun's cgi and X11 
- *	are supported. If this the case the library name is obtained by
- *	parsing it of the end of the path. For example, Sun's cgi may
- *	be specified as /usr/local/lib/cgi even though there is no such
- *	file.
+ *	error reporting stuff
  */
-/*ARGSUSED*/
-Ct_err	init_ctrans(argc, argv, prog_name, gcap, fcap, stand_alone,				batch)
-	int	*argc;
-	char	**argv;
+static	char	eLog[32][256];
+static	int	eIndex = 0;
+#define	MAX_MSG	(sizeof(eLog) / sizeof(eLog[0]))
 
-	char	*prog_name,
-		*gcap,
-		*fcap;
-	boolean	stand_alone;
-	boolean	batch;
 
+static	void	elog(msg)
+	char	*msg;
 {
-	extern	void	sigint_handler();
-	char	*minw;
- 
-	stand_Alone = stand_alone;
-	Batch = batch;
-
-	if (ctransIsInit) {
-		close_ctrans();
+	if (eIndex < MAX_MSG) {
+		strncpy(eLog[eIndex],msg, sizeof(eLog[eIndex])-1);
+		eIndex++;
 	}
-
-
-	if (!Batch)
-		(void)signal(SIGINT,sigint_handler);
-
-	/*
-	 * open tty for user interaction if not batch
-	 */
-	if (!Batch && !BATCH) {
-		tty = fopen("/dev/tty", "r");
-	}
-
-
-	/*
-	 * set the output device
-	 */
-	if (SetDevice(gcap) < 0) {
-		return(pre_err);
-	}
-
-	/*
-	 * load in any device specific command line options in to the option
-	 * table and parse them
-	 */
-	optionDesc = OpenOptionTbl();
-	if (ParseOptionTable(optionDesc, argc, argv, devices[currdev].opt) < 0){
-		ct_error(T_NULL, ErrGetMsg());
-		return(DIE);
-	}	
-
-	Argv = argv;
-	Argc = *argc;
-
-
-	init_cgmc(&command);
-
-	/*
-	 * the following is a kludge to ensure a minimum linewidth
-	 */
-	minw = getenv ("MINWIDTH");
-	if (minw) {
-		SetMinLineWidthDefault((float) atoi(minw));
-	}
-
-
-	/*
-	 * set the fontcap
-	 */
-	if (SetFont(fcap) < 0) {
-		return(pre_err);
-	}
-
-	/*
-	 * intialize the default table
-	 */
-	InitDefault();	
-
-	ctransIsInit = TRUE;
-	return(OK);
-}
-
-
-/*
- *	init_metafile:
- *	PUBLIC
- *
- *		intialize a single metafile within the named metafile.
- *	CGM allows multiple metafiles to reside with in a single file.
- *	This routine must be called prior to processing each single
- *	metafile. In most instances only one metafile will be contained
- *	in a metafile and this routine need only be invoked once
- *
- * on entry
- *	record		: the number of the record containing the first
- *	cgm_fd		: CGM file descriptor returned from CGM_open
- *			  element of the metafile. 0 if first metafile
- * on exit
- *	return		: -1 => error, 0 => EOF, 1 => OK
- */
-int	init_metafile(record, cgm_fd)
-	int	record;
-	Cgm_fd	cgm_fd;
-{
-
-	int	status;
-	int	devnum = devices[currdev].number;	
-
-	Ct_err	noop();
-
-	/*
-	 * 	make sure we've been initialized
-	 */
-	if (!ctransIsInit) {
-		ct_error(T_NULL, "not in proper state");
-		return(-1);
-	}
-
-	/*
-	 * initialize the input module
-	 */
-	if (InitInput(cgm_fd) != OK) {
-		return(-1);
-	}
-	/*
-	 *	Jump to the first frame in the metafile
-	 *	in the metafile begining at record 'record' 
- 	 */
-	if (record != NEXT) {
-		if (SetRecord(record) != OK) {
-			return (-1);
-		}
-	}
-
-	/*
-	 *	Make sure firs elements is a BEGIN METAFILE
-	 */
-	if ((status = Instr_Dec(&command)) < 1) {
-		if (status < 0) {	/* else eof	*/
-			ct_error(T_FRE, "metafile");
-		}
-		return(status);
-	}
-	DoEscapes(&command);
-	if (command.class == DEL_ELEMENT && command.command == BEG_MF) {
-		Process(&command);
-	}
-	else {
-		ct_error(T_FRE, "missing CGM BEGIN METAFILE element");
-		return(-1);
-	}
-
-	/*
-	 * load the default color palette now if there is one. We need to
-	 * do this after the BEGIN METAFILE is processed and before the
-	 * first BEGIN PICTURE
-	 */
-	if (palFname) {
-		if (LoadPalette(&command, palFname)) {
-			Process(&command);	/* command contains pal	*/
-			/*
-			 * disable future CGM color table entries
-			 */
-			cmdtab[devnum][ATT_ELEMENT][COLOR_TABLE] = noop;
-			
-		}
-	}
-
-	/*
-	 * 	process until the first frame or an end of metafile element	
-	 */
-	if (Instr_Dec(&command) < 1) {
-		ct_error(T_FRE, "metafile");
-		return (-1);
-	}
-	while((command.class != DEL_ELEMENT || command.command != BEG_PIC)
-		&& (command.class != DEL_ELEMENT || command.command != END_MF)){
-
-		Process(&command);
-
-		if (Instr_Dec(&command) < 1) {
-			ct_error(T_FRE, "metafile");
-			return (-1);
-		}
-	}	 
-
-	/*
-	 * 'command' now contains a BEG_PIC or an END_METAFILE element 
-	 */
-	return (1);
-
 }
 
 
 
-/*
- *	ctrans:
- *	PUBLIC
- *
- *		processes a frame in a metafile. 'command' should contain
- *	a CGM BEG_PIC or END_MF element
- *
- * on entry
- *	record		: == NEXT => process next frame in metafile
- *			  else process frame begining at record `record`
- * on exit
- *	return		: one of [ERROR, OK, EOM]
- */
-
-Ct_err	ctrans(record)
-	int	record;
-{
-
-	Ct_err	status;
-
-	/*
-	 * 	make sure we've been initialized
-	 */
-	if (!ctransIsInit) {
-		ct_error(T_NULL, "not in proper state");
-		return(DIE);
-	}
-
-	/*
-	 * do we need to do random frame access
-	 */
-	if (record != NEXT ) {
-		if (SetRecord(record) != OK) {
-			return(pre_err);
-		}
-		if (Instr_Dec(&command) < 1) {
-			ct_error(T_FRE, "metafile");
-			return(DIE);
-		}
-	}
-
-	DoEscapes(&command);
-	/*
-	 * see if we've reached the end of the file
-	 */
-	if (command.class == DEL_ELEMENT && command.command == END_MF) {
-		Process(&command);	/* process the END MF command	*/
-		return(EOM);
-	}
-
-	/*
-	 * current element better be a begin picture
-	 */
-	if (! (command.class == DEL_ELEMENT && command.command == BEG_PIC)) {
-		ct_error(T_NULL, "not in proper state");
-		return(DIE);
-	}
-	Process(&command); /* process the begin picture element    */
-
-
-	/*
-	 * if we're in batch mode we clear the device *before*  processing
-	 * the frame. We need to do this now because we can't do it at 
-	 * the end of this call because when we're in batch mode it is
-	 * expected that the calling program will do any user interaction
-	 * instead of having it handled by the devices EndPic element
-	 * handler. 
-	 */
-	if (Batch) clear_device();
-
-
-	/*
-	 * process elements until we get an end of picture 
-	 */
-	while ((status = Instr_Dec(&command)) > 0) {
-
-		/*
-		 * execute the cgmc
-		 */
-		Process(&command);
-
-		if (command.class == DEL_ELEMENT && command.command == END_PIC){
-
-			break;	/* we're done	*/
-		}
-	}
-
-	if (status < 1) {
-		ct_error(T_FRE, "metafile");
-		return(DIE);
-	}
-
-
-	/*
-	 * get the next instruction. It should be either a Begin Pic or 
-	 * an End MF or an escape
-	 */
-	if (Instr_Dec(&command) < 1) {
-		ct_error(T_FRE, "metafile");
-		return(DIE);
-	}
-
-	if (! Batch) clear_device();
-
-	return(OK);
-}
-
-
-/*
- *	ctrans_merge:
- *	PUBLIC
- *
- *	process one frame on top of anonther. Like ctrans() except second
- *	frame is drawn over first.  
- *
- * on entry
- *	record1 	: first frame to process beginning at record 'record'. 
- *	record1 	: second frame to process beginning at record 'record'. 
- * on exit
- *	return		: one of [ERROR, OK, EOM]
- */
-
-Ct_err	ctrans_merge(record1, record2)
-	int	record1, record2;
-{
-	/*
-	 * 	make sure we've been initialized
-	 */
-	if (!ctransIsInit) {
-		ct_error(T_NULL, "not in proper state");
-		return(DIE);
-	}
-
-	/*
-	 * advance to first record
-	 */
-	if (SetRecord(record1) != OK) {
-		return(pre_err);
-	}
-
-	/*
-	 * 	Do until get a END PICTURE or END METAFILE element
-	 */
-	do {
-		if (Instr_Dec(&command) < 1) {
-			ct_error(T_FRE, "metafile");
-			return(DIE);
-		}
-
-		Process(&command);
-
-	} while (((command.class != DEL_ELEMENT) 
-			|| (command.command != END_PIC))
-		&& ((command.class != DEL_ELEMENT) 
-			|| (command.command != END_MF)));
-
-	/*
-	 * advance to second record (skip the END_PIC command)
-	 */
-	if (SetRecord(record2) != OK) {
-		return(pre_err);
-	}
-
-	/*
-	 * for the second frame we skip over everthing between the 
-	 * begin-pic and begin-pic-body
-	 */
-	do {
-
-		if (Instr_Dec(&command) < 1) {
-			ct_error(T_FRE, "metafile");
-			return (DIE);
-		}
-	}while((command.class != DEL_ELEMENT || command.command != BEG_PIC_B)
-		&& (command.class != DEL_ELEMENT || command.command != END_MF));
-
-
-	/*
-	 * get the next command
-	 */
-	if (Instr_Dec(&command) < 1) {
-		ct_error(T_FRE, "metafile");
-		return (DIE);
-	}
-
-	/*
-	 * 	Do until get a END PICTURE or END METAFILE element
-	 */
-	while (((command.class != DEL_ELEMENT) 
-			|| (command.command != END_PIC))
-		&& ((command.class != DEL_ELEMENT) 
-			|| (command.command != END_MF))) {
-
-		Process(&command);
-
-		if (Instr_Dec(&command) < 1) {
-			ct_error(T_FRE, "metafile");
-			return(DIE);
-		}
-	}
-
-	/*
-	 * process END_PICTURE or END_METAFILE
-	 */
-	Process(&command);
-
-	if (command.command == END_MF)
-
-		/* end of metafile		*/
-		return(EOM);
-	else {
-		/* 
-		 * end of a single frame. Get BEG_PIC command for next 
-		 * invocation of  ctrans()
-		 */
-		if (Instr_Dec(&command) < 1) {
-			ct_error(T_FRE, "metafile");
-			return(DIE);
-		}
-		return(OK);
-	}
-}
-/*
- *	SetDevice()
- *	PUBLIC
- *
- *	Set the output device to specified device. The output device is
- *	specified on the call to init_ctrans. This functions allows
- *	the device to be changed. Note: if the device is changed in mid
- *	file than init_meta will need to be called to ensure that the
- *	output device receives the appropriate initialization.
- * on entry
- *	*gcap		: name of output device
- * on exit
- *	return		: < 0 => error
- */
-SetDevice(gcap)
-	char	*gcap;
-{
-	char	*device;
-	int	i;
-
-	/*
-	 * if we've already initialized a device close it
-	 */
-	if (deviceIsInit) {
-		int	devnum = devices[currdev].number;	
-		(void)(*cmdtab[devnum][DEL_ELEMENT][END_MF])(&command);
-	}
-
-	/*
-	 *	find out the name of the device (remove the path)
-	 */
-	device = (device = strrchr(gcap, '/')) ? ++device : gcap;
-
-	if (! strcmp(device, "xbfr")) {
-		fprintf(stderr, "ctrans : Warning - 'xbfr' device won't be available in next release. Use 'xwd' instead\n");
-		device = "xwd";
-	}
-
-
-	/*
-	 * Find what number in the device array the device is
-	 */
-	for(i=0;(i<devicenum) && (strcmp(device,devices[i].name) != 0);i++)
-		;
-	if (i<devicenum)
-		currdev = i;
-	else
-		currdev = 0;
-
-
-	/*
-	 *	This is a hack for Sun's cgi which seems to capture
-	 *	system signals. Thus making it impossible for ctrans
-	 *	to perform proper termination on interrupt. So, we
-	 *	close the error module and then open it again using
-	 *	stderr for direct error messages instead of a file
-	 */
-	if ( devices[currdev].number == X11_I) {
-		close_ct_error();
-		init_ct_error("ctrans", FALSE);
-	}
-
-
-
-	/*
-	 *	Init the graph cap if one is used.
-	 */
-	if (devices[currdev].usegcap) {
-
-
-		/*
-		 *	init the graphcap stuff
-		 */
-		if (GP_Init(gcap) != OK) {
-			return(-1);
-		}
-
-	}
-
-	/*
-	 * load device dependent portion of common routines
-	 */
-	if (devices[currdev].use_common) {
-		ComSetDevice(devices[currdev].name);
-	}
-
-	return(1);
-
-}
-
-/*
- *	SetFont()
- *	PUBLIC
- *
- *	Set the font device to fontcap. The font is
- *	specified on the call to init_ctrans. This functions allows
- *	the font to be changed. This function may only be called after
- *	SetDevice() or after init_ctrans() has been called.
- * on entry
- *	*fcap		: name of font
- * on exit
- *	return		: < 0 => error
- */
-SetFont(fcap)
-	char	*fcap;
-{
-	/*
-	 *	Init the font cap if on is used.
-	 */
-	if( devices[currdev].usefcap ) {
-
-		/*
-		 *	Init the font Cap stuff
-		 */
-		if(Init_Font(fcap) != OK) {
-			return (-1);
-		}
-
-	/*	init the fontlist	*/
-	InitFontList();
-	}
-	return (1);
-}
-
-/*
- *	SetDefaultPalette
- *	PUBLIC
- *
- *	Inform ctrans to use a default color palette to overide colormap
- *	entries supplied by the CGM being translated. This routine must
- *	be called *before* init_metafile() or it will have no effect
- *
- * on entry
- *	*pal_fname	: name of file containing palette
- */
-void	SetDefaultPalette(pal_fname) 
-	char	*pal_fname;
-{
-	palFname = pal_fname;
-}
-
-/*
- *	Process
- *	PRIVATE
- *
- *	This function takes a cgmc and then calls the correct
- *	function using the class and id along with the current device.
- */
-Process(c)
-CGMC	*c;
-{
-	int	devnum = devices[currdev].number;	
-#ifdef DEBUG
-	(void)fprintf(stdout,"class = %d, id = %d\n",	c->class,c->command);
-#else
-
-		if ((c->class > MAXCLASS) || (c->command > MAXFUNCPERCLASS))
-			ct_error(NT_IOUE,""); /* Illegal or Unsupported cgm  */
-
-		else if (cmdtab[devnum][c->class][c->command])
-			(void)(*cmdtab[devnum][c->class][c->command])(c);
-		else
-			ct_error(NT_IOUE,""); /* Illegal or Unsupported cgm  */
-
-#endif
-}
-
-/*
- *	if the cgmc contains a escape element or a noop process it and 
- *	fetch the next element into the cgmc and repeat
- */
-DoEscapes(cgmc)
-	CGMC	*cgmc;
-{
-	while ((cgmc->class == ESC_ELEMENT && cgmc->command == ESCAPE) ||
-		(cgmc->class == DEL_ELEMENT && cgmc->command == NOOP)) {
-
-		Process(cgmc);
-		Instr_Dec(cgmc);
-	}
-}
 
 /*
  *	The number of each type in the cgmc to allocate space for.
@@ -823,7 +207,7 @@ CGMC *cgmc;
 	cgmc->more = FALSE;
 }
 
-free_cgmc(cgmc)
+void	free_cgmc(cgmc)
 	CGMC	*cgmc;
 {
 	/*
@@ -845,6 +229,589 @@ free_cgmc(cgmc)
 }
 
 
+
+/*
+ *	Process
+ *	PRIVATE
+ *
+ *	This function takes a cgmc and then calls the correct
+ *	function using the class and id along with the current device.
+ */
+CtransRC	Process(c)
+	CGMC	*c;
+{
+	int	devnum = devices[currdev].number;	
+	int	rc;
+
+	if ((c->class > MAXCLASS) || (c->command > MAXFUNCPERCLASS)) {
+		ESprintf(
+			EINVAL, "Illegal metafile element(class=%d, id=%d)",
+			c->class, c->command
+		);
+		elog(ErrGetMsg());
+		return(WARN);
+	}
+	else if (cmdtab[devnum][c->class][c->command]) {
+		rc = (*cmdtab[devnum][c->class][c->command])(c);
+	}
+	else {
+		/*
+		 * no function for element
+		 */
+		ESprintf(
+			EINVAL, "Illegal metafile element(class=%d, id=%d)",
+			c->class, c->command
+		);
+		elog(ErrGetMsg());
+		return(WARN);
+	}
+
+	if (rc >= 0) {
+		return(OK);
+	}
+	/*
+	 * fatal if descriptor or delimiter element
+	 */
+	else if (c->class == DEL_ELEMENT || c->class == DES_ELEMENT) {
+		ESprintf(
+			E_UNKNOWN, 
+			"Error processing CGM element(class=%d, id=%d) [ %s ]",
+			c->class, c->command, ErrGetMsg()
+		);
+		elog(ErrGetMsg());
+		return(FATAL);
+	}
+	/*
+	 * non-fatal error (we hope)
+	 */
+	else {
+		ESprintf(
+			E_UNKNOWN, 
+			"Error processing CGM element(class=%d, id=%d) [ %s ]",
+			c->class, c->command, ErrGetMsg()
+		);
+		elog(ErrGetMsg());
+		return(WARN);
+	}
+}
+
+static	void	clear_device()
+{
+	CGMC	temp_cgmc;
+
+	temp_cgmc.class = DEL_ELEMENT;
+	temp_cgmc.command = CLEAR_DEVICE;
+	(void) Process(&temp_cgmc);
+}
+
+/*
+ *	if the cgmc contains a escape element or a noop process it and 
+ *	fetch the next element into the cgmc and repeat
+ */
+DoEscapes(cgmc)
+	CGMC	*cgmc;
+{
+	while ((cgmc->class == ESC_ELEMENT && cgmc->command == ESCAPE) ||
+		(cgmc->class == DEL_ELEMENT && cgmc->command == NOOP)) {
+
+		if (Process(cgmc) != FATAL) {
+			(void) Instr_Dec(cgmc);
+		}
+	}
+}
+
+/**********************************************************************
+**********************************************************************
+**
+**	C T R A N S   A P I
+**
+**********************************************************************
+*********************************************************************/
+
+
+/*
+ *	init_ctrans:
+ * 	PUBLIC
+ *
+ *		initialize the ctrans translator
+ *
+ * on entry
+ *	*argc		: the argument count to the main program
+ *	**argv		: the arguments to the main program
+ *	*gcap		: path to the graphcap
+ *	*fcap		: path to the fontcap, if NULL default font used
+ *	stand_alone	: False => ctrans under control of interactive interface
+ *	batch		: True => don't prompt for user interaction
+ *
+ * on exit
+ *	*argc		: contains argc
+ *	**argv		: points to argv
+ *	stand_Alone	: stand_alone
+ *	Batch		: batch
+ *	
+ *	return		== [FATAL=-2, WARN=-1, OK=1]
+ *	
+ * Note:
+ *	gcap may be specify a software library. Currently Sun's cgi and X11 
+ *	are supported. If this the case the library name is obtained by
+ *	parsing it of the end of the path. For example, Sun's cgi may
+ *	be specified as /usr/local/lib/cgi even though there is no such
+ *	file.
+ */
+/*ARGSUSED*/
+CtransRC	init_ctrans(argc, argv, gcap, fcap, stand_alone, batch)
+	int	*argc;
+	char	**argv;
+
+	char	*gcap,
+		*fcap;
+	boolean	stand_alone;
+	boolean	batch;
+
+{
+	char	*tty_in	= "/dev/tty";
+	char	*minw;
+ 
+	stand_Alone = stand_alone;
+	Batch = batch;
+
+	if (ctransIsInit) {
+		close_ctrans();
+	}
+
+
+	/*
+	 * open tty for user interaction if not batch
+	 */
+	if (!Batch && !BATCH) {
+		if (! (tty = fopen(tty_in, "r"))) {
+			ESprintf(errno,"fopen(%s, r)", tty_in);
+			elog(ErrGetMsg());
+			return(FATAL);
+		}
+	}
+
+
+	/*
+	 * set the output device
+	 */
+	if (SetDevice(gcap) < 0) {
+		ESprintf(
+			E_UNKNOWN, "Can't initialize device(%s) [ %s ]",
+			gcap, ErrGetMsg()
+		); 
+		elog(ErrGetMsg());
+		return(FATAL);
+	}
+
+	/*
+	 * load in any device specific command line options in to the option
+	 * table and parse them
+	 */
+	optionDesc = OpenOptionTbl();
+	if (ParseOptionTable(optionDesc, argc, argv, devices[currdev].opt) < 0){
+		ESprintf(
+			E_UNKNOWN, "Can't process device options [ %s ]",
+			ErrGetMsg()
+		); 
+		elog(ErrGetMsg());
+		return(WARN);
+	}	
+
+	Argv = argv;
+	Argc = *argc;
+
+
+	init_cgmc(&command);
+
+	/*
+	 * the following is a kludge to ensure a minimum linewidth
+	 */
+	minw = getenv ("MINWIDTH");
+	if (minw) {
+		SetMinLineWidthDefault((float) atoi(minw));
+	}
+
+
+	/*
+	 * set the fontcap
+	 */
+	if (fcap) {
+		(void) SetFont(fcap);
+	}
+
+
+	ctransIsInit = TRUE;
+	return(OK);
+}
+
+
+/*
+ *	init_metafile:
+ *	PUBLIC
+ *
+ *		intialize a single metafile within the named metafile.
+ *	CGM allows multiple metafiles to reside with in a single file.
+ *	This routine must be called prior to processing each single
+ *	metafile. In most instances only one metafile will be contained
+ *	in a metafile and this routine need only be invoked once
+ *
+ * on entry
+ *	record		: the number of the record containing the first
+ *	cgm_fd		: CGM file descriptor returned from CGM_open
+ *			  element of the metafile. 0 if first metafile
+ * on exit
+ *	return		== [FATAL=-2, WARN=-1, OK=1]
+ */
+CtransRC	init_metafile(record, cgm_fd)
+	int	record;
+	Cgm_fd	cgm_fd;
+{
+
+	CtransRC	rc;
+	CtransRC	rcx = OK;
+	int	devnum = devices[currdev].number;	
+
+	int	noop();
+
+	/*
+	 * 	make sure we've been initialized
+	 */
+	if (!ctransIsInit) {
+		ESprintf(E_UNKNOWN, "Not in proper state\n");
+		elog(ErrGetMsg());
+		return(FATAL);
+	}
+
+	/*
+	 * intialize the CGM default table
+	 */
+	InitDefault();	
+
+	/*
+	 * initialize the input module
+	 */
+	if (InitInput(cgm_fd) < 0) {
+		elog(ErrGetMsg());
+		return(FATAL);
+	}
+	/*
+	 *	Jump to the first frame in the metafile
+	 *	in the metafile begining at record 'record' 
+ 	 */
+	if (record != NEXT) {
+		if (SetRecord(record) < 0) {
+			ESprintf(E_UNKNOWN,"Can't seek to record(%d)",record);
+			elog(ErrGetMsg());
+			return (WARN);
+		}
+	}
+
+	/*
+	 *	Make sure first elements is a BEGIN METAFILE
+	 *	Instr_Dec returns 0 of EOF, -1 on error.
+	 */
+	if (Instr_Dec(&command) < 1) {
+		elog(ErrGetMsg());
+		return(FATAL);
+	}
+	DoEscapes(&command);
+	if (command.class == DEL_ELEMENT && command.command == BEG_MF) {
+		if ((rc = Process(&command)) == FATAL) return(FATAL);
+		if (rc == WARN) rcx = WARN;
+	}
+	else {
+		ESprintf(E_UNKNOWN,"Metafile missing BEGIN METAFILE element");
+		elog(ErrGetMsg());
+		return(FATAL);
+	}
+
+	/*
+	 * load the default color palette now if there is one. We need to
+	 * do this after the BEGIN METAFILE is processed and before the
+	 * first BEGIN PICTURE
+	 */
+	if (palFname) {
+		if (LoadPalette(&command, palFname)) {
+			/*
+			 * command contains pal	
+			 */
+			if ((rc = Process(&command)) == FATAL) return(FATAL);
+			if (rc == WARN) rcx = WARN;
+			/*
+			 * disable future CGM color table entries
+			 */
+			cmdtab[devnum][ATT_ELEMENT][COLOR_TABLE] = noop;
+			
+		}
+	}
+
+	/*
+	 * 	process until the first frame or an end of metafile element	
+	 */
+	if (Instr_Dec(&command) < 1) {
+		elog(ErrGetMsg());
+		return (FATAL);
+	}
+	while((command.class != DEL_ELEMENT || command.command != BEG_PIC)
+		&& (command.class != DEL_ELEMENT || command.command != END_MF)){
+
+		if ((rc = Process(&command)) == FATAL) return(FATAL);
+		if (rc == WARN) rcx = WARN;
+
+		if (Instr_Dec(&command) < 1) {
+			elog(ErrGetMsg());
+			return (FATAL);
+		}
+	}	 
+
+	/*
+	 * 'command' now contains a BEG_PIC or an END_METAFILE element 
+	 */
+	return (rcx);
+}
+
+
+
+/*
+ *	ctrans:
+ *	PUBLIC
+ *
+ *		processes a frame in a metafile. 'command' should contain
+ *	a CGM BEG_PIC or END_MF element
+ *
+ * on entry
+ *	record		: == NEXT => process next frame in metafile
+ *			  else process frame begining at record `record`
+ * on exit
+ *	return		== [FATAL=-2, WARN=-1, EOM=0, OK=1]
+ */
+
+CtransRC	ctrans(record)
+	int	record;
+{
+
+	int	status = 0;
+	CtransRC	rc;
+	CtransRC	rcx = OK;
+
+	/*
+	 * 	make sure we've been initialized
+	 */
+	if (!ctransIsInit) {
+		ESprintf(E_UNKNOWN, "Not in proper state\n");
+		elog(ErrGetMsg());
+		return(FATAL);
+	}
+
+	/*
+	 * do we need to do random frame access
+	 */
+	if (record != NEXT ) {
+		if (SetRecord(record) < 0) {
+			ESprintf(E_UNKNOWN, "Can't seek to record(%d)",record);
+			elog(ErrGetMsg());
+			return (WARN);
+		}
+		if (Instr_Dec(&command) < 1) {
+			elog(ErrGetMsg());
+			return(FATAL);
+		}
+	}
+
+	DoEscapes(&command);
+	/*
+	 * see if we've reached the end of the file
+	 */
+	if (command.class == DEL_ELEMENT && command.command == END_MF) {
+		/* 
+		 * process the END MF command	
+		 */
+		if ((rc = Process(&command)) == FATAL) return(FATAL);
+		if (rc == WARN) rcx = WARN;
+		return(EOM);
+	}
+
+	/*
+	 * current element better be a begin picture
+	 */
+	if (! (command.class == DEL_ELEMENT && command.command == BEG_PIC)) {
+		ESprintf(E_UNKNOWN, "BEGIN PICTURE element expected");
+		elog(ErrGetMsg());
+		return(FATAL);
+	}
+	/* 
+	 * process the begin picture element    
+	 */
+	if ((rc = Process(&command)) == FATAL) return(FATAL);
+	if (rc == WARN) rcx = WARN;
+
+	/*
+	 * process elements until we get an end of picture 
+	 */
+	while ((status = Instr_Dec(&command)) > 0) {
+
+		/*
+		 * execute the cgmc
+		 */
+		if ((rc = Process(&command)) == FATAL) return(FATAL);
+		if (rc == WARN) rcx = WARN;
+
+		if (command.class == DEL_ELEMENT && command.command == END_PIC){
+
+			break;	/* we're done	*/
+		}
+	}
+
+	if (status < 1) {
+		elog(ErrGetMsg());
+		return(FATAL);
+	}
+
+
+	/*
+	 * get the next instruction. It should be either a Begin Pic or 
+	 * an End MF or an escape
+	 */
+	if (Instr_Dec(&command) < 1) {
+		elog(ErrGetMsg());
+		return(FATAL);
+	}
+
+	if (! Batch) clear_device();
+
+	return(rcx);
+}
+
+
+/*
+ *	ctrans_merge:
+ *	PUBLIC
+ *
+ *	process one frame on top of anonther. Like ctrans() except second
+ *	frame is drawn over first.  
+ *
+ * on entry
+ *	record1 	: first frame to process beginning at record 'record'. 
+ *	record1 	: second frame to process beginning at record 'record'. 
+ * on exit
+ *	return		== [FATAL=-2, WARN=-1, EOM=0, OK=1]
+ */
+
+CtransRC	ctrans_merge(record1, record2)
+	int	record1, record2;
+{
+	CtransRC	rc;
+	CtransRC	rcx;
+	/*
+	 * 	make sure we've been initialized
+	 */
+	if (!ctransIsInit) {
+		ESprintf(E_UNKNOWN, "Not in proper state\n");
+		elog(ErrGetMsg());
+		return(FATAL);
+	}
+
+	/*
+	 * advance to first record
+	 */
+	if (SetRecord(record1) < 0) {
+		ESprintf(E_UNKNOWN,"Can't seek to record(%d)",record1);
+		elog(ErrGetMsg());
+		return (WARN);
+	}
+
+	/*
+	 * 	Do until get a END PICTURE or END METAFILE element
+	 */
+	do {
+		if (Instr_Dec(&command) < 1) {
+			elog(ErrGetMsg());
+			return(FATAL);
+		}
+
+		if ((rc = Process(&command)) == FATAL) return(FATAL);
+		if (rc == WARN) rcx = WARN;
+
+	} while (((command.class != DEL_ELEMENT) 
+			|| (command.command != END_PIC))
+		&& ((command.class != DEL_ELEMENT) 
+			|| (command.command != END_MF)));
+
+	/*
+	 * advance to second record (skip the END_PIC command)
+	 */
+	if (SetRecord(record2) < 0) {
+		ESprintf(E_UNKNOWN,"Can't seek to record(%d)",record1);
+		elog(ErrGetMsg());
+		return (WARN);
+	}
+
+	/*
+	 * for the second frame we skip over everthing between the 
+	 * begin-pic and begin-pic-body
+	 */
+	do {
+
+		if (Instr_Dec(&command) < 1) {
+			elog(ErrGetMsg());
+			return (FATAL);
+		}
+	}while((command.class != DEL_ELEMENT || command.command != BEG_PIC_B)
+		&& (command.class != DEL_ELEMENT || command.command != END_MF));
+
+
+	/*
+	 * get the next command
+	 */
+	if (Instr_Dec(&command) < 1) {
+		elog(ErrGetMsg());
+		return (FATAL);
+	}
+
+	/*
+	 * 	Do until get a END PICTURE or END METAFILE element
+	 */
+	while (((command.class != DEL_ELEMENT) 
+			|| (command.command != END_PIC))
+		&& ((command.class != DEL_ELEMENT) 
+			|| (command.command != END_MF))) {
+
+		if ((rc = Process(&command)) == FATAL) return(FATAL);
+		if (rc == WARN) rcx = WARN;
+
+		if (Instr_Dec(&command) < 1) {
+			elog(ErrGetMsg());
+			return(FATAL);
+		}
+	}
+
+	/*
+	 * process END_PICTURE or END_METAFILE
+	 */
+	if ((rc = Process(&command)) == FATAL) return(FATAL);
+	if (rc == WARN) rcx = WARN;
+
+	if (command.command == END_MF)
+
+		/* end of metafile		*/
+		return(EOM);
+	else {
+		/* 
+		 * end of a single frame. Get BEG_PIC command for next 
+		 * invocation of  ctrans()
+		 */
+		if (Instr_Dec(&command) < 1) {
+			elog(ErrGetMsg());
+			return(FATAL);
+		}
+		return(rcx);
+	}
+}
+
+
+
+
 /*
  *	GraphicsMode
  *	PUBLIC
@@ -855,7 +822,7 @@ free_cgmc(cgmc)
  *	on 		: if set put device in graphics mode, else put device
  *			  in text mode
  */
-GraphicsMode(on)
+void	GraphicsMode(on)
 	boolean	on;
 {
 
@@ -868,15 +835,52 @@ GraphicsMode(on)
 
 	if (on)	{	/* put device in graphics mode	*/
 		(void) buffer(GRAPHIC_INIT, GRAPHIC_INIT_SIZE);
-		(void) buffer(ERASE, ERASE_SIZE);
+		if (!BATCH) {	/* don't clear batch devices */
+			(void)buffer(ERASE, ERASE_SIZE);
+		}
 	}
 	else {	/* put device in text mode	*/
-		(void) buffer(ERASE, ERASE_SIZE);
+		if (!BATCH) {	/* don't clear batch devices */
+			(void)buffer(ERASE, ERASE_SIZE);
+		}
 		(void) buffer(TEXT_INIT, TEXT_INIT_SIZE);
 		deviceIsInit = FALSE;
 	}
 
 	(void) flush();	/* send instruction to device	*/
+}
+
+/*
+ *	CtransClear
+ *	PUBLIC
+ *
+ *	Clear the output device.
+ */
+void	CtransClear()
+{
+	clear_device();
+}
+
+
+/*
+ *	close_metafile:
+ *	PUBLIC
+ *
+ *		terminate a metafile processing
+ *
+ */
+void	close_metafile()
+{
+	int	devnum = devices[currdev].number;	
+
+	/*
+	 * invoke driver specific termination routine. If it has not
+	 * already been invoked and we are not in debug mode.
+	 */
+	if (deviceIsInit && ! (*deBug)) {
+		(void)(*cmdtab[devnum][DEL_ELEMENT][CLEAR_DEVICE])(&command);
+		(void)(*cmdtab[devnum][DEL_ELEMENT][END_MF])(&command);
+	}
 }
 
 /*
@@ -886,10 +890,9 @@ GraphicsMode(on)
  *		terminate ctrans
  *
  */
-close_ctrans()
+void	close_ctrans()
 {
 
-	int	devnum = devices[currdev].number;	
 
 	if (!ctransIsInit) {
 		return;
@@ -902,25 +905,12 @@ close_ctrans()
 
 	if (devices[currdev].use_common) ComClose();
 
-	/*
-	 * invoke driver specific termination routine. If it has not
-	 * already been invoked and we are not in debug mode.
-	 */
-	if (deviceIsInit && ! (*deBug)) {
-		(void)(*cmdtab[devnum][DEL_ELEMENT][CLEAR_DEVICE])(&command);
-		(void)(*cmdtab[devnum][DEL_ELEMENT][END_MF])(&command);
-	}
 
 	/*
 	 *	flush the output buffer
 	 */
 	if (devices[currdev].usegcap)
 		flush();
-
-	/*
-	 *	close the error module
-	 */
-	close_ct_error();
 
 	(void) CloseOptionTbl(optionDesc);
 
@@ -930,23 +920,167 @@ close_ctrans()
 }
 
 /*
- *	sigint_handler
- *	PRIVATE
+ *	IsOutputToTty()
+ *	PUBLIC
  *
- *		interupt signal handler
+ *	Is ctrans device output writen to a device terminal
  */
-void	sigint_handler()
+boolean	IsOutputToTty()
 {
-	close_ctrans();
-	exit(0);
+	if (!ctransIsInit) {
+		return(TRUE);
+	}
+
+	return(devices[currdev].usegcap && isatty(fileno(stdout)));
 }
 
-static	clear_device()
-{
-	CGMC	temp_cgmc;
+/*
+ *	ReadCtransMsg()
+ *	PUBLIC
+ *	
+ *	Read the next ctrans error message
+ *
+ * on exit
+ *	return		: NULL => all messages read, else the next error msg.
+ */
 
-	temp_cgmc.class = DEL_ELEMENT;
-	temp_cgmc.command = CLEAR_DEVICE;
-	Process(&temp_cgmc);
+char	*ReadCtransMsg()
+{
+	static	current = 0;
+	if (current < eIndex) {
+		return(eLog[current++]);
+	}
+
+	current = eIndex = 0;
+	return(NULL);
+}
+
+
+
+/*
+ *	SetDevice()
+ *	PUBLIC
+ *
+ *	Set the output device to specified device. The output device is
+ *	specified on the call to init_ctrans. This functions allows
+ *	the device to be changed. Note: if the device is changed in mid
+ *	file than init_meta will need to be called to ensure that the
+ *	output device receives the appropriate initialization.
+ * on entry
+ *	*gcap		: name of output device
+ * on exit
+ *	return		== [FATAL=-2, WARN=-1, OK=1]
+ */
+CtransRC	SetDevice(gcap)
+	char	*gcap;
+{
+	char	*device;
+	int	i;
+
+	/*
+	 * if we've already initialized a device close it
+	 * BOGUS
+	 */
+	if (deviceIsInit) {
+		int	devnum = devices[currdev].number;	
+		(void)(*cmdtab[devnum][DEL_ELEMENT][END_MF])(&command);
+	}
+
+	/*
+	 *	find out the name of the device (remove the path)
+	 */
+	device = (device = strrchr(gcap, '/')) ? ++device : gcap;
+
+	if (! strcmp(device, "xbfr")) {
+		fprintf(stderr, "ctrans : Warning - 'xbfr' device won't be available in next release. Use 'xwd' instead\n");
+		device = "xwd";
+	}
+
+
+	/*
+	 * Find what number in the device array the device is
+	 */
+	for(i=0;(i<devicenum) && (strcmp(device,devices[i].name) != 0);i++)
+		;
+	if (i<devicenum)
+		currdev = i;
+	else
+		currdev = 0;
+
+
+	/*
+	 *	Init the graph cap if one is used.
+	 */
+	if (devices[currdev].usegcap) {
+
+		/*
+		 *	init the graphcap stuff
+		 */
+		if (GP_Init(gcap) < 0) {
+			elog(ErrGetMsg());
+			return(FATAL);
+		}
+	}
+
+	/*
+	 * load device dependent portion of common routines
+	 */
+	if (devices[currdev].use_common) {
+		ComSetDevice(devices[currdev].name);
+	}
+
+	return(OK);
+}
+
+/*
+ *	SetFont()
+ *	PUBLIC
+ *
+ *	Set the font device to fontcap. The font is
+ *	specified on the call to init_ctrans. This functions allows
+ *	the font to be changed. This function may only be called after
+ *	SetDevice() or after init_ctrans() has been called.
+ * on entry
+ *	*fcap		: name of font
+ * on exit
+ *	return		== [FATAL=-2, WARN=-1, OK=1]
+ */
+CtransRC	SetFont(fcap)
+	char	*fcap;
+{
+	/*
+	 *	Init the font cap if on is used.
+	 */
+	if( devices[currdev].usefcap ) {
+
+		/*
+		 *	Init the font Cap stuff
+		 */
+		if(Init_Font(fcap) < 0) {
+			elog(ErrGetMsg());
+			return (WARN);
+		}
+
+	/*	init the fontlist	*/
+	InitFontList();
+	}
+	return (OK);
+}
+
+/*
+ *	SetDefaultPalette
+ *	PUBLIC
+ *
+ *	Inform ctrans to use a default color palette to overide colormap
+ *	entries supplied by the CGM being translated. This routine must
+ *	be called *before* init_metafile() or it will have no effect
+ *
+ * on entry
+ *	*pal_fname	: name of file containing palette
+ */
+void	SetDefaultPalette(pal_fname) 
+	char	*pal_fname;
+{
+	palFname = pal_fname;
 }
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.11 1992-04-03 20:58:43 clyne Exp $
+ *	$Id: text.c,v 1.12 1992-07-16 18:08:32 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <ncarv.h>
-#include <cterror.h>
 #include "cgmc.h"
 #include "text.h"
 #include "readfont.h"
@@ -45,7 +44,7 @@
 
 
 extern	char	*strcpy();
-extern	Ct_err	Init_Readfont();
+extern	int	Init_Readfont();
 extern	float	X_scale();
 
 /* coordinate transformation matrix necessary for scaling and rotating of
@@ -212,32 +211,30 @@ static trans_coord(f1,f2)
  *		must be invoked with a fontcap file name and path prior to
  *		any font processing
  */
-Ct_err	Init_Font(fontcap)
+int	Init_Font(fontcap)
 	char *fontcap;
 {
 	static	char	*fontCap = NULL;
 	char	*f = fontcap;
 	char	buf[80];
+	int	status = 0;
 
 
 	FontIsInit = FALSE;
 
-	if (Init_Readfont(f) != OK) {
-		(void) sprintf(buf, "error processing font: %s", f);
-		ct_error(NT_NULL, buf);
+	if (Init_Readfont(f) != 0) {
+		status = -1;
 
 		/*
 		 * try and use previous fontcap if it exists
 		 */
 		if (fontCap) {
 			f = fontCap;
-			if (Init_Readfont(f) == OK) {
-				(void) sprintf(buf, "using font: %s", f);
-				ct_error(NT_NULL, buf);
+			if (Init_Readfont(f) < 0) {
+				return (status);
 			}
-			else return (OK);
 		}
-		else return(OK);
+		else return(status);
 	}
 
 	/* create space for temp cmgc	*/
@@ -261,7 +258,7 @@ Ct_err	Init_Font(fontcap)
 	fontCap = icMalloc((unsigned) strlen(f) + 1);
 	(void) strcpy(fontCap, f);
 
-	return (OK);
+	return (status);
 }
 
 /* 	path_spacing:
@@ -334,7 +331,7 @@ static path_spacing ()
 				* dir);
 			break;
 		default:
-		ct_error(NT_ITA, "(path)");
+			break;
 	  }
 }
 
@@ -481,7 +478,6 @@ static int	str_width(strlen, s)
 			case PATH_DOWN 	:  return(F_FONT_RIGHT(fcap_current)); 
 		}
 	default    :
-		ct_error(NT_ITA, "(allignment)");
 		return(0);
 	}
 }
@@ -565,7 +561,6 @@ static int	str_height(strlen)
 				return(-1 * (Width * (strlen-1))); 
 		}
 	default :
-		ct_error(NT_ITA, "(allignment)");
 		return(0);
 	}
 		
@@ -653,7 +648,7 @@ int	var_width(s,strlen)
  *		X_spacing, Y_spacing : contain spacing in x and y direction
  */
 
-Ct_err	Text(cgmc)
+int	Text(cgmc)
 	CGMC	*cgmc;
 {
 	int	index;		/* index into the transformed fontlist	*/
@@ -680,7 +675,7 @@ Ct_err	Text(cgmc)
 	IXtype 	line_type = LINE_TYPE;
 	CItype	line_colour = LINE_COLOUR.index;
 
-	extern	Ct_err	setFont();
+	extern	int	setFont();
 
 	/*
 	 * make sure font has not changed
@@ -691,21 +686,21 @@ Ct_err	Text(cgmc)
 	}
 
 	if (! FontIsInit)
-		return(OK);	/* no font, nothing to do	*/
+		return(0);	/* no font, nothing to do	*/
 
 	/*set line width */
 	tempcgmc.class = 5;
 	tempcgmc.command = 3;
 	tempcgmc.r[0] = 1.0;
 	tempcgmc.Rnum = 1;
-	Process(&tempcgmc);
+	(void) Process(&tempcgmc);
 
 	/*set line type	*/
 	tempcgmc.class = 5;
 	tempcgmc.command = 2;
 	tempcgmc.ix[0] = 1;
 	tempcgmc.IXnum = 1;
-	Process(&tempcgmc);
+	(void) Process(&tempcgmc);
 
 	/*set line colour to text colour	*/
 	/*remember text is stroked with lines	*/
@@ -713,7 +708,7 @@ Ct_err	Text(cgmc)
 	tempcgmc.command = 4;
 	tempcgmc.ci[0] = TEXT_COLOUR.index;
 	tempcgmc.CInum = 1;
-	Process(&tempcgmc);
+	(void) Process(&tempcgmc);
 	
 
 	modified();	/* recalc transformation values if attributes changed*/
@@ -815,7 +810,7 @@ Ct_err	Text(cgmc)
 					draw(cgmc);
 #else
 					if (cgmc->Pnum > 1) {
-						Process(cgmc); 
+						(void) Process(cgmc); 
 					}
 					k = 0;
 #endif
@@ -835,7 +830,7 @@ Ct_err	Text(cgmc)
 			draw(cgmc);
 #else
 			if (cgmc->Pnum > 1) {
-				Process(cgmc); 
+				(void) Process(cgmc); 
 			}
 			k = 0;
 #endif
@@ -884,23 +879,23 @@ Ct_err	Text(cgmc)
 	tempcgmc.command = 3;
 	tempcgmc.r[0] = line_width;
 	tempcgmc.Rnum = 1;
-	Process(&tempcgmc);
+	(void) Process(&tempcgmc);
 
 	/*set line type	*/
 	tempcgmc.class = 5;
 	tempcgmc.command = 2;
 	tempcgmc.ix[0] = line_type;
 	tempcgmc.IXnum = 1;
-	Process(&tempcgmc);
+	(void) Process(&tempcgmc);
 
 	/*set line colour to normal	*/
 	tempcgmc.class = 5;
 	tempcgmc.command = 4;
 	tempcgmc.ci[0] = line_colour;
 	tempcgmc.CInum = 1;
-	Process(&tempcgmc);
+	(void) Process(&tempcgmc);
 
-	return (OK);
+	return (0);
 }
  
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: default.h,v 1.8 1992-04-03 20:56:58 clyne Exp $
+ *	$Id: default.h,v 1.9 1992-07-16 18:07:32 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -221,7 +221,7 @@ static DEFAULTTABLE	defaulttable = {
 	3,				/* markertype default */
 	FALSE,				/* marker type damage	*/
 	0,				/* markerbundleindex default */
-	SCALED,				/* markersizemode default */
+	MODE_SCALED,			/* markersizemode default */
 	1.0,				/* markersize default */
 	FALSE,				/* marker size damage	*/
 
@@ -382,7 +382,7 @@ extern	ColorLUTable		*clut;
 #define	MARKER_SCALE	0.01 	/* multiplied by vdc extent when marker size
 				 * specification mode is scaled
 				 */
-#define	MARKER_SIZE	(dt->markersizemode == ABSOLUTE ? (long)dt->markersize : (long) (dt->xmax - dt->xmin)  * MARKER_SCALE * dt->markersize)
+#define	MARKER_SIZE	(dt->markersizemode == MODE_ABSOLUTE ? (long)dt->markersize : (long) (dt->xmax - dt->xmin)  * MARKER_SCALE * dt->markersize)
 #define	MARKER_SIZE_DAMAGE	dt->marker_size_damage
 
 /*

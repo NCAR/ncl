@@ -1,5 +1,5 @@
 /*
- *	$Id: gcaprast.c,v 1.10 1992-05-11 23:23:30 clyne Exp $
+ *	$Id: gcaprast.c,v 1.11 1992-07-16 18:07:59 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -24,7 +24,6 @@
  */
 
 #include	<stdio.h>
-#include	<cterror.h>
 #include	<ncarv.h>
 #include	"cgmc.h"
 #include	"defines.h"
@@ -33,7 +32,7 @@
 #include	"translate.h"
 
 extern 	long	GetInt();
-extern 	Ct_err	formatcoord();
+extern 	int	formatcoord();
 
 
 
@@ -120,7 +119,7 @@ rasterformatinit()
 /*
  * 	Format and encode the raster vector count 
  */
-Ct_err	formatrasterveccnt(count)
+int	formatrasterveccnt(count)
 long	count;			/* the vector count */
 {
 	char	temp[30];	/* temp buffer to work in */
@@ -154,8 +153,9 @@ long	count;			/* the vector count */
 			src = count;
 			srcbitstart = RASTER_VECTOR_COUNT_FORMAT[DATA_VALUE][i];
 		} else {
-			ct_error(NT_GFEE, "(data type out of range)");
-			return (SICK);
+			ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+			return (-1);
+
 		}
 
 		if (datatype > -1)
@@ -190,21 +190,21 @@ long	count;			/* the vector count */
 				buffer(temp, ftoa(temp,value));
 				break;
 			default:
-				ct_error(NT_GFEE, "(unsupported encoding)");
-				break;
+				ESPRINTF(E_UNKNOWN,"Invalid graphcap entry",(NULL));
+				return (-1);
 			}
 	}
 
 	if (RASTER_VECTOR_COUNT_ENCODING == BINARY)
 		buffer(temp,veccntoutsize);
 
-	return (OK);
+	return (0);
 }
 
 /*
  * 	Format and encode the data  -- the data is a colour index
  */
-Ct_err	formatrasterdata(data,count)
+int	formatrasterdata(data,count)
 Ctype	data;
 int	count;
 {
@@ -242,8 +242,8 @@ int	count;
 			src = data;
 			srcbitstart = RASTER_DATA_FORMAT[DATA_VALUE][i];
 		} else {
-			ct_error(NT_GFEE, "(data type out of range)");
-			return (SICK);
+			ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+			return (-1);
 		}
 
 		if (datatype > -1)
@@ -289,8 +289,8 @@ int	count;
 				buffer(temp, ftoa(temp,value));
 				break;
 			default:
-				ct_error(NT_GFEE, "(unsupported encoding)");
-				break;
+				ESPRINTF(E_UNKNOWN, "Invalid graphcap entry",(NULL));
+				return(-1);
 			}
 	}
 
@@ -306,7 +306,7 @@ int	count;
 				(int) (dataoutsize * BITS_PER_BYTE),
 				FALSE)));
 
-	return (OK);
+	return (0);
 }
 
 /*
@@ -315,7 +315,7 @@ int	count;
  *	encoding. 
  *	
  */
-Ct_err	raster(c)
+int	raster(c)
 CGMC	*c;
 {
 	long	deltax,deltay;
@@ -379,8 +379,7 @@ CGMC	*c;
 			/* make sure data available in cgmc     */
 			if (index >= c->Cnum && c->more) {
 				if (Instr_Dec(c) < 1) {
-					ct_error(T_FRE, "metafile");
-					return (DIE);
+					return (-1);
 				}
 				
 				index = 0;
@@ -448,7 +447,11 @@ CGMC	*c;
 						(int)deltax);
 				}
 				else {
-					ct_error(NT_GFEE,"");
+					ESprintf(
+						E_UNKNOWN, 
+						"Can't plot cell array"
+					);
+					return(-1);
 				}
 			}
 
@@ -457,7 +460,7 @@ CGMC	*c;
 	}
 
 	cfree((char *) index_array);
-	return(OK);
+	return(0);
 }
 
 
@@ -477,7 +480,7 @@ CGMC	*c;
  *	return		: 0 => Ok, else error
  */
 /*ARGSUSED*/
-Ct_err	CellArray_(c, P, Q, R, nx, ny)
+int	CellArray_(c, P, Q, R, nx, ny)
 	CGMC		*c;
 	Ptype	P, Q, R;
 	int	nx, ny;
@@ -513,7 +516,7 @@ Ct_err	CellArray_(c, P, Q, R, nx, ny)
 	/*
 	 * don't know how to handle a cell array with zero dimension
 	 */
-	if (nx == 0 || ny == 0) return (OK);
+	if (nx == 0 || ny == 0) return (0);
 
 	rows = (int *) icMalloc ((unsigned) ny * sizeof (int));
 	cols = (int *) icMalloc ((unsigned) nx * sizeof (int));
@@ -549,8 +552,7 @@ Ct_err	CellArray_(c, P, Q, R, nx, ny)
 			/* make sure data available in cgmc     */
 			if (cgmc_index == c->Cnum && c->more) {
 				if (Instr_Dec(c) < 1) {
-					ct_error(T_FRE, "metafile");
-					return (DIE);
+					return (-1);
 				}
 				cgmc_index = 0;
 			}
@@ -597,8 +599,8 @@ Ct_err	CellArray_(c, P, Q, R, nx, ny)
 				}
 			}
 			if (! Runlength) {
-				ct_error(NT_GFEE, "");
-				return(OK);
+				ESprintf(E_UNKNOWN, "Can't plot cell array");
+				return(-1);
 			}
 
 			start_y += step_y;	/* next row of pixels	*/
@@ -623,7 +625,7 @@ Ct_err	CellArray_(c, P, Q, R, nx, ny)
 	free((char *) cols);
 	free((char *) index_array);
 
-	return(OK);
+	return(0);
 }
 
 /*

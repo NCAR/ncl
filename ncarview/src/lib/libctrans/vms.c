@@ -29,7 +29,6 @@
 #include <iodef.h> 
 #include <string.h>
 #include <file.h>
-#include "cterror.h"
 
 
 /* The following two routines are designed to read in the graphcap and fontcap
@@ -291,7 +290,6 @@ int  VMStty (mode, buffer, arglen)
                                                 "mrs=800", "rfm=fix");
                         if (fd == -1)
                         {
-                                (void)ct_error(CT_T_FOE, BATCH_FILE);
                                 error = fd;
                         }
                         opened = TRUE;
@@ -319,7 +317,6 @@ int  VMStty (mode, buffer, arglen)
                         error = write(fd, tmpbuf, RECLEN*numitems);
                         if (error < 0)
                         {
-                                (void)ct_error(CT_T_FWE, BATCH_FILE);
                         }
                         for (i = 0; i < index; i++)
                                 tmpbuf[i] = tmpbuf[numitems*RECLEN + i];
@@ -355,7 +352,6 @@ int  VMStty (mode, buffer, arglen)
                         error = write(fd, tmpbuf, RECLEN*numitems);
                         if (error < 0)
                         {
-                                (void)ct_error(CT_T_FWE, BATCH_FILE);
                         }
                         index = 0;
                 }

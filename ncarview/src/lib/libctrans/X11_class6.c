@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class6.c,v 1.3 1992-04-03 20:40:22 clyne Exp $
+ *	$Id: X11_class6.c,v 1.4 1992-07-16 18:06:55 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -26,20 +26,15 @@
 #include	<X11/Xlib.h>
 #include	<X11/Xutil.h>
 #include	<ncarv.h>
-#include	<cterror.h>
 #include	"cgmc.h"
 
 
 /* Class 6 */
 /*ARGSUSED*/
-Ct_err	X11_Escape(c)
-CGMC *c;
+int	X11_Escape(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_Escape\n");
-#endif DEBUG
-
-	return (OK);
+	return (0);
 }
 
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: bitops.c,v 1.4 1992-04-03 20:40:48 clyne Exp $
+ *	$Id: bitops.c,v 1.5 1992-07-16 18:07:03 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -12,7 +12,6 @@
 ***********************************************************************/
 #include	<stdio.h>
 #include	<ncarv.h>
-#include	<cterror.h>
 #include	"default.h"
 
 /*
@@ -92,7 +91,6 @@ long GetInt(bufptr,prec,is_signed)
 
 	}
 
-	ct_error(NT_IIP,"");
 	return (0);
 }
 
@@ -162,8 +160,6 @@ double GetReal(bufptr,r_mode,expon_prec,man_prec)
 			}
 		}
 
-		ct_error(NT_IFP,"");
-		return (-1);
 	} 
 	else {
 
@@ -173,14 +169,16 @@ double GetReal(bufptr,r_mode,expon_prec,man_prec)
 		 * translation code should be implemented here  in a similar 
 		 * manner to that of fixed point. 
 		 */
-		if (expon_prec == 9 && man_prec == 23)
-			ct_error(NT_IFP,"");
+		if (expon_prec == 9 && man_prec == 23) {
 
-		if (expon_prec == 12 && man_prec == 52)
-			ct_error(NT_IFP,"");
+		}
 
-		return(-1);
+		else if (expon_prec == 12 && man_prec == 52) {
+
+		}
 	}
+
+	return(0);	/* silly	*/
 }
 
 
@@ -218,8 +216,7 @@ int	Get_SI_int(bufptr,prec)
 		return((sign == 1) ? (si * -1) : si);
 	}
 
-	ct_error(NT_IFP,"");
-	return(-1);
+	return(0);	/* silly	*/
 }
 
 
@@ -303,4 +300,3 @@ swapBytes(cptr, word_size, num_words)
 		cptr += word_size;
 	}
 }
-

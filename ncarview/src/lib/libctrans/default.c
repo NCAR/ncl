@@ -1,5 +1,5 @@
 /*
- *	$Id: default.c,v 1.8 1992-04-03 20:56:53 clyne Exp $
+ *	$Id: default.c,v 1.9 1992-07-16 18:07:29 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -19,7 +19,8 @@
  */
 #define	INDEXED	0
 #include <stdio.h>
-#include <cterror.h>
+#include <errno.h>
+#include <ncarv.h>
 #include "cgmc.h"
 #define	 DEFAULT
 #include "default.h"
@@ -66,7 +67,7 @@ static	ColorElement		*picColorDefaultTable;
 
 InitDefault()
 {
-	boolean	isInit = FALSE;
+	static	boolean	isInit = FALSE;
 	int	i;
 
 	/*
@@ -94,6 +95,7 @@ InitDefault()
 	 * copy in the initial color map which has a few entries defined
 	 */
 	for (i=0; i<defaultCmapSize; i++) {
+		colorLUTable.ce[i].damage = TRUE;
 		colorLUTable.ce[i] = defaultCmap[i];
 	}
 	for (; i<=MAX_C_I; i++) {
@@ -191,114 +193,153 @@ boolean		value;
 
 /* Class 1 */
 /*ARGSUSED*/
-Ct_err MFVersion(c)
+int MFVersion(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"MFVersion\n");
-#endif
 
 	dt->mfversion = c->i[0];
 
-	return(OK);
+	return(0);
 }
 
 /*ARGSUSED*/
-Ct_err MFDesc(c)
+int MFDesc(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"MFDesc\n");
-#endif
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err VDCType(c)
+int VDCType(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"VDCType\n");
-#endif
 	dt->vdc_type = c->e[0];
-	return (OK);
+
+	if (dt->vdc_type == VDC_IS_INT) {
+		return (0);
+	}
+
+	if (dt->vdc_type == VDC_IS_REAL) {
+		ESprintf(EINVAL, "Unsupported vdc type (%d)",dt->vdc_type);
+		return(-1);
+	}
+
+	ESprintf(EINVAL, "Illegal vdc type (%d)",dt->vdc_type);
+	return(-1);
 }
 
 /*ARGSUSED*/
-Ct_err IntergerPrec(c)
-CGMC *c;
+int IntergerPrec(c)
+	CGMC *c;
 {
-#ifdef DEBUG 
-	(void)fprintf(stderr,"IntegerPrec\n");
-#endif
 	dt->ip = c->i[0];
-	return (OK);
+
+	if (dt->ip == 8 || dt->ip == 16 || dt->ip == 24 || dt->ip == 32) {
+		return (0);
+	}
+
+	ESprintf(EINVAL, "Illegal integer precision(%d)",dt->ip);
+	return(-1);
 }
 
 /*ARGSUSED*/
-Ct_err RealPrec(c)
-CGMC *c;
+int RealPrec(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"RealPrec\n");
-#endif
 	dt->real_mode = c->i[0];
 	dt->real_exp = c->i[1];
 	dt->real_man = c->i[2];
-	return (OK);
+
+	if (dt->real_mode == REAL_MODE_FIXED) {
+		if ((dt->real_exp == 16 && dt->real_man == 16) || 
+			(dt->real_exp == 32 && dt->real_man == 32)) {
+
+			return(0);
+		}
+	}
+
+	/*
+	 * floating point reals not supported yet
+	 */
+	if (dt->real_mode == REAL_MODE_FLOAT) {
+		if ((dt->real_exp == 9 && dt->real_man == 23) || 
+			(dt->real_exp == 12 && dt->real_man == 52)) {
+
+			ESprintf(EINVAL, 
+				"Unsupported real precision(mode=%d,exp=%d,man=%d)",
+				dt->real_mode, dt->real_exp, dt->real_man
+			);
+			return(-1);
+		}
+	}
+
+	ESprintf(EINVAL, 
+		"Illegal real precision(mode=%d,exp=%d,man=%d)",
+		dt->real_mode, dt->real_exp, dt->real_man
+	);
+	return(-1);
 }
 
 /*ARGSUSED*/
-Ct_err IndexPrec(c)
-CGMC *c;
+int IndexPrec(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"IndexPrec\n");
-#endif
 	dt->ixp = c->i[0];
-	return (OK);
+	if (dt->ixp == 8 || dt->ixp == 16 || dt->ixp == 24 || dt->ixp == 32) {
+		return (0);
+	}
+
+	ESprintf(EINVAL,"Illegal index precision(%d)",dt->ixp);
+	return(-1);
 }
 
 /*ARGSUSED*/
-Ct_err ColrPrec(c)
+int ColrPrec(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"ColrPrec\n");
-#endif
 	dt->dcp = c->i[0];
-	return (OK);
+	if (dt->dcp == 8) {
+		return (0);
+	}
+	if (dt->dcp == 16 || dt->dcp == 24 || dt->dcp == 32) {
+		ESprintf(EINVAL, "Unsupported color precision(%d)",dt->dcp);
+		return(-1);
+	}
+
+	ESprintf(EINVAL, "Illegal color precision(%d)",dt->dcp);
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err ColrIndexPrec(c)
-CGMC *c;
+int ColrIndexPrec(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"ColrIndexPrec\n");
-#endif
 	dt->cip = c->i[0];
-	return (OK);
+
+	if (dt->cip == 8) {
+		return (0);
+	}
+	if (dt->cip == 16 || dt->cip == 24 || dt->cip == 32) {
+		ESprintf(EINVAL, "Unsupported color index precision(%d)",dt->cip);
+		return(-1);
+	}
+
+	ESprintf(EINVAL, "Illegal color index precision(%d)",dt->cip);
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err MaxColrIndex(c)
-CGMC *c;
+int MaxColrIndex(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"MaxColrIndex\n");
-#endif
 	dt->max_c_i = c->ci[0];
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err ColrValueExt(c)
+int ColrValueExt(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"ColrValueExt\n");
-#endif
 	dt->c_v_e_min.red = c->cd[0].red;
 	dt->c_v_e_min.green = c->cd[0].green;
 	dt->c_v_e_min.blue = c->cd[0].blue;
@@ -306,131 +347,172 @@ CGMC *c;
 	dt->c_v_e_max.red = c->cd[1].red;
 	dt->c_v_e_max.green = c->cd[1].green;
 	dt->c_v_e_max.blue = c->cd[1].blue;
-	return (OK);
+
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err MFElemList(c)
+int MFElemList(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"MFElemList\n");
-#endif
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err MFDefaults(c)
+int MFDefaults(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"MFDefaults\n");
-#endif
-	return (OK);
+	return (0);
 }
 
 
 /*ARGSUSED*/
-Ct_err CharSetList(c)
+int CharSetList(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"CharSetList\n");
-#endif
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err CharCoding(c)
+int CharCoding(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"CharCoding\n");
-#endif
 	dt->char_c_a = c->e[0];
-	return (OK);
+
+	if (dt->char_c_a != BASIC_7_BIT) {
+		ESprintf(
+			EINVAL, 
+			"Unsupported character encoding(%d)",dt->char_c_a
+		);
+		return(-1);
+	}
+	return (0);
 }
 
 /* Class 2 */
 /*ARGSUSED*/
-Ct_err ScaleMode(c)
+int ScaleMode(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"ScaleMode\n");
-#endif
 	dt->scalemodee = c->e[0];
 	dt->scalemoder = c->r[0];
-	return (OK);
+
+	if (dt->scalemodee == MODE_ABSTRACT) {
+		return (0);
+	}
+
+	if (dt->scalemodee == MODE_METRIC) {
+		ESprintf(EINVAL, "Unsupported scale mode(%d)",dt->scalemodee);
+		return(-1);
+	}
+
+	ESprintf(EINVAL, "Illegal scale mode(%d)",dt->scalemodee);
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err ColrMode(c)
+int ColrMode(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"ColrMode\n");
-#endif
 	dt->csm = c->e[0];
-	return (OK);
+
+	if (dt->csm == MODE_INDEXED) {
+		return (0);
+	}
+
+	if (dt->csm == MODE_DIRECT) {
+		ESprintf(EINVAL, "Unsupported color mode(%d)",dt->csm);
+		return(-1);
+	}
+
+	ESprintf(EINVAL, "Illegal color mode(%d)",dt->csm);
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err LineWidthMode(c)
+int LineWidthMode(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"LineWidthMode\n");
-#endif
 
 	dt->line_width_mode = c->e[0];
-	return (OK);
+
+	if (dt->line_width_mode == MODE_SCALED) {
+		return (0);
+	}
+
+	if (dt->line_width_mode == MODE_ABSOLUTE) {
+		ESprintf(
+			EINVAL, "Unsupported line width mode(%d)",
+			dt->line_width_mode
+		);
+		return(-1);
+	}
+
+	ESprintf(EINVAL, "Illegal line width mode(%d)",dt->line_width_mode);
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err MarkerSizeMode(c)
+int MarkerSizeMode(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"MarkerSizeMode\n");
-#endif
 	dt->mar_siz_mod = c->e[0];
-	return (OK);
+	if (dt->mar_siz_mod == MODE_SCALED) {
+		return (0);
+	}
+
+	if (dt->mar_siz_mod == MODE_ABSOLUTE) {
+		ESprintf(
+			EINVAL, "Unsupported marker size mode(%d)",
+			dt->mar_siz_mod
+		);
+		return(-1);
+	}
+
+	ESprintf(EINVAL, "Illegal marker size mode(%d)",dt->mar_siz_mod);
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err EdgeWidthMode(c)
+int EdgeWidthMode(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"EdgeWidthMode\n");
-#endif
 	dt->edg_wid_mod = c->e[0];
-	return (OK);
+
+	if (dt->edg_wid_mod == MODE_SCALED) {
+		return (0);
+	}
+
+	if (dt->edg_wid_mod == MODE_ABSOLUTE) {
+		ESprintf(
+			EINVAL, "Unsupported edge width mode(%d)",
+			dt->edg_wid_mod
+		);
+		return(-1);
+	}
+
+	ESprintf(EINVAL, "Illegal edge width mode(%d)",dt->edg_wid_mod);
+	return (-1);
 }
 
-Ct_err VDCExt(c)
+int VDCExt(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"VDCExt\n");
-#endif
 	XMIN = c->p[0].x;
 	YMIN = c->p[0].y;
 	XMAX = c->p[1].x;
 	YMAX = c->p[1].y;
 
 	dt->char_height = (VDCtype) 0.01*(YMAX - YMIN);
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err BackColr(c)
+int BackColr(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"BackColr\n");
-#endif
 
 	dt->backcolr.red = c->cd[0].red;
 	dt->backcolr.green = c->cd[0].green;
@@ -450,7 +532,7 @@ CGMC *c;
 
 	clut->damage = at->colour_table_access = TRUE;
 
-	return (OK);
+	return (0);
 }
 
 
@@ -460,107 +542,134 @@ CGMC *c;
 
 
 /*ARGSUSED*/
-Ct_err VDCIntergerPrec(c)
+int VDCIntergerPrec(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"VDCIntergerPrec\n");
-#endif
 	dt->vdc_int = c->i[0];
-	return (OK);
+	if (dt->vdc_int == 8 || dt->vdc_int == 16 || 
+		dt->vdc_int == 24 || dt->vdc_int == 32) {
+
+		return (0);
+	}
+	ESprintf(EINVAL, "Illegal integer precision(%d)",dt->vdc_int);
+	return(-1);
 }
 
 /*ARGSUSED*/
-Ct_err VDCRealPrec(c)
+int VDCRealPrec(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"VDCRealPrec\n");
-#endif
 	dt->vdc_real_mode = c->i[0];
 	dt->vdc_real_exp = c->i[0];
 	dt->vdc_real_man = c->i[0];
-	return (OK);
+	if (dt->vdc_real_mode == 1) {
+		if ((dt->vdc_real_exp == 16 && dt->vdc_real_man == 16) || 
+			(dt->vdc_real_exp == 32 && dt->vdc_real_man == 32)) {
+
+			return(0);
+		}
+	}
+
+	/*
+	 * floating point reals not supported yet
+	 */
+	else if (dt->vdc_real_mode == 0) {
+		if ((dt->vdc_real_exp == 9 && dt->vdc_real_man == 23) || 
+			(dt->vdc_real_exp == 12 && dt->vdc_real_man == 52)) {
+
+			ESprintf(EINVAL, 
+				"Unsupported real precision(mode=%d,exp=%d,man=%d)",
+				dt->vdc_real_mode, dt->vdc_real_exp, 
+				dt->vdc_real_man
+			);
+			return(-1);
+		}
+	}
+
+	ESprintf(EINVAL, 
+		"Illegal real precision(mode=%d,exp=%d,man=%d)",
+		dt->vdc_real_mode, dt->vdc_real_exp, dt->vdc_real_man
+	);
+	return(-1);
 }
 
 /*ARGSUSED*/
-Ct_err AuxColr(c)
-CGMC *c;
-
-
+int AuxColr(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"AuxColr\n");
-#endif
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err Transparency(c)
-CGMC *c;
+int Transparency(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"Transparency\n");
-#endif
 	dt->trans = c->e[0];
-	return (OK);
+
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
-Ct_err ClipRect(c)
-CGMC *c;
+int ClipRect(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"ClipRect\n");
-#endif
 	CLIPXMIN = c->p[0].x;
 	CLIPYMIN = c->p[0].y;
 	CLIPXMAX = c->p[1].x;
 	CLIPYMAX = c->p[1].y;
 
 	dt->clip_damage = at->clip_access = TRUE;
-	return (OK);
+	return (0);
 }
-Ct_err Clip(c)
-CGMC *c;
+int Clip(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"Clip\n");
-#endif
 
 	CLIPFLAG = c->e[0];
 	dt->clip_damage = at->clip_access = TRUE;
 
-	return (OK);
+	return (0);
 }
 
 /* Class 5 */
 
 /*ARGSUSED*/
-Ct_err LineIndex(c)
-CGMC *c;
+int LineIndex(c)
+	CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"LineIndex\n");
-#endif
 	dt->line_ind = c->ix[0];
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err LineType(c)
+int LineType(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"LineType\n");
-#endif
+	int	status = 0;
 
 	dt->line_type = c->ix[0];
 
 	dt->line_type_damage = at->line_type_access = TRUE;
-	return (OK);
+
+	switch (dt->line_type) {
+	case L_SOLID :
+	case L_DASH :
+	case L_DOT :
+	case L_DASH_DOT :
+	case L_DASH_DOT_DOT :
+		status = 0;
+		break;
+
+	default:
+		ESprintf(EINVAL, "Illegal line type(%d)",dt->line_type);
+		status = -1;
+		break;
+	}
+	return (status);
 }
 
 /*ARGSUSED*/
-Ct_err LineWidth(c)
+int LineWidth(c)
 CGMC *c;
 {
 	float	line_width = c->r[0];
@@ -582,16 +691,13 @@ CGMC *c;
 	dt->line_width = line_width;
 
 	dt->line_width_damage = at->line_width_access = TRUE;
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err LineColr(c)
+int LineColr(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"LineColr\n");
-#endif
 
 	if (CSM == INDEXED) 
 		dt->line_colour.index = c->ci[0];
@@ -602,56 +708,61 @@ CGMC *c;
 	}
 
 	dt->line_colour_damage = at->line_colour_access = TRUE;
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err MarkerIndex(c)
+int MarkerIndex(c)
 CGMC *c;
 { 
-#ifdef DEBUG
-	(void)fprintf(stderr,"MarkerIndex\n");
-#endif
 	dt->marker_ind = c->ix[0];
-	return (OK);
+	return (0);
 }
 
-Ct_err MarkerType(c)
+int MarkerType(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"MarkerType\n");
-#endif
+	int	status = 0;
 
 	dt->markertype = c->ix[0];
 	dt->marker_type_damage = at->marker_type_access = TRUE;
-	return (OK);
+
+	switch (dt->markertype) {
+	case MARKER_X :
+	case MARKER_CIRCLE :
+	case MARKER_STAR :
+	case MARKER_DOT :
+	case MARKER_PLUS :
+		status = 0;
+		break;
+
+	default:
+		ESprintf(EINVAL, "Illegal marker type(%d)",dt->markertype);
+		status = -1;
+		break;
+	}
+
+	return (status);
 }
 
 /*ARGSUSED*/
-Ct_err MarkerSize(c)
+int MarkerSize(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"MarkerSize\n");
-#endif
 
-	if (MAR_SIZ_MOD == SCALED) 
+	if (MAR_SIZ_MOD == MODE_SCALED) 
 		dt->markersize = c->r[0];
 	else
 		dt->markersize = c->vdc[0];
 
 	dt->marker_size_damage = at->marker_size_access = TRUE;
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err MarkerColr(c)
+int MarkerColr(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"MarkerColr\n");
-#endif
 	if (CSM == INDEXED) 
 		dt->marker_colour.index = c->ci[0];
 	else {
@@ -661,71 +772,71 @@ CGMC *c;
 	}
 
 	dt->marker_colour_damage = at->marker_colour_access = TRUE; 
-	return (OK);
+	return (0);
 } 
 
 /*ARGSUSED*/
-Ct_err TextIndex(c)
+int TextIndex(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"TextIndex\n");
-#endif
 	dt->text_ind = c->ix[0];
-	return (OK);
+	return (0);
 }
 
 
 /*ARGSUSED*/
-Ct_err TextFontIndex(c)
+int TextFontIndex(c)
 CGMC *c;
 {
 	dt->text_f_ind = c->ix[0];
 	dt->text_f_ind_damage = at->text_f_ind_access = TRUE;
 
-	return(OK);
+	return(0);
 }
 
 /*ARGSUSED*/
-Ct_err TextPrec(c)
+int TextPrec(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"TextPrec\n");
-#endif
+	int	status = 0;
+
 	dt->text_prec = c->e[0];
-	return (OK);
+
+	switch (dt->text_prec) {
+	case PREC_STRING :
+	case PREC_CHAR :
+	case PREC_STROKE :
+		status = 0;
+		break;
+
+	default:
+		ESprintf(EINVAL, "Illegal text precision(%d)",dt->text_prec);
+		status = -1;
+		break;
+	}
+	return (status);
 }
 
-Ct_err CharExpan(c)
+int CharExpan(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"CharExpan\n");
-#endif
 
 	dt->char_expan = c->r[0];
-	return (OK);
+	return (0);
 }
 
-Ct_err CharSpace(c)
+int CharSpace(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"CharSpace\n");
-#endif
 
 	dt->char_space = c->r[0];
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err TextColr(c)
+int TextColr(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"TextColr\n");
-#endif
 	if (CSM == INDEXED) 
 		dt->text_colour.index = c->ci[0];
 	else {
@@ -733,109 +844,161 @@ CGMC *c;
 		dt->text_colour.direct.green = c->cd[0].green;
 		dt->text_colour.direct.blue = c->cd[0].blue;
 	}
-	return (OK);
+	return (0);
 }
-Ct_err CharHeight(c)
+int CharHeight(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"CharHeight\n");
-#endif
 
 	dt->char_height = c->vdc[0];
-	return (OK);
+	return (0);
 }
-Ct_err CharOri(c)
+int CharOri(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"CharOri\n");
-#endif
 
 	dt->char_x_up = c->vdc[0];
 	dt->char_y_up = c->vdc[1];
 	dt->char_x_base = c->vdc[2];
 	dt->char_y_base = c->vdc[3];
-	return (OK);
+	return (0);
 }
-Ct_err TextPath(c)
+int TextPath(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"TextPath\n");
-#endif
+	int	status = 0;
 
 	dt->text_path = c->e[0];
-	return (OK);
+
+	switch (dt->text_path) {
+	case PATH_RIGHT :
+	case PATH_LEFT :
+	case PATH_UP :
+	case PATH_DOWN:
+		status = 0;
+		break;
+
+	default:
+		ESprintf(EINVAL, "Illegal text path(%d)",dt->text_path);
+		status = -1;
+		break;
+	}
+	return (status);
 }
 
 /*ARGSUSED*/
-Ct_err TextAlign(c)
+int TextAlign(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"TextAlign\n");
-#endif
+	int	status = 0;
+
 	dt->text_ali_h = c->e[0];
 	dt->text_ali_v = c->e[1];
 	dt->text_ali_c_h = c->r[0];
 	dt->text_ali_c_h = c->r[1];
-	return (OK);
+
+	switch (dt->text_ali_h) {
+	case A_NORM_H :
+	case A_LEFT :
+	case A_CENTER :
+	case A_RIGHT:
+	case A_CO_HOR:
+		status = 0;
+		break;
+
+	default:
+		ESprintf(
+			EINVAL, "Illegal horizontal text alignment(%d)",
+			dt->text_ali_h
+		);
+		status = -1;
+		break;
+	}
+
+	switch (dt->text_ali_v) {
+	case A_NORM_V :
+	case A_TOP :
+	case A_CAP :
+	case A_HALF:
+	case A_BASE:
+	case A_BOTTOM:
+	case A_CO_VER:
+		status = 0;
+		break;
+
+	default:
+		ESprintf(
+			EINVAL, "Illegal vertical text alignment(%d)",
+			dt->text_ali_v
+		);
+		status = -1;
+		break;
+	}
+	return (status);
 }
 
 /*ARGSUSED*/
-Ct_err CharSetIndex(c)
+int CharSetIndex(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"CharSetIndex\n");
-#endif
 	dt->char_ind = c->ix[0];
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err AltCharSetIndex(c)
+int AltCharSetIndex(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"AltCharSetIndex\n");
-#endif
 	dt->alt_char_ind = c->ix[0];
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err FillIndex(c)
+int FillIndex(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"FillIndex\n");
-#endif
 	dt->fill_ind = c->ix[0];
-	return (OK);
+
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err IntStyle(c)
+int IntStyle(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"IntStyle\n");
-#endif
+	int	status = 0;
+
 	dt->int_style = c->e[0];
 	dt->int_style_damage = at->int_style_access = TRUE;
-	
-	return (OK);
+
+	switch (dt->int_style) {
+	case HOLLOW_S :
+	case SOLID_S :
+	case HATCH_S :
+	case EMPTY_S :
+		status = 0;
+		break;
+
+	case PATTERN_S :
+		ESprintf(EINVAL, "Unsupported fill style(%d)",dt->int_style);
+		status = -1;
+		break;
+	default:
+		ESprintf(EINVAL, "Illegal fill style(%d)",dt->int_style);
+		status = -1;
+		break;
+	}
+
+	return (status);
 }
 
 /*ARGSUSED*/
-Ct_err FillColr(c)
+int FillColr(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"FillColr\n");
-#endif
 	if (CSM == INDEXED) 
 		dt->fill_colour.index = c->ci[0];
 	else {
@@ -844,118 +1007,119 @@ CGMC *c;
 		dt->fill_colour.direct.blue = c->cd[0].blue;
 	}
 	dt->fill_colour_damage = at->fill_colour_access = TRUE;
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err HatchIndex(c)
+int HatchIndex(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"HatchIndex\n");
-#endif
+	int	status = 0;
+
 	dt->hatch_ind = c->ix[0];
-	return (OK);
+
+	switch (dt->hatch_ind) {
+	case HORIZONTAL :
+	case VERTICAL :
+	case POSITIVE :
+	case NEGATIVE :
+	case HORIZ_VERT :
+	case POS_NEG :
+		status = 0;
+		break;
+
+	default:
+		ESprintf(EINVAL, "Illegal hatch index(%d)",dt->hatch_ind);
+		status = -1;
+		break;
+	}
+
+	return (status);
 }
 
 /*ARGSUSED*/
-Ct_err PatIndex(c)
+int PatIndex(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"PatIndex\n");
-#endif
 	dt->pattern_ind = c->ix[0];
-	return (OK);
+
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err EdgeIndex(c)
+int EdgeIndex(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"EdgeIndex\n");
-#endif
 	dt->edge_ind = c->ix[0];
-	return (OK);
+
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err EdgeType(c)
+int EdgeType(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"EdgeType\n");
-#endif
 	dt->edge_type = c->ix[0];
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err EdgeWidth(c)
+int EdgeWidth(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"EdgeWidth\n");
-#endif
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err EdgeColr(c)
+int EdgeColr(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"EdgeColr\n");
-#endif
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err EdgeVis(c)
+int EdgeVis(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"EdgeVis\n");
-#endif
 	dt->edge_vis = c->e[0];
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err FillRefPt(c)
+int FillRefPt(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"FillRefPt\n");
-#endif
 	dt->fill_r_pt.x = c->p[0].x;
 	dt->fill_r_pt.y = c->p[0].y;
-	return (OK);
+
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err PatTable(c)
+int PatTable(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"PatTable\n");
-#endif
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err PatSize(c)
+int PatSize(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"PatSize\n");
-#endif
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*ARGSUSED*/
-Ct_err ColrTable(c)
+int ColrTable(c)
 CGMC *c;
 {
 	int	color_index;
@@ -979,17 +1143,15 @@ CGMC *c;
 
 	clut->damage = at->colour_table_access = TRUE;
 
-	return (OK);
+	return (0);
 }
 
 /*ARGSUSED*/
-Ct_err ASF(c)
+int ASF(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"ASF\n");
-#endif
-	return (OK);
+	ESprintf(ENOSYS, "Unsupported CGM element");
+	return (-1);
 }
 
 /*

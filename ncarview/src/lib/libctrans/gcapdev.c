@@ -1,8 +1,7 @@
 /*
- *	$Id: gcapdev.c,v 1.14 1992-06-09 19:41:57 clyne Exp $
+ *	$Id: gcapdev.c,v 1.15 1992-07-16 18:07:55 clyne Exp $
  */
 #include <stdio.h>
-#include <cterror.h>
 #include "graphcap.h"
 #include "cgmc.h"
 #include "soft_fill.h"
@@ -10,7 +9,7 @@
 #include "ctrandef.h"
 #include "default.h"
 
-extern	Ct_err	formatveccnt(), formatcoord(), formatindex(), formatwidth(),
+extern	int	formatveccnt(), formatcoord(), formatindex(), formatwidth(),
 		formatintensity();
 
 /*
@@ -55,7 +54,7 @@ boolean polysim;	/* True if to simulate polygons with lines */
 
 	int	line_width = ROUND(LINE_WIDTH);
 
-	Ct_err	ComLineSim();
+	int	ComLineSim();
 
 	/*
 	 *	If the line style is not the default then send the 
@@ -632,7 +631,10 @@ void	gcap_update_color_table()
 			(void)formatintensity(data, 3);
 			break;
 		default:
-			ct_error(NT_NULL, "bad graphcap colour map model");
+			ESprintf(
+				E_UNKNOWN, 
+				"Invalid viewport format [ %s ]", ErrGetMsg()
+			);
 			break;
 		}
 

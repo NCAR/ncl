@@ -9,7 +9,6 @@
  */
 #include <stdio.h>
 #include <math.h>
-#include <cterror.h>
 #include "default.h"
 #include "cgmc.h"
 #include "soft_fill.h"
@@ -128,7 +127,7 @@ ComSimHatch(p_list, n, hatch_index, hatch_spacing, dev)
 			cos_theta_inv[0] = 0.0; sin_theta_inv[0] = -1.0;
 			break;
 
-		case POSSITIVE :	/* rotate 45 degrees	*/
+		case POSITIVE :	/* rotate 45 degrees	*/
 			cos_theta[0] = -0.707107; sin_theta[0] = 0.707107;
 			cos_theta_inv[0] = sin_theta_inv[0]= -0.707107;
 			break;
@@ -147,7 +146,7 @@ ComSimHatch(p_list, n, hatch_index, hatch_spacing, dev)
 			num_hatch = 2;	/* two cross hatches	*/
 			break;
 
-		case POSS_NEG  :
+		case POS_NEG  :
 			cos_theta[0] = 0.707107; sin_theta[0] = 0.707107;
 			cos_theta_inv[0]= 0.707107; sin_theta_inv[0]= -0.707107;
 			cos_theta[1] = -0.707107; sin_theta[1] = 0.707107;
@@ -155,7 +154,6 @@ ComSimHatch(p_list, n, hatch_index, hatch_spacing, dev)
 			num_hatch = 2;	/* two cross hatches	*/
 			break;
 		default:
-			ct_error(NT_UPFS,"bad hatch style");
 			cos_theta[0] = 1.0; sin_theta[0] = 0.0;
 			cos_theta_inv[0] = 1.0; sin_theta_inv[0] = 0.0;
 			break;
