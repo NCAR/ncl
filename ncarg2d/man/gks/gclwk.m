@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gclwk.m,v 1.11 2000-08-22 04:15:56 haley Exp $
+.\"	$Id: gclwk.m,v 1.12 2003-05-25 17:16:50 haley Exp $
 .\"
 .TH GCLWK 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -30,7 +30,7 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-2000
+Copyright (C) 1987-2003
 .br
 University Corporation for Atmospheric Research
 .br

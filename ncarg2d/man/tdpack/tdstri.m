@@ -62,7 +62,7 @@ tdclrs, tdctri, tddtri, tdgeti, tdgetr, tdgrds, tdgrid, tdgtrs, tdinit, tditri,
 tdlbla, tdlbls, tdline, tdlnpa, tdmtri, tdotri, tdpack, tdpack_params,
 tdpara, tdplch, tdprpa, tdprpi, tdprpt, tdseti, tdsetr, tdsort, tdstrs
 .SH COPYRIGHT
-Copyright (C) 1987-2000
+Copyright (C) 1987-2003
 .br
 University Corporation for Atmospheric Research
 .br

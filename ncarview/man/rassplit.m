@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: rassplit.m,v 1.11 2000-08-22 15:00:56 haley Exp $
+.\"	$Id: rassplit.m,v 1.12 2003-05-25 17:20:15 haley Exp $
 .\"
 .TH RASSPLIT 1NCARG "January 1993" NCARG "NCAR VIEW"
 .SH \fBNAME\fP
@@ -83,7 +83,7 @@ over again.
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-2000
+Copyright (C) 1987-2003
 .br
 University Corporation for Atmospheric Research
 .br

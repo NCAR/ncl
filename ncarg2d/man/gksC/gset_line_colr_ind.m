@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_line_colr_ind.m,v 1.11 2000-08-22 04:16:13 haley Exp $
+.\"	$Id: gset_line_colr_ind.m,v 1.12 2003-05-25 17:16:53 haley Exp $
 .\"
 .TH GSET_LINE_COLR_IND 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -43,7 +43,7 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-2000
+Copyright (C) 1987-2003
 .br
 University Corporation for Atmospheric Research
 .br

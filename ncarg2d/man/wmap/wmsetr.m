@@ -36,7 +36,7 @@ Hardcopy:
 WMAP - A Package for Producing Daily Weather Maps and Plotting Station 
 Model Data
 .SH COPYRIGHT
-Copyright (C) 1987-2000
+Copyright (C) 1987-2003
 .br
 University Corporation for Atmospheric Research
 .br

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_char_expan.m,v 1.10 2000-08-22 04:16:07 haley Exp $
+.\"	$Id: ginq_char_expan.m,v 1.11 2003-05-25 17:16:52 haley Exp $
 .\"
 .TH GINQ_CHAR_EXPAN 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -48,7 +48,7 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-2000
+Copyright (C) 1987-2003
 .br
 University Corporation for Atmospheric Research
 .br

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gstxp.m,v 1.10 2000-08-22 04:16:04 haley Exp $
+.\"	$Id: gstxp.m,v 1.11 2003-05-25 17:16:51 haley Exp $
 .\"
 .TH GSTXP 3NCARG "14 January 1992" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -47,7 +47,7 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-2000
+Copyright (C) 1987-2003
 .br
 University Corporation for Atmospheric Research
 .br

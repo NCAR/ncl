@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gsasf.m,v 1.10 2000-08-22 04:16:01 haley Exp $
+.\"	$Id: gsasf.m,v 1.11 2003-05-25 17:16:51 haley Exp $
 .\"
 .TH GSASF 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -66,7 +66,7 @@ gqtxsp, gqtxci, gqfais, gqfasi, gqfaci,, gset_asfs
 Hardcopy:  
 "User's Guide for NCAR GKS-0A Graphics"
 .SH COPYRIGHT
-Copyright (C) 1987-2000
+Copyright (C) 1987-2003
 .br
 University Corporation for Atmospheric Research
 .br

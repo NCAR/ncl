@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: cgm.m,v 1.14 2000-08-22 15:00:52 haley Exp $
+.\"	$Id: cgm.m,v 1.15 2003-05-25 17:20:14 haley Exp $
 .\"
 .\" NCAR View cgm.man 3.00 9/13/89 Clyne
 .TH CGM_TOOLS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -320,7 +320,7 @@ CGMs with more the one metafile stored in the are not guaranteed to work.
 Should not have to explicitly flush the output buffer for \fBCGM_getInstr\fR.
 This should be handled automatically when the file is closed.
 .SH COPYRIGHT
-Copyright (C) 1987-2000
+Copyright (C) 1987-2003
 .br
 University Corporation for Atmospheric Research
 .br

@@ -152,7 +152,7 @@ stuixy,
 stumta,
 stumxy.
 .SH COPYRIGHT
-Copyright (C) 1987-2000
+Copyright (C) 1987-2003
 .br
 University Corporation for Atmospheric Research
 .br

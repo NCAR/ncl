@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gqopsg.m,v 1.10 2000-08-22 04:16:00 haley Exp $
+.\"	$Id: gqopsg.m,v 1.11 2003-05-25 17:16:51 haley Exp $
 .\"
 .TH GQOPSG 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -29,7 +29,7 @@ gevtm, gactm, gclsg, gcrsg, gcsgwk, gdsg, gqsgus, gssgt., ginq_name_open_seg
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"
 .SH COPYRIGHT
-Copyright (C) 1987-2000
+Copyright (C) 1987-2003
 .br
 University Corporation for Atmospheric Research
 .br
