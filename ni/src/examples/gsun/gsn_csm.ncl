@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.166 2004-06-05 02:57:38 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.167 2004-06-14 18:54:39 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -948,7 +948,7 @@ begin
                        "gsnStringFont","gsnStringFontHeightF", \
                        "gsnLeftStringFontHeightF",\
                        "gsnCenterStringFontHeightF",\
-                       "gsnCenterStringFontHeightF"/)
+                       "gsnRightStringFontHeightF"/)
   if((res).and..not.any(ismissing(getvaratts(res))))
     nstrings = dimsizes(valid_subttl_res)
     do i=0,nstrings-1,1
