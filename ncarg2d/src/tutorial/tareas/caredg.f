@@ -65,6 +65,7 @@ C
       CALL LINE (.8,.05,.8,.45)
       CALL GSELNT (0)
       CALL PLCHHQ (.50,.01,'Vertical Strips',.013,0.,0.)
+      CALL FRAME
 C
 C Deactivate and close workstation, close GKS.
 C

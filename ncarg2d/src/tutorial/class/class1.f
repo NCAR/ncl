@@ -93,6 +93,7 @@ C
       CALL CURVED(XRHLEG,YRHLEG,8)
       CALL CURVED(XBELLY,YBELLY,3)
       CALL CURVED(XFFLEG,YFFLEG,14)
+      CALL FRAME
 C
 C Deactivate and close workstation, close GKS.
 C

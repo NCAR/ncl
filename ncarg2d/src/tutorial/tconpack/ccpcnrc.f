@@ -22,6 +22,10 @@ C Call CPEZCT
 C
       CALL CPCNRC (ZREG,M,M,N,-40.,50.,10.,0,0,-366)
 C
+C Advance frame
+C
+      CALL FRAME
+C
 C Deactivate and close workstation, close GKS.
 C
       CALL GDAWK (IWKID)
