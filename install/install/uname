@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: uname,v 1.6 1995-11-07 16:21:04 haley Exp $
+#      $Id: uname,v 1.7 1996-01-17 22:06:17 haley Exp $
 #
 #########################################################################
 #									#
@@ -208,10 +208,8 @@ while($#argv)
 			breaksw
 
 		case	LINUX:
-			set arch = i486
-			breaksw
-
 		case	ULTRIX:
+		case	OSF1:
 			set arch = $mach
 			breaksw
 
@@ -257,10 +255,6 @@ while($#argv)
 				echo "$0 : Unknown machine type" > /dev/tty
 				exit 1
 			endsw
-			breaksw
-
-		case	OSF1:
-			set arch = $mach
 			breaksw
 
 		endsw

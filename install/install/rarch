@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: rarch,v 1.5 1995-11-07 16:21:00 haley Exp $
+#      $Id: rarch,v 1.6 1996-01-17 22:06:16 haley Exp $
 #
 #########################################################################
 #									#
@@ -91,7 +91,12 @@ case HP-UX:
 	exit 0
 
 case LINUX:
-	echo LINUX_i486
+	set mach = `/bin/uname -m`
+	if ("$mach" == "i486") then
+		echo LINUX_i486
+	else
+		echo LINUX_i586
+	endif
 	exit 0
 
 case SunOS:

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: sys_type,v 1.5 1995-11-07 16:21:02 haley Exp $
+#      $Id: sys_type,v 1.6 1996-01-17 22:06:17 haley Exp $
 #
 #########################################################################
 #									#
@@ -39,7 +39,7 @@
 set systems = ( \
 		HPUX_HP9000_7xx AIX_RS6000 SunOS_Sun4 Solaris_Sun4 ULTRIX_RISC \
         IRIX_IP IRIX64_IP UNICOS_YMP UNICOS_J90 UNICOS_C90 OSF1_alpha \
-        LINUX_i486)
+        LINUX_i486 LINUX_i586)
 
 #
 # auto-detect the system type
