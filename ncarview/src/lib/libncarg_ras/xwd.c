@@ -1,5 +1,5 @@
 /*
- *	$Id: xwd.c,v 1.16 1993-01-17 06:52:02 don Exp $
+ *	$Id: xwd.c,v 1.17 1993-02-18 00:01:40 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -186,7 +186,15 @@ XWDRead(ras)
 	bcopy((char *) dep, (char *) &old_dep, sizeof(XWDFileHeader));
 
 	status = fread( (char *)dep, 1, sizeof(XWDFileHeader), ras->fp);
-	if (status != sizeof(XWDFileHeader)) return(RAS_EOF);
+	if (status == 0) {
+		(void) ESprintf(E_UNKNOWN, "\"%s\" is empty", ras->name);
+		return(RAS_ERROR);
+	}
+	else if (status != sizeof(XWDFileHeader)) {
+		(void) ESprintf(RAS_E_NOT_IN_CORRECT_FORMAT,
+			"XWDRead(\"%s\")", ras->name);
+		return(RAS_ERROR);
+	}
 
 	if (*(char *) &swaptest) {
 		_swaplong((char *) dep, sizeof(XWDFileHeader));
@@ -195,7 +203,10 @@ XWDRead(ras)
 	/* Check to see if the xwd file is the proper revision. */
 
 	if (dep->file_version != XWD_FILE_VERSION) {
-		(void) fprintf(stderr, "XWD file format version mismatch\n");
+		(void) ESprintf(RAS_E_NOT_IN_CORRECT_FORMAT,
+			"XWDRead(\"%s\")", ras->name);
+		(void) fprintf(stderr,
+			"Warning: XWD file format version mismatch\n");
 	}
 
 	if (dep->header_size < sizeof(XWDFileHeader)) {
@@ -245,9 +256,9 @@ XWDRead(ras)
 			return(RAS_ERROR);
 		}
 
-		ras->red = (unsigned char *) ras_calloc((unsigned) ras->ncolor, 1);
-		ras->green = (unsigned char *) ras_calloc((unsigned) ras->ncolor,1);
-		ras->blue = (unsigned char *) ras_calloc((unsigned) ras->ncolor, 1);
+		ras->red  =(unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
+		ras->green=(unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
+		ras->blue =(unsigned char *)ras_calloc((unsigned)ras->ncolor,1);
 	}
 	else {
 		if (dep->pixmap_width != old_dep.pixmap_width) {
@@ -272,7 +283,11 @@ XWDRead(ras)
 	}
 
 	status = fread(ras->text, 1, win_name_size, ras->fp);
-	if (status != win_name_size) return(RAS_EOF);
+	if (status != win_name_size) {
+		(void) ESprintf(RAS_E_PREMATURE_EOF,
+				"XWDRead(\"%s\")", ras->name);
+		return(RAS_ERROR);
+	}
 
 	/* Read in the color palette */
 
