@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.30 1997-04-09 17:32:01 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.31 1997-04-14 22:25:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -624,6 +624,7 @@ static NhlErrorTypes SetUpTrans
 	NhlIrregularTransObjLayer inew = (NhlIrregularTransObjLayer)new;
 	NhlIrregularTransObjLayer iold = (NhlIrregularTransObjLayer)old;
 	NhlIrregularTransObjLayerPart *irp = &inew->irtrans;
+	NhlIrregularTransObjLayerPart *oirp = &iold->irtrans;
 	char *error_lead;
 	float *tmp;
 	float tmpf;
@@ -645,14 +646,24 @@ static NhlErrorTypes SetUpTrans
 			irp->y_max_set = True;
 		if (_NhlArgIsSet(args,nargs,NhlNtrXCoordPoints) ||
 		    _NhlArgIsSet(args,nargs,NhlNtrXAxisType) ||
-		    irp->x_min_set || irp->x_max_set) {
+                    _NhlArgIsSet(args,nargs,NhlNtrXInterPoints) ||
+		    irp->x_min_set || irp->x_max_set ||
+                    irp->x_reverse != oirp->x_reverse ||
+                    irp->x_tension != oirp->x_tension ||
+                    irp->x_samples != oirp->x_samples) {
 			new_x_coords = True;
+                        call_spline_create = 1;
 		}
 		
 		if (_NhlArgIsSet(args,nargs,NhlNtrYCoordPoints) ||
 		    _NhlArgIsSet(args,nargs,NhlNtrYAxisType) ||
-		    irp->y_min_set || irp->y_max_set) {
+                    _NhlArgIsSet(args,nargs,NhlNtrYInterPoints) ||
+		    irp->y_min_set || irp->y_max_set ||
+                    irp->y_reverse != oirp->y_reverse ||
+                    irp->y_tension != oirp->y_tension ||
+                    irp->y_samples != oirp->y_samples) {
 			new_y_coords = True;
+                        call_spline_create = 1;
 		}
 	}
 	else {
@@ -821,7 +832,6 @@ static NhlErrorTypes SetUpTrans
 
 	if(c_or_s == SET){
 		if(new_x_coords) {
-			call_spline_create = 1;
 			if(iold->irtrans.x_coord_points != NULL) {
 				NhlFree(iold->irtrans.x_coord_points);
 			}
@@ -839,7 +849,6 @@ static NhlErrorTypes SetUpTrans
 			       (char*)tmp,sizeof(float) * irp->x_num_points);
 		}
 		if(new_y_coords) {
-			call_spline_create = 1;
 			if(iold->irtrans.y_coord_points != NULL) {
 				NhlFree(iold->irtrans.y_coord_points);
 			}
@@ -952,7 +961,6 @@ static NhlErrorTypes SetUpTrans
 		}
 		memcpy((char*)irp->x_inter_points,(char*)tmp,
 			sizeof(float)*irp->x_num_points);
-		call_spline_create = 1;
 	}
 	
 	if((c_or_s == CREATE && irp->y_inter_points != NULL) ||
@@ -971,13 +979,6 @@ static NhlErrorTypes SetUpTrans
 		}
 		memcpy((char*)irp->y_inter_points,(char*)tmp,
 			sizeof(float)*irp->y_num_points);
-		call_spline_create = 1;
-	}
-	if((c_or_s == SET)&&(irp->y_tension != iold->irtrans.y_tension)) {
-		call_spline_create = 1;
-	}
-	if((c_or_s == SET)&&(irp->x_tension !=iold->irtrans.x_tension)) {
-		call_spline_create = 1;
 	}
 
 	if(call_spline_create) {
@@ -997,14 +998,14 @@ static NhlErrorTypes SetUpTrans
 			irp->x_tension,irp->y_tension,
 			irp->x_samples,irp->y_samples,
 			&xstatus,&ystatus);	
+                if (xstatus != NhlBOTHTRANS || ystatus != NhlBOTHTRANS) {
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,
+                            "%s: spline coordinate approximation not possible",
+                                  error_lead);
+                        ret = NhlFATAL;
+                }
 	}
-        if (xstatus != NhlBOTHTRANS || ystatus != NhlBOTHTRANS) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,
-                       "%s: spline coordinate approximation not possible",
-                          error_lead);
-                ret = NhlFATAL;
-        }
-        else {
+        if (ret > NhlFATAL) {
                 _NhlEvalSplineCoordForward(&irp->thecoord,
                                            irp->x_min,
                                            irp->y_min,
