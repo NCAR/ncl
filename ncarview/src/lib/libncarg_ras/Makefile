@@ -7,18 +7,21 @@
 #
 #######################################################################
 
-SYSTEM_INCLUDE		= Sun4
+SYSTEM_INCLUDE		= Sun3
 
-PARFIL_INIT     = /u1/clyne/testlib/params3.1.3
-PARFIL_PERM     = /u1/clyne/testlib/params3.1.3
+VERSION         = 3.1.3
+PARFIL_INIT     = /tmp/clyne/lib/params
+PARFIL_PERM     = /tmp/clyne/lib/params
 
-BINDIR		= /u1/clyne/testbin
-LIBDIR		= /u1/clyne/testlib
-MANDIR		= /u1/clyne/testman
+BINDIR          = /tmp/clyne/bin
+LIBDIR          = /tmp/clyne/lib
+MANDIR          = /tmp/clyne/man
 MAN_SECTION     = l
 TMPDIR          = /tmp
-XAPPDIR		= /u1/clyne/testlib
-BITSDIR         = /usr/include/X11/bitmaps
+
+XLIBDIR         = /usr/lib
+XINCDIR         = /usr/include
+XAPPDIR         = /tmp/clyne/lib
 
 INCLUDEDIR      = $(NCARG)/include
 DBDIR           = $(LIBDIR)
@@ -33,16 +36,18 @@ CONFIGDIR       = $(NCARG)/config
 YMAKE           = $(CONFIGDIR)/ymake -I$(CONFIGDIR)
 
 MAKE            = make
-FLOAT_OPT       =
+FLOAT_OPT       = -fswitch
 OS              =
 ARCH            =
+XPATH           = -I$(XINCDIR) -L$(XLIBDIR)
+VDEFINE         = -DVERSION='"$(VERSION)"'
 CC              = cc
 CC_LD           = $(CC)
 CDEBUG          =
-COPT            = -g
+COPT            = -O
 CMISC           =
 CFLAGS          = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
-	$(FLOAT_OPT)
+	$(FLOATOPT) $(XPATH) $(VDEFINE)
 LD_CFLAGS       = $(CFLAGS)
 CPP             = /lib/cpp
 FCPP            = /lib/cpp
@@ -73,7 +78,6 @@ INSTALL_RM      = $(RM)
 INSTALL_BIN     = 0755
 INSTALL_MAN     = 0644
 INSTALL_APP     = 0644
-INSTALL_BIT     = 0644
 INSTALL_LIB     = 0644
 INSTALL_DB      = 0644
 
@@ -84,7 +88,9 @@ FSPLIT          = fsplit
 CALLCONV        = $(NCARG)/utils/callconv
 SHELL           = /bin/sh
 
-#	$Id: Makefile,v 1.7 1992-02-12 16:11:35 clyne Exp $
+GKS_BUFFER_SIZE = 0
+
+#	$Id: Makefile,v 1.8 1992-02-21 12:49:27 clyne Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.

@@ -1,5 +1,5 @@
 /*
- *	$Id: hdf.c,v 1.4 1992-02-12 11:24:44 don Exp $
+ *	$Id: hdf.c,v 1.5 1992-02-21 12:49:33 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -37,7 +37,6 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
-#include <malloc.h>
 #include "dfgr.h"
 #include "ncarg_ras.h"
 #include "options.h"

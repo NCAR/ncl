@@ -1,5 +1,5 @@
 /*
- *	$Id: resample.c,v 1.2 1992-02-12 11:43:53 don Exp $
+ *	$Id: resample.c,v 1.3 1992-02-21 12:49:35 clyne Exp $
  */
 #include	<stdio.h>
 #include	<string.h>
@@ -222,6 +222,7 @@ RasScaleBilinear(src, nx, ny, verbose)
 				(int) (i1 + fracx * (i2 - i1));
 	}}
 
-	(void) free(fx);
+	(void) free((char *) x1v);
+	(void) free((char *) fracxv);
 	return(dst);
 }

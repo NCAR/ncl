@@ -1,5 +1,5 @@
 /*
- *	$Id: dfi.h,v 1.2 1991-08-16 11:11:26 clyne Exp $
+ *	$Id: dfi.h,v 1.3 1992-02-21 12:49:30 clyne Exp $
  */
 /*****************************************************************************
 * 
@@ -23,14 +23,17 @@
 *****************************************************************************/
 
 #ifdef RCSID
-static char RcsId[] = "@(#)$Revision: 1.2 $"
+static char RcsId[] = "@(#)$Revision: 1.3 $"
 #endif
 /*
-$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libncarg_ras/Attic/dfi.h,v 1.2 1991-08-16 11:11:26 clyne Exp $
+$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libncarg_ras/Attic/dfi.h,v 1.3 1992-02-21 12:49:30 clyne Exp $
 $Log: dfi.h,v $
-Revision 1.2  1991-08-16 11:11:26  clyne
-*** empty log message ***
+Revision 1.3  1992-02-21 12:49:30  clyne
+ported to HP
 
+ * Revision 1.2  91/08/16  11:11:26  clyne
+ * *** empty log message ***
+ * 
  * Revision 1.1  91/06/18  15:12:10  clyne
  * Initial revision
  * 
@@ -137,6 +140,13 @@ Revision 1.2  1991-08-16 11:11:26  clyne
 #if	defined(sgi) && defined(mips) && ! defined(_KNOWN_)
 #ifndef	IRIS4
 #define	IRIS4
+#endif
+#define	_KNOWN_
+#endif
+
+#if	defined(cray)
+#ifndef	UNICOS
+#define	UNICOS
 #endif
 #define	_KNOWN_
 #endif
@@ -620,10 +630,16 @@ pascal functions
 #define DF_MAXFNLEN         256 /* maximum length of filename parameters */
 
 #ifndef MAC
-char *strncpy();
-char *strcpy();
-char *malloc();
-char *memcpy();
+extern	char *strncpy();
+#ifndef	RS6000
+extern	char *strcpy();
+#endif
+extern	char *malloc();
+#if	defined(MIPSEL) || defined(UNICOS) || defined(hpux) || defined(RS6000)
+extern	void *memcpy();
+#else
+extern	char *memcpy();
+#endif
 #endif /* !MAC */
 
 #endif /*DF_MAGICK*/
