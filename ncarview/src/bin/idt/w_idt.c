@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.14 1991-08-20 16:50:14 clyne Exp $
+ *	$Id: w_idt.c,v 1.15 1991-08-20 18:43:51 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -307,7 +307,7 @@ create_main_panel(parent, select_action)
 	XtSetArg(args[n], XtNtype, XawAsciiString); n++;
 	text = XtCreateManagedWidget("text",asciiTextWidgetClass,paned,args,n);
 
-	InitText(text, MAX_TEXT_LINES);
+	InitText(text, MAX(MAX_TEXT_LINES,message_height));
 	AppendText(header);
 	cfree(header);
 

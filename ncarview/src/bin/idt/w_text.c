@@ -1,5 +1,5 @@
 /*
- *	$Id: w_text.c,v 1.2 1991-01-09 10:53:52 clyne Exp $
+ *	$Id: w_text.c,v 1.3 1991-08-20 18:43:53 clyne Exp $
  */
 /*
  *	w_text.c
@@ -17,6 +17,7 @@
 #include <X11/Xaw/AsciiText.h>
 
 #include <ncarv.h>
+#include "idt.h";
 
 static	Widget	textWidget;
 static	int	maxLines;
@@ -160,6 +161,7 @@ void	AppendText(t)
 
 	extern	char	*strrchr();
 	extern	char	*strchr();
+	extern AppData App_Data;
 
 
 	buf = icMalloc((unsigned) (strlen(t) + 1));
@@ -184,13 +186,13 @@ void	AppendText(t)
 	 * default the text widget will display the first character in the
 	 * top left corner of the display
 	 */
-	if (numLines >= 5) {
+	if (numLines >= App_Data.message_height) {
 		n = 0;
 		XtSetArg(args[n], XtNstring, &text);	n++;
 		XtGetValues(textWidget, args, n);
 
 		s = strrchr(text, '\n');
-		for (i = 0; i < 4; i++) {
+		for (i = 0; i < App_Data.message_height - 1; i++) {
 			s--;
 			while(*s != '\n') s--;	
 		}

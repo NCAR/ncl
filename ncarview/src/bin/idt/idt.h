@@ -1,5 +1,5 @@
 /*
- *	$Id: idt.h,v 1.4 1991-06-18 14:50:15 clyne Exp $
+ *	$Id: idt.h,v 1.5 1991-08-20 18:43:47 clyne Exp $
  */
 #ifndef	_idt_
 #define	_idt_
@@ -41,5 +41,11 @@ typedef	struct	{
 #define	TR_PAL		"-pal"
 
 #define	MAX_TEXT_LINES	20
+
+
+#ifndef	MAX
+#define	MAX(A,B)	((A) > (B) ? (A) : (B))
+#endif	MAX
+
 
 #endif
