@@ -1,5 +1,5 @@
 C
-C $Id: ppex01.f,v 1.3 1994-07-08 16:28:45 stautler Exp $
+C $Id: ppex01.f,v 1.4 1995-04-03 20:33:18 kennison Exp $
 C
       PROGRAM TESTIT
 C
@@ -475,8 +475,8 @@ C
      +ned in magenta.',
      +                                                      .0148,0.,0.)
 C
-        CALL PLCHHQ (CFUX(.5),CFUY(.04),'The polygon is first drawn in w
-     +hite and then again in red using PPPLCL.',
+        CALL PLCHHQ (CFUX(.5),CFUY(.04), 'The polyline is first drawn in
+     + white and then again in red using PPPLCL.',
      +                                                      .0148,0.,0.)
 C
         FRCT=.25
