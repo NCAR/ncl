@@ -85,11 +85,13 @@ if(groot != NULL) {
 			if(step != NULL) {
 				off1 = _NclTranslate(step->node,fp);
 				step=step->next;
+				while(step != NULL) {
+					(void)_NclTranslate(step->node,fp);
+					step = step->next;
+				}	
+			} else {
+				off1 = _NclGetCurrentOffset();
 			}
-			while(step != NULL) {
-				(void)_NclTranslate(step->node,fp);
-				step = step->next;
-			}	
 		break;
 		}
 		case Ncl_RETURN:

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.h,v 1.17 1995-03-25 00:58:59 ethan Exp $
+ *      $Id: Machine.h,v 1.18 1996-05-13 18:07:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -224,12 +224,6 @@ void
 extern void _NclPushMachine(
 #if	NhlNeedProto
 void * /*the_mach_rec */
-#endif
-);
-
-extern int _NclGetCurrentOffset(
-#if	NhlNeedProto
-void
 #endif
 );
 
