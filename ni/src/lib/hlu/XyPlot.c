@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.41 1995-04-03 07:18:00 boote Exp $
+ *      $Id: XyPlot.c,v 1.42 1995-04-06 22:03:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -145,8 +145,8 @@ static NhlResource data_resources[] = {
 	{".not",".not",NhlTBoolean,sizeof(NhlBoolean),Oset(marker_size_set),
 		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
 	{NhlNxyMarkerSizeF,NhlCxyMarkerSizeF,NhlTFloat,
-		sizeof(float),Oset(marker_size),NhlTProcedure,ResUnset,
-		_NhlRES_DEFAULT,(NhlFreeFunc)NULL},
+		sizeof(float),Oset(marker_size),NhlTProcedure,
+		(NhlPointer)ResUnset,_NhlRES_DEFAULT,(NhlFreeFunc)NULL},
 	{NhlNxyMarkerSizes,NhlCxyMarkerSizes,NhlTFloatGenArray,
 		sizeof(NhlGenArray),Oset(marker_sizes),NhlTImmediate,
 		(NhlPointer)NULL,_NhlRES_DEFAULT,(NhlFreeFunc)NhlFreeGenArray},
@@ -191,15 +191,15 @@ static NhlResource data_resources[] = {
 	{".not",".not",NhlTBoolean,sizeof(NhlBoolean),Oset(dash_seg_len_set),
 		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
 	{NhlNxyLineDashSegLenF,NhlCxyLineDashSegLenF,NhlTFloat,
-		sizeof(float),Oset(dash_seg_len),NhlTProcedure,ResUnset,
-		_NhlRES_DEFAULT,NULL},
+		sizeof(float),Oset(dash_seg_len),NhlTProcedure,
+		(NhlPointer)ResUnset,_NhlRES_DEFAULT,NULL},
 
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
 		Oset(llabel_fheight_set),NhlTImmediate,(NhlPointer)True,
 		_NhlRES_NOACCESS,NULL},
 	{NhlNxyLineLabelFontHeightF,NhlCxyLineLabelFontHeightF,NhlTFloat,
-		sizeof(float),Oset(llabel_fheight),NhlTProcedure,ResUnset,
-		_NhlRES_DEFAULT,NULL},
+		sizeof(float),Oset(llabel_fheight),NhlTProcedure,
+		(NhlPointer)ResUnset,_NhlRES_DEFAULT,NULL},
 
 /* End-documented-resources */
 
