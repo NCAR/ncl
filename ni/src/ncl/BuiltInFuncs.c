@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.144 2002-07-01 19:35:42 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.145 2002-07-01 21:42:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -12025,7 +12025,7 @@ NhlErrorTypes _NclICreateFile(void)
 		varids[i]= ncvardef(cdfid,NrmQuarkToString(*(string*)tmp_md->multidval.val),the_type,dnames_md->multidval.totalelements,ids);
 		nclattlist = tmp_att->att.att_list;
 		while(nclattlist != NULL){ 
-			if((nclattlist->quark != NrmStringToQuark("type"))&&(nclattlist->quark!=NrmStringToQuark("dims"))&&(nclattlist->quark != NrmStringToQUark("set_fillvalue"))){
+			if((nclattlist->quark != NrmStringToQuark("type"))&&(nclattlist->quark!=NrmStringToQuark("dims"))&&(nclattlist->quark != NrmStringToQuark("set_fillvalue"))){
 				if(nclattlist->attvalue->multidval.data_type != NCL_string) {		
 					the_type = _MapType(nclattlist->attvalue->multidval.data_type);
 					ncattput(cdfid,varids[i],nclattlist->attname,tmp_type,nclattlist->attvalue->multidval.totalelements,nclattlist->attvalue->multidval.val);
