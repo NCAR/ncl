@@ -129,7 +129,7 @@ tdlbla, tdlbls, tdline, tdlnpa, tdmtri, tdotri, tdpack, tdpack_params,
 tdpara, tdplch, tdprpa, tdprpi, tdprpt, tdsetr, tdsort, tdstri, tdstrs,
 tdez3d
 .SH COPYRIGHT
-Copyright (C) 1987-2003
+Copyright (C) 1987-2005
 .br
 University Corporation for Atmospheric Research
 .br

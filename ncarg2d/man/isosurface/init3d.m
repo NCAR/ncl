@@ -126,7 +126,7 @@ isosurface, isosurface_params, ezisos,
 isgeti, isgetr, isseti, issetr, pwrzi, 
 ncarg_cbind
 .SH COPYRIGHT
-Copyright (C) 1987-2003
+Copyright (C) 1987-2005
 .br
 University Corporation for Atmospheric Research
 .br

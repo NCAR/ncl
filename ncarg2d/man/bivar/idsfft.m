@@ -152,7 +152,7 @@ the capability of doing linear interpolation and a different kind
 of triangulation, put in a parameter access interface, and wrote a
 routine to allow the triangulation to be plotted.
 .SH COPYRIGHT
-Copyright (C) 1987-2003
+Copyright (C) 1987-2005
 .br
 University Corporation for Atmospheric Research
 .br

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gactm.m,v 1.11 2003-05-25 17:16:50 haley Exp $
+.\"	$Id: gactm.m,v 1.12 2005-01-04 15:42:04 haley Exp $
 .\"
 .TH GACTM 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -101,7 +101,7 @@ gevtm, gclsg, gcrsg, gcsgwk, gdsg, gqopsg, gqsgus, gssgt., gaccum_tran_matrix
 Hardcopy: 
 "User's Guide for NCAR GKS-0A Graphics"
 .SH COPYRIGHT
-Copyright (C) 1987-2003
+Copyright (C) 1987-2005
 .br
 University Corporation for Atmospheric Research
 .br

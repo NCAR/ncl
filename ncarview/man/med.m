@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: med.m,v 1.23 2003-05-25 17:20:15 haley Exp $
+.\"	$Id: med.m,v 1.24 2005-01-04 15:47:26 haley Exp $
 .\"
 .\" @(#)med.l 1.0 90/02/15 NCAR; from UCB 4.3 and S5R4
 .tr ##
@@ -487,7 +487,7 @@ which is the product of the
 .B merge
 command may appear differently than expected.
 .SH COPYRIGHT
-Copyright (C) 1987-2003
+Copyright (C) 1987-2005
 .br
 University Corporation for Atmospheric Research
 .br
