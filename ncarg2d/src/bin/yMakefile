@@ -1,9 +1,9 @@
 #
-#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:34:03 ncargd Exp $
+#	$Id: yMakefile,v 1.2 1992-10-05 17:07:02 ncargd Exp $
 #
 NCARG		= ../../..
 
-SUBDIRS = scripts bnchmk cgmtrans impltest plt ncargsrcx findg psfltrs \
+SUBDIRS = scripts bnchmk cgmtrans impltest ncargsrcx findg psfltrs \
 	  pre2ncgm
 
 MakeSubdirs($(SUBDIRS))
