@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.5 1994-01-27 21:21:46 boote Exp $
+ *      $Id: Converters.c,v 1.6 1994-01-29 00:29:27 boote Exp $
  */
 /************************************************************************
 *									*
@@ -415,6 +415,73 @@ _NhlConvertersInitialize
 			{NhlSTRENUM,	False,	"0"}
 			};
 
+	NhlConvertArg	FontEnumList[] = {
+			{NhlSTRENUM,	0,	"0"},
+			{NhlSTRENUM,	0,	"pwritx"},
+			{NhlSTRENUM,	1,	"1"},
+			{NhlSTRENUM,	1,	"default"},
+			{NhlSTRENUM,	2,	"2"},
+			{NhlSTRENUM,	2,	"cartographic_roman"},
+			{NhlSTRENUM,	3,	"3"},
+			{NhlSTRENUM,	3,	"cartographic_greek"},
+			{NhlSTRENUM,	4,	"4"},
+			{NhlSTRENUM,	4,	"simplex_roman"},
+			{NhlSTRENUM,	5,	"5"},
+			{NhlSTRENUM,	5,	"simplex_greek"},
+			{NhlSTRENUM,	6,	"6"},
+			{NhlSTRENUM,	6,	"simplex_script"},
+			{NhlSTRENUM,	7,	"7"},
+			{NhlSTRENUM,	7,	"complex_roman"},
+			{NhlSTRENUM,	8,	"8"},
+			{NhlSTRENUM,	8,	"complex_greek"},
+			{NhlSTRENUM,	9,	"9"},
+			{NhlSTRENUM,	9,	"complex_script"},
+			{NhlSTRENUM,	10,	"10"},
+			{NhlSTRENUM,	10,	"complex_italic"},
+			{NhlSTRENUM,	11,	"11"},
+			{NhlSTRENUM,	11,	"complex_cyrillic"},
+			{NhlSTRENUM,	12,	"12"},
+			{NhlSTRENUM,	12,	"duplex_roman"},
+			{NhlSTRENUM,	13,	"13"},
+			{NhlSTRENUM,	13,	"triplex_roman"},
+			{NhlSTRENUM,	14,	"14"},
+			{NhlSTRENUM,	14,	"triplex_italic"},
+			{NhlSTRENUM,	15,	"15"},
+			{NhlSTRENUM,	15,	"gothic_german"},
+			{NhlSTRENUM,	16,	"16"},
+			{NhlSTRENUM,	16,	"gothic_english"},
+			{NhlSTRENUM,	17,	"17"},
+			{NhlSTRENUM,	17,	"gothic_italian"},
+			{NhlSTRENUM,	18,	"18"},
+			{NhlSTRENUM,	18,	"math_symbols"},
+			{NhlSTRENUM,	19,	"19"},
+			{NhlSTRENUM,	19,	"symbol_set1"},
+			{NhlSTRENUM,	20,	"20"},
+			{NhlSTRENUM,	20,	"symbol_set2"},
+			{NhlSTRENUM,	21,	"21"},
+			{NhlSTRENUM,	21,	"helvetica"},
+			{NhlSTRENUM,	22,	"22"},
+			{NhlSTRENUM,	22,	"helvetica-bold"},
+			{NhlSTRENUM,	25,	"25"},
+			{NhlSTRENUM,	25,	"times-roman"},
+			{NhlSTRENUM,	26,	"26"},
+			{NhlSTRENUM,	26,	"times-bold"},
+			{NhlSTRENUM,	29,	"29"},
+			{NhlSTRENUM,	29,	"courier"},
+			{NhlSTRENUM,	30,	"30"},
+			{NhlSTRENUM,	30,	"courier-bold"},
+			{NhlSTRENUM,	33,	"33"},
+			{NhlSTRENUM,	33,	"greek"},
+			{NhlSTRENUM,	34,	"34"},
+			{NhlSTRENUM,	34,	"math-symbols"},
+			{NhlSTRENUM,	35,	"35"},
+			{NhlSTRENUM,	35,	"text-symbols"},
+			{NhlSTRENUM,	36,	"36"},
+			{NhlSTRENUM,	36,	"weather1"},
+			{NhlSTRENUM,	37,	"37"},
+			{NhlSTRENUM,	37,	"weather2"}
+			};
+
 	(void)NhlRegisterConverter(NhlTString,NhlTFloat,NhlCvtStringToFloat,
 							NULL,0,False,NULL);
 	(void)NhlRegisterConverter(NhlTString,NhlTInteger,NhlCvtStringToInteger,
@@ -423,5 +490,7 @@ _NhlConvertersInitialize
 			BoolEnumList,NhlNumber(BoolEnumList),False,NULL);
 	(void)NhlRegisterConverter(NhlTString,NhlTCharacter,NhlCvtStringToChar,
 							NULL,0,False,NULL);
+	(void)NhlRegisterConverter(NhlTString,NhlTFont,NhlCvtStringToEnum,
+			FontEnumList,NhlNumber(FontEnumList),False,NULL);
 	return;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.3 1994-01-27 21:24:57 boote Exp $
+ *      $Id: MultiText.c,v 1.4 1994-01-29 00:29:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -310,16 +310,16 @@ MultiTextInitialize
 #if	__STDC__
 (
 	NhlLayerClass	lc,	/* class	*/
-	NhlLayer		req,	/* requested	*/
-	NhlLayer		new,	/* new		*/
+	NhlLayer	req,	/* requested	*/
+	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
 	int		nargs	/* nargs	*/
 )
 #else
 (lc,req,new,args,nargs)
 	NhlLayerClass	lc;	/* class	*/
-	NhlLayer		req;	/* requested	*/
-	NhlLayer		new;	/* new		*/
+	NhlLayer	req;	/* requested	*/
+	NhlLayer	new;	/* new		*/
 	_NhlArgList	args;	/* args		*/
 	int		nargs;	/* nargs	*/
 #endif

@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.5 1994-01-27 21:22:57 boote Exp $
+ *      $Id: Error.c,v 1.6 1994-01-29 00:29:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -54,7 +54,7 @@ static NhlResource resources[] = {
 	{NhlNerrBuffer,NhlCerrBuffer,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(buffer_errors),NhlTImmediate,False},
 	{NhlNerrLevel,NhlCerrLevel,NhlTErrorTypes,sizeof(NhlErrorTypes),
-		Oset(error_level),NhlTString,(NhlPointer)"NhlWARNING"},
+		Oset(error_level),NhlTImmediate,(NhlPointer)NhlWARNING},
 	{NhlNerrPrint,NhlCerrPrint,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(print_errors),NhlTImmediate,(NhlPointer)True},
 	{NhlNerrFileName,NhlCerrFileName,NhlTString,sizeof(NhlString),

@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.4 1994-01-27 21:25:55 boote Exp $
+ *      $Id: TextItem.c,v 1.5 1994-01-29 00:29:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -679,7 +679,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			} else {
 				tnew->text.cntr = 0.0;
 			}
-			c_plchhq(tnew->text.real_x_pos,tnew->text.real_y_pos,
+			c_plchhq(0.5,0.5,
 				tnew->text.real_string,tnew->text.real_size,
 				360.0,tnew->text.cntr);
 			c_pcgetr("DL",&tmpdl);
@@ -724,7 +724,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			} else {
 				tnew->text.cntr = 0.0;
 			}
-			c_plchhq(tnew->text.real_x_pos,tnew->text.real_y_pos,
+			c_plchhq(0.5,0.5,
 				tnew->text.real_string,tnew->text.real_size,
 				360.0,tnew->text.cntr);
 			c_pcgetr("DL",&tmpdl);
@@ -808,7 +808,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			} else {
 				tnew->text.cntr = -1.0;
 			}
-			c_plchhq(tnew->text.real_x_pos,tnew->text.real_y_pos,
+			c_plchhq(0.5,0.5,
 				tnew->text.real_string,tnew->text.real_size,
 				360.0,tnew->text.cntr);
 			c_pcgetr("DL",&tmpdl);
@@ -988,4 +988,3 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 */
 	return(ret);
 }
-

@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.3 1994-01-27 21:22:21 boote Exp $
+ *      $Id: Create.c,v 1.4 1994-01-29 00:29:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -335,7 +335,9 @@ _NhlCreate
 		return(NhlFATAL);
 	}
 
+#ifdef	NoMore
 	(void)memset((char*)layer,(int)~(0x01),(int)lc->base_class.layer_size);
+#endif
 /*
  * Set things that are identical in Obj's and NhlLayer's.
  */
