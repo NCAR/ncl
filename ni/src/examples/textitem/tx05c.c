@@ -1,5 +1,5 @@
 /*
- *	$Id: tx05c.c,v 1.1 1995-03-03 20:01:08 fred Exp $
+ *	$Id: tx05c.c,v 1.2 1995-03-20 21:29:01 fred Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -15,9 +15,9 @@
  *                      National Center for Atmospheric Research
  *                      PO 3000, Boulder, Colorado
  *
- *      Date:           Fri Mar  3 12:47:43 MST 199Fri Mar  3 12:47:43 MST 1995
+ *      Date:           Fri Mar  3 12:47:43 MST 1995
  *
- *      Description:    Demonstrates the TextItem Object with text having
+ *      Description:    Demonstrates the TextItem object with text having
  *                      various heights and at various angles.
  */
 #include <stdio.h>

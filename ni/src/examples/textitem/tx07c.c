@@ -1,5 +1,5 @@
 /*
- *	$Id: tx07c.c,v 1.1 1995-03-03 20:01:11 fred Exp $
+ *	$Id: tx07c.c,v 1.2 1995-03-20 21:29:06 fred Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -131,7 +131,7 @@ main()
     NhlRLSetInteger(rlist,NhlNtxFontColor, 3);
     NhlRLSetInteger(rlist,NhlNtxFont, 25);
     NhlRLSetFloat(rlist,NhlNtxPosYF,  0.93);
-    NhlRLSetFloat(rlist,NhlNtxFontHeightF, .05);
+    NhlRLSetFloat(rlist,NhlNtxFontHeightF, .045);
     NhlRLSetString(rlist,NhlNtxString,"Text Spacings and Aspect Ratios");
     NhlSetValues(labid,rlist);
     NhlDraw(labid);
