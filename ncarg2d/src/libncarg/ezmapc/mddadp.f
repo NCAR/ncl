@@ -1,6 +1,6 @@
 C
-C $Id: mpgdsp.f,v 1.3 2000-08-22 15:04:12 haley Exp $
-C                                                                      
+C $Id: mddadp.f,v 1.1 2001-08-16 23:12:44 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -20,30 +20,38 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      REAL FUNCTION MPGDSP (ALAT,ALON,BLAT,BLON)
+      DOUBLE PRECISION FUNCTION MDDADP (GEOG)
 C
-        REAL ALAT,ALON,CALT,SALT,CALN,SALN
-        REAL BLAT,BLON,CBLT,SBLT,CBLN,SBLN
+        DOUBLE PRECISION GEOG(2)
 C
-        REAL XCOA,YCOA,ZCOA
-        REAL XCOB,YCOB,ZCOB
+        DOUBLE PRECISION DTOR,RTOD
 C
-        REAL DIST
+        DOUBLE PRECISION ALAT,ALON,CALT,SALT,CALN,SALN
+        DOUBLE PRECISION BLAT,BLON,CBLT,SBLT,CBLN,SBLN
 C
-        REAL DTOR,RTOD
+        DOUBLE PRECISION XCOA,YCOA,ZCOA
+        DOUBLE PRECISION XCOB,YCOB,ZCOB
 C
-        DATA DTOR / .017453292519943E0 /
-        DATA RTOD / 57.2957795130823E0 /
+        DOUBLE PRECISION DIST
 C
-        CALT=COS(DTOR*ALAT)
-        SALT=SIN(DTOR*ALAT)
-        CALN=COS(DTOR*ALON)
-        SALN=SIN(DTOR*ALON)
+        DATA DTOR /  .017453292519943D0 /
+        DATA RTOD /  57.2957795130823D0 /
 C
-        CBLT=COS(DTOR*BLAT)
-        SBLT=SIN(DTOR*BLAT)
-        CBLN=COS(DTOR*BLON)
-        SBLN=SIN(DTOR*BLON)
+        DATA ALAT /  1.11701072128000D0 /
+        DATA ALON / -2.65290046304000D0 /
+C
+        BLAT=GEOG(2)
+        BLON=GEOG(1)
+
+        CALT=COS(ALAT)
+        SALT=SIN(ALAT)
+        CALN=COS(ALON)
+        SALN=SIN(ALON)
+C
+        CBLT=COS(BLAT)
+        SBLT=SIN(BLAT)
+        CBLN=COS(BLON)
+        SBLN=SIN(BLON)
 C
         XCOA=CALT*CALN
         YCOA=CALT*SALN
@@ -55,7 +63,7 @@ C
 C
         DIST=SQRT((XCOA-XCOB)**2+(YCOA-YCOB)**2+(ZCOA-ZCOB)**2)
 C
-        MPGDSP=2.E0*RTOD*ASIN(DIST/2.E0)
+        MDDADP=2.D0*RTOD*ASIN(DIST/2.D0)
 C
         RETURN
 C

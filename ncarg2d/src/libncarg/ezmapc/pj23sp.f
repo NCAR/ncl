@@ -1,6 +1,6 @@
 C
-C $Id: pj23sp.f,v 1.3 2000-08-22 15:04:25 haley Exp $
-C                                                                      
+C $Id: pj23sp.f,v 1.4 2001-08-16 23:13:01 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -48,7 +48,7 @@ C
          GEOG(1) = COORD(1)
          GEOG(2) = COORD(2)
          IERR = 0
-         IF (MPDASP(GEOG).GT.30.E0) THEN
+         IF (MDDASP(GEOG).GT.30.E0) THEN
            IF (IPEMSG.EQ.0) WRITE (IPELUN,2020)
  2020      FORMAT (/' ERROR PJ23SP'/
      .              ' POINT IS TOO FAR FROM CENTER OF PROJECTION')

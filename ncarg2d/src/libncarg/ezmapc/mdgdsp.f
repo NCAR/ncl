@@ -1,6 +1,6 @@
 C
-C $Id: mpgddp.f,v 1.3 2000-08-22 15:04:12 haley Exp $
-C                                                                      
+C $Id: mdgdsp.f,v 1.1 2001-08-16 23:12:44 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -20,20 +20,20 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      DOUBLE PRECISION FUNCTION MPGDDP (ALAT,ALON,BLAT,BLON)
+      REAL FUNCTION MDGDSP (ALAT,ALON,BLAT,BLON)
 C
-        DOUBLE PRECISION ALAT,ALON,CALT,SALT,CALN,SALN
-        DOUBLE PRECISION BLAT,BLON,CBLT,SBLT,CBLN,SBLN
+        REAL ALAT,ALON,CALT,SALT,CALN,SALN
+        REAL BLAT,BLON,CBLT,SBLT,CBLN,SBLN
 C
-        DOUBLE PRECISION XCOA,YCOA,ZCOA
-        DOUBLE PRECISION XCOB,YCOB,ZCOB
+        REAL XCOA,YCOA,ZCOA
+        REAL XCOB,YCOB,ZCOB
 C
-        DOUBLE PRECISION DIST
+        REAL DIST
 C
-        DOUBLE PRECISION DTOR,RTOD
+        REAL DTOR,RTOD
 C
-        DATA DTOR / .017453292519943D0 /
-        DATA RTOD / 57.2957795130823D0 /
+        DATA DTOR / .017453292519943E0 /
+        DATA RTOD / 57.2957795130823E0 /
 C
         CALT=COS(DTOR*ALAT)
         SALT=SIN(DTOR*ALAT)
@@ -55,7 +55,7 @@ C
 C
         DIST=SQRT((XCOA-XCOB)**2+(YCOA-YCOB)**2+(ZCOA-ZCOB)**2)
 C
-        MPGDDP=2.D0*RTOD*ASIN(DIST/2.D0)
+        MDGDSP=2.E0*RTOD*ASIN(DIST/2.E0)
 C
         RETURN
 C

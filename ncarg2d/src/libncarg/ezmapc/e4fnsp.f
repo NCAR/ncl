@@ -1,6 +1,6 @@
 C
-C $Id: e4fnsp.f,v 1.3 2000-08-22 15:04:11 haley Exp $
-C                                                                      
+C $Id: e4fnsp.f,v 1.4 2001-08-16 23:12:43 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved

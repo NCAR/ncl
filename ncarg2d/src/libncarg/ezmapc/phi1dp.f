@@ -1,6 +1,6 @@
 C
-C $Id: phi1dp.f,v 1.3 2000-08-22 15:04:15 haley Exp $
-C                                                                      
+C $Id: phi1dp.f,v 1.4 2001-08-16 23:12:51 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved

@@ -1,6 +1,6 @@
 C
-C $Id: sphddp.f,v 1.4 2000-08-22 15:04:27 haley Exp $
-C                                                                      
+C $Id: sphddp.f,v 1.5 2001-08-16 23:13:04 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -45,7 +45,7 @@ C If ISPH is negative, user-specified values of these must be supplied;
 C otherwise, the values are returned.
 C
       IMPLICIT DOUBLE PRECISION (A-Z)
-      INTEGER ISPH,JSPH
+      INTEGER ISPH
       DIMENSION PARM(15),AXIS(20),BXIS(20)
 C
       COMMON /ELLPDP/ AZ,EZ,ESZ,E0Z,E1Z,E2Z,E3Z,E4Z

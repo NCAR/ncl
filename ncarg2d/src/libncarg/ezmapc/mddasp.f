@@ -1,6 +1,6 @@
 C
-C $Id: mpdasp.f,v 1.3 2000-08-22 15:04:12 haley Exp $
-C                                                                      
+C $Id: mddasp.f,v 1.1 2001-08-16 23:12:44 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -20,7 +20,7 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      REAL FUNCTION MPDASP (GEOG)
+      REAL FUNCTION MDDASP (GEOG)
 C
         REAL GEOG(2)
 C
@@ -63,7 +63,7 @@ C
 C
         DIST=SQRT((XCOA-XCOB)**2+(YCOA-YCOB)**2+(ZCOA-ZCOB)**2)
 C
-        MPDASP=2.E0*RTOD*ASIN(DIST/2.E0)
+        MDDASP=2.E0*RTOD*ASIN(DIST/2.E0)
 C
         RETURN
 C

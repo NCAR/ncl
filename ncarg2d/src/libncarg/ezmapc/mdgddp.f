@@ -1,6 +1,6 @@
 C
-C $Id: mpdadp.f,v 1.3 2000-08-22 15:04:12 haley Exp $
-C                                                                      
+C $Id: mdgddp.f,v 1.1 2001-08-16 23:12:44 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -20,11 +20,7 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      DOUBLE PRECISION FUNCTION MPDADP (GEOG)
-C
-        DOUBLE PRECISION GEOG(2)
-C
-        DOUBLE PRECISION DTOR,RTOD
+      DOUBLE PRECISION FUNCTION MDGDDP (ALAT,ALON,BLAT,BLON)
 C
         DOUBLE PRECISION ALAT,ALON,CALT,SALT,CALN,SALN
         DOUBLE PRECISION BLAT,BLON,CBLT,SBLT,CBLN,SBLN
@@ -34,24 +30,20 @@ C
 C
         DOUBLE PRECISION DIST
 C
-        DATA DTOR /  .017453292519943D0 /
-        DATA RTOD /  57.2957795130823D0 /
+        DOUBLE PRECISION DTOR,RTOD
 C
-        DATA ALAT /  1.11701072128000D0 /
-        DATA ALON / -2.65290046304000D0 /
+        DATA DTOR / .017453292519943D0 /
+        DATA RTOD / 57.2957795130823D0 /
 C
-        BLAT=GEOG(2)
-        BLON=GEOG(1)
-
-        CALT=COS(ALAT)
-        SALT=SIN(ALAT)
-        CALN=COS(ALON)
-        SALN=SIN(ALON)
+        CALT=COS(DTOR*ALAT)
+        SALT=SIN(DTOR*ALAT)
+        CALN=COS(DTOR*ALON)
+        SALN=SIN(DTOR*ALON)
 C
-        CBLT=COS(BLAT)
-        SBLT=SIN(BLAT)
-        CBLN=COS(BLON)
-        SBLN=SIN(BLON)
+        CBLT=COS(DTOR*BLAT)
+        SBLT=SIN(DTOR*BLAT)
+        CBLN=COS(DTOR*BLON)
+        SBLN=SIN(DTOR*BLON)
 C
         XCOA=CALT*CALN
         YCOA=CALT*SALN
@@ -63,7 +55,7 @@ C
 C
         DIST=SQRT((XCOA-XCOB)**2+(YCOA-YCOB)**2+(ZCOA-ZCOB)**2)
 C
-        MPDADP=2.D0*RTOD*ASIN(DIST/2.D0)
+        MDGDDP=2.D0*RTOD*ASIN(DIST/2.D0)
 C
         RETURN
 C

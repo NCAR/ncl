@@ -1,6 +1,6 @@
 C
-C $Id: tsfnsp.f,v 1.3 2000-08-22 15:04:27 haley Exp $
-C                                                                      
+C $Id: tsfnsp.f,v 1.4 2001-08-16 23:13:04 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved

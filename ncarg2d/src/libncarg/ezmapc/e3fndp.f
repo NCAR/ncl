@@ -1,6 +1,6 @@
 C
-C $Id: e3fndp.f,v 1.3 2000-08-22 15:04:10 haley Exp $
-C                                                                      
+C $Id: e3fndp.f,v 1.4 2001-08-16 23:12:42 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved

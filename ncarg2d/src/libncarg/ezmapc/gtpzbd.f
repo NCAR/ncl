@@ -1,6 +1,6 @@
 C
-C $Id: gtpzbd.f,v 1.6 2000-08-22 15:04:11 haley Exp $
-C                                                                      
+C $Id: gtpzbd.f,v 1.7 2001-08-16 23:12:43 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -37,9 +37,9 @@ C
           INTEGER ID27(134),ID83(134)
         SAVE   /STPLIR/
 C
-        COMMON /USGSC1/ UTPA(15),UUMN,UUMX,UVMN,UVMX,IPRF
-          DOUBLE PRECISION UTPA,UUMN,UUMX,UVMN,UVMX
-          INTEGER IPRF
+        COMMON /USGSC1/  UTPA(15),UUMN,UUMX,UVMN,UVMX,IPRF
+        DOUBLE PRECISION UTPA,UUMN,UUMX,UVMN,UVMX
+        INTEGER IPRF
         SAVE   /USGSC1/
 C
         DATA IPEMSG /    1    /

@@ -1,16 +1,17 @@
 #
-#       $Id: yMakefile,v 1.2 1999-04-19 22:10:44 kennison Exp $
+#       $Id: yMakefile,v 1.3 2001-08-16 23:13:05 kennison Exp $
 #
 MYNAME  = ezmapc
 
-GENERIC_SRCS =   adjldp.f adjlsp.f asindp.f asinsp.f dmspdp.f dmspsp.f \
-	e0fndp.f e0fnsp.f e1fndp.f e1fnsp.f e2fndp.f e2fnsp.f e3fndp.f \
-	e3fnsp.f e4fndp.f e4fnsp.f gtpzbd.f mlfndp.f mlfnsp.f mpdadp.f \
-	mpdasp.f mpgddp.f mpgdsp.f mputfd.f mputfs.f mputid.f mputin.f \
-	mputis.f msfndp.f msfnsp.f pakcdp.f pakcsp.f pakddp.f pakdsp.f \
-	pakrdp.f pakrsp.f paksdp.f pakssp.f phi1dp.f phi1sp.f phi2dp.f \
-	phi2sp.f phi3dp.f phi3sp.f phi4dp.f phi4sp.f pj01dp.f pj01sp.f \
-	pj02dp.f pj02sp.f pj03dp.f pj03sp.f pj04dp.f pj04sp.f pj05dp.f \
+GENERIC_SRCS =
+	adjldp.f adjlsp.f asindp.f asinsp.f dmspdp.f dmspsp.f e0fndp.f \
+	e0fnsp.f e1fndp.f e1fnsp.f e2fndp.f e2fnsp.f e3fndp.f e3fnsp.f \
+	e4fndp.f e4fnsp.f gtpzbd.f mddadp.f mddasp.f mdgddp.f mdgdsp.f \
+	mdutfd.f mdutfs.f mdutid.f mdutin.f mdutis.f mlfndp.f mlfnsp.f \
+	mputfd.f mputfs.f mputid.f mputin.f mputis.f msfndp.f msfnsp.f \
+	pakcdp.f pakcsp.f pakddp.f pakdsp.f pakrdp.f pakrsp.f paksdp.f \
+	pakssp.f phi1dp.f phi1sp.f phi2dp.f phi2sp.f phi3dp.f phi3sp.f \
+	phi4dp.f phi4sp.f pj03dp.f pj03sp.f pj04dp.f pj04sp.f pj05dp.f \
 	pj05sp.f pj06dp.f pj06sp.f pj07dp.f pj07sp.f pj08dp.f pj08sp.f \
 	pj09dp.f pj09sp.f pj10dp.f pj10sp.f pj11dp.f pj11sp.f pj12dp.f \
 	pj12sp.f pj13dp.f pj13sp.f pj14dp.f pj14sp.f pj15dp.f pj15sp.f \
@@ -20,14 +21,15 @@ GENERIC_SRCS =   adjldp.f adjlsp.f asindp.f asinsp.f dmspdp.f dmspsp.f \
 	raddsp.f seradp.f serasp.f sphddp.f sphdsp.f tsfndp.f tsfnsp.f \
 	untfdp.f untfsp.f
 
-GENERIC_OBJS =   adjldp.o adjlsp.o asindp.o asinsp.o dmspdp.o dmspsp.o \
-	e0fndp.o e0fnsp.o e1fndp.o e1fnsp.o e2fndp.o e2fnsp.o e3fndp.o \
-	e3fnsp.o e4fndp.o e4fnsp.o gtpzbd.o mlfndp.o mlfnsp.o mpdadp.o \
-	mpdasp.o mpgddp.o mpgdsp.o mputfd.o mputfs.o mputid.o mputin.o \
-	mputis.o msfndp.o msfnsp.o pakcdp.o pakcsp.o pakddp.o pakdsp.o \
-	pakrdp.o pakrsp.o paksdp.o pakssp.o phi1dp.o phi1sp.o phi2dp.o \
-	phi2sp.o phi3dp.o phi3sp.o phi4dp.o phi4sp.o pj01dp.o pj01sp.o \
-	pj02dp.o pj02sp.o pj03dp.o pj03sp.o pj04dp.o pj04sp.o pj05dp.o \
+GENERIC_OBJS =
+	adjldp.o adjlsp.o asindp.o asinsp.o dmspdp.o dmspsp.o e0fndp.o \
+	e0fnsp.o e1fndp.o e1fnsp.o e2fndp.o e2fnsp.o e3fndp.o e3fnsp.o \
+	e4fndp.o e4fnsp.o gtpzbd.o mddadp.o mddasp.o mdgddp.o mdgdsp.o \
+	mdutfd.o mdutfs.o mdutid.o mdutin.o mdutis.o mlfndp.o mlfnsp.o \
+	mputfd.o mputfs.o mputid.o mputin.o mputis.o msfndp.o msfnsp.o \
+	pakcdp.o pakcsp.o pakddp.o pakdsp.o pakrdp.o pakrsp.o paksdp.o \
+	pakssp.o phi1dp.o phi1sp.o phi2dp.o phi2sp.o phi3dp.o phi3sp.o \
+	phi4dp.o phi4sp.o pj03dp.o pj03sp.o pj04dp.o pj04sp.o pj05dp.o \
 	pj05sp.o pj06dp.o pj06sp.o pj07dp.o pj07sp.o pj08dp.o pj08sp.o \
 	pj09dp.o pj09sp.o pj10dp.o pj10sp.o pj11dp.o pj11sp.o pj12dp.o \
 	pj12sp.o pj13dp.o pj13sp.o pj14dp.o pj14sp.o pj15dp.o pj15sp.o \

@@ -1,6 +1,6 @@
 C
-C $Id: pjinsp.f,v 1.4 2000-08-22 15:04:25 haley Exp $
-C                                                                      
+C $Id: pjinsp.f,v 1.5 2001-08-16 23:13:02 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -27,8 +27,8 @@ C
       INTEGER ITEMP
       INTEGER LAND, PATH, LIMIT, IND02, IND06, IND09, ISYS, KEEPZN
       INTEGER I,ZONE,ISPH,DEGS(5),MINS(5)
-      INTEGER ID, IND, ITEM, MODE, N
-      INTEGER LUNIT, NAD27(134), NAD83(134)
+      INTEGER ID, IND, MODE, N
+      INTEGER NAD27(134), NAD83(134)
 C
       COMMON /STPLCH/ NM27,NM83
         CHARACTER*32 NM27(134),NM83(134)
@@ -83,9 +83,9 @@ C
       COMMON /PC23SP/ A23,LON023,X023,Y023,ACOEF,BCOEF,EC,LAT023,
      .                CCHIO,SCHIO,N
 C
-      COMMON /USGSC1/ UTPA(15),UUMN,UUMX,UVMN,UVMX,IPRF
-        DOUBLE PRECISION UTPA,UUMN,UUMX,UVMN,UVMX
-        INTEGER IPRF
+      COMMON /USGSC1/  UTPA(15),UUMN,UUMX,UVMN,UVMX,IPRF
+      DOUBLE PRECISION UTPA,UUMN,UUMX,UVMN,UVMX
+      INTEGER IPRF
       SAVE   /USGSC1/
 C
       DATA PI /3.14159265358979323846E0/
