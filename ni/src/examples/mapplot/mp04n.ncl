@@ -26,11 +26,18 @@ begin
 ;
     FRAME_COUNT=36
 
-    anno_names = (/"Los Angeles","Seattle","Toronto","New York","Miami","Mexico City","London","Jakarta","Moscow","New Delhi","Rio de Janeiro","Cairo","Buenos Aires","Beijing","Tokyo","Lagos","Nairobi","Sydney","Bogota","Lima","Cape Town","Calcutta","Shanghai","Bombay","Denver"/)
+    anno_names = (/"Los Angeles","Seattle","Toronto","New York","Miami",\
+"Mexico City","London","Jakarta","Moscow","New Delhi","Rio de Janeiro",\
+"Cairo","Buenos Aires","Beijing","Tokyo","Lagos","Nairobi","Sydney","Bogota",\
+"Lima","Cape Town","Calcutta","Shanghai","Bombay","Denver"/)
 
-    anno_lat = (/34.0,47.6,43.7,40.67,25.75,19.417,51.32,-6.13,55.75,28.37,-22.883,30.05, -34.67,39.917,35.67,6.45,-1.283,-33.9167,4.633,-12.1,-33.933,22.583,31.217,18.93,39.716/)
+    anno_lat = (/34.0,47.6,43.7,40.67,25.75,19.417,51.32,-6.13,55.75,28.37,\
+-22.883,30.05, -34.67,39.917,35.67,6.45,-1.283,-33.9167,4.633,-12.1,-33.933,\
+22.583,31.217,18.93,39.716/)
 
-    anno_lon = (/-118.28,-122.33,-79.4167,-73.83,-80.25,-99.167,-0.1,106.75,37.7,77.217,-43.283,31.25,-58.4167,116.4167,139.67,3.28,36.833,151.167,-74.083,-77.05,18.4667,88.35,121.4167,72.85,-105.017/)
+    anno_lon = (/-118.28,-122.33,-79.4167,-73.83,-80.25,-99.167,-0.1,106.75,\
+37.7,77.217,-43.283,31.25,-58.4167,116.4167,139.67,3.28,36.833,151.167,\
+-74.083,-77.05,18.4667,88.35,121.4167,72.85,-105.017/)
     
 ;
 ; Create an application context. Set the app dir to the current directory
