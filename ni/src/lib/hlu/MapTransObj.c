@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.47 2000-02-17 01:24:31 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.48 2000-05-16 01:35:26 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -208,6 +208,12 @@ static NhlResource resources[] = {
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.great_circle_lines_on),
 	 NhlTImmediate,_NhlUSET((NhlPointer)False) ,0,NULL},
 
+{NhlNmpDataMinLonF,NhlCmpDataMinLonF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.data_xmin),
+	 NhlTString,_NhlUSET("-180.0"),0,NULL},
+{NhlNmpDataMaxLonF,NhlCmpDataMaxLonF,NhlTFloat,sizeof(float),
+	 NhlOffset(NhlMapTransObjLayerRec,mptrans.data_xmax),
+	 NhlTString,_NhlUSET("180.0"),0,NULL},
 
 /* End-documented-resources */
         
@@ -1327,15 +1333,44 @@ static NhlErrorTypes  MapTransSetValues
 	NhlMapTransObjLayerPart	*omtp = &(mold->mptrans);
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
 	char *e_text, *entry_name = "MapTransSetValues";
+	int data_arg_count = 0;
 
-	if (num_args == 2 && 
+	if (num_args == 2 &&
 	    (args[0].quark == Qdataxstart || args[0].quark == Qdataxend)) {
-                mtp->data_xmin = MIN(mnew->trobj.data_xstart,
-                                     mnew->trobj.data_xend);
-                mtp->data_xmax = MAX(mnew->trobj.data_xstart,
-                                     mnew->trobj.data_xend);
-                return NhlNOERROR;
+		mtp->data_xmin = MIN(mnew->trobj.data_xstart,
+				     mnew->trobj.data_xend);
+		mtp->data_xmax = MAX(mnew->trobj.data_xstart,
+				     mnew->trobj.data_xend);
+		return NhlNOERROR;
         }
+	if (_NhlArgIsSet(args,num_args,NhlNmpDataMinLonF))
+		data_arg_count++;
+	if (_NhlArgIsSet(args,num_args,NhlNmpDataMaxLonF))
+		data_arg_count++;
+	if (data_arg_count) {
+		if (mtp->data_xmin > mtp->data_xmax) {
+			float tmp;
+			char *e_text = 
+		   "%s: mpDataMinLonF greater than  mpDataMaxLonF: exchanging";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			tmp = mtp->data_xmin;
+			mtp->data_xmin = mtp->data_xmax;
+			mtp->data_xmin = tmp;
+		}
+		if (mtp->data_xmin == mtp->data_xmax ||
+		    mtp->data_xmin < -540 || mtp->data_xmax > 540) {
+			char *e_text = 
+   "%s: mpDataMinLonF and/or mpDataMaxLonF out of range: resetting to default";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			mtp->data_xmin = -180;
+			mtp->data_xmax = 180;
+		}
+		mnew->trobj.data_xstart = mtp->data_xmin;
+		mnew->trobj.data_xend = mtp->data_xmax;
+	}
+	if (num_args == data_arg_count)
+		return NhlNOERROR;
+			 
 	mtp->trans_changed = True;
 	mnew->trobj.change_count++;
 
@@ -1359,6 +1394,28 @@ static NhlErrorTypes  MapTransSetValues
 	subret = CheckMapLimits(mnew,entry_name);
 	ret = MIN(ret,subret);
 
+	/*
+	 * if switching from NhlLATLON mode, convert relative center lat/lon
+	 * values to normal center lat/lon values and turn off the relative
+	 * center switches. This implies that you must always set the relative
+	 * switches on explicitly when you go to NhlLATLON mode, but it seems
+	 * necessary to ensure consistent operation.
+	 */
+	if (omtp->map_limit_mode == NhlLATLON && 
+	    mtp->map_limit_mode != NhlLATLON) {
+		if (mtp->rel_center_lon) {
+			if (! _NhlArgIsSet(args,num_args,NhlNmpCenterLonF))
+				mtp->center_lon += 
+					(mtp->max_lon + mtp->min_lon) / 2.0;
+			mtp->rel_center_lon = False;
+		}
+		if (mtp->rel_center_lat) {
+			if (! _NhlArgIsSet(args,num_args,NhlNmpCenterLatF))
+				mtp->center_lat += 
+					(mtp->max_lat + mtp->min_lat) / 2.0;
+			mtp->rel_center_lat = False;
+		}
+	}
 	if (mtp->map_limit_mode == NhlNDC &&
 	    (mtp->left_ndc != omtp->left_ndc ||
 	     mtp->right_ndc != omtp->right_ndc ||

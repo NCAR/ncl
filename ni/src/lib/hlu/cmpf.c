@@ -379,3 +379,198 @@ double _NhlCmpDAny
 	b_int = (long)b_final;
 	return((double)a_int-(double)b_int);
 }
+
+
+/*
+ * Function:	_NhlCmpFAny2
+ *
+ * Description: New version of the _NhlCmpFAny routine. 
+ *		A new parameter allows specification of a minimum nonzero
+ *              value.
+ *              Also: Now uses frexp to break numbers up without fear of
+ *              overflow. Numbers are normalized to the range 
+ *              .1 <= fabs(x) < 1.0, using the base 2 exponent to nearly
+ *              figure out the base 10 exponent to factor out. Iteration
+ *              is then used to get the exact base 10 exponent.
+ *		
+ *
+ * In Args:	a	first floating point number
+ *		b	second floating point number
+ *		sig_dig	<=7 represents number of significant digits to compare.
+ *              min_nonzero the smallest abs value to be treated as nonzero.
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: 0 if equal, <0 if a<b, and >0 if a>b
+ *
+ * Side Effects: NONE
+ */
+float	_NhlCmpFAny2
+#if	NhlNeedProto
+(float a, float b, int sig_dig, float min_nonzero)
+#else
+(a,b,sig_dig,min_nonzero)
+	float a;
+	float b;
+	int sig_dig;
+	float min_nonzero;
+#endif
+{
+	double afr,bfr,minfr;
+	int    aexp,bexp,minexp;
+	long   arnd,brnd;
+	int    asign,bsign;
+	float factor;
+	int   diffexp;
+	int   aexp10,bexp10,diffexp10;
+	double norm_factor,anorm,bnorm;
+	int icount = 0;
+	NhlBoolean azero,bzero;
+
+#define CMPF_DEBUG 0
+#define EXP2TOEXP10 0.30102999
+
+#if CMPF_DEBUG
+	fprintf(stderr,"comparing a: %g and b: %g to %d significant digits\n",
+		a,b,sig_dig);
+#endif
+	if(sig_dig > 7) 
+		sig_dig = 7;
+
+	afr = frexp(a,&aexp);
+	bfr = frexp(b,&bexp);
+
+	minfr = fabs(frexp(min_nonzero,&minexp));
+	asign = afr < 0.0 ? -1 : 1;
+	bsign = bfr < 0.0 ? -1 : 1;
+#if CMPF_DEBUG
+	fprintf(stderr,"base 2 decomposition: a: %g %d b: %g %d\n",
+		afr,aexp,bfr,bexp);
+#endif
+	azero = afr == 0.0 || aexp < minexp ||
+		(aexp == minexp && afr * asign < minfr);
+	bzero = bfr == 0.0 || bexp < minexp ||
+		(bexp == minexp && bfr * bsign < minfr);
+
+	if (azero && bzero) {
+#if CMPF_DEBUG
+		fprintf(stderr,
+			"numbers smaller than minimum non-zero value: %f\n",
+			min_nonzero);
+#endif
+		return 0.0;
+	}
+	if (azero)
+		return (float) - bsign;
+	if (bzero)
+		return (float) asign;
+	
+	diffexp = abs(aexp - bexp);
+	if (diffexp >= 4) {
+		/*
+		 * difference exceeds range of single digit decimal precision
+		 */
+#if CMPF_DEBUG
+		fprintf(stderr,"difference exceeds factor of 10e1\n");
+#endif
+
+		switch (asign) {
+		case 1:
+			switch (bsign) {
+			case 1:
+				return (float)aexp - bexp;
+			case -1:
+				return 1.0;
+			}
+		case -1:
+			switch (bsign) {
+			case 1:
+				return -1.0;
+			case -1:
+				return (float)bexp - aexp;
+			}
+		}
+	}
+
+	aexp10 = EXP2TOEXP10 * aexp;
+
+#if CMPF_DEBUG
+	printf("a base 2 exp: %d a base 10 exp: %d\n",aexp,aexp10);
+#endif
+/*
+ * normalize the original values such that the greatest absolute value is
+ * in the range .1 <= x < 1.0. Two step process: the first step seems to get
+ * within 1 digit either way, so perhaps the "while" could be replaced with
+ * and "if", but this is not proven.
+ */
+	norm_factor = pow(10.0,-aexp10); 
+	anorm = a * norm_factor;
+	while (anorm * asign >= 1.0) {
+		icount++;
+		aexp10++;
+		anorm *= .1;
+	}
+	while (anorm * asign < .1) {
+		icount++;
+		aexp10--;
+		anorm *= 10;
+	}
+
+#if CMPF_DEBUG
+	printf("a normalized after %d iterations: %g %d\n",
+	       icount,anorm,aexp10);
+#endif
+	bexp10 = EXP2TOEXP10 * bexp;
+#if CMPF_DEBUG
+	printf("b base 2 exp: %d b base 10 exp: %d\n",bexp,bexp10);
+#endif
+
+	norm_factor = pow(10.0,-bexp10); 
+	bnorm = b * norm_factor;
+	while (bnorm * bsign >= 1.0) {
+		icount++;
+		bexp10++;
+		bnorm *= .1;
+	}
+	while (bnorm * bsign < .1) {
+		icount++;
+		bexp10--;
+		bnorm *= 10;
+	}
+
+#if CMPF_DEBUG
+	printf("b normalized after %d iterations: %g %d\n",
+	       icount,bnorm,bexp10);
+#endif
+
+/*
+ * Convert to longs in the range 10e(sig_digits) <= x < 10e(sig_digits+1)
+ * rounded in the units digit.
+ */
+
+	factor = pow(10.0,(double)sig_dig);
+	arnd = anorm * factor + (asign == 1 ? .5 : -.5);
+	brnd = bnorm * factor + (bsign == 1 ? .5 : -.5);
+
+/*
+ * the exponents cannot be different by more than 1, since 10^2 is greater
+ * than 2^4.
+ */         
+	diffexp10 = aexp10 - bexp10;
+	if (diffexp10 > 0) {
+		arnd *= 10;
+	}
+	else if (diffexp10 < 0) {
+		brnd *= 10;
+	}
+	
+#if CMPF_DEBUG
+	fprintf(stderr,
+	"rounded values converted to longs in range 10e(sig_digits): %d %d\n",
+		arnd,brnd);
+#endif
+/*
+ * compare
+ */
+	return (float) (arnd - brnd);
+}

@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformP.h,v 1.22 1999-04-02 23:51:17 dbrown Exp $
+ *      $Id: TransformP.h,v 1.23 2000-05-16 01:35:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,14 @@
 #define NhlCtfOverlayTrans	".TfOverlayTrans"
 #define NhlNtfOverlayStatus	".tfOverlayStatus"
 #define NhlCtfOverlayStatus	".TfOverlayStatus"
+#define NhlNtfBaseXF 		".tfBaseXF"
+#define NhlCtfBaseXF 		".TfBaseXF"
+#define NhlNtfBaseYF 		".tfBaseYF"
+#define NhlCtfBaseYF 		".TfBaseYF"
+#define NhlNtfBaseWidthF	".tfBaseWidthF"
+#define NhlCtfBaseWidthF	".TfBaseWidthF"
+#define NhlNtfBaseHeightF	".tfBaseHeightF"
+#define NhlCtfBaseHeightF	".TfBaseHeightF"
 
 /*
  * The Transform superclass marks resources as set when appropriate, but
@@ -52,7 +60,7 @@ typedef struct NhlTransformLayerPart {
 	/* Public resource fields */
 
 	NhlBoolean		plot_manager_on;
-	NhlBoolean		do_ndc_overlay;
+	NhlOverlayMode		do_ndc_overlay;
 	NhlBoolean		line_interpolation_on;
 	NhlBoolean		x_min_set;
 	float 			x_min;
@@ -80,6 +88,7 @@ typedef struct NhlTransformLayerPart {
 	NhlLayer		overlay_trans_obj;  
 	NhlLayer		overlay_object; 
 	NhltfOverlayStatus	overlay_status;
+	float			bx, by, bw, bh; /* base viewport */
 
 	/* 
 	 * Private fields for members of the Transform class 

@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.62 2000-02-16 01:43:30 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.63 2000-05-16 01:35:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/PlotManagerP.h>
 #include <ncarg/hlu/LogLinTransObjP.h>
 #include <ncarg/hlu/IrregularTransObj.h>
@@ -857,6 +858,7 @@ PlotManagerInitialize
 	ovnew->trans.overlay_trans_obj = ovnew->trans.trans_obj;
 	ovp->trans_change_count = 0;
 	ovp->trans_changed = True;
+
 /*
  * Allocate an array to store pointers to the overlay records. 
  * Then allocate an array for the first member element.
@@ -944,7 +946,8 @@ PlotManagerInitialize
 	for (i = ovp->overlay_count; i < ovp->overlay_alloc; i++) 
 		ovp->pm_recs[i] = NULL;
 	
-	ret = ManageAnnotations(ovnew,(NhlPlotManagerLayer)req,True,args,num_args);
+	ret = ManageAnnotations(ovnew,(NhlPlotManagerLayer)req,
+				True,args,num_args);
  
 	return ret;
 }
@@ -1064,12 +1067,11 @@ static NhlErrorTypes PlotManagerSetValues
 	NhlPlotManagerLayer		ovnew = (NhlPlotManagerLayer) new;
 	NhlPlotManagerLayer		ovold = (NhlPlotManagerLayer) old;
 	NhlPlotManagerLayerPart	*ovp = &(ovnew->plotmanager);
-        NhlSArg			sargs[16];
-        int			nargs = 0;
 	int			i;
-	NhlBoolean		update_req = False;
-	NhlBoolean		update_anno_req = False;
 	int			trans_change_count;
+	NhlBoolean		is_map;
+	float			x,y,w,h;
+	NhlViewLayer		ovl_view;
 
 	if (_NhlArgIsSet(args,num_args,NhlNpmLabelBarWidthF))
 		ovp->lbar_width_set = True;
@@ -1235,56 +1237,103 @@ static NhlErrorTypes PlotManagerSetValues
 
 /*
  * If the base view has changed, modify the view of each overlay to 
- * match it. 
+ * match it. There is a special case if the transobj is a mapTrans and
+ * the MapPlot mpShapeMode resource is set to FixedAspectNoFitBB. In this
+ * case, NDCOverlays must be set to the location of the map data - not to
+ * the viewport.
  */
-	if (ovnew->view.x != ovold->view.x)
-		NhlSetSArg(&sargs[nargs++],NhlNvpXF,ovnew->view.x);
-	if (ovnew->view.y != ovold->view.y)
-		NhlSetSArg(&sargs[nargs++],NhlNvpYF,ovnew->view.y);
-	if (ovnew->view.width != ovold->view.width)
-		NhlSetSArg(&sargs[nargs++],NhlNvpWidthF,ovnew->view.width);
-	if (ovnew->view.height != ovold->view.height)
-		NhlSetSArg(&sargs[nargs++],NhlNvpHeightF,ovnew->view.height);
-/*
- * If the transformation has changed the annotations associated 
- * with member overlay plots need to be updated.
- */
-	if (ovp->update_req ||
-	    ovp->trans_changed) {
-		NhlSetSArg(&sargs[nargs++],NhlNpmUpdateReq,True);
-		update_req = True;
-	}
-	if (ovp->update_anno_req) {
-		NhlSetSArg(&sargs[nargs++],NhlNpmUpdateAnnoReq,True);
-		update_anno_req = True;
+	if (_NhlIsClass(ovnew->trans.trans_obj,NhlmapTransObjClass)) {
+		float l,r,t,b;
+		NhlVAGetValues(ovnew->trans.trans_obj->base.id,
+			       NhlNmpLeftNDCF,&l,
+			       NhlNmpRightNDCF,&r,
+			       NhlNmpTopNDCF,&t,
+			       NhlNmpBottomNDCF,&b,
+			       NULL);
+		x = l;
+		y = t;
+		w = r - l;
+		h = t - b;
+		is_map = True;
 	}
 /*
  * Ensure that all the base plots are up to date; don't pass the
- * update req resource if the plot has no PlotManager of its own.
+ * update req resources if the plot has no PlotManager of its own.
  */
 	for (i = 1; i < ovp->overlay_count; i++) {
-
+		NhlTransformLayer	plot = ovp->pm_recs[i]->plot;
+		NhlTransformLayerPart	*plot_tfp = &plot->trans;
 		NhlPlotManagerLayer ovl = 
 			(NhlPlotManagerLayer)ovp->pm_recs[i]->ov_obj;
+		NhlSArg		sargs[16];
+		int		nargs = 0;
 
-		int num_args = nargs;
+		/*
+		 * If the transformation has changed the annotations 
+		 * associated with member overlay plots need to be updated.
+		 */
 
-		if (ovl == NULL) {
-			if (update_req && update_anno_req)
-				num_args = nargs - 2;
-			else if (update_req)
-				num_args = nargs - 1;
-			else if (update_anno_req)
-				num_args = nargs - 1;
+		if (ovl && (ovp->update_req || ovp->trans_changed))
+			NhlSetSArg(&sargs[nargs++],NhlNpmUpdateReq,True);
+		if (ovl && ovp->update_anno_req)
+			NhlSetSArg(&sargs[nargs++],NhlNpmUpdateAnnoReq,True);
+
+		if (is_map && plot_tfp->do_ndc_overlay == NhlNDCDATAEXTENT) {
+			float cx,cy,cw,ch;
+			NhlVAGetValues(plot->base.id,
+				       NhlNvpXF,&cx,
+				       NhlNvpYF,&cy,
+				       NhlNvpWidthF,&cw,
+				       NhlNvpHeightF,&ch,
+				       NULL);
+			if (x != cx)
+				NhlSetSArg(&sargs[nargs++],NhlNvpXF,x);
+			if (y != cy)
+				NhlSetSArg(&sargs[nargs++],NhlNvpYF,y);
+			if (w != cw)
+				NhlSetSArg(&sargs[nargs++],NhlNvpWidthF,w);
+			if (h != ch)
+				NhlSetSArg(&sargs[nargs++],NhlNvpHeightF,h);
 		}
-
-		subret = NhlALSetValues(ovp->pm_recs[i]->plot->base.id,
-					sargs,num_args);
+		else {
+			if (ovnew->view.x != ovold->view.x)
+				NhlSetSArg(&sargs[nargs++],
+					   NhlNvpXF,ovnew->view.x);
+			if (ovnew->view.y != ovold->view.y)
+				NhlSetSArg(&sargs[nargs++],
+					   NhlNvpYF,ovnew->view.y);
+			if (ovnew->view.width != ovold->view.width)
+				NhlSetSArg(&sargs[nargs++],
+					   NhlNvpWidthF,ovnew->view.width);
+			if (ovnew->view.height != ovold->view.height)
+				NhlSetSArg(&sargs[nargs++],
+					   NhlNvpHeightF,ovnew->view.height);
+		}
+		if (ovnew->view.x != ovold->view.x) 
+			NhlSetSArg(&sargs[nargs++],NhlNtfBaseXF,ovnew->view.x);
+		if (ovnew->view.y != ovold->view.y)
+			NhlSetSArg(&sargs[nargs++],NhlNtfBaseYF,ovnew->view.y);
+		if (ovnew->view.width != ovold->view.width)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtfBaseWidthF,ovnew->view.width);
+		if (ovnew->view.height != ovold->view.height)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtfBaseHeightF,ovnew->view.height);
+		
+		subret = NhlALSetValues(plot->base.id,sargs,nargs);
 		if ((ret = MIN(subret, ret)) < NhlWARNING) {
 			e_text = "%s: error setting overlay plot member view";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NhlFATAL;
 		}
+#if 0
+		if (ovl) {
+			ovl->trans.bx = ovnew->view.x;
+			ovl->trans.by = ovnew->view.y;
+			ovl->trans.bw = ovnew->view.width;
+			ovl->trans.bh = ovnew->view.height;
+		}
+#endif
 	}
 
 	ovp->update_req = False;
@@ -2575,7 +2624,6 @@ static NhlErrorTypes SetViewTracking
 	float			x_vp,y_vp,width_vp,height_vp;
 	int			status;
 	float			oo_range = 1E12;
-	NhlLayer		plot_for_trans;
 	
 	if (anno_rec->status == NhlNEVER)
 		return ret;
@@ -3004,7 +3052,6 @@ static NhlErrorTypes AddSpecialZonesBB
 	char			*e_text;
 	NhlPlotManagerLayer		ovl = (NhlPlotManagerLayer) instance;
 	NhlPlotManagerLayerPart	*ovl_basep;
-	float 			t,b,l,r;
 	int			i;
 	
 /*
@@ -3447,6 +3494,10 @@ ManageExtAnnotation
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name;
 	char			*e_text;
+	NhlPlotManagerLayerPart	*ovp = &ovnew->plotmanager;
+	NhlPlotManagerLayerPart	*oovp = &ovold->plotmanager;
+	NhlTransformLayerPart   *tfp = &((NhlTransformLayer)ovnew)->trans;
+	NhlTransformLayerPart   *otfp = &((NhlTransformLayer)ovold)->trans;
 	NhlJustification	just = NhlCENTERCENTER;
 	NhlBoundingBox		bbox;
 	float			x_pos,y_pos,x_start,y_start,width,height;
@@ -3504,10 +3555,10 @@ ManageExtAnnotation
 	}
 	
 	if (anno_rec->resize_notify &&
-	    ((ovnew->view.width != ovold->view.width) ||
-	    (ovnew->view.height != ovold->view.height))) {
-		width = width_vp * ovnew->view.width / ovold->view.width;
-		height = height_vp * ovnew->view.height / ovold->view.height;
+	    ((tfp->bw != otfp->bw) ||
+	    (tfp->bh != otfp->bh))) {
+		width = width_vp * tfp->bw / otfp->bw;
+		height = height_vp * tfp->bh / otfp->bh;
 	}
 	else {
 		height = height_vp;
@@ -3527,30 +3578,30 @@ ManageExtAnnotation
 		if (ret < NhlWARNING) return ret;
 	}
 	x_start = anno_rec->zone != 0 ? ovnew->view.x :
-		ovnew->view.x + 0.5 * ovnew->view.width; 
-	y_start = anno_rec->zone != 0 ? ovnew->view.y - ovnew->view.height :
-		ovnew->view.y - 0.5 * ovnew->view.height;
+		ovnew->view.x + 0.5 * tfp->bw; 
+	y_start = anno_rec->zone != 0 ? ovnew->view.y - tfp->bh :
+		ovnew->view.y - 0.5 * tfp->bh;
 	sign = anno_rec->zone == 1 ? 1.0 : -1.0;
 	switch (anno_rec->side) {
 	case NhlBOTTOM:
-		x_pos = x_start + anno_rec->para_pos * ovnew->view.width;
+		x_pos = x_start + anno_rec->para_pos * tfp->bw;
 		y_pos = bbox.b +
-                        sign * anno_rec->ortho_pos * ovnew->view.height;
+                        sign * anno_rec->ortho_pos * tfp->bh;
 		break;
 	case NhlTOP:
-		x_pos = x_start + anno_rec->para_pos * ovnew->view.width;
+		x_pos = x_start + anno_rec->para_pos * tfp->bw;
 		y_pos = bbox.t -
-			sign * anno_rec->ortho_pos * ovnew->view.height;
+			sign * anno_rec->ortho_pos * tfp->bh;
 		break;
 	case NhlLEFT:
 		x_pos = bbox.l + 
-			sign * anno_rec->ortho_pos * ovnew->view.width;
-		y_pos = y_start + anno_rec->para_pos * ovnew->view.height;
+			sign * anno_rec->ortho_pos * tfp->bw;
+		y_pos = y_start + anno_rec->para_pos * tfp->bh;
 		break;
 	case NhlRIGHT:
 		x_pos = bbox.r - 
-			sign * anno_rec->ortho_pos * ovnew->view.width;
-		y_pos = y_start + anno_rec->para_pos * ovnew->view.height;
+			sign * anno_rec->ortho_pos * tfp->bw;
+		y_pos = y_start + anno_rec->para_pos * tfp->bh;
 		break;
 	default:
 		e_text = "%s: internal enumeration error";
@@ -3742,6 +3793,7 @@ ManageTickMarks
 	NhlPlotManagerLayerPart	*ovp = &ovnew->plotmanager;
 	NhlPlotManagerLayerPart	*oovp = &ovold->plotmanager;
 	NhlTransformLayerPart	*tfp = &ovnew->trans;
+	NhlTransformLayerPart	*otfp = &ovold->trans;
 	int			tmpid = NhlNULLOBJID;
 	char			buffer[_NhlMAXFNAMELEN];
         NhlSArg			sargs[ovTMARGCOUNT];
@@ -3767,10 +3819,10 @@ ManageTickMarks
 	anno_rec->zone = ovp->tickmark_zone > NhlOV_DEF_TICKMARK_ZONE ?
 		NhlOV_DEF_TICKMARK_ZONE : ovp->tickmark_zone;
 
-	if (ovnew->view.x != ovold->view.x ||
-	    ovnew->view.y != ovold->view.y ||
-	    ovnew->view.width != ovold->view.width ||
-	    ovnew->view.height != ovold->view.height)
+	if (tfp->bx != otfp->bx ||
+	    tfp->by != otfp->by ||
+	    tfp->bw != otfp->bw ||
+	    tfp->bh != otfp->bh)
 		view_changed = True;
 /*
  * If not displaying tickmarks or if the trans object and the view have
@@ -3994,10 +4046,10 @@ ManageTickMarks
 	if (ovp->tickmarks == NULL) {	
 		NhlSetSArg(&sargs[nargs++],
 			   NhlNvpUseSegments,ovnew->view.use_segments);
-		NhlSetSArg(&sargs[nargs++],NhlNvpXF,ovnew->view.x);
-		NhlSetSArg(&sargs[nargs++],NhlNvpYF,ovnew->view.y);
-		NhlSetSArg(&sargs[nargs++],NhlNvpWidthF,ovnew->view.width);
-		NhlSetSArg(&sargs[nargs++],NhlNvpHeightF,ovnew->view.height);
+		NhlSetSArg(&sargs[nargs++],NhlNvpXF,tfp->bx);
+		NhlSetSArg(&sargs[nargs++],NhlNvpYF,tfp->by);
+		NhlSetSArg(&sargs[nargs++],NhlNvpWidthF,tfp->bw);
+		NhlSetSArg(&sargs[nargs++],NhlNvpHeightF,tfp->bh);
 		NhlSetSArg(&sargs[nargs++],NhlNtmYLStyle,ovp->y_tm_style);
 		NhlSetSArg(&sargs[nargs++],NhlNtmXBStyle,ovp->x_tm_style);
 		NhlSetSArg(&sargs[nargs++],NhlNtmYRStyle,ovp->y_tm_style);
@@ -4024,18 +4076,14 @@ ManageTickMarks
 		}
 		anno_rec->plot_id = tmpid;
 	} else {
-		if (ovnew->view.x != ovold->view.x)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNvpXF,ovnew->view.x);
-		if (ovnew->view.y != ovold->view.y)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNvpYF,ovnew->view.y);
-		if (ovnew->view.width != ovold->view.width)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNvpWidthF,ovnew->view.width);
-		if (ovnew->view.height != ovold->view.height)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNvpHeightF,ovnew->view.height);
+		if (tfp->bx != otfp->bx)
+			NhlSetSArg(&sargs[nargs++],NhlNvpXF,tfp->bx);
+		if (tfp->by != otfp->by)
+			NhlSetSArg(&sargs[nargs++],NhlNvpYF,tfp->by);
+		if (tfp->bw != otfp->bw)
+			NhlSetSArg(&sargs[nargs++],NhlNvpWidthF,tfp->bw);
+		if (tfp->bh != otfp->bh)
+			NhlSetSArg(&sargs[nargs++],NhlNvpHeightF,tfp->bh);
 		if (ovnew->view.use_segments != ovold->view.use_segments)
 			NhlSetSArg(&sargs[nargs++],
                                    NhlNvpUseSegments,ovnew->view.use_segments);
@@ -4118,12 +4166,13 @@ ManageTitles
 	char			*e_text;
 	NhlPlotManagerLayerPart	*ovp = &ovnew->plotmanager;
 	NhlPlotManagerLayerPart	*oovp = &ovold->plotmanager;
+	NhlTransformLayerPart   *tfp = &((NhlTransformLayer)ovnew)->trans;
+	NhlTransformLayerPart   *otfp = &((NhlTransformLayer)ovold)->trans;
 	int			tmpid = NhlNULLOBJID;
 	NhlBoundingBox		bbox;
 	char			buffer[_NhlMAXFNAMELEN];
         NhlSArg			sargs[16];
         int			nargs = 0;
-	float			x_vp,y_vp,width_vp,height_vp;
 	int			zone;
 
 	entry_name = (init) ? "PlotManagerInitialize" : "PlotManagerSetValues";
@@ -4249,24 +4298,21 @@ ManageTitles
 	if (init) {
 		if (! ovp->ti_main_font_height_set) 
 			ovp->ti_main_font_height = NhlDEF_TITLE_HEIGHT *
-				ovnew->view.width / NHL_DEFAULT_VIEW_WIDTH;
+				tfp->bw / NHL_DEFAULT_VIEW_WIDTH;
 		if (! ovp->ti_x_axis_font_height_set)
 			ovp->ti_x_axis_font_height = NhlDEF_TITLE_HEIGHT *
-				ovnew->view.width / NHL_DEFAULT_VIEW_WIDTH;
+				tfp->bw / NHL_DEFAULT_VIEW_WIDTH;
 		if (! ovp->ti_y_axis_font_height_set)
 			ovp->ti_y_axis_font_height = NhlDEF_TITLE_HEIGHT *
-				ovnew->view.height / NHL_DEFAULT_VIEW_HEIGHT;
+				tfp->bh / NHL_DEFAULT_VIEW_HEIGHT;
 	}
 	else {
 		if (! ovp->ti_main_font_height_set) 
-			ovp->ti_main_font_height *=
-				ovnew->view.width / ovold->view.width;
+			ovp->ti_main_font_height *= tfp->bw / otfp->bw;
 		if (! ovp->ti_x_axis_font_height_set)
-			ovp->ti_x_axis_font_height *=
-				ovnew->view.width / ovold->view.width;
+			ovp->ti_x_axis_font_height *= tfp->bw / otfp->bw;
 		if (! ovp->ti_y_axis_font_height_set)
-			ovp->ti_y_axis_font_height *=
-				ovnew->view.height / ovold->view.height;
+			ovp->ti_y_axis_font_height *= tfp->bh / otfp->bh;
 	}
 
 	switch(ovp->ti_main_position) {
@@ -4280,17 +4326,16 @@ ManageTitles
 		ovp->ti_main_position = NhlCENTER;
 	case NhlCENTER:
 		ovp->real_main_offset_x = ovp->ti_main_offset_x +
-			((ovnew->view.x + ovnew->view.width/2.0) -
+			((tfp->bx + tfp->bw/2.0) -
 			 (ovp->ti_x + ovp->ti_width/2.0));
 		break;
 	case NhlLEFT:
 		ovp->real_main_offset_x = ovp->ti_main_offset_x +
-			(ovnew->view.x - ovp->ti_x);
+			(tfp->bx - ovp->ti_x);
 		break;
 	case NhlRIGHT:
 		ovp->real_main_offset_x = ovp->ti_main_offset_x +
-			((ovnew->view.x + ovnew->view.width) - 
-			 (ovp->ti_x + ovp->ti_width));
+			((tfp->bx + tfp->bw) - (ovp->ti_x + ovp->ti_width));
 		break;
 	}
 
@@ -4305,17 +4350,16 @@ ManageTitles
 		ovp->ti_x_axis_position = NhlCENTER;
 	case NhlCENTER:
 		ovp->real_x_axis_offset_x = ovp->ti_x_axis_offset_x +
-			((ovnew->view.x + ovnew->view.width/2.0) -
+			((tfp->bx + tfp->bw/2.0) -
 			 (ovp->ti_x + ovp->ti_width/2.0));
 		break;
 	case NhlLEFT:
 		ovp->real_x_axis_offset_x = ovp->ti_x_axis_offset_x +
-			(ovnew->view.x - ovp->ti_x);
+			(tfp->bx - ovp->ti_x);
 		break;
 	case NhlRIGHT:
 		ovp->real_x_axis_offset_x = ovp->ti_x_axis_offset_x +
-			((ovnew->view.x + ovnew->view.width) - 
-			 (ovp->ti_x + ovp->ti_width));
+			((tfp->bx + tfp->bw) - (ovp->ti_x + ovp->ti_width));
 		break;
 	}
 
@@ -4330,17 +4374,16 @@ ManageTitles
 		ovp->ti_y_axis_position = NhlCENTER;
 	case NhlCENTER:
 		ovp->real_y_axis_offset_y = ovp->ti_y_axis_offset_y +
-			((ovnew->view.y - ovnew->view.height/2.0) -
+			((tfp->by - tfp->bh/2.0) -
 			 (ovp->ti_y - ovp->ti_height/2.0));
 		break;
 	case NhlTOP:
 		ovp->real_y_axis_offset_y = ovp->ti_y_axis_offset_y +
-			(ovnew->view.y - ovp->ti_y);
+			(tfp->by - ovp->ti_y);
 		break;
 	case NhlBOTTOM:
 		ovp->real_y_axis_offset_y = ovp->ti_y_axis_offset_y + 
-			((ovnew->view.y - ovnew->view.height) - 
-			 (ovp->ti_y - ovp->ti_height));
+			((tfp->by - tfp->bh) - (ovp->ti_y - ovp->ti_height));
 		break;
 	}
 
@@ -4377,10 +4420,6 @@ ManageTitles
 			   NhlNtiMainPosition,ovp->ti_main_position);
 	} else {
 		
-		x_vp = ((NhlViewLayer) ovp->titles)->view.x;
-		y_vp = ((NhlViewLayer) ovp->titles)->view.y;
-		width_vp = ((NhlViewLayer) ovp->titles)->view.width;
-		height_vp = ((NhlViewLayer) ovp->titles)->view.height;
 		if (ovp->ti_x != oovp->ti_x)
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNvpXF,ovp->ti_x);
@@ -4490,6 +4529,8 @@ ManageLabelBar
 	char			*e_text;
 	NhlPlotManagerLayerPart	*ovp = &ovnew->plotmanager;
 	NhlPlotManagerLayerPart	*oovp = &ovold->plotmanager;
+	NhlTransformLayerPart   *tfp = &((NhlTransformLayer)ovnew)->trans;
+	NhlTransformLayerPart   *otfp = &((NhlTransformLayer)ovold)->trans;
 	int			tmpid = NhlNULLOBJID;
 	NhlBoundingBox		bbox;
 	char			buffer[_NhlMAXFNAMELEN];
@@ -4543,8 +4584,8 @@ ManageLabelBar
  * the current orientation.
  */
 
-	wold = init ? NHL_DEFAULT_VIEW_WIDTH : ovold->view.width;
-	hold = init ? NHL_DEFAULT_VIEW_HEIGHT : ovold->view.height;
+	wold = init ? NHL_DEFAULT_VIEW_WIDTH : otfp->bw;
+	hold = init ? NHL_DEFAULT_VIEW_HEIGHT : otfp->bh;
 	if (ovp->lbar_keep_aspect) {
 		float ratio;
 
@@ -4552,11 +4593,11 @@ ManageLabelBar
 		default:
 		case NhlTOP:
 		case NhlBOTTOM:
-			ratio = ovnew->view.width / wold;
+			ratio = tfp->bw / wold;
 			break;
 		case NhlLEFT:
 		case NhlRIGHT:
-			ratio = ovnew->view.height / hold;
+			ratio = tfp->bh / hold;
 			break;
 		}
 		if (! ovp->lbar_width_set)
@@ -4566,9 +4607,9 @@ ManageLabelBar
 	}
 	else {
 		if (! ovp->lbar_width_set)
-			ovp->lbar_width *= ovnew->view.width / wold;
+			ovp->lbar_width *= tfp->bw / wold;
 		if (! ovp->lbar_height_set)
-			ovp->lbar_height *= ovnew->view.height / hold;
+			ovp->lbar_height *= tfp->bh / hold;
 
 		if (! ovp->lbar_width_set && ! ovp->lbar_height_set) {
 
@@ -4612,28 +4653,20 @@ ManageLabelBar
 
 	switch (anno_rec->side) {
 	case NhlBOTTOM:
-		ovp->lbar_x = ovnew->view.x + 
-			anno_rec->para_pos * ovnew->view.width;
-		ovp->lbar_y = bbox.b + 
-			sign * anno_rec->ortho_pos * ovnew->view.height;
+		ovp->lbar_x = tfp->bx + anno_rec->para_pos * tfp->bw;
+		ovp->lbar_y = bbox.b + sign * anno_rec->ortho_pos * tfp->bh;
 		break;
 	case NhlTOP:
-		ovp->lbar_x = ovnew->view.x + 
-			anno_rec->para_pos * ovnew->view.width;
-		ovp->lbar_y = bbox.t - 
-			sign * anno_rec->ortho_pos * ovnew->view.height;
+		ovp->lbar_x = tfp->bx + anno_rec->para_pos * tfp->bw;
+		ovp->lbar_y = bbox.t - sign * anno_rec->ortho_pos * tfp->bh;
 		break;
 	case NhlLEFT:
-		ovp->lbar_x = bbox.l + 
-			sign * anno_rec->ortho_pos * ovnew->view.width;
-		ovp->lbar_y = ovnew->view.y - ovnew->view.height +
-			anno_rec->para_pos * ovnew->view.height;
+		ovp->lbar_x = bbox.l + sign * anno_rec->ortho_pos * tfp->bw;
+		ovp->lbar_y = tfp->by - tfp->bh + anno_rec->para_pos * tfp->bh;
 		break;
 	case NhlRIGHT:
-		ovp->lbar_x = bbox.r - 
-			sign * anno_rec->ortho_pos * ovnew->view.width;
-		ovp->lbar_y = ovnew->view.y - ovnew->view.height +
-			anno_rec->para_pos * ovnew->view.height;
+		ovp->lbar_x = bbox.r - sign * anno_rec->ortho_pos * tfp->bw;
+		ovp->lbar_y = tfp->by - tfp->bh + anno_rec->para_pos * tfp->bh;
 		break;
 	default:
 		e_text = "%s: internal enumeration error";
@@ -4804,6 +4837,8 @@ ManageLegend
 	char			*e_text;
 	NhlPlotManagerLayerPart	*ovp = &ovnew->plotmanager;
 	NhlPlotManagerLayerPart	*oovp = &ovold->plotmanager;
+	NhlTransformLayerPart   *tfp = &((NhlTransformLayer)ovnew)->trans;
+	NhlTransformLayerPart   *otfp = &((NhlTransformLayer)ovold)->trans;
 	int			tmpid = NhlNULLOBJID;
 	NhlBoundingBox		bbox;
 	char			buffer[_NhlMAXFNAMELEN];
@@ -4853,12 +4888,12 @@ ManageLegend
  * If the view width or height has changed adjust the Legend width and
  * height if they have not been set explcitly by the user
  */
-	wold = init ? NHL_DEFAULT_VIEW_WIDTH : ovold->view.width;
-	hold = init ? NHL_DEFAULT_VIEW_HEIGHT : ovold->view.height;
+	wold = init ? NHL_DEFAULT_VIEW_WIDTH : tfp->bw;
+	hold = init ? NHL_DEFAULT_VIEW_HEIGHT : tfp->bh;
 	if (! ovp->lgnd_width_set)
-		ovp->lgnd_width *= ovnew->view.width / wold;
+		ovp->lgnd_width *= tfp->bw / wold;
 	if (! ovp->lgnd_height_set)
-		ovp->lgnd_height *= ovnew->view.height / hold;
+		ovp->lgnd_height *= tfp->bh / hold;
 
 /*
  * Get the bounding box for the zone inside the annotation zone, 
@@ -4875,28 +4910,20 @@ ManageLegend
 	sign = anno_rec->zone == 1 ? 1.0 : -1.0;
 	switch (anno_rec->side) {
 	case NhlBOTTOM:
-		ovp->lgnd_x = ovnew->view.x + 
-			anno_rec->para_pos * ovnew->view.width;
-		ovp->lgnd_y = bbox.b + 
-			sign * anno_rec->ortho_pos * ovnew->view.height;
+		ovp->lgnd_x = tfp->bx + anno_rec->para_pos * tfp->bw;
+		ovp->lgnd_y = bbox.b + sign * anno_rec->ortho_pos * tfp->bh;
 		break;
 	case NhlTOP:
-		ovp->lgnd_x = ovnew->view.x + 
-			anno_rec->para_pos * ovnew->view.width;
-		ovp->lgnd_y = bbox.t - 
-			sign * anno_rec->ortho_pos * ovnew->view.height;
+		ovp->lgnd_x = tfp->bx + anno_rec->para_pos * tfp->bw;
+		ovp->lgnd_y = bbox.t - sign * anno_rec->ortho_pos * tfp->bh;
 		break;
 	case NhlLEFT:
-		ovp->lgnd_x = bbox.l + 
-			sign * anno_rec->ortho_pos * ovnew->view.width;
-		ovp->lgnd_y = ovnew->view.y - ovnew->view.height +
-			anno_rec->para_pos * ovnew->view.height;
+		ovp->lgnd_x = bbox.l + sign * anno_rec->ortho_pos * tfp->bw;
+		ovp->lgnd_y = tfp->by - tfp->bh + anno_rec->para_pos * tfp->bh;
 		break;
 	case NhlRIGHT:
-		ovp->lgnd_x = bbox.r - 
-			sign * anno_rec->ortho_pos * ovnew->view.width;
-		ovp->lgnd_y = ovnew->view.y - ovnew->view.height +
-			anno_rec->para_pos * ovnew->view.height;
+		ovp->lgnd_x = bbox.r - sign * anno_rec->ortho_pos * tfp->bw;
+		ovp->lgnd_y = tfp->by - tfp->bh + anno_rec->para_pos * tfp->bh;
 		break;
 	default:
 		e_text = "%s: internal enumeration error";
@@ -5076,6 +5103,8 @@ NhlErrorTypes NhlAddOverlay
 	float			ox,oy,owidth,oheight;
         NhlArgVal       	cbdata,dummy;
         _NhlOverlayStatusCBDataRec overlay_status;
+	float			x,y,w,h;
+	NhlBoolean		is_map = False;
         
 /*
  * Check validity of the plot layers, then root out the pointer to the overlay
@@ -5283,9 +5312,26 @@ NhlErrorTypes NhlAddOverlay
  * Call set values for each plot added to the overlay to inform it of its
  * new status, adjusting its view to be identical to the overlay's view.
  */
+	if (_NhlIsClass(base_tfp->overlay_trans_obj,NhlmapTransObjClass)) {
+		float r,b;
+		NhlVAGetValues(base_tfp->overlay_trans_obj->base.id,
+			       NhlNmpLeftNDCF,&x,
+			       NhlNmpRightNDCF,&r,
+			       NhlNmpTopNDCF,&y,
+			       NhlNmpBottomNDCF,&b,
+			       NULL);
+		w = r - x;
+		h = y - b;
+		is_map = True;
+	}
+		
 	for (i = 0; i < plot_count; i++) {
-		NhlSArg			sargs[10];
+		NhlSArg			sargs[32];
 		int			nargs = 0;
+		NhlTransformLayer	plot = sub_recs[i]->plot;
+		NhlTransformLayerPart	*plot_tfp = &plot->trans;
+		NhlPlotManagerLayer	pml = 
+			(NhlPlotManagerLayer)sub_recs[i]->ov_obj;
 
 		NhlSetSArg(&sargs[nargs++],NhlNtfOverlayStatus, 
 			   _tfCurrentOverlayMember);
@@ -5293,11 +5339,25 @@ NhlErrorTypes NhlAddOverlay
 			   NhlNtfOverlayObject,base_tfp->overlay_object);
 		NhlSetSArg(&sargs[nargs++],
 			   NhlNtfOverlayTrans, base_tfp->overlay_trans_obj);
-		NhlSetSArg(&sargs[nargs++],NhlNvpXF,ovl->view.x);
-		NhlSetSArg(&sargs[nargs++],NhlNvpYF,ovl->view.y);
-		NhlSetSArg(&sargs[nargs++],NhlNvpWidthF,ovl->view.width);
-		NhlSetSArg(&sargs[nargs++],NhlNvpHeightF,ovl->view.height);
+		if (is_map && plot_tfp->do_ndc_overlay == NhlNDCDATAEXTENT) {
+			NhlSetSArg(&sargs[nargs++],NhlNvpXF,x);
+			NhlSetSArg(&sargs[nargs++],NhlNvpYF,y);
+			NhlSetSArg(&sargs[nargs++],NhlNvpWidthF,w);
+			NhlSetSArg(&sargs[nargs++],NhlNvpHeightF,h);
+		}
+		else {
+			NhlSetSArg(&sargs[nargs++],NhlNvpXF,ovl->view.x);
+			NhlSetSArg(&sargs[nargs++],NhlNvpYF,ovl->view.y);
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNvpWidthF,ovl->view.width);
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNvpHeightF,ovl->view.height);
+		}
 		NhlSetSArg(&sargs[nargs++],NhlNpmUpdateReq, True);
+		NhlSetSArg(&sargs[nargs++],NhlNtfBaseXF,ovl->view.x);
+		NhlSetSArg(&sargs[nargs++],NhlNtfBaseYF,ovl->view.y);
+		NhlSetSArg(&sargs[nargs++],NhlNtfBaseWidthF,ovl->view.width);
+		NhlSetSArg(&sargs[nargs++],NhlNtfBaseHeightF,ovl->view.height);
 
 		subret = NhlALSetValues(sub_recs[i]->plot->base.id,
 					sargs,nargs); 
@@ -5673,7 +5733,6 @@ int NhlAddAnnotation
 	NhlLayer		base = _NhlGetLayer(plot_id);
 	NhlLayer		anno_view = _NhlGetLayer(anno_view_id);
 	NhlLayer		plot_overlay;
-	int			anno_manager_id;
 
 	if (base == NULL || ! _NhlIsTransform(base)) {
 		e_text = "%s: invalid plot id";
@@ -6383,7 +6442,6 @@ NhlAnnoRec *UnregisterAnnotation
 	NhlAnnoRec		**tanrp;
 	NhlAnnoRec		*anrp = NULL;
 	int			i;
-	int			view_id = NhlNULLOBJID - 1;
 	NhlTransformLayerPart	*tfp = &((NhlPlotManagerLayer)overlay)->trans;
 	NhlPlotManagerLayer	base_pm = NULL;
 
@@ -6554,8 +6612,6 @@ RemoveOverlayBase
         int			nargs = 0;
 	int			i;
 	int			count = 1;
-	NhlAnnoRec		*anno_list;
-	int			max_zone;
 
 /*
  * Create a GenArray of 1 element in order to set the PlotManagerRecs resource
@@ -6825,7 +6881,7 @@ extern NhlErrorTypes _NhlManageOverlay
 	int			tmpid = NhlNULLOBJID;
 	char			buffer[_NhlMAXFNAMELEN];
 	NhlSArg			*lsargs;
-	int			lsarg_count = 10; /* Keep up to date!!! */
+	int			lsarg_count = 32; /* Keep up to date!!! */
 
 	if (*overlay_object == NULL) {
 		if (! tfp->plot_manager_on)
@@ -6942,23 +6998,49 @@ extern NhlErrorTypes _NhlManageOverlay
 		}
 
 		if (tfp->overlay_object->base.id ==
-		    otfp->overlay_object->base.id &&
-		    (vwp->x != ovvl->view.x ||
-		     vwp->y != ovvl->view.y ||
-		     vwp->width != ovvl->view.width ||
-		     vwp->height != ovvl->view.height)) {
+		    otfp->overlay_object->base.id) {
+			NhlBoolean error = False;
+			if (_NhlIsClass(tfp->overlay_trans_obj,
+					NhlmapTransObjClass) &&
+			    tfp->do_ndc_overlay == NhlNDCDATAEXTENT) {
+				float l,r,t,b;
+				NhlVAGetValues(tfp->overlay_trans_obj->base.id,
+					       NhlNmpLeftNDCF,&l,
+					       NhlNmpRightNDCF,&r,
+					       NhlNmpTopNDCF,&t,
+					       NhlNmpBottomNDCF,&b,
+					       NULL);
+				if (_NhlCmpFAny(vwp->x,l,6) != 0.0 ||
+				    _NhlCmpFAny(vwp->y,t,6) != 0.0 ||
+				    _NhlCmpFAny(vwp->width,r-l,6) != 0.0 ||
+				    _NhlCmpFAny(vwp->height,t-b,6) != 0.0) {
+					_NhlInternalSetView
+						((NhlViewLayer)lnew,
+						 l,t,r-l,t-b,
+						 ovvl->view.keep_aspect);
+					error = True;			
+				}
+			}
+			else if (vwp->x != ovvl->view.x ||
+				 vwp->y != ovvl->view.y ||
+				 vwp->width != ovvl->view.width ||
+				 vwp->height != ovvl->view.height) {
 
-			_NhlInternalSetView((NhlViewLayer)lnew,
-					    ovvl->view.x,
-					    ovvl->view.y,
-					    ovvl->view.width,
-					    ovvl->view.height,
-					    ovvl->view.keep_aspect);
-
-			e_text =
+				_NhlInternalSetView((NhlViewLayer)lnew,
+						    ovvl->view.x,
+						    ovvl->view.y,
+						    ovvl->view.width,
+						    ovvl->view.height,
+						    ovvl->view.keep_aspect);
+				error = True;
+			}
+			if (error) {
+				e_text =
 			"%s: attempt to set overlay member plot view ignored";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-			ret = MIN(ret,NhlWARNING);
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					  e_text,entry_name);
+				ret = MIN(ret,NhlWARNING);
+			}
 		}
 	}
 
@@ -6974,6 +7056,16 @@ extern NhlErrorTypes _NhlManageOverlay
 			NhlSetSArg(&lsargs[nargs++],NhlNvpWidthF,vwp->width);
 		if (vwp->height != ovwp->height)
 			NhlSetSArg(&lsargs[nargs++],NhlNvpHeightF,vwp->height);
+
+		if (tfp->bx != otfp->bx)
+			NhlSetSArg(&lsargs[nargs++],NhlNtfBaseXF,tfp->bx);
+		if (tfp->by != otfp->by)
+			NhlSetSArg(&lsargs[nargs++],NhlNtfBaseYF,tfp->by);
+		if (tfp->bw != otfp->bw)
+			NhlSetSArg(&lsargs[nargs++],NhlNtfBaseWidthF,tfp->bw);
+		if (tfp->bh != otfp->bh)
+			NhlSetSArg(&lsargs[nargs++],NhlNtfBaseHeightF,tfp->bh);
+
 		if (vwp->use_segments != ovwp->use_segments)
 			NhlSetSArg(&lsargs[nargs++],
                                    NhlNvpUseSegments,vwp->use_segments);

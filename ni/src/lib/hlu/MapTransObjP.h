@@ -1,5 +1,5 @@
 /*
- *      $Id: MapTransObjP.h,v 1.10 1998-04-16 03:08:53 dbrown Exp $
+ *      $Id: MapTransObjP.h,v 1.11 2000-05-16 01:35:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -109,6 +109,8 @@ typedef struct _NhlMapTransObjLayerPart{
 	float		actual_max_lat;
 	float		actual_min_lon;
 	float		actual_max_lon;
+        float   	data_xmin;
+        float   	data_xmax;
 
 	/* Private resources */
 
@@ -123,8 +125,6 @@ typedef struct _NhlMapTransObjLayerPart{
 	float 	ut;
 	float	ub;
 	NhlBoolean updated;
-        float   data_xmin;
-        float   data_xmax;
 
 }NhlMapTransObjLayerPart;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: hluutil.h,v 1.5 1996-05-16 23:46:28 dbrown Exp $
+ *      $Id: hluutil.h,v 1.6 2000-05-16 01:35:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -39,6 +39,8 @@
 #ifndef	_NHLCALLF
 #define	_NHLCALLF(reg,cap)	NGCALLF(reg,cap)
 #endif	/* _NHLCALLF	*/
+
+#define	_NhlMIN_NONZERO 1e-32
 
 typedef struct compar_dat {
 	int is_zero;
@@ -140,6 +142,15 @@ extern float _NhlRndIt(
 #if  NhlNeedProto
 float /* a */,
 int /*sig_digit*/
+#endif
+);
+
+extern float	_NhlCmpFAny2(
+#if	NhlNeedProto
+	float a, 
+	float b, 
+	int sig_dig,
+	float min_nonzero
 #endif
 );
 

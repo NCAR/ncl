@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.h,v 1.14 1999-04-02 23:51:17 dbrown Exp $
+ *      $Id: Transform.h,v 1.15 2000-05-16 01:35:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,12 +25,21 @@
 
 #include <ncarg/hlu/View.h>
 
+typedef enum _NhlOverlayMode {
+	NhlDATATRANSFORM = 0,  /* DataTransform */
+	NhlNDCVIEWPORT = 1,    /* NDCViewport */
+	NhlNDCDATAEXTENT = 2   /* NDCDataExtent */
+} NhlOverlayMode;
+
+#define NhlTOverlayMode        "OverlayMode"
+
 /*
  * Public Transform instance resources
  */
 
 #define NhlNtfPlotManagerOn		"tfPlotManagerOn"
 #define NhlNtfDoNDCOverlay		"tfDoNDCOverlay"
+#define NhlNtfOverlayMode		"tfOverlayMode"
 #define NhlNtfLineInterpolationOn 	"tfLineInterpolationOn"
 
 /*
@@ -39,6 +48,7 @@
 
 #define NhlCtfPlotManagerOn		"TfPlotManagerOn"
 #define NhlCtfDoNDCOverlay		"TfDoNDCOverlay"
+#define NhlCtfOverlayMode		"TfOverlayMode"
 #define NhlCtfLineInterpolationOn 	"TfLineInterpolationOn"
 
 /*

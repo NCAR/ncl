@@ -1,5 +1,5 @@
 /*
- *      $Id: MapTransObj.h,v 1.9 1997-08-14 16:30:19 dbrown Exp $
+ *      $Id: MapTransObj.h,v 1.10 2000-05-16 01:35:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -107,6 +107,9 @@ typedef enum _NhlProjection {
 #define NhlNmpEllipticalBoundary	"mpEllipticalBoundary"
 #define NhlNmpGreatCircleLinesOn	"mpGreatCircleLinesOn"
 
+#define NhlNmpDataMinLonF		"mpDataMinLonF"
+#define NhlNmpDataMaxLonF		"mpDataMaxLonF"
+
 /* resource classes */
 
 #define	NhlCmpProjection		"MpProjection"
@@ -176,6 +179,9 @@ typedef enum _NhlProjection {
 #define NhlCmpSatelliteAngle2F		"MpSatelliteAngle2F"
 #define NhlCmpEllipticalBoundary	"MpEllipticalBoundary"
 #define NhlCmpGreatCircleLinesOn	"MpGreatCircleLinesOn"
+
+#define NhlCmpDataMinLonF		"MpDataMinLonF"
+#define NhlCmpDataMaxLonF		"MpDataMaxLonF"
 
 extern NhlClass NhlmapTransObjClass;
 

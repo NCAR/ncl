@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.49 2000-03-02 01:30:19 dbrown Exp $
+ *      $Id: Transform.c,v 1.50 2000-05-16 01:35:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -51,9 +51,9 @@ static NhlResource resources[] = {
 		  NhlTImmediate,_NhlUSET((NhlPointer)True),
           	  _NhlRES_NOSACCESS,NULL},
 	{ NhlNtfDoNDCOverlay,NhlCtfDoNDCOverlay,
-		  NhlTBoolean,sizeof(NhlBoolean),
-		  Oset(do_ndc_overlay),
-		  NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
+		NhlTOverlayMode,sizeof(NhlOverlayMode),
+		Oset(do_ndc_overlay),NhlTImmediate,
+	  	_NhlUSET((NhlPointer)NhlDATATRANSFORM),0,NULL},
 
 /* End-documented-resources */
 
@@ -72,6 +72,18 @@ static NhlResource resources[] = {
 		  Oset(overlay_status),
 		  NhlTImmediate,_NhlUSET((NhlPointer)_tfNotInOverlay),
           	  _NhlRES_PRIVATE,NULL},
+	{NhlNtfBaseXF, NhlCtfBaseXF, NhlTFloat, sizeof(float),
+	 Oset(bx),NhlTString,_NhlUSET(NHL_DEFAULT_VIEW_X_STR),
+	 _NhlRES_PRIVATE,NULL},
+	{ NhlNtfBaseYF, NhlCtfBaseYF, NhlTFloat, sizeof(float),
+	  Oset(by),NhlTString,_NhlUSET(NHL_DEFAULT_VIEW_Y_STR),
+	  _NhlRES_PRIVATE,NULL},
+	{ NhlNtfBaseWidthF, NhlCtfBaseWidthF, NhlTFloat, sizeof(float),
+	  Oset(bw),NhlTString,_NhlUSET(NHL_DEFAULT_VIEW_WIDTH_STR),
+	  _NhlRES_PRIVATE,NULL},
+	{ NhlNtfBaseHeightF, NhlCtfBaseHeightF, NhlTFloat, sizeof(float),
+	  Oset(bh),NhlTString,_NhlUSET(NHL_DEFAULT_VIEW_HEIGHT_STR),
+	  _NhlRES_PRIVATE,NULL},
         
 /* Intercepted resources */
 
@@ -360,8 +372,20 @@ TransformClassPartInit
 	{NhlLOGAXIS,		"LogAxis"}
         };
 
+	_NhlEnumVals 	overlaymodelist[] = {
+		{NhlDATATRANSFORM, "DataTransform"},
+		{NhlDATATRANSFORM, "False"},
+		{NhlNDCVIEWPORT,  "NDCViewport"},
+		{NhlNDCVIEWPORT,  "True"},
+		{NhlNDCDATAEXTENT, "NDCDataExtent"}
+	};
+
 	_NhlRegisterEnumType(NhltransformClass,
-			NhlTAxisType,axistypelist,NhlNumber(axistypelist));
+			     NhlTAxisType,axistypelist,
+			     NhlNumber(axistypelist));
+	_NhlRegisterEnumType(NhltransformClass,
+			     NhlTOverlayMode,overlaymodelist,
+			     NhlNumber(overlaymodelist));
         
 	if(tlc->trans_class.data_to_ndc == NhlInheritTransFunc)
 		tlc->trans_class.data_to_ndc = sc->trans_class.data_to_ndc;
@@ -490,6 +514,11 @@ TransformInitialize
                 tfp->y_log = False;
                 tfp->y_axis_type = NhlLINEARAXIS;
         }
+	tfp->bx = tnew->view.x;
+	tfp->by = tnew->view.y;
+	tfp->bw = tnew->view.width;
+	tfp->bh = tnew->view.height;
+
         return NhlNOERROR;
         
 }
@@ -595,6 +624,19 @@ static NhlErrorTypes TransformSetValues
                 }
         }
 
+	/*
+	 * these vars keep track of the base plot viewport (if there is 
+	 * one). If the transform is an overlay, then the PlotManager
+	 * sets these values. Otherwise, track the view here.
+	 */
+	if (! _NhlIsOverlay(tnew->base.id)) { 
+		tfp->bx = tnew->view.x;
+		tfp->by = tnew->view.y;
+		tfp->bw = tnew->view.width;
+		tfp->bh = tnew->view.height;
+	}
+
+
         return NhlNOERROR;
 }
 
@@ -667,6 +709,13 @@ static NhlErrorTypes TransformDataToNDC
 	        }
 	}
 
+#if 0
+/*
+ this is useless -- the data bounds are not checked in DataToNDC --
+ only in NDCtoDATA --- so that's where it belongs, except that we have 
+ to be sure to use the plot that actually sets the transformation --
+ that is not the MapPlot --- this has to be figured out.
+*/
 /*
  * If the TransObj is a MapTransObj then set the longitude limits 
  * expected by the data.
@@ -682,6 +731,7 @@ static NhlErrorTypes TransformDataToNDC
 					NhlNtrDataXEndF,tfp->data_xend,
 					NULL);
 	}
+#endif
 	subret = _NhlSetTrans(top, plot);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {

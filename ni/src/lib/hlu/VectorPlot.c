@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.64 2000-02-08 01:18:14 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.65 2000-05-16 01:35:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1345,17 +1345,14 @@ static NrmQuark	Qmax_magnitude_format = NrmNULLQUARK;
 static NrmQuark	Qmax_svalue_format = NrmNULLQUARK; 
 static NrmQuark	Qrefvec_anno_string1 = NrmNULLQUARK; 
 static NrmQuark	Qrefvec_anno_string2 = NrmNULLQUARK; 
-static NrmQuark	Qrefvec_anno_format = NrmNULLQUARK; 
 static NrmQuark	Qminvec_anno_string1 = NrmNULLQUARK; 
 static NrmQuark	Qminvec_anno_string2 = NrmNULLQUARK; 
-static NrmQuark	Qminvec_anno_format = NrmNULLQUARK; 
 static NrmQuark	Qno_data_label_string = NrmNULLQUARK; 
 static NrmQuark	Qzerof_label_string = NrmNULLQUARK; 
 static NrmQuark	Qlb_label_strings = NrmNULLQUARK;
 static NrmQuark	Qref_magnitude = NrmNULLQUARK;
 static NrmQuark	Qmin_magnitude = NrmNULLQUARK;
 static NrmQuark	Qmax_magnitude = NrmNULLQUARK;
-static NrmQuark	Qmin_frac_len = NrmNULLQUARK;
 static NrmQuark	Qref_length = NrmNULLQUARK;
 
 static char *InitName = "VectorPlotInitialize";
@@ -1555,17 +1552,14 @@ VectorPlotClassInitialize
 	Qmax_svalue_format = NrmStringToQuark(NhlNvcScalarValueFormat);
 	Qrefvec_anno_string1 = NrmStringToQuark(NhlNvcRefAnnoString1);
 	Qrefvec_anno_string2 = NrmStringToQuark(NhlNvcRefAnnoString2);
-	Qrefvec_anno_format = NrmStringToQuark(NhlNvcRefAnnoFormat);
 	Qminvec_anno_string1 = NrmStringToQuark(NhlNvcMinAnnoString1);
 	Qminvec_anno_string2 = NrmStringToQuark(NhlNvcMinAnnoString2);
-	Qminvec_anno_format = NrmStringToQuark(NhlNvcMinAnnoFormat);
 	Qzerof_label_string = NrmStringToQuark(NhlNvcZeroFLabelString);
 	Qno_data_label_string = NrmStringToQuark(NhlNvcNoDataLabelString);
 	Qlb_label_strings = NrmStringToQuark(NhlNlbLabelStrings);
 	Qref_magnitude = NrmStringToQuark(NhlNvcRefMagnitudeF);
 	Qmin_magnitude = NrmStringToQuark(NhlNvcMinMagnitudeF);
 	Qmax_magnitude = NrmStringToQuark(NhlNvcMaxMagnitudeF);
-	Qmin_frac_len = NrmStringToQuark(NhlNvcMinFracLengthF);
 	Qref_length = NrmStringToQuark(NhlNvcRefLengthF);
 
 	return NhlNOERROR;
@@ -3726,7 +3720,6 @@ static NhlErrorTypes InitCoordBounds
         NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
         NhlTransformLayerPart	*tfp = &vcl->trans;
 	char		*e_text;
-	NhlBoolean	x_data_reversed,y_data_reversed;
 
 	vcp->do_low_level_log = False;
         vcp->use_irr_trans = False;
@@ -3754,9 +3747,6 @@ static NhlErrorTypes InitCoordBounds
                 return ret;
 	}
         
-	x_data_reversed = vcp->vfp->x_start > vcp->vfp->x_end;
-	y_data_reversed = vcp->vfp->y_start > vcp->vfp->y_end;
-
         tfp->data_xstart = vcp->vfp->x_start;
         tfp->data_xend = vcp->vfp->x_end;
         tfp->data_ystart = vcp->vfp->y_start;
@@ -3776,7 +3766,6 @@ static NhlErrorTypes InitCoordBounds
                 if (vcp->vfp->x_arr && tfp->x_axis_type != NhlIRREGULARAXIS) {
                         tfp->data_xstart = vcp->vfp->ix_start;
                         tfp->data_xend = vcp->vfp->ix_end;
-			x_data_reversed = False;
                 }
                 if (vcp->vfp->y_arr && ! tfp->y_axis_type_set) {
 			if (! vcp->ovfp || (vcp->data_changed  &&
@@ -3788,7 +3777,6 @@ static NhlErrorTypes InitCoordBounds
                 if (vcp->vfp->y_arr && tfp->y_axis_type != NhlIRREGULARAXIS) {
                         tfp->data_ystart = vcp->vfp->iy_start;
                         tfp->data_yend = vcp->vfp->iy_end;
-			y_data_reversed = False;
                 }
         }
         ret = _NhltfCheckCoordBounds
@@ -5308,7 +5296,6 @@ static NhlErrorTypes ManageVecAnno
 	char			buffer[_NhlMAXRESNAMLEN];
 	int			tmpid;
 	NhlBoolean		on;
-        NhlBoolean		use_vec_color;
 
 	entry_name = (init) ? InitName : SetValuesName;
 
@@ -5331,9 +5318,6 @@ static NhlErrorTypes ManageVecAnno
 				   &text_changed,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 	if (text_changed) oilp->text2 = NULL;
-
-        use_vec_color = ilp->aap->use_vec_color &&
-                !(vcp->use_scalar_array && vcp->scalar_data_init);
 
         switch(vcp->glyph_style) {
             default:
@@ -6523,7 +6507,8 @@ static NhlErrorTypes    ManageVectorData
 	vcp->a_params.uvmn = vcp->vfp->mag_min;
 	vcp->a_params.uvmx = vcp->vfp->mag_max;
 
-	vcp->zero_field = _NhlCmpFAny(vcp->zmax,0.0,NhlvcPRECISION) <= 0.0 ?
+	vcp->zero_field = _NhlCmpFAny2
+		(vcp->zmax,0.0,NhlvcPRECISION,_NhlMIN_NONZERO) <= 0.0 ?
 		True : False;
 	if (vcp->zero_field) {
 		e_text = 
@@ -7110,7 +7095,6 @@ static NhlErrorTypes    ManageDynamicArrays
 	    sip->mode != osip->mode ||
 	    sip->scale_value != osip->scale_value ||
 	    sip->scale_factor != osip->scale_factor) {
-		NhlBoolean modified = False;
 		NhlString cp;
 		float *fp = (float *) vcp->levels->data;
 		NhlString *sp = vcp->level_strings;
@@ -7148,7 +7132,6 @@ static NhlErrorTypes    ManageDynamicArrays
 				return NhlFATAL;
 			}
 			strcpy(sp[i],cp);
-			modified = True;
 		}
 		vcp->level_strings = sp;
 		ovcp->level_strings = NULL;
@@ -7603,7 +7586,8 @@ static NhlErrorTypes    SetupLevelsManual
 	}
 	else {
 		lmax = floor(((max - lmin) / spacing) * spacing + lmin);
-		if (_NhlCmpFAny(lmax,max,NhlvcPRECISION) == 0.0) {
+		if (_NhlCmpFAny2
+		    (lmax,max,NhlvcPRECISION,spacing * 0.001) == 0.0) {
 			lmax -= spacing;
 		}
 		lmax = MAX(lmin,lmax);
@@ -7616,7 +7600,8 @@ static NhlErrorTypes    SetupLevelsManual
 	else {
 		count = (lmax - lmin) / vcp->level_spacing;
 		rem = lmax - lmin - vcp->level_spacing * count; 
-		if (_NhlCmpFAny(rem,0.0,NhlvcPRECISION) != 0.0)
+		if (_NhlCmpFAny2
+		    (rem,0.0,NhlvcPRECISION,spacing * 0.001) != 0.0)
 			count += 2;
 		else
 			count += 1;
@@ -7706,7 +7691,8 @@ static NhlErrorTypes    SetupLevelsEqual
 	lmin = min;
 	lmax = max;
 
-        if (vcp->zero_field || _NhlCmpFAny(lmin,lmax,NhlvcPRECISION) == 0.0) {
+        if (vcp->zero_field || 
+	    _NhlCmpFAny2(lmin,lmax,NhlvcPRECISION,_NhlMIN_NONZERO) == 0.0) {
                 vcp->level_count = 1;
                 vcp->level_spacing = 0.0;
 		zero_or_equal = True;
@@ -7786,7 +7772,8 @@ static NhlErrorTypes    SetupLevelsAutomatic
 	lmin = min;
 	lmax = max;
 
-        if (vcp->zero_field || _NhlCmpFAny(lmin,lmax,NhlvcPRECISION) == 0.0) {
+        if (vcp->zero_field || 
+	    _NhlCmpFAny2(lmin,lmax,NhlvcPRECISION,_NhlMIN_NONZERO) == 0.0) {
                 choose_spacing = False;
                 count = 1;
                 spacing = 0.0;
@@ -7798,11 +7785,13 @@ static NhlErrorTypes    SetupLevelsAutomatic
 		lmin = ceil(lmin / spacing) * spacing;
 		lmax = MIN(lmax,floor(lmax / spacing) * spacing);
 		count =	(int)((lmax - lmin) / vcp->level_spacing + 1.5);
-		if (_NhlCmpFAny(lmin,min,NhlvcPRECISION) == 0.0) {
+		if (_NhlCmpFAny2
+		    (lmin,min,NhlvcPRECISION,spacing * 0.001) == 0.0) {
 			lmin += spacing;
 			count--;
 		}
-		if (_NhlCmpFAny(lmax,max,NhlvcPRECISION) == 0.0) {
+		if (_NhlCmpFAny2
+		    (lmax,max,NhlvcPRECISION,spacing * 0.001) == 0.0) {
 			lmax -= spacing;
 			count--;
 		}
@@ -7835,13 +7824,15 @@ static NhlErrorTypes    SetupLevelsAutomatic
 			NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
 			return ret;
 		}
-		if (_NhlCmpFAny(lmin,min,NhlvcPRECISION) == 0.0) {
+		if (_NhlCmpFAny2
+		    (lmin,min,NhlvcPRECISION,spacing * 0.001) == 0.0) {
 			lmin += spacing;
 		}
 		ftmp = lmin;
 		ftest = max;
 		count = 0;
-		while (_NhlCmpFAny(ftmp,ftest,NhlvcPRECISION) < 0.0) {
+		while (_NhlCmpFAny2
+		       (ftmp,ftest,NhlvcPRECISION,spacing * 0.001) < 0.0) {
 			count++;
 			ftmp = lmin + count * spacing;
 		}
@@ -8076,7 +8067,7 @@ static NhlErrorTypes ChooseSpacingLin
 	int	i;
 	char	*e_text;
 
-	if(_NhlCmpFAny(*tend,*tstart,NhlvcPRECISION)<=0.0) {
+	if(_NhlCmpFAny2(*tend,*tstart,NhlvcPRECISION,_NhlMIN_NONZERO)<=0.0) {
 		e_text = "%s: Scalar level extent is near 0.0";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(NhlFATAL);
@@ -8090,8 +8081,8 @@ static NhlErrorTypes ChooseSpacingLin
 		ax1 = floor(*tend/t) * t;
 		if(((i>=npts-1)&&(*spacing == u))||
 		   ((t <= *spacing)&&
-		    (_NhlCmpFAny((ax1-am1)/t,(double)max_ticks,
-				 convert_precision) <= 0.0))){
+		    (_NhlCmpFAny2((ax1-am1)/t,(double)max_ticks,
+				 convert_precision,_NhlMIN_NONZERO) <= 0.0))){
 			*spacing = t;
 			ax2 = ax1;
 			am2 = am1;

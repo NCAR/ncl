@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.94 2000-02-08 01:18:07 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.95 2000-05-16 01:35:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -871,15 +871,6 @@ static NhlErrorTypes ContourPlotDraw(
 static NhlErrorTypes ContourPlotPostDraw(
 #if	NhlNeedProto
         NhlLayer	/* layer */
-#endif
-);
-
-
-static float	cnCmpFAny(
-#if	NhlNeedProto
-	float a, 
-	float b, 
-	int sig_dig
 #endif
 );
 
@@ -3328,8 +3319,9 @@ static NhlErrorTypes GetDataBound
                                                 False : True;
                                 }
                         }
-                        else if (rotation == 0.0 && cnCmpFAny
-                                 (max_lat-min_lat-center_lat,0.0,6) == 0.0) {
+                        else if (rotation == 0.0 && _NhlCmpFAny2
+                                 (max_lat-min_lat-center_lat,
+				  0.0,6,1e-6) == 0.0) {
                                 *xlinear = (cl->trans.x_log || x_irr) ?
                                         False : True;
                                 *ylinear = (cl->trans.y_log || y_irr) ?
@@ -8181,7 +8173,8 @@ static NhlErrorTypes    ManageData
 	cnp->zmin = cnp->sfp->data_min;
 	cnp->zmax = cnp->sfp->data_max;
 
-	cnp->const_field = cnCmpFAny(cnp->zmax,cnp->zmin,8) <= 0.0 ?
+	cnp->const_field = 
+		_NhlCmpFAny2(cnp->zmax,cnp->zmin,8,_NhlMIN_NONZERO) <= 0.0 ?
 		True : False;
 	if (cnp->const_field) {
 		e_text = 
@@ -8388,6 +8381,7 @@ static NhlErrorTypes    AdjustText
 
 	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";
 
+
 /* 
  * Adjust text height. Then determine principal width and height
  * and the "real " text height based on aspect ratio. 21.0 is the default 
@@ -8399,9 +8393,9 @@ static NhlErrorTypes    AdjustText
 			lbl_attrp->height *= 
 				cnew->view.width / NHL_DEFAULT_VIEW_WIDTH;
 		}
-		else if (cnew->view.width != cold->view.width) {
+		else if (cnew->trans.bw != cold->trans.bw) {
 			lbl_attrp->height *= 
-				cnew->view.width / cold->view.width;
+				cnew->trans.bw / cold->trans.bw;
 		}
 	}
 
@@ -9624,7 +9618,7 @@ static NhlErrorTypes    SetupLevelsManual
 	}
 	else {
 		lmax = floor(((cnp->zmax - lmin) / spacing) * spacing + lmin);
-		if (cnCmpFAny(lmax,cnp->zmax,6) == 0.0) {
+		if (_NhlCmpFAny2(lmax,cnp->zmax,6,spacing * 0.001) == 0.0) {
 			lmax -= spacing;
 		}
 		cnp->max_level_val = lmax;
@@ -9636,7 +9630,7 @@ static NhlErrorTypes    SetupLevelsManual
 	else {
 		count = (lmax - lmin) / cnp->level_spacing;
 		rem = lmax - lmin - cnp->level_spacing * count; 
-		if (cnCmpFAny(rem,0.0,6) != 0.0)
+		if (_NhlCmpFAny2(rem,0.0,6,spacing * 0.001) != 0.0)
 		  count += 2;
 		else
 		  count += 1;
@@ -9801,11 +9795,11 @@ static NhlErrorTypes    SetupLevelsAutomatic
 		lmin = ceil(lmin / spacing) * spacing;
 		lmax = MIN(lmax,floor(lmax / spacing) * spacing);
 		count =	(int)((lmax - lmin) / cnp->level_spacing + 1.5);
-		if (cnCmpFAny(lmin,cnp->zmin,6) == 0.0) {
+		if (_NhlCmpFAny2(lmin,cnp->zmin,6,spacing * 0.001) == 0.0) {
 			lmin += spacing;
 			count--;
 		}
-		if (cnCmpFAny(lmax,cnp->zmax,6) == 0.0) {
+		if (_NhlCmpFAny2(lmax,cnp->zmax,6,spacing * 0.001) == 0.0) {
 			lmax -= spacing;
 			count--;
 		}
@@ -9837,13 +9831,13 @@ static NhlErrorTypes    SetupLevelsAutomatic
 			NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
 			return ret;
 		}
-		if (cnCmpFAny(lmin,cnp->zmin,6) == 0.0) {
+		if (_NhlCmpFAny2(lmin,cnp->zmin,6,spacing * 0.001) == 0.0) {
 			lmin += spacing;
 		}
 		ftmp = lmin;
 		ftest = cnp->zmax;
 		count = 0;
-		while (cnCmpFAny(ftmp,ftest,6) < 0.0) {
+		while (_NhlCmpFAny2(ftmp,ftest,6,spacing * 0.001) < 0.0) {
 			count++;
 			ftmp = lmin + count * spacing;
 		}
@@ -10061,7 +10055,7 @@ static NhlErrorTypes ChooseSpacingLin
 	int	i;
 	char	*e_text;
 
-	if(cnCmpFAny(*tend,*tstart,8)<=0.0) {
+	if(_NhlCmpFAny2(*tend,*tstart,8,_NhlMIN_NONZERO)<=0.0) {
 		e_text = "%s: Scalar field is constant";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(NhlFATAL);
@@ -10075,8 +10069,8 @@ static NhlErrorTypes ChooseSpacingLin
 		ax1 = floor(*tend/t) * t;
 		if(((i>=npts-1)&&(*spacing == u))||
 		   ((t <= *spacing)&&
-		    (cnCmpFAny((ax1-am1)/t,(double)max_ticks,
-				 convert_precision) <= 0.0))){
+		    (_NhlCmpFAny2((ax1-am1)/t,(double)max_ticks,
+				 convert_precision,_NhlMIN_NONZERO) <= 0.0))){
 			*spacing = t;
 			ax2 = ax1;
 			am2 = am1;
@@ -11080,126 +11074,3 @@ NhlErrorTypes _NhlRasterFill
 
 	return ret;
 }
-
-
-/*
- * Function:	cnCmpFAny
- *
- * In Args:	a	first floating point number
- *		b	second floating point number
- *		sig_dig	<=7 represents number of significant digits to compare.
- *
- * Out Args:	NONE
- *
- * Return Values: 0 if equal, <0 if a<b, and >0 if a>b
- *
- * Side Effects: NONE
- */
-float	cnCmpFAny
-#if	NhlNeedProto
-(float a, float b, int sig_dig)
-#else
-(a,b,sig_dig)
-	float a;
-	float b;
-	int sig_dig;
-#endif
-{
-	float	a_final;
-	float	b_final;
-	long a_int;
-	long b_int;
-	int exp;
-	int signa;
-	int signb;
-	float tmp;
-/*
-* If sig_dig is > 6, a_int and b_int will overflow and cause problems
-*/
-	if(sig_dig > 7) 
-		sig_dig = 7;
-
-/*
-* Get ride of easy cases:
-* These actually didn't end up being easy since large numbers compared againts
-* zero cause a_int and b_int to overflow. So I added the fabs checks to make
-* sure that the absolute value of non-zero numbers are at least between 
-* 0 and 1.0.
-*/
-	if (a == 0.0 || b == 0.0)
-		return (a - b);
-
-	if((a == 0.0)&&(b!=0.0)&&(log10(fabs(b))<=0.0)) {
-		a_int = 0;
-		b_final = b * (float)pow(10.0,(double)sig_dig);
-		b_int = (long)b_final;
-		return((float)(a_int - b_int));
-	} else if((a!=0.0)&&(b==0.0)&&(log10(fabs(a))<=0.0)){
-		b_int = 0;
-		a_final = a * (float)pow(10.0,(double)sig_dig);
-		a_int = (long)a_final;
-		return((float)(a_int - b_int));
-	} else if((a==0.0)&&(b==0.0)){
-		return(0.0);
-	}
-/*
-* If I get here and either a or b is zero then than means one of them is
-* greater that 1 and one is 0.0
-*/
-	if((a==0.0)||(b==0.0)) {
-		return(a - b);
-	}
-
-	
-/*
-* store sign info and make sure both numbers are positive so log10 can be
-* used. 
-*/
-	if(a < 0.0)
-		signa = -1;
-	else
-		signa = 1;
-	if(b < 0.0)
-		signb = -1;
-	else
-		signb = 1;
-	a_final = fabs(a);
-	b_final = fabs(b);
-/*
-* Now compute the exponent needed to shift a to the decimal position immediately
-* right of the decimal point for the value of a
-*/
-	if(a_final>b_final){ 
-		tmp = (float)log10(a_final);
-		exp = (long)ceil(log10(a_final));
-		if((float)exp == tmp)
-			exp++;
-	} else {
-		tmp = (float)log10(b_final);
-		exp = (long)ceil(log10(b_final));
-		if((float)exp == tmp)
-			exp++;
-	}
-
-/*
-* Now divide through by the exponent determined above
-*/
-	a_final = a_final/(float)pow(10.0,(double)exp);
-	b_final = b_final/(float)pow(10.0,(double)exp);
-
-/*
-* Since a and possibly b are now shifted to the immediate left of the decimal,
-* multipling by pow(10.0,sig_dig), rounding , setting appropriate sign  and 
-* truncating the decimal produces two integers that can be compared.
-*/
-	a_final = a_final * pow(10.0,(double)sig_dig);
-	b_final = b_final * pow(10.0,(double)sig_dig);
-	a_final = _NhlRndIt(a_final,sig_dig);
-	b_final = _NhlRndIt(b_final,sig_dig);
-	a_final *= signa;
-	b_final *= signb;
-	a_int = (long)a_final;
-	b_int = (long)b_final;
-	return((float)a_int-(float)b_int);
-}
-
