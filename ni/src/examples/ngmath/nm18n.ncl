@@ -68,6 +68,7 @@ begin
   NCGM=1
   X11=0
   PS=0
+  PDF=0
  
   if (NCGM .eq. 1) then
     wid = gsn_open_wks("ncgm","nm18n")
@@ -77,6 +78,9 @@ begin
   end if
   if (PS .eq. 1) then
     wid = gsn_open_wks("ps","nm18n")
+  end if
+  if (PDF .eq. 1) then
+    wid = gsn_open_wks("pdf","nm18n")
   end if
 
 ;

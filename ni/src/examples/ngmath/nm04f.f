@@ -1,5 +1,5 @@
 C
-C      $Id: nm04f.f,v 1.5 1999-04-19 17:35:38 fred Exp $
+C      $Id: nm04f.f,v 1.6 2003-03-01 00:42:49 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                       C
@@ -22,6 +22,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
 
       parameter(NUM=1000,NX=21,NY=21,NZ=21)
@@ -35,13 +36,14 @@ C
       integer appid,wid,gkswid
       integer srlist, grlist
       integer i
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Default is to display output to an NCGM workstation.
 C
       NCGM=1
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize the high level utility library
 C
@@ -83,6 +85,14 @@ C
          call NhlFRLSetString(srlist,'wkPSFileName','./nm04f.ps',ierr)
          call NhlFCreate(wid,'nm04Work',
      +        NhlFPSWorkstationClass,0,srlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkPDFFileName','./nm04f.pdf',ierr)
+         call NhlFCreate(wid,'nm04Work',
+     +        NhlFPDFWorkstationClass,0,srlist,ierr)
       endif
 
       do 10 i=1,NUM

@@ -1,5 +1,5 @@
 C
-C      $Id: nm03f.f,v 1.3 1998-04-25 16:42:57 haley Exp $
+C      $Id: nm03f.f,v 1.4 2003-03-01 00:42:49 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                       C
@@ -85,13 +85,14 @@ C
       integer appid,wid,gkswid
       integer srlist, grlist
       integer i,len_dims(2)
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Default is to display output to an NCGM workstation.
 C
       NCGM=1
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize the high level utility library
 C
@@ -132,6 +133,14 @@ C
          call NhlFRLSetString(srlist,'wkPSFileName','./nm03f.ps',ierr)
          call NhlFCreate(wid,'nm03Work',
      +        NhlFPSWorkstationClass,0,srlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(srlist)
+         call NhlFRLSetString(srlist,'wkPDFFileName','./nm03f.pdf',ierr)
+         call NhlFCreate(wid,'nm03Work',
+     +        NhlFPDFWorkstationClass,0,srlist,ierr)
       endif
 C
 C  Define the function values.

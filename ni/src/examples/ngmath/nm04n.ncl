@@ -74,6 +74,7 @@ output = dsgrid3s(xi, yi, zi, u, xo, yo, zo)
 NCGM=1
 X11=0
 PS=0
+PDF=0
 
 if (NCGM .eq. 1) then
 ;
@@ -98,6 +99,15 @@ else
       wid = create "dsgrid" psWorkstationClass defaultapp
         "wkPSFileName" : "nm04n.ps"
       end create
+    else
+      if (PDF .eq. 1) then
+;
+; Create a PDFWorkstation object.
+;
+        wid = create "dsgrid" pdfWorkstationClass defaultapp
+          "wkPDFFileName" : "nm04n.pdf"
+        end create
+      end if
     end if
   end if
 end if

@@ -45,6 +45,7 @@ begin
   NCGM=1
   X11=0
   PS=0
+  PDF=0
  
   if (NCGM .eq. 1) then
     wks = gsn_open_wks("ncgm","nm15n")
@@ -54,6 +55,9 @@ begin
   end if
   if (PS .eq. 1) then
     wks = gsn_open_wks("ps","nm15n")
+  end if
+  if (PDF .eq. 1) then
+    wks = gsn_open_wks("pdf","nm15n")
   end if
 
   cmap = (/                 \

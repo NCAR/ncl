@@ -1,5 +1,5 @@
 /*
- *      $Id: nm03c.c,v 1.7 1998-01-08 16:31:20 haley Exp $
+ *      $Id: nm03c.c,v 1.8 2003-03-01 00:42:49 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -34,6 +34,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/ScalarField.h>
 #include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/VectorPlot.h>
@@ -104,7 +105,7 @@ main(int argc, char *argv[])
   int   appid,wid,dataid,cnid,vfid,vcid,gkswid;
   int   srlist, grlist;
   int   i, j, ier;
-  int   NCGM=1, X11=0, PS=0;
+  int   NCGM=1, X11=0, PS=0, PDF=0;
 /*
  * Initialize the high level utility library
  */
@@ -140,11 +141,19 @@ main(int argc, char *argv[])
   }
   else if (PS) {
 /*
- * Create a meta file workstation.
+ * Create a PS workstation.
  */
 	NhlRLClear(srlist);
 	NhlRLSetString(srlist,NhlNwkPSFileName,"./nm03c.ps");
 	NhlCreate(&wid,"nm03Work",NhlpsWorkstationClass,NhlDEFAULT_APP,srlist);
+  }
+  else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+	NhlRLClear(srlist);
+	NhlRLSetString(srlist,NhlNwkPDFFileName,"./nm03c.pdf");
+	NhlCreate(&wid,"nm03Work",NhlpdfWorkstationClass,NhlDEFAULT_APP,srlist);
   }
 
   for (i = 0 ; i < NumIn ; i++) {

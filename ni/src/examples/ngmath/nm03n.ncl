@@ -104,6 +104,7 @@ begin
   NCGM=1
   X11=0
   PS=0
+  PDF=0
 
   if (NCGM .eq. 1) then
 ;
@@ -128,6 +129,15 @@ begin
         wid = create "natgrids" psWorkstationClass defaultapp
           "wkPSFileName" : "nm03n.ps"
         end create
+      else
+        if (PDF .eq. 1) then
+;
+; Create a PDFWorkstation object.
+;
+          wid = create "natgrids" pdfWorkstationClass defaultapp
+            "wkPDFFileName" : "nm03n.pdf"
+          end create
+        end if
       end if
     end if
   end if

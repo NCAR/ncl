@@ -82,6 +82,7 @@ end do
 NCGM=1
 X11=0
 PS=0
+PDF=0
 
 if (NCGM .eq. 1) then
 ;
@@ -106,6 +107,15 @@ else
       wid = create "dsgrid" psWorkstationClass defaultapp
         "wkPSFileName" : "nm06n.ps"
       end create
+    else
+      if (PDF .eq. 1) then
+;
+; Create a PDFWorkstation object.
+;
+        wid = create "dsgrid" pdfWorkstationClass defaultapp
+          "wkPDFFileName" : "nm06n.pdf"
+        end create
+      end if
     end if
   end if
 end if

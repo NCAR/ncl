@@ -54,6 +54,7 @@ zo = ftsurf(xi,yi,zi,xo,yo)
   NCGM=1
   X11=0
   PS=0
+  PDF=0
  
   if (NCGM .eq. 1) then
 ;
@@ -78,6 +79,15 @@ zo = ftsurf(xi,yi,zi,xo,yo)
         wid = create "dsgrid" psWorkstationClass defaultapp
           "wkPSFileName" : "nm12n.ps"
         end create
+      else
+        if (PDF .eq. 1) then
+;
+; Create a PDFWorkstation object.
+;
+          wid = create "dsgrid" pdfWorkstationClass defaultapp
+            "wkPDFFileName" : "nm12n.pdf"
+          end create
+        end if
       end if
      end if
   end if

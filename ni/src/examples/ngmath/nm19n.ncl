@@ -77,6 +77,7 @@ zo2 = onedtond(zo,(/nx,ny/))
   NCGM=1
   X11=0
   PS=0
+  PDF=0
  
   if (NCGM .eq. 1) then
     wid = gsn_open_wks("ncgm","nm19n")
@@ -86,6 +87,9 @@ zo2 = onedtond(zo,(/nx,ny/))
   end if
   if (PS .eq. 1) then
     wid = gsn_open_wks("ps","nm19n")
+  end if
+  if (PDF .eq. 1) then
+    wid = gsn_open_wks("pdf","nm19n")
   end if
 
 ;

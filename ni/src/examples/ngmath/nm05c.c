@@ -1,5 +1,5 @@
 /*
- *      $Id: nm05c.c,v 1.4 1998-06-28 21:31:41 fred Exp $
+ *      $Id: nm05c.c,v 1.5 2003-03-01 00:42:49 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -30,6 +30,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 
 
 #define NUM     6
@@ -40,7 +41,7 @@ main()
 {
   int  appid,wid,gkswid;
   int  srlist, grlist;
-  int  NCGM=1, X11=0, PS=0;
+  int  NCGM=1, X11=0, PS=0, PDF=0;
   int  i, j, k, ier;
   float xi[] = {0.00, 1.00, 0.00, 1.00, 0.40, 0.75};
   float yi[] = {0.00, 0.00, 1.00, 1.00, 0.20, 0.65};
@@ -104,11 +105,19 @@ main()
     }
     else if (PS) {
 /*
- * Create a meta file workstation.
+ * Create a PS workstation.
  */
         NhlRLClear(srlist);
         NhlRLSetString(srlist,NhlNwkPSFileName,"./nm05c.ps");
         NhlCreate(&wid,"nm05Work",NhlpsWorkstationClass,NhlDEFAULT_APP,srlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(srlist);
+        NhlRLSetString(srlist,NhlNwkPDFFileName,"./nm05c.pdf");
+        NhlCreate(&wid,"nm05Work",NhlpdfWorkstationClass,NhlDEFAULT_APP,srlist);
     }
 /*
  * Get Workstation ID.

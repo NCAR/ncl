@@ -1,5 +1,5 @@
 /*
- *      $Id: nm02c.c,v 1.1 1997-12-16 15:42:11 haley Exp $
+ *      $Id: nm02c.c,v 1.2 2003-03-01 00:42:49 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -34,6 +34,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 
 #define Npts    6
 #define NumXOut 21
@@ -54,7 +55,7 @@ main(int argc, char *argv[])
     int    appid,wid,gkswid;
     int    srlist, grlist;
     int    i,j;
-    int    NCGM=1, X11=0, PS=0;
+    int    NCGM=1, X11=0, PS=0, PDF=0;
 
 /*
  * Initialize the high level utility library
@@ -90,11 +91,19 @@ main(int argc, char *argv[])
     }
     else if (PS) {
 /*
- * Create a meta file workstation.
+ * Create a PS workstation.
  */
         NhlRLClear(srlist);
         NhlRLSetString(srlist,NhlNwkPSFileName,"./nm02c.ps");
         NhlCreate(&wid,"nm02Work",NhlpsWorkstationClass,NhlDEFAULT_APP,srlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(srlist);
+        NhlRLSetString(srlist,NhlNwkPDFFileName,"./nm02c.pdf");
+        NhlCreate(&wid,"nm02Work",NhlpdfWorkstationClass,NhlDEFAULT_APP,srlist);
     }
 	xc = 1./(NumXOut-1.);
 	for( i = 0; i < NumXOut; i++ ) {

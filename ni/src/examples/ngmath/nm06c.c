@@ -1,5 +1,5 @@
 /*
- *      $Id: nm06c.c,v 1.4 1998-06-23 22:53:11 fred Exp $
+ *      $Id: nm06c.c,v 1.5 2003-03-01 00:42:49 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 
 
 #define NUM  171
@@ -45,7 +46,7 @@ main()
   float rho = 3., theta = -54., phi = 32.;
   int    appid,wid,gkswid;
   int    srlist, grlist;
-  int    NCGM=1, X11=0, PS=0;
+  int    NCGM=1, X11=0, PS=0, PDF=0;
  
 /*
  *  Create random data in three space and define a function.
@@ -120,11 +121,19 @@ main()
     }
     else if (PS) {
 /*
- * Create a meta file workstation.
+ * Create a PS workstation.
  */
         NhlRLClear(srlist);
         NhlRLSetString(srlist,NhlNwkPSFileName,"./nm06c.ps");
         NhlCreate(&wid,"nm06Work",NhlpsWorkstationClass,NhlDEFAULT_APP,srlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(srlist);
+        NhlRLSetString(srlist,NhlNwkPDFFileName,"./nm06c.pdf");
+        NhlCreate(&wid,"nm06Work",NhlpdfWorkstationClass,NhlDEFAULT_APP,srlist);
     }
 /*
  * Get Workstation ID.

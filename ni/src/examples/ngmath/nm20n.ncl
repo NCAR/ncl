@@ -1,5 +1,5 @@
 ;
-;      $Id: nm20n.ncl,v 1.6 2000-03-02 23:01:43 fred Exp $
+;      $Id: nm20n.ncl,v 1.7 2003-03-01 00:42:50 grubin Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
@@ -123,6 +123,8 @@ begin
   NCGM=1
   X11=0
   PS=0
+  PDF=0
+
   if (NCGM .eq. 1) then
     wks = gsn_open_wks("ncgm","nm20n")
   end if
@@ -132,6 +134,10 @@ begin
   if (PS .eq. 1) then
     wks = gsn_open_wks("ps","nm20n")
   end if
+  if (PDF .eq. 1) then
+    wks = gsn_open_wks("pdf","nm20n")
+  end if
+
   gsn_define_colormap(wks,cmap)
 
 ;

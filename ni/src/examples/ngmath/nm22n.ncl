@@ -1,5 +1,5 @@
 ;
-;      $Id: nm22n.ncl,v 1.1 1999-09-09 16:45:06 fred Exp $
+;      $Id: nm22n.ncl,v 1.2 2003-03-01 00:42:50 grubin Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -108,6 +108,7 @@ begin
   NCGM=1
   X11=0
   PS=0
+  PDF=0
  
   if (NCGM .eq. 1) then
     wid = gsn_open_wks("ncgm","nm22n")
@@ -117,6 +118,9 @@ begin
   end if
   if (PS .eq. 1) then
     wid = gsn_open_wks("ps","nm22n")
+  end if
+  if (PDF .eq. 1) then
+    wid = gsn_open_wks("pdf","nm22n")
   end if
 
 ;
