@@ -1,0 +1,318 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                       ;
+;                Copyright (C)  1996                                    ;
+;        University Corporation for Atmospheric Research                ;
+;                All Rights Reserved                                    ;
+;                                                                       ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;   File:       cn15n.ncl
+;
+;   Author:     Bob Lackman
+;           National Center for Atmospheric Research
+;           PO 3000, Boulder, Colorado
+;
+;   Date:       Wed Jan 24, 1996
+;
+;   Description:    Combines a contour plot and an xy plot on a
+;                   single frame.  Output goes to an X11 window,
+;                   an NCGM, *and* a PostScript file.
+;
+begin
+  filedir = ncargpath("data")
+  file1 = addfile(filedir + "/cdf/sstdata_netcdf.nc","R")
+  nlat = dimsizes(file1->lat)
+  mlon = dimsizes(file1->lon)
+  sstjan = new( (/nlat,mlon/), float)
+  sstjan(:,:) = file1->sst(0,:,:)
+;
+; This section flips the field to starting at 30E.
+;
+;  a = file1->sst(0,:,:)
+;  b = a
+;  do i = 15,180,1
+;    b(:,i-15) = a(:,i)
+;  end do
+;  do i = 165,180,1
+;    b(:,i) = a(:,i-165)
+;  end do
+;
+; Create an sst data object.
+;
+  jan = create "sf" scalarFieldClass noparent
+    "sfDataArray": sstjan
+    "sfXCStartV" : 0.
+    "sfXCEndV"   : 360.
+    "sfYCStartV" : file1->lat(0)
+    "sfYCEndV"   : file1->lat(dimsizes(file1->lat)-1)
+  end create
+;
+; Modify the color map.  Color indices '0' and '1' are the background
+; and foreground colors respectively.
+;
+  ncolors = 16
+  cmap = new( (/ncolors,3/), float)
+  cmap(0,:) = (/1.00,1.00,1.00/)  ; white
+  cmap(1,:) = (/0.00,0.00,0.00/)  ; black
+  cmap(2,:) = (/0.00,0.00,1.00/)  ; blue
+  cmap(3,:) = (/0.20,0.56,0.80/)  ; sky blue
+  cmap(4,:) = (/0.00,1.00,1.00/)  ; cyan
+  cmap(5,:) = (/0.50,0.00,1.00/)  ; blue magenta
+  cmap(6,:) = (/0.00,1.00,0.00/)  ; green
+  cmap(7,:) = (/0.14,0.56,0.14/)  ; forest green
+  cmap(8,:) = (/1.00,1.00,0.00/)  ; yellow
+  cmap(9,:) = (/1.00,0.50,0.00/)  ; orange
+  cmap(10,:) = (/1.00,0.00,1.00/) ; magenta
+  cmap(11,:) = (/1.00,0.00,0.00/) ; red
+  cmap(12,:) = (/0.65,0.16,0.16/) ; brown
+  cmap(13,:) = (/0.86,0.58,0.44/) ; tan
+  cmap(14,:) = (/0.66,0.66,0.66/) ; light gray
+  cmap(15,:) = (/0.40,0.40,0.40/) ; dark gray
+;
+; Output to all three workstations.
+;
+  NCGM=1
+  X11=1
+  PS=1
+;
+; Create an ncgmWorkstation object.
+;
+  ncgm = create "cn15Work" ncgmWorkstationClass defaultapp
+    "wkMetaName" : "./cn15n.ncgm"      ; name the ncgm
+    "wkColorMap" : cmap                ; assign the new color map
+  end create
+;
+; Create an XWorkstation object.
+;
+   x = create "cn15Work" xWorkstationClass defaultapp
+    "wkColorMap" : cmap                     ; assign the new color map
+   end create
+;
+; Create a PSWorkstation object.
+;
+   ps = create "cn15Work" psWorkstationClass defaultapp
+    "wkVisualType" : "color"
+    "wkPSFileName" : "./cn15n.ps"      ; name the PostScript file
+    "wkColorMap" : cmap              ; assign the new color map
+;
+; Since the plots are beside each other, use landscape mode and the
+; PostScript resources for positioning the plot on the paper.
+;
+    "wkOrientation" : "landscape"
+    "wkDeviceLowerX" :   0
+    "wkDeviceLowerY" :  60  
+    "wkDeviceUpperX" : 600
+    "wkDeviceUpperY" : 700
+  end create
+;
+; Create a ContourPlot object.
+;
+  cn = create "cn" contourPlotClass x
+    "cnScalarFieldData" : jan
+    "vpXF" : .06
+    "vpYF" : .65
+    "vpWidthF" : .60
+    "vpHeightF" : .30
+    "cnInfoLabelOn" : "False"
+    "cnHighLabelsOn" : "False"
+    "cnLowLabelsOn" : "False"
+    "cnMonoLineColor" : "False"
+    "cnLineColors"    : (/12,13,14,7,2,0,8,11,6,9,4,3,5,7,10/)
+    "cnLineDrawOrder" : "predraw"
+    "cnFillDrawOrder" : "predraw"
+    "cnLabelDrawOrder" : "predraw"
+    "cnLineLabelInterval" : 2
+    "cnLineLabelPlacementMode" : "computed"
+    "tmXBMode" : "EXPLICIT"
+    "tmXBValues" : (/0,60,120,180,240,300,360/)
+    "tmXBLabels" : (/"0","60E","120E","180","120W","60W","0"/)
+    "tmYLMode" : "EXPLICIT"
+    "tmYLValues" : (/-90, -60,-30,0,30,60,90/)
+    "tmYLLabels" : (/"90S","60S","30S","EQ","30N","60N","90N"/)
+    "tmXTLabelsOn" : "False"
+    "tmYRLabelsOn" : "True"
+    "tmXBLabelFontHeightF" :  .010
+    "tmYLLabelFontHeightF" :  .010
+    "tmXBMajorOutwardLengthF" : .006
+    "tmXBMajorLengthF" : .006
+    "tmXTMajorLengthF" : 0.
+    "tmXTMajorOutwardLengthF" : 0.
+    "tmYLMajorOutwardLengthF" : .006
+    "tmYLMajorLengthF" : .006
+    "tmXBMinorOn" : "False"
+    "tmXTMinorOn" : "False"
+    "tmYLMinorOn" : "False"
+    "tmYRMinorOn" : "False"
+  end create
+;
+; Create another ContourPlot object.
+;
+  cellsize = .8/360.
+  ice = create "ice" contourPlotClass x
+    "cnScalarFieldData" : jan
+    "vpXF" : .06
+    "vpYF" : .65
+    "vpWidthF" : .60
+    "vpHeightF" : .30
+    "tmXBOn" : "False"
+    "tmYLOn" : "False"
+    "tmXBMinorOn" : "False"
+    "tmYLMinorOn" : "False"
+    "tmXBLabelsOn"   : "False"
+    "tmYLLabelsOn"   : "False"
+    "tmXBMajorLengthF" : 0.
+    "tmYLMajorLengthF" : 0.
+    "cnFillOn" : "True"
+    "cnRasterModeOn" : "True"
+    "cnRasterCellSizeF" : cellsize
+    "cnMinLevelValF" : -2.0
+    "cnFillColors"   : (/0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2/)
+    "cnLineLabelsOn" : "False"
+    "cnLinesOn" : "False"
+    "cnMonoFillColor" : "False"
+    "cnInfoLabelOn" : "False"
+    "cnHighLabelsOn" : "False"
+  end create
+;
+; Create a MapPlot object.
+;
+  mp = create "mp" mapPlotClass x
+    "vpXF" : .06
+    "vpYF" : .65
+    "vpWidthF" : .60
+    "vpHeightF" : .30
+    "mpFillOn" : True
+    "mpLabelsOn" : "False"
+    "mpDefaultFillColor" : 13
+    "mpLandFillColor" : 13
+    "mpOutlineOn" : "False"
+    "mpAreaMaskingOn" : "True"
+    "mpMaskAreaSpecifiers" : "Oceans"
+    "mpInlandWaterFillColor" : 2
+    "mpGridAndLimbOn" : "False"
+    "mpLimitMode" : "latlon"
+    "mpMinLonF" : 0.
+    "mpMaxLonF" : 360.
+    "mpCenterLonF" : 180.
+  end create
+;
+; Create a TextItem object.
+;
+  tx = create "tx" textItemClass x
+    "txPosXF" : 0.5
+    "txPosYF" : 0.8
+    "txJust"    : "CENTERCENTER"
+    "txString" : "January Climatological Surface Temperature"
+    "txFontHeightF" : .030
+    "txFont" : 25
+  end create
+
+;
+; Start with the Jan data.  Do zonal averages over water.
+;
+; Use 1.e+36 to denote a missing value.
+;
+  sstmsg = 1.e+36
+  zoneave = new( (/nlat/), float)
+  zoneave(:) = sstmsg
+;
+;  Read the ocean(1)/land(2) mask ascii dataset created by Areas/Ezmap.
+;
+  ocean1 = asciiread(filedir + "/asc/oceanland30e.asc",(/91,181/),"integer")
+
+  do nl=0,nlat-1     ; loop over all latitudes
+    ksst   = 0      ; knt the number of grid pts at ocean locations
+    sstzon = 0.0    ; save and plt later as [lat vs zoneave]
+
+    do ml=0,mlon-1  ; loop over all lon at a particular lat
+
+      if (ocean1(nl,ml).eq.1) then
+        ksst = ksst+1
+        sstzon = sstzon + sstjan(nl,ml)
+      end if
+    end do
+
+    if (ksst.ne.0) then
+      zoneave(nl) = sstzon/ksst
+    end if
+
+  end do
+;
+; Create a coordarrays data object.
+;
+  zonal = create "zonal" coordArraysClass defaultapp
+    "caYArray": (file1->lat(:))
+    "caXArray": zoneave
+    "caXMissingV" : 1.e36
+  end create
+;
+; Create XyPlot object and assign data to it.
+;
+  xy_plot = create "xy_plot" xyPlotClass x
+    "vpXF": .73
+    "vpYF": .65
+    "vpWidthF" :  .25
+    "vpHeightF" : .30
+    "xyCoordData": zonal
+    "trYMaxF" :  90.
+    "trYMinF" : -90.
+    "trXMaxF" :  30.
+    "trXMinF" :   0.
+    "tmXTLabelsOn" : "False"
+    "tmYRLabelsOn" : "False"
+    "tmYLLabelsOn" : "False"
+    "tmXBMajorLengthF" : .006
+    "tmXBMajorOutwardLengthF" : .006
+    "tmXBLabelFontHeightF" :  .010
+    "tmYLMajorOutwardLengthF" : .006
+    "tmYLMajorLengthF" : .006
+    "tmXTMajorLengthF" : 0.
+    "tmXTMajorOutwardLengthF" : 0.
+    "tmYRMajorLengthF" : 0.
+    "tmYRMajorOutwardLengthF" : 0.
+    "tmXBMinorOn" : "False"
+    "tmYLMinorOn" : "False"
+    "tmXBMode" : "EXPLICIT"
+    "tmXBValues" : (/0,3,6,9,12,15,18,21,24,27,30/)
+    "tmXBLabels" : (/"0","3","6","9","12","15","18","21","24","27","30"/)
+  end create
+;
+; Draw all objects to X11 window.
+;
+  draw(ice)
+  draw(cn)
+  draw(mp)
+  draw(xy_plot)
+  draw(tx)
+  frame(x)
+;
+; Reassign the workstation to save an ncgm.
+;
+  NhlChangeWorkstation (ice,ncgm)
+  NhlChangeWorkstation (cn,ncgm)
+  NhlChangeWorkstation (mp,ncgm)
+;
+; Draw only the contour plot with map and ice to the ncgm.
+;
+  draw(ice)
+  draw(cn)
+  draw(mp)
+  frame(ncgm)
+;
+; Reassign the workstation to save PS.
+;
+  NhlChangeWorkstation (ice,ps)
+  NhlChangeWorkstation (cn,ps)
+  NhlChangeWorkstation (mp,ps)
+  NhlChangeWorkstation (xy_plot,ps)
+  NhlChangeWorkstation (tx,ps)
+;
+; Draw all objects to PostScript.
+;
+  draw(ice)
+  draw(cn)
+  draw(mp)
+  draw(xy_plot)
+  draw(tx)
+  frame(ps)
+end
