@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargrun.m,v 1.1 1993-03-11 15:23:06 haley Exp $
+.\"	$Id: ncargrun.m,v 1.2 1993-04-05 17:44:54 haley Exp $
 .\"
 .TH NCARGRUN 1NCARG "JUNE 1988" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -25,7 +25,3 @@ translator.
 .BI \-t " "
 specifies that metafile output should be piped to the default translator
 "ftrans".
-.SH "SEE ALSO"
-.LP
-.I "NCAR Graphics UNIX Release"
-.LP

@@ -1,7 +1,7 @@
 .\"
-.\"	$Id: psblack.m,v 1.1 1993-03-11 15:23:16 haley Exp $
+.\"	$Id: psblack.m,v 1.2 1993-04-05 17:44:59 haley Exp $
 .\"
-.TH PSBLACK 1NCARG "SEPTEMBER 1990" NCAR "NCAR GRAPHICS"
+.TH PSBLACK 1NCARG "September 1990" NCAR "NCAR GRAPHICS"
 .SH NAME
 psblack \- PostScript filter.
 .SH SYNOPSIS
@@ -20,3 +20,5 @@ not appear as a light gray, but as white on
 the black background.  This filter is potentially
 useful for any PostScript files created by NCAR
 Graphics.
+.SH SEE ALSO
+ctrans(1NCARG), pswhite(1NCARG)

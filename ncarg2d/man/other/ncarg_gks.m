@@ -133,5 +133,5 @@ The one exception is that you can convert the file back to
 NCGM using \fIcgm2ncgm\fP.
 .sp
 .SH "SEE ALSO"
-cgm2ncgm(1)
+cgm2ncgm(1NCARG)
 .LP

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: pre2ncgm.m,v 1.1 1993-03-11 15:23:14 haley Exp $
+.\"	$Id: pre2ncgm.m,v 1.2 1993-04-05 17:44:56 haley Exp $
 .\"
 .TH PRE2NCGM 1NCARG "OCTOBER 1990" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -39,30 +39,4 @@ Various errors are detected by "pre2ncgm" and  are  written  to
 .SH VERSION
 1.00 (1-Aug-90)
 .SH SEE ALSO
-ctrans(1),ftrans(1),plt(1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-NCAR                  Last change: 3-Jan-90                     1
-
-
-
+ctrans(1NCARG),ftrans(1NCARG)

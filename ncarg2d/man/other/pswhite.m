@@ -1,7 +1,7 @@
 .\"
-.\"	$Id: pswhite.m,v 1.1 1993-03-11 15:23:18 haley Exp $
+.\"	$Id: pswhite.m,v 1.2 1993-04-05 17:45:01 haley Exp $
 .\"
-.TH PSWHITE 1NCARG "SEPTEMBER 1990" NCAR "NCAR GRAPHICS"
+.TH PSWHITE 1NCARG "September 1990" NCAR "NCAR GRAPHICS"
 .SH NAME
 pswhite \- PostScript filter.
 .SH SYNOPSIS
@@ -22,3 +22,5 @@ created by NCAR Graphics in Version 3.00 or
 earlier.  In Release 3.01 or later, the NCAR
 CGM interpreters by default plot black lines
 on a white background.
+.SH SEE ALSO
+ctrans(1NCARG), psblack(1NCARG)
