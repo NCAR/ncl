@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.21 1993-01-12 20:11:47 clyne Exp $
+ *	$Id: commands.c,v 1.22 1993-01-13 21:04:41 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -64,6 +64,7 @@ static	CtransRC	plotit(frame)
 	 * call ctrans to plot the frame begining at record
 	 */
 	for (i = 0; i < icState.dup; i++) {
+		CtransClear();
 		ctrc = ctrans(record);
 
 		if (icState.movie) {
@@ -78,7 +79,9 @@ static	CtransRC	plotit(frame)
 			while (getchar() != '\n')
 			; 
 		}
+#ifdef	DEAD
 		CtransClear();
+#endif
 	}
 	return(ctrc);
 }
