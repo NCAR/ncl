@@ -1,5 +1,5 @@
 C
-C      $Id: cn13f.f,v 1.3 1996-01-10 21:25:46 haley Exp $
+C      $Id: cn13f.f,v 1.4 1996-05-14 20:33:35 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -180,7 +180,7 @@ C
 C NhlDestroy destroys the given id and all of its children.
 C
       call NhlFRLDestroy(srlist)
-      call NhlFDestroy(appid,ierr)
+      call NhlFDestroy(workid,ierr)
 C
 C Restores state.
 C
