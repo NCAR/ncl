@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.8 1996-06-13 16:55:10 haley Exp $
+#   $Id: yMakefile,v 1.9 1996-06-17 21:23:58 haley Exp $
 #
 #   Makefile for HLU VectorPlot examples
 #
@@ -10,12 +10,12 @@ PROG_LIBS   = $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  = $(XMOTIFCLIENTLIBS) -lnetcdf
 SYS_LIBS    = $(CTOFLIBS) -lm
 
-CSRCS       = vc01c.c vc02c.c vc03c.c vc05c.c
-FSRCS       = vc01f.f vc02f.f vc03f.f vc05f.f
+CSRCS       = vc01c.c vc02c.c vc03c.c vc04c.c vc05c.c
+FSRCS       = vc01f.f vc02f.f vc03f.f vc04f.f vc05f.f
 NSRCS       = vc01n.ncl vc02n.ncl vc03n.ncl vc04n.ncl vc05n.ncl vc06n.ncl
 
-COBJS       = vc01c.o vc02c.o vc03c.o vc05c.o
-FOBJS       = vc01f.o vc02f.o vc03f.o vc05f.o
+COBJS       = vc01c.o vc02c.o vc03c.o vc04c.o vc05c.o
+FOBJS       = vc01f.o vc02f.o vc03f.o vc04f.o vc05f.o
 SRCS        = $(CSRCS) $(FSRCS)
 OBJS        = $(COBJS) $(FOBJS)
 
@@ -29,11 +29,13 @@ InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
 CExampleTarget(vc01c,vc01c.o)
 CExampleTarget(vc02c,vc02c.o)
 CExampleTarget(vc03c,vc03c.o)
+CExampleTarget(vc04c,vc04c.o)
 CExampleTarget(vc05c,vc05c.o)
 
 FExampleTarget(vc01f,vc01f.o)
 FExampleTarget(vc02f,vc02f.o)
 FExampleTarget(vc03f,vc03f.o)
+FExampleTarget(vc04f,vc04f.o)
 FExampleTarget(vc05f,vc05f.o)
 
 CleanFilesTarget($(OBJS))

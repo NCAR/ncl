@@ -92,7 +92,7 @@ end create
 
 ;
 ; Create a VectorPlot object, supplying the ScalarField object as data
-; Setting vcMonoVectorLineColor False causes VectorPlot to color the
+; Setting vcMonoFillArrowFillColor False causes VectorPlot to color the
 ; vector arrows individually based, by default, on the vector magnitude.
 ;
 
