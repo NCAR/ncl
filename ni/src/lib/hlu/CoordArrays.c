@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.1 1993-09-15 22:10:30 boote Exp $
+ *      $Id: CoordArrays.c,v 1.2 1993-09-20 21:37:14 boote Exp $
  */
 /************************************************************************
 *									*
@@ -98,7 +98,7 @@ CoordArraysFloatLayerClassRec coordArraysFloatLayerClassRec = {
 	},
 	/* CoordArraysFloatLayerPart */
 	{
-/* foo				*/	NULL
+/* foo				*/	0
 	}
 };
 
@@ -125,7 +125,7 @@ CoordArraysIntLayerClassRec coordArraysIntLayerClassRec = {
 	},
 	/* CoordArraysIntLayerPart */
 	{
-/* foo				*/	NULL
+/* foo				*/	0
 	}
 };
 
@@ -161,11 +161,11 @@ CoordArraysLayerClassRec coordArraysLayerClassRec = {
 	},
 	/* DataItemLayerClassPart */
 	{
-/* foo				*/	NULL
+/* foo				*/	0
 	},
 	/* CoordArraysLayerClassPart */
 	{
-/* foo				*/	NULL
+/* foo				*/	0
 	}
 };
 	

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.1 1993-09-15 22:10:11 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.2 1993-09-20 21:37:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -410,7 +410,7 @@ CoordArrTableFloatLayerClassRec coordArrTableFloatLayerClassRec = {
 	},
 	/* CoordArrTableFloatLayerPart */
 	{
-/* foo				*/	NULL
+/* foo				*/	0
 	}
 };
 
@@ -437,7 +437,7 @@ CoordArrTableIntLayerClassRec coordArrTableIntLayerClassRec = {
 	},
 	/* CoordArrTableIntLayerPart */
 	{
-/* foo				*/	NULL
+/* foo				*/	0
 	}
 };
 
@@ -473,11 +473,11 @@ CoordArrTableLayerClassRec coordArrTableLayerClassRec = {
 	},
 	/* DataItemLayerClassPart */
 	{
-/* foo				*/	NULL
+/* foo				*/	0
 	},
 	/* CoordArrTableLayerClassPart */
 	{
-/* foo				*/	NULL
+/* foo				*/	0
 	}
 };
 	
@@ -852,7 +852,7 @@ CoordArrTableInitialize
 {
 	char			*error_lead = "CoordArrTableInitialize";
 	CoordArrTableLayer	ncat = (CoordArrTableLayer)new;
-	LayerClass		child_class;
+	LayerClass		child_class=NULL;
 	int			tchild;
 	char			name[MAXRESNAMLEN];
 	NhlErrorTypes		ret;
