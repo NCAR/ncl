@@ -1,5 +1,5 @@
 /*
- *      $Id: OverlayP.h,v 1.10 1994-06-24 00:39:53 dbrown Exp $
+ *      $Id: OverlayP.h,v 1.11 1994-11-04 21:06:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,10 +35,6 @@
 #define NhlOV_DEF_LABELBAR_ZONE 6
 #define NhlOV_DEF_LEGEND_ZONE	7
 #define NhlOV_DEF_TITLE_HEIGHT  0.02
-
-/* Zone/Display flags */
-
-#define NhlovMAXZONE		24
 
 /* private resources */
 

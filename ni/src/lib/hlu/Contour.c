@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.35 1994-10-27 01:36:45 dbrown Exp $
+ *      $Id: Contour.c,v 1.36 1994-11-04 21:06:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1802,6 +1802,7 @@ ContourClassPartInitialize
 					NhlNlbFillPatterns,
 					NhlNlbMonoFillScale,
 					NhlNlbFillScales,
+					NhlNlbLabelAlignment,
 					NULL);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -2040,6 +2041,7 @@ ContourInitialize
 				return ret;
 		}
 	}
+
 	cnp->data_changed = False;
 	cnp->level_spacing_set = False;
 	cnp->line_dash_seglen_set = False;

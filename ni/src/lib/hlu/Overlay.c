@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.26 1994-10-27 01:36:55 dbrown Exp $
+ *      $Id: Overlay.c,v 1.27 1994-11-04 21:06:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -137,19 +137,6 @@ static NhlResource resources[] = {
 		 sizeof(float),
 		 Oset(lbar_ortho_pos),
 		 NhlTString,_NhlUSET("0.02"),0,NULL},
-	{ NhlNovLabelBarXOffsetF, NhlCovLabelBarXOffsetF,NhlTFloat, 
-		  sizeof(float),
-		  Oset(lbar_x_off),
-		  NhlTString,_NhlUSET("0.02" ),0,NULL},
-	{ NhlNovLabelBarYOffsetF, NhlCovLabelBarYOffsetF,NhlTFloat, 
-		  sizeof(float),
-		  Oset(lbar_y_off),
-		  NhlTString,_NhlUSET("0.00" ),0,NULL},
-	{NhlNovLabelBarPosition, NhlCovLabelBarPosition, NhlTPosition, 
-		 sizeof(NhlJustification),
-		 Oset(lbar_pos),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlBOTTOM),0,NULL},
-
 
 /* Legend resources */
 
@@ -179,18 +166,6 @@ static NhlResource resources[] = {
 		 sizeof(float),
 		 Oset(lgnd_ortho_pos),NhlTString,
 		 _NhlUSET("0.02"),0,NULL},
-	{NhlNovLegendPosition, NhlCovLegendPosition, NhlTPosition, 
-		 sizeof(NhlPosition),
-		 Oset(lgnd_pos),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTER),0,NULL},
-	{ NhlNovLegendXOffsetF, NhlCovLegendXOffsetF,NhlTFloat, 
-		  sizeof(float),
-		  Oset(lgnd_x_off),
-		  NhlTString,_NhlUSET("0.00" ),0,NULL},
-	{ NhlNovLegendYOffsetF, NhlCovLegendYOffsetF,NhlTFloat, 
-		  sizeof(float),
-		  Oset(lgnd_y_off),
-		  NhlTString,_NhlUSET("0.02" ),0,NULL},
 
 /* End-documented-resources */
 
@@ -216,24 +191,8 @@ static NhlResource resources[] = {
 		  Oset(update_req),
 		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
 
-/*
- * Intercepted tick mark resources
- */
-	{ NhlNtmXBDataLeftF, NhlCtmXBDataLeftF,NhlTFloat, sizeof(float),
-		  Oset(x_b_data_left),
-		  NhlTString,_NhlUSET("0.0" ),0,NULL},
-	{ NhlNtmXBDataRightF, NhlCtmXBDataRightF,NhlTFloat, sizeof(float),
-		  Oset(x_b_data_right),
-		  NhlTString,_NhlUSET("1.0" ),0,NULL},
-	{ NhlNtmYLDataBottomF, NhlCtmYLDataBottomF,NhlTFloat, sizeof(float),
-		  Oset(y_l_data_bottom),
-		  NhlTString,_NhlUSET("0.0" ),0,NULL},
-	{ NhlNtmYLDataTopF, NhlCtmYLDataTopF,NhlTFloat, sizeof(float),
-		  Oset(y_l_data_top),
-		  NhlTString,_NhlUSET("1.0" ),0,NULL},
-
 /* 
- * Overlay only looks at the XLog and YLog directly
+ * Intercepted TransObj resources
  */
 	{ NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
 		Oset(x_min),
@@ -706,8 +665,24 @@ OverlayClassPartInitialize
 					False,False,
 					NhlNtmXBDataLeftF,
 					NhlNtmXBDataRightF,
+					NhlNtmXBStyle,
+					NhlNtmXBIrregularPoints,
+					NhlNtmXBIrrTensionF,
+					NhlNtmXTDataLeftF,
+					NhlNtmXTDataRightF,
+					NhlNtmXTStyle,
+					NhlNtmXTIrregularPoints,
+					NhlNtmXTIrrTensionF,
 					NhlNtmYLDataBottomF,
 					NhlNtmYLDataTopF,
+					NhlNtmYLStyle,
+					NhlNtmYLIrregularPoints,
+					NhlNtmYLIrrTensionF,
+					NhlNtmYRDataBottomF,
+					NhlNtmYRDataTopF,
+					NhlNtmYRStyle,
+					NhlNtmYRIrregularPoints,
+					NhlNtmYRIrrTensionF,
 					NULL);
 
 	if ((ret = MIN(subret,ret)) < NhlWARNING)
@@ -2311,7 +2286,7 @@ static NhlErrorTypes SetExternalView
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
 	}
-	if (anno_rec->zone > 0)
+	if (anno_rec->zone > 1)
 		just = ConstrainJustification(anno_rec);
 	else
 		just = anno_rec->just;
@@ -2807,7 +2782,7 @@ ManageExtAnnotation
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
 	}
-	if (anno_rec->zone > 0)
+	if (anno_rec->zone > 1)
 		just = ConstrainJustification(anno_rec);
 
 /*
@@ -2966,6 +2941,8 @@ ManageTickMarks
 	NhlAnnoRec	*anno_rec;
 #endif
 {
+#define ovTMARGCOUNT	32
+
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name;
 	char			*e_text;
@@ -2974,7 +2951,7 @@ ManageTickMarks
 	NhlTransformLayerPart	*tfp = &ovnew->trans;
 	int			tmpid = -1;
 	char			buffer[_NhlMAXFNAMELEN];
-        NhlSArg			sargs[16];
+        NhlSArg			sargs[ovTMARGCOUNT];
         int			nargs = 0;
 	NhlLayer			trobj;
 	NhlString		trobj_name;
@@ -3198,6 +3175,12 @@ ManageTickMarks
 		NhlSetSArg(&sargs[nargs++],NhlNtmYLDataTopF,y_irr[count-1]);
 		NhlSetSArg(&sargs[nargs++],NhlNtmXBIrregularPoints,ovp->x_irr);
 		NhlSetSArg(&sargs[nargs++],NhlNtmYLIrregularPoints,ovp->y_irr);
+		NhlSetSArg(&sargs[nargs++],NhlNtmXTDataLeftF,x_irr[0]);
+		NhlSetSArg(&sargs[nargs++],NhlNtmXTDataRightF,x_irr[count-1]);
+		NhlSetSArg(&sargs[nargs++],NhlNtmYRDataBottomF,y_irr[0]);
+		NhlSetSArg(&sargs[nargs++],NhlNtmYRDataTopF,y_irr[count-1]);
+		NhlSetSArg(&sargs[nargs++],NhlNtmXTIrregularPoints,ovp->x_irr);
+		NhlSetSArg(&sargs[nargs++],NhlNtmYRIrregularPoints,ovp->y_irr);
 	}
 		 
 		 
@@ -3216,7 +3199,16 @@ ManageTickMarks
 		NhlSetSArg(&sargs[nargs++],NhlNtmXBStyle,ovp->x_tm_style);
 		NhlSetSArg(&sargs[nargs++],NhlNtmXBIrrTensionF,ovp->x_tension);
 		NhlSetSArg(&sargs[nargs++],NhlNtmYLIrrTensionF,ovp->y_tension);
+		NhlSetSArg(&sargs[nargs++],NhlNtmYRStyle,ovp->y_tm_style);
+		NhlSetSArg(&sargs[nargs++],NhlNtmXTStyle,ovp->x_tm_style);
+		NhlSetSArg(&sargs[nargs++],NhlNtmXTIrrTensionF,ovp->x_tension);
+		NhlSetSArg(&sargs[nargs++],NhlNtmYRIrrTensionF,ovp->y_tension);
 
+		if (nargs >= ovTMARGCOUNT) {
+			e_text = "%s: TickMark setargs array exceeded";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			return(NhlFATAL);
+		}
 		strcpy(buffer,ovnew->base.name);
 		strcat(buffer,".TickMark");
 		subret = _NhlALCreateChild(&tmpid,buffer,NhltickMarkLayerClass,
@@ -3248,19 +3240,34 @@ ManageTickMarks
 		if (ovp->x_tm_style != oovp->x_tm_style) {
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNtmXBStyle,ovp->x_tm_style);
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtmXTStyle,ovp->x_tm_style);
 		}
 		if (ovp->y_tm_style != oovp->y_tm_style) {
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNtmYLStyle,ovp->y_tm_style);
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtmYRStyle,ovp->y_tm_style);
 		}
-		if (ovp->x_tension != oovp->x_tension)
+		if (ovp->x_tension != oovp->x_tension) {
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNtmXBIrrTensionF,ovp->x_tension);
-		if (ovp->y_tension != oovp->y_tension)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtmXTIrrTensionF,ovp->x_tension);
+		}
+		if (ovp->y_tension != oovp->y_tension) {
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNtmYLIrrTensionF,ovp->y_tension);
-		
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNtmYRIrrTensionF,ovp->y_tension);
+		}
 
+
+		if (nargs >= ovTMARGCOUNT) {
+			e_text = "%s: TickMark setargs array exceeded";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			return(NhlFATAL);
+		}
 		subret = _NhlALSetValuesChild(ovp->tickmarks->base.id,
 					      (NhlLayer)ovnew,sargs,nargs);
 
@@ -3970,7 +3977,7 @@ ManageLegend
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
 	}
-	if (anno_rec->zone > 0)
+	if (anno_rec->zone > 1)
 		anno_rec->just = ConstrainJustification(anno_rec);
 	ovp->real_lgnd_just = anno_rec->just;
 
@@ -4214,8 +4221,8 @@ NhlErrorTypes NhlAddToOverlay
 	}
 	if (base == plot) {
 		e_text = "%s: overlay member and base plot ids are the same";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		return NhlWARNING;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 
 	plot_tfp = &(((NhlTransformLayer)plot)->trans);
@@ -4239,9 +4246,9 @@ NhlErrorTypes NhlAddToOverlay
 	    plot_classp->trans_class.overlay_capability ==
 	    					_tfOverlayBaseOnly) {
 		e_text = "%s: plot class %s cannot be overlay member";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  plot_classp->base_class.class_name);
-		return NhlWARNING;
+		return NhlFATAL;
 	}
 
 /*
@@ -4258,17 +4265,17 @@ NhlErrorTypes NhlAddToOverlay
 
 	if (plot_tfp->overlay_status == _tfCurrentOverlayMember) {
 		e_text = "%s: plot ID %d is already an overlay member";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,plot_id);
-		return NhlWARNING;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,plot_id);
+		return NhlFATAL;
 	}
 	else if (plot_tfp->overlay_status == _tfCurrentOverlayBase) {
 
 		if (plot_tfp->overlay_object == NULL || 
 		    ! _NhlIsTransform(plot_tfp->overlay_object)) {
 		      e_text = "%s: plot ID %d has inconsistent overlay info";
-		        NhlPError(NhlWARNING,NhlEUNKNOWN,
+		        NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  e_text,entry_name,plot_id);
-			return NhlWARNING;
+			return NhlFATAL;
 		}
 
 		subret = NhlVAGetValues(plot_tfp->overlay_object->base.id,
@@ -4678,6 +4685,7 @@ NhlErrorTypes NhlRegisterAnnotation
 	char			*entry_name = "NhlRegisterAnnotation";
 	NhlLayer		base = _NhlGetLayer(overlay_base_id);
 	NhlLayer		annotation = _NhlGetLayer(annotation_id);
+	NhlLayer		view_layer;
 	NhlOverlayLayer		overlay;
 	NhlTransformLayerPart	*base_tfp;
 	NhlAnnoRec		*anrp;
@@ -4728,6 +4736,20 @@ NhlErrorTypes NhlRegisterAnnotation
 				NULL);
 
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return NhlFATAL;
+#if 0
+/*
+ * Make sure that a View class object has been attached to the 
+ * Annotation
+ */
+
+	if (((view_layer = _NhlGetLayer(pid)) == NULL) ||
+	    ! _NhlIsView(view_layer)) {
+		e_text = "%s: annotation has no valid View object attached";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		return NhlWARNING;
+	}
+#endif
+
 /*
  * Record the annotation in the overlay's data structures; a pointer
  * to the new annotation record is returned.
