@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.32 1993-09-09 20:17:26 clyne Exp $
+ *	$Id: rast.c,v 1.33 1994-04-14 18:04:02 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -167,12 +167,6 @@ static	clear_grid(grid)
 
 static	init_color_tab()
 {
-
-	/*
-	 * set rgb-component pointers to default portion of 
-	 * RasColorMap
-	 */
-	colorTab.rgb = &colorTab.default_rgb[0];
 
 	/*
 	 * record the foreground and background color in the
@@ -610,22 +604,6 @@ CGMC *c;
 	 *      for each new frame
 	 */
 	SetInPic((boolean)TRUE);
-
-	if (firstFrame) {
-		/*
-		 * from now on can't modify default color map, can only
-		 * modify current colormap
-		 */
-		colorTab.rgb = &colorTab.current_rgb[0];
-		firstFrame = FALSE;
-	}
-
-	/*
-	 * restore default global colormap to current colormap
-	 */
-	for (i=0; i < MAX_COLOR; i++) {
-		colorTab.current_rgb[i] = colorTab.default_rgb[i];
-	}
 
 	FILL_COLOUR_DAMAGE = TRUE;
 	LINE_COLOUR_DAMAGE = TRUE;

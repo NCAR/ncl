@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.h,v 1.5 1992-09-01 23:42:59 clyne Exp $
+ *	$Id: rast.h,v 1.6 1994-04-14 18:04:03 clyne Exp $
  */
 #ifndef	_color_
 #define	_color_
@@ -17,9 +17,7 @@ typedef	struct	{
  *	we use this struct to maintain a default and a current colormap.
  */	
 typedef	struct	{
-	Rgb	default_rgb[MAX_COLOR_INDEX];
-	Rgb	current_rgb[MAX_COLOR_INDEX];
-	Rgb	*rgb;
+	Rgb	rgb[MAX_COLOR_INDEX];
 	} RasColrTab;
 
 #define	RAS_PUT_PIX(ras, x,y, index, table, direct) \
