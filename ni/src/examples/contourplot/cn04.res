@@ -27,7 +27,7 @@
 ! use the 'computed' method of spacing labels and adjust spacing to every
 ! fourth contour line; make line labels horizontal
 !
-*cn04Work.ContourPlot1*cnLineLabelSpacing : computed
+*cn04Work.ContourPlot1*cnLineLabelPlacementMode : computed
 *cn04Work.ContourPlot1*cnLineLabelInterval : 4
 *cn04Work.ContourPlot1*cnLineLabelAngleF : 0.0
 *cn04Work.ContourPlot1*cnLineLabelTextHeightF : 0.008
