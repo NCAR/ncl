@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.9 1995-02-28 22:34:37 fred Exp $
+ *	$Id: ps.c,v 1.10 1995-11-30 20:24:45 fred Exp $
  */
 /*
  *
@@ -789,7 +789,7 @@ void PSpreamble (PSddp *psa, preamble_type type)
 				psa->page_number, psa->page_number);
 		}
 		psa->pict_empty = FALSE;
-        	(void) fprintf(fp, "%.2f %.2f A ", scl, scl);
+        	(void) fprintf(fp, "%.5f %.5f A ", scl, scl);
         	(void) fprintf(fp, "%d J ",psa->line_join);
         	(void) fprintf(fp, "%d C ",psa->line_cap);
 		if (psa->line_join == MITER) {
