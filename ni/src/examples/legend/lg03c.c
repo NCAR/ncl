@@ -1,5 +1,5 @@
 /*
- *  $Id: lg03c.c,v 1.12 1995-04-27 20:02:05 haley Exp $
+ *  $Id: lg03c.c,v 1.13 1995-05-01 16:23:48 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -44,11 +44,11 @@ main()
 /*
  * Initialize data values
  */
-    colors[0] = 40;
-    colors[1] = 50;
-    colors[2] = 65;
-    colors[3] = 80;
-    colors[4] = 90;
+    colors[0] = 2;
+    colors[1] = 4;
+    colors[2] = 6;
+    colors[3] = 8;
+    colors[4] = 10;
     lnthik = 4.;
 
     item_ind[0] =  2;

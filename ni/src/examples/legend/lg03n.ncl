@@ -27,7 +27,7 @@ begin
 ;
 labels = (/"Line_Type_0","Line_Type_1","Line_Type_2", \
            "Line_Type_3","Line_Type_4" /)
-colors = (/ 40, 50, 65, 80, 90 /)
+colors = (/ 2, 4, 6, 8, 10 /)
 lnthik = (/ 4.0, 4.0, 4.0, 4.0, 4.0 /)
 item_ind = (/ 2, 3, 4, 5, 6 /)
 

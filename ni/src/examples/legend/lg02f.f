@@ -35,7 +35,7 @@ C
       data labels / 'Marker_0', 'Marker_1', 'Marker_2', 
      1     'Marker_3', 'Marker_4' /
 
-      data colors / 11, 21, 31, 41, 51 /
+      data colors / 3, 5, 7, 9, 11 /
 
       data mkthik / 2.0, 3.0, 4.0, 5.0, 6.0 /
 

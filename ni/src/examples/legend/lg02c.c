@@ -42,11 +42,11 @@ main()
     labels[2] = "Marker_2";
     labels[3] = "Marker_3";
     labels[4] = "Marker_4";
-    colors[0] = 11;
-    colors[1] = 21;
-    colors[2] = 31;
-    colors[3] = 41;
-    colors[4] = 51;
+    colors[0] = 3;
+    colors[1] = 5;
+    colors[2] = 7;
+    colors[3] = 9;
+    colors[4] = 11;
     mkthik[0] = 2.;
     mkthik[1] = 3.;
     mkthik[2] = 4.;

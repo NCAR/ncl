@@ -26,7 +26,7 @@ begin
 ; Initialize data values
 ;
 labels = (/"Marker_0","Marker_1","Marker_2","Marker_3","Marker_4" /)
-colors = (/ 11, 21, 31, 41, 51 /)
+colors = (/ 3, 5, 7, 9, 11 /)
 mkthik = (/ 2.0, 3.0, 4.0, 5.0, 6.0 /)
 item_ind = (/ 2, 3, 4, 5, 6 /)
 
