@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.29 2000-02-07 23:26:18 haley Exp $
+;      $Id: gsn_code.ncl,v 1.30 2000-02-16 20:15:58 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -41,7 +41,7 @@
 undef("set_attr")
 undef("get_res_eq")
 undef("get_res_ne")
-undef("get_special_res_value")
+undef("get_res_value")
 undef("spread_colors")
 undef("check_for_irreg2loglin")
 undef("gsnp_turn_off_tickmarks")
@@ -184,17 +184,18 @@ begin
 end
 
 ;***********************************************************************;
-; Function : get_special_res_value                                      ;
+; Function : get_res_value                                              ;
 ;                res:logical                                            ;
 ;            resname:string                                             ;
 ;        default_val                                                    ;
 ;                                                                       ;
-; This function checks to see if the given special "gsn" resource has   ;
-; been set, and if it has, it returns its value and removes it from the ;
-; resource list.  Otherwise, it returns the default value which is the  ;
-; last argument passed in.                                              ;
+; This function checks to see if the given resource has been set, and if;
+; so, it returns its value and removes it from the resource list.       ;
+; Otherwise, it returns the default value which is the last argument    ;
+; passed in.                                                            ;
+;                                                                       ;
 ;***********************************************************************;
-function get_special_res_value(res:logical,resname:string,default_val)
+function get_res_value(res:logical,resname:string,default_val)
 local return_val
 begin
   return_val = default_val
@@ -309,10 +310,10 @@ procedure check_for_irreg2loglin(res:logical,xlinear:logical,ylinear:logical,\
 end
 
 ;***********************************************************************;
-  xlinear = get_special_res_value(res,"gsnXAxisIrregular2Linear",xlinear)
-  ylinear = get_special_res_value(res,"gsnYAxisIrregular2Linear",ylinear)
-  xlog    = get_special_res_value(res,"gsnXAxisIrregular2Log",xlog)
-  ylog    = get_special_res_value(res,"gsnYAxisIrregular2Log",ylog)
+; Procedure : check_for_irreg2loglin                                    ;
+;                res:logical                                            ;
+;            xlinear:logical                                            ;
+;            ylinear:logical                                            ;
 ;               xlog:logical                                            ;
 ;               ylog:logical                                            ;
 ;                                                                       ;
@@ -589,7 +590,7 @@ begin
     "tmXBLabelFontHeightF" : (xbfont+ylfont)/2.
     "tmXBMajorLengthF"     : xlength
     "tmXBMinorLengthF"     : xmlength
-  ticks_on = get_special_res_value(res,"gsnTickMarksOn",True)
+    "tmYLLabelFontHeightF" : (xbfont+ylfont)/2.
     "tmYLMajorLengthF"     : ylength
     "tmYLMinorLengthF"     : ymlength
   end setvalues
@@ -1271,7 +1272,7 @@ begin
     panel_labelbar = False
     draw_boxes     = False
     orths = (/     1.0,          -1.0,      -1.0,        1.0/)
-    panel_center = get_special_res_value(resources,"gsnPanelCenter",True)
+    panel_center = get_res_value(resources,"gsnPanelCenter",True)
 ; title string which is also set with tx* resources. We have to figure
     if(resources)
       if(isatt(resources,"gsnFrame").and..not.resources@gsnFrame)
@@ -1728,13 +1729,13 @@ begin
             "sfMissingValueV" :data@_FillValue
         end setvalues
     end if
-    calldraw  = get_special_res_value(res2,"gsnDraw", True)
-    callframe = get_special_res_value(res2,"gsnFrame",True)
-    shape     = get_special_res_value(res2,"gsnShape",False)
-    scale     = get_special_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_special_res_value(res2,"gsnSpreadColors",False)
-    min_index = get_special_res_value(res2,"gsnSpreadColorStart",2)
-    max_index = get_special_res_value(res2,"gsnSpreadColorEnd",-1)
+;
+; Create plot object. Make sure you set the tension values (if
+; them later.
+;
+    xtension  = get_res_value(res2,"trXTensionF", 2.0)
+    ytension  = get_res_value(res2,"trYTensionF", 2.0)
+
     plot_object = create wksname + "_contour" contourPlotClass wks
         "trXTensionF"       : xtension
         "trYTensionF"       : ytension
@@ -1868,13 +1869,13 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
 ; any) when you create the plot. This works better than setting
 ; them later.
 ;
-    calldraw  = get_special_res_value(res2,"gsnDraw", True)
-    callframe = get_special_res_value(res2,"gsnFrame",True)
-    scale     = get_special_res_value(res2,"gsnScale",False)
-    shape     = get_special_res_value(res2,"gsnShape",scale)
-    sprdcols  = get_special_res_value(res2,"gsnSpreadColors",False)
-    min_index = get_special_res_value(res2,"gsnSpreadColorStart",2)
-    max_index = get_special_res_value(res2,"gsnSpreadColorEnd",-1)
+    xtension  = get_res_value(res2,"trXTensionF", 2.0)
+    ytension  = get_res_value(res2,"trYTensionF", 2.0)
+    contour_object = create wksname + "_contour" contourPlotClass wks
+        "cnScalarFieldData" : data_object
+        "trYTensionF"       : ytension
+        "trXTensionF"       : xtension
+    end create
 
     sfres = get_res_eq(res2,"sf")
 ; Check for existence of data@long_name and use it in a title it
@@ -2003,8 +2004,8 @@ local i, attnames, plot_object, res2
 ; "resources" is an optional list of resources. The id of the map plot  ;
 ; is returned.                                                          ;
 ;                                                                       ;
-    calldraw  = get_special_res_value(res2,"gsnDraw", True)
-    callframe = get_special_res_value(res2,"gsnFrame",True)
+; Special resources ("gsn" prefix) allowed:                             ;
+;                                                                       ;
 ;   gsnFrame                                                            ;
     if(res2.and..not.any(ismissing(getvaratts(res2))))
       attsetvalues(plot_object,res2)
@@ -2077,10 +2078,10 @@ begin
     data_object = create wksname + "_data" vectorFieldClass noparent
         "vfUDataArray" : u
         "vfVDataArray" : v
-    calldraw  = get_special_res_value(res2,"gsnDraw", True)
-    callframe = get_special_res_value(res2,"gsnFrame",True)
-    shape     = get_special_res_value(res2,"gsnShape",False)
-    scale     = get_special_res_value(res2,"gsnScale",shape)
+    end create
+
+
+    if(isatt(u,"_FillValue")) then
         setvalues data_object
             "vfMissingUValueV" :u@_FillValue
         end setvalues
@@ -2211,10 +2212,10 @@ begin
 ; Check for missing values.
 
     if(isatt(u,"_FillValue")) then
-    calldraw  = get_special_res_value(res2,"gsnDraw", True)
-    callframe = get_special_res_value(res2,"gsnFrame",True)
-    shape     = get_special_res_value(res2,"gsnShape",False)
-    scale     = get_special_res_value(res2,"gsnScale",shape)
+        setvalues data_object
+            "vfMissingUValueV" :u@_FillValue
+    end if
+    if(isatt(v,"_FillValue")) then
         setvalues data_object
             "vfMissingVValueV" :v@_FillValue
         end setvalues
@@ -2412,13 +2413,13 @@ begin
     data_object = create wksname + "_data" vectorFieldClass noparent
         "vfUDataArray" : u
         "vfVDataArray" : v
-    calldraw  = get_special_res_value(res2,"gsnDraw", True)
-    callframe = get_special_res_value(res2,"gsnFrame",True)
-    shape     = get_special_res_value(res2,"gsnShape",False)
-    scale     = get_special_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_special_res_value(res2,"gsnSpreadColors",False)
-    min_index = get_special_res_value(res2,"gsnSpreadColorStart",2)
-    max_index = get_special_res_value(res2,"gsnSpreadColorEnd",-1)
+    end create
+
+
+    if(isatt(u,"_FillValue")) then
+        setvalues data_object
+            "vfMissingUValueV" :u@_FillValue
+        end setvalues
     end if
     if(isatt(v,"_FillValue")) then
         setvalues data_object
@@ -2574,10 +2575,10 @@ begin
     sfdata_object = create wksname + "_sfdata" scalarFieldClass noparent
         "sfDataArray" : data
     end create
-    calldraw  = get_special_res_value(res2,"gsnDraw", True)
-    callframe = get_special_res_value(res2,"gsnFrame",True)
-    shape     = get_special_res_value(res2,"gsnShape",False)
-    scale     = get_special_res_value(res2,"gsnScale",shape)
+
+; Check for a missing value.
+    if(isatt(data,"_FillValue")) then
+        setvalues sfdata_object
 
 ; Create vector plot object.
 
@@ -2699,10 +2700,10 @@ begin
 ; Check for a missing value.
 
     if(isatt(data,"_FillValue")) then
-    calldraw  = get_special_res_value(res2,"gsnDraw", True)
-    callframe = get_special_res_value(res2,"gsnFrame",True)
-    shape     = get_special_res_value(res2,"gsnShape",False)
-    scale     = get_special_res_value(res2,"gsnScale",shape)
+        setvalues sfdata_object
+            "sfMissingValueV" :data@_FillValue
+    end if
+
         "vcVectorFieldData" : vfdata_object
     end create
 
@@ -2806,13 +2807,13 @@ begin
 ; Check for missing values.
 
     if(isatt(u,"_FillValue")) then
-    calldraw  = get_special_res_value(res2,"gsnDraw", True)
-    callframe = get_special_res_value(res2,"gsnFrame",True)
-    shape     = get_special_res_value(res2,"gsnShape",False)
-    scale     = get_special_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_special_res_value(res2,"gsnSpreadColors",False)
-    min_index = get_special_res_value(res2,"gsnSpreadColorStart",2)
-    max_index = get_special_res_value(res2,"gsnSpreadColorEnd",-1)
+        setvalues data_object
+            "vfMissingUValueV" :u@_FillValue
+    end if
+    if(isatt(v,"_FillValue")) then
+        setvalues data_object
+            "vfMissingVValueV" :v@_FillValue
+        end setvalues
     end if
 
 ; Create plot object.
@@ -2931,13 +2932,13 @@ begin
     end if
 
 ; Check for missing values.
-    calldraw  = get_special_res_value(res2,"gsnDraw", True)
-    callframe = get_special_res_value(res2,"gsnFrame",True)
-    shape     = get_special_res_value(res2,"gsnShape",False)
-    scale     = get_special_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_special_res_value(res2,"gsnSpreadColors",False)
-    min_index = get_special_res_value(res2,"gsnSpreadColorStart",2)
-    max_index = get_special_res_value(res2,"gsnSpreadColorEnd",-1)
+
+    if(isatt(u,"_FillValue")) then
+            "vfMissingUValueV" :u@_FillValue
+        end setvalues
+    end if
+    if(isatt(v,"_FillValue")) then
+        setvalues vfdata_object
             "vfMissingVValueV" :v@_FillValue
         end setvalues
     end if
@@ -3100,13 +3101,13 @@ begin
         "sfDataArray" : data
     end create
 
-    calldraw  = get_special_res_value(res2,"gsnDraw", True)
-    callframe = get_special_res_value(res2,"gsnFrame",True)
-    shape     = get_special_res_value(res2,"gsnShape",False)
-    scale     = get_special_res_value(res2,"gsnScale",shape)
-    sprdcols  = get_special_res_value(res2,"gsnSpreadColors",False)
-    min_index = get_special_res_value(res2,"gsnSpreadColorStart",2)
-    max_index = get_special_res_value(res2,"gsnSpreadColorEnd",-1)
+; Check for a missing value.
+
+        setvalues sfdata_object
+            "sfMissingValueV" :data@_FillValue
+        end setvalues
+    end if
+
 ; Create plot object.
 
     vector_object = create wksname + "_vector" vectorPlotClass wks
@@ -3266,10 +3267,10 @@ begin
       set_attr(res2,"tiYAxisString",y@long_name)
     end if
 
-    calldraw  = get_special_res_value(res2,"gsnDraw", True)
-    callframe = get_special_res_value(res2,"gsnFrame",True)
-    shape     = get_special_res_value(res2,"gsnShape",False)
-    scale     = get_special_res_value(res2,"gsnScale",shape)
+; By default, only solid lines get drawn if there are multiple lines, so
+; set some dash patterns to use instead.  Also set different marker styles.
+    getvalues plot_object
+        "xyCoordDataSpec" : dspec
     end getvalues
 
     if(res2.and..not.any(ismissing(getvaratts(res2))))
