@@ -185,9 +185,13 @@ NhlErrorTypes center_finite_diff_W( void )
   else {
     type_dqdr = NCL_float;
     dqdr      = (void*)calloc(size_q,sizeof(float));
+    tmp_dqdr  = coerce_output_double(dqdr,type_dqdr,npts);
+    if( tmp_dqdr == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"center_finite_diff: Unable to allocate memory for temporary output array");
+      return(NhlFATAL);
+    }
   }
-  tmp_dqdr = coerce_output_double(dqdr,type_dqdr,npts);
-  if( dqdr == NULL || tmp_dqdr == NULL ) {
+  if( dqdr == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"center_finite_diff: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
@@ -231,16 +235,23 @@ NhlErrorTypes center_finite_diff_W( void )
         tmp_r = &((double*)r)[index_q];
       }
     }
+    if(type_dqdr == NCL_double) {
+/*
+ * Point tmp_dqdr to dqdr.
+ */
+      tmp_dqdr = &((double*)dqdr)[index_q];
+    }
+
 /*
  * Call the Fortran routine.
  */
     NGCALLF(dcfindif,DCFINDIF)(tmp_q,tmp_r,&npts,&missing_dq.doubleval,
                                &missing_dr.doubleval,cyclic,&iend,
                                qq,rr,&npts1,tmp_dqdr,&ier);
+
     if(type_dqdr != NCL_double) {
       coerce_output_float_only(dqdr,tmp_dqdr,npts,index_q);
     }
-
     index_q += npts;
   }
 /*
@@ -253,7 +264,7 @@ NhlErrorTypes center_finite_diff_W( void )
   NclFree(rr);
 
   if(has_missing_q) {
-    if(type_q == NCL_double) {
+    if(type_dqdr == NCL_double) {
       return(NclReturnValue(dqdr,ndims_q,dsizes_q,&missing_dq,type_dqdr,0));
     }
     else {
@@ -472,9 +483,7 @@ NhlErrorTypes uv2vr_cfd_W( void )
     NGCALLF(dvrfidf,DVRFIDF)(tmp_u,tmp_v,tmp_lat,tmp_lon,&nlon,&nlat,
                              &missing_du.doubleval,bound_opt,tmp_vort,&ier);
     if(type_vort != NCL_double) {
-      for(j = 0; j < nlatnlon; j++) {
-        ((float*)vort)[index_uv+j] = (float)(tmp_vort[j]);
-      }
+      coerce_output_float_only(vort,tmp_vort,nlatnlon,index_uv);
     }
     index_uv += nlatnlon;
   }
@@ -488,7 +497,7 @@ NhlErrorTypes uv2vr_cfd_W( void )
   if(type_vort!= NCL_double) NclFree(tmp_vort);
 
   if(has_missing_u) {
-    if(type_u == NCL_double) {
+    if(type_vort == NCL_double) {
       return(NclReturnValue(vort,ndims_u,dsizes_u,&missing_du,type_vort,0));
     }
     else {
@@ -705,9 +714,7 @@ NhlErrorTypes uv2dv_cfd_W( void )
     NGCALLF(ddvfidf,DDVFIDF)(tmp_u,tmp_v,tmp_lat,tmp_lon,&nlon,&nlat,
                              &missing_du.doubleval,bound_opt,tmp_div,&ier);
     if(type_div != NCL_double) {
-      for(j = 0; j < nlatnlon; j++) {
-        ((float*)div)[index_uv+j] = (float)(tmp_div[j]);
-      }
+      coerce_output_float_only(div,tmp_div,nlatnlon,index_uv);
     }
     index_uv += nlatnlon;
   }
@@ -721,7 +728,7 @@ NhlErrorTypes uv2dv_cfd_W( void )
   if(type_div != NCL_double) NclFree(tmp_div);
 
   if(has_missing_u) {
-    if(type_u == NCL_double) {
+    if(type_div == NCL_double) {
       return(NclReturnValue(div,ndims_u,dsizes_u,&missing_du,type_div,0));
     }
     else {

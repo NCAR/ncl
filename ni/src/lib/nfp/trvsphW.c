@@ -1333,7 +1333,7 @@ NhlErrorTypes fo2fshv_W( void )
  */
   coerce_missing(type_uoff,has_missing_uoff,&missing_uoff,&missing_duoff,
                  NULL);
-  coerce_missing(type_voff,has_missing_voff,&missing_voff,&missing_duoff,
+  coerce_missing(type_voff,has_missing_voff,&missing_voff,&missing_dvoff,
                  NULL);
 /*
  * Allocate space for temporary input and output. If the input is not double,
@@ -1417,7 +1417,7 @@ NhlErrorTypes fo2fshv_W( void )
     }
     else {
       found_missing = contains_missing(tmp_voff,jlatilon,has_missing_voff,
-                                       missing_voff.doubleval);
+                                       missing_dvoff.doubleval);
       if(found_missing) missing = missing_dvoff.doubleval;
     }
     if(found_missing) {
@@ -1692,7 +1692,7 @@ NhlErrorTypes f2foshv_W( void )
     }
     else {
       found_missing = contains_missing(tmp_vreg,jlat1ilon,has_missing_vreg,
-                                       missing_vreg.doubleval);
+                                       missing_dvreg.doubleval);
       if(found_missing) missing = missing_dvreg.doubleval;
     }
     if(found_missing) {

@@ -78,10 +78,9 @@ NhlErrorTypes fluxEddy_W( void )
 
   dsizes_fluxeddy[0] = 1;
   for( i = 0; i < ndims_x-1; i++ ) {
-    size_fluxeddy *= dsizes_x[i];
+    size_fluxeddy     *= dsizes_x[i];
     dsizes_fluxeddy[i] = dsizes_x[i];
   }
-  size_fluxeddy  *= dsizes_x[ndims_x-1];
   ndims_fluxeddy = ndims_x - 1 < 1 ? 1 : ndims_x - 1;
         
 /*
