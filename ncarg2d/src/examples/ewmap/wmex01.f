@@ -1,7 +1,7 @@
 C
-C	$Id: wmex01.f,v 1.4 1994-12-15 23:49:28 fred Exp $
+C	$Id: wmex01.f,v 1.5 1994-12-16 01:53:36 fred Exp $
 C
-      PROGRAM WMEX06
+      PROGRAM WMEX01
 C
 C  Example of weather fronts.
 C

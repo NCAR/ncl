@@ -1,14 +1,36 @@
 C
-C       $Id: wmex05.f,v 1.2 1994-12-15 23:49:36 fred Exp $
+C       $Id: wmex05.f,v 1.3 1994-12-16 01:53:43 fred Exp $
 C
-      PROGRAM WMEX11
+      PROGRAM WMEX05
 C
-C  Examples of regional weather and temperature.
+C  Examples of regional weather and temperatures.
 C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
+C  Number of points defining region; number of regions; number of points
+C  in clip region.
+C
+      PARAMETER (NU=8, NO=8, NOP1=NO+1, NC=5)
+C
+C  Data for a region.
+C
+      DIMENSION XU(NU),YU(NU),XP(NU),YP(NU)
+      DIMENSION XOFF(NO),YOFF(NO)
+      DIMENSION XCLIP(NC),YCLIP(NC)
+      CHARACTER*13 LABELS(NOP1)
+C
+      DATA XU/ 0.05, 0.20, 0.40, 0.70, 0.80, 0.65, 0.40, 0.05/
+      DATA YU/ 0.70, 0.45, 0.60, 0.70, 0.80, 0.95, 0.84, 0.70/
+      DATA XOFF/0.10, 0.52, 0.10, 0.52, 0.10, 0.52,  0.10,  0.52/
+      DATA YOFF/0.47, 0.47, 0.27, 0.27, 0.07, 0.07, -0.13, -0.13/
+      DATA XCLIP/0.10, 0.75, 0.75, 0.10, 0.10/
+      DATA YCLIP/0.50, 0.50, 0.85, 0.85, 0.50/
+      DATA LABELS/'Ice','Snow','Fluries','Rain','Showers',
+     +            'Thunderstorms','Temperature',
+     +            'Temperature','(clipped)'/
 C
 C  Open GKS, open and activate a workstation.
 C
@@ -23,180 +45,35 @@ C
       CALL GSCR(IWKID, 2, 1.0, 0.0, 0.0)
       CALL GSCR(IWKID, 3, 0.0, 0.0, 1.0)
       CALL GSCR(IWKID, 4, 0.0, 1.0, 0.0)
-      CALL GSCR(IWKID, 5, 0.9, 0.9, 0.9)
-      CALL GSCR(IWKID, 6, 1.0, 1.0, 0.0)
 C
-      CALL PLCHHQ(0.50,0.94,':F26:Symbols and labels',0.033,0.,0.)       
+      CALL PLCHHQ(0.50,0.93,':F26:Weather and temperature regions',
+     +            0.033,0.,0.)       
 C
-C  HIs and LOWs
-C
-      YY = 0.83
-      YINC = 0.17
-      XINC = 0.12
-      CALL PCSETC('FC','%')
-      CALL PLCHHQ(0.05,YY,'%F26%HIs and LOWs:',0.025,0.,-1.)       
-      CALL PCSETC('FC',':')
-      CALL PCGETR('XE',XE)
-      XE = XE+0.5*XINC
-C
-      CALL WMSETI('HIS - shadow color for high symbols',1)
-      CALL WMSETI('HIB - background color for high symbols',0)
-      CALL WMSETI('HIF - character color for high symbols',1)
-      CALL WMSETI('HIC - character color for circumscribed circle',1)
-      CALL WMLABS(XE,YY,'HI')
-      XE = XE+XINC
-C
-      CALL WMSETR('SHT',0.04)
-      CALL WMSETI('HIS - shadow color for high symbols',3)
-      CALL WMSETI('HIB - background color for high symbols',5)
-      CALL WMSETI('HIF - character color for high symbols',2)
-      CALL WMSETI('HIC - character color for circumscribed circle',4)
-      CALL WMLABS(XE,YY,'HI')
-      XE = XE+XINC
-C
-      CALL WMSETR('SHT',0.02)
-      CALL WMSETI('LOS - shadow color for low symbols',5)
-      CALL WMSETI('LOB - background color for low symbols',1)
-      CALL WMSETI('LOF - character color for low symbols',0)
-      CALL WMLABS(XE,YY,'LOW')
-      XE = XE+XINC
-C
-      CALL WMSETR('SHT',0.04)
-      CALL WMSETI('LOS - shadow color for low symbols',2)
-      CALL WMSETI('LOB - background color for low symbols',5)
-      CALL WMSETI('LOF - character color for low symbols',3)
-      CALL WMLABS(XE,YY,'LOW')
-C
-C  Arrows.
-C
-      YY = YY-YINC
-      CALL PCSETC('FC - Function code character','%')
-      CALL PLCHHQ(0.05,YY,'%F26%Arrows:',0.025,0.,-1.)       
-      CALL PCSETC('FC',':')
-      CALL PCGETR('XE - coordinate of end of last string',XE)
-      XE = XE+0.05
-      CALL WMSETR('ARD - arrow direction',270.)
-      CALL WMLABS(XE,YY-0.02,'Arrow')
-C
-      XE = XE+0.1
-      CALL WMSETR('ARS - arrow size',.1)
-      CALL WMSETR('ARD - arrow direction',55.)
-      CALL WMSETR('ARL - scale factor for length of arrow tail',1.)
-      CALL WMSETI('AWC - color index for interior of arrow',2)
-      CALL WMLABS(XE,YY+0.05,'Arrow')
-C
-      XE = XE+0.04
-      CALL GSLWSC(2.)
-      CALL WMSETR('ARS - arrow size',.2)
-      CALL WMSETR('ARD - arrow direction',180.)
-      CALL WMSETR('ARL - scale factor for length of arrow tail',0.6)
-      CALL WMSETI('AWC - color index for interior of arrow',0)
-      CALL WMSETI('AOC - color index for arrow outline',3)
-      CALL WMLABS(XE,YY,'Arrow')
-C
-      XE = XE+0.18
-      CALL WMSETR('ARD - arrow direction',270.)
-      CALL WMSETI('AWC - color index for interior of arrow',2)
-      CALL GSLWSC(2.)
-      CALL WMLABS(XE,YY-0.05,'Arrow')
-      CALL GSLWSC(1.)
-C
-      XE = XE+0.18
-      CALL WMSETR('ARD - arrow direction',0.)
-      CALL WMSETI('AWC - color index for interior of arrow',5)
-      CALL WMSETI('AOC - color index for arrow outline',2)
-      CALL WMSETI('ASC - color index for arrow shadow',3)
-      CALL WMLABS(XE,YY,'Arrow')
-C
-      XE = XE+0.03
-      CALL WMDFLT()
-      CALL WMSETR('ARS - arrow size',.1)
-      CALL WMSETR('ARD - arrow direction',180.)
-      CALL WMSETR('ARL - scale factor for length of arrow tail',1.8)
-      CALL WMLABS(XE,YY,'Arrow')
-C
-C  Dots and cities.
-C
-      YY = YY-YINC
-      CALL PCSETC('FC','%')
-      CALL PLCHHQ(0.05,YY,'%F26%Dots and City info:',0.025,0.,-1.)       
-      CALL PCSETC('FC',':')
-      CALL PCGETR('XE',XE)
-      XE = XE+0.05
-      CALL WMSETI('DBC - color index for dot shadow',2)
-      CALL WMSETI('DTC - color index for dot',3)
-      CALL WMSETR('DTS - size of dot',0.012)
-      CALL WMLABS(XE,YY,'DOT')
-      XE = XE+0.10
-      CALL WMSETI('RFC - color index for city labels',3)
-      CALL WMSETI('CBC - color index background of city labels',0)
-      CALL WMSETR('CHT - size of city labels',.02)
-      CALL WMSETR('CMG - margins for city labels',.006)
-      CALL WMLABC(XE,YY,'Boulder','83/68')
-      XE = XE+0.15
-      CALL WMSETI('DBC - color index for dot shadow',5)
-      CALL WMSETI('DTC - color index for dot',1)
-      CALL WMSETR('DTS - size of dot',0.024)
-      CALL WMLABS(XE,YY,'DOT')
-      XE = XE+0.12
-      CALL WMSETI('RFC - color index for city labels',6)
-      CALL WMSETI('CBC - color index background of city labels',3)
-      CALL WMSETR('CHT - size of city labels',.03)
-      CALL WMSETR('CMG - margins for city labels',.006)
-      CALL WMLABC(XE,YY,'Tulsa','103/83')
-C
-C  Regional weather labels.
-C
-      YY = YY-YINC
-      CALL PCSETC('FC','%')
-      CALL PLCHHQ(0.05,YY,'%F26%Regional labels:',0.025,0.,-1.)       
-      CALL PCSETC('FC',':')
-      CALL PCGETR('XE',XE)
-      XE = XE+0.13
-      CALL WMSETR('WHT - size of label',0.02)
-      CALL WMLABW(XE,YY,'TORRID')
-      XE = XE+0.30
-      CALL WMSETI('RC1 - color index for box outline',4)
-      CALL WMSETI('RC2 - color index for character background',5)
-      CALL WMSETI('RC3 - color index for box shadow',1)
-      CALL WMSETI('RC4 - color index for text',3)
-      CALL WMSETI('RC5 - color index for text outlines',2)
-      CALL WMSETR('WHT - size of label',0.035)
-      CALL WMLABW(XE,YY,'FREEZING')
-C
-C  Regional temps.
-C
-      YY = YY-YINC
-      CALL PCSETC('FC','%')
-      CALL PLCHHQ(0.05,YY,'%F26%Regional temps.:',0.025,0.,-1.)       
-      CALL PCSETC('FC',':')
-      CALL PCGETR('XE',XE)
-      XE = XE+0.07
-C
-C  Reset (primarily for arrow lengths and sizes).
-C
-      CALL WMDFLT()
-      CALL WMSETR('THT - Height of regional temperature labels',0.032)
-      CALL WMSETI('RFC - primary character color',2)
-      CALL WMLABT(XE,YY,'80s',0)
-      XE = XE+0.12
-      CALL WMSETR('ARS - arrow size',0.07)
-      CALL WMSETI('ROS - color index for character outlines',0)
-      CALL WMSETI('RFC - primary character color',2)
-      CALL WMSETI('RLS - color index for shadows',1)
-      CALL WMLABT(XE,YY,'80s',2)
-      XE = XE+0.03
-      CALL WMSETI('ROS - color index for character outlines',1)
-      CALL WMSETI('RFC - primary character color',0)
-      CALL WMSETI('RLS - color index for shadows',1)
-      CALL WMLABT(XE,YY,'80s',6)
-      XE = XE+0.15
-      CALL WMSETI('ROS - color index for character outlines',-1)
-      CALL WMSETI('RFC - primary character color',2)
-      CALL WMSETI('RLS - color index for shadows',-1)
-      CALL WMSETI('RBS - color index for backgrounds for labels',1)
-      CALL WMSETR('RMG - size of margins around characters',0.01)
-      CALL WMLABT(XE,YY,'80s',0)
+      CALL WMSETI('COL',3)
+      SCALE = .4
+      CALL WMSETR('RHT - size scale',0.015)
+      CALL PCSETI('FN',26)
+      DO 10 I=1,NO
+        DO 20 J=1,NU
+          XP(J) = SCALE*XU(J)+XOFF(I)
+          YP(J) = SCALE*YU(J)+YOFF(I)
+   20   CONTINUE
+        IF (I .LE. NO-2) THEN
+          CALL WMDRRG(NU,XP,YP,LABELS(I),1,XP,YP)
+          CALL PLCHHQ(XP(3)+.01,YP(3)-.025,LABELS(I),0.02,0.,-1.)       
+        ELSE IF (I .EQ. NO-1) THEN
+          CALL WMDRRG(NU,XP,YP,'INDEX2',1,XP,YP)
+          CALL PLCHHQ(XP(3)+.01,YP(3)-.025,LABELS(I),0.02,0.,-1.)       
+        ELSE IF (I .EQ. NO) THEN
+          DO 30 J=1,NC
+            XCLIP(J) = SCALE*XCLIP(J)+XOFF(I)
+            YCLIP(J) = SCALE*YCLIP(J)+YOFF(I)
+   30     CONTINUE
+          CALL WMDRRG(NU,XP,YP,'INDEX4',NC,XCLIP,YCLIP)
+          CALL PLCHHQ(XP(3)+.01,YP(3)-.025,LABELS(I),0.02,0.,-1.)       
+          CALL PLCHHQ(XP(3)+.01,YP(3)-.060,LABELS(I+1),0.02,0.,-1.)       
+        ENDIF
+   10 CONTINUE
 C
       CALL FRAME
 C

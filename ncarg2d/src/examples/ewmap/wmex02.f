@@ -1,7 +1,7 @@
 C
-C       $Id: wmex02.f,v 1.8 1994-12-15 23:49:30 fred Exp $
+C       $Id: wmex02.f,v 1.9 1994-12-16 01:53:38 fred Exp $
 C
-      PROGRAM WMEX07
+      PROGRAM WMEX02
 C
 C  Examples of spline fits for weather fronts and regions.
 C
@@ -9,8 +9,6 @@ C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
-C
-      CHARACTER*28 LABEL
 C
 C  Color index for cross markers.
 C
@@ -52,9 +50,6 @@ C
       CALL GSCR(IWKID, 2, 1.0, 0.0, 0.0)
       CALL GSCR(IWKID, 3, 0.0, 0.0, 1.0)
 C
-C  First frame - illustrate spline fits of weather fronts and regions.
-C
-C
 C  Plot title.
 C
       CALL PLCHHQ(0.50,0.94,':F26:Spline fits for fronts and regions',
@@ -83,34 +78,6 @@ C
         CALL CROSS(XU(I),YU(I),ICCLR)
    30 CONTINUE
 C
-      CALL FRAME
-C
-C  Second frame - example of end point slope control.
-C
-      CALL PCSETI('CC',1)
-      CALL PLCHHQ(0.50,0.96,':F26:Slope control at endpoints',
-     +            0.03,0.,0.)
-C
-C  Set some parameter values.
-C
-      CALL WMSETI('NMS - number of symbols on front line',6)
-      CALL WMSETR('SL1 - slope at start of front line if SLF=0 or 1',0.)       
-      CALL WMSETR('SL2 - slope at end of front line if SLF=0 or 1',-15.)       
-      CALL WMSETI('WFC - color for warm fronts',1)
-      CALL WMSETR('LIN - line widths of front lines',3.)
-      CALL WMSETI('REV - line widths of front lines',1)
-      CALL WMSETI('WFC - color for warm fronts',2)
-      CALL PCSETI('CC',3)
-      DO 40 I=3,0,-1
-        CALL WMSETI('SLF - flags whether slopes are from SL1 and SL2',I)      
-        DO 50 J=1,NV
-          YV(J) = YV(J)-0.22
-   50   CONTINUE
-        CALL WMDRFT(NV,XV,YV)
-        WRITE(LABEL,500) I
-  500   FORMAT(':F22:SLF=',I1,', SL1=0., SL2=-15.')  
-        CALL PLCHHQ(.7,YV(1)+.08,LABEL,.024,0.,0.)
-   40 CONTINUE
       CALL FRAME
 C
       CALL GDAWK(IWKID)

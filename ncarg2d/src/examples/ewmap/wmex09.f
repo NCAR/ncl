@@ -1,16 +1,15 @@
 C
-C       $Id: wmex09.f,v 1.1 1994-12-15 23:49:43 fred Exp $
+C	$Id: wmex09.f,v 1.2 1994-12-16 01:53:50 fred Exp $
 C
-      PROGRAM WMEX12
+      PROGRAM WMEX09
 C
-C  Example of station model data.
+C  A chart of wind speeds.
 C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
-      PARAMETER (X1=0.22, X2=0.67)
-      CHARACTER*5 IMDAT(9)
+      PARAMETER (T1=0.90, T2=0.84)
 C
       CALL GOPKS (IERRF, ISZDM)
       CALL GOPWK (IWKID, LUNIT, IWTYPE)
@@ -20,40 +19,130 @@ C
       CALL GSCR(IWKID,1,0.,0.,0.)
       CALL GSCR(IWKID,2,.4,0.,.4)
 C
-C  Symbolic station model
+C  Example 01 - chart of wind barbs for various speeds.
 C
-      CALL WMSETR('WBS',0.20)
+      CALL PERIM(1,1,1,1)
+      CALL LINE(0.000, T1+0.005, 1.000, T1+0.005)
+      CALL LINE(0.000, T1-0.005, 1.000, T1-0.005)
+      CALL LINE(0.000, T2, 1.000, T2)
+      CALL LINE(0.495, 0.000, 0.495, T1-0.005)
+      CALL LINE(0.505, 0.000, 0.505, T1-0.005)
+C
+      CALL PLCHHQ(0.5,0.955,':F25:Wind Speeds',.03,0.,0.)
+      CALL PCSETI('FN',21)
+      XCL = 0.12
+      XCC = 0.26
+      XCR = 0.40
+      DO 10 I=1,2
+        XL = XCL+(I-1)*0.5
+        XC = XCC+(I-1)*0.5
+        XR = XCR+(I-1)*0.5
+        CALL PLCHHQ(XL,0.87,'Symbol',0.022,0.,0.) 
+        CALL PLCHHQ(XC,0.87,'Knots',0.022,0.,0.) 
+        CALL PLCHHQ(XR,0.87,'Miles/hr.',0.022,0.,0.) 
+   10 CONTINUE
+      FINC = T2/10.
+      SIZE = 0.022
+      XCL = 0.16
       CALL GSLWSC(3.)
-      CALL EXSTNM(X2,.73)
-      CALL LINE(0.1,.5,0.9,.5)
-      CALL PLOTIT(0,0,0)
-      SIZ = 0.03
-      CALL PCSETI('FN',26)
-      CALL PCSETI('CC',2)
-      CALL PLCHHQ(X1,.85,'SYMBOLIC',SIZ,0.,0.)
-      CALL PLCHHQ(X1,.75,'STATION',SIZ,0.,0.)
-      CALL PLCHHQ(X1,.65,'MODEL',SIZ,0.,0.)
-      CALL PCSETI('CC',1)
+      CALL NGSETI('WO',1)
+      CALL NGSETI('CA',0)
 C
-C  Sample plotted report
+      P1 = T2-0.75*FINC
+      CALL WMSETR('WBS',0.1)
+      CALL WMSETI('COL',1)
+      CALL WMGETR('WBS',WSLEN)
+      CALL WMBARB(XCL-0.5*WSLEN,P1-0.5*SIZE,0.,0.)
+      CALL PLCHHQ(XCC,P1,'Calm',SIZE,0.,0.)
+      CALL PLCHHQ(XCR,P1,'Calm',SIZE,0.,0.)
 C
-      IMDAT(1) = '11212'
-      IMDAT(2) = '83320'
-      IMDAT(3) = '10011'
-      IMDAT(4) = '20000'
-      IMDAT(5) = '30000'
-      IMDAT(6) = '40147'
-      IMDAT(7) = '52028'
-      IMDAT(8) = '60111'
-      IMDAT(9) = '77060'
-      IMDAT(10) = '86792'
-      CALL WMSTNM(X2,.23,IMDAT)
-      CALL PCSETI('FN',26)
-      CALL PCSETI('CC',2)
-      CALL PLCHHQ(X1,.35,'SAMPLE',SIZ,0.,0.)
-      CALL PLCHHQ(X1,.25,'PLOTTED',SIZ,0.,0.)
-      CALL PLCHHQ(X1,.15,'DATA',SIZ,0.,0.)
-      CALL PCSETI('CC',1)
+      P1 = P1-FINC
+      CALL WMBARB(XCL,P1-0.5*SIZE,-1.,0.)
+      CALL PLCHHQ(XCC,P1,'1-2',SIZE,0.,0.)
+      CALL PLCHHQ(XCR,P1,'1-2',SIZE,0.,0.)
+C
+      P1 = P1-FINC
+      CALL WMBARB(XCL,P1-0.5*SIZE,-5.,0.)
+      CALL PLCHHQ(XCC,P1,'3-7',SIZE,0.,0.)
+      CALL PLCHHQ(XCR,P1,'3-8',SIZE,0.,0.)
+C
+      P1 = P1-FINC
+      CALL WMBARB(XCL,P1-0.5*SIZE,-10.,0.)
+      CALL PLCHHQ(XCC,P1,'8-12',SIZE,0.,0.)
+      CALL PLCHHQ(XCR,P1,'9-14',SIZE,0.,0.)
+C
+      P1 = P1-FINC
+      CALL WMBARB(XCL,P1-0.5*SIZE,-15.,0.)
+      CALL PLCHHQ(XCC,P1,'13-17',SIZE,0.,0.)
+      CALL PLCHHQ(XCR,P1,'15-20',SIZE,0.,0.)
+C
+      P1 = P1-FINC
+      CALL WMBARB(XCL,P1-0.5*SIZE,-20.,0.)
+      CALL PLCHHQ(XCC,P1,'18-22',SIZE,0.,0.)
+      CALL PLCHHQ(XCR,P1,'21-25',SIZE,0.,0.)
+C
+      P1 = P1-FINC
+      CALL WMBARB(XCL,P1-0.5*SIZE,-25.,0.)
+      CALL PLCHHQ(XCC,P1,'23-27',SIZE,0.,0.)
+      CALL PLCHHQ(XCR,P1,'26-31',SIZE,0.,0.)
+C
+      P1 = P1-FINC
+      CALL WMBARB(XCL,P1-0.5*SIZE,-30.,0.)
+      CALL PLCHHQ(XCC,P1,'28-32',SIZE,0.,0.)
+      CALL PLCHHQ(XCR,P1,'32-37',SIZE,0.,0.)
+C
+      P1 = P1-FINC
+      CALL WMBARB(XCL,P1-0.5*SIZE,-35.,0.)
+      CALL PLCHHQ(XCC,P1,'33-37',SIZE,0.,0.)
+      CALL PLCHHQ(XCR,P1,'38-43',SIZE,0.,0.)
+C
+      XCL = XCL+0.5
+      XCC = XCC+0.5
+      XCR = XCR+0.5
+      P1 = T2-0.75*FINC
+      CALL WMBARB(XCL,P1-0.5*SIZE,-40.,0.)
+      CALL PLCHHQ(XCC,P1,'38-42',SIZE,0.,0.)
+      CALL PLCHHQ(XCR,P1,'44-49',SIZE,0.,0.)
+C
+      P1 = P1-FINC
+      CALL WMBARB(XCL,P1-0.5*SIZE,-45.,0.)
+      CALL PLCHHQ(XCC,P1,'43-47',SIZE,0.,0.)
+      CALL PLCHHQ(XCR,P1,'50-54',SIZE,0.,0.)
+C
+      P1 = P1-FINC
+      CALL WMBARB(XCL,P1-0.5*SIZE,-50.,0.)
+      CALL PLCHHQ(XCC,P1,'48-52',SIZE,0.,0.)
+      CALL PLCHHQ(XCR,P1,'55-60',SIZE,0.,0.)
+C
+      P1 = P1-FINC
+      CALL WMBARB(XCL,P1-0.5*SIZE,-55.,0.)
+      CALL PLCHHQ(XCC,P1,'53-57',SIZE,0.,0.)
+      CALL PLCHHQ(XCR,P1,'61-66',SIZE,0.,0.)
+C
+      P1 = P1-FINC
+      CALL WMBARB(XCL,P1-0.5*SIZE,-60.,0.)
+      CALL PLCHHQ(XCC,P1,'58-62',SIZE,0.,0.)
+      CALL PLCHHQ(XCR,P1,'67-71',SIZE,0.,0.)
+C
+      P1 = P1-FINC
+      CALL WMBARB(XCL,P1-0.5*SIZE,-65.,0.)
+      CALL PLCHHQ(XCC,P1,'63-67',SIZE,0.,0.)
+      CALL PLCHHQ(XCR,P1,'72-77',SIZE,0.,0.)
+C
+      P1 = P1-FINC
+      CALL WMBARB(XCL,P1-0.5*SIZE,-70.,0.)
+      CALL PLCHHQ(XCC,P1,'68-72',SIZE,0.,0.)
+      CALL PLCHHQ(XCR,P1,'78-83',SIZE,0.,0.)
+C
+      P1 = P1-FINC
+      CALL WMBARB(XCL,P1-0.5*SIZE,-75.,0.)
+      CALL PLCHHQ(XCC,P1,'73-77',SIZE,0.,0.)
+      CALL PLCHHQ(XCR,P1,'84-89',SIZE,0.,0.)
+C
+      P1 = P1-FINC
+      CALL WMBARB(XCL,P1-0.5*SIZE,-105.,0.)
+      CALL PLCHHQ(XCC,P1,'103-107',SIZE,0.,0.)
+      CALL PLCHHQ(XCR,P1,'119-123',SIZE,0.,0.)
 C
       CALL FRAME
 C
@@ -62,92 +151,4 @@ C
       CALL GCLKS
 C
       STOP
-      END
-      SUBROUTINE EXSTNM(X,Y)
-C
-C  Convert X and Y to NDC and work in NDC space.
-C
-      CALL WMW2NX(1,X,XNDC)
-      CALL WMW2NY(1,Y,YNDC)
-C
-C  Draw a wind barb at 320 degrees and cloud cover symbol.
-C
-      CALL WMSETI('WBF',1)
-      CALL WMBARB(XNDC,YNDC,-5.,8.66)
-      CALL WMSETI('WBF',IBO)
-      CALL WMGETR('WBC',WBC)
-      CALL WMGETR('WBS',WBSHFT)
-      CALL NGWSYM('N',0,XNDC,YNDC,WBC*WBSHFT,1,0)
-C
-      SIZ = 0.15*WBSHFT
-      CALL PCSETI('FN',21)
-      CALL PLCHHQ(XNDC,YNDC,'N',SIZ,0.,0.)
-C
-C  Direction
-C
-      CALL WMSETI('RBS',0)
-      CALL WMSETR('RMG',.030*WBSHFT)
-      CALL WMSETR('THT',0.8*SIZ)
-      CALL WMLABT(XNDC-0.7*WBSHFT*0.5,YNDC+0.7*WBSHFT*0.866,'dd',0)
-C
-C  Wind speed
-C
-      CALL WMLABT(XNDC-0.92*WBSHFT*0.5,YNDC+0.7*WBSHFT*1.5,'ff',0)
-C
-C  High clouds (CH).
-C
-      CALL PLCHHQ(XNDC,YNDC+0.83*WBSHFT,'C:B1:H',SIZ,0.,0.)
-C
-C  Medium clouds (CM).
-C
-      CALL PLCHHQ(XNDC,YNDC+0.47*WBSHFT,'C:B1:M',SIZ,0.,0.)
-C
-C  Current temperature (TT).
-C
-      CALL PLCHHQ(XNDC-0.7*WBSHFT,YNDC+0.36*WBSHFT,'TT',SIZ,0.,0.)
-C
-C  Barometric pressure (ppp).
-C
-      CALL PLCHHQ(XNDC+0.55*WBSHFT,YNDC+0.36*WBSHFT,'ppp',SIZ,0.,0.)
-C
-C  Visibility (VV).
-C
-      CALL PLCHHQ(XNDC-.95*WBSHFT,YNDC,'VV',SIZ,0.,0.)
-C
-C  Present weather (ww).
-C
-      CALL PLCHHQ(XNDC-0.45*WBSHFT,YNDC,'ww',SIZ,0.,0.)
-C
-C  Pressure change (pp).
-C
-      CALL PLCHHQ(XNDC+0.5*WBSHFT,YNDC,'pp',SIZ,0.,0.)
-C
-C  Pressure tendency (a).
-C
-      CALL PLCHHQ(XNDC+WBSHFT,YNDC,'a',SIZ,0.,0.)
-C
-C  Temperature of dewpoint (TD).
-C
-      CALL PLCHHQ(XNDC-0.65*WBSHFT,YNDC-0.42*WBSHFT,'T:B1:d',SIZ,0.,0.)
-C
-C  Low clouds (CL).
-C
-      CALL PLCHHQ(XNDC-0.17*WBSHFT,YNDC-0.42*WBSHFT,'C:B1:L',SIZ,0.,0.)
-C
-C  Sky cover (NH).
-C
-      CALL PLCHHQ(XNDC+0.31*WBSHFT,YNDC-0.42*WBSHFT,'N:B1:h',SIZ,0.,0.)
-C
-C  Past weather (W).
-C
-      CALL PLCHHQ(XNDC+0.75*WBSHFT,YNDC-0.42*WBSHFT,'W',SIZ,0.,0.)
-C
-C  Cloud height (h).
-C
-      CALL PLCHHQ(XNDC-0.12*WBSHFT,YNDC-0.72*WBSHFT,'h',SIZ,0.,0.)
-C
-C  Precipitation in last 6 hours (RR).
-C
-      CALL PLCHHQ(XNDC+0.53*WBSHFT,YNDC-0.72*WBSHFT,'RR',SIZ,0.,0.)
-C
       END
