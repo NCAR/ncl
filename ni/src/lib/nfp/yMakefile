@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.15 2000-02-25 00:41:13 haley Exp $
+#      $Id: yMakefile,v 1.16 2000-03-07 14:19:48 haley Exp $
 #
 #########################################################################
 #									#
@@ -25,35 +25,35 @@ EXTRA_INCLUDES  = -I../../ncl
 
 HDRS = wrapper.h
 
-CSRCS = calcorcW.c chiinvW.c csagridW.c cssgridW.c cz2ccmW.c datesW.c \
+CSRCS = areavolW.c calcorcW.c chiinvW.c csagridW.c cssgridW.c cz2ccmW.c datesW.c \
 	drwvctc.c dsgridW.c dtrendW.c eofW.c ezfftW.c fitgridW.c fluxEddyW.c \
 	hydroW.c int2pW.c julGregW.c linmsgW.c natgridW.c ncolorW.c ngmiscW.c \
 	regcoefW.c relhumW.c remapW.c rhombtriW.c shgridW.c	sindexW.c slpW.c \
 	smth9W.c specxW.c sph2W.c sphintW.c sstoiW.c statW.c svdW.c tdpackW.c \
 	trvsphW.c varimaxW.c vibetaW.c wmapW.c wrunaveW.c wrapper.c 
 
-COBJS = calcorcW.o chiinvW.o csagridW.o cssgridW.o cz2ccmW.o datesW.o \
+COBJS = areavolW.o calcorcW.o chiinvW.o csagridW.o cssgridW.o cz2ccmW.o datesW.o \
 	drwvctc.o dsgridW.o dtrendW.o eofW.o ezfftW.o fitgridW.o fluxEddyW.o \
 	hydroW.o int2pW.o julGregW.o linmsgW.o natgridW.o ncolorW.o ngmiscW.o \
 	regcoefW.o relhumW.o remapW.o rhombtriW.o shgridW.o	sindexW.o slpW.o \
 	smth9W.o specxW.o sph2W.o sphintW.o sstoiW.o statW.o svdW.o tdpackW.o \
 	trvsphW.o varimaxW.o vibetaW.o wmapW.o wrunaveW.o wrapper.o 
 
-FSRCS = calcorc_dp.f chiin_dp.f cz2ccm_dp.f dtrend_dp.f ezfft_dp.f \
+FSRCS = areaAve.f calcorc_dp.f chiin_dp.f cz2ccm_dp.f dtrend_dp.f ezfft_dp.f \
 	fluxEddyTav_dp.f fo2fs_dp.f hydro_dp.f index77_dp.f int2p_dp.f \
 	julGreg.f linmsg_dp.f upsl_dp.f prneof_dp.f prneofts_dp.f rdsstoi.f \
 	regcoef_dp.f relhum_dp.f remap.f rhombtri_dp.f rmStndx_dp.f runave_dp.f \
 	smth9_dp.f sp2_util.f sp2_util_dp.f specx_dp.f statx.f statx_dp.f \
 	svd_lap_dp.f svd_util_dp.f trcwav_dp.f trvsph77_dp.f \
-	varimax_dp.f vibeta_dp.f wrunave_dp.f
+	varimax_dp.f vibeta_dp.f volAve.f wrunave_dp.f
 
-FOBJS = calcorc_dp.o chiin_dp.o cz2ccm_dp.o dtrend_dp.o ezfft_dp.o \
+FOBJS = areaAve.o calcorc_dp.o chiin_dp.o cz2ccm_dp.o dtrend_dp.o ezfft_dp.o \
 	fluxEddyTav_dp.o fo2fs_dp.o hydro_dp.o index77_dp.o int2p_dp.o \
 	julGreg.o linmsg_dp.o upsl_dp.o prneof_dp.o prneofts_dp.o rdsstoi.o \
 	regcoef_dp.o relhum_dp.o remap.o rhombtri_dp.o rmStndx_dp.o runave_dp.o \
 	smth9_dp.o sp2_util.o sp2_util_dp.o specx_dp.o statx.o statx_dp.o \
 	svd_lap_dp.o svd_util_dp.o trcwav_dp.o trvsph77_dp.o \
-	varimax_dp.o vibeta_dp.o wrunave_dp.o
+	varimax_dp.o vibeta_dp.o volAve.o wrunave_dp.o
 
 OBJS = $(COBJS) $(FOBJS)
 

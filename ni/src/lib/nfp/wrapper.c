@@ -92,9 +92,13 @@ extern NhlErrorTypes vrdv2uvf_W(void);
 extern NhlErrorTypes vrdv2uvg_W(void);
 
 extern NhlErrorTypes vhaec_W(void);
+extern NhlErrorTypes vhaeC_W(void);
 extern NhlErrorTypes vhagc_W(void);
+extern NhlErrorTypes vhagC_W(void);
 extern NhlErrorTypes vhsec_W(void);
+extern NhlErrorTypes vhseC_W(void);
 extern NhlErrorTypes vhsgc_W(void);
+extern NhlErrorTypes vhsgC_W(void);
 extern NhlErrorTypes shaec_W(void);
 extern NhlErrorTypes shagc_W(void);
 extern NhlErrorTypes shsec_W(void);
@@ -229,6 +233,8 @@ extern NhlErrorTypes jul2greg_W(void);
 extern NhlErrorTypes relhum_W(void);
 extern NhlErrorTypes runave_W(void);
 extern NhlErrorTypes wgt_runave_W(void);
+extern NhlErrorTypes wgt_areaave_W(void);
+extern NhlErrorTypes wgt_volave_W(void);
 extern NhlErrorTypes dtrend_W(void);
 extern NhlErrorTypes fluxEddy_W(void);
 extern NhlErrorTypes cz2ccm_W(void);
@@ -1048,6 +1054,18 @@ void NclAddUserFuncs(void)
     NclRegisterProc(vhaec_W,args,"vhaec",nargs);
 
 /*
+ * Register "vhaeC".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(vhaeC_W,args,"vhaeC",nargs);
+
+/*
  * Register "vhagc".
  *
  * Create private argument array.
@@ -1062,6 +1080,18 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(vhagc_W,args,"vhagc",nargs);
+
+/*
+ * Register "vhagC".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(vhagC_W,args,"vhagC",nargs);
 
 /*
  * Register "vhsec".
@@ -1080,6 +1110,19 @@ void NclAddUserFuncs(void)
     NclRegisterProc(vhsec_W,args,"vhsec",nargs);
 
 /*
+ * Register "vhseC".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    dimsizes[0] = 1;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(vhseC_W,args,"vhseC",nargs);
+
+/*
  * Register "vhsgc".
  *
  * Create private argument array.
@@ -1094,6 +1137,19 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterProc(vhsgc_W,args,"vhsgc",nargs);
+
+/*
+ * Register "vhsgC".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    dimsizes[0] = 1;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(vhsgC_W,args,"vhsgC",nargs);
 
 /*
  * Register "shaec".
@@ -2678,6 +2734,31 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(wgt_runave_W,args,"wgt_runave",nargs);
 
 /*
+ * Register "wgt_areaave".
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(wgt_areaave_W,args,"wgt_areaave",nargs);
+
+/*
+ * Register "wgt_volave".
+ */
+    nargs = 0;
+    args = NewArgs(5);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(wgt_volave_W,args,"wgt_volave",nargs);
+
+/*
  * Register "dtrend".
  */
     nargs = 0;
@@ -2926,6 +3007,36 @@ NclScalar         *missing_dx
                typeclass_x);
   }
 }
+
+/*
+ * Copy a scalar to an array of scalars.
+ */
+double *copy_scalar_to_array(
+double       *x,
+int          ndims_x,
+int          *dsizes_x,
+int          size_x)
+{
+  int i;
+  double *dx;
+/*
+ * Check if x is a scalar. If so, then allocate an array to hold
+ * this scalar value in every element.
+ */
+  if(ndims_x == 1 && dsizes_x[ndims_x-1] == 1) {
+    dx = (double*)calloc(size_x,sizeof(double));
+    if( dx == NULL ) return(NULL);
+    for(i = 0; i < size_x; i++) dx[i] = *x;
+  }
+  else {
+/*
+ * x is not a scalar, so just point dx at x.
+ */
+    dx = x;
+  }
+  return(dx);
+}
+
 
 /*
  * Coerce double data back to float. This is mainly used for routines

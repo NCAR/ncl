@@ -20,6 +20,8 @@ extern double *coerce_input_double(void*,NclBasicDataTypes,int,int,
 extern void coerce_subset_input_double(void *,double *,int,NclBasicDataTypes,
                                        int,int,NclScalar*,NclScalar*);
 
+extern double *copy_scalar_to_array(double *, int, int *, int);
+
 extern float *coerce_output_float(double *, void *, int, int);
 
 extern double *coerce_output_double(void*,NclBasicDataTypes,int);
