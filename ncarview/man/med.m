@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: med.m,v 1.10 1993-01-16 00:02:30 clyne Exp $
+.\"	$Id: med.m,v 1.11 1993-02-03 04:26:34 clyne Exp $
 .\"
 .\" @(#)med.l 1.0 90/02/15 NCAR; from UCB 4.3 and S5R4
 .tr ##
@@ -22,7 +22,7 @@ med \- NCAR CGM metafile frame editor
 .SH DESCRIPTION
 .LP
 .B med 
-is a metafile frame-level editor designed to resemble 
+is a frame-level, metafile editor designed to resemble 
 syntactically 
 .SM UNIX's 
 .BR sed (1) 
@@ -114,9 +114,12 @@ are specified,
 performs the operation on the inclusive range of frames.
 If no address is specified then the
 .I current
-frame is used as a default. The exception to this is the
+frame is used as a default. The exception to this are the
 .B w
-(write) command. The default address for 
+(write) 
+and the
+.B a
+(append) commands. The default address for 
 .B w
 is the entire buffer.
 .LP
@@ -170,7 +173,7 @@ Frames can be addressed in several ways:
 .I nnn
 By frame number.
 Frames in the buffer are numbered relative to
-the start of the buffer.  
+the start of the buffer.  The first frame is frame 1.
 .TP
 .B $
 The last frame of the buffer.
@@ -214,7 +217,7 @@ changes it.
 .SS Commands
 .LP
 Only one command may appear per line.
-commands may accept zero, one or two addresses, followed by possibly
+Commands may accept zero, one or two addresses, followed by possibly
 a third address or an argument. Commands that accept up to two addresses
 regard a third as an error. Likewise, commands that do not accept an
 argument regard one as an error. Commands may be abbreviated.
@@ -230,7 +233,7 @@ frame being used as the default. The same is true in the absence of a
 required third address. For example,
 .B c 
 is equivalent to
-.B .,.c. .
+.BR .,.c. .
 .LP
 The commands 
 .B q
@@ -247,7 +250,7 @@ parenthesized addresses are not part of the command. Unless otherwise
 noted a command does not change the current frame number.
 .HP
 .PD 0
-.RB ( \|1 \|, \|$ \|)append
+.RB ( \|1 \|, \|$ \|) append
 .I metafile
 .br
 Append buffer to a file. Append the addressed frames in the buffer to 
@@ -255,7 +258,7 @@ Append buffer to a file. Append the addressed frames in the buffer to
 If no address is specified the entire buffer is written. If the file
 does not exist create it.
 .TP
-.RB "(\|.\|,\|.\|)copy(\|.\|)"
+.RB "(\|.\|,\|.\|) copy (\|.\|)"
 .br
 Copy frames. Duplicate the addressed frames in the buffer and append 
 them after the third address. The current frame becomes the destination
@@ -289,7 +292,7 @@ If no command is given, print list of command names with a short
 description of each.
 .HP
 .PD 0
-.RB ( \|. \|, \|. \|)label
+.RB ( \|. \|, \|. \|) label
 .I string
 .br
 Label the addressed frames with 
@@ -308,7 +311,7 @@ addressed frame. The first
 addressed frame is thus changed. The second frame remains the same. The
 current frame is set to the first addressed frame.
 .TP
-.RB "(\|.\|,\|.\|)move(\|.\|)"
+.RB "(\|.\|,\|.\|) move (\|.\|)"
 .br
 Move the addressed frames to the first frame following the third address. 
 .TP
@@ -335,7 +338,7 @@ will refuse to terminate unless
 is appended with a '!'.
 .HP
 .PD 0
-.RB ( \|.\| )read
+.RB ( \|.\| ) read
 .I metafile
 .br
 Read in a metafile. Read the contents of 
@@ -346,7 +349,7 @@ must be a valid NCAR CGM. The resulting current frame is the last frame
 read in.
 .HP
 .PD 0
-.RB "(\|1\|,\|$\|)split <\|number\|>"
+.RB "(\|1\|,\|$\|)" split "<\|number\|>"
 .I outfile
 .br
 Split the current metafile into 
@@ -369,7 +372,7 @@ is used as the default (output files will be called med001.ncgm, med002.ncgm,
 etc.). 
 .HP
 .PD 0
-.RB ( \|1 \|, \|$ \|)write 
+.RB (\|1 \|, \|$ \|) write 
 .I metafile
 .br
 Write buffer. Write the addressed frames in the buffer to 
@@ -448,7 +451,7 @@ one could execute:
 .sp
 .SH BUGS 
 .B med
-doesn't understand filenames that begin with a digit.
+ does not understand filenames that begin with a digit.
 .sp
 .SH CAVEATS 
 The 

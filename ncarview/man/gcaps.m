@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gcaps.m,v 1.9 1993-01-16 00:02:22 clyne Exp $
+.\"	$Id: gcaps.m,v 1.10 1993-02-03 04:26:27 clyne Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH GCAPS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -14,7 +14,8 @@ report available graphcaps
 .SH DESCRIPTION
 .B gcaps
 is a simple script that reports all the available graphcaps for use in 
-metafile translation.
+metafile translation by the metafile translator 
+.BR ctrans(1NCARG) .
 .SH OPTIONS
 .TP
 .B \-V

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarv_spool.m,v 1.7 1993-01-16 00:02:33 clyne Exp $
+.\"	$Id: ncarv_spool.m,v 1.8 1993-02-03 04:26:36 clyne Exp $
 .\"
 .\" ncarv_spool 3.01 90/06/22 
 .TH NCARV_SPOOL 5NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -69,7 +69,8 @@ file. The first entry describes a device named
 .BR postscript .
 When 
 .B postscript
-is named as the spooling device, metafile frames are translated by ctrans
+is named as the spooling device, metafile frames are translated by 
+.B ctrans
 into the format described by the 
 .B ps.mono
 graphcap. The font
@@ -85,7 +86,7 @@ entry specifies that metafile frames will be rasterized at a 1857 by
 1183 pixel resolution and output in X11 xwd format. The result of this 
 rasterization is piped to a program 
 .B x11tonrif
-which in turn sends it output to a program called
+which in turn sends its output to a program called
 .BR rasttg .
 In the third example the final output is directed to a file called
 .BR sunfile .

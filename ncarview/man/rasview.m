@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: rasview.m,v 1.6 1993-01-16 00:02:44 clyne Exp $
+.\"	$Id: rasview.m,v 1.7 1993-02-03 04:26:42 clyne Exp $
 .\"
 .TH RASVIEW 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
@@ -7,7 +7,7 @@ rasview \- Raster file previewer for the X Window System.
 .SH SYNOPSIS
 .B rasview
 [
-.BI \toolkitoption " ..."
+.BI \-toolkitoption " ..."
 ] [
 .BI \-ifmt " format"
 ] [
@@ -119,8 +119,8 @@ Print the version number and then exit.
 understands the following image format name extensions:
 .nf
 	avs		Application Visualization System
-	nrif		NCAR Raster Interchange Format
 	hdf		Hierarchical Data Format
+	nrif		NCAR Raster Interchange Format
 	sun		Sun Microsystems 
 	sgi		Silicon Graphics Incorporated
 	xwd		X11 Window Dump

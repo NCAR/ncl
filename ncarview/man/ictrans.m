@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ictrans.m,v 1.13 1993-01-16 00:02:24 clyne Exp $
+.\"	$Id: ictrans.m,v 1.14 1993-02-03 04:26:29 clyne Exp $
 .\"
 .\" ictrans 3.01 90/06/22 
 .TH ICTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -218,22 +218,9 @@ Print the version number and then exit.
 .SH DEVICE SPECIFIC OPTIONS
 .B ictrans
 accepts an identical set of device-specific options to that of
-.BR ctrans(1NCARG).
-For a description of the device-specific options see the
-.TP
-.BI \-wid " window_id"
-Render into the previously created X window specified by
-.IR window_id .
-Normally 
-.B ctrans
-creates its own window for plotting. The window specified by 
-.I window_id
-must be of type 
-.BR InputOutput .
-The window must also have inherited its color map, depth and visual class from
-the root window. 
-.B DEVICE SPECIFIC OPTIONS section in 
-.BR ctrans(1NCARG).
+.BR ctrans.
+For a description of the device-specific options see 
+.BR ctrans(1NCARG) .
 .SH COMMANDS
 .SS Command Structure
 .LP 
@@ -319,9 +306,6 @@ Assign
 .I def
 to the alias
 .IR name .
-.I name
-is not allowed to be
-.BR alias.
 If
 .I def
 is omitted, the alias
@@ -387,18 +371,6 @@ Reports number of frames contained in the file.
 .B current
 .br
 Reports the current frame.
-.HP
-.B device
-.BI [ " device name " ]
-.br
-Set the translation device to 
-.IR "device name" .
-This function is identical to that of the 
-.B -d
-command line option.
-Without an argument 
-.B device
-reports the name of the current device for metafile translation.
 .HP
 .B file
 .BI [ " metafile "]
@@ -466,7 +438,8 @@ frame, such as color,  may override attributes in the second frame.
 .br
 Toggle loop mode on or off. When loop mode is on subsequent
 .B plot
-commands will cause the requested frames to be plotted and then ictrans 
+commands will cause the requested frames to be plotted and then 
+.B ictrans 
 will proceed to 
 either the first frame in the defined segment or the last and repeatedly
 display the first through last (last through first) frames. Looping continues
@@ -521,7 +494,9 @@ will wait for a newline character before advancing to the next frame.
 .B plot 
 will report the number of frames and the last frame in
 .IR frames .
-Plotting will be terminated and ictrans will reenter command mode after
+Plotting will be terminated and 
+.B ictrans 
+will reenter command mode after
 the last frame is plotted or upon receiving a interrupt signal, SIGINT.
 .HP 
 .BI [ " frames " ] 
@@ -531,7 +506,7 @@ The addressed frames are translated and sent to the current spooling device.
 Translation is performed by a spawned translator. The 
 .B spooler
 command may be used to select a spooling device.
-See 
+See
 .BR ncarv_spool(5NCARG).
 .HP 
 .B quit
@@ -590,7 +565,8 @@ configuration file, or by the NCARV_SPOOL environment variable, then
 becomes the current spooler. Subsequent 
 .B Print
 commands will use the spooler definition defined by the current spooler. 
-.BR See ncarv_spool(5NCARG).
+See
+.BR ncarv_spool(5NCARG).
 .HP 
 .BI [ " start frame " ] 
 .B start

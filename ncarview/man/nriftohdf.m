@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: nriftohdf.m,v 1.7 1993-01-16 00:02:37 clyne Exp $
+.\"	$Id: nriftohdf.m,v 1.8 1993-02-03 04:26:38 clyne Exp $
 .\"
 .TH NRIFTOHDF 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
@@ -44,10 +44,10 @@ Print the version number and then exit.
 .B nriftohdf 
 will only accept 8 bit, indexed encoded nrif files. 
 .B nriftohdf 
-will not accept \fI Bi-level, Bi-level run length,
+will not accept Bi-level, Bi-level run length,
 indexed color run length, Direct color integrated,
 Direct color integrated run length, Direct color segregated,
-\fRor \fIDirect color segregated run length\fR at any precision.
+or Direct color segregated run length at any precision.
 .LP
 .B nriftohdf
 is an obsolete utility which simply calls

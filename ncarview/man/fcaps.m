@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: fcaps.m,v 1.8 1993-01-16 00:02:19 clyne Exp $
+.\"	$Id: fcaps.m,v 1.9 1993-02-03 04:26:25 clyne Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH FCAPS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -14,7 +14,8 @@ report available fontcaps
 .SH DESCRIPTION
 .B fcaps
 is a simple script that reports all the available fontcaps for use in 
-metafile translation.
+metafile translation by the metafile translator 
+.BR ctrans(1NCARG) .
 .SH OPTIONS
 .TP
 .B \-V

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ctrans.m,v 1.14 1993-01-16 03:35:50 clyne Exp $
+.\"	$Id: ctrans.m,v 1.15 1993-02-03 04:26:22 clyne Exp $
 .\"
 .\" ctrans 3.2 
 .TH CTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -36,11 +36,11 @@ ctrans \- a Computer Graphics Metafile ( \fICGM\fR ) translator
 ] [
 .B \-Version
 ] [
-.BI \-viewport " llx lly urx ury"
+.BI \-viewport " llx:lly:urx:ury"
 ] [
 .BI \-wid " window_id"
 ] [
-.BI \-window " llx lly urx ury"
+.BI \-window " llx:lly:urx:ury"
 ] [
 .I device\-specific options
 ] 
@@ -92,7 +92,7 @@ under release 4 and 5, version 11 of
 .LP
 .B ctrans
 can also translate metacode into the following raster formats: 
-.B a60, avs, hdf, nrif, sun
+.B a60, avs, hdf, hppcl, nrif, sun
 and
 .BR xwd .
 The device specifier for these raster
@@ -101,7 +101,7 @@ formats is the name of the format. For example
 Additionally, a clear text driver, "-d CTXT",
 is available on any terminal. 
 Not all of the aforementioned devices
-may be supported by your version of 
+may be supported by your particular configuration of 
 .BR ctrans .
 For a list of supported devices see the
 .BR gcaps(1NCARG)
@@ -214,8 +214,6 @@ are undefined.
 On devices which support line width scaling all line width specifications
 within the metafile will be scaled by 
 .BR scale .
-will be scaled
-.I scale
 This option is subject to modification by the 
 .BR -lmin " and " -lmax 
 options.
@@ -236,6 +234,8 @@ seconds after the display of each frame and then proceed automatically.
 This option and the
 .B \-pause 
 option are mutually exclusive.
+.LP
+This option may not behave as expected on slower devices.
 .TP
 .BI \-outfile " file"
 Direct translator output to 
@@ -255,7 +255,8 @@ for subsequent translation of the metafile. This palette will override any
 color map defined by the CGM being translated. For a description of 
 the format of 
 .I pal_fname
-see ras_palette(5NCARG).
+see 
+.BR ras_palette(5NCARG) .
 .TP
 .B \-pause
 Pause after each frame in the metafile is displayed and wait for the
@@ -286,7 +287,7 @@ first
 element in that record.  The user must
 perform bookkeeping to determine the record that contains
 the desired frame.  Normally, a metafile editor (e.g.,
-.B ictrans)
+.BR ictrans(1NCARG) .
 may be used as the actual user interface to perform this
 bookkeeping. Without a specified 
 .I record number,
@@ -307,7 +308,7 @@ Operate in verbose mode.
 .BI \-Version
 Print the version number and then exit.
 .TP
-.BI \-viewport " llx lly urx ury"
+.BI \-viewport " llx:lly:urx:ury"
 Set the viewport of the output device. The viewport is the rectangular
 region of the output device of which the virtual device coordinate
 system of the metafile is mapped onto. Normally this region is the largest
@@ -322,7 +323,7 @@ specify the upper right corner of the device in normalized coordinates.
 For example, \fB-viewport 0.0 0.0 0.5 0.5\fR, specifies the lower left 
 corner of the device. 
 .TP
-.BI \-window " llx lly urx ury"
+.BI \-window " llx:lly:urx:ury"
 Specify the workstation window (in the GKS sense). Four
 coordinates are specified
 which define a rectangular window which is a subset of the normalized VDC
@@ -412,7 +413,9 @@ As a side effect of this option the rendering window
 is not cleared between frames.
 .TP 
 .B \-pcmap
-Ask ctrans to create its own X color map. If this option is not used
+Ask 
+.B ctrans 
+to create its own X color map. If this option is not used
 .B ctrans
 will use the default color map provided by the X server. When this
 option is used color table indeces specified by the metafile are mapped
@@ -440,7 +443,9 @@ the root window.
 .IP
 Note also that when this option is used 
 .B ctrans
-cannot receive X events from the drawing window. Hence, ctrans cannot use
+cannot receive X events from the drawing window. Hence, 
+.B ctrans 
+cannot use
 "mouse clicks" as a signal to advance frames. For this reason the
 .B -pause
 option is useful to prevent 
@@ -476,22 +481,39 @@ device.
 The following options are available when 
 .I device 
 is 
-.B a60, avs, hdf, nrif, sun, 
+.B a60, avs, hdf, hppcl, nrif, sun, 
 or 
 .BR xwd :
+.TP
+.BI \-dpi " dpi"
+Specify the number of dots per inch. This option is only meaningful
+for the HP LaserJet,
+.BR hppcl ,
+which ignores the
+.B \-resolution 
+option. 
+.I dpi
+may be one of 75, 100, 150, or 300.
 .TP
 .B \-direct
 By default
 .B ctrans
 outputs raster imagery with 8-bit-indexed encoding. When this option
 is used, if the raster file format supports it, raster imagery is output
-in a 24-bit-direct encoding scheme.
+in a 24-bit-direct encoding scheme. Be warned: the resultant file is
+three times the size of its 8-bit-indexed counterpart.
+.TP
+.B \-landscape
+Generate the image in landscape mode. This option is ignored by all 
+raster devices except the HP LaserJet,
+.BR hppcl .
+By default the LaserJet uses portrait mode.
 .TP
 .BI \-resolution " width" " x" " height"
 .I width
 and
 .I height
-specify the resolution of the raster file to be created.
+specify the spatial resolution in pixels of the raster file to be created.
 .SH EXAMPLES
 .PP
 To process a metafile named
@@ -550,6 +572,16 @@ at a resolution of 1024x1024 pixels, call:
 .br
 The raster output is in X11 "xwd" format and is sent to the file
 .BR raster.xwd .
+.PP
+To zoom in on the upper right quarter of the metafile 
+.B gmeta
+and display it in an X window, call:
+.sp
+.ti +0.5i
+% 
+.B "ctrans -d X11 -window 0.5:0.5:1.0:1.0"
+.sp
+.br
 .SH ENVIRONMENT
 .TP
 .B FONTCAP

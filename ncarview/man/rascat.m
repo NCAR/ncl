@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: rascat.m,v 1.6 1993-01-16 03:35:52 clyne Exp $
+.\"	$Id: rascat.m,v 1.7 1993-02-03 04:26:40 clyne Exp $
 .\"
 .TH RASCAT 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
@@ -229,10 +229,6 @@ is extracted and written to the file
 Aspect ratios are not preserved by the 
 .B \-resolution
 option.
-.LP
-.B rascat can read 
-.B .sgi
-files, but cannot write them.
 .LP
 Not all formats support both 8-bit and 24-bit encodings.
 .LP

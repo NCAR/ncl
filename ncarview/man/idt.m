@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: idt.m,v 1.12 1993-01-16 00:02:27 clyne Exp $
+.\"	$Id: idt.m,v 1.13 1993-02-03 04:26:31 clyne Exp $
 .\"
 .\" NCAR View: idt.man,v 1.0 89/09/10 clyne 
 .\" Revision 3.01 90/11/15 clyne
@@ -386,8 +386,10 @@ The following resource specification can be used to set the default size
 of the graphics display window to 200 by 200 pixels:
 .sp
 .ti +0.5i
+.nf
 	Idt*canvas.width:	200
 	Idt*canvas.height:	200
+.fi
 .ti -0.5i
 .br
 .PP
@@ -424,14 +426,12 @@ temporary files. On most systems the default is
 .BR /tmp .
 On some systems the default is 
 .BR /usr/tmp .
-.B X11
-this variable MUST be set. 
 .TP
-SHELL
+.B SHELL
 Specifies the UNIX shell that the file selector is to use for 
 expanding metacharacters. /bin/sh is used by default.
 .TP
-XENVIRONMENT
+.B XENVIRONMENT
 Specifies the name of a resource file that overrides the global resources
 stored in the RESOURCE_MANAGER property.
 .SH FILES
@@ -470,10 +470,6 @@ You can not save "zoomed" plots to a file. More precisely, you may save a
 "zoomed" plot, however, the resultant plot will not be "zoomed".
 .PP
 The "Scrolled to Frame" label is not continuously updated.
-.PP
-The current version of 
-.B ictrans
-must be on your search path.
 .PP
 The range with which one may zoom in on a plot with either the 
 .B zoom
