@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.7 1991-08-15 17:13:28 clyne Exp $
+ *	$Id: main.c,v 1.8 1991-09-26 16:29:20 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -46,7 +46,6 @@
 extern	char	*getFcapname();
 extern	char	*getGcapname();
 extern	Ct_err	init_ctrans();
-extern	Ct_err	init_metafile();
 extern	Ct_err	ctrans();
 
 extern	char	*strrchr();
@@ -141,6 +140,7 @@ char	**argv;
 	char	**meta_files = (char **) 
 			malloc ((unsigned) ((argc * sizeof(char *)) + 1));
 	int	i,j;
+	int	status;
 
 	/* put the program name in a global variable */
 
@@ -281,9 +281,9 @@ char	**argv;
 		 *	multible metafiles to reside in a single file. This 
 		 *	driver will only process the first.
 		 */
-		if (init_metafile(0, cgm_fd) != OK) {
-			close_ctrans();
-			exit(1);
+		if ((status = init_metafile(0, cgm_fd)) < 1) {
+			meta_files++;
+			continue;
 		}
 
 	
