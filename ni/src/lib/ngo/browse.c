@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.17 1998-02-20 00:11:28 dbrown Exp $
+ *      $Id: browse.c,v 1.18 1998-02-20 22:42:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2272,13 +2272,13 @@ extern NgPageId NgOpenPage(
         switch (type) {
             case _brREGVAR:
                     if (qcount < 1 || qname[0] == NrmNULLQUARK)
-                            return NULL;
+                            return NgNoPage;
                     page = UpdatePanes(go,_brREGVAR,
                                        qname[0],NrmNULLQUARK,False);
                     break;
             case _brFILEREF:
                     if (qcount < 1 || qname[0] == NrmNULLQUARK)
-                            return NULL;
+                            return NgNoPage;
                     page = UpdatePanes(go,_brFILEREF,
                                        NrmNULLQUARK,qname[0],False);
                     break;
@@ -2286,12 +2286,12 @@ extern NgPageId NgOpenPage(
                     if (qcount < 2
                         || qname[0] == NrmNULLQUARK
                         || qname[1] == NrmNULLQUARK)
-                            return NULL;
+                            return NgNoPage;
                     page = UpdatePanes(go,_brFILEVAR,qname[0],qname[1],False);
                     break;
             case _brHLUVAR:
                     if (qcount < 1 || qname[0] == NrmNULLQUARK)
-                            return NULL;
+                            return NgNoPage;
                     page = UpdatePanes(go,_brHLUVAR,
                                        qname[0],NrmNULLQUARK,False);
                     break;
