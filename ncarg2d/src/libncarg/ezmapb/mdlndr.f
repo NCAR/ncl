@@ -1,5 +1,5 @@
 C
-C $Id: mdlndr.f,v 1.1 2001-08-16 23:10:48 kennison Exp $
+C $Id: mdlndr.f,v 1.2 2001-09-07 18:38:40 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -71,7 +71,7 @@ C
 C
 C Declare other local variables.
 C
-        INTEGER          I,IAID,IDOT,IFDE,IIII,ILTS,INTF,IOAL,IOAR,ISTA,
+        INTEGER          I,IAID,IDOT,IFDE,ILTS,INTF,IOAL,IOAR,ISTA,
      +                   IWGF,LFND,LFNL,LFNM,LONM,MCHR,NCHR,NPTS
 C
         DATA IIII / 5 , 7 , 6 , 8 /
