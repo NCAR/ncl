@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.108 2003-06-26 22:56:55 haley Exp $
+;      $Id: gsn_code.ncl,v 1.109 2003-07-27 23:01:34 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -76,16 +76,19 @@ undef("create_labelbar")
 undef("gsn_open_ps")
 undef("gsn_open_pdf")
 undef("gsn_open_wks")
-undef("gsn_polygon")
 undef("gsn_add_primitive")
+undef("gsn_polygon")
 undef("gsn_add_polygon")
 undef("gsn_polygon_ndc")
+undef("gsn_add_polygon_ndc")
 undef("gsn_polyline")
 undef("gsn_add_polyline")
 undef("gsn_polyline_ndc")
+undef("gsn_add_polyline_ndc")
 undef("gsn_polymarker")
 undef("gsn_add_polymarker")
 undef("gsn_polymarker_ndc")
+undef("gsn_add_polymarker_ndc")
 undef("gsn_labelbar_ndc")
 undef("gsn_legend_ndc")
 undef("gsn_text_ndc_return")
@@ -2041,6 +2044,197 @@ begin
 end
 
 ;***********************************************************************;
+; Function : gsn_add_primitive                                          ;
+;                   wks: workstation object                             ;
+;                plotid: plot object                                    ;
+;                     x: 1-dimensional array of x points                ;
+;                     y: 1-dimensional array of y points                ;
+;                 isndc: NDC space or not                               ;
+;              polytype: type of primitive                              ;
+;             resources: optional resources                             ;
+;                                                                       ;
+; This function adds a primitive to the plot "plotid", either in the    ;
+; same data space as the data in the plot, or in NDC space. ("plotid"   ;
+; is returned from a previous call to one of the gsn_* plotting         ;
+; functions), "x" and "y" are the x and y locations of each point in the;
+; primitive, and should either be in the same data space as the data    ;
+; from "plotid" (isndc = False) or should be values from 0 to 1 if in   ;
+; NDC space (isndc = True).                                             ;
+;                                                                       ;
+; "resources" is an optional list of resources.  This function returns  ;
+; the primitive object created. polytype is the type of primitive to add;
+; (polymarker, polygon, or polyline)                                    ;
+;                                                                       ;
+;***********************************************************************;
+function gsn_add_primitive(wks:graphic,plotid:graphic,x[*]:numeric,\
+                           y[*]:numeric,isndc:logical,polytype:string, \
+                           resources:logical)
+local res2, gsid, gsres, prim_object, dummy
+begin
+  res2 = get_resources(resources)
+
+  if(.not.any(polytype.eq.(/"polymarker","polygon","polyline"/)))
+    print("Warning: gsn_add_primitive: Do not recognize primitive type '"+ polytype + "'.")
+   return(0)
+  end if
+;
+; If in NDC space, make sure X and Y values are in the range 0 to 1.
+; Also, create a canvas to draw on.
+;
+  if(isndc) then
+    if(any(x.lt.0.or.x.gt.1.or.y.lt.0.or.y.gt.1)) then
+      print("Warning: gsn_add_primitive: The X and Y values must be between 0 to 1 if you are in NDC space.")
+      return(0)
+    end if
+
+    canvas = create "canvas" logLinPlotClass wks
+      "vpXF"      : 0.0
+      "vpYF"      : 1.0
+      "vpWidthF"  : 1.0
+      "vpHeightF" : 1.0
+    end create
+  end if 
+;
+; Create a graphic style object.  We have to do this instead of using
+; the default one, because if we add two primitive objects to a plot
+; and assign each one a different color, the two objects will have the
+; same color as the last color that was set.
+
+  gsid = create "graphic_style" graphicStyleClass wks end create
+;
+; Set graphic style resources, if any.
+;
+  gsres = get_res_eq(res2,"gs")
+  gmres = False
+  attsetvalues_check(gsid,gsres)
+  if(isatt(gsres,"gsLineColor"))
+    gmres = True
+    gmres@gsMarkerColor = gsres@gsLineColor
+  end if
+
+  if(any(ismissing(x)).or.any(ismissing(y)))
+;
+; If the primitive is a polymarker or polygon, then just use the
+; non-missing values.
+;
+    if(polytype.eq."polygon".or.polytype.eq."polymarker")
+      inds = ind(.not.ismissing(x).and..not.ismissing(y))
+      if(.not.any(ismissing(inds)))
+        x2 = x(inds)
+        y2 = y(inds)
+        prim_object = create polytype primitiveClass noparent
+          "prXArray"       : x2
+          "prYArray"       : y2
+          "prPolyType"     : polytype
+          "prGraphicStyle" : gsid
+        end create
+        delete(x2)
+        delete(y2)
+        delete(inds)
+;
+; Add primitive to the plot object.  If in NDC space, then add it to the 
+; canvas, and then add the canvas as an annotation.
+;
+        dummy = new(1,graphic)
+        if(isndc) then
+          NhlAddPrimitive(canvas,prim_object,dummy)
+          anno = NhlAddAnnotation(plotid,canvas)
+          setvalues anno
+            "amZone"           : 0
+            "amResizeNotify"   : True
+          end setvalues
+        else
+          NhlAddPrimitive(plotid,prim_object,dummy)
+        end if
+      else
+        prim_object = new(1,graphic)
+      end if
+    else
+;
+; If the primitive is a polyline, then retrieve the pairs of non-missing
+; points, and plot them individually.
+;
+      dummy = new(1,graphic)
+      indices = get_non_missing_pairs(x,y)
+      i = 0
+;
+; Get the number of non-missing pairs of lines.
+;
+      nlines = dimsizes(ind(.not.ismissing(indices(:,0))))
+      if(.not.ismissing(nlines)) 
+        prim_object = new(nlines,graphic)
+        astring     = new(nlines,string)
+        astring     = polytype + ispan(0,nlines-1,1)
+        first_marker = True
+        do i=0,nlines-1
+          ibeg = indices(i,0)
+          iend = indices(i,1)
+          if(iend.eq.ibeg)
+;
+; If there's only one point in our line, then indicate it
+; with a polymarker.
+;
+            polytype2 = "polymarker"
+            if(first_marker)
+              attsetvalues_check(gsid,gmres)
+              first_marker = False
+            end if
+          else
+            polytype2 = "polyline"
+          end if
+          prim_object(i) = create astring(i) primitiveClass noparent
+            "prXArray"       : x(ibeg:iend)
+            "prYArray"       : y(ibeg:iend)
+            "prPolyType"     : polytype2
+            "prGraphicStyle" : gsid
+          end create
+          if(isndc) then
+            NhlAddPrimitive(canvas,prim_object(i),dummy)
+          else
+            NhlAddPrimitive(plotid,prim_object(i),dummy)
+          end if
+        end do
+        if(isndc) then
+          anno = NhlAddAnnotation(plotid,canvas)
+          setvalues anno
+            "amZone"           : 0
+            "amResizeNotify"   : True
+          end setvalues
+        end if
+      else
+        prim_object = new(1,graphic)
+      end if
+    end if
+  else
+;
+; No data is missing, so create a primitive object.
+;
+    prim_object = create polytype primitiveClass noparent
+      "prXArray"       : x
+      "prYArray"       : y
+      "prPolyType"     : polytype
+      "prGraphicStyle" : gsid
+    end create
+;
+; Add primitive to the plot object.
+;
+    dummy = new(1,graphic)
+    if(isndc) then
+      NhlAddPrimitive(canvas,prim_object,dummy)
+      anno = NhlAddAnnotation(plotid,canvas)
+      setvalues anno
+        "amZone"           : 0
+        "amResizeNotify"   : True
+      end setvalues
+    else
+      NhlAddPrimitive(plotid,prim_object,dummy)
+    end if
+  end if
+
+  return(prim_object)
+end
+
+;***********************************************************************;
 ; Procedure : gsn_polygon                                               ;
 ;                   wks: workstation object                             ;
 ;                plotid: plot object                                    ;
@@ -2088,145 +2282,6 @@ begin
 end
 
 ;***********************************************************************;
-; Function : gsn_add_primitive                                          ;
-;                   wks: workstation object                             ;
-;                plotid: plot object                                    ;
-;                     x: 1-dimensional array of x points                ;
-;                     y: 1-dimensional array of y points                ;
-;              polytype: type of primitive                              ;
-;               resources: optional resources                           ;
-;                                                                       ;
-; This function adds a primitive to the plot "plotid", in the same data ;
-; space as the data in the plot ("plotid" is returned from a previous   ;
-; call to one of the gsn_* plotting functions). "x" and "y" are the x   ;
-; and y locations of each point in the primitive, and should be in the  ;
-; same data space as the data from "plotid". "resources" is an optional ;
-; list of resources.  This function returns the primitive object        ;
-; created. polytype is the type of primitive to add (polymarker,        ;
-; polygon, or polyline)                                                 ;
-;                                                                       ;
-;***********************************************************************;
-function gsn_add_primitive(wks:graphic,plotid:graphic,x[*]:numeric,\
-                           y[*]:numeric,polytype:string,resources:logical)
-local gsid, gsres, prim_object, dummy
-begin
-  res2 = get_resources(resources)
-
-  if(.not.any(polytype.eq.(/"polymarker","polygon","polyline"/)))
-    print("Warning: gsn_add_primitive: Do not recognize primitive type '"+ polytype + "'.")
-   return(0)
-  end if
-
-; Create a graphic style object.  We have to do this instead of using
-; the default one, because if we add two primitive objects to a plot
-; and assign each one a different color, the two objects will have the
-; same color as the last color that was set.
-
-    gsid = create "graphic_style" graphicStyleClass wks end create
-;
-; Set graphic style resources, if any.
-;
-    gsres = get_res_eq(res2,"gs")
-    gmres = False
-    attsetvalues_check(gsid,gsres)
-    if(isatt(gsres,"gsLineColor"))
-      gmres = True
-      gmres@gsMarkerColor = gsres@gsLineColor
-    end if
-
-    if(any(ismissing(x)).or.any(ismissing(y)))
-;
-; If the primitive is a polymarker or polygon, then just use the
-; non-missing values.
-;
-      if(polytype.eq."polygon".or.polytype.eq."polymarker")
-        inds = ind(.not.ismissing(x).and..not.ismissing(y))
-        if(.not.any(ismissing(inds)))
-          x2 = x(inds)
-          y2 = y(inds)
-          prim_object = create polytype primitiveClass noparent
-            "prXArray"       : x2
-            "prYArray"       : y2
-            "prPolyType"     : polytype
-            "prGraphicStyle" : gsid
-          end create
-          delete(x2)
-          delete(y2)
-          delete(inds)
-;
-; Add primitive to the plot object.
-;
-          dummy = new(1,graphic)
-          NhlAddPrimitive(plotid,prim_object,dummy)
-        else
-          prim_object = new(1,graphic)
-        end if
-      else
-;
-; If the primitive is a polyline, then retrieve the pairs of non-missing
-; points, and plot them individually.
-;
-        dummy = new(1,graphic)
-        indices = get_non_missing_pairs(x,y)
-        i = 0
-;
-; Get the number of non-missing pairs of lines.
-;
-        nlines = dimsizes(ind(.not.ismissing(indices(:,0))))
-        if(.not.ismissing(nlines)) 
-          prim_object = new(nlines,graphic)
-          astring     = new(nlines,string)
-          astring     = polytype + ispan(0,nlines-1,1)
-          first_marker = True
-          do i=0,nlines-1
-            ibeg = indices(i,0)
-            iend = indices(i,1)
-            if(iend.eq.ibeg)
-;
-; If there's only one point in our line, then indicate it
-; with a polymarker.
-;
-              polytype2 = "polymarker"
-              if(first_marker)
-                attsetvalues_check(gsid,gmres)
-                first_marker = False
-              end if
-            else
-              polytype2 = "polyline"
-            end if
-            prim_object(i) = create astring(i) primitiveClass noparent
-              "prXArray"       : x(ibeg:iend)
-              "prYArray"       : y(ibeg:iend)
-              "prPolyType"     : polytype2
-              "prGraphicStyle" : gsid
-            end create
-            NhlAddPrimitive(plotid,prim_object(i),dummy)
-          end do
-        else
-          prim_object = new(1,graphic)
-        end if
-      end if
-    else
-;
-; No data is missing, so create a primitive object.
-;
-      prim_object = create polytype primitiveClass noparent
-        "prXArray"       : x
-        "prYArray"       : y
-        "prPolyType"     : polytype
-        "prGraphicStyle" : gsid
-      end create
-;
-; Add primitive to the plot object.
-;
-      dummy = new(1,graphic)
-      NhlAddPrimitive(plotid,prim_object,dummy)
-    end if
-
-    return(prim_object)
-end
-
-;***********************************************************************;
 ; Function : gsn_add_polygon                                            ;
 ;                   wks: workstation object                             ;
 ;                plotid: plot object                                    ;
@@ -2250,7 +2305,7 @@ function gsn_add_polygon(wks:graphic,plotid:graphic,x[*]:numeric,\
                          y[*]:numeric,resources:logical)
 begin
   res2 = get_resources(resources)
-  return(gsn_add_primitive(wks,plotid,x,y,"polygon",res2))
+  return(gsn_add_primitive(wks,plotid,x,y,False,"polygon",res2))
 end
 
 
@@ -2306,6 +2361,31 @@ begin
       NhlNDCPolygon(canvas,gsid,x2,y2)
     end if
 end
+
+;***********************************************************************;
+; Function : gsn_add_polygon_ndc                                        ;
+;                   wks: workstation object                             ;
+;                plotid: plot object                                    ;
+;                     x: 1-dimensional array of x points                ;
+;                     y: 1-dimensional array of y points                ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function adds a polygon to the plot "plotid", in NDC space.      ;
+; "x" and "y" are the x and y locations of each point in the polygon,   ;
+; and should be in NDC space (0 to 1). "resources" is an optional list  ;
+; of resources.  This function returns the primitive object created.    ;
+;                                                                       ;
+; This function is different from gsn_polygof_ndcn because it actually  ;
+; attaches the polygon to the plot. This means that if you resize or    ;
+; move the plot, the polygon will stay with the plot.                   ;
+;***********************************************************************;
+function gsn_add_polygon_ndc(wks:graphic,plotid:graphic,x[*]:numeric,\
+                             y[*]:numeric,resources:logical)
+begin
+  res2 = get_resources(resources)
+  return(gsn_add_primitive(wks,plotid,x,y,True,"polygon",res2))
+end
+
 
 ;***********************************************************************;
 ; Procedure : gsn_polyline                                              ;
@@ -2405,7 +2485,7 @@ function gsn_add_polyline(wks:graphic,plotid:graphic,x[*]:numeric,\
                            y[*]:numeric,resources:logical)
 begin
   res2 = get_resources(resources)
-  return(gsn_add_primitive(wks,plotid,x,y,"polyline",res2))
+  return(gsn_add_primitive(wks,plotid,x,y,False,"polyline",res2))
 end
 
 
@@ -2479,6 +2559,29 @@ begin
 end
 
 ;***********************************************************************;
+; Function : gsn_add_polyline_ndc                                       ;
+;                   wks: workstation object                             ;
+;                  plot: plot object                                    ;
+;                     x: 1-dimensional array of x ndc points            ;
+;                     y: 1-dimensional array of y ndc points            ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function adds a polyline to the plot "plot" in NDC space.        ;
+; "x" and "y" are the x and y locations of each point in the line, and  ;
+; must be between 0 and 1 "resources" is an optional list of resources. ;
+;                                                                       ;
+; This function is different from gsn_polyline_ndc because it actually  ;
+; attaches the line(s) to the plot. This means that if you resize or    ;
+; move the plot, the line will stay with the plot.                      ;
+;***********************************************************************;
+function gsn_add_polyline_ndc(wks:graphic,plot:graphic,x[*]:numeric, \
+                              y[*]:numeric,resources:logical)
+begin
+  res2 = get_resources(resources)
+  return(gsn_add_primitive(wks,plot,x,y,True,"polyline",res2))
+end
+
+;***********************************************************************;
 ; Procedure : gsn_polymarker                                            ;
 ;                   wks: workstation object                             ;
 ;                plotid: plot object                                    ;
@@ -2549,7 +2652,7 @@ function gsn_add_polymarker(wks:graphic,plotid:graphic,x[*]:numeric,\
                             y[*]:numeric,resources:logical)
 begin
   res2 = get_resources(resources)
-  return(gsn_add_primitive(wks,plotid,x,y,"polymarker",res2))
+  return(gsn_add_primitive(wks,plotid,x,y,False,"polymarker",res2))
 end
 
 
@@ -2605,6 +2708,31 @@ begin
       NhlNDCPolymarker(canvas,gsid,x2,y2)
     end if
 end
+
+;***********************************************************************;
+; Function : gsn_add_polymarker_ndc                                     ;
+;                   wks: workstation object                             ;
+;                plotid: plot object                                    ;
+;                     x: 1-dimensional array of x points                ;
+;                     y: 1-dimensional array of y points                ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function adds polymarkers to the plot "plotid", in NDC space.    ;
+; "x" and "y" are the x and y locations of each marker, and should be in;
+; NDC space (0 to 1). "resources" is an optional list of resources. This;
+; function returns the primitive object created.                        ;
+;                                                                       ;
+; This function is different from gsn_polymarker_ndc because it actually;
+; attaches the markers to the plot. This means that if you resize or    ;
+; move the plot, the markers will stay with the plot.                   ;
+;***********************************************************************;
+function gsn_add_polymarker_ndc(wks:graphic,plotid:graphic,x[*]:numeric,\
+                                y[*]:numeric,resources:logical)
+begin
+  res2 = get_resources(resources)
+  return(gsn_add_primitive(wks,plotid,x,y,True,"polymarker",res2))
+end
+
 
 ;***********************************************************************;
 ; Procedure : gsn_labelbar_ndc                                          ;
@@ -3389,15 +3517,24 @@ begin
   yrange = y_top - y_bot
 
   if(lbhor)
-    row_scale = min((/yrange/(nrows*total_height+labelbar_height),yrange/))
-    col_scale = min((/xrange/(ncols*total_width), xrange/))
-    scale = min((/col_scale,row_scale/))
-    yrange = yrange - scale * labelbar_height
+;
+; Previously, we used to include xrange and yrange as part of the min
+; statement. This seemed to cause problems if you set one of
+; gsnPanelTop/Bottom/Right/Left however, so I removed it.  Initial
+; testing on Sylvia's panel examples seems to indicate this is okay.
+;
+    row_scale = yrange/(nrows*total_height+labelbar_height)
+    col_scale = xrange/(ncols*total_width)
+    scale     = min((/col_scale,row_scale/))
+    yrange    = yrange - scale * labelbar_height
   else
-    row_scale = min((/yrange/(nrows*total_height),yrange/))
-    col_scale = min((/xrange/(ncols*total_width+labelbar_width), xrange/))
-    scale = min((/col_scale,row_scale/))
-    xrange = xrange - scale * labelbar_width
+;
+; See above comments.
+;
+    row_scale = yrange/(nrows*total_height)
+    col_scale = xrange/(ncols*total_width+labelbar_width)
+    scale     = min((/col_scale,row_scale/))
+    xrange    = xrange - scale * labelbar_width
   end if
 
   new_plot_width  = scale*plot_width    ; Calculate new width
