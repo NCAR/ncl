@@ -1,0 +1,9 @@
+#
+#	$Id: yMakefile,v 1.1 1994-05-13 16:28:17 haley Exp $
+#
+
+CSRCS = c_colcon.c
+
+GENERIC_SRCS = $(CSRCS)
+
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
