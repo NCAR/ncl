@@ -77,7 +77,7 @@ char *DSErrMsg(int i)
     "   interpolated value set to missing value flag."
   };
 
-  if ( (i > 1) && (i < MAX_ERROR) ) {
+  if ( (i > 1) && (i <= MAX_ERROR) ) {
     rlist = (char *) error_list[i-1];
   }
   else {
