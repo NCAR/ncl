@@ -253,6 +253,7 @@ extern NhlErrorTypes isleapyear_W(void);
 extern NhlErrorTypes greg2jul_W(void);
 extern NhlErrorTypes jul2greg_W(void);
 
+extern NhlErrorTypes angmom_atm_W(void);
 extern NhlErrorTypes relhum_W(void);
 extern NhlErrorTypes runave_W(void);
 extern NhlErrorTypes wgt_runave_W(void);
@@ -3068,6 +3069,18 @@ void NclAddUserFuncs(void)
     args = NewArgs(1);
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     NclRegisterFunc(jul2greg_W,args,"jul2greg",nargs);
+
+/*
+ * Register "angmom_atm".
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    NclRegisterFunc(angmom_atm_W,args,"angmom_atm",nargs);
 
 /*
  * Register "relhum".

@@ -27,8 +27,8 @@ NhlErrorTypes wgt_areaave_W( void )
   double *tmp_x, *tmp_wgty, *tmp_wgtx, *tmp1_wgtx, *tmp1_wgty;
   int *iflag;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_wgtx, dsizes_wgtx[NCL_MAX_DIMENSIONS];
-  int ndims_wgty, dsizes_wgty[NCL_MAX_DIMENSIONS];
+  int dsizes_wgtx[NCL_MAX_DIMENSIONS];
+  int dsizes_wgty[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x, type_wgtx, type_wgty;
   NclScalar missing_x, missing_dx, missing_rx;
 /*
@@ -58,7 +58,7 @@ NhlErrorTypes wgt_areaave_W( void )
   wgty = (void*)NclGetArgValue(
           1,
           4,
-          &ndims_wgty,
+          NULL,
           dsizes_wgty,
           NULL,
           NULL,
@@ -68,7 +68,7 @@ NhlErrorTypes wgt_areaave_W( void )
   wgtx = (void*)NclGetArgValue(
           2,
           4,
-          &ndims_wgtx,
+          NULL,
           dsizes_wgtx,
           NULL,
           NULL,
@@ -95,14 +95,16 @@ NhlErrorTypes wgt_areaave_W( void )
   ny = dsizes_x[ndims_x-2];
   nxny = nx * ny;
 
-  if(dsizes_wgty[ndims_wgty-1] != 1 && dsizes_wgty[ndims_wgty-1] != ny) {
+  if(dsizes_wgty[0] != 1 && dsizes_wgty[0] != ny) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areaave: wgty must be a scalar or a 1-dimensional vector the same size as the second-to-the-last dimension of x");
     return(NhlFATAL);
   }
-  if(dsizes_wgtx[ndims_wgtx-1] != 1 && dsizes_wgtx[ndims_wgtx-1] != nx) {
+
+  if(dsizes_wgtx[0] != 1 && dsizes_wgtx[0] != nx) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areaave: wgtx must be a scalar or a 1-dimensional vector the same size as the last dimension of x");
     return(NhlFATAL);
   }
+
 /*
  * Compute the size of the output array.
  */
@@ -138,16 +140,16 @@ NhlErrorTypes wgt_areaave_W( void )
 /*
  * Coerce weights to double if necessary.
  */
-  tmp1_wgtx = coerce_input_double(wgtx,type_wgtx,nx,0,NULL,NULL);
-  tmp1_wgty = coerce_input_double(wgty,type_wgty,ny,0,NULL,NULL);
+  tmp1_wgtx = coerce_input_double(wgtx,type_wgtx,dsizes_wgtx[0],0,NULL,NULL);
+  tmp1_wgty = coerce_input_double(wgty,type_wgty,dsizes_wgty[0],0,NULL,NULL);
 
   if(tmp1_wgtx == NULL || tmp1_wgty == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areaave: Unable to allocate memory for coercing weights to double precision");
     return(NhlFATAL);
   }
 
-  tmp_wgtx = copy_scalar_to_array(tmp1_wgtx,ndims_wgtx,dsizes_wgtx,nx);
-  tmp_wgty = copy_scalar_to_array(tmp1_wgty,ndims_wgty,dsizes_wgty,ny);
+  tmp_wgtx = copy_scalar_to_array(tmp1_wgtx,1,dsizes_wgtx,nx);
+  tmp_wgty = copy_scalar_to_array(tmp1_wgty,1,dsizes_wgty,ny);
 
   if(tmp_wgtx == NULL || tmp_wgty == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areaave: Unable to allocate memory for coercing weights to double precision");
@@ -238,9 +240,9 @@ NhlErrorTypes wgt_volave_W( void )
   double *tmp_wgtz, *tmp_wgty, *tmp_wgtx, *tmp1_wgtz, *tmp1_wgtx, *tmp1_wgty;
   int *iflag;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_wgtx, dsizes_wgtx[NCL_MAX_DIMENSIONS];
-  int ndims_wgty, dsizes_wgty[NCL_MAX_DIMENSIONS];
-  int ndims_wgtz, dsizes_wgtz[NCL_MAX_DIMENSIONS];
+  int dsizes_wgtx[NCL_MAX_DIMENSIONS];
+  int dsizes_wgty[NCL_MAX_DIMENSIONS];
+  int dsizes_wgtz[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x, type_wgtx, type_wgty, type_wgtz;
   NclScalar missing_x, missing_dx, missing_rx;
 /*
@@ -270,7 +272,7 @@ NhlErrorTypes wgt_volave_W( void )
   wgtz = (void*)NclGetArgValue(
           1,
           5,
-          &ndims_wgtz,
+          NULL,
           dsizes_wgtz,
           NULL,
           NULL,
@@ -280,7 +282,7 @@ NhlErrorTypes wgt_volave_W( void )
   wgty = (void*)NclGetArgValue(
           2,
           5,
-          &ndims_wgty,
+          NULL,
           dsizes_wgty,
           NULL,
           NULL,
@@ -290,7 +292,7 @@ NhlErrorTypes wgt_volave_W( void )
   wgtx = (void*)NclGetArgValue(
           3,
           5,
-          &ndims_wgtx,
+          NULL,
           dsizes_wgtx,
           NULL,
           NULL,
@@ -318,15 +320,15 @@ NhlErrorTypes wgt_volave_W( void )
   nz = dsizes_x[ndims_x-3];
   nxnynz = nx * ny * nz;
 
-  if(dsizes_wgtz[ndims_wgtz-1] != 1 && dsizes_wgtz[ndims_wgtz-1] != nz) {
+  if(dsizes_wgtz[0] != 1 && dsizes_wgtz[0] != nz) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave: wgtz must be a scalar or a 1-dimensional vector the same size as the third-to-the-last dimension of x");
     return(NhlFATAL);
   }
-  if(dsizes_wgty[ndims_wgty-1] != 1 && dsizes_wgty[ndims_wgty-1] != ny) {
+  if(dsizes_wgty[0] != 1 && dsizes_wgty[0] != ny) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave: wgty must be a scalar or a 1-dimensional vector the same size as the second-to-the-last dimension of x");
     return(NhlFATAL);
   }
-  if(dsizes_wgtx[ndims_wgtx-1] != 1 && dsizes_wgtx[ndims_wgtx-1] != nx) {
+  if(dsizes_wgtx[0] != 1 && dsizes_wgtx[0] != nx) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave: wgtx must be a scalar or a 1-dimensional vector the same size as the last dimension of x");
     return(NhlFATAL);
   }
@@ -363,17 +365,17 @@ NhlErrorTypes wgt_volave_W( void )
 /*
  * Coerce weights to double if necessary.
  */
-  tmp1_wgtx = coerce_input_double(wgtx,type_wgtx,nx,0,NULL,NULL);
-  tmp1_wgty = coerce_input_double(wgty,type_wgty,ny,0,NULL,NULL);
-  tmp1_wgtz = coerce_input_double(wgtz,type_wgtz,nz,0,NULL,NULL);
+  tmp1_wgtx = coerce_input_double(wgtx,type_wgtx,dsizes_wgtx[0],0,NULL,NULL);
+  tmp1_wgty = coerce_input_double(wgty,type_wgty,dsizes_wgty[0],0,NULL,NULL);
+  tmp1_wgtz = coerce_input_double(wgtz,type_wgtz,dsizes_wgtz[0],0,NULL,NULL);
 
   if(tmp1_wgtx == NULL || tmp1_wgty == NULL || tmp1_wgtz == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave: Unable to allocate memory for coercing weights to double precision");
     return(NhlFATAL);
   }
-  tmp_wgtx = copy_scalar_to_array(tmp1_wgtx,ndims_wgtx,dsizes_wgtx,nx);
-  tmp_wgty = copy_scalar_to_array(tmp1_wgty,ndims_wgty,dsizes_wgty,ny);
-  tmp_wgtz = copy_scalar_to_array(tmp1_wgtz,ndims_wgtz,dsizes_wgtz,nz);
+  tmp_wgtx = copy_scalar_to_array(tmp1_wgtx,1,dsizes_wgtx,nx);
+  tmp_wgty = copy_scalar_to_array(tmp1_wgty,1,dsizes_wgty,ny);
+  tmp_wgtz = copy_scalar_to_array(tmp1_wgtz,1,dsizes_wgtz,nz);
 
   if(tmp_wgtx == NULL || tmp_wgty == NULL || tmp_wgtz == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areaave: Unable to allocate memory for coercing weights to double precision");
@@ -466,8 +468,8 @@ NhlErrorTypes wgt_volave_ccm_W( void )
   double *tmp_wgtz, *tmp_wgty, *tmp_wgtx, *tmp1_wgtx, *tmp1_wgty;
   int *iflag;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
-  int ndims_wgtx, dsizes_wgtx[NCL_MAX_DIMENSIONS];
-  int ndims_wgty, dsizes_wgty[NCL_MAX_DIMENSIONS];
+  int dsizes_wgtx[NCL_MAX_DIMENSIONS];
+  int dsizes_wgty[NCL_MAX_DIMENSIONS];
   int ndims_wgtz, dsizes_wgtz[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x, type_wgtx, type_wgty, type_wgtz;
   NclScalar missing_x, missing_dx, missing_rx;
@@ -508,7 +510,7 @@ NhlErrorTypes wgt_volave_ccm_W( void )
   wgty = (void*)NclGetArgValue(
           2,
           5,
-          &ndims_wgty,
+          NULL,
           dsizes_wgty,
           NULL,
           NULL,
@@ -518,7 +520,7 @@ NhlErrorTypes wgt_volave_ccm_W( void )
   wgtx = (void*)NclGetArgValue(
           3,
           5,
-          &ndims_wgtx,
+          NULL,
           dsizes_wgtx,
           NULL,
           NULL,
@@ -574,11 +576,11 @@ NhlErrorTypes wgt_volave_ccm_W( void )
  * wgty must either be a scalar or a 1-d array of length ny.
  * wgtx must either be a scalar or a 1-d array of length nx.
  */
-  if(dsizes_wgty[ndims_wgty-1] != 1 && dsizes_wgty[ndims_wgty-1] != ny) {
+  if(dsizes_wgty[0] != 1 && dsizes_wgty[0] != ny) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave_ccm: wgty must be a scalar or a 1-dimensional vector the same size as the second-to-the-last dimension of x");
     return(NhlFATAL);
   }
-  if(dsizes_wgtx[ndims_wgtx-1] != 1 && dsizes_wgtx[ndims_wgtx-1] != nx) {
+  if(dsizes_wgtx[0] != 1 && dsizes_wgtx[0] != nx) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave_ccm: wgtx must be a scalar or a 1-dimensional vector the same size as the last dimension of x");
     return(NhlFATAL);
   }
@@ -608,15 +610,15 @@ NhlErrorTypes wgt_volave_ccm_W( void )
 /*
  * Coerce weights to double if necessary.
  */
-  tmp1_wgtx = coerce_input_double(wgtx,type_wgtx,nx,0,NULL,NULL);
-  tmp1_wgty = coerce_input_double(wgty,type_wgty,ny,0,NULL,NULL);
+  tmp1_wgtx = coerce_input_double(wgtx,type_wgtx,dsizes_wgtx[0],0,NULL,NULL);
+  tmp1_wgty = coerce_input_double(wgty,type_wgty,dsizes_wgty[0],0,NULL,NULL);
 
   if(tmp1_wgtx == NULL || tmp1_wgty == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave_ccm: Unable to allocate memory for coercing weights to double precision");
     return(NhlFATAL);
   }
-  tmp_wgtx = copy_scalar_to_array(tmp1_wgtx,ndims_wgtx,dsizes_wgtx,nx);
-  tmp_wgty = copy_scalar_to_array(tmp1_wgty,ndims_wgty,dsizes_wgty,ny);
+  tmp_wgtx = copy_scalar_to_array(tmp1_wgtx,1,dsizes_wgtx,nx);
+  tmp_wgty = copy_scalar_to_array(tmp1_wgty,1,dsizes_wgty,ny);
 
   if(tmp_wgtx == NULL || tmp_wgty == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areaave: Unable to allocate memory for coercing weights to double precision");

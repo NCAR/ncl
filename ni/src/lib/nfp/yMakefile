@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.25 2000-07-21 00:00:12 haley Exp $
+#      $Id: yMakefile,v 1.26 2000-08-08 17:59:53 haley Exp $
 #
 #########################################################################
 #									#
@@ -31,7 +31,7 @@ CSRCS = areavolW.c calcorcW.c chiinvW.c csagridW.c cssgridW.c cz2ccmW.c \
 	locminmaxW.c mapgciW.c natgridW.c ncolorW.c preshybW.c ngmiscW.c regcoefW.c \
 	relhumW.c remapW.c rhombtriW.c shgridW.c sindexW.c slpW.c skewtW.c \
 	smth9W.c specxW.c sph2W.c sphintW.c sstoiW.c statW.c svdW.c \
-	tdpackW.c trvsphW.c varimaxW.c vibetaW.c wmapW.c wrunaveW.c \
+	tdpackW.c trvsphW.c varimaxW.c vibetaW.c wgneW.o wmapW.c wrunaveW.c \
 	wrapper.c vinth2pW.c vinth2peW.c
 
 COBJS = areavolW.o calcorcW.o chiinvW.o csagridW.o cssgridW.o cz2ccmW.o \
@@ -40,10 +40,10 @@ COBJS = areavolW.o calcorcW.o chiinvW.o csagridW.o cssgridW.o cz2ccmW.o \
 	locminmaxW.o mapgciW.o natgridW.o ncolorW.o preshybW.o ngmiscW.o regcoefW.o \
 	relhumW.o remapW.o rhombtriW.o shgridW.o sindexW.o slpW.o skewtW.o \
 	smth9W.o specxW.o sph2W.o sphintW.o sstoiW.o statW.o svdW.o \
-	tdpackW.o trvsphW.o varimaxW.o vibetaW.o wmapW.o wrunaveW.o \
+	tdpackW.o trvsphW.o varimaxW.o vibetaW.o wgneW.o wmapW.o wrunaveW.o \
 	wrapper.o vinth2pW.o vinth2peW.o
 
-FSRCS = areaAve.f calcorc_dp.f chiin_dp.f cntrFiniteDiff.f cz2ccm_dp.f \
+FSRCS = aam.f areaAve.f calcorc_dp.f chiin_dp.f cntrFiniteDiff.f cz2ccm_dp.f \
 	dmapgci.f dtrend_dp.f ezfft_dp.f fluxEddyTav_dp.f fo2fs_dp.f \
 	hydro_dp.f index77_dp.f int2p_dp.f julGreg.f linint2.f linmsg_dp.f \
 	localMinMax.f preshybrid.f prneof_dp.f prneofts_dp.f rdsstoi.f \
@@ -53,7 +53,7 @@ FSRCS = areaAve.f calcorc_dp.f chiin_dp.f cntrFiniteDiff.f cz2ccm_dp.f \
 	trvsph77_dp.f upsl_dp.f varimax_dp.f vibeta_dp.f volAve.f \
 	wrunave_dp.f vinth2p_dp.f vinth2p_ecmwf.f
 
-FOBJS = areaAve.o calcorc_dp.o chiin_dp.o cntrFiniteDiff.o cz2ccm_dp.o \
+FOBJS = aam.o areaAve.o calcorc_dp.o chiin_dp.o cntrFiniteDiff.o cz2ccm_dp.o \
 	dmapgci.o dtrend_dp.o ezfft_dp.o fluxEddyTav_dp.o fo2fs_dp.o \
 	hydro_dp.o index77_dp.o int2p_dp.o julGreg.o linint2.o linmsg_dp.o \
 	localMinMax.o preshybrid.o prneof_dp.o prneofts_dp.o rdsstoi.o \
