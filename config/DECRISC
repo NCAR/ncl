@@ -1,5 +1,5 @@
 /*
- *      $Id: DECRISC,v 1.21 1994-04-08 18:37:10 boote Exp $
+ *      $Id: DECRISC,v 1.22 1994-08-25 20:18:42 haley Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,7 @@
 #define	StdDefines	-DByteSwapped
 #define	FCppCommand	/lib/cpp
 #define CtoFLibraries   -lots -lfor -lF77 -lI77 -lU77 -lutil -li -lm -lUfor
-#define ProjectDefines 
 
-#define	ArchRecLibSearch	-L/usr/local/lib
-#define	ArchRecIncSearch	-I/usr/local/include
+#define CCompiler       gcc
+#define CcOptions       -ansi
+
