@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.109 2002-11-10 15:58:39 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.110 2002-11-12 16:47:10 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -6138,8 +6138,8 @@ begin
 ; Check for left/right titles at top. Use attributes "long_name" and
 ; "units" if they exist.
 
-    set_right_subtitle(unew,res2,res2)
-    set_left_subtitle(unew,res2,res2)
+    set_right_subtitle(datanew,res2,res2)
+    set_left_subtitle(datanew,res2,res2)
 
 ; Check for existence of the left, center, and right subtitles.
 
@@ -6417,8 +6417,8 @@ begin
 ; Check for left/right titles at top. Use attributes "long_name" and
 ; "units" if they exist.
 
-    set_right_subtitle(unew,res2,mpres)
-    set_left_subtitle(unew,res2,mpres)
+    set_right_subtitle(datanew,res2,mpres)
+    set_left_subtitle(datanew,res2,mpres)
 
 ; Check if frame and/or draw are not supposed to be called.
 
@@ -6689,8 +6689,8 @@ begin
 ; Check for left/right titles at top. Use attributes "long_name" and
 ; "units" if they exist.
 
-    set_right_subtitle(unew,res2,mpres)
-    set_left_subtitle(unew,res2,mpres)
+    set_right_subtitle(datanew,res2,mpres)
+    set_left_subtitle(datanew,res2,mpres)
 
 ; Check for draw and frame.
 
@@ -6908,8 +6908,8 @@ begin
 ; Check for left/right titles at top. Use attributes "long_name" and
 ; "units" if they exist.
 
-    set_right_subtitle(unew,res2,mpres)
-    set_left_subtitle(unew,res2,mpres)
+    set_right_subtitle(datanew,res2,mpres)
+    set_left_subtitle(datanew,res2,mpres)
 
 ; Check if frame and/or draw are not supposed to be called.
 
@@ -7497,7 +7497,7 @@ begin
         yref_line_color = "foreground"  ; defaults to foreground color.
       end if
 ;
-; Check if we want a bar chart. If so, gsnYRefLine must be set.
+; Check if we want a bar chart.
 ;
       bar_chart        = get_res_value(res2,"gsnXYBarChart",False)
       bar_outline_only = get_res_value(res2,"gsnXYBarChartOutlineOnly",False)
