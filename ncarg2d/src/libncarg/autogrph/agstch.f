@@ -1,8 +1,5 @@
 C
-C	$Id: agstch.f,v 1.1.1.1 1992-04-17 22:31:03 ncargd Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: agstch.f,v 1.2 1996-04-18 17:46:20 kennison Exp $
 C
       SUBROUTINE AGSTCH (CHST,LNCS,IDCS)
 C

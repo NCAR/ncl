@@ -1,8 +1,5 @@
 C
-C	$Id: agstup.f,v 1.3 1992-09-04 20:33:10 ncargd Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: agstup.f,v 1.4 1996-04-18 17:46:21 kennison Exp $
 C
       SUBROUTINE AGSTUP (XDRA,NVIX,IIVX,NEVX,IIEX,
      +                   YDRA,NVIY,IIVY,NEVY,IIEY)

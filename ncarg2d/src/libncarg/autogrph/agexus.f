@@ -1,8 +1,5 @@
 C
-C	$Id: agexus.f,v 1.1.1.1 1992-04-17 22:30:57 ncargd Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: agexus.f,v 1.2 1996-04-18 17:46:06 kennison Exp $
 C
       SUBROUTINE AGEXUS (SVAL,ZMIN,ZMAX,ZLOW,ZHGH,
      +                               ZDRA,NVIZ,IIVZ,NEVZ,IIEZ,UMIN,UMAX)

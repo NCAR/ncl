@@ -1,8 +1,5 @@
 C
-C	$Id: agscan.f,v 1.3 1992-09-04 20:33:07 ncargd Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: agscan.f,v 1.4 1996-04-18 17:46:17 kennison Exp $
 C
       SUBROUTINE AGSCAN (TPID,LOPA,NIPA,IIPA)
 C

@@ -1,8 +1,5 @@
 C
-C	$Id: agexax.f,v 1.1.1.1 1992-04-17 22:30:57 ncargd Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: agexax.f,v 1.2 1996-04-18 17:46:05 kennison Exp $
 C
       SUBROUTINE AGEXAX (IAXS,SVAL,UMIN,UMAX,NICE,QLUA,FUNS,QBTP,BASD,
      +                   BASE,QMJD,QMND,QMNT,QLTD,QLTP,QLED,QLEX,QLFD,

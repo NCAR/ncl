@@ -1,8 +1,5 @@
 C
-C	$Id: aginit.f,v 1.1.1.1 1992-04-17 22:31:01 ncargd Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: aginit.f,v 1.2 1996-04-18 17:46:11 kennison Exp $
 C
       SUBROUTINE AGINIT
 C

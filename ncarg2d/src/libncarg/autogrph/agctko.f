@@ -1,8 +1,5 @@
 C
-C	$Id: agctko.f,v 1.1.1.1 1992-04-17 22:30:56 ncargd Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: agctko.f,v 1.2 1996-04-18 17:46:02 kennison Exp $
 C
       SUBROUTINE AGCTKO (XBGA,YBGA,XDCA,YDCA,CFAX,CFAY,CSFA,JAOR,NMMT,
      +                   QMDP,WMML,WMMR,FNLL,FNLR,MM12,MM34,XMMT,YMMT)

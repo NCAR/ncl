@@ -1,8 +1,5 @@
 C
-C	$Id: agpwrt.f,v 1.1.1.1 1992-04-17 22:31:02 ncargd Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: agpwrt.f,v 1.2 1996-04-18 17:46:14 kennison Exp $
 C
       SUBROUTINE AGPWRT (XPOS,YPOS,CHRS,NCHS,ISIZ,IORI,ICEN)
 C

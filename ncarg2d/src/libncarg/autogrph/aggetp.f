@@ -1,8 +1,5 @@
 C
-C	$Id: aggetp.f,v 1.1.1.1 1992-04-17 22:31:00 ncargd Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: aggetp.f,v 1.2 1996-04-18 17:46:09 kennison Exp $
 C
       SUBROUTINE AGGETP (TPID,FURA,LURA)
 C

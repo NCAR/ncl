@@ -1,8 +1,5 @@
 C
-C	$Id: agsrch.f,v 1.3 1992-09-04 20:33:08 ncargd Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: agsrch.f,v 1.4 1996-04-18 17:46:20 kennison Exp $
 C
       SUBROUTINE AGSRCH (TPID,IPID,IKWL,UKWL,LKWL)
 C

@@ -1,8 +1,5 @@
 C
-C	$Id: agdshn.f,v 1.1.1.1 1992-04-17 22:30:57 ncargd Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: agdshn.f,v 1.2 1996-04-18 17:46:05 kennison Exp $
 C
       CHARACTER*16 FUNCTION AGDSHN (IDSH)
 C

@@ -1,8 +1,5 @@
 C
-C	$Id: ezxy.f,v 1.3 1992-09-04 20:33:15 ncargd Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: ezxy.f,v 1.4 1996-04-18 17:46:24 kennison Exp $
 C
       SUBROUTINE EZXY (XDRA,YDRA,NPTS,LABG)
 C

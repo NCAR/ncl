@@ -1,8 +1,5 @@
 C
-C	$Id: agsetr.f,v 1.1.1.1 1992-04-17 22:31:03 ncargd Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: agsetr.f,v 1.2 1996-04-18 17:46:19 kennison Exp $
 C
       SUBROUTINE AGSETR (TPID,FUSR)
 C

@@ -1,8 +1,5 @@
 C
-C	$Id: agnumb.f,v 1.1.1.1 1992-04-17 22:31:01 ncargd Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: agnumb.f,v 1.2 1996-04-18 17:46:13 kennison Exp $
 C
       SUBROUTINE AGNUMB (NBTP,SBSE,EXMU , NLTP,NLEX,NLFL ,
      +                             BFRM,MCIM,NCIM,IPXM , BFRE,MCIE,NCIE)

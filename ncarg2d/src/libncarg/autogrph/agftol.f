@@ -1,8 +1,5 @@
 C
-C	$Id: agftol.f,v 1.1.1.1 1992-04-17 22:30:57 ncargd Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: agftol.f,v 1.2 1996-04-18 17:46:07 kennison Exp $
 C
       SUBROUTINE AGFTOL (IAXS,IDMA,VINP,VOTP,VLCS,LLUA,UBEG,UDIF,FUNS,
      +                                                        NBTP,SBSE)

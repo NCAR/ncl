@@ -1,8 +1,5 @@
 C
-C	$Id: displa.f,v 1.1.1.1 1992-04-17 22:31:04 ncargd Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: displa.f,v 1.2 1996-04-18 17:46:22 kennison Exp $
 C
       SUBROUTINE DISPLA (LFRA,LROW,LTYP)
 C

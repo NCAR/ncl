@@ -1,8 +1,5 @@
 C
-C	$Id: aglbls.f,v 1.1.1.1 1992-04-17 22:31:01 ncargd Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: aglbls.f,v 1.2 1996-04-18 17:46:12 kennison Exp $
 C
       SUBROUTINE AGLBLS (ITST,WCWP,HCWP,FLLB,LBIM,FLLN,DBOX,SBOX,RBOX)
 C

@@ -1,8 +1,5 @@
 C
-C	$Id: ezy.f,v 1.3 1992-09-04 20:33:17 ncargd Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: ezy.f,v 1.4 1996-04-18 17:46:24 kennison Exp $
 C
       SUBROUTINE EZY (YDRA,NPTS,LABG)
 C
