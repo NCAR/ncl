@@ -1,5 +1,5 @@
 C
-C      $Id: xy10f.f,v 1.7 1997-05-22 17:07:25 haley Exp $
+C      $Id: xy10f.f,v 1.8 1997-07-28 21:51:43 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -127,8 +127,8 @@ C Get lat/lon data values.
 C
       start(1) = 1
       count(1) = rec_len
-      call ncvgt(ncid,latid,start,count,lat,3000,ierr)
-      call ncvgt(ncid,lonid,start,count,lon,3000,ierr)
+      call ncvgt(ncid,latid,start,count,lat,ierr)
+      call ncvgt(ncid,lonid,start,count,lon,ierr)
 C
 C Close the netCDF file.
 C
