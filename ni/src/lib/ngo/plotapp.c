@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.5 1999-09-11 01:06:43 dbrown Exp $
+ *      $Id: plotapp.c,v 1.6 1999-09-15 02:23:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2624,6 +2624,7 @@ static NhlBoolean ReplaceDataSymRef
 	NrmQuark	qdim;
 	NgVarData	vd;
 	NhlBoolean	status = False;
+	NhlBoolean	is_coord_attr = False;
 
 	if (! dt->qvar) /* this data is not specified yet */
 		return False;
@@ -2715,6 +2716,7 @@ static NhlBoolean ReplaceDataSymRef
 				sprintf(tbuf,"\"\"");
 				break;
 			}
+			is_coord_attr = True;
 		}
 		if (qdim > NrmNULLQUARK) {
 			/* 
@@ -2739,9 +2741,12 @@ static NhlBoolean ReplaceDataSymRef
 					NrmQuarkToString(dt->qvar),
 					NrmQuarkToString(qdim));
 			}
-			if (vd->start[i] == 0 && 
-			    vd->finish[i] == vinfo->dim_info[i].dim_size - 1 &&
-			    vd->stride[i] == 1) {
+			if (is_coord_attr) 
+				;
+			else if (vd->start[i] == 0 && 
+				 vd->finish[i] == 
+				 vinfo->dim_info[i].dim_size - 1 &&
+				 vd->stride[i] == 1) {
 				sprintf(&tbuf[strlen(tbuf)],"(:)");
 			}
 			else {
