@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.112 2003-09-03 21:29:33 haley Exp $
+;      $Id: gsn_code.ncl,v 1.113 2003-09-18 20:26:44 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -69,6 +69,7 @@ undef("gsnp_scale_plot")
 undef("check_for_tickmarks_off")
 undef("compute_ps_device_coords")
 undef("draw_and_frame")
+undef ("create_canvas")
 undef("get_bb_res")
 undef("gsn_open_ncgm")
 undef("gsn_open_x11")
@@ -1730,6 +1731,30 @@ begin
 end
 
 ;***********************************************************************;
+; Function : create_canvas                                              ;
+;               wks : workstation                                       ;
+;                                                                       ;
+; This function creates a LogLin plot that can be used for drawing      ;
+; primitives.                                                           ;
+;                                                                       ;
+;***********************************************************************;
+function create_canvas(wks:graphic)
+begin
+;
+; Create a LogLinPlot that covers the entire NDC space
+; to use as a drawing canvas
+;
+  canvas = create "canvas" logLinPlotClass wks
+    "vpXF"      : 0.0
+    "vpYF"      : 1.0
+    "vpWidthF"  : 1.0
+    "vpHeightF" : 1.0
+  end create
+
+  return(canvas)
+end
+
+;***********************************************************************;
 ; Function : gsn_open_ncgm                                              ;
 ;               name : name of output cgm file                          ;
 ;                                                                       ;
@@ -2340,15 +2365,9 @@ begin
     end getvalues
 
 ;
-; Create a LogLinPlot that covers the entire NDC space
-; to use as a drawing canvas
-;
-    canvas = create "canvas" logLinPlotClass wks
-      "vpXF"      : 0.0
-      "vpYF"      : 1.0
-      "vpWidthF"  : 1.0
-      "vpHeightF" : 1.0
-    end create
+; Create a canvas to draw on.
+; 
+    canvas = create_canvas(wks)
 
     gsres = get_res_eq(res2,"gs")
     attsetvalues_check(gsid,gsres)
@@ -2493,15 +2512,9 @@ begin
         "wkDefGraphicStyleId":  gsid
     end getvalues
 ;
-; Create a LogLinPlot that covers the entire NDC space
-; to use as a drawing canvas
-;
-    canvas = create "canvas" logLinPlotClass wks
-      "vpXF"      : 0.0
-      "vpYF"      : 1.0
-      "vpWidthF"  : 1.0
-      "vpHeightF" : 1.0
-    end create
+; Create a canvas to draw on.
+; 
+    canvas = create_canvas(wks)
 
     gsres = get_res_eq(res2,"gs")
     attsetvalues_check(gsid,gsres)
@@ -2638,15 +2651,9 @@ begin
     end getvalues
 
 ;
-; Create a LogLinPlot that covers the entire NDC space
-; to use as a drawing canvas
-;
-    canvas = create "canvas" logLinPlotClass wks
-      "vpXF"      : 0.0
-      "vpYF"      : 1.0
-      "vpWidthF"  : 1.0
-      "vpHeightF" : 1.0
-    end create
+; Create a canvas to draw on.
+; 
+    canvas = create_canvas(wks)
 
     gsres = get_res_eq(res2,"gs")
     attsetvalues_check(gsid,gsres)
