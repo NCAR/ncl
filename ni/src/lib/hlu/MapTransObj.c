@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.56 2003-09-10 21:29:56 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.57 2004-01-26 18:19:22 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <float.h>
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/MapTransObjP.h>
@@ -248,7 +249,11 @@ static NhlResource resources[] = {
 {NhlNmpDumpPolygonAreaMap, NhlCmpDumpPolygonAreaMap,NhlTBoolean,
 	 sizeof(NhlBoolean),NhlOffset(NhlMapTransObjLayerRec,
 				      mptrans.dump_polygon_area_map),
-	 NhlTImmediate,_NhlUSET((NhlPointer) False),_NhlRES_PRIVATE,NULL}
+	 NhlTImmediate,_NhlUSET((NhlPointer) False),_NhlRES_PRIVATE,NULL},
+
+	{ NhlNtrOutOfRangeF, NhlCtrOutOfRangeF, NhlTFloat, sizeof(float),
+		NhlOffset(NhlMapTransObjLayerRec,trobj.out_of_range),
+		NhlTString, _NhlUSET("1.0e12"),_NhlRES_PRIVATE,NULL }
 
 #if 0
 
@@ -1150,7 +1155,7 @@ static NhlErrorTypes MapDataToCompc
 * A problem could develop here if 1e12 is not represented identically in
 * FORTRAN and C because of arithmetic error
 */
-			if((tmpx == 1e12) ||(tmpy == 1e12)) {
+			if(tmpx == minstance->trobj.out_of_range) {
 				*status = 1;
 				xout[i]=yout[i]=minstance->trobj.out_of_range;
 			}
@@ -1205,8 +1210,7 @@ static NhlErrorTypes MapDataToWin
 * A problem could develop here if 1e12 is not represented identically in
 * FORTRAN and C because of arithmentic error
 */
-			if(_NhlCmpFAny2(xout[i],1e12,4,1e-6) == 0.0 ||
-			   _NhlCmpFAny2(yout[i],1e12,4,1e-6) == 0.0) {
+			if (xout[i] == minstance->trobj.out_of_range) {
 				*status = 1;
 				xout[i]=yout[i]=minstance->trobj.out_of_range;
 			}
@@ -1273,7 +1277,7 @@ static NhlErrorTypes MapWinToData
 
 		} else {
 			c_maptri(x[i],y[i],&(yout[i]),&(xout[i]));
-			if((xout[i] == 1e12) || (yout[i] == 1e12)) {
+			if (yout[i] == minstance->trobj.out_of_range) {
 				*status = 1;
 				xout[i]=yout[i]=minstance->trobj.out_of_range;
 			}
@@ -1286,7 +1290,7 @@ static NhlErrorTypes MapWinToData
 				}
 			}
 			else if (xout[i] > mtp->data_xmax) {
-				xout[i] -= 360.0;
+				xout[i] -= 360.0;	
 				if (xout[i] < mtp->data_xmin - mpDATAEPS) {
 					*status = 1;
 					xout[i]=yout[i]=
@@ -1379,13 +1383,13 @@ static NhlErrorTypes GetMinMaxLatLon
 		c_maptri(xloc[0],yloc[0],&(yout[0]),&(xout[0]));
 		c_maptri(xloc[1],yloc[1],&(yout[1]),&(xout[1]));
 
-		if (xout[0] > 1e10 || xout[1] > 1e10)
+		if (xout[0] > 1e10 || xout[1] > 1e10) {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 	       "GetMinMaxLatLon: unable to determine min/max lat/lon values");
 			return NhlWARNING;;
-		
+		}
 		/* no problem */
-		if (_NhlCmpFAny2(xout[0],xout[1],6,1e-6)>= 0.0)
+		if (_NhlCmpFAny2(xout[0],xout[1],6,1e-10)>= 0.0)
 			xout[0] -= 360;
 		while (xout[0] < cycle_point) {
 			xout[0] += 360;
@@ -2652,6 +2656,7 @@ int n;
 	NhlBoolean	edges_on;
 	float		*xl,*yl;
 	int		nl;
+	int             npoints = mptrans->trobj.point_count;
 
 	Wkptr = mptrans->trobj.wkptr;
 /*
@@ -2939,8 +2944,9 @@ int (_NHLCALLF(hlumappolygon,HLUMAPPOLYGON))
 #if 0
 	printf("iai %d iag %d nai %d\n", *iai,*iag,*nai);
 #endif
-	if (*iai == 5)
+	if (*iai == 5) {
 		_NhlWorkstationFill(Wkptr,xcs,ycs,*ncs);
+	}
 
 	return 0;
 }
