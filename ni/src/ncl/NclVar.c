@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.39 1997-01-24 01:34:30 ethan Exp $
+ *      $Id: NclVar.c,v 1.40 1997-02-14 19:50:30 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1822,29 +1822,11 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 	tmp_sel.selected_from_var = NULL;
 	tmp_sel.n_entries = 1;
 	
-	lhs_md = (NclMultiDValData)_NclGetObj(lhs->var.thevalue_id);
-	if((rhs_type != lhs_type)||((rhs_type == lhs_type)&&(rhs_type == Ncl_Obj))){
-		if(rhs_type == Ncl_Obj) {
-			return(NhlFATAL);
-		}
-		rhs_md = _NclVarValueRead(rhs,rhs_sel_ptr,NULL);
-		if(rhs_md == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occurred reading %s",((rhs->var.thesym != NULL)?rhs->var.thesym->name:"unknown"));
-			return(NhlFATAL);
-		}
-		ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
-		if(rhs_md->obj.status != PERMANENT) {
-			_NclDestroyObj((NclObj)rhs_md);
-		}
-		if(ret < NhlWARNING) {
-			return(ret);
-		}
-		return(ret);
-			
-	} else {
-	
-		rhs_md = (NclMultiDValData)_NclGetObj(rhs->var.thevalue_id);
+	if(rhs_type == Ncl_Obj) {
+		return(NhlFATAL);
 	}
+	lhs_md = (NclMultiDValData)_NclGetObj(lhs->var.thevalue_id);
+	rhs_md = (NclMultiDValData)_NclGetObj(rhs->var.thevalue_id);
 	if(lhs_md == NULL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occurred reading %s",((lhs->var.thesym != NULL)?lhs->var.thesym->name:"unknown"));
 		return(NhlFATAL);
@@ -1853,27 +1835,42 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occurred reading %s",((rhs->var.thesym != NULL)?rhs->var.thesym->name:"unknown"));
 		return(NhlFATAL);
 	}
+/*
 	if((rhs_sel_ptr == NULL)&&(lhs_sel_ptr == NULL)&&(lhs->obj.id == rhs->obj.id)&&(lhs->var.thevalue_id == rhs->var.thevalue_id)&&(lhs->var.att_id == rhs->var.att_id)) { 
 		return(NhlNOERROR);
 	}
+*/
 	
 	if(lhs->obj.id == rhs->obj.id) { 
 /*
 * Same Variable
 */
-		rhs_md = _NclVarValueRead(rhs,rhs_sel_ptr,NULL);
-		if(rhs_md == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occurred reading %s",((rhs->var.thesym != NULL)?rhs->var.thesym->name:"unknown"));
-			return(NhlFATAL);
+		if(rhs_sel_ptr == NULL) {
+			rhs_md = _NclVarValueRead(rhs,rhs_sel_ptr,NULL);
+			if(rhs_md == NULL) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occurred reading %s",((rhs->var.thesym != NULL)?rhs->var.thesym->name:"unknown"));
+				return(NhlFATAL);
+			}
 		}
 
-	
-		ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
-		if(rhs_md->obj.status != PERMANENT) {
-			_NclDestroyObj((NclObj)rhs_md);
-		}
-		if(ret < NhlWARNING) {
-			return(ret);
+
+		if(lhs_md->obj.id != rhs_md->obj.id) {
+			ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
+			if(rhs_md->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)rhs_md);
+			}
+			if(ret < NhlWARNING) {
+				return(ret);
+			}
+		} else if(lhs_sel_ptr != NULL) {
+			rhs_md = _NclCopyVal(rhs_md,NULL); 
+			ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
+			if(rhs_md->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)rhs_md);
+			}
+			if(ret < NhlWARNING) {
+				return(ret);
+			}
 		}
 /*
 * When var is the same special care must be taken to not overwrite coordinate information
@@ -1984,9 +1981,20 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 /*
 * Taking advatage that the following call fills in the extents for each selection
 */
-		ret = _NclReadThenWriteSubSection((NclData)lhs_md, lhs_sel_ptr, (NclData)rhs_md, rhs_sel_ptr);
-		if(ret < NhlINFO) {
-			return(ret);
+		if(lhs_md->obj.id != rhs_md->obj.id) {
+			ret = _NclReadThenWriteSubSection((NclData)lhs_md, lhs_sel_ptr, (NclData)rhs_md, rhs_sel_ptr);
+			if(ret < NhlINFO) {
+				return(ret);
+			}
+		} else {
+			rhs_md = (NclMultiDValData)_NclReadSubSection((NclData)rhs_md,rhs_sel_ptr,NULL); 
+			ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
+			if(rhs_md->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)rhs_md);
+			}
+			if(ret < NhlWARNING) {
+				return(ret);
+			}
 		}
 		j = 0;
 		i = 0;
@@ -2224,10 +2232,15 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 #ifdef NCLVARDEBUG
 		fprintf(stdout,"(rhs_sel_ptr == NULL) &&(lhs_sel_ptr == NULL)\n");
 #endif
-		ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
-		if(ret < NhlWARNING){
-			return(ret);
-		} 
+/*
+* This could be the case during parameter remapping
+*/
+		if(lhs_md->obj.id != rhs_md->obj.id) {
+			ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
+			if(ret < NhlWARNING){
+				return(ret);
+			} 
+		}
 /*
 * Loop through all dimensions check dimension name. if unequal change name
 * then if coord_var exists write to that coordinate variable
@@ -2339,10 +2352,21 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 #ifdef NCLVARDEBUG
 		fprintf(stdout,"(rhs_sel_ptr == NULL)\n");
 #endif
-		ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
-		if(ret < NhlWARNING){
-			return(ret);
-		} 
+		if(lhs_md->obj.id != rhs_md->obj.id) {
+			ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
+			if(ret < NhlWARNING){
+				return(ret);
+			} 
+		} else {
+			rhs_md = _NclCopyVal(rhs_md,NULL); 
+			ret = _NclAssignToVar(lhs,rhs_md,lhs_sel_ptr);
+			if(rhs_md->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)rhs_md);
+			}
+			if(ret < NhlWARNING) {
+				return(ret);
+			}
+		}
 		j = 0;
 		i = 0;
 		done = 0;
@@ -2556,9 +2580,14 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 			return(NhlFATAL);
 		}
 
-		ret = _NclAssignToVar(lhs,rhs_md,NULL);
-		if(ret < NhlWARNING) {
-			return(ret);
+		if(lhs_md->obj.id != rhs_md->obj.id) {
+			ret = _NclAssignToVar(lhs,rhs_md,NULL);
+			if(rhs_md->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)rhs_md);
+			}
+			if(ret < NhlWARNING) {
+				return(ret);
+			}
 		}
 		j=0;
 		i= 0;
