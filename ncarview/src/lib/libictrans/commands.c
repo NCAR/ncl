@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.8 1991-08-26 16:09:39 clyne Exp $
+ *	$Id: commands.c,v 1.9 1991-08-26 18:14:34 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -415,7 +415,21 @@ int	iCPlot(ic)
 
 		while (! loopAbort) {	/* loop until SIGINT		*/
 
-			frame = ic->cmd.src_frames.fc[i].start_frame;
+			frame = ic->cmd.src_frames.fc[i].start_frame % abs_inc;
+			if (inc < 0) {
+				frame = ((icState.stop_segment - frame)/abs_inc)
+				* abs_inc + frame;
+
+				for (; frame>icState.stop_segment; frame+=inc)
+					;
+			} 
+			else {
+				for (; frame<icState.start_segment; frame+=inc)
+					;
+			}
+
+			num_frames = 
+				icState.stop_segment - icState.start_segment +1;
 
 			for (j = 0; j < num_frames && ! loopAbort; 
 				j += abs_inc, frame += inc) {
