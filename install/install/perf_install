@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: perf_install,v 1.12 1997-08-22 16:06:52 haley Exp $
+#      $Id: perf_install,v 1.13 1997-12-17 00:16:47 haley Exp $
 #
 #########################################################################
 #									#
@@ -178,6 +178,11 @@ case	"cdrom":
 		set tars = ($ltars)
 		breaksw
 
+	case	"LINUX_PC"
+		set cd_system = "linux"
+		set tars = ($ltars)
+		breaksw
+
 	case	"SunOS_sun4"
 		set cd_system = "sunos_s4"
 		set tars = ($ltars)
@@ -185,6 +190,11 @@ case	"cdrom":
 
 	case	"Solaris_sun4"
 		set cd_system = "solaris"
+		set tars = ($ltars)
+		breaksw
+
+	case	"Solaris_PC"
+		set cd_system = "solarpc"
 		set tars = ($ltars)
 		breaksw
 
@@ -203,6 +213,21 @@ case	"cdrom":
 
 	case	"UNICOS_YMP"
 		set cd_system = "UCOS_YMP"
+		breaksw
+	endsw
+
+	case	"UNICOS_C90"
+		set cd_system = "UCOS_C90"
+		breaksw
+	endsw
+
+	case	"UNICOS_J90"
+		set cd_system = "UCOS_J90"
+		breaksw
+	endsw
+
+	case	"UNICOS_T90"
+		set cd_system = "UCOS_T90"
 		breaksw
 	endsw
 

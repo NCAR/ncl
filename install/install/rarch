@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: rarch,v 1.9 1997-02-04 20:50:19 haley Exp $
+#      $Id: rarch,v 1.10 1997-12-17 00:16:48 haley Exp $
 #
 #########################################################################
 #									#
@@ -87,9 +87,17 @@ case ULTRIX:
 	exit 0
 
 case HP-UX:
-	echo HPUX_HP9000_7xx
+	switch ("$a[5]")
+	case	9000/7*:
+		echo HPUX_HP9000_7xx
+		breaksw
+	case	9000/8*:
+		echo HPUX_HP9000_8xx
+		breaksw
+	endsw
 	exit 0
 
+case Linux:
 case LINUX:
 	echo LINUX_PC
 	exit 0
@@ -100,13 +108,13 @@ case SunOS:
         if ("$a[5]" == "i86pc") then
 			echo Solaris_PC
 		else
-			echo Solaris_Sun4
+			echo Solaris_sun4
 		endif
 		exit 0
 	default:
 		switch("$a[5]")
-		case	sun4*
-			echo SunOS_Sun4
+		case	sun4*:
+			echo SunOS_sun4
 			exit 0
 		endsw
 	endsw
@@ -114,16 +122,19 @@ case SunOS:
 endsw
 
 switch ("$a[5]")
-case CRAY
+case CRAY:
 	switch("$a[6]")
 	case	Y*:
 		echo UNICOS_YMP
 		exit 0
-	case	J90:
+	case	J9*:
 		echo UNICOS_J90
 		exit 0
-	case	C90:
+	case	C9*:
 		echo UNICOS_C90
+		exit 0
+	case	T*:
+		echo UNICOS_T90
 		exit 0
 	endsw
 
