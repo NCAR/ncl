@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class5.c,v 1.12 1993-01-12 22:05:46 clyne Exp $
+ *	$Id: X11_class5.c,v 1.13 1993-01-13 22:51:03 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -77,6 +77,41 @@ int	X11_ASF(c)
 }
 
 
+static	Visual	*get_best_8bit_visual(depth, dpy)
+	int	*depth;
+	Display	*dpy;
+{
+	XVisualInfo	vinfo;
+	int	screen = DefaultScreen(dpy);
+
+
+	/*
+	 * find best 8-bit depth visual
+	 */
+	if (XMatchVisualInfo(dpy, screen, 8, PseudoColor, &vinfo)) {
+		*depth = vinfo.depth;
+		return(vinfo.visual);
+	}
+	else if (XMatchVisualInfo(dpy, screen, 8, StaticColor, &vinfo)) {
+		*depth = vinfo.depth;
+		return(vinfo.visual);
+	}
+	else if (XMatchVisualInfo(dpy, screen, 8, GrayScale, &vinfo)) {
+		*depth = vinfo.depth;
+		return(vinfo.visual);
+	}
+	else if (XMatchVisualInfo(dpy, screen, 8, StaticGray, &vinfo)) {
+		*depth = vinfo.depth;
+		return(vinfo.visual);
+	}
+
+	/*
+	 * yuck, can't find anything. return the default
+	 */
+	*depth = DefaultDepth(dpy, screen);
+	return (DefaultVisual(dpy, screen));
+}
+
 /*	init_color: 	
  *
  *		intialize the color table and allocate default colours
@@ -84,19 +119,23 @@ int	X11_ASF(c)
  *	*foreground	: Default foreground color name
  *	*background	: Default background color name
  *	do_pcmap	: If true create private colormap else use default.
+ *	best_vis	: If true try to get the best visual, else use default.
  *
  * on exit
  *	Cmap		: contains the color map
+ *	bestVisual	: the visual to use.
+ *	DspDepth	: the display depth for this visual
  *	Color_ava	: true if have a color display
  *	fg, bg, bd	: set to default colours as described in name
  */
 
 
-int	init_color(foreground, background, do_pcmap, reverse, fg, bg, bd)
+int	init_color(foreground, background, do_pcmap, reverse, best_vis,fg,bg,bd)
 	char		*foreground,
 			*background;
 	boolean		do_pcmap;
 	boolean		reverse;
+	boolean		best_vis;
 	Pixeltype	*fg, *bg, *bd;
 {
 
@@ -120,11 +159,15 @@ int	init_color(foreground, background, do_pcmap, reverse, fg, bg, bd)
 
 
 	/*
-	 *	get default visual that describes colourmap
- 	 *	See Section 3.1.
+	 * get the visual
 	 */
-	visual = DefaultVisual(dpy, DefaultScreen(dpy));	
-	DspDepth = DisplayPlanes(dpy, DefaultScreen(dpy));
+	if (best_vis) {
+		bestVisual = get_best_8bit_visual(&DspDepth, dpy);
+	}
+	else {
+		bestVisual = DefaultVisual(dpy, DefaultScreen(dpy));
+		DspDepth = DefaultDepth(dpy, DefaultScreen(dpy));
+	}
 
 	if (DspDepth == 1) {
 
@@ -160,16 +203,15 @@ int	init_color(foreground, background, do_pcmap, reverse, fg, bg, bd)
 	 */
 	Color_ava = TRUE;
 
-	if (do_pcmap) {
+	/*
+	 * if we are requested to create a new color map or we are not
+	 * using the default visual we need to create our own color map
+	 */
+	if (do_pcmap || bestVisual != DefaultVisual(dpy, DefaultScreen(dpy))) {
 		Cmap = XCreateColormap(
 			dpy, RootWindow(dpy, DefaultScreen(dpy)), 
-			visual, AllocAll
+			bestVisual, AllocAll
 		);
-		/*
-		 * change default colormap. Window Manager is responsible
-		 * for swapping it in when sprite is in our window
-		 */
-		XSetWindowColormap(dpy, drawable, Cmap);
 		privateCmap = TRUE;
 	}
 	else {

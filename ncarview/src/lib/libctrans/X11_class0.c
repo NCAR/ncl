@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.24 1993-01-12 22:05:40 clyne Exp $
+ *	$Id: X11_class0.c,v 1.25 1993-01-13 22:50:55 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -33,6 +33,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
+#include <X11/Xatom.h>
 #include <ncarg/c.h>
 #include "cgmc.h"
 #include "default.h"
@@ -169,9 +170,7 @@ static	XWMHints	xwmh = {
 static	XFontStruct	*fontstruct = NULL;/* Font descriptor for title bar*/
 static	Pixeltype fg, bg, bd;		/* Pixel values 		*/
 static	XEvent      event;		/* Event received 		*/
-static	XSizeHints  xsh;		/* Size hints for window manager*/
 static	XSetWindowAttributes xswa;	/* Set Window Attribute struct 	*/
-static	unsigned long bw = BORDERWIDTH;	/* Border width 		*/
 static	GC	titleGC;	/* GC for title bar containing NCAR logo*/
 
 
@@ -192,6 +191,41 @@ static	CoordModifier	dev_coord_mod = {0,0,1.0,1.0};
  */
 
 
+Window	create_window(dpy, geometry, cmap, depth, visual)
+	Display		*dpy;
+	Colormap	cmap;
+	char		*geometry;
+	int		depth;
+	Visual		*visual;
+{
+	XSetWindowAttributes	xswa;
+	unsigned long		mask = 0;
+	Window			win;
+	XSizeHints  		xsh;	/* Size hints for window manager*/
+
+	do_geometry(geometry, &xsh);
+
+	xswa.background_pixel = bg;		mask |= CWBackPixel;
+	xswa.border_pixel = bd;			mask |= CWBorderPixel;
+	xswa.colormap = cmap;			mask |= CWColormap;
+	xswa.bit_gravity = CenterGravity;	mask |= CWBitGravity;
+	xswa.backing_store = WhenMapped;	mask |= CWBackingStore;
+
+	win = XCreateWindow(
+		dpy, RootWindow(dpy,DefaultScreen(dpy)),
+		xsh.x, xsh.y, xsh.width, xsh.height,
+		BORDERWIDTH, depth, InputOutput, visual, mask, &xswa
+	);
+
+	XSetWMNormalHints(dpy, win, &xsh);
+
+	return(win);
+}
+
+
+
+
+
 /*ARGSUSED*/
 int	X11_BegMF(c)
 CGMC *c;
@@ -201,11 +235,14 @@ CGMC *c;
 
 	XButtonPressedEvent	*button_event;
 	XKeyEvent		*key_event;
+	XTextProperty		textprop;
+	XClassHint 		class_hint;
 	int			len;
 	char			keybuffer[8];
 	char			*dpy_env = "DISPLAY";
 	int			status = 0;
 	char			*prog_name;
+	int			depth;		/* window depth	*/
 
 	if (deviceIsInit) {
 		(void) X11_EndMF(c);
@@ -238,6 +275,10 @@ CGMC *c;
 		ESprintf(E_UNKNOWN,"XOpenDisplay(%s)", dpy_name);
 		return (-1);
 	}
+
+#ifdef	XSYNC
+	XSynchronize(dpy, 1);
+#endif
 
 
 	if (x11_opts.ignorebg) {
@@ -292,6 +333,25 @@ CGMC *c;
 
 
 
+	/*
+	 *		intitialize color map if available
+	 *	select default colours for border, background and foreground 
+	 *	of window. These colours will be used if the user doesn't 
+	 *	supply his own colour table through the CGM. init_color()
+	 * 	sets bestVisual, Cmap, and DspDepth as a side effect.
+	 *
+	 * 	If we are creating our own window then we tell init_color
+	 *	to find the best visual (idealy 8-bit, PseudoColor). If
+	 *	we are using another application's window we expect that
+	 *	window to have been created with the default visual, depth
+	 *	and colormap;
+	 */
+	startedDrawing = FALSE;
+	(void) init_color(
+		x11_opts.foreground, x11_opts.background, 
+		x11_opts.pcmap, (boolean) x11_opts.reverse, 
+		(boolean) (x11_opts.wid == -1 ? TRUE : FALSE), &fg, &bg, &bd
+	);
 
 	/*
 	 * Create the Window with the information in the XSizeHints, the
@@ -303,16 +363,9 @@ CGMC *c;
 		 *      Initialize the Resource manager. See 10.11
 		 */
 		XrmInitialize();
-		/*
-		 *      provide window with intial size and possition. Fill out
-		 *      XSizeHints struct to inform window manager. See section
-		 *      9.1.6 and 10.3
-		 */
-		do_geometry(x11_opts.Geometry, &xsh);
-		drawable = XCreateSimpleWindow(dpy, 
-			RootWindow(dpy,DefaultScreen(dpy)),
-			xsh.x, xsh.y, xsh.width, xsh.height,
-			bw, bd, bg);
+		drawable = create_window(
+			dpy, x11_opts.Geometry, Cmap, DspDepth, bestVisual
+		);
 
 		/*
 		 *	read in pixmap for icon
@@ -330,12 +383,32 @@ CGMC *c;
 			(prog_name = strrchr(*Argv,'/')) ? ++prog_name : *Argv
 			);
 
-		XSetStandardProperties(dpy, drawable, prog_name,
-			prog_name, icon.pmap, Argv, Argc, &xsh);
+		xwmh.icon_pixmap = icon.pmap; xwmh.flags |= IconPixmapHint;
+		textprop.value = (unsigned char *) prog_name;
+		textprop.encoding = XA_STRING;
+		textprop.format = 8;
+		textprop.nitems = strlen(prog_name);
+		class_hint.res_name = (char *)NULL;
+		class_hint.res_class = "Ctrans";
 
-		xwmh.icon_pixmap = icon.pmap;
-		xwmh.flags |= IconPixmapHint;
-		XSetWMHints(dpy, drawable, &xwmh);
+		XSetWMProperties(
+			dpy, (Window) drawable, &textprop, 
+			(XTextProperty *) NULL, 
+			Argv, Argc, (XSizeHints *) NULL,
+			xwmh, &class_hint
+		);
+
+		/*
+		 * change default colormap. Window Manager is responsible
+		 * for swapping it in when sprite is in our window. We
+		 * can only use a private colormap if ctrans creates
+		 * the drawing window. Otherwise we rely on the externaly
+		 * provided window to be created with the DefaultColormap
+		 */
+		if (x11_opts.pcmap) {
+			XSetWindowColormap(dpy, drawable, Cmap);
+		}
+
 
 	}
 	else {	/* else use window provided on command line	*/
@@ -343,43 +416,6 @@ CGMC *c;
 	}
 	win = drawable;
 
-
-	/*
-	 *		intitialize color map if available
-	 *	select default colours for border, background and foreground 
-	 *	of window. These colours will be used if the user doesn't 
-	 *	supply his own colour table through the CGM.
-	 */
-	startedDrawing = FALSE;
-	(void) init_color(
-		x11_opts.foreground, x11_opts.background, 
-		x11_opts.pcmap, (boolean) x11_opts.reverse, &fg, &bg, &bd
-	);
-
-	/*
-	 * make sure we have a contrasting window background by default.
-	 * this will most likely get overiden by the CGM.
-	 */
-	XSetWindowBackground(dpy, win, bg);
-	XSetWindowBorder(dpy, win, bd);
-
-	/*
-	 * Ensure that the window's colormap field points to the default
-	 * colormap,  so that the window manager knows the correct 
-	 * colormap to use for the window.  See Section 3.2.9. Also,  
-	 * set the window's Bit Gravity to reduce Expose events.
-	 */
-#ifdef	DEAD
-	xswa.colormap = DefaultColormap(dpy, DefaultScreen(dpy));
-#else
-	xswa.colormap = Cmap;
-
-#endif
-	xswa.bit_gravity = CenterGravity;
-	xswa.backing_store = WhenMapped;
-	XChangeWindowAttributes(dpy, win, (CWColormap 
-				| CWBitGravity 
-				| CWBackingStore), &xswa);
 
 	/* 
 	 * 	create default graphics contexts for the win. See Section 5.3.	
@@ -543,9 +579,9 @@ CGMC *c;
 	 * color map is writable)
 	 */
 	if (Color_ava && 
-		((visual->class == DirectColor)
-		|| (visual->class == PseudoColor)
-		|| (visual->class == GrayScale))) {
+		((bestVisual->class == DirectColor)
+		|| (bestVisual->class == PseudoColor)
+		|| (bestVisual->class == GrayScale))) {
 
 		free_colors();
 	}

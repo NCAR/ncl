@@ -1,5 +1,5 @@
 /*
- *	$Id: Xcrm.c,v 1.16 1993-01-12 22:05:48 clyne Exp $
+ *	$Id: Xcrm.c,v 1.17 1993-01-13 22:51:05 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -86,8 +86,9 @@ static	int	back_color(color)
 	/*
 	 * see if color model is writeable
 	 */
-	if (visual->class == DirectColor || visual->class == PseudoColor 
-		|| visual->class == GrayScale) {
+	if (bestVisual->class == DirectColor || 
+		bestVisual->class == PseudoColor || 
+		bestVisual->class == GrayScale) {
 
 		/*
 		 * if the background color has not been set yet we need
@@ -131,11 +132,12 @@ static	int	back_color(color)
 	}
 
 	/*
-	 * background color needs to be handled differently for
-	 * windows and pixmaps
+	 * Set the window background iff we have a valid window, i.e win != 0.
+	 * This is an ugly hack that lets us call this function before 
+	 * a window has been created.
 	 */
 	pixel = Colortab[0];
-	if (strcmp("X11", devices[currdev].name) == 0) {
+	if (win != 0) {
 		XSetWindowBackground(dpy, win, pixel);
 		XClearWindow(dpy, win);
 	}
@@ -240,8 +242,9 @@ int	X11_UpdateColorTable_()
 	/* 
 	 *	see what type of visual we have (read only or read/write)
 	 */
-	if ((visual->class == TrueColor) || (visual->class == StaticColor)
-		|| (visual->class == StaticGray)) {
+	if ((bestVisual->class == TrueColor) || 
+		(bestVisual->class == StaticColor) || 
+		(bestVisual->class == StaticGray)) {
 
 
 		/*	
@@ -296,7 +299,7 @@ int	X11_UpdateColorTable_()
 				 * try and alloc a new cell in the color map
 				 */
 				if (alloc_cell(i, &pixel) < 0) {
-					status = -1;
+					return(-1);
 				}
 
 				/* 

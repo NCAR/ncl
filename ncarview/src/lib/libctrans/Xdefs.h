@@ -24,9 +24,9 @@ typedef	struct  {
 
 
 Display		*dpy;		/* X server connection		*/
-Drawable	win;		/* Window ID 			*/
+Drawable	win = 0;	/* Window ID 			*/
 Drawable	drawable;	/* the drawable			*/
-Visual		*visual;
+Visual		*bestVisual;
 int		DspDepth;	/* depth in pixels of display	*/
 Colormap	Cmap;		/* current colormap for $win	*/
 boolean		privateCmap;	/* true if have private colormap*/
@@ -51,7 +51,7 @@ XGCValues	gcv;		/* structure for manipulating a GC	*/
 extern	Display		*dpy;		
 extern	Drawable	win;	
 extern	Drawable	drawable;	
-extern	Visual		*visual;
+extern	Visual		*bestVisual;
 extern	int		DspDepth;
 extern	Colormap	Cmap;
 extern	boolean		privateCmap;

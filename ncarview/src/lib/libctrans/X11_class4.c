@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.23 1993-01-12 22:05:43 clyne Exp $
+ *	$Id: X11_class4.c,v 1.24 1993-01-13 22:50:59 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -414,9 +414,6 @@ static	int	x11_cell_array(c, color_pal, P, Q, R, nx, ny)
 	Ptype	P, Q, R;
 	int	nx, ny;
 {
-	Visual	*visual = DefaultVisual(dpy, DefaultScreen(dpy));
-	unsigned int depth = DisplayPlanes(dpy, DefaultScreen(dpy));
-
 	unsigned int	image_height,	/* image height in pixels	*/
 			image_width,	/* image width in pixels	*/
 			image_size,	/* size of image data in bytes	*/
@@ -475,7 +472,7 @@ static	int	x11_cell_array(c, color_pal, P, Q, R, nx, ny)
 		return(-1);
 	}
 
-	ximage = XCreateImage(dpy, visual, depth, ZPixmap, 0, NULL,
+	ximage = XCreateImage(dpy, bestVisual, DspDepth, ZPixmap, 0, NULL,
 		image_width, image_height, 32, 0);
 
 
@@ -1093,7 +1090,7 @@ int	X11_Polygon(c)
 			if (tile.tileid = XCreatePixmap(dpy, drawable, 
 				tile.width, 
 				tile.height, 
-				DefaultDepth(dpy,DefaultScreen(dpy)))) {
+				DspDepth)) {
 
 				tile.P[1].x = tile.P[2].x = tile.width;
 				tile.P[2].y = tile.P[3].y = tile.height;
