@@ -30,10 +30,10 @@ c .   ier       - error code
 
 
       INTEGER NROW,NCOL,NOBS,MSTA
+      INTEGER NEVAL, JOPT, IFLAG, IER
 
       DOUBLE PRECISION X(NROW,NCOL),EVEC(NCOL,NEVAL),XX(NROW,NCOL),
      +                 WRK(NOBS),XMSG
-      INTEGER NEVAL, JOPT, IFLAG, IER
       DOUBLE PRECISION EVECTS(NROW,NEVAL)
 
       DOUBLE PRECISION XBAR
@@ -155,11 +155,11 @@ c INPUT
 
 c dimensions of xx
       INTEGER NROW,NCOL,NOBS,MSTA
+      INTEGER NEVAL, JOPT, IFLAG
 
 c monthly data from station/grid pt
 c missing code (if any)
       DOUBLE PRECISION XX(NROW,NCOL),EVEC(NCOL,NEVAL),XMSG
-      INTEGER NEVAL, JOPT, IFLAG
 c OUTPUT
 
 c monthly anomalies from long term monthly mean
