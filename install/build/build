@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: build,v 1.1 1993-02-20 00:10:15 clyne Exp $
+#      $Id: build,v 1.2 1993-02-25 16:16:52 clyne Exp $
 #
 #########################################################################
 #									#
@@ -21,14 +21,19 @@
 #	Description:	generate an NCAR G binary tar file for the platform
 #			this script is run on.
 #
-#	Usage:		build [-debug]
+#	Usage:		build [-debug] [-quick] [-nomake]
 #
 #	Environment:	NCARG	path to NCAR G source
 #
 #	Files:
 #
 #
-#	Options:
+#	Options:	-quick		Perform a "make dirs all install"
+#					on NCAR G source instead of a 
+#					"make Everything".
+#
+#			-nomake		Skip making NCAR Graphics. Assume
+#					its already been done.
 
 #
 #	Return the leaf of a directory path
@@ -200,6 +205,7 @@ $configFile;  				# NCAR G config file
 $Version; 				# NCAR G version number
 $sizesFile; 				# path to size requirements file
 $do_quick = 0;				# make Everything?
+$do_nomake = 0;				# skip NCAR G compile
 $install_dir = "INSTALL";		# where the INSTALL script lives
 %configFiles = (			# map sys type to config file name
 	'HPUX_HP9000_7xx', 	'HPUX_snake',
@@ -223,15 +229,19 @@ while ($ARGV[0] =~ /-/) {
         elsif (/-quick/) {
 		$do_quick = 1;
         }
+        elsif (/-nomake/) {
+		$do_quick = 1;
+		$do_nomake = 1;
+        }
 	else {
-		print STDERR "Usage: $progName [-debug]\n";
+		print STDERR "Usage: $progName [-debug] [-quick] [-nomake]\n";
 		print STDERR "Terminating build session\n";
 		exit 1;
 	}
 }
 
 if (@ARGV) {
-	print STDERR "Usage: $progName [-debug]\n";
+	print STDERR "Usage: $progName [-debug] [-quick] [-nomake]\n";
 	print STDERR "Terminating build session\n";
 	exit 1;
 }
@@ -351,48 +361,58 @@ if (! $do_quick) {
 
 
 #
-#	nuke the install directory so we're sure its updated by INSTALL
-#	before anyone makes a tape
+#	if do_nomake we assume NCAR G has already been compiled and installed
+#	to $build_dir
 #
-$cmd = "cd $build_dir; /bin/rm -fr $install_dir";
-system($cmd);
-if ($? != 0) {
-	print "\"$cmd\" exited with error\n";
-	print "Terminating build session\n";
-	exit 1;
-}
+if (! $do_nomake) {
+	#
+	#	nuke the install directory so we're sure its updated by INSTALL
+	#	before anyone makes a tape
+	#
+	$cmd = "cd $build_dir; /bin/rm -fr $install_dir";
+	system($cmd);
+	if ($? != 0) {
+		print "\"$cmd\" exited with error\n";
+		print "Terminating build session\n";
+		exit 1;
+	}
 
-#
-#	Verify that the config file for the installation is correct
-#	for this system
-#
-if (&DoConfig("$ncarg/config", $configFile, $build_dir, $Version)) {
-	print "Terminating build session\n";
-	exit 1;
-}
+	#
+	#	Verify that the config file for the installation is correct
+	#	for this system
+	#
+	if (&DoConfig("$ncarg/config", $configFile, $build_dir, $Version)) {
+		print "Terminating build session\n";
+		exit 1;
+	}
 
 
-print "NCARG=$ncarg, version=$Version, system=$sys_type build_dir=$build_dir\n";
-print "Start building NCAR G\n";
+	print "NCARG=$ncarg, version=$Version, system=$sys_type build_dir=$build_dir\n";
+	print "Start building NCAR G\n";
 
-#
-#	compile and install NCAR G to the build directory
-#
-if ($do_quick) {
-	$cmd = "cd $ncarg; (make Makefiles; make dirs all install) 1> $build_dir/make-output 2>&1";
+	#
+	#	compile and install NCAR G to the build directory
+	#
+	if ($do_quick) {
+		$cmd = "cd $ncarg; (make Makefiles; make dirs all install) 1> $build_dir/make-output 2>&1";
+	}
+	else {
+		$cmd = "cd $ncarg; make Everything 1> $build_dir/make-output 2>&1";
+	}
+
+	print "\n\nBuilding NCAR Graphics. This may take a while...\n\n";
+	system("$cmd");
+	if ($? != 0) {
+		print "\"$cmd\" exited with error - \n";
+		print "Terminating build session\n";
+		exit 1;
+	}
+	print "Completed building NCAR Graphics\n";
 }
 else {
-	$cmd = "cd $ncarg; make Everything 1> $build_dir/make-output 2>&1";
+	print "\nSkipping make of NCAR Graphics. Assume NCAR G has already\n";
+	print "been compiled and installed to $build_dir\n\n";
 }
-
-print "\n\nBuilding NCAR Graphics. This may take a while...\n\n";
-system("$cmd");
-if ($? != 0) {
-	print "\"$cmd\" exited with error - \n";
-	print "Terminating build session\n";
-	exit 1;
-}
-print "Completed building NCAR Graphics\n";
 
 
 #
