@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.c,v 1.3 1991-06-18 15:02:08 clyne Exp $
+ *	$Id: commondev.c,v 1.4 1991-07-08 16:59:26 clyne Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -185,9 +185,6 @@ CGMC *c;
 	/*
 	 * if no clipping use the quick algorithm
 	 */
-CLIPFLAG = FALSE;
-devWinSet = FALSE;
-
 
 	if (!CLIPFLAG && !devWinSet) {
 	p = 0;
