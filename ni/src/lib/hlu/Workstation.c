@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.46 1996-03-01 18:24:38 ethan Exp $
+ *      $Id: Workstation.c,v 1.47 1996-03-07 21:49:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1861,7 +1861,7 @@ DrawChildren
 	if(!children)
 		return NhlNOERROR;
 
-	if(!_NhlIsOverlayMember(children->pid))
+	if(!_NhlIsOverlayMember(children->pid) && NhlIsView(children->pid))
 		ret = NhlDraw(children->pid);
 
 	ret1 = DrawChildren(children->next);
