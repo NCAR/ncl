@@ -100,7 +100,7 @@ C equal to REAL(IBS) and DBS is made equal to DBLE(IBS).
 C
       DATA IBS / 0 /
 C
-C IDB is the internal parameter 'IDB', which may be set non-zero by a
+C IDB is the internal parameter 'DB', which may be set non-zero by a
 C user program to turn on the production of debug plots.
 C
       DATA IDB / 0 /
