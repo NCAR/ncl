@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.80 2001-12-05 00:19:04 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.81 2001-12-06 19:41:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4413,7 +4413,6 @@ static NhlErrorTypes ManageTickMarks
 	NhlBoolean usebottom = True, useleft = True;
 	NhlBoolean xbon,ylon,xton,yron;
 	NhlBoolean xb_labels_on,yl_labels_on,xt_labels_on,yr_labels_on;
-	float deltax,deltay;
 	int i;
 
  	if (! tfp->plot_manager_on)
@@ -4444,6 +4443,8 @@ static NhlErrorTypes ManageTickMarks
 		return ret;
 
 	if (init) {
+		float delta;
+		int set_count = 0;
 		mpp->xbvalues = NULL;
 		mpp->xblabels = NULL;
 		mpp->xtvalues = NULL;
@@ -4452,48 +4453,116 @@ static NhlErrorTypes ManageTickMarks
 		mpp->yllabels = NULL;
 		mpp->yrvalues = NULL;
 		mpp->yrlabels = NULL;
-		if (! mpp->xb_major_length_set)
-			mpp->xb_major_length = 0.014;
-		if (! mpp->xt_major_length_set)
-			mpp->xt_major_length = 0.014;
-		if (! mpp->yl_major_length_set)
-			mpp->yl_major_length = 0.014;
-		if (! mpp->yr_major_length_set)
-			mpp->yr_major_length = 0.014;
-		if (! mpp->xb_font_height_set)
-			mpp->xb_font_height = 0.014;
-		if (! mpp->xt_font_height_set)
-			mpp->xt_font_height = 0.014;
-		if (! mpp->yl_font_height_set)
-			mpp->yl_font_height = 0.014;
-		if (! mpp->yr_font_height_set)
-			mpp->yr_font_height = 0.014;
-		deltax = mpnew->view.width/NHL_DEFAULT_VIEW_WIDTH;
-		deltay = mpnew->view.height/NHL_DEFAULT_VIEW_HEIGHT;
+		delta = (mpnew->view.width/NHL_DEFAULT_VIEW_WIDTH +
+			 mpnew->view.height/NHL_DEFAULT_VIEW_HEIGHT) / 2.0;
+
+		if (mpp->xb_major_length_set) 
+			set_count++;
+		else
+			mpp->xb_major_length = 0.0;
+		if (mpp->xt_major_length_set) 
+			set_count++;
+		else
+			mpp->xt_major_length = 0.0;
+		if (mpp->yl_major_length_set) 
+			set_count++;
+		else
+			mpp->yl_major_length = 0.0;
+		if (mpp->yr_major_length_set) 
+			set_count++;
+		else
+			mpp->yr_major_length = 0.0;
+
+		if (set_count == 0) {
+			mpp->xb_major_length = 0.014 * delta;
+			mpp->xt_major_length = 0.014 * delta;
+			mpp->yl_major_length = 0.014 * delta;
+			mpp->yr_major_length = 0.014 * delta;
+		}
+		else {
+			/*
+			 * Since all tickmarks should be the same length,
+			 * take an average of those that are set. (Others
+			 * are 0.0 at this point.)
+			 */
+			float len = 
+				(mpp->xb_major_length +
+				 mpp->xt_major_length +
+				 mpp->yl_major_length +
+				 mpp->yr_major_length) / (float)set_count;
+
+			mpp->xb_major_length = len;
+			mpp->xt_major_length = len;
+			mpp->yl_major_length = len;
+			mpp->yr_major_length = len;
+		}
+		
+		set_count = 0;
+		if (mpp->xb_font_height_set) 
+			set_count++;
+		else
+			mpp->xb_font_height = 0.0;
+		if (mpp->xt_font_height_set) 
+			set_count++;
+		else
+			mpp->xt_font_height = 0.0;
+		if (mpp->yl_font_height_set) 
+			set_count++;
+		else
+			mpp->yl_font_height = 0.0;
+		if (mpp->yr_font_height_set) 
+			set_count++;
+		else
+			mpp->yr_font_height = 0.0;
+				
+		if (set_count == 0) {
+			mpp->xb_font_height = 0.014 * delta;
+			mpp->xt_font_height = 0.014 * delta;
+			mpp->yl_font_height = 0.014 * delta;
+			mpp->yr_font_height = 0.014 * delta;
+		}
+		else {
+			/*
+			 * Since all tickmarks should be the same length,
+			 * take an average of those that are set. (Others
+			 * are 0.0 at this point.)
+			 */
+			float hgt = 
+				(mpp->xb_font_height +
+				 mpp->xt_font_height +
+				 mpp->yl_font_height +
+				 mpp->yr_font_height) / (float)set_count;
+
+			mpp->xb_font_height = hgt;
+			mpp->xt_font_height = hgt;
+			mpp->yl_font_height = hgt;
+			mpp->yr_font_height = hgt;
+		}
 	}
 	else {
+		float deltax,deltay;
 		deltax = mpnew->view.width/mpold->view.width;
 		deltay = mpnew->view.height/mpold->view.height;
-	}
-	if (_NhlCmpFAny2(deltax,1.0,4,_NhlMIN_NONZERO) != 0.0) {
-		if (! mpp->yl_major_length_set)
-			mpp->yl_major_length *= deltax;
-		if (! mpp->yr_major_length_set)
-			mpp->yr_major_length *= deltax;
-		if (! mpp->xb_font_height_set)
-			mpp->xb_font_height *= deltax;
-		if (! mpp->xt_font_height_set)
-			mpp->xt_font_height *= deltax;
-	}
-	if (_NhlCmpFAny2(deltay,1.0,4,_NhlMIN_NONZERO) != 0.0) {
-		if (! mpp->xb_major_length_set)
-			mpp->xb_major_length *= deltay;
-		if (! mpp->xt_major_length_set)
-			mpp->xt_major_length *= deltay;
-		if (! mpp->yl_font_height_set)
-			mpp->yl_font_height *= deltay;
-		if (! mpp->yr_font_height_set)
-			mpp->yr_font_height *= deltay;
+		if (_NhlCmpFAny2(deltax,1.0,4,_NhlMIN_NONZERO) != 0.0) {
+			if (! mpp->yl_major_length_set)
+				mpp->yl_major_length *= deltax;
+			if (! mpp->yr_major_length_set)
+				mpp->yr_major_length *= deltax;
+			if (! mpp->xb_font_height_set)
+				mpp->xb_font_height *= deltax;
+			if (! mpp->xt_font_height_set)
+				mpp->xt_font_height *= deltax;
+		}
+		if (_NhlCmpFAny2(deltay,1.0,4,_NhlMIN_NONZERO) != 0.0) {
+			if (! mpp->xb_major_length_set)
+				mpp->xb_major_length *= deltay;
+			if (! mpp->xt_major_length_set)
+				mpp->xt_major_length *= deltay;
+			if (! mpp->yl_font_height_set)
+				mpp->yl_font_height *= deltay;
+			if (! mpp->yr_font_height_set)
+				mpp->yr_font_height *= deltay;
+		}
 	}
 
 	if (mpp->display_tickmarks <= NhlNEVER)
@@ -4732,6 +4801,7 @@ static NhlErrorTypes ManageTickMarks
 	NhlSetSArg(&sargs[(*nargs)++],NhlNtmXTLabelsOn,xt_labels_on);
 	NhlSetSArg(&sargs[(*nargs)++],NhlNtmYLLabelsOn,yl_labels_on);
 	NhlSetSArg(&sargs[(*nargs)++],NhlNtmYRLabelsOn,yr_labels_on);
+
 
 	if (init || mpp->xb_major_length_set) {
 		NhlSetSArg(&sargs[(*nargs)++],
