@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.3 1995-02-27 21:54:06 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.4 1995-03-01 00:36:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -586,6 +586,7 @@ NhlErrorTypes _NclIAddFile
 	int rw_v;
 	int *id = (int*)NclMalloc((unsigned)sizeof(int));
 	int dim_size = 1;
+	obj *tmp_obj = (obj*)NclMalloc((unsigned)sizeof(obj));
 /*
 * Guarenteed to be scalar string
 */
@@ -634,7 +635,27 @@ NhlErrorTypes _NclIAddFile
 			return(NhlFATAL);
 		}
 	} else {
-		return(NhlFATAL);
+		*tmp_obj = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
+		out_md = _NclMultiDValnclfileDataCreate(
+				NULL,
+				NULL,
+				Ncl_MultiDValnclfileData,
+				0,
+				(void*)tmp_obj,
+				(void*)&((NclTypeClass)nclTypeobjClass)->type_class.default_mis,
+				1,
+				&dim_size,
+				TEMPORARY,
+				NULL);
+		if(out_md != NULL) {
+			out_data.kind = NclStk_VAL;
+			out_data.u.data_obj = out_md;
+			_NclPlaceReturn(out_data);
+			return(NhlWARNING);
+		} else {
+			_NclDestroyObj((NclObj)file);
+			return(NhlFATAL);
+		}
 	}
 }
 

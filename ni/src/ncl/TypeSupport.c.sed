@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeSupport.c.sed,v 1.1 1995-01-28 01:53:05 ethan Exp $
+ *      $Id: TypeSupport.c.sed,v 1.2 1995-03-01 00:36:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -45,6 +45,7 @@ NhlErrorTypes _NclInitTypeClasses
 	_NclInitClass(nclTypebyteClass);
 	_NclInitClass(nclTypecharClass);
 	_NclInitClass(nclTypestringClass);
+	_NclInitClass(nclTypeobjClass);
 	return(NhlNOERROR);
 }
 
@@ -104,6 +105,10 @@ NclObjTypes obj_type_enum;
 		return((NclTypeClass)nclTypestringClass);
 	case Ncl_Typechar:
 		return((NclTypeClass)nclTypecharClass);
+	case Ncl_Typeobj:
+		return((NclTypeClass)nclTypeobjClass);
+	case Ncl_Typelogical:
+		return((NclTypeClass)nclTypelogicalClass);
 	default:
 		return((NclTypeClass)nclTypeClass);
 	}

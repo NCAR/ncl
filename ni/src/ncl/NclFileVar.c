@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclFileVar.c,v 1.5 1995-01-28 01:51:25 ethan Exp $
+ *      $Id: NclFileVar.c,v 1.6 1995-03-01 00:36:18 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -137,7 +137,16 @@ FILE *fp;
 
 	theval = (NclMultiDValData)_NclGetObj(thevar->var.thevalue_id);
 	if(theval != NULL) {
-		thefile = (NclFile)_NclGetObj(*(int*)theval->multidval.val);
+		if(theval->multidval.missing_value.has_missing) {
+			if(theval->multidval.missing_value.value.objval == *(obj*)theval->multidval.val) {
+				nclfprintf(fp,"(0) File Missing Value : %d\n",*(obj*)theval->multidval.val);
+				thefile = NULL;
+			} else {
+				thefile = (NclFile)_NclGetObj(*(int*)theval->multidval.val);
+			}
+		} else {
+			thefile = (NclFile)_NclGetObj(*(int*)theval->multidval.val);
+		}
 		if(thefile != NULL) {
 			_NclPrint((NclObj)thefile,fp);
 		}
@@ -147,7 +156,7 @@ FILE *fp;
 
 NclFileVarClassRec nclFileVarClassRec = {
 	{
-		"NclVarClass",
+		"NclFileVarClass",
 		sizeof(NclVarRec),
 		(NclObjClass)&nclVarClassRec,
 		0,
