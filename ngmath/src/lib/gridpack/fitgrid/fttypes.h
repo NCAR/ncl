@@ -1,5 +1,5 @@
 /* 
- * $Id: fttypes.h,v 1.3 2000-08-22 03:34:57 haley Exp $
+ * $Id: fttypes.h,v 1.4 2002-08-27 03:56:00 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -28,3 +28,8 @@ typedef struct {
       size_t size;
       float  *data;
 } FTdata;
+
+typedef struct {
+      size_t size;
+      double  *data;
+} DPdata;

@@ -1,6 +1,6 @@
 C
-C $Id: fcurv2.f,v 1.4 2002-08-03 00:27:32 fred Exp $
-C                                                                      
+C $Id: fcurv2.f,v 1.5 2002-08-27 03:55:59 haley Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved

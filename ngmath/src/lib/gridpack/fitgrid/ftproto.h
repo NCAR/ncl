@@ -1,5 +1,5 @@
 /*
- * $Id: ftproto.h,v 1.5 2002-08-03 00:27:32 fred Exp $
+ * $Id: ftproto.h,v 1.6 2002-08-27 03:56:00 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -43,7 +43,8 @@ int c_ftcurvd(int, float [], float [], int, float [], float []);
 int c_ftcurvi(float, float, int, float [], float [], float *);
 int c_ftcurvp(int, float [], float [], float, int, float [], float yo[]);
 int c_ftcurvpi(float, float, float, int, float [], float [], float *);
-int c_ftcurvs(int, float [], float [], int, float [], int, float [], float []);
+int c_ftcurvs(int, float [], float [], int, float [], int, float [],
+              float []);
 int c_ftcurvs1(int, float [], float [], int, float [],
                int, float, float, float [], float []);
 int c_ftcurvps(int, float [], float [], float, int, float [],
@@ -55,7 +56,29 @@ int c_ftkurvd(int, float [], float [], int, float [], float [], float [],
 int c_ftkurvpd(int, float [], float [], int, float [], float [], float [], 
                float [], float [], float [], float []);
 float *c_ftsurf(int, int, float *, float *, float *,
-              int, int, float *, float *, int *);
+                int, int, float *, float *, int *);
+int c_ftcurvdp(int, double [], double [], int, double [], double []);
+int c_ftcurvddp(int, double [], double [], int, double [], double []);
+int c_ftcurvidp(double, double, int, double [], double [], double *);
+int c_ftcurvpdp(int, double [], double [], double, int, double [], 
+                double []);
+int c_ftcurvpidp(double, double, double, int, double [], double [], double *);
+int c_ftcurvsdp(int, double [], double [], int, double [], int, double [],
+				double []);
+int c_ftcurvs1dp(int, double [], double [], int, double [],
+                 int, double, double, double [], double []);
+int c_ftcurvpsdp(int, double [], double [], double, int, double [],
+                 int, double [], double []);
+int c_ftkurvdp(int, double [], double [], int, double [], double [], 
+               double []);
+int c_ftkurvpdp(int, double [], double [], int, double [], double [],
+				double []);
+int c_ftkurvddp(int, double [], double [], int, double [], double [],
+				double [], double [], double [], double [], double []);
+int c_ftkurvpddp(int, double [], double [], int, double [], double [],
+				 double [], double [], double [], double [], double []);
+double *c_ftsurfdp(int, int, double *, double *, double *,
+                   int, int, double *, double *, int *);
 
 /*
  *  Fortran function macro.  This macro is used to provide the appropriate
@@ -93,7 +116,7 @@ void NGCALLF(fcurvi,FCURVI)(float *, float *, int *, float *, float *,
 void NGCALLF(curvp1,CURVP1)(int *, float *, float *, float *, float *, 
                             float *, float *, int *);
 void NGCALLF(fcurvp2,FCURVP2)(int *, float *, float *, float *, float *, 
-             float *, int *, float *, float *);
+                              float *, int *, float *, float *);
 void NGCALLF(fcurvpi,FCURVPI)(float *, float *, float *, int *, float *, 
                               float *, float *, float *, float *);
 void NGCALLF(curvs,CURVS)(int *, float *, float *, float *, int *, 
@@ -110,7 +133,9 @@ void NGCALLF(fkurv2,FKURV2)(int *, float *, float *, int *, float *,
                             float *, float *);
 void NGCALLF(kurvp1,KURVP1)(int *, float *, float *, float *, float *, 
                             float *, float *, float *, int *);
-void NGCALLF(fkurvp2,FKURVP2)(int *, float *, float *, int *, float *, float *, float *, float *, float *, float *, float *);
+void NGCALLF(fkurvp2,FKURVP2)(int *, float *, float *, int *, float *, 
+                              float *, float *, float *, float *, float *,
+                              float *);
 void NGCALLF(fkurvd,FKURVD)(int *, float *, float *, int *, float *, 
                             float *, float *, float *, float *, float *, 
                             float *, float *, float *, float *, float *);
@@ -125,3 +150,54 @@ void NGCALLF(surf1,SURF1)(int *, int *, float *, float *, float *, int *,
 void NGCALLF(fsurf2,FSURF2)(float *, float *, float *, int *, int *, 
                             float *, float *, float *, int *, float *, 
                             float *);
+void NGCALLF(curv1dp,CURV1DP)(int *, double *, double *, double *, double *,
+                              int *, double *, double *, double *, int *);
+void NGCALLF(fcurv2dp,FCURV2DP)(int *, double *, double *, double *,
+                                double *, int *, double *, double *);
+void NGCALLF(fcurvddp,FCURVDDP)(int *, double *, double *, double *,
+                                double *, int *, double *, double *);
+void NGCALLF(fcurvidp,FCURVIDP)(double *, double *, int *, double *,
+                                double *, double *, double *, double *);
+void NGCALLF(curvp1dp,CURVP1DP)(int *, double *, double *, double *,
+                                double *, double *, double *, int *);
+void NGCALLF(fcurvp2dp,FCURVP2DP)(int *, double *, double *, double *,
+                                  double *, double *, int *, double *,
+                                  double *);
+void NGCALLF(fcurvpidp,FCURVPIDP)(double *, double *, double *, int *,
+                                  double *, double *, double *,
+                                  double *, double *);
+void NGCALLF(curvsdp,CURVSDP)(int *, double *, double *, double *,
+                              int *, double *, double *, double *,
+                              double *, double *, double *, int *);
+void NGCALLF(curvpsdp,CURVPSDP)(int *, double *, double *, double *,
+                                double *, int *, double *, double *, 
+                                double *, double *, double *, double *,
+                                int *);
+void NGCALLF(kurv1dp,KURV1DP)(int *, double *, double *, double *, double *,
+                              int *, double *, double *, double *, double *,
+                              double *, int *);
+void NGCALLF(fkurv2dp,FKURV2DP)(int *, double *, double *, int *,
+                                double *, double *, double *, double *,
+                                double *, double *, double *);
+void NGCALLF(kurvp1dp,KURVP1DP)(int *, double *, double *, double *,
+                                double *, double *, double *, double *,
+                                int *);
+void NGCALLF(fkurvp2dp,FKURVP2DP)(int *, double *, double *, int *,
+                                  double *, double *, double *, double *, 
+                                  double *, double *, double *);
+void NGCALLF(fkurvddp,FKURVDDP)(int *, double *, double *, int *,
+                                double *, double *, double *, double *,
+                                double *, double *, double *, double *,
+                                double *, double *, double *);
+void NGCALLF(fkurvpddp,FKURVPDDP)(int *, double *, double *, int *,
+                                  double *, double *, double *, double *,
+                                  double *, double *, double *, double *,
+                                  double *, double *, double *);
+void NGCALLF(surf1dp,SURF1DP)(int *, int *, double *, double *, double *,
+                              int *, double *, double *, double *,
+                              double *, double *, double *, double *,
+                              double *, int *, double *, double *,
+                              double *, int *);
+void NGCALLF(fsurf2dp,FSURF2DP)(double *, double *, double *, int *,
+                                int *, double *, double *, double *,
+                                int *, double *, double *);
