@@ -1,0 +1,24 @@
+#
+#      $Id: yMakefile,v 1.1 1995-04-08 03:00:10 haley Exp $
+#
+#########################################################################
+#                                                                       #
+#              Copyright (C)  1993                                      #
+#        University Corporation for Atmospheric Research                #
+#              All Rights Reserved                                      #
+#                                                                       #
+#########################################################################
+#
+#   File:       yMakefile
+#
+#   Author:     Mary L. Haley
+#           National Center for Atmospheric Research
+#           PO 3000, Boulder, Colorado
+#
+#   Date:       Wed Apr 05 16:52:19 MDT 1995
+#
+#   Description:    yMakefile for ncarg/ni/src/examples/data
+
+#define IHaveSubdirs
+
+SUBDIRS	= cdf
