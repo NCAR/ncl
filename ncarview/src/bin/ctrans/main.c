@@ -58,6 +58,9 @@ static	struct	{
 	IntType_	movie;		/* movie or batch mode		*/
 	BoolType_       soft_fill;	/* software fill of polygons	*/
 	BoolType_       debug;		/* software fill of polygons	*/
+	FloatType_ 	min_line_width;	/* minimum line width		*/
+	FloatType_ 	max_line_width;	/* maximun line width		*/
+	FloatType_ 	line_scale;	/* additional line scaling	*/
 	} commLineOpt;
 	
 
@@ -67,6 +70,9 @@ static	OptDescRec	set_options[] = {
 	{"movie", OptSepArg, "-1"},	
         {"softfill", OptIsArg, "false"},
         {"Debug", OptIsArg, "false"},
+	{"lmin", OptSepArg, "1"},	
+	{"lmax", OptSepArg, "1"},	
+	{"lscale", OptSepArg, "1"},	
 	{NULL},	
 	};
 
@@ -81,6 +87,12 @@ static	Option	get_options[] = {
 							sizeof (BoolType_ )},
         {"Debug", BoolType, (unsigned long) &commLineOpt.debug, 
 							sizeof (BoolType_ )},
+        {"lmin", FloatType, (unsigned long) &commLineOpt.min_line_width, 
+							sizeof (FloatType_ )},
+        {"lmax", FloatType, (unsigned long) &commLineOpt.max_line_width, 
+							sizeof (FloatType_ )},
+        {"lscale", FloatType, (unsigned long) &commLineOpt.line_scale, 
+							sizeof (FloatType_ )},
 	{NULL},
 	};
 
@@ -135,6 +147,13 @@ char	**argv;
 
 	batch = commLineOpt.movie != -1;
 	sleep_time = commLineOpt.movie;
+
+	/*
+	 * set line scaling options
+	 */
+	SetMinLineWidthDefault(commLineOpt.min_line_width);
+	SetMaxLineWidthDefault(commLineOpt.max_line_width);
+	SetAdditionalLineScale(commLineOpt.line_scale);
 
         /*
 	 *	If a device was given on command line build the full path
