@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.25 1994-11-17 20:53:28 boote Exp $
+ *      $Id: Machine.c,v 1.26 1994-12-13 22:36:28 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -63,7 +63,8 @@ extern "C" {
 #define NCL_FUNC_MACHINE_SIZE 2048
 #endif
 
-NclStackEntry thestack[NCL_STACK_SIZE];
+NclStackEntry *thestack;
+int cur_stacksize = NCL_STACK_SIZE;
 
 char *ops_strings[NUM_OPERATORS];
 
@@ -326,9 +327,9 @@ static NhlErrorTypes IncreaseMachineSize
 ()
 #endif
 {
-	mstk->the_rec->themachine = (NclValue*)NclRealloc(mstk->the_rec->themachine,mstk->the_rec->current_machine_size*2);
-	mstk->the_rec->thefiles = (char**)NclRealloc(mstk->the_rec->themachine,mstk->the_rec->current_machine_size*2);
-	mstk->the_rec->thelines = (int*)NclRealloc(mstk->the_rec->themachine,mstk->the_rec->current_machine_size*2);
+	mstk->the_rec->themachine = (NclValue*)NclRealloc(mstk->the_rec->themachine,mstk->the_rec->current_machine_size*2*sizeof(NclValue));
+	mstk->the_rec->thefiles = (char**)NclRealloc(mstk->the_rec->thefiles,mstk->the_rec->current_machine_size*2*sizeof(char*));
+	mstk->the_rec->thelines = (int*)NclRealloc(mstk->the_rec->thelines,mstk->the_rec->current_machine_size*2*sizeof(int));
 	mstk->the_rec->current_machine_size *=2;
 	if(mstk->the_rec->themachine == NULL) {
 		NhlPError(NhlFATAL,errno,"IncreaseMachineSize: Unable to increase the size of the machine");
@@ -340,6 +341,8 @@ static NhlErrorTypes IncreaseMachineSize
 * from the current pcoffset value
 */
 	mstk->the_rec->pc = &(mstk->the_rec->themachine[mstk->the_rec->pcoffset]);
+	mstk->the_rec->fn = &(mstk->the_rec->thefiles[mstk->the_rec->pcoffset]);
+	mstk->the_rec->lc = &(mstk->the_rec->thelines[mstk->the_rec->pcoffset]);
 	return(NhlNOERROR);
 }
 	
@@ -351,6 +354,7 @@ NhlErrorTypes _NclInitMachine
 ()
 #endif
 {
+	thestack = (NclStackEntry*)NclMalloc((unsigned)sizeof(NclStackEntry)*NCL_STACK_SIZE);
 	fp = (NclFrame*)thestack;
 	sb = thestack;
 	sb_off = 0;
@@ -416,37 +420,6 @@ NclStackEntry *_NclGetLevel1Var
 	}
 }
 
-NhlErrorTypes _NclPutRec
-#if  __STDC__
-(NclSymbol* the_sym,NclStackEntry *therec)
-#else
-(the_sym,therec)
-NclSymbol* the_sym;
-NclStackEntry *therec;
-#endif
-{
-	int i;
-	NclFrame *previous;
-
-	i = current_scope_level;
-	
-
-	if(the_sym->level == 1) {
-		return(_NclPutLevel1Var(the_sym->offset,therec));
-	} else {
-		previous = (NclFrame*)fp;
-		while(i != the_sym->level) {
-			i--;
-			previous = (NclFrame*)((NclStackEntry*)thestack + ((NclStackEntry*)previous)->u.offset);
-		}
-/*
-* increment over stack frame stuff to base of actual scope
-*/
-		previous++;
-		*((NclStackEntry*)((NclStackEntry*)previous + the_sym->offset)) = *therec;
-		return(NhlNOERROR);
-	}
-}
 
 NclStackEntry *_NclRetrieveRec
 #if  __STDC__
