@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.2 1992-09-29 17:00:20 ncargd Exp $
+#	$Id: yMakefile,v 1.3 1993-01-15 22:25:01 kennison Exp $
 #
 NCARG	= ../../../..
 
@@ -8,10 +8,10 @@ FSPLIT	= ncarguncat
 MYNAME	= emisc
 
 GENERIC_SRCS = \
-	 arex01.f coex01.f coex02.f coex03.f cbex01.f stex01.f
+	 arex01.f coex01.f coex02.f coex03.f cbex01.f slex01.f
 
 GENERIC_OBJS = \
-	 arex01.o coex01.o coex02.o coex03.o cbex01.o stex01.o
+	 arex01.o coex01.o coex02.o coex03.o cbex01.o slex01.o
 
 OTHER_SRCS = example.f
 
