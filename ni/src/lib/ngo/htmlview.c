@@ -1,5 +1,5 @@
 /*
- *      $Id: htmlview.c,v 1.4 1998-01-24 02:10:41 dbrown Exp $
+ *      $Id: htmlview.c,v 1.5 1998-02-07 03:57:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,7 +35,12 @@
 #include <ncarg/ngo/htmlviewP.h>
 #include <ncarg/ngo/nclstate.h>
 
+#if 0
+#define DOCTOP "ngdoc/ng4.0/"
+#else 
 #define DOCTOP "ngdoc/ng4.1alpha/"
+#endif
+
 #define DOCHLURESDIR "ref/hlu/obj/"
 #define DOCRESEXT ".res.html"
 #define MAX_HTML_OBJECT_LIST_LEN 10
@@ -223,6 +228,7 @@ static String GetContent(
         filename[0] = toupper(filename[0]);
         if (!strcmp(filename,"PsWorkstation"))
                 filename[1] = 'S';
+#if 0        
         else if(!strcmp(filename,"Transformation"))
                 sprintf(filename,"TransObj");
         else if(!strcmp(filename,"MapTransformation"))
@@ -231,6 +237,7 @@ static String GetContent(
                 sprintf(filename,"IrregularTransObj");
         else if(!strcmp(filename,"LogLinTransformation"))
                 sprintf(filename,"LogLinTransObj");
+#endif        
 
         if (! hvp->filebase) {
 		/* contruct a command to get the doc for this resource */

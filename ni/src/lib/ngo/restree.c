@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.11 1998-01-28 17:25:57 dbrown Exp $
+ *      $Id: restree.c,v 1.12 1998-02-07 03:57:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -376,7 +376,7 @@ static void UpdateClassDisplayStatus
                 if (! cip->layer || ! cip->res_count)
                         cip->display_mode =
                                 MIN(cip->display_mode,_rtUNEXPANDABLE);
-                else if (! pub_rtp->preview_instance)
+                else if (! (pub_rtp->preview_instance && cip->cntrl_info))
                         cip->display_mode = _rtEXPANDABLE;
                 if (cip->ndata &&
                     cip->display_mode != _rtHIDDEN && cip->res_count)
@@ -3434,24 +3434,23 @@ NhlErrorTypes NgUpdateResTree
         ndata->info = (void *)qhlu;
         ndata->expanded = True;
 
-        if (ndata->subdata)
+        if (ndata->subdata) {
                 FreeSubNodes(ndata);
-
-        if (class != rtp->class) {
-                if (rtp->qnames)
-                        NhlFree(rtp->qnames);
-                if (rtp->class_info) {
-                        for (i = 0; i < rtp->class_count; i++)
-                                if (rtp->class_info->cntrl_info)
-                                        NhlFree(rtp->class_info->cntrl_info);
-                        NhlFree(rtp->class_info);
-                }
-                if (rtp->res_data)
-                        NhlFree(rtp->res_data);
-                rtp->qnames = _NhlGetUserResources(class,&rtp->qnames_count);
-                rtp->class = class;
-                OrderResources(rtp);
+                ndata->subdata = NULL;
         }
+        if (rtp->qnames)
+                NhlFree(rtp->qnames);
+        if (rtp->class_info) {
+                for (i = 0; i < rtp->class_count; i++)
+                        if (rtp->class_info->cntrl_info)
+                                NhlFree(rtp->class_info->cntrl_info);
+                NhlFree(rtp->class_info);
+        }
+        if (rtp->res_data)
+                NhlFree(rtp->res_data);
+        rtp->qnames = _NhlGetUserResources(class,&rtp->qnames_count);
+        rtp->class = class;
+        OrderResources(rtp);
 
         tcount = 3;
         rowdefs = NhlMalloc
@@ -3640,6 +3639,7 @@ NgResTree *NgCreateResTree
         pub_rtp->geo_data = NULL;
         pub_rtp->h_scroll = NULL;
         pub_rtp->v_scroll = NULL;
+        pub_rtp->preview_instance = True;
         
         rtp->created = False;
         rtp->class = NULL;
