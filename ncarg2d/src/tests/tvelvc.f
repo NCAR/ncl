@@ -30,7 +30,7 @@ C
       STOP
       END
 C
-      SUBROUTINE VELVC (IERROR)
+      SUBROUTINE TVELVC1 (IERROR)
 C
 C PURPOSE                To provide a simple demonstration of VELVCT.
 C
