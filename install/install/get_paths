@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: get_paths,v 1.1 1993-02-20 00:11:10 clyne Exp $
+#      $Id: get_paths,v 1.2 1993-02-22 18:45:22 clyne Exp $
 #
 #########################################################################
 #									#
@@ -139,7 +139,7 @@ if (! "$do_default") then
 
 	echo "" > /dev/tty
 
-	echo "	It is highly recommended that you use the default" > /dev/tty
+	echo "	It is recommended that you use the default" > /dev/tty
 	echo "	installation path(s). Do you wish to use the" > /dev/tty
 	echo "	default (y)?" > /dev/tty
 	echo "" > /dev/tty

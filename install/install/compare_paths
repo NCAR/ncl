@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: compare_paths,v 1.1 1993-02-20 00:10:58 clyne Exp $
+#      $Id: compare_paths,v 1.2 1993-02-22 18:45:20 clyne Exp $
 #
 #########################################################################
 #									#
@@ -67,6 +67,8 @@ cat > /dev/tty <<EOF
 have different parents. Users of NCAR Graphics will be required
 to set the environment variable $env_var to <$path2:h> in addition
 to setting the NCARG_ROOT environment variable to <$path1:h>
+It is HIGHLY recommended that ALL NCAR Graphics components
+share the same parent directory.
 
 Are you sure you want to do this (n)?
 EOF
