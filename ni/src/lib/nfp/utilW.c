@@ -5,6 +5,20 @@
  * They should be located in ${NCARG_ROOT}/include.
  */
 #include "wrapper.h"
+#include <ncarg/hlu/hlu.h>
+#include <ncarg/hlu/NresDB.h>
+#include <ncarg/ncl/defs.h>
+#include "Symbol.h"
+#include "NclMdInc.h"
+#include "Machine.h"
+#include <ncarg/ncl/NclVar.h>
+#include "DataSupport.h"
+#include "VarSupport.h"
+#include "NclCoordVar.h"
+#include <ncarg/ncl/NclCallBacksI.h>
+#include <ncarg/ncl/NclDataDefs.h>
+#include <ncarg/ncl/NclBuiltInSupport.h>
+#include <ncarg/gks.h>
 
 extern void NGCALLF(rndncl,RNDNCL)(int*,double*,int*,double*,double*,int*);
 
@@ -250,6 +264,7 @@ NhlErrorTypes replace_ieeenan_W( void )
  * Input array variables
  */
   void *x, *value;
+  double *dvalue;
   int *iopt, has_missing_x;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x, type_value;
@@ -290,7 +305,9 @@ NhlErrorTypes replace_ieeenan_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"replace_ieeenan: the second argument must be of type float or double");
     return(NhlFATAL);
   }
-
+/*
+ * iopt isn't used for anything yet.
+ */
   iopt = (int*)NclGetArgValue(
           2,
           3,
@@ -306,6 +323,12 @@ NhlErrorTypes replace_ieeenan_W( void )
   size_x = 1;
   for( i = 0; i < ndims_x; i++ ) size_x *= dsizes_x[i];
 
+/*
+ * Coerce value to double if necessary.
+ */
+  if(type_x == NCL_double) {
+    dvalue = coerce_input_double(value,type_value,1,0,NULL,NULL);
+  }
 /*
  * A poor man's test for NaN: if the number is not less than or equal to
  * 0 or greater than or equal to zero, then it must be NaN.
@@ -326,27 +349,12 @@ NhlErrorTypes replace_ieeenan_W( void )
         continue;
       }
       else {
-        ((double*)x)[i] = ((double*)value)[0];
+        ((double*)x)[i] = *dvalue;
       }
     }
   }
 /*
  * Return.
  */
-  if(*iopt == 1) {
-    if(has_missing_x) {
-      if(type_x == NCL_float) {
-        missing_x.floatval = ((float*)value)[0];
-      }
-      else {
-        missing_x.doubleval = ((double*)value)[0];
-      }
-      return(NclReturnValue(x,ndims_x,dsizes_x,&missing_x,type_x,0));
-    }
-    else {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"replace_ieeenan: the first argument does not have a _FillValue attribute set, so it cannot be set to the replacement value");
-    }
-  }
-  return(NclReturnValue(x,ndims_x,dsizes_x,NULL,type_x,0));
+  return(NhlNOERROR);
 }
-

@@ -373,6 +373,7 @@ extern NhlErrorTypes relhum_W(void);
 extern NhlErrorTypes runave_W(void);
 extern NhlErrorTypes wgt_runave_W(void);
 extern NhlErrorTypes wgt_areaave_W(void);
+extern NhlErrorTypes wgt_areasum_W(void);
 extern NhlErrorTypes wgt_volave_W(void);
 extern NhlErrorTypes wgt_arearmse_W(void);
 extern NhlErrorTypes wgt_volrmse_W(void);
@@ -4767,6 +4768,18 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(wgt_areaave_W,args,"wgt_areaave",nargs);
 
 /*
+ * Register "wgt_areasum".
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(wgt_areasum_W,args,"wgt_areasum",nargs);
+
+/*
  * Register "wgt_volave".
  */
     nargs = 0;
@@ -5262,7 +5275,7 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
     SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
-    NclRegisterFunc(replace_ieeenan_W, args, "replace_ieeenan", nargs);
+    NclRegisterProc(replace_ieeenan_W, args, "replace_ieeenan", nargs);
 
 /*
  *  Registering dcdfbinp_W.

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.63 2002-12-20 17:03:11 haley Exp $
+#      $Id: yMakefile,v 1.64 2003-01-24 18:27:47 haley Exp $
 #
 #########################################################################
 #									#
@@ -33,8 +33,8 @@ CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c cdf_dpW.c chiinvW.c \
 	linint2W.c linmsgW.c linroodW.c locminmaxW.c mapgciW.c \
 	mixhumW.c natgridW.c ncolorW.c nglogoW.c ngmiscW.c nicevalsW.c \
 	outputgif.c paleoW.c prcwatW.c preshybW.c pressigW.c probtestW.c \
-        randomW.c rcmW.c regcoefW.c relhumW.c remapW.c rhombtriW.c \
-        shgridW.c sindexW.c slpW.c skewtW.c smth9W.c sortW.c specxW.c sph2W.c \
+    randomW.c rcmW.c regcoefW.c relhumW.c remapW.c rhombtriW.c \
+    shgridW.c sindexW.c slpW.c skewtW.c smth9W.c sortW.c specxW.c sph2W.c \
 	sphintW.c sstoiW.c statW.c svdW.c taperW.c tdpackW.c tempnamW.c \
 	trvsphW.c varimaxW.c vibetaW.c waveletW.c wgneW.c wmapW.c \
 	wrunaveW.c wrapper.c utilW.c vinth2pW.c vinth2peW.c zonmpsiW.c
@@ -47,14 +47,14 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cdf_dpW.o chiinvW.o \
 	linint2W.o linmsgW.o linroodW.o locminmaxW.o mapgciW.o \
 	mixhumW.o natgridW.o ncolorW.o nglogoW.o ngmiscW.o nicevalsW.o \
 	outputgif.o paleoW.o prcwatW.o preshybW.o pressigW.o probtestW.o \
-        randomW.o rcmW.o regcoefW.o relhumW.o remapW.o rhombtriW.o \
-        shgridW.o sindexW.o slpW.o skewtW.o smth9W.o sortW.o specxW.o sph2W.o \
+    randomW.o rcmW.o regcoefW.o relhumW.o remapW.o rhombtriW.o \
+    shgridW.o sindexW.o slpW.o skewtW.o smth9W.o sortW.o specxW.o sph2W.o \
 	sphintW.o sstoiW.o statW.o svdW.o taperW.o tdpackW.o tempnamW.o \
 	trvsphW.o varimaxW.o vibetaW.o waveletW.o wgneW.o wmapW.o \
 	wrunaveW.o wrapper.o utilW.o vinth2pW.o vinth2peW.o zonmpsiW.o
 
-FSRCS = aam.f areaAve.f areaRmse.f calcorc_dp.f cdf_dp.f cfftb.f cfftb1.f \
-	cfftf.f cfftf1.f cffti.f cffti1.f chiin_dp.f cntrFiniteDiff.f \
+FSRCS = aam.f areaAve.f areaRmse.f areaSum.f calcorc_dp.f cdf_dp.f cfftb.f \
+	cfftb1.f cfftf.f cfftf1.f cffti.f cffti1.f chiin_dp.f cntrFiniteDiff.f \
 	cz2ccm_dp.f dbetai.f dewpt_trh.f dmapgci.f dpsort.f dtrend_dp.f \
 	exptapersh.f ezfft_dp.f f2foshv.f filtrx.f finfo.f fluxEddyTav_dp.f \
 	fo2fs_dp.f gausLobat.f grid2triple.f hydro_dp.f index77_dp.f \
@@ -70,8 +70,8 @@ FSRCS = aam.f areaAve.f areaRmse.f calcorc_dp.f cdf_dp.f cfftb.f cfftb1.f \
 	varimax_dp.f vibeta_dp.f vinth2p_dp.f vinth2p_ecmwf.f volAve.f \
 	volRmse.f wavelet.f wrunave_dp.f zon_mpsi.f
 
-FOBJS = aam.o areaAve.o areaRmse.o calcorc_dp.o cdf_dp.o cfftb.o cfftb1.o \
-	cfftf.o cfftf1.o cffti.o cffti1.o chiin_dp.o cntrFiniteDiff.o \
+FOBJS = aam.o areaAve.o areaRmse.o areaSum.o calcorc_dp.o cdf_dp.o cfftb.o \
+	cfftb1.o cfftf.o cfftf1.o cffti.o cffti1.o chiin_dp.o cntrFiniteDiff.o \
 	cz2ccm_dp.o dbetai.o dewpt_trh.o dmapgci.o dpsort.o dtrend_dp.o \
 	exptapersh.o ezfft_dp.o f2foshv.o filtrx.o finfo.o fluxEddyTav_dp.o \
 	fo2fs_dp.o gausLobat.o grid2triple.o hydro_dp.o index77_dp.o \

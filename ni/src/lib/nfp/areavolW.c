@@ -10,6 +10,9 @@
 extern void NGCALLF(dwgtareaave,DWGTAREAAVE)(double*,double*,double*,int*,
                                              int*,double*,int*,double*);
 
+extern void NGCALLF(dwgtareasum,DWGTAREASUM)(double*,double*,double*,int*,
+                                             int*,double*,int*,double*);
+
 extern void NGCALLF(dwgtvolave,DWGTVOLAVE)(double*,double*,double*,double*,
                                            int*,int*,int*,double*,int*,
                                            double*);
@@ -102,7 +105,7 @@ NhlErrorTypes wgt_areaave_W( void )
  * Check dimensions.
  */
   if(ndims_x < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areave: the input array must have at least 2 dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areaave: the input array must have at least 2 dimensions");
     return(NhlFATAL);
   }
   nx = dsizes_x[ndims_x-1];
@@ -237,6 +240,215 @@ NhlErrorTypes wgt_areaave_W( void )
  * Return double values with missing value set.
  */
     return(NclReturnValue(ave,ndims_ave,dsizes_ave,&missing_dx,NCL_double,0));
+  }
+}
+
+
+NhlErrorTypes wgt_areasum_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *x, *wgty, *wgtx;
+  double *tmp_x, *tmp_wgty, *tmp_wgtx, *tmp1_wgtx, *tmp1_wgty;
+  int *iflag;
+  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int dsizes_wgtx[NCL_MAX_DIMENSIONS];
+  int dsizes_wgty[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_x, type_wgtx, type_wgty;
+  NclScalar missing_x, missing_dx, missing_rx;
+/*
+ * Output variable.
+ */
+  void *sum;
+  double *tmp_sum;
+  int *dsizes_sum, ndims_sum;
+/*
+ * Declare various variables for random purposes.
+ */
+  int i, index_x, nx, ny, nxny, total_leftmost;
+
+/*
+ * Retrieve arguments.
+ */
+  x = (void*)NclGetArgValue(
+          0,
+          4,
+          &ndims_x,
+          dsizes_x,
+          &missing_x,
+          &has_missing_x,
+          &type_x,
+          2);
+
+  wgty = (void*)NclGetArgValue(
+          1,
+          4,
+          NULL,
+          dsizes_wgty,
+          NULL,
+          NULL,
+          &type_wgty,
+          2);
+
+  wgtx = (void*)NclGetArgValue(
+          2,
+          4,
+          NULL,
+          dsizes_wgtx,
+          NULL,
+          NULL,
+          &type_wgtx,
+          2);
+
+  iflag = (int*)NclGetArgValue(
+          3,
+          4,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          2);
+/*
+ * Check dimensions.
+ */
+  if(ndims_x < 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areasum: the input array must have at least 2 dimensions");
+    return(NhlFATAL);
+  }
+  nx = dsizes_x[ndims_x-1];
+  ny = dsizes_x[ndims_x-2];
+  nxny = nx * ny;
+
+  if(dsizes_wgty[0] != 1 && dsizes_wgty[0] != ny) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areasum: wgty must be a scalar or a 1-dimensional vector the same size as the second-to-the-last dimension of x");
+    return(NhlFATAL);
+  }
+
+  if(dsizes_wgtx[0] != 1 && dsizes_wgtx[0] != nx) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areasum: wgtx must be a scalar or a 1-dimensional vector the same size as the last dimension of x");
+    return(NhlFATAL);
+  }
+
+/*
+ * Compute the size of the output array.
+ */
+  ndims_sum  = max(1,ndims_x-2);
+  dsizes_sum = (int*)calloc(ndims_sum,sizeof(int));  
+  if( dsizes_sum == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areasum: Unable to allocate memory for holding dimension sizes");
+    return(NhlFATAL);
+  }
+
+  dsizes_sum[0] = 1;
+
+  total_leftmost = 1;
+  for( i = 0; i < ndims_x-2; i++ ) {
+    dsizes_sum[i] = dsizes_x[i];
+    total_leftmost *= dsizes_x[i];
+  }
+/*
+ * Coerce the missing value.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
+/*
+ * Create a temporary array to hold subarrays of x.
+ */
+  if(type_x != NCL_double) {
+    tmp_x = (double*)calloc(nxny,sizeof(double));
+    if( tmp_x == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areasum: Unable to allocate memory for coercing input array to double precision");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Coerce weights to double if necessary.
+ */
+  tmp1_wgtx = coerce_input_double(wgtx,type_wgtx,dsizes_wgtx[0],0,NULL,NULL);
+  tmp1_wgty = coerce_input_double(wgty,type_wgty,dsizes_wgty[0],0,NULL,NULL);
+
+  if(tmp1_wgtx == NULL || tmp1_wgty == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areasum: Unable to allocate memory for coercing weights to double precision");
+    return(NhlFATAL);
+  }
+
+  tmp_wgtx = copy_scalar_to_array(tmp1_wgtx,1,dsizes_wgtx,nx);
+  tmp_wgty = copy_scalar_to_array(tmp1_wgty,1,dsizes_wgty,ny);
+
+  if(tmp_wgtx == NULL || tmp_wgty == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areasum: Unable to allocate memory for coercing weights to double precision");
+    return(NhlFATAL);
+  }
+/*
+ * Allocate space for output.
+ */
+  if(type_x != NCL_double) {
+    sum     = (void*)calloc(total_leftmost,sizeof(float));
+    tmp_sum = (double*)calloc(1,sizeof(double));
+    if(tmp_sum == NULL || sum == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areasum: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    sum = (void*)calloc(total_leftmost,sizeof(double));
+    if( sum == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areasum: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Loop through leftmost dimensions and call Fortran routine.
+ */
+  index_x = 0;
+  for( i = 0; i < total_leftmost; i++ ) {
+    if(type_x != NCL_double) {
+/*
+ * Coerce subsection of x (tmp_x) to double.
+ */
+      coerce_subset_input_double(x,tmp_x,index_x,type_x,nxny,has_missing_x,
+                                 &missing_x,&missing_dx);
+    }
+    else {
+      tmp_x = &((double*)x)[index_x];
+    }
+
+    if(type_x == NCL_double) tmp_sum = &((double*)sum)[i];
+
+    NGCALLF(dwgtareasum,DWGTAREASUM)(tmp_x,tmp_wgty,tmp_wgtx,&nx,&ny,
+                                     &missing_dx.doubleval,iflag,tmp_sum);
+    if(type_x != NCL_double) {
+      ((float*)sum)[i] = (float)*tmp_sum;
+    }
+
+    index_x += nxny;
+  }
+/*
+ * Free stuff.
+ */
+  if(type_x != NCL_double) {
+    NclFree(tmp_x);
+    NclFree(tmp_sum);
+  }
+  if(tmp_wgtx != tmp1_wgtx) NclFree(tmp_wgtx);
+  if(tmp_wgty != tmp1_wgty) NclFree(tmp_wgty);
+
+  if(type_wgtx != NCL_double) NclFree(tmp1_wgtx);
+  if(type_wgty != NCL_double) NclFree(tmp1_wgty);
+        
+  if(type_x != NCL_double) {
+/*
+ * Return float values with missing value set.
+ */
+    return(NclReturnValue(sum,ndims_sum,dsizes_sum,&missing_rx,NCL_float,0));
+  }
+  else {
+/*
+ * Return double values with missing value set.
+ */
+    return(NclReturnValue(sum,ndims_sum,dsizes_sum,&missing_dx,NCL_double,0));
   }
 }
 
@@ -389,7 +601,7 @@ NhlErrorTypes wgt_volave_W( void )
   tmp_wgtz = copy_scalar_to_array(tmp1_wgtz,1,dsizes_wgtz,nz);
 
   if(tmp_wgtx == NULL || tmp_wgty == NULL || tmp_wgtz == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areaave: Unable to allocate memory for coercing weights to double precision");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave: Unable to allocate memory for coercing weights to double precision");
     return(NhlFATAL);
   }
 /*
@@ -629,7 +841,7 @@ NhlErrorTypes wgt_volave_ccm_W( void )
   tmp_wgty = copy_scalar_to_array(tmp1_wgty,1,dsizes_wgty,ny);
 
   if(tmp_wgtx == NULL || tmp_wgty == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areaave: Unable to allocate memory for coercing weights to double precision");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave_ccm: Unable to allocate memory for coercing weights to double precision");
     return(NhlFATAL);
   }
 /*
