@@ -1,5 +1,5 @@
 C
-C	$Id: stdudv.f,v 1.2 1993-01-21 01:14:41 dbrown Exp $
+C	$Id: stdudv.f,v 1.3 1993-01-21 23:50:41 dbrown Exp $
 C
       SUBROUTINE STDUDV (UX,VY,I,J,X,Y,DU,DV)
 C
@@ -87,7 +87,7 @@ C Text string parameters
 C
       COMMON / STCHAR / CSTR,CMNT,CMXT,CZFT,CILT
 C
-      SAVE /STPAR/, /STCOM/, /STTRAN/, /STSTRM/, /STTXP/, /STCHAR/
+      SAVE /STPAR/, /STTRAN/, /STSTRM/, /STTXP/, /STCHAR/
 C
 C Internal buffer lengths
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: stdraw.f,v 1.3 1993-01-21 19:31:08 dbrown Exp $
+C	$Id: stdraw.f,v 1.4 1993-01-21 23:50:38 dbrown Exp $
 C
       SUBROUTINE STDRAW  (U,V,UX,VY,IAM,STUMSL)
 C
@@ -88,7 +88,7 @@ C Text string parameters
 C
       COMMON / STCHAR / CSTR,CMNT,CMXT,CZFT,CILT
 C
-      SAVE /STPAR/, /STCOM/, /STTRAN/, /STSTRM/, /STTXP/, /STCHAR/
+      SAVE /STPAR/, /STTRAN/, /STSTRM/, /STTXP/, /STCHAR/
 C
 C Internal buffer lengths
 C
@@ -717,7 +717,7 @@ C Text string parameters
 C
       COMMON / STCHAR / CSTR,CMNT,CMXT,CZFT,CILT
 C
-      SAVE /STPAR/, /STCOM/, /STTRAN/, /STSTRM/, /STTXP/, /STCHAR/
+      SAVE /STPAR/, /STTRAN/, /STSTRM/, /STTXP/, /STCHAR/
 C
 C Internal buffer lengths
 C
@@ -890,7 +890,7 @@ C Text string parameters
 C
       COMMON / STCHAR / CSTR,CMNT,CMXT,CZFT,CILT
 C
-      SAVE /STPAR/, /STCOM/, /STTRAN/, /STSTRM/, /STTXP/, /STCHAR/
+      SAVE /STPAR/, /STTRAN/, /STSTRM/, /STTXP/, /STCHAR/
 C
 C Internal buffer lengths
 C
@@ -1001,7 +1001,7 @@ C Text string parameters
 C
       COMMON / STCHAR / CSTR,CMNT,CMXT,CZFT,CILT
 C
-      SAVE /STPAR/, /STCOM/, /STTRAN/, /STSTRM/, /STTXP/, /STCHAR/
+      SAVE /STPAR/, /STTRAN/, /STSTRM/, /STTXP/, /STCHAR/
 C
 C Internal buffer lengths
 C
@@ -1116,7 +1116,7 @@ C Text string parameters
 C
       COMMON / STCHAR / CSTR,CMNT,CMXT,CZFT,CILT
 C
-      SAVE /STPAR/, /STCOM/, /STTRAN/, /STSTRM/, /STTXP/, /STCHAR/
+      SAVE /STPAR/, /STTRAN/, /STSTRM/, /STTXP/, /STCHAR/
 C
 C Internal buffer lengths
 C

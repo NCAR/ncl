@@ -1,5 +1,5 @@
 C
-C	$Id: stinit.f,v 1.2 1993-01-21 01:14:46 dbrown Exp $
+C	$Id: stinit.f,v 1.3 1993-01-21 23:50:46 dbrown Exp $
 C
 C-----------------------------------------------------------------------
 C
@@ -96,7 +96,7 @@ C Text string parameters
 C
       COMMON / STCHAR / CSTR,CMNT,CMXT,CZFT,CILT
 C
-      SAVE /STPAR/, /STCOM/, /STTRAN/, /STSTRM/, /STTXP/, /STCHAR/
+      SAVE /STPAR/, /STTRAN/, /STSTRM/, /STTXP/, /STCHAR/
 C
 C Internal buffer lengths
 C
