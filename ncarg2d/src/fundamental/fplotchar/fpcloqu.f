@@ -135,7 +135,7 @@ C
 C
 C Set the font
 C
-     CALL GSTXFP(-7,2)
+      CALL GSTXFP(-7,2)
 C
 C  Plot the strings
 C
