@@ -141,8 +141,6 @@ overlay(mpid,vcid)
 smindist0 = "0.000"
 smindist1 = "0.00"
 smindist2 = "0.0"
-slongitude0 = "00"
-slongitude1 = "0"
 
 ;
 ; Create FRAME_COUNT frames, increasing the value of vcMinDistanceF
@@ -157,19 +155,12 @@ do i = (FRAME_COUNT-1),0,1
 		"mpCenterLonF" :  i * 360./(FRAME_COUNT-1)
 	end setvalues
 ;
-; create fixed length strings representing the current longitude
-; and the value of vcMinDistanceF
+; create fixed length strings representing the value of vcMinDistanceF
 ;
 	longitudeval = floattoint(i * 360./(FRAME_COUNT-1) + 0.5)
-	if (longitudeval .lt. 10) then
-		slongitude = slongitude0+longitudeval+":S:o:N:"
-	else 
-		if (longitudeval .lt. 100) then
-			slongitude = slongitude1+longitudeval+":S:o:N:"
-		else
-			slongitude = longitudeval+":S:o:N:"
-		end if	
-	end if
+
+    slongitude = longitudeval+":S:o:N:"
+
 	val = ((FRAME_COUNT-1) - i) * 0.0175/(FRAME_COUNT-1)
 	mindistval = floattoint(10000*val + 0.5)
 	if (mindistval .lt. 10) then
