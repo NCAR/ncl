@@ -428,7 +428,7 @@ NhlErrorTypes dsgrid2_W( void )
  * Check if z array had missing values. If so, print a warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"dsgrid2: %d 1-dimensional input array contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dsgrid2: %d 1-dimensional input arrays contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free arrays
@@ -1099,7 +1099,7 @@ NhlErrorTypes dsgrid3_W( void )
  * Check if u array had missing values. If so, print a warning message.
  */
   if(nmiss) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"dsgrid2: %d 1-dimensional input array contained missing values. No interpolation performed on these arrays",nmiss);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dsgrid2: %d 1-dimensional input arrays contained missing values. No interpolation performed on these arrays",nmiss);
   }
 /*
  * Free arrays

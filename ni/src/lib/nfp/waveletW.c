@@ -188,7 +188,7 @@ NhlErrorTypes wavelet_W( void )
  * We haven't implemented isigtest = 2, so default to 0 if it isn't.
  */
   if(*isigtest != 0 && *isigtest != 1) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"wavelet: Only isigtest = 0 or 1 has been implmented. Defaulting to 0");
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"wavelet: Only isigtest = 0 or 1 has been implemented. Defaulting to 0");
     *isigtest = 0;
   }
 
