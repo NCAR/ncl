@@ -1,12 +1,12 @@
 #
-#       $Id: yMakefile,v 1.3 1999-09-21 00:11:24 dbrown Exp $
+#       $Id: yMakefile,v 1.4 1999-12-07 19:13:17 dbrown Exp $
 #
 
 #define IHaveSubdirs
 
 SUBDIRS		= contour streamline vector xy test
 
-FILES		= DIRECTORY.res
+FILES		= DIRECTORY.res common.ncl
 
 PSPATH	= $(LIBNCARGPATH)/plot_styles
 INSTALL_PS = $(INSTALL_DB)
