@@ -1,5 +1,5 @@
 /*
- *	$Id: rasview.c,v 1.13 1993-03-31 20:28:35 clyne Exp $
+ *	$Id: rasview.c,v 1.14 1993-11-02 22:07:22 clyne Exp $
  */
 /*
  *	rasview.c
@@ -29,6 +29,7 @@ static	struct	{
 	boolean	version;	/* print version		*/
 	boolean movie;		/* movie mode			*/
 	char	*ifmt;		/* input format			*/
+	boolean	not_used;	/* "-" option, we toss it	*/
 	} opt;
 
 /*
@@ -40,6 +41,7 @@ static	OptDescRec	set_options[] = {
 	{"Version", 0, NULL, "Print version number end exit"},
 	{"movie", 0, NULL, "Display frames in movie mode"},
 	{"ifmt", 1, NULL, "Input format"},
+        {"", 0, NULL, "Read rasterfile from the standard input"},
 	{NULL}
 };
 	
@@ -56,6 +58,8 @@ static	Option	get_options[] = {
 	{"movie", NCARGCvtToBoolean, (Voidptr)&opt.movie,sizeof(opt.movie)
 	},
 	{"ifmt", NCARGCvtToString, (Voidptr)&opt.ifmt,sizeof(opt.ifmt)
+	},
+	{"", NCARGCvtToBoolean, (Voidptr) &opt.not_used, sizeof(opt.not_used)
 	},
 	{
 	NULL
@@ -163,10 +167,13 @@ main(argc, argv)
 	int	verbose;	/* verbose or quite mode		*/
 	int	count;		/* number of image displayed		*/
 	int	i;
+	char	**files;
 
 	int	exit_status = 0;
 
 	progName = argv[0];
+
+	files = (char **) malloc((argc + 1) * sizeof(char *));
 
 	/*
 	 * register the options we're interested in and have them parsed
@@ -215,9 +222,20 @@ main(argc, argv)
 	/*
 	 * make sure nothing left on command line execpt file names
 	 */
+	argv++; argc--;
 	for (i=0; i<argc; i++) {
 		if (*argv[i] == '-') usage(progName, (char *) NULL);
+		files[i] = argv[i];
 	}
+	files[i] = NULL;
+
+	/*
+	 * if no files read from stdin
+	 */
+	if (files[0] == NULL) {
+		files[0] = "stdin";
+		files[1] = NULL;
+	} 
 
 	/*
 	 * load default palette if one was requested.
@@ -243,13 +261,13 @@ main(argc, argv)
 	/*
 	 * anything left on command line is assumed to be a raster file
 	 */
-	while(*(++argv))
+	while(*files)
 	{
 
-		if ((ras = RasterOpen(*argv, opt.ifmt)) == (Raster *) NULL){
+		if ((ras = RasterOpen(*files, opt.ifmt)) == (Raster *) NULL){
 			(void) fprintf (
 				stderr, "%s: RasterOpen(%s,%s) [ %s ]\n",
-				progName, *argv, opt.ifmt, ErrGetMsg()
+				progName, *files, opt.ifmt, ErrGetMsg()
 			);
 			exit_status++;
 			continue;	/* skip this file	*/
@@ -257,7 +275,7 @@ main(argc, argv)
 
 		if (verbose) {
 			(void) fprintf(stderr, 
-				"Displaying images from file: %s\n", *argv);
+				"Displaying images from file: %s\n", *files);
 		}
 
 		/*
@@ -283,10 +301,11 @@ main(argc, argv)
 			(void) fprintf(
 				stderr, 
 				"%s: Couldn't read rasterfile(%s) [ %s ]\n",
-				progName, *argv, ErrGetMsg()
+				progName, *files, ErrGetMsg()
 			);
 			exit_status++;
 		}
+		files++;
 	}
 	RasDrawClose(context);
 	exit(exit_status);
