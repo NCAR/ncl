@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.20 1998-10-19 22:13:23 boote Exp $
+!      $Id: ngi.res,v 1.21 1998-11-19 00:56:13 dbrown Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -65,9 +65,9 @@ NgNGO*visual:		XcbVisual
 !NgNGO*visual:		PseudoColor
 !NgNGO*depth:		8
 
-NgNGO*colorMode:	mixedcmap
 !NgNGO*colorMode:	privatecmap
-!NgNGO*colorMode:	sharedcmap
+NgNGO*colorMode:	sharedcmap
+NgNGO*colorMode:	mixedcmap
 
 !NgNGO*maxColorCells:	0
 NgNGO*rgbError:		5
@@ -414,6 +414,14 @@ addfile*Start_Stop.translations: #override \
 *xwork*emenu*colorMapEditor.labelString:		Colormap
 *xwork*emenu*colorMapEditor.mnemonic:			C
 *xwork*emenu*colorMapEditor.acceleratorText:		Ctrl+C
+
+*xwork*omenu*drawSingleViewOption.labelString:		Draw Selected View Only
+*xwork*omenu*autoRefreshOption.labelString:		Auto Update
+
+*xwork*vmenu*clearAllViews.labelString:                 Clear All Views
+*xwork*vmenu*drawAllViews.labelString:                  Draw All Views
+
+
 
 *xworkMGR*graphics.background:	black
 *xworkMGR*graphics.foreground:	white
@@ -873,8 +881,11 @@ browse.title:				Data Browser
 addfile*directory: /fs/scd/home1/ncargd/dev/sun4_SunOS_5_5_1/lib/ncarg/data/cdf
 addfile*directory:     /traver/home/dbrown/src/data
 addfile*directory:     /fs/scd/home1/dbrown/src/data
-addfile*directory:     /usr/local/ncarg/lib/ncarg/data/cdf/
 addfile*directory:     /traver/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
+
+addfile*directory:     /fs/scd/home1/dbrown/src/data
+addfile*directory:     /home/dbrown/src/dev/test
+addfile*directory:     /usr/local/ncarg/lib/ncarg/data/cdf/
 addfile*directory:     /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
 
 !htmlview: display is sgi,linux
