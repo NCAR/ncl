@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.91 1999-10-20 23:53:36 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.92 1999-11-19 19:31:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4923,6 +4923,7 @@ static NhlErrorTypes UpdateFillInfo
 {
 	NhlErrorTypes		ret = NhlNOERROR;
 	NhlContourPlotLayerPart	*cnp = &(cl->contourplot);
+#if 0
  	NhlBoolean	color_fill, pattern_fill;
 
 	color_fill = (cnp->mono_fill_color && 
@@ -4932,6 +4933,16 @@ static NhlErrorTypes UpdateFillInfo
 
 	if (color_fill &&  pattern_fill &&  
 	    (cnp->fill_on || cnp->raster_mode_on)) {
+	}
+#endif 
+/*
+ * Since the missing value fill resources are not supposed to be affected
+ * by the mono flags, you cannot optimize the fill away if mono fill color is
+ * true and fill color is transparent or mono fill pattern is true and the
+ * fill pattern is hollow. So just keep it simple.
+ * 
+ */
+	if (cnp->fill_on || cnp->raster_mode_on) {
 		*do_fill = True;
 		return ret;
 	}
