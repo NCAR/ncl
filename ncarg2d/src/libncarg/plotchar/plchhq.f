@@ -1,5 +1,5 @@
 C
-C $Id: plchhq.f,v 1.6 1993-01-12 02:41:38 kennison Exp $
+C $Id: plchhq.f,v 1.7 1993-02-19 17:42:24 kennison Exp $
 C
       SUBROUTINE PLCHHQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
@@ -1503,7 +1503,7 @@ C ... redo the SET call so we can use fractional coordinates, ...
 C
 
                 CALL    SET (XVPL,XVPR,YVPB,YVPT,
-     +                       XVPL,XVPR,YVPB,YVPT,LNLG)
+     +                       XVPL,XVPR,YVPB,YVPT,1)
 C
 C ... change color (during pass 2) if so directed by information from
 C the fontcap, ...
