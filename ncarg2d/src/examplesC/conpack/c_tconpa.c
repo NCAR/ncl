@@ -1,5 +1,5 @@
 /*
- *	$Id: c_tconpa.c,v 1.1 1994-05-13 14:26:04 haley Exp $
+ *	$Id: c_tconpa.c,v 1.2 1994-05-24 22:42:07 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -261,7 +261,7 @@ int cpcolr(xcra,ycra,ncra,iaia,igia,naia)
  * Create structure to pass to gfill_area
  */
 			fill_area.num_points = *ncra-1;
-			fill_area.points = (Gpoint *) malloc(2*(*ncra-1)*sizeof(Gfloat));
+			fill_area.points = (Gpoint *) malloc(fill_area.num_points*sizeof(Gpoint));
 			if( !fill_area.points ) {
 				fprintf( stderr, "colram: Not enough memory to create fill area structure\n" );
 				gemergency_close_gks();

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpex08.c,v 1.1 1994-05-13 14:25:57 haley Exp $
+ *	$Id: c_cpex08.c,v 1.2 1994-05-24 22:42:06 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -271,7 +271,7 @@ colram (xcra,ycra,ncra,iaia,igia,nagi)
  * Create structure to pass to gfill_area
  */
         fill_area.num_points = *ncra-1;
-        fill_area.points = (Gpoint *) malloc(2*(*ncra-1)*sizeof(Gfloat));
+        fill_area.points = (Gpoint *) malloc(fill_area.num_points*sizeof(Gpoint));
         if( !fill_area.points ) {
             fprintf( stderr, "colram: Not enough memory to create fill area structure\n" );
             gemergency_close_gks();
@@ -336,7 +336,7 @@ int colrcl(xcra,ycra,ncra,iaia,igia,nagi)
  * Create structure to pass to gpolyline
  */
         line.num_points = *ncra;
-        line.points = (Gpoint *) malloc(2*(*ncra)*sizeof(Gfloat));
+        line.points = (Gpoint *) malloc(line.num_points*sizeof(Gpoint));
         if( !line.points ) {
             fprintf( stderr, "colrcl: Not enough memory to create fill area structure\n" );
             gemergency_close_gks();
@@ -397,7 +397,7 @@ int colrll (xcra,ycra,ncra,iaia,igia,nagi)
  * Create structure to pass to gpolyline
  */
         line.num_points = *ncra;
-        line.points = (Gpoint *) malloc(2*(*ncra)*sizeof(Gfloat));
+        line.points = (Gpoint *) malloc(line.num_points*sizeof(Gpoint));
         if( !line.points ) {
             fprintf( stderr, "colrcl: Not enough memory to create fill area structure\n" );
             gemergency_close_gks();
