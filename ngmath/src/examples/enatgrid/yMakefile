@@ -1,19 +1,19 @@
 #
-#	$Id: yMakefile,v 1.8 2004-09-27 22:33:07 fred Exp $
+#	$Id: yMakefile,v 1.9 2004-12-14 18:43:34 haley Exp $
 #
 
 MYNAME	= enatgrid
 
 SRCS = \
 	nnplotc.c    c_nnex01.c   c_nnex01d.c    c_nnex02.c    c_nnex03.c \
-	c_nnex06.c                                                        \
+	c_nnex04.c c_nnex06.c                                             \
 	nnplotf.f    nnex01.f     nnex01d.f      nnex02.f      nnex03.f   \
 	nnex04.f     nnex05.f     nnex06.f       nnex07.f      nnex08.f   \
 	nnex09.f     nnex10.f
 
 OBJS = \
 	nnplotc.o    c_nnex01.o   c_nnex01d.o    c_nnex02.o    c_nnex03.o \
-	c_nnex06.o                                                        \
+	c_nnex04.o c_nnex06.o                                             \
 	nnplotf.o    nnex01.o     nnex01d.o      nnex02.o      nnex03.o   \
 	nnex04.o     nnex05.o     nnex06.o       nnex07.o      nnex08.o   \
 	nnex09.o     nnex10.o
