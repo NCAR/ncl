@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.9 2003-05-10 00:15:53 shea Exp $
+;      $Id: contributed.ncl,v 1.10 2003-05-10 22:37:25 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -1048,7 +1048,7 @@ begin
  end if
  delete (xD_atts)
                                   ; add info on operation performed
- xF@typeConversion_op = "NCL: double converted to float"
+ xF@typeConversion_op_ncl = "double converted to float"
 
  ndimx = dimsizes(dimx)           ; number of dimensions
  do i=0,ndimx-1                   ; loop over all dimensions
@@ -1306,9 +1306,9 @@ begin
                                        ; add an extra attribute
  Ndx1 = Ndx-1                          ; last dimension
  if (.not.ismissing(x!Ndx1)) then   
-      xave@average_op= "dim_avg over dimension: "+x!Ndx1
+      xave@average_op_ncl= "dim_avg over dimension: "+x!Ndx1
  else
-      xave@average_op= "dim_avg function was applied"
+      xave@average_op_ncl= "dim_avg function was applied"
  end if
  
  return (xave)
@@ -1336,9 +1336,9 @@ begin
                                        ; add an extra attribute
  Ndx1 = Ndx-1                          ; last dimension
  if (.not.ismissing(x!Ndx1)) then   
-      xvar@variance_op= "dim_variance over dimension: "+x!Ndx1
+      xvar@variance_op_ncl= "dim_variance over dimension: "+x!Ndx1
  else
-      xvar@variance_op= "dim_variance function was applied"
+      xvar@variance_op_ncl= "dim_variance function was applied"
  end if
  
  return (xvar)
@@ -1366,9 +1366,9 @@ begin
                                        ; add an extra attribute
  Ndx1 = Ndx-1                          ; last dimension
  if (.not.ismissing(x!Ndx1)) then   
-      xstd@stddev_op= "dim_stddev over dimension: "+x!Ndx1
+      xstd@stddev_op_ncl= "dim_stddev over dimension: "+x!Ndx1
  else
-      xstd@stddev_op= "dim_stddev function was applied"
+      xstd@stddev_op_ncl= "dim_stddev function was applied"
  end if
  
  return (xstd)
@@ -1396,9 +1396,9 @@ begin
                                        ; add an extra attribute
  Ndx1 = Ndx-1                          ; last dimension
  if (.not.ismissing(x!Ndx1)) then   
-      xsum@sum_op= "dim_sum over dimension: "+x!Ndx1
+      xsum@sum_op_ncl= "dim_sum over dimension: "+x!Ndx1
  else
-      xsum@sum_op= "dim_sum function was applied"
+      xsum@sum_op_ncl= "dim_sum function was applied"
  end if
  
  return (xsum)
@@ -1421,9 +1421,9 @@ begin
  dimx = dimsizes(x)
  Ndx  = dimsizes(dimx)      ; number of dimensions
  if (.not.ismissing(x!(Ndx-1))) then   
-      xStd@standardize_op= "dim_standardize over dimension: "+x!(Ndx-1)
+      xStd@standardize_op_ncl= "dim_standardize over dimension: "+x!(Ndx-1)
  else
-      xStd@standardize_op= "dim_standardize function was applied"
+      xStd@standardize_op_ncl= "dim_standardize function was applied"
  end if
  
  return (xStd)
@@ -1456,9 +1456,9 @@ begin
                                            ; add an extra attribute
      Ndx1 = Ndx-1                          ; last dimension
      if (.not.ismissing(x!Ndx1)) then   
-          xrmsd@rmsd_op= "NCL: dim_rmsd applied to dimension: "+x!Ndx1
+          xrmsd@rmsd_op_ncl= "dim_rmsd applied to dimension: "+x!Ndx1
      else
-          xrmsd@rmsd_op= "NCL: dim_rmsd function was applied "+Ndx1
+          xrmsd@rmsd_op_ncl= "dim_rmsd function was applied "+Ndx1
      end if
 
      return (xrmsd)
@@ -1670,7 +1670,7 @@ begin
   end if
   var_out = var   ; transfer all coordinate variables, attributes etc
   var_out = smth9 (var, p, q, cyclic) ; add info on operation performed
-  var_out@spatial_op = "smth9; nine-pt smoother applied; " + \
+  var_out@spatial_op_ncl = "smth9; nine-pt smoother applied; " + \
                                "p="+p+"  q="+q+"  cyclic="+cyclic
 
   return(var_out)
@@ -1700,7 +1700,7 @@ begin
   end if
   var_out = var   ; transfer all coordinate variables, attributes etc
   var_out = smth9 (var, p, q, cyclic) ; add info on operation performed
-  var_out@spatial_op = "smth9; nine-pt smoother applied; " + \
+  var_out@spatial_op_ncl = "smth9; nine-pt smoother applied; " + \
                              "p="+p+"  q="+q+"  cyclic="+cyclic
   return(var_out)
 end
@@ -1771,7 +1771,7 @@ begin
 ; only need to do this if plotting or writing to netCDF file
 
    copy_VarAtts (x,aveMonth)
-   aveMonth@time_op = "Climatology: "+ (ntim/nmos) +" years"
+   aveMonth@time_op_ncl = "Climatology: "+ (ntim/nmos) +" years"
    aveMonth@info    = "function clmMonLLT: contributed.ncl"
 
 ; copy spatial (eg, lat/lon) coordinate variables
@@ -1831,7 +1831,7 @@ begin
 
    copy_VarAtts (x,stdMonth)
 
-   stdMonth@time_op = " Monthly Standard Deviation: "+ (ntim/nmos) +" years"
+   stdMonth@time_op_ncl = " Monthly Standard Deviation: "+ (ntim/nmos) +" years"
    stdMonth@info    = "function stdMonLLT: contributed.ncl"
 
 ; copy spatial (eg, lat/lon) coordinate variables
@@ -1890,7 +1890,7 @@ begin
 
 ; Create an informational attribute:  
 
-   xAnom@anomaly_op  = "function calcMonAnomLLT: contributed.ncl"
+   xAnom@anomaly_op_ncl  = "function calcMonAnomLLT: contributed.ncl"
    return (xAnom)
 end
 
@@ -1925,7 +1925,7 @@ begin
 
 ; Create an informational attribute 
 
-   xAnom@anomaly_op  = "Annual Cycle Removed:function rmMonAnnCycLLT:contributed.ncl" 
+   xAnom@anomaly_op_ncl  = "Annual Cycle Removed:function rmMonAnnCycLLT:contributed.ncl" 
    xAnom@reference   = "function rmMonAnnCycLLT in contrib.ncl"
    return (xAnom)
 end
@@ -2050,7 +2050,7 @@ begin
 
 ; Create an informational attribute:  
 
-   xStiz@standardized_op  = "calcMonStandardizeAnomTLL: contributed.ncl"
+   xStiz@standardized_op_ncl  = "calcMonStandardizeAnomTLL: contributed.ncl"
    
    return (xStiz)
 end
@@ -2087,7 +2087,7 @@ begin
      xAnom(yr:yr+nmos-1) = (/ x(yr:yr+nmos-1)- aveMonth /)
   end do
   xAnom@long_name  = x@long_name + ": Anomalies"
-  xAnom@anomaly_op = "function rmAnnCyc1D "
+  xAnom@anomaly_op_ncl = "function rmAnnCyc1D "
 
   return (xAnom)
 end
@@ -2130,7 +2130,7 @@ begin
 
    copy_VarAtts (x,aveMonth)
 
-   aveMonth@time_op = "Climatology: "+ (ntim/nmos) +" years"
+   aveMonth@time_op_ncl = "Climatology: "+ (ntim/nmos) +" years"
    aveMonth@info    = "function clmMonLLLT: contributed.ncl"
 
 ; copy spatial (eg, lat/lon) coordinate variables
@@ -2189,7 +2189,7 @@ begin
 
    copy_VarAtts (x,stdMonth)
 
-   stdMonth@time_op = " Monthly Standard Deviation: "+ (ntim/nmos) +" years"
+   stdMonth@time_op_ncl = " Monthly Standard Deviation: "+ (ntim/nmos) +" years"
    stdMonth@info    = "function stdMonLLLT: contributed.ncl"
 
 ; copy spatial (eg, lat/lon) coordinate variables
@@ -2246,7 +2246,7 @@ begin
 
 ; Create an informational attribute:  
 
-   xAnom@anomaly_op  = "function calcMonAnomLLLT: contributed.ncl"
+   xAnom@anomaly_op_ncl  = "function calcMonAnomLLLT: contributed.ncl"
    return (xAnom)
 end
 
@@ -2278,7 +2278,7 @@ begin
 
 ; Create an informational attribute 
 
-   xAnom@anomaly_op  = "Annual Cycle Removed:function rmMonAnnCycLLLT:contributed.ncl" 
+   xAnom@anomaly_op_ncl  = "Annual Cycle Removed:function rmMonAnnCycLLLT:contributed.ncl" 
    xAnom@reference   = "function rmMonAnnCycLLLT in contrib.ncl"
    return (xAnom)
 end
@@ -2389,7 +2389,7 @@ begin
 
 ; Create an informational attribute:  
 
-   xAnom@anomaly_op  = "Anomalies from Annual Cycle: calcMonAnomTLL: contributed.ncl" 
+   xAnom@anomaly_op_ncl  = "Anomalies from Annual Cycle: calcMonAnomTLL: contributed.ncl" 
    
    return (xAnom)
 end
@@ -2424,7 +2424,7 @@ begin
 
 ; Create an informational attribute 
 
-   xAnom@anomaly_op  = "Annual Cycle Removed: rmMonAnnCycTLL: contributed.ncl" 
+   xAnom@anomaly_op_ncl  = "Annual Cycle Removed: rmMonAnnCycTLL: contributed.ncl" 
    return (xAnom)
 end
 
@@ -3836,11 +3836,7 @@ local xRunAve
 begin
   xRunAve = x
   xRunAve = runave (x, nave, kopt)   
-  if (isatt(x,"long_name")) then     ; possibly augment long_name
-      xRunAve@aveInfo = x@long_name +": runave: nave="+nave 
-  else
-      xRunAve@aveInfo = "runave: nave="+nave
-  end if
+  xRunAve@runave_op_ncl = "runave: nave="+nave 
 
   return(xRunAve)
 end
@@ -3855,11 +3851,7 @@ local wRunAve
 begin
   wRunAve = x
   wRunAve = wgt_runave (x, wgt, kopt)   
-  if (isatt(x,"long_name")) then     ; possibly augment long_name
-      wRunAve@aveInfo = x@long_name +": wgt_runave" 
-  else
-      wRunAve@aveInfo = "wgt_runave"
-  end if
+  wRunAve@wgt_runave_op_ncl = "wgt_runave"
 
   return(wRunAve)
 end
@@ -3883,12 +3875,7 @@ begin
   areaAve  = wgt_areaave (x, wgty, wgtx, 0)   
 
   copy_VarMeta (x, areaAve)          ; contributed.ncl (copy meta data)
-
-  if (isatt(x,"long_name")) then     ; possibly augment long_name
-      areaAve@long_name = "Area Ave: "+x@long_name
-  else
-      areaAve@long_name = "Area Average"
-  end if
+  areaAve@wgt_areaave_op_ncl = "Area Average"
 
   return(areaAve)
 end
