@@ -94,7 +94,7 @@ LoadPalette(cgmc, palette)
 
 	cgmc->CDnum = 256;	/* number of values defined	*/
 
-	cfree(colors);
+	free((char *) colors);
 
 	return(1);
 }

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ictrans.m,v 1.5 1991-06-19 18:07:23 clyne Exp $
+.\"	$Id: ictrans.m,v 1.6 1991-08-15 17:11:07 clyne Exp $
 .\"
 .\" ictrans 3.01 90/06/22 
 .TH ICTRANS 1NCARG "22 June 1990" NCAR "NCAR View 3.01"
@@ -12,6 +12,8 @@ ictrans \- user interface to the CGM translator
 .BI \-d " device"
 ] [
 .BI \-f " font"
+] [
+.BI \-e " script"
 ] [
 .B \-soft
 ] [
@@ -93,6 +95,16 @@ is not set and invoke
 .B ictrans 
 without any arguments.
 .TP
+.BI \-e " script"
+.I script
+is a command for 
+.BR ictrans .
+Multiple 
+.B -e
+options may appear on a single command line. Be careful to use quotes if
+your command contains spaces or metacharacters that might be interpreted
+by the shell.
+.TP
 .BI \-f " fontcap"
 When interpreting CGM 
 .B TEXT 
@@ -119,14 +131,14 @@ devices. The following is a list of such options.
 .TP 
 .BI \-background " color"
 Specifies the default color to use for the background of an X11 window. 
-If the metafile explicitly sets color index 0 this option is overriden.
+If the metafile explicitly sets color index 0 this option is overridden.
 .TP 
 .B \-bell
 Turn off bell. The default is to bell between plotting of frames.
 .TP 
 .BI \-foreground " color"
 Specifies the default foreground color of an X11 window. 
-If the metafile explicitly sets color index 1 this option is overriden.
+If the metafile explicitly sets color index 1 this option is overridden.
 .TP
 .BI \-lmin " min"
 On devices which support line width scaling all lines are guaranteed to be
@@ -630,6 +642,19 @@ ictrans> zoom 0.0 0.0 0.5 0.5
 would result in the lower left quarter of subsequent plots being blown up
 to fill the entire display. Specification of such a window may be used 
 for zooming and panning.
+.SH EXAMPLES
+The following example shows how 
+.B ictrans 
+might be used in a batch environment to translate a metafile called
+.B gmeta
+and send the translated results of the entire file
+to a spooled device called "imagen" which might be defined in the system
+.B ncarv_spool
+file:
+.sp
+.IP
+.B "% ictrans -e 'spooler imagen' -e '1,$Print' gmeta
+.sp
 .SH FILES
 .PD 0
 .TP 28

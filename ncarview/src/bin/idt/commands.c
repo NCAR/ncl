@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.3 1991-06-18 14:48:10 clyne Exp $
+ *	$Id: commands.c,v 1.4 1991-08-15 17:14:25 clyne Exp $
  */
 /*
  *	commands.c
@@ -99,7 +99,7 @@ void	Command1(command)
 	/*
 	 * send the command to the appopriate recipient
 	 */
-	TalkTo(id, buf, ASYNC);
+	(void) TalkTo(id, buf, ASYNC);
 }
 	
 /*
@@ -216,7 +216,7 @@ void	Command2(command, command_data)
 	/*
 	 * send the command to the appopriate recipient
 	 */
-	TalkTo(id, buf, ASYNC);
+	(void) TalkTo(id, buf, ASYNC);
 }
 	
 /*
@@ -271,5 +271,5 @@ void	Command3(command, command_data)
 	/*
 	 * send the command to the appopriate recipient
 	 */
-	TalkTo(id, buf, ASYNC);
+	(void) TalkTo(id, buf, ASYNC);
 }

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: idt.m,v 1.4 1991-06-18 14:43:42 clyne Exp $
+.\"	$Id: idt.m,v 1.5 1991-08-15 17:11:40 clyne Exp $
 .\"
 .\" NCAR View: idt.man,v 1.0 89/09/10 clyne 
 .\" Revision 3.01 90/11/15 clyne
@@ -397,6 +397,35 @@ The hierarchy of the display panel popup
 .fi
 .sp
 Paned
+.SH EXAMPLES
+.PP
+The following resource specification can be used to set the default size 
+of the graphics display window to 512 by 512 pixels and place it in the 
+top left corner of your screen:
+.sp
+.ti +0.5i
+	ctrans*geometry:	512x512+0+0
+.ti -0.5i
+.br
+.PP
+If you want to place the control panel in the top right corner insert the
+following into your .Xdefaults file:
+.sp
+.ti +0.5i
+	idt.geometry:        -0+0
+.ti -0.5i
+.br
+.PP
+Finally, if you want the display panel to appear slightly below the graphics
+display window try setting its geometry resource as follows:
+.sp
+.ti +0.5i
+	idt.TopLevelShell*geometry:        +0+536
+.ti -0.5i
+.br
+.PP
+Depending on how your window manager adorns its windows you may have to 
+slightly adjust the 'y' parameter of this geometry request.
 .SH FILES
 .TP 40
 \\.idthist

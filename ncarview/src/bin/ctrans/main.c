@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.6 1991-04-18 13:28:11 clyne Exp $
+ *	$Id: main.c,v 1.7 1991-08-15 17:13:28 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -78,7 +78,7 @@ static	OptDescRec	set_options[] = {
 	{"movie", OptSepArg, "-1"},	
         {"softfill", OptIsArg, "false"},
         {"Debug", OptIsArg, "false"},
-        {"bell", OptIsArg, "false"},
+        {"bell", OptIsArg, "true"},
         {"", OptIsArg, "false"},
 	{"lmin", OptSepArg, "-1"},	
 	{"lmax", OptSepArg, "-1"},	
@@ -225,7 +225,10 @@ char	**argv;
 	 * a record list. 
 	 */
 	i = 1;
-	if (i < argc && strcmp (argv[i], "-r") == 0) {	/* look for rec list*/
+	/*
+	 *	look for rec list
+	 */
+	if (i < argc && strcmp (argv[i], "-record") == 0) {
 		i++;
 		j = 0;
 		record = (int *) icMalloc ((argc + 1) * sizeof (int));

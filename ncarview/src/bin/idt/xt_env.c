@@ -1,5 +1,5 @@
 /*
- *      $Id: xt_env.c,v 1.1 1991-07-31 17:19:15 clyne Exp $
+ *      $Id: xt_env.c,v 1.2 1991-08-15 17:16:44 clyne Exp $
  */
 /*
  *	File:		xt_env.c
@@ -17,6 +17,14 @@
 #include <stdio.h>
 #include <ncarv.h>
 
+#ifdef	SYSV
+#include <string.h>
+#else
+#include <strings.h>
+#endif
+
+extern	char	*getenv();
+
 /*
  *	XAppDirPath
  *
@@ -31,6 +39,7 @@ void	XAppDirPath()
 {
 	char	*xapp_path;
 	char	*xufsp_env	= "XUSERFILESEARCHPATH";
+	char	*xapp_env	= "XAPPLRESDIR";
 
 	static	char	*bufptr = NULL;
 
@@ -39,7 +48,7 @@ void	XAppDirPath()
 	 * variables are set do nothing.
 	 */
 	if (getenv(xufsp_env)) return;
-	if (getenv("XAPPLRESDIR")) return;
+	if (getenv(xapp_env)) return;
 
 	xapp_path = GetNCARGPath("XAPPDIR");
 
@@ -52,11 +61,11 @@ void	XAppDirPath()
 	if (bufptr) free (bufptr);
 	
 	bufptr = icMalloc ((unsigned) 
-		(strlen(xufsp_env) + strlen("=") + strlen(xapp_path) + 1));
+		(strlen(xapp_env) + strlen("=") + strlen(xapp_path) + 1));
 
-	(void) strcpy(bufptr, xufsp_env);
+	(void) strcpy(bufptr, xapp_env);
 	(void) strcat(bufptr, "=");
 	(void) strcat(bufptr, xapp_path);
 
-	(void) putenv (xapp_path);
+	(void) putenv (bufptr);
 }

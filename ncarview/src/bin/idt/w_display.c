@@ -1,5 +1,5 @@
 /*
- *	$Id: w_display.c,v 1.4 1991-06-18 14:50:34 clyne Exp $
+ *	$Id: w_display.c,v 1.5 1991-08-15 17:15:29 clyne Exp $
  */
 /*
  *	w_display.c
@@ -537,7 +537,8 @@ static  void    Set_Window(widget, client_data, call_data)
 	int	id = (int) client_data;
 	void	create_simple_dialog_popup();
 
-	create_simple_dialog_popup(widget, id, "set device window:",SET_WINDOW);
+	create_simple_dialog_popup(widget, id, 
+		"set device window coordinates:",SET_WINDOW);
 
 }
 

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: med.m,v 1.3 1991-02-06 15:08:12 clyne Exp $
+.\"	$Id: med.m,v 1.4 1991-08-15 17:12:07 clyne Exp $
 .\"
 .\" @(#)med.l 1.0 90/02/15 NCAR; from UCB 4.3 and S5R4
 .tr ##
@@ -381,7 +381,7 @@ into a single file
 one might use the following:
 .sp
 .IP
-.B "% med -e 'r cgm1' -e 'r cgm2' -e 'r cgm3' -e 'w! cgm123'"
+.B "% med -e 'r cgm1' -e 'r cgm2' -e 'r cgm3' -e 'w cgm123'"
 .sp
 .LP
 Or one could pass the following script to 

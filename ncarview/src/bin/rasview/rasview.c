@@ -1,5 +1,5 @@
 /*
- *	$Id: rasview.c,v 1.2 1991-06-18 14:55:35 clyne Exp $
+ *	$Id: rasview.c,v 1.3 1991-08-15 17:18:50 clyne Exp $
  */
 /*
  *	rasview.c
@@ -65,8 +65,11 @@ main(argc, argv)
 	int	verbose;	/* verbose or quite mode		*/
 	int	count;		/* number of image displayed		*/
 	char	*program_name;
+	int	i;
 
 	int	exit_status = 0;
+
+	void	usage();
 
 	program_name = argv[0];
 
@@ -81,6 +84,13 @@ main(argc, argv)
 	getOptions((caddr_t) 0, get_options);
 	pal_name = commLineOpt.palette;
 	verbose = ! commLineOpt.quiet;
+
+	/*
+	 * make sure nothing left on command line execpt file names
+	 */
+	for (i=0; i<argc; i++) {
+		if (*argv[i] == '-') usage(program_name, (char *) NULL);
+	}
 
 
 	/*
@@ -98,7 +108,7 @@ main(argc, argv)
 	 */
 	if (pal_name) {
 		if (PaletteRead(pal_name,NULL,default_colors)== RAS_OK){
-			RasDrawSetPalette(context, default_colors,
+			(void) RasDrawSetPalette(context, default_colors,
 				default_colors + 256,
 				default_colors + 512, 
 				256);
@@ -207,4 +217,20 @@ static	display_image(ras, context, verbose)
 		return(-1);
 	}
 	return(0);
+}
+
+void	usage(prog_name, message) 
+	char	*prog_name;
+	char	*message;
+{
+
+	if (message) {
+		(void) fprintf(stderr, "%s: %s", prog_name, message);
+	}
+
+	(void) fprintf(stderr, 
+		"%s: Usage: %s [-pal palette_file] [-quiet] [raster_file...]\n",
+		prog_name, prog_name);
+
+	exit(1);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: meta_edit.c,v 1.4 1991-06-18 14:57:17 clyne Exp $
+ *	$Id: meta_edit.c,v 1.5 1991-08-15 17:19:21 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -157,8 +157,8 @@ Directory	*CGM_copyFrames(start_frame, num_frames, target )
 	 */
 	if (workingDir->num_frames + num_frames > workingDir->dir_size) {
 
-		(void)
-		ReallocDir(workingDir,workingDir->num_frames + num_frames);
+		(void) ReallocDir(workingDir, (unsigned) 
+			(workingDir->num_frames + num_frames));
 	}
 
 	/*
@@ -351,8 +351,8 @@ Directory	*CGM_readFrames(ncar_cgm, start_frame, num_frames, target,
 	 */
 	if (workingDir->num_frames + num_frames > workingDir->dir_size) {
 
-		(void)
-		ReallocDir(workingDir, workingDir->num_frames + num_frames);
+		(void) ReallocDir(workingDir, (unsigned) 
+				(workingDir->num_frames + num_frames));
 	}
 
 	/*
@@ -1310,7 +1310,7 @@ static	copy_dir(d1, d2, src, dest, num_frames)
 	 */
 	if ((dest + num_frames) > d1->dir_size) {
 
-		ReallocDir(d1, dest + num_frames);
+		(void) ReallocDir(d1, dest + num_frames);
 	}
 
 	/*

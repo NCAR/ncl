@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ctrans.m,v 1.5 1991-06-19 18:07:18 clyne Exp $
+.\"	$Id: ctrans.m,v 1.6 1991-08-15 17:10:26 clyne Exp $
 .\"
 .\" ctrans 3.01 90/06/22
 .TH CTRANS 1NCARV "22 June 1990" NCAR "NCAR View 3.01"
@@ -14,7 +14,7 @@ ctrans \- a Computer Graphics Metafile ( \fICGM\fR ) translator
 ] [
 .BI \-movie " time" 
 ] [
-.BI \-r " record_num ..."
+.BI \-record " record_num ..."
 ] [
 .B \-soft
 ] [
@@ -160,7 +160,7 @@ will wait
 .I time
 seconds after the display of each frame and then proceed automatically.
 .TP
-.B -r 
+.B -record 
 < 
 .I "record_number... " 
 >
@@ -189,6 +189,7 @@ Unconditionally perform software filling of all filled polygons. This
 option may be useful for devices which have limits on the number of
 vertices describing a polygon. On some devices this number is known and
 software filling is performed, as appropriate, without user specification.
+.TP
 .B \-bell
 Turn off bell. The default is to bell between plotting of frames.
 .TP
@@ -363,7 +364,7 @@ frame starting in the third record, call:
 .sp
 .ti +0.5i
 % 
-.B "ctrans -r 3 -d t4107 gmeta"
+.B "ctrans -record 3 -d t4107 gmeta"
 .br
 .PP
 To examine the metafile
@@ -391,7 +392,7 @@ at a resolution of 1024x1024 pixels, call:
 .sp
 .ti +0.5i
 % 
-.B "ctrans -d xwd -res 1024x1024 > xwdfile"
+.B "ctrans -d xwd -res 1024x1024 > raster.xwd"
 .sp
 .br
 The raster output is in X11 "xwd" format and is sent to the file

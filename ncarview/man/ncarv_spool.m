@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarv_spool.m,v 1.2 1991-01-09 10:48:54 clyne Exp $
+.\"	$Id: ncarv_spool.m,v 1.3 1991-08-15 17:12:29 clyne Exp $
 .\"
 .\" ncarv_spool 3.01 90/06/22 
 .TH ncarv_spool 1NCARV "26 June 1990" NCAR "NCAR View 3.01"
@@ -97,14 +97,18 @@ In the third example the final output is directed to a file called
 # example ncarv_spool file
 #
 postscript : -d ps.mono -f font1 : | lpr -Pprinter0
-dicomed : -d xbfr -geom 1857x1183 : | x11tonrif | rasttg -tc
-sunraster : -d xbfr -geom 1152x900 : | x11tosun > sunfile
+dicomed : -d xwd -geom 1857x1183 : | x11tonrif | rasttg -tc
+sunraster : -d xwd -geom 1152x900 : | x11tosun > sunfile
 .ft R
 .fi
 .RE
 .SH FILES
-.TP 20
-ncarv_spool
+.TP 40
+/usr/local/lib/ncarv_spool
+- System spooler configuration file
+.TP 40
+$HOME/.ncarv_spool
+- User spooler configuration file
 .SH SEE ALSO
 .BR ctrans(1NCARG) ,
 .BR ictrans(1NCARG)

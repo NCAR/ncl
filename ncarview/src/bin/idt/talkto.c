@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.5 1991-04-09 17:34:23 clyne Exp $
+ *	$Id: talkto.c,v 1.6 1991-08-15 17:15:11 clyne Exp $
  */
 /*
  *	talkto.c
@@ -81,15 +81,13 @@ static	void	reaper()
  *			  this process will use this unique channel id. channel
  *			  is an int in the range [0,MAX_DISPLAYS). 
  *	targv		: process to exec with all its args
- *	targc		: len of targv
  *	hfd		: history file fd, if -1 not open
  * on exit
  *	return		: < 0 => failure, else ok
  */
-OpenTranslator(channel, argv, argc, hfd)
+OpenTranslator(channel, argv, hfd)
 	int	channel;
 	char	**argv;
-	int	argc;
 	int	hfd;
 {
 

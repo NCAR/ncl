@@ -1,5 +1,5 @@
 /*
- *	$Id: display.c,v 1.4 1991-06-18 14:48:16 clyne Exp $
+ *	$Id: display.c,v 1.5 1991-08-15 17:14:35 clyne Exp $
  */
 /*
  *	Display.c
@@ -75,7 +75,7 @@ int	OpenDisplay(metafile)
 	 */
 	tArgv[tArgc - 1] = metafile;
 
-	if (OpenTranslator(id, tArgv, tArgc, hFD) < 0) {
+	if (OpenTranslator(id, tArgv, hFD) < 0) {
 		return(-1);	/* can't get a translator for this metafile*/
 	}
 
@@ -93,13 +93,13 @@ int	OpenDisplay(metafile)
 	 * set some default data values for idt commands associated with 
 	 * this connection
 	 */
-	strncpy(pcvs[id].loop, "0", MAX_DATA_LEN - 1);
-	strncpy(pcvs[id].dup, "1", MAX_DATA_LEN - 1);
-	strncpy(pcvs[id].goto_, "1", MAX_DATA_LEN - 1);
-	strncpy(pcvs[id].skip ,"0", MAX_DATA_LEN - 1);
-	strncpy(pcvs[id].start_segment, "1", MAX_DATA_LEN - 1);
-	strncpy(pcvs[id].stop_segment,  s ? s : "1", MAX_DATA_LEN - 1);
-	strncpy(pcvs[id].set_window, "0.0 0.0 1.0 1.0", MAX_DATA_LEN - 1);
+	(void) strncpy(pcvs[id].loop, "0", MAX_DATA_LEN - 1);
+	(void) strncpy(pcvs[id].dup, "1", MAX_DATA_LEN - 1);
+	(void) strncpy(pcvs[id].goto_, "1", MAX_DATA_LEN - 1);
+	(void) strncpy(pcvs[id].skip ,"0", MAX_DATA_LEN - 1);
+	(void) strncpy(pcvs[id].start_segment, "1", MAX_DATA_LEN - 1);
+	(void) strncpy(pcvs[id].stop_segment,  s ? s : "1", MAX_DATA_LEN - 1);
+	(void) strncpy(pcvs[id].set_window, "0.0 0.0 1.0 1.0", MAX_DATA_LEN - 1);
 
 
 	numUsed++;
@@ -250,35 +250,35 @@ void	SetValues(id, command, value)
 
 	switch ((int) command) {
 	case	LOOP:
-		strncpy(pcvs[id].loop, value, MAX_DATA_LEN - 1);
+		(void) strncpy(pcvs[id].loop, value, MAX_DATA_LEN - 1);
 		break;
 
 	case	DUP:
-		strncpy(pcvs[id].dup, value, MAX_DATA_LEN - 1);
+		(void) strncpy(pcvs[id].dup, value, MAX_DATA_LEN - 1);
 		break;
 
 	case	SKIP:
-		strncpy(pcvs[id].skip, value, MAX_DATA_LEN - 1);
+		(void) strncpy(pcvs[id].skip, value, MAX_DATA_LEN - 1);
 		break;
 
 	case	GOTO:
-		strncpy(pcvs[id].goto_, value, MAX_DATA_LEN - 1);
+		(void) strncpy(pcvs[id].goto_, value, MAX_DATA_LEN - 1);
 		break;
 
 	case	START_SEGMENT:
-		strncpy(pcvs[id].start_segment, value, MAX_DATA_LEN - 1);
+		(void) strncpy(pcvs[id].start_segment, value, MAX_DATA_LEN - 1);
 		break;
 
 	case	STOP_SEGMENT:
-		strncpy(pcvs[id].stop_segment, value, MAX_DATA_LEN - 1);
+		(void) strncpy(pcvs[id].stop_segment, value, MAX_DATA_LEN - 1);
 		break;
 
 	case	SET_WINDOW:
-		strncpy(pcvs[id].set_window, value, MAX_DATA_LEN - 1);
+		(void) strncpy(pcvs[id].set_window, value, MAX_DATA_LEN - 1);
 		break;
 
 	case	SAVE:
-		strncpy(pcvs[id].save, value, MAX_DATA_LEN - 1);
+		(void) strncpy(pcvs[id].save, value, MAX_DATA_LEN - 1);
 		break;
 
 	default:

@@ -120,4 +120,8 @@ typedef	struct {
 #define COUNT_LEN	16
 
 
+#ifndef	MIN
+#define	MIN(A,B)	((A) < (B) ? (A) : (B))
+#endif	MIN
+
 #endif _internals

@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.12 1991-07-31 17:18:08 clyne Exp $
+ *	$Id: w_idt.c,v 1.13 1991-08-15 17:15:43 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -168,8 +168,6 @@ main(argc, argv)
 	XtAppContext 	app_con;
 	char		**targv;	/* translator args	*/
 	int		targc;
-	Arg		args[5];
-	Cardinal	n;
 
 	char	**get_trans_commandline();
 	void 	SetFileSelection();
@@ -177,6 +175,11 @@ main(argc, argv)
 	void	action_display();
 	char	*meta_fname = NULL;
 	void	XAppDirPath();
+
+	/*
+	 * hack to ensure idt app resource file is found
+	 */
+	XAppDirPath();
 
 	toplevel = XtAppInitialize(&app_con, "Idt", options, XtNumber(options),
 			       &argc, argv, fallback_resources, NULL, ZERO);
@@ -221,10 +224,6 @@ main(argc, argv)
 	 */
 	XtAppAddActions(app_con, actionTable, XtNumber(actionTable));
 
-	/*
-	 * hack to ensure idt app resource file is found
-	 */
-	XAppDirPath();
 	
 
 	/*

@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.6 1991-07-19 16:00:46 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.7 1991-08-15 17:19:49 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -41,6 +41,7 @@
 #include	<ncarv.h>
 #include	"internals.h"
 	
+extern	char	*strcpy();
 
 #ifndef	L_SET
 #define	L_SET	0
@@ -501,7 +502,7 @@ Directory	*CGM_directory(cgm_fd)
 				dir->meta_size += DIR_2_ALLOC;
 				dir->meta = (int *) icRealloc 
 					((char *) dir->meta, 
-					dir->meta_size * sizeof (int));
+					(unsigned)dir->meta_size * sizeof(int));
 			}
 				
 
@@ -530,7 +531,7 @@ Directory	*CGM_directory(cgm_fd)
 				/* alloc more space	*/
 
 				(void) ReallocDir(dir,
-					dir->dir_size + DIR_2_ALLOC);
+					(unsigned) dir->dir_size + DIR_2_ALLOC);
 
 
 			}
@@ -1262,7 +1263,7 @@ void	CGM_freeDirectory(dir)
 
 Directory	*ReallocDir(dir, num_frames)
 		Directory	*dir;
-		int	num_frames;
+		unsigned	num_frames;
 {
 
 	int	i;
@@ -1321,7 +1322,8 @@ Directory	*CGM_copyCreateDir(d1)
 	d2->num_meta = d1->num_meta;
 	if (d2->meta_size < meta_size) {
 		d2->meta = (int *) icRealloc((char *) d2->meta,
-						meta_size * sizeof (int)); }
+					(unsigned) meta_size * sizeof (int)); 
+	}
 	for (i = 0; i < d1->num_meta; i++) {
 		d2->meta[i] = d1->meta[i];
 	}
@@ -1332,7 +1334,7 @@ Directory	*CGM_copyCreateDir(d1)
 	 */
 	d2->num_frames = d1->num_frames;
 	if (d2->dir_size < dir_size) {
-		d2 = ReallocDir(d2, dir_size);
+		d2 = ReallocDir(d2, (unsigned) dir_size);
 	}
 	for (i = 0; i < d1->num_frames; i++) {
 		d2->d[i].record = d1->d[i].record;
@@ -1353,7 +1355,7 @@ Directory	*CGM_copyCreateDir(d1)
 	 */
 	if (d2->MFDes_size < des_size) {
 		d2->MFDescription = (char **) icRealloc((char *) d2->meta,
-					meta_size * sizeof (char *));
+				(unsigned) meta_size * sizeof (char *));
 	}
 	for (i = 0; i < des_size; i++ ) {
 		d2->MFDescription[i] = NULL;	/* no used	*/

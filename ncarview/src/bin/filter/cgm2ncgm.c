@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm2ncgm.c,v 1.2 1991-01-09 10:56:02 clyne Exp $
+ *	$Id: cgm2ncgm.c,v 1.3 1991-08-15 17:13:50 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -97,13 +97,19 @@ main (argc,argv)
 	while ((status = get_next_instr(&instr)) > 0) {
 
 		if (instr.class > MAXCLASS || instr.id > MAXFUNCPERCLASS) {
-			(void) 
-			fprintf(stderr, "cgm2ncgm: warning: bogus metafile\n");
+			(void) fprintf(stderr, 
+				"cgm2ncgm: warning: invalid CGM element - ");
+			(void) fprintf(stderr,
+				"class = %d, id = %d\n", instr.class, instr.id);
 		}
 		if (CGM_putInstr(cgm_fd, &instr) < 0) {
 			(void)fprintf(stderr,"cgm2ncgm : error writing file\n");
 			exit(1);
 		}
+		if (instr.class == DEL_ELEMENT && instr.id == END_MF) {
+			break;
+		}
+
 	}
 
 	/*

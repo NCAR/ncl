@@ -68,9 +68,6 @@ CTarget($(MYNAME),$(OBJS),$(LIBS))
 MakefileTarget
 CleanTarget
 
-install::
-	$(INSTALL) -m $(INSTALL_LIB) ncarv_spool $(LIBDIR)
-
 lint: $(HDR) $(SRCS)
 	lint $(CDEFINES) $(LINTLIBS) $(SRCS)  1> lint.out 2>&1
 #	lint $(SRCS) $(LIBS) > lint.out

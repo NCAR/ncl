@@ -1,7 +1,27 @@
 #
+#	$Id: ctlib,v 1.6 1991-08-15 17:17:11 clyne Exp $
+#
+#!/bin/csh -f
+#
 #	This script simply reports the libraries required by ctrans.
 #	The library list will vary depending on machine configuration
 #
-#!/bin/csh
 
-echo /tmp/testlib/libictrans.o /tmp/testlib/libctrans.o  	/tmp/testlib/libcgm.a /tmp/testlib/libncarv.a  	/tmp/testlib/libncarg_ras.a /tmp/testlib/libhdf.a -lX11   -lm
+set libdir = `ncargpar LIBDIR`
+
+if ($status != 0) then
+	exit 1
+endif
+
+if (! -d "$libdir") then
+  echo "Library directory <$libdir> does not exist."
+  exit 1
+endif
+
+set locals = ""
+
+foreach file (libictrans.o libctrans.o libcgm.a libncarv.a  libncarg_ras.a libhdf.a)
+  set locals = "$locals $libdir/$file"
+end
+
+echo $locals -lX11  -lsuntool -lsunwindow -lpixrect -lm
