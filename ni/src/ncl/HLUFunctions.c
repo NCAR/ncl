@@ -1107,7 +1107,7 @@ NhlErrorTypes _NclIAddAnnotation
 		}
 	} else {
 		for( i = 0; i < total; i++) {
-			tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_hlu_obj_ids[i]);
+			tmp_hlu_ptr[i] = (NclHLUObj)_NclGetObj(ncl_ano_obj_ids[i]);
 		}
 		j = total;
 	}
