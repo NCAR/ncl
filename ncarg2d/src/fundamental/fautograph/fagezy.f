@@ -28,7 +28,3 @@ C
 C
       STOP
       END
-
-
-      STOP
-      END
