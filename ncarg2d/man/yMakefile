@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.4 1993-01-15 22:20:26 haley Exp $
+#	$Id: yMakefile,v 1.5 1993-02-24 22:41:50 haley Exp $
 #
 NCARG	= ../..
 
@@ -14,7 +14,7 @@ MANS = \
 	strmln threed velvct ncargf77 plt \
 	ncargintro ncargcc ncargmac ncargmac3 ncarg_gks\
 	cgmtrans ftrans \
-	ncargex ncargCex ncargrun findg colconv conpack gflash labelbar \
+	ncargex ncargcex ncargrun findg colconv conpack gflash labelbar \
 	plotchar softfill stitle
 #else
 MANS = \
@@ -27,7 +27,7 @@ MANS = \
 	strmln threed velvct ncargf77 plt \
 	ncargintro ncargcc ncargmac ncargmac3 ncarg_gks\
 	ncargsrc cgmtrans ftrans \
-	ncargex ncargCex ncargrun findg colconv conpack gflash labelbar \
+	ncargex ncargcex ncargrun findg colconv conpack gflash labelbar \
 	plotchar softfill stitle
 #endif
 
