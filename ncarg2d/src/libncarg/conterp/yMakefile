@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1996-10-25 21:43:18 boote Exp $
+#	$Id: yMakefile,v 1.6 2001-09-26 22:50:16 haley Exp $
 #
 
 MYNAME	= conterp
@@ -22,3 +22,8 @@ PartialLibraryTarget(libncarg.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
 
 PartialLibraryTarget(libNGcn.a,$(OBJECTS))
+
+#if defined(linux)
+conloc.o: conloc.f
+	$(F77) $(FCOPTIONS) -g -c conloc.f
+#endif
