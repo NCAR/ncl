@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.39 1999-03-24 21:22:29 haley Exp $
+ *      $Id: Project,v 1.40 1999-10-20 20:52:09 haley Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,7 @@
  *			etc are in the Template file.
  */
 
-#define NcargVersion 4.1.1
+#define NcargVersion 4.2.0
 
 #ifndef	BuildRasterHDF
 #define	BuildRasterHDF
@@ -138,6 +138,7 @@ HLUEXDIR		= hluex
 NCLDIR			= ncl
 NCLEXDIR		= nclex
 NGODIR			= ngo
+NFPDIR			= nfp
 DATADIR			= data
 DBDIR			= database
 FONTCAPDIR		= fontcaps
@@ -291,6 +292,7 @@ NCARGRASLIBSRC	= $(NVIEWLIBSRC)/libncarg_ras
 HLULIBSRC	= $(NILIBSRC)/hlu
 NGOLIBSRC	= $(NILIBSRC)/ngo
 XCBLIBSRC	= $(NILIBSRC)/xcb
+NFPLIBSRC	= $(NILIBSRC)/nfp
 NCLLIBSRC	= $(NISRC)/ncl
 
 #ifdef	BuildShared
@@ -304,6 +306,7 @@ NCARGRASLIB	= -lNGras
 HLULIB		= -lNGhlu
 NGOLIB		= -lNGgo
 XCBLIB		= -lXcb
+NFPLIB		= -lnfp
 NCLLIB		=
 NCLAPILIB	= -lNGncl
 
@@ -320,6 +323,7 @@ DEPHLULIB	=
 DEPNGOLIB	=
 DEPNCLLIB	=
 DEPNCLAPILIB	=
+DEPNFPLIB	=
 
 DEPCTRANSLIB	=
 DEPICTRANS_LIB	=
@@ -333,6 +337,7 @@ CGMLIB		= _UseLib(-L$(CGMLIBSRC),-lcgm)
 NCARGRASLIB	= _UseLib(-L$(NCARGRASLIBSRC),-lncarg_ras)
 HLULIB		= _UseLib(-L$(HLULIBSRC),-lhlu)
 NGOLIB		= _UseLib(-L$(NGOLIBSRC),-lngo)
+NFPLIB		= _UseLib(-L$(NFPLIBSRC),-lnfp)
 XCBLIB		= _UseLib(-L$(XCBLIBSRC),-lXcb)
 NCLLIB		= _UseLib(-L$(NCLLIBSRC),-lncl)
 NCLAPILIB	= _UseLib(-L$(NCLLIBSRC),-lnclapi)
@@ -348,6 +353,7 @@ DEPCGMLIB	= _DepLib($(CGMLIBSRC),$(LIBROOT),libcgm.a)
 DEPNCARGRASLIB	= _DepLib($(NCARGRASLIBSRC),$(LIBROOT),libncarg_ras.a)
 DEPHLULIB	= _DepLib($(HLULIBSRC),$(LIBROOT),libhlu.a)
 DEPNGOLIB	= _DepLib($(NGOLIBSRC),$(LIBROOT),libngo.a)
+DEPNFPLIB	= _DepLib($(NFPLIBSRC),$(LIBROOT),libnfp.a)
 DEPNCLLIB	= _DepLib($(NCLLIBSRC),$(LIBROOT),libncl.a)
 DEPNCLAPILIB	= _DepLib($(NCLLIBSRC),$(LIBROOT),libnclapi.a)
 
