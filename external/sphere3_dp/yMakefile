@@ -28,5 +28,5 @@ OBJS = alf.o divec.o dives.o divgc.o divgs.o gaqd.o geo2math.o gradec.o \
 	vrtes.o vrtgc.o vrtgs.o vshifte.o vsurf.o vtsec.o vtses.o vtsgc.o \
 	vtsgs.o
 
-LibraryTarget($(MYLIB),$(OBJS))  
+BuildAndInstallLibraryTarget($(MYLIB),$(OBJS))  
 
