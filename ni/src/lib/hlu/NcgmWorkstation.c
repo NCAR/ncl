@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.29 1997-11-13 20:06:25 dbrown Exp $
+ *      $Id: NcgmWorkstation.c,v 1.30 1998-02-26 17:43:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -568,6 +568,7 @@ NcgmWorkstationOpen
  */
 	c_ngsrat(2,winstance->ncgm.gks_iat,winstance->ncgm.gks_rat);
 
+	
 	return MIN(subret,retcode);
 	
 }
@@ -851,6 +852,19 @@ NcgmWorkstationUpdate
 
 	subret = (*NhlworkstationClassRec.work_class.update_work)(l);
 	retcode = MIN(retcode,subret);
+
+/*
+ * close the ncgm after the initial update performed by the WorkstationOpen
+ * call to avoid empty frames in certain situations. 
+ */
+	if (! np->started) {
+		subret = TempClose(_NhlGetLayer
+				   (wlc->ncgm_class.current_ncgm_wkid),func);
+		retcode = MIN(retcode,subret);
+		wlc->ncgm_class.current_ncgm_wkid = NhlNULLOBJID;
+		np->new_frame = False;
+		np->started = True;
+	}
 
 	return retcode;
 }
