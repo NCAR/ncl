@@ -1,5 +1,5 @@
 /*
- *      $Id: colormap.c,v 1.9 1999-09-30 21:42:30 dbrown Exp $
+ *      $Id: colormap.c,v 1.10 1999-10-18 22:12:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -754,6 +754,18 @@ GetBrowser
 
 	return True;
 }
+static NhlBoolean
+PostUpdateCmap
+(
+	NhlPointer	cdata
+)
+{
+	NgColorMap	cm = (NgColorMap)cdata;
+
+	UpdateCmap(cm);
+
+	return True;
+}
 
 static void
 CmapApplyCB
@@ -782,6 +794,8 @@ CmapApplyCB
 	if (browse != NhlDEFAULT_APP)
 		NgUpdatePages(browse,True,cm->colormap.work);
 #endif
+	NgAddWorkProc(cm->go.appmgr,PostUpdateCmap,cm);
+
 	return;
 }
 

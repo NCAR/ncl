@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.27 1999-10-05 23:16:21 dbrown Exp $
+ *      $Id: hlupage.c,v 1.28 1999-10-18 22:12:31 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -944,6 +944,7 @@ RegisterHluDataDestroyCB
 
 	hdata->preview = preview;
 	hdata->go_id = page->go->base.id;
+	hdata->draw_req = True;
 
 	if (rec->public.plot_style) {
 		hdata->qplotstyle = NrmStringToQuark(rec->public.plot_style);

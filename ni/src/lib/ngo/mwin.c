@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.27 1999-09-29 02:05:58 dbrown Exp $
+ *      $Id: mwin.c,v 1.28 1999-10-18 22:12:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -927,6 +927,7 @@ AddWorkNode
 		(otree->wtree,wknode->level,True,False,-1,
 		 XmUNSPECIFIED_PIXMAP,XmUNSPECIFIED_PIXMAP,wknode->xmname);
 
+	NgDrawUpdatedViews((NgWksState)otree,True,wknode->id);
 	return True;
 }
 
@@ -2015,6 +2016,7 @@ AddViewNode
 		if (! hdata)
 			return False;
 		l->base.gui_data2 = (NhlPointer) hdata;
+		hdata->draw_req = True;
 	}
 	if (! vwo) {
 		vwo = NhlMalloc(sizeof(NgViewObjRec));
@@ -2180,18 +2182,32 @@ AddViewNode
 		Do_Draw = True;
 	}
 	NgUpdateViewBB((NgWksState)otree,vwnode->id);
-	if (! base_node_not_found) {
-		if (_NhlIsClass(l->base.wkptr,NhlxWorkstationClass)) {
-			NgHluData	hdata;
-			NgWksObj	wks;
 
-			hdata = (NgHluData) l->base.wkptr->base.gui_data2;
-			wks = hdata ? (NgWksObj) hdata->gdata : NULL;
-			if (wks && wks->auto_refresh)
+	if (! base_node_not_found && 
+	    _NhlIsClass(l->base.wkptr,NhlxWorkstationClass)) {
+		NgHluData	whdata;
+		NgWksObj	wks;
+
+		whdata = (NgHluData) l->base.wkptr->base.gui_data2;
+		wks = whdata ? (NgWksObj) whdata->gdata : NULL;
+		if (wks) {
+			/* 
+			 * If there's a colormap callback pending, it
+			 * will do a complete redraw of the wks window, so
+			 * to avoid unnecessary drawing skip the draw here.
+			 * However, the colormap cb does not pop up the
+			 * workstation window, so do a popup to ensure that
+			 * it is up.
+			 */
+			if (wks->colormap_cb_pending) {
+				NgXWorkPopup(otree->appmgr,wks->wks_wrap_id);
+			}
+			else if (wks->auto_refresh) {
 				NgDrawXwkView
 					(wks->wks_wrap_id,vwnode->id,False);
 				NgSetSelectedXwkView
 					(wks->wks_wrap_id,vwnode->id);
+			}
 		}
 	}
 
@@ -2936,7 +2952,7 @@ extern void NgDrawUpdatedViews(
 	int		wk_id
 )
 {
-	NgObjTree	otree = (NgWksState)wks_state;
+	NgObjTree	otree = (NgObjTree)wks_state;
 	NgObjTreeNode	vwnode,wknode;
 	NhlBoolean	draw_single;
 	int		selected_id;

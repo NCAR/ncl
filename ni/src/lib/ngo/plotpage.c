@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.c,v 1.7 1999-10-13 17:15:49 dbrown Exp $
+ *      $Id: plotpage.c,v 1.8 1999-10-18 22:12:36 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -35,10 +35,8 @@
 #include <Xm/Protocols.h>
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/XWorkstation.h>
-#include <ncarg/hlu/DataComm.h>
-#include <ncarg/hlu/CoordArrays.h>
-#include <ncarg/hlu/ScalarField.h>
-#include <ncarg/hlu/VectorField.h>
+#include <ncarg/hlu/View.h>
+#include <ncarg/hlu/WorkstationI.h>
 
 
 static NrmQuark QString = NrmNULLQUARK;
@@ -905,6 +903,7 @@ RegisterHluDataDestroyCB
 
 	hdata->preview = preview;
 	hdata->go_id = page->go->base.id;
+	hdata->draw_req = True;
 
 	if (rec->public.plot_style && ! preview) {
 		hdata->qplotstyle = NrmStringToQuark(rec->public.plot_style);
@@ -1438,6 +1437,7 @@ static NhlErrorTypes DoUpdateFunc
 static NhlErrorTypes DoUpdateFuncs
 (        
 	brPlotPageRec	*rec,
+	NhlBoolean	init,
 	int		obj_ix,
 	int		sequence,
 	int		*count
@@ -1458,13 +1458,16 @@ static NhlErrorTypes DoUpdateFuncs
 
 		if (ditem->qhlu_name != qobj_name)
 			continue;
-		
 		switch (ditem->item_type) {
 		default:
 			break;
 		case _NgUPDATEFUNC:
 			if (sequence !=  (int) ditem->data)
 				break;
+			if (! init) {
+				if (ditem->init_only)
+					break;
+			}
 			subret = DoUpdateFunc(rec,ditem,&plot_changed);
 			ret = MIN(ret,subret);
 			if (plot_changed)
@@ -1523,6 +1526,7 @@ CreateInstance
 	brPlotPageRec	*rec = (brPlotPageRec *) pdp->type_rec;
         int		i,j;
 	NgDataProfile	dprof = rec->data_profile;
+        NhlArgVal       sel,user_data;
 #if 0
 	NhlBoolean	success = True;
 #endif
@@ -1570,7 +1574,7 @@ CreateInstance
 			}
 		}
 	}
-			
+
 	/*
 	 * Now call the update functions. These functions may require
 	 * the presence of other objects that may not yet have existed at
@@ -1589,7 +1593,7 @@ CreateInstance
 	for (i = 0; i <= rec->max_seq_num; i++) {
 		for (j = 0; j < dprof->obj_count; j++) {
 			int count;
-			subret = DoUpdateFuncs(rec,j,i,&count);
+			subret = DoUpdateFuncs(rec,True,j,i,&count);
 			ret = MIN(ret,subret);
 		}
 	}
@@ -1601,7 +1605,7 @@ CreateInstance
 		if (! DoPlotTreeUpdate(page,i))
 			continue;
 	}
-	
+
 	return ret;
 
 /*
@@ -1626,7 +1630,8 @@ UpdateInstance
 	int		i,j;
 	NgResData	resdata = NgReallocResData(NULL,0);
 	NhlBoolean	*hlus_on;
-
+	NgHluData	whdata;
+	NgWksObj	wks;
 
 	for (i = 0; i < dprof->obj_count; i++) {
 		resdata->res_count = 0;
@@ -1683,7 +1688,7 @@ UpdateInstance
 		for (j = 0; j < dprof->obj_count; j++) {
 			int count;
 
-			subret = DoUpdateFuncs(rec,j,i,&count);
+			subret = DoUpdateFuncs(rec,False,j,i,&count);
 			ret = MIN(ret,subret);
 
 			if (count && NgViewOn(rec->hlu_ids[i])) {
@@ -1724,17 +1729,34 @@ UpdateInstance
 	}
 	NhlFree(hlus_on);
 
+	whdata = (NgHluData) wl->base.wkptr->base.gui_data2;
+	wks = whdata ? (NgWksObj) whdata->gdata : NULL;
+
 /*
  * There is no auto callback for setvalues yet, so for updates the draw
  * must occur here
  */
-	if (do_draw && _NhlIsClass(wl,NhlxWorkstationClass)) {
+	if (do_draw && _NhlIsClass(wl,NhlxWorkstationClass) &&
+		! wks->colormap_cb_pending) {
 		NgHluData hdata = (NgHluData) wl->base.gui_data2;
 		NgWksObj wks = hdata ? (NgWksObj) hdata->gdata : NULL;
 
 		if (wks && wks->auto_refresh) {
 			NgDrawGraphic(rec->go->base.id,
 				      NrmQuarkToString(page->qvar),True);
+		}
+	}
+
+	if (wks->colormap_cb_pending) {
+		for (i = 0; i < dprof->obj_count; i++) {
+			int top_id = _NhlTopLevelView(rec->hlu_ids[i]);
+			NhlLayer tl = _NhlGetLayer(top_id);
+			if (tl) {
+				NgHluData hdata = 
+					(NgHluData) tl->base.gui_data2;
+				if (hdata)
+					hdata->draw_req = False;
+			}
 		}
 	}
 
@@ -3061,3 +3083,37 @@ _NgGetPlotPage
 		_NgGOWidgetTranslations(go,pdp->form);
         return pdp;
 }
+
+/*
+ * allocates memory that caller is responsible for freeing
+ */
+int *NgPlotObjGetHluIds
+(
+	int go_id,
+	int page_id,
+	int *count
+)
+{
+	brPlotPageRec *rec = (brPlotPageRec *) NgPageData(go_id,page_id);
+	int *hlu_ids;
+	
+	*count = 0;
+
+	if (! rec)
+		return NULL;
+
+	if (! rec->hlu_count)
+		return NULL;
+	hlu_ids = NhlMalloc(rec->hlu_count * sizeof(int));
+
+	if (!hlu_ids) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NULL;
+	}
+	memcpy(hlu_ids,rec->hlu_ids,rec->hlu_count * sizeof(int));
+
+	*count = rec->hlu_count;
+
+	return hlu_ids;
+}
+

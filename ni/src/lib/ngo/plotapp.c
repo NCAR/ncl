@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.9 1999-10-13 17:15:47 dbrown Exp $
+ *      $Id: plotapp.c,v 1.10 1999-10-18 22:12:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -68,6 +68,7 @@ static NrmQuark *QFakeRes[] = {
 typedef struct _AppResProfileRec {
 	NrmQuark	qname;
 	NrmQuark	qrefres;
+	int		init_only;
 	int		vis;
 	int		required;
 	int		mindims;
@@ -93,7 +94,8 @@ static ProfResRec ProfRes[] = {
 	{"Name", 0, 0},
 	{"Reference", 0, 1},
 	{"Visibility", 0 , 2},
-	{"SaveForCompare", 0, 3}
+	{"SaveForCompare", 0, 3},
+	{"InitializeOnly", 0, 4 }
 };
 
 /*
@@ -358,6 +360,7 @@ SetAppResProfile
 	resprof->qname = NrmNULLQUARK;
 	resprof->qrefres = NrmNULLQUARK;
 	resprof->vis = -1;
+	resprof->init_only = -1;
 	resprof->required = -1;
 	resprof->mindims = -1;
 	resprof->maxdims = -1;
@@ -403,6 +406,12 @@ SetAppResProfile
 					else
 						resprof->save_to_compare = 
 							True;
+					break;
+				case 4:
+					if (! strcasecmp(cp,"False"))
+						resprof->init_only = False;
+					else
+						resprof->init_only = True;
 					break;
 				}
 			}
@@ -1960,6 +1969,8 @@ static void EditDataItem
 		ditem->data = rprof->data;
 	if (rprof->save_to_compare > -1) 
 		ditem->save_to_compare = (NhlBoolean)rprof->save_to_compare;
+	if (rprof->init_only > -1) 
+		ditem->init_only = (NhlBoolean)rprof->init_only;
 
 	return;
 
@@ -2041,7 +2052,8 @@ static void MergeObjResDataItems
 		}
 		else if (rprof) {
 			ditem = NgNewDataItem
-				(rprof->qname,qres,obj->qbasename,
+				(rprof->qname ? rprof->qname : qres,
+				 qres,obj->qbasename,
 				 obj->class,ditype,rprof->mindims,
 				 rprof->maxdims,
 				 ((int)rprof->data) < 0 ? NULL : rprof->data,
@@ -2049,14 +2061,16 @@ static void MergeObjResDataItems
 				 rprof->vis < 0 ? True : rprof->vis,
 				 set_only,
 				 rprof->save_to_compare < 0 ? 
-				 False : rprof->save_to_compare);
+				 False : rprof->save_to_compare,
+				 rprof->init_only < 0 ? 
+				 False : rprof->init_only);
 			NgAppendDataProfileItem(dprof,ditem,rprof->qrefres);
 		}
 		else {
 			ditem = NgNewDataItem
 				(qres,qres,obj->qbasename,
 				 obj->class,ditype,0,1,data,
-				 False,True,set_only,False);
+				 False,True,set_only,False,False);
 			NgAppendDataProfileItem(dprof,ditem,NrmNULLQUARK);
 		}
 		ditem->appres_info = (NhlPointer) res;

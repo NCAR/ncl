@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.h,v 1.6 1999-09-11 01:06:09 dbrown Exp $
+ *      $Id: dataprofile.h,v 1.7 1999-10-18 22:12:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -167,6 +167,7 @@ int		coord_num; 	/* applies to NgDataItemType
 	NhlPointer	appres_info;
 	NhlBoolean	set_only;
 	NhlBoolean	save_to_compare;
+	NhlBoolean	init_only;
 } NgDataItemRec, *NgDataItem;
 
 typedef struct _NgPlotDataRec {
@@ -268,7 +269,8 @@ NgDataItem NgNewDataItem
 	NhlBoolean	required,
 	NhlBoolean	visible,
 	NhlBoolean	set_only,
-	NhlBoolean	save_to_compare
+	NhlBoolean	save_to_compare,
+	NhlBoolean	init_only
 );
 
 extern NhlErrorTypes

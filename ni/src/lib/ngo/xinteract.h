@@ -1,5 +1,5 @@
 /*
- *      $Id: xinteract.h,v 1.4 1999-02-23 03:56:56 dbrown Exp $
+ *      $Id: xinteract.h,v 1.5 1999-10-18 22:12:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,7 @@ typedef struct _NgWksObjRec {
 	Const char	*name;
 	NgCBWP		cccb;
 	NhlBoolean	auto_refresh;
+	NhlBoolean	colormap_cb_pending;
 } NgWksObjRec, *NgWksObj;
 
 typedef char NgViewStatus;

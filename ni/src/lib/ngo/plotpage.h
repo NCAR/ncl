@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.h,v 1.1 1999-08-11 23:41:57 dbrown Exp $
+ *      $Id: plotpage.h,v 1.2 1999-10-18 22:12:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -96,6 +96,13 @@ extern void NgPlotObjCreateUpdate
 (
 	int go_id,
 	int page_id
+);
+
+extern int *NgPlotObjGetHluIds
+(
+	int go_id,
+	int page_id,
+	int *count
 );
 
 #endif	/* _NG_PLOTPAGE_H */

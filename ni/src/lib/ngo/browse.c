@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.34 1999-10-13 17:15:41 dbrown Exp $
+ *      $Id: browse.c,v 1.35 1999-10-18 22:12:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,7 @@
 #include <ncarg/ngo/hlupageP.h>
 #include <ncarg/ngo/htmlpageP.h>
 #include <ncarg/ngo/plotpageP.h>
+#include <ncarg/hlu/View.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Form.h>
@@ -2653,6 +2654,52 @@ extern NhlErrorTypes NgResetPage
  * the force_draw parameter forces all visible graphics to be redrawn.
  * it does not override the 'draw single view' option.
  */
+static int Workstation
+(
+	brPage		*page
+)
+{
+	int *id_array;
+	int i;
+	int hlu_id,count;
+	NhlLayer l;
+
+	switch (page->type) {
+	case _brPLOTVAR:
+		/* find the first View object, then find its workstation */
+		id_array = NgPlotObjGetHluIds
+			(page->go->base.id,page->id,&count);
+		if (! id_array)
+			break;
+		l = NULL;
+		for (i = 0; i < count; i++) {
+			if (! NhlIsView(id_array[i])) {
+				continue;
+			}
+			l = _NhlGetLayer(id_array[i]);
+		}
+		NhlFree(id_array);
+		if (l)
+			return l->base.wkptr->base.id;
+		break;
+
+	case _brHLUVAR:
+		
+		hlu_id = NgNclGetHluObjId(page->go->go.nclstate,
+					  NrmQuarkToString(page->qvar),
+					  &count,&id_array);
+		if (count > 1)
+			NhlFree(id_array);
+		l = _NhlGetLayer(hlu_id);
+		if (! (l && NhlClassIsSubclass(l->base.layer_class,
+					       NhlviewClass)))
+			break;
+		return l->base.wkptr->base.id;
+	default:
+		break;
+	}
+	return NhlNULLOBJID;
+}
 extern NhlErrorTypes NgUpdatePages
 (
         int		goid,
@@ -2697,11 +2744,15 @@ extern NhlErrorTypes NgUpdatePages
 				continue;
 			if (page->type == _brPLOTVAR)
 				continue;
+			if (wk_id > NhlNULLOBJID && page->type == _brHLUVAR) {
+				if (wk_id != Workstation(page))
+					continue;
+			}
 			(*page->pdata->update_page)(page);
                 }
         }
 
-
+ 
         for (i = 0; i < pcp->current_count; i++) {
 		pane = np->pane_ctrl.panes[i];
                 for (j = 0; j < pane->pagecount; j++) {
@@ -2710,10 +2761,12 @@ extern NhlErrorTypes NgUpdatePages
 				continue;
 			if (page->type != _brPLOTVAR)
 				continue;
+			if (wk_id != Workstation(page))
+				continue;
 			(*page->pdata->update_page)(page);
                 }
         }
-
+	
 	NgDrawUpdatedViews(wks_state,force_draw,wk_id);
 	
         return NhlNOERROR;

@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.c,v 1.7 1999-10-13 17:15:45 dbrown Exp $
+ *      $Id: dataprofile.c,v 1.8 1999-10-18 22:12:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -413,27 +413,29 @@ static NhlBoolean GetFillValue
 static NgDataItemRec sfdataarray = {
 	"scalar field", "sfDataArray", NrmNULLQUARK,NrmNULLQUARK,  
 	_NgSCALARFIELD,_NgDATAVAR,2,2,NULL,
-	True,True,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,False,False };
+	True,True,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec sfxarray = {
 	"x coord", "sfXArray",NrmNULLQUARK,NrmNULLQUARK,
 	_NgSCALARFIELD,_NgCOORDVAR,1,1,(NhlPointer)1,
-	False,True,NULL,NULL,NULL,&sfdataarray,0,NULL,NULL,NULL,False,False };
+	False,True,NULL,NULL,NULL,&sfdataarray,
+	0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec sfyarray = {
 	"y coord", "sfYArray", NrmNULLQUARK,NrmNULLQUARK,
 	_NgSCALARFIELD,_NgCOORDVAR,1,1,(NhlPointer)2,
-	False,True,NULL,NULL,NULL,&sfdataarray,0,NULL,NULL,NULL,False,False };
+	False,True,NULL,NULL,NULL,&sfdataarray,
+	0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec sfmissingvaluev =	{
 	"missing value", "sfMissingValueV", NrmNULLQUARK,NrmNULLQUARK,
 	_NgSCALARFIELD,_NgMISSINGVAL,0,0,NULL,
 	False,False,NULL,GetFillValue,NULL,
-	&sfdataarray,0,NULL,NULL,NULL,False,False };
+	&sfdataarray,0,NULL,NULL,NULL,False,False,False };
 
 
 static NgDataItemRec cnscalarfielddata = {
 	"scalar field object", "cnScalarFieldData", NrmNULLQUARK,NrmNULLQUARK,
 	_NgCONTOURPLOT,_NgDATAOBJ,0,0,NULL,
 	False,False,NULL,NULL,ScalarDataDefined,
-	&sfdataarray,0,NULL,NULL,NULL,False,False};
+	&sfdataarray,0,NULL,NULL,NULL,False,False,False};
 
 static NgDataItem ScalarFieldItems[] = {
 	&sfdataarray,&sfxarray,&sfyarray,&sfmissingvaluev };
@@ -448,76 +450,79 @@ static NgDataItem ContourPlot0Items[] = { &cnscalarfielddata };
 static NgDataItemRec vfudataarray = {
 	"u vector field", "vfUDataArray", NrmNULLQUARK,NrmNULLQUARK,
 	_NgVECTORFIELD,_NgDATAVAR,2,2,NULL,
-	True,True,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,False,False };
+	True,True,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec vfvdataarray = {
 	"v vector field", "vfVDataArray", NrmNULLQUARK,NrmNULLQUARK,
 	_NgVECTORFIELD,_NgDATAVAR,2,2,NULL,
-	True,True,NULL,NULL,NULL,&vfudataarray,0,NULL,NULL,NULL,False,False};
+	True,True,NULL,NULL,NULL,&vfudataarray,
+	0,NULL,NULL,NULL,False,False,False};
 static NgDataItemRec vfxarray = {
 	"x coord", "vfXArray", NrmNULLQUARK,NrmNULLQUARK,
 	_NgVECTORFIELD,_NgCOORDVAR,1,1,(NhlPointer)1,
-	False,True,NULL,NULL,NULL,&vfudataarray,0,NULL,NULL,NULL,False,False };
+	False,True,NULL,NULL,NULL,&vfudataarray,
+	0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec vfyarray = {
 	"y coord", "vfYArray", NrmNULLQUARK,NrmNULLQUARK,
 	_NgVECTORFIELD,_NgCOORDVAR,1,1,(NhlPointer)2,
-	False,True,NULL,NULL,NULL,&vfudataarray,0,NULL,NULL,NULL,False,False };
+	False,True,NULL,NULL,NULL,&vfudataarray,
+	0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec vfmissinguvaluev = {
 	"u missing value", "vfMissingUValueV", NrmNULLQUARK,NrmNULLQUARK,
 	_NgVECTORFIELD,_NgMISSINGVAL,0,0,NULL,
 	False,False,NULL,GetFillValue,NULL,
-	&vfudataarray,0,NULL,NULL,NULL,False,False };
+	&vfudataarray,0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec vfmissingvvaluev = {
 	"v missing value", "vfMissingVValueV", NrmNULLQUARK,NrmNULLQUARK,
 	_NgVECTORFIELD,_NgMISSINGVAL,0,0,NULL,
 	False,False,NULL,GetFillValue,NULL,
-	&vfvdataarray,0,NULL,NULL,NULL,False,False };
+	&vfvdataarray,0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec vf_sfdataarray = {
 	"scalar field", "sfDataArray", NrmNULLQUARK,NrmNULLQUARK,  
 	_NgSCALARFIELD,_NgDATAVAR,2,2,NULL,
 	False,True,NULL,NULL,NULL,
-	&vfudataarray,0,NULL,NULL,NULL,False,False };
+	&vfudataarray,0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec vf_sfmissingvaluev =	{
 	"missing value", "sfMissingValueV", NrmNULLQUARK,NrmNULLQUARK,
 	_NgSCALARFIELD,_NgMISSINGVAL,0,0,NULL,
 	False,False,NULL,GetFillValue,NULL,
-	&vf_sfdataarray,0,NULL,NULL,NULL,False,False };
+	&vf_sfdataarray,0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec dcdelaycompute =	{
 	"delay compute", "dcDelayCompute", NrmNULLQUARK,NrmNULLQUARK,
 	_NgVECTORPLOT,_NgCONFIG,0,0,NULL,
 	False,False,NULL,GetVectorPlotValue,NULL,
-	&vf_sfdataarray,0,NULL,NULL,NULL,False,False };
+	&vf_sfdataarray,0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec vcusescalararray =	{
 	"use scalar array", "vcUseScalarArray", NrmNULLQUARK,NrmNULLQUARK,
 	_NgVECTORPLOT,_NgCONFIG,0,0,NULL,
 	False,False,NULL,GetVectorPlotValue,NULL,
-	&vf_sfdataarray,0,NULL,NULL,NULL,False,False };
+	&vf_sfdataarray,0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec vcmonofillarrowfillcolor =	{
 	"mono fill arrow color", "vcMonoFillArrowFillColor", 
 	NrmNULLQUARK,NrmNULLQUARK,
 	_NgVECTORPLOT,_NgCONFIG,0,0,NULL,
 	False,False,NULL,GetVectorPlotValue,NULL,
-	&vf_sfdataarray,0,NULL,NULL,NULL,False,False };
+	&vf_sfdataarray,0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec vcmonolinearrowcolor =	{
 	"mono line arrow color", "vcMonoLineArrowColor", 
 	NrmNULLQUARK,NrmNULLQUARK,
 	_NgVECTORPLOT,_NgCONFIG,0,0,NULL,
 	False,False,NULL,GetVectorPlotValue,NULL,
-	&vf_sfdataarray,0,NULL,NULL,NULL,False,False };
+	&vf_sfdataarray,0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec vcvectorfielddata = {
 	"vector field object", "vcVectorFieldData", NrmNULLQUARK,NrmNULLQUARK,
 	_NgVECTORPLOT,_NgDATAOBJ,0,0,NULL,
 	False,False,NULL,NULL,VectorDataDefined,
-	&vfudataarray,0,NULL,NULL,NULL,False,False };
+	&vfudataarray,0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec vcscalarfielddata = {
 	"scalar field object", "vcScalarFieldData", NrmNULLQUARK,NrmNULLQUARK,
 	_NgVECTORPLOT,_NgDATAOBJ,0,0,NULL,
 	False,False,NULL,NULL,ScalarDataDefined,
-	&vf_sfdataarray,0,NULL,NULL,NULL,False,False };
+	&vf_sfdataarray,0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec stvectorfielddata = {
 	"vector field object", "stVectorFieldData", NrmNULLQUARK,NrmNULLQUARK,
 	_NgSTREAMLINEPLOT,_NgDATAOBJ,0,0,NULL,
 	False,False,NULL,NULL,VectorDataDefined,
-	&vfudataarray,0,NULL,NULL,NULL,False,False };
+	&vfudataarray,0,NULL,NULL,NULL,False,False,False };
 
 static NgDataItem VectorFieldItems[] = {
 	&vfudataarray,&vfvdataarray,&vfxarray,&vfyarray,
@@ -549,36 +554,37 @@ static NgDataItem StreamlinePlot0Items[] = { &stvectorfielddata };
 static NgDataItemRec cayarray = {
 	"y array", "caYArray", NrmNULLQUARK,NrmNULLQUARK,
 	_NgCOORDARRAY,_NgDATAVAR,2,1,(NhlPointer)1,
-	False,True,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,False,False };
+	False,True,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec caxarray = {
 	"x array", "caXArray", NrmNULLQUARK,NrmNULLQUARK,
 	_NgCOORDARRAY,_NgDATAVAR,2,1,(NhlPointer)1,
-	False,True,NULL,NULL,NULL,&cayarray,0,NULL,NULL,NULL,False,False };
+	False,True,NULL,NULL,NULL,&cayarray,
+	0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec caymissingv = {
 	"y missing value", "caYMissingV", NrmNULLQUARK,NrmNULLQUARK,
 	_NgCOORDARRAY,_NgMISSINGVAL,0,0,NULL,
 	False,False,NULL,GetFillValue,NULL,&cayarray,
-	0,NULL,NULL,NULL,False,False };
+	0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec caxmissingv = {
 	"x missing value", "caXMissingV", NrmNULLQUARK,NrmNULLQUARK,
 	_NgCOORDARRAY,_NgMISSINGVAL,0,0,NULL,
 	False,False,NULL,GetFillValue,NULL,&caxarray,
-	0,NULL,NULL,NULL,False,False };
+	0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec caycast = {
 	"y array type", "caYCast", NrmNULLQUARK,NrmNULLQUARK,
 	_NgCOORDARRAY,_NgCONFIG,0,0,NULL,
 	False,False,NULL,GetCoordArrayValue,NULL,
-	&cayarray,0,NULL,NULL,NULL,False,False };
+	&cayarray,0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec caxcast = {
 	"x array type", "caXCast", NrmNULLQUARK,NrmNULLQUARK,
 	_NgCOORDARRAY,_NgCONFIG,0,0,NULL,
 	False,False,NULL,GetCoordArrayValue,NULL,
-	&caxarray ,0,NULL,NULL,NULL,False,False };
+	&caxarray ,0,NULL,NULL,NULL,False,False,False };
 static NgDataItemRec xycoorddata = {
 	"coord arrays object", "xyCoordData", NrmNULLQUARK,NrmNULLQUARK,
 	_NgXYPLOT,_NgDATAOBJ,0,0,NULL,
 	False,False,NULL,NULL,CoordArrayDataDefined,
-	&cayarray,0,NULL,NULL,NULL,False,False };
+	&cayarray,0,NULL,NULL,NULL,False,False,False };
 
 static NgDataItem CoordArrayItems[] = {
 	&cayarray,&caxarray,&caymissingv,&caxmissingv,&caycast,&caxcast
@@ -1355,7 +1361,8 @@ NgDataItem NgNewDataItem
 	NhlBoolean	required,
 	NhlBoolean	visible,
 	NhlBoolean	set_only,
-	NhlBoolean	save_to_compare
+	NhlBoolean	save_to_compare,
+	NhlBoolean	init_only
 )
 {
 	NgDataItem ditem = NhlMalloc(sizeof(NgDataItemRec));
@@ -1380,6 +1387,7 @@ NgDataItem NgNewDataItem
 	ditem->vdata = vdata;
 	ditem->set_only = set_only;
 	ditem->save_to_compare = save_to_compare;
+	ditem->init_only = init_only;
 	ditem->get_val = NULL;
 	ditem->val_defined = NULL;
 	ditem->ref_ditem = NULL;

@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.22 1999-09-30 21:42:33 dbrown Exp $
+ *      $Id: xwk.c,v 1.23 1999-10-18 22:12:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -149,21 +149,33 @@ ColorWPCB
 	NgXWk		xwk = (NgXWk)udata.ptrval;
 	int		browse = NhlDEFAULT_APP;
 	NgXWkPart	*xp;
+ 	NgHluData 	hdata;
+	NgWksObj	wkobj;
 
 	xp = &xwk->xwk;
+	xp->color_cb_pending = False;
+	hdata = (NgHluData) xp->xwork->base.gui_data2;
+	wkobj = hdata ? (NgWksObj) hdata->gdata : NULL;
+
+	if (wkobj) {
+		wkobj->colormap_cb_pending = False;
+	}
+
 	if (xp->ignore_color_cb)
 		return;
 
-	if (xp->mapped) {
-
-		NgAppEnumerateGO(xwk->go.appmgr,GetBrowser,&browse);
-
-		if (browse != NhlDEFAULT_APP) {
-			xp->ignore_color_cb = True;
-			NgUpdatePages(browse,True,xp->xwork->base.id);
-			xp->ignore_color_cb = False;
-		}
+	if (!xp->mapped) {
+		return;
 	}
+	
+	NgAppEnumerateGO(xwk->go.appmgr,GetBrowser,&browse);
+
+	if (browse != NhlDEFAULT_APP) {
+		xp->ignore_color_cb = True;
+		NgUpdatePages(browse,True,xp->xwork->base.id);
+		xp->ignore_color_cb = False;
+	}
+
 }
 
 static void
@@ -283,10 +295,43 @@ static NhlBoolean TestColorWPCB(
 
 	NgXWk		xwk = (NgXWk)udata.ptrval;
 	NgXWkPart	*xp;
+ 	NgHluData 	hdata;
+	NgWksObj	wkobj;
+	NhlGenArray	colormap;
+
 
 	xp = &xwk->xwk;
-	if (xp->ignore_color_cb)
+	NhlVAGetValues(xp->xwork->base.id,
+		       NhlNwkColorMap,&colormap,
+		       NULL);
+
+	if (xp->ignore_color_cb || xp->color_cb_pending) {
+		if (xp->last_colormap)
+			NhlFreeGenArray(xp->last_colormap);
+		xp->last_colormap = colormap;
 		return False;
+	}
+
+	if (xp->last_colormap) {
+		if (colormap->num_elements == xp->last_colormap->num_elements &
+		    ! memcmp(colormap->data,xp->last_colormap->data,
+			     colormap->num_elements * sizeof(float))) {
+			NhlFreeGenArray(colormap);
+			return False;
+		}
+		else {
+			NhlFreeGenArray(xp->last_colormap);
+		}
+	}
+	xp->last_colormap = colormap;
+
+	xp->color_cb_pending = True;
+	hdata = (NgHluData) xp->xwork->base.gui_data2;
+	wkobj = hdata ? (NgWksObj) hdata->gdata : NULL;
+
+	if (wkobj) {
+		wkobj->colormap_cb_pending = True;
+	}
 	return True;
 }
 
@@ -398,6 +443,7 @@ NgXWorkPreOpenCB
 	/* only fill in the wrapper id at this point */
 	wko->wks_wrap_id = xwkid;
 	wko->auto_refresh = True;
+	wko->colormap_cb_pending = False;
 	hdata->gdata = (NhlPointer) wko;
 	
 	wk->base.gui_data2 = (NhlPointer) hdata;
@@ -572,6 +618,8 @@ XWkInitialize
 	np->xor_gc = NULL;
 	np->graphics = NULL;
 	np->ignore_color_cb = False;
+	np->color_cb_pending = False;
+	np->last_colormap = NULL;
 	memset(np->xor_box,0,sizeof(XPoint)*5);
 
 	/*
@@ -647,7 +695,8 @@ MapGraphicsEH
 	else if (event->xunmap.window != XtWindow(widget))
 		return;
 
-	xwk->xwk.mapped = (event->type == MapNotify);
+	if (event->type == MapNotify)
+		xwk->xwk.mapped = True; /* once true always true */
 #if DEBUG_XWK
 	fprintf(stderr,"EH mapped = %d\n",xwk->xwk.mapped);
 #endif
