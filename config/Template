@@ -4,8 +4,8 @@
 #endif
 
 #if defined(AIX) && defined(RS6000)
-#define SystemIncludes		"RS6000"
-#define SystemIncludesName	RS6000
+#define SystemIncludes		"AIX_RS6000"
+#define SystemIncludesName	AIX_RS6000
 #endif
 
 #if defined(u370) && defined(unix)
@@ -70,7 +70,7 @@
 #define SystemIncludesName	Cray2
 #endif
 
-#if defined(UNICOS) && defined(Y_MP)
+#if defined(UNICOS) && defined(YMP)
 #define SystemIncludes          "Cray"
 #define SystemIncludesName      Cray
 #endif
