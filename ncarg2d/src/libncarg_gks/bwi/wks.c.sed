@@ -1,9 +1,9 @@
 /*
- *      $Id: wks.c.sed,v 1.2 1992-04-21 17:58:51 ncargd Exp $
+ *      $Id: wks.c.sed,v 1.3 1992-05-13 16:41:09 ncargd Exp $
  */
 /***********************************************************************
 *                                                                      *
-*		NCAR Graphics - UNIX Version 3.1.2                     *
+*		NCAR Graphics - UNIX Version 3.1.3b                    *
 *		Copyright (C) 1987, 1988, 1989, 1991                   *
 *		University Corporation for Atmospheric Research        *
 *		All Rights Reserved                                    *
@@ -225,7 +225,7 @@ opnwks_(unit, fname, status)
 	A stream is attached to the file and a buffer allocated
 	of the size constant BUFSIZ from stdio.h or from
 	the user-defined environment variable NCARG_GKS_BUFSIZE,
-	which specifies the number of 1024byte blocks to
+	which specifies the number of 1024-byte blocks to
 	use for I/O.
 
 	If GKS output is a process, it is assumed to be
@@ -251,7 +251,7 @@ opnwks_(unit, fname, status)
 		if ( fork() == 0 )
 #else
 		if ( vfork() == 0 )
-#endif CRAY
+#endif
 		{
 			(void) close(pipes[1]);
 			(void) close(0); 
@@ -330,8 +330,18 @@ opnwks_(unit, fname, status)
 		(void)fprintf(stderr,"Using stream bufsize    = %d\n", bufsize);
 		(void)fprintf(stderr,"Streams default bufsize = %d\n", BUFSIZ);
 #endif DEBUG
+		/*
+		If a stream buffer has never been allocated for this
+		LU, then allocate one. Otherwise, just reuse what's
+		already there. This is done instead of just free'ing
+		the buffer when the LU is closed because this approach
+		doesn't work on the Cray (reasons unknown).
+		*/
 
-		mftab[*unit].buf = (char *) malloc( (unsigned) bufsize );
+		if (mftab[*unit].buf == (char *) NULL) {
+			mftab[*unit].buf = (char *)malloc( (unsigned) bufsize );
+		}
+
 		if ( mftab[*unit].buf == (char *) NULL) {
 			(void) fclose(mftab[*unit].fp);
 			(void) fprintf(stderr,
@@ -423,9 +433,14 @@ clswks_(unit, status)
 			(void) wait(&child_status);
 		}
 
+		/*
+		Close the LU. Dynamically allocated memory is not
+		freed because it causes a problem on Crays. The memory
+		pointer is left for the next use of the LU.
+		*/
+
 		mftab[*unit].fp   = MF_CLOSED;
 		mftab[*unit].type = NO_OUTPUT;
-		mftab[*unit].buf  = (char *) NULL;
 	}
 	return(0);
 }
