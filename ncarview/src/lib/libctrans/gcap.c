@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.36 1993-04-27 20:32:41 clyne Exp $
+ *	$Id: gcap.c,v 1.37 1993-04-29 22:33:12 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -508,6 +508,8 @@ CGMC *c;
 	Ptype	z;		/* the fourth corner		*/
 	int	i,j;
 	int	nx,ny;
+	double	x0, y0, x1, y1, x2, y2, x3, y3;
+	double	px, py;
 
 	Ptype	coord_buf[4];
 	long	coord_buf_num;
@@ -548,20 +550,22 @@ CGMC *c;
 		delta_q_y = delta_z_y;
 	}
 	
+	px = (double) p.x;
+	py = (double) p.y;
 
 	for(i=0, cgmc_index=0; i<ny; i++) {
 
 		/*
 		 * the coords of the first cell in row i
 		 */
-		coord_buf[0].x = (int) p.x;
-		coord_buf[0].y = (int) p.y;
-		coord_buf[1].x = (int) p.x + delta_r_x;
-		coord_buf[1].y = (int) p.y + delta_r_y;
-		coord_buf[2].x = (int) p.x + delta_q_x;
-		coord_buf[2].y = (int) p.y + delta_q_y;
-		coord_buf[3].x = (int) p.x + delta_z_x;
-		coord_buf[3].y = (int) p.y + delta_z_y;
+		x0 = px;
+		y0 = py;
+		x1 = px + delta_r_x;
+		y1 = py + delta_r_y;
+		x2 = px + delta_q_x;
+		y2 = py + delta_q_y;
+		x3 = px + delta_z_x;
+		y3 = py + delta_z_y;
 
 		for(j=0;j<nx;j++) {
 
@@ -588,25 +592,36 @@ CGMC *c;
 			gcap_fillcolour(color_index);
 				
 
+			/*
+			 * convert back to ints
+			 */
+			coord_buf[0].x = (int) x0;
+			coord_buf[0].y = (int) y0;
+			coord_buf[1].x = (int) x1;
+			coord_buf[1].y = (int) y1;
+			coord_buf[2].x = (int) x2;
+			coord_buf[2].y = (int) y2;
+			coord_buf[3].x = (int) x3;
+			coord_buf[3].y = (int) y3;
 			coord_buf_num = 4;	/* need to reset each time */
 			gcap_pointflush(coord_buf, &coord_buf_num,TRUE,FALSE);
 
 			/*
 			 * move to the next cell
 			 */
-			coord_buf[0].x = coord_buf[1].x;
-			coord_buf[0].y = coord_buf[1].y;
-			coord_buf[3].x = coord_buf[2].x;
-			coord_buf[3].y = coord_buf[2].y;
-			coord_buf[1].x = coord_buf[0].x + delta_r_x;
-			coord_buf[1].y = coord_buf[0].y + delta_r_y;
-			coord_buf[2].x = coord_buf[0].x + delta_q_x;
-			coord_buf[2].y = coord_buf[0].y + delta_q_y;
+			x0 = x1;
+			y0 = y1;
+			x3 = x2;
+			y3 = y2;
+			x1 = x0 + delta_r_x;
+			y1 = y0 + delta_r_y;
+			x2 = x0 + delta_q_x;
+			y2 = y0 + delta_q_y;
 
 		}
 
-		p.x = p.x + delta_z_x;
-		p.y = p.y + delta_z_y;
+		px = px + delta_z_x;
+		py = py + delta_z_y;
 	}
 
 	return (0);
