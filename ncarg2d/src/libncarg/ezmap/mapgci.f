@@ -1,5 +1,5 @@
 C
-C $Id: mapgci.f,v 1.4 1994-03-16 23:51:27 kennison Exp $
+C $Id: mapgci.f,v 1.5 1994-03-18 23:49:58 kennison Exp $
 C
       SUBROUTINE MAPGCI (ALAT,ALON,BLAT,BLON,NOPI,RLTI,RLNI)
 C
@@ -42,6 +42,8 @@ C
 C A positive value of "a" represents rotation in the direction from the
 C U axis to the V axis.
 C
+      COMMON /MAPCMB/ IIER
+      SAVE /MAPCMB/
 C
 C Define the constants used to convert from degrees to radians and
 C vice-versa.
@@ -51,7 +53,10 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPGCI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+      IF (ICFELL('MAPGCI - UNCLEARED PRIOR ERROR',1).NE.0) THEN
+        IIER=-1
+        RETURN
+      END IF
 C
 C Compute the U, V, and W coordinates (on a unit sphere) of the points
 C A and B.

@@ -1,5 +1,5 @@
 C
-C $Id: mapset.f,v 1.5 1994-03-16 23:52:05 kennison Exp $
+C $Id: mapset.f,v 1.6 1994-03-18 23:50:35 kennison Exp $
 C
       SUBROUTINE MAPSET (ARG1,ARG2,ARG3,ARG4,ARG5)
 C
@@ -22,7 +22,10 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPSET - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+      IF (ICFELL('MAPSET - UNCLEARED PRIOR ERROR',1).NE.0) THEN
+        IIER=-1
+        RETURN
+      END IF
 C
 C Transfer the parameters defining the map limits.
 C

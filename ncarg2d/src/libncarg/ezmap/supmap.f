@@ -1,5 +1,5 @@
 C
-C $Id: supmap.f,v 1.5 1994-03-16 23:52:47 kennison Exp $
+C $Id: supmap.f,v 1.6 1994-03-18 23:51:17 kennison Exp $
 C
       SUBROUTINE SUPMAP (JPRJ,PLAT,PLON,ROTA,PLM1,PLM2,PLM3,PLM4,JLTS,
      +                   JGRD,IOUT,IDOT,IERR)
@@ -22,7 +22,10 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('SUPMAP - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+      IF (ICFELL('SUPMAP - UNCLEARED PRIOR ERROR',1).NE.0) THEN
+        IIER=-1
+        RETURN
+      END IF
 C
 C Set EZMAP's grid-spacing parameter.
 C

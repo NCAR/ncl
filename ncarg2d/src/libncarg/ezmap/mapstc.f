@@ -1,5 +1,5 @@
 C
-C $Id: mapstc.f,v 1.5 1994-03-16 23:52:07 kennison Exp $
+C $Id: mapstc.f,v 1.6 1994-03-18 23:50:37 kennison Exp $
 C
       SUBROUTINE MAPSTC (WHCH,CVAL)
 C
@@ -22,7 +22,10 @@ C
       COMMON /MAPCMB/ IIER
       SAVE /MAPCMB/
 C
-      IF (ICFELL('MAPSTC - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+      IF (ICFELL('MAPSTC - UNCLEARED PRIOR ERROR',1).NE.0) THEN
+        IIER=-1
+        RETURN
+      END IF
       IF (WHCH(1:2).EQ.'OU'.OR.WHCH(1:2).EQ.'ou') THEN
         I=IDICTL(CVAL,DDCT,5)
         IF (I.EQ.0) I=IDICTL(CVAL,DDCL,5)

@@ -1,5 +1,5 @@
 C
-C $Id: mapgtl.f,v 1.5 1994-03-16 23:51:35 kennison Exp $
+C $Id: mapgtl.f,v 1.6 1994-03-18 23:50:05 kennison Exp $
 C
       SUBROUTINE MAPGTL (WHCH,LVAL)
 C
@@ -17,7 +17,10 @@ C
       COMMON /MAPCMB/ IIER
       SAVE /MAPCMB/
 C
-      IF (ICFELL('MAPGTL - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+      IF (ICFELL('MAPGTL - UNCLEARED PRIOR ERROR',1).NE.0) THEN
+        IIER=-1
+        RETURN
+      END IF
       IF      (WHCH(1:2).EQ.'DL'.OR.WHCH(1:2).EQ.'dl') THEN
         LVAL=IDTL.NE.0
       ELSE IF (WHCH(1:2).EQ.'DO'.OR.WHCH(1:2).EQ.'do') THEN

@@ -1,5 +1,5 @@
 C
-C $Id: mapstr.f,v 1.5 1994-03-16 23:52:12 kennison Exp $
+C $Id: mapstr.f,v 1.6 1994-03-18 23:50:43 kennison Exp $
 C
       SUBROUTINE MAPSTR (WHCH,RVAL)
 C
@@ -28,7 +28,10 @@ C
       DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
       SAVE /MAPDPS/
 C
-      IF (ICFELL('MAPSTR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+      IF (ICFELL('MAPSTR - UNCLEARED PRIOR ERROR',1).NE.0) THEN
+        IIER=-1
+        RETURN
+      END IF
       IF      (WHCH(1:2).EQ.'DD'.OR.WHCH(1:2).EQ.'dd') THEN
         DDTS=RVAL
         DBTD=DDTS/DSCA

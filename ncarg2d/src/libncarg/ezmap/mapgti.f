@@ -1,5 +1,5 @@
 C
-C $Id: mapgti.f,v 1.5 1994-03-16 23:51:33 kennison Exp $
+C $Id: mapgti.f,v 1.6 1994-03-18 23:50:04 kennison Exp $
 C
       SUBROUTINE MAPGTI (WHCH,IVAL)
 C
@@ -27,7 +27,10 @@ C
       DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
       SAVE /MAPDPS/
 C
-      IF (ICFELL('MAPGTI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+      IF (ICFELL('MAPGTI - UNCLEARED PRIOR ERROR',1).NE.0) THEN
+        IIER=-1
+        RETURN
+      END IF
       IF      (WHCH(1:2).EQ.'C1'.OR.WHCH(1:2).EQ.'c1') THEN
         IVAL=ICIN(1)
       ELSE IF (WHCH(1:2).EQ.'C2'.OR.WHCH(1:2).EQ.'c2') THEN

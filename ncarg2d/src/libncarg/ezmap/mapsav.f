@@ -1,5 +1,5 @@
 C
-C $Id: mapsav.f,v 1.3 1994-03-16 23:52:03 kennison Exp $
+C $Id: mapsav.f,v 1.4 1994-03-18 23:50:33 kennison Exp $
 C
       SUBROUTINE MAPSAV (IFNO)
 C
@@ -30,7 +30,10 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPSAV - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+      IF (ICFELL('MAPSAV - UNCLEARED PRIOR ERROR',1).NE.0) THEN
+        IIER=-1
+        RETURN
+      END IF
 C
 C Write a record containing all the user-settable parameters.
 C

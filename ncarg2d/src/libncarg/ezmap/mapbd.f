@@ -1,5 +1,5 @@
 C
-C $Id: mapbd.f,v 1.5 1994-03-16 23:51:16 kennison Exp $
+C $Id: mapbd.f,v 1.6 1994-03-18 23:49:46 kennison Exp $
 C
       BLOCK DATA MAPBD
 C

@@ -1,5 +1,5 @@
 C
-C $Id: maproj.f,v 1.5 1994-03-16 23:51:57 kennison Exp $
+C $Id: maproj.f,v 1.6 1994-03-18 23:50:27 kennison Exp $
 C
       SUBROUTINE MAPROJ (ARG1,ARG2,ARG3,ARG4)
 C
@@ -26,7 +26,10 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPROJ - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+      IF (ICFELL('MAPROJ - UNCLEARED PRIOR ERROR',1).NE.0) THEN
+        IIER=-1
+        RETURN
+      END IF
 C
 C Transfer the parameters defining the projection.
 C

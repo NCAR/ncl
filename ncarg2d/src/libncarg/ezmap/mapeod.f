@@ -1,5 +1,5 @@
 C
-C $Id: mapeod.f,v 1.3 1994-03-16 23:51:24 kennison Exp $
+C $Id: mapeod.f,v 1.4 1994-03-18 23:49:54 kennison Exp $
 C
       SUBROUTINE MAPEOD (NOUT,NSEG,IDLS,IDRS,NPTS,PNTS)
       DIMENSION PNTS(*)

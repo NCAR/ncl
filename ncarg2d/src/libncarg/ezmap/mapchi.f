@@ -1,5 +1,5 @@
 C
-C $Id: mapchi.f,v 1.3 1994-03-16 23:51:19 kennison Exp $
+C $Id: mapchi.f,v 1.4 1994-03-18 23:49:50 kennison Exp $
 C
       SUBROUTINE MAPCHI (IPRT,IDTG,IDPT)
 C

@@ -1,5 +1,5 @@
 C
-C $Id: mapiq.f,v 1.3 1994-03-16 23:51:45 kennison Exp $
+C $Id: mapiq.f,v 1.4 1994-03-18 23:50:15 kennison Exp $
 C
       SUBROUTINE MAPIQ
 C
@@ -13,7 +13,10 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPIQ - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+      IF (ICFELL('MAPIQ - UNCLEARED PRIOR ERROR',1).NE.0) THEN
+        IIER=-1
+        RETURN
+      END IF
 C
 C Flush the points buffer.
 C

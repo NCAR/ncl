@@ -1,5 +1,5 @@
 C
-C $Id: maprs.f,v 1.3 1994-03-16 23:51:59 kennison Exp $
+C $Id: maprs.f,v 1.4 1994-03-18 23:50:29 kennison Exp $
 C
       SUBROUTINE MAPRS
 C
@@ -16,7 +16,10 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPRS - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+      IF (ICFELL('MAPRS - UNCLEARED PRIOR ERROR',1).NE.0) THEN
+        IIER=-1
+        RETURN
+      END IF
 C
 C Restore the SET call.
 C

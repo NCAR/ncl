@@ -1,5 +1,5 @@
 C
-C $Id: mapio.f,v 1.6 1994-03-16 23:51:43 kennison Exp $
+C $Id: mapio.f,v 1.7 1994-03-18 23:50:14 kennison Exp $
 C
       SUBROUTINE MAPIO (IACT)
 C

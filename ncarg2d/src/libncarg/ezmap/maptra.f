@@ -1,5 +1,5 @@
 C
-C $Id: maptra.f,v 1.3 1994-03-16 23:52:14 kennison Exp $
+C $Id: maptra.f,v 1.4 1994-03-18 23:50:44 kennison Exp $
 C
       SUBROUTINE MAPTRA (RLAT,RLON,UVAL,VVAL)
 C
@@ -9,10 +9,15 @@ C
       COMMON /MAPCM6/ ELPM,UMNM,UMXM,VMNM,VMXM,UCNM,VCNM,URNM,VRNM
       LOGICAL ELPM
       SAVE /MAPCM6/
+      COMMON /MAPCMB/ IIER
+      SAVE /MAPCMB/
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPTRA - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+      IF (ICFELL('MAPTRA - UNCLEARED PRIOR ERROR',1).NE.0) THEN
+        IIER=-1
+        RETURN
+      END IF
 C
 C The call to MAPTRA is simply passed on to MAPTRN, but the values
 C returned are checked to see if the point lies outside the perimeter;

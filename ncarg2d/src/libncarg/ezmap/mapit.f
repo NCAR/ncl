@@ -1,5 +1,5 @@
 C
-C $Id: mapit.f,v 1.3 1994-03-16 23:51:47 kennison Exp $
+C $Id: mapit.f,v 1.4 1994-03-18 23:50:17 kennison Exp $
 C
       SUBROUTINE MAPIT (XLAT,XLON,IFST)
 C
@@ -41,7 +41,10 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPIT - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+      IF (ICFELL('MAPIT - UNCLEARED PRIOR ERROR',1).NE.0) THEN
+        IIER=-1
+        RETURN
+      END IF
 C
 C Initialize the variables that control interpolation.
 C

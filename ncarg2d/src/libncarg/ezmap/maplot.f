@@ -1,5 +1,5 @@
 C
-C $Id: maplot.f,v 1.3 1994-03-16 23:51:53 kennison Exp $
+C $Id: maplot.f,v 1.4 1994-03-18 23:50:24 kennison Exp $
 C
       SUBROUTINE MAPLOT
 C
@@ -26,7 +26,10 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('MAPLOT - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+      IF (ICFELL('MAPLOT - UNCLEARED PRIOR ERROR',1).NE.0) THEN
+        IIER=-1
+        RETURN
+      END IF
 C
 C If EZMAP needs initialization or if an error has occurred since the
 C last initialization, do nothing.
