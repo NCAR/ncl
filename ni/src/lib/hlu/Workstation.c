@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.27 1995-03-03 20:14:59 dbrown Exp $
+ *      $Id: Workstation.c,v 1.28 1995-03-03 20:25:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3050,7 +3050,8 @@ int _NhlIsAllocatedColor
 	char *e_text;
 
 	if (_NhlIsWorkstation(wk)) {
-		if (ci < 0 || ci >= MAX_COLOR_MAP) return False;
+		if (ci < NhlTRANSPARENT || ci >= MAX_COLOR_MAP) return False;
+		if (ci == NhlTRANSPARENT) return True;
 		return wk->work.private_color_map[ci].ci >= 0 ? True : False;
 	}
 
