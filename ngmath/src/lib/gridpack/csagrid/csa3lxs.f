@@ -10,10 +10,6 @@ C
 C  Check on the number of knots.
 C
       NTOT = KNOTS(1)*KNOTS(2)*KNOTS(3)
-      IF (NTOT .GT. NI) THEN
-        CALL CFAERR (201,' CSA3LXS - cannot have more knots than input d
-     +ata points',56)
-      ENDIF
 C
       DO 20 I=1,3
         IF (KNOTS(I) .LT. 4) THEN

@@ -4,14 +4,7 @@ C
      +          UO(NO),WORK(NWRK),NDERIV(2)
       DATA NDERIV/0,0/
 C
-C  Check on the number of knots.
-C
       NTOT = KNOTS(1)*KNOTS(2)
-      IF (NTOT .GT. NI) THEN
-        CALL CFAERR (201,' CSA2LS - cannot have more knots than input da
-     +ta points',55)
-      ENDIF
-C
       DO 20 I=1,2
         IF (KNOTS(I) .LT. 4) THEN
           CALL CFAERR (202,' CSA2LS - must have at least four knots in e

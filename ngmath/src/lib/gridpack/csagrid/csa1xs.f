@@ -5,10 +5,7 @@ C
 C
 C  Check on the number of knots.
 C
-      IF (KNOTS .GT. NI) THEN
-        CALL CFAERR (201,' CSA1S - cannot have more knots than input dat
-     +a points',54)
-      ELSE IF (KNOTS .LT. 4) THEN
+      IF (KNOTS .LT. 4) THEN
         CALL CFAERR (202,' CSA1S - must have at least four knots',38)       
       ENDIF
 C
