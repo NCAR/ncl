@@ -1,5 +1,5 @@
 /*
- *      $Id: ngi.c,v 1.1 1996-10-10 18:55:51 boote Exp $
+ *      $Id: ngi.c,v 1.2 1996-10-16 16:19:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +26,7 @@
 #include <Xm/VendorSP.h>
 
 #include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/App.h>
+#include <ncarg/hlu/AppI.h>
 
 #include <ncarg/ngo/xapp.h>
 #include <ncarg/ngo/nclstate.h>
@@ -36,18 +36,17 @@
  * commandline and fallbacks need to be added to the app object in the
  * hlu library.
  */
-#if	NOT
-
-static String fallback[] = {
-	"ngi.version:		NOTFOUND",
+static NhlString resdb[] = {
+#ifndef	DEBUG
+#include "ngi.res.h"
+#endif
 	NULL
 };
 
-static XrmOptionDescRec clineopts[] = {
-	{"-noopt","*noopt",XrmoptionSepArg,NULL}
+static NrmOptionDescRec clineopts[] = {
+	{"-noopt","*noopt",NrmoptionSepArg,NULL},
+	NULL
 };
-
-#endif
 
 void
 main
@@ -65,14 +64,18 @@ main
 	int		appid,nxapp,ncl,ne;
 
 	NhlInitialize();
+
 	NhlVACreate(&appid,"ngi",NhlappClass,NhlDEFAULT_APP,
-#if	NOT
-		NgNappFallback,			fallback,
-		NgNappCommandLineOpts,		clineopts,
-		NgNappNumCommandLineOpts,	XtNumber(clineopts),
-#endif
+		_NhlNappResourceStrings,	resdb,
+		_NhlNappCommandLineOpts,	clineopts,
+		_NhlNappArgcInOut,		&argc,
+		_NhlNappArgvInOut,		argv,
 		NULL);
 
+	/*
+	 * This object initializes things in the hlu library so every
+	 * object created after it gets its id in the _NhlNguiData.
+	 */
 	NhlVACreate(&nxapp,"ngi",NgxappMgrClass,appid,
 		NgNappName,			"ngi",
 		NgNappClass,			"Ngi",
@@ -80,24 +83,17 @@ main
 		NgNxappArgv,			argv,
 		NULL);
 
+	/*
+	 * This object assigns a field in the nxapp object to
+	 * its id, so every object has access to it as well.
+	 */
 	NhlVACreate(&ncl,"nclstate",NgnclStateClass,appid,
-		NgNAppMgr,	nxapp,
 		NULL);
 
 	NhlVACreate(&ne,"ncledit",NgnclEditClass,appid,
-		NgNAppMgr,	nxapp,
-		NgNNclState,	ncl,
 		NULL);
 
 	NgGOPopup(ne);
-#if	NOT
-	NhlVACreate(&ne,"ncledit",NgnclEditClass,appid,
-		NgNAppMgr,	nxapp,
-		NgNNclState,	ncl,
-		NULL);
-
-	NgGOPopup(ne);
-#endif
 
 	/*
 	 * Now create the main window object.

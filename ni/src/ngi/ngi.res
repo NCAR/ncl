@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.1 1996-10-10 18:55:51 boote Exp $
+!      $Id: ngi.res,v 1.2 1996-10-16 16:19:07 boote Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -40,11 +40,14 @@ NgNGO*XmFrame*XmLabel.FontList:	-*-helvetica-medium-r-normal-*-*-120-*-*-*-*-iso
 		Meta ~Ctrl<Key>W:	closeWindow()		\n\
 		 Alt ~Ctrl<Key>W:	closeWindow()		\n\
 		Meta ~Ctrl<Key>Q:	quitApplication()	\n\
-		 Alt ~Ctrl<Key>Q:	quitApplication()
+		 Alt ~Ctrl<Key>Q:	quitApplication()	\n\
+		Meta ~Ctrl<Key>L:	loadScript()		\n\
+		 Alt ~Ctrl<Key>L:	loadScript()
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! NCL EDITOR			!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 ncledit*nclcmd.translations:	#override				\
 	<Select>:		activate()				\n\
@@ -81,17 +84,18 @@ ncledit*pane.rightOffset:		0
 ncledit*pane.bottomOffset:		0
 ncledit*pane.marginHeight:		0
 
-ncleidt*slabel.topOffset:		0
 ncledit*slabel.bottomAttachment:	ATTACH_NONE
 
 ncledit*sform*bottomOffset:		10
 ncledit*sform*bottomOffset:		10
 ncledit*scroll*topOffset:		10
 
-ncledit*holabel.bottomAttachment:	ATTACH_NONE
-ncledit*vlabel.bottomAttachment:	ATTACH_NONE
-ncledit*flabel.bottomAttachment:	ATTACH_NONE
-ncledit*fulabel.bottomAttachment:	ATTACH_NONE
+ncledit*hoframe.rightPosition:		23
+ncledit*vframe.leftPosition:		23
+ncledit*vframe.rightPosition:		46
+ncledit*fframe.leftPosition:		46
+ncledit*fframe.rightPosition:		69
+ncledit*fuframe.leftPosition:		69
 
 ncledit*reset.topAttachment:		ATTACH_NONE
 ncledit*reset.rightAttachment:		ATTACH_NONE
@@ -119,12 +123,16 @@ ncledit*nclcmd.rows:			15
 *menubar.help.mnemonic:			H
 *menubar.help.sensitive:		False
 
+*fmenu.loadScript.labelString:		Load
+*fmenu.loadScript.mnemonic:		L
+*fmenu.loadScript.acceleratorText:	Alt+L
+
 *fmenu.closeWindow.labelString:		Close
 *fmenu.closeWindow.mnemonic:		C
 *fmenu.closeWindow.acceleratorText:	Alt+W
 
-*fmenu.quitApplication.labelString:	Quit
-*fmenu.quitApplication.mnemonic:	Q
+*fmenu.quitApplication.labelString:	Exit
+*fmenu.quitApplication.mnemonic:	x
 *fmenu.quitApplication.acceleratorText:	Alt+Q
 
 ! titles/labels and such
