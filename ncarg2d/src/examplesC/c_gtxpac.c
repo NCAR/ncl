@@ -54,7 +54,7 @@ main()
  *  Select Triplex Roman font.
  */
     tfp.font = -13;
-    tfp.prec = 2;
+    tfp.prec = GPREC_STROKE;
     gset_text_font_prec(&tfp);
 /*
  *  Text path = right, color = yellow
@@ -62,10 +62,10 @@ main()
     x = .2;
     y = .7;
     gset_char_ht(.04);
-    gset_text_path(0);
+    gset_text_path(GPATH_RIGHT);
     gset_text_colr_ind(4);
-    text_align.hor = 1;
-    text_align.vert = 3;
+    text_align.hor = GHOR_LEFT;
+    text_align.vert = GVERT_HALF;
     gset_text_align(&text_align);
     pos.x = x;
     pos.y = y;
@@ -77,10 +77,10 @@ main()
     x = .80;
     y = .115;
     gset_char_ht(.04);
-    gset_text_path(1);
+    gset_text_path(GPATH_LEFT);
     gset_text_colr_ind(2);
-    text_align.hor = 3;
-    text_align.vert = 3;
+    text_align.hor = GHOR_RIGHT;
+    text_align.vert = GVERT_HALF;
     gset_text_align(&text_align);
     pos.x = x;
     pos.y = y;
@@ -92,10 +92,10 @@ main()
     x = .22;
     y = .62;
     gset_char_ht(.025);
-    gset_text_path(3);
+    gset_text_path(GPATH_DOWN);
     gset_text_colr_ind(5);
-    text_align.hor = 2;
-    text_align.vert = 1;
+    text_align.hor = GHOR_CTR;
+    text_align.vert = GVERT_TOP;
     gset_text_align(&text_align);
     pos.x = x;
     pos.y = y;
@@ -107,10 +107,10 @@ main()
     x = .79;
     y = .18;
     gset_char_ht(.03);
-    gset_text_path(2);
+    gset_text_path(GPATH_UP);
     gset_text_colr_ind(6);
-    text_align.hor = 2;
-    text_align.vert = 5;
+    text_align.hor = GHOR_CTR;
+    text_align.vert = GVERT_BOTTOM;
     gset_text_align(&text_align);
     pos.x = x;
     pos.y = y;
@@ -186,13 +186,13 @@ float x, y;
 /*
  * Set interior fill style and color
  */
-    gset_fill_int_style(1);
+    gset_fill_int_style(GSTYLE_SOLID);
     gset_fill_colr_ind(3);
 /*
  *  Malloc space for cross
  */
     area.num_points = ID;
-    area.points = (Gpoint *)malloc(ID*sizeof(Gpoint));
+    area.points = (Gpoint *)malloc(area.num_points*sizeof(Gpoint));
     if( !area.points ) {
         fprintf( stderr, "cross:  Not enough memory to create fill area arrays\n" );
         return;
@@ -208,5 +208,6 @@ float x, y;
 /*
  * Free up memory
  */
-    if( area.points != NULL ) free(area.points);
+    free(area.points);
+	return;
 }

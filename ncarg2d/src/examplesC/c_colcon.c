@@ -31,7 +31,7 @@ main()
  * open gks, and turn clipping off
  */
     c_opngks();
-    gset_clip_ind(0);
+    gset_clip_ind(GIND_NO_CLIP);
 /*
  * call conpack color fill routine
  */
@@ -68,7 +68,7 @@ char *proj;
 /*
  * set color fill to solid
  */
-    gset_fill_int_style (1);
+    gset_fill_int_style (GSTYLE_SOLID);
 /* 
  * initialize areas
  */
@@ -144,7 +144,7 @@ int *n, *ngrps;
 {
     int i, j;
     int idmap, idcont;
-    Gpoint_list fill_area;
+    Gpoint_list area;
 
     idmap = -1;
     idcont = -1;
@@ -178,19 +178,19 @@ int *n, *ngrps;
 /*
  * set up struct for fill area
  */
-        fill_area.num_points = *n-1;
-        fill_area.points = (Gpoint *)calloc(*n-1,sizeof(Gpoint));
-        if( !fill_area.points ) {
-            fprintf( stderr, "fill:  Not enough memory to create fill area arrays\n" );
+        area.num_points = *n-1;
+        area.points = (Gpoint *)malloc(area.num_points*sizeof(Gpoint));
+        if( !area.points ) {
+            fprintf( stderr, "fill:  Not enough memory to create fill area array\n" );
             gemergency_close_gks();
             exit(1);
         }
         for( i = 0; i < *n-1; i++ ) {
-            fill_area.points[i].x = xwrk[i];
-            fill_area.points[i].y = ywrk[i];
+            area.points[i].x = xwrk[i];
+            area.points[i].y = ywrk[i];
         }
-        gfill_area(&fill_area);
-        free(fill_area.points);
+        gfill_area(&area);
+        free(area.points);
     }
     return(1);
 }
@@ -329,12 +329,12 @@ int n;
  * choose other foreground colors spaced equally around the spectrum
  */
     icnt=0;
-    hues=360./n;
+    hues=360./(float)n;
     for( i = 0; i < n; i++ ) {
         xhue=(i+1)*hues;
         c_hlsrgb(xhue,60.,75.,&rgb.rgb.red,&rgb.rgb.green,&rgb.rgb.blue);
         if (xhue<=36.0) {
-            gset_colr_rep(1,n+2-i,&rgb);
+            gset_colr_rep(1,n+4-i,&rgb);
             icnt=icnt+1;
         }
         else {

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_elblba.c,v 1.5 1993-07-19 21:50:11 haley Exp $
+ *	$Id: c_elblba.c,v 1.6 1993-10-29 19:50:52 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -37,19 +37,19 @@ main()
     int lnd1[20],lnd2[16],lnd3[4],lnd4[4],lnd5[4],lnd6[4];
     extern void dfclrs();
 
-    iasf.linetype = 1;
-    iasf.linewidth = 1;
-    iasf.line_colr_ind = 1;
-    iasf.marker_type = 1;
-    iasf.marker_size = 1;
-    iasf.marker_colr_ind = 1;
-    iasf.text_font_prec = 1;
-    iasf.char_expan = 1;
-    iasf.char_space = 1;
-    iasf.text_colr_ind = 1;
-    iasf.fill_int_style = 1;
-    iasf.fill_style_ind = 1;
-    iasf.fill_colr_ind = 1;
+    iasf.linetype = GASF_INDIV;
+    iasf.linewidth = GASF_INDIV;
+    iasf.line_colr_ind = GASF_INDIV;
+    iasf.marker_type = GASF_INDIV;
+    iasf.marker_size = GASF_INDIV;
+    iasf.marker_colr_ind = GASF_INDIV;
+    iasf.text_font_prec = GASF_INDIV;
+    iasf.char_expan = GASF_INDIV;
+    iasf.char_space = GASF_INDIV;
+    iasf.text_colr_ind = GASF_INDIV;
+    iasf.fill_int_style = GASF_INDIV;
+    iasf.fill_style_ind = GASF_INDIV;
+    iasf.fill_colr_ind = GASF_INDIV;
 
     for( i = 0; i < 20; i++ ) lnd1[i] = i+1;
     for( i = 0; i < 16; i++ ) lnd2[i] = i;
@@ -70,11 +70,11 @@ main()
 /*
  * Force solid fill.
  */
-    gset_fill_int_style(1);
+    gset_fill_int_style(GSTYLE_SOLID);
 /*
  * Turn off the clipping indicator.
  */
-    gset_clip_ind(0);
+    gset_clip_ind(GIND_NO_CLIP);
 /*
  * Define color indices.
  */
@@ -126,34 +126,33 @@ main()
 void dfclrs()
 {
     int i;
-    Gcolr_rep rgbv[16];
+    Gcolr_rep rgb[16];
 /*
  * Define a set of RGB color triples for colors 1 through 15.
  */
-    rgbv[2].rgb.red = 0.70; rgbv[2].rgb.green = 0.70; rgbv[2].rgb.blue = 0.70;
-    rgbv[3].rgb.red = 0.75; rgbv[3].rgb.green = 0.50; rgbv[3].rgb.blue = 1.00;
-    rgbv[4].rgb.red = 0.50; rgbv[4].rgb.green = 0.00; rgbv[4].rgb.blue = 1.00;
-    rgbv[5].rgb.red = 0.00; rgbv[5].rgb.green = 0.00; rgbv[5].rgb.blue = 1.00;
-    rgbv[6].rgb.red = 0.00; rgbv[6].rgb.green = 0.50; rgbv[6].rgb.blue = 1.00;
-    rgbv[7].rgb.red = 0.00; rgbv[7].rgb.green = 1.00; rgbv[7].rgb.blue = 1.00;
-    rgbv[8].rgb.red = 0.00; rgbv[8].rgb.green = 1.00; rgbv[8].rgb.blue = 0.60;
-    rgbv[9].rgb.red = 0.00; rgbv[9].rgb.green = 1.00; rgbv[9].rgb.blue = 0.00;
-    rgbv[10].rgb.red = 0.70; rgbv[10].rgb.green = 1.00; rgbv[10].rgb.blue = 0.00;
-    rgbv[11].rgb.red = 1.00; rgbv[11].rgb.green = 1.00; rgbv[11].rgb.blue = 0.00;
-    rgbv[12].rgb.red = 1.00; rgbv[12].rgb.green = 0.75; rgbv[12].rgb.blue = 0.00;
-    rgbv[13].rgb.red = 1.00; rgbv[13].rgb.green = 0.38; rgbv[13].rgb.blue = 0.38;
-    rgbv[14].rgb.red = 1.00; rgbv[14].rgb.green = 0.00; rgbv[14].rgb.blue = 0.38;
-    rgbv[15].rgb.red = 1.00; rgbv[15].rgb.green = 0.00; rgbv[15].rgb.blue = 0.00;
+    rgb[0].rgb.red = rgb[0].rgb.green = rgb[0].rgb.blue = 0.0;
+    rgb[1].rgb.red = rgb[1].rgb.green = rgb[1].rgb.blue = 1.00;
+    rgb[2].rgb.red = 0.70; rgb[2].rgb.green = 0.70; rgb[2].rgb.blue = 0.70;
+    rgb[3].rgb.red = 0.75; rgb[3].rgb.green = 0.50; rgb[3].rgb.blue = 1.00;
+    rgb[4].rgb.red = 0.50; rgb[4].rgb.green = 0.00; rgb[4].rgb.blue = 1.00;
+    rgb[5].rgb.red = 0.00; rgb[5].rgb.green = 0.00; rgb[5].rgb.blue = 1.00;
+    rgb[6].rgb.red = 0.00; rgb[6].rgb.green = 0.50; rgb[6].rgb.blue = 1.00;
+    rgb[7].rgb.red = 0.00; rgb[7].rgb.green = 1.00; rgb[7].rgb.blue = 1.00;
+    rgb[8].rgb.red = 0.00; rgb[8].rgb.green = 1.00; rgb[8].rgb.blue = 0.60;
+    rgb[9].rgb.red = 0.00; rgb[9].rgb.green = 1.00; rgb[9].rgb.blue = 0.00;
+    rgb[10].rgb.red = 0.70; rgb[10].rgb.green = 1.00; rgb[10].rgb.blue = 0.00;
+    rgb[11].rgb.red = 1.00; rgb[11].rgb.green = 1.00; rgb[11].rgb.blue = 0.00;
+    rgb[12].rgb.red = 1.00; rgb[12].rgb.green = 0.75; rgb[12].rgb.blue = 0.00;
+    rgb[13].rgb.red = 1.00; rgb[13].rgb.green = 0.38; rgb[13].rgb.blue = 0.38;
+    rgb[14].rgb.red = 1.00; rgb[14].rgb.green = 0.00; rgb[14].rgb.blue = 0.38;
+    rgb[15].rgb.red = 1.00; rgb[15].rgb.green = 0.00; rgb[15].rgb.blue = 0.00;
 
-    rgbv[0].rgb.red = rgbv[0].rgb.green = rgbv[0].rgb.blue = 0.0;
 /*
  * Define 16 different color indices, for indices 0 through 15.  The
  * color corresponding to index 0 is black and the color corresponding
  * to index 1 is white.
  */
-    gset_colr_rep(1,0,&rgbv[0]);
-    rgbv[1].rgb.red = rgbv[1].rgb.green = rgbv[1].rgb.blue = 1.00;
-    for( i = 1; i <= 15; i++ ) {
-        gset_colr_rep(1,i,&rgbv[i]);
+    for( i = 0; i <= 15; i++ ) {
+        gset_colr_rep(1,i,&rgb[i]);
     }
 }

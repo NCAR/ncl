@@ -1,5 +1,5 @@
 /*
- *	$Id: c_sfex02.c,v 1.6 1993-01-30 20:15:14 haley Exp $
+ *	$Id: c_sfex02.c,v 1.7 1993-10-29 19:50:58 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -25,19 +25,19 @@ main()
 /*
  * Initialize the values in the aspect-source-flag array.
  */
-    ias.linetype = 1;
-    ias.linewidth = 1;
-    ias.line_colr_ind = 1;
-    ias.marker_type = 1;
-    ias.marker_size = 1;
-    ias.marker_colr_ind = 1;
-    ias.text_font_prec = 1;
-    ias.char_expan = 1;
-    ias.char_space = 1;
-    ias.text_colr_ind = 1;
-    ias.fill_int_style = 1;
-    ias.fill_style_ind = 1;
-    ias.fill_colr_ind = 1;
+    ias.linetype = GASF_INDIV;
+    ias.linewidth = GASF_INDIV;
+    ias.line_colr_ind = GASF_INDIV;
+    ias.marker_type = GASF_INDIV;
+    ias.marker_size = GASF_INDIV;
+    ias.marker_colr_ind = GASF_INDIV;
+    ias.text_font_prec = GASF_INDIV;
+    ias.char_expan = GASF_INDIV;
+    ias.char_space = GASF_INDIV;
+    ias.text_colr_ind = GASF_INDIV;
+    ias.fill_int_style = GASF_INDIV;
+    ias.fill_style_ind = GASF_INDIV;
+    ias.fill_colr_ind = GASF_INDIV;
 /*
  * Open GKS.
  */
@@ -45,7 +45,7 @@ main()
 /*
  * Turn off the clipping indicator.
  */
-    gset_clip_ind(0);
+    gset_clip_ind(GIND_NO_CLIP);
 /*
  * Set all the GKS aspect source flags to "individual".
  */
@@ -53,7 +53,7 @@ main()
 /*
  * force solid fill.
  */
-    gset_fill_int_style (1);
+    gset_fill_int_style (GSTYLE_SOLID);
 /*
  * Define color indices.
  */

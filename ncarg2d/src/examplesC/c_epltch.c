@@ -1,5 +1,5 @@
 /*
- *  $Id: c_epltch.c,v 1.7 1993-01-25 19:10:49 haley Exp $
+ *  $Id: c_epltch.c,v 1.8 1993-10-29 19:50:54 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -44,7 +44,7 @@ main()
     int i, j, k, l, icmp, c_ifnt, ichr, ifns;
     float csmu, xpos, ypos, xcen, ycen, xrgt, ybot;
     float wdth, xlft, ytop, xcrd, ycrd;
-    Gcolr_rep rgb;
+    Gcolr_rep rgb[5];
 /*
  * Define a flag which says, if 0, that the first eight plots are to
  * occupy eight separate frames and, if 1, that those plots are to be
@@ -617,16 +617,12 @@ main()
  * Illustrate the use of filled fonts with shadows and outlines.  First,
  * define some colors to use.
  */
-    rgb.rgb.red = 0.;    rgb.rgb.green = .5;    rgb.rgb.blue = .5;    
-    gset_colr_rep (1,2,&rgb);
-    rgb.rgb.red = .9;    rgb.rgb.green = .9;    rgb.rgb.blue = 0.;    
-    gset_colr_rep (1,3,&rgb);
-    rgb.rgb.red = 1.;    rgb.rgb.green = .3;    rgb.rgb.blue = .3;    
-    gset_colr_rep (1,4,&rgb);
-    rgb.rgb.red = 0.;    rgb.rgb.green = 0.;    rgb.rgb.blue = 1.;    
-    gset_colr_rep (1,5,&rgb);
-    rgb.rgb.red = .2;    rgb.rgb.green = .2;    rgb.rgb.blue = .2;    
-    gset_colr_rep (1,6,&rgb);
+    rgb[0].rgb.red = 0.;  rgb[0].rgb.green = .5;  rgb[0].rgb.blue = .5;    
+    rgb[1].rgb.red = .9;  rgb[1].rgb.green = .9;  rgb[1].rgb.blue = 0.;
+    rgb[2].rgb.red = 1.;  rgb[2].rgb.green = .3;  rgb[2].rgb.blue = .3;    
+	rgb[3].rgb.red = 0.;  rgb[3].rgb.green = 0.;  rgb[3].rgb.blue = 1.;    
+    rgb[4].rgb.red = .2;  rgb[4].rgb.green = .2;  rgb[4].rgb.blue = .2;    
+	for( i = 0; i < 5; i++ ) gset_colr_rep(1,i+2,&rgb[i]);
 /*
  * Write a line.
  */

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_eezmpa.c,v 1.5 1993-02-01 21:05:40 haley Exp $
+ *	$Id: c_eezmpa.c,v 1.6 1993-10-29 19:50:50 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -18,11 +18,11 @@ main()
 {
     float xcs[10000],ycs[10000];
     int iai[10],iag[10];
-    float rgb[4][15],p1[2],p2[2],p3[3],p4[2];
-    int ioc[14];
+    float p1[2],p2[2],p3[3],p4[2];
+    int ioc[16];
     Gasfs if1;
     int i,j,isu,ie;
-    Gcolr_rep color;
+    Gcolr_rep rgb[16];
     extern int colram(
 #ifdef NeedFuncProto
         float *xcs,
@@ -46,35 +46,39 @@ main()
 /*
  * define the required rgb triples and indices.
  */
-    rgb[1][1] = 0.70;    rgb[2][1] = 0.70;    rgb[3][1] = 0.70;
-    rgb[1][2] = 0.75;    rgb[2][2] = 0.50;    rgb[3][2] = 1.00;
-    rgb[1][3] = 0.50;    rgb[2][3] = 0.00;    rgb[3][3] = 1.00;
-    rgb[1][4] = 0.00;    rgb[2][4] = 0.00;    rgb[3][4] = 1.00;
-    rgb[1][5] = 0.00;    rgb[2][5] = 0.50;    rgb[3][5] = 1.00;
-    rgb[1][6] = 0.00;    rgb[2][6] = 1.00;    rgb[3][6] = 1.00;
-    rgb[1][7] = 0.00;    rgb[2][7] = 1.00;    rgb[3][7] = 0.60;
-    rgb[1][8] = 0.00;    rgb[2][8] = 1.00;    rgb[3][8] = 0.00;
-    rgb[1][9] = 0.70;    rgb[2][9] = 1.00;    rgb[3][9] = 0.00;
-    rgb[1][10] = 1.00;   rgb[2][10] = 1.00;   rgb[3][10] = 0.00;
-    rgb[1][11] = 1.00;   rgb[2][11] = 0.75;   rgb[3][11] = 0.00;
-    rgb[1][12] = 1.00;   rgb[2][12] = 0.38;   rgb[3][12] = 0.38;
-    rgb[1][13] = 1.00;   rgb[2][13] = 0.00;   rgb[3][13] = 0.38;
-    rgb[1][14] = 1.00;   rgb[2][14] = 0.00;   rgb[3][14] = 0.00;
+    rgb[ 0].rgb.red = 1.00; rgb[ 0].rgb.green = 1.00; rgb[ 0].rgb.blue = 1.00;
+    rgb[ 1].rgb.red = 0.70; rgb[ 1].rgb.green = 0.70; rgb[ 1].rgb.blue = 0.70;
+    rgb[ 2].rgb.red = 0.75; rgb[ 2].rgb.green = 0.50; rgb[ 2].rgb.blue = 1.00;
+    rgb[ 3].rgb.red = 0.50; rgb[ 3].rgb.green = 0.00; rgb[ 3].rgb.blue = 1.00;
+    rgb[ 4].rgb.red = 0.00; rgb[ 4].rgb.green = 0.00; rgb[ 4].rgb.blue = 1.00;
+    rgb[ 5].rgb.red = 0.00; rgb[ 5].rgb.green = 0.50; rgb[ 5].rgb.blue = 1.00;
+    rgb[ 6].rgb.red = 0.00; rgb[ 6].rgb.green = 1.00; rgb[ 6].rgb.blue = 1.00;
+    rgb[ 7].rgb.red = 0.00; rgb[ 7].rgb.green = 1.00; rgb[ 7].rgb.blue = 0.60;
+    rgb[ 8].rgb.red = 0.00; rgb[ 8].rgb.green = 1.00; rgb[ 8].rgb.blue = 0.00;
+    rgb[ 9].rgb.red = 0.70; rgb[ 9].rgb.green = 1.00; rgb[ 9].rgb.blue = 0.00;
+    rgb[10].rgb.red = 1.00; rgb[10].rgb.green = 1.00; rgb[10].rgb.blue = 0.00;
+    rgb[11].rgb.red = 1.00; rgb[11].rgb.green = 0.75; rgb[11].rgb.blue = 0.00;
+    rgb[12].rgb.red = 1.00; rgb[12].rgb.green = 0.38; rgb[12].rgb.blue = 0.38;
+    rgb[13].rgb.red = 1.00; rgb[13].rgb.green = 0.00; rgb[13].rgb.blue = 0.38;
+    rgb[14].rgb.red = 1.00; rgb[14].rgb.green = 0.00; rgb[14].rgb.blue = 0.00;
+    rgb[15].rgb.red = 0.00; rgb[15].rgb.green = 0.00; rgb[15].rgb.blue = 0.00;
     
-    ioc[0] = 6;
-    ioc[1] = 2;
-    ioc[2] = 5;
-    ioc[3] = 12;
-    ioc[4] = 10;
-    ioc[5] = 11;
-    ioc[6] = 1;
-    ioc[7] = 3;
-    ioc[8] = 4;
-    ioc[9] = 8;
-    ioc[10] = 9;
-    ioc[11] = 7;
-    ioc[12] = 13;
-    ioc[13] = 14;
+    ioc[0] = 0;
+    ioc[1] = 6;
+    ioc[2] = 2;
+    ioc[3] = 5;
+    ioc[4] = 12;
+    ioc[5] = 10;
+    ioc[6] = 11;
+    ioc[7] = 1;
+    ioc[8] = 3;
+    ioc[9] = 4;
+    ioc[10] = 8;
+    ioc[11] = 9;
+    ioc[12] = 7;
+    ioc[13] = 13;
+    ioc[14] = 14;
+    ioc[15] = 15;
 /*
  * open gks.
  */
@@ -83,26 +87,21 @@ main()
  * re-set certain aspect source flags to "individual".
  */
     ginq_asfs(&ie,&if1);
-    if1.fill_int_style = 1;
-    if1.fill_style_ind = 1;
+    if1.fill_int_style = GASF_INDIV;
+    if1.fill_style_ind = GASF_INDIV;
     gset_asfs(&if1);
 /*
  * force solid fill.
  */
-    gset_fill_int_style(1);
+    gset_fill_int_style(GSTYLE_SOLID);
 /*
  * define 15 different color indices.  the first 14 are spaced through
  * the color spectrum and the final one is black.
  */
-    for( j = 1; j <= 14; j++ ) {
-        i=ioc[j-1];
-        color.rgb.red = rgb[1][i];
-        color.rgb.green = rgb[2][i];
-        color.rgb.blue = rgb[3][i];
-        gset_colr_rep(1,j,&color);
+    for( j = 0; j < 16; j++ ) {
+        i=ioc[j];
+        gset_colr_rep(1,j,&rgb[i]);
     }
-    color.rgb.red = color.rgb.green = color.rgb.blue = 0.;
-    gset_colr_rep(1,15,&color);
 /*
  * set up ezmap, but don't draw anything.
  */
@@ -139,11 +138,6 @@ main()
  */
     isu=250000-(iam[6]-iam[5]-1);
     printf( "SPACE USED IN AREA MAP IS %d\n",isu);
-/*
- * set the background color.
- */
-    color.rgb.red = color.rgb.green = color.rgb.blue = 1.;
-    gset_colr_rep(1,0,&color);
 /*
  * color the map.
  */
@@ -208,7 +202,7 @@ colram (xcs,ycs,ncs,iai,iag,nai)
  * that.)
  */
     int i, itm;
-    Gpoint_list fill_area;
+    Gpoint_list area;
 
     if (iai[9] >= 0 && iai[1] >= 0) {
         itm=max(iai[0],iai[1]);
@@ -221,22 +215,22 @@ colram (xcs,ycs,ncs,iai,iag,nai)
 /*
  * Create structure to pass to gfill_area
  */
-            fill_area.num_points = *ncs-1;
-            fill_area.points = (Gpoint *) malloc(2*(*ncs-1)*sizeof(Gfloat));
-            if( !fill_area.points ) {
+            area.num_points = *ncs-1;
+            area.points = (Gpoint *) malloc(area.num_points*sizeof(Gpoint));
+            if( !area.points ) {
                 fprintf( stderr, "colram: Not enough memory to create fill area structure\n" );
                 gemergency_close_gks();
                 exit(1);
             }
             for( i = 0; i < *ncs-1; i++ ) {
-                fill_area.points[i].x = xcs[i];
-                fill_area.points[i].y = ycs[i];
+                area.points[i].x = xcs[i];
+                area.points[i].y = ycs[i];
             }
 /*
  * Fill area
  */
-            gfill_area(&fill_area);
-            free((Gpoint *)fill_area.points);
+            gfill_area(&area);
+            free((Gpoint *)area.points);
         }
     }
     return(1);
@@ -281,7 +275,7 @@ int colrln(xcs,ycs,ncs,iai,iag,nai)
  * Create structure to pass to gfill_area
  */
             line.num_points = *ncs;
-            line.points = (Gpoint *) malloc(2*(*ncs)*sizeof(Gfloat));
+            line.points = (Gpoint *) malloc(line.num_points*sizeof(Gpoint));
             if( !line.points ) {
                 fprintf( stderr, "colrln: Not enough memory to create fill area structure\n" );
                 gemergency_close_gks();
@@ -292,6 +286,7 @@ int colrln(xcs,ycs,ncs,iai,iag,nai)
                 line.points[i].y = ycs[i];
             }
             gpolyline(&line);
+            free(line.points);
         }
     }
     return(1);
