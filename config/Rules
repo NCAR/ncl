@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.39 1999-03-24 21:34:53 haley Exp $
+ *	$Id: Rules,v 1.40 2000-07-18 19:49:28 haley Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -815,3 +815,62 @@ install-local::]\
 	$(INSTALL) -m $(INSTALL_APP) $$name.ad $(XAPPPATH)/$$name); \ ]\
 	done]
 #endif	/* InstallXappFiles */
+
+
+#ifndef ParseHTIncs
+#define	ParseHTIncs(files,oldsuffix,newsuffix,dest)\
+]\
+all::]\
+]\
+all-local:: ]\
+	@for file in files ; do \ ] \
+	echo "Creating $$file.newsuffix"; \ ] \
+	$(PERL) -n -e 'if(/^<inc srv "(\S+)">$$/)' \ ]\
+	-e '{open(INCFILE,$$1) || die "problem opening $$1";' \ ]\
+	-e 'while(<INCFILE>){print;}close(INCFILE);}' \ ]\
+	-e 'else{print;}' \ ]\
+	$$file.oldsuffix > $$file.newsuffix; \ ]\
+	done]\
+]\
+clean-local:: ]\
+	@for file in files ; do \ ]\
+	echo "$(RM) $$file.newsuffix"; \ ]\
+	$(RM) $$file.newsuffix; \ ]\
+	done]\
+]\
+install-local::]\
+	MakeDir(dest)]\
+	@for file in files; do\ ]\
+	(echo "Installing $$file.newsuffix";\ ]\
+	$(INSTALL) -m $(INSTALL_INC) $$file.newsuffix dest);\ ]\
+	done]
+#endif	/* ParseHTIncs */
+
+#ifndef ParseHTIsmaps
+#define	ParseHTIsmaps(files,suffix,dest)\
+]\
+all::]\
+]\
+all-local:: ]\
+	@for file in files ; do \ ] \
+	echo "Creating $$file.suffix"; \ ] \
+	$(PERL) -n -e 'if(/^<inc srv "(\S+)">$$/)' \ ]\
+	-e '{open(INCFILE,$$1) || die "problem opening $$1";' \ ]\
+	-e 'while(<INCFILE>){print;}close(INCFILE);}' \ ]\
+	-e 'else{print;}' \ ]\
+	$$file > $$file.suffix; \ ]\
+	done]\
+]\
+clean-local:: ]\
+	@for file in files ; do \ ]\
+	echo "$(RM) $$file.suffix"; \ ]\
+	$(RM) $$file.suffix; \ ]\
+	done]\
+]\
+install-local::]\
+	MakeDir(dest)]\
+	@for file in files; do\ ]\
+	(echo "Installing $$file.suffix";\ ]\
+	$(INSTALL) -m $(INSTALL_INC) $$file.suffix dest);\ ]\
+	done]
+#endif	/* ParseHTIsmaps */
