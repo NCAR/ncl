@@ -5,16 +5,22 @@
 ARGTAI - Returns the area identifiers 
 associated with a given point.
 .SH SYNOPSIS
-CALL ARGTAI (MAP, XCD, YCD, IAI, IAG, MAI, NAI, ICF)
+CALL ARGTAI (MAP,XCD,YCD,IAI,IAG,MAI,NAI,ICF)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
 void c_argtai (int *map, float xcd, float ycd, int *iai, int *iag, 
 int mai, int *nai, int icf)
 .SH DESCRIPTION 
-.IP "MAP(LMAP)" 12
-(a workspace array, dimensioned LMAP, of type INTEGER) - 
-The area-map array.
+.IP "MAP" 12
+(an input/output array of type INTEGER) - An array containing an area map that
+has been initialized by a call to ARINAM and to which edges have been added
+by calls to AREDAM.  If you did not preprocess the area map by calling
+ARPRAM, ARGTAI calls it before doing anything else.
+.sp
+Note: As part of initializing the area map, ARINAM stores the dimension of
+MAP in MAP(1); therefore, the dimension does not have to be given as an
+argument in calls to ARGTAI.)
 .IP "XCD" 12
 (an input expression of type REAL) - 
 The X coordinate, in the current 
@@ -25,13 +31,13 @@ you want to obtain information.
 The Y coordinate, in the current user 
 coordinate system, of a point about which you want to 
 obtain information.
-.IP "IAI(MAI)" 12
+.IP "IAI" 12
 (an output array, dimensioned MAI, of type INTEGER) - 
-The array in which area identifiers for areas containing the 
+The array in which area identifiers for the area containing the
 specified point will be returned.
-.IP "IAG(MAI)" 12
+.IP "IAG" 12
 (an output array, dimensioned MAI, of type INTEGER) - 
-The array in which group identifiers for areas containing 
+The array in which group identifiers for the area containing
 the specified point will be returned.
 .IP "MAI" 12
 (an input expression of type INTEGER) - 
@@ -52,7 +58,8 @@ flag to zero, Areas assumes that the information
 retrieved previously is still correct and skips calls to 
 GETSET. This option is valuable if you are 
 planning to make thousands of calls to ARGTAI 
-with the same area map.
+with the same area map: Do the first one with ICF = 1 and the
+rest with ICF = 0.
 .SH C-BINDING DESCRIPTION 
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.

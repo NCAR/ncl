@@ -6,72 +6,86 @@ ARPRAM - Preprocesses an area map that has been initialized by a
 call to ARINAM and to which edges have been added by 
 calls to AREDAM.
 .SH SYNOPSIS
-CALL ARPRAM (MAP, IF1, IF2, IF3)
+CALL ARPRAM (MAP,IF1,IF2,IF3)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
 void c_arpram (int *map, int if1, int if2, int if3)
 .SH DESCRIPTION 
-Preprocessing the area map is a seven-step process to 
-ensure that no edge segments cross, and to make area 
-identifier information consistent in the area map. The only 
-advantage of user calls to ARPRAM is to use the time-saving 
-shortcuts specified by the IF1, IF2, and IF3 arguments.
-.sp
-Step 1: ARPRAM shortens edge segments whose 
+Preprocessing an area map is a seven-step process that makes all
+of the area-identifier information in the area map consistent:
+.IP "Step 1: " 12
+ARPRAM shortens edge segments whose
 projections on the X axis are more than twice as long 
 as the average. ARPRAM does this by interpolating 
 points along their lengths. This improves efficiency 
 when executing other parts of the algorithm.
-.sp
-Step 2: ARPRAM locates all intersections of all edges 
-and interpolates points along these edge segments. 
-This step can take a lot of time. If you set IF1 not equal 
-to 0, then pairs of edge segments are examined for 
+.IP "Step 2: " 12
+ARPRAM locates all intersections of edge segments
+and interpolates the intersection points along these edge segments.
+This step can take a lot of time. If you set IF1 nonzero,
+then pairs of edge segments are examined for
 intersections only if one of the pair has a left or a right 
 area identifier that is zero or negative.
-.sp
-Step 3: ARPRAM removes coincident edge segments 
-(edge segments with identical endpoints) from the 
-area map. This is done for all edge segments in the 
-area map, regardless of which group or groups 
-contain the coincident edge segments.
-.sp
-Step 4: ARPRAM searches for and removes "dangling" 
-edges (those that do not contribute to enclosing any 
-area). This step is skipped if IF2 is not equal to 0.
-.sp
-Step 5: ARPRAM looks for holes in each edge group and 
-draws connecting edge segments between the edge and 
-the hole. This step is skipped if IF3 is not equal to 0.
-.sp
-Step 6: ARPRAM adjusts area identifier information 
+.IP "Step 3: " 12
+ARPRAM locates coincident edge segments
+(edge segments with identical endpoints).  If two such
+coincident edge segments belong to the same group, one
+of them is removed; if they belong to different groups,
+one if them is modified in such a way that it will appear
+to be present when looking for areas defined by edge segments
+in a particular group, but absent when looking for areas
+defined by all edge segments.
+.IP "Step 4: " 12
+ARPRAM searches for and removes "dangling"
+edge segments (those that do not contribute to enclosing any
+area). This step is skipped if IF2 is nonzero.
+.IP "Step 5: " 12
+ARPRAM looks for holes in the areas defined by each edge
+group and draws connecting edge segments between the edge and
+the hole. This step is skipped if IF3 is nonzero.
+.IP "Step 6: " 12
+ARPRAM adjusts area identifier information
 in the area map. It examines all the edge segments of 
 each area in each group to see what area identifier 
-should be assigned to the area, then makes 
+should be assigned to the area, and then makes
 adjustments.
-.sp
-Step 7: Connecting lines that were inserted in step 5 
+.IP "Step 7: " 12
+Connecting lines that were inserted in step 5
 are removed from the area map.
-.sp
+.PP
 You can put edges in an area map, preprocess it, add 
 more edges, preprocess it again, and so on.
 .sp
-.IP "MAP(LMAP)" 12
-(a workspace array, dimensioned LMAP, of type INTEGER) - 
-The area-map array.
+Each of the routines ARDRLN, ARGTAI, and ARSCAM checks to make
+sure that the area map has been preprocessed since the last time
+that edges were added to it and, if not, calls ARPRAM; the only
+advantage to the user of calling ARPRAM directly is to use the
+time-saving shortcuts specified by the arguments IF1, IF2, and
+IF3.
+.sp
+The arguments of ARPRAM are as follows:
+.sp
+.IP "MAP" 12
+(an input/output array of type INTEGER) - An array containing an area map that
+has been initialized by a call to ARINAM and to which edges have been added
+by calls to AREDAM.
+.sp
+Note: As part of initializing the area map, ARINAM stores the dimension of
+MAP in MAP(1); therefore, the dimension does not have to be given as an
+argument in calls to ARPRAM.)
 .IP "IF1" 12
 (an input expression of type INTEGER) - 
-If you set IF1 nonzero, ARPRAM examines a pair of edge 
-segments only if one of the pair has a left or right area 
+If you set IF1 nonzero, ARPRAM checks a pair of edge segments
+for intersection only if one of the pair has a left or right area
 identifier that is zero or negative. This would be appropriate 
-for contour lines that intersect the perimeter, but that are 
-known not to intersect each other.
+for contour lines, which intersect the perimeter, but do not
+intersect each other.
 .IP "IF2" 12
 (an input expression of type INTEGER) - 
-If you set IF2 nonzero, ARPRAM does not remove 
+If you set IF2 nonzero, ARPRAM does not check for
 dangling edges. This would be appropriate for contour 
-lines that are known not to have any such edges. This is 
+lines, which are known not to have any such edges. This is
 not appropriate for Ezmap boundary lines, because the 
 Ezmap dataset contains some edge segments (small 
 islands) that are formed by unclosed curves.
@@ -81,7 +95,9 @@ If you set IF3 nonzero,
 ARPRAM speeds up the process of adjusting area 
 identifiers by omitting the consideration of 
 "holes" in the areas examined. This is appropriate 
-for contour lines.
+for contour lines as long as the left and right area
+identifiers provided at each contour level are
+consistent with those provided at the adjacent levels.
 .SH C-BINDING DESCRIPTION 
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.

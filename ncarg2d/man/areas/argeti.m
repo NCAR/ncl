@@ -2,20 +2,22 @@
 .na
 .nh
 .SH NAME
-ARGETI - Retrieves an integer parameter in Areas.
+ARGETI - Retrieves the integer value of an Areas parameter.
 .SH SYNOPSIS
-CALL ARGETI (PNAM, IVAL)
+CALL ARGETI (PNAM,IVAL)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
 void c_argeti (char *pnam, int *ival)
 .SH DESCRIPTION 
 .IP "PNAM" 12
-(an input expression of type CHARACTER) - 
-The name of the parameter that you want to retrieve.
+(an input constant or variable of type CHARACTER) -
+The name of the parameter that you want to retrieve.  The character string
+can be of any length, but only the first two characters
+of it will be examined.
 .IP "IVAL" 12
-(an input expression of type INTEGER) - 
-An integer variable to hold the parameter value.
+(an output variable of type INTEGER) -
+An integer variable to receive the desired parameter value.
 .SH C-BINDING DESCRIPTION 
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.

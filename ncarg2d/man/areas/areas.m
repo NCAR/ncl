@@ -2,28 +2,27 @@
 .na
 .nh
 .SH NAME
-Areas - A set of routines to create an area map from a set of
-edges.
+Areas - A set of routines allowing you to create an area map from a set of
+edges and then to use the area map for various purposes.
 .SH SYNOPSIS
-ARINAM - Initializes areas.
+ARINAM - Initializes an area map.
 .br
 AREDAM - Adds edges to an area map.
 .br
 ARPRAM - Preprocesses an area map.
 .br
-ARSCAM - Obtains definitions of areas created by edges inserted
-into area map.
+ARSCAM - Obtains definitions of areas created by edges in an area map.
 .br
 ARDRLN - Draws a polyline masked by a given area map.
 .br
 ARGTAI - Gets area identifiers associated with a given point.
 .br
-ARGETI - Retrieves an Areas integer parameter value.
+ARGETI - Retrieves the integer value of an Areas parameter.
 .br
-ARSETI - Sets an Areas integer parameter value.
+ARSETI - Provides a new integer value for an Areas parameter.
 .br
-ARDBPA - For debugging, produces a picture of that part of
-the area map that belongs to a specified group.
+ARDBPA - For debugging - produces a picture of that part of
+the area map that belongs to a specified edge group.
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp

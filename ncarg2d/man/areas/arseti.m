@@ -2,19 +2,19 @@
 .na
 .nh
 .SH NAME
-ARSETI - Sets an integer parameter in Areas.
+ARSETI - Provides a new integer value for an Areas parameter.
 .SH SYNOPSIS
-CALL ARSETI (PNAM, IVAL)
+CALL ARSETI (PNAM,IVAL)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
 void c_arseti (char *pnam, int ival)
 .SH DESCRIPTION 
 .IP "PNAM" 12
-(an input expression of type CHARACTER) - 
-The name of the parameter that you want to set. The string 
-can be of any length, however, only the first two characters 
-within the quotation marks will be examined.
+(an input constant or variable of type CHARACTER) -
+The name of the parameter that you want to set. The character string
+can be of any length, but only the first two characters
+of it will be examined.
 .IP "IVAL" 12
 (an input expression of type INTEGER) - 
 The integer value you select for the parameter.

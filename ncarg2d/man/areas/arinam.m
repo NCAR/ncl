@@ -2,27 +2,29 @@
 .na
 .nh
 .SH NAME
-ARINAM - Initializes area map.
+ARINAM - Initializes an area map.
 .SH SYNOPSIS
-CALL ARINAM (MAP, LMAP)
+CALL ARINAM (MAP,LMAP)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
 void c_arinam (int *map, int lmap)
 .SH DESCRIPTION
-.IP "MAP(LMAP)" 12
+.IP "MAP" 12
 (output array, of type INTEGER, dimensioned at least LMAP) - 
 An integer array in which 
 an area map is to be constructed. Each vertex for 
 an edge segment in your area map requires ten 
 words in the array MAP. Remember that the total 
-number of vertexes includes those added at each 
+number of vertices includes those added at each
 intersection of edges, and those added when long 
 edge segments are broken into shorter edge 
 segments.
 .IP "LMAP" 12
 (an input expression of type INTEGER) - 
-Length of the MAP array.
+Length of the MAP array.  As part of the initialization process, the
+value of LMAP is stored in MAP(1); that way, it need not be given as
+an argument in calls to other routines that use the area map.
 .SH C-BINDING DESCRIPTION 
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
