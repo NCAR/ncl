@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.24 1993-01-19 19:37:33 clyne Exp $
+ *	$Id: rast.c,v 1.25 1993-01-20 00:51:33 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -195,8 +195,8 @@ get_resolution(dev_extent, opts, name)
 	 */
 	if (! strcmp(name, "hppcl")) {
 		dpi = atoi(opts.dpi);
-		width = 6 * dpi;
-		height = 6 * dpi;
+		width = 7 * dpi;
+		height = 7 * dpi;
 	}
 	else {
 		char	*cptr = opts.resolution;
