@@ -1,36 +1,37 @@
 /*
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;                                                                       ;
-;                Copyright (C)  1996                                    ;
-;        University Corporation for Atmospheric Research                ;
-;                All Rights Reserved                                    ;
-;                                                                       ;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-;   File:       vc05c.c
-;
-;   Author: Lynn Hermanson
-;           National Center for Atmospheric Research
-;           PO 3000, Boulder, Colorado
-; 
-;   Date:       April 10, 1996
-;
-;   Description:     Given a simple mathematically generated data set,
-;                    which looks like the intersection of two vector fields
-;                    with opposite directions,this program produces three
-;                    plot frames which demonstrate the use of VectorPlot;1st-
-;                    default resources, 2nd- overlayed on a world map, 3rd-
-;                    overlayed on an orthographic projection of the globe
-;                    centered on the north pole covering 90 to 40 degrees
-;                    north latitude.
-;
-;  Begin by generating the data set called "increasingvectors".
-;  The values in the array "U" are defined to be the magnitude of the x 
-;  component of the vectors.  The values in the array "V" are defined to be
-;  the magnitude of the y component of the vectors. The location of the 
-;  vectors corresponds to the indices of the arrays. Each index pair will
-;  eventually correspond to a latitude,longitude location on a map. 
-/*;;;********* see resource file vc05.res ******
+*************************************************************************
+*                                                                       *
+*                Copyright (C)  1996                                    *
+*        University Corporation for Atmospheric Research                *
+*                All Rights Reserved                                    *
+*                                                                       *
+*************************************************************************
+*
+*   File:       vc05c.c
+*
+*   Author: Lynn Hermanson
+*           National Center for Atmospheric Research
+*           PO 3000, Boulder, Colorado
+* 
+*   Date:       April 10, 1996
+*
+*   Description:     Given a simple mathematically generated data set,
+*                    which looks like the intersection of two vector fields
+*                    with opposite directions,this program produces three
+*                    plot frames which demonstrate the use of VectorPlot*1st-
+*                    default resources, 2nd- overlayed on a world map, 3rd-
+*                    overlayed on an orthographic projection of the globe
+*                    centered on the north pole covering 90 to 40 degrees
+*                    north latitude.
+*
+*  Begin by generating the data set called "increasingvectors".
+*  The values in the array "U" are defined to be the magnitude of the x 
+*  component of the vectors.  The values in the array "V" are defined to be
+*  the magnitude of the y component of the vectors. The location of the 
+*  vectors corresponds to the indices of the arrays. Each index pair will
+*  eventually correspond to a latitude,longitude location on a map. 
+*
+*  ********* see resource file vc05.res ******
 */
 
 #include <math.h>
