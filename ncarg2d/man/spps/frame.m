@@ -22,7 +22,7 @@ workstations are cleared.
 .sp
 FRAME is most applicable to an environment with a single active
 workstation.  When multiple workstations are used, the more
-versatile NGPICT routine is recommended.  NCPICT includes
+versatile NGPICT routine is recommended.  NGPICT includes
 the option of issuing a "<READY>" prompt
 when a window is on pause.
 .sp
