@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.20 1992-09-09 15:08:15 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.21 1992-11-10 19:50:24 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -1361,7 +1361,7 @@ int	CGM_putInstr(cgm_fd, instr)
 		tmp = 0;
 		PUTBITS(tmp, CLASS_POSS, CLASS_BITS, instr->class);
 		PUTBITS(tmp, ID_POSS, ID_BITS, instr->id);
-		if (instr->data_length < LONGFORM)  {
+		if (! instr->more && instr->data_length < LONGFORM)  {
 			PUTBITS(tmp, PARM_POSS, PARM_BITS, instr->data_length);
 		}
 		else {	/* long form command	*/
@@ -1394,7 +1394,7 @@ int	CGM_putInstr(cgm_fd, instr)
 	/*
 	 * insert data length if long form command
 	 */
-	if (instr->data_length >= LONGFORM || pg->more) {
+	if (instr->more || instr->data_length >= LONGFORM || pg->more ) {
 		/*
 		 * make sure room in buffer, if not write it
 		 */
