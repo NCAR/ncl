@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.32 1996-12-13 06:32:56 boote Exp $
+ *      $Id: Project,v 1.33 1997-01-25 00:28:42 haley Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,7 @@
  *			etc are in the Template file.
  */
 
-#define NcargVersion 4.0.1
+#define NcargVersion 4.0.1a
 
 #ifndef	BuildRasterHDF
 #define	BuildRasterHDF
@@ -368,9 +368,8 @@ DEPCNCARGLIBS	= $(DEPCNCARGLIB) $(DEPCNCARGGKSLIB)
 DEPHLULIBS	= $(DEPHLULIB)
 DEPNCLLIBS	= $(DEPHLULIB) $(DEPNCLAPILIB)
 
-COMMONBIN	= $(COMMONSRC)/bin
-GRAPHCSRC	= $(COMMONBIN)/graphc
-FONTCSRC	= $(COMMONBIN)/fontc
+GRAPHCSRC	= $(COMMONSRC)/graphcap
+FONTCSRC	= $(COMMONSRC)/fontcap
 
 GRAPHC		= _UseProg($(GRAPHCSRC),graphc)
 FONTC		= _UseProg($(FONTCSRC),fontc)
