@@ -1,8 +1,11 @@
+;
+;      $Id: nm21n.ncl,v 1.4 2000-02-25 19:10:51 fred Exp $
+;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
-;                  Copyright (C)  1999                                  ;
-;          University Corporation for Atmospheric Research              ;
-;                  All Rights Reserved                                  ;
+;                Copyright (C)  2000                                    ;
+;        University Corporation for Atmospheric Research                ;
+;                All Rights Reserved                                    ;
 ;                                                                       ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
@@ -12,7 +15,7 @@
 ;                 National Center for Atmospheric Research
 ;                 PO 3000, Boulder, Colorado
 ;
-;   Date:         Fri Jun 11 13:12:05 MDT 1999
+;   Date:         Thu Jun  3 15:16:01 MDT 1999
 ;
 ;   Description:  This program illustrates the use of the interpolation
 ;                 capabilities of the cssgrid package.
@@ -71,7 +74,7 @@ procedure genrs(rlat[*]:float, rlon[*]:float)
 local size, tmpa, rslt, rz
 
 begin
-  size = sizeof(rlat)/sizeof(rlat(0))
+  size = (sizeof(rlat)/sizeof("float"))
   tmpa = new(1,integer)
   rslt = new(1,float)
   nrand(0,tmpa,rslt)
@@ -121,7 +124,7 @@ procedure geni(mlow[1]:integer, mhgh[1]:integer, \
 ;  The function used is a sum of exponentials.
 ;
 ;  Versions of these codes were originally written in Fortran
-;  by David Kennison at NCAR.
+;  David Kennison at NCAR.
 ;
 
 local D2R, R2D, r0, r1, r2, xcvi, ycvi, zcvi, ivof, nlow, nhgh,   \
@@ -330,17 +333,14 @@ end
 ;
 begin
  
+  D2R =  0.017453293
+  R2D = 57.295780000
+
 ;
 ;  Define random points and functional values on the globe,
 ;  triangulate, interpolate to a uniform grid, then draw a 
 ;  contour plot on a map.
 ;
-
-;
-;  Ratios for converting between degrees and radians.
-;
-  D2R =  0.017453293
-  R2D = 57.295780000
 
 ;
 ;  Number of input data values.
@@ -378,40 +378,24 @@ begin
   end do
 
 ;
-;  Set x and y to the values of rlon and rlat, respectively,
-;  in radians.
-;
-  x = D2R*rlon
-  y = D2R*rlat
-
-;
-;  Transform the spherical coordinates X and Y to Cartesian
-;  coordinates (X,Y,Z) on the unit sphere (X**2 +  Y**2 + Z**2 = 1).
-;
-  z = new(N,float)
-  cstrans(y, x, x, y, z);
-
-;
 ;  Create the triangulation.
 ;
-  triangles = csstri(x,y,z)
-  num_triangles = sizeof(triangles)/(3*sizeof(triangles(0,0)))
+  triangles = csstri(rlat,rlon)
+  num_triangles = sizeof(triangles)/(3*sizeof("integer"))
 
 ;
 ;  Get the circumcenters for the Delaunay triangles and store
-;  them in arrays xc, yc, and zc.  "nca" is the actual number 
+;  them in arrays plat and plon.  "nca" is the actual number 
 ;  of circles found.
 ;
-  xc = new(2*N,float)
-  yc = new(2*N,float)
-  zc = new(2*N,float)
+  plat = new(2*N,float)
+  plon = new(2*N,float)
   rc = new(2*N,float)
   nca = new(1,integer)
   numv = new(1,integer)
   nv = new(N,integer)
-  csvoro(x,y,z,0,1,xc,yc,zc,rc,nca,numv,nv)
+  csvoro(rlat,rlon,0,1,plat,plon,rc,nca,numv,nv)
 
-;
 ;  Draw a plot of the triangulation and the Voronoi polygons.
 ;
 
@@ -462,6 +446,7 @@ begin
   map_resources@vpYF = 0.90
   map_resources@vpWidthF = 0.88
   map_resources@vpHeightF = 0.88
+  map_resources@mpSatelliteDistF  = 4.0
 
   map_resources@mpGreatCircleLinesOn = True
 
@@ -475,12 +460,12 @@ begin
   rlatn = new(2,float)
   rlonn = new(2,float)
   do i=0,N-1
-    csvoro(x,y,z,i,0,xc,yc,zc,rc,nca,numv,nv)
+    csvoro(rlat,rlon,i,0,plat,plon,rc,nca,numv,nv)
     do j=1,numv-1
-      csscoord(xc(nv(j-1)), yc(nv(j-1)), zc(nv(j-1)), rlatn(0), rlonn(0))
-      csscoord(xc(nv(j)), yc(nv(j)), zc(nv(j)), rlatn(1), rlonn(1))
-      rlatn = R2D*rlatn
-      rlonn = R2D*rlonn
+      rlatn(0) = plat(nv(j-1))
+      rlonn(0) = plon(nv(j-1))
+      rlatn(1) = plat(nv(j))
+      rlonn(1) = plon(nv(j))
       gsn_polyline(wks,map,rlonn,rlatn,gsres)
     end do
   end do
@@ -488,19 +473,19 @@ begin
 ;
 ;  Draw the triangles.
 ;
-  plat = new(4,float)
-  plon = new(4,float)
+  qlat = new(4,float)
+  qlon = new(4,float)
   gsres@gsLineColor = 2
   do np=0,num_triangles-1
-    plat(0) = rlat(triangles(np,0))
-    plon(0) = rlon(triangles(np,0))
-    plat(1) = rlat(triangles(np,1))
-    plon(1) = rlon(triangles(np,1))
-    plat(2) = rlat(triangles(np,2))
-    plon(2) = rlon(triangles(np,2))
-    plat(3) = rlat(triangles(np,0))
-    plon(3) = rlon(triangles(np,0))
-    gsn_polyline(wks,map,plon,plat,gsres)
+    qlat(0) = rlat(triangles(np,0))
+    qlon(0) = rlon(triangles(np,0))
+    qlat(1) = rlat(triangles(np,1))
+    qlon(1) = rlon(triangles(np,1))
+    qlat(2) = rlat(triangles(np,2))
+    qlon(2) = rlon(triangles(np,2))
+    qlat(3) = rlat(triangles(np,0))
+    qlon(3) = rlon(triangles(np,0))
+    gsn_polyline(wks,map,qlon,qlat,gsres)
   end do
 
 ;
@@ -533,16 +518,16 @@ begin
   platn = new(NI,float) 
   plonn = new(NJ,float) 
   do i=0,NI-1
-    platn(i) = D2R*(-90.+i*2.5)
+    platn(i) = -90.+i*2.5
   end do
   do j=0,NJ-1
-    plonn(j) = D2R*(-180.+j*2.5)
+    plonn(j) = -180.+j*2.5
   end do
 
 ;
 ;  Interpolate to the regular grid.
 ;
-  ff = cssgrid(x,y,z,fval,platn,plonn)
+  ff = cssgrid(rlat,rlon,fval,platn,plonn)
 
 ;
 ;  Draw a contour map of the interpolated values using the same 

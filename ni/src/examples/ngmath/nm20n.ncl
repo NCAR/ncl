@@ -1,6 +1,9 @@
+;
+;      $Id: nm20n.ncl,v 1.5 2000-02-25 19:10:51 fred Exp $
+;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
-;                Copyright (C)  1999                                    ;
+;                Copyright (C)  2000                                    ;
 ;        University Corporation for Atmospheric Research                ;
 ;                All Rights Reserved                                    ;
 ;                                                                       ;
@@ -18,6 +21,7 @@
 ;                 and Voronoi diagram capabilities of the cssgrid package.
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 load "$NCARG_ROOT/lib/ncarg/nclex/gsun/gsn_code.ncl"
 
@@ -56,12 +60,6 @@ end
 begin
  
 ;
-;  Ratios for converting between degrees and radians.
-;
-  D2R =  0.017453293
-  R2D = 57.295780000
-
-;
 ;  Number of points to use for drawing arcs on the globe.
 ;
   NARC = 50
@@ -71,40 +69,35 @@ begin
 ;  These data points do not cover the globe, but rather are confined
 ;  to the nothern hemisphere and are enclosed by a boundary.
 ; 
-  rlat = (/  70.,  70., 70., 85., 60., 60., 65./)
-  rlon = (/-160., -70.,  0., 20., 50., 80.,140./)
+  plat = (/  70.,  70., 70., 85., 60., 60., 65./)
+  plon = (/-160., -70.,  0., 20., 50., 80.,140./)
 
 ;
 ;  Determine tha size of the input arrays; create arrays for
 ;  storing the Cartesian coordinate equivalents to the lat/lon input;
 ;  calculate the Cartesian coordinates.
 ;  
-  fsize = sizeof(rlat)/sizeof(rlat(0))
-  x = new(fsize,float)
-  y = new(fsize,float)
-  z = new(fsize,float)
-  cstrans(D2R*rlat,D2R*rlon,x,y,z)
+  fsize = sizeof(plat)/sizeof("float")
 
 ;
 ;  Create the Delaunay triangulation; "triangles" is returned as
 ;  a two dimensional array dimensioned for fsize x 3.
 ;
-  triangles = csstri(x,y,z)
-  num_triangles = sizeof(triangles)/(3*sizeof(triangles(0,0)))
+  triangles = csstri(plat,plon)
+  num_triangles = sizeof(triangles)/(3*sizeof("integer"))
 
 ;
 ;  Get the circumcenters for the Delaunay triangles and store
 ;  them in arrays xc, yc, and zc.  "nca" is the actual number 
 ;  of circles found.
 ;
-  xc = new(2*fsize,float)
-  yc = new(2*fsize,float)
-  zc = new(2*fsize,float)
+  rlat = new(2*fsize,float)
+  rlon = new(2*fsize,float)
   rc = new(2*fsize,float)
   nca = new(1,integer)
   numv = new(1,integer)
   nv = new(fsize,integer)
-  csvoro(x,y,z,0,1,xc,yc,zc,rc,nca,numv,nv)
+  csvoro(plat,plon,0,1,rlat,rlon,rc,nca,numv,nv)
 
 ;
 ;  Draw a plot of the triangulation, the circumcircles, and the
@@ -165,9 +158,6 @@ begin
 ;  original data values are plotted and not those going through
 ;  the pseudo points.
 ;
-  latitudes = new(nca,float)
-  longitudes = new(nca,float)
-  csscoord(xc(0:nca-1), yc(0:nca-1), zc(0:nca-1), latitudes, longitudes)
   arclat = new(NARC, float)
   arclon = new(NARC, float)
 
@@ -175,7 +165,7 @@ begin
   gsres@gsLineThicknessF = 2.
   gsres@gsLineColor = 4
   do i=4,9
-    nggcog(R2D*latitudes(i), R2D*longitudes(i), R2D*rc(i), arclat, arclon)
+    nggcog(rlat(i), rlon(i), rc(i), arclat, arclon)
     gsn_polyline(wks,map,arclon,arclat,gsres)
   end do
 
@@ -186,12 +176,12 @@ begin
   rlatn = new(2,float)
   rlonn = new(2,float)
   do i=0,fsize-1
-    csvoro(x,y,z,i,0,xc,yc,zc,rc,nca,numv,nv)
+    csvoro(plat,plon,i,0,rlat,rlon,rc,nca,numv,nv)
     do j=1,numv-1
-      csscoord(xc(nv(j-1)), yc(nv(j-1)), zc(nv(j-1)), rlatn(0), rlonn(0))
-      csscoord(xc(nv(j)), yc(nv(j)), zc(nv(j)), rlatn(1), rlonn(1))
-      rlatn = R2D*rlatn
-      rlonn = R2D*rlonn
+      rlatn(0) = rlat(nv(j-1))
+      rlonn(0) = rlon(nv(j-1))
+      rlatn(1) = rlat(nv(j))
+      rlonn(1) = rlon(nv(j))
       gsn_polyline(wks,map,rlonn,rlatn,gsres)
     end do
   end do
@@ -199,19 +189,19 @@ begin
 ;
 ;  Draw the triangles.
 ;
-  plat = new(4,float)
-  plon = new(4,float)
+  qlat = new(4,float)
+  qlon = new(4,float)
   gsres@gsLineColor = 2
   do np=0,num_triangles-1
-    plat(0) = rlat(triangles(np,0))
-    plon(0) = rlon(triangles(np,0))
-    plat(1) = rlat(triangles(np,1))
-    plon(1) = rlon(triangles(np,1))
-    plat(2) = rlat(triangles(np,2))
-    plon(2) = rlon(triangles(np,2))
-    plat(3) = rlat(triangles(np,0))
-    plon(3) = rlon(triangles(np,0))
-    gsn_polyline(wks,map,plon,plat,gsres)
+    qlat(0) = plat(triangles(np,0))
+    qlon(0) = plon(triangles(np,0))
+    qlat(1) = plat(triangles(np,1))
+    qlon(1) = plon(triangles(np,1))
+    qlat(2) = plat(triangles(np,2))
+    qlon(2) = plon(triangles(np,2))
+    qlat(3) = plat(triangles(np,0))
+    qlon(3) = plon(triangles(np,0))
+    gsn_polyline(wks,map,qlon,qlat,gsres)
   end do
 
 ;
@@ -219,7 +209,7 @@ begin
 ;
   gsres@gsFillColor = 3
   do i=0,fsize-1
-    nggcog(rlat(i),rlon(i),1.3,arclat,arclon)
+    nggcog(plat(i),plon(i),1.3,arclat,arclon)
     gsn_polygon(wks,map,arclon,arclat,gsres)
   end do
 
@@ -228,8 +218,7 @@ begin
 ;
   gsres@gsFillColor = 5
   do i=4,9
-    csscoord(xc(i), yc(i), zc(i), rlatn(0), rlonn(0))
-    nggcog(R2D*rlatn(0),R2D*rlonn(0),0.65,arclat,arclon)
+    nggcog(rlat(i),rlon(i),0.65,arclat,arclon)
     gsn_polygon(wks,map,arclon,arclat,gsres)
   end do
 
@@ -250,3 +239,5 @@ begin
   frame(wks)
 
 end
+
+
