@@ -1,6 +1,6 @@
 
 /*
- *      $Id: atoargv.c,v 1.3 1992-09-01 23:47:09 clyne Exp $
+ *      $Id: atoargv.c,v 1.4 1999-07-27 21:42:24 haley Exp $
  */
 /*
  *	File:		atoargv.c
@@ -15,6 +15,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <errno.h>
 #include "c.h"

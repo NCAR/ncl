@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 #include <ncarg/ngmath.h>

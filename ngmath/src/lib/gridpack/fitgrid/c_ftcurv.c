@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "ftgvars.h"
 #include "ftproto.h"
 #include <math.h>

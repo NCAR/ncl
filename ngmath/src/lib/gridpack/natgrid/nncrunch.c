@@ -4,6 +4,7 @@
  *  copyright to his original code.  Augmentations and changes
  *  to Dr. Watson's code are copyrighted (C) by UCAR, 1997.
  */
+#include <stdlib.h>
 #include "nncheads.h"
 #include "nnchead.h"
 #include "nntypes.h"
