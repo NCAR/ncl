@@ -13,11 +13,6 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
-/*
- *  Declare the required C external functions.
- */
-extern void   c_nggcog(float, float, float, float *, float *, int);
-
 NhlErrorTypes nggcog_W(void)
 {
 
