@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.24 1994-07-20 18:55:39 boote Exp $
+ *	$Id: Rules,v 1.25 1994-12-09 17:46:25 haley Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -524,19 +524,42 @@ CleanFilesTarget(library)
 #endif	/* PartialLibraryRoot */
 
 /*
- * Macro:	HLUExampleTarget
+ * Macro:	HLUCExampleTarget
  *
- * Description:	Sources for HLUExampleTarget are any file that needs to be
+ * Description:	Sources for HLUCExampleTarget are any file that needs to be
  *		copied to the HLUEXPATH - currently only $name.h $name.data
  *		Makefile.$name and $name.resfile are supported by the nhlex
  *		script.
  */
-#ifndef	HLUExampleTarget
-#define HLUExampleTarget(program,objects,sources)\
-CNotInstalledTarget(program,objects)\
-InstallTarget(program, $(INSTALL_BIN), $(HLUEXPATH))\
-InstallTarget(sources, $(INSTALL_INC), $(HLUEXPATH))
-#endif	/* HLUExampleTarget */
+#ifndef	HLUCExampleTarget
+#define HLUCExampleTarget(program,objects)\
+]\
+examples:: program]\
+]\
+program: objects]\
+	$(CC_LD) $(CC_LDOPTIONS) -o program objects $(PROG_LIBS) $(CSTATIC) $(LDLIBS) $(CDYNAMIC) $(EXTRA_LDLIBS)]\
+]\
+CleanFilesTarget(program objects)
+#endif	/* HLUCExampleTarget */
+
+/*
+ * Macro:	HLUFExampleTarget
+ *
+ * Description:	Sources for HLUFExampleTarget are any file that needs to be
+ *		copied to the HLUEXPATH - currently only $name.h $name.data
+ *		Makefile.$name and $name.resfile are supported by the nhlex
+ *		script.
+ */
+#ifndef	HLUFExampleTarget
+#define HLUFExampleTarget(program,objects)\
+]\
+examples:: program]\
+]\
+program: objects]\
+	$(F77_LD) $(FC_LDOPTIONS) -o program objects $(PROG_LIBS) $(CSTATIC) $(LDLIBS) $(CDYNAMIC) $(EXTRA_LDLIBS)]\
+]\
+CleanFilesTarget(program objects)
+#endif	/* HLUFExampleTarget */
 
 /*
  * Macro:	DependTarget
