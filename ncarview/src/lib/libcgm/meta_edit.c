@@ -1,5 +1,5 @@
 /*
- *	$Id: meta_edit.c,v 1.16 1992-10-22 21:26:24 clyne Exp $
+ *	$Id: meta_edit.c,v 1.17 1993-01-08 04:31:19 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -456,7 +456,7 @@ Directory	*CGM_copyFrames(start_frame, num_frames, target )
 			return(ERR);
 		}
 
-		workingList.size += num_frames;
+		workingList.size = workingList.number + num_frames;
 	}
 
 
@@ -653,7 +653,7 @@ Directory	*CGM_readFrames(ncar_cgm, start_frame, num_frames, target,
 			return(ERR);
 		}
 
-		workingList.size += num_frames;
+		workingList.size = workingList.number + num_frames;
 	}
 
 
