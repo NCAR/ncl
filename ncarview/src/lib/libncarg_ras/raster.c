@@ -1,5 +1,5 @@
 /*
- *	$Id: raster.c,v 1.13 1992-03-23 21:46:00 clyne Exp $
+ *	$Id: raster.c,v 1.14 1992-07-17 22:36:22 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -35,7 +35,7 @@
 #include "devices.h"
 
 int	OptionOrientation = RAS_PORTRAIT;
-int	OptionCompression = RAS_COMPRESS_OFF;
+int	OptionCompression = RAS_COMPRESS_RLE;
 int	OptionDotsPerInch = 75;
 int	OptionDitherPopular = False;
 int	OptionDitherColors = 256;
