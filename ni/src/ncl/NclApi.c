@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.32 1996-07-25 20:28:13 ethan Exp $
+ *      $Id: NclApi.c,v 1.33 1996-08-30 16:04:03 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -113,30 +113,14 @@ int NclInitServer
 #endif
 #endif
 	ncopts = NC_VERBOSE;
-/*
-	thefptr = fopen("ncl.tree","w");
-        theoptr = fopen("ncl.seq","w");
-*/
 	cur_line_text = NclMalloc((unsigned)512);
         cur_line_maxsize = 512;
         cur_line_text_pos = &(cur_line_text[0]);
 
-	NhlInitialize();
-	NhlVACreate(&appid,"ncl",NhlappClass,NhlDEFAULT_APP,
-                NhlNappDefaultParent,1,NULL);
+	NhlOpen();
 
 
 	
-	NhlVASetValues(NhlErrGetID(),
-/*
-		NhlNerrBuffer,True,
-*/
-		NhlNerrLevel,error_level,
-/*
-		NhlNerrPrint,False,
-		NhlNerrFilePtr,the_err_file,
-*/
-		NULL);
 	_NclInitMachine();
 	_NclInitSymbol();
 	_NclInitTypeClasses();
