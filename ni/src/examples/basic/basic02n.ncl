@@ -1,6 +1,6 @@
-; $Id: basic02n.ncl,v 1.1 1995-02-03 20:35:57 scheitln Exp $
+; $Id: basic02n.ncl,v 1.2 1995-02-03 20:39:06 scheitln Exp $
 ;
-; This first frame in this example demonstrates how to set the view port 
+; The first frame in this example demonstrates how to set the view port 
 ; for a contour plot.
 ; Note: no data is used in this example, so the output appears
 ; only as a bounding box with tickmarks.
