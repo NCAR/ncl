@@ -1,52 +1,90 @@
-C
-C	$Id: frame.f,v 1.1.1.1 1992-04-17 22:32:29 ncargd Exp $
-C
       SUBROUTINE FRAME
       COMMON /GFLASH/MODEF,IOPWKS(100),IOACT(100),NUMOP,IWISSI
 C
-C FRAME is intended to advance to a new frame.  The GKS version clears
-C all open workstations.
+C  FRAME is designed to effect a break in the picture drawing
+C  sequence depending upon whether the workstation type is 
+C  MO, or whether it is an OUTPUT or OUTIN workstation.
+C  
+C  An UPDATE WORKSTATION and CLEAR WORKSTATION is done on all 
+C  metafiles and all workstations of type OUTPUT.  For metafiles
+C  this inserts an END PICTURE into the metafile.
+C  
+C  If there are any OUTIN workstations, all of them are updated
+C  with an UPDATE WORKSTATION and a pause is done on the OUTIN
+C  workstation of most recent creation.  After return from the 
+C  pause, a CLEAR WORKSTATION is done on all OUTIN workstations.
 C
-C Illegal to call frame while a FLASH buffer is open.
+      INTEGER WKID
+      CHARACTER*80 DATREC,STR,ISTR
 C
-      IF (MODEF .EQ. 1) THEN
-        CALL SETER ('FRAME  - ILLEGAL TO CALL FRAME WHILE A FLASH BUFFER
-     -IS OPEN',16,2)
-      ENDIF
-C
-C First, flush the pen-move buffer.
+C  First, flush the pen-move buffer.
 C
       CALL PLOTIF (0.,0.,2)
 C
-C Get the number of open workstations.  If there are none, we're done.
+C  If no workstations are open, return.
 C
-      CALL GQOPWK (0,IE,NO,ID)
-      IF (NO.EQ.0) RETURN
+      CALL GQOPWK (1,IER,NO,ID)
+      IF (NO .EQ. 0) RETURN
 C
-C Otherwise, clear the open workstations of category OUTPUT, OUTIN,
-C or MO.
+C  Update all workstations.
 C
-      DO 101 I=1,NO
+      DO 200 I=1,NO
 C
-C Get workstation ID.
+C  Get the workstation ID.
 C
-        CALL GQOPWK (I,IE,NO,ID)
+        CALL GQOPWK (I,IERR,NO,WKID)
 C
-C Get workstation type.
+C  Get workstation type.
 C
-        CALL GQWKC (ID,IE,IA,IT)
+        CALL GQWKC (WKID,IER,ICON,ITYPE)
 C
-C Get workstation category.
+C  Get workstation category (0=output; 2=out/in; 4=metafile).
 C
-        CALL GQWKCA (IT,IE,IC)
+        CALL GQWKCA (ITYPE,IER,ICAT)
 C
-C Clear workstation if it is of category OUTPUT, OUTIN, or MO.
+        IF (ICAT .EQ. 4) THEN
 C
-        IF (IC.EQ.0 .OR. IC.EQ.2 .OR. IC.EQ.4) CALL GCLRWK (ID,1)
-  101 CONTINUE
+C  Illegal to call FRAME while a FLASH buffer is open.
 C
-C Done.
+          IF (MODEF .EQ. 1) THEN
+            CALL SETER 
+     -    ('FRAME - ILLEGAL TO CALL FRAME WHILE A FLASH BUFFER IS OPEN',      
+     -      16,2)
+          ENDIF
+          CALL GCLRWK(WKID,1)
+        ELSE IF (ICAT.EQ.0 .OR. ICAT.EQ.2) THEN
+          CALL GUWK(WKID,0)
+          IF (ICAT .EQ. 0) THEN
+            CALL GCLRWK(WKID,1)
+          ENDIF
+        ENDIF
+  200 CONTINUE
 C
+C  Pause on the OUTIN workstaton of most recent creation.
+C
+      DO 100 I=NO,1,-1
+        CALL GQOPWK (I,IERR,NO,WKID)
+        CALL GQWKC (WKID,IER,ICON,ITYPE)
+        CALL GQWKCA (ITYPE,IER,ICAT)
+        IF (ICAT.EQ.2) THEN
+          ISTR(1:1) = CHAR(0)
+          CALL GINST(WKID,1,0,ISTR,1,0.,1279.,0.,1023.,1,1,1,DATREC)       
+          CALL GSSTM(WKID,1,0,0)
+          CALL GRQST(WKID,1,ISTAT,LOSTR,STR)
+          GO TO 110
+        ENDIF
+  100 CONTINUE
+  110 CONTINUE
+C
+C  Clear all OUTIN worktations.
+C
+      DO 300 I=1,NO
+        CALL GQOPWK (I,IERR,NO,WKID)
+        CALL GQWKC (WKID,IER,ICON,ITYPE)
+        CALL GQWKCA (ITYPE,IER,ICAT)
+        IF (ICAT.EQ.2) THEN
+          CALL GCLRWK(WKID,1)
+        ENDIF
+  300 CONTINUE
       RETURN
-C
       END
