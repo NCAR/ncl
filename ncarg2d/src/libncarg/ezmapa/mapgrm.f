@@ -1,5 +1,5 @@
 C
-C $Id: mapgrm.f,v 1.4 1994-03-18 23:18:49 kennison Exp $
+C $Id: mapgrm.f,v 1.5 1994-04-08 23:33:14 kennison Exp $
 C
       SUBROUTINE MAPGRM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
 C
@@ -26,7 +26,7 @@ C
       LOGICAL IMF,IPF
 C
 C Define required constants.
-C
+ 
       DATA DTOR / .017453292519943 /
 C
 C The arithmetic statement functions FLOOR and CLING give, respectively,
@@ -53,6 +53,11 @@ C
 C If the grid is suppressed, do nothing.
 C
       IF (GRID.LE.0.) RETURN
+C
+C Reset the color index and dash pattern for the grid.
+C
+      CALL MAPCHM (2,IDSH,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+      IF (ICFELL('MAPGRM',2).NE.0) RETURN
 C
 C Set the flags IMF and IPF, which are true if and only if meridians and
 C parallels, respectively, are straight lines and it is "safe" to draw
@@ -150,13 +155,13 @@ C
       DLAT=(XLAT-RLAT)/CLING((XLAT-RLAT)/GRDR)
 10016 CONTINUE
       CALL MAPITM (RLAT,RLON,0,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
-      IF (ICFELL('MAPGRM',2).NE.0) RETURN
+      IF (ICFELL('MAPGRM',3).NE.0) RETURN
   102 RLAT=RLAT+DLAT
       CALL MAPITM (RLAT,RLON,1,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
-      IF (ICFELL('MAPGRM',3).NE.0) RETURN
+      IF (ICFELL('MAPGRM',4).NE.0) RETURN
       IF (RLAT.LT.XLAT-.9999) GO TO 102
       CALL MAPIQM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
-      IF (ICFELL('MAPGRM',4).NE.0) RETURN
+      IF (ICFELL('MAPGRM',5).NE.0) RETURN
       IF (RLON.LT.XLON-.9999) GO TO 101
 C
 C Round the latitude limits to appropriate multiples of GRID.
@@ -172,11 +177,11 @@ C for the parallels at -90 and/or +90 to be drawn.
 C
       IF (.NOT.(IPRJ.EQ.10)) GO TO 10017
       CALL MAPTRN (-90.,PHIO,U,V)
-      IF (ICFELL('MAPGRM',5).NE.0) RETURN
+      IF (ICFELL('MAPGRM',6).NE.0) RETURN
       IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
      +                                                  SLAT=SLAT-GRID
       CALL MAPTRN (90.,PHIO,U,V)
-      IF (ICFELL('MAPGRM',6).NE.0) RETURN
+      IF (ICFELL('MAPGRM',7).NE.0) RETURN
       IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
      +                                                  BLAT=BLAT+GRID
 10017 CONTINUE
@@ -195,14 +200,19 @@ C
       DLON=(XLON-RLON)/CLING((XLON-RLON)/GRDR)
 10019 CONTINUE
       CALL MAPITM (RLAT,RLON,0,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
-      IF (ICFELL('MAPGRM',7).NE.0) RETURN
+      IF (ICFELL('MAPGRM',8).NE.0) RETURN
   104 RLON=RLON+DLON
       CALL MAPITM (RLAT,RLON,1,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
-      IF (ICFELL('MAPGRM',8).NE.0) RETURN
+      IF (ICFELL('MAPGRM',9).NE.0) RETURN
       IF (RLON.LT.XLON-.9999) GO TO 104
       CALL MAPIQM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
-      IF (ICFELL('MAPGRM',9).NE.0) RETURN
+      IF (ICFELL('MAPGRM',10).NE.0) RETURN
       IF (XLAT.LT.BLAT-.9999) GO TO 103
+C
+C Restore the color index, and dash pattern.
+C
+      CALL MAPCHM (-2,0,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+      IF (ICFELL('MAPGRM',11).NE.0) RETURN
 C
 C Done.
 C

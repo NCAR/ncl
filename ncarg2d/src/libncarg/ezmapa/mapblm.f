@@ -1,9 +1,9 @@
 C
-C $Id: mapblm.f,v 1.1 1994-04-07 21:02:29 kennison Exp $
+C $Id: mapblm.f,v 1.2 1994-04-08 23:33:10 kennison Exp $
 C
       SUBROUTINE MAPBLM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
 C
-      DIMENSION IAM(*)
+      DIMENSION IAM(*),XCS(*),YCS(*),IAI(*),IAG(*)
 C
 C Declare required common blocks.
 C
@@ -35,10 +35,6 @@ C
       DOUBLE PRECISION DR,DS,DCOSB,DSINB,DCOSA,DSINA,DCOSPH,DSINPH,
      +                 DCOSLA,DSINLA
 C
-C Dimension the arrays needed to define some lines across the map.
-C
-      DIMENSION XCR(2),YCR(2)
-C
 C Define required constants.
 C
       DATA DTOR / .017453292519943 /
@@ -65,17 +61,17 @@ C
       IF (INTF) RETURN
       IF (IIER.NE.0) RETURN
 C
-C Put the perimeter and the limb line into the area map (in group 1 and,
-C perhaps, in group 2).
+C If the perimeter is to be drawn ...
 C
-      IGRP=IGI1
+      IF (.NOT.(PRMF)) GO TO 10001
 C
-10001 CONTINUE
+C ... reset the color index and dash pattern for the perimeter ...
 C
-C Perimeter.
+      CALL MAPCHM (1,IOR(ISHIFT(32767,1),1),
+     +                              IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+      IF (ICFELL('MAPBLM',2).NE.0) RETURN
 C
-      IDLT=0
-      IDRT=-1
+C .. and draw the perimeter.
 C
       IF (.NOT.(ELPF)) GO TO 10002
       TEMP=.9998
@@ -138,30 +134,39 @@ C
       GO TO 10019
 10018 CONTINUE
 C
-C Limb line.
+C Restore the color index and dash pattern.
+C
+      CALL MAPCHM (-1,0,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+      IF (ICFELL('MAPBLM',3).NE.0) RETURN
+C
+10001 CONTINUE
+C
+C Reset the color index and dash pattern for limb lines.
+C
+      CALL MAPCHM (4,IOR(ISHIFT(32767,1),1),
+     +                                IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+      IF (ICFELL('MAPBLM',4).NE.0) RETURN
+C
+C Draw the limb line.
 C
       GO TO (101,107,102,103,107,104,107,107,105,107,107,105) , IPRJ
 C
   101 DLAT=GRDR
       RLON=PHIO+179.9999
-      IDLT=0
-      IDRT=-1
       K=CLING(180./DLAT)
       DO 10020 I=1,2
       RLAT=-90.
       CALL MAPITM (RLAT,RLON,0,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
-      IF (ICFELL('MAPBLM',2).NE.0) RETURN
+      IF (ICFELL('MAPBLM',5).NE.0) RETURN
       DO 10021 J=1,K-1
       RLAT=RLAT+DLAT
       CALL MAPITM (RLAT,RLON,1,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
-      IF (ICFELL('MAPBLM',3).NE.0) RETURN
+      IF (ICFELL('MAPBLM',6).NE.0) RETURN
 10021 CONTINUE
       RLAT=RLAT+DLAT
       CALL MAPITM (RLAT,RLON,2,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
-      IF (ICFELL('MAPBLM',4).NE.0) RETURN
+      IF (ICFELL('MAPBLM',7).NE.0) RETURN
       RLON=PHIO-179.9999
-      IDLT=-1
-      IDRT=0
 10020 CONTINUE
       L10019=    2
       GO TO 10019
@@ -176,8 +181,6 @@ C
 10023 CONTINUE
       SSLT=SALT
       SALT=-ABS(SALT)
-      IDLT=-1
-      IDRT=0
       IF (.NOT.(IROD.EQ.0)) GO TO 10024
       R=.9998
 10025 CONTINUE
@@ -212,7 +215,7 @@ C
       IF (ABS(RLON).GT.180.) RLON=RLON-SIGN(360.,RLON)
       CALL MAPITM (RLAT,RLON,IPEN,
      +             IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
-      IF (ICFELL('MAPBLM',5).NE.0) RETURN
+      IF (ICFELL('MAPBLM',8).NE.0) RETURN
       IPEN=1
       IF (I.EQ.360) IPEN=2
 10026 CONTINUE
@@ -262,7 +265,7 @@ C
       IF (ABS(RLON).GT.180.) RLON=RLON-SIGN(360.,RLON)
       CALL MAPITM (RLAT,RLON,IPEN,
      +             IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
-      IF (ICFELL('MAPBLM',6).NE.0) RETURN
+      IF (ICFELL('MAPBLM',9).NE.0) RETURN
       IPEN=1
       IF (I.EQ.360) IPEN=2
 10036 CONTINUE
@@ -304,8 +307,6 @@ C
       TEMP=.9998
 C
 10044 CONTINUE
-      IDLT=0
-      IDRT=-1
       IVIS=-1
       I = 1
       GO TO 10047
@@ -381,16 +382,13 @@ C
       GO TO 10044
 10062 CONTINUE
 C
-  107 CONTINUE
-      IF (IGRP.EQ.IGI2.OR.NOVS.LE.0) GO TO 10063
+C Restore the color index and dash pattern.
 C
-      IGRP=IGI2
+  107 CALL MAPCHM (-4,0,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+      IF (ICFELL('MAPBLM',10).NE.0) RETURN
 C
-      GO TO 10001
-10063 CONTINUE
-C
-C If the selected outline type is "NONE", quit; no outlines need be
-C added to the area map.
+C If the selected outline type is "NONE", quit; no outlines need to
+C be drawn.
 C
       IF (NOUT.LE.0) RETURN
 C
@@ -402,83 +400,110 @@ C
       IWGF=0
       IF (BLAM-SLAM.GT.179.9999.AND.BLOM-SLOM.GT.359.9999) IWGF=1
 C
+C IGIS keeps track of changes in the group identifier, so that the
+C color index can be changed when necessary.
+C
+      IGIS=0
+C
 C Position to the user-selected portion of the outline dataset.
 C
-      IGRP=IGI1
       CALL MAPIO (1)
-      IF (ICFELL('MAPBLM',8).NE.0) RETURN
-      IDLT=IDOS(NOUT)+IDLS
-      IDRT=IDOS(NOUT)+IDRS
+      IF (ICFELL('MAPBLM',11).NE.0) RETURN
       NSEG=0
 C
 C Read the next record (group of points).
 C
   301 CALL MAPIO (2)
-      IF (ICFELL('MAPBLM',9).NE.0) RETURN
-      IDLT=IDOS(NOUT)+IDLS
-      IDRT=IDOS(NOUT)+IDRS
+      IF (ICFELL('MAPBLM',12).NE.0) RETURN
       NSEG=NSEG+1
 C
 C Check for the end of the desired data.
 C
-      IF (NPTS.EQ.0) RETURN
+      IF (NPTS.EQ.0) GO TO 303
 C
 C If less than the whole globe is shown by the projection, do a quick
 C check for intersection of the box surrounding the point group with
 C the area shown.
 C
-      IF (.NOT.(IWGF.EQ.0)) GO TO 10064
+      IF (.NOT.(IWGF.EQ.0)) GO TO 10063
       IF (SLAG.GT.BLAM.OR.BLAG.LT.SLAM) GO TO 301
       IF ((SLOG     .GT.BLOM.OR.BLOG     .LT.SLOM).AND.
      +    (SLOG-360..GT.BLOM.OR.BLOG-360..LT.SLOM).AND.
      +    (SLOG+360..GT.BLOM.OR.BLOG+360..LT.SLOM)) GO TO 301
-10064 CONTINUE
+10063 CONTINUE
 C
 C See if the user wants to omit this point group.
 C
-      CALL MAPEOD (NOUT,NSEG,IDLT,IDRT,NPTS,PNTS)
-      IF (.NOT.(ICFELL('MAPBLM',10).NE.0)) GO TO 10065
+      CALL MAPEOD (NOUT,NSEG,IDOS(NOUT)+IDLS,
+     +                       IDOS(NOUT)+IDRS,NPTS,PNTS)
+      IF (.NOT.(ICFELL('MAPBLM',13).NE.0)) GO TO 10064
       IIER=-1
       RETURN
-10065 CONTINUE
+10064 CONTINUE
       IF (NPTS.LE.1) GO TO 301
+C
+C If we've switched to a new group, set the color index, dotting, and
+C dash pattern for the group.
+C
+      IF (.NOT.(IGID.NE.IGIS)) GO TO 10065
+      IF (.NOT.(IGIS.NE.0)) GO TO 10066
+      CALL MAPCHM (-4-IGIS,0,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+      IF (ICFELL('MAPBLM',14).NE.0) RETURN
+10066 CONTINUE
+      CALL MAPCHM (4+IGID,IOR(ISHIFT(32767,1),1),
+     +                                IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+      IF (ICFELL('MAPBLM',15).NE.0) RETURN
+      IGIS=IGID
+10065 CONTINUE
 C
 C Plot the group.
 C
       CALL MAPITM (PNTS(1),PNTS(2),0,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
-      IF (ICFELL('MAPBLM',11).NE.0) RETURN
+      IF (ICFELL('MAPBLM',16).NE.0) RETURN
 C
-      DO 10066 K=2,NPTS-1
+      DO 10067 K=2,NPTS-1
       CALL MAPITM (PNTS(2*K-1),PNTS(2*K),1,
      +             IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
-      IF (ICFELL('MAPBLM',12).NE.0) RETURN
-10066 CONTINUE
+      IF (ICFELL('MAPBLM',17).NE.0) RETURN
+10067 CONTINUE
 C
       CALL MAPITM (PNTS(2*NPTS-1),PNTS(2*NPTS),2,
      +             IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
-      IF (ICFELL('MAPBLM',13).NE.0) RETURN
+      IF (ICFELL('MAPBLM',18).NE.0) RETURN
 C
 C Force a buffer dump.
 C
       L10019=    6
       GO TO 10019
-10067 CONTINUE
+10068 CONTINUE
 C
 C Go get another group.
 C
       GO TO 301
 C
+C Reset the color index, dotting, and dash pattern, if necessary.
+C
+  303 CONTINUE
+      IF (.NOT.(IGIS.NE.0)) GO TO 10069
+      CALL MAPCHM (-4-IGIS,0,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+      IF (ICFELL('MAPBLM',19).NE.0) RETURN
+10069 CONTINUE
+C
+C Done.
+C
+      RETURN
+C
 C The following internal procedure is invoked to start a line.
 C
 10005 CONTINUE
-      IF (.NOT.(NCRA.GT.1)) GO TO 10068
+      IF (.NOT.(NCRA.GT.1)) GO TO 10070
       CALL ARDRLN (IAM,XCRA,YCRA,NCRA,
      +             XCS,YCS,MCS,IAI,IAG,MAI,LPR)
-      IF (.NOT.(ICFELL('MAPBLM',14).NE.0)) GO TO 10069
+      IF (.NOT.(ICFELL('MAPBLM',20).NE.0)) GO TO 10071
       IIER=-1
       RETURN
-10069 CONTINUE
-10068 CONTINUE
+10071 CONTINUE
+10070 CONTINUE
       XCRA(1)=XCRD
       YCRA(1)=YCRD
       NCRA=1
@@ -487,17 +512,17 @@ C
 C The following internal procedure is invoked to continue a line.
 C
 10010 CONTINUE
-      IF (.NOT.(NCRA.EQ.100)) GO TO 10070
+      IF (.NOT.(NCRA.EQ.100)) GO TO 10072
       CALL ARDRLN (IAM,XCRA,YCRA,NCRA,
      +             XCS,YCS,MCS,IAI,IAG,MAI,LPR)
-      IF (.NOT.(ICFELL('MAPBLM',15).NE.0)) GO TO 10071
+      IF (.NOT.(ICFELL('MAPBLM',21).NE.0)) GO TO 10073
       IIER=-1
       RETURN
-10071 CONTINUE
+10073 CONTINUE
       XCRA(1)=XCRA(100)
       YCRA(1)=YCRA(100)
       NCRA=1
-10070 CONTINUE
+10072 CONTINUE
       NCRA=NCRA+1
       XCRA(NCRA)=XCRD
       YCRA(NCRA)=YCRD
@@ -506,15 +531,15 @@ C
 C The following internal procedure is invoked to terminate a line.
 C
 10019 CONTINUE
-      IF (.NOT.(NCRA.GT.1)) GO TO 10072
+      IF (.NOT.(NCRA.GT.1)) GO TO 10074
       CALL ARDRLN (IAM,XCRA,YCRA,NCRA,
      +             XCS,YCS,MCS,IAI,IAG,MAI,LPR)
-      IF (.NOT.(ICFELL('MAPBLM',16).NE.0)) GO TO 10073
+      IF (.NOT.(ICFELL('MAPBLM',22).NE.0)) GO TO 10075
       IIER=-1
       RETURN
-10073 CONTINUE
+10075 CONTINUE
       NCRA=0
-10072 CONTINUE
-      GO TO (10018,10022,10032,10042,10061,10067) , L10019
+10074 CONTINUE
+      GO TO (10018,10022,10032,10042,10061,10068) , L10019
 C
       END
