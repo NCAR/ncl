@@ -178,9 +178,15 @@ c c c real     betai
       DOUBLE PRECISION XMEAN,XVAR,XSD,XCOV,XN,DF,SUM,TVAL,ALPHA,R1
       INTEGER N,LAG,JER,NPTUSED
 
+      NEQV = NPTS
+
 c compute 1st two moments
 
       CALL DSTAT2(X,NPTS,XMSG,XMEAN,XVAR,XSD,NPTUSED,JER)
+      if (NPTUSED.LE.0) THEN
+          NEQV = -999
+          RETURN
+      END IF
 
 c compute lag-1 autocorrelation coef
 
@@ -197,13 +203,14 @@ c compute lag-1 autocorrelation coef
       IF (XN.GE.2.D0 .AND. XVAR.GT.0.D0) THEN
           R1 = (XCOV/ (XN-1.D0))/XVAR
       ELSE
-          R1 = XMSG
+          R1   = XMSG
+          NEQV = -999
       END IF
 
 c the approach below does not work when r<0.
 
-      NEQV = NPTUSED
       IF (R1.LE.0.0D0) THEN
+          NEQV = NPTUSED
           RETURN
       END IF
 
