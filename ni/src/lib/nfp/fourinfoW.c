@@ -68,6 +68,13 @@ NhlErrorTypes fourier_info_W( void )
   if(*nhret == 0) {
     nht = npts/2;
   }
+  else {
+    if(*nhret < 0 || *nhret > npts/2) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: nhx must be 0 <= nhx <= npts/2, where npts is the last dimension size of x");
+      return(NhlFATAL);
+    }
+    nht = *nhret;
+  }
 /*
  * Compute the total size of the output array.
  */
