@@ -1,10 +1,10 @@
 #
-#	$Id: yMakefile,v 1.9 1994-03-01 18:20:16 haley Exp $
+#	$Id: yMakefile,v 1.10 1994-03-24 17:15:34 haley Exp $
 #
 
 CSRCS = \
 	c_agex07.c c_cbex01.c c_colcon.c c_eezmpa.c c_elblba.c c_epltch.c \
-	c_mpex05.c c_sfex02.c c_slex01.c c_gtxpac.c
+	c_mpex05.c c_sfex02.c c_slex01.c c_gtxpac.c c_xwndws.c
 
 SED_SRCS = \
 	c_cbex01.c c_agex07.c c_mpex05.c
