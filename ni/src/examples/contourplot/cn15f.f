@@ -1,5 +1,5 @@
 C
-C      $Id: cn15f.f,v 1.5 1999-03-15 18:05:48 haley Exp $
+C      $Id: cn15f.f,v 1.6 1999-07-26 14:40:05 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -51,7 +51,7 @@ C
 C Declare variables for Tick Mark values.
 C
       real xbvalues1(7),xbvalues2(11),ylvalues(7)
-      character*3 xblabels1(7)
+      character*4 xblabels1(7)
       character*2 xblabels2(11)
       character*3 yllabels(7)
       data xbvalues1/0,60,120,180,240,300,360/
