@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans_wks.c.sed,v 1.12 1993-02-11 21:43:18 clyne Exp $
+ *	$Id: ictrans_wks.c.sed,v 1.13 1994-02-18 22:09:40 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -26,18 +26,14 @@
 #include <sys/types.h>
 #include <sys/file.h>
 #include <unistd.h>
+#ifdef cray
+#include <fortran.h>
+#endif
+
 #include <ncarg/cgm_tools.h>
 #include "ictrans_wks.h"
 
 /*LINTLIBRARY*/
-
-#ifdef ardent
-typedef struct
-{
-	char	*text;
-	int	length;
-} FortranString;
-#endif
 
 /* The table which maintains information on open metafiles */
 static struct
@@ -101,27 +97,26 @@ ictarg_(unit, args, status)
 	
 
 
-#ifdef ardent
-opnwks_(unit, string, status)
+#ifdef cray
+opnwks_(unit, fname_, status)
+	_fcd	fname_;
 #else
 opnwks_(unit, fname, status)
-#endif
-	int	*unit;
-#ifdef ardent
-	FortranString	*string;
-#else
 	char	*fname;
 #endif
+	int	*unit;
 	int	*status;
 {
 	static int	init = 0;
 	int		i, mfd, pipes[2], type;
 	char		*gks_output, *gks_translator;
 	char		*getenv(), *p;
-#ifdef ardent
+#ifdef cray
+	unsigned	length = _fcdlen(fname_);
 	char		*fname;
 
-	fname = string->text;
+	fname = (char *)malloc(sizeof(char)*length);
+	strncpy( fname, _fcdtocp(fname_), length );
 #endif
 
 	/* Initialize the table that is used to track lu's */
