@@ -260,7 +260,7 @@ void GetThinnedLonParams
  int lo2,
  int idir,
  int *nlon,
- int *di
+ double *di
 )
 #else
 (gds,nlat,lo1,lo2,idir,nlon,di)
@@ -270,7 +270,7 @@ void GetThinnedLonParams
  int lo2;
  int idir;
  int *nlon;
- int *di;
+ double *di;
 #endif
 {
 	int pl_ix;
@@ -315,7 +315,7 @@ void GetThinnedLonParams
 		}
 		diff = lo1 - lo2;
 	}
-	*di =  diff / (*nlon - 1);
+	*di =  diff / (double) (*nlon - 1);
 	return;
 }
 
@@ -327,7 +327,7 @@ void GetThinnedLatParams
  int la2,
  int jdir,
  int *nlat,
- int *dj
+ double *dj
 )
 #else
 (gds,nlon,la1,la2,jdir,nlat,dj)
@@ -337,7 +337,7 @@ void GetThinnedLatParams
  int la2;
  int jdir;
  int *nlat;
- int *dj;
+ double *dj;
 #endif
 {
 	
@@ -377,7 +377,7 @@ void GetThinnedLatParams
 	else {
 		diff = la1 - la2;
 	}
-	*dj =  diff / (*nlat - 1);
+	*dj =  diff / (double)(*nlat - 1);
 	return;
 }
 
@@ -3771,7 +3771,7 @@ int * nlonatts;
 	int ila2;
 	int ilo1;
 	int ilo2;
-	int loinc;
+	double loinc;
 	int max_lon;
 	int num;
 	int sign;
@@ -3870,7 +3870,8 @@ int * nlonatts;
 		tmpc[1] = thevarrec->thelist->rec_inq->gds[21];
 		tmpc[2] = thevarrec->thelist->rec_inq->gds[22];
 		ilo2 = ((thevarrec->thelist->rec_inq->gds[20] & (char)0200) ? -1:1)*(int)UnsignedCnvtToDecimal(3,tmpc);
-		loinc = (int)CnvtToDecimal(2,&thevarrec->thelist->rec_inq->gds[23]);
+		
+			
 		*n_dims_lon = 1;
 		*dimsizes_lon = malloc(sizeof(int));
 		nlon = CnvtToDecimal(2,&thevarrec->thelist->rec_inq->gds[6]);
@@ -3879,6 +3880,15 @@ int * nlonatts;
 			is_thinned_lon = 1;
 			GetThinnedLonParams(thevarrec->thelist->rec_inq->gds,
 					    nlat,ilo1,ilo2,idir,&nlon,&loinc);
+		} else {
+			int itmp = (int)CnvtToDecimal(2,&thevarrec->thelist->rec_inq->gds[23]);
+			if (itmp != 65535) {
+				loinc = (double) itmp;
+			}
+			else {
+				loinc = (ilo2 - ilo1) / (double) (nlon - 1);
+				loinc = loinc < 0 ? -loinc : loinc;
+			}
 		}
 		(*dimsizes_lon)[0] = nlon;
 		*lon = malloc(sizeof(float)*nlon);
@@ -4247,8 +4257,8 @@ int * nlonatts;
 	int lo1;
 	int la2;
 	int lo2;
-	int di;
-	int dj;
+	double di;
+	double dj;
 	int latXlon;
 	int idir;
 	int jdir;
@@ -4262,94 +4272,108 @@ int * nlonatts;
 	float *tmp_float;
 	NclQuark* tmp_string;
 	int nlon, nlat;
+	int itmp;
 	
 	
-	if((thevarrec->thelist != NULL)&&(thevarrec->thelist->rec_inq != NULL)) {
-		gds = thevarrec->thelist->rec_inq->gds;
-		if(gds != NULL) {
-			nlon = CnvtToDecimal(2,&(gds[6]));
-			nlat = CnvtToDecimal(2,&(gds[8]));
-			
-/*
-* Check for thinned grids
-*/
-			is_thinned_lon = (nlon == 65535); /* all bits set indicates missing: missing means thinned */
-			is_thinned_lat = (nlat == 65535);
-			idir = ((char)0200 & gds[27]) ? -1 : 1;
-			jdir = ((char)0100 & gds[27]) ? 1 : -1;
-			latXlon = ((char)0040 & gds[27])? 0 : 1; 
-			sign = ((char)0200 & gds[10] )? -1 : 1;
-			tmp[0] = (char)0177 & gds[10];
-			tmp[1] = gds[11];
-			tmp[2] = gds[12];
-			la1 = sign * CnvtToDecimal(3,tmp);
-			sign = ((char)0200 & gds[13] )? -1 : 1;
-			tmp[0] = (char)0177 & gds[13];
-			tmp[1] = gds[14];
-			tmp[2] = gds[15];
-			lo1 = sign * CnvtToDecimal(3,tmp);
-			sign = ((char)0200 & gds[17] )? -1 : 1;
-			tmp[0] = (char)0177 & gds[17];
-			tmp[1] = gds[18];
-			tmp[2] = gds[19];
-			la2 = sign * CnvtToDecimal(3,tmp);
-			sign = ((char)0200 & gds[20] )? -1 : 1;
-			tmp[0] = (char)0177 & gds[20];
-			tmp[1] = gds[21];
-			tmp[2] = gds[22];
-			lo2 = sign * CnvtToDecimal(3,tmp);
-			has_dir_inc = ((char)0200 & gds[16]) ? 1 : 0;
-			di = CnvtToDecimal(2,&gds[23]);
-			dj = CnvtToDecimal(2,&gds[25]);
-			
-			if (is_thinned_lon) {
-				GetThinnedLonParams(gds,nlat,lo1,lo2,idir,&nlon,&di);
-			}
-			else if (is_thinned_lat) {
-				GetThinnedLatParams(gds,nlon,la1,la2,jdir,&nlat,&dj);
-			}
-			
-			if (nlon == 0 || nlat == 0 || (is_thinned_lon && is_thinned_lat)) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  "GdsCEGrid: Invalid grid detected");
-				*lat = NULL;
-				*n_dims_lat = 0;
-				*dimsizes_lat = NULL;
-				*lon = NULL;
-				*n_dims_lon= 0;
-				*dimsizes_lon= NULL;
-			} else {
-				
-				*dimsizes_lat = (int*)NclMalloc(sizeof(int));
-				*dimsizes_lon = (int*)NclMalloc(sizeof(int));
-				*(*dimsizes_lon) = nlon;
-				*(*dimsizes_lat) = nlat;
-				*n_dims_lat = 1;
-				*n_dims_lon = 1;
-				*lat = (float*)NclMalloc((unsigned)sizeof(float)* nlat);
-				*lon = (float*)NclMalloc((unsigned)sizeof(float)* nlon);
-				for(i = 0;i < *(*dimsizes_lat) ; i++) {
-					(*lat)[i] = (float)(la1 + jdir * i * dj) / 1000.0;
-				}
-				for(i = 0;i < *(*dimsizes_lon) ; i++) {
-					(*lon)[i] = (float)(lo1 + idir * i * di) / 1000.0;
-				}
-			}
-			
-			
-		} else {
-			
-			*lat = NULL;
-			*n_dims_lat = 0;
-			*dimsizes_lat = NULL;
-			*lon = NULL;
-			*n_dims_lon= 0;
-			*dimsizes_lon= NULL;
-			
-		}
+	*lat = NULL;
+	*n_dims_lat = 0;
+	*dimsizes_lat = NULL;
+	*lon = NULL;
+	*n_dims_lon= 0;
+	*dimsizes_lon= NULL;
+	if((thevarrec->thelist == NULL)||(thevarrec->thelist->rec_inq == NULL)) 
+		return;
 
+	gds = thevarrec->thelist->rec_inq->gds;
+	if(gds == NULL) {
+		return;
 	}
-		
+
+	nlon = CnvtToDecimal(2,&(gds[6]));
+	nlat = CnvtToDecimal(2,&(gds[8]));
+	is_thinned_lon = (nlon == 65535); /* all bits set indicates missing: missing means thinned */
+	is_thinned_lat = (nlat == 65535);
+	if (nlon <= 1 || nlat <= 1 || (is_thinned_lon && is_thinned_lat)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "GdsCEGrid: Invalid grid detected");
+		*lat = NULL;
+		*n_dims_lat = 0;
+		*dimsizes_lat = NULL;
+		*lon = NULL;
+		*n_dims_lon= 0;
+		*dimsizes_lon= NULL;
+		return;
+	}
+
+	idir = ((char)0200 & gds[27]) ? -1 : 1;
+	jdir = ((char)0100 & gds[27]) ? 1 : -1;
+	latXlon = ((char)0040 & gds[27])? 0 : 1; 
+	sign = ((char)0200 & gds[10] )? -1 : 1;
+	tmp[0] = (char)0177 & gds[10];
+	tmp[1] = gds[11];
+	tmp[2] = gds[12];
+	la1 = sign * CnvtToDecimal(3,tmp);
+	sign = ((char)0200 & gds[13] )? -1 : 1;
+	tmp[0] = (char)0177 & gds[13];
+	tmp[1] = gds[14];
+	tmp[2] = gds[15];
+	lo1 = sign * CnvtToDecimal(3,tmp);
+	sign = ((char)0200 & gds[17] )? -1 : 1;
+	tmp[0] = (char)0177 & gds[17];
+	tmp[1] = gds[18];
+	tmp[2] = gds[19];
+	la2 = sign * CnvtToDecimal(3,tmp);
+	sign = ((char)0200 & gds[20] )? -1 : 1;
+	tmp[0] = (char)0177 & gds[20];
+	tmp[1] = gds[21];
+	tmp[2] = gds[22];
+	lo2 = sign * CnvtToDecimal(3,tmp);
+	has_dir_inc = ((char)0200 & gds[16]) ? 1 : 0;
+	if (is_thinned_lon) {
+		GetThinnedLonParams(gds,nlat,lo1,lo2,idir,&nlon,&di);
+	}
+	else {
+		itmp =  CnvtToDecimal(2,&gds[23]);
+		if (itmp != 65535) {
+			di = (double) itmp;
+		}
+		else {
+			/* not specified: must be calculated from the endpoints and number of steps */
+			di = (lo2 - lo1) / (double)(nlon - 1);
+			if (di < 0) di = -di;
+		}
+	}
+
+	if (is_thinned_lat) {
+		GetThinnedLatParams(gds,nlon,la1,la2,jdir,&nlat,&dj);
+	}
+	else {
+		itmp = (double) CnvtToDecimal(2,&gds[25]);
+		if (itmp != 65535.0) {
+			dj = (double) itmp;
+		}
+		else {
+			/* not specified: must be calculated from the endpoints and number of steps */
+			dj = (la2 - la1) / (double) (nlat - 1);
+			if (dj < 0) dj = -dj;
+		}
+	}
+			
+	*dimsizes_lat = (int*)NclMalloc(sizeof(int));
+	*dimsizes_lon = (int*)NclMalloc(sizeof(int));
+	*(*dimsizes_lon) = nlon;
+	*(*dimsizes_lat) = nlat;
+	*n_dims_lat = 1;
+	*n_dims_lon = 1;
+	*lat = (float*)NclMalloc((unsigned)sizeof(float)* nlat);
+	*lon = (float*)NclMalloc((unsigned)sizeof(float)* nlon);
+	for(i = 0;i < *(*dimsizes_lat) ; i++) {
+		(*lat)[i] = (float)(la1 + jdir * i * dj) / 1000.0;
+	}
+	for(i = 0;i < *(*dimsizes_lon) ; i++) {
+		(*lon)[i] = (float)(lo1 + idir * i * di) / 1000.0;
+	}
+	
 	if(lon_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = la1/1000.0;
