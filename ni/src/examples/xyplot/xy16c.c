@@ -1,5 +1,5 @@
 /*
- *      $Id: xy16c.c,v 1.1 1997-02-24 18:12:13 haley Exp $
+ *      $Id: xy16c.c,v 1.2 1997-03-20 18:25:58 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -338,8 +338,6 @@ main()
       NhlDraw(xy2);
       NhlDraw(xy3);
       NhlFrame(xworkid);
-      NhlDestroy(srlist);
-      NhlDestroy(grlist);
       NhlDestroy(appid);
       NhlClose();
 }
