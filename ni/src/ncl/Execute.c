@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.86 1997-03-06 00:20:52 ethan Exp $
+ *      $Id: Execute.c,v 1.87 1997-03-13 17:53:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -4063,7 +4063,7 @@ NclExecuteReturnStatus _NclExecute
 				NclSymbol *file_sym;
 				NclStackEntry *file_ptr,data1,rhs,fvar,avar;
 				NclMultiDValData file_md,rhs_md;
-				NclSelectionRecord *sel_ptr;
+				NclSelectionRecord *sel_ptr = NULL;
 				NclFile		file;
 				NclQuark 	var;
 				NclQuark	att;
@@ -4205,7 +4205,7 @@ NclExecuteReturnStatus _NclExecute
 				NclQuark coord_name;
 				NclQuark var_name;
 				int nsubs;
-				NclSelectionRecord *sel_ptr;
+				NclSelectionRecord *sel_ptr = NULL;
 				NclMultiDValData rhs_md,thevalue;
 				NclAtt theatt;
 				NclAttList *step;
