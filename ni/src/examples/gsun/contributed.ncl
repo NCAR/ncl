@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.6 2003-05-02 03:16:35 shea Exp $
+;      $Id: contributed.ncl,v 1.7 2003-05-07 15:41:56 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -72,6 +72,9 @@
 ; namelist
 ; merge_VarAtts
 ; timeCoads2YYYYMM
+; -------------   
+; Now using CVS .... no longer will I manually maintain the change log
+; -------------
 ;
 ; Contributed.ncl
 ;
@@ -5116,4 +5119,31 @@ begin
   end do
 
   return(nam)
+end
+;*************************************************************************
+; D. Shea
+; Read simple f90 namelist file as indicated by Ben Foster
+; An integer variable is returned. Upon return it will have 
+; associated with it attributes that were created from the
+; input namelist file.
+;
+; create symmetric min/max values for plots
+; will add additional plot resources to the "res" variable
+; 
+; usage:    res = True
+;          symMinMaxPlt(zData, 14, False, res)
+;
+procedure symMinMaxPlt (x:numeric, nCnLvl:integer, inOut:logical, res:logical)
+local xMin, xMax, cmnmx, mnmxint
+begin
+  xMin  = min(x)
+  xMax  = max(x)
+  cmnmx = max( (/fabs(xMin), fabs(xMax)/) )  ; larger of two values
+
+  mnmxint = nice_mnmxintvl( -cmnmx, cmnmx, nCnLvl, inOut)
+
+  res@cnLevelSelectionMode = "ManualLevels"   
+  res@cnMinLevelValF       = mnmxint(0)
+  res@cnMaxLevelValF       = mnmxint(1)
+  res@cnLevelSpacingF      = mnmxint(2)
 end
