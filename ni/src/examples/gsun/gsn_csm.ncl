@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.121 2003-03-07 15:45:14 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.122 2003-03-28 15:09:44 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3508,19 +3508,19 @@ begin
 ;
 ; Define an array of strings to label the time values.
 ;
-; Calculate slt, given ut and lon (slt = ut + lon/15)
+; Calculate slt, given ut and lon (slt = ut + lon/15). Make sure values 
+; fall between 0 and 23.
 ;
-        slt = ut + plon/15
+        slt = (ut + plon/15) % 24
+;
+; It's possible some values fall between -23 and -1, so add 24 to them.
+;
         ind_lt_00 = ind(slt.lt.0)
-        ind_ge_24 = ind(slt.ge.24)
+
         if(.not.any(ismissing(ind_lt_00))) then
           slt(ind_lt_00) = slt(ind_lt_00) + 24
         end if
-        if(.not.any(ismissing(ind_ge_24))) then
-          slt(ind_ge_24) = slt(ind_ge_24) - 24
-        end if
         delete(ind_lt_00)
-        delete(ind_ge_24)
 ; 
 ; Convert "slt" to integer. If it is equal to the float version of "slt",
 ; then we know that our values are effectively integers, and we can plot
@@ -4872,9 +4872,11 @@ begin
     maxbb     = get_bb_res(res2)
 
 ;
-; Check for type of polar plot desired.
+; Check for type of polar plot and polar labels desired.
 ;
-    mpres@gsnPolar = get_polar_type(res2)
+    mpres@gsnPolar     = get_polar_type(res2)
+    mpres@gsnPolarTime = get_res_value(res2,"gsnPolarTime",False)
+    mpres@gsnPolarUT   = get_res_value(res2,"gsnPolarUT",0.)
 
 ; Check for subtitles at top and add to mpres if exist.
 
@@ -5362,9 +5364,11 @@ begin
     maxbb     = get_bb_res(res2)
 
 ;
-; Check for type of polar plot desired.
+; Check for type of polar plot and polar labels desired.
 ;
-    mpres@gsnPolar = get_polar_type(res2)
+    mpres@gsnPolar     = get_polar_type(res2)
+    mpres@gsnPolarTime = get_res_value(res2,"gsnPolarTime",False)
+    mpres@gsnPolarUT   = get_res_value(res2,"gsnPolarUT",0.)
 
 ; Check for subtitles at top and add to mpres if exist.
 
@@ -5843,9 +5847,11 @@ begin
     maxbb     = get_bb_res(res2)
 
 ;
-; Check for type of polar plot.
+; Check for type of polar plot and polar labels desired.
 ;
-    mpres@gsnPolar = get_polar_type(res2)
+    mpres@gsnPolar     = get_polar_type(res2)
+    mpres@gsnPolarTime = get_res_value(res2,"gsnPolarTime",False)
+    mpres@gsnPolarUT   = get_res_value(res2,"gsnPolarUT",0.)
 
 ; Check for subtitles at top and add to mpres if exist.
 
@@ -6775,8 +6781,10 @@ begin
 ;
 ; Check for type of polar plot and scalar field representation.
 ;
-    mpres@gsnPolar = get_polar_type(res2)
-    scalar_contour = get_res_value(res2,"gsnScalarContour",False)
+    mpres@gsnPolar     = get_polar_type(res2)
+    mpres@gsnPolarTime = get_res_value(res2,"gsnPolarTime",False)
+    mpres@gsnPolarUT   = get_res_value(res2,"gsnPolarUT",0.)
+    scalar_contour     = get_res_value(res2,"gsnScalarContour",False)
 
 ; Check for subtitles at top and add to mpres if exist.
 
