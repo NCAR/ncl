@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.131 2005-02-08 00:10:32 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.132 2005-02-14 19:48:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -7554,7 +7554,7 @@ static NhlErrorTypes    ManageData
 	cnp->zmax = cnp->sfp->data_max;
 
 	cnp->const_field = 
-		_NhlCmpFAny2(cnp->zmax,cnp->zmin,8,_NhlMIN_NONZERO) <= 0.0 ?
+		_NhlCmpFAny2(cnp->zmax,cnp->zmin,6,_NhlMIN_NONZERO) <= 0.0 ?
 		True : False;
 	if (cnp->const_field) {
 		e_text = 
