@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.21 1999-03-12 19:13:48 dbrown Exp $
+ *      $Id: go.c,v 1.22 1999-03-12 23:33:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -46,11 +46,20 @@
 #include <X11/Xmu/Editres.h>
 #endif
 
+#define DEF_EDIT_FIELD_COLOR	"#d0d0d0"
+#define DEF_SELECT_COLOR	"#faf0e6"
+
 #define	Oset(field)	NhlOffset(NgGORec,go.field)
 static NhlResource resources[] = {
 	{NgNgoTitle,NgCgoTitle,NhlTString,sizeof(NhlString),
 		Oset(title),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
 		_NhlRES_RCONLY,NULL},
+	{NgNgoEditFieldColor,NgCgoEditFieldColor,NhlTString,sizeof(NhlString),
+	 Oset(edit_field_color),NhlTImmediate,
+	 _NhlUSET((NhlPointer)NULL),_NhlRES_RCONLY,NULL},
+	{NgNgoSelectColor,NgCgoSelectColor,NhlTString,sizeof(NhlString),
+	 Oset(select_color),NhlTImmediate,
+	 _NhlUSET((NhlPointer)NULL),_NhlRES_RCONLY,NULL}
 };
 #undef	Oset
 
@@ -665,6 +674,7 @@ GOInitialize
 	NgGO			pgo;
 	NhlArgVal		dummy,udata;
 	NhlErrorTypes		ret = NhlNOERROR,lret;
+	NhlString		color_name;
 
 	go->subshell = _NhlIsClass(new->base.parent,NggOClass);
 
@@ -689,6 +699,31 @@ GOInitialize
 	}
 	else
 		go->xm_title = NULL;
+
+	if (go->edit_field_color) {
+		go->edit_field_color = NhlMalloc(sizeof(char)
+				      *(strlen(go->edit_field_color)+1));
+		if(!go->edit_field_color){
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return NhlFATAL;
+		}
+		strcpy(go->edit_field_color,rgo->edit_field_color);
+	}
+	else {
+		go->edit_field_color = DEF_EDIT_FIELD_COLOR;
+	}
+	if (go->select_color) {
+		go->select_color = NhlMalloc(sizeof(char)
+				      *(strlen(go->select_color)+1));
+		if(!go->select_color){
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return NhlFATAL;
+		}
+		strcpy(go->select_color,rgo->select_color);
+	}
+	else {
+		go->select_color = DEF_SELECT_COLOR;
+	}
 
 	go->sensitive = True;
 	go->x_sensitive = True;
@@ -768,6 +803,16 @@ GODestroy
 		NhlFree(go->title);
 		go->title = NULL;
 	}
+	if (go->edit_field_color && 
+	    go->edit_field_color != DEF_EDIT_FIELD_COLOR) {
+		NhlFree(go->edit_field_color);
+		go->edit_field_color = NULL;
+	}		
+	if (go->select_color && 
+	    go->select_color != DEF_SELECT_COLOR) {
+		NhlFree(go->select_color);
+		go->select_color = NULL;
+	}		
 
 	if(go->xm_title){
 		NgXAppFreeXmString(go->appmgr,go->xm_title);
@@ -919,6 +964,7 @@ GOCreateWin
 	NgXAppExport		x = gp->x;
 	XWindowAttributes	att;
 	char			mgrname[_NhlMAXRESNAMLEN];
+	XColor			col;
 	XtResource		xtres[] = {
 		{NgNglobalTranslations,NgCglobalTranslations,
 			XtRTranslationTable,sizeof(XtTranslations),
@@ -1009,6 +1055,11 @@ GOCreateWin
 		XmNresizeHeight,	True,
 		XmNresizeWidth,		True,
 		NULL);
+
+	XcbAllocCloseNamedColor(gp->xcb,gp->edit_field_color,&col);
+	gp->edit_field_pixel = col.pixel;
+	XcbAllocCloseNamedColor(gp->xcb,gp->select_color,&col);
+	gp->select_pixel = col.pixel;
 
 	return True;
 }

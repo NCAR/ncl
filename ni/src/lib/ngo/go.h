@@ -1,5 +1,5 @@
 /*
- *      $Id: go.h,v 1.2 1997-09-17 16:41:07 boote Exp $
+ *      $Id: go.h,v 1.3 1999-03-12 23:33:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,8 +33,12 @@ extern NhlClass NggOClass;
  * Public api
  */
 
-#define	NgNgoTitle	"gotitle"
-#define	NgCgoTitle	"Gotitle"
+#define	NgNgoTitle		"gotitle"
+#define	NgCgoTitle		"Gotitle"
+#define NgNgoEditFieldColor	"goEditFieldColor"
+#define NgCgoEditFieldColor	"GoEditFieldColor"
+#define NgNgoSelectColor	"goSelectColor"
+#define NgCgoSelectColor	"GoSelectColor"
 
 /*
  * resources retrieved through Xt

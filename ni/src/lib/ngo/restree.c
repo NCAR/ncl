@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.19 1999-03-12 19:13:48 dbrown Exp $
+ *      $Id: restree.c,v 1.20 1999-03-12 23:33:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -86,16 +86,16 @@ static int Grlist;
 
 static unsigned char Check_Bits[] = {
         0x00,0x01,0x80,0x01,0xc0,0x00,0x61,0x00,0x37,0x00,0x3e,0x00,
-        0x1c,0x00,0x08,0x00,0x00,0x00 
+        0x1c,0x00,0x08,0x00,0x00,0x00,0x00
 };
 
 static unsigned char No_Check_Bits[] = {
         0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-        0x00,0x00,0x00,0x00,0x00,0x00 
+        0x00,0x00,0x00,0x00,0x00,0x00,0x00
 };
 static unsigned char Mask_Bits[] = {
         0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
-        0xff,0xff,0xff,0xff,0xff,0xff 
+        0xff,0xff,0xff,0xff,0xff,0xff,0xff
 };
 
 static Pixmap Check_Pixmap, No_Check_Pixmap,Mask_Pixmap;
@@ -1050,7 +1050,7 @@ static int ExpandClass
                       XmNrowRangeStart,row,
                       XmNrowRangeEnd,row + nrows -1,
                       XmNcellEditable,True,
-                      XtVaTypedArg,XmNcellBackground,XmRString,"#d0d0d0",8,
+		      XmNcellBackground,rtp->go->go.edit_field_pixel,
                       NULL);
 
         for (i = 0; i < nrows; i++) {
@@ -1736,7 +1736,10 @@ static NhlBoolean CheckToggleSetState
                       XmNcellPixmap,No_Check_Pixmap,
                       NULL);
         
-        if (_NhlIsSubtypeQ(Qgenarray,svp->res_data->res->nrm_type))
+	if (_NhlIsSubtypeQ(Qgenarray,svp->res_data->res->nrm_type) ||
+                    svp->res_data->res->nrm_type == Qdatalist ||
+                    svp->res_data->res->nrm_type == Qobjid ||
+                    svp->res_data->res->nrm_type == Qdataspeclist)
                 NhlRLGet(Grlist,
                          NrmQuarkToString(svp->res_data->res->nrm_name),
                          NhlTGenArray,&value);
@@ -1779,6 +1782,23 @@ static NhlBoolean CheckToggleSetState
                         _NhlFreeConvertContext(context);
                 }
         }
+	else if (svp->res_data->res->nrm_type == Qdatalist ||
+		 svp->res_data->res->nrm_type == Qobjid ||
+		 svp->res_data->res->nrm_type == Qdataspeclist) {
+		NhlGenArray ga = (NhlGenArray) value;
+		if (ga->num_elements == 0)
+			sprintf(buf,"<null>");
+		else {
+			int hlu_id = ((int*)ga->data)[0];
+			NhlString sym = NgNclGetHLURef
+				(rtp->go->go.nclstate,hlu_id);
+			if (! sym) 
+				sprintf(buf,"<null>");
+			else
+				sprintf(buf,"%s",sym);
+		}
+		NhlFreeGenArray(ga);
+	}
         else {
                 sprintf(buf,"%s",(NhlString)value);
                 CheckCntrlRes(rtp,svp->res_data,value);
@@ -1968,6 +1988,19 @@ static void RestoreSensitivity
         xev->state = Button1Mask;
         XtCallActionProc
                 (pub_rtp->tree,"XmLGridSelect",(XEvent*)xev,&param2,1);
+
+        XtVaSetValues(pub_rtp->tree,
+                      XmNcolumn,2,
+                      XmNrow,rtp->edit_row,
+		      XmNcellBackground,rtp->go->go.edit_field_pixel,
+                      NULL);
+        XtVaSetValues(rtp->text,
+#if 0
+                      XmNvalue,rtp->selected_row_xmstr,
+#endif
+		      XmNbackground,rtp->go->go.edit_field_pixel,
+                      NULL);
+
 	return;
 }
 
@@ -1989,12 +2022,21 @@ static void EnumEdCB
         rtResData	*resp;
         XmMegaButtonCallbackStruct *cb = (XmMegaButtonCallbackStruct *)cb_data;
         XButtonEvent	*xev = &cb->event->xbutton;
+	char *cur_string = NULL;
         
 #if DEBUG_RESTREE
         fprintf(stderr,"in enum ed cb\n");
 #endif
 
         rtp->size_update_req = False;
+
+	if (rtp->selected_row_xmstr) {
+		XmStringGetLtoR(rtp->selected_row_xmstr,
+				XmFONTLIST_DEFAULT_TAG,&cur_string);
+	}
+	if (cur_string && ! strcmp(cur_string,ep->strings[cb->pos]))
+		return;
+
         rowptr = XmLGridGetRow(pub_rtp->tree,XmCONTENT,rtp->edit_row);
         
         XtVaGetValues(pub_rtp->tree,
@@ -2048,6 +2090,7 @@ static void UnmapEnumEdCB
 
         ep->up = False;
 	RestoreSensitivity(rtp,(XButtonEvent *)cb->event);
+
         return;
         
 }
@@ -2399,8 +2442,8 @@ static void SelectCB
                                       XmNrow,rtp->edit_row,
                                       XmNcolumnRangeStart,1,
                                       XmNcolumnRangeEnd,2,
-                                      XtVaTypedArg,XmNcellBackground,
-                                      XmRString,"#d0d0d0",8,
+				      XmNcellBackground,
+				      rtp->go->go.edit_field_pixel,
                                       NULL);
                 else
                         XtVaSetValues(pub_rtp->tree,
@@ -2422,8 +2465,7 @@ static void SelectCB
                 XtVaSetValues(pub_rtp->tree,
                               XmNcolumn,2,
                               XmNrow,cb->row,
-                              XtVaTypedArg,XmNcellBackground,
-                              XmRString,"lightsalmon",12,
+			      XmNcellBackground,rtp->go->go.select_pixel,
                               NULL);
                 rtp->edit_row = cb->row;
                 if (_NhlIsSubtypeQ(Qenum,resp->res->nrm_type))
@@ -2466,8 +2508,7 @@ static void EditCB
                     fprintf(stderr,"edit begin\n");
 #endif
                     XtVaSetValues(rtp->text,
-                                  XtVaTypedArg,XmNbackground,
-                                  XmRString,"lightsalmon",12,
+				  XmNbackground,rtp->go->go.select_pixel,
                                   NULL);
                     rtp->edit_row = cb->row;
                     rtp->manual_edit_started = True;
@@ -2494,8 +2535,7 @@ static void EditCB
                                   XmNcursorPosition,0,
                                   XmNborderWidth,2,
                                   XmNcursorPositionVisible,True,
-                                  XtVaTypedArg,XmNbackground,
-                                  XmRString,"lightsalmon",12,
+				  XmNbackground,rtp->go->go.select_pixel,
                                   NULL);
 #if 0
                     XmTextSetInsertionPosition(rtp->text,0);
@@ -2530,13 +2570,13 @@ static void EditCB
         XtVaSetValues(pub_rtp->tree,
                       XmNcolumn,2,
                       XmNrow,cb->row,
-                      XtVaTypedArg,XmNcellBackground,
-                      XmRString,"#d0d0d0",8,
+		      XmNcellBackground,rtp->go->go.edit_field_pixel,
                       NULL);
         XtVaSetValues(rtp->text,
+#if 0
                       XmNvalue,rtp->selected_row_xmstr,
-                      XtVaTypedArg,XmNbackground,
-                      XmRString,"#d0d0d0",8,
+#endif
+		      XmNbackground,rtp->go->go.edit_field_pixel,
                       NULL);
         if (rtp->size_update_req) {
                 if (pub_rtp->geo_notify && pub_rtp->geo_data)

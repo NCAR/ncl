@@ -1,5 +1,5 @@
 /*
- *      $Id: goP.h,v 1.11 1998-10-19 20:25:54 boote Exp $
+ *      $Id: goP.h,v 1.12 1999-03-12 23:33:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -42,7 +42,10 @@ typedef struct _NgGORec *NgGO;
 typedef struct _NgGOPart {
 /* resources */
 	NhlString	title;
+	NhlString	edit_field_color;
+	NhlString	select_color;
 	NhlBoolean	sensitive;
+	
 
 /* private fields */
 	XmString	xm_title;
@@ -85,6 +88,8 @@ typedef struct _NgGOPart {
         _NhlCB		gochange_cb;
 	XtTranslations	global_trans;
 	int		print;
+	Pixel		edit_field_pixel;
+	Pixel		select_pixel;
 } NgGOPart;
 
 typedef struct _NgGORec {

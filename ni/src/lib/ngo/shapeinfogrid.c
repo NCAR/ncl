@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.12 1999-01-11 19:36:28 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.13 1999-03-12 23:33:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -415,8 +415,7 @@ SetSelectedDim
                       XmNcolumn,sip->selected_dim,
                       XmNrowRangeStart,START_ROW,
                       XmNrowRangeEnd,STRIDE_ROW,
-                      XtVaTypedArg,XmNcellBackground,
-                      XmRString,"#d0d0d0",8,
+		      XmNcellBackground,sirp->go->go.edit_field_pixel,
                       XmNcellRightBorderColor,Right_Border_Color,
                       XmNcellLeftBorderColor,Left_Border_Color,
                       NULL);
@@ -433,10 +432,8 @@ SetSelectedDim
                       XmNcolumn,selected_dim,
                       XmNrowRangeStart,START_ROW,
                       XmNrowRangeEnd,STRIDE_ROW,
-                      XtVaTypedArg,XmNcellRightBorderColor,
-                      XmRString,"lightsalmon",12,
-                      XtVaTypedArg,XmNcellLeftBorderColor,
-                      XmRString,"lightsalmon",12,
+		      XmNcellRightBorderColor,sirp->go->go.select_pixel,
+		      XmNcellLeftBorderColor,sirp->go->go.select_pixel,
                       NULL);
 
         if (selected_dim != sip->selected_dim) {
@@ -451,15 +448,15 @@ SetSelectedDim
                                       XmNrowRangeStart,START_ROW,
                                       XmNrowRangeEnd,FINISH_ROW,
                                       XmNcolumn,sip->selected_dim,
-                                      XtVaTypedArg,XmNcellBackground,
-                                      XmRString,"lightsalmon",12,
+				      XmNcellBackground,
+				      sirp->go->go.select_pixel,
                                       NULL);
                 else
                         XtVaSetValues(sip->grid,
                                       XmNrow,sip->edit_row,
                                       XmNcolumn,sip->selected_dim,
-                                      XtVaTypedArg,XmNcellBackground,
-                                      XmRString,"lightsalmon",12,
+				      XmNcellBackground,
+				      sirp->go->go.select_pixel,
                                       NULL);
                 XmLGridSetFocus(sip->grid,sip->edit_row,sip->selected_dim);
                 
@@ -511,8 +508,7 @@ CellFocusCB
                               XmNrowRangeStart,START_ROW,
                               XmNrowRangeEnd,STRIDE_ROW,
                               XmNcolumn,cb->column,
-                              XtVaTypedArg,XmNcellBackground,
-                              XmRString,"#d0d0d0",8,
+			      XmNcellBackground,sirp->go->go.edit_field_pixel,
                               NULL);
         }
         else {
@@ -534,8 +530,7 @@ CellFocusCB
                               XmNrowRangeStart,start_row,
                               XmNrowRangeEnd,finish_row,
                               XmNcolumn,cb->column,
-                              XtVaTypedArg,XmNcellBackground,
-                              XmRString,"lightsalmon",12,
+			      XmNcellBackground,sirp->go->go.select_pixel,
                               NULL);
         }
         return;
@@ -798,8 +793,7 @@ UpdateState
                               XmNrowRangeStart,start_row,
                               XmNrowRangeEnd,finish_row,
                               XmNcolumn,col,
-                              XtVaTypedArg,
-                              XmNcellBackground,XmRString,"#d0d0d0",8,
+			      XmNcellBackground,sirp->go->go.edit_field_pixel,
                               NULL);
         }
 
@@ -850,8 +844,7 @@ DimEditCB
                                   XmNtextWidget,&text,
                                   NULL);
                     XtVaSetValues(text,
-                                  XtVaTypedArg,XmNbackground,
-                                  XmRString,"lightsalmon",12,
+				  XmNbackground,sirp->go->go.select_pixel,
                                   NULL);
                     sip->edit_row = cb->row;
 		    sirp->manual_edit_started = True;
@@ -899,8 +892,7 @@ DimEditCB
                               XmNrow,cb->row,
                               XmNcolumn,cb->column,
                               XmNcellString,cell_string,
-			      XtVaTypedArg,
-			      XmNcellBackground,XmRString,"#d0d0d0",8,
+			      XmNcellBackground,sirp->go->go.edit_field_pixel,
                               NULL);
                 return;
         }
@@ -1122,8 +1114,7 @@ NhlErrorTypes NgShapeInfoGridEditFocusCell
                       XmNrowRangeStart,start_row,
                       XmNrowRangeEnd,finish_row,
                       XmNcolumn,col,
-                      XtVaTypedArg,XmNcellBackground,
-                      XmRString,"lightsalmon",12,
+		      XmNcellBackground,sirp->go->go.select_pixel,
                       NULL);
 
         if (synchro_mode_update && how != NG_MIN_VAL && how != NG_MAX_VAL) {
@@ -1246,16 +1237,15 @@ NhlErrorTypes NgShapeInfoGridSynchroStepMode
                       XmNrowRangeStart,START_ROW,
                       XmNrowRangeEnd,FINISH_ROW,
                       XmNcolumn,col,
-                      XtVaTypedArg,
-                      XmNcellBackground,XmRString,"#d0d0d0",8,
+		      XmNcellBackground,sirp->go->go.edit_field_pixel,
                       NULL);
 	if (! on) {
 		if (sip->edit_row > -1) {
 			XtVaSetValues(sip->grid,
 				      XmNrow,sip->edit_row,
 				      XmNcolumn,sip->selected_dim,
-				      XtVaTypedArg,XmNcellBackground,
-				      XmRString,"lightsalmon",12,
+				      XmNcellBackground,
+				      sirp->go->go.select_pixel,
 				      NULL);
 		}
 		return NhlNOERROR;
@@ -1267,8 +1257,7 @@ NhlErrorTypes NgShapeInfoGridSynchroStepMode
                               XmNrowRangeStart,START_ROW,
                               XmNrowRangeEnd,FINISH_ROW,
                               XmNcolumn,sip->selected_dim,
-                              XtVaTypedArg,XmNcellBackground,
-                              XmRString,"lightsalmon",12,
+			      XmNcellBackground,sirp->go->go.select_pixel,
                               NULL);
 		UpdateState(shape_info_grid,
 			    sip->edit_row,sip->selected_dim,False);
@@ -1345,7 +1334,7 @@ NhlErrorTypes NgUpdateShapeInfoGrid
                       XmNrowRangeStart,START_ROW,
                       XmNrowRangeEnd,STRIDE_ROW,
                       XmNcellEditable,True,
-                      XtVaTypedArg,XmNcellBackground,XmRString,"#d0d0d0",8,
+		      XmNcellBackground,sirp->go->go.edit_field_pixel,
                       NULL);
         
         for (i = 0; i <= sirp->vinfo->n_dims; i++) {
@@ -1444,6 +1433,7 @@ NgShapeInfoGrid *NgCreateShapeInfoGrid
         sirp->start_coords = NULL;
         sirp->finish_coords = NULL;
         sirp->float_types = NULL;
+	sirp->go = go;
         sip->edit_row = -1;
         sirp->qfileref = NrmNULLQUARK;
         sirp->vinfo = NULL;
@@ -1486,8 +1476,7 @@ void NgDeactivateShapeInfoGrid
                               XmNcolumn,sip->selected_dim,
                               XmNrowRangeStart,START_ROW,
                               XmNrowRangeEnd,STRIDE_ROW,
-                              XtVaTypedArg,XmNcellBackground,
-                              XmRString,"#d0d0d0",8,
+			      XmNcellBackground,sirp->go->go.edit_field_pixel,
                               XmNcellRightBorderColor,Right_Border_Color,
                               XmNcellLeftBorderColor,Left_Border_Color,
                               NULL);

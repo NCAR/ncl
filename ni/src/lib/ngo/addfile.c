@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.22 1998-10-19 20:25:52 boote Exp $
+ *      $Id: addfile.c,v 1.23 1999-03-12 23:33:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -565,8 +565,7 @@ static void SetApplyForm
                               NULL);
                 XtVaSetValues(np->vname,
                               XmNeditable,True,
-                              XtVaTypedArg,XmNbackground,
-                              XmRString,"lightsalmon",12,
+			      XmNbackground,l->go.edit_field_pixel,
                               NULL);
                 XtSetSensitive(np->ok,True);
                 XtSetSensitive(np->apply,True);
@@ -1951,8 +1950,7 @@ FileRefDeleteCB
                       NULL);
         XtVaSetValues(np->vname,
                       XmNeditable,True,
-                      XtVaTypedArg,XmNbackground,
-                      XmRString,"lightsalmon",12,
+		      XmNbackground,go->go.edit_field_pixel,
                       NULL);
         XtSetSensitive(np->ok,True);
         XtSetSensitive(np->apply,True);
@@ -2161,8 +2159,7 @@ AddFileCreateWin
                                         XmNuserData,go,
                                         NULL);
 	XtVaSetValues(np->vname,
-		      XtVaTypedArg,XmNbackground,
-		      XmRString,"lightsalmon",12,
+		      XmNbackground,go->go.edit_field_pixel,
 		      NULL);
 
 	np->vname_label =
@@ -2585,8 +2582,7 @@ AddFileCreateWin
                                         NULL);
 	XmStringGetLtoR(np->dirmask,XmFONTLIST_DEFAULT_TAG,&dirmask_text);
 	XtVaSetValues(np->filtertext,
-		      XtVaTypedArg,XmNbackground,
-		      XmRString,"lightsalmon",12,
+		      XmNbackground,go->go.edit_field_pixel,
 #if 0
 		      XmNvalue,dirmask_text,
 		      XmNcursorPosition,strlen(dirmask_text),

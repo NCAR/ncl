@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.12 1999-02-23 03:56:53 dbrown Exp $
+ *      $Id: shaper.c,v 1.13 1999-03-12 23:33:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -134,8 +134,7 @@ UpdateCoordDataGrid
 			      XmNcolumn,-1,
 			      XmNrow,-1,
 			      XmNrowType,rowtype,
-			      XtVaTypedArg,XmNcellBackground,
-			      XmRString,"#d0d0d0",8,
+			      XmNcellBackground,si->go->go.edit_field_pixel,
 			      NULL);
 	}
 	else {
@@ -145,8 +144,8 @@ UpdateCoordDataGrid
 					      XmNcolumn,i,
 					      XmNrow,-1,
 					      XmNrowType,rowtype,
-					      XtVaTypedArg,XmNcellBackground,
-					      XmRString,"#d0d0d0",8,
+					      XmNcellBackground,
+					      si->go->go.edit_field_pixel,
 					      NULL);
 			else 
 				XtVaSetValues(si->datagrid->grid,
