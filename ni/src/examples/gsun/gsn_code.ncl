@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.131 2004-01-17 00:25:17 haley Exp $
+;      $Id: gsn_code.ncl,v 1.132 2004-02-04 04:18:23 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -524,13 +524,32 @@ end
 ;***********************************************************************;
 function check_attr(res:logical,att_name:string,att_value, \
                     convert_lower:logical)
-local res2, new_att_value
+local res2, new_att_value, is_att_value_string, is_att_name_string
 begin
   res2 = res
 
   if(res2.and.isatt(res2,att_name))
-    if(typeof(att_value).eq."string".and.convert_lower)
-      new_att_value = lower_case(att_value)
+    if(typeof(att_value).eq."string") then
+      is_att_value_string = True
+    else
+      is_att_value_string = False
+    end if
+
+    if(typeof(res@$att_name$).eq."string") then
+      is_att_name_string = True
+     else
+      is_att_name_string = False
+    end if
+;
+; If one value is a string and the other isn't, then we can't
+; compare them, and we just have to return False.
+
+    if(is_att_name_string.ne.is_att_value_string) then
+      return(False)
+    end if
+
+    if(is_att_value_string.and.convert_lower)
+      new_att_value   = lower_case(att_value)
       res2@$att_name$ = lower_case(res2@$att_name$)
     else
       new_att_value = att_value
@@ -3587,7 +3606,8 @@ begin
   lbhor = True
   if(panel_labelbar) then
     lbres = get_res_eq(res,(/"lb","pmLabelBar","vp"/))  ; Get labelbar resources.
-    if(check_attr(lbres,"lbOrientation","vertical",True))
+    if(check_attr(lbres,"lbOrientation","vertical",True).or.\
+       check_attr(lbres,"lbOrientation",1,True)) then
       lbhor = False
       labelbar_width = 0.20 * plot_width + 2.*xwsp
 ;
