@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.2 1999-08-14 01:32:57 dbrown Exp $
+ *      $Id: plotapp.c,v 1.3 1999-08-27 19:42:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -235,8 +235,8 @@ typedef struct _DataTableRec {
 	AppData		appdata;
 	NrmQuark	qvar;
 	NrmQuark	qfile;
-	NrmQuark	qdims[5]; /* dims listed in fast to slow order */
-	int		dim_ix[5]; /* indexes of the dims in the var */
+	NrmQuark	qdims[10]; /* dims listed in fast to slow order */
+	int		dim_ix[10]; /* indexes of the dims in the var */
 	NhlBoolean	reorder;
 	NclApiDataList	*dl;
 	NhlBoolean	free_dl;
@@ -2056,8 +2056,10 @@ static NhlBoolean MatchDimensions
 {
 	AppDataRes	datares;
 	DataTable	dt = &Data_Table[dcount];
-	NhlString	patterns[5] = { NULL,NULL,NULL,NULL,NULL };
-	NhlBoolean	matched[5] = { False, False, False, False, False };
+	NhlString	patterns[10] = { NULL,NULL,NULL,NULL,NULL,
+					 NULL,NULL,NULL,NULL,NULL };
+	NhlBoolean	matched[10] = { False, False, False, False, False,
+				        False, False, False, False, False };
 	int		i,j,ix;
 	NclApiVarInfoRec *vinfo;
 
@@ -2070,7 +2072,7 @@ static NhlBoolean MatchDimensions
 				ix = abs(datares->coord_ix) - 1;
 			else 
 				ix = datares->coord_ix;
-			if (ix > 4)
+			if (ix > 9)
 				continue;
 			patterns[ix] = datares->value;
 		}
@@ -2097,6 +2099,7 @@ static NhlBoolean MatchDimensions
 	for (i = 0; i < appdata->ndims; i++) {
 		if (! dt->qdims[i] > NrmNULLQUARK) {
 			if (patterns[i])
+
 				return False;
 			for (j = vinfo->n_dims - 1; j >=0; j--) {
 				if (! matched[j]) {
@@ -2104,6 +2107,7 @@ static NhlBoolean MatchDimensions
 					dt->qdims[i] = 
 						vinfo->dim_info[j].dim_quark;
 					matched[j] = True;
+					break;
 				}
 			}
 		}
@@ -2726,6 +2730,7 @@ NhlBoolean NgPlotAppDataUsable
 	NgGO		go = (NgGO) _NhlGetLayer(go_id);
 	AppData		data;
 	int		dcount;
+	
 
 	if (! go)
 		return NhlFATAL;
@@ -2739,14 +2744,14 @@ NhlBoolean NgPlotAppDataUsable
 	if (! papp)
 		return NhlFATAL;
 /*
- * Right now we're just check to see that at least one required data reference 
+ * Right now we're just check to see that at least one data reference 
  * is looking for a data var with number of dimensions less than or
- * equal to the number of dimesnsions in the data var under test.
+ * equal to the number of dimensions in the data var under test.
  * But we also need to check that the var meets pattern and unit and
  * whatever other requirements come up.
  */
 	for (data = papp->data; data; data = data->next) {
-		if (data->required && data->ndims <= vdata->ndims)
+		if (data->ndims <= vdata->ndims)
 			return True;
 	}
 	return False;
