@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.6 1992-09-29 15:31:36 ncargd Exp $
+#	$Id: ncargcc.csh,v 1.7 1992-10-05 17:42:07 ncargd Exp $
 #
 
 set system="SED_SYSTEM_INCLUDE"
@@ -30,7 +30,7 @@ endif
 
 set libgks	=	"$l/libncarg_gks.a"
 set liblocal	=	"$l/libncarg_loc.a"
-set libcbind    = "$l/libc_ncarg.a $l/libc_ncarg_gks.a $l/libc_common.a"
+set libcbind    = "$l/libncargC.a $l/libncarg_gksC.a
 
 if ($system == "Cray2" || $system == "Cray") then
   set f77libs     =       "-L/lib -lf -lio -lm -lp -lsci -lu -lc"
