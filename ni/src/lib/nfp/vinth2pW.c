@@ -95,6 +95,7 @@ NhlErrorTypes vinth2p_W
 	NclScalar out_missing;
 	int was_val = 0;
 	int not_double = 0;
+	int psf_elem;
 	NclTypeClass plevo_type_class;
 	
 
@@ -287,6 +288,11 @@ NhlErrorTypes vinth2p_W
 		}
 	}
 	psf_blk = psfc_dimsizes[psfc_n_dims -1] * psfc_dimsizes[psfc_n_dims -2];
+	psf_elem = 1;
+	for(i = 0; i < psfc_n_dims; i++) {
+		psf_elem *= psfc_dimsizes[i];
+	}
+	
 	
         intyp = (int*)NclGetArgValue(
                         5,
@@ -342,7 +348,7 @@ NhlErrorTypes vinth2p_W
 		
 		for(i = 0; i < total ; i++) {
 			_Nclcoerce((NclTypeClass)nclTypedoubleClass, tmp_datai, (datai+i*sz*nblk),nblk,NULL,NULL,datai_md->multidval.type);
-			_Nclcoerce((NclTypeClass)nclTypedoubleClass, psfc_d, ((char*)psfc+sz*psf_blk*i),psf_blk,NULL,NULL,datai_md->multidval.type);
+			_Nclcoerce((NclTypeClass)nclTypedoubleClass, psfc_d, ((char*)psfc+sz*psf_blk*i),psf_blk,NULL,NULL,(NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(psfc_type))));
 			NGCALLF(vinth2p,VINTH2P)(tmp_datai,tmp_datao,hbcofa,hbcofb,p0,plevi,plevo,intyp,ilev,psfc_d,&missing,kxtrp,&(datai_dimsizes[2]),&(datai_dimsizes[1]),&(datai_dimsizes[0]),&(datai_dimsizes[0]),&(plevo_dimsizes));
 			for(j = 0; j< nblk_out; j++) {
 				((float*)datao)[i*nblk_out + j] = (float)tmp_datao[j];
@@ -354,10 +360,16 @@ NhlErrorTypes vinth2p_W
 		
 	} else {
 		datao = (char*)NclMalloc(total * nblk_out * sizeof(double));
-		for(i = 0; i < total; i++) {
-			NGCALLF(vinth2p,VINTH2P)((datai+sizeof(double)*i*nblk),(((char*)datao)+sizeof(double)*nblk_out*i),hbcofa,hbcofb,p0,plevi,plevo,intyp,ilev,(((char*)psfc)+sizeof(double)*psf_blk*i),&missing,kxtrp,&(datai_dimsizes[2]),&(datai_dimsizes[1]),&(datai_dimsizes[0]),&(datai_dimsizes[0]),&(plevo_dimsizes));
-
+		if(psfc_type != NCL_double) {
+			psfc_d = (double*) NclMalloc(psf_elem*sizeof(double));
+			_Nclcoerce((NclTypeClass)nclTypedoubleClass, psfc_d, (char*)psfc,psf_elem,NULL,NULL,(NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(psfc_type))));
+		} else {
+			psfc_d =(double*) psfc;
 		}
+		for(i = 0; i < total; i++) {
+			NGCALLF(vinth2p,VINTH2P)((datai+sizeof(double)*i*nblk),(((char*)datao)+sizeof(double)*nblk_out*i),hbcofa,hbcofb,p0,plevi,plevo,intyp,ilev,(((char*)psfc_d)+sizeof(double)*psf_blk*i),&missing,kxtrp,&(datai_dimsizes[2]),&(datai_dimsizes[1]),&(datai_dimsizes[0]),&(datai_dimsizes[0]),&(plevo_dimsizes));
+		}
+		NclFree(psfc_d);
 	}
 
 
