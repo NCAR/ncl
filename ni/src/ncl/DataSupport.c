@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.43 2003-02-28 00:59:43 dbrown Exp $
+ *      $Id: DataSupport.c,v 1.44 2003-09-24 18:53:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1481,7 +1481,7 @@ NclBasicDataTypes dt;
 #endif
 {
 	static int first = 1;
-	static NclQuark quarks[11];
+	static NclQuark quarks[12];
 
 	if(first) {
 		first = 0;
@@ -1496,6 +1496,7 @@ NclBasicDataTypes dt;
 		quarks[8] = NrmStringToQuark("logical");
 		quarks[9] = NrmStringToQuark("obj");
 		quarks[10] = NrmStringToQuark("list");
+		quarks[11] = NrmStringToQuark("none");
 
 	}	
 
@@ -1522,8 +1523,10 @@ NclBasicDataTypes dt;
 		return(NrmQuarkToString(quarks[9]));
 	case NCL_list:
 		return(NrmQuarkToString(quarks[10]));
+	case NCL_none:
+        default:
+		return(NrmQuarkToString(quarks[11]));
 	}
-	return(NULL);
 }
 
 NclBasicDataTypes _NclPromoteType
