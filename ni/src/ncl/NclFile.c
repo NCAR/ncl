@@ -1775,10 +1775,13 @@ struct _NclSelectionRecord* sel_ptr;
 			att_id = -1;
 		}
 		if(sel_ptr == NULL) {
-			for(i = 0 ; i < thefile->file.var_info[index]->num_dimensions; i++){
+/*
+* Because some file may allow dimensions of size 1 special care must be taken here
+*/
+			for(i = 0 ; i < tmp_md->multidval.n_dims; i++){
 				if(_NclFileVarIsCoord(thefile,
-					thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[i]]->dim_name_quark)!= -1) {
-					tmp_var = _NclFileReadCoord(thefile,thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[i]]->dim_name_quark,NULL);
+					dim_info[i].dim_quark)!= -1) {
+					tmp_var = _NclFileReadCoord(thefile,dim_info[i].dim_quark,NULL);
                                 	coords[i] = tmp_var->obj.id;
 				} else {
 					coords[i] = -1;

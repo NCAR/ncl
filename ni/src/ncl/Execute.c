@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.54 1996-04-12 23:35:37 ethan Exp $
+ *      $Id: Execute.c,v 1.55 1996-04-17 21:56:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2809,6 +2809,7 @@ NclExecuteReturnStatus _NclExecute
 				NclSelectionRecord* sel_ptr = NULL;
 				int i,index;
 				NclMultiDValData rhs_md = NULL,value = NULL; 
+				int subs_expected;
 
 
 
@@ -2851,36 +2852,78 @@ NclExecuteReturnStatus _NclExecute
 							file = (NclFile)_NclGetObj((int)*(obj*)value->multidval.val);
 						if((file != NULL)&&((index = _NclFileIsVar(file,var)) != -1)) {
 							if((nsubs != file->file.var_info[index]->num_dimensions)&&(nsubs != 0)){
-								NhlPError(NhlFATAL,NhlEUNKNOWN,
-									"Number of subscripts (%d) and number of dimensions (%d) do not match for variable (%s->%s)",
-									nsubs,
-									file->file.var_info[index]->num_dimensions,
-									file_sym->name,
-									NrmQuarkToString(var));
-									estatus = NhlFATAL;
-									_NclCleanUpStack(nsubs +1);
-							}
-							if(nsubs != 0) {
+								subs_expected = 0;
+								for(i = 0; i < file->file.var_info[index]->num_dimensions; i++) {
+									if(file->file.file_dim_info[file->file.var_info[index]->file_dim_num[i]]->dim_size != 1) {
+										subs_expected += 1;
+									}
+								}
+								if(subs_expected != nsubs) {
+									NhlPError(NhlFATAL,NhlEUNKNOWN,
+										"Number of subscripts (%d) and number of dimensions (%d) do not match for variable (%s->%s)",
+										nsubs,
+										file->file.var_info[index]->num_dimensions,
+										file_sym->name,
+										NrmQuarkToString(var));
+										estatus = NhlFATAL;
+										_NclCleanUpStack(nsubs +1);
+								}
+							} 
+	
+							if((nsubs != 0)&&(nsubs == file->file.var_info[index]->num_dimensions))  {
 								sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
 								sel_ptr->n_entries = nsubs;
-							for(i = 0 ; i < nsubs; i++) {
-								data = _NclPop();
-								switch(data.u.sub_rec->sub_type) {
-								case INT_VECT:
-									estatus = _NclBuildFileVSelection(file,var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
-									break;
-								case INT_RANGE:
-									estatus = _NclBuildFileRSelection(file,var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
-									break;
-								case COORD_VECT:
-									estatus = _NclBuildFileCoordVSelection(file,var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
-									break;
-								case COORD_RANGE:
-									estatus = _NclBuildFileCoordRSelection(file,var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
-									break;
+								for(i = 0 ; i < nsubs; i++) {
+									data = _NclPop();
+									switch(data.u.sub_rec->sub_type) {
+									case INT_VECT:
+										estatus = _NclBuildFileVSelection(file,var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+										break;
+									case INT_RANGE:
+										estatus = _NclBuildFileRSelection(file,var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+										break;
+									case COORD_VECT:
+										estatus = _NclBuildFileCoordVSelection(file,var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+										break;
+									case COORD_RANGE:
+										estatus = _NclBuildFileCoordRSelection(file,var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+										break;
+									}
+									_NclFreeSubRec(data.u.sub_rec);
 								}
-							_NclFreeSubRec(data.u.sub_rec);
-							}
+							} else if((nsubs != 0)&&(nsubs == subs_expected)) { 
+								sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
+								sel_ptr->n_entries = file->file.var_info[index]->num_dimensions;
+		
+								for(i = 0 ; i < sel_ptr->n_entries; i++) {
+									if(file->file.file_dim_info[file->file.var_info[index]->file_dim_num[sel_ptr->n_entries - i - 1]]->dim_size != 1){
+										data = _NclPop();
+										switch(data.u.sub_rec->sub_type) {
+										case INT_VECT:
+											estatus = _NclBuildFileVSelection(file,var,data.u.sub_rec->u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec->name);
+											break;
+										case INT_RANGE:
+											estatus = _NclBuildFileRSelection(file,var,data.u.sub_rec->u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec->name);
+											break;
+										case COORD_VECT:
+											estatus = _NclBuildFileCoordVSelection(file,var,data.u.sub_rec->u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec->name);
+											break;
+										case COORD_RANGE:
+											estatus = _NclBuildFileCoordRSelection(file,var,data.u.sub_rec->u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec->name);
+											break;
+										}
+										_NclFreeSubRec(data.u.sub_rec);
+									} else {
+			
+										sel_ptr->selection[sel_ptr->n_entries - i - 1].sel_type = Ncl_SUBSCR;
+										sel_ptr->selection[sel_ptr->n_entries - i - 1].u.sub.start = 0;
+										sel_ptr->selection[sel_ptr->n_entries - i - 1].u.sub.finish= 0;
+										sel_ptr->selection[sel_ptr->n_entries - i - 1].u.sub.stride = 1;
+										sel_ptr->selection[sel_ptr->n_entries - i - 1].dim_num = sel_ptr->n_entries - i - 1;
+										
+
+									}
+								}
 							} else {
 								sel_ptr = NULL;
 							}
@@ -2960,7 +3003,7 @@ NclExecuteReturnStatus _NclExecute
 */
 				NclSymbol *dfile = NULL;
 				NclQuark var;
-				int nsubs;
+				int nsubs,subs_expected;
 				NclStackEntry *file_ptr = NULL;
 				NclStackEntry out_var,data;
 				NclStackEntry fvar;
@@ -3007,9 +3050,6 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 */
 				nsubs = (NclQuark)*ptr;
-				for(i = 0 ; i < nsubs ; i++) {
-					dim_is_ref[i] = 0;
-				}
 				file_ptr =  _NclRetrieveRec(dfile,READ_IT);
 				if((file_ptr != NULL)&&(file_ptr->kind == NclStk_VAR)&&(estatus != NhlFATAL)) {
 					value = _NclVarValueRead(file_ptr->u.data_var,NULL,NULL);
@@ -3017,9 +3057,23 @@ NclExecuteReturnStatus _NclExecute
 						if(value != NULL) 
 							file = (NclFile)_NclGetObj((int)*(obj*)value->multidval.val);
 						if((file != NULL)&&((index = _NclFileIsVar(file,var)) != -1)) {
+							for(i = 0 ; i < file->file.var_info[index]->num_dimensions; i++) {
+								dim_is_ref[i] = 0;
+							}
+							subs_expected = 0;
+							for(i = 0; i < file->file.var_info[index]->num_dimensions; i++) {
+                                                        	if(file->file.file_dim_info[file->file.var_info[index]->file_dim_num[i]]->dim_size != 1) {
+                                                               		subs_expected += 1;
+                                                                }
+                                                        }
+
 							if((nsubs != 0)&&(nsubs ==  file->file.var_info[index]->num_dimensions)){
 								sel_ptr = (NclSelectionRecord*)NclMalloc (sizeof(NclSelectionRecord));
 								sel_ptr->n_entries = nsubs;
+							} else if(nsubs == subs_expected) {
+								sel_ptr = (NclSelectionRecord*)NclMalloc (sizeof(NclSelectionRecord));
+								sel_ptr->n_entries = file->file.var_info[index]->num_dimensions;
+									
 							} else if(nsubs==0){
 								sel_ptr = NULL;
 							} else {
@@ -3028,39 +3082,47 @@ NclExecuteReturnStatus _NclExecute
 								_NclCleanUpStack(nsubs);
 							}
 							if(estatus != NhlFATAL) {
-								for(i=0;i<nsubs;i++) {
-									data =_NclPop();
-									switch(data.u.sub_rec->sub_type) {
-									case INT_VECT:
-										ret = _NclBuildFileVSelection(file,var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
-										break;
-									case INT_RANGE:
-										ret = _NclBuildFileRSelection(file,var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
-										break;
-									case COORD_VECT:
-										estatus = _NclBuildFileCoordVSelection(file,var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
-										break;
-									case COORD_RANGE:
-										estatus = _NclBuildFileCoordRSelection(file,var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
-										break;
-									}
-									_NclFreeSubRec(data.u.sub_rec);
-									if(ret < NhlWARNING) {
-										estatus = NhlFATAL;
-									}
-									if(estatus < NhlWARNING) 
-										break;
-									if(!dim_is_ref[(sel_ptr->selection[nsubs - i - 1]).dim_num]) {
-										dim_is_ref[(sel_ptr->selection[nsubs - i - 1]).dim_num] = 1;
-									} else {
-										NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in subscript # %d, dimension is referenced more that once",i);
-										estatus = NhlFATAL;
+								if(sel_ptr != NULL) {
+									for(i=0;i<sel_ptr->n_entries;i++) {
+										if(file->file.file_dim_info[file->file.var_info[index]->file_dim_num[sel_ptr->n_entries - i - 1]]->dim_size != 1){
+											data =_NclPop();
+											switch(data.u.sub_rec->sub_type) {
+											case INT_VECT:
+												ret = _NclBuildFileVSelection(file,var,data.u.sub_rec->u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec->name);
+												break;
+											case INT_RANGE:
+												ret = _NclBuildFileRSelection(file,var,data.u.sub_rec->u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec->name);
+												break;
+											case COORD_VECT:
+												estatus = _NclBuildFileCoordVSelection(file,var,data.u.sub_rec->u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec->name);
+												break;
+											case COORD_RANGE:
+												estatus = _NclBuildFileCoordRSelection(file,var,data.u.sub_rec->u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec->name);
+												break;
+											}
+											_NclFreeSubRec(data.u.sub_rec);
+											if(ret < NhlWARNING) {
+												estatus = NhlFATAL;
+											}
+											if(estatus < NhlWARNING) 
+												break;
+										} else {
+											sel_ptr->selection[sel_ptr->n_entries - i - 1].sel_type = Ncl_SUBSCR;
+											sel_ptr->selection[sel_ptr->n_entries - i - 1].u.sub.start = 0;
+											sel_ptr->selection[sel_ptr->n_entries - i - 1].u.sub.finish= 0;
+											sel_ptr->selection[sel_ptr->n_entries - i - 1].u.sub.stride = 1;
+											sel_ptr->selection[sel_ptr->n_entries - i - 1].dim_num = sel_ptr->n_entries - i - 1;
+
+										}
+										if(!dim_is_ref[(sel_ptr->selection[sel_ptr->n_entries - i - 1]).dim_num]) {
+											dim_is_ref[(sel_ptr->selection[sel_ptr->n_entries - i - 1]).dim_num] = 1;
+										} else {
+											NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in subscript # %d, dimension is referenced more that once",i);
+											estatus = NhlFATAL;
+										}
 									}
 								}
 								if(estatus != NhlFATAL) {
-	/*
-								if(kind == PARAM_FILE_VAR_OP) {
-	*/
 									out_var.kind = NclStk_VAR;
 									out_var.u.data_var = _NclFileReadVar(file,var,sel_ptr);
 									if(sel_ptr != NULL)
@@ -3070,19 +3132,6 @@ NclExecuteReturnStatus _NclExecute
 									} else 	{
 										estatus = NhlFATAL;
 									}
-	/*
-								} else {
-									out_var.kind = NclStk_VAL;
-									out_var.u.data_obj = _NclFileReadVarValue(file,var,sel_ptr);
-									if(sel_ptr != NULL) 
-										NclFree(sel_ptr);
-									if((estatus != NhlFATAL)&&(out_var.u.data_obj != NULL)) {
-										estatus = _NclPush(out_var);
-									} else {
-										estatus = NhlFATAL;
-									}
-								}
-	*/
 								}	
 							}
 						} else {

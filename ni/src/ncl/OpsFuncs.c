@@ -269,7 +269,22 @@ NhlErrorTypes _NclBuildArray
 	int still_no_missing = 1;
 
 	
-
+	if( n_items == 1) {
+		data = _NclPop();
+		switch(data.kind) {
+		case NclStk_VAL:
+			result->kind = NclStk_VAL;
+			result->u.data_obj = data.u.data_obj;
+			return(NhlNOERROR);
+		case NclStk_VAR:
+			result->kind = NclStk_VAL;
+			result->u.data_obj = _NclCopyVal(_NclVarValueRead(data.u.data_var,NULL,NULL),NULL);
+			if(data.u.data_var->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)data.u.data_var);
+			}
+			return(NhlNOERROR);
+		}
+	}
 /*
 * First element determines whether the type of the result array is numerci
 * or textual
@@ -1217,7 +1232,7 @@ NclStackEntry missing_expr;
 	int dim_sizes[NCL_MAX_DIMENSIONS];
 	short tmp_missing = NCL_DEFAULT_MISSING_VALUE;
 	long *dim_size_list,total;
-	int i;
+	int i,j;
 	NclTypeClass typec = NULL;
 	
 
@@ -1293,20 +1308,35 @@ NclStackEntry missing_expr;
 		}
 		dim_size_list = (long*)tmp1_md->multidval.val;
 		total = 1;
-		for(i = 0; i< tmp1_md->multidval.dim_sizes[0]; i++) {
-			if(dim_size_list[i] < 1) {	
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"New: a zero or negative value has been passed in in the dimension size parameter");
-				return(NhlFATAL);
+		j = 0;
+		if((tmp1_md->multidval.dim_sizes[0] == 1)&&(dim_size_list[0] > 0)) {
+			total *= dim_size_list[0];
+			dim_sizes[0] = (int)dim_size_list[0];
+			j++;
+		} else {
+			for(i = 0; i< tmp1_md->multidval.dim_sizes[0]; i++) {
+				if(dim_size_list[i] < 1) {	
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"New: a zero or negative value has been passed in in the dimension size parameter");
+					return(NhlFATAL);
+				} else if(dim_size_list[i] == 1) {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"New: NCL values can not have dimension sizes of 1 unless they are scalar, ignoring dimension and continueing");
+				} else {
+					total *= dim_size_list[i];
+					dim_sizes[j] = (int)dim_size_list[i];
+					j++;
+				}
 			}
-			total *= dim_size_list[i];
-			dim_sizes[i] = (int)dim_size_list[i];
+		}
+		if(j == 0) {
+			dim_sizes[0] = 1;
+			j = 1;
 		}
 		tmp_val = (void*)NclMalloc((unsigned int)total*_NclSizeOf(the_type));
 		for(i = 0; i< total*_NclSizeOf(the_type); i+=_NclSizeOf(the_type)) {
 			memcpy((void*)&(((char*)tmp_val)[i]),(void*)&missing_val,_NclSizeOf(the_type));
 			
 		}
-		tmp_md = _NclCreateVal(NULL,NULL,((the_obj_type & NCL_VAL_TYPE_MASK) ? Ncl_MultiDValData:the_obj_type),0,tmp_val,&missing_val,tmp1_md->multidval.totalelements,dim_sizes,TEMPORARY,NULL,(NclObjClass)((the_obj_type & NCL_VAL_TYPE_MASK) ?_NclTypeEnumToTypeClass(the_obj_type):NULL));
+		tmp_md = _NclCreateVal(NULL,NULL,((the_obj_type & NCL_VAL_TYPE_MASK) ? Ncl_MultiDValData:the_obj_type),0,tmp_val,&missing_val,j,dim_sizes,TEMPORARY,NULL,(NclObjClass)((the_obj_type & NCL_VAL_TYPE_MASK) ?_NclTypeEnumToTypeClass(the_obj_type):NULL));
 		if(tmp1_md != size_md) {
 			_NclDestroyObj((NclObj)tmp1_md);
 		}

@@ -3338,6 +3338,9 @@ void* storage;
 			}
 			tmp_md = (NclMultiDValData)_NclReadSubSection((NclData)vstep->int_var->value,&sel_ptr,NULL);
 			memcpy((void*)&((char*)out_data)[data_offset],tmp_md->multidval.val,tmp_md->multidval.totalsize);
+			if(tmp_md->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)tmp_md);
+			}
 			return(out_data);
 		}
 		vstep = vstep->next;

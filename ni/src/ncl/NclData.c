@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.c,v 1.8 1995-11-03 00:00:41 ethan Exp $
+ *      $Id: NclData.c,v 1.9 1996-04-17 21:56:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -677,6 +677,7 @@ FILE *fp;
 				tmp = tmp->next;			
 			}
 		}
+		NclFree(objs);
 	}
 }
 int _NclNumObjs

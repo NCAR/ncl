@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.15 1996-04-04 19:45:40 ethan Exp $
+ *      $Id: NclNetCdf.c,v 1.16 1996-04-17 21:56:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -82,6 +82,7 @@ int		n_vars;
 NetCdfVarInqRecList *vars;
 int		n_dims;
 NetCdfDimInqRecList *dims;
+int		has_scalar_dim;
 int		n_file_atts;
 NetCdfAttInqRecList *file_atts;
 };
@@ -195,10 +196,14 @@ int wr_status;
 	int cdfid;
 	int dummy;
 	char buffer[MAX_NC_NAME];
-	int i,j;
+	char buffer2[MAX_NC_NAME];
+	int i,j,has_scalar_dim = 0,nvars = 0;
+	long tmp_size;
 	NetCdfAttInqRecList **stepalptr;
 	NetCdfVarInqRecList **stepvlptr;
+	NetCdfVarInqRecList *tmpvlptr;
 	NetCdfDimInqRecList **stepdlptr;
+	NetCdfDimInqRecList *tmpdlptr;
 	
 
 	if(tmp == NULL) {
@@ -235,6 +240,9 @@ int wr_status;
 			(*stepdlptr)->next = NULL;
 			(*stepdlptr)->dim_inq->dimid = i;
 			ncdiminq(cdfid,i,buffer,&((*stepdlptr)->dim_inq->size));
+			if((*stepdlptr)->dim_inq->size == 0) {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"NetCdf: %s is a zero length dimension some variables may be ignored",buffer);
+			}
 			(*stepdlptr)->dim_inq->name = NrmStringToQuark(buffer);
 			stepdlptr = &((*stepdlptr)->next);
 		}
@@ -242,8 +250,9 @@ int wr_status;
 		tmp->dims = NULL;
 	}
 	stepvlptr = &(tmp->vars);
+	nvars = tmp->n_vars;
 	if(tmp->n_vars != 0 ) {
-		for(i = 0 ; i < tmp->n_vars; i++) {
+		for(i = 0 ; i < nvars; i++) {
 			*stepvlptr = (NetCdfVarInqRecList*)NclMalloc(
 					(unsigned) sizeof(NetCdfVarInqRecList));
 			(*stepvlptr)->var_inq = (NetCdfVarInqRec*)NclMalloc(
@@ -256,28 +265,65 @@ int wr_status;
 				((*stepvlptr)->var_inq->dim),
 				&((*stepvlptr)->var_inq->natts)
 				);
-			(*stepvlptr)->var_inq->name = NrmStringToQuark(buffer);
-			stepalptr = &((*stepvlptr)->var_inq->att_list);
-			if(((*stepvlptr)->var_inq->natts) != 0) {
-				for(j = 0; j < ((*stepvlptr)->var_inq->natts); j++) {
-					ncattname(cdfid,i,j,buffer);
-					(*stepalptr) = (NetCdfAttInqRecList*)NclMalloc(
-						(unsigned)sizeof(NetCdfAttInqRecList));
-					(*stepalptr)->att_inq = (NetCdfAttInqRec*)NclMalloc(
-						(unsigned)sizeof(NetCdfAttInqRec));
-					(*stepalptr)->next = NULL;
-					(*stepalptr)->att_inq->att_num = j;
-					(*stepalptr)->att_inq->name = NrmStringToQuark(buffer);
-					(*stepalptr)->att_inq->varid = i;
-					ncattinq(cdfid,i,buffer,
-						&((*stepalptr)->att_inq->data_type),
-						&((*stepalptr)->att_inq->len));
-					stepalptr = &((*stepalptr)->next);
+			for(j = 0; j < ((*stepvlptr)->var_inq->n_dims); j++) {
+				tmp_size = 0;
+				ncdiminq(cdfid,((*stepvlptr)->var_inq->dim)[j],buffer2,&tmp_size);
+				if(tmp_size == 0 ) {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"NetCdf: A zero length dimension was found in variable (%s), ignoring this variable",buffer);
+					break;
 				}
-			} else {
-				((*stepvlptr)->var_inq->att_list) = NULL;
 			}
-			stepvlptr = &((*stepvlptr)->next);
+			if(j != ((*stepvlptr)->var_inq->n_dims)) {
+				tmpvlptr = *stepvlptr;
+				*stepvlptr = NULL;
+				tmp->n_vars--;
+				NclFree(tmpvlptr->var_inq);
+				NclFree(tmpvlptr);
+				
+			} else {
+				if(((*stepvlptr)->var_inq->n_dims) == 0) {
+					((*stepvlptr)->var_inq->dim)[0] = -5;
+					((*stepvlptr)->var_inq->n_dims) = 1;
+					has_scalar_dim = 1;
+				}
+				(*stepvlptr)->var_inq->name = NrmStringToQuark(buffer);
+				stepalptr = &((*stepvlptr)->var_inq->att_list);
+				if(((*stepvlptr)->var_inq->natts) != 0) {
+					for(j = 0; j < ((*stepvlptr)->var_inq->natts); j++) {
+						ncattname(cdfid,i,j,buffer);
+						(*stepalptr) = (NetCdfAttInqRecList*)NclMalloc(
+							(unsigned)sizeof(NetCdfAttInqRecList));
+						(*stepalptr)->att_inq = (NetCdfAttInqRec*)NclMalloc(
+							(unsigned)sizeof(NetCdfAttInqRec));
+						(*stepalptr)->next = NULL;
+						(*stepalptr)->att_inq->att_num = j;
+						(*stepalptr)->att_inq->name = NrmStringToQuark(buffer);
+						(*stepalptr)->att_inq->varid = i;
+						ncattinq(cdfid,i,buffer,
+							&((*stepalptr)->att_inq->data_type),
+							&((*stepalptr)->att_inq->len));
+						stepalptr = &((*stepalptr)->next);
+					}
+				} else {
+					((*stepvlptr)->var_inq->att_list) = NULL;
+				}
+				stepvlptr = &((*stepvlptr)->next);
+			}
+		}
+		if(has_scalar_dim) {
+			tmp->has_scalar_dim = 1;
+			tmpdlptr = tmp->dims;
+			tmp->dims = (NetCdfDimInqRecList*)NclMalloc(
+					(unsigned) sizeof(NetCdfDimInqRecList));
+			tmp->dims->dim_inq = (NetCdfDimInqRec*)NclMalloc(
+					(unsigned)sizeof(NetCdfDimInqRec));
+			tmp->dims->next = tmpdlptr;
+			tmp->dims->dim_inq->dimid = -5;
+			tmp->dims->dim_inq->size = 1;
+			tmp->dims->dim_inq->name = NrmStringToQuark("ncl_scalar");
+			tmp->n_dims++;
+		} else {
+			tmp->has_scalar_dim = 0;
 		}
 	} else {
 		tmp->vars = NULL;
@@ -422,7 +468,13 @@ NclQuark var_name;
 					stepdl = stepdl->next;
 				}
 				tmp->dim_sizes[j] = stepdl->dim_inq->size;
-				tmp->file_dim_num[j] = stepdl->dim_inq->dimid;
+				if(stepdl->dim_inq->dimid == -5) {
+					tmp->file_dim_num[j] = 0;
+				} else if(rec->has_scalar_dim) {
+					tmp->file_dim_num[j] = stepdl->dim_inq->dimid + 1;
+				} else {
+					tmp->file_dim_num[j] = stepdl->dim_inq->dimid;
+				}
 			}
 			return(tmp);
 		} else {
@@ -1057,6 +1109,11 @@ int size;
 
 	if(rec->wr_status <=  0) {
 		
+		if((thedim == NrmStringToQuark("ncl_scalar"))&&(size != 1)) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: \"ncl_scalar\" in a reserved dimension name in NCL, this name can only represent dimensions of size 1");
+
+			return(NhlFATAL);
+		}
 		cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
 		if(cdfid == -1) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
@@ -1132,6 +1189,10 @@ long* dim_sizes;
 			stepdl = rec->dims;
 			while(stepdl != NULL) {
 				if(stepdl->dim_inq->name == dim_names[i]){
+					if((n_dims > 1)&&(dim_names[i] == NrmStringToQuark("ncl_scalar"))) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: the reserved dimension name \"ncl_scalar\" was used in a value with more than one dimension, can not add variable");
+						return(NhlFATAL);
+					}
 					dim_ids[i] = stepdl->dim_inq->dimid;
 					break;
 				} else {
@@ -1141,7 +1202,11 @@ long* dim_sizes;
 		} 
 		if(the_data_type != NULL) {
 			ncredef(cdfid);
-			ret = ncvardef(cdfid,NrmQuarkToString(thevar),*the_data_type, n_dims, dim_ids);
+			if((n_dims == 1)&&(dim_ids[0] == -5)) {
+				ret = ncvardef(cdfid,NrmQuarkToString(thevar),*the_data_type, 0, NULL);
+			} else {
+				ret = ncvardef(cdfid,NrmQuarkToString(thevar),*the_data_type, n_dims, dim_ids);
+			}
 			ncendef(cdfid);
 			ncclose(cdfid);
 			if(ret == -1) {
@@ -1290,9 +1355,17 @@ NclQuark to;
 	NetCdfDimInqRecList *stepdl;
 	int cdfid,ret;
 
+	if(to == NrmStringToQuark("ncl_scalar")) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf : \"ncl_scalar\" is an NCL reserved dimension other dimensions can not be changed to it");
+                return(NhlFATAL);
+	}
 	stepdl = rec->dims;
 	while(stepdl != NULL) {
 		if(stepdl->dim_inq->name == from) {
+			if(stepdl->dim_inq->dimid == -5) {
+				stepdl->dim_inq->name = to;
+				return(NhlNOERROR);
+			}
 			cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
 			if(cdfid == -1) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
