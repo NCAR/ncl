@@ -446,3 +446,11 @@ ACCESS_TABLE	*at = &access_table;
 	
 
 #endif
+
+#ifndef	MIN
+#define	MIN(X,Y)	((X) < (Y) ? (X) : (Y))
+#endif
+
+#ifndef	MAX
+#define	MAX(X,Y)	((X) > (Y) ? (X) : (Y))
+#endif

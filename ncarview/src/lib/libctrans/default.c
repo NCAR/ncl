@@ -21,6 +21,15 @@
 #include "default.h"
 #include	<cterror.h>
 
+static	struct	{
+	float	min_line_width;
+	boolean	min_line_width_set;
+	float	max_line_width;
+	boolean	max_line_width_set;
+	float	line_width_scale;
+	boolean	line_width_scale_set;
+	} Option = {1.0, FALSE, 1.0, FALSE, 1.0, FALSE};
+
 SetInPic(value)
 boolean		value;
 {
@@ -433,11 +442,23 @@ CGMC *c;
 Ct_err LineWidth(c)
 CGMC *c;
 {
-#ifdef DEBUG
-	(void)fprintf(stderr,"LineWidth\n");
-#endif
+	float	line_width = c->r[0];
 
-	dt->line_width = c->r[0];
+	if (Option.line_width_scale_set) line_width *= Option.line_width_scale;
+
+	/*
+	 * make sure line width doesn't exceed bounds
+	 */
+	if (Option.min_line_width_set) 
+		line_width = MAX(line_width, Option.min_line_width);
+
+	if (Option.max_line_width_set) 
+		line_width = MIN(line_width, Option.max_line_width);
+
+	/*
+	 * record the line width
+	 */
+	dt->line_width = line_width;
 
 	dt->line_width_damage = at->line_width_access = TRUE;
 	return (OK);
@@ -824,4 +845,62 @@ CGMC *c;
 	(void)fprintf(stderr,"ASF\n");
 #endif
 	return (OK);
+}
+
+/*
+ *	some utility functions
+ */
+
+/*
+ *	set mininum line width
+ */
+SetMinLineWidthDefault(line_width)
+	float	line_width;
+{
+
+	/*
+	 * Make sure the metafile global default is in range
+	 */
+	defaulttable.line_width = MAX(line_width, defaulttable.line_width);
+
+	/*
+	 * signal the change made to the default
+	 */
+	LINE_WIDTH_ACCESS = TRUE;
+
+	/*
+	 * record the new minimum for future use
+	 */
+	Option.min_line_width = line_width;
+	Option.min_line_width_set = TRUE;;
+	
+}
+
+/*
+ *	Set Maximum line width.
+ */
+SetMaxLineWidthDefault(line_width)
+	float	line_width;
+{
+	defaulttable.line_width = MIN(line_width, defaulttable.line_width);
+
+	LINE_WIDTH_ACCESS = TRUE;
+
+	Option.max_line_width = line_width;
+	Option.max_line_width_set = TRUE;;
+	
+}
+
+/*
+ *	set additional line scaling
+ */
+SetAdditionalLineScale(line_scale)
+	float	line_scale;
+{
+	LINE_WIDTH_ACCESS = TRUE;
+
+	defaulttable.line_width = line_scale;
+
+	Option.line_width_scale = line_scale;
+	Option.line_width_scale_set = TRUE;;
 }
