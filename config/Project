@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.40 1999-10-20 20:52:09 haley Exp $
+ *      $Id: Project,v 1.41 2000-07-18 19:48:45 haley Exp $
  */
 /************************************************************************
 *									*
@@ -392,5 +392,6 @@ HDFDEFINES	= HdfDefines
 VDEFINE		= -DVERSION='"$(VERSION)"'
 PROJECTDEFINES	= ProjectDefines
 GKS_BUFFER_SIZE	= GksBufferSize
+PERL = /usr/local/bin/perl
 
 
