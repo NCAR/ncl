@@ -39,10 +39,6 @@ C Declare the routine which does the shading.
 C
         EXTERNAL SHADER
 C
-C Dimension a character variable to hold plot labels.
-C
-        CHARACTER*11 LABL
-C
 C Declare common blocks required for communication with CPMPXY.
 C
         COMMON /CPMPC1/ XFOI(33),YFOJ(33)
@@ -197,10 +193,11 @@ C
 C
 C choose between vector magnitude and scalar array coloring
 C
+           CALL VVSETI('NLV - Number of Levels', 14)
            IF (K .EQ. 1) THEN
-              CALL VVSETI('CTV -- Color Threshold Value', 14)
+              CALL VVSETI('CTV -- Color Threshold Value', 2)
            ELSE
-              CALL VVSETI('CTV -- Color Threshold Value', -14)
+              CALL VVSETI('CTV -- Color Threshold Value', 1)
            END IF
 C
 C set up the color array
@@ -239,6 +236,7 @@ C
            CALL VVSETR('YC1 -- Lower X Bound', 0.0)
            CALL VVSETR('YCN -- Upper Y Bound', 360.0)
            CALL VVSETI('SET -- Set Call Flag', 0)
+           CALL VVSETI('XIN - X Grid Increment', 2)
            CALL VVSETI('MSK -- Area Mask Flag', 1)
 C
 C Call the initialization routine
@@ -249,14 +247,16 @@ C Remove the bottom 05% of the vectors
 C
            CALL VVGETR('VMX -- Max Vector Magnitude',VMX)
            CALL VVGETR('VMN -- Min Vector Magnitude',VMN)
-           CALL VVSETR('VLM -- Set Vector Low Magnitude', 
+           CALL VVSETR('VLC -- Vector Low Cutoff', 
      +                 VMN+0.05*(VMX-VMN))
 C
-C Triple the size of the longest vector and make the shortest one
-C one quarter the length of the the longest.
+C Increase the size of the longest vector by 50% from its default
+C value and make the shortest one fourth the length of the longest.
 C
            CALL VVGETR('DMX -- Max Vector Device Magnitude',DMX)
-           CALL VVSETR('VML -- Set Vector Max Length', DMX*3.0) 
+           CALL GETSET(VL,VR,VB,VT,UL,UR,UB,UT,LL)
+           VRL = 1.5 * DMX / (VR - VL)
+           CALL VVSETR('VRL - Vector Realized Length', VRL)
            CALL VVSETR('VFR -- Vector Fractional Minimum', 0.25)
 C
 C Move the Minimum and Maximum Vector text blocks out of the
@@ -270,7 +270,7 @@ C
 C Turn on statistics
 C
            CALL VVSETI('VST - Vector statistics', 1)
-C
+
 C Call VVECTR to draw the vectors, using the same area map that
 C the CONPACK routines used. The 'Draw Masked Vector' routine 
 C used is the one supplied with the Velocity Vector Utility.

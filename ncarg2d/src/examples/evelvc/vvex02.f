@@ -1,4 +1,4 @@
-C	$Id: vvex02.f,v 1.4 1993-01-23 00:56:42 dbrown Exp $
+C	$Id: vvex02.f,v 1.5 1993-02-19 21:58:14 dbrown Exp $
 C
       PROGRAM VVEX02
 C
@@ -35,16 +35,17 @@ C
       CALL VVSETI('VPO -- Vector Position Method', 0)
       CALL VVSETI('SET -- Set Call Flag', 0)
       CALL VVSETI('MAP -- Mapping Flag', 1)
+      CALL VVSETI('NLV -- Number of Levels', 14)
 C
       DO 1000 I=1,10,1 
 C
 C Alternately color vectors based on magnitude or scalar array value
 C
-         ISGN=1
          IF (MOD(I,2) .EQ. 0) THEN
-            ISGN=-1
+            CALL VVSETI('CTV -- Color Thresholds Value', 1)
+         ELSE
+            CALL VVSETI('CTV -- Color Thresholds Value', 2)
          END IF
-         CALL VVSETI('CTV -- Color Thresholds Value', 14*ISGN)
 C
 C Do 10 different easy map projections
 C
@@ -70,12 +71,12 @@ C
          IF (I .GE. 5) THEN
             CALL VVGETR('VMN -- Minimum Vector', VMN)
             CALL  VVGETR('VMX -- Maximum Vector', VMX)
-            CALL VVSETR('VLM -- Vector Low Magnitude',
+            CALL VVSETR('VLC -- Vector Low Cutoff',
      +           VMN+(VMX-VMN)/5.0)
-            CALL VVGETR('VLM -- Vector Low Magnitude',VLM)
-            CALL VVGETR('VFR -- Vector Fractioal Minimum',VFR)
+            CALL VVGETR('VLC -- Vector Low Cutoff Magnitude',VLM)
+            CALL VVGETR('VFR -- Vector Fractional Minimum',VFR)
             CALL VVGETR('DMX -- Distance of Max Vector',DMX)
-            CALL VVSETR('VML -- Vector Max Length', DMX*2.0)
+            CALL VVSETR('VRL -- Vector Realized Length', DMX*2.0)
          END IF
 C
          CALL VVECTR (A(1,10),A(1,25),ZDAT,IDM,IDM,IDM)
