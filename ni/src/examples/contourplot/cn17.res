@@ -1,4 +1,4 @@
-; 
+;
 ; Set the main title attributes.
 ;
 *tiMainFont:        25
@@ -14,6 +14,7 @@
 *cnLineLabelsOn:   False
 *cnLinesOn:        False
 *cnLowLabelsOn:    False
+*cnInfoLabelOn:    False
 
 ; 
 ; Set the line thickness and color for circle.
