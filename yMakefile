@@ -143,6 +143,34 @@ dirs::
 	echo "Installation Error - $(XAPPPATH) is not writeable"; exit 1; \
 	else continue; fi
 
+#ifdef	InstallManToLocal
+	@-if (test ! -d $(MANLPATH)) then mkdir $(MANLPATH); else continue; fi
+	@-if (test ! -d $(MANLPATH) || test ! -w $(MANLPATH)) then \
+	echo "Installation Error - $(MANLPATH) is not writeable"; exit 1; \
+	else continue; fi
+#else
+	@-if (test ! -d $(MAN1PATH)) then mkdir $(MAN1PATH); else continue; fi
+	@-if (test ! -d $(MAN1PATH) || test ! -w $(MAN1PATH)) then \
+	echo "Installation Error - $(MAN1PATH) is not writeable"; exit 1; \
+	else continue; fi
+	@-if (test ! -d $(MAN3PATH)) then mkdir $(MAN3PATH); else continue; fi
+	@-if (test ! -d $(MAN3PATH) || test ! -w $(MAN3PATH)) then \
+	echo "Installation Error - $(MAN3PATH) is not writeable"; exit 1; \
+	else continue; fi
+	@-if (test ! -d $(MAN5PATH)) then mkdir $(MAN5PATH); else continue; fi
+	@-if (test ! -d $(MAN5PATH) || test ! -w $(MAN5PATH)) then \
+	echo "Installation Error - $(MAN5PATH) is not writeable"; exit 1; \
+	else continue; fi
+	@-if (test ! -d $(MAN6PATH)) then mkdir $(MAN6PATH); else continue; fi
+	@-if (test ! -d $(MAN6PATH) || test ! -w $(MAN6PATH)) then \
+	echo "Installation Error - $(MAN6PATH) is not writeable"; exit 1; \
+	else continue; fi
+	@-if (test ! -d $(MAN8PATH)) then mkdir $(MAN8PATH); else continue; fi
+	@-if (test ! -d $(MAN8PATH) || test ! -w $(MAN8PATH)) then \
+	echo "Installation Error - $(MAN8PATH) is not writeable"; exit 1; \
+	else continue; fi
+#endif
+
 MakefilesSubdirs($(SUBDIRS))
 InstallSubdirs($(SUBDIRS))
 CleanSubdirs($(SUBDIRS))
