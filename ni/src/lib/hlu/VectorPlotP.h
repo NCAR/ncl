@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlotP.h,v 1.9 1997-12-17 16:48:09 dbrown Exp $
+ *      $Id: VectorPlotP.h,v 1.10 1998-01-16 21:08:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -152,7 +152,9 @@ typedef struct _NhlVectorPlotLayerPart {
 	NhlBoolean		map_direction;
 	NhlVectorPositionMode	position_mode;
 	NhlDrawOrder		vector_order;
-
+        NhlBoolean		glyph_style_set;
+        NhlVectorGlyphStyle	glyph_style;
+        
 	float			min_distance;
 	float			min_magnitude;
 	float			max_magnitude;
@@ -182,6 +184,7 @@ typedef struct _NhlVectorPlotLayerPart {
 	float			l_arrowhead_min_size;
 	NhlBoolean		l_arrowhead_max_size_set;
 	float			l_arrowhead_max_size;
+        NhlBoolean		fill_arrows_on_set;
 	NhlBoolean		fill_arrows_on;
 	NhlBoolean		mono_f_arrow_fill_color;
 	NhlColorIndex		f_arrow_fill_color;
@@ -196,6 +199,14 @@ typedef struct _NhlVectorPlotLayerPart {
 	float			f_arrowhead_interior;
 	float			f_arrowhead_y;
 	float			f_arrowhead_min_y;
+        NhlBoolean		mono_wb_color;
+        NhlColorIndex		wb_color;
+        float			wb_line_thickness;
+        float			wb_tick_angle;
+        float			wb_tick_length;
+        float			wb_tick_spacing;
+        float			wb_calm_circle_size;
+        float			wb_scale_factor;
 
 	NhlBoolean		use_refvec_anno_attrs;
 	NhlvcLabelAttrs 	refvec_anno;

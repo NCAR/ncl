@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.h,v 1.4 1997-08-14 16:30:51 dbrown Exp $
+ *      $Id: VectorPlot.h,v 1.5 1998-01-16 21:08:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,6 +38,13 @@ typedef enum _NhlVectorPositionMode {
 } NhlVectorPositionMode;
 #define NhlTVectorPositionMode	"VectorPositionMode"
 
+typedef enum _NhlVectorGlyphStyle {
+	NhlLINEARROW,
+	NhlFILLARROW,
+	NhlWINDBARB
+} NhlVectorGlyphStyle;
+#define NhlTVectorGlyphStyle		"VectorGlyphStyle"
+
 /*
  * VectorPlot instance resources
  */
@@ -47,6 +54,7 @@ typedef enum _NhlVectorPositionMode {
 #define NhlNvcMapDirection		"vcMapDirection"
 #define NhlNvcPositionMode		"vcPositionMode"
 #define NhlNvcVectorDrawOrder		"vcVectorDrawOrder"
+#define NhlNvcGlyphStyle		"vcGlyphStyle"
 
 #define NhlNvcMinDistanceF		"vcMinDistanceF"
 #define NhlNvcMinMagnitudeF		"vcMinMagnitudeF"
@@ -86,6 +94,15 @@ typedef enum _NhlVectorPositionMode {
 #define NhlNvcFillArrowHeadInteriorXF	"vcFillArrowHeadInteriorXF"
 #define NhlNvcFillArrowHeadYF		"vcFillArrowHeadYF"
 #define NhlNvcFillArrowHeadMinFracYF	"vcFillArrowHeadMinFracYF"
+
+#define NhlNvcMonoWindBarbColor		"vcMonoWindBarbColor"
+#define NhlNvcWindBarbColor		"vcWindBarbColor"
+#define NhlNvcWindBarbLineThicknessF	"vcWindBarbLineThicknessF"
+#define NhlNvcWindBarbTickAngleF	"vcWindBarbTickAngleF"
+#define NhlNvcWindBarbTickLengthF	"vcWindBarbTickLengthF"
+#define NhlNvcWindBarbTickSpacingF	"vcWindBarbTickSpacingF"
+#define NhlNvcWindBarbCalmCircleSizeF   "vcWindBarbCalmCircleSizeF"
+#define NhlNvcWindBarbScaleFactorF	"vcWindBarbScaleFactorF"
 
 #define NhlNvcUseRefAnnoRes		"vcUseRefAnnoRes"
 #define NhlNvcRefAnnoOn 		"vcRefAnnoOn"
@@ -215,6 +232,7 @@ typedef enum _NhlVectorPositionMode {
 #define NhlCvcMapDirection		"VcMapDirection"
 #define NhlCvcPositionMode		"VcPositionMode"
 #define NhlCvcVectorDrawOrder		"VcVectorDrawOrder"
+#define NhlCvcGlyphStyle		"VcGlyphStyle"
 
 #define NhlCvcMinDistanceF		"VcMinDistanceF"
 #define NhlCvcMinMagnitudeF		"VcMinMagnitudeF"
@@ -254,6 +272,15 @@ typedef enum _NhlVectorPositionMode {
 #define NhlCvcFillArrowHeadInteriorXF	"VcFillArrowHeadInteriorXF"
 #define NhlCvcFillArrowHeadYF		"VcFillArrowHeadYF"
 #define NhlCvcFillArrowHeadMinFracYF	"VcFillArrowHeadMinFracYF"
+
+#define NhlCvcMonoWindBarbColor		"VcMonoWindBarbColor"
+#define NhlCvcWindBarbColor		"VcWindBarbColor"
+#define NhlCvcWindBarbLineThicknessF	"VcWindBarbLineThicknessF"
+#define NhlCvcWindBarbTickAngleF	"VcWindBarbTickAngleF"
+#define NhlCvcWindBarbTickLengthF	"VcWindBarbTickLengthF"
+#define NhlCvcWindBarbTickSpacingF	"VcWindBarbTickSpacingF"
+#define NhlCvcWindBarbCalmCircleSizeF   "VcWindBarbCalmCircleSizeF"
+#define NhlCvcWindBarbScaleFactorF	"VcWindBarbScaleFactorF"
 
 #define NhlCvcUseRefAnnoRes		"VcUseRefAnnoRes"
 #define NhlCvcRefAnnoOn 		"VcRefAnnoOn"

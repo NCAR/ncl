@@ -1,5 +1,5 @@
 /*
- *      $Id: VecAnno.h,v 1.2 1996-01-19 18:06:37 dbrown Exp $
+ *      $Id: VecAnno.h,v 1.3 1998-01-16 21:08:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -47,6 +47,11 @@ typedef struct __NhlvaArrowParams {
 	float ayr_fayr;
 	float ayf_fayf;
 	float afo_iafo;
+        float wba_wbad;
+        float wbt_wbtf;
+        float wbc_wbcf;
+        float wbd_wbdf;
+        float wbs_wbsc;
 } _NhlvaArrowParams;
 
 typedef struct __NhlvaDrawParams {

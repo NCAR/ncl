@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.68 1998-01-02 21:23:01 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.69 1998-01-16 21:08:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4091,11 +4091,18 @@ static NhlErrorTypes cnDraw
 	c_cprset();
 
 	SetCpParams(cnl,entry_name);
-	NhlVAGetValues(cnp->trans_obj->base.id, 
-		       NhlNtrOutOfRangeF, &cnp->out_of_range_val,
-		       NULL);
-        c_cpsetr("ORV",cnp->out_of_range_val);
-
+/*
+ * Only set the ORV parameter if overlaying on EZMAP. It can cause
+ * problems otherwise. (Not sure yet whether it is needed in some cases
+ * though, and perhaps not needed in certain Ezmap cases.
+ */
+	if (cnp->trans_obj->base.layer_class->base_class.class_name ==
+	    NhlmapTransObjClass->base_class.class_name) {
+		NhlVAGetValues(cnp->trans_obj->base.id, 
+			       NhlNtrOutOfRangeF, &cnp->out_of_range_val,
+			       NULL);
+		c_cpsetr("ORV",cnp->out_of_range_val);
+	}
 
 	if (cnp->sfp->missing_value_set)
 		c_cpsetr("SPV",cnp->sfp->missing_value);

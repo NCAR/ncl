@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.43 1997-12-17 01:16:54 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.44 1998-01-16 21:08:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -66,7 +66,12 @@ static NhlResource resources[] = {
  	{NhlNvcVectorDrawOrder,NhlCvcVectorDrawOrder,NhlTDrawOrder,
 		 sizeof(NhlDrawOrder),Oset(vector_order),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlDRAW),0,NULL},
-
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(glyph_style_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
+ 	{NhlNvcGlyphStyle,NhlCvcGlyphStyle,NhlTVectorGlyphStyle,
+         	sizeof(NhlVectorGlyphStyle),Oset(glyph_style),
+         	NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 
 	{ NhlNvcMinDistanceF,NhlCvcMinDistanceF,
 		  NhlTFloat,sizeof(float),Oset(min_distance),NhlTString,
@@ -161,10 +166,13 @@ static NhlResource resources[] = {
 		  NhlTFloat,sizeof(float),Oset(l_arrowhead_max_size),
 		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(fill_arrows_on_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNvcFillArrowsOn,NhlCvcFillArrowsOn,
-		  NhlTBoolean,sizeof(NhlBoolean),
-		  Oset(fill_arrows_on),NhlTImmediate,
-		  _NhlUSET((NhlPointer) False),0,NULL},
+		NhlTBoolean,sizeof(NhlBoolean),
+		Oset(fill_arrows_on),NhlTProcedure,
+	 	_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNvcMonoFillArrowFillColor,NhlCvcMonoFillArrowFillColor,
 		  NhlTBoolean,sizeof(NhlBoolean),
 		  Oset(mono_f_arrow_fill_color),NhlTImmediate,
@@ -208,6 +216,33 @@ static NhlResource resources[] = {
 		  NhlTFloat,sizeof(float),Oset(f_arrowhead_min_y),NhlTString,
 		  _NhlUSET("0.25"),0,NULL},
 
+	{NhlNvcMonoWindBarbColor,NhlCvcMonoWindBarbColor,
+		  NhlTBoolean,sizeof(NhlBoolean),
+		  Oset(mono_wb_color),NhlTImmediate,
+		  _NhlUSET((NhlPointer) True),0,NULL},
+	{NhlNvcWindBarbColor, NhlCvcWindBarbColor, NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(wb_color),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
+	{NhlNvcWindBarbLineThicknessF,NhlCvcWindBarbLineThicknessF,
+		  NhlTFloat,sizeof(float),Oset(wb_line_thickness),NhlTString,
+		  _NhlUSET("1.0"),0,NULL},
+	{NhlNvcWindBarbTickAngleF,NhlCvcWindBarbTickAngleF,
+		  NhlTFloat,sizeof(float),Oset(wb_tick_angle),NhlTString,
+		  _NhlUSET("62.0"),0,NULL},
+	{NhlNvcWindBarbTickLengthF,NhlCvcWindBarbTickLengthF,
+		  NhlTFloat,sizeof(float),Oset(wb_tick_length),NhlTString,
+		  _NhlUSET("0.30"),0,NULL},
+	{NhlNvcWindBarbTickSpacingF,NhlCvcWindBarbTickSpacingF,
+		  NhlTFloat,sizeof(float),Oset(wb_tick_spacing),NhlTString,
+		  _NhlUSET("0.125"),0,NULL},
+	{NhlNvcWindBarbCalmCircleSizeF,NhlCvcWindBarbCalmCircleSizeF,
+		  NhlTFloat,sizeof(float),Oset(wb_calm_circle_size),NhlTString,
+		  _NhlUSET("0.25"),0,NULL},
+	{NhlNvcWindBarbScaleFactorF,NhlCvcWindBarbScaleFactorF,
+		  NhlTFloat,sizeof(float),Oset(wb_scale_factor),NhlTString,
+		  _NhlUSET("1.0"),0,NULL},
+        
+        
 	{NhlNvcUseRefAnnoRes,NhlCvcUseRefAnnoRes,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(use_refvec_anno_attrs),
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
@@ -1536,11 +1571,19 @@ VectorPlotClassInitialize
         {NhlARROWTAIL, 		"ArrowTail"},
         {NhlARROWCENTER, 	"ArrowCenter"}
         };
+        
+        _NhlEnumVals   glyphstylelist[] = {
+        {NhlLINEARROW,		"LineArrow"},
+        {NhlFILLARROW, 		"FillArrow"},
+        {NhlWINDBARB, 		"WindBarb"}
+        };
 
 	load_hlucp_routines(False);
 
 	_NhlRegisterEnumType(NhlvectorPlotClass,NhlTVectorPositionMode,
 		positionmodelist,NhlNumber(positionmodelist));
+	_NhlRegisterEnumType(NhlvectorPlotClass,NhlTVectorGlyphStyle,
+		glyphstylelist,NhlNumber(glyphstylelist));
 
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);
@@ -1769,6 +1812,11 @@ VectorPlotInitialize
 		vcp->y_min = 0.0;
 	if (! vcp->y_max_set)
 		vcp->y_max = 1.0;
+	if (! vcp->glyph_style_set) {
+		vcp->glyph_style = NhlLINEARROW;
+		if (vcp->fill_arrows_on_set && vcp->fill_arrows_on)
+			vcp->glyph_style = NhlFILLARROW;
+	}
 
 /* Initialize private members */
 
@@ -2193,6 +2241,11 @@ static NhlErrorTypes VectorPlotSetValues
 	else if (vcp->use_scalar_array != ovcp->use_scalar_array) {
 		vcp->max_level_val = FLT_MAX;
 		vcp->max_level_set = False;
+	}
+	if (_NhlArgIsSet(args,num_args,NhlNvcFillArrowsOn) &&
+	    !_NhlArgIsSet(args,num_args,NhlNvcGlyphStyle)) {
+		vcp->glyph_style = vcp->fill_arrows_on ?
+		  NhlFILLARROW : NhlLINEARROW;
 	}
 
 /*
@@ -3502,7 +3555,7 @@ static NhlErrorTypes vcDraw
 		c_vvseti("LBL",0);
 	}
 
-	if (! vcp->fill_arrows_on) {
+	if (vcp->glyph_style == NhlLINEARROW) {
 		c_vvseti("AST",0);
 		c_vvsetr("LWD",MAX(0.0,vcp->l_arrow_thickness));
 		c_vvsetr("AMN",MAX(0.0,
@@ -3518,7 +3571,31 @@ static NhlErrorTypes vcDraw
                                     _NhlGetGksCi(vcl->base.wkptr,lcolor));
                 }
 	}
-	else {
+	else if (vcp->glyph_style == NhlWINDBARB) {
+		c_vvseti("AST",2);
+		c_vvsetr("LWD",MAX(0.0,vcp->wb_line_thickness));
+                c_vvsetr("WBA",vcp->wb_tick_angle);
+                c_vvsetr("WBT",vcp->wb_tick_length);
+                c_vvsetr("WBD",vcp->wb_tick_spacing);
+                c_vvsetr("WBC",vcp->wb_calm_circle_size); /* diameter */
+                
+/* Note: wind barb scale factor adjusts the vector magnitude presented to
+ * the wind barb drawing routine independently of magnitude scale factor
+ * 1 m/s = 1.8947 knots; 1 mph = .8696 knots
+ */
+                c_vvsetr("WBS",vcp->wb_scale_factor);
+                if (vcp->mono_wb_color) {
+                        int wbcolor = vcp->wb_color;
+
+                        all_mono = True;
+                        if (wbcolor <= NhlTRANSPARENT) wbcolor = NhlFOREGROUND;
+                        gset_line_colr_ind(
+                                _NhlGetGksCi(vcl->base.wkptr,wbcolor));
+                        gset_fill_colr_ind(
+                                _NhlGetGksCi(vcl->base.wkptr,wbcolor));
+                }
+        }
+	else if (vcp->glyph_style == NhlFILLARROW) {
                 int fcolor = vcp->f_arrow_fill_color;
                 int lcolor = vcp->f_arrow_edge_color;
 
@@ -4536,7 +4613,10 @@ static NhlErrorTypes ManageLabels
 	else {
 		vcp->refvec_anno.aap->real_vec_mag = 
 			vcp->refvec_anno.aap->vec_mag;
-		if (vcp->min_frac_len > 0.0) {
+                if (vcp->glyph_style == NhlWINDBARB)
+                            /* all vectors drawn at the same length */
+                        ;
+                else if (vcp->min_frac_len > 0.0) {
 			float minlen, minmag, refmag;
 
                         minlen = vcp->min_frac_len * vcp->real_ref_length;
@@ -4573,7 +4653,9 @@ static NhlErrorTypes ManageLabels
 		return(ret);
 	}
 
-	if (vcp->min_frac_len > 0.0) {
+        if (vcp->glyph_style == NhlWINDBARB)
+                vcp->minvec_anno.aap->vec_len = vcp->real_ref_length;
+	else if (vcp->min_frac_len > 0.0) {
 		vcp->minvec_anno.aap->vec_len = 
 			vcp->min_frac_len * vcp->real_ref_length;
 	}
@@ -4593,7 +4675,10 @@ static NhlErrorTypes ManageLabels
 	else {
 		vcp->minvec_anno.aap->real_vec_mag = 
 			vcp->minvec_anno.aap->vec_mag;
-		if (vcp->min_frac_len > 0.0) {
+                if (vcp->glyph_style == NhlWINDBARB)
+                            /* all vectors drawn at the same length */
+                        ;
+		else if (vcp->min_frac_len > 0.0) {
 			float minlen, minmag, refmag;
 
                         minlen = vcp->min_frac_len * vcp->real_ref_length;
@@ -5503,6 +5588,7 @@ static NhlErrorTypes ManageVecAnno
 	char			buffer[_NhlMAXRESNAMLEN];
 	int			tmpid;
 	NhlBoolean		on;
+        NhlBoolean		use_vec_color;
 
 	entry_name = (init) ? InitName : SetValuesName;
 
@@ -5526,22 +5612,49 @@ static NhlErrorTypes ManageVecAnno
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 	if (text_changed) oilp->text2 = NULL;
 
-	ilp->aap->real_arrow_line_thickness = vcp->fill_arrows_on ?
-		vcp->f_arrow_edge_thickness : vcp->l_arrow_thickness;
+        use_vec_color = ilp->aap->use_vec_color &&
+                !(vcp->use_scalar_array && vcp->scalar_data_init);
 
-	if (! ilp->aap->use_vec_color) {
-		ilp->aap->real_arrow_line_color = vcp->fill_arrows_on ?
-			ilp->aap->arrow_edge_color : 
-				ilp->aap->arrow_line_color;
-		ilp->aap->real_arrow_fill_color = ilp->aap->arrow_fill_color;
-	}
-	else {
+        switch(vcp->glyph_style) {
+            default:
+            case NhlLINEARROW:
+                    ilp->aap->real_arrow_line_thickness =
+                            vcp->l_arrow_thickness;
+                    if (! ilp->aap->use_vec_color)
+                            ilp->aap->real_arrow_line_color =
+                                    ilp->aap->arrow_line_color;
+                    break;
+            case NhlFILLARROW:
+                    ilp->aap->real_arrow_line_thickness =
+                            vcp->f_arrow_edge_thickness;
+                    if (! ilp->aap->use_vec_color) {
+                            ilp->aap->real_arrow_line_color =
+                                    ilp->aap->arrow_edge_color;
+                            ilp->aap->real_arrow_fill_color =
+                                    ilp->aap->arrow_fill_color;
+                    }
+                    break;
+            case NhlWINDBARB:
+                    ilp->aap->real_arrow_line_thickness =
+                            vcp->wb_line_thickness;
+                    if (! ilp->aap->use_vec_color) {
+                            ilp->aap->real_arrow_line_color =
+                                    ilp->aap->arrow_line_color;
+                            ilp->aap->real_arrow_fill_color =
+                                    ilp->aap->arrow_line_color;
+                    }
+                    break;
+        }
+	if (ilp->aap->use_vec_color) {
 		int i;
 		float *fp = (float *) vcp->levels->data;
 		int *ip = (int *) vcp->level_colors->data;
 		float mag = ilp->aap->real_vec_mag;
 		NhlBoolean set = False;
 		int color = 1;
+                NhlBoolean scalar =
+                        vcp->use_scalar_array && vcp->scalar_data_init;
+                
 		for (i = 0; i < vcp->level_count; i++) {
 			if (mag <= fp[i]) {
 				color = ip[i];
@@ -5552,37 +5665,36 @@ static NhlErrorTypes ManageVecAnno
 		if (! set) {
 			color = ip[vcp->level_count];
 		}
-		if (vcp->mono_f_arrow_fill_color ||
-		    (vcp->use_scalar_array && vcp->scalar_data_init)) {
-			ilp->aap->real_arrow_fill_color = 
-				vcp->f_arrow_fill_color;
-		}
-		else {
-			ilp->aap->real_arrow_fill_color = color;
-		}
-		if (! vcp->fill_arrows_on) {
-			if (vcp->mono_l_arrow_color ||
-			    (vcp->use_scalar_array && vcp->scalar_data_init)) {
-				ilp->aap->real_arrow_line_color = 
-					vcp->l_arrow_color;
-			}
-			else {
-				ilp->aap->real_arrow_line_color = color;
-			}
-		}
-		else {
-			if (vcp->mono_f_arrow_edge_color ||
-			    (vcp->use_scalar_array && vcp->scalar_data_init)) {
-				ilp->aap->real_arrow_line_color = 
-					vcp->f_arrow_edge_color;
-			}
-			else {
-				ilp->aap->real_arrow_line_color = color;
-			}
-		}
-	}
-
-	vcp->a_params.ast_iast = (float) vcp->fill_arrows_on;
+                ilp->aap->real_arrow_fill_color = color;
+                ilp->aap->real_arrow_line_color = color;
+                
+                switch(vcp->glyph_style) {
+                    default:
+                    case NhlLINEARROW:
+                            if (scalar || vcp->mono_l_arrow_color)
+                                    ilp->aap->real_arrow_line_color =
+                                            vcp->l_arrow_color;
+                            break;
+                    case NhlFILLARROW:
+                            if (scalar || vcp->mono_f_arrow_edge_color)
+                                    ilp->aap->real_arrow_line_color = 
+                                            vcp->f_arrow_edge_color;
+                            if (scalar || vcp->mono_f_arrow_fill_color)
+                                    ilp->aap->real_arrow_fill_color = 
+                                            vcp->f_arrow_fill_color;
+                            break;
+                    case NhlWINDBARB:
+                            if (scalar || vcp->mono_wb_color) {
+                                    ilp->aap->real_arrow_line_color = 
+                                            vcp->wb_color;
+                                    ilp->aap->real_arrow_fill_color = 
+                                            vcp->wb_color;
+                            }
+                            break;
+                }
+        }
+        
+	vcp->a_params.ast_iast = (float) vcp->glyph_style;
 	vcp->a_params.fw2w = vcnew->view.width;
 	vcp->a_params.uvmg = ilp->aap->real_vec_mag;
 	vcp->a_params.vlc_vlom = MAX(0.0,vcp->min_magnitude);
@@ -5603,6 +5715,11 @@ static NhlErrorTypes ManageVecAnno
 	vcp->a_params.ayr_fayr = vcp->f_arrowhead_y;
 	vcp->a_params.ayf_fayf = vcp->f_arrowhead_min_y;
 	vcp->a_params.afo_iafo = (float)vcp->fill_over_edge;
+	vcp->a_params.wba_wbad = vcp->wb_tick_angle;
+	vcp->a_params.wbt_wbtf = vcp->wb_tick_length;
+	vcp->a_params.wbc_wbcf = 0.25;
+	vcp->a_params.wbd_wbdf = vcp->wb_tick_spacing;
+	vcp->a_params.wbs_wbsc = vcp->wb_scale_factor;
 
 	if (init || anrp->id == NhlNULLOBJID) {
 		NhlSetSArg(&targs[(targc)++],NhlNvaString1On,
