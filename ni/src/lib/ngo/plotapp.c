@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.23 2000-02-09 03:39:14 dbrown Exp $
+ *      $Id: plotapp.c,v 1.24 2000-02-26 01:35:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -145,6 +145,7 @@ typedef char RefType;
 #define REF_COORD		1
 #define REF_ATTR		2
 #define REF_SUBSET		3
+#define REF_COORD_STR		4
 
 typedef struct _AppResSymRefRec {
 	struct _AppResSymRefRec *next;
@@ -826,6 +827,7 @@ static NhlBoolean ParseResourceValue
 	FuncInfo finfo;
 	int sym_start_pos;
 	NrmQuark qcur_file = NrmNULLQUARK, qcur_var = NrmNULLQUARK;
+	NhlBoolean numeric_coord = False;
 
 	*rfuncs_ret = NULL;
 /*
@@ -980,6 +982,10 @@ static NhlBoolean ParseResourceValue
 				begin = True;
 				state = INDIMENSION;
 			}
+			else if (*ch == '&') {
+				begin = True;
+				state = INCOORDVAR;
+			}
 			else {
 				symbol_end = True;
 				state = BASIC;
@@ -987,11 +993,32 @@ static NhlBoolean ParseResourceValue
 			}
 			break;
 		case INATTRIBUTE:
-		case INCOORDVAR:
 			if (begin) {
 				if (! (isalpha(*ch) || *ch == '_'))
 					bogus = True;
 				begin = False;
+			}
+			else if (! (isalnum(*ch) || *ch == '_')) {
+				symbol_end = True;
+				state = BASIC;
+				continue; /* look at this char again */
+			}
+			break;
+		case INCOORDVAR:
+			if (begin) {
+				if (isdigit(*ch) || *ch == '-')
+					numeric_coord = True;
+				else if (! (isalpha(*ch) || *ch == '_'))
+					bogus = True;
+				begin = False;
+			}
+			else if (numeric_coord) {
+				if (! isdigit(*ch)) {
+					symbol_end = True;
+					state = BASIC;
+					numeric_coord = False;
+					continue; /* look again */
+				}
 			}
 			else if (! (isalnum(*ch) || *ch == '_')) {
 				symbol_end = True;
@@ -1134,6 +1161,7 @@ static NhlBoolean ParseResourceValue
 	case END_INHANDLE:
 	case INATTRIBUTE:
 	case INDIMENSION:
+	case INCOORDVAR:
 	case BASIC:
 		break;
 	case INSYMBOL:
@@ -1937,13 +1965,16 @@ static void RecordObjResRefs
 				rtype = REF_REGULAR;
 				break;
 			case '!':
-				rtype = REF_COORD;
+				rtype = REF_COORD_STR;
 				break;
 			case '@':
 				rtype = REF_ATTR;
 				break;
 			case '(':
 				rtype = REF_SUBSET;
+				break;
+			case '&':
+				rtype = REF_COORD;
 				break;
 			}
 		}
@@ -2038,14 +2069,16 @@ static void RecordDataResRefs
 				rtype = REF_REGULAR;
 				break;
 			case '!':
-
-				rtype = REF_COORD;
+				rtype = REF_COORD_STR;
 				break;
 			case '@':
 				rtype = REF_ATTR;
 				break;
 			case '(':
 				rtype = REF_SUBSET;
+				break;
+			case '&':
+				rtype = REF_COORD;
 				break;
 			}
 		}
@@ -3646,6 +3679,59 @@ static NhlBoolean ReplaceDataSymRef
 			status = True;
 		}
 		break;
+	case REF_COORD_STR:
+		/*
+		 * the coordinate index is beyond the char count by 2
+		 */
+		cp = *buffer + offset + sref->count + 2;
+
+		coord_ix = strtol(cp,&sp,10);
+		if (! (sp > cp)) {
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+		     "Syntax error in res file coord index specification"));
+			return False;
+		}
+		spos = sp - *buffer;
+		/*
+		 * the DataTable is stored in fast to slow order
+		 */
+		if (coord_ix >= 0) {
+			coord_ix = vinfo->n_dims - coord_ix - 1;
+		}
+		else {
+			coord_ix = -coord_ix - 1;
+		}
+		if (coord_ix < 0 || coord_ix > 4) {
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			  "Invalid coord index in res file specification"));
+			return False;
+		}
+		qdim = dt->qdims[coord_ix];
+		if (qdim > NrmNULLQUARK) {
+			for (i = 0; i < vinfo->n_dims; i++) {
+				if (qdim == vinfo->dim_info[i].dim_quark)
+					break;
+			}
+			if (i == vinfo->n_dims) 
+				qdim = NrmNULLQUARK;
+			else {
+				if (dt->qfile) {
+					sprintf(tbuf,"%s->%s!%d",
+						NrmQuarkToString(dt->qfile),
+						NrmQuarkToString(dt->qvar),i);
+				}
+				else {
+					sprintf(tbuf,"%s!%d",
+						NrmQuarkToString(dt->qvar),i);
+				}
+				status = True;
+			}
+		}
+		if (qdim <= NrmNULLQUARK) {
+			sprintf(tbuf,"\"\"");
+			status = True;
+		}
+		break;
 	case REF_REGULAR:
 		if (dt->qfile) {
 			sprintf(tbuf,"%s->%s",
@@ -4760,14 +4846,6 @@ NhlErrorTypes NgSetPlotAppDataVars
 }
 
 
-/*
- * This routine substitutes references to dynamic vars in an edited value
- * with the var '$'syms so that they can continue to be updated dynamically.
- * (if possible). If no substitutions are made the value is returned 
- * unmodified. Otherwise memory is allocated for the return value.
- * The plotapp data vars must already be set.
- */
-
 static char *VarRefInValue
 (
 	char 		*value,
@@ -4782,7 +4860,7 @@ static char *VarRefInValue
 
 	*is_subsection = False;
 
-	if (! vdata->qfile)
+	if (! vdata->qvar)
 		return NULL;
 
 	if (vdata->qfile) {
@@ -4870,6 +4948,15 @@ static char *VarRefInValue
 	}
 	return begin;
 }
+
+/*
+ * This routine substitutes references to dynamic vars in an edited value
+ * with the var '$'syms so that they can continue to be updated dynamically.
+ * (if possible). If no substitutions are made the value is returned 
+ * unmodified. Otherwise memory is allocated for the return value.
+ * The plotapp data vars must already be set.
+ */
+
 AppResSymRef BackSubstitute
 (
 	NgDataItem	ditem,
@@ -4916,6 +5003,7 @@ AppResSymRef BackSubstitute
 		(*buf)[newlen] = '\0';
 		break;
 	case REF_COORD:
+	case REF_COORD_STR:
 		cp = res->value + sref->offset + sref->count + 2; 
 		if (! strtol(cp,&endp,10))
 			return False;
