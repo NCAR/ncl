@@ -1,5 +1,5 @@
 C
-C	$Id: mapgci.f,v 1.1.1.1 1992-04-17 22:31:57 ncargd Exp $
+C	$Id: mapgci.f,v 1.2 1992-09-30 14:04:52 ncargd Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -110,7 +110,12 @@ C Rotating the points about the U axis by the angle -ATAN(WCPF/VCPF)
 C leaves the position of point E unchanged, but carries point F into
 C point G, in the UV plane.
 C
-        ALPH=ATAN2(WCPF,VCPF)
+        IF (WCPF.NE.0..OR.VCPF.NE.0.) THEN
+          ALPH=ATAN2(WCPF,VCPF)
+        ELSE
+          ALPH=0.
+        END IF
+C
         CALP=COS(ALPH)
         SALP=SIN(ALPH)
 C
@@ -125,7 +130,11 @@ C
 C The angle from E to G (which is the same as the angle from A to B)
 C may now be computed easily.
 C
-        BETA=ATAN2(VCPG,UCPG)
+        IF (VCPG.NE.0..OR.UCPG.NE.0.) THEN
+          BETA=ATAN2(VCPG,UCPG)
+        ELSE
+          BETA=0.
+        END IF
 C
 C Interpolate points between the points E and G and map them back to
 C the great circle route between A and B.
@@ -145,7 +154,11 @@ C
           VCPQ=VCPP*CALN+UCPP*SALN
           WCPQ=WCPP
           RLTI(IOPI)=RTOD*ATAN2(WCPQ,SQRT(UCPQ*UCPQ+VCPQ*VCPQ))
-          RLNI(IOPI)=RTOD*ATAN2(VCPQ,UCPQ)
+          IF (VCPQ.NE.0..OR.UCPQ.NE.0.) THEN
+            RLNI(IOPI)=RTOD*ATAN2(VCPQ,UCPQ)
+          ELSE
+            RLNI(IOPI)=0.
+          END IF
   101   CONTINUE
 C
 C Done.
