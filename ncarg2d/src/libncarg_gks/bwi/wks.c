@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c,v 1.6 2003-01-15 18:59:59 fred Exp $
+ *      $Id: wks.c,v 1.7 2003-12-09 17:03:07 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -90,7 +90,7 @@
 *       Author:         Don Middleton
 *                       NCAR Scientific Computing Division
 *
-*       Last Revised:   April, 1994
+*       Last Revised:   October, 2003
 *
 ***********************************************************************/
 
@@ -102,7 +102,11 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#ifdef	FreeBSD
+#include <sys/filio.h>
+#else
 #include <sys/file.h>
+#endif	/* FreeBSD */
 #ifdef cray
 #include <fortran.h>
 #endif

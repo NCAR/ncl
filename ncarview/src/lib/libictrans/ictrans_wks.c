@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans_wks.c,v 1.3 2000-08-22 15:12:00 haley Exp $
+ *	$Id: ictrans_wks.c,v 1.4 2003-12-09 17:04:34 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -14,7 +14,7 @@
 * General Public License for more details.                              *
 *                                                                       *
 * You should have received a copy of the GNU General Public License     *
-* along with this software; if not, write to the Free Software         *
+* along with this software; if not, write to the Free Software          *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307   *
 * USA.                                                                  *
 *                                                                       *
@@ -43,7 +43,11 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#ifdef	FreeBSD
+#include <sys/filio.h>
+#else
 #include <sys/file.h>
+#endif	/* FreeBSD */
 #include <unistd.h>
 #ifdef cray
 #include <fortran.h>

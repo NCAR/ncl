@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.23 2002-06-20 22:22:51 haley Exp $
+#	$Id: yMakefile,v 1.24 2003-12-09 17:04:34 grubin Exp $
 #
 
 MYNAME1		= libictrans.o
@@ -23,7 +23,7 @@ GENERIC_OBJS	= commands.o cmd_tab.o get_cmd.o \
 #if defined(Linux) || defined(LINUX)
 #define linux
 #endif
-#if defined(linux) || defined(Darwin)
+#if defined(linux) || defined(Darwin) || defined(FreeBSD)
 LEX_OBJS = lex.yy_linux.o
 #else
 LEX_OBJS = lex.yy.o
@@ -41,7 +41,7 @@ BuildSharedLibTarget(libNGictrans,$(GENERIC_OBJS),1,0,$(CTRANSLIB) $(CGMLIB) $(N
 DependTarget($(SRCS))
 CleanFilesTarget(lex.yy.c lex.yy.c.sed sedscript)
 
-#if !defined(linux) && !defined(Darwin)
+#if !defined(linux) && !defined(Darwin) && !defined(FreeBSD)
 lex.yy.c: lex.l Makefile
 	@echo '1a\' > sedscript
 	@echo '#include "input.h"' >>  sedscript

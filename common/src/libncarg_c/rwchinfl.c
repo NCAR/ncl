@@ -1,11 +1,11 @@
 /*
- *	$Id: rwchinfl.c,v 1.7 2002-03-25 16:10:30 haley Exp $
+ *	$Id: rwchinfl.c,v 1.8 2003-12-09 17:04:07 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
-*			     Copyright (C)  2000	                        		*
-*	     University Corporation for Atmospheric Research		        *
-*			     All Rights Reserved			                        *
+*			     Copyright (C)  2000	                *
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
 *                                                                       *
 * This file is free software; you can redistribute it and/or modify     *
 * it under the terms of the GNU General Public License as published     *
@@ -26,7 +26,11 @@
 
 
 #include <ncarg/c.h>
+#ifdef	FreeBSD
+#include <sys/filio.h>
+#else
 #include <sys/file.h>
+#endif	/* FreeBSD */
 #include <fcntl.h>
 #include <unistd.h>
 
