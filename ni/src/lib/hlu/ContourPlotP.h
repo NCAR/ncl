@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.30 2003-09-10 21:29:53 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.31 2004-03-11 02:00:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -135,7 +135,10 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlDrawOrder	line_order;
 	NhlDrawOrder	fill_order;
 	NhlBoolean	lines_on;
+	NhlBoolean      fill_on_set;
 	NhlBoolean	fill_on;
+	NhlBoolean      fill_mode_set;
+	NhlcnFillMode   fill_mode;
 	NhlColorIndex	fill_background_color;
 
         NhlcnLabelScalingMode	label_scaling_mode;
@@ -152,6 +155,7 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlBoolean	lbar_end_labels_on;
 	NhlBoolean	explicit_lgnd_labels_on;
 	NhlGenArray	lgnd_level_flags;
+	NhlBoolean      raster_mode_on_set;
 	NhlBoolean	raster_mode_on;
 	NhlBoolean	cell_size_set;
 	float		cell_size;
@@ -159,6 +163,8 @@ typedef struct _NhlContourPlotLayerPart {
         float		raster_sample_factor;
         float		min_cell_size;
 	NhlBoolean	cyclic_mode_on;
+	NhlColorIndex   cell_fill_edge_color;
+	NhlColorIndex   cell_fill_missing_val_edge_color;
 
 	NhlGenArray	levels;
 	NhlBoolean	mono_level_flag;
@@ -233,9 +239,12 @@ typedef struct _NhlContourPlotLayerPart {
 
 	NhlBoolean	dump_area_map;
 	NhlBoolean	fix_fill_bleed;
+	NhlBoolean      output_gridded_data;
+	NhlString       output_file_name;
 	int		amap_crange;
 	NhlBoolean	update_req;
 	NhlBoolean	data_changed;
+	NhlBoolean      trans_updated;
 
 	/* Private Fields */
 
@@ -290,6 +299,8 @@ typedef struct _NhlContourPlotLayerPart {
 	float		*data;
 	NhlBoolean	do_low_level_log;
 	NhlBoolean	low_level_log_on;
+	NhlLayer        render_obj;
+	int             render_update_mode;
 
 	/* labelbar and legend stuff */
 

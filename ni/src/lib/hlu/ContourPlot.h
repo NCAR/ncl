@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.h,v 1.17 2003-08-13 21:26:47 dbrown Exp $
+ *      $Id: ContourPlot.h,v 1.18 2004-03-11 02:00:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -83,6 +83,14 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 
 #define NhlTcnHighLowLabelOverlapMode	"cnHighLowLabelOverlapMode"
 
+typedef enum _NhlcnFillMode {
+	NhlAREAFILL, 
+	NhlRASTERFILL,
+	NhlCELLFILL
+} NhlcnFillMode;
+
+#define NhlTcnFillMode	"cnFillMode"
+
 /*
  * ContourPlot instance resources
  */
@@ -104,6 +112,7 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlNcnLinesOn			"cnLinesOn"
 #define NhlNcnFillOn			"cnFillOn"
 #define NhlNcnFillBackgroundColor	"cnFillBackgroundColor"
+#define NhlNcnFillMode			"cnFillMode"
 
 #define NhlNcnLabelScalingMode		"cnLabelScalingMode"
 #define NhlNcnLabelScaleValueF		"cnLabelScaleValueF"
@@ -140,6 +149,8 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlNcnFillScaleF		"cnFillScaleF"
 #define NhlNcnFillScales		"cnFillScales"
 #define NhlNcnFillDotSizeF		"cnFillDotSizeF"
+#define NhlNcnCellFillEdgeColor         "cnCellFillEdgeColor"
+#define NhlNcnCellFillMissingValEdgeColor "cnCellFillMissingValEdgeColor"
 
 #define NhlNcnMonoLineColor		"cnMonoLineColor"
 #define NhlNcnLineColor			"cnLineColor"
@@ -293,6 +304,8 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlNcnFixFillBleed		"cnFixFillBleed"
 #define NhlNcnAreaMapCRange		"cnAreaMapCRange"
 #define NhlNcnConpackParams		"cnConpackParams"
+#define NhlNcnOutputGriddedData		"cnOutputGriddedData"
+#define NhlNcnOutputFileName		"cnOutputFileName"
 
 /*
  * ContourPlot class resources
@@ -309,6 +322,9 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnFillDrawOrder		"CnFillDrawOrder"
 #define NhlCcnLinesOn			"CnLinesOn"
 #define NhlCcnFillOn			"CnFillOn"
+#define NhlCcnFillMode			"CnFillMode"
+#define NhlCcnCellFillEdgeColor         "CnCellFillEdgeColor"
+#define NhlCcnCellFillMissingValEdgeColor "CnCellFillMissingValEdgeColor"
 
 #define NhlCcnLabelScalingMode		"CnLabelScalingMode"
 #define NhlCcnLabelScaleValueF		"CnLabelScaleValueF"
@@ -394,6 +410,8 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnFixFillBleed		"CnFixFillBleed"
 #define NhlCcnAreaMapCRange		"CnAreaMapCRange"
 #define NhlCcnConpackParams		"CnConpackParams"
+#define NhlCcnOutputGriddedData		"CnOutputGriddedData"
+#define NhlCcnOutputFileName		"CnOutputFileName"
 
 
 /*

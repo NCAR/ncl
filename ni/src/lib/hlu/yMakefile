@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.60 2003-07-14 23:12:46 dbrown Exp $
+#      $Id: yMakefile,v 1.61 2004-03-11 02:00:34 dbrown Exp $
 #
 #########################################################################
 #                                                                       #
@@ -55,7 +55,10 @@ HDRS		= Base.h BaseI.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		Primitive.h PrimitiveP.h \
 		CurvilinearTransObj.h CurvilinearTransObjP.h \
 		SphericalTransObj.h SphericalTransObjP.h SphericalGeometryP.h \
-        PDFWorkstation.h PDFWorkstationP.h
+	        PDFWorkstation.h PDFWorkstationP.h \
+		CnRenderer.h CnRendererP.h CnStdRenderer.h CnStdRendererP.h \
+		CnTriMeshRenderer.h CnTriMeshRendererP.h \
+		TriMeshTransObj.h TriMeshTransObjP.h
 
 CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Create.c Destroy.c Draw.c Error.c GetValues.c \
@@ -76,7 +79,8 @@ CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		CurvilinearTransObj.c SphericalTransObj.c SphericalGeometry.c \
 		bsearch.c linaprox.c wksisact.c simpletrans.c wksisopn.c \
 		cmpf.c nicevals.c \
-        PDFWorkstation.c
+	        PDFWorkstation.c CnRenderer.c CnStdRenderer.c \
+		CnTriMeshRenderer.c TriMeshTransObj.c 
 
 COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Create.o Destroy.o Draw.o Error.o GetValues.o \
@@ -97,19 +101,22 @@ COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		CurvilinearTransObj.o SphericalTransObj.o SphericalGeometry.o \
 		bsearch.o linaprox.o wksisact.o simpletrans.o wksisopn.o \
 		cmpf.o nicevals.o \
-        PDFWorkstation.o
+	        PDFWorkstation.o CnRenderer.o CnStdRenderer.o \
+		CnTriMeshRenderer.o TriMeshTransObj.o
 
 FSRCS		= DATACOMMF.f ERRORF.f HLUF.f PLOTMANAGERF.f RLGEN.f RLSET.f \
 		RLGET.f TRANSFORMF.f VIEWF.f WORKSPACEF.f WORKSTATIONF.f \
 		DATAITEMF.f APPF.f dashchar.f\
 		coeff1.f interp.f sdot.f sgesl.f trip.f fitpack.f isamax.f \
-		search.f sscal.f saxpy.f sgefa.f terp1.f gerhnd.f
+		search.f sscal.f saxpy.f sgefa.f terp1.f gerhnd.f \
+		trmrectgrid.f
 
 FOBJS		= DATACOMMF.o ERRORF.o HLUF.o PLOTMANAGERF.o RLGEN.o RLSET.o \
 		RLGET.o TRANSFORMF.o VIEWF.o WORKSPACEF.o WORKSTATIONF.o \
 		DATAITEMF.o APPF.o dashchar.o \
 		coeff1.o interp.o sdot.o sgesl.o trip.o fitpack.o isamax.o \
-		search.o sscal.o saxpy.o sgefa.o terp1.o gerhnd.o
+		search.o sscal.o saxpy.o sgefa.o terp1.o gerhnd.o \
+		trmrectgrid.o
 
 OBJS		= $(COBJS) $(FOBJS)
 

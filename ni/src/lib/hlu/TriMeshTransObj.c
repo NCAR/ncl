@@ -1,5 +1,5 @@
 /*
- *      $Id: SphericalTransObj.c,v 1.5 2004-03-11 02:00:32 dbrown Exp $
+ *      $Id: TriMeshTransObj.c,v 1.1 2004-03-11 02:00:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9,13 +9,13 @@
 *									*
 ************************************************************************/
 /*
- *	File:		SphericalTransObj.c
+ *	File:		TriMeshTransObj.c
  *
  *	Author:		David I. Brown
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	Date:		Wed Jun 12 12:35:56 MDT 2002
+ *	Date:		Thu Oct 16 17:41:11 MDT 2003
  *
  *	Description:	
  *
@@ -24,10 +24,9 @@
 #include <stdio.h>
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/hluP.h>
-#include <ncarg/hlu/SphericalTransObjP.h>
+#include <ncarg/hlu/TriMeshTransObjP.h>
 #include <ncarg/hlu/View.h>
 #include <ncarg/hlu/ConvertersP.h>
-#include <ncarg/hlu/SphericalGeometryP.h>
 #include <math.h>
 
 static NhlResource resources[] = {
@@ -36,13 +35,13 @@ static NhlResource resources[] = {
 
 	{ NhlNtrXCoordPoints,NhlCtrXCoordPoints,NhlTFloatGenArray,
 		  sizeof(NhlGenArray),
-		  NhlOffset(NhlSphericalTransObjLayerRec,
-			    sptrans.x_coord_points_ga),NhlTImmediate,
+		  NhlOffset(NhlTriMeshTransObjLayerRec,
+			    tmtrans.x_coord_points_ga),NhlTImmediate,
 		  _NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray },
 	{ NhlNtrYCoordPoints,NhlCtrYCoordPoints,NhlTFloatGenArray,
 		  sizeof(NhlGenArray),
-		  NhlOffset(NhlSphericalTransObjLayerRec,
-			    sptrans.y_coord_points_ga),NhlTImmediate,
+		  NhlOffset(NhlTriMeshTransObjLayerRec,
+			    tmtrans.y_coord_points_ga),NhlTImmediate,
 		  _NhlUSET(NULL) ,0,(NhlFreeFunc)NhlFreeGenArray }
 
 /* End-documented-resources */
@@ -53,7 +52,7 @@ static NhlResource resources[] = {
 * BaseClass Methods defined
 */
 
-static NhlErrorTypes  SpTransSetValues(
+static NhlErrorTypes  TmTransSetValues(
 #if	NhlNeedProto
         NhlLayer,          /* old */
         NhlLayer,          /* reference */
@@ -63,7 +62,7 @@ static NhlErrorTypes  SpTransSetValues(
 #endif
 );
 
-static NhlErrorTypes SpTransInitialize(
+static NhlErrorTypes TmTransInitialize(
 #if	NhlNeedProto
         NhlClass,     /* class */
         NhlLayer,          /* req */
@@ -74,7 +73,7 @@ static NhlErrorTypes SpTransInitialize(
 );
 
 
-static NhlErrorTypes SpTransDestroy(
+static NhlErrorTypes TmTransDestroy(
 #if	NhlNeedProto
         NhlLayer        /* inst */
 #endif
@@ -85,7 +84,7 @@ static NhlErrorTypes SpTransDestroy(
 * TransObjClass Methods defined
 */
 
-static NhlErrorTypes SpSetTrans(
+static NhlErrorTypes TmSetTrans(
 #if	NhlNeedProto
 NhlLayer	/*instance*/,
 NhlLayer  /*parent*/
@@ -93,7 +92,7 @@ NhlLayer  /*parent*/
 );
 
 
-static NhlErrorTypes SpWinToNDC(
+static NhlErrorTypes TmWinToNDC(
 #if	NhlNeedProto
 NhlLayer	/*instance*/,
 float*	/*x*/,
@@ -108,7 +107,7 @@ int * 	/* status */
 );
 
 
-static NhlErrorTypes SpNDCToWin(
+static NhlErrorTypes TmNDCToWin(
 #if	NhlNeedProto
 NhlLayer	/*instance*/,
 float*	/*x*/,
@@ -123,7 +122,7 @@ int *   /* status */
 );
 
 
-static NhlErrorTypes SpDataToCompc(
+static NhlErrorTypes TmDataToCompc(
 #if	NhlNeedProto
 NhlLayer   /*instance */,
 float*  /*x*/,
@@ -137,7 +136,7 @@ int *   /* status */
 #endif
 );
 
-static NhlErrorTypes SpCompcToData(
+static NhlErrorTypes TmCompcToData(
 #if	NhlNeedProto
 NhlLayer   /*instance */,
 float*  /*x*/,
@@ -151,7 +150,7 @@ int *   /* status */
 #endif
 );
 
-static NhlErrorTypes SpWinToCompc(
+static NhlErrorTypes TmWinToCompc(
 #if	NhlNeedProto
 NhlLayer   /*instance */,
 float*  /*x*/,
@@ -167,7 +166,7 @@ int *   /* status */
 
 
 
-static NhlErrorTypes SpNDCLineTo(
+static NhlErrorTypes TmNDCLineTo(
 #if     NhlNeedProto
 NhlLayer   /* instance */,
 float   /* x */,
@@ -175,16 +174,7 @@ float   /* y */,
 int     /* upordown */
 #endif
 );
-static NhlErrorTypes SpDataLineTo(
-#if     NhlNeedProto
-NhlLayer   /* instance */,
-float   /* x */,
-float   /* y */,
-int     /* upordown */
-#endif
-);
-
-static NhlErrorTypes SpWinLineTo(
+static NhlErrorTypes TmDataLineTo(
 #if     NhlNeedProto
 NhlLayer   /* instance */,
 float   /* x */,
@@ -193,7 +183,16 @@ int     /* upordown */
 #endif
 );
 
-static NhlErrorTypes SpDataPolygon(
+static NhlErrorTypes TmWinLineTo(
+#if     NhlNeedProto
+NhlLayer   /* instance */,
+float   /* x */,
+float   /* y */,
+int     /* upordown */
+#endif
+);
+
+static NhlErrorTypes TmDataPolygon(
 #if     NhlNeedProto
 NhlLayer   /* instance */,
 float*   /* x */,
@@ -214,7 +213,7 @@ static NhlErrorTypes SetUpTrans(
 
 static NhlBoolean compare_check(
 #if NhlNeedProto
-	NhlSphericalTransObjLayerPart *spp,
+	NhlTriMeshTransObjLayerPart *tmp,
 	float	*x,
  	float	*y,
 	int	type /* data 0, compc 1 */
@@ -232,7 +231,7 @@ static NhlBoolean compare_view(
 #endif
 );
 
-static NhlErrorTypes SpTransGetValues(
+static NhlErrorTypes TmTransGetValues(
 #if NhlNeedProto
 	NhlLayer /* l */,
 	_NhlArgList /*args */,
@@ -240,7 +239,7 @@ static NhlErrorTypes SpTransGetValues(
 #endif
 );
 
-static NhlErrorTypes 	SpTransClassInitialize(
+static NhlErrorTypes 	TmTransClassInitialize(
 #if NhlNeedProto
 	void
 #endif
@@ -249,19 +248,19 @@ static NhlErrorTypes 	SpTransClassInitialize(
 #define CREATE  1
 #define SET 0
 
-#define NhlspDATA 0
-#define NhlspCOMPC 1
+#define NhltmDATA 0
+#define NhltmCOMPC 1
 
 static NrmQuark QtrXCoordPoints;
 static NrmQuark QtrYCoordPoints;
 static NrmQuark QtrXInterPoints;
 static NrmQuark QtrYInterPoints;
 
-NhlSphericalTransObjClassRec NhlsphericalTransObjClassRec = {
+NhlTriMeshTransObjClassRec NhltriMeshTransObjClassRec = {
         {
-/* class_name			*/	"sphericalTransformationClass",
+/* class_name			*/	"triMeshTransformationClass",
 /* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(NhlSphericalTransObjLayerRec),
+/* layer_size			*/	sizeof(NhlTriMeshTransObjLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhltransObjClassRec,
 /* cvt_table			*/	NULL,
@@ -275,36 +274,36 @@ NhlSphericalTransObjClassRec NhlsphericalTransObjClassRec = {
 /* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	NULL,
-/* class_initialize		*/	SpTransClassInitialize,
-/* layer_initialize		*/	SpTransInitialize,
-/* layer_set_values		*/	SpTransSetValues,
+/* class_initialize		*/	TmTransClassInitialize,
+/* layer_initialize		*/	TmTransInitialize,
+/* layer_set_values		*/	TmTransSetValues,
 /* layer_set_values_hook	*/	NULL,
-/* layer_get_values		*/	SpTransGetValues,
+/* layer_get_values		*/	TmTransGetValues,
 /* layer_reparent		*/	NULL,
-/* layer_destroy		*/	SpTransDestroy
+/* layer_destroy		*/	TmTransDestroy
         },
         {
-/* set_trans		*/	SpSetTrans,
+/* set_trans		*/	TmSetTrans,
 /* trans_type		*/	NULL,
-/* win_to_ndc		*/	SpWinToNDC,
-/* ndc_to_win		*/	SpNDCToWin,
-/* data_to_win		*/	SpDataToCompc, 
-/* win_to_data		*/	SpCompcToData, 
-/* data_to_compc	*/	SpDataToCompc,
-/* compc_to_data	*/	SpCompcToData,
-/* win_to_compc		*/	SpWinToCompc,
-/* compc_to_win		*/	SpWinToCompc,
-/* data_lineto 		*/      SpDataLineTo,
-/* compc_lineto		*/      SpWinLineTo,
-/* win_lineto 		*/      SpWinLineTo,
-/* NDC_lineto 		*/      SpNDCLineTo,
-/* data_polygon		*/      SpDataPolygon
+/* win_to_ndc		*/	TmWinToNDC,
+/* ndc_to_win		*/	TmNDCToWin,
+/* data_to_win		*/	TmDataToCompc, 
+/* win_to_data		*/	TmCompcToData, 
+/* data_to_compc	*/	TmDataToCompc,
+/* compc_to_data	*/	TmCompcToData,
+/* win_to_compc		*/	TmWinToCompc,
+/* compc_to_win		*/	TmWinToCompc,
+/* data_lineto 		*/      TmDataLineTo,
+/* compc_lineto		*/      TmWinLineTo,
+/* win_lineto 		*/      TmWinLineTo,
+/* NDC_lineto 		*/      TmNDCLineTo,
+/* data_polygon		*/      TmDataPolygon
 
         }
 };
 
-NhlClass NhlsphericalTransObjClass =
-			(NhlClass)&NhlsphericalTransObjClassRec;
+NhlClass NhltriMeshTransObjClass =
+			(NhlClass)&NhltriMeshTransObjClassRec;
 
 
 #define INCREASING 0
@@ -314,9 +313,9 @@ NhlClass NhlsphericalTransObjClass =
 
 
 /*
- * Function:	SpTransSetValues
+ * Function:	TmTransSetValues
  *
- * Description:	SetValues method for SphericalTrans Objects
+ * Description:	SetValues method for TriMeshTrans Objects
  *
  * In Args: 	All standard ones for set_values method.
  *
@@ -327,7 +326,7 @@ NhlClass NhlsphericalTransObjClass =
  * Side Effects: Allocates and copies space for array resources
  */
 /*ARGSUSED*/
-static NhlErrorTypes SpTransSetValues
+static NhlErrorTypes TmTransSetValues
 #if	NhlNeedProto
 (NhlLayer old, NhlLayer reference, NhlLayer new, _NhlArgList args, int num_args)
 #else
@@ -339,8 +338,8 @@ static NhlErrorTypes SpTransSetValues
 	int	num_args;
 #endif
 {
-	NhlSphericalTransObjLayer inew = (NhlSphericalTransObjLayer) new;
-	NhlSphericalTransObjLayerPart *spp = &inew->sptrans;
+	NhlTriMeshTransObjLayer inew = (NhlTriMeshTransObjLayer) new;
+	NhlTriMeshTransObjLayerPart *tmp = &inew->tmtrans;
 	NhlTransObjLayerPart	*tp = &inew->trobj;
 
 	return(SetUpTrans(new,old,SET,args,num_args));	
@@ -348,9 +347,9 @@ static NhlErrorTypes SpTransSetValues
 
 
 /*
- * Function:	SpTransInitialize
+ * Function:	TmTransInitialize
  *
- * Description: Initialize function for SphericalTransObjs. Performs same
+ * Description: Initialize function for TriMeshTransObjs. Performs same
  *		operations as set_values for copying array resources
  *
  * In Args:  	Standard layer_initialize arguments.
@@ -359,10 +358,10 @@ static NhlErrorTypes SpTransSetValues
  *
  * Return Values: Error Status
  *
- * Side Effects: allocates space and copies valus of array resources.
+ * Side Effects: allocates tmace and copies valus of array resources.
  */
 /*ARGSUSED*/
-static NhlErrorTypes SpTransInitialize
+static NhlErrorTypes TmTransInitialize
 #if	NhlNeedProto
 ( NhlClass class, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args)
 #else
@@ -378,7 +377,7 @@ static NhlErrorTypes SpTransInitialize
 }
 
 /*
- * Function:	SpTransDestroy
+ * Function:	TmTransDestroy
  *
  * Description:
  *
@@ -390,7 +389,7 @@ static NhlErrorTypes SpTransInitialize
  *
  * Side Effects:	NONE
  */
-static NhlErrorTypes SpTransDestroy
+static NhlErrorTypes TmTransDestroy
 #if	NhlNeedProto
 (NhlLayer inst)
 #else
@@ -398,29 +397,31 @@ static NhlErrorTypes SpTransDestroy
 NhlLayer inst;
 #endif
 {
-	NhlSphericalTransObjLayer sp = 
-		(NhlSphericalTransObjLayer)inst;
+	NhlTriMeshTransObjLayer tm = 
+		(NhlTriMeshTransObjLayer)inst;
 
-	NhlFreeGenArray(sp->sptrans.x_sph_ga);
-	NhlFreeGenArray(sp->sptrans.y_sph_ga);
+	if (tm->tmtrans.x_trm_ga)
+		NhlFreeGenArray(tm->tmtrans.x_trm_ga);
+	if (tm->tmtrans.y_trm_ga)
+		NhlFreeGenArray(tm->tmtrans.y_trm_ga);
 
-	if (sp->sptrans.ixmin)
-		NhlFree(sp->sptrans.ixmin);
-	if (sp->sptrans.ixmax)
-		NhlFree(sp->sptrans.ixmax);
-	if (sp->sptrans.iymin)
-		NhlFree(sp->sptrans.iymin);
-	if (sp->sptrans.iymax)
-		NhlFree(sp->sptrans.iymax);
+	if (tm->tmtrans.ixmin)
+		NhlFree(tm->tmtrans.ixmin);
+	if (tm->tmtrans.ixmax)
+		NhlFree(tm->tmtrans.ixmax);
+	if (tm->tmtrans.iymin)
+		NhlFree(tm->tmtrans.iymin);
+	if (tm->tmtrans.iymax)
+		NhlFree(tm->tmtrans.iymax);
 
- 	free(sp->sptrans.xmin_dat);
-	free(sp->sptrans.xmax_dat);
-	free(sp->sptrans.ymin_dat);
-	free(sp->sptrans.ymax_dat);
- 	free(sp->sptrans.compc_xmin_dat);
-	free(sp->sptrans.compc_xmax_dat);
-	free(sp->sptrans.compc_ymin_dat);
-	free(sp->sptrans.compc_ymax_dat);
+ 	free(tm->tmtrans.xmin_dat);
+	free(tm->tmtrans.xmax_dat);
+	free(tm->tmtrans.ymin_dat);
+	free(tm->tmtrans.ymax_dat);
+ 	free(tm->tmtrans.compc_xmin_dat);
+	free(tm->tmtrans.compc_xmax_dat);
+	free(tm->tmtrans.compc_ymin_dat);
+	free(tm->tmtrans.compc_ymax_dat);
 
 	return NhlNOERROR;
 }
@@ -429,33 +430,6 @@ NhlLayer inst;
 #define MAX4(a,b,c,d) MAX(MAX((a),(b)),MAX((c),(d)))
 #define DEGTORAD 0.017453292519943
 #define RADTODEG 57.2957795130823
-
-static void SetUpLLCosSinArray
-#if	NhlNeedProto
-(
-	NhlSphericalTransObjLayerPart *spp
-)
-#else
-(spp)
-	NhlSphericalTransObjLayerPart *spp;
-#endif
-{
-	int i,j;
-	float *xp,*yp;
-	xp = (float *) spp->x_sph_ga->data;
-	yp = (float *) spp->y_sph_ga->data;
-
-	for (j = 0; j < spp->yaxis_size; j++) {
-		for (i = 0; i < spp->xaxis_size; i++) {
-			int off = i + j * spp->xaxis_size;
-			LLCosSin *llcs = spp->llcs + off;
-			llcs->latcos = cos(DEGTORAD * (double) *(yp + off));
-			llcs->latsin = sin(DEGTORAD * (double) *(yp + off));
-			llcs->loncos = cos(DEGTORAD * (double) *(xp + off));
-			llcs->lonsin = sin(DEGTORAD * (double) *(xp + off));
-		}
-	}
-}
 
 static NhlErrorTypes SetUpTrans
 #if	NhlNeedProto
@@ -469,19 +443,17 @@ static NhlErrorTypes SetUpTrans
 	int nargs;
 #endif
 {
-	NhlSphericalTransObjLayer inew = (NhlSphericalTransObjLayer)new;
-	NhlSphericalTransObjLayer iold = (NhlSphericalTransObjLayer)old;
-	NhlSphericalTransObjLayerPart *spp = &inew->sptrans;
-	NhlSphericalTransObjLayerPart *ospp = &iold->sptrans;
+	NhlTriMeshTransObjLayer inew = (NhlTriMeshTransObjLayer)new;
+	NhlTriMeshTransObjLayer iold = (NhlTriMeshTransObjLayer)old;
+	NhlTriMeshTransObjLayerPart *tmp = &inew->tmtrans;
+	NhlTriMeshTransObjLayerPart *otmp = &iold->tmtrans;
 	NhlTransObjLayerPart	*tp = &inew->trobj;
 	NhlTransObjLayerPart	*otp = &iold->trobj;
 	char *error_lead,*e_text;
 	NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
 	NhlBoolean new_coords = False;
-        NhlBoolean x_sph_coords_set = False,y_sph_coords_set = False;
         NhlBoolean data_extent_def;
         NhlBoolean new_data_extent;
-	int old_xaxis_size,old_yaxis_size;
 	
 	tp->change_count++;
 	
@@ -491,14 +463,8 @@ static NhlErrorTypes SetUpTrans
 	
 	if(c_or_s == SET) {
 
-		error_lead = "SpTransSetValues";
+		error_lead = "TmTransSetValues";
 
-		if (_NhlArgIsSet(args,nargs,NhlNtrXCoordPoints))
-                        x_sph_coords_set = True;
-		if (_NhlArgIsSet(args,nargs,NhlNtrYCoordPoints))
-                        y_sph_coords_set = True;
-		if (x_sph_coords_set || y_sph_coords_set)
-			new_coords = True;
                 if (! data_extent_def &&
                     (tp->x_min != otp->x_min ||
                      tp->x_max != otp->x_max ||
@@ -512,219 +478,152 @@ static NhlErrorTypes SetUpTrans
 				tp->data_ystart != otp->data_ystart ||
 				tp->data_yend != otp->data_yend;
 		}
-		old_xaxis_size = spp->xaxis_size;
-		old_yaxis_size = spp->yaxis_size;
 	}
 	else {
-		error_lead = "SpTransInitialize";
+		error_lead = "TmTransInitialize";
 		new_coords = True;
                 new_data_extent = True;
-                if (spp->x_coord_points_ga)
-                       x_sph_coords_set = True; 
-                if (spp->y_coord_points_ga)
-                       y_sph_coords_set = True; 
-		if (! (x_sph_coords_set && y_sph_coords_set)) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-			  "%s: Both %s and %s must be set",
-			  error_lead,NhlNtrXCoordPoints,NhlNtrYCoordPoints);
-			return NhlFATAL;
-		}
-		spp->x_sph_ga = NULL;
-		spp->y_sph_ga = NULL; 
-                spp->x_sph_min = 0.0;
-                spp->x_sph_max = 0.0;
-                spp->y_sph_min = 0.0;
-                spp->y_sph_max = 0.0;
-                spp->xaxis_size = 0;
-                spp->yaxis_size = 0;
+		tmp->x_trm_ga = NULL;
+		tmp->y_trm_ga = NULL; 
+                tmp->x_trm_min = 0.0;
+                tmp->x_trm_max = 0.0;
+                tmp->y_trm_min = 0.0;
+                tmp->y_trm_max = 0.0;
 
-                spp->ul = spp->ub = 0.0;
-                spp->ur = spp->ut = 1.0;
-		spp->ixmin = spp->ixmax = NULL;
-		spp->iymin = spp->iymax = NULL;
-		old_xaxis_size = -1;
-		old_yaxis_size = -1;
-		spp->llcs = NULL;
+                tmp->ul = tmp->ub = 0.0;
+                tmp->ur = tmp->ut = 1.0;
+		tmp->ixmin = tmp->ixmax = NULL;
+		tmp->iymin = tmp->iymax = NULL;
 	}
 
 	if (data_extent_def) {
-		spp->x_sph_min = MIN(tp->data_xstart,tp->data_xend);
-		spp->x_sph_max = MAX(tp->data_xstart,tp->data_xend);
-		spp->y_sph_min = MIN(tp->data_ystart,tp->data_yend);
-		spp->y_sph_max = MAX(tp->data_ystart,tp->data_yend);
-	}
-	if (x_sph_coords_set) {
-		if (spp->x_sph_ga)
-			NhlFreeGenArray(spp->x_sph_ga);
-		spp->x_sph_ga = 
-			_NhlCopyGenArray(spp->x_coord_points_ga,True);
-		if (! spp->x_sph_ga) {
-			NHLPERROR((NhlFATAL,ENOMEM,NULL));
-			return NhlFATAL;
-		}
-		spp->x_coord_points_ga = NULL;
-	}
-	if (y_sph_coords_set) {
-		if (spp->y_sph_ga)
-			NhlFreeGenArray(spp->y_sph_ga);
-		spp->y_sph_ga = 
-			_NhlCopyGenArray(spp->y_coord_points_ga,True);
-		if (! spp->y_sph_ga) {
-			NHLPERROR((NhlFATAL,ENOMEM,NULL));
-			return NhlFATAL;
-		}
-		spp->y_coord_points_ga = NULL;
-	}
-	if (spp->y_sph_ga->len_dimensions[1] != 
-	    spp->x_sph_ga->len_dimensions[1] ||
-	    spp->x_sph_ga->len_dimensions[0] != 
-	    spp->x_sph_ga->len_dimensions[0]) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			  "%s: %s and %s must have equal dimension lengths",
-			  error_lead,NhlNtrXCoordPoints,NhlNtrYCoordPoints);
-		return NhlFATAL;
+		tmp->x_trm_min = MIN(tp->data_xstart,tp->data_xend);
+		tmp->x_trm_max = MAX(tp->data_xstart,tp->data_xend);
+		tmp->y_trm_min = MIN(tp->data_ystart,tp->data_yend);
+		tmp->y_trm_max = MAX(tp->data_ystart,tp->data_yend);
 	}
 		
 
-	if (tp->x_min < spp->x_sph_min) {
+	if (tp->x_min < tmp->x_trm_min) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "%s: X minimum less than minimum value of coordinate points array, defaulting",
 			  error_lead);
 		ret = MIN(ret,NhlWARNING);
-		tp->x_min = spp->x_sph_min;
+		tp->x_min = tmp->x_trm_min;
 	}
-	if (tp->x_max > spp->x_sph_max) {
+	if (tp->x_max > tmp->x_trm_max) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "%s: X maximum greater than maximum value of coordinate points array, defaulting",
 			  error_lead);
 		ret = MIN(ret,NhlWARNING);
-		tp->x_max = spp->x_sph_max;
+		tp->x_max = tmp->x_trm_max;
 	}
-	if (tp->y_min < spp->y_sph_min) {
+	if (tp->y_min < tmp->y_trm_min) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "%s: Y minimum less than minimum value of coordinate points array, defaulting",
 			  error_lead);
 		ret = MIN(ret,NhlWARNING);
-		tp->y_min = spp->y_sph_min;
+		tp->y_min = tmp->y_trm_min;
 	}
-	if (tp->y_max > spp->y_sph_max) {
+	if (tp->y_max > tmp->y_trm_max) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "%s: Y maximum greater than maximum value of coordinate points array, defaulting",
 			  error_lead);
 		ret = MIN(ret,NhlWARNING);
-		tp->y_max = spp->y_sph_max;
+		tp->y_max = tmp->y_trm_max;
 	}
-
-	spp->ul = 0;
-	spp->ur = spp->x_sph_ga->len_dimensions[1] - 1;
-	spp->ub = 0;
-	spp->ut = spp->x_sph_ga->len_dimensions[0] - 1;
-	spp->xaxis_size = spp->x_sph_ga->len_dimensions[1];
-	spp->yaxis_size = spp->x_sph_ga->len_dimensions[0];
 
         
 	if(tp->x_reverse) {
-		float tmpf = spp->ur;
-		spp->ur = spp->ul;
-		spp->ul = tmpf;
+		float tmpf = tmp->ur;
+		tmp->ur = tmp->ul;
+		tmp->ul = tmpf;
 	}
 	if(tp->y_reverse) {
-		float tmpf = spp->ut;
-		spp->ut = spp->ub;
-		spp->ub = tmpf;
+		float tmpf = tmp->ut;
+		tmp->ut = tmp->ub;
+		tmp->ub = tmpf;
 	}
-	spp->compc_x_min = MIN(spp->ul,spp->ur);
-	spp->compc_x_max = MAX(spp->ul,spp->ur);
-	spp->compc_y_min = MIN(spp->ut,spp->ub);
-	spp->compc_y_max = MAX(spp->ut,spp->ub);
-	spp->ixb = spp->compc_x_min;
-	spp->ixe = spp->compc_x_max;
-	spp->iyb = spp->compc_y_min;
-	spp->iye = spp->compc_y_max;
+	tmp->compc_x_min = MIN(tmp->ul,tmp->ur);
+	tmp->compc_x_max = MAX(tmp->ul,tmp->ur);
+	tmp->compc_y_min = MIN(tmp->ut,tmp->ub);
+	tmp->compc_y_max = MAX(tmp->ut,tmp->ub);
+	tmp->ixb = tmp->compc_x_min;
+	tmp->ixe = tmp->compc_x_max;
+	tmp->iyb = tmp->compc_y_min;
+	tmp->iye = tmp->compc_y_max;
 	
 
-	spp->log_lin_value = 1;
-	spp->x_min = tp->x_min;
-	spp->y_min = tp->y_min;
-	spp->x_max = tp->x_max;
-	spp->y_max = tp->y_max;
-	spp->x_reverse = tp->x_reverse;
-	spp->y_reverse = tp->y_reverse;
-
-	if (new_coords || new_data_extent) {
-		int size = spp->xaxis_size * spp->yaxis_size;
-
-		if (spp->xaxis_size != old_xaxis_size || 
-		    spp->yaxis_size != old_yaxis_size) {
-			if (spp->llcs)
-				NhlFree(spp->llcs);
-			spp->llcs = NhlMalloc(sizeof(LLCosSin) * size);
-			if (! spp->llcs) {
-				NHLPERROR((NhlFATAL,ENOMEM,NULL));
-				return NhlFATAL;
-			}
-		}
-		SetUpLLCosSinArray(spp);
-	}
+	tmp->log_lin_value = 1;
+	tmp->x_min = tp->x_min;
+	tmp->y_min = tp->y_min;
+	tmp->x_max = tp->x_max;
+	tmp->y_max = tp->y_max;
+	tmp->x_reverse = tp->x_reverse;
+	tmp->y_reverse = tp->y_reverse;
+	tmp->ul = tmp->x_min;
+	tmp->ur = tmp->x_max;
+	tmp->ub = tmp->y_min;
+	tmp->ut = tmp->y_max;
 
 
 	if (c_or_s == CREATE) {
-		if ((spp->xmin_dat = _NhlCmpFSetup(tp->x_min,5)) == NULL) {
+		if ((tmp->xmin_dat = _NhlCmpFSetup(tp->x_min,5)) == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: error setting up compare information",
 				  error_lead);
 			return(NhlFATAL);
 		}
-		if ((spp->xmax_dat = _NhlCmpFSetup(tp->x_max,5)) == NULL) {
+		if ((tmp->xmax_dat = _NhlCmpFSetup(tp->x_max,5)) == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: error setting up compare information",
 				  error_lead);
 			return(NhlFATAL);
 		}
-		if ((spp->ymin_dat =_NhlCmpFSetup(tp->y_min,5)) == NULL) {
+		if ((tmp->ymin_dat =_NhlCmpFSetup(tp->y_min,5)) == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: error setting up compare information",
 				  error_lead);
 			return(NhlFATAL);
 		}
-		if ((spp->ymax_dat = _NhlCmpFSetup(tp->y_max,5)) == NULL) {
+		if ((tmp->ymax_dat = _NhlCmpFSetup(tp->y_max,5)) == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: error setting up compare information",
 				  error_lead);
 			return(NhlFATAL);
 		}
-		if ((spp->compc_xmin_dat =
-		     _NhlCmpFSetup(spp->compc_x_min,5)) == NULL) {
+		if ((tmp->compc_xmin_dat =
+		     _NhlCmpFSetup(tmp->compc_x_min,5)) == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: error setting up compare information",
 				  error_lead);
 			return(NhlFATAL);
 		}
-                spp->save_compc_xmin_dat = spp->compc_xmin_dat;
-		if ((spp->compc_xmax_dat = 
-		     _NhlCmpFSetup(spp->compc_x_max,5)) == NULL) {
+                tmp->save_compc_xmin_dat = tmp->compc_xmin_dat;
+		if ((tmp->compc_xmax_dat = 
+		     _NhlCmpFSetup(tmp->compc_x_max,5)) == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: error setting up compare information",
 				  error_lead);
 			return(NhlFATAL);
 		}
-                spp->save_compc_xmax_dat = spp->compc_xmax_dat;
-		if ((spp->compc_ymin_dat = 
-		     _NhlCmpFSetup(spp->compc_y_min,5)) == NULL) {
+                tmp->save_compc_xmax_dat = tmp->compc_xmax_dat;
+		if ((tmp->compc_ymin_dat = 
+		     _NhlCmpFSetup(tmp->compc_y_min,5)) == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: error setting up compare information",
 				  error_lead);
 			return(NhlFATAL);
 		}
-                spp->save_compc_ymin_dat = spp->compc_ymin_dat;
-		if ((spp->compc_ymax_dat = 
-		     _NhlCmpFSetup(spp->compc_y_max,5)) == NULL) {
+                tmp->save_compc_ymin_dat = tmp->compc_ymin_dat;
+		if ((tmp->compc_ymax_dat = 
+		     _NhlCmpFSetup(tmp->compc_y_max,5)) == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: error setting up compare information",
 				  error_lead);
 			return(NhlFATAL);
 		}
-                spp->save_compc_ymax_dat = spp->compc_ymax_dat;
+                tmp->save_compc_ymax_dat = tmp->compc_ymax_dat;
 
                 tp->x_min_set = tp->x_max_set = False;
                 tp->x_reverse_set = False;
@@ -733,85 +632,85 @@ static NhlErrorTypes SetUpTrans
         
 		return(ret);
 	}
-        if (tp->x_min != iold->sptrans.x_min) {
-                free(spp->xmin_dat);
-                if ((spp->xmin_dat = _NhlCmpFSetup(tp->x_min,5)) == NULL) {
+        if (tp->x_min != iold->tmtrans.x_min) {
+                free(tmp->xmin_dat);
+                if ((tmp->xmin_dat = _NhlCmpFSetup(tp->x_min,5)) == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: error setting up compare information",
 				  error_lead);
 			return(NhlFATAL);
 		}
 	}
-	if (tp->x_max != iold->sptrans.x_max) {
-		free(spp->xmax_dat);
-		if ((spp->xmax_dat = _NhlCmpFSetup(tp->x_max,5)) == NULL) {
+	if (tp->x_max != iold->tmtrans.x_max) {
+		free(tmp->xmax_dat);
+		if ((tmp->xmax_dat = _NhlCmpFSetup(tp->x_max,5)) == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: error setting up compare information",
 				  error_lead);
 			return(NhlFATAL);
 		}
 	}
-	if (tp->y_min != iold->sptrans.y_min) {
-		free(spp->ymin_dat);
-		if ((spp->ymin_dat = _NhlCmpFSetup(tp->y_min,5)) == NULL) {
+	if (tp->y_min != iold->tmtrans.y_min) {
+		free(tmp->ymin_dat);
+		if ((tmp->ymin_dat = _NhlCmpFSetup(tp->y_min,5)) == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: error setting up compare information",
 				  error_lead);
 			return(NhlFATAL);
 		}
 	}
-	if (tp->y_max != iold->sptrans.y_max) {
-		free(spp->ymax_dat);
-		if ((spp->ymax_dat = _NhlCmpFSetup(tp->y_max,5)) == NULL) {
+	if (tp->y_max != iold->tmtrans.y_max) {
+		free(tmp->ymax_dat);
+		if ((tmp->ymax_dat = _NhlCmpFSetup(tp->y_max,5)) == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: error setting up compare information",
 				  error_lead);
 			return(NhlFATAL);
 		}
 	}
-	if (spp->compc_x_min != iold->sptrans.compc_x_min) {
-		free(spp->compc_xmin_dat);
-		if ((spp->compc_xmin_dat =
-		     _NhlCmpFSetup(spp->compc_x_min,5)) == NULL) {
+	if (tmp->compc_x_min != iold->tmtrans.compc_x_min) {
+		free(tmp->compc_xmin_dat);
+		if ((tmp->compc_xmin_dat =
+		     _NhlCmpFSetup(tmp->compc_x_min,5)) == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: error setting up compare information",
 				  error_lead);
 			return(NhlFATAL);
 		}
-                spp->save_compc_xmin_dat = spp->compc_xmin_dat;
+                tmp->save_compc_xmin_dat = tmp->compc_xmin_dat;
 	}
-	if (spp->compc_x_max != iold->sptrans.compc_x_max) {
-		free(spp->compc_xmax_dat);
-		if ((spp->compc_xmax_dat = 
-		     _NhlCmpFSetup(spp->compc_x_max,5)) == NULL) {
+	if (tmp->compc_x_max != iold->tmtrans.compc_x_max) {
+		free(tmp->compc_xmax_dat);
+		if ((tmp->compc_xmax_dat = 
+		     _NhlCmpFSetup(tmp->compc_x_max,5)) == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: error setting up compare information",
 				  error_lead);
 			return(NhlFATAL);
 		}
-                spp->save_compc_xmax_dat = spp->compc_xmax_dat;
+                tmp->save_compc_xmax_dat = tmp->compc_xmax_dat;
 	}
-	if (spp->compc_y_min != iold->sptrans.compc_y_min) {
-		free(spp->compc_ymin_dat);
-		if ((spp->compc_ymin_dat = 
-		     _NhlCmpFSetup(spp->compc_y_min,5)) == NULL) {
+	if (tmp->compc_y_min != iold->tmtrans.compc_y_min) {
+		free(tmp->compc_ymin_dat);
+		if ((tmp->compc_ymin_dat = 
+		     _NhlCmpFSetup(tmp->compc_y_min,5)) == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: error setting up compare information",
 				  error_lead);
 			return(NhlFATAL);
 		}
-                spp->save_compc_ymin_dat = spp->compc_ymin_dat;
+                tmp->save_compc_ymin_dat = tmp->compc_ymin_dat;
 	}
-	if (spp->compc_y_max != iold->sptrans.compc_y_max) {
-		free(spp->compc_ymax_dat);
-		if ((spp->compc_ymax_dat = 
-		     _NhlCmpFSetup(spp->compc_y_max,5)) == NULL) {
+	if (tmp->compc_y_max != iold->tmtrans.compc_y_max) {
+		free(tmp->compc_ymax_dat);
+		if ((tmp->compc_ymax_dat = 
+		     _NhlCmpFSetup(tmp->compc_y_max,5)) == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "%s: error setting up compare information",
 				  error_lead);
 			return(NhlFATAL);
 		}
-                spp->save_compc_ymax_dat = spp->compc_ymax_dat;
+                tmp->save_compc_ymax_dat = tmp->compc_ymax_dat;
 	}
         
         tp->x_min_set = tp->x_max_set = False;
@@ -824,15 +723,15 @@ static NhlErrorTypes SetUpTrans
 }
 
 /*
- * Function:	SpSetTrans
+ * Function:	TmSetTrans
  *
- * Description: set_trans method for SphericalTransObjs. The current instance
+ * Description: set_trans method for TriMeshTransObjs. The current instance
  *		and the parent of the instance are needed. The parent 
  *		provides current screen position information (x,y,width,height)
  *		these are not set through resources because one transformation
  *		needs to possibly be shared by multiple plots.
  *
- * In Args:	instance    is the instance of the SphericalTransObj 
+ * In Args:	instance    is the instance of the TriMeshTransObj 
  *		parent	    is the parent of the transform
  *
  * Out Args:	NONE
@@ -842,7 +741,7 @@ static NhlErrorTypes SetUpTrans
  * Side Effects:  GKS state altered.
  */
 
-static NhlErrorTypes SpSetTrans
+static NhlErrorTypes TmSetTrans
 #if	NhlNeedProto
 (
 	NhlLayer	tobj,
@@ -854,9 +753,9 @@ static NhlErrorTypes SpSetTrans
 	NhlLayer	vobj;
 #endif
 {
-	NhlSphericalTransObjLayer	to=(NhlSphericalTransObjLayer)tobj;
+	NhlTriMeshTransObjLayer	to=(NhlTriMeshTransObjLayer)tobj;
 	NhlTransObjLayerPart		*top = &to->trobj;
-	NhlSphericalTransObjLayerPart	*tp = &to->sptrans;
+	NhlTriMeshTransObjLayerPart	*tp = &to->tmtrans;
 	NhlErrorTypes ret;
 
 	ret = (*NhltransObjClassRec.trobj_class.set_trans)(tobj,vobj);
@@ -868,7 +767,7 @@ static NhlErrorTypes SpSetTrans
 			       tp->ul,tp->ur,tp->ub,tp->ut,
 			       tp->log_lin_value,
                                &top->off_screen,
-                               "SpSetTrans"));
+                               "TmSetTrans"));
 
 }
 
@@ -888,14 +787,14 @@ static NhlErrorTypes SpSetTrans
 static NhlBoolean compare_check
 #if	NhlNeedProto
 (
-	NhlSphericalTransObjLayerPart *spp,
+	NhlTriMeshTransObjLayerPart *tmp,
 	float	*x,
  	float	*y,
 	int	type /* data 0, compc 1 */
 )
 #else
-(spp,x,y,type)
-	NhlSphericalTransObjLayerPart *spp;
+(tmp,x,y,type)
+	NhlTriMeshTransObjLayerPart *tmp;
 	float	*x;
 	float	*y;
 	int	type;
@@ -903,44 +802,44 @@ static NhlBoolean compare_check
 {
 	int xmndif,xmxdif,ymndif,ymxdif;
 
-	if (type == NhlspDATA) {
-		if ((xmndif = _NhlCmpF(*x,spp->xmin_dat)) < 0 ||
-		    (xmxdif = _NhlCmpF(*x,spp->xmax_dat)) > 0 ||
-		    (ymndif = _NhlCmpF(*y,spp->ymin_dat)) < 0 ||
-		    (ymxdif = _NhlCmpF(*y,spp->ymax_dat)) > 0) {
+	if (type == NhltmDATA) {
+		if ((xmndif = _NhlCmpF(*x,tmp->xmin_dat)) < 0 ||
+		    (xmxdif = _NhlCmpF(*x,tmp->xmax_dat)) > 0 ||
+		    (ymndif = _NhlCmpF(*y,tmp->ymin_dat)) < 0 ||
+		    (ymxdif = _NhlCmpF(*y,tmp->ymax_dat)) > 0) {
 			return False;
 		}
 		if (xmndif == 0) {
-			*x = spp->x_min;
+			*x = tmp->x_min;
 		}
 		else if (xmxdif == 0) {
-			*x = spp->x_max;
+			*x = tmp->x_max;
 		}
 		if (ymndif == 0) {
-			*y = spp->y_min;
+			*y = tmp->y_min;
 		}
 		else if (ymxdif == 0) {
-			*y = spp->y_max;
+			*y = tmp->y_max;
 		}
 	}
 	else {
-		if ((xmndif = _NhlCmpF(*x,spp->compc_xmin_dat)) < 0 ||
-		    (xmxdif = _NhlCmpF(*x,spp->compc_xmax_dat)) > 0 ||
-		    (ymndif = _NhlCmpF(*y,spp->compc_ymin_dat)) < 0 ||
-		    (ymxdif = _NhlCmpF(*y,spp->compc_ymax_dat)) > 0) {
+		if ((xmndif = _NhlCmpF(*x,tmp->compc_xmin_dat)) < 0 ||
+		    (xmxdif = _NhlCmpF(*x,tmp->compc_xmax_dat)) > 0 ||
+		    (ymndif = _NhlCmpF(*y,tmp->compc_ymin_dat)) < 0 ||
+		    (ymxdif = _NhlCmpF(*y,tmp->compc_ymax_dat)) > 0) {
 			return False;
 		}
 		if (xmndif == 0) {
-			*x = spp->compc_x_min;
+			*x = tmp->compc_x_min;
 		}
 		else if (xmxdif == 0) {
-			*x = spp->compc_x_max;
+			*x = tmp->compc_x_max;
 		}
 		if (ymndif == 0) {
-			*y = spp->compc_y_min;
+			*y = tmp->compc_y_min;
 		}
 		else if (ymxdif == 0) {
-			*y = spp->compc_y_max;
+			*y = tmp->compc_y_max;
 		}
 	}
 	return True;
@@ -1005,14 +904,14 @@ static NhlBoolean compare_view
 
 
 /*
- * Function:	SpWinToNDC
+ * Function:	TmWinToNDC
  *
  * Description: Computes the current forward tranformation of the points x and
  *		y to NDC based on the current viewport of the parent. It is
  *		important that this routine not depend on a static screen 
  *		orientation because the parents view may have been transformed.
  *
- * In Args:	instance is the SphericalTransObj and parent is the plot.
+ * In Args:	instance is the TriMeshTransObj and parent is the plot.
  *		(x,y) are the coordinates in data space.
  *		(xout,yout) are the coordinate in Normalized device coordinates.
  *
@@ -1023,7 +922,7 @@ static NhlBoolean compare_view
  * Side Effects:
  */
 
-static NhlErrorTypes SpWinToNDC
+static NhlErrorTypes TmWinToNDC
 #if	NhlNeedProto
 (NhlLayer instance,float *x,float *y,int n,float* xout,float* yout,float* xmissing,float* ymissing,int *status)
 #else
@@ -1039,8 +938,8 @@ static NhlErrorTypes SpWinToNDC
 	int * status;
 #endif
 {
-	NhlSphericalTransObjLayer	iinstance =
-				(NhlSphericalTransObjLayer)instance;
+	NhlTriMeshTransObjLayer	iinstance =
+				(NhlTriMeshTransObjLayer)instance;
 	NhlTransObjLayerPart		*tp = &iinstance->trobj;
 	int i;
 	
@@ -1050,12 +949,12 @@ static NhlErrorTypes SpWinToNDC
 /*
 * Compc and Window are identical coordinates in this object
 */
-			if((x[i] > iinstance->sptrans.compc_x_max)
-			   ||(x[i] < iinstance->sptrans.compc_x_min)
-			   ||(y[i] > iinstance->sptrans.compc_y_max)
-			   ||(y[i] < iinstance->sptrans.compc_y_min)) {
-				if (! compare_check(&iinstance->sptrans,
-						    &x[i],&y[i],NhlspCOMPC)) {
+			if((x[i] > iinstance->tmtrans.x_max)
+			   ||(x[i] < iinstance->tmtrans.x_min)
+			   ||(y[i] > iinstance->tmtrans.y_max)
+			   ||(y[i] < iinstance->tmtrans.y_min)) {
+				if (! compare_check(&iinstance->tmtrans,
+						    &x[i],&y[i],NhltmDATA)) {
 					*status = 1;
 					xout[i]=yout[i] =
 						iinstance->trobj.out_of_range;
@@ -1063,10 +962,10 @@ static NhlErrorTypes SpWinToNDC
 				}
 
 			} 
-			strans(iinstance->sptrans.ul,
-			       iinstance->sptrans.ur,
-			       iinstance->sptrans.ub,
-			       iinstance->sptrans.ut,
+			strans(iinstance->tmtrans.ul,
+			       iinstance->tmtrans.ur,
+			       iinstance->tmtrans.ub,
+			       iinstance->tmtrans.ut,
 			       tp->x,tp->x+tp->width,tp->y-tp->height,tp->y,
 			       x[i],y[i],&(xout[i]),&(yout[i]));
 		}
@@ -1074,22 +973,22 @@ static NhlErrorTypes SpWinToNDC
 		for(i = 0; i< n ; i++) {
 			if(((xmissing != NULL)&&(*xmissing == x[i]))
 			   ||((ymissing != NULL)&&(*ymissing == y[i]))
-			   ||(x[i] > iinstance->sptrans.compc_x_max)
-			   ||(x[i] < iinstance->sptrans.compc_x_min)
-			   ||(y[i] > iinstance->sptrans.compc_y_max)
-			   ||(y[i] < iinstance->sptrans.compc_y_min)) {
-				if (! compare_check(&iinstance->sptrans,
-						    &x[i],&y[i],NhlspCOMPC)) {
+			   ||(x[i] > iinstance->tmtrans.x_max)
+			   ||(x[i] < iinstance->tmtrans.x_min)
+			   ||(y[i] > iinstance->tmtrans.y_max)
+			   ||(y[i] < iinstance->tmtrans.y_min)) {
+				if (! compare_check(&iinstance->tmtrans,
+						    &x[i],&y[i],NhltmDATA)) {
 					*status = 1;
 					xout[i]=yout[i] =
 						iinstance->trobj.out_of_range;
 					continue;
 				}
 			}
-			strans(iinstance->sptrans.ul,
-			       iinstance->sptrans.ur,
-			       iinstance->sptrans.ub,	
-			       iinstance->sptrans.ut,
+			strans(iinstance->tmtrans.ul,
+			       iinstance->tmtrans.ur,
+			       iinstance->tmtrans.ub,	
+			       iinstance->tmtrans.ut,
 			       tp->x,tp->x+tp->width,tp->y-tp->height,tp->y,
 			       x[i],y[i],&(xout[i]),&(yout[i]));
 		}
@@ -1100,7 +999,7 @@ static NhlErrorTypes SpWinToNDC
 
 
 /*
- * Function:	SpNDCToWin
+ * Function:	TmNDCToWin
  *
  * Description:
  *
@@ -1112,7 +1011,7 @@ static NhlErrorTypes SpWinToNDC
  *
  * Side Effects:
  */
-static NhlErrorTypes SpNDCToWin
+static NhlErrorTypes TmNDCToWin
 #if	NhlNeedProto
 (NhlLayer instance,float *x,float *y,int n,float* xout,float* yout,float * xmissing, float *ymissing,int *status)
 #else
@@ -1131,8 +1030,8 @@ static NhlErrorTypes SpNDCToWin
 	float x1;
 	float y1;
 	int i;
-	NhlSphericalTransObjLayer	iinstance = 
-				(NhlSphericalTransObjLayer)instance;
+	NhlTriMeshTransObjLayer	iinstance = 
+				(NhlTriMeshTransObjLayer)instance;
 	NhlTransObjLayerPart		*tp = &iinstance->trobj;
 
 	*status = 0;
@@ -1153,9 +1052,9 @@ static NhlErrorTypes SpNDCToWin
 					continue;
 				}
 			}
-			strans(tp->x,x1,y1,tp->y,iinstance->sptrans.ul,
-			       iinstance->sptrans.ur, iinstance->sptrans.ub,
-			       iinstance->sptrans.ut, x[i],y[i],
+			strans(tp->x,x1,y1,tp->y,iinstance->tmtrans.ul,
+			       iinstance->tmtrans.ur, iinstance->tmtrans.ub,
+			       iinstance->tmtrans.ut, x[i],y[i],
 			       &(xout[i]),&(yout[i]));
 		}
 	} 
@@ -1177,258 +1076,19 @@ static NhlErrorTypes SpNDCToWin
 
 			}
 			strans(tp->x,x1,y1,tp->y,
-			       iinstance->sptrans.ul,
-			       iinstance->sptrans.ur, 
-			       iinstance->sptrans.ub,
-			       iinstance->sptrans.ut, x[i],y[i],
+			       iinstance->tmtrans.ul,
+			       iinstance->tmtrans.ur, 
+			       iinstance->tmtrans.ub,
+			       iinstance->tmtrans.ut, x[i],y[i],
 			       &(xout[i]),&(yout[i]));
 		}
 	}
 	return(NhlNOERROR);
 }
 
-/*
- * this returns a negative value if point (xp,yp) is left of 
- * line (x0,y0),(x1,y1)
- */
-
-#define RIGHTOF(xp,yp,x0,y0,x1,y1) \
- 	((x0)-(xp))*((yp)-(y1))-((x1)-(xp))*((yp)-(y0))
-#define RIGHTOFD(xp,yp,x0,y0,x1,y1) \
- 	(double)((x0)-(xp))*(double)((yp)-(y1))-\
-	(double)((x1)-(xp))*(double)((yp)-(y0))
-
 
 /*
- * Function:	IsNearby
- *
- * Description: return True if the point (x,y) is within 2 grid boxes
- * of the 'current' box location
- *		
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
- */
-/*ARGSUSED*/
-static NhlBoolean IsNearby
-#if	NhlNeedProto
-(
-	NhlSphericalTransObjLayerPart *spp,
-	double *sc
-)
-#else
-(spp,sc)
-	NhlSphericalTransObjLayerPart *spp;
-	double *sc;
-#endif
-{
-	int icdp;
-
-	if (! (spp->ixe == spp->ixb+1 && spp->iye == spp->iyb+1))
-		return False;
-
-	icdp = icegdp(sc,(double *)spp->llcs,spp->xaxis_size,spp->yaxis_size,
-		       spp->ixb,spp->ixe,spp->iyb,spp->iye);
-	if (icdp == 0)        
-		return True; /* same box */
-	spp->ixb = MAX(0,spp->ixb-1);
-	spp->ixe = MIN(spp->xaxis_size-1,spp->ixe+1);
-	spp->iyb = MAX(0,spp->iyb-1);
-	spp->iye = MIN(spp->yaxis_size-1,spp->iye+1);
-	icdp = icegdp(sc,(double *)spp->llcs,spp->xaxis_size,spp->yaxis_size,
-		       spp->ixb,spp->ixe,spp->iyb,spp->iye);
-	if (icdp == 0)       
-		return True; /* adjacent box */
-	spp->ixb = MAX(0,spp->ixb-1);
-	spp->ixe = MIN(spp->xaxis_size-1,spp->ixe+1);
-	spp->iyb = MAX(0,spp->iyb-1);
-	spp->iye = MIN(spp->yaxis_size-1,spp->iye+1);
-	icdp = icegdp(sc,(double *)spp->llcs,spp->xaxis_size,spp->yaxis_size,
-		       spp->ixb,spp->ixe,spp->iyb,spp->iye);
-	if (icdp == 0)
-		return True; /* near-by box */
-
-	return False;
-}
-
-/*
- * Function:	SetQuadrant
- *
- * Description: sets the current grid bounding indexes to the grid
- * quadrant in which the point (x,y) lies. 
- *		
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values: returns True if the point (x,y) can be located in
- *  a grid quandrant, False otherwise.
- *
- * Side Effects:
- */
-/*ARGSUSED*/
-static NhlBoolean SetQuadrant
-#if	NhlNeedProto
-(
-	NhlSphericalTransObjLayerPart *spp,
-	double *sc
-)
-#else
-(spp,sc)
-	NhlSphericalTransObjLayerPart *spp;
-	double *sc;
-#endif
-{
-	int icdp;
-
- 	/* lower left quadrant */
-	spp->ixb = 0;
-	spp->ixe = (int) (spp->xaxis_size / 2.0);
-	spp->iyb = 0;
-	spp->iye = (int) (spp->yaxis_size / 2.0);
-	icdp = icegdp(sc,(double *)spp->llcs,spp->xaxis_size,spp->yaxis_size,
-		       spp->ixb,spp->ixe,spp->iyb,spp->iye);
-	if (icdp == 0)        
-		return True;
-
-	/* lower right quadrant */
-	spp->ixb = (int) (spp->xaxis_size / 2.0);
-	spp->ixe = spp->xaxis_size - 1;
-	spp->iyb = 0;
-	spp->iye = (int) (spp->yaxis_size / 2.0);
-	icdp = icegdp(sc,(double *)spp->llcs,spp->xaxis_size,spp->yaxis_size,
-		       spp->ixb,spp->ixe,spp->iyb,spp->iye);
-	if (icdp == 0)        
-		return True;
-
- 	/* upper left quadrant */
-	spp->ixb = 0;
-	spp->ixe = (int) (spp->xaxis_size / 2.0);
-	spp->iyb = (int) (spp->yaxis_size / 2.0);
-	spp->iye = spp->yaxis_size - 1;
-	icdp = icegdp(sc,(double *)spp->llcs,spp->xaxis_size,spp->yaxis_size,
-		       spp->ixb,spp->ixe,spp->iyb,spp->iye);
-	if (icdp == 0)        
-		return True;
-
- 	/* upper right quadrant */
-	spp->ixb = (int) (spp->xaxis_size / 2.0);
-	spp->ixe = spp->xaxis_size - 1;
-	spp->iyb = (int) (spp->yaxis_size / 2.0);
-	spp->iye = spp->yaxis_size - 1;
-	icdp = icegdp(sc,(double *)spp->llcs,spp->xaxis_size,spp->yaxis_size,
-		       spp->ixb,spp->ixe,spp->iyb,spp->iye);
-	if (icdp == 0)        
-		return True;
-
-	return False;
-}
-
-#define EPS 1.0e-8
-
-/*
- * Function:	GetFracCoords
- *
- * Description: Once it is known what compc grid box a data point lies,
- *              this routine determines the fractional component within
- *              the grid box, and sets the final data values.
- *              Note this routine assumes that 
- *              (ixe == ixb+1 && iye == iyb+1)
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values: False if out of range; True otherwise;
- *
- * Side Effects:
- */
-/*ARGSUSED*/
-static NhlBoolean GetFracCoords
-#if	NhlNeedProto
-(
-	NhlSphericalTransObjLayerPart *spp,
-	double *sc,
-	float  oor,
-        float*  xout,
-        float*  yout
-)
-#else
-(spp,x,y,xout,yout)
-	NhlSphericalTransObjLayerPart *spp;
-	double *sc;
-	float  oor;
-        float*  xout;
-        float*  yout;
-
-#endif
-{
-	double icdp;
-	int mid;
-	double xf,yf;
-	LLCosSin *llcs = spp->llcs;
-	int xsz = spp->xaxis_size;
-
-	while (1) {
-		if (spp->ixe - spp->ixb >= spp->iye - spp->iyb) {
-			if (spp->ixe - spp->ixb == 1) {
-				break;
-			}
-			mid = (spp->ixb + spp->ixe) / 2;
-			icdp = icegdp(sc,(double *)spp->llcs,
-				       spp->xaxis_size,spp->yaxis_size,
-				       spp->ixb,mid,spp->iyb,spp->iye);
-			if (icdp != 0)        
-				spp->ixb = mid;
-			else
-				spp->ixe = mid;
-		}
-		else {
-			mid = (spp->iyb + spp->iye) / 2;
-			icdp = icegdp(sc,(double *)spp->llcs,
-				       spp->xaxis_size,spp->yaxis_size,
-				       spp->ixb,spp->ixe,spp->iyb,mid);
-			if (icdp != 0)        
-				spp->iyb = mid;
-			else
-				spp->iye = mid;
-		}
-	}
-/*
-	icdp = icegdp(sc,(double *)spp->llcs,
-		      spp->xaxis_size,spp->yaxis_size,
-		      spp->ixb,spp->ixe,spp->iyb,spp->iye);
-	if (icdp != 0) {
-		*xout = *yout = oor;
-		return False;
-	}
-*/
-
-	fpiqdp(&((llcs+xsz*spp->iyb+spp->ixb)->latcos),
-	       &((llcs+xsz*spp->iyb+spp->ixe)->latcos),
-	       &((llcs+xsz*spp->iye+spp->ixb)->latcos),
-	       &((llcs+xsz*spp->iye+spp->ixe)->latcos),
-	       sc,&xf,&yf);
-
-	if (xf < 0.0) {
-		*xout = *yout = oor;
-		return False;
-	}
-	*xout = spp->ixb + xf;
-	*yout = spp->iyb + yf;
-
-	return True;
-}
-
-
-/*
- * Function:	SpDataToCompc
+ * Function:	TmDataToCompc
  *
  * Description: Transforms data coordinates into the computation coordinate
  *		system
@@ -1442,7 +1102,7 @@ static NhlBoolean GetFracCoords
  * Side Effects:
  */
 /*ARGSUSED*/
-static NhlErrorTypes SpDataToCompc
+static NhlErrorTypes TmDataToCompc
 #if	NhlNeedProto
 (
 	NhlLayer instance,
@@ -1468,16 +1128,12 @@ static NhlErrorTypes SpDataToCompc
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
-	NhlSphericalTransObjLayer iinstance =
-                (NhlSphericalTransObjLayer)instance;
-	NhlSphericalTransObjLayerPart *spp = &iinstance->sptrans;
+	NhlTriMeshTransObjLayer iinstance =
+                (NhlTriMeshTransObjLayer)instance;
+	NhlTriMeshTransObjLayerPart *tmp = &iinstance->tmtrans;
 	int i;
 	int ix,iy;
-	float *xp = (float *)spp->x_sph_ga->data;
-	float *yp = (float *)spp->y_sph_ga->data;
-	int xsz = spp->xaxis_size;
 	float x0,y0;
-	LLCosSin *llcs = spp->llcs;
 	double xf,yf;
 	double sc[4],dlon,dlat,xdout,ydout;
 
@@ -1487,42 +1143,47 @@ static NhlErrorTypes SpDataToCompc
 			||((ymissing != NULL)&&(*ymissing == y[i]))
 #if 0
 /* will this work? */
-			||(x[i] < spp->x_min)	
-			||(x[i] > spp->x_max)
+			||(x[i] < tmp->x_min)	
+			||(x[i] > tmp->x_max)
 #endif
-			||(y[i] < spp->y_min)
-			||(y[i] > spp->y_max)) {
+			||(y[i] < tmp->y_min)
+			||(y[i] > tmp->y_max)) {
 		
-			if (! compare_check(spp,&x[i],&y[i],NhlspDATA)) {
+			if (! compare_check(tmp,&x[i],&y[i],NhltmDATA)) {
 				*status = 1;
 				xout[i]=yout[i] =
 					iinstance->trobj.out_of_range;
 				continue;
 			}
 		}
+		xout[i] = x[i];
+		yout[i] = y[i];
+
+#if 0
 		sc[0] = cos(DEGTORAD * (double)y[i]);
 		sc[1] = sin(DEGTORAD * (double)y[i]);
 		sc[2] = cos(DEGTORAD * (double)x[i]);
 		sc[3] = sin(DEGTORAD * (double)x[i]);
 		
-		if (! IsNearby(spp,sc)) {
-			if (! SetQuadrant(spp,sc)) {
+		if (! IsNearby(tmp,sc)) {
+			if (! SetQuadrant(tmp,sc)) {
 				*status = 1;
 				xout[i]= yout[i] = 
 					iinstance->trobj.out_of_range;
 				continue;	
 			}
 		}
-		if (! GetFracCoords(spp,sc,iinstance->trobj.out_of_range,
+		if (! GetFracCoords(tmp,sc,iinstance->trobj.out_of_range,
 				    &(xout[i]),&(yout[i]))) {
 			*status = 1;
 		}
+#endif
 	}
 	return(ret);
 }
 
 /*
- * Function:	SpCompcToData
+ * Function:	TmCompcToData
  *
  * Description:	transforms computational coordinates into data coordinates.
  *
@@ -1535,7 +1196,7 @@ static NhlErrorTypes SpDataToCompc
  * Side Effects:
  */
 /*ARGSUSED*/
-static NhlErrorTypes SpCompcToData
+static NhlErrorTypes TmCompcToData
 #if	NhlNeedProto
 (NhlLayer instance,
  float *x,
@@ -1560,16 +1221,12 @@ static NhlErrorTypes SpCompcToData
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR;
-	NhlSphericalTransObjLayer iinstance = 
-		(NhlSphericalTransObjLayer)instance;
-	NhlSphericalTransObjLayerPart *spp = &iinstance->sptrans;
+	NhlTriMeshTransObjLayer iinstance = 
+		(NhlTriMeshTransObjLayer)instance;
+	NhlTriMeshTransObjLayerPart *tmp = &iinstance->tmtrans;
 	int i;
 	int ix,iy;
-	float *xp = (float *)spp->x_sph_ga->data;
-	float *yp = (float *)spp->y_sph_ga->data;
-	int xsz = spp->xaxis_size;
 	float x0,y0;
-	LLCosSin *llcs = spp->llcs;
 	double xf,yf;
 	double out[4],dlon,dlat,xdout,ydout;
 
@@ -1577,48 +1234,28 @@ static NhlErrorTypes SpCompcToData
 	for(i = 0; i< n ; i++) {
 		if(((xmissing != NULL)&&(*xmissing == x[i]))
 			||((ymissing != NULL)&&(*ymissing == y[i]))
-			||(x[i] > spp->compc_x_max)
-			||(x[i] < spp->compc_x_min)
-			||(y[i] > spp->compc_y_max)
-			||(y[i] < spp->compc_y_min)) {
+#if 0
+			||(x[i] > tmp->x_max)
+			||(x[i] < tmp->x_min)
+#endif
+			||(y[i] > tmp->y_max)
+			||(y[i] < tmp->y_min)) {
 
-			if (! compare_check(spp,&x[i],&y[i],NhlspCOMPC)) {
+			if (! compare_check(tmp,&x[i],&y[i],NhltmDATA)) {
 				*status = 1;
 				xout[i]=yout[i] =
 					iinstance->trobj.out_of_range;
 				continue;
 			}
 		}
-		ix = MAX(0,MIN(spp->xaxis_size-2,(int)x[i]));
-		iy = MAX(0,MIN(spp->yaxis_size-2,(int)y[i]));
-		xf = (double)x[i] - (double)ix;
-		yf = (double)y[i] - (double)iy;
-		ipiqdp(&((llcs+xsz*iy+ix)->latcos),
-		       &((llcs+xsz*iy+ix+1)->latcos),
-		       &((llcs+xsz*(iy+1)+ix)->latcos),
-		       &((llcs+xsz*(iy+1)+ix+1)->latcos),
-		       &xf,&yf,out);
-
-		dlat = RADTODEG * asin(out[1]);
-		if (out[2] == 0.0 && out[3] == 0.0) {
-			dlon = 0.0;
-		}
-		else {
-			dlon = RADTODEG * atan2(out[3],out[2]);
-		}
-		yout[i] = (float) dlat;
-		if (dlon < spp->x_sph_min)
-			xout[i] = (float) (dlon + 360.0);
-		else if (dlon > spp->x_sph_max)
-			xout[i] = (float) (dlon - 360.0);
-		else
-			xout[i] = (float) dlon;
+		xout[i] = x[i];
+		yout[i] = y[i];
 	}
 	return(ret);
 }
 
 /*ARGSUSED*/
-static NhlErrorTypes SpWinToCompc
+static NhlErrorTypes TmWinToCompc
 #if	NhlNeedProto
 (NhlLayer instance, float* x,float* y,int n,float* xout,float* yout,float* xmissing,float* ymissing,int* status)
 #else
@@ -1635,25 +1272,26 @@ int* status;
 #endif
 {
         NhlErrorTypes ret = NhlNOERROR;
-        NhlSphericalTransObjLayer iinstance = (NhlSphericalTransObjLayer)instance;
+        NhlTriMeshTransObjLayer iinstance = (NhlTriMeshTransObjLayer)instance;
         int i;
 
         *status = 0;
         for(i = 0 ; i< n; i++) {
                 if(((xmissing != NULL)&&(*xmissing == x[i]))
                         || ((ymissing != NULL)&&(*ymissing == y[i]))
-                        ||(x[i] < iinstance->sptrans.compc_x_min)
-                        ||(x[i] > iinstance->sptrans.compc_x_max)
-                        ||(y[i] < iinstance->sptrans.compc_y_min)
-                        ||(y[i] > iinstance->sptrans.compc_y_max)) {
-
-			if (! compare_check(&iinstance->sptrans,
-					    &x[i],&y[i],NhlspCOMPC)) {
+                        ||(x[i] <= iinstance->tmtrans.x_min)
+                        ||(x[i] >= iinstance->tmtrans.x_max)
+                        ||(y[i] <= iinstance->tmtrans.y_min)
+                        ||(y[i] >= iinstance->tmtrans.y_max)) {
+#if 0
+			if (! compare_check(&iinstance->tmtrans,
+					    &x[i],&y[i],NhltmCOMPC)) {
 				*status = 1;
 				xout[i]=yout[i] =
 					iinstance->trobj.out_of_range;
 				continue;
 			}
+#endif 
 		}
 		yout[i] = y[i];
 		xout[i] = x[i];
@@ -1663,7 +1301,7 @@ int* status;
 
 static NhlErrorTypes AdjustToEdge
 #if	NhlNeedProto
-(NhlSphericalTransObjLayer spinst, 
+(NhlTriMeshTransObjLayer tminst, 
 float xclip, 
 float yclip, 
 float x,
@@ -1674,8 +1312,8 @@ float *xc,
 float *yc
 )
 #else
-(spinst,xclip,yclip,x,y,xd, yd,xc,yc)
-NhlSphericalTransObjLayer spinst;
+(tminst,xclip,yclip,x,y,xd, yd,xc,yc)
+NhlTriMeshTransObjLayer tminst;
 float xclip;
 float yclip; 
 float x;
@@ -1686,8 +1324,8 @@ float *xc;
 float *yc;
 #endif
 {
-	NhlSphericalTransObjLayerPart *spp = 
-		(NhlSphericalTransObjLayerPart *) &spinst->sptrans;
+	NhlTriMeshTransObjLayerPart *tmp = 
+		(NhlTriMeshTransObjLayerPart *) &tminst->tmtrans;
 	float xt,yt;
 	int i,status = 1;
 
@@ -1697,26 +1335,26 @@ float *yc;
 	for (i=0; i < 2; i++) {
 
 		if (x != xclip) {
-			if (_NhlCmpF(xt,spp->xmin_dat) < 0.0) {
-				*xd = spp->x_min;
+			if (_NhlCmpF(xt,tmp->xmin_dat) < 0.0) {
+				*xd = tmp->x_min;
 				*yd = yclip +(y-yclip) * (*xd-xclip)/(x-xclip);
 			}
-			else if (_NhlCmpF(xt,spp->xmax_dat) > 0.0) {
-				*xd = spp->x_max;
+			else if (_NhlCmpF(xt,tmp->xmax_dat) > 0.0) {
+				*xd = tmp->x_max;
 				*yd = yclip +(y-yclip) * (*xd-xclip)/(x-xclip);
 			}
 		}
 		if (y != yclip) {
-			if (_NhlCmpF(yt,spp->ymin_dat) < 0.0) {
-				*yd = spp->y_min;
+			if (_NhlCmpF(yt,tmp->ymin_dat) < 0.0) {
+				*yd = tmp->y_min;
 				*xd = xclip +(x-xclip) * (*yd-yclip)/(y-yclip);
 			}
-			else if (_NhlCmpF(yt,spp->ymax_dat) > 0.0) {
-				*yd = spp->y_max;
+			else if (_NhlCmpF(yt,tmp->ymax_dat) > 0.0) {
+				*yd = tmp->y_max;
 				*xd = xclip +(x-xclip) * (*yd-yclip)/(y-yclip);
 			}
 		}
-		SpDataToCompc((NhlLayer)spinst,xd,yd,1,
+		TmDataToCompc((NhlLayer)tminst,xd,yd,1,
 				      xc,yc,NULL,NULL,&status);
 		if (status) {
 			xt = *xd;
@@ -1730,7 +1368,7 @@ float *yc;
 }
 
 
-static NhlErrorTypes SpDataLineTo
+static NhlErrorTypes TmDataLineTo
 #if	NhlNeedProto
 (NhlLayer instance, float x, float y, int upordown )
 #else
@@ -1741,7 +1379,7 @@ float y;
 int upordown;
 #endif
 {
-	NhlSphericalTransObjLayer spinst = (NhlSphericalTransObjLayer)instance;
+	NhlTriMeshTransObjLayer tminst = (NhlTriMeshTransObjLayer)instance;
 	static float lastx,lasty;
 	static int call_frstd = 1;
 	float currentx,currenty;
@@ -1752,7 +1390,7 @@ int upordown;
 	int i,npoints = 256;
 	float xdist,ydist,xc,yc,xd,yd;
 
-	npoints = spinst->trobj.point_count;
+	npoints = tminst->trobj.point_count;
 /*
 * if true the moveto is being performed
 */
@@ -1769,20 +1407,20 @@ int upordown;
 	currenty = y;
 	holdx = lastx;
 	holdy = lasty;
-	_NhlTransClipLine(spinst->sptrans.x_min,
-			  spinst->sptrans.x_max,
-			  spinst->sptrans.y_min,
-			  spinst->sptrans.y_max,
+	_NhlTransClipLine(tminst->tmtrans.x_min,
+			  tminst->tmtrans.x_max,
+			  tminst->tmtrans.y_min,
+			  tminst->tmtrans.y_max,
 			  &lastx,
 			  &lasty,
 			  &currentx,
 			  &currenty,
-			  spinst->trobj.out_of_range);
+			  tminst->trobj.out_of_range);
 
-	if((lastx == spinst->trobj.out_of_range)
-	   ||(lasty == spinst->trobj.out_of_range)
-	   ||(currentx == spinst->trobj.out_of_range)
-	   ||(currenty == spinst->trobj.out_of_range)){
+	if((lastx == tminst->trobj.out_of_range)
+	   ||(lasty == tminst->trobj.out_of_range)
+	   ||(currentx == tminst->trobj.out_of_range)
+	   ||(currenty == tminst->trobj.out_of_range)){
 /*
  * Line has gone completely out of window
  */
@@ -1801,7 +1439,7 @@ int upordown;
 /*
  * Use the linear clipped length to determine the number of points to use
  */
-	SpDataToCompc(instance,xpoints,ypoints,2,
+	TmDataToCompc(instance,xpoints,ypoints,2,
 		      xpoints,ypoints,NULL,NULL,&status);
 
 	xdist = c_cufx(xpoints[1]) - c_cufx(xpoints[0]);
@@ -1815,7 +1453,7 @@ int upordown;
 	if (lastx == holdx && currentx == x && 
 	    lasty == holdy && currenty == y) {
 		if (call_frstd == 1) {
-			_NhlWorkstationLineTo(spinst->trobj.wkptr,
+			_NhlWorkstationLineTo(tminst->trobj.wkptr,
 				      c_cufx(xpoints[0]),c_cufy(ypoints[0]),1);
 			call_frstd = 2;
 		}
@@ -1824,10 +1462,10 @@ int upordown;
 		for (i = 0; i<npoints; i++) {
 			xd = lastx + xdist *(i+1)/ (float)npoints;
 			yd = lasty + ydist *(i+1)/ (float)npoints;
-			SpDataToCompc(instance,&xd,&yd,1,
+			TmDataToCompc(instance,&xd,&yd,1,
 				      &xc,&yc,NULL,NULL,&status);
 			if (! status)
-				_NhlWorkstationLineTo(spinst->trobj.wkptr,
+				_NhlWorkstationLineTo(tminst->trobj.wkptr,
 						      c_cufx(xc),c_cufy(yc),0);
 		}
 		lastx = x;
@@ -1841,7 +1479,7 @@ int upordown;
  * and move there.
  */
 	if((lastx != holdx)||(lasty!= holdy)) {
-		if (AdjustToEdge(spinst,holdx,holdy,x,y,&xd,&yd,&xc,&yc)
+		if (AdjustToEdge(tminst,holdx,holdy,x,y,&xd,&yd,&xc,&yc)
 			< NhlNOERROR)
 			return NhlFATAL;
 		lastx = xd;
@@ -1849,11 +1487,11 @@ int upordown;
 		xdist = x - lastx;
 		ydist = y - lasty;
 
-		_NhlWorkstationLineTo(spinst->trobj.wkptr,
+		_NhlWorkstationLineTo(tminst->trobj.wkptr,
 				      c_cufx(xc),c_cufy(yc),1);
 	}
 	else if (call_frstd == 1) {
-		_NhlWorkstationLineTo(spinst->trobj.wkptr,
+		_NhlWorkstationLineTo(tminst->trobj.wkptr,
 				      c_cufx(xpoints[0]),c_cufy(ypoints[0]),1);
 	}
 	call_frstd = 2;
@@ -1861,13 +1499,13 @@ int upordown;
 	for (i = 0; i< npoints; i++) {
 		xd = lastx + xdist *(i+1)/(float)npoints;
 		yd = lasty + ydist *(i+1)/(float)npoints;
-		SpDataToCompc(instance,&xd,&yd,1,&xc,&yc,NULL,NULL,&status);
+		TmDataToCompc(instance,&xd,&yd,1,&xc,&yc,NULL,NULL,&status);
 		if (status) {
-			if (AdjustToEdge(spinst,x,y,holdx,holdy,
+			if (AdjustToEdge(tminst,x,y,holdx,holdy,
 					 &xd,&yd,&xc,&yc) < NhlNOERROR)
 				return NhlFATAL;
 		}
-		_NhlWorkstationLineTo(spinst->trobj.wkptr,
+		_NhlWorkstationLineTo(tminst->trobj.wkptr,
 				      c_cufx(xc),c_cufy(yc),0);
 		if (status) {
 			break;
@@ -1879,7 +1517,7 @@ int upordown;
 }
 
 /*ARGSUSED*/
-static NhlErrorTypes SpWinLineTo
+static NhlErrorTypes TmWinLineTo
 #if	NhlNeedProto
 (NhlLayer instance, float x, float y, int upordown)
 #else
@@ -1890,7 +1528,7 @@ float y;
 int upordown;
 #endif
 {
-	NhlSphericalTransObjLayer spinst = (NhlSphericalTransObjLayer)instance;
+	NhlTriMeshTransObjLayer tminst = (NhlTriMeshTransObjLayer)instance;
 	static float lastx,lasty;
 	static int call_frstd = 1;
 	float currentx,currenty;
@@ -1910,34 +1548,34 @@ int upordown;
 /*
 * Window and compc are identical for this object
 */
-			spinst->sptrans.compc_x_min, 
-			spinst->sptrans.compc_x_max, 
-			spinst->sptrans.compc_y_min, 
-			spinst->sptrans.compc_y_max,
+			tminst->tmtrans.compc_x_min, 
+			tminst->tmtrans.compc_x_max, 
+			tminst->tmtrans.compc_y_min, 
+			tminst->tmtrans.compc_y_max,
 			&lastx, &lasty, &currentx, &currenty,
-			spinst->trobj.out_of_range);
-		if((lastx == spinst->trobj.out_of_range)
-			||(lasty == spinst->trobj.out_of_range)
-			||(currentx == spinst->trobj.out_of_range)
-			||(currenty == spinst->trobj.out_of_range)){
+			tminst->trobj.out_of_range);
+		if((lastx == tminst->trobj.out_of_range)
+			||(lasty == tminst->trobj.out_of_range)
+			||(currentx == tminst->trobj.out_of_range)
+			||(currenty == tminst->trobj.out_of_range)){
 /*
 * Line has gone completely out of window
 */
 			lastx = x;	
 			lasty = y;
 			call_frstd = 1;
-			return(_NhlWorkstationLineTo(spinst->trobj.wkptr,c_cufx(x),c_cufy(y),1));
+			return(_NhlWorkstationLineTo(tminst->trobj.wkptr,c_cufx(x),c_cufy(y),1));
 		} else {
                         if((lastx != holdx)||(lasty!= holdy)) {
                                 call_frstd = 1;
                         }
 
 			if(call_frstd == 1) {
-				_NhlWorkstationLineTo(spinst->trobj.wkptr,c_cufx(lastx),c_cufy(lasty),1);
+				_NhlWorkstationLineTo(tminst->trobj.wkptr,c_cufx(lastx),c_cufy(lasty),1);
 
 				call_frstd = 2;
 			}
-			_NhlWorkstationLineTo(spinst->trobj.wkptr,c_cufx(currentx),c_cufy(currenty),0);
+			_NhlWorkstationLineTo(tminst->trobj.wkptr,c_cufx(currentx),c_cufy(currenty),0);
 
 			lastx = x;
 			lasty = y;
@@ -1951,7 +1589,7 @@ int upordown;
 
 
 /*ARGSUSED*/
-static NhlErrorTypes SpNDCLineTo
+static NhlErrorTypes TmNDCLineTo
 #if	NhlNeedProto
 (NhlLayer instance, float x, float y, int upordown )
 #else
@@ -1962,7 +1600,7 @@ float y;
 int upordown;
 #endif
 {
-	NhlSphericalTransObjLayer iinstance= (NhlSphericalTransObjLayer)instance;
+	NhlTriMeshTransObjLayer iinstance= (NhlTriMeshTransObjLayer)instance;
 	NhlTransObjLayerPart		*tp = &iinstance->trobj;
 	static float lastx,lasty;
 	static int call_frstd = 1;
@@ -2044,7 +1682,7 @@ int n;
 		
 
 /*ARGSUSED*/
-static NhlErrorTypes SpDataPolygon
+static NhlErrorTypes TmDataPolygon
 #if	NhlNeedProto
 (NhlLayer instance, float *x, float *y, int n )
 #else
@@ -2056,12 +1694,12 @@ int n;
 #endif
 {
 	NhlErrorTypes ret;
-	NhlSphericalTransObjLayer spinst = (NhlSphericalTransObjLayer)instance;
-	NhlSphericalTransObjLayerPart *sptp = 
-		(NhlSphericalTransObjLayerPart *) &spinst->sptrans;
+	NhlTriMeshTransObjLayer tminst = (NhlTriMeshTransObjLayer)instance;
+	NhlTriMeshTransObjLayerPart *tmtp = 
+		(NhlTriMeshTransObjLayerPart *) &tminst->tmtrans;
 	NhlString e_text;
-	NhlString entry_name = "SpDataPolygon";
-	float out_of_range = spinst->trobj.out_of_range;
+	NhlString entry_name = "TmDataPolygon";
+	float out_of_range = tminst->trobj.out_of_range;
 	int i,j,ixout;
 	float px,py,cx,cy,dx,dy,tx,ty;
 	float *xbuf,*ybuf,*dbuf,*xout,*yout;
@@ -2071,7 +1709,7 @@ int n;
 	float xdist,ydist,tdist;
 	int outcount;
 
-	npoints = spinst->trobj.point_count;
+	npoints = tminst->trobj.point_count;
 	open = (x[0] != x[n-1] || y[0] != y[n-1]) ?  True : False;
 	count = pcount = open ? n + 1 : n; 
 
@@ -2115,8 +1753,8 @@ int n;
 				done = True;
 			}
 		}
-		_NhlTransClipLine(sptp->x_min,sptp->x_max,
-				  sptp->y_min,sptp->y_max,
+		_NhlTransClipLine(tmtp->x_min,tmtp->x_max,
+				  tmtp->y_min,tmtp->y_max,
 				  &px,&py,&cx,&cy,out_of_range);
 
 		if (px == out_of_range) {
@@ -2149,7 +1787,7 @@ int n;
 		}
 	}
 	count = j;
-	ret = SpDataToCompc(instance,xbuf,ybuf,count,
+	ret = TmDataToCompc(instance,xbuf,ybuf,count,
 			    xbuf,ybuf,NULL,NULL,&status);
 	tdist = 0.0;
 
@@ -2166,9 +1804,9 @@ int n;
 				+ fabs(ybuf[i]-ybuf[i-1]);
 			tdist += dbuf[i-1];
 		}
-		if (spinst->trobj.point_count > 1)
+		if (tminst->trobj.point_count > 1)
 			npoints *= (tdist);
-		/* include some extra space for safety */
+		/* include some extra tmace for safety */
 		xout = NhlMalloc((npoints+count)*sizeof(float));
 		yout = NhlMalloc((npoints+count)*sizeof(float));
 		outcount = npoints+count;
@@ -2191,7 +1829,7 @@ int n;
 			for (j=0; j < lcount; j++) {
 				cx = x[i-1] + xdist * (j+1) / (float)lcount;
 				cy = y[i-1] + ydist * (j+1) / (float)lcount;
-				SpDataToCompc(instance,&cx,&cy,1,
+				TmDataToCompc(instance,&cx,&cy,1,
 				      &cx,&cy,NULL,NULL,&status);
 				if (! status) {
 					ixout++;
@@ -2218,7 +1856,7 @@ int n;
 		printf("count,pcount,npoints,ixout+1,%d,%d,%d,%d\n",
 		       count,pcount,npoints,ixout+1);
 #endif
-		ret = _NhlWorkstationFill(spinst->trobj.wkptr,
+		ret = _NhlWorkstationFill(tminst->trobj.wkptr,
 					  xout,yout,ixout+1);
 
 		NhlFree(xbuf);
@@ -2233,7 +1871,7 @@ int n;
  * clipping boundary may not be correct. However, it hopefully gives a close
  * enough measure of the length to compute the number of points required.
  * Replace out of bounds points with points far enough outside the 
- * NDC viewspace that lines extending from the viewport edge to these
+ * NDC viewtmace that lines extending from the viewport edge to these
  * lines will be fully clipped.
  */
 	pix = -1;
@@ -2253,56 +1891,56 @@ int n;
 			}
 			cx = x[ixbuf[i]];
 			cy = y[ixbuf[i]];
-			xorange = cx < sptp->x_min || cx >sptp->x_max ? 
+			xorange = cx < tmtp->x_min || cx >tmtp->x_max ? 
 				True : False;
-			yorange = cy < sptp->y_min || cy >sptp->y_max ? 
+			yorange = cy < tmtp->y_min || cy >tmtp->y_max ? 
 				True : False;
 			status = 0;
 			if (xorange && ! yorange) {
-				if (cx < sptp->x_min) {
-					cx = sptp->x_min;
-					xbuf[i] = sptp->x_reverse ?
+				if (cx < tmtp->x_min) {
+					cx = tmtp->x_min;
+					xbuf[i] = tmtp->x_reverse ?
 						1.1 : -.1;
 				}
 				else {
-					cx = sptp->x_max;
-					xbuf[i] = sptp->x_reverse ?
+					cx = tmtp->x_max;
+					xbuf[i] = tmtp->x_reverse ?
 						-.1 : 1.1;
 				}
-				SpDataToCompc(instance,&cx,&cy,1,
+				TmDataToCompc(instance,&cx,&cy,1,
 					      &cx,&cy,
 					      NULL,NULL,&status);
 				ybuf[i] = c_cufy(cy);
 			}
 			else if (yorange && ! xorange) {
-				if (cy < sptp->y_min) {
-					cy = sptp->y_min;
-					ybuf[i] = sptp->y_reverse ?
+				if (cy < tmtp->y_min) {
+					cy = tmtp->y_min;
+					ybuf[i] = tmtp->y_reverse ?
 						1.1 : -.1;
 				}
 				else {
-					cy = sptp->y_max;
-					ybuf[i] = sptp->y_reverse ?
+					cy = tmtp->y_max;
+					ybuf[i] = tmtp->y_reverse ?
 						-.1 : 1.1;
 				}
-				SpDataToCompc(instance,&cx,&cy,1,
+				TmDataToCompc(instance,&cx,&cy,1,
 					      &cx,&cy,
 					      NULL,NULL,&status);
 				xbuf[i] = c_cufx(cx);
 			}
 			else {
-				if (sptp->x_reverse)
-					xbuf[i] = cx < sptp->x_min ? 
+				if (tmtp->x_reverse)
+					xbuf[i] = cx < tmtp->x_min ? 
 						1.1 : -.1;
 				else
-					xbuf[i] = cx < sptp->x_min ? 
+					xbuf[i] = cx < tmtp->x_min ? 
 						-.1 : 1.1;
 
-				if (sptp->y_reverse)
-					ybuf[i] = cy < sptp->y_min ? 
+				if (tmtp->y_reverse)
+					ybuf[i] = cy < tmtp->y_min ? 
 						1.1 : -.1;
 				else
-					ybuf[i] = cy < sptp->y_min ? 
+					ybuf[i] = cy < tmtp->y_min ? 
 						-.1 : 1.1;
 			}
 			if (status) {
@@ -2327,9 +1965,9 @@ int n;
 			tdist += dbuf[i-1];
 		}
 	}
-	if (spinst->trobj.point_count > 1)
+	if (tminst->trobj.point_count > 1)
 		npoints *= tdist;
-	/* include some extra space for safety */
+	/* include some extra tmace for safety */
 	xout = NhlMalloc((npoints+count)*sizeof(float));
 	yout = NhlMalloc((npoints+count)*sizeof(float));
 	if (xout == NULL || yout == NULL) {
@@ -2367,13 +2005,13 @@ int n;
 		for (j=0; j < lcount; j++) {
 			dx = px + xdist * (j+1) / (float)lcount;
 			dy = py + ydist * (j+1) / (float)lcount;
-			SpDataToCompc(instance,&dx,&dy,1,
+			TmDataToCompc(instance,&dx,&dy,1,
 				      &tx,&ty,NULL,NULL,&status);
 			if (! status) {
 				if (! started) {
 					started = True;
 					if (lcount == 1) j--;
-					if (AdjustToEdge(spinst,px,py,cx,cy,
+					if (AdjustToEdge(tminst,px,py,cx,cy,
 							 &dx,&dy,&tx,&ty) 
 					    < NhlNOERROR)
 						return NhlFATAL;
@@ -2392,7 +2030,7 @@ int n;
 		}
 		if (status) {
 			if (started) {
-				if (AdjustToEdge(spinst,cx,cy,px,py,
+				if (AdjustToEdge(tminst,cx,cy,px,py,
 						 &dx,&dy,&tx,&ty) < NhlNOERROR)
 					return NhlFATAL;
 				ixout++;
@@ -2439,7 +2077,7 @@ int n;
 	printf("count,pcount,npoints,ixout+1,%d,%d,%d,%d\n",
 	       count,pcount,npoints,ixout+1);
 #endif
-	ret = _NhlWorkstationFill(spinst->trobj.wkptr,xout,yout,ixout+1);
+	ret = _NhlWorkstationFill(tminst->trobj.wkptr,xout,yout,ixout+1);
 
 	NhlFree(xbuf);
 	NhlFree(ybuf);
@@ -2449,7 +2087,7 @@ int n;
 	return ret;
 	
 }
-static NhlErrorTypes SpTransGetValues
+static NhlErrorTypes TmTransGetValues
 #if	NhlNeedProto
 (NhlLayer l, _NhlArgList args, int nargs)
 #else
@@ -2459,23 +2097,23 @@ _NhlArgList args;
 int nargs;
 #endif
 {
-	NhlSphericalTransObjLayerPart* spp = 
-		(&((NhlSphericalTransObjLayer)l)->sptrans);
+	NhlTriMeshTransObjLayerPart* tmp = 
+		(&((NhlTriMeshTransObjLayer)l)->tmtrans);
 	int i, count;
 	NhlGenArray ga;
 	char *e_text;
-	NhlString entry_name = "SpTransGetValues";
+	NhlString entry_name = "TmTransGetValues";
 
 
 	for( i = 0; i < nargs ; i++) {
 		ga = NULL;
 		if(args[i].quark == QtrXCoordPoints) {
-			if(spp->x_sph_ga != NULL)
-				ga = spp->x_sph_ga;
+			if(tmp->x_trm_ga != NULL)
+				ga = tmp->x_trm_ga;
 		}
 		if(args[i].quark == QtrYCoordPoints) {
-			if(spp->y_sph_ga != NULL)
-				ga = spp->y_sph_ga;
+			if(tmp->y_trm_ga != NULL)
+				ga = tmp->y_trm_ga;
 		}
 		if (ga) {
 			NhlGenArray ga_out;
@@ -2493,7 +2131,7 @@ int nargs;
 }
 
 /*
- * Function:	SpTransClassInitialize
+ * Function:	TmTransClassInitialize
  *
  * Description: 
  *
@@ -2505,7 +2143,7 @@ int nargs;
  *
  * Side Effects: 	NONE
  */
-static NhlErrorTypes    SpTransClassInitialize
+static NhlErrorTypes    TmTransClassInitialize
 #if	NhlNeedProto
 (void)
 #else

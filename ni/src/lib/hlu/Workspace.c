@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.45 2002-02-11 19:17:18 dbrown Exp $
+ *      $Id: Workspace.c,v 1.46 2004-03-11 02:00:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1757,6 +1757,14 @@ static NhlErrorTypes	ChangeWorkspaceSize
 			int nsize = wsrp->cur_size/sizeof(int);
 			c_cpmviw(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
 		}
+		else if (wsrp->type == NhlwsCTFLOAT) {
+			int nsize = wsrp->cur_size/sizeof(float);
+			c_ctmvrw(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
+		}
+		else if (wsrp->type == NhlwsCTINT) {
+			int nsize = wsrp->cur_size/sizeof(int);
+			c_ctmviw(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
+		}
 	}
 
 #if DEBUG_WS
@@ -1842,6 +1850,14 @@ static NhlErrorTypes	EnlargeWorkspace
 	else if (wsrp->type == NhlwsCNINT) {
 		int nsize = wsrp->cur_size/sizeof(int);
 		c_cpmviw(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
+	}
+	else if (wsrp->type == NhlwsCTFLOAT) {
+		int nsize = wsrp->cur_size/sizeof(float);
+		c_ctmvrw(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
+	}
+	else if (wsrp->type == NhlwsCTINT) {
+		int nsize = wsrp->cur_size/sizeof(int);
+		c_ctmviw(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
 	}
 
 #if DEBUG_WS
@@ -3309,6 +3325,974 @@ NhlErrorTypes _NhlCprect
 
 	return NhlNOERROR;
 }
+
+/*
+ * Function:	_NhlCtmesh
+ *
+ * Description: Conpackt routine CTMESH
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlCtmesh
+#if	NhlNeedProto
+(
+	float		*rpnt,
+	int		npnt,
+	int		lopn,
+	int             *iedg,
+	int             nedg,
+	int             loen,
+	int             *itri,
+	int             ntri,
+	int             lotn,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+	char		*entry_name
+)
+#else
+(rpnt,npnt,lopn,iedg,nedg,loen,itri,ntri,lotn,flt_ws,int_ws,entry_name)
+	float		*rpnt;
+	int		npnt;
+	int		lopn;
+	int             *iedg;
+	int             nedg;
+	int             loen;
+	int             *itri;
+	int             ntri;
+	int             lotn;
+	NhlWorkspace	*flt_ws;
+	NhlWorkspace	*int_ws;
+	char		*entry_name;
+#endif 
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlWorkspaceRec *fwsrp = (NhlWorkspaceRec *) flt_ws;
+	NhlWorkspaceRec *iwsrp = (NhlWorkspaceRec *) int_ws;
+	int		save_mode;
+	NhlBoolean	done = False;
+	char		*e_msg;
+	char		*cmp_msg1 = "REAL WORKSPACE OVERFLOW";
+	char		*cmp_msg2 = "INTEGER WORKSPACE OVERFLOW";
+	int		err_num;
+
+	if (! (fwsrp && fwsrp->ws_ptr && iwsrp && iwsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
+	}
+	c_entsr(&save_mode,1);
+
+	do {
+		c_ctmesh(rpnt,npnt,lopn,
+			 iedg,nedg,loen,
+			 itri,ntri,lotn, 
+			 fwsrp->ws_ptr,(fwsrp->cur_size/sizeof(float)),
+			 iwsrp->ws_ptr,(iwsrp->cur_size/sizeof(int)));
+
+		if (c_nerro(&err_num) == 0) {
+			done = True;
+		}
+		else {
+			e_msg = c_semess(0);
+			c_errof();
+			if (strstr(e_msg,cmp_msg1)) {
+#if DEBUG_WS
+				printf("resizing flt_ws old %d",
+				       fwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(fwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", fwsrp->cur_size);
+#endif
+			}
+			else if (strstr(e_msg,cmp_msg2)) {
+#if DEBUG_WS
+				printf("resizing int_ws old %d",
+				       iwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(iwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", iwsrp->cur_size);
+#endif
+			}
+			else {
+				e_text = "%s: %s";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,e_msg);
+				return NhlFATAL;
+			}
+		}
+	} while (! done);
+	
+	c_retsr(save_mode);
+
+	return NhlNOERROR;
+}
+
+
+/*
+ * Function:	_NhlCtcldr
+ *
+ * Description: Conpackt routine CTCLDR
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlCtcldr
+#if	NhlNeedProto
+(
+	float		*rpnt,
+	int             *iedg,
+	int             *itri,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+	char		*entry_name
+)
+#else
+(rpnt,iedg,itri,flt_ws,int_ws,entry_name)
+	float		*rpnt;
+	int             *iedg;
+	int             *itri;
+	NhlWorkspace	*flt_ws;
+	NhlWorkspace	*int_ws;
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlWorkspaceRec *fwsrp = (NhlWorkspaceRec *) flt_ws;
+	NhlWorkspaceRec *iwsrp = (NhlWorkspaceRec *) int_ws;
+	int		save_mode;
+	NhlBoolean	done = False;
+	char		*e_msg;
+	char		*cmp_msg1 = "REAL WORKSPACE OVERFLOW";
+	char		*cmp_msg2 = "INTEGER WORKSPACE OVERFLOW";
+	int		err_num;
+
+	if (! (fwsrp && fwsrp->ws_ptr && iwsrp && iwsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
+	}
+	c_entsr(&save_mode,1);
+
+	do {
+		c_ctcldr(rpnt,iedg,itri,fwsrp->ws_ptr,iwsrp->ws_ptr);
+
+		if (c_nerro(&err_num) == 0) {
+			done = True;
+		}
+		else {
+			e_msg = c_semess(0);
+			c_errof();
+			if (strstr(e_msg,cmp_msg1)) {
+#if DEBUG_WS
+				printf("resizing flt_ws old %d",
+				       fwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(fwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", fwsrp->cur_size);
+#endif
+			}
+			else if (strstr(e_msg,cmp_msg2)) {
+#if DEBUG_WS
+				printf("resizing int_ws old %d",
+				       iwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(iwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", iwsrp->cur_size);
+#endif
+			}
+			else {
+				e_text = "%s: %s";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,e_msg);
+				return NhlFATAL;
+			}
+		}
+	} while (! done);
+	
+	c_retsr(save_mode);
+
+	return NhlNOERROR;
+}
+
+/*
+ * Function:	_NhlCtlbdr
+ *
+ * Description: Conpackt routine CTLBDR
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlCtlbdr
+#if	NhlNeedProto
+(
+	float		*rpnt,
+	int             *iedg,
+	int             *itri,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+	char		*entry_name
+)
+#else
+(rpnt,iedg,itri,flt_ws,int_ws,entry_name)
+	float		*rpnt;
+	int             *iedg;
+	int             *itri;
+	NhlWorkspace	*flt_ws;
+	NhlWorkspace	*int_ws;
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlWorkspaceRec *fwsrp = (NhlWorkspaceRec *) flt_ws;
+	NhlWorkspaceRec *iwsrp = (NhlWorkspaceRec *) int_ws;
+	int		save_mode;
+	NhlBoolean	done = False;
+	char		*e_msg;
+	char		*cmp_msg1 = "REAL WORKSPACE OVERFLOW";
+	char		*cmp_msg2 = "INTEGER WORKSPACE OVERFLOW";
+	int		err_num;
+
+	if (! (fwsrp && fwsrp->ws_ptr && iwsrp && iwsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
+	}
+	c_entsr(&save_mode,1);
+
+
+	do {
+		c_ctlbdr(rpnt,iedg,itri,fwsrp->ws_ptr,iwsrp->ws_ptr);
+
+		if (c_nerro(&err_num) == 0) {
+			done = True;
+		}
+		else {
+			e_msg = c_semess(0);
+			c_errof();
+			if (strstr(e_msg,cmp_msg1)) {
+#if DEBUG_WS
+				printf("resizing flt_ws old %d",
+				       fwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(fwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", fwsrp->cur_size);
+#endif
+			}
+			else if (strstr(e_msg,cmp_msg2)) {
+#if DEBUG_WS
+				printf("resizing int_ws old %d",
+				       iwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(iwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", iwsrp->cur_size);
+#endif
+			}
+			else {
+				e_text = "%s: %s";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,e_msg);
+				return NhlFATAL;
+			}
+		}
+	} while (! done);
+	
+	c_retsr(save_mode);
+
+	return NhlNOERROR;
+}
+
+/*
+ * Function:	_NhlCtcica
+ *
+ * Description: Conpackt routine CTCICA
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlCtcica
+#if	NhlNeedProto
+(
+	float		*rpnt,
+	int             *iedg,
+	int             *itri,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+	NhlWorkspace	*cell_ws,
+	int		ica1,
+	int		icam,
+	int		ican,
+	float		xcpf,
+	float		ycpf,
+	float		xcqf,
+	float		ycqf,
+	float		min_cell_size,
+	NhlBoolean	smooth,
+	char		*entry_name
+)
+#else
+(rpnt,iedg,itri,flt_ws,int_ws,cell_ws,ica1,icam,ican,
+ xcpf,ycpf,xcqf,ycqf,min_cell_size,smooth,entry_name)
+	float		*rpnt;
+	int             *iedg;
+	int             *itri;
+	NhlWorkspace	*flt_ws;
+	NhlWorkspace	*int_ws;
+	NhlWorkspace	*cell_ws;
+	int		ica1;
+	int		icam;
+	int		ican;
+	float		xcpf;
+	float		ycpf;
+	float		xcqf;
+	float		ycqf;
+	float		min_cell_size;
+	NhlBoolean	smooth;
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlWorkspaceRec *fwsrp = (NhlWorkspaceRec *) flt_ws;
+	NhlWorkspaceRec *iwsrp = (NhlWorkspaceRec *) int_ws;
+	NhlWorkspaceRec *cwsrp = (NhlWorkspaceRec *) cell_ws;
+	int		save_mode;
+	NhlBoolean	done = False;
+	char		*e_msg;
+	char		*cmp_msg1 = "REAL WORKSPACE OVERFLOW";
+	char		*cmp_msg2 = "INTEGER WORKSPACE OVERFLOW";
+	int		err_num;
+	float		fl,fr,fb,ft,wl,wr,wb,wt;
+	int		ll;
+	int		startx = 1,starty = 1;
+	int		countx,county;
+	Gint		err_ind;
+	Gclip		clip_ind_rect;
+	float 		lxcpf,lycpf,lxcqf,lycqf;
+	float		xstep,ystep;
+	float		lx = -999.,rx = -999.,by = -999. ,ty = -999.;
+	float		xedge,yedge;
+	int		xedge_ix,yedge_ix;
+	int		count;
+
+	if (! (fwsrp && fwsrp->ws_ptr && iwsrp && iwsrp->ws_ptr &&
+		cwsrp && cwsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
+	}
+	c_entsr(&save_mode,1);
+
+	if (cwsrp->cur_size != icam * ican * sizeof(int)) {
+		int amount = (icam * ican) * sizeof(int) - cwsrp->cur_size;
+		ret = ChangeWorkspaceSize(cwsrp,amount,entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
+
+	lxcpf = smooth ? MAX(0.0,xcpf) : xcpf;
+	lycpf = smooth ? MAX(0.0,ycpf) : ycpf;
+	lxcqf = smooth ? MIN(1.0,xcqf) : xcqf;
+	lycqf = smooth ? MIN(1.0,ycqf) : ycqf;
+
+	if (! smooth) {
+		ret = _NhlTriMeshRasterFill
+			(rpnt,iedg,itri,cwsrp->ws_ptr,
+			 ica1,icam,ican,lxcpf,lycpf,lxcqf,lycqf,entry_name);
+		if (ret < NhlWARNING) 
+			return NhlFATAL;
+	}
+	else do {
+		int yes = 1;
+		if (yes) {
+		 NGCALLF(ctcica,CTCICA)
+			 (rpnt,iedg,itri,fwsrp->ws_ptr,iwsrp->ws_ptr,
+			 cwsrp->ws_ptr,
+			 &ica1,&icam,&ican,&lxcpf,&lycpf,&lxcqf,&lycqf);
+		}
+		else {
+			ret = _NhlTriMeshRasterFill
+			(rpnt,iedg,itri,cwsrp->ws_ptr,
+			 ica1,icam,ican,lxcpf,lycpf,lxcqf,lycqf,entry_name);
+			if (ret < NhlWARNING) 
+				return NhlFATAL;
+		}
+		if (c_nerro(&err_num) == 0) {
+			done = True;
+		}
+		else {
+			e_msg = c_semess(0);
+			c_errof();
+			if (strstr(e_msg,cmp_msg1)) {
+#if DEBUG_WS
+				printf("resizing flt_ws old %d",
+				       fwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(fwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", fwsrp->cur_size);
+#endif
+			}
+			else if (strstr(e_msg,cmp_msg2)) {
+#if DEBUG_WS
+				printf("resizing int_ws old %d",
+				       iwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(iwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", iwsrp->cur_size);
+#endif
+			}
+			else {
+				e_text = "%s: %s";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,e_msg);
+				return NhlFATAL;
+			}
+		}
+	} while (! done);
+
+/*
+ * Since all the transformations have been applied during the creation of
+ * the cell array, it must be placed into the frame using an identity
+ * transformation.
+ */
+	c_getset(&fl,&fr,&fb,&ft,&wl,&wr,&wb,&wt,&ll);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+
+	c_set(fl,fr,fb,ft,fl,fr,fb,ft,1);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	
+	ginq_clip(&err_ind,&clip_ind_rect);
+	gset_clip_ind(GIND_CLIP);
+
+	countx = icam;
+	county = ican;
+	if (! smooth) {
+		float rem;
+		xstep = (lxcqf-lxcpf) / icam;
+		ystep = (lycqf-lycpf) / ican;
+		if (lxcpf < 0) {
+			count = -lxcpf / xstep;
+			rem = -lxcpf - count * xstep;
+			if (rem > 0.0)
+				count += 1;
+			startx += count;
+			countx -= count;
+			lx = xstep - rem;
+			lxcpf += count * xstep;
+		}
+		if (lxcqf > 1.0) {
+			count = (lxcqf - 1.0) / xstep;
+			rem = (lxcqf - 1.0) - count * xstep;
+			if (rem > 0.0)
+				count += 1;
+			countx -= count;
+			rx = 1.0 - (xstep -rem);
+			lxcqf -= count * xstep;
+		}
+		if (lycpf < 0) {
+			count = -lycpf / ystep;
+			rem = -lycpf - count * ystep;
+			if (rem > 0.0)
+				count += 1;
+			starty += count;
+			county -= count;
+			by = ystep -rem;
+			lycpf += count * ystep;
+		}
+		if (lycqf > 1.0) {
+			count = (lycqf - 1.0) / ystep;
+			rem = (lycqf - 1.0) - count * ystep;
+			if (rem > 0.0)
+				count += 1;
+			county -= count;
+			ty = 1.0 - (ystep - rem);
+			lycqf -= count * ystep;
+		}
+	}
+	if (countx > 0 && county > 0) {
+		_NHLCALLF(gca,GCA)(&lxcpf,&lycpf,&lxcqf,&lycqf,&icam,&ican,
+				   &startx,&starty,&countx,&county,
+				   cwsrp->ws_ptr);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	}
+
+	/* 
+	 * Fill around the edges if necessary -- the min_cell_size check
+	 * is required to prevent 0-sized arrays in device space, which
+	 * can cause core dumps, at least using the xWorkstation.
+	 */
+
+	count = 1;
+	if (lx > min_cell_size && county > 0) {
+		xedge = 0.0;
+		xedge_ix = MAX(1,startx-1);
+		_NHLCALLF(gca,GCA)(&xedge,&lycpf,&lx,&lycqf,&icam,&ican,
+				   &xedge_ix,&starty,&count,&county,
+				   cwsrp->ws_ptr);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	}
+	if (by > min_cell_size && countx > 0) {
+		yedge = 0.0;
+		yedge_ix = MAX(1,starty-1);
+		_NHLCALLF(gca,GCA)(&lxcpf,&yedge,&lxcqf,&by,&icam,&ican,
+				   &startx,&yedge_ix,&countx,&count,
+				   cwsrp->ws_ptr);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	}
+	if (rx > min_cell_size && county > 0) {
+		xedge = 1.0;
+		xedge_ix = startx + countx;
+		_NHLCALLF(gca,GCA)(&rx,&lycpf,&xedge,&lycqf,&icam,&ican,
+				   &xedge_ix,&starty,&count,&county,
+				   cwsrp->ws_ptr);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	}
+	if (ty > min_cell_size && countx > 0) {
+		yedge = 1.0;
+		yedge_ix = starty + county;
+		_NHLCALLF(gca,GCA)(&lxcpf,&ty,&lxcqf,&yedge,&icam,&ican,
+				   &startx,&yedge_ix,&countx,&count,
+				   cwsrp->ws_ptr);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	}
+	/* now do possible single cells at the corners */
+
+	if (lx > min_cell_size && by > min_cell_size) {
+		xedge = 0.0;
+		xedge_ix = MAX(1,startx - 1);
+		yedge = 0.0;
+		yedge_ix = MAX(1,starty -1);
+		_NHLCALLF(gca,GCA)(&xedge,&yedge,&lx,&by,&icam,&ican,
+				   &xedge_ix,&yedge_ix,&count,&count,
+				   cwsrp->ws_ptr);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	}
+	if (rx > min_cell_size && by > min_cell_size) {
+		xedge = 1.0;
+		xedge_ix = startx + countx;
+		yedge = 0.0;
+		yedge_ix = MAX(1,starty -1);
+		_NHLCALLF(gca,GCA)(&rx,&yedge,&xedge,&by,&icam,&ican,
+				   &xedge_ix,&yedge_ix,&count,&count,
+				   cwsrp->ws_ptr);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	}
+	if (lx > min_cell_size && ty > min_cell_size) {
+		xedge = 0.0;
+		xedge_ix = MAX(1,startx - 1);
+		yedge = 1.0;
+		yedge_ix = starty + county;
+		_NHLCALLF(gca,GCA)(&xedge,&ty,&lx,&yedge,&icam,&ican,
+				   &xedge_ix,&yedge_ix,&count,&count,
+				   cwsrp->ws_ptr);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	}
+	if (rx > min_cell_size && ty > min_cell_size) {
+		xedge = 1.0;
+		xedge_ix = startx + countx;
+		yedge = 1.0;
+		yedge_ix = starty + county;
+		_NHLCALLF(gca,GCA)(&rx,&ty,&xedge,&yedge,&icam,&ican,
+				   &xedge_ix,&yedge_ix,&count,&count,
+				   cwsrp->ws_ptr);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	}
+
+
+	gset_clip_ind(clip_ind_rect.clip_ind);
+
+	c_set(fl,fr,fb,ft,wl,wr,wb,wt,ll);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+
+	c_retsr(save_mode);
+
+	return NhlNOERROR;
+}
+
+
+/*
+ * Function:	_NhlCtclam
+ *
+ * Description: Conpack routine CTCLAM
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlCtclam
+#if	NhlNeedProto
+(
+	float		*rpnt,
+	int             *iedg,
+	int             *itri,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+ 	NhlWorkspace	*amap_ws,
+	char		*entry_name
+)
+#else
+(rpnt,iedg,itri,flt_ws,int_ws,amap_ws,entry_name)
+	float		*rpnt;
+	int             *iedg;
+	int             *itri;
+	NhlWorkspace	*flt_ws;
+	NhlWorkspace	*int_ws;
+ 	NhlWorkspace	*amap_ws;
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlWorkspaceRec	*awsrp = (NhlWorkspaceRec *) amap_ws;
+	NhlWorkspaceRec *fwsrp = (NhlWorkspaceRec *) flt_ws;
+	NhlWorkspaceRec *iwsrp = (NhlWorkspaceRec *) int_ws;
+	int		save_mode;
+	NhlBoolean	done = False;
+	char		*e_msg;
+	char		*cmp_msg1 = "AREA-MAP ARRAY OVERFLOW";
+	char		*cmp_msg2 = "REAL WORKSPACE OVERFLOW";
+	char		*cmp_msg3 = "INTEGER WORKSPACE OVERFLOW";
+	int		err_num;
+
+	if (! (fwsrp && fwsrp->ws_ptr && iwsrp && iwsrp->ws_ptr &&
+		awsrp && awsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
+	}
+	c_entsr(&save_mode,1);
+
+	do {
+		c_ctclam(rpnt,iedg,itri,
+			 fwsrp->ws_ptr,iwsrp->ws_ptr,awsrp->ws_ptr);
+
+		if (c_nerro(&err_num) == 0) {
+			done = True;
+		}
+		else {
+			e_msg = c_semess(0);
+			c_errof();
+			if (strstr(e_msg,cmp_msg1)) {
+#if DEBUG_WS
+				printf("resizing amap old %d",awsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(awsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", awsrp->cur_size);
+#endif
+			}
+			else if (strstr(e_msg,cmp_msg2)) {
+#if DEBUG_WS
+				printf("resizing flt_ws old %d",
+				       fwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(fwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", fwsrp->cur_size);
+#endif
+			}
+			else if (strstr(e_msg,cmp_msg3)) {
+#if DEBUG_WS
+				printf("resizing int_ws old %d",
+				       iwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(iwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", iwsrp->cur_size);
+#endif
+			}
+			else {
+				e_text = "%s: %s";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,e_msg);
+				return NhlFATAL;
+			}
+		}
+	} while (! done);
+	
+	c_retsr(save_mode);
+
+	return NhlNOERROR;
+}
+
+
+/*
+ * Function:	_NhlCtcldm
+ *
+ * Description: Conpack routine CTCLDM
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlCtcldm
+#if	NhlNeedProto
+(
+	float		*rpnt,
+	int             *iedg,
+	int             *itri,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+ 	NhlWorkspace	*amap_ws,
+	int		(*rtpl)(float *xcs, 
+				float *ycs,
+				int *ncs,
+				int *iai,
+				int *iag,
+				int *nai),
+	char		*entry_name
+)
+#else
+(rpnt,iedg,itri,flt_ws,int_ws,amap_ws,rtpl,entry_name)
+	float		*rpnt;
+	int             *iedg;
+	int             *itri;
+	NhlWorkspace	*flt_ws;
+	NhlWorkspace	*int_ws;
+ 	NhlWorkspace	*amap_ws;
+	int		(*rtpl)();
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlWorkspaceRec	*awsrp = (NhlWorkspaceRec *) amap_ws;
+	NhlWorkspaceRec *fwsrp = (NhlWorkspaceRec *) flt_ws;
+	NhlWorkspaceRec *iwsrp = (NhlWorkspaceRec *) int_ws;
+	int		save_mode;
+	NhlBoolean	done = False;
+	char		*e_msg;
+	char		*cmp_msg1 = "AREA-MAP ARRAY OVERFLOW";
+	char		*cmp_msg2 = "REAL WORKSPACE OVERFLOW";
+	char		*cmp_msg3 = "INTEGER WORKSPACE OVERFLOW";
+	int		err_num;
+
+	if (! (fwsrp && fwsrp->ws_ptr && iwsrp && iwsrp->ws_ptr &&
+		awsrp && awsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
+	}
+	c_entsr(&save_mode,1);
+
+	do {
+		c_ctcldm(rpnt,iedg,itri,
+			 fwsrp->ws_ptr,iwsrp->ws_ptr,awsrp->ws_ptr,rtpl);
+
+		if (c_nerro(&err_num) == 0) {
+			done = True;
+		}
+		else {
+			e_msg = c_semess(0);
+			c_errof();
+			if (strstr(e_msg,cmp_msg1)) {
+#if DEBUG_WS
+				printf("resizing amap old %d",awsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(awsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", awsrp->cur_size);
+#endif
+			}
+			else if (strstr(e_msg,cmp_msg2)) {
+#if DEBUG_WS
+				printf("resizing flt_ws old %d",
+				       fwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(fwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", fwsrp->cur_size);
+#endif
+			}
+			else if (strstr(e_msg,cmp_msg3)) {
+#if DEBUG_WS
+				printf("resizing int_ws old %d",
+				       iwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(iwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", iwsrp->cur_size);
+#endif
+			}
+			else {
+				e_text = "%s: %s";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,e_msg);
+				return NhlFATAL;
+			}
+		}
+	} while (! done);
+	
+	c_retsr(save_mode);
+
+	return NhlNOERROR;
+}
+
+
+/*
+ * Function:	_NhlCtlbam
+ *
+ * Description: Conpack routine CTLBAM
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlCtlbam
+#if	NhlNeedProto
+(
+	float		*rpnt,
+	int             *iedg,
+	int             *itri,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+ 	NhlWorkspace	*amap_ws,
+	char		*entry_name
+)
+#else
+(rpnt,iedg,itriflt_ws,int_ws,amap_ws,entry_name)
+	float		*rpnt;
+	int             *iedg;
+	int             *itri;
+	NhlWorkspace	*flt_ws;
+	NhlWorkspace	*int_ws;
+ 	NhlWorkspace	*amap_ws;
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlWorkspaceRec	*awsrp = (NhlWorkspaceRec *) amap_ws;
+	NhlWorkspaceRec *fwsrp = (NhlWorkspaceRec *) flt_ws;
+	NhlWorkspaceRec *iwsrp = (NhlWorkspaceRec *) int_ws;
+	int		save_mode;
+	NhlBoolean	done = False;
+	char		*e_msg;
+	char		*cmp_msg1 = "AREA-MAP ARRAY OVERFLOW";
+	char		*cmp_msg2 = "REAL WORKSPACE OVERFLOW";
+	char		*cmp_msg3 = "INTEGER WORKSPACE OVERFLOW";
+	int		err_num;
+
+	if (! (fwsrp && fwsrp->ws_ptr && iwsrp && iwsrp->ws_ptr &&
+		awsrp && awsrp->ws_ptr)) { 
+		e_text = "%s: invalid workspace";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,e_text,entry_name);
+		return NhlFATAL;
+	}
+	c_entsr(&save_mode,1);
+
+	do {
+		c_ctlbam(rpnt,iedg,itri,
+			 fwsrp->ws_ptr,iwsrp->ws_ptr,awsrp->ws_ptr);
+
+		if (c_nerro(&err_num) == 0) {
+			done = True;
+		}
+		else {
+			e_msg = c_semess(0);
+			c_errof();
+			if (strstr(e_msg,cmp_msg1) != NULL) {
+#if DEBUG_WS
+				printf("resizing amap old %d",awsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(awsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", awsrp->cur_size);
+#endif
+			}
+			else if (strstr(e_msg,cmp_msg2) != NULL) {
+#if DEBUG_WS
+				printf("resizing flt_ws old %d",
+				       fwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(fwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", fwsrp->cur_size);
+#endif
+			}
+			else if (strstr(e_msg,cmp_msg3) != NULL) {
+#if DEBUG_WS
+				printf("resizing int_ws old %d",
+				       iwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(iwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if DEBUG_WS
+				printf(" new %d\n", iwsrp->cur_size);
+#endif
+			}
+			else {
+				e_text = "%s: %s";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,e_msg);
+				return NhlFATAL;
+			}
+		}
+	} while (! done);
+	
+	c_retsr(save_mode);
+
+	return NhlNOERROR;
+}
+
 
 /*
  * Function:	_NhlMapbla

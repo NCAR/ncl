@@ -1,5 +1,5 @@
 /*
- *      $Id: SphericalGeometry.c,v 1.3 2003-02-27 18:26:51 dbrown Exp $
+ *      $Id: SphericalGeometry.c,v 1.4 2004-03-11 02:00:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1220,23 +1220,23 @@ int icegdp
   qtmp=qqdp+4*(ibeg+idim*jbeg);
 
   for (i=ibeg;i<iend;i++) {
-    qtmp+=4;
-    atmp+=adgcdp(pqdp,qtmp);
+	  qtmp = qqdp + 4 * (i + idim*jbeg);
+	  atmp+=adgcdp(pqdp,qtmp);
   }
 
   for (j=jbeg;j<jend;j++) {
-    qtmp+=4*idim ;
-    atmp+=adgcdp(pqdp,qtmp);
+	  qtmp = qqdp + 4 * (iend + idim * j);
+	  atmp+=adgcdp(pqdp,qtmp);
   }
 
-  for (i=ibeg;i<iend;i++) {
-    qtmp-=4;
-    atmp+=adgcdp(pqdp,qtmp);
+  for (i=iend; i > ibeg; i--) {
+	  qtmp = qqdp + 4 * (i + idim * jend);
+	  atmp+=adgcdp(pqdp,qtmp);
   }
 
-  for (j=jbeg;j<jend;j++) {
-    qtmp-=4*idim ;
-    atmp+=adgcdp(pqdp,qtmp);
+  for (j=jend;j> jbeg;j--) {
+	  qtmp = qqdp + 4 * (ibeg + idim * j);
+	  atmp+=adgcdp(pqdp,qtmp);
   }
 
   atmp=atmp/(double)(2*(iend-ibeg+jend-jbeg));

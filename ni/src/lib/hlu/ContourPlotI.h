@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotI.h,v 1.1 1997-07-14 18:38:08 dbrown Exp $
+ *      $Id: ContourPlotI.h,v 1.2 2004-03-11 02:00:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,31 @@ extern NhlErrorTypes _NhlRasterFill(
 	float		xcqf,
 	float		ycqf,
 	char		*entry_name
+#endif        
+        );
+
+extern NhlErrorTypes _NhlTriMeshRasterFill(
+#if	NhlNeedProto
+	float		*rpnt,
+	int             *iedg,
+	int             *itri,
+	int		*cell,
+	int		ica1,
+	int		icam,
+	int		ican,
+	float		xcpf,
+	float		ycpf,
+	float		xcqf,
+	float		ycqf,
+	char		*entry_name
+#endif        
+        );
+
+
+extern NhlErrorTypes _NhlCellFill(
+#if	NhlNeedProto
+	NhlLayer                l,
+	NhlString		entry_name
 #endif        
         );
 

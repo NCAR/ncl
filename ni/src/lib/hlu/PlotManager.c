@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.69 2003-05-09 18:25:45 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.70 2004-03-11 02:00:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,7 @@
 #include <ncarg/hlu/IrregularTransObj.h>
 #include <ncarg/hlu/CurvilinearTransObj.h>
 #include <ncarg/hlu/SphericalTransObj.h>
+#include <ncarg/hlu/TriMeshTransObj.h>
 #include <ncarg/hlu/MapPlot.h>
 #include <ncarg/hlu/AnnoManagerP.h>
 #include <ncarg/hlu/ConvertersP.h>
@@ -3961,6 +3962,21 @@ ManageTickMarks
 			       NULL);
 		ovp->x_tm_style = (x_log == 1) ? NhlLOG : NhlLINEAR;
 		ovp->y_tm_style = (y_log == 1) ? NhlLOG : NhlLINEAR;
+	}
+	else if (trobj_name == 
+		 NhltriMeshTransObjClass->base_class.class_name) {
+		NhlVAGetValues(trobj->base.id,
+			       NhlNtrXMinF,&x_min,
+			       NhlNtrXMaxF,&x_max,
+			       NhlNtrYMinF,&y_min,
+			       NhlNtrYMaxF,&y_max,
+			       NULL);
+		x_log = False;
+		x_reverse = False;
+		y_log = False;
+		y_reverse = False;
+		ovp->x_tm_style = NhlLINEAR;
+		ovp->y_tm_style = NhlLINEAR;
 	}
 	else if (trobj_name== 
 		 NhlirregularTransObjClass->base_class.class_name) {

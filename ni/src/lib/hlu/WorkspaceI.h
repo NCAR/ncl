@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkspaceI.h,v 1.15 2001-11-28 02:47:51 dbrown Exp $
+ *      $Id: WorkspaceI.h,v 1.16 2004-03-11 02:00:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,8 @@
 #include <ncarg/hlu/Workspace.h>
 
 typedef enum _NhlwsType {
-	NhlwsAREAMAP, NhlwsCNFLOAT, NhlwsCNINT, NhlwsSEGDATA, NhlwsOTHER
+	NhlwsAREAMAP, NhlwsCNFLOAT, NhlwsCNINT, NhlwsSEGDATA, 
+	NhlwsCTFLOAT, NhlwsCTINT, NhlwsOTHER
 } NhlwsType;
 
 typedef enum _NhlPersistence {
@@ -230,6 +231,113 @@ extern NhlErrorTypes _NhlCprect(
 	char		*entry_name
 #endif
 );
+
+/* Dynamic Conpackt interface functions */
+
+NhlErrorTypes _NhlCtmesh(
+#if	NhlNeedProto
+	float		*rpnt,
+	int		npnt,
+	int		lopn,
+	int             *iedg,
+	int             nedg,
+	int             loen,
+	int             *itri,
+	int             ntri,
+	int             lotn,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+	char		*entry_name
+#endif
+);
+
+NhlErrorTypes _NhlCtcldr(
+#if	NhlNeedProto
+	float		*rpnt,
+	int             *iedg,
+	int             *itri,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+	char		*entry_name
+#endif
+);
+
+NhlErrorTypes _NhlCtlbdr(
+#if	NhlNeedProto
+
+	float		*rpnt,
+	int             *iedg,
+	int             *itri,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+	char		*entry_name
+#endif
+);
+
+NhlErrorTypes _NhlCtcica(
+#if	NhlNeedProto
+	float		*rpnt,
+	int             *iedg,
+	int             *itri,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+	NhlWorkspace	*cell_ws,
+	int		ica1,
+	int		icam,
+	int		ican,
+	float		xcpf,
+	float		ycpf,
+	float		xcqf,
+	float		ycqf,
+	float		min_cell_size,
+	NhlBoolean	smooth,
+	char		*entry_name
+#endif
+);
+
+NhlErrorTypes _NhlCtclam(
+#if	NhlNeedProto
+	float		*rpnt,
+	int             *iedg,
+	int             *itri,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+ 	NhlWorkspace	*amap_ws,
+	char		*entry_name
+#endif
+);
+
+NhlErrorTypes _NhlCtcldm(
+#if	NhlNeedProto
+	float		*rpnt,
+	int             *iedg,
+	int             *itri,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+ 	NhlWorkspace	*amap_ws,
+	int		(*rtpl)(float *xcs, 
+				float *ycs,
+				int *ncs,
+				int *iai,
+				int *iag,
+				int *nai),
+	char		*entry_name
+#endif
+);
+
+NhlErrorTypes _NhlCtlbam(
+#if	NhlNeedProto
+	float		*rpnt,
+	int             *iedg,
+	int             *itri,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+ 	NhlWorkspace	*amap_ws,
+	char		*entry_name
+#endif
+);
+
+
 
 /* Dynamic Ezmap interface functions */
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.45 2003-10-07 21:27:20 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.46 2004-03-11 02:00:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2728,6 +2728,12 @@ int n;
 				yout[ixout] = c_cufy(ty);
 			}
 			ixout++;
+			if (ixout >= outcount) {
+				outcount = ResizeOut(&xout,&yout,
+						     outcount);
+				if (outcount < 0)
+					return NhlFATAL;
+			}
 			xout[ixout] = xbuf[i];
 			yout[ixout] = ybuf[i];
 		}
