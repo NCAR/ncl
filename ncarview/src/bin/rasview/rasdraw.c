@@ -1,5 +1,5 @@
 /*
- *	$Id: rasdraw.c,v 1.15 1994-10-11 23:19:03 clyne Exp $
+ *	$Id: rasdraw.c,v 1.16 1995-03-16 23:08:23 haley Exp $
  */
 /*
  *	rasdraw.c
@@ -39,7 +39,7 @@ static	void	load_static_24bit_image_(ras, context)
 
 	for(i=0; i<ras->ny; i++)
 	for(j=0; j<ras->nx; j++, s+=3, t+=4) {
-		bcopy((char *) s, (char *) t, 3);
+		memmove((void *) t, (const void *) s, 3);
 	}
 
 	XPutImage(context->dpy, XtWindow(context->canvas), context->gc,
@@ -96,9 +96,9 @@ static	void	load_static_8bit_image_(ras, context)
 
 	if (! context->image_info.lsbFirst) {
 		for (i = 0; i < ras->nx * ras->ny; i++) {
-			bcopy(((char *) (&static_pal[*rdata]) + 
+			memmove(xidata, ((const void *) (&static_pal[*rdata]) + 
 				sizeof(long) - bytes_per_pixel),
-				xidata, bytes_per_pixel);
+				bytes_per_pixel);
 
 			rdata++;
 			xidata += bytes_per_pixel;
@@ -106,8 +106,8 @@ static	void	load_static_8bit_image_(ras, context)
 	}
 	else {
 		for (i = 0; i < ras->nx * ras->ny; i++) {
-			bcopy((char *) &static_pal[*rdata],
-				xidata, bytes_per_pixel);
+			memmove(xidata,(const void *) &static_pal[*rdata],
+				bytes_per_pixel);
 
 			rdata++;
 			xidata += bytes_per_pixel;
@@ -962,21 +962,21 @@ int	RasDrawSetPalette(context, red, green, blue, ncolor)
 		ESprintf(errno,"malloc(%d)", ncolor);
 		return(-1);
 	}
-	bcopy((char *) red, (char *) ucptr, (int) ncolor);
+	memmove((void *) ucptr, (const void *) red, (size_t) ncolor);
 	context->default_pal.red = ucptr;
 
 	if ( ! (ucptr = (unsigned char *) malloc(ncolor))) {
 		ESprintf(errno,"malloc(%d)", ncolor);
 		return(-1);
 	}
-	bcopy((char *) green, (char *) ucptr, (int) ncolor);
+	memmove((void *) ucptr, (const void *) green, (size_t) ncolor);
 	context->default_pal.green = ucptr;
 
 	if ( ! (ucptr = (unsigned char *) malloc(ncolor))) {
 		ESprintf(errno,"malloc(%d)", ncolor);
 		return(-1);
 	}
-	bcopy((char *) blue, (char *) ucptr, (int) ncolor);
+	memmove((void *) ucptr, (const void *) blue, (size_t) ncolor);
 	context->default_pal.blue = ucptr;
 
 	context->default_pal.ncolor = ncolor;
