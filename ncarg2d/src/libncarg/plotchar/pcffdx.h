@@ -1,5 +1,5 @@
 C
-C	$Id: pcffdx.h,v 1.3 2000-08-22 03:45:45 haley Exp $
+C	$Id: pcffdx.h,v 1.4 2002-03-28 00:18:07 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,7 +20,7 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      PARAMETER (IFCLEN=3000, ICLEN=150)
+      PARAMETER (IFCLEN=6000, ICLEN=300)
       COMMON /PCINDX/IBFC(IFCLEN)    ,SFLGS(ICLEN)   ,CHRPNT(128),
      +               IXC(ICLEN)      ,IYC(ICLEN)     ,XC(ICLEN)  ,
      +               YC(ICLEN)       ,OUTLIN         ,SCALE

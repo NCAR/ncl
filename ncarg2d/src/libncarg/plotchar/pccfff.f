@@ -1,5 +1,5 @@
 C
-C	$Id: pccfff.f,v 1.4 2000-08-22 15:05:21 haley Exp $
+C	$Id: pccfff.f,v 1.5 2002-03-28 00:18:06 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -112,7 +112,7 @@ C
 C
 C Read the fontcap.
 C
-        CALL PCFRED (IBNU,NFNTL,IBFC,3000)
+        CALL PCFRED (IBNU,NFNTL,IBFC,IFCLEN)
 C
 C Close the fontcap file.
 C
