@@ -14,7 +14,7 @@ C
         ERMSG = ERMSGS(INDEX)
       ELSE
         NUM = -100
-        ERMSG = ERMSGS(NUM)
+        ERMSG = ERMSGS(79)
       ENDIF
 C
       RETURN
