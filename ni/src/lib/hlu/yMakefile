@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.45 1997-03-05 19:24:21 haley Exp $
+#      $Id: yMakefile,v 1.46 1997-05-12 22:43:29 boote Exp $
 #
 #########################################################################
 #									#
@@ -98,7 +98,7 @@ FOBJS		= DATACOMM.o ERROR.o HLU.o PLOTMANAGER.o RLGEN.o RLSET.o \
 
 OBJS		= $(COBJS) $(FOBJS)
 
-BuildSharedLibTarget(libNGhlu,$(OBJS),1,0,$(CNCARGLIB) $(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB) $(CTOFLIBS) -lm -lc)
+BuildSharedLibTarget(libNGhlu,$(OBJS),1,0,$(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB) $(CTOFLIBS) -lm -lc)
 LibraryTarget($(MYNAME),$(OBJS))
 BuildIncludes($(HDRS),ncarg/hlu,../..)
 InstallTarget($(HDRS),$(INSTALL_INC),$(HLUINCPATH))
