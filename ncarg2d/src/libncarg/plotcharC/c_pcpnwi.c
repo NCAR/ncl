@@ -1,5 +1,5 @@
 /*
- *	$Id: c_pcpnwi.c,v 1.4 2001-09-20 04:10:17 haley Exp $
+ *	$Id: c_pcpnwi.c,v 1.5 2002-02-23 03:17:39 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -49,8 +49,13 @@ char *c_pcpnwi
     NGCALLF(pcpnwi,PCPNWI)(ft_str,cftwhch,&ipai);
     strcpy( buff, NGFstrToCstr(ft_str));
 #else
+#if defined(AbsoftProFortran)
+    extern NGstring NGCALLF(pcpnwi,PCPNWI)(char*,char*,int*,int,int);
+    NGCALLF(pcpnwi,PCPNWI)(buff,whch,&ipai,len,NGSTRLEN(whch));
+#else
     extern NGstring NGCALLF(pcpnwi,PCPNWI)(char*,int,char*,int*,int);
     NGCALLF(pcpnwi,PCPNWI)(buff,len,whch,&ipai,NGSTRLEN(whch));
+#endif
 #endif
     buff[len] = '\0';
     return(buff);
