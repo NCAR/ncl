@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.176 2004-10-21 22:11:18 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.177 2004-12-09 23:13:08 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4618,6 +4618,13 @@ lbar_on, calldraw, callframe, main_offset, datanew, res2, cnres, mpres, \
 vpwf, vphf, font_height, levels, colors, zonal_zone, lbres, \
 infolabel_on, infolabel_zone, lbar_zone, lbar_height, lbar_width
 begin
+;
+; Make sure input data is 1D or 2D
+;
+    if(.not.is_data_1d_or_2d(data)) then
+      print("gsn_csm_contour_map_polar: Fatal: the input data array must be 1D or 2D")
+      return
+    end if
 
 ; Initialize.
     lbar_on       = False     ; Labelbar flag
@@ -4801,6 +4808,14 @@ res, res2, lbres, xy_res, mpres, cnres, levels, colors, \
 lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just, \
 map_vpwf, map_vphf, vphf, contour_plot
 begin
+;
+; Make sure input data is 1D or 2D
+;
+    if(.not.is_data_1d_or_2d(data)) then
+      print("gsn_csm_contour_map_ce: Fatal: the input data array must be 1D or 2D")
+      return
+    end if
+
 ; Initialize.
     lbar_on        = False    ; Default is no labelbar.
     mpres          = True
@@ -5183,6 +5198,14 @@ res, res2, lbres, xy_res, mpres, cnres, levels, colors, \
 lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just, \
 map_vpwf, map_vphf, vphf, contour_plot
 begin
+;
+; Make sure input data is 1D or 2D
+;
+    if(.not.is_data_1d_or_2d(data)) then
+      print("gsn_csm_contour_map_other: Fatal: the input data array must be 1D or 2D")
+      return
+    end if
+
 ; Initialize.
     lbar_on        = False    ; Default is no labelbar.
     mpres          = True
@@ -6348,6 +6371,13 @@ local i, stream_object, map_object, res, res2, \
 calldraw, callframe, min_lat, max_lat, unew, vnew, datanew, \
 map_vpwf, map_vphf, vpwf, vphf, lbar_on
 begin
+;
+; Make sure input data is 1D or 2D
+;
+    if(.not.is_data_1d_or_2d(data)) then
+      print("gsn_csm_streamline_contour_map_ce: Fatal: the input data array must be 1D or 2D")
+      return
+    end if
 
 ; Initialize.
     infolabel_on   = False
@@ -6581,6 +6611,14 @@ local i, stream_object, map_object, res, res2, calldraw, vcres, \
 lbres, vpwf, vphf, callframe, lbar_on, lbar_zone, unew, vnew
 begin
 ;
+; Make sure input data is 1D or 2D
+;
+    if(.not.is_data_1d_or_2d(data)) then
+      print("gsn_csm_streamline_contour_map_polar: Fatal: the input data array must be 1D or 2D")
+      return
+    end if
+
+;
 ; The default is to draw streamlines colored by a scalar field, so this
 ; means a labelbar should be drawn, and no contour information is 
 ; needed.
@@ -6768,6 +6806,13 @@ res, res2, lbres, mpres, vcres, levels, colors, \
 lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just, \
 map_vpwf, map_vphf, vphf 
 begin
+;
+; Make sure input data is 1D or 2D
+;
+    if(.not.is_data_1d_or_2d(data)) then
+      print("gsn_csm_streamline_contour_map_other: Fatal: the input data array must be 1D or 2D")
+      return
+    end if
 ; Initialize.
     infolabel_on   = False
     lbar_on        = False    ; Default is no labelbar.
@@ -6945,6 +6990,13 @@ function gsn_csm_vector_scalar(wks:graphic,u[*][*]:numeric,v[*][*]:numeric, \
 local i, vector_object, res, res2, \
 calldraw, callframe, unew, vnew, datanew, vpwf, vphf, lbar_on
 begin
+;
+; Make sure input data is 1D or 2D
+;
+    if(.not.is_data_1d_or_2d(data)) then
+      print("gsn_csm_vector_scalar: Fatal: the input data array must be 1D or 2D")
+      return
+    end if
 
 ; Initialize.
     main_zone      = 2         ; Zone for main title (may change later)
@@ -7213,6 +7265,13 @@ local i, vector_object, map_object, res, res2, \
 calldraw, callframe, min_lat, max_lat, unew, vnew, datanew, \
 map_vpwf, map_vphf, vpwf, vphf, lbar_on
 begin
+;
+; Make sure input data is 1D or 2D
+;
+    if(.not.is_data_1d_or_2d(data)) then
+      print("gsn_csm_vector_scalar_map_ce: Fatal: the input data array must be 1D or 2D")
+      return
+    end if
 
 ; Initialize.
     infolabel_on   = False
@@ -7516,6 +7575,13 @@ local i, vector_object, map_object, res, res2, calldraw, vcres, \
 lbres, vpwf, vphf, callframe, lbar_on, lbar_zone, unew, vnew
 begin
 ;
+; Make sure input data is 1D or 2D
+;
+    if(.not.is_data_1d_or_2d(data)) then
+      print("gsn_csm_vector_scalar_map_polar: Fatal: the input data array must be 1D or 2D")
+      return
+    end if
+;
 ; The default is to draw vectors colored by a scalar field, so this
 ; means a labelbar should be drawn, and no contour information is 
 ; needed.
@@ -7742,6 +7808,14 @@ res, res2, lbres, mpres, vcres, levels, colors, \
 lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just, \
 map_vpwf, map_vphf, vphf 
 begin
+;
+; Make sure input data is 1D or 2D
+;
+    if(.not.is_data_1d_or_2d(data)) then
+      print("gsn_csm_vector_scalar_map_other: Fatal: the input data array must be 1D or 2D")
+      return
+    end if
+
 ; Initialize.
     infolabel_on   = False
     refanno_on     = True
@@ -9632,6 +9706,13 @@ local res, contour_object, res2, xfontf, yfontf, font_height, lbar_on, \
 calldraw, callframe, left_string, center_string, right_string, \
 main_zone, datanew, popgrid, contour_plot
 begin
+;
+; Make sure input data is 1D or 2D
+;
+    if(.not.is_data_1d_or_2d(data)) then
+      print("gsn_csm_contour: Fatal: the input data array must be 1D or 2D")
+      return
+    end if
 
 ; Initialize.
     lbar_on       = False     ; Labelbar flag

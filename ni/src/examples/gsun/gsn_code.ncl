@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.157 2004-11-12 21:58:44 haley Exp $
+;      $Id: gsn_code.ncl,v 1.158 2004-12-09 23:13:08 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1235,6 +1235,25 @@ begin
 
   return
 end
+
+;***********************************************************************;
+;                                                                       ;
+; This function checks if a data array is 1D or 2D and returns False if ;
+; is not.                                                               ;
+;                                                                       ;
+;***********************************************************************;
+function is_data_1d_or_2d(data)
+begin
+  dims = dimsizes(data)
+  rank = dimsizes(dims)
+
+  if(rank.eq.1.or.rank.eq.2) then
+    return(True)
+  else
+    return(False)
+  end if
+end
+
 
 ;***********************************************************************;
 ; Function : overlay_irregular                                          ;
@@ -6739,6 +6758,14 @@ datares, cnres, llres, cn_res_index, ll_res_index, calldraw, callframe, \
 force_x_linear, force_y_linear, force_x_log, force_y_log, \
 trxmin, trxmax, trymin, trymax, res2, scale, shape, sprdcols
 begin
+;
+; Make sure input data is 1D or 2D
+;
+    if(.not.is_data_1d_or_2d(data)) then
+      print("gsn_contour: Fatal: the input data array must be 1D or 2D")
+      return
+    end if
+
     cnres     = False
     llres     = False
     res2      = get_resources(resources)
@@ -6921,6 +6948,14 @@ function gsn_contour_map(wks:graphic,data:numeric,\
 local i, data_object, contour_object, res, sf_res_index, \
 cn_res_index, mp_res_index, map_object, res2, scale, shape, sprdcols
 begin
+;
+; Make sure input data is 1D or 2D
+;
+    if(.not.is_data_1d_or_2d(data)) then
+      print("gsn_contour_map: Fatal: the input data array must be 1D or 2D")
+      return
+    end if
+
     res2 = get_resources(resources)
 
     wksname = get_res_value_keep(wks,"name","gsnapp")
@@ -7662,6 +7697,14 @@ function gsn_vector_contour(wks:graphic,u[*][*]:numeric,\
 local i, vfdata_object, sfdata_object, contour_object, res, \
 vf_res_index, vc_res_index, sf_res_index, res2
 begin
+;
+; Make sure input data is 1D or 2D
+;
+    if(.not.is_data_1d_or_2d(data)) then
+      print("gsn_vector_contour: Fatal: the input data array must be 1D or 2D")
+      return
+    end if
+
     res2 = get_resources(resources)
 
 ;
@@ -7768,6 +7811,14 @@ function gsn_streamline_contour(wks:graphic,u[*][*]:numeric,\
 local i, vfdata_object, sfdata_object, contour_object, res, \
 vf_res_index, st_res_index, sf_res_index, res2
 begin
+;
+; Make sure input data is 1D or 2D
+;
+    if(.not.is_data_1d_or_2d(data)) then
+      print("gsn_streamline_contour: Fatal: the input data array must be 1D or 2D")
+      return
+    end if
+
     res2 = get_resources(resources)
 ;
 ; Create the vector and scalar fields.
@@ -7869,6 +7920,14 @@ function gsn_vector_contour_map(wks:graphic,u[*][*]:numeric,\
 local i, vfdata_object, sfdata_object, contour_object, res, \
 vf_res_index, vc_res_index, sf_res_index, mp_res_index, map_object, res2
 begin
+;
+; Make sure input data is 1D or 2D
+;
+    if(.not.is_data_1d_or_2d(data)) then
+      print("gsn_vector_contour_map: Fatal: the input data array must be 1D or 2D")
+      return
+    end if
+
     res2 = get_resources(resources)
 ;
 ; Create the vector and scalar field objects.
@@ -8072,6 +8131,14 @@ force_x_linear, force_y_linear, force_x_log, force_y_log, \
 trxmin, trxmax, trymin, trymax, ll_res_index, llres, vf_res_index, \
 vc_res_index, sf_res_index, res2, sprdcols
 begin
+;
+; Make sure input data is 1D or 2D
+;
+    if(.not.is_data_1d_or_2d(data)) then
+      print("gsn_vector_scalar: Fatal: the input data array must be 1D or 2D")
+      return
+    end if
+
     llres = False
     res2  = get_resources(resources)
 
@@ -8197,6 +8264,14 @@ local i, vfdata_object, sfdata_object, contour_object, res, \
 vf_res_index, vc_res_index, sf_res_index, mp_res_index, map_object, res2, \
 sprdcols
 begin
+;
+; Make sure input data is 1D or 2D
+;
+    if(.not.is_data_1d_or_2d(data)) then
+      print("gsn_vector_scalar_map: Fatal: the input data array must be 1D or 2D")
+      return
+    end if
+
     res2 = get_resources(resources)
 ;
 ; Create the vector and scalar field object.
