@@ -1,5 +1,5 @@
 /*
- *	$Id: default.c,v 1.19 1993-03-12 18:21:34 clyne Exp $
+ *	$Id: default.c,v 1.20 1993-03-31 00:03:05 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -741,8 +741,11 @@ int LineColr(c)
 CGMC *c;
 {
 
-	if (CSM == INDEXED) 
-		dt->line_colour.index = c->ci[0];
+	if (CSM == INDEXED)  {
+		if (clut->ce[c->ci[0]].defined) {
+			dt->line_colour.index = c->ci[0];
+		}
+	}
 	else {
 		dt->line_colour.direct.red = c->cd[0].red;
 		dt->line_colour.direct.green = c->cd[0].green;
@@ -805,8 +808,11 @@ CGMC *c;
 int MarkerColr(c)
 CGMC *c;
 {
-	if (CSM == INDEXED) 
-		dt->marker_colour.index = c->ci[0];
+	if (CSM == INDEXED)  {
+		if (clut->ce[c->ci[0]].defined) {
+			dt->marker_colour.index = c->ci[0];
+		}
+	}
 	else {
 		dt->marker_colour.direct.red = c->cd[0].red;
 		dt->marker_colour.direct.green = c->cd[0].green;
@@ -882,8 +888,11 @@ CGMC *c;
 int TextColr(c)
 CGMC *c;
 {
-	if (CSM == INDEXED) 
-		dt->text_colour.index = c->ci[0];
+	if (CSM == INDEXED)  {
+		if (clut->ce[c->ci[0]].defined) {
+			dt->text_colour.index = c->ci[0];
+		}
+	}
 	else {
 		dt->text_colour.direct.red = c->cd[0].red;
 		dt->text_colour.direct.green = c->cd[0].green;
@@ -1057,8 +1066,11 @@ CGMC *c;
 int FillColr(c)
 CGMC *c;
 {
-	if (CSM == INDEXED) 
-		dt->fill_colour.index = c->ci[0];
+	if (CSM == INDEXED)  {
+		if (clut->ce[c->ci[0]].defined) {
+			dt->fill_colour.index = c->ci[0];
+		}
+	}
 	else {
 		dt->fill_colour.direct.red = c->cd[0].red;
 		dt->fill_colour.direct.green = c->cd[0].green;
