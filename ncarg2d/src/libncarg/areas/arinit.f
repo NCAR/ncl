@@ -1,7 +1,4 @@
 C
-C	$Id: arinit.f,v 1.1.1.1 1992-04-17 22:32:12 ncargd Exp $
-C
-C
 C The subroutine ARINIT
 C --- ---------- -------
 C
@@ -31,15 +28,7 @@ C
       IAU=IAD
 C
       IF (.NOT.(IAU.EQ.0)) GO TO 10001
-        RS1=REAL(ILC)*REAL(ILC)
-        RS2=RS1+.25E0
-        RS3=RS2+.25E0
-        DS1=DBLE(ILC)*DBLE(ILC)
-        DS2=DS1+.25D0
-        DS3=DS2+.25D0
-        RS4=REAL(ILC)
-        RS5=RS4+.25E0
-        RS6=RS5+.25E0
+        CALL ARINI2 (ILC,RS1,RS2,RS3,DS1,DS2,DS3,RS4,RS5,RS6)
         IF (.NOT.(RS2.NE.RS1.AND.RS3.NE.RS2)) GO TO 10002
           IAU=1
         GO TO 10003

@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:32:10 ncargd Exp $
+#	$Id: yMakefile,v 1.2 1992-07-21 18:35:38 ncargd Exp $
 #
 NCARG	= ../../../..
 
@@ -11,13 +11,13 @@ FOPT =
 
 GENERIC_SRCS = \
 	arblda.f arrat2.f ardat2.f ardbda.f ardbpa.f ardrln.f aredam.f \
-	argeti.f argtai.f arinam.f arinit.f armpia.f arpram.f arscam.f \
-	arseti.f
+	argeti.f argtai.f arinam.f arini2.f arinit.f armpia.f arpram.f \
+	arscam.f arseti.f
 
 GENERIC_OBJS = \
 	arblda.o arrat2.o ardat2.o ardbda.o ardbpa.o ardrln.o aredam.o \
-	argeti.o argtai.o arinam.o arinit.o armpia.o arpram.o arscam.o \
-	arseti.o
+	argeti.o argtai.o arinam.o arinit.o arini2.o armpia.o arpram.o \
+	arscam.o arseti.o
 
 SOURCES = $(GENERIC_SRCS)
 

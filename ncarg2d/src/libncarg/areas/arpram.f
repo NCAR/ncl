@@ -1,7 +1,4 @@
 C
-C	$Id: arpram.f,v 1.1.1.1 1992-04-17 22:32:13 ncargd Exp $
-C
-C
 C The subroutine ARPRAM.
 C --- ---------- -------
 C
@@ -767,7 +764,7 @@ C
 C
 C This internal procedure processes coincident pairs of segments found.
 C If both members of the pair belong to the same group, area identifier
-C information from both members is ignored and one of the pair is
+C information from both members is reconciled and one of the pair is
 C deleted.  If they belong to different groups, the group id in one of
 C them is negated, so that it is present when we are looking at edges
 C belonging to a single group, but absent when we are looking at all
