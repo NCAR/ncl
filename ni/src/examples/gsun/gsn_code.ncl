@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.55 2001-01-13 19:20:23 haley Exp $
+;      $Id: gsn_code.ncl,v 1.56 2001-01-16 23:54:57 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -703,10 +703,7 @@ begin
 
 ; Function : compute_ps_device_coords                                  ;
 ;                bb[4] : float                                         ;
-;               orient : string                                        ;
-;          paper_width : float                                         ;
-;         paper_height : float                                         ;
-;               margin : float                                         ;
+;                  res : logical                                       ;
 ;                                                                      ;
 ; This function computes the PostScript device coordinates needed to   ;
 ; make a plot fill up the full page.                                   ;
@@ -715,25 +712,47 @@ begin
 ;          be a float array with four values between 0 and 1.          ;
 ;            (top,bottom,left,right)                                   ;
 ;                                                                      ;
-; orient : orientation of paper. Can be "landscape", "portrait", or    ;
-;          "auto_orient"                                               ;
+; res : list of optional resources. Ones accepted include:             ;
 ;                                                                      ;
-; paper_width  : width of paper (in inches)                            ;
-; paper_height : height of paper (in inches)                           ;
-; margin       : margin to leave around plots (in inches)              ;
+;       "paper_orient" - orientation of paper. Can be "landscape",      ;
+;                       "portrait", or "auto_orient". Default is       ;
+;                       "auto_orient".                                 ;
+;                                                                      ;
+;       "paper_width"  - width of paper (in inches, default is 8.5)    ;
+;       "paper_height" - height of paper (in inches, default is 11.0)  ;
+;       "paper_margin" - margin to leave around plots (in inches,      ;
+;                        default is 0.5)                               ;
 ;                                                                      ;
 ;**********************************************************************;
 
-function compute_ps_device_coords(bb,orient,paper_width,paper_height,margin)
-local coords, top, bot, lft, rgt, dpi, dpi_pw, dpi_ph, dpi_margin
+function compute_ps_device_coords(bb,res)
+local coords, top, bot, lft, rgt, dpi, dpi_pw, dpi_ph, dpi_margin, \
+      paper_width, paper_height, paper_margin
 begin
+;
+; Get resources.
+;
+  paper_height = get_res_value(res,"paper_height",11.0)
+  paper_width  = get_res_value(res,"paper_width",8.5)
+  paper_margin = get_res_value(res,"paper_margin",0.5)
+  paper_orient = get_res_value(res,"paper_orient","auto_orient")
+  dimbb        = dimsizes(bb)
+
+;
 ;
 ; Error checking.
 ;
-  top = bb(0)
-  bot = bb(1)
-  lft = bb(2)
-  rgt = bb(3)
+  if(dimsizes(dimbb).eq.1) then
+    top = bb(0)
+    bot = bb(1)
+    lft = bb(2)
+    rgt = bb(3)
+  else
+    top = max(bb(:,0))
+    bot = min(bb(:,1))
+    lft = max(bb(:,2))
+    rgt = min(bb(:,3))
+  end if
 
   if(bot.lt.0.or.bot.gt.1.or.top.lt.0.or.top.gt.1.or. \
      lft.lt.0.or.lft.gt.1.or.rgt.lt.0.or.rgt.gt.1)
@@ -748,10 +767,10 @@ begin
 ;
 ; Initialization
 ;
-  dpi = 72       ; Dots per inch.
-  dpi_pw     = paper_width * dpi
+  dpi        = 72                       ; Dots per inch.
+  dpi_pw     = paper_width  * dpi
   dpi_ph     = paper_height * dpi
-  dpi_margin = margin * dpi
+  dpi_margin = paper_margin * dpi
 
 ;
 ; Get paper height/width in dpi units
@@ -772,7 +791,7 @@ begin
 ; Determine orientation, and then calculate device coordinates based
 ; on this.
 ; 
-  lc_orient = orient
+  lc_orient = lower_case(paper_orient)
   if(lc_orient.eq."portrait".or.lc_orient.eq."auto_orient".and. \
       (ph / pw).ge.1.0)
 ;
@@ -1375,14 +1394,28 @@ begin
 ;
 ; Compute device coordinates.
 ;
-  coords = compute_ps_device_coords(new_bb,orient,8.5,11.,0.5)
+  res = True
+  res@paper_orient = orient
+  coords = compute_ps_device_coords(new_bb,res)
 
 ;
 ; Retrieve current workstation so that we can retrieve the colormap.
 ; Assume all plots have same workstation parent, and thus the same
 ; colormap.
 ;
-  wks = NhlGetParentId(plots(0))
+  still_missing = True
+  i = 0
+  do while(still_missing.and.i.lt.nplots)
+    if(.not.ismissing(plots(i)))
+      wks = NhlGetParentId(plots(i))
+      still_missing = False
+    end if
+    i = i + 1
+  end do
+  if(still_missing) then
+    print("output_ps: all plots are empty, no PostScript file created") 
+    exit
+  end if 
 
   getvalues wks
     "wkColorMap" : cmap
@@ -1402,13 +1435,16 @@ begin
   wks2 = gsn_open_wks(wks_type,psname)   ; Open PostScript workstation.
 
   do i = 0,nplots-1
-    NhlChangeWorkstation(plots(i),wks2)  ; Change workstation to new one.
+    if(.not.ismissing(plots(i))) then
+      NhlChangeWorkstation(plots(i),wks2)  ; Change workstation to new one.
+  
+      draw(plots(i))                       ; Draw plot to new workstation.
 
-    draw(plots(i))                       ; Draw plot to new workstation.
+      NhlChangeWorkstation(plots(i),wks)  ; Change workstation back to orig.
+    end if
   end do
 
   frame(wks2)
-  delete(wks2)
 
 end
 
@@ -2053,6 +2089,7 @@ end
 ; This procedure takes the array of plots and draws them all on one     ;
 ; workstation in the configuration specified by dims.                   ;
 ;                                                                       ;
+; For example, if you have six plots and dims is (/2,3/), then the six  ;
 ; plots will be drawn in 2 rows and 3 columns.                          ;
 ;                                                                       ;
 ; However, if you set gsnPanelRowSpec to True, and dims to an array of  ;
@@ -2107,7 +2144,7 @@ begin
     end do
   else
     if(ddims.ne.2)
-  panel_save     = get_res_value(res,"gsnPanelSave",False)
+  panel_save     = get_res_value(res,"gsnPanelSave",True)
   panel_debug    = get_res_value(res,"gsnPanelDebug",False)
   panel_center   = get_res_value(res,"gsnPanelCenter",True)
   panel_labelbar = get_res_value(res,"gsnPanelLabelBar",False)
@@ -2619,8 +2656,11 @@ begin
       if(.not.ismissing(plot(i)))
         if(added_anno.and..not.ismissing(anno(i)))
           NhlRemoveAnnotation(plot(i),anno(i))
+        end if
         setvalues plot(i)
-  plots = gsn_panel_return(wks,plot,dims,resources)
+          "vpXF"      : old_vp(i,0)
+          "vpYF"      : old_vp(i,1)
+          "vpWidthF"  : old_vp(i,2)
           "vpHeightF" : old_vp(i,3)
         end setvalues
       end if
@@ -3301,6 +3341,7 @@ end
 ;***********************************************************************;
 function gsn_contour(wks:graphic, data[*][*]:numeric, resources:logical )
 local i, data_object, plot_object, res, sf_res_index, \
+datares, cnres, llres, cn_res_index, ll_res_index, calldraw, callframe, \
 begin
     cnres     = False
     llres     = False

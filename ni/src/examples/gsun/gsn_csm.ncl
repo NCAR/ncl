@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.57 2001-01-15 05:05:49 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.58 2001-01-16 23:54:58 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -87,9 +87,9 @@ undef("gsn_csm_vector_map_other")
 undef("gsn_csm_streamline_map_ce")
 undef("gsn_csm_streamline_map_polar")
 undef("gsn_csm_streamline_map_other")
-undef("gsn_csm_streamline_scalar_map_ce")
-undef("gsn_csm_streamline_scalar_map_polar")
-undef("gsn_csm_streamline_scalar_map_other")
+undef("gsn_csm_streamline_contour_map_ce")
+undef("gsn_csm_streamline_contour_map_polar")
+undef("gsn_csm_streamline_contour_map_other")
 undef("gsn_csm_vector_scalar_map_ce")
 undef("gsn_csm_vector_scalar_map_polar")
 undef("gsn_csm_vector_scalar_map_other")
@@ -97,7 +97,7 @@ undef("gsn_csm_contour_map")
 undef("gsn_csm_streamline_map")
 undef("gsn_csm_vector_map")
 undef("gsn_csm_vector_scalar_map")
-undef("gsn_csm_streamline_scalar_map")
+undef("gsn_csm_streamline_contour_map")
 undef("gsn_csm_contour_map_overlay")
 undef("gsn_csm_xy")
 undef("gsn_csm_contour")
@@ -4599,8 +4599,8 @@ begin
     end if
 
 ; Check for left/right titles at top. Use attributes "long_name" and
-; streamlineed, and "resources" is an optional list of resources. The   ;
-; Id of the map plot is returned.                                       ;
+; "units" if they exist.
+
     set_right_subtitle(unew,res2,mpres)
     set_left_subtitle(unew,res2,mpres)
 
@@ -4710,7 +4710,7 @@ begin
     res2 = get_resources(resources)
 
 ; Check for cyclic point (default is True).
-; Function : gsn_csm_streamline_scalar_map_ce                           ;
+
     if(get_res_value(res2,"gsnAddCyclic",True))
       unew = gsn_add_cyclic_point(u)
       vnew = gsn_add_cyclic_point(v)
@@ -4721,7 +4721,7 @@ begin
 
 ; Check for coordinate variables. These values will determine where to 
 ; overlay streamlines on map.
-function gsn_csm_streamline_scalar_map_ce(wks:graphic,u[*][*]:numeric,\
+
     check_for_y_lat_coord(unew,res2,"vector")
     check_for_lon_coord(unew,res2,"vector")
 
@@ -4933,7 +4933,7 @@ begin
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
     stres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm"/))
 
-; Function : gsn_csm_streamline_scalar_map_polar                        ;
+; Before we create the objects, turn off draw and frame for them.
     stres          = True
     mpres          = True
     stres@gsnDraw  = False
@@ -4941,10 +4941,10 @@ begin
     mpres@gsnDraw  = False
     mpres@gsnFrame = False
 
-; overlays contour plot.                                                ;
+    if(lbar_on.and.check_attr(lbres,"lbOrientation","vertical",True))
       set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
       set_attr(mpres,"vpHeightF",0.75)   ; on the side.
-function gsn_csm_streamline_scalar_map_polar(wks:graphic,u[*][*]:numeric, \
+      set_attr(mpres,     "vpXF",0.08)
       set_attr(mpres,     "vpYF",0.90)
     end if
 
@@ -5110,7 +5110,7 @@ begin
 ; info label), we can determine where to put all this
 ; stuff.
 ;
-; Function : gsn_csm_streamline_scalar_map_other                        ;
+    if(infolabel_on)
       set_attr(res2,"cnInfoLabelZone",2)
       set_attr(res2,"cnInfoLabelOrthogonalPosF", 0.1)
       set_attr(res2,"cnInfoLabelParallelPosF", 1.0)
@@ -5119,10 +5119,9 @@ begin
 
     if(lbar_on)
       if(lbar_orient.eq."vertical")
-;                                                                       ;
         set_attr(res2,"vpXF",0.15)
         set_attr(res2,"pmLabelBarOrthogonalPosF",0.1)
-function gsn_csm_streamline_scalar_map_other(wks:graphic,u[*][*]:numeric,\
+      else
         set_attr(res2,"vpYF",0.82)
       end if
     end if
@@ -6036,7 +6035,7 @@ begin
     end setvalues
 
 ; Set font heights only if they haven't been set explicitly by user.
-; gsn_csm_streamline_map_polar or gsn_csm_streamline_map_polar          ;
+
     if(.not.isatt(vcres,"vcRefAnnoFontHeightF"))
       setvalues vector_object
         "vcRefAnnoFontHeightF"  : font_height
@@ -6127,19 +6126,20 @@ end
 ;***********************************************************************;
 
 function gsn_csm_streamline_map(wks:graphic,u[*][*]:numeric,v[*][*]:numeric,\
-; Function : gsn_csm_streamline_scalar_map                              ;
+                                resources:logical)
 local res
 begin
   res = get_resources(resources)
 
   if(res.and.(isatt(res,"gsnPolarNH").or.isatt(res,"gsnPolarSH").or.\
               isatt(res,"gsnPolar")))
-; This function calls either gsn_csm_streamline_scalar_map_ce,          ;
-; gsn_csm_vector_scalar_map_polar depending on the map projection       ;
+    return(gsn_csm_streamline_map_polar(wks,u,v,res))
+  else
+    if(check_attr(res,"mpProjection","CylindricalEquidistant",True).or.\
        .not.isatt(res,"mpProjection"))
       return(gsn_csm_streamline_map_ce(wks,u,v,res))
     else
-function gsn_csm_streamline_scalar_map(wks:graphic,u[*][*]:numeric, \
+      return(gsn_csm_streamline_map_other(wks,u,v,res))
     end if
   end if
 end
@@ -6148,13 +6148,13 @@ end
 ;***********************************************************************;
 ; Function : gsn_csm_vector_map                                         ;
 ;                   wks: workstation object                             ;
-    return(gsn_csm_streamline_scalar_map_polar(wks,u,v,data,res))
+;                     u: 2-dimensional data                             ;
 ;                     v: 2-dimensional data                             ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
-      return(gsn_csm_streamline_scalar_map_ce(wks,u,v,data,res))
+; This function calls either gsn_csm_vector_map_ce,                     ;
 ; gsn_csm_vector_map_polar or gsn_csm_vector_map_polar depending on the ;
-      return(gsn_csm_streamline_scalar_map_other(wks,u,v,data,res))
+; map projection selected.                                              ;
 ;***********************************************************************;
 
 function gsn_csm_vector_map(wks:graphic,u[*][*]:numeric,v[*][*]:numeric,\
