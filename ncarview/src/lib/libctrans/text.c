@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.14 1992-09-09 15:09:40 clyne Exp $
+ *	$Id: text.c,v 1.15 1992-10-15 17:46:15 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -686,6 +686,7 @@ int	Text(cgmc)
 	int	var_y_adj = 0;	/* space adjustment needed for variable space
 				 * fonts
 				 */
+	int	status = 0;
 
 	static	char *string = NULL;
 	static	unsigned str_space = 0;
@@ -702,7 +703,7 @@ int	Text(cgmc)
 	 * make sure font has not changed
 	 */
 	if (TEXT_F_IND_DAMAGE) {
-		(void) setFont(TEXT_F_IND);
+		if (setFont(TEXT_F_IND) < 0) status = -1;
 		TEXT_F_IND_DAMAGE = FALSE;
 	}
 
@@ -924,7 +925,7 @@ int	Text(cgmc)
 	tempcgmc.CInum = 1;
 	(void) Process(&tempcgmc);
 
-	return (0);
+	return (status);
 }
  
 

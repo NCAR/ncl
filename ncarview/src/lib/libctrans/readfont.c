@@ -1,5 +1,5 @@
 /*
- *	$Id: readfont.c,v 1.7 1992-09-01 23:43:04 clyne Exp $
+ *	$Id: readfont.c,v 1.8 1992-10-15 17:46:12 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -107,6 +107,7 @@ int decodefont()
 		 */
 		size = var_space ? size - 1 : size;
 
+		if (size) {
 		/* 
  		 * malloc only enough memory necessary to describe a 
 		 * particular character. Free any memory alloced in
@@ -138,6 +139,7 @@ int decodefont()
 			ESprintf(errno, "malloc(%d)", size * sizeof(Pen_coord));
 			return(-1);
 		}
+		}	/* (if size)	*/
 
 		F_NUMSTROKE(fcap_template, i) = 
 		F_NUMSTROKE(fcap_current, i) = size;
