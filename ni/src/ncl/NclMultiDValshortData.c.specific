@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValshortData.c.specific,v 1.1 1994-07-14 20:47:00 ethan Exp $
+ *      $Id: NclMultiDValshortData.c.specific,v 1.2 1994-08-08 22:35:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -41,6 +41,7 @@ static struct _NclDataRec *MultiDVal_short_md_Coerce
 	float *fvalue;
 	long *lvalue;
 	int *ivalue;
+	string *svalue;
 	NclScalar missing;
 	int i;
 	int chckmiss = 0;
@@ -184,6 +185,44 @@ static struct _NclDataRec *MultiDVal_short_md_Coerce
 			self_md->multidval.dim_sizes,	
 			TEMPORARY,NULL);
 		return(output_md);
+	case Ncl_MultiDValstringData: {
+		char buffer[NCL_MAX_STRING];
+		svalue = (string*)NclMalloc((unsigned)sizeof(string)*
+			self_md->multidval.totalelements);
+		if(self_md->multidval.missing_value.has_missing) {
+			if(new_missing == NULL) {
+				sprintf(buffer,"%d",self_md->multidval.missing_value.value.shortval);
+				missing.stringval = NrmStringToQuark(buffer);
+			} else {
+				chckmiss = 1;
+				missing = self_md->multidval.missing_value.value;
+			}
+		}
+		if(chckmiss) {
+			for(i=0; i<self_md->multidval.totalelements;i++) {
+				sprintf(buffer,"%d",((short*)self_md->multidval.val)[i]);
+				svalue[i] = (string)(
+					((short*)self_md->multidval.val)[i] == missing.shortval ?
+					new_missing->stringval :
+					NrmStringToQuark(buffer)
+					);
+			}
+		} else {
+			for(i=0; i<self_md->multidval.totalelements;i++) {
+				sprintf(buffer,"%d",((short*)self_md->multidval.val)[i]);
+				svalue[i] = (string)NrmStringToQuark(buffer);
+			}
+		}
+		if(new_missing != NULL) 
+			missing = *new_missing;
+		output_md = (NclData)_NclMultiDValstringCreate(NULL,
+			NULL,Ncl_MultiDValstringData,0,(void*)svalue,
+		((self_md->multidval.missing_value.has_missing||new_missing != NULL) ? &missing:NULL),
+			self_md->multidval.n_dims,
+			self_md->multidval.dim_sizes,	
+			TEMPORARY,NULL);
+		return(output_md);
+	}
 	case Ncl_MultiDValshortData:
 		if((new_missing == NULL)||(!self_md->multidval.missing_value.has_missing)){
 			return(self);
@@ -217,6 +256,7 @@ static struct _NclDataRec *MultiDVal_short_s_Coerce
         float *fvalue;
         long *lvalue;
         int *ivalue;
+	string *svalue;
         NclScalar missing;
 	int chckmiss = 0;
 
@@ -352,6 +392,40 @@ static struct _NclDataRec *MultiDVal_short_s_Coerce
 		} else {
 			return(self);
 		}
+	case Ncl_MultiDValstringData: {
+		char buffer[NCL_MAX_STRING];
+                svalue = (string*)NclMalloc((unsigned)sizeof(string)*
+                        self_md->multidval.totalelements);
+                if(self_md->multidval.missing_value.has_missing) {
+                        if(new_missing == NULL) {
+                                sprintf(buffer,"%d",self_md->multidval.missing_value.value.shortval);
+                                missing.stringval = NrmStringToQuark(buffer);
+                        } else {
+                                chckmiss = 1;
+                                missing = self_md->multidval.missing_value.value;
+                        }
+                }
+                if(chckmiss) {
+                        sprintf(buffer,"%d",*((short*)self_md->multidval.val));
+                        *svalue = (string)(
+                               (*(short*)self_md->multidval.val) == missing.shortval ?
+                                new_missing->stringval :
+                                NrmStringToQuark(buffer)
+                        );
+                } else {
+                        sprintf(buffer,"%d",(*(short*)self_md->multidval.val));
+                        *svalue = (string)NrmStringToQuark(buffer);
+                }
+                if(new_missing != NULL)
+                        missing = *new_missing;
+                output_md = (NclData)_NclMultiDValstringCreate(NULL,
+                        NULL,Ncl_MultiDValstringData,0,(void*)svalue,
+                ((self_md->multidval.missing_value.has_missing||new_missing != NULL) ? &missing:NULL),
+                        self_md->multidval.n_dims,
+                        self_md->multidval.dim_sizes,
+                        TEMPORARY,NULL);
+                return(output_md);
+	}
 	default:
 		return(NULL);
 	}

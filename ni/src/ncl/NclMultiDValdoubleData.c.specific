@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValdoubleData.c.specific,v 1.2 1994-07-28 23:34:08 ethan Exp $
+ *      $Id: NclMultiDValdoubleData.c.specific,v 1.3 1994-08-08 22:35:03 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,11 @@ static NclData MultiDVal_double_md_Coerce
 #endif
 {
 	NclMultiDValdoubleData self_md = (NclMultiDValdoubleData)self;
+	string *svalue;
+	NclScalar missing;
+	int chckmiss = 0;
+	int i;
+	NclData output_md;
 	if(coerce_to_obj == Ncl_MultiDValdoubleData) {
 		if((new_missing == NULL)||(!self_md->multidval.missing_value.has_missing)) {
 			return(self);
@@ -47,6 +52,43 @@ static NclData MultiDVal_double_md_Coerce
 		} else {
 				return(self);
 		}
+	} else if(coerce_to_obj == Ncl_MultiDValstringData) {
+                char buffer[NCL_MAX_STRING];
+                svalue = (string*)NclMalloc((unsigned)sizeof(string)*
+                        self_md->multidval.totalelements);
+                if(self_md->multidval.missing_value.has_missing) {
+                        if(new_missing == NULL) {
+                                sprintf(buffer,"%g",self_md->multidval.missing_value.value.doubleval);
+                                missing.stringval = NrmStringToQuark(buffer);
+                        } else {
+                                chckmiss = 1;
+                                missing = self_md->multidval.missing_value.value;
+                        }
+                }
+                if(chckmiss) {
+                        for(i=0; i<self_md->multidval.totalelements;i++) {
+                                sprintf(buffer,"%g",((double*)(self_md->multidval.val))[i]);
+                                svalue[i] = (string)(
+                                        ((double*)self_md->multidval.val)[i] == missing.doubleval ?
+                                        new_missing->stringval :
+                                        NrmStringToQuark(buffer)
+                                        );
+                        }
+                } else {
+                        for(i=0; i<self_md->multidval.totalelements;i++) {
+                                sprintf(buffer,"%g",((double*)(self_md->multidval.val))[i]);
+                                svalue[i] = (string)NrmStringToQuark(buffer);
+                        }
+                }
+                if(new_missing != NULL)
+                        missing = *new_missing;
+                output_md = (NclData)_NclMultiDValstringCreate(NULL,
+                        NULL,Ncl_MultiDValstringData,0,(void*)svalue,
+                ((self_md->multidval.missing_value.has_missing||new_missing != NULL) ? &missing:NULL),
+                        self_md->multidval.n_dims,
+                        self_md->multidval.dim_sizes,
+                        TEMPORARY,NULL);
+                return((NclData)output_md);
 	} else {
 		return(NULL);
 	}
@@ -62,7 +104,12 @@ NclObjTypes coerce_to_obj;
 NclScalar *new_missing;
 #endif
 {
+	string *svalue;
 	NclMultiDValdoubleData self_md = (NclMultiDValdoubleData)self;
+	int i;
+	NclScalar missing;
+	int chckmiss = 0;
+	NclData output_md;
 	if(coerce_to_obj  == Ncl_MultiDValdoubleData) {
 		if((new_missing == NULL )||(!self_md->multidval.missing_value.has_missing)) {
 			return(self);
@@ -79,6 +126,39 @@ NclScalar *new_missing;
 		} else {
 			return(self);
 		}
+	} if(coerce_to_obj == Ncl_MultiDValstringData) {
+                char buffer[NCL_MAX_STRING];
+                svalue = (string*)NclMalloc((unsigned)sizeof(string)*
+                        self_md->multidval.totalelements);
+                if(self_md->multidval.missing_value.has_missing) {
+                        if(new_missing == NULL) {
+                                sprintf(buffer,"%g",self_md->multidval.missing_value.value.doubleval);
+                                missing.stringval = NrmStringToQuark(buffer);
+                        } else {
+                                chckmiss = 1;
+                                missing = self_md->multidval.missing_value.value;
+                        }
+                }
+                if(chckmiss) {
+                	sprintf(buffer,"%g",((double*)(self_md->multidval.val))[i]);
+                        *svalue = (string)(
+                               (*(double*)self_md->multidval.val) == missing.doubleval ?
+                       		new_missing->stringval :
+                       		NrmStringToQuark(buffer)
+                        );
+                } else {
+                        sprintf(buffer,"%g",*(double*)(self_md->multidval.val));
+                        *svalue = (string)NrmStringToQuark(buffer);
+                }
+                if(new_missing != NULL)
+                        missing = *new_missing;
+                output_md = (NclData)_NclMultiDValstringCreate(NULL,
+                        NULL,Ncl_MultiDValstringData,0,(void*)svalue,
+                ((self_md->multidval.missing_value.has_missing||new_missing != NULL) ? &missing:NULL),
+                        self_md->multidval.n_dims,
+                        self_md->multidval.dim_sizes,
+                        TEMPORARY,NULL);
+                return(output_md);
 	} else {
 		return(NULL);
 	}

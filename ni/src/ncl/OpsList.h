@@ -82,4 +82,5 @@
 #define ASSIGN_VAR_VAR_OP			82
 #define NEW_OP 					83
 #define NEW_WM_OP				84
-#define NUM_OPERATORS				85
+#define PUSH_LOG_LIT_OP				85
+#define NUM_OPERATORS				86

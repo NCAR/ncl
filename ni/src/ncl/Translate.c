@@ -252,59 +252,36 @@ if(groot != NULL) {
 /*
 * Nothing on stack here
 */
-                        off1 =_NclTranslate(dofromto->end_expr,fp);
+                        off1 = _NclTranslate(dofromto->end_expr,fp);
 			_NclPutInstr(ASSIGN_VAR_OP,dofromto->line,dofromto->file);
 			_NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
 			_NclPutInstr(0,dofromto->line,dofromto->file);
 /*
 * Two values of start expr pushed on stack
 */
-                        _NclTranslate(dofromto->start_expr,fp);
-			_NclPutInstr(DUP_TOFS,dofromto->line,dofromto->file);
-/*
-* Read end_sym value and push it
-*/
-			_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
-			_NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
-			_NclPutInstr(0,dofromto->line,dofromto->file);
-/*
-* Now compare to determine direction of inc
-*/
-                        _NclPutInstr(LT_OP,dofromto->line,dofromto->file);
-/*
-* Dup top of stack to perform JMPFALSE
-*/
-			_NclPutInstr(DUP_TOFS,dofromto->line,dofromto->file);
-/*
-* Now top of stack has increment value of either 1 or -1
-*/ 
-                        _NclPutInstr(JMPFALSE,dofromto->line,dofromto->file);
-                        off5 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
                         _NclPutInstr(PUSH_INT_LIT_OP,dofromto->line,dofromto->file);
-                        _NclPutIntInstr(-1,dofromto->line,dofromto->file);
-			_NclPutInstr(JMP,dofromto->line,dofromto->file);
-			off9 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
-
-                        off6 =_NclPutInstr(PUSH_INT_LIT_OP,dofromto->line,dofromto->file);
                         _NclPutIntInstr(1,dofromto->line,dofromto->file);
-                        _NclPutInstrAt(off5,off6,dofromto->line,dofromto->file);
 /*
 * assigns increment value to inc_sym uncovers direction logical on top of stack
 */
-			off10 = _NclPutInstr(ASSIGN_VAR_OP,dofromto->line,dofromto->file);
-			_NclPutInstrAt(off9,off10,dofromto->line,dofromto->file);
+			_NclPutInstr(ASSIGN_VAR_OP,dofromto->line,dofromto->file);
 			_NclPutInstr((NclValue)dofromto->inc_sym,dofromto->line,dofromto->file);
 			_NclPutInstr(0,dofromto->line,dofromto->file);
 /*
 * assigns direction sym uncovers start_expr value
 */
+			_NclPutInstr(PUSH_LOG_LIT_OP,dofromto->line,dofromto->file);
+			_NclPutIntInstr(0,dofromto->line,dofromto->file);
+
 			_NclPutInstr(ASSIGN_VAR_OP,dofromto->line,dofromto->file);
 			_NclPutInstr((NclValue)dofromto->dir_sym,dofromto->line,dofromto->file);
 			_NclPutInstr(0,dofromto->line,dofromto->file);
+
 			
 /*
 * assigns start_expr to the loop counter variable
 */
+			_NclTranslate(dofromto->start_expr,fp);
                         ((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_WRITEIT;
                         _NclTranslate(dofromto->inc_var,fp);
 			
@@ -313,26 +290,15 @@ if(groot != NULL) {
                         _NclPutInstr((NclValue)dofromto->dir_sym,dofromto->line,dofromto->file);
                         _NclPutInstr(0,dofromto->line,dofromto->file);
 
-			_NclPutInstr(JMPFALSE,dofromto->line,dofromto->file);
-			off7 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
 
                         ((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_READIT;
                         _NclTranslate(dofromto->inc_var,fp);
 			_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
                         _NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
                         _NclPutInstr(0,dofromto->line,dofromto->file);
-                        _NclPutInstr(LT_OP,dofromto->line,dofromto->file);
-			_NclPutInstr(JMP,dofromto->line,dofromto->file);
-			off9 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
+                        _NclPutInstr(GE_OP,dofromto->line,dofromto->file);
 
 
-                        ((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_READIT;
-			off8 = _NclTranslate(dofromto->inc_var,fp);
-			_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
-                        _NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);
-                        _NclPutInstr(0,dofromto->line,dofromto->file);
-                        _NclPutInstr(GT_OP,dofromto->line,dofromto->file);
-			_NclPutInstrAt(off7,off8,dofromto->line,dofromto->file);
 			
 /*
 * loop operator plus offset of begining of loop block
@@ -340,8 +306,7 @@ if(groot != NULL) {
 * direction, followed by the final value. First thing DO_FROM_TO_OP does is pop that value
 * and compare. then it runs its loop
 */
-                        off10 = _NclPutInstr(DO_FROM_TO_OP,dofromto->line,dofromto->file);
-			_NclPutInstrAt(off9,off10,dofromto->line,dofromto->file);
+                        _NclPutInstr(DO_FROM_TO_OP,dofromto->line,dofromto->file);
 
                         off2 = _NclPutInstr(NOOP,dofromto->line,dofromto->file);
                         _NclPutInstr((NclValue)dofromto->end_sym,dofromto->line,dofromto->file);

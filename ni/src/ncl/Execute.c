@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.22 1994-07-27 20:30:19 ethan Exp $
+ *      $Id: Execute.c,v 1.23 1994-08-08 22:34:53 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -737,6 +737,19 @@ NclExecuteReturnStatus _NclExecute
 				_NclPush(data);
 				break;
 			}
+			case PUSH_LOG_LIT_OP :
+			{
+				NclStackEntry data;
+				int dim_size = 1;
+				ptr++;lptr++;fptr++;
+				data.kind = NclStk_VAL;
+				data.u.data_obj = _NclMultiDVallogicalCreate(NULL,
+						NULL,Ncl_MultiDVallogicalData,0,
+						(void*)ptr,NULL,1,&dim_size,
+						STATIC,NULL);
+				_NclPush(data);
+				break;
+			}
 			case JMPFALSE : {
 				NclStackEntry data;
 				NclMultiDValData val;
@@ -987,7 +1000,7 @@ NclExecuteReturnStatus _NclExecute
 					}
 					while(!done) {
 						rtst = _NclExecute(jmp_off);
-						if(rtst != Ncl_ERRORS) {
+						if((rtst != Ncl_ERRORS)&&(rtst != Ncl_BREAKS)) {
 							data = _NclPop();
 							switch(data.kind) {
 							case NclStk_VAL:
@@ -1019,6 +1032,9 @@ NclExecuteReturnStatus _NclExecute
 							default:
 								break;
 							}
+						} else if(rtst == Ncl_BREAKS){
+							done = 1;
+							estatus = NhlNOERROR;
 						} else {
 							done = 1;
 							estatus = NhlFATAL;

@@ -4,6 +4,7 @@ extern "C" {
 #include <stdio.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/Overlay.h>
 #include "defs.h"
 #include <errno.h>
 #include "Symbol.h"
@@ -17,6 +18,55 @@ extern "C" {
 #include "parser.h"
 #include "OpsList.h"
 
+NhlErrorTypes _NclIAddToOverlay
+#if  __STDC__
+(void)
+#else
+()
+#endif
+{	
+	NclStackEntry base;
+	NclStackEntry over;
+	int baseid;
+	int overid;
+	NclMultiDValData tmp_md = NULL;
+	NclHLUObj base_hl = NULL;
+	NclHLUObj over_hl = NULL;
+	
+
+	
+	base =  _NclGetArg(0,2);
+	over =  _NclGetArg(1,2);
+
+	switch(base.kind) {
+	case NclStk_VAL:
+		baseid = *(int*)base.u.data_obj->multidval.val;
+		base_hl = (NclHLUObj)_NclGetObj(baseid);
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(base.u.data_var,NULL,NULL);
+		baseid = *(int*)tmp_md->multidval.val;
+		base_hl = (NclHLUObj)_NclGetObj(baseid);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	switch(over.kind) {
+	case NclStk_VAL:
+		overid = *(int*)over.u.data_obj->multidval.val;
+		over_hl = (NclHLUObj)_NclGetObj(overid);
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(over.u.data_var,NULL,NULL);
+		overid = *(int*)tmp_md->multidval.val;
+		over_hl = (NclHLUObj)_NclGetObj(overid);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	NhlAddToOverlay(base_hl->hlu.hlu_id,over_hl->hlu.hlu_id,-1);
+	return(NhlNOERROR);
+}
 NhlErrorTypes _NclIAddFile
 #if  __STDC__
 (void)

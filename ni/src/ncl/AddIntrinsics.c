@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.6 1994-07-18 15:46:34 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.7 1994-08-08 22:34:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -102,6 +102,12 @@ void
 #endif
 );
 
+extern NhlErrorTypes _NclIAddToOverlay(
+#ifdef NhlNeedProtot
+void
+#endif
+);
+
 void _NclAddIntrinsics
 #if  __STDC__
 (void)
@@ -171,6 +177,12 @@ void _NclAddIntrinsics
 	args[0].arg_data_type = _NclLookUp("logical");
 	args[0].is_dimsizes = 0;
 	_NclRegisterFunc(_NclIAll,args,"all",1,IFUNC);
+	args = NclCalloc(3,sizeof(NclArgTemplate));
+	args[0].arg_data_type = NULL;
+	args[0].is_dimsizes = 0;
+	args[1].arg_data_type = NULL;
+	args[1].is_dimsizes = 0;
+	_NclRegisterProc(_NclIAddToOverlay,args,"overlay",2,IPROC);
 	return;
 }
 

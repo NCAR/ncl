@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValintData.c.specific,v 1.1 1994-07-14 20:46:53 ethan Exp $
+ *      $Id: NclMultiDValintData.c.specific,v 1.2 1994-08-08 22:35:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -38,7 +38,8 @@ static struct _NclDataRec *MultiDVal_int_md_Coerce
 	NclMultiDValintData self_md = (NclMultiDValintData)self;
 	double *dvalue;
 	long *lvalue;
-	float *fvalue;
+	float *fvalue;	
+	string *svalue;
 	NclScalar missing;
 	int i,chckmiss = 0;
 
@@ -159,6 +160,45 @@ static struct _NclDataRec *MultiDVal_int_md_Coerce
 			self_md->multidval.dim_sizes,	
 			TEMPORARY,NULL);
 		return((NclData)output_md);
+	case Ncl_MultiDValstringData:{
+		char buffer[NCL_MAX_STRING];
+                svalue = (string*)NclMalloc((unsigned)sizeof(string)*
+                        self_md->multidval.totalelements);
+                if(self_md->multidval.missing_value.has_missing) {
+                        if(new_missing == NULL) {
+                                sprintf(buffer,"%d",self_md->multidval.missing_value.value.intval);
+                                missing.stringval = NrmStringToQuark(buffer);
+                        } else {
+                                chckmiss = 1;
+                                missing = self_md->multidval.missing_value.value;
+                        }
+                }
+                if(chckmiss) {
+                        for(i=0; i<self_md->multidval.totalelements;i++) {
+                                sprintf(buffer,"%d",((int*)self_md->multidval.val)[i]);
+                                svalue[i] = (string)(
+                                        ((int*)self_md->multidval.val)[i] == missing.intval ?
+                                        new_missing->stringval :
+                                        NrmStringToQuark(buffer)
+                                        );
+                        }
+                } else {
+                        for(i=0; i<self_md->multidval.totalelements;i++) {
+                                sprintf(buffer,"%d",((int*)self_md->multidval.val)[i]);
+				svalue[i] = (string)NrmStringToQuark(buffer);
+			}
+		}
+		if(new_missing != NULL)
+                        missing = *new_missing;
+                output_md = (NclData)_NclMultiDValstringCreate(NULL,
+                        NULL,Ncl_MultiDValstringData,0,(void*)svalue,
+                ((self_md->multidval.missing_value.has_missing||new_missing != NULL) ? &missing:NULL),
+                        self_md->multidval.n_dims,
+                        self_md->multidval.dim_sizes,
+                        TEMPORARY,NULL);
+                return(output_md);
+
+	}
 	default:
 		return((NclData)NULL);
 	}
@@ -178,6 +218,7 @@ static NclData MultiDVal_int_s_Coerce
 	double *dvalue;
 	long *lvalue;
 	float *fvalue;
+	string *svalue;
 	NclScalar missing;
 	int chckmiss = 0;
 	
@@ -196,7 +237,6 @@ static NclData MultiDVal_int_s_Coerce
 				missing = self_md->multidval.missing_value.value;
 			}
 		}
-
 		if(chckmiss) {
 			*fvalue = (float)(
 				*((int*)self_md->multidval.val)	
@@ -291,6 +331,40 @@ static NclData MultiDVal_int_s_Coerce
 		} else {
 			return((NclData)self);
 		}
+	case Ncl_MultiDValstringData:{
+		char buffer[NCL_MAX_STRING];
+                svalue = (string*)NclMalloc((unsigned)sizeof(string)*
+                        self_md->multidval.totalelements);
+                if(self_md->multidval.missing_value.has_missing) {
+                        if(new_missing == NULL) {
+                                sprintf(buffer,"%d",self_md->multidval.missing_value.value.intval);
+                                missing.stringval = NrmStringToQuark(buffer);
+                        } else {
+                                chckmiss = 1;
+                                missing = self_md->multidval.missing_value.value;
+                        }
+                }
+                if(chckmiss) {
+                        sprintf(buffer,"%d",*(int*)(self_md->multidval.val));
+                        *svalue = (string)(
+                               (*(int*)self_md->multidval.val) == missing.intval ?
+                                new_missing->stringval :
+                                NrmStringToQuark(buffer)
+                        );
+                } else {
+                        sprintf(buffer,"%d",*(int*)(self_md->multidval.val));
+                        *svalue = (string)NrmStringToQuark(buffer);
+                }
+                if(new_missing != NULL)
+                        missing = *new_missing;
+                output_md = (NclData)_NclMultiDValstringCreate(NULL,
+                        NULL,Ncl_MultiDValstringData,0,(void*)svalue,
+                ((self_md->multidval.missing_value.has_missing||new_missing != NULL) ? &missing:NULL),
+                        self_md->multidval.n_dims,
+                        self_md->multidval.dim_sizes,
+                        TEMPORARY,NULL);
+                return(output_md);
+	}
 	default:
 		return((NclData)NULL);
 	}

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.19 1994-07-21 00:18:52 ethan Exp $
+ *      $Id: Machine.c,v 1.20 1994-08-08 22:34:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -160,6 +160,7 @@ static void SetUpOpsStrings() {
 	ops_strings[PARAM_VAR_DIM_OP]= "PARAM_VAR_DIM_OP";
 	ops_strings[ASSIGN_VAR_VAR_OP]= "ASSIGN_VAR_VAR_OP";
 	ops_strings[DUP_TOFS]= "DUP_TOFS";
+	ops_strings[PUSH_LOG_LIT_OP]= "PUSH_LOG_LIT_OP";
 }
 
 NclValue *_NclGetCurrentMachine
@@ -1003,6 +1004,7 @@ void _NclPrintMachine
 			case SET_OBJ_OP :
 			case GET_OBJ_OP :
 			case PUSH_INT_LIT_OP :
+			case PUSH_LOG_LIT_OP :
 			case ARRAY_LIT_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;

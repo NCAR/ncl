@@ -57,7 +57,9 @@ main() {
 #endif
 	fclose(thefptr);
 	fprintf(stdout,"Number of unfreed objects %d\n",_NclNumObjs());
+/*
 	_NclPrintUnfreedObjs(stdout);
+*/
 	NhlClose();
 	exit(0);
 }
