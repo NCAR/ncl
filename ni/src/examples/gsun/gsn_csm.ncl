@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.167 2004-06-14 18:54:39 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.168 2004-06-18 15:12:29 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -686,10 +686,18 @@ begin
       left            = True
       left@sub_string = res@gsnLeftString
 ;
-; Check for font setting.
+; Check for ParallelPosF/OrthogonalPosF setting.
 ;
-      if(isatt(res,"gsnStringFont")) then
-        left@gsnStringFont = res@gsnStringFont
+      if(isatt(res,"gsnLeftStringParallelPosF")) then
+        left@gsnLeftStringParallelPosF = \
+                    get_res_value(res,"gsnLeftStringParallelPosF",0.0)
+      end if
+      if(isatt(res,"gsnLeftStringOrthogonalPosF")) then
+;
+; 0.0 is just a dummy value. It will not be used.
+;
+        left@gsnLeftStringOrthogonalPosF = \
+                     get_res_value(res,"gsnLeftStringOrthogonalPosF",0.0)
       end if
 ;
 ; Check for font heights.
@@ -712,6 +720,21 @@ begin
       center            = True
       center@sub_string = res@gsnCenterString
 ;
+; Check for ParallelPosF/OrthogonalPosF setting.
+;
+      if(isatt(res,"gsnCenterStringParallelPosF")) then
+        center@gsnCenterStringParallelPosF =  \
+                        get_res_value(res,"gsnCenterStringParallelPosF",0.5)
+      end if
+
+      if(isatt(res,"gsnCenterStringOrthogonalPosF")) then
+;
+; 0.0 is just a dummy value. It will not be used.
+;
+        center@gsnCenterStringOrthogonalPosF = \
+                     get_res_value(res,"gsnCenterStringOrthogonalPosF",0.0)
+      end if
+;
 ; Check for font heights.
 ;
       if(isatt(res,"gsnCenterStringFontHeightF")) then
@@ -731,6 +754,20 @@ begin
     if(isatt(res,"gsnRightString"))
       right            = True
       right@sub_string = res@gsnRightString
+;
+; Check for ParallelPosF/OrthogonalPosF setting.
+;
+      if(isatt(res,"gsnRightStringParallelPosF")) then
+        right@gsnRightStringParallelPosF = \
+                     get_res_value(res,"gsnRightStringParallelPosF",1.0)
+      end if
+      if(isatt(res,"gsnRightStringOrthogonalPosF")) then
+;
+; 0.0 is just a dummy value. It will not be used.
+;
+        right@gsnRightStringOrthogonalPosF = \
+                     get_res_value(res,"gsnRightStringOrthogonalPosF",0.0)
+      end if
 ;
 ; Check for font heights.
 ;
@@ -946,9 +983,15 @@ local valid_string_res
 begin
   valid_subttl_res = (/"gsnLeftString","gsnCenterString","gsnRightString",\
                        "gsnStringFont","gsnStringFontHeightF", \
-                       "gsnLeftStringFontHeightF",\
-                       "gsnCenterStringFontHeightF",\
-                       "gsnRightStringFontHeightF"/)
+                       "gsnLeftStringFontHeightF",      \
+                       "gsnCenterStringFontHeightF",    \
+                       "gsnRightStringFontHeightF",     \
+                       "gsnLeftStringParallelPosF",     \
+                       "gsnCenterStringParallelPosF",   \
+                       "gsnRightStringParallelPosF",    \
+                       "gsnLeftStringOrthogonalPosF",   \
+                       "gsnCenterStringOrthogonalPosF", \
+                       "gsnRightStringOrthogonalPosF"/)
   if((res).and..not.any(ismissing(getvaratts(res))))
     nstrings = dimsizes(valid_subttl_res)
     do i=0,nstrings-1,1
@@ -1624,9 +1667,32 @@ begin
   txres = get_res_eq(res,"tx")
   amres = get_res_eq(res,"am")
   
+;
+; Get the height, as we use this to calculate distance of strings
+; from top of plot.
+;
+  getvalues plot
+    "vpHeightF"  : vph
+  end getvalues
 
   num_res  = 0
-  parallel_pos = (/0.0,0.5,1.0/)
+  parallel_pos = new(3,float)
+  parallel_pos(0) = get_res_value(left_string, \
+                                  "gsnLeftStringParallelPosF",   0.0)
+  parallel_pos(1) = get_res_value(center_string, \
+                                  "gsnCenterStringParallelPosF", 0.5)
+  parallel_pos(2) = get_res_value(right_string, \
+                                  "gsnRightStringParallelPosF",  1.0)
+
+  orthpos = get_res_value(amres,"amOrthogonalPosF",0.01*vph)
+  orthgonal_pos = new(3,float)
+  orthgonal_pos(0) = get_res_value(left_string, \
+                                  "gsnLeftStringOrthgonalPosF",  orthpos)
+  orthgonal_pos(1) = get_res_value(center_string, \
+                                  "gsnCenterStringOrthgonalPosF",orthpos)
+  orthgonal_pos(2) = get_res_value(right_string, \
+                                  "gsnRightStringOrthgonalPosF", orthpos)
+
   just         = (/"left","center","right"/)
   fhghts       = (/0.,0.,0./)
   strings      = (/"","",""/)  
@@ -1667,11 +1733,6 @@ begin
     delete(txres@txFontHeightF)
   end if
 
-  getvalues plot
-    "vpHeightF"  : vph
-  end getvalues
-
-  orthpos = get_res_value(amres,"amOrthogonalPosF",0.01*vph)
   ablank = stringtocharacter(" ")
   do i=0,2
     if(.not.ismissing(strings(i)).and.strings(i).ne."")
@@ -1696,7 +1757,7 @@ begin
           "amSide"          : "top"         ; Subtitle at top.
           "amParallelPosF"  : parallel_pos(i)
           "amJust"          : "bottom"+just(i)
-          "amOrthogonalPosF": orthpos       ; Move away from top edge
+          "amOrthogonalPosF": orthgonal_pos(i) ; Move away from top edge
           "amResizeNotify"  : True          ; Resize subtitle if map resized.
         end setvalues
         attsetvalues_check(anno,amres)   ; Set some annotation resources.
@@ -4270,8 +4331,20 @@ local i, res, map_object, calldraw, callframe, \
 left_string, center_string, right_string, main_zone, res2
 begin
 ; Initialize.
-    main_zone     = 2         ; Zone for main title (may change later)
     res2 = get_resources(resources)
+
+;
+; Need to check what kind of tickmarks are being used so we can set
+; the zone appropriately. It may be the case that it's okay to always
+; set it to 3, but this makes the title move slightly up, even if there
+; are no tickmarks.
+;
+    display_mode = get_display_mode(res2,"pmTickMarkDisplayMode","nocreate")
+    if(display_mode.eq.1.or.display_mode.eq.2) then
+      main_zone = 3
+    else
+      main_zone = 2
+    end if
 
 ; This section tests for more special resources: those that start
 ; with "gsn."
@@ -4356,8 +4429,6 @@ begin
 ; If user has turned on built-in map tickmarks, then go ahead and
 ; let the tickmark resources (if any) be passed to the map object.
 ;
-    display_mode = get_display_mode(res2,"pmTickMarkDisplayMode","nocreate")
-
     if(display_mode.eq.1.or.display_mode.eq.2) then
       mpres = get_res_ne(res2,(/"tx","am"/))       ; Get rest of resources
     else
@@ -10391,4 +10462,3 @@ begin
   contour@vcdata = streamline@data
   return(contour)
 end
-
