@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c.sed,v 1.18 1994-10-11 17:21:32 haley Exp $
+ *      $Id: wks.c.sed,v 1.19 1994-11-15 17:54:15 fred Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -157,7 +157,7 @@ int	opnwks_(unit, openf, fname, status)
 	unsigned	length = _fcdlen(fname_);
 	char		*fname;
 
-	fname = (char *)malloc(sizeof(char)*(length+1));
+	fname = (char *) calloc(sizeof(char)*(length+1),sizeof(char));
 	strncpy( fname, _fcdtocp(fname_), length );
 #endif
 
@@ -223,8 +223,8 @@ int	opnwks_(unit, openf, fname, status)
   		
   			/* The file is in the NGTMPDIR directory */
 			tpath = (char *) GetNCARGPath(NGTMPDIR);
-			tname = malloc(strlen(tpath) + 
-					strlen("/") + strlen(fname) + 1);
+			tname = (char *) calloc(strlen(tpath) + strlen("/") +
+					strlen(fname) + 1, sizeof(char));
 			(void) strcpy(tname, tpath);
 			(void) strcat(tname, "/");
 			(void) strcat(tname, fname);	
@@ -233,7 +233,8 @@ int	opnwks_(unit, openf, fname, status)
 		else {
 
 			/* File is not a temporary */
-			mftab[*unit].name = malloc(strlen(fname)+1);
+			mftab[*unit].name = calloc(strlen(fname)+1,
+						sizeof(char));
 			(void) strcpy(mftab[*unit].name, fname);
 		}
 
@@ -266,7 +267,8 @@ int	opnwks_(unit, openf, fname, status)
 				mftab[*unit].name = "gmeta";
 			}
 			else {
-				mftab[*unit].name = malloc(strlen(fname)+1);
+				mftab[*unit].name = calloc(strlen(fname)+1,
+								sizeof(char));
 				(void) strcpy(mftab[*unit].name, fname);
 			}
 		}
@@ -287,14 +289,15 @@ int	opnwks_(unit, openf, fname, status)
 				for(p++; *p==' ' && *p != '\0'; ) p++;
 				mftab[*unit].type = PIPE_OUTPUT;
 				mftab[*unit].name =
-					malloc(strlen(p)+1);
+					calloc(strlen(p)+1,sizeof(char));
 				(void) strcpy(mftab[*unit].name,p);
 			}
 			else
 			{
 				mftab[*unit].type = FILE_OUTPUT;
 				mftab[*unit].name =
-					malloc(strlen(gks_output_env)+1);
+					calloc(strlen(gks_output_env)+1,
+							sizeof(char));
 				(void)strcpy(mftab[*unit].name,gks_output_env);
 			}
 		}
@@ -898,7 +901,7 @@ int	delfil_(fname, status)
 	unsigned	length = _fcdlen(fname_);
 	char		*fname;
 
-	fname = (char *)malloc(sizeof(char)*(length+1));
+	fname = (char *) calloc(sizeof(char)*(length+1),sizeof(char));
 	strncpy( fname, _fcdtocp(fname_), length );
 #endif
 	/*
@@ -906,7 +909,8 @@ int	delfil_(fname, status)
 	 *  be legally called with invalid file names.
 	 */
 	tpath = (char *) GetNCARGPath(NGTMPDIR);
-	tname = malloc(strlen(tpath) + strlen("/") + strlen(fname) + 1);
+	tname = calloc(strlen(tpath) + strlen("/") + strlen(fname) + 1,
+				sizeof(char));
 	(void) strcpy(tname, tpath);
 	(void) strcat(tname, "/");
 	(void) strcat(tname, fname);	

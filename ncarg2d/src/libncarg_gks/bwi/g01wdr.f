@@ -1,5 +1,5 @@
 C
-C	$Id: g01wdr.f,v 1.5 1994-04-28 23:35:53 fred Exp $
+C	$Id: g01wdr.f,v 1.6 1994-11-15 17:54:13 fred Exp $
 C
         SUBROUTINE G01WDR(WKID,METANM)
 C
@@ -214,6 +214,7 @@ C  Set the file name.
 C
       IF (METANM(1:7) .EQ. 'DEFAULT') THEN
         FNAME = 'GMETA'
+        ILEN = 5
       ELSE
         FNAME = METANM
         CALL GTNLEN(FNAME,ILEN,IER)
