@@ -6,6 +6,31 @@
  */
 
 /*
+ *  Function prototypes for the csagrid package.
+ */
+int c_csa1s(int, float [], float [], int, int, float [], float []);
+int c_csa1xs(int, float [], float [], float [], int,
+             float, int, int, float xo[], float yo[]);
+float *c_csa2s(int, float [], float [], float [], int [],
+               int, int, float [], float [], int *);
+float *c_csa2xs(int, float [], float [], float [], float [], int [], float,
+                int [], int, int, float [], float [], int *);
+float *c_csa2ls(int, float [], float [], float [], int [],
+                int, float [], float [], int *);
+float *c_csa2lxs(int, float [], float [], float [], float [], int [],
+                 float, int [], int, float [], float [], int *);
+float *c_csa3s(int, float [], float [], float [], float [], int [], int, int,
+               int, float [], float [], float [], int *);
+float *c_csa3xs(int, float [], float [], float [], float [], float [],
+                int [], float, int [], int, int, int, float [],
+                float [], float [], int *);
+float *c_csa3ls(int, float [], float [], float [], float [],
+                int [], int, float [], float [], float[], int *);
+float *c_csa3lxs(int, float [], float [], float [], float [],
+                 float [], int [], float, int [],
+                 int, float [], float [], float [], int *);
+
+/*
  *  Function prototypes for the fitgrid package.
  */
 int c_ftseti(char *, int);
