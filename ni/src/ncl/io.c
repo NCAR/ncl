@@ -93,7 +93,7 @@ int nclfprintf
 	return(ret);
 }
 
-void _NclSetPrintFunc
+NclVaPrintFunc _NclSetPrintFunc
 #if	NhlNeedProto
 (NclVaPrintFunc thepit)
 #else
@@ -101,7 +101,11 @@ void _NclSetPrintFunc
 NclVaPrintFunc thepit;
 #endif
 {
+	NclVaPrintFunc tmp;
+
+	tmp = pit;
 	pit = thepit;
+	return(tmp);
 }
 #if     defined(SunOS) && (MAJOR == 4)
 extern FILE *nclin;

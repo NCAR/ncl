@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.21 1995-11-04 00:49:18 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.22 1995-12-01 01:04:32 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2133,6 +2133,7 @@ NhlErrorTypes _NclIasciiwrite
 	char *step = NULL;
 	NclStackEntry data_out;
 	int is_stdout = 0;
+	NclVaPrintFunc tmp ;
 
 
 	fpath = _NclGetArg(0,2,DONT_CARE);
@@ -2180,14 +2181,18 @@ NhlErrorTypes _NclIasciiwrite
 		fd = stdout;
 	} else {
 		fd = fopen(path_string,"w+");
+		tmp = _NclSetPrintFunc(vfprintf);
 	}
 	step = (char*)tmp_md->multidval.val;
 	for(i = 0; i < tmp_md->multidval.totalelements; i++) {
 		_Nclprint(tmp_md->multidval.type,fd,(void*)step);
-		fprintf(fd,"\n");
+		nclfprintf(fd,"\n");
 		step = step + tmp_md->multidval.type->type_class.size;
 	}
-	fclose(fd);
+	if(!is_stdout) {
+		_NclSetPrintFunc(tmp);
+		fclose(fd);
+	}
 	return(NhlNOERROR);
 }
 
@@ -2951,9 +2956,6 @@ NhlErrorTypes _NclIgetenv
 
 
 
-#ifdef __cplusplus
-}
-#endif
 
 NhlErrorTypes _NclIinttoshort
 #if	NhlNeedProto
@@ -2994,11 +2996,12 @@ NhlErrorTypes _NclIinttoshort
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < -maxshort)||(value[i] > maxshort)||(value[i] == missing.intval)) {
-				out_val[i] = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+				out_val[i] = (short)missing.intval;
 			} else {
 				out_val[i] = (short)value[i];
 			}
 		}
+		missing2.shortval =  (short)missing.intval;
 	} else {
 		for(i = 0; i < total; i++) {
 			if((value[i] < -maxshort )||(value[i] > maxshort)) {
@@ -3007,12 +3010,15 @@ NhlErrorTypes _NclIinttoshort
 				out_val[i] = (short)value[i];
 			}
 		}
+		if(has_missing) {
+			missing2.shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+		}
 	}
 	return(NclReturnValue(
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_short,
 		0
 	));
@@ -3049,25 +3055,30 @@ NhlErrorTypes _NclIinttobyte
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.intval)) {
-				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+				out_val[i] = (byte)missing.intval;
 			} else {
 				out_val[i] = (byte)value[i];
 			}
 		}
+		missing2.byteval = (byte)missing.intval;
 	} else {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)) {
 				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+				has_missing = 1;
 			} else {
 				out_val[i] = (byte)value[i];
 			}
+		}
+		if(has_missing) { 
+			missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
 		}
 	}
 	return(NclReturnValue(
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_byte,
 		0
 	));
@@ -3105,11 +3116,12 @@ NhlErrorTypes _NclIinttochar
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.intval)) {
-				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+				out_val[i] = (char)missing.intval;
 			} else {
 				out_val[i] = (char)value[i];
 			}
 		}
+		missing2.charval = (char)missing.intval;
 	} else {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)) {
@@ -3118,12 +3130,13 @@ NhlErrorTypes _NclIinttochar
 				out_val[i] = (char)value[i];
 			}
 		}
+		missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
 	}
 	return(NclReturnValue(
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_char,
 		0
 	));
@@ -3160,11 +3173,12 @@ NhlErrorTypes _NclIchartoint
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.charval)) {
-				out_val[i] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+				out_val[i] = (int)missing.charval;
 			} else {
 				out_val[i] = (int)value[i];
 			}
 		}
+		missing2.intval = (int)missing.charval;
 	} else {
 		for(i = 0; i < total; i++) {
 			out_val[i] = (int)value[i];
@@ -3174,7 +3188,7 @@ NhlErrorTypes _NclIchartoint
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_int,
 		0
 	));
@@ -3212,25 +3226,31 @@ NhlErrorTypes _NclIshorttobyte
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.shortval)) {
-				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+				out_val[i] = (byte)  missing.shortval;
 			} else {
 				out_val[i] = (byte)value[i];
 			}
 		}
+		missing2.byteval = (byte)  missing.shortval;
+
 	} else {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)) {
-				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;	
+				has_missing = 1;
 			} else {
 				out_val[i] = (byte)value[i];
 			}
+		}
+		if(has_missing) {
+			missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;  
 		}
 	}
 	return(NclReturnValue(
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_byte,
 		0
 	));
@@ -3268,25 +3288,30 @@ NhlErrorTypes _NclIshorttochar
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.shortval)) {
-				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+				out_val[i] = (char)missing.shortval;
 			} else {
 				out_val[i] = (char)value[i];
 			}
 		}
+		missing2.charval = (char)missing.shortval;
 	} else {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)) {
 				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+				has_missing = 1;
 			} else {
 				out_val[i] = (char)value[i];
 			}
+		}
+		if(has_missing) {
+			missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
 		}
 	}
 	return(NclReturnValue(
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_char,
 		0
 	));
@@ -3323,11 +3348,13 @@ NhlErrorTypes _NclIchartoshort
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.charval)) {
-				out_val[i] = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+				out_val[i] = (short) missing.charval;
 			} else {
 				out_val[i] = (short)value[i];
 			}
 		}
+		missing2.shortval = (short) missing.charval;
+
 	} else {
 		for(i = 0; i < total; i++) {
 			out_val[i] = (short)value[i];
@@ -3337,7 +3364,7 @@ NhlErrorTypes _NclIchartoshort
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2: NULL),
 		NCL_short,
 		0
 	));
@@ -3382,25 +3409,31 @@ NhlErrorTypes _NclIlongtoint
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < -maxint)||(value[i] > maxint)||(value[i] == missing.longval)) {
-				out_val[i] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+				out_val[i] = (int)missing.longval;
 			} else {
 				out_val[i] = (int)value[i];
 			}
 		}
+		missing2.intval = (int)missing.longval;
 	} else {
 		for(i = 0; i < total; i++) {
 			if((value[i] < -maxint )||(value[i] > maxint)) {
 				out_val[i] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+				has_missing = 1;
 			} else {
 				out_val[i] = (int)value[i];
 			}
 		}
+		if(has_missing) {
+			missing2.intval = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+		}
 	}
+
 	return(NclReturnValue(
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_int,
 		0
 	));
@@ -3444,25 +3477,30 @@ NhlErrorTypes _NclIlongtoshort
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < -maxshort)||(value[i] > maxshort)||(value[i] == missing.longval)) {
-				out_val[i] = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+				out_val[i] = (short)missing.longval;
 			} else {
 				out_val[i] = (short)value[i];
 			}
 		}
+		missing2.shortval = (short)missing.longval;
 	} else {
 		for(i = 0; i < total; i++) {
 			if((value[i] < -maxshort )||(value[i] > maxshort)) {
 				out_val[i] = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+				has_missing = 1;
 			} else {
 				out_val[i] = (short)value[i];
 			}
+		}
+		if(has_missing) {
+			missing2.shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
 		}
 	}
 	return(NclReturnValue(
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_short,
 		0
 	));
@@ -3498,25 +3536,30 @@ NhlErrorTypes _NclIlongtobyte
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.longval)) {
-				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+				out_val[i] = (byte)missing.longval;
 			} else {
 				out_val[i] = (byte)value[i];
 			}
 		}
+		missing2.byteval = (byte)missing.longval;
 	} else {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)) {
 				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+				has_missing = 1;
 			} else {
 				out_val[i] = (byte)value[i];
 			}
+		}
+		if(has_missing) {
+			missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
 		}
 	}
 	return(NclReturnValue(
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_byte,
 		0
 	));
@@ -3554,25 +3597,30 @@ NhlErrorTypes _NclIlongtochar
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.longval)) {
-				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+				out_val[i] = (char)missing.longval;
 			} else {
 				out_val[i] = (char)value[i];
 			}
 		}
+		missing2.charval = (char)missing.longval;
 	} else {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)) {
 				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+				has_missing = 1;
 			} else {
 				out_val[i] = (char)value[i];
 			}
+		}
+		if(has_missing) {
+			missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
 		}
 	}
 	return(NclReturnValue(
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_char,
 		0
 	));
@@ -3609,11 +3657,12 @@ NhlErrorTypes _NclIchartolong
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.charval)) {
-				out_val[i] = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
+				out_val[i] = (long)missing.charval;
 			} else {
 				out_val[i] = (long)value[i];
 			}
 		}
+		missing2.longval = (long)missing.charval;
 	} else {
 		for(i = 0; i < total; i++) {
 			out_val[i] = (long)value[i];
@@ -3623,7 +3672,7 @@ NhlErrorTypes _NclIchartolong
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_long,
 		0
 	));
@@ -3668,25 +3717,30 @@ NhlErrorTypes _NclIfloattoshort
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < -maxshort)||(value[i] > maxshort)||(value[i] == missing.floatval)) {
-				out_val[i] = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+				out_val[i] = (short)missing.floatval;
 			} else {
 				out_val[i] = (short)value[i];
 			}
 		}
+		missing2.shortval  = (short)missing.floatval;
 	} else {
 		for(i = 0; i < total; i++) {
 			if((value[i] < -maxshort )||(value[i] > maxshort)) {
 				out_val[i] = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+				has_missing = 1;
 			} else {
 				out_val[i] = (short)value[i];
 			}
+		}
+		if(has_missing) {
+			missing2.shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
 		}
 	}
 	return(NclReturnValue(
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_short,
 		0
 	));
@@ -3730,25 +3784,30 @@ NhlErrorTypes _NclIfloattoint
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < -maxint)||(value[i] > maxint)||(value[i] == missing.floatval)) {
-				out_val[i] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+				out_val[i] = (int)missing.floatval;
 			} else {
 				out_val[i] = (int)value[i];
 			}
 		}
+		missing2.intval = (int)missing.floatval;
 	} else {
 		for(i = 0; i < total; i++) {
 			if((value[i] < -maxint )||(value[i] > maxint)) {
 				out_val[i] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+				has_missing = 1;
 			} else {
 				out_val[i] = (int)value[i];
 			}
+		}
+		if(has_missing) {
+			missing2.intval = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 		}
 	}
 	return(NclReturnValue(
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_int,
 		0
 	));
@@ -3792,25 +3851,30 @@ NhlErrorTypes _NclIfloattolong
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < -maxlong)||(value[i] > maxlong)||(value[i] == missing.floatval)) {
-				out_val[i] = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
+				out_val[i] = (long)missing.floatval;
 			} else {
 				out_val[i] = (long)value[i];
 			}
 		}
+		missing2.longval = (long)missing.floatval;
 	} else {
 		for(i = 0; i < total; i++) {
 			if((value[i] < -maxlong )||(value[i] > maxlong)) {
 				out_val[i] = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
+				has_missing = 1;
 			} else {
 				out_val[i] = (long)value[i];
 			}
+		}
+		if(has_missing) {
+			missing2.longval = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
 		}
 	}
 	return(NclReturnValue(
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_long,
 		0
 	));
@@ -3846,25 +3910,31 @@ NhlErrorTypes _NclIfloattobyte
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.floatval)) {
-				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+				out_val[i] = (byte)missing.floatval;
 			} else {
 				out_val[i] = (byte)value[i];
 			}
 		}
+		missing2.byteval = (byte)missing.floatval;
+
 	} else {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)) {
 				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+				has_missing = 1;
 			} else {
 				out_val[i] = (byte)value[i];
 			}
+		}
+		if(has_missing) {
+			missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
 		}
 	}
 	return(NclReturnValue(
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_byte,
 		0
 	));
@@ -3902,25 +3972,30 @@ NhlErrorTypes _NclIfloattochar
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.floatval)) {
-				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+				out_val[i] = (char)missing.floatval;
 			} else {
 				out_val[i] = (char)value[i];
 			}
 		}
+		missing2.charval = (char)missing.floatval;
 	} else {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)) {
 				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+				has_missing = 1;
 			} else {
 				out_val[i] = (char)value[i];
 			}
+		}
+		if(has_missing) {
+			missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
 		}
 	}
 	return(NclReturnValue(
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_char,
 		0
 	));
@@ -3957,11 +4032,12 @@ NhlErrorTypes _NclIchartofloat
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.charval)) {
-				out_val[i] = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+				out_val[i] = (float)missing.charval;
 			} else {
 				out_val[i] = (float)value[i];
 			}
 		}
+		missing2.floatval = (float)missing.charval;
 	} else {
 		for(i = 0; i < total; i++) {
 			out_val[i] = (float)value[i];
@@ -3971,7 +4047,7 @@ NhlErrorTypes _NclIchartofloat
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_float,
 		0
 	));
@@ -4007,25 +4083,30 @@ NhlErrorTypes _NclIdoubletobyte
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.doubleval)) {
-				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+				out_val[i] = (byte)missing.doubleval;
 			} else {
 				out_val[i] = (byte)value[i];
 			}
 		}
+		missing2.byteval = (byte)missing.doubleval;
 	} else {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)) {
 				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+				has_missing = 1;
 			} else {
 				out_val[i] = (byte)value[i];
 			}
+		}
+		if(has_missing) {
+			missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
 		}
 	}
 	return(NclReturnValue(
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_byte,
 		0
 	));
@@ -4063,25 +4144,30 @@ NhlErrorTypes _NclIdoubletochar
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.doubleval)) {
-				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+				out_val[i] = (char)missing.doubleval;
 			} else {
 				out_val[i] = (char)value[i];
 			}
 		}
+		missing2.charval = (char)missing.doubleval;
 	} else {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)) {
 				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+				has_missing = 1;
 			} else {
 				out_val[i] = (char)value[i];
 			}
+		}
+		if(has_missing) {
+			missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
 		}
 	}
 	return(NclReturnValue(
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_char,
 		0
 	));
@@ -4118,11 +4204,12 @@ NhlErrorTypes _NclIchartodouble
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.charval)) {
-				out_val[i] = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+				out_val[i] = (double)missing.charval;
 			} else {
 				out_val[i] = (double)value[i];
 			}
 		}
+		missing2.doubleval = (double)missing.charval;
 	} else {
 		for(i = 0; i < total; i++) {
 			out_val[i] = (double)value[i];
@@ -4132,7 +4219,7 @@ NhlErrorTypes _NclIchartodouble
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_double,
 		0
 	));
@@ -4176,25 +4263,30 @@ NhlErrorTypes _NclIdoubletoshort
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < -maxshort)||(value[i] > maxshort)||(value[i] == missing.doubleval)) {
-				out_val[i] = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+				out_val[i] = (short)missing.doubleval;
 			} else {
 				out_val[i] = (short)value[i];
 			}
 		}
+		missing2.shortval = (short)missing.doubleval;
 	} else {
 		for(i = 0; i < total; i++) {
 			if((value[i] < -maxshort )||(value[i] > maxshort)) {
 				out_val[i] = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+				has_missing = 1;
 			} else {
 				out_val[i] = (short)value[i];
 			}
+		}
+		if(has_missing) {
+			missing2.shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
 		}
 	}
 	return(NclReturnValue(
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_short,
 		0
 	));
@@ -4238,25 +4330,30 @@ NhlErrorTypes _NclIdoubletoint
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < -maxint)||(value[i] > maxint)||(value[i] == missing.doubleval)) {
-				out_val[i] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+				out_val[i] =  (int)missing.doubleval;
 			} else {
 				out_val[i] = (int)value[i];
 			}
 		}
+		missing2.intval = (int)missing.doubleval;
 	} else {
 		for(i = 0; i < total; i++) {
 			if((value[i] < -maxint )||(value[i] > maxint)) {
 				out_val[i] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+				has_missing = 1;
 			} else {
 				out_val[i] = (int)value[i];
 			}
+		}
+		if(has_missing) {
+			missing2.intval = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 		}
 	}
 	return(NclReturnValue(
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_int,
 		0
 	));
@@ -4293,6 +4390,7 @@ NhlErrorTypes _NclIdoubletolong
                         &has_missing,
                         &type,
                         0);
+
         for(i = 0; i < n_dims; i++) {
                 total *= dimsizes[i];
         }
@@ -4300,28 +4398,37 @@ NhlErrorTypes _NclIdoubletolong
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
 			if((value[i] < -maxlong)||(value[i] > maxlong)||(value[i] == missing.doubleval)) {
-				out_val[i] = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
+				out_val[i] = (long)missing.doubleval;
 			} else {
 				out_val[i] = (long)value[i];
 			}
 		}
+		missing2.longval = (long)missing.doubleval;
 	} else {
 		for(i = 0; i < total; i++) {
 			if((value[i] < -maxlong )||(value[i] > maxlong)) {
 				out_val[i] = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
+				has_missing = 1;
 			} else {
 				out_val[i] = (long)value[i];
 			}
+		}
+		if(has_missing) {	
+			missing2.longval = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
 		}
 	}
 	return(NclReturnValue(
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_long,
 		0
 	));
+
+
+
+
 }
 NhlErrorTypes _NclIdoubletofloat
 #if	NhlNeedProto
@@ -4352,23 +4459,16 @@ NhlErrorTypes _NclIdoubletofloat
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypefloatClass)->type_class.size *total);
 	if(has_missing) {
-		for(i = 0; i < total; i++) {
-			if(value[i] == missing.doubleval) {
-				out_val[i] = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-			} else {
-				out_val[i] = (float)value[i];
-			}
-		}
-	} else {
-		for(i = 0; i < total; i++) {
-			out_val[i] = (float)value[i];
-		}
+		missing2.floatval = (float)missing.doubleval;
+	}  
+	for(i = 0; i < total; i++) {
+		out_val[i] = (float)value[i];
 	}
 	return(NclReturnValue(
 		(void*)out_val,
 		n_dims,
 		dimsizes,
-		(has_missing ? &missing : NULL),
+		(has_missing ? &missing2 : NULL),
 		NCL_float,
 		0
 	));
@@ -4851,3 +4951,6 @@ NhlErrorTypes _NclIIsFileVarDim
 	}
 
 }
+#ifdef __cplusplus
+}
+#endif

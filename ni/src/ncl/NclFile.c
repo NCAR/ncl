@@ -256,27 +256,29 @@ FILE    *fp;
 		return(NhlWARNING);
 	}
 	for(i = 0; i < thefile->file.n_vars; i++) {
-		ret = nclfprintf(fp,"\t\t%s %s ( ",_NclBasicDataTypeToName(thefile->file.var_info[i]->data_type),NrmQuarkToString(thefile->file.var_info[i]->var_name_quark));
-		if(ret < 0) {	
-			return(NhlWARNING);
-		}
-		for(j=0; j< thefile->file.var_info[i]->num_dimensions - 1; j++) {
-			ret = nclfprintf(fp,"%s, ",NrmQuarkToString(FileGetDimName(thefile,thefile->file.var_info[i]->file_dim_num[j])));
+		if(thefile->file.var_info[i] != NULL) {
+			ret = nclfprintf(fp,"\t\t%s %s ( ",_NclBasicDataTypeToName(thefile->file.var_info[i]->data_type),NrmQuarkToString(thefile->file.var_info[i]->var_name_quark));
 			if(ret < 0) {	
 				return(NhlWARNING);
 			}
-		}
-		ret = nclfprintf(fp,"%s )\n",NrmQuarkToString(FileGetDimName(thefile,thefile->file.var_info[i]->file_dim_num[thefile->file.var_info[i]->num_dimensions - 1])));
-		if(ret < 0) {	
-			return(NhlWARNING);
-		}
-		step = thefile->file.var_att_info[i];
-		while(step != NULL) {
-			ret = nclfprintf(fp,"\t\t\t%s\n", NrmQuarkToString(step->the_att->att_name_quark));
+			for(j=0; j< thefile->file.var_info[i]->num_dimensions - 1; j++) {
+				ret = nclfprintf(fp,"%s, ",NrmQuarkToString(FileGetDimName(thefile,thefile->file.var_info[i]->file_dim_num[j])));
+				if(ret < 0) {	
+					return(NhlWARNING);
+				}
+			}
+			ret = nclfprintf(fp,"%s )\n",NrmQuarkToString(FileGetDimName(thefile,thefile->file.var_info[i]->file_dim_num[thefile->file.var_info[i]->num_dimensions - 1])));
 			if(ret < 0) {	
 				return(NhlWARNING);
 			}
-			step = step->next;
+			step = thefile->file.var_att_info[i];
+			while(step != NULL) {
+				ret = nclfprintf(fp,"\t\t\t%s\n", NrmQuarkToString(step->the_att->att_name_quark));
+				if(ret < 0) {	
+					return(NhlWARNING);
+				}
+				step = step->next;
+			}
 		}
 	}
 	

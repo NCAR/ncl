@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.21 1995-11-03 00:01:11 ethan Exp $
+ *      $Id: defs.h,v 1.22 1995-12-01 01:04:41 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -153,7 +153,7 @@ extern int nclfprintf(
 #endif
 );
 
-void _NclSetPrintFunc(
+NclVaPrintFunc _NclSetPrintFunc(
 #if NhlNeedProto
 NclVaPrintFunc thepit
 #endif
