@@ -1,5 +1,5 @@
 /*
- *	$Id: misc.c,v 1.3 1991-09-27 14:12:10 clyne Exp $
+ *	$Id: misc.c,v 1.4 1991-10-01 16:00:04 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -45,7 +45,7 @@ CGM_validCGM(ncar_cgm)
 	/*
 	 * try and open the file. 
 	 */
-	if  ((fd = CGM_open (ncar_cgm, BUFSIZE, "w")) < 0) {
+	if  ((fd = CGM_open (ncar_cgm, BUFSIZE, "r")) < 0) {
 		return (-1);
 	} 
 

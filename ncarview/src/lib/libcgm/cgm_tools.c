@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.8 1991-09-27 14:11:55 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.9 1991-10-01 15:59:51 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -186,14 +186,19 @@ Cgm_fd	CGM_open(metafile, record_size, type)
 		cgmTab[index].read = stream_read;
 		cgmTab[index].seek = stream_seek;
 		cgmTab[index].close = stream_close;
+
+#ifdef	DEAD
+		if (record_size > BUFSIZ) {
+			void	setvbuf_();
+			setvbuf_(cgmTab[index].fp, record_size);
+		}
+#endif
 	}
 
-	else  {
-
-	/* 
+	/*
 	 *	see if read/write from pipe
 	 */
-	if (strcmp (metafile, rw_pipe) == 0) {
+	else if (strcmp (metafile, rw_pipe) == 0) {
 	
 		cgmTab[index].mtype = Pipe;
 		if (pipe(fildes) < 0)  {
@@ -227,7 +232,13 @@ Cgm_fd	CGM_open(metafile, record_size, type)
 		cgmTab[index].read = stream_read;
 		cgmTab[index].seek = stream_seek;
 		cgmTab[index].close = stream_close;
-	}
+
+#ifdef	DEAD
+		if (record_size > BUFSIZ) {
+			void	setvbuf_();
+			setvbuf_(cgmTab[index].fp, record_size);
+		}
+#endif
 	}
 
 	/*
@@ -1501,3 +1512,30 @@ static	int	noop()
 {
 	return(-1);
 }
+
+#ifdef	DEAD
+
+static	void	setvbuf_(fp, r)
+	FILE	*fp;
+	int	r;
+{
+	
+	int	i;
+	int	size;
+	char	*b;
+
+	/*
+	 * find the smallest buffer size that is bigger then r and 
+	 * is an integral of BUFSIZ
+	 */
+	i = r / BUFSIZ;
+	i++;
+	size = i * BUFSIZ;
+
+	if ((b = malloc(size)) == NULL) {
+		return;
+	}
+
+	setvbuf(fp, b, _IOFBF, size);
+}
+#endif

@@ -1,5 +1,5 @@
 /*
- *	$Id: meta_edit.c,v 1.6 1991-09-27 14:12:04 clyne Exp $
+ *	$Id: meta_edit.c,v 1.7 1991-10-01 15:59:57 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -934,7 +934,7 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 	/*
 	 * open the file for appending
 	 */
-	if ((fd = CGM_open(ncar_cgm, r, "w" )) < 0) {
+	if ((fd = CGM_open(ncar_cgm, r, "a+" )) < 0) {
 		(void) CGM_close(tmp_fd);
 		return(-1);
 	}
@@ -976,7 +976,7 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 	/*
 	 * now open the file for writing
 	 */
-	if ((fd = CGM_open(ncar_cgm, r, "w" )) < 0) {
+	if ((fd = CGM_open(ncar_cgm, r, "a" )) < 0) {
 		(void) CGM_close(tmp_fd);
 		if (buf) cfree((char *) buf);
 		return(-1);
