@@ -77,6 +77,10 @@ extern NhlErrorTypes shaec_W(void);
 extern NhlErrorTypes shagc_W(void);
 extern NhlErrorTypes shsec_W(void);
 extern NhlErrorTypes shsgc_W(void);
+extern NhlErrorTypes shaeC_W(void);
+extern NhlErrorTypes shagC_W(void);
+extern NhlErrorTypes shseC_W(void);
+extern NhlErrorTypes shsgC_W(void);
 
 extern NhlErrorTypes nggcog_W(void);
 
@@ -178,7 +182,10 @@ extern NhlErrorTypes pslhor_W(void);
 extern NhlErrorTypes monthday_W(void);
 extern NhlErrorTypes day_of_year_W(void);
 extern NhlErrorTypes days_in_month_W(void);
+extern NhlErrorTypes day_of_week_W(void);
 extern NhlErrorTypes isleapyear_W(void);
+extern NhlErrorTypes greg2jul_W(void);
+extern NhlErrorTypes jul2greg_W(void);
 
 extern NhlErrorTypes relhum_W(void);
 extern NhlErrorTypes runave_W(void);
@@ -1091,6 +1098,52 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
 
     NclRegisterProc(shsgc_W,args,"shsgc",nargs);
+
+/*
+ * Register "shaeC".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(shaeC_W,args,"shaeC",nargs);
+
+/*
+ * Register "shagC".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(shagC_W,args,"shagC",nargs);
+
+/*
+ * Register "shseC".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+
+    NclRegisterFunc(shseC_W,args,"shseC",nargs);
+
+/*
+ * Register "shsgC".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+
+    NclRegisterFunc(shsgC_W,args,"shsgC",nargs);
 
 /*
  *  Register nggcog.
@@ -2315,6 +2368,16 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(days_in_month_W,args,"days_in_month",nargs);
 
 /*
+ * Register "day_of_week".
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+    NclRegisterFunc(day_of_week_W,args,"day_of_week",nargs);
+
+/*
  * Register "day_of_year".
  */
     nargs = 0;
@@ -2324,6 +2387,25 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
     NclRegisterFunc(day_of_year_W,args,"day_of_year",nargs);
+
+/*
+ * Register "greg2jul".
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+    NclRegisterFunc(greg2jul_W,args,"greg2jul",nargs);
+
+/*
+ * Register "jul2greg".
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    NclRegisterFunc(jul2greg_W,args,"jul2greg",nargs);
 
 /*
  * Register "relhum".

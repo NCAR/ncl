@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.1 1999-10-15 17:57:34 haley Exp $
+#      $Id: yMakefile,v 1.2 1999-10-27 14:47:18 haley Exp $
 #
 #########################################################################
 #									#
@@ -23,31 +23,31 @@ MYNAME		=	libnfp
 
 EXTRA_INCLUDES  = -I../../ncl
 
-CSRCS = sphintW.c trvsphW.c sindexW.c eofW.c svdW.c \
-	sph2W.c natgridW.c dsgridW.c drwvctc.c regcoefW.c statW.c ezfftW.c \
-	sstoiW.c vibetaW.c slpW.c int2pW.c hydroW.c datesW.c cz2ccmW.c \
-	relhumW.c fitgridW.c tdpackW.c wmapW.c csagridW.c ncolorW.c  \
-	fluxEddyW.c dtrendW.c wrunaveW.c specxW.c chiinvW.c cssgridW.c \
-	ngmiscW.c shgridW.c wrapper.c
+CSRCS = chiinvW.c csagridW.c cssgridW.c cz2ccmW.c datesW.c drwvctc.c \
+	dsgridW.c dtrendW.c eofW.c ezfftW.c fitgridW.c fluxEddyW.c \
+	hydroW.c int2pW.c julGregW.c natgridW.c ncolorW.c ngmiscW.c \
+	regcoefW.c relhumW.c shgridW.c sindexW.c slpW.c specxW.c \
+	sph2W.c sphintW.c sstoiW.c statW.c svdW.c tdpackW.c trvsphW.c \
+	vibetaW.c wmapW.c wrunaveW.c wrapper.c 
 
-COBJS = sphintW.o trvsphW.o sindexW.o eofW.o svdW.o \
-	sph2W.o natgridW.o dsgridW.o drwvctc.o regcoefW.o statW.o ezfftW.o \
-	sstoiW.o vibetaW.o slpW.o int2pW.o hydroW.o datesW.o cz2ccmW.o \
-	relhumW.o fitgridW.o tdpackW.o wmapW.o csagridW.o ncolorW.o  \
-	fluxEddyW.o dtrendW.o wrunaveW.o specxW.o chiinvW.o cssgridW.o \
-	ngmiscW.o shgridW.o wrapper.o
+COBJS = chiinvW.o csagridW.o cssgridW.o cz2ccmW.o datesW.o drwvctc.o \
+	dsgridW.o dtrendW.o eofW.o ezfftW.o fitgridW.o fluxEddyW.o \
+	hydroW.o int2pW.o julGregW.o natgridW.o ncolorW.o ngmiscW.o \
+	regcoefW.o relhumW.o shgridW.o sindexW.o slpW.o specxW.o \
+	sph2W.o sphintW.o sstoiW.o statW.o svdW.o tdpackW.o trvsphW.o \
+	vibetaW.o wmapW.o wrunaveW.o wrapper.o 
 
-FSRCS =  trvsph77.f trcwav.f statx.f statx_dp.f prneof_dp.f int2p.f \
-	prneofts_dp.f svd_lap_dp.f svd_util_dp.f relhum.f cz2ccm.f \
-	sp2_util.f fo2fs.f index77.f hydro.f fluxEddyTav_dp.f dtrend.f \
-	regcoef.f ezfft.f rdsstoi.f vibeta.f ncl_upsl.f runave.f wrunave.f \
-	specx.f chiin.f
+FSRCS = chiin.f cz2ccm.f dtrend.f ezfft.f fluxEddyTav_dp.f fo2fs.f \
+	hydro.f index77.f int2p.f julGreg.f ncl_upsl.f prneof_dp.f \
+	prneofts_dp.f rdsstoi.f regcoef.f relhum.f runave.f sp2_util.f \
+	specx.f statx.f statx_dp.f svd_lap_dp.f svd_util_dp.f trcwav.f \
+	trvsph77.f vibeta.f wrunave.f
 
-FOBJS =  trvsph77.o trcwav.o statx.o statx_dp.o prneof_dp.o int2p.o \
-	prneofts_dp.o svd_lap_dp.o svd_util_dp.o relhum.o cz2ccm.o \
-	sp2_util.o fo2fs.o index77.o hydro.o fluxEddyTav_dp.o dtrend.o \
-	regcoef.o ezfft.o rdsstoi.o vibeta.o ncl_upsl.o runave.o wrunave.o \
-	specx.o chiin.o
+FOBJS = chiin.o cz2ccm.o dtrend.o ezfft.o fluxEddyTav_dp.o fo2fs.o \
+	hydro.o index77.o int2p.o julGreg.o ncl_upsl.o prneof_dp.o \
+	prneofts_dp.o rdsstoi.o regcoef.o relhum.o runave.o sp2_util.o \
+	specx.o statx.o statx_dp.o svd_lap_dp.o svd_util_dp.o trcwav.o \
+	trvsph77.o vibeta.o wrunave.o
 
 OBJS = $(COBJS) $(FOBJS)
 
