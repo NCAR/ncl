@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ctrans.m,v 1.29 2000-07-12 17:36:45 haley Exp $
+.\"	$Id: ctrans.m,v 1.30 2000-08-22 15:00:52 haley Exp $
 .\"
 .\" ctrans 3.2 
 .TH CTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -706,17 +706,17 @@ University Corporation for Atmospheric Research
 .br
 
 This documentation is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public License as
-published by the Free Software Foundation; either version 2.1 of the
-License, or (at your option) any later version.
+modify it under the terms of the GNU General Public License as published
+by the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
 
 This software is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
+General Public License for more details.
 
-You should have received a copy of the GNU Lesser General Public
-License along with this software; if not, write to the Free Software
+You should have received a copy of the GNU General Public License
+along with this software; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 USA.
 
