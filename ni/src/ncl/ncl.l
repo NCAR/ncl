@@ -44,8 +44,14 @@ char *str;
 int reset;
 #endif
 {
-	yy_scan_string(str);
-	return(yyparse(reset));
+        int tmp;
+        yy_scan_string(str);
+        tmp = yyparse(reset);
+ 
+        yy_flush_buffer(YY_CURRENT_BUFFER );
+        yy_delete_buffer( YY_CURRENT_BUFFER );
+        return(tmp);
+
 }
 
 
