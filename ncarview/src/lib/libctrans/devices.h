@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.h,v 1.18 1993-01-19 19:37:31 clyne Exp $
+ *	$Id: devices.h,v 1.19 1995-05-03 22:40:24 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -165,6 +165,7 @@ struct device{
         ,{"sun",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
         ,{"avs",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
         ,{"parallax",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
+        ,{"yuv",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
 
 #ifdef  X11
         ,{"X11",X11_I,FALSE,TRUE,"", FALSE, X11_opts}
