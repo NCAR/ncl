@@ -29,6 +29,8 @@ main()
     int appid, wid, pid;
     int rlist;
     int NCGM=0;
+	int len[2];
+	float cmap[4][3];
 /*
  * Initialize the high level utility library
  */
@@ -46,12 +48,23 @@ main()
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"ti03",NhlappClass,NhlDEFAULT_APP,rlist);
 
+/*
+ * Modify the color map.  Color indices '0' and '1' are the background
+ * and foreground colors respectively.
+ */
+    cmap[0][0] = cmap[0][1] = cmap[0][2] = 0.;
+    cmap[1][0] = 0.0; cmap[1][1] = 1.0; cmap[1][2] = 1.0;
+    cmap[2][0] = 1.0; cmap[2][1] = 0.5; cmap[2][2] = 0.0;
+    cmap[3][0] = 1.0; cmap[3][1] = 1.0; cmap[3][2] = 0.0;
+    len[0] = 4;  len[1] = 3;
+
     if (NCGM) {
 /*
  * Create a meta file workstation object.
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./ti03c.ncgm");
+        NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
         NhlCreate(&wid,"ti03Work",NhlncgmWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
@@ -61,6 +74,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
+		NhlRLSetMDFloatArray(rlist,NhlNwkColorMap,&cmap[0][0],2,len);
         NhlCreate(&wid,"ti03Work",NhlxWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }

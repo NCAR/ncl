@@ -24,6 +24,18 @@ C
 
       integer appid, wid, pid
       integer rlist, ierr
+C
+C Modify the color map.  Color indices '1' and '2' are the background
+C and foreground colors respectively.
+C
+      integer len(2)
+      data len/3,4/
+      real cmap(3,4)
+      data cmap/0.,0.,0.,
+     +          0.,1.,1.,
+     +          1.,.5,0.,
+     +          1.,1.,0./
+
       integer NCGM
 C
 C Default is to create an X workstation.
@@ -52,6 +64,7 @@ C Create an NCGM workstation object.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkMetaName','./ti03f.ncgm',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
          call NhlFCreate(wid,'ti03Work',NhlFNcgmWorkstationClass,0,
      $        rlist,ierr)
       else
@@ -60,6 +73,7 @@ C Create an xworkstation object.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetstring(rlist,'wkPause','True',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
          call NhlFCreate(wid,'ti03Work',NhlFXWorkstationClass,
      $        0,rlist,ierr)
       endif

@@ -1,5 +1,5 @@
 ;
-;   $Id: ti03n.ncl,v 1.6 1995-04-07 10:55:01 boote Exp $
+;   $Id: ti03n.ncl,v 1.7 1995-05-01 17:31:18 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -26,6 +26,16 @@
 begin
 
 ;
+; Modify the color map.  Color indices '0' and '1' are the background
+; and foreground colors respectively.
+;
+cmap = new( (/4,3/), float)
+cmap(0,:) = (/0.0,0.0,0.0/)
+cmap(1,:) = (/0.0,1.0,1.0/)
+cmap(2,:) = (/1.0,0.5,0.0/)
+cmap(3,:) = (/1.0,1.0,0.0/)
+
+;
 ; Create an application context. Set the app dir to the current directory
 ; so the application looks for a resource file in the working directory.
 ; In this example the resource file supplies the plot title only.
@@ -45,6 +55,7 @@ if (NCGM .eq. 1) then
 ; Create an ncgmWorkstation object.
 ;
   wid = create "ti03Work" ncgmWorkstationClass defaultapp
+      "wkColorMap" : cmap
       "wkMetaName"         : "ti03n.ncgm"
   end create
 else
@@ -52,6 +63,7 @@ else
 ; Create an XWorkstation object.
 ;
   wid = create "ti03Work" xWorkstationClass defaultapp
+      "wkColorMap" : cmap
       "wkPause" : "True"
   end create
 end if
