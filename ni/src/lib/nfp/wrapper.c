@@ -280,7 +280,8 @@ extern NhlErrorTypes ftest_W(void);
 extern NhlErrorTypes rtest_W(void);
 extern NhlErrorTypes equiv_sample_size_W(void);
 extern NhlErrorTypes NhlGetNamedColorIndex_W(void);
-extern NhlErrorTypes common_graphic_mnmxstp_W(void);
+extern NhlErrorTypes output_gif_W(void);
+extern NhlErrorTypes nice_mnmxintvl_W(void);
 
 void NclAddUserFuncs(void)
 {
@@ -3411,16 +3412,30 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "string", NclANY, NclANY);   nargs++;
     NclRegisterFunc(NhlGetNamedColorIndex_W, args, "NhlGetNamedColorIndex", nargs);
 
+
 /*
- *  Register common_graphic_mnmxstp.
+ *  Register output_gif.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args, nargs, "graphic", NclANY, NclANY);  nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);   nargs++;
+    dimsizes[0] = 2;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);   nargs++;
+    NclRegisterProc(output_gif_W, args, "output_gif", nargs);
+
+/*
+ *  Register nice_mnmxintvl.
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);  nargs++;
-    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);  nargs++;
-    SetArgTemplate(args, nargs, "integer", NclANY, NclANY);  nargs++;
-    SetArgTemplate(args, nargs, "logical", NclANY, NclANY);  nargs++;
-    NclRegisterFunc(common_graphic_mnmxstp_W, args, "common_graphic_mnmxstp", nargs);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "logical", 1, dimsizes);  nargs++;
+    NclRegisterFunc(nice_mnmxintvl_W, args, "nice_mnmxintvl", nargs);
 
     return;
 }

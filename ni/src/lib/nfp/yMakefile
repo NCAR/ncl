@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.30 2000-08-23 16:46:55 haley Exp $
+#      $Id: yMakefile,v 1.31 2000-09-12 03:59:43 haley Exp $
 #
 #########################################################################
 #									#
@@ -31,8 +31,8 @@ HDRS = wrapper.h
 CSRCS = areavolW.c betaincW.c calcorcW.c chiinvW.c csagridW.c \
 	cssgridW.c cz2ccmW.c datesW.c drwvctc.c dsgridW.c dtrendW.c \
 	eofW.c ezfftW.c finitediffW.c fitgridW.c fluxEddyW.c hydroW.c \
-	int2pW.c julGregW.c linint2W.c linmsgW.c locminmaxW.c \
-	mapgciW.c natgridW.c ncolorW.c ngmiscW.c nicevalsW.c preshybW.c \
+	int2pW.c julGregW.c linint2W.c linmsgW.c locminmaxW.c mapgciW.c \
+	natgridW.c ncolorW.c ngmiscW.c nicevalsW.c outputgif.c preshybW.c \
 	probtestW.c regcoefW.c relhumW.c remapW.c rhombtriW.c shgridW.c \
 	sindexW.c slpW.c skewtW.c smth9W.c specxW.c sph2W.c sphintW.c \
 	sstoiW.c statW.c svdW.c tdpackW.c trvsphW.c varimaxW.c vibetaW.c \
@@ -41,8 +41,8 @@ CSRCS = areavolW.c betaincW.c calcorcW.c chiinvW.c csagridW.c \
 COBJS = areavolW.o betaincW.o calcorcW.o chiinvW.o csagridW.o \
 	cssgridW.o cz2ccmW.o datesW.o drwvctc.o dsgridW.o dtrendW.o \
 	eofW.o ezfftW.o finitediffW.o fitgridW.o fluxEddyW.o hydroW.o \
-	int2pW.o julGregW.o linint2W.o linmsgW.o locminmaxW.o \
-	mapgciW.o natgridW.o ncolorW.o ngmiscW.o nicevalsW.o preshybW.o \
+	int2pW.o julGregW.o linint2W.o linmsgW.o locminmaxW.o mapgciW.o \
+	natgridW.o ncolorW.o ngmiscW.o nicevalsW.o outputgif.o preshybW.o \
 	probtestW.o regcoefW.o relhumW.o remapW.o rhombtriW.o shgridW.o \
 	sindexW.o slpW.o skewtW.o smth9W.o specxW.o sph2W.o sphintW.o \
 	sstoiW.o statW.o svdW.o tdpackW.o trvsphW.o varimaxW.o vibetaW.o \

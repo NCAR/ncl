@@ -80,7 +80,7 @@ NhlErrorTypes NhlGetNamedColorIndex_W( void )
  * If only one workstation has been given, then the number of dimensions
  * of the output is just equal to the dimensions of the colors inputted.
  */
-  if(ndims_wks == 1 && dsizes_wks[0] == 1) {
+  if(is_scalar(ndims_wks,dsizes_wks[0])) {
 	ndims_out = ndims_cname;
 	for( i = 0; i < ndims_cname; i++ ) {
 	  dsizes_out[i] = dsizes_cname[i];
