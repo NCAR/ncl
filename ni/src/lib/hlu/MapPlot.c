@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.94 2003-09-10 21:29:54 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.95 2004-06-28 22:14:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -532,6 +532,34 @@ static NhlResource resources[] = {
 	 Oset(yr_major_length),NhlTProcedure,
 	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
 
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 Oset(xb_major_outward_length_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
+	{NhlNtmXBMajorOutwardLengthF, NhlCtmMajorOutwardLengthsF, 
+		 NhlTFloat,sizeof(float),
+	 Oset(xb_major_outward_length),NhlTProcedure,
+	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 Oset(xt_major_outward_length_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
+	{NhlNtmXTMajorOutwardLengthF, NhlCtmMajorOutwardLengthsF, 
+		 NhlTFloat,sizeof(float),
+	 Oset(xt_major_outward_length),NhlTProcedure,
+	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 Oset(yl_major_outward_length_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
+	{NhlNtmYLMajorOutwardLengthF, NhlCtmMajorOutwardLengthsF, 
+		 NhlTFloat,sizeof(float),
+	 Oset(yl_major_outward_length),NhlTProcedure,
+	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 Oset(yr_major_outward_length_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
+	{NhlNtmYRMajorOutwardLengthF, NhlCtmMajorOutwardLengthsF, 
+		 NhlTFloat,sizeof(float),
+	 Oset(yr_major_outward_length),NhlTProcedure,
+	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 	 Oset(xb_font_height_set),NhlTImmediate,_NhlUSET((NhlPointer)True),
 	 _NhlRES_PRIVATE,NULL},
@@ -1554,6 +1582,14 @@ static NhlErrorTypes MapPlotSetValues
 		mpp->yl_major_length_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNtmYRMajorLengthF)) 
 		mpp->yr_major_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmXBMajorOutwardLengthF)) 
+		mpp->xb_major_outward_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmXTMajorOutwardLengthF)) 
+		mpp->xt_major_outward_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYLMajorOutwardLengthF)) 
+		mpp->yl_major_outward_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtmYRMajorOutwardLengthF)) 
+		mpp->yr_major_outward_length_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNtmXBLabelFontHeightF)) 
 		mpp->xb_font_height_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNtmXTLabelFontHeightF)) 
@@ -1664,6 +1700,14 @@ static NhlErrorTypes MapPlotSetValues
 			       NhlNtmXTMajorLengthF,&mpp->xt_major_length,
 			       NhlNtmYLMajorLengthF,&mpp->yl_major_length,
 			       NhlNtmYRMajorLengthF,&mpp->yr_major_length,
+			       NhlNtmXBMajorOutwardLengthF,
+			       		&mpp->xb_major_outward_length,
+			       NhlNtmXTMajorOutwardLengthF,
+			       		&mpp->xt_major_outward_length,
+			       NhlNtmYLMajorOutwardLengthF,
+			       		&mpp->yl_major_outward_length,
+			       NhlNtmYRMajorOutwardLengthF,
+			       		&mpp->yr_major_outward_length,
 			       NhlNtmXBLabelFontHeightF,&mpp->xb_font_height,
 			       NhlNtmXTLabelFontHeightF,&mpp->xt_font_height,
 			       NhlNtmYLLabelFontHeightF,&mpp->yl_font_height,
@@ -4548,6 +4592,7 @@ static NhlErrorTypes ManageTickMarks
 	NhlBoolean xb_labels_on,yl_labels_on,xt_labels_on,yr_labels_on;
 	NhlBoolean update = False;
 	int projection;
+	NhlBoolean outward_set;
 	int i;
 
  	if (! tfp->plot_manager_on)
@@ -4572,6 +4617,10 @@ static NhlErrorTypes ManageTickMarks
 	     || mpp->xt_major_length_set
 	     || mpp->yl_major_length_set
 	     || mpp->yr_major_length_set
+	     || mpp->xb_major_outward_length_set
+	     || mpp->xt_major_outward_length_set
+	     || mpp->yl_major_outward_length_set
+	     || mpp->yr_major_outward_length_set
 	     || mpp->xb_font_height_set
 	     || mpp->xt_font_height_set
 	     || mpp->yl_font_height_set
@@ -4633,6 +4682,56 @@ static NhlErrorTypes ManageTickMarks
 			mpp->yl_major_length = len;
 			mpp->yr_major_length = len;
 		}
+
+		set_count = 0;
+		if (mpp->xb_major_outward_length_set) 
+			set_count++;
+		else
+			mpp->xb_major_outward_length = 0.0;
+
+		if (mpp->xt_major_outward_length_set) 
+			set_count++;
+		else
+			mpp->xt_major_outward_length = 0.0;
+		if (mpp->yl_major_outward_length_set) 
+			set_count++;
+		else
+			mpp->yl_major_outward_length = 0.0;
+		if (mpp->yr_major_outward_length_set) 
+			set_count++;
+		else
+			mpp->yr_major_outward_length = 0.0;
+
+		/*
+		 * the default outward length is the same as the 
+		 * major length which puts the whole tickmark outside the
+		 * plot viewport.
+		 */
+		if (set_count == 0) {
+			mpp->xb_major_outward_length = mpp->xb_major_length;
+			mpp->xt_major_outward_length = mpp->xt_major_length;
+			mpp->yl_major_outward_length = mpp->yl_major_length;
+			mpp->yr_major_outward_length = mpp->yr_major_length;
+		}
+		
+		else {
+			/*
+			 * Since the outward length should be the same for
+			 * all take an average of those that are set. (Others
+			 * are 0.0 at this point.)
+			 */
+			float len = 
+				(mpp->xb_major_outward_length +
+				 mpp->xt_major_outward_length +
+				 mpp->yl_major_outward_length +
+				 mpp->yr_major_outward_length) 
+				/ (float)set_count;
+
+			mpp->xb_major_outward_length = len;
+			mpp->xt_major_outward_length = len;
+			mpp->yl_major_outward_length = len;
+			mpp->yr_major_outward_length = len;
+		}
 		
 		set_count = 0;
 		if (mpp->xb_font_height_set) 
@@ -4685,6 +4784,10 @@ static NhlErrorTypes ManageTickMarks
 				mpp->yl_major_length *= deltax;
 			if (! mpp->yr_major_length_set)
 				mpp->yr_major_length *= deltax;
+			if (! mpp->yl_major_outward_length_set)
+				mpp->yl_major_outward_length *= deltax;
+			if (! mpp->yr_major_outward_length_set)
+				mpp->yr_major_outward_length *= deltax;
 			if (! mpp->xb_font_height_set)
 				mpp->xb_font_height *= deltax;
 			if (! mpp->xt_font_height_set)
@@ -4695,6 +4798,10 @@ static NhlErrorTypes ManageTickMarks
 				mpp->xb_major_length *= deltay;
 			if (! mpp->xt_major_length_set)
 				mpp->xt_major_length *= deltay;
+			if (! mpp->xb_major_outward_length_set)
+				mpp->xb_major_outward_length *= deltay;
+			if (! mpp->xt_major_outward_length_set)
+				mpp->xt_major_outward_length *= deltay;
 			if (! mpp->yl_font_height_set)
 				mpp->yl_font_height *= deltay;
 			if (! mpp->yr_font_height_set)
@@ -4957,52 +5064,128 @@ static NhlErrorTypes ManageTickMarks
 	NhlSetSArg(&sargs[(*nargs)++],NhlNtmYLLabelsOn,yl_labels_on);
 	NhlSetSArg(&sargs[(*nargs)++],NhlNtmYRLabelsOn,yr_labels_on);
 
+	/*
+	 * Rely on the TickMark object to equalize the setting for
+	 * these resources.
+	 */
 
-	if (init || mpp->xb_major_length_set) {
+	if (init) {
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNtmXBMajorLengthF,mpp->xb_major_length);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNtmXBMajorOutwardLengthF,mpp->xb_major_length);
-	}
-	if (init || mpp->xt_major_length_set) {
-		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNtmXTMajorLengthF,mpp->xt_major_length);
-		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNtmXTMajorOutwardLengthF,mpp->xt_major_length);
-	}
-	if (init || mpp->yl_major_length_set) {
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNtmYLMajorLengthF,mpp->yl_major_length);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNtmYLMajorOutwardLengthF,mpp->yl_major_length);
-	}
-	if (init || mpp->yr_major_length_set) {
-		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNtmYRMajorLengthF,mpp->yr_major_length);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNtmYRMajorOutwardLengthF,mpp->yr_major_length);
-	}
-	if (init || mpp->xb_font_height_set) {
+			   NhlNtmXBMajorOutwardLengthF,
+			   mpp->xb_major_outward_length);
+		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNtmXTMajorOutwardLengthF,
+			   mpp->xt_major_outward_length);
+		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNtmYLMajorOutwardLengthF,
+			   mpp->yl_major_outward_length);
+		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNtmYRMajorOutwardLengthF,
+			   mpp->yr_major_outward_length);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNtmXBLabelFontHeightF,mpp->xb_font_height);
-	}
-	if (init || mpp->xt_font_height_set) {
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNtmXTLabelFontHeightF,mpp->xt_font_height);
-	}
-	if (init || mpp->yl_font_height_set) {
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNtmYLLabelFontHeightF,mpp->yl_font_height);
-	}
-	if (init || mpp->yr_font_height_set) {
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNtmYRLabelFontHeightF,mpp->yr_font_height);
 	}
-
+	else {
+		float outlen;
+		if (mpp->xb_major_length_set) {
+			NhlSetSArg(&sargs[(*nargs)++],
+				   NhlNtmXBMajorLengthF,mpp->xb_major_length);
+			if (! mpp->xb_major_outward_length_set) {
+				outlen = mpp->xb_major_outward_length *
+					mpp->xb_major_length/ompp->xb_major_length;
+				NhlSetSArg(&sargs[(*nargs)++],
+					   NhlNtmXBMajorOutwardLengthF,outlen);
+			}
+		}
+		if (mpp->xt_major_length_set) {
+			NhlSetSArg(&sargs[(*nargs)++],
+				   NhlNtmXTMajorLengthF,mpp->xt_major_length);
+			if (! mpp->xt_major_outward_length_set) {
+				outlen = mpp->xt_major_outward_length *
+					mpp->xt_major_length/ompp->xt_major_length;
+				NhlSetSArg(&sargs[(*nargs)++],
+					   NhlNtmXTMajorOutwardLengthF,outlen);
+			}
+		}
+		if (mpp->yl_major_length_set) {
+			NhlSetSArg(&sargs[(*nargs)++],
+				   NhlNtmYLMajorLengthF,mpp->yl_major_length);
+			if (! mpp->yl_major_outward_length_set) {
+				outlen = mpp->yl_major_outward_length *
+					mpp->yl_major_length/ompp->yl_major_length;
+				NhlSetSArg(&sargs[(*nargs)++],
+					   NhlNtmYLMajorOutwardLengthF,outlen);
+			}
+		}
+		if (mpp->yr_major_length_set) {
+			NhlSetSArg(&sargs[(*nargs)++],
+				   NhlNtmYRMajorLengthF,mpp->yr_major_length);
+			if (! mpp->yr_major_outward_length_set) {
+				outlen = mpp->yr_major_outward_length *
+					mpp->yr_major_length/ompp->yr_major_length;
+				NhlSetSArg(&sargs[(*nargs)++],
+					   NhlNtmYRMajorOutwardLengthF,outlen);
+			}
+		}
+		if (mpp->xb_major_outward_length_set) {
+			NhlSetSArg(&sargs[(*nargs)++],
+				   NhlNtmXBMajorOutwardLengthF,
+				   mpp->xb_major_outward_length);
+		}
+		if (mpp->xt_major_outward_length_set) {
+			NhlSetSArg(&sargs[(*nargs)++],
+				   NhlNtmXTMajorOutwardLengthF,
+				   mpp->xt_major_outward_length);
+		}
+		if (mpp->yl_major_outward_length_set) {
+			NhlSetSArg(&sargs[(*nargs)++],
+				   NhlNtmYLMajorOutwardLengthF,
+				   mpp->yl_major_outward_length);
+		}
+		if (mpp->yr_major_outward_length_set) {
+			NhlSetSArg(&sargs[(*nargs)++],
+				   NhlNtmYRMajorOutwardLengthF,
+				   mpp->yr_major_outward_length);
+		}
+		if (mpp->xb_font_height_set) {
+			NhlSetSArg(&sargs[(*nargs)++],
+				   NhlNtmXBLabelFontHeightF,mpp->xb_font_height);
+		}
+		if (mpp->xt_font_height_set) {
+			NhlSetSArg(&sargs[(*nargs)++],
+				   NhlNtmXTLabelFontHeightF,mpp->xt_font_height);
+		}
+		if (mpp->yl_font_height_set) {
+			NhlSetSArg(&sargs[(*nargs)++],
+				   NhlNtmYLLabelFontHeightF,mpp->yl_font_height);
+		}
+		if (mpp->yr_font_height_set) {
+			NhlSetSArg(&sargs[(*nargs)++],
+				   NhlNtmYRLabelFontHeightF,mpp->yr_font_height);
+		}
+	}
 	mpp->xb_major_length_set = False;
 	mpp->xt_major_length_set = False;
 	mpp->yl_major_length_set = False;
 	mpp->yr_major_length_set = False;
+	mpp->xb_major_outward_length_set = False;
+	mpp->xt_major_outward_length_set = False;
+	mpp->yl_major_outward_length_set = False;
+	mpp->yr_major_outward_length_set = False;
 	mpp->xb_font_height_set = False;
 	mpp->xt_font_height_set = False;
 	mpp->yl_font_height_set = False;

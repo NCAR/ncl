@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.25 2003-06-04 19:04:23 dbrown Exp $
+ *      $Id: MapPlotP.h,v 1.26 2004-06-28 22:14:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -221,6 +221,14 @@ typedef struct NhlMapPlotLayerPart {
 	float 		yl_major_length;
 	NhlBoolean	yr_major_length_set;
 	float 		yr_major_length;
+	NhlBoolean	xb_major_outward_length_set;
+	float 		xb_major_outward_length;
+	NhlBoolean	xt_major_outward_length_set;
+	float 		xt_major_outward_length;
+	NhlBoolean	yl_major_outward_length_set;
+	float 		yl_major_outward_length;
+	NhlBoolean	yr_major_outward_length_set;
+	float 		yr_major_outward_length;
 	NhlBoolean	xb_font_height_set;
 	float 		xb_font_height;
 	NhlBoolean	xt_font_height_set;
