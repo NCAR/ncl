@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.36 1997-04-22 19:28:42 haley Exp $
+ *	$Id: Rules,v 1.37 1997-05-14 23:05:56 boote Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -350,7 +350,7 @@ InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
 #define	_CLinkProgram(program,objects,deplib)\
 BuildRelObj(program.obj.o,objects)\
 program: program.obj.o deplib]\
-	$(CC_LD) $(CC_LDOPTIONS) -o program program.obj.o $(PROG_LIBS) $(CSTATIC) $(LDLIBS) $(CDYNAMIC) $(EXTRA_LDLIBS)]\
+	$(CC_LD) $(CC_LDOPTIONS) -o program program.obj.o $(CDYNAMIC) $(PROG_LIBS) $(CSTATIC) $(LDLIBS) $(CDYNAMIC) $(EXTRA_LDLIBS)]\
 ]\
 CleanFilesTarget(program program.obj.o objects)
 #else
@@ -418,35 +418,9 @@ CleanFilesTarget(library.a objects)
 #ifndef	BuildSharedPartialFromArch
 #ifdef	BuildShared
 #define	BuildSharedPartialFromArch(library,arch,major,minor,reqlibs)\
-]\
-all::]\
-]\
-all-local:: library.so]\
-]\
-library.so:: library.so.major]\
-	@$(RM) library.so; \ ]\
-	$(LN) library.so.major library.so ]\
-	@cd $(TOP)/shared;\ ]\
-	$(RM) library.so; \ ]\
-	$(LN) library.so.major library.so ]\
-]\
-library.so.major:: arch]\
-	MakeDir($(TOP)/shared)]\
-	$(LD) -shared -woff 85,33 -set_version sgi##major.minor -rdata_shared -update_registry $(TOP)/shared/so_locations -o $@ -all arch -none $(SHAREDLDLIBSEARCH) reqlibs ]\
-	@cd $(TOP)/shared;\ ]\
-	$(RM) library.so.major; \ ]\
-	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\
-]\
-InstallTarget(library.so.major,$(INSTALL_LIB),$(LIBPATH))\
-install-local:: library.so.major]\
-	MakeDir($(LIBPATH))]\
-	@cd $(LIBPATH); \ ]\
-	$(RM) library.so; \ ]\
-	$(LN) library.so.major library.so ]\
-]\
-CleanFilesTarget(library.so library.so.major arch)
+PrintError(BuildSharedPartialFromArch,"BuildSharedPartialFromArch","Rule hasn't been defined.")
 #else
-#define	BuildSharedPartialFromArch(library,arch,major,minor,reqlibs) /**/
+#define BuildSharedPartialFromArch(library,arch,major,minor,reqlibs)	/**/
 #endif	/* BuildShared */
 #endif	/* BuildSharedPartialFromArch */
 
@@ -458,35 +432,9 @@ CleanFilesTarget(library.so library.so.major arch)
 #ifndef	BuildSharedFromArch
 #ifdef	BuildShared
 #define	BuildSharedFromArch(library,arch,major,minor,reqlibs)\
-]\
-all::]\
-]\
-all-local:: library.so]\
-]\
-library.so:: library.so.major]\
-	@$(RM) library.so; \ ]\
-	$(LN) library.so.major library.so ]\
-	@cd $(TOP)/shared;\ ]\
-	$(RM) library.so; \ ]\
-	$(LN) library.so.major library.so ]\
-]\
-library.so.major:: arch]\
-	MakeDir($(TOP)/shared)]\
-	$(LD) -shared -woff 85,84 -set_version sgi##major.minor -no_unresolved -rdata_shared -update_registry $(TOP)/shared/so_locations -o $@ -all arch -none $(SHAREDLDLIBSEARCH) reqlibs ]\
-	@cd $(TOP)/shared;\ ]\
-	$(RM) library.so.major; \ ]\
-	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\
-]\
-InstallTarget(library.so.major,$(INSTALL_LIB),$(LIBPATH))\
-install-local:: library.so.major]\
-	MakeDir($(LIBPATH))]\
-	@cd $(LIBPATH); \ ]\
-	$(RM) library.so; \ ]\
-	$(LN) library.so.major library.so ]\
-]\
-CleanFilesTarget(library.so library.so.major arch)
+PrintError(BuildSharedFromArch,"BuildSharedFromArch","Rule hasn't been defined.")
 #else
-#define	BuildSharedFromArch(library,arch,major,minor,reqlibs) /**/
+#define BuildSharedFromArch(library,arch,major,minor,reqlibs)	/**/
 #endif	/* BuildShared */
 #endif	/* BuildSharedFromArch */
 
@@ -502,36 +450,10 @@ CleanFilesTarget(library.so library.so.major arch)
 #ifndef	BuildSharedPartialLib
 #ifdef	BuildShared
 #define	BuildSharedPartialLib(library,objects,major,minor,reqlibs)\
-]\
-all::]\
-]\
-all-local:: library.so]\
-]\
-library.so:: library.so.major]\
-	@$(RM) library.so; \ ]\
-	$(LN) library.so.major library.so ]\
-	@cd $(TOP)/shared;\ ]\
-	$(RM) library.so; \ ]\
-	$(LN) library.so.major library.so ]\
-]\
-library.so.major:: objects]\
-	MakeDir($(TOP)/shared)]\
-	$(LD) -shared -woff 85 -set_version sgi##major.minor -rdata_shared -default_delay_load -update_registry $(TOP)/shared/so_locations -o $@ objects $(SHAREDLDLIBSEARCH) reqlibs ]\
-	@cd $(TOP)/shared;\ ]\
-	$(RM) library.so.major; \ ]\
-	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\
-]\
-InstallTarget(library.so.major,$(INSTALL_LIB),$(LIBPATH))\
-install-local:: library.so.major]\
-	MakeDir($(LIBPATH))]\
-	@cd $(LIBPATH); \ ]\
-	$(RM) library.so; \ ]\
-	$(LN) library.so.major library.so ]\
-]\
-CleanFilesTarget(library.so library.so.major)
+PrintError(BuildSharedPartialLib,"BuildSharedPartialLib","Rule hasn't been defined.")
 #else
-#define	BuildSharedPartialLib(library,objects,major,minor,reqlibs) /**/
-#endif	/* IRIX */
+#define BuildSharedPartialLib(library,objects,major,minor,reqlibs)	/**/
+#endif	/* BuildShared */
 #endif	/* BuildSharedPartialLib */
 
 /*
@@ -542,36 +464,10 @@ CleanFilesTarget(library.so library.so.major)
 #ifndef	BuildSharedLibTarget
 #ifdef	BuildShared
 #define	BuildSharedLibTarget(library,objects,major,minor,reqlibs)\
-]\
-all::]\
-]\
-all-local:: library.so]\
-]\
-library.so:: library.so.major]\
-	@$(RM) library.so; \ ]\
-	$(LN) library.so.major library.so ]\
-	@cd $(TOP)/shared;\ ]\
-	$(RM) library.so; \ ]\
-	$(LN) library.so.major library.so ]\
-]\
-library.so.major:: objects]\
-	MakeDir($(TOP)/shared)]\
-	$(LD) -shared -woff 85 -set_version sgi##major.minor -no_unresolved -rdata_shared -update_registry $(TOP)/shared/so_locations -o $@ objects $(SHAREDLDLIBSEARCH) reqlibs ]\
-	@cd $(TOP)/shared;\ ]\
-	$(RM) library.so.major; \ ]\
-	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\
-]\
-InstallTarget(library.so.major,$(INSTALL_LIB),$(LIBPATH))\
-install-local:: library.so.major]\
-	MakeDir($(LIBPATH))]\
-	@cd $(LIBPATH); \ ]\
-	$(RM) library.so; \ ]\
-	$(LN) library.so.major library.so ]\
-]\
-CleanFilesTarget(library.so library.so.major)
+PrintError(BuildSharedLibTarget,"BuildSharedLibTarget","Rule hasn't been defined.")
 #else
-#define	BuildSharedLibTarget(library,objects,major,minor,reqlibs) /**/
-#endif	/* IRIX */
+#define BuildSharedLibTarget(library,objects,major,minor,reqlibs)	/**/
+#endif	/* BuildShared */
 #endif	/* BuildSharedLibTarget */
 
 /*

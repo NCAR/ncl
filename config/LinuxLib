@@ -1,0 +1,170 @@
+NGCOMM
+NGCOMM	$Id: LinuxLib,v 1.1 1997-05-14 23:05:54 boote Exp $
+NGCOMM
+NGCOMM###################################################################
+NGCOMM#									#
+NGCOMM#			      Copyright (C) 1997			#
+NGCOMM#		University Corporation for Atmospheric Research		#
+NGCOMM#			      All Rights Reserved			#
+NGCOMM#									#
+NGCOMM###################################################################
+NGCOMM#
+NGCOMM#	File:		LinuxLib
+NGCOMM#
+NGCOMM#	Author:		Jeff W. Boote
+NGCOMM#			National Center for Atmospheric Research
+NGCOMM#			PO 3000, Boulder, Colorado
+NGCOMM#
+NGCOMM#	Date:		Tue May 13 18:13:34 MDT 1997
+NGCOMM#
+NGCOMM#	Description:	Rules for building Shared libs for Linux
+NGCOMM#
+
+/*
+ * Macro:	BuildSharedPartialFromArch
+ *
+ * Description:	Build a shared lib that should only be linked from
+ *		another shared lib - it may have unresolved references.
+ */
+#ifndef	BuildSharedPartialFromArch
+#define	BuildSharedPartialFromArch(library,arch,major,minor,reqlibs)\
+]\
+all::]\
+]\
+all-local:: library.so]\
+]\
+library.so:: library.so.major]\
+	@$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
+library.so.major:: arch]\
+	MakeDir($(TOP)/shared)]\
+	$(LD) -shared -o $@ --whole-archive arch $(SHAREDLDLIBSEARCH) reqlibs ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so.major; \ ]\
+	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\
+]\
+InstallTarget(library.so.major,$(INSTALL_LIB),$(LIBPATH))\
+install-local:: library.so.major]\
+	MakeDir($(LIBPATH))]\
+	@cd $(LIBPATH); \ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
+CleanFilesTarget(library.so library.so.major arch)
+#endif	/* BuildSharedPartialFromArch */
+
+/*
+ * Macro:	BuildSharedFromArch
+ *
+ * Description:	Build a shared library from a .a file
+ */
+#ifndef	BuildSharedFromArch
+#define	BuildSharedFromArch(library,arch,major,minor,reqlibs)\
+]\
+all::]\
+]\
+all-local:: library.so]\
+]\
+library.so:: library.so.major]\
+	@$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
+library.so.major:: arch]\
+	MakeDir($(TOP)/shared)]\
+	$(LD) -shared -o $@ --whole-archive arch $(SHAREDLDLIBSEARCH) reqlibs ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so.major; \ ]\
+	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\
+]\
+InstallTarget(library.so.major,$(INSTALL_LIB),$(LIBPATH))\
+install-local:: library.so.major]\
+	MakeDir($(LIBPATH))]\
+	@cd $(LIBPATH); \ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
+CleanFilesTarget(library.so library.so.major arch)
+#endif	/* BuildSharedFromArch */
+
+/*
+ * Macro:	BuildSharedPartialLib
+ *
+ * Description: Build a shared library that may contain unresolved references.
+ *		It should not be linked in directly from users - this should
+ *		only be used by other libraries, and it should contain
+ *		ABSOLUTELY NO USER ENTRY POINTS - it should be created
+ *		default - delay loaded.
+ */
+#ifndef	BuildSharedPartialLib
+#define	BuildSharedPartialLib(library,objects,major,minor,reqlibs)\
+]\
+all::]\
+]\
+all-local:: library.so]\
+]\
+library.so:: library.so.major]\
+	@$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
+library.so.major:: objects]\
+	MakeDir($(TOP)/shared)]\
+	$(LD) -shared -o $@ objects $(SHAREDLDLIBSEARCH) reqlibs ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so.major; \ ]\
+	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\
+]\
+InstallTarget(library.so.major,$(INSTALL_LIB),$(LIBPATH))\
+install-local:: library.so.major]\
+	MakeDir($(LIBPATH))]\
+	@cd $(LIBPATH); \ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
+CleanFilesTarget(library.so library.so.major)
+#endif	/* BuildSharedPartialLib */
+
+/*
+ * Macro:	BuildSharedLibTarget
+ *
+ * Description: Build a shared library
+ */
+#ifndef	BuildSharedLibTarget
+#define	BuildSharedLibTarget(library,objects,major,minor,reqlibs)\
+]\
+all::]\
+]\
+all-local:: library.so]\
+]\
+library.so:: library.so.major]\
+	@$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
+library.so.major:: objects]\
+	MakeDir($(TOP)/shared)]\
+	$(LD) -shared -o $@ objects $(_LIBROOTSEARCH) reqlibs ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so.major; \ ]\
+	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\
+]\
+InstallTarget(library.so.major,$(INSTALL_LIB),$(LIBPATH))\
+install-local:: library.so.major]\
+	MakeDir($(LIBPATH))]\
+	@cd $(LIBPATH); \ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
+CleanFilesTarget(library.so library.so.major)
+#endif	/* BuildSharedLibTarget */

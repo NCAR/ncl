@@ -1,0 +1,164 @@
+/*
+ * Macro:	BuildSharedPartialFromArch
+ *
+ * Description:	Build a shared lib that should only be linked from
+ *		another shared lib - it may have unresolved references.
+ */
+#ifndef	BuildSharedPartialFromArch
+#ifdef	BuildShared
+#define	BuildSharedPartialFromArch(library,arch,major,minor,reqlibs)\
+]\
+all::]\
+]\
+all-local:: library.so]\
+]\
+library.so:: library.so.major]\
+	@$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
+library.so.major:: arch]\
+	MakeDir($(TOP)/shared)]\
+	$(LD) -shared -woff 85,33 -set_version sgi##major.minor -rdata_shared -update_registry $(TOP)/shared/so_locations -o $@ -all arch -none $(SHAREDLDLIBSEARCH) reqlibs ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so.major; \ ]\
+	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\
+]\
+InstallTarget(library.so.major,$(INSTALL_LIB),$(LIBPATH))\
+install-local:: library.so.major]\
+	MakeDir($(LIBPATH))]\
+	@cd $(LIBPATH); \ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
+CleanFilesTarget(library.so library.so.major arch)
+#else
+#define	BuildSharedPartialFromArch(library,arch,major,minor,reqlibs) /**/
+#endif	/* BuildShared */
+#endif	/* BuildSharedPartialFromArch */
+
+/*
+ * Macro:	BuildSharedFromArch
+ *
+ * Description:	Build a shared library from a .a file
+ */
+#ifndef	BuildSharedFromArch
+#ifdef	BuildShared
+#define	BuildSharedFromArch(library,arch,major,minor,reqlibs)\
+]\
+all::]\
+]\
+all-local:: library.so]\
+]\
+library.so:: library.so.major]\
+	@$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
+library.so.major:: arch]\
+	MakeDir($(TOP)/shared)]\
+	$(LD) -shared -woff 85,84 -set_version sgi##major.minor -no_unresolved -rdata_shared -update_registry $(TOP)/shared/so_locations -o $@ -all arch -none $(SHAREDLDLIBSEARCH) reqlibs ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so.major; \ ]\
+	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\
+]\
+InstallTarget(library.so.major,$(INSTALL_LIB),$(LIBPATH))\
+install-local:: library.so.major]\
+	MakeDir($(LIBPATH))]\
+	@cd $(LIBPATH); \ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
+CleanFilesTarget(library.so library.so.major arch)
+#else
+#define	BuildSharedFromArch(library,arch,major,minor,reqlibs) /**/
+#endif	/* BuildShared */
+#endif	/* BuildSharedFromArch */
+
+/*
+ * Macro:	BuildSharedPartialLib
+ *
+ * Description: Build a shared library that may contain unresolved references.
+ *		It should not be linked in directly from users - this should
+ *		only be used by other libraries, and it should contain
+ *		ABSOLUTELY NO USER ENTRY POINTS - it should be created
+ *		default - delay loaded.
+ */
+#ifndef	BuildSharedPartialLib
+#ifdef	BuildShared
+#define	BuildSharedPartialLib(library,objects,major,minor,reqlibs)\
+]\
+all::]\
+]\
+all-local:: library.so]\
+]\
+library.so:: library.so.major]\
+	@$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
+library.so.major:: objects]\
+	MakeDir($(TOP)/shared)]\
+	$(LD) -shared -woff 85 -set_version sgi##major.minor -rdata_shared -default_delay_load -update_registry $(TOP)/shared/so_locations -o $@ objects $(SHAREDLDLIBSEARCH) reqlibs ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so.major; \ ]\
+	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\
+]\
+InstallTarget(library.so.major,$(INSTALL_LIB),$(LIBPATH))\
+install-local:: library.so.major]\
+	MakeDir($(LIBPATH))]\
+	@cd $(LIBPATH); \ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
+CleanFilesTarget(library.so library.so.major)
+#else
+#define	BuildSharedPartialLib(library,objects,major,minor,reqlibs) /**/
+#endif	/* BuildShared */
+#endif	/* BuildSharedPartialLib */
+
+/*
+ * Macro:	BuildSharedLibTarget
+ *
+ * Description: Build a shared library
+ */
+#ifndef	BuildSharedLibTarget
+#ifdef	BuildShared
+#define	BuildSharedLibTarget(library,objects,major,minor,reqlibs)\
+]\
+all::]\
+]\
+all-local:: library.so]\
+]\
+library.so:: library.so.major]\
+	@$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
+library.so.major:: objects]\
+	MakeDir($(TOP)/shared)]\
+	$(LD) -shared -woff 85 -set_version sgi##major.minor -no_unresolved -rdata_shared -update_registry $(TOP)/shared/so_locations -o $@ objects $(SHAREDLDLIBSEARCH) reqlibs ]\
+	@cd $(TOP)/shared;\ ]\
+	$(RM) library.so.major; \ ]\
+	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\
+]\
+InstallTarget(library.so.major,$(INSTALL_LIB),$(LIBPATH))\
+install-local:: library.so.major]\
+	MakeDir($(LIBPATH))]\
+	@cd $(LIBPATH); \ ]\
+	$(RM) library.so; \ ]\
+	$(LN) library.so.major library.so ]\
+]\
+CleanFilesTarget(library.so library.so.major)
+#else
+#define	BuildSharedLibTarget(library,objects,major,minor,reqlibs) /**/
+#endif	/* IRIX */
+#endif	/* BuildSharedLibTarget */

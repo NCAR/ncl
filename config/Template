@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.33 1997-01-21 21:34:43 boote Exp $
+ *      $Id: Template,v 1.34 1997-05-14 23:05:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -240,6 +240,8 @@ NGCOMM########################################################################
 
 #if	defined(SGI) && ((MAJOR >= 6) || ((MAJOR == 5) && (MINOR >= 3)))
 #define	BuildShared
+#elif	defined(Linux)
+#define	BuildShared
 #endif
 
 #else
@@ -249,6 +251,29 @@ NGCOMM########################################################################
 #endif	/* !BuildShared */
 
 #endif	/* BuildShared */
+
+#ifdef	BuildShared
+#ifndef	_LIB_FILE
+
+#if	defined(SGI)
+#define	_LIB_FILE	"SGILib"
+#elif	defined(Linux)
+#define	_LIB_FILE	"LinuxLib"
+#endif
+
+#else
+
+#if	!_LIB_FILE
+#undef	_LIB_FILE
+#endif
+#endif	/* _LIB_FILE */
+
+#else
+#ifdef	_LIB_FILE
+#undef	_LIB_FILE
+#endif
+#endif	/* BuildShared */
+
 
 #ifndef	XLibrary
 #define	XLibrary -lX11
@@ -381,6 +406,14 @@ NGCOMM########################################################################
 #ifndef	LdRelCommand
 #define	LdRelCommand	LdCommand
 #endif	/* LdRelCommand */
+
+#ifndef	RpathFlag
+#define	RpathFlag	-Wl,-rpath,
+#endif
+
+#ifndef	SysSharedLibFlags
+#define	SysSharedLibFlags	/**/
+#endif
 
 #ifndef	ExtraSysLibraries
 #define	ExtraSysLibraries	/**/
@@ -618,10 +651,12 @@ BUILDINCTOP	= ./..
 
 #ifdef	_LibRootEqualPath
 _LIBROOTSEARCH	=	-L$(LIBROOT)
-_EXECLIBSEARCH	=	-Wl,-rpath,$(TOP)/shared:$(LIBROOT)
+_EXECLIBSEARCH	=	$(RPATHFLAG)$(TOP)/shared:$(LIBROOT)
+_SHLIBSEARCH	=	-rpath $(TOP)/shared:$(LIBROOT)
 #else
 _LIBROOTSEARCH	=	-L$(LIBPATH) -L$(LIBROOT)
-_EXECLIBSEARCH	=	-Wl,-rpath,$(TOP)/shared:$(LIBPATH):$(LIBROOT)
+_EXECLIBSEARCH	=	$(RPATHFLAG)$(TOP)/shared:$(LIBPATH):$(LIBROOT)
+_SHLIBSEARCH	=	-rpath $(TOP)/shared:$(LIBPATH):$(LIBROOT)
 #endif
 
 #ifdef	_IncRootEqualPath
@@ -631,8 +666,9 @@ _INCROOTSEARCH	=	-I$(INCPATH) -I$(INCROOT)
 #endif
 
 #ifdef	BuildShared
+SYSSHAREDLIBFLAGS =	SysSharedLibFlags
 SHAREDLIBSEARCH	=	-L$(TOP)/shared
-SHAREDLIBFLAGS	=	-Wl,-woff,84,-woff,85 $(_EXECLIBSEARCH) $(SHAREDLIBSEARCH)
+SHAREDLIBFLAGS	=	$(SYSSHAREDLIBFLAGS) $(_EXECLIBSEARCH) $(SHAREDLIBSEARCH)
 SHAREDLDLIBSEARCH = $(DEV_LIB_SEARCH) $(SHAREDLIBSEARCH) $(_LIBROOTSEARCH) $(LIB_SEARCH)
 #else
 SHAREDLIBFLAGS =
@@ -674,6 +710,7 @@ XTRA_FLDFLAGS	= $(EXTRA_FLDFLAGS) $(EXTRA_LDFLAGS)
 
 LD		= LdCommand
 LD_REL		= LdRelCommand
+RPATHFLAG	= RpathFlag
 AR		= ArCommand
 AR_SRC		= ArSrcCommand
 AR_SRC_QUICK	= $(AR_SRC) ArQuickOpt
@@ -756,6 +793,20 @@ NGCOMM
 NGCOMM########################################################################
 #endif
 #endif	/* _NO_PROJECT_FILE */
+
+#ifdef	_LIB_FILE
+NGCOMM########################################################################
+NGCOMM
+NGCOMM Including Lib file
+NGCOMM
+NGCOMM########################################################################
+#include _LIB_FILE
+NGCOMM########################################################################
+NGCOMM
+NGCOMM After Including Lib file
+NGCOMM
+NGCOMM########################################################################
+#endif
 
 NGCOMM########################################################################
 NGCOMM

@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX,v 1.3 1997-05-05 21:31:58 boote Exp $
+ *      $Id: LINUX,v 1.4 1997-05-14 23:05:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,9 +24,11 @@
 #define	HdfDefines	-DLINUX
 #define	StdDefines	-DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped
 #define ByteSwapped
+#define	Cstatic	-Wl,-Bstatic
+#define	Cdynamic -Wl,-Bdynamic
 #define	CCompiler	gcc
 #define	FCompiler	g77
-#define	CtoFLibraries	-lm -lf2c
+#define	CtoFLibraries	-lf2c
 #define CcOptions       -ansi
 #define FcOptions
 #define COptimizeFlag   
@@ -48,4 +50,3 @@ FC = $(F77)
 #ifndef	MakeDir
 #define	MakeDir(dir)	@if (test ! -d dir); then ($(MKDIRHIER) dir); fi
 #endif
-

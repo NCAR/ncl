@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.14 1997-04-21 21:53:52 haley Exp $
+ *      $Id: yMakefile,v 1.15 1997-05-14 23:05:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,8 +27,9 @@ CONFIG-PROGRAMS	= ymake-filter fcpp callconv mkdirhier ymake-install ldrel
 ARCHFILES	=	AIX_RS6000 AlphaOSF1 Cray DECRISC \
 			HPUX_snake SGI4D SGIR8 Sun4 \
 			Sun4Solaris LINUX SystemV
+LIBFILES	=	SGILib LinuxLib
 YMAKEFILES	=	Project Rules SiteFileName Template
-CONFIGFILES	=	$(ARCHFILES) $(YMAKEFILES)
+CONFIGFILES	=	$(ARCHFILES) $(LIBFILES) $(YMAKEFILES)
 
 #if	UseCatDirs
 EXTENSION	=	.cat
