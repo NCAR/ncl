@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.10 1992-09-01 23:44:37 clyne Exp $
+ *	$Id: sunraster.c,v 1.11 1992-09-10 21:05:24 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -32,6 +32,7 @@
  *		
  */
 #include <stdio.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>
@@ -39,7 +40,6 @@
 #include "sunraster.h"
 
 static char	*FormatName = "sun";
-extern char	*ProgramName;
 
 Raster *
 SunOpen(name)
@@ -49,7 +49,7 @@ SunOpen(name)
 
 	ras = (Raster *) calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
+		(void) ESprintf(errno, "");
 		return( (Raster *) NULL );
 	}
 
@@ -60,13 +60,13 @@ SunOpen(name)
 	else {
 		ras->fd  = open(name, O_RDONLY);
 		if (ras->fd == -1) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, "");
 			return( (Raster *) NULL );
 		}
 
 		ras->fp = fdopen(ras->fd, "r");
 		if (ras->fp == (FILE *) NULL) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, "");
 			return( (Raster *) NULL );
 		}
 	}
@@ -88,25 +88,26 @@ SunOpenWrite(name, nx, ny, comment, encoding)
 	int		nx;
 	int		ny;
 	char		*comment;
-	int		encoding;
+	RasterEncoding	encoding;
 {
 	Raster		*ras;
 	SunInfo		*dep;
 
 	if (name == (char *) NULL) {
-		(void) RasterSetError(RAS_E_NULL_NAME);
+		(void) ESprintf(RAS_E_NULL_NAME,
+			"SunOpenWrite(%s,,,,)", name);
 		return( (Raster *) NULL );
 	}
 
 	ras = (Raster *) calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
+		(void) ESprintf(errno, "");
 		return( (Raster *) NULL );
 	}
 
 	ras->dep = calloc(sizeof(SunInfo),1);
 	if (ras->dep == (char *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
+		(void) ESprintf(errno, "");
 		return( (Raster *) NULL );
 	}
 
@@ -118,7 +119,7 @@ SunOpenWrite(name, nx, ny, comment, encoding)
 	else {
 		ras->fd = open(name, O_WRONLY | O_CREAT, 0644);
 		if (ras->fd == -1) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, "");
 			return( (Raster *) NULL );
 		}
 	}
@@ -149,7 +150,8 @@ SunOpenWrite(name, nx, ny, comment, encoding)
 	ras->data	= (unsigned char *)calloc((unsigned)(ras->length+4),1);
 
 	if (encoding != RAS_INDEXED) {
-		(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
+		(void) ESprintf(RAS_E_UNSUPPORTED_ENCODING,
+		"NCAR Graphics does not support Sun true color output");
 		return( (Raster *) NULL );
 	}
 	else {
@@ -271,7 +273,7 @@ SunRead(ras)
 	if (ras->dep == (char *) NULL) {
 		ras->dep =  (char *) calloc(sizeof(SunInfo),1);
 		if (ras->dep == (char *) NULL) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, "");
 			return(RAS_ERROR);
 		}
 	}
@@ -290,7 +292,8 @@ SunRead(ras)
 	/* Weed out the unsupported encoding forms */
 
 	if (dep->ras_type == RT_OLD || dep->ras_type == RT_EXPERIMENTAL) {
-		(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
+		(void) ESprintf(RAS_E_UNSUPPORTED_ENCODING,
+		"Sun RT_OLD and RT_EXPERIMENTAL not supported for input");
 		return(RAS_ERROR);
 	}
 
@@ -310,7 +313,8 @@ SunRead(ras)
 		ras->length	= ras->nx * ras->ny * 3;
 	}
 	else {
-		(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
+		(void) ESprintf(RAS_E_UNSUPPORTED_ENCODING,
+		"Only Sun RMT_EQUAL_RGB and RMT_NONE color maps supported");
 		return(RAS_ERROR);
 	}
 		
@@ -321,7 +325,7 @@ SunRead(ras)
 		ras->data = (unsigned char *) calloc( ras->length, 1);
 
 		if (ras->data == (unsigned char *) NULL) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, "");
 			return(RAS_ERROR);
 		}
 
@@ -334,7 +338,7 @@ SunRead(ras)
 			if (ras->red == (unsigned char *) NULL ||
 			    ras->green == (unsigned char *) NULL ||
 			    ras->blue == (unsigned char *) NULL) {
-			    (void) RasterSetError(RAS_E_SYSTEM);
+			    (void) ESprintf(errno, "");
 			    return(RAS_ERROR);
 			}
 		}
@@ -345,7 +349,7 @@ SunRead(ras)
 	already loaded a color map then just discard the information.
 	*/
 
-	if (!ras->map_loaded) {
+	if (!ras->map_forced) {
 		status=fread((char *)ras->red,1,ras->ncolor,ras->fp);
 		if (status != ras->ncolor) return(RAS_EOF);
 
@@ -391,7 +395,7 @@ SunRead(ras)
 			tmpbuf = (unsigned char *) 
 				calloc( (unsigned) dep->ras_length, 1);
 			if (tmpbuf == (unsigned char *) NULL) {
-				(void) RasterSetError(RAS_E_SYSTEM);
+				(void) ESprintf(errno, "");
 				return(RAS_ERROR);
 			}
 		}
@@ -423,13 +427,16 @@ SunRead(ras)
 			  tmpbuf_size = image_size;
 			} 
 			if (tmpbuf == (unsigned char *) NULL) {
-				(void) RasterSetError(RAS_E_SYSTEM);
+				(void) ESprintf(errno, "");
 				return(RAS_ERROR);
 			}
 		}
 
 		status=fread((char *)tmpbuf,1,(int)image_size,ras->fp);
+#ifdef DEAD
 		if (status != image_size) return(RAS_EOF);
+#endif
+		if (status != image_size) image_size = status;
 
 		for(datap = ras->data, rlep = tmpbuf;
 		rlep < (tmpbuf+image_size) ; ) {
