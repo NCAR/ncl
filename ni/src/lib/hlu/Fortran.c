@@ -1,5 +1,5 @@
 /*
- *      $Id: Fortran.c,v 1.9 1995-03-31 00:50:50 boote Exp $
+ *      $Id: Fortran.c,v 1.10 1995-05-02 21:28:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -971,6 +971,7 @@ CvtGenArrToFArr
 
 		StackAlloc(len_dim,num_dim);
 
+		num_elements = 1;
 		for(i=0;i < num_dim; i++){
 			if(exp->len_dim[i] < gen->len_dimensions[
 						(gen->num_dimensions -1 )-i]){
@@ -984,9 +985,12 @@ CvtGenArrToFArr
 
 				len_dim[i] = exp->len_dim[i];
 			}
-			else
+			else{
 				len_dim[i] = gen->len_dimensions
 						[gen->num_dimensions-1-i];
+			}
+
+			num_elements *= len_dim[i];
 		}
 	}
 	else{
@@ -1239,11 +1243,8 @@ GetFArray
 
 	val.ptrval = exp;
 
-	if(_NhlRLInsert(id,NhlGETRL,_NhlFstrToQuark(fname,fname_len),FExpArrQ,
-				val,sizeof(NhlPointer),(_NhlFreeFunc)NhlFree))
-		return False;
-	else
-		return True;
+	return _NhlRLInsert(id,NhlGETRL,_NhlFstrToQuark(fname,fname_len),
+			FExpArrQ,val,sizeof(NhlPointer),(_NhlFreeFunc)NhlFree);
 }
 
 /*

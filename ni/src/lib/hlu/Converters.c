@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.36 1995-04-22 01:01:32 boote Exp $
+ *      $Id: Converters.c,v 1.37 1995-05-02 21:28:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -42,6 +42,7 @@ static NrmQuark stringQ;
 static NrmQuark genQ;
 static NrmQuark intgenQ;
 static NrmQuark strgenQ;
+static NrmQuark varQ;
 
 
 static _NhlTokens
@@ -1995,7 +1996,7 @@ CvtArgs
 	 * if from is not a GenArray, then this converter was already called
 	 * to get the more specific name.  This ends the recursion.
 	 */
-	if(from->typeQ != genQ){
+	if((from->typeQ != genQ) && (from->typeQ != varQ)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"%s:Need a converter from %s to %s",func,
 						NrmQuarkToString(from->typeQ),
@@ -3125,6 +3126,7 @@ _NhlConvertersInitialize
 	genQ = NrmStringToQuark(NhlTGenArray);
 	intgenQ = NrmStringToQuark(NhlTIntegerGenArray);
 	strgenQ = NrmStringToQuark(NhlTStringGenArray);
+	varQ = NrmStringToQuark(NhlTVariable);
 
 	/*
 	 * Create hierarchy

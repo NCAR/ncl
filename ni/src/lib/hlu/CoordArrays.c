@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.27 1995-04-07 10:41:19 boote Exp $
+ *      $Id: CoordArrays.c,v 1.28 1995-05-02 21:28:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1511,7 +1511,7 @@ CoordArraysGetValues
 
 		if((args[i].quark == xarrQ) && cap->xarray){
 			*(NhlGenArray*)args[i].value.ptrval =
-				_NhlCopyGenArray(cap->xarray,cap->copy_arrays);
+				_NhlCopyGenArray(cap->xarray,True);
 			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
 				NhlPError(NhlWARNING,ENOMEM,
 				"%s:Unable to allocate memory to retrieve %s",
@@ -1522,7 +1522,7 @@ CoordArraysGetValues
 
 		else if((args[i].quark == yarrQ) && cap->yarray){
 			*(NhlGenArray*)args[i].value.ptrval =
-				_NhlCopyGenArray(cap->yarray,cap->copy_arrays);
+				_NhlCopyGenArray(cap->yarray,True);
 			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
 				NhlPError(NhlWARNING,ENOMEM,
 				"%s:Unable to allocate memory to retrieve %s",
@@ -1578,7 +1578,7 @@ CoordArraysGetValues
 		else if(args[i].quark == ymaxQ){
 
 			if(!cap->max_y){
-				if(FlushObj(XDIM,cap) < NhlWARNING){
+				if(FlushObj(YDIM,cap) < NhlWARNING){
 					NhlPError(NhlWARNING,NhlEUNKNOWN,
 						"%s:Unable to determine %s",
 							func,NhlNcaYMaxV);
@@ -1622,7 +1622,7 @@ CoordArraysGetValues
 		else if(args[i].quark == yminQ){
 
 			if(!cap->min_y){
-				if(FlushObj(XDIM,cap) < NhlWARNING){
+				if(FlushObj(YDIM,cap) < NhlWARNING){
 					NhlPError(NhlWARNING,NhlEUNKNOWN,
 						"%s:Unable to determine %s",
 							func,NhlNcaYMinV);

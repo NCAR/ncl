@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.25 1995-04-07 10:41:11 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.26 1995-05-02 21:28:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1585,7 +1585,7 @@ CoordArrTableGetValues
 			int		*lens,j;
 
 			*(NhlGenArray*)args[i].value.ptrval = tgen =
-				_NhlCopyGenArray(clp->xtable,clp->copy_tables);
+				_NhlCopyGenArray(clp->xtable,True);
 
 			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
 				NhlPError(NhlWARNING,ENOMEM,
@@ -1594,8 +1594,7 @@ CoordArrTableGetValues
 				ret = MIN(NhlWARNING,ret);
 				continue;
 			}
-
-			if(clp->copy_tables){
+			else{
 				/*
 				 * Now copy the vectors
 				 */
@@ -1623,7 +1622,7 @@ CoordArrTableGetValues
 			int		*lens,j;
 
 			*(NhlGenArray*)args[i].value.ptrval = tgen =
-				_NhlCopyGenArray(clp->ytable,clp->copy_tables);
+				_NhlCopyGenArray(clp->ytable,True);
 
 			if(*(NhlGenArray*)args[i].value.ptrval == NULL){
 				NhlPError(NhlWARNING,ENOMEM,
@@ -1632,8 +1631,7 @@ CoordArrTableGetValues
 				ret = MIN(NhlWARNING,ret);
 				continue;
 			}
-
-			if(clp->copy_tables){
+			else{
 				/*
 				 * Now copy the vectors
 				 */
