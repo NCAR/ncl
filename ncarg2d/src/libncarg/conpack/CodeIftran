@@ -89,14 +89,6 @@ I equivalence statements defining IRnn and LRnn must be changed.
 I
 .RE /$NBRW$/4/
 I
-I Selection of code to include CVS "$Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $" comments.
-I --------- -- ---- -- ------- --- ------ --------
-I
-I To include a CVS "$Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $" comment in each routine, use ".DE A"; else,
-I use ".EL A".
-I
-.EL A
-I
 I The CONPACK common blocks
 I --- ------- ------ ------
 I
@@ -208,13 +200,13 @@ C
         SAVE   /CPCOM2/
 .ENDIF
 .END
-I
+
+
 I***********************************************************************
 I C O N P A C K   -   B L O C K   D A T A   ( D E F A U L T S )
 I***********************************************************************
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       BLOCK DATA CPBLDA
 C
 C Declare all of the CONPACK common blocks.
@@ -1088,13 +1080,13 @@ C
         DATA ZMAX,ZMIN / 0.,0. /
 C
       END
-I
+
+
 I***********************************************************************
 I C O N P A C K   -   U S E R - L E V E L   S U B R O U T I N E S
 I***********************************************************************
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPBACK (ZDAT,RWRK,IWRK)
 C
         DIMENSION ZDAT(IZD1,*),RWRK(*),IWRK(*)
@@ -1131,9 +1123,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPCICA (ZDAT,RWRK,IWRK,ICRA,ICA1,ICAM,ICAN,XCPF,YCPF,
      +                                                      XCQF,YCQF)
 C
@@ -1271,7 +1262,7 @@ C invisible or outside the grid.
 C
             IOOR=0
 C
-            IF (IMPF.EQ.0) THEN
+            IF (IMPF.EQ.0)
               XCCI=1.+((XCCU-XAT1)/(XATM-XAT1))*REAL(IZDM-1)
               YCCI=1.+((YCCU-YAT1)/(YATN-YAT1))*REAL(IZDN-1)
             ELSE
@@ -1357,9 +1348,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPCLAM (ZDAT,RWRK,IWRK,IAMA)
 C
         DIMENSION ZDAT(IZD1,*),RWRK(*),IWRK(*),IAMA(*)
@@ -1665,9 +1655,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPCLDM (ZDAT,RWRK,IWRK,IAMA,RTPL)
 C
         DIMENSION ZDAT(IZD1,*),RWRK(*),IWRK(*),IAMA(*)
@@ -2134,9 +2123,8 @@ C
         END BLOCK
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPCLDR (ZDAT,RWRK,IWRK)
 C
         DIMENSION ZDAT(IZD1,*),RWRK(*),IWRK(*)
@@ -2578,9 +2566,8 @@ C
         END BLOCK
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPCLTR (ZDAT,RWRK,IWRK,CLVL,IJMP,IRW1,IRW2,NRWK)
 C
         DIMENSION ZDAT(IZD1,*),RWRK(*),IWRK(*)
@@ -2624,9 +2611,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPCNRC (ZDAT,KZDT,MZDT,NZDT,FLOW,FHGH,FINC,KSET,NHGH,
      +                   NDSH)
 C
@@ -2791,7 +2777,7 @@ C
             CALL CPGETR ('CLV - CONTOUR LEVEL',CLEV)
             IF (ICFELL('CPCNRC',35).NE.0) RETURN
             IF (FLOW.GE.FHGH.OR.(CLEV.GE.FLOW-.001*CINU.AND.
-     +                           CLEV.LE.FHGH+.001*CINU)) THEN
+     +                           CLEV.LE.FHGH+.001*CINU))
               NCLN=NCLN+1
               IF (NCLN.NE.ICLO)
                 CALL CPGETI ('CLU - CONTOUR LEVEL USE FLAG',ICLU)
@@ -2943,9 +2929,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPDRPL (XCS,YCS,NCS,IAI,IAG,NAI)
 C
         DIMENSION XCS(*),YCS(*),IAI(*),IAG(*)
@@ -2990,9 +2975,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPEZCT (ZDAT,MZDT,NZDT)
 C
         DIMENSION ZDAT(MZDT,NZDT)
@@ -3016,9 +3000,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPGETC (WHCH,CVAL)
 C
         CHARACTER*(*) WHCH,CVAL
@@ -3110,9 +3093,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPGETI (WHCH,IVAL)
 C
         CHARACTER*(*) WHCH
@@ -3142,9 +3124,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPGETR (WHCH,RVAL)
 C
         CHARACTER*(*) WHCH
@@ -3494,9 +3475,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPLBAM (ZDAT,RWRK,IWRK,IAMA)
 C
         DIMENSION ZDAT(IZD1,*),RWRK(*),IWRK(*),IAMA(*)
@@ -3634,9 +3614,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPLBDR (ZDAT,RWRK,IWRK)
 C
         DIMENSION ZDAT(IZD1,*),RWRK(*),IWRK(*)
@@ -4041,9 +4020,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPMVIW (IWKO,IWKN,LWKN)
 C
         DIMENSION IWKO(LIWK),IWKN(LWKN)
@@ -4101,7 +4079,7 @@ C
             IF (LIWS(I).NE.0.AND.IIWS(I).LT.ITM2) ITM1=I
           END DO
 C
-          IF (ITM1.NE.0) THEN
+          IF (ITM1.NE.0)
             DO (J=1,LIWS(ITM1))
               IWKN(IINW+J)=IWKO(IIWS(ITM1)+J)
             END DO
@@ -4130,9 +4108,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPMVRW (RWKO,RWKN,LWKN)
 C
         DIMENSION RWKO(LRWK),RWKN(LWKN)
@@ -4190,7 +4167,7 @@ C
             IF (LRWS(I).NE.0.AND.IRWS(I).LT.ITM2) ITM1=I
           END DO
 C
-          IF (ITM1.NE.0) THEN
+          IF (ITM1.NE.0)
             DO (J=1,LRWS(ITM1))
               RWKN(IINW+J)=RWKO(IRWS(ITM1)+J)
             END DO
@@ -4219,9 +4196,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPPKCL (ZDAT,RWRK,IWRK)
 C
         DIMENSION ZDAT(IZD1,*),RWRK(*),IWRK(*)
@@ -4382,9 +4358,8 @@ C
   101   RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPPKLB (ZDAT,RWRK,IWRK)
 C
         DIMENSION ZDAT(IZD1,*),RWRK(*),IWRK(*)
@@ -4468,7 +4443,7 @@ C in the contour levels (which probably means there was only one
 C unspecified label and it should be just a zero), find the position
 C of the leftmost digit in the minimum and maximum values and use it.
 C
-        IF (MINI.GT.MAXI) THEN
+        IF (MINI.GT.MAXI)
           CALL CPNUMB (MAX(ABS(ZMIN),ABS(ZMAX))/SCFU,NDGL,-10000,-1,-1,
      +                      ' ',' ',' ',0,0,0,0,0,0,SCHR,NCHS,NDGS,IEVA)
           MINI=IEVA
@@ -4556,9 +4531,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPPKLP (ZDAT,RWRK,IWRK)
 C
         DIMENSION ZDAT(IZD1,*),RWRK(*),IWRK(*)
@@ -4694,9 +4668,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPRECT (ZDAT,KZDT,MZDT,NZDT,RWRK,KRWK,IWRK,KIWK)
 C
         DIMENSION ZDAT(IZD1,*),RWRK(*),IWRK(*)
@@ -4774,9 +4747,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPRSET
 C
 C This subroutine may be called to reset all variables which have
@@ -4977,9 +4949,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPSETC (WHCH,CVAL)
 C
         CHARACTER*(*) WHCH,CVAL
@@ -5100,9 +5071,8 @@ C
   101   RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPSETI (WHCH,IVAL)
 C
         CHARACTER*(*) WHCH
@@ -5134,9 +5104,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPSETR (WHCH,RVAL)
 C
         CHARACTER*(*) WHCH
@@ -5481,9 +5450,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPSPRS (ZSPS,KSPS,MSPS,NSPS,RWRK,KRWK,IWRK,KIWK,ZDAT,
      +                   KZDT)
 C
@@ -5508,9 +5476,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPSPS1 (ZSPS,KSPS,MSPS,NSPS,RWRK,KRWK,IWRK,KIWK,ZDAT,
      +                   KZDT)
 C
@@ -5591,9 +5558,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPSP1A (ZSPS,KSPS,MSPS,NSPS,RWRK,IWRK,ZDAT)
 C
         DIMENSION ZSPS(KSPS,*),RWRK(*),IWRK(*),ZDAT(IZD1,*)
@@ -5766,10 +5732,10 @@ C
             ISPS=IWRK(II01+I)/NSPS+1
             JSPS=MOD(IWRK(II01+I),NSPS)+1
             ZSPS(ISPS,JSPS)=SVAL
-            IF (ISPS.EQ.1) THEN
+            IF (ISPS.EQ.1)
               JBEG=1
               JEND=1
-            ELSE IF (ISPS.EQ.MSPS) THEN
+            ELSE IF (ISPS.EQ.MSPS)
               JBEG=IZDM
               JEND=IZDM
             ELSE
@@ -5780,10 +5746,10 @@ C
      +                                 REAL(MSPS-1)-.000001)*
      +                                      REAL(IZDM-1))+1))
             END IF
-            IF (JSPS.EQ.1) THEN
+            IF (JSPS.EQ.1)
               KBEG=1
               KEND=1
-            ELSE IF (JSPS.EQ.NSPS) THEN
+            ELSE IF (JSPS.EQ.NSPS)
               KBEG=IZDN
               KEND=IZDN
             ELSE
@@ -5823,9 +5789,8 @@ C
           END BLOCK
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPSPS2 (XSPS,YSPS,ZSPS,KSPS,MSPS,NSPS,RWRK,KRWK,IWRK,
      +                   KIWK,ZDAT,KZDT)
 C
@@ -5913,9 +5878,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPSP2A (XSPS,YSPS,ZSPS,KSPS,MSPS,NSPS,RWRK,IWRK,ZDAT)
 C
         DIMENSION XSPS(*),YSPS(*),ZSPS(KSPS,*),RWRK(*),IWRK(*),
@@ -6124,10 +6088,10 @@ C
             ISPS=IWRK(II01+I)/NSPS+1
             JSPS=MOD(IWRK(II01+I),NSPS)+1
             ZSPS(ISPS,JSPS)=SVAL
-            IF (ISPS.EQ.1) THEN
+            IF (ISPS.EQ.1)
               JBEG=1
               JEND=1
-            ELSE IF (ISPS.EQ.MSPS) THEN
+            ELSE IF (ISPS.EQ.MSPS)
               JBEG=IZDM
               JEND=IZDM
             ELSE
@@ -6138,10 +6102,10 @@ C
      +                                 (XSPS(MSPS  )-XSPS(1))-.000001)*
      +                                  REAL(IZDM-1))+1))
             END IF
-            IF (JSPS.EQ.1) THEN
+            IF (JSPS.EQ.1)
               KBEG=1
               KEND=1
-            ELSE IF (JSPS.EQ.NSPS) THEN
+            ELSE IF (JSPS.EQ.NSPS)
               KBEG=IZDN
               KEND=IZDN
             ELSE
@@ -6174,13 +6138,13 @@ C
         RETURN
 C
       END
-I
+
+
 I***********************************************************************
 I C O N P A C K   -   U S E R - C A L L B A C K   R O U T I N E S
 I***********************************************************************
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE HLUCPCHCF (IFLG)
 C
 C This routine stands between CONPACK and the user call-back routine
@@ -6194,9 +6158,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPCHCF (IFLG)
 C
 C This routine is a dummy.  It is called just before and just after
@@ -6219,9 +6182,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE HLUCPCHCL (IFLG)
 C
 C This routine stands between CONPACK and the user call-back routine
@@ -6235,9 +6197,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPCHCL (IFLG)
 C
 C This routine is a dummy.  It is called just before and just after each
@@ -6254,9 +6215,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE HLUCPCHHL (IFLG)
 C
 C This routine stands between CONPACK and the user call-back routine
@@ -6270,9 +6230,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPCHHL (IFLG)
 C
 C This routine is a dummy.  It is called just before and just after
@@ -6316,9 +6275,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE HLUCPCHIL (IFLG)
 C
 C This routine stands between CONPACK and the user call-back routine
@@ -6332,9 +6290,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPCHIL (IFLG)
 C
 C This routine is a dummy.  It is called just before and just after
@@ -6368,9 +6325,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE HLUCPCHLL (IFLG)
 C
 C This routine stands between CONPACK and the user call-back routine
@@ -6384,9 +6340,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPCHLL (IFLG)
 C
 C This routine is a dummy.  It is called just before and just after
@@ -6427,9 +6382,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE HLUCPMPXY (IMAP,XINP,YINP,XOTP,YOTP)
 C
 C This routine stands between CONPACK and the user call-back routine
@@ -6443,9 +6397,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPMPXY (IMAP,XINP,YINP,XOTP,YOTP)
 C
 C By default, CONPACK draws contour lines using X coordinates in the
@@ -6494,8 +6447,8 @@ C of this version of CPMPXY.  Note that, if you modify CPMPXY to do
 C other mappings, you should update the following code to correctly
 C reflect the capabilities of the modified routine.
 C
-      IF (IMAP.EQ.0) THEN
-        IF ((INT(XINP).GE.1.AND.INT(XINP).LE.2).OR.INT(XINP).GE.3) THEN
+      IF (IMAP.EQ.0)
+        IF ((INT(XINP).GE.1.AND.INT(XINP).LE.2).OR.INT(XINP).GE.3)
           YINP=3.
         ELSE
           YINP=0.
@@ -6503,8 +6456,8 @@ C
 C
 C Handle the EZMAP case ...
 C
-      ELSE IF (ABS(IMAP).EQ.1) THEN
-        IF (IMAP.GT.0) THEN
+      ELSE IF (ABS(IMAP).EQ.1)
+        IF (IMAP.GT.0)
           CALL MAPTRA (YINP,XINP,XOTP,YOTP)
           IF (ICFELL('CPMPXY',1).NE.0) RETURN
         ELSE
@@ -6514,8 +6467,8 @@ C
 C
 C ... the polar coordinate case ...
 C
-      ELSE IF (ABS(IMAP).EQ.2) THEN
-        IF (IMAP.GT.0) THEN
+      ELSE IF (ABS(IMAP).EQ.2)
+        IF (IMAP.GT.0)
           XOTP=XINP*COS(.017453292519943*YINP)
           YOTP=XINP*SIN(.017453292519943*YINP)
         ELSE
@@ -6535,9 +6488,8 @@ C
       RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE HLUCPSCAE (ICRA,ICA1,ICAM,ICAN,XCPF,YCPF,XCQF,YCQF,
      +                                          IND1,IND2,ICAF,IAID)
 C
@@ -6555,9 +6507,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPSCAE (ICRA,ICA1,ICAM,ICAN,XCPF,YCPF,XCQF,YCQF,
      +                                       IND1,IND2,ICAF,IAID)
         DIMENSION ICRA(ICA1,*)
@@ -6621,13 +6572,13 @@ C
         RETURN
 C
       END
-I
+
+
 I***********************************************************************
 I C O N P A C K   -   I N T E R N A L   S U B R O U T I N E S
 I***********************************************************************
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPCFLB (IACT,RWRK,IAMA)
 C
         DIMENSION RWRK(*),IAMA(*)
@@ -6658,14 +6609,14 @@ C Retrieve the definitions of the current GKS window and viewport.
 C
         CALL GQCNTN (IGER,NCNT)
 C
-        IF (IGER.NE.0) THEN
+        IF (IGER.NE.0)
           CALL SETER ('CPCFLB - ERROR EXIT FROM GQCNTN',1,1)
           RETURN
         END IF
 C
         CALL GQNT (NCNT,IGER,WIND,VPRT)
 C
-        IF (IGER.NE.0) THEN
+        IF (IGER.NE.0)
           CALL SETER ('CPCFLB - ERROR EXIT FROM GQNT',2,1)
           RETURN
         END IF
@@ -6915,9 +6866,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPCPAG (ZDAT,RWRK)
 C
         DIMENSION ZDAT(IZD1,*),RWRK(*)
@@ -7248,9 +7198,8 @@ C                       RWRK(IGRM*IGRN+IR02+(L-1)*IGRM+K)=GANG
         END BLOCK
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPDRSG (RWRK,IPTX,IPTY,NXYC)
 C
         DIMENSION RWRK(*)
@@ -7284,9 +7233,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPGIWS (IWRK,IOWS,LOWS,IERR)
 C
         DIMENSION IWRK(*)
@@ -7492,9 +7440,8 @@ C
         END IF
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPGRWS (RWRK,IOWS,LOWS,IERR)
 C
         DIMENSION RWRK(*)
@@ -7700,9 +7647,8 @@ C
         END IF
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPGVAI (ZVAL,IAID)
 C
 C Given a field value ZVAL, CPGVAI searches the current contour list to
@@ -7764,9 +7710,8 @@ C
   102   RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPHCHM (RWRK,IPTX,IPTY,NXYC,IAMA,IWRK,RTPL)
 C
         DIMENSION RWRK(*),IAMA(*),IWRK(*)
@@ -7897,9 +7842,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPHCHR (RWRK,IPTX,IPTY,NXYC)
 C
         DIMENSION RWRK(*)
@@ -8015,9 +7959,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPHLLB (ZDAT,RWRK,IWRK)
 C
         DIMENSION ZDAT(IZD1,*),RWRK(*),IWRK(*)
@@ -8281,7 +8224,7 @@ C lows may have missed some because of equal field values at neighboring
 C locations within the search neighborhood and if the user has enabled
 C an additional search for the highs and lows that were missed, do it.
 C
-        IF (IFLG.NE.0.AND.IHLE.NE.0) THEN
+        IF (IFLG.NE.0.AND.IHLE.NE.0)
 C
 C Grab a portion of the integer workspace of length IZDM*IZDN.
 C
@@ -8696,9 +8639,8 @@ C
   111   END BLOCK
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPHLSO (RWRK,IDRW,MRWK,NRWK,IWRK)
 C
         DIMENSION RWRK(IDRW,*),IWRK(*)
@@ -8723,7 +8665,7 @@ C If the first dimension of the array of data to be sorted is equal to
 C the first dimension of the FORTRAN array in which it is stored, use
 C a simpler, faster version of the code to process it.
 C
-        IF (IDRW.EQ.MRWK) THEN
+        IF (IDRW.EQ.MRWK)
           CALL CPHLS2 (RWRK,MRWK*NRWK,IWRK)
 C
 C Otherwise ...
@@ -8740,12 +8682,12 @@ C ... sort them.
 C                                                                       
           K=0
 C
-  102     IF (3*K+1.LT.MRWK*NRWK) THEN
+  102     IF (3*K+1.LT.MRWK*NRWK)
             K=3*K+1
             GO TO 102
           END IF
 C
-  103     IF (K.GT.0) THEN
+  103     IF (K.GT.0)
 C
             DO 105 I=1,MRWK*NRWK-K
 C
@@ -8774,9 +8716,8 @@ C
         RETURN
 C
       END                                                               
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPHLS2 (RWRK,NRWK,IWRK)
 C
         DIMENSION RWRK(NRWK),IWRK(NRWK)
@@ -8794,12 +8735,12 @@ C
 C                                                                       
         K=0
 C
-  102   IF (3*K+1.LT.NRWK) THEN
+  102   IF (3*K+1.LT.NRWK)
           K=3*K+1
           GO TO 102
         END IF
 C
-  103   IF (K.GT.0) THEN
+  103   IF (K.GT.0)
 C
           DO 105 I=1,NRWK-K
 C
@@ -8826,9 +8767,8 @@ C
         RETURN
 C
       END                                                               
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPINIT (ZDAT,RWRK,IWRK)
 C
         DIMENSION ZDAT(IZD1,*),RWRK(*),IWRK(*)
@@ -9175,9 +9115,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPINLB (ZDAT,RWRK,IWRK)
 C
         DIMENSION ZDAT(IZD1,*),RWRK(*),IWRK(*)
@@ -9297,9 +9236,8 @@ C
   101   RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPINRC
 C
 C CPINRC sets constants that are required by CONPACK and that cannot be
@@ -9357,9 +9295,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPINRK (NSDR,TMP1,TMP2,TMP3)
 C
 C This routine computes some quantities needed by CPINRC; the code is
@@ -9376,9 +9313,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPNUMB (VALU,NDGD,LMSD,IEXP,LEXP,CEX1,CEX2,CEX3,LEX1,
      +                   LEX2,LEX3,IOMA,IODP,IOTZ,CBUF,NBUF,NDGS,IEVA)
 C
@@ -9882,9 +9818,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPPLAR (RWRK,IPTX,IPTY,NXYC)
 C
         DIMENSION RWRK(*)
@@ -10147,9 +10082,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPPLPS (RWRK,IPTX,IPTY,NXYC)
 C
         DIMENSION RWRK(*)
@@ -10637,9 +10571,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       FUNCTION CPRANF ()
 C
 C This function generates a sequence of "random" numbers.  Obviously,
@@ -10663,9 +10596,8 @@ C
         CPRANF=RSEQ(ISEQ)
         RETURN
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPSBST (CHSI,CHSO,NCHO)
 C
         CHARACTER*(*) CHSI,CHSO
@@ -10808,9 +10740,8 @@ C
         END BLOCK
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPSORT (RVAL,NVAL,IPER)
 C
         DIMENSION RVAL(NVAL),IPER(NVAL)
@@ -10862,9 +10793,8 @@ C
         RETURN
 C
       END                                                               
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPSTLS (ZDAT,RWRK,IWRK)
 C
         DIMENSION ZDAT(IZD1,*),RWRK(*),IWRK(*)
@@ -10923,10 +10853,9 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
 .OP   BI=66
+
+
       SUBROUTINE CPTRCL (ZDAT,RWRK,IWRK,CLVL,IJMP,IRW1,IRW2,NRWK)
 C
         DIMENSION ZDAT(IZD1,*),RWRK(*),IWRK(*)
@@ -12158,9 +12087,8 @@ C
 C
       END
 .OP   BI=77
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
 .OP   BI=66
       SUBROUTINE CPTREG (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
 C
@@ -12810,9 +12738,8 @@ C
 C
       END
 .OP   BI=77
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
 .OP   BI=66
       SUBROUTINE CPTRES (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK,IFWB)
 C
@@ -13569,9 +13496,8 @@ C
 C
       END
 .OP   BI=77
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
 .OP   BI=66
       SUBROUTINE CPTREV (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
 C
@@ -14058,9 +13984,8 @@ C
 C
       END
 .OP   BI=77
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
 .OP   BI=66
       SUBROUTINE CPTRVE (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
 C
@@ -14483,9 +14408,8 @@ C
 C
       END
 .OP   BI=77
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPTROE (XCRA,YCRA,NCRA,OFFS,RWRK,IOCF,IAMA,IGID,IAIL,
      +                                                           IAIR)
 C
@@ -14570,22 +14494,23 @@ C
 C
 C Do necessary initialization.
 C
-        IF (IBEG.NE.0) THEN
+        IJMP=1
+C
+        IF (IBEG.NE.0)
           ICRA=1
           XCPB=XCRA(1)
           YCPB=YCRA(1)
           XCPC=XCRA(2)
           YCPC=YCRA(2)
-          IF (ICLO.EQ.0) THEN
+          IF (ICLO.EQ.0)
             DIRE=0.
-            ASSIGN 101 TO IJMP
             GO TO 201
           ELSE
             RWRK(1)=XCRA(2)
             RWRK(2)=YCRA(2)
             RWRK(5)=REAL(IAIL)
             RWRK(6)=REAL(IAIR)
-            IF (NCRA.GE.3) THEN
+            IF (NCRA.GE.3)
               RWRK(3)=XCRA(3)
               RWRK(4)=YCRA(3)
             ELSE
@@ -14594,7 +14519,7 @@ C
             END IF
           END IF
         ELSE
-          IF (RWRK(3).EQ.1.E36) THEN
+          IF (RWRK(3).EQ.1.E36)
             RWRK(3)=XCRA(2)
             RWRK(4)=YCRA(2)
           END IF
@@ -14617,10 +14542,8 @@ C
 C Generate offset points near the point with index ICRA until ICRA
 C becomes equal to NCRA.
 C
-  101   ASSIGN 102 TO IJMP
-C
-  102   ICRA=ICRA+1
-        IF (ICRA.LT.NCRA) THEN
+  101   ICRA=ICRA+1
+        IF (ICRA.LT.NCRA)
           XCPA=XCPB
           YCPA=YCPB
           XCPB=XCPC
@@ -14632,18 +14555,18 @@ C
 C
 C Do necessary final stuff.
 C
-        IF (IEND.EQ.0) THEN
+        IF (IEND.EQ.0)
           RWRK( 7)=XCRA(NCRA-1)
           RWRK( 8)=YCRA(NCRA-1)
           RWRK( 9)=XNXT
           RWRK(10)=YNXT
           RWRK(11)=REAL(IAIL)
           RWRK(12)=REAL(IAIR)
-          GO TO 104
+          GO TO 103
         ELSE
-          IF (ICLO.EQ.0) THEN
+          IF (ICLO.EQ.0)
             DIRE=1.
-            ASSIGN 104 TO IJMP
+            IJMP=2
             GO TO 201
           ELSE
             XCPA=XCPB
@@ -14652,12 +14575,12 @@ C
             YCPB=YCPC
             XCPC=RWRK(1)
             YCPC=RWRK(2)
-            ASSIGN 103 TO IJMP
+            IJMP=2
             GO TO 301
           END IF
         END IF
 C
-  103   XCPA=XCPB
+  102   XCPA=XCPB
         YCPA=YCPB
         XCPB=XCPC
         YCPB=YCPC
@@ -14665,12 +14588,12 @@ C
         YCPC=RWRK(4)
         JAIL=INT(RWRK(5))
         JAIR=INT(RWRK(6))
-        ASSIGN 104 TO IJMP
+        IJMP=3
         GO TO 301
 C
 C Done.
 C
-  104   RETURN
+  103   RETURN
 C
 C The following internal procedure generates the point of intersection
 C of the line offset from BC with the edge of the plotter frame and
@@ -14684,15 +14607,15 @@ C
         YCPP=YCPB+OFFS*XDBC/DFBC
         XCPQ=XCPC-OFFS*YDBC/DFBC
         YCPQ=YCPC+OFFS*XDBC/DFBC
-        IF (ABS(XDBC).GT.ABS(YDBC)) THEN
-          IF (XDBC.GT.0.) THEN
+        IF (ABS(XDBC).GT.ABS(YDBC))
+          IF (XDBC.GT.0.)
             XNXT=DIRE
           ELSE
             XNXT=1.-DIRE
           END IF
           YNXT=YCPP+(XNXT-XCPP)*(YDBC/XDBC)
         ELSE
-          IF (YDBC.GT.0.) THEN
+          IF (YDBC.GT.0.)
             YNXT=DIRE
           ELSE
             YNXT=1.-DIRE
@@ -14702,7 +14625,7 @@ C
         CALL CPWLAM (XNXT,YNXT,IFST,IAMA,IGID,IAIL,IAIR)
         IF (ICFELL('CPTROE',2).NE.0) RETURN
         IFST=1
-        GO TO IJMP , (101,104)
+        GO TO (101,103) , IJMP
 C
 C The following internal procedure generates the point of intersection
 C of the line offset from AB with the line offset from BC and sends that
@@ -14723,7 +14646,7 @@ C
         XCPS=XCPC-OFFS*YDBC/DFBC
         YCPS=YCPC+OFFS*XDBC/DFBC
         DNOM=(XCPP-XCPQ)*(YCPR-YCPS)-(XCPR-XCPS)*(YCPP-YCPQ)
-        IF (DNOM.EQ.0.) THEN
+        IF (DNOM.EQ.0.)
           XNXT=.5*(XCPQ+XCPR)
           YNXT=.5*(YCPQ+YCPR)
         ELSE
@@ -14736,12 +14659,11 @@ C
         IFST=1
         JAIL=IAIL
         JAIR=IAIR
-        GO TO IJMP , (102,103,104)
+        GO TO (101,102,103) , IJMP
 C
       END
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:03:03 kennison Exp $
-A
+
+
       SUBROUTINE CPWLAM (XNXT,YNXT,IFST,IAMA,IGID,IAIL,IAIR)
 C
         DIMENSION IAMA(*)
@@ -14799,7 +14721,7 @@ C
 C If the next point is not the first point of a line, there is work to
 C be done.
 C
-        IF (IFST.NE.0) THEN
+        IF (IFST.NE.0)
 C
 C The left and right area identifiers passed to AREDAM must be defined
 C to be consistent with the user coordinate system, rather than the
@@ -14808,7 +14730,7 @@ C
           CALL GETSET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
 C
           IF ((XWDL.LT.XWDR.AND.YWDB.LT.YWDT).OR.
-     +        (XWDL.GT.XWDR.AND.YWDB.GT.YWDT)) THEN
+     +        (XWDL.GT.XWDR.AND.YWDB.GT.YWDT))
             JAIL=IAIL
             JAIR=IAIR
           ELSE
@@ -14820,7 +14742,7 @@ C There are various possible cases, depending on whether the last point
 C was inside or outside the window and whether the next point is inside
 C or outside the window.
 C
-          IF (LPOW.EQ.0) THEN
+          IF (LPOW.EQ.0)
             IF (NPOW.NE.0) GO TO 101
             XCRA(1)=CFUX(XLST)
             IF (ICFELL('CPWLAM',1).NE.0) RETURN
@@ -14845,14 +14767,14 @@ C
           XDIF=XNXT-XLST
           YDIF=YNXT-YLST
 C
-          IF (ABS(XDIF).GT..000001*(XMAX-XMIN)) THEN
+          IF (ABS(XDIF).GT..000001*(XMAX-XMIN))
             XPEW=XMIN
             IF (XDIF.GE.0.) XPEW=XMAX
             YPEW=YLST+(XPEW-XLST)*YDIF/XDIF
             IF (YPEW.GE.YMIN.AND.YPEW.LE.YMAX) GO TO 102
           END IF
 C
-          IF (ABS(YDIF).GT..000001*(YMAX-YMIN)) THEN
+          IF (ABS(YDIF).GT..000001*(YMAX-YMIN))
             YPEW=YMIN
             IF (YDIF.GE.0.) YPEW=YMAX
             XPEW=XLST+(YPEW-YLST)*XDIF/YDIF
@@ -14878,14 +14800,14 @@ C
           XDIF=XLST-XNXT
           YDIF=YLST-YNXT
 C
-          IF (ABS(XDIF).GT..000001*(XMAX-XMIN)) THEN
+          IF (ABS(XDIF).GT..000001*(XMAX-XMIN))
             XPEW=XMIN
             IF (XDIF.GE.0.) XPEW=XMAX
             YPEW=YNXT+(XPEW-XNXT)*YDIF/XDIF
             IF (YPEW.GE.YMIN.AND.YPEW.LE.YMAX) GO TO 104
           END IF
 C
-          IF (ABS(YDIF).GT..000001*(YMAX-YMIN)) THEN
+          IF (ABS(YDIF).GT..000001*(YMAX-YMIN))
             YPEW=YMIN
             IF (YDIF.GE.0.) YPEW=YMAX
             XPEW=XNXT+(YPEW-YNXT)*XDIF/YDIF
@@ -14949,7 +14871,7 @@ C
           YPE1=YLST+(XPE1-XLST)*YDIF/XDIF
           YPE2=YLST+(XPE2-XLST)*YDIF/XDIF
 C
-          IF (ABS(YDIF).LE..000001*(YMAX-YMIN)) THEN
+          IF (ABS(YDIF).LE..000001*(YMAX-YMIN))
             IF (YPE1.LT.YMIN.OR.YPE1.GT.YMAX) GO TO 115
             IF (YPE2.LT.YMIN.OR.YPE2.GT.YMAX) GO TO 115
             GO TO 114
