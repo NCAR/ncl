@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.25 1996-10-31 18:08:34 haley Exp $
+#	$Id: ymake,v 1.26 1996-11-16 19:03:29 haley Exp $
 #
 ######################################################################
 #
@@ -460,7 +460,7 @@ case	UNICOS:
 		case	Y*:
 			set arch = YMP
 		breaksw
-        case	C90
+        case	C90:
 			set arch = C90
 		breaksw
 		default:
