@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.21 1995-01-11 00:46:39 boote Exp $
+ *      $Id: MapPlot.c,v 1.22 1995-01-11 20:33:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -154,9 +154,10 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNmpDirectFillAreaColor, NhlCmpDirectFillAreaColor, 
 		 NhlTBoolean,sizeof(NhlBoolean),Oset(direct_fill_area_color),
-		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
-	{NhlNmpFillPatternBackground,NhlCmpFillPatternBackground,NhlTColorIndex,
-		 sizeof(NhlColorIndex),Oset(fill_pattern_background),
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+	{NhlNmpFillPatternBackground,NhlCmpFillPatternBackground,
+		 NhlTColorIndex,sizeof(NhlColorIndex),
+		 Oset(fill_pattern_background),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
 
 	{NhlNmpMonoFillGroupColor, NhlCmpMonoFillGroupColor, NhlTBoolean,
@@ -3590,6 +3591,7 @@ static NhlErrorTypes    mpManageDynamicArrays
 			return NhlFATAL;
 		}
 		mpp->fill_area_specs = ga;
+		ompp->fill_area_specs = NULL;
 
 	}
 		
@@ -3608,6 +3610,8 @@ static NhlErrorTypes    mpManageDynamicArrays
 			return NhlFATAL;
 		}
 		mpp->mask_area_specs = ga;
+		ompp->mask_area_specs = NULL;
+
 	}
 		
 /*
@@ -3625,6 +3629,7 @@ static NhlErrorTypes    mpManageDynamicArrays
 			return NhlFATAL;
 		}
 		mpp->outline_specs = ga;
+		ompp->outline_specs = NULL;
 	}
 		
 /*
@@ -3650,6 +3655,7 @@ static NhlErrorTypes    mpManageDynamicArrays
 					  NhlNmpAreaNames);
 				return NhlFATAL;
 			}
+			ompp->area_names = NULL;
 		}
 		mpp->area_names = ga;
 	}
@@ -3678,9 +3684,10 @@ static NhlErrorTypes    mpManageDynamicArrays
 					  NhlNmpAreaNames);
 				return NhlFATAL;
 			}
-			mpp->area_groups = ga;
 			need_check = True;
+			ompp->area_groups = NULL;
 		}
+		mpp->area_groups = ga;
 
 	}
 	if (need_check || mpp->fill_group_count < ompp->fill_group_count) {
@@ -3739,6 +3746,7 @@ static NhlErrorTypes    mpManageDynamicArrays
 					  entry_name,NhlNmpFillAreaColors);
 				return NhlFATAL;
 			}
+			ompp->fill_area_colors = NULL;
 			mpp->fill_area_colors = ga;
 			count = mpp->fill_area_colors->num_elements;
 		}
