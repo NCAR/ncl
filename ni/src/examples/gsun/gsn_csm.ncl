@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.123 2003-04-17 21:03:03 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.124 2003-04-17 21:46:51 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -522,9 +522,30 @@ begin
   center = False
 
   if((res).and..not.any(ismissing(getvaratts(res)))) then
+;
+; Check for font setting.
+;
+    if(isatt(res,"gsnStringFont")) then
+      left@gsnStringFont   = res@gsnStringFont
+      center@gsnStringFont = res@gsnStringFont
+      right@gsnStringFont  = res@gsnStringFont
+      delete(res@gsnStringFont)
+    end if
+;
+; Check for left string.
+;
     if(isatt(res,"gsnLeftString")) then
       left            = True
       left@sub_string = res@gsnLeftString
+;
+; Check for font setting.
+;
+      if(isatt(res,"gsnStringFont")) then
+        left@gsnStringFont = res@gsnStringFont
+      end if
+;
+; Check for font heights.
+;
       if(isatt(res,"gsnLeftStringFontHeightF")) then
         left@gsnLeftStringFontHeightF = get_res_value(res, \
                                         "gsnLeftStringFontHeightF",0.0)
@@ -536,9 +557,15 @@ begin
       end if 
       delete(res@gsnLeftString)
     end if
+;
+; Check for center string.
+;
     if(isatt(res,"gsnCenterString"))
       center            = True
       center@sub_string = res@gsnCenterString
+;
+; Check for font heights.
+;
       if(isatt(res,"gsnCenterStringFontHeightF")) then
         center@gsnCenterStringFontHeightF = get_res_value(res, \
                                            "gsnCenterStringFontHeightF",0.0)
@@ -550,9 +577,15 @@ begin
       end if 
       delete(res@gsnCenterString)
     end if
+;
+; Check for right string.
+;
     if(isatt(res,"gsnRightString"))
       right            = True
       right@sub_string = res@gsnRightString
+;
+; Check for font heights.
+;
       if(isatt(res,"gsnRightStringFontHeightF")) then
         right@gsnRightStringFontHeightF = get_res_value(res, \
                                          "gsnRightStringFontHeightF",0.0)
@@ -1495,22 +1528,31 @@ begin
   fhghts       = (/0.,0.,0./)
   strings      = (/"","",""/)  
 ;
-; Set the three strings and their font heights. 
+; Set the three strings and their fonts and font heights. 
 ;
   if(left_string)
+    if(isatt(left_string,"gsnStringFont"))
+      txres@txFont = left_string@gsnStringFont
+    end if
     strings(0) = left_string@sub_string
     fhghts(0)  = get_res_value_keep(left_string,"gsnLeftStringFontHeightF",\
                  get_res_value_keep(left_string,"gsnStringFontHeightF",\
                  get_res_value_keep(txres,"txFontHeightF",0.0)))
   end if
   if(center_string) 
+    if(isatt(center_string,"gsnStringFont"))
+      txres@txFont = center_string@gsnStringFont
+    end if
     strings(1) = center_string@sub_string
     fhghts(1)  = get_res_value_keep(center_string,"gsnCenterStringFontHeightF",\
                  get_res_value_keep(center_string,"gsnStringFontHeightF",\
                  get_res_value_keep(txres,"txFontHeightF",0.0)))
   end if
   if(right_string)
-    strings(2) =  right_string@sub_string
+    if(isatt(right_string,"gsnStringFont"))
+      txres@txFont = right_string@gsnStringFont
+    end if
+    strings(2) = right_string@sub_string
     fhghts(2)  = get_res_value_keep(right_string,"gsnRightStringFontHeightF",\
                  get_res_value_keep(right_string,"gsnStringFontHeightF",\
                  get_res_value_keep(txres,"txFontHeightF",0.0)))
@@ -3577,10 +3619,14 @@ begin
       text_ids = new(num_labels,graphic)
 
 ;
-; Check if user setting own font heights.
+; Check if user setting own font heights.  gsnPolarLabelFontHeightF
+; takes precedence over txFontHeightF.
 ;
-    text_font_height = get_res_value_keep(res2,"txFontHeightF",font_height)
-    text_font        = get_res_value_keep(res2,"txFont","helvetica-bold")
+    text_font_height = get_res_value(res2,"gsnPolarLabelFontHeightF", \
+                       get_res_value_keep(res2,"txFontHeightF",\
+                       font_height))
+    text_font        = get_res_value(res2,"gsnPolarLabelFont", \
+                       get_res_value_keep(res2,"txFont","helvetica-bold"))
 
 ; Create an array of TextItem objects that we'll use to label the
 ; lat/lon grid.  
