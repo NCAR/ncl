@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ctrans.m,v 1.22 1995-06-05 18:57:53 haley Exp $
+.\"	$Id: ctrans.m,v 1.23 1995-06-12 21:13:49 haley Exp $
 .\"
 .\" ctrans 3.2 
 .TH CTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -591,7 +591,6 @@ The binary NCAR Graphcap files
 .IP $NCARG_ROOT/lib/ncarg/fontcaps/* 30
 The binary NCAR Fontcap files
 .SH SEE ALSO
-.BR cgmtrans(1NCARG), 
 .BR fcaps(1NCARG), 
 .BR fontcap(5NCARG), 
 .BR gcaps(1NCARG), 
