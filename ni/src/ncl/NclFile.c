@@ -472,13 +472,17 @@ NclQuark var;
 			step = thefile->file.var_att_info[index];
 			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)thefile);
 			while(step != NULL) {
-				val = NclMalloc(_NclSizeOf(step->the_att->data_type)* step->the_att->num_elements );
-				(void)(*thefile->file.format_funcs->read_var_att)(
-					thefile->file.private_rec,
-					var,
-					step->the_att->att_name_quark,
-					val
-					);
+				if (step->the_att->data_type == NCL_none)
+					val = NULL;
+				else {
+					val = NclMalloc(_NclSizeOf(step->the_att->data_type)* step->the_att->num_elements );
+					(void)(*thefile->file.format_funcs->read_var_att)(
+						thefile->file.private_rec,
+						var,
+						step->the_att->att_name_quark,
+						val
+						);
+				}
 				tmp_md = _NclCreateMultiDVal(
 						NULL,
 						NULL,
@@ -1076,14 +1080,14 @@ int vtype;
 	int i,j,k,done = 0,inc_done = 0;
 	int n_dims_input,n_elem;
 	int n_dims_output;
-	int total_elements = 1;
+	long total_elements = 1;
 	int has_vectors = 0;
 	int has_stride = 0;
 	int has_reverse = 0;
 	int has_reorder = 0;
 	int to = 0,block_read_limit,n_elem_block;
 	
-	int multiplier_input[NCL_MAX_DIMENSIONS];
+	long multiplier_input[NCL_MAX_DIMENSIONS];
 	int compare_sel[NCL_MAX_DIMENSIONS];
 	long current_index[NCL_MAX_DIMENSIONS];
 	long current_finish[NCL_MAX_DIMENSIONS];

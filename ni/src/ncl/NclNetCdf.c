@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.30 2003-02-21 22:52:19 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.31 2004-02-23 20:16:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -198,7 +198,10 @@ NetCdfAttInqRec* att_inq
 	char *tmp;
 	int ret;
 
-	if(att_inq->data_type == NC_CHAR) {
+	if (att_inq->data_type < 1) {
+		att_inq->value = NULL;
+	}
+	else if(att_inq->data_type == NC_CHAR) {
 		tmp = (char*)NclMalloc(att_inq->len+1);
 		tmp[att_inq->len] = '\0';
 		ret = ncattget(ncid,att_inq->varid,NrmQuarkToString(att_inq->name),tmp);
@@ -784,9 +787,8 @@ long stride;
 void* storage;
 #endif
 {
-	int tsize = nctypelen(var_inq->data_type);
-
 	long i,j;
+	int tsize = var_inq->data_type < 1 ? 1 : nctypelen(var_inq->data_type);
 
 	for (j = 0, i = start; i <= finish; i += stride,j++) {
 		memcpy(((char*)storage) + j * tsize,((char *)var_inq->value) + i * tsize,tsize);
@@ -931,7 +933,13 @@ void* storage;
 				ret = ncattget(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),storage);
 			}
 			ncclose(cdfid);
-			return(storage);
+			if (ret != -1) 
+				return(storage);
+			else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Error retrieving value for global ttribute (%s) of (%s)",
+					  NrmQuarkToString(theatt),NrmQuarkToString(rec->file_path_q));
+				return NULL;
+			}
 		} else {
 			stepal = stepal->next;
 		}
@@ -971,6 +979,7 @@ void* storage;
 							memcpy(storage,stepal->att_inq->value,
 							       nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len);
 						}
+						return(storage);
 					}
 					cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_NOWRITE);
 			
@@ -991,6 +1000,11 @@ void* storage;
 					ncclose(cdfid);
 					if(ret != -1)
 						return(storage);
+					else {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Error retrieving value for Attribute (%s) of (%s->%s)",
+							  NrmQuarkToString(theatt),NrmQuarkToString(rec->file_path_q),NrmQuarkToString(thevar));
+						return NULL;
+					}
 				} else {
 					stepal = stepal->next;
 				}
@@ -1772,7 +1786,10 @@ static void NetCacheAttValue
 	void *value;
 #endif
 {
-	if (att_inq->data_type == NC_CHAR) {
+	if (att_inq->data_type < 1 || value == NULL) {
+		att_inq->value = NULL;
+	}
+	else if (att_inq->data_type == NC_CHAR) {
 		char *tmp = NclMalloc(att_inq->len + 1);
 		strncpy(tmp,value,att_inq->len);
 		tmp[att_inq->len] = '\0';
