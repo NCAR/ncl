@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.98 2002-06-19 17:07:44 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.99 2002-06-21 04:17:51 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -7304,22 +7304,6 @@ begin
         nyref        = dimsizes(yref_line)
         delete(res2@gsnYRefLine)
 ;
-; Determine color of Y reference line.
-;
-        if(isatt(res2,"gsnYRefLineColor"))
-          yref_line_color = res2@gsnYRefLineColor
-          if(.not.(dimsizes(yref_line_color).eq.nyref.or.\
-                   dimsizes(yref_line_color).eq.1))
-            print("gsn_csm_xy: Fatal: you must specify either one Y reference line color")
-            print("or the same number of colors as there are reference lines.")
-            return
-          end if
-          delete(res2@gsnYRefLineColor)
-        else
-          yref_line_color = "foreground"  ; defaults to foreground color.
-        end if
-
-;
 ; Determine color of fill above reference line(s).
 ;
         if(isatt(res2,"gsnAboveYRefLineColor"))
@@ -7359,15 +7343,34 @@ begin
         end if
       end if                            ; Check if gsnYRefLine set.
 ;
+; Determine color of Y reference line.
+;
+      if(isatt(res2,"gsnYRefLineColor"))
+        yref_line_color = res2@gsnYRefLineColor
+        if(.not.(dimsizes(yref_line_color).eq.nyref.or.\
+                 dimsizes(yref_line_color).eq.1))
+          print("gsn_csm_xy: Fatal: you must specify either one Y reference line color")
+          print("or the same number of colors as there are reference lines.")
+          return
+        end if
+        delete(res2@gsnYRefLineColor)
+      else
+        yref_line_color = "foreground"  ; defaults to foreground color.
+      end if
+;
 ; Check if we want a bar chart. If so, gsnYRefLine must be set.
 ;
       bar_chart        = get_res_value(res2,"gsnXYBarChart",False)
       bar_outline_only = get_res_value(res2,"gsnXYBarChartOutlineOnly",False)
       if(bar_chart.and..not.bar_outline_only)
-        if(.not.yref_line_on)
-          print("gsn_csm_xy: Warning: if drawing bar charts, you must set gsnYRefLine.")
-          print("Drawing a regular XY plot instead.")
-          bar_chart = False
+        if(.not.yref_line_on) then
+;
+; If no ref line specified, but bar fill is on, then set the reference
+; line to the minimum y value.
+;
+          yref_line    = get_res_value_keep(res2,"trYMinF",min(y))
+          nyref        = 1 
+          yref_line_on = True
         else
           if((ncurves.gt.1.and.nyref.gt.1.and.ncurves.ne.nyref).or. \
              (ncurves.eq.1.and.nyref.ne.1))
@@ -7479,6 +7482,18 @@ begin
             yref_fill_on         = True
             mlt_above_bar_colors = True
             bar_colors_above = get_res_value(res2,"gsnAboveYRefLineBarColors",1)
+;
+; If both gsnAboveYRefLineBarColors and gsnXYBarChartColors are set,
+; then only use the first one.
+;
+            if(isatt(res2,"gsnXYBarChartColors")) then
+              delete(res2@gsnXYBarChartColors)
+            end if
+          end if  
+          if(.not.mlt_above_bar_colors.and.isatt(res2,"gsnXYBarChartColors")) then
+            yref_fill_on         = True
+            mlt_above_bar_colors = True
+            bar_colors_above = get_res_value(res2,"gsnXYBarChartColors",1)
           end if  
           if(isatt(res2,"gsnBelowYRefLineBarColors")) then
             yref_fill_on         = True
