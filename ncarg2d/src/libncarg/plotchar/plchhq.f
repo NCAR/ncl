@@ -1,5 +1,5 @@
 C
-C	$Id
+C $Id: plchhq.f,v 1.3 1992-11-11 01:14:17 kennison Exp $
 C
 C***********************************************************************
 C P A C K A G E   P L O T C H A R   -   I N T R O D U C T I O N
