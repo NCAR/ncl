@@ -258,6 +258,7 @@ extern NhlErrorTypes runave_W(void);
 extern NhlErrorTypes wgt_runave_W(void);
 extern NhlErrorTypes wgt_areaave_W(void);
 extern NhlErrorTypes wgt_volave_W(void);
+extern NhlErrorTypes wgt_volave_ccm_W(void);
 extern NhlErrorTypes dtrend_W(void);
 extern NhlErrorTypes dtrend_msg_W(void);
 extern NhlErrorTypes local_min_W(void);
@@ -3124,6 +3125,19 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(wgt_volave_W,args,"wgt_volave",nargs);
+
+/*
+ * Register "wgt_volave_ccm".
+ */
+    nargs = 0;
+    args = NewArgs(5);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(wgt_volave_ccm_W,args,"wgt_volave_ccm",nargs);
 
 /*
  * Register "dtrend".
