@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.7 1994-03-08 21:54:44 fred Exp $
+#	$Id: yMakefile,v 1.8 1995-06-05 18:48:19 haley Exp $
 #
 
 MYNAME	= graphcap
@@ -13,9 +13,8 @@ MYNAME	= graphcap
 GENERIC_SRCS = \
 	adm5.gc aed.a.gc aed.b.gc balsml.gc hpgl.gc \
 	hpgl2.gc hpgl2.dual.gc hpgl2pe.gc hpgl2pe.dual.gc \
-	hp150.gc hp2648a.gc hp7475a.gc hp7510a.gc hplj100l.gc hplj100p.gc \
-	hplj150l.gc hplj150p.gc hplj300l.gc hplj300p.gc hplj75l.gc hplj75p.gc \
-	hpljo75l.gc hpljo75p.gc imagen.gc imagen.port.gc pc.mono.gc \
+	hp150.gc hp2648a.gc hp7475a.gc hp7510a.gc \
+	imagen.gc imagen.port.gc pc.mono.gc \
 	ps.color.gc ps.land.color.gc ps.land.mono.gc ps.mono.gc qms800.gc \
 	r6211.gc s100.gc t4010.gc t4025.gc t4105.gc t4107.gc \
 	t4107.seg.gc t4115.gc t4115.seg.gc tal1590.gc tekalike.gc \
@@ -24,10 +23,9 @@ GENERIC_SRCS = \
 
 GRAPHCAPS = \
 	adm5 aed.a aed.b balsml hpgl \
-	hp150 hp2648a hp7475a hp7510a hplj100l hplj100p \
+	hp150 hp2648a hp7475a hp7510a \
 	hpgl2 hpgl2.dual hpgl2pe hpgl2pe.dual \
-	hplj150l hplj150p hplj300l hplj300p hplj75l hplj75p \
-	hpljo75l hpljo75p imagen imagen.port pc.mono \
+	imagen imagen.port pc.mono \
 	ps.color ps.land.color ps.land.mono ps.mono qms800 \
 	r6211 s100 t4010 t4025 t4105 t4107 \
 	t4107.seg t4115 t4115.seg tal1590 tekalike \
