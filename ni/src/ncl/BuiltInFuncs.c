@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.87 1997-11-05 17:16:50 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.88 1997-11-20 00:30:45 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -792,7 +792,6 @@ NhlErrorTypes _Nclsystemfunc
 	int tmp_id;
 	int n;
 	int status;
-	FILE *tmp_fp;
 	int current_buf_size = 512;
 	int current_qbuf_size = 512;
 	char *buffer_ptr;
@@ -839,7 +838,6 @@ NhlErrorTypes _Nclsystemfunc
 			signal(SIGPIPE,SIG_DFL);
 			signal(SIGCHLD,SIG_DFL);
 			close(fildes[1]);
-			tmp_fp = fopen("tmp.txt","w");
 			n = 0;
 			nelem = 0;
 			while(read(fildes[0],buffer_ptr,1) > 0) {

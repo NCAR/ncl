@@ -2168,6 +2168,11 @@ int *version;
 				fprintf(stdout,"found G\n");
 */
                                 ret2 = read(gribfile,(void*)&(is[1]),7);
+				if(ret2 < 7) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Premature end-of-file, file appears to be truncated");
+					*totalsize = 0;
+                        		return(GRIBEOF);
+				} 
                                 i += ret2;
                                 test[0] = is[0];
                                 test[1] = is[1];
@@ -2186,6 +2191,11 @@ int *version;
 					size = UnsignedCnvtToDecimal(3,&(is[4]));
                                         ret3 = lseek(gribfile,i+size - (ret1 + ret2) - 4,SEEK_SET);
                                         ret4 = read(gribfile,(void*)nd,4);
+					if(ret4 < 4) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Premature end-of-file, file appears to be truncated");
+						*totalsize = 0;
+                        			return(GRIBEOF);
+					}	 
                                         test[0] = nd[0];
                                         test[1] = nd[1];
                                         test[2] = nd[2];
@@ -2212,7 +2222,8 @@ int *version;
 					while(1) {
 						t = lseek(gribfile,*offset + size,SEEK_SET);
 						ret4 = read(gribfile,(void*)nd,4);
-						if(ret4 != 4) {
+						if(ret4 < 4) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Premature end-of-file, file appears to be truncated");
 							break;
 						}
 						test[0] = nd[0];
@@ -3513,6 +3524,7 @@ void* storage;
 				sel_ptr.selection[i].u.sub.start = start[i];
 				sel_ptr.selection[i].u.sub.finish = finish[i];
 				sel_ptr.selection[i].u.sub.stride = stride[i];
+				sel_ptr.selection[i].u.sub.is_single = 0;
 			}
 			tmp_md = (NclMultiDValData)_NclReadSubSection((NclData)vstep->int_var->value,&sel_ptr,NULL);
 			memcpy((void*)&((char*)out_data)[data_offset],tmp_md->multidval.val,tmp_md->multidval.totalsize);
@@ -3553,11 +3565,13 @@ void* storage;
 			sel_ptr.selection[0].u.sub.start = grid_start[0];
 			sel_ptr.selection[0].u.sub.finish = grid_finish[0];
 			sel_ptr.selection[0].u.sub.stride = grid_stride[0];
+			sel_ptr.selection[0].u.sub.is_single = 0;
 			sel_ptr.selection[1].sel_type = Ncl_SUBSCR;
 			sel_ptr.selection[1].dim_num = 1;
 			sel_ptr.selection[1].u.sub.start = grid_start[1];
 			sel_ptr.selection[1].u.sub.finish = grid_finish[1];
 			sel_ptr.selection[1].u.sub.stride = grid_stride[1];
+			sel_ptr.selection[1].u.sub.is_single = 0;
 			
 
 			offset = 0;
