@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.155 2004-10-01 22:53:04 haley Exp $
+;      $Id: gsn_code.ncl,v 1.156 2004-11-12 21:50:22 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1257,7 +1257,7 @@ function overlay_irregular(wks,wksname,overlay_plot_object:graphic,\
                            data_object:graphic,xlinear:logical, \
                            ylinear:logical,xlog:logical,ylog:logical,\
                            type:string,llres:logical)
-local xaxistype,yaxistype,trxmin,trymin,trxmax,trymax,Xpts,Ypts
+local xaxistype,yaxistype,trxmin,trymin,trxmax,trymax,Xpts,Ypts,is_tm_mode
 begin
 
   if(xlinear) then
@@ -1334,46 +1334,95 @@ begin
 ;
 ; Case 1
 ;
+; If pmTickMarkDisplayMode is set, we need to set it during the
+; create call, and not afterwards.  But, we can't assume a default
+; default value, because it varies depending on the type of plot
+; being created. So, we have to do the kludgy thing of checking
+; for it, and only setting it if the user has set it.
+;
+    is_tm_mode = isatt(llres,"pmTickMarkDisplayMode")
+    if(is_tm_mode) then
+      tm_mode = get_display_mode(llres,"pmTickMarkDisplayMode","NoCreate")
+      delete(llres@pmTickMarkDisplayMode)
+    end if
     if(xaxistype.ne."IrregularAxis".and. \
        yaxistype.ne."IrregularAxis") then
-      plot_object = create wksname + "_irregular" irregularPlotClass wks
-        "trXAxisType"    : xaxistype
-        "trYAxisType"    : yaxistype
-        "trXMinF"        : trxmin
-        "trXMaxF"        : trxmax
-        "trYMinF"        : trymin
-        "trYMaxF"        : trymax
+      if(is_tm_mode) then
+        plot_object = create wksname + "_irregular" irregularPlotClass wks
+          "pmTickMarkDisplayMode" : tm_mode
+          "trXAxisType"    : xaxistype
+          "trYAxisType"    : yaxistype
+          "trXMinF"        : trxmin
+          "trXMaxF"        : trxmax
+          "trYMinF"        : trymin
+          "trYMaxF"        : trymax
+        end create
+      else
+        plot_object = create wksname + "_irregular" irregularPlotClass wks
+          "trXAxisType"    : xaxistype
+          "trYAxisType"    : yaxistype
+          "trXMinF"        : trxmin
+          "trXMaxF"        : trxmax
+          "trYMinF"        : trymin
+          "trYMaxF"        : trymax
       end create
+      end if
     end if
 ;
 ; Case 2
 ;
     if(xaxistype.eq."IrregularAxis".and. \
        yaxistype.ne."IrregularAxis") then
-      plot_object = create wksname + "_irregular" irregularPlotClass wks
-        "trXAxisType"    : xaxistype
-        "trYAxisType"    : yaxistype
-        "trXCoordPoints" : Xpts
-        "trXMinF"        : trxmin
-        "trXMaxF"        : trxmax
-        "trYMinF"        : trymin
-        "trYMaxF"        : trymax
-      end create
+      if(is_tm_mode) then
+        plot_object = create wksname + "_irregular" irregularPlotClass wks
+          "pmTickMarkDisplayMode" : tm_mode
+          "trXAxisType"    : xaxistype
+          "trYAxisType"    : yaxistype
+          "trXCoordPoints" : Xpts
+          "trXMinF"        : trxmin
+          "trXMaxF"        : trxmax
+          "trYMinF"        : trymin
+          "trYMaxF"        : trymax
+        end create
+      else
+        plot_object = create wksname + "_irregular" irregularPlotClass wks
+          "trXAxisType"    : xaxistype
+          "trYAxisType"    : yaxistype
+          "trXCoordPoints" : Xpts
+          "trXMinF"        : trxmin
+          "trXMaxF"        : trxmax
+          "trYMinF"        : trymin
+          "trYMaxF"        : trymax
+        end create
+      end if
     end if
 ;
 ; Case 3
 ;
     if(yaxistype.eq."IrregularAxis".and. \
        xaxistype.ne."IrregularAxis") then
-      plot_object = create wksname + "_irregular" irregularPlotClass wks
-        "trXAxisType"    : xaxistype
-        "trYAxisType"    : yaxistype
-        "trYCoordPoints" : Ypts
-        "trXMinF"        : trxmin
-        "trXMaxF"        : trxmax
-        "trYMinF"        : trymin
-        "trYMaxF"        : trymax
-      end create
+      if(is_tm_mode) then
+        plot_object = create wksname + "_irregular" irregularPlotClass wks
+          "pmTickMarkDisplayMode" : tm_mode
+          "trXAxisType"    : xaxistype
+          "trYAxisType"    : yaxistype
+          "trYCoordPoints" : Ypts
+          "trXMinF"        : trxmin
+          "trXMaxF"        : trxmax
+          "trYMinF"        : trymin
+          "trYMaxF"        : trymax
+        end create
+      else
+        plot_object = create wksname + "_irregular" irregularPlotClass wks
+          "trXAxisType"    : xaxistype
+          "trYAxisType"    : yaxistype
+          "trYCoordPoints" : Ypts
+          "trXMinF"        : trxmin
+          "trXMaxF"        : trxmax
+          "trYMinF"        : trymin
+          "trYMaxF"        : trymax
+        end create
+      end if
     end if
 
     attsetvalues_check(plot_object,llres)
@@ -6772,6 +6821,18 @@ begin
 
     cnres = get_res_ne(res2,"sf")
 
+;
+; Don't let pmTickMarkDisplayMode be set after the fact if we are
+; going to overlya this plot later, because you might get an error
+; message about warning:PlotManagerSetValues: TickMark annotation 
+; cannot be added after NhlCreate.
+;
+    if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log.and.\
+       isatt(cnres,"pmTickMarkDisplayMode")) then
+      delete(cnres@pmTickMarkDisplayMode)
+      llres = get_res_eq(res2,(/"pm","tr","vp"/))
+    end if
+
     attsetvalues_check(plot_object,cnres)
 
     if(isvar("zthickness")) then
@@ -6796,9 +6857,6 @@ begin
       attsetvalues(plot_object,cnres2)
     end if
 
-    if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
-        llres = get_res_eq(res2,(/"tr","vp"/))
-    end if
 ;
 ; If gsnShape was set to True, then resize the X or Y axis so that
 ; the scales are proportionally correct.
