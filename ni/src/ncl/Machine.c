@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.15 1994-05-28 00:12:50 ethan Exp $
+ *      $Id: Machine.c,v 1.16 1994-06-03 20:13:26 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1430,7 +1430,10 @@ void _NclRemapParameters
 * Try reverse coercion which in many cases will
 * just fail.
 */
+/*
 						tmp_var = _NclCoerceVar(data.u.data_var,param_rep_type,NULL);
+*/
+						tmp_var = NULL;
 						if(tmp_var == NULL) { 
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclRemapParameters: Argument (%d) to function or procedure was coerced before calling and can not be coerced back, arguments value remains unchanged",i);
 						} else {
