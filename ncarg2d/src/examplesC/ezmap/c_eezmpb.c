@@ -1,5 +1,5 @@
 /*
- *  $Id: c_eezmpb.c,v 1.1 1998-05-24 01:06:21 kennison Exp $
+ *  $Id: c_eezmpb.c,v 1.2 1998-05-28 17:01:44 haley Exp $
  */
 
 #include <stdio.h>
@@ -11,8 +11,6 @@
 
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
-
-#include "ezmapb.h"
 
 #define max(x,y)   ((x) > (y) ? (x) : (y) )
 
