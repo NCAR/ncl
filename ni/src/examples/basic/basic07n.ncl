@@ -21,9 +21,9 @@
 
 begin
 
-      NCGM=1;
-      PS=1;
-      X11=1;
+      NCGM=1
+      PS=1
+      X11=1
 
 ;
 ; Call a subroutine that generates an LLU

@@ -63,7 +63,7 @@ C
 C
 C Set the display. Default is to display output to an X workstation.
 C
-	NCGM = 0
+	NCGM=0
 
 C
 C Initialize the high level utility library and create application.

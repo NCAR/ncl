@@ -1,5 +1,5 @@
 C
-C $Id: basic01f.f,v 1.8 1995-06-14 17:16:45 stautler Exp $
+C $Id: basic01f.f,v 1.9 1995-06-19 16:20:12 stautler Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -98,7 +98,7 @@ C
 C
 C Default is to display output to an X workstation
 C
-      NCGM = 0
+      NCGM=0
 
       if (NCGM.eq.1) then
 C

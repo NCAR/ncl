@@ -1,5 +1,5 @@
 /*
- * $Id: basic02c.c,v 1.6 1995-06-14 17:16:47 stautler Exp $
+ * $Id: basic02c.c,v 1.7 1995-06-19 16:20:13 stautler Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -38,7 +38,7 @@ main()
 {
         int appid,wks,con1,rlist;
 
-	int NCGM = 0;
+	int NCGM=0;
 
 /*
  * Initialize the graphics libraries and create a resource list that

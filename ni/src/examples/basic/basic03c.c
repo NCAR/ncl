@@ -1,5 +1,5 @@
 /*
- * $Id: basic03c.c,v 1.6 1995-06-14 17:16:51 stautler Exp $
+ * $Id: basic03c.c,v 1.7 1995-06-19 16:20:14 stautler Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -45,7 +45,7 @@ main()
 
 	int dims[2] = { 5, 5 };
 
-	int NCGM = 0;
+	int NCGM=0;
 
 /*
  * Initialize the graphics libraries and create a resource list that
