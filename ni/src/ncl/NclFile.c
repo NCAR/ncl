@@ -2733,10 +2733,13 @@ int type;
 	float tmpf;
 	NclScalar *tmp_mis;
 	NclScalar tmp_scalar;
+	NclScalar tmp_scalar0;
 	int tmp_size = 1,tmpi;
 	void *data_type;
 	NclBasicDataTypes from_type,to_type;
 	NclObjTypes obj_type;
+	int result = 0;
+	int free_tmp_md = 0;
 
 	if(thefile->file.wr_status <= 0) {
 		index = FileIsVar(thefile,var);
@@ -2936,12 +2939,17 @@ int type;
 			} else {
 				if((has_missing)&&(value->multidval.missing_value.has_missing)) {
 					mis_md = FileReadVarAtt(thefile,var,NrmStringToQuark(NCL_MISSING_VALUE_ATT),NULL);
-					if(value->obj.status != PERMANENT) {
+					_Ncleq(value->multidval.type,(void*)&(result),(void*)&(value->multidval.missing_value.value),(void*)(mis_md->multidval.val),NULL,NULL,1,1);
+					if((!result) &&(value->obj.status != PERMANENT)) {
 						tmp_md = value;
 						memcpy(&tmp_scalar,mis_md->multidval.val,mis_md->multidval.totalsize);
 						_NclResetMissingValue(tmp_md,(NclScalar*) &tmp_scalar);
 					} else {
+
+/* Situation where missing values are not equal and can't just overwrite input's*/
+
 						tmp_md = _NclCopyVal(value,(NclScalar*)mis_md->multidval.val);
+						free_tmp_md = 1;
 					}
 				} else if(value->multidval.missing_value.has_missing) {
 					tmp_mis = (NclScalar*)NclMalloc((unsigned)sizeof(NclScalar));
@@ -2998,6 +3006,9 @@ int type;
 							}
 						}
 					}
+					if(free_tmp_md) {
+						_NclDestroyObj((NclObj)tmp_md);
+					}
 
 						return(ret);
 				} else {
@@ -3047,6 +3058,9 @@ int type;
 								real_stride);
 						}
 						if(ret < NhlWARNING) {
+							if(free_tmp_md) {
+								_NclDestroyObj((NclObj)tmp_md);
+							}
 							return(ret);
 						}
 						if(value->multidval.kind != SCALAR) {
@@ -3140,6 +3154,9 @@ int type;
 						}
 					}
 
+					if(free_tmp_md) {
+						_NclDestroyObj((NclObj)tmp_md);
+					}
 					return(ret);
 				}
 			} else if((type == FILE_VAR_ACCESS) ? thefile->file.format_funcs->write_var_ns != NULL : thefile->file.format_funcs->write_coord_ns != NULL) {
@@ -3172,6 +3189,9 @@ int type;
 								NclFree(tmpfdim);
 							}
 						}
+					}
+					if(free_tmp_md) {
+						_NclDestroyObj((NclObj)tmp_md);
 					}
 
 					return(ret);
@@ -3225,6 +3245,9 @@ int type;
 								);
 						}
 						if(ret < NhlWARNING) {
+							if(free_tmp_md) {
+								_NclDestroyObj((NclObj)tmp_md);
+							}
 							return(ret);
 						}
 						if(value->multidval.kind != SCALAR) {
@@ -3316,6 +3339,9 @@ int type;
 								NclFree(tmpfdim);
 							}
 						}
+					}
+					if(free_tmp_md) {
+						_NclDestroyObj((NclObj)tmp_md);
 					}
 					return(ret);
 				}
