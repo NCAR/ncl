@@ -1,5 +1,5 @@
 C
-C $Id: pchiqu.f,v 1.1 1993-01-12 02:41:17 kennison Exp $
+C $Id: pchiqu.f,v 1.2 1994-03-09 23:23:44 kennison Exp $
 C
       SUBROUTINE PCHIQU (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
@@ -9,6 +9,7 @@ C
         CHARACTER CHRS*(*)
 C
         CALL PLCHHQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
+        IF (ICFELL('PCHIQU',1).NE.0) RETURN
 C
         RETURN
 C

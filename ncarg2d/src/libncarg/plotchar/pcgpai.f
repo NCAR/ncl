@@ -1,5 +1,5 @@
 C
-C $Id: pcgpai.f,v 1.1 1993-01-12 02:41:09 kennison Exp $
+C $Id: pcgpai.f,v 1.2 1994-03-09 23:23:37 kennison Exp $
 C
       SUBROUTINE PCGPAI (CHRS,IBEG,IVAL)
 C

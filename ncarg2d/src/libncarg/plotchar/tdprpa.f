@@ -1,5 +1,5 @@
 C
-C $Id: tdprpa.f,v 1.1 1992-11-17 18:47:22 kennison Exp $
+C $Id: tdprpa.f,v 1.2 1994-03-09 23:24:20 kennison Exp $
 C
       SUBROUTINE TDPRPA (XIPA,YIPA,XI2D,YI2D)
 C

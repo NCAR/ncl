@@ -1,5 +1,5 @@
 C
-C $Id: tdseti.f,v 1.1 1992-11-17 18:47:28 kennison Exp $
+C $Id: tdseti.f,v 1.2 1994-03-09 23:24:26 kennison Exp $
 C
       SUBROUTINE TDSETI (PNAM,IVAL)
 C
@@ -11,6 +11,7 @@ C
 C Just convert it into a call to the routine TDSETR.
 C
       CALL TDSETR (PNAM,REAL(IVAL))
+      IF (ICFELL('TDSETI',1).NE.0) RETURN
 C
 C Done.
 C

@@ -1,5 +1,5 @@
 C
-C $Id: pcgetr.f,v 1.6 1993-01-12 02:41:07 kennison Exp $
+C $Id: pcgetr.f,v 1.7 1994-03-09 23:23:35 kennison Exp $
 C
       SUBROUTINE PCGETR (WHCH,RVAL)
 C
@@ -37,8 +37,8 @@ C
           RVAL=REAL(IBXC(IPAI))
         ELSE
           CALL SETER ('PCGETR - BOX COLOR ARRAY INDEX IS OUT OF RANGE',
-     +                                                             1,2)
-          STOP
+     +                                                             1,1)
+          RETURN
         END IF
       ELSE IF (WHCH(1:2).EQ.'BF'.OR.WHCH(1:2).EQ.'bf') THEN
         RVAL=REAL(IBXF)
@@ -57,8 +57,8 @@ C
         ELSE IF (IPAI.GE.1.AND.IPAI.LE.16) THEN
           RVAL=REAL(LSCI(IPAI))
         ELSE
-          CALL SETER ('PCGETR - COLOR ARRAY INDEX IS OUT OF RANGE',1,2)
-          STOP
+          CALL SETER ('PCGETR - COLOR ARRAY INDEX IS OUT OF RANGE',1,1)
+          RETURN
         END IF
       ELSE IF (WHCH(1:2).EQ.'CD'.OR.WHCH(1:2).EQ.'cd') THEN
         RVAL=REAL(JCOD)
@@ -147,8 +147,8 @@ C
       ELSE IF (WHCH(1:2).EQ.'YE'.OR.WHCH(1:2).EQ.'ye') THEN
         RVAL=YEND
       ELSE
-        CALL SETER ('PCGETR - UNRECOGNIZED PARAMETER NAME',2,2)
-        STOP
+        CALL SETER ('PCGETR - UNRECOGNIZED PARAMETER NAME',2,1)
+        RETURN
       END IF
 C
 C Done.

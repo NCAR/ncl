@@ -1,5 +1,5 @@
 C
-C $Id: pcsort.f,v 1.4 1993-01-12 02:41:36 kennison Exp $
+C $Id: pcsort.f,v 1.5 1994-03-09 23:24:01 kennison Exp $
 C
       SUBROUTINE PCSORT (LCHR,INDX,NLCH)
 C

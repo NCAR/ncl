@@ -1,5 +1,5 @@
 C
-C $Id: pccffc.f,v 1.6 1993-01-12 02:40:54 kennison Exp $
+C $Id: pccffc.f,v 1.7 1994-03-09 23:23:23 kennison Exp $
 C
       SUBROUTINE PCCFFC (IPSS,IBNU,NFNT,IASC,IPIC,RDGU,LDGU,NDGU)
 C
@@ -91,14 +91,17 @@ C Open the fontcap file.
 C
         IBNS=IBNU
         CALL PCFOPN (IBNU,NFNT)
+        IF (ICFELL('PCCFFC',1).NE.0) RETURN
 C
 C Read the fontcap.
 C
         CALL PCFRED (IBNU,NFNT,IFCP,5600)
+        IF (ICFELL('PCCFFC',2).NE.0) RETURN
 C
 C Close the fontcap file.
 C
         CALL PCFCLS (IBNU,NFNT)
+        IF (ICFELL('PCCFFC',3).NE.0) RETURN
         IBNU=IBNS
 C
 C Compute quantities needed to unpack X and Y coordinates and pen

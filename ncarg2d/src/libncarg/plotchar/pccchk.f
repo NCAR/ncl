@@ -1,5 +1,5 @@
 C
-C $Id: pccchk.f,v 1.5 1993-06-11 17:19:52 kennison Exp $
+C $Id: pccchk.f,v 1.6 1994-03-09 23:23:22 kennison Exp $
 C
       SUBROUTINE PCCCHK (IERR)
 C

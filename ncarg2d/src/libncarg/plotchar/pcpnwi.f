@@ -1,5 +1,5 @@
 C
-C $Id: pcpnwi.f,v 1.1 1993-01-12 02:41:27 kennison Exp $
+C $Id: pcpnwi.f,v 1.2 1994-03-09 23:23:53 kennison Exp $
 C
       CHARACTER*16 FUNCTION PCPNWI (WHCH,IPAI)
 C
@@ -13,8 +13,8 @@ C the index, in the form expected by the routines PCGETR and PCSETR (in
 C parentheses following the two-character internal parameter name).
 C
       IF (LEN(WHCH).LT.2) THEN
-        CALL SETER ('PCPNWI - PARAMETER NAME TOO SHORT',1,2)
-        STOP
+        CALL SETER ('PCPNWI - PARAMETER NAME TOO SHORT',1,1)
+        RETURN
       ELSE
         WRITE (CTMP,'(I16)') IPAI
         IBEG=0
@@ -25,8 +25,8 @@ C
           END IF
   101   CONTINUE
         IF (IBEG.EQ.0) THEN
-          CALL SETER ('PCPNWI - INTERNAL ERROR - SEE CONSULTANT',2,2)
-          STOP
+          CALL SETER ('PCPNWI - INTERNAL ERROR - SEE CONSULTANT',2,1)
+          RETURN
         ELSE
           PCPNWI=WHCH(1:2)//'('//CTMP(IBEG:IEND)//')'//'            '
         END IF

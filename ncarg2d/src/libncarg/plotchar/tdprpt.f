@@ -1,5 +1,5 @@
 C
-C $Id: tdprpt.f,v 1.1 1992-11-17 18:47:26 kennison Exp $
+C $Id: tdprpt.f,v 1.2 1994-03-09 23:24:24 kennison Exp $
 C
       SUBROUTINE TDPRPT (XI3D,YI3D,ZI3D,XI2D,YI2D)
 C

@@ -1,5 +1,5 @@
 C
-C $Id: pcmequ.f,v 1.1 1993-01-12 02:41:21 kennison Exp $
+C $Id: pcmequ.f,v 1.2 1994-03-09 23:23:48 kennison Exp $
 C
       SUBROUTINE PCMEQU (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
@@ -9,6 +9,7 @@ C
         CHARACTER CHRS*(*)
 C
         CALL PLCHMQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
+        IF (ICFELL('PCMEQU',1).NE.0) RETURN
 C
         RETURN
 C

@@ -1,5 +1,5 @@
 C
-C $Id: pcsetr.f,v 1.6 1993-01-12 02:41:34 kennison Exp $
+C $Id: pcsetr.f,v 1.7 1994-03-09 23:23:59 kennison Exp $
 C
       SUBROUTINE PCSETR (WHCH,RVAL)
 C
@@ -37,8 +37,8 @@ C
           IBXC(IPAI)=INT(RVAL)
         ELSE
           CALL SETER ('PCSETR - BOX COLOR ARRAY INDEX IS OUT OF RANGE',
-     +                                                             1,2)
-          STOP
+     +                                                             1,1)
+          RETURN
         END IF
       ELSE IF (WHCH(1:2).EQ.'BF'.OR.WHCH(1:2).EQ.'bf') THEN
         IBXF=INT(RVAL)
@@ -57,8 +57,8 @@ C
         ELSE IF (IPAI.GE.1.AND.IPAI.LE.16) THEN
           LSCI(IPAI)=INT(RVAL)
         ELSE
-          CALL SETER ('PCSETR - COLOR ARRAY INDEX IS OUT OF RANGE',1,2)
-          STOP
+          CALL SETER ('PCSETR - COLOR ARRAY INDEX IS OUT OF RANGE',1,1)
+          RETURN
         END IF
       ELSE IF (WHCH(1:2).EQ.'CD'.OR.WHCH(1:2).EQ.'cd') THEN
         JCOD=MAX(0,MIN(1,INT(RVAL)))
@@ -81,6 +81,7 @@ C
         IF (IORD.EQ.0) IORD=1
       ELSE IF (WHCH(1:2).EQ.'FB'.OR.WHCH(1:2).EQ.'fb') THEN
         CALL BZSETR ('FTL',RVAL)
+        IF (ICFELL('PCSETR',2).NE.0) RETURN
       ELSE IF (WHCH(1:2).EQ.'FN'.OR.WHCH(1:2).EQ.'fn') THEN
         NODF=ABS(INT(RVAL))
         IF ((NODF.GE. 23.AND.NODF.LE. 24).OR.
@@ -141,8 +142,8 @@ C
       ELSE IF (WHCH(1:2).EQ.'TE'.OR.WHCH(1:2).EQ.'te') THEN
         ITEF=MAX(0,MIN(1,INT(RVAL)))
       ELSE
-        CALL SETER ('PCSETR - UNRECOGNIZED PARAMETER NAME',2,2)
-        STOP
+        CALL SETER ('PCSETR - UNRECOGNIZED PARAMETER NAME',3,1)
+        RETURN
       END IF
 C
 C Done.

@@ -1,5 +1,5 @@
 C
-C $Id: pcmqlq.f,v 1.4 1993-01-12 02:41:25 kennison Exp $
+C $Id: pcmqlq.f,v 1.5 1994-03-09 23:23:51 kennison Exp $
 C
       SUBROUTINE PCMQLQ (XSUB,YSUB,CHRS,SIZE,ANGD,CNTR)
 C
@@ -26,8 +26,10 @@ C Call the appropriate routine.
 C
       IF (IQUF.EQ.1) THEN
         CALL PLCHMQ (XSUB,YSUB,CHRS,SIZE,ANGD,CNTR)
+        IF (ICFELL('PCMQLQ',1).NE.0) RETURN
       ELSE
         CALL PLCHLQ (XSUB,YSUB,CHRS,SIZE,ANGD,CNTR)
+        IF (ICFELL('PCMQLQ',2).NE.0) RETURN
       END IF
 C
 C Done.

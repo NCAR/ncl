@@ -1,5 +1,5 @@
 C
-C $Id: pcsetc.f,v 1.6 1993-01-12 02:41:29 kennison Exp $
+C $Id: pcsetc.f,v 1.7 1994-03-09 23:23:55 kennison Exp $
 C
       SUBROUTINE PCSETC (WHCH,CVAL)
 C
@@ -43,11 +43,11 @@ C
             GO TO 102
           END IF
   101   CONTINUE
-        CALL SETER ('PCSETC - UNRECOGNIZED FONT NAME',1,2)
-        STOP
+        CALL SETER ('PCSETC - UNRECOGNIZED FONT NAME',1,1)
+        RETURN
       ELSE
-        CALL SETER ('PCSETC - UNRECOGNIZED PARAMETER NAME',2,2)
-        STOP
+        CALL SETER ('PCSETC - UNRECOGNIZED PARAMETER NAME',2,1)
+        RETURN
       END IF
 C
 C Done.

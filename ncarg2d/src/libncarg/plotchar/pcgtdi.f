@@ -1,5 +1,5 @@
 C
-C $Id: pcgtdi.f,v 1.5 1993-01-12 02:41:13 kennison Exp $
+C $Id: pcgtdi.f,v 1.6 1994-03-09 23:23:40 kennison Exp $
 C
       SUBROUTINE PCGTDI (CHRS,NCHR,ICHR,NUMV)
 C

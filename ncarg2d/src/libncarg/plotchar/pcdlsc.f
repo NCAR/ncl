@@ -1,5 +1,5 @@
 C
-C $Id: pcdlsc.f,v 1.1 1993-01-12 02:40:58 kennison Exp $
+C $Id: pcdlsc.f,v 1.2 1994-03-09 23:23:27 kennison Exp $
 C
       SUBROUTINE PCDLSC (IFCI)
 C
@@ -22,8 +22,8 @@ C
 C Check for error in the argument.
 C
       IF (IFCI.LT.0) THEN
-        CALL SETER ('PCDLSC - FIRST COLOR INDEX IS LESS THAN ZERO',1,2)
-        STOP
+        CALL SETER ('PCDLSC - FIRST COLOR INDEX IS LESS THAN ZERO',1,1)
+        RETURN
       END IF
 C
 C Define the colors and store the color indices in the array LSCI.  The

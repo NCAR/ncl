@@ -1,5 +1,5 @@
 C
-C $Id: tdsetr.f,v 1.1 1992-11-17 18:47:30 kennison Exp $
+C $Id: tdsetr.f,v 1.2 1994-03-09 23:24:28 kennison Exp $
 C
       SUBROUTINE TDSETR (PNAM,RVAL)
 C
@@ -36,7 +36,8 @@ C
       ELSE IF (PNAM(1:3).EQ.'STY'.OR.PNAM(1:3).EQ.'sty') THEN
         IT=MAX(0,MIN(1,INT(RVAL)))
       ELSE
-        CALL SETER ('TDSETR - UNRECOGNIZED PARAMETER NAME',1,2)
+        CALL SETER ('TDSETR - UNRECOGNIZED PARAMETER NAME',1,1)
+        RETURN
       END IF
 C
 C Done.

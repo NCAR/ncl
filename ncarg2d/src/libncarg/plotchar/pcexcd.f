@@ -1,5 +1,5 @@
 C
-C $Id: pcexcd.f,v 1.4 1993-01-12 02:41:00 kennison Exp $
+C $Id: pcexcd.f,v 1.5 1994-03-09 23:23:29 kennison Exp $
 C
       SUBROUTINE PCEXCD (IPNT,IPSS,NDGU)
 C

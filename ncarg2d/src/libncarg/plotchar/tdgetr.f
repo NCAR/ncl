@@ -1,5 +1,5 @@
 C
-C $Id: tdgetr.f,v 1.1 1992-11-17 18:47:16 kennison Exp $
+C $Id: tdgetr.f,v 1.2 1994-03-09 23:24:15 kennison Exp $
 C
       SUBROUTINE TDGETR (PNAM,RVAL)
 C
@@ -36,7 +36,8 @@ C
       ELSE IF (PNAM(1:3).EQ.'STY'.OR.PNAM(1:3).EQ.'sty') THEN
         RVAL=REAL(IT)
       ELSE
-        CALL SETER ('TDGETR - UNRECOGNIZED PARAMETER NAME',1,2)
+        CALL SETER ('TDGETR - UNRECOGNIZED PARAMETER NAME',1,1)
+        RETURN
       END IF
 C
 C Done.

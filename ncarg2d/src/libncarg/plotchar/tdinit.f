@@ -1,5 +1,5 @@
 C
-C $Id: tdinit.f,v 1.1 1992-11-17 18:47:18 kennison Exp $
+C $Id: tdinit.f,v 1.2 1994-03-09 23:24:17 kennison Exp $
 C
       SUBROUTINE TDINIT (XMID,YMID,ZMID,XORI,YORI,ZORI,XTHI,YTHI,ZTHI,
      +                   OTEP)

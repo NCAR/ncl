@@ -1,5 +1,5 @@
 C
-C $Id: tdpara.f,v 1.1 1992-11-17 18:47:20 kennison Exp $
+C $Id: tdpara.f,v 1.2 1994-03-09 23:24:19 kennison Exp $
 C
       SUBROUTINE TDPARA (ARG1,ARG2,ARG3,ARG4,ARG5,ARG6,ARG7,ARG8,ARG9)
 C

@@ -1,5 +1,5 @@
 C
-C $Id: pcgetc.f,v 1.7 1993-04-30 22:27:59 kennison Exp $
+C $Id: pcgetc.f,v 1.8 1994-03-09 23:23:31 kennison Exp $
 C
       SUBROUTINE PCGETC (WHCH,CVAL)
 C
@@ -46,8 +46,8 @@ C
   101   CONTINUE
         CVAL='!FONT NOT DEFINED!'
       ELSE
-        CALL SETER ('PCGETC - UNRECOGNIZED PARAMETER NAME',1,2)
-        STOP
+        CALL SETER ('PCGETC - UNRECOGNIZED PARAMETER NAME',1,1)
+        RETURN
       END IF
 C
 C Done.

@@ -1,5 +1,5 @@
 C
-C $Id: pcseti.f,v 1.4 1993-01-12 02:41:31 kennison Exp $
+C $Id: pcseti.f,v 1.5 1994-03-09 23:23:57 kennison Exp $
 C
       SUBROUTINE PCSETI (WHCH,IVAL)
 C
@@ -11,6 +11,7 @@ C
 C Just convert it into a call to the routine PCSETR.
 C
       CALL PCSETR (WHCH,REAL(IVAL))
+      IF (ICFELL('PCSETI',1).NE.0) RETURN
 C
 C Done.
 C
