@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.16 2003-07-01 23:29:50 shea Exp $
+;      $Id: contributed.ncl,v 1.17 2003-07-16 17:03:49 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -4142,6 +4142,7 @@ end
 ;
 ; RESULT    xJJA(time/12,lev,lat,lon)    xJJA(time/12,lat,lon)
 ;
+; Note: this returns (7/2003) NMO as an attribute
 
 undef ("month_to_season")
 function month_to_season (xMon:numeric, SEASON:string)
@@ -4279,6 +4280,8 @@ begin
       xSea&$dName$ = cv
   end if
 
+  xSea@NMO = NMO   ; for possible use in subscripting 
+                   ; eg: nStrt= xSea@NMO ; time(nStrt:ntim-1,12)
   return (xSea)
   end
 ; ------------------------
