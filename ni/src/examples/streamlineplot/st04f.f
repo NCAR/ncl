@@ -1,5 +1,5 @@
 C
-C      $Id: st04f.f,v 1.4 1997-05-22 16:47:00 haley Exp $
+C      $Id: st04f.f,v 1.5 1997-10-08 17:27:44 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -335,7 +335,7 @@ C
       tmid = ncvid(ncid(2),'reftime',ierr)
       strt(1) = 1 
       cnt(1) = 8
-      call ncvgt(ncid(2),tmid,strt,cnt,rftime,ierr)
+      call ncvgtc(ncid(2),tmid,strt,cnt,rftime,8,ierr)
 
       do 100 i=0,TIMESTEPS-1
          if (i .ne. 17 .and. i .ne. 36 .and. i .ne. 37) then
