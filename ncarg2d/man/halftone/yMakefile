@@ -1,11 +1,11 @@
 #
-#	$Id: yMakefile,v 1.5 1993-10-19 17:17:00 boote Exp $
+#	$Id: yMakefile,v 1.6 1994-03-03 17:59:37 haley Exp $
 #
 
 MAN =	ezhftn hafton halftone
 
 # Install preformatted troff documents on systems without troff
-#if UseCatDirs
+#ifdef UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m

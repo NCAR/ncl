@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.4 1993-10-19 17:15:00 boote Exp $
+#	$Id: yMakefile,v 1.5 1994-03-03 17:58:44 haley Exp $
 #
 
 MAN =	agback agbnch agchax agchcu agchil agchnl agcurv agdshn aggetc aggetf \
@@ -7,7 +7,7 @@ MAN =	agback agbnch agchax agchcu agchil agchnl agcurv agdshn aggetc aggetf \
 	agsetr agstup agutol anotat autograph autograph_params displa ezmxy \
 	ezmy ezxy ezy
 
-#if UseCatDirs
+#ifdef UseCatDirs
 # Install preformatted troff documents on systems without troff
 FORMAT_EXT	= .p
 #else

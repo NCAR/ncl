@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.7 1993-10-19 17:16:08 boote Exp $
+#	$Id: yMakefile,v 1.8 1994-03-03 17:59:14 haley Exp $
 #
 
 MAN =	ezmap ezmap_params ezmapa mapaci mapbla mapdrw mapeod mapfst mapgci \
@@ -10,7 +10,7 @@ MAN =	ezmap ezmap_params ezmapa mapaci mapbla mapdrw mapeod mapfst mapgci \
 	supmap
 
 # Install preformatted troff documents on systems without troff
-#if UseCatDirs
+#ifdef UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m

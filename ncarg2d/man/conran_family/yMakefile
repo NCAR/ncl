@@ -1,12 +1,12 @@
 #
-#	$Id: yMakefile,v 1.5 1993-10-19 17:15:31 boote Exp $
+#	$Id: yMakefile,v 1.6 1994-03-03 17:59:01 haley Exp $
 #
 
 MAN = conop1 conop2 conop3 conop4 conran conran_family conran_family_params \
 	conraq conras
 
 # Install preformatted troff documents on systems without troff
-#if UseCatDirs
+#ifdef UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m

@@ -1,11 +1,11 @@
 #
-#	$Id: yMakefile,v 1.7 1993-10-19 17:18:47 boote Exp $
+#	$Id: yMakefile,v 1.8 1994-03-03 18:00:30 haley Exp $
 #
 
 MAN =	ezsrfc pwrzs setr srface surface surface_params
 
 # Install preformatted troff documents on systems without troff
-#if UseCatDirs
+#ifdef UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m

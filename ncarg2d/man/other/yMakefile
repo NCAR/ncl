@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.7 1993-10-19 17:17:39 boote Exp $
+#	$Id: yMakefile,v 1.8 1994-03-03 17:59:58 haley Exp $
 #
 
 #ifdef BuildNCARGSourceLibrary
@@ -14,7 +14,7 @@ MAN5 = ncargintro
 MAN = $(MAN1) $(MAN3) $(MAN5)
 
 # Install preformatted troff documents on systems without troff
-#if UseCatDirs
+#ifdef UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m

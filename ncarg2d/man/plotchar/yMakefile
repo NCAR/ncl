@@ -1,12 +1,12 @@
 #
-#	$Id: yMakefile,v 1.5 1993-10-19 17:17:51 boote Exp $
+#	$Id: yMakefile,v 1.6 1994-03-03 18:00:04 haley Exp $
 #
 
 MAN =	pcdlsc pcgetc pcgeti pcgetr pchiqu pcloqu pcmequ pcmpxy pcpnwi pcsetc \
 	pcseti pcsetr plchhq plchlq plchmq plotchar plotchar_params
 
 # Install preformatted troff documents on systems without troff
-#if UseCatDirs
+#ifdef UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m

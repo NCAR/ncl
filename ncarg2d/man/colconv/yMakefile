@@ -1,11 +1,11 @@
 #
-#	$Id: yMakefile,v 1.4 1993-10-19 17:15:14 boote Exp $
+#	$Id: yMakefile,v 1.5 1994-03-03 17:58:52 haley Exp $
 #
 
 MAN = colconv hlsrgb hsvrgb rgbhls rgbhsv rgbyiq yiqrgb
 
 # Install preformatted troff documents on systems without troff
-#if UseCatDirs
+#ifdef UseCatDirs
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m
