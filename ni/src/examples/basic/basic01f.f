@@ -1,5 +1,5 @@
 C
-C $Id: basic01f.f,v 1.4 1995-03-31 21:31:24 haley Exp $
+C $Id: basic01f.f,v 1.5 1995-04-03 04:43:01 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -37,7 +37,7 @@ C
 
       external NhlFAppLayerClass
       external NhlFXWorkstationLayerClass
-      external NhlFContourLayerClass
+      external NhlFContourPlotLayerClass
 
       integer appid,wks,con1,rlist,ierr
 C
@@ -106,7 +106,7 @@ C The first argument, con1, is a variable that identifies the object.
 C The second create call argument, '"con1"', sets the name of the object.
 C This is an arbitrary name and does not have to match the variable
 C object identifier used in the first parameter.
-C The third argument, "NhlFContourLayerClass", identifies the type or
+C The third argument, "NhlFContourPlotLayerClass", identifies the type or
 C class of the object to create.  In this case, the type is a contour
 C plot.  The third argument, "wks", specifies the id of the object's
 C parent.  By  specifying the id of the X workstation created earlier,
@@ -117,7 +117,7 @@ C made to default values.
 C The sixth argument, "ierr", is used to return an error code.
 C
       call NhlFRLClear(rlist)
-      call NhlFCreate(con1,"con1",NhlFContourLayerClass,wks,
+      call NhlFCreate(con1,"con1",NhlFContourPlotLayerClass,wks,
      1      rlist,ierr)
 C
 C ##########

@@ -1,4 +1,4 @@
-; $Id: basic01n.ncl,v 1.4 1995-02-27 18:14:51 scheitln Exp $
+; $Id: basic01n.ncl,v 1.5 1995-04-03 04:43:02 haley Exp $
 ;
 ; This example demonstrates how to draw a contour plot using mostly
 ; defaults.  Note: no data is used in this example, so the output appears
@@ -46,13 +46,13 @@ wks = create "wks" xWorkstationLayerClass defaultapp
 ; The first create call argument, '"con1"', sets the name of the object.
 ; This is an arbitrary name and does not have to match the variable name
 ; on the left hand side of the call.
-; The second argument, "contourLayerClass", identifies the type or class
+; The second argument, "contourPlotLayerClass", identifies the type or class
 ; of the object to create.  In this case, the type is a contour plot. 
 ; The third argument, "wks", specifies the id of the object's parent.  By 
 ; specifying the id of the X workstation created earlier, the plot will
 ; be drawn into an X window.
 
-con1 = create "con1" contourLayerClass wks 
+con1 = create "con1" contourPlotLayerClass wks 
        end create
 
 ; ##########

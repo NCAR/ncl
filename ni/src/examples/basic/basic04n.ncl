@@ -1,4 +1,4 @@
-; $Id: basic04n.ncl,v 1.3 1995-02-27 18:11:33 scheitln Exp $
+; $Id: basic04n.ncl,v 1.4 1995-04-03 04:43:12 haley Exp $
 ;
 ; This example demonstrates how to select and change the workstation
 ; device for drawing your output to an NCGM file or an X workstation window.
@@ -71,14 +71,14 @@ end create
 ; Create a contour object to draw into the X workstation.
 ; Assign data using the cnScalarFieldData resource.
 
-xcon = create "xcon" contourLayerClass xwks
+xcon = create "xcon" contourPlotLayerClass xwks
    "cnScalarFieldData" : field1
 end create
 
 ; Create an empty contour object to draw into the ncgm workstation.
 ; Assign data using the cnScalarFieldData resource.
 
-ncon = create "ncon" contourLayerClass nwks
+ncon = create "ncon" contourPlotLayerClass nwks
    "cnScalarFieldData" : field1
 end create
 

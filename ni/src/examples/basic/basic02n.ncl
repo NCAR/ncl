@@ -1,4 +1,4 @@
-; $Id: basic02n.ncl,v 1.4 1995-02-27 18:11:31 scheitln Exp $
+; $Id: basic02n.ncl,v 1.5 1995-04-03 04:43:05 haley Exp $
 ;
 ; The first frame in this example demonstrates how to set the view port 
 ; for a contour plot.
@@ -32,7 +32,7 @@ wks = create "wks" xWorkstationLayerClass defaultapp
 ; system (0,0) specifies the lower-left corner and (1,1) specifies the 
 ; uper-right corner of a plot.
 
-con1 = create "con1" contourLayerClass wks 
+con1 = create "con1" contourPlotLayerClass wks 
 	"vpXF"       : 0.05   ;The left edge of the viewport bounding box
  	"vpYF"       : 0.95   ;The top edge of the viewport bounding box
  	"vpWidthF"   : 0.4    ;The width of the viewport bounding box

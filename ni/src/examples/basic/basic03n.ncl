@@ -1,4 +1,4 @@
-; $Id: basic03n.ncl,v 1.3 1995-02-27 18:11:32 scheitln Exp $
+; $Id: basic03n.ncl,v 1.4 1995-04-03 04:43:09 haley Exp $
 ;
 ; This example demonstrates how to:
 ;   1. Create a scalar field data object and assign it to a plot.
@@ -43,7 +43,7 @@ end create
 ; Create a contour plot object and assign the data using the
 ; cnScalarFieldData resource.
 
-con1 = create "con1" contourLayerClass wks
+con1 = create "con1" contourPlotLayerClass wks
 	"cnScalarFieldData" : field1
 end create
 
@@ -82,7 +82,7 @@ end create
 ; Notice that the parent id is wks2, making the contour object
 ; a child of the new workstation.
 
-con2 = create "con2" contourLayerClass wks2
+con2 = create "con2" contourPlotLayerClass wks2
 	"cnScalarFieldData" : field1
 end create
 
@@ -105,7 +105,7 @@ frame(wks2)
 ; a resource and its value.  In this example contour line labels are turned
 ; off by setting the "cnLineLabelsOn" resource to "False".
 
-con3 = create "con3" contourLayerClass wks2
+con3 = create "con3" contourPlotLayerClass wks2
 	"cnScalarFieldData" : field1
 	"cnLineLabelsOn"    : "False"
 end create

@@ -1,5 +1,5 @@
 C
-C $Id: basic03f.f,v 1.4 1995-03-31 21:31:26 haley Exp $
+C $Id: basic03f.f,v 1.5 1995-04-03 04:43:07 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -29,7 +29,7 @@ C
 
       external NhlFAppLayerClass
       external NhlFXWorkstationLayerClass
-      external NhlFContourLayerClass
+      external NhlFContourPlotLayerClass
       external NhlFScalarFieldLayerClass
 
       integer appid1,appid2,wks,wks2,con1,con2,con3,field1,rlist,ierr
@@ -82,7 +82,7 @@ C cnScalarFieldData resource.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetInteger(rlist,"cnScalarFieldData",field1,ierr)
-      call NhlFCreate(con1,"con1",NhlFContourLayerClass,wks,
+      call NhlFCreate(con1,"con1",NhlFContourPlotLayerClass,wks,
      1      rlist,ierr)
 C
 C Draw the plot. 
@@ -124,7 +124,7 @@ C a child of the new workstation.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetInteger(rlist,"cnScalarFieldData",field1,ierr)
-      call NhlFCreate(con2,"con2",NhlFContourLayerClass,wks2,
+      call NhlFCreate(con2,"con2",NhlFContourPlotLayerClass,wks2,
      1      rlist,ierr)
 C
 C The contour object is drawn with filled contours because there is
@@ -149,7 +149,7 @@ C
       call NhlFRLClear(rlist)
       call NhlFRLSetInteger(rlist,"cnScalarFieldData",field1,ierr)
       call NhlFRLSetString(rlist,"cnLineLabelsOn","False",ierr)
-      call NhlFCreate(con3,"con3",NhlFContourLayerClass,wks2,
+      call NhlFCreate(con3,"con3",NhlFContourPlotLayerClass,wks2,
      1      rlist,ierr)
 C
 C Draw the contour object.

@@ -1,5 +1,5 @@
 /*
- * $Id: basic04c.c,v 1.2 1995-03-20 18:41:20 haley Exp $
+ * $Id: basic04c.c,v 1.3 1995-04-03 04:43:10 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -34,7 +34,7 @@
 #include <ncarg/hlu/ResList.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
-#include <ncarg/hlu/Contour.h>
+#include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/ScalarField.h>
 #include <ncarg/hlu/hlu.h>
 
@@ -112,14 +112,14 @@ main ()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,"cnScalarFieldData",field1);
-        NhlCreate(&xcon,"xcon",NhlcontourLayerClass,xwks,rlist);
+        NhlCreate(&xcon,"xcon",NhlcontourPlotLayerClass,xwks,rlist);
 /*
  * Create an empty contour object to draw into the ncgm workstation.
  * Assign data using the cnScalarFieldData resource.
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,"cnScalarFieldData",field1);
-        NhlCreate(&ncon,"ncon",NhlcontourLayerClass,nwks,rlist);
+        NhlCreate(&ncon,"ncon",NhlcontourPlotLayerClass,nwks,rlist);
 
 /*
  * ##########

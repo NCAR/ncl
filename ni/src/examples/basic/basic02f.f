@@ -1,5 +1,5 @@
 C
-C $Id: basic02f.f,v 1.4 1995-03-31 21:31:25 haley Exp $
+C $Id: basic02f.f,v 1.5 1995-04-03 04:43:04 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -31,7 +31,7 @@ C
 
       external NhlFAppLayerClass
       external NhlFXWorkstationLayerClass
-      external NhlFContourLayerClass
+      external NhlFContourPlotLayerClass
 
       integer appid,wks,con1,rlist,ierr
 C
@@ -72,7 +72,7 @@ C specifies the uper-right corner of a plot.
       call NhlFRLSetFloat(rlist,"vpYF",0.95,ierr) 
       call NhlFRLSetFloat(rlist,"vpWidthF",0.4,ierr) 
       call NhlFRLSetFloat(rlist,"vpHeightF",0.4,ierr) 
-      call NhlFCreate(con1,"con1",NhlFContourLayerClass,wks,
+      call NhlFCreate(con1,"con1",NhlFContourPlotLayerClass,wks,
      $     rlist,ierr)
 C
 C Draw the plot. 

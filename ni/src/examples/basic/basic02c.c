@@ -1,5 +1,5 @@
 /*
- * $Id: basic02c.c,v 1.2 1995-03-20 18:41:17 haley Exp $
+ * $Id: basic02c.c,v 1.3 1995-04-03 04:43:03 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -30,7 +30,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/ResList.h>
 #include <ncarg/hlu/XWorkstation.h>
-#include <ncarg/hlu/Contour.h>
+#include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/hlu.h>
 
 main()
@@ -76,7 +76,7 @@ main()
 	NhlRLSetFloat(rlist,"vpYF",0.95); 
 	NhlRLSetFloat(rlist,"vpWidthF",0.4); 
 	NhlRLSetFloat(rlist,"vpHeightF",0.4); 
-        NhlCreate(&con1,"con1",NhlcontourLayerClass,wks,rlist);
+        NhlCreate(&con1,"con1",NhlcontourPlotLayerClass,wks,rlist);
 
 /*
  * Draw the plot. 

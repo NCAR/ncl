@@ -1,5 +1,5 @@
 /*
- * $Id: basic03c.c,v 1.2 1995-03-20 18:41:18 haley Exp $
+ * $Id: basic03c.c,v 1.3 1995-04-03 04:43:06 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -28,7 +28,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/ResList.h>
 #include <ncarg/hlu/XWorkstation.h>
-#include <ncarg/hlu/Contour.h>
+#include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/ScalarField.h>
 #include <ncarg/hlu/hlu.h>
 
@@ -83,7 +83,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,"cnScalarFieldData",field1);
-        NhlCreate(&con1,"con1",NhlcontourLayerClass,wks,rlist);
+        NhlCreate(&con1,"con1",NhlcontourPlotLayerClass,wks,rlist);
 /*
  * Draw the plot. 
  */
@@ -123,7 +123,7 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,"cnScalarFieldData",field1);
-        NhlCreate(&con2,"con2",NhlcontourLayerClass,wks2,rlist);
+        NhlCreate(&con2,"con2",NhlcontourPlotLayerClass,wks2,rlist);
 /*
  * The contour object is drawn with filled contours because there is
  * a resource in basic03.res that specifies that contour fill is on.
@@ -148,7 +148,7 @@ main()
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,"cnScalarFieldData",field1);
         NhlRLSetString(rlist,"cnLineLabelsOn","False");
-        NhlCreate(&con3,"con3",NhlcontourLayerClass,wks2,rlist);
+        NhlCreate(&con3,"con3",NhlcontourPlotLayerClass,wks2,rlist);
 /*
  * Draw the contour object.
  */

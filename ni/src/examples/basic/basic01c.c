@@ -1,5 +1,5 @@
 /*
- * $Id: basic01c.c,v 1.2 1995-03-20 18:41:15 haley Exp $
+ * $Id: basic01c.c,v 1.3 1995-04-03 04:42:58 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -36,7 +36,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/ResList.h>
 #include <ncarg/hlu/XWorkstation.h>
-#include <ncarg/hlu/Contour.h>
+#include <ncarg/hlu/ContourPlot.h>
 #include <ncarg/hlu/hlu.h>
 
 main()
@@ -111,7 +111,7 @@ main()
  * The second create call argument, '"con1"', sets the name of the object.
  * This is an arbitrary name and does not have to match the variable object
  * identifier used in the first parameter.
- * The third argument, "contourLayerClass", identifies the type or class
+ * The third argument, "contourPlotLayerClass", identifies the type or class
  * of the object to create.  In this case, the type is a contour plot. 
  * The third argument, "wks", specifies the id of the object's parent.  By 
  * specifying the id of the X workstation created earlier, the plot will
@@ -122,7 +122,7 @@ main()
  */
 
         NhlRLClear(rlist);
-        NhlCreate(&con1,"con1",NhlcontourLayerClass,wks,rlist);
+        NhlCreate(&con1,"con1",NhlcontourPlotLayerClass,wks,rlist);
 
 /*
  * ##########

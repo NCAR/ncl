@@ -1,5 +1,5 @@
 C
-C $Id: basic04f.f,v 1.4 1995-03-31 21:31:27 haley Exp $
+C $Id: basic04f.f,v 1.5 1995-04-03 04:43:11 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -35,7 +35,7 @@ C
       external NhlFAppLayerClass
       external NhlFXWorkstationLayerClass
       external NhlFNcgmWorkstationLayerClass
-      external NhlFContourLayerClass
+      external NhlFContourPlotLayerClass
       external NhlFScalarFieldLayerClass
 
       integer appid,nwks,xwks,ncon,xcon,field1,rlist,ierr
@@ -113,7 +113,7 @@ C Assign data using the cnScalarFieldData resource.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetInteger(rlist,'cnScalarFieldData',field1,ierr)
-      call NhlFCreate(xcon,'xcon',NhlFContourLayerClass,xwks,
+      call NhlFCreate(xcon,'xcon',NhlFContourPlotLayerClass,xwks,
      $     rlist,ierr)
 C
 C Create an empty contour object to draw into the ncgm workstation.
@@ -121,7 +121,7 @@ C Assign data using the cnScalarFieldData resource.
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetInteger(rlist,'cnScalarFieldData',field1,ierr)
-      call NhlFCreate(ncon,'ncon',NhlFContourLayerClass,nwks,
+      call NhlFCreate(ncon,'ncon',NhlFContourPlotLayerClass,nwks,
      $     rlist,ierr)
 C
 C ##########
