@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.84 2002-04-05 14:38:25 haley Exp $
+;      $Id: gsn_code.ncl,v 1.85 2002-05-07 00:55:45 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -57,6 +57,7 @@ undef("get_display_mode")
 undef("attsetvalues_check")
 undef("spread_colors")
 undef("check_for_irreg2loglin")
+undef("get_plot_not_loglin")
 undef("fix_zero_contour")
 undef("maximize_bb")
 undef("gsnp_turn_off_tickmarks")
@@ -855,6 +856,55 @@ begin
   end if
 
   return
+end
+
+;***********************************************************************;
+; function : get_plot_not_loglin                                        ;
+;                plot:graphic                                           ;
+;                                                                       ;
+; Determine what class type "plot" is. If it's a logLinPlotClass, then  ;
+; It should have an attribute "contour" or "vector" that is the         ;
+; corresponding contour or vector plot.                                 ;
+;                                                                       ;
+;***********************************************************************;
+function get_plot_not_loglin(plot:graphic)
+local class
+begin
+  new_plot           = new(1,graphic)
+  new_plot@plot_type = "unknown"
+
+  class = NhlClassName(plot)
+
+  if(class(0).ne."contourPlotClass".and.class(0).ne."vectorPlotClass".and. \
+     class(0).ne."xyPlotClass") then
+    if(isatt(plot,"contour")) then
+      new_plot = plot@contour
+      new_plot@plot_type = "contour"
+    else
+      if(isatt(plot,"vector")) then
+        new_plot = plot@vector
+        new_plot@plot_type = "vector"
+      else
+        new_plot = plot(0)
+      end if
+    end if
+  else
+    if(class(0).eq."contourPlotClass") then
+      new_plot = plot(0)
+      new_plot@plot_type = "contour"
+    else
+      if(class(0).eq."vectorPlotClass") then
+        new_plot = plot(0)
+        new_plot@plot_type = "vector"
+      else
+        if(class(0).eq."xyPlotClass") then
+          new_plot = plot(0)
+          new_plot@plot_type = "xy"
+        end if
+      end if
+    end if
+  end if
+  return(new_plot)
 end
 
 ;**********************************************************************;
@@ -2888,53 +2938,24 @@ begin
 ; the vector or contour plot overlaid
 ; on it will be indicated by "plot@contour" or "plot@vector"
 ;
-  plot_type = "unknown"
-  class = NhlClassName(plot)
-
-  if(class(0).ne."contourPlotClass".and.class(0).ne."vectorPlotClass".and. \
-     class(0).ne."xyPlotClass") then
-    if(isatt(plot,"contour")) then
-      contour_plot = plot@contour
-      plot_type = "contour"
-    else
-      if(isatt(plot,"vector")) then
-        vector_plot = plot@vector
-        plot_type = "vector"
-      end if
-    end if
-  else
-    if(class(0).eq."contourPlotClass") then
-      contour_plot = plot(0)
-      plot_type = "contour"
-    else
-      if(class(0).eq."vectorPlotClass") then
-        vector_plot = plot(0)
-        plot_type = "vector"
-      else
-        if(class(0).eq."xyPlotClass") then
-          xy_plot = plot(0)
-          plot_type = "xy"
-        end if
-      end if
-    end if
-  end if
+  new_plot = get_plot_not_loglin(plot)
 
 ;
 ; Get the font height
 ;
   if(is_figure_strings.or.panel_labelbar) then
-    if(plot_type.eq."contour") then
-      getvalues contour_plot
+    if(new_plot@plot_type.eq."contour") then
+      getvalues new_plot
         "cnInfoLabelFontHeightF" : font_height
       end getvalues
     else
-      if(plot_type.eq."vector") then
-        getvalues vector_plot
+      if(new_plot@plot_type.eq."vector") then
+        getvalues new_plot
           "vcRefAnnoFontHeightF" : font_height
         end getvalues
       else
-        if(plot_type.eq."xy") then
-          getvalues xy_plot
+        if(new_plot@plot_type.eq."xy") then
+          getvalues new_plot
             "tiXAxisFontHeightF" : font_height
           end getvalues
           font_height = 0.6*font_height
@@ -2975,7 +2996,7 @@ begin
 ;
   lbhor = True
   if(panel_labelbar) then
-    lbres = get_res_eq(res,(/"lb","vp"/))  ; Get labelbar resources.
+    lbres = get_res_eq(res,(/"lb","pmLabelBar","vp"/))  ; Get labelbar resources.
     if(check_attr(lbres,"lbOrientation","vertical",True))
       lbhor = False
       labelbar_width = 0.20 * plot_width + 2.*xwsp
@@ -3217,13 +3238,13 @@ begin
 ;
 ; If plot type is unknown or xy, then we can't get labelbar information.
 ;
-    if(plot_type.ne."unknown".and.plot_type.ne."xy") then
-      if(plot_type.eq."contour") then
+    if(new_plot@plot_type.ne."unknown".and.new_plot@plot_type.ne."xy") then
+      if(new_plot@plot_type.eq."contour") then
 ;
 ; Get information on how contour plot is filled, so we can recreate 
 ; labelbar.
 ;
-        getvalues contour_plot
+        getvalues new_plot
           "cnLevels"               : levels
           "cnFillColors"           : colors
           "cnFillPatterns"         : fill_patterns
@@ -3239,7 +3260,7 @@ begin
         mono_fill_pat = True
         mono_fill_scl = True
         mono_fill_col = False
-        getvalues vector_plot
+        getvalues new_plot
           "vcLevels"                 : levels
           "vcLevelColors"            : colors
         end getvalues
@@ -3251,11 +3272,22 @@ begin
       labelbar_width       = scale * labelbar_width
       labelbar_font_height = font_height
 ;
-; Set some labelbar resources.
+; Set some labelbar resources.  If pmLabelBarWidth/Height are set,
+; use these no matter what, for the labelbar width and height. Otherwise,
+; use vpWidth/Height if they are set.
 ;
       lbres = True
-      set_attr(lbres,"vpWidthF", labelbar_width)
-      set_attr(lbres,"vpHeightF",labelbar_height)
+      if(isatt(lbres,"pmLabelBarWidthF")) then
+        lbres@vpWidthF = get_res_value(lbres,"pmLabelBarWidthF",labelbar_width)
+      else
+        set_attr(lbres,"vpWidthF", labelbar_width)
+      end if
+        
+      if(isatt(lbres,"pmLabelBarHeightF")) then
+        lbres@vpHeightF = get_res_value(lbres,"pmLabelBarHeightF",labelbar_height)
+      else
+        set_attr(lbres,"vpHeightF",labelbar_height)
+      end if
 ;
 ; Set position of labelbar depending on whether it's horizontal or
 ; vertical.
@@ -3298,7 +3330,7 @@ begin
 ;
       fix_zero_contour(levels)
       newplots(nplot) = create_labelbar(wks,dimsizes(colors),colors, \
-                                         levels,lbres)
+                                        levels,lbres)
       nplot = nplot + 1
     else
        print("Warning: gsn_panel: unrecognized plot type for getting labelbar information. Ignoring labelbar request.")
@@ -3555,11 +3587,101 @@ begin
   res2  = get_resources(plotres2)
   base  = oldbaseplot
   plots = oldplots
+  nplots= dimsizes(plots)
 
   attach_y = .not.get_res_value(res1,"gsnAttachPlotsXAxis",False)
   attach_y = .not.get_res_value(res2,"gsnAttachPlotsXAxis",.not.attach_y)
   border_on = get_res_value(res1,"gsnAttachBorderOn",True)
 
+;
+; The plots to be attached may not be regular plots (contour, xy, vector,
+; etc), so we won't be able to retrieve tickmark info from them.  We have
+; to see if they are overlay plots, instead, that have regular plots 
+; overlaid on them. If so, we can use the overlaid plots for tickmark
+; info. If not, then we are in trouble.
+;
+; Here's the list of "regular" plot types:
+;
+  plot_types = (/"contourPlotClass","xyPlotClass","vectorPlotClass",\
+                 "streamlinePlotClass"/)
+
+;
+; First check the base plot for "regular plotness".
+;
+  found_base = False
+
+  if(any(NhlClassName(base).eq.plot_types)) then
+;
+; The base plot is a regular plot.
+;
+    new_base   = base
+    found_base = True
+  else
+;
+; The base plot is not a regular plot, so find out if it has a regular
+; plot overlaid on it.
+;
+    getvalues base
+      "pmOverlaySequenceIds" : base_ids
+    end getvalues
+    if(.not.ismissing(base_ids(0))) then
+      j = 0
+;
+; Loop through the overlaid plots and find a "regular" one. We will
+; use the first one we find.
+;
+      do while(j.lt.dimsizes(base_ids).and..not.found_base)
+        if(any(NhlClassName(base_ids(j)).eq.plot_types)) then
+          new_base   = base_ids(j)
+          found_base = True
+        end if
+        j = j + 1
+      end do
+    end if
+  end if
+
+  if(.not.found_base) then
+    print("Warning: gsn_attach_plots: the base plot is an unrecognized plot type; may get unexpected results.")
+    new_base = base
+  end if
+;
+; Now test the plots to be attached, and see if they are "regular" plots.
+;
+  found_plots  = new(nplots,logical)
+  new_plots    = new(nplots,graphic)
+  found_plots  = False
+
+  do i=0,nplots-1
+    if(any(NhlClassName(plots(i)).eq.plot_types)) then
+      new_plots(i)   = plots(i)
+      found_plots(i) = True
+    else
+      getvalues plots(i)
+        "pmOverlaySequenceIds" : tmp_plot_ids
+      end getvalues
+
+      if(.not.ismissing(tmp_plot_ids(0))) then
+        j = 0
+;
+; Loop through the overlaid plots and find a "regular" one. We will
+; use the first one we find.
+;
+        do while(j.lt.dimsizes(tmp_plot_ids).and..not.found_plots(i)) 
+          if(any(NhlClassName(tmp_plot_ids(j)).eq.plot_types)) then
+            new_plots(i)   = tmp_plot_ids(j)
+            found_plots(i) = True
+          end if
+          j = j + 1
+        end do
+      end if
+      delete(tmp_plot_ids)
+    end if
+    if(.not.found_plots(i)) then
+      print("Warning: gsn_attach_plots: unrecognized plot type, may get unexpected results.")
+      new_plots(i)   = plots(i)
+      found_plots(i) = False
+    end if
+  end do
 ;
 ; Retrieve tickmark lengths and font height labels so we can make
 ; them the same size later.
@@ -3573,7 +3695,6 @@ begin
     "tiMainFontHeightF" : main_font_height1
   end getvalues
 
-  nplots  = dimsizes(plots)
   widths  = new(dimsizes(plots),float)
   heights = new(dimsizes(plots),float)
 
@@ -3591,40 +3712,60 @@ begin
   font_heights = new(nplots,float)
 
   if(attach_y)
-    getvalues base
-      "tmXBMajorLengthF"        : mj_length1
-      "tmXBMajorOutwardLengthF" : mjo_length1
-      "tmXBMinorLengthF"        : mn_length1
-      "tmXBMinorOutwardLengthF" : mno_length1
-      "tmXBLabelFontHeightF"    : font_height1
-    end getvalues
+;
+; If didn't find a regular base plot, then we can't do anything
+; about the tickmarks.
+;
+    if(found_base) then
+      getvalues new_base
+        "tmXBMajorLengthF"        : mj_length1
+        "tmXBMajorOutwardLengthF" : mjo_length1
+        "tmXBMinorLengthF"        : mn_length1
+        "tmXBMinorOutwardLengthF" : mno_length1
+        "tmXBLabelFontHeightF"    : font_height1
+      end getvalues
+    end if
 
     do i=0,nplots-1
-      getvalues plots(i)
-        "tmXBMajorLengthF"        : mj_lengths(i)
-        "tmXBMajorOutwardLengthF" : mjo_lengths(i)
-        "tmXBMinorLengthF"        : mn_lengths(i)
-        "tmXBMinorOutwardLengthF" : mno_lengths(i)
-        "tmXBLabelFontHeightF"    : font_heights(i)
-      end getvalues
+;
+; If didn't find a regular plot, then we can't do anything
+; about the tickmarks.
+;
+      if(found_plots(i)) then
+        getvalues new_plots(i)
+          "tmXBMajorLengthF"        : mj_lengths(i)
+          "tmXBMajorOutwardLengthF" : mjo_lengths(i)
+          "tmXBMinorLengthF"        : mn_lengths(i)
+          "tmXBMinorOutwardLengthF" : mno_lengths(i)
+          "tmXBLabelFontHeightF"    : font_heights(i)
+        end getvalues
+      end if
     end do
   else
-    getvalues base
-      "tmYLMajorLengthF"        : mj_length1
-      "tmYLMajorOutwardLengthF" : mjo_length1
-      "tmYLMinorLengthF"        : mn_length1
-      "tmYLMinorOutwardLengthF" : mno_length1
-      "tmYLLabelFontHeightF"    : font_height1
-    end getvalues
+;
+; If didn't find a regular base plot, then we can't do anything
+; about the tickmarks.
+;
+    if(found_base) then
+      getvalues new_base
+        "tmYLMajorLengthF"        : mj_length1
+        "tmYLMajorOutwardLengthF" : mjo_length1
+        "tmYLMinorLengthF"        : mn_length1
+        "tmYLMinorOutwardLengthF" : mno_length1
+        "tmYLLabelFontHeightF"    : font_height1
+      end getvalues
+    end if
 
     do i=0,nplots-1
-      getvalues plots(i)
-        "tmYLMajorLengthF"        : mj_lengths(i)
-        "tmYLMajorOutwardLengthF" : mjo_lengths(i)
-        "tmYLMinorLengthF"        : mn_lengths(i)
-        "tmYLMinorOutwardLengthF" : mno_lengths(i)
-        "tmYLLabelFontHeightF"    : font_heights(i)
-      end getvalues
+      if(found_plots(i)) then
+        getvalues new_plots(i)
+          "tmYLMajorLengthF"        : mj_lengths(i)
+          "tmYLMajorOutwardLengthF" : mjo_lengths(i)
+          "tmYLMinorLengthF"        : mn_lengths(i)
+          "tmYLMinorOutwardLengthF" : mno_lengths(i)
+          "tmYLLabelFontHeightF"    : font_heights(i)
+        end getvalues
+      end if
     end do
   end if
 
@@ -3659,59 +3800,70 @@ begin
 ; tickmarks and labels where appropriate.
 ;
   if(attach_y) then
-    setvalues base
-      "tmYUseLeft"   : get_res_value(res1,"tmYUseLeft",False)
-      "tmYROn"       : get_res_value(res1,"tmYROn",False)
-      "tmYRLabelsOn" : get_res_value(res1,"tmYRLabelsOn",False)
-      "tmYRBorderOn" : get_res_value(res1,"tmYRBorderOn",border_on)
-    end setvalues
+    if(found_base) then
+      setvalues new_base
+        "tmYUseLeft"   : get_res_value(res1,"tmYUseLeft",False)
+        "tmYROn"       : get_res_value(res1,"tmYROn",False)
+        "tmYRLabelsOn" : get_res_value(res1,"tmYRLabelsOn",False)
+        "tmYRBorderOn" : get_res_value(res1,"tmYRBorderOn",border_on)
+      end setvalues
+    end if
     do i=0,nplots-2
-      setvalues plots(i)
+      if(found_plots(i)) then
+        setvalues new_plots(i)
+          "tmYUseLeft"   : get_res_value(res2,"tmYUseLeft",False)
+          "tmYLOn"       : get_res_value(res2,"tmYLOn",False)
+          "tmYLBorderOn" : get_res_value(res2,"tmYLBorderOn",border_on)
+          "tmYROn"       : get_res_value(res2,"tmYROn",False)
+          "tmYRLabelsOn" : get_res_value(res2,"tmYRLabelsOn",False)
+          "tmYRBorderOn" : get_res_value(res2,"tmYRBorderOn",border_on)
+          "tiYAxisOn"    : get_res_value(res2,"tiYAxisOn",False)
+        end setvalues
+      end if
+    end do
+    if(found_plots(nplots-1)) then
+      setvalues new_plots(nplots-1)
         "tmYUseLeft"   : get_res_value(res2,"tmYUseLeft",False)
+        "tiYAxisOn"    : get_res_value(res2,"tiYAxisOn",False)
         "tmYLOn"       : get_res_value(res2,"tmYLOn",False)
         "tmYLBorderOn" : get_res_value(res2,"tmYLBorderOn",border_on)
-        "tmYROn"       : get_res_value(res2,"tmYROn",False)
-        "tmYRLabelsOn" : get_res_value(res2,"tmYRLabelsOn",False)
-        "tmYRBorderOn" : get_res_value(res2,"tmYRBorderOn",border_on)
-        "tiYAxisOn"    : get_res_value(res2,"tiYAxisOn",False)
+        "tmYLLabelsOn" : get_res_value(res1,"tmYLLabelsOn",False)
       end setvalues
-    end do
-    setvalues plots(nplots-1)
-      "tmYUseLeft"   : get_res_value(res2,"tmYUseLeft",False)
-      "tiYAxisOn"    : get_res_value(res2,"tiYAxisOn",False)
-      "tmYLOn"       : get_res_value(res2,"tmYLOn",False)
-      "tmYLBorderOn" : get_res_value(res2,"tmYLBorderOn",border_on)
-      "tmYLLabelsOn" : get_res_value(res1,"tmYLLabelsOn",False)
-    end setvalues
+    end if
   else
-    setvalues base
-      "tmXUseBottom" : get_res_value(res1,"tmXUseBottom",False)
-      "tmXBOn"       : get_res_value(res1,"tmXBOn",False)
-      "tmXBBorderOn" : get_res_value(res1,"tmXBBorderOn",border_on)
-      "tmXBLabelsOn" : get_res_value(res1,"tmXBLabelsOn",False)
-      "tiXAxisOn"    : get_res_value(res1,"tiXAxisOn",False)
-    end setvalues
-
+    if(found_base) then
+      setvalues new_base
+        "tmXUseBottom" : get_res_value(res1,"tmXUseBottom",False)
+        "tmXBOn"       : get_res_value(res1,"tmXBOn",False)
+        "tmXBBorderOn" : get_res_value(res1,"tmXBBorderOn",border_on)
+        "tmXBLabelsOn" : get_res_value(res1,"tmXBLabelsOn",False)
+        "tiXAxisOn"    : get_res_value(res1,"tiXAxisOn",False)
+      end setvalues
+    end if
     do i=0,nplots-2
-      setvalues plots(i)
+      if(found_plots(i)) then
+        setvalues new_plots(i)
+          "tmXUseBottom" : get_res_value(res2,"tmXUseBottom",False)
+          "tmXBOn"       : get_res_value(res2,"tmXBOn",False)
+          "tmXBBorderOn" : get_res_value(res2,"tmXBBorderOn",border_on)
+          "tmXBLabelsOn" : get_res_value(res2,"tmXBLabelsOn",False)
+          "tmXTOn"       : get_res_value(res2,"tmXTOn",False)
+          "tmXTBorderOn" : get_res_value(res2,"tmXTBorderOn",border_on)
+          "tmXTLabelsOn" : get_res_value(res2,"tmXTLabelsOn",False)
+          "tiMainOn"     : get_res_value(res2,"tiMainOn",False)
+          "tiXAxisOn"    : get_res_value(res2,"tiXAxisOn",False)
+        end setvalues
+      end if
+    end do
+    if(found_plots(nplots-1)) then
+      setvalues new_plots(nplots-1)
         "tmXUseBottom" : get_res_value(res2,"tmXUseBottom",False)
-        "tmXBOn"       : get_res_value(res2,"tmXBOn",False)
-        "tmXBBorderOn" : get_res_value(res2,"tmXBBorderOn",border_on)
-        "tmXBLabelsOn" : get_res_value(res2,"tmXBLabelsOn",False)
         "tmXTOn"       : get_res_value(res2,"tmXTOn",False)
         "tmXTBorderOn" : get_res_value(res2,"tmXTBorderOn",border_on)
         "tmXTLabelsOn" : get_res_value(res2,"tmXTLabelsOn",False)
         "tiMainOn"     : get_res_value(res2,"tiMainOn",False)
-        "tiXAxisOn"    : get_res_value(res2,"tiXAxisOn",False)
       end setvalues
-    end do
-    setvalues plots(nplots-1)
-      "tmXUseBottom" : get_res_value(res2,"tmXUseBottom",False)
-      "tmXTOn"       : get_res_value(res2,"tmXTOn",False)
-      "tmXTBorderOn" : get_res_value(res2,"tmXTBorderOn",border_on)
-      "tmXTLabelsOn" : get_res_value(res2,"tmXTLabelsOn",False)
-      "tiMainOn"     : get_res_value(res2,"tiMainOn",False)
-    end setvalues
+    end if
   end if
 
 ;
@@ -3831,34 +3983,38 @@ begin
   setvalues base
     "vpHeightF"               : new_scale1 * height1
     "vpWidthF"                : new_scale1 * width1
-
-    "tiXAxisFontHeightF"      : font_heightx
-    "tiYAxisFontHeightF"      : font_heighty
-    "tiMainFontHeightF"       : main_font_height
-
-    "tmYRMajorLengthF"        : mj_length
-    "tmYRMajorOutwardLengthF" : mjo_length
-    "tmYRMinorLengthF"        : mn_length
-    "tmYRMinorOutwardLengthF" : mno_length
-
-    "tmYLMajorLengthF"        : mj_length
-    "tmYLMajorOutwardLengthF" : mjo_length
-    "tmYLMinorLengthF"        : mn_length
-    "tmYLMinorOutwardLengthF" : mno_length
-
-    "tmXBMajorLengthF"        : mj_length
-    "tmXBMajorOutwardLengthF" : mjo_length
-    "tmXBMinorLengthF"        : mn_length
-    "tmXBMinorOutwardLengthF" : mno_length
-
-    "tmXTMajorLengthF"        : mj_length
-    "tmXTMajorOutwardLengthF" : mjo_length
-    "tmXTMinorLengthF"        : mn_length
-    "tmXTMinorOutwardLengthF" : mno_length
-
-    "tmXBLabelFontHeightF"    : font_heightx
-    "tmYLLabelFontHeightF"    : font_heighty
   end setvalues
+
+  if(found_base) then
+    setvalues new_base
+      "tiXAxisFontHeightF"      : font_heightx
+      "tiYAxisFontHeightF"      : font_heighty
+      "tiMainFontHeightF"       : main_font_height
+  
+      "tmYRMajorLengthF"        : mj_length
+      "tmYRMajorOutwardLengthF" : mjo_length
+      "tmYRMinorLengthF"        : mn_length
+      "tmYRMinorOutwardLengthF" : mno_length
+
+      "tmYLMajorLengthF"        : mj_length
+      "tmYLMajorOutwardLengthF" : mjo_length
+      "tmYLMinorLengthF"        : mn_length
+      "tmYLMinorOutwardLengthF" : mno_length
+  
+      "tmXBMajorLengthF"        : mj_length
+      "tmXBMajorOutwardLengthF" : mjo_length
+      "tmXBMinorLengthF"        : mn_length
+      "tmXBMinorOutwardLengthF" : mno_length
+  
+      "tmXTMajorLengthF"        : mj_length
+      "tmXTMajorOutwardLengthF" : mjo_length
+      "tmXTMinorLengthF"        : mn_length
+      "tmXTMinorOutwardLengthF" : mno_length
+  
+      "tmXBLabelFontHeightF"    : font_heightx
+      "tmYLLabelFontHeightF"    : font_heighty
+    end setvalues
+  end if
 
   if(attach_y) then
     mj_length  =  get_res_value(res2,"tmXBMajorLengthF",new_mj_length)
@@ -3887,34 +4043,38 @@ begin
     setvalues plots(i)
       "vpHeightF"               : new_scales * heights(i)
       "vpWidthF"                : new_scales * widths(i)
-
-      "tiXAxisFontHeightF"      : font_heightx
-      "tiYAxisFontHeightF"      : font_heighty
-      "tiMainFontHeightF"       : main_font_height
-
-      "tmYRMajorLengthF"        : mj_length
-      "tmYRMajorOutwardLengthF" : mjo_length
-      "tmYRMinorLengthF"        : mn_length
-      "tmYRMinorOutwardLengthF" : mno_length
-
-      "tmYLMajorLengthF"        : mj_length
-      "tmYLMajorOutwardLengthF" : mjo_length
-      "tmYLMinorLengthF"        : mn_length
-      "tmYLMinorOutwardLengthF" : mno_length
-
-      "tmXBMajorLengthF"        : mj_length
-      "tmXBMajorOutwardLengthF" : mjo_length
-      "tmXBMinorLengthF"        : mn_length
-      "tmXBMinorOutwardLengthF" : mno_length
-
-      "tmXTMajorLengthF"        : mj_length
-      "tmXTMajorOutwardLengthF" : mjo_length
-      "tmXTMinorLengthF"        : mn_length
-      "tmXTMinorOutwardLengthF" : mno_length
-
-      "tmXBLabelFontHeightF"    : font_heightx
-      "tmYLLabelFontHeightF"    : font_heighty
     end setvalues
+
+    if(found_plots(i)) then
+      setvalues new_plots(i)
+        "tiXAxisFontHeightF"      : font_heightx
+        "tiYAxisFontHeightF"      : font_heighty
+        "tiMainFontHeightF"       : main_font_height
+  
+        "tmYRMajorLengthF"        : mj_length
+        "tmYRMajorOutwardLengthF" : mjo_length
+        "tmYRMinorLengthF"        : mn_length
+        "tmYRMinorOutwardLengthF" : mno_length
+  
+        "tmYLMajorLengthF"        : mj_length
+        "tmYLMajorOutwardLengthF" : mjo_length
+        "tmYLMinorLengthF"        : mn_length
+        "tmYLMinorOutwardLengthF" : mno_length
+  
+        "tmXBMajorLengthF"        : mj_length
+        "tmXBMajorOutwardLengthF" : mjo_length
+        "tmXBMinorLengthF"        : mn_length
+        "tmXBMinorOutwardLengthF" : mno_length
+  
+        "tmXTMajorLengthF"        : mj_length
+        "tmXTMajorOutwardLengthF" : mjo_length
+        "tmXTMinorLengthF"        : mn_length
+        "tmXTMinorOutwardLengthF" : mno_length
+  
+        "tmXBLabelFontHeightF"    : font_heightx
+        "tmYLLabelFontHeightF"    : font_heighty
+      end setvalues
+    end if
   end do
 ;
 ; Get new bounding boxes and sizes of resized plots, so we can
