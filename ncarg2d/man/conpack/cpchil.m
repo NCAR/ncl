@@ -7,10 +7,6 @@ The default version does nothing.  A user-written version may be supplied
 to provide control as the label is drawn.
 .SH SYNOPSIS
 CALL CPCHIL (IFLG)
-.SH C-BINDING SYNOPSIS
-#include <ncarg/ncargC.h>
-.sp
-void cpchil(int *iflg)
 .SH DESCRIPTION 
 .IP IFLG 12
 (INTEGER, input) is positive if an action is about to 
@@ -47,9 +43,7 @@ should only be done during a call with IFLG = 1 or IFLG =
 done for the other.
 .SH ACCESS
 To use CPCHIL, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use cpchil from a
-C program, load the NCAR Graphics libraries ncargC, ncarg_gksC, 
-ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.  
 .SH SEE ALSO
 Online: 
 conpack, 

@@ -9,7 +9,7 @@ CALL HALFAX (MJRX,MNRX,MJRY,MNRY,XINT,YINT,IXLB,IYLB)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_halfax (int mjrx, int mnrx, int mjry, int mnry, \\
+void c_halfax (int mjrx, int mnrx, int mjry, int mnry, 
 .br
 float xint, float yint, int ixlb, int iylb)
 .SH DESCRIPTION 

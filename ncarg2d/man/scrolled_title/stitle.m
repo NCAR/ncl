@@ -15,7 +15,7 @@ see the overview man page for this utility, type "man scrolled_title".
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_stitle (char *cards[], int ncards, int nyst, \\
+void c_stitle (char *cards[], int ncards, int nyst, 
 .br
 int nyfin, float tst, float tmv, float tfin, int movie)
 .SH DESCRIPTION
@@ -113,8 +113,7 @@ internal parameter \'FIN\' non-zero), the stationary sequence
 at the start (if TST is non-zero), the scrolling time (if
 TMV is non-zero), the stationary sequence at the end (if
 TFIN is non-zero), and the fade-out sequence (if the user
-has turned on fade-out by setting the internal parameter
-\'FOU\' non-zero).
+has turned on fade-out by setting the internal parameter \'FOU\' non-zero).
 .sp
 During practice runs, only selected frames are created: a
 frame for the fade-in sequence (if fade-in is turned on), a
@@ -135,7 +134,7 @@ for the foreground color.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
-.SH USAGE@@@
+.SH USAGE
 STITLE takes input through its argument list and generates
 graphic output that moves a body of text up through the viewing
 window. This is done by outputting the appropriate number of

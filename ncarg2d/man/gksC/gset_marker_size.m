@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_marker_size.m,v 1.1 1993-03-21 01:31:49 haley Exp $
+.\"	$Id: gset_marker_size.m,v 1.2 1993-05-03 17:31:22 haley Exp $
 .\"
 .TH GSET_MARKER_SIZE 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME

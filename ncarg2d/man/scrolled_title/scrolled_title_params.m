@@ -1,4 +1,4 @@
-.TH S*title_params 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH Scrolled_title_params 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -7,7 +7,7 @@ internal parameters.
 .SH DESCRIPTION 
 Parameter descriptions, in alphabetical order, of all Scrolled_title
 internal parameters follow. Each description begins with a line
-giving the parameter name and it default value. 
+giving the parameter name and its default value.
 .IP "\'ALN\' - 0" 
 Flag to control whether alignment
 frames with dots in the corners are

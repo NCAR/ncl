@@ -10,7 +10,7 @@ CALL SRFACE (X,Y,Z,M,MX,NX,NY,S,STEREO)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_srface (float *x, float *y, float *z, int *m, \\
+void c_srface (float *x, float *y, float *z, int *m, 
 .br
 int mx, int nx, int ny, float s[6], float stereo)
 .SH DESCRIPTION 

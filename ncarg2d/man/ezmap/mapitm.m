@@ -11,23 +11,23 @@ CALL MAPIQM (IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,NOGI,ULPR)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_mapitm (float rlat, float rlon, int ifst, \\
+void c_mapitm (float rlat, float rlon, int ifst, 
 .br
-int *iama, float *xcra, float *ycra, int mcra, \\
+int *iama, float *xcra, float *ycra, int mcra, 
 .br
-int *iaai, int *iagi, int nogi, \\
+int *iaai, int *iagi, int nogi, 
 .br
 int (*ulpr)(float *xcra, 
-float *ycra, int *mcra, \\
+float *ycra, int *mcra, 
 .br
 int *iaai, int *iagi, int *nogi))
 .sp
-void c_mapiqm (int *iama, float *xcra, float *ycra, \\
+void c_mapiqm (int *iama, float *xcra, float *ycra, 
 .br
-int mcra, int *iaai, int *iagi, int nogi, \\
+int mcra, int *iaai, int *iagi, int nogi, 
 .br
 int ulpr(float *xcra, 
-float *ycra, int *mcra, \\
+float *ycra, int *mcra, 
 .br
 int *iaai, int *iagi
 , int *nogi))
@@ -112,9 +112,9 @@ example:
 cmpitm. 
 .SH ACCESS
 To use MAPITM, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_mapitm, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_mapitm, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, 
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 ezmap,

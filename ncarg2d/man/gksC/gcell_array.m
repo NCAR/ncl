@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gcell_array.m,v 1.2 1993-03-29 22:41:43 haley Exp $
+.\"	$Id: gcell_array.m,v 1.3 1993-05-03 17:29:21 haley Exp $
 .\"
 .TH GCELL_ARRAY 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME

@@ -1,4 +1,4 @@
-.TH VVSETR 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH VVSETR 3NCARG "April 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -28,12 +28,15 @@ to be given to the parameter specified by CNM.
 The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH USAGE
-This routine allows you to set the current value of
-Vectors parameters.  For a complete list of parameters available
-in this utility, see the vectors_params man page.
+This routine allows you to set the current value of Vectors parameters
+of type REAL. For a complete list of parameters available in this
+utility, see the vectors_params man page.
 .SH EXAMPLES
-Use the ncargex command to see the following relevant examples: 
+Use the ncargex command to see the following relevant examples:
 bnchmk,
+ffex00,
+ffex02,
+ffex05,
 stex02,
 stex03,
 vvex01,
@@ -50,9 +53,6 @@ messages and/or informational messages.
 Online:
 vectors,
 vectors_params,
-ezvec,
-fx,
-fy,
 vvectr,
 vvgetc,
 vvgeti,

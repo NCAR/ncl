@@ -1,9 +1,9 @@
 #
-#	$Id: yMakefile,v 1.4 1993-04-20 16:16:18 haley Exp $
+#	$Id: yMakefile,v 1.5 1993-05-03 17:41:33 haley Exp $
 #
 NCARG	= ../../..
 
-MAN3 =  curve3 fence3 frst3 line3 perim3 point3 psym3 pwrz pwrzt set3 threed \
+MAN3 = curve3 fence3 frst3 line3 perim3 point3 psym3 pwrz pwrzt set3 threed \
 	tick3 tick43 vect3
 
 MAN = $(MAN3)

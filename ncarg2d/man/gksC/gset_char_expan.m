@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_char_expan.m,v 1.1 1993-03-21 01:31:14 haley Exp $
+.\"	$Id: gset_char_expan.m,v 1.2 1993-05-03 17:30:58 haley Exp $
 .\"
 .TH GSET_CHAR_EXPAN 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME

@@ -8,10 +8,6 @@ version does nothing.  A user-written version may be supplied to provide
 control as the labels are drawn.
 .SH SYNOPSIS
 CALL CPCHHL (IFLG)
-.SH C-BINDING SYNOPSIS
-#include <ncarg/ncargC.h>
-.sp
-void cpchhl (int *iflg)
 .SH DESCRIPTION 
 .IP IFLG 12
 (INTEGER, input) is positive if an action is about to 
@@ -67,9 +63,7 @@ been set to the value of the high or low being labelled; its value
 may be retrieved and used by CPCHHL.
 .SH ACCESS
 To use CPCHHL, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use cpchhl from a C
-program, load the NCAR Graphics libraries ncargC, ncarg_gksC, 
-ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.  
 .SH SEE ALSO
 Online: 
 conpack, 

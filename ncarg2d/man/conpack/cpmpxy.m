@@ -8,12 +8,6 @@ coordinate system superimposed on the data grid to some
 other coordinate system.
 .SH SYNOPSIS
 CALL CPMPXY (IMAP, XINP, YINP, XOTP, YOTP)
-.SH C-BINDING SYNOPSIS
-#include <ncarg/ncargC.h>
-.sp
-void cpmpxy (int *imap, float *xinp, float *yinp, 
-.br
-float *xotp, float *yotp)
 .SH DESCRIPTION 
 .IP IMAP 12
 (INTEGER, input) is zero if the object of the call is 
@@ -196,9 +190,7 @@ mapping. It should also be made, when IMAP = 0, to return
 correct information about its own capabilities.
 .SH ACCESS
 To use CPMPXY, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use cpmpxy from a C
-program, load the NCAR Graphics libraries ncargC, ncarg_gksC, 
-ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.  
 .SH SEE ALSO
 Online:
 conpack,

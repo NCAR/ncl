@@ -8,10 +8,6 @@ nothing.  A user-written version may be supplied to provide control as
 contour lines are drawn.
 .SH SYNOPSIS
 CALL CPCHCL (IFLG)
-.SH C-BINDING SYNOPSIS
-#include <ncarg/ncargC.h>
-.sp
-void cpchcl (int *iflg)
 .SH DESCRIPTION 
 .IP IFLG 12
 (INTEGER, input) is +1 if a line is about to be drawn, 
@@ -45,9 +41,7 @@ element of a parameter array like 'CLD' will automatically
 get the correct one for the line being drawn.
 .SH ACCESS
 To use CPCHCL, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use cpchcl from a C
-program, load the NCAR Graphics libraries ncargC, ncarg_gksC, 
-ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.  
 .SH SEE ALSO
 Online: 
 conpack, 

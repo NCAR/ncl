@@ -10,11 +10,11 @@ An implementation of the routine from which Ezmap grew.
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_supmap (int jprj, float plat, float plon, \\
+void c_supmap (int jprj, float plat, float plon, 
 .br
-float rota, float *plm1, float *plm2, float *plm3, \\
+float rota, float *plm1, float *plm2, float *plm3, 
 .br
-float *plm4, int jlts, int jgrd, int iout, int idot, \\
+float *plm4, int jlts, int jgrd, int iout, int idot, 
 .br
 int *ierr)
 .SH DESCRIPTION 

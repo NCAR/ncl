@@ -1,5 +1,5 @@
 '\" t
-.TH Vectors_params 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH Vectors_params 3NCARG "April 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -61,7 +61,7 @@ example that sets up a fourteen color palette:
 .in -15
 .fi
 .IP ""
-See the description of CTV, NLV, and TVL for details on
+See the descriptions of CTV, NLV, and TVL for details on
 configuring the vector coloring scheme.
 .IP "CPM - Compatibility Mode - Integer"
 Controls the degree of compatibility between pre-Version
@@ -115,9 +115,8 @@ Value/Use FX,FY,etc/Use VELDAT data/Use input params
 4/yes/no/no
 .TE
 .sp
-(*) Old means EZVEC, VELVEC, VELVCT entry point; new,
-VVINIT/VVECTR. Only the first column affects the behavior
-of the VVINIT/VVECTR interface.
+(*) Old means EZVEC, VELVEC, VELVCT entry point; new, VVINIT/VVECTR.
+Only the first column applies to the VVINIT/VVECTR interface.
 .IP "CTV - Color Threshold Value Control - Integer"
 In conjunction with NLV, this parameter controls vector
 coloring and the setting of threshold values. The vectors
@@ -152,6 +151,9 @@ data values; VVINIT assigns values to the
 first NLV elements of the threshold level
 array, TVL.
 .RE
+.IP " "
+If you make CTV positive, you must initialize Vectors with a call to
+VVINIT after the modification.
 .IP "DMN - NDC Minimum Vector Size - Real, Read-Only"
 This parameter is a read-only parameter that has a useful
 value only following a call to VVECTR (directly or through
@@ -255,18 +257,15 @@ dimension indices are linearly related to
 the angle in degrees.
 .RE
 .IP ""
-If MAP has any other value, the mapping subroutine, VVMPXY,
-passes its parameters on to the user-modifiable subroutine,
-VVUMXY. The default version of VVUMXY simply performs an
-identity transformation, without considering the value of
-the TRT parameter. The effect is the same as if one were to
-set both MAP and TRT to zero. Note that, while not actually
-prohibited in the Vectors utility, the user is advised not
-to use negative integers for user-defined mappings, since a
-negative value results in an inverse transformation in the
-Conpack utility. Inverse transformations are not needed in
-Vectors but an inconsistent use of negative mapping codes
-would likely be confusing in the long run.
+If MAP has any other value, the mapping subroutine, VVMPXY, passes its
+parameters on to the user-modifiable subroutine, VVUMXY. The default
+version of VVUMXY simply performs an identity transformation, without
+considering the value of the TRT parameter. The effect is the same as
+if one were to set both MAP and TRT to zero. Note that, while the
+Vectors utility does not actually prohibit the practice, the user is
+advised not to use negative integers for user-defined mappings, since
+other utilities in the NCAR Graphics toolkit attach a special meaning
+to negative mapping codes.
 .sp
 For all the predefined mappings, the linear relationship
 between the grid array indices and the data coordinate
@@ -305,7 +304,7 @@ magnitude. Otherwise the vector arrow uses
 the current polyline color index. The text
 is colored using the current text color
 index in either case.
-.IP >= 0" 15
+.IP ">= 0" 15
 The value of MNC is used as the color
 index for both the text and the vector
 arrow
@@ -530,6 +529,8 @@ Currently NLV is constrained to a maximum value of 64. The
 default value of NLV is 0, specifying that vectors are
 colored according to the value of the GKS polyline color
 index currently in effect, regardless of the value of CTV.
+If CTV is greater than 0, you must  initialize Vectors with a
+call to VVINIT after modifying this parameter.
 .IP "PAI - Parameter Array Index - Integer"
 The value of PAI must be set before calling VVGETC, VVGETI,
 VVGETR, VVSETC, VVSETI, or VVSETR to access any parameter
@@ -566,6 +567,9 @@ array contains vector angles in degrees.
 U array contain vector magnitudes; V array
 contains vector angles in radians.
 .RE
+.IP " "
+You must initialize Vectors with a call to VVINIT after modifying this
+parameter.
 .IP "PMN - Minimum Scalar Array Value - Real, Read-Only"
 The user may retrieve the value specified by PMN at any
 time after a call to VVINIT. It will contain a copy of the
@@ -579,22 +583,23 @@ maximum value encountered in the scalar data array.  If no
 scalar data array has been passed into VVINIT it will have
 a value of 0.0.
 .IP "PSV - P Array Special Value - Real"
-Use PSV to indicate the special value that flags an unknown
-data value in the P scalar data array. This value will not
-be considered in the determination of the data set maximum
-and minimum values. Also, depending on the setting of the
-SPC parameter, the vector may be specially colored to flag
-the unknown data point, or even eliminated from the plot.
+Use PSV to indicate the special value that flags an unknown data value
+in the P scalar data array. This value will not be considered in the
+determination of the data set maximum and minimum values. Also,
+depending on the setting of the SPC parameter, the vector may be
+specially colored to flag the unknown data point, or even eliminated
+from the plot. You must initialize Vectors with a call to VVINIT after
+modifying this parameter.
 .IP "SET - SET Call Flag - Integer"
-Give SET the value 0 to inhibit the SET call otherwise
-performed by VVINIT. Arguments 5-8 of a SET call done by
-the user must be consistent with the ranges of the user
-coordinates expected by Vectors. This is determined by the
-mapping from grid to data coordinates as specified by the
-values of the parameters XC1, XCM, YC1, YCN, and also by
-the mapping from data to user coordinates established by
-the MAP parameter. 
-The default value of SET is 1.
+Give SET the value 0 to inhibit the SET call VVINIT performs by
+default. Arguments 5-8 of a SET call made by the user must be
+consistent with the ranges of the user coordinates expected by
+Vectors. This is determined by the mapping from grid to data
+coordinates as specified by the values of the parameters XC1, XCM,
+YC1, YCN, and also by the mapping from data to user coordinates
+established by the MAP parameter. You must initialize Vectors with a
+call to VVINIT after modifying this parameter. The default value of
+SET is 1.
 .IP "SPC - Special Color - Integer"
 SPC controls special value processing for the optional
 scalar data array used to color the vectors, as follows:
@@ -611,6 +616,9 @@ locations are not drawn.
 Vectors at P scalar array special value
 locations are drawn using color index SPC.
 .RE
+.IP " "
+You must initialize Vectors with a call to VVINIT after modifying this
+parameter.
 .IP "SVF - Special Value Flag - Integer"
 The special value flag controls special value processing
 for the U and V vector component data arrays. Special
@@ -637,13 +645,13 @@ Vectors with special values in both the U
 and V arrays are not drawn
 .RE
 .IP ""
-The U and V special values are defined by setting
-parameters USV and VSV. Generally, the Vectors utility can
-be expected to ignore special values when it determines the
-maximum and minimum vector magnitudes, although if SVF is
-set to a value of four, it is possible that a special value
-occurring in only one of the arrays could be interpreted as
-an actual vector component value.
+The U and V special values are defined by setting parameters USV and
+VSV. Generally, the Vectors utility can be expected to ignore special
+values when it determines the maximum and minimum vector magnitudes,
+although if SVF is set to a value of four, it is possible that a
+special value occurring in only one of the arrays could be interpreted
+as an actual vector component value. You must initialize Vectors with
+a call to VVINIT after modifying this parameter.
 .IP "TRT - Transformation Type - Integer"
 As currently implemented, TRT further qualifies the mapping
 transformation specified by the MAP parameters, as follows:
@@ -706,21 +714,19 @@ Yout = Yoffset + Sconstant * Yin
 If the Sconstant is not the same for Y and X then the
 mapping is non-uniform.
 .sp
-This option is currently implemented only for the 
-pre-defined MAP parameter codes, 0 and 2, the identity mapping
-and the polar coordinate mapping. However, it operates on a
-different stage of the transformation pipeline in each
-case. The polar mapping is non-linear from data to user
-coordinates. The identity mapping, even though necessarily
-linear over the data to user space mapping, can have a 
-non-uniform mapping from user to NDC space, depending on the
-values given to the input parameters of the SET call. This
-will be the case whenever the LL input parameter is other
-than one, or when LL equals one, but the viewport and the
-user coordinate boundaries do not have the same aspect
-ratio. Thus for a MAP value of 2, TRT affects the mapping
-between data and user space, whereas for MAP set to 0, TRT
-influences the mapping between user and NDC space.
+This option is currently implemented only for the pre-defined MAP
+parameter codes, 0 and 2, the identity mapping and the polar
+coordinate mapping. However, it operates on a different stage of the
+transformation pipeline in each case. The polar mapping is non-linear
+from data to user coordinates. The identity mapping, even though
+necessarily linear over the data to user space mapping, can have a
+non-uniform mapping from user to NDC space, depending on the values
+given to the input parameters of the SET call. This will be the case
+whenever the LL input parameter is other than one, or when LL equals
+one, but the viewport and the user coordinate boundaries do not have
+the same aspect ratio. Thus for a MAP value of 2, TRT affects the
+mapping between data and user space, whereas for MAP set to 0, TRT
+influences the mapping between user and NDC space. 
 .IP "TVL - Array of Threshold Values - Real Array"
 TVL holds an array of threshold values used to determine
 the color used for coloring the vectors, when either of the
@@ -773,12 +779,12 @@ encountered while choosing the color for a vector, it is
 given the color associated with the greatest value in the
 array.
 .IP "USV - U Array Special Value - Real"
-USV is the U vector component array special value. It is a
-value outside the range of the normal data used to indicate
-that there is no valid data for this grid location. When
-SVF is set to 1 or 3, Vectors will not draw a vector whose
-U component has the special value. It has a default value
-of 1.0 E12.
+USV is the U vector component array special value. It is a value
+outside the range of the normal data used to indicate that there is no
+valid data for this grid location. When SVF is set to 1 or 3, Vectors
+will not draw a vector whose U component has the special value. You
+must initialize Vectors with a call to VVINIT after modifying this
+parameter. It has a default value of 1.0 E12.
 .IP "VFR - Minimum Vector Fractional Length - Real"
 This parameter allows the user to adjust the realized size
 of the minimum magnitude vector relative to the maximum
@@ -925,25 +931,25 @@ is rendered as a graphical text item above the
 representation of the maximum size vector. VMX is initially
 set to a value of 0.0.
 .IP "VPB - Viewport Bottom - Real"
-The parameter VPB has an effect only when SET is non-zero,
-specifying that Vectors should do the call to SET. It
-specifies a minimum boundary value for the bottom edge of
-the viewport in NDC space, and is constrained to a value
-between 0.0 and 1.0. It must be less than the value of the
-Viewport Top parameter, VPT. The actual value of the
-viewport bottom edge used in the plot may be greater than
-the value of VPB, depending on the setting of the Viewport
-Shape parameter, VPS. The default value of VPB is 0.05.
+The parameter VPB has an effect only when SET is non-zero, specifying
+that Vectors should do the call to SET. It specifies a minimum
+boundary value for the bottom edge of the viewport in NDC space, and
+is constrained to a value between 0.0 and 1.0. It must be less than
+the value of the Viewport Top parameter, VPT. The actual value of the
+viewport bottom edge used in the plot may be greater than the value of
+VPB, depending on the setting of the Viewport Shape parameter, VPS.
+You must initialize Vectors with a call to VVINIT after modifying this
+parameter. The default value of VPB is 0.05.
 .IP "VPL - Viewport Left - Real"
-The parameter VPL has an effect only when SET is non-zero,
-specifying that Vectors should do the call to SET. It
-specifies a minimum boundary value for the left edge of the
-viewport in NDC space, and is constrained to a value
-between 0.0 and 1.0. It must be less than the value of the
-Viewport Right parameter, VPR. The actual value of the
-viewport left edge used in the plot may be greater than the
-value of VPL, depending on the setting of the Viewport
-Shape parameter, VPS. The default value of VPL is 0.05.
+The parameter VPL has an effect only when SET is non-zero, specifying
+that Vectors should do the call to SET. It specifies a minimum
+boundary value for the left edge of the viewport in NDC space, and is
+constrained to a value between 0.0 and 1.0. It must be less than the
+value of the Viewport Right parameter, VPR. The actual value of the
+viewport left edge used in the plot may be greater than the value of
+VPL, depending on the setting of the Viewport Shape parameter, VPS.
+You must initialize Vectors with a call to VVINIT after modifying this
+parameter. The default value of VPL is 0.05.
 .IP "VPO - Vector Positioning Mode - Integer"
 VPO specifies the position of the vector arrow in relation
 to the grid point location of the vector component data.
@@ -962,15 +968,15 @@ The tail of the vector arrow is placed at
 the grid point location
 .RE
 .IP "VPR - Viewport Right - Real"
-The parameter VPR has an effect only when SET is non-zero,
-specifying that Vectors should do the call to SET. It
-specifies a maximum boundary value for the right edge of
-the viewport in NDC space, and is constrained to a value
-between 0.0 and 1.0. It must be greater than the value of
-the Viewport Left parameter, VPL. The actual value of the
-viewport right edge used in the plot may be less than the
-value of VPR, depending on the setting of the Viewport
-Shape parameter, VPS. The default value of VPR is 0.95.
+The parameter VPR has an effect only when SET is non-zero, specifying
+that Vectors should do the call to SET. It specifies a maximum
+boundary value for the right edge of the viewport in NDC space, and is
+constrained to a value between 0.0 and 1.0. It must be greater than
+the value of the Viewport Left parameter, VPL. The actual value of the
+viewport right edge used in the plot may be less than the value of
+VPR, depending on the setting of the Viewport Shape parameter, VPS.
+You must initialize Vectors with a call to VVINIT after modifying this
+parameter. The default value of VPR is 0.95.
 .IP "VPS - Viewport Shape - Real"
 The parameter VPS has an effect only when SET is non-zero,
 specifying that Vectors should do the call to SET; it
@@ -998,20 +1004,20 @@ than VPS. Otherwise make the viewport a
 square.
 .RE
 .IP ""
-The viewport, whatever its final shape, is centered in, and
-made as large as possible in, the area specified by the
-parameters VPB, VPL, VPR, and VPT. The default value of VPS
-is 25.
+The viewport, whatever its final shape, is centered in, and made as
+large as possible in, the area specified by the parameters VPB, VPL,
+VPR, and VPT. You must initialize Vectors with a call to VVINIT after
+modifying this parameter. The default value of VPS is 25.
 .IP "VPT - Viewport Top - Real"
-The parameter VPT has an effect only when SET is non-zero,
-specifying that Vectors should do the call to SET. It
-specifies a maximum boundary value for the top edge of the
-viewport in NDC space, and is constrained to a value
-between 0.0 and 1.0. It must be greater than the value of
-the Viewport Bottom parameter, VPB. The actual value of the
-viewport top edge used in the plot may be less than the
-value of VPT, depending on the setting of the Viewport
-Shape parameter, VPS. The default value of VPT is 0.95.
+The parameter VPT has an effect only when SET is non-zero, specifying
+that Vectors should do the call to SET. It specifies a maximum
+boundary value for the top edge of the viewport in NDC space, and is
+constrained to a value between 0.0 and 1.0. It must be greater than
+the value of the Viewport Bottom parameter, VPB. The actual value of
+the viewport top edge used in the plot may be less than the value of
+VPT, depending on the setting of the Viewport Shape parameter, VPS.
+You must initialize Vectors with a call to VVINIT after modifying this
+parameter. The default value of VPT is 0.95.
 .IP "VST - Vector Statistics Output Flag - Integer"
 If VST is set to one, VVECTR writes a summary of its
 operation to the default logical output unit, including the
@@ -1048,100 +1054,98 @@ VVECTR Statistics
 .fi
 .in -15
 .IP "VSV - V Array Special Value - Real"
-VSV is the V vector component array special value. It is a
-value outside the range of the normal data used to indicate
-that there is no valid data for this grid location. When
-SVF is set to 2 or 3, Vectors will not draw a vector whose
-V component has the special value. It has a default value
-of 1.0 E12.
+VSV is the V vector component array special value. It is a value
+outside the range of the normal data used to indicate that there is no
+valid data for this grid location. When SVF is set to 2 or 3, Vectors
+will not draw a vector whose V component has the special value. You
+must initialize Vectors with a call to VVINIT after modifying this
+parameter. It has a default value of 1.0 E12.
 .IP "WDB - Window Bottom - Real"
-When VVINIT does the call to SET, the parameter WDB is used
-to determine argument number 7, the user Y coordinate at
-the bottom of the window. If WDB is not equal to WDT, WDB
-is used. If WDB is equal to WDT, but YC1 is not equal to
-YCN, then YC1 is used. Otherwise, the value 1.0 is used.
-The default value of WDB is 0.0.
+When VVINIT does the call to SET, the parameter WDB is used to
+determine argument number 7, the user Y coordinate at the bottom of
+the window. If WDB is not equal to WDT, WDB is used. If WDB is equal
+to WDT, but YC1 is not equal to YCN, then YC1 is used. Otherwise, the
+value 1.0 is used. You must initialize Vectors with a call to VVINIT
+after modifying this parameter. The default value of WDB is 0.0.
 .IP "WDL - Window Left - Real"
-When VVINIT the call to SET, the parameter WDL is used to
-determine argument number 5, the user X coordinate at the
-left edge of the window. If WDL is not equal to WDR, WDL is
-used. If WDL is equal to WDR, but XC1 is not equal to XCM,
-then XC1 is used. Otherwise, the value 1.0 is used. The
-default value of WDL is 0.0.
+When VVINIT the call to SET, the parameter WDL is used to determine
+argument number 5, the user X coordinate at the left edge of the
+window. If WDL is not equal to WDR, WDL is used. If WDL is equal to
+WDR, but XC1 is not equal to XCM, then XC1 is used. Otherwise, the
+value 1.0 is used. You must initialize Vectors with a call to VVINIT
+after modifying this parameter. The default value of WDL is 0.0.
 .IP "WDR - Window Right - Real"
-When VVINIT does the call to SET, the parameter WDR is used
-to determine argument number 6, the user X coordinate at
-the right edge of the window. If WDR is not equal to WDL,
-WDR is used. If WDR is equal to WDL, but XCM is not equal
-to XC1, then XCM is used. Otherwise, the value of the
-VVINIT input parameter, M, converted to a real, is used.
-The default value of WDR is 0.0.
+When VVINIT does the call to SET, the parameter WDR is used to
+determine argument number 6, the user X coordinate at the right edge
+of the window. If WDR is not equal to WDL, WDR is used. If WDR is
+equal to WDL, but XCM is not equal to XC1, then XCM is used.
+Otherwise, the value of the VVINIT input parameter, M, converted to a
+real, is used. You must initialize Vectors with a call to VVINIT
+after modifying this parameter. The default value of WDR is 0.0.
 .IP "WDT - Window Top - Real"
-When VVINIT does the call to SET, the parameter WDB is used
-to determine argument number 8, the user Y coordinate at
-the top of the window. If WDT is not equal to WDB, WDT is
-used. If WDT is equal to WDB, but YCN is not equal to YC1
-then YCN is used. Otherwise, the value of the VVINIT input
-parameter, N, converted to a real, is used. The default
-value of WDT is 0.0.
+When VVINIT does the call to SET, the parameter WDB is used to
+determine argument number 8, the user Y coordinate at the top of the
+window. If WDT is not equal to WDB, WDT is used. If WDT is equal to
+WDB, but YCN is not equal to YC1 then YCN is used. Otherwise, the
+value of the VVINIT input parameter, N, converted to a real, is used.
+You must initialize Vectors with a call to VVINIT after modifying this
+parameter. The default value of WDT is 0.0.
 .IP "XC1 - X Coordinate at Index 1 - Real"
-The parameter XC1 specifies the X coordinate value that
-corresponds to a value of 1 for the first subscript of the
-U, V, vector component arrays as well as for the P scalar
-data array, if used. Together with XCM, YC1, and YCN it
-establishes the mapping from grid coordinate space to data
-coordinate space. If XC1 is equal to XCM, 1 will be used.
-The default value of XC1 is 0.0.
+The parameter XC1 specifies the X coordinate value that corresponds to
+a value of 1 for the first subscript of the U, V, vector component
+arrays as well as for the P scalar data array, if used. Together with
+XCM, YC1, and YCN it establishes the mapping from grid coordinate
+space to data coordinate space. If XC1 is equal to XCM, 1 will be
+used. You must initialize Vectors with a call to VVINIT after
+modifying this parameter. The default value of XC1 is 0.0.
 .IP "XCM - X Coordinate at Index M - Real"
-The parameter XCM specifies the X coordinate value that
-corresponds to the value of the VVINIT input parameter, M,
-for the first subscript of the U and V vector component
-arrays as well as for the P scalar data array, if used.
-Together with XC1, YC1, and YCN it establishes the mapping
-from grid coordinate space to data coordinate space. If XC1
-is equal to XCM, the value of M, converted to a real, will
-be used. The default value of XCM is 0.0.
+The parameter XCM specifies the X coordinate value that corresponds to
+the value of the VVINIT input parameter, M, for the first subscript of
+the U and V vector component arrays as well as for the P scalar data
+array, if used.  Together with XC1, YC1, and YCN it establishes the
+mapping from grid coordinate space to data coordinate space. If XC1 is
+equal to XCM, the value of M, converted to a real, will be used. You
+must initialize Vectors with a call to VVINIT after modifying this
+parameter. The default value of XCM is 0.0.
 .IP "XIN - X Axis Array Increment (Grid) - Integer"
-XIN controls the step size through first dimensional
-subscripts of the U,V vector component arrays and also
-through the P scalar data array if it is used. For dense
-arrays plotted at a small scale, the user could set this
-parameter to a value greater than one to reduce the
-crowding of the vectors and hopefully improve the
-intelligibility of the plot. The grid point with subscripts
-(1,1) is always included in the plot, so if XIN had a value
-of three, for example, only grid points with first
-dimension subscripts 1, 4, 7... (and so on) would be
-plotted. See also YIN. The default value of XIN is 1.
+XIN controls the step size through first dimensional subscripts of the
+U,V vector component arrays and also through the P scalar data array
+if it is used. For dense arrays plotted at a small scale, the user
+could set this parameter to a value greater than one to reduce the
+crowding of the vectors and hopefully improve the intelligibility of
+the plot. The grid point with subscripts (1,1) is always included in
+the plot, so if XIN had a value of three, for example, only grid
+points with first dimension subscripts 1, 4, 7... (and so on) would be
+plotted. See also YIN. You must initialize Vectors with a call to
+VVINIT after modifying this parameter. The default value of XIN is 1.
 .IP "YC1 - Y Coordinate at Index 1 - Real"
-The parameter YC1 specifies the Y coordinate value that
-corresponds to a value of 1 for the first subscript of the
-U, V, vector component arrays as well as for the P scalar
-data array, if used. Together with YCN, XC1, and XCM it
-establishes the mapping from grid coordinate space to data
-coordinate space. If YC1 is equal to YCN, 1 will be used.
-The default value of YC1 is 0.0.
+The parameter YC1 specifies the Y coordinate value that corresponds to
+a value of 1 for the first subscript of the U, V, vector component
+arrays as well as for the P scalar data array, if used. Together with
+YCN, XC1, and XCM it establishes the mapping from grid coordinate
+space to data coordinate space. If YC1 is equal to YCN, 1 will be
+used. You must initialize Vectors with a call to VVINIT after
+modifying this parameter. The default value of YC1 is 0.0.
 .IP "YCN - Y Coordinate at Index N - Real"
-The parameter YCN specifies the Y coordinate value that
-corresponds to the value of the VVINIT input parameter, N,
-for the second subscript of the U and V vector component
-arrays as well as the P scalar data array, if used.
-Together with YC1, XC1, and XCM it establishes the mapping
-from grid coordinate space to data coordinate space. If XC1
-is equal to XCM, the value of N, converted to a real, will
-be used. The default value of YCN is 0.0.
+The parameter YCN specifies the Y coordinate value that corresponds to
+the value of the VVINIT input parameter, N, for the second subscript
+of the U and V vector component arrays as well as the P scalar data
+array, if used.  Together with YC1, XC1, and XCM it establishes the
+mapping from grid coordinate space to data coordinate space. If XC1 is
+equal to XCM, the value of N, converted to a real, will be used. You
+must initialize Vectors with a call to VVINIT after modifying this
+parameter. The default value of YCN is 0.0.
 .IP "YIN - Y Axis Array Increment (Grid) - Integer"
-YIN controls the step size through the second dimension
-subscripts of the U and V vector component arrays and also
-through the P scalar data array if it is used. For dense
-arrays plotted at a small scale, the user could set this
-parameter to a value greater than one to reduce the
-crowding of the vectors and hopefully improve the
-intelligibility of the plot. The grid point with subscripts
-(1,1) is always included in the plot, so if YIN had a value
-of three, for example, only grid points with second
-dimension subscripts 1, 4, 7... (and so on) would be
-plotted. See also XIN. The default value of YIN is 1.
+YIN controls the step size through the second dimension subscripts of
+the U and V vector component arrays and also through the P scalar data
+array if it is used. For dense arrays plotted at a small scale, the
+user could set this parameter to a value greater than one to reduce
+the crowding of the vectors and hopefully improve the intelligibility
+of the plot. The grid point with subscripts (1,1) is always included
+in the plot, so if YIN had a value of three, for example, only grid
+points with second dimension subscripts 1, 4, 7... (and so on) would
+be plotted. See also XIN. You must initialize Vectors with a call to
+VVINIT after modifying this parameter. The default value of YIN is 1.
 .IP "ZFC - Zero Field Text Block Color - Integer"
 If ZFC is greater or equal to zero, it specifies the GKS
 color index to use to color the Zero Field text block.
@@ -1215,13 +1219,19 @@ depends on the value assigned to the Zero Field Positioning
 Mode parameter, ZFP. The default value is 0.5.
 .SH SEE ALSO
 Online:
+vectors,
+vvectr,
 vvgetc,
 vvgeti,
 vvgetr,
+vvinit,
 vvrset,
 vvsetc,
 vvseti,
-vvsetr.
+vvsetr,
+vvudmv,
+vvumxy,
+ncarg_cbind.
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

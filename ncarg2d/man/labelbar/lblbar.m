@@ -10,14 +10,14 @@ LBLBAR - Draws a complete label bar.
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_lblbar (int ihov, float xleb, float xreb, \\
+void c_lblbar (int ihov, float xleb, float xreb, 
 .br
 float ybeb, float
-yteb, int nbox, float wsfb, \\
+yteb, int nbox, float wsfb, 
 .br
 float hsfb, int *lfin, 
 int iftp, 
-char *llbs[], \\
+char *llbs[], 
 .br
 int nlbs, int lbab)
 .SH DESCRIPTION

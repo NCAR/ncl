@@ -1,22 +1,27 @@
-.TH EZSTRM 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH EZSTRM 3NCARG "April 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
 EZSTRM - 
-Used as a front-end to STRMLN with a simpler interface.
-Like STRMLN, it may be used to create a streamline field
-flow plot in a single call. The restrictions are: (1) the
-actual first dimension of the array must be equal to the
-size given to Streamlines (i.e. IMAX); and (2), assuming
-the default value of the compatibility mode parameter, CPM,
-Streamlines will perform a SET call and will draw a
-perimeter around the plot using a call to PERIM.
+A front-end to STRMLN with a simpler interface.
+Like STRMLN, it plots a streamline representation of field flow data
+in a single call.
+.SH STATUS
+EZSTRM is obsolete, and is supported only to provide compatibility
+with old NCAR Graphics codes. However, the compatibility mode
+parameter, CPM, offers a number of options to help ease the the
+transition to the new version of the utility. When writing new code
+you are encouraged not to use this entry point, since it provides less
+capability than the standard Streamlines interface, and may eventually
+be phased out.
 .SH SYNOPSIS
 CALL EZSTRM (U,V,WORK,IMAX,JMAX) 
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_ezstrm (float *u, float *v, float *work, int imax, int jmax)
+void c_ezstrm (float *u, float *v, float *work,
+.br
+               int imax, int jmax)
 .SH DESCRIPTION 
 .IP U 12
 (REAL 2-dimensional array, dimensioned IMAX x n: n >=
@@ -47,17 +52,36 @@ The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions with the following exceptions:
 .sp
 .IP imax 12
-The second dimension of u and v in the calling program.
+The actual size of the second dimension of arrays u and v.
 .IP jmax 12
-The first dimension of u and v in the calling program.
+The assumed size of first dimension of arrays u and v.
+.SH USAGE
+U and V are 2-dimensional vector component arrays, whose actual first
+dimensions must be equal to the value of IMAX, and whose second
+dimensions must equal or exceed the value of JMAX. The WORK array
+must, at minimum, be of length 2*IMAX*JMAX.
+.sp
+Assuming the default value of the compatibility mode parameter, CPM,
+Streamlines always performs a SET call and draws a perimeter around
+the plot when accessed through the EZSTRM interface. Before the return
+from EZSTRM, another call to SET restores the previous coordinate
+system mapping.
+.sp
+By modifying the value of CPM, you may take more control over
+the utility than originally possible using this entry point. For
+instance, you can override the default value of the SET parameter, or
+use the Version 3.2 coordinate system mapping routines instead of the
+old FX and FY functions. Nevertheless, when creating new code, use the
+STINIT/STREAM interface, since its capabilities are greater and more
+likely to improve with time.
 .SH ACCESS
 To use EZSTRM, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 streamlines,
+streamlines_params,
 fx,
-fy,
 stgeti,
 stgetr,
 stinit,

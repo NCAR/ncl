@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_text_align.m,v 1.1 1993-03-21 01:31:57 haley Exp $
+.\"	$Id: gset_text_align.m,v 1.2 1993-05-03 17:31:30 haley Exp $
 .\"
 .TH GSET_TEXT_ALIGN 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME

@@ -1,4 +1,4 @@
-.TH VVGETI 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH VVGETI 3NCARG "April 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -28,12 +28,9 @@ the parameter specified by CNM is to be returned.
 The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH USAGE
-This routine allows you to retrieve the current value of
-Vectors parameters.  For a complete list of parameters available
-in this utility, see the vectors_params man page.
-.SH EXAMPLES
-Use the ncargex command to see the following relevant example: 
-vvex02.
+This routine allows you to retrieve the current value of Vectors
+parameters of type INTEGER.  For a complete list of parameters
+available in this utility, see the vectors_params man page.
 .SH ACCESS
 To use VVGETI, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_vvgeti, load the 
@@ -46,9 +43,6 @@ messages and/or informational messages.
 Online:
 vectors,
 vectors_params,
-ezvec,
-fx,
-fy,
 vvectr,
 vvgetc,
 vvgetr,

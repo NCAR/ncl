@@ -9,7 +9,7 @@ CALL MAPGCI(ALAT,ALON,BLAT,BLON,NOPI,RLTI,RLNI)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_mapgci( float alat, float alon, float blat, \\
+void c_mapgci( float alat, float alon, float blat, 
 .br
 float blon, int nopi, float *rlti, float *rlni)
 .SH DESCRIPTION 
@@ -54,9 +54,9 @@ example:
 cmpgci.
 .SH ACCESS
 To use MAPGCI, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_mapgci, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_mapgci, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 ezmap, 

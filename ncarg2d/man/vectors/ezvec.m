@@ -1,85 +1,82 @@
-.TH VVECTR 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH EZVEC 3NCARG "April 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
-VVECTR - 
-Manages the coordinate system mapping, color
-setting, auxiliary text output, and drawing of the vector
-field plot, according to the specifications established by
-the parameter setting routines and the initialization
-routine, VVINIT.
+EZVEC -
+A front-end to VELVCT with a simpler interface. Like VELVCT, it plots a
+a vector field in a single call.
 .SH SYNOPSIS
-CALL VVECTR (U,V,P,IAM,VVUDMV,WRK) 
+CALL EZVEC (U,V,M,N)
+.SH STATUS
+EZVEC is obsolete, and is supported only to provide compatibility
+with old NCAR Graphics codes. However, the compatibility mode
+parameter, CPM, offers a number of options to help ease the the
+transition to the new version of the utility. When writing new code
+you are encouraged not to use this entry point, since it provides less
+capability than the standard Vectors interface, and may eventually
+be phased out.
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_vvectr(float *u, float *v, float *p, int *iam, \\
-.br
-int (*vvudmv_)(float *xcs,
-float *ycs, int *ncs, \\
-.br
-int *iai, int *iag, int *nai), float *wrk)
-.SH DESCRIPTION 
+void c_ezvec (float *u, float *v, int m, int n)
+.SH DESCRIPTION
 .IP U 12
-(REAL 2 dimensional array, dimensioned as specified in
-last call to VVINIT, input): By default, assumed to contain
-the first dimensional axis components of the vector field.
-However, if PLR is non-zero, it is treated as containing
-the vector magnitudes.
+(REAL 2-dimensional array, dimensioned M x n: n >= N,
+input) By default, assumed to contain the first dimensional
+Cartesian components of the vector field. However, if PLR
+is non-zero, it is treated as containing the vector
+magnitudes.
 .IP V 12
-(REAL 2 dimensional array, dimensioned as specified in
-last call to VVINIT, input): By default, assumed to contain
-the second dimensional axis components of the vector field.
+(REAL 2-dimensional array, dimensioned M x n: n >= N,
+input) By default, assumed to contain the second
+dimensional Cartesian components of the vector field.
 However, if PLR is non-zero, it is treated as containing
 the vector angles.
-.IP P 12
-(REAL 2 dimensional array, dimensioned as specified in
-last call to VVINIT, input): Array of scalar data that may
-be used to color the vectors. The grid points are assumed
-to coincide with the grid points of the U and V arrays.
-Required only if CTV has an absolute value of 2; otherwise
-this argument is ignored and may be assigned a dummy value.
-.IP IAM 12
-(INTEGER array, unknown dimension, input): Area map
-array previously established by calls to routines in the
-Areas utility. It is not examined or modified by Vectors.
-Required only if MSK is set to a non-zero value; otherwise
-it is ignored and may be assigned a dummy value.
-.IP VVUDMV 12
-(EXTERNAL subroutine, input): User-definable masked
-drawing subroutine. See the man page vvudmv 
-for a discussion of the usage and argument list
-required for this subroutine. Required only if MSK is set
-to a non-zero value; otherwise it is ignored and may be
-assigned a dummy value.
-.IP WRK 12
-(REAL array, dimensioned as specified in last call to
-VVINIT, input/output): Array intended for future
-enhancement of the Vectors utility. It is currently ignored
-and may be assigned a dummy value.
+.IP M 12
+(INTEGER, input) Actual size of the first dimension of
+arrays U and V
+.IP N 12
+(INTEGER, input) Assumed size of the second dimension of
+arrays U and V.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN
-argument descriptions.
+argument descriptions with the following exceptions:
+.IP m 12
+The actual size of the second dimension of arrays u and v.
+.IP n 12
+The assumed size of first dimension of arrays u and v.
+.SH USAGE
+U and V are 2-dimensional vector component arrays, whose actual first
+dimensions must be equal to the value of M, and whose second
+dimensions must equal or exceed the value of N.
+.sp
+Assuming the default value of the compatibility mode parameter, CPM,
+Vectors always performs a SET call and draws a perimeter around the
+plot when accessed through the EZVEC interface. Before the return from
+EZVEC, another call to SET restores the previous coordinate system
+mapping.  
+.sp
+By modifying the value of CPM, you may take more control over the
+utility than originally possible using this entry point. For instance,
+you can override the default value of the SET parameter, or use the
+Version 3.2 coordinate system mapping routines instead of the old FX,
+FY, MXF, and MYF functions. Nevertheless, when creating new code, use
+the VVINIT/VVECTR interface, since its capabilities are greater and
+more likely to improve with time.
 .SH EXAMPLES
-Use the ncargex command to see the following relevant examples: 
-bnchmk,
-stex03,
-vvex01,
-vvex02.
+Use the ncargex command to see the following relevant
+example:
+tvelvc.
 .SH ACCESS
-To use VVECTR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_vvectr, load the 
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
-.SH MESSAGES
-See the vectors man page for a description of all Vectors error
-messages and/or informational messages.
+To use EZVEC, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 vectors,
-ezvec,
+vectors_params,
 fx,
-fy,
+velvct,
+vvectr,
 vvgetc,
 vvgeti,
 vvgetr,
@@ -96,3 +93,4 @@ Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved
+

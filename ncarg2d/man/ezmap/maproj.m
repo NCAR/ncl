@@ -8,7 +8,7 @@ CALL MAPROJ (JPRJ, PLAT, PLON, ROTA)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_maproj (char *jprj, float plat, float plon, \\
+void c_maproj (char *jprj, float plat, float plon, 
 .br
 float rota)
 .SH DESCRIPTION 

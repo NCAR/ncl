@@ -1,10 +1,10 @@
 #
-#	$Id: yMakefile,v 1.1 1993-04-06 19:38:59 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-05-03 17:22:16 haley Exp $
 #
 NCARG	= ../../..
 
-MAN3 = dashline dashline_params dashchar dashsmth dashsupr curved dashdb \
-	dashdc frstd lastd lined reset vectd
+MAN3 = curved dashchar dashdb dashdc dashline dashline_params dashsmth \
+	dashsupr frstd lastd lined reset vectd
 
 MAN = $(MAN3)
 

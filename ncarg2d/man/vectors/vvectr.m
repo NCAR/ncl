@@ -1,4 +1,4 @@
-.TH VVECTR 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH VVECTR 3NCARG "April 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -13,12 +13,13 @@ CALL VVECTR (U,V,P,IAM,VVUDMV,WRK)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_vvectr(float *u, float *v, float *p, int *iam, \\
+void c_vvectr(float *u, float *v, float *p, int *iam, 
 .br
-int (*vvudmv_)(float *xcs,
-float *ycs, int *ncs, \\
+              int (*vvudmv_)(float *xcs, float *ycs, 
 .br
-int *iai, int *iag, int *nai), float *wrk)
+              int *ncs, int *iai, int *iag, int *nai), 
+.br
+              float *wrk)
 .SH DESCRIPTION 
 .IP U 12
 (REAL 2 dimensional array, dimensioned as specified in
@@ -60,9 +61,63 @@ and may be assigned a dummy value.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
+.SH USAGE
+A call to VVINIT must precede the first call to VVECTR, and is again
+required any time the vector or scalar array data changes, any of the
+coordinate control parameters are modified, or the number of color
+threshold levels is modified when Vectors is given the responsibility
+of setting up the color threshold value array. However, the user may
+modify text elements or any of the rendering control parameters, and
+if assuming responsibility for setting up the color threshold array,
+may also modify the color array parameters, in between multiple
+invocations of VVECTR.
+.sp
+Arguments to VVINIT establish the sizes of the two or three data
+arrays. VVINIT places these values into common block variables where
+they become available to VVECTR.  Therefore no size arguments need
+appear in the VVECTR argument list. When there is no scalar data
+array, and area masking is not enabled, all but the first two
+arguments to VVECTR may have dummy values and the invocation would be
+something like:
+.in 15
+.sp
+CALL VVECTR(U,V,IDM,IDM,IDM,IDM)
+.in -15
+.PP
+where IDM is an arbitrary variable, INTEGER or REAL, that need not
+have been initialized.  However, any time the color threshold control
+parameter, CTV has an absolute value of 2, the auxiliary scalar data
+array is expected, and the P scalar array variable needs to be
+specified.  
+.sp
+The masking capability supported by Vectors allows the user to overlay
+vector fields on top of graphics produced by other utilities, such as
+Conpack contour plots, without encroaching on areas, like label boxes,
+that should appear in the foreground. Normally the area map should be
+generated and used in the normal way (as described in the Areas and
+Conpack documentation) before calling any routines in the Vectors
+utility. When the parameter MSK has a non-zero value, masking is
+enabled and a previously created area map must be passed to VVECTR.
+VVECTR examines the map, returning an error if it determines that it
+is an invalid map or contains more area maps that it can handle,
+currently 64. Otherwise its only use of the map is as a member of the
+argument list when invoking one of the Areas routines, ARDRLN or
+ARGTAI.  The user must also pass in a user-definable masked drawing
+subroutine.  A simple version of this subroutine, named VVUDMV, is
+supplied with the Vectors utility, and may suffice for basic masked
+drawing operations. See the vvudmv man page for more information.
+.sp
+The last argument in the calling sequence, WRK, is intended for future
+enhancement of the Vectors utility. It is currently ignored, and may
+always be passed a dummy argument value.
 .SH EXAMPLES
-Use the ncargex command to see the following relevant examples: 
+Use the ncargex command to see the following relevant examples:
 bnchmk,
+ffex00,
+ffex01,
+ffex02,
+ffex05,
+stex02,
 stex03,
 vvex01,
 vvex02.
@@ -77,9 +132,7 @@ messages and/or informational messages.
 .SH SEE ALSO
 Online:
 vectors,
-ezvec,
-fx,
-fy,
+vectors_params,
 vvgetc,
 vvgeti,
 vvgetr,

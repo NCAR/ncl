@@ -1,4 +1,4 @@
-.TH STRSET 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH STRSET 3NCARG "April 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -15,26 +15,22 @@ None.
 .SH C-BINDING DESCRIPTION
 None.
 .SH USAGE
-This routine allows you to set the current value of Streamlines
-parameters. For a complete list of parameters available in this utility,
-see the streamlines_params man page.
+This routine resets all Streamlines parameters to their default
+values.  For a complete list of the parameters affected and their
+default values, see the vectors_params man page.
 .SH ACCESS
 To use STRSET, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_strset, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_strset, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 streamlines,
 streamlines_params,
-ezstrm,
-fx,
-fy,
 stgeti,
 stgetr,
 stinit,
 stream,
-strmln,
 stseti,
 stsetr,
 stuixy,

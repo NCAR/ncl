@@ -18,7 +18,7 @@ CALL SFSGFA (XRA, YRA, NRA, DST, NST, IND, NND, ICI)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_sfsgfa (float *xra, float *yra, int nra, \\
+void c_sfsgfa (float *xra, float *yra, int nra, 
 .br
 float *dst, 
 int nst, int *ind, int nnd, int ici)

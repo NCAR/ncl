@@ -9,7 +9,7 @@ CALL HSTOPC (STRING,STRNG2,NUMBER,ILCH)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_hstopc (char *string, char *strng2, int number, \\
+void c_hstopc (char *string, char *strng2, int number, 
 .br
 int ilch)
 .SH DESCRIPTION

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gevtm.m,v 1.2 1993-04-02 16:44:57 haley Exp $
+.\"	$Id: gevtm.m,v 1.3 1993-05-03 17:26:07 haley Exp $
 .\"
 .TH GEVTM 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME

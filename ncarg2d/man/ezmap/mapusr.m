@@ -7,10 +7,6 @@ The default version does nothing.  A user-written version may be supplied
 to change the appearance of the map.
 .SH SYNOPSIS
 CALL MAPUSR (IPRT)
-.SH C-BINDING SYNOPSIS
-#include <ncarg/ncargC.h>
-.sp
-void mapusr (int iprt)
 .SH DESCRIPTION 
 .IP IPRT 12
 (input expression, of type INTEGER), if positive, says that a
@@ -38,9 +34,6 @@ If IPRT is negative, then the drawing of the last
 part is complete. The absolute value of IPRT will be
 one of the above values. Changed quantities should be
 restored.
-.SH C-BINDING DESCRIPTION 
-The C-binding argument description is the same as the FORTRAN 
-argument description.
 .SH USAGE
 Ezmap executes the statement
 .sp
@@ -60,9 +53,7 @@ example:
 mpex08.
 .SH ACCESS
 To use MAPUSR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use the mapusr C-binding,
-load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, 
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.  
 .SH SEE ALSO
 Online:
 ezmap,

@@ -1,4 +1,4 @@
-.TH STSETI 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH STSETI 3NCARG "April 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -19,7 +19,7 @@ CNM are examined. The three characters must either be
 entirely upper or entirely lower case; mixed case is not
 recognized. It is recommended that the rest of the
 character string be used to improve the readability of the
-code. For example, instead of \'CKP\', use \'CHP - Check
+code. For example, instead of \'CKP\', use \'CKP - Check
 Progress Iteration Count\'.
 .IP IVL 12
 (INTEGER, input) is an expression, the value of which
@@ -29,11 +29,14 @@ The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH USAGE
 This routine allows you to set the current value of Streamlines
-parameters. For a complete list of parameters available in this utility,
-see the streamlines_params man page.
+parameters of type INTEGER. For a complete list of parameters
+available in this utility, see the streamlines_params man page.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
-examples: 
+examples:
+ffex00,
+ffex03,
+ffex04,
 stex01,
 stex02,
 stex03.
@@ -49,14 +52,10 @@ messages and/or informational messages.
 Online:
 streamlines,
 streamlines_params,
-ezstrm,
-fx,
-fy,
 stgeti,
 stgetr,
 stinit,
 stream,
-strmln,
 strset,
 stsetr,
 stuixy,

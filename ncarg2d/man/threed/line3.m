@@ -8,7 +8,7 @@ CALL LINE3 (UA,VA,WA,UB,VB,WB)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_line3 (float ua, float va, float wa, float ub, \\
+void c_line3 (float ua, float va, float wa, float ub, 
 .br
 float vb, float wb)
 .SH DESCRIPTION 

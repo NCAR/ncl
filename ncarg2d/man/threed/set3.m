@@ -9,9 +9,9 @@ CALL SET3 (XA,XB,YA,YB,UC,UD,VC,VD,WC,WD,EYE)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_set3 (float xa, float xb, float ya, float yb, \\
+void c_set3 (float xa, float xb, float ya, float yb, 
 .br
-float uc, float ud, float vc, float vd, float wc, \\
+float uc, float ud, float vc, float vd, float wc, 
 .br
 float wd, float eye[3])
 .SH DESCRIPTION 

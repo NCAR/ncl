@@ -7,10 +7,6 @@ default version does nothing.  A user-written version may be supplied to
 provide control as the labels are drawn.
 .SH SYNOPSIS
 CALL CPCHLL (IFLG)
-.SH C-BINDING SYNOPSIS
-#include <ncarg/ncargC.h>
-.sp
-void cpchll (int *iflg)
 .SH DESCRIPTION 
 .IP IFLG 12
 (INTEGER, input) is positive if an action is about to 
@@ -52,9 +48,7 @@ parameters associated with that level may easily be
 retrieved by calls to CPGETx.
 .SH ACCESS
 To use CPCHLL, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use cpchll from a C
-program, load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, 
-ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.  
 .SH SEE ALSO
 Online: 
 conpack, 

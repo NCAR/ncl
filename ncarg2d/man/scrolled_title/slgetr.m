@@ -3,10 +3,9 @@
 .nh
 .SH NAME
 SLGETR - 
-Gets the current values of
-internal parameters of type REAL 
-that affect the behavior of STITLE and
-FTITLE. See the
+Gets the current real value of an internal parameter of Scrolled_title
+of type INTEGER or REAL.
+See the
 scrolled_title_params man page for a complete list of all
 the Scrolled_title internal parameters.
 .SH SYNOPSIS
@@ -17,13 +16,15 @@ CALL SLGETR (PNAM, RVAL)
 void c_slgetr (char *pnam, float *rval)
 .SH DESCRIPTION 
 .IP PNAM 12
-(an input expression of type CHARACTER) specifies the
+(an input constant or variable of type CHARACTER) specifies the
 name of the parameter whose value is to be retrieved. Only
 the first three characters of the string are examined.
 .IP RVAL 12 
 (an output variable of type REAL) is the value of the
 internal parameter. If the internal parameter is of type
-INTEGER, REAL(integer value) will be returned.
+INTEGER and has the value "i", RVAL = REAL(i).  If the
+internal parameter is of type REAL and has the value "r",
+RVAL = r.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.

@@ -10,7 +10,7 @@ CALL MAPTRN (RLAT, RLON, UVAL, VVAL)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_maptrn (float rlat, float rlon, float *uval, \\
+void c_maptrn (float rlat, float rlon, float *uval, 
 .br
 float *vval)
 .SH DESCRIPTION 

@@ -10,7 +10,7 @@ CALL MAPTRN (RLAT, RLON, UVAL, VVAL)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_maptrn (float rlat, float rlon, float *uval, \\
+void c_maptrn (float rlat, float rlon, float *uval, 
 .br
 float *vval)
 .SH DESCRIPTION 
@@ -39,7 +39,7 @@ cpex03,
 mpex09.
 .SH ACCESS
 To use MAPTRN, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_maptrn, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_maptrn, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
 ncarg_loc, preferably in that order.
 .SH MESSAGES

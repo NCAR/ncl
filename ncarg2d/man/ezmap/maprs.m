@@ -23,7 +23,7 @@ inappropriate, call to SET.
 No example is available for MAPRS.
 .SH ACCESS
 To use MAPRS, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_maprs, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_maprs, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
 ncarg_loc, preferably in that order.
 .SH SEE ALSO

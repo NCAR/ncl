@@ -9,9 +9,9 @@ CALL ISOSRF (F,LU,MU,LV,MV,MW,EYE,MUVWP2,SLAB,FISO,IFLAG)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_isosrf (float *f, int lu, int mu, int lv, int mv, \\
+void c_isosrf (float *f, int lu, int mu, int lv, int mv, 
 .br
-int mw, float eye[3], int muvwp2, float *slab, float fiso, \\
+int mw, float eye[3], int muvwp2, float *slab, float fiso, 
 .br
 int iflag)
 .SH UTILITY

@@ -13,7 +13,7 @@ CALL EZSRFC (Z,M,ANGH,ANGV,WORK)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_ezsrfc (float *z, int m, float angh, float angv, \\
+void c_ezsrfc (float *z, int m, float angh, float angv, 
 .br
 float *work)
 .SH DESCRIPTION 

@@ -15,7 +15,7 @@ Conpack contouring package.
 HAFTON continues to be provided for compatibility of early NCAR Graphics
 codes.  If you are writing new code, we suggest that you use CPCICA.
 .SH SYNOPSIS
-HAFTON (Z,L,M,N,FLO,HI,NLEV,NOPT,NPRM,ISPV,SPVAL)
+CALL HAFTON (Z,L,M,N,FLO,HI,NLEV,NOPT,NPRM,ISPV,SPVAL)
 .SH DESCRIPTION 
 .IP Z 12
 (an input array of type REAL) defining a two-dimensional field to be

@@ -1,10 +1,10 @@
 #
-#	$Id: yMakefile,v 1.3 1993-04-01 23:57:11 haley Exp $
+#	$Id: yMakefile,v 1.4 1993-05-03 17:36:10 haley Exp $
 #
 NCARG	= ../../..
 
-MAN3 = plotchar plotchar_params pcdlsc pcgetc pcgeti pcgetr pchiqu pcloqu \
-	pcmequ pcmpxy pcpnwi pcsetc pcseti pcsetr plchhq plchlq plchmq
+MAN3 = pcdlsc pcgetc pcgeti pcgetr pchiqu pcloqu pcmequ pcmpxy pcpnwi pcsetc \
+	pcseti pcsetr plchhq plchlq plchmq plotchar plotchar_params
 
 MAN = $(MAN3)
 

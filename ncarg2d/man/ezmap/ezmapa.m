@@ -265,9 +265,9 @@ MAPEOD
 MAPUSR
 .SH ACCESS 
 To use Ezmap routines, load the NCAR Graphics libraries ncarg,
-ncarg_gks, and ncarg_loc, preferably in that order.  To use the 
+ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.  To use the 
 C-bindings, load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg,
-ncarg_gks, and ncarg_loc, preferably in that order.
+ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 Possible error-flag values are as shown in the following table:
 .RS 4

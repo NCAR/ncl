@@ -9,7 +9,7 @@ CALL PWRZT (X,Y,Z,ID,N,ISIZE,LINE,ITOP,ICNT)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_pwrzt (float x, float y, float z, char *id, int n, \\
+void c_pwrzt (float x, float y, float z, char *id, int n, 
 .br
 int isize, int line, int itop, int icnt)
 .SH DESCRIPTION

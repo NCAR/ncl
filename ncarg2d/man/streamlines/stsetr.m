@@ -1,4 +1,4 @@
-.TH STSETR 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH STSETR 3NCARG "April 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -28,11 +28,14 @@ The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH USAGE
 This routine allows you to set the current value of Streamlines
-parameters. For a complete list of parameters available in this utility,
-see the streamlines_params man page.
+parameters of type REAL. For a complete list of parameters available
+in this utility, see the streamlines_params man page.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
-examples: 
+examples:
+ffex00,
+ffex03,
+ffex04,
 stex01,
 stex02,
 stex03.
@@ -48,14 +51,10 @@ messages and/or informational messages.
 Online:
 streamlines,
 streamlines_params,
-ezstrm,
-fx,
-fy,
 stgeti,
 stgetr,
 stinit,
 stream,
-strmln,
 strset,
 stseti,
 stuixy,

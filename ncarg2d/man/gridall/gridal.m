@@ -17,7 +17,7 @@ see the overview man page for this utility, type "man gridall".
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_gridal (int mjrx, int mnrx, int mjry, int mnry, \\
+void c_gridal (int mjrx, int mnrx, int mjry, int mnry, 
 .br
 int ixlb, int iylb, int igph, float xint, float yint)
 .SH DESCRIPTION 

@@ -13,12 +13,12 @@ CALL SFNORM (XRA,YRA,NRA,DST,NST,IND,NND)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_sfwrld (float *xra, float *yra, int nra, \\
+void c_sfwrld (float *xra, float *yra, int nra, 
 .br
 float *dst, 
 int nst, int *ind, int nnd)
 .sp
-void c_sfnorm (float *xra, float *yra, int nra, \\
+void c_sfnorm (float *xra, float *yra, int nra, 
 .br
 float *dst, 
 int nst, int *ind, int nnd)

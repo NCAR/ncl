@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_line_colr_ind.m,v 1.1 1993-03-21 01:30:09 haley Exp $
+.\"	$Id: ginq_line_colr_ind.m,v 1.2 1993-05-03 17:30:11 haley Exp $
 .\"
 .TH GINQ_LINE_COLR_ind 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME

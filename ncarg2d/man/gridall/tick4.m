@@ -44,9 +44,9 @@ example:
 tgrida.
 .SH ACCESS
 To use TICK4, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_tick4, load 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_tick4, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 gridall,

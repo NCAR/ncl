@@ -37,7 +37,7 @@ of points.
 See the man page for MAPIT.
 .SH ACCESS
 To use MAPFST, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_mapfst, load the
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_mapfst, load the
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and
 ncarg_loc, preferably in that order.
 .SH SEE ALSO

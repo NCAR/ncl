@@ -9,7 +9,7 @@ CALL EZISOS (F,MU,MV,MW,EYE,SLAB,FISO)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_ezisos (float *f, int mu, int mv, int mw, \\
+void c_ezisos (float *f, int mu, int mv, int mw, 
 .br 
 float eye[3], float *slab, float fiso)
 .SH DESCRIPTION 

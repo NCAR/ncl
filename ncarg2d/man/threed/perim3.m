@@ -8,7 +8,7 @@ CALL PERIM3 (MAGR1,MINR2,MAGR2,MINR2,IWHICH,VAR)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_perim3 (int magr1, int minr2, int magr2, int minr2, \\
+void c_perim3 (int magr1, int minr2, int magr2, int minr2, 
 .br
 int iwhich, float var)
 .SH DESCRIPTION 

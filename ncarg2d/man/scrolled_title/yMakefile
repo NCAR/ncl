@@ -1,10 +1,10 @@
 #
-#	$Id: yMakefile,v 1.3 1993-04-01 23:57:21 haley Exp $
+#	$Id: yMakefile,v 1.4 1993-05-03 17:37:11 haley Exp $
 #
 NCARG	= ../../..
 
 MAN3 = ftitle scrolled_title scrolled_title_params slgeti slgetr slseti \
-	slsetr stitle 
+	slsetr stitle
 
 MAN = $(MAN3)
 

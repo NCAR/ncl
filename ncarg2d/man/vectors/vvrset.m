@@ -1,4 +1,4 @@
-.TH VVRSET 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH VVRSET 3NCARG "April 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -13,9 +13,9 @@ void c_vvrset( void )
 .SH DESCRIPTION 
 None.
 .SH USAGE
-This routine allows you to set the current value of
-Vectors parameters.  For a complete list of parameters available
-in this utility, see the vectors_params man page.
+This routine resets all Vectors parameters to their default values.
+For a complete list of the parameters affected and their default
+values, see the vectors_params man page.
 .SH ACCESS
 To use VVRSET, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_vvrset, load the 
@@ -25,9 +25,6 @@ ncarg_c, and ncarg_loc, preferably in that order.
 Online:
 vectors,
 vectors_params,
-ezvec,
-fx,
-fy,
 vvectr,
 vvgetc,
 vvgeti,

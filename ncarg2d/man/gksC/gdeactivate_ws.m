@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gdeactivate_ws.m,v 1.1 1993-03-21 01:29:24 haley Exp $
+.\"	$Id: gdeactivate_ws.m,v 1.2 1993-05-03 17:29:33 haley Exp $
 .\"
 .TH GDEACTIVATE_WS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gpolyline.m,v 1.2 1993-03-29 22:42:23 haley Exp $
+.\"	$Id: gpolyline.m,v 1.3 1993-05-03 17:30:45 haley Exp $
 .\"
 .TH GPOLYLINE 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME

@@ -14,7 +14,7 @@ presetting parameters.
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_labmod (char *fmtx, char *fmty, int numx, int numy, \\
+void c_labmod (char *fmtx, char *fmty, int numx, int numy, 
 .br
 int iszx, int iszy, int ixdc, int iydc, int ixor)
 .SH DESCRIPTION 

@@ -1,4 +1,4 @@
-.TH VVUMXY 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH VVUMXY 3NCARG "April 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -73,71 +73,56 @@ on the value of the vector positioning parameter, VPO
 mapping failed; positive values are reserved and should not
 be used by the implementor of a mapping routine.
 .SH USAGE
-The user does not call VVUMXY. Vectors calls it only when
-the parameter MAP has a value other than 0, 1, or 2, the
-mappings handled by Vectors internally. Note that unlike
-other user-modifiable mapping routines in NCAR Graphics,
-such as CPMPXY, that map a single point into the user
-coordinate system, this routine returns two points,
-representing both ends of the vector, scaled for magnitude,
-in the normalized device coordinate (NDC) system. The NDC
-system is used for output because, as a coordinate system
-guaranteed to be rectangular and uniform, it serves as a
-convenient reference system to help map both vector
-magnitude and direction correctly. The term uniform, as
-used in this discussion, means that an arbitrary numerical
-increment along either the X or Y axis has the same length
-given any offset from the coordinate system origin. The
-user coordinate system does not qualify, because it may be
-log-scaled, or the X units may have a different size from
-the Y units.
+The user does not call VVUMXY. Vectors calls it only when the
+parameter MAP has a value other than 0, 1, or 2, the mappings handled
+by Vectors internally. Note that unlike other user-modifiable mapping
+routines in NCAR Graphics, such as CPMPXY, that map a single point
+into the user coordinate system, this routine returns two points,
+representing both ends of the vector, scaled for magnitude, in the
+normalized device coordinate (NDC) system. The NDC system is used for
+output because, as a coordinate system guaranteed to be rectangular
+and uniform, it serves as a convenient reference system to help map
+both vector magnitude and direction correctly. The term uniform, as
+used in this discussion, means that an arbitrary numerical increment
+along either the X or Y axis has the same length given any offset from
+the coordinate system origin. The user coordinate system does not
+qualify, because it may be log-scaled, or the X units may have a
+different size from the Y units.
 .sp
-Mappings the user chooses to implement are bound to be 
-non-linear, since the linear mappings are handled by the
-default setting of the MAP parameter. Under these
-conditions, one cannot simply project both ends of the
-vector. Essentially it is necessary to find the direction
-of the vector at a point on a curve. The internal mapping
-routine, VVMPXY, uses an iterative differential technique
-to accomplish this task. The default version of VVUMXY
-contains commented code offering a suggested approach that
-could be adopted by the implementor of a custom mapping.
+In order to implement a custom mapping, you must pick a unique mapping
+code (a positive integer greater than 2), and then modify VVUMXY to
+recognize and respond to the chosen code. In the standard distribution
+of NCAR Graphics, this routine resides in the file, \'vvumxy.f\'.
+VVUMXY has access to a common block called VVMAP that contains a
+number of variables used to record the current transformation state.
+In order to accommodate a variety of mapping implementations, VVMAP
+provides more information than normally required. Consider the values
+stored in VVMAP as strictly read-only.  One essential member of this
+common block is IMAP, which contains the value currently assigned to
+the MAP parameter.
 .sp
-Note that the non-linear mappings can occur over two
-separate transformations. Each must be handled separately.
-The transformation between the data coordinate system and
-the user coordinate system is the first. Pre-defined
-mappings 1 and 2, the Ezmap and polar projections, are
-examples. The second occurs in the transformation between
-user and NDC space whenever the user system is not uniform,
-as defined above. The default linear transformation can
-handle vector mapping over log-scaled or unequal unit user
-coordinates. However, the polar coordinate mapping will not
-properly project vectors if log scaled user coordinates are
-in effect. It is not an issue for the map projections,
-since Ezmap always sets up a uniform user coordinate system.
-.sp
-A common block called VVMAP is made available to VVUMXY,
-allowing access to a number of variables used to record the
-current transformation state. More information is provided
-than normally required to perform the mapping, but perhaps
-in certain situations it may be useful. The values stored
-in VVMAP should be treated as strictly read-only, or the
-results will be, as the saying goes, "undefined".
-Particularly important variables contained in this common
-block include IMAP, which contains the value currently
-assigned to the MAP parameter, and ITRT, which stores the
-value currently assigned to the transformation type
-parameter TRT.
+When implementing a non-linear mapping, an iterative differential
+technique will most likely be required. Look at the routine, VVMPXY,
+in \'vvmpxy.f\', which handles the pre-defined mappings, for examples
+of the method. Both the default transformation (MAP set to 0), in
+order to account for possible log scaling of the user coordinate axes,
+and also the Ezmap projection (MAP set to 1) use such a technique.
+Basically the idea is that the vector components must be
+proportionally reduced in size enough that an effectively
+"instantaneous" angle can be calculated, although they must not become
+so small that the calculation is adversely affected by the floating
+point precision available for the machine. Additionally, checks must
+be put in place to prevent the increment from stepping off the edge of
+the coordinate system space. The pre-defined mappings step in the
+opposite direction to find the angle whenever an increment in the
+original direction would fall off the edge.
 .SH ACCESS
 To use VVUMXY, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  
 .SH SEE ALSO
 Online:
 vectors,
-ezvec,
-fx,
-fy,
+vectors_params,
 vvectr,
 vvgetc,
 vvgeti,

@@ -10,14 +10,6 @@ replaced by the user with a version that does something different.
  CALL CPSCAE (ICRA, ICA1, ICAM, ICAN, XCPF, YCPF, XCQF, 
 .br
 + YCQF, IND1, IND2, ICAF, IAID)
-.SH C-BINDING SYNOPSIS
-#include <ncarg/ncargC.h>
-.sp
-void c_cpscae (int *icra, int ica1, int icam, int ican, 
-.br
-float xcpf, float ycpf, float xcqf, float ycqf, int ind1, 
-.br
-int ind2, int icaf, int iaid)
 .SH DESCRIPTION 
 The first eight arguments of CPSCAE describe the user's 
 cell array and are taken directly from the user's call to 
@@ -61,18 +53,6 @@ schemes for picking color indices.
 (INTEGER, input) is the value of the area identifier 
 associated with the midpoint of the cell (IND1,IND2). The 
 four possibilities are as described for the routine CPCICA.
-.SH C-BINDING DESCRIPTION
-The C-binding argument descriptions are the same as the FORTRAN 
-argument descriptions, with the following exceptions:
-.IP icra 12
-icra is dimensioned n by ica1 where n is greater than or equal to the
-value of the argument ican
-.IP ica1 12
-The second dimension of the array icra.
-.IP icam 12
-The second dimension of the user's cell array.
-.IP ican 12
-The first dimension of the user's cell array.
 .SH USAGE
 CPSCAE is not called by the user. When a user calls the
 routine CPCICA and the internal parameter 'CAF' is
@@ -88,9 +68,7 @@ the current value of the color index for the cell in
 determining the new value of the color index for the cell.
 .SH ACCESS
 To use CPSCAE, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_cpscae, load the 
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.  
 .SH SEE ALSO
 Online:
 conpack,

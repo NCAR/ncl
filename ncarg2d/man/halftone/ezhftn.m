@@ -15,7 +15,7 @@ Conpack contouring package.
 EZHFTN continues to be provided for compatibility of early NCAR Graphics
 codes.  If you are writing new code, we suggest that you use CPCICA.
 .SH SYNOPSIS
-EZHFTN (Z,M,N)
+CALL EZHFTN (Z,M,N)
 .SH DESCRIPTION 
 .IP Z 12
 (an input array of type REAL) defining a two-dimensional field to be

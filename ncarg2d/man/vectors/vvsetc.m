@@ -1,4 +1,4 @@
-.TH VVSETC 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH VVSETC 3NCARG "April 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -28,9 +28,9 @@ is to be given to the parameter specified by CNM.
 The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH USAGE
-This routine allows you to set the current value of
-Vectors parameters.  For a complete list of parameters available
-in this utility, see the vectors_params man page.
+This routine allows you to set the current value of Vectors parameters
+of type CHARACTER.  For a complete list of parameters available in
+this utility, see the vectors_params man page.
 .SH ACCESS
 To use VVSETC, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_vvsetc, load the 
@@ -43,9 +43,6 @@ messages and/or informational messages.
 Online:
 vectors,
 vectors_params,
-ezvec,
-fx,
-fy,
 vvectr,
 vvgetc,
 vvgeti,

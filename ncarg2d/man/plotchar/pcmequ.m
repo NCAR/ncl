@@ -18,7 +18,7 @@ CALL PCMEQU (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_pcmequ (float xpos, float ypos, char *chrs, \\
+void c_pcmequ (float xpos, float ypos, char *chrs, 
 .br
 float size, float angd, float cntr)
 .SH DESCRIPTION 

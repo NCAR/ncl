@@ -1,4 +1,4 @@
-.TH STUMSL 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH STUMSL 3NCARG "April 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -34,46 +34,42 @@ identifier groups.
 current version of Streamlines supports up to 64 area
 groups.
 .SH USAGE
-\'STUMSL\' is the name given to the default version of the
-masked streamline drawing routine, and it is also the name
-given to the argument through which the external subroutine
-is passed to STREAM. The user, however, can choose any
-acceptable FORTRAN identifier as the name of a user-defined
-version of the routine. But whatever the name, it must have
-an equivalent argument list to the default version of
-STUMSL. Also, whether or not the default version is used,
-the subroutine that calls STREAM should contain an external
-declaration of the routine, such as:
+\'STUMSL\' is the name given to the default version of the masked
+streamline drawing routine, and it is also the name given to the
+argument through which the external subroutine is passed to STREAM.
+However, you may choose any acceptable FORTRAN identifier as the name
+of a user-defined version of the routine. The substitute routine must
+have an argument list equivalent to the default version of STUMSL.
+Also, whether or not the default version is used, the subroutine that
+calls STREAM should contain an external declaration of the routine,
+such as:
 .sp
 .RS 10
 EXTERNAL STUMSL
 .RE
 .sp 
-If the MSK parameter is greater than 0, signifying that
-masking is to be performed, Streamlines sends one or more
-sets of X and Y polyline coordinate arrays to the area
-masking routine, ARDRLN, for each streamline. ARDRLN
-subdivides the polyline into pieces such that each smaller
-polyline has a single area identifier with respect to each
-area identifier group, then makes a call to STUMSL for each
-polyline piece. While the default version of STUMSL only
-checks to see that none of the area identifiers are
-negative, a user-defined version could perform more
-complicated decision processing based on knowledge of the
-meaning of specific area identifier groups and/or area
-identifier values. Note that, before invoking STUMSL,
-ARDRLN converts the coordinates into normalized device
-coordinates, and does the following SET call:
+If the MSK parameter is greater than 0, signifying that masking is to
+be performed, Streamlines sends one or more sets of X and Y polyline
+coordinate arrays to the area masking routine, ARDRLN, for each
+streamline. ARDRLN subdivides the polyline into pieces such that each
+smaller polyline has a single area identifier with respect to each
+area identifier group, then makes a call to STUMSL for each polyline
+piece. While the default version of STUMSL only checks to see that
+none of the area identifiers are negative, a user-defined version
+could perform more complicated decision processing based on knowledge
+of the meaning of specific area identifier groups and/or area
+identifier values. Note that, before invoking STUMSL, ARDRLN
+modifies the user coordinate space by making the following calls:
+.in 15
 .sp
-.RS 10
-CALL SET(-1.0,1.0,-1.0,1.0,-1.0,1.0,-1.0,1.0,1)
-.sp
-.RE 
-This call temporarily makes the user to NDC mapping an
-identity, and allows the user to call any of the routines,
-CURVE, CURVED, or the GKS routine GPL, to render the
-polygon piece, without worrying about a possible non-
-identity mapping between user and world coordinates.
+CALL GETSET(VPL,VPR,VPB,VPT,WDL,WDR,WDB,WDT,LLG)
+CALL SET(VPL,VPR,VPB,VPT,VPL,VPR,VPB,VPT,1)
+.in -15
+.PP
+These calls temporarily turn the user to NDC mapping into an identity, allowing
+the user to call any of the routines, CURVE, CURVED, or the GKS
+routine GPL, to render the polygon piece without worrying about a
+possible non-identity mapping between user and world coordinates.
 .sp
 The current version of Streamlines supports masked drawing
 with up to 64 area groups. Streamlines will exit with an
@@ -85,14 +81,11 @@ ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 streamlines,
-ezstrm,
-fx,
-fy,
+streamlines_params,
 stgeti,
 stgetr,
 stinit,
 stream,
-strmln,
 strset,
 stseti,
 stsetr,

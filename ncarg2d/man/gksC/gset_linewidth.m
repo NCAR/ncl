@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_linewidth.m,v 1.1 1993-03-21 01:31:44 haley Exp $
+.\"	$Id: gset_linewidth.m,v 1.2 1993-05-03 17:31:19 haley Exp $
 .\"
 .TH GSET_LINEWIDTH 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME

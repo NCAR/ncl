@@ -1,18 +1,23 @@
-.TH STREAM 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH STREAM 3NCARG "April 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
-STREAM - 
-Outputs the streamline representation of the
-flow field, according to the specifications established by
-the parameter setting routines and the initialization
-routine, STINIT.
+STREAM - Plots a streamline representation of field flow data, based
+on conditions established by STINIT and the current values of a set of
+user-modifiable internal parameters associated with the Streamlines
+utility.
 .SH SYNOPSIS
-CALL STREAM (U,V,P, IAM,STUMSL,WRK) 
+CALL STREAM (U,V,P,IAM,STUMSL,WRK) 
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_stream(float *u, float *v, float *p, int *iam, int (*stumsl_)( float *xcs, float *ycs, int *ncs, int *iai, int *iag, int *nai), float *wrk)
+void c_stream(float *u, float *v, float *p, int *iam, 
+.br
+              int (*stumsl_)( float *xcs, float *ycs, 
+.br
+              int *ncs, int *iai, int *iag, int *nai), 
+.br
+              float *wrk)
 .SH DESCRIPTION 
 .IP U 12
 (REAL 2 dimensional array, dimensioned as specified in
@@ -28,7 +33,7 @@ However, if PLR is non-zero, it is treated as containing
 the vector angles.
 .IP P 12
 (REAL, input, DUMMY): This argument is currently ignored.
-Should be assigned a dummy value.
+May be assigned a dummy value.
 .IP IAM 12
 (INTEGER array, unknown dimension, input): Area map
 array previously established by calls to routines in the
@@ -54,16 +59,63 @@ a streamline or placing a directional arrowhead.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
+.SH USAGE
+A call to STINIT must precede the first call to STREAM, and is again
+required any time the vector array data changes or any of the
+coordinate space control parameters are modified. However, you may
+modify certain rendering control parameters between multiple
+invocations of STREAM. See the streamlines_params man page for more
+information.
+.sp
+Arguments to STINIT establish the sizes of the vector component arrays
+and the WRK array. STINIT places these values into common block
+variables where they become available to STREAM.  Therefore no size
+arguments need appear in the STREAM argument list.  When area masking
+is not enabled, the third, fourth and fifth arguments to STREAM may
+all have dummy values and the invocation would be something like:
+.in 15
+.sp
+CALL STREAM(U,V,IDM,IDM,IDM,WRK)
+.in -15
+.PP
+where IDM is an arbitrary variable that need not have been initialized.
+.sp
+The masking capability supported by Streamlines allows you to
+overlay vector fields on top of graphics produced by other utilities,
+such as CONPACK contour plots, without encroaching on areas, like
+label boxes, that should appear in the foreground. Normally the area
+map should be generated and used in the normal way (as described in
+the AREAS and CONPACK documentation) before calling any routines in
+the Streamlines utility. When the parameter MSK has a non-zero value,
+masking is enabled and a previously created area map must be passed to
+STREAM. STREAM examines the map, returning an error if the map appears
+to be invalid or the number of area groups is beyond the range it can
+handle (currently 64). Otherwise, it only uses the map as an argument
+to the Areas utility subroutine, ARDRLN. The user must also pass in a
+user-definable masked drawing subroutine. A simple version of this
+subroutine, named (like the argument) STUMSL, is supplied with the
+Streamlines utility, and may suffice for basic masked drawing
+operations. See the stumsl man page for more information.
+.sp
+The P array argument is intended for future enhancement of the
+Streamlines utility and is not currently used or examined in any way.
+You may pass it an uninitialized dummy argument.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
-examples: 
+examples:
+ffex00,
+ffex01,
+ffex03,
+ffex04,
 stex01,
+stex02,
+stex03,
 stex03.
 .SH ACCESS
 To use STREAM, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_stream, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_stream, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the streamlines man page for a description of all Streamlines error
 messages and/or informational messages.
@@ -71,13 +123,9 @@ messages and/or informational messages.
 Online:
 streamlines,
 streamlines_params,
-ezstrm,
-fx,
-fy,
 stgeti,
 stgetr,
 stinit,
-strmln,
 strset,
 stseti,
 stsetr,

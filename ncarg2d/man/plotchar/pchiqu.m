@@ -15,7 +15,7 @@ CALL PCHIQU (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_pchiqu (float xpos, float ypos, char *chrs, \\
+void c_pchiqu (float xpos, float ypos, char *chrs, 
 .br
 float size, float angd, float cntr)
 .SH DESCRIPTION 

@@ -3,9 +3,8 @@
 .nh
 .SH NAME
 SLSETR - 
-Sets the values of internal
-parameters of type REAL
-that affect the behavior of STITLE and FTITLE.
+Provides a new real value for an internal parameter of Scrolled_title
+of type INTEGER or REAL.
 See the scrolled_title_params man page
 for a complete list of all the
 Scrolled_title internal parameters.
@@ -17,13 +16,15 @@ CALL SLSETR (PNAM, RVAL)
 void c_slsetr (char *pnam, float rval)
 .SH DESCRIPTION 
 .IP PNAM 12
-(an input expression of type CHARACTER) specifies the
+(an input constant or variable of type CHARACTER) specifies the
 name of the parameter to be set. Only the first three
 characters of the string are examined.
 .IP RVAL 12
 (an input expression of type REAL) is the desired
 value of the internal parameter. If the internal parameter
 is of type INTEGER, it will be given the value INT(RVAL).
+If the internal parameter is of type REAL, it will be given the
+value RVAL.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.

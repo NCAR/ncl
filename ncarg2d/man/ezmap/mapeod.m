@@ -8,12 +8,6 @@ to examine each outline-dataset segment and, perhaps, to delete selected
 ones.
 .SH SYNOPSIS
 CALL MAPEOD (NOUT,NSEG,IDLS,IDRS,NPTS,PNTS)
-.SH C-BINDING SYNOPSIS
-#include <ncarg/ncargC.h>
-.sp
-void mapeod (int *nout, int *nseg, int *idls, int *idrs, \\
-.br
-int *npts, float *pnts)
 .SH DESCRIPTION 
 .IP NOUT 12
 (an input expression of type INTEGER) is the number of the outline
@@ -53,9 +47,6 @@ second point, ... PNTS(2*NPTS-1) and PNTS(2*NPTS) the latitude and
 longitude of the last point. All values are in degrees. Longitudes are
 all between -180 and +180; no segment crosses the meridian at -180 (+180)
 degrees.
-.SH C-BINDING DESCRIPTION
-The C-binding argument descriptions are the same as the FORTRAN 
-argument descriptions.
 .SH USAGE
 MAPEOD is called by MAPLOT to examine each segment in an outline dataset
 just before it is plotted and by MAPBLA to examine each segment in an
@@ -71,9 +62,7 @@ mpex05,
 mpex09.
 .SH ACCESS
 To use MAPEOD, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use the C version of 
-MAPEOD, load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg,
-ncarg_gks, and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.  
 .SH SEE ALSO
 Online:
 ezmap, 

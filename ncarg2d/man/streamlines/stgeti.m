@@ -1,4 +1,4 @@
-.TH STGETI 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH STGETI 3NCARG "April 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -29,8 +29,8 @@ The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH USAGE
 This routine allows you to retrieve the current value of Streamlines
-parameters. For a complete list of parameters available in this utility,
-see the streamlines_params man page.
+parameters of type INTEGER. For a complete list of parameters
+available in this utility, see the streamlines_params man page.
 .SH ACCESS
 To use STGETI, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_stgeti, load the 
@@ -43,13 +43,9 @@ messages and/or informational messages.
 Online:
 streamlines,
 streamlines_params,
-ezstrm,
-fx,
-fy,
 stgetr,
 stinit,
 stream,
-strmln,
 strset,
 stseti,
 stsetr,

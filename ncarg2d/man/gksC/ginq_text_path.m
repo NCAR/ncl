@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_text_path.m,v 1.1 1993-03-21 01:30:46 haley Exp $
+.\"	$Id: ginq_text_path.m,v 1.2 1993-05-03 17:30:39 haley Exp $
 .\"
 .TH GINQ_TEXT_PATH 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME

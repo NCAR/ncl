@@ -10,7 +10,7 @@ CALL TICK43 (MAGU,MINU,MAGV,MINV,MAGW,MINW)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_tick43 (int magu, int minu, int magv, int minv, \\
+void c_tick43 (int magu, int minu, int magv, int minv, 
 .br
 int magw, int minw)
 .SH DESCRIPTION 

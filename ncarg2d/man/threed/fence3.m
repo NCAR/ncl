@@ -10,7 +10,7 @@ CALL FENCE3 (U,V,W,N,IOREN,BOT)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_fence3 (float *u, float *v, float *w, int n, \\
+void c_fence3 (float *u, float *v, float *w, int n, 
 .br
 int ioren, float bot)
 .SH DESCRIPTION 

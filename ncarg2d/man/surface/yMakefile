@@ -1,9 +1,9 @@
 #
-#	$Id: yMakefile,v 1.5 1993-04-16 21:36:16 haley Exp $
+#	$Id: yMakefile,v 1.6 1993-05-03 17:40:53 haley Exp $
 #
 NCARG	= ../../..
 
-MAN3 = ezsrfc pwrzs srface surface surface_params setr
+MAN3 = ezsrfc pwrzs setr srface surface surface_params
 
 MAN = $(MAN3)
 

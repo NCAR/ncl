@@ -1,85 +1,111 @@
-.TH VVECTR 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH VELVEC 3NCARG "April 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
-VVECTR - 
-Manages the coordinate system mapping, color
-setting, auxiliary text output, and drawing of the vector
-field plot, according to the specifications established by
-the parameter setting routines and the initialization
-routine, VVINIT.
+VELVEC - A older version of the Vectors utility, now a front-end to
+VELVCT. It is identical to the VELVCT call except that there is no
+LENGTH parameter to allow adjustment of the realized length of the
+maximum vector magnitude.
 .SH SYNOPSIS
-CALL VVECTR (U,V,P,IAM,VVUDMV,WRK) 
+VELVEC (U,LU,V,LV,M,N,FLO,HI,NSET,ISPV,SPV)
+.SH STATUS
+VELVEC is obsolete, and is supported only to provide compatibility
+with old NCAR Graphics codes. However, the compatibility mode
+parameter, CPM, offers a number of options to help ease the the
+transition to the new version of the utility. When writing new code
+you are encouraged not to use this entry point, since it provides less
+capability than the standard Vectors interface, and may eventually
+be phased out.
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_vvectr(float *u, float *v, float *p, int *iam, \\
+void c_velvec(float *u, int lu, float *v, int lv, int m,
 .br
-int (*vvudmv_)(float *xcs,
-float *ycs, int *ncs, \\
+              int n, float flo, float hi, int nset,
 .br
-int *iai, int *iag, int *nai), float *wrk)
-.SH DESCRIPTION 
+              int ispv, float *spv)
+.SH DESCRIPTION
 .IP U 12
-(REAL 2 dimensional array, dimensioned as specified in
-last call to VVINIT, input): By default, assumed to contain
-the first dimensional axis components of the vector field.
-However, if PLR is non-zero, it is treated as containing
-the vector magnitudes.
+(REAL 2-dimensional array, dimensioned LU x n: n >= N, input): By
+default, assumed to contain the first dimensional Cartesian
+components of the vector field. However, if PLR is non-zero, it is
+treated as containing the vector magnitudes.
+.IP LU 12
+(INTEGER, input): Actual value of the first dimension of array U.
 .IP V 12
-(REAL 2 dimensional array, dimensioned as specified in
-last call to VVINIT, input): By default, assumed to contain
-the second dimensional axis components of the vector field.
-However, if PLR is non-zero, it is treated as containing
-the vector angles.
-.IP P 12
-(REAL 2 dimensional array, dimensioned as specified in
-last call to VVINIT, input): Array of scalar data that may
-be used to color the vectors. The grid points are assumed
-to coincide with the grid points of the U and V arrays.
-Required only if CTV has an absolute value of 2; otherwise
-this argument is ignored and may be assigned a dummy value.
-.IP IAM 12
-(INTEGER array, unknown dimension, input): Area map
-array previously established by calls to routines in the
-Areas utility. It is not examined or modified by Vectors.
-Required only if MSK is set to a non-zero value; otherwise
-it is ignored and may be assigned a dummy value.
-.IP VVUDMV 12
-(EXTERNAL subroutine, input): User-definable masked
-drawing subroutine. See the man page vvudmv 
-for a discussion of the usage and argument list
-required for this subroutine. Required only if MSK is set
-to a non-zero value; otherwise it is ignored and may be
-assigned a dummy value.
-.IP WRK 12
-(REAL array, dimensioned as specified in last call to
-VVINIT, input/output): Array intended for future
-enhancement of the Vectors utility. It is currently ignored
-and may be assigned a dummy value.
+(REAL 2-dimensional array, dimensioned LV x n: n >= N, input): By
+default, assumed to contain the second dimensional Cartesian
+components of the vector field. However, if PLR is non-zero, it is
+treated as containing the vector angles.
+.IP LV 12
+LV (INTEGER, input): Actual value of the first dimension of array V.
+.IP M 12
+(INTEGER, input): Number of contiguous elements along the first
+dimensional axis containing data to be processed in each of the
+arrays, U and V.
+.IP N 12
+(INTEGER, input): Number of contiguous elements along the second
+dimensional axis containing data to be processed in each of the
+arrays, U and V.
+.IP FLO 12
+(REAL, input): Minimum vector magnitude allowed to be displayed in the
+plot.
+.IP HI 12
+(REAL, input): Maximum vector magnitude allowed to be displayed in the
+plot. If set to 0.0 there is no upper limit imposed.
+.IP NSET 12
+(INTEGER, input): Flag that controls how and when the SET call is
+invoked. If NSET is 0, VELVEC makes a SET call to establish a standard
+viewport and window boundaries coincident with the array coordinate
+boundaries. PERIM is called to draw a border. If NSET is greater than
+zero, VELVEC does not call SET or PERIM. If NSET is less than zero,
+VELVEC calls SET to establish window boundaries coincident with the
+array grid coordinate boundaries but does not modify the viewport or
+call PERIM. Unlike the VVINIT/VVECTR interface, when VELVEC does a SET
+call, it always restores the original coordinate system state before
+returning.
+.IP ISPV 12
+(INTEGER, input): Flag to control the special value feature. 0 means
+that the feature is not in use. 1 means that if the value of
+U(I,J)=SPV(1) the vector will not be plotted.  2 means that if the
+value of V(I,J)=SPV(2) the vector will not be plotted. 3 means that
+if either U(I,J)=SPV(1) or V(I,J)=SPV(2) then the vector will not be
+plotted. 4 means that if U(I,J)=SPV(1) and V(I,J)=SPV(2), the vector
+will not be plotted.
+.IP SPV 12
+(REAL array, dimensioned 2, input): An array of length 2 which gives
+the value in the U array and the value in the V array which denote
+special values. This argument is ignored if ISPV=0. The default values
+are 1.0E12.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN
-argument descriptions.
-.SH EXAMPLES
-Use the ncargex command to see the following relevant examples: 
-bnchmk,
-stex03,
-vvex01,
-vvex02.
+argument descriptions with the following exceptions:
+.sp
+.IP lu 12
+The second dimension of u in the calling program.
+.IP lv 12
+The second dimension of v in the calling program.
+.IP m 12
+Number of contiguous elements along the
+second dimensional axis containing data to be processed in
+each of the arrays, u and v.
+.IP n 12
+Number of contiguous elements along the
+first dimensional axis containing data to be processed in
+each of the arrays, u and v.
+.SH USAGE
+VELVEC is used identically to VELVCT except that there is no provision
+for adjusting the realized length of the maximum vector magnitude. See the
+velvct man page for more information.
 .SH ACCESS
-To use VVECTR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_vvectr, load the 
-NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
-.SH MESSAGES
-See the vectors man page for a description of all Vectors error
-messages and/or informational messages.
+To use VELVEC, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 vectors,
-ezvec,
+vectors_params,
 fx,
-fy,
+vvectr,
 vvgetc,
 vvgeti,
 vvgetr,
@@ -96,3 +122,4 @@ Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved
+

@@ -9,7 +9,7 @@ CALL MAPSET (JLTS, PLM1, PLM2, PLM3, PLM4)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_mapset (char *jlts, float *plm1, float *plm2, \\
+void c_mapset (char *jlts, float *plm1, float *plm2, 
 .br
 float *plm3, float *plm4)
 .SH DESCRIPTION 

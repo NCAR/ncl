@@ -3,9 +3,8 @@
 .nh
 .SH NAME
 SLSETI - 
-Sets the values of internal
-parameters of type INTEGER
-that affect the behavior of STITLE and FTITLE.
+Provides a new integer value for an internal parameter of Scrolled_title
+of type INTEGER or REAL.
 See the scrolled_title_params man page
 for a complete list of all the
 Scrolled_title internal parameters.
@@ -17,13 +16,14 @@ CALL SLSETI (PNAM, IVAL)
 void c_slseti (char *pnam, int ival)
 .SH DESCRIPTION 
 .IP PNAM 12
-(an input expression of type CHARACTER) specifies the
+(an input constant or variable of type CHARACTER) specifies the
 name of the parameter to be set. Only the first three
 characters of the string are examined.
 .IP IVAL 12
 (an input expression of type INTEGER) is the desired
-value of the internal parameter. If the internal parameter
-is of type REAL, it will be given the value REAL(IVAL).
+value of the internal parameter. If the internal parameter is
+of type INTEGER, it will be given the value IVAL.   If the internal
+parameter is of type REAL, it will be given the value REAL(IVAL).
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.

@@ -8,7 +8,7 @@ CALL MAPTRI (UVAL,VVAL,RLAT,RLON)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_maptri (float uval, float vval, float *rlat, \\
+void c_maptri (float uval, float vval, float *rlat, 
 .br
 float *rlon)
 .SH DESCRIPTION 

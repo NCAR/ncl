@@ -8,7 +8,7 @@ CALL MAPPOS (XLOW,XROW,YBOW,YTOW)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_mappos (float xlow, float xrow, float ybow, \\
+void c_mappos (float xlow, float xrow, float ybow, 
 .br
 float ytow)
 .SH DESCRIPTION 

@@ -3,27 +3,27 @@
 .nh
 .SH NAME
 SLGETI - 
-Gets the current values of
-internal parameters of type INTEGER 
-that affect the behavior of STITLE and
-FTITLE. See the
+Gets the current integer value of an internal parameter of Scrolled_title
+of type INTEGER or REAL.
+See the
 scrolled_title_params man page for a complete list of all
 the Scrolled_title internal parameters.
 .SH SYNOPSIS
-CALL SLGETI (PNAM, IVAL)
+CALL SLGETI (PNAM,IVAL)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
 void c_slgeti (char *pnam, int *ival)
 .SH DESCRIPTION 
 .IP PNAM 12
-(an input expression of type CHARACTER) specifies the
+(an input constant or variable of type CHARACTER) specifies the
 name of the parameter whose value is to be retrieved. Only
 the first three characters of the string are examined.
 .IP IVAL 12
 (an output variable of type INTEGER) is the current
-value of the internal parameter. If the internal parameter
-is of type REAL, INT(real value) will be returned.
+value of the internal parameter. If the internal parameter is of type
+INTEGER and has the value "i", IVAL = i.   If the internal parameter
+is of type REAL and has the value "r", IVAL = INT(r).
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.

@@ -8,11 +8,11 @@ CALL MAPIQM (IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,NOGI,ULPR)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_mapiqm (int *iama, float *xcra, float *ycra, \\
+void c_mapiqm (int *iama, float *xcra, float *ycra, 
 .br
-int mcra, int *iaai, int *iagi, int nogi, \\
+int mcra, int *iaai, int *iagi, int nogi, 
 .br
-int (*ulpr)(float *xcra, float *ycra, int *mcra, \\
+int (*ulpr)(float *xcra, float *ycra, int *mcra, 
 .br
 int *iaai, int *iagi, int *nogi))
 .SH DESCRIPTION 
@@ -61,7 +61,7 @@ example:
 cmpitm,
 .SH ACCESS
 To use MAPIQM, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_mapiqm, load the
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_mapiqm, load the
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
 ncarg_loc, preferably in that order.
 .SH SEE ALSO

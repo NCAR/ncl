@@ -9,7 +9,7 @@ CALL NGDOTS(X,Y,NUM,SIZE,ICOLOR)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_ngdots(float *x, float *y, int num, float size, \\
+void c_ngdots(float *x, float *y, int num, float size, 
 .br 
 int icolor)
 .SH DESCRIPTION 

@@ -18,7 +18,7 @@ CALL HISTGR (DAT1,NDIM,NPTS,IFLAG,CLASS,NCLASS,WRK,NWRK)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_histgr (float *dat1, int ndim, int npts, \\
+void c_histgr (float *dat1, int ndim, int npts, 
 .br
 int iflag, float *class, int nclass, float *wrk, int nwrk)
 .SH DESCRIPTION

@@ -9,7 +9,7 @@ CALL HSTOPI (STRING, PARAM1, PARAM2, ICOL, LCOL)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_hstopi (char *string, int param1, int param2, \\
+void c_hstopi (char *string, int param1, int param2, 
 .br
 int *icol, int lcol)
 .SH DESCRIPTION

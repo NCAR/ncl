@@ -10,7 +10,7 @@ CALL MAPIQA (IAMA,IGID,IAIL,IAIR)
 .sp
 void c_mapiqa (int *iama, int igid, int iail, int iair)
 .sp
-void c_mapita (float rlat, float rlon, int ifst, \\
+void c_mapita (float rlat, float rlon, int ifst, 
 .br
 int *iama, int igid, int iail, 
 int iair)
@@ -47,7 +47,7 @@ cmpita,
 cpex08.
 .SH ACCESS
 To use MAPIQA, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order. To use c_mapiqa, load 
+ncarg_c, and ncarg_loc, preferably in that order. To use c_mapiqa, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
 ncarg_loc, preferably in that order.
 .SH SEE ALSO
