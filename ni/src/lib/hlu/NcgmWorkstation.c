@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.32 1998-03-11 18:35:47 dbrown Exp $
+ *      $Id: NcgmWorkstation.c,v 1.33 1998-03-13 22:19:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -486,13 +486,17 @@ TempClose
 #endif
 {
 	NhlNcgmWorkstationLayer		wl = (NhlNcgmWorkstationLayer)l;
+	NhlNcgmWorkstationClass wlc = 
+		(NhlNcgmWorkstationClass)l->base.layer_class;
 
 #if DEBUG_NCGM
-	fprintf(stderr,"calling ngmftc for %s\n",wl->ncgm.meta_name);
+	fprintf(stderr,"calling ngmftc: hlu_id %d; gkswkid %d; metafile %s\n",
+                l->base.id,wl->work.gkswksid,wl->ncgm.meta_name);
 #endif
 	c_ngmftc(wl->work.gkswksid);
 	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
 		return NhlFATAL;
+        wlc->ncgm_class.current_ncgm_wkid = NhlNULLOBJID;
 
 	return NhlNOERROR;
 }
@@ -533,7 +537,8 @@ UpdateGKSState
 		}
                                 
 #if DEBUG_NCGM
-	fprintf(stderr,"calling ngreop iop %d for %s\n",2,np->meta_name);
+	fprintf(stderr,"calling ngreop: hlu_id %d;  gkswkid %d; metafile %s\n",
+                l->base.id,wl->work.gkswksid,np->meta_name);
 #endif
 		c_ngreop(wl->work.gkswksid,wl->work.gkswksconid,1,
 			 np->meta_name,2,
@@ -903,7 +908,6 @@ NcgmWorkstationUpdate
 	if (! np->started) {
                 subret = TempClose(l,func);
 		retcode = MIN(retcode,subret);
-		wlc->ncgm_class.current_ncgm_wkid = NhlNULLOBJID;
 		np->new_frame = False;
 		np->started = True;
 	}
@@ -966,7 +970,6 @@ NcgmWorkstationClear
  */
 	subret = TempClose(l,func);
 	retcode = MIN(retcode,subret);
-	wlc->ncgm_class.current_ncgm_wkid = NhlNULLOBJID;
 	np->new_frame = True;
 	np->update_colors = True;
 
@@ -1010,15 +1013,21 @@ static void NcgmWorkstationNotify(
 
         switch (action) {
             case _NhlwkLLUActivate:
-                    NcgmWorkstationActivate(l);
+                    UpdateGKSState(l,func);
+                    _NHLCALLF(gzacwk,GZACWK)(&wl->work.gkswksid);
+                    wl->work.cleared = False;
                     break;
             case _NhlwkLLUDeactivate:
-                    NcgmWorkstationDeactivate(l);
+                    UpdateGKSState(l,func);
+                    _NHLCALLF(gzdawk,GDACWK)(&wl->work.gkswksid);
                     TempClose(l,func);
-                    wlc->ncgm_class.current_ncgm_wkid = NhlNULLOBJID;
                     break;
             case _NhlwkLLUClear:
-                    NcgmWorkstationClear(l);
+                    UpdateGKSState(l,func);
+                    _NHLCALLF(gzclrwk,GZCLRWK)(&wl->work.gkswksid);
+                    if (! wksisact(wl->work.gkswksid))
+                            TempClose(l,func); 
+                    wl->work.cleared = True;
                     break;
             case _NhlwkLLUClose:
                     NcgmWorkstationClose(l);

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.77 1998-03-12 02:35:21 dbrown Exp $
+ *      $Id: Workstation.c,v 1.78 1998-03-13 22:19:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -533,7 +533,7 @@ static NhlErrorTypes WorkstationMarker(
 #endif
 );
 
-void _NHLCALLF(gopwk,GOPWK) (
+extern void _NHLCALLF(gopwk,GOPWK) (
 #if	NhlNeedProto
 	int	*wkid,
         int	*conid,
@@ -543,7 +543,8 @@ void _NHLCALLF(gopwk,GOPWK) (
 
 static void StoreGksWksType (
 #if	NhlNeedProto
-        int	gks_id
+        int	gks_id,
+        int	wtype
 #endif
 );
 
@@ -556,7 +557,8 @@ static void StoreGksWksType (
  */
  
 static int	CurrentWksCount = 0;
-static wkGksWksRec Gks_Wks_Recs[MAX_OPEN_WKS] = { -1,-1 }; /* uninitialized */
+static wkGksWksRec Gks_Wks_Recs[MAX_OPEN_WKS] =
+			{ -1,-1,-1 }; /* uninitialized */
 
 static NhlBoolean Hlu_Wks_Flag = False;
 
@@ -888,6 +890,10 @@ static void InitializeGksWksRecs
                 gksp[i].gks_id = wks_list.ints[i];
                 NGCALLF(gqwkc,GQWKC)
                         (&gksp[i].gks_id,&errind,&iconn_id,&ws_type);
+                if (gksp[i].gks_type == 1) {
+                        NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+ "Non-HLU GKS ncgm workstation cannot be used until NhlClose is called"));
+                }
                 gksp[i].gks_type = ws_type;
         }
         *wcp->current_wks_count = wks_list_len;
@@ -1220,7 +1226,7 @@ static NhlErrorTypes WorkstationInitialize
         
 	wp->gkswksid = (int)NhlFATAL;
 	wp->open = False;
-        wp->activated = False;
+        wp->cleared = True;
 	wp->gkswkstype = (int)NhlFATAL;
 	wp->gkswksconid = (int)NhlFATAL;
 	wp->def_plot_id = NhlNULLOBJID;
@@ -2311,7 +2317,7 @@ WorkstationActivate
 		return NhlFATAL;
 	}
         
-        wl->work.activated = True;
+        wl->work.cleared = False;
 	if(wksisact(wl->work.gkswksid)){
 		/*
 		 * WORKSTATION IS ALREADY ACTIVE
@@ -2573,7 +2579,7 @@ WorkstationClear
 	char	func[] = "WorkstationClear";
 	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
 
-        if (! wl->work.activated)
+        if (wl->work.cleared)
                 return NhlNOERROR;
 #if DEBUG_NCGM
 	fprintf(stderr,"calling gclrwk\n");
@@ -2584,7 +2590,7 @@ WorkstationClear
 	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
 		return NhlWARNING;
 
-        wl->work.activated = False;
+        wl->work.cleared = True;
         
 	return NhlNOERROR;
 }
@@ -4831,54 +4837,65 @@ void _NHLCALLF(nhlpfisworkstation,NHLPFISWORKSTATION)
  * Out Args: 
  *
  * Scope:	
- * Returns: True if notify performed.
+ * Returns: ErrorTypes
  *
  * Side Effect:	
  */
-static NhlBoolean CheckAndNotify
+static NhlErrorTypes CheckAndNotify
 #if	NhlNeedProto
 (
         int gks_id,
-        int action
-
+        int action,
+        NhlBoolean *notified
 )
 #else
-(gks_id,action)
+(gks_id,action,notified)
 	int gks_id;
         int action;
+        NhlBoolean *notified;
 #endif
 {
         wkGksWksRec	*gksp = Gks_Wks_Recs;
         NhlLayer l;
         NhlWorkstationClassPart *wcp;
-        int i;
-        
+        int i,j;
+
+        *notified = False;
         for (i = 0; i < CurrentWksCount; i++) {
                 if (gksp[i].gks_id == gks_id)
                         break;
         }
         if (i == CurrentWksCount) {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                           "Gks Workstation %d not properly recorded",gks_id));
-                return False;
+                           "Gks Workstation %d is not open",gks_id));
+                return NhlFATAL;
         }
-        if (gksp[i].hlu_id == NhlNULLOBJID)
-                return False;
-        
+        if (gksp[i].hlu_id == NhlNULLOBJID) {
+                if (gksp[i].gks_type == 1) {
+                        for (j=0;j<CurrentWksCount;j++) {
+                                if (gksp[j].gks_type == 1 && j != i) {
+                                        NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+   "Cannot access non-HLU GKS ncgm workstation while NcgmWorkstation exists"));
+                                        return NhlFATAL;
+                                }
+                        }
+                }
+                return NhlNOERROR;
+        }
         l = _NhlGetLayer(gksp[i].hlu_id);
 	if(! (l && _NhlIsWorkstation(l))) {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
                            "Hlu Workstation invalid for Gks Id %d",gks_id));
-                return False;
+                return NhlFATAL;
         }
 	wcp = &((NhlWorkstationClass)l->base.layer_class)->work_class;
 
         if (wcp->notify_work) {
                 (*wcp->notify_work)(l,action);
-                return True;
+                *notified = True;
         }
         
-        return False;
+        return NhlNOERROR;
 }
 
 /*
@@ -4942,7 +4959,6 @@ static NhlBoolean LLUpdateGksWksRecs
         return True;
 }
 
-
 /*
  * Function:	_NhlUpdateGksWksRecs
  *
@@ -5004,8 +5020,7 @@ NhlErrorTypes _NhlUpdateGksWksRecs
         }
         if (! gks_id) {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                           "%s: null value invalid on add",
-                           func));
+                           "%s: internal error: null Gks id pointer",func));
                 return NhlFATAL;
         }
         
@@ -5050,21 +5065,21 @@ NhlErrorTypes _NhlUpdateGksWksRecs
 static void StoreGksWksType
 #if	NhlNeedProto
 (
-        int	gks_id
+        int	gks_id,
+        int	wtype
 )
 #else
-(gks_id)
+(gks_id,wtype)
         int	gks_id;
+        int	wtype;
 #endif
 {
         wkGksWksRec	*gksp = Gks_Wks_Recs;
         int i;
-        int errind,iconn_id,ws_type;
 
-        NGCALLF(gqwkc,GQWKC)(&gks_id,&errind,&iconn_id,&ws_type);
         for (i = 0; i < CurrentWksCount; i++) {
                 if (gksp[i].gks_id == gks_id)
-                        gksp[i].gks_type = ws_type;
+                        gksp[i].gks_type = wtype;
         }
 }
 
@@ -5095,16 +5110,26 @@ void _NHLCALLF(gopwk,GOPWK)
         int	*wtype;
 #endif
 {
+        char func[] = "GOPWK";
+        
 #if DEBUG_NCGM
 	fprintf(stderr,"in hlu gopwk\n");
 #endif
 
-        if (! Hlu_Wks_Flag)
+        if (! Hlu_Wks_Flag) {
+                wkGksWksRec	*gksp = Gks_Wks_Recs;
+                if (gksp[0].gks_id != -1 && *wtype == 1) {
+                        NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+"%s: cannot open non-HLU GKS metafile workstation after initializing NhlworkstationClass",
+                                   func));
+                        return;
+                }
                 LLUpdateGksWksRecs(*wkid,True);
-
+        }
 	_NHLCALLF(gzopwk,GZOPWK)(wkid,conid,wtype);
+	_NhlLLErrCheckPrnt(NhlFATAL,func);
 
-        StoreGksWksType(*wkid);
+        StoreGksWksType(*wkid,*wtype);
         
         Hlu_Wks_Flag = False;
         
@@ -5134,16 +5159,22 @@ void _NHLCALLF(gclwk,GCLWK)
 	int	*wkid;
 #endif
 {
+        char func[] = "GCLWK";
 #if DEBUG_NCGM
 	fprintf(stderr,"in hlu gclwk\n");
 #endif
         if (! Hlu_Wks_Flag) {
-                if (CheckAndNotify(*wkid,_NhlwkLLUClose))
+                NhlBoolean notified;
+                if (CheckAndNotify(*wkid,_NhlwkLLUClose,&notified)
+                        < NhlWARNING)
+                        return;
+                else if (notified)
                         return;
                 LLUpdateGksWksRecs(*wkid,False);
         }
 
 	_NHLCALLF(gzclwk,GZCLWK)(wkid);
+	_NhlLLErrCheckPrnt(NhlFATAL,func);
 
         Hlu_Wks_Flag = False;
         
@@ -5174,14 +5205,21 @@ void _NHLCALLF(gacwk,GACWK)
 	int	*wkid;
 #endif
 {
+        char func[] = "GACWK";
 #if DEBUG_NCGM
 	fprintf(stderr,"in hlu gacwk\n");
 #endif
-        if (! Hlu_Wks_Flag)
-                if (CheckAndNotify(*wkid,_NhlwkLLUActivate))
+        if (! Hlu_Wks_Flag) {
+                NhlBoolean notified;
+                if (CheckAndNotify(*wkid,_NhlwkLLUActivate,&notified)
+                        < NhlWARNING)
                         return;
-
+                else if (notified)
+                        return;
+        }
+        
 	_NHLCALLF(gzacwk,GZACWK)(wkid);
+	_NhlLLErrCheckPrnt(NhlFATAL,func);
 
         Hlu_Wks_Flag = False;
         
@@ -5212,14 +5250,21 @@ void _NHLCALLF(gdawk,GDAWK)
 	int	*wkid;
 #endif
 {
+        char func[] = "GDAWK";
 #if DEBUG_NCGM
 	fprintf(stderr,"in hlu gdawk\n");
 #endif
-        if (! Hlu_Wks_Flag)
-                if (CheckAndNotify(*wkid,_NhlwkLLUDeactivate))
+        if (! Hlu_Wks_Flag) {
+                NhlBoolean notified;
+                if (CheckAndNotify(*wkid,_NhlwkLLUDeactivate,&notified)
+                        < NhlWARNING)
                         return;
+                else if (notified)
+                        return;
+        }
         
 	_NHLCALLF(gzdawk,GZDAWK)(wkid);
+	_NhlLLErrCheckPrnt(NhlFATAL,func);
         
         Hlu_Wks_Flag = False;
 
@@ -5249,17 +5294,24 @@ void _NHLCALLF(gclrwk,GCLRWK)
 	int	*wkid;
 #endif
 {
+        char func[] = "GDCLRWK";
         
 #if DEBUG_NCGM
 	fprintf(stderr,"in hlu gclrwk\n");
 #endif
         
 
-        if (! Hlu_Wks_Flag)
-                if (CheckAndNotify(*wkid,_NhlwkLLUClear))
+        if (! Hlu_Wks_Flag) {
+                NhlBoolean notified;
+                if (CheckAndNotify(*wkid,_NhlwkLLUClear,&notified)
+                        < NhlWARNING)
                         return;
+                else if (notified)
+                        return;
+        }
         
 	_NHLCALLF(gzclrwk,GZCLRWK)(wkid);
+	_NhlLLErrCheckPrnt(NhlFATAL,func);
         
         Hlu_Wks_Flag = False;
 
