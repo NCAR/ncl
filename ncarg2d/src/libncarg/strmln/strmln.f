@@ -1,5 +1,5 @@
 C
-C	$Id: strmln.f,v 1.7 1993-02-25 19:32:14 dbrown Exp $
+C	$Id: strmln.f,v 1.8 1993-02-26 23:11:22 dbrown Exp $
 C
       SUBROUTINE STRMLN (U,V,WORK,IMAX,IPTSX,JPTSY,NSET,IER)
 C
@@ -421,7 +421,7 @@ C Initialize the stream plotting routine and draw the streamlines
 C
       CALL STINIT(U,LU,V,LV,IDM,IDM,M,N,WORK,LW)
 C
-      CALL STREAM(U,V,WORK,IDM,IDM)
+      CALL STREAM(U,V,IDM,IDM,IDM,WORK)
 C
 C Fetch the error value into the output parameter, IER
 C

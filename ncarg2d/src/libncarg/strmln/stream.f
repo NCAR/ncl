@@ -1,19 +1,20 @@
 C
-C	$Id: stream.f,v 1.4 1993-02-25 19:32:11 dbrown Exp $
+C	$Id: stream.f,v 1.5 1993-02-26 23:11:19 dbrown Exp $
 C
-      SUBROUTINE STREAM (U,V,WRK,IAM,STUMSL)
+      SUBROUTINE STREAM (U,V,P,IAM,STUMSL,WRK)
 C
-      DIMENSION  U(IUD1,*), V(IVD1,*), WRK(*), IAM(*)
+      DIMENSION  U(IUD1,*), V(IVD1,*), P(IPD1,*), IAM(*), WRK(*)
 C
       EXTERNAL STUMSL
 C
 C Input parameters:
 C
 C U,V    - arrays containing vector field data
-C WRK    - workspace 
+C P      - 2-d scalar data array. (dummy - not implemented yet)
 C IAM    - An area map array, may be dummied if 'MSK' is zero
 C STUMSL - User modifiable masked drawing function; also may
 C          be dummied if 'MSK is zero
+C WRK    - workspace 
 C
 C ---------------------------------------------------------------------
 C
@@ -124,7 +125,7 @@ C
 C Check for valid area map and area group overflow if masking is enabled
 C
       IF (IMSK.GT.0) THEN
-         IF (IAM(7).GT.IPAGMX) THEN
+         IF (IAM(7).GT.IPGRCT) THEN
             CSTR(1:29)='STREAM - TOO MANY AREA GROUPS'
             CALL SETER (CSTR(1:29),1,2)
             STOP
