@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.35 1997-03-16 17:34:25 haley Exp $
+ *	$Id: Rules,v 1.36 1997-04-22 19:28:42 haley Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -32,7 +32,7 @@ Makefiles:: rule]
  *		not be used in an actual yMakefile.
  */
 #ifndef	InternalMakefileTarget
-#define InternalMakefileTarget\
+#define InternalMakefileTarget \
 ]\
 YmakeDependency(local-Makefile)\
 ]\
