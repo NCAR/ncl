@@ -59,7 +59,7 @@
 #include "translate.h"
 
 #ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/gcap.c,v 1.1.1.1 1990-12-11 13:34:20 clyne Exp $";
+static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/gcap.c,v 1.2 1990-12-11 14:03:56 clyne Exp $";
 #endif
 
 extern	FILE	*tty;
@@ -677,11 +677,6 @@ CGMC *c;
 	/*
 	 * 	Init translation values and the formating routines
 	 */
-	deviceWinCoord.llx = DEV_WIN_LL_X;
-	deviceWinCoord.lly = DEV_WIN_LL_Y;
-	deviceWinCoord.urx = DEV_WIN_UR_X;
-	deviceWinCoord.ury = DEV_WIN_UR_Y;
-
 	dev_extent.llx = LOWER_LEFT_X;
 	dev_extent.lly = LOWER_LEFT_Y;
 	dev_extent.ury = UPPER_RIGHT_Y;
@@ -870,6 +865,10 @@ CGMC *c;
 Ct_err	BegPicBody(c)
 CGMC *c;
 {
+	/*
+	 * map virtual coords to virtual virtual coords
+	 */
+	GetDevWin(&deviceWinCoord);
 
 	return (OK);
 }
@@ -904,6 +903,7 @@ CGMC *c;
 	 * Clear the display
 	 */
 	(void)buffer(ERASE, ERASE_SIZE);
+
 
 	/*
 	 * reset to default attributes

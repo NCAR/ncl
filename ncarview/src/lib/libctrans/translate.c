@@ -310,10 +310,10 @@ void	SetDevWin(llx, lly, urx, ury)
  *
  *	Return the current settings for the "Device Window" specification
  */
-CoordRect	GetDevWin()
+GetDevWin(dev_win_coord)
+	CoordRect	*dev_win_coord;
 {
-	return (deviceWinCoord);
-
+	*dev_win_coord = deviceWinCoord;
 }
 
 /*

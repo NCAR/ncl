@@ -33,7 +33,7 @@
  * rev 1.01 clyne 4/18/90	: expanded application programmer interace
  */
 #ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.1.1.1 1990-12-11 13:33:29 clyne Exp $";
+static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.2 1990-12-11 14:04:06 clyne Exp $";
 #endif
 
 
@@ -583,11 +583,15 @@ GraphicsMode(on)
 	if (! ctransIsInit || ! devices[currdev].usegcap)
 		return;
 
-	if (on)	/* put device in graphics mode	*/
-		(void) buffer(GRAPHIC_INIT, GRAPHIC_INIT_SIZE);
-	else {	/* put device in text mode	*/
+	if (on)	{	/* put device in graphics mode	*/
 		(void) buffer(GRAPHIC_INIT, GRAPHIC_INIT_SIZE);
 		(void) buffer(ERASE, ERASE_SIZE);
+	}
+	else {	/* put device in text mode	*/
+#ifdef	DEAD
+		(void) buffer(GRAPHIC_INIT, GRAPHIC_INIT_SIZE);
+		(void) buffer(ERASE, ERASE_SIZE);
+#endif
 		(void) buffer(TEXT_INIT, TEXT_INIT_SIZE);
 	}
 
