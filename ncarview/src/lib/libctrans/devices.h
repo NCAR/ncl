@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.h,v 1.17 1993-01-19 16:36:27 clyne Exp $
+ *	$Id: devices.h,v 1.18 1993-01-19 19:37:31 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -107,7 +107,7 @@ static	OptDescRec	raster_opts[] = {
 	{"compress", 0, NULL, "Do compress output image"},
 	{"landscape", 0, NULL, "Do landscape mode"},
 	{"rle", 0, NULL, "Do run length encode output (if supported)"},
-	{"dpi", 1, "75", "Dots per inch - (HPLJ only)"},
+	{"dpi", 1, "150", "Dots per inch - (HPPCL only)"},
 	{"direct", 0,NULL,"Do output direct encoded imagery (default indexed)"},
 	{"outfile", 1,"stdout","Write output to file 'arg0'"},
 	{NULL}
@@ -156,11 +156,12 @@ struct device{
 } devices[] = {
         {"gcap",GCAP_I,TRUE,TRUE,"", TRUE, gcap_opts}
         ,{"a60",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
-        ,{"hplj",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
+        ,{"hppcl",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
         ,{"xwd",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
         ,{"nrif",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
         ,{"hdf",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
         ,{"sgi",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
+        ,{"rgb",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
         ,{"sun",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
         ,{"avs",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
         ,{"parallax",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}

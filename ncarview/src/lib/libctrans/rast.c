@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.23 1993-01-19 16:36:29 clyne Exp $
+ *	$Id: rast.c,v 1.24 1993-01-19 19:37:33 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -193,7 +193,7 @@ get_resolution(dev_extent, opts, name)
 	 * hp laserjet. With the laserjet users specify resolution in terms
 	 * of dots per inch.  We assume a full size picture is 6 by 6 inches
 	 */
-	if (! strcmp(name, "hplj")) {
+	if (! strcmp(name, "hppcl")) {
 		dpi = atoi(opts.dpi);
 		width = 6 * dpi;
 		height = 6 * dpi;
