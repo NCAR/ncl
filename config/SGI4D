@@ -65,7 +65,8 @@ XTOOLLIB          = -lXt
 XMULIB            = -lXmu
 XAWLIB            = -lXaw
 HDFLIB            = -ldf
-NETCDFLIB         = -lnetcdf
+XDRLIB		  = -lsun
+NETCDFLIB         = -lnetcdf $(XDRLIB)
 
 
 GENERICPATH       = $(NCARG)/$(GENERICDIR)
