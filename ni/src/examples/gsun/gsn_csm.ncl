@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.180 2004-12-31 17:32:19 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.181 2004-12-31 19:04:16 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -8455,8 +8455,19 @@ begin
 ;
 ; Determine color of Y reference line(s).
 ;
-      if(isatt(res2,"gsnYRefLineColor"))
-        yref_line_color = res2@gsnYRefLineColor
+      set_yref_line_color = False
+      if(isatt(res2,"gsnYRefLineColors"))
+        yref_line_color = get_res_value(res2,"gsnYRefLineColors","foreground")
+        set_yref_line_color = True
+      else
+        if(isatt(res2,"gsnYRefLineColor"))
+          yref_line_color = get_res_value(res2,"gsnYRefLineColor","foreground")
+          set_yref_line_color = True
+        else
+          yref_line_color = "foreground"
+        end if
+      end if
+      if(set_yref_line_color) then
         if(.not.(dimsizes(yref_line_color).eq.nyref.or.\
                  dimsizes(yref_line_color).eq.1))
           print("gsn_csm_xy: Warning: you must specify either one Y reference line color")
@@ -8464,9 +8475,6 @@ begin
           print("Will use the foreground color.") 
           yref_line_color = "foreground"
         end if
-        delete(res2@gsnYRefLineColor)
-      else
-        yref_line_color = "foreground"  ; defaults to foreground color.
       end if
 ;
 ; Determine dash pattern of Y reference line(s).
