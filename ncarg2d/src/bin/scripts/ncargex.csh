@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.125 2001-10-10 02:23:58 haley Exp $
+#   $Id: ncargex.csh,v 1.126 2002-02-22 05:15:55 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -719,7 +719,7 @@ set list_cfnd = ($dashline_cfnd $field_cfnd $ngmisc_cfnd $spps_cfnd \
 set list_fpdc = ($gks_fpdc)
 set list_cpdc = ($gks_cpdc)
 
-set list_fps = (pgkex19 pgkex20 pgkex21 pgkex22 pgkex23)
+set list_fps = (pgkex19 pgkex20 pgkex21 pgkex22 pgkex23 wmex13 wmex14)
 set list_cps = (c_pgkex21)
 
 #****************************************#
