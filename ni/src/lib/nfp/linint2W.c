@@ -108,8 +108,8 @@ NhlErrorTypes linint1_W( void )
   nfi = nxi;
   nfo = nxo;
 
-  if(nxi <= 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: The rightmost dimensions of xi must be greater than 2");
+  if(nxi < 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: xi must have at least 2 elements");
     return(NhlFATAL);
   }
 
@@ -117,7 +117,7 @@ NhlErrorTypes linint1_W( void )
  * Check dimensions of fi.
  */
   if(dsizes_fi[ndims_fi-1] != nxi) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: The rightmost dimension of fi must be nxi, where nxi is the dimensions of xi");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: The rightmost dimension of fi must be nxi, where nxi is the length of xi");
     return(NhlFATAL);
   }
 /*
@@ -351,15 +351,15 @@ NhlErrorTypes linint2_W( void )
   nyo  = dsizes_yo[0];
   nfi  = nxi * nyi;
   nfo  = nxo * nyo;
-  if(nxi <= 2 || nyi <= 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: The rightmost dimensions of xi and yi must be greater than 2");
+  if(nxi < 2 || nyi < 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: xi and yi must both have at least two elements");
     return(NhlFATAL);
   }
 /*
  * Check dimensions of fi.
  */
   if(dsizes_fi[ndims_fi-2] != nyi || dsizes_fi[ndims_fi-1] != nxi) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: The rightmost dimensions of fi must be nyi x nxi, where nyi and nxi are the dimensions of yi and xi respectively");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: The rightmost dimensions of fi must be nyi x nxi, where nyi and nxi are the lengths of yi and xi respectively");
     return(NhlFATAL);
   }
 /*
@@ -598,19 +598,19 @@ NhlErrorTypes linint2_points_W( void )
   nxyo = dsizes_xo[0];
   nxi2 = nxi+2;
   if(dsizes_yo[0] != nxyo) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: The rightmost dimension of xo and yo must be the same");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: xo and yo must be the same length");
+    return(NhlFATAL);
+  }
+  if(nxi < 2 || nyi < 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: xi and yi must both have at least two elements");
     return(NhlFATAL);
   }
   nfi = nxi * nyi;
-  if(nxi <= 2 || nyi <= 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: The rightmost dimensions of xi and yi must be greater than 2");
-    return(NhlFATAL);
-  }
 /*
  * Check dimensions of fi.
  */
   if(dsizes_fi[ndims_fi-2] != nyi || dsizes_fi[ndims_fi-1] != nxi) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: The rightmost dimensions of fi must be nyi x nxi, where nyi and nxi are the dimensions of yi and xi respectively");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: The rightmost dimensions of fi must be nyi x nxi, where nyi and nxi are the lengths of yi and xi respectively");
     return(NhlFATAL);
   }
 /*
