@@ -1,5 +1,5 @@
 C
-C       $Id: stdraw.f,v 1.14 1997-01-14 20:45:18 dbrown Exp $
+C       $Id: stdraw.f,v 1.15 1999-03-04 20:45:55 dbrown Exp $
 C
       SUBROUTINE STDRAW  (U,V,UX,VY,IAM,STUMSL)
 C
@@ -381,8 +381,6 @@ C
          IF (IST .LT. 0) GO TO 50
          XND=CUFX(XUS)
          YND=CUFY(YUS)
-         XNS=XND
-         YNS=YND
          XN1=XND
          YN1=YND
          CALL HLUSTMPTA(XDA,YDA,XUS,YUS,XND,YND,DU,DV,TA,IST)
@@ -400,6 +398,8 @@ C
 C
       END IF
 C
+      XNS=XND
+      YNS=YND
       ICT=1
       IPC=1
       PX(IPC)=XUS
