@@ -1,5 +1,5 @@
 C
-C       $Id: vvex03.f,v 1.4 1995-06-14 13:57:18 haley Exp $
+C       $Id: vvex03.f,v 1.5 1995-11-30 18:19:11 dbrown Exp $
 C
       PROGRAM VVEX03
 C
@@ -528,21 +528,21 @@ C
             IST = -1
             RETURN
          END IF
-         XT = XCOORD(I)
-         YT = YCOORD(J)
+         XC = XCOORD(I)
+         YC = YCOORD(J)
 C
 C WXMN, WXMX, WYMN, and WYMX contain the minimum and maximum values of
 C the user coordinate space. The following test ensures that the 
 C coordinate values in the array are within the current boundaries
 C of the user space.
 C
-         IF (XT.LT.WXMN .OR. XT.GT.WXMX .OR. 
-     +        YT.LT.WYMN .OR. YT.GT.WYMX) THEN
+         IF (XC.LT.WXMN .OR. XC.GT.WXMX .OR. 
+     +        YC.LT.WYMN .OR. YC.GT.WYMX) THEN
             IST = -1
             RETURN
          END IF
-         XB=CUFX(XT)
-         YB=CUFY(YT)
+         XB=CUFX(XC)
+         YB=CUFY(YC)
          XE=XB+U*SXDC
          YE=YB+V*SYDC
 C
@@ -564,16 +564,16 @@ C Since XCOORD and YCOORD are actually single dimensional arrays,
 C convert the 2-d indexes supplied to VVUMXY into their 1-d equivalent 
 C to index into the coordinate arrays.
 C
-         XT = XCOORD(NXCT*(J-1)+I)
-         YT = YCOORD(NXCT*(J-1)+I)
+         XC = XCOORD(NXCT*(J-1)+I)
+         YC = YCOORD(NXCT*(J-1)+I)
 C
-         IF (XT.LT.WXMN .OR. XT.GT.WXMX .OR. 
-     +        YT.LT.WYMN .OR. YT.GT.WYMX) THEN
+         IF (XC.LT.WXMN .OR. XC.GT.WXMX .OR. 
+     +        YC.LT.WYMN .OR. YC.GT.WYMX) THEN
             IST = -1
             RETURN
          END IF
-         XB=CUFX(XT)
-         YB=CUFY(YT)
+         XB=CUFX(XC)
+         YB=CUFY(YC)
          XE=XB+U*SXDC
          YE=YB+V*SYDC
 C
@@ -598,24 +598,24 @@ C Since XCOORD and YCOORD are actually single dimensional arrays,
 C convert the 2-d indexes supplied to VVUMXY into their 1-d equivalent 
 C to index into the coordinate arrays.
 C
-         XT = XCOORD(NXCT*(J-1)+I)
-         YT = YCOORD(NXCT*(J-1)+I)
+         XC = XCOORD(NXCT*(J-1)+I)
+         YC = YCOORD(NXCT*(J-1)+I)
 C
 C The following code is adapted from the Ezmap projection code in 
 C VVMPXY. An iterative technique is used that handles most vectors 
 C arbitrarily close to the projection limb.
-C XT is longitude, YT is latitude.
+C XC is longitude, YC is latitude.
 C
 C Test for 90 degree latitude.
 C
-         IF (IFIX(ABS(YT)*PRCFAC+0.5).EQ.IPCTST) THEN
+         IF (IFIX(ABS(YC)*PRCFAC+0.5).EQ.IPCTST) THEN
             IST=-1
             RETURN
          END IF
 C
 C Project the starting value: bail out if outside the window
 C
-         CALL MAPTRN (YT,XT,XB,YB)
+         CALL MAPTRA (YC,XC,XB,YB)
          IF (XB .LT. WXMN .OR. XB .GT. WXMX .OR.
      +       YB .LT. WYMN .OR. YB .GT. WYMX) THEN
             IST=-5
@@ -633,7 +633,7 @@ C The incremental distance is proportional to a small fraction
 C of the vector magnitude
 C
          DUV=PVFRAC/UVM
-         CLT=COS(Y*PDTOR)
+         CLT=COS(YC*PDTOR)
 C
 C Project the incremental distance. If the positive difference doesn't
 C work, try the negative difference. If the difference results in a
@@ -642,9 +642,9 @@ C
          ICT=0
          SGN=1.0
  20      CONTINUE
-
-         CALL MAPTRN(YT+SGN*V*DUV,XT+SGN*U*DUV/CLT,XT,YT)
-
+C
+         CALL MAPTRA(YC+SGN*V*DUV,XC+SGN*U*DUV/CLT,XT,YT)
+C
          DV1=SQRT((XT-XB)*(XT-XB)+(YT-YB)*(YT-YB))
          IF (DV1 .GT. RLEN) THEN
             IF (SGN .EQ. -1.0) THEN
