@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.10 1993-03-25 17:16:44 clyne Exp $
+ *	$Id: commands.c,v 1.11 1994-03-05 00:36:59 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -63,7 +63,7 @@ extern	char	*localTmp;	/* a local tmp directory	*/
 /*
  * medCopy: copy 1 or more frames to a new location in the file buffer
  */
-medCopy(med_data)
+void	medCopy(med_data)
 	MedData	*med_data;
 {
 	CommandData	*c_data;
@@ -137,7 +137,7 @@ medCopy(med_data)
 /*
  * medDelete: delete 1 or more frames in the file buffer
  */
-medDelete(med_data)
+void	medDelete(med_data)
 	MedData	*med_data;
 {
 	CommandData	*c_data;
@@ -203,7 +203,7 @@ medDelete(med_data)
 /*
  * medEdit: edit a new file
  */
-medEdit(med_data)
+void	medEdit(med_data)
 	MedData	*med_data;
 {
 	CommandData	*c_data;
@@ -278,7 +278,7 @@ medEdit(med_data)
 /*
  * medLabel: give a name to 1 or more frames in the file buffer
  */
-medLabel(med_data)
+void	medLabel(med_data)
 	MedData	*med_data;
 {
 	CommandData	*c_data;
@@ -354,7 +354,7 @@ medLabel(med_data)
 /*
  * medHelp: give help on a command
  */
-medHelp(med_data)
+void	medHelp(med_data)
 	MedData	*med_data;
 {
 	CommandData	*c_data;
@@ -422,7 +422,7 @@ medHelp(med_data)
 /*
  * medMerge: merge two or more frames on top of each other in the buffer
  */
-medMerge(med_data)
+void	medMerge(med_data)
 	MedData	*med_data;
 {
 	CommandData	*c_data;
@@ -487,7 +487,7 @@ medMerge(med_data)
 /*
  * medMove: move 1 or more frames to a new location in the file buffer
  */
-medMove(med_data)
+void	medMove(med_data)
 	MedData	*med_data;
 {
 	CommandData	*c_data;
@@ -552,7 +552,7 @@ medMove(med_data)
 /*
  * medPrint: print contents of buffer at a given line
  */
-medPrint(med_data)
+void	medPrint(med_data)
 	MedData	*med_data;
 {
 	CommandData	*c_data;
@@ -621,7 +621,7 @@ medPrint(med_data)
 /*
  * medQuit: exit med
  */
-medQuit(med_data)
+void	medQuit(med_data)
 	MedData	*med_data;
 {
 	CommandData	*c_data;
@@ -661,7 +661,7 @@ medQuit(med_data)
 /*
  * medRead: read the contents of a metafile into the buffer
  */
-medRead(med_data)
+void	medRead(med_data)
 	MedData	*med_data;
 {
 	CommandData	*c_data;
@@ -743,7 +743,7 @@ medRead(med_data)
 /*
  * medWrite: write buffer contents to a file
  */
-medWrite(med_data)
+void	medWrite(med_data)
 	MedData	*med_data;
 {
 	CommandData	*c_data;
@@ -829,7 +829,7 @@ medWrite(med_data)
 /*
  * medAppend: append buffer contents to a file
  */
-medAppend(med_data)
+void	medAppend(med_data)
 	MedData	*med_data;
 {
 	CommandData	*c_data;
@@ -945,7 +945,7 @@ medAppend(med_data)
 /*
  * medSplit: split the file into pieces
  */
-medSplit(med_data)
+void	medSplit(med_data)
 	MedData	*med_data;
 {
 	CommandData	*c_data;
@@ -1037,7 +1037,7 @@ medSplit(med_data)
 /*
  * medShell: escape to the shell
  */
-medShell(med_data)
+void	medShell(med_data)
 	MedData	*med_data;
 {
 	CommandData	*c_data;

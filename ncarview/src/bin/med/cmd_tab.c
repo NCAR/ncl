@@ -1,5 +1,5 @@
 /*
- *	$Id: cmd_tab.c,v 1.3 1992-04-20 22:01:56 clyne Exp $
+ *	$Id: cmd_tab.c,v 1.4 1994-03-05 00:36:58 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -24,7 +24,7 @@
 #include	<stdio.h>
 #include	"med.h"
 
-int	medCopy(), medDelete(), medEdit(), medLabel(), medHelp(), medMerge(), 
+void	medCopy(), medDelete(), medEdit(), medLabel(), medHelp(), medMerge(), 
 	medMove(), medPrint(), medQuit(), medRead(), medWrite(), medAppend(),
 	medShell(), medSplit();
 

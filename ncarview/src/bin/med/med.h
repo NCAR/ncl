@@ -42,7 +42,7 @@ typedef	struct	{
 	char	*c_name;	/* the name of the command	*/
 	char    *c_help;        /* help string */
 	char    *c_usage;	/* usage string */
-	int     (*c_handler)(); /* function to call */
+	void     (*c_handler)(); /* function to call */
 }	Cmd;
 
 /*
