@@ -1,5 +1,5 @@
 /*
- *  $Id: c_coex02.c,v 1.5 1995-06-14 13:59:08 haley Exp $
+ *  $Id: c_coex02.c,v 1.6 1997-04-21 14:38:25 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -74,9 +74,9 @@ main()
       strcpy(tlab[2][3], "Dark Gray                " );
       strcpy(tlab[3][3], "Black                    " );
 
-	  gopen_gks ("stdout",0);
-	  gopen_ws (WKID, NULL, IWTYPE);
-	  gactivate_ws(WKID);
+      gopen_gks ("stdout",0);
+      gopen_ws (WKID, NULL, IWTYPE);
+      gactivate_ws(WKID);
 /*
  *  Use the Duplex character set of PLOTCHAR.
  */
@@ -84,10 +84,10 @@ main()
 /*
  *  Define color indices and RGB labels..
  */
-	  rgb2.rgb.red = rgb2.rgb.green = rgb2.rgb.blue = 0.;
-	  gset_colr_rep(WKID,0,&rgb2);
-	  rgb2.rgb.red = rgb2.rgb.green = rgb2.rgb.blue = 1.;
-	  gset_colr_rep(WKID,1,&rgb2);
+      rgb2.rgb.red = rgb2.rgb.green = rgb2.rgb.blue = 0.;
+      gset_colr_rep(WKID,0,&rgb2);
+      rgb2.rgb.red = rgb2.rgb.green = rgb2.rgb.blue = 1.;
+      gset_colr_rep(WKID,1,&rgb2);
       for( j = 0; j < NY; j++ ) {
           for( i = 0; i < NX; i++ ) {
               gset_colr_rep(WKID,NX*(j)+i+2,&rgb[i][j]);
@@ -111,9 +111,9 @@ main()
       c_pcseti("CD",1);
       c_plchhq(.5,.96,"Sixteen Sample Colors",.02,0.,0.);
       c_frame();
-	  gdeactivate_ws(WKID);
-	  gclose_ws(WKID);
-	  gclose_gks();
+      gdeactivate_ws(WKID);
+      gclose_ws(WKID);
+      gclose_gks();
 }
 
 drbox (x,y,szx,y0,szy,tlab,blab,indx)
@@ -157,7 +157,7 @@ int indx;
 /*
  *  if the color is black, draw a boundary.
  */
-    ginq_colr_rep(WKID,indx,0,&ier,&rgb);
+    ginq_colr_rep(WKID,indx,GINQ_SET,&ier,&rgb);
     fill_area.num_points = 5;
     if (rgb.rgb.red == 0. && rgb.rgb.green == 0. && rgb.rgb.blue == 0.) {
         gset_line_colr_ind(1);

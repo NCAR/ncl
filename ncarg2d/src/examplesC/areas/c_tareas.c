@@ -1,5 +1,5 @@
 /*
- *	$Id: c_tareas.c,v 1.3 1995-06-14 13:58:51 haley Exp $
+ *	$Id: c_tareas.c,v 1.4 1997-04-21 14:38:07 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -93,8 +93,8 @@ int *ierror;
 
     dtr = .017453292519943;
     ginq_asfs(&ie,&if1);
-    if1.fill_int_style=1;
-    if1.fill_style_ind=1;
+    if1.fill_int_style=GASF_INDIV;
+    if1.fill_style_ind=GASF_INDIV;
     gset_asfs(&if1);
     gset_fill_int_style(GSTYLE_SOLID);
     for( j = 0; j <= 15; j++ ) {

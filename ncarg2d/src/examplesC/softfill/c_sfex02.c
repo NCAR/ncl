@@ -1,5 +1,5 @@
 /*
- *	$Id: c_sfex02.c,v 1.3 1995-06-14 13:59:59 haley Exp $
+ *	$Id: c_sfex02.c,v 1.4 1997-04-21 14:38:37 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -25,6 +25,7 @@ main()
     int i, ity, ici, l;
     float xcn, ycn, x1, y1,x2,y2,rx,rx2;
     Gasfs ias;
+    extern void dfclrs();
 /*
  * Initialize the values in the aspect-source-flag array.
  */
@@ -139,7 +140,7 @@ main()
     gclose_gks();
 }
 
-dfclrs()
+void dfclrs()
 {
 /*
  * Define a set of RGB color triples for colors 1 through 15.
@@ -178,4 +179,5 @@ dfclrs()
         color.rgb.blue = rgbv[2][i];
         gset_colr_rep(WKID,i+1,&color);
     }
+    return;
 }

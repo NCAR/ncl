@@ -1,5 +1,5 @@
 /*
- *  $Id: c_epltch.c,v 1.3 1995-06-14 13:59:49 haley Exp $
+ *  $Id: c_epltch.c,v 1.4 1997-04-21 14:38:30 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -39,6 +39,7 @@ char  *rlbl[48] = { "A(01)", "B(02)", "C(03)", "D(04)", "E(05)", "F(06)",
 
 main()
 {
+    extern void drawbx();
 /*
  * Define arrays for column labels and row labels for the plots showing
  * the complex and duplex character sets.
@@ -625,9 +626,9 @@ main()
     rgb[0].rgb.red = 0.;  rgb[0].rgb.green = .5;  rgb[0].rgb.blue = .5;    
     rgb[1].rgb.red = .9;  rgb[1].rgb.green = .9;  rgb[1].rgb.blue = 0.;
     rgb[2].rgb.red = 1.;  rgb[2].rgb.green = .3;  rgb[2].rgb.blue = .3;    
-	rgb[3].rgb.red = 0.;  rgb[3].rgb.green = 0.;  rgb[3].rgb.blue = 1.;    
+    rgb[3].rgb.red = 0.;  rgb[3].rgb.green = 0.;  rgb[3].rgb.blue = 1.;    
     rgb[4].rgb.red = .2;  rgb[4].rgb.green = .2;  rgb[4].rgb.blue = .2;    
-	for( i = 0; i < 5; i++ ) gset_colr_rep(WKID,i+2,&rgb[i]);
+    for( i = 0; i < 5; i++ ) gset_colr_rep(WKID,i+2,&rgb[i]);
 /*
  * Write a line.
  */
@@ -770,7 +771,7 @@ main()
     gclose_gks();
 }
 
-drawbx(xcen,ycen,angd,xtra)
+void drawbx(xcen,ycen,angd,xtra)
 float xcen,ycen,angd,xtra;
 {
     float dstl, dstr, dstb, dstt;
@@ -799,4 +800,5 @@ float xcen,ycen,angd,xtra;
     c_plotif (xalt,yalt,1);
     c_plotif (xalb,yalb,1);
     c_plotif (0.,0.,2);
+    return;
 }

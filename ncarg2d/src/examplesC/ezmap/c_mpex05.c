@@ -1,5 +1,5 @@
 /*
- *  $Id: c_mpex05.c,v 1.2 1995-06-14 13:59:21 haley Exp $
+ *  $Id: c_mpex05.c,v 1.3 1997-04-21 14:38:28 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -35,7 +35,7 @@ main()
 /*
  * Turn off the clipping indicator.
  */
-    gset_clip_ind (0);
+    gset_clip_ind (GIND_NO_CLIP);
 /*
  * Set the outline-dataset parameter.
  */

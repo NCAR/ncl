@@ -1,5 +1,5 @@
 /*
- *	$Id: c_slex01.c,v 1.3 1995-06-14 13:59:56 haley Exp $
+ *    $Id: c_slex01.c,v 1.4 1997-04-21 14:38:33 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -44,6 +44,7 @@ char *cards[12] = {
 
 main()
 {
+    extern void exstl0();
 /*
  *  Open GKS.
  */
@@ -62,7 +63,7 @@ main()
     gclose_gks();
 }
 
-exstl0()
+void exstl0()
 {
 /*
  *  This subroutine provides a simple example of STITLE usage.
@@ -120,4 +121,5 @@ exstl0()
  */
     ncards = 12;
     c_stitle (cards,ncards,nyst,nyfin,tst,tmv,tfin,movie);
+    return;
 }

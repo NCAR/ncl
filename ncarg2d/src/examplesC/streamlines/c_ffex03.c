@@ -1,5 +1,5 @@
 /*
- *  $Id: c_ffex03.c,v 1.3 1995-06-14 14:00:06 haley Exp $
+ *  $Id: c_ffex03.c,v 1.4 1997-04-21 14:38:40 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -29,7 +29,7 @@ float u[NSIZE][MSIZE], v[NSIZE][MSIZE], p[NSIZE][MSIZE];
 
 main()
 {
-	int i, iclrix, nclv, idm;
+	int i, iclrix, nclv, idm=0;
 	float xdm;
     float p1[2],p2[2],p3[2],p4[2];
 /*
