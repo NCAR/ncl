@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.7 1994-04-05 19:21:43 fred Exp $
+C	$Id: gesc.f,v 1.8 1994-04-28 23:28:12 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -62,8 +62,9 @@ C      -1516  --  Scale factor for nominal linewidth.
 C      -1517  --  Background fills entire page.
 C      -1518  --  Line joins.
 C      -1519  --  Line caps.
-C      -1520  --  Coordinate points for picture positioning.
-C      -1521  --  Scale factor for PS coordintaes
+C      -1520  --  Miter limit.
+C      -1521  --  Coordinate points for picture positioning.
+C      -1522  --  Scale factor for PS coordintaes
 C
       IF (FCTID .EQ. -1396) THEN
 C
@@ -249,7 +250,9 @@ C  File name for output metafile.
 C
         GFNAME = ' '
         DO 250 I=1,LIDR
-          DO 260 J=1,80
+          JLIM = 80
+          IF (I .EQ. 4) JLIM = 16
+          DO 260 J=1,JLIM
             INDX = 80*(I-1)+J
             GFNAME(INDX:INDX) = IDR(I)(J:J)
   260     CONTINUE
@@ -282,18 +285,18 @@ C  for use with the next OPEN WORKSTATION.  This call can be made
 C  with no workstations open.
 C
         IF (FCTID .EQ. -1521) THEN
-          READ(IDR(1)( 6:10),520) CLLX
-          READ(IDR(1)(11:15),520) CLLY
-          READ(IDR(1)(16:20),520) CURX
-          READ(IDR(1)(21:25),520) CURY
-  520     FORMAT(I5)
+          READ(IDR(1)( 2:10),520) CLLX
+          READ(IDR(1)(12:20),520) CLLY
+          READ(IDR(1)(22:30),520) CURX
+          READ(IDR(1)(32:40),520) CURY
+  520     FORMAT(I9)
           RETURN
         ENDIF 
 C
-C  Scale factor.
+C  Coordinate scale factor for next PostScript workstation opened.
 C
         IF (FCTID .EQ. -1522) THEN
-          READ(IDR(1)(6:10),520) CPSCL
+          READ(IDR(1)(1:5),520) CPSCL
           RETURN
         ENDIF 
 C

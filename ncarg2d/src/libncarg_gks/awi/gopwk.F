@@ -152,13 +152,15 @@ C
         ENDIF
 C
 C  Set the file name for an MO workstation back to default; set the
-C  positioning coordinates back to defaults.
+C  positioning coordinates back to defaults; set the PostScript 
+C  coordinate scale factor back to the default.
 C
         GFNAME = 'DEFAULT'
         CLLX = -1
         CLLY = -1
         CURX = -1
         CURY = -1
+        CPSCL = -1
 C
 C  For an X window that does not currently exist, obtain the local 
 C  window ID for all future calls; for an X window that already exists
