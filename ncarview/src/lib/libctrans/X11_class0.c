@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.26 1993-01-19 15:00:20 haley Exp $
+ *	$Id: X11_class0.c,v 1.27 1993-01-26 19:21:00 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -570,6 +570,7 @@ CGMC *c;
 int	X11_EndMF(c)
 CGMC *c;
 {
+		
 
 	if (!deviceIsInit)
 		return(0);
@@ -586,6 +587,11 @@ CGMC *c;
 		free_colors();
 	}
 
+	/* 
+	 * hack to inform init_color that we no longer have a valid
+	 * window
+	 */
+	win = 0;	
 	XCloseDisplay(dpy);
 
 	deviceIsInit = FALSE;
