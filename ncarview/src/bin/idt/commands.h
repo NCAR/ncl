@@ -23,6 +23,7 @@
 #define	ZOOM_STRING		"zoom %s\n. plot\n"
 #define	UNZOOM_STRING		"zoom 0.0 0.0 1.0 1.0\n. plot\n"
 #define	PRINT_STRING		"spooler %s\n. Print\n"
+#define	NOOP_STRING		"Noop\n"
 
 #define	STOP_SIGNAL		SIGINT
 #endif

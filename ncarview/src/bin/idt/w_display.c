@@ -1,5 +1,5 @@
 /*
- *	$Id: w_display.c,v 1.19 1993-03-11 19:31:24 clyne Exp $
+ *	$Id: w_display.c,v 1.20 1993-04-23 20:43:26 clyne Exp $
  */
 /*
  *	w_display.c
@@ -531,6 +531,7 @@ static  void    Zoom(widget, client_data, call_data)
 	/*
 	 * get the new mapping
 	 */
+	(void) TalkTo(wd->id, NOOP_STRING, SYNC);
         if (ZoomCoords(
 		XtDisplay(widget), root, wd->ar, &llx,&lly,&urx,&ury) == NULL){
 
