@@ -1,0 +1,9 @@
+#
+#       $Id: yMakefile,v 1.1 1999-09-21 00:16:22 dbrown Exp $
+#
+FILES		= DIRECTORY.res ZonalAverage.res test_style.ncl
+
+PSPATH	= $(LIBNCARGPATH)/plot_styles/test
+INSTALL_PS = $(INSTALL_DB)
+
+InstallTarget($(FILES),$(INSTALL_PS),$(PSPATH))
