@@ -1,6 +1,6 @@
 
 
-      PROGRAM CTTD01
+      PROGRAM CTTD02
 C
 C Define the error file, the Fortran unit number, the workstation type,
 C and the workstation ID to be used in calls to GKS routines.
@@ -71,8 +71,8 @@ C
 C       PARAMETER (ICAP=0)  !  no color fill done
         PARAMETER (ICAP=1)  !  color fill done
 C
-        PARAMETER (IMSP=0)  !  mesh not drawn on frame
-C       PARAMETER (IMSP=1)  !  mesh drawn on frame
+C       PARAMETER (IMSP=0)  !  mesh not drawn on frame
+        PARAMETER (IMSP=1)  !  mesh drawn on frame
 C
 C       PARAMETER (ICOP=0)  !  contours not drawn on frame
         PARAMETER (ICOP=1)  !  contours drawn on frame
@@ -150,10 +150,11 @@ C mesh is created from a rectangular one by splitting each rectangular
 C cell in half, we can declare the largest values we expect to use for
 C the dimensions of that mesh:
 C
-C       PARAMETER (IDIM=181,JDIM=91,IDM1=IDIM-1,JDM1=JDIM-1)
-C       PARAMETER (IDIM=121,JDIM=61,IDM1=IDIM-1,JDM1=JDIM-1)
-        PARAMETER (IDIM= 81,JDIM=41,IDM1=IDIM-1,JDM1=JDIM-1)
-C       PARAMETER (IDIM= 41,JDIM=21,IDM1=IDIM-1,JDM1=JDIM-1)
+C       PARAMETER (IDIM=361,JDIM=181,IDM1=IDIM-1,JDM1=JDIM-1)
+C       PARAMETER (IDIM=181,JDIM= 91,IDM1=IDIM-1,JDM1=JDIM-1)
+C       PARAMETER (IDIM=121,JDIM= 61,IDM1=IDIM-1,JDM1=JDIM-1)
+        PARAMETER (IDIM= 81,JDIM= 41,IDM1=IDIM-1,JDM1=JDIM-1)
+C       PARAMETER (IDIM= 41,JDIM= 21,IDM1=IDIM-1,JDM1=JDIM-1)
 C
 C and then compute from those values the maximum number of points,
 C edges, and triangles that the triangular mesh arrays will need to
@@ -249,7 +250,7 @@ C ANG1 is a bearing angle, ANG2 is an elevation angle, and RMUL is a
 C multiplier of the length of the diagonal of the data box, specifying
 C the distance from the center of the box to the eye.
 C
-        DATA ANG1,ANG2,RMUL / -35.,55.,2.9 /
+        DATA ANG1,ANG2,RMUL / -175., 55.,2.9 /
 C
 C ISTE is a flag that says whether to do a simple image (ISTE=0),
 C a one-frame stereo image (ISTE=-1), or a two-frame stereo image
@@ -330,7 +331,7 @@ C
         PRINT * , ' '
         PRINT * , 'CREATING TRIANGULAR MESH:'
 C
-        CALL GTTD01 (RPNT,MPNT,NPNT,LOPN,            !  point list
+        CALL GTTD02 (RPNT,MPNT,NPNT,LOPN,            !  point list
      +               IEDG,MEDG,NEDG,LOEN,            !  edge list
      +               ITRI,MTRI,NTRI,LOTN,            !  triangle list
      +               IDIM,JDIM,XLAT,XLON,ZDAT,ISCR)  !  other arguments
@@ -380,7 +381,7 @@ C
 C
 C Deform the triangular mesh to fit on the surface of the ellipsoid,
 C further deform it to create a sort of distorted "dumbbell", and
-C and supply dummy data values.
+C then supply dummy data values.
 C
         CALL TDGDIN (-1.,1.,-1.,1.,-1.,1.,21,21)
 C
@@ -428,7 +429,8 @@ C
         CALL GSCR   (IWID, 0,1.,1.,1.)  !  white (background)
         CALL GSCR   (IWID, 1,0.,0.,0.)  !  black (foreground)
         CALL GSCR   (IWID, 2,1.,1.,0.)  !  yellow
-        CALL GSCR   (IWID, 3,1.,0.,1.)  !  magenta
+C       CALL GSCR   (IWID, 3,1.,0.,1.)  !  magenta
+        CALL GSCR   (IWID, 3,.5,1.,.5)  !  light green
         CALL GSCR   (IWID, 4,1.,0.,0.)  !  red
         CALL GSCR   (IWID, 5,0.,1.,1.)  !  cyan
         CALL GSCR   (IWID, 6,0.,1.,0.)  !  green
@@ -462,18 +464,18 @@ C special version of CTMXYZ).
 C
         CALL CTSETI ('MAP - MAPPING FLAG',2)
 C
-C Turn on the drawing of the mesh edge and set the area identifier for
-C areas outside the mesh.
+C Set the area identifier for cells associated with triangles that are
+C seen from "the back".
 C
-c       CALL CTSETI ('PAI - PARAMETER ARRAY INDEX',-1)
-c       CALL CTSETI ('CLU - CONTOUR LEVEL USE FLAG',1)
-c       CALL CTSETI ('AIA - AREA IDENTIFIER FOR AREA',-1)
+        CALL CTSETI ('PAI - PARAMETER ARRAY INDEX',-1)
+        CALL CTSETI ('AIA - AREA IDENTIFIER FOR AREA',1001)
 C
-C Set the area identifier for areas in "out-of-range" areas.
+C Set the area identifier for cells associated with no triangles of the
+C mesh.
 C
-c       CALL CTSETI ('PAI',-2)
-c       CALL CTSETI ('AIA - AREA IDENTIFIER FOR AREA',1002)
-c
+        CALL CTSETI ('PAI',-2)
+        CALL CTSETI ('AIA - AREA IDENTIFIER FOR AREA',1002)
+C
 C Set the 2D smoother flag.
 C
         CALL CTSETR ('T2D - TENSION ON 2D SPLINES',T2DS)
@@ -613,13 +615,6 @@ C
             GO TO 103
           END IF
 C
-C Set masks that will be used to determine what triangles to block.
-C
-C Set masks for 3-D| t t t t u u u u | toggle/use
-C triangle blocking| h e w u h e w u | hidden/edge-on/wrongside/user
-C
-        CALL CTTDBM (0,0,0,0,1,1,0,1)
-C
 C DRAW THE TRIANGULAR MESH, IF REQUESTED.
 C ---- --- ---------- ----- -- ----------
 C
@@ -666,6 +661,13 @@ C Draw the mesh, showing only the edges of unblocked triangles.
 C
           CALL PLOTIT (0,0,2)
           CALL GSPLCI (8)
+C
+C Set masks for 3-D  | t t t t u u u u | toggle/use
+C triangle blocking  | h e w u h e w u | hidden/edge-on/wrongside/user
+C
+          CALL CTTDBM (0,0,0,0,1,1,0,1)
+C
+C Draw the mesh.
 C
           CALL CTTDDM (RPNT,IEDG,ITRI,RWRK,IWRK,(1-IDIA)*6)
 C
@@ -745,6 +747,13 @@ C
             CALL PLOTIT (0,0,2)
             CALL GSPLCI (8)
 C
+C Set masks for 3-D    | t t t t u u u u | toggle/use
+C triangle blocking    | h e w u h e w u | hidden/edge-on/wrongside/user
+C
+            CALL CTTDBM (0,0,0,0,1,1,0,1)
+C
+C Draw the mesh.
+C
             CALL CTTDDM (RPNT,IEDG,ITRI,RWRK,IWRK,(1-IDIA)*6)
 C
             CALL PLOTIT (0,0,2)
@@ -788,6 +797,11 @@ C
             CALL GSPLCI (1)
 C
           END IF
+C
+C Set masks for 3-D  | t t t t u u u u | toggle/use
+C triangle blocking  | h e w u h e w u | hidden/edge-on/wrongside/user
+C
+          CALL CTTDBM (0,0,0,0,1,1,1,1)
 C
 C Proceed as implied by the setting of the label-positioning flag.
 C
@@ -939,6 +953,13 @@ C
             CALL PLOTIT (0,0,2)
             CALL GSPLCI (8)
 C
+C Set masks for 3-D    | t t t t u u u u | toggle/use
+C triangle blocking    | h e w u h e w u | hidden/edge-on/wrongside/user
+C
+            CALL CTTDBM (0,0,0,0,1,1,1,1)
+C
+C Draw the mesh.
+C
             CALL CTTDDM (RPNT,IEDG,ITRI,RWRK,IWRK,(1-IDIA)*6)
 C
             CALL PLOTIT (0,0,2)
@@ -1036,6 +1057,13 @@ C
             CALL PLOTIT (0,0,2)
             CALL GSPLCI (8)
 C
+C Set masks for 3-D    | t t t t u u u u | toggle/use
+C triangle blocking    | h e w u h e w u | hidden/edge-on/wrongside/user
+C
+            CALL CTTDBM (0,0,1,0,1,1,1,1)
+C
+C Draw the mesh.
+C
             CALL CTTDDM (RPNT,IEDG,ITRI,RWRK,IWRK,(1-IDIA)*6)
 C
             CALL PLOTIT (0,0,2)
@@ -1044,6 +1072,11 @@ C
           END IF
 C
           IF (ICOP.NE.0) THEN
+C
+C Set masks for 3-D    | t t t t u u u u | toggle/use
+C triangle blocking    | h e w u h e w u | hidden/edge-on/wrongside/user
+C
+            CALL CTTDBM (0,0,0,0,1,1,1,1)
 C
             IF (ABS(ILLP).EQ.1) THEN
 C
@@ -1286,7 +1319,7 @@ C
       END
 
 
-      SUBROUTINE GTTD01 (RPNT,MPNT,NPNT,LOPN,
+      SUBROUTINE GTTD02 (RPNT,MPNT,NPNT,LOPN,
      +                   IEDG,MEDG,NEDG,LOEN,
      +                   ITRI,MTRI,NTRI,LOTN,
      +                   IDIM,JDIM,XLAT,XLON,ZDAT,ISCR)
@@ -1313,7 +1346,7 @@ C
 C Declare external a routine to tell CTTMRG about points of overlap on
 C the lat/lon grid.
 C
-        EXTERNAL MITD01
+        EXTERNAL MITD02
 C
 C Define a constant used to convert from degrees to radians.
 C
@@ -1323,8 +1356,10 @@ C Zero the data arrays.
 C
         DO 102 I=1,IDIM
           DO 101 J=1,JDIM
-            XLAT(I,J)= -90.+(REAL(J-1)/REAL(JDIM-1))*180.
-            XLON(I,J)=-180.+(REAL(I-1)/REAL(IDIM-1))*360.
+C           XLAT(I,J)= -90.+(REAL(J-1)/REAL(JDIM-1))*180.
+            XLAT(I,J)= -80.+(REAL(J-1)/REAL(JDIM-1))*160.
+C           XLON(I,J)=-180.+(REAL(I-1)/REAL(IDIM-1))*360.
+            XLON(I,J)=-160.+(REAL(I-1)/REAL(IDIM-1))*320.
             ZDAT(I,J)=COS(3.*DTOR*XLAT(I,J))*COS(3.*DTOR*XLON(I,J))
   101     CONTINUE
   102   CONTINUE
@@ -1333,7 +1368,7 @@ C Call a general-purpose subroutine that accepts a rectangular grid
 C mapped onto the surface of the globe and returns a triangular mesh
 C equivalent to it.
 C
-        CALL CTTMRG (IDIM,JDIM,XLAT,XLON,ZDAT,ISCR,SVAL,MITD01,
+        CALL CTTMRG (IDIM,JDIM,XLAT,XLON,ZDAT,ISCR,SVAL,MITD02,
      +               RPNT,MPNT,NPNT,LOPN,
      +               IEDG,MEDG,NEDG,LOEN,
      +               ITRI,MTRI,NTRI,LOTN)
@@ -1345,7 +1380,7 @@ C
       END
 
 
-      SUBROUTINE MITD01 (IDIM,JDIM,IINI,JINI,IINO,JINO)
+      SUBROUTINE MITD02 (IDIM,JDIM,IINI,JINI,IINO,JINO)
 C
 C Given the dimensions, IDIM and JDIM, of a simple lat/lon grid on the
 C globe, and the indices, IINI and JINI, of a point on the grid, this
@@ -1355,19 +1390,8 @@ C that the first and last rows of the grid each map into a single point
 C (perhaps the south pole and the north pole, respectively) and that
 C the right and left edges of the grid lie on top of each other.
 C
-        IF (JINI.EQ.1) THEN          !  point in first row of grid
-          IINO=1
-          JINO=1
-        ELSE IF (JINI.EQ.JDIM) THEN  !  point in last row of grid
-          IINO=1
-          JINO=JDIM
-        ELSE IF (IINI.EQ.IDIM) THEN  !  point in last column of grid
-          IINO=1
-          JINO=JINI
-        ELSE                         !  all other points of the grid
-          IINO=IINI
-          JINO=JINI
-        END IF
+        IINO=IINI
+        JINO=JINI
 C
 C Done.
 C
