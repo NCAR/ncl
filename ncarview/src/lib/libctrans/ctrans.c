@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.38 1995-05-10 13:42:08 clyne Exp $
+ *	$Id: ctrans.c,v 1.39 1995-07-07 18:53:49 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -1140,20 +1140,8 @@ CtransRC	SetFont(fcap)
 	 */
 	if( devices[currdev].usefcap ) {
 
-		/*
-		 *	Init the font Cap stuff
-		 */
-		if(Init_Font(fcap) < 0) {
-			ESprintf(
-				E_UNKNOWN, "Can't initialize fontcap [ %s ]",
-				ErrGetMsg()
-			); 
-			elog(ErrGetMsg());
-			return (WARN);
-		}
-
-	/*	init the fontlist	*/
-	InitFontList();
+		/*	init the fontlist	*/
+		InitFontList(fcap);
 	}
 	return (OK);
 }

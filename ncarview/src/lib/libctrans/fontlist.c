@@ -1,5 +1,5 @@
 /*
- *	$Id: fontlist.c,v 1.12 1994-03-09 19:25:55 clyne Exp $
+ *	$Id: fontlist.c,v 1.13 1995-07-07 18:53:50 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -12,6 +12,7 @@
 ***********************************************************************/
 #include	<stdio.h>
 #include	<string.h>
+#include	<stdlib.h>
 #include	<errno.h>
 #include	<ncarg/c.h>
 #include	"default.h"
@@ -33,11 +34,21 @@
  */
 
 
+static	char *my_strdup(const char *s1)
+{
+	char	*s2;
+
+	s2 = malloc(strlen(s1) + 1);
+	if (! s2) return (NULL);
+
+	strcpy(s2, s1);
+}
+
 #define	MAXFONT		25	/* maximum number of fonts in the fontlist */	
-#define	MAX_F_NAME_LEN	40	/* max length of a font name		*/
 
 
-static	char	Fontlist[MAXFONT][MAX_F_NAME_LEN];
+static	char	*Fontlist[MAXFONT];
+static	boolean	DefaultFont = FALSE;
 
 extern	int	Init_Font();
 extern	char	msg[];
@@ -48,72 +59,51 @@ static	int	fontindex = -1;
  *
  *		intitialize the fontlist table
  */
-void	InitFontList()
+void	InitFontList(const char *default_font)
 {
 	int	i;
 
 	static	boolean	initialized = FALSE;
 
+	if (initialized) {
+		for (i=0; i<MAXFONT; i++) {
+			if (Fontlist[i]) free(Fontlist[i]);
+		}
+	}
+	DefaultFont = FALSE;
 
-	if (initialized) return; 
-	
-	(void) strncpy(Fontlist[0], "DEFAULT", MAX_F_NAME_LEN - 1);
-	(void) strncpy(
-		Fontlist[1], "HERSHEY:CARTOGRAPHIC_ROMAN", MAX_F_NAME_LEN - 1
-	);
-	(void) strncpy(
-		Fontlist[2], "HERSHEY:CARTOGRAPHIC_GREEK", MAX_F_NAME_LEN - 1
-	);
-	(void) strncpy(
-		Fontlist[3], "HERSHEY:SIMPLEX_ROMAN", MAX_F_NAME_LEN - 1
-	);
-	(void) strncpy(
-		Fontlist[4], "HERSHEY:SIMPLEX_GREEK", MAX_F_NAME_LEN - 1
-	);
-	(void) strncpy(
-		Fontlist[5], "HERSHEY:SIMPLEX_SCRIPT", MAX_F_NAME_LEN - 1
-	);
-	(void) strncpy(
-		Fontlist[6], "HERSHEY:COMPLEX_ROMAN", MAX_F_NAME_LEN - 1
-	);
-	(void) strncpy(
-		Fontlist[7], "HERSHEY:COMPLEX_GREEK", MAX_F_NAME_LEN - 1
-	);
-	(void) strncpy(
-		Fontlist[8], "HERSHEY:COMPLEX_SCRIPT", MAX_F_NAME_LEN - 1
-	);
-	(void) strncpy(
-		Fontlist[9], "HERSHEY:COMPLEX_ITALIC", MAX_F_NAME_LEN - 1
-	);
-	(void) strncpy(
-		Fontlist[10], "HERSHEY:COMPLEX_CYRILLIC", MAX_F_NAME_LEN - 1
-	);
-	(void) strncpy(
-		Fontlist[11], "HERSHEY:DUPLEX_ROMAN", MAX_F_NAME_LEN - 1
-	);
-	(void) strncpy(
-		Fontlist[12], "HERSHEY:TRIPLEX_ROMAN", MAX_F_NAME_LEN - 1
-	);
-	(void) strncpy(
-		Fontlist[13], "HERSHEY:TRIPLEX_ITALIC", MAX_F_NAME_LEN - 1
-	);
-	(void) strncpy(
-		Fontlist[14], "HERSHEY:GOTHIC_GERMAN", MAX_F_NAME_LEN - 1
-	);
-	(void) strncpy(
-		Fontlist[15], "HERSHEY:GOTHIC_ENGLISH", MAX_F_NAME_LEN - 1
-	);
-	(void) strncpy(
-		Fontlist[16], "HERSHEY:GOTHIC_ITALIAN", MAX_F_NAME_LEN - 1
-	);
-	(void) strncpy(
-		Fontlist[17], "HERSHEY:MATH_SYMBOLS", MAX_F_NAME_LEN - 1
-	);
-	(void) strncpy(Fontlist[18], "HERSHEY:SYMBOL_SET1", MAX_F_NAME_LEN - 1);
-	(void) strncpy(Fontlist[19], "HERSHEY:SYMBOL_SET2", MAX_F_NAME_LEN - 1);
+	i = 0;
+	if (default_font) {
+		Fontlist[i++] = my_strdup(default_font);
+		DefaultFont = TRUE;
+	}
+	else {
+		Fontlist[i++] = my_strdup("DEFAULT");
+	}
 
-	for(i=20; i<MAXFONT; i++) {
-		Fontlist[i][0] = '\0';
+
+	Fontlist[i++] = my_strdup("HERSHEY:CARTOGRAPHIC_ROMAN");
+	Fontlist[i++] = my_strdup("HERSHEY:CARTOGRAPHIC_GREEK");
+	Fontlist[i++] = my_strdup("HERSHEY:SIMPLEX_ROMAN");
+	Fontlist[i++] = my_strdup("HERSHEY:SIMPLEX_GREEK");
+	Fontlist[i++] = my_strdup("HERSHEY:SIMPLEX_SCRIPT");
+	Fontlist[i++] = my_strdup("HERSHEY:COMPLEX_ROMAN");
+	Fontlist[i++] = my_strdup("HERSHEY:COMPLEX_GREEK");
+	Fontlist[i++] = my_strdup("HERSHEY:COMPLEX_SCRIPT");
+	Fontlist[i++] = my_strdup("HERSHEY:COMPLEX_ITALIC");
+	Fontlist[i++] = my_strdup("HERSHEY:COMPLEX_CYRILLIC");
+	Fontlist[i++] = my_strdup("HERSHEY:DUPLEX_ROMAN");
+	Fontlist[i++] = my_strdup("HERSHEY:TRIPLEX_ROMAN");
+	Fontlist[i++] = my_strdup("HERSHEY:TRIPLEX_ITALIC");
+	Fontlist[i++] = my_strdup("HERSHEY:GOTHIC_GERMAN");
+	Fontlist[i++] = my_strdup("HERSHEY:GOTHIC_ENGLISH");
+	Fontlist[i++] = my_strdup("HERSHEY:GOTHIC_ITALIAN");
+	Fontlist[i++] = my_strdup("HERSHEY:MATH_SYMBOLS");
+	Fontlist[i++] = my_strdup("HERSHEY:SYMBOL_SET1");
+	Fontlist[i++] = my_strdup("HERSHEY:SYMBOL_SET2");
+
+	for(; i<MAXFONT; i++) {
+		Fontlist[i] = NULL;
 	}
 
 	initialized = TRUE;
@@ -147,7 +137,12 @@ CGMC *c;
 
 	/* copy fontlist to the table	*/
 	for (i=0; i < c->Snum; i++) {
-		(void) strncpy(Fontlist[i],c->s->string[i], MAX_F_NAME_LEN - 1);
+		if (! (i==0 && DefaultFont)) {
+
+			if (Fontlist[i]) free(Fontlist[i]);
+			Fontlist[i++] = my_strdup(c->s->string[i]);
+		}
+
 	}
 	return(status);
 }
@@ -167,7 +162,7 @@ int	setFont(font_index)
 
 	font = Fontlist[font_index - 1];
 
-	if (! *font) {
+	if (! font) {
 		ESprintf(E_UNKNOWN, "Invalid font index(%d)", font_index);;
 		return(-1);
 	}
