@@ -1,5 +1,5 @@
 /*
- *	$Id: c_wmgetc.c,v 1.1 1997-04-11 17:45:25 haley Exp $
+ *	$Id: c_wmgetc.c,v 1.2 1997-12-19 22:22:36 haley Exp $
  */
 #include <ncarg/ncargC.h>
 
@@ -39,11 +39,11 @@ void c_wmgetc
     len1 = NGSTRLEN(cnp);
     cvp2 = NGCstrToFstr(cvp,len);
     cnp2 = NGCstrToFstr(cnp,len1);
-    NGCALLF(wmgetc,WMGETC)(cnp2,cvp2,len1,len);
+    NGCALLF(wmgetc,WMGETC)(cnp2,cvp2,len1,len-1);
 
     cvp = NGFstrToCstr(cvp2);
-    cvp[len] = '\0';
-    for( i = len-1; i >= 0; i-- ) {
+    cvp[len-1] = '\0';
+    for( i = len-2; i >= 0; i-- ) {
         if( cvp[i] != ' ' && cvp[i] != '\0' ) {
             cvp[i+1] = '\0';
             break;

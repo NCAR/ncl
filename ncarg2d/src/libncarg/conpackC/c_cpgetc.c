@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpgetc.c,v 1.1 1997-04-11 17:41:03 haley Exp $
+ *	$Id: c_cpgetc.c,v 1.2 1997-12-19 22:19:28 haley Exp $
  */
 #include <ncarg/ncargC.h>
 
@@ -39,11 +39,11 @@ void c_cpgetc
     len1 = NGSTRLEN(whch);
     cval2 = NGCstrToFstr(cval,len);
     whch2 = NGCstrToFstr(whch,len1);
-    NGCALLF(cpgetc,CPGETC)(whch2,cval2,len1,len);
+    NGCALLF(cpgetc,CPGETC)(whch2,cval2,len1,len-1);
 
     cval = NGFstrToCstr(cval2);
-    cval[len] = '\0';
-    for( i = len-1; i >= 0; i-- ) {
+    cval[len-1] = '\0';
+    for( i = len-2; i >= 0; i-- ) {
         if( cval[i] != ' ' && cval[i] != '\0' ) {
             cval[i+1] = '\0';
             break;

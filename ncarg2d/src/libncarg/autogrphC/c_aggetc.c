@@ -1,5 +1,5 @@
 /*
- *	$Id: c_aggetc.c,v 1.1 1997-04-11 17:40:33 haley Exp $
+ *	$Id: c_aggetc.c,v 1.2 1997-12-19 22:18:46 haley Exp $
  */
 #include <ncarg/ncargC.h>
 
@@ -40,11 +40,11 @@ void c_aggetc
     len1 = NGSTRLEN(tpid);
     cusr2 = NGCstrToFstr(cusr,len);
     tpid2 = NGCstrToFstr(tpid,len1);
-    NGCALLF(aggetc,AGGETC)(tpid2,cusr2,len1,len);
+    NGCALLF(aggetc,AGGETC)(tpid2,cusr2,len1,len-1);
 
     cusr = NGFstrToCstr(cusr2);
-    cusr[len] = '\0';
-    for( i = len-1; i >= 0; i-- ) {
+    cusr[len-1] = '\0';
+    for( i = len-2; i >= 0; i-- ) {
         if( cusr[i] != ' ' && cusr[i] != '\0' ) {
             cusr[i+1] = '\0';
             break;

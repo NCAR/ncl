@@ -1,5 +1,5 @@
 /*
- *	$Id: c_dpgetc.c,v 1.1 1997-04-11 17:41:42 haley Exp $
+ *	$Id: c_dpgetc.c,v 1.2 1997-12-19 22:20:10 haley Exp $
  */
 #include <ncarg/ncargC.h>
 
@@ -39,11 +39,11 @@ void c_dpgetc
     len1 = NGSTRLEN(pnam);
     cval2 = NGCstrToFstr(cval,len);
     pnam2 = NGCstrToFstr(pnam,len1);
-    NGCALLF(dpgetc,DPGETC)(pnam2,cval2,len1,len);
+    NGCALLF(dpgetc,DPGETC)(pnam2,cval2,len1,len-1);
 
     cval = NGFstrToCstr(cval2);
-    cval[len] = '\0';
-    for( i = len-1; i >= 0; i-- ) {
+    cval[len-1] = '\0';
+    for( i = len-2; i >= 0; i-- ) {
         if( cval[i] != ' ' && cval[i] != '\0' ) {
             cval[i+1] = '\0';
             break;

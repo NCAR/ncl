@@ -1,5 +1,5 @@
 /*
- *	$Id: c_vvgetc.c,v 1.1 1997-04-11 17:45:16 haley Exp $
+ *	$Id: c_vvgetc.c,v 1.2 1997-12-19 22:22:32 haley Exp $
  */
 #include <ncarg/ncargC.h>
 
@@ -40,10 +40,10 @@ void c_vvgetc
     len1 = NGSTRLEN(whch);
     whch2 = NGCstrToFstr(whch,len1);
     cval2 = NGCstrToFstr(cval,len);
-    NGCALLF(vvgetc,VVGETC)(whch2,cval2,len1,len);
+    NGCALLF(vvgetc,VVGETC)(whch2,cval2,len1,len-1);
     cval = NGFstrToCstr(cval2);
-    cval[len] = '\0';
-    for( i = len-1; i >= 0; i-- ) {
+    cval[len-1] = '\0';
+    for( i = len-2; i >= 0; i-- ) {
         if( cval[i] != ' ' && cval[i] != '\0' ) {
             cval[i+1] = '\0';
             break;
