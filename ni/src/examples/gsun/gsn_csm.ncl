@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.151 2004-01-02 17:33:50 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.152 2004-01-15 17:31:30 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -47,13 +47,10 @@ undef("get_csm_long_name_units_string")
 undef("check_for_subtitles")
 undef("set_right_subtitle")
 undef("set_left_subtitle")
-undef("set_xaxis_string")
-undef("set_yaxis_string")
+undef("set_axis_string")
 undef("set_subtitles_res")
-undef("is_valid_xcoord")
-undef("is_valid_ycoord")
-undef("is_valid_lat2d_attr")
-undef("is_valid_lon2d_attr")
+undef("is_valid_coord")
+undef("is_valid_latlon2d_attr")
 undef("check_for_coord_arrays")
 undef("check_class_name")
 undef("get_allowed_latnames")
@@ -764,8 +761,8 @@ begin
 ;
 ; If gsnLeftString hasn't been set, then use one of several valid "long
 ; names" if they exist. Also have to delete the attribute used so it
-; doesn't get used in the title by gsn_code.ncl. But, be careful here because
-; you don't want to remove the attribute from the actual data. 
+; doesn't get used in the title by gsn_code.ncl. But, be careful here
+; because you don't want to remove the attribute from the actual data. 
 ; Before calling this routine, you should be using a copy of your
 ; data.
 ;
@@ -792,154 +789,107 @@ begin
 end
 
 ;***********************************************************************;
-; Function : is_valid_xcoord                                            ;
+; Function : is_valid_coord                                             ;
 ;                                                                       ;
-; Checks if the X coordinate variable exist and if it is 1-dimensional. ; 
+; Checks if the X or Y coordinate variable exist and if it is           ;
+; 1-dimensional.                                                       ; 
 ;                                                                       ;
 ;***********************************************************************;
-function is_valid_xcoord(data:numeric)
-local dims1
+function is_valid_coord(data:numeric,axis:string)
+local dims
 begin
-  if(isdimnamed(data,1).and.iscoord(data,data!1))
-    dims1 = dimsizes(dimsizes(data&$data!1$))
-    if(dims1.eq.1) then
-      return(True)
-    else
-      return(False)
+  dims = -1
+  if(axis.eq."x") then
+    if(isdimnamed(data,1).and.iscoord(data,data!1))
+      dims = dimsizes(dimsizes(data&$data!1$))
     end if
+  else
+    if(isdimnamed(data,0).and.iscoord(data,data!0))
+      dims = dimsizes(dimsizes(data&$data!0$))
+    end if
+  end if
+  if(dims.eq.1) then
+    return(True)
   else
     return(False)
   end if
 end
 
 ;***********************************************************************;
-; Function : is_valid_ycoord                                            ;
+; Function : is_valid_latlon2d_attr                                     ;
 ;                                                                       ;
-; Checks if the Y coordinate variable exist and if it is 1-dimensional. ; 
+; Checks for a valid lon2d or lat2d attribute. This special attribute is;
+; used by the gsn_csm* scripts for cases where the data is represented  ;
+; by 2D  lat/lon arrays, instead of 1D coordinate arrays.               ;
 ;                                                                       ;
-;***********************************************************************;
-function is_valid_ycoord(data:numeric)
-local dims0
-begin
-  if(isdimnamed(data,0).and.iscoord(data,data!0))
-    dims0 = dimsizes(dimsizes(data&$data!0$))
-    if(dims0.eq.1) then
-      return(True)
-    else
-      return(False)
-    end if
-  else
-    return(False)
-  end if
-end
-
-;***********************************************************************;
-; Function : is_valid_lat2d_attr                                        ;
-;                                                                       ;
-; Checks for a valid lat2d attribute. This special attribute is used by ;
-; the gsn_csm* scripts for cases where the data is represented by 2D    ;
-; lat/lon arrays, instead of 1D coordinate arrays.                      ;
-;                                                                       ;
-; The lat2d array can be one element larger in both dimensions. This    ;
-; can mean that we are dealing with cell boundaries instead of cell     ;
+; The lat2d/lon2d arrays can be one element larger in both dimensions.  ;
+; This can mean that we are dealing with cell boundaries instead of cell;
 ; centers.                                                              ;
 ;***********************************************************************;
-function is_valid_lat2d_attr(data:numeric)
-local lat_dims, data_dims
+function is_valid_latlon2d_attr(data:numeric,lstring:string)
+local ldims, data_dims
 begin
-  if(isatt(data,"lat2d")) then
-    lat_dims  = dimsizes(data@lat2d)
+  if(isatt(data,lstring)) then
+    ldims     = dimsizes(data@$lstring$)
     data_dims = dimsizes(data)
-    if(all(lat_dims.eq.data_dims).or.all(lat_dims.eq.(data_dims+1))) then
+    if(all(ldims.eq.data_dims).or.all(ldims.eq.(data_dims+1))) then
       return(True)
     else
-      print("is_valid_lat2d_attr: Warning: The 'lat2d' attribute must either be the same dimension sizes as the data, or one element larger in both directions.  Your data will most likely not be overlaid on the map correctly.")
+      print("is_valid_latlon2d_attr: Warning: The '" + lstring + "' attribute must either be the same dimension sizes as the data, or one element larger in both directions.  Your data will most likely not be overlaid on the map correctly.")
     end if
   end if
   return(False)
 end 
 
-;***********************************************************************;
-; Function : is_valid_lon2d_attr                                        ;
-;                                                                       ;
-; Checks for a valid lon2d attribute. This special attribute is used by ;
-; the gsn_csm* scripts for cases where the data is represented by 2D    ;
-; lat/lon arrays, instead of 1D coordinate arrays.                      ;
-;                                                                       ;
-; The lon2d array can be one element larger in both dimensions. This    ;
-; can mean that we are dealing with cell boundaries instead of cell     ;
-; centers.                                                              ;
-;***********************************************************************;
-function is_valid_lon2d_attr(data:numeric)
-local lon_dims, data_dims
-begin
-  if(isatt(data,"lon2d")) then
-    lon_dims  = dimsizes(data@lon2d)
-    data_dims = dimsizes(data)
-    if(all(lon_dims.eq.data_dims).or.all(lon_dims.eq.(data_dims+1))) then
-      return(True)
-    else
-      print("is_valid_lon2d_attr: Warning: The 'lon2d' attribute must either be the same dimension sizes as the data, or one element larger in both directions.  Your data will most likely not be overlaid on the map correctly.")
-    end if
-  end if
-  return(False)
-end 
 
 ;***********************************************************************;
-; Procedure : set_xaxis_string                                          ;
+; Procedure : set_axis_string                                           ;
 ;                 res: logical                                          ;
 ;                data: numeric                                          ;
+;                axis: string                                           ;
 ;                                                                       ;
-; This procedure sets the tiXAxisString resource depending on current   ;
-; resource and/or attribute settings.                                   ;
+; This procedure sets the tiXAxisString or tiYAxisString resource       ;
+; depending on current resource and/or attribute settings.              ;
 ;***********************************************************************;
-procedure set_xaxis_string(plot:graphic,res:logical,data:numeric)
-begin
-  tires = get_res_eq(res,(/"ti"/))  ; Get tickmark resources
-  is_xyplot = get_res_value_keep(res,"gsnXYPlot", False)
-;
-; If the X axis tickmarks are being labeled explicitly by the user, 
-; then don't put a label on the X axis.
-;
-  if(check_attr(res,"tmXBMode","Explicit",True))
-    set_attr(tires,"tiXAxisString","")
-  else
-    if(.not.is_xyplot.and.is_valid_xcoord(data)) then
-      xaxis_string = get_csm_long_name_units_string(data&$data!1$)
-      if(.not.ismissing(xaxis_string)) then
-        set_attr(tires,"tiXAxisString",xaxis_string)
-      end if
-    end if
-  end if
-
-  attsetvalues_check(plot,tires)
-  return
-end
-
-;***********************************************************************;
-; Procedure : set_yaxis_string                                          ;
-;                 res: logical                                          ;
-;                data: numeric                                          ;
-;                                                                       ;
-; This procedure sets the tiYAxisString resource depending on current   ;
-; resource and/or attribute settings.                                   ;
-;***********************************************************************;
-procedure set_yaxis_string(plot:graphic,res:logical,data:numeric)
+procedure set_axis_string(plot:graphic,res:logical,data:numeric,axis:string)
 local title, tires, is_xyplot
 begin
+
   tires = get_res_eq(res,(/"ti"/))  ; Get tickmark resources
   is_xyplot = get_res_value_keep(res,"gsnXYPlot", False)
-;
-; If the Y axis tickmarks are being labeled explicitly by the user, 
-; then don't put a label on the Y axis.
-;
-  if(check_attr(res,"tmYLMode","Explicit",True))
-    set_attr(tires,"tiYAxisString","")
+
+  valid_coord = is_valid_coord(data,axis)
+  if(axis.eq."y") then
+    mode_res = "tmYLMode"
+    axis_res = "tiYAxisString"
+    if(valid_coord) then
+      coord_var = data&$data!0$
+    end if
   else
-    if(.not.is_xyplot.and.is_valid_ycoord(data)) then
-      yaxis_string = get_csm_long_name_units_string(data&$data!0$)
-      if(.not.ismissing(yaxis_string)) then
-        set_attr(tires,"tiYAxisString",yaxis_string)
+    mode_res = "tmXBMode"
+    axis_res = "tiXAxisString"
+    if(valid_coord) then
+      coord_var = data&$data!1$
+    end if
+  end if
+;
+; If the axis tickmarks are being labeled explicitly by the user, 
+; then don't put a label on that axis.
+;
+  if(check_attr(res,mode_res,"Explicit",True))
+    set_attr(tires,axis_res,"")
+  else
+    if(.not.is_xyplot) then
+      if(valid_coord) then
+        axis_string = get_csm_long_name_units_string(coord_var)
+        if(.not.ismissing(axis_string)) then
+          set_attr(tires,axis_res,axis_string)
+        end if
+      end if
+    else    
+      axis_string = get_csm_long_name_units_string(data)
+      if(.not.ismissing(axis_string)) then
+        set_attr(tires,axis_res,axis_string)
       end if
     end if
   end if
@@ -1026,10 +976,11 @@ begin
 ;
   if(.not.((isatt(res,xstart_name).and.isatt(res,xend_name)).or.\
             isatt(res,xarray_name))) then
-    if(any(type.eq.valid_2dcoord_types).and.is_valid_lon2d_attr(data)) then
+    if(any(type.eq.valid_2dcoord_types).and. \
+       is_valid_latlon2d_attr(data,"lon2d")) then
       res@$xarray_name$ = data@lon2d
     else 
-      if(is_valid_xcoord(data)) then
+      if(is_valid_coord(data,"x")) then
         res@$xarray_name$ = data&$data!1$
       end if
     end if
@@ -1042,10 +993,11 @@ begin
 ;
   if(.not.((isatt(res,ystart_name).and.isatt(res,yend_name)).or.\
             isatt(res,yarray_name))) then
-    if(any(type.eq.valid_2dcoord_types).and.is_valid_lat2d_attr(data)) then
+    if(any(type.eq.valid_2dcoord_types).and. \
+       is_valid_latlon2d_attr(data,"lat2d")) then
       res@$yarray_name$ = data@lat2d
     else
-      if(is_valid_ycoord(data)) then
+      if(is_valid_coord(data,"y")) then
         res@$yarray_name$ = data&$data!0$
      end if
     end if
@@ -1214,7 +1166,7 @@ begin
   end if
 
   if(axis.eq."x") then
-    if(is_valid_xcoord(data)) then
+    if(is_valid_coord(data,"x")) then
       if(latorlon.eq."lat") then
         if(isatt(data&$data!1$,"units").and. \
            any(data&$data!1$@units.eq.get_allowed_lat_units)) then
@@ -1234,7 +1186,7 @@ begin
 ; We are dealing with the Y axis.
 ;
   else
-    if(is_valid_ycoord(data)) then
+    if(is_valid_coord(data,"y")) then
       if(latorlon.eq."lat") then
         if(isatt(data&$data!0$,"units").and.\
           any(data&$data!0$@units.eq.get_allowed_lat_units)) then
@@ -1401,7 +1353,8 @@ begin
 ;
   if(.not.((isatt(res,start_name).and.isatt(res,end_name)).or.\
             isatt(res,array_name))) then
-    if(any(type.eq.valid_2dcoord_types).and.is_valid_lat2d_attr(data)) then
+    if(any(type.eq.valid_2dcoord_types).and. \
+       is_valid_latlon2d_attr(data,"lat2d")) then
       res@$array_name$ = data@lat2d
       return
     else 
@@ -1472,7 +1425,8 @@ begin
 ;
   if(.not.((isatt(res,start_name).and.isatt(res,end_name)).or. \
             isatt(res,array_name))) then
-    if(any(type.eq.valid_2dcoord_types).and.is_valid_lat2d_attr(data)) then
+    if(any(type.eq.valid_2dcoord_types).and. \
+       is_valid_latlon2d_attr(data,"lat2d")) then
       res@$array_name$ = data@lat2d
       return
     else 
@@ -1544,7 +1498,8 @@ begin
 ;
   if(.not.((isatt(res,start_name).and.isatt(res,end_name)).or.\
             isatt(res,array_name))) then
-    if(any(type.eq.valid_2dcoord_types).and.is_valid_lon2d_attr(data)) then
+    if(any(type.eq.valid_2dcoord_types).and. \
+       is_valid_latlon2d_attr(data,"lon2d")) then
       res@$array_name$ = data@lon2d
       return
     else 
@@ -2890,7 +2845,9 @@ begin
 ;
 ; Only set a X axis label if it is not a lon axis.
 ;
-      set_xaxis_string(plot,res,data)
+      if((is_xyplot.and.is_xaxis).or..not.is_xyplot) then
+        set_axis_string(plot,res,data,"x")
+      end if
     end if
   end if
 
@@ -2910,7 +2867,9 @@ begin
 ;
 ; Only set a Y axis label if it is not a lat axis.
 ;
-    set_yaxis_string(plot,res,data)
+    if((is_xyplot.and.is_yaxis).or..not.is_xyplot) then
+      set_axis_string(plot,res,data,"y")
+    end if
   end if
 end
 
@@ -9115,7 +9074,7 @@ begin
 
 ; Use coordinate variable for X if it exists.
 
-    if(is_valid_xcoord(data).and..not.(isatt(res2,"sfXCStartV").and. \
+    if(is_valid_coord(data,"x").and..not.(isatt(res2,"sfXCStartV").and. \
        isatt(res2,"sfXCEndV")))
       set_attr(res2,"sfXArray",data&$data!1$)
     end if
@@ -9322,7 +9281,7 @@ begin
     lat_spacing  = get_res_value(res2,"gsnMajorLatSpacing",0)
     mlat_spacing = get_res_value(res2,"gsnMinorLatSpacing",0)
 
-    if(is_valid_ycoord(data))
+    if(is_valid_coord(data,"y"))
       title = get_csm_long_name_units_string(data&$data!0$)
       if(.not.ismissing(title)) then
         set_attr(res2,"tiYAxisString",title)
@@ -9332,7 +9291,7 @@ begin
 ;
 ; If this is a pressure/hgt plot, then do stuff to the pressure values.
 ;
-    if(is_valid_ycoord(data))
+    if(is_valid_coord(data,"y"))
       npres = dimsizes(data&$data!0$)
 ;
 ; Check for pressure values.  If they are not in descending order, then
@@ -9731,7 +9690,7 @@ begin
 ; Create vector plot. We have to check the pressure values.  If they
 ; are not in descending order, then reverse 'em.
 ;
-  if(is_valid_ycoord(u))
+  if(is_valid_coord(u,"y"))
     npres = dimsizes(u&$u!0$)
     if(u&$u!0$(0).lt.u&$u!0$(npres-1))
       vector = gsn_csm_vector(wks,u(::-1,:),v(::-1,:),vcres)
@@ -9964,7 +9923,7 @@ begin
 ; Create streamline plot. We have to check the pressure values.  If they
 ; are not in descending order, then reverse 'em.
 ;
-  if(is_valid_ycoord(u))
+  if(is_valid_coord(u,"y"))
     npres = dimsizes(u&$u!0$)
     if(u&$u!0$(0).lt.u&$u!0$(npres-1))
       streamline = gsn_csm_streamline(wks,u(::-1,:),v(::-1,:),stres)
