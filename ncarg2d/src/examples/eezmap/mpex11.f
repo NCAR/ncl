@@ -1,13 +1,14 @@
 
 
 
-      PROGRAM MPEX11
+      PROGRAM MPEX13
 C
 C The object of this EZMAP example is to show off some capabilities of
 C new code in EZMAPB (created in April, 1998).  Three different parts of
 C the earth are shown at various "levels"; level 1 includes just land
 C and water, level 2 includes continents, level 3 includes countries,
-C and level 4 includes states within the US.
+C level 4 includes states within the US, and level 5 includes counties
+C within the states.
 C
 C LAMA is the length of an area map A for geographical boundaries;
 C in general, this value needs to be a bit larger than would have been
@@ -18,18 +19,18 @@ C and some circles carving up the frame into areas within each of which
 C we wish to display geographic information differently; the vertical
 C strips go into edge group 2 and the circles into edge group 5.
 C
-        PARAMETER (LAMA=500000)
+        PARAMETER (LAMA=2000000)
 C
 C LAMB is the length of an area map B into which will be put just the
 C circles mentioned above.  This area map will be used to determine
 C characteristics of the lines drawn by the call to MPLNDM.
 C
-        PARAMETER (LAMB= 20000)
+        PARAMETER (LAMB=  80000)
 C
 C MCRA is the required length of the scratch arrays to be used by
 C ARSCAM for X/Y coordinates.
 C
-        PARAMETER (MCRA= 10000)
+        PARAMETER (MCRA=  40000)
 C
 C Declare the area map arrays.
 C
@@ -48,21 +49,23 @@ C
 C Declare some arrays in which to put values defining some portions of
 C the globe to be looked at.
 C
-        DIMENSION CLON(3),SLAT(3),SLON(3),BLAT(3),BLON(3)
-        CHARACTER*64 LABL(3)
+        DIMENSION CLON(4),SLAT(4),SLON(4),BLAT(4),BLON(4)
+        CHARACTER*64 LABL(4)
 C
 C Define the portions of the globe to be looked at.
 C
-        DATA CLON / -105. ,   10. ,  110. /
+        DATA CLON /  -90. ,  10. , 55. , 110. /
 C
-        DATA SLAT /    5. ,   34. ,  -16. /
-        DATA SLON / -130. ,  -10. ,   80. /
-        DATA BLAT /   60. ,   65. ,   40. /
-        DATA BLON /  -60. ,   40. ,  140. /
+        DATA SLAT /   -9. ,  34. , 20. , -16. /
+        DATA SLON / -145. , -10. , 20. ,  80. /
+        DATA BLAT /   70. ,  65. , 60. ,  40. /
+        DATA BLON /  -45. ,  40. , 90. , 140. /
 C
-        DATA LABL / 'A part of North America (with Arkansas in pink)'  ,
-     +              'A part of Northern Europe (with Slovakia in pink)',
-     +              'A part of Southeast Asia (with Cambodia in pink)' /
+        DATA LABL /
+     +       'North America (Custer County, Nebraska, in Pink)',
+     +       'Northern Europe (Slovakia in Pink)              ',
+     +       'Eurasia (Uzbekistan in Pink)'                    ,
+     +       'Southeast Asia (Cambodia in Pink)'               /
 C
 C Open GKS.
 C
@@ -99,7 +102,7 @@ C
 C
 C Loop to depict three different portions of the globe.
 C
-        DO 105 IVEW=1,3
+        DO 105 IVEW=1,4
 C
 C Tell EZMAP to use a Mercator projection.  CLON(IVEW) is the center
 C longitude.
@@ -116,34 +119,46 @@ C Initialize EZMAP.
 C
           CALL MAPINT
 C
+C Find out what SET call was done by EZMAP, reset the map limits in
+C such a way as to make the map square, and then reinitialize.
+C
+          CALL GETSET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+          XCEN=.5*(XWDL+XWDR)
+          YCEN=.5*(YWDB+YWDT)
+          HWTH=.5*MAX(XWDR-XWDL,YWDT-YWDB)
+          CALL MAPSET ('LI',XCEN-HWTH,XCEN+HWTH,
+     +                      YCEN-HWTH,YCEN+HWTH)
+          CALL MAPINT
+C
 C Initialize both of area maps A and B.
 C
           CALL ARINAM (IAMA,LAMA)
           CALL ARINAM (IAMB,LAMB)
 C
-C Put three concentric circles into both of area maps A and B (in edge
-C group 5).  The interior of the smallest circle has area identifier 4,
-C the ring around it has area identifier 3, the ring around that has
-C area identifier 2, and the remainder has area identifier 1.  These
-C area identifiers will be used to determine the "level" at which the
-C geographical information is to be displayed; level 4 means "states",
+C Put four concentric circles into both of area maps A and B (in edge
+C group 5).  The interior of the smallest circle has area identifier 5,
+C the ring around it has area identifier 4, the ring around that has
+C area identifier 3, the ring around that has area identifier 2, and
+C the remainder has area identifier 1.  These area identifiers will be
+C used to determine the "level" at which the geographical information
+C is to be displayed; level 5 means "counties", level 4 means "states",
 C level 3 means "countries", level 2 means "continents", and level 1
-C just means "land/water".
+C means just "land/water".
 C
-          DO 102 ICIR=1,3
+          DO 102 ICIR=1,4
             DO 101 IANG=1,361
               ANGL=.017453292519943*REAL(MOD(IANG-1,360))
-              XCRA(IANG)=CFUX(.5+(.18+.13*REAL(ICIR-1))*COS(ANGL))
-              YCRA(IANG)=CFUY(.5+(.18+.13*REAL(ICIR-1))*SIN(ANGL))
+              XCRA(IANG)=CFUX(.5+(.05+.13*REAL(ICIR-1))*COS(ANGL))
+              YCRA(IANG)=CFUY(.5+(.05+.13*REAL(ICIR-1))*SIN(ANGL))
   101       CONTINUE
-            CALL AREDAM (IAMA,XCRA,YCRA,361,5,5-ICIR,4-ICIR)
-            CALL AREDAM (IAMB,XCRA,YCRA,361,5,5-ICIR,4-ICIR)
+            CALL AREDAM (IAMA,XCRA,YCRA,361,5,6-ICIR,5-ICIR)
+            CALL AREDAM (IAMB,XCRA,YCRA,361,5,6-ICIR,5-ICIR)
   102     CONTINUE
 C
 C Put all the EZMAP boundary lines from the named dataset (down to
-C level 4) into area map A.
+C level 5) into area map A.
 C
-          CALL MPLNAM ('Earth..1',4,IAMA)
+          CALL MPLNAM ('Earth..2',5,IAMA)
 C
 C Color the map as implied by the contents of area map A.  See the
 C "user callback" routine COLORA (elsewhere in this file) to see how
@@ -159,11 +174,11 @@ C
           PRINT * , 'Length of area map A: ',LAMA-IAMA(6)+IAMA(5)+1
           PRINT * , 'Length of area map B: ',LAMB-IAMB(6)+IAMB(5)+1
 C
-C Draw the Ezmap boundary lines masked by area map B; the lines are
+C Draw the EZMAP boundary lines masked by area map B; the lines are
 C drawn differently inside each of the areas created by the concentric
 C circles.
 C
-          CALL MPLNDM ('Earth..1',4,IAMB,XCRA,YCRA,MCRA,
+          CALL MPLNDM ('Earth..2',5,IAMB,XCRA,YCRA,MCRA,
      +                                         IAAI,IAGI,5,COLORL)
 C
 C Draw the concentric circles themselves.
@@ -171,11 +186,11 @@ C
           CALL GSLWSC (2.)
           CALL GSPLCI (2)
 C
-          DO 104 ICIR=1,3
+          DO 104 ICIR=1,4
             DO 103 IANG=1,361
               ANGL=.017453292519943*REAL(MOD(IANG-1,360))
-              XCRA(IANG)=CFUX(.5+(.18+.13*REAL(ICIR-1))*COS(ANGL))
-              YCRA(IANG)=CFUY(.5+(.18+.13*REAL(ICIR-1))*SIN(ANGL))
+              XCRA(IANG)=CFUX(.5+(.05+.13*REAL(ICIR-1))*COS(ANGL))
+              YCRA(IANG)=CFUY(.5+(.05+.13*REAL(ICIR-1))*SIN(ANGL))
   103       CONTINUE
             CALL CURVE (XCRA,YCRA,361)
   104     CONTINUE
@@ -187,21 +202,18 @@ C
           CALL GSFACI (2)
 C
           CALL PLCHHQ (CFUX(.500),CFUY(.975),
-     +             'From the database "Earth..1", added in April, 1998',
+     +                      'The Database "Earth..2" at Various Levels',
      +                                                       .018,0.,0.)
 C
           CALL PLCHHQ (CFUX(.500),CFUY(.025),
      +                                 LABL(IVEW)(1:MPILNB(LABL(IVEW))),
      +                                                       .018,0.,0.)
 C
-          CALL PLCHHQ (CFUX(.085),CFUY(.091),'Using level 1 boundaries',
-     +                                                      .012,0.,-1.)
-          CALL PLCHHQ (CFUX(.192),CFUY(.198),'Using level 2 boundaries',
-     +                                                      .012,0.,-1.)
-          CALL PLCHHQ (CFUX(.291),CFUY(.303),'Using level 3 boundaries',
-     +                                                      .012,0.,-1.)
-          CALL PLCHHQ (CFUX(.383),CFUY(.395),'Using level 4 boundaries',
-     +                                                      .012,0.,-1.)
+          CALL PLCHHQ (CFUX(.142911),CFUY(.142911),'1',.02,0.,0.)
+          CALL PLCHHQ (CFUX(.234835),CFUY(.234835),'2',.02,0.,0.)
+          CALL PLCHHQ (CFUX(.326759),CFUY(.326759),'3',.02,0.,0.)
+          CALL PLCHHQ (CFUX(.418683),CFUY(.418683),'4',.02,0.,0.)
+          CALL PLCHHQ (CFUX(.500000),CFUY(.500000),'5',.02,0.,0.)
 C
           CALL GSPLCI (1)
           CALL GSFACI (1)
@@ -228,15 +240,15 @@ C
 
       SUBROUTINE DFCLRS (IWKS)
 C
-C Define some color indices for use in the example "mpex11".
+C Define some color indices for use in the example "mpex13".
 C
         CALL GSCR (IWKS,  0,0.,0.,0.)  !  black   - the background
         CALL GSCR (IWKS,  1,1.,1.,1.)  !  white   - the foreground
         CALL GSCR (IWKS,  2,1.,1.,0.)  !  yellow  - some labelling
         CALL GSCR (IWKS, 11,1.,1.,1.)  !  white   - water/land edges
-        CALL GSCR (IWKS, 12,.8,.8,.8)  !  gray    - continent edges
-        CALL GSCR (IWKS, 13,.6,.6,.6)  !  gray    - country edges
-        CALL GSCR (IWKS, 14,.4,.4,.4)  !  gray    - state edges
+        CALL GSCR (IWKS, 12,1.,1.,1.)  !  gray    - continent edges
+        CALL GSCR (IWKS, 13,1.,1.,1.)  !  gray    - country edges
+        CALL GSCR (IWKS, 14,1.,1.,1.)  !  gray    - state edges
         CALL GSCR (IWKS, 15,.1,.1,.1)  !  gray    - county edges
         CALL GSCR (IWKS, 16,1.,.6,.6)  !  pink    - highlighted area
         CALL GSCR (IWKS,101,.2,.2,.8)  !  area color 1
@@ -265,6 +277,7 @@ C     Level 1 (land/water boundaries): double thickness, color 11
 C     Level 2 (continental boundaries): double thickness, color 12
 C     Level 3 (country boundaries): double thickness, color 13
 C     Level 4 (state boundaries): single thickness, color 14
+C     Level 5 (county boundaries): single thickness, color 15
 C
 C Flush SPPS pen-move buffers.
 C
@@ -287,6 +300,9 @@ C
           ELSE IF (ILTY.EQ.4) THEN
             CALL GSLWSC (1.)
             CALL GSPLCI (14)
+          ELSE IF (ILTY.EQ.5) THEN
+            CALL GSLWSC (1.)
+            CALL GSPLCI (15)
           END IF
 C
 C If, on the other hand, IFLG is less than minus one, a line was just
@@ -311,10 +327,10 @@ C
 C
         DIMENSION XCRA(NCRA),YCRA(NCRA),IAAI(NGPS),IAGI(NGPS)
 C
-C In the example "mpex11", the routine COLORA is called by the AREAS
+C In the example "mpex13", the routine COLORA is called by the AREAS
 C routine ARSCAM to fill the areas created by area map A.
 C
-        CHARACTER*64 MPNAME
+        CHARACTER*128 MPFNME
 C
 C Extract the area identifiers of the area relative to groups 1
 C (geographic), 2 (vertical stripping), and 5 (concentric circles).
@@ -330,17 +346,18 @@ C
   101   CONTINUE
 C
 C If all the area identifiers have valid values, choose a color for the
-C area and fill it.  If the name of the area is "Arkansas" or "Slovaki"
-C or "Cambodia", it is filled using color 16 (pink); otherwise, we use
-C the suggested color for the area at the level implied by the group-5
-C area identifier.
+C area and fill it.  If the full name of it is "Nebraska - Custer",
+C "Slovakia", "Uzbekistan", or "Cambodia", it is filled using color 16
+C (pink); otherwise, we use the suggested color for the area at the
+C level implied by the group-5 area identifier.
 C
         IF (IAI1.GE.1) THEN
           IF (IAI2.GE.0) THEN
             IF (IAI5.GE.1) THEN
-              IF (MPNAME(IAI1).EQ.'Arkansas'.OR.
-     +            MPNAME(IAI1).EQ.'Slovakia'.OR.
-     +            MPNAME(IAI1).EQ.'Cambodia') THEN
+              IF (MPFNME(IAI1,4).EQ.'Nebraska - Custer'.OR.
+     +            MPFNME(IAI1,4).EQ.'Slovakia'.OR.
+     +            MPFNME(IAI1,4).EQ.'Uzbekistan'.OR.
+     +            MPFNME(IAI1,4).EQ.'Cambodia') THEN
                 CALL GSFACI (16)
               ELSE
                 CALL GSFACI (100+MPISCI(MPIOSA(IAI1,IAI5)))
@@ -394,7 +411,7 @@ C
 C
         DIMENSION XCRA(NCRA),YCRA(NCRA),IAAI(NGPS),IAGI(NGPS)
 C
-C In the example "mpex11", the routine COLORL is called by the EZMAPB
+C In the example "mpex13", the routine COLORL is called by the EZMAPB
 C routine MPLNDM to draw lines masked by the contents of area map B.
 C
 C Get the value of the line type for the line being drawn.
@@ -411,10 +428,11 @@ C
 C
 C If the group-5 area identifier is valid, draw the line if and only
 C if its type is less than or equal to the group-5 area identifier.
-C What this means is that all boundary lines (down to the state level)
-C are drawn in the inner circle, state lines are omitted in the ring
-C surrounding that, country lines are omitted in the ring surrounding
-C that, and continental boundary lines are omitted elsewhere.
+C What this means is that all boundary lines (down to the county level)
+C are drawn in the inner circle, county lines are omitted in the ring
+C surrounding that, state lines are omitted in the ring surrounding
+C that, country lines are omitted in the ring surrounding that, and
+C continental boundary lines are omitted elsewhere.
 C
         IF (IAI5.GE.1) THEN
           IF (ILTY.LE.IAI5) THEN
