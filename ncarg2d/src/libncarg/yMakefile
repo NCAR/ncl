@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.14 1997-06-18 23:05:59 kennison Exp $
+#       $Id: yMakefile,v 1.15 1997-06-30 21:53:57 kennison Exp $
 #
 #	Makefile for libncarg.a
 #	Includes utilities and their corresponding test programs,
@@ -18,7 +18,7 @@ SUBDIRS = \
 	commonC dashcharC dashpackC ezmapC gflashC gridalC \
 	histgrC isosrfC labelbarC ngmiscC plotcharC \
 	polypackC softfillC sppsC srfaceC stitleC \
-	supportC strmlnC threedC velvctC wmapC
+	supportC strmlnC tdpackC threedC velvctC wmapC
 
 INCLUDES    = ncargC.h
 
