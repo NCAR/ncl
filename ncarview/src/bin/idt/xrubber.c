@@ -1,5 +1,5 @@
 /*
- *	$Id: xrubber.c,v 1.11 1993-01-06 21:07:35 clyne Exp $
+ *	$Id: xrubber.c,v 1.12 1993-01-06 22:40:03 clyne Exp $
  */
 /*
  *	xrubber.c
@@ -249,6 +249,8 @@ static	rubber_band_window(dpy, root, fg, x, y,
 		root, rubberStartCursor, CurrentTime) != GrabSuccess) {
 
 		(void) fprintf(stderr, "Can't grab the mouse\n");
+
+		XUngrabServer(dpy);
 		return(-1);
 	}
 
