@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.51 1993-09-24 20:07:05 kennison Exp $
+#   $Id: ncargex.csh,v 1.52 1993-09-24 21:14:06 kennison Exp $
 #
 
 #********************#
@@ -543,6 +543,11 @@ while ($#argv > 0)
         case "-scrolled_title":
             shift
             set names=($names ${scrlld_title_list})
+            breaksw
+
+	case "-seter":
+            shift
+	    set names=($names $seter_list)
             breaksw
 
         case "-softfill":
