@@ -94,8 +94,8 @@ C AnnoManager objects allow the PlotManager to manipulate any View class
 C object as an annotation a uniform fashion. They allow
 C the user to set the View object's size and location relative to
 C the viewport of a Plot. They may be located relative to one
-C of the viewport sides, or, as in this example, aligned with the plot's 
-C data space (amTrackData is set True in the resource file).
+C of the viewport sides, or, as in this example, aligned with the 
+C plot's data space (amTrackData is set True in the resource file).
 C
 C Create a TextItem for each place name to be included on the map.
 C Collect the object ids into an array.
@@ -115,8 +115,8 @@ C
       call NhlFRLSetintegerarray(rlist,'pmAnnoViews',text_ids,NDIM,ierr)
       call NhlFCreate(mapid,'Map0',NhlFMapPlotLayerClass,wid,rlist,ierr)
 C
-C Retrieve the ids of the AnnoManager objects created by the PlotManager and
-C then set their location in data coordinate space. The AnnoManager
+C Retrieve the ids of the AnnoManager objects created by the PlotManager
+C and then set their location in data coordinate space. The AnnoManager
 C objects are arranged in the same order as the TextItems in the
 C pmAnnoViews resource.
 C
