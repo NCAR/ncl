@@ -1,9 +1,9 @@
 C
-C   $Id: openmp.F.sed,v 1.3 1992-10-20 22:41:07 haley Exp $
+C   $Id: openmp.F.sed,v 1.4 1993-12-03 21:14:00 kennison Exp $
 C
       SUBROUTINE OPENMP (IUNIT)
       CHARACTER*128 FILENM
-	  DATA FILENM / ' ' /
+          DATA FILENM / ' ' /
       SAVE IOPEN
       DATA IOPEN / 0 /
       IF (IOPEN.EQ.0) THEN
@@ -17,9 +17,9 @@ C
  101      CONTINUE
          GO TO 105
       ELSE
-	      DO 102 I=2,128
-    	      LENEM=I
-        	  IF (FILENM(I:I).EQ.CHAR(0)) GO TO 103
+              DO 102 I=2,128
+              LENEM=I
+                  IF (FILENM(I:I).EQ.CHAR(0)) GO TO 103
  102      CONTINUE
  103      PRINT * , 'OPENMP - ',FILENM(1:LENEM-1)
           STOP

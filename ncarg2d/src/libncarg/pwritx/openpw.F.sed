@@ -1,9 +1,9 @@
 C
-C   $Id: openpw.F.sed,v 1.2 1992-10-20 22:41:54 haley Exp $
+C   $Id: openpw.F.sed,v 1.3 1993-12-03 21:15:04 kennison Exp $
 C
       SUBROUTINE OPENPW (IUNIT)
       CHARACTER*128 FILENM
-	  DATA FILENM / ' ' /
+          DATA FILENM / ' ' /
       SAVE IOPEN
       DATA IOPEN / 0 /
       IF (IOPEN.EQ.0) THEN
