@@ -1,5 +1,5 @@
 C
-C       $Id: wmex05.f,v 1.4 1995-06-14 13:57:24 haley Exp $
+C       $Id: wmex05.f,v 1.5 1996-05-29 16:45:57 fred Exp $
 C
       PROGRAM WMEX05
 C
@@ -28,7 +28,7 @@ C
       DATA YOFF/0.47, 0.47, 0.27, 0.27, 0.07, 0.07, -0.13, -0.13/
       DATA XCLIP/0.10, 0.75, 0.75, 0.10, 0.10/
       DATA YCLIP/0.50, 0.50, 0.85, 0.85, 0.50/
-      DATA LABELS/'Ice','Snow','Fluries','Rain','Showers',
+      DATA LABELS/'Ice','Snow','Flurries','Rain','Showers',
      +            'Thunderstorms','Temperature',
      +            'Temperature','(clipped)'/
 C
