@@ -1,5 +1,5 @@
 C
-C	$Id: wmex13.f,v 1.3 1998-06-30 14:13:13 haley Exp $
+C	$Id: wmex13.f,v 1.4 2002-02-22 00:13:20 fred Exp $
 C
       PROGRAM WMEX13
 C
@@ -479,6 +479,7 @@ C----------------
 C  LOs and HIs  |
 C----------------
 C
+      CALL GSCLIP(0)
       DO 80 I=1,NUML
         CALL MAPTRN(RLOHUX(I),RLOHUY(I),XO,YO)
         IF (LOWHI(I) .EQ. 0) THEN
