@@ -1,5 +1,5 @@
 /*
- *	$Id: w_dialog.c,v 1.7 1992-12-14 22:05:21 clyne Exp $
+ *	$Id: w_dialog.c,v 1.8 1993-02-09 22:29:01 clyne Exp $
  */
 /*
  *	w_dialog.c
@@ -34,7 +34,11 @@ typedef	struct	{
 	Voidptr	data;		/* data to invoke func() with		*/
 	Widget	popup;		/* the popup widget			*/
 	Widget	dialog;		/* the dialog widget			*/
+#ifdef	__STDC__
 	void	(*func)(Voidptr, char *);	/* func to call when selected*/
+#else
+	void	(*func)();	/* func to call when selected*/
+#endif
 	} CallbackData;
 
 static	Widget	dialog;
@@ -140,7 +144,11 @@ void	OkSDTranslation(widget, event, params, num_params)
 void	CreateSimpleDialogPopup(button, label, select, data, default_value)
 	Widget	button;
 	char	*label;
+#ifdef	__STDC__
 	void	(*select)(Voidptr, char *);
+#else
+	void	(*select)();
+#endif
 	Voidptr		data;
 	char	*default_value;
 {

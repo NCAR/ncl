@@ -1,5 +1,5 @@
 /*
- *	$Id: display.c,v 1.11 1992-12-14 22:05:05 clyne Exp $
+ *	$Id: display.c,v 1.12 1993-02-09 22:28:56 clyne Exp $
  */
 /*
  *	Display.c
@@ -141,8 +141,17 @@ void	CloseDisplay(id)
  *			  a history file
  */
 void	InitDisplayModule(
+#ifdef	__STDC__
 	char *program_name, char **targv, int targc, short history
 	)
+#else
+	program_name, targv, targc, history
+	)
+	char *program_name; 
+	char **targv; 
+	int targc; 
+	short history;
+#endif
 {
 
 	if (history) {
