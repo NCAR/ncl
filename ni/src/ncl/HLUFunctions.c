@@ -248,7 +248,7 @@ NhlErrorTypes _NclISetColor
 	for( i = 0; i < j; i++) {
 		
 		if((tmp_hlu_ptr[i]!= NULL)&&(_NhlIsWorkstation(_NhlGetLayer(tmp_hlu_ptr[i]->hlu.hlu_id)))) {
-			if((has_missing_c)&&(color_inds[i] != missing_c.intval)) {
+			if((!has_missing_c)||(color_inds[i] != missing_c.intval)) {
 				for(k = 0; k < total_c; k++) {
 					if( ((!has_missing_r)||(red[i] != missing_r.floatval))&&
 					((!has_missing_g)||(green[i] != missing_g.floatval))&&
