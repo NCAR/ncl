@@ -9,9 +9,10 @@ c            xmsg = u@_FillValue
 c            nlat,mlon = dimsizes (u)
 c            iopt= cyclic
 
-c relative vorticity via centered finite difference approach
-c      approach (rv)
-c .   rv = dv/dx-du/dy+(u/a)tan(lat)   where "d" means partial derivitive
+c relative vorticity via centered finite difference approach (rv)
+c .  rv = dv/dx-du/dy+(u/a)tan(lat)   where "d" means partial derivitive
+c reference: Bluestein p113-114 [was not the original reference]
+c            Halt-Martin p314   [ nothing on rv] 
 
 c assumptions:
 c .   (1) latitudes  monotonically increasing  [eg: glat(2) > glat(1)]
@@ -34,7 +35,8 @@ c                                          ! OUTPUT
 C NCLEND
 c                                          ! LOCAL  (dynamic/adjustable)
       DOUBLE PRECISION CLAT(NLAT),DX(NLAT),DLON,DX2(NLAT),DLON2,
-     +                 DY2(NLAT),DYTOP,DYBOT,RE,RAD,RCON
+     +                 DY2(NLAT),DYTOP,DYBOT,RE,RAD,RCON,
+     +                 POLAT,TLATRE(NLAT)
       INTEGER ML,NL,MLSTRT,MLEND,MLM1,MLP1,JOPT
 
 c                                          ! error chk stuff
@@ -43,6 +45,11 @@ c                                          ! error chk stuff
           IER = 1
           RETURN
       END IF
+      IF (ABS(GLAT(1)).gt.90.D0 .OR. ABS(GLAT(NLAT)).GT.90.D0) THEN
+          IER = 2
+          RETURN
+      END IF
+
 
       RE = 6.37122D06
       RAD = 4.D0*ATAN(1.D0)/180.D0
@@ -50,8 +57,24 @@ c                                          ! error chk stuff
       JOPT = ABS(IOPT)
 c                                 ! pre-compute cos(lat)
       DO NL = 1,NLAT
-          CLAT(NL) = COS(RAD*GLAT(NL))
+          CLAT(NL)   = COS(RAD*GLAT(NL))
       END DO
+c                                 ! pre-compute tan(lat)/re
+c                                 ! pole pts will not be used below
+      DO NL = 1,NLAT
+         IF (ABS(GLAT(NL)).LT.90.D0) THEN
+             TLATRE(NL) = TAN(RAD*GLAT(NL))/RE
+         ELSE
+             IF (GLAT(NL).EQ.90.D0) THEN
+                 POLAT = 0.5*(GLAT(NL)+GLAT(NL-1))
+                 TLATRE(NL) = TAN(RAD*POLAT)/RE
+             ELSE
+                 POLAT = 0.5*(GLAT(NL)+GLAT(NL+1))
+                 TLATRE(NL) = TAN(RAD*POLAT)/RE
+             END IF
+         END IF
+      END DO
+        
 c                                          ! initialize to msg
       DO NL = 1,NLAT
           DO ML = 1,MLON
@@ -65,9 +88,8 @@ c                                          ! calculate "1/(2*dy)"
       DO NL = 2,NLAT - 1
           DY2(NL) = 1.D0/ (RCON* (GLAT(NL+1)-GLAT(NL-1)))
       END DO
-C*PL*ERROR* Comment line too long
-c                                          ! calculate "1/dx" [left, right]
-c                                          ! and "1/(2*dx)
+c                                       ! calculate "1/dx" [left, right]
+c                                       ! and "1/(2*dx)
       DLON = GLON(2) - GLON(1)
       DLON2 = GLON(3) - GLON(1)
 
@@ -98,10 +120,12 @@ c                                          ! iopt=0 or 1
 c                                          ! rv in grid body
           DO NL = 2,NLAT - 1
               IF (V(MLP1,NL).NE.XMSG .AND. V(MLM1,NL).NE.XMSG .AND.
-     +            U(ML,NL+1).NE.XMSG .AND. U(ML,NL-1).NE.XMSG) THEN
+     +            U(ML,NL+1).NE.XMSG .AND. U(ML,NL-1).NE.XMSG .AND.
+     +            U(ML,NL)  .NE.XMSG) THEN
 
                   RV(ML,NL) = (V(MLP1,NL)-V(MLM1,NL))*DX2(NL) -
-     +                        (U(ML,NL+1)-U(ML,NL-1))*DY2(NL)
+     +                        (U(ML,NL+1)-U(ML,NL-1))*DY2(NL) +
+     +                         U(ML,NL)*TLATRE(NL) 
 
               END IF
           END DO
@@ -109,17 +133,19 @@ c                                          ! rv in grid body
           IF (JOPT.GE.2) THEN
 c                                   ! bottom bound (nl=1)
               IF (V(MLP1,1).NE.XMSG .AND. V(MLM1,1).NE.XMSG .AND.
-     +            U(ML,2).NE.XMSG .AND. U(ML,1).NE.XMSG) THEN
+     +            U(ML,2)  .NE.XMSG .AND. U(ML,1)  .NE.XMSG) THEN
 
                   RV(ML,1) = (V(MLP1,1)-V(MLM1,1))*DX2(1) -
-     +                       (U(ML,2)-U(ML,1))*DYBOT
+     +                       (U(ML,2)-U(ML,1))*DYBOT      +
+     +                        U(ML,1)*TLATRE(1)
               END IF
 c                                   ! top bound   (nl=nlat)
               IF (V(MLP1,NLAT).NE.XMSG .AND. V(MLM1,NLAT).NE.XMSG .AND.
-     +            U(ML,NLAT).NE.XMSG .AND. U(ML,NLAT-1).NE.XMSG) THEN
+     +            U(ML,NLAT)  .NE.XMSG .AND. U(ML,NLAT-1).NE.XMSG)THEN
 
                   RV(ML,NLAT) = (V(MLP1,NLAT)-V(MLM1,NLAT))*DX2(NLAT) -
-     +                          (U(ML,NLAT)-U(ML,NLAT-1))*DYTOP
+     +                          (U(ML,NLAT)-U(ML,NLAT-1))*DYTOP       +
+     +                           U(ML,NLAT)*TLATRE(NLAT)
               END IF
           END IF
       END DO
@@ -127,18 +153,22 @@ c                                   ! ?left/right bound?
       IF (JOPT.EQ.2) THEN
           DO NL = 2,NLAT - 1
 c                                   ! left bound (ml=1)
-              IF (V(2,NL).NE.XMSG .AND. V(1,NL).NE.XMSG .AND.
-     +            U(1,NL+1).NE.XMSG .AND. U(1,NL-1).NE.XMSG) THEN
+              IF (V(2,NL).NE.XMSG   .AND. V(1,NL)  .NE.XMSG .AND.
+     +            U(1,NL+1).NE.XMSG .AND. U(1,NL-1).NE.XMSG .AND.
+     +            U(1,NL)  .NE.XMSG) THEN
 
-                  RV(1,NL) = (V(2,NL)-V(1,NL))*DX(NL) -
-     +                       (U(1,NL+1)-U(1,NL-1))*DY2(NL)
+                  RV(1,NL) = (V(2,NL)-V(1,NL))*DX(NL)      -
+     +                       (U(1,NL+1)-U(1,NL-1))*DY2(NL) +
+     +                        U(1,NL)*TLATRE(NL)
               END IF
 c                                   ! right bound (ml=mlon)
-              IF (V(MLON,NL).NE.XMSG .AND. V(MLON-1,NL).NE.XMSG .AND.
-     +            U(MLON,NL+1).NE.XMSG .AND. U(MLON,NL-1).NE.XMSG) THEN
+              IF (V(MLON,NL)  .NE.XMSG .AND. V(MLON-1,NL).NE.XMSG .AND.
+     +            U(MLON,NL+1).NE.XMSG .AND. U(MLON,NL-1).NE.XMSG .AND.
+     +            U(MLON,NL)  .NE.XMSG) THEN
 
-                  RV(MLON,NL) = (V(MLON,NL)-V(MLON-1,NL))*DX(NL) -
-     +                          (U(MLON,NL+1)-U(MLON,NL-1))*DY2(NL)
+                  RV(MLON,NL) = (V(MLON,NL)-V(MLON-1,NL))*DX(NL)    -
+     +                          (U(MLON,NL+1)-U(MLON,NL-1))*DY2(NL) +
+     +                           U(MLON,NL)*TLATRE(NL)
               END IF
           END DO
       END IF
@@ -161,10 +191,10 @@ c NCLFORTSTART
       IMPLICIT NONE
 
 c divergence via centered finite differences
-C*PL*ERROR* Comment line too long
-c .   div = dv/dy+du/dx - (v/re)*tan(lat)   where "d" means partial derivitive
-c .                     ^^^^^^^^^^^^^^^^    Haltiner and Martin p314
-
+c . div = dv/dy+du/dx-(v/re)*tan(lat)  where "d" ==> partial derivitive
+c 
+c reference: Bluestein p113-114 
+c            Halt-Martin p314   
 
 c NCL: dv = uv2dv_cfd (u,v,lat,lon,cyclic)
 c            xmsg = u@_FillValue
@@ -193,7 +223,8 @@ c                                          ! OUTPUT
 C NCLEND
 c                                          ! LOCAL  (dynamic/adjustable)
       DOUBLE PRECISION CLAT(NLAT),DX(NLAT),DLON,DX2(NLAT),DLON2,
-     +                 DY2(NLAT),DYTOP,DYBOT,RE,RAD,RCON,POLAT
+     +                 DY2(NLAT),DYTOP,DYBOT,RE,RAD,RCON,
+     +                 POLAT,TLATRE(NLAT)
       INTEGER ML,NL,MLSTRT,MLEND,MLM1,MLP1,JOPT
 
 c                                          ! error chk stuff
@@ -202,14 +233,33 @@ c                                          ! error chk stuff
           IER = 1
           RETURN
       END IF
+      IF (ABS(GLAT(1)).gt.90.D0 .OR. ABS(GLAT(NLAT)).GT.90.D0) THEN
+          IER = 2
+          RETURN
+      END IF
 
       RE = 6.37122D06
       RAD = 4.D0*ATAN(1.D0)/180.D0
       RCON = RE*RAD
       JOPT = ABS(IOPT)
-c                                          ! computing 1./cos(glat)
+c                                 ! pre-compute cos(lat)
       DO NL = 1,NLAT
-          CLAT(NL) = COS(RAD*GLAT(NL))
+          CLAT(NL)   = COS(RAD*GLAT(NL))
+      END DO
+c                                 ! pre-compute tan(lat)/re
+c                                 ! pole pts will not be used below
+      DO NL = 1,NLAT
+         IF (ABS(GLAT(NL)).LT.90.D0) THEN
+             TLATRE(NL) = TAN(RAD*GLAT(NL))/RE
+         ELSE
+             IF (GLAT(NL).EQ.90.D0) THEN
+                 POLAT = 0.5*(GLAT(NL)+GLAT(NL-1))
+                 TLATRE(NL) = TAN(RAD*POLAT)/RE
+             ELSE
+                 POLAT = 0.5*(GLAT(NL)+GLAT(NL+1))
+                 TLATRE(NL) = TAN(RAD*POLAT)/RE
+             END IF
+         END IF
       END DO
 c                                          ! initialize to msg
       DO NL = 1,NLAT
@@ -224,9 +274,8 @@ c                                          ! calculate "1/(2*dy)"
       DO NL = 2,NLAT - 1
           DY2(NL) = 1.D0/ (RCON* (GLAT(NL+1)-GLAT(NL-1)))
       END DO
-C*PL*ERROR* Comment line too long
-c                                          ! calculate "1/dx" [left, right]
-c                                          ! and "1/(2*dx)
+c                                       ! calculate "1/dx" [left, right]
+c                                       ! and "1/(2*dx)
       DLON = GLON(2) - GLON(1)
       DLON2 = GLON(3) - GLON(1)
 
@@ -256,43 +305,31 @@ c                                          ! set subscript range
 c                                          ! dv in grid body
           DO NL = 2,NLAT - 1
               IF (V(ML,NL+1).NE.XMSG .AND. V(ML,NL-1).NE.XMSG .AND.
-     +            U(MLP1,NL).NE.XMSG .AND. U(MLM1,NL).NE.XMSG) THEN
+     +            U(MLP1,NL).NE.XMSG .AND. U(MLM1,NL).NE.XMSG .AND.
+     +            V(ML,NL)  .NE.XMSG) THEN
 
                   DV(ML,NL) = (V(ML,NL+1)-V(ML,NL-1))*DY2(NL) +
      +                        (U(MLP1,NL)-U(MLM1,NL))*DX2(NL) -
-     +                        (V(ML,NL)/RE)*TAN(RAD*GLAT(NL))
+     +                         V(ML,NL)*TLATRE(NL) 
               END IF
           END DO
-c                                   ! ?bottom/top bound? [bogus pole]
+c                                   ! ?bottom/top bound? 
           IF (JOPT.GE.2) THEN
 c                                   ! bottom bound (nl=1)
-              IF (V(ML,2).NE.XMSG .AND. V(ML,1).NE.XMSG .AND.
+              IF (V(ML,2)  .NE.XMSG .AND. V(ML,1)  .NE.XMSG .AND.
      +            U(MLP1,2).NE.XMSG .AND. U(MLM1,1).NE.XMSG) THEN
 
-                  DV(ML,1) = (V(ML,2)-V(ML,1))*DYBOT +
-     +                       (U(MLP1,1)-U(MLM1,1))*DX2(1)
-                  IF (GLAT(1).NE.-90.D0) THEN
-                      DV(ML,1) = DV(ML,1) - (V(ML,1)/RE)*
-     +                           TAN(RAD*GLAT(1))
-                  ELSE
-                      POLAT = 0.5D0* (GLAT(2)+GLAT(1))
-                      DV(ML,1) = DV(ML,1) - (V(ML,1)/RE)*TAN(RAD*POLAT)
-                  END IF
+                  DV(ML,1) = (V(ML,2)-V(ML,1))*DYBOT      +
+     +                       (U(MLP1,1)-U(MLM1,1))*DX2(1) -
+     +                        V(ML,1)*TLATRE(1)
               END IF
 c                                   ! top bound   (nl=nlat)
-              IF (V(ML,NLAT).NE.XMSG .AND. V(ML,NLAT-1).NE.XMSG .AND.
+              IF (V(ML,NLAT).NE.XMSG   .AND. V(ML,NLAT-1).NE.XMSG .AND.
      +            U(MLP1,NLAT).NE.XMSG .AND. U(MLM1,NLAT).NE.XMSG) THEN
 
-                  DV(ML,NLAT) = (V(ML,NLAT)-V(ML,NLAT-1))*DYTOP +
-     +                          (U(MLP1,NLAT)-U(MLM1,NLAT))*DX2(NLAT)
-                  IF (GLAT(NLAT).NE.90.D0) THEN
-                      DV(ML,NLAT) = DV(ML,NLAT) -
-     +                              (V(ML,NLAT)/RE)*TAN(RAD*GLAT(NLAT))
-                  ELSE
-                      POLAT = 0.5D0* (GLAT(NLAT)+GLAT(NLAT-1))
-                      DV(ML,NLAT) = DV(ML,NLAT) -
-     +                              (V(ML,NLAT)/RE)*TAN(RAD*POLAT)
-                  END IF
+                  DV(ML,NLAT) = (V(ML,NLAT)-V(ML,NLAT-1))*DYTOP      +
+     +                          (U(MLP1,NLAT)-U(MLM1,NLAT))*DX2(NLAT)-
+     +                           V(ML,NLAT)*TLATRE(NLAT)
               END IF
           END IF
       END DO
@@ -301,19 +338,21 @@ c                                   ! ?left/right bound?
           DO NL = 2,NLAT - 1
 c                                   ! left bound (ml=1)
               IF (V(1,NL+1).NE.XMSG .AND. V(1,NL-1).NE.XMSG .AND.
-     +            U(2,NL).NE.XMSG .AND. U(1,NL).NE.XMSG) THEN
+     +            U(2,NL)  .NE.XMSG .AND. U(1,NL)  .NE.XMSG .AND.
+     +            V(1,NL)  .NE.XMSG) THEN
 
                   DV(1,NL) = (V(1,NL+1)-V(1,NL-1))*DY2(NL) +
      +                       (U(2,NL)-U(1,NL))*DX(NL) -
-     +                       (V(1,NL)/RE)*TAN(RAD*GLAT(NL))
+     +                        V(1,NL)*TLATRE(NL)
               END IF
 c                                   ! right bound (ml=mlon)
               IF (V(MLON,NL+1).NE.XMSG .AND. V(MLON,NL-1).NE.XMSG .AND.
-     +            U(MLON,NL).NE.XMSG .AND. U(MLON-1,NL).NE.XMSG) THEN
+     +            U(MLON,NL)  .NE.XMSG .AND. U(MLON-1,NL).NE.XMSG .AND.
+     +            V(MLON,NL)  .NE.XMSG) THEN
 
                   DV(MLON,NL) = (V(MLON,NL+1)-V(MLON,NL-1))*DY2(NL) +
      +                          (U(MLON,NL)-U(MLON-1,NL))*DX(NL) -
-     +                          (V(MLON,NL)/RE)*TAN(RAD*GLAT(NL))
+     +                           V(MLON,NL)*TLATRE(NL)
               END IF
           END DO
       END IF
