@@ -1,5 +1,5 @@
 C
-C  $Id: vc03f.f,v 1.2 1996-06-17 21:22:30 haley Exp $
+C  $Id: vc03f.f,v 1.3 1996-09-18 19:27:04 haley Exp $
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      
 C                 Copyright (C)  1996                                  
@@ -30,9 +30,7 @@ C
        external NhlFVectorPlotClass
        external NhlFVectorFieldClass
 
-       parameter(a= 2)
-       parameter( b= 37)
-       parameter( c= 37)
+       parameter(LL=37,MM=37,NN=2)
 
        integer NCGM, X11, PS
        integer appid,wid,vcid,vfid
@@ -40,7 +38,7 @@ C
        integer len_dims(3)
        integer flen,ierr
        real reflen, ref
-       real x(c,b,a)
+       real x(LL,MM,NN)
        integer i,j,k
 C
 C  Generate vector data array
@@ -60,8 +58,8 @@ C
 
       flen = flen
 
- 15   open(UNIT=10,FILE=filename,READONLY,STATUS='OLD')
-      read(10,*)(((x(i,j,k),i=1,c),j=1,b),k=1,a)
+ 15   open(UNIT=10,FILE=filename,STATUS='OLD')
+      read(10,*)(((x(i,j,k),i=1,LL),j=1,MM),k=1,NN)
 C
 C Initialize the HLU library and set up resource template.
 C
@@ -109,9 +107,9 @@ C Create a VectorField data object using the data set defined above.
 C By default the array bounds will define the data boundaries 
 C (zero-based, as in C language conventions)
 C
-      len_dims(1) = c
-      len_dims(2) = b
-      len_dims(3) = a
+      len_dims(1) = LL
+      len_dims(2) = MM
+      len_dims(3) = NN
       call NhlFRLClear(rlist)
       call NhlFRLSetMDFloatArray(rlist,'vfDataArray',x,3,len_dims,ierr)
       call NhlFRLSetFloat(rlist,'vfXCStartV', -180.0,ierr)
@@ -128,8 +126,8 @@ C  Create a VectorPlot object, supplying the VectorField object as
 C  data.
 C
       call NhlFRLClear(rlist)
-      call NhlFRLSetString(rlist,'tiMainString', 'Filled Arrow 
-     +     VectorPlot',ierr)
+      call NhlFRLSetString(rlist,'tiMainString',
+     +                    'Filled Arrow VectorPlot',ierr)
       call NhlFRLSetFloat(rlist,'vcRefMagnitudeF', 20.0,ierr)
       call NhlFRLSetString(rlist,'vcFillArrowsOn', 'True',ierr)
       call NhlFRLSetFloat(rlist,'vcMinFracLengthF', 0.2,ierr)

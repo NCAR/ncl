@@ -31,15 +31,13 @@ C
        external NhlFVectorPlotClass
        external NhlFVectorFieldClass
 
-       parameter(a= 2)
-       parameter( b= 37)
-       parameter( c= 37)
+       parameter(LL=37,MM=37,NN=2)
        integer NCGM, X11, PS
        integer appid,wid,vcid,vfid
        integer rlist,grlist
        integer len_dims(3)
        integer flen,ierr
-       real x(c,b,a)
+       real x(LL,MM,NN)
        integer i,j,k
        real reflen, ref, tiheight, tiht
 C
@@ -56,8 +54,8 @@ C
          endif
  10   continue
 
- 15   open(UNIT=10,FILE=filename,READONLY,STATUS='OLD')
-      read(10,*)(((x(i,j,k),i=1,c),j=1,b),k=1,a)
+ 15   open(UNIT=10,FILE=filename,STATUS='OLD')
+      read(10,*)(((x(i,j,k),i=1,LL),j=1,MM),k=1,NN)
 C
 C Initialize the HLU library and set up resource template.
 C  
@@ -107,9 +105,9 @@ C  By default the array bounds will define the data boundaries
 C  (zero-based,
 C  as in C language conventions)
 C
-      len_dims(1) = c
-      len_dims(2) = b
-      len_dims(3) = a
+      len_dims(1) = LL
+      len_dims(2) = MM
+      len_dims(3) = NN
       call NhlFRLClear(rlist)
       call NhlFRLSetMDFloatArray(rlist,'vfDataArray',x,3,len_dims,ierr)
       call NhlFRLSetFloat(rlist,'vfXCStartV', -180.0,ierr)
@@ -145,8 +143,8 @@ C
       tiht = 0.9 * tiheight
       call NhlFRLClear(rlist)
       call NhlFRLSetFloat(rlist,'vcRefLengthF',ref,ierr)
-      call NhlFRLSetString(rlist,'tiMainString','How to Rotate a Vector
-     +Plot 90:F34:0:F:',ierr) 
+      call NhlFRLSetString(rlist,'tiMainString',
+     +'How to Rotate a Vector Plot 90:F34:0:F:',ierr) 
       call NhlFRLSetFloat(rlist,'tiMainFontHeightF',tiht,ierr)
       call NhlFSetValues(vcid,rlist,ierr)
 
@@ -187,8 +185,8 @@ C
       call NhlFDraw(vcid,ierr)
       call NhlFFrame(wid,ierr)
       call NhlFRLClear(rlist)
-      call NhlFRLSetString(rlist,'tiMainString','3b:: Or the X-Axis
-     + for Counter Clockwise Rotation',ierr)
+      call NhlFRLSetString(rlist,'tiMainString',
+     +'3b:: Or the X-Axis for Counter Clockwise Rotation',ierr)
       call NhlFRLSetString(rlist,'trYReverse', 'False',ierr)
       call NhlFRLSetString(rlist,'trXReverse', 'True',ierr)
       call NhlFSetValues(vcid,rlist,ierr)
