@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.7 1993-01-19 16:37:00 clyne Exp $
+#	$Id: yMakefile,v 1.8 1993-01-20 15:43:27 clyne Exp $
 #
 
 NCARG		= ../../../..
@@ -8,7 +8,7 @@ MYNAME		= scripts
 
 SCRIPTS		= ncarvversion ctlib gcaps fcaps 
 
-RASTER_SPECIFIERS	= \sun xwd nrif hdf avs sgi hplj
+RASTER_SPECIFIERS	= \sun xwd nrif hdf avs sgi hppcl
 
 
 CTXT_SPECIFIER = CTXT
