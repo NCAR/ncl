@@ -1,5 +1,5 @@
 C
-C $Id: mplndr.f,v 1.8 1999-07-29 22:55:48 kennison Exp $
+C $Id: mplndr.f,v 1.9 1999-08-19 21:55:19 kennison Exp $
 C
       SUBROUTINE MPLNDR (FLNM,ILVL)
 C
@@ -41,9 +41,9 @@ C
 C
 C IIII is used in the process of mapping line types into color indices.
 C
-        DIMENSION IIII(3)
+        DIMENSION IIII(4)
 C
-        DATA IIII / 5 , 7 , 6 /
+        DATA IIII / 5 , 7 , 6 , 8 /
 C
 C Check for an uncleared prior error.
 C
@@ -184,10 +184,10 @@ C
           IF (NPTS.LE.1) GO TO 106
           IF (ILTY.NE.ILTS) THEN
             IF (ILTS.NE.0) THEN
-              CALL MAPCHI (-IIII(MAX(2,MIN(4,ILTS))-1),0,0)
+              CALL MAPCHI (-IIII(MAX(2,MIN(5,ILTS))-1),0,0)
               IF (ICFELL('MPLNDR',3).NE.0) RETURN
             END IF
-            CALL MAPCHI (IIII(MAX(2,MIN(4,ILTY))-1),IDOT,
+            CALL MAPCHI (IIII(MAX(2,MIN(5,ILTY))-1),IDOT,
      +                                           IOR(ISHIFT(32767,1),1))
             IF (ICFELL('MPLNDR',4).NE.0) RETURN
             ILTS=ILTY
@@ -212,7 +212,7 @@ C
 C Reset the color index, dotting, and dash pattern, if necessary.
 C
         IF (ILTS.NE.0) THEN
-          CALL MAPCHI (-IIII(MAX(2,MIN(4,ILTS))-1),0,0)
+          CALL MAPCHI (-IIII(MAX(2,MIN(5,ILTS))-1),0,0)
           IF (ICFELL('MPLNDR',9).NE.0) RETURN
         END IF
 C

@@ -1,5 +1,5 @@
 C
-C $Id: mplndm.f,v 1.8 1999-07-29 22:55:48 kennison Exp $
+C $Id: mplndm.f,v 1.9 1999-08-19 21:55:19 kennison Exp $
 C
       SUBROUTINE MPLNDM (FLNM,ILVL,IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,
      +                                                           ULPR)
@@ -48,9 +48,9 @@ C
 C
 C IIII is used in the process of mapping line types into color indices.
 C
-        DIMENSION IIII(3)
+        DIMENSION IIII(4)
 C
-        DATA IIII / 5 , 7 , 6 /
+        DATA IIII / 5 , 7 , 6 , 8 /
 C
 C Check for an uncleared prior error.
 C
@@ -186,11 +186,11 @@ C
           IF (NPTS.LE.1) GO TO 106
           IF (ILTY.NE.ILTS) THEN
             IF (ILTS.NE.0) THEN
-              CALL MAPCHM (-IIII(MAX(2,MIN(4,ILTS))-1),0,
+              CALL MAPCHM (-IIII(MAX(2,MIN(5,ILTS))-1),0,
      +                          IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
               IF (ICFELL('MPLNDM',3).NE.0) RETURN
             END IF
-            CALL MAPCHM (IIII(MAX(2,MIN(4,ILTY))-1),
+            CALL MAPCHM (IIII(MAX(2,MIN(5,ILTY))-1),
      +                                           IOR(ISHIFT(32767,1),1),
      +                          IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
             IF (ICFELL('MPLNDM',4).NE.0) RETURN
@@ -219,7 +219,7 @@ C
 C Reset the color index, dotting, and dash pattern, if necessary.
 C
         IF (ILTS.NE.0) THEN
-          CALL MAPCHM (-IIII(MAX(2,MIN(4,ILTS))-1),0,
+          CALL MAPCHM (-IIII(MAX(2,MIN(5,ILTS))-1),0,
      +                          IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
           IF (ICFELL('MPLNDM',9).NE.0) RETURN
         END IF
