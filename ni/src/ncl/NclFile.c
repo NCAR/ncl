@@ -2067,7 +2067,11 @@ struct _NclSelectionRecord* sel_ptr;
 				if(_NclFileVarIsCoord(thefile,
 					dim_info[i].dim_quark)!= -1) {
 					tmp_var = _NclFileReadCoord(thefile,dim_info[i].dim_quark,NULL);
-                                	coords[i] = tmp_var->obj.id;
+					if(tmp_var != NULL) {
+                                		coords[i] = tmp_var->obj.id;
+					} else {
+						coords[i] = -1;
+					}
 				} else {
 					coords[i] = -1;
 				}

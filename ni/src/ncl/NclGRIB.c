@@ -1887,9 +1887,11 @@ GribParamList* step;
 					}
 				}
 			}
+/*
 			if(i != total) {
-				fprintf(stdout,"HELLO?\n");
+				fprintf(stdout,"HELLO (%d,%d)?\n",i,total);
 			}
+*/
 			
 			free_it = the_end;
 			the_end = the_end->next;
