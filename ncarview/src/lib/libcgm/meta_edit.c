@@ -1,5 +1,5 @@
 /*
- *	$Id: meta_edit.c,v 1.15 1992-09-09 15:08:34 clyne Exp $
+ *	$Id: meta_edit.c,v 1.16 1992-10-22 21:26:24 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -82,7 +82,7 @@ static	FILE *verboseFP = NULL;	/* operate in verbose mode		*/
 #define	ABS(X)		((X) < 0 ? (-(X)) : (X))
 
 static	char	*tempFile = NULL;	/* name of temp scratch file	*/
-static	char	*writeFile = WRITEFILE;	/* name of scratch file for writes */
+static	char	writeFile[] = WRITEFILE;	/* name of scratch file for writes */
 
 
 static	unsigned char	*tmpBuf;	/* tmp storage for r/w metafile	*/
