@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.75 1997-12-17 23:41:41 ethan Exp $
+ *      $Id: XyPlot.c,v 1.76 1998-02-18 01:26:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1688,8 +1688,24 @@ XyPlotSetValues
 		xn->xyplot.new_draw_req = True;
 	}
 	if (xn->view.use_segments) {
+                NhlTransDat *trans_dat = NULL;
+                
 		if (NewDrawArgs(args,num_args))
 			xn->xyplot.new_draw_req = True;
+                
+                if (xn->xyplot.draw_dat)
+                        trans_dat = xn->xyplot.draw_dat;
+                else if (xn->xyplot.postdraw_dat)
+                        trans_dat = xn->xyplot.postdraw_dat;
+                else if (xn->xyplot.predraw_dat)
+                        trans_dat = xn->xyplot.predraw_dat;
+                if (! _NhlSegmentSpansArea(trans_dat,
+                                           xn->view.x,
+                                           xn->view.x + xn->view.width,
+                                           xn->view.y - xn->view.height,
+                                           xn->view.y))
+                        xn->xyplot.new_draw_req = True;
+
 	}
 
 	if((xn->view.width != xo->view.width) ||

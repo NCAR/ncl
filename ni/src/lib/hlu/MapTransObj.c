@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.38 1998-02-11 01:44:07 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.39 1998-02-18 01:23:20 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -567,6 +567,8 @@ NhlLayer parent;
 	char *cproj, *climit;
 	float v_angle_lim, h_angle_lim, center_lat, center_lon;
 	float rl1[2],rl2[2],rl3[2],rl4[2];
+        NhlBoolean outside_viewspace = False;
+        float pxl,pxr,pyb,pyt;
 
 	ret =(*NhltransObjClassRec.trobj_class.set_trans)(instance,parent);
 
@@ -574,13 +576,39 @@ NhlLayer parent;
 	yt = minstance->trobj.y;
 	width = minstance->trobj.width;
 	height = minstance->trobj.height;
-	xr = MIN(1.0,xl + width);
-	yb = MAX(0.0,yt - height);
-	xl = MAX(0.0,xl);
-	yt = MIN(1.0,yt);
-	width = xr - xl;
-	height = yt -yb;
-	c_mappos(xl,xr,yb,yt);
+        xr = xl + width;
+        yb = yt - height;
+        
+        if (xl >= 1.0 || xr <= 0.0 || yb >= 1.0 || yt <= 0.0) {
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                           "%s: plot entirely outside viewspace; cannot draw",
+                           entry_name));
+                return NhlFATAL;
+        }
+        else if (xl < 0.0 || xr > 1.0 || yb < 0.0 || yt > 1.0) {
+                outside_viewspace = True;
+        }
+        
+        if (! outside_viewspace) {
+                c_mappos(xl,xr,yb,yt);
+        }
+        else {
+                    /* temporarily resize and reposition map so that it lies
+                       completely within the viewspace */
+                pxl = 0.0;
+                pyb = 0.0;
+                if (width > height) {
+                        pxr = 1.0;
+                        pyt = height / width;
+                }
+                else {
+                        pxr = width / height;
+                        pyt = 1.0;
+                }
+                c_mappos(pxl,pxr,pyb,pyt);
+                
+        }
+        
 	c_mapsti("EL",mtp->elliptical_boundary);
 
 	switch (mtp->projection) {
@@ -805,16 +833,35 @@ NhlLayer parent;
 	mtp->bottom_window = mtp->ub;
 	mtp->top_window = mtp->ut;
 
-	if (! mtp->preserve_aspect) {
+        if (! mtp->preserve_aspect) {
+                    /* this works whether or not the map is entirely within
+                       the viewspace */ 
+                mtp->map_pos_l = xl;
+                mtp->map_pos_r = xr;
+                mtp->map_pos_b = yb;
+                mtp->map_pos_t = yt;
+                _NhlTransLLUSet(mtp->map_pos_l,mtp->map_pos_r,
+                                mtp->map_pos_b,mtp->map_pos_t,
+                                mtp->ul,mtp->ur,mtp->ub,mtp->ut,
+                                loglin,entry_name);
+        }
+        else if (outside_viewspace) {
+                float npl,npr,npb,npt;
 
-		c_set (xl,xr,yb,yt,mtp->ul,mtp->ur,mtp->ub,mtp->ut,loglin);
-
-		mtp->map_pos_l = xl;
-		mtp->map_pos_r = xr;
-		mtp->map_pos_t = yt;
-		mtp->map_pos_b = yb;
-	}
-
+                    /* reposition to the real location */
+                npl = xl + width * (mtp->map_pos_l/pxr);
+                npr = xl + width * (mtp->map_pos_r/pxr);
+                npb = yb + height * (mtp->map_pos_b/pyt);
+                npt = yb + height * (mtp->map_pos_t/pyt);
+                mtp->map_pos_l = npl;
+                mtp->map_pos_r = npr;
+                mtp->map_pos_b = npb;
+                mtp->map_pos_t = npt;
+                _NhlTransLLUSet(mtp->map_pos_l,mtp->map_pos_r,
+                                mtp->map_pos_b,mtp->map_pos_t,
+                                mtp->ul,mtp->ur,mtp->ub,mtp->ut,
+                                loglin,entry_name);
+        }
 	mtp->left_ndc = mtp->map_pos_l;
 	mtp->right_ndc = mtp->map_pos_r;
 	mtp->bottom_ndc = mtp->map_pos_b;

@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.55 1997-08-14 16:30:00 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.56 1998-02-18 01:22:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -773,7 +773,12 @@ static NhlErrorTypes LabelBarSetValues
 		do_scaling = True;
 	}
 
-	if (num_args > view_args)
+	if (num_args > view_args ||
+            ! _NhlSegmentSpansArea(lb_p->trans_dat,
+                                   tnew->view.x,
+                                   tnew->view.x + tnew->view.width,
+                                   tnew->view.y - tnew->view.height,
+                                   tnew->view.y))
 		lb_p->new_draw_req = True;
 
 	if (lb_p->box_count < 1) {
@@ -4125,6 +4130,7 @@ static NhlErrorTypes    LabelBarDraw
 		return(ret);
 
 	if (lbl->view.use_segments && ! lb_p->new_draw_req) {
+                
                 subret = _NhlActivateWorkstation(lbl->base.wkptr);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
                 subret = _NhlDrawSegment(lb_p->trans_dat,

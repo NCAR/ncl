@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.33 1998-02-07 03:50:56 dbrown Exp $
+ *      $Id: LogLinTransObj.c,v 1.34 1998-02-18 01:22:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -663,6 +663,7 @@ NhlLayer inst;
 	return NhlNOERROR;
 }
 
+
 /*
  * Function:	LlSetTrans
  *
@@ -699,7 +700,7 @@ static NhlErrorTypes LlSetTrans
 	NhlString		entry_name = "LlSetTrans";
 	NhlString		e_text;
 	NhlErrorTypes		ret;
-	float xr, yb;
+	float xr,yb;
 	
 	ret = (*NhltransObjClassRec.trobj_class.set_trans)(tobj,vobj);
 	if(ret < NhlWARNING)
@@ -707,28 +708,11 @@ static NhlErrorTypes LlSetTrans
 
 	xr = tp->x + tp->width;
 	yb = tp->y - tp->height;
-	if (tp->x < 0.0 || tp->y > 1.0 || xr > 1.0 || yb < 0.0) {
-		e_text = "%s: View extent is outside NDC range: constraining";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		ret = MIN(ret,NhlWARNING);
-		tp->x = MIN(1.0,MAX(tp->x,0.0));
-                tp->width = MIN(tp->width,1.0-tp->x);
-                if (tp->width <= 0.0)
-                        tp->width = 0.1;
-		xr = tp->x + tp->width;
-		tp->y = MAX(0.0,MIN(tp->y,1.0));
-                tp->height = MIN(tp->height,1.0-tp->y);
-                if (tp->height <= 0.0)
-                        tp->height = 0.1;
-		yb = tp->y - tp->height;
-	}
-	c_set(tp->x,xr,yb,tp->y,
-	      linstance->lltrans.ul,linstance->lltrans.ur,
-	      linstance->lltrans.ub,linstance->lltrans.ut,
-	      linstance->lltrans.log_lin_value);
-
-	
-	return(NhlNOERROR);
+        
+	return(_NhlTransLLUSet(tp->x,xr,yb,tp->y,
+			       linstance->lltrans.ul,linstance->lltrans.ur,
+			       linstance->lltrans.ub,linstance->lltrans.ut,
+			       linstance->lltrans.log_lin_value,entry_name));
 	
 }
 

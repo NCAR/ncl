@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.36 1997-09-23 00:03:11 dbrown Exp $
+ *      $Id: Transform.c,v 1.37 1998-02-18 01:25:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1509,7 +1509,7 @@ extern NhlErrorTypes _NhltfDrawSegment
 (
         NhlLayer	plot,
 	NhlLayer	trobj,
-        NhlTransDat	*transdat,    				       
+        NhlTransDat	*transdat,
 	NhlString	entry_name
 )
 #else
@@ -1556,6 +1556,7 @@ extern NhlErrorTypes _NhltfDrawSegment
 		x[2] = vl->view.fr;
 		y[2] = vl->view.ft;
 	}
+        
 	while(steptrans != NULL) {
 		if (steptrans->seg_trans_dat == transdat)
 			break;

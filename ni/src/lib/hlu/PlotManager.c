@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.44 1997-09-08 19:26:31 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.45 1998-02-18 01:23:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3756,6 +3756,9 @@ ManageTickMarks
 		if (ovnew->view.height != ovold->view.height)
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNvpHeightF,ovnew->view.height);
+		if (ovnew->view.use_segments != ovold->view.use_segments)
+			NhlSetSArg(&sargs[nargs++],
+                                   NhlNvpUseSegments,ovnew->view.use_segments);
 		if (ovp->x_tm_style != oovp->x_tm_style) {
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNtmXBStyle,ovp->x_tm_style);
@@ -4049,6 +4052,9 @@ ManageTitles
 		if (ovp->ti_height != oovp->ti_height)
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNvpHeightF,ovp->ti_height);
+                if (ovnew->view.use_segments  != ovold->view.use_segments)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNvpUseSegments,ovnew->view.use_segments);
 		if ((ovp->ti_main_font_height != oovp->ti_main_font_height)
 		    || (ovp->ti_width != oovp->ti_width))
 			NhlSetSArg(&sargs[nargs++],
@@ -4613,6 +4619,9 @@ ManageLegend
 		if (ovp->lgnd_orient != oovp->lgnd_orient)
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNlgOrientation,ovp->lgnd_orient);
+                if (ovnew->view.use_segments != ovold->view.use_segments)
+			NhlSetSArg(&sargs[nargs++],
+                                   NhlNvpUseSegments,ovnew->view.use_segments);
 		subret = _NhlALSetValuesChild(ovp->legend->base.id,
 					      (NhlLayer)ovnew,sargs,nargs);
 
@@ -4623,7 +4632,7 @@ ManageLegend
 		}
 	}
 /*
- * Need to retrieve the height and width because the LabelBar might 
+ * Need to retrieve the height and width because the Legend might 
  * change these values, particularly if auto_manage is set false.
  */
 	subret = NhlVAGetValues(ovp->legend->base.id,
@@ -6430,7 +6439,7 @@ extern NhlErrorTypes _NhlManageOverlay
 	int			tmpid = NhlNULLOBJID;
 	char			buffer[_NhlMAXFNAMELEN];
 	NhlSArg			*lsargs;
-	int			lsarg_count = 8; /* Keep up to date!!! */
+	int			lsarg_count = 10; /* Keep up to date!!! */
 
 	if (*overlay_object == NULL) {
 		if (! tfp->plot_manager_on)
@@ -6573,6 +6582,9 @@ extern NhlErrorTypes _NhlManageOverlay
 			NhlSetSArg(&lsargs[nargs++],NhlNvpWidthF,vwp->width);
 		if (vwp->height != ovwp->height)
 			NhlSetSArg(&lsargs[nargs++],NhlNvpHeightF,vwp->height);
+		if (vwp->use_segments != ovwp->use_segments)
+			NhlSetSArg(&lsargs[nargs++],
+                                   NhlNvpUseSegments,vwp->use_segments);
 
 		if (tfp->overlay_object != otfp->overlay_object)
 			NhlSetSArg(&lsargs[nargs++],

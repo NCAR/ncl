@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.27 1998-02-07 03:51:26 dbrown Exp $
+ *      $Id: TransObj.c,v 1.28 1998-02-18 01:25:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #include <ncarg/hlu/View.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/TransObjP.h>
+#include <math.h>
 
 static NhlResource resources[] =  {
 
@@ -676,3 +677,104 @@ float missing;
 
 }
 
+NhlErrorTypes _NhlTransLLUSet
+#if NhlNeedProto
+(
+    float vl,
+    float vr,
+    float vb,
+    float vt,
+    float wl,
+    float wr,
+    float wb,
+    float wt,
+    int lf,
+    NhlString entry
+)
+#else
+(vl,vr,vb,vt,wl,wr,wb,wt,lf,entry)
+    float vl;
+    float vr;
+    float vb;
+    float vt;
+    float wl;
+    float wr;
+    float wb;
+    float wt;
+    int lf;
+    NhlString entry;
+#endif
+{
+        float fl,fr,fb,ft,ul,ur,ub,ut;
+        float fwidth,fheight,uwidth,uheight;
+
+        if (vl >= 0.0 && vr <= 1.0 && vb >=0.0 && vt <= 1.0) {
+                _NHLCALLF(set,SET) (&vl,&vr,&vb,&vt,&wl,&wr,&wb,&wt,&lf);
+                return NhlNOERROR;
+        }
+
+        if (vl >= 1.0 || vr <= 0.0 || vb >= 1.0 || vt <= 0.0) {
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                    "%s: plot entirely outside viewspace; cannot draw",entry));
+                return NhlFATAL;
+        }
+
+        fwidth = vr-vl;
+        fheight = vt-vb;
+
+        fl = MAX(0.0,vl);
+        fr = MIN(1.0,vr);
+        fb = MAX(0.0,vb);
+        ft = MIN(1.0,vt);
+
+        switch (lf) {
+            case 1:
+            default:
+                    uwidth = wr-wl;
+                    ul = (vl < 0.0) ? wl + uwidth * (-vl / fwidth) : wl;
+                    ur = (vr > 1.0) ? wr - uwidth * ((vr-1.0) / fwidth) : wr;
+                    uheight = wt-wb;
+                    ub = (vb < 0.0) ? wb + uheight * (-vb / fheight) : wb;
+                    ut = (vt > 1.0) ? wt - uheight * ((vt-1.0) / fheight) : wt;
+                    break;
+            case 2:
+                    uwidth = wr-wl;
+                    ul = (vl < 0.0) ?  wl + uwidth * (-vl / fwidth) : wl;
+                    ur = (vr > 1.0) ?  wr - uwidth * ((vr-1.0) / fwidth) : wr;
+                    uheight = log10(wt)-log10(wb);
+                    ub = (vb < 0.0) ?
+                            pow(10,log10(wb) + uheight * (-vb / fheight)) : wb;
+                    ut = (vt > 1.0) ?
+                            pow(10,log10(wt)
+                                - uheight * ((vt-1.0) / fheight)) : wt;
+                    break;
+            case 3:
+                    uwidth = log10(wr)-log10(wl);
+                    ul = (vl < 0.0) ?
+                            pow(10,log10(wl) + uwidth * (-vl / fwidth)) : wl;
+                    ur = (vr > 1.0) ?
+                            pow(10,log10(wr)
+                                - uwidth * ((vr-1.0) / fwidth)) : wr;
+                    uheight = wt-wb;
+                    ub = (vb < 0.0) ? wb + uheight * (-vb / fheight) : wb;
+                    ut = (vt > 1.0) ? wt - uheight * ((vt-1.0) / fheight) : wt;
+                    break;
+            case 4:
+                    uwidth = log10(wr)-log10(wl);
+                    ul = (vl < 0.0) ?
+                            pow(10,log10(wl) + uwidth * (-vl / fwidth)) : wl;
+                    ur = (vr > 1.0) ?
+                            pow(10,log10(wr)
+                                - uwidth * ((vr-1.0) / fwidth)) : wr;
+                    uheight = log10(wt)-log10(wb);
+                    ub = (vb < 0.0) ?
+                            pow(10,log10(wb) + uheight * (-vb / fheight)) : wb;
+                    ut = (vt > 1.0) ?
+                            pow(10,log10(wt) -
+                                uheight * ((vt-1.0) / fheight)) : wt;
+                    break;
+        }
+
+        _NHLCALLF(set,SET) (&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&lf);
+        return NhlNOERROR;
+}

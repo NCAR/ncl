@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.56 1997-08-14 16:30:06 dbrown Exp $
+ *      $Id: Legend.c,v 1.57 1998-02-18 01:22:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -894,7 +894,12 @@ static NhlErrorTypes LegendSetValues
 		do_scaling = True;
 	}
 
-	if (num_args > view_args)
+	if (num_args > view_args ||
+            ! _NhlSegmentSpansArea(lg_p->trans_dat,
+                                   tnew->view.x,
+                                   tnew->view.x + tnew->view.width,
+                                   tnew->view.y - tnew->view.height,
+                                   tnew->view.y))
 		lg_p->new_draw_req = True;
 
 	if (lg_p->item_count < 1) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.31 1997-08-14 16:30:43 dbrown Exp $
+ *      $Id: Title.c,v 1.32 1998-02-18 01:25:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -988,7 +988,12 @@ static NhlErrorTypes    TitleSetValues
 	if (_NhlArgIsSet(args,num_args,NhlNvpWidthF)) view_args++;
 	if (_NhlArgIsSet(args,num_args,NhlNvpHeightF)) view_args++;
 
-	if (num_args > view_args)
+	if (num_args > view_args ||
+            ! _NhlSegmentSpansArea(tnew->title.trans_dat,
+                                   tnew->view.x,
+                                   tnew->view.x + tnew->view.width,
+                                   tnew->view.y - tnew->view.height,
+                                   tnew->view.y))
 		tnew->title.new_draw_req = True;
 
         if (view_args) {

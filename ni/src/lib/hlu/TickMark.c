@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.59 1997-09-23 00:03:04 dbrown Exp $
+ *      $Id: TickMark.c,v 1.60 1998-02-18 01:24:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1392,7 +1392,12 @@ static NhlErrorTypes	TickMarkSetValues
 	if (_NhlArgIsSet(args,num_args,NhlNtmYRMinorOutwardLengthF)) 
 		tnew->tick.y_r_minor_outward_length_set = True;
 
-	if (num_args > view_args)
+	if (num_args > view_args ||
+            ! _NhlSegmentSpansArea(tnew->tick.trans_dat,
+                                   tnew->view.x,
+                                   tnew->view.x + tnew->view.width,
+                                   tnew->view.y - tnew->view.height,
+                                   tnew->view.y))
 	    tnew->tick.new_draw_req = True;
 /*
 * for resources that represent size THAT HAVE NOT been set in the current

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Segments.h,v 1.1 1993-04-30 17:24:06 boote Exp $
+ *      $Id: Segments.h,v 1.2 1998-02-18 01:23:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,7 +29,8 @@ typedef struct _NhlTransDat{
 	int id;
         int indx[3]; 
         float a[3][3]; 
-        int d; 
+        int d;
+        float xmin,xmax,ymin,ymax;
 } NhlTransDat;
 
 

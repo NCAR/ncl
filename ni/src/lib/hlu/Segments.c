@@ -1,5 +1,5 @@
 /*
- *      $Id: Segments.c,v 1.6 1996-10-10 21:02:55 dbrown Exp $
+ *      $Id: Segments.c,v 1.7 1998-02-18 01:23:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -154,6 +154,11 @@ NhlTransDat *_NhlInitSegTransDat
 	transdat = (NhlTransDat*)NhlMalloc((unsigned)sizeof(NhlTransDat));
 	if(transdat != NULL ){
 
+                transdat->xmin = x[0];
+                transdat->xmax = x[2];
+                transdat->ymin = y[0];
+                transdat->ymax = y[2];
+
 		transdat->a[0][0] = x[0];
 		transdat->a[1][0] = y[0];
 		transdat->a[2][0] = 1.0;
@@ -228,6 +233,11 @@ void	_NhlResetSegTransDat
 	int k,j;
 
 	if(transdat != NULL ){
+
+                transdat->xmin = x[0];
+                transdat->xmax = x[2];
+                transdat->ymin = y[0];
+                transdat->ymax = y[2];
 
 		transdat->a[0][0] = x[0];
 		transdat->a[1][0] = y[0];
@@ -323,6 +333,85 @@ void	_NhlComputeSegTrans
 	
 	return;
 	
+}
+
+/*
+ * Function:	_NhlSegmentSpansArea
+ *
+ * Description:	Checks to see if a segment, which may be incomplete because
+ * it was drawn when the viewport extends partially outside the viewspace,
+ * covers the area that now is requested. If not, it returns False.
+ *
+ * In Args:	transdat	contains among other things the min and max
+ *                              x and y when the segment was created
+ *              xmin,xmax,ymin,ymax the current viewport boundaries.
+ *
+ * Out Args: 	NONE
+ *
+ * Return Values: 	True if the segment contains enough info to draw
+ *                      the picture.
+ *
+ * Side Effects:	Segment drawn to workstation.
+ */
+
+NhlBoolean _NhlSegmentSpansArea
+#if	NhlNeedProto
+(
+        NhlTransDat	*transdat,
+        float		xmin,
+        float		xmax,
+        float		ymin,
+        float		ymax
+        )
+#else
+(transdat,xmin,xmax,ymin,ymax)
+	NhlTransDat	*transdat;
+        float		xmin;
+        float		xmax;
+        float		ymin;
+        float		ymax;
+#endif
+{
+        float owidth,oheight,nwidth,nheight;
+
+        if (! transdat)
+                return False;
+
+        if (transdat->xmin >= 0.0 && transdat->xmax <= 1.0 &&
+            transdat->ymin >= 0.0 && transdat->ymax <= 1.0)
+                return True;
+                
+        owidth = transdat->xmax - transdat->xmin;
+        oheight = transdat->ymax - transdat->ymin;
+        nwidth = xmax - xmin;
+        nheight = ymax - ymin;
+
+        if (transdat->xmin < 0.0) {
+                if (xmin >= 0.0)
+                        return False;
+                if (transdat->xmin / owidth < xmin / nwidth)
+                        return False;
+        }
+        if (transdat->xmax > 1.0) {
+                if (xmax <= 1.0)
+                        return False;
+                if ((transdat->xmax-1.0) / owidth > (xmax-1.0) / nwidth)
+                        return False;
+        }
+        if (transdat->ymin < 0.0) {
+                if (ymin >= 0.0)
+                        return False;
+                if (transdat->ymin / oheight < ymin / nheight)
+                        return False;
+        }
+        if (transdat->ymax > 1.0) {
+                if (ymax <= 1.0)
+                        return False;
+                if ((transdat->ymax-1.0) / oheight > (ymax-1.0) / nheight)
+                        return False;
+        }
+
+        return True;
 }
 
 /*

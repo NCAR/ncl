@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjP.h,v 1.15 1998-02-07 03:51:31 dbrown Exp $
+ *      $Id: TransObjP.h,v 1.16 1998-02-18 01:25:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -163,6 +163,21 @@ float * /*y0*/,
 float * /*x1*/,
 float * /*y1*/,
 float /*missing*/
+#endif
+);
+
+NhlErrorTypes _NhlTransLLUSet(
+#if NhlNeedProto
+    float vl,
+    float vr,
+    float vb,
+    float vt,
+    float wl,
+    float wr,
+    float wb,
+    float wt,
+    int lf,
+    NhlString entry
 #endif
 );
 

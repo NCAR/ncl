@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.39 1998-02-07 03:51:21 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.40 1998-02-18 01:23:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1482,8 +1482,24 @@ static NhlErrorTypes StreamlinePlotSetValues
 		stp->new_draw_req = True;
 	}
 	if (stnew->view.use_segments) {
+                NhlTransDat *trans_dat = NULL;
+                
 		if (NewDrawArgs(args,num_args))
 			stp->new_draw_req = True;
+                
+                if (stp->draw_dat)
+                        trans_dat = stp->draw_dat;
+                else if (stp->postdraw_dat)
+                        trans_dat = stp->postdraw_dat;
+                else if (stp->predraw_dat)
+                        trans_dat = stp->predraw_dat;
+                if (! _NhlSegmentSpansArea(trans_dat,
+                                           stnew->view.x,
+                                           stnew->view.x + stnew->view.width,
+                                           stnew->view.y - stnew->view.height,
+                                           stnew->view.y))
+                        stp->new_draw_req = True;
+
 	}
 
 	if (_NhlArgIsSet(args,num_args,NhlNstArrowLengthF))

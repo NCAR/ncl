@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.60 1997-09-23 00:02:56 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.61 1998-02-18 01:23:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1611,8 +1611,24 @@ static NhlErrorTypes MapPlotSetValues
 		Mpp->new_draw_req = True;
 	}
 	if (Mpl->view.use_segments) {
+                NhlTransDat *trans_dat = NULL;
+                
 		if (NewDrawArgs(args,num_args))
 			Mpp->new_draw_req = True;
+                
+                if (Mpp->draw_dat)
+                        trans_dat = Mpp->draw_dat;
+                else if (Mpp->postdraw_dat)
+                        trans_dat = Mpp->postdraw_dat;
+                else if (Mpp->predraw_dat)
+                        trans_dat = Mpp->predraw_dat;
+                if (! _NhlSegmentSpansArea(trans_dat,
+                                           Mpl->view.x,
+                                           Mpl->view.x + Mpl->view.width,
+                                           Mpl->view.y - Mpl->view.height,
+                                           Mpl->view.y))
+                        Mpp->new_draw_req = True;
+
 	}
 
 	Mpp->limb.on = Mpp->grid.on;

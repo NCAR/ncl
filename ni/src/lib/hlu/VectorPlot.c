@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.45 1998-02-07 03:51:53 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.46 1998-02-18 01:25:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2198,8 +2198,24 @@ static NhlErrorTypes VectorPlotSetValues
 	if (vcnew->view.use_segments != vcold->view.use_segments)
 		vcp->new_draw_req = True;
 	if (vcnew->view.use_segments) {
+                NhlTransDat *trans_dat = NULL;
+                
 		if (NewDrawArgs(args,num_args))
 			vcp->new_draw_req = True;
+                
+                if (vcp->draw_dat)
+                        trans_dat = vcp->draw_dat;
+                else if (vcp->postdraw_dat)
+                        trans_dat = vcp->postdraw_dat;
+                else if (vcp->predraw_dat)
+                        trans_dat = vcp->predraw_dat;
+                if (! _NhlSegmentSpansArea(trans_dat,
+                                           vcnew->view.x,
+                                           vcnew->view.x + vcnew->view.width,
+                                           vcnew->view.y - vcnew->view.height,
+                                           vcnew->view.y))
+                        vcp->new_draw_req = True;
+
 	}
 
 	if (_NhlArgIsSet(args,num_args,NhlNvcLevelSpacingF))

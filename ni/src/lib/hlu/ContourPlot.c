@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.70 1998-02-07 03:49:55 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.71 1998-02-18 01:21:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2375,8 +2375,24 @@ static NhlErrorTypes ContourPlotSetValues
 		cnp->new_draw_req = True;
 	}
 	if (cnew->view.use_segments) {
+                NhlTransDat *trans_dat = NULL;
+                
 		if (NewDrawArgs(args,num_args))
 			cnp->new_draw_req = True;
+                
+                if (cnp->draw_dat)
+                        trans_dat = cnp->draw_dat;
+                else if (cnp->postdraw_dat)
+                        trans_dat = cnp->postdraw_dat;
+                else if (cnp->predraw_dat)
+                        trans_dat = cnp->predraw_dat;
+                if (! _NhlSegmentSpansArea(trans_dat,
+                                           cnew->view.x,
+                                           cnew->view.x + cnew->view.width,
+                                           cnew->view.y - cnew->view.height,
+                                           cnew->view.y))
+                        cnp->new_draw_req = True;
+
 	}
 
 	if (_NhlArgIsSet(args,num_args,NhlNcnLevelSpacingF))
@@ -3424,6 +3440,10 @@ static NhlErrorTypes GetDataBound
                         }
                 }
 	}
+        bbox->l = MAX(0.0,bbox->l);
+        bbox->r = MIN(1.0,bbox->r);
+        bbox->t = MIN(1.0,bbox->t);
+        bbox->b = MAX(0.0,bbox->b);
 
 	return NhlNOERROR;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: ViewI.h,v 1.5 1997-01-08 21:10:33 dbrown Exp $
+ *      $Id: ViewI.h,v 1.6 1998-02-18 01:26:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -57,14 +57,25 @@ float   *       /* yprime */
 #endif
 );
 
+extern NhlBoolean _NhlSegmentSpansArea(
+#if	NhlNeedProto
+NhlTransDat* transdat,
+float xmin,
+float xmax,
+float ymin,
+float ymax
+#endif
+);
+
 extern NhlErrorTypes _NhlDrawSegment(
 #if	NhlNeedProto
 NhlTransDat*,   /* transdat */
 int             /* wksid */
 #endif
 );
+
 extern void _NhlEvalTrans(
-#if	NhlNeedProto
+#if     NhlNeedProto
 float *,        /*transform */
 float,          /* x */
 float,          /* y */

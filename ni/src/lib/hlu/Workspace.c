@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.37 1997-07-14 18:36:29 dbrown Exp $
+ *      $Id: Workspace.c,v 1.38 1998-02-18 01:26:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2863,11 +2863,11 @@ NhlErrorTypes _NhlCpcica
 	}
 
 	xhalf = 0.5 * (xcqf-xcpf) / (icam-1);
-	lxcpf = xcpf - xhalf;
-	lxcqf = xcqf + xhalf;
+	lxcpf = MAX(0.0,xcpf - xhalf);
+	lxcqf = MIN(1.0,xcqf + xhalf);
 	yhalf = 0.5 * (ycqf-ycpf) / (ican-1);
-	lycpf = ycpf - yhalf;
-	lycqf = ycqf + yhalf;
+	lycpf = MAX(0.0,ycpf - yhalf);
+	lycqf = MIN(1.0,ycqf + yhalf);
 
 	if (! smooth) {
 		ret = _NhlRasterFill(zdat,cwsrp->ws_ptr,ica1,icam,ican,
