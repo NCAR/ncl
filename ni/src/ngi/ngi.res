@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.24 1999-03-15 18:09:56 dbrown Exp $
+!      $Id: ngi.res,v 1.25 1999-05-22 00:21:38 dbrown Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -25,10 +25,14 @@
 !									!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-!!! DEBUGING !!!
-NgNGO*synchronous:	True
+!!! DEBUGGING !!!
+!NgNGO*synchronous:	True
 *dragInitiatorProtocolStyle:	XmDRAG_NONE
 *dragReceiverProtocolStyle:	XmDRAG_NONE
+*dragInitiatorProtocolStyle:	XmDRAG_DROP_ONLY
+*dragReceiverProtocolStyle:	XmDRAG_DROP_ONLY
+*allowDragSelected:		True
+!*allowDrop:			True
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -42,6 +46,8 @@ NgNGO*addfileMGR*pattern:	*.{cdf,nc,grb,hdf,ccm}
 NgNGO*addfileMGR*directory:	.
 
 !*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
+
+
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -63,9 +69,7 @@ NgNGO*addfileMGR*directory:	.
 !
 NgNGO*visual:		XcbVisual
 !NgNGO*visual:		PseudoColor
-!NgNGO*visual:		DirectColor
 !NgNGO*depth:		8
-!NgNGO*depth:		24
 
 !NgNGO*colorMode:	privatecmap
 NgNGO*colorMode:	sharedcmap
@@ -127,7 +131,7 @@ NgNGO*XmFrame*XmLabel.FontList:	-*-helvetica-medium-r-normal-*-*-120-*-*-*-*-iso
 !NgNGO*renderTable*fontType:		FONT_IS_FONT
 !NgNGO*renderTable*underlineType:	AS_IS
 
-!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
+!*!*!*!*!*!*!*!*!e!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -137,8 +141,8 @@ NgNGO*XmFrame*XmLabel.FontList:	-*-helvetica-medium-r-normal-*-*-120-*-*-*-*-iso
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 NgNGO*globalTranslations:	\
-		Meta ~Ctrl<Key>C:	closeWindow()		\n\
-		 Alt ~Ctrl<Key>C:	closeWindow()		\n\
+		Meta ~Ctrl<Key>W:	closeWindow()		\n\
+		 Alt ~Ctrl<Key>W:	closeWindow()		\n\
 		Meta ~Ctrl<Key>Q:	quitApplication()	\n\
 		 Alt ~Ctrl<Key>Q:	quitApplication()	\n\
 		Meta ~Ctrl<Key>A:	addFile()		\n\
@@ -147,11 +151,12 @@ NgNGO*globalTranslations:	\
 		 Alt ~Ctrl<Key>L:	loadScript()		\n\
 		Meta ~Ctrl<Key>N:	nclWindow()		\n\
 		 Alt ~Ctrl<Key>N:	nclWindow()		\n\
-		Ctrl ~Alt<Key>N:	nclWindow("new")	\n\
 		Meta ~Ctrl<Key>B:	browseWindow()		\n\
 		 Alt ~Ctrl<Key>B:	browseWindow()		\n\
-		Ctrl ~Alt<Key>B:	browseWindow("new")	\n\
-		Ctrl ~Alt~Meta<Key>C:	colorMapEditor()
+		 Meta ~Ctrl<Key>C:	colorMapEditor()	\n\
+		 Alt ~Ctrl<Key>C:	colorMapEditor()	\n\
+		 Meta ~Ctrl<Key>P:	 printPlot()		\n\
+		 Alt ~Ctrl<Key>P:	printPlot()		
 
 !
 ! Menubar strings
@@ -180,11 +185,11 @@ NgNGO*globalTranslations:	\
 
 *fmenu.nclWindow.labelString:		Ncl Editor
 *fmenu.nclWindow.mnemonic:		N
-*fmenu.nclWindow.acceleratorText:	Ctrl+N
+*fmenu.nclWindow.acceleratorText:	Alt+N
 
 *fmenu.browseWindow.labelString:	Browser
 *fmenu.browseWindow.mnemonic:		B
-*fmenu.browseWindow.acceleratorText:	Ctrl+B
+*fmenu.browseWindow.acceleratorText:	Alt+B
 
 *fmenu.addFile.labelString:		Add File
 *fmenu.addFile.mnemonic:		A
@@ -196,11 +201,11 @@ NgNGO*globalTranslations:	\
 
 *fmenu.printPlot.labelString:		Print/Output Plot
 *fmenu.printPlot.mnemonic:		P
-*fmenu.printPlot.acceleratorText:	Ctrl+P
+*fmenu.printPlot.acceleratorText:	Alt+P
 
 *fmenu.closeWindow.labelString:		Close
 *fmenu.closeWindow.mnemonic:		C
-*fmenu.closeWindow.acceleratorText:	Alt+C
+*fmenu.closeWindow.acceleratorText:	Alt+W
 
 *fmenu.quitApplication.labelString:	Exit
 *fmenu.quitApplication.mnemonic:	x
@@ -881,8 +886,8 @@ browse.title:				Data Browser
 
 ! for development
 !addfile*directory: /fs/scd/home1/ncargd/dev/sun4_SunOS_5_5_1/lib/ncarg/data/cdf
-!addfile*directory: /usr/local/ncarg/lib/ncarg/data/cdf/
 !addfile*directory: /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
+!addfile*directory: /usr/local/ncarg/lib/ncarg/data/cdf/
 
 
 !htmlview: display is sgi,linux
@@ -905,25 +910,236 @@ browse.title:				Data Browser
 *PaneInc*topOffset: 0
 *PaneInc*bottomOffset: 0
 
-
-
-!*contourPlotClass*cnMinLevelValF : 1.0
-!*contourPlotClass*cnMaxLevelValF : 7.0
-!*contourPlotClass*cnLevelSpacingF : 1.0
-
-!*contourPlotClass*cnLevelSelectionMode : ManualLevels
-!*wkColorMap : psgcap
-!*wkColorMap : temp1
-*cnHighLabelsOn : False
-*cnLowLabelsOn : False
-!*mpShapeMode: FixedAspectNoFitBB
-!*mapPlotClass*vpWidthF : 1.0
-!*mapPlotClass*vpHeightF : 1.0
-!*mapPlotClass*vpYF : 1.0
-!*mapPlotClass*vpXF : 0.0
-!*mapPlotClass*mpDumpAreaMap : True
-*mpDataBaseVersion : NCARG4_1
+ 
 *vpUseSegments: True
 *logLinPlotClass*pmTickMarkDisplayMode: always
 *irregularPlotClass*pmTickMarkDisplayMode: always
 *wkColorMap: temp1
+
+!
+! so since we're not using clipboard for text, it's not too useful for
+! the List either.
+!
+!*XmList*translations: #override                       \n\
+!	~Meta ~Alt Ctrl	<Btn2Down>:	ListBeginSelect() \n\
+!	~Meta ~Alt Ctrl	<Btn2Up>: 	ListEndSelect() \
+!					ListCopyToClipboard()		\n\
+!	~Meta ~Alt Ctrl	<Key>c:		ListCopyToClipboard()
+!	
+
+!
+! these are kill buffer commands that we're not using right now. Instead
+! everything goes into the clipboard. That way we can uniformly support
+! XmText and XmTextField. And use the clipboard to paste from XmList widgets
+!									\
+!
+! actually I'm going back to using the kill actions and removing the
+! clipboard actions. There is something wierd going on with the keyboard
+! focus. It is not getting properly released from the the widget that was
+! using the clipboard actions (at least using Motif 2.x on Linux). Maybe
+! when there's more time this can be figured out. I'm still leaving the
+! clipboard actions for the TextField, because it does not have kill.
+!
+!									\
+!	~Meta ~Alt Ctrl	<Btn2Up>:	paste-clipboard()		\n\
+!	~Meta ~Alt Ctrl<Key>y:		paste-clipboard()		\n\
+!	~Meta ~Alt Ctrl<Key>k:		set-anchor() \
+!					end-of-line(extend) \
+!					cut-clipboard() 		\n\
+!	~Meta ~Alt Ctrl<Key>w:		cut-clipboard()			\n\
+!	~Meta ~Alt Ctrl<Key>c:		copy-clipboard()		\n\
+!	Meta ~Ctrl       <Key>d:	set-anchor() \
+!					forward-word(extend) \
+!					cut-clipboard()			\n\
+!	 Alt ~Ctrl       <Key>d:	set-anchor() \
+!					forward-word(extend) \
+!					cut-clipboard()			\n\
+!	Meta ~Ctrl<Key>osfBackSpace:	set-anchor() \
+!					backward-word(extend) \
+!					cut-clipboard()			\n\
+!	 Alt ~Ctrl<Key>osfBackSpace:	set-anchor() \
+!					backward-word(extend) \
+!					cut-clipboard()			\n\
+!	Meta ~Ctrl<Key>osfDelete:	set-anchor() \
+!					forward-word(extend) \
+!					cut-clipboard()			\n\
+!	 Alt ~Ctrl<Key>osfDelete:	set-anchor() \
+!					forward-word(extend) \
+!					cut-clipboard()			\n\
+!
+
+*editingTranslations:                   #override                       \n\
+                <Key>Return:            process-return()                \
+                                        activate()			\n\
+        Meta ~Ctrl<Key>A:               select-all()                    \n\
+         Alt ~Ctrl<Key>A:               select-all()                    \n\
+        ~Meta ~Alt Ctrl<Key>a:          beginning-of-line()             \n\
+        ~Meta ~Alt  Shift Ctrl<Key>a:   set-anchor()  \
+					beginning-of-line(extend)       \n\
+        ~Meta ~Alt ~Shift Ctrl<Key>b:   backward-character()            \n\
+        ~Meta ~Alt  Shift Ctrl<Key>b:   backward-character(extend)      \n\
+        ~Meta ~Alt        Ctrl<Key>d:   delete-next-character()         \n\
+        ~Meta ~Alt ~Shift Ctrl<Key>e:   end-of-line()                   \n\
+        ~Meta ~Alt  Shift Ctrl<Key>e:   end-of-line(extend)             \n\
+        ~Meta ~Alt ~Shift Ctrl<Key>f:   forward-character()             \n\
+        ~Meta ~Alt  Shift Ctrl<Key>f:   forward-character(extend)       \n\
+        ~Meta ~Alt        Ctrl<Key>g:   process-cancel()                \n\
+        ~Meta ~Alt        Ctrl<Key>h:   delete-previous-character()     \n\
+        ~Meta ~Alt        Ctrl<Key>space: set-anchor()                  \n\
+        ~Meta ~Alt        Ctrl<Key>2:   set-anchor()                    \n\
+        ~Meta ~Alt        Ctrl<Key>@:   set-anchor()                    \n\
+									\
+	~Meta ~Alt Ctrl<Key>y:		unkill()			\n\
+	~Meta ~Alt Ctrl<Key>k:		kill-to-end-of-line()		\n\
+	~Meta ~Alt Ctrl<Key>w:		key-select() kill-selection()	\n\
+	Meta ~Ctrl       <Key>d:	kill-next-word()		\n\
+	 Alt ~Ctrl       <Key>d:	kill-next-word()		\n\
+	Meta ~Ctrl<Key>osfBackSpace:	kill-previous-word()		\n\
+	 Alt ~Ctrl<Key>osfBackSpace:	kill-previous-word()		\n\
+	Meta ~Ctrl<Key>osfDelete:	kill-next-word()		\n\
+	 Alt ~Ctrl<Key>osfDelete:	kill-next-word()		\n\
+                                                                        \
+        Meta ~Ctrl ~Shift<Key>b:        backward-word()                 \n\
+         Alt ~Ctrl ~Shift<Key>b:        backward-word()                 \n\
+        Meta ~Ctrl  Shift<Key>b:        backward-word(extend)           \n\
+         Alt ~Ctrl  Shift<Key>b:        backward-word(extend)           \n\
+        Meta ~Ctrl ~Shift<Key>f:        forward-word()                  \n\
+         Alt ~Ctrl ~Shift<Key>f:        forward-word()                  \n\
+        Meta ~Ctrl  Shift<Key>f:        forward-word(extend)            \n\
+         Alt ~Ctrl  Shift<Key>f:        forward-word(extend)            \n\
+        Meta ~Ctrl ~Shift<Key>osfLeft:  backward-word()                 \n\
+         Alt ~Ctrl ~Shift<Key>osfLeft:  backward-word()                 \n\
+        Meta ~Ctrl  Shift<Key>osfLeft:  backward-word(extend)           \n\
+         Alt ~Ctrl  Shift<Key>osfLeft:  backward-word(extend)           \n\
+        Meta ~Ctrl ~Shift<Key>osfRight: forward-word()                  \n\
+         Alt ~Ctrl ~Shift<Key>osfRight: forward-word()                  \n\
+        Meta ~Ctrl  Shift<Key>osfRight: forward-word(extend)            \n\
+         Alt ~Ctrl  Shift<Key>osfRight: forward-word(extend)            \n\
+									\
+	~Meta ~Alt Ctrl<Key>j:		newline-and-indent()		\n\
+	~Meta ~Alt Ctrl<Key>o:		newline-and-backup()		\n\
+	~Meta ~Alt ~Shift Ctrl<Key>n:	next-line()			\n\
+	~Meta ~Alt  Shift Ctrl<Key>n:	next-line(extend)		\n\
+	~Meta ~Alt ~Shift Ctrl<Key>p:	previous-line()			\n\
+	~Meta ~Alt  Shift Ctrl<Key>p:	previous-line(extend)		\n\
+	~Meta ~Alt ~Shift Ctrl<Key>v:	next-page()			\n\
+	~Meta ~Alt  Shift Ctrl<Key>v:	next-page(extend)		\n\
+	Meta  Ctrl ~Shift<Key>v:	previous-page()			\n\
+	 Alt  Ctrl ~Shift<Key>v:	previous-page()			\n\
+	Meta ~Ctrl  Shift<Key>v:	previous-page(extend)		\n\
+	 Alt ~Ctrl  Shift<Key>v:	previous-page(extend)		\n\
+	 Alt ~Ctrl ~Shift<Key>[:	backward-paragraph()		\n\
+	Meta ~Ctrl ~Shift<Key>[:	backward-paragraph()		\n\
+	 Alt ~Ctrl  Shift<Key>[:	backward-paragraph(extend)	\n\
+	Meta ~Ctrl  Shift<Key>[:	backward-paragraph(extend)	\n\
+	 Alt ~Ctrl ~Shift<Key>]:	forward-paragraph()		\n\
+	Meta ~Ctrl ~Shift<Key>]:	forward-paragraph()		\n\
+	 Alt ~Ctrl  Shift<Key>]:	forward-paragraph(extend)	\n\
+	Meta ~Ctrl  Shift<Key>[:	forward-paragraph(extend)	\n\
+	 Alt ~Ctrl       <Key><:	set-anchor()			\
+					beginning-of-file()		\n\
+	Meta ~Ctrl       <Key><:	set-anchor()			\
+					beginning-of-file()		\n\
+ 	 Alt ~Ctrl       <Key>>:	set-anchor()			\
+					end-of-file()			\n\
+	Meta ~Ctrl       <Key>>:	set-anchor()			\
+					end-of-file()			\n\
+	~Alt  Ctrl       <Key><:	set-anchor()			\
+					beginning-of-file(extend)	\n\
+       ~Meta  Ctrl       <Key><:	set-anchor()			\
+					beginning-of-file(extend)	\n\
+	~Alt  Ctrl       <Key>>:	set-anchor()			\
+					end-of-file(extend)		\n\
+       ~Meta  Ctrl       <Key>>:	set-anchor()			\
+					end-of-file(extend)		\n\
+	~Meta ~Alt ~Ctrl<Key>Prior:	previous-page()			\n\
+	~Meta ~Alt ~Ctrl<Key>Next:	next-page()			\n\
+	~Meta ~Alt ~Ctrl<Key>osfPageUp:	previous-page()			\n\
+	~Meta ~Alt ~Ctrl<Key>osfPageDown: next-page()			\n\
+	~Meta ~Alt        Ctrl<Key>l:	redraw-display()	
+
+*textFieldEditingTranslations:          #override                       \n\
+                <Key>Return:		activate()			\n\
+        Meta ~Ctrl<Key>A:               select-all()                    \n\
+         Alt ~Ctrl<Key>A:               select-all()                    \n\
+        ~Meta ~Alt Ctrl<Key>a:          beginning-of-line()             \n\
+        ~Meta ~Alt  Shift Ctrl<Key>a:   set-anchor() \
+					beginning-of-line(extend)       \n\
+        ~Meta ~Alt ~Shift Ctrl<Key>b:   backward-character()            \n\
+        ~Meta ~Alt  Shift Ctrl<Key>b:   backward-character(extend)      \n\
+        ~Meta ~Alt        Ctrl<Key>d:   delete-next-character()         \n\
+        ~Meta ~Alt ~Shift Ctrl<Key>e:   end-of-line()                   \n\
+        ~Meta ~Alt  Shift Ctrl<Key>e:   end-of-line(extend)             \n\
+        ~Meta ~Alt ~Shift Ctrl<Key>f:   forward-character()             \n\
+        ~Meta ~Alt  Shift Ctrl<Key>f:   forward-character(extend)       \n\
+        ~Meta ~Alt        Ctrl<Key>g:   process-cancel()                \n\
+        ~Meta ~Alt        Ctrl<Key>h:   delete-previous-character()     \n\
+        ~Meta ~Alt        Ctrl<Key>space: set-anchor()                  \n\
+        ~Meta ~Alt        Ctrl<Key>2:   set-anchor()                    \n\
+        ~Meta ~Alt        Ctrl<Key>@:   set-anchor()                    \n\
+                                                                        \
+        Meta ~Ctrl ~Shift<Key>b:        backward-word()                 \n\
+         Alt ~Ctrl ~Shift<Key>b:        backward-word()                 \n\
+        Meta ~Ctrl  Shift<Key>b:        backward-word(extend)           \n\
+         Alt ~Ctrl  Shift<Key>b:        backward-word(extend)           \n\
+        Meta ~Ctrl ~Shift<Key>f:        forward-word()                  \n\
+         Alt ~Ctrl ~Shift<Key>f:        forward-word()                  \n\
+        Meta ~Ctrl  Shift<Key>f:        forward-word(extend)            \n\
+         Alt ~Ctrl  Shift<Key>f:        forward-word(extend)            \n\
+        Meta ~Ctrl ~Shift<Key>osfLeft:  backward-word()                 \n\
+         Alt ~Ctrl ~Shift<Key>osfLeft:  backward-word()                 \n\
+        Meta ~Ctrl  Shift<Key>osfLeft:  backward-word(extend)           \n\
+         Alt ~Ctrl  Shift<Key>osfLeft:  backward-word(extend)           \n\
+        Meta ~Ctrl ~Shift<Key>osfRight: forward-word()                  \n\
+         Alt ~Ctrl ~Shift<Key>osfRight: forward-word()                  \n\
+        Meta ~Ctrl  Shift<Key>osfRight: forward-word(extend)            \n\
+         Alt ~Ctrl  Shift<Key>osfRight: forward-word(extend)            \n\
+									\
+	~Meta ~Alt Ctrl	<Btn2Up>:	paste-clipboard()		\n\
+	~Meta ~Alt Ctrl<Key>y:		paste-clipboard()		\n\
+	~Meta ~Alt Ctrl<Key>y:		paste-clipboard()		\n\
+	~Meta ~Alt Ctrl<Key>k:		set-anchor() \
+					end-of-line(extend) \
+					cut-clipboard() 		\n\
+	~Meta ~Alt Ctrl<Key>w:		cut-clipboard()			\n\
+	~Meta ~Alt Ctrl<Key>c:		copy-clipboard()		\n\
+	Meta ~Ctrl       <Key>d:	set-anchor() \
+					forward-word(extend) \
+					cut-clipboard()			\n\
+	 Alt ~Ctrl       <Key>d:	set-anchor() \
+					forward-word(extend) \
+					cut-clipboard()			\n\
+	Meta ~Ctrl<Key>osfBackSpace:	set-anchor() \
+					backward-word(extend) \
+					cut-clipboard()			\n\
+	 Alt ~Ctrl<Key>osfBackSpace:	set-anchor() \
+					backward-word(extend) \
+					cut-clipboard()			\n\
+	Meta ~Ctrl<Key>osfDelete:	set-anchor() \
+					forward-word(extend) \
+					cut-clipboard()			\n\
+	 Alt ~Ctrl<Key>osfDelete:	set-anchor() \
+					forward-word(extend) \
+					cut-clipboard()			\n\
+									\
+	 Alt ~Ctrl       <Key><:	set-anchor()	\
+					beginning-of-line()		\n\
+	Meta ~Ctrl       <Key><:	set-anchor()	\
+					beginning-of-line()		\n\
+ 	 Alt ~Ctrl       <Key>>:	set-anchor()	\
+					end-of-line()			\n\
+	Meta ~Ctrl       <Key>>:	set-anchor()	\
+					end-of-line()			\n\
+	~Alt  Ctrl       <Key><:	set-anchor()	\
+					beginning-of-line(extend)	\n\
+       ~Meta  Ctrl       <Key><:	set-anchor()	\
+					beginning-of-line(extend)	\n\
+	~Alt  Ctrl       <Key>>:	set-anchor()	\
+					end-of-line(extend)		\n\
+       ~Meta  Ctrl       <Key>>:	set-anchor()	\
+					end-of-line(extend)
+
+
+
+
+
