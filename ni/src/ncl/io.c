@@ -180,7 +180,7 @@ void _NclPushNewInputFile
 (fp,name,cline_number)
 FILE *fp;
 char *name;
-cline_number;
+int cline_number;
 #endif
 {
 	static int first = 1;
