@@ -1,0 +1,228 @@
+#
+#	$Id: yMakefile,v 1.1 1993-01-09 02:10:16 fred Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= wiss
+
+#if defined(sun) || (defined(u370) && (unix))
+# The Sun f77 optimizer appears to have troubles with the GKS system.
+
+FOPT =
+
+#endif
+
+GENERIC_SRCS = \
+gwelod.f  gwibkd.f  gwica.f   gwiclp.f  gwiclw.f  gwid2r.f  gwid2s.f  gwidmp.f \
+gwiesc.f  gwifa.f   gwiflb.f  gwiiac.f  gwiiws.f  gwilod.f  gwipat.f  gwipl.f \
+gwipm.f   gwisas.f  gwitx.f   gwiwdr.f  gwpart.f  gwpasf.f  gwpdva.f  gwpdvi.f \
+gwpdvr.f  gwptni.f  gwptpr.f  gwptps.f 
+
+GENERIC_OBJS = \
+gwelod.o  gwibkd.o  gwica.o   gwiclp.o  gwiclw.o  gwid2r.o  gwid2s.o  gwidmp.o \
+gwiesc.o  gwifa.o   gwiflb.o  gwiiac.o  gwiiws.o  gwilod.o  gwipat.o  gwipl.o \
+gwipm.o   gwisas.o  gwitx.o   gwiwdr.o  gwpart.o  gwpasf.o  gwpdva.o  gwpdvi.o \
+gwpdvr.o  gwptni.o  gwptpr.o  gwptps.o 
+
+SOURCES = $(GENERIC_SRCS)
+
+OBJECTS = $(GENERIC_OBJS)
+
+PartialLibrary(libncarg_gks.a,$(OBJECTS))
+
+#ifdef  BuildNCARGSourceLibrary
+all:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_QUICK) $(LIBPATH)/srcncarg_gks.a $(MYNAME) $(SOURCES)
+	@-$(RM) $(MYNAME)
+
+install:: $(SOURCES)
+	@echo "$(SOURCES)" > $(MYNAME)
+	@$(AR_SRC_CHECK) $(LIBPATH)/srcncarg_gks.a $(MYNAME) $(SOURCES)
+	$(RANLIB) $(LIBPATH)/srcncarg_gks.a
+	@-$(RM) $(MYNAME)
+
+FRule
+#endif
+
+gwelod.o : gwelod.f \
+   gwiins.h \
+   gwiio.h 
+ 
+gwibkd.o : gwibkd.f \
+   gwiwsl.h \
+   gwiwdt.h \
+   gwiins.h \
+   gwiadf.h \
+   gwiadc.h \
+   gwiopc.h 
+ 
+gwica.o : gwica.f \
+   gksin.h \
+   gwiio.h \
+   gwiins.h \
+   gwiwsl.h \
+   gksenu.h \
+   gwiopc.h 
+ 
+gwiclp.o : gwiclp.f \
+   gksin.h \
+   gwiwsl.h \
+   gwiins.h \
+   gwiopc.h 
+ 
+gwiclw.o : gwiclw.f \
+   gwiarq.h \
+   gksin.h \
+   gwiwsl.h \
+   gwiio.h \
+   gwiins.h \
+   gwiast.h \
+   gwiadf.h \
+   gwiopc.h \
+   gksenu.h 
+ 
+gwid2r.o : gwid2r.f \
+   gwiarq.h \
+   gwiadf.h 
+ 
+gwid2s.o : gwid2s.f \
+   gwiast.h \
+   gwiadf.h 
+ 
+gwidmp.o : gwidmp.f \
+   gwiwdt.h \
+   gwiwsl.h \
+   gwiadc.h \
+   gwiarq.h \
+   gwiast.h \
+   gwiadf.h \
+   gwiio.h \
+   gwiins.h \
+   gwiopc.h \
+   gksenu.h 
+ 
+gwiesc.o : gwiesc.f \
+   gksin.h \
+   gwiins.h 
+ 
+gwifa.o : gwifa.f \
+   gksin.h \
+   gwiio.h \
+   gwiins.h \
+   gwiwsl.h \
+   gwiarq.h \
+   gwiast.h \
+   gwiadc.h \
+   gwiopc.h \
+   gksenu.h 
+ 
+gwiflb.o : gwiflb.f \
+   gwiio.h 
+ 
+gwiiac.o : gwiiac.f \
+   gwiarq.h \
+   gwiast.h \
+   gwiadf.h \
+   gwiadc.h 
+ 
+gwiiws.o : gwiiws.f \
+   gwiwsl.h \
+   gwiins.h \
+   gksenu.h 
+ 
+gwilod.o : gwilod.f \
+   gwiio.h 
+ 
+gwipat.o : gwipat.f \
+   gksin.h \
+   gwiins.h \
+   gwiadc.h 
+ 
+gwipl.o : gwipl.f \
+   gksin.h \
+   gwiio.h \
+   gwiins.h \
+   gwiwsl.h \
+   gwiarq.h \
+   gwiast.h \
+   gwiadc.h \
+   gwiopc.h \
+   gksenu.h 
+ 
+gwipm.o : gwipm.f \
+   gksin.h \
+   gwiio.h \
+   gwiins.h \
+   gwiwsl.h \
+   gwiarq.h \
+   gwiast.h \
+   gwiadc.h \
+   gwiopc.h \
+   gksenu.h 
+ 
+gwisas.o : gwisas.f \
+   gwiins.h \
+   gwiadc.h \
+   gwiarq.h \
+   gwiast.h \
+   gwiopc.h 
+ 
+gwitx.o : gwitx.f \
+   gksin.h \
+   gwiio.h \
+   gwiins.h \
+   gwiwsl.h \
+   gwiarq.h \
+   gwiast.h \
+   gwiadc.h \
+   gwiopc.h \
+   gksenu.h 
+ 
+gwiwdr.o : gwiwdr.f \
+   gksin.h \
+   gwiwdt.h \
+   gwiwsl.h \
+   gwiadc.h \
+   gwiarq.h \
+   gwiast.h \
+   gwiadf.h \
+   gwiio.h \
+   gwiins.h \
+   gwiopc.h \
+   gksenu.h 
+ 
+gwpart.o : gwpart.f \
+   gwiins.h \
+   gwiio.h 
+ 
+gwpasf.o : gwpasf.f \
+   gksin.h \
+   gwiarq.h \
+   gwiast.h \
+   gwiadc.h 
+ 
+gwpdva.o : gwpdva.f \
+   gksin.h \
+   gwiarq.h \
+   gwiast.h \
+   gwiadc.h 
+ 
+gwpdvi.o : gwpdvi.f \
+   gwiarq.h \
+   gwiast.h \
+   gwiadc.h 
+ 
+gwpdvr.o : gwpdvr.f \
+   gwiarq.h \
+   gwiast.h \
+   gwiadc.h 
+ 
+gwptni.o : gwptni.f \
+   gwiins.h 
+ 
+gwptpr.o : gwptpr.f \
+   gwiins.h 
+ 
+gwptps.o : gwptps.f \
+   gwiins.h 

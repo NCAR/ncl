@@ -1,0 +1,68 @@
+C
+C	$Id: gwpdvr.f,v 1.1 1993-01-09 02:10:06 fred Exp $
+C
+        SUBROUTINE GWPDVR (RNVAL, IPOINT, IPRIM)
+C
+C  Update attribute deferral variables for a real-valued attribute.
+C
+C
+C  Parameters:
+C
+C    INPUT
+C      RNVAL   - New value for the attribute item.
+C      IPOINT  - Pointer into deferral control variable structures, 
+C                and into the index array that gives the start of the
+C                primitive in the attribute equivalencing array, 
+C                real version.
+C      IPRIM   - Output primitive type associated with the attribute 
+C                (1=POLYLINE, 2=POLYMARKER, 3=TEXT, 4=FILL AREA).  
+C                used to index into other of the control variable 
+C                structures.
+C
+C      OUTPUT
+C        Adjustment of attribute deferral control parameters in COMMON.        
+C
+      include 'gwiarq.h'
+      include 'gwiast.h'
+      include 'gwiadc.h'
+C
+      REAL    RNVAL(*)
+      INTEGER IPOINT, IPRIM
+C
+      LOGICAL CHGNS
+      INTEGER I, IOFF, LNGVAL
+C
+      SAVE
+C
+C  Offset and length of attribute in equivalencing structures.
+C
+      IOFF   = IABS(IP2AEA(IPOINT))
+      LNGVAL = IL2AEA(IPOINT)
+C
+C  Is the new value different from the last sent?
+C
+      CHGNS = RNVAL(1).NE.ASAEQV(IOFF)
+      DO 10 I=2,LNGVAL
+        CHGNS = CHGNS.OR. RNVAL(I).NE.ASAEQV(IOFF+I-1)
+   10 CONTINUE
+C
+      IF (CHGNS) THEN
+C
+C  New and last sent differ -- set aggregate change-pending parameter.
+C
+        AGPEND(IPRIM) = .TRUE.
+      END IF
+C
+C  Copy new value to requested.
+C
+      ARAEQV(IOFF) = RNVAL(1)
+      DO 30 I=2,LNGVAL
+        ARAEQV(IOFF+I-1) = RNVAL(I)
+   30 CONTINUE
+C
+C  Mark value change.
+C
+      VALCHG(IPOINT) = CHGNS
+C
+      RETURN
+      END
