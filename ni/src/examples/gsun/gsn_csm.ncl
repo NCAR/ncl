@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.111 2002-12-09 23:42:44 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.112 2002-12-09 23:46:57 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1911,8 +1911,8 @@ begin
 ;
 ; Loop through and add above-ref-line polygons.
 ;
+  ngons = 0
   if(ref_line_above_color.ne.-1.and.anumgons.gt.0)
-    ngons      = 0
     igon       = 0
     create_gon = False
     do i=0,npts-1
