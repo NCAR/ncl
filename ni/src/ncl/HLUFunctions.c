@@ -1107,15 +1107,15 @@ NhlErrorTypes _NclIIsAllocatedColor
 		if((tmp_hlu_ptr[i]!= NULL)&&(_NhlIsWorkstation(_NhlGetLayer(tmp_hlu_ptr[i]->hlu.hlu_id)))) {
 			for(k = 0; k < total_c; k++) {
 				if((!has_missing_c)||(color_inds[k] != missing_c.intval)) {
-					log_out[i*j+k] = NhlIsAllocatedColor(tmp_hlu_ptr[i]->hlu.hlu_id,color_inds[k]);
+					log_out[i*total_c+k] = NhlIsAllocatedColor(tmp_hlu_ptr[i]->hlu.hlu_id,color_inds[k]);
 				} else {
-					log_out[i*j+k] = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
+					log_out[i*total_c+k] = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
 				}
 			} 
 		} else {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclIIsAllocatedColor: one of the elements of the workstation parameter does not exist as an HLU workstation, ignoring");
 			for(k = 0; k < total_c; k++) {
-				log_out[i*j+k] = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
+				log_out[i*total_c+k] = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
 			} 
 		}
 	}
