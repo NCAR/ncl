@@ -235,7 +235,7 @@ end create
 ; Create a Contour object, supplying the ScalarField object as data,
 ; and setting the size of the viewport.
 ;
-cnid = create "Contour1" contourLayerClass wid
+cnid = create "Contour1" contourPlotLayerClass wid
     "cnScalarFieldData" : dataid
     "tiMainString" : "EXAMPLE 2-1"
     "vpWidthF" : 0.4625

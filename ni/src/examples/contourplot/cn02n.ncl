@@ -86,7 +86,7 @@ end create
 ;
 ; Create a Contour object, supplying the ScalarField object as data
 ;
-cnid = create "Contour1" contourLayerClass wid
+cnid = create "Contour1" contourPlotLayerClass wid
     "cnScalarFieldData" : dataid
 end create
 
