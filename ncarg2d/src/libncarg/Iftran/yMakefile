@@ -1,0 +1,16 @@
+#
+#       $Id: yMakefile,v 1.1 2004-05-11 16:49:13 kennison Exp $
+#
+
+MYNAME  = Iftran
+
+PROG_LIBS = $(NCARGCLIB)
+DEPLIBS = $(DEPNCARGCLIB)
+
+_FortranLinkProgram(Iftran,Iftran.o,$(DEPLIBS))
+
+_CLinkProgram(Fsplit,Fsplit.o,NullArgument)
+
+all-local:: Iftran
+
+all-local:: Fsplit
