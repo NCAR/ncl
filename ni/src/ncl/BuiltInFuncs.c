@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.152 2003-03-11 22:29:50 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.153 2003-03-11 23:34:08 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -12396,14 +12396,17 @@ NhlErrorTypes   _NclIGetFileVarType
         case Ncl_None:
         default:
             *rstr = NrmStringToQuark("missing");
-            missing.stringval = NrmStringToQuark("missing");
             NhlPError(NhlWARNING, NhlEUNKNOWN,
                 "getfilevartype: variable (%s) does not exist in file (%s)",
                 NrmQuarkToString(*var), NrmQuarkToString(f->file.fname));
+
+            missing.stringval = NrmStringToQuark("missing");
+            return NclReturnValue(rstr, 1, &dimsizes, &missing,
+                    ((NclTypeClass) nclTypestringClass)->type_class.data_type, 0);
+
             break;
 	}
 
-    return NclReturnValue(rstr, 1, &dimsizes, &missing,
+    return NclReturnValue(rstr, 1, &dimsizes, NULL,
             ((NclTypeClass) nclTypestringClass)->type_class.data_type, 0);
 }
-
