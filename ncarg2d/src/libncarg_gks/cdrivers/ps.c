@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.4 1994-05-28 00:44:47 fred Exp $
+ *	$Id: ps.c,v 1.5 1994-06-06 21:20:05 fred Exp $
  */
 /*
  *
@@ -1050,7 +1050,8 @@ static void PSinit(PSddp *psa, int *coords)
  *  character number, and normalized character width.
  *
  *  The function returns a zero if the character is available and returns
- *  a -1 if it is not.
+ *  a -1 if it is not.  If the character is not availavble, the description
+ *  for a filled Times-Roman asterisk is returned in psfc.
  */
 static int MapFonts (PSddp *psa, int cnum, PSCharInfo *psfc)
 
@@ -1386,7 +1387,7 @@ static int MapFonts (PSddp *psa, int cnum, PSCharInfo *psfc)
 		 32,  32,  32,  32,  -1,  -1,  -1,  -1,  32,  32,  32,  32, 
 		 32,  32,  32,  32,  32,  32,  32,  32,  32,  32,  32,  32, 
 	     };
-	int index, fnum;
+	int index, fnum, return_value=0;
 
 	psfc->char_num = cnum;
 	psfc->outline = FALSE;
@@ -1432,7 +1433,7 @@ static int MapFonts (PSddp *psa, int cnum, PSCharInfo *psfc)
 		}
 		break;
 	case	H_SIMPLEX_SCRIPT: 
-		return(-1);
+		return_value = -1;
 	case	H_COMPLEX_ROMAN:
 		psfc->font = PS_TIMES_ROMAN;
 		psa->fonts_used[PS_TIMES_ROMAN] = 1;
@@ -1451,13 +1452,15 @@ static int MapFonts (PSddp *psa, int cnum, PSCharInfo *psfc)
 		}
 		break;
 	case	H_COMPLEX_SCRIPT:
-		return(-1);
+		return_value = -1;
+		break;
 	case	H_COMPLEX_ITALIC:
 		psfc->font = PS_TIMES_ITALIC;
 		psa->fonts_used[PS_TIMES_ITALIC] = 1;
 		break;
 	case	H_COMPLEX_CYRILLIC:
-		return(-1);
+		return_value = -1;
+		break;
 	case	H_DUPLEX_ROMAN:
 		psfc->font = PS_HELVETICA_BOLD;
 		psa->fonts_used[PS_HELVETICA_BOLD] = 1;
@@ -1471,11 +1474,14 @@ static int MapFonts (PSddp *psa, int cnum, PSCharInfo *psfc)
 		psa->fonts_used[PS_TIMES_BOLDITALIC] = 1;
 		break;
 	case	H_GOTHIC_GERMAN:
-		return(-1);
+		return_value = -1;
+		break;
 	case	H_GOTHIC_ENGLISH:
-		return(-1);
+		return_value = -1;
+		break;
 	case	H_GOTHIC_ITALIAN:
-		return(-1);
+		return_value = -1;
+		break;
 	case    H_MATH_SYMBOLS:
 		if ((cnum >= 32) && (cnum <= 127)) {
 			psfc->font = hms2psf[cnum-32];
@@ -1484,9 +1490,11 @@ static int MapFonts (PSddp *psa, int cnum, PSCharInfo *psfc)
 		}
 		break;
 	case	H_SYMBOL_SET1:
-		return(-1);
+		return_value = -1;
+		break;
 	case    H_SYMBOL_SET2:
-		return(-1);
+		return_value = -1;
+		break;
 	case	NCAR_HELVETICA: 
 		psfc->font = PS_HELVETICA;
 		psa->fonts_used[PS_HELVETICA] = 1;
@@ -1574,9 +1582,11 @@ static int MapFonts (PSddp *psa, int cnum, PSCharInfo *psfc)
 		}
 		break;
 	case	NCAR_WEATHER1:
-		return(-1);
+		return_value = -1;
+		break;
 	case	NCAR_WEATHER2:
-		return(-1);
+		return_value = -1;
+		break;
 	case	NCAR_HELVETICA_O: 
 		psfc->font = PS_HELVETICA;
 		psa->fonts_used[PS_HELVETICA] = 1;
@@ -1679,11 +1689,14 @@ static int MapFonts (PSddp *psa, int cnum, PSCharInfo *psfc)
 		}
 		break;
 	case	NCAR_WEATHER1_O:
-		return(-1);
+		return_value = -1;
+		break;
 	case	NCAR_WEATHER2_O:
-		return(-1);
+		return_value = -1;
+		break;
 	default:
-		return(-1);
+		return_value = -1;
+		break;
 	}
 
 	if ((psfc->char_num >= 32) && (psfc->char_num <= 127)) {
@@ -1693,13 +1706,27 @@ static int MapFonts (PSddp *psa, int cnum, PSCharInfo *psfc)
 		index = (psfc->char_num) - 160 + 96;
 	}
 	else if (psfc->char_num == -1) {
-		return(-1);
+		return_value = -1;
 	}
 	else {
 		psfc->font_height = 
 			PSFontMetrics[psfc->font][FONT_HEIGHT_ARRAY_INDEX];
 		psfc->char_width = 0;
 		return(0);
+	}
+
+	/*
+	 *  Return a filled Times-Roman asterisk if character not available.
+	 */
+	if (return_value == -1) {
+                psfc->font = PS_TIMES_ROMAN;
+                psa->fonts_used[PS_TIMES_ROMAN] = 1;
+		psfc->char_num = 42;
+		psfc->char_width = PSFontMetrics[psfc->font][10];
+		psfc->font_height = 
+			PSFontMetrics[psfc->font][FONT_HEIGHT_ARRAY_INDEX];
+		psfc->outline = FALSE;
+		return(return_value);
 	}
 
 	psfc->char_width = PSFontMetrics[psfc->font][index];
@@ -1820,7 +1847,8 @@ static int check_EPS (GKSC *gksc)
 
 
 /*
- *  Put out polyline.
+ *  Put out polyline.  If the second argument is non-zero, draw
+ *  a line from the last to the first point if required.
  */
 static void OutputPolyline (GKSC *gksc, int closed)
 {
@@ -2183,7 +2211,7 @@ ps_Text(gksc)
 	PSTextent  textent;
         int     requested_color, current_color;
 	int	PSFontScale, PSCharHeight, PSCharSpace;
-	int	i, j, found, x_position, y_position, y_inc, ier = 0;
+	int	i, j, found, x_position, y_position, y_inc, return_value;
 	int	string_height, max_char_width, char_spacing;
 	int	num_chars, old_font, current_font, strpos, fcount;
 
@@ -2196,7 +2224,7 @@ ps_Text(gksc)
 
 	psa = (PSddp *) gksc->ddp;
 
-	if ((ier = check_EPS(gksc)) != 0) return(ier);
+	if ((return_value = check_EPS(gksc)) != 0) return(return_value);
 
 	num_chars = strlen(sptr);
 	if (num_chars == 0) {
@@ -2248,13 +2276,7 @@ ps_Text(gksc)
 		 */
 		found = MapFonts(psa, (int) (ctmp & 255), &fc);
 		if (found < 0) {
-                	ESprintf(ERR_PS_CHAR,"PS:   PostScript equivalent "
-				"character "
-			    	"not available for character with ASCII \n"
-                            	"   decimal equivalent %d in font %d "
-			    	"-- string not plotted, use Plotchar",
-			    	(int) ctmp, psa->attributes.text_font);
-                  	return(ERR_PS_CHAR);
+			return_value = ERR_PS_CHAR;
 		}
 
 		/*
@@ -2552,7 +2574,7 @@ ps_Text(gksc)
 	 */
 	(void) fprintf(psa->file_pointer,"Gr\n");
 
-	return(0);
+	return(return_value);
 }
 
 /*ARGSUSED*/
@@ -2602,6 +2624,7 @@ ps_FillArea(gksc)
 	switch(psa->attributes.fill_int_style) {
 	case HOLLOW_FILL:   /* Put out polyline */
 	    OutputPolyline (gksc, 1);
+            fprintf(psa->file_pointer, "K\n");
 	    break;
         case SOLID_FILL:
 	    if (npoints < StackSize) {           /* Short form PS fill */
@@ -2618,11 +2641,12 @@ ps_FillArea(gksc)
 	    }
             else {                               /* Software fill  */
               ps_SoftFill (gksc, 0., psa->sfill_spacing);
-              fprintf(psa->file_pointer, "K\n",gksc->p.num);
+              fprintf(psa->file_pointer, "K\n");
             }
             break;
 	case PATTERN_FILL:  /* currently not implemented, issue polyline */
 	    OutputPolyline (gksc, 1);
+            fprintf(psa->file_pointer, "K\n");
             break;
 	case HATCH_FILL:
 	    switch (psa->attributes.fill_style_ind) {
@@ -2640,22 +2664,23 @@ ps_FillArea(gksc)
 	        break;
 	    case HORIZ_VERT_HATCH:
                 ps_SoftFill (gksc, 0., psa->hatch_spacing);  
-                fprintf(psa->file_pointer, "K\n",gksc->p.num);
+                fprintf(psa->file_pointer, "K\n");
                 ps_SoftFill (gksc, 90., psa->hatch_spacing);  
 	        break;
 	    case POS_NEG_HATCH:
                 ps_SoftFill (gksc, 45., psa->hatch_spacing);  
-                fprintf(psa->file_pointer, "K\n",gksc->p.num);
+                fprintf(psa->file_pointer, "K\n");
                 ps_SoftFill (gksc, 135., psa->hatch_spacing);  
 	        break;
 	    default:
 		OutputPolyline (gksc, 1);
 		break;
             }
-            fprintf(psa->file_pointer, "K\n",gksc->p.num);
+            fprintf(psa->file_pointer, "K\n");
 	    break;
 	default:
 	    OutputPolyline (gksc, 1);
+            fprintf(psa->file_pointer, "K\n");
 	    break;
 	}
 
