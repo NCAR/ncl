@@ -1,5 +1,5 @@
 C
-C $Id: WORKSTATION.f,v 1.1 1994-05-12 23:52:48 boote Exp $
+C $Id: WORKSTATION.f,v 1.2 1994-05-13 18:56:40 boote Exp $
 C
 C****************************************************************
 C								*
@@ -20,10 +20,10 @@ C
 C      Description:     
 C
       subroutine nhlfupdateworkstation(idwork,ierr)
-      	call nhlf_updateworkstation(idwork,ierr)
+      	call nhl_fupdateworkstation(idwork,ierr)
       end
       subroutine nhlfclearworkstation(idwork,ierr)
-      	call nhlf_clearworkstation(idwork,ierr)
+      	call nhl_fclearworkstation(idwork,ierr)
       end
       subroutine nhlfframe(id_work,ierr)
 	call nhl_fframe(id_work,ierr)
