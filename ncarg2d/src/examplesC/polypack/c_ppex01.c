@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ppex01.c,v 1.3 1994-11-03 20:55:54 haley Exp $
+ *	$Id: c_ppex01.c,v 1.4 1994-11-16 18:16:16 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -714,11 +714,11 @@ float *xcbl, *xcbr, *ycob, *dxle, *dxre, *ycot;
 
 float ppfran()
 {
-	extern double trunc(double x);
+	extern double floor(double x);
 	static double x = 2.718281828459045;
 	double y, z;
 	y = 9821.0*x+.211327;
-	z = trunc(y);
+	z = floor(y);
 	x = y - z;
 	return((float)x);
 }
