@@ -1,5 +1,5 @@
 /*
- *  $Id: c_ftex01.c,v 1.3 2003-08-06 15:36:16 haley Exp $
+ *  $Id: c_ftex01.c,v 1.4 2003-08-07 18:34:03 fred Exp $
  */
 #include <stdio.h>
 #include <ncarg/ncargC.h>
@@ -43,7 +43,7 @@ main()
  */
   c_ftseti("sf1",   0);
   c_ftsetr("sl1", 0.0);
-  c_ftsetr("sl2", 0.0);
+  c_ftsetr("sln", 0.0);
 
 /*
  *  Calculate the interpolated values, the derivative, and the integral.
