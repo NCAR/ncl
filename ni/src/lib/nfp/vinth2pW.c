@@ -25,7 +25,7 @@ NhlErrorTypes vinth2p_W
 	NclMultiDValData x_coord_md;
 	NclVar lev_coord_var;
 	NclMultiDValData lev_coord_md;
-	int ids[3];
+	int ids[4];
 	NclDimRec dim_info[4];
 
 	NclStackEntry data,val,plevo_val;
@@ -268,9 +268,11 @@ NhlErrorTypes vinth2p_W
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p: Surface pressure must have same number of time, lat and lon elements as input, number of dimensions does not match.");
 		return(NhlFATAL);
 	} else {
-		if(datai_md->multidval.dim_sizes[0] != psfc_dimsizes[0]) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p: Surface pressure must have same number of time elements as input.");
-			return(NhlFATAL);
+		if(datai_n_dims == 4) {
+			if(datai_md->multidval.dim_sizes[0] != psfc_dimsizes[0]) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p: Surface pressure must have same number of time elements as input.");
+				return(NhlFATAL);
+			}
 		}
 		if(datai_md->multidval.dim_sizes[datai_md->multidval.n_dims - 2] != psfc_dimsizes[1]) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p: Surface pressure must have same number of latitude elements as input.");
