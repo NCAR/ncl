@@ -32,7 +32,7 @@ NhlErrorTypes wgt_runave_W( void )
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   int ndims_wgt, dsizes_wgt[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x, type_wgt;
-  NclScalar missing_x;
+  NclScalar missing_x, missing_dx, missing_rx;
 /*
  * Work array.
  */
@@ -41,8 +41,7 @@ NhlErrorTypes wgt_runave_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, npts, nwgt, ier, size_x, total_size_x;
-  double xmsg;
+  int i, j, npts, nwgt, ier, total_size_x1, total_size_x;
 
 /*
  * Retrieve arguments.
@@ -52,8 +51,8 @@ NhlErrorTypes wgt_runave_W( void )
           3,
           &ndims_x,
           dsizes_x,
-		  &missing_x,
-		  &has_missing_x,
+          &missing_x,
+          &has_missing_x,
           &type_x,
           2);
 
@@ -95,20 +94,12 @@ NhlErrorTypes wgt_runave_W( void )
 /*
  * Compute the total size of the output array (minus the last dimension).
  */
-  size_x = 1;
+  total_size_x1 = 1;
   for( i = 0; i < ndims_x-1; i++ ) {
-    size_x *= dsizes_x[i];
+    total_size_x1 *= dsizes_x[i];
   }
-  total_size_x = size_x * npts;
+  total_size_x = total_size_x1 * npts;
 
-/*
- * Types of input arrays must float or double.
- */
-  if( (type_x   != NCL_double  && type_x   != NCL_float) ||
-      (type_wgt !=  NCL_double && type_wgt != NCL_float)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave: The types of the first two input arrays must be float or double");
-    return(NhlFATAL);
-  }
 /*
  * Coerce data to double if necessary. Since we have to make a copy of
  * the first input array anyway (the input array will be overwritten by
@@ -116,48 +107,84 @@ NhlErrorTypes wgt_runave_W( void )
  */
   dx   = (double*)NclMalloc(sizeof(double)*total_size_x);
   if( dx == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave: Unable to allocate memory for coercing input array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave: Unable to allocate memory for coercing input array to double precision");
     return(NhlFATAL);
   }
-  _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-			 dx,
-			 x,
-			 total_size_x,
-			 &missing_x,
-			 NULL,
-			 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-  
-  if(type_wgt != NCL_double) {
-	dwgt = (double*)NclMalloc(sizeof(double)*nwgt);
-	if( dwgt == NULL ) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave: Unable to allocate memory for coercing weight array");
-	  return(NhlFATAL);
-	}
-	_Nclcoerce((NclTypeClass)nclTypedoubleClass,
-			   dwgt,
-			   wgt,
-			   nwgt,
-			   NULL,
-			   NULL,
-			   _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_wgt)));
+/*
+ * Coerce the missing value first.
+ */
+  if(has_missing_x) {
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               &missing_dx,
+               &missing_x,
+               1,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+
+    if(type_x != NCL_double) {
+      _Nclcoerce((NclTypeClass)nclTypefloatClass,
+                 &missing_rx,
+                 &missing_x,
+                 1,
+                 NULL,
+                 NULL,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+/*
+ * Coerce the data with missing values.
+ */
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               dx,
+               x,
+               total_size_x,
+               &missing_dx,
+               &missing_x,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
   }
   else {
-	dwgt = (double*)wgt;
+/*
+ * Coerce the data without missing values.
+ */
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               dx,
+               x,
+               total_size_x,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+/*
+ * Get the default missing value.
+ */ 
+    if(type_x != NCL_double) {
+      missing_rx.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      missing_dx.doubleval = (double)missing_rx.floatval;
+    }
+    else {
+      missing_dx.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    }
   }
 /*
- * Test for missing values.
+ * Coerce second input array if necessary.
  */
-  if( has_missing_x ) {
-	if(type_x == NCL_double) {
-	  xmsg = (double)missing_x.doubleval;
-	}
-	else {
-	  xmsg = (double)missing_x.floatval;
-	}
+  if(type_wgt != NCL_double) {
+    dwgt = (double*)NclMalloc(sizeof(double)*nwgt);
+    if( dwgt == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave: Unable to allocate memory for coercing weight array to double precision");
+      return(NhlFATAL);
+    }
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               dwgt,
+               wgt,
+               nwgt,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_wgt)));
   }
   else {
-	xmsg = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    dwgt = (double*)wgt;
   }
+
 /*
  * Allocate space for work array.
  */
@@ -173,44 +200,40 @@ NhlErrorTypes wgt_runave_W( void )
  *
  */
   j = 0;
-  for( i = 0; i < size_x; i++ ) {
-	NGCALLF(dwgtrunave,DWGTRUNAVE)(&dx[j],&npts,dwgt,&nwgt,kopt,&xmsg,
-								   work,&lwork,&ier);
-	j += npts;
+  for( i = 0; i < total_size_x1; i++ ) {
+    NGCALLF(dwgtrunave,DWGTRUNAVE)(&dx[j],&npts,dwgt,&nwgt,kopt,
+                                   &missing_dx.doubleval,work,&lwork,&ier);
+    j += npts;
   }
   free(work);
   if((void*)dwgt != wgt) {
-	NclFree(dwgt);
+    NclFree(dwgt);
   }
-	
+        
   if(type_x != NCL_double) {
 /*
  * Copy double values to float values.
  */
-	fx = (float*)NclMalloc(sizeof(float)*total_size_x);
-	if( fx == NULL ) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave: Unable to allocate memory for return array");
-	  return(NhlFATAL);
-	}
+    fx = (float*)NclMalloc(sizeof(float)*total_size_x);
+    if( fx == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave: Unable to allocate memory for return array");
+      return(NhlFATAL);
+    }
     for( i = 0; i < total_size_x; i++ ) {
       fx[i] = (float)dx[i];
     }
 
-	NclFree(dx);
-	if( has_missing_x ) {
-	  return(NclReturnValue((void*)fx,ndims_x,dsizes_x,&missing_x,NCL_float,0));
-	}
-	else {
-	  return(NclReturnValue((void*)fx,ndims_x,dsizes_x,NULL,NCL_float,0));
-	}
+    NclFree(dx);
+/*
+ * Return float values with missing value set.
+ */
+    return(NclReturnValue((void*)fx,ndims_x,dsizes_x,&missing_rx,NCL_float,0));
   }
   else {
-	if( has_missing_x ) {
-	  return(NclReturnValue((void*)dx,ndims_x,dsizes_x,&missing_x,NCL_double,0));
-	}
-	else {
-	  return(NclReturnValue((void*)dx,ndims_x,dsizes_x,NULL,NCL_double,0));
-	}
+/*
+ * Return double values with missing value set.
+ */
+    return(NclReturnValue((void*)dx,ndims_x,dsizes_x,&missing_dx,NCL_double,0));
   }
 }
 
@@ -226,7 +249,7 @@ NhlErrorTypes runave_W( void )
   int *nave, *kopt;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclBasicDataTypes type_x;
-  NclScalar missing_x;
+  NclScalar missing_x, missing_dx, missing_rx;
 /*
  * Work array.
  */
@@ -235,8 +258,7 @@ NhlErrorTypes runave_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, k, npts, ier, total_size_x, size_x;
-  double xmsg;
+  int i, j, k, npts, ier, total_size_x, total_size_x1;
 
 /*
  * Retrieve arguments.
@@ -246,8 +268,8 @@ NhlErrorTypes runave_W( void )
           3,
           &ndims_x,
           dsizes_x,
-		  &missing_x,
-		  &has_missing_x,
+          &missing_x,
+          &has_missing_x,
           &type_x,
           2);
 
@@ -282,49 +304,76 @@ NhlErrorTypes runave_W( void )
 /*
  * Compute the total size of the output array (minus the last dimension).
  */
-  size_x = 1;
+  total_size_x1 = 1;
   for( i = 0; i < ndims_x-1; i++ ) {
-    size_x *= dsizes_x[i];
+    total_size_x1 *= dsizes_x[i];
   }
-  total_size_x = size_x * npts;
-/*
- * Type of input array must double or float.
- */
-  if( type_x != NCL_double && type_x != NCL_float) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"runave: The type of the first input array must be float or double");
-    return(NhlFATAL);
-  }
+  total_size_x = total_size_x1 * npts;
 /*
  * Coerce data to double if necessary. Since we have to make a copy of
  * the first input array anyway (the input array will be overwritten by
  * output array), we coerce it no matter what.
+ *
+ * First allocate space for double precision input array.
  */
   dx   = (double*)NclMalloc(sizeof(double)*total_size_x);
   if( dx == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"runave: Unable to allocate memory for coercing input array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"runave: Unable to allocate memory for coercing input array to double precision");
     return(NhlFATAL);
   }
-  _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-			 dx,
-			 x,
-			 total_size_x,
-			 &missing_x,
-			 NULL,
-			 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
-  
 /*
- * Test for missing values.
+ * Coerce the missing value first.
  */
-  if( has_missing_x ) {
-	if(type_x == NCL_double) {
-	  xmsg = missing_x.doubleval;
-	}
-	else {
-	  xmsg = (double)missing_x.floatval;
-	}
+  if(has_missing_x) {
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               &missing_dx,
+               &missing_x,
+               1,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+
+    if(type_x != NCL_double) {
+      _Nclcoerce((NclTypeClass)nclTypefloatClass,
+                 &missing_rx,
+                 &missing_x,
+                 1,
+                 NULL,
+                 NULL,
+                 _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+    }
+/*
+ * Coerce data values with missing values.
+ */
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+             dx,
+             x,
+             total_size_x,
+             &missing_dx,
+             &missing_x,
+             _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
   }
   else {
-	xmsg = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+/*
+ * Coerce the data without missing values.
+ */
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               dx,
+               x,
+               total_size_x,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+/*
+ * Get the default missing value.
+ */ 
+    if(type_x != NCL_double) {
+      missing_rx.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      missing_dx.doubleval = (double)missing_rx.floatval;
+    }
+    else {
+      missing_dx.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    }
   }
 /*
  * Allocate space for work array.
@@ -340,43 +389,38 @@ NhlErrorTypes runave_W( void )
  * Call the Fortran version of this routine.
  *
  */
-
   j = 0;
-  for( i = 0; i < size_x; i++ ) {
-	NGCALLF(drunave,DRUNAVE)(&dx[j],&npts,nave,kopt,&xmsg,work,&lwork,&ier);
-	j += npts;
+  for( i = 0; i < total_size_x1; i++ ) {
+    NGCALLF(drunave,DRUNAVE)(&dx[j],&npts,nave,kopt,&missing_dx.doubleval,
+                             work,&lwork,&ier);
+    j += npts;
   }
   free(work);
-	
+        
   if(type_x != NCL_double) {
 /*
  * Copy double values to float values.
  */
-	fx = (float*)NclMalloc(sizeof(float)*total_size_x);
-	if( fx == NULL ) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"runave: Unable to allocate memory for return array");
-	  return(NhlFATAL);
-	}
+    fx = (float*)NclMalloc(sizeof(float)*total_size_x);
+    if( fx == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"runave: Unable to allocate memory for return array");
+      return(NhlFATAL);
+    }
     for( i = 0; i < total_size_x; i++ ) {
       fx[i] = (float)dx[i];
     }
-
-	NclFree(dx);
-
-	if( has_missing_x ) {
-	  return(NclReturnValue((void*)fx,ndims_x,dsizes_x,&missing_x,NCL_float,0));
-	}
-	else {
-	  return(NclReturnValue((void*)fx,ndims_x,dsizes_x,NULL,NCL_float,0));
-	}
+    
+    NclFree(dx);
+/*
+ * Return float values with missing value set.
+ */
+    return(NclReturnValue((void*)fx,ndims_x,dsizes_x,&missing_rx,NCL_float,0));
   }
   else {
-	if( has_missing_x ) {
-	  return(NclReturnValue((void*)dx,ndims_x,dsizes_x,&missing_x,NCL_double,0));
-	}
-	else {
-	  return(NclReturnValue((void*)dx,ndims_x,dsizes_x,NULL,NCL_double,0));
-	}
+/*
+ * Return double values with missing value set.
+ */
+    return(NclReturnValue((void*)dx,ndims_x,dsizes_x,&missing_dx,NCL_double,0));
   }
 }
 
