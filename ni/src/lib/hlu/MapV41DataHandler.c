@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.12 1999-08-19 21:44:55 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.13 1999-08-27 00:38:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -572,6 +572,9 @@ static NhlErrorTypes SetUpEntityRecs
         Mv41p = &mv41l->mapv41dh;
 	if (Mv41p->entity_recs &&
 	    Mv41p->entity_recs != Mv41cp->entity_recs) {
+		for (i = 0; i < Mv41p->entity_rec_count; i++) {
+			NhlFree(Mv41p->entity_recs[i].name);
+		}
 		NhlFree(Mv41p->entity_recs);
 		Mv41p->entity_recs = NULL;
 	}
@@ -1548,6 +1551,7 @@ static NhlErrorTypes    MapV41DHDestroy
 {
         NhlMapV41DataHandlerLayer mv41l = (NhlMapV41DataHandlerLayer) l;
         NhlMapV41DataHandlerLayerPart *mv41p = &mv41l->mapv41dh;
+	int i;
 
 	if (mv41p->fill_recs != NULL)
 		NhlFree(mv41p->fill_recs);
@@ -1558,6 +1562,9 @@ static NhlErrorTypes    MapV41DHDestroy
 
 	if (mv41p->entity_recs &&
 	    mv41p->entity_recs != Mv41cp->entity_recs) {
+		for (i = 0; i < mv41p->entity_rec_count; i++) {
+			NhlFree(mv41p->entity_recs[i].name);
+		}
 		NhlFree(mv41p->entity_recs);
 	}
 	if (mv41p->alpha_recs &&
@@ -1732,14 +1739,16 @@ static NhlErrorTypes    UpdateSpecFillRecords
                 }
 
                 if (count == mv41p->fill_rec_alloc) {
-                        mv41p->fill_recs = NhlMalloc
-                                (sizeof(v41SpecFillRec) * v41ALLOC_UNIT);
+                        mv41p->fill_rec_alloc += v41ALLOC_UNIT;
+                        mv41p->fill_recs = NhlRealloc
+                                (mv41p->fill_recs,
+				 sizeof(v41SpecFillRec) *
+				 mv41p->fill_rec_alloc);
                         if (! mv41p->fill_recs) {
                                 e_text = "%s: dynamic memory allocation error";
                                 NhlPError(NhlFATAL,ENOMEM,e_text,entry_name);
                                 return NhlFATAL;
                         }
-                        mv41p->fill_rec_alloc += v41ALLOC_UNIT;
                 }
                 mv41p->fill_recs[count].eid = erec->eid;
                 mv41p->fill_recs[count].spec_ix = spec_fill_index;
@@ -1985,14 +1994,16 @@ static NhlErrorTypes    UpdateSpecLineRecords
                 }
                 
                 if (count == mv41p->outline_rec_alloc) {
-                        mv41p->outline_recs = NhlMalloc
-                                (sizeof(v41SpecLineRec) * v41ALLOC_UNIT);
+                        mv41p->outline_rec_alloc += v41ALLOC_UNIT;
+                        mv41p->outline_recs = NhlRealloc
+                                (mv41p->outline_recs, 
+				 sizeof(v41SpecLineRec) *
+				 mv41p->outline_rec_alloc);
                         if (! mv41p->outline_recs) {
                                 e_text = "%s: dynamic memory allocation error";
                                 NhlPError(NhlFATAL,ENOMEM,e_text,entry_name);
                                 return NhlFATAL;
                         }
-                        mv41p->outline_rec_alloc += v41ALLOC_UNIT;
                 }
                 mv41p->outline_recs[count].eid = erec->eid;
                 mv41p->outline_recs[count].spec_ix = spec_line_index;
