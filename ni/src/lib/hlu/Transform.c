@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.47 2000-01-20 03:39:49 dbrown Exp $
+ *      $Id: Transform.c,v 1.48 2000-02-16 01:43:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2102,7 +2102,7 @@ extern NhlErrorTypes _NhltfCheckCoordBounds
 	if (tfp->x_min == tfp->x_max) {
 		e_text = "%s: Zero X coordinate span: defaulting";
 		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		NhlPError(NhlWARNING,NhlEZEROSPAN,e_text,entry_name);
 		tfp->x_min = 0.0; 
 		tfp->x_max = 1.0;
                 tfp->sticky_x_min_set = tfp->sticky_x_max_set = False;
@@ -2149,7 +2149,7 @@ extern NhlErrorTypes _NhltfCheckCoordBounds
 	if (tfp->y_min == tfp->y_max) {
 		e_text = "%s: Zero Y coordinate span: defaulting";
 		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		NhlPError(NhlWARNING,NhlEZEROSPAN,e_text,entry_name);
 		tfp->y_min = 0.0; 
 		tfp->y_max = 1.0;
                 tfp->sticky_y_min_set = tfp->sticky_y_max_set = False;

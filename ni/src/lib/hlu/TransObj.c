@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.32 1999-04-02 23:51:16 dbrown Exp $
+ *      $Id: TransObj.c,v 1.33 2000-02-16 01:43:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -306,7 +306,7 @@ TransInitialize
         if (tp->x_min == tp->x_max) {
 		e_text = "%s: Zero X coordinate span: defaulting";
 		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		NhlPError(NhlWARNING,NhlEZEROSPAN,e_text,entry_name);
 		tp->x_min = 0.0;
                 tp->x_min_set = False;
 		tp->x_max = 1.0;
@@ -336,7 +336,7 @@ TransInitialize
         if (tp->y_min == tp->y_max) {
 		e_text = "%s: Zero Y coordinate span: defaulting";
 		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		NhlPError(NhlWARNING,NhlEZEROSPAN,e_text,entry_name);
 		tp->y_min = 0.0;
                 tp->y_min_set = False;
 		tp->y_max = 1.0;

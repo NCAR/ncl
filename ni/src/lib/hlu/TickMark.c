@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.71 2000-02-11 02:47:38 dbrown Exp $
+ *      $Id: TickMark.c,v 1.72 2000-02-16 01:43:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -8087,6 +8087,7 @@ int		c_or_s;
 			label_spacing = tnew->view.width;
 		}
 		else if (tnew->tick.x_b_mode == NhlEXPLICIT) {
+			label_spacing = tnew->view.width;
 			for (i = 1; i < tmp; i++) {
 				label_spacing = 
 					MIN(label_spacing, locs_for_multi[i] -
@@ -8236,6 +8237,7 @@ int		c_or_s;
 			label_spacing = tnew->view.width;
 		}
 		else if (tnew->tick.x_t_mode == NhlEXPLICIT) {
+			label_spacing = tnew->view.width;
 			for (i = 1; i < tmp; i++) {
 				label_spacing = 
 					MIN(label_spacing, locs_for_multi[i] -
@@ -8385,6 +8387,7 @@ int		c_or_s;
 			label_spacing = tnew->view.width;
 		}
 		else if (tnew->tick.y_l_mode == NhlEXPLICIT) {
+			label_spacing = tnew->view.width;
 			for (i = 1; i < tmp; i++) {
 				label_spacing = 
 					MIN(label_spacing, locs_for_multi[i] -
@@ -8530,6 +8533,7 @@ int		c_or_s;
 			label_spacing = tnew->view.width;
 		}
 		else if (tnew->tick.y_r_mode == NhlEXPLICIT) {
+			label_spacing = tnew->view.width;
 			for (i = 1; i < tmp; i++) {
 				label_spacing = 
 					MIN(label_spacing, locs_for_multi[i] -

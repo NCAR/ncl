@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.61 2000-02-09 03:37:43 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.62 2000-02-16 01:43:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -95,6 +95,9 @@ static NhlResource resources[] = {
 		  sizeof(float),
 		  Oset(lbar_height),
 		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
+	{ NhlNpmLabelBarKeepAspect, NhlCpmLabelBarKeepAspect,NhlTBoolean, 
+		  sizeof(NhlBoolean),Oset(lbar_keep_aspect),
+		  NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
 	{NhlNpmLabelBarSide, NhlCpmLabelBarSide, NhlTPosition, 
 		 sizeof(NhlJustification),
 		 Oset(lbar_side),
@@ -130,6 +133,9 @@ static NhlResource resources[] = {
 		  sizeof(float),
 		  Oset(lgnd_height),
 		  NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
+	{ NhlNpmLegendKeepAspect, NhlCpmLegendKeepAspect,NhlTBoolean, 
+		  sizeof(NhlBoolean),Oset(lgnd_keep_aspect),
+		  NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
 	{NhlNpmLegendSide, NhlCpmLegendSide, NhlTPosition, 
 		 sizeof(NhlPosition),
 		 Oset(lgnd_side),
@@ -4539,27 +4545,52 @@ ManageLabelBar
 
 	wold = init ? NHL_DEFAULT_VIEW_WIDTH : ovold->view.width;
 	hold = init ? NHL_DEFAULT_VIEW_HEIGHT : ovold->view.height;
-	if (! ovp->lbar_width_set)
-		ovp->lbar_width *= ovnew->view.width / wold;
-	if (! ovp->lbar_height_set)
-		ovp->lbar_height *= ovnew->view.height / hold;
+	if (ovp->lbar_keep_aspect) {
+		float ratio;
 
-	if (! ovp->lbar_width_set && ! ovp->lbar_height_set) {
+		switch (ovp->lbar_side) {
+		default:
+		case NhlTOP:
+		case NhlBOTTOM:
+			ratio = ovnew->view.width / wold;
+			break;
+		case NhlLEFT:
+		case NhlRIGHT:
+			ratio = ovnew->view.height / hold;
+			break;
+		}
+		if (! ovp->lbar_width_set)
+			ovp->lbar_width *= ratio;
+		if (! ovp->lbar_height_set)
+			ovp->lbar_height *= ratio;
+	}
+	else {
+		if (! ovp->lbar_width_set)
+			ovp->lbar_width *= ovnew->view.width / wold;
+		if (! ovp->lbar_height_set)
+			ovp->lbar_height *= ovnew->view.height / hold;
 
-		if (init || ovp->lbar_orient != oovp->lbar_orient) {
-			float t;
+		if (! ovp->lbar_width_set && ! ovp->lbar_height_set) {
 
-			if (ovp->lbar_orient == NhlVERTICAL) {
-				t = MIN(ovp->lbar_height,ovp->lbar_width);
-				ovp->lbar_height = MAX(ovp->lbar_height,
-						       ovp->lbar_width);
-				ovp->lbar_width = t;
-			}
-			else  {
-				t = MIN(ovp->lbar_height,ovp->lbar_width);
-				ovp->lbar_width = MAX(ovp->lbar_height,
-						       ovp->lbar_width);
-				ovp->lbar_height = t;
+			if (init || ovp->lbar_orient != oovp->lbar_orient) {
+				float t;
+
+				if (ovp->lbar_orient == NhlVERTICAL) {
+					t = MIN(ovp->lbar_height,
+						ovp->lbar_width);
+					ovp->lbar_height = 
+						MAX(ovp->lbar_height,
+						    ovp->lbar_width);
+					ovp->lbar_width = t;
+				}
+				else  {
+					t = MIN(ovp->lbar_height,
+						ovp->lbar_width);
+					ovp->lbar_width = 
+						MAX(ovp->lbar_height,
+						    ovp->lbar_width);
+					ovp->lbar_height = t;
+				}
 			}
 		}
 	}
@@ -4670,6 +4701,8 @@ ManageLabelBar
 		NhlSetSArg(&sargs[nargs++],NhlNvpWidthF,ovp->lbar_width);
 		NhlSetSArg(&sargs[nargs++],NhlNvpHeightF,ovp->lbar_height);
 		NhlSetSArg(&sargs[nargs++],
+			   NhlNvpKeepAspect,ovp->lbar_keep_aspect);
+		NhlSetSArg(&sargs[nargs++],
 			   NhlNlbJustification,ovp->real_lbar_just);
 		NhlSetSArg(&sargs[nargs++],
 			   NhlNlbOrientation,ovp->lbar_orient);
@@ -4698,6 +4731,9 @@ ManageLabelBar
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNvpHeightF,ovp->lbar_height);
 
+		if (ovp->lbar_keep_aspect != oovp->lbar_keep_aspect)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNvpKeepAspect,ovp->lbar_keep_aspect);
 		if (ovp->real_lbar_just != oovp->real_lbar_just)
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNlbJustification,ovp->real_lbar_just);

@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.h,v 1.5 1997-08-14 16:30:24 dbrown Exp $
+ *      $Id: PlotManager.h,v 1.6 2000-02-16 01:43:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -64,6 +64,7 @@ typedef enum _NhlAnnotationDisplayMode {
 #define NhlNpmLabelBarWidthF	"pmLabelBarWidthF"
 #define NhlNpmLabelBarHeightF	"pmLabelBarHeightF"
 #define NhlNpmLabelBarSide	"pmLabelBarSide"
+#define NhlNpmLabelBarKeepAspect	"pmLabelBarKeepAspect"
 #define NhlNpmLabelBarParallelPosF	"pmLabelBarParallelPosF"
 #define NhlNpmLabelBarOrthogonalPosF	"pmLabelBarOrthogonalPosF"
 
@@ -72,6 +73,7 @@ typedef enum _NhlAnnotationDisplayMode {
 #define NhlNpmLabelBarPosition	"pmLabelBarPosition"
 #define NhlNpmLegendWidthF	"pmLegendWidthF"
 #define NhlNpmLegendHeightF	"pmLegendHeightF"
+#define NhlNpmLegendKeepAspect	"pmLegendKeepAspect"
 #define NhlNpmLegendSide	"pmLegendSide"
 #define NhlNpmLegendParallelPosF	"pmLegendParallelPosF"
 #define NhlNpmLegendOrthogonalPosF	"pmLegendOrthogonalPosF"
@@ -106,6 +108,7 @@ typedef enum _NhlAnnotationDisplayMode {
 #define NhlCpmLegendZone	"PmLegendZone"
 #define NhlCpmLabelBarWidthF	"PmLabelBarWidth"
 #define NhlCpmLabelBarHeightF	"PmLabelBarHeight"
+#define NhlCpmLabelBarKeepAspect	"PmLabelBarKeepAspect"
 #define NhlCpmLabelBarSide	"PmLabelBarSide"
 #define NhlCpmLabelBarParallelPosF	"PmLabelBarParallelPosF"
 #define NhlCpmLabelBarOrthogonalPosF	"PmLabelBarOrthogonalPosF"
@@ -116,6 +119,7 @@ typedef enum _NhlAnnotationDisplayMode {
 
 #define NhlCpmLegendWidthF	"PmLegendWidth"
 #define NhlCpmLegendHeightF	"PmLegendHeight"
+#define NhlCpmLegendKeepAspect	"PmLegendKeepAspect"
 #define NhlCpmLegendSide	"PmLegendSide"
 #define NhlCpmLegendParallelPosF	"PmLegendParallelPosF"
 #define NhlCpmLegendOrthogonalPosF	"PmLegendOrthogonalPosF"

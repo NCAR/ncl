@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.64 2000-02-11 02:47:36 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.65 2000-02-16 01:43:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -838,6 +838,8 @@ static NhlErrorTypes LabelBarSetValues
 	lb_p->lb_height = tnew->view.height;
 
 	if (do_scaling) {
+		int i;
+
 		tx = tnew->view.width / told->view.width;
 		ty = tnew->view.height / told->view.height;
 
@@ -853,8 +855,25 @@ static NhlErrorTypes LabelBarSetValues
 			else
 				lb_p->title_height *= ty;
 		}
-	}
+		if (lb_p->orient == NhlHORIZONTAL) {
+			lb_p->max_label_len *= tx;
+			lb_p->min_label_spacing = 
+				tx * (lb_p->labels.rxtr - lb_p->labels.lxtr);
+		}
+		else {
+			lb_p->max_label_len *= ty;
+			lb_p->min_label_spacing = 
+				tx * (lb_p->labels.txtr - lb_p->labels.bxtr);
+		}
 
+		for (i=1; i<lb_p->label_draw_count; i++) {
+			lb_p->min_label_spacing = 
+				MIN(lb_p->min_label_spacing,
+				    tx * (lb_p->label_locs[i] - 
+					  lb_p->label_locs[i-1]));
+		}
+	}
+	
 	lxtr = tx * (lb_p->perim.l - lb_p->perim.lxtr);
 	rxtr = tx * (lb_p->perim.rxtr - lb_p->perim.r);
 	bxtr = ty * (lb_p->perim.b - lb_p->perim.bxtr);
@@ -3952,7 +3971,7 @@ static NhlErrorTypes    AdjustGeometry
 
 		lb_p->min_label_spacing = (lb_p->orient == NhlHORIZONTAL) ?
 			lb_p->labels.rxtr - lb_p->labels.lxtr :
-			lb_p->labels.txtr - lb_p->labels.rxtr;
+			lb_p->labels.txtr - lb_p->labels.bxtr;
 		for (i=1; i<lb_p->label_draw_count; i++) {
 			lb_p->min_label_spacing = MIN(lb_p->min_label_spacing,
 						      lb_p->label_locs[i] - 
@@ -3984,7 +4003,7 @@ static NhlErrorTypes    AdjustGeometry
 	_NhlInternalSetView((NhlViewLayer)tnew,
 			    lb_p->lb_x,lb_p->lb_y,
 			    lb_p->lb_width,lb_p->lb_height,
-			    False);
+			    tnew->view.keep_aspect);
 	return (ret);
 }
 

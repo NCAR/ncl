@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManagerP.h,v 1.13 1999-04-02 23:51:10 dbrown Exp $
+ *      $Id: PlotManagerP.h,v 1.14 2000-02-16 01:43:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -140,6 +140,7 @@ typedef struct _NhlPlotManagerLayerPart {
 	float			lbar_width;
 	NhlBoolean		lbar_height_set;
 	float			lbar_height;
+	NhlBoolean		lbar_keep_aspect;
 	NhlPosition		lbar_side;
 	float			lbar_para_pos;
 	float			lbar_ortho_pos;
@@ -158,6 +159,7 @@ typedef struct _NhlPlotManagerLayerPart {
 	float			lgnd_width;
 	NhlBoolean		lgnd_height_set;
 	float			lgnd_height;
+	NhlBoolean		lgnd_keep_aspect;
 	NhlPosition		lgnd_side;
 	float			lgnd_para_pos;
 	float			lgnd_ortho_pos;
