@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.2 1996-10-16 16:19:07 boote Exp $
+!      $Id: ngi.res,v 1.3 1996-11-24 22:26:52 boote Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -20,6 +20,14 @@
 !	Description:	
 !
 !
+
+! These resources will *hopefully* be replaced by a configuration dialog
+! in and "Options" menu.
+ncledit*loadMGR.pattern:	*.ncl
+ncledit*loadMGR.directory:	.
+ncledit*addfileMGR.pattern:	*.{cdf,nc,grb}
+ncledit*addfileMGR.directory:	.
+
 NgNGO*background:	#b2b2b2
 NgNGO*foreground:	black
 NgNGO*XmList*background:	#bebebe
@@ -41,6 +49,8 @@ NgNGO*XmFrame*XmLabel.FontList:	-*-helvetica-medium-r-normal-*-*-120-*-*-*-*-iso
 		 Alt ~Ctrl<Key>W:	closeWindow()		\n\
 		Meta ~Ctrl<Key>Q:	quitApplication()	\n\
 		 Alt ~Ctrl<Key>Q:	quitApplication()	\n\
+		Meta ~Ctrl<Key>A:	addFile()		\n\
+		 Alt ~Ctrl<Key>A:	addFile()		\n\
 		Meta ~Ctrl<Key>L:	loadScript()		\n\
 		 Alt ~Ctrl<Key>L:	loadScript()
 
@@ -55,55 +65,63 @@ ncledit*nclcmd.translations:	#override				\
 				activate()
 
 ! Geometry
-ncledit*XmList.listSizePolicy:	CONSTANT
-ncledit*XmList.visibleItemCount:	4
+ncledit.ncleditMGR*XmList.listSizePolicy:	CONSTANT
+ncledit.ncleditMGR*XmList.visibleItemCount:	4
 
-ncledit*XmFrame.marginWidth:	5
-ncledit*XmFrame.marginHeight:	5
-ncledit*XmFrame*childHorizontalAlignment:	ALIGNMENT_CENTER
+ncledit.ncleditMGR*XmFrame.marginWidth:	5
+ncledit.ncleditMGR*XmFrame.marginHeight:	5
+ncledit.ncleditMGR*XmFrame*childHorizontalAlignment:	ALIGNMENT_CENTER
 
 ! default XmForm constraints for all widgets in the ncledit window
 ncledit*topAttachment:		ATTACH_FORM
 ncledit*bottomAttachment:	ATTACH_FORM
 ncledit*leftAttachment:		ATTACH_FORM
 ncledit*rightAttachment:	ATTACH_FORM
-ncledit*topOffset:		5
-ncledit*bottomOffset:		5
-ncledit*leftOffset:		5
-ncledit*rightOffset:		5
+ncledit.ncleditMGR*topOffset:		5
+ncledit.ncleditMGR*bottomOffset:		5
+ncledit.ncleditMGR*leftOffset:		5
+ncledit.ncleditMGR*rightOffset:		5
 
-ncledit*menubar.bottomAttachment:	ATTACH_NONE
-ncledit*menubar.topOffset:		0
-ncledit*menubar.bottomOffset:		0
-ncledit*menubar.leftOffset:		0
-ncledit*menubar.rightOffset:		0
+ncledit.ncleditMGR*menubar.bottomAttachment:	ATTACH_NONE
+ncledit.ncleditMGR*menubar.topOffset:		0
+ncledit.ncleditMGR*menubar.bottomOffset:		0
+ncledit.ncleditMGR*menubar.leftOffset:		0
+ncledit.ncleditMGR*menubar.rightOffset:		0
 
-ncledit*pane.topOffset:			0
-ncledit*pane.leftOffset:		0
-ncledit*pane.rightOffset:		0
-ncledit*pane.bottomOffset:		0
-ncledit*pane.marginHeight:		0
+ncledit.ncleditMGR*pane.topOffset:			0
+ncledit.ncleditMGR*pane.leftOffset:		0
+ncledit.ncleditMGR*pane.rightOffset:		0
+ncledit.ncleditMGR*pane.bottomOffset:		0
+ncledit.ncleditMGR*pane.marginHeight:		0
 
-ncledit*slabel.bottomAttachment:	ATTACH_NONE
+ncledit.ncleditMGR*slabel.bottomAttachment:	ATTACH_NONE
 
-ncledit*sform*bottomOffset:		10
-ncledit*sform*bottomOffset:		10
-ncledit*scroll*topOffset:		10
+ncledit.ncleditMGR*sform*bottomOffset:		10
+ncledit.ncleditMGR*sform*bottomOffset:		10
+ncledit.ncleditMGR*scroll*topOffset:		10
 
-ncledit*hoframe.rightPosition:		23
-ncledit*vframe.leftPosition:		23
-ncledit*vframe.rightPosition:		46
-ncledit*fframe.leftPosition:		46
-ncledit*fframe.rightPosition:		69
-ncledit*fuframe.leftPosition:		69
+ncledit.ncleditMGR*hoframe.rightPosition:		23
+ncledit.ncleditMGR*vframe.leftPosition:		23
+ncledit.ncleditMGR*vframe.rightPosition:		46
+ncledit.ncleditMGR*fframe.leftPosition:		46
+ncledit.ncleditMGR*fframe.rightPosition:		69
+ncledit.ncleditMGR*fuframe.leftPosition:		69
 
-ncledit*reset.topAttachment:		ATTACH_NONE
-ncledit*reset.rightAttachment:		ATTACH_NONE
-ncledit*ilabel.topAttachment:		ATTACH_NONE
-ncledit*ilabel.alignment:		ALIGNMENT_BEGINNING
+ncledit.ncleditMGR*reset.topAttachment:		ATTACH_NONE
+ncledit.ncleditMGR*reset.rightAttachment:		ATTACH_NONE
+
+ncledit.ncleditMGR*ilabel.topAttachment:		ATTACH_NONE
+ncledit.ncleditMGR*ilabel.alignment:		ALIGNMENT_BEGINNING
 
 ncledit*nclcmd.columns:			40
 ncledit*nclcmd.rows:			15
+
+!
+! Geometry for addfile window
+!
+ncledit*addfile*vname.rightAttachment:		ATTACH_NONE
+ncledit*addfile*midtxt.rightAttachment:		ATTACH_NONE
+ncledit*addfile*rwoptMenu.rightAttachment:	ATTACH_NONE
 
 !
 ! Menubar strings
@@ -123,7 +141,11 @@ ncledit*nclcmd.rows:			15
 *menubar.help.mnemonic:			H
 *menubar.help.sensitive:		False
 
-*fmenu.loadScript.labelString:		Load
+*fmenu.addFile.labelString:		Add File
+*fmenu.addFile.mnemonic:		A
+*fmenu.addFile.acceleratorText:		Alt+A
+
+*fmenu.loadScript.labelString:		Load Script
 *fmenu.loadScript.mnemonic:		L
 *fmenu.loadScript.acceleratorText:	Alt+L
 
@@ -148,7 +170,11 @@ ncledit*reset.labelString:	Reset
 ncledit*reset.sensitive:	False
 ncledit*close.labelString:	Close
 
-!ncledit*loadscript_fsb.pattern:	*.ncl
+ncledit*addfile*vname.resizeWidth:	True
+ncledit*addfile*vname.value:	\ 
+ncledit*addfile*midtxt.labelString:	= addfile(\"[ ]\",\"
+ncledit*addfile*endtxt.labelString:	\")
+
 !ncledit*loadscript_fsb_popup.title:	Load NCL Script
 !ncledit*loadscript_fsb.selectionLabelString:	Select NCL Script:
 !ncledit*addfile_fsb_popup.title:	Add Data File
