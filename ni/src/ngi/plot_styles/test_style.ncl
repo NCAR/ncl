@@ -94,23 +94,23 @@ begin
 	minix = max((/0,minix/))
 	maxix = min((/ncols - 1,maxix/))
 	nc = maxix - minix + 1
-	stride = (nc) / (lcount + 1)
+;	stride = (nc) / (lcount + 1)
 
 ;	print(stride)
 
-	if (stride.lt.1) then
-		icols = new(lcount+1,integer)
-		icols(0:nc - 1) = ispan(minix,maxix,1)
-		start = nc
-		do while (start + nc .le. lcount + 1)
-			icols(start:start+n-1) = icols(0:nc-1)
-			start = start + nc
-		end do
-		if (start.lt.lcount+1) then
-			icols(start:lcount) = icols(0:lcount-start)
-		end if
-		return icols
-	end if
+;	if (stride.lt.1) then
+;		icols = new(lcount+1,integer)
+;		icols(0:nc - 1) = ispan(minix,maxix,1)
+;		start = nc
+;		do while (start + nc .le. lcount + 1)
+;			icols(start:start+nc-1) = icols(0:nc-1)
+;			start = start + nc
+;		end do
+;		if (start.lt.lcount+1) then
+;			icols(start:lcount) = icols(0:lcount-start)
+;		end if
+;		return icols
+;	end if
 
 	fmin = new(1,float)
 	fmax = new(1,float)
@@ -178,7 +178,7 @@ begin
 	return lon
     end if
 
-    if (typeof(data).eq."double") then
+    if (typeof(lon).eq."double") then
 	    newlon = new((/mx+1/),double)
     else
 	    newlon = new((/mx+1/),float)
@@ -390,13 +390,13 @@ begin
 		end if
 	end if
 	
-	print(ret)
+;	print(ret)
 	return ret
 end	
 
 function pos_xy_anno (base : graphic, xy : graphic)
 
-local vpheight,vpwidth,vpx,xyx,bb,bb1,vpheight0,vpwidth0, \
+local width,vpheight,vpwidth,vpx,xyx,bb,bb1,vpheight0,vpwidth0, \
 	am,opos,opos0,ret
 
 begin
@@ -405,7 +405,7 @@ begin
       getvalues base
         "vpHeightF"    : vpheight
         "vpXF"         : vpx
-        "vpWidthF"     : vpwidth
+        "vpWidthF"     : width
       end getvalues
 
       getvalues xy
@@ -415,12 +415,12 @@ begin
         "vpXF"         : xyx
       end getvalues
 
-      vpwidth = min((/vpheight,vpwidth * .625/))
+      vpwidth = min((/vpheight,width * .625/))
 
       if (.not. (vpwidth .eq. vpwidth0 .and. \
 		 vpheight .eq. vpheight0)) then
-	      print("vpwidth: " + vpwidth + " vpwidth0: " + vpwidth0)
-	      print("vpheight: " + vpheight + " vpheight0: " + vpheight0)
+;	      print("vpwidth: " + vpwidth + " vpwidth0: " + vpwidth0)
+;	      print("vpheight: " + vpheight + " vpheight0: " + vpheight0)
 	      setvalues xy
         	"vpHeightF"    : vpheight
 	        "vpWidthF"     : vpwidth
@@ -431,6 +431,9 @@ begin
       bb = NhlGetBB(base)
       bb1 = NhlGetBB(xy)
 
+      getvalues xy
+        "vpXF"         : xyx
+      end getvalues
 
 ;
 ; unfortunately you can't really get the right edge of the map plot with
@@ -442,8 +445,9 @@ begin
 ;
 ;      print(bb)
 ;      print(bb1)
+;      print(width)
 
-      opos = 0.001 + max((/0.0,xyx-bb1(2)/)) / vpwidth
+      opos = 0.001 + max((/0.0,xyx-bb1(2)/)) / width
 ;
 ;      print ("opos: " + opos + " xyx: " + xyx)
 ;
@@ -452,14 +456,14 @@ begin
       end getvalues
 
       if (.not. (opos .eq. opos0)) then
-	      print("opos: " + opos + " opos0: " + opos0)
+;	      print("opos: " + opos + " opos0: " + opos0)
 	      setvalues am
 		"amOrthogonalPosF" : opos
 	      end setvalues
 	      ret = 1
       end if
 
-      print(ret)
+;      print(ret)
       return ret	
 end
 
@@ -718,7 +722,7 @@ begin
 	       all(yvalues0 .eq. yvalues) .and. \
 	       all(myvalues0 .eq.myvalues))) then
 
-	    print("first")	       
+;	    print("first")	       
 	    ret = 1
 	    setvalues tm
 	       "trXMinF"	  : min_lon
@@ -771,7 +775,7 @@ begin
                youtl0 .eq. major_length .and. \
 	       yminoutl0 .eq. minor_length)) then
 
-	    print("second")	       
+;	    print("second")	       
 	    ret = 1
 	    setvalues tm
 	      "tmXBLabelFontHeightF" : height
@@ -787,7 +791,7 @@ begin
 	    end setvalues
     end if
 
-    print(ret)
+;    print(ret)
     return ret
 
 end
@@ -838,13 +842,13 @@ begin
 		return 0
 	end if
 	 
-	print("latlon " + latlon0)
-	print("xmin: " + xmin + " xmin0: " + xmin0)
-	print("ymin: " + ymin + " ymin0: " + ymin0)
-	print("xmax: " + xmax + " xmax0: " + xmax0)
-	print("ymax: " + ymax + " ymax0: " + ymax0)
-	print("rel_lat: " + relative_lat + " rel_lat0: " + rel_lat0)
-	print("rel_lon: " + relative_lon + " rel_lon0: " + rel_lon0)
+;	print("latlon " + latlon0)
+;	print("xmin: " + xmin + " xmin0: " + xmin0)
+;	print("ymin: " + ymin + " ymin0: " + ymin0)
+;	print("xmax: " + xmax + " xmax0: " + xmax0)
+;	print("ymax: " + ymax + " ymax0: " + ymax0)
+;	print("rel_lat: " + relative_lat + " rel_lat0: " + rel_lat0)
+;	print("rel_lon: " + relative_lon + " rel_lon0: " + rel_lon0)
 
 	setvalues map
 		"mpLimitMode" : "latlon"
