@@ -16,4 +16,22 @@
  */
 #define	MAX_ATOARGV_STRING	1024
 
+typedef	unsigned long	BitMask;
+
+/*
+ * 	maximum number of option tables
+ */
+#define	MAX_TBLS	BITS(BitMask)
+
+/*
+ * 	initial malloc size for a small chunk of memory
+ */
+#define	SMALL_BLOCK	10
+
+typedef	struct	{
+	OptDescRec	*opt_desc_rec;	/* the option table	*/
+	int		size; 		/* mem alloced to table */
+	int		num;		/* num elements in table*/
+	} OptTable;
+
 #endif	/* _options_	*/

@@ -1,5 +1,5 @@
 /*
- *	$Id: options.c,v 1.14 1992-05-14 16:46:54 clyne Exp $
+ *	$Id: options.c,v 1.15 1992-06-24 20:41:57 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -38,10 +38,10 @@
 #include "options.h"
 
 
+static	BitMask	usedOD = 0;	/* bitmap of used option descriptors	*/
+static	int	numUsed = 0;	/* number of used option descriptors	*/
 
-static	OptDescRec	*optDescRec = NULL;	/* the option table	*/
-static	int		optDescRecSize = 0;	/* mem alloced to table */
-static	int		optDescRecNum = 0;	/* num elements in table*/
+static	OptTable	optTbls[MAX_TBLS];
 
 /*
 **
@@ -180,6 +180,79 @@ int	NCARGCvtToDimension2D(from, to)
 
 
 /*
+ *	OpenOptionTbl()
+ *	[exported]
+ *
+ *
+ *	Instantiate an option table. OpenOptionTbl() creates an instance
+ *	of an option table and returns an option descriptor (od) with
+ *	which to reference it.
+ *
+ * on exit
+ *	return		: -1 => failure, else an option descriptor is returned
+ */
+OpenOptionTbl()
+{
+	int		od;		/* option descriptor	*/
+	OptDescRec	*odr;
+	int		tmp;
+
+	if (numUsed >= MAX_TBLS) {
+		ESprintf(EMFILE, "");
+		return(-1);
+	}
+
+	/* find a free index    */
+	for(od=0; od<MAX_TBLS && ((usedOD >> od) & 1); od++);
+
+	tmp = sizeof(OptDescRec) * SMALL_BLOCK;
+	if (! (odr = (OptDescRec *) malloc(tmp))) {
+		ESprintf(errno, "malloc(%d)",tmp);
+		return(-1);
+	}
+	optTbls[od].opt_desc_rec = odr;
+	optTbls[od].size = SMALL_BLOCK;
+	optTbls[od].num = 0;
+
+	usedOD |= (1 << od); /* update bitmap to include new addition*/
+	numUsed++;
+
+	return(od);
+}
+
+
+/*
+ *	CloseOptionTbl()
+ *	[exported]
+ *
+ *	Free an instance of an option table.
+ *
+ * on entry
+ *	od		: reference the option table to free
+ * on exit
+ *	return		: -1 => error, else ok
+ */
+CloseOptionTbl(od) 
+	int	od;
+{
+	if (!(usedOD & (1 << od))) {
+		ESprintf(EBADF, "");
+		return(-1);
+	}
+
+	if (optTbls[od].size > 0) {
+		free((char *) optTbls[od].opt_desc_rec);
+		optTbls[od].size = 0;
+		optTbls[od].num = 0;
+	}
+
+	usedOD &= (~(1 << od));
+	numUsed--;
+
+	return(0);
+}
+
+/*
  *	GetOptions
  *	[exported]
  *
@@ -207,25 +280,35 @@ int	NCARGCvtToDimension2D(from, to)
  *
  *
  * on entry
+ *	od		: option descriptor
  *	options		: Null terminated list of options to be returned
  *
  * on exit
  *	return		: -1 => failure, else OK
  */
-GetOptions(options)
+GetOptions(od, options)
 	Option		*options;
 {
 
-	int	i, j;
-	char	*s;
-	int	arg_count;
+	int		i, j;
+	char		*s;
+	int		arg_count;
+	OptDescRec	*odr;
 
 	OptDescRec	*optd, *get_option();
 	Voidptr		offset;
 
+	if (!(usedOD & (1 << od))) {
+		ESprintf(EBADF, "");
+		return(-1);	/* invalid option descriptor	*/
+	}
+	odr = optTbls[od].opt_desc_rec;
+
 	for (i = 0; options[i].option_name; i++ ) {
 
-		optd = get_option(options[i].option_name);/* find the option */
+		/*
+		 * find the option */
+		optd = get_option(odr, options[i].option_name);
 
 		if (optd == (OptDescRec *) NULL) {
 			ESprintf(
@@ -273,23 +356,32 @@ GetOptions(options)
  *	LoadOptionTable() invokes ESprintf() on error.
  *
  * on entry
+ *	od		: option descriptor
  *	optd		: Null terminated list of options
  *
  * on exit
  *	return		: -1 => failure, else OK.
  */
-LoadOptionTable(optd)
+LoadOptionTable(od, optd)
+	int		od;
 	OptDescRec	*optd;
 {
 
 	int	i,j,n;
 	int	num;
-	static	short	first = 1;
+	OptDescRec	*odr;
+	unsigned	tmp;
 
 	extern	char	*strcpy();
 	char	*fmt_opt_string();
 
 	if (! optd[0].option) return (0);
+
+	if (!(usedOD & (1 << od))) {
+		ESprintf(EBADF, "");
+		return(-1);	/* invalid option descriptor	*/
+	}
+	odr = optTbls[od].opt_desc_rec;
 
 	/*
 	 * make sure there are no duplicate names in the table. This only 
@@ -298,8 +390,8 @@ LoadOptionTable(optd)
 	 * how many options there are as well
 	 */
 	for (j = 0, num = 0; optd[j].option; j++) {
-		for ( i = 0; i < optDescRecNum; i++) {
-			if (strcmp(optDescRec[i].option, optd[j].option) == 0){
+		for ( i = 0; i < optTbls[od].num; i++) {
+			if (strcmp(odr[i].option, optd[j].option) == 0){
 				ESprintf(
 					EINVAL, 
 					"Option %s already in option table", 
@@ -311,34 +403,23 @@ LoadOptionTable(optd)
 		num++;
 	}
 
-	/*
-	 * if first time called malloc memory, else realloc memory.
-	 */
-	if (first) {
-		if (! (optDescRec = (OptDescRec *) malloc ((unsigned) 
-			((num+1) * sizeof(OptDescRec))))) {
+	if ((optTbls[od].num + num + 1) > optTbls[od].size) {
 
-			ESprintf(errno,"malloc(%d)",(num+1)*sizeof(OptDescRec));
+		optTbls[od].size += num+1;
+		tmp = optTbls[od].size * sizeof(OptDescRec);
+
+		if (! (odr = (OptDescRec *) realloc ((char *) odr, tmp))) {
+			ESprintf(errno,"malloc(%d)", tmp);
 			return(-1);
 		}
-		optDescRecSize = num + 1;
-		first = 0;
-	}
-	else {
-		optDescRecSize += num;
-		if (! (optDescRec = (OptDescRec *) realloc ((char *)optDescRec, 
-			(unsigned) (sizeof (OptDescRec) * optDescRecSize)))) {
-
-			ESprintf(errno,"malloc(%d)",(num+1)*sizeof(OptDescRec));
-			return(-1);
-		}
+		optTbls[od].opt_desc_rec = odr;
 	}
 
 	/*
 	 * copy all the options into the option table allocating memory
 	 * as necessary.
 	 */
-	for (i = 0, n = optDescRecNum; i < num; i++, optDescRecNum++, n++) {
+	for (i = 0, n = optTbls[od].num; i < num; i++, optTbls[od].num++, n++) {
 		if (optd[i].arg_count == 0) optd[i].value = "false";
 
 		if (! optd[i].option) {
@@ -355,13 +436,13 @@ LoadOptionTable(optd)
 			}
 		}
 
-		optDescRec[n].option = optd[i].option;
-		optDescRec[n].arg_count = optd[i].arg_count;
-		optDescRec[n].value = optd[i].value;
-		optDescRec[n].help = optd[i].help;
+		odr[n].option = optd[i].option;
+		odr[n].arg_count = optd[i].arg_count;
+		odr[n].value = optd[i].value;
+		odr[n].help = optd[i].help;
 
 	}
-	optDescRec[n].option = NULL;	/* terminate list  */
+	odr[n].option = NULL;	/* terminate list  */
 	
 	return(1);
 }
@@ -377,34 +458,43 @@ LoadOptionTable(optd)
  *
  *
  * on entry
+ *	od		: option descriptor
  *	optd		: Null terminated list of options
  *
  */
-void	RemoveOptions(optd)
+void	RemoveOptions(od, optd)
+	int		od;
 	OptDescRec	*optd;
 {
 	int	i,j;
+	OptDescRec	*odr;
 
 	if (! optd[0].option) return ;
+
+	if (!(usedOD & (1 << od))) {
+		return;		/* invalid option descriptor	*/
+	}
+
+	odr = optTbls[od].opt_desc_rec;
 
 	/*
 	 * look for the option in the option table.
 	 */
 	for (j=0; optd[j].option; j++) {
-		for (i=0; i < optDescRecNum; i++) {
-			if (strcmp(optDescRec[i].option, optd[j].option) == 0){
-				optDescRecNum--;
+		for (i=0; i < optTbls[od].num; i++) {
+			if (strcmp(odr[i].option, optd[j].option) == 0){
+				optTbls[od].num--;
 				break;
 			}
 		}
 		/*
 		 * we won't enter this loop unless a match is found
-		 * and optDescRecNum is decremented
+		 * and optTbls[od].num is decremented
 		 */
-		for( ; i<optDescRecNum; i++) {
-			optDescRec[i] = optDescRec[i+1];
+		for( ; i<optTbls[od].num; i++) {
+			odr[i] = odr[i+1];
 		}
-		optDescRec[i].option = NULL;
+		odr[i].option = NULL;
 	}
 }
 
@@ -421,6 +511,7 @@ void	RemoveOptions(optd)
  *	ESprintf() is invoked on error.
  *
  * on entry:
+ *	od		: option descriptor
  *	**argv		: list of command line args
  *	*argc		: num elements in argv
  *	*optds		: additional options to merge into the option table
@@ -429,7 +520,8 @@ void	RemoveOptions(optd)
  *	*argc		: num elements in argv
  *	return		: -1 => failure, else OK
  */
-ParseOptionTable(argc, argv, optds)
+ParseOptionTable(od, argc, argv, optds)
+	int	od;
 	int	*argc;
 	char	**argv;
 	OptDescRec	*optds;
@@ -437,16 +529,23 @@ ParseOptionTable(argc, argv, optds)
 	int	i;
 	char	**next = argv + 1;
 	OptDescRec	*optd;
+	OptDescRec	*odr;
 	int		new_argc = 1;
 
 	extern	OptDescRec	*get_option();
 	char	*copy_create_arg_string();
 
+	if (!(usedOD & (1 << od))) {
+		ESprintf(EBADF, "");
+		return(-1);	/* invalid option descriptor	*/
+	}
+	odr = optTbls[od].opt_desc_rec;
+
 	/*
 	 * if any options to be merged do so
 	 */
 	if (optds) {
-		if (LoadOptionTable(optds) == -1) return(-1);
+		if (LoadOptionTable(od, optds) == -1) return(-1);
 	}
 
 	if (! argv) return(1);
@@ -458,7 +557,7 @@ ParseOptionTable(argc, argv, optds)
 	for (i = 1; i < *argc; i++) {
 
 		if (*argv[i] == '-') {	/* is it an option specifier?	*/
-			optd = get_option((char *) (argv[i] + 1));
+			optd = get_option(odr, (char *) (argv[i] + 1));
 		}
 		else {
 			optd = (OptDescRec *) NULL;	/* not a specifier */ 
@@ -535,13 +634,15 @@ ParseOptionTable(argc, argv, optds)
  *	is not set the option/environemnt variable pair are ignored.
  *
  * on entry
+ *	od		: option descriptor
  *	*envv		: NUll-terminated list of option/env pairs
  *	*optds		: additional options to merge into the option table
  *
  * on exit
  *	return		: -1 => error, else OK
  */
-ParseEnvOptions(envv, optds)
+ParseEnvOptions(od, envv, optds)
+	int		od;
 	EnvOpt		*envv;
 	OptDescRec	*optds;
 {
@@ -556,7 +657,7 @@ ParseEnvOptions(envv, optds)
 	 * if any options to be merged do so
 	 */
 	if (optds) {
-		if (LoadOptionTable(optds) == -1) return(-1);
+		if (LoadOptionTable(od, optds) == -1) return(-1);
 	}
 
 	/*
@@ -573,7 +674,7 @@ ParseEnvOptions(envv, optds)
 				return(-1);
 			}
 			if (ParseOptionTable(
-				&argc, argv, (OptDescRec *) NULL) == -1) {
+				od, &argc, argv, (OptDescRec *) NULL) == -1) {
 
 				return(-1);
 			}
@@ -600,19 +701,27 @@ ParseEnvOptions(envv, optds)
  *	expected by the option, followed by the contents of the 'help' field.
  *
  * on entry
+ *	od		: option descriptor
  *	*fp		: file pointer where output is written.
  */
-void	PrintOptionHelp(fp)
+void	PrintOptionHelp(od, fp)
+	int	od;
 	FILE	*fp;
 {
-	int	i,j;
-	char	buf[30];
-	char	sbf[20];
+	int		i,j;
+	char		buf[30];
+	char		sbf[20];
+	OptDescRec	*odr;
 
-	for(i=0; i<optDescRecNum; i++) {
-		sprintf(buf, "    -%-8.8s", optDescRec[i].option);
-		if (optDescRec[i].arg_count < 4) {
-			for(j=0; j<optDescRec[i].arg_count; j++) {
+	if (!(usedOD & (1 << od))) {
+		return;		/* invalid option descriptor	*/
+	}
+	odr = optTbls[od].opt_desc_rec;
+
+	for(i=0; i<optTbls[od].num; i++) {
+		sprintf(buf, "    -%-8.8s", odr[i].option);
+		if (odr[i].arg_count < 4) {
+			for(j=0; j<odr[i].arg_count; j++) {
 				sprintf(sbf, " arg%d", j);
 				if (strlen(sbf) + strlen(buf) < sizeof(buf)) {
 					(void) strcat(buf, sbf);
@@ -623,15 +732,15 @@ void	PrintOptionHelp(fp)
 			}
 		}
 		else {
-			sprintf(sbf," arg0 .. arg%d",optDescRec[i].arg_count-1);
+			sprintf(sbf," arg0 .. arg%d",odr[i].arg_count-1);
 			(void) strcat(buf, sbf);
 		}
 		(void) fprintf(fp, buf);
 		for(j=strlen(buf); j<sizeof(buf); j++) {
 			putc(' ', fp);
 		}
-		if (optDescRec[i].help) {
-			(void) fprintf(fp, "%s\n", optDescRec[i].help);
+		if (odr[i].help) {
+			(void) fprintf(fp, "%s\n", odr[i].help);
 		}
 		else {
 			(void) fprintf(fp, "\n");
@@ -649,7 +758,8 @@ void	PrintOptionHelp(fp)
  *	return		: if found return command obj ptr. If name is ambiguous
  *			  return -1. If not found return NULL.
  */
-static	OptDescRec	*get_option (name)
+static	OptDescRec	*get_option (odr, name)
+	OptDescRec	*odr;
 	char	*name;
 {
 	char *p, *q;
@@ -660,7 +770,7 @@ static	OptDescRec	*get_option (name)
 	nmatches = 0;
 	found = NULL;
 
-	for (o = optDescRec; o && (p = o->option); o++) {
+	for (o = odr; o && (p = o->option); o++) {
 		for (q = name; *q == *p++; q++) {
 			if (*q == 0)            /* exact match? */
 				return (o);

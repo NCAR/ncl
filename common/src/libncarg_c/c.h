@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.10 1992-04-22 15:13:10 clyne Exp $
+ *	$Id: c.h,v 1.11 1992-06-24 20:41:54 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -72,6 +72,16 @@ typedef	struct	Dimension2D_ {
 #define FALSE	0
 #define TRUE	!FALSE
 #endif	/* TRUE */
+
+
+#ifndef	BITSPERBYTE
+#define BITSPERBYTE     8
+#endif
+
+#ifndef	BITS
+#define BITS(type)      (BITSPERBYTE * (int)sizeof(type))
+#endif
+
 
 
 #define	BYTESIZE	8
