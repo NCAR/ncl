@@ -1,12 +1,12 @@
 /*
- *      $Id: NresDB.c,v 1.10 1997-01-17 18:57:40 boote Exp $
+ *      $Id: NresDB.c,v 1.11 2004-09-09 19:58:42 grubin Exp $
  */
 /************************************************************************
-*									*
-*			     Copyright (C)  1992			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
+*                                                                       *
+*                Copyright (C)  1992                                    *
+*           University Corporation for Atmospheric Research             *
+*                All Rights Reserved                                    *
+*                                                                       *
 ************************************************************************/
 /*
  *	File:		NresDB.c
@@ -425,9 +425,15 @@ void NrmStringToBindingQuarkList(name, bindings, quarks)
 #ifdef DEBUG
 
 #ifdef OLD_STUFF
+# if NhlNeedProto
+static void PrintQuarkList(
+    NrmQuarkList    quarks,
+    FILE    *stream)
+# else
 static void PrintQuarkList(quarks, stream)
     NrmQuarkList    quarks;
     FILE	    *stream;
+# endif /* NhlNeedProto */
 {
     NhlBoolean	    firstNameSeen;
 
@@ -444,25 +450,42 @@ static void PrintQuarkList(quarks, stream)
 #endif /* DEBUG */
 
 /*ARGSUSED*/
+# if NhlNeedProto
+static void mbnoop(
+    NhlPointer state)
+# else
 static void mbnoop(state)
     NhlPointer state;
+# endif /* NhlNeedProto */
 {
 	return;
 }
 
 /*ARGSUSED*/
+# if NhlNeedProto
+static char mbchar(
+    NhlPointer  state,
+    char    *str,
+    int*    lenp)
+# else
 static char mbchar(state, str, lenp)
     NhlPointer state;
     char *str;
     int *lenp;
+# endif /* NhlNeedProto */
 {
     *lenp = 1;
     return *str;
 }
 
 /*ARGSUSED*/
+# if NhlNeedProto
+static char *lcname(
+    NhlPointer  state)
+# else
 static char *lcname(state)
     NhlPointer state;
+# endif /* NhlNeedProto */
 {
     return "C";
 }
@@ -475,7 +498,11 @@ static RConst NrmMethodsRec mb_methods = {
     mbnoop
 };
 
+# if NhlNeedProto
 static NrmDatabase NewDatabase()
+# else
+static NrmDatabase NewDatabase()
+# endif /* NhlNeedProto */
 {
     register NrmDatabase db;
 
@@ -495,9 +522,15 @@ static NrmDatabase NewDatabase()
 /* move all values from ftable to ttable, and free ftable's buckets.
  * ttable is quaranteed empty to start with.
  */
+# if NhlNeedProto
+static void MoveValues(
+    LTable  ftable,
+    register LTable  ttable)
+# else
 static void MoveValues(ftable, ttable)
     LTable ftable;
     register LTable ttable;
+# endif /* NhlNeedProto */
 {
     register VEntry fentry, nfentry;
     register VEntry *prev;
@@ -522,9 +555,15 @@ static void MoveValues(ftable, ttable)
 /* move all tables from ftable to ttable, and free ftable.
  * ttable is quaranteed empty to start with.
  */
+# if NhlNeedProto
+static void MoveTables(
+    NTable  ftable,
+    register NTable ttable)
+# else
 static void MoveTables(ftable, ttable)
     NTable ftable;
     register NTable ttable;
+# endif /* NhlNeedProto */
 {
     register NTable fentry, nfentry;
     register NTable *prev;
@@ -547,8 +586,13 @@ static void MoveTables(ftable, ttable)
 }
 
 /* grow the table, based on current number of entries */
+# if NhlNeedProto
+static void GrowTable(
+    NTable  *prev)
+# else
 static void GrowTable(prev)
     NTable *prev;
+# endif /* NhlNeedProto */
 {
     register NTable table;
     register int i;
@@ -590,10 +634,17 @@ static void GrowTable(prev)
 }
 
 /* merge values from ftable into *pprev, destroy ftable in the process */
+# if NhlNeedProto
+static void MergeValues(
+    LTable  ftable, 
+    NTable* pprev,
+    NhlBoolean  override)
+# else
 static void MergeValues(ftable, pprev, override)
     LTable ftable;
     NTable *pprev;
     NhlBoolean override;
+# endif /* NhlNeedProto */
 {
     register VEntry fentry, tentry;
     register VEntry *prev;
@@ -670,10 +721,17 @@ static void MergeValues(ftable, pprev, override)
 }
 
 /* merge tables from ftable into *pprev, destroy ftable in the process */
+# if NhlNeedProto
+static void MergeTables(
+    NTable  ftable,
+    NTable  *pprev,
+    NhlBoolean  override)
+# else
 static void MergeTables(ftable, pprev, override)
     NTable ftable;
     NTable *pprev;
     NhlBoolean override;
+# endif /* NhlNeedProto */
 {
     register NTable fentry, tentry;
     NTable nfentry;
@@ -743,9 +801,16 @@ static void MergeTables(ftable, pprev, override)
     GROW(pprev);
 }
 
+# if NhlNeedProto
+void NrmCombineDatabase(
+    NrmDatabase from,
+    NrmDatabase *into,
+    NhlBoolean  override)
+# else
 void NrmCombineDatabase(from, into, override)
     NrmDatabase	from, *into;
     NhlBoolean override;
+# endif /* NhlNeedProto */
 {
     register NTable *prev;
     register NTable ftable, ttable, nftable;
@@ -787,19 +852,34 @@ void NrmCombineDatabase(from, into, override)
     }
 }
 
+# if NhlNeedProto
+void NrmMergeDatabases(
+    NrmDatabase from,
+    NrmDatabase *into)
+# else
 void NrmMergeDatabases(from, into)
     NrmDatabase	from, *into;
+# endif /* NhlNeedProto */
 {
     NrmCombineDatabase(from, into, True);
 }
 
 /* store a value in the database, overriding any existing entry */
+# if NhlNeedProto
+static void PutEntry(
+    NrmDatabase db,
+    NrmBindingList  bindings,
+    NrmQuarkList    quarks,
+    NrmRepresentation   type,
+    NrmValuePtr value)
+# else
 static void PutEntry(db, bindings, quarks, type, value)
     NrmDatabase		db;
     NrmBindingList	bindings;
     NrmQuarkList	quarks;
     NrmRepresentation	type;
     NrmValuePtr		value;
+# endif /* NhlNeedProto */
 {
     register NTable *pprev, *prev;
     register NTable table;
@@ -983,12 +1063,21 @@ static void PutEntry(db, bindings, quarks, type, value)
 #undef NEWTABLE
 }
 
+# if NhlNeedProto
+void NrmQPutResource(
+    NrmDatabase *pdb,
+    NrmBindingList  bindings,
+    NrmQuarkList    quarks,
+    NrmRepresentation   type,
+    NrmValuePtr value)
+# else
 void NrmQPutResource(pdb, bindings, quarks, type, value)
     NrmDatabase		*pdb;
     NrmBindingList      bindings;
     NrmQuarkList	quarks;
     NrmRepresentation	type;
     NrmValuePtr		value;
+# endif /* NhlNeedProto */
 {
     if (!*pdb) *pdb = NewDatabase();
     PutEntry(*pdb, bindings, quarks, type, value);
@@ -1059,11 +1148,19 @@ void NrmQPutStringResource(pdb, bindings, quarks, str)
 
 static void GetIncludeFile();
 
+# if NhlNeedProto
+static void GetDatabase(
+    NrmDatabase db,
+    Const char  *permstr,
+    Const char  *filename,
+    NhlBoolean  doall)
+# else
 static void GetDatabase(db, permstr, filename, doall)
     NrmDatabase db;
     Const char *permstr;
     Const char *filename;
     NhlBoolean doall;
+# endif /* NhlNeedProto */
 {
     register char *ptr;
     register char *str = (char *)permstr;
@@ -1528,9 +1625,13 @@ NrmDatabase NrmGetStringDatabase(data)
  *	Returns: An allocated string containing the contents of the file.
  */
 
-static char *
-ReadInFile(filename)
-Const char * filename;
+# if NhlNeedProto
+static char *ReadInFile(
+    Const char* filename)
+# else
+static char *ReadInFile(filename)
+    Const char * filename;
+# endif /* NhlNeedProto */
 {
     register int fd, size;
     char * filebuf;
@@ -1557,12 +1658,19 @@ Const char * filename;
     return filebuf;
 }
 
-static void
-GetIncludeFile(db, base, fname, fnamelen)
+# if NhlNeedProto
+static void GetIncludeFile(
+    NrmDatabase db,
+    char*   base, 
+    char*   fname,
+    int fnamelen)
+# else
+static void GetIncludeFile(db, base, fname, fnamelen)
     NrmDatabase db;
     char *base;
     char *fname;
     int fnamelen;
+# endif /* NhlNeedProto */
 {
     int len;
     char *str;
@@ -1653,12 +1761,21 @@ NrmCombineFileDB
  * stop if user proc returns True.  level is current depth in database.
  */
 /*ARGSUSED*/
+# if NhlNeedProto
+static NhlBoolean EnumLTable(
+    LTable  table,
+    NrmNameList names,
+    NrmClassList    classes,
+    register int    level,
+    register EClosure   closure)
+# else
 static NhlBoolean EnumLTable(table, names, classes, level, closure)
     LTable		table;
     NrmNameList		names;
     NrmClassList 	classes;
     register int	level;
     register EClosure	closure;
+# endif /* NhlNeedProto */
 {
     register VEntry *bucket;
     register int i;
@@ -1699,10 +1816,17 @@ static NhlBoolean EnumLTable(table, names, classes, level, closure)
     return False;
 }
 
+# if NhlNeedProto
+static NhlBoolean EnumAllNTable(
+    NTable  table,
+    register int    level,
+    register    EClosure    closure)
+# else
 static NhlBoolean EnumAllNTable(table, level, closure)
     NTable		table;
     register int	level;
     register EClosure	closure;
+# endif /* NhlNeedProto */
 {
     register NTable *bucket;
     register int i;
@@ -1733,12 +1857,21 @@ static NhlBoolean EnumAllNTable(table, level, closure)
 /* recurse on every table in the table, arbitrary order.
  * stop if user proc returns True.  level is current depth in database.
  */
+# if NhlNeedProto
+static NhlBoolean EnumNTable(
+    NTable  table,
+    NrmNameList names,
+    NrmClassList    classes,
+    register int    level,
+    register EClosure   closure)
+# else
 static NhlBoolean EnumNTable(table, names, classes, level, closure)
     NTable		table;
     NrmNameList		names;
     NrmClassList 	classes;
     register int	level;
     register EClosure	closure;
+# endif /* NhlNeedProto */
 {
     register NTable	entry;
     register NrmQuark	q;
@@ -1891,6 +2024,15 @@ static NhlBoolean EnumNTable(table, names, classes, level, closure)
 /* call the proc for every value in the database, arbitrary order.
  * stop if the proc returns True.
  */
+# if NhlNeedProto
+NhlBoolean NrmEnumerateDatabase(
+    NrmDatabase db,
+    NrmNameList names,
+    NrmClassList    classes,
+    int mode,
+    NrmDBEnumProc   proc,
+    NhlPointer  closure)
+# else
 NhlBoolean NrmEnumerateDatabase(db, names, classes, mode, proc, closure)
     NrmDatabase		db;
     NrmNameList		names;
@@ -1898,6 +2040,7 @@ NhlBoolean NrmEnumerateDatabase(db, names, classes, mode, proc, closure)
     int			mode;
     NrmDBEnumProc		proc;
     NhlPointer		closure;
+# endif /* NhlNeedProto */
 {
     NrmBinding  bindings[MANDBDEPTH+2];
     NrmQuark	quarks[MANDBDEPTH+2];
@@ -1924,10 +2067,17 @@ NhlBoolean NrmEnumerateDatabase(db, names, classes, mode, proc, closure)
     return False;
 }
 
+# if NhlNeedProto
+static void PrintBindingQuarkList(
+    NrmBindingList  bindings,
+    NrmQuarkList    quarks,
+    FILE*   stream)
+# else
 static void PrintBindingQuarkList(bindings, quarks, stream)
     NrmBindingList      bindings;
     NrmQuarkList	quarks;
     FILE		*stream;
+# endif /* NhlNeedProto */
 {
     NhlBoolean	firstNameSeen;
 
@@ -1944,6 +2094,15 @@ static void PrintBindingQuarkList(bindings, quarks, stream)
 
 /* output out the entry in correct file syntax */
 /*ARGSUSED*/
+# if NhlNeedProto
+static NhlBoolean DumpEntry(
+    NrmDatabase*    db,
+    NrmBindingList  bindings,
+    NrmQuarkList    quarks,
+    NrmRepresentation*  type,
+    NrmValuePtr value,
+    NhlPointer  data)
+# else
 static NhlBoolean DumpEntry(db, bindings, quarks, type, value, data)
     NrmDatabase		*db;
     NrmBindingList      bindings;
@@ -1951,6 +2110,7 @@ static NhlBoolean DumpEntry(db, bindings, quarks, type, value, data)
     NrmRepresentation   *type;
     NrmValuePtr		value;
     NhlPointer		data;
+# endif /* NhlNeedProto */
 {
     FILE			*stream = (FILE *)data;
     register unsigned int	i;
@@ -1992,9 +2152,15 @@ static NhlBoolean DumpEntry(db, bindings, quarks, type, value, data)
 
 #ifdef DEBUG
 
+# if NhlNeedProto
+void PrintTable(
+    NTable  table,
+    FILE*   file)
+# else
 void PrintTable(table, file)
     NTable table;
     FILE *file;
+# endif /* NhlNeedProto */
 {
     NrmBinding  bindings[MANDBDEPTH+1];
     NrmQuark	quarks[MANDBDEPTH+1];
@@ -2081,11 +2247,19 @@ void NrmPutFileDatabase(db, fileName)
 
 /* add tight/loose entry to the search list, return True if list is full */
 /*ARGSUSED*/
+# if NhlNeedProto
+static NhlBoolean AppendLEntry(
+    LTable  table,
+    NrmNameList names,
+    NrmClassList    classes,
+    register SClosure   closure)
+# else
 static NhlBoolean AppendLEntry(table, names, classes, closure)
     LTable		table;
     NrmNameList		names;
     NrmClassList 	classes;
     register SClosure	closure;
+# endif /* NhlNeedProto */
 {
     /* check for duplicate */
     if (closure->idx >= 0 && closure->list[closure->idx] == table)
@@ -2100,11 +2274,19 @@ static NhlBoolean AppendLEntry(table, names, classes, closure)
 
 /* add loose entry to the search list, return True if list is full */
 /*ARGSUSED*/
+# if NhlNeedProto
+static NhlBoolean AppendLooseLEntry(
+    LTable  table,
+    NrmNameList names,
+    NrmClassList    classes,
+    register SClosure   closure)
+# else
 static NhlBoolean AppendLooseLEntry(table, names, classes, closure)
     LTable		table;
     NrmNameList		names;
     NrmClassList 	classes;
     register SClosure	closure;
+# endif /* NhlNeedProto */
 {
     /* check for duplicate */
     if (closure->idx >= 0 && closure->list[closure->idx] == table)
@@ -2120,11 +2302,19 @@ static NhlBoolean AppendLooseLEntry(table, names, classes, closure)
 }
 
 /* search for a leaf table */
+# if NhlNeedProto
+static NhlBoolean SearchNEntry(
+    NTable  table,
+    NrmNameList names,
+    NrmClassList    classes,
+    SClosure    closure)
+# else
 static NhlBoolean SearchNEntry(table, names, classes, closure)
     NTable		table;
     NrmNameList		names;
     NrmClassList 	classes;
     SClosure		closure;
+# endif /* NhlNeedProto */
 {
     register NTable	entry;
     register NrmQuark	q;
@@ -2184,12 +2374,21 @@ static NhlBoolean SearchNEntry(table, names, classes, closure)
     return False;
 }
 
+# if NhlNeedProto
+NhlBoolean NrmQGetSearchList(
+    NrmDatabase db,
+    NrmNameList names,
+    NrmClassList    classes,
+    NrmSearchList   searchList,
+    int listLength)
+# else
 NhlBoolean NrmQGetSearchList(db, names, classes, searchList, listLength)
     NrmDatabase     db;
     NrmNameList	    names;
     NrmClassList    classes;
     NrmSearchList   searchList;	/* RETURN */
     int		    listLength;
+# endif /* NhlNeedProto */
 {
     register NTable	table;
     SClosureRec		closure;
@@ -2325,11 +2524,19 @@ NrmGetQResFromList
 }
 
 /* look for a tight/loose value */
+# if NhlNeedProto
+static NhlBoolean GetVEntry(
+    LTable  table,
+    NrmNameList names,
+    NrmClassList    classes,
+    VClosure    closure)
+# else
 static NhlBoolean GetVEntry(table, names, classes, closure)
     LTable		table;
     NrmNameList		names;
     NrmClassList 	classes;
     VClosure		closure;
+# endif /* NhlNeedProto */
 {
     register VEntry entry;
     register NrmQuark q;
@@ -2360,11 +2567,19 @@ static NhlBoolean GetVEntry(table, names, classes, closure)
 }
 
 /* look for a loose value */
+# if NhlNeedProto
+static NhlBoolean GetLooseVEntry(
+    LTable  table,
+    NrmNameList names,
+    NrmClassList    classes,
+    VClosure    closure)
+# else
 static NhlBoolean GetLooseVEntry(table, names, classes, closure)
     LTable		table;
     NrmNameList		names;
     NrmClassList 	classes;
     VClosure		closure;
+# endif /* NhlNeedProto */
 {
     register VEntry	entry;
     register NrmQuark	q;
@@ -2402,11 +2617,19 @@ static NhlBoolean GetLooseVEntry(table, names, classes, closure)
 }
 
 /* recursive search for a value */
+# if NhlNeedProto
+static NhlBoolean GetNEntry(
+    NTable  table,
+    NrmNameList names,
+    NrmClassList    classes,
+    VClosure    closure)
+# else
 static NhlBoolean GetNEntry(table, names, classes, closure)
     NTable		table;
     NrmNameList		names;
     NrmClassList 	classes;
     VClosure		closure;
+# endif /* NhlNeedProto */
 {
     register NTable	entry;
     register NrmQuark	q;
@@ -2470,12 +2693,21 @@ static NhlBoolean GetNEntry(table, names, classes, closure)
     return False;
 }
 
+# if NhlNeedProto
+NhlBoolean NrmQGetResource(
+    NrmDatabase db,
+    NrmNameList names,
+    NrmClassList    classes,
+    NrmRepresentation*  pType,
+    NrmValuePtr pValue)
+# else
 NhlBoolean NrmQGetResource(db, names, classes, pType, pValue)
     NrmDatabase         db;
     NrmNameList		names;
     NrmClassList 	classes;
     NrmRepresentation	*pType;  /* RETURN */
     NrmValuePtr		pValue;  /* RETURN */
+# endif /* NhlNeedProto */
 {
     register NTable table;
     VClosureRec closure;
@@ -2533,8 +2765,13 @@ NhlBoolean NrmGetResource(db, name_str, class_str, pType_str, pValue)
 }
 
 /* destroy all values, plus table itself */
+# if NhlNeedProto
+static void DestroyLTable(
+    LTable  table)
+# else
 static void DestroyLTable(table)
     LTable table;
+# endif /* NhlNeedProto */
 {
     register int i;
     register VEntry *buckets;
@@ -2553,8 +2790,13 @@ static void DestroyLTable(table)
 }
 
 /* destroy all contained tables, plus table itself */
+# if NhlNeedProto
+static void DestroyNTable(
+    NTable  table)
+# else
 static void DestroyNTable(table)
     NTable table;
+# endif /* NhlNeedProto */
 {
     register int i;
     register NTable *buckets;
@@ -2574,14 +2816,18 @@ static void DestroyNTable(table)
     NhlFree((char *)table);
 }
 
+# if NhlNeedProto
+char *NrmLocaleOfDatabase(
+    NrmDatabase db)
+# else
 char *NrmLocaleOfDatabase(db)
     NrmDatabase db;
+# endif /* NhlNeedProto */
 {
     return (*db->methods->lcname)(db->mbstate);
 }
 
-void
-NrmDestroyDB
+void NrmDestroyDB
 #if	NhlNeedProto
 (
 	NrmDatabase	db
