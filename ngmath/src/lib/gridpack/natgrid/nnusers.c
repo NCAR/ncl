@@ -1,5 +1,5 @@
 /*
- * $Id: nnusers.c,v 1.5 2000-08-22 15:19:43 haley Exp $
+ * $Id: nnusers.c,v 1.6 2000-08-25 23:29:45 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -180,4 +180,36 @@ void NGCALLF(nnpnts,NNPNTS) (float *x, float *y, float *point)
 void NGCALLF(nnpntend,NNPNTEND) ()
 {
    c_nnpntend ();
+}
+void NGCALLF(nngetwts,NNGETWTS) (int *numw, int *neighs, float *wts, float *px, float *py, float *pz)
+{
+   int i;
+
+   if (igrad || !single_point) {
+      ErrorHnd(31, "c_nngetwts", filee, emsg);
+   }
+   c_nngetwts(numw, neighs, wts, px, py, pz);
+
+/*
+ *  Adjust the indices for Fortran.
+ */
+   for (i = 0; i < *numw; i++) {
+     neighs[i]++;
+   }
+}
+void NGCALLF(nngetwtsd,NNGETWTSD) (int *numw, int *neighs, double *wts, double *px, double *py, double *pz)
+{
+   int i;
+
+   if (igrad || !single_point) {
+      ErrorHnd(31, "c_nngetwtsd", filee, emsg);
+   }
+   c_nngetwtsd(numw, neighs, wts, px, py, pz);
+
+/*
+ *  Adjust the indices for Fortran.
+ */
+   for (i = 0; i < *numw; i++) {
+     neighs[i]++;
+   }
 }

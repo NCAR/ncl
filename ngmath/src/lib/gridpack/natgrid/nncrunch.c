@@ -1,5 +1,5 @@
 /*
- * $Id: nncrunch.c,v 1.6 2000-08-22 15:19:40 haley Exp $
+ * $Id: nncrunch.c,v 1.7 2000-08-25 23:29:44 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -728,6 +728,15 @@ double Surface()
       asurf += curneig->narea * 
          points[curneig->neinum][2];
    }
+   if (jwts == 1) {
+     num_wts = numnei+1;
+     curneig = rootneig;
+     for (i0=0; i0 <= numnei; i0++) {
+       curneig = curneig->nextneig;
+       nbrs[i0] = curneig->neinum;
+       wts[i0]  = curneig->narea;
+     } 
+   }
    return asurf;
 }
 double Meld(double asurf, double wxd, double wyd)
@@ -761,6 +770,7 @@ double Meld(double asurf, double wxd, double wyd)
                wxd -
                points[curneig->neinum][4] * 
                wyd) - asurf) * hP;
+             
          }
       }
    }

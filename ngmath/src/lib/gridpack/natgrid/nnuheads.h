@@ -1,5 +1,5 @@
 /*
- * $Id: nnuheads.h,v 1.5 2000-08-22 03:34:56 haley Exp $
+ * $Id: nnuheads.h,v 1.6 2000-08-25 23:29:45 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -32,6 +32,8 @@ extern void   c_nngetaspects(int, int, float *, int *);
 extern void   c_nnpntinits(int, float *, float *, float *);
 extern void   c_nnpnts(float, float, float *);
 extern void   c_nnpntend();
+extern void   c_nngetwts(int *, int *, float *, float *, float *, float *);
+extern void   c_nngetwtsd(int *, int *, double *, double *, double *, double *);
 
 /*
  *  Fortran function macro.  This macro is used to provide the appropriate
@@ -67,6 +69,8 @@ void  NGCALLF(nngetaspects,NNGETASPECTS) (int *, int *, float *, int *);
 void  NGCALLF(nnpntinits,NNPNTINITS) (int *, float *, float *, float *);
 void  NGCALLF(nnpnts,NNPNTS) (float *, float *, float *);
 void  NGCALLF(nnpntend,NNPNTEND) ();
+void  NGCALLF(nngetwts,NNGETWTS) (int *, int *, float *, float *, float *, float*);
+void  NGCALLF(nngetwtsd,NNGETWTSD) (int *, int *, double *, double *, double *, double *);
 
 float  *c_natgrids(int, float [], float [], float [],
                    int, int, float [], float [], int *);

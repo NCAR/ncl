@@ -1,5 +1,5 @@
 /*
- * $Id: nncrunchs.c,v 1.8 2000-08-22 15:19:41 haley Exp $
+ * $Id: nncrunchs.c,v 1.9 2000-08-25 23:29:44 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -402,6 +402,11 @@ float **MakeGrid(int nxi, int nyi, float *xi, float *yi)
       curas.slope_out = FloatMatrix(nxi,nyi);
    }
 
+/*
+ * jwts flags saving the neighbor indices and associated
+ * weights when request in single point mode using linear interpolation.
+ */
+   jwts = 0;
    for (j8 = 0 ; j8 < nyi ; j8++) {
       if (updir > 0) 
          wyd = yi[j8]*magy;
@@ -425,7 +430,11 @@ float **MakeGrid(int nxi, int nyi, float *xi, float *yi)
          if (!extrap AND !goodflag) 
             surf = nuldat;
          else {
+            if(single_point==1 && j7==1 && j8==1 && igrad==0) {
+              jwts = 1;
+            }
             surf = Surface();
+            jwts = 0;
             if (igrad>0) surf = Meld(surf,wxd,wyd);
             if (non_neg) if (surf < 0) surf = 0;
          }
@@ -639,12 +648,14 @@ void c_nnpnts(float x, float y, float *point)
  *  Check to see if the input point is within the gridded region
  *  set up in the initialization.
  */
-   if ( (x < xstart) || (x > xend) || (y < ystart) || (y > yend) )
-   {
-      sprintf(emsg,"\n  Coordinate = (%f, %f)\n", x, y);
-      ErrorHnd(27, "c_nnpnts", filee, emsg);
-      return;
-   } 
+/*
+ *   if ( (x < xstart) || (x > xend) || (y < ystart) || (y > yend) )
+ *   {
+ *      sprintf(emsg,"\n  Coordinate = (%f, %f)\n", x, y);
+ *      ErrorHnd(27, "c_nnpnts", filee, emsg);
+ *      return;
+ *   } 
+ */
  
 /*
  *  Set up a 3 x 3 gridded region with the desired coordinate in
@@ -674,4 +685,32 @@ void c_nnpntend()
    horilap = horilap_save;
    vertlap = vertlap_save;
    Terminate();
+}
+void c_nngetwts(int *num_neig, int *fnbrs, float *fwts, float *px, float *py, float *pz)
+{
+  int i;
+  *num_neig = num_wts;
+  for (i = 0; i < num_wts; i++) {
+    fnbrs[i] = nbrs[i];
+    fwts[i] = (float) wts[i];
+  }
+  for (i = 0; i < 3; i++) {
+    px[i] = (float) points[datcnt+i][0];
+    py[i] = (float) points[datcnt+i][1];
+    pz[i] = (float) points[datcnt+i][2];
+  }
+}
+void c_nngetwtsd(int *num_neig, int *fnbrs, double *fwtsd, double *px, double *py, double *pz)
+{
+  int i;
+  *num_neig = num_wts;
+  for (i = 0; i < num_wts; i++) {
+    fnbrs[i] = nbrs[i];
+    fwtsd[i] = wts[i];
+  }
+  for (i = 0; i < 3; i++) {
+    px[i] = points[datcnt+i][0];
+    py[i] = points[datcnt+i][1];
+    pz[i] = points[datcnt+i][2];
+  }
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: nnerror.c,v 1.6 2000-08-22 15:19:42 haley Exp $
+ * $Id: nnerror.c,v 1.7 2000-08-25 23:29:44 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define  MAX_ERROR 30
+#define  MAX_ERROR 31
 
 void     ErrorLog(int, char *, FILE *, char *);
 char     *ErrMsg(int);
@@ -150,6 +150,9 @@ char *ErrMsg(int i)
 
 /* #030 */
     "Error number out of range."
+
+/* #031 */
+    "Weights can be returned only for linear interpolation when in \n single point mode."
    };
 
   if (i >= MAX_ERROR) {

@@ -1,5 +1,5 @@
 /*
- * $Id: nnghead.h,v 1.5 2000-08-22 03:34:55 haley Exp $
+ * $Id: nnghead.h,v 1.6 2000-08-25 23:29:45 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -48,7 +48,7 @@ extern  double  **points, **joints, wbit,
                 bigtri[3][3], horilap_save, vertlap_save;
 
 extern  double  magx, magy, magz, magx_orig, magy_orig, magz_orig,
-                maxxy[2][3], magx_auto, magy_auto, magz_auto;
+                maxxy[2][3], magx_auto, magy_auto, magz_auto, *wts;
 
 extern  int     igrad, non_neg, densi, sdip, rads, southhemi,
                 extrap, adf, nndup;
@@ -57,7 +57,7 @@ extern  int     datcnt, datcnt3, numtri, imag, numnei, iscale,
                 ext, *jndx, neicnt, optim, goodflag, updir,
                 scor[3][2], auto_scale,
                 single_point, first_single, asflag,
-                error_status;
+                error_status, *nbrs, jwts, num_wts;
 
 extern  char    tri_file[256], error_file[256], emsg[256];
 

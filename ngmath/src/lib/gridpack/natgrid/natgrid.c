@@ -1,5 +1,5 @@
 /*
- * $Id: natgrid.c,v 1.5 2000-08-22 15:19:40 haley Exp $
+ * $Id: natgrid.c,v 1.6 2000-08-25 23:29:43 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -82,7 +82,12 @@ void Terminate()
 	FreeVecti(jndx);
    	jndx = NULL;
    }
-   
+   if(wts != NULL) {
+	free(wts);
+   }
+   if(nbrs != NULL) {
+	free(nbrs);
+   }
 
    magx = magx_orig;
    magy = magy_orig;

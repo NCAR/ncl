@@ -1,5 +1,5 @@
 /*
- * $Id: nnuhead.h,v 1.4 2000-08-22 03:34:55 haley Exp $
+ * $Id: nnuhead.h,v 1.5 2000-08-25 23:29:45 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -34,7 +34,7 @@
 
 extern int       igrad,  densi,   non_neg,    sdip,        rads,
                  optim,  extrap,  southhemi,  updir, auto_scale,
-                 adf,    nndup;
+                 adf,    nndup,   single_point;
 
 extern double    bI,        bJ,         magx,       magy,
                  magz,      horilap,    vertlap,    nuldat,

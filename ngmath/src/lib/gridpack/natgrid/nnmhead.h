@@ -1,5 +1,5 @@
 /*
- * $Id: nnmhead.h,v 1.8 2000-08-22 03:34:55 haley Exp $
+ * $Id: nnmhead.h,v 1.9 2000-08-25 23:29:45 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -48,8 +48,7 @@ double  **points, **joints, wbit,
         bigtri[3][3], horilap_save, vertlap_save;
 
 double  magx = 1, magy = 1, magz = 1, magx_orig, magy_orig, magz_orig, 
-        maxxy[2][3],
-        magx_auto, magy_auto, magz_auto;
+        maxxy[2][3], magx_auto, magy_auto, magz_auto, *wts;
 
 int     igrad = 0, non_neg = 0, densi, sdip = 0, rads = 0, southhemi = 0,
         extrap = 1, adf = 0, nndup = 1;
@@ -58,7 +57,7 @@ int     datcnt, datcnt3, numtri, imag, numnei, iscale,
         ext, *jndx, neicnt, optim = 1, goodflag, updir = 1,
         scor[3][2] = {{1,2}, {2,0}, {0,1}}, auto_scale = 1,
         single_point = 0, first_single = 1, asflag = 1,
-        error_status = 0;
+        error_status = 0, *nbrs, jwts = 0, num_wts;
 
 char    tri_file[256] = {"nnalg.dat"}, error_file[256] = {"stderr"},
         emsg[256];
