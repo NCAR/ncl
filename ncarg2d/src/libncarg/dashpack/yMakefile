@@ -1,0 +1,20 @@
+#
+#	$Id: yMakefile,v 1.1 1994-08-24 17:08:43 kennison Exp $
+#
+
+MYNAME  = dashpack
+
+GENERIC_SRCS = \
+	dpblda.f dpcurv.f dpdraw.f dpline.f dpfrst.f dpvect.f dplast.f \
+	dpgetc.f dpgeti.f dpgetr.f dpsetc.f dpseti.f dpsetr.f dpsmth.f
+
+GENERIC_OBJS = \
+	dpblda.o dpcurv.o dpdraw.o dpline.o dpfrst.o dpvect.o dplast.o \
+	dpgetc.o dpgeti.o dpgetr.o dpsetc.o dpseti.o dpsetr.o dpsmth.o
+
+SOURCES = $(GENERIC_SRCS)
+
+OBJECTS = $(GENERIC_OBJS)
+
+PartialLibraryTarget(libncarg.a,$(OBJECTS))
+PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
