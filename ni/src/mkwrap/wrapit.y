@@ -249,11 +249,10 @@ interface_list : interface ENDOFIF
 				strcat(buffer,c_callrec->arg_strings[i]->string);
 				if(i!= c_callrec->n_args + c_callrec->nstrs -1) {
 					strcat(buffer,",");
-				} else {
-					strcat(buffer,");\n\n");
-				}
+				} 
 			}
 		}
+		strcat(buffer,");\n\n");
 		fprintf(stdout,"%s",buffer);
 		c_vdefs = current->c_vdefs;
 		while(c_vdefs != NULL) {
@@ -371,11 +370,10 @@ interface_list : interface ENDOFIF
 				strcat(buffer,c_callrec->arg_strings[i]->string);
 				if(i!= c_callrec->n_args + c_callrec->nstrs -1) {
 					strcat(buffer,",");
-				} else {
-					strcat(buffer,");\n\n");
-				}
+				} 
 			}
 		}
+		strcat(buffer,");\n\n");
 		fprintf(stdout,"%s",buffer);
 		c_vdefs = current->c_vdefs;
 		while(c_vdefs != NULL) {
