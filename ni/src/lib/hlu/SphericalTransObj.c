@@ -1,5 +1,5 @@
 /*
- *      $Id: SphericalTransObj.c,v 1.1 2002-07-02 01:26:41 dbrown Exp $
+ *      $Id: SphericalTransObj.c,v 1.2 2002-07-12 22:44:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1603,7 +1603,12 @@ static NhlErrorTypes SpCompcToData
 			dlon = RADTODEG * atan2(out[3],out[2]);
 		}
 		yout[i] = (float) dlat;
-		xout[i] = (float) dlon;
+		if (dlon < spp->x_sph_min)
+			xout[i] = (float) (dlon + 360.0);
+		else if (dlon > spp->x_sph_max)
+			xout[i] = (float) (dlon - 360.0);
+		else
+			xout[i] = (float) dlon;
 	}
 	return(ret);
 }
