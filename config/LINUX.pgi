@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX.pgi,v 1.2 2003-08-01 17:42:43 haley Exp $
+ *      $Id: LINUX.pgi,v 1.3 2003-08-04 14:20:00 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,6 +29,9 @@
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler     pgcc
 #define FCompiler     pgf90
+/*
+ * #define CtoFLibraries -lpgftnrtl -lpgc -lpgf90  -lpgf90_rpm1  -lpgf902
+ */
 #define CtoFLibraries -lpgftnrtl -lpgc
 #define XToolLibrary -lXt -lSM -lICE
 #define BuildShared NO
