@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.7 1992-06-25 21:49:20 clyne Exp $
+#	$Id: yMakefile,v 1.8 1992-07-21 21:03:38 clyne Exp $
 #
 #
 #	Makefile for libncarv -- NCAR View library of general routines
@@ -21,14 +21,14 @@ VMSSRCS		= vms-unix.c
 INCLUDES	= ncarv.h 
 SRCS		= options.c icmalloc.c misc.c ncarg_path.c version.c \
 		error.c atoargv.c $(VMSSRCS)
-OBJECTS		= options.o icmalloc.o misc.o ncarg_path.o version.o \
+OBJS		= options.o icmalloc.o misc.o ncarg_path.o version.o \
 		error.o atoargv.o $(VMSOBJS)
 
 EQUALHACK	= =
 
 InstallAllTarget($(INCLUDES), $(INSTALL_INC), $(INCDIR))
 
-Library($(MYNAME),$(OBJECTS))
+Library($(MYNAME),$(OBJS))
 
 
 ncarg_path.o:	Makefile
@@ -44,3 +44,11 @@ clean::
 lint:
 	$(LINT) -I$(CINC) -DPARFIL_MACRO$(EQUALHACK)'"$(PARFIL_PERM)"' \
 		$(SRCS) 1> lint.out 2>&1
+
+saber_src: $(SRCS)
+	#setopt load_flags $(CFLAGS) $(CINCS)
+	#load $(SRCS) $(LIBS)
+
+saber_obj: $(OBJS)
+	#setopt load_flags $(CFLAGS) $(CINCS)
+	#load $(OBJS) $(LIBS)
