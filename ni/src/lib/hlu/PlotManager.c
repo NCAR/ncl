@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.4 1995-04-04 06:47:58 boote Exp $
+ *      $Id: PlotManager.c,v 1.5 1995-04-04 17:38:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1767,11 +1767,17 @@ static NhlErrorTypes PlotManagerPostDraw
 			if (anlp->plot_id == NhlNULLOBJID)
 				continue;
 			view = _NhlGetLayer(anlp->plot_id);
+			if (view == NULL || ! _NhlIsView(view)) {
+				e_text = "%s: invalid annotation";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return(NhlFATAL);
+			}
 			subret = _NhlPlotManagerDraw(view);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				e_text = "%s: error drawing annotation";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-					  entry_name);
+				NhlPError(ret,
+					  NhlEUNKNOWN,e_text,entry_name);
 				return(ret);
 			}
 			switch (anlp->type) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: Draw.c,v 1.11 1995-04-03 21:57:24 dbrown Exp $
+ *      $Id: Draw.c,v 1.12 1995-04-04 17:38:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -201,13 +201,6 @@ NhlErrorTypes _NhlPlotManagerDraw
 	char			*entry_name = "_NhlPlotManagerDraw";
 	char			*e_text;
 	NhlTransformLayerPart	*tfp;
-	
-	if((layer == NULL) || !_NhlIsBase(layer)){
-		e_text = "%s: Invalid plot ID: %d";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			  e_text,entry_name,layer->base.id);
-		return(NhlFATAL);
-	}
 
 	if (_NhlIsTransform(layer)) {
 
@@ -283,15 +276,26 @@ NhlDraw
 {
 	char			*e_text;
 	char			*entry_name = "NhlDraw";
-	
-	if (_NhlIsOverlayMember(id)) {
+	NhlLayer		draw_layer;
+
+	if ((draw_layer = _NhlGetLayer(id)) == NULL) {
+		e_text = "%s: Invalid Layer Id: %d";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,id);
+		return(NhlFATAL);
+	}
+	else if (! _NhlIsView(draw_layer) && ! _NhlIsWorkstation(draw_layer)) {
+		e_text = "%s: Layer Id not View or Workstation: %d";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,id);
+		return(NhlFATAL);
+	}
+	else if (_NhlIsOverlayMember(id)) {
 		e_text =
 		       "%s: cannot draw Overlay Member, ID %d, independently";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,id);
 		return(NhlWARNING);
 	}
 
-	return _NhlPlotManagerDraw(_NhlGetLayer(id));
+	return _NhlPlotManagerDraw(draw_layer);
 
 }
 
