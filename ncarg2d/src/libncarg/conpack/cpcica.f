@@ -1,5 +1,5 @@
 C
-C $Id: cpcica.f,v 1.10 2002-01-29 22:48:34 kennison Exp $
+C $Id: cpcica.f,v 1.11 2002-05-02 16:39:59 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -215,7 +215,7 @@ C
               YCCI=1.+((YCCD-YAT1)/(YATN-YAT1))*REAL(IZDN-1)
             ELSE
               IOOR=1
-              IAID=IAIA(257)
+              IAID=IAIA(259)
             END IF
           END IF
 C
