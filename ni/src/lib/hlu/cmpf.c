@@ -553,16 +553,34 @@ float	_NhlCmpFAny2
 	brnd = bnorm * factor + (bsign == 1 ? .5 : -.5);
 
 /*
- * the exponents cannot be different by more than 1, since 10^2 is greater
- * than 2^4.
+ * ASSERT: 
+ * exponents never differ by more than 2
+ * (compare .1 and .000999999999 noting that .1/(2^4) = 0.00625) 
+ * This allows a switch rather than a while loop here.
  */         
 	diffexp10 = aexp10 - bexp10;
-	if (diffexp10 > 0) {
-		arnd *= 10;
-	}
-	else if (diffexp10 < 0) {
+
+        switch (diffexp10) {
+        case -2:
+		brnd *= 100;
+		break;
+        case -1:
 		brnd *= 10;
-	}
+		break;
+        case 0:
+		break;
+        case 1:
+		arnd *= 10;
+		break;
+        case 2:
+		arnd *= 100;
+		break;
+        default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "Algorithmic error in _NhlCmpFAny2");
+		break;
+        }
+
 	
 #if CMPF_DEBUG
 	fprintf(stderr,
