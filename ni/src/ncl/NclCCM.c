@@ -319,22 +319,22 @@ static int extractCCM(int which,char buf[8])
 
 static int IsF77Blocked
 #if NhlNeedProto
-(int fd)
+(FILE* fd)
 #else
 (fd)
-int fd;
+FILE* fd;
 #endif
 {
 	int n;
 	char control_word[4];
 	int ind;
 	
-	n = read(fd,(control_word),4);
+	n = fread((control_word),1,4,fd);
 	if(n!=4) return(0);
 
 	ind = *(int*)control_word;
-	lseek(fd,ind+ 4,SEEK_SET);
-	n = read(fd,(control_word),4);
+	fseek(fd,ind+ 4,SEEK_SET);
+	n = fread((control_word),1,4,fd);
 	if(n!=4) return(0);
 	if(ind != *(int*)control_word) {
 		return(0);
@@ -346,10 +346,10 @@ int fd;
 
 static int IsCOSBlockedCCM
 #if NhlNeedProto
-(int fd)
+(FILE* fd)
 #else
 (fd)
-int fd;
+FILE* fd;
 #endif
 {
 	char thebuff[8];
@@ -363,7 +363,7 @@ int fd;
 	
 
 
-	read(fd,(void*)thebuff,sizeof(BCW));
+	fread((void*)thebuff,1,sizeof(BCW),fd);
 	type = extractCCM(0,thebuff);
 	junk = extractCCM(1,thebuff);
 	bnhi = extractCCM(2,thebuff);
@@ -372,21 +372,21 @@ int fd;
 
 
 	if ( type != 0 || bnhi != 0 || bnlo != 0 ) {
-		lseek(fd,0,SEEK_SET);
+		fseek(fd,0,SEEK_SET);
 		return (IsF77Blocked(fd));
 	}
 
 	 /* Skip over the rest of the first block. */
 
-  	if ( read(fd, bytes, WORD_SIZE*511) != 511*WORD_SIZE ) {
-		lseek(fd,0,SEEK_SET);
+  	if ( fread(bytes,1,WORD_SIZE*511,fd) != 511*WORD_SIZE ) {
+		fseek(fd,0,SEEK_SET);
 		return (IsF77Blocked(fd));
 	}
 
   	/* Read and interpret second control word. */
 
-  	if ( read(fd, (void*)thebuff, sizeof( BCW )) != sizeof(BCW) ) {
-		lseek(fd,0,SEEK_SET);
+  	if ( fread((void*)thebuff,1, sizeof( BCW ),fd) != sizeof(BCW) ) {
+		fseek(fd,0,SEEK_SET);
 		return (IsF77Blocked(fd));
 	}
 
@@ -397,11 +397,11 @@ int fd;
 	fwi = extractCCM(4,thebuff);
 
   	if ( type != 0 || bnhi != 0 || bnlo != 1 ) {
-		lseek(fd,0,SEEK_SET);
+		fseek(fd,0,SEEK_SET);
 		return (IsF77Blocked(fd));
 	}
 
-	lseek(fd,0,SEEK_SET);
+	fseek(fd,0,SEEK_SET);
 
 	return(1);
 }
@@ -472,7 +472,7 @@ int CompareHeaders(CCMI *initial_iheader,CCMC *initial_cheader,CCMR *initial_rhe
 	return(1);
 }
 
-long COSRecSeek(int fd,int n_words, long current_offset) 
+long COSRecSeek(FILE* fd,int n_words, long current_offset) 
 {
 	long totsz = sz(n_words);
 	int cb = current_offset / BLOCK_SIZE;
@@ -480,7 +480,7 @@ long COSRecSeek(int fd,int n_words, long current_offset)
 	int nb = 0;
 
 	if((BLOCK_SIZE - cof) > totsz) {
-		lseek(fd,cb * BLOCK_SIZE + cof + totsz,SEEK_SET);
+		fseek(fd,cb * BLOCK_SIZE + cof + totsz,SEEK_SET);
 		return(cb * BLOCK_SIZE + cof + totsz);
 	} else {
 		if(cof != 0) {
@@ -491,31 +491,31 @@ long COSRecSeek(int fd,int n_words, long current_offset)
 		if(totsz >= BLOCK_SIZE) {
 			fprintf(stdout,"Error1\n");
 		}
-		lseek(fd,(cb+nb)*BLOCK_SIZE + totsz + BLOCK_SIZE + sz(1),SEEK_SET);
+		fseek(fd,(cb+nb)*BLOCK_SIZE + totsz + BLOCK_SIZE + sz(1),SEEK_SET);
 		return((cb+nb)*BLOCK_SIZE + totsz + BLOCK_SIZE + sz(1));
 	}
 }
 long MySeek
 #if NhlNeedProto
-(CCMFileRec *therec,int fd,int nwords,long start_off)
+(CCMFileRec *therec,FILE* fd,int nwords,long start_off)
 #else
 (therec,fd,nwords,start_off)
 CCMFileRec *therec;
-int fd;
+FILE* fd;
 int nwords;
 long start_off;
 #endif
 {
 	if(nwords == 0) {
-		lseek(fd,start_off,SEEK_SET);
+		fseek(fd,start_off,SEEK_SET);
 		return(start_off);
 	} else if(therec->cos_blocking==1) {
 		return(COSRecSeek(fd,nwords, start_off));
 	} else if(therec->cos_blocking==0){
-		lseek(fd,start_off+sz(nwords-1),SEEK_SET);
+		fseek(fd,start_off+sz(nwords-1),SEEK_SET);
 		return(start_off + sz(nwords-1));
 	} else {
-		lseek(fd,start_off+sz(nwords-1),SEEK_SET);
+		fseek(fd,start_off+sz(nwords-1),SEEK_SET);
 		return(start_off + sz(nwords-1));
 	}
 }
@@ -554,7 +554,7 @@ int forward_index(unsigned char cw[]) {
 	return(IntIt(buffer));
 }
 
-long COSGetNWords(int fd,int num_words,long current_offset,char *buffer)
+long COSGetNWords(FILE* fd,int num_words,long current_offset,char *buffer)
 {
 	long totsz = sz(num_words);
 	int cb = current_offset / BLOCK_SIZE;
@@ -565,28 +565,28 @@ long COSGetNWords(int fd,int num_words,long current_offset,char *buffer)
 	int index = 0;
 	char control[WORD_SIZE];
 	
-	lseek(fd,current_offset,SEEK_SET);
+	fseek(fd,current_offset,SEEK_SET);
 	if(totsz < (BLOCK_SIZE - cof)) {
-		n = read(fd,buffer,totsz);
+		n = fread(buffer,1,totsz,fd);
 		index +=n;
 		return(cb * BLOCK_SIZE + cof + totsz);
 	} else {
 	
 		totsz = totsz - (BLOCK_SIZE - cof);
-		n = read (fd,buffer,(BLOCK_SIZE - cof));
+		n = fread (buffer,1,(BLOCK_SIZE - cof),fd);
 		index += n;
 		nb = (totsz)/(BLOCK_SIZE-sz(1));
 		for(i = 0; i < nb; i++) {
-			n = read(fd,control,WORD_SIZE);
-			n = read (fd,&(buffer[index]),(BLOCK_SIZE - sz(1)));
+			n = fread(control,1,WORD_SIZE,fd);
+			n = fread (&(buffer[index]),1,(BLOCK_SIZE - sz(1)),fd);
 			index += n;
 		} 
 		totsz -= nb * (BLOCK_SIZE - sz(1));
 		if(totsz >= BLOCK_SIZE) {
 			fprintf(stdout,"Error1\n");
 		}
-		n = read(fd,control,WORD_SIZE);
-		n = read (fd,&(buffer[index]),totsz);
+		n = fread(control,1,WORD_SIZE,fd);
+		n = fread (&(buffer[index]),1,totsz,fd);
 		index += n;
 		return(COSRecSeek(fd,num_words,current_offset));
 	}
@@ -594,33 +594,33 @@ long COSGetNWords(int fd,int num_words,long current_offset,char *buffer)
 
 long MyRead
 #if NhlNeedProto
-(CCMFileRec *therec,int fd,char *buffer,int nwords, long start_off)
+(CCMFileRec *therec,FILE* fd,char *buffer,int nwords, long start_off)
 #else
 (therec,fd,buffer,nwords, start_off)
 CCMFileRec *therec;
-int fd;
+FILE* fd;
 char *buffer;
 int nwords;
 long start_off;
 #endif
 {
 	int n;
-        lseek(fd,start_off,SEEK_SET);
         if(nwords == 0) {
+        	fseek(fd,start_off,SEEK_SET);
                 return(start_off);
         } else if(therec->cos_blocking==1){
 		return(COSGetNWords(fd,nwords,start_off,buffer));
         } else if(therec->cos_blocking==0) {
-		lseek(fd,start_off,SEEK_SET);
-                n = read(fd,buffer,nwords*WORD_SIZE);
+		fseek(fd,start_off,SEEK_SET);
+                n = fread(buffer,1,nwords*WORD_SIZE,fd);
 		return(start_off + n);
         } else {
-		lseek(fd,start_off,SEEK_SET);
-                n = read(fd,buffer,nwords*WORD_SIZE);
+		fseek(fd,start_off,SEEK_SET);
+                n = fread(buffer,1,nwords*WORD_SIZE,fd);
 		return(start_off + n);
 	}
 }
-int COSGetRecord(int fd, int block_number,int offset,char **buffer,int* finish_block,int* finish_offset)
+int COSGetRecord(FILE* fd, int block_number,int offset,char **buffer,int* finish_block,int* finish_offset)
 {
 	long real_offset = (block_number * BLOCK_SIZE) + sz(offset);
 	long end_offset;
@@ -631,13 +631,14 @@ int COSGetRecord(int fd, int block_number,int offset,char **buffer,int* finish_b
 	int index = 0;
 	char tmpc;
 
-	end_offset = real_offset = lseek(fd,real_offset,SEEK_SET);
-	n = read(fd,control_word,WORD_SIZE);
+  	fseek(fd,real_offset,SEEK_SET);
+	end_offset = real_offset;
+	n = fread(control_word,1,WORD_SIZE,fd);
 	if(n != WORD_SIZE) 
 		return(-1);
 	while(forward_index(control_word)==0) {
 		end_offset += sz(1);
-		n = read(fd,control_word,WORD_SIZE);
+		n = fread(control_word,1,WORD_SIZE,fd);
 		if(n != WORD_SIZE) {
 			return(-1);
 		}
@@ -648,39 +649,39 @@ int COSGetRecord(int fd, int block_number,int offset,char **buffer,int* finish_b
 		len = forward_index(control_word);	
 		total += len;
 		end_offset += sz(len);
-		end_offset = lseek(fd,end_offset,SEEK_SET);
-		n = read(fd,control_word,WORD_SIZE);
+		fseek(fd,end_offset,SEEK_SET);
+		n = fread(control_word,1,WORD_SIZE,fd);
 		if( n != WORD_SIZE) 
 			return(-1);
 	};
 	*buffer = (char*)NclMalloc(sz(total));
-	lseek(fd,real_offset,SEEK_SET);
-	n = read(fd,control_word,WORD_SIZE);
+	fseek(fd,real_offset,SEEK_SET);
+	n = fread(control_word,1,WORD_SIZE,fd);
 	if( n != WORD_SIZE) 
 		return(-1);
         control_word[0] = control_word[0] & (char)0017;
 	while(EndOfRec(control_word)!=CEOR){
                 len = forward_index(control_word);
-		n = read(fd,&((*buffer)[index]),sz(len));
+		n = fread(&((*buffer)[index]),1,sz(len),fd);
 		if( n != sz(len)) 
 			return(-1);
 		index += sz(len);
-		n =read(fd,control_word,WORD_SIZE);
+		n =fread(control_word,1,WORD_SIZE,fd);
 		if( n != WORD_SIZE) 
 			return(-1);
         }
-	lseek(fd,end_offset,SEEK_SET);
+	fseek(fd,end_offset,SEEK_SET);
 	*finish_block = end_offset / BLOCK_SIZE;
 	*finish_offset = (end_offset % BLOCK_SIZE)/WORD_SIZE;
 	return(total);
 }
 int MyGetRecord
 #if NhlNeedProto
-(CCMFileRec *therec,int fd, int start_block ,int start_offset,char **buffer,int *finish_block,int *finish_offset,int* rec_size)
+(CCMFileRec *therec,FILE* fd, int start_block ,int start_offset,char **buffer,int *finish_block,int *finish_offset,int* rec_size)
 #else
 (therec,fd,start_block ,start_offset,buffer,finish_block,finish_offset,rec_size)
 CCMFileRec *therec;
-int fd;
+FILE* fd;
 int start_block;
 int start_offset;
 char **buffer;
@@ -700,14 +701,14 @@ int *rec_size;
 			end_offset = start_block * BLOCK_SIZE + start_offset * WORD_SIZE + *rec_size * WORD_SIZE;
 			*finish_block = end_offset / BLOCK_SIZE;
 			*finish_offset = (end_offset % BLOCK_SIZE) / WORD_SIZE;
-			lseek(fd,start_block * BLOCK_SIZE + start_offset * WORD_SIZE, SEEK_SET);
-			return(read(fd,*buffer,*rec_size * WORD_SIZE));
+			fseek(fd,start_block * BLOCK_SIZE + start_offset * WORD_SIZE, SEEK_SET);
+			return(fread(*buffer,1,*rec_size * WORD_SIZE,fd));
 		} else {
 			return(-1);
 		}
 	} else {
-		lseek(fd,start_block * BLOCK_SIZE + start_offset * WORD_SIZE, SEEK_SET);
-		n = read(fd,control_word,4);
+		fseek(fd,start_block * BLOCK_SIZE + start_offset * WORD_SIZE, SEEK_SET);
+		n = fread(control_word,1,4,fd);
 		if(n != 4) return(-1);
 
 		*buffer = NclMalloc(*(int*)control_word);
@@ -715,8 +716,8 @@ int *rec_size;
 		*finish_block = end_offset / BLOCK_SIZE;
 		*finish_offset = (end_offset % BLOCK_SIZE) / WORD_SIZE;
 
-		n = read(fd,*buffer,*(int*)control_word);
-		read(fd,control_word,4);
+		n = fread(*buffer,1,*(int*)control_word,fd);
+		fread(control_word,1,4,fd);
 		return(n);
 		
 	}
@@ -725,7 +726,7 @@ int *rec_size;
 
 
 
-long UnPackRealHeader(CCMFileRec *therec,int fd,CCMI *iheader, CCMR *header,int start_block, int start_offset)
+long UnPackRealHeader(CCMFileRec *therec,FILE* fd,CCMI *iheader, CCMR *header,int start_block, int start_offset)
 {
 	int i;
 	int zero = 0;
@@ -782,7 +783,7 @@ long UnPackRealHeader(CCMFileRec *therec,int fd,CCMI *iheader, CCMR *header,int 
 	}
 
 }
-long UnPackCharHeader(CCMFileRec *therec,int fd,CCMI *iheader, CCMC *header,int start_block, int start_offset)
+long UnPackCharHeader(CCMFileRec *therec,FILE* fd,CCMI *iheader, CCMC *header,int start_block, int start_offset)
 {
 	int i;
 	int zero = 0;
@@ -819,7 +820,7 @@ long UnPackCharHeader(CCMFileRec *therec,int fd,CCMI *iheader, CCMC *header,int 
 	return((finish_block * BLOCK_SIZE) + sz(finish_offset));
 
 }
-long UnPackIntHeader(CCMFileRec *therec,int fd, CCMI *header,int start_block, int start_offset)
+long UnPackIntHeader(CCMFileRec *therec,FILE* fd, CCMI *header,int start_block, int start_offset)
 {
 	int i;
 	int zero = 0;
@@ -1024,7 +1025,7 @@ int	wr_status;
 	static NclQList *qlist = NULL;
 	static int start_quark = 0;
 	static int n_quarks = 0;
-	int fd;
+	FILE* fd;
 	char *units[31];
 	float spacing;
 	float *tmp_lon,*tmp_siga,*tmp_sigb;
@@ -1035,6 +1036,7 @@ int	wr_status;
 	int n_time;
 	int *date;
 	int *datesec;
+	void *vbuf;
 
 	if(first) {
 		n_quarks = sizeof(ccm_name_tab)/sizeof(CCMNAMES);
@@ -1054,10 +1056,12 @@ int	wr_status;
 */
 		first = 0;
 	}
-	fd = open(NrmQuarkToString(path),O_RDONLY);
+	fd = fopen(NrmQuarkToString(path),"r");
+	vbuf = (void*)NclMalloc(4*getpagesize());
+	setvbuf(fd,vbuf,_IOFBF,4*getpagesize());
 	if(fd > 0) {
 /*
-* If its COS blocked it will set up MySeek and MyRead pointers for COS reads
+* If its COS blocked it will set up MySeek and MyRead pointers for COS freads
 * If its NON blocked cray binary file the MySeek and MyRead pointer 
 */
 		therec = (CCMFileRec*)NclMalloc(sizeof(CCMFileRec));
@@ -1080,19 +1084,22 @@ int	wr_status;
 		case 0:
 			NhlPError(NhlFATAL,NhlEUNKNOWN," A %s \"sigma coordinate tape\" has been detected.\n\t(MFTYP = %d), this is a non-standard CCM file.\n\tNCL only supports the type \"hybrid coordinate tape\"",(initial_iheader.MFTYP<100)?"model generated":"processor generated",initial_iheader.MFTYP);
 			NclFree(therec);
-			close(fd);
+			NclFree(vbuf);
+			fclose(fd);
 			return(NULL);
 			break;
 		case 1:
 			NhlPError(NhlFATAL,NhlEUNKNOWN," A %s \"pressure coordinate tape\" has been detected.\n\t(MFTYP = %d), this is a non-standard CCM file.\n\tNCL only supports the type \"hybrid coordinate tape\"",(initial_iheader.MFTYP<100)?"model generated":"processor generated",initial_iheader.MFTYP);
 			NclFree(therec);
-			close(fd);
+			NclFree(vbuf);
+			fclose(fd);
 			return(NULL);
 			break;
 		case 3:
 			NhlPError(NhlFATAL,NhlEUNKNOWN," A %s \"theta coordinate tape\" has been detected.\n\t(MFTYP = %d), this is a non-standard CCM file.\n\tNCL only supports the type \"hybrid coordinate tape\"",(initial_iheader.MFTYP<100)?"model generated":"processor generated",initial_iheader.MFTYP);
 			NclFree(therec);
-			close(fd);
+			NclFree(vbuf);
+			fclose(fd);
 			return(NULL);
 			break;
 		case 4:
@@ -1100,20 +1107,23 @@ int	wr_status;
 		case 5:
 			NhlPError(NhlFATAL,NhlEUNKNOWN," A %s \"pressure coordinate tape\" has been detected.\n\t(MFTYP = %d), this is a non-standard CCM file.\n\tNCL only supports the type \"hybrid coordinate tape\"",(initial_iheader.MFTYP<100)?"model generated":"processor generated",initial_iheader.MFTYP);
 			NclFree(therec);
-			close(fd);
+			NclFree(vbuf);
+			fclose(fd);
 			return(NULL);
 			break;
 		default:
 			NhlPError(NhlFATAL,NhlEUNKNOWN," A %s \"unknown tape\" has been detected.\n\t(MFTYP = %d), this is a non-standard CCM file.\n\tNCL only supports the type \"hybrid coordinate tape\"",(initial_iheader.MFTYP<100)?"model generated":"processor generated",initial_iheader.MFTYP);
 			NclFree(therec);
-			close(fd);
+			NclFree(vbuf);
+			fclose(fd);
 			return(NULL);
 			break;
 		}
 		if(coff == -1) {
 			NclFree(therec);
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM integer header for file (%s)",NrmQuarkToString(path));
-					close(fd);
+			NclFree(vbuf);
+					fclose(fd);
 			return(NULL);
 		}
 
@@ -1138,7 +1148,8 @@ int	wr_status;
 		if(coff == -1) {
 			NclFree(therec);
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM character header for file (%s)",NrmQuarkToString(path));
-					close(fd);
+			NclFree(vbuf);
+					fclose(fd);
 			return(NULL);
 		}
 		cb = coff / BLOCK_SIZE;
@@ -1148,7 +1159,8 @@ int	wr_status;
 		if(coff == -1) {
 			NclFree(therec);
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM real header for file (%s)",NrmQuarkToString(path));
-					close(fd);
+			NclFree(vbuf);
+					fclose(fd);
 			return(NULL);
 		}
 		if((initial_iheader.MPLAT - initial_iheader.MPSIG)==(3*(2*initial_iheader.NLEV + 1))) {
@@ -1380,7 +1392,8 @@ int	wr_status;
 			default:
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An incorrect value was detected suggesting an error in the CCM file (%s)",NrmQuarkToString(path));
 				NclFree(therec);
-					close(fd);
+			NclFree(vbuf);
+					fclose(fd);
 				return(NULL);
 			}
 			therec->vars[i].var_info.dim_sizes[dim_num] = initial_iheader.NLON;
@@ -1399,7 +1412,8 @@ int	wr_status;
 			if((index < 1)||(index > initial_iheader.NOREC)) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An error occurred while indexing latitude data records. This file is not a vaild CCM history file");
 				NclFree(therec);
-				close(fd);
+			NclFree(vbuf);
+				fclose(fd);
 				return(NULL);
 			}
 			therec->lat_rec_offsets[(index-1)] = coff;
@@ -1446,7 +1460,8 @@ int	wr_status;
 					if((index < 1)||(index > tmp_iheader.NOREC)) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An error occurred while indexing latitude data records. This file is not a vaild CCM history file");
 						NclFree(therec);
-						close(fd);
+			NclFree(vbuf);
+						fclose(fd);
 						return(NULL);
 					}
 					therec->lat_rec_offsets[i*tmp_iheader.NOREC+(index-1)] = coff;
@@ -1486,7 +1501,8 @@ int	wr_status;
 				if(tmp_off == -1) {
 					NclFree(therec);
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM character header for file (%s)",NrmQuarkToString(path));
-					close(fd);
+			NclFree(vbuf);
+					fclose(fd);
 					return(NULL);
 				}
 				cb = tmp_off / BLOCK_SIZE;
@@ -1495,14 +1511,16 @@ int	wr_status;
 				if(tmp_off == -1) {
 					NclFree(therec);
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM real header for file (%s)",NrmQuarkToString(path));
-					close(fd);
+			NclFree(vbuf);
+					fclose(fd);
 					return(NULL);
 				}
 				if(!CompareHeaders(&initial_iheader,&initial_cheader,&initial_rheader,
 						    &tmp_iheader,&tmp_cheader,&tmp_rheader)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Comparision of headers failed, headers for timestep number (%d) vary unacceptably from initial header, NCL doesn't handle this",i+1);
 					NclFree(therec);
-					close(fd);
+			NclFree(vbuf);
+					fclose(fd);
 					return(NULL);
 
 				} else {
@@ -1545,7 +1563,8 @@ int	wr_status;
 /*
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM character header for file (%s)",NrmQuarkToString(path));
 */
-					close(fd);
+			NclFree(vbuf);
+					fclose(fd);
 					return(NULL);
 				}
 				cb = tmp_off / BLOCK_SIZE;
@@ -1554,14 +1573,16 @@ int	wr_status;
 				if(tmp_off == -1) {
 					NclFree(therec);
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM real header for file (%s)",NrmQuarkToString(path));
-					close(fd);
+			NclFree(vbuf);
+					fclose(fd);
 					return(NULL);
 				}
 				if(!CompareHeaders(&initial_iheader,&initial_cheader,&initial_rheader,
 						    &tmp_iheader,&tmp_cheader,&tmp_rheader)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Comparision of headers failed, headers for timestep number (%d) vary unacceptably from initial header, NCL doesn't handle this",i+1);
 					NclFree(therec);
-					close(fd);
+			NclFree(vbuf);
+					fclose(fd);
 					return(NULL);
 
 				} else {
@@ -1586,10 +1607,12 @@ int	wr_status;
 			fprintf(stdout,"%ld\n",therec->lat_rec_offsets[i]);
 		}
 */
-		close(fd);
+			NclFree(vbuf);
+		fclose(fd);
 		return(therec);
 	} else if(fd <= 0) {
                 NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: Could not open (%s) check permissions",NrmQuarkToString(path));
+			NclFree(vbuf);
         }
         return(NULL);
 }
@@ -1863,11 +1886,11 @@ NclQuark dim_name;
 
 static int MyUnPack
 #if	NhlNeedProto
-(CCMFileRec* therec,int fd,void *rbuffer, void* buffer, int poff, long coff, int packing,int *dimsizes,int level_type )
+(CCMFileRec* therec,FILE* fd,void *rbuffer, void* buffer, int poff, long coff, int packing,int *dimsizes,int level_type )
 #else
 (therec, fd, rbuffer, buffer,poff, coff, packing,dimsizes, level_type)
 CCMFileRec* therec;
-int fd;
+FILE* fd;
 void *rbuffer;
 void* buffer;
 int poff;
@@ -2022,12 +2045,14 @@ void *storage
 	int lstart,tstart;
 	int lfinish,tfinish;
 	int lstride,tstride;
-	int nl,nt,fd;
+	int nl,nt;
+	FILE* fd;
 	int to = 0;
 	NclMultiDValData tmp_md;
 	NclMultiDValData tmp_md2;
 	int dimsizes[4];
 	CcmIntVarInqRecList *tmp;
+	void *vbuf;
 
 	for (i = 0; i < thefile->n_vars; i++) {
 		if(thefile->vars[i].var_info.var_name_quark == var_name) {
@@ -2059,7 +2084,10 @@ void *storage
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"CCMReadVar: Variable (%s) undefined",NrmQuarkToString(var_name));
 		return(NULL);
 	} else {
-		fd = open(NrmQuarkToString(thefile->file_path_q),O_RDONLY);
+		fd = fopen(NrmQuarkToString(thefile->file_path_q),"r");
+		vbuf = (void*)NclMalloc(4*getpagesize());
+		setvbuf(fd,vbuf,_IOFBF,4*getpagesize());
+		
 		k = 0;
 		if(tmp_var->var_info.file_dim_num[0] == TIME_DIM_NUMBER) {
 			tstart = start[k];
@@ -2131,7 +2159,8 @@ void *storage
 		}
 		NclFree(buffer);
 		_NclDestroyObj((NclObj)tmp_md);
-		close(fd);
+		NclFree(vbuf);
+		fclose(fd);
 	}
 	return(NULL);
 }
