@@ -1,5 +1,5 @@
 C
-C $Id: mapset.f,v 1.6 1994-03-18 23:50:35 kennison Exp $
+C $Id: mapset.f,v 1.7 1994-04-08 23:00:32 kennison Exp $
 C
       SUBROUTINE MAPSET (ARG1,ARG2,ARG3,ARG4,ARG5)
 C
@@ -57,7 +57,7 @@ C
 C Error exit.
 C
   901 IIER=10
-      CALL MAPCEM (' MAPSET - UNKNOWN MAP AREA SPECIFIER ',ARG1,IIER,1)
+      CALL MAPCEM ('MAPSET - UNKNOWN MAP AREA SPECIFIER ',ARG1,IIER,1)
       RETURN
 C
       END

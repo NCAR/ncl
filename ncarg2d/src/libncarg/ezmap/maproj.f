@@ -1,5 +1,5 @@
 C
-C $Id: maproj.f,v 1.6 1994-03-18 23:50:27 kennison Exp $
+C $Id: maproj.f,v 1.7 1994-04-08 23:00:31 kennison Exp $
 C
       SUBROUTINE MAPROJ (ARG1,ARG2,ARG3,ARG4)
 C
@@ -65,7 +65,7 @@ C
 C Error exit.
 C
   901 IIER=9
-      CALL MAPCEM (' MAPROJ - UNKNOWN PROJECTION NAME ',ARG1,IIER,1)
+      CALL MAPCEM ('MAPROJ - UNKNOWN PROJECTION NAME ',ARG1,IIER,1)
       RETURN
 C
       END

@@ -1,5 +1,5 @@
 C
-C $Id: maplot.f,v 1.4 1994-03-18 23:50:24 kennison Exp $
+C $Id: maplot.f,v 1.5 1994-04-08 23:00:29 kennison Exp $
 C
       SUBROUTINE MAPLOT
 C
@@ -91,24 +91,27 @@ C If we've switched to a new group, set the color index, dotting, and
 C dash pattern for the group.
 C
       IF (IGID.NE.IGIS) THEN
-        IF (IGIS.NE.0) CALL MAPCHI (-4-IGIS,0,0)
+        IF (IGIS.NE.0) THEN
+          CALL MAPCHI (-4-IGIS,0,0)
+          IF (ICFELL('MAPLOT',5).NE.0) RETURN
+        END IF
         CALL MAPCHI (4+IGID,IDOT,IOR(ISHIFT(32767,1),1))
-        IF (ICFELL('MAPLOT',5).NE.0) RETURN
+        IF (ICFELL('MAPLOT',6).NE.0) RETURN
         IGIS=IGID
       END IF
 C
 C Plot the group.
 C
       CALL MAPIT (PNTS(1),PNTS(2),0)
-      IF (ICFELL('MAPLOT',6).NE.0) RETURN
+      IF (ICFELL('MAPLOT',7).NE.0) RETURN
 C
       DO 102 K=2,NPTS-1
         CALL MAPIT (PNTS(2*K-1),PNTS(2*K),1)
-        IF (ICFELL('MAPLOT',7).NE.0) RETURN
+        IF (ICFELL('MAPLOT',8).NE.0) RETURN
   102 CONTINUE
 C
       CALL MAPIT (PNTS(2*NPTS-1),PNTS(2*NPTS),2)
-      IF (ICFELL('MAPLOT',8).NE.0) RETURN
+      IF (ICFELL('MAPLOT',9).NE.0) RETURN
 C
 C Go get another group.
 C
@@ -118,14 +121,14 @@ C Reset the color index, dotting, and dash pattern, if necessary.
 C
   103 IF (IGIS.NE.0) THEN
         CALL MAPCHI (-4-IGIS,0,0)
-        IF (ICFELL('MAPLOT',9).NE.0) RETURN
+        IF (ICFELL('MAPLOT',10).NE.0) RETURN
       END IF
 C
 C If the limb lines have not already been drawn, do it now.
 C
       IF (GRID.LE.0.) THEN
         CALL MAPLMB
-        IF (ICFELL('MAPLOT',10).NE.0) RETURN
+        IF (ICFELL('MAPLOT',11).NE.0) RETURN
       END IF
 C
 C Done.

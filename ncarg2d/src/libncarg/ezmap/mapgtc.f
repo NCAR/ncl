@@ -1,5 +1,5 @@
 C
-C $Id: mapgtc.f,v 1.6 1994-03-18 23:50:02 kennison Exp $
+C $Id: mapgtc.f,v 1.7 1994-04-08 23:00:22 kennison Exp $
 C
       SUBROUTINE MAPGTC (WHCH,CVAL)
 C
@@ -56,7 +56,7 @@ C
 C Error exits.
 C
   901 IIER=1
-      CALL MAPCEM (' MAPGTC - UNKNOWN PARAMETER NAME ',WHCH,IIER,1)
+      CALL MAPCEM ('MAPGTC - UNKNOWN PARAMETER NAME ',WHCH,IIER,1)
       CVAL=' '
       RETURN
 C

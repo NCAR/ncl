@@ -1,5 +1,5 @@
 C
-C $Id: mapstl.f,v 1.6 1994-03-18 23:50:41 kennison Exp $
+C $Id: mapstl.f,v 1.7 1994-04-08 23:00:37 kennison Exp $
 C
       SUBROUTINE MAPSTL (WHCH,LVAL)
 C
@@ -44,7 +44,7 @@ C
 C Error exits.
 C
   901 IIER=14
-      CALL MAPCEM (' MAPSTL - UNKNOWN PARAMETER NAME ',WHCH,IIER,1)
+      CALL MAPCEM ('MAPSTL - UNKNOWN PARAMETER NAME ',WHCH,IIER,1)
       RETURN
 C
       END

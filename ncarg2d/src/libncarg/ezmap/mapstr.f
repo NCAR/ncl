@@ -1,5 +1,5 @@
 C
-C $Id: mapstr.f,v 1.6 1994-03-18 23:50:43 kennison Exp $
+C $Id: mapstr.f,v 1.7 1994-04-08 23:00:39 kennison Exp $
 C
       SUBROUTINE MAPSTR (WHCH,RVAL)
 C
@@ -78,7 +78,7 @@ C
 C Error exits.
 C
   901 IIER=15
-      CALL MAPCEM (' MAPSTR - UNKNOWN PARAMETER NAME ',WHCH,IIER,1)
+      CALL MAPCEM ('MAPSTR - UNKNOWN PARAMETER NAME ',WHCH,IIER,1)
       RETURN
 C
       END

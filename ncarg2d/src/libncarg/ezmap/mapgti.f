@@ -1,5 +1,5 @@
 C
-C $Id: mapgti.f,v 1.6 1994-03-18 23:50:04 kennison Exp $
+C $Id: mapgti.f,v 1.7 1994-04-08 23:00:25 kennison Exp $
 C
       SUBROUTINE MAPGTI (WHCH,IVAL)
 C
@@ -120,7 +120,7 @@ C
 C Error exits.
 C
   901 IIER=2
-      CALL MAPCEM (' MAPGTI - UNKNOWN PARAMETER NAME ',WHCH,IIER,1)
+      CALL MAPCEM ('MAPGTI - UNKNOWN PARAMETER NAME ',WHCH,IIER,1)
       IVAL=0
       RETURN
 C

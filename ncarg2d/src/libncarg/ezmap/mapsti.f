@@ -1,5 +1,5 @@
 C
-C $Id: mapsti.f,v 1.6 1994-03-18 23:50:39 kennison Exp $
+C $Id: mapsti.f,v 1.7 1994-04-08 23:00:36 kennison Exp $
 C
       SUBROUTINE MAPSTI (WHCH,IVAL)
 C
@@ -112,7 +112,7 @@ C
 C Error exits.
 C
   901 IIER=13
-      CALL MAPCEM (' MAPSTI - UNKNOWN PARAMETER NAME ',WHCH,IIER,1)
+      CALL MAPCEM ('MAPSTI - UNKNOWN PARAMETER NAME ',WHCH,IIER,1)
       RETURN
 C
       END

@@ -1,5 +1,5 @@
 C
-C $Id: mapgtr.f,v 1.6 1994-03-18 23:50:07 kennison Exp $
+C $Id: mapgtr.f,v 1.7 1994-04-08 23:00:28 kennison Exp $
 C
       SUBROUTINE MAPGTR (WHCH,RVAL)
 C
@@ -86,7 +86,7 @@ C
 C Error exits.
 C
   901 IIER=4
-      CALL MAPCEM (' MAPGTR - UNKNOWN PARAMETER NAME ',WHCH,IIER,1)
+      CALL MAPCEM ('MAPGTR - UNKNOWN PARAMETER NAME ',WHCH,IIER,1)
       RVAL=0.
       RETURN
 C
