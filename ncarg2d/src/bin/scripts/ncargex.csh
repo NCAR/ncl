@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.62 1994-06-20 20:31:42 kennison Exp $
+#   $Id: ncargex.csh,v 1.63 1994-07-08 19:08:40 haley Exp $
 #
 
 #********************#
@@ -33,7 +33,7 @@ endif
 setenv NCARG_ROOT  `ncargpath root`
 
 if ($status != 0) then
-	exit 1
+    exit 1
 endif
 
 
@@ -124,7 +124,7 @@ set colconv_list = ($ex_colconv $tst_colconv $fnd_colconv)
 #                        #
 #************************#
 set ex_conpack   = (cpex01 cpex02 cpex03 cpex04 cpex05 cpex06 cpex07 \
-		    cpex08 cpex09 cpex10 cpex11 ${ex_cbivar})
+                    cpex08 cpex09 cpex10 ${ex_cbivar})
 set tst_conpack  = (tconpa)
 set ttr_conpack  = (ccpback ccpcff ccpcfx ccpcica ccpcir ccpcis ccpcit ccpclc \
                     ccpcld ccpcldm ccpcldr ccpcll ccpclu ccpcnrc ccpdflt \
@@ -400,15 +400,15 @@ set ttr_overlap = (mpex03 mpex05 arex01 sfex01 tsoftf)
 #                                                                     #
 #*********************************************************************#
 set ex_list  = ($ex_areas $ex_autograph $ex_colconv $ex_conpack $ex_ezmap \
-		$ex_field $ex_labelbar $ex_plotchar $ex_polypack \
+                $ex_field $ex_labelbar $ex_plotchar $ex_polypack \
                 ${ex_scrlld_title} $ex_softfill $ex_spps $ex_surface $ex_misc)
 
 set tst_list = ($tst_areas $tst_autograph $tst_colconv $tst_conpack \
                 ${tst_cnrn_family} ${tst_cnrc_family} $tst_dashline \
                 $tst_ezmap $tst_field $tst_gflash $tst_gridall $tst_halftone \
                 $tst_histogram $tst_isosrfhr $tst_isosurface $tst_labelbar \
-		$tst_plotchar $tst_polypack $tst_pwrite ${tst_scrlld_title} \
-		$tst_seter $tst_softfill $tst_surface $tst_threed)
+                $tst_plotchar $tst_polypack $tst_pwrite ${tst_scrlld_title} \
+                $tst_seter $tst_softfill $tst_surface $tst_threed)
 
 set ttr_list = ($ttr_areas $ttr_conpack $ttr_ezmap $ttr_class)
 
@@ -432,6 +432,14 @@ set X11_option
 #               #
 #***************#
 set names
+
+#*********************************#
+#                                 #
+# Default workstation type is "1" #
+#                                 #
+#*********************************#
+set ws_type = "1"
+set ncgmfile
 
 while ($#argv > 0)
     
@@ -568,9 +576,9 @@ while ($#argv > 0)
             set names=($names $plotchar_list)
             breaksw
 
-	case "-polypack":
+        case "-polypack":
             shift
-	    set names=($names $polypack_list)
+            set names=($names $polypack_list)
             breaksw
 
         case "-pwrite_family":
@@ -653,6 +661,56 @@ while ($#argv > 0)
             set Unique
             breaksw
 
+        case "-W":
+            unset psfile
+            unset epsfile
+            unset epsifile
+            shift
+            set ws_type = "$1"
+            switch ($ws_type)
+            
+            case  "1":
+                set ncgmfile
+            breaksw
+
+            case "8":
+                set interfile
+            breaksw
+
+            case "10":
+                set textfile
+            breaksw
+
+            case "20":
+            case "23":
+            case "26":
+            case "29":
+                set psfile
+            breaksw
+
+            case "21":
+            case "24":
+            case "27":
+            case "30":
+                set epsfile
+            breaksw
+
+            case "22":
+            case "25":
+            case "28":
+            case "31":
+                set epsifile
+            breaksw
+
+            default:
+                echo ""
+                echo "    ncargex:  $ws_type is an invalid workstation type."
+                echo ""
+                exit 1
+            endsw
+            shift
+            breaksw
+
         case "-noX11"
             shift
             set X11_option = "-noX11"
@@ -675,6 +733,36 @@ while ($#argv > 0)
     endsw
 end
 
+#********************************************#
+#                                            #
+# Cannot have both interactive and noX11 set #
+#                                            #
+#********************************************#
+
+if ($X11_option == "-noX11" && $?interfile) then
+    echo ""
+    echo "Warning:  You cannot use the '-noX11' option if you are"
+    echo "          running an interactive example.  I will turn"
+    echo "          the '-noX11' option off."
+    echo ""
+    set X11_option
+endif
+
+
+#***********************************************#
+#                                               #
+# Cannot have both interactive and ws_type != 8 #
+#                                               #
+#***********************************************#
+if ($?interfile && $ws_type != "8") then
+    echo ""
+    echo "Warning:  You must have a workstation type of '8' if you"
+    echo "          are running an interactive example.  I will force"
+    echo "          ws_type to be '8'.  If you specify the '-inter'"
+    echo "          option, ws_type will be set to 8 automatically."
+    echo ""
+    set ws_type = "8"
+endif
 
 #***********************#
 #                       #
@@ -789,12 +877,12 @@ switch ($type)
 endsw
 echo ""
 
-#**************************************************#
-#                                                  #
-# If the "-unique" option was selected and the     #
-# example already exists, don't generate it again. #
-#                                                  #
-#**************************************************#
+#***********************************************#
+#                                               #
+# If the "-unique" option was selected and the  #
+# NCGM already exists, don't generate it again. #
+#                                               #
+#***********************************************#
 
 if ($?Unique && -f $name.ncgm) goto theend
 
@@ -805,8 +893,9 @@ if ($?Unique && -f $name.ncgm) goto theend
 #********************************#
 
 set ncargf77flags
-set f_files = $name.f
-set rmfiles
+set f_files
+set rmfiles = "$name.f"
+set copy_files
 
 #****************************************#
 #                                        #
@@ -824,8 +913,8 @@ switch ($name)
     case cpex07:
     case cpex08:
     case cpex09:
-        set f_files = ($f_files cpexcc.f)
-        set rmfiles = (cpexcc.o)
+        set f_files = (cpexcc.f)
+        set rmfiles = ($rmfiles cpexcc.o)
     breaksw
 
     case mpex01:
@@ -839,14 +928,14 @@ switch ($name)
     case mpex09:
     case mpex10:
     case mpexfi:
-        set f_files = ($f_files mpexcc.f)
-        set rmfiles = (mpexcc.o)
+        set f_files = (mpexcc.f)
+        set rmfiles = ($rmfiles mpexcc.o)
     breaksw
 
     case vvex01:
     case vvex02:
-        set f_files = ($f_files vvexcc.f)
-        set rmfiles = (vvexcc.o)
+        set f_files = (vvexcc.f)
+        set rmfiles = ($rmfiles vvexcc.o)
     breaksw
 
     case ccpcica:
@@ -857,8 +946,8 @@ switch ($name)
     case ccpmap:
     case ccpmovi:
     case ccpvp:
-        set f_files = ($f_files ggdini.f)
-        set rmfiles = (ggdini.o)
+        set f_files = (ggdini.f)
+        set rmfiles = ($rmfiles ggdini.o)
     breaksw
 endsw
 
@@ -955,12 +1044,6 @@ switch ($name)
 #***************************************************#
     case fgke01:
     case fgke04:
-        echo "NOTE: This example is interactive and can only be executed if"
-        echo "      you have X running and have your DISPLAY environment"
-        echo "      variable set properly.  It will create an X11 window"
-        echo "      that you must click on with your mouse to advance the"
-        echo "      frame(s)."
-        echo ""
     breaksw
 endsw
 
@@ -972,13 +1055,30 @@ set rmfiles = ($rmfiles $copy_files)
 #                       #
 #***********************#
    
+if ( $type == "Example")      set tempdir = $example_dir
+if ( $type == "Fundamentals") set tempdir = $fund_dir
+if ( $type == "Programmer")   set tempdir = $pdoc_dir
+if ( $type == "Tutorial" )    set tempdir = $tutor_dir
+if ( $type == "Test" )        set tempdir = $test_dir
+
+echo "  Copying $name.f"
+ed << EOF - $tempdir/$name.f >& /dev/null
+g/SED_WSTYPE/s//$ws_type/g
+w ./$name.f
+q
+EOF
+
+set f_files = ($f_files $name.f)
+
+#***********************#
+#                       #
+# Copy the needed files #
+#                       #
+#***********************#
+   
 foreach file($copy_files)
     echo "  Copying $file"
-    if ( $type == "Example")      cp $example_dir/$file .
-    if ( $type == "Fundamentals") cp $fund_dir/$file .
-    if ( $type == "Programmer")   cp $pdoc_dir/$file .
-    if ( $type == "Tutorial" )    cp $tutor_dir/$file .
-    if ( $type == "Test" )        cp $test_dir/$file .
+    cp $tempdir/$file .
 end
 
 #******************************#
@@ -987,10 +1087,23 @@ end
 #                              #
 #******************************#
    
+unset not_valid_metafile
+
 if (! $?NoRunOption) then
-    echo ""
-    echo "Compiling and Linking..."
-    ncargf77 $X11_option $ncargf77flags -o $name $f_files
+    if ($type == "Interactive_Example" && $?interfile) then
+        echo "NOTE: This example is interactive and can only be executed if"
+        echo "      you have X running and have your DISPLAY environment"
+        echo "      variable set properly.  It will create an X11 window"
+        echo "      that you must click on with your mouse to advance the"
+        echo "      frame(s)."
+        echo ""
+        echo "Compiling and Linking..."
+        ncargf77 $ncargf77flags -o $name $f_files
+    else
+        echo ""
+        echo "Compiling and Linking..."
+        ncargf77 $X11_option $ncargf77flags -o $name $f_files
+    endif
     if ($status != 0) then
         echo ""
         echo "The compile and link failed"
@@ -1007,26 +1120,26 @@ if (! $?NoRunOption) then
    
     switch( $name )
         case mpexfi:
-            ncargrun -o $name.ncgm $name < mpexfi.dat
+            $name < mpexfi.dat
         breaksw
         case srex01:
-            ncargrun -o $name.ncgm $name < srex01.dat
+            $name < srex01.dat
         breaksw
         case agex13:
-            ncargrun -o $name.ncgm $name < agda13.dat
+            $name < agda13.dat
         breaksw
         case ffex02:
         case ffex03:
-            ncargrun -o $name.ncgm $name < ffex02.dat
+            ./$name < ffex02.dat
         breaksw
         case ffex05:
-            ncargrun -o $name.ncgm $name < ffex05.dat
+            ./$name < ffex05.dat
         breaksw
         case fcover:
-            ncargrun -o $name.ncgm $name < fcover.dat
+            ./$name < fcover.dat
         breaksw
         case class1:
-            ncargrun -o $name.ncgm $name < class1.dat
+            ./$name < class1.dat
         breaksw
         case fgke03:
             ./$name
@@ -1035,6 +1148,7 @@ if (! $?NoRunOption) then
         case ccpcff:
         case tcolcv:
         case fcce02:
+            set not_valid_metafile
             echo ""
             echo "NOTE: This example is for testing purposes only."
             echo "      No metafile will produced."
@@ -1042,13 +1156,34 @@ if (! $?NoRunOption) then
             ./$name
         breaksw
         default:
-            ncargrun -o $name.ncgm $name
+            ./$name
     endsw
 
-    set rmfiles = ($rmfiles $name.o $name)
-    if ( $name != "tcolcv" && $name != "ccpcff" && $name != "fgke03" && $name != "fcce02" ) then
+    if ( ! $?not_valid_metafile ) then
+      if ($?psfile) then
+        mv ./gmeta1.ps ${name}.ps
+        echo ""
+        echo "PostScript file is named ${name}.ps"
+        echo ""
+      else if ($?epsfile) then
+        mv ./gmeta1.eps ${name}.eps
+        echo ""
+        echo "Encapsulated PostScript file is named ${name}.eps"
+        echo ""
+      else if ($?epsifile) then
+        mv ./gmeta1.epsi ${name}.epsi 
+        echo ""
+        echo "Interchange Encapsulated PostScript file is named ${name}.epsi"
+        echo ""
+      else if ( $?ncgmfile) then
+        mv ./gmeta $name.ncgm
+        echo ""
         echo "Metafile is named $name.ncgm"
+        echo ""
+      endif
     endif
+
+    set rmfiles = ($rmfiles $name.o $name)
 endif
 
 #******************************#
