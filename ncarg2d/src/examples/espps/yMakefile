@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.2 1993-03-05 00:39:50 haley Exp $
+#	$Id: yMakefile,v 1.3 1993-04-16 17:02:34 haley Exp $
 #
 NCARG	= ../../../..
 
@@ -8,7 +8,7 @@ FSPLIT	= ncarguncat
 MYNAME	= espps
 
 GENERIC_SRCS = \
-	splogy.f sprevx.f spset1.f spset2.f
+	splogy.f sprevx.f
 
 install::
 	@for file in $(GENERIC_SRCS); do\
