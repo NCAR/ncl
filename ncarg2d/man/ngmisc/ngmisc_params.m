@@ -42,6 +42,10 @@ Specifying larger values for CO will increase the accuracy of coordinate
 positions at the expense of larger files (more space is needed to
 represent the larger integer coordinate values); smaller numbers reduce 
 the accuracy of coordinate positions, but reduce file sizes.
+.IP "\'CT\'   -   Integer   -    0"
+Specifies whether NGDOTS will draw filled dots or circles.  If the value
+of CT is 0, then filled dots are drawn.  If the value of CT is not 0, then
+circles are drawn.
 .IP "\'ER\'   -   Integer   -   10"
 Specifies the maximum number of error messages that will be issued
 by NCAR GKS before it terminates execution.  ER must be larger than zero.
