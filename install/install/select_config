@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: select_config,v 1.8 1995-10-05 21:59:03 haley Exp $
+#      $Id: select_config,v 1.9 1996-04-19 16:54:00 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -51,7 +51,7 @@ cat <<EOF > /dev/tty
 
 
                  NCAR Graphics Unix Version $VERSION
-                     Copyright (C) 1987-1995
+                     Copyright (C) 1987-1996
           University Corporation for Atmospheric Research
      The use of this Software is governed by a License Agreement.
 

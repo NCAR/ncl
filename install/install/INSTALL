@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: INSTALL,v 1.9 1995-10-05 21:58:58 haley Exp $
+#      $Id: INSTALL,v 1.10 1996-04-19 16:53:58 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -57,7 +57,7 @@ cat <<EOF
 
 
                  NCAR Graphics Unix Version $VERSION
-                     Copyright (C) 1987-1995
+                     Copyright (C) 1987-1996
           University Corporation for Atmospheric Research
      The use of this Software is governed by a License Agreement.
 
