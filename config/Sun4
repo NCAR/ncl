@@ -69,10 +69,11 @@ EXTENSIONLIB      = -lXext
 XTOOLLIB          = -lXt
 XMULIB            = -lXmu
 XAWLIB            = -lXaw
+XMOTIFLIBS        = -lXm $(XTOOLLIB) $(XLIB)
 HDFLIB            = -ldf
 XDRLIB            =
 NETCDFLIB         = -lnetcdf $(XDRLIB)
-
+HDFDEFINES        = -DSUN
 
 GENERICPATH       = $(NCARG)/$(GENERICDIR)
 
@@ -86,7 +87,7 @@ ARCH              =
 VDEFINE           = -DVERSION='"$(VERSION)"'
 CC                = acc
 CC_LD             = $(CC)
-CDEBUG            =
+CDEBUG            = 
 COPT              =
 CMISC             = -Xa -DNeedFuncProto
 CINC              = $(INC_SEARCH)

@@ -69,9 +69,11 @@ EXTENSIONLIB      = -lXext
 XTOOLLIB          = -lXt
 XMULIB            = -lXmu
 XAWLIB            = -lXaw
+XMOTIFLIBS        = -lXm $(XTOOLLIB) $(XLIB)
 HDFLIB            = -ldf
 XDRLIB            =
 NETCDFLIB         = -lnetcdf $(XDRLIB)
+HDFDEFINES        = -DHP9000
 
 GENERICPATH       = $(NCARG)/$(GENERICDIR)
 
