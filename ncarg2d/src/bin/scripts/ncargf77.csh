@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargf77.csh,v 1.28 1997-03-26 22:32:07 haley Exp $
+#   $Id: ncargf77.csh,v 1.29 1997-03-31 15:47:46 haley Exp $
 #
 
 #*********************************************#
@@ -159,7 +159,7 @@ foreach arg ($argv)
 end
 
 set ncarg_libs  = "$libncarg $libgks $libncarg_c $libmath"
-set newargv = "$newargv $stub_file $libpath $ctrans_libs $robjs $ncarg_libs $xlib $libmath $libextra"
+set newargv = "$newargv $stub_file $libpath $ctrans_libs $robjs $ncarg_libs $xlib $libextra"
 
 echo $newargv
 eval $newargv
