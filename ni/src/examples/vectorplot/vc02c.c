@@ -1,5 +1,5 @@
 /*
- *      $Id: vc02c.c,v 1.1 1996-04-04 19:30:29 dbrown Exp $
+ *      $Id: vc02c.c,v 1.2 1996-04-11 19:23:40 dbrown Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -36,29 +36,28 @@
 #define M 30
 #define N 25
 #define PI  3.14159    
-static float U[M*N],V[M*N];
 
 main(int argc, char *argv[])
 {
-
+    int NCGM=0, X11=1, PS=0;
     int appid,wid,vcid,vfid;
     int rlist,grlist;
     int len_dims[2];
-    int NCGM=0, X11=1, PS=0;
     float reflen;
+    float U[N][M],V[N][M];
 
 /*
- * Create a simple vector field
+ * Generate vector data arrays
  */
     {
-	    float igrid,jgrid;
+	    float igrid, jgrid;
 	    int i,j;
 	    igrid = 2.0 * PI / (float) M;
 	    jgrid = 2.0 * PI / (float) N;
 	    for (j = 0; j < N; j++) {
 		    for (i = 0; i < M; i++) {
-			    *(U + j * M + i) = 10.0 * cos(jgrid * (float) j);
-			    *(V + j * M + i) = 10.0 * cos(igrid * (float) i);
+			    U[j][i] = 10.0 * cos(jgrid * (float) j);
+			    V[j][i] = 10.0 * cos(igrid * (float) i);
 		    }
 	    }
     }
@@ -116,8 +115,8 @@ main(int argc, char *argv[])
     len_dims[0] = N;
     len_dims[1] = M;
     NhlRLClear(rlist);
-    NhlRLSetMDFloatArray(rlist,NhlNvfUDataArray,U,2,len_dims);
-    NhlRLSetMDFloatArray(rlist,NhlNvfVDataArray,V,2,len_dims);
+    NhlRLSetMDFloatArray(rlist,NhlNvfUDataArray,&U[0][0],2,len_dims);
+    NhlRLSetMDFloatArray(rlist,NhlNvfVDataArray,&V[0][0],2,len_dims);
     NhlCreate(&vfid,"vectorfield",NhlvectorFieldClass,appid,rlist);
 
 /*
@@ -127,7 +126,11 @@ main(int argc, char *argv[])
  */
 
     NhlRLClear(rlist);
+    NhlRLSetString(rlist,NhlNtiMainString,
+		   "Line-Drawn Vectors (colored by magnitude)");
+
     NhlRLSetString(rlist,NhlNvcMonoLineArrowColor,"false");
+
     NhlRLSetInteger(rlist,NhlNvcVectorFieldData,vfid);
     NhlCreate(&vcid,"vectorplot",NhlvectorPlotClass,wid,rlist);
 
@@ -154,7 +157,10 @@ main(int argc, char *argv[])
 
     reflen *= 1.5;    
     NhlRLClear(rlist);
+    NhlRLSetString(rlist,NhlNtiMainString,
+		   "Adjusting the Reference and Minimum Length");
     NhlRLSetFloat(rlist,NhlNvcRefLengthF,reflen);
+    NhlRLSetFloat(rlist,NhlNvcMinFracLengthF,0.3);
     NhlSetValues(vcid,rlist);
 
     NhlDraw(vcid);

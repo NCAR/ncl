@@ -30,7 +30,7 @@ U = new((/N,M/),float)
 V = new((/N,M/),float)
 
 ;
-; create a simple vector field
+; Generate vector data arrays
 ;
 
 igrid = 2.0 * PI / M

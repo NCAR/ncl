@@ -24,8 +24,8 @@
 
 begin
 
-path = "."
-data = asciiread(path + "/vc03.asc",(/2,25,37/),"float")
+path = ncargpath("data") + "/asc/"
+data = asciiread(path + "uvdata0.asc",(/2,37,37/),"float")
 
 ;
 ; Create an application context. Set the app dir to the current directory
@@ -80,8 +80,10 @@ dataid = create "vfield" vectorFieldClass appid
         "vfDataArray" : data
 	"vfXCStartV" : -180.0
 	"vfXCEndV" : 0.0
-	"vfYCStartV" : 20.0
-	"vfYCEndV" : 80.0
+	"vfYCStartV" : 0.0
+	"vfYCEndV" : 90.0
+	"vfYCStartSubsetV" : 20.0
+	"vfYCEndSubsetV" : 80.0
 end create
 
 ;
