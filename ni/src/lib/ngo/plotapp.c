@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.22 2000-02-08 01:29:56 dbrown Exp $
+ *      $Id: plotapp.c,v 1.23 2000-02-09 03:39:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4310,7 +4310,6 @@ static void SubstituteVarSyms
 					 inval,True);
 				if (newval) {
 					is_func = True;
-					FreeResFuncs(rfuncs);
 					NgSetExpressionVarData
 						(papp->go_id,ditem->vdata,
 						 newval,_NgNOEVAL,True);
