@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.56 2004-12-16 17:21:47 shea Exp $
+;      $Id: contributed.ncl,v 1.57 2005-01-28 18:41:40 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -410,6 +410,9 @@ end
 ;***************************************************************
 ; D. Shea   
 ; There is no NCL built-in function to get the dimension names
+; +++++++ THIS HAS CHANGED ++++++++++++
+;         getvardims replaces this function
+; +++++++++++++++++++++++++++++++++++++
 ; of a variable in memory. There is one for file variables 
 ; [getfilevardims] but not for a variable in memory. Dunno why! 
 ; Usage:   dimNames = getVarDimNames (x)
@@ -417,20 +420,22 @@ end
 undef ("getVarDimNames")
 function getVarDimNames (x)
 
-local dimx, rank, n, dimNames
+;local dimx, rank, n, dimNames
 begin
-  dimx = dimsizes(x)
-  rank = dimsizes(dimx)
+ ;dimx = dimsizes(x)
+ ;rank = dimsizes(dimx)
 
-  dimNames = new ( rank, "string", "missing")
+ ;dimNames = new ( rank, "string", "missing")
 
-  do n=0,rank-1
-     if (.not.ismissing(x!n)) then
-         dimNames(n) = x!n
-     end if
-  end do
+ ;do n=0,rank-1
+ ;   if (.not.ismissing(x!n)) then
+ ;       dimNames(n) = x!n
+ ;   end if
+ ;end do
 
-  return (dimNames)
+ ;return (dimNames)
+
+  return (getvardims(x))
 end
 
 ; *****************************************************************
