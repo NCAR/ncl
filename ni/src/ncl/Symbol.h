@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.25 1997-08-04 17:58:33 ethan Exp $
+ *      $Id: Symbol.h,v 1.26 1998-02-22 17:42:34 haley Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,10 @@ extern "C" {
 #ifndef _NCSymbol_h
 #define _NCSymbol_h
 
+#if defined(HPUX)
+#include <dl.h>
+#endif
+
 typedef struct _NclFileInfo {
 	char filename[NCL_MAX_STRING];
 	int level;
@@ -51,7 +55,11 @@ typedef struct _NclVarInfo {
 
 typedef struct _NclSharedLibraryInfo {
 	struct _NclScopeRec* scope;
+#if defined(HPUX)
+	shl_t so_handle;
+#else
 	void *so_handle;
+#endif
 }NclSharedLibraryInfo;
 
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.48 1998-01-28 15:06:25 boote Exp $
+ *      $Id: NclApi.c,v 1.49 1998-02-22 17:42:33 haley Exp $
  */
 /************************************************************************
 *									*
@@ -47,7 +47,11 @@ extern "C" {
 #include "NclFileVar.h"
 #include "HLUSupport.h"
 #include <dirent.h>
+#if defined(HPUX)
+#include <dl.h>
+#else
 #include <dlfcn.h>
+#endif
 
 int force_reset = 0;
 int start_state = 0;
@@ -201,13 +205,25 @@ int NclInitServer
 			while((ent = readdir(d)) != NULL) {
 				if(*ent->d_name != '.') {
 					sprintf(buffer,"%s/%s",_NGResolvePath(libpath),ent->d_name);
+#if defined(HPUX)
+					so_handle = shl_load(buffer,BIND_IMMEDIATE,0L);
+#else
 					so_handle = dlopen(buffer,RTLD_NOW);
+#endif
 					if(so_handle != NULL) {
+#if defined(HPUX)
+						(void)shl_findsym(so_handle, "Init",TYPE_UNDEFINED,(void*)init_function);
+#else
 						init_function = dlsym(so_handle, "Init");
+#endif
 						if(init_function != NULL) {
 							(*init_function)();
 						} else {
+#if defined(HPUX)
+							shl_unload(so_handle);
+#else
 							dlclose(so_handle);
+#endif
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not find Init() in external file %s, file not loaded",buffer);
 						}
 					} else {

@@ -19,8 +19,11 @@ extern "C" {
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#if defined(HPUX)
+#include <dl.h>
+#else
 #include <dlfcn.h>
-
+#endif
 
 
 
@@ -82,7 +85,11 @@ main() {
 	int reset = 1;
 	DIR *d;
 	struct dirent *ent;
+#if defined(HPUX)
+	shl_t so_handle;
+#else
 	void *so_handle;
+#endif
 	char buffer[4*NCL_MAX_STRING];
 	void (*init_function)(void);
 	char *libpath;
@@ -145,13 +152,25 @@ main() {
 			while((ent = readdir(d)) != NULL) {
 				if(*ent->d_name != '.') {
 					sprintf(buffer,"%s/%s",_NGResolvePath(libpath),ent->d_name);
+#if defined(HPUX)
+					so_handle = shl_load(buffer,BIND_IMMEDIATE,0L);
+#else
 					so_handle = dlopen(buffer,RTLD_NOW);
+#endif
 					if(so_handle != NULL) {
+#if defined(HPUX)
+						(void)shl_findsym(&so_handle, "Init",TYPE_UNDEFINED,(void*)init_function);
+#else
 						init_function = dlsym(so_handle, "Init");
+#endif
 						if(init_function != NULL) {
 							(*init_function)();
 						} else {
+#if defined(HPUX)
+							shl_unload(so_handle);
+#else
 							dlclose(so_handle);
+#endif
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not find Init() in external file %s, file not loaded",buffer);
 						}
 					} else {

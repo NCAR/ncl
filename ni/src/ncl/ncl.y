@@ -15,7 +15,11 @@
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#if defined(HPUX)
+#include <dl.h>
+#else
 #include <dlfcn.h>
+#endif
 int scopelevel = 0;
 extern int yydebug;
 extern char *yytext;
@@ -204,11 +208,24 @@ statement_list :  statement eoln			{
 								void (*init_function)(void);
 								$2->u.package = NclMalloc(sizeof(NclSharedLibraryInfo));
 								fprintf(stdout,"opening: %s\n",_NGResolvePath($3));
+#if defined(HPUX)
+
+								$2->u.package->so_handle = shl_load(_NGResolvePath($3),BIND_IMMEDIATE,0L);
+#else
 								$2->u.package->so_handle = dlopen(_NGResolvePath($3),RTLD_NOW);
+#endif
 								if($2->u.package->so_handle == NULL) {
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occured loading the external file %s, file not loaded\n%s",$3,dlerror());
+#if defined(HPUX)
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n",$3);
+#else
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n%s",$3,dlerror());
+#endif
 								} else {
+#if defined(HPUX)
+									(void)shl_findsym(&$2->u.package->so_handle, "Init",TYPE_UNDEFINED,(void*)init_function);
+#else
 									init_function = dlsym($2->u.package->so_handle, "Init");
+#endif
 									if(init_function != NULL) {
 										_NclResetNewSymStack();
 										_NclNewScope();
@@ -228,11 +245,23 @@ statement_list :  statement eoln			{
 								$$ = NULL;
 								$3->u.package = NclMalloc(sizeof(NclSharedLibraryInfo));
 								fprintf(stdout,"opening: %s\n",_NGResolvePath($4));
+#if defined(HPUX)
+								$3->u.package->so_handle = shl_load(_NGResolvePath($4),BIND_IMMEDIATE,0L);
+#else
 								$3->u.package->so_handle = dlopen(_NGResolvePath($4),RTLD_NOW);
+#endif
 								if($3->u.package->so_handle == NULL) {
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occured loading the external file %s, file not loaded\n%s",$4,dlerror());
+#if defined(HPUX)
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n",$4);
+#else
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n%s",$4,dlerror());
+#endif
 								} else {
+#if defined(HPUX)
+									(void)shl_findsym(&$3->u.package->so_handle, "Init",TYPE_UNDEFINED,(void*)init_function);
+#else
 									init_function = dlsym($3->u.package->so_handle, "Init");
+#endif
 									if(init_function != NULL) {
 										_NclResetNewSymStack();
 										_NclNewScope();
@@ -329,12 +358,24 @@ block_statement_list : statement eoln {
 								$$ = NULL;
 								$2->u.package = NclMalloc(sizeof(NclSharedLibraryInfo));
 								fprintf(stdout,"opening: %s\n",_NGResolvePath($3));
+#if defined(HPUX)
+								$2->u.package->so_handle = shl_load(_NGResolvePath($3),BIND_IMMEDIATE,0L);
+#else
 								$2->u.package->so_handle = dlopen(_NGResolvePath($3),RTLD_NOW);
+#endif
 								if($2->u.package->so_handle == NULL) {
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occured loading the external file %s, file not loaded",$3);
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occured loading the external file %s, file not loaded\n%s",$3,dlerror());
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded",$3);
+#if defined(HPUX)
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n",$3);
+#else
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n%s",$3,dlerror());
+#endif
 								} else {
+#if defined(HPUX)
+									(void)shl_findsym(&$2->u.package->so_handle, "Init",TYPE_UNDEFINED,(void*)init_function);
+#else
 									init_function = dlsym($2->u.package->so_handle, "Init");
+#endif
 									if(init_function != NULL) {
 										_NclResetNewSymStack();
 										_NclNewScope();				
@@ -353,11 +394,23 @@ block_statement_list : statement eoln {
 								$$ = NULL;
 								$3->u.package = NclMalloc(sizeof(NclSharedLibraryInfo));
 								fprintf(stdout,"opening: %s\n",_NGResolvePath($4));
+#if defined(HPUX)
+								$3->u.package->so_handle = shl_load(_NGResolvePath($4),BIND_IMMEDIATE,0L);
+#else
 								$3->u.package->so_handle = dlopen(_NGResolvePath($4),RTLD_NOW);
+#endif
 								if($3->u.package->so_handle == NULL) {
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occured loading the external file %s, file not loaded\n%s",$4,dlerror());
+#if defined(HPUX)
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n",$4);
+#else
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n%s",$4,dlerror());
+#endif
 								} else {
+#if defined(HPUX)
+									(void)shl_findsym(&$3->u.package->so_handle, "Init",TYPE_UNDEFINED,(void*)init_function);
+#else
 									init_function = dlsym($3->u.package->so_handle, "Init");
+#endif
 									if(init_function != NULL) {
 										_NclResetNewSymStack();
 										_NclNewScope();				
