@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.37 1995-05-05 08:50:38 boote Exp $
+ *      $Id: TickMark.c,v 1.38 1995-05-18 17:27:26 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -7227,8 +7227,9 @@ int num_args;
         NhlErrorTypes ret = NhlNOERROR;
 
 
-
-	if((tnew->tick.y_l_on)||(tnew->tick.x_b_on)) {
+	if(tnew->tick.xb_yl_trans_obj == NULL ) {
+		ret = CreateXBYLTransformInfo(tnew,args, num_args);	
+	} else if((tnew->tick.y_l_on)||(tnew->tick.x_b_on)) {
 /*
 * Fist decide what the state change is. It is special when going from
 * NhlIRREGULAR to NhlLOG or NhlLINEAR and from NhlLOG or NhlLINEAR to NhlIRREGULAR. In
@@ -7444,7 +7445,9 @@ int num_args;
 	have_ir = 0;
 	need_ir = 0;
 	nargs = 0;
-	if((tnew->tick.y_r_on)||(tnew->tick.x_t_on)) {
+	if(tnew->tick.xt_yr_trans_obj == NULL) {
+		ret = CreateXTYRTransformInfo(tnew,args, num_args);
+	} else if((tnew->tick.y_r_on)||(tnew->tick.x_t_on)) {
 
 		if((told->tick.y_r_style == NhlIRREGULAR)||		
 			(told->tick.x_t_style == NhlIRREGULAR)) {
