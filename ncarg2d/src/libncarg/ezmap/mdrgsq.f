@@ -1,5 +1,5 @@
 C
-C $Id: mdrgsq.f,v 1.5 2001-11-02 22:37:17 kennison Exp $
+C $Id: mdrgsq.f,v 1.6 2002-11-01 18:47:02 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -60,6 +60,11 @@ C
         CHARACTER*4 CTM4
         CHARACTER*1 CTM1
 C
+C Define an amended version of the FORTRAN function ICHAR that will work
+C on machines like the IBM, which sign-extend eight-bit characters.
+C
+        ICHARF(CHAR)=MOD(ICHAR(CHAR)+256,256)
+C
 C Compute the values of the parameters DLON and DLAT from the values of
 C NILN and NILT in COMMON.
 C
@@ -88,10 +93,10 @@ C
           RETURN
         END IF
 C
-        IPOS=IOR(ISHIFT(IOR(ISHIFT(IOR(ISHIFT(ICHAR(CTM4(4:4)),8),
-     +                                        ICHAR(CTM4(3:3))),8),
-     +                                        ICHAR(CTM4(2:2))),8),
-     +                                        ICHAR(CTM4(1:1)))-1
+        IPOS=IOR(ISHIFT(IOR(ISHIFT(IOR(ISHIFT(ICHARF(CTM4(4:4)),8),
+     +                                        ICHARF(CTM4(3:3))),8),
+     +                                        ICHARF(CTM4(2:2))),8),
+     +                                        ICHARF(CTM4(1:1)))-1
 C
 C Position the cell file to the start of the definition.
 C
@@ -111,7 +116,7 @@ C
           RETURN
         END IF
 C
-        IPGB = ICHAR(CTM1)
+        IPGB = ICHARF(CTM1)
 C
 C If the polygon byte is non-zero, we are at the start of a new polygon.
 C
@@ -135,10 +140,10 @@ C
             RETURN
           END IF
 C
-          IPID=IOR(ISHIFT(IOR(ISHIFT(IOR(ISHIFT(ICHAR(CTM4(4:4)),8),
-     +                                          ICHAR(CTM4(3:3))),8),
-     +                                          ICHAR(CTM4(2:2))),8),
-     +                                          ICHAR(CTM4(1:1)))
+          IPID=IOR(ISHIFT(IOR(ISHIFT(IOR(ISHIFT(ICHARF(CTM4(4:4)),8),
+     +                                          ICHARF(CTM4(3:3))),8),
+     +                                          ICHARF(CTM4(2:2))),8),
+     +                                          ICHARF(CTM4(1:1)))
 C
 C Zero IFLG.  It gets set non-zero when we have found the first point
 C of the polygon, positive if that point is on the edge of the 1-degree
@@ -160,7 +165,7 @@ C
             RETURN
           END IF
 C
-          ISGB = ICHAR(CTM1)
+          ISGB = ICHARF(CTM1)
 C
 C The low-order three bits of the segment byte tell us what follows.
 C Pull them off into ITMP, saving the previous value as ITML.
@@ -200,10 +205,10 @@ C
               QLON=RLON
 C
               RLON=.000001D0*DBLE(IOR(ISHIFT(
-     +             IOR(ISHIFT(IOR(ISHIFT(ICHAR(CTM4(4:4)),8),
-     +                                   ICHAR(CTM4(3:3))),8),
-     +                                   ICHAR(CTM4(2:2))),8),
-     +                                   ICHAR(CTM4(1:1))))
+     +             IOR(ISHIFT(IOR(ISHIFT(ICHARF(CTM4(4:4)),8),
+     +                                   ICHARF(CTM4(3:3))),8),
+     +                                   ICHARF(CTM4(2:2))),8),
+     +                                   ICHARF(CTM4(1:1))))
 C
 C Read a latitude.
 C
@@ -217,10 +222,10 @@ C
               QLAT=RLAT
 C
               RLAT=.000001D0*DBLE(IOR(ISHIFT(
-     +             IOR(ISHIFT(IOR(ISHIFT(ICHAR(CTM4(4:4)),8),
-     +                                   ICHAR(CTM4(3:3))),8),
-     +                                   ICHAR(CTM4(2:2))),8),
-     +                                   ICHAR(CTM4(1:1))))
+     +             IOR(ISHIFT(IOR(ISHIFT(ICHARF(CTM4(4:4)),8),
+     +                                   ICHARF(CTM4(3:3))),8),
+     +                                   ICHARF(CTM4(2:2))),8),
+     +                                   ICHARF(CTM4(1:1))))
 C
 C If we had not yet seen the first point of the polygon (that is to
 C say, if IFLG is zero), this is it; save its longitude and latitude
@@ -362,10 +367,10 @@ C
               RETURN
             END IF
 C
-            IPOS=IOR(ISHIFT(IOR(ISHIFT(IOR(ISHIFT(ICHAR(CTM4(4:4)),8),
-     +                                            ICHAR(CTM4(3:3))),8),
-     +                                            ICHAR(CTM4(2:2))),8),
-     +                                            ICHAR(CTM4(1:1)))-1
+            IPOS=IOR(ISHIFT(IOR(ISHIFT(IOR(ISHIFT(ICHARF(CTM4(4:4)),8),
+     +                                            ICHARF(CTM4(3:3))),8),
+     +                                            ICHARF(CTM4(2:2))),8),
+     +                                            ICHARF(CTM4(1:1)))-1
 C
 C Get the number of points to be read from the rim file.
 C
@@ -376,10 +381,10 @@ C
               RETURN
             END IF
 C
-            NPTS=IOR(ISHIFT(IOR(ISHIFT(IOR(ISHIFT(ICHAR(CTM4(4:4)),8),
-     +                                            ICHAR(CTM4(3:3))),8),
-     +                                            ICHAR(CTM4(2:2))),8),
-     +                                            ICHAR(CTM4(1:1)))
+            NPTS=IOR(ISHIFT(IOR(ISHIFT(IOR(ISHIFT(ICHARF(CTM4(4:4)),8),
+     +                                            ICHARF(CTM4(3:3))),8),
+     +                                            ICHARF(CTM4(2:2))),8),
+     +                                            ICHARF(CTM4(1:1)))
 C
 C If the number of points to be read is non-zero (for some reason, it
 C *can* happen that the number is zero), read the points.
@@ -411,10 +416,10 @@ C
                 QLON=RLON
 C
                 RLON=.000001D0*DBLE(IOR(ISHIFT(
-     +               IOR(ISHIFT(IOR(ISHIFT(ICHAR(CTM4(4:4)),8),
-     +                                     ICHAR(CTM4(3:3))),8),
-     +                                     ICHAR(CTM4(2:2))),8),
-     +                                     ICHAR(CTM4(1:1))))
+     +               IOR(ISHIFT(IOR(ISHIFT(ICHARF(CTM4(4:4)),8),
+     +                                     ICHARF(CTM4(3:3))),8),
+     +                                     ICHARF(CTM4(2:2))),8),
+     +                                     ICHARF(CTM4(1:1))))
 C
 C Read a latitude.
 C
@@ -428,10 +433,10 @@ C
                 QLAT=RLAT
 C
                 RLAT=.000001D0*DBLE(IOR(ISHIFT(
-     +               IOR(ISHIFT(IOR(ISHIFT(ICHAR(CTM4(4:4)),8),
-     +                                     ICHAR(CTM4(3:3))),8),
-     +                                     ICHAR(CTM4(2:2))),8),
-     +                                     ICHAR(CTM4(1:1))))
+     +               IOR(ISHIFT(IOR(ISHIFT(ICHARF(CTM4(4:4)),8),
+     +                                     ICHARF(CTM4(3:3))),8),
+     +                                     ICHARF(CTM4(2:2))),8),
+     +                                     ICHARF(CTM4(1:1))))
 C
 C If we had not yet seen the first point of the polygon (that is to
 C say, if IFLG is zero), this is it; save its longitude and latitude
