@@ -295,6 +295,8 @@ NhlErrorTypes vinth2p_ecmwf_W
       missing = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis;
       if(not_double) {
         out_missing.floatval = (float)missing.doubleval;
+      } else {
+        out_missing= missing;
       }
     }
     
