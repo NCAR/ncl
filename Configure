@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.10 1995-06-26 19:12:55 boote Exp $
+#      $Id: Configure,v 1.11 1997-05-05 21:32:42 boote Exp $
 #
 #########################################################################
 #									#
@@ -24,7 +24,7 @@
 onintr cleanup
 
 set shell = $SHELL
-if ($shell:t != "csh") then
+if (($shell:t != "csh") && ($shell:t != "tcsh")) then
 	echo "Current shell must be csh."
 	exit 1
 endif
