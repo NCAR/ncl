@@ -1,5 +1,5 @@
 C
-C $Id: basic01f.f,v 1.6 1995-04-07 10:53:40 boote Exp $
+C $Id: basic01f.f,v 1.7 1995-06-14 15:08:47 stautler Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -22,7 +22,7 @@ C                       plot using mostly defaults.  Note: no data is
 C                       used in this example, so the output appears
 C                       only as a bounding box with tickmarks.
 C 
-C                       The mininum set of steps needed for creating
+C                       The minimum set of steps needed for creating
 C                       any plot involve the following:
 C
 C                       1. Initialize the graphics libraries
@@ -47,7 +47,7 @@ C ##########
 C Initialize the graphics libraries and create a resource list that
 C is normally used to assign name/value pairs within objects.  Then
 C clear (empty) this list, and create an application object.  This
-C object manages multiple resource databases used by seperate objects.  
+C object manages multiple resource databases used by separate objects.  
 C
 C The first argument, appid, is a variable that identifies the object.
 C The second argument, '"basic01"', sets the name of the object being

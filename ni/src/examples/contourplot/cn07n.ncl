@@ -95,7 +95,7 @@ draw(con1)
 frame(wks)
 
 ;
-; Loop on remaing time steps
+; Loop on remaining time steps
 ;
 do i = 1, dimsizes(a->frtime) - 1
     setvalues field1

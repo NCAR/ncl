@@ -1,5 +1,5 @@
 C
-C      $Id: xy06f.f,v 1.6 1995-04-27 17:34:45 haley Exp $
+C      $Id: xy06f.f,v 1.7 1995-06-14 15:09:17 stautler Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -301,7 +301,7 @@ C
  38            format('Station ',a3,' not in netCDF file for hour ',i2)
                call NhlFPError('WARNING',1000,error_msg)
                write(error_msg,39)special_value
- 39            format('Will substitue missing value = ', f7.1)
+ 39            format('Will substitute missing value = ', f7.1)
                call NhlFPError('WARNING',1000,error_msg)
             endif
          end do

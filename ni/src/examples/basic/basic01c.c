@@ -1,5 +1,5 @@
 /*
- * $Id: basic01c.c,v 1.4 1995-04-07 10:53:39 boote Exp $
+ * $Id: basic01c.c,v 1.5 1995-06-14 15:08:46 stautler Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -22,7 +22,7 @@
 *                       used in this example, so the output appears
 *                       only as a bounding box with tickmarks.
 * 
-*                       The mininum set of steps needed for creating
+*                       The minimum set of steps needed for creating
 *                       any plot involve the following:
 *
 *                       1. Initialize the graphics libraries
@@ -51,7 +51,7 @@ main()
  * Initialize the graphics libraries and create a resource list that
  * is normally used to assign name/value pairs within objects.  Then
  * clear (empty) this list, and create an application object.  This
- * object manages multiple resource databases used by seperate objects.  
+ * object manages multiple resource databases used by separate objects.  
  *
  * The first argument, "&appid", is a variable that identifies the object.
  * The second argument, "basic01", sets the name of the object being created.

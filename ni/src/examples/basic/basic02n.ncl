@@ -1,4 +1,4 @@
-; $Id: basic02n.ncl,v 1.6 1995-04-07 10:53:43 boote Exp $
+; $Id: basic02n.ncl,v 1.7 1995-06-14 15:08:51 stautler Exp $
 ;
 ; The first frame in this example demonstrates how to set the view port 
 ; for a contour plot.
@@ -30,7 +30,7 @@ wks = create "wks" xWorkstationClass defaultapp
 ; output window.  The values of these resources are specified in 
 ; Normalized Device Coordinates (NDCs).  In this two-dimensional coordinate 
 ; system (0,0) specifies the lower-left corner and (1,1) specifies the 
-; uper-right corner of a plot.
+; upper-right corner of a plot.
 
 con1 = create "con1" contourPlotClass wks 
 	"vpXF"       : 0.05   ;The left edge of the viewport bounding box
@@ -64,7 +64,7 @@ draw(con1)
 ; viewport resources so that the next plot does not overwrite the first
 ; one.  The setvalues expression is used to set resources after an object
 ; has already been created.  The first argument, "con1", in the setvalues
-; expression specifes an object id of a plot that was generated earlier
+; expression specifies an object id of a plot that was generated earlier
 ; with the create call.  This is then followed by a list of resource value
 ; pairs that apply to the object.
 

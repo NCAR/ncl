@@ -49,7 +49,7 @@ main()
 	NhlCreate(&workid,"x",NhlxWorkstationClass,NhlDEFAULT_APP,0);
 
 	/*
-	 * Create a TextItem.  I am not programatically setting any of
+	 * Create a TextItem.  I am not programmatically setting any of
 	 * the TextItem resources, so the Resource Database made up from
 	 * the resource files read-in by the "ap01" App object is specifying
 	 * all the attributes to the TextItem.

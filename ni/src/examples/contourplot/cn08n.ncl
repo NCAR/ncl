@@ -48,7 +48,7 @@ else
 end if
 
 ;
-; Set up intial scalar field with longitude of
+; Set up initial scalar field with longitude of
 ; temperature data. Data is also converted to 
 ; Degrees F from Degrees K before being assigned to 
 ; sfDataArray resource

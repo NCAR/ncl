@@ -1,5 +1,5 @@
 /*
- * $Id: basic04c.c,v 1.4 1995-04-07 10:53:47 boote Exp $
+ * $Id: basic04c.c,v 1.5 1995-06-14 15:08:54 stautler Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -56,7 +56,7 @@ main ()
  * Initialize the graphics libraries and create a resource list that
  * is normally used to assign name/value pairs within objects.  Then
  * clear (empty) this list, and create an application object.  This
- * object manages multiple resource databases used by seperate objects.
+ * object manages multiple resource databases used by separate objects.
  */
         NhlInitialize();
         rlist = NhlRLCreate(NhlSETRL);

@@ -1,5 +1,5 @@
 /*
- * $Id: basic02c.c,v 1.4 1995-04-07 10:53:41 boote Exp $
+ * $Id: basic02c.c,v 1.5 1995-06-14 15:08:49 stautler Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -41,7 +41,7 @@ main()
  * Initialize the graphics libraries and create a resource list that
  * is normally used to assign name/value pairs within objects.  Then
  * clear (empty) this list, and create an application object.  This
- * object manages multiple resource databases used by seperate objects.
+ * object manages multiple resource databases used by separate objects.
  */
         NhlInitialize();
         rlist = NhlRLCreate(NhlSETRL);
@@ -69,7 +69,7 @@ main()
  * output window.  The values of these resources are specified in 
  * Normalized Device Coordinates (NDCs).  In this two-dimensional coordinate 
  * system (0,0) specifies the lower-left corner and (1,1) specifies the 
- * uper-right corner of a plot.
+ * upper-right corner of a plot.
  */
         NhlRLClear(rlist);
 	NhlRLSetFloat(rlist,"vpXF",0.05); 
@@ -107,7 +107,7 @@ main()
  * viewport resources so that the next plot does not overwrite the first
  * one.  The setvalues expression is used to set resources after an object
  * has already been created.  The first argument, "con1", in the setvalues
- * expression specifes an object id of a plot that was generated earlier
+ * expression specifies an object id of a plot that was generated earlier
  * with the create call.  This is then followed by a list of resource value
  * pairs that apply to the object.
  */

@@ -38,7 +38,7 @@ file1 = addfile(ncargpath("data") + "/cdf/cn10n.cdf","r")
 ;
 cmap = new( (/26, 3/), float)
 ;
-;  Colors for countour fill areas varying from blue to red.
+;  Colors for contour fill areas varying from blue to red.
 ;
 cmap( 0,:) = (/1.00, 1.00, 1.00/)
 cmap( 1,:) = (/0.00, 0.15, 1.00/)

@@ -1,5 +1,5 @@
 /*
- *      $Id: cn02c.c,v 1.3 1995-04-07 10:53:55 boote Exp $
+ *      $Id: cn02c.c,v 1.4 1995-06-14 15:09:07 stautler Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -127,7 +127,7 @@ main(int argc, char *argv[])
  * In the ContourPlot object, many resources that apply to the lines 
  * representing the contour levels and the fill areas between the levels
  * have both a scalar and an array form. You control which applies by 
- * setting an associated boolean flag, indentified by the prefix "Mono".
+ * setting an associated boolean flag, identified by the prefix "Mono".
  * As an illustration, set NhlNcnMonoLineDashPattern and NhlNcnMonoLineColor
  * false to use a different line dash pattern and line color at each level.
  * At the same time set the line thickness of all lines to twice the

@@ -1,10 +1,10 @@
-; $Id: basic01n.ncl,v 1.6 1995-04-07 10:53:41 boote Exp $
+; $Id: basic01n.ncl,v 1.7 1995-06-14 15:08:48 stautler Exp $
 ;
 ; This example demonstrates how to draw a contour plot using mostly
 ; defaults.  Note: no data is used in this example, so the output appears
 ; only as a bounding box with tickmarks.
 ; 
-; The mininum set of steps needed for creating any plot involve the following:
+; The minimum set of steps needed for creating any plot involve the following:
 ;
 ;   1. Choose the type of output 
 ;   2. Create a plot object

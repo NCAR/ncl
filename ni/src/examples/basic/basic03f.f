@@ -1,5 +1,5 @@
 C
-C $Id: basic03f.f,v 1.6 1995-04-07 10:53:45 boote Exp $
+C $Id: basic03f.f,v 1.7 1995-06-14 15:08:53 stautler Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -47,7 +47,7 @@ C
 C Initialize the graphics libraries and create a resource list that
 C is normally used to assign name/value pairs within objects.  Then
 C clear (empty) this list, and create an application object.  This
-C object manages multiple resource databases used by seperate objects.
+C object manages multiple resource databases used by separate objects.
 C
       call NhlFInitialize
       call NhlFRLCreate(rlist,'SETRL')

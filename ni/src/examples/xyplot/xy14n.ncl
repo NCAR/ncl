@@ -1,5 +1,5 @@
 ;
-;      $Id: xy14n.ncl,v 1.3 1995-05-22 14:54:27 haley Exp $
+;      $Id: xy14n.ncl,v 1.4 1995-06-14 15:09:18 stautler Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -32,7 +32,7 @@ begin
 ; would probably be read in, either directly or as part of
 ; a data file like a netCDF or HDF file.
 ;
-; The temperature data is hourly data in degrees Celcius and
+; The temperature data is hourly data in degrees Celsius and
 ; the rainfall data is hourly data in millimeters.
 ;
 

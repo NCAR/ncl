@@ -1,5 +1,5 @@
 C
-C $Id: basic02f.f,v 1.6 1995-04-07 10:53:42 boote Exp $
+C $Id: basic02f.f,v 1.7 1995-06-14 15:08:50 stautler Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -38,7 +38,7 @@ C
 C Initialize the graphics libraries and create a resource list that
 C is normally used to assign name/value pairs within objects.  Then
 C clear (empty) this list, and create an application object.  This
-C object manages multiple resource databases used by seperate objects.
+C object manages multiple resource databases used by separate objects.
 C
       call NhlFInitialize
       call NhlFRLCreate(rlist,'SETRL')
@@ -65,7 +65,7 @@ C these four resources determines where the plot will display in the
 C output window.  The values of these resources are specified in 
 C Normalized Device Coordinates (NDCs).  In this two-dimensional
 C coordinate system (0,0) specifies the lower-left corner and (1,1)
-C specifies the uper-right corner of a plot.
+C specifies the upper-right corner of a plot.
 
       call NhlFRLClear(rlist)
       call NhlFRLSetFloat(rlist,"vpXF",0.05,ierr) 
@@ -100,7 +100,7 @@ C To add another plot to the same frame, we first need to reset the
 C viewport resources so that the next plot does not overwrite the first
 C one.  The setvalues expression is used to set resources after an object
 C has already been created.  The first argument, "con1", in the setvalues
-C expression specifes an object id of a plot that was generated earlier
+C expression specifies an object id of a plot that was generated earlier
 C with the create call.  This is then followed by a list of resource
 C value pairs that apply to the object.
 C
