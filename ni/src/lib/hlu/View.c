@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.31 1999-04-05 20:48:16 dbrown Exp $
+ *      $Id: View.c,v 1.32 1999-08-14 01:25:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -355,6 +355,13 @@ static NhlErrorTypes	ViewSetValues
 	NhlSegTransList	steptrans;
 	NhlErrorTypes	ret = NhlNOERROR;
 
+	if (_NhlArgIsSet(args,num_args,NhlNvpOn) && 
+	    newl->view.annomanager_id > NhlNULLOBJID) {
+		NhlVASetValues(newl->view.annomanager_id,
+			       "amOn",newl->view.on,
+			       NULL);
+	}
+		
 	if((newl->view.x != oldl->view.x) ||
 	   (newl->view.y != oldl->view.y) ||
 	   (newl->view.width != oldl->view.width) ||

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.c,v 1.19 1998-07-15 00:40:48 dbrown Exp $
+ *      $Id: VectorField.c,v 1.20 1999-08-14 01:25:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3272,6 +3272,12 @@ VectorFieldInitialize
 		vfp->x_el_count = vfp->u_arr->len_dimensions[1];
 		vfp->y_el_count = vfp->u_arr->len_dimensions[0];
 	}
+	if (vfp->x_el_count < 2 || vfp->y_el_count < 2) {
+		e_text = "%s: Insufficient number of elements in %s, %s or %s",
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  NhlNvfDataArray,NhlNvfUDataArray,NhlNvfVDataArray);
+		return NhlFATAL;
+	}
         
         if (vfp->x_arr) {
                 NrmValue from, to;
@@ -3588,16 +3594,20 @@ VectorFieldSetValues
         context = _NhlCreateConvertContext(new);
 	if (vfp->d_arr != ovfp->d_arr) {
                 NhlBoolean reset = False;
-		if (! vfp->d_arr && ! (vfp->x_arr && vfp->y_arr)) {
-                        e_text = 
+		if (! vfp->d_arr) {
+			if (! (vfp->x_arr && vfp->y_arr)) {
+				e_text = 
 	    "%s: the %s resource cannot be set NULL, restoring previous value";
-                        NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-                                  entry_name,NhlNvfDataArray);
-                        reset = True;
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+					  entry_name,NhlNvfDataArray);
+				reset = True;
+			}
 		}
-		else if (vfp->d_arr->num_dimensions != 3) {
-			e_text =
-            "%s: invalid number of dimensions in %s, restoring previous value";
+		else if (vfp->d_arr->num_dimensions != 3 ||
+			 vfp->d_arr->len_dimensions[1] < 2 ||
+			 vfp->d_arr->len_dimensions[2] < 2) {
+			e_text = 
+			     "%s: invalid %s value: restoring previous value";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 				  entry_name,NhlNvfDataArray);
                         reset = True;
@@ -3663,6 +3673,15 @@ VectorFieldSetValues
                      vfp->v_arr->len_dimensions[1])) ) {
 			e_text = 
      "%s: dimensions of %s and %s are inconsistent, restoring previous values";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNvfUDataArray,NhlNvfVDataArray);
+                        reset = True;
+		}
+		if (! reset &&
+                    (vfp->u_arr->len_dimensions[0] < 2 ||
+		     vfp->u_arr->len_dimensions[1] < 2)) {
+			e_text = 
+			   "%s: Insufficient number of elements in %s and %s";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNvfUDataArray,NhlNvfVDataArray);
                         reset = True;

@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.59 1999-04-19 23:28:50 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.60 1999-08-14 01:25:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1286,6 +1286,24 @@ static NhlErrorTypes PlotManagerSetValues
 		
 	return ret;
 }
+static NhlAnnoRec *CopyAnnoList
+(
+NhlAnnoRec *list
+)
+{
+	NhlAnnoRec *anlp,*to_anlp,**to_list;
+
+	if (! list)
+		return NULL;
+
+	to_list = &to_anlp;
+	for (anlp = list; anlp; anlp = anlp->next) {
+		to_anlp = NhlMalloc(sizeof(NhlAnnoRec));
+		memcpy(to_anlp,anlp,sizeof(NhlAnnoRec));
+		to_anlp = to_anlp->next;
+	}
+	return *to_list;
+}
 
 /*
  * Function:	PlotManagerGetValues
@@ -1380,6 +1398,10 @@ static NhlErrorTypes	PlotManagerGetValues
 				memcpy((char*)pm_recs[j],
 				       (char*)ovp->pm_recs[j],
 				       sizeof(NhlpmRec));
+				/*
+				pm_recs[j]->anno_list = CopyAnnoList
+					(ovp->pm_recs[j]->anno_list);
+				*/
 			}
 			
 			ga = NhlCreateGenArray((NhlPointer)pm_recs,
@@ -1396,55 +1418,65 @@ static NhlErrorTypes	PlotManagerGetValues
 			ga->my_data = True;
 			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
 		}
-		else if (args[i].quark == Qanno_views && ovp->anno_count > 0) {
+		else if (args[i].quark == Qanno_views) {
 
 			count = ovp->anno_count;
-			ids = (int *) NhlMalloc(count * sizeof(int));
+			if (count) {
+				ids = (int *) NhlMalloc(count * sizeof(int));
 
-			if (ids == NULL) {
-				e_text = "%s: dynamic memory allocation error";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return NhlFATAL;
-			}
-			memcpy(ids,ovp->view_ids,count * sizeof(int));
+				if (ids == NULL) {
+					e_text = 
+					 "%s: dynamic memory allocation error";
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
+						  e_text,entry_name);
+					return NhlFATAL;
+				}
+				memcpy(ids,ovp->view_ids,count * sizeof(int));
 
-			if ((ga = NhlCreateGenArray((NhlPointer)ids,
-						    NhlTInteger,sizeof(int),
-						    1,&count)) 
-			    == NULL) {
-				e_text = "%s: error creating %s GenArray";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name,NhlNpmAnnoViews);
-				return NhlFATAL;
+				if ((ga = NhlCreateGenArray
+				     ((NhlPointer)ids,NhlTInteger,sizeof(int),
+				      1,&count)) == NULL) {
+					e_text = 
+					     "%s: error creating %s GenArray";
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
+						  e_text,entry_name,
+						  NhlNpmAnnoViews);
+					return NhlFATAL;
+				}
+				ga->my_data = True;
 			}
-			ga->my_data = True;
-			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
+			*((NhlGenArray *)(args[i].value.ptrval)) = 
+				count ? ga : NULL;
+
 		}
-		else if (args[i].quark == Qannomanagers &&
-			 ovp->anno_count > 0){
+		else if (args[i].quark == Qannomanagers) {
 			count = ovp->anno_count;
-			ids = (int *) NhlMalloc(count * sizeof(int));
+			if (count) {
+				ids = (int *) NhlMalloc(count * sizeof(int));
 
-			if (ids == NULL) {
-				e_text = "%s: dynamic memory allocation error";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return NhlFATAL;
-			}
-			memcpy(ids,ovp->anno_ids,count * sizeof(int));
+				if (ids == NULL) {
+					e_text = 
+					"%s: dynamic memory allocation error";
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
+						  e_text,entry_name);
+					return NhlFATAL;
+				}
+				memcpy(ids,ovp->anno_ids,count * sizeof(int));
 
-			if ((ga = NhlCreateGenArray((NhlPointer)ids,
-						    NhlTInteger,sizeof(int),
-						    1,&count)) 
-			    == NULL) {
-				e_text = "%s: error creating %s GenArray";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name,NhlNpmAnnoViews);
-				return NhlFATAL;
+				if ((ga = NhlCreateGenArray
+				     ((NhlPointer)ids,NhlTInteger,sizeof(int),
+				      1,&count)) == NULL) {
+					e_text = 
+					     "%s: error creating %s GenArray";
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
+						  e_text,entry_name,
+						  NhlNpmAnnoManagers);
+					return NhlFATAL;
+				}
+				ga->my_data = True;
 			}
-			ga->my_data = True;
-			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
+			*((NhlGenArray *)(args[i].value.ptrval)) = 
+				count ? ga : NULL;
 		}
 	}
 	return(NhlNOERROR);
@@ -2068,6 +2100,11 @@ static NhlAnnoRec *RecordAnnotation
 	char			*entry_name = "PlotManagerInitialize";
 	NhlPlotManagerLayerPart	*ovp = &(ovl->plotmanager);
 	NhlAnnoRec		*anno_rec, *anlp;
+	NhlTransformLayerPart	*tfp = &(ovl->trans);
+	NhlPlotManagerLayer	base_pm = NULL;
+
+	if (tfp->overlay_status == _tfCurrentOverlayMember)
+		base_pm = (NhlPlotManagerLayer) tfp->overlay_object;
 
 	if (status == NhlNOCREATE) {
 		e_text = "%s: internal error calling RecordAnnotation";
@@ -2116,6 +2153,20 @@ static NhlAnnoRec *RecordAnnotation
 		anlp = anlp->next;
 	}
 	anlp->next = anno_rec;
+
+	if (base_pm) {
+		NhlpmRec **pm_recs = base_pm->plotmanager.pm_recs;
+		int i;
+
+		for (i = 0; i < base_pm->plotmanager.overlay_count; i++) {
+			if (pm_recs[i]->ov_obj == (NhlLayer)ovl) {
+				pm_recs[i]->anno_list = 
+					ovp->pm_recs[0]->anno_list;
+				break;
+			}
+		}
+	}
+
 	return anno_rec;
 
 }
@@ -3614,20 +3665,28 @@ UpdateAnnoData
 		if (anlp->type == ovEXTERNAL) {
 			NhlAnnoManagerLayer aml = (NhlAnnoManagerLayer) 
 				_NhlGetLayer(anlp->anno_id);
-			NhlAnnoManagerLayerPart *amp = &aml->annomanager;
-			on = amp->on;
-			anlp->plot_id = amp->view_id;
-			anlp->resize_notify = amp->resize_notify;
-			anlp->zone = amp->zone;
-			anlp->side = amp->side;
-			anlp->just = amp->just;
-			anlp->ortho_pos = amp->ortho_pos;
-			anlp->para_pos = amp->para_pos;
-			anlp->track_data = amp->track_data;
-			anlp->data_x = amp->data_x;
-			anlp->data_y = amp->data_y;
-			anlp->status = on ? NhlALWAYS : NhlNEVER;
-                        anlp->viewable = on;
+			NhlAnnoManagerLayerPart *amp;
+			if (! aml) {
+				anlp->plot_id = NhlNULLOBJID;
+				anlp->viewable = False;
+				anlp->status = NhlNEVER;
+			}
+			else {
+				amp = &aml->annomanager;
+				on = amp->on;
+				anlp->plot_id = amp->view_id;
+				anlp->resize_notify = amp->resize_notify;
+				anlp->zone = amp->zone;
+				anlp->side = amp->side;
+				anlp->just = amp->just;
+				anlp->ortho_pos = amp->ortho_pos;
+				anlp->para_pos = amp->para_pos;
+				anlp->track_data = amp->track_data;
+				anlp->data_x = amp->data_x;
+				anlp->data_y = amp->data_y;
+				anlp->status = on ? NhlALWAYS : NhlNEVER;
+				anlp->viewable = on;
+			}
 		}
 		if (anlp->viewable && anlp->zone > *max_zone)
 			*max_zone = anlp->zone;
@@ -3722,7 +3781,13 @@ ManageTickMarks
 						    sargs,nargs);
 		}
 	}
-	if ((trobj = tfp->overlay_trans_obj) == NULL) {
+	if (tfp->do_ndc_overlay && ovp->display_tickmarks == NhlALWAYS)
+	       trobj = 
+		    ((NhlTransformLayer)ovnew->base.parent)->trans.trans_obj;
+	else
+		trobj = tfp->overlay_trans_obj;
+
+	if (trobj == NULL) {
 		e_text = "%s: No trans obj found for TickMark object";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(NhlFATAL);
@@ -6242,8 +6307,13 @@ NhlAnnoRec *UnregisterAnnotation
 	NhlAnnoRec		*anrp = NULL;
 	int			i;
 	int			view_id = NhlNULLOBJID - 1;
+	NhlTransformLayerPart	*tfp = &((NhlPlotManagerLayer)overlay)->trans;
+	NhlPlotManagerLayer	base_pm = NULL;
 
 	if (entry_name == NULL) entry_name = "UnregisterAnnotation";
+
+	if (tfp->overlay_status == _tfCurrentOverlayMember)
+		base_pm = (NhlPlotManagerLayer) tfp->overlay_object;
 
 	ovp = &((NhlPlotManagerLayer)overlay)->plotmanager;
 
@@ -6261,6 +6331,18 @@ NhlAnnoRec *UnregisterAnnotation
 		}
 		if (anrp)
 			break;
+	}
+	if (base_pm) {
+		NhlpmRec **pm_recs = base_pm->plotmanager.pm_recs;
+		int i;
+
+		for (i = 0; i < base_pm->plotmanager.overlay_count; i++) {
+			if (pm_recs[i]->ov_obj == overlay) {
+				pm_recs[i]->anno_list = 
+					ovp->pm_recs[0]->anno_list;
+				break;
+			}
+		}
 	}
 
 	if (! annomanager->base.being_destroyed)

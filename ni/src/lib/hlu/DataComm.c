@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.44 1997-08-14 16:29:50 dbrown Exp $
+ *      $Id: DataComm.c,v 1.45 1999-08-14 01:25:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1572,6 +1572,9 @@ DataSpecDestroy
 	NhlDataSpecLayer	dsl = (NhlDataSpecLayer)l;
 
 	if(!dsl->dataspec.destroying){
+		if (! dsl->base.parent)
+			return NhlNOERROR;
+
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 "%s:Destroy called from somewhere other than parent! Destroying parent to keep integrity",func);
 		return NhlDestroy(dsl->base.parent->base.id);

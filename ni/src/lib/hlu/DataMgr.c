@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgr.c,v 1.14 1997-02-24 22:12:22 boote Exp $
+ *      $Id: DataMgr.c,v 1.15 1999-08-14 01:25:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -197,7 +197,7 @@ FreeHandles
  *
  * In Args:	
  *		_NhlDHandle	list,	list of handles to free
- *		int		ditemid	dataitem parent of mgr
+ *		NhlLayer	ditem	dataitem parent of mgr
  *
  * Out Args:	
  *
@@ -210,23 +210,29 @@ ReleaseHandles
 #if	NhlNeedProto
 (
 	_NhlDHandle	list,	/* list of handles to free	*/
-	int		ditemid	/* dataitem parent of mgr	*/
+	NhlLayer	ditem	/* dataitem parent of mgr	*/
 )
 #else
 (list,ditemid)
 	_NhlDHandle	list;		/* list of handles to free	*/
-	int		ditemid;	/* list of handles to free	*/
+	NhlLayer	ditem;		/* dataitem parent of mgr	*/
 #endif
 {
+	if (! ditem)
+		return;
 	/*
 	 * If null terminate recursion
 	 */
+
 	if(list == NULL)
 		return;
 
-	ReleaseHandles(list->next,ditemid);
-	(void)NhlRemoveData(list->datacommid,NrmQuarkToString(list->res_name),
-								ditemid);
+	ReleaseHandles(list->next,ditem);
+	if (_NhlGetLayer(list->datacommid)) {
+		(void)NhlRemoveData(list->datacommid,
+				    NrmQuarkToString(list->res_name),
+				    ditem->base.id);
+	}
 
 	return;
 }
@@ -303,7 +309,7 @@ DataMgrDestroy
 	 * free all the handles, but just in case FreeHandles free's anything
 	 * still in the list.
 	 */
-	ReleaseHandles(mgr->datamgr.connection_list,mgr->base.parent->base.id);
+	ReleaseHandles(mgr->datamgr.connection_list,mgr->base.parent);
 	FreeHandles(mgr->datamgr.connection_list);
 	FreeCache(mgr->datamgr.data_list);
 

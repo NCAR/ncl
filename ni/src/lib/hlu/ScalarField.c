@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.32 1998-07-15 00:40:45 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.33 1999-08-14 01:25:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2317,6 +2317,13 @@ ScalarFieldInitialize
 	sfp->changed |= _NhlsfDARR_CHANGED;
 	sfp->x_el_count = sfp->d_arr->len_dimensions[1];
 	sfp->y_el_count = sfp->d_arr->len_dimensions[0];
+
+	if (sfp->x_el_count < 2 || sfp->y_el_count < 2) {
+		e_text = "%s: Insufficient number of elements in %s",
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  NhlNsfDataArray);
+		return NhlFATAL;
+	}
         
         if (sfp->x_arr) {
                 NrmValue from, to;
@@ -2590,7 +2597,9 @@ ScalarFieldSetValues
 	sfp->changed = 0;
         context = _NhlCreateConvertContext(new);
 	if (sfp->d_arr != osfp->d_arr) {
-		if (sfp->d_arr == NULL || sfp->d_arr->num_dimensions != 2) {
+		if (sfp->d_arr == NULL || sfp->d_arr->num_dimensions != 2 ||
+			sfp->d_arr->len_dimensions[1] < 2 ||
+			sfp->d_arr->len_dimensions[0] < 2) {
 			e_text = 
 			   "%s: invalid %s value: restoring previous value";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,

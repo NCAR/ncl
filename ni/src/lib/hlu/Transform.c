@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.44 1999-04-02 23:51:17 dbrown Exp $
+ *      $Id: Transform.c,v 1.45 1999-08-14 01:25:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1783,18 +1783,19 @@ _NhlTopLevelView
 	int	pid;
 #endif
 {
-	int base_plot_id;
+	int top_id,anno_base_id;
 	
 	if (_NhlIsAnnotation(pid)) {
-		base_plot_id = _NhlAnnotationBase(pid);
-		while (_NhlIsAnnotation(base_plot_id))
-			base_plot_id = _NhlAnnotationBase(base_plot_id);
-		return base_plot_id;
+		anno_base_id = _NhlAnnotationBase(pid);
+		while (_NhlIsAnnotation(anno_base_id))
+			anno_base_id = _NhlAnnotationBase(anno_base_id);
+		if (anno_base_id > NhlNULLOBJID)
+			pid = anno_base_id;
 	}
 
-	base_plot_id = _NhlOverlayBase(pid);
-	if (base_plot_id > NhlNULLOBJID)
-		return base_plot_id;
+	top_id = _NhlOverlayBase(pid);
+	if (top_id > NhlNULLOBJID)
+		return top_id;
 	else if (_NhlGetLayer(pid))
 		return pid;
 	else 

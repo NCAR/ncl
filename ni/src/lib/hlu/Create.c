@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.38 1999-03-27 00:44:47 dbrown Exp $
+ *      $Id: Create.c,v 1.39 1999-08-14 01:25:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -268,6 +268,39 @@ CallInitialize
 
 }
 
+static void CleanUp
+(
+	NhlLayer l
+)
+{
+	_NhlAllChildNode *child;
+
+	if (! l)
+		return;
+	/*
+	 * get rid of the app destroy callback
+	 */
+
+	if (l->base.app_destroy) {
+		_NhlCBDelete(l->base.app_destroy);
+	}
+	/*
+	 * get rid of any children that have been successfully created
+	 */
+	for (child = l->base.all_children; child; child = child->next) {
+		NhlLayer cl = _NhlGetLayer(child->pid);
+		if (! cl) 
+			continue;
+		/*
+		 * don't want the child doing anything to the parent, since
+		 * it doesn't exist yet
+		 */
+		cl->base.parent = NULL;
+
+		NhlDestroy(child->pid);
+	}
+	return;
+}
 /*
  * Function:	_NhlCreate
  *
@@ -594,6 +627,7 @@ _NhlCreate
 	if(lret < NhlWARNING){
 		NhlPError(lret,NhlEUNKNOWN,
 				"Unable to initialize layer-Can't Create");
+		CleanUp(layer);
 		_NhlRemoveLayer(layer);
 		(void)NhlFree(layer);
 		*pid = lret;
