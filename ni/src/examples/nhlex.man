@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\"	$Id: nhlex.man,v 1.6 1995-01-17 23:20:38 haley Exp $
+.\"	$Id: nhlex.man,v 1.7 1995-01-25 22:09:46 haley Exp $
 .\"
 .\"######################################################################
 .\"#									#
@@ -47,7 +47,7 @@ execute properly.
 If the requested example creates an NCGM file, it will have the same
 name as the example, suffixed with ".ncgm". An option allows you to
 request that only the source code be copied to your directory, without
-copying the executable or executing the example.  Another option
+compiling or running the example.  Another option
 allows you to request that only the NCGM file be left in your
 directory and that all other files created by \fBnhlex\fP be deleted.
 The argument \fIname\fP may be selected from the lists that appear

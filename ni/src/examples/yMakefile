@@ -1,35 +1,33 @@
 #
-#      $Id: yMakefile,v 1.10 1995-01-19 22:51:52 boote Exp $
+#      $Id: yMakefile,v 1.11 1995-01-25 22:09:49 haley Exp $
 #
 #########################################################################
-#									#
-#			   Copyright (C)  1993				#
-#	     University Corporation for Atmospheric Research		#
-#			   All Rights Reserved				#
-#									#
+#                                                                       #
+#              Copyright (C)  1993                                      #
+#        University Corporation for Atmospheric Research                #
+#              All Rights Reserved                                      #
+#                                                                       #
 #########################################################################
 #
-#	File:		yMakefile
+#   File:       yMakefile
 #
-#	Author:		Jeff W. Boote
-#			National Center for Atmospheric Research
-#			PO 3000, Boulder, Colorado
+#   Author:     Jeff W. Boote
+#           National Center for Atmospheric Research
+#           PO 3000, Boulder, Colorado
 #
-#	Date:		Tue Apr 27 15:04:19 MDT 1993
+#   Date:       Tue Apr 27 15:04:19 MDT 1993
 #
-#	Description:	yMakefile for ncarg/ni/src/examples
+#   Description:    yMakefile for ncarg/ni/src/examples
 
 #define IHaveSubdirs
 
 SUBDIRS		= $(EXAMPLES)
-#
-# examples 3 and 4 do not work right now
-#
+
 EXAMPLES	= nhl01 nhl02 nhl03 nhl05 nhl06 nhl07 nhl08 nhl09 \
 		nhl10 nhl11 nhl12 nhl13 nhlf01 nhlf05 nhlf06 nhlf07 nhlf08 \
 		nhlf09 nhlf10 nhlf11 nhlf12 nhlf13
-SCRIPTS		= nhlex
-MANS		= nhlex.man
+SCRIPTS		= nhlex nhlex.new 
+MANS		= nhlex.man nhlex.new.man
 
 #ifdef	DEBUG
 DBFLAG	=	1
@@ -43,10 +41,10 @@ SCRIPT_VERBOSE	=	$(DBFLAG)
 InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
 CleanFilesTarget($(SCRIPTS))
 InstallManPages(nhlex,.man,$(MAN1PATH),$(MAN1_SECTION))
+InstallManPages(nhlex.new,.man,$(MAN1PATH),$(MAN1_SECTION))
 
 nhlex: nhlex.csh Makefile
 	@sed \
-	-e 's+SED_HLUUSRRESENVNAME+$(HLUUSRRESENVNAME)+' \
 	-e 's+SED_DEBUG+$(SCRIPT_DEBUG)+' \
 	-e 's+SED_VERBOSE+$(SCRIPT_VERBOSE)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
@@ -54,3 +52,13 @@ nhlex: nhlex.csh Makefile
 	-e 's+SED_LIBROOT+$(LIBROOT)+' \
 	-e 's+SED_EXAMPLES+$(EXAMPLES)+' \
 	< nhlex.csh > nhlex
+
+nhlex.new: nhlex.new.csh Makefile
+	@sed \
+	-e 's+SED_DEBUG+$(SCRIPT_DEBUG)+' \
+	-e 's+SED_VERBOSE+$(SCRIPT_VERBOSE)+' \
+	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
+	-e 's+SED_HLUDIR+$(HLUDIR)+' \
+	-e 's+SED_LIBROOT+$(LIBROOT)+' \
+	< nhlex.new.csh > nhlex.new
+
