@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.7 1995-06-16 20:56:50 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.8 1995-06-16 23:49:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -234,6 +234,7 @@ typedef struct _NhlContourPlotLayerPart {
 
 	NhlBoolean	dump_area_map;
 	int		amap_crange;
+	NhlGenArray	conpack_params;
 	NhlBoolean	update_req;
 	NhlBoolean	data_changed;
 

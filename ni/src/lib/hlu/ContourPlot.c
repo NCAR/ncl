@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.21 1995-06-16 20:56:44 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.22 1995-06-16 23:49:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -789,6 +789,10 @@ static NhlResource resources[] = {
 	{NhlNcnAreaMapCRange, NhlCcnAreaMapCRange,NhlTInteger,
 		 sizeof(int),Oset(amap_crange),
 		 NhlTImmediate,_NhlUSET((NhlPointer) 100000),0,NULL},
+	{NhlNcnConpackParams, NhlCcnConpackParams,NhlTStringGenArray,
+		 sizeof(NhlPointer),Oset(conpack_params),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
+		 (NhlFreeFunc)NhlFreeGenArray},
 	{NhlNcnDataChanged,NhlCcnDataChanged,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(data_changed),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
@@ -1609,6 +1613,45 @@ static NrmQuark	Qlgnd_level_flags = NrmNULLQUARK;
 static NrmQuark	Qlg_label_strings = NrmNULLQUARK;
 static NrmQuark	Qlb_label_strings = NrmNULLQUARK;
 
+
+
+typedef enum { 
+	cnInt,
+	cnFloat,
+	cnString 
+} _cnParamType;
+
+typedef struct _cnCp_Params {
+	NhlString	name;
+	_cnParamType	type;
+} cnCp_Params;
+
+static cnCp_Params Cp_Params[] = {
+{"HCL", cnFloat},
+{"HCS", cnFloat}, 
+{"HCF", cnInt}, 
+{"HLX", cnInt}, 
+{"HLY", cnInt}, 
+{"IWM", cnInt}, 
+{"PC1", cnFloat},
+{"PC2", cnFloat}, 
+{"PC3", cnFloat}, 
+{"PC4", cnFloat}, 
+{"PC5", cnFloat}, 
+{"PC6", cnFloat},
+{"PIC", cnInt}, 
+{"PIE", cnInt},
+{"PW1", cnFloat}, 
+{"PW2", cnFloat}, 
+{"PW3", cnFloat},
+{"PW4", cnFloat}, 
+{"RC1", cnFloat}, 
+{"RC2", cnFloat}, 
+{"RC3", cnFloat}, 
+{"RWC", cnInt}, 
+{"RWG", cnInt}, 
+{"RWM", cnInt},
+};
 
 static NhlString cnEmptyString = "";
 
@@ -3634,6 +3677,72 @@ static NhlErrorTypes ContourPlotPostDraw
 
 
 /*
+ * Function:	SetCpParams
+ *
+ * Description:	
+ *
+ * In Args:	layer	ContourPlot instance
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+static NhlErrorTypes SetCpParams
+#if	NhlNeedProto
+(NhlContourPlotLayer cnl,NhlString entry_name)
+#else
+(cnl,entry_name)
+        NhlContourPlotLayer cnl;
+	NhlString	entry_name;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
+	NhlString		*sp;
+	int			i,j;
+	char			param[4];
+	float			value;
+
+	if (cnp->conpack_params == NULL)
+		return NhlNOERROR;
+
+	sp = (NhlString *) cnp->conpack_params->data;
+
+	for (i = 0; i < cnp->conpack_params->num_elements; i++) {
+		NhlBoolean matched = False;
+		_cnParamType type;
+		if (sp[i] != NULL && sp[i][0] != '\0') {
+			value = 0.0;
+			sscanf(sp[i],"%3s:%f",&param[0],&value);
+			for (j = 0; j < NhlNumber(Cp_Params); j ++) {
+				if (! strcmp(Cp_Params[j].name,param)) {
+					matched = True;
+					type = Cp_Params[j].type;
+					break;
+				}
+			}
+			if (matched && type == cnInt) {
+				c_cpseti(param,(int) value);
+			}
+			else if (matched && type == cnFloat) {
+				c_cpsetr(param,value);
+			}
+			else {
+				char * e_text = 
+              "%s: %s is invalid Conpack param or cannot be from HLU library";
+				NhlPError(NhlWARNING,
+					  NhlEUNKNOWN,e_text,entry_name,param);
+				ret = MIN(ret,NhlWARNING);
+			}
+		}
+	}
+	return ret;
+}
+
+/*
  * Function:	cnDraw
  *
  * Description:	
@@ -3696,6 +3805,8 @@ static NhlErrorTypes cnDraw
 		return NhlFATAL;
 	}
 	cnp->wk_active = True;
+
+	SetCpParams(cnl,entry_name);
 
 	if (cnl->view.use_segments) {
 		switch (order) {
@@ -8664,6 +8775,22 @@ static NhlErrorTypes    ManageDynamicArrays
 	
 
 /*=======================================================================*/
+
+	if ((init && cnp->conpack_params != NULL) ||
+	    (cnp->conpack_params != ocnp->conpack_params)) {
+
+		if ((ga = 
+		     _NhlCopyGenArray(cnp->conpack_params,True)) == NULL) {
+			e_text = "%s: error copying gen array";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+		if (! init && ocnp->conpack_params != NULL) {
+			NhlFreeGenArray(ocnp->conpack_params);
+			ocnp->conpack_params = NULL;
+		}
+		cnp->conpack_params = ga;
+	}
 
 /*
  * Test for changes that require a new draw (when in segment mode)
