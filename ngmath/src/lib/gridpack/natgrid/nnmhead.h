@@ -18,7 +18,7 @@ double  **points, **joints, wbit,
         maxhoriz, aaa, bbb, ccc, det,
         work3[3][3], xx, sumx, sumy, sumz,
         sumx2, sumy2, sumxy, sumxz, sumyz,
-        asum, pi, piby2, piby32, rad2deg,
+        asum, nn_pi, piby2, piby32, rad2deg,
         bigtri[3][3], horilap_save, vertlap_save;
 
 double  magx = 1, magy = 1, magz = 1, magx_orig, magy_orig, magz_orig, 

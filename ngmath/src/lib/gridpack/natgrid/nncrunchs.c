@@ -329,7 +329,7 @@ data_limits:
    if (sdip OR igrad)
    {  
       piby2 = 2 * atan(1.0);
-      pi = piby2 * 2;
+      nn_pi = piby2 * 2;
       piby32 = 3 * piby2;
       rad2deg = 90 / piby2;
    }
@@ -436,7 +436,7 @@ float **MakeGrid(int nxi, int nyi, float *xi, float *yi)
                   if (surfn > 0) 
                      aspect = 0; 
                   else 
-                     aspect = pi;
+                     aspect = nn_pi;
                }
             }
             slope = atan(sqrt(SQ(surfe) + SQ(surfn)));

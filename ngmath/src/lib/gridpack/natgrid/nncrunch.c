@@ -37,7 +37,7 @@ void Gradient()
          xn = Surface();
          points[i0][3] = (xc - xe) / wbit;
          points[i0][4] = (xc - xn) / wbit;
-         asum /= pi; 
+         asum /= nn_pi; 
          points[i0][5] = 1 - sqrt(asum / 
             (asum + SQ(points[i0][2] - xc)));
       }
