@@ -1,8 +1,8 @@
 !
 ! Title resources
 !
-*xyPlot1*tiMainString:   Location of all Station IDs
-*xyPlot2*tiMainString:   Location of Station IDs over Mainland US
+*xyPlot1*tiMainString:   Location of all stations
+*xyPlot2*tiMainString:   Location of station over mainland US
 *mpPlot1*tiMainString:   Cylindrical Equidistant Projection
 *mpPlot2*tiMainString:   Lambert Conformal Conic Projection
 *xyPlot1*tiXAxisString:          longitude

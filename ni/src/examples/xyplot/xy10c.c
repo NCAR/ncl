@@ -1,5 +1,5 @@
 /*
-**      $Id: xy10c.c,v 1.1 1995-05-05 19:35:15 haley Exp $
+**      $Id: xy10c.c,v 1.2 1995-05-05 20:56:21 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -46,8 +46,8 @@ main()
  */
     int     appid, xworkid, xyid1, xyid2, mpid1, mpid2, dataid;
     int     rlist, i;
-	float   *lat, *lon;
-	float   special_value = -9999.;
+    float   *lat, *lon;
+    float   special_value = -9999.;
 /*
  * Declare variables for getting information from netCDF file.
  */
@@ -55,7 +55,7 @@ main()
     int     ndims, nvars, ngatts;
     long    rec_len;
     long    start[1], count[1];
-	char    filename[256], recname[50];
+    char    filename[256], recname[50];
     const   char *dir = _NGGetNCARGEnv("data");
 
     int NCGM=0;
@@ -95,48 +95,48 @@ main()
 /*
  * Open the netCDF file.
  */
-	sprintf( filename, "%s/cdf/%s", dir, file );
+    sprintf( filename, "%s/cdf/%s", dir, file );
 /*
  * Open the netCDF file.
  */
-	ncid = ncopen(filename,NC_NOWRITE);
+    ncid = ncopen(filename,NC_NOWRITE);
 /*
  * Get the record length and dimension name.
  */
-	ncinquire(ncid, &ndims, &nvars, &ngatts, &recid);
-	ncdiminq(ncid, recid, recname, &rec_len);
+    ncinquire(ncid, &ndims, &nvars, &ngatts, &recid);
+    ncdiminq(ncid, recid, recname, &rec_len);
 /*
  * Malloc space for lat/lon arrays.
  */
-	lat = (float *)malloc(sizeof(float)*rec_len);
-	lon = (float *)malloc(sizeof(float)*rec_len);
-	if (lat == NULL || lon == NULL ) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  "Unable to malloc space for lat/lon arrays");
-		exit(1);
-	}
+    lat = (float *)malloc(sizeof(float)*rec_len);
+    lon = (float *)malloc(sizeof(float)*rec_len);
+    if (lat == NULL || lon == NULL ) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,
+                  "Unable to malloc space for lat/lon arrays");
+        exit(1);
+    }
 /*
  * Get the ids of the lat/lon arrays.
  */
-	latid = ncvarid(ncid,"lat");
-	lonid = ncvarid(ncid,"lon");
+    latid = ncvarid(ncid,"lat");
+    lonid = ncvarid(ncid,"lon");
 /*
  * Get lat/lon data values.
  */
-	start[0] = 0; count[0] = rec_len;
-	ncvarget(ncid,latid,(long const *)start,(long const *)count,lat);
-	ncvarget(ncid,lonid,(long const *)start,(long const *)count,lon);
+    start[0] = 0; count[0] = rec_len;
+    ncvarget(ncid,latid,(long const *)start,(long const *)count,lat);
+    ncvarget(ncid,lonid,(long const *)start,(long const *)count,lon);
 /*
  * Close the netCDF file.
  */
-	ncclose(ncid);
+    ncclose(ncid);
 /*
  * Throw out values that may be incorrect.
  */ 
-	for( i = 0; i < rec_len; i++ ) {
-		if( lat[i] <  -90. || lat[i] >  90.) lat[i] = special_value;
-		if( lon[i] < -180. || lon[i] > 180.) lon[i] = special_value;
-	}
+    for( i = 0; i < rec_len; i++ ) {
+        if( lat[i] <  -90. || lat[i] >  90.) lat[i] = special_value;
+        if( lon[i] < -180. || lon[i] > 180.) lon[i] = special_value;
+    }
 /*
  * Define the Data object.
  */
@@ -191,16 +191,16 @@ main()
  * Overlay the first XyPlot object on the first MapPlot object.  This
  * will plot station ids over the world.
  */
-	NhlAddOverlay(mpid1,xyid1,-1);
-	NhlDraw(mpid1);
-	NhlFrame(xworkid);
+    NhlAddOverlay(mpid1,xyid1,-1);
+    NhlDraw(mpid1);
+    NhlFrame(xworkid);
 /*
  * Overlay the second XyPlot object on the second MapPlot object.  This
  * will plot station ids over mainland United States only.
  */
-	NhlAddOverlay(mpid2,xyid2,-1);
-	NhlDraw(mpid2);
-	NhlFrame(xworkid);
+    NhlAddOverlay(mpid2,xyid2,-1);
+    NhlDraw(mpid2);
+    NhlFrame(xworkid);
 /*
  * NhlDestroy destroys the given id and all of its children so
  * destroying "appid" will destroy "xworkid" which will also destroy
