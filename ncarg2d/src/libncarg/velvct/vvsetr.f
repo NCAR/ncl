@@ -1,5 +1,5 @@
 C
-C	$Id: vvsetr.f,v 1.7 1993-02-19 21:51:34 dbrown Exp $
+C	$Id: vvsetr.f,v 1.8 1993-02-24 01:24:57 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -223,8 +223,6 @@ C
          ILBL=INT(RVL)
       ELSE IF (CNM(1:3).EQ.'DPF'.OR. CNM(1:3).EQ.'dpf') THEN
          IDPF=INT(RVL)
-      ELSE IF (CNM(1:3).EQ.'MSG'.OR. CNM(1:3).EQ.'msg') THEN
-         IMSG=INT(RVL)
 C
 C arrow min, max
 C
@@ -270,8 +268,8 @@ C
          FZFY=RVL
       ELSE IF (CNM(1:3).EQ.'ZFP'.OR. CNM(1:3).EQ.'zfp') THEN
          IZFP=INT(RVL)
-      ELSE IF (CNM(1:3).EQ.'ZFP'.OR. CNM(1:3).EQ.'zfp') THEN
-         IZFP=INT(RVL)
+      ELSE IF (CNM(1:3).EQ.'ZFC'.OR. CNM(1:3).EQ.'zfc') THEN
+         IZFC=INT(RVL)
 C     
       ELSE IF (CNM(1:3).EQ.'LBS'.OR.CNM(1:3).EQ.'lbs') THEN
          FLBS=RVL

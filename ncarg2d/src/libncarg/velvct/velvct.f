@@ -1,5 +1,5 @@
 C
-C	$Id: velvct.f,v 1.6 1993-02-19 21:51:03 dbrown Exp $
+C	$Id: velvct.f,v 1.7 1993-02-24 01:24:51 dbrown Exp $
 C
       SUBROUTINE VELVCT (U,LU,V,LV,M,N,FLO,HI,NSET,LENGTH,ISPV,SPV)
 C
@@ -219,6 +219,16 @@ C IDM             - integer dummy variable
 C
       DATA IDM / 0 /
 C
+C Saved values of internal parameters (Note that these do not follow
+C the usually observed rule of using 3 characters or less for local
+C variables):
+C SVLC,SVHC,ISSET,SVRL,ISSVF,SUSV,SVSV,SVPS,ISVPO,ISLBL,ISDPF,
+C SAMN,SAMX,SLBS,ISXIN,ISYIN,ISMXP,SMXX
+C
+C The character variables must be declared:
+C
+      CHARACTER*(IPCHSZ) CSMNT, CSMXT
+C
 C This is an empirically derived factor for converting from the
 C WTSTR text size to PLCHHQ text
 C
@@ -230,6 +240,29 @@ C The following call is for gathering statistics on library use at ncar.
 C
 C
       CALL Q8QST4 ('CRAYLIB','VELVCT','VELVEC','VERSION  4')
+C
+C Save the values of all internal parameters that might be reset
+C
+      CALL VVGETR('VLC - Vector Low Cutoff Value', SVLC)
+      CALL VVGETR('VHC - Vector High Cutoff Value',SVHC)
+      CALL VVGETI('SET - Do SET Call Flag', ISSET)
+      CALL VVGETR('VRL - Maximum Vector Realized Length', SVRL)
+      CALL VVGETI('SVF - Special Value Flag', ISSVF)
+      CALL VVGETR('USV - U Array Special Value', SUSV)
+      CALL VVGETR('VSV - V Array Special Value', SVSV)
+      CALL VVGETR('VPS - Viewport Mode Setting', SVPS)
+      CALL VVGETI('VPO - Vector Position Method', ISVPO)
+      CALL VVGETI('LBL - Vector Labelling Flag', ISLBL)
+      CALL VVGETI('DPF - Label Normalization', ISDPF)
+      CALL VVGETR('AMN - Arrow Head Minimum Size', SAMN)
+      CALL VVGETR('AMX - Arrow Head Maximum Size', SAMX)
+      CALL VVGETR('LBS - Vector Label Text Size', SLBS)
+      CALL VVGETI('XIN - X Grid Increment', ISXIN)
+      CALL VVGETI('YIN - Y Grid Increment', ISYIN)
+      CALL VVGETC('MNT - Minimum Vector Text', CSMNT)
+      CALL VVGETC('MXT - Maximum Vector Text', CSMXT)
+      CALL VVGETI('MXP - Maximum Text Position Mode', ISMXP)
+      CALL VVGETR('MXX - Maximum Text X Position', SMXX)
 C
 C Set up the scaling of the plot.
 C
@@ -295,7 +328,7 @@ C
 C
 C Since the set call has been handled VVINIT should not do a SET
 C
-         CALL VVSETI('SET - Do set call flag', 0)
+         CALL VVSETI('SET - Do SET Call Flag', 0)
 C
 C Convert the maximum vector length from plotter address units to
 C a fraction of the viewport
@@ -311,29 +344,22 @@ C
 C
 C     Special values
 C
-         CALL VVSETI('SVF - Special value flag', ISPV)
+         CALL VVSETI('SVF - Special Value Flag', ISPV)
          IF (ISPV .EQ. 1 .OR. ISPV .EQ. 3 .OR. ISPV .EQ. 4) THEN
-            CALL VVSETR('USV - U array special value', SPV(1))
+            CALL VVSETR('USV - U Array Special Value', SPV(1))
          END IF
          IF (ISPV .EQ. 2 .OR. ISPV .EQ. 3 .OR. ISPV .EQ. 4) THEN
-            CALL VVSETR('VSV - V array special value', SPV(2))
+            CALL VVSETR('VSV - V Array Special Value', SPV(2))
          END IF
       END IF
 C
 C Common block values
 C
       IF (ICB .EQ. 1) THEN
-         CALL VVSETR('VPS - Viewport mode setting', EXT)
-         CALL VVSETI('VPO - Vector position method', ICTRFG)
-         CALL VVSETI('LBL - Vector labelling flag', ILAB)
-         CALL VVSETI('DPF - Label normalization', IOFFD)
-C
-C The sense of the message plotting parameter is opposite the 
-C IOFFM flag
-C
-         MSG = 0
-         IF (IOFFM .EQ. 0) MSG = 1
-         CALL VVSETI('MSG - Plot message flag', MSG)
+         CALL VVSETR('VPS - Viewport Mode Setting', EXT)
+         CALL VVSETI('VPO - Vector Position Method', ICTRFG)
+         CALL VVSETI('LBL - Vector Labelling Flag', ILAB)
+         CALL VVSETI('DPF - Label Normalization', IOFFD)
 C
 C Convert minimum and maximum arrow head sizes and the vector 
 C label character size to fraction of viewport width.
@@ -342,23 +368,27 @@ C
          AMX = RMX / SVM
          TSZ = PHQCVT * SIZE / SVM
 C
-         CALL VVSETR('AMN - Arrow head minimum size', AMN)
-         CALL VVSETR('AMX - Arrow head maximum size', AMX)
-         CALL VVSETR('LBS - Vector label text size', TSZ)
+         CALL VVSETR('AMN - Arrow Head Minimum Size', AMN)
+         CALL VVSETR('AMX - Arrow Head Maximum Size', AMX)
+         CALL VVSETR('LBS - Vector Label Text Size', TSZ)
 C
 C Viewport values (XLT,YBT,SIDE) do not need to be set since they
 C have been handled above.
 C
-         CALL VVSETI('XIN - X grid increment', INCX)
-         CALL VVSETI('YIN - Y grid increment', INCY)
+         CALL VVSETI('XIN - X Grid Increment', INCX)
+         CALL VVSETI('YIN - Y Grid Increment', INCY)
 C
-C In addition, although not part of the common block, when the
-C common block values are used the text is set the way it
-C always appeared with the old VELVCT
+C Depending on the value of the message flag, set up the 
+C min/max text blocks to emulate the old VELVCT. 
 C
-         CALL VVSETC('MNT - minimum vector text', ' ')
-         CALL VVSETI('MXP - maximum text position mode', 4)
-         CALL VVSETR('MXX - maximum text X position', 1.0)
+         CALL VVSETC('MNT - Minimum Vector Text', ' ')
+         IF (IOFFM .NE. 0) THEN
+            CALL VVSETC('MXT - Maximum Vector Text', ' ')
+         ELSE
+            CALL VVSETI('MXP - Maximum Text Position Mode', 4)
+            CALL VVSETR('MXX - Maximum Text X Position', 1.0)
+            CALL VVSETC('MXT - Maximum Vector Text', 'MAXIMUM VECTOR')
+         END IF
 C
       END IF
 C
@@ -377,6 +407,29 @@ C
 C Restore the compatibility flag value if necessary
 C
       IF (ICPM .EQ. 99) ICPM = 0
+C
+C Reset all internal parameters that may have been modified
+C
+      CALL VVSETR('VLC - Vector Low Cutoff Value', SVLC)
+      CALL VVSETR('VHC - Vector High Cutoff Value',SVHC)
+      CALL VVSETI('SET - Do SET Call Flag', ISSET)
+      CALL VVSETR('VRL - Maximum Vector Realized Length', SVRL)
+      CALL VVSETI('SVF - SpeciaL Value Flag', ISSVF)
+      CALL VVSETR('USV - U Array Special Value', SUSV)
+      CALL VVSETR('VSV - V Array Special Value', SVSV)
+      CALL VVSETR('VPS - Viewport Mode Setting', SVPS)
+      CALL VVSETI('VPO - Vector Position Method', ISVPO)
+      CALL VVSETI('LBL - Vector Labelling Flag', ISLBL)
+      CALL VVSETI('DPF - Label Normalization', ISDPF)
+      CALL VVSETR('AMN - Arrow Head Minimum Size', SAMN)
+      CALL VVSETR('AMX - Arrow Head Maximum Size', SAMX)
+      CALL VVSETR('LBS - Vector Label Text Size', SLBS)
+      CALL VVSETI('XIN - X Grid Increment', ISXIN)
+      CALL VVSETI('YIN - Y Grid Increment', ISYIN)
+      CALL VVSETC('MNT - Minimum Vector Text', CSMNT)
+      CALL VVSETC('MXT - Maximum Vector Text', CSMXT)
+      CALL VVSETI('MXP - Maximum Text Position Mode', ISMXP)
+      CALL VVSETR('MXX - Maximum Text X Position', SMXX)
 C
       RETURN
       END

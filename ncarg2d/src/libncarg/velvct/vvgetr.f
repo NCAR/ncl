@@ -1,5 +1,5 @@
 C
-C	$Id: vvgetr.f,v 1.8 1993-02-19 21:51:20 dbrown Exp $
+C	$Id: vvgetr.f,v 1.9 1993-02-24 01:24:54 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -153,6 +153,10 @@ C
          RVL=VMXL
       ELSE IF (CNM(1:3).EQ.'VFR'.OR. CNM(1:3).EQ.'vfr') THEN
          RVL=VFRC
+      ELSE IF (CNM(1:3).EQ.'XIN'.OR. CNM(1:3).EQ.'xin') THEN
+         RVL=REAL(IXIN)
+      ELSE IF (CNM(1:3).EQ.'YIN'.OR. CNM(1:3).EQ.'yin') THEN
+         RVL=REAL(IYIN)
       ELSE IF (CNM(1:3).EQ.'SVF'.OR. CNM(1:3).EQ.'svf') THEN
          RVL=REAL(ISVF)
       ELSE IF (CNM(1:3).EQ.'USV'.OR.CNM(1:3).EQ.'usv') THEN
@@ -229,8 +233,6 @@ C
          RVL=REAL(ILBL)
       ELSE IF (CNM(1:3).EQ.'DPF'.OR. CNM(1:3).EQ.'dpf') THEN
          RVL=REAL(IDPF)
-      ELSE IF (CNM(1:3).EQ.'MSG'.OR. CNM(1:3).EQ.'msg') THEN
-         RVL=REAL(IMSG)
 C
 C arrow min, max
 C
