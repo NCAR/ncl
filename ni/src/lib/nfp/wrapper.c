@@ -2561,9 +2561,9 @@ void NclAddUserFuncs(void)
  * Configure five parameters identically as single dimension float
  * arrays of any size.
  */
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
 /*
@@ -2581,9 +2581,9 @@ void NclAddUserFuncs(void)
  * Configure five parameters identically as single dimension double
  * arrays of any size.
  */
-        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
 /*
@@ -2601,10 +2601,10 @@ void NclAddUserFuncs(void)
  * Configure five parameters identically as single dimension float
  * arrays of any size.
  */
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
@@ -2623,10 +2623,10 @@ void NclAddUserFuncs(void)
  * Configure five parameters identically as single dimension float
  * arrays of any size.
  */
-        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;

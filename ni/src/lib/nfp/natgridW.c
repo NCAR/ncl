@@ -492,6 +492,7 @@ OK_NAME:  pvalue = (void *) NclGetArgValue(
               "has an incorrect type");
     return(NhlFATAL);
   }
+  return(NhlNOERROR);
 }
 
 NhlErrorTypes nngetp_W(void)
@@ -604,6 +605,7 @@ OK_NAME:  for (i = 0; i < numpi; i++) {
       return(NclReturnValue((void *) qvalue, 1, &ret_size, NULL,NCL_string, 1));
     }
   }
+  return(NhlNOERROR);
 }
 
 
