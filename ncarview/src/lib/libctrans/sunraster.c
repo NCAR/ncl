@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.5 1991-06-18 17:39:26 clyne Exp $
+ *	$Id: sunraster.c,v 1.6 1991-07-18 16:25:44 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -737,7 +737,8 @@ CGMC *c;
 		cols = (int *) icMalloc((unsigned) (nx * sizeof (int)));
 		rows = (int *) icMalloc((unsigned) (ny * sizeof (int)));
 
-		cell_prep(P, Q, R, rows, cols, (unsigned) nx, (unsigned) ny);
+		SetUpCellArrayIndexing(ABS(P.x - Q.x) + 1, ABS(P.y - Q.y) + 1,
+			rows, cols, (unsigned) nx, (unsigned) ny);
 		
 		/*
 		 * how is cell array stored

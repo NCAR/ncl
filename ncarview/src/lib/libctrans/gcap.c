@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.8 1991-04-05 11:37:15 clyne Exp $
+ *	$Id: gcap.c,v 1.9 1991-07-18 16:25:25 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -137,7 +137,6 @@ CGMC *c;
 		coord_mod.y_off = RASTER_YOFFSET;
 		coord_mod.x_scale = RASTER_XSCALE;
 		coord_mod.y_scale = RASTER_YSCALE;
-
 		transinit(&dev_extent, coord_mod, FALSE);
 
 		(void) rasterformatinit();
@@ -438,15 +437,46 @@ CGMC *c;
 	return (OK);
 }
 
+Ct_err	PolyMarker(c)
+	CGMC *c;
+{
+	Ct_err	_PolyMarker();
+
+	return(_PolyMarker(c, MARKER_DOT_SIZE));
+}
+
+
 
 /*ARGSUSED*/
 Ct_err	CellArray(c)
 CGMC *c;
 {
-	boolean 	clip = FALSE;
+#ifdef DEBUG
+	(void) fprintf(stderr,"CellArray\n");
+#endif DEBUG
+
+#define	PACKED_MODE	1
+
+
+	/*	
+	 *	programmers unfamiliar with CGM representation of Cell arrays
+	 *	should see section 5.6.9  in the ANSI document on 
+	 *	Computer Graphic Metafiles.
+	 */
+
+
+	/* points giving boundry of cell array	*/
+	Ptype	P, Q, R;	/* cell array corner boundries		*/
+	int	nx, ny;		/* dimensions of cell array by number of cells*/
+	Etype	mode;		/* cell representation mode		*/
+	boolean	clip = FALSE;
+
+	Ct_err	cell_array(), non_rect_cell_array();
 	extern	long	clipxmax, clipxmin, clipymax, clipymin;
 
-
+	/*
+	 *	check any control elements
+	 */
 	if (CLIP_DAMAGE) {
                 CoordRect       device_win_coord;
                 GetDevWin(&device_win_coord);
@@ -454,31 +484,63 @@ CGMC *c;
 		CLIP_DAMAGE = FALSE;
 	}
 
-	if ((c->p[0].y != c->p[2].y) || (c->p[2].x != c->p[1].x)) {
-		ct_error(NT_NULL,
-			"graphcap ctrans does not accept non rectangular cell arrays");
+	/*
+ 	 *	extract data from cgmc
+	 */
+
+
+		/*	dimensions	*/
+	nx = c->i[0];		ny = c->i[1];
+
+
+		/*	cell representation mode	*/
+	mode = c->e[0];
+
+	if (CSM != INDEXED) {
+		ct_error(NT_CAFE, "direct color not supported");
 		return (SICK);
+	}
+
+	if (mode != PACKED_MODE) {
+		(void) fprintf(stderr, 
+		"ctrans: run length encoded cell arrays not supported\n");
+		return(OK);
 	}
 
 	if (CLIPFLAG || devWinSet) {	/* do we need to do clipping?	*/
 		if (c->p[0].x < clipxmin || c->p[0].y < clipymin
-		|| c->p[1].x > clipxmax || c->p[1].y > clipymax) 
+			|| c->p[0].x > clipxmax || c->p[0].y > clipymax
+			|| c->p[1].x < clipxmin || c->p[1].y < clipymin
+			|| c->p[1].x > clipxmax || c->p[1].y > clipymax) { 
 
-		clip = TRUE;
+			clip = TRUE;
+		}
 	}
+
+        /*
+         * see if cell array is rectangular or not
+         */
+        if (c->p[2].x != c->p[1].x || c->p[0].y != c->p[2].y) {
+		ct_error(NT_NULL, "non rectangular cell array");
+		return(OK);
+        }
 
 	/*
 	 *	if the device has raster instructions use them
 	 */
-	if (RASTER_HOR_START_SIZE > 0 && !clip)
-		(void)raster(c);
+	if (RASTER_HOR_START_SIZE > 0 && !clip) {
+		P.x = R_XConvert(c->p[0].x);	P.y = R_YConvert(c->p[0].y);
+		Q.x = R_XConvert(c->p[1].x);	Q.y = R_YConvert(c->p[1].y);
+		R.x = R_XConvert(c->p[2].x);	R.y = R_YConvert(c->p[2].y);
+		return(CellArray_(c, P, Q, R, nx, ny));
+	}
 	/*
 	 *	The device has nothing so just draw a box or we need
 	 * 	to clip the cell array in which case we punt at this point.
 	 */
 	else if (!RASTER_SIMULATE || clip) {
-		gcap_line(c->p[0].x,c->p[0].y,c->p[2].x,c->p[2].y);
-		gcap_line(c->p[2].x,c->p[2].y,c->p[1].x,c->p[1].y);
+		gcap_line(c->p[0].x,c->p[0].y,c->p[1].x,c->p[0].y);
+		gcap_line(c->p[1].x,c->p[0].y,c->p[1].x,c->p[1].y);
 		gcap_line(c->p[1].x,c->p[1].y,c->p[0].x,c->p[1].y);
 		gcap_line(c->p[0].x,c->p[1].y,c->p[0].x,c->p[0].y);
 
@@ -486,6 +548,7 @@ CGMC *c;
 		(void)cellsim(c);
 
 	return (OK);
+
 }
 
 /*ARGSUSED*/

@@ -1,5 +1,5 @@
 /*
- *	$Id: fill.c,v 1.4 1991-06-18 15:00:17 clyne Exp $
+ *	$Id: fill.c,v 1.5 1991-07-18 16:25:18 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -613,6 +613,11 @@ fill_S(cgmc,instr)
 		else {
 			instr->data++; 
 			numparm--;
+		}
+
+		if (charcount > numparm) {
+			ct_error(T_EE, "invalid CGM");
+			return(-1);
 		}
 
 		/*

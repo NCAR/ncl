@@ -1,5 +1,5 @@
 /*
- *	$Id: gcapdev.c,v 1.3 1991-07-17 15:22:11 clyne Exp $
+ *	$Id: gcapdev.c,v 1.4 1991-07-18 16:25:29 clyne Exp $
  */
 #include <stdio.h>
 #include "graphcap.h"
@@ -49,6 +49,8 @@ boolean polysim;	/* True if to simulate polygons with lines */
 	int	i;
 	boolean mass = FALSE;	/* true if can buffer all points at once */
 
+	int	line_width = ROUND(LINE_WIDTH);
+
 	/*
 	 *	If the line style is not the default then send the 
 	 *	line segment to the software simulation routine
@@ -65,11 +67,11 @@ boolean polysim;	/* True if to simulate polygons with lines */
 	 * 	if line width is not the default (1) and device does not have
 	 *	wide line capability simulate wide lines with software
 	 */
-	if (!polyflag && (int) LINE_WIDTH != 1 && LINE_WIDTH_START_SIZE == 0) {
+	if (!polyflag && line_width != 1 && LINE_WIDTH_START_SIZE == 0) {
 		for(i=1;i<*coord_buf_num;i++)
 			(void) ComFatLine(coord_buf[i-1].x,coord_buf[i-1].y,
 					coord_buf[i].x,coord_buf[i].y,
-					(int) LINE_WIDTH);
+					line_width);
 			return;
 	}
 

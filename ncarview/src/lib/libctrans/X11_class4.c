@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.5 1991-05-16 11:41:14 clyne Exp $
+ *	$Id: X11_class4.c,v 1.6 1991-07-18 16:24:54 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -41,12 +41,6 @@
 #include	"Xcrm.h"
 #include	"soft_fill.h"
 #include	"translate.h"
-
-#ifdef	BSD
-#define RINT(X)	rint((double) X)
-#else
-#define	RINT(X)	((int) X)	/* no round to an int routine in sys V	*/
-#endif
 
 extern  Ct_err	Instr_Dec();
 
@@ -687,29 +681,20 @@ CGMC *c;
 
 #define	PACKED_MODE	1
 
-	extern	Ct_err	raster_packed_cell_sim();	
-	extern	Ct_err	polygon_packed_cell_sim();	
-
 
 	/*	
 	 *	programmers unfamiliar with CGM representation of Cell arrays
 	 *	should see section 5.6.9  in the ANSI document on 
 	 *	Computer Graphic Metafiles.
-	 *
-	 *	Note:
-	 *		NCAR's CGM generator lables the lower left corner 
-	 *	of the cell array P. The corner P should be the upper left 
-	 *	corner of the cell array. This is a Bug in the generator.
 	 */
 
 
 	/* points giving boundry of cell array	*/
-	Ptype	P,		/* LOWER left corner (See above)	*/
-		Q,		/* upper right corner			*/
-		R;		/* lower right				*/	
-
-	Itype	nx, ny;		/* dimensions of cell array by number of cells*/
+	Ptype	P, Q, R;	/* cell array corner boundries		*/
+	int	nx, ny;		/* dimensions of cell array by number of cells*/
 	Etype	mode;		/* cell representation mode		*/
+
+	Ct_err	x11_cell_array(), x11_non_rect_cell_array();
 
 
 	startedDrawing = TRUE;
@@ -743,74 +728,24 @@ CGMC *c;
 		return (SICK);
 	}
 
-	/*
-	 * see if cell array is rectangular for quick display with raster 
-	 * instructions.
-	 */
-	if (P.y == R.y && R.x == Q.x) {
-		int	*rows, *cols;
-
-		cols = (int *) icMalloc((unsigned) nx * sizeof (int));
-		rows = (int *) icMalloc((unsigned) ny * sizeof (int));
-
-		cell_prep(P, Q, R, rows, cols, (unsigned) nx, (unsigned) ny);
-		
-		/*
-		 * how is cell array stored
-		 */
-		if (mode == PACKED_MODE) {
-			/*
-			 *	use raster instructions
-			 */
-			(void) raster_packed_cell_sim(c, P, rows, cols, 
-				(int) nx, (int) ny, abs((int) (P.x - R.x)));
-		} 
-		else {
-			(void) fprintf(stderr, 
-			"ctrans: run length encoded cell arrays not supported\n"
-			);
-		}
-		if (rows) cfree((char *) rows);
-		if (cols) cfree((char *) cols);
+	if (mode != PACKED_MODE) {
+		(void) fprintf(stderr, 
+		"ctrans: run length encoded cell arrays not supported\n");
+		return(OK);
 	}
 
-	/* 
-	 * cell array is NOT rectangular
-	 */
-	else {
-		int	delta_pr_x,	/* length of x vector for delta_pr*/ 
-			delta_pr_y;	/* length of y vector for delta_pr*/ 
+        /*
+         * see if cell array is rectangular or not
+         */
+        if (R.x != Q.x || P.y != R.y) {
+                return (x11_non_rect_cell_array(c, Colortab,P,Q,R,nx,ny));
+        }
 
-		int	delta_qr_x,	/* length of x vector for delta_qr*/
-			delta_qr_y;	/* length of y vector for delta_qr*/
+        /*
+         * cell array is a rectangluar
+         */
+        return(x11_cell_array(c, Colortab, P, Q, R, nx, ny));
 
-		int	fudge_x,
-			fudge_y;
-
-		irregular_cell_prep (P, Q, R, (unsigned) nx, (unsigned) ny
-			&delta_pr_x, &delta_pr_y,
-			&delta_qr_x, &delta_qr_y,
-			&fudge_x, &fudge_y);
-
-		/*
-		 * how is cell array stored
-		 */
-		if (mode == PACKED_MODE) {
-			/*
-			 *	draw individual cells using a fill polygon
-			 */
-			(void) polygon_packed_cell_sim(c,P,delta_pr_x, 
-				delta_pr_y, delta_qr_x, 
-				delta_qr_y, fudge_x, fudge_y, 
-				(int) nx, (int) ny);
-		}
-		else {
-			(void) fprintf(stderr, 
-			"ctrans: run length encoded cell arrays not supported\n"
-			);
-		}
-	}
-	return (OK);
 }
 
 
@@ -1089,7 +1024,7 @@ static	Ct_err	GCsetlinewidth(linewidth)
 		 * for fat lines change the join style to round instead of
 	 	 * miter
 		 */
-		gcv.line_width = RINT(linewidth);
+		gcv.line_width = (int) ROUND(linewidth);
 		mask = GCLineWidth | GCJoinStyle;
 	}
 
@@ -1247,4 +1182,277 @@ static	sim_polygon(xp_list,n)
 	}
 
 	cfree ((char *) p_list);
+}
+
+
+static	Ct_err	x11_non_rect_cell_array(c, color_pal, P, Q, R, nx, ny)
+	CGMC		*c;
+        Pixeltype       *color_pal;
+        Ptype		P, Q, R;
+        int		nx, ny;
+{
+        return(OK);      /* non rectangular cell arrays are not supported */
+}
+
+
+
+/*
+ * macro for copying a pixel from a pixel table into a character array
+ */
+#define	PUT_PIX(pal, pal_ind, dst, size)	\
+	{					\
+	int	i;				\
+	char	*s, *d;				\
+	s = (char *) &(pal)[(pal_ind)];		\
+	d = (char *) dst;			\
+	for (i=0; i<size; i++) {		\
+		*d++ = *s++;			\
+	}					\
+	}
+		
+/*
+ *	x11_cell_array
+ *	[internal]
+ *
+ *	render a rectangular cell array
+ *
+ * on entry
+ *	*color_pal	: array of X pixels
+ *	P,Q,R		: corners of the cell array (See CGM standard)
+ *	nx		: number of cells in x direction
+ *	ny		: number of cells in y direction
+ * on exit
+ *	return		: 0 => Ok, else error
+ */
+static	Ct_err	x11_cell_array(c, color_pal, P, Q, R, nx, ny)
+	CGMC		*c;
+	Pixeltype	*color_pal;
+	Ptype	P, Q, R;
+	int	nx, ny;
+{
+	Visual	*visual = DefaultVisual(dpy, DefaultScreen(dpy));
+	unsigned int depth = DisplayPlanes(dpy, DefaultScreen(dpy));
+
+	unsigned int	image_height,	/* image height in pixels	*/
+			image_width,	/* image width in pixels	*/
+			image_size,	/* size of image data in bytes	*/
+			pad;		/* number of bytes padding	*/
+	unsigned	pixel_size;	/* size of a single pixel	*/
+	char		*data,		/* image data			*/
+			*cptr;
+
+	int		step_x,		/* step size for incrementing in
+					 * x direction within the image
+					 */
+			step_y;		/* step size for incrementing in
+					 * y direction within the image
+					 */
+
+	int		start_x, 
+			start_y;	/* destination of image in drawable */
+
+	int		*rows, 
+			*cols;		/* information about the number of
+					 * pixels making up a row (col) in
+					 * a the cell at row (col)[i]
+					 */
+	int		*index_array,	/* color indeces for a cell row	*/
+			index;		/* color index for current cell */
+	int		cgmc_index;	/* index into the cgmc		*/
+
+	Pixeltype	pixels[MAX_COLOR_SIZE];
+	XImage		*ximage;	/* the X image			*/
+
+	register int	i,j,k,l;
+
+	void	encode_pixels(), SetUpCellArrayIndexing(), 
+		SetUpCellArrayAddressing();
+
+	image_width = ABS(P.x - Q.x) + 1;
+	image_height = ABS(P.y - Q.y) + 1;
+
+	/*
+	 * don't know how to handle a cell array with zero dimension
+	 */
+	if (nx == 0 || ny == 0) return (OK);
+
+	rows = (int *) icMalloc ((unsigned) ny * sizeof (int));
+	cols = (int *) icMalloc ((unsigned) nx * sizeof (int));
+	index_array = (int *) icMalloc ((unsigned) nx * sizeof (int));
+	ximage = XCreateImage(dpy, visual, depth, ZPixmap, 0, NULL,
+		image_width, image_height, 32, 0);
+
+
+	image_size = ximage->bytes_per_line * image_height;
+	ximage->data = icMalloc(image_size);
+	data = ximage->data;
+
+	pad = ximage->bytes_per_line - image_width;
+
+	if (ximage->bits_per_pixel % 8) {
+		return(SICK);	/* pixel size must be byte multible	*/
+	}
+
+	pixel_size = ximage->bits_per_pixel / 8;
+
+ 
+	/*
+	 * encode the color palette into a form that is easier to access
+	 * with PUT_PIX()
+	 */
+	encode_pixels(color_pal, pixels, MAX_COLOR_SIZE, pixel_size, 
+			ximage->byte_order);
+
+	/*
+	 * calculate x & y steping size, position of image in the window,
+	 * and starting address for data destination
+	 */
+	SetUpCellArrayAddressing(P, Q, R, image_size, pad, pixel_size, 
+			ximage->bytes_per_line, 0,0, &step_x, &step_y, 
+			&start_x, &start_y, &data);
+
+	/*
+	 * set up rows and cols arrays with info about number of pixels
+	 * making up each cell. We do this to avoid floating point arithmatic
+	 * later on
+	 */
+	SetUpCellArrayIndexing(image_width, image_height, rows, cols, nx, ny);
+
+
+	/*
+	 * process the rows
+	 */
+	cgmc_index = 0;
+	for (i=0; i<ny; i++) {
+
+		/* 
+		 * load array of color indecies for row[i] of cells
+		 */
+                for (k=0; k<nx; k++, cgmc_index++) {
+                        index_array[k] = c->c[cgmc_index];
+
+			/* make sure data available in cgmc     */
+			if (cgmc_index == c->Cnum && c->more) {
+				if (Instr_Dec(c) != OK) return (pre_err);
+				cgmc_index = 0;
+			}
+
+                }
+
+                /*      
+		 * the rows of pixels per cell[i]
+		 */
+                for (j=0; j < rows[i]; j++) {
+
+			cptr = data;
+			/*
+			 * the coloumns
+			 */
+			for (k=0; k<nx; k++) {
+
+
+				/*
+				 * the coloums of pixels per cell
+				 */
+				index = index_array[k];
+				for (l=0; l<cols[k]; l++) {
+					PUT_PIX(pixels,index, cptr,pixel_size);
+					cptr += step_x;
+				}
+			
+			}
+			data += step_y;	/* skip to next row	*/
+		}
+	}
+
+	/*
+	 * copy image to the window
+	 */
+	XPutImage(dpy, drawable, cellGC, ximage, 0, 0, start_x, start_y,
+					image_width, image_height);
+
+
+	XDestroyImage(ximage);	/* frees ximage->data too	*/
+	free((char *) rows);
+	free((char *) cols);
+	free((char *) index_array);
+
+	return(OK);
+}
+
+
+
+
+/*
+ *	encode_pixels
+ *	[internal]
+ *
+ *	encode the color palette into a form that is easier to access
+ *	with PUT_PIX()
+ *
+ * on entry
+ *	*src		: list of pixels
+ *	n		: len of src
+ *	pixel_size	: size of a single pixel
+ *	byte_order	: byte order to encode for (LSBFirst | MSBFirst)
+ * on exit
+ *	*dst		: the encoded pixels
+ */
+static	void	encode_pixels(src, dst, n, pixel_size, byte_order)
+	Pixeltype	*src, *dst;
+	unsigned	n, 
+			pixel_size;
+	int		byte_order;
+{
+
+	unsigned long	swaptest = 1;
+	unsigned short	swap = FALSE;
+	unsigned char	*left, *right, c;
+
+	int		i, j;
+
+
+	/*
+	 * find out if we're on a byte swapped (LSBFirst) machine
+	 */
+	if (((*(char *) &swaptest) && (byte_order != LSBFirst))
+		|| (!(*(char *) &swaptest) && (byte_order == LSBFirst))) {
+
+		swap = TRUE;
+	}
+
+
+	/*
+	 * encode the pixel table
+	 */
+	for (i=0; i<n; i++) {
+
+		dst[i] = src[i];
+
+		/*
+		 * swap byte if needed
+		 */
+		if (swap) {
+			left = (unsigned char *) &dst[i];
+			right = left + sizeof (dst[i]) - 1;
+			while (left < right) {
+				c = *left;
+				*left++ = *right;
+				*right-- = c;
+			}
+		}
+
+		/*
+		 * left shift data so first significant byte is the 
+		 * first byte (only need to do this if byte order is 
+		 * MSBFirst, else its already done)
+		 */
+		if (byte_order == MSBFirst) {
+			left = (unsigned char *) &dst[i];
+			right = left + sizeof (dst[i]) - pixel_size;
+			for (j=0; j<pixel_size; j++) {
+				*left++ = *right++;
+			}
+		}
+	}
 }

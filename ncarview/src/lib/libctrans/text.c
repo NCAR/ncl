@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.6 1991-06-18 15:01:37 clyne Exp $
+ *	$Id: text.c,v 1.7 1991-07-18 16:25:49 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -217,13 +217,14 @@ Ct_err	Init_Font(fontcap)
 {
 	static	char	*fontCap = NULL;
 	char	*f = fontcap;
+	char	buf[80];
 
 
 	FontIsInit = FALSE;
 
 	if (Init_Readfont(f) != OK) {
-		(void) fprintf(stderr, 
-		"ctrans: error processing font %s\n", f);
+		sprintf(buf, "error processing font: %s", f);
+		ct_error(NT_NULL, buf);
 
 		/*
 		 * try and use previous fontcap if it exists
@@ -231,8 +232,8 @@ Ct_err	Init_Font(fontcap)
 		if (fontCap) {
 			f = fontCap;
 			if (Init_Readfont(f) == OK) {
-				(void) fprintf(stderr, 
-				"ctrans: using font %s\n", f);
+				sprintf(buf, "using font: %s", f);
+				ct_error(NT_NULL, buf);
 			}
 			else return (OK);
 		}

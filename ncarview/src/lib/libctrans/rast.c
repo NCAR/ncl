@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.2 1991-06-18 15:01:50 clyne Exp $
+ *	$Id: rast.c,v 1.3 1991-07-18 16:25:35 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -240,22 +240,41 @@ CGMC *c;
 	return (OK);
 }
 
+Ct_err	Ras_PolyMarker(c)
+CGMC *c;
+{
+	Ct_err	_PolyMarker();
+
+	return(_PolyMarker(c, FALSE));
+}
+
 
 /*ARGSUSED*/
 Ct_err	Ras_CellArray(c)
 CGMC *c;
 {
+#ifdef DEBUG
+	(void) fprintf(stderr,"Ras_CellArray\n");
+#endif DEBUG
+
 #define	PACKED_MODE	1
 
-	/* points giving boundry of cell array	*/
-	Ptype	Pcoord,		/* LOWER left corner 			*/
-		Qcoord,		/* upper right corner			*/
-		Rcoord;		/* lower right				*/	
 
-	Itype	nx, ny;		/* dimensions of cell array by number of cells*/
+	/*	
+	 *	programmers unfamiliar with CGM representation of Cell arrays
+	 *	should see section 5.6.9  in the ANSI document on 
+	 *	Computer Graphic Metafiles.
+	 */
+
+
+	/* points giving boundry of cell array	*/
+	Ptype	Pcoord, 
+		Qcoord, 
+		Rcoord;	/* cell array corner boundries		*/
+	int	nx, ny;		/* dimensions of cell array by number of cells*/
 	Etype	mode;		/* cell representation mode		*/
 
-	Ct_err	cell_array();
+	Ct_err	ras_cell_array(), ras_non_rect_cell_array();
 
 
 	/*
@@ -280,39 +299,25 @@ CGMC *c;
 	}
 
 	if (mode != PACKED_MODE) {
-		ct_error(NT_CAFE, "packed mode only supported");
-		return (SICK);
+		(void) fprintf(stderr, 
+		"ctrans: run length encoded cell arrays not supported\n");
+		return(OK);
 	}
 
-	/*
-	 * only support rectangular cell arrays
-	 */
-	if (Pcoord.y == Rcoord.y && Rcoord.x == Qcoord.x) {
-		int	*rows, *cols;
+        /*
+         * see if cell array is rectangular or not
+         */
+        if (Rcoord.x != Qcoord.x || Pcoord.y != Rcoord.y) {
+                return (ras_non_rect_cell_array(c,Pcoord,Qcoord,Rcoord,nx,ny));
+        }
 
-		cols = (int *) icMalloc((unsigned) nx * sizeof (int));
-		rows = (int *) icMalloc((unsigned) ny * sizeof (int));
+        /*
+         * cell array is a rectangluar
+         */
+        return(ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny));
 
-		cell_prep(Pcoord, Qcoord, Rcoord, rows, cols, 
-					(unsigned) nx, (unsigned) ny);
-		
-		(void) cell_array(c, Pcoord, rows, cols, 
-			(int) nx, (int) ny, abs((int) (Pcoord.x - Rcoord.x)));
-
-		if (rows) cfree((char *) rows);
-		if (cols) cfree((char *) cols);
-	}
-
-	/* 
-	 * cell array is NOT rectangular
-	 */
-	else {
-	
-		ct_error(NT_CAFE, "cell array must be rectangular");
-		return (SICK);
-	}
-	return (OK);
 }
+
 
 Ct_err	Ras_ColrTable(c)
 CGMC *c;
@@ -419,68 +424,163 @@ get_resolution(dev_extent, opts, name)
 	dev_extent->urx = width - 1;
 }
 
-Ct_err	cell_array(c, P, rows, cols, nx,  ny, width)
-	CGMC	*c;
-	Ptype	P;
-	int	*rows, *cols;
-	int	nx, ny;
-	int	width;
+
+
+static	Ct_err	ras_non_rect_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
+	CGMC		*c;
+        Ptype  Pcoord, Qcoord, Rcoord;
+        int     nx, ny;
 {
-
-	register	int k,l;
-	register	int i,j;
-
-	int	*index_array = NULL;	/* single row of cell pixel vals*/
-	int	index = 0;      	/* index for color list in cgmc */
-	int	x_index;		/* x coordinate			*/
-
-	index_array = (int *) icMalloc ((unsigned) nx * sizeof(int));
+        return(0);      /* non rectangular cell arrays are not supported */
+}
 
 
-	/*	the rows	*/
-	for (i=0; i < ny; i++ ) {
 
-		/* load  array of color indecies for that row of cells	*/
-		for (k=0; k < nx; k++, index++) {
+/*
+ *	ras_cell_array
+ *	[internal]
+ *
+ *	render a rectangular cell array
+ *
+ * on entry
+ *	P,Q,R		: corners of the cell array (See CGM standard)
+ *	nx		: number of cells in x direction
+ *	ny		: number of cells in y direction
+ * on exit
+ *	return		: 0 => Ok, else error
+ */
+static	Ct_err	ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
+	CGMC		*c;
+	Ptype	Pcoord, Qcoord, Rcoord;
+	int	nx, ny;
+{
+	unsigned int	image_height,	/* image height in pixels	*/
+			image_width,	/* image width in pixels	*/
+			image_size,	/* size of image data in bytes	*/
+			pad;
+	unsigned char	*data,		/* image data			*/
+			*cptr;
+
+	int		step_x,		/* step size for incrementing in
+					 * x direction within the image
+					 */
+			step_y;		/* step size for incrementing in
+					 * y direction within the image
+					 */
+
+	int		start_x, 
+			start_y;	/* destination of image in drawable */
+
+	int		*rows, 
+			*cols;		/* information about the number of
+					 * pixels making up a row (col) in
+					 * a the cell at row (col)[i]
+					 */
+	int		xoff, yoff;	/* offset to cell array dest.	*/
+	unsigned char	*index_array,	/* color indeces for a cell row	*/
+			index;		/* color index for current cell */
+	int		cgmc_index;	/* index into the cgmc		*/
+
+
+	register int	i,j,k,l;
+
+	void	SetUpCellArrayIndexing(), SetUpCellArrayAddressing();
+
+	image_width = ABS(Pcoord.x - Qcoord.x) + 1;
+	image_height = ABS(Pcoord.y - Qcoord.y) + 1;
+
+	/*
+	 * don't know how to handle a cell array with zero dimension
+	 */
+	if (nx == 0 || ny == 0) return (OK);
+
+	rows = (int *) icMalloc ((unsigned) ny * sizeof (int));
+	cols = (int *) icMalloc ((unsigned) nx * sizeof (int));
+	index_array = (unsigned char *) icMalloc ((unsigned) nx * sizeof (int));
+
+	image_size = image_height * rastGrid->nx;
+	pad = rastGrid->nx - image_width;
+	data = rastGrid->data;
+
+ 
+	/*
+	 * calculate x & y steping size, position of image in the window,
+	 * and starting address for data destination
+	 */
+	xoff = MIN3(Pcoord.x, Qcoord.x, Rcoord.x);
+	yoff = MIN3(Pcoord.y, Qcoord.y, Rcoord.y);
+	SetUpCellArrayAddressing(Pcoord, Qcoord, Rcoord, image_size, pad, 1,
+		rastGrid->nx, xoff, yoff, 
+		&step_x, &step_y, &start_x, &start_y, &data);
+
+	/*
+	 * set up rows and cols arrays with info about number of pixels
+	 * making up each cell. We do this to avoid floating point arithmatic
+	 * later on
+	 */
+	SetUpCellArrayIndexing(image_width, image_height, rows, cols, nx, ny);
+
+
+	/*
+	 * process the rows
+	 */
+	cgmc_index = 0;
+	for (i=0; i<ny; i++) {
+
+		/* 
+		 * load array of color indecies for row[i] of cells
+		 */
+                for (k=0; k<nx; k++, cgmc_index++) {
+                        index_array[k] = (unsigned char) c->c[cgmc_index];
 
 			/* make sure data available in cgmc     */
-			if (index == c->Cnum && c->more) {
-				if (Instr_Dec(c) != OK)
-					return (pre_err);
-
-				index = 0;
+			if (cgmc_index == c->Cnum && c->more) {
+				if (Instr_Dec(c) != OK) return (pre_err);
+				cgmc_index = 0;
 			}
 
-			index_array[k] = c->c[index];
-		}
-		
-		/*	the rows of pixels per cell	*/
-		for (j=0; j < rows[i]; j++, P.y--) {
+                }
 
+                /*      
+		 * the rows of pixels per cell[i]
+		 */
+                for (j=0; j < rows[i]; j++) {
 
-			/*	the coloumns	*/
-			x_index = P.x;
+			cptr = data;
+			/*
+			 * the coloumns
+			 */
 			for (k=0; k<nx; k++) {
 
 
-				/*	the coloums of pixels per cell	*/
-				for (l=0; l< cols[k]; l++, x_index++ ) {
-					INDEXED_PIXEL(rastGrid, x_index, P.y) =
-								index_array[k];
-	
+				/*
+				 * the coloums of pixels per cell
+				 */
+				index = index_array[k];
+				for (l=0; l<cols[k]; l++) {
+					*cptr = index;
+					cptr += step_x;
 				}
+			
 			}
+			data += step_y;	/* skip to next row	*/
 		}
-
-	
 	}
 
-	if (index_array != (int *) NULL) cfree((char *) index_array);
+	free((char *) rows);
+	free((char *) cols);
+	free((char *) index_array);
 
-	return (OK);
+	return(OK);
 }
 
-build_ras_arg(ras_argc, ras_argv, rasterCommLineOpt)
+
+
+
+
+
+
+static	build_ras_arg(ras_argc, ras_argv, rasterCommLineOpt)
 	int	*ras_argc;
 	char	**ras_argv;
 	struct	RasterCommLineOpt_ rasterCommLineOpt;

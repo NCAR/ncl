@@ -1,5 +1,5 @@
 /*
- *	$Id: cterror.c,v 1.6 1991-06-18 14:59:28 clyne Exp $
+ *	$Id: cterror.c,v 1.7 1991-07-18 16:25:09 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -269,11 +269,15 @@ char	*message;
 				 *	general errors
 				 */
 				case  T_CNOD:
-					PRINT_E ("can not open device");
+					PRINT_E ("can not open device: ");
 					break;
 
 				case  T_MALLOC:
-					PRINT_E ("memory allocation error ");
+					PRINT_E ("memory allocation error: ");
+					break;
+
+				case  T_EE:
+					PRINT_E ("error in CGM encoding: ");
 					break;
 
 				/*

@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.c,v 1.4 1991-07-08 16:59:26 clyne Exp $
+ *	$Id: commondev.c,v 1.5 1991-07-18 16:25:04 clyne Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -293,8 +293,9 @@ CGMC *c;
 }
 
 
-Ct_err	PolyMarker(c)
-CGMC *c;
+Ct_err	_PolyMarker(c, fat_dot)
+	CGMC *c;
+int	fat_dot;
 {
 	int	offset;
 	int	i;
@@ -367,15 +368,13 @@ CGMC *c;
 		break;
 	case MARKER_DOT:
 		for(i=0;i<c->Pnum;i++) {
-#ifdef	DEAD
 			/*
 			 * see if device needs a larger then normal dot
 			 */
-			if (!MARKER_DOT_SIZE && dt->markersize == 1.0) 
+			if (!fat_dot && dt->markersize == 1.0) 
 				dev->line(c->p[i].x,c->p[i].y,c->p[i].x,c->p[i].y);
 
 			else 
-#endif
 			{	/* fat dot - draw a box not a dot	*/
 				len = 0.2 * offset;
 				x = c->p[i].x - len;

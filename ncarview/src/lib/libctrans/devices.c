@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.c,v 1.4 1991-06-18 14:59:58 clyne Exp $
+ *	$Id: devices.c,v 1.5 1991-07-18 16:25:13 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -99,7 +99,7 @@ Ct_err	 Ras_BegMF(), Ras_EndMF(), Ras_BegPic(), Ras_BegPicBody(), Ras_EndPic();
 
 /*	Class 4	*/
 
-Ct_err	Ras_CellArray();
+Ct_err	Ras_PolyMarker(), Ras_CellArray();
 
 /*	Class 5	*/
 
@@ -426,7 +426,7 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	},
 	/* Class 4 */
 	{
-	NULL, PolyLine, DisjtLine, PolyMarker, Text,
+	NULL, PolyLine, DisjtLine, Ras_PolyMarker, Text,
 	RestrText, ApndText, Polygon, PolygonSet, Ras_CellArray,
 	GDP, Rect, Circle, Arc3Pt, Arc3PtClose,
 	ArcCtr, ArcCtrClose, Ellipse, EllipArc, EllipArcClose,

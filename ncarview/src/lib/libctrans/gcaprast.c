@@ -1,5 +1,5 @@
 /*
- *	$Id: gcaprast.c,v 1.1 1991-03-12 17:39:20 clyne Exp $
+ *	$Id: gcaprast.c,v 1.2 1991-07-18 16:25:31 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -456,4 +456,223 @@ CGMC	*c;
 
 	cfree((char *) index_array);
 	return(OK);
+}
+
+
+
+/*
+ *	CellArray_
+ *	[internal]
+ *
+ *	render a rectangular cell array
+ *
+ * on entry
+ *	*c		: cgmc containing cell array instruction
+ *	P,Q,R		: corners of the cell array (See CGM standard)
+ *	nx		: number of cells in x direction
+ *	ny		: number of cells in y direction
+ * on exit
+ *	return		: 0 => Ok, else error
+ */
+Ct_err	CellArray_(c, P, Q, R, nx, ny)
+	CGMC		*c;
+	Ptype	P, Q, R;
+	int	nx, ny;
+{
+	unsigned int	image_height,	/* image height in pixels	*/
+			image_width,	/* image width in pixels	*/
+			image_size,	/* size of image data in bytes	*/
+			pad;
+
+	int		step_x,		/* step size for incrementing in
+					 * x direction within the image
+					 */
+			step_y;		/* step size for incrementing in
+					 * y direction within the image
+					 */
+
+	long		start_x, 
+			start_y;	/* where does raster image start */
+
+	int		*rows, 
+			*cols;		/* information about the number of
+					 * pixels making up a row (col) in
+					 * a the cell at row (col)[i]
+					 */
+	unsigned char	*index_array,	/* color indeces for a cell row	*/
+			index;		/* color index for current cell */
+	int		cgmc_index;	/* index into the cgmc		*/
+	boolean		swap;
+
+
+	register int	i,j,k,l;
+
+	void	SetUpCellArrayIndexing(), set_up_addressing(), swap_array();
+
+	image_width = ABS(P.x - Q.x) + 1;
+	image_height = ABS(P.y - Q.y) + 1;
+
+	/*
+	 * don't know how to handle a cell array with zero dimension
+	 */
+	if (nx == 0 || ny == 0) return (OK);
+
+	rows = (int *) icMalloc ((unsigned) ny * sizeof (int));
+	cols = (int *) icMalloc ((unsigned) nx * sizeof (int));
+	index_array = (unsigned char *) icMalloc ((unsigned) nx * sizeof (int));
+
+	/*
+	 * determine starting addresses for raster instructions based on 
+	 * orientation of cell array as described by P and Q
+	 */
+	set_up_addressing(P, Q, &step_y, &start_x, &start_y, &swap);
+ 
+	/*
+	 * set up rows and cols arrays with info about number of pixels
+	 * making up each cell. We do this to avoid floating point arithmatic
+	 * later on
+	 */
+	SetUpCellArrayIndexing(image_width, image_height, rows, cols, nx, ny);
+
+
+	/*
+	 * process the rows
+	 */
+	cgmc_index = 0;
+	for (i=0; i<ny; i++) {
+
+		/* 
+		 * load array of color indecies for row[i] of cells
+		 */
+                for (k=0; k<nx; k++, cgmc_index++) {
+                        index_array[k] = (unsigned char) c->c[cgmc_index];
+
+			/* make sure data available in cgmc     */
+			if (cgmc_index == c->Cnum && c->more) {
+				if (Instr_Dec(c) != OK) return (pre_err);
+				cgmc_index = 0;
+			}
+
+                }
+
+		/*
+		 * if cell array rows run backwords from raster rows
+		 * swap the order of the cell array row indecis
+		 */
+		if (swap) {
+			swap_array(index_array, nx);
+		}
+
+                /*      
+		 * the rows of pixels per cell[i]
+		 */
+                for (j=0; j < rows[i]; j++) {
+
+			/*
+			 * format the begin raster instruction
+			 */
+			for(k=0;k<RASTER_HOR_START_SIZE;k++) {
+				switch(RASTER_HOR_START[k]) {
+				case (char)XYC:
+					(void)formatcoord(start_x,start_y,2);
+					break;
+				case (char)XC:
+					(void)formatcoord(start_x,(long)0,1);
+					break;
+				case (char)YC:
+					(void)formatcoord(start_y,(long)0,1);
+					break;
+				case (char)VC:
+					(void)formatrasterveccnt(nx);
+					break;
+				case (char)RL:
+					Runlength = TRUE;
+					break;
+				default:
+					buffer(&RASTER_HOR_START[k],1);
+					break;
+				}
+			}
+			if (! Runlength) {
+				ct_error(NT_GFEE, "");
+				return(OK);
+			}
+
+			start_y += step_y;	/* next row of pixels	*/
+
+			/*
+			 * the coloumns
+			 */
+			for (k=0; k<nx; k++) {
+
+				/*
+				 * the coloums of pixels per cell
+				 */
+				(void)formatrasterdata(index_array[k], cols[k]);
+			
+			}
+
+			buffer(RASTER_HOR_TERM, RASTER_HOR_TERM_SIZE);
+		}
+	}
+
+	free((char *) rows);
+	free((char *) cols);
+	free((char *) index_array);
+
+	return(OK);
+}
+
+/*
+ *	set_up_addressing
+ *	[internal]
+ *
+ * on entry
+ *	P,Q		: corners of cell array
+ * on exit
+ *	*step_y		: rasterize from top to bottom or vise versa
+ *	*start_x	: starting X coordinate for raster instructions
+ *	*start_y	: starting X coordinate for raster instructions
+ */
+static	void	set_up_addressing(P, Q,  step_y, start_x, start_y, swap)
+	Ptype	P,Q;
+	int	*step_y;
+	long	*start_x,
+		*start_y;
+	boolean	*swap;	
+{
+
+	if (P.x < Q.x) {
+		*start_x = P.x;
+		*swap = FALSE;
+	}
+	else {
+		*start_x = Q.x;
+		*swap = TRUE;
+	}
+
+	*start_y = P.y;
+	if (P.y < Q.y) {
+		*step_y = 1;
+	}
+	else {
+		*step_y = -1;
+	}
+}
+
+static	void	swap_array(array, n)
+	Ctype	*array;
+	int	n;
+{
+	Ctype	*left, *right;
+	Ctype	temp;
+
+	left = &array[0];
+	right = &array[n-1];
+
+	while (left < right) {
+		temp = *left;
+		*left++ = *right;
+		*right-- = temp;
+	}
 }
