@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.40 1995-06-22 01:59:11 dbrown Exp $
+ *      $Id: TickMark.c,v 1.41 1995-06-27 20:28:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4921,7 +4921,7 @@ static NhlErrorTypes CheckLog
                 }
 		if(tnew->tick.x_b_mode == NhlMANUAL) {
 			if(tnew->tick.x_b_tick_spacing < 1.0) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG style and NhlMANUAL mode selected but spacing is less than 1 decade reseting XBTickSpacing to 1.0",error_lead);
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG style and NhlMANUAL mode selected but spacing is less than 1 decade resetting XBTickSpacing to 1.0",error_lead);
 				ret = NhlWARNING;
 				tnew->tick.x_b_tick_spacing = 1.0;
 			} else if(((float)((int)tnew->tick.x_b_tick_spacing)) !=
@@ -4940,7 +4940,7 @@ static NhlErrorTypes CheckLog
 			(tnew->tick.x_b_minor_per_major != 1)&&
 			(tnew->tick.x_b_minor_per_major != 4)&&
 			(tnew->tick.x_b_minor_per_major != 8)) {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG tick marks can only have 1, 4 or 8 minor tickmarks, reseting XBMinorPerMajor to 1,4 or 8",error_lead);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG tick marks can only have 1, 4 or 8 minor tickmarks, resetting XBMinorPerMajor to 1,4 or 8",error_lead);
 			ret = NhlWARNING;
 		
 			if(tnew->tick.x_b_minor_per_major < 3) {
@@ -4962,7 +4962,7 @@ static NhlErrorTypes CheckLog
                 }
 		if(tnew->tick.x_t_mode == NhlMANUAL) {
 			if(tnew->tick.x_t_tick_spacing < 1.0){
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG style and NhlMANUAL mode selected but spacing is less than 1 decade reseting XTTickSpacing to 1.0",error_lead);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG style and NhlMANUAL mode selected but spacing is less than 1 decade resetting XTTickSpacing to 1.0",error_lead);
 			ret = NhlWARNING;
 			tnew->tick.x_t_tick_spacing = 1.0;
 			} else if(((float)((int)tnew->tick.x_t_tick_spacing)) !=
@@ -4981,7 +4981,7 @@ static NhlErrorTypes CheckLog
 			(tnew->tick.x_t_minor_per_major != 1)&&
 			(tnew->tick.x_t_minor_per_major != 4)&&
 			(tnew->tick.x_t_minor_per_major != 8)) {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG tick marks can only have 1, 4 or 8 minor tickmarks, reseting XTMinorPerMajor to 1,4 or 8",error_lead);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG tick marks can only have 1, 4 or 8 minor tickmarks, resetting XTMinorPerMajor to 1,4 or 8",error_lead);
 			ret = NhlWARNING;
 		
 			if(tnew->tick.x_t_minor_per_major < 3) {
@@ -5003,7 +5003,7 @@ static NhlErrorTypes CheckLog
                 }
 		if(tnew->tick.y_l_mode == NhlMANUAL) {
 			if(tnew->tick.y_l_tick_spacing < 1.0) {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG style and NhlMANUAL mode selected but spacing is less than 1 decade reseting YLTickSpacing to 1.0",error_lead);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG style and NhlMANUAL mode selected but spacing is less than 1 decade resetting YLTickSpacing to 1.0",error_lead);
 			ret = NhlWARNING;
 			tnew->tick.y_l_tick_spacing = 1.0;
 			} else if(((float)((int)tnew->tick.y_l_tick_spacing)) !=
@@ -5022,7 +5022,7 @@ static NhlErrorTypes CheckLog
 			(tnew->tick.y_l_minor_per_major != 1)&&
 			(tnew->tick.y_l_minor_per_major != 4)&&
 			(tnew->tick.y_l_minor_per_major != 8)) {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG tick marks can only have 1, 4 or 8 minor tickmarks, reseting YLMinorPerMajor to 1,4 or 8",error_lead);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG tick marks can only have 1, 4 or 8 minor tickmarks, resetting YLMinorPerMajor to 1,4 or 8",error_lead);
 			ret = NhlWARNING;
 		
 			if(tnew->tick.y_l_minor_per_major < 3) {
@@ -5044,7 +5044,7 @@ static NhlErrorTypes CheckLog
                 }
 		if(tnew->tick.y_r_mode == NhlMANUAL) {
 			if(tnew->tick.y_r_tick_spacing < 1.0){
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG style and NhlMANUAL mode selected but spacing is less than 1 decade reseting YRTickSpacing to 1.0",error_lead);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG style and NhlMANUAL mode selected but spacing is less than 1 decade resetting YRTickSpacing to 1.0",error_lead);
 			tnew->tick.y_r_tick_spacing = 1.0;
 			} else if(((float)((int)tnew->tick.y_r_tick_spacing)) !=
 					tnew->tick.y_r_tick_spacing) {
@@ -5062,7 +5062,7 @@ static NhlErrorTypes CheckLog
 			(tnew->tick.y_r_minor_per_major != 1)&&
 			(tnew->tick.y_r_minor_per_major != 4)&&
 			(tnew->tick.y_r_minor_per_major != 8)) {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG tick marks can only have 1, 4 or 8 minor tickmarks, reseting YLMinorPerMajor to 1,4 or 8",error_lead);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: NhlLOG tick marks can only have 1, 4 or 8 minor tickmarks, resetting YLMinorPerMajor to 1,4 or 8",error_lead);
 			ret = NhlWARNING;
 		
 			if(tnew->tick.y_r_minor_per_major < 3) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.8 1995-06-16 23:49:08 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.9 1995-06-27 20:28:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,7 +32,7 @@
 #include <ncarg/hlu/FormatI.h>
 
 #define Nhl_cnDEF_ARRAY_SIZE	16
-#define Nhl_cnMAX_LEVELS	256
+#define Nhl_cnMAX_LEVELS	255
 #define Nhl_cnDEF_COLOR		NhlFOREGROUND
 #define Nhl_cnDEF_PATTERN	1
 #define Nhl_cnDEF_DASH_PATTERN  0

@@ -1,5 +1,5 @@
 /*
- *      $Id: Format.c,v 1.9 1995-06-16 20:56:57 dbrown Exp $
+ *      $Id: Format.c,v 1.10 1995-06-27 20:28:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1227,6 +1227,7 @@ NhlErrorTypes _NhlGetScaleInfo
         int ieva;
 	float tmpf;
 	int i;
+	char *cp;
 
         lmsd = -10000;
         ndgd = 10;
@@ -1267,21 +1268,15 @@ NhlErrorTypes _NhlGetScaleInfo
 	*div_pwr = ieva;
 
 	tmpf = fabs(value);
-	sprintf(cbuf,"%.8f",tmpf);
+	sprintf(cbuf,"%.6e",tmpf);
 	*sig_digits = 0;
-	i = 0;
-	if (tmpf < 1.0) {
-		while ((cbuf[i] == '0' || cbuf[i] == '.') &&
-		       cbuf[i] != '\0')
-			i++;
+
+	cp = strrchr(cbuf,'e');
+	cp--;
+	while (*cp == '0' && cp > cbuf) {
+		cp--;
 	}
-	while (cbuf[i] != '\0') {
-		if (cbuf[i] == '0')
-			break;
-		if (cbuf[i] != '.')
-			(*sig_digits)++;
-		i++;
-	}
+	*sig_digits = cp - cbuf;
 
 	return NhlNOERROR;
 }
