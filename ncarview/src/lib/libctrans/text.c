@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.23 1993-01-22 01:10:35 clyne Exp $
+ *	$Id: text.c,v 1.24 1993-01-28 22:04:38 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -56,22 +56,27 @@
 static	float	matrix[2][2];	
 
 
-
-/* globals which retain information necessary for coordinate transformation
- *from one invocation of the font processing routines to the next
+/*
+ * offset in both x and y direction necessary to position characters
+ * due to inter-character spacing. The offsets are relative to the 
+ * VDC coordinate system and take into consideration the effects
+ * on text path imposed by char up and base vectors. i.e. they have 
+ * been transformed by $matrix.
  */
-static	int	X_spacing, Y_spacing;	/* character spacing		*/
-static	int	Width;			/* the absolute width of a 
-					 * string  after appropriate spacing 
-					 * has  been added.
-					 */
-static	int	Spacing;		/* spacing added to the character body
-					 * in the x or y direction
-					 */
+static	int	X_spacing, Y_spacing;	
 
-static	int	Widtharray2[WDTH_SPACE];/* array containing widths of each
-					 * character for variable space fonts
-					 */	
+/*
+ * absolute inter-character spacing. $Spacing is relative to the possibly
+ * rotated coordinate system imposed by the characte up and base vectors.
+ * i.e. $Spacing has not been transformed by $matrix.
+ */
+static	int	Spacing;		
+
+/*
+ * width of each character in the font
+ */
+static	int	Widtharray2[WDTH_SPACE];
+
 /*
  * arrays containing left and right extent of each character 
  * for variable space fonts
@@ -108,11 +113,12 @@ static	float	X_scale(height)
  *		for handling character orientation, character expansion and
  *		character height. 
  *	on entry:
-		fcap_template has been filled in
+ *		fcap_template has been filled in
  *	on exit
  *		matrix : contains data necessary to compute transformations
+ *
  */
-static	make_matrix()
+static	void	make_matrix()
 {
 	float	sx,sy;		/* scale in x and y direction	*/
 
@@ -146,7 +152,7 @@ static	make_matrix()
  *	on exit
  *		f2 : transformed version of f1 via the transformation matrix
  */
-static trans_coord(f1,f2)
+static void	trans_coord(f1,f2)
 	Fcap	*f1, *f2;	/* font lists	*/
 {
 	int	i,k;
@@ -168,17 +174,6 @@ static trans_coord(f1,f2)
 	}
 
 
-	/* if variable spacing is desired	*/
-	if (var_space) {
-		/* scale widths of individual characters	*/
-		for (i=0;i<F_NUMCHAR(*f1) ;i++)  {
-			leftExtent2[i] = xscale * leftExtent1[i];
-			rightExtent2[i] = xscale * rightExtent1[i];
-			Widtharray2[i] = rightExtent2[i] - leftExtent2[i];
-		}
-	}
-
-
 
 	/* scale other portions of font coordinate system 
 	 * note: only scaling is done here. Rotation is done in the alignment
@@ -189,7 +184,6 @@ static trans_coord(f1,f2)
 
 	F_CHAR_WIDTH(*f2) = F_CHAR_WIDTH(*f1) * xscale;
 	
-
 		/* scale y coordinates parameters*/
 	F_FONT_TOP(*f2) = F_FONT_TOP(*f1) * yscale;
 	F_FONT_CAP(*f2) = F_FONT_CAP(*f1) * yscale;
@@ -199,6 +193,31 @@ static trans_coord(f1,f2)
 
 		/*scale x coordinates parameters*/
 	F_FONT_RIGHT(*f2) = F_FONT_RIGHT(*f1) * xscale;
+
+	/*
+	 * compute left and right extent of each character in the font.	
+	 * For mono space characters this value is fixed for all characters
+	 */
+	if (var_space) {
+		for (i=0;i<F_NUMCHAR(*f1) ;i++)  {
+			leftExtent2[i] = xscale * leftExtent1[i];
+			rightExtent2[i] = xscale * rightExtent1[i];
+			Widtharray2[i] = rightExtent2[i] - leftExtent2[i];
+		}
+	}
+	else {
+		/*
+		 * for mono-spaced fonts the character body is fixed for
+		 * all characters. We assume that left and right extents
+		 * of the character body are the left and right extents
+		 * of the font coordinate system.
+		 */
+		for (i=0;i<F_NUMCHAR(*f1) ;i++)  {
+			leftExtent2[i] = 0;
+			rightExtent2[i] = F_FONT_RIGHT(*f2);
+			Widtharray2[i] = rightExtent2[i] - leftExtent2[i];
+		}
+	}
 
 }
 
@@ -253,72 +272,59 @@ int	Init_Font(fontcap)
  *		path" and "character spacing". These values are effected and
  *		therefore scaled appropriately by "Character Height", "Character
  *		expansion" and "Character Orientation".				
- *	on exit
- *		Y_spacing,
- *		X_spacing : contain spacing in x and/or y directions. 
- *			    NOTE : This spacing is in the along the Untranslated
- *				    coordinate system, not along base and up 
- *				    vector.
- *		Width :   if mono space font or if path is up or down then 
- *				contain height of and width of character width 
- *			   	appropriate spacing added.
- *			  else contain spacing between characters
- *		Spacing:	the amount of space added to the character
- *				body in either the x or y direction depending
- *				on the path
+ * on exit
+ *	Y_spacing,
+ *	X_spacing 	: contain spacing in x and/or y directions. 
+ *		    	  NOTE : This spacing is in the along the Untransformed
+ *		    	  coordinate system, not along base and up 
+ *		    	  vector.
+ *	Spacing		: the amount of space added to the character
+ *			  body in either the x or y direction depending
+ *			  on the path
  *		
  */
-static path_spacing ()
+static void	path_spacing ()
 {
 	int	dir = 1;
 
+	Spacing = (int) ((CHAR_SPACE * CHAR_HEIGHT) 
+		* (MAG(CHAR_X_BASE,CHAR_Y_BASE) 
+		/ MAG(CHAR_X_UP,CHAR_Y_UP)));
+
 	switch (TEXT_PATH) { 
-		case PATH_LEFT: 
-			dir = -1;	/* negate value	*/
-		case PATH_RIGHT:
-			Spacing = (int) ((CHAR_SPACE * CHAR_HEIGHT) 
-				* (MAG(CHAR_X_BASE,CHAR_Y_BASE) 
-				/ MAG(CHAR_X_UP,CHAR_Y_UP)));
 
-			Width = ((var_space) ? 0
-				: F_FONT_RIGHT(fcap_current)) + Spacing;
+	case PATH_LEFT: 
+		dir = -1;	/* negate value	*/
+	case PATH_RIGHT:
 
-			X_spacing = (int) ( 
-				Width * ((float) CHAR_X_BASE / 
-					MAG(CHAR_X_BASE,CHAR_Y_BASE)) 
-				* dir);
+		X_spacing = (int) ( 
+			Spacing * ((float) CHAR_X_BASE / 
+			MAG(CHAR_X_BASE,CHAR_Y_BASE)) * dir
+		);
 
-			Y_spacing = (int) ( 
-				Width * ((float) CHAR_Y_BASE / 
-					MAG(CHAR_X_BASE,CHAR_Y_BASE))
-				 * dir);
+		Y_spacing = (int) ( 
+			Spacing * ((float) CHAR_Y_BASE / 
+			MAG(CHAR_X_BASE,CHAR_Y_BASE)) * dir
+		);
 
-			break;
+		break;
 
-		case PATH_DOWN:
-			dir = -1;	/* negate value	*/
-		case PATH_UP:
-			Spacing = CHAR_SPACE * CHAR_HEIGHT;
+	case PATH_DOWN:
+		dir = -1;	/* negate value	*/
+	case PATH_UP:
 
-			/*
-			 * this should be "width = top + spacing" if the
-			 * font coordinate system truly began at (0,0)
-			 */
-			Width = (F_FONT_TOP(fcap_current) -
-				F_FONT_BOTTOM(fcap_current) + Spacing);
+		X_spacing = (int) (
+			Spacing * (CHAR_X_UP / MAG(CHAR_X_UP,CHAR_Y_UP)) * dir
+		);
 
+		Y_spacing = (int) ( 
+			Spacing * (CHAR_Y_UP / MAG(CHAR_X_UP,CHAR_Y_UP)) * dir
+		);
+		break;
 
-			X_spacing = (int) (
-				Width * (CHAR_X_UP / MAG(CHAR_X_UP,CHAR_Y_UP))
-				* dir);
-
-			Y_spacing = (int) ( 
-				Width * (CHAR_Y_UP / MAG(CHAR_X_UP,CHAR_Y_UP))
-				* dir);
-			break;
-		default:
-			break;
-	  }
+	default:
+	break;
+	}
 }
 
 
@@ -339,8 +345,8 @@ static modified ()
 }
 
 /*	left_most:
- *		This function finds the right-most extented character
- *		in a string and returns its right extent.
+ *		This function finds the left-most extented character
+ *		in a string and returns its left extent.
  *		It assumes that the coordinate origin is on the left side.
  *
  * on entry
@@ -356,8 +362,6 @@ static	int	left_most(s, strlen)
 	int	i;
 	int	index;
 	unsigned	min;
-
-	if (! var_space) return (0);
 
 
 	for (i=0, min=~0; i<strlen; i++) {
@@ -386,8 +390,6 @@ static	int	right_most(s, strlen)
 	int	i;
 	int	max, index;
 
-	if (! var_space) return (F_FONT_RIGHT(fcap_current));
-
 	for (i=0, max=0; i<strlen; i++) {
 		index = s[i] - F_CHAR_START(fcap_template);
 		max = MAX(rightExtent2[index], max);
@@ -415,8 +417,6 @@ static	int	middle_most(s, strlen)
 	int	i;
 	int	left, right;
 
-	if (! var_space) return (F_FONT_RIGHT(fcap_current) / 2);
-
 	left = left_most(s, strlen);
 	right = right_most(s, strlen);
 	return (left + ((right - left) / 2));
@@ -436,8 +436,6 @@ static	int	left_extent(c)
 {
 	int	index;
 
-	if (! var_space) return (0);
-
 	index = c - F_CHAR_START(fcap_template);
 	return(leftExtent2[index]);
 }
@@ -456,8 +454,6 @@ static	int	right_extent(c)
 {
 	int	index;
 
-	if (! var_space) return (F_FONT_RIGHT(fcap_current));
-
 	index = c - F_CHAR_START(fcap_template);
 	return(rightExtent2[index]);
 }
@@ -465,20 +461,20 @@ static	int	right_extent(c)
 /*	txt_ext_width:
  *
  *	Calculate the width of the text extent rectangle bounding the
- *	given string.
+ *	given string which includes with of the character bodies and the 
+ *	inter-character spacing. This function assumes that text path 
+ *	is either right or left.
  *
  * on entry
  *	var_space 	: true or false;
  *	strlen 		: length of string to print
- *	Width  		: amount of additional spacing to add due to
- *			  CHAR_SPACING if var_space is true, else it is
- *			  the with of a mono space character.
  * on exit
- *	return 		= Width of text extent rectangle
+ *	return 		= absolute length of text extent rectangle
  */
-static	int	text_extent_width(s,strlen)
+static	int	text_extent_length(s,strlen,path)
 	char	*s;
 	int	strlen;
+	Etype	path;
 {
 	int	i;
 	int	index;
@@ -486,13 +482,21 @@ static	int	text_extent_width(s,strlen)
 
 	if (! strlen) return(0);
 
-	if (! var_space) return ((Width * strlen) - Spacing);
-
-	for (i=0;i<strlen;i++) {
-		index = s[i] - F_CHAR_START(fcap_template);
-		total += (Widtharray2[index] + Width);
+	if (path == PATH_RIGHT || path == PATH_LEFT) {
+		for (i=0;i<strlen;i++) {
+			index = s[i] - F_CHAR_START(fcap_template);
+			total += (Widtharray2[index]);
+		}
 	}
-	total += (strlen - 1) * X_spacing;	/* add text spacing	*/
+	else {	/* path is up or down	*/
+		total = strlen * 
+			(F_FONT_TOP(fcap_current) -F_FONT_BOTTOM(fcap_current));
+	}
+
+	/* 
+	 * add inter-character spacing
+	 */
+	total += (strlen - 1) * Spacing;	
 	return(total);
 }
 
@@ -502,14 +506,11 @@ static	int	text_extent_width(s,strlen)
  *	must be "rotated" to accommodate the rotation of the string due to 
  *	orientation and path.
  *	
- *	on entry:
- *		strlen : length of the text string.
- *		s	: the string
- *		Width  : if mono space font or path is up or down 
- *				absolute Width of string along base vector
- *			 else  contain spacing between characters
- *	on exit:
- *		return = x translation value along  base vector.
+ * on entry:
+ *	strlen		: length of the text string.
+ *	s		: the string
+ * on exit:
+ *	return 		: x translation value along  base vector.
  *		 
  */ 
 
@@ -538,7 +539,9 @@ static int	str_width(strlen, s)
 	case A_LEFT :	/* align left	*/
 		switch (TEXT_PATH) {
 		case PATH_LEFT  : 
-			return(- text_extent_width(s+1,strlen-1));
+			return(- (text_extent_length(s, strlen, TEXT_PATH) - 
+				right_extent(s[0]))
+			);
 
 		case PATH_RIGHT : 
 			return(left_extent(s[0]));
@@ -549,12 +552,13 @@ static int	str_width(strlen, s)
 	case A_CENTER :	/*align center	*/
 		switch (TEXT_PATH) {
 		case PATH_RIGHT : 
-			return((text_extent_width(s,strlen) / 2) +
+			return((text_extent_length(s,strlen,TEXT_PATH) / 2) +
 				left_extent(s[0]));
 
 		case PATH_LEFT 	: 
-			return(-((text_extent_width(s,strlen) / 2) -
-					F_FONT_RIGHT(fcap_current)));
+			return(-((text_extent_length(s,strlen,TEXT_PATH) / 2) -
+					right_extent(s[0]))
+			);
 		case PATH_UP 	: 
 		case PATH_DOWN  : return(middle_most(s, strlen));
 		}
@@ -562,7 +566,7 @@ static int	str_width(strlen, s)
 	case A_RIGHT  : 	/*align right	*/
 		switch (TEXT_PATH) {
 		case PATH_RIGHT : 
-			return(text_extent_width(s,strlen) + 
+			return(text_extent_length(s,strlen,TEXT_PATH) + 
 				left_extent(s[0]));
 		case PATH_LEFT 	:  
 			return(right_extent(s[0]));
@@ -580,18 +584,15 @@ static int	str_width(strlen, s)
  *	The value returned must be "rotated" to accommodate the rotation 
  *	of the string due to orientation and path.
  *	
- *	on entry:
- *		strlen 	: the length of the string.
- *		fcap_current has been filled in.
- *		Width  : if mono space font or path is up or down 
- *				absolute Width of string along base vector
- *			 else  contain spacing between characters
- *	on exit:
- *		return = y translation value along up vector.
+ * on entry
+ *	strlen 		: the length of the string.
+ * on exit
+ *	return 		: y translation value along up vector.
  *		 
  */ 
-static int	str_height(strlen)
+static int	str_height(strlen, s)
 	int	strlen;
+	char	*s;
 {
 	switch (TEXT_ALI_V) {
 	case A_NORM_V :
@@ -608,7 +609,9 @@ static int	str_height(strlen)
 		case PATH_DOWN :
 			return (F_FONT_TOP(fcap_current));
 		case PATH_UP :  
-			return((Width * (strlen-1)) + F_FONT_TOP(fcap_current));
+			return(text_extent_length(s, strlen, TEXT_PATH) +
+				F_FONT_BOTTOM(fcap_current)
+			);
 		}
 
 	case A_CAP :
@@ -618,7 +621,11 @@ static int	str_height(strlen)
 		case PATH_DOWN : 
 			return (F_FONT_CAP(fcap_current));
 		case PATH_UP :  
-			return((Width * (strlen-1)) + F_FONT_CAP(fcap_current)); 
+			return(text_extent_length(s, strlen, TEXT_PATH) +
+				F_FONT_BOTTOM(fcap_current) -
+				(F_FONT_TOP(fcap_current) -
+				F_FONT_CAP(fcap_current))
+			);
 		}
 	case A_HALF : 
 		switch(TEXT_PATH) {
@@ -626,10 +633,13 @@ static int	str_height(strlen)
 		case PATH_LEFT :
 			return (F_FONT_HALF(fcap_current));
 		case PATH_DOWN : 
-			return (-((((strlen * Width) - Spacing) / 2)
-				- F_FONT_TOP(fcap_current)));
+			return(-((text_extent_length(s, strlen, TEXT_PATH)/2) -
+				F_FONT_TOP(fcap_current))
+			);
 		case PATH_UP :  
-			return(((Width * strlen) - Spacing) / 2); 
+			return((text_extent_length(s, strlen ,TEXT_PATH) / 2) +
+				F_FONT_BOTTOM(fcap_current)
+			);
 		}
 	case A_BASE : 
 		switch(TEXT_PATH) {
@@ -638,8 +648,11 @@ static int	str_height(strlen)
 		case PATH_UP :  
 			return (F_FONT_BASE(fcap_current));
 		case PATH_DOWN : 
-			return(-((Width * (strlen-1)) - 
-				F_FONT_BASE(fcap_current))); 
+			return(- (text_extent_length(s, strlen, TEXT_PATH) -
+				F_FONT_TOP(fcap_current) -
+				(F_FONT_BASE(fcap_current) - 
+				F_FONT_BOTTOM(fcap_current)))
+			); 
 		}
 	case A_BOTTOM : 
 		switch(TEXT_PATH) {
@@ -648,8 +661,9 @@ static int	str_height(strlen)
 		case PATH_UP :  
 			return (F_FONT_BOTTOM(fcap_current));
 		case PATH_DOWN : 
-			return(-((Width * (strlen-1)) - 
-				F_FONT_BOTTOM(fcap_current))); 
+			return(- (text_extent_length(s, strlen, TEXT_PATH) -
+				F_FONT_TOP(fcap_current))
+			); 
 		}
 	default :
 		return(0);
@@ -676,7 +690,7 @@ static void	text_align(transx,transy, strlen,s)
 	float	x,y;	/*temp storage	*/
 
 	x = (float) str_width(strlen,s);	/*translation of x	*/
-	y = (float) str_height(strlen);		/*translation of y	*/
+	y = (float) str_height(strlen,s);	/*translation of y	*/
 
 
 	*transx = -((x * cosBase) - (y * sinUp));
@@ -831,19 +845,21 @@ int	Text(cgmc)
 	CGMC	*cgmc;
 {
 	int	index;		/* index into the transformed fontlist	*/
-	int	x_space = 0;	/* spacing in x and y direction		*/
-	int	y_space = 0;
+	int	x_space,	
+		y_space;	/* used to position chars in text string*/
+	int	prev_width;	/* width of previous character in string*/
+	int	left_ext;	/* left extent of character body	*/
 	int	i,k;
 	long	trans_x, trans_y;
 	int	numstroke;	/* number of strokes making up the font	*/
 	int	char_ind;
 	int	str_ind;	/* index to the current string		*/
+	long	align_x,
+		align_y;	/* translatation required by text alignment */
 	int	status = 0;
 
-	static	char *string = NULL;	/* the string currently being stroked */
-	static	unsigned str_space = 0;	/* size of string array		*/
+	char	string[1024];	/* local copy of string to be stroked 	*/
 
-	static	Ptype	pStart; 	/* point of origin of text	*/
 	static	Ptype	p[1024];	/* point buffer array		*/
 
 	/*
@@ -857,6 +873,9 @@ int	Text(cgmc)
 	if (! FontIsInit)
 		return(0);	/* no font, nothing to do	*/
 
+	/*
+	 * initialize the line drawing code. We stroke text with polylines.
+	 */
 	if (open_line_draw() < 0) return(-1);
 
 	modified();	/* recalc transformation values if attributes changed*/
@@ -867,18 +886,15 @@ int	Text(cgmc)
 	 */
 	for (str_ind = 0; str_ind < cgmc->Snum; str_ind++) {
 
-	/* make sure their is sufficient space in s.string	*/
-	if (( i = cgmc->s->string_space[str_ind]) > str_space) {
-		if (string != (char *) NULL) free ((Voidptr) string);
-		string = (char *) malloc ((unsigned) i * sizeof(char));
-		if (! string) {
-			ESprintf(errno, "malloc(%d)", i * sizeof(char));
-			return(-1);
-		}
-		str_space = i;
-	}
+	prev_width = 0;
+	x_space = -X_spacing;
+	y_space = -Y_spacing;
 
-	(void) strcpy(string,cgmc->s->string[0]);
+	/*
+	 * make a local copy of the string to be stroked so we can modify
+	 * it if necessary.
+	 */
+	(void) strncpy(string,cgmc->s->string[str_ind], sizeof(string)-1);
 
 	/*
 	 * make sure every character in the string has a definition. If
@@ -896,12 +912,19 @@ int	Text(cgmc)
 
 		
 
-	/* calculate text alignment	*/
+	/* 
+	 * compute translation of text required by text alignment and
+	 * up and base vectors.
+	 */
 	text_align(&trans_x, &trans_y, strlen(string), string); 
 
-	/*store contents of cgmc	*/
-	pStart.x = cgmc->p[0].x + trans_x; 
-	pStart.y = cgmc->p[0].y + trans_y;
+	/*
+	 * now add in starting position of text string
+	 */
+	align_x = cgmc->p[0].x + trans_x; 
+	align_y = cgmc->p[0].y + trans_y;
+
+	left_ext = leftExtent2[string[0] - F_CHAR_START(fcap_template)];	
 
 
 	/* transform text in to cgmc polylines	*/
@@ -919,14 +942,66 @@ int	Text(cgmc)
 		/* number of strokes making up a character.	*/
 		numstroke = F_NUMSTROKE(fcap_current, index);
 
+		/* 
+		 * compute position of character as a function of 
+		 * text path and orientation, inter-character spacing, and
+		 * size of previous character's body.
+		 */
+		switch (TEXT_PATH) {
+		
+		case	PATH_RIGHT:
+			x_space += X_spacing + 
+				((prev_width + left_ext - leftExtent2[index]) * 
+				CHAR_X_BASE/MAG(CHAR_X_BASE,CHAR_Y_BASE));
 
+			y_space += Y_spacing +
+				((prev_width + left_ext - leftExtent2[index]) * 
+				CHAR_Y_BASE/MAG(CHAR_X_BASE,CHAR_Y_BASE));
+			break;
+
+		case	PATH_LEFT:
+			x_space += X_spacing - 
+				((prev_width + left_ext - leftExtent2[index]) * 
+				CHAR_X_BASE/MAG(CHAR_X_BASE,CHAR_Y_BASE));
+
+			y_space += Y_spacing -
+				((prev_width + left_ext - leftExtent2[index]) * 
+				CHAR_Y_BASE/MAG(CHAR_X_BASE,CHAR_Y_BASE));
+			break;
+
+		case	PATH_UP:
+			x_space += X_spacing +
+				(prev_width *
+				CHAR_X_UP/MAG(CHAR_X_UP,CHAR_Y_UP));
+ 
+			y_space += Y_spacing +
+				(prev_width *
+				CHAR_Y_UP/MAG(CHAR_X_UP,CHAR_Y_UP));
+			break;
+
+		case	PATH_DOWN:
+			x_space += X_spacing -
+				(prev_width *
+				CHAR_X_UP/MAG(CHAR_X_UP,CHAR_Y_UP));
+ 
+			y_space += Y_spacing -
+				(prev_width *
+				CHAR_Y_UP/MAG(CHAR_X_UP,CHAR_Y_UP));
+			break;
+		}
+
+
+		/*
+		 * stroke the character
+		 */
 		if (numstroke) {
 
+
 			p[k].x = F_X_COORD(fcap_current, index, i)
-				+ x_space + pStart.x;
+				+ x_space + align_x;
 
 			p[k].y = F_Y_COORD(fcap_current, index, i)
-				+ y_space + pStart.y;
+				+ y_space + align_y;
 
 			k++; i++; 
 
@@ -941,10 +1016,11 @@ int	Text(cgmc)
 					k = 0;
 				} 
 
-				p[k].x = F_X_COORD(fcap_current, index, i)					+ x_space + pStart.x;
+				p[k].x = F_X_COORD(fcap_current, index, i) + 
+					x_space + align_x;
 
-				p[k].y = F_Y_COORD(fcap_current, index, i)
-					+ y_space + pStart.y;
+				p[k].y = F_Y_COORD(fcap_current, index, i) + 
+					y_space + align_y;
 				k++; 
 			}
 
@@ -955,36 +1031,18 @@ int	Text(cgmc)
 
 		}	/* if numstroke	*/
 
-		/* calculate possistion of NEXT character for
-		 * for variable space font
+		/*
+		 * store width/height of this character so we can use
+		 * it to compute the position of the next character
 		 */
-		if (var_space && (TEXT_PATH == PATH_RIGHT))  {
-			x_space += X_spacing 
-				+ (Widtharray2[index] 
-			* CHAR_X_BASE/MAG(CHAR_X_BASE,CHAR_Y_BASE));
-
-			y_space += Y_spacing 
-				+ (Widtharray2[index] 
-			* CHAR_Y_BASE/MAG(CHAR_X_BASE,CHAR_Y_BASE));
+		if (TEXT_PATH == PATH_UP || TEXT_PATH == PATH_DOWN) {
+			prev_width = 
+				F_FONT_TOP(fcap_current) - 
+				F_FONT_BOTTOM(fcap_current);
 		}
-
-		if (var_space && (TEXT_PATH == PATH_LEFT))  {
-			x_space += (X_spacing 
-				- (Widtharray2[index] 
-				* CHAR_X_BASE/MAG(CHAR_X_BASE,CHAR_Y_BASE)));
-
-			y_space += (Y_spacing 
-				- (Widtharray2[index] 
-				* CHAR_Y_BASE/MAG(CHAR_X_BASE,CHAR_Y_BASE)));
-		}
-	
-		/* calculate possistion of next character for
-		 * for mono space font
-		 */
-		if (!(var_space) || (TEXT_PATH == PATH_UP)
-			|| (TEXT_PATH == PATH_DOWN)) {
-			x_space += X_spacing; 
-			y_space += Y_spacing;
+		else {
+			prev_width = Widtharray2[index];
+			left_ext = leftExtent2[index];
 		}
 
 	}

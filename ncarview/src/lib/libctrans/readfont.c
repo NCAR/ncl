@@ -1,5 +1,5 @@
 /*
- *	$Id: readfont.c,v 1.9 1993-01-08 21:17:59 clyne Exp $
+ *	$Id: readfont.c,v 1.10 1993-01-28 22:04:34 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -30,19 +30,25 @@
  *	maintenance manual for information on CGMC). For proper function of
  *	"readfont", the binary version of the fontcap must be created
  *	in exact format of that produced by the FORTRAN translator
- *	"fntchg". For information on fontcaps see "NCAR Computer
+ *	"fontc". For information on fontcaps see "NCAR Computer
  *	Graphics Metafile Translator" documentation. For information
  *	on their storage see fontcap translation documentation
  *
- *	Note: In debug mode this file will print out the contents of the 
- *	fontcap.
  *
- *	[revised]	John Clyne	(clyne@bierstadt.ucar.edu)
- *	
- *	date		Wed Mar 15 09:52:01 MST 1989
+ *	This module makes the following assumptions which are not explicitly
+ *	stated in the fontcap manual:
  *
- *	fontcap is now represented as a single struct an may be read
- *	in with one read
+ *	1) The Font coordinate system is constant for all characters in a
+ *	given font. 
+ *
+ *	2) Each character defined in a font is centered left to right 
+ *	in the font coordinate system.
+ *
+ *	3) left and right extents for the character bodies for variable-spaced
+ *	fonts may vary.
+ * 
+ *	4) Top and bottom extent is constant for each character in a given
+ *	font.
  */ 
 
 /*	decodefont:
