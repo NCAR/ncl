@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ncargpath.c,v 1.1 1992-09-09 17:37:45 clyne Exp $
+ *      $Id: ncargpath.c,v 1.2 1992-12-10 21:26:46 don Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "ncarg/c.h"
+#include <ncarg/c.h>
 
 void	usage(progname)
 	char	*progname;
