@@ -1,5 +1,5 @@
 /*
- *	$Id: in.c,v 1.9 1992-11-19 21:49:26 clyne Exp $
+ *	$Id: in.c,v 1.10 1993-01-11 21:19:51 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -201,7 +201,7 @@ int	SetRecord(recnum)
 {
 	CGM_flushGetInstr(cgmFd);
 	if (CGM_lseek(cgmFd, recnum, L_SET) < 0) {
-		ESprintf(errno, "CGM_lseek(%d, %d, %d)", cgmFd, recnum, L_SET);
+		ESprintf(errno,"CGM_lseek(%d, %d, %d)",cgmFd,recnum,L_SET);
 		return(-1);
 	}
 	return(0);
@@ -229,9 +229,9 @@ int	Instr_Dec(cgmc)
 	 * fetch next raw CGM instruction from metafile
 	 */
 	if ((retnum = CGM_getInstr(cgmFd, &instr)) < 1) {
-		if (retnum < 0) {	/* else eof	*/
+		if (retnum < 0 || (retnum == 0 && errno != 0)) {	
 			ESprintf(errno,"Error fetching CGM element");
-		
+			/* else eof	*/
 		}
 		return(retnum);
 	}

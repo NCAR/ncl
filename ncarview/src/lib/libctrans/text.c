@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.21 1993-01-11 16:48:01 clyne Exp $
+ *	$Id: text.c,v 1.22 1993-01-11 21:19:54 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -330,7 +330,7 @@ static path_spacing ()
 static modified ()
 {
 
-	if (TEXT_ATT_DAMAGE || TEXT_F_IND_DAMAGE) {
+	if (TEXT_ATT_DAMAGE) {
 		make_matrix();
 		trans_coord(&fcap_template,&fcap_current);
 		path_spacing();
@@ -810,7 +810,7 @@ int	Text(cgmc)
 	static	unsigned str_space = 0;	/* size of string array		*/
 
 	static	Ptype	pStart; 	/* point of origin of text	*/
-	static	Ptype	p[4];	/* point buffer array		*/
+	static	Ptype	p[1024];	/* point buffer array		*/
 
 	/*
 	 * make sure font has not changed
@@ -910,7 +910,9 @@ int	Text(cgmc)
 			for (;i < numstroke;i++) { 
 				if (!(F_PEN(fcap_template, index, i))) {
 
-					if (line_draw(p, k) < 0) status = -1;
+					if (line_draw(p, k) < 0) {
+						status = -1;
+					}
 
 					k = 0;
 				} 
@@ -922,7 +924,9 @@ int	Text(cgmc)
 				k++; 
 			}
 
-			if (line_draw(p, k) < 0) status = -1;
+			if (line_draw(p, k) < 0) {
+				status = -1;
+			}
 			k = 0;
 
 			}	/* if numstroke	*/

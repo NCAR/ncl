@@ -1,5 +1,5 @@
 /*
- *	$Id: default.c,v 1.17 1993-01-11 19:08:55 clyne Exp $
+ *	$Id: default.c,v 1.18 1993-01-11 21:19:48 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -832,6 +832,7 @@ CGMC *c;
 {
 	dt->text_f_ind = c->ix[0];
 	dt->text_f_ind_damage = at->text_f_ind_access = TRUE;
+	dt->text_att_damage = at->text_att_access = TRUE;
 
 	return(0);
 }
@@ -1009,8 +1010,17 @@ CGMC *c;
 {
 	dt->fill_ind = c->ix[0];
 
+/*
+ *	ifdef out this warning message because this element appears
+ *	in so many of pre-ncarg3.2 NCGMs even though we have never
+ *	supported it.
+ */
+#ifdef	DEAD
 	ESprintf(ENOSYS, "Unsupported CGM element");
 	return (-1);
+#else
+	return(0);
+#endif
 }
 
 /*ARGSUSED*/
@@ -1091,8 +1101,17 @@ CGMC *c;
 {
 	dt->pattern_ind = c->ix[0];
 
+/*
+ *	ifdef out this warning message because this element appears
+ *	in so many of pre-ncarg3.2 NCGMs even though we have never
+ *	supported it.
+ */
+#ifdef	DEAD
 	ESprintf(ENOSYS, "Unsupported CGM element");
 	return (-1);
+#else
+	return(0);
+#endif
 }
 
 /*ARGSUSED*/
