@@ -1,5 +1,5 @@
 /*
- *      $Id: xy11c.c,v 1.4 1995-02-02 22:58:24 haley Exp $
+ *      $Id: xy11c.c,v 1.5 1995-02-08 18:02:30 haley Exp $
  */
 /************************************************************************
 *									*
@@ -113,7 +113,6 @@ main()
 	 * (Setting the color information.)
 	 */
 	NhlRLClear(rlist);
-	NhlRLSetInteger(rlist,NhlNwkPause,True);
 	NhlCreate(&xworkid,"xy11xWork",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
 									rlist);
 

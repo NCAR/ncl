@@ -1,11 +1,8 @@
 #
-#   $Id: yMakefile,v 1.5 1995-02-06 18:07:09 haley Exp $
+#   $Id: yMakefile,v 1.6 1995-02-08 18:02:31 haley Exp $
 #
 #   Makefile for HLU XYPlot examples
 #
-
-NCGMS   =   xy01c.ncgm xy02c.ncgm xy03c.ncgm xy04c.ncgm xy05c.ncgm \
-			xy11c.ncgm xy12c.ncgm xy13c.ncgm xy11f.ncgm
 
 PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
@@ -13,6 +10,8 @@ SYS_LIBS    =   $(CTOFLIBS) -lm
 
 SRCS        = xy01c.c xy02c.c xy03c.c xy04c.c xy05c.c xy11c.c xy12c.c \
 				xy13c.c xy11f.f
+OBJS        = xy01c.o xy02c.o xy03c.o xy04c.o xy05c.o xy11c.o xy12c.o \
+				xy13c.o xy11f.o
 INCLUDES    = xy13c.h 
 DATA        = xy12c.asc
 RES         = xy01.res xy02.res xy03.res xy04.res xy05.res
@@ -30,6 +29,6 @@ HLUCExampleTarget(xy12c,xy12c.o)
 HLUCExampleTarget(xy13c,xy13c.o)
 HLUFExampleTarget(xy11f,xy11f.o)
 
-CleanFilesTarget($(CPROGS) $(FPROGS) $(NCGMS) $(OBJS))
+CleanFilesTarget($(OBJS))
 DependTarget($(SRCS))
 
