@@ -23,13 +23,13 @@ typedef	struct	{
 	CDtype	direct;
 	}		COtype;
 
-typedef short int	Etype;		/* Enumerated */
+typedef short Etype;		/* Enumerated */
 
-typedef long int	Itype;		/* Integer */
+typedef long Itype;		/* Integer */
 
-typedef long	int	IXtype;		/* Index */
+typedef long IXtype;		/* Index */
 
-typedef long int	VDCtype;	/* VDC space value */
+typedef long VDCtype;	/* VDC space value */
 
 typedef struct {
 	VDCtype	x,y;
@@ -50,39 +50,39 @@ typedef	struct	{
 	int	class;
 	int	command;
 
-	unsigned short int	CInum,CIspace;
+	unsigned int	CInum,CIspace;
 	CItype*		ci;
 
-	unsigned short int	CDnum,CDspace;
+	unsigned int	CDnum,CDspace;
 	CDtype*		cd;
 
-	unsigned short int	Enum,Espace;
+	unsigned int	Enum,Espace;
 	Etype*		e;	
 
-	unsigned short int	Inum,Ispace;
+	unsigned int	Inum,Ispace;
 	Itype*		i;
 
-	unsigned short int	IXnum,IXspace;
+	unsigned int	IXnum,IXspace;
 	IXtype*		ix;
 
-	unsigned short int	Pnum,Pspace;
+	unsigned int	Pnum,Pspace;
 	Ptype*		p;
 
-	unsigned short int	Rnum,Rspace;
+	unsigned int	Rnum,Rspace;
 	Rtype*		r;
 
-	unsigned short int	Snum,Sspace;
+	unsigned int	Snum,Sspace;
 	Stype*		s;
 
-	unsigned short int	VDCnum,VDCspace;
+	unsigned int	VDCnum,VDCspace;
 	VDCtype*	vdc;
 
-	unsigned short int	Cnum, Cspace;
+	unsigned int	Cnum, Cspace;
 	Ctype*		c;
 	
 	boolean 	more;
 
-	short int	Dnum,Dspace;
+	int	Dnum,Dspace;
 	Dtype*		d;
 }	CGMC;
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.c,v 1.18 1992-11-06 23:17:44 clyne Exp $
+ *	$Id: commondev.c,v 1.19 1993-01-06 21:12:06 clyne Exp $
  */
 #include <math.h>
 #include <stdio.h>
@@ -257,7 +257,7 @@ CGMC *c;
 		 * last group. n = count of processed points .
 		 * p = count of processed unsent point specifications.
 		 */
-		while ((unsigned short) n < (unsigned short) (c->Pnum - 1)) {
+		while (n < (c->Pnum - 1)) {
 			if (Clipper(c->p[n].x,c->p[n].y,c->p[n+1].x,c->p[n+1].y,
 				&x1, &y1, &x2, &y2)) {
 
@@ -362,7 +362,7 @@ CGMC *c;
 	 * draw line segments one at a time
 	 */
 	if (ODD(c->Pnum)) c->Pnum--;    /* must be even */
-	for(i=0; (unsigned short) i<c->Pnum; i+=2) {
+	for(i=0; i<c->Pnum; i+=2) {
 		dev->line(c->p[i].x, c->p[i].y, c->p[i+1].x, c->p[i+1].y);
 	}
 	return(0);
@@ -409,7 +409,7 @@ int	fat_dot;
 
 	switch (MARKER_TYPE) {
 	case MARKER_X:	
-		for(i=0;(unsigned short) i<c->Pnum;i++) {
+		for(i=0;i<c->Pnum;i++) {
 			dev->line( c->p[i].x - offset, c->p[i].y - offset,
 			      c->p[i].x + offset, c->p[i].y + offset);
 
@@ -419,13 +419,13 @@ int	fat_dot;
 		break;
 
 	case MARKER_CIRCLE:
-		for(i=0;(unsigned short) i<c->Pnum;i++) {
+		for(i=0;i<c->Pnum;i++) {
 			quick_circle((int) c->p[i].x, (int) c->p[i].y, offset);	
 		}
 		break;
 
 	case MARKER_STAR:
-		for(i=0;(unsigned short) i<c->Pnum;i++) {
+		for(i=0;i<c->Pnum;i++) {
 			dev->line( c->p[i].x - offset, c->p[i].y,
 			      c->p[i].x + offset, c->p[i].y);
 
@@ -440,7 +440,7 @@ int	fat_dot;
 		}
 		break;
 	case MARKER_PLUS:
-		for(i=0;(unsigned short) i<c->Pnum;i++) {
+		for(i=0;i<c->Pnum;i++) {
 			dev->line( c->p[i].x - offset, c->p[i].y,
 			      c->p[i].x + offset, c->p[i].y);
 
@@ -449,7 +449,7 @@ int	fat_dot;
 		}
 		break;
 	case MARKER_DOT:
-		for(i=0;(unsigned short) i<c->Pnum;i++) {
+		for(i=0;i<c->Pnum;i++) {
 			/*
 			 * see if device needs a larger then normal dot
 			 */
@@ -592,7 +592,7 @@ CGMC *c;
 		}
 
 
-		for(i = 2; (unsigned short) i < c->Pnum ; i++) {
+		for(i = 2; i < c->Pnum ; i++) {
 			if (! Clipper(c->p[i-1].x,c->p[i-1].y,
 				c->p[i].x,c->p[i].y,
 				&x1,&y1,&x2,&y2)) {

@@ -1,5 +1,5 @@
 /*
- *	$Id: clear_text.c,v 1.10 1992-09-09 15:08:58 clyne Exp $
+ *	$Id: clear_text.c,v 1.11 1993-01-06 21:12:02 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -346,7 +346,7 @@ CGMC *c;
 	(void) printf("\nFONT LIST \n");
 
 	if (! opt.no_para) {
-		for (i=0; (unsigned short) i<c->Snum; i++)
+		for (i=0; i<c->Snum; i++)
 			(void) printf("\n font		-> \"%s\"\n", 
 				c->s->string[i]);
 	}
@@ -648,7 +648,7 @@ CGMC *c;
 	if (! opt.no_data) {
 
 		(void) printf("	%d points follow:\n", c->Pnum);
-		for (i = 0; (unsigned short) i < c->Pnum; i++) {
+		for (i = 0; i < c->Pnum; i++) {
 			(void) printf("		P(%d)	-> %6d, %6d\n",
 				i, c->p[i].x, c->p[i].y);
 		}
@@ -669,7 +669,7 @@ CGMC *c;
 	if (! opt.no_data) {
 
 		(void) printf("	%d points follow:\n", c->Pnum);
-		for (i = 0; (unsigned short) i < c->Pnum; i++) {
+		for (i = 0; i < c->Pnum; i++) {
 			(void) printf("		P(%d)	-> %6d, %6d\n",
 				i, c->p[i].x, c->p[i].y);
 		}
@@ -689,7 +689,7 @@ CGMC *c;
 	if (! opt.no_data) {
 
 		(void) printf("	%d points follow:\n", c->Pnum);
-		for (i = 0; (unsigned short) i < c->Pnum; i++) {
+		for (i = 0; i < c->Pnum; i++) {
 			(void) printf("		P(%d)	-> %6d, %6d\n",
 				i, c->p[i].x, c->p[i].y);
 		}
@@ -751,7 +751,7 @@ CGMC *c;
 	if (! opt.no_data) {
 
 		(void) printf("	%d points follow:\n", c->Pnum);
-		for (i = 0; (unsigned short) i < c->Pnum; i++) {
+		for (i = 0; i < c->Pnum; i++) {
 			(void) printf("		P(%d)	-> %6d, %6d\n",
 				i, c->p[i].x, c->p[i].y);
 		}
@@ -1563,7 +1563,7 @@ CGMC	*c;
 	(void) printf("\nCOLOUR TABLE\n");
 
 	if (! opt.no_para) {
-		for (i = 0; (unsigned short) i < c->CDnum; i++) {
+		for (i = 0; i < c->CDnum; i++) {
 		(void) printf("	index & colour	-> %6d	(%6d, %6d, %6d)\n",
 			c->ci[0] + i, 
 			c->cd[i].red, c->cd[i].green, c->cd[i].blue);
@@ -1599,7 +1599,7 @@ CGMC *c;
 	if (! opt.no_data) {
 		(void) printf("	data record follows:\n\n");
 
-		for (i = 0; (unsigned short) i < c->Snum; i++) 
+		for (i = 0; i < c->Snum; i++) 
 			(void) printf("			 \"%s\"\n", 
 				c->s->string[i]);
 	}

@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.21 1992-12-12 00:22:04 clyne Exp $
+ *	$Id: X11_class0.c,v 1.22 1993-01-06 21:11:48 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -595,8 +595,8 @@ CGMC *c;
 		dev_extent.urx = dev.width - 1;
 
 		transinit(&dev_extent, dev_coord_mod, TRUE);
-		GCSetClipExtent((short) dev_extent.llx, (short) dev_extent.ury,
-				(short) dev_extent.urx, (short) dev_extent.lly);
+		GCSetClipExtent(dev_extent.llx, dev_extent.ury,
+				dev_extent.urx, dev_extent.lly);
 	}
 	return(0);
 }

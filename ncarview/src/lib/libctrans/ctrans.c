@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.27 1992-10-15 16:49:08 clyne Exp $
+ *	$Id: ctrans.c,v 1.28 1993-01-06 21:12:10 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -227,7 +227,7 @@ CGMC *cgmc;
 			return(-1);
 		}
 
-		for (i = 1; (unsigned short) i < cgmc->Sspace; i++) {
+		for (i = 1; i < cgmc->Sspace; i++) {
 			cgmc->s->string_space[i] = 0;
 			cgmc->s->string[i] = NULL;
 		}

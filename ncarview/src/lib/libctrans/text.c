@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.17 1992-11-06 23:35:57 clyne Exp $
+ *	$Id: text.c,v 1.18 1993-01-06 21:12:26 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -739,7 +739,7 @@ int	Text(cgmc)
 	/*
 	 *	process each string in the cgmc
 	 */
-	for (str_ind = 0; (unsigned short) str_ind < cgmc->Snum; str_ind++) {
+	for (str_ind = 0; str_ind < cgmc->Snum; str_ind++) {
 
 	/* make sure their is sufficient space in s.string	*/
 	if (( i = cgmc->s->string_space[str_ind]) > str_space) {
@@ -813,7 +813,7 @@ int	Text(cgmc)
 
 
 			/* make sure there is room in cgmc for strokes	*/
-			if (cgmc->Pspace <= (unsigned short) numstroke) {
+			if (cgmc->Pspace <= numstroke) {
 				if (cgmc->p != (Ptype *) NULL) 
 					free((Voidptr) cgmc->p);
 

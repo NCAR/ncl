@@ -1,5 +1,5 @@
 /*
- *	$Id: fontlist.c,v 1.9 1992-09-09 15:09:26 clyne Exp $
+ *	$Id: fontlist.c,v 1.10 1993-01-06 21:12:17 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -148,7 +148,7 @@ CGMC *c;
 	}
 
 	/* copy fontlist to the table	*/
-	for (i=0; (unsigned short) i < c->Snum; i++) {
+	for (i=0; i < c->Snum; i++) {
 		(void) strncpy(Fontlist[i],c->s->string[i], MAX_F_NAME_LEN - 1);
 	}
 	return(status);

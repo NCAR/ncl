@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class3.c,v 1.6 1992-09-01 23:41:14 clyne Exp $
+ *	$Id: X11_class3.c,v 1.7 1993-01-06 21:11:51 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -69,7 +69,7 @@ CGMC *c;
  *	lry		: lower right y coordinate of device.
  */
 GCSetClipExtent(ulx, uly, lrx, lry)
-	short	ulx, uly, lrx, lry;
+	int	ulx, uly, lrx, lry;
 {
 	devExtentRectangle.x = ulx;
 	devExtentRectangle.y = uly;
@@ -89,14 +89,14 @@ GCSetClipExtent(ulx, uly, lrx, lry)
  */
 GCsetclipping()
 {
-	short	ulx, uly, lrx, lry;		/* origin of rectangle	*/
+	int	ulx, uly, lrx, lry;		/* origin of rectangle	*/
 
 	XRectangle rectangle;
 
 	rectangle = devExtentRectangle;
 
 	if (CLIPFLAG) {
-		short r_lrx, r_lry;
+		int r_lrx, r_lry;
 
 		/*
 		 * CGM's coodinate origin is the lower left corner, X's
