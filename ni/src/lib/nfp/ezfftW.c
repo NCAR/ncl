@@ -36,9 +36,12 @@ NhlErrorTypes ezfftf_W( void )
   void *cf, *xbar;
   int ndims_cf, dsizes_cf[NCL_MAX_DIMENSIONS];
   double *tmp_cf1, *tmp_cf2, *tmp_xbar;
+  NclBasicDataTypes type_cf;
+  NclTypeClass type_cf_class;
 /*
  * Attribute variables
  */
+  void *N;
   int att_id;
   int dsizes[1];
   NclMultiDValData att_md, return_md;
@@ -106,12 +109,15 @@ NhlErrorTypes ezfftf_W( void )
   if(type_x == NCL_double) {
     cf   = (void*)calloc(size_cf,sizeof(double));
     xbar = (void*)calloc(size_leftmost,sizeof(double));
+    type_cf = NCL_double;
   }
   else {
     cf   = (void*)calloc(size_cf,sizeof(float));
     xbar = (void*)calloc(size_leftmost,sizeof(float));
+    type_cf = NCL_float;
   }
-  if ( cf == NULL || xbar == NULL) {
+  N = (void*)calloc(1,sizeof(int));
+  if ( cf == NULL || xbar == NULL || N == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Cannot allocate memory for output arrays" );
     return(NhlFATAL);
   }
@@ -141,9 +147,9 @@ NhlErrorTypes ezfftf_W( void )
 /*
  * Copy results back into xbar and cf.
  */
-    coerce_output_float_or_double(xbar,tmp_xbar,type_x,1,i);
-    coerce_output_float_or_double(cf,tmp_cf1,type_x,npts2,index_cf);
-    coerce_output_float_or_double(cf,tmp_cf2,type_x,npts2,index_cf+lnpts2);
+    coerce_output_float_or_double(xbar,tmp_xbar,type_cf,1,i);
+    coerce_output_float_or_double(cf,tmp_cf1,type_cf,npts2,index_cf);
+    coerce_output_float_or_double(cf,tmp_cf2,type_cf,npts2,index_cf+lnpts2);
 
     index_x  += npts;
     index_cf += npts2;
@@ -159,93 +165,72 @@ NhlErrorTypes ezfftf_W( void )
 /*
  * Set up variable to return.
  */
-  if(type_x != NCL_double) {
+  type_cf_class = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_cf)));
+
 /*
  * Set up return values.
  */
-    return_md = _NclCreateVal(
-                        NULL,
-                        NULL,
-                        Ncl_MultiDValData,
-                        0,
-                        cf,
-                        NULL,
-                        ndims_cf,
-                        dsizes_cf,
-                        TEMPORARY,
-                        NULL,
-                        (NclObjClass)nclTypefloatClass
-                        );
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            cf,
+                            NULL,
+                            ndims_cf,
+                            dsizes_cf,
+                            TEMPORARY,
+                            NULL,
+                            (NclObjClass)type_cf_class
+                            );
 /*
- * Attributes
+ * Attributes "xbar" and "N".
  */
-    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
 
-    dsizes[0] = size_leftmost;
-    att_md = _NclCreateVal(
-                        NULL,
-                        NULL,
-                        Ncl_MultiDValData,
-                        0,
-                        xbar,
-                        NULL,
-                        1,
-                        dsizes,
-                        TEMPORARY,
-                        NULL,
-                        (NclObjClass)nclTypefloatClass
-                        );
-    _NclAddAtt(
-               att_id,
-               "xbar",
-               att_md,
-               NULL
-               );
-  }
-  else {
-/*
- * Input was double, so return double output.
- */
-    return_md = _NclCreateVal(
-                        NULL,
-                        NULL,
-                        Ncl_MultiDValData,
-                        0,
-                        cf,
-                        NULL,
-                        ndims_cf,
-                        dsizes_cf,
-                        TEMPORARY,
-                        NULL,
-                        (NclObjClass)nclTypedoubleClass
-                        );
-/*
- * Attributes
- */
-    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
-        
-    dsizes[0] = size_leftmost;
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           xbar,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "xbar",
-               att_md,
-               NULL
-               );
+  dsizes[0] = size_leftmost;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         xbar,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)type_cf_class
+                         );
+  _NclAddAtt(
+             att_id,
+             "xbar",
+             att_md,
+             NULL
+             );
 
-  }
+  (*(int*)N) = npts;
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         N,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypeintClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "N",
+             att_md,
+             NULL
+             );
+
 /*
  * Set up variable to hold return array and attributes.
  */
@@ -284,6 +269,12 @@ NhlErrorTypes ezfftb_W( void )
   void *xbar;
   double *tmp_xbar;
   NclBasicDataTypes type_cf, type_xbar;
+/*
+ * Some variables we need to retrieve the "N" atttribute (if it exists).
+ */
+  NclAttList *att_list;
+  NclAtt tmp_attobj;
+  NclStackEntry data;
 /*
  * Output array variables
  */
@@ -342,11 +333,43 @@ NhlErrorTypes ezfftb_W( void )
       return(NhlFATAL);
     }
   }
+
+/*
+ * Okay, what follows here is some code for retrieving the "N"
+ * attribute if it exists. This attribute is one that should have been
+ * set when "ezfftf" was called, and it indicates the length of the
+ * original series.
+ */
+  npts2  = dsizes_cf[ndims_cf-1];     /* Go ahead and calculate the     */
+  npts   = 2*npts2;                   /* length, in case it is not set  */
+                                      /* explicitly.                    */
+  data = _NclGetArg(0,2,DONT_CARE);
+  switch(data.kind) {
+  case NclStk_VAR:
+    if(data.u.data_var->var.att_id != -1) {
+      tmp_attobj = (NclAtt)_NclGetObj(data.u.data_var->var.att_id);
+      if(tmp_attobj == NULL) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Bad attribute list, can't continue");
+        return(NhlFATAL);
+      }
+      if(tmp_attobj->att.n_atts == 0) {
+        break;
+      }
+      att_list = tmp_attobj->att.att_list;
+      i = 0;
+      while(att_list != NULL) {
+        if(att_list->quark == NrmStringToQuark("N")) {
+          npts  = *(int*)att_list->attvalue->multidval.val;
+          npts2 = npts/2;
+          break;
+        }
+        att_list = att_list->next;
+      }
+    }
+  }
 /*
  * Calculate size of output array.
  */
-  npts2  = dsizes_cf[ndims_cf-1];
-  npts   = 2*npts2;
   lnpts2 = npts2 * size_leftmost;
   size_x = size_leftmost * npts;
 
