@@ -948,7 +948,7 @@ GIT *the_it;
 	int mi = 0;
 	char buffer[100];
 
-	JulianDiffDate(1,1,the_it->year,the_it->days_from_jan1,&d,&mn,&y);
+	HeisDiffDate(1,1,the_it->year,the_it->days_from_jan1,&d,&mn,&y);
 	if(mn < 10) {
 		sprintf(buffer,"0%d/",mn);
 	} else {
@@ -1692,7 +1692,7 @@ int dimsize;
 		int iyear;
 		str = NrmQuarkToString(vals[i]);
 		sscanf(str,"%2d/%2d/%4d (%2d:%2d)",&m,&d,&y,&h,&min);
-		jddiff = JulianDayDiff(1,1,1800,d,m,y);
+		jddiff = HeisDayDiff(1,1,1800,d,m,y);
 		dhours[i] = jddiff * 24 + h + min / 60.0;
 	}
 				       
@@ -4513,11 +4513,11 @@ int wr_status;
 
 				if(version) {
 					grib_rec->initial_time.year = (short)(((short)grib_rec->pds[24] - 1 )*100 + (short)(int)grib_rec->pds[12]);
-					grib_rec->initial_time.days_from_jan1 = JulianDayDiff(1,1,grib_rec->initial_time.year,(int)grib_rec->pds[14],(int)grib_rec->pds[13],grib_rec->initial_time.year);
+					grib_rec->initial_time.days_from_jan1 = HeisDayDiff(1,1,grib_rec->initial_time.year,(int)grib_rec->pds[14],(int)grib_rec->pds[13],grib_rec->initial_time.year);
 					grib_rec->initial_time.minute_of_day = (short)grib_rec->pds[15] * 60 + (short)grib_rec->pds[16];
 				} else {
 					grib_rec->initial_time.year = (short)(1900 + (short)(int)grib_rec->pds[12]);
-					grib_rec->initial_time.days_from_jan1 = JulianDayDiff(1,1,grib_rec->initial_time.year,(int)grib_rec->pds[14],(int)grib_rec->pds[13],grib_rec->initial_time.year);
+					grib_rec->initial_time.days_from_jan1 = HeisDayDiff(1,1,grib_rec->initial_time.year,(int)grib_rec->pds[14],(int)grib_rec->pds[13],grib_rec->initial_time.year);
 					grib_rec->initial_time.minute_of_day = (short)grib_rec->pds[15] * 60 + (short)grib_rec->pds[16];
 				}
 				if(grib_rec->version != 0) {
