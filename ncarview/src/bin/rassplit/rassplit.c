@@ -64,7 +64,7 @@ main(argc, argv)
 				frame_list[frames_selected++] = atoi(*++argv);
 			}
 		}
-		else if (!strcmp(arg, "-v")) {
+		else if ( !strcmp(arg, "-v") || !strcmp(arg, "-verbose") ) {
 			OptionVerbose = True;
 		}
 		else if (!strcmp(arg, "-Version")) {
@@ -88,13 +88,13 @@ main(argc, argv)
 	}
 
 	if (srcfile == (char *) NULL ) {
-		fprintf(stderr, "Not enough arguments\n");
+		(void) fprintf(stderr,"%s: Not enough arguments\n",ProgramName);
 		exit(1);
 	}
 
 	root = malloc(strlen(srcfile) + 1);
 	if (root == (char *) NULL) {
-		fprintf(stderr, "Memory error\n");
+		(void) fprintf(stderr, "%s: Memory error\n", ProgramName);
 		exit(1);
 	}
 
