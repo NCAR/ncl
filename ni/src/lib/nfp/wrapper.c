@@ -641,7 +641,7 @@ void NclAddUserFuncs(void)
 
     NclRegisterProc(f2fshv_W,args,"f2fshv",nargs);
 /*
- * Register "EOF".
+ * Register "eofunc".
  *
  * Create private argument array.
  */
@@ -652,10 +652,10 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
-    NclRegisterFunc(eof_W,args,"EOF",nargs);
+    NclRegisterFunc(eof_W,args,"eofunc",nargs);
 
 /*
- * Register "EOF_TS".
+ * Register "eofunc_ts".
  *
  * Create private argument array.
  */
@@ -666,7 +666,7 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
-    NclRegisterFunc(eof_ts_W,args,"EOF_TS",nargs);
+    NclRegisterFunc(eof_ts_W,args,"eofunc_ts",nargs);
 /*
  * Register "eofcov".
  *
@@ -802,7 +802,7 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(eof_varimax_W,args,"eof_varimax",nargs);
 
 /*
- * Register "EOF_VARIMAX".
+ * Register "eofunc_varimax".
  *
  * Create private argument array.
  */
@@ -811,7 +811,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
-    NclRegisterFunc(eof_varimax2_W,args,"EOF_VARIMAX",nargs);
+    NclRegisterFunc(eof_varimax2_W,args,"eofunc_varimax",nargs);
 
 /*
  * Register "eof2data".

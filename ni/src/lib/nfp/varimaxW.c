@@ -352,7 +352,7 @@ NhlErrorTypes eof_varimax2_W( void )
  * Check dimensions.
  */
   if( ndims_evec < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF_VARIMAX: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax: The input array must be at least 2-dimensional");
     return(NhlFATAL);
   }
 
@@ -415,7 +415,7 @@ NhlErrorTypes eof_varimax2_W( void )
   ldevec = nvar;
 
   if( nvar < 1 || nfac < 1 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF_VARIMAX: The dimensions of the input array must both be at least 1");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax: The dimensions of the input array must both be at least 1");
     return(NhlFATAL);
   }
   total_size_evec = nvar * nfac;
@@ -431,7 +431,7 @@ NhlErrorTypes eof_varimax2_W( void )
  */
   devec = (double*)calloc(total_size_evec,sizeof(double));
   if( devec == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF_VARIMAX: Unable to allocate memory for coercing evec array to double precision");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax: Unable to allocate memory for coercing evec array to double precision");
     return(NhlFATAL);
   }
   coerce_subset_input_double(evec,devec,0,type_evec,total_size_evec,
@@ -441,7 +441,7 @@ NhlErrorTypes eof_varimax2_W( void )
  */
   if(contains_missing(devec,total_size_evec,has_missing_evec,
                       missing_devec.doubleval)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF_VARIMAX: The input array contains missing values.");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax: The input array contains missing values.");
     return(NhlFATAL);
   }
 
@@ -467,7 +467,7 @@ NhlErrorTypes eof_varimax2_W( void )
   b = (double *)calloc(nvar,sizeof(double));
   w = (double *)calloc(nvar,sizeof(double));
   if( a == NULL || b == NULL || w == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF_VARIMAX: Unable to allocate memory for work arrays");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
 /*

@@ -145,7 +145,7 @@ NhlErrorTypes eof_W( void )
  * The grid coming in must be at least 2-dimensional.
  */
   if( ndims_x < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF: The input array must be at least 2-dimensional");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: The input array must be at least 2-dimensional");
     return(NhlFATAL);
   }
 /*
@@ -159,7 +159,7 @@ NhlErrorTypes eof_W( void )
   total_size_x = ncol * nrow;
 
   if( msta < 1 || nobs < 1 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF: The dimensions of the input array must both be at least 1");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: The dimensions of the input array must both be at least 1");
     return(NhlFATAL);
   }
 /*
@@ -172,7 +172,7 @@ NhlErrorTypes eof_W( void )
   dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
                            &missing_dx);
   if( dx == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF: Unable to allocate memory for coercing x array to double precision");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for coercing x array to double precision");
     return(NhlFATAL);
   }
 /*
@@ -185,7 +185,7 @@ NhlErrorTypes eof_W( void )
 
   evec = (double *)calloc(total_size_evec,sizeof(double));
   if( evec == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF: Unable to allocate memory for output array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 /*
@@ -196,7 +196,7 @@ NhlErrorTypes eof_W( void )
   pcvar = (float *)calloc(*neval,sizeof(float));
   wevec = (double *)calloc(*neval * ncol,sizeof(double));
   if( trace == NULL || pcvar == NULL || eval == NULL || wevec == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF: Unable to allocate memory for attribute arrays");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for attribute arrays");
     return(NhlFATAL);
   }
 
@@ -259,12 +259,12 @@ NhlErrorTypes eof_W( void )
  */
           if (!strcmp(attr_list->attname, "jopt")) {
             if(attr_list->attvalue->multidval.data_type != NCL_int) {
-              NhlPError(NhlWARNING,NhlEUNKNOWN,"EOF: The 'jopt' attribute must be an integer, defaulting to 0.");
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc: The 'jopt' attribute must be an integer, defaulting to 0.");
             }
             else {
               jopt = *(int*) attr_list->attvalue->multidval.val;
               if(jopt != 0 && jopt != 1) {
-                NhlPError(NhlWARNING,NhlEUNKNOWN,"EOF: The 'jopt' attribute must be 0 or 1. Defaulting to 0.");
+                NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc: The 'jopt' attribute must be 0 or 1. Defaulting to 0.");
                 jopt = 0;
               }
             }
@@ -298,7 +298,7 @@ NhlErrorTypes eof_W( void )
               *rpcrit = (float)(*pcrit);
             }
             else {
-              NhlPError(NhlWARNING,NhlEUNKNOWN,"EOF: The 'pcrit' attribute must be of type numeric. Defaulting to 50.");
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc: The 'pcrit' attribute must be of type numeric. Defaulting to 50.");
               return_pcrit = False;
             }
           }
@@ -310,7 +310,7 @@ NhlErrorTypes eof_W( void )
               return_eval = *(logical*) attr_list->attvalue->multidval.val;
             }
             else {
-              NhlPError(NhlWARNING,NhlEUNKNOWN,"EOF: The 'return_eval' attribute must be a logical. Defaulting to True.");
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc: The 'return_eval' attribute must be a logical. Defaulting to True.");
             }
           }
 /*
@@ -330,7 +330,7 @@ NhlErrorTypes eof_W( void )
               }
             }
             else {
-              NhlPError(NhlWARNING,NhlEUNKNOWN,"EOF: The 'revert' attribute must be a logical. Defaulting to True.");
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc: The 'revert' attribute must be a logical. Defaulting to True.");
             }
           }
 /*
@@ -342,7 +342,7 @@ NhlErrorTypes eof_W( void )
               tr_setbyuser = True;
             }
             else {
-              NhlPError(NhlWARNING,NhlEUNKNOWN,"EOF: The 'transpose' attribute must be a logical. Will let routine pick best value.");
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc: The 'transpose' attribute must be a logical. Will let routine pick best value.");
             }
           }
 /*
@@ -353,7 +353,7 @@ NhlErrorTypes eof_W( void )
               debug = *(logical*) attr_list->attvalue->multidval.val;
             }
             else {
-              NhlPError(NhlWARNING,NhlEUNKNOWN,"EOF: The 'debug' attribute must be a logical. Defaulting to False.");
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc: The 'debug' attribute must be a logical. Defaulting to False.");
             }
           }
           attr_list = attr_list->next;
@@ -370,13 +370,13 @@ NhlErrorTypes eof_W( void )
   if(!return_pcrit) {
     pcrit = (double *)calloc(1,sizeof(double));
     if( pcrit == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF: Unable to allocate memory for pcrit");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for pcrit");
       return(NhlFATAL);
     }
     *pcrit = 50.;
   }
   if(debug) {
-    printf("EOF: pcrit = %g\n", *pcrit);
+    printf("eofunc: pcrit = %g\n", *pcrit);
   }
 /*
  * Create arrays to store non-missing data and to remove mean from
@@ -387,7 +387,7 @@ NhlErrorTypes eof_W( void )
   xvar   = (double *)calloc(ncol,sizeof(double));
   xdvar  = (double *)calloc(ncol,sizeof(double));
   if( xdata == NULL || xave == NULL || xvar == NULL || xdvar == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF: Unable to allocate memory for work arrays");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
 
@@ -445,28 +445,28 @@ NhlErrorTypes eof_W( void )
  * the same, except one operates on a transposed version of the 2d array.
  */
   if(debug) {
-    printf("EOF: msta = %d mcsta = %d nobs = %d\n", msta, mcsta, nobs);
+    printf("eofunc: msta = %d mcsta = %d nobs = %d\n", msta, mcsta, nobs);
   }
   if(!tr_setbyuser) {
     if(mcsta <= nrow) {
       transpose = False;
       if(debug) {
-        printf("EOF: transpose set to False\n");
+        printf("eofunc: transpose set to False\n");
       }
     }
     else {
       transpose = True;
       if(debug) {
-        printf("EOF: transpose set to True\n");
+        printf("eofunc: transpose set to True\n");
       }
     }
   }
   else if(debug) {
     if(transpose) {
-      printf("EOF: user set transpose to True\n");
+      printf("eofunc: user set transpose to True\n");
     }
     else {
-      printf("EOF: user set transpose to False\n");
+      printf("eofunc: user set transpose to False\n");
     }
   }
 
@@ -500,7 +500,7 @@ NhlErrorTypes eof_W( void )
   ifail  =    (int *)calloc(lifail,sizeof(int));
   if( cssm == NULL || work == NULL || weval == NULL || iwork == NULL ||
       ifail == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF: Unable to allocate memory for work arrays");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
 /*
@@ -511,7 +511,7 @@ NhlErrorTypes eof_W( void )
     teof   = (double *)calloc(*neval * nrow,sizeof(double));
     w2d    = (double *)calloc(*neval * nrow,sizeof(double));
     if( teof == NULL || w2d == NULL || xdatat == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF: Unable to allocate memory for additional work arrays");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for additional work arrays");
       return(NhlFATAL);
     }
   }
@@ -543,16 +543,16 @@ NhlErrorTypes eof_W( void )
  */
   if (ier != 0) {
     if (ier == -1) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"EOF: cssm contains one or more missing values.\n(One or more series contains all missing values.)" );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc: cssm contains one or more missing values.\n(One or more series contains all missing values.)" );
     }
     else if (ier == -88) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"EOF: trace is equal to zero.\nAll data entries are missing or are equal to zero." );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc: trace is equal to zero.\nAll data entries are missing or are equal to zero." );
     }
     else if (ier < 0) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"EOF: The %d-th argument had an illegal value", abs(ier) );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc: The %d-th argument had an illegal value", abs(ier) );
     }
     else {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"EOF: %d eigenvectors failed to converge",ier);
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc: %d eigenvectors failed to converge",ier);
     }
   }
 /*
@@ -593,7 +593,7 @@ NhlErrorTypes eof_W( void )
  */
     revec = (float*)calloc(total_size_evec,sizeof(float));
     if( revec == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF: Unable to allocate memory for output array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
     for( i = 0; i < total_size_evec; i++ ) revec[i] = (float)evec[i];
@@ -1008,13 +1008,13 @@ NhlErrorTypes eof_ts_W( void )
  * the second input array.
  */
   if( ndims_x < 2 || ndims_x != ndims_evec ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF_TS: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts: The input arrays must be at least 2-dimensional and have the same number of dimensions");
     return(NhlFATAL);
   }
   msta = 1;
   for( i = 0; i <= ndims_x-2; i++ ) {
     if( dsizes_x[i] != dsizes_evec[i+1] ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF_TS: All but the last dimension of the first input array must be the same as all but the first dimension of the second input array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts: All but the last dimension of the first input array must be the same as all but the first dimension of the second input array");
       return(NhlFATAL);
     }
     msta *= dsizes_x[i];
@@ -1027,7 +1027,7 @@ NhlErrorTypes eof_ts_W( void )
   total_size_evec = msta * neval;
 
   if( msta < 1 || nobs < 1 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF_TS: The dimensions of the input array must both be at least 1");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts: The dimensions of the input array must both be at least 1");
     return(NhlFATAL);
   }
 /*
@@ -1044,7 +1044,7 @@ NhlErrorTypes eof_ts_W( void )
   devec = coerce_input_double(evec,type_evec,total_size_evec,
                               has_missing_evec,&missing_evec,&missing_devec);
   if(dx == NULL || devec == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF_TS: Unable to allocate memory for coercing input arrays to double precision");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
   }
 /*
@@ -1055,7 +1055,7 @@ NhlErrorTypes eof_ts_W( void )
   evec_ts = (double *)calloc(ntime*neval,sizeof(double));
   evtsav  = (double *)calloc(neval,sizeof(double));
   if( evec_ts == NULL || evtsav == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF_TS: Unable to allocate memory for output arrays");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts: Unable to allocate memory for output arrays");
     return(NhlFATAL);
   }
 
@@ -1069,7 +1069,7 @@ NhlErrorTypes eof_ts_W( void )
   wrk  = (double *)calloc(lwrk,sizeof(double));
   wx   = (double *)calloc(lwx,sizeof(double));
   if( wrk == NULL || wx == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF_TS: Unable to allocate memory for work arrays");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
 
@@ -1112,12 +1112,12 @@ NhlErrorTypes eof_ts_W( void )
  */
           if (!strcmp(attr_list->attname, "jopt")) {
             if(attr_list->attvalue->multidval.data_type != NCL_int) {
-              NhlPError(NhlWARNING,NhlEUNKNOWN,"EOF_TS: The 'jopt' attribute must be an integer, defaulting to 0.");
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc_ts: The 'jopt' attribute must be an integer, defaulting to 0.");
             }
             else {
               jopt = *(int*) attr_list->attvalue->multidval.val;
               if(jopt != 0 && jopt != 1) {
-                NhlPError(NhlWARNING,NhlEUNKNOWN,"EOF_TS: The 'jopt' attribute must be 0 or 1. Defaulting to 0.");
+                NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc_ts: The 'jopt' attribute must be 0 or 1. Defaulting to 0.");
                 jopt = 0;
               }
             }
@@ -1143,16 +1143,16 @@ NhlErrorTypes eof_ts_W( void )
  */
   if (ier != 0) {
     if (ier == -1) { 
-       NhlPError(NhlWARNING,NhlEUNKNOWN,"EOF_TS: cssm contains one or more missing values" );
+       NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc_ts: cssm contains one or more missing values" );
     }
     else if (ier == -88) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"EOF_TS: trace is equal to zero" );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc_ts: trace is equal to zero" );
     }
     else if (ier < 0) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"EOF_TS: The %d-th argument had an illegal value", abs(ier) );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc_ts: The %d-th argument had an illegal value", abs(ier) );
     }
     else {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"EOF_TS: %d eigenvectors failed to converge",ier);
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc_ts: %d eigenvectors failed to converge",ier);
     }
   }
 /*
@@ -1174,7 +1174,7 @@ NhlErrorTypes eof_ts_W( void )
     revec_ts = (float *)calloc(ntime*neval,sizeof(float));
     revtsav  = (float *)calloc(neval,sizeof(float));
     if( revec_ts == NULL || revtsav == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF_TS: Unable to allocate memory for output arrays");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_ts: Unable to allocate memory for output arrays");
       return(NhlFATAL);
     }
     for( i = 0; i < ntime*neval; i++ ) revec_ts[i] = (float)evec_ts[i];
