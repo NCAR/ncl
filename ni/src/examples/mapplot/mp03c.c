@@ -1,5 +1,5 @@
 /*
- *      $Id: mp03c.c,v 1.3 1995-02-11 03:07:14 dbrown Exp $
+ *      $Id: mp03c.c,v 1.4 1995-03-03 20:33:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -115,8 +115,6 @@ main(int argc, char *argv[])
  */
 
 	NhlRLClear(rlist);
-	NhlRLSetFloat(rlist,NhlNvpYF,0.775);
-	NhlRLSetFloat(rlist,NhlNvpHeightF,0.45);
 	NhlRLSetString(rlist,NhlNmpFillOn,"true");
 	NhlRLSetString(rlist,NhlNovTitleDisplayMode,"always");
 	NhlRLSetString(rlist,NhlNtiMainString,"mp03c");

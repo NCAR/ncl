@@ -1,3 +1,3 @@
 ! 
-! mp02 resource file
+! mp01 resource file
 !

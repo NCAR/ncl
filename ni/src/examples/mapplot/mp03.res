@@ -1,6 +1,16 @@
 ! 
 ! mp03 resource file
 !
+! set the default viewport; note that if you do not want the size of
+! the labelbar belonging to the Contour to be adjusted when it is 
+! overlaid on the MapPlot, the Contour's view should be set to the same
+! size as the MapPlot's.
+!
+*vpYF: 0.775
+*vpHeightF: 0.45
+*vpXF: 0.1
+*vpWidthF: 0.8
+!
 ! no tick marks
 !
 *mp03Work.Contour1*ovTickMarkDisplayMode : nocreate
@@ -16,6 +26,9 @@
 *mp03Work.Contour1*ovLabelBarOrthogonalOffsetF : 0.1
 *mp03Work.Contour1*lbTitleOn : false
 *mp03Work.Contour1*lbPerimOn : false
+*mp03Work.Contour1*lbLeftMarginF : 0.0
+*mp03Work.Contour1*lbRightMarginF : 0.0
+
 *mp03Work.Contour1*lbAutoManage : false
 *mp03Work.Contour1*lbLabelFontHeightF : 0.015
 *mp03Work.Contour1*lbLabelAngleF  : -30.0
