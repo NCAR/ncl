@@ -50,6 +50,7 @@ NhlErrorTypes eofcov_W( void )
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
+  int *eof_function;
   double *trace, *eval;
   float *pcvar;
   float *rtrace, *reval;
@@ -394,6 +395,34 @@ NhlErrorTypes eofcov_W( void )
                NULL
                );
   }
+
+/*
+ * eof_function is returned to indicate which function was used.
+ */
+  eof_function = (int *)calloc(1,sizeof(int));
+  *eof_function = 0;
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+						 NULL,
+						 NULL,
+						 Ncl_MultiDValData,
+						 0,
+						 (void*)eof_function,
+						 NULL,
+						 1,
+						 dsizes,
+						 TEMPORARY,
+						 NULL,
+						 (NclObjClass)nclTypeintClass
+						 );
+  _NclAddAtt(
+			 att_id,
+			 "eof_function",
+			 att_md,
+			 NULL
+			 );
+
+
   tmp_var = _NclVarCreate(
                           NULL,
                           NULL,
@@ -445,6 +474,7 @@ NhlErrorTypes eofcor_W( void )
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
+  int *eof_function;
   double *trace, *eval;
   float *pcvar;
   float *rtrace, *reval;
@@ -789,6 +819,33 @@ NhlErrorTypes eofcor_W( void )
                NULL
                );
   }
+/*
+ * eof_function is returned to indicate which function was used.
+ */
+  eof_function = (int *)calloc(1,sizeof(int));
+  *eof_function = 1;
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+						 NULL,
+						 NULL,
+						 Ncl_MultiDValData,
+						 0,
+						 (void*)eof_function,
+						 NULL,
+						 1,
+						 dsizes,
+						 TEMPORARY,
+						 NULL,
+						 (NclObjClass)nclTypeintClass
+						 );
+  _NclAddAtt(
+			 att_id,
+			 "eof_function",
+			 att_md,
+			 NULL
+			 );
+
+
   tmp_var = _NclVarCreate(
                           NULL,
                           NULL,
@@ -840,6 +897,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
+  int *eof_function;
   double *trace, *eval;
   float *pcvar;
   float *rtrace, *reval;
@@ -1208,6 +1266,33 @@ NhlErrorTypes eofcov_pcmsg_W( void )
                NULL
                );
   }
+/*
+ * eof_function is returned to indicate which function was used.
+ */
+  eof_function = (int *)calloc(1,sizeof(int));
+  *eof_function = 2;
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+						 NULL,
+						 NULL,
+						 Ncl_MultiDValData,
+						 0,
+						 (void*)eof_function,
+						 NULL,
+						 1,
+						 dsizes,
+						 TEMPORARY,
+						 NULL,
+						 (NclObjClass)nclTypeintClass
+						 );
+  _NclAddAtt(
+			 att_id,
+			 "eof_function",
+			 att_md,
+			 NULL
+			 );
+
+
   tmp_var = _NclVarCreate(
                           NULL,
                           NULL,
@@ -1259,6 +1344,7 @@ NhlErrorTypes eofcor_pcmsg_W( void )
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
+  int *eof_function;
   double *trace, *eval;
   float *pcvar;
   float *rtrace, *reval;
@@ -1627,6 +1713,33 @@ NhlErrorTypes eofcor_pcmsg_W( void )
                NULL
                );
   }
+/*
+ * eof_function is returned to indicate which function was used.
+ */
+  eof_function = (int *)calloc(1,sizeof(int));
+  *eof_function = 3;
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+						 NULL,
+						 NULL,
+						 Ncl_MultiDValData,
+						 0,
+						 (void*)eof_function,
+						 NULL,
+						 1,
+						 dsizes,
+						 TEMPORARY,
+						 NULL,
+						 (NclObjClass)nclTypeintClass
+						 );
+  _NclAddAtt(
+			 att_id,
+			 "eof_function",
+			 att_md,
+			 NULL
+			 );
+
+
   tmp_var = _NclVarCreate(
                           NULL,
                           NULL,
