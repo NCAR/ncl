@@ -68,6 +68,7 @@ typedef	struct {
 	int	(*write)();
 	int	(*seek)();
 	int	(*close)();
+	int	(*flush)();
 	} Cgm_tab;
 /*
  *	some NCAR CGM binary encoding defines

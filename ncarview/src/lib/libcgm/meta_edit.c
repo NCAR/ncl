@@ -1,5 +1,5 @@
 /*
- *	$Id: meta_edit.c,v 1.8 1992-03-11 20:50:35 clyne Exp $
+ *	$Id: meta_edit.c,v 1.9 1992-03-12 22:15:03 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -796,6 +796,7 @@ int	CGM_writeFrames(ncar_cgm, start_frame, num_frames)
 	 *	open the temp file where some frames may be
 	 *	stored
 	 */
+	(void) CGM_flush(workingList.tmp_fd);
 	if ((tmp_fd = CGM_open(tempFile, r, "r")) < 0)
 		return(-1);
 	
@@ -920,6 +921,7 @@ int	CGM_appendFrames(ncar_cgm, start_frame, num_frames)
 	 *	open the temp file where some frames may be
 	 *	stored
 	 */
+	(void) CGM_flush(workingList.tmp_fd);
 	if ((tmp_fd = CGM_open(tempFile, r, "r")) < 0)
 		return(-1);
 	
@@ -1051,6 +1053,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 	 * open file with bottom frame for reading. set file ptr to frame
 	 */
 	if (workingList.list[bottom].utype == ACTUAL) {
+		(void) CGM_flush(workingList.tmp_fd);
 		if ((b_fd = CGM_open(ncarCgm, recordSize, "r")) < 0) {
 			return (ERR);
 		}
@@ -1061,6 +1064,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 
 	}
 	else {	/* open tmp file for *reading*	*/
+		(void) CGM_flush(workingList.tmp_fd);
 		if ((b_fd = CGM_open(tempFile, r, "r")) < 0) {
 			return (ERR);
 		}
@@ -1076,6 +1080,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 	 * open file with top frame for reading. set file ptr to frame
 	 */
 	if (workingList.list[top].utype == ACTUAL) {
+		(void) CGM_flush(workingList.tmp_fd);
 		if ((t_fd = CGM_open(ncarCgm, recordSize, "r")) < 0) {
 			(void) CGM_close(b_fd);
 			return (ERR);
@@ -1090,6 +1095,7 @@ Directory	*CGM_mergeFrames(bottom, top)
 
 	}
 	else {	/* open tmp file for *reading*	*/
+		(void) CGM_flush(workingList.tmp_fd);
 		if ((t_fd = CGM_open(tempFile, r, "r")) < 0) {
 			(void) CGM_close(b_fd);
 			return (ERR);
@@ -1527,6 +1533,7 @@ Directory	*CGM_editFrame(frame, edit_instr, num_occur)
 	 * open file containing frame for reading
 	 */
 	if (workingList.list[frame].utype == ACTUAL) {
+		(void) CGM_flush(workingList.tmp_fd);
 		if ((fd = CGM_open(ncarCgm, recordSize, "r")) < 0) {
 			return (ERR);
 		}
@@ -1538,6 +1545,7 @@ Directory	*CGM_editFrame(frame, edit_instr, num_occur)
 
 	}
 	else {	/* open tmp file for *reading*	*/
+		(void) CGM_flush(workingList.tmp_fd);
 		if ((fd = CGM_open(tempFile, r, "r")) < 0) {
 			return (ERR);
 		}

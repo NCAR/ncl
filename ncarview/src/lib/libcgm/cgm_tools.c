@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.10 1992-02-24 17:52:22 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.11 1992-03-12 22:14:41 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -56,30 +56,31 @@ extern	char	*strcpy();
  * operations
  */
 int	noop();
-int	stream_read(), stream_write(), stream_seek(), stream_close();
+int	stream_read(), stream_write(), stream_seek(), stream_close(), 
+	stream_flush();
 int	raw_read(), raw_write(), raw_seek(), raw_close();
 int	memory_read(), memory_write(), memory_seek(), memory_close();
 static	Cgm_tab	cgmTab[] = {
-	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
-	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
-	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
-	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
-	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
-	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
-	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
-	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
-	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
-	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
-	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
-	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
-	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
-	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
-	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
-	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
-	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
-	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
-	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop}, 
-	{0, File, NULL, NULL, -1, -1, (Pg_struct *) NULL, noop,noop,noop,noop} 
+	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop},
+	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop},
+	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop},
+	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop},
+	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop},
+	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop},
+	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop},
+	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop},
+	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop},
+	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop},
+	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop},
+	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop},
+	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop},
+	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop},
+	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop},
+	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop},
+	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop},
+	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop},
+	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop},
+	{0, File, NULL, NULL,-1,-1,(Pg_struct *)NULL, noop,noop,noop,noop,noop} 
 	};
 
 /* maximum files allowed open	*/
@@ -186,6 +187,7 @@ Cgm_fd	CGM_open(metafile, record_size, type)
 		cgmTab[index].read = stream_read;
 		cgmTab[index].seek = stream_seek;
 		cgmTab[index].close = stream_close;
+		cgmTab[index].flush = stream_flush;
 
 #ifdef	DEAD
 		if (record_size > BUFSIZ) {
@@ -232,6 +234,7 @@ Cgm_fd	CGM_open(metafile, record_size, type)
 		cgmTab[index].read = stream_read;
 		cgmTab[index].seek = stream_seek;
 		cgmTab[index].close = stream_close;
+		cgmTab[index].flush = stream_flush;
 
 #ifdef	DEAD
 		if (record_size > BUFSIZ) {
@@ -376,6 +379,25 @@ CGM_lseek(cgm_fd, offset, whence)
 	long 	offset_ = r * offset;
 
 	return(cgmTab[cgm_fd].seek(cgm_fd, offset_, whence));
+}
+
+/*
+ *	CGM_flush()
+ *
+ *	writes any unwritten data for an output  stream associated  or
+ *      an  update stream in which the most recent operation was not
+ *	input to be delivered to the host environment to  the  file;
+ *	otherwise it is ignored.  The named stream remains open.
+ *
+ * on entry
+ *	cgm_fd		: a valid CGM file descriptor.
+ * on exit
+ *	return		  == -1 if an error occured
+ */
+CGM_flush(cgm_fd)
+	Cgm_fd	cgm_fd;
+{
+	return(cgmTab[cgm_fd].flush(cgm_fd));
 }
 
 
@@ -1488,6 +1510,14 @@ static	int	stream_close(cgm_fd)
 	return(fclose(fp));
 }
 
+static	int	stream_flush(cgm_fd)
+	Cgm_fd		cgm_fd;
+{
+	FILE	*fp = cgmTab[cgm_fd].fp;
+
+	return(fflush(fp));
+}
+
 static	int	raw_close(cgm_fd)
 	Cgm_fd		cgm_fd;
 {
@@ -1512,7 +1542,7 @@ static	int	memory_close(cgm_fd)
 
 static	int	noop()
 {
-	return(-1);
+	return(0);
 }
 
 #ifdef	DEAD
