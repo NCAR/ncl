@@ -72,14 +72,6 @@ I equivalence statements defining IRnn and LRnn must be changed.
 I
 .RE /$NBRW$/4/
 I
-I Selection of code to include CVS "$Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $" comments.
-I --------- -- ---- -- ------- --- ------ --------
-I
-I To include a CVS "$Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $" comment in each routine, use ".DE A"; else,
-I use ".EL A".
-I
-.EL A
-I
 I The CONPACKT common blocks
 I --- -------- ------ ------
 I
@@ -192,13 +184,13 @@ C
         SAVE   /CTCOM2/
 .ENDIF
 .END
-I
+
+
 I***********************************************************************
 I C O N P A C K T   -   B L O C K   D A T A   ( D E F A U L T S )
 I***********************************************************************
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       BLOCK DATA CTBLDA
 C
 C Declare all of the CONPACKT common blocks.
@@ -1076,13 +1068,13 @@ C
         DATA ZMAX,ZMIN / 0.,0. /
 C
       END
-I
+
+
 I***********************************************************************
 I C O N P A C K T   -   U S E R - L E V E L   S U B R O U T I N E S
 I***********************************************************************
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTBACK (RPNT,IEDG,ITRI,RWRK,IWRK)
 C
         DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*)
@@ -1117,9 +1109,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTCICA (RPNT,IEDG,ITRI,RWRK,IWRK,ICRA,ICA1,ICAM,ICAN,
      +                                            XFCP,YFCP,XFCQ,YFCQ)
 C
@@ -1478,9 +1469,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTCLAM (RPNT,IEDG,ITRI,RWRK,IWRK,IAMA)
 C
         DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*),IAMA(*)
@@ -1724,9 +1714,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTCLDM (RPNT,IEDG,ITRI,RWRK,IWRK,IAMA,RTPL)
 C
         DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*),IAMA(*)
@@ -2159,9 +2148,8 @@ C
         END BLOCK
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTCLDR (RPNT,IEDG,ITRI,RWRK,IWRK)
 C
         DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*)
@@ -2571,9 +2559,8 @@ C
         END BLOCK
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTCLTR (RPNT,IEDG,ITRI,RWRK,IWRK,CLVL,IJMP,IRW1,IRW2,
      +                                                           NRWK)
 C
@@ -2618,9 +2605,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTDRPL (XCS,YCS,NCS,IAI,IAG,NAI)
 C
         DIMENSION XCS(*),YCS(*),IAI(*),IAG(*)
@@ -2665,9 +2651,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTGETC (WHCH,CVAL)
 C
         CHARACTER*(*) WHCH,CVAL
@@ -2759,9 +2744,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTGETI (WHCH,IVAL)
 C
         CHARACTER*(*) WHCH
@@ -2791,9 +2775,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTGETR (WHCH,RVAL)
 C
         CHARACTER*(*) WHCH
@@ -3139,9 +3122,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTLBAM (RPNT,IEDG,ITRI,RWRK,IWRK,IAMA)
 C
         DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*),IAMA(*)
@@ -3283,9 +3265,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTLBDR (RPNT,IEDG,ITRI,RWRK,IWRK)
 C
         DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*)
@@ -3694,9 +3675,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTMESH (RPNT,KPNT,KOPN,
      +                   IEDG,KEDG,KOEN,
      +                   ITRI,KTRI,KOTN,
@@ -4234,9 +4214,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTMVIW (IWKO,IWKN,LWKN)
 C
         DIMENSION IWKO(LIWK),IWKN(LWKN)
@@ -4323,9 +4302,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTMVRW (RWKO,RWKN,LWKN)
 C
         DIMENSION RWKO(LRWK),RWKN(LWKN)
@@ -4412,9 +4390,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTPKCL (RPNT,IEDG,ITRI,RWRK,IWRK)
 C
         DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*)
@@ -4579,9 +4556,8 @@ C
   101   RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTPKLB (RPNT,IEDG,ITRI,RWRK,IWRK)
 C
         DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*)
@@ -4757,9 +4733,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTPKLP (RPNT,IEDG,ITRI,RWRK,IWRK)
 C
         DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*)
@@ -4899,9 +4874,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTRSET
 C
 C This subroutine may be called to reset all variables which have
@@ -5099,9 +5073,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTSETC (WHCH,CVAL)
 C
         CHARACTER*(*) WHCH,CVAL
@@ -5222,9 +5195,8 @@ C
   101   RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTSETI (WHCH,IVAL)
 C
         CHARACTER*(*) WHCH
@@ -5256,9 +5228,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTSETR (WHCH,RVAL)
 C
         CHARACTER*(*) WHCH
@@ -5587,9 +5558,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTTMRG (IDIM,JDIM,RLAT,RLON,RDAT,ISCR,SVAL,RTMI,
      +                   RPNT,MPNT,NPNT,LOPN,
      +                   IEDG,MEDG,NEDG,LOEN,
@@ -6040,9 +6010,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTTMTL (NTTO,TBUF,MBUF,NBUF,
      +                   IPPP,MPPP,NPPP,
      +                   IPPE,MPPE,NPPE,
@@ -6176,9 +6145,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTTMTX (NTTO,TBUF,MBUF,NBUF,
      +                   EPST,
      +                   IPPP,MPPP,NPPP,
@@ -6315,13 +6283,13 @@ C
         RETURN
 C
       END
-I
+
+
 I***********************************************************************
 I C O N P A C K T   -   U S E R - C A L L B A C K   R O U T I N E S
 I***********************************************************************
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE HLUCTCHCF (IFLG)
 C
 C This routine stands between CONPACKT and the user call-back routine
@@ -6335,9 +6303,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTCHCF (IFLG)
 C
 C This routine is a dummy.  It is called just before and just after
@@ -6360,9 +6327,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE HLUCTCHCL (IFLG)
 C
 C This routine stands between CONPACKT and the user call-back routine
@@ -6376,9 +6342,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTCHCL (IFLG)
 C
 C This routine is a dummy.  It is called just before and just after each
@@ -6395,9 +6360,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE HLUCTCHHL (IFLG)
 C
 C This routine stands between CONPACKT and the user call-back routine
@@ -6411,9 +6375,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTCHHL (IFLG)
 C
 C This routine is a dummy.  It is called just before and just after
@@ -6457,9 +6420,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE HLUCTCHIL (IFLG)
 C
 C This routine stands between CONPACKT and the user call-back routine
@@ -6473,9 +6435,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTCHIL (IFLG)
 C
 C This routine is a dummy.  It is called just before and just after
@@ -6509,9 +6470,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE HLUCTCHLL (IFLG)
 C
 C This routine stands between CONPACKT and the user call-back routine
@@ -6525,9 +6485,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTCHLL (IFLG)
 C
 C This routine is a dummy.  It is called just before and just after
@@ -6568,9 +6527,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE HLUCTMXYZ (IMAP,XINP,YINP,ZINP,XOTP,YOTP)
 C
 C This routine stands between CONPACKT and the user call-back routine
@@ -6584,9 +6542,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTMXYZ (IMAP,XINP,YINP,ZINP,XOTP,YOTP)
 C
 C Define the constant required to convert an angle from radians to
@@ -6637,9 +6594,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE HLUCTSCAE (ICRA,ICA1,ICAM,ICAN,XCPF,YCPF,XCQF,YCQF,
      +                                          IND1,IND2,ICAF,IAID)
 C
@@ -6657,9 +6613,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTSCAE (ICRA,ICA1,ICAM,ICAN,XCPF,YCPF,XCQF,YCQF,
      +                                       IND1,IND2,ICAF,IAID)
         DIMENSION ICRA(ICA1,*)
@@ -6723,9 +6678,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTTDCA (RPNT,IEDG,ITRI,RWRK,IWRK,ICRA,ICA1,ICAM,ICAN,
      +                                            XFCP,YFCP,XFCQ,YFCQ)
 C
@@ -7158,9 +7112,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTTDBF (RPNT,IEDG,ITRI,RWRK,IWRK,IFLG,ATOL)
 C
         DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*)
@@ -7245,7 +7198,7 @@ C
 C Determine which bits of the blocking flags are to be used and set
 C IBIT accordingly.
 C
-        IF (OE.GE.0.) THEN
+        IF (OE.GE.0.)
           IBIT=2
         ELSE
           IBIT=16
@@ -7674,9 +7627,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTTDBM (IHBX,IEBX,IWBX,IUBX,IHBA,IEBA,IWBA,IUBA)
 C
 C This routine assumes that TDPACK routines are being used to map the
@@ -7745,9 +7697,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTTDDM (RPNT,IEDG,ITRI,RWRK,IWRK,IDIA)
 C
         DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*)
@@ -7796,17 +7747,17 @@ C
 C
           IFLL=0
 C
-          IF (IEDG(IPTE+3).GE.0) THEN
+          IF (IEDG(IPTE+3).GE.0)
             IF (ITBF(ITRI(LOTN*((IEDG(IPTE+3)-1)/LOTN)+4)).EQ.0) IFLL=1
           END IF
 C
           IFLR=0
 C
-          IF (IEDG(IPTE+4).GE.0) THEN
+          IF (IEDG(IPTE+4).GE.0)
             IF (ITBF(ITRI(LOTN*((IEDG(IPTE+4)-1)/LOTN)+4)).EQ.0) IFLR=1
           END IF
 C
-          IF (IFLL.NE.0.OR.IFLR.NE.0) THEN
+          IF (IFLL.NE.0.OR.IFLR.NE.0)
 C
             CALL TDLINE (RPNT(IEDG(IPTE+1)+1),
      +                   RPNT(IEDG(IPTE+1)+2),
@@ -7824,13 +7775,12 @@ C
         RETURN
 C
       END
-I
+
+
 I***********************************************************************
 I C O N P A C K T   -   I N T E R N A L   S U B R O U T I N E S
 I***********************************************************************
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
       SUBROUTINE CTCFLB (IACT,RWRK,IAMA)
 C
         DIMENSION RWRK(*),IAMA(*)
@@ -8118,9 +8068,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTCPAG (RPNT,IEDG,ITRI,RWRK)
 C
         DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*)
@@ -8444,9 +8393,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTDRSG (RWRK,IPTX,IPTY,NXYC)
 C
         DIMENSION RWRK(*)
@@ -8480,9 +8428,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTGIWS (IWRK,IOWS,LOWS,IERR)
 C
         DIMENSION IWRK(*)
@@ -8688,9 +8635,8 @@ C
         END IF
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTGRWS (RWRK,IOWS,LOWS,IERR)
 C
         DIMENSION RWRK(*)
@@ -8896,9 +8842,8 @@ C
         END IF
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTGVAI (ZVAL,IAID)
 C
 C Given a field value ZVAL, CTGVAI searches the current contour list to
@@ -8960,9 +8905,8 @@ C
   102   RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTHCHM (RWRK,IPTX,IPTY,NXYC,IAMA,IWRK,RTPL)
 C
         DIMENSION RWRK(*),IAMA(*),IWRK(*)
@@ -9093,9 +9037,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTHCHR (RWRK,IPTX,IPTY,NXYC)
 C
         DIMENSION RWRK(*)
@@ -9211,9 +9154,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTHLLB (RPNT,IEDG,ITRI,RWRK,IWRK)
 C
         DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*)
@@ -10006,9 +9948,8 @@ C
   110   END BLOCK
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTHLSO (RWRK,IDRW,MRWK,NRWK,IWRK)
 C
         DIMENSION RWRK(IDRW,*),IWRK(*)
@@ -10084,9 +10025,8 @@ C
         RETURN
 C
       END                                                               
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTHLS2 (RWRK,NRWK,IWRK)
 C
         DIMENSION RWRK(NRWK),IWRK(NRWK)
@@ -10136,9 +10076,8 @@ C
         RETURN
 C
       END                                                               
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTINLB (RPNT,IEDG,ITRI,RWRK,IWRK)
 C
         DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*)
@@ -10258,9 +10197,8 @@ C
   101   RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTINRC
 C
 C CTINRC sets constants that are required by CONPACKT and that cannot be
@@ -10318,9 +10256,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTINRK (NSDR,TMP1,TMP2,TMP3)
 C
 C This routine computes some quantities needed by CTINRC; the code is
@@ -10337,9 +10274,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTNUMB (VALU,NDGD,LMSD,IEXP,LEXP,CEX1,CEX2,CEX3,LEX1,
      +                   LEX2,LEX3,IOMA,IODP,IOTZ,CBUF,NBUF,NDGS,IEVA)
 C
@@ -10843,9 +10779,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTPISB (XCPA,YCPA,XCPB,YCPB,XCPC,YCPC,XCPD,YCPD,
      +                                            XCOP,YCOP,IFLG)
 C
@@ -10882,9 +10817,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTPITT (XCA1,YCA1,XCA2,YCA2,XCA3,YCA3,
      +                   XCB1,YCB1,XCB2,YCB2,XCB3,YCB3,
      +                   XCOP,YCOP,IFLG)
@@ -11010,9 +10944,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTPLAR (RWRK,IPTX,IPTY,NXYC)
 C
         DIMENSION RWRK(*)
@@ -11275,9 +11208,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTPLPS (RWRK,IPTX,IPTY,NXYC)
 C
         DIMENSION RWRK(*)
@@ -11765,9 +11697,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       FUNCTION CTRANF ()
 C
 C This function generates a sequence of "random" numbers.  Obviously,
@@ -11791,9 +11722,8 @@ C
         CTRANF=RSEQ(ISEQ)
         RETURN
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTSBST (CHSI,CHSO,NCHO)
 C
         CHARACTER*(*) CHSI,CHSO
@@ -11936,9 +11866,8 @@ C
         END BLOCK
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTSORT (RVAL,NVAL,IPER)
 C
         DIMENSION RVAL(NVAL),IPER(NVAL)
@@ -11990,9 +11919,8 @@ C
         RETURN
 C
       END                                                               
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTSTLS (RPNT,IEDG,ITRI,RWRK,IWRK)
 C
         DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*)
@@ -12055,9 +11983,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
 .OP   BI=66
       SUBROUTINE CTTRCL (RPNT,IEDG,ITRI,RWRK,IWRK,CLVL,IJMP,IRW1,IRW2,
      +                                                           NRWK)
@@ -12892,9 +12819,8 @@ C
 C
       END
 .OP   BI=77
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
 .OP   BI=66
       SUBROUTINE CTTREG (RPNT,IEDG,ITRI,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,
      +                                                           NRWK)
@@ -13642,9 +13568,8 @@ C
 C
       END
 .OP   BI=77
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
 .OP   BI=66
       SUBROUTINE CTTRVE (RPNT,IEDG,ITRI,RWRK,IWRK,IJMP,IRW1,IRW2,NRWK)
 C
@@ -14007,9 +13932,8 @@ C
 C
       END
 .OP   BI=77
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTTROE (XCRA,YCRA,NCRA,OFFS,RWRK,IOCF,IAMA,IGID,IAIL,
      +                                                           IAIR)
 C
@@ -14094,6 +14018,8 @@ C
 C
 C Do necessary initialization.
 C
+        IJMP=1
+C
         IF (IBEG.NE.0)
           ICRA=1
           XCPB=XCRA(1)
@@ -14102,7 +14028,6 @@ C
           YCPC=YCRA(2)
           IF (ICLO.EQ.0)
             DIRE=0.
-            ASSIGN 101 TO IJMP
             GO TO 201
           ELSE
             RWRK(1)=XCRA(2)
@@ -14141,9 +14066,7 @@ C
 C Generate offset points near the point with index ICRA until ICRA
 C becomes equal to NCRA.
 C
-  101   ASSIGN 102 TO IJMP
-C
-  102   ICRA=ICRA+1
+  101   ICRA=ICRA+1
         IF (ICRA.LT.NCRA)
           XCPA=XCPB
           YCPA=YCPB
@@ -14163,11 +14086,11 @@ C
           RWRK(10)=YNXT
           RWRK(11)=REAL(IAIL)
           RWRK(12)=REAL(IAIR)
-          GO TO 104
+          GO TO 103
         ELSE
           IF (ICLO.EQ.0)
             DIRE=1.
-            ASSIGN 104 TO IJMP
+            IJMP=2
             GO TO 201
           ELSE
             XCPA=XCPB
@@ -14176,12 +14099,12 @@ C
             YCPB=YCPC
             XCPC=RWRK(1)
             YCPC=RWRK(2)
-            ASSIGN 103 TO IJMP
+            IJMP=2
             GO TO 301
           END IF
         END IF
 C
-  103   XCPA=XCPB
+  102   XCPA=XCPB
         YCPA=YCPB
         XCPB=XCPC
         YCPB=YCPC
@@ -14189,12 +14112,12 @@ C
         YCPC=RWRK(4)
         JAIL=INT(RWRK(5))
         JAIR=INT(RWRK(6))
-        ASSIGN 104 TO IJMP
+        IJMP=3
         GO TO 301
 C
 C Done.
 C
-  104   RETURN
+  103   RETURN
 C
 C The following internal procedure generates the point of intersection
 C of the line offset from BC with the edge of the plotter frame and
@@ -14226,7 +14149,7 @@ C
         CALL CTWLAM (XNXT,YNXT,IFST,IAMA,IGID,IAIL,IAIR)
         IF (ICFELL('CTTROE',2).NE.0) RETURN
         IFST=1
-        GO TO IJMP , (101,104)
+        GO TO (101,103) , IJMP
 C
 C The following internal procedure generates the point of intersection
 C of the line offset from AB with the line offset from BC and sends that
@@ -14260,12 +14183,11 @@ C
         IFST=1
         JAIL=IAIL
         JAIR=IAIR
-        GO TO IJMP , (102,103,104)
+        GO TO (101,102,103) , IJMP
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       SUBROUTINE CTWLAM (XNXT,YNXT,IFST,IAMA,IGID,IAIL,IAIR)
 C
         DIMENSION IAMA(*)
@@ -14518,9 +14440,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       FUNCTION ICAPNT (XCRD,YCRD,ZCRD,DVAL,RPNT,LOPN,IPPP,MPPP,NPPP)
 C
         DIMENSION RPNT(LOPN,MPPP),IPPP(2,MPPP)
@@ -14622,9 +14543,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       FUNCTION ICAPNX (XCRD,YCRD,ZCRD,DVAL,RPNT,LOPN,IPPP,MPPP,NPPP,
      +                                                         EPST)
 C
@@ -14795,9 +14715,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       FUNCTION ICAEDG (IPP1,IPP2,IEDG,LOEN,IPPE,MPPE,NPPE,RPNT)
 C
         DIMENSION IEDG(LOEN,MPPE),IPPE(2,MPPE),RPNT(*)
@@ -14920,9 +14839,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       FUNCTION CTFRAN ()
 C
 C Pseudo-random-number generator.
@@ -14938,9 +14856,8 @@ C
         RETURN
 C
       END
-A
-A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
-A
+
+
       FUNCTION CTABGC (ALAT,ALON,BLAT,BLON,CLAT,CLON)
 C
 C (CTABGC = ConpackT, Angle Between Great Circles)
