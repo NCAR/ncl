@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.21 1994-11-03 22:59:44 haley Exp $
+#	$Id: ncargcex.csh,v 1.22 1994-11-04 17:11:06 haley Exp $
 #
 
 #**************************#
@@ -14,7 +14,7 @@ if ($#argv < 1) then
   echo " Options:"
   echo ""
   echo " To invoke various classes of examples:"
-  echo "   [-A] [-x11]"
+  echo "   [-A] [-ps] [-x11]"
   echo ""
   echo " To invoke various utilities:"
   echo "   [-areas] [-autograph] [-bivar] [-colconv] [-conpack]  "
@@ -210,7 +210,8 @@ set gflash_list = ($tst_gflash)
 #                  #
 #******************#
 set ex_gks     = (c_gtxpac)
-set gks_list   = ($ex_gks)
+set pdc_gks    = (c_pgkex21)
+set gks_list   = ($ex_gks $pdc_gks)
 
 #************************#
 #                        #
@@ -359,6 +360,8 @@ set tst_list = ($tst_areas $tst_dashpack $tst_gflash $tst_gridall \
 set ttr_list = ($ttr_conpack)
 
 set fnd_list = ($fnd_dashline $fnd_field $fnd_ngmisc $fnd_spps $fnd_threed)
+set pdc_list = ($pdc_gks)
+set ps_list = (c_pgkex21)
 
 #****************************************#
 #                                        #
@@ -390,7 +393,7 @@ while ($#argv > 0)
     case "-all":
     case "-A":
       shift
-      set names=($names $ex_list $tst_list $ttr_list $fnd_list)
+      set names=($names $ex_list $tst_list $ttr_list $fnd_list $pdc_list)
       breaksw
         
     case "-allexamples":
@@ -545,6 +548,11 @@ while ($#argv > 0)
     case "-wmap":
       shift
       set names=($names $wmap_list)
+      breaksw
+
+    case "-ps":
+      shift
+      set names=($names $ps_list)
       breaksw
 
     case "-x11":
@@ -864,6 +872,16 @@ endif
 # if there's anything special about it #
 #                                      #
 #**************************************#
+switch($name)
+    case c_pgkex21:
+      set tmp_ws_type = "20"
+      echo ""
+      echo "  This example was set up to demonstrate the Postscript"
+      echo "  driver, so workstation type 20 is being used."
+      echo ""
+    breaksw
+endsw
+
 if ($?tmp_ws_type) then
   set the_ws_type = "$tmp_ws_type"
 else
