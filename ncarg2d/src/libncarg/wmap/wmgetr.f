@@ -1,5 +1,5 @@
 C
-C	$Id: wmgetr.f,v 1.5 2000-08-22 15:07:45 haley Exp $
+C	$Id: wmgetr.f,v 1.6 2001-02-14 01:05:06 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -106,6 +106,30 @@ C
       ELSE IF (CNP(1:3).EQ.'RHT' .OR. CNP(1:3).EQ.'rht' .OR. 
      +    CNP(1:3).EQ.'Rht') THEN
         RVP = WSIZER
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'SIG' .OR. CNP(1:3).EQ.'sig' .OR. 
+     +    CNP(1:3).EQ.'Sig') THEN
+        IF (TNSION .EQ. -1.) THEN
+          RVP = 0.001
+        ELSE
+          RVP = TNSION
+        ENDIF
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'SMT' .OR. CNP(1:3).EQ.'SMT' .OR. 
+     +    CNP(1:3).EQ.'Smt') THEN
+        IF (RSMOTH .EQ. -1.) THEN
+          RVP = RSMRET
+        ELSE
+          RVP = RSMOTH
+        ENDIF
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'OER' .OR. CNP(1:3).EQ.'oer' .OR. 
+     +    CNP(1:3).EQ.'Oer') THEN
+        IF (OBSERR .EQ. -1.) THEN
+          RVP = OBSRET
+        ELSE
+          RVP = OBSERR
+        ENDIF
         GO TO 110
       ELSE IF (CNP(1:3).EQ.'SHT' .OR. CNP(1:3).EQ.'sht' .OR. 
      +    CNP(1:3).EQ.'Sht') THEN

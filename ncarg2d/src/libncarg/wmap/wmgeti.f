@@ -1,5 +1,5 @@
 C
-C	$Id: wmgeti.f,v 1.10 2000-08-22 15:07:45 haley Exp $
+C	$Id: wmgeti.f,v 1.11 2001-02-14 01:05:05 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -207,6 +207,10 @@ C
       ELSE IF (CNP(1:3).EQ.'AWC' .OR. CNP(1:3).EQ.'awc' .OR. 
      +    CNP(1:3).EQ.'Awc') THEN
         IVP = IAROWC
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'SMF' .OR. CNP(1:3).EQ.'smf' .OR. 
+     +    CNP(1:3).EQ.'Smf') THEN
+        IVP = ISMOTH
         GO TO 110
       ELSE IF (CNP(1:3).EQ.'ASC' .OR. CNP(1:3).EQ.'asc' .OR. 
      +    CNP(1:3).EQ.'Asc') THEN

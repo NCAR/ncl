@@ -1,5 +1,5 @@
 C
-C	$Id: wmdrft.f,v 1.12 2000-08-22 15:07:44 haley Exp $
+C	$Id: wmdrft.f,v 1.13 2001-02-14 01:05:05 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -78,19 +78,59 @@ C
 C  Construct a spline curve having NPTS points in it that represents
 C  the curve in (X,Y).  We use Alan Cline's spline package for this.
 C
-      CALL MSKRV1(NPO,XO,YO,SLOPE1,SLOPE2,XS,YS,TEMP,S,TNSION,ISLFLG)
-      DO 10 I=1,NPTS
-        T = REAL(I-1)/REAL(NPTS-1)
-        IF (I .EQ. 1) THEN
-          CALL MSKRV2(T,XOUT(I),YOUT(I),NPO,XO,YO,XS,YS,S,TNSION,1,
-     +                SLOPEL)
-        ELSE IF (I .EQ. NPTS) THEN
-          CALL MSKRV2(T,XOUT(I),YOUT(I),NPO,XO,YO,XS,YS,S,TNSION,0,SLP)
-        ELSE
-          CALL MSKRV2(T,XOUT(I),YOUT(I),NPO,XO,YO,XS,YS,S,TNSION,1,
-     +                SLOPER)
+      IF (TNSION .EQ. -1.) THEN
+        TNSION = 0.001
+      ENDIF
+C
+C  Interpolate if ISMOTH=0; use a smoothing spline otherwise.
+C
+      IF (ISMOTH .EQ. 0) THEN
+        CALL MSKRV1(NPO,XO,YO,SLOPE1,SLOPE2,XS,YS,TEMP,S,TNSION,ISLFLG)
+        DO 10 I=1,NPTS
+          T = REAL(I-1)/REAL(NPTS-1)
+          IF (I .EQ. 1) THEN
+            CALL MSKRV2(T,XOUT(I),YOUT(I),NPO,XO,YO,XS,YS,S,TNSION,1,
+     +                  SLOPEL)
+          ELSE IF (I .EQ. NPTS) THEN
+            CALL MSKRV2(T,XOUT(I),YOUT(I),NPO,XO,YO,XS,YS,S,TNSION,0,
+     +                  SLP)
+          ELSE
+            CALL MSKRV2(T,XOUT(I),YOUT(I),NPO,XO,YO,XS,YS,S,TNSION,1,
+     +                  SLOPER)
+          ENDIF
+   10   CONTINUE
+      ELSE
+        TEPS = SQRT(1./REAL(NPO))
+        IOBSET = 1
+        IF (OBSERR .EQ. -1.) THEN
+          IOBSET = 0
+          OBSERR = 0.005*WMCMAX(NPO,YO) 
+          OBSRET = OBSERR
         ENDIF
-   10 CONTINUE
+        IRSSET = 1
+        IF (RSMOTH .EQ. -1.) THEN
+          IRSSET = 0
+          RSMOTH = 50.*REAL(NPO)
+          RSMRET = RSMOTH
+        ENDIF 
+        CALL CURVS(NPO,XO,YO,OBSERR,1,RSMOTH,TEPS,XS,YS,TNSION,
+     +             TEMP,IER)
+        XINC = (XO(NPO)-XO(1))/REAL(NPTS-1)
+        DO 11 I=1,NPTS
+          XOUT(I) = XO(1)+REAL(I-1)*XINC
+C
+C  The notation is confusing here.  XS contains the smoothed
+C  *ordinates* from CURVS (just saving space here) and YS 
+C  contains the derivative information.
+C
+          YOUT(I) = CURV2(XOUT(I),NPO,X,XS,YS,TNSION,TEMP,IER)   
+   11   CONTINUE
+      ENDIF
+C
+C  Restore flags for unset values.
+C
+      IF(IOBSET .EQ. 0) OBSERR = -1.
+      IF(IRSSET .EQ. 0) RSMOTH = -1.
 C
 C  Convert to NDC space.
 C

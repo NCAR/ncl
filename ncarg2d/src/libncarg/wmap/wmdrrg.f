@@ -1,5 +1,5 @@
 C
-C	$Id: wmdrrg.f,v 1.7 2000-08-22 15:07:44 haley Exp $
+C	$Id: wmdrrg.f,v 1.8 2001-02-14 01:05:05 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -83,6 +83,9 @@ C
 C  Construct a spline curve having NPTS points in it that represents
 C  the curve in (X,Y).  We use Alan Cline's spline package for this.
 C
+      IF (TNSION .EQ. -1.) THEN
+        TNSION = 0.001
+      ENDIF
       CALL MSKRV1(NPO,XO,YO,SLOPE1,SLOPE2,XS,YS,TEMP,S,TNSION,4)
       DO 10 I=1,NPTS
         T = REAL(I-1)/REAL(NPTS-1)

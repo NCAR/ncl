@@ -1,5 +1,5 @@
 C
-C	$Id: wmsetr.f,v 1.6 2000-08-22 15:07:48 haley Exp $
+C	$Id: wmsetr.f,v 1.7 2001-02-14 01:05:06 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -84,6 +84,27 @@ C
       ELSE IF (CNP(1:3).EQ.'LWD' .OR. CNP(1:3).EQ.'lwd' .OR.
      +         CNP(1:3).EQ.'Lwd') THEN
         SLINWD = MAX(RVP,0.0001)
+        GO TO 120
+C
+C  SIG - Tension factor for tension spline routines.
+C
+      ELSE IF (CNP(1:3).EQ.'SIG' .OR. CNP(1:3).EQ.'sig' .OR.
+     +         CNP(1:3).EQ.'Sig') THEN
+        TNSION = RVP
+        GO TO 120
+C
+C  SMT - Smoothing parameter for the smoothing spline routines.
+C
+      ELSE IF (CNP(1:3).EQ.'SMT' .OR. CNP(1:3).EQ.'smt' .OR.
+     +         CNP(1:3).EQ.'Smt') THEN
+        RSMOTH = RVP
+        GO TO 120
+C
+C  OER - Observational weights for data for smoothing spline routines.
+C
+      ELSE IF (CNP(1:3).EQ.'OER' .OR. CNP(1:3).EQ.'oer' .OR.
+     +         CNP(1:3).EQ.'Oer') THEN
+        OBSERR = RVP
         GO TO 120
 C
 C  SHT - Height of symbols plotted with WMLABS.

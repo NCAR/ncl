@@ -1,5 +1,5 @@
 C
-C	$Id: wmseti.f,v 1.9 2000-08-22 15:07:48 haley Exp $
+C	$Id: wmseti.f,v 1.10 2001-02-14 01:05:06 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -436,6 +436,13 @@ C
       ELSE IF (CNP(1:3).EQ.'AWC' .OR. CNP(1:3).EQ.'awc' .OR.
      +    CNP(1:3).EQ.'Awc') THEN
         IAROWC = IVP
+        GO TO 120
+C
+C  SMF - Flags whether interpolation (=0) or smoothing (=1) is done.
+C
+      ELSE IF (CNP(1:3).EQ.'SMF' .OR. CNP(1:3).EQ.'smf' .OR.
+     +    CNP(1:3).EQ.'Smf') THEN
+        ISMOTH = IVP
         GO TO 120
 C
 C  ASC - arrow shadow color.

@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.3 1999-11-19 23:24:56 haley Exp $
+#	$Id: yMakefile,v 1.4 2001-02-14 01:05:06 fred Exp $
 #
 
 MYNAME	= wmaps
@@ -10,7 +10,7 @@ GENERIC_SRCS = \
 	wmgeti.f wmgetr.f wmgtln.f wmgtso.f wmintv.f wmlabc.f \
 	wmlabs.f wmlabt.f wmlabw.f wmlgfa.f wmlgnd.f wmlgpl.f \
 	wmrgwt.f wmsect.f wmsetc.f wmseti.f wmsetr.f wmstnm.f \
-	wmw2nx.f wmw2ny.f
+	wmw2nx.f wmw2ny.f wmcmax.f
 
 GENERIC_OBJS = \
 	wmbarb.o wmblda.o wmcext.o wmchbg.o wmdflt.o wmdrfl.o \
@@ -18,7 +18,7 @@ GENERIC_OBJS = \
 	wmgeti.o wmgetr.o wmgtln.o wmgtso.o wmintv.o wmlabc.o \
 	wmlabs.o wmlabt.o wmlabw.o wmlgfa.o wmlgnd.o wmlgpl.o \
 	wmrgwt.o wmsect.o wmsetc.o wmseti.o wmsetr.o wmstnm.o \
-	wmw2nx.o wmw2ny.o
+	wmw2nx.o wmw2ny.o wmcmax.o
 
 OTHER_SRCS =
 

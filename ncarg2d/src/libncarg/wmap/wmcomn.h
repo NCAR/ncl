@@ -1,5 +1,5 @@
 C
-C	$Id: wmcomn.h,v 1.11 2000-08-22 03:45:45 haley Exp $
+C	$Id: wmcomn.h,v 1.12 2001-02-14 01:05:05 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -23,10 +23,6 @@ C
 C  Size of the symbol type array.  This is a hardwired maximum.
 C
       PARAMETER (ISDIM=200)
-C
-C  Tension factor used for spline computations.
-C
-      PARAMETER(TNSION=0.001)
 C
 C  WMCOMI contains the values for all settable INTEGER and REAL
 C  parameters:
@@ -133,6 +129,12 @@ C    IAROUC  AOC   Arrow outline color.
 C    ITRO1C  T1C   One color for alternate colors of tropical front. 
 C    ITRO2C  T2C   Second color for alternate colors of tropical front.
 C    IEZFLG  EZF   Flag for NCL to know if wmap is being used with mapping.
+C    TNSION  SIG   Tension factor for tension spline routines.
+C    ISMOTH  SMF   Flags whether interpolation (=0) or smoothing (=1) is done.
+C    RSMOTH  SMT   Smoothing parameter for the smoothing spline routines.
+C    OBSERR  OER   Observational weights for data for smoothing spline routines.
+C    RSMRET  ---   Used to return the default setting of RSMOTH.
+C    OBSRET  ---   Used to return the default setting of OBSERR.
 C
       COMMON /WMCOMI/ SYMWID, BEGDST, ENDDST, BETDST, MAXSYM, IARNDX, 
      +                IFRONT, CRVLEN, ISLFLG, SLOPE1, SLOPE2, SLOPEL,
@@ -147,13 +149,14 @@ C
      +                IHIGC2, IHIGC3, ILOWC1, ILOWC2, ILOWC3, IRGLC1,
      +                IRGLC2, IRGLC3, IRGLC4, IDOTBG, IAROWC, IARSHC,
      +                IRLLSC, IRLOUC, IRLBKC, IHIGC4, IAROUC, IRGLC5,
-     +                ITRO1C, ITRO2C, ILOWC4, IEZFLG,
+     +                ITRO1C, ITRO2C, ILOWC4, IEZFLG, TNSION, ISMOTH,
+     +                RSMOTH, OBSERR, RSMRET, OBSRET,
      +                ISTYPE(ISDIM)
 C
 C  WMARRS contains arrray space.
 C
-      PARAMETER (NPTS=300,NWRK=50000)
-      COMMON /WMARRS/XO(NPTS),YO(NPTS),TEMP(NPTS),S(NPTS),
+      PARAMETER (NPTS=300,NPTS9=9*NPTS,NWRK=50000)
+      COMMON /WMARRS/XO(NPTS),YO(NPTS),TEMP(NPTS9),S(NPTS),
      +               XS(NPTS),YS(NPTS),XOUT(NPTS),YOUT(NPTS),
      +               ALEN(NPTS),RWORK(NWRK)
       COMMON /IMARRS/IWORK(NWRK)

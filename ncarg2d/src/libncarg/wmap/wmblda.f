@@ -1,5 +1,5 @@
 C
-C	$Id: wmblda.f,v 1.10 2000-08-22 15:07:43 haley Exp $
+C	$Id: wmblda.f,v 1.11 2001-02-14 01:05:04 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -203,5 +203,27 @@ C
 C  Arrow color, arrow shadow color, arrow outline color.
 C
       DATA IAROWC,IARSHC,IAROUC/1,-1,-1/
+C
+C  Tension factor for spline routines, a negative value indicates that
+C  the value has not been specified and a defualt value will be supplied
+C  at run time.
+C
+      DATA TNSION/-1./
+C
+C  Smoothing parameter for the smoothing spline routines, a negative 
+C  value indicates that the value has not been specified and a defualt 
+C  value will be supplied at run time.
+C
+      DATA RSMOTH/-1./
+C
+C  Observational weights for data for smoothing spline routines.  A negative
+C  value indicates that the value has not been specified and a defualt 
+C  value will be supplied at run time.
+C
+      DATA OBSERR/-1./
+C
+C  Flags whether interpolation (=0) or smoothing (=1) is done.
+C
+      DATA ISMOTH/0/
 C
       END
