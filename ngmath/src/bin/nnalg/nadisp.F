@@ -1,5 +1,5 @@
 C
-C $Id: nadisp.F,v 1.4 2000-08-22 15:37:36 haley Exp $
+C $Id: nadisp.F,v 1.5 2004-02-17 17:38:57 haley Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -164,8 +164,9 @@ C
       IF (NUMPNT+3 .GT. IPDIM) THEN
         IMAX = IPDIM
         WRITE(6,520) NUMPNT,IMAX
-  520   FORMAT(' Number of input data points = ',I8/' This exceeds the m
-     +aximum allowed, which is ',I8)
+  520   FORMAT(' Number of input data points = ',
+     +I8/' This exceeds the maximum allowed, which is ',
+     +I8)
         STOP
       ENDIF
 C
@@ -192,8 +193,9 @@ C
       IF (NUMSIM .GT. ISDIM) THEN
         IMAX = ISDIM
         WRITE(6,530) NUMSIM,IMAX
-  530   FORMAT(' Number of circumcircles = ',I8/' This exceeds the maxim
-     +um allowed, which is ',I8)
+  530   FORMAT(' Number of circumcircles = ',
+     +I8/' This exceeds the maximum allowed, which is ',
+     +I8)
         STOP
       ENDIF
       DO 60 I=1,NUMSIM
