@@ -1,5 +1,5 @@
 /*
- *	$Id: clear_text.c,v 1.5 1992-02-07 17:38:47 clyne Exp $
+ *	$Id: clear_text.c,v 1.6 1992-04-03 20:56:20 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -37,18 +37,13 @@
 #include "text.h"
 
 static	struct	{
-	BoolType_	data,	/* true if user wants element's parameters   */	
-			para;	/* true if user also wants all data points */
-	} commLineOpt;
-
-static	boolean	data,	/* true if user wants element's parameters   */	
-		para;	/* true if user also wants all data points */
+	boolean	no_data,	/* true if user wants element's parameters   */	
+		no_para;	/* true if user also wants all data points */
+	} opt;
 
 static  Option  options[] =  {
-        {"Data", BoolType, (unsigned long) &commLineOpt.data, 
-						sizeof (BoolType_ )},
-        {"Para", BoolType, (unsigned long) &commLineOpt.para, 
-						sizeof (BoolType_ )},
+        {"Data", NCARGCvtToBoolean,(Voidptr)&opt.no_data, sizeof(opt.no_data )},
+        {"Para", NCARGCvtToBoolean,(Voidptr)&opt.no_para, sizeof(opt.no_para )},
 	{NULL}
         };
 
@@ -81,13 +76,13 @@ CGMC *c;
 	 *	parse clear_text specific command line args
 	 */
 
-	getOptions((caddr_t) 0, options);
-
-	data = commLineOpt.data;
-	para = commLineOpt.para;
+	if (GetOptions(options) < 0) {
+		ct_error(T_NULL, ErrGetMsg());
+		return(DIE);
+	}
 
 	(void) printf("\nBEGIN METAFILE\n");
-	if (para) 
+	if (! opt.no_para) 
 		(void) printf("	metafile name	-> \"%s\"\n", c->s->string[0]);
 	return (OK);
 }
@@ -109,7 +104,7 @@ CGMC *c;
 
 	(void) printf("\nBEGIN PICTURE\n");
 
-	if (para) 
+	if (! opt.no_para) 
 		(void) printf("	picture name	-> \"%s\"\n", c->s->string[0]);
 	return (OK);
 }
@@ -151,7 +146,7 @@ CGMC *c;
 
 	(void) printf("\nMETAFILE VERSION\n");
 
-	if (para) 
+	if (! opt.no_para) 
 		(void) printf("	version number	-> %i\n", c->i[0]);
 	return (OK);
 }
@@ -163,7 +158,7 @@ CGMC *c;
 
 	(void) printf("\nMETAFILE DESCRIPTION\n");
 
-	if (para) 
+	if (! opt.no_para) 
 		(void) printf("	description	-> \"%s\"\n", c->s->string[0]);
 	return (OK);
 }
@@ -175,7 +170,7 @@ CGMC *c;
 
 	(void) printf("\nVDC TYPE\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		switch (c->e[0]) {
 		
 		case 0:
@@ -198,7 +193,7 @@ CGMC *c;
 
 	(void) printf("\nINTEGER PRECISION\n");
 
-	if (para) 
+	if (! opt.no_para) 
 		(void) printf("	precision	-> %6d\n", c->i[0]);
 	return (OK);
 }
@@ -210,7 +205,7 @@ CGMC *c;
 
 	(void) printf("\nREAL PRECISION (*unsupported*)\n");
 
-	if (para) { 
+	if (! opt.no_para) { 
 		switch (c->i[0]) {
 		
 		case 0:
@@ -237,7 +232,7 @@ CGMC *c;
 
 	(void) printf("\nINDEX PRECISION\n");
 	
-	if (para) 
+	if (! opt.no_para) 
 		(void) printf("	precision	-> %6d\n", c->i[0]);
 	return (OK);
 }
@@ -249,7 +244,7 @@ CGMC *c;
 
 	(void) printf("\nCOLOUR PRECISION\n");
 	
-	if (para) 
+	if (! opt.no_para) 
 		(void) printf("	precision	-> %6d\n", c->i[0]);
 	return (OK);
 }
@@ -261,7 +256,7 @@ CGMC *c;
 
 	(void) printf("\nCOLOUR INDEX PRECISION\n");
 	
-	if (para) 
+	if (! opt.no_para) 
 		(void) printf("	precision	-> %6d\n", c->i[0]);
 	return (OK);
 }
@@ -273,7 +268,7 @@ CGMC *c;
 
 	(void) printf("\nMAXIMUM COLOUR INDEX (*unsupported*)\n");
 	
-	if (para) 
+	if (! opt.no_para) 
 		(void) printf("	index		-> %6d\n", c->ci[0]);
 	return (OK);
 }
@@ -285,7 +280,7 @@ CGMC *c;
 
 	(void) printf("\nCOLOUR VALUE EXTENT (*unsupported*)\n");
 	
-	if (para) {
+	if (! opt.no_para) {
 		(void) printf("	minimum rgb	-> %6d, %6d, %6d\n", 
 			c->cd[0].red, c->cd[0].green, c->cd[0].blue);
 
@@ -304,7 +299,7 @@ CGMC *c;
 
 	(void) printf("\nMETAFILE ELEMENT LIST \n");
 
-	if (para && c->i[0]) {
+	if (! opt.no_para && c->i[0]) {
 
 		if (c->ix[0] == -1) {
 
@@ -347,7 +342,7 @@ CGMC *c;
 
 	(void) printf("\nFONT LIST \n");
 
-	if (para) {
+	if (! opt.no_para) {
 		for (i=0; i<c->Snum; i++)
 			(void) printf("\n font		-> \"%s\"\n", 
 				c->s->string[i]);
@@ -385,7 +380,7 @@ CGMC *c;
 
 	(void) printf("\nSCALING MODE (*unsupported*)\n");
 
-	if (para) {
+	if (! opt.no_para) {
 
 		switch (c->e[0]) {
 		
@@ -412,7 +407,7 @@ CGMC *c;
 
 	(void) printf("\nCOLOUR SELECTION MODE\n");
 
-	if (para) {
+	if (! opt.no_para) {
 
 		switch (c->e[0]) {
 		
@@ -439,7 +434,7 @@ CGMC *c;
 
 	(void) printf("\nLINE WIDTH SPECIFICATION MODE (*unsupported*)\n");
 
-	if (para) {
+	if (! opt.no_para) {
 
 		switch (c->e[0]) {
 		
@@ -466,7 +461,7 @@ CGMC *c;
 
 	(void) printf("\nMARKER SIZE SPECIFICATION MODE (*unsupported*)\n");
 
-	if (para) {
+	if (! opt.no_para) {
 
 		switch (c->e[0]) {
 		
@@ -492,7 +487,7 @@ CGMC *c;
 
 	(void) printf("\nEDGE WIDTH SPECIFICATION MODE (*unsupported*)\n");
 
-	if (para) {
+	if (! opt.no_para) {
 
 		switch (c->e[0]) {
 		
@@ -515,7 +510,7 @@ CGMC *c;
 
 	(void) printf("\nVDC EXTENT\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		(void) printf("	first point	-> %6d, %6d\n", 
 			c->p[0].x, c->p[0].y);
 
@@ -533,7 +528,7 @@ CGMC *c;
 
 	(void) printf("\nBACKGROUND COLOUR\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		(void) printf("	background rgb	-> (%6d, %6d, %6d)\n",
 			c->cd[0].red, c->cd[0].green, c->cd[0].blue);
 
@@ -553,7 +548,7 @@ CGMC *c;
 
 	(void) printf("\nVDC INTEGER PRECISION\n");
 
-	if (para) 
+	if (! opt.no_para) 
 		(void) printf("	precision	-> %6d\n", c->i[0]);
 	return (OK);
 }
@@ -565,7 +560,7 @@ CGMC *c;
 
 	(void) printf("\nVDC REAL PRECISION (*unsupported*)\n");
 
-	if (para) { 
+	if (! opt.no_para) { 
 		switch (c->i[0]) {
 		
 		case 0:
@@ -607,7 +602,7 @@ CGMC *c;
 
 	(void) printf("\nCLIP RECTANGLE\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		(void) printf("	first corner	-> %6d, %6d\n",
 			c->p[0].x, c->p[0].y);
 
@@ -623,7 +618,7 @@ CGMC *c;
 
 	(void) printf("\nCLIP INDICATOR\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		if (c->e[0] == 0)
 			(void) printf("	flag		->    off\n");
 		else
@@ -647,7 +642,7 @@ CGMC *c;
 
 	(void) printf("\nPOLYLINE\n");
 
-	if (data) {
+	if (! opt.no_data) {
 
 		(void) printf("	%d points follow:\n", c->Pnum);
 		for (i = 0; i < c->Pnum; i++) {
@@ -668,7 +663,7 @@ CGMC *c;
 
 	(void) printf("\nDISJOINT POLYLINE (*unsupported*)\n");
 
-	if (data) {
+	if (! opt.no_data) {
 
 		(void) printf("	%d points follow:\n", c->Pnum);
 		for (i = 0; i < c->Pnum; i++) {
@@ -688,7 +683,7 @@ CGMC *c;
 
 	(void) printf("\nPOLYMARKER\n");
 
-	if (data) {
+	if (! opt.no_data) {
 
 		(void) printf("	%d points follow:\n", c->Pnum);
 		for (i = 0; i < c->Pnum; i++) {
@@ -708,7 +703,7 @@ CGMC *c;
 
 	(void) printf("\nTEXT\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		(void) printf("	position	-> %6d, %6d\n", 
 			c->p[0].x, c->p[0].y);
 
@@ -750,7 +745,7 @@ CGMC *c;
 
 	(void) printf("\nPOLYGON\n");
 
-	if (data) {
+	if (! opt.no_data) {
 
 		(void) printf("	%d points follow:\n", c->Pnum);
 		for (i = 0; i < c->Pnum; i++) {
@@ -786,7 +781,7 @@ CGMC *c;
 
 	(void) printf("\nCELL ARRAY \n");
 
-	if (para) {
+	if (! opt.no_para) {
 		(void) printf("	corner point P	-> %6d, %6d\n",
 			c->p[0].x, c->p[0].y);
 
@@ -813,7 +808,7 @@ CGMC *c;
 	 *	print out data if requested	
 	 */
 
-	if (data && c->e[0] == RUN) {
+	if (! opt.no_data && c->e[0] == RUN) {
 
 		(void) printf("	run length encoded data follows:\n"); 
 
@@ -843,7 +838,7 @@ CGMC *c;
 				colorindex++;
 			}
 		}
-	} else if (data && c->e[0] == PACKED) {
+	} else if (! opt.no_data && c->e[0] == PACKED) {
 
 		(void) printf("	packed encoded data follows:\n"); 
 
@@ -900,12 +895,12 @@ CGMC *c;
 
 	(void) printf("\nGENERALIZED DRAWING PRIMITIVE \n");
 
-	if (para) {
+	if (! opt.no_para) {
 		(void) printf("	GDP identifier	-> %6d\n", c->i[0]);
 		(void) printf("	point list size	-> %6d\n", c->i[1]);
 	}
 
-	if (data) {
+	if (! opt.no_data) {
 		(void) printf("	%d points follow:\n", c->Pnum);
 		for (i = 0; i < c->i[1]; i++) {
 			(void) printf("		P(%d)	-> %6d, %6d\n",
@@ -1019,7 +1014,7 @@ CGMC *c;
 
 	(void) printf("\nLINE TYPE\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		switch (c->ix[0]) {
 		
 		case L_SOLID:
@@ -1052,7 +1047,7 @@ CGMC *c;
 
 	(void) printf ("\nLINE WIDTH\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		if (line_wid_mode == ABSOLUTE)
 			(void) printf("	absolute width	-> %6d\n", c->vdc[0]);
 		else
@@ -1068,7 +1063,7 @@ CGMC *c;
 
 	(void) printf("\nLINE COLOUR\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		if (color_sel_mode == INDEXED)
 			(void) printf("	color index	-> %6d\n", c->ci[0]);
 		else
@@ -1102,7 +1097,7 @@ CGMC *c;
 {
 	(void) printf("\nMARKER TYPE\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		switch (c->ix[0]) {
 		
 		case DOT_M:
@@ -1136,7 +1131,7 @@ CGMC *c;
 
 	(void) printf("\nMARKER SIZE\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		if (marker_siz_mode == ABSOLUTE)
 			(void) printf("	absolute size	-> %6d\n", c->vdc[0]);
 		else
@@ -1153,7 +1148,7 @@ CGMC *c;
 
 	(void) printf ("\nMARKER COLOUR\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		if (color_sel_mode == INDEXED)
 			(void) printf("	color index	-> %6d\n", c->ci[0]);
 		else
@@ -1177,7 +1172,7 @@ CGMC *c;
 {
 	(void) printf ("\nTEXT FONT INDEX \n");
 
-	if (para) {
+	if (! opt.no_para) {
 		(void) printf("	font index	-> %6d\n", c->ix[0]);
 	}
 	return (OK);
@@ -1190,7 +1185,7 @@ CGMC *c;
 {
 	(void) printf ("\nTEXT PRECISION \n");
 
-	if (para) {
+	if (! opt.no_para) {
 		switch (c->e[0]) {
 		
 		case STRING_P:
@@ -1217,7 +1212,7 @@ CGMC *c;
 {
 	(void) printf("\nCHARACTER EXPANSION FACTOR\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		(void) printf("	expansion	-> %8.2f\n", c->r[0]);
 	}
 	return (OK);
@@ -1228,7 +1223,7 @@ CGMC *c;
 {
 	(void) printf("\nCHARACTER SPACING\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		(void) printf("	spacing		-> %8.2f\n", c->r[0]);
 	}
 	return (OK);
@@ -1240,7 +1235,7 @@ CGMC *c;
 {
 	(void) printf("\nTEXT COLOUR\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		if (color_sel_mode == INDEXED)
 			(void) printf("	color index	-> %6d\n", c->ci[0]);
 		else
@@ -1254,7 +1249,7 @@ CGMC *c;
 {
 	(void) printf("\nCHARACTER HEIGHT\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		(void) printf("	height		-> %6d\n", c->vdc[0]);
 	}
 	return (OK);
@@ -1264,7 +1259,7 @@ CGMC *c;
 {
 	(void) printf("\nCHARACTER ORIENTATION\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		(void) printf("	x character up	-> %6d\n", c->vdc[0]);
 		(void) printf("	y character up	-> %6d\n", c->vdc[1]);
 		(void) printf("	x character down-> %6d\n", c->vdc[2]);
@@ -1278,7 +1273,7 @@ CGMC *c;
 {
 	(void) printf ("\nTEXT PATH\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		switch (c->e[0]) {
 		
 		case PATH_RIGHT:
@@ -1307,7 +1302,7 @@ CGMC *c;
 {
 	(void)printf ("\nTEXT ALIGNMENT\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		/*
 		 * horizontal alignment
 		 */
@@ -1398,7 +1393,7 @@ CGMC *c;
 {
 	(void) printf("\nINTERIOR STYLE\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		switch (c->e[0]) {
 		
 		case HOLLOW_S:
@@ -1430,7 +1425,7 @@ CGMC *c;
 {
 	(void) printf("\nFILL COLOUR\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		if (color_sel_mode == INDEXED)
 			(void) printf("	fill index	-> %6d\n", c->ci[0]);	
 		else
@@ -1446,7 +1441,7 @@ CGMC *c;
 {
 	(void) printf("\nHATCH INDEX\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		switch (c->ix[0]) {
 		
 		case HORIZONTAL:
@@ -1481,7 +1476,7 @@ CGMC *c;
 {
 	(void) printf("\nPATTERN INDEX\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		(void) printf("	index		-> %6d\n", c->ix[0]);
 	}
 	return (OK);
@@ -1534,7 +1529,7 @@ CGMC *c;
 {
 	(void) printf("\nFILL REFERENCE POINT\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		(void) printf("	fill point	-> %6d, %6d\n", 
 			c->p[0].x, c->p[0].y);
 	}
@@ -1565,7 +1560,7 @@ CGMC	*c;
 
 	(void) printf("\nCOLOUR TABLE\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		for (i = 0; i < c->CDnum; i++) {
 		(void) printf("	index & colour	-> %6d	(%6d, %6d, %6d)\n",
 			c->ci[0] + i, 
@@ -1595,11 +1590,11 @@ CGMC *c;
 
 	(void) printf("\nESCAPE\n");
 
-	if (para) {
+	if (! opt.no_para) {
 		(void) printf("	escape id	-> %6d\n", c->i[0]);
 	}
 
-	if (data) {
+	if (! opt.no_data) {
 		(void) printf("	data record follows:\n\n");
 
 		for (i = 0; i < c->Snum; i++) 

@@ -1,5 +1,5 @@
 /*
- *	$Id: rastdev.h,v 1.3 1991-10-04 15:19:33 clyne Exp $
+ *	$Id: rastdev.h,v 1.4 1992-04-03 20:58:11 clyne Exp $
  */
 #ifndef	_rastdev_
 #define	_rastdev_

@@ -1,5 +1,5 @@
 /*
- *	$Id: sun_view.c,v 1.12 1992-02-18 20:01:14 clyne Exp $
+ *	$Id: sun_view.c,v 1.13 1992-04-03 20:58:30 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -42,21 +42,19 @@ extern	boolean	deviceIsInit;
 extern	boolean	Batch;
 extern	char	*program_name;
 extern	boolean	*softFill;
-extern	boolean	*bellOff;
+extern	boolean	*doBell;
 
 /*
  *	command line options supported by sunview driver
  */
 static	struct  {
-        StringType_     Ws;	/* size of window		*/
-        StringType_     Wp;	/* position of window		*/
-        } commLineOpt;
+        char	*Ws;	/* size of window		*/
+        char	*Wp;	/* position of window		*/
+        } opt;
 
 static  Option  options[] =  {
-        {"Ws", StringType, (unsigned long) &commLineOpt.Ws, 
-						sizeof (StringType_ )},
-        {"Wp", StringType, (unsigned long) &commLineOpt.Wp, 
-						sizeof (StringType_ )},
+        {"Ws", NCARGCvtToString, (Voidptr) &opt.Ws, sizeof (opt.Ws )},
+        {"Wp", NCARGCvtToString, (Voidptr) &opt.Wp, sizeof (opt.Wp )},
         {NULL},
         };
 
@@ -112,13 +110,16 @@ CGMC *c;
                  *      parse sunview specific command line args
                  *      (currently only geometry accepted       )
                  */
-                getOptions((caddr_t) 0, options);
+		if (GetOptions(options) < 0) {
+			ct_error(T_NULL, ErrGetMsg());
+			return(DIE);
+		}
 
 		/*
 		 * convert string representing width and heigth to 
 		 * width and heigth
 		 */
-		if (sscanf(commLineOpt.Ws,"%d %d",&dev.width,&dev.height) !=2){
+		if (sscanf(opt.Ws,"%d %d",&dev.width,&dev.height) !=2){
 			ct_error(T_NULL, "dimensions must be quoted");
 			return(DIE);
 		}
@@ -130,7 +131,7 @@ CGMC *c;
 		 * convert string representing position to 
 		 * position
 		 */
-		if (sscanf(commLineOpt.Wp, "%d %d", &x, &y) != 2) {
+		if (sscanf(opt.Wp, "%d %d", &x, &y) != 2) {
 
 			ct_error(T_NSO, "position must be quoted");
 			return(DIE);
@@ -369,7 +370,7 @@ CGMC *c;
 	 *	Beep & wait for the user to press mouse button 1,
 	 *	space bar, return or quit.
 	 */
-	if (! *bellOff) window_bell(frame);
+	if (*doBell) window_bell(frame);
 
 	while(!nextFrame) {
 		(void) notify_dispatch();

@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.18 1992-02-28 00:20:08 clyne Exp $
+ *	$Id: ctrans.c,v 1.19 1992-04-03 20:56:42 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -86,7 +86,7 @@ static	char	*palFname = NULL;
 
 boolean *softFill = &softfill;
 boolean *deBug = &debug;
-boolean *bellOff = &bell_off;
+boolean *doBell = &bell_off;
 
 FILE	*tty = NULL;
 
@@ -185,7 +185,10 @@ Ct_err	init_ctrans(argc, argv, prog_name, gcap, fcap, stand_alone,				batch)
 	 * load in any device specific command line options in to the option
 	 * table and parse them
 	 */
-	parseOptionTable(argc, argv, devices[currdev].opt);
+	if (ParseOptionTable(argc, argv, devices[currdev].opt) < 0) {
+		ct_error(T_NULL, ErrGetMsg());
+		return(DIE);
+	}	
 
 	Argv = argv;
 	Argc = *argc;

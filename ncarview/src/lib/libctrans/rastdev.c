@@ -1,5 +1,5 @@
 /*
- *	$Id: rastdev.c,v 1.7 1992-02-10 17:31:58 clyne Exp $
+ *	$Id: rastdev.c,v 1.8 1992-04-03 20:58:08 clyne Exp $
  */
 #include <stdio.h>
 #include <ncarg_ras.h>

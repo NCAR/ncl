@@ -1,5 +1,5 @@
 /*
- *	$Id: cterror.c,v 1.10 1992-02-10 17:31:46 clyne Exp $
+ *	$Id: cterror.c,v 1.11 1992-04-03 20:56:32 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -70,45 +70,12 @@ static	void usage(message)
 char	*message;
 {
 	int	i;
-	(void)fprintf(errfile,"%s\n",message);
-
-	if (currdev >= 0) {	/* do we know what device	*/
-		(void) fprintf(errfile, 
-			"usage: %s -d %s [-r <record>] [-f <fcap>] [-s ] [-bell] [-lmin <min>] [-lmax <max>]  [-lscale <scale>]", 
-			program_name, devices[currdev].name);
-
-		for (i = 0; 
-		devices[currdev].opt && devices[currdev].opt[i].option; i++) {
-
-			(void) fprintf(errfile, 
-				"[-%s", devices[currdev].opt[i].option); 
-			
-			if (devices[currdev].opt[i].arg_type == OptSepArg) { 
-				(void) fprintf(errfile, 
-				" %s", devices[currdev].opt[i].option); 
-			}
-
-			(void) fprintf(errfile, 
-				"] ");
-		}
-		(void) fprintf(errfile, "<metafile...>\n");
-		return;
-	}
-			
-
-
-
-	(void) fprintf(errfile, 
-	"usage: %s [-d <device>] [-r <record>] [-f <fontcap>] [-s ] [-bell] [-lmin <min>] [-lmax <max>] [-lscale <scale>] [device options] <metafile...> \n", program_name);
-
-	
-	(void) fprintf(errfile, "where device is one of:\n");
-	(void) 
-	fprintf(errfile, "	<graphcap name>		a valid graphcap\n");
-
-	for (i = 1; i < devicenum; i++)  {
-		(void) fprintf(errfile, "	%s\n", devices[i].name);
-	}
+	(void) fprintf(errfile,"%s\n",message);
+	(void) fprintf(
+		errfile, 
+		"Usage: %s -d <device> -f <font> [options] [device-specific options] [ - | metafile... ]\n", program_name
+	);
+	PrintOptionHelp(errfile);
 }
 
 
@@ -133,12 +100,17 @@ char	*message;
 		 */
 		if ((int) error <= END_NT) {
 
-			pre_err = SICK;		/* error not fatal. record not fatal*/
+			pre_err = SICK;		/* error not fatal. 
+						 * record not fatal
+						 */
 
 			if (report != ALL && report != NON_TERM)
 				return;
 
 			(void) fprintf(errfile, "%s: ", program_name); 
+			if (message && strlen(message)) {
+				(void) fprintf(errfile,"%s :", message);
+			}
 
 			switch (error) {
 
@@ -245,11 +217,8 @@ char	*message;
 				/* invalid error message	*/
 				break;
 			}
+			(void) fprintf(stderr, "\n");
 
-			if (message)
-				(void) fprintf(errfile," - %s", message);
-
-			(void) fprintf(errfile, "\n");
 		}
 		else {
 
@@ -262,6 +231,9 @@ char	*message;
 			if (report == ALL || report == TERMINAL) {
 
 				(void) fprintf(errfile, "%s: ", program_name); 
+				if (message && strlen(message)) {
+					(void) fprintf(errfile,"%s :", message);
+				}
 
 				switch (error) {
 
@@ -269,30 +241,30 @@ char	*message;
 				 *	general errors
 				 */
 				case  T_CNOD:
-					PRINT_E ("can not open device: ");
+					PRINT_E ("can not open device");
 					break;
 
 				case  T_MALLOC:
-					PRINT_E ("memory allocation error: ");
+					PRINT_E ("memory allocation error");
 					break;
 
 				case  T_EE:
-					PRINT_E ("error in CGM encoding: ");
+					PRINT_E ("error in CGM encoding");
 					break;
 
 				/*
 				 *	input errors
 				 */
 				case  T_FOE:
-					PRINT_E ("file open error: ");
+					PRINT_E ("file open error");
 					break;
 
 				case  T_FRE:
-					PRINT_E ("file read error: ");
+					PRINT_E ("file read error");
 				break;
 
 				case  T_FSE:
-					PRINT_E ("file seek error: ");
+					PRINT_E ("file seek error");
 					break;
 
 				/*
@@ -335,11 +307,7 @@ char	*message;
 				break;
 			}
 
-			if (message)
-				(void) fprintf(errfile," %s", message);
-
 			(void) fprintf(errfile, "\n");
-
 		}
 
 		/*

@@ -7,7 +7,7 @@
 *                      NCAR View V3.00 - UNIX Release                  *
 *                                                                      *
 ***********************************************************************/
-#include <boolean.h>
+#include <ncarv.h>
 
 #ifndef _cgmc_
 #define _cgmc_

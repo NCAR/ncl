@@ -1,5 +1,5 @@
 /*
- *      $Id: ctrans_api.c,v 1.6 1992-02-07 17:38:59 clyne Exp $
+ *      $Id: ctrans_api.c,v 1.7 1992-04-03 20:56:46 clyne Exp $
  */
 /*
  *	File:		ctrans_api.c
@@ -53,7 +53,7 @@ extern	boolean	stand_Alone;
 extern	boolean	Batch;
 extern	boolean *softFill;
 extern	boolean *deBug;
-extern	boolean *bellOff;
+extern	boolean *doBell;
 extern	FILE	*tty;
 extern	boolean	deviceIsInit;	
 extern	int	currdev;
@@ -110,7 +110,7 @@ CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 
 	static	boolean softFillOption = FALSE;
 	static	boolean deBugOption = FALSE;
-	static	boolean bellOffOption = TRUE;
+	static	boolean doBellOption = FALSE;
 	int	i;
 
 	char	*getGcapname(), *getFcapname();
@@ -131,7 +131,7 @@ CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	Batch = TRUE;			/* drivers don't prompt user	*/
 	softFill = &softFillOption;	/* no soft fill			*/
 	deBug = &deBugOption;		/* no debugging			*/
-	bellOff = &bellOffOption;	/* no bell			*/
+	doBell = &doBellOption;		/* no bell			*/
 	deviceIsInit = FALSE;
 
 
@@ -166,7 +166,10 @@ CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 		dev_argv_[i] = (char *) malloc (strlen(dev_argv[i] + 1));
 		(void) strcpy (dev_argv_[i], dev_argv[i]);
 	}
-	parseOptionTable(&dev_argc, (char **) dev_argv_, devices[currdev].opt);
+	if (ParseOptionTable(&dev_argc, dev_argv_, devices[currdev].opt) < 0) {
+		CtransSetError_(ERR_INV_ARG);
+		return(-1);
+	}
 
 
 

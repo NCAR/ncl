@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.h,v 1.7 1992-02-29 00:13:43 clyne Exp $
+ *	$Id: devices.h,v 1.8 1992-04-03 20:57:06 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -93,46 +93,46 @@
 #ifdef	DEVICES
 
 static	OptDescRec	gcap_opts[] = {
-	{"window", OptSepArg, NULL},
-	{"viewport", OptSepArg, NULL},
+	{"window", 1, NULL, "Specify window transform - llx:lly:urx:ury"},
+	{"viewport", 1, NULL, "Specify viewport transform - llx:lly:urx:ury"},
 	{NULL}
 	};
 
 static	OptDescRec	raster_opts[] = {
-	{"resolution", OptSepArg, "512x512"},
-	{"window", OptSepArg, NULL},
-	{"viewport", OptSepArg, NULL},
-	{"compress", OptIsArg, "false"},
-	{"landscape", OptIsArg, "false"},
-	{"rle", OptIsArg, "false"},
-	{"dpi", OptSepArg, "75"},
+	{"resolution", 1, "512x512", "Raster resolution - widthxheight"},
+	{"window", 1, NULL, "Specify window transform - llx:lly:urx:ury"},
+	{"viewport", 1, NULL, "Specify viewport transform - llx:lly:urx:ury"},
+	{"compress", 0, NULL, "Do compress output image"},
+	{"landscape", 0, NULL, "Do landscape mode"},
+	{"rle", 0, NULL, "Do run length encode output (if supported)"},
+	{"dpi", 1, "75", "Dots per inch - (HPLJ only)"},
 	{NULL}
 	};
 
 #ifdef	X11
 static	OptDescRec	X11_opts[] = {
-	{"geometry", OptSepArg, NULL},
-	{"window", OptSepArg, NULL},
-	{"viewport", OptSepArg, NULL},
-	{"foreground", OptSepArg, NULL},
-	{"background", OptSepArg, NULL},
-	{"reverse", OptIsArg, "false"},
+	{"geometry", 1, NULL, "Window geometry (X11 only)"},
+	{"window", 1, NULL, "Specify window transform - llx:lly:urx:ury"},
+	{"viewport", 1, NULL, "Specify viewport transform - llx:lly:urx:ury"},
+	{"foreground", 1, NULL, "Default foreground color (X11 color only)"},
+	{"background", 1, NULL, "Default background color (X11 color only)"},
+	{"reverse", 0, NULL, "Do reverse video (X11 monochrome only)"},
 	{NULL}
 	};
 #endif
 
 #ifdef	CTXT
 static	OptDescRec	CTXT_opts[] = {
-	{"Data", OptIsArg, "true"},
-	{"Para", OptIsArg, "true"},
+	{"Data", 0, NULL, "Do suppress display of data"},
+	{"Para", 0, NULL, "Do suppress display of parameters"},
 	{NULL}
 	};
 #endif
 
 #if 	defined(SunV) || defined(SunR)
 static	OptDescRec	SunV_opts[] = {
-	{"Ws", OptSepArg, "-1 -1"},
-	{"Wp", OptSepArg, "0 0"},
+	{"Ws", 1, "-1 -1", "Window size"},
+	{"Wp", 1, "0 0", "Window position"},
 	{NULL}
 	};
 #endif
@@ -152,6 +152,7 @@ struct device{
         ,{"nrif",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
         ,{"hdf",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
         ,{"sun",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
+        ,{"avs",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
         ,{"parallax",RAST_I,FALSE,TRUE,"", TRUE, raster_opts}
 
 #ifdef  X11

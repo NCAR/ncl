@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.11 1992-02-18 20:01:19 clyne Exp $
+ *	$Id: sunraster.c,v 1.12 1992-04-03 20:58:35 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -42,7 +42,7 @@ extern	boolean	deviceIsInit;
 extern	boolean	Batch;
 extern	char	*program_name;
 extern	boolean	*softFill;
-extern	boolean	*bellOff;
+extern	boolean	*doBell;
 
 #define	DEFAULT_WIDTH	1152	/* default raster width		*/
 #define	DEFAULT_HEIGHT	900	/* default raster height	*/
@@ -58,12 +58,11 @@ static	struct {		/* current info about the device*/
  *	command line options supported by sunview driver
  */
 static	struct  {
-        StringType_     Ws;	/* size of window		*/
-        } commLineOpt;
+        char	*Ws;	/* size of window		*/
+        } opt;
 
 static  Option  options[] =  {
-        {"Ws", StringType, (unsigned long) &commLineOpt.Ws, 
-					sizeof (StringType_ )},
+        {"Ws", NCARGCvtToString, (Voidptr) &opt.Ws, sizeof (opt.Ws )},
         {NULL},
         };
 
@@ -107,13 +106,16 @@ CGMC *c;
                  *      parse sunview specific command line args
                  *      (currently only geometry accepted       )
                  */
-                getOptions((caddr_t) 0, options);
+		if (GetOptions(options) < 0) {
+			ct_error(T_NULL, ErrGetMsg());
+			return(DIE);
+		}
 
 		/*
 		 * convert string representing width and heigth to 
 		 * width and heigth
 		 */
-		if (sscanf(commLineOpt.Ws,"%d %d",&dev.width,&dev.height) !=2){
+		if (sscanf(opt.Ws,"%d %d",&dev.width,&dev.height) !=2){
 			ct_error(T_NULL, "dimensions must be quoted");
 			return(DIE);
 		}
@@ -240,7 +242,7 @@ CGMC *c;
 	/*
 	 * ring the bell
 	 */
-	if (! *bellOff) (void) fprintf(stderr, "");
+	if (*doBell) (void) fprintf(stderr, "");
 
 	/*
 	 * copy color map into the colormap_t structure

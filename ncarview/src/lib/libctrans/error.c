@@ -1,5 +1,5 @@
 /*
- *      $Id: error.c,v 1.3 1992-02-11 14:59:12 clyne Exp $
+ *      $Id: error.c,v 1.4 1992-04-03 20:57:12 clyne Exp $
  */
 /*
  *	File:		error.c	

@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.18 1992-02-29 00:13:48 clyne Exp $
+ *	$Id: gcap.c,v 1.19 1992-04-03 20:57:33 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -72,23 +72,21 @@ extern	boolean	deviceIsInit;
 static	CoordRect	VDCExtent;
 
 static	struct	GCapOpts_	{
-	StringType_	window;
-	StringType_	viewport;
+	char	*window;
+	char	*viewport;
 	} gcap_opts;
 
 static	Option	options[] = {
-        {
-	"window", StringType,
-		(unsigned long) &gcap_opts.window, sizeof (StringType_ )
+        {"window", NCARGCvtToString,
+		(Voidptr) &gcap_opts.window, sizeof (gcap_opts.window)
 	},
-	{
-	"viewport", StringType,
-		(unsigned long) &gcap_opts.viewport, sizeof (StringType_ )
+	{"viewport", NCARGCvtToString,
+		(Voidptr) &gcap_opts.viewport, sizeof (gcap_opts.window)
 	},
 	{
 	NULL
 	}
-	};
+};
 
 extern	boolean	*softFill;
 
@@ -118,7 +116,10 @@ CGMC *c;
 	/*
 	 * parse gcap specific options
 	 */
-	getOptions((caddr_t) 0, options);
+	if (GetOptions(options) < 0) {
+		ct_error(T_NULL, ErrGetMsg());
+		return(DIE);
+	}
 	
 	/*
 	 * 	Init translation values and the formating routines

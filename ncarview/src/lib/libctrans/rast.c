@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.9 1992-02-29 00:13:57 clyne Exp $
+ *	$Id: rast.c,v 1.10 1992-04-03 20:58:01 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -32,37 +32,31 @@ extern	char	*RasterGetError();
 extern	char	*strcpy();
 
 
-static	struct	RasterCommLineOpt_ {
-	StringType_	resolution;
-	StringType_	window;
-	StringType_	viewport;
-	StringType_	dpi;
-	BoolType_	rle;
-	BoolType_	compress;
+static	struct	Opts {
+	char	*resolution;
+	char	*window;
+	char	*viewport;
+	char	*dpi;
+	boolean	rle;
+	boolean	compress;
 	} rast_opts;
 
 static	Option	raster_opts[] = {
-	{
-	"resolution",StringType,(unsigned long) &rast_opts.resolution,
-				sizeof (StringType_)
+	{"resolution",NCARGCvtToString,(Voidptr) &rast_opts.resolution,
+				sizeof (rast_opts.resolution)
 	},
-	{
-	"window",StringType,(unsigned long) &rast_opts.window,
-				sizeof (StringType_)
+	{"window",NCARGCvtToString,(Voidptr) &rast_opts.window,
+				sizeof (rast_opts.window)
 	},
-	{
-	"viewport",StringType,(unsigned long) &rast_opts.viewport,
-				sizeof (StringType_)
+	{"viewport",NCARGCvtToString,(Voidptr) &rast_opts.viewport,
+				sizeof (rast_opts.viewport)
 	},
-	{
-	"dpi",StringType,(unsigned long) &rast_opts.dpi,
-				sizeof(StringType_)
+	{"dpi",NCARGCvtToString,(Voidptr) &rast_opts.dpi,
+				sizeof(rast_opts.dpi)
 	},
-	{
-	"rle",BoolType,(unsigned long) &rast_opts.rle,sizeof(BoolType_)
+	{"rle",NCARGCvtToBoolean,(Voidptr) &rast_opts.rle,sizeof(rast_opts.rle)
 	},
-	{
-	"compress",BoolType,(unsigned long) &rast_opts.compress,					sizeof (BoolType_)
+	{"compress",NCARGCvtToBoolean,(Voidptr) &rast_opts.compress,					sizeof (rast_opts.compress)
 	},
 	{
 	NULL
@@ -94,7 +88,10 @@ CGMC *c;
 	 *      parse raster specific command line args
 	 *      (currently only resolution accepted       )
 	 */
-	getOptions((caddr_t) 0, raster_opts);
+	if (GetOptions(raster_opts) < 0) {
+		ct_error(T_NULL, ErrGetMsg());
+		return(DIE);
+	}
 
 	/*
 	 * load options for libraster into ras_argv and initialilze
@@ -426,7 +423,7 @@ set_back_color(colr)
 #define DEFAULT_HEIGHT  512	/* default raster height        */
 get_resolution(dev_extent, opts, name)
 	CoordRect	*dev_extent;
-	struct	RasterCommLineOpt_ opts;
+	struct	Opts opts;
 	char	*name;
 {
 	int	width = DEFAULT_WIDTH;
@@ -625,7 +622,7 @@ static	Ct_err	ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
 static	build_ras_arg(ras_argc, ras_argv, rast_opts)
 	int	*ras_argc;
 	char	**ras_argv;
-	struct	RasterCommLineOpt_ rast_opts;
+	struct	Opts rast_opts;
 {
 	int	i;
 

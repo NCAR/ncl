@@ -1,5 +1,5 @@
 /*
- *	$Id: gcapdev.h,v 1.3 1991-10-04 15:19:25 clyne Exp $
+ *	$Id: gcapdev.h,v 1.4 1992-04-03 20:57:38 clyne Exp $
  */
 #ifndef	_gcapdev_
 #define	_gcapdev_

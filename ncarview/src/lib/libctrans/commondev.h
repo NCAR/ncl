@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.h,v 1.3 1991-10-04 15:18:55 clyne Exp $
+ *	$Id: commondev.h,v 1.4 1992-04-03 20:56:28 clyne Exp $
  */
 #ifndef	_commondev_
 #define	_commondev_
