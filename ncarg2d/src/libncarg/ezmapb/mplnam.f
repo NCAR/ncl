@@ -1,5 +1,5 @@
 C
-C $Id: mplnam.f,v 1.4 1998-04-30 22:43:56 kennison Exp $
+C $Id: mplnam.f,v 1.5 1998-05-12 23:02:05 kennison Exp $
 C
       SUBROUTINE MPLNAM (FLNM,ILVL,IAMA)
 C
@@ -167,7 +167,6 @@ C Save some pointers that will tell us whether anything actually got
 C put into the area map, so that, if not, we can take remedial action.
 C
         IAM5=IAMA(5)
-        IAM6=IAMA(6)
 C
 C Read and process each of the lines.
 C
@@ -215,7 +214,7 @@ C action to supply AREAS with a correct area identifier.  Again, look
 C for a local version of the required file and, if it can't be found,
 C look in the NCAR Graphics database directory.
 C
-        IF (IAMA(5).EQ.IAM5.AND.IAMA(6).EQ.IAM6) THEN
+        IF (IAMA(5).EQ.IAM5) THEN
           FLNL(LFNL-6:LFNL-1)='.areas'
           CALL NGOFRO (FLNL(1:LFNL),IFDE,ISTA)
           IF (ISTA.NE.0) THEN
