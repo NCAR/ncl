@@ -36,7 +36,7 @@ C
 C
 C Invoke demo driver
 C
-      CALL STEX02(IERR)
+      CALL STREAM(IERR)
 C
 C     Deactivate and close workstation, close GKS.
 C
@@ -46,7 +46,7 @@ C
       STOP
       END
 C
-      SUBROUTINE STEX02 (IERROR)
+      SUBROUTINE STREAM (IERROR)
 C
 C
       PARAMETER (M=25,N=25)
