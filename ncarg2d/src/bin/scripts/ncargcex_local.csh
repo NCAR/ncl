@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex_local.csh,v 1.7 1994-12-19 17:46:09 haley Exp $
+#	$Id: ncargcex_local.csh,v 1.8 1994-12-19 18:45:37 stautler Exp $
 #
 
 #********************************#
@@ -404,8 +404,9 @@ set vectors_list = ($ex_vectors $tst_vectors $fnd_vectors)
 # set wmap examples #
 #                   #
 #*******************#
-set ex_wmap   = (c_wmex07 c_wmex08 c_wmex09 c_wmex10 c_wmex11 c_wmex12 \
-c_wmex13 c_wmex14)
+set ex_wmap   = (c_wmex01 c_wmex02 c_wmex03 c_wmex04 c_wmex05 c_wmex06 \
+                 c_wmex07 c_wmex08 c_wmex09 c_wmex10 c_wmex11 c_wmex12 \
+                 c_wmex13 c_wmex14)
 set wmap_list = ($ex_wmap)
 
 #****************************************#
