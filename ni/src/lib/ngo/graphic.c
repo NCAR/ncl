@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.c,v 1.6 1998-11-18 19:45:17 dbrown Exp $
+ *      $Id: graphic.c,v 1.7 1998-11-20 04:11:02 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -258,11 +258,30 @@ NhlErrorTypes NgDestroyGraphic
 {
         char buf[512];
         NgGO go = (NgGO)_NhlGetLayer(goid);
+	int i,hlu_id, *id_array, count;
 
         if (!go) {
                 NHLPERROR((NhlWARNING,NhlEUNKNOWN,"invalid graphic object"));
                 return (NhlErrorTypes) NhlFATAL;
         }
+
+        hlu_id = NgNclGetHluObjId
+                (go->go.nclstate,ncl_graphic,&count,&id_array);
+        for (i = 0; i < count; i++) {
+		NhlLayer l;
+                if (count > 1)
+                        hlu_id = id_array[i];
+		l = _NhlGetLayer(hlu_id);
+		if (l && _NhlIsXWorkstation(l)) {
+			NgWksObj wkobj = (NgWksObj) l->base.gui_data2;
+			if (wkobj)
+				wkobj->auto_refresh = False;
+		}
+	}	
+        if (count > 1) {
+                NhlFree(id_array);
+        }
+	
         sprintf(buf,"destroy(%s)\ndelete(%s)\n",ncl_graphic,ncl_graphic);
         (void)NgNclSubmitBlock(go->go.nclstate,buf);
                 
@@ -325,9 +344,7 @@ NhlErrorTypes NgDrawGraphic
 		int appmgr = (int) wkl->base.gui_data;
 		NgGO go = (NgGO) _NhlGetLayer(wko->wks_wrap_id);
 
-		if (! go->go.up)
-			NgXWorkPopup(appmgr,wko->wks_wrap_id);
-		NgDrawXwkView(wko->wks_wrap_id,base_id);
+		NgDrawXwkView(wko->wks_wrap_id,base_id,clear);
 	}
 	else {
         

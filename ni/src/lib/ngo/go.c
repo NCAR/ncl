@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.18 1998-11-18 19:45:17 dbrown Exp $
+ *      $Id: go.c,v 1.19 1998-11-20 04:11:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1675,7 +1675,7 @@ _NgGOCreateMenubar
                                     NULL);
         
         gp->delete_menu = NgCreateVarMenus(pulldown,
-                                           DeleteVarCB,
+                                           DeleteHLUCB,
                                            DeleteVarCB,
                                            DeleteVarCB,
                                            NULL,go);

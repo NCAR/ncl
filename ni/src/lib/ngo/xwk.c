@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.10 1998-11-18 19:45:23 dbrown Exp $
+ *      $Id: xwk.c,v 1.11 1998-11-20 04:11:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -762,7 +762,8 @@ AutoRefreshOptionCB
 	xwk->xwk.auto_refresh = xmcb->set;
 
 	wksobj = (NgWksObj) xwk->xwk.xwork->base.gui_data2;
-	wksobj->auto_refresh = xwk->xwk.auto_refresh;
+	if (wksobj)
+		wksobj->auto_refresh = xwk->xwk.auto_refresh;
 
 	return;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: xinteract.h,v 1.1 1998-11-18 19:45:22 dbrown Exp $
+ *      $Id: xinteract.h,v 1.2 1998-11-20 04:11:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -82,7 +82,8 @@ extern void NgXCoordToNDC(
 
 extern void NgDrawXwkView(
 	int		xwkid,
-	int		view_id
+	int		view_id,
+	NhlBoolean	force_clear
 );
 
 extern void NgClearXwkView(

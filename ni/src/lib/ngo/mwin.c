@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.18 1998-11-18 19:45:19 dbrown Exp $
+ *      $Id: mwin.c,v 1.19 1998-11-20 04:11:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -678,7 +678,7 @@ WkChildChangeCB
 	if (_NhlIsXWorkstation(_NhlGetLayer(nwork->id))) {
 		wkobj = (NgWksObj) nwork->ndata;
 		if (wkobj && wkobj->auto_refresh)
-			NgDrawXwkView(wkobj->wks_wrap_id,cc->child);
+			NgDrawXwkView(wkobj->wks_wrap_id,cc->child,False);
 	}	
 	
 	return;
@@ -1404,6 +1404,31 @@ RemoveOverlayNode
 	return True;
 }
 
+extern void SetViewBBOffscreen
+(
+	NgObjTree	otree,
+	int		pid
+	)
+{
+	char		func[]="NgUpdateViewBB";
+	NgObjTreeNode	vnode;
+	NgViewObj	vobj;
+
+
+	vnode = FindNode(otree->wklist,pid);
+	if (vnode)
+		vobj = (NgViewObj) vnode->ndata;
+
+	if (vobj) {
+		vobj->xbbox.p0.x = vobj->xbbox.p0.y = 10000;
+		vobj->xbbox.p1.x = vobj->xbbox.p0.x + 1;
+		vobj->xbbox.p1.y = vobj->xbbox.p0.y + 1;
+		vobj->xvp = vobj->xbbox;
+	}
+
+	return;
+}
+
 static void
 AnnoStatusCB
 (
@@ -1443,7 +1468,7 @@ AnnoStatusCB
 		_NhlOverlayBase(anstat->base_id) : anstat->base_id;
 
 	wks = (NgWksObj)wp->ndata;
-	if (vl->base.being_destroyed || vl->base.wkptr->base.being_destroyed)
+	if (vl->base.wkptr->base.being_destroyed)
 		wks->auto_refresh = False;
 	if (anstat->isanno) {
 		int pos,sel_id;
@@ -1505,7 +1530,7 @@ AnnoStatusCB
 			/* 
 			 * Redraw the base plot so the overlay will show up
 			 */
-			NgDrawXwkView(wks->wks_wrap_id,pbase_id);
+			NgDrawXwkView(wks->wks_wrap_id,pbase_id,False);
 			NhlVAGetValues(wks->wks_wrap_id,
 				       NgNxwkSelectedView,&sel_id,
 				       NULL);
@@ -1536,16 +1561,36 @@ AnnoStatusCB
 		 * the remove function both removes and replaces the 
 		 * tree rows.
 		 */
-		if (Do_Draw && is_xwork && wks->auto_refresh) {
-			NgClearXwkView(wks->wks_wrap_id,anstat->base_id);
+		if (! (Do_Draw && is_xwork && wks->auto_refresh)) {
+			RemoveAnnotationNode(otree,bnode,anstat->id);
+		}
+		else {
+			NhlLayer bl = _NhlGetLayer(anstat->base_id);
+
+			/*
+			 * This draw must occur before removing the node so
+			 * that the removed annotation won't yet be seen as
+			 * an independent plot. If it's being destroyed it
+			 * can't be drawn.
+			 */
+
+			if (bl && ! bl->base.being_destroyed)
+				NgDrawXwkView(wks->wks_wrap_id,
+					      anstat->base_id,True);
+				
+
 			RemoveAnnotationNode(otree,bnode,anstat->id);
 			/* 
 			 * Redraw the now top-level view
 			 */
-			NgDrawXwkView(wks->wks_wrap_id,anstat->id);
-		}
-		else {
-			RemoveAnnotationNode(otree,bnode,anstat->id);
+			if (vl->base.being_destroyed) {
+				SetViewBBOffscreen(otree,anstat->id);
+			}	
+			else {
+				NgUpdateViewBB((NgWksState)otree,anstat->id);
+				NgDrawXwkView
+					(wks->wks_wrap_id,anstat->id,False);
+			}
 		}
 
 	}
@@ -1566,7 +1611,6 @@ OverlayStatusCB
 	NgObjTree	otree = (NgObjTree)udata.ptrval;
 	NgObjTreeNode   trnode,basenode;
 	NgObjTreeNode	bvp,ovnode,*vp,wp = NULL;
-	NgViewObj	vwo;
 	NgWksObj	wks;
 
 #if DEBUG_MWIN
@@ -1586,7 +1630,7 @@ OverlayStatusCB
 	}
 
 	wks = (NgWksObj)wp->ndata;
-	if (tl->base.being_destroyed || tl->base.wkptr->base.being_destroyed)
+	if (tl->base.wkptr->base.being_destroyed)
 		wks->auto_refresh = False;
 	if (ovstat->status == _tfCurrentOverlayMember) {
 		int pos,sel_id;
@@ -1645,7 +1689,7 @@ OverlayStatusCB
 			/* 
 			 * Redraw the base plot so the overlay will show up
 			 */
-			NgDrawXwkView(wks->wks_wrap_id,bvp->id);
+			NgDrawXwkView(wks->wks_wrap_id,bvp->id,False);
 		}
 		else {
 			AddOverlayNode(otree,bvp,ovnode);
@@ -1671,18 +1715,37 @@ OverlayStatusCB
 		 * the remove function both removes and replaces the 
 		 * tree rows.
 		 */
-		if (Do_Draw && _NhlIsXWorkstation(_NhlGetLayer(wp->id)) &&
-		    wks->auto_refresh) {
-			NgClearXwkView(wks->wks_wrap_id,ovstat->base_id);
+
+		if (! (Do_Draw && _NhlIsXWorkstation(_NhlGetLayer(wp->id)) &&
+		    wks->auto_refresh)) {
+			RemoveOverlayNode(otree,bvp,ovstat->id);
+		}
+		else {
+			NhlLayer bl = _NhlGetLayer(ovstat->base_id);
+			/*
+			 * This draw must occur before removing the node so
+			 * that the removed overlay won't yet be seen as
+			 * an independent plot. If it's being destroyed it
+			 * can't be drawn.
+			 */
+			if (bl && ! bl->base.being_destroyed)
+				NgDrawXwkView(wks->wks_wrap_id,
+					      ovstat->base_id,True);
+
 			RemoveOverlayNode(otree,bvp,ovstat->id);
 			/* 
 			 * Redraw the now top-level view
 			 */
-			NgDrawXwkView(wks->wks_wrap_id,ovstat->id);
+			if (tl->base.being_destroyed) {
+				SetViewBBOffscreen(otree,ovstat->id);
+			}	
+			else {
+				NgUpdateViewBB((NgWksState)otree,ovstat->id);
+				NgDrawXwkView
+					(wks->wks_wrap_id,ovstat->id,False);
+			}
 		}
-		else {
-			RemoveOverlayNode(otree,bvp,ovstat->id);
-		}
+
 	}
 	return;
 }	
@@ -1830,8 +1893,10 @@ AddViewNode
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return False;
 	}
-	vwnode->ndata = (ObjNodeData) vwo;
 	l->base.gui_data2 = (NhlPointer) vwo;
+
+	vwnode->ndata = (ObjNodeData) vwo;
+
 	vwnode->id = hlu->id;
 	name = NgNclGetHLURef(otree->nsid,vwnode->id);
 	vwnode->xmname = NgXAppCreateXmString(otree->appmgr,name);
@@ -1964,7 +2029,8 @@ AddViewNode
 			NgWksObj	wks;
 			wks = (NgWksObj)l->base.wkptr->base.gui_data2;
 			if (wks && wks->auto_refresh)
-				NgDrawXwkView(wks->wks_wrap_id,vwnode->id);
+				NgDrawXwkView
+					(wks->wks_wrap_id,vwnode->id,False);
 		}
 	}
 

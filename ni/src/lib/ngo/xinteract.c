@@ -1,5 +1,5 @@
 /*
- *      $Id: xinteract.c,v 1.1 1998-11-18 19:45:22 dbrown Exp $
+ *      $Id: xinteract.c,v 1.2 1998-11-20 04:11:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -314,22 +314,26 @@ static void SetViewPort
 }
 
 
-static void ClearViewBB
+static NhlBoolean ClearViewBB
 (
 	NgXWk		xwk,
-	int		view_id
+	int		view_id,
+	NhlBoolean	force_clear
 	)
 {
 	NhlLayer	l = _NhlGetLayer(view_id);
 	NgViewObj	vobj = NULL;
-	Display		*dpy = XtDisplay(xwk->xwk.graphics);
-	Dimension	w,h;
-	NgWksState 	wks_state;
+	NhlBoolean	do_clear = True;
 	
+/*
+ * If condtional is true, then the BB is only cleared if it is different
+ * from the previous BB.
+ */
 	if (l) 
 		vobj = (NgViewObj) l->base.gui_data2;
 
 	if (! vobj) {
+		NgWksState 	wks_state = NULL;
 		/*
 		 * The object may already have been deleted so try an
 		 *  alternate route to get the object info: looking 
@@ -342,17 +346,36 @@ static void ClearViewBB
 	
 		vobj = NgGetView(wks_state,view_id);
 		if (! vobj)
-			return;
+			return False;
 	}
 
-	w = vobj->xbbox.p1.x - vobj->xbbox.p0.x;
-	h = vobj->xbbox.p1.y - vobj->xbbox.p0.y;
-		
-	XClearArea(dpy,XtWindow(xwk->xwk.graphics),vobj->xbbox.p0.x,
-		   vobj->xbbox.p0.y,w,h,False);
-	XSync(dpy,False);
+	if (! force_clear) {
+		NhlBoundingBox  thebox;
+		NgXBBox		bbox;
 
-	return;
+		NhlGetBB(view_id,&thebox);
+		NgNDCToXCoord(xwk->base.id,&bbox,
+			      thebox.l,thebox.t,
+			      thebox.r - thebox.l,thebox.t - thebox.b);
+
+		if (! memcmp(&bbox,&vobj->xbbox,sizeof(NgXBBox)))
+			do_clear = False;
+	}
+		
+	if (do_clear) {
+		Display		*dpy = XtDisplay(xwk->xwk.graphics);
+		Dimension	w,h;
+		NgXBBox		*cbbox = &vobj->xbbox;
+
+		w = cbbox->p1.x - cbbox->p0.x;
+		h = cbbox->p1.y - cbbox->p0.y;
+		
+		XClearArea(dpy,XtWindow(xwk->xwk.graphics),
+			   cbbox->p0.x,cbbox->p0.y,w,h,False);
+		XSync(dpy,False);
+	}
+	return do_clear;
+	
 }
 
 static int GetIntersectingViews
@@ -595,7 +618,7 @@ static void Manipulate
 	 * region has been defined - Set the viewport.
 	 */
 
-	ClearViewBB(xwk,l->base.id);
+	ClearViewBB(xwk,l->base.id,True);
 
 	/*
 	 * turn off auto_refresh temporarily because we don't want the 
@@ -1091,7 +1114,8 @@ extern void NgXCoordToNDC
 extern void NgDrawXwkView
 (
 	int		xwkid,
-	int		view_id
+	int		view_id,
+	NhlBoolean	force_clear
 )
 {
 
@@ -1104,9 +1128,13 @@ extern void NgDrawXwkView
 	int *draw_table;
 	int vcount = 0, *iviews = NULL;
 	int i,j,k;
+	NhlBoolean cleared,entered = False;
 
 	if (!xwk)
 		return;
+
+	if (!xwk->go.up) 
+		NgXWorkPopup(xwk->go.appmgr,xwk->base.id);
 
 	NhlVAGetValues(xwk->go.appmgr,
 		       NgNappWksState,&wks_state,
@@ -1128,13 +1156,14 @@ extern void NgDrawXwkView
 	if (view_id == xwk->xwk.selected_view_id) {
 		XorDrawViewPort(xwk,xwk->xwk.selected_view_id,True);
 	}
-	ClearViewBB(xwk,view_id);
+	cleared = ClearViewBB(xwk,view_id,force_clear);
 
 	/* 
 	 * Build a draw table of all views that need to be redrawn. These
-	 * include any views whose BB intersects the area occupied by the
-	 * the old location of view_id; views on top of these views 
-	 * (recursively); and views on top of view_id (recursively). 
+	 * include any views (underneath the view_id view) whose BB 
+	 * intersects the area occupied by the the old location of view_id 
+	 * and views on top of these views (recursively) (if cleared is true);
+	 * and views on top of view_id (recursively). 
 	 * First find the old location intersections. As we draw, find
 	 * intersections with each view drawn, possibly adding new views
 	 * to the draw table.
@@ -1149,37 +1178,52 @@ extern void NgDrawXwkView
 			return;
 		}
 		memset(draw_table,(char) 0,top_level_count * sizeof(int));
-	
-		vcount = GetIntersectingViews(xwk,view_id,&iviews);
 	}
-	if (! vcount) {
-		/* 
-		 * if vcount == 0, then the view must not have been 
-		 * entered into the view tree yet.
-		 */
-#if 0
-		view_name = NgNclGetHLURef(xwk->go.nclstate,view_id);
-		sprintf(buf,"draw(%s)\n",view_name);
-		(void)NgNclSubmitBlock(xwk->go.nclstate,buf);
-#endif
-		if (_NhlGetLayer(view_id))
-		    NhlDraw(view_id);
-		if (xwk->xwk.selected_view_id) {
-			XorDrawViewPort(xwk,xwk->xwk.selected_view_id,False);
+	if (! cleared && top_level_count) {
+		/* only put view_id into the draw_table */
+		for (i = 0; i < top_level_count; i++) {
+			if (top_level_views[i] == view_id) {
+				draw_table[i] = view_id;
+				entered = True;
+			}
 		}
-		return;
 	}
-	for (i = 0,j = 0; i < vcount; i++) {
-		/* 
-		 * assumes iviews a subset of top_level_views with the
-		 * same ordering
-		 */
-		while (top_level_views[j] != iviews[i])
-			j++;
-		draw_table[j] = iviews[i];
+	if (! entered) {
+		if (top_level_count)
+			vcount = GetIntersectingViews(xwk,view_id,&iviews);
+		if (! vcount) {
+			/* 
+			 * if vcount == 0, then the view must not have been 
+			 * entered into the view tree yet.
+			 */
+#if 0
+			view_name = NgNclGetHLURef(xwk->go.nclstate,view_id);
+			sprintf(buf,"draw(%s)\n",view_name);
+			(void)NgNclSubmitBlock(xwk->go.nclstate,buf);
+#endif
+			if (_NhlGetLayer(view_id))
+				NhlDraw(view_id);
+			if (xwk->xwk.selected_view_id) {
+				XorDrawViewPort
+					(xwk,xwk->xwk.selected_view_id,False);
+			}
+			return;
+		}
+		for (i = 0,j = 0; i < vcount; i++) {
+			/* 
+			 * assumes iviews a subset of top_level_views with the
+			 * same ordering
+			 */
+			while (top_level_views[j] != iviews[i])
+				j++;
+			draw_table[j] = iviews[i];
+		}
+		NhlFree(iviews);
+		iviews = NULL;
 	}
-	NhlFree(iviews);
-	iviews = NULL;
+/*
+ * This is the main draw loop
+ */
 	for (i = 0; i < top_level_count; i++) {
 		if (! _NhlGetLayer(draw_table[i]))
 			continue;
@@ -1192,7 +1236,7 @@ extern void NgDrawXwkView
 		(void)NgNclSubmitBlock(xwk->go.nclstate,buf);
 #endif
 		NhlDraw(draw_table[i]);
-		if (draw_table[i] == view_id) {
+		if (draw_table[i] == view_id && cleared) {
 			NgUpdateViewBB(wks_state,view_id);
 		}
 		vcount = GetIntersectingViews(xwk,draw_table[i],&iviews);
@@ -1250,7 +1294,7 @@ extern void NgClearXwkView
 
 	if (xwk->xwk.selected_view_id)	
 		XorDrawViewPort(xwk,xwk->xwk.selected_view_id,True);
-	ClearViewBB(xwk,view_id);
+	ClearViewBB(xwk,view_id,True);
 
 	/* 
 	 * Build a draw table of all views that need to be redrawn. These

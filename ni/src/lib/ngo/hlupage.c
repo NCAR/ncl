@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.16 1998-11-18 19:45:18 dbrown Exp $
+ *      $Id: hlupage.c,v 1.17 1998-11-20 04:11:03 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -212,7 +212,6 @@ static Boolean ManagePlotObj
         int res_count = 0;
 	NhlLayer wl;
 	NgWksObj	wks;
-	NhlBoolean	save_auto_refresh;
         
 	char *cnlineres[] = {
 		"cnScalarFieldData",
@@ -403,15 +402,6 @@ static Boolean ManagePlotObj
 		values[i] = dataitemlist[i];
 	}
 
-	wl = _NhlGetLayer(wk_id);
-	if (wl) {
-		wks = (NgWksObj) wl->base.gui_data2;
-		if (wks) {
-			save_auto_refresh = wks->auto_refresh;
-			wks->auto_refresh = False;
-		}
-	}
-
         if (rec->state == _hluNOTCREATED) {
 		char buf[512] = "_NgPreview_";
 		strcat(buf,NrmQuarkToString(page->qvar));
@@ -457,9 +447,6 @@ static Boolean ManagePlotObj
         NgResTreeAddResList(rec->nclstate,(NhlPointer)rec->res_tree,block_id);
         
         NgNclVisBlockEnd(rec->nclstate,block_id);
-                
-	if (wks) 
-		wks->auto_refresh = save_auto_refresh;
 
 	return True;
 }
@@ -485,6 +472,7 @@ ContourCreateUpdate
         XmString xmstring;
         NhlBoolean create,already_created = False;
 	char buf[512],buf1[512];
+	NhlLayer	wl = _NhlGetLayer(wk_id);
         
         if (QFillValue == NrmNULLQUARK) {
                 QFillValue = NrmStringToQuark("_FillValue"); 
@@ -591,11 +579,24 @@ ContourCreateUpdate
         }
         NgResTreeResUpdateComplete(rec->res_tree,rec->hlu_id,False);
 
-        if (rec->state == _hluCREATED) {
+        if (already_created) {
                 NgDrawGraphic(rec->go->base.id,
                               NrmQuarkToString(page->qvar),True);
                 rec->new_data = False;
         }
+	if (already_created &&
+	    NhlClassIsSubclass(rec->class,NhlviewClass) &&
+	    _NhlIsClass(wl,NhlxWorkstationClass)) {
+		NgWksObj	wks = NULL;
+		int 		draw_id = _NhlTopLevelView(rec->hlu_id);
+		if (wl && draw_id) {
+			wks = (NgWksObj) wl->base.gui_data2;
+		}
+		if (wks && wks->auto_refresh) {
+			NgDrawXwkView(wks->wks_wrap_id,draw_id,True);
+		}
+	}
+
         rec->do_setval_cb = True;
         
 	return;
@@ -644,22 +645,13 @@ CreateInstance
         NgSetResProc	setresproc[2];
         XtPointer	setresdata[2];
         NhlString	parent = NULL;
-	NhlLayer	wl = _NhlGetLayer(wk_id);
 	NgWksObj	wks = NULL;
-	NhlBoolean	save_auto_refresh;
 
         setresproc[0] = NgResTreeAddResList;
         setresdata[0] = (NhlPointer)rec->res_tree;
 
         if (wk_id != NhlNULLOBJID)
                 parent = NgNclGetHLURef(rec->go->go.nclstate,wk_id);
-        if (wl) {
-		wks = (NgWksObj) wl->base.gui_data2;
-		if (wks) {
-			save_auto_refresh = wks->auto_refresh;
-			wks->auto_refresh = False;
-		}
-	}
 
         ret = NgCreateGraphic
                 (rec->go->base.id,&hlu_id,
@@ -676,13 +668,6 @@ CreateInstance
                 (void)NgNclSubmitBlock(rec->nclstate,buf);
                 return ret;
         }
-        if (NhlClassIsSubclass(rec->class,NhlviewClass)) {
-                NgDrawGraphic
-                        (rec->go->base.id,NrmQuarkToString(page->qvar),True);
-        }
-	if (wks) 
-		wks->auto_refresh = save_auto_refresh;
-
         return hlu_id;
 }
 
@@ -700,32 +685,29 @@ UpdateInstance
         XtPointer	setresdata[2];
 	NhlLayer	l = _NhlGetLayer(rec->hlu_id);
 	NhlLayer	wl = _NhlGetLayer(wk_id);
-	NgWksObj	wks = NULL;
-	NhlBoolean	save_auto_refresh;
 
 	if (! l)	
 		return NhlFATAL;
 
-        if (wl) {
-		wks = (NgWksObj) wl->base.gui_data2;
-		if (wks) {
-			save_auto_refresh = wks->auto_refresh;
-			wks->auto_refresh = False;
-		}
-	}
         setresproc[0] = NgResTreeAddResList;
         setresdata[0] = (XtPointer)rec->res_tree;
         
         ret = NgUpdateGraphic
                 (rec->go->base.id,NrmQuarkToString(page->qvar),
                  1,setresproc,setresdata);
-        if (NhlClassIsSubclass(rec->class,NhlviewClass)) {
-                NgDrawGraphic
-                        (rec->go->base.id,NrmQuarkToString(page->qvar),True);
-        }
-        
-	if (wks) 
-		wks->auto_refresh = save_auto_refresh;
+
+	if (NhlClassIsSubclass(rec->class,NhlviewClass) &&
+	    _NhlIsClass(wl,NhlxWorkstationClass)) {
+		NgWksObj	wks = NULL;
+		int 		draw_id = _NhlTopLevelView(rec->hlu_id);
+		
+		if (draw_id && wl) {
+			wks = (NgWksObj) wl->base.gui_data2;
+		}
+		if (wks && wks->auto_refresh) {
+			NgDrawXwkView(wks->wks_wrap_id,rec->hlu_id,True);
+		}
+	}
 
         return ret;
 }
