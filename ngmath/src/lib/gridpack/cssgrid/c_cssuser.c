@@ -552,3 +552,28 @@ void c_csgetd ( char *cnp, double *rvp)
     cnp2 = NGCstrToFstr(cnp,len);
     NGCALLF(csgetd,CSGETD)(cnp2,rvp,len);
 }
+
+void  c_css2c(int n, float *rlat, float *rlon, float *x, 
+              float *y, float *z) {
+
+  NGCALLF(css2c,CSS2C)(&n, rlat, rlon, x, y, z);
+
+}
+void  c_css2cd(int n, double *rlat, double *rlon, double *x, 
+              double *y, double *z) {
+
+  NGCALLF(css2cd,CSS2CD)(&n, rlat, rlon, x, y, z);
+
+}
+void  c_csc2s(int n, float *x, float *y, float *z, 
+              float *rlat, float *rlon) {
+
+  NGCALLF(csc2s,CSC2S)(&n, x, y, z, rlat, rlon);
+
+}
+void  c_csc2sd(int n, double *x, double *y, double *z, 
+              double *rlat, double *rlon) {
+
+  NGCALLF(csc2sd,CSC2SD)(&n, x, y, z, rlat, rlon);
+
+}

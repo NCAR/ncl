@@ -41,7 +41,8 @@ C
 C  SIG - Value for constant SIGMA.
 C
       IF (CNP(1:3).EQ.'SIG' .OR. CNP(1:3).EQ.'sig' .OR.
-     +         CNP(1:3).EQ.'Sig') THEN
+     +    CNP(1:3).EQ.'Sig' .OR. CNP(1:3).EQ.'DSG' .OR.
+     +    CNP(1:3).EQ.'dsg' .OR. CNP(1:3).EQ.'Dsg') THEN
         USSIG = DVP
         ICSIG = 1 
         GO TO 120
@@ -50,7 +51,8 @@ C  TOL - Tolerance to use in calculating gradient differences to terminate
 C        iteration sequence to compute the SIGMA array.
 C
       ELSE IF (CNP(1:3).EQ.'TOL' .OR. CNP(1:3).EQ.'tol' .OR.
-     +         CNP(1:3).EQ.'Tol') THEN
+     +         CNP(1:3).EQ.'Tol' .OR. CNP(1:3).EQ.'DTL' .OR.
+     +         CNP(1:3).EQ.'dtl' .OR. CNP(1:3).EQ.'Dtl') THEN
         TOLIC = DVP
         GO TO 120
       ELSE

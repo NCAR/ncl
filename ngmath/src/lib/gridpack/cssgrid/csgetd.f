@@ -1,5 +1,5 @@
 C
-C	$Id: csgetd.f,v 1.1 2000-01-12 22:56:12 fred Exp $
+C	$Id: csgetd.f,v 1.2 2000-01-27 18:57:56 fred Exp $
 C
       SUBROUTINE CSGETD (CNP,DVP)
 C
@@ -42,11 +42,13 @@ C
 C Get the appropriate parameter value.
 C
       IF (CNP(1:3).EQ.'TOL' .OR. CNP(1:3).EQ.'tol' .OR.
-     +    CNP(1:3).EQ.'Tol') THEN
+     +    CNP(1:3).EQ.'Tol' .OR. CNP(1:3).EQ.'DTL' .OR.
+     +    CNP(1:3).EQ.'dtl' .OR. CNP(1:3).EQ.'Dtl') THEN
         DVP = TOLIC
         GO TO 110
       ELSE IF (CNP(1:3).EQ.'SIG' .OR. CNP(1:3).EQ.'sig' .OR.
-     +    CNP(1:3).EQ.'Sig') THEN
+     +         CNP(1:3).EQ.'Sig' .OR. CNP(1:3).EQ.'DSG' .OR.
+     +         CNP(1:3).EQ.'dsg' .OR. CNP(1:3).EQ.'Dsg') THEN
         DVP = USSIG
         GO TO 110
       ELSE
