@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.134 2004-02-09 16:47:24 haley Exp $
+;      $Id: gsn_code.ncl,v 1.135 2004-03-23 16:45:37 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -232,8 +232,14 @@ end
 ; resource of a workstation object or to the second argument of         ;
 ; gsn_define_colormap.                                                  ;
 ;***********************************************************************;
-function hsv2rgb (h[*]:float,s[*]:float,v[*]:float)
+function hsv2rgb (h_old[*]:float,s_old[*]:float,v_old[*]:float)
 begin
+;
+; Make a backup copy of the HSV values.
+;
+  h = h_old
+  s = s_old
+  v = v_old
 ;
 ; This function converts between HSV and RGB color space
 ; Input: h [0.0-360.0], s [0.0-1.0], v [0.0-1.0]
