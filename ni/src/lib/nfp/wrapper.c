@@ -23,6 +23,7 @@ extern NhlErrorTypes eofcov_W(void);
 extern NhlErrorTypes eofcor_W(void);
 extern NhlErrorTypes eofcov_ts_W(void);
 extern NhlErrorTypes eofcor_ts_W(void);
+extern NhlErrorTypes eof_varimax_W(void);
 extern NhlErrorTypes svdcov_W(void);
 extern NhlErrorTypes svdstd_W(void);
 extern NhlErrorTypes svdcov_sv_W(void);
@@ -410,6 +411,15 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(eofcor_ts_W,args,"eofcor_ts",nargs);
+/*
+ * Register "eof_varimax".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    NclRegisterFunc(eof_varimax_W,args,"eof_varimax",nargs);
 /*
  * Register "svdcov".
  *

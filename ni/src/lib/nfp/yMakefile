@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.6 1999-12-02 13:43:32 haley Exp $
+#      $Id: yMakefile,v 1.7 1999-12-16 20:10:39 haley Exp $
 #
 #########################################################################
 #									#
@@ -28,26 +28,26 @@ CSRCS = chiinvW.c csagridW.c cssgridW.c cz2ccmW.c datesW.c drwvctc.c \
 	hydroW.c int2pW.c julGregW.c linmsgW.c natgridW.c ncolorW.c ngmiscW.c \
 	regcoefW.c relhumW.c remapW.c rhombtriW.c shgridW.c sindexW.c slpW.c \
 	smth9W.c specxW.c sph2W.c sphintW.c sstoiW.c statW.c svdW.c tdpackW.c \
-	trvsphW.c vibetaW.c wmapW.c wrunaveW.c wrapper.c 
+	trvsphW.c varimaxW.c vibetaW.c wmapW.c wrunaveW.c wrapper.c 
 
 COBJS = chiinvW.o csagridW.o cssgridW.o cz2ccmW.o datesW.o drwvctc.o \
 	dsgridW.o dtrendW.o eofW.o ezfftW.o fitgridW.o fluxEddyW.o \
 	hydroW.o int2pW.o julGregW.o linmsgW.o natgridW.o ncolorW.o ngmiscW.o \
 	regcoefW.o relhumW.o remapW.o rhombtriW.o shgridW.o sindexW.o slpW.o \
 	smth9W.o specxW.o sph2W.o sphintW.o sstoiW.o statW.o svdW.o tdpackW.o \
-	trvsphW.o vibetaW.o wmapW.o wrunaveW.o wrapper.o
+	trvsphW.o varimaxW.o vibetaW.o wmapW.o wrunaveW.o wrapper.o
 
 FSRCS = chiin.f cz2ccm.f dtrend.f ezfft.f fluxEddyTav_dp.f fo2fs.f \
 	hydro.f index77.f int2p.f julGreg.f linmsg.f ncl_upsl.f prneof_dp.f \
 	prneofts_dp.f rdsstoi.f regcoef.f relhum.f remap.f rhombtri.f runave.f \
 	smth9.f sp2_util.f specx.f statx.f statx_dp.f svd_lap_dp.f svd_util_dp.f \
-	trcwav.f trvsph77.f vibeta.f wrunave.f
+	trcwav.f trvsph77.f varimax_dp.f vibeta.f wrunave.f
 
 FOBJS = chiin.o cz2ccm.o dtrend.o ezfft.o fluxEddyTav_dp.o fo2fs.o \
 	hydro.o index77.o int2p.o julGreg.o linmsg.o ncl_upsl.o prneof_dp.o \
 	prneofts_dp.o rdsstoi.o regcoef.o relhum.o remap.o runave.o rhombtri.o \
 	smth9.o sp2_util.o specx.o statx.o statx_dp.o svd_lap_dp.o svd_util_dp.o \
-	trcwav.o trvsph77.o vibeta.o wrunave.o
+	trcwav.o trvsph77.o varimax_dp.o vibeta.o wrunave.o
 
 OBJS = $(COBJS) $(FOBJS)
 
