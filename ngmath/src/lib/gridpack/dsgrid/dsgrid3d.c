@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <math.h>
 #include "dstypes.h"
 #include "dsproto.h"
@@ -44,7 +45,7 @@ double *c_dsgrid3d(int n, double x[], double y[], double z[], double u[],
  */
 {
   int       i, j, k;
-  double    epsilon_test, xc, yc, zc, perror = 1.;
+  double    epsilon_test, xc, yc, zc, perror = 1., *retval;
 
   DSpointd3 q;
 
@@ -56,7 +57,7 @@ double *c_dsgrid3d(int n, double x[], double y[], double z[], double u[],
   dsgetmem(n, nx, ny, nz, ier);
   if (*ier != 0) return(&perror);
 
-  dsinit(n, nx, ny, nz, x, y, z, &epsilon_test, ier);
+  dsinit(n, nx, ny, nz, x, y, z, xo, yo, zo, &epsilon_test, ier);
   if (*ier != 0) return(&perror);
     
 /*
@@ -89,9 +90,10 @@ double *c_dsgrid3d(int n, double x[], double y[], double z[], double u[],
     }
   }
   
+  retval = &ds_output[0];
   dsfreemem();
   ds_first_call = 0;
-  return(ds_output);
+  return(retval);
 }
 
 /*
@@ -147,6 +149,7 @@ void dsfreemem()
  *  Initialization.
  */
 void dsinit(int n, int nx, int ny, int nz, double x[], double y[], double z[], 
+            double xo[], double yo[], double zo[], 
             double *epsilon_test, int *ier)
 {
   int    i;
@@ -166,19 +169,23 @@ void dsinit(int n, int nx, int ny, int nz, double x[], double y[], double z[],
     return;
   }
 
-  xmn = ds_input_points[0].x;
-  ymn = ds_input_points[0].y;
-  zmn = ds_input_points[0].z;
-  xmx = ds_input_points[0].x;
-  ymx = ds_input_points[0].y;
-  zmx = ds_input_points[0].z;
-  for (i = 0; i < n; i++) {
-    xmn = MIN(x[i], xmn);
-    ymn = MIN(y[i], ymn);
-    zmn = MIN(z[i], zmn);
-    xmx = MAX(x[i], xmx);
-    ymx = MAX(y[i], ymx);
-    zmx = MAX(z[i], zmx);
+  xmn = xo[0];
+  ymn = yo[0];
+  zmn = zo[0];
+  xmx = xo[0];
+  ymx = yo[0];
+  zmx = zo[0];
+  for (i = 0; i < nx; i++) {
+    xmn = MIN(xo[i], xmn);
+    xmx = MAX(xo[i], xmx);
+  }
+  for (i = 0; i < ny; i++) {
+    ymn = MIN(yo[i], ymn);
+    ymx = MAX(yo[i], ymx);
+  }
+  for (i = 0; i < nz; i++) {
+    zmn = MIN(zo[i], zmn);
+    zmx = MAX(zo[i], zmx);
   }
 /*
  *  Find the maximum span of the three coordinates.
