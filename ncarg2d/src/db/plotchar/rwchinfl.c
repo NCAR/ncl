@@ -1,5 +1,5 @@
 /*
- * $Id: rwchinfl.c,v 1.3 2000-08-22 14:36:34 haley Exp $
+ * $Id: rwchinfl.c,v 1.4 2001-11-26 16:39:08 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -27,6 +27,7 @@
 
 #include <ncarg/c.h>
 #include <sys/file.h>
+#include <fcntl.h>
 
 
 #if defined (cray)
