@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_cgd.ncl,v 1.2 2003-03-10 23:44:47 haley Exp $
+;      $Id: gsn_cgd.ncl,v 1.3 2003-03-10 23:55:14 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -32,38 +32,12 @@
 ; procedures with the same name.                                        ;
 ;***********************************************************************;
 
-undef("add_cyclic_point")
 undef("gsn_labeled_map_ce")
 undef("gsn_labeled_map_polar")
 undef("gsn_labeled_map")
 undef("gsn_contour_ezp1_polar")
 undef("gsn_contour_ezp1_ce")
 
-function add_cyclic_point(data[*][*]:float)
-;
-; Add a cyclic point in "x" to a 2D array
-; for a lat/lon plot "x"  corresponds to "lon"
-;                    "ny" corresponds to "nlat"
-;                    "mx" corresponds to "mlon"
-local dims, newdata, ny, mx, mx1
-begin
-    dims    = dimsizes(data)
-    ny      = dims(0)
-    mx      = dims(1)
-    mx1     = mx+1
-
-    newdata = new((/ny  ,mx1/),float)
-
-    newdata(:,0:mx-1) = data             ; pass everything
-    newdata(:,mx)     = (/ data(:,0) /)  ; value only
-
-    if((.not.ismissing(newdata!1)) .and. iscoord(data,newdata!1)) then 
-        newdata&$newdata!1$(mx) = newdata&$newdata!1$(0) + 360.0
-    end if
- 
-    return(newdata)
-end
- 
 ;***********************************************************************;
 ; Function : gsn_labeled_map_ce                                         ;
 ;                   wks: workstation object                             ;
@@ -1001,11 +975,7 @@ begin
         delete(res2@gsnAddCyclic)
     end if
 
-    if(addcyclic)
-        datanew = add_cyclic_point(data)
-    else
-        datanew = data
-    end if
+    datanew = data
 
 ; This section tests for special resources: those that start with "gsn."
 
@@ -1339,11 +1309,7 @@ begin
         delete(res2@gsnAddCyclic)
     end if
 
-    if(addcyclic)
-        datanew = add_cyclic_point(data)
-    else
-        datanew = data
-    end if
+    datanew = data
 
 ; Check for a missing value.
 
