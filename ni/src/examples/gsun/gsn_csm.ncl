@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.86 2002-02-04 23:29:47 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.87 2002-02-05 04:28:46 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -109,6 +109,7 @@ undef("gsn_csm_vector_scalar_map")
 undef("gsn_csm_streamline_contour_map")
 undef("gsn_csm_contour_map_overlay")
 undef("gsn_csm_xy")
+undef("gsn_csm_y")
 undef("gsn_csm_contour")
 undef("gsn_csm_hov")
 undef("gsn_csm_lat_time")
@@ -7533,6 +7534,48 @@ begin
         xline = fspan(xref_line(i),xref_line(i),2)
         var_string = systemfunc("echo xpolyline$$") + i
         xy_object@$var_string$ = gsn_add_polyline(wks,xy_object,xline,yline, \
+                                                  gsres)
+      end do
+      delete(xline)
+      delete(yline)
+    end if
+
+; Draw Y reference line.
+
+    if(yref_line_on)
+      getvalues xy_object
+        "trXMinF"  : xmin
+        "trXMaxF"  : xmax
+      end getvalues
+
+
+      xline = (/xmin,xmax/)
+
+      gsres@gsLineColor = yref_line_color(0)
+
+      do i=0,nyref-1
+        if(dimsizes(yref_line_color).gt.1)
+          gsres@gsLineColor = yref_line_color(i)
+        end if
+        yline = fspan(tofloat(yref_line(i)),tofloat(yref_line(i)),2)
+        var_string = systemfunc("echo ypolyline$$") + i
+
+        xy_object@$var_string$ = gsn_add_polyline(wks,xy_object,xline, \
+                                                  yline,gsres)
+      end do
+
+      delete(xline)
+      delete(yline)
+    end if
+
+; Get title label sizes and tickmark lengths.
+    getvalues xy_object
+      "vpWidthF"             : width
+      "vpHeightF"            : height
+  xy = gsn_csm_xy(wks,x,y,resources)
+      "tiYAxisFontHeightF"   : yfontf
+
+      "tmYLMajorLengthF"     : ylength
       "tmXBMajorLengthF"     : xlength
       "tmYLMinorLengthF"     : ymlength
       "tmXBMinorLengthF"     : xmlength

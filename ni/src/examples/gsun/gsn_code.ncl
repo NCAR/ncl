@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.79 2002-02-04 23:29:41 haley Exp $
+;      $Id: gsn_code.ncl,v 1.80 2002-02-05 04:28:45 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -111,6 +111,7 @@ undef("gsn_vector_map")
 undef("gsn_vector_scalar")
 undef("gsn_vector_scalar_map")
 undef("gsn_xy")
+undef("gsn_y")
 
 ;***********************************************************************;
 ; function : smooth92d                                                  ;
@@ -6691,3 +6692,45 @@ begin
     plot_object@dataspec = dspec
     return(plot_object)
 end
+
+;***********************************************************************;
+; Function : gsn_y                                                      ;
+;                   wks: workstation object                             ;
+;                     y: n-dimensional array of Y array                 ;
+;             resources: optional resources                             ;
+;                                                                       ;
+; This function is similar to gsn_xy, except instead of a specific X    ;
+; array, index values are used.                                         ;
+;                                                                       ;
+;***********************************************************************;
+function gsn_y(wks:graphic, y:numeric, resources:logical )
+local dsizes_y, npts, x, rank_y, xy
+begin
+;
+; Get dimension sizes of Y array.
+;
+  dsizes_y = dimsizes(y)
+  rank_y   = dimsizes(dsizes_y)
+  if(rank_y.eq.1) then
+    npts = dsizes_y
+  else
+    if(rank_y.ne.2) then
+      print("Error: gsn_y: The input Y array must either be 1-dimensional, or 2-dimensional, where the leftmost dimension represents the number of curves and the rightmost dimension the number of points in each curve.")
+      exit
+    end if
+    npts = dsizes_y(1) 
+  end if
+
+; 
+; Create the indexed X array.
+;
+  x = ispan(0,npts-1,1)
+  x@long_name = ""
+
+;
+; Call gsn_xy.
+;
+  xy = gsn_xy(wks,x,y,resources)
+  return(xy)
+end
+
