@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.h,v 1.10 1995-06-16 20:57:09 dbrown Exp $
+ *      $Id: TickMark.h,v 1.11 1995-12-14 22:34:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -357,7 +357,7 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlCtmLabelFontHeightsF		"TmLabelFontHeightsF"
 #define NhlCtmLabelFontColors		"TmLabelFontColors"
 #define NhlCtmLabelFontAspectsF		"TmLabelFontAspectsF"
-#define NhlCtmMajorThicknessesF		"TmMajorThicknesssF"
+#define NhlCtmMajorThicknessesF		"TmMajorThicknessesF"
 #define NhlCtmMajorLineColors		"TmMajorLineColors"
 #define NhlCtmMajorLengthsF		"TmMajorLengthsF"
 #define NhlCtmMajorOutwardLengthsF	"TmMajorOutwardLengthsF"
