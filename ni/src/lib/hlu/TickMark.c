@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.73 2000-03-02 01:30:18 dbrown Exp $
+ *      $Id: TickMark.c,v 1.74 2000-03-09 01:21:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2687,18 +2687,23 @@ static NhlErrorTypes DrawGrid
 NhlTickMarkLayer tlayer;
 #endif
 {
-	float xr,xl,yt,yb;
-	int i;
+	float xr,xl,yt,yb,wr,wl,wt,wb;
+	int i,ll;
 	NhlErrorTypes ret = NhlNOERROR;
 	NhlErrorTypes ret1 = NhlNOERROR;
 	NhlBoolean x_b_on,x_t_on,y_l_on,y_r_on;
+/*
+ * Since clipping is off we don't care what viewport is set, only that
+ * it be inside the viewspace and that the identity trans is in effect.
+ * It is more efficient if we do not change the currently set viewport
+ */
+	c_getset(&xl,&xr,&yb,&yt,&wl,&wr,&wb,&wt,&ll);
+	c_set(xl,xr,yb,yt,xl,xr,yb,yt,1);
 
 	xr = tlayer->view.x + tlayer->view.width;
 	xl = tlayer->view.x;
 	yt = tlayer->view.y;
 	yb = tlayer->view.y - tlayer->view.height;
-
-	c_set(xl,xr,yb,yt,xl,xr,yb,yt,1);
 
 	NhlVASetValues(tlayer->base.wkptr->base.id,
 		_NhlNwkReset,	True,
@@ -2860,21 +2865,25 @@ static NhlErrorTypes DrawTicks
 NhlTickMarkLayer tlayer;
 #endif
 {
-	float xr,xl,yt,yb;
-	int i;
+	float xr,xl,yt,yb,wr,wl,wt,wb;
+	int i,ll;
 	NhlErrorTypes ret = NhlNOERROR;
 	NhlBoolean x_b_on,x_t_on,y_l_on,y_r_on;
 
+
 /*
-* NEED SOME WAY TO KNOW WHEN A GKS ERROR HAS OCCURED
-*/		
+ * Since clipping is off we don't care what viewport is set, only that
+ * it be inside the viewspace and that the identity trans is in effect.
+ * It is more efficient if we do not change the currently set viewport
+ */
+	c_getset(&xl,&xr,&yb,&yt,&wl,&wr,&wb,&wt,&ll);
+	c_set(xl,xr,yb,yt,xl,xr,yb,yt,1);
+	
 	xr = tlayer->view.x + tlayer->view.width;
 	xl = tlayer->view.x;
 	yt = tlayer->view.y;
 	yb = tlayer->view.y - tlayer->view.height;
 
-	c_set(xl,xr,yb,yt,xl,xr,yb,yt,1);
-	
 	NhlVASetValues(tlayer->base.wkptr->base.id,
 		_NhlNwkReset,	True,
 		NULL);
@@ -3036,19 +3045,22 @@ static NhlErrorTypes DrawBorder
 #endif
 {
 	int n;
-	float xr,xl,yt,yb;
+	float xr,xl,yt,yb,wr,wl,wt,wb;
+	int ll;
 	NhlErrorTypes ret = NhlNOERROR;
 
 	gset_linewidth((Gdouble)tlayer->tick.border_thickness);
 	gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr,
                        tlayer->tick.border_line_color));
 
-	xr = tlayer->view.x + tlayer->view.width;
-	xl = tlayer->view.x;
-	yt = tlayer->view.y;
-	yb = tlayer->view.y - tlayer->view.height;
 
+/*
+ * Since clipping is off we don't care what viewport is set, only that
+ * it be inside the viewspace and that the identity trans is in effect.
+ * It is more efficient if we do not change the currently set viewport
+ */
 
+	c_getset(&xl,&xr,&yb,&yt,&wl,&wr,&wb,&wt,&ll);
 	c_set(xl,xr,yb,yt,xl,xr,yb,yt,1);
 
 	n = 0;
