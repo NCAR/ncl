@@ -1,5 +1,5 @@
 /*
- *	$Id: display.c,v 1.8 1992-08-12 21:41:49 clyne Exp $
+ *	$Id: display.c,v 1.9 1992-08-24 23:01:06 clyne Exp $
  */
 /*
  *	Display.c
@@ -18,8 +18,6 @@
 #include "display.h"
 #include "talkto.h"
 
-char	*programName;
-
 static	int	hFD = -1;	/* history file fd	*/
 
 static	unsigned long	usedMask = 0;
@@ -27,8 +25,6 @@ static	int		numUsed = 0;
 
 static	char	**tArgv;	/* translator command line	*/
 static	int	tArgc;
-
-static	PlotCommandValues	pcvs[MAX_DISPLAYS];	
 
 /*
  *	OpenDisplay
@@ -38,7 +34,7 @@ static	PlotCommandValues	pcvs[MAX_DISPLAYS];
  *	OpenDisplay returns a unique integer id that is associated with
  *	the particular instance of the translator spawned. This id is used
  *	by other routines to communicate with the appropriate translator.
- *	OpenDisplay also sets some of the default values for idt commands
+ *
  * on entry
  *	*metafile	: name of metafile to translate
  *	wid		: window id for transator to display in
@@ -64,6 +60,11 @@ int	OpenDisplay()
 	return(id);			/* return users file descriptor	*/
 }
 
+/*
+ *	spawn the actual translator associated with $id.
+ *	$metafile is the name of the metafile to process. $wid is the 
+ *	X11 window id of the window in which the translator is to draw.
+ */
 int	StartTranslator(id, metafile, wid)
 	int	id;
 	char	*metafile;
@@ -71,8 +72,6 @@ int	StartTranslator(id, metafile, wid)
 {
 	char	*s;
 	char	widbuf[10];
-
-	extern	char	*TalkTo();
 
 
 	/*
@@ -100,18 +99,6 @@ int	StartTranslator(id, metafile, wid)
 	 * find out how many frames there are
 	 */
 	if ((s = TalkTo(id, "count\n", SYNC)) == NULL) return (-1);
-
-	/*
-	 * set some default data values for idt commands associated with 
-	 * this connection
-	 */
-	(void) strncpy(pcvs[id].dup, "1", MAX_DATA_LEN - 1);
-	(void) strncpy(pcvs[id].goto_, "1", MAX_DATA_LEN - 1);
-	(void) strncpy(pcvs[id].skip ,"0", MAX_DATA_LEN - 1);
-	(void) strncpy(pcvs[id].start_segment, "1", MAX_DATA_LEN - 1);
-	(void) strncpy(pcvs[id].stop_segment,  s ? s : "1", MAX_DATA_LEN - 1);
-	(void) strncpy(pcvs[id].set_window, "0.0 0.0 1.0 1.0", MAX_DATA_LEN - 1);
-
 
 	return(1);
 }
@@ -162,13 +149,10 @@ void	InitDisplayModule(program_name, targv, targc, history)
 	short	history;
 {
 
-	programName = icMalloc((unsigned) (strlen(program_name) + 1));
-	(void) strcpy(programName, program_name);
-
 	if (history) {
 		hFD = open (HISTORY_FILE, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		if (hFD == -1) {
-			perror(programName);
+			perror(program_name);
 		}
 	}
 
@@ -191,107 +175,5 @@ void	CloseDisplayModule()
 {
 	if (hFD != -1) {
 		(void) close(hFD);
-	}
-}
-
-/*
- *	GetValue
- *	[exported]
- *
- *	Get a command value for a particular command and connection id
- * on entry
- *	id		: the connection id
- *	command		: the command
- *
- * on exit
- *	return		: NULL => error; else the data is returned.
- */
-char	*GetValue(id, command)
-	int		id;
-	DisplayCommands	command;
-{
-
-	switch ((int) command) {
-	case	DUP:
-		return (pcvs[id].dup);
-
-	case	SKIP:
-		return (pcvs[id].skip);
-
-	case	GOTO:
-		return (pcvs[id].goto_);
-
-	case	START_SEGMENT:
-		return (pcvs[id].start_segment);
-
-	case	STOP_SEGMENT:
-		return (pcvs[id].stop_segment);
-
-	case	SET_WINDOW:
-		return (pcvs[id].set_window);
-
-	case	SAVE:
-		return (pcvs[id].save);
-
-	default:
-		(void) fprintf(stderr, "Illegal command\n");
-		return (NULL);
-
-	}
-}
-
-/*
- *	SetValue
- *	[exported]
- *
- *	Set a command value for a particular command and connection id
- *	If the command is unrecognized no action is taken.
- *
- * on entry
- *	id		: the connection id
- *	command		: the command
- *	value		: the data
- */
-void	SetValues(id, command, value)
-	int		id;
-	DisplayCommands	command;
-	char		*value;
-{
-
-	switch ((int) command) {
-	case	DUP:
-		(void) strncpy(pcvs[id].dup, value, MAX_DATA_LEN - 1);
-		break;
-
-	case	SKIP:
-		(void) strncpy(pcvs[id].skip, value, MAX_DATA_LEN - 1);
-		break;
-
-	case	GOTO:
-		(void) strncpy(pcvs[id].goto_, value, MAX_DATA_LEN - 1);
-		break;
-
-	case	START_SEGMENT:
-		(void) strncpy(pcvs[id].start_segment, value, MAX_DATA_LEN - 1);
-		break;
-
-	case	STOP_SEGMENT:
-		(void) strncpy(pcvs[id].stop_segment, value, MAX_DATA_LEN - 1);
-		break;
-
-	case	SET_WINDOW:
-		(void) strncpy(pcvs[id].set_window, value, MAX_DATA_LEN - 1);
-		break;
-
-	case	SAVE:
-		(void) strncpy(pcvs[id].save, value, MAX_DATA_LEN - 1);
-		break;
-
-	default:
-		/*
-		 * ignore unknown commands
-		 */
-		break;
-
 	}
 }

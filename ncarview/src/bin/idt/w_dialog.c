@@ -1,5 +1,5 @@
 /*
- *	$Id: w_dialog.c,v 1.4 1992-08-12 21:42:02 clyne Exp $
+ *	$Id: w_dialog.c,v 1.5 1992-08-24 23:01:21 clyne Exp $
  */
 /*
  *	w_dialog.c
@@ -31,11 +31,10 @@
 static	void	Cancel(), Ok();
 
 typedef	struct	{
-	caddr_t	data;		/* data to invoke func() with		*/
+	Voidptr	data;		/* data to invoke func() with		*/
 	Widget	popup;		/* the popup widget			*/
 	Widget	dialog;		/* the dialog widget			*/
 	void	(*func)();	/* function to call when selected	*/
-	char	*format;	/* command format string		*/
 	} CallbackData;
 
 static	Widget	dialog;
@@ -51,21 +50,28 @@ static	Widget	dialog;
  *	current code does not provide for multible dialog boxes active at
  *	the same time. 
  *
+ *	The function select is defined:
+ *		void	select(Voidptr *data, char *value)
+ *
+ *	select() is invoked when the "OK" button is selected from the
+ *	dialog box. 'data' is passed unmolested to select as it is
+ *	received by CreateSimplePopup(). 'value' is the return value
+ *	of the dialog box.
+ *		
+ *
  * on entry
  *	button		: widget that determines position of popup
  *	*label		: label to appear in box
  *	*select()	: function to be called when OK is selected
- *	*data		: data to pass in select
- *	*format		: command format string
- *	*value		: default value to be displayed
+ *	*data		: data to pass in select as arg 1
+ *	*default_value	: default value to be displayed
  */
-void	CreateSimpleDialogPopup(button, label, select, data, format, value)
+void	CreateSimpleDialogPopup(button, label, select, data, default_value)
 	Widget	button;
 	char	*label;
 	void	(*select)();
-	caddr_t		data;
-	char	*format;
-	char	*value;
+	Voidptr		data;
+	char	*default_value;
 {
 
 	Arg		args[10];
@@ -100,13 +106,13 @@ void	CreateSimpleDialogPopup(button, label, select, data, format, value)
 		button, args, n);
 
 
-	if (! value) value = "";
+	if (! default_value) default_value = "";
 
 	/*
 	 * The dialog box with the requested label 
 	 */
 	n = 0;
-	XtSetArg(args[n], XtNvalue, value);	n++;
+	XtSetArg(args[n], XtNvalue, default_value);	n++;
 	XtSetArg(args[n], XtNlabel, label);	n++;
 	dialog = XtCreateManagedWidget("dialog",dialogWidgetClass,popup,args,n);
 
@@ -117,7 +123,6 @@ void	CreateSimpleDialogPopup(button, label, select, data, format, value)
 	callback_data.dialog = dialog;
 	callback_data.data = data;
 	callback_data.func = select;
-	callback_data.format = format;
 
 	XawDialogAddButton(dialog, "ok", Ok, (XtPointer) &callback_data);
 
@@ -158,7 +163,7 @@ static	void	Ok(widget, client_data, call_data)
 	/*
 	 * invoke the select function with the given data and the dialog value 
 	 */
-	((*(cd->func)) (cd->data, cd->format, value));
+	((*(cd->func)) (cd->data, value));
 
 
 	/*

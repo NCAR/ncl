@@ -1,5 +1,5 @@
 /*
- *	$Id: scroll.c,v 1.7 1992-08-12 22:57:30 clyne Exp $
+ *	$Id: scroll.c,v 1.8 1992-08-24 23:01:10 clyne Exp $
  */
 /*
  *	scroll.c
@@ -24,34 +24,27 @@
  *	generating a plot command to a translator
  *
  * on entry
- *	id		: id of translator scrolled
- *	percent		: percent of scroll bar thumb wheel was moved to
+ *	*wd			: widget data.
+ *	wd->start_segment	: the starting segment frame number
+ *	wd->stop_segment	: the ending segment frame number
+ *	percent			: percent of scroll bar thumb wheel was moved to
  */
-void	ScrollTo(id, percent)
-	int	id;
-	float	percent;
+void	ScrollTo(wd, percent)
+	WidgetData	*wd;
+	float		percent;
 {
 	int	start, stop;
 	int	frame;
 	char	buf[10];
 
-	void	Command2();
-	char	*GetValue();
-
-	Command_Id	command_id;
-
-	static	int	last_frame = 0;	/* kludge kludge	*/
-
-	command_id.id = id;
-	command_id.command	= GOTO;
 
 
 	/*
 	 * find out how many frames are covered by the segment defined
 	 * for this translator
 	 */
-	start = atoi(GetValue(id, START_SEGMENT));
-	stop = atoi(GetValue(id, STOP_SEGMENT));
+	start = wd->pcv.start_segment;
+	stop = wd->pcv.stop_segment;
 
 	/*
 	 * map percent into a frame number
@@ -59,23 +52,28 @@ void	ScrollTo(id, percent)
 	frame = (int) ((float) (stop - start + 1) * percent) + start;
 
 	/*
-	 * this is a hack. if the last frame from *any* translator matches the
+	 * If the last frame from matches the
 	 * current requested frame do nothing
 	 */
-	if (frame == last_frame)
+	if (frame == wd->current_frame_num) {
 		return;	/* do nothing	*/
+	}
 
-	last_frame = frame;	/* record current frame	*/
+	wd->current_frame_num = frame;	/* record current frame	*/
 
-	/*
-	 * send the plotting command
-	 */
 	(void) sprintf(buf, "%d", frame);
-	Command((caddr_t) &command_id, GOTO_STRING, buf);
+	if (wd->do_animate) {
+		AnimateDisplayImage(wd->a, frame-1);
+	}
+	else {
+		/*
+		 * send the plotting command
+		 */
+		Command(wd->id, GOTO_STRING, buf);
+	}
 
 	/*
 	 * update the displayed frame count
 	 */
-	UpdateFrameLabel(id, buf);
+	UpdateFrameLabel(wd, buf);
 }
-	

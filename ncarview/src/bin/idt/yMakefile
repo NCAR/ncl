@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.10 1992-06-25 21:47:45 clyne Exp $
+#	$Id: yMakefile,v 1.11 1992-08-24 23:01:28 clyne Exp $
 #
 #
 #	Makefile for idt -- Interactive Image Display Tool
@@ -65,12 +65,12 @@ EQUALHACK = =
 OBJS	= \
 	w_idt.o w_file.o file.o glob.o w_display.o display.o w_dialog.o \
 	commands.o talkto.o xrubber.o scroll.o w_text.o spooler.o w_icon.o \
-	xt_env.o kludge.o
+	xt_env.o kludge.o animate.o animate_cb.o
 
 SRCS	= \
 	w_idt.c w_file.c file.c glob.c w_display.c display.c w_dialog.c \
 	commands.c talkto.c xrubber.c scroll.c w_text.c spooler.c w_icon.c \
-	xt_env.c kludge.c
+	xt_env.c kludge.c animate.c animate_cb.c
 
 
 all::	$(MYNAME)

@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.7 1992-08-12 21:41:42 clyne Exp $
+ *	$Id: commands.c,v 1.8 1992-08-24 23:01:02 clyne Exp $
  */
 /*
  *	commands.c
@@ -20,23 +20,19 @@
 #include "commands.h"
 #include "talkto.h"
 
-extern	char	*TalkTo();
-extern	void	SetValues();
 
 /*
  *	Command
  *	[exported]
  *
- *	Format a command string and set it to the translator. The $format
+ *	Format a command string and send it to the translator. The $format
  *	arg contains one or more newline-separated translator commands and
  *	possibly a single %s format specifier. 
  *	
  *
  *
  * on entry
- *	command		: name of the idt command to map into an ictrans 
- *			  command and the id of the translator to receive the
- *			  command.
+ *	id		: communication channel
  *	*format		: a printf-style formating string containing the
  *			  actual command string to be sent to the translator.
  *			  If $format contains a '%s' the string referenced by
@@ -45,14 +41,12 @@ extern	void	SetValues();
  *		
  *	*command_data	: data to send with the command
  */
-void	Command(command, format, command_data)
-	caddr_t	command;
+void	Command(id, format, command_data)
+	int	id;
 	char	*format;
 	char	*command_data;	/* possibly NULL	*/
 {
-	Command_Id	*comm_id = (Command_Id *) command;
 
-	int	id = comm_id->id;	/* id of the command recipient	*/
 	char	buf[1024];		/* formatted command string(s)	*/
 	char	cmd_buf[1024];	/* a single translator command string	*/
 	char	*s;
@@ -73,8 +67,4 @@ void	Command(command, format, command_data)
 		sprintf(cmd_buf, "%s\n", s);
 		(void) TalkTo(id, cmd_buf, ASYNC);
 	}
-	/*
-	 * store the value of the data for later reference
-	 */
-	SetValues(id, comm_id->command, command_data); 
 }

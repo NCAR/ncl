@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.13 1992-08-12 16:50:06 clyne Exp $
+ *	$Id: talkto.c,v 1.14 1992-08-24 23:01:15 clyne Exp $
  */
 /*
  *	talkto.c
@@ -135,7 +135,7 @@ static	int	get_trans_msg(fp, buf, size)
 /*
  *	Get an error message from the translator. Unlike get_trans_msg()
  *	this function does no massaging to the string returned on the
- *	stream 'fp'. Any any and all bytes available on fp at the time
+ *	stream 'fp'. Any and all bytes available on fp at the time
  *	get_trans_err() is called are returned as a null terminated string.
  *	if no bytes are available get_trans_err() returns immediately.
  *
@@ -198,7 +198,7 @@ static	int	get_trans_err(fp, buf, size)
  * on exit
  *	return		: < 0 => failure, else ok
  */
-OpenTranslator(channel, argv, hfd)
+int	OpenTranslator(channel, argv, hfd)
 	int	channel;
 	char	**argv;
 	int	hfd;
@@ -460,7 +460,7 @@ char	*TalkTo(id, command_string, mode)
  *	id		: id of the recipient translator
  *	signal		: signal to send
  */
-SignalTo(id, signal)
+void	SignalTo(id, signal)
 	int	id;
 	int	signal;
 {
@@ -478,7 +478,7 @@ SignalTo(id, signal)
  *	id		: id of the translator
  *	*s		: message to send
  */
-Message(id, s)
+void	Message(id, s)
 	int	id;
 	char	*s;
 {
@@ -513,7 +513,7 @@ Message(id, s)
  *	id		: id of the translator
  *	*s		: message to send
  */
-ErrorMessage(id, s)
+void	ErrorMessage(id, s)
 	int	id;
 	char	*s;
 {
