@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.4 1991-01-09 11:09:19 clyne Exp $
+ *	$Id: ctrans.c,v 1.5 1991-03-05 14:39:25 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -36,7 +36,7 @@
  * rev 1.01 clyne 4/18/90	: expanded application programmer interace
  */
 #ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.4 1991-01-09 11:09:19 clyne Exp $";
+static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.5 1991-03-05 14:39:25 clyne Exp $";
 #endif
 
 
@@ -94,7 +94,7 @@ boolean *bellOff = &bell_off;
 
 CGMC	command;
 
-FILE	*tty;
+FILE	*tty = NULL;
 
 boolean	ctransIsInit = FALSE;	/* ctrans device independent initialization
 				 * state 
@@ -169,11 +169,7 @@ Ct_err	init_ctrans(argc, argv, prog_name, gcap, fcap, stand_alone,				batch)
 	 * open tty for user interaction if not batch
 	 */
 	if (!Batch && !BATCH) {
-		if ( (tty = fopen("/dev/tty", "r")) == (FILE *) NULL )
-		{
-			ct_error(T_FOE, "tty");
-			return(DIE);
-		}
+		tty = fopen("/dev/tty", "r");
 	}
 
 
@@ -632,7 +628,7 @@ close_ctrans()
 
 
 	if (!Batch && !BATCH) {
-		(void) fclose (tty);
+		if (tty) (void) fclose (tty);
 	}
 
 	/*

@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.5 1991-02-06 15:28:56 clyne Exp $
+ *	$Id: gcap.c,v 1.6 1991-03-05 14:39:29 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -880,7 +880,7 @@ CGMC *c;
 		/*
 		 * if not Batch wait for user to hit return
 		 */
-		if (!Batch) {
+		if (!Batch && tty) {
 			(void)lseek(0,0L,L_SET);
 			while (getc(tty) != '\n');	
 			(void)lseek(0,0L,L_SET);
