@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.91 1998-01-07 00:13:14 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.92 1998-01-20 22:48:08 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -8554,7 +8554,7 @@ NhlErrorTypes _NclIstddev
                 		0
         		));
 		}
-		out1_val = (void*)NclMalloc(sizeof(float));
+		out0_val = (void*)NclMalloc(sizeof(float));
 		div_val = (void*)NclMalloc(sizeof(float));
 		data_type = NCL_float;
 		the_type = (NclTypeClass)nclTypefloatClass;
@@ -10422,7 +10422,7 @@ NhlErrorTypes _NclIIsNumeric
 		return(NhlFATAL);
 
 	out_val = (logical*)NclMalloc(sizeof(logical));
-	if(tmp_md->multidval.type->type_class.type & NCL_VAL_TYPE_MASK) {
+	if(tmp_md->multidval.type->type_class.type & NCL_VAL_NUMERIC_MASK) {
 		*out_val = 1;
 	} else {
 		*out_val = 0;
