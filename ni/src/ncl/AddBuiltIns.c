@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.44 1999-09-23 21:15:47 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.45 1999-11-12 18:36:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -593,6 +593,22 @@ void
 );
 
 extern NhlErrorTypes _NclIAttSetValues(
+#if     NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIPop(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIPush(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclINewList(
 #if     NhlNeedProto
 void
 #endif
@@ -1446,6 +1462,23 @@ void _NclAddBuiltIns
     SetArgTemplate(args,nargs,"graphic",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     NclRegisterProc(_NclIAttSetValues,args,"attsetvalues",nargs);
+
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"list",NclANY,NclANY);nargs++;
+    NclRegisterFunc(_NclIPop,args,"ListPop",nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"list",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,NclANY,NclANY,NclANY);nargs++;
+    NclRegisterProc(_NclIPush,args,"ListPush",nargs);
+
+    nargs = 0;
+    args = NewArgs(1);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+    NclRegisterFunc(_NclINewList,args,"NewList",nargs);
     
 
 /*

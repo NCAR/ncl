@@ -77,7 +77,7 @@ char *cur_load_file = NULL;
 %token <real> REAL
 %token <str> STRING DIM DIMNAME ATTNAME COORDV FVAR 
 %token <sym> INTEGER FLOAT LONG DOUBLE BYTE CHARACTER GRAPHIC STRNG NUMERIC FILETYPE SHORT LOGICAL
-%token <sym> UNDEF VAR WHILE DO QUIT  NPROC PIPROC IPROC UNDEFFILEVAR BREAK NOPARENT NCLNULL
+%token <sym> UNDEF VAR WHILE DO QUIT  NPROC PIPROC IPROC UNDEFFILEVAR BREAK NOPARENT NCLNULL LIST
 %token <sym> BGIN END NFUNC IFUNC FDIM IF THEN VBLKNAME CONTINUE
 %token <sym> DFILE KEYFUNC KEYPROC ELSE EXTERNAL NCLEXTERNAL RETURN VSBLKGET NEW
 %token <sym> OBJVAR OBJTYPE RECORD VSBLKCREATE VSBLKSET LOCAL STOP NCLTRUE NCLFALSE DLIB
@@ -116,8 +116,8 @@ char *cur_load_file = NULL;
 %type <src_node> procedure function_def procedure_def fp_block block do conditional
 %type <src_node> visblk statement_list
 %type <src_node> declaration identifier expr v_parent 
-%type <src_node> subscript0 subscript2 break_cont vcreate
-%type <src_node> subscript3 subscript1 subexpr primary function array error filevarselector coordvarselector attributeselector
+%type <src_node> subscript0 subscript2 break_cont vcreate list_subscript 
+%type <src_node> subscript3 subscript1 subexpr primary function array error filevarselector coordvarselector attributeselector 
 %type <list> the_list arg_dec_list subscript_list opt_arg_list named_subscript_list normal_subscript_list
 %type <list> block_statement_list resource_list dim_size_list  
 %type <list> arg_list do_stmnt resource vset vget get_resource get_resource_list
@@ -1357,6 +1357,7 @@ datatype : FLOAT	{ $$ = $1; }
 	| GRAPHIC 	{ $$ = $1; }
 	| STRNG	 	{ $$ = $1; }
 	| LOGICAL 	{ $$ = $1; }
+	| LIST 		{ $$ = $1; }
 ;
 
 dim_size_list : LBK INT RBK		{ 
@@ -1483,77 +1484,249 @@ attributeselector : ATTNAME{
 		$$ = $2;
 	}
 
-identifier : vname {
-			$$ = _NclMakeVarRef($1,NULL);
-		  }
-	| vname filevarselector {
-						$$ = _NclMakeFileVarRef($1,$2,NULL,Ncl_FILEVAR);
+identifier : vname list_subscript 	{
+						NclSymbol *tmp;
+						NclSymbol *tmp0;
+						void *node;
+						if($2 == NULL) {
+							$$ = _NclMakeVarRef($1,NULL);
+						} else {
+							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
+							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
+/*
+							node = _NclMakeVarRef(tmp0,NULL);
+							_NclValOnly(node);
+*/
+							$$ = _NclMakeListRef(_NclMakeVarRef(tmp0,NULL),tmp,$1,$2,tmp0);
+						}
+		  			}
+	| vname list_subscript filevarselector {
+						NclSymbol *tmp;
+						NclSymbol *tmp0;
+						if($2 == NULL) {
+							$$ = _NclMakeFileVarRef($1,$3,NULL,Ncl_FILEVAR);
+						} else {
+							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
+							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
+							
+							$$ = _NclMakeListRef(_NclMakeFileVarRef(tmp0,$3,NULL,Ncl_FILEVAR),tmp,$1,$2,tmp0);
+						}
+			 		}
+	| vname list_subscript filevarselector MARKER		{
+						NclSymbol *tmp;
+						NclSymbol *tmp0;
+						if($2 == NULL) {
+							$$ = _NclMakeFileVarRef($1,$3,NULL,Ncl_FILEVAR);
+						} else {
+							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
+							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
+							$$ = _NclMakeListRef(_NclMakeFileVarRef(tmp0,$3,NULL,Ncl_FILEVAR),tmp,$1,$2,tmp0);
+						}
 					}
-	| vname filevarselector MARKER		{
-						$$ = _NclMakeFileVarRef($1,$2,NULL,Ncl_FILEVAR);
+	| vname list_subscript filevarselector LP subscript_list RP MARKER {
+						NclSymbol *tmp;
+						NclSymbol *tmp0;
+						if($2 == NULL) {	
+							$$ = _NclMakeFileVarRef($1,$3,$5,Ncl_FILEVAR);
+						} else {
+							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
+							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
+							$$ = _NclMakeListRef(_NclMakeFileVarRef(tmp0,$3,$5,Ncl_FILEVAR),tmp,$1,$2,tmp0);
+						}
 					}
-	| vname filevarselector LP subscript_list RP MARKER {
-				
-						$$ = _NclMakeFileVarRef($1,$2,$4,Ncl_FILEVAR);
+	| vname list_subscript filevarselector LP subscript_list RP	{	
+						NclSymbol *tmp;
+						NclSymbol *tmp0;
+						if($2 == NULL) {
+							$$ = _NclMakeFileVarRef($1,$3,$5,Ncl_FILEVAR);
+						} else {
+							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
+							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
+							$$ = _NclMakeListRef(_NclMakeFileVarRef(tmp0,$3,$5,Ncl_FILEVAR),tmp,$1,$2,tmp0);
+						}
 					}
-	| vname filevarselector LP subscript_list RP	{	
-				
-						$$ = _NclMakeFileVarRef($1,$2,$4,Ncl_FILEVAR);
+	| vname list_subscript filevarselector DIM_MARKER primary	{
+						NclSymbol *tmp0;
+						NclSymbol *tmp;
+						_NclValOnly($5);
+						if($2 == NULL) {
+							$$ = _NclMakeFileVarDimRef($1,$3,$5);		
+						} else {
+							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
+							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
+							$$ = _NclMakeListRef(_NclMakeFileVarDimRef(tmp0,$3,$5),tmp,$1,$2,tmp0);
+						}
 					}
-	| vname filevarselector DIM_MARKER primary	{
+        | vname list_subscript filevarselector attributeselector {
+						NclSymbol *tmp0;
+						NclSymbol *tmp;
+						if($2 == NULL) {
+							$$ = _NclMakeFileVarAttRef($1,$3,$4,NULL);
+						} else {
+							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
+							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
+							$$ = _NclMakeListRef(_NclMakeFileVarAttRef(tmp0,$3,$4,NULL),tmp,$1,$2,tmp0);
+						}
+					}
+        | vname list_subscript filevarselector attributeselector LP subscript_list RP	{
+						NclSymbol *tmp0;
+						NclSymbol *tmp;
+						if($2 == NULL) {
+							$$ = _NclMakeFileVarAttRef($1,$3,$4,$6);
+						} else {
+							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
+							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
+							$$ = _NclMakeListRef(_NclMakeFileVarAttRef(tmp0,$3,$4,$6),tmp,$1,$2,tmp0);
+						}
+					}
+	| vname list_subscript filevarselector coordvarselector			{
+						NclSymbol *tmp0;
+						NclSymbol *tmp;
+						if($2 == NULL) {
+							$$ = _NclMakeFileVarCoordRef($1,$3,$4,NULL);
+						} else {
+							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
+							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
+							$$ = _NclMakeListRef(_NclMakeFileVarCoordRef(tmp0,$3,$4,NULL),tmp,$1,$2,tmp0);
+						}
+					}
+	| vname list_subscript filevarselector coordvarselector attributeselector{
+						NclSymbol *tmp;
+						NclSymbol *tmp0;
+						if($2 == NULL) {
+							$$ = _NclMakeFileVarCoordAttRef($1,$3,$4,$5,NULL);
+						} else {
+							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
+							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
+							$$ = _NclMakeListRef(_NclMakeFileVarCoordAttRef(tmp0,$3,$4,$5,NULL),tmp,$1,$2,tmp0);
+						}
+					}
+	| vname list_subscript filevarselector coordvarselector attributeselector LP subscript_list RP {
+						NclSymbol *tmp0;
+						NclSymbol *tmp;
+						if($2 == NULL) {
+							$$ = _NclMakeFileVarCoordAttRef($1,$3,$4,$5,$7);
+						} else {
+							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
+							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
+							$$ = _NclMakeListRef(_NclMakeFileVarCoordAttRef(tmp0,$3,$4,$5,$7),tmp,$1,$2,tmp0);
+						}
+					}
+	| vname list_subscript filevarselector coordvarselector LP subscript_list RP{
+						NclSymbol *tmp0;
+						NclSymbol *tmp;
+						if($2 == NULL) {
+							$$ = _NclMakeFileVarCoordRef($1,$3,$4,$6);
+						} else {
+							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
+							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
+							$$ = _NclMakeListRef(_NclMakeFileVarCoordRef(tmp0,$3,$4,$6),tmp,$1,$2,tmp0);
+						}
+					}
+	| vname list_subscript DIM_MARKER primary  {
+						NclSymbol *tmp0;
+						NclSymbol *tmp;
 						_NclValOnly($4);
-						$$ = _NclMakeFileVarDimRef($1,$2,$4);		
+						if($2 == NULL) {
+							$$ = _NclMakeVarDimRef($1,$4);
+						} else {
+							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
+							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
+							$$ = _NclMakeListRef(_NclMakeVarDimRef(tmp0,$4),tmp,$1,$2,tmp0);
+						}
 					}
-        | vname filevarselector attributeselector {
-						$$ = _NclMakeFileVarAttRef($1,$2,$3,NULL);
+        | vname list_subscript attributeselector {
+						NclSymbol *tmp0;
+						NclSymbol *tmp;
+						if($2 == NULL) {
+							$$ = _NclMakeVarAttRef($1,$3,NULL);
+						} else {
+							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
+							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
+							$$ = _NclMakeListRef(_NclMakeVarAttRef(tmp0,$3,NULL),tmp,$1,$2,tmp0);
+						}
 					}
-        | vname filevarselector attributeselector LP subscript_list RP	{
-						$$ = _NclMakeFileVarAttRef($1,$2,$3,$5);
-					}
-	| vname filevarselector coordvarselector			{
-						$$ = _NclMakeFileVarCoordRef($1,$2,$3,NULL);
-					}
-	| vname filevarselector coordvarselector attributeselector{
-						$$ = _NclMakeFileVarCoordAttRef($1,$2,$3,$4,NULL);
-					}
-	| vname filevarselector coordvarselector attributeselector LP subscript_list RP {
-						$$ = _NclMakeFileVarCoordAttRef($1,$2,$3,$4,$6);
-					}
-	| vname filevarselector coordvarselector LP subscript_list RP{
-						$$ = _NclMakeFileVarCoordRef($1,$2,$3,$5);
-					}
-	| vname DIM_MARKER primary  {
-						_NclValOnly($3);
-						$$ = _NclMakeVarDimRef($1,$3);		
-					}
-        | vname attributeselector {
-						$$ = _NclMakeVarAttRef($1,$2,NULL);
-					}
-        | vname attributeselector LP subscript_list RP	{
-						$$ = _NclMakeVarAttRef($1,$2,$4);
+        | vname list_subscript attributeselector LP subscript_list RP	{
+						NclSymbol *tmp0;
+						NclSymbol *tmp;
+						if($2 == NULL) {
+							$$ = _NclMakeVarAttRef($1,$3,$5);
+						} else {
+							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
+							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
+							$$ = _NclMakeListRef(_NclMakeVarAttRef(tmp0,$3,$5),tmp,$1,$2,tmp0);
+						}
 					}
 	| vname MARKER			{
 						$$ = _NclMakeVarRef($1,NULL);
 					}
-	| vname LP subscript_list RP MARKER     {
-						$$ = _NclMakeVarRef($1,$3);
+	| vname list_subscript LP subscript_list RP MARKER     {
+						NclSymbol *tmp;
+						NclSymbol *tmp0;
+						if($2 == NULL) {
+							$$ = _NclMakeVarRef($1,$4);
+						} else {
+							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
+							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
+							$$ = _NclMakeListRef(_NclMakeVarRef(tmp0,$4),tmp,$1,$2,tmp0);
+						}
 					}
-        | vname LP subscript_list RP {
-						$$ = _NclMakeVarRef($1,$3);
+        | vname list_subscript LP subscript_list RP {
+						NclSymbol *tmp0;
+						NclSymbol *tmp;
+						if($2 == NULL) {
+							$$ = _NclMakeVarRef($1,$4);
+						} else {
+							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
+							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
+							$$ = _NclMakeListRef(_NclMakeVarRef(tmp0,$4),tmp,$1,$2,tmp0);
+						}
 					}
-	| vname coordvarselector{
-						$$ = _NclMakeVarCoordRef($1,$2,NULL);
+	| vname list_subscript coordvarselector{
+						NclSymbol *tmp0;
+						NclSymbol *tmp;
+						if($2 == NULL) {
+							$$ = _NclMakeVarCoordRef($1,$3,NULL);
+						} else {
+							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
+							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
+							$$ = _NclMakeListRef(_NclMakeVarCoordRef(tmp0,$3,NULL),tmp,$1,$2,tmp0);
+						}
 					}
-	| vname coordvarselector LP subscript_list RP{
-						$$ = _NclMakeVarCoordRef($1,$2,$4);
+	| vname list_subscript coordvarselector LP subscript_list RP{
+						NclSymbol *tmp0;
+						NclSymbol *tmp;
+						if($2 == NULL) {
+							$$ = _NclMakeVarCoordRef($1,$3,$5);
+						} else {
+							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
+							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
+							$$ = _NclMakeListRef(_NclMakeVarCoordRef(tmp0,$3,$5),tmp,$1,$2,tmp0);
+						}
 					}
-	| vname coordvarselector attributeselector		{
-						$$ = _NclMakeVarCoordAttRef($1,$2,$3,NULL);
+	| vname list_subscript coordvarselector attributeselector		{
+						NclSymbol *tmp0;
+						NclSymbol *tmp;
+						if($2 == NULL) {
+							$$ = _NclMakeVarCoordAttRef($1,$3,$4,NULL);
+						} else {
+							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
+							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
+							$$ = _NclMakeListRef(_NclMakeVarCoordAttRef(tmp0,$3,$4,NULL),tmp,$1,$2,tmp0);
+						}
 					}
-	| vname coordvarselector attributeselector LP subscript_list RP {
-						$$ = _NclMakeVarCoordAttRef($1,$2,$3,$5);
+	| vname list_subscript coordvarselector attributeselector LP subscript_list RP {
+						NclSymbol *tmp0;
+						NclSymbol *tmp;
+						if($2 == NULL) {
+							$$ = _NclMakeVarCoordAttRef($1,$3,$4,$6);
+						} else {
+							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
+							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
+							$$ = _NclMakeListRef(_NclMakeVarCoordAttRef(tmp0,$3,$4,$6),tmp,$1,$2,tmp0);
+						}
 					}
-	| vname LP RP error 			{
+	| vname list_subscript LP RP error 			{
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: possibly an undefined procedure");
 					$$ = NULL;
 	}
@@ -1568,12 +1741,22 @@ vname : OBJVAR		{
 	| VAR		{
 				$$ = $1;
 			}
-	| UNDEF		{
-				$$ = $1;
-			}
 	| DFILE		{
 				$$ = $1;
 			}
+	| LIST 		{
+				$$ = $1;
+			}
+	| UNDEF 	{
+				$$ = $1;
+			}
+;
+list_subscript : { 
+		$$ = NULL;
+	}
+	| LBK subexpr RBK {
+		$$ = _NclMakeIntSubscript($2,NULL);
+	}
 ;
 subscript_list : named_subscript_list {
 			$$ = $1;
@@ -2065,6 +2248,8 @@ primary : REAL				{
 						$$ = _NclMakeNULLNode();
 					}
 ;
+
+
 function:  IFUNC opt_arg_list		{
 						NclSrcListNode *step;
 						int count = 0;

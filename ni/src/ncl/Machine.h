@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.h,v 1.21 1997-10-01 18:19:08 ethan Exp $
+ *      $Id: Machine.h,v 1.22 1999-11-12 18:36:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -70,7 +70,7 @@ typedef enum stack_value_types {
 	NclStk_PARAMLIST = 020, NclStk_RANGEREC = 040,
 	NclStk_VECREC = 0100, NclStk_FILE = 0200, NclStk_GRAPHIC = 0400,
 	NclStk_RETURNVAL = 01000, NclStk_STATIC_LINK = 02000, 
-	NclStk_DYNAMIC_LINK = 04000, NclStk_RET_OFFSET = 010000
+	NclStk_DYNAMIC_LINK = 04000, NclStk_RET_OFFSET = 010000, NclStk_LIST = 020000
 	} NclStackValueTypes;
 
 typedef enum {NONE_P, VALUE_P, VAR_P} NclParamTypes;
@@ -106,6 +106,7 @@ typedef struct _NclStackEntry{
 		struct _NclParamRecList *the_list;
 		struct _NclVarRec	*data_var;
 		struct _NclMultiDValDataRec 	*data_obj;
+		struct _NclListRec 	*data_list;
 	}u;
 }NclStackEntry;
 

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.111 1999-11-10 19:51:37 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.112 1999-11-12 18:36:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -58,6 +58,8 @@ extern "C" {
 #include "NclBuiltInSupport.h"
 #include "FileSupport.h"
 #include "NclAtt.h"
+#include "NclList.h"
+#include "ListSupport.h"
 #include <signal.h>
 
 extern int cmd_line;
@@ -11383,6 +11385,121 @@ NhlErrorTypes _NclIAttSetValues( void )
 	NhlFree(gen_array);
 	NhlRLDestroy(rl_list);
 	return(NhlNOERROR);
+}
+
+NhlErrorTypes _NclIPush(void)
+{
+	obj *obj_id,*list_id;
+	NclObj thelist = NULL;
+	NclObj theobj = NULL;
+        NclStackEntry data;
+
+   	list_id = (obj*)NclGetArgValue(
+           0,
+           2,
+           NULL, 
+           NULL,
+	   NULL,
+	   NULL,
+           NULL,
+           DONT_CARE);
+	data= _NclGetArg(1,2,DONT_CARE);
+	theobj = (NclObj)data.u.data_obj;
+
+	thelist = _NclGetObj(*list_id);
+
+	return(_NclListPush(thelist,theobj));
+
+
+	
+}
+NhlErrorTypes _NclIPop(void)
+{
+	obj *list_id;
+	NclObj thelist = NULL;
+	NclObj tmp = NULL;
+        NclStackEntry data;
+
+   	list_id = (obj*)NclGetArgValue(
+           0,
+           1,
+           NULL, 
+           NULL,
+	   NULL,
+	   NULL,
+           NULL,
+           DONT_CARE);
+	thelist = _NclGetObj(*list_id);
+	if(thelist != NULL) {
+		tmp = _NclListPop(thelist);
+		if(tmp != NULL) {
+			if(tmp->obj.obj_type & (Ncl_Var | Ncl_FileVar | Ncl_HLUVar | Ncl_CoordVar)) {
+				data.kind = NclStk_VAR;
+				data.u.data_var= (NclVar)tmp;
+			} else if(tmp->obj.obj_type & ( Ncl_MultiDValData | Ncl_MultiDValnclfileData | Ncl_MultiDValHLUObjData | Ncl_OneDValCoordData)) {
+				data.kind = NclStk_VAL;
+				data.u.data_obj= (NclMultiDValData)tmp;
+			}
+			_NclPlaceReturn(data);
+			return(NhlNOERROR);
+		} else {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"Empty List: Returning missing value");
+			data.kind = NclStk_VAL;
+			data.u.data_obj = _NclCreateMissing();
+			_NclPlaceReturn(data);
+			return(NhlWARNING);
+		}
+		
+	} else {
+		return(NhlFATAL);
+	}
+
+	
+}
+NhlErrorTypes _NclINewList( void )
+{
+	NclStackEntry data;
+	char *tmp;
+	NclList tmp_list;
+	obj *id;
+	int one = 1;
+	int i;
+	string *tmp_string;
+	char buffer[5];
+	
+   	tmp_string = (string*)NclGetArgValue(
+           0,
+           1,
+           NULL, 
+           NULL,
+	   NULL,
+	   NULL,
+           NULL,
+           DONT_CARE);
+	
+	tmp = NrmQuarkToString(*tmp_string);
+	if(tmp == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"NewList: unknow list type. Only \"join\" or \"cat\" supported");
+		return(NhlFATAL);
+	}
+	buffer[4] = '\0';
+	buffer[3] = '\0';
+	for(i = 0; i < strlen(tmp); i++) {
+		buffer[i] = tolower(tmp[i]);
+		if(i == 3) 
+			break;
+	}
+	
+
+	data.kind = NclStk_VAL;
+	tmp_list =(NclList)_NclListCreate(NULL,NULL,0,0,(strcmp("join",buffer) == 0 ? (NCL_JOIN | NCL_FIFO):(NCL_CONCAT|NCL_FIFO)));
+	id = (obj*)NclMalloc(sizeof(obj));
+	*id = tmp_list->obj.id;
+	data.u.data_obj = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,0,id,NULL,1,&one,TEMPORARY,NULL);
+	_NclListSetType((NclObj)tmp_list,NCL_FIFO);
+	_NclPlaceReturn(data);
+	return(NhlNOERROR);
+	
 }
 #ifdef __cplusplus
 }

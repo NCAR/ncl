@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.107 1999-04-02 00:08:21 ethan Exp $
+ *      $Id: Execute.c,v 1.108 1999-11-12 18:36:38 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -45,8 +45,10 @@ extern "C" {
 #include "OpsFuncs.h"
 #include "parser.h"
 #include "NclAtt.h"
+#include "NclList.h"
 #include "NclHLUObj.h"
 #include "HLUSupport.h"
+#include "ListSupport.h"
 #include <errno.h>
 
 extern int cmd_line;
@@ -105,6 +107,298 @@ static void _NclPopExecute
                 handle.next= handle.next->next;
                 NclFree(tmp);
         }
+}
+void CallLIST_ASSIGN_VERIFY_SUB (void) {
+	NclStackEntry *data_ptr;
+
+	data_ptr = _NclPeek(0);
+	if(data_ptr->kind == NclStk_SUBREC) {
+		switch(data_ptr->u.sub_rec.sub_type) {
+		case COORD_VECT:
+		case COORD_RANGE:
+		case COORD_SINGLE:
+		case INT_VECT:
+		case INT_RANGE:
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Only single elements from lists can be used on the left-hand-side of and assignment statment");
+			estatus = NhlFATAL;
+			break;
+		case INT_SINGLE:
+			break;
+		}
+	} else {
+		estatus = NhlFATAL;
+	}
+
+}
+void CallLIST_CLEAR_TMP_OP(void) {
+	NclSymbol *temporary;
+	NclStackEntry *temporary_ptr;
+
+	ptr++;lptr++;fptr++;
+	temporary = (NclSymbol*)(*ptr);
+	temporary_ptr = _NclRetrieveRec(temporary,DONT_CARE);
+/*
+	if((temporary_ptr->kind == NclStk_VAR)&&(temporary_ptr->u.data_var->obj.status == TEMPORARY)) {
+		_NclDestroyObj((NclObj)temporary_ptr->u.data_var);
+	}
+*/
+	temporary_ptr->kind = NclStk_NOVAL;
+	temporary_ptr->u.data_var = NULL;
+	(void)_NclChangeSymbolType(temporary,UNDEF);
+	
+	return;
+}
+void CallTERM_LIST_OP(void) {
+	NclSymbol *temporary;
+	NclStackEntry *temporary_list_ptr;
+	NclStackEntry output;
+	int n_elements =0;
+
+	ptr++;lptr++;fptr++;
+	temporary = (NclSymbol*)(*ptr);
+	temporary_list_ptr = _NclRetrieveRec(temporary,DONT_CARE);
+
+	if(temporary_list_ptr != NULL) {
+		n_elements = temporary_list_ptr->u.data_list->list.nelem;
+		if(n_elements != 1) {
+			if(temporary_list_ptr->u.data_list->list.list_type & NCL_JOIN) {
+				estatus = _NclBuildArray(n_elements,&output);
+			} else {
+				estatus = _NclBuildConcatArray(n_elements,&output);
+			}
+                	if(estatus != NhlFATAL)
+                     	estatus = _NclPush(output);
+		}
+		_NclDestroyObj((NclObj)temporary_list_ptr->u.data_list);
+	}
+	
+
+	return;
+}
+void CallLIST_READ_OP(void) {
+	NclSymbol *listsym;
+	NclSymbol *temporary;
+	NclStackEntry *list_ptr;
+	NclStackEntry *temporary_list_ptr;
+	NclStackEntry data;
+	NclList list;
+	NclList newlist;
+	int subs,i;
+	NclSelection *sel_ptr=NULL;
+	NclSelection sel;
+	NclMultiDValData vect_md,tmp_md;
+	long *thevector;
+	
+	
+
+	ptr++;lptr++;fptr++;
+	listsym = (NclSymbol*)(*ptr);
+	ptr++;lptr++;fptr++;
+	temporary = (NclSymbol*)(*ptr);
+	ptr++;lptr++;fptr++;
+	subs = *ptr;
+
+	list_ptr = _NclRetrieveRec(listsym,DONT_CARE);
+	temporary_list_ptr = _NclRetrieveRec(temporary,DONT_CARE);
+	if(list_ptr != NULL) {
+		tmp_md = (NclMultiDValData)_NclGetObj(list_ptr->u.data_var->var.thevalue_id);
+		list = (NclList)_NclGetObj(*(obj*)tmp_md->multidval.val);
+	} else {
+		estatus = NhlFATAL;
+                return;
+	}
+
+	if(subs) {
+		data = _NclPop();
+		switch(data.u.sub_rec.sub_type) {
+			case INT_VECT:
+				vect_md = data.u.sub_rec.u.vec.vec;
+				if(!(vect_md->multidval.type->type_class.type & Ncl_Typelong)) {
+                        		tmp_md = _NclCoerceData(vect_md,Ncl_Typelong,NULL);
+                        		if(tmp_md == NULL) {
+                                		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce vector to long type can't perform subscripting");
+						estatus = NhlFATAL;
+                                		return;
+                        		}
+ 
+                		}  else {
+                        		tmp_md = vect_md;
+               			}
+		                thevector = (long*)NclMalloc((unsigned)vect_md->multidval.totalelements * sizeof(long));
+				memcpy((char*)thevector,(char*)tmp_md->multidval.val,tmp_md->multidval.totalelements * sizeof(long));
+				sel.sel_type = Ncl_VECSUBSCR;
+				sel.u.vec.n_ind = vect_md->multidval.totalelements;
+				sel.u.vec.min = thevector[0];
+				sel.u.vec.max = thevector[0];
+				sel.u.vec.ind = thevector;
+                		for(i = 0; i < sel.u.vec.n_ind; i++) {
+                        		if(thevector[i] > sel.u.vec.max) {
+                                		sel.u.vec.max = thevector[i];
+                        		}
+                        		if(thevector[i] < sel.u.vec.min) {
+                                		sel.u.vec.min = thevector[i];
+                        		}
+                		}
+                		if((tmp_md != vect_md)&&(tmp_md->obj.status != PERMANENT)) {
+               			         _NclDestroyObj((NclObj)tmp_md);
+		                }
+				break;
+			case INT_SINGLE:
+			case INT_RANGE:
+				sel.u.sub.is_single = data.u.sub_rec.u.range.is_single;
+				if(( data.u.sub_rec.u.range.start == NULL)&&( data.u.sub_rec.u.range.finish == NULL)) {
+					sel.sel_type = Ncl_SUB_ALL;
+					sel.u.sub.start = 0;
+					sel.u.sub.finish = 0;
+					sel.u.sub.stride = 1;
+				} else if(data.u.sub_rec.u.range.start == NULL) {
+					sel.sel_type = Ncl_SUB_DEF_VAL;
+					sel.u.sub.start = 0;
+		                        if(!_NclScalarCoerce(
+               			                 data.u.sub_rec.u.range.finish->multidval.val,
+                               			 data.u.sub_rec.u.range.finish->multidval.data_type,
+                                		&(sel.u.sub.finish),NCL_long)) {
+/*
+* This shouldn't happen but it can't hurt to have an extra check here
+*/
+                                		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce subscript value to long data type");
+						estatus = NhlFATAL;
+                               	 		return;
+                        		}
+ 
+                        		sel.u.sub.stride = 1;
+
+				} else if(data.u.sub_rec.u.range.finish == NULL) {
+                        		sel.sel_type = Ncl_SUB_VAL_DEF;
+ 
+                        		if(!_NclScalarCoerce(
+                                		data.u.sub_rec.u.range.start->multidval.val,
+                                		data.u.sub_rec.u.range.start->multidval.data_type,
+                                		&(sel.u.sub.start),NCL_long)) {
+                                		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce subscript value to long data type");
+						estatus = NhlFATAL;
+                               	 		return;
+		 
+                        		}
+		 
+                        		sel.u.sub.finish = 0;
+                        		sel.u.sub.stride = 1;
+
+				} else {
+		                        sel.sel_type = Ncl_SUBSCR;
+ 
+					if(!_NclScalarCoerce(
+						data.u.sub_rec.u.range.start->multidval.val,
+						data.u.sub_rec.u.range.start->multidval.data_type,
+						&(sel.u.sub.start),NCL_long)) {
+                                		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce subscript value to long data type");
+						estatus = NhlFATAL;
+                               	 		return;
+                        		}
+ 
+                        		if(!_NclScalarCoerce(
+                                		data.u.sub_rec.u.range.finish->multidval.val,
+                                		data.u.sub_rec.u.range.finish->multidval.data_type,
+                                		&(sel.u.sub.finish),NCL_long)) {
+                                		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce subscript value to long data type");
+						estatus = NhlFATAL;
+                               	 		return;
+                        		}
+ 
+                        		sel.u.sub.stride = 1;
+
+				}
+				if(data.u.sub_rec.u.range.stride != NULL) {
+                        		if(!_NclScalarCoerce(
+                                		data.u.sub_rec.u.range.stride->multidval.val,
+                                		data.u.sub_rec.u.range.stride->multidval.data_type,
+                                		&(sel.u.sub.stride),NCL_long)) {
+                                		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce subscript value to long data type");
+						estatus = NhlFATAL;
+                               	 		return;
+                        		}
+ 
+                		}
+
+				break;
+			default:
+				break;
+		}
+		sel_ptr = &sel;
+	} else {
+		sel_ptr = NULL;
+	}
+
+	newlist =_NclListSelect(list,sel_ptr);
+	if(newlist != NULL) {
+		temporary_list_ptr->kind = NclStk_LIST;
+		temporary_list_ptr->u.data_list = newlist;
+	} else {
+		temporary_list_ptr->kind = NclStk_NOVAL;
+		temporary_list_ptr->u.data_list = NULL;
+		estatus = NhlFATAL;
+	}
+	
+	return;
+}
+void CallSET_NEXT_OP(void) 
+{
+	NclSymbol *listsym;
+	NclSymbol *temporary;
+	NclStackEntry *list_ptr;
+	NclStackEntry *tmp_ptr;
+	NclList list;
+	NclObj the_obj;
+ 	unsigned long offset;
+	int the_obj_id;
+	
+	
+
+	ptr++;lptr++;fptr++;
+	listsym = (NclSymbol*)(*ptr);
+	ptr++;lptr++;fptr++;
+	temporary= (NclSymbol*)(*ptr);
+	ptr++;lptr++;fptr++;
+	offset = *ptr;
+	
+	tmp_ptr = _NclRetrieveRec(temporary,DONT_CARE);
+	list_ptr = _NclRetrieveRec(listsym,DONT_CARE);
+	list = list_ptr->u.data_list;
+	
+
+	the_obj_id = _NclGetNext((NclObj)list);
+	if(the_obj_id != -1 ) {
+		the_obj = _NclGetObj(the_obj_id);
+		if(the_obj == NULL) {
+        		ptr = machine + offset - 1;
+			lptr = _NclGetCurrentLineRec() + offset - 1;
+			fptr = _NclGetCurrentFileNameRec() + offset - 1;
+/*
+* Need to destroy/free stuff here.
+*/
+			return;
+		} else {
+			switch(the_obj->obj.obj_type) {
+			case Ncl_Var:
+			case Ncl_HLUVar:
+			case Ncl_CoordVar:
+				(void)_NclChangeSymbolType(temporary,VAR);
+				tmp_ptr->kind = NclStk_VAR;
+				tmp_ptr->u.data_var = (NclVar)the_obj;
+				break;
+			case Ncl_FileVar:
+				(void)_NclChangeSymbolType(temporary,FVAR);
+				tmp_ptr->kind = NclStk_VAR;
+				tmp_ptr->u.data_var = (NclVar)the_obj;
+				break;
+			}
+		}
+	} else {
+        	ptr = machine + offset - 1;
+		lptr = _NclGetCurrentLineRec() + offset - 1;
+		fptr = _NclGetCurrentFileNameRec() + offset - 1;
+	}
+	return;
 }
 void CallINT_SUBSCRIPT_OP(void) {
 				NclStackEntry data;
@@ -2531,14 +2825,19 @@ void CallPARAM_FILEVAR_DIM_OP(void) {
 							if(tmp1_md == NULL) {
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not corece dimension ref into long");
 								estatus = NhlFATAL;
-							} else if((tmp1_md != NULL)&&(tmp_md->obj.status != PERMANENT)) {
+							} else if(tmp_md->obj.status != PERMANENT) {
 								_NclDestroyObj((NclObj)tmp_md);
 								tmp_md =tmp1_md;
-							} 	
+							} else {
+								tmp_md = tmp1_md;
+							}	
 						}
 						if(estatus != NhlFATAL) {
 							if(tmp_md->multidval.kind == SCALAR) {
 								tmp1_md = _NclFileVarReadDim(file_obj,var_name,(NclQuark)-1,*(long*)tmp_md->multidval.val);
+								if(tmp_md->obj.status != PERMANENT) {
+									_NclDestroyObj((NclObj)tmp_md);
+								}
 								if(tmp1_md != NULL) {
 									data.kind = NclStk_VAL;
 									data.u.data_obj = tmp1_md;
@@ -5271,6 +5570,10 @@ NclExecuteReturnStatus _NclExecute
 /****************************
 * Zero Operand Instructions *
 ****************************/
+			case LIST_ASSIGN_VERIFY_SUB: {
+				CallLIST_ASSIGN_VERIFY_SUB();
+			}
+			break;
 			case STOPSEQ:
 				level--;
 				return(Ncl_STOPS);
@@ -5406,6 +5709,14 @@ NclExecuteReturnStatus _NclExecute
 /***************************
 * One Operand Instructions *
 ***************************/
+			case LIST_CLEAR_TMP_OP: {
+				CallLIST_CLEAR_TMP_OP();
+			}
+			break;
+			case TERM_LIST_OP : {
+				CallTERM_LIST_OP();
+			}
+			break;
 			case FUNC_CALL_OP : {
 				CallFUNC_CALL_OP();
 			}
@@ -5489,6 +5800,10 @@ NclExecuteReturnStatus _NclExecute
 /***************************
 * Two Operand Instructions *
 ***************************/			
+			case LIST_READ_OP: {
+				CallLIST_READ_OP();
+			}
+			break;
 			case VARVAL_READ_OP : {
 				CallVARVAL_READ_OP();
 			}
@@ -5527,6 +5842,10 @@ NclExecuteReturnStatus _NclExecute
 /*****************************
 * Three Operand Instructions *
 *****************************/
+			case SET_NEXT_OP: {
+				CallSET_NEXT_OP();
+			}	
+			break;
 			case PARAM_VARATT_OP:
 			case VARATT_OP : {
 				CallVARATT_OP();

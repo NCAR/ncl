@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.35 1999-11-05 23:12:19 ethan Exp $
+ *      $Id: SrcTree.c,v 1.36 1999-11-12 18:36:44 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -67,7 +67,8 @@ char *src_tree_names[] = {"Ncl_BLOCK", "Ncl_RETURN", "Ncl_IFTHEN",
 			"Ncl_RESOURCE","Ncl_GETRESOURCE", "Ncl_OBJ",
 			"Ncl_BREAK", "Ncl_CONTINUE","Ncl_FILEVARATT",
 			"Ncl_FILEVARDIM",
-			"Ncl_FILECOORD","Ncl_NEW","Ncl_LOGICAL","Ncl_VARCOORDATT","Ncl_FILECOORDATT","Ncl_WILDCARDINDEX","Ncl_NULLNODE"
+			"Ncl_FILECOORD","Ncl_NEW","Ncl_LOGICAL","Ncl_VARCOORDATT","Ncl_FILECOORDATT","Ncl_WILDCARDINDEX","Ncl_NULLNODE",
+			"Ncl_LIST"
 			};
 /*
 * These are the string equivalents of the attribute tags assigned to 
@@ -2264,6 +2265,9 @@ void _NclPrintSymbol
 	case CONTINUE:
 		fprintf(fp,"%s\t","CONTINUE");
 		break;
+	case LIST:
+		fprintf(fp,"%s\t","LIST");
+		break;
 	default:
 		break;
 	}
@@ -2848,6 +2852,31 @@ if(groot != NULL) {
 			i--;
 		}
 			break;
+		case Ncl_LIST:
+		{
+			NclList *list = (NclList*)root;
+			putspace(i,fp);
+			fprintf(fp,"%s\n",list->name);
+			i++;
+			putspace(i,fp);
+			fprintf(fp,"%s\t",ref_node_names[list->ref_type]);
+			_NclPrintSymbol(list->sym,fp);
+			
+			i++;
+			putspace(i,fp);
+			_NclPrintTree(list->ref_node,fp);
+			_NclPrintTree(list->subscript_list,fp);
+/*
+			step = list->subscript_list;
+			while(step != NULL) {
+				_NclPrintTree(step->node,fp);
+				step = step->next;
+			}
+*/
+			i--;
+			i--;
+		}
+			break;
 		case Ncl_VAR:
 		{
 			NclVar *var = (NclVar*)root;
@@ -3159,6 +3188,62 @@ void _NclVarDestroy
         }
         NclFree((void*)tmp);
 }
+/*
+void _NclListDestroy
+#if     NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else
+(thenode)
+        struct ncl_genericnode *thenode;
+#endif
+{
+        NclVar*tmp = (NclVar*)thenode;
+        NclSrcListNode *step,*temp;
+        step = tmp->subscript_list;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
+        NclFree((void*)tmp);
+}
+*/
+
+void *_NclMakeListRef
+#if	NhlNeedProto
+(void *ref_node,NclSymbol *equiv_sym,NclSymbol *list,void *subscript_list,NclSymbol *tmp_var)
+#else
+(ref_node,equiv_sym,list,subscript_list,tmp_var)
+void *ref_node;
+NclSymbol *equiv_sym;
+NclSymbol *list;
+void *subscript_list;
+NclSymbol *tmp_var
+#endif
+{
+	NclList * tmp = (NclList*)NclMalloc((unsigned)sizeof(NclList));
+	if(tmp == NULL) {
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
+		return(NULL);
+	}
+	tmp->kind = Ncl_LIST;
+	tmp->name = src_tree_names[Ncl_LIST];
+	tmp->line = cur_line_number;
+	tmp->file = cur_load_file;
+/*
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclListDestroy;
+*/
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	tmp->sym = list;
+	tmp->tmp= equiv_sym;
+	tmp->tmp_var= tmp_var;
+	tmp->ref_node= ref_node;
+	tmp->subscript_list = subscript_list;
+	tmp->ref_type = Ncl_READIT;
+	_NclRegisterNode((NclGenericNode*)tmp);
+	return((void*)tmp);
+}
+
 
 void *_NclMakeVarRef
 #if	NhlNeedProto
@@ -3618,6 +3703,11 @@ void *root;
 					break;
 			}
 		}
+/*
+	} else if(groot->kind == Ncl_VAR) {
+		((NclGenericRefNode*)groot)->ref_type = Ncl_VALONLY;
+*/
+	
 	} else {
 		return;
 	}

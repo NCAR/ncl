@@ -94,4 +94,9 @@
 #define FILEVARVAL_COORD_OP			94
 #define VARVAL_COORD_OP				95
 #define FILE_VARVAL_OP				96
-#define NUM_OPERATORS				97
+#define LIST_READ_OP				97
+#define SET_NEXT_OP				98
+#define TERM_LIST_OP				99
+#define LIST_CLEAR_TMP_OP			100
+#define LIST_ASSIGN_VERIFY_SUB 			101
+#define NUM_OPERATORS				102	

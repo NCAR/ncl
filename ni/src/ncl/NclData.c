@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.c,v 1.16 1999-04-01 20:27:23 ethan Exp $
+ *      $Id: NclData.c,v 1.17 1999-11-12 18:36:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -809,6 +809,15 @@ NclObj self;
 			objs[tmp].next = NULL;
 		}
 	} 
+	switch(current_id) {
+	case 40:
+	case 608:
+	case 613:
+		tmp = 0;
+		break;
+	default:
+		break;
+	}
 
 	
 	

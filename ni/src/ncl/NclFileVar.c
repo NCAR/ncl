@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclFileVar.c,v 1.17 1997-01-16 19:44:10 ethan Exp $
+ *      $Id: NclFileVar.c,v 1.18 1999-11-12 18:36:40 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -327,11 +327,16 @@ struct _NclObjRec*	self;
 	int i;
 	NclVar self_var = (NclVar)self;
 	NclMultiDValData value = (NclMultiDValData)_NclGetObj(self_var->var.thevalue_id);
-	NclFile thefile = (NclFile)_NclGetObj(*(int*)value->multidval.val);
+	NclFile thefile = NULL;
 
+	if(value != NULL) {
+
+		thefile = (NclFile)_NclGetObj(*(int*)value->multidval.val);
+	} 
 
 	_NclUnRegisterObj((NclObj)self_var);
-	_NclDelParent((NclObj)thefile,self);
+	if(thefile != NULL)
+		_NclDelParent((NclObj)thefile,self);
 	for(i = 0; i< self_var->var.n_dims; i++ ) {
 		if(self_var->var.coord_vars[i] != -1) {
 			_NclDelParent(_NclGetObj(self_var->var.coord_vars[i]),self);

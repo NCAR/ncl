@@ -45,7 +45,11 @@ Ncl_CoordVar = 			02000000,
 Ncl_Type = 			04000000,
 Ncl_MultiDValnclfileData =	010000000,
 Ncl_MultiDValHLUObjData = 	020000000,
-Ncl_OneDValCoordData = 		040000000
+Ncl_OneDValCoordData = 		040000000,
+Ncl_List = 			0100000000,
+Ncl_MultiDVallistData = 	0200000000,
+Ncl_ListVar = 			0400000000,
+Ncl_Typelist = 			01000000000
 } NclObjTypes;
 
 /*
@@ -101,7 +105,8 @@ NCL_byte = 	0100,
 NCL_string = 	0200,
 NCL_numeric = 	0400,
 NCL_logical = 	01000,
-NCL_obj = 	02000
+NCL_obj = 	02000,
+NCL_list = 	04000
 } NclBasicDataTypes;
 
 typedef NclQuark string; /* Makes this a quark type */

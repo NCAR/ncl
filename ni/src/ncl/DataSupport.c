@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.37 1998-06-08 22:27:00 ethan Exp $
+ *      $Id: DataSupport.c,v 1.38 1999-11-12 18:36:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -484,6 +484,8 @@ long _NclObjTypeToName
 		return(NrmStringToQuark("Ncl_Typelogical"));
 	case Ncl_Typeobj:
 		return(NrmStringToQuark("Ncl_Typeobj"));
+	case Ncl_Typelist:
+		return(NrmStringToQuark("Ncl_Typelist"));
 	default:
 		return(-1);
 	}
@@ -522,6 +524,8 @@ NclObjTypes _NclKeywordToObjType
 			return(Ncl_Typelogical);
 		case FILETYPE:
 			return(Ncl_MultiDValnclfileData);
+		case LIST:
+			return(Ncl_Typelist);
 		default:
 			return(Ncl_Obj);
 		}
@@ -559,6 +563,8 @@ NclObjTypes _NclBasicDataTypeToObjType
 		return(Ncl_Typelogical);
 	case NCL_obj:
 		return(Ncl_Typeobj);
+	case NCL_list:
+		return(Ncl_Typelist);
 	default:
 		return(Ncl_Obj);
 	}
@@ -595,6 +601,8 @@ NclBasicDataTypes _NclKeywordToDataType
 			return(NCL_numeric);
 		case LOGICAL:
 			return(NCL_logical);
+		case LIST:
+			return(NCL_list);
 		case GRAPHIC:
 		case FILETYPE:
 			return(NCL_obj);
@@ -636,6 +644,8 @@ NclBasicDataTypes data_type;
 			return(sizeof(obj));	
 		case NCL_logical:
 			return(sizeof(int));	
+		case NCL_list:
+			return(sizeof(int));	
 		default:
 			return(-1);
 	}
@@ -650,7 +660,14 @@ void _NclDestroyObj
 #endif
 {
 	NclObjClass oc;
+        NhlArgVal selector;
+        NhlArgVal cbdata;
+
 	_NclCallCallBacks(obj,DESTROYED);
+        cbdata.intval = obj->obj.id;
+        selector.lngval = DESTROYED;
+        _NhlCBCallCallbacks(obj->obj.cblist,selector,cbdata);
+
 
 	if(obj == NULL)  {
 		return;
@@ -1384,7 +1401,7 @@ NclBasicDataTypes dt;
 #endif
 {
 	static int first = 1;
-	static NclQuark quarks[10];
+	static NclQuark quarks[11];
 
 	if(first) {
 		first = 0;
@@ -1398,6 +1415,8 @@ NclBasicDataTypes dt;
 		quarks[7] = NrmStringToQuark("byte");
 		quarks[8] = NrmStringToQuark("logical");
 		quarks[9] = NrmStringToQuark("obj");
+		quarks[10] = NrmStringToQuark("list");
+
 	}	
 
 	switch(dt) {
@@ -1421,6 +1440,8 @@ NclBasicDataTypes dt;
 		return(NrmQuarkToString(quarks[8]));
 	case NCL_obj:
 		return(NrmQuarkToString(quarks[9]));
+	case NCL_list:
+		return(NrmQuarkToString(quarks[10]));
 	}
 	return(NULL);
 }

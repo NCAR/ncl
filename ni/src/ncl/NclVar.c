@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.57 1999-06-11 22:14:57 ethan Exp $
+ *      $Id: NclVar.c,v 1.58 1999-11-12 18:36:42 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,7 @@
 #include "NclCoordVar.h"
 #include "NclCallBacksI.h"
 #include <math.h>
+#include "parser.h"
 
 static NhlErrorTypes VarWrite(
 #if 	NhlNeedProto
@@ -1697,9 +1698,10 @@ struct _NclObjRec *parent;
 {	
         NclRefList *tmp,*tmp1;
         int found = 0;
+	NclVar thevar = (NclVar)theobj;
 
         if(theobj->obj.parents == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"MultiDValDelParent: Attempt to delete parent from empty list");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"VarDelParent: Attempt to delete parent from empty list");
                 return(NhlFATAL);
         }
 
@@ -1712,7 +1714,8 @@ struct _NclObjRec *parent;
                 found = 1;
         }
         if((tmp == NULL)&&(found)) {
-		_NclDestroyObj(theobj);
+		if((theobj->obj.ref_count <=0)&&((thevar->var.thesym == NULL)||(thevar->var.thesym->type == UNDEF)))
+			_NclDestroyObj(theobj);
                 return(NhlNOERROR);
         }
         while(tmp->next != NULL) {
@@ -1727,7 +1730,7 @@ struct _NclObjRec *parent;
                 }
         }
         if(found) {
-		if(theobj->obj.ref_count <=0) 
+		if((theobj->obj.ref_count <=0)&&((thevar->var.thesym == NULL)||(thevar->var.thesym->type == UNDEF)))
 			_NclDestroyObj(theobj);
                 return(NhlNOERROR);
         } else {
@@ -1745,7 +1748,9 @@ struct _NclObjRec *parent;
 #endif
 {
 	NclRefList *tmp = NULL;
+/*
 	if(parent->obj.obj_type_mask & ( Ncl_Var)) {
+*/
 
 		theobj->obj.ref_count++;
 	        tmp = theobj->obj.parents;
@@ -1754,10 +1759,12 @@ struct _NclObjRec *parent;
         	theobj->obj.parents->pid = parent->obj.id;
 		
 		return(NhlNOERROR);
+/*
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN, "Only files and variables can be parents of variables\n");
 		return(NhlFATAL);
 	}
+*/
 }
 
 static struct _NclVarRec * VarCopy

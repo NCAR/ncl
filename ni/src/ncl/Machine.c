@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.77 1999-08-17 18:17:11 ethan Exp $
+ *      $Id: Machine.c,v 1.78 1999-11-12 18:36:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -182,6 +182,11 @@ static void SetUpOpsStrings() {
 	ops_strings[VARVAL_COORD_OP] = "VARVAL_COORD_OP";
 	ops_strings[FILE_VARVAL_OP] = "FILE_VARVAL_OP";
 	ops_strings[PUSHNULL] = "PUSHNULL";
+	ops_strings[LIST_READ_OP] = "LIST_READ_OP";
+	ops_strings[SET_NEXT_OP] = "SET_NEXT_OP";
+	ops_strings[TERM_LIST_OP] = "TERM_LIST_OP";
+	ops_strings[LIST_CLEAR_TMP_OP] = "LIST_CLEAR_TMP_OP";
+	ops_strings[LIST_ASSIGN_VERIFY_SUB] = "LIST_ASSIGN_VERIFY_SUB";
 }
 
 static NhlErrorTypes IncreaseStackSize
@@ -1204,6 +1209,7 @@ void _NclPrintMachine
 			case ENDSTMNT_OP:
 			case DUP_TOFS:
 			case GET_OBJ_OP :
+			case LIST_ASSIGN_VERIFY_SUB:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				break;
 			case JMP :
@@ -1420,13 +1426,13 @@ void _NclPrintMachine
 			case PARAM_FILEVAR_DIM_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++,fptr++;
-/*
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++,fptr++;
-*/
+/*
 				fprintf(fp,"\t");
 				fprintf(fp,"%s\n",NrmQuarkToString(*ptr));
+*/
 				break;
 			case CREATE_OBJ_WP_OP:
 			case CREATE_OBJ_OP:
@@ -1437,6 +1443,39 @@ void _NclPrintMachine
 				fprintf(fp,"\t");
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				break;	
+			case LIST_READ_OP:
+				fprintf(fp,"%s\n",ops_strings[*ptr]);
+				ptr++;lptr++,fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				ptr++;lptr++,fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				ptr++;lptr++,fptr++;
+				if(*(int*)ptr == 0 ) {
+					fprintf(fp,"No Subscripts");
+				} else {
+					fprintf(fp,"Yes Subscripts");
+				}
+				break;
+			case LIST_CLEAR_TMP_OP:
+			case TERM_LIST_OP:
+				fprintf(fp,"%s\n",ops_strings[*ptr]);
+				ptr++;lptr++,fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				break;
+			case SET_NEXT_OP:
+				fprintf(fp,"%s\n",ops_strings[*ptr]);
+				ptr++;lptr++,fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				ptr++;lptr++,fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				ptr++;lptr++,fptr++;
+				fprintf(fp,"\tjump to: %d\n",*(int*)ptr);
+				break;
 			default:
 				break;
 		}

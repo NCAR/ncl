@@ -216,7 +216,7 @@ static struct _NclMultiDValDataRec *CreateFalseConst
 	}
 	tmp_obj = _NclCreateFalse();
 	tmp_obj->obj.is_constant = tmp_obj->obj.id+1;
-	return(tmp_obj);
+	return((NclMultiDValData)tmp_obj);
 }
 
 
@@ -2132,6 +2132,64 @@ Unneeded translations
 				_NclPutInstr(NEW_OP,new_op->line,new_op->file);
 				_NclPutInstr((NclValue)new_op->data_sym,new_op->line,new_op->file);
 			}
+			break;
+		}
+		case Ncl_LIST:
+		{
+			NclList *list_op = (NclList*)groot;
+			int nsubs = 0;
+
+			off1 = _NclPutInstr(ISDEFINED_OP,list_op->line,list_op->file);
+			_NclPutInstr((NclValue)list_op->sym,list_op->line,list_op->file);
+			if(list_op->subscript_list != NULL) {
+				(void)_NclTranslate(list_op->subscript_list,fp);
+				if(list_op->ref_type == Ncl_WRITEIT) {
+					((NclGenericRefNode*)list_op->ref_node)->ref_type = Ncl_WRITEIT;
+					_NclPutInstr(LIST_ASSIGN_VERIFY_SUB,list_op->line,list_op->file);
+				}
+			}
+
+/*
+* List object hold
+* Creates a tmp List variable to be used to sequence through list object
+* Separation of list variable is need to support multiple list reference on same
+* line. Another reason is lists can be pushed on to stack because that would
+* cause problems with array operations.
+*/
+
+			_NclPutInstr(LIST_READ_OP,list_op->line,list_op->file);
+			_NclPutInstr((NclValue)list_op->sym,list_op->line,list_op->file);
+			_NclPutInstr((NclValue)list_op->tmp,list_op->line,list_op->file);
+			_NclPutIntInstr(list_op->subscript_list?1:0,list_op->line,list_op->file);
+/*
+* Starts sequesting of list through tmp_var reference. retrieves next element and then
+* creates equivalence symbol table entry with the symbol list_op->tmp. This enables
+* anything int the list_op->ref_node to work without changes. The retrieve record
+* will return whatever is equivalent with to "tmp". Stack is NOT affected.
+*/
+			off2 = _NclPutInstr(SET_NEXT_OP,list_op->line,list_op->file);
+			_NclPutInstr((NclValue)list_op->tmp,list_op->line,list_op->file);
+			_NclPutInstr((NclValue)list_op->tmp_var,list_op->line,list_op->file);
+			off3 = _NclPutInstr(NOOP,list_op->line,list_op->file);
+			
+/*
+* Actual operation to perform on each list element. Idn's in ref_node are symbols pointed
+* to by "tmp"
+*/
+			(void)_NclTranslate(list_op->ref_node,fp);
+			_NclPutInstr(LIST_CLEAR_TMP_OP,list_op->line,list_op->file);
+			_NclPutInstr((NclValue)list_op->tmp_var,list_op->line,list_op->file);
+			
+
+			_NclPutInstr(JMP,list_op->line,list_op->file);
+			_NclPutInstr(off2,list_op->line,list_op->file);
+/*
+* terminates list operation. All elements on stack are popped and joined either
+* using ARRAY_LIST_OP or concatenated. Temporary is freed
+*/
+			off5 =_NclPutInstr(TERM_LIST_OP,list_op->line,list_op->file);
+			_NclPutInstr((NclValue)list_op->tmp,list_op->line,list_op->file);
+			_NclPutInstrAt(off3,off5,list_op->line,list_op->file);
 			break;
 		}
 		default:
