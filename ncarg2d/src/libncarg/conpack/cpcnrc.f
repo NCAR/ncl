@@ -1,5 +1,5 @@
 C
-C	$Id: cpcnrc.f,v 1.1.1.1 1992-04-17 22:32:44 ncargd Exp $
+C $Id: cpcnrc.f,v 1.2 1993-01-29 17:17:58 kennison Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -44,6 +44,9 @@ C
      +CALL GETSET (SVPL,SVPR,SVPB,SVPT,SWDL,SWDR,SWDB,SWDT,LLFS)
 C
 C Arrange for the selection of contour levels as desired by the user.
+C
+      CALL CPSETR ('CMN - CONTOUR MINIMUM',1.)
+      CALL CPSETR ('CMX - CONTOUR MAXIMUM',0.)
 C
       IF (FINC.LT.0.) THEN
         CALL CPSETI ('CLS - CONTOUR LEVEL SELECTOR',MAX(1,INT(-FINC)))
