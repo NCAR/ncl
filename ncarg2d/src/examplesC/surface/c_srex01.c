@@ -1,5 +1,5 @@
 /*
- *	$Id: c_srex01.c,v 1.3 2004-08-01 17:12:45 haley Exp $
+ *      $Id: c_srex01.c,v 1.4 2004-08-17 21:02:19 kennison Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -69,12 +69,16 @@ main()
  * Interpolate to get more closely-spaced data in the array QDAT.
  */
     for( j = 1; j <= 100; j++ ) {
-        fl=1.+38.99999999*(float)(j-1)/99.;
+        fl=1.+39.*(float)(j-1)/99.;
         l=(int)(fl);
+        if (l<1) l=1;
+        if (l>39) l=39;
         fl=fl-(float)(l);
         for( i = 1; i <= 100; i++ ) {
-            fk=1.+38.99999999*(float)(i-1)/99.;
+            fk=1.+39.*(float)(i-1)/99.;
             k=(int)(fk);
+            if (k<1) k=1;
+            if (k>39) k=39;
             fk=fk-(float)(k);
             qdat[i-1][j-1]=(1.-fl)*((1.-fk)*odat[k-1][l-1]+fk*odat[k][l-1])+
                                 fl*((1.-fk)*odat[k-1][  l]+fk*odat[k][  l]);
