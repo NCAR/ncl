@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: ymkmf,v 1.7 1994-08-17 23:41:20 boote Exp $
+#      $Id: ymkmf,v 1.8 1994-09-13 14:51:54 haley Exp $
 #
 #########################################################################
 #									#
@@ -84,7 +84,7 @@ endif
 
 echo $thisdir | fgrep $topname >& /dev/null
 if ($status != 0) then
-	if($?def_topname) then
+	if ($?def_topname) then
 		set topdir = .
 		set curdir = .
 		goto shortcut
@@ -104,7 +104,7 @@ set	ndir = `dirname $thisdir`
 
 while ("$base" != "$topname")
 	if ("$base" == "/") then
-		if($?def_topname) then
+		if ($?def_topname) then
 			set topdir = .
 			set curdir = .
 			goto shortcut
@@ -112,7 +112,7 @@ while ("$base" != "$topname")
 		echo "$0 : Bad TopDir name $topname"
 		exit 1
 	endif
-	if($?curdir) then
+	if ($?curdir) then
 		set curdir = "$base"/"$curdir"
 	else
 		set curdir = "$base"
@@ -124,7 +124,7 @@ while ("$base" != "$topname")
 	set ndir = `dirname ${ndir}`
 end
 
-if($?curdir) then
+if ($?curdir) then
 	set curdir = ./"$curdir"
 else
 	set curdir = .

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.19 1994-08-08 19:12:53 boote Exp $
+#	$Id: ymake,v 1.20 1994-09-13 14:51:53 haley Exp $
 #
 ######################################################################
 #
@@ -130,7 +130,7 @@ foreach arg ($ymakeargs)
 	endsw
 end
 
-if( ! $?top_dir) then
+if ( ! $?top_dir) then
 	set top_dir = .
 endif
 
@@ -138,13 +138,13 @@ if ( -r $top_dir/ymake.conf) then
 	set defines=($defines -D_LOCAL_CONF=\"$top_dir/ymake.conf\")
 endif
 
-if(! $?NoProject) then
+if (! $?NoProject) then
 	if ( -r $top_dir/ymake.project) then
 		set defines=($defines -D_PROJECT_FILE=\"$top_dir/ymake.project\")
 	endif
 endif
 
-if($useinstalled != 0) then
+if ($useinstalled != 0) then
 	set config_dir = `ncargpath config`
 	if ($status != 0) then
 		echo "$0 : Unable to find NCARG_CONFIG dir" > /dev/tty
@@ -318,12 +318,12 @@ case	SunOS:
 	case	sun4*:
 		set arch = sun4
 
-		if($?extraos == 0) then
+		if ($?extraos == 0) then
 			set sysincs = Sun4
 			breaksw
 		endif
 
-		if("$extraos" == Solaris) then
+		if ("$extraos" == Solaris) then
 			set sysincs = Sun4Solaris
 			breaksw
 		endif
@@ -381,7 +381,7 @@ case	OSF1:
 	set os = $opsys
 	set arch = $mach
 
-	if("$os" == ULTRIX) then
+	if ("$os" == ULTRIX) then
 		set sysincs = DECRISC
 	else
 		set sysincs = AlphaOSF1
@@ -448,7 +448,7 @@ default:
 	breaksw
 endsw
 
-if($?sysincs == 0) then
+if ($?sysincs == 0) then
 	echo "$0 : Unknown System Type - No Config file" > /dev/tty
 	exit 1
 endif
@@ -487,7 +487,7 @@ default:
 	breaksw
 endsw
 
-if("$subminor" == "") then
+if ("$subminor" == "") then
 	unset subminor
 endif
 
@@ -564,7 +564,7 @@ echo '#include "Template"' | \
 $cpp $cppopt -I. -D_COMMENT_="" -DNGCOMM=\# $defines -DYMAKEFILE=\"$tmp1\" | \
 "$config_dir"/ymake-filter >>$outfile
 
-if($status) goto error_cleanup
+if ($status) goto error_cleanup
 
 /bin/rm -f $outfile.bak $tmp1
 onintr
