@@ -61,7 +61,7 @@ library.so:: library.so.major]\
 ]\
 library.so.major:: arch]\
 	MakeDir($(TOP)/shared)]\
-	$(LD) -shared -woff 85,84 -set_version sgi##major.minor -no_unresolved -rdata_shared -update_registry $(TOP)/shared/so_locations -o $@ -all arch -none $(SHAREDLDLIBSEARCH) reqlibs ]\
+	$(LD) -shared -woff 85,84 -set_version sgi##major.minor -rdata_shared -update_registry $(TOP)/shared/so_locations -o $@ -all arch -none $(SHAREDLDLIBSEARCH) reqlibs ]\
 	@cd $(TOP)/shared;\ ]\
 	$(RM) library.so.major; \ ]\
 	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\
@@ -145,7 +145,7 @@ library.so:: library.so.major]\
 ]\
 library.so.major:: objects]\
 	MakeDir($(TOP)/shared)]\
-	$(LD) -shared -woff 85 -set_version sgi##major.minor -no_unresolved -rdata_shared -update_registry $(TOP)/shared/so_locations -o $@ objects $(SHAREDLDLIBSEARCH) reqlibs ]\
+	$(LD) -shared -woff 85 -set_version sgi##major.minor -rdata_shared -update_registry $(TOP)/shared/so_locations -o $@ objects $(SHAREDLDLIBSEARCH) reqlibs ]\
 	@cd $(TOP)/shared;\ ]\
 	$(RM) library.so.major; \ ]\
 	$(LN) ../$(CURRENT_DIR)/library.so.major . ]\
