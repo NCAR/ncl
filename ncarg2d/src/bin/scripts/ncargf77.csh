@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargf77.csh,v 1.21 1994-08-11 16:51:33 haley Exp $
+#   $Id: ncargf77.csh,v 1.22 1994-12-05 20:42:35 haley Exp $
 #
 
 #*********************************************#
@@ -14,12 +14,15 @@ if ($status != 0) then
 	exit 1
 endif
 
-set XLIBPATH = ""
+set syslibdir = "SED_LIBSEARCH"
+set xlib     = "SED_XLIB"
 set system   = "SED_SYSTEM_INCLUDE"
 set fortran  = "SED_F77"
-set loadopt  = "SED_LDFLAGS"
+set loadflags  = "SED_LDFLAGS"
 set libdir   = `ncargpath SED_LIBDIR`
 set ro       = "$libdir/SED_NCARGDIR/SED_ROBJDIR"
+set libpath = "-L$libdir $syslibdir"
+
 set libextra = ""
 
 if (! -d "$libdir") then
@@ -29,12 +32,9 @@ endif
 
 if ("$system" == "Sun4Solaris") then
   set libextra = "/usr/ucblib/libucb.a"
-  set XLIBPATH = "-L/usr/openwin/lib"
-else if("$system" == "HPUX_snake") then
-  set XLIBPATH = "-L/usr/lib/X11R5"
 endif    
 
-set newargv = "$fortran $loadopt"
+set newargv = "$fortran $loadflags"
 
 set ctrans_libs = ""
 set stub_file   = ""
@@ -42,18 +42,18 @@ set stub_file   = ""
 #
 # set up default libraries
 #
-set libncarg  =  "$libdir/libncarg.a"
-set libgks     = "$libdir/libncarg_gks.a"
-set libncarg_c = "$libdir/libncarg_c.a"
+set libncarg  =  "-lncarg"
+set libgks     = "-lncarg_gks"
+set libncarg_c = "-lncarg_c"
+set ncarg_libs  = "$libncarg $libgks $libncarg_c"
 
 set libmath  = "-lm"
-set libX11     = "$XLIBPATH -lX11"
 
 set smooth = "$ro/libdashsmth.o"
 set quick  = "$ro/libdashline.o $ro/libconrcqck.o $ro/libconraq.o"
 set super  = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
 
-set libs
+set robjs
 
 foreach arg ($argv)
 
@@ -66,68 +66,68 @@ foreach arg ($argv)
 
     case "-smooth":
         echo "Smooth f77 of NCAR Graphics"
-        set libs = "$libs $smooth"
+        set robjs = "$robjs $smooth"
         breaksw
 
     case "-super":
         echo "Super f77 of NCAR Graphics"
-        set libs = "$libs $super"
+        set robjs = "$robjs $super"
         breaksw
 
     case "-quick":
         echo "Quick f77 of NCAR Graphics"
-        set libs = "$libs $quick"
+        set robjs = "$robjs $quick"
         breaksw
 
     case "-agupwrtx":
         echo "Autograph with PWRITX"
-        set libs = "$libs $ro/libagupwrtx.o"
+        set robjs = "$robjs $ro/libagupwrtx.o"
         breaksw
 
     case "-conransmooth":
         echo "Smooth Conran"
-        set libs = "$libs $smooth"
+        set robjs = "$robjs $smooth"
         breaksw
 
     case "-conranquick":
         echo "Quick Conran"
-        set libs = "$libs $ro/libconraq.o"
+        set robjs = "$robjs $ro/libconraq.o"
         breaksw
 
     case "-conransuper":
         echo "Super Conran"
-        set libs = "$libs $ro/libconras.o $ro/libdashsupr.o"
+        set robjs = "$robjs $ro/libconras.o $ro/libdashsupr.o"
         breaksw
 
     case "-conrecsmooth":
         echo "Smooth Conrec"
-        set libs = "$libs $ro/libdashsmth.o"
+        set robjs = "$robjs $ro/libdashsmth.o"
         breaksw
 
     case "-conrecquick":
         echo "Quick Conrec"
-        set libs = "$libs $ro/libconrcqck.o"
+        set robjs = "$robjs $ro/libconrcqck.o"
         breaksw
 
     case "-conrecsuper":
         echo "Super Conrec"
-        set libs = "$libs $ro/libconrcspr.o $ro/libdashsupr.o"
+        set robjs = "$robjs $ro/libconrcspr.o $ro/libdashsupr.o"
         breaksw
 
     case "-dashsmooth":
         echo "Smooth Dash"
-        set libs = "$libs $ro/libdashsmth.o"
+        set robjs = "$robjs $ro/libdashsmth.o"
         breaksw
 
     case "-dashquick":
     case "-dashline":
         echo "Quick Dash"
-        set libs = "$libs $ro/libdashline.o"
+        set robjs = "$robjs $ro/libdashline.o"
         breaksw
 
     case "-dashsuper":
         echo "Super Dash"
-        set libs = "$libs $ro/libdashsupr.o"
+        set robjs = "$robjs $ro/libdashsupr.o"
         breaksw
 
     case "-dashchar":
@@ -137,7 +137,7 @@ foreach arg ($argv)
     case "-ictrans":
         echo "Output to ictrans"
         set ctrans_libs = `ctlib`
-        set libX11   = ""
+        set xlib   = ""
         set libmath  = ""
         set stub_file = $ro/ggkwdr_stub.o
         if ("$system" == "Sun4") then
@@ -147,7 +147,7 @@ foreach arg ($argv)
 
     case "-noX11"
         set stub_file = $ro/ggkwdr_stub.o
-        set libX11 = ""
+        set xlib = ""
         breaksw
 
     case "-*":
@@ -161,7 +161,7 @@ foreach arg ($argv)
     endsw
 end
 
-set newargv = "$newargv $stub_file $ctrans_libs $libs $libncarg $libgks $libncarg_c $libX11 $libmath $libextra"
+set newargv = "$newargv $stub_file $libpath $ctrans_libs $robjs $ncarg_libs $xlib $libmath $libextra"
 
 echo $newargv
 eval $newargv
