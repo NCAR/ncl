@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.43 1999-12-15 00:05:25 haley Exp $
+.\"	$Id: ncargex.m,v 1.44 2000-02-17 23:55:34 kennison Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "June 1998" NCAR "NCAR GRAPHICS"
@@ -493,7 +493,7 @@ fsrezsrf fsrpwrzs fsrsrfac srex01 tsrfac tpwrzs c_srex01
 .sp
 .I "TDPACK Examples:"
 .sp
-tdex01 tdex02 tdex03 c_tdex01 c_tdex03
+tdex01 tdex02 tdex03 tdex04 tdex05 tdex06 c_tdex01 c_tdex03
 .sp
 .I "THREED Examples:"
 .sp
