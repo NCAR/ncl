@@ -1,5 +1,5 @@
 /*
- *      $Id: ResListP.h,v 1.4 1995-01-11 00:46:42 boote Exp $
+ *      $Id: ResListP.h,v 1.5 1997-09-19 14:41:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,7 @@ typedef struct _NhlGArgExtraRec{
 	unsigned int	size_ret;
 	_NhlArgVal	value_ret;
 	_NhlFreeFunc	free_func;
+	NhlClass	chld_class;
 } _NhlGArgExtra, *_NhlGArgExtraList;
 
 typedef struct _NhlRLNode_ _NhlRLNodeRec, *_NhlRLNode;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.37 1997-08-14 16:30:25 dbrown Exp $
+ *      $Id: Resources.c,v 1.38 1997-09-19 14:41:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1586,8 +1586,11 @@ _NhlSortChildArgs
 					 * Only add resoure to one list for
 					 * getvalues.
 					 */
-					if(getvalues)
+					if(getvalues){
+						*args_in[i].chld_class =
+								reslist->class;
 						break;
+					}
 				}
 
 				arglist = arglist->next;

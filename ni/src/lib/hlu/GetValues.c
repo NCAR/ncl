@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.22 1997-05-05 21:45:17 boote Exp $
+ *      $Id: GetValues.c,v 1.23 1997-09-19 14:41:16 boote Exp $
  */
 /************************************************************************
 *									*
@@ -473,9 +473,11 @@ NhlGetValues
 		gextra[i].type_ret = NrmNULLQUARK;
 		gextra[i].size_ret = 0;
 		gextra[i].free_func = NULL;
+		gextra[i].chld_class = NULL;
 		gargs[i].type_ret = &gextra[i].type_ret;
 		gargs[i].size_ret = &gextra[i].size_ret;
 		gargs[i].free_func = &gextra[i].free_func;
+		gargs[i].chld_class = &gextra[i].chld_class;
 	}
 
 	ret = _NhlGetLayerValues(l,gargs,nargs);
@@ -516,13 +518,22 @@ NhlGetValues
 			 * pointing at, and the converter function should
 			 * know what type it is pointing at.  _NhlArgVal
 			 * should be the "largest" size supported - and it
-			 * is since it's a union of all the supported types.
+			 * is, since it's a union of all the supported types.
 			 */
 			to.size = sizeof(_NhlArgVal);
 			to.data = args[i].value;
 
 			if(context == NULL)
 				context = _NhlCreateConvertContext(l);
+
+			if(gextra[i].chld_class){
+				_NhlConvertContextClass(context,
+							gextra[i].chld_class);
+			}
+			else{
+				_NhlConvertContextClass(context,
+							l->base.layer_class);
+			}
 
 			if(_NhlConvertData(context,gextra[i].type_ret,
 					args[i].type,&from,&to) < NhlINFO){
@@ -667,6 +678,7 @@ NhlVAGetValues
 	NrmQuark	type_ret;
 	_NhlFreeFunc	free_func;
 	unsigned int	size_ret;
+	NhlClass	chld_class;
 
 	if(l == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -690,6 +702,7 @@ NhlVAGetValues
 		args[i].type_ret = &type_ret;
 		args[i].size_ret = &size_ret;
 		args[i].free_func = &free_func;
+		args[i].chld_class = &chld_class;
 		args[i].type = NrmNULLQUARK;
 		i++;
 	}
@@ -741,6 +754,7 @@ NhlALGetValues
 	NrmQuark	type_ret;
 	unsigned int	size_ret;
 	_NhlFreeFunc	free_func;
+	NhlClass	chld_class;
 
 	if(l == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -754,6 +768,7 @@ NhlALGetValues
 		args[i].type_ret = &type_ret;
 		args[i].size_ret = &size_ret;
 		args[i].free_func = &free_func;
+		args[i].chld_class = &chld_class;
 		args[i].type = NrmNULLQUARK;
 	}
 

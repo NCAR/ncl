@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.40 1997-07-31 22:16:38 dbrown Exp $
+ *      $Id: hluP.h,v 1.41 1997-09-19 14:41:21 boote Exp $
  */
 /************************************************************************
 *									*
@@ -182,6 +182,7 @@ typedef struct _NhlArgRec{
 	NrmQuark		*type_ret;
 	unsigned int		*size_ret;
 	_NhlFreeFunc		*free_func;
+	NhlClass		*chld_class;
 } _NhlArg, *_NhlArgList;
 
 typedef struct _NhlChildArgRec _NhlChildArgNode, *_NhlChildArgList; 
